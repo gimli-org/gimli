@@ -8,7 +8,7 @@ import numpy as np
 import matplotlib as mpl
 from matplotlib.patches import Rectangle
 from matplotlib.collections import PatchCollection, LineCollection
-from matplotlib.colors import LogNorm
+import matplotlib.colors as colors
 
 import pygimli as pg
 from pygimli.misc import streamline
@@ -162,14 +162,18 @@ class CellBrowser(object):
         if event.key not in ('up', 'down', 'escape'):
             return
         if event.key is 'up':
-            self.cellID += 1
+            if self.cellID is not None:
+                self.cellID += 1
         elif event.key is'down':
-            self.cellID -= 1
+            if self.cellID is not None:
+                self.cellID -= 1
         else:
             self.hide()
             return
-        self.cellID = int(np.clip(self.cellID, 0, self.mesh.cellCount() - 1))
-        self.update()
+
+        if self.cellID is not None:
+            self.cellID = int(np.clip(self.cellID, 0, self.mesh.cellCount() - 1))
+            self.update()
 
     def update(self):
         """Update the information window."""
@@ -315,6 +319,7 @@ def drawModel(ax, mesh, data=None, logScale=True,
         if min(data) <= 0:
             logScale = False
 
+
         pg.mplviewer.setMappableData(gci, viewdata,
                                      cMin=cMin, cMax=cMax,
                                      logScale=logScale)
@@ -325,6 +330,7 @@ def drawModel(ax, mesh, data=None, logScale=True,
         ax.set_ylabel(ylabel)
 
     showMesh = kwargs.pop('showMesh', False)
+
     if showMesh:
         drawMesh(ax, mesh)
 
@@ -747,12 +753,18 @@ def drawMPLTri(ax, mesh, data=None, cMin=None, cMax=None,
 
     if len(z) == len(triangles):
         shading = kwargs.pop('shading', 'flat')
+
+        #bounds = np.linspace(levels[0], levels[-1], nLevs)
+        #norm = colors.BoundaryNorm(boundaries=bounds, ncolors=256)
+
         if shading == 'gouraud':
             z = pg.meshtools.cellDataToNodeData(mesh, data)
             gci = ax.tripcolor(x, y, triangles, z, shading=shading,
+                               #norm=norm,
                                **kwargs)
         else:
             gci = ax.tripcolor(x, y, triangles, facecolors=z, shading=shading,
+                               #norm=norm,
                                **kwargs)
 
     elif len(z) == mesh.nodeCount():
@@ -1255,60 +1267,3 @@ def drawParameterConstraints(ax, mesh, cMat, cWeight=None):
 
     updateAxes_(ax)
 
-
-def draw1DColumn(ax, x, val, thk, width=30, ztopo=0, cmin=1, cmax=1000,
-                 cmap=None, name=None, textoffset=0.0):
-    """Draw a 1D column (e.g., from a 1D inversion) on a given ax.
-
-    Examples
-    --------
-    >>> import numpy as np
-    >>> import matplotlib.pyplot as plt
-    >>> from pygimli.mplviewer import draw1DColumn
-    >>> thk = [1, 2, 3, 4]
-    >>> val = thk
-    >>> fig, ax = plt.subplots()
-    >>> draw1DColumn(ax, 0.5, val, thk, width=0.1, cmin=1, cmax=4, name="VES")
-    <matplotlib.collections.PatchCollection object at ...>
-    >>> ax.set_ylim(-np.sum(thk), 0)
-    (-10, 0)
-    """
-    z = -np.hstack((0., np.cumsum(thk), np.sum(thk) * 1.5)) + ztopo
-    recs = []
-    for i in range(len(val)):
-        recs.append(Rectangle((x - width / 2., z[i]), width, z[i + 1] - z[i]))
-
-    pp = PatchCollection(recs)
-    col = ax.add_collection(pp)
-
-    pp.set_edgecolor(None)
-    pp.set_linewidths(0.0)
-
-    if cmap is not None:
-        if isinstance(cmap, str):
-            pp.set_cmap(cmapFromName(cmap))
-        else:
-            pp.set_cmap(cmap)
-
-    pp.set_norm(LogNorm(cmin, cmax))
-    pp.set_array(np.array(val))
-    pp.set_clim(cmin, cmax)
-    if name:
-        ax.text(x+textoffset, ztopo, name, ha='center', va='bottom')
-
-    updateAxes_(ax)
-
-    return col
-
-
-def plotLines(ax, line_filename, linewidth=1.0, step=1):
-    """Read lines from file and plot over model."""
-    xz = np.loadtxt(line_filename)
-    n_points = xz.shape[0]
-    if step == 2:
-        for i in range(0, n_points, step):
-            x = xz[i:i+step, 0]
-            z = xz[i:i+step, 1]
-            ax.plot(x, z, 'k-', linewidth=linewidth)
-    if step == 1:
-        ax.plot(xz[:, 0], xz[:, 1], 'k-', linewidth=linewidth)

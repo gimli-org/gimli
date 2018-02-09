@@ -43,20 +43,25 @@ if '--debug' in sys.argv:
 else:
     setDebug(False)
 
-def info(msg):
-    logger.info(msg)
+def _msg(*args):
+    msg = ''
+    for arg in args:
+        msg += str(arg) + " "
 
-def warn(msg):
-    logger.warn(msg)
+def info(*args):
+    logger.info(_msg(args))
 
-def error(msg):
-    logger.error(msg)
+def warn(*args):
+    logger.warn(_msg(args))
 
-def debug(msg):
-    logger.debug(msg)
+def error(*args):
+    logger.error(_msg(args))
 
-def critical(msg):
-    logger.critical(msg)
+def debug(*args):
+    logger.debug(_msg(args))
+
+def critical(*args):
+    logger.critical(_msg(args))
     raise Exception(msg)
 
 def deprecated(msg, hint):

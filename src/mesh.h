@@ -390,6 +390,15 @@ public:
         For single attribute match to is set to 0.0, for open end set to = -1.0 */
     std::vector < Cell * > findCellByAttribute(double from, double to=0.0) const;
 
+
+    /*! Return vector of cells that are intersected with a given ray from start
+     * to end. Intersecting positions, i.e., the travel path are stored in pos.
+     Note this will not yet check if the ray lies completely along a boundary.
+     This will probably fail and need to be implemented.
+     */
+    std::vector < Cell * > findCellsAlongRay(const RVector3 & start,
+                                             const RVector3 & end,
+                                             R3Vector & pos) const;
     //** end get infos stuff
 
     //** start mesh modification stuff

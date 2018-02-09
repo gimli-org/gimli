@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 from matplotlib.collections import PatchCollection
-from matplotlib.colors import LogNorm
+import matplotlib.colors as colors
 
 import pygimli as pg
 
@@ -120,6 +120,52 @@ def drawModel1D(ax, thickness=None, values=None, model=None, depths=None,
     # assume positive depths pointing upward
     ax.set_ylim(pz[-1], pz[0])
     ax.grid(True)
+
+
+def draw1DColumn(ax, x, val, thk, width=30, ztopo=0, cmin=1, cmax=1000,
+                 cmap=None, name=None, textoffset=0.0):
+    """Draw a 1D column (e.g., from a 1D inversion) on a given ax.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import matplotlib.pyplot as plt
+    >>> from pygimli.mplviewer import draw1DColumn
+    >>> thk = [1, 2, 3, 4]
+    >>> val = thk
+    >>> fig, ax = plt.subplots()
+    >>> draw1DColumn(ax, 0.5, val, thk, width=0.1, cmin=1, cmax=4, name="VES")
+    <matplotlib.collections.PatchCollection object at ...>
+    >>> ax.set_ylim(-np.sum(thk), 0)
+    (-10, 0)
+    """
+    z = -np.hstack((0., np.cumsum(thk), np.sum(thk) * 1.5)) + ztopo
+    recs = []
+    for i in range(len(val)):
+        recs.append(Rectangle((x - width / 2., z[i]), width, z[i + 1] - z[i]))
+
+    pp = PatchCollection(recs)
+    col = ax.add_collection(pp)
+
+    pp.set_edgecolor(None)
+    pp.set_linewidths(0.0)
+
+    if cmap is not None:
+        if isinstance(cmap, str):
+            pp.set_cmap(cmapFromName(cmap))
+        else:
+            pp.set_cmap(cmap)
+
+    pp.set_norm(colors.LogNorm(cmin, cmax))
+    pp.set_array(np.array(val))
+    pp.set_clim(cmin, cmax)
+    if name:
+        ax.text(x+textoffset, ztopo, name, ha='center', va='bottom')
+
+    updateAxes_(ax)
+
+    return col
+
 
 
 def showmymatrix(mat, x, y, dx=2, dy=1, xlab=None, ylab=None, cbar=None):
@@ -310,7 +356,7 @@ def showStitchedModels_Redundant(mods, ax=None,
         pp.set_cmap(kwargs['cmap'])
 
     print(cmin, cmax)
-    norm = LogNorm(cmin, cmax)
+    norm = colors.LogNorm(cmin, cmax)
     pp.set_norm(norm)
     pp.set_array(np.array(RES))
 #    pp.set_clim(cmin, cmax)

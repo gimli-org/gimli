@@ -427,6 +427,11 @@ RVector3 EdgeShape::rst(Index i) const{
     THROW_TO_IMPL; return RVector3(0.0, 0.0, 0.0);
 }
 
+bool EdgeShape::intersectRay(const RVector3 & start, const RVector3 & dir,
+                             RVector3 & pos){
+    return Line(node(0).pos(), node(1).pos()).intersectRay(start, dir, pos);
+}
+
 void TriangleShape::setNodes(Node * n0, Node * n1, Node * n2){
     setNode(0, *n0); setNode(1, *n1); setNode(2, *n2);
 }

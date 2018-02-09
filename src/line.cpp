@@ -75,7 +75,8 @@ bool Line::compare(const Line & line, double epsilon) const {
     else return false;
 }
 
-RVector3 Line::intersect(const RVector3 & start, const RVector3 & dir) const {
+bool Line::intersectRay(const RVector3 & start, const RVector3 & dir,
+                        RVector3 & pos) const {
 
     RVector3 dirN(dir.norm());
 
@@ -84,15 +85,26 @@ RVector3 Line::intersect(const RVector3 & start, const RVector3 & dir) const {
     RVector3 v3(-dirN[1], dirN[0]);
 
     double d = v2.dot(v3);
-    if (abs(d) < TOLERANCE) return RVector3(false);
+    if (abs(d) < TOLERANCE) return false;
 
     // same like below // double t1 = -v1.cross(v2)[2] / d;
     double t1 = (v2[0] * v1[1] - v1[0] * v2[1]) / d;
     double t2 = v1.dot(v3) / d;
 
-    if (t1 >= 0.0 && t2 >= 0.0 && t2 <= 1.0) return start + t1 * dirN;
+    if (t1 >= 0.0 && t2 >= 0.0 && t2 <= 1.0) {
+        pos = start + t1 * dirN;
+        return true;
+    }
 
-    return RVector3(false);
+    return false;
+}
+
+RVector3 Line::intersect(const RVector3 & start, const RVector3 & dir) const{
+    RVector3 p;
+    if (!this->intersectRay(start, dir, p)){
+        p.setValid(false);
+    }
+    return p;
 }
 
 RVector3 Line::intersect(const Line & line) const {

@@ -37,15 +37,19 @@ def autolevel(z, nLevs, logscale=None, zmin=None, zmax=None):
     if logscale:
         locator = ticker.LogLocator()
     else:
-        locator = ticker.MaxNLocator(nLevs + 1)
+        #print('MaxNLocator(nBins=nLevs + 1)', nLevs)
+        locator = ticker.LinearLocator(numticks=nLevs)
+        #locator = ticker.MaxNLocator(nBins=nLevs + 1)
+        #locator = ticker.MaxNLocator(nBins='auto')
 
     if zmin is None:
-        zmin = round(min(z), 4)
+        zmin = round(min(z), 2)
 
     if zmax is None:
-        zmax = round(max(z), 4)
+        zmax = round(max(z), 2)
 
-    ##print("autolevel", zmin, zmax)
+    #print("autolevel", zmin, zmax)
+    #print(locator.tick_values(zmin, zmax))
     return locator.tick_values(zmin, zmax)
 
 
@@ -230,7 +234,7 @@ def createColorBar(patches, cMin=None, cMax=None, nLevs=5, label=None,
     if label is not None:
         cbar.set_label(label)
 
-    # updateColorBar(cbar, cMin=cMin, cMax=cMax, nLevs=nLevs, label=label)
+    updateColorBar(cbar, cMin=cMin, cMax=cMax, nLevs=nLevs, label=label)
 
     return cbar
 
@@ -323,10 +327,8 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5):
     for i in cbarLevels:
         if abs(i) == 0.0:
             cbarLevelsString.append("0")
-        elif abs(i) > 1e4 or abs(i) <= 1e-4:
+        elif abs(i) > 1e3 or abs(i) <= 1e-3:
             cbarLevelsString.append("%.1e" % i)
-        elif abs(i) < 1e-3:
-            cbarLevelsString.append("%.5f" % i)
         elif abs(i) < 1e-2:
             cbarLevelsString.append("%.4f" % i)
         elif abs(i) < 1e-1:
@@ -334,6 +336,8 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5):
         elif abs(i) < 1e0:
             cbarLevelsString.append("%.2f" % i)
         elif abs(i) < 1e1:
+            cbarLevelsString.append("%.1f" % i)
+        elif abs(i) < 1e2:
             cbarLevelsString.append("%.1f" % i)
         else:
             cbarLevelsString.append("%.0f" % i)
