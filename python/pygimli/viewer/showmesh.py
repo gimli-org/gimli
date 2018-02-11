@@ -221,9 +221,15 @@ def showMesh(mesh, data=None, hold=False, block=False,
         #print('-----------------------------')
         #print(data, type(data))
         #print('-----------------------------')
-        if (hasattr(data[0], '__len__') and
-                not isinstance(data, np.ma.core.MaskedArray) and
-                not isinstance(data, list)):
+
+        ### data=[[marker, val], ....]
+        if type(data) is list and \
+            type(data[0]) is list and type(data[0][0]) is int:
+            data = pg.solver.parseMapToCellArray(data, mesh)
+
+
+        if hasattr(data[0], '__len__') and not \
+            isinstance(data, np.ma.core.MaskedArray):
 
             if len(data) == 2:  # [u,v] x N
                 data = np.array(data).T
@@ -244,12 +250,7 @@ def showMesh(mesh, data=None, hold=False, block=False,
         else:
             validData = True
             try:
-                if type(data) is list:
-                    if type(data[0]) is list and type(data[0][0]) is int:
-                        gci = drawModel(ax, mesh,
-                                        pg.solver.parseMapToCellArray(data, mesh),
-                                        **kwargs)
-                elif len(data) == mesh.cellCount():
+                if len(data) == mesh.cellCount():
                     gci = drawModel(ax, mesh, data, **kwargs)
                 elif len(data) == mesh.nodeCount():
                     gci = drawField(ax, mesh, data, **kwargs)
