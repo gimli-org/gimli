@@ -1496,8 +1496,11 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
             u = solver.solve(rhs)
         else:
             for i, r in enumerate(rhs):
-                #solver.solve(r, u[i])
-                u[i] = solver.solve(r)
+                print(type(u))
+                print(u)
+                print(u[i])
+                solver.solve(r, u[i])
+                #u[i] = solver.solve(r)
 
         solverTime = swatch.duration(True)
         if verbose:

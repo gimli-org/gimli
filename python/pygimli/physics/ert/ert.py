@@ -181,11 +181,12 @@ class ERTModelling(pg.ModellingBase):
         u = np.zeros((nEle, nDof))
         self.subPotentials = [pg.RMatrix(nEle, nDof) for i in range(len(k))]
         for i, ki in enumerate(k):
+            ws = {'u': self.subPotentials[i]}
             uE = pg.solve(mesh, a=1./res, b=(ki * ki)/res, f=rhs,
                           bc={'Robin': self.mixedBC},
                           userData={'sourcePos': self.electrodes, 'k': ki},
-                          verbose=False, stat=0, debug=False,
-                          ret=self.subPotentials[i])
+                          verbose=False, stats=0, debug=False,
+                          ws=ws)
             u += w[i] * uE
         # collect potential matrix,
         # i.e., potential for all electrodes and all injections
