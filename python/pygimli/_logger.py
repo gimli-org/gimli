@@ -45,23 +45,26 @@ else:
 
 def _msg(*args):
     msg = ''
-    for arg in args:
-        msg += str(arg) + " "
+    for i, arg in enumerate(args):
+        msg += str(arg)
+        if i < len(args)-1:
+            msg += ' '
+    return msg
 
 def info(*args):
-    logger.info(_msg(args))
+    logger.info(_msg(*args))
 
 def warn(*args):
-    logger.warn(_msg(args))
+    logger.warn(_msg(*args))
 
 def error(*args):
-    logger.error(_msg(args))
+    logger.error(_msg(*args))
 
 def debug(*args):
-    logger.debug(_msg(args))
+    logger.debug(_msg(*args))
 
 def critical(*args):
-    logger.critical(_msg(args))
+    logger.critical(_msg(*args))
     raise Exception(msg)
 
 def deprecated(msg, hint):

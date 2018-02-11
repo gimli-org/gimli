@@ -14,7 +14,7 @@ pg.version()
 # test pygimli log
 pg.info("Start numeric log test." + str(pg.log(pg.RVector(1, 1.))))
 pg.warn("Start warning test.")
-pg.error("Start error test.")
+pg.error("Start error test.: int", 1, " vec", pg.RVector(2))
 #pg.critical("Start critical test.")
 
 pg.debug("debug 0")

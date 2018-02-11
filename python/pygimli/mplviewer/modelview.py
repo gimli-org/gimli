@@ -12,7 +12,7 @@ import pygimli as pg
 
 from pygimli.mplviewer.colorbar import setMappableData
 from pygimli.utils import rndig
-
+from .utils import updateAxes as updateAxes_
 
 def drawModel1D(ax, thickness=None, values=None, model=None, depths=None,
                 plot='plot',
@@ -165,7 +165,6 @@ def draw1DColumn(ax, x, val, thk, width=30, ztopo=0, cmin=1, cmax=1000,
     updateAxes_(ax)
 
     return col
-
 
 
 def showmymatrix(mat, x, y, dx=2, dy=1, xlab=None, ylab=None, cbar=None):

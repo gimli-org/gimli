@@ -1017,13 +1017,17 @@ def __getCoords(coord, dim, ent):
     """
     if isinstance(ent, pg.R3Vector) or isinstance(ent, pg.stdVectorRVector3):
         return getattr(_pygimli_, coord)(ent)
+    if type(ent) == list and isinstance(ent[0], pg.RVector3):
+        return getattr(_pygimli_, coord)(ent)
     if isinstance(ent, pg.DataContainer):
         return getattr(_pygimli_, coord)(ent.sensorPositions())
     if isinstance(ent, pg.Mesh):
         return getattr(_pygimli_, coord)(ent.positions())
     if hasattr(ent, 'ndim') and ent.ndim == 2 and len(ent[0] > dim):
         return ent[:, dim]
-    pg.error("Don't know how to find the " + coord + "-coordinates of entity:", ent)
+
+    # use logger here
+    raise Exception("Don't know how to find the " + coord + "-coordinates of entity:", ent)
 
 def x(instance):
     """Syntactic sugar to find all x-coordinates of a given class instance.
@@ -1033,7 +1037,7 @@ def x(instance):
 
     Parameters
     ----------
-    instance : pg.DataContainer, pg.Mesh, pg.R3Vector, np.array
+    instance : pg.DataContainer, pg.Mesh, pg.R3Vector, np.array, list(RVector3)
         Return the associated coordinate positions for the given class instance.
     """
     return __getCoords('x', 0, instance)
@@ -1046,7 +1050,7 @@ def y(instance):
 
     Parameters
     ----------
-    instance : pg.DataContainer, pg.Mesh, pg.R3Vector, np.array
+    instance : pg.DataContainer, pg.Mesh, pg.R3Vector, np.array, list(RVector3)
         Return the associated coordinate positions for the given class instance.
     """
     return __getCoords('y', 1, instance)
@@ -1059,7 +1063,7 @@ def z(instance):
 
     Parameters
     ----------
-    instance : pg.DataContainer, pg.Mesh, pg.R3Vector, np.array
+    instance : pg.DataContainer, pg.Mesh, pg.R3Vector, np.array, list(RVector3)
         Return the associated coordinate positions for the given class instance.
     """
     return __getCoords('z', 2, instance)
