@@ -116,6 +116,10 @@ def showMesh(mesh, data=None, hold=False, block=False,
             or if no cells are given:
             forward to :py:mod:`pygimli.mplviewer.drawPLC`
 
+        . [[marker, value], ...]
+            List of Cellvalues per cell marker
+            forward to :py:mod:`pygimli.mplviewer.drawModel`
+
         . float per cell -- model, patch
             forward to :py:mod:`pygimli.mplviewer.drawModel`
 
@@ -218,7 +222,8 @@ def showMesh(mesh, data=None, hold=False, block=False,
         #print(data, type(data))
         #print('-----------------------------')
         if (hasattr(data[0], '__len__') and
-                not isinstance(data, np.ma.core.MaskedArray)):
+                not isinstance(data, np.ma.core.MaskedArray) and
+                not isinstance(data, list)):
 
             if len(data) == 2:  # [u,v] x N
                 data = np.array(data).T
@@ -239,7 +244,12 @@ def showMesh(mesh, data=None, hold=False, block=False,
         else:
             validData = True
             try:
-                if len(data) == mesh.cellCount():
+                if type(data) is list:
+                    if type(data[0]) is list and type(data[0][0]) is int:
+                        gci = drawModel(ax, mesh,
+                                        pg.solver.parseMapToCellArray(data, mesh),
+                                        **kwargs)
+                elif len(data) == mesh.cellCount():
                     gci = drawModel(ax, mesh, data, **kwargs)
                 elif len(data) == mesh.nodeCount():
                     gci = drawField(ax, mesh, data, **kwargs)

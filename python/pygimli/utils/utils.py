@@ -255,7 +255,7 @@ def grange(start, end, dx=0, n=0, log=False):
         if not log:
             return grange(start, end, dx=(e - s) / (n - 1))
         else:
-            return pg.increasingRange2(start, end, n)
+            return pg.increasingRange(start, end, n)
     else:
         raise Exception('Either dx or n have to be given.')
 
@@ -559,7 +559,7 @@ def uniqueRows(data, prec=2):
     """Equivalent of Matlabs unique(data, 'rows') with tolerance check.
 
     Additionally returns forward and reverse indices
-    
+
     Examples
     --------
     >>> from pygimli.utils.utils import uniqueRows
