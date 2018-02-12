@@ -240,3 +240,17 @@ def saveAnimation(mesh, data, out, vData=None, plc=None, label='', cMin=None,
         plt.pause(0.001)
 
     createAnimation(fig, animate, int(len(data)), dpi, out)
+
+
+def plotLines(ax, line_filename, linewidth=1.0, step=1):
+    """Read lines from file and plot over model."""
+    xz = np.loadtxt(line_filename)
+    n_points = xz.shape[0]
+    if step == 2:
+        for i in range(0, n_points, step):
+            x = xz[i:i+step, 0]
+            z = xz[i:i+step, 1]
+            ax.plot(x, z, 'k-', linewidth=linewidth)
+    if step == 1:
+        ax.plot(xz[:, 0], xz[:, 1], 'k-', linewidth=linewidth)
+

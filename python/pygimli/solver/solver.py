@@ -1117,6 +1117,9 @@ def assembleRobinBC(S, boundaryPairs, rhs=None, time=0.0, userData=None):
     Sp = pg.ElementMatrix()
     Sq = pg.ElementMatrix()
 
+    #if isinstance(rhs, np.ndarray):
+        #rhs = pg.RVector(rhs)
+
     for pair in boundaryPairs:
         boundary = pair[0]
         val = pair[1]
@@ -1124,7 +1127,8 @@ def assembleRobinBC(S, boundaryPairs, rhs=None, time=0.0, userData=None):
         p = generateBoundaryValue(boundary, val, time, userData)
         #### p = gamma / alpha
         #p = 20.
-        q = -41.0
+        #q = -41.0
+        q = None
 
         #print("Robin")
         #print(boundary)
@@ -1456,7 +1460,7 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
 
         # create result array
         u = None
-        if u in workSpace:
+        if 'u' in workSpace:
             u = workSpace['u']
 
         singleForce = True
@@ -1493,7 +1497,10 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
             u = solver.solve(rhs)
         else:
             for i, r in enumerate(rhs):
-                solver.solve(r, u[i])
+                if isinstance(u[i], pg.RVector):
+                    solver.solve(r, u[i])
+                else:
+                    u[i] = solver.solve(r)
 
         solverTime = swatch.duration(True)
         if verbose:

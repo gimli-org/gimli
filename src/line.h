@@ -72,8 +72,13 @@ public:
     /*! Return const reference to ref. point p1 */
     const RVector3 & p1() const { return p1_; }
 
-    /*! Return intersection pos of this line segment and the ray given by
-     start and direction dir. */
+    /*! Return true if this line segment intersect with a the ray given by
+     start and direction dir. Fill pos with the intersection position.*/
+    bool intersectRay(const RVector3 & start, const RVector3 & dir,
+                      RVector3 & pos) const;
+
+    /*! Return insection position of this line segment with a the ray given by
+     start and direction dir. Pos is invalid for no intersection.*/
     RVector3 intersect(const RVector3 & start, const RVector3 & dir) const;
 
     /*! Returns the intersection point between line and this line.

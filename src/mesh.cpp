@@ -570,6 +570,44 @@ Cell * Mesh::findCell(const RVector3 & pos, size_t & count,
     return cell;
 }
 
+
+std::vector < Cell * > Mesh::findCellsAlongRay(const RVector3 & start,
+                                               const RVector3 & end,
+                                               R3Vector & pos) const {
+    pos.clean();
+    std::vector < Cell * > cells;
+
+    RVector3 dir(end- start);
+    RVector3 inPos(start);
+    pos.push_back(inPos);
+
+    while (inPos != end){
+        Cell *c = this->findCell(inPos + dir*1e-4);
+        if (!c) break;
+
+        RVector3 outPos(false);
+        for (Index i = 0; i < c->boundaryCount(); i++){
+            Shape * s = c->boundary(i)->pShape();
+
+            if (s->intersectRay(start, dir, outPos)){
+                if (outPos != inPos){
+                    outPos.setValid(true);
+                    break;
+                } else {
+                    outPos.setValid(false);
+                }
+            }
+        }
+
+        if (outPos.valid()){
+            pos.push_back(outPos);
+            cells.push_back(c);
+            inPos = outPos;
+        }
+    }
+    return cells;
+}
+
 std::vector < Boundary * > Mesh::findBoundaryByMarker(int marker) const {
     return findBoundaryByMarker(marker, marker + 1);
 }

@@ -731,6 +731,7 @@ Vector = _pygimli_.RVector
 Matrix = _pygimli_.RMatrix
 Inversion = _pygimli_.RInversion
 Pos = _pygimli_.RVector3
+PosVector = _pygimli_.R3Vector
 
 Trans = _pygimli_.RTrans
 TransLinear = _pygimli_.RTransLinear
@@ -1011,6 +1012,61 @@ def __MeshSetCellMarker__(self, m):
     deprecated(msg='Mesh::setCellMarker()', hint='Mesh::setCellMarkers()')
     return self.setCellMarkers(m)
 
+def __getCoords(coord, dim, ent):
+    """Syntactic sugar to find all x-coordinates of a given entity.
+    """
+    if isinstance(ent, pg.R3Vector) or isinstance(ent, pg.stdVectorRVector3):
+        return getattr(_pygimli_, coord)(ent)
+    if type(ent) == list and isinstance(ent[0], pg.RVector3):
+        return getattr(_pygimli_, coord)(ent)
+    if isinstance(ent, pg.DataContainer):
+        return getattr(_pygimli_, coord)(ent.sensorPositions())
+    if isinstance(ent, pg.Mesh):
+        return getattr(_pygimli_, coord)(ent.positions())
+    if hasattr(ent, 'ndim') and ent.ndim == 2 and len(ent[0] > dim):
+        return ent[:, dim]
+
+    # use logger here
+    raise Exception("Don't know how to find the " + coord + "-coordinates of entity:", ent)
+
+def x(instance):
+    """Syntactic sugar to find all x-coordinates of a given class instance.
+
+    Convenience function to return all associated x-coordinates
+    of a given class instance.
+
+    Parameters
+    ----------
+    instance : pg.DataContainer, pg.Mesh, pg.R3Vector, np.array, list(RVector3)
+        Return the associated coordinate positions for the given class instance.
+    """
+    return __getCoords('x', 0, instance)
+
+def y(instance):
+    """Syntactic sugar to find all y-coordinates of a given class instance.
+
+    Convenience function to return all associated x-coordinates
+    of a given class instance.
+
+    Parameters
+    ----------
+    instance : pg.DataContainer, pg.Mesh, pg.R3Vector, np.array, list(RVector3)
+        Return the associated coordinate positions for the given class instance.
+    """
+    return __getCoords('y', 1, instance)
+
+def z(instance):
+    """Syntactic sugar to find all z-coordinates of a given class instance.
+
+    Convenience function to return all associated x-coordinates
+    of a given class instance.
+
+    Parameters
+    ----------
+    instance : pg.DataContainer, pg.Mesh, pg.R3Vector, np.array, list(RVector3)
+        Return the associated coordinate positions for the given class instance.
+    """
+    return __getCoords('z', 2, instance)
 
 _pygimli_.Mesh.cellMarker = __MeshGetCellMarker__
 _pygimli_.Mesh.setCellMarker = __MeshSetCellMarker__

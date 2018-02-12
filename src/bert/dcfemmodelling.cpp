@@ -1471,7 +1471,7 @@ RVector DCMultiElectrodeModelling::calcGeometricFactor(const DataContainerERT & 
     if (verbose_) std::cout << "Obtaining geometric factors";
     if (!this->topography() && !buildCompleteElectrodeModel_) {
         if (verbose_) std::cout << " (analytical)" << std::endl;
-        return geometricFactor(data, mesh_->dimension(), false);
+        return geometricFactors(data, mesh_->dimension(), false);
     }
 
     if (electrodes_.size() == 0){

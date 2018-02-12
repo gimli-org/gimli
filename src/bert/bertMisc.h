@@ -58,6 +58,7 @@ DLLEXPORT RVector geometricFactors(const DataContainerERT & data, int dim=3,
 /*! DEPRECATED due to wrong typo. */
 inline RVector geometricFactor(const DataContainerERT & data, int dim=3,
                                   bool forceFlatEarth=false){
+    __MS("Deprecated please use 'geometricFactors'")
     return geometricFactors(data, dim, forceFlatEarth);
 }
 
