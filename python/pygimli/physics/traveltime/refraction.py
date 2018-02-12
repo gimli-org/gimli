@@ -397,6 +397,8 @@ class Refraction(MethodManager):
             self.inv.setRobustData(kwargs.pop('robustData'))
         if 'blockyModel' in kwargs:
             self.inv.setBlockyModel(kwargs.pop('blockyModel'))
+        if kwargs.pop('referenceModel', False):
+            self.inv.setReferenceModel(startModel)
 
         if not hasattr(self.error, '__iter__'):
             self.error = Refraction.estimateError(
@@ -579,7 +581,7 @@ class Refraction(MethodManager):
         C = self.fop.constraintsRef()
         return np.sign(np.absolute(C.transMult(C * coverage)))
 
-    def showCoverage(self, ax=None, name='coverage'):
+    def showCoverage(self, ax=None, name='coverage', **kwargs):
         """shows the ray coverage in logscale"""
         if ax is None:
             fig, ax = plt.subplots()
@@ -588,7 +590,7 @@ class Refraction(MethodManager):
         self.axs[name] = ax
         cov = self.rayCoverage()
         pg.show(self.mesh, pg.log10(cov+min(cov[cov > 0])*.5), ax=ax,
-                coverage=self.standardizedCoverage())
+                coverage=self.standardizedCoverage(), **kwargs)
 
     def showModel(self, ax=None, vals=None, **kwargs):
         """WRITEME"""
