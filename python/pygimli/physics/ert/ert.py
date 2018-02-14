@@ -363,13 +363,13 @@ class ERTManager(MeshMethodManager):
         pg.renameKwarg('noisify', 'noiseLevel', kwargs)
 
         noiseLevel = kwargs.pop('noiseLevel', 0.0)
+
         if noiseLevel > 0:
-            noiseRel = kwargs.pop('noiseLevel', 0.03)
             noiseAbs = kwargs.pop('noiseAbs', 1e-4)
-            err = noiseRel + noiseAbs / rhoa
+            err = noiseLevel + noiseAbs / rhoa
             scheme.set('err', err)
             if verbose:
-                pg.info("Set noise (" + str(noiseRel*100) + "% + " + str(noiseAbs) + " V) min:",
+                pg.info("Set noise (" + str(noiseLevel*100) + "% + " + str(noiseAbs) + " V) min:",
                       min(err), "max:", max(err))
             rhoa *= 1. + pg.randn(scheme.size()) * err
 
