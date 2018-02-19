@@ -29,7 +29,8 @@ class ModellingMT(pg.ModellingBase):
             c1 = mt.createCircle(pos=[0.0, -5.0], radius=3.0, area=.1, marker=2)
             mesh = pg.meshtools.createMesh([world, c1], quality=34.3)
             u = pg.solver.solveFiniteElements(mesh, a=[[1, 100], [2, 1]],
-                                              uB=[[4, 1.0], [2, 0.0]])
+                                              bc={'Dirichlet': [[4, 1.0],
+                                                                [2, 0.0]]})
 
         # print(i)
         return par * 2.0
@@ -80,7 +81,7 @@ class TestFOP(unittest.TestCase):
         fop.createJacobian(m)
         J1 = pg.RMatrix(fop.jacobian())
 
-        fop.setMultiThreadJacobian(4)
+        fop.setMultiThreadJacobian(nPars)
         fop.createJacobian(m)
         J2 = fop.jacobian()
 

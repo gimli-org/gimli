@@ -55,7 +55,7 @@ def info(*args):
     logger.info(_msg(*args))
 
 def warn(*args):
-    logger.warn(_msg(*args))
+    logger.warning(_msg(*args))
 
 def error(*args):
     logger.error(_msg(*args))
@@ -68,11 +68,12 @@ def critical(*args):
     raise Exception(msg)
 
 def deprecated(msg, hint):
-    logger.warn(msg + ", is deprecated, use:" + hint + " instead.")
+    print(msg, hint)
+    logger.warning(msg + ", is deprecated, please use:" + hint + " instead.")
 
 def renameKwarg(old, new, kwargs):
     if old in kwargs:
-        logger.warn("Keyword argument name changed from '" + old + \
+        logger.warning("Keyword argument name changed from '" + old + \
                  "' to '" + new + "'")
         kwargs[new] = kwargs.pop(old)
 
