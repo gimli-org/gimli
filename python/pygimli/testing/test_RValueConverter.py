@@ -85,7 +85,11 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(pg.sum(a), sum(x))
 
     def test_NumpyToRVector(self):
+<<<<<<< Updated upstream
         """Implemented in custom_rvalue.cpp."""
+=======
+        """ implemented in custom_rvalue.cpp"""
+>>>>>>> Stashed changes
         x = np.arange(0, 1., 0.2)
         a = pg.RVector(x)
         self.assertEqual(a.size(), len(x))
@@ -107,6 +111,7 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(pg.sum(a), sum(x))
         self.assertEqual(pg.sum(x), sum(x))
 
+<<<<<<< Updated upstream
     def test_NumpyToRMatrix(self):
         """Implemented in custom_rvalue.cpp."""
         M = np.ndarray((5, 4))
@@ -121,6 +126,8 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(sum(A[2]), sum(M[2]))
         self.assertEqual(sum(A[3]), sum(M[3]))
 
+=======
+>>>>>>> Stashed changes
     def test_NumpyToRVector3(self):
         """Implemented in custom_rvalue.cpp."""
         x = np.array([0.0, 1.0, 0.0])
@@ -230,13 +237,5 @@ class TestRVectorMethods(unittest.TestCase):
         A = np.array(pg.RMatrix(4,4))
 
 if __name__ == '__main__':
-
     pg.setDebug(0)
     unittest.main()
-    #pg.setDebug(1)
-    #M = np.arange(16.).reshape((4,4))
-    #A = pg.RMatrix(M)
-    #M2 = np.array(A)
-    #print(M2)
-
-    #exit()
