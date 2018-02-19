@@ -7,7 +7,9 @@ import time
 
 import numpy as np
 import pygimli as pg
+import pygimli.meshtools as mt
 
+run_solve = True
 
 class ModellingMT(pg.ModellingBase):
     def __init__(self, nPars, verbose):
@@ -21,7 +23,14 @@ class ModellingMT(pg.ModellingBase):
 
     def response_mt(self, par, i=0):
         """ """
-        time.sleep(0.1)
+        if run_solve:
+            world = mt.createWorld(start=[-10, 0], end=[10, -10],
+                                   marker=1, worldMarker=False)
+            c1 = mt.createCircle(pos=[0.0, -5.0], radius=3.0, area=.1, marker=2)
+            mesh = pg.meshtools.createMesh([world, c1], quality=34.3)
+            u = pg.solver.solveFiniteElements(mesh, a=[[1, 100], [2, 1]],
+                                              uB=[[4, 1.0], [2, 0.0]])
+
         # print(i)
         return par * 2.0
 
