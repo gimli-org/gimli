@@ -1215,7 +1215,10 @@ def polyCreateWorld(filename, x=None, depth=None, y=None, marker=0,
     """Create the PLC of a default world.
 
     Create the PLC of a default world.
+
     Out of core wrapper for dcfemlib::polytools::polyCreateWorld
+
+    # TODO need to be converted to the pyhon only tools.
 
     Parameters
     ----------
@@ -1223,7 +1226,6 @@ def polyCreateWorld(filename, x=None, depth=None, y=None, marker=0,
     Returns
     -------
     """
-    raise BaseException('obsolete use mesh methods directly')
     if depth is None:
         print("Please specify worlds depth.")
         return

@@ -194,7 +194,6 @@ void Region::countParameter(Index start){
     //std::cout << WHERE_AM_I << " " << marker_ << " " << parameterCount_ << " " << startParameter_ << " " << endParameter_ <<  std::endl;
 }
 
-
 //################ Start values
 void Region::setStartModel(const RVector & start){
     setBackground(false);

@@ -1081,7 +1081,7 @@ def drawStreams(ax, mesh, data, startStream=3, **kwargs):
         # start a stream from each boundary cell
         for y in np.linspace(viewMesh.ymin(), viewMesh.ymax(), 100):
             c = viewMesh.findCell(
-                [(viewMesh.xmax() - viewMesh.xmax()) / 2.0, y])
+                        [(viewMesh.xmax() - viewMesh.xmax()) / 2.0, y])
             if c is not None:
                 if c.valid():
                     drawStreamLine_(ax, viewMesh, c, data, dataMesh,
@@ -1136,12 +1136,13 @@ def drawSensors(ax, sensors, diam=None, coords=None, verbose=False, **kwargs):
     Examples
     --------
     >>> import numpy as np
-    >>> import matplotlib.pyplot as plt
+    >>> import pygimli as pg
     >>> from pygimli.mplviewer import drawSensors
     >>> sensors = np.random.rand(5, 2)
     >>> fig, ax = plt.subplots()
     >>> drawSensors(ax, sensors, diam=0.02, coords=[0, 1])
     >>> ax.set_aspect('equal')
+    >>> pg.wait()
     """
     if coords is None:
         coords = [0, 2]
@@ -1154,7 +1155,7 @@ def drawSensors(ax, sensors, diam=None, coords=None, verbose=False, **kwargs):
         eSpacing = sensors[0].distance(sensors[1])
         diam = eSpacing / 8.0
 
-    for e in sensors:
+    for i, e in enumerate(sensors):
         if verbose:
             print(e, diam, e[coords[0]], e[coords[1]])
         eCircles.append(mpl.patches.Circle((e[coords[0]], e[coords[1]]), diam))
@@ -1260,7 +1261,6 @@ def drawParameterConstraints(ax, mesh, cMat, cWeight=None):
         linewidths.append(linewidth)
 
     linCol = mpl.collections.LineCollection(lines, antialiaseds=True)
-
     linCol.set_color(colors)
     linCol.set_linewidth(linewidths)
     ax.add_collection(linCol)

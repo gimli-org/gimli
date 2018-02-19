@@ -12,7 +12,11 @@ fi
 GIMLI_ROOT=$(pwd)/gimli
 GIMLI_SOURCE_DIR=$GIMLI_ROOT/gimli
 GIMLI_BUILD_DIR=$GIMLI_ROOT/build
+<<<<<<< Updated upstream
 PYGIMLI_SOURCE_DIR=$GIMLI_SOURCE_DIR/python
+=======
+PYGIMLI_SOURCE_DIR=$GIMLI_SOURCE/python
+>>>>>>> Stashed changes
 
 PARALLEL_BUILD=2
 PYTHON_MAJOR=3
@@ -100,7 +104,16 @@ for i in "$@"; do
     esac
 done
 
+<<<<<<< Updated upstream
 # echo "=========================================="
+=======
+if [ $LOCALSCRIPTS -eq 1 ]; then
+    SCRIPT_REPO=$GIMLI_SOURCE_DIR/scripts/install
+    GET="cat"
+fi
+
+echo "=========================================="
+>>>>>>> Stashed changes
 if [ $(uname) == "Darwin" ]; then
     SYSTEM='mac'
     echo "Determining system ... DARWIN system found"
@@ -145,13 +158,20 @@ export UPDATE_ONLY=$UPDATE_ONLY
 echo "Installing at: "$GIMLI_ROOT
 echo "Build for Python="$PYTHON_MAJOR
 echo "Parallelize with j="$PARALLEL_BUILD
+<<<<<<< Updated upstream
 echo "Update only: " $UPDATE_ONLY
 echo "Branch: " $BRANCH
 echo "CLEAN build: " $CLEAN
+=======
+echo "Update only" $UPDATE_ONLY
+echo "Branch:" $BRANCH
+echo "CLEAN build:" $CLEAN
+>>>>>>> Stashed changes
 
 getGIMLI(){
     mkdir -p $GIMLI_ROOT
     pushd $GIMLI_ROOT
+<<<<<<< Updated upstream
 
         if [ -d $GIMLI_SOURCE_DIR ]; then
             pushd $GIMLI_SOURCE_DIR
@@ -178,11 +198,43 @@ buildGIMLI(){
 
         [ $UPDATE_ONLY -eq 0 ] && rm -rf $GIMLI_BUILD_DIR
 
+=======
+
+        if [ -d $GIMLI_SOURCE_DIR ]; then
+            pushd $GIMLI_SOURCE_DIR
+                git pull
+            popd
+        else
+            git clone https://github.com/gimli-org/gimli.git
+        fi
+
+        if [ -n "$BRANCH" ]; then
+            pushd $GIMLI_SOURCE_DIR
+                echo "Switching to branch: " $BRANCH
+                git checkout $BRANCH
+            popd
+        fi
+
+        chmod +x $PYGIMLI_SOURCE_DIR/apps/*
+
+    popd
+}
+
+buildGIMLI(){
+    pushd $GIMLI_ROOT
+
+        [ $UPDATE_ONLY -eq 0 ] && rm -rf $GIMLI_BUILD_DIR
+
+>>>>>>> Stashed changes
         mkdir -p $GIMLI_BUILD_DIR
 
         pushd $GIMLI_BUILD_DIR
 
+<<<<<<< Updated upstream
             cmake -G "$CMAKE_GENERATOR" $GIMLI_SOURCE_DIR -DPYVERSION=$PYTHON_MAJOR
+=======
+            cmake -G "$CMAKE_GENERATOR" $GIMLI_SOURCE_DIR -D$PYVERSION=$PYTHON_MAJOR
+>>>>>>> Stashed changes
 
             make -j$PARALLEL_BUILD && make pygimli J=$PARALLEL_BUILD
         popd
@@ -205,6 +257,7 @@ echo "========================================================================="
 echo "Installing system prerequisites for" $SYSTEM
 echo "-------------------------------------------------------------------------"
 "$GET" $SCRIPT_REPO/install_$SYSTEM'_prereqs.sh' | bash
+<<<<<<< Updated upstream
 
 echo "========================================================================="
 echo "Get GIMLi sources"
@@ -212,6 +265,15 @@ echo "-------------------------------------------------------------------------"
 getGIMLI
 
 echo "========================================================================="
+=======
+
+echo "========================================================================="
+echo "Get GIMLi sources"
+echo "-------------------------------------------------------------------------"
+getGIMLI
+
+echo "========================================================================="
+>>>>>>> Stashed changes
 echo "Installing GIMLi for" $SYSTEM
 echo "-------------------------------------------------------------------------"
 buildGIMLI
