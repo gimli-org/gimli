@@ -97,7 +97,7 @@ class PetroJointModelling(pg.ModellingBase):
 
     def initJacobian(self):
         """TODO."""
-        self.jac  = pg.BlockMatrix()
+        self.jac = pg.BlockMatrix()
         nData = 0
         for fi in self.fops:
             self.jac.addMatrix(fi.jacobian(), nData, 0)

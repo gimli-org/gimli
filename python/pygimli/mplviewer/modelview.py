@@ -46,7 +46,7 @@ def drawModel1D(ax, thickness=None, values=None, model=None, depths=None,
         values = model[nLay:]
 
     plot : string
-        mpl plot funktion
+        Matplotlib plotting function.
         'plot', 'semilogx', 'semilogy', 'loglog'
 
     xlabel : str
