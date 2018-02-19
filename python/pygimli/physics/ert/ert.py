@@ -186,7 +186,7 @@ class ERTModelling(pg.ModellingBase):
             uE = pg.solve(mesh, a=1./res, b=(ki * ki)/res, f=rhs,
                           bc={'Robin': self.mixedBC},
                           userData={'sourcePos': self.electrodes, 'k': ki},
-                          verbose=self.verbose, stats=0, debug=False,
+                          verbose=self.verbose(), stats=0, debug=False,
                           ws=ws
                           )
             u += w[i] * uE
@@ -208,7 +208,6 @@ class ERTModelling(pg.ModellingBase):
             uAB = pM[iA] - pM[iB]
             r[i] = uAB[iM] - uAB[iN]
 
-        print(self.data('k'))
         self.lastResponse = r * self.data('k')
 
         if self.verbose():

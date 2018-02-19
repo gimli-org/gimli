@@ -30,7 +30,7 @@ def solveDarcy(mesh, k=None, p0=1, verbose=False):
             [7, 0],  # right top
             ]
 
-    p = pg.solver.solve(mesh, a=k, uB=uDir)
+    p = pg.solver.solve(mesh, a=k, bc={'Dirichlet': uDir})
     vel = -pg.solver.grad(mesh, p) * np.asarray([k, k, k]).T
     mvel = mt.cellDataToNodeData(mesh, vel)
     return mesh, mvel, p, k, np.asarray([pg.x(vel), pg.y(vel)])
@@ -109,7 +109,7 @@ def solveERT(mesh, concentration, verbose=0):
         resis[i] = 1. / ((1./rbI) + 1./rho0)
 
     ert = pg.physics.ert.ERTManager(verbose=False)
-    ertScheme.set('k', ert.fop.calcGeometricFactor(ertScheme))
+    ertScheme.set('k', ert.fop.calcGeometricFactors(ertScheme))
 
     errPerc = 0.01
     errVolt = 1e-5
@@ -222,7 +222,7 @@ def simulateSynth(model, tMax=5000, satSteps=150, ertSteps=10, area=0.1,
 
     # openblas have some problems with to high thread count ..
     # we need to dig into
-    print("TC", pg.threadCount())
+    print("ThreadCount:", pg.threadCount())
     pg.setThreadCount(4)
 
     print('##### Simulate synthetic data ' + '#'*50)
@@ -340,7 +340,7 @@ def createFopWithParaDomain(paraRefine=0, ncpu=6):
 
 if __name__ == '__main__':
 
-    paraRefine = 3
+    paraRefine = 2
     ncpu = 6
 
     fop, rhoaR, err, paraMesh = createFopWithParaDomain(paraRefine=paraRefine,
