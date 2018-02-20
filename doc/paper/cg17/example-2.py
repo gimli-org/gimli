@@ -30,9 +30,29 @@ def solveDarcy(mesh, k=None, p0=1, verbose=False):
             [7, 0],  # right top
             ]
 
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
     p = pg.solver.solve(mesh, a=k, bc={'Dirichlet': uDir})
+=======
+    print("Solve for P ...")
+    p = pg.solver.solve(mesh, a=k, bc={'Dirichlet': uDir}, verbose=True)
+    print("Grap p x vel ...")
+>>>>>>> Stashed changes
+=======
+    print("Solve for P ...")
+    p = pg.solver.solve(mesh, a=k, bc={'Dirichlet': uDir}, verbose=True)
+    print("Grap p x vel ...")
+>>>>>>> Stashed changes
+=======
+    print("Solve for P ...")
+    p = pg.solver.solve(mesh, a=k, bc={'Dirichlet': uDir}, verbose=True)
+    print("Grap p x vel ...")
+>>>>>>> Stashed changes
     vel = -pg.solver.grad(mesh, p) * np.asarray([k, k, k]).T
+    print("cell to node...")
     mvel = mt.cellDataToNodeData(mesh, vel)
+    print("prior to return")
     return mesh, mvel, p, k, np.asarray([pg.x(vel), pg.y(vel)])
 
 
