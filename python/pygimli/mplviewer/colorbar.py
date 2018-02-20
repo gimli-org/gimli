@@ -29,9 +29,9 @@ def autolevel(z, nLevs, logscale=None, zmin=None, zmax=None):
     >>> from pygimli.mplviewer import autolevel
     >>> x = np.linspace(1, 10, 100)
     >>> autolevel(x, 3)
-    array([  1.,   4.,   7.,  10.])
+    array([ 1.,  4.,  7., 10.])
     >>> autolevel(x, 3, logscale=True)
-    array([   0.1,    1. ,   10. ,  100. ])
+    array([  0.1,   1. ,  10. , 100. ])
     """
     locator = None
     if logscale:
