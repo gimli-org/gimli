@@ -206,7 +206,7 @@ def drawMesh(ax, mesh, **kwargs):
 
     mesh : :gimliapi:`GIMLI::Mesh`
         The plotted mesh to browse through.
-    ax : mpl axis instance, optional
+    ax : mpl axe instance, optional
         Axis instance where the mesh is plotted (default is current axis).
     fitView: bool [True]
         Adjust ax limits to mesh bounding box.
@@ -1136,10 +1136,11 @@ def drawSensors(ax, sensors, diam=None, coords=None, verbose=False, **kwargs):
     Examples
     --------
     >>> import numpy as np
+    >>> import matplotlib.pyplot as plt
     >>> import pygimli as pg
     >>> from pygimli.mplviewer import drawSensors
     >>> sensors = np.random.rand(5, 2)
-    >>> fig, ax = plt.subplots()
+    >>> fig, ax = pg.plt.subplots()
     >>> drawSensors(ax, sensors, diam=0.02, coords=[0, 1])
     >>> ax.set_aspect('equal')
     >>> pg.wait()
@@ -1158,7 +1159,7 @@ def drawSensors(ax, sensors, diam=None, coords=None, verbose=False, **kwargs):
     for i, e in enumerate(sensors):
         if verbose:
             print(e, diam, e[coords[0]], e[coords[1]])
-        eCircles.append(mpl.patches.Circle((e[coords[0]], e[coords[1]]), diam))
+        eCircles.append(mpl.patches.Circle((e[coords[0]], e[coords[1]]), diam, **kwargs))
 
     p = mpl.collections.PatchCollection(eCircles,
                                         **kwargs)
