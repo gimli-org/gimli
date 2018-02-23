@@ -2,7 +2,6 @@
 """Plotting utilities used througout the mplviewer package."""
 
 import os
-
 import time
 
 import matplotlib.animation as animation
@@ -41,16 +40,11 @@ def hold(val=1):
     pg.mplviewer.holdAxes__ = val
 
 
-def wait():
+def wait(**kwargs):
     """TODO WRITEME."""
-
     # plt.pause seems to be broken in mpl:2.1
-    try:
-        plt.pause(0.1)
-    except:
-        time.sleep(0.1)
-        pass
-    plt.show()
+    time.sleep(0.05)
+    plt.show(**kwargs)
 
 
 def adjustWorldAxes(ax):
@@ -65,7 +59,7 @@ def adjustWorldAxes(ax):
 
     ax.set_yticklabels(tickLabels)
     plt.tight_layout()
-    plt.pause(0.01)
+    time.sleep(0.05)
 
 
 def saveFigure(fig, filename, pdfTrim=False):
@@ -86,7 +80,7 @@ def saveAxes(ax, filename, adjust=False):
     if adjust:
         adjustWorldAxes(ax)
 
-    plt.pause(0.01)
+    time.sleep(0.05)
     saveFigure(ax.figure, filename)
 
 
@@ -248,19 +242,22 @@ def plotLines(ax, line_filename, linewidth=1.0, step=1):
     n_points = xz.shape[0]
     if step == 2:
         for i in range(0, n_points, step):
-            x = xz[i:i+step, 0]
-            z = xz[i:i+step, 1]
+            x = xz[i:i + step, 0]
+            z = xz[i:i + step, 1]
             ax.plot(x, z, 'k-', linewidth=linewidth)
     if step == 1:
         ax.plot(xz[:, 0], xz[:, 1], 'k-', linewidth=linewidth)
+
 
 def createTwinX(ax):
     """Utility function to create or return an existing a twin x axes for ax."""
     return _createTwin(ax, 'twinx')
 
+
 def createTwinY(ax):
     """Utility function to create or return an existing a twin x axes for ax."""
     return _createTwin(ax, 'twiny')
+
 
 def _createTwin(ax, funct):
     """Utility function to create or return an existing a twin x axes for ax."""
@@ -276,3 +273,11 @@ def _createTwin(ax, funct):
 
     return tax
 
+
+def circle(x, y, ax, radius=0.8):
+    from matplotlib.patches import Circle
+    from matplotlib.patheffects import withStroke
+    circle = Circle((x, y), radius, clip_on=False, zorder=10, linewidth=1,
+                    edgecolor='k', facecolor="w", alpha=1,
+                    path_effects=[withStroke(linewidth=2, foreground='k')])
+    ax.add_artist(circle)

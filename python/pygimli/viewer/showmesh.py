@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-
 """Generic mesh visualization tools."""
 
 import os
 import sys
+import time
 import traceback
 
 # plt should not be used outside of mplviewer
@@ -73,7 +73,7 @@ def show(mesh=None, data=None, **kwargs):
 #        ax.autoscale_view(tight=True)
         ax.set_xlim([xmin, xmax])
         ax.set_ylim([ymin, ymax])
-#        print(ax.get_data_interval())
+        #        print(ax.get_data_interval())
         return ax, cbar
 
     if isinstance(mesh, pg.Mesh):
@@ -95,9 +95,9 @@ def show(mesh=None, data=None, **kwargs):
     return ax, None
 
 
-def showMesh(mesh, data=None, hold=False, block=False,
-             colorBar=None, label=None, coverage=None,
-             ax=None, savefig=None, showMesh=False, **kwargs):
+def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
+             label=None, coverage=None, ax=None, savefig=None, showMesh=False,
+             markers=False, **kwargs):
     """2D Mesh visualization.
 
     Create an axis object and plot a 2D mesh with given node or cell data.
@@ -172,6 +172,9 @@ def showMesh(mesh, data=None, hold=False, block=False,
     showMesh : bool [False]
         Shows the the mesh itself aditional.
 
+    marker : bool [False]
+        Show mesh and boundary marker.
+
     **kwargs :
         * xlabel : str [None]
             Add label to the x axis
@@ -209,12 +212,24 @@ def showMesh(mesh, data=None, hold=False, block=False,
         lastHoldStatus = pg.mplviewer.utils.holdAxes__
         pg.mplviewer.hold(val=1)
 
-
     gci = None
     validData = False
 
+    if markers:
+        kwargs["boundaryMarker"] = True
+        if mesh.cellCount() > 0:
+            data = mesh.cellMarkers()
+            label = "Cell markers"
+            uniquemarkers = list(set(mesh.cellMarkers()))
+            kwargs["cMap"] = plt.cm.get_cmap("Set3", len(uniquemarkers))
+            kwargs["logScale"] = False
+            kwargs["cMin"] = np.min(data) - 0.5
+            kwargs["cMax"] = np.max(data) + 0.5
+            # kwargs["grid"] = True
+
     if data is None:
         drawMesh(ax, mesh, **kwargs)
+
     elif isinstance(data, pg.stdVectorRVector3):
         drawSensors(ax, data, **kwargs)
     elif isinstance(data, pg.R3Vector):
@@ -241,7 +256,7 @@ def showMesh(mesh, data=None, hold=False, block=False,
 
             elif data.shape[1] == 3:  # probably N x [u,v,w]
                 # if sum(data[:, 0]) != sum(data[:, 1]):
-                    # drawStreams(ax, mesh, data, **kwargs)
+                # drawStreams(ax, mesh, data, **kwargs)
                 drawStreams(ax, mesh, data[:, 0:2], **kwargs)
             else:
                 print("No valid stream data:", data.shape, data.ndim)
@@ -288,6 +303,10 @@ def showMesh(mesh, data=None, hold=False, block=False,
         elif colorBar is not False:
             cbar = updateColorBar(colorBar, gci, label=label, **subkwargs)
 
+        if markers:
+            cbar.set_ticks(uniquemarkers)
+            cbar.set_ticklabels(list(map(str, uniquemarkers)))
+
     if coverage is not None:
         if len(data) == mesh.cellCount():
             addCoverageAlpha(gci, coverage)
@@ -298,7 +317,6 @@ def showMesh(mesh, data=None, hold=False, block=False,
     if not hold or block is not False:
         if data is not None:
             if len(data) == mesh.cellCount():
-                #print("Cell data found .. initialize cell browser")
                 cb = CellBrowser(mesh, data, ax=ax)
                 cb.connect()
 
@@ -372,8 +390,8 @@ def showBoundaryNorm(mesh, normMap=None, **kwargs):
 
                 if (pair[1][0] != 0) or (pair[1][1] != 0):
                     ax.arrow(c1[0], c1[1], pair[1][0], pair[1][1],
-                             head_width=0.1, head_length=0.3,
-                             color=col, **kwargs)
+                             head_width=0.1, head_length=0.3, color=col,
+                             **kwargs)
                 else:
                     ax.plot(c1[0], c1[1], 'o', color=col)
         return
@@ -382,9 +400,8 @@ def showBoundaryNorm(mesh, normMap=None, **kwargs):
     for b in mesh.boundaries():
         c1 = b.center()
         c2 = c1 + b.norm()
-        ax.plot([c1[0], c2[0]],
-                [c1[1], c2[1]], color=col, **kwargs)
+        ax.plot([c1[0], c2[0]], [c1[1], c2[1]], color=col, **kwargs)
 
-    plt.pause(0.01)
+    time.sleep(0.05)
 
     return ax
