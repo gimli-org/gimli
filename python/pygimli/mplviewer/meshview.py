@@ -971,7 +971,7 @@ def drawStreamLine_(ax, mesh, c, data, dataMesh=None, linewidth=1.0,
         lwidths = pg.RVector(len(v), linewidth)
         lwidths[pg.find(pg.RVector(v) < dropTol)] = 0.0
 
-        lines = LineCollection(segments, linewidths=lwidths, **kwargs)
+        lines = mpl.collections.LineCollection(segments, linewidths=lwidths, **kwargs)
         ax.add_collection(lines)
 
         # probably the limits are wrong without plot call
