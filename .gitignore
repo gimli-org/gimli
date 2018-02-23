@@ -1,11 +1,22 @@
 # Files and filetypes exluded from version control
 # Python standard taken from https://github.com/github/gitignore/blob/master/Python.gitignore
 
+
 # Customizations
 *.log
-command.history
 *.pdf
 *.bak
+
+# pyGIMLi
+command.history
+*.bmat
+*.vtk
+*.bms
+*.vector
+
+# Gmsh
+*.geo
+*.msh
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
