@@ -36,3 +36,7 @@ pg.log(pg.Critical, "core log ")
 
 #pg.logger.exception("Exception")
 
+def testMethod(**kwargs):
+    pg.warnNonEmptyArgs(kwargs)
+
+testMethod(a=1, b='foo')

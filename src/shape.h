@@ -299,6 +299,7 @@ public:
      * */
     virtual bool intersectRay(const RVector3 & start, const RVector3 & dir,
                               RVector3 & pos){
+        __MS(rtti() << " " << name())
         THROW_TO_IMPL
         return false;
     };

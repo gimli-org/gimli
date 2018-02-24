@@ -79,5 +79,7 @@ def renameKwarg(old, new, kwargs):
 
 def warnNonEmptyArgs(kwargs):
     if len(kwargs) > 0:
-        logger.warn("unrecognized keyword arguments", kwargs)
+        caller = sys._getframe(1).f_code.co_name
+        logger.warning("Unrecognized keyword arguments for method: '" + caller
+                       + "' "  + _msg(kwargs))
 
