@@ -428,11 +428,13 @@ def createPolygon(verts, isClosed=False, isHole=False, **kwargs):
     for v in verts:
         poly.createNodeWithCheck(v, warn=True)
 
+    boundaryMarker = kwargs.pop('boundaryMarker', 1)
     marker = kwargs.pop('marker', None)
     area = kwargs.pop('area', 0)
     isHole = kwargs.pop('isHole', False)
 
-    polyCreateDefaultEdges_(poly, isClosed=isClosed, isHole=False)
+    polyCreateDefaultEdges_(poly, isClosed=isClosed, isHole=False,
+                            boundaryMarker=boundaryMarker)
 
     if isClosed and marker is not None or area > 0:
         if isHole:
