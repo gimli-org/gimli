@@ -1,4 +1,4 @@
-# coding=utf-8
+# CODING=Utf-8
 """Plotting utilities used througout the mplviewer package."""
 
 import os
@@ -272,12 +272,3 @@ def _createTwin(ax, funct):
         tax = getattr(ax, funct)()
 
     return tax
-
-
-def circle(x, y, ax, radius=0.8):
-    from matplotlib.patches import Circle
-    from matplotlib.patheffects import withStroke
-    circle = Circle((x, y), radius, clip_on=False, zorder=10, linewidth=1,
-                    edgecolor='k', facecolor="w", alpha=1,
-                    path_effects=[withStroke(linewidth=2, foreground='k')])
-    ax.add_artist(circle)

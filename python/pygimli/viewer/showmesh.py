@@ -225,7 +225,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
             kwargs["logScale"] = False
             kwargs["cMin"] = np.min(data) - 0.5
             kwargs["cMax"] = np.max(data) + 0.5
-            # kwargs["grid"] = True
+            kwargs["grid"] = True
 
     if data is None:
         drawMesh(ax, mesh, **kwargs)

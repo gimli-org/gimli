@@ -1,7 +1,6 @@
 # Files and filetypes exluded from version control
 # Python standard taken from https://github.com/github/gitignore/blob/master/Python.gitignore
 
-
 # Customizations
 *.log
 *.pdf
@@ -67,3 +66,5 @@ coverage.xml
 # Translations
 *.mo
 *.pot
+
+test.py

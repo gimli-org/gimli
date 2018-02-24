@@ -12,7 +12,6 @@ from pygimli.misc import streamline
 
 from .colorbar import autolevel, cmapFromName, createColorBar
 from .utils import updateAxes as updateAxes_
-from .utils import circle
 
 
 class CellBrowserCacheSingleton(object):
@@ -299,7 +298,9 @@ def drawModel(ax, mesh, data=None, logScale=True, cMin=None, cMax=None,
 
         gci.set_antialiased(True)
 
-        if grid:
+        showMesh = kwargs.pop('showMesh', False)
+
+        if grid or showMesh:
             gci.set_linewidth(0.3)
             gci.set_edgecolor("0.3")
         else:
@@ -327,11 +328,6 @@ def drawModel(ax, mesh, data=None, logScale=True, cMin=None, cMax=None,
         ax.set_xlabel(xlabel)
     if ylabel is not None:
         ax.set_ylabel(ylabel)
-
-    showMesh = kwargs.pop('showMesh', False)
-
-    if showMesh:
-        drawMesh(ax, mesh)
 
     updateAxes_(ax)
     return gci
@@ -579,10 +575,9 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
         for b in mesh.boundaries():
             x = b.center()[0]
             y = b.center()[1]
-            circle(x, y, ax=ax)
-            ax.text(x, y,
-                    str(b.marker()), color='k', verticalalignment='center',
-                    horizontalalignment='center', zorder=20, fontweight="bold")
+            bbox_props = dict(boxstyle="circle,pad=0.3", fc="0.8", ec="k")
+            ax.text(x, y, str(b.marker()), color="k", va="center", ha="center",
+                    zorder=20, bbox=bbox_props)
 
 #    p = mpl.collections.PatchCollection(eCircles, color=cols)
 #    ax.add_collection(p)
