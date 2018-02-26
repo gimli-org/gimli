@@ -187,6 +187,15 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
             Will be forwarded to the draw functions and matplotlib methods,
             respectively.
 
+    Examples
+    --------
+    >>> import pygimli as pg
+    >>> import pygimli.meshtools as mt
+    >>> world = mt.createWorld(start=[-10, 0], end=[10, -10],
+    ...                        layers=[-3, -7], worldMarker=False)
+    >>> mesh = mt.createMesh(world, quality=32, area=0.2, smooth=[1, 10])
+    >>> pg.viewer.showMesh(mesh, markers=True)
+
     Returns
     -------
     ax : matplotlib.axes

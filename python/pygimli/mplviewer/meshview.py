@@ -534,6 +534,18 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
 
     Examples
     --------
+    >>> import matplotlib.pyplot as plt
+    >>> import pygimli as pg
+    >>> import pygimli.meshtools as mt
+    >>> # Create geometry definition for the modeling domain
+    >>> world = mt.createWorld(start=[-20, 0], end=[20, -16],
+    ...                        layers=[-2, -8], worldMarker=False)
+    >>> # Create a heterogeneous block
+    >>> block = mt.createRectangle(start=[-6, -3.5], end=[6, -6.0],
+    ...                            marker=10,  boundaryMarker=10, area=0.1)
+    >>> fig, ax = plt.subplots()
+    >>> geom = mt.mergePLC([world, block])
+    >>> pg.mplviewer.drawPLC(ax, geom, markers=True)
     """
     #    eCircles = []
     cols = []
