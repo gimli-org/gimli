@@ -229,13 +229,13 @@ def drawMesh(ax, mesh, **kwargs):
     if kwargs.pop('fitView', True):
         ax.set_xlim(mesh.xmin(), mesh.xmax())
         ax.set_ylim(mesh.ymin(), mesh.ymax())
+        ax.set_aspect('equal')
 
-    ax.set_aspect('equal')
     updateAxes_(ax)
 
 
-def drawModel(ax, mesh, data=None, logScale=True, cMin=None, cMax=None,
-              cmap=None, xlabel=None, ylabel=None, verbose=False, grid=False,
+def drawModel(ax, mesh, data=None, logScale=False, cMin=None, cMax=None,
+              cmap=None, xlabel=None, ylabel=None, verbose=False,
               tri=False, **kwargs):
     """Draw a 2d mesh and color the cell by the data.
 
@@ -248,8 +248,6 @@ def drawModel(ax, mesh, data=None, logScale=True, cMin=None, cMax=None,
     data : array, optional
         Data to draw. Should either equal numbers of cells or nodes of the
         corresponding `mesh`.
-    grid : boolean, optional
-        Draw cell boundaries.
     tri : boolean, optional
         use MPL tripcolor (experimental)
     **kwargs : Additonal keyword arguments
@@ -294,23 +292,21 @@ def drawModel(ax, mesh, data=None, logScale=True, cMin=None, cMax=None,
             else:
                 gci.set_cmap(cmap)
 
-        ax.set_aspect('equal')
+        #gci.set_antialiased(True)
+        #gci.set_linewidth(None)
 
-        gci.set_antialiased(True)
-
-        showMesh = kwargs.pop('showMesh', False)
-
-        if grid or showMesh:
-            gci.set_linewidth(0.3)
-            gci.set_edgecolor("0.3")
-        else:
-            gci.set_linewidth(None)
+        #showMesh = kwargs.pop('showMesh', False)
+        #if grid or showMesh:
+        #gci.set_linewidth(0.3)
+        #gci.set_edgecolor("0.3")
+        #gci.set_edgecolor('face')
+        #gci.set_edgecolor(None)
+        #else:
 
         if data is None:
             data = pg.RVector(mesh.cellCount())
 
         if len(data) != mesh.cellCount():
-
             print(data, mesh)
             print("INFO: drawModel have wrong data length .. " +
                   " indexing data from cellMarkers()")
@@ -328,6 +324,8 @@ def drawModel(ax, mesh, data=None, logScale=True, cMin=None, cMax=None,
         ax.set_xlabel(xlabel)
     if ylabel is not None:
         ax.set_ylabel(ylabel)
+
+    ax.set_aspect('equal')
 
     updateAxes_(ax)
     return gci
@@ -359,10 +357,8 @@ def drawSelectedMeshBoundaries(ax, boundaries, color=None, linewidth=1.0):
             return
 
     for bound in boundaries:
-        lines.append(
-            list(
-                zip([bound.node(0).x(), bound.node(1).x()],
-                    [bound.node(0).y(), bound.node(1).y()])))
+        lines.append(list(zip([bound.node(0).x(), bound.node(1).x()],
+                              [bound.node(0).y(), bound.node(1).y()])))
 
     lineCollection = mpl.collections.LineCollection(lines, antialiaseds=drawAA)
 
@@ -405,15 +401,12 @@ def drawSelectedMeshBoundariesShadow(ax, boundaries, first='x', second='y',
 
     for cell in boundaries:
         polys.append(
-            list(
-                zip([
-                    getattr(cell.node(0), first)(), getattr(
-                        cell.node(1), first)(), getattr(cell.node(2), first)()
-                ], [
-                    getattr(cell.node(0), second)(), getattr(
-                        cell.node(1), second)(), getattr(cell.node(2), second)
-                    ()
-                ])))
+            list(zip([getattr(cell.node(0), first)(),
+                      getattr(cell.node(1), first)(),
+                      getattr(cell.node(2), first)()],
+                     [getattr(cell.node(0), second)(),
+                      getattr(cell.node(1), second)(),
+                      getattr(cell.node(2), second)()])))
 
     collection = mpl.collections.PolyCollection(polys, antialiaseds=True)
 
@@ -485,14 +478,12 @@ def drawMeshBoundaries(ax, mesh, hideMesh=False, useColorMap=False, **kwargs):
                                    color=(0.0, 0.0, 0.0, 1.0),
                                    linewidth=linewidth)
 
-    drawSelectedMeshBoundaries(
-        ax,
-        mesh.findBoundaryByMarker(pg.MARKER_BOUND_HOMOGEN_NEUMANN),
-        color=(0.0, 1.0, 0.0, 1.0), linewidth=1.0)
-    drawSelectedMeshBoundaries(
-        ax,
-        mesh.findBoundaryByMarker(pg.MARKER_BOUND_MIXED),
-        color=(1.0, 0.0, 0.0, 1.0), linewidth=1.0)
+    drawSelectedMeshBoundaries(ax,
+                    mesh.findBoundaryByMarker(pg.MARKER_BOUND_HOMOGEN_NEUMANN),
+                    color=(0.0, 1.0, 0.0, 1.0), linewidth=1.0)
+    drawSelectedMeshBoundaries(ax,
+                    mesh.findBoundaryByMarker(pg.MARKER_BOUND_MIXED),
+                    color=(1.0, 0.0, 0.0, 1.0), linewidth=1.0)
 
     b0 = [b for b in mesh.boundaries() if b.marker() > 0]
     if useColorMap:
@@ -610,21 +601,15 @@ def createMeshPatches(ax, mesh, verbose=True, **kwargs):
 
     for cell in mesh.cells():
         if cell.shape().nodeCount() == 3:
-            polys.append(
-                list(
-                    zip([cell.node(0).x(), cell.node(1).x(), cell.node(2).x()],
-                        [cell.node(0).y(), cell.node(1).y(), cell.node(2).y()
-                         ])))
+            polys.append(list(zip([cell.node(0).x(), cell.node(1).x(),
+                                   cell.node(2).x()],
+                                  [cell.node(0).y(), cell.node(1).y(),
+                                   cell.node(2).y()])))
         elif cell.shape().nodeCount() == 4:
-            polys.append(
-                list(
-                    zip([
-                        cell.node(0).x(), cell.node(1).x(), cell.node(2).x(),
-                        cell.node(3).x()
-                    ], [
-                        cell.node(0).y(), cell.node(1).y(), cell.node(2).y(),
-                        cell.node(3).y()
-                    ])))
+            polys.append(list(zip([cell.node(0).x(), cell.node(1).x(),
+                                   cell.node(2).x(), cell.node(3).x()],
+                                  [cell.node(0).y(), cell.node(1).y(),
+                                   cell.node(2).y(), cell.node(3).y()])))
         else:
             print(("unknown shape to patch: ", cell.shape(),
                    cell.shape().nodeCount()))
