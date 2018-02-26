@@ -69,6 +69,7 @@ def show(mesh=None, data=None, **kwargs):
             ymin = min(ymin, m.ymin())
             ymax = max(ymax, m.ymax())
 
+
 #        ax.relim()
 #        ax.autoscale_view(tight=True)
         ax.set_xlim([xmin, xmax])
@@ -218,15 +219,15 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
     if markers:
         kwargs["boundaryMarker"] = True
         if mesh.cellCount() > 0:
-            data = mesh.cellMarkers()
+            uniquemarkers, uniqueidx = np.unique(
+                np.array(mesh.cellMarkers()), return_inverse=True)
             label = "Cell markers"
-            uniquemarkers = list(set(mesh.cellMarkers()))
             kwargs["cMap"] = plt.cm.get_cmap("Set3", len(uniquemarkers))
             kwargs["logScale"] = False
-            kwargs["cMin"] = np.min(data) - 0.5
-            kwargs["cMax"] = np.max(data) + 0.5
+            kwargs["cMin"] = -0.5
+            kwargs["cMax"] = len(uniquemarkers) - 0.5
             kwargs["grid"] = True
-
+            data = np.arange(len(uniquemarkers))[uniqueidx]
     if data is None:
         drawMesh(ax, mesh, **kwargs)
 
@@ -304,8 +305,12 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
             cbar = updateColorBar(colorBar, gci, label=label, **subkwargs)
 
         if markers:
-            cbar.set_ticks(uniquemarkers)
-            cbar.set_ticklabels(list(map(str, uniquemarkers)))
+            ticks = np.arange(len(uniquemarkers))
+            cbar.set_ticks(ticks)
+            labels = []
+            for marker in uniquemarkers:
+                labels.append(str((marker)))
+            cbar.set_ticklabels(labels)
 
     if coverage is not None:
         if len(data) == mesh.cellCount():
