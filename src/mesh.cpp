@@ -481,16 +481,16 @@ Cell * Mesh::findCellBySlopeSearch_(const RVector3 & pos, Cell * start,
 //                      i < this->cell(cellIDX__.back()).nodeCount(); i ++){
 //                     std::cout << this->cell(cellIDX__.back()).node(i)<< std::endl;
 //                 }
+                if (debug()){
+                    std::cout << WHERE_AM_I << " exit with submesh " << cellIDX__.size() << std::endl;
+                    std::cout << "probably cant find a cell for " << pos << std::endl;
 
-                std::cout << WHERE_AM_I << " exit with submesh " << cellIDX__.size() << std::endl;
-                std::cout << "probably cant find a cell for " << pos << std::endl;
+                    Mesh subMesh; subMesh.createMeshByCellIdx(*this, cellIDX__);
 
-                Mesh subMesh; subMesh.createMeshByCellIdx(*this, cellIDX__);
-
-                subMesh.exportVTK("submesh");
-                this->exportVTK("submeshParent");
+                    subMesh.exportVTK("submesh");
+                    this->exportVTK("submeshParent");
+                }
                 return NULL;
-                exit(0);
             }
         }
     } while (++cellCounter < cellCount() && cell);
