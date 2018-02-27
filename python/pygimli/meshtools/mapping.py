@@ -248,16 +248,14 @@ def interpolateAlongCurve(curve, t, **kwargs):
     >>> topo = np.array([[-2., 0.], [-1., 0.], [0.5, 0.], [3., 2.], [4., 2.], [6., 1.], [10., 1.], [12., 1.]])
     >>> t = np.arange(15.0)
     >>> p = mt.interpolateAlongCurve(topo, t)
-    >>> _= axs[0][0].plot(topo[:,0], topo[:,1], '-x', mew=2)
-    >>> _= axs[0][0].plot(p[:,0], p[:,1], 'o', color='red') #doctest: +ELLIPSIS
+    >>> _= axs[0,0].plot(topo[:,0], topo[:,1], '-x', mew=2)
+    >>> _= axs[0,1].plot(p[:,0], p[:,1], 'o', color='red') #doctest: +ELLIPSIS
     >>>
     >>> p = mt.interpolateAlongCurve(topo, t, method='spline')
-    >>> _= axs[0][0].plot(p[:,0], p[:,1], '-o', color='black') #doctest: +ELLIPSIS
+    >>> _= axs[1,0].plot(p[:,0], p[:,1], '-o', color='black') #doctest: +ELLIPSIS
     >>>
     >>> p = mt.interpolateAlongCurve(topo, t, method='harmonic', nc=3)
-    >>> _= axs[0][0].plot(p[:,0], p[:,1], '-o', color='green') #doctest: +ELLIPSIS
-    >>>
-    >>> _= axs[0][0].set_aspect(1)
+    >>> _= axs[1,1].plot(p[:,0], p[:,1], '-o', color='green') #doctest: +ELLIPSIS
     >>>
     >>> pg.plt.show()
     >>> pg.wait()
