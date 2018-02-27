@@ -225,7 +225,10 @@ def drawMesh(ax, mesh, **kwargs):
     >>> drawMesh(ax, mesh)
     >>> plt.show()
     """
-    pg.mplviewer.drawMeshBoundaries(ax, mesh, **kwargs)
+    if mesh.cellCount() == 0:
+        pg.mplviewer.drawPLC(ax, mesh, **kwargs)
+    else:
+        pg.mplviewer.drawMeshBoundaries(ax, mesh, **kwargs)
 
     if kwargs.pop('fitView', True):
         ax.set_xlim(mesh.xmin(), mesh.xmax())
@@ -495,9 +498,6 @@ def drawMeshBoundaries(ax, mesh, hideMesh=False, useColorMap=False, **kwargs):
     drawSelectedMeshBoundaries(ax, b4, color=(0.0, 0.0, 0.0, 1.0),
                                linewidth=1.5)
 
-    if mesh.cellCount() == 0:
-        drawPLC(ax, mesh, **kwargs)
-
     updateAxes_(ax)
 
 
@@ -566,6 +566,9 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
                     labels.append("%d\n(area: %s)" % (marker, areas[marker]))
                 cbar.set_ticklabels(labels)
 
+    if kwargs.pop('showBoundary', True):
+        drawMeshBoundaries(ax, mesh)
+
     for n in mesh.nodes():
         col = (0.0, 0.0, 0.0, 0.5)
 
@@ -594,6 +597,11 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
 
         for hole in mesh.holeMarker():
             ax.text(hole[0], hole[1], 'H', color='black')
+
+    if kwargs.pop('fitView', True):
+        ax.set_xlim(mesh.xmin(), mesh.xmax())
+        ax.set_ylim(mesh.ymin(), mesh.ymax())
+        ax.set_aspect('equal')
 
     updateAxes_(ax)
 
@@ -734,7 +742,6 @@ def drawMPLTri(ax, mesh, data=None, cMin=None, cMax=None, cmap=None,
     --------
     >>>
     """
-    print(kwargs)
     x, y, triangles, z, _ = createTriangles(mesh, data)
 
     gci = None
@@ -796,11 +803,10 @@ def drawMPLTri(ax, mesh, data=None, cMin=None, cMax=None, cmap=None,
         else:
             gci.set_cmap(cmap)
 
-    ax.set_aspect('equal')
-
     if kwargs.pop('fitView', True):
         ax.set_xlim(mesh.xmin(), mesh.xmax())
         ax.set_ylim(mesh.ymin(), mesh.ymax())
+        ax.set_aspect('equal')
 
     updateAxes_(ax)
     return gci

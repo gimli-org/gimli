@@ -245,6 +245,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
 
     if data is None:
         showMesh = True
+        showBoundary = True
     elif isinstance(data, pg.stdVectorRVector3):
         drawSensors(ax, data, **kwargs)
     elif isinstance(data, pg.R3Vector):
@@ -337,7 +338,8 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
 
     if showMesh:
         drawMesh(ax, mesh, **kwargs)
-    elif showBoundary is True or showBoundary is 1:
+
+    if showBoundary is True or showBoundary is 1:
         b = mesh.boundaries(mesh.boundaryMarkers() != 0)
         pg.mplviewer.drawSelectedMeshBoundaries(ax, b,
                                                 color=(0.0, 0.0, 0.0, 1.0),
