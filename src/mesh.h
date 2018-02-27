@@ -285,11 +285,20 @@ public:
     /*! Return vector of node from index list */
     std::vector< Node * > nodes(const IndexArray & ids) const;
 
+    /*! Return a vector of nodes ptrs matching BVector b.*/
+    std::vector< Node * > nodes(const BVector & b) const;
+
     /*! Return vector of cells from index list */
     std::vector< Cell * > cells(const IndexArray & ids) const;
 
+    /*! Return a vector of cells ptrs matching BVector b.*/
+    std::vector< Cell * > cells(const BVector & b) const;
+
     /*! Return vector of boundaries from index list */
     std::vector< Boundary * > boundaries(const IndexArray & ids) const;
+
+    /*! Return a vector of boundary ptrs matching BVector b.*/
+    std::vector< Boundary * > boundaries(const BVector & b) const;
 
     inline Index nodeCount() const { return nodeVector_.size(); }
     Node & node(Index i) const;
@@ -369,7 +378,6 @@ public:
         for to equal open end set to = MAX_INT */
     std::vector < Boundary * > findBoundaryByMarker(int from, int to) const;
 
-
     /*! Return ptr to the cell that match position pos, counter holds amount of touch tests.
         Searching is done first by nearest-neighbour-kd-tree search,
         followed by slope-search if extensive is set. Return NULL if no cell can be found. */
@@ -389,7 +397,6 @@ public:
     /*! Return vector of cell ptrs with attribute match the range [from .. to). \n
         For single attribute match to is set to 0.0, for open end set to = -1.0 */
     std::vector < Cell * > findCellByAttribute(double from, double to=0.0) const;
-
 
     /*! Return vector of cells that are intersected with a given ray from start
      * to end. Intersecting positions, i.e., the travel path are stored in pos.

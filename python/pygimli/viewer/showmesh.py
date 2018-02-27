@@ -69,6 +69,7 @@ def show(mesh=None, data=None, **kwargs):
             ymin = min(ymin, m.ymin())
             ymax = max(ymax, m.ymax())
 
+
 #        ax.relim()
 #        ax.autoscale_view(tight=True)
         ax.set_xlim([xmin, xmax])
@@ -96,7 +97,8 @@ def show(mesh=None, data=None, **kwargs):
 
 
 def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
-             label=None, coverage=None, ax=None, savefig=None, showMesh=False,
+             label=None, coverage=None, ax=None, savefig=None,
+             showMesh=False, showBoundary=None,
              markers=False, **kwargs):
     """2D Mesh visualization.
 
@@ -170,7 +172,11 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
         an epstopdf if the .eps suffix is found in savefig
 
     showMesh : bool [False]
-        Shows the the mesh itself aditional.
+        Shows the mesh itself aditional.
+
+    showBoundary : bool [None]
+        Shows all boundary with marker != 0. A value None means automatic
+        True for cell data and False for node data.
 
     marker : bool [False]
         Show mesh and boundary marker.
@@ -185,6 +191,15 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
         * all remaining
             Will be forwarded to the draw functions and matplotlib methods,
             respectively.
+
+    Examples
+    --------
+    >>> import pygimli as pg
+    >>> import pygimli.meshtools as mt
+    >>> world = mt.createWorld(start=[-10, 0], end=[10, -10],
+    ...                        layers=[-3, -7], worldMarker=False)
+    >>> mesh = mt.createMesh(world, quality=32, area=0.2, smooth=[1, 10])
+    >>> pg.viewer.showMesh(mesh, markers=True)
 
     Returns
     -------
@@ -218,18 +233,18 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
     if markers:
         kwargs["boundaryMarker"] = True
         if mesh.cellCount() > 0:
-            data = mesh.cellMarkers()
+            uniquemarkers, uniqueidx = np.unique(
+                np.array(mesh.cellMarkers()), return_inverse=True)
             label = "Cell markers"
-            uniquemarkers = list(set(mesh.cellMarkers()))
             kwargs["cMap"] = plt.cm.get_cmap("Set3", len(uniquemarkers))
             kwargs["logScale"] = False
-            kwargs["cMin"] = np.min(data) - 0.5
-            kwargs["cMax"] = np.max(data) + 0.5
-            kwargs["grid"] = True
+            kwargs["cMin"] = -0.5
+            kwargs["cMax"] = len(uniquemarkers) - 0.5
+            data = np.arange(len(uniquemarkers))[uniqueidx]
+            showMesh = True
 
     if data is None:
-        drawMesh(ax, mesh, **kwargs)
-
+        showMesh = True
     elif isinstance(data, pg.stdVectorRVector3):
         drawSensors(ax, data, **kwargs)
     elif isinstance(data, pg.R3Vector):
@@ -243,7 +258,6 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
         if type(data) is list and \
             type(data[0]) is list and type(data[0][0]) is int:
             data = pg.solver.parseMapToCellArray(data, mesh)
-
 
         if hasattr(data[0], '__len__') and not \
             isinstance(data, np.ma.core.MaskedArray):
@@ -259,16 +273,19 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
                 # drawStreams(ax, mesh, data, **kwargs)
                 drawStreams(ax, mesh, data[:, 0:2], **kwargs)
             else:
-                print("No valid stream data:", data.shape, data.ndim)
-                drawMesh(ax, mesh, **kwargs)
+                pg.warn("No valid stream data:", data.shape, data.ndim)
+                showMesh = True
         elif min(data) == max(data):  # or pg.haveInfNaN(data):
-            print("No valid data: ", min(data), max(data), pg.haveInfNaN(data))
-            drawMesh(ax, mesh, **kwargs)
+            pg.warn("No valid data: ", min(data), max(data), pg.haveInfNaN(data))
+            showMesh = True
         else:
             validData = True
             try:
                 if len(data) == mesh.cellCount():
                     gci = drawModel(ax, mesh, data, **kwargs)
+                    if showBoundary is None:
+                        showBoundary = True
+
                 elif len(data) == mesh.nodeCount():
                     gci = drawField(ax, mesh, data, **kwargs)
 
@@ -304,8 +321,12 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
             cbar = updateColorBar(colorBar, gci, label=label, **subkwargs)
 
         if markers:
-            cbar.set_ticks(uniquemarkers)
-            cbar.set_ticklabels(list(map(str, uniquemarkers)))
+            ticks = np.arange(len(uniquemarkers))
+            cbar.set_ticks(ticks)
+            labels = []
+            for marker in uniquemarkers:
+                labels.append(str((marker)))
+            cbar.set_ticklabels(labels)
 
     if coverage is not None:
         if len(data) == mesh.cellCount():
@@ -313,6 +334,15 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
         else:
             raise BaseException('toImplement')
             # addCoverageAlpha(gci, pg.cellDataToPointData(mesh, coverage))
+
+    if showMesh:
+        drawMesh(ax, mesh, **kwargs)
+    elif showBoundary is True or showBoundary is 1:
+        b = mesh.boundaries(mesh.boundaryMarkers() != 0)
+        pg.mplviewer.drawSelectedMeshBoundaries(ax, b,
+                                                color=(0.0, 0.0, 0.0, 1.0),
+                                                linewidth=1.4)
+
 
     if not hold or block is not False:
         if data is not None:
@@ -326,9 +356,6 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
         except BaseException as _:
 
             pass
-
-    if showMesh:
-        pg.show(mesh, ax=ax)
 
     if hold:
         pg.mplviewer.hold(val=lastHoldStatus)

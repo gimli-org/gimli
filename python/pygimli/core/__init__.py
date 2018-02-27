@@ -1040,6 +1040,9 @@ def __getCoords(coord, dim, ent):
         return getattr(_pygimli_, coord)(ent.sensorPositions())
     if isinstance(ent, pg.Mesh):
         return getattr(_pygimli_, coord)(ent.positions())
+    if isinstance(ent, _pygimli_.stdVectorNodes):
+        return np.array([n.pos()[dim] for n in ent])
+
     if hasattr(ent, 'ndim') and ent.ndim == 2 and len(ent[0] > dim):
         return ent[:, dim]
 
