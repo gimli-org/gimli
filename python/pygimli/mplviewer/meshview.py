@@ -238,7 +238,7 @@ def drawMesh(ax, mesh, **kwargs):
     updateAxes_(ax)
 
 
-def drawModel(ax, mesh, data=None, logScale=False, cMin=None, cMax=None,
+def drawModel(ax, mesh, data=None, logScale=True, cMin=None, cMax=None,
               cmap=None, xlabel=None, ylabel=None, verbose=False,
               tri=False, **kwargs):
     """Draw a 2d mesh and color the cell by the data.
@@ -281,7 +281,9 @@ def drawModel(ax, mesh, data=None, logScale=False, cMin=None, cMax=None,
         pg.error("drawModel: The mesh is empty.", mesh)
 
     if tri:
-        gci = drawMPLTri(ax, mesh, data, cmap=cmap, **kwargs)
+        gci = drawMPLTri(ax, mesh, data,
+                         cMin=cMin, cMax=cMax, cmap=cmap, logScale=logScale,
+                         **kwargs)
 
     else:
         gci = pg.mplviewer.createMeshPatches(ax, mesh, verbose=verbose,
@@ -315,14 +317,13 @@ def drawModel(ax, mesh, data=None, logScale=False, cMin=None, cMax=None,
         pg.mplviewer.setMappableData(gci, viewdata, cMin=cMin, cMax=cMax,
                                      logScale=logScale)
 
-    #gci.set_antialiased(False)
-    #gci.set_linewidth(0.0)
-
-    gci.set_linewidth(0.5)
+    gci.set_antialiased(False)
+    gci.set_linewidth(0.1)
     gci.set_edgecolor('face')
 
     if xlabel is not None:
         ax.set_xlabel(xlabel)
+
     if ylabel is not None:
         ax.set_ylabel(ylabel)
 
@@ -566,8 +567,9 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
                     labels.append("%d\n(area: %s)" % (marker, areas[marker]))
                 cbar.set_ticklabels(labels)
 
-    if kwargs.pop('showBoundary', True):
-        drawMeshBoundaries(ax, mesh)
+    else:
+        if kwargs.pop('showBoundary', True):
+            drawMeshBoundaries(ax, mesh)
 
     for n in mesh.nodes():
         col = (0.0, 0.0, 0.0, 0.5)
@@ -714,8 +716,9 @@ def createTriangles(mesh, data=None):
     return x, y, triangles, z, dataIdx
 
 
-def drawMPLTri(ax, mesh, data=None, cMin=None, cMax=None, cmap=None,
-               interpolate=False, **kwargs):
+def drawMPLTri(ax, mesh, data=None,
+               cMin=None, cMax=None, cmap=None, logScale=True,
+               **kwargs):
     """Draw mesh based scalar field using matplotlib triplot.
 
     Draw scalar field into MPL axes using matplotlib triplot.
@@ -749,11 +752,7 @@ def drawMPLTri(ax, mesh, data=None, cMin=None, cMax=None, cmap=None,
     levels = kwargs.pop('levels', [])
     nLevs = kwargs.pop('nLevs', 5)
     if len(levels) == 0:
-        levels = autolevel(data, nLevs, zmin=cMin, zmax=cMax)
-
-    #print("drawMPLTri:", nLevs, levels)
-    if interpolate and len(data) == mesh.cellCount():
-        z = pg.meshtools.cellDataToNodeData(mesh, data)
+        levels = autolevel(data, nLevs, zmin=cMin, zmax=cMax, logScale=logScale)
 
     if len(z) == len(triangles):
         shading = kwargs.pop('shading', 'flat')
@@ -763,10 +762,11 @@ def drawMPLTri(ax, mesh, data=None, cMin=None, cMax=None, cmap=None,
 
         if shading == 'gouraud':
             z = pg.meshtools.cellDataToNodeData(mesh, data)
-            gci = ax.tripcolor(x, y, triangles, z, shading=shading, **kwargs)
+            gci = ax.tripcolor(x, y, triangles, z,
+                               shading=shading, **kwargs)
         else:
-            gci = ax.tripcolor(x, y, triangles, facecolors=z, shading=shading,
-                               **kwargs)
+            gci = ax.tripcolor(x, y, triangles, facecolors=z,
+                               shading=shading, **kwargs)
 
     elif len(z) == mesh.nodeCount():
         shading = kwargs.pop('shading', None)
