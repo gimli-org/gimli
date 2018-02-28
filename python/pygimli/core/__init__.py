@@ -44,6 +44,7 @@ from pygimli.io import load
 from pygimli.viewer import show, plt, wait
 from pygimli.solver import solve
 from pygimli.meshtools import interpolate
+from pygimli.utils import boxprint
 
 def showNow():
     pass
@@ -52,21 +53,37 @@ def showNow():
 __swatch__ = _pygimli_.Stopwatch()
 
 def tic(msg=None):
-    """Start global stopwatch."""
-    if msg is not None:
+    """Start global timer. Print elpased time with `pg.toc()`."""
+    if msg:
         print(msg)
     __swatch__.start()
 
 
-def toc(msg=None):
-    """Print elapsed time since stopwatch was started."""
-    if msg is not None:
+def toc(msg=None, box=False):
+    """Print elapsed time since global timer was started with `pg.tic()`."""
+    if msg:
         print(msg)
-    print('Elapsed time is:', dur(), "s")
+    seconds = dur()
+    m, s = divmod(seconds, 60)
+    h, m = divmod(m, 60)
+    type(m)
+    if h <= 0 and m <= 0:
+         time = "%.2f" % s
+    elif h <= 0:
+        if m == 1.0:
+            time = "%d minute and %.2f" % (m, s)
+        else:
+            time = "%d minutes and %.2f" % (m, s)
+    elif h == 1.0:
+        time = "%d hour, %d minutes and %.2f" % (h, m, s)
+    else:
+        time = "%d hours, %d minutes and %.2f" % (h, m, s)
+    p = print if not box else boxprint
+    p("Elapsed time is %s seconds." % time)
 
 
 def dur():
-    """Return time since the stopwatch was started."""
+    """Return time in seconds since global timer was started with `pg.tic()`."""
     return __swatch__.duration()
 
 
@@ -1023,6 +1040,9 @@ def __getCoords(coord, dim, ent):
         return getattr(_pygimli_, coord)(ent.sensorPositions())
     if isinstance(ent, pg.Mesh):
         return getattr(_pygimli_, coord)(ent.positions())
+    if isinstance(ent, _pygimli_.stdVectorNodes):
+        return np.array([n.pos()[dim] for n in ent])
+
     if hasattr(ent, 'ndim') and ent.ndim == 2 and len(ent[0] > dim):
         return ent[:, dim]
 

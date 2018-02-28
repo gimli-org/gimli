@@ -17,7 +17,7 @@ along a profile for a cylindrical heterogeneity with different approaches.
 
 import numpy as np
 import pygimli as pg
-from pygimli.meshtools import createCircle, createWorld, createMesh
+from pygimli.meshtools import createCircle, createWorld, createMesh, mergePLC
 
 from pygimli.physics.gravimetry import gradUCylinderHoriz, solveGravimetry
 
@@ -52,7 +52,8 @@ world = createWorld(start=[-200, 200], end=[200, -200], marker=1)
 
 # Add some nodes to the measurement points to increase the accuracy a bit
 [world.createNode(x_, 0.0,  1) for x_ in x]
-mesh = createMesh([world, circ], quality=34)
+plc = mergePLC([world, circ])
+mesh = createMesh(plc, quality=34)
 mesh = mesh.createP2()
 
 density = pg.solver.parseMapToCellArray([[1, 0.0], [2, dRho]], mesh)
@@ -78,7 +79,7 @@ ax1.plot(x, gc_m, label='Integration: Mesh')
 ax1.plot(x, dudz, label=r'FEM: $\frac{\partial u}{\partial z}$')
 
 ax2 = pg.plt.subplot(2, 1, 2)
-pg.show([world,  circ], ax=ax2)
+pg.show(plc, ax=ax2)
 ax2.plot(x, x*0,  'bv')
 
 ax1.set_ylabel(r'$\frac{\partial u}{\partial z}$ [mGal]')

@@ -20,7 +20,7 @@ cdict = {'red': ((0.0, 0.0, 0.0), (0.5, 1.0, 1.0), (1.0, 1.0, 1.0)),
 
 blueRedCMap = mpl.colors.LinearSegmentedColormap('my_colormap', cdict, 256)
 
-def autolevel(z, nLevs, logscale=None, zmin=None, zmax=None):
+def autolevel(z, nLevs, logScale=None, zmin=None, zmax=None):
     """Create nLevs bins for the data array z based on matplotlib ticker.
 
     Examples
@@ -29,12 +29,12 @@ def autolevel(z, nLevs, logscale=None, zmin=None, zmax=None):
     >>> from pygimli.mplviewer import autolevel
     >>> x = np.linspace(1, 10, 100)
     >>> autolevel(x, 3)
-    array([  1.,   4.,   7.,  10.])
+    array([ 1.,  4.,  7., 10.])
     >>> autolevel(x, 3, logscale=True)
-    array([   0.1,    1. ,   10. ,  100. ])
+    array([  0.1,   1. ,  10. , 100. ])
     """
     locator = None
-    if logscale:
+    if logScale and min(z) > 0:
         locator = ticker.LogLocator()
     else:
         #print('MaxNLocator(nBins=nLevs + 1)', nLevs)

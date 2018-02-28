@@ -230,13 +230,5 @@ class TestRVectorMethods(unittest.TestCase):
         A = np.array(pg.RMatrix(4,4))
 
 if __name__ == '__main__':
-
     pg.setDebug(0)
     unittest.main()
-    #pg.setDebug(1)
-    #M = np.arange(16.).reshape((4,4))
-    #A = pg.RMatrix(M)
-    #M2 = np.array(A)
-    #print(M2)
-
-    #exit()

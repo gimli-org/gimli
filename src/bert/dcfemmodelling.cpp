@@ -1072,8 +1072,8 @@ RVector DCMultiElectrodeModelling::response(const RVector & model,
         RVector respRe(dMap.data(this->dataContainer(), false, false));
         RVector respIm(dMap.data(this->dataContainer(), false, true));
 
-        CVector resp(toComplex(respRe, respIm));
-        RVector am(abs(resp) * dataContainer_->get("k"));
+        CVector resp(toComplex(respRe, respIm) * dataContainer_->get("k"));
+        RVector am(abs(resp));
         RVector ph(-angle(resp));
 
         if (verbose_){

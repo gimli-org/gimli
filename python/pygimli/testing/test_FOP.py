@@ -7,7 +7,9 @@ import time
 
 import numpy as np
 import pygimli as pg
+import pygimli.meshtools as mt
 
+run_solve = True
 
 class ModellingMT(pg.ModellingBase):
     def __init__(self, nPars, verbose):
@@ -15,13 +17,30 @@ class ModellingMT(pg.ModellingBase):
         pg.ModellingBase.__init__(self, verbose)
         self.regionManager().setParameterCount(nPars)
 
+    def dummySolve(self, info):
+        world = mt.createWorld(start=[-10, 0], end=[10, -10],
+                                   marker=1, worldMarker=False)
+        c1 = mt.createCircle(pos=[0.0, -5.0], radius=3.0, area=.1, marker=2)
+        mesh = pg.meshtools.createMesh([world, c1], quality=34.3)
+
+        u = pg.solver.solveFiniteElements(mesh, a=[[1, 100], [2, 1]],
+                                              bc={'Dirichlet': [[4, 1.0],
+                                                                [2, 0.0]]})
+        print(info, mesh)
+
     def response(self, par):
         """ """
+        if run_solve:
+            self.dummySolve('ST')
         return par * 1.0
 
     def response_mt(self, par, i=0):
         """ """
-        time.sleep(0.1)
+        if run_solve:
+            self.dummySolve('MT' + str(i))
+            #pg.solver.solve(pg.createGrid(range(100), range(100)), a=1, f=1,
+                            #bc={'Dirichlet': 0})
+
         # print(i)
         return par * 2.0
 
@@ -51,11 +70,17 @@ class TestFOP(unittest.TestCase):
         fop = ModellingMT(nPars, verbose=True)
 
         ms = np.array([m*2, m*3, m*4, m*5])
+        print(ms)
         fop.setMultiThreadJacobian(1)
+        print('#')
+
         ds1 = np.zeros((len(ms), len(ms[0])))
+        #print('#')
         fop.responses(ms, ds1)
 
-        fop.setMultiThreadJacobian(4)
+        print('#')
+
+        fop.setMultiThreadJacobian(nPars)
         ds2 = np.zeros((len(ms), len(ms[0])))
         fop.responses(ms, ds2)
 
@@ -71,7 +96,7 @@ class TestFOP(unittest.TestCase):
         fop.createJacobian(m)
         J1 = pg.RMatrix(fop.jacobian())
 
-        fop.setMultiThreadJacobian(4)
+        fop.setMultiThreadJacobian(nPars)
         fop.createJacobian(m)
         J2 = fop.jacobian()
 
@@ -83,5 +108,9 @@ class TestFOP(unittest.TestCase):
 
 
 if __name__ == '__main__':
+
+    #fop  = TestFOP()
+    #fop.test_MT()
+    #fop.test_multiResponseMT()
 
     unittest.main()

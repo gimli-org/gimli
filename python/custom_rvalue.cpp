@@ -90,7 +90,7 @@ template < class ValueType > void * checkConvertibleSequenz(PyObject * obj){
 //             __DC(obj << "\t cannot convert")
 //             }
 
-            std::cout << WHERE_AM_I << "element cannot converted " << std::endl;
+            __DC(WHERE_AM_I << "element cannot converted ")
         }
 
     } else {

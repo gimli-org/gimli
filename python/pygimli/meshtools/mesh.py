@@ -1,6 +1,5 @@
-test=None
 # -*- coding: utf-8 -*-
-"""Generally mesh generation and maintenance."""
+"""General mesh generation and maintenance."""
 
 import os
 
@@ -1170,9 +1169,7 @@ def createParaMesh2DGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
     >>> mesh = createParaMesh2DGrid(sensors=pg.RVector(range(10)),
     ...                             boundary=1, paraDX=1,
     ...                             paraDZ=1, paraDepth=5)
-    >>> ax, _ = pg.show(mesh, mesh.cellMarkers(), alpha=0.3, cmap="summer",
-    ...                 hold=True)
-    >>> ax, _ = pg.show(mesh, ax=ax)
+    >>> ax, _ = pg.show(mesh, markers=True, showMesh=True)
     """
     mesh = pg.Mesh(2)
 

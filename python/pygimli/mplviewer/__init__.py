@@ -13,7 +13,8 @@ from .utils import (hold,
                     saveAnimation,
                     setOutputStyle,
                     setPlotStuff,
-                    plotLines)
+                    plotLines,
+                    createTwinX, createTwinY)
 
 from .boreholes import BoreHole, BoreHoles, create_legend
 

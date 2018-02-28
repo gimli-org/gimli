@@ -481,16 +481,16 @@ Cell * Mesh::findCellBySlopeSearch_(const RVector3 & pos, Cell * start,
 //                      i < this->cell(cellIDX__.back()).nodeCount(); i ++){
 //                     std::cout << this->cell(cellIDX__.back()).node(i)<< std::endl;
 //                 }
+                if (debug()){
+                    std::cout << WHERE_AM_I << " exit with submesh " << cellIDX__.size() << std::endl;
+                    std::cout << "probably cant find a cell for " << pos << std::endl;
 
-                std::cout << WHERE_AM_I << " exit with submesh " << cellIDX__.size() << std::endl;
-                std::cout << "probably cant find a cell for " << pos << std::endl;
+                    Mesh subMesh; subMesh.createMeshByCellIdx(*this, cellIDX__);
 
-                Mesh subMesh; subMesh.createMeshByCellIdx(*this, cellIDX__);
-
-                subMesh.exportVTK("submesh");
-                this->exportVTK("submeshParent");
+                    subMesh.exportVTK("submesh");
+                    this->exportVTK("submeshParent");
+                }
                 return NULL;
-                exit(0);
             }
         }
     } while (++cellCounter < cellCount() && cell);
@@ -672,22 +672,34 @@ std::vector < Cell * > Mesh::findCellByAttribute(double from, double to) const {
     return vCell;
 }
 
-std::vector< Cell * > Mesh::cells(const IndexArray & ids) const {
-    std::vector < Cell * > v(ids.size());
-    for (Index i = 0; i < ids.size(); i ++) v[i] = cellVector_[ids[i]];
-    return v;
-}
-
 std::vector< Node * > Mesh::nodes(const IndexArray & ids) const{
     std::vector < Node * > v(ids.size());
     for (Index i = 0; i < ids.size(); i ++) v[i] = nodeVector_[ids[i]];
     return v;
 }
 
+std::vector < Node * > Mesh::nodes(const BVector & b) const{
+    return nodes(find(b));
+}
+
+std::vector< Cell * > Mesh::cells(const IndexArray & ids) const {
+    std::vector < Cell * > v(ids.size());
+    for (Index i = 0; i < ids.size(); i ++) v[i] = cellVector_[ids[i]];
+    return v;
+}
+
+std::vector < Cell * > Mesh::cells(const BVector & b) const{
+    return cells(find(b));
+}
+
 std::vector< Boundary * > Mesh::boundaries(const IndexArray & ids) const{
     std::vector < Boundary * > v(ids.size());
     for (Index i = 0; i < ids.size(); i ++) v[i] = boundaryVector_[ids[i]];
     return v;
+}
+
+std::vector < Boundary * > Mesh::boundaries(const BVector & b) const{
+    return boundaries(find(b));
 }
 
 void Mesh::setCellMarkers(const IndexArray & ids, int marker){

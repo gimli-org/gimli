@@ -55,7 +55,7 @@ def showQuality(mesh, qualities):
     fig, axes = plt.subplots(1, 2)
     axes[1].hist(qualities, color="grey")
     pg.show(mesh, qualities, ax=axes[0], cMin=0.5, cMax=1, hold=True,
-            logScale=False, label="Mesh quality", cmap="RdYlGn", grid=True)
+            logScale=False, label="Mesh quality", cmap="RdYlGn", showMesh=True)
     s = "Min: %.2f, Mean: %.2f, Max: %.2f" % (
         np.min(qualities), np.mean(qualities), np.max(qualities))
     axes[1].set_title(s)
