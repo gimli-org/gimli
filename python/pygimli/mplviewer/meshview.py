@@ -66,38 +66,21 @@ class CellBrowser(object):
 
     def __init__(self, mesh, data=None, ax=None):
         """Construct CellBrowser on a specific `mesh`."""
-
-        # we put this CellBrowser into a global cache to keep them alive
-        # if he has been called from pg.show()
-        # TODO remove them from the cache if the figure has been closed or the
-        # the mpl_connection is finished.
-        __CBCache__.add(self)
-
         if ax:
             self.ax = ax
         else:
             self.ax = mpl.pyplot.gca()
 
         self.fig = self.ax.figure
-        self.mesh = mesh
-        self.lw = np.ones(mesh.cellCount())
-        self.data = data
+        self.mesh = None
+        self.data = None
+        self.highLight = None
+
         self.cellID = None
-        self.edgeColors = None
         self.event = None
         self.artist = None
         self.pid = None
         self.kid = None
-
-        if data is not None:
-            if len(data) == mesh.nodeCount():
-                self.data = pg.meshtools.nodeDataToCellData(mesh, data)
-
-            if mesh.cellCount() != len(data):
-                print('data length mismatch mesh.cellCount(): ' +
-                      str(len(data)) + "!=" + str(mesh.cellCount()) +
-                      ". Mapping data to cellMarkers().")
-                self.data = data[mesh.cellMarkers()]
 
         bbox = dict(boxstyle='round, pad=0.5', fc='w', alpha=0.5)
         arrowprops = dict(arrowstyle='->', connectionstyle='arc3,rad=0.5')
@@ -108,48 +91,81 @@ class CellBrowser(object):
 
         self.text = self.ax.annotate(None, xy=(0, 0), **kwargs)
 
+        self.setMesh(mesh)
+        self.setData(data)
+
     def connect(self):
         """Connect to matplotlib figure canvas."""
         self.pid = self.fig.canvas.mpl_connect('pick_event', self.onpick)
         self.kid = self.fig.canvas.mpl_connect('key_press_event', self.onpress)
+        __CBCache__.add(self)
 
     def disconnect(self):
         """Disconnect from matplotlib figure canvas."""
         self.fig.canvas.mpl_connect(self.pid)
         self.fig.canvas.mpl_connect(self.kid)
+        __CBCache__.remove(self)
+
+    def setMesh(self, mesh):
+        self.mesh = mesh
+
+    def setData(self, data=None):
+        """Set data, if not set look for the artist array data."""
+        self.hide()
+        if data is not None:
+            if len(data) == self.mesh.cellCount():
+                self.data = data
+            elif len(data) == self.mesh.nodeCount():
+                self.data = pg.meshtools.nodeDataToCellData(self.mesh, data)
+            else:
+                pg.warn('Data length mismatch mesh.cellCount(): ' +
+                      str(len(data)) + "!=" + str(mesh.cellCount()) +
+                      ". Mapping data to cellMarkers().")
+                self.data = data[self.mesh.cellMarkers()]
 
     def hide(self):
         """Hide info window."""
+        self.cellID = -1
         self.text.set_visible(False)
-        self.artist.set_edgecolors(self.edgeColors)
+
+        if self.highLight is not None:
+            self.highLight.remove()
+            self.highLight = None
+
         self.fig.canvas.draw()
 
-    def highlight(self):
+    def highlightCell(self, cell):
         """Highlight selected cell."""
+        p = [_createCellPolygon(cell)]
+        if self.highLight is not None:
+            self.highLight.remove()
 
-        if self.edgeColors is not None:
-            ec = self.edgeColors.copy()
-            ec[self.cellID] = np.ones(ec.shape[1])
-            self.artist.set_edgecolors(ec)
-            lw = self.lw.copy()
-            lw[self.cellID] = 3
-            self.artist.set_linewidths(lw)
+        self.highLight = mpl.collections.PolyCollection(p)
+        self.highLight.set_edgecolors('0')
+        self.highLight.set_linewidths(1.5)
+        self.highLight.set_facecolors([0.9, 0.9, 0.9, 0.4])
+        self.ax.add_collection(self.highLight)
+
 
     def onpick(self, event):
         """Call `self.update()` on mouse pick event."""
+        print(event)
         self.event = event
         self.artist = event.artist
 
         if self.data is None:
             self.data = self.artist.get_array()
-            self.edgeColors = self.artist.get_edgecolors()
+            #self.edgeColors = self.artist.get_edgecolors()
 
         if 'mouseevent' in event.__dict__.keys():
             if (event.mouseevent.xdata is not None and
                     event.mouseevent.ydata is not None):
-                pos = pg.RVector3(event.mouseevent.xdata,
-                                  event.mouseevent.ydata)
-                self.cellID = self.mesh.findCell(pos, True).id()
+                c = self.mesh.findCell((event.mouseevent.xdata,
+                                        event.mouseevent.ydata))
+                if c and self.cellID != c.id():
+                    self.cellID = c.id()
+                else:
+                    self.cellID = -1
         else:  # variant before (seemed inaccurate)
             self.cellID = event.ind[0]
         self.update()
@@ -172,28 +188,35 @@ class CellBrowser(object):
             return
 
         if self.cellID is not None:
-            self.cellID = int(
-                np.clip(self.cellID, 0,
-                        self.mesh.cellCount() - 1))
+            self.cellID = int(np.clip(self.cellID, 0,
+                                      self.mesh.cellCount() - 1))
             self.update()
 
     def update(self):
-        """Update the information window."""
+        """Update the information window.
+
+        Hide the information window for self.cellID == -1
+        """
         try:
-            center = self.mesh.cell(self.cellID).center()
-            x, y = center.x(), center.y()
-            marker = self.mesh.cells()[self.cellID].marker()
-            data = self.data[self.cellID]
-            header = "Cell %d:\n" % self.cellID
-            header += "-" * (len(header) - 1)
-            info = "\nx: {:.2f}\n y: {:.2f}\n data: {:.2e}\n marker: {:d}".format(
-                x, y, data, marker)
-            text = header + textwrap.dedent(info)
-            self.text.set_text(text)
-            self.text.xy = x, y
-            self.text.set_visible(True)
-            self.highlight()
-            self.fig.canvas.draw()
+            if self.cellID > -1:
+                cell = self.mesh.cell(self.cellID)
+                center = cell.center()
+                x, y = center.x(), center.y()
+                marker = cell.marker()
+                data = self.data[self.cellID]
+                header = "Cell %d:\n" % self.cellID
+                header += "-" * (len(header) - 1)
+                info = "\nx: {:.2f}\n y: {:.2f}\n data: {:.2e}\n marker: {:d}".format(
+                    x, y, data, marker)
+                text = header + textwrap.dedent(info)
+                self.text.set_text(text)
+                self.text.xy = x, y
+                self.text.set_visible(True)
+                self.highlightCell(cell)
+                self.fig.canvas.draw()
+            else:
+                self.hide()
+
         except BaseException as e:
             print(e)
 
@@ -605,8 +628,22 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
 
     updateAxes_(ax)
 
+def _createCellPolygon(cell):
+    """Utility function to polygon for cell shape to be used by MPL."""
+    if cell.shape().nodeCount() == 3:
+        return list(zip([cell.node(0).x(), cell.node(1).x(),
+                                   cell.node(2).x()],
+                                  [cell.node(0).y(), cell.node(1).y(),
+                                   cell.node(2).y()]))
+    elif cell.shape().nodeCount() == 4:
+        return list(zip([cell.node(0).x(), cell.node(1).x(),
+                                   cell.node(2).x(), cell.node(3).x()],
+                                  [cell.node(0).y(), cell.node(1).y(),
+                                   cell.node(2).y(), cell.node(3).y()]))
 
-def createMeshPatches(ax, mesh, verbose=True, **kwargs):
+    pg.warn("Unknown shape to patch: ", cell)
+
+def createMeshPatches(ax, mesh, verbose=True):
     """Utility function to create 2d mesh patches within a given ax."""
     if not mesh:
         pg.error("drawMeshBoundaries(ax, mesh): invalid mesh:", mesh)
@@ -617,28 +654,11 @@ def createMeshPatches(ax, mesh, verbose=True, **kwargs):
         return
 
     pg.tic()
-    polys = []
-
-    for cell in mesh.cells():
-        if cell.shape().nodeCount() == 3:
-            polys.append(list(zip([cell.node(0).x(), cell.node(1).x(),
-                                   cell.node(2).x()],
-                                  [cell.node(0).y(), cell.node(1).y(),
-                                   cell.node(2).y()])))
-        elif cell.shape().nodeCount() == 4:
-            polys.append(list(zip([cell.node(0).x(), cell.node(1).x(),
-                                   cell.node(2).x(), cell.node(3).x()],
-                                  [cell.node(0).y(), cell.node(1).y(),
-                                   cell.node(2).y(), cell.node(3).y()])))
-        else:
-            pg.warn("Unknown shape to patch: ", cell)
-
-    patches = mpl.collections.PolyCollection(polys,
-                                             #antialiaseds=False,
-                                             picker=True)
+    polys = [_createCellPolygon(c) for c in mesh.cells()]
+    patches = mpl.collections.PolyCollection(polys, picker=True)
 
     if verbose:
-        pg.info("plotting time = ", pg.toc())
+        pg.info("Creation of mesh patches took = ", pg.toc())
 
     return patches
 
