@@ -245,7 +245,8 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
 
     if data is None:
         showMesh = True
-        showBoundary = True
+        if showBoundary is None:
+            showBoundary = True
     elif isinstance(data, pg.stdVectorRVector3):
         drawSensors(ax, data, **kwargs)
     elif isinstance(data, pg.R3Vector):
@@ -304,7 +305,30 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
                 print("Mesh: ", mesh)
                 drawMesh(ax, mesh, **kwargs)
 
-    ax.set_aspect('equal')
+    if mesh.cellCount() == 0:
+        pg.mplviewer.drawPLC(ax, mesh, **kwargs)
+
+    if showMesh:
+        if gci is not None and hasattr(gci, 'set_antialiased'):
+            gci.set_antialiased(True)
+            gci.set_linewidth(0.3)
+            gci.set_edgecolor("0.1")
+        else:
+            pg.mplviewer.drawSelectedMeshBoundaries(ax, mesh.boundaries(),
+                                                    color="0.1", linewidth=0.3)
+            #drawMesh(ax, mesh, **kwargs)
+
+    if showBoundary is True or showBoundary is 1:
+        b = mesh.boundaries(mesh.boundaryMarkers() != 0)
+        pg.mplviewer.drawSelectedMeshBoundaries(ax, b,
+                                                color=(0.0, 0.0, 0.0, 1.0),
+                                                linewidth=1.4)
+
+    if kwargs.pop('fitView', True):
+        ax.set_xlim(mesh.xmin(), mesh.xmax())
+        ax.set_ylim(mesh.ymin(), mesh.ymax())
+        ax.set_aspect('equal')
+
 
     cbar = None
 
@@ -345,7 +369,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
                                                 color=(0.0, 0.0, 0.0, 1.0),
                                                 linewidth=1.4)
 
-    if not hold or block is not False:
+    if not hold or block is not False and plt.get_backend() is not "Agg":
         if data is not None:
             if len(data) == mesh.cellCount():
                 cb = CellBrowser(mesh, data, ax=ax)

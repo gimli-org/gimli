@@ -85,15 +85,12 @@ def createRectangle(start=None, end=None, pos=None, size=None, **kwargs):
 
     Examples
     --------
-    >>> from pygimli.meshtools import createRectangle
-    >>> from pygimli.mplviewer import drawMesh
     >>> import matplotlib.pyplot as plt
+    >>> import pygimli as pg
+    >>> from pygimli.meshtools import createRectangle
     >>> rectangle = createRectangle(start=[4, -4], end=[6, -6],
     ...                             marker=4, area=0.1)
-    >>>
-    >>> fig, ax = plt.subplots()
-    >>> drawMesh(ax, rectangle)
-    >>> plt.show()
+    >>> _ = pg.show(rectangle)
     """
     if not ((start and end) or (pos and size)):
         raise BaseException("createRectangle pls. give either start and end"
@@ -271,7 +268,7 @@ def createCircle(pos=None, radius=1, segments=12, start=0, end=2. * math.pi,
     ...                       end=1.5*math.pi, isClosed=False)
     >>> plc = plc.mergePLC([c0, c1, c2])
     >>> fig, ax = plt.subplots()
-    >>> drawMesh(ax, plc)
+    >>> drawMesh(ax, plc, fillRegion=False)
     >>> plt.show()
     """
     if pos is None:
@@ -355,7 +352,7 @@ def createLine(start, end, segments, **kwargs):
     ...                    leftDirection=True)
     >>>
     >>> ax, _ = pg.show(mt.createMesh([w, l1, l2,]))
-    >>> ax, _ = pg.show([w, l1, l2,], ax=ax)
+    >>> ax, _ = pg.show([w, l1, l2,], ax=ax, fillRegion=False)
     >>> pg.wait()
     """
     poly = pg.Mesh(2)

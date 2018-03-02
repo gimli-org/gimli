@@ -20,7 +20,7 @@ cdict = {'red': ((0.0, 0.0, 0.0), (0.5, 1.0, 1.0), (1.0, 1.0, 1.0)),
 
 blueRedCMap = mpl.colors.LinearSegmentedColormap('my_colormap', cdict, 256)
 
-def autolevel(z, nLevs, logscale=None, zmin=None, zmax=None):
+def autolevel(z, nLevs, logScale=None, zmin=None, zmax=None):
     """Create nLevs bins for the data array z based on matplotlib ticker.
 
     Examples
@@ -34,7 +34,7 @@ def autolevel(z, nLevs, logscale=None, zmin=None, zmax=None):
     array([  0.1,   1. ,  10. , 100. ])
     """
     locator = None
-    if logscale:
+    if logScale and min(z) > 0:
         locator = ticker.LogLocator()
     else:
         #print('MaxNLocator(nBins=nLevs + 1)', nLevs)
