@@ -6,10 +6,10 @@ Readme for Github repository only. (Get's selected before *.rst file)
   <img src="https://www.pygimli.org/_static/gimli_logo.svg" width="50%">
 </a>
 
+<!-- Re-activate when jenkins is running again
 [![Build Status](https://www.pygimli.org/build_status.svg)](https://www.pygimli.org/build.html)
+-->
 [![Code Health](https://landscape.io/github/gimli-org/gimli/master/landscape.svg)](https://landscape.io/github/gimli-org/gimli/master)
-
-<!-- [![Issue Stats](http://issuestats.com/github/gimli-org/gimli/badge/issue?style=flat)](http://issuestats.com/github/gimli-org/gimli) -->
 [![license](https://img.shields.io/github/license/gimli-org/gimli.svg?style=flat-square)](https://pygimli.org/license.html)
 
 pyGIMLi is an open-source library for modelling and inversion and in geophysics. The object-oriented library provides management for structured and unstructured meshes in 2D and 3D, finite-element and finite-volume solvers, various geophysical forward operators, as well as Gauss-Newton based frameworks for constrained, joint and fully-coupled inversions with flexible regularization.
@@ -36,6 +36,8 @@ See binaries on <https://www.pygimli.org/installation.html#win>
 
 [![Anaconda-Server Badge](https://anaconda.org/gimli/pygimli/badges/installer/conda.svg)](https://conda.anaconda.org/gimli)
 [![Anaconda-Server Badge](https://anaconda.org/gimli/pygimli/badges/downloads.svg)](https://anaconda.org/gimli/pygimli)
+[![Anaconda-Server Badge](https://anaconda.org/gimli/pygimli/badges/version.svg)](https://anaconda.org/gimli/pygimli)
+[![Anaconda-Server Badge](https://anaconda.org/gimli/pygimli/badges/latest_release_date.svg)](https://anaconda.org/gimli/pygimli)
 
 ```bash
 # Add gimli and conda-forge channels (only once)
