@@ -44,13 +44,13 @@ See binaries on <https://www.pygimli.org/installation.html#win>
 conda config --add channels gimli --add channels conda-forge
 
 # Install pygimli
-conda install -f pygimli
+conda install pygimli
 
 # Test pygimli
 python -c "import pygimli; pygimli.test()"
 
 # Update pygimli
-conda update -f pygimli
+conda update pygimli
 ```
 
 ##### Install via curl
