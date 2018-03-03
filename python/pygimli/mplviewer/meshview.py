@@ -316,8 +316,7 @@ def drawModel(ax, mesh, data=None, logScale=True, cMin=None, cMax=None,
                          **kwargs)
 
     else:
-        gci = pg.mplviewer.createMeshPatches(ax, mesh, verbose=verbose,
-                                             **kwargs)
+        gci = pg.mplviewer.createMeshPatches(ax, mesh, verbose=verbose)
         ax.add_collection(gci)
 
         cMap = kwargs.pop('cMap', None)
