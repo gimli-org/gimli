@@ -30,7 +30,7 @@ def autolevel(z, nLevs, logScale=None, zmin=None, zmax=None):
     >>> x = np.linspace(1, 10, 100)
     >>> autolevel(x, 3)
     array([ 1.,  4.,  7., 10.])
-    >>> autolevel(x, 3, logscale=True)
+    >>> autolevel(x, 3, logScale=True)
     array([  0.1,   1. ,  10. , 100. ])
     """
     locator = None
