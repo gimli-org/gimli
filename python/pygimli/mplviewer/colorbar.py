@@ -298,6 +298,28 @@ def createColorBarOnly(cMin=1, cMax=100, logScale=False, cMap=None, nLevs=5,
     return fig
 
 
+def valueToNiceString(v):
+    """Return a nice string for a given value suitable for graphical output."""
+    if round(v) == v and abs(v) < 1e3:
+        return str(int(v))
+    elif abs(v) == 0.0:
+        return "0"
+    elif abs(v) > 1e3 or abs(v) <= 1e-3:
+        return str("%.1e" % v)
+    elif abs(v) < 1e-2:
+        return str("%.4f" % v)
+    elif abs(v) < 1e-1:
+        return str("%.3f" % v)
+    elif abs(v) < 1e0:
+        return str("%.2f" % v)
+    elif abs(v) < 1e1:
+        return str("%.1f" % v)
+    elif abs(v) < 1e2:
+        return str("%.1f" % v)
+    else:
+        return str("%.0f" % v)
+
+
 def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5):
     """TODO Documentme."""
     if cMin is None:
@@ -325,22 +347,7 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5):
 
     cbarLevelsString = []
     for i in cbarLevels:
-        if abs(i) == 0.0:
-            cbarLevelsString.append("0")
-        elif abs(i) > 1e3 or abs(i) <= 1e-3:
-            cbarLevelsString.append("%.1e" % i)
-        elif abs(i) < 1e-2:
-            cbarLevelsString.append("%.4f" % i)
-        elif abs(i) < 1e-1:
-            cbarLevelsString.append("%.3f" % i)
-        elif abs(i) < 1e0:
-            cbarLevelsString.append("%.2f" % i)
-        elif abs(i) < 1e1:
-            cbarLevelsString.append("%.1f" % i)
-        elif abs(i) < 1e2:
-            cbarLevelsString.append("%.1f" % i)
-        else:
-            cbarLevelsString.append("%.0f" % i)
+        cbarLevelsString.append(valueToNiceString(i))
 
     if hasattr(cbar, 'mappable'):
         cbar.mappable.set_clim(vmin=cMin, vmax=cMax)
