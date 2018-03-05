@@ -58,7 +58,8 @@ def warn(*args):
     logger.warning(_msg(*args))
 
 def error(*args):
-    logger.error(_msg(*args))
+    caller = sys._getframe(1).f_code.co_name
+    logger.error(caller + ": " + _msg(*args))
 
 def debug(*args):
     logger.debug(_msg(*args))

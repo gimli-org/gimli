@@ -360,6 +360,15 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
             raise BaseException('toImplement')
             # addCoverageAlpha(gci, pg.cellDataToPointData(mesh, coverage))
 
+    if showMesh:
+        drawMesh(ax, mesh, **kwargs)
+
+    if showBoundary is True or showBoundary is 1:
+        b = mesh.boundaries(pg.find(mesh.boundaryMarkers() != 0))
+        pg.mplviewer.drawSelectedMeshBoundaries(ax, b,
+                                                color=(0.0, 0.0, 0.0, 1.0),
+                                                linewidth=1.4)
+
     if not hold or block is not False and plt.get_backend() is not "Agg":
         if data is not None:
             if len(data) == mesh.cellCount():
