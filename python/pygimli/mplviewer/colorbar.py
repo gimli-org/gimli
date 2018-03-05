@@ -298,8 +298,8 @@ def createColorBarOnly(cMin=1, cMax=100, logScale=False, cMap=None, nLevs=5,
     return fig
 
 
-def valueToNiceString(v):
-    """Return a nice string for a given value suitable for graphical output."""
+def prettyFloat(v):
+    """Return a pretty string for a given value suitable for graphical output."""
     if round(v) == v and abs(v) < 1e3:
         return str(int(v))
     elif abs(v) == 0.0:
@@ -347,7 +347,7 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5):
 
     cbarLevelsString = []
     for i in cbarLevels:
-        cbarLevelsString.append(valueToNiceString(i))
+        cbarLevelsString.append(prettyFloat(i))
 
     if hasattr(cbar, 'mappable'):
         cbar.mappable.set_clim(vmin=cMin, vmax=cMax)
@@ -359,8 +359,23 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5):
     cbar.draw_all()
 
 
+def setMappableValues(mappable, dataIn):
+    """Change the data values for a given mapable."""
+    data = dataIn
+    if not isinstance(data, np.ma.core.MaskedArray):
+        data = np.array(dataIn)
+
+    # set bad value color to white
+    if mappable.get_cmap() is not None:
+        mappable.get_cmap().set_bad([1.0, 1.0, 1.0, 0.0])
+
+    mappable.set_array(data)
+
 def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=False):
-    """Change the data values for a given mappable."""
+    """Change the data values for a given mappable.
+
+    DEPRECATED
+    """
     data = dataIn
 
     if not isinstance(data, np.ma.core.MaskedArray):

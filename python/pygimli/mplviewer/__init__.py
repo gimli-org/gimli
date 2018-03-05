@@ -27,6 +27,7 @@ from .colorbar import (createColorBar,
                        cmapFromName,
                        findAndMaskBestClim,
                        setCbarLevels,
+                       setMappableValues,
                        setMappableData)
 
 from .meshview import (CellBrowser,
