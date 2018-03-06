@@ -328,7 +328,7 @@ def drawModel(ax, mesh, data=None, logScale=True, cMin=None, cMax=None,
             print(data, mesh)
             pg.info("drawModel have wrong data length .. " +
                     " indexing data from cellMarkers()")
-            viewdata = data(mesh.cellMarkers())
+            viewdata = data[mesh.cellMarkers()]
         else:
             viewdata = data
 
@@ -587,7 +587,11 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
                     areas[reg.marker()] = reg.area()
                 labels = []
                 for marker in uniquemarkers:
-                    labels.append("%d\n(area: %s)" % (marker, areas[marker]))
+                    label = "%d" % marker
+                    labels.append("%d" % marker)
+                    if marker in areas:
+                        label += "\n(area: %s)" % areas[marker]
+                    labels.append(label)
                 cbar.set_ticklabels(labels)
 
     else:
