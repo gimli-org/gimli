@@ -3,9 +3,19 @@
 
 # Customizations
 *.log
-command.history
 *.pdf
 *.bak
+
+# pyGIMLi
+command.history
+*.bmat
+*.vtk
+*.bms
+*.vector
+
+# Gmsh
+*.geo
+*.msh
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -56,3 +66,5 @@ coverage.xml
 # Translations
 *.mo
 *.pot
+
+test.py

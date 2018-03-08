@@ -20,8 +20,8 @@ cdict = {'red': ((0.0, 0.0, 0.0), (0.5, 1.0, 1.0), (1.0, 1.0, 1.0)),
 
 blueRedCMap = mpl.colors.LinearSegmentedColormap('my_colormap', cdict, 256)
 
-def autolevel(z, nLevs, logscale=None, zmin=None, zmax=None):
-    """Create N levels for the data array z based on matplotlib ticker.
+def autolevel(z, nLevs, logScale=None, zmin=None, zmax=None):
+    """Create nLevs bins for the data array z based on matplotlib ticker.
 
     Examples
     --------
@@ -29,23 +29,27 @@ def autolevel(z, nLevs, logscale=None, zmin=None, zmax=None):
     >>> from pygimli.mplviewer import autolevel
     >>> x = np.linspace(1, 10, 100)
     >>> autolevel(x, 3)
-    array([  0. ,   2.5,   5. ,   7.5,  10. ])
-    >>> autolevel(x, 3, logscale=True)
-    array([   0.1,    1. ,   10. ,  100. ])
+    array([ 1.,  4.,  7., 10.])
+    >>> autolevel(x, 3, logScale=True)
+    array([  0.1,   1. ,  10. , 100. ])
     """
     locator = None
-    if logscale:
+    if logScale and min(z) > 0:
         locator = ticker.LogLocator()
     else:
-        locator = ticker.MaxNLocator(nLevs + 1)
+        #print('MaxNLocator(nBins=nLevs + 1)', nLevs)
+        locator = ticker.LinearLocator(numticks=nLevs+1)
+        #locator = ticker.MaxNLocator(nBins=nLevs + 1)
+        #locator = ticker.MaxNLocator(nBins='auto')
 
     if zmin is None:
-        zmin = round(min(z), 4)
+        zmin = round(min(z), 2)
 
     if zmax is None:
-        zmax = round(max(z), 4)
+        zmax = round(max(z), 2)
 
-    ##print("autolevel", zmin, zmax)
+    #print("autolevel", zmin, zmax)
+    #print(locator.tick_values(zmin, zmax))
     return locator.tick_values(zmin, zmax)
 
 
@@ -230,7 +234,7 @@ def createColorBar(patches, cMin=None, cMax=None, nLevs=5, label=None,
     if label is not None:
         cbar.set_label(label)
 
-    # updateColorBar(cbar, cMin=cMin, cMax=cMax, nLevs=nLevs, label=label)
+    updateColorBar(cbar, cMin=cMin, cMax=cMax, nLevs=nLevs, label=label)
 
     return cbar
 
@@ -294,6 +298,28 @@ def createColorBarOnly(cMin=1, cMax=100, logScale=False, cMap=None, nLevs=5,
     return fig
 
 
+def prettyFloat(v):
+    """Return a pretty string for a given value suitable for graphical output."""
+    if round(v) == v and abs(v) < 1e3:
+        return str(int(v))
+    elif abs(v) == 0.0:
+        return "0"
+    elif abs(v) > 1e3 or abs(v) <= 1e-3:
+        return str("%.1e" % v)
+    elif abs(v) < 1e-2:
+        return str("%.4f" % v)
+    elif abs(v) < 1e-1:
+        return str("%.3f" % v)
+    elif abs(v) < 1e0:
+        return str("%.2f" % v)
+    elif abs(v) < 1e1:
+        return str("%.1f" % v)
+    elif abs(v) < 1e2:
+        return str("%.1f" % v)
+    else:
+        return str("%.0f" % v)
+
+
 def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5):
     """TODO Documentme."""
     if cMin is None:
@@ -321,22 +347,7 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5):
 
     cbarLevelsString = []
     for i in cbarLevels:
-        if abs(i) == 0.0:
-            cbarLevelsString.append("0")
-        elif abs(i) > 1e4 or abs(i) <= 1e-4:
-            cbarLevelsString.append("%.1e" % i)
-        elif abs(i) < 1e-3:
-            cbarLevelsString.append("%.5f" % i)
-        elif abs(i) < 1e-2:
-            cbarLevelsString.append("%.4f" % i)
-        elif abs(i) < 1e-1:
-            cbarLevelsString.append("%.3f" % i)
-        elif abs(i) < 1e0:
-            cbarLevelsString.append("%.2f" % i)
-        elif abs(i) < 1e1:
-            cbarLevelsString.append("%.1f" % i)
-        else:
-            cbarLevelsString.append("%.0f" % i)
+        cbarLevelsString.append(prettyFloat(i))
 
     if hasattr(cbar, 'mappable'):
         cbar.mappable.set_clim(vmin=cMin, vmax=cMax)
@@ -348,8 +359,23 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5):
     cbar.draw_all()
 
 
+def setMappableValues(mappable, dataIn):
+    """Change the data values for a given mapable."""
+    data = dataIn
+    if not isinstance(data, np.ma.core.MaskedArray):
+        data = np.array(dataIn)
+
+    # set bad value color to white
+    if mappable.get_cmap() is not None:
+        mappable.get_cmap().set_bad([1.0, 1.0, 1.0, 0.0])
+
+    mappable.set_array(data)
+
 def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=False):
-    """Change the data values for a given mappable."""
+    """Change the data values for a given mappable.
+
+    DEPRECATED
+    """
     data = dataIn
 
     if not isinstance(data, np.ma.core.MaskedArray):

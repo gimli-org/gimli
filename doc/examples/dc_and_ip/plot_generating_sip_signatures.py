@@ -20,31 +20,26 @@ f = np.logspace(-2, 5, 100)
 
 Z = ColeColeRho(f, rho=10, m=0.1, tau=0.04, c=0.5)
 
-fig, axes = pg.plt.subplots(
-    2, 2,
-    figsize=(15 / 2.54, 10 / 2.54),
-    sharex=True,
-)
+fig, axes = pg.plt.subplots(2, 2, figsize=(15 / 2.54, 10 / 2.54), sharex=True)
+
 ax = axes[0, 0]
 ax.semilogx(f, np.abs(Z), '.-')
-ax.set_ylabel(r'$|Z| [\Omega m]$')
+ax.set_ylabel(r'$|Z|$ ($\Omega$m)')
 ax = axes[0, 1]
 ax.semilogx(f, -np.angle(Z) * 1e3, '.-')
-ax.set_ylabel(r'$-\phi$ [mrad]')
+ax.set_ylabel(r'$-\phi$ (mrad)')
 ax = axes[1, 0]
 Y = 1 / Z
 ax.loglog(f, np.real(Y), '.-')
-ax.set_xlabel('frequency [Hz]')
-ax.set_ylabel(r"$\sigma' [S/m]$")
+ax.set_xlabel('Frequency (Hz)')
+ax.set_ylabel(r"$\sigma'$ (S$/$m)")
 ax = axes[1, 1]
 ax.loglog(f, np.imag(Y), '.-')
-ax.set_xlabel('frequency [Hz]')
-ax.set_ylabel(r"$\sigma'' [S/m]$")
+ax.set_xlabel('Frequency (Hz)')
+ax.set_ylabel(r"$\sigma''$ (S$/$m)")
 
 for ax in axes.flat:
-    ax.xaxis.set_major_locator(
-        mpl.ticker.LogLocator(numticks=5)
-    )
+    ax.xaxis.set_major_locator(mpl.ticker.LogLocator(numticks=5))
 fig.tight_layout()
 pg.plt.show()
 
@@ -68,19 +63,19 @@ Z = rho0 * (Z1 + Z2)
 fig, axes = pg.plt.subplots(2, 2, figsize=(15 / 2.54, 10 / 2.54))
 ax = axes[0, 0]
 ax.semilogx(f, np.abs(Z), '.-')
-ax.set_ylabel(r'$|Z| [\Omega m]$')
+ax.set_ylabel(r'$|Z|$ ($\Omega$m)')
 ax = axes[0, 1]
 ax.semilogx(f, -np.angle(Z) * 1e3, '.-')
-ax.set_ylabel(r'$-\phi$ [mrad]')
+ax.set_ylabel(r'$-\phi$ (mrad)')
 ax = axes[1, 0]
 Y = 1 / Z
 ax.loglog(f, np.real(Y), '.-')
-ax.set_xlabel('frequency [Hz]')
-ax.set_ylabel(r"$\sigma' [S/m]$")
+ax.set_xlabel('Frequency (Hz)')
+ax.set_ylabel(r"$\sigma'$ (S$/$m)")
 ax = axes[1, 1]
 ax.loglog(f, np.imag(Y), '.-')
-ax.set_xlabel('frequency [Hz]')
-ax.set_ylabel(r"$\sigma'' [S/m]$")
+ax.set_xlabel('Frequency (Hz)')
+ax.set_ylabel(r"$\sigma''$ (S$/$m)")
 
 for ax in axes.flat:
     ax.xaxis.set_major_locator(

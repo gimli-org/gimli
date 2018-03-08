@@ -94,11 +94,8 @@ def pointSource(cell, f, userData):
     if cell.shape().isInside(sourcePos):
         f.setVal(cell.N(cell.shape().rst(sourcePos)), cell.ids())
 
-dx = 0.5
-grid = pg.createGrid(x=np.arange(-10.0, 10.0+dx, dx),
-                     y=np.arange(-15.0, .0+dx, dx))
-# grid = pg.createGrid(x=np.linspace(-10.0, 10.0, 21),
-#                      y=np.linspace(-15.0, .0, 16))
+grid = pg.createGrid(x=np.linspace(-10.0, 10.0, 41),
+                     y=np.linspace(-15.0,  0.0, 31))
 
 grid = grid.createP2()
 
@@ -130,12 +127,18 @@ u -= solve(grid, a=sigma, b=sigma * k*k, f=pointSource,
 
 # print("error min max", min(err), max(err))
 
-ax = show(grid, data=u, filled=True, colorBar=True, cmap="RdBu_r",
-          orientation='horizontal', label='Solution u', hold=True)[0]
-show(grid, ax=ax, hold=True)
-gridCoarse = pg.createGrid(x=np.linspace(-10.0, 10.0, 20),  # ???
-                           y=np.linspace(-15.0, .0, 20))
-# Instead of the grid we want to add streamlines to the plot to show the
-# gradients of the solution.
+ax = show(grid, data=u, fillContour=True, colorBar=True, cMap="RdBu_r",
+          orientation='horizontal', label='Solution u', nLevs=11, logScale=True, hold=True, showMesh=True)[0]
+
+# Additional to the image of the potential we want to see the current flow too.
+# The current flows along the gradient of our solution and can be plotted as
+# stream lines. On default the drawStreams method draws one segment of a
+# stream line per cell of the mesh. This can be a little confusing for dense
+# meshes so we can give a second (coarse) mesh as a new cell basis to draw the
+# streams. If the drawStreams get scalar data the gradients will be calculated.
+
+gridCoarse = pg.createGrid(x=np.linspace(-10.0, 10.0, 20),
+                           y=np.linspace(-15.0,   .0, 20))
 drawStreams(ax, grid, u, coarseMesh=gridCoarse, color='Black')
+
 pg.wait()

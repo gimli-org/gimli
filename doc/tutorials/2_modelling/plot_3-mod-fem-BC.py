@@ -1,6 +1,7 @@
 #!/ussr/bin/env python
 # -*- coding: utf-8 -*-
 r"""
+.. _tut:modelling_bc:
 
 Modelling with Boundary Conditions
 ----------------------------------
@@ -40,7 +41,7 @@ grid = pg.createGrid(x=np.linspace(-1.0, 1.0, 21),
 
 ###############################################################################
 # Short test: setting single node dirichlet BC
-u = solve(grid, f=1., uB=[grid.node(2), 0.])
+u = solve(grid, f=1., bc={'Dirichlet': [grid.node(2), 0.]})
 
 ax, _ = pg.show(grid, u, label='Solution $u$',)
 show(grid, ax=ax)
@@ -56,7 +57,7 @@ dirichletBC = [[1, 1.0],                                     # left
                [grid.findBoundaryByMarker(4), uDirichlet]]   # bottom
 
 ###############################################################################
-# The BC are passed using the uBoundary keyword. Note that showMesh returns the
+# The BC are passed using the bc keyword dictionary. Note that showMesh returns the
 # created figure ax ax while drawMesh plots on it and it can also be used as
 # a class with plotting or decoration methods.
 u = solve(grid, f=1., bc={'Dirichlet': dirichletBC})
@@ -81,13 +82,13 @@ ax.set_ylim([-1.1, 1.1])
 #
 # Alternatively we can define the gradients of the solution on the boundary,
 # i.e., Neumann type BC. This is done with another map (marker, value) and
-# passed by the keyword duBoundary.
+# passed by bc Dictionary.
 neumannBC = [[1, -0.5],  # left
              [grid.findBoundaryByMarker(4), 2.5]]  # bottom
 
 dirichletBC = [3, 1.0]  # top
 
-u = solve(grid, f=0., duB=neumannBC, uB=dirichletBC)
+u = solve(grid, f=0., bc={'Dirichlet': dirichletBC, 'Neumann': neumannBC})
 
 ###############################################################################
 # Note that on boundary 4 (right) no BC is explicitly applied leading to

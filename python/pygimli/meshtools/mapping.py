@@ -27,7 +27,7 @@ def nodeDataToCellData(mesh, data):
                             str(mesh.nodeCount()) +
                             "got: " + str(len(data)), str(len(data[0])))
 
-    return pg.interpolate(mesh, data, destPos=mesh.cellCenters())
+    return pg.interpolate(mesh, data, mesh.cellCenters())
 
 
 def cellDataToNodeData(mesh, data, style='mean'):
@@ -59,7 +59,7 @@ def cellDataToNodeData(mesh, data, style='mean'):
     >>> celldata = np.array([1, 2, 3, 4])
     >>> nodedata = pg.meshtools.cellDataToNodeData(grid, celldata)
     >>> print(nodedata.array())
-    [ 1.   1.5  2.   2.   2.5  3.   3.   3.5  4. ]
+    [1.  1.5 2.  2.  2.5 3.  3.  3.5 4. ]
     """
     if len(data) != mesh.cellCount():
         raise BaseException("Dimension mismatch, expecting cellCount(): " +
@@ -248,16 +248,14 @@ def interpolateAlongCurve(curve, t, **kwargs):
     >>> topo = np.array([[-2., 0.], [-1., 0.], [0.5, 0.], [3., 2.], [4., 2.], [6., 1.], [10., 1.], [12., 1.]])
     >>> t = np.arange(15.0)
     >>> p = mt.interpolateAlongCurve(topo, t)
-    >>> _= axs[0][0].plot(topo[:,0], topo[:,1], '-x', mew=2)
-    >>> _= axs[0][0].plot(p[:,0], p[:,1], 'o', color='red') #doctest: +ELLIPSIS
+    >>> _= axs[0,0].plot(topo[:,0], topo[:,1], '-x', mew=2)
+    >>> _= axs[0,1].plot(p[:,0], p[:,1], 'o', color='red') #doctest: +ELLIPSIS
     >>>
     >>> p = mt.interpolateAlongCurve(topo, t, method='spline')
-    >>> _= axs[0][0].plot(p[:,0], p[:,1], '-o', color='black') #doctest: +ELLIPSIS
+    >>> _= axs[1,0].plot(p[:,0], p[:,1], '-o', color='black') #doctest: +ELLIPSIS
     >>>
     >>> p = mt.interpolateAlongCurve(topo, t, method='harmonic', nc=3)
-    >>> _= axs[0][0].plot(p[:,0], p[:,1], '-o', color='green') #doctest: +ELLIPSIS
-    >>>
-    >>> _= axs[0][0].set_aspect(1)
+    >>> _= axs[1,1].plot(p[:,0], p[:,1], '-o', color='green') #doctest: +ELLIPSIS
     >>>
     >>> pg.plt.show()
     >>> pg.wait()
@@ -306,6 +304,7 @@ def interpolateAlongCurve(curve, t, **kwargs):
             zC = curve[:, 2]
 
     if len(kwargs.keys()) > 0:
+        #interpolate more curve points to get a smooth line
         dTi = min(pg.utils.dist(pg.utils.diff(curve))) / 10.
         ti = np.arange(min(tCurve), max(tCurve)+dTi, dTi)
         xC = pg.interpolate(ti, tCurve, xC, **kwargs)
@@ -357,7 +356,6 @@ def tapeMeasureToCoordinates(tape, pos):
     pg.deprecated("tapeMeasureToCoordinates", "interpolateAlongCurve")
     return interpolateAlongCurve(tape, pos)
 
-
 def interpolate(*args, **kwargs):
     r"""Interpolation convinience function.
 
@@ -381,7 +379,7 @@ def interpolate(*args, **kwargs):
         args: :gimliapi:`GIMLI::Mesh`, :gimliapi:`GIMLI::Mesh`, iterable
             `outData = interpolate(outMesh, inMesh, vals)`
 
-            Datavalues vals can be scalar or vector for all nodes or cells in inMesh.
+            Data values vals can be scalar or vector for all nodes or cells in inMesh.
 
       Returns:
         Interpolated values
@@ -462,12 +460,30 @@ def interpolate(*args, **kwargs):
     if pgcore:
         if len(args) == 3: # args: outData = (inMesh, inData, outPos)
 
-            if isinstance(args[2], pg.R3Vector) or \
-               isinstance(args[2], pg.stdVectorRVector3):
-                return pg.core._pygimli_.interpolate(args[0], args[1],
+            if args[1].ndim == 2: # outData = (inMesh, vR3 )
+                if args[1].ndim == 2: # outData = (inMesh, vR3, vR3)
+
+                    outMat = pg.Matrix()
+                    pg.core._pygimli_.interpolate(args[0],
+                                                  inMat=np.array(args[1]).T,
+                                                  destPos=args[2],
+                                                  outMat=outMat,
+                                                  **kwargs)
+                    return np.array(outMat).T
+
+                # outData = (inMesh, vR, vR3)
+                return pg.core._pygimli_.interpolate(args[0],
+                                                     args[1],
                                                      destPos=args[2],
                                                      **kwargs)
         if len(args) == 4: # args: (inMesh, inData, outPos, outData)
+
+            if args[1].ndim == 1 and args[2].ndim == 1 and args[3].ndim == 1:
+                return pg.core._pygimli_.interpolate(args[0],
+                                                     inVec=args[1],
+                                                     x=args[2],
+                                                     y=args[3],
+                                                     **kwargs)
 
             if isinstance(args[1], pg.RMatrix) and \
                isinstance(args[3], pg.RMatrix):
@@ -484,11 +500,21 @@ def interpolate(*args, **kwargs):
                                                      outVec=args[3],
                                                      **kwargs)
 
+        if len(args) == 5:
+            if args[1].ndim == 1 and args[2].ndim == 1 and \
+               args[3].ndim == 1 and args[4].ndim == 1:
+                return pg.core._pygimli_.interpolate(args[0],
+                                                     inVec=args[1],
+                                                     x=args[2],
+                                                     y=args[3],
+                                                     z=args[4],
+                                                     **kwargs)
+
         return pg.core._pygimli_.interpolate(*args, **kwargs)
 
     if len(args) == 3:
 
-        if isinstance(args[0], pg.Mesh): # args: (inMesh, outMesh, data)
+        if isinstance(args[0], pg.Mesh): # args: (outMesh, inMesh, data)
             outMesh = args[0]
             inMesh = args[1]
             data = args[2]
@@ -514,6 +540,7 @@ def interpolate(*args, **kwargs):
                                       destPos=outMesh.positions())
             else:
                 print(inMesh)
+                print(outMesh)
                 raise Exception("Don't know how to interpolate data of size",
                                 str(len(data)))
 

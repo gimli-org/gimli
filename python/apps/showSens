@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
     This program is part of pygimli
@@ -9,18 +9,15 @@
 import sys
 import os
 
-import pygimli as g
-import pybert as b
+import pygimli as pg
 
 
 def exportSens(meshfile, sensMatrix, outFilename, dataID, tol=1e-5,
                save=False, saveTo='.'):
-    mesh = g.Mesh(meshfile)
+    mesh = pg.Mesh(meshfile)
     mesh.showInfos()
 
-    S = g.RMatrix(sensMatrix)
-    print(S.rows())
-    print(S.cols())
+    S = pg.RMatrix(sensMatrix)
 
     savePath = os.path.abspath(saveTo)
     try:
@@ -35,21 +32,21 @@ def exportSens(meshfile, sensMatrix, outFilename, dataID, tol=1e-5,
 
     if dataID == -1:
         for i in range(0, S.rows()):
-            d = b.prepExportSensitivityData(mesh, S[i](mesh.cellMarkers()), tol)
-            
+            d = pg.prepExportSensitivityData(mesh, S[i](mesh.cellMarkers()), tol)
+
             add = '0'*(len(str(S.rows()))-len(str(i)))
             name = os.path.join(savePath, outFilename + "-" + add + str(i) + ".vec")
 
             if save:
-                print(name)
-                g.save(d, name)
+                print("saving", name)
+                pg.save(d, name)
             mesh.addExportData(name, d)
     else:
-        d = b.prepExportSensitivityData(mesh, S[dataID](mesh.cellMarkers()), tol)
+        d = pg.prepExportSensitivityData(mesh, S[dataID](mesh.cellMarkers()), tol)
         name = os.path.join(savePath, outFilename + "-" + str(dataID) + ".vec")
         if save:
-            print(name)
-            g.save(d, name)
+            print("saving", name)
+            pg.save(d, name)
         mesh.addExportData(name, d)
 
     mesh.exportVTK(outFilename)
@@ -59,7 +56,7 @@ def main(argv):
     from optparse import OptionParser
 
     parser = OptionParser("usage: %prog [options] mesh",
-                          version="%prog: " + g.__version__)
+                          version="%prog: " + pg.__version__)
 
     parser.add_option("-v", "--verbose", dest="verbose", action="store_true", default=False,
                       help="Be verbose.")

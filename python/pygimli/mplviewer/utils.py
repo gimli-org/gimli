@@ -1,8 +1,7 @@
-# coding=utf-8
+# CODING=Utf-8
 """Plotting utilities used througout the mplviewer package."""
 
 import os
-
 import time
 
 import matplotlib.animation as animation
@@ -29,7 +28,9 @@ def updateAxes(ax, a=None):
     """For internal use."""
     if not holdAxes__:
         try:
-            plt.pause(0.1)
+            time.sleep(0.05)
+            # plt.pause seems to be broken in mpl:2.1
+            # plt.pause(0.1)
         except BaseException as _:
             print(ax, a)
 
@@ -39,12 +40,11 @@ def hold(val=1):
     pg.mplviewer.holdAxes__ = val
 
 
-def wait():
+def wait(**kwargs):
     """TODO WRITEME."""
-    time.sleep(0.1)
     # plt.pause seems to be broken in mpl:2.1
-    # plt.pause(0.1)
-    plt.show()
+    time.sleep(0.05)
+    plt.show(**kwargs)
 
 
 def adjustWorldAxes(ax):
@@ -59,7 +59,7 @@ def adjustWorldAxes(ax):
 
     ax.set_yticklabels(tickLabels)
     plt.tight_layout()
-    plt.pause(0.01)
+    time.sleep(0.05)
 
 
 def saveFigure(fig, filename, pdfTrim=False):
@@ -80,7 +80,7 @@ def saveAxes(ax, filename, adjust=False):
     if adjust:
         adjustWorldAxes(ax)
 
-    plt.pause(0.01)
+    time.sleep(0.05)
     saveFigure(ax.figure, filename)
 
 
@@ -234,3 +234,41 @@ def saveAnimation(mesh, data, out, vData=None, plc=None, label='', cMin=None,
         plt.pause(0.001)
 
     createAnimation(fig, animate, int(len(data)), dpi, out)
+
+
+def plotLines(ax, line_filename, linewidth=1.0, step=1):
+    """Read lines from file and plot over model."""
+    xz = np.loadtxt(line_filename)
+    n_points = xz.shape[0]
+    if step == 2:
+        for i in range(0, n_points, step):
+            x = xz[i:i + step, 0]
+            z = xz[i:i + step, 1]
+            ax.plot(x, z, 'k-', linewidth=linewidth)
+    if step == 1:
+        ax.plot(xz[:, 0], xz[:, 1], 'k-', linewidth=linewidth)
+
+
+def createTwinX(ax):
+    """Utility function to create or return an existing a twin x axes for ax."""
+    return _createTwin(ax, 'twinx')
+
+
+def createTwinY(ax):
+    """Utility function to create or return an existing a twin x axes for ax."""
+    return _createTwin(ax, 'twiny')
+
+
+def _createTwin(ax, funct):
+    """Utility function to create or return an existing a twin x axes for ax."""
+    tax = None
+    for other_ax in ax.figure.axes:
+        if other_ax is ax:
+            continue
+        if other_ax.bbox.bounds == ax.bbox.bounds:
+            tax = other_ax
+
+    if tax is None:
+        tax = getattr(ax, funct)()
+
+    return tax

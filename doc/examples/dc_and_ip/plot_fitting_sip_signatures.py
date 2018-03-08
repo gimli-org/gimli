@@ -22,17 +22,15 @@ Z1 = ColeColeRho(f, rho=1, m=0.1, tau=0.5, c=0.5)
 # term2
 Z2 = ColeColeRho(f, rho=1, m=0.25, tau=1e-6, c=1.0)
 # create sum
-rho0 = 100
+rho0 = 100 # (Ohm m)
 Z = rho0 * (Z1 + Z2)
 amplitude = np.abs(Z)
 phase = np.angle(Z)
 
-sip = SIPSpectrum(
-    f=f,
-    amp=np.abs(Z),
-    # note the minus sign: we need to provide -phase[rad]
-    phi=-np.angle(Z),
-)
+sip = SIPSpectrum(f=f,
+                  amp=np.abs(Z),
+                  # note the minus sign: we need to provide -phase[rad]
+                  phi=-np.angle(Z))
 sip.showData()
 sip.showDataKK()  # check Kramers-Kronig relations
 
@@ -52,11 +50,10 @@ Z = ColeColeRho(f, rho=100, m=m[0], tau=tau, c=0.5)
 amplitude = np.abs(Z)
 phase = np.angle(Z)
 
-sip = SIPSpectrum(
-    f=f,
-    amp=np.abs(Z),
-    # note the minus sign: we need to provide -phase[rad]
-    phi=-np.angle(Z),
+sip = SIPSpectrum(f=f,
+                  amp=np.abs(Z),
+                  # note the minus sign: we need to provide -phase[rad]
+                  phi=-np.angle(Z),
 )
 sip.fitColeCole(useCond=False)  # works for both rho and sigma models
 sip.showAll()  # save=True)
@@ -75,7 +72,7 @@ Z1 = ColeColeRho(f, rho=1, m=0.1, tau=0.5, c=0.5)
 # term2
 Z2 = ColeColeRho(f, rho=1, m=0.25, tau=1e-6, c=1.0)
 # create sum
-rho0 = 100
+rho0 = 100 #(Ohm m)
 Z = rho0 * (Z1 + Z2)
 amplitude = np.abs(Z)
 phase = np.angle(Z)

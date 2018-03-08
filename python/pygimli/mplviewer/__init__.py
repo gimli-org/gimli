@@ -12,7 +12,9 @@ from .utils import (hold,
                     createAnimation,
                     saveAnimation,
                     setOutputStyle,
-                    setPlotStuff)
+                    setPlotStuff,
+                    plotLines,
+                    createTwinX, createTwinY)
 
 from .boreholes import BoreHole, BoreHoles, create_legend
 
@@ -25,12 +27,12 @@ from .colorbar import (createColorBar,
                        cmapFromName,
                        findAndMaskBestClim,
                        setCbarLevels,
+                       setMappableValues,
                        setMappableData)
 
 from .meshview import (CellBrowser,
                        createMeshPatches,
                        createTriangles,
-                       draw1DColumn,
                        drawField,
                        drawMesh,
                        drawMeshBoundaries,
@@ -42,8 +44,7 @@ from .meshview import (CellBrowser,
                        drawSelectedMeshBoundariesShadow,
                        drawSensors,
                        drawStreamLines,
-                       drawStreams,
-                       plotLines)
+                       drawStreams)
 
 from .overlayimage import (cacheFileName,
                            deg2MapTile,
@@ -54,16 +55,19 @@ from .overlayimage import (cacheFileName,
 # TODO example scripts for the following and refactor is needed
 # maybe ploter should named show or draw
 from .dataview import (drawSensorAsMarker,  # dups to meshview??
+                       showVecMatrix,
                        generateMatrix,
                        patchMatrix,
                        patchValMap,
                        plotDataContainerAsMatrix,
                        plotMatrix,
-                       plotVecMatrix)
+                       plotVecMatrix,
+                       )
 
 # which of these do we actually need?
 from .modelview import (drawModel1D,
                         showmymatrix,  # needed ?
+                        draw1DColumn, # needed or redundant ?
                         draw1dmodel,   # needed or redundant ?
                         draw1dmodel__Redundant,  # needed or redundant ?
                         show1dmodel,  # needed or redundant ?

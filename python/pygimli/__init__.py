@@ -54,56 +54,12 @@ if "conda" in __path__[0]:
     except ImportError:
         pass
 ################################################################################
-
 from . import core
 from ._version import get_versions
 from .core import *
 from .testing import test
 
-import logging
-
-logger = logging.getLogger('pyGIMLi')
-
-def setDebug(d):
-    if d:
-        core._pygimli_.setDebug(True)
-        logger.setLevel(logging.DEBUG)
-        logging.getLogger('Core').setLevel(logging.DEBUG)
-        logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                    datefmt='%m/%d/%Y %H:%M:%S',
-                    #filename='pygimli.log'
-                    )
-        logger.debug("Set debug mode: on")
-    else:
-        core._pygimli_.setDebug(False)
-        logging.basicConfig(level=logging.INFO,
-                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                    datefmt='%m/%d/%Y %H:%M:%S',
-                    #filename='pygimli.log'
-                    )
-        logger.debug("Set debug mode: off")
-        logging.getLogger('Core').setLevel(logging.INFO)
-        logger.setLevel(logging.INFO)
-
-if '--debug' in sys.argv:
-    setDebug(True)
-else:
-    setDebug(False)
-
-
-def deprecated(msg, hint):
-    logger.warn(msg + ", is deprecated, use:" + hint + " instead.")
-
-def renameKwarg(old, new, kwargs):
-    if old in kwargs:
-        logger.warn("Keyword argument name changed from '" + old + \
-                 "' to '" + new + "'")
-        kwargs[new] = kwargs.pop(old)
-
-def warnNonEmptyArgs(kwargs):
-    if len(kwargs) > 0:
-        logger.warn("unrecognized keyword arguments", kwargs)
+from ._logger import *
 
 __version__ = get_versions()['version']
 del get_versions

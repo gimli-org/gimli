@@ -85,15 +85,12 @@ def createRectangle(start=None, end=None, pos=None, size=None, **kwargs):
 
     Examples
     --------
-    >>> from pygimli.meshtools import createRectangle
-    >>> from pygimli.mplviewer import drawMesh
     >>> import matplotlib.pyplot as plt
+    >>> import pygimli as pg
+    >>> from pygimli.meshtools import createRectangle
     >>> rectangle = createRectangle(start=[4, -4], end=[6, -6],
     ...                             marker=4, area=0.1)
-    >>>
-    >>> fig, ax = plt.subplots()
-    >>> drawMesh(ax, rectangle)
-    >>> plt.show()
+    >>> _ = pg.show(rectangle)
     """
     if not ((start and end) or (pos and size)):
         raise BaseException("createRectangle pls. give either start and end"
@@ -271,7 +268,7 @@ def createCircle(pos=None, radius=1, segments=12, start=0, end=2. * math.pi,
     ...                       end=1.5*math.pi, isClosed=False)
     >>> plc = plc.mergePLC([c0, c1, c2])
     >>> fig, ax = plt.subplots()
-    >>> drawMesh(ax, plc)
+    >>> drawMesh(ax, plc, fillRegion=False)
     >>> plt.show()
     """
     if pos is None:
@@ -355,7 +352,7 @@ def createLine(start, end, segments, **kwargs):
     ...                    leftDirection=True)
     >>>
     >>> ax, _ = pg.show(mt.createMesh([w, l1, l2,]))
-    >>> ax, _ = pg.show([w, l1, l2,], ax=ax)
+    >>> ax, _ = pg.show([w, l1, l2,], ax=ax, fillRegion=False)
     >>> pg.wait()
     """
     poly = pg.Mesh(2)
@@ -428,11 +425,13 @@ def createPolygon(verts, isClosed=False, isHole=False, **kwargs):
     for v in verts:
         poly.createNodeWithCheck(v, warn=True)
 
+    boundaryMarker = kwargs.pop('boundaryMarker', 1)
     marker = kwargs.pop('marker', None)
     area = kwargs.pop('area', 0)
     isHole = kwargs.pop('isHole', False)
 
-    polyCreateDefaultEdges_(poly, isClosed=isClosed, isHole=False)
+    polyCreateDefaultEdges_(poly, isClosed=isClosed, isHole=False,
+                            boundaryMarker=boundaryMarker)
 
     if isClosed and marker is not None or area > 0:
         if isHole:
@@ -445,10 +444,11 @@ def createPolygon(verts, isClosed=False, isHole=False, **kwargs):
 
     # set a regionmarker here .. somewhere
 
+    pg.warnNonEmptyArgs(kwargs)
     return poly
 
 
-def mergePLC(pols):
+def mergePLC(pols, tol=1e-3):
     """Merge multiply polygons.
 
     Merge multiply polygons into a single polygon.
@@ -461,6 +461,9 @@ def mergePLC(pols):
     ----------
     pols: [:gimliapi:`GIMLI::Mesh`]
         List of polygons that need to be merged
+
+    tol : double
+        Tolerance to check for duplicated nodes. [1e-3]
 
     Returns
     -------
@@ -491,7 +494,7 @@ def mergePLC(pols):
     for p in pols:
         nodes = []
         for n in p.nodes():
-            nn = poly.createNodeWithCheck(n.pos())
+            nn = poly.createNodeWithCheck(n.pos(), tol)
             if n.marker() != 0:
                 nn.setMarker(n.marker())
             nodes.append(nn)
@@ -1211,7 +1214,10 @@ def polyCreateWorld(filename, x=None, depth=None, y=None, marker=0,
     """Create the PLC of a default world.
 
     Create the PLC of a default world.
+
     Out of core wrapper for dcfemlib::polytools::polyCreateWorld
+
+    # TODO need to be converted to the pyhon only tools.
 
     Parameters
     ----------
@@ -1219,7 +1225,6 @@ def polyCreateWorld(filename, x=None, depth=None, y=None, marker=0,
     Returns
     -------
     """
-    raise BaseException('obsolete use mesh methods directly')
     if depth is None:
         print("Please specify worlds depth.")
         return

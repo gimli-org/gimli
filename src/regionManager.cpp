@@ -194,7 +194,6 @@ void Region::countParameter(Index start){
     //std::cout << WHERE_AM_I << " " << marker_ << " " << parameterCount_ << " " << startParameter_ << " " << endParameter_ <<  std::endl;
 }
 
-
 //################ Start values
 void Region::setStartModel(const RVector & start){
     setBackground(false);
@@ -280,6 +279,7 @@ void Region::fillConstraints(RSparseMapMatrix & C, Index startConstraintsID){
 
     double cMixRatio = 1.0; // for mixing 1st or 2nd order with 0th order (constraintTypes 10 and 20)
     if (constraintType_ == 10 || constraintType_ == 20) cMixRatio = 1.0; //**retrieve from properties!!!
+
     if (constraintType_ == 0 || constraintType_ == 20){ //purely 0th or mixed 2nd+0th
         for (size_t i = 0; i < parameterCount_; i++) {
             C[startConstraintsID + i][startParameter_ + i] = cMixRatio;
@@ -308,17 +308,17 @@ void Region::fillConstraints(RSparseMapMatrix & C, Index startConstraintsID){
     }
     //** 1st order constraints (opt. combined with 0th order)
     Index cID = startConstraintsID;
-         for (std::vector < Boundary * >::iterator it = bounds_.begin(), itmax = bounds_.end();
+    for (std::vector < Boundary * >::iterator it = bounds_.begin(), itmax = bounds_.end();
         it != itmax; it ++){
 
         leftParaId = -1;
         rightParaId = -1;
-        if ((*it)->leftCell() ) leftParaId  = (*it)->leftCell()->marker();
+        if ((*it)->leftCell()) leftParaId  = (*it)->leftCell()->marker();
         if ((*it)->rightCell()) rightParaId = (*it)->rightCell()->marker();
 
         //if ( leftParaId > -1 && rightParaId > -1 && leftParaId != rightParaId) {
         if (leftParaId >= (int)startParameter_ && leftParaId < (int)endParameter_ &&
-             rightParaId >= (int)startParameter_ && rightParaId < (int)endParameter_ &&
+            rightParaId >= (int)startParameter_ && rightParaId < (int)endParameter_ &&
                 leftParaId != rightParaId){
             C[cID][leftParaId] = 1;
             C[cID][rightParaId] = -1;

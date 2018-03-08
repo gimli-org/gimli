@@ -290,6 +290,13 @@ RVector MeshEntity::dNdL(const RVector3 & rst, uint i) const {
     return ret;
 }
 
+RMatrix MeshEntity::dNdL(const RVector3 & rst) const {
+    RMatrix ret;
+    ret.push_back(this->dNdL(rst, 0));
+    ret.push_back(this->dNdL(rst, 1));
+    ret.push_back(this->dNdL(rst, 2));
+    return ret;
+}
 
 double MeshEntity::pot(const RVector3 & xyz, const RVector & u) const {
     return sum(u(this->ids()) * this->N(shape().rst(xyz)));
