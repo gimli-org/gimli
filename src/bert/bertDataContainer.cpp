@@ -73,8 +73,8 @@ void DataContainerERT::initTokenTranslator(){
     l["eca"] = "ECa EC_a";
     l["r"] = "r rho r(Ohm) imp z u/i"; //** rho is confusing!
 // done in base l["err"] = "err std error err/%";
-    l["ip"] = "ip ip/mrad ip/� phase phase/mrad phase/� phi phi/mrad phi/�";
-    l["iperr"] = "iperr iperr/mrad iperr/� phierr phierr/mrad phierr/�";
+    l["ip"] = "ip ip/mrad ip/° phase phase/mrad phase/° phi phi/mrad phi/°";
+    l["iperr"] = "iperr iperr/mrad iperr/° phierr phierr/mrad phierr/°";
     l["u"] = "u u/V u(V) u/mV u(mV) v v/V v(V) v/mV v(mV)";
     l["i"] = "i i/A i(A) i/mA i(mA)";
     l["k"] = "k";

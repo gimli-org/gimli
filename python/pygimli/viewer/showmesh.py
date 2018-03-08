@@ -154,7 +154,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
 
     colorBar : bool [None], Colorbar
         Create and show a colorbar. If colorBar is a valid colorbar then only
-        his values will be updated.
+        its values will be updated.
 
     label : str
         Set colorbar label. If set colorbar is toggled to True. [None]
@@ -207,6 +207,8 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
 
     colobar : matplotlib.colorbar
     """
+    renameKwarg('cmap', 'cMap', kwargs)
+
     if ax is None:
         ax = plt.subplots()[1]
 
@@ -291,13 +293,9 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
                 elif len(data) == mesh.nodeCount():
                     gci = drawField(ax, mesh, data, **kwargs)
 
-                cmap = kwargs.pop('cmap', None)
                 cMap = kwargs.pop('cMap', None)
                 if cMap is not None:
-                    cmap = cMap
-
-                if cmap is not None:
-                    gci.set_cmap(cmapFromName(cmap))
+                    gci.set_cmap(cmapFromName(cMap))
 
             except BaseException as e:
                 print("Exception occured: " + e)
@@ -329,7 +327,6 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
         ax.set_ylim(mesh.ymin(), mesh.ymax())
         ax.set_aspect('equal')
 
-
     cbar = None
 
     if label is not None and colorBar is None:
@@ -337,7 +334,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
 
     if colorBar and validData:
         # , **kwargs) # causes problems!
-        labels = ['cMin', 'cMax', 'nLevs', 'orientation', 'pad']
+        labels = ['cMin', 'cMax', 'nLevs', 'orientation', 'pad', 'cMap']
         subkwargs = {key: kwargs[key] for key in labels if key in kwargs}
 
         if colorBar is True or colorBar is 1:

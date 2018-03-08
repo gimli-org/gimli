@@ -174,7 +174,8 @@ def findColorBar(ax):
     # return None
 
 
-def updateColorBar(cbar, gci=None, cMin=None, cMax=None, nLevs=5, label=None):
+def updateColorBar(cbar, gci=None, cMin=None, cMax=None, nLevs=5,
+                   label=None, cMap=None):
     """Update colorbar values.
 
     Update limits and label of a given colorbar.
@@ -184,6 +185,16 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, nLevs=5, label=None):
         pass
         # check the following first
         # cbar.on_mappable_changed(gci)
+
+
+    if cMap is not None:
+        if isinstance(cMap, str):
+            cMap = cmapFromName(cMap, ncols=256, bad=[1.0, 1.0, 1.0, 0.0])
+
+        print("setCmap", cMap)
+        cbar.mappable.set_cmap(cMap)
+        #cbar.on_mappable_changed(gci)
+        #gci.set_cmap(cmapFromName(cMap))
 
     setCbarLevels(cbar, cMin, cMax, nLevs)
 
@@ -231,10 +242,9 @@ def createColorBar(patches, cMin=None, cMax=None, nLevs=5, label=None,
 
     patches.set_clim(vmin=cMin, vmax=cMax)
     cbar = cbarTarget.colorbar(patches, cax=cax, orientation=orientation)
-    if label is not None:
-        cbar.set_label(label)
 
-    updateColorBar(cbar, cMin=cMin, cMax=cMax, nLevs=nLevs, label=label)
+    updateColorBar(cbar, cMin=cMin, cMax=cMax, nLevs=nLevs, label=label,
+                   **kwargs)
 
     return cbar
 
@@ -285,12 +295,10 @@ def createColorBarOnly(cMin=1, cMax=100, logScale=False, cMap=None, nLevs=5,
     cbar = mpl.colorbar.ColorbarBase(ax, norm=norm, cmap=cmap,
                                      orientation=orientation, **kwargs)
 
-    setCbarLevels(cbar, cMin=None, cMax=None, nLevs=nLevs)
-
     #        cbar.labelpad = -20
     #        cbar.ax.yaxis.set_label_position('left')
-    if label is not None:
-        cbar.set_label(label)
+    updateColorBar(cbar, cMin=cMin, cMax=cMax, nLevs=nLevs, label=label
+                   **kwargs)
 
     if savefig is not None:
         saveFigure(fig, savefig)
