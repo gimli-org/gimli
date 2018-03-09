@@ -444,6 +444,12 @@ public:
 
     virtual RVector3 norm() const;
 
+    /*!* Return true if the ray intersects the shape.
+     * On boundary means inside too. The intersection position is stored in pos.
+     * */
+    virtual bool intersectRay(const RVector3 & start, const RVector3 & dir,
+                              RVector3 & pos);
+
 protected:
 
     /*! Interface to get the size i.e. area of this \ref TriangleShape */
@@ -497,6 +503,9 @@ public:
 //     virtual RMatrix dNdrst(const RVector3 & rst) const;
 //
     virtual RVector3 norm() const;
+
+    virtual bool intersectRay(const RVector3 & start, const RVector3 & dir,
+                              RVector3 & pos);
 
 protected:
     virtual double domainSize_() const { return area(); }

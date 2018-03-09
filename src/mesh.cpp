@@ -570,7 +570,6 @@ Cell * Mesh::findCell(const RVector3 & pos, size_t & count,
     return cell;
 }
 
-
 std::vector < Cell * > Mesh::findCellsAlongRay(const RVector3 & start,
                                                const RVector3 & end,
                                                R3Vector & pos) const {
@@ -578,11 +577,19 @@ std::vector < Cell * > Mesh::findCellsAlongRay(const RVector3 & start,
     std::vector < Cell * > cells;
 
     RVector3 dir(end- start);
+    dir.normalize();
+
     RVector3 inPos(start);
+
+    if (!this->findCell(inPos, false)){
+        inPos = tree_->nearest(inPos)->pos();
+    }
+
     pos.push_back(inPos);
 
+    double stepTol = 1e-1;
     while (inPos != end){
-        Cell *c = this->findCell(inPos + dir*1e-4);
+        Cell *c = this->findCell(inPos + dir*stepTol, false);
         if (!c) break;
 
         RVector3 outPos(false);
@@ -590,7 +597,7 @@ std::vector < Cell * > Mesh::findCellsAlongRay(const RVector3 & start,
             Shape * s = c->boundary(i)->pShape();
 
             if (s->intersectRay(start, dir, outPos)){
-                if (outPos != inPos){
+                if (outPos.dist(inPos) > stepTol){
                     outPos.setValid(true);
                     break;
                 } else {
