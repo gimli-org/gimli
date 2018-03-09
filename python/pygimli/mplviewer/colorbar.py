@@ -191,10 +191,7 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, nLevs=5,
         if isinstance(cMap, str):
             cMap = cmapFromName(cMap, ncols=256, bad=[1.0, 1.0, 1.0, 0.0])
 
-        print("setCmap", cMap)
         cbar.mappable.set_cmap(cMap)
-        #cbar.on_mappable_changed(gci)
-        #gci.set_cmap(cmapFromName(cMap))
 
     setCbarLevels(cbar, cMin, cMax, nLevs)
 
