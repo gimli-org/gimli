@@ -207,7 +207,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
 
     colobar : matplotlib.colorbar
     """
-    renameKwarg('cmap', 'cMap', kwargs)
+    pg.renameKwarg('cmap', 'cMap', kwargs)
 
     if ax is None:
         ax = plt.subplots()[1]

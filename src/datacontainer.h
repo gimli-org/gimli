@@ -141,6 +141,12 @@ public:
     inline const RVector3 & sensorPosition(double i) const {
         return sensorPoints_[(uint)i]; }
 
+    /*! Return a single sensor position. Syntactic sugar.*/
+    inline const RVector3 & sensor(long i) const {
+        ASSERT_RANGE(SIndex(i), 0, this->sensorCount())
+        return sensorPoints_[i];
+    }
+
     /*! Create a valid sensor at a given position and returns the id of the sensor.
         Is there already a sensor at the given position NO new sensor will be created.
         Atm. brute force search with a snapping distance of tolerance is done.
