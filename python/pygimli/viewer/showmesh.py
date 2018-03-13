@@ -243,7 +243,6 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
             kwargs["cMin"] = -0.5
             kwargs["cMax"] = len(uniquemarkers) - 0.5
             data = np.arange(len(uniquemarkers))[uniqueidx]
-            showMesh = True
 
     if data is None:
         showMesh = True
@@ -298,7 +297,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
                     gci.set_cmap(cmapFromName(cMap))
 
             except BaseException as e:
-                print("Exception occured: " + e)
+                print("Exception occured: ", e)
                 print("Data: ", min(data), max(data), pg.haveInfNaN(data))
                 print("Mesh: ", mesh)
                 drawMesh(ax, mesh, **kwargs)
