@@ -309,24 +309,31 @@ std::string logStr_(LogType type){
 #endif
 
 void log(LogType type, const std::string & msg){
-    #if defined(RUN_FROM_PY) && defined(PYTHON_FOUND) && not defined(WIN32)
+    #if defined(PYTHON_FOUND) && not defined(WIN32)
+    //#if defined(RUN_FROM_PY) && defined(PYTHON_FOUND) && not defined(WIN32)
     static PyObject *logging = NULL;
     static PyObject *logger = NULL;
     static PyObject *string = NULL;
 
-    logging = PyImport_ImportModule("logging");
-    //logging = PyImport_ImportModuleNoBlock("logging");
+    if (Py_IsInitialized()){ // only use python logger if called from python runtime
 
-    if (logging == NULL){
-        // running native? no python runtime?);
-            std::cout << logStr_(type) << ":" << msg << std::endl;
+        logging = PyImport_ImportModule("logging");
+        //logging = PyImport_ImportModuleNoBlock("logging");
+
+        if (logging == NULL){
+            // running native? no python runtime?);
+                std::cout << logStr_(type) << ":" << msg << std::endl;
+        } else {
+
+            logger = PyObject_CallMethod(logging, "getLogger", "s", "Core");
+            string = Py_BuildValue("s", msg.c_str());
+            PyObject_CallMethod(logger, logStr_(type).c_str(), "O", string);
+            Py_DECREF(string);
+        }
     } else {
-
-        logger = PyObject_CallMethod(logging, "getLogger", "s", "Core");
-        string = Py_BuildValue("s", msg.c_str());
-        PyObject_CallMethod(logger, logStr_(type).c_str(), "O", string);
-        Py_DECREF(string);
+        std::cout << logStr_(type) << ": " << msg << std::endl;
     }
+
     #else
         std::cout << logStr_(type) << ": " << msg << std::endl;
     #endif
