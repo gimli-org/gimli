@@ -308,8 +308,7 @@ def drawModel(ax, mesh, data=None, logScale=True, cMin=None, cMax=None,
                          **kwargs)
 
     else:
-        gci = pg.mplviewer.createMeshPatches(ax, mesh, verbose=verbose,
-                                             **kwargs)
+        gci = pg.mplviewer.createMeshPatches(ax, mesh, verbose=verbose)
         ax.add_collection(gci)
 
         cMap = kwargs.pop('cMap', None)
@@ -555,7 +554,7 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
     ...                            marker=10,  boundaryMarker=10, area=0.1)
     >>> fig, ax = plt.subplots()
     >>> geom = mt.mergePLC([world, block])
-    >>> pg.mplviewer.drawPLC(ax, geom, markers=True)
+    >>> pg.mplviewer.drawPLC(ax, geom)
     """
     #    eCircles = []
     cols = []

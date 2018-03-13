@@ -199,7 +199,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
     >>> world = mt.createWorld(start=[-10, 0], end=[10, -10],
     ...                        layers=[-3, -7], worldMarker=False)
     >>> mesh = mt.createMesh(world, quality=32, area=0.2, smooth=[1, 10])
-    >>> pg.viewer.showMesh(mesh, markers=True)
+    >>> _ = pg.viewer.showMesh(mesh, markers=True)
 
     Returns
     -------

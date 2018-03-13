@@ -174,11 +174,30 @@ def findColorBar(ax):
     # return None
 
 
-def updateColorBar(cbar, gci=None, cMin=None, cMax=None, nLevs=5,
-                   label=None, cMap=None):
+def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
+                   logScale=False, nLevs=5, label=None):
     """Update colorbar values.
 
     Update limits and label of a given colorbar.
+
+    Parameters
+    ----------
+    cbar: matplotlib colorbar
+
+    gci : matplotlib graphical instance
+
+    cMin: float
+
+    cMax: float
+
+    cLog: bool
+
+    cMap: matplotlib colormap
+
+    nLevs: int
+
+    label: str
+
     """
     # print("update cbar:", cMin, cMax, label)
     if gci is not None:
@@ -186,6 +205,9 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, nLevs=5,
         # check the following first
         # cbar.on_mappable_changed(gci)
 
+
+    if logScale:
+        print("logScale:", logScale)
 
     if cMap is not None:
         if isinstance(cMap, str):
@@ -201,8 +223,7 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, nLevs=5,
     return cbar
 
 
-def createColorBar(patches, cMin=None, cMax=None, nLevs=5, label=None,
-                   orientation='horizontal', **kwargs):
+def createColorBar(gci, orientation='horizontal', size=0.2, pad=None, **kwargs):
     """Create a Colorbar.
 
     Shortcut to create a matplotlib colorbar within the ax for a given
@@ -210,9 +231,18 @@ def createColorBar(patches, cMin=None, cMax=None, nLevs=5, label=None,
 
     Parameters
     ----------
+
+    gci : matplotlib graphical instance
+
+    orientation : string
+
+    size : float
+
+    pad : float
+
+
     **kwargs :
-        * size : with or height of the colobar
-        * pad : padding distance from ax
+        Forwarded to updateColorBar
     """
     cbarTarget = plt
     cax = None
@@ -220,28 +250,27 @@ def createColorBar(patches, cMin=None, cMax=None, nLevs=5, label=None,
     #    if hasattr(patches, 'figure'):
     #       cbarTarget = patches.figure
 
-    if hasattr(patches, 'ax'):
-        divider = make_axes_locatable(patches.ax)
-    if hasattr(patches, 'axes'):
-        divider = make_axes_locatable(patches.axes)
-    elif hasattr(patches, 'get_axes'):
-        divider = make_axes_locatable(patches.get_axes())
+    if hasattr(gci, 'ax'):
+        divider = make_axes_locatable(gci.ax)
+    if hasattr(gci, 'axes'):
+        divider = make_axes_locatable(gci.axes)
+    elif hasattr(gci, 'get_axes'):
+        divider = make_axes_locatable(gci.get_axes())
 
     if divider:
         if orientation == 'horizontal':
-            size = kwargs.pop('size', 0.2)
-            pad = kwargs.pop('pad', 0.5)
+            if pad is None:
+                pad = 0.5
             cax = divider.append_axes("bottom", size=size, pad=pad)
         else:
-            size = kwargs.pop('size', 0.2)
-            pad = kwargs.pop('pad', 0.1)
+            if pad is None:
+                pad = 0.1
             cax = divider.append_axes("right", size=size, pad=pad)
 
-    patches.set_clim(vmin=cMin, vmax=cMax)
-    cbar = cbarTarget.colorbar(patches, cax=cax, orientation=orientation)
+    #gci.set_clim(vmin=cMin, vmax=cMax)
+    cbar = cbarTarget.colorbar(gci, cax=cax, orientation=orientation)
 
-    updateColorBar(cbar, cMin=cMin, cMax=cMax, nLevs=nLevs, label=label,
-                   **kwargs)
+    updateColorBar(cbar, gci=gci, **kwargs)
 
     return cbar
 
