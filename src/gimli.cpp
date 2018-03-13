@@ -309,7 +309,7 @@ std::string logStr_(LogType type){
 #endif
 
 void log(LogType type, const std::string & msg){
-    #if defined(PYTHON_FOUND) && not defined(WIN32)
+    #if defined(RUN_FROM_PY) && defined(PYTHON_FOUND) && not defined(WIN32)
     static PyObject *logging = NULL;
     static PyObject *logger = NULL;
     static PyObject *string = NULL;

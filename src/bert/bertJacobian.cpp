@@ -47,10 +47,11 @@ public:
                          const std::map< long, uint >  & currPatternIdx,
                          const RVector                 & weights,
                          const RVector                 & k,
+                         bool calc1,
                          bool verbose)
     : BaseCalcMT(verbose), S_(&S), para_(&para), //cellMapIndex_ (&cellMapIndex),
     data_(&data), pots_(&pots), currPatternIdx_(&currPatternIdx),
-    weights_(&weights), k_(&k){
+    weights_(&weights), k_(&k), calc1_(calc1){
         nData_ = data.size();
         nElecs_ = data.sensorCount();
     }
@@ -58,16 +59,12 @@ public:
     virtual ~CreateSensitivityColMT(){}
 
     virtual void calc(Index tNr=0){
-        if (getEnvironment("SENSMAT1", false, true)){
+
+        if (calc1_){
             calc1(tNr);
         }else {
             calc2(tNr);
         }
-//        if (getEnvironment("SENSMAT2", false, true)){
-//            calc2(tNr);
-//        }else {
-//            calc1(tNr);
-//        }
     }
 
     virtual void calc2(Index tNr=0){
@@ -259,6 +256,7 @@ protected:
     const RVector                   * k_;
     uint                            nData_;
     uint                            nElecs_;
+    bool                            calc1_;
 
 };
 
@@ -338,6 +336,7 @@ MEMINFO
         matrixClusterIds.clear();
         matrixClusterIds.push_back(std::pair < Index, Index >(nData, nModel));
 
+        bool calc1 = getEnvironment("SENSMAT1", false, true);
         for (uint i = 0; i < nModel; i += modelCluster ){
 MEMINFO
             Index start = i;
@@ -361,7 +360,9 @@ MEMINFO
             distributeCalc(CreateSensitivityColMT< ValueType >(S, cellsCluster,
                                                                data, pots,
                                                                currPatternIdx,
-                                                               weights, k, verbose),
+                                                               weights, k,
+                                                               calc1,
+                                                               verbose),
                            cellsCluster.size(), nThreads, verbose);
 
 MEMINFO
@@ -398,10 +399,10 @@ MEMINFO
             std::cout << "): " << swatch.duration() << ":";
 //swatch.stop(verbose);
         }
-
+        bool calc1 = getEnvironment("SENSMAT1", false, true);
         distributeCalc(CreateSensitivityColMT< ValueType >(S, cells, data,
                                                            pots, currPatternIdx,
-                                                           weights, k, verbose),
+                                                           weights, k, calc1, verbose),
                         cells.size(), nThreads, verbose);
          if (verbose){
              swatch.stop(verbose);
