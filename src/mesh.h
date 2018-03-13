@@ -579,15 +579,15 @@ public:
      */
     void addExportData(const std::string & name, const RVector & data);
 
-    /*! Return the data with a given name.
+    /*! DEPRECATED Return the data with a given name.
      * If there is no such data an exception is thrown.*/
     RVector exportData(const std::string & name) const;
 
-    /*! Return the full data map read only. */
+    /*! DEPRECATED  Return the full data map read only. */
     const std::map< std::string, RVector > & exportDataMap() const {
         return exportDataMap_; }
 
-    /*! Set the full data map.*/
+    /*! DEPRECATED Set the full data map.*/
     void setExportDataMap(const std::map< std::string, RVector > & eMap) {
         exportDataMap_ = eMap; }
 
@@ -599,15 +599,29 @@ public:
         addExportData(name+"-Im", imag(data));
     }
 
-    /*!*/
+    /*! Add data to the mesh that will be saved with by using the binary mesh
+     * format v.2. or exported with the appropriate name in VTK format,
+     * if the size of data equals the amount of nodes, cells or boundaries.
+     */
     void addData(const std::string & name, const RVector & data){ addExportData(name, data); }
-    /*!*/
-    RVector data(const std::string & name) const { return exportData(name); }
-    /*!*/
-    bool haveData(const std::string & name) const { return exportDataMap_.count(name) > 0; }
-    /*!*/
-    const std::map< std::string, RVector > & dataMap() const { return exportDataMap_; }
 
+    /*! Return the data with a given name.
+     * If there is no such data an exception is thrown.*/
+    RVector data(const std::string & name) const { return exportData(name); }
+
+    /*! Return True if date with such a name exists.*/
+    bool haveData(const std::string & name) const {
+        return exportDataMap_.count(name) > 0;
+    }
+
+    /*! Return the full data map read only. */
+    const std::map< std::string, RVector > & dataMap() const {
+        return exportDataMap_;
+    }
+    /*! Replace the datamap by m */
+    void setDataMap(const std::map< std::string, RVector > m) {
+        exportDataMap_ = m;
+    }
     /*! Print data map info.*/
     void dataInfo() const;
 

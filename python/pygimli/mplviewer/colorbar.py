@@ -205,9 +205,24 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
         # check the following first
         # cbar.on_mappable_changed(gci)
 
+    vals = cbar.mappable.get_array()
+
+    if cMax is None:
+        cMax = max(vals)
+
+    if cMin is None:
+        cMin = min(vals)
 
     if logScale:
-        print("logScale:", logScale)
+        if cMin < 1e-12:
+            cMin = min(filter(lambda _x: _x > 0.0, vals))
+
+        norm = mpl.colors.LogNorm(vmin=cMin, vmax=cMax)
+    else:
+        norm = mpl.colors.Normalize(vmin=cMin, vmax=cMax)
+
+    cbar.set_norm(norm)
+    cbar.mappable.set_norm(norm)
 
     if cMap is not None:
         if isinstance(cMap, str):
@@ -270,7 +285,8 @@ def createColorBar(gci, orientation='horizontal', size=0.2, pad=None, **kwargs):
     #gci.set_clim(vmin=cMin, vmax=cMax)
     cbar = cbarTarget.colorbar(gci, cax=cax, orientation=orientation)
 
-    updateColorBar(cbar, gci=gci, **kwargs)
+    #print(kwargs)
+    #updateColorBar(cbar, gci=gci, **kwargs)
 
     return cbar
 
@@ -334,7 +350,7 @@ def createColorBarOnly(cMin=1, cMax=100, logScale=False, cMap=None, nLevs=5,
 
 def prettyFloat(v):
     """Return a pretty string for a given value suitable for graphical output."""
-    if round(v) == v and abs(v) < 1e3:
+    if abs(round(v)-v) < 1e-4 and abs(v) < 1e3:
         return str(int(v))
     elif abs(v) == 0.0:
         return "0"

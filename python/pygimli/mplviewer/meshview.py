@@ -338,7 +338,7 @@ def drawModel(ax, mesh, data=None, logScale=True, cMin=None, cMax=None,
         pg.mplviewer.setMappableData(gci, viewdata, cMin=cMin, cMax=cMax,
                                      logScale=logScale)
 
-    gci.set_antialiased(False)
+    gci.set_antialiased(True)
     gci.set_linewidth(0.1)
     gci.set_edgecolor('face')
 
