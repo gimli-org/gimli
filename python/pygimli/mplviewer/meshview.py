@@ -90,6 +90,7 @@ class CellBrowser(object):
 
     def __del__():
         """Deregister if the cellBrowser has been deleted."""
+        print("########################")
         self.disconnect()
 
     def connect(self):
