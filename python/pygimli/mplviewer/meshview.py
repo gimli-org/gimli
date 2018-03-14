@@ -70,6 +70,8 @@ class CellBrowser(object):
         else:
             self.ax = mpl.pyplot.gca()
 
+        self._connected = False
+
         self.fig = self.ax.figure
         self.mesh = None
         self.data = None
@@ -84,18 +86,27 @@ class CellBrowser(object):
 
         self.setMesh(mesh)
         self.setData(data)
+        self.connect()
+
+    def __del__():
+        """Deregister if the cellBrowser has been deleted."""
+        self.disconnect()
 
     def connect(self):
         """Connect to matplotlib figure canvas."""
-        self.pid = self.fig.canvas.mpl_connect('pick_event', self.onpick)
-        self.kid = self.fig.canvas.mpl_connect('key_press_event', self.onpress)
-        __CBCache__.add(self)
+        if not self._connected:
+            self.pid = self.fig.canvas.mpl_connect('pick_event', self.onpick)
+            self.kid = self.fig.canvas.mpl_connect('key_press_event', self.onpress)
+            __CBCache__.add(self)
+            self._connected = True
 
     def disconnect(self):
         """Disconnect from matplotlib figure canvas."""
-        __CBCache__.remove(self)
-        self.fig.canvas.mpl_connect(self.pid)
-        self.fig.canvas.mpl_connect(self.kid)
+        if self._connected:
+            __CBCache__.remove(self)
+            self.fig.canvas.mpl_connect(self.pid)
+            self.fig.canvas.mpl_connect(self.kid)
+            self._connected = False
 
     def initText(self):
         bbox = dict(boxstyle='round, pad=0.5', fc='w', alpha=0.5)
