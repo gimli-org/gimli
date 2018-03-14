@@ -88,9 +88,8 @@ class CellBrowser(object):
         self.setData(data)
         self.connect()
 
-    def __del__():
+    def __del__(self):
         """Deregister if the cellBrowser has been deleted."""
-        print("########################")
         self.disconnect()
 
     def connect(self):
@@ -105,8 +104,8 @@ class CellBrowser(object):
         """Disconnect from matplotlib figure canvas."""
         if self._connected:
             __CBCache__.remove(self)
-            self.fig.canvas.mpl_connect(self.pid)
-            self.fig.canvas.mpl_connect(self.kid)
+            self.fig.canvas.mpl_disconnect(self.pid)
+            self.fig.canvas.mpl_disconnect(self.kid)
             self._connected = False
 
     def initText(self):

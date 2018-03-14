@@ -1020,15 +1020,6 @@ from .matrix import *
 # some backward compatibility
 ############################
 
-def __MeshGetCellMarker__(self):
-    deprecated(msg='Mesh::cellMarker()', hint='Mesh::cellMarkers()')
-    return self.cellMarkers()
-
-
-def __MeshSetCellMarker__(self, m):
-    deprecated(msg='Mesh::setCellMarker()', hint='Mesh::setCellMarkers()')
-    return self.setCellMarkers(m)
-
 def __getCoords(coord, dim, ent):
     """Syntactic sugar to find all x-coordinates of a given entity.
     """
@@ -1088,5 +1079,3 @@ def z(instance):
     """
     return __getCoords('z', 2, instance)
 
-_pygimli_.Mesh.cellMarker = __MeshGetCellMarker__
-_pygimli_.Mesh.setCellMarker = __MeshSetCellMarker__

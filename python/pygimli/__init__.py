@@ -68,3 +68,17 @@ def version():
     """Shortcut to show and return current version."""
     logger.info('Version: ' + __version__ + " core:" + pg.versionStr())
     return __version__
+
+
+#### its here until we can sort logger function inside .core package
+def __MeshGetCellMarker__(self):
+    deprecated(msg='Mesh::cellMarker()', hint='Mesh::cellMarkers()')
+    return self.cellMarkers()
+
+
+def __MeshSetCellMarker__(self, m):
+    deprecated(msg='Mesh::setCellMarker()', hint='Mesh::setCellMarkers()')
+    return self.setCellMarkers(m)
+
+pg.Mesh.cellMarker = __MeshGetCellMarker__
+pg.Mesh.setCellMarker = __MeshSetCellMarker__
