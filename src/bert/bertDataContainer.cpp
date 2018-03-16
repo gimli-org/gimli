@@ -89,8 +89,7 @@ void DataContainerERT::initTokenTranslator(){
 }
 
 void DataContainerERT::checkDataValidityLocal(){
-    __M
-    __DS(size())
+
     if (size() > 0){
         if (this->haveData("rhoa") || this->haveData("r") || this->haveData("u")){
             //** no shm only here

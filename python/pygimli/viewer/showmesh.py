@@ -339,8 +339,10 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
 
         if colorBar is True or colorBar is 1:
             cbar = createColorBar(gci, label=label, **subkwargs)
+            updateColorBar(cbar, gci, label=label, **subkwargs)
         elif colorBar is not False:
             cbar = updateColorBar(colorBar, gci, label=label, **subkwargs)
+
 
         if markers:
             ticks = np.arange(len(uniquemarkers))

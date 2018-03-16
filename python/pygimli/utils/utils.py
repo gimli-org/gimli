@@ -42,7 +42,7 @@ class ProgressBar(object):
         self.pbar = "[]"
         self._amount(0)
 
-    def __call__(self, it, msg=":"):
+    def __call__(self, it, msg=""):
         self.update(it, msg)
 
     def update(self, iteration, msg=""):
