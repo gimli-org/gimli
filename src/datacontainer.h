@@ -192,8 +192,10 @@ public:
     /*! Return the input format string for the sensors. */
     inline const std::string & formatStringSensors() const { return inputFormatStringSensors_; }
 
-    /*! Sort all sensors regarding their x-coordinate. */
-    void sortSensorsX();
+    /*! Sort all sensors regarding their increasing coordinates.
+     * Set inc flag to false to sort respective coordinate in
+     * decreasing direction.*/
+    void sortSensorsX(bool incX=true, bool incY=true, bool incZ=true);
 
     /*! Translate all sensor positions by trans. */
     void translate(const RVector3 & trans);

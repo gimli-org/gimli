@@ -511,6 +511,7 @@ def interpolate(*args, **kwargs):
                                                      **kwargs)
 
         return pg.core._pygimli_.interpolate(*args, **kwargs)
+        # end if pg.core:
 
     if len(args) == 3:
 
