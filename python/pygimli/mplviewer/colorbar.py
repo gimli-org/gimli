@@ -207,11 +207,10 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
 
     vals = cbar.mappable.get_array()
 
-    if cMax is None:
-        cMax = max(vals)
-
     if cMin is None:
-        cMin = min(vals)
+        cMin = cbar.get_clim()[0]
+    if cMax is None:
+        cMax = cbar.get_clim()[1]
 
     if logScale:
         if cMin < 1e-12:
@@ -286,7 +285,7 @@ def createColorBar(gci, orientation='horizontal', size=0.2, pad=None, **kwargs):
     cbar = cbarTarget.colorbar(gci, cax=cax, orientation=orientation)
 
     #print(kwargs)
-    #updateColorBar(cbar, gci=gci, **kwargs)
+    #updateColorBar(cbar, **kwargs)
 
     return cbar
 
@@ -403,6 +402,8 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5):
         cbar.mappable.set_clim(vmin=cMin, vmax=cMax)
         cbar.set_clim(cMin, cMax)
 
+    #print('setCbarLevels.ticks ********************', cbarLevels)
+    #print('setCbarLevels.ticklabels ********************', cbarLevelsString)
     cbar.set_ticks(cbarLevels)
     cbar.set_ticklabels(cbarLevelsString)
 
@@ -421,11 +422,13 @@ def setMappableValues(mappable, dataIn):
 
     mappable.set_array(data)
 
+
 def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=False):
     """Change the data values for a given mappable.
 
     DEPRECATED
     """
+    #DEPRECATED
     data = dataIn
 
     if not isinstance(data, np.ma.core.MaskedArray):
