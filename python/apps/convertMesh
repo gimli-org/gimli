@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 #!/usr/bin/env python3
+=======
+#!/usr/bin/env python
+>>>>>>> Revert "Use Python3 in app header to allow ./script call on linux"
 # -*- coding: utf-8 -*-
 """
 Convert mesh between different formats (and refinements) or add data to it.
