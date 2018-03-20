@@ -2013,7 +2013,7 @@ MEMINFO
                 if (primPotFileBody_.find(NOT_DEFINED) != std::string::npos){
                 //!** primary potential file body is NOT_DEFINED so we try to determine ourself
                     if (initVerbose){
-                        std::cout << std::endl << " no primary potential for secondary field calculation. Calculate analytical" << std::endl;
+                        std::cout << std::endl << " No primary potential for secondary field calculation. Calculating analytically..." << std::endl;
                         initVerbose = false;
                     }
                     // PLS CHECK some redundancy here see DCMultiElectrodeModelling::calculateKAnalyt
@@ -2022,7 +2022,7 @@ MEMINFO
 
                 } else {
                     if (initVerbose){
-                        std::cout << std::endl << " no primary potential for secondary field calculation. Load Potentials." << std::endl;
+                        std::cout << std::endl << " No primary potential for secondary field calculation. Loading potentials." << std::endl;
                         initVerbose = false;
                     }
                 //!** primary potential file body is given so we load it
