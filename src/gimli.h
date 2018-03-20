@@ -41,7 +41,7 @@
 #endif
 
 #if BOOST_BIND_FOUND || defined(HAVE_BOOST_BIND_HPP)
-	#define USE_BOOST_BIND TRUE
+    #define USE_BOOST_BIND TRUE
 #endif
 
 #ifndef PACKAGE_NAME

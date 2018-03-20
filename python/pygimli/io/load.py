@@ -95,6 +95,7 @@ def load(fname, verbose=False):
         ".poly": readPLC,
         ".bms": pg.Mesh,
         ".msh": readGmsh,
+        ".mod": pg.Mesh,
         ".vtk": pg.Mesh,
         ".h5": readFenicsHDF5Mesh  # fenics specs as default
     }

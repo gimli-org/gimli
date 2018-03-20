@@ -73,8 +73,8 @@ void DataContainerERT::initTokenTranslator(){
     l["eca"] = "ECa EC_a";
     l["r"] = "r rho r(Ohm) imp z u/i"; //** rho is confusing!
 // done in base l["err"] = "err std error err/%";
-    l["ip"] = "ip ip/mrad ip/� phase phase/mrad phase/� phi phi/mrad phi/�";
-    l["iperr"] = "iperr iperr/mrad iperr/� phierr phierr/mrad phierr/�";
+    l["ip"] = "ip ip/mrad ip/° phase phase/mrad phase/° phi phi/mrad phi/°";
+    l["iperr"] = "iperr iperr/mrad iperr/° phierr phierr/mrad phierr/°";
     l["u"] = "u u/V u(V) u/mV u(mV) v v/V v(V) v/mV v(mV)";
     l["i"] = "i i/A i(A) i/mA i(mA)";
     l["k"] = "k";
@@ -89,6 +89,7 @@ void DataContainerERT::initTokenTranslator(){
 }
 
 void DataContainerERT::checkDataValidityLocal(){
+
     if (size() > 0){
         if (this->haveData("rhoa") || this->haveData("r") || this->haveData("u")){
             //** no shm only here
@@ -183,11 +184,11 @@ std::set < SIndex > DataContainerERT::currentPattern(bool reciprocity){
     return pattern;
 }
 
-void DataContainerERT::addFourPointData(long a, long b, long m, long n){
+Index DataContainerERT::addFourPointData(long a, long b, long m, long n){
     return this->createFourPointData(this->size(), a, b, m, n);
 }
 
-void DataContainerERT::createFourPointData(Index i, long a, long b, long m, long n){
+Index DataContainerERT::createFourPointData(Index i, long a, long b, long m, long n){
     if (this->size() <= i) {
         resize(max(i+1,1));
         // memory reservation is vectors job so this should be ok
@@ -214,6 +215,7 @@ void DataContainerERT::createFourPointData(Index i, long a, long b, long m, long
     } else {
         throwError(1, WHERE_AM_I + " index out of size, resize data first:" + str(this->size()) + " " + str(i));
     }
+    return i;
 }
 
 void DataContainerERT::fitFillSize(){
@@ -272,7 +274,6 @@ void DataContainerERT::averageDuplicateData(bool verbose){
                 itD->second.setVal(mean(origData.get(itD->first)(it->second)), i);
             }
         }
-
     }
 
     if (verbose){

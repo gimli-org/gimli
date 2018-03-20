@@ -75,13 +75,21 @@ class CellBrowser(object):
         self.mesh = None
         self.data = None
         self.highLight = None
-        self.text = None
 
         self.cellID = None
         self.event = None
         self.artist = None
         self.pid = None
         self.kid = None
+
+        bbox = dict(boxstyle='round, pad=0.5', fc='w', alpha=0.5)
+        arrowprops = dict(arrowstyle='->', connectionstyle='arc3,rad=0.5')
+        kwargs = dict(fontproperties='monospace', visible=False,
+                      fontsize=mpl.rcParams['font.size'] - 2, weight='bold',
+                      xytext=(50, 20), arrowprops=arrowprops,
+                      textcoords='offset points', bbox=bbox, va='center')
+
+        self.text = self.ax.annotate(None, xy=(0, 0), **kwargs)
 
         self.setMesh(mesh)
         self.setData(data)
@@ -94,19 +102,9 @@ class CellBrowser(object):
 
     def disconnect(self):
         """Disconnect from matplotlib figure canvas."""
-        __CBCache__.remove(self)
         self.fig.canvas.mpl_connect(self.pid)
         self.fig.canvas.mpl_connect(self.kid)
-
-    def initText(self):
-        bbox = dict(boxstyle='round, pad=0.5', fc='w', alpha=0.5)
-        arrowprops = dict(arrowstyle='->', connectionstyle='arc3,rad=0.5')
-        kwargs = dict(fontproperties='monospace', visible=False,
-                      fontsize=mpl.rcParams['font.size'] - 2, weight='bold',
-                      xytext=(50, 20), arrowprops=arrowprops,
-                      textcoords='offset points', bbox=bbox, va='center')
-
-        self.text = self.ax.annotate(None, xy=(0, 0), **kwargs)
+        __CBCache__.remove(self)
 
     def setMesh(self, mesh):
         self.mesh = mesh
@@ -128,29 +126,26 @@ class CellBrowser(object):
     def hide(self):
         """Hide info window."""
         self.cellID = -1
+        self.text.set_visible(False)
 
-        if self.text is not None:
-            self.text.set_visible(False)
-
-        self.removeHighlightCell()
+        if self.highLight is not None:
+            self.highLight.remove()
+            self.highLight = None
 
         self.fig.canvas.draw()
 
-    def removeHighlightCell(self):
-        if self.highLight is not None:
-            if self.highLight in self.ax.collections:
-                self.highLight.remove()
-            self.highLight = None
-
     def highlightCell(self, cell):
         """Highlight selected cell."""
-        self.removeHighlightCell()
-        self.highLight = mpl.collections.PolyCollection(
-                                                    [_createCellPolygon(cell)])
+        p = [_createCellPolygon(cell)]
+        if self.highLight is not None:
+            self.highLight.remove()
+
+        self.highLight = mpl.collections.PolyCollection(p)
         self.highLight.set_edgecolors('0')
         self.highLight.set_linewidths(1.5)
         self.highLight.set_facecolors([0.9, 0.9, 0.9, 0.4])
         self.ax.add_collection(self.highLight)
+
 
     def onpick(self, event):
         """Call `self.update()` on mouse pick event."""
@@ -159,6 +154,7 @@ class CellBrowser(object):
 
         if self.data is None:
             self.data = self.artist.get_array()
+            #self.edgeColors = self.artist.get_edgecolors()
 
         if 'mouseevent' in event.__dict__.keys():
             if (event.mouseevent.xdata is not None and
@@ -212,10 +208,6 @@ class CellBrowser(object):
                 info = "\nx: {:.2f}\n y: {:.2f}\n data: {:.2e}\n marker: {:d}".format(
                     x, y, data, marker)
                 text = header + textwrap.dedent(info)
-
-                if self.text is None or self.text not in self.ax.texts:
-                    self.initText()
-
                 self.text.set_text(text)
                 self.text.xy = x, y
                 self.text.set_visible(True)
@@ -346,7 +338,7 @@ def drawModel(ax, mesh, data=None, logScale=True, cMin=None, cMax=None,
         pg.mplviewer.setMappableData(gci, viewdata, cMin=cMin, cMax=cMax,
                                      logScale=logScale)
 
-    gci.set_antialiased(False)
+    gci.set_antialiased(True)
     gci.set_linewidth(0.1)
     gci.set_edgecolor('face')
 
@@ -562,7 +554,7 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
     ...                            marker=10,  boundaryMarker=10, area=0.1)
     >>> fig, ax = plt.subplots()
     >>> geom = mt.mergePLC([world, block])
-    >>> pg.mplviewer.drawPLC(ax, geom, markers=True)
+    >>> pg.mplviewer.drawPLC(ax, geom)
     """
     #    eCircles = []
     cols = []
@@ -574,15 +566,17 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
         else:
             markers = np.array(tmpMesh.cellMarkers())
             uniquemarkers, uniqueidx = np.unique(markers, return_inverse=True)
-            kwargs["cmap"] = plt.cm.get_cmap("Set3", len(uniquemarkers))
-            kwargs.setdefault('tri', True)
-            kwargs.setdefault('alpha', 1)
-            kwargs.setdefault('linewidth', 0.0)
-            kwargs.setdefault('snap', True)
+            kwargs["cMap"] = plt.cm.get_cmap("Set3", len(uniquemarkers))
             kwargs["cMin"] = -0.5
             kwargs["cMax"] = len(uniquemarkers) - 0.5
-            kwargs.setdefault('data', np.arange(len(uniquemarkers))[uniqueidx])
-            gci = drawModel(ax=ax, mesh=tmpMesh, **kwargs)
+            gci = drawModel(ax=ax,
+                            data=np.arange(len(uniquemarkers))[uniqueidx],
+                            mesh=tmpMesh,
+                            alpha=1,
+                            linewidth=0.0,
+                            tri=True,
+                            snap=True,
+                            **kwargs)
 
             if regionMarker:
                 cbar = createColorBar(gci, label="Region markers", **kwargs)
