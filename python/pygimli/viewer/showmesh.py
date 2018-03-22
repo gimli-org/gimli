@@ -243,7 +243,6 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
             kwargs["cMin"] = -0.5
             kwargs["cMax"] = len(uniquemarkers) - 0.5
             data = np.arange(len(uniquemarkers))[uniqueidx]
-            showMesh = True
 
     if data is None:
         showMesh = True
@@ -298,13 +297,14 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
                     gci.set_cmap(cmapFromName(cMap))
 
             except BaseException as e:
-                print("Exception occured: " + e)
+                print("Exception occured: ", e)
                 print("Data: ", min(data), max(data), pg.haveInfNaN(data))
                 print("Mesh: ", mesh)
                 drawMesh(ax, mesh, **kwargs)
 
     if mesh.cellCount() == 0:
         pg.mplviewer.drawPLC(ax, mesh, **kwargs)
+        showMesh = False
 
     if showMesh:
         if gci is not None and hasattr(gci, 'set_antialiased'):
@@ -338,18 +338,21 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
         subkwargs = {key: kwargs[key] for key in labels if key in kwargs}
 
         if colorBar is True or colorBar is 1:
+            #print('drawColorbar ************************')
             cbar = createColorBar(gci, label=label, **subkwargs)
             updateColorBar(cbar, gci, label=label, **subkwargs)
         elif colorBar is not False:
+            #print('updateColorBar ************************')
             cbar = updateColorBar(colorBar, gci, label=label, **subkwargs)
-
 
         if markers:
             ticks = np.arange(len(uniquemarkers))
+            #print('show.ticks ********************', ticks)
             cbar.set_ticks(ticks)
             labels = []
             for marker in uniquemarkers:
                 labels.append(str((marker)))
+            #print('show.labels ********************', labels)
             cbar.set_ticklabels(labels)
 
     if coverage is not None:
@@ -372,7 +375,6 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
         if data is not None:
             if len(data) == mesh.cellCount():
                 cb = CellBrowser(mesh, data, ax=ax)
-                cb.connect()
 
         plt.show(block=block)
         try:

@@ -175,7 +175,7 @@ def findColorBar(ax):
 
 
 def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
-                   logScale=False, nLevs=5, label=None):
+                   logScale=None, nLevs=5, label=None):
     """Update colorbar values.
 
     Update limits and label of a given colorbar.
@@ -205,32 +205,38 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
         # check the following first
         # cbar.on_mappable_changed(gci)
 
-    vals = cbar.mappable.get_array()
-
-    if cMax is None:
-        cMax = max(vals)
-
-    if cMin is None:
-        cMin = min(vals)
-
-    if logScale:
-        if cMin < 1e-12:
-            cMin = min(filter(lambda _x: _x > 0.0, vals))
-
-        norm = mpl.colors.LogNorm(vmin=cMin, vmax=cMax)
-    else:
-        norm = mpl.colors.Normalize(vmin=cMin, vmax=cMax)
-
-    cbar.set_norm(norm)
-    cbar.mappable.set_norm(norm)
-
     if cMap is not None:
         if isinstance(cMap, str):
             cMap = cmapFromName(cMap, ncols=256, bad=[1.0, 1.0, 1.0, 0.0])
 
         cbar.mappable.set_cmap(cMap)
 
-    setCbarLevels(cbar, cMin, cMax, nLevs)
+    needLevelUpdate = False
+
+    if cMin is not None or cMax is not None or nLevs is not None:
+        needLevelUpdate = True
+
+    if logScale is not None:
+        needLevelUpdate = True
+
+        if cMin is None:
+            cMin = cbar.get_clim()[0]
+        if cMax is None:
+            cMax = cbar.get_clim()[1]
+
+        if logScale:
+            if cMin < 1e-12:
+                cMin = min(filter(lambda _x: _x > 0.0, cbar.mappable.get_array()))
+
+            norm = mpl.colors.LogNorm(vmin=cMin, vmax=cMax)
+        else:
+            norm = mpl.colors.Normalize(vmin=cMin, vmax=cMax)
+
+        cbar.set_norm(norm)
+        cbar.mappable.set_norm(norm)
+
+    if needLevelUpdate:
+        setCbarLevels(cbar, cMin, cMax, nLevs)
 
     if label is not None:
         cbar.set_label(label)
@@ -282,11 +288,9 @@ def createColorBar(gci, orientation='horizontal', size=0.2, pad=None, **kwargs):
                 pad = 0.1
             cax = divider.append_axes("right", size=size, pad=pad)
 
-    #gci.set_clim(vmin=cMin, vmax=cMax)
     cbar = cbarTarget.colorbar(gci, cax=cax, orientation=orientation)
 
-    #print(kwargs)
-    #updateColorBar(cbar, gci=gci, **kwargs)
+    updateColorBar(cbar, **kwargs)
 
     return cbar
 
@@ -403,6 +407,8 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5):
         cbar.mappable.set_clim(vmin=cMin, vmax=cMax)
         cbar.set_clim(cMin, cMax)
 
+    #print('setCbarLevels.ticks ********************', cbarLevels)
+    #print('setCbarLevels.ticklabels ********************', cbarLevelsString)
     cbar.set_ticks(cbarLevels)
     cbar.set_ticklabels(cbarLevelsString)
 
@@ -421,11 +427,13 @@ def setMappableValues(mappable, dataIn):
 
     mappable.set_array(data)
 
+
 def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=False):
     """Change the data values for a given mappable.
 
     DEPRECATED
     """
+    #DEPRECATED
     data = dataIn
 
     if not isinstance(data, np.ma.core.MaskedArray):

@@ -10,7 +10,7 @@ import numpy as np
 import pygimli as pg
 from pygimli.misc import streamline
 
-from .colorbar import autolevel, cmapFromName, createColorBar
+from .colorbar import autolevel, cmapFromName, createColorBar, updateColorBar
 from .utils import updateAxes as updateAxes_
 
 
@@ -248,6 +248,7 @@ def drawMesh(ax, mesh, **kwargs):
     >>> plt.show()
     """
     if mesh.cellCount() == 0:
+        print("drawMesh*************")
         pg.mplviewer.drawPLC(ax, mesh, **kwargs)
     else:
         pg.mplviewer.drawMeshBoundaries(ax, mesh, **kwargs)
@@ -328,7 +329,7 @@ def drawModel(ax, mesh, data=None, logScale=True, cMin=None, cMax=None,
             print(data, mesh)
             pg.info("drawModel have wrong data length .. " +
                     " indexing data from cellMarkers()")
-            viewdata = data(mesh.cellMarkers())
+            viewdata = data[mesh.cellMarkers()]
         else:
             viewdata = data
 
@@ -559,6 +560,7 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
     #    eCircles = []
     cols = []
 
+    #print('draw PLC ********************')
     if fillRegion and mesh.boundaryCount() > 2:
         tmpMesh = pg.meshtools.createMesh(mesh, quality=20, area=0)
         if tmpMesh.cellCount() == 0:
@@ -566,9 +568,6 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
         else:
             markers = np.array(tmpMesh.cellMarkers())
             uniquemarkers, uniqueidx = np.unique(markers, return_inverse=True)
-            kwargs["cMap"] = plt.cm.get_cmap("Set3", len(uniquemarkers))
-            kwargs["cMin"] = -0.5
-            kwargs["cMax"] = len(uniquemarkers) - 0.5
             gci = drawModel(ax=ax,
                             data=np.arange(len(uniquemarkers))[uniqueidx],
                             mesh=tmpMesh,
@@ -579,15 +578,23 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
                             **kwargs)
 
             if regionMarker:
-                cbar = createColorBar(gci, label="Region markers", **kwargs)
+                kwargs["cMap"] = plt.cm.get_cmap("Set3", len(uniquemarkers))
+                kwargs["cMin"] = -0.5
+                kwargs["cMax"] = len(uniquemarkers) - 0.5
+                cbar = createColorBar(gci, label="Region markers")
+                updateColorBar(cbar, **kwargs)
                 ticks = np.arange(len(uniquemarkers))
+
                 cbar.set_ticks(ticks)
                 areas = {}
                 for reg in mesh.regionMarker():
                     areas[reg.marker()] = reg.area()
                 labels = []
                 for marker in uniquemarkers:
-                    labels.append("%d\n(area: %s)" % (marker, areas[marker]))
+                    label = "%d" % marker
+                    if marker in areas:
+                        label += "\n(area: %s)" % areas[marker]
+                    labels.append(label)
                 cbar.set_ticklabels(labels)
 
     else:
@@ -621,7 +628,8 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
     if regionMarker:
 
         for hole in mesh.holeMarker():
-            ax.text(hole[0], hole[1], 'H', color='black')
+            ax.text(hole[0], hole[1], 'H', color='black',
+                    va="center", ha="center")
 
     if kwargs.pop('fitView', True):
         ax.set_xlim(mesh.xmin(), mesh.xmax())
