@@ -1,8 +1,9 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-This program is part of pygimli
-Visit http://www.resistivity.net for further information or the latest version.
+Plot triangle mesh using matplotlib.
+This program is part of pyGIMLi.
+Visit http://www.pygimli.org for further information or the latest version.
 """
 
 from __future__ import print_function
