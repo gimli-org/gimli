@@ -39,12 +39,15 @@ except ImportError as e:
 ###  Global convinience functions #####
 #######################################
 
+from .. _logger import *
+
 #_pygimli_.load = None
 from pygimli.io import load
 from pygimli.viewer import show, plt, wait
 from pygimli.solver import solve
 from pygimli.meshtools import interpolate
 from pygimli.utils import boxprint
+
 
 def showNow():
     pass
@@ -1023,7 +1026,6 @@ from .matrix import *
 def __MeshGetCellMarker__(self):
     deprecated(msg='Mesh::cellMarker()', hint='Mesh::cellMarkers()')
     return self.cellMarkers()
-
 
 def __MeshSetCellMarker__(self, m):
     deprecated(msg='Mesh::setCellMarker()', hint='Mesh::setCellMarkers()')
