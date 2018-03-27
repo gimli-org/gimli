@@ -50,7 +50,8 @@ from .overlayimage import (cacheFileName,
                            deg2MapTile,
                            getMapTile,
                            mapTile2deg,
-                           underlayMap)
+                           underlayMap,
+                           underlayBKGMap)
 
 # TODO example scripts for the following and refactor is needed
 # maybe ploter should named show or draw
