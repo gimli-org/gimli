@@ -7,7 +7,6 @@ import os
 from math import floor
 
 import numpy as np
-import matplotlib.image as mpimg
 
 from pygimli.io import opt_import
 
@@ -26,24 +25,53 @@ def handleWPTS(wpts):
         else:
             continue
 
-        name = wpt.getElementsByTagName('name')[0].childNodes[0].data
-        time = wpt.getElementsByTagName('time')[0].childNodes[0].data
+        name = 'None'
+        if wpt.getElementsByTagName('name'):
+            name = wpt.getElementsByTagName('name')[0].childNodes[0].data
+
+        time = 0
+        if wpt.getElementsByTagName('time'):
+            time = wpt.getElementsByTagName('time')[0].childNodes[0].data
 
         w.append((lon, lat, name, time))
     return w
 
 
-def readGPX(filename):
+def readGPX(fileName):
     """Extract GPS Waypoint from GPS Exchange Format (GPX).
 
     Currently only simple waypoint extraction is supported.
+
+
+    <gpx version="1.0" creator="creator">
+
+    <metadata>
+    <name>Name</name>
+    </metadata>
+    <wpt lat="50.0" lon="10.">
+    <name>WPT1 Name</name>
+    </wpt>
+
+    <wpt lat="51." lon="11.">
+    <name>WPT2 Name</name>
+    </wpt>
+
+    </gpx>
+
     """
     from xml.dom.minidom import parse
 
-    dom = parse(filename)
+    dom = parse(fileName)
+
+    name = fileName
+    meta = dom.getElementsByTagName("metadata")
+    if len(meta) > 0:
+        if meta[0].getElementsByTagName('name'):
+            name = meta[0].getElementsByTagName('name')[0].childNodes[0].data
+
     wpts = dom.getElementsByTagName("wpt")
 
-    return handleWPTS(wpts)
+    return handleWPTS(wpts), name
 
 
 def readSimpleLatLon(filename, verbose=False):
@@ -189,80 +217,3 @@ def readGeoRefTIF(file_name):
     return im, bbox, projection
 
 
-def getBKGaddress(xlim, ylim, imsize=1000, zone=32, service='dop40',
-                  usetls=False, epsg=0, uuid='', fmt='image/jpeg',
-                  layer='rgb'):
-    """Generate address for rendering web service image from BKG.
-
-    Assumes UTM in given zone.
-    """
-    url = 'https://sg.geodatenzentrum.de/wms_' + service
-    if usetls:
-        url = 'https://sgtls12.geodatenzentrum.de/wms_' + service  # new
-    stdarg = '&SERVICE=WMS&VERSION=1.1.0&LAYERS=' + layer
-    stdarg += '&STYLES=default&FORMAT=' + fmt
-    if epsg == 0:
-        epsg = 32600 + zone  # WGS 84 / UTM zone 32N
-#        epsg = 25800 + zone  # ETRS89 / UTM zone 32N
-    srsstr = 'SRS=EPSG:' + str(epsg)  # EPSG definition of UTM
-
-    if imsize is None or imsize <= 1:
-        imsize = int((xlim[1] - xlim[0])/0.4) + 1  # take 40cm DOP resolution
-        print('choose image size ', imsize)
-    box = ','.join(str(int(v)) for v in [xlim[0], ylim[0], xlim[1], ylim[1]])
-    ysize = int((imsize - 1.) * (ylim[1] - ylim[0]) / (xlim[1] - xlim[0])) + 1
-    sizestr = 'WIDTH=' + str(imsize) + '&HEIGHT=' + '%d' % ysize
-    if uuid:
-        url += '__' + uuid
-    addr = url + '?REQUEST=GetMap' + stdarg + '&' + srsstr + \
-        '&' + 'BBOX=' + box + '&' + sizestr
-
-    return addr, box
-
-
-def underlayBKGMap(ax, mode='DOP', utmzone=32, epsg=0, imsize=2500, uuid='',
-                   usetls=False):
-    """Underlay digital orthophoto or topographic (mode='DTK') map under axes.
-
-    First accessed, the image is obtained from BKG, saved and later loaded.
-
-    Parameters
-    ----------
-    mode : str
-        'DOP' (digital orthophoto 40cm) or
-        'DTK' (digital topo map 1:25000)
-
-    imsize : int
-        image width in pixels (height will be automatically determined
-
-    """
-    try:
-        import urllib.request as urllib2
-    except ImportError:
-        import urllib2
-
-    ext = {'DOP': '.jpg', 'DTK': '.png'}  # extensions for different map types
-    wms = {'DOP': 'dop40', 'DTK': 'dtk25'}  # wms service name for map types
-    fmt = {'DOP': 'image/jpeg', 'DTK': 'image/png'}  # format
-    lay = {'DOP': 'rgb', 'DTK': '0'}
-    if imsize < 1:  # 0, -1 or 0.4 could be reasonable parameters
-        ax = ax.get_xlim()
-        imsize = int((ax[1] - ax[0]) / 0.4)  # use original 40cm pixel size
-        if imsize > 5000:  # limit overly sized images
-            imsize = 2500  # default value
-    ad, box = getBKGaddress(ax.get_xlim(), ax.get_ylim(), imsize, zone=utmzone,
-                            service=wms[mode.upper()], usetls=usetls,
-                            uuid=uuid, epsg=epsg,
-                            fmt=fmt[mode.upper()], layer=lay[mode.upper()])
-    imname = mode + box + ext[mode]
-    if not os.path.isfile(imname):  # not already existing
-        print('Retrieving file from geodatenzentrum.de using URL: ' + ad)
-        req = urllib2.Request(ad)
-        response = urllib2.urlopen(req)
-        with open(imname, 'wb') as output:
-            output.write(response.read())
-
-    im = mpimg.imread(imname)
-    bb = [int(bi) for bi in box.split(',')]  # bounding box
-    ax.imshow(im, extent=[bb[0], bb[2], bb[1], bb[3]],
-              interpolation='nearest')
