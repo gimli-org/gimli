@@ -95,6 +95,15 @@ __all__ = [
     "deg2MapTile", "getMapTile", "mapTile2deg", "underlayMap", "updateAxes"
 ]
 
+# plt.subplots() resets locale setting to system default .. this went
+# horrible wrong for german 'decimal_point': ','
+# https://github.com/matplotlib/matplotlib/issues/6706
+# Qt5Agg resets it after importing figure;
+# TkAgg resets it after importing pyplot.
+# until its fixed we should maybe silently initialize the qt5agg backend and
+# refix the locale afterwards. If someone have a plan to do.
+#checkAndFixLocaleDecimal_point(verbose=True)
+
 
 def createColorbar(*args, **kwargs):
     print("createColorbar is DEPRECATED .. please use createColorBar instead.")

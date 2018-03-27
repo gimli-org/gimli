@@ -9,6 +9,3 @@ automatic filetype detection.
 from .load import load
 from .load import optImport, opt_import
 
-
-
-# from .gps import underlayBKGMap, GKtoUTM

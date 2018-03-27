@@ -26,24 +26,53 @@ def handleWPTS(wpts):
         else:
             continue
 
-        name = wpt.getElementsByTagName('name')[0].childNodes[0].data
-        time = wpt.getElementsByTagName('time')[0].childNodes[0].data
+        name = 'None'
+        if wpt.getElementsByTagName('name'):
+            name = wpt.getElementsByTagName('name')[0].childNodes[0].data
+
+        time = 0
+        if wpt.getElementsByTagName('time'):
+            time = wpt.getElementsByTagName('time')[0].childNodes[0].data
 
         w.append((lon, lat, name, time))
     return w
 
 
-def readGPX(filename):
+def readGPX(fileName):
     """Extract GPS Waypoint from GPS Exchange Format (GPX).
 
     Currently only simple waypoint extraction is supported.
+
+
+    <gpx version="1.0" creator="creator">
+
+    <metadata>
+    <name>Name</name>
+    </metadata>
+    <wpt lat="50.0" lon="10.">
+    <name>WPT1 Name</name>
+    </wpt>
+
+    <wpt lat="51." lon="11.">
+    <name>WPT2 Name</name>
+    </wpt>
+
+    </gpx>
+
     """
     from xml.dom.minidom import parse
 
-    dom = parse(filename)
+    dom = parse(fileName)
+
+    name = fileName
+    meta = dom.getElementsByTagName("metadata")
+    if len(meta) > 0:
+        if meta[0].getElementsByTagName('name'):
+            name = meta[0].getElementsByTagName('name')[0].childNodes[0].data
+
     wpts = dom.getElementsByTagName("wpt")
 
-    return handleWPTS(wpts)
+    return handleWPTS(wpts), name
 
 
 def readSimpleLatLon(filename, verbose=False):

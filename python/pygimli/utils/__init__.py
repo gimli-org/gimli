@@ -18,4 +18,6 @@ from .utils import (ProgressBar, boxprint, chi2, cumDist, diff, dist,
                     trimDocString, unicodeToAscii, unique, unique_everseen,
                     unique_rows, uniqueAndSum, )
 
+from .gps import readGPX
+
 __all__ = [name for name in dir() if '_' not in name]
