@@ -1,26 +1,14 @@
 # -*- coding: utf-8 -*-
-
 """
 This package contains submodules for various petrophysical models
 """
 
-from .resistivity import resistivityArchie
-from .resistivity import transFwdArchiePhi
-from .resistivity import transInvArchiePhi
-from .resistivity import transFwdArchieS
-from .resistivity import transInvArchieS
-
-from .velocity import slownessWyllie
-from .velocity import transFwdWylliePhi
-from .velocity import transInvWylliePhi
-from .velocity import transFwdWyllieS
-from .velocity import transInvWyllieS
-
 from .hydro import permeabilityEngelhardtPitter
-
-from .modelling import PetroModelling
-from .modelling import PetroJointModelling
-from .modelling import PetroInversion
-from .modelling import JointPetroInversion
+from .modelling import (JointPetroInversion, PetroInversion,
+                        PetroJointModelling, PetroModelling)
+from .resistivity import (resistivityArchie, transFwdArchiePhi,
+                          transFwdArchieS, transInvArchiePhi, transInvArchieS)
+from .velocity import (slownessWyllie, transFwdWylliePhi, transFwdWyllieS,
+                       transInvWylliePhi, transInvWyllieS)
 
 __all__ = [name for name in dir() if '_' not in name]
