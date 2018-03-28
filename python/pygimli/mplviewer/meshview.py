@@ -248,7 +248,6 @@ def drawMesh(ax, mesh, **kwargs):
     >>> plt.show()
     """
     if mesh.cellCount() == 0:
-        print("drawMesh*************")
         pg.mplviewer.drawPLC(ax, mesh, **kwargs)
     else:
         pg.mplviewer.drawMeshBoundaries(ax, mesh, **kwargs)

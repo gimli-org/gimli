@@ -8,12 +8,68 @@ from math import floor
 
 import numpy as np
 
-from pygimli.io import opt_import
+import pygimli as pg
 
 
-def handleWPTS(wpts):
+def findUTMZone(lon, lat):
+    """Find utm zone for lon and lat values.
+
+    lon -180 -- -174 -> 1 ... 174 -- 180 -> 60
+    lat < 0 hemisphere = S, > 0 hemisphere = N
+
+    Parameters
+    ----------
+    lon : float
+    lat : float
+
+    Returns
+    -------
+    str :
+        zone + hemisphere
+    """
+    zone = int((int(lon) + 180) / 6) + 1
+
+    if lat > 0:
+        return str(zone) + 'N'
+    else:
+        return str(zone) + 'S'
+
+
+def getUTMProjection(zone, ellipsoid='WGS84'):
+    """Create and return the current coordinate projection.
+
+    This is a proxy for pyproj.
+
+    Parameters
+    ----------
+    utmZone : str
+        Zone for for UTM
+
+    ellipsoid : str
+        ellipsoid based on ['wgs84']
+
+    Returns
+    -------
+    Pyproj Projection
+
+    """
+
+    pyproj = pg.optImport('pyproj', 'Coordinate transformations.')
+
+    return pyproj.Proj(proj='utm', zone=zone, ellps=ellipsoid)
+
+
+
+def _getXMLData(ele, name, default):
+    ret = default
+    if ele.getElementsByTagName(name):
+        ret = ele.getElementsByTagName(name)[0].childNodes[0].data
+
+    return ret
+
+def _extractWPTS(wpts):
     """Handler for Waypoints in gpx xml-dom."""
-    w = []
+    w = dict()
 
     for wpt in wpts:
         if wpt.hasAttribute('lat'):
@@ -25,15 +81,13 @@ def handleWPTS(wpts):
         else:
             continue
 
-        name = 'None'
-        if wpt.getElementsByTagName('name'):
-            name = wpt.getElementsByTagName('name')[0].childNodes[0].data
+        name = _getXMLData(wpt, 'name', 'WP ' + str(len(w.keys())))
 
-        time = 0
-        if wpt.getElementsByTagName('time'):
-            time = wpt.getElementsByTagName('time')[0].childNodes[0].data
-
-        w.append((lon, lat, name, time))
+        w[name] = {'lat': lat,
+                   'lon': lon,
+                   'time': _getXMLData(wpt, 'time', 0),
+                   'desc': _getXMLData(wpt, 'desc', None),
+                   }
     return w
 
 
@@ -42,18 +96,15 @@ def readGPX(fileName):
 
     Currently only simple waypoint extraction is supported.
 
-
     <gpx version="1.0" creator="creator">
 
     <metadata>
     <name>Name</name>
     </metadata>
-    <wpt lat="50.0" lon="10.">
-    <name>WPT1 Name</name>
-    </wpt>
-
     <wpt lat="51." lon="11.">
-    <name>WPT2 Name</name>
+    <name>optional</name>
+    <time>optional</time>
+    <description>optional</description>
     </wpt>
 
     </gpx>
@@ -64,14 +115,14 @@ def readGPX(fileName):
     dom = parse(fileName)
 
     name = fileName
+
     meta = dom.getElementsByTagName("metadata")
     if len(meta) > 0:
-        if meta[0].getElementsByTagName('name'):
-            name = meta[0].getElementsByTagName('name')[0].childNodes[0].data
+        name = _getXMLData(meta[0], 'name', fileName)
 
     wpts = dom.getElementsByTagName("wpt")
 
-    return handleWPTS(wpts), name
+    return _extractWPTS(wpts), name
 
 
 def readSimpleLatLon(filename, verbose=False):
@@ -170,13 +221,15 @@ def GKtoUTM(ea, no=None, zone=32, gk=None, gkzone=None):
         if gkzone <= 0 or gkzone >= 5:
             print("cannot detect valid GK zone")
 
-    pyproj = opt_import('pyproj', 'coordinate transformations')
+    pyproj = optImport('pyproj', 'coordinate transformations')
     if pyproj is None:
         return None
 
     gk = pyproj.Proj(init="epsg:"+str(31464+gkzone))
-    wgs84 = pyproj.Proj(init="epsg:4326")  # pure ellipsoid to doubel transform
-    utm = pyproj.Proj(proj='utm', zone=zone, ellps='WGS84')  # UTM
+    wgs84 = pyproj.Proj(init="epsg:4326")  # pure ellipsoid to double transform
+
+    utm = getUTMProjection(zone=zone, ellps='WGS84')  # UTM
+
     if no is None:  # two-column matrix
         lon, lat = pyproj.transform(gk, wgs84, ea[0], ea[1])
     else:

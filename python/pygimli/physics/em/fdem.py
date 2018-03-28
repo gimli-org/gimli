@@ -4,7 +4,6 @@
 
 import pygimli as pg
 from pygimli.mplviewer import show1dmodel, drawModel1D
-from pygimli.io import opt_import
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -301,15 +300,15 @@ class FDEM():
             ivcp = range(len(self.header['FREQUENCY']))
         self.frequencies = np.array(self.header['FREQUENCY'])[ivcp]
         self.coilSpacing = np.array(self.header['COILSEPERATION'])[ivcp]
+
         # read properties from data block
         names = tmp.dtype.names
-        pyproj = opt_import('pyproj',
-                            'coordinate transformations EM lon,lat values')
-        if 'lon' in names and 'lat' in names and pyproj is not None:
-            utm = pyproj.Proj(proj='utm', zone=32, ellps='WGS84')  # projection
+        if 'lon' in names and 'lat' in names:
+            utm = pg.utils.getUTMProjection(zone=32)
             x, y = utm(tmp['lon'], tmp['lat'])
         else:
             x, y = tmp['x'], tmp['y']
+
         self.pos = np.column_stack((x, y))[::takeevery]
         dx = np.sqrt(np.diff(self.pos[:, 0])**2 + np.diff(self.pos[:, 1])**2)
         self.x = np.hstack((0., np.cumsum(dx)))

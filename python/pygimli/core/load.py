@@ -25,11 +25,11 @@ def optImport(module, requiredFor="use the full functionality"):
 
     Examples
     --------
-    >>> from pygimli.io import optImport
-    >>> pg = optImport("pygimli")
+    >>> import pygimli as pg
+    >>> pg = pg.optImport("pygimli")
     >>> pg.__name__
     'pygimli'
-    >>> optImport("doesNotExist", requiredFor="do something special")
+    >>> pg.optImport("doesNotExist", requiredFor="do something special")
     No module named 'doesNotExist'.
     You need to install this optional dependency to do something special.
     """
@@ -40,18 +40,21 @@ def optImport(module, requiredFor="use the full functionality"):
     if module.count(".") > 2:
         raise ImportError("Can only import modules and sub-packages.")
 
+    mod = None
     try:
         mod = import_module(module)
     except ImportError:
         msg = ("No module named \'%s\'.\nYou need to install this optional "
                "dependency to %s.")
         print(msg % (module, requiredFor))
-        mod = None
+        # exception would be better her but then the test fails
+        # raise Exception(msg % (module, requiredFor))
 
     return mod
 
-
-opt_import = optImport
+def opt_import(*args, **kwargs):
+    pg.deprecated()
+    return optImport(*args, **kwargs)
 
 
 def load(fname, verbose=False):
@@ -68,11 +71,10 @@ def load(fname, verbose=False):
     --------
     >>> import os, tempfile
     >>> import pygimli as pg
-    >>> from pygimli.io import load
     >>> fname = tempfile.mktemp(suffix=".bms")
     >>> pg.createGrid(range(3), range(3)).save(fname)
     1
-    >>> mesh = load(fname)
+    >>> mesh = pg.load(fname)
     >>> os.remove(fname)
     >>> mesh.cellCount()
     4

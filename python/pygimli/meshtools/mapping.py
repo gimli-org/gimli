@@ -565,7 +565,7 @@ def interpolate(*args, **kwargs):
                 return harmfitNative(u, x=x, nc=coeff, xc=xi, err=None)[0]
 
             if 'spline' in method:
-                if pg.io.opt_import("scipy", requiredFor="use interpolate splines."):
+                if pg.optImport("scipy", requiredFor="use interpolate splines."):
                     from scipy import interpolate
                     tck = interpolate.splrep(x, u, s=0)
                     return interpolate.splev(xi, tck, der=0)

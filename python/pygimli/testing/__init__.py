@@ -17,8 +17,6 @@ from os.path import join, realpath
 
 import matplotlib.pyplot as plt
 
-from pygimli.io import opt_import
-
 
 def test(target=None, show=False, onlydoctests=False, coverage=False,
          htmlreport=False, abort=False, verbose=True):
@@ -94,13 +92,13 @@ def test(target=None, show=False, onlydoctests=False, coverage=False,
         cmd.extend(["--ignore", join(cwd, directory)])
 
     if coverage:
-        pc = opt_import("pytest_cov", "create a code coverage report")
+        pc = pg.optImport("pytest_cov", "create a code coverage report")
         if pc:
             cmd.extend(["--cov", "pygimli"])
             cmd.extend(["--cov-report", "term"])
 
     if htmlreport:
-        ph = opt_import("pytest_html", "create a html report")
+        ph = pg.optImport("pytest_html", "create a html report")
         if ph:
             cmd.extend(["--html", htmlreport])
 
