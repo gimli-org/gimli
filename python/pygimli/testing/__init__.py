@@ -12,6 +12,7 @@ Writing tests for pygimli
 Please check: https://pytest.org/latest/example/index.html
 """
 
+import numpy as np
 import sys
 from os.path import join, realpath
 
@@ -49,6 +50,12 @@ def test(target=None, show=False, onlydoctests=False, coverage=False,
         Return correct exit code, e.g. abort documentation build when a test
         fails.
     """
+
+    printopt = np.get_printoptions()
+
+    # Numpy compatibility (array string representation has changed)
+    if np.__version__[:4] == "1.14":
+        np.set_printoptions(legacy="1.13")
 
     old_backend = plt.get_backend()
     if not show:
@@ -105,5 +112,6 @@ def test(target=None, show=False, onlydoctests=False, coverage=False,
     exitcode = pytest.main(cmd)
     plt.switch_backend(old_backend)
     plt.close('all')
+    np.set_printoptions(**printopt)
     if abort:
         sys.exit(exitcode)

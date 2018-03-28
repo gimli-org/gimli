@@ -59,7 +59,7 @@ def cellDataToNodeData(mesh, data, style='mean'):
     >>> celldata = np.array([1, 2, 3, 4])
     >>> nodedata = pg.meshtools.cellDataToNodeData(grid, celldata)
     >>> print(nodedata.array())
-    [1.  1.5 2.  2.  2.5 3.  3.  3.5 4. ]
+    [ 1.   1.5  2.   2.   2.5  3.   3.   3.5  4. ]
     """
     if len(data) != mesh.cellCount():
         raise BaseException("Dimension mismatch, expecting cellCount(): " +
