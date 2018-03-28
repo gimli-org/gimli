@@ -273,12 +273,13 @@ def underlayMap(ax, proj, vendor='OSM', zoom=-1, pixelLimit=None,
 
     extent = np.asarray([imUL[0], imLR[0], imLR[1], imUL[1]])
 
-    ax.imshow(image, extent=extent)
+    gci = ax.imshow(image, extent=extent)
 
     if not fitMap:
         ax.set_xlim(origXLimits)
         ax.set_ylim(origYLimits)
 
+    return gci
 
 def getBKGaddress(xlim, ylim, imsize=1000, zone=32, service='dop40',
                   usetls=False, epsg=0, uuid='', fmt='image/jpeg',

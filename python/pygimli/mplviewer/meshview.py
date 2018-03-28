@@ -81,7 +81,25 @@ class CellBrowser(object):
         self.artist = None
         self.pid = None
         self.kid = None
+        self.text = None
 
+        self.setMesh(mesh)
+        self.setData(data)
+        self.connect()
+
+    def connect(self):
+        """Connect to matplotlib figure canvas."""
+        self.pid = self.fig.canvas.mpl_connect('pick_event', self.onPick)
+        self.kid = self.fig.canvas.mpl_connect('key_press_event', self.onPress)
+        __CBCache__.add(self)
+
+    def disconnect(self):
+        """Disconnect from matplotlib figure canvas."""
+        self.fig.canvas.mpl_connect(self.pid)
+        self.fig.canvas.mpl_connect(self.kid)
+        __CBCache__.remove(self)
+
+    def initText(self):
         bbox = dict(boxstyle='round, pad=0.5', fc='w', alpha=0.5)
         arrowprops = dict(arrowstyle='->', connectionstyle='arc3,rad=0.5')
         kwargs = dict(fontproperties='monospace', visible=False,
@@ -90,21 +108,6 @@ class CellBrowser(object):
                       textcoords='offset points', bbox=bbox, va='center')
 
         self.text = self.ax.annotate(None, xy=(0, 0), **kwargs)
-
-        self.setMesh(mesh)
-        self.setData(data)
-
-    def connect(self):
-        """Connect to matplotlib figure canvas."""
-        self.pid = self.fig.canvas.mpl_connect('pick_event', self.onpick)
-        self.kid = self.fig.canvas.mpl_connect('key_press_event', self.onpress)
-        __CBCache__.add(self)
-
-    def disconnect(self):
-        """Disconnect from matplotlib figure canvas."""
-        self.fig.canvas.mpl_connect(self.pid)
-        self.fig.canvas.mpl_connect(self.kid)
-        __CBCache__.remove(self)
 
     def setMesh(self, mesh):
         self.mesh = mesh
@@ -126,13 +129,17 @@ class CellBrowser(object):
     def hide(self):
         """Hide info window."""
         self.cellID = -1
-        self.text.set_visible(False)
+        if self.text is not None:
+            self.text.set_visible(False)
 
+        self.removeHighlightCell()
+        self.fig.canvas.draw_idle()
+
+    def removeHighlightCell(self):
         if self.highLight is not None:
-            self.highLight.remove()
+            if self.highLight in self.ax.collections:
+                self.highLight.remove()
             self.highLight = None
-
-        self.fig.canvas.draw()
 
     def highlightCell(self, cell):
         """Highlight selected cell."""
@@ -147,7 +154,7 @@ class CellBrowser(object):
         self.ax.add_collection(self.highLight)
 
 
-    def onpick(self, event):
+    def onPick(self, event):
         """Call `self.update()` on mouse pick event."""
         self.event = event
         self.artist = event.artist
@@ -169,7 +176,7 @@ class CellBrowser(object):
             self.cellID = event.ind[0]
         self.update()
 
-    def onpress(self, event):
+    def onPress(self, event):
         """Call `self.update()` if up, down, or escape keys are pressed."""
         # print(event, event.key)
         if self.data is None:
@@ -208,6 +215,10 @@ class CellBrowser(object):
                 info = "\nx: {:.2f}\n y: {:.2f}\n data: {:.2e}\n marker: {:d}".format(
                     x, y, data, marker)
                 text = header + textwrap.dedent(info)
+
+                if self.text is None or self.text not in self.ax.texts:
+                    self.initText()
+
                 self.text.set_text(text)
                 self.text.xy = x, y
                 self.text.set_visible(True)
