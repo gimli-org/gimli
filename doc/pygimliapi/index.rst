@@ -20,7 +20,6 @@ pyGIMLi API Reference
   :template: module.rst
 
   frameworks
-  io
   manager
   meshtools
   misc

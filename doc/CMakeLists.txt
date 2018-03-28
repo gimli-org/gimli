@@ -189,5 +189,5 @@ add_custom_target(doc
         "Building HTML, API and PDF Documentation"
     DEPENDS
         sphinxhtml
-        sphinxpdf
+        #sphinxpdf
 )

@@ -96,8 +96,8 @@ class CellBrowser(object):
     def connect(self):
         """Connect to matplotlib figure canvas."""
         if not self._connected:
-            self.pid = self.fig.canvas.mpl_connect('pick_event', self.onpick)
-            self.kid = self.fig.canvas.mpl_connect('key_press_event', self.onpress)
+            self.pid = self.fig.canvas.mpl_connect('pick_event', self.onPick)
+            self.kid = self.fig.canvas.mpl_connect('key_press_event', self.onPress)
             __CBCache__.add(self)
             self._connected = True
 
