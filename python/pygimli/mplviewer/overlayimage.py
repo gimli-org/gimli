@@ -9,6 +9,8 @@ import random
 import numpy as np
 import matplotlib.image as mpimg
 
+import pygimli as pg
+
 
 class OverlayImageMPL(object):
     """TODO Documentme."""
@@ -80,6 +82,27 @@ class OverlayImageMPL(object):
             self.imAxes.set_yticks([])
 
 
+class MapTilesCacheSingleton(object):
+    __instance = None
+    _tilesCache = dict()
+
+    def __new__(cls):
+        if MapTilesCacheSingleton.__instance is None:
+            MapTilesCacheSingleton.__instance = object.__new__(cls)
+        return MapTilesCacheSingleton.__instance
+
+    def add(self, key, tile):
+        self._tilesCache[key] = tile
+
+    def get(self, key):
+        if key in self._tilesCache:
+            return self._tilesCache[key]
+        return None
+
+# We only want one instance of this global cache so its a singleton class
+__MatTilesCache__ = MapTilesCacheSingleton()
+
+
 def deg2MapTile(lon_deg, lat_deg, zoom):
     """TODO Documentme."""
     lat_rad = math.radians(lat_deg)
@@ -107,14 +130,16 @@ def cacheFileName(fullname, vendor):
     """Createfilename and path to cache download data."""
     (dirName, fileName) = os.path.split(fullname)
 
-    path = './' + vendor + '/' + dirName
+    #os.path.joint(pg.getConfigPath(), fileName)
+
+    path = os.path.join(pg.getConfigPath(), vendor, dirName)
 
     try:
         os.makedirs(path)
     except OSError:
         pass
 
-    return path + '/' + fileName
+    return os.path.join(path, fileName)
 
 
 def getMapTile(xtile, ytile, zoom, vendor='OSM', verbose=False):
@@ -163,22 +188,32 @@ def getMapTile(xtile, ytile, zoom, vendor='OSM', verbose=False):
 
     filename = cacheFileName(imagename, serverName) + imFormat
 
-    if os.path.exists(filename):
-        if verbose:
-            print(("Read image from disk", filename))
-        image = mpimg.imread(filename)
-        image = image[:, :, 0:3]
+    image = __MatTilesCache__.get(filename)
+
+    if image is None:
+
+        if os.path.exists(filename):
+            if verbose:
+                print(("Read image from disk", filename))
+            image = mpimg.imread(filename)
+            image = image[:, :, 0:3]
+        else:
+            if verbose:
+                print(("Get map from url maps", url))
+
+            image = mpimg.imread(url)
+            if verbose:
+                print(imagename)
+            mpimg.imsave(filename, image)
+
+        if imFormat == '.jpeg':
+            image = image[::-1, ...] / 256.
+
+        __MatTilesCache__.add(filename, image)
     else:
         if verbose:
-            print(("Get map from url maps", url))
+            print(("Took image from cache", filename))
 
-        image = mpimg.imread(url)
-        if verbose:
-            print(imagename)
-        mpimg.imsave(filename, image)
-
-    if imFormat == '.jpeg':
-        image = image[::-1, ...] / 256.
     return image
 # def getMapTile(...)
 

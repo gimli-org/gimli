@@ -42,7 +42,7 @@ except ImportError as e:
 from .. _logger import *
 
 _pygimli_.load = None
-from .load import load, optImport, opt_import
+from .load import load, optImport, opt_import, getConfigPath
 
 from pygimli.viewer import show, plt, wait
 from pygimli.solver import solve

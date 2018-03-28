@@ -26,9 +26,13 @@ def sparseMatrix2csr(A):
     from scipy.sparse import csr_matrix
     if isinstance(A, pg.SparseMapMatrix):
         C = pg.SparseMatrix(A)
-        return csr_matrix((C.vecVals(), C.vecRowIdx(), C.vecColPtr()))
+        return csr_matrix((C.vecVals().array(),
+                           C.vecRowIdx(),
+                           C.vecColPtr()))
     elif isinstance(A, pg.SparseMatrix):
-        return csr_matrix((A.vecVals(), A.vecRowIdx(), A.vecColPtr()))
+        return csr_matrix((A.vecVals().array(),
+                           A.vecRowIdx(),
+                           A.vecColPtr()))
 
     return csr_matrix(A)
 

@@ -57,6 +57,22 @@ def opt_import(*args, **kwargs):
     return optImport(*args, **kwargs)
 
 
+def getConfigPath():
+    r"""Return the user space path for configuration or cache files.
+
+    For Windows: return 'C:\Documents and Settings\username\Appdata\gimli'
+
+    For Linux return /home/username/.config/gimli
+
+    """
+
+    if 'APPDATA' in os.environ:
+        return os.path.join(os.environ['APPDATA'], 'gimli')
+    else:
+        return os.path.join(os.environ['HOME'], '.config', 'gimli')
+
+
+
 def load(fname, verbose=False):
     """General import function to load data and meshes from file.
 

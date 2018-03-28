@@ -113,5 +113,6 @@ def test(target=None, show=False, onlydoctests=False, coverage=False,
     plt.switch_backend(old_backend)
     plt.close('all')
     np.set_printoptions(**printopt)
+
     if abort:
         sys.exit(exitcode)
