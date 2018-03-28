@@ -83,6 +83,7 @@ class CellBrowser(object):
         self.artist = None
         self.pid = None
         self.kid = None
+        self.text = None
 
         self.setMesh(mesh)
         self.setData(data)
@@ -107,6 +108,16 @@ class CellBrowser(object):
             self.fig.canvas.mpl_disconnect(self.pid)
             self.fig.canvas.mpl_disconnect(self.kid)
             self._connected = False
+
+    def initText(self):
+        bbox = dict(boxstyle='round, pad=0.5', fc='w', alpha=0.5)
+        arrowprops = dict(arrowstyle='->', connectionstyle='arc3,rad=0.5')
+        kwargs = dict(fontproperties='monospace', visible=False,
+                      fontsize=mpl.rcParams['font.size'] - 2, weight='bold',
+                      xytext=(50, 20), arrowprops=arrowprops,
+                      textcoords='offset points', bbox=bbox, va='center')
+
+        self.text = self.ax.annotate(None, xy=(0, 0), **kwargs)
 
     def initText(self):
         bbox = dict(boxstyle='round, pad=0.5', fc='w', alpha=0.5)
@@ -147,6 +158,7 @@ class CellBrowser(object):
         self.fig.canvas.draw()
 
     def removeHighlightCell(self):
+        """Remove cell highlights."""
         if self.highLight is not None:
             if self.highLight in self.ax.collections:
                 self.highLight.remove()
@@ -162,7 +174,8 @@ class CellBrowser(object):
         self.highLight.set_facecolors([0.9, 0.9, 0.9, 0.4])
         self.ax.add_collection(self.highLight)
 
-    def onpick(self, event):
+
+    def onPick(self, event):
         """Call `self.update()` on mouse pick event."""
         self.event = event
         self.artist = event.artist
@@ -188,7 +201,7 @@ class CellBrowser(object):
         else:  # variant before (seemed inaccurate)
             self.cellID = event.ind[0]
 
-    def onpress(self, event):
+    def onPress(self, event):
         """Call `self.update()` if up, down, or escape keys are pressed."""
         # print(event, event.key)
         if self.data is None:
@@ -270,7 +283,6 @@ def drawMesh(ax, mesh, **kwargs):
     >>> plt.show()
     """
     if mesh.cellCount() == 0:
-        print("drawMesh*************")
         pg.mplviewer.drawPLC(ax, mesh, **kwargs)
     else:
         pg.mplviewer.drawMeshBoundaries(ax, mesh, **kwargs)

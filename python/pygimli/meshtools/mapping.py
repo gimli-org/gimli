@@ -59,7 +59,7 @@ def cellDataToNodeData(mesh, data, style='mean'):
     >>> celldata = np.array([1, 2, 3, 4])
     >>> nodedata = pg.meshtools.cellDataToNodeData(grid, celldata)
     >>> print(nodedata.array())
-    [1.  1.5 2.  2.  2.5 3.  3.  3.5 4. ]
+    [ 1.   1.5  2.   2.   2.5  3.   3.   3.5  4. ]
     """
     if len(data) != mesh.cellCount():
         raise BaseException("Dimension mismatch, expecting cellCount(): " +
@@ -565,7 +565,7 @@ def interpolate(*args, **kwargs):
                 return harmfitNative(u, x=x, nc=coeff, xc=xi, err=None)[0]
 
             if 'spline' in method:
-                if pg.io.opt_import("scipy", requiredFor="use interpolate splines."):
+                if pg.optImport("scipy", requiredFor="use interpolate splines."):
                     from scipy import interpolate
                     tck = interpolate.splrep(x, u, s=0)
                     return interpolate.splev(xi, tck, der=0)

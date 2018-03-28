@@ -12,12 +12,11 @@ Writing tests for pygimli
 Please check: https://pytest.org/latest/example/index.html
 """
 
+import numpy as np
 import sys
 from os.path import join, realpath
 
 import matplotlib.pyplot as plt
-
-from pygimli.io import opt_import
 
 
 def test(target=None, show=False, onlydoctests=False, coverage=False,
@@ -51,6 +50,12 @@ def test(target=None, show=False, onlydoctests=False, coverage=False,
         Return correct exit code, e.g. abort documentation build when a test
         fails.
     """
+
+    printopt = np.get_printoptions()
+
+    # Numpy compatibility (array string representation has changed)
+    if np.__version__[:4] == "1.14":
+        np.set_printoptions(legacy="1.13")
 
     old_backend = plt.get_backend()
     if not show:
@@ -94,18 +99,20 @@ def test(target=None, show=False, onlydoctests=False, coverage=False,
         cmd.extend(["--ignore", join(cwd, directory)])
 
     if coverage:
-        pc = opt_import("pytest_cov", "create a code coverage report")
+        pc = pg.optImport("pytest_cov", "create a code coverage report")
         if pc:
             cmd.extend(["--cov", "pygimli"])
             cmd.extend(["--cov-report", "term"])
 
     if htmlreport:
-        ph = opt_import("pytest_html", "create a html report")
+        ph = pg.optImport("pytest_html", "create a html report")
         if ph:
             cmd.extend(["--html", htmlreport])
 
     exitcode = pytest.main(cmd)
     plt.switch_backend(old_backend)
     plt.close('all')
+    np.set_printoptions(**printopt)
+
     if abort:
         sys.exit(exitcode)
