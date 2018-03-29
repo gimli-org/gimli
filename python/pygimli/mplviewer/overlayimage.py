@@ -110,6 +110,24 @@ def deg2MapTile(lon_deg, lat_deg, zoom):
     xtile = int((lon_deg + 180.0) / 360.0 * n)
     ytile = int((1.0 - math.log(math.tan(lat_rad) +
                                 (1 / math.cos(lat_rad))) / math.pi) / 2.0 * n)
+
+
+
+    #correct the latitude to go from 0 (north) to 180 (south),
+    #instead of 90(north) to -90(south)
+    latitude=90 - lat_deg;
+    #//correct the longitude to go from 0 to 360
+    longitude=180 + lon_deg;
+
+    #//find tile size from zoom level
+    latTileSize = 180/(pow(2,(17-zoom)))
+    longTileSize = 360/(pow(2,(17-zoom)))
+
+    #//find the tile coordinates
+    tilex=(int)(longitude/longTileSize)
+    tiley=(int)(latitude/latTileSize)
+
+
     return (xtile, ytile)
 
 
@@ -145,6 +163,13 @@ def cacheFileName(fullname, vendor):
 def getMapTile(xtile, ytile, zoom, vendor='OSM', verbose=False):
     """Get a map tile from public mapping server.
 
+    Its not recommended to use the google maps tile server without
+    the google maps api so if you use it to often your IP will be blacklisted
+
+    TODO: look here for more vendors https://github.com/Leaflet/Leaflet
+    TODO: Try http://scitools.org.uk/cartopy/docs/v0.14/index.html
+    TODO: Try https://github.com/jwass/mplleaflet
+
     Parameters
     ----------
     xtile : int
@@ -155,7 +180,7 @@ def getMapTile(xtile, ytile, zoom, vendor='OSM', verbose=False):
 
     vendor : str
         . 'OSM' or 'Open Street Map' (tile.openstreetmap.org)
-        . 'GM' or 'Google Maps' (mt.google.com)
+        . 'GM' or 'Google Maps' (mt.google.com) (do not use it to much)
 
     verbose : bool [false]
         be verbose
@@ -168,20 +193,26 @@ def getMapTile(xtile, ytile, zoom, vendor='OSM', verbose=False):
         url = 'http://a.' + serverName + '/' + imagename + '.png'
         imFormat = '.png'
     elif vendor == 'GM' or vendor == 'Google Maps':
-        # http://mt1.google.com/vt/x=70389&s=&y=43016&z=17
-        # http://mt.google.com/vt/x=70389&s=&y=43016&z
-        serverName = 'mt.google.com'
-        nr = random.randint(0, 3)
-        url = 'http://mt' + str(nr) + '.google.com/vt/x=' + \
-            str(xtile) + '&y=' + str(ytile) + '&z=' + str(zoom)
+        # its not recommended to use the google maps tile server without
+        # google maps api .. if you use it to often your IP will be blacklisted
+        # mt.google.com will balance itself
+        serverName = 'http://mt.google.com'
+        #nr = random.randint(1, 4)
+        #serverName = 'http://mt' + str(nr) + '.google.com'
+        # LAYERS:
+        #h = roads only
+        #m = standard roadmap
+        #p = terrain
+        #r = somehow altered roadmap
+        #s = satellite only
+        #t = terrain only
+        #y = hybrid
+        #,transit
+
+        url = serverName + '/vt/lyrs=m' + \
+              '&x=' + str(xtile) + '&y=' + str(ytile) + \
+              '&hl=en' + '&z=' + str(zoom)
         imFormat = '.png'
-    elif vendor == 'GMS' or vendor == 'Google Maps Satellite':
-        serverName = 'khm.google.com'
-        nr = random.randint(0, 3)
-        url = 'http://khm' + str(nr) + '.google.com/kh/v=60&x=' + \
-            str(xtile) + '&y=' + str(ytile) + '&z=' + str(zoom)
-        imFormat = '.jpeg'
-#        http://khm0.google.com/kh/v=60&x=2197&y=1346&z=12
     else:
         raise "Vendor: " + vendor + \
             " not supported (currently only OSM (Open Street Map))"
