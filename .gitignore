@@ -1,6 +1,14 @@
 # Files and filetypes exluded from version control
 # Python standard taken from https://github.com/github/gitignore/blob/master/Python.gitignore
 
+# Documentation
+_build/
+_tutorials_auto/
+_examples_auto/
+_generated/
+# sidebar gallery is created on the fly
+doc/_templates/gallery.html
+
 # Customizations
 *.log
 *.pdf
@@ -14,6 +22,7 @@ command.history
 *.vector
 
 # Gmsh
+*.geo.*
 *.geo
 *.msh
 
