@@ -23,9 +23,11 @@ body {
     line-height: 21px;
 }
 a {
-    color: #107896
+    /* color: #107896 */
+    color: #337AB7
 }
 a:hover {
+    color: #107896;
     text-decoration: none;
 }
 
@@ -645,12 +647,14 @@ i.icon-search {
     padding-left: 3px;
 }
 .highlight .nn {
-    color: #107896;
+    /* color: #107896; */
+    color: #337AB7;
     font-weight: bold;
 }
 div.highlight-python pre a {
     font-weight: bold;
-    color: #107896;
+    /* color: #107896; */
+    color: #337AB7;
     text-decoration: underline;
 }
 div.highlight-python pre a:hover {

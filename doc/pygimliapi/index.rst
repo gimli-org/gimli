@@ -19,6 +19,7 @@ pyGIMLi API Reference
   :toctree: _generated
   :template: module.rst
 
+  .. core
   frameworks
   manager
   meshtools
@@ -26,6 +27,7 @@ pyGIMLi API Reference
   mplviewer
   physics
   solver
+  testing
   utils
   viewer
 
