@@ -58,7 +58,7 @@ regularization on meshes (1D, 2D, 3D) with regular or irregular arrangement are
 available. There is flexible control of all inversion parameters. The default
 inversion framework is based on the generalized Gauss-Newton method.
 
-Please see :ref:`inversion tutorial<tut:inversion>` for examples and more
+Please see :ref:`tut:inversion` for examples and more
 details.
 
 .. _sec:about_gimli_modelling:
@@ -79,7 +79,7 @@ The modelling capabilities of pyGIMLi inlcude:
 * Triangle, Quads, Tetrahedron, Prism and Hexahedron, mixed meshes
 * solver for elliptic problems (Helmholtz-type PDE)
 
-Please see :ref:`modelling tutorial<tut:modelling>` for examples and more details.
+Please see :ref:`tut:modelling` for examples and more details.
 
 License
 -------
