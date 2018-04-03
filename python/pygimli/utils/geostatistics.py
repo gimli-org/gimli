@@ -7,7 +7,6 @@ from math import pi, sin, cos
 import numpy as np
 
 import pygimli as pg
-from pygimli.io import opt_import
 
 
 def covarianceMatrixVec(x, y, z=None, I=None, dip=0, strike=0, var=1):
@@ -79,7 +78,7 @@ def covarianceMatrix(mesh, nodes=False, **kwargs):
 
 def computeInverseRootMatrix(CM, thrsh=0.001, verbose=False):
     """Compute inverse square root (C^{-0.5} of matrix."""
-    spl = opt_import('scipy.linalg', 'scipy linear algebra')
+    spl = pg.optImport('scipy.linalg', 'scipy linear algebra')
     if spl is None:
         return None
 

@@ -10,7 +10,7 @@ import numpy as np
 import pygimli as pg
 from pygimli.misc import streamline
 
-from .colorbar import autolevel, cmapFromName, createColorBar
+from .colorbar import autolevel, cmapFromName, createColorBar, updateColorBar
 from .utils import updateAxes as updateAxes_
 
 
@@ -63,13 +63,14 @@ class CellBrowser(object):
     >>> browser = CellBrowser(mesh)
     >>> browser.connect()
     """
-
     def __init__(self, mesh, data=None, ax=None):
         """Construct CellBrowser on a specific `mesh`."""
         if ax:
             self.ax = ax
         else:
             self.ax = mpl.pyplot.gca()
+
+        self._connected = False
 
         self.fig = self.ax.figure
         self.mesh = None
@@ -82,21 +83,41 @@ class CellBrowser(object):
         self.artist = None
         self.pid = None
         self.kid = None
+        self.text = None
 
         self.setMesh(mesh)
         self.setData(data)
+        self.connect()
+
+    def __del__(self):
+        """Deregister if the cellBrowser has been deleted."""
+        self.disconnect()
 
     def connect(self):
         """Connect to matplotlib figure canvas."""
-        self.pid = self.fig.canvas.mpl_connect('pick_event', self.onpick)
-        self.kid = self.fig.canvas.mpl_connect('key_press_event', self.onpress)
-        __CBCache__.add(self)
+        if not self._connected:
+            self.pid = self.fig.canvas.mpl_connect('pick_event', self.onPick)
+            self.kid = self.fig.canvas.mpl_connect('key_press_event', self.onPress)
+            __CBCache__.add(self)
+            self._connected = True
 
     def disconnect(self):
         """Disconnect from matplotlib figure canvas."""
-        __CBCache__.remove(self)
-        self.fig.canvas.mpl_connect(self.pid)
-        self.fig.canvas.mpl_connect(self.kid)
+        if self._connected:
+            __CBCache__.remove(self)
+            self.fig.canvas.mpl_disconnect(self.pid)
+            self.fig.canvas.mpl_disconnect(self.kid)
+            self._connected = False
+
+    def initText(self):
+        bbox = dict(boxstyle='round, pad=0.5', fc='w', alpha=0.5)
+        arrowprops = dict(arrowstyle='->', connectionstyle='arc3,rad=0.5')
+        kwargs = dict(fontproperties='monospace', visible=False,
+                      fontsize=mpl.rcParams['font.size'] - 2, weight='bold',
+                      xytext=(50, 20), arrowprops=arrowprops,
+                      textcoords='offset points', bbox=bbox, va='center')
+
+        self.text = self.ax.annotate(None, xy=(0, 0), **kwargs)
 
     def initText(self):
         bbox = dict(boxstyle='round, pad=0.5', fc='w', alpha=0.5)
@@ -137,6 +158,7 @@ class CellBrowser(object):
         self.fig.canvas.draw()
 
     def removeHighlightCell(self):
+        """Remove cell highlights."""
         if self.highLight is not None:
             if self.highLight in self.ax.collections:
                 self.highLight.remove()
@@ -152,28 +174,34 @@ class CellBrowser(object):
         self.highLight.set_facecolors([0.9, 0.9, 0.9, 0.4])
         self.ax.add_collection(self.highLight)
 
-    def onpick(self, event):
+
+    def onPick(self, event):
         """Call `self.update()` on mouse pick event."""
         self.event = event
         self.artist = event.artist
 
         if self.data is None:
             self.data = self.artist.get_array()
+            #self.edgeColors = self.artist.get_edgecolors()
 
         if 'mouseevent' in event.__dict__.keys():
+            #print(event.__dict__.keys())
+            #print(event.mouseevent)
             if (event.mouseevent.xdata is not None and
-                    event.mouseevent.ydata is not None):
+                event.mouseevent.ydata is not None and
+                event.mouseevent.button == 1):
                 c = self.mesh.findCell((event.mouseevent.xdata,
                                         event.mouseevent.ydata))
                 if c and self.cellID != c.id():
                     self.cellID = c.id()
                 else:
                     self.cellID = -1
+
+                self.update()
         else:  # variant before (seemed inaccurate)
             self.cellID = event.ind[0]
-        self.update()
 
-    def onpress(self, event):
+    def onPress(self, event):
         """Call `self.update()` if up, down, or escape keys are pressed."""
         # print(event, event.key)
         if self.data is None:
@@ -197,7 +225,6 @@ class CellBrowser(object):
 
     def update(self):
         """Update the information window.
-
         Hide the information window for self.cellID == -1
         """
         try:
@@ -336,7 +363,7 @@ def drawModel(ax, mesh, data=None, logScale=True, cMin=None, cMax=None,
             print(data, mesh)
             pg.info("drawModel have wrong data length .. " +
                     " indexing data from cellMarkers()")
-            viewdata = data(mesh.cellMarkers())
+            viewdata = data[mesh.cellMarkers()]
         else:
             viewdata = data
 
@@ -346,7 +373,7 @@ def drawModel(ax, mesh, data=None, logScale=True, cMin=None, cMax=None,
         pg.mplviewer.setMappableData(gci, viewdata, cMin=cMin, cMax=cMax,
                                      logScale=logScale)
 
-    gci.set_antialiased(False)
+    gci.set_antialiased(True)
     gci.set_linewidth(0.1)
     gci.set_edgecolor('face')
 
@@ -562,11 +589,12 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
     ...                            marker=10,  boundaryMarker=10, area=0.1)
     >>> fig, ax = plt.subplots()
     >>> geom = mt.mergePLC([world, block])
-    >>> pg.mplviewer.drawPLC(ax, geom, markers=True)
+    >>> pg.mplviewer.drawPLC(ax, geom)
     """
     #    eCircles = []
     cols = []
 
+    #print('draw PLC ********************')
     if fillRegion and mesh.boundaryCount() > 2:
         tmpMesh = pg.meshtools.createMesh(mesh, quality=20, area=0)
         if tmpMesh.cellCount() == 0:
@@ -574,26 +602,33 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
         else:
             markers = np.array(tmpMesh.cellMarkers())
             uniquemarkers, uniqueidx = np.unique(markers, return_inverse=True)
-            kwargs["cmap"] = plt.cm.get_cmap("Set3", len(uniquemarkers))
-            kwargs.setdefault('tri', True)
-            kwargs.setdefault('alpha', 1)
-            kwargs.setdefault('linewidth', 0.0)
-            kwargs.setdefault('snap', True)
-            kwargs["cMin"] = -0.5
-            kwargs["cMax"] = len(uniquemarkers) - 0.5
-            kwargs.setdefault('data', np.arange(len(uniquemarkers))[uniqueidx])
-            gci = drawModel(ax=ax, mesh=tmpMesh, **kwargs)
+            gci = drawModel(ax=ax,
+                            data=np.arange(len(uniquemarkers))[uniqueidx],
+                            mesh=tmpMesh,
+                            alpha=1,
+                            linewidth=0.0,
+                            tri=True,
+                            snap=True,
+                            **kwargs)
 
             if regionMarker:
-                cbar = createColorBar(gci, label="Region markers", **kwargs)
+                kwargs["cMap"] = plt.cm.get_cmap("Set3", len(uniquemarkers))
+                kwargs["cMin"] = -0.5
+                kwargs["cMax"] = len(uniquemarkers) - 0.5
+                cbar = createColorBar(gci, label="Region markers")
+                updateColorBar(cbar, **kwargs)
                 ticks = np.arange(len(uniquemarkers))
+
                 cbar.set_ticks(ticks)
                 areas = {}
                 for reg in mesh.regionMarker():
                     areas[reg.marker()] = reg.area()
                 labels = []
                 for marker in uniquemarkers:
-                    labels.append("%d\n(area: %s)" % (marker, areas[marker]))
+                    label = "%d" % marker
+                    if marker in areas:
+                        label += "\n(area: %s)" % areas[marker]
+                    labels.append(label)
                 cbar.set_ticklabels(labels)
 
     else:
@@ -627,7 +662,8 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
     if regionMarker:
 
         for hole in mesh.holeMarker():
-            ax.text(hole[0], hole[1], 'H', color='black')
+            ax.text(hole[0], hole[1], 'H', color='black',
+                    va="center", ha="center")
 
     if kwargs.pop('fitView', True):
         ax.set_xlim(mesh.xmin(), mesh.xmax())

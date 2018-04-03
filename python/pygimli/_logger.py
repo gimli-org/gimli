@@ -59,7 +59,7 @@ def warn(*args):
 
 def error(*args):
     caller = sys._getframe(1).f_code.co_name
-    logger.error(caller + ": " + _msg(*args))
+    logger.error(caller + "\n" + _msg(*args))
 
 def debug(*args):
     logger.debug(_msg(*args))
@@ -69,8 +69,8 @@ def critical(*args):
     raise Exception(msg)
 
 def deprecated(msg, hint):
-    print(msg, hint)
-    logger.warning(msg + ", is deprecated, please use:" + hint + " instead.")
+    caller = sys._getframe(1).f_code.co_name
+    logger.warning(caller + "\n" + msg + ", is deprecated, please use:" + hint + " instead.")
 
 def renameKwarg(old, new, kwargs):
     if old in kwargs:

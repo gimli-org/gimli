@@ -31,7 +31,7 @@ class ProgressBar(object):
     >>> from pygimli.utils import ProgressBar
     >>> pbar = ProgressBar(its=20, width=40, sign='+')
     >>> pbar.update(5)
-    \r[+++++++++++       30%                 ]  6 of 20 complete
+    \r[+++++++++++       30%                 ] 6 of 20 complete
     """
 
     def __init__(self, its, width=80, sign=":"):
@@ -42,6 +42,9 @@ class ProgressBar(object):
         self.pbar = "[]"
         self._amount(0)
 
+    def __call__(self, it, msg=""):
+        self.update(it, msg)
+
     def update(self, iteration, msg=""):
         """Update ProgressBar by iteration number starting at 0 with optional
         message."""
@@ -50,11 +53,13 @@ class ProgressBar(object):
             self.pbar += " (" + msg + ")"
         print("\r" + self.pbar, end="")
         sys.stdout.flush()
+        if iteration == self.its-1:
+            print()
 
     def _setbar(self, elapsed_it):
         """Reset pbar based on current iteration number."""
         self._amount((elapsed_it / float(self.its)) * 100.0)
-        self.pbar += "  %d of %s complete" % (elapsed_it, self.its)
+        self.pbar += " %d of %s complete" % (elapsed_it, self.its)
 
     def _amount(self, new_amount):
         """Calculate amount by which to update the pbar."""
@@ -168,18 +173,18 @@ def niceLogspace(vMin, vMax, nDec=10):
     >>> from pygimli.utils import niceLogspace
     >>> v1 = niceLogspace(vMin=0.1, vMax=0.1, nDec=1)
     >>> print(v1)
-    [0.1 1. ]
+    [ 0.1  1. ]
     >>> v1 = niceLogspace(vMin=0.09, vMax=0.11, nDec=1)
     >>> print(v1)
-    [0.01 0.1  1.  ]
+    [ 0.01  0.1   1.  ]
     >>> v1 = niceLogspace(vMin=0.09, vMax=0.11, nDec=10)
     >>> print(len(v1))
     21
     >>> print(v1)
-    [0.01       0.01258925 0.01584893 0.01995262 0.02511886 0.03162278
-     0.03981072 0.05011872 0.06309573 0.07943282 0.1        0.12589254
-     0.15848932 0.19952623 0.25118864 0.31622777 0.39810717 0.50118723
-     0.63095734 0.79432823 1.        ]
+    [ 0.01        0.01258925  0.01584893  0.01995262  0.02511886  0.03162278
+      0.03981072  0.05011872  0.06309573  0.07943282  0.1         0.12589254
+      0.15848932  0.19952623  0.25118864  0.31622777  0.39810717  0.50118723
+      0.63095734  0.79432823  1.        ]
     """
     if vMin > vMax or vMin < 1e-12:
         print("vMin:", vMin, "vMax", vMax)
@@ -347,11 +352,11 @@ def dist(p, c=None):
     >>> p[0] = [0.0, 0.0]
     >>> p[1] = [0.0, 1.0]
     >>> print(dist(p))
-    [0. 1. 0. 0.]
+    [ 0.  1.  0.  0.]
     >>> x = pg.RVector(4, 0)
     >>> y = pg.RVector(4, 1)
     >>> print(dist(np.array([x, y]).T))
-    [1. 1. 1. 1.]
+    [ 1.  1.  1.  1.]
     """
     if c is None:
         c = pg.RVector3(0.0, 0.0, 0.0)
@@ -395,7 +400,7 @@ def cumDist(p):
     >>> p[2] = [0.0, 1.0]
     >>> p[3] = [0.0, 0.0]
     >>> print(cumDist(p))
-    [0. 1. 1. 2.]
+    [ 0.  1.  1.  2.]
     """
     d = np.zeros(len(p))
     d[1:] = np.cumsum(dist(diff(p)))
@@ -622,7 +627,7 @@ def uniqueAndSum(indices, to_sum, return_index=False, verbose=False):
     >>> # you need for example 3 array to find unique node positions in a mesh
     >>> values = np.arange(0.1, 0.7, 0.1)
     >>> print(values)
-    [0.1 0.2 0.3 0.4 0.5 0.6]
+    [ 0.1  0.2  0.3  0.4  0.5  0.6]
     >>> # some values to be summed together (for example attributes of nodes)
     >>> unique_idx, summed_vals = uniqueAndSum(to_sort, values)
     >>> print(unique_idx)
@@ -631,8 +636,7 @@ def uniqueAndSum(indices, to_sum, return_index=False, verbose=False):
      [1 2]
      [2 3]]
     >>> print(summed_vals)
-    [0.3 0.3 0.4 1.1]
-    >>> # [0.1 + 0.2, 03., 0.4, 0.5 + 0.6]
+    [ 0.3  0.3  0.4  1.1]
     """
     flag_mult = len(indices) != indices.size
     if verbose:

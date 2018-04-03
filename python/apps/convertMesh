@@ -1,8 +1,9 @@
-#!/usr/bin/env python33
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-This program is part of pygimli
-Visit http://www.resistivity.net for further information or the latest version.
+Convert mesh between different formats (and refinements) or add data to it.
+This program is part of pyGIMLi.
+Visit http://www.pygimli.org for further information or the latest version.
 """
 
 import sys

@@ -39,12 +39,16 @@ except ImportError as e:
 ###  Global convinience functions #####
 #######################################
 
-#_pygimli_.load = None
-from pygimli.io import load
+from .. _logger import *
+
+_pygimli_.load = None
+from .load import load, optImport, opt_import, getConfigPath
+
 from pygimli.viewer import show, plt, wait
 from pygimli.solver import solve
 from pygimli.meshtools import interpolate
 from pygimli.utils import boxprint
+
 
 def showNow():
     pass
@@ -1024,10 +1028,13 @@ def __MeshGetCellMarker__(self):
     deprecated(msg='Mesh::cellMarker()', hint='Mesh::cellMarkers()')
     return self.cellMarkers()
 
-
 def __MeshSetCellMarker__(self, m):
     deprecated(msg='Mesh::setCellMarker()', hint='Mesh::setCellMarkers()')
     return self.setCellMarkers(m)
+
+pg.Mesh.cellMarker = __MeshGetCellMarker__
+pg.Mesh.setCellMarker = __MeshSetCellMarker__
+
 
 def __getCoords(coord, dim, ent):
     """Syntactic sugar to find all x-coordinates of a given entity.
@@ -1088,5 +1095,3 @@ def z(instance):
     """
     return __getCoords('z', 2, instance)
 
-_pygimli_.Mesh.cellMarker = __MeshGetCellMarker__
-_pygimli_.Mesh.setCellMarker = __MeshSetCellMarker__

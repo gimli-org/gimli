@@ -154,7 +154,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
 
     colorBar : bool [None], Colorbar
         Create and show a colorbar. If colorBar is a valid colorbar then only
-        his values will be updated.
+        its values will be updated.
 
     label : str
         Set colorbar label. If set colorbar is toggled to True. [None]
@@ -199,7 +199,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
     >>> world = mt.createWorld(start=[-10, 0], end=[10, -10],
     ...                        layers=[-3, -7], worldMarker=False)
     >>> mesh = mt.createMesh(world, quality=32, area=0.2, smooth=[1, 10])
-    >>> pg.viewer.showMesh(mesh, markers=True)
+    >>> _ = pg.viewer.showMesh(mesh, markers=True)
 
     Returns
     -------
@@ -207,6 +207,8 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
 
     colobar : matplotlib.colorbar
     """
+    pg.renameKwarg('cmap', 'cMap', kwargs)
+
     if ax is None:
         ax = plt.subplots()[1]
 
@@ -241,7 +243,6 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
             kwargs["cMin"] = -0.5
             kwargs["cMax"] = len(uniquemarkers) - 0.5
             data = np.arange(len(uniquemarkers))[uniqueidx]
-            showMesh = True
 
     if data is None:
         showMesh = True
@@ -291,22 +292,19 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
                 elif len(data) == mesh.nodeCount():
                     gci = drawField(ax, mesh, data, **kwargs)
 
-                cmap = kwargs.pop('cmap', None)
                 cMap = kwargs.pop('cMap', None)
                 if cMap is not None:
-                    cmap = cMap
-
-                if cmap is not None:
-                    gci.set_cmap(cmapFromName(cmap))
+                    gci.set_cmap(cmapFromName(cMap))
 
             except BaseException as e:
-                print("Exception occured: " + e)
+                print("Exception occured: ", e)
                 print("Data: ", min(data), max(data), pg.haveInfNaN(data))
                 print("Mesh: ", mesh)
                 drawMesh(ax, mesh, **kwargs)
 
     if mesh.cellCount() == 0:
         pg.mplviewer.drawPLC(ax, mesh, **kwargs)
+        showMesh = False
 
     if showMesh:
         if gci is not None and hasattr(gci, 'set_antialiased'):
@@ -329,7 +327,6 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
         ax.set_ylim(mesh.ymin(), mesh.ymax())
         ax.set_aspect('equal')
 
-
     cbar = None
 
     if label is not None and colorBar is None:
@@ -337,20 +334,29 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
 
     if colorBar and validData:
         # , **kwargs) # causes problems!
-        labels = ['cMin', 'cMax', 'nLevs', 'orientation', 'pad']
+        labels = ['cMin', 'cMax', 'nLevs', 'cMap', 'logScale']
         subkwargs = {key: kwargs[key] for key in labels if key in kwargs}
+        subkwargs['label'] = label
 
         if colorBar is True or colorBar is 1:
-            cbar = createColorBar(gci, label=label, **subkwargs)
+            cbar = createColorBar(gci,
+                                  orientation=kwargs.pop('orientation',
+                                                         'horizontal'),
+                                  size=kwargs.pop('size', 0.2),
+                                  pad=kwargs.pop('pad', None)
+                                  )
+            updateColorBar(cbar, **subkwargs)
         elif colorBar is not False:
-            cbar = updateColorBar(colorBar, gci, label=label, **subkwargs)
+            cbar = updateColorBar(colorBar, **subkwargs)
 
         if markers:
             ticks = np.arange(len(uniquemarkers))
+            #print('show.ticks ********************', ticks)
             cbar.set_ticks(ticks)
             labels = []
             for marker in uniquemarkers:
                 labels.append(str((marker)))
+            #print('show.labels ********************', labels)
             cbar.set_ticklabels(labels)
 
     if coverage is not None:
@@ -373,7 +379,6 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
         if data is not None:
             if len(data) == mesh.cellCount():
                 cb = CellBrowser(mesh, data, ax=ax)
-                cb.connect()
 
         plt.show(block=block)
         try:

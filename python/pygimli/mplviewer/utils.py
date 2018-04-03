@@ -28,7 +28,8 @@ def updateAxes(ax, a=None):
     """For internal use."""
     if not holdAxes__:
         try:
-            time.sleep(0.05)
+            time.sleep(0.1)
+            #ax.canvas.draw_onIdle()#figure
             # plt.pause seems to be broken in mpl:2.1
             # plt.pause(0.1)
         except BaseException as _:
@@ -43,7 +44,8 @@ def hold(val=1):
 def wait(**kwargs):
     """TODO WRITEME."""
     # plt.pause seems to be broken in mpl:2.1
-    time.sleep(0.05)
+    #ax.canvas.draw_onIdle()
+    time.sleep(0.2)
     plt.show(**kwargs)
 
 

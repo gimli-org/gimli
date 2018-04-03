@@ -83,7 +83,7 @@ add_custom_target(sphinxapi
     COMMAND
         cmake -E copy_if_different ${SPHINX_SRC_DIR}/doc/sidebar_gallery.py ${SPHINX_SRCBUILD_DIR}/doc
     COMMAND
-	      sphinx-autogen ${SPHINX_SRC_DIR}/doc/pygimliapi/index.rst -t ${SPHINX_SRC_DIR}/doc/_templates -o ${SPHINX_SRCBUILD_DIR}/doc/pygimliapi/_generated
+	      sphinx-autogen -i ${SPHINX_SRC_DIR}/doc/pygimliapi/index.rst -t ${SPHINX_SRC_DIR}/doc/_templates -o ${SPHINX_SRCBUILD_DIR}/doc/pygimliapi/_generated
     COMMENT
         "Building pygimli api doc"
     DEPENDS

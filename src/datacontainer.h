@@ -75,11 +75,11 @@ public:
     /*! Return reference to the RVector at the data map associated to the token. */
     inline RVector & operator() (const std::string & token) { return *ref(token); }
 
-//     /*! Return read-only reference to the RVector at the data map associated to the token. */
-//     inline const RVector & operator[] (const std::string & token) const { return get(token); }
-//
-//     /*! Return reference to the RVector at the data map associated to the token. */
-//     inline RVector & operator[] (const std::string & token) { return *ref(token); }
+    /*! Return read-only reference to the RVector at the data map associated to the token. */
+    inline const RVector & operator[] (const std::string & token) const { return get(token); }
+
+    /*! Return reference to the RVector at the data map associated to the token. */
+    inline RVector & operator[] (const std::string & token) { return *ref(token); }
 
 
     /*! Init default data fields 'valid' and call virtual init method. */
@@ -141,6 +141,12 @@ public:
     inline const RVector3 & sensorPosition(double i) const {
         return sensorPoints_[(uint)i]; }
 
+    /*! Return a single sensor position. Syntactic sugar.*/
+    inline const RVector3 & sensor(long i) const {
+        ASSERT_RANGE(SIndex(i), 0, this->sensorCount())
+        return sensorPoints_[i];
+    }
+
     /*! Create a valid sensor at a given position and returns the id of the sensor.
         Is there already a sensor at the given position NO new sensor will be created.
         Atm. brute force search with a snapping distance of tolerance is done.
@@ -186,8 +192,10 @@ public:
     /*! Return the input format string for the sensors. */
     inline const std::string & formatStringSensors() const { return inputFormatStringSensors_; }
 
-    /*! Sort all sensors regarding their x-coordinate. */
-    void sortSensorsX();
+    /*! Sort all sensors regarding their increasing coordinates.
+     * Set inc flag to false to sort respective coordinate in
+     * decreasing direction.*/
+    void sortSensorsX(bool incX=true, bool incY=true, bool incZ=true);
 
     /*! Translate all sensor positions by trans. */
     void translate(const RVector3 & trans);
@@ -265,14 +273,18 @@ public:
      Note, new data from resizeing will be set to invalid. */
     void resize(uint size);
 
-    /*! Return string with space-separated list of all available data tokens. If withAnnotation is set the List is separated by the Words "SensorIndex:" and "Data:" */
-    std::string tokenList(bool withAnnotation = true) const;
+    /*! Return string with space-separated list of all available data tokens.
+     * If withAnnotation sets the List separated by the Words "SensorIndex:" and "Data:" */
+    std::string tokenList(bool withAnnotation=true) const;
 
     /*! Add new data field with optional description. Throws an exception if the data field size is not the same size of the DataContainer.
         \param token String to identify the data
         \param data \ref RVector of the data
         \param description String that describe the data */
     void add(const std::string & token, const RVector & data, const std::string & description = "");
+
+    /*! Add new data field */
+    void add(const std::string & token){ add(token, RVector(this->size(), 0.0)); }
 
     /*! Set the data for a given token. If there is no such data, new data will be added.
      * Throws an exception if the data field size is not the same size of the \ref DataContainer.

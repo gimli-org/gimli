@@ -3,7 +3,7 @@
 Useful utility functions.
 """
 
-from .base import (createDateTimeString, createfolders, createResultFolder,
+from .base import (rms, nanrms, createDateTimeString, createfolders, createResultFolder,
                    getSavePath, gmat2numpy, interperc, interpExtrap, inthist,
                    num2str, numpy2gmat, rndig, saveResult)
 from .geostatistics import computeInverseRootMatrix, covarianceMatrix
@@ -17,5 +17,7 @@ from .utils import (ProgressBar, boxprint, chi2, cumDist, diff, dist,
                     getIndex, grange, logDropTol, niceLogspace, rand, randN,
                     trimDocString, unicodeToAscii, unique, unique_everseen,
                     unique_rows, uniqueAndSum, )
+
+from .gps import readGPX, findUTMZone, getUTMProjection
 
 __all__ = [name for name in dir() if '_' not in name]

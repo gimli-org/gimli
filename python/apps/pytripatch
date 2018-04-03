@@ -1,8 +1,9 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-This program is part of pygimli
-Visit http://www.resistivity.net for further information or the latest version.
+Plot triangle mesh using matplotlib.
+This program is part of pyGIMLi.
+Visit http://www.pygimli.org for further information or the latest version.
 """
 
 from __future__ import print_function
@@ -143,8 +144,10 @@ def showTriMesh(meshname, modelname, contour=False, constraintMat=None,
     if (constraintMat):
         showConstrainMat(axis, mesh, constraintMat, cWeight)
     elif (modelname):
-        if modelname.lower() == 'marker':
-            data = np.asarray(mesh.cellMarker())
+
+        if modelname.lower() == 'marker' or modelname.lower() == 'markers':
+
+            data = np.asarray(mesh.cellMarkers())
         elif modelname.lower() == 'attribute':
             data = np.asarray(mesh.cellAttributes())
         elif modelname in list(mesh.exportDataMap().keys()):
@@ -246,9 +249,12 @@ def showMeshPatch(axis, mesh, data,
                                           orientation=orientation)
 
     if showCbar:
-        pg.mplviewer.createColorBar(patches, cMin=cMin, cMax=cMax,
-                                    nLevs=nLevs, label=label,
-                                    orientation=orientation)
+        #print(cMin, cMax)
+        cbar = pg.mplviewer.createColorBar(patches, cMin=cMin, cMax=cMax,
+                                           nLevs=nLevs, label=label,
+                                           orientation=orientation)
+
+
 
     if cmapname is not None:
         cmap = cmapFromName(cmapname)
@@ -739,9 +745,10 @@ def main(argv):
     if not options.silent:
         axes.figure.canvas.draw()
 
+    browser = None
+
     if options.cellBrowser:
         browser = CellBrowser(mesh, data, axes)
-        browser.connect()
 
     if options.outFileName:
         print("writing: ", options.outFileName)

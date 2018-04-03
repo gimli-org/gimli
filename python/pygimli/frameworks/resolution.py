@@ -4,7 +4,7 @@ Methods to calculate the model resolution.
 
 import numpy as np
 
-from pygimli.io import opt_import
+import pygimli as pg
 
 
 def computeR(J, C, alpha=0.5):
@@ -32,7 +32,7 @@ def computeR(J, C, alpha=0.5):
     alpha : float
         Regularization strength :math:`\alpha`.
     """
-    lin = opt_import("scipy.linalg", "calculate model resolution matrices")
+    lin = pg.optImport("scipy.linalg", "Calculate model resolution matrices.")
     if lin:
         import scipy.sparse as sp
         from scipy.sparse import coo_matrix, csc_matrix
