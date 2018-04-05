@@ -7,6 +7,7 @@ import sys
 import os
 import subprocess
 import traceback
+import numpy as np
 
 if sys.platform == 'win32':
     os.environ['PATH'] = __path__[0] + ';' + os.environ['PATH']
@@ -1095,3 +1096,6 @@ def z(instance):
     """
     return __getCoords('z', 2, instance)
 
+def search(what):
+    """Utility function to search docstrings for string `what`."""
+    np.lookfor(what, module="pygimli", import_modules=False)
