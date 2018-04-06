@@ -116,6 +116,9 @@ try:
             'numpy': 'http://docs.scipy.org/doc/numpy'
         },
 
+        # Don't report time of fast scripts (< 10 sec)
+        "min_reported_time": 10,
+
         # path where to store your example linker templates
         'backreferences_dir': 'pygimliapi/_generated',
 

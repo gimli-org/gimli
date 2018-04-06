@@ -1,5 +1,6 @@
 #!/ussr/bin/env python
 # -*- coding: utf-8 -*-
+# sphinx_gallery_thumbnail_number = 3
 r"""
 .. _tut:modelling_bc:
 
