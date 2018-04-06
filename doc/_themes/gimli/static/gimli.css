@@ -19,7 +19,7 @@ body {
     /* font-family: "Open Sans", sans-serif; */
     font-family: "Fira Sans", sans-serif;
     font-size: 15px;
-    font-weight: 400;
+    /* font-weight: 400; */
     line-height: 21px;
 }
 a {
@@ -65,7 +65,7 @@ input, button, select, textarea {
 .gallery.figure .caption {
     text-align: left !important;
     font-size: 18px;
-    font-weight: 180;
+    /* font-weight: 180; */
     position: relative;
     top: -50%;
     left: +25%;
@@ -73,7 +73,7 @@ input, button, select, textarea {
 p.caption {
     text-align: center;
     margin-top: 1 em;
-    font-size: small;
+    /* font-size: small; */
 }
 .figure.align-center img {
     display: block;
@@ -191,11 +191,8 @@ input#url.security {
 }
 
 /*format of code cells lastcout directive*/
-
-
-}
 pre, code, blockquote {
-    font-family: "Inconsolata";
+    font-family: "Inconsolata", monospace;
     font-size: 15px;
 }
 
@@ -203,7 +200,6 @@ pre, code, blockquote {
 
 code.descname, code.descclassname, code.xref.py.py-mod.docutils.literal, code.xref.py.py-obj.docutils.literal {
     padding: 1px 1px;
-    color: #002b36;
     white-space: nowrap;
     background-color: transparent;
     border: none;
@@ -219,10 +215,12 @@ table.longtable.docutils a:hover {
 
 span.pre {
     padding: 1px 1px;
-    color: #002b36;
+    color: #337AB7;
+    /* color: #002b36; */
     white-space: nowrap;
     background-color: transparent;
     border: none;
+    font-size: 14px;
 }
 /*code.xref.py.py-mod.docutils.literal {
     font-size: 30px;
@@ -423,7 +421,7 @@ div.sphx-glr-download a:hover {
 }
 
 code.xref.download.docutils.literal {
-    font-family: "Fira Sans";
+    font-family: "Roboto";
     font-size: 14px;
 }
 
@@ -490,7 +488,7 @@ blockquote em {
 /*make source link of functions appear right*/
 .viewcode-link, .viewcode-back {
     float: right;
-    font-weight: bold;
+    font-weight: 500;
 }
 
 /* master content table */
@@ -575,6 +573,7 @@ dl.class, dl.function, dl.method, dl.attribute {
 }
 .descclassname {
     color: #aaa;
+    font-size: small;
     font-weight: normal;
     font-family: monospace;
 }
@@ -597,6 +596,7 @@ dl.class dd, dl.function dd {
 }
 .docutils.field-list th {
     background-color: #eee;
+    font-weight: 500;
     padding: 10px;
     text-align: left;
     vertical-align: top;
@@ -610,17 +610,17 @@ dl.class dd, dl.function dd {
 .docutils.field-list td blockquote p {
     font-size: 14px;
     /* font-family: "Open Sans"; */
-    font-family: "Fira Sans";
+    font-family: "Roboto";
     line-height: 18px;
     font-weight: normal;
 }
 p.rubric {
-    font-weight: bold;
+    font-weight: 500;
     font-size: 15px;
     margin: 15px 0 10px 0;
 }
 p.admonition-title {
-    font-weight: 100;
+    /* font-weight: 100; */
     font-size: 18px;
     text-decoration: italic;
 }
@@ -678,5 +678,13 @@ img.wrap-fig {
 
 table.docutils.field-list {
     font-size: 14px;
-    line-height: 10px;
+    line-height: 6px;
+}
+
+span.sig-paren {
+  font-weight: 500;
+}
+
+strong {
+  font-weight: 500;
 }
