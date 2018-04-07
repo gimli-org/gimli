@@ -34,23 +34,19 @@ namespace GIMLI{
 
 class KDTreeWrapper;
 
-template < class T > class DLLEXPORT BoundingBox;
-typedef BoundingBox< double > RBoundingBox;
-typedef BoundingBox< double > IBoundingBox;
-
 //! A BoundingBox
-/*! A BoundingBox which contains a min and max Vector3< ValueType >. IBoundingBox and RBoundingBox typedefs an Integer and Real Boundingbox, respectivly. */
-template < class ValueType > class DLLEXPORT BoundingBox{
+/*! A BoundingBox which contains a min and max Vector3< double >*/
+class DLLEXPORT BoundingBox{
 public:
     /*! Default constructor, with BoundingBox[0.0, 0.0, 0.0; 1.0, 1.0, 1.0] */
-    BoundingBox(const Pos < ValueType > & min=Pos < double >(0, 0, 0),
-                const Pos < ValueType > & max=Pos < double >(1.0, 1.0, 1.0))
+    BoundingBox(const Pos < double > & min=Pos < double >(0, 0, 0),
+                const Pos < double > & max=Pos < double >(1.0, 1.0, 1.0))
         : min_(min), max_(max){
     }
 
     /*! Construct BBox from position vector */
-    BoundingBox(const std::vector < Pos < ValueType > > & vPos){
-        min_ = Pos < ValueType >((ValueType)MAX_DOUBLE, (ValueType)MAX_DOUBLE, (ValueType)MAX_DOUBLE);
+    BoundingBox(const R3Vector & vPos){
+        min_ = Pos < double>((double)MAX_DOUBLE, (double)MAX_DOUBLE, (double)MAX_DOUBLE);
         max_ = min_ * -1.0;
         for (uint i = 0; i < vPos.size(); i ++){
             min_[0] = std::min(vPos[i][0], min_[0]);
@@ -63,44 +59,66 @@ public:
     }
 
     /*! Copy constructor. */
-    BoundingBox(const BoundingBox < ValueType > & bbox){ this->copy_(bbox); }
+    BoundingBox(const BoundingBox & bbox){ this->copy_(bbox); }
 
     /*! Assignment operator. */
-    BoundingBox < ValueType > & operator = (const BoundingBox < ValueType > bbox){
+    BoundingBox & operator = (const BoundingBox & bbox){
     	if (this != & bbox){
             this->copy_(bbox);
         } return * this;
     }
 
     /*! Check if a point lie inside (with boundary). */
-    bool isInside(const Pos < ValueType > & p){
+    bool isInside(const Pos < double > & p){
         return ((p[0] <= max_[0] && p[0] >= min_[0]) &&
                 (p[1] <= max_[1] && p[1] >= min_[1]) &&
                 (p[2] <= max_[2] && p[2] >= min_[2]));
     }
 
     /*! Set minimum Position. */
-    void setMin(const Pos < ValueType > & min) { min_ = min; }
+    void setMin(const Pos < double > & min) { min_ = min; }
     /*! Return a copy of the minimum position. */
-    const Pos < ValueType > & min() const { return min_; }
+    const Pos < double > & min() const { return min_; }
 
     /*! Set maximum Position. */
-    void setMax(const Pos < ValueType > & max) { max_ = max; }
+    void setMax(const Pos < double > & max) { max_ = max; }
     /*! Return a copy of the maximum position. */
-    const Pos < ValueType > & max() const { return max_; }
+    const Pos < double > & max() const { return max_; }
+
+    /*! Return minimal x coordinate.*/
+    inline double xMin() const { return min_[0];}
+    /*! Return minimal y coordinate.*/
+    inline double yMin() const { return min_[1];}
+    /*! Return minimal z coordinate.*/
+    inline double zMin() const { return min_[2];}
+
+    /*! Return maximal x coordinate.*/
+    inline double xMax() const { return max_[0];}
+    /*! Return maximal y coordinate.*/
+    inline double yMax() const { return max_[1];}
+    /*! Return maximal z coordinate.*/
+    inline double zMax() const { return max_[2];}
+
+    /*! Return maximal x length.*/
+    inline double xSize() const { return abs(this->xMax()-this->xMin());}
+    /*! Return maximal y length.*/
+    inline double ySize() const { return abs(this->yMax()-this->yMin());}
+    /*! Return maximal z length.*/
+    inline double zSize() const { return abs(this->zMax()-this->zMin());}
+
 
 protected:
 
-    void copy_(const BoundingBox < ValueType > & bbox){
+    void copy_(const BoundingBox & bbox){
     	min_ = bbox.min();
         max_ = bbox.max();
     }
 
-    Pos < ValueType > min_;
-    Pos < ValueType > max_;
+    Pos < double > min_;
+    Pos < double > max_;
 };
 
-template < class ValueType > std::ostream & operator << (std::ostream & str, const BoundingBox< ValueType > & bb){
+inline std::ostream & operator << (std::ostream & str, const BoundingBox & bb){
     str << "BoundingBox [" << bb.min() << ", " << bb.max() << "]" ;
     return str;
 }
@@ -670,7 +688,7 @@ public:
     double ymax() const { findRange_(); return maxRange_[1]; }
     double zmax() const { findRange_(); return maxRange_[2]; }
 
-    const RBoundingBox boundingBox() const { findRange_(); return RBoundingBox(minRange_, maxRange_);}
+    const BoundingBox boundingBox() const { findRange_(); return BoundingBox(minRange_, maxRange_);}
 
     /*! Return the interpolation matrix I from all node positions
      * to the query points q. I is a (len(q) x nodeCount()) SparseMapMatrix.

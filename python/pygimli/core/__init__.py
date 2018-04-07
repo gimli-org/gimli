@@ -125,6 +125,9 @@ def RVector3_str(self):
 
 
 def R3Vector_str(self):
+    if self.size() < 20:
+        return self.array().__str__()
+
     return "R3Vector: n=" + str(self.size())
 
 

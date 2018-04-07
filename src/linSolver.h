@@ -44,8 +44,12 @@ public:
 
     ~LinSolver();
 
+    RVector operator()(const RVector & rhs);
+    CVector operator()(const CVector & rhs);
+
     void solve(const RVector & rhs, RVector & solution);
     void solve(const CVector & rhs, CVector & solution);
+
     RVector solve(const RVector & rhs);
     CVector solve(const CVector & rhs);
 

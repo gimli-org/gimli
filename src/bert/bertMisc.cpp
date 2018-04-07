@@ -319,7 +319,7 @@ double DCParaDepth(const DataContainerERT & data){
 }
 
 void setDefaultBERTBoundaryConditions(Mesh & mesh){
-    RBoundingBox bbox(mesh.boundingBox());
+    BoundingBox bbox(mesh.boundingBox());
     mesh.createNeighbourInfos();
     for (uint i = 0; i < mesh.boundaryCount(); i ++){
         RVector3 cen(mesh.boundary(i).center());
@@ -337,7 +337,7 @@ void setDefaultBERTBoundaryConditions(Mesh & mesh){
 }
 
 void setAllNeumannBoundaryConditions(Mesh & mesh){
-    RBoundingBox bbox(mesh.boundingBox());
+    BoundingBox bbox(mesh.boundingBox());
     mesh.createNeighbourInfos();
     for (uint i = 0; i < mesh.boundaryCount(); i ++){
         RVector3 cen(mesh.boundary(i).center());

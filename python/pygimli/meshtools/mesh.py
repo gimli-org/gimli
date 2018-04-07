@@ -23,11 +23,12 @@ def createMesh(poly, quality=30, area=0.0, smooth=None, switches=None,
 
     Parameters
     ----------
-    poly: :gimliapi:`GIMLI::Mesh` or list
+    poly: :gimliapi:`GIMLI::Mesh` or list or ndarray
         * 2D or 3D gimli mesh that contains the PLC.
         * 2D mesh needs edges
         * 3D mesh needs ... to be implemented
         * List of x y pairs [[x0, y0], ... ,[xN, yN]]
+        * ndarray [x_i, y_i]
         * PLC or list of PLC
     quality: float
         2D triangle quality sets a minimum angle constraint.
@@ -64,8 +65,10 @@ def createMesh(poly, quality=30, area=0.0, smooth=None, switches=None,
                 pg.meshtools.mergePLC(poly), quality, area, smooth, switches,
                 verbose)
     # poly == [pos, pos, ]
-    if isinstance(poly, list) or isinstance(poly, type(zip)) or \
-        type(poly) == pg.stdVectorRVector3:
+    if isinstance(poly, list) or \
+        isinstance(poly, type(zip)) or \
+        type(poly) == pg.stdVectorRVector3 or \
+        (isinstance(poly, np.ndarray) and poly.ndim == 2):
         delPLC = pg.Mesh(2)
         for p in poly:
             delPLC.createNode(p[0], p[1], 0.0)
@@ -82,7 +85,7 @@ def createMesh(poly, quality=30, area=0.0, smooth=None, switches=None,
             # -D Conforming delaunay
             # -F Uses Steven Fortune's sweepline algorithm
             # no -a here ignores per region area
-            switches = 'pazeA'
+            switches = 'pzeA'
 
             if area > 0:
                 switches += 'a' + str(area)

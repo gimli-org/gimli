@@ -147,6 +147,7 @@ void Mesh::clear(){
 }
 
 Node * Mesh::createNode_(const RVector3 & pos, int marker, int id){
+    rangesKnown_ = false;
     if (id == -1) id = nodeCount();
     nodeVector_.push_back(new Node(pos));
     nodeVector_.back()->setMarker(marker);

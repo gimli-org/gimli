@@ -425,7 +425,7 @@ def interpolate(*args, **kwargs):
     TODO
 
     * 2D parametric to points (method=['linear, 'spline', 'harmonic'])
-    * 2D/3D point cloud to points/grids (Delauney, 'linear, 'spline', 'harmonic')
+    * 2D/3D point cloud to points/grids ('Delauney', 'linear, 'spline', 'harmonic')
     * Mesh to points based on nearest neighbour values (pg.core)
 
     Examples
@@ -460,22 +460,21 @@ def interpolate(*args, **kwargs):
     if pgcore:
         if len(args) == 3: # args: outData = (inMesh, inData, outPos)
 
-            if args[1].ndim == 2: # outData = (inMesh, vR3 )
-                if args[1].ndim == 2: # outData = (inMesh, vR3, vR3)
+            if args[1].ndim == 2: # outData = (inMesh, vR3, vR3)
 
-                    outMat = pg.Matrix()
-                    pg.core._pygimli_.interpolate(args[0],
-                                                  inMat=np.array(args[1]).T,
-                                                  destPos=args[2],
-                                                  outMat=outMat,
-                                                  **kwargs)
-                    return np.array(outMat).T
+                outMat = pg.Matrix()
+                pg.core._pygimli_.interpolate(args[0],
+                                              inMat=np.array(args[1]).T,
+                                              destPos=args[2],
+                                              outMat=outMat,
+                                              **kwargs)
+                return np.array(outMat).T
 
-                # outData = (inMesh, vR, vR3)
-                return pg.core._pygimli_.interpolate(args[0],
-                                                     args[1],
-                                                     destPos=args[2],
-                                                     **kwargs)
+            # ELSE outData = (inMesh, vR, vR3)
+            return pg.core._pygimli_.interpolate(srcMesh=args[0],
+                                                 inVec=args[1],
+                                                 destPos=args[2],
+                                                 **kwargs)
         if len(args) == 4: # args: (inMesh, inData, outPos, outData)
 
             if args[1].ndim == 1 and args[2].ndim == 1 and args[3].ndim == 1:
