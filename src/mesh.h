@@ -422,7 +422,7 @@ public:
      This will probably fail and need to be implemented.
      */
     std::vector < Cell * > findCellsAlongRay(const RVector3 & start,
-                                             const RVector3 & end,
+                                             const RVector3 & dir,
                                              R3Vector & pos) const;
     //** end get infos stuff
 
