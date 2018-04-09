@@ -196,6 +196,9 @@ pre, code, blockquote {
     font-size: 15px;
 }
 
+.nav-header {
+    font-weight: 500;
+}
 /*API module headers*/
 
 code.descname, code.descclassname, code.xref.py.py-mod.docutils.literal, code.xref.py.py-obj.docutils.literal {
@@ -203,10 +206,12 @@ code.descname, code.descclassname, code.xref.py.py-mod.docutils.literal, code.xr
     white-space: nowrap;
     background-color: transparent;
     border: none;
+    font-weight: bold;
 }
 
 table.longtable.docutils a {
     font-weight: bold;
+    font-family: Inconsolata;
 }
 
 table.longtable.docutils a:hover {
@@ -374,7 +379,7 @@ div.sphx-glr-download a {
   display: inline-block;
   /* Not valid in old browser, hence we keep the line above to override */
   display: table-caption;
-  font-weight: bold;
+  font-weight: 500;
   padding: 1ex;
   text-align: center;
 }
@@ -481,7 +486,7 @@ blockquote p {
     font-size: 14px;
 }
 blockquote em {
-    font-weight: bold;
+    font-weight: 500;
     font-style: normal;
 }
 
