@@ -10,7 +10,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pygimli as pg
 from .importexport import readTXTSpectrum, readFuchs3File, readRadicSIPFuchs
-from .plotting import showAmplitudeSpectrum, showSpectrum, showPhaseSpectrum
+from .plotting import drawAmplitudeSpectrum, drawPhaseSpectrum, showSpectrum
 from .models import DebyePhi, DebyeComplex, relaxationTerm
 from .tools import KramersKronig, fitCCEMPhi, fitCCC
 from .tools import fitCCCC, fitCCPhi, fit2CCPhi
@@ -171,7 +171,7 @@ class SIPSpectrum():
             fig, ax = plt.subplots()
             self.fig['phase'] = fig
 
-        showPhaseSpectrum(ax, self.f, self.phi*1000, **kwargs)
+        drawPhaseSpectrum(ax, self.f, self.phi*1000, **kwargs)
 
     def showData(self, reim=False, znorm=False, cond=False, nrows=2, ax=None,
                  **kwargs):
@@ -558,7 +558,7 @@ class SIPSpectrum():
         self.fig['all'] = fig
         fig.subplots_adjust(hspace=0.25)
         # amplitude
-        showAmplitudeSpectrum(ax[0], self.f, self.amp, label='data', ylog=0)
+        drawAmplitudeSpectrum(ax[0], self.f, self.amp, label='data', ylog=0)
         if np.any(self.ampDD):
             ax[0].plot(self.f, self.ampDD, 'm-', label='DD response')
         if np.any(self.ampCC):

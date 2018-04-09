@@ -3,7 +3,7 @@
 
     This package contains tools, modelling operators, and managers for:
 
-    * lightweight Electrical Resistivity Tomography (TEM)
+    * lightweight Electrical Resistivity Tomography (ERT)
     * Vertical Electric Sounding (VES)
 """
 

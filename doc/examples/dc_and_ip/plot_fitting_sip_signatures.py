@@ -28,9 +28,9 @@ amplitude = np.abs(Z)
 phase = np.angle(Z)
 
 sip = SIPSpectrum(f=f,
-                  amp=np.abs(Z),
+                  amp=amplitude,
                   # note the minus sign: we need to provide -phase[rad]
-                  phi=-np.angle(Z))
+                  phi=-phase)
 sip.showData()
 sip.showDataKK()  # check Kramers-Kronig relations
 
@@ -51,9 +51,9 @@ amplitude = np.abs(Z)
 phase = np.angle(Z)
 
 sip = SIPSpectrum(f=f,
-                  amp=np.abs(Z),
+                  amp=amplitude,
                   # note the minus sign: we need to provide -phase[rad]
-                  phi=-np.angle(Z),
+                  phi=-phase,
 )
 sip.fitColeCole(useCond=False)  # works for both rho and sigma models
 sip.showAll()  # save=True)
@@ -79,9 +79,9 @@ phase = np.angle(Z)
 
 sip = SIPSpectrum(
     f=f,
-    amp=np.abs(Z),
+    amp=amplitude,
     # note the minus sign: we need to provide -phase[rad]
-    phi=-np.angle(Z),
+    phi=-phase,
 )
 sip.fitCCEM()  # fit an SIP Cole-Cole term and an EM term (also Cole-Cole)
 
@@ -110,9 +110,9 @@ phase = np.angle(Z)
 
 sip = SIPSpectrum(
     f=f,
-    amp=np.abs(Z),
+    amp=amplitude,
     # note the minus sign: we need to provide -phase[rad]
-    phi=-np.angle(Z),
+    phi=-phase,
 )
 # sip.showData()  # znorm=True)
 # sip.showDataKK()  # check Kramers-Kronig relations

@@ -352,28 +352,6 @@ def createColorBarOnly(cMin=1, cMax=100, logScale=False, cMap=None, nLevs=5,
     return fig
 
 
-def prettyFloat(v):
-    """Return a pretty string for a given value suitable for graphical output."""
-    if abs(round(v)-v) < 1e-4 and abs(v) < 1e3:
-        return str(int(v))
-    elif abs(v) == 0.0:
-        return "0"
-    elif abs(v) > 1e3 or abs(v) <= 1e-3:
-        return str("%.1e" % v)
-    elif abs(v) < 1e-2:
-        return str("%.4f" % v)
-    elif abs(v) < 1e-1:
-        return str("%.3f" % v)
-    elif abs(v) < 1e0:
-        return str("%.2f" % v)
-    elif abs(v) < 1e1:
-        return str("%.1f" % v)
-    elif abs(v) < 1e2:
-        return str("%.1f" % v)
-    else:
-        return str("%.0f" % v)
-
-
 def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5):
     """TODO Documentme."""
     if cMin is None:
@@ -401,7 +379,7 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5):
 
     cbarLevelsString = []
     for i in cbarLevels:
-        cbarLevelsString.append(prettyFloat(i))
+        cbarLevelsString.append(pg.mplviewer.prettyFloat(i))
 
     if hasattr(cbar, 'mappable'):
         cbar.mappable.set_clim(vmin=cMin, vmax=cMax)

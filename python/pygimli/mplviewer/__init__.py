@@ -5,6 +5,8 @@
 from .utils import (hold,
                     wait,
                     updateAxes,
+                    prettyFloat,
+                    renameDepthTicks,
                     insertUnitAtNextLastTick,
                     saveFigure,
                     saveAxes,
