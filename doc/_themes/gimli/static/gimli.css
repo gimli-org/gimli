@@ -196,6 +196,10 @@ pre, code, blockquote {
     font-size: 15px;
 }
 
+dt {
+  font-weight: 500;
+}
+
 .nav-header {
     font-weight: 500;
 }
