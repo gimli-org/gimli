@@ -882,18 +882,23 @@ def exportHDF5Mesh(mesh, exportname, group='mesh', indices='cell_indices',
             out[grp][cells].attrs['celltype'] = np.string_('tetrahedron')
             out[grp][cells].attrs.create('partition', [0])
     return True
-def readEIDORSMesh(filename, matlab_varname,verbose=False):
+
+
+def readEIDORSMesh(fileName, matlabVarname, verbose=False):
     """Reads finite element model in EIDORS format and returns pygimli mesh.
 
     Parameters
     ----------
     filename : str
         name of the .mat file containing the EIDORS model
-    matlab_varname : str
+    matlabVarname : str
         variable name of .mat file in MATLAB workspace
     """
+    if not pg.optImport("scipy", requiredFor="read EIDORS mesh."):
+        raise ImportError('cannot import sciyp')
+
     import scipy.io as spio
-        
+
     def todict(matobj):
         dict = {}
         for strg in matobj._fieldnames:
@@ -903,19 +908,16 @@ def readEIDORSMesh(filename, matlab_varname,verbose=False):
             else:
                 dict[strg] = elem
         return dict
-    
-    
+
     def check_keys(dict):
         for key in dict:
             if isinstance(dict[key], spio.matlab.mio5_params.mat_struct):
                 dict[key] = todict(dict[key])
         return dict
-    
-    
-    def loadmat(filename):
-        data = spio.loadmat(filename, struct_as_record=False, squeeze_me=True)
-        return check_keys(data)
 
+    def loadmat(filename):
+        data = spio.loadmat(fileName, struct_as_record=False, squeeze_me=True)
+        return check_keys(data)
 
     def get_nested(data, *args):
         if args and data:
@@ -924,8 +926,8 @@ def readEIDORSMesh(filename, matlab_varname,verbose=False):
                 value = data.get(element)
                 return value if len(args) == 1 else get_nested(value, *args[1:])
 
-    matlab_eidors = loadmat(filename)
-    python_eidors = get_nested(matlab_eidors, matlab_varname)
+    matlab_eidors = loadmat(fileName)
+    python_eidors = get_nested(matlab_eidors, matlabVarname)
     # if input eidors data is forward model instead of an image
     if 'nodes' in python_eidors.keys():
         nodes = get_nested(python_eidors, "nodes")
@@ -941,12 +943,14 @@ def readEIDORSMesh(filename, matlab_varname,verbose=False):
 
     dim_nodes = np.size(nodes, 1)
     dim_elems = np.size(elems, 1)
+
     if verbose:
-        print('Reading %s... ' % filename)
+        print('Reading %s... ' % fileName)
         print('found %s  %s-dimensional nodes... ' % (np.size(nodes, 0), dim_nodes))
-    if dim_elems == 3 & verbose:
+
+    if dim_elems == 3 and verbose:
         print('found %s triangles... ' % np.size(elems, 0))
-    elif dim_elems == 4 & verbose:
+    elif dim_elems == 4 and verbose:
         print('found %s tetrahedrons... ' % np.size(elems, 0))
 
     if 'elem_data' in python_eidors.keys():
@@ -1014,6 +1018,7 @@ def readEIDORSMesh(filename, matlab_varname,verbose=False):
         mesh.setCellMarkers(boundary_numbers.astype(int))
 
     return mesh
+
 
 def exportFenicsHDF5Mesh(mesh, exportname, **kwargs):
     """Exports Gimli mesh in HDF5 format suitable for Fenics.

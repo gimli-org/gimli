@@ -89,7 +89,7 @@ def renameDepthTicks(ax):
         tickLabels.append(prettyFloat(-t))
 
     ax.set_yticklabels(tickLabels)
-    insertUnitAtNextLastTick(ax, 'm', xlabel=False)
+    #insertUnitAtNextLastTick(ax, 'm', xlabel=False)
     updateAxes(ax)
 
 
