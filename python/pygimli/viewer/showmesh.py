@@ -303,8 +303,16 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
                 drawMesh(ax, mesh, **kwargs)
 
     if mesh.cellCount() == 0:
-        pg.mplviewer.drawPLC(ax, mesh, **kwargs)
         showMesh = False
+        if mesh.boundaryCount() == 0:
+            pg.mplviewer.drawPLC(ax, mesh, showNodes=True,
+                                 fillRegion=False, showBoundary=False,
+                                 **kwargs)
+            showBoundary = False
+            #ax.plot(pg.x(mesh), pg.y(mesh), '.', color='black')
+        else:
+            pg.mplviewer.drawPLC(ax, mesh, **kwargs)
+
 
     if showMesh:
         if gci is not None and hasattr(gci, 'set_antialiased'):
@@ -334,16 +342,20 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
 
     if colorBar and validData:
         # , **kwargs) # causes problems!
-        labels = ['cMin', 'cMax', 'nLevs', 'orientation', 'pad', 'cMap']
+        labels = ['cMin', 'cMax', 'nLevs', 'cMap', 'logScale']
         subkwargs = {key: kwargs[key] for key in labels if key in kwargs}
+        subkwargs['label'] = label
 
         if colorBar is True or colorBar is 1:
-            #print('drawColorbar ************************')
-            cbar = createColorBar(gci, label=label, **subkwargs)
-            updateColorBar(cbar, gci, label=label, **subkwargs)
+            cbar = createColorBar(gci,
+                                  orientation=kwargs.pop('orientation',
+                                                         'horizontal'),
+                                  size=kwargs.pop('size', 0.2),
+                                  pad=kwargs.pop('pad', None)
+                                  )
+            updateColorBar(cbar, **subkwargs)
         elif colorBar is not False:
-            #print('updateColorBar ************************')
-            cbar = updateColorBar(colorBar, gci, label=label, **subkwargs)
+            cbar = updateColorBar(colorBar, **subkwargs)
 
         if markers:
             ticks = np.arange(len(uniquemarkers))

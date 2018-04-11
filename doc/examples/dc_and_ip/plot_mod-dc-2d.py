@@ -128,7 +128,8 @@ u -= solve(grid, a=sigma, b=sigma * k*k, f=pointSource,
 # print("error min max", min(err), max(err))
 
 ax = show(grid, data=u, fillContour=True, colorBar=True, cMap="RdBu_r",
-          orientation='horizontal', label='Solution u', nLevs=11, logScale=True, hold=True, showMesh=True)[0]
+          orientation='horizontal', label='Solution u', nLevs=11,
+          logScale=False, hold=True, showMesh=True)[0]
 
 # Additional to the image of the potential we want to see the current flow too.
 # The current flows along the gradient of our solution and can be plotted as

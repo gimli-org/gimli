@@ -543,8 +543,6 @@ namespace pyplusplus{ namespace aliases{
     typedef GIMLI::TransCotLU< GIMLI::RVector >   RTransCotLU;
     typedef GIMLI::TransCumulative < GIMLI::RVector > RTransCumulative;
 
-    typedef GIMLI::BoundingBox<double> RBoundingBox;
-
     typedef GIMLI::Singleton< GIMLI::ShapeFunctionCache >   SingletonShapeFunction;
     typedef GIMLI::Singleton< GIMLI::IntegrationRules >     SingletonIntegrationsRules;
     typedef GIMLI::Singleton< GIMLI::MemWatch >             SingletonMemWatch;

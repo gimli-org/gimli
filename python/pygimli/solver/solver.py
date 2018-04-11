@@ -788,12 +788,15 @@ def linSolve(A, b, verbose=False):
     """
     x = pg.RVector(len(b), .0)
 
+    print(type(A))
     if isinstance(A, pg.RSparseMapMatrix):
         S = pg.RSparseMatrix(A)
         solver = pg.LinSolver(S, verbose=verbose)
         solver.solve(b, x)
     elif isinstance(A, np.ndarray):
         return np.linalg.solve(A, b)
+    elif isinstance(A, scipy.sparse.csr.csr_matrix):
+        return scipy.sparse.linalg.spsolve(A, b)
     else:
         solver = pg.LinSolver(A, verbose=verbose)
         solver.solve(b, x)
@@ -1372,6 +1375,9 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
         progress : bool
             Give some calculation progress.
 
+        assembleOnly : bool
+            if set stops after matrix asssemblation
+
         ws : dict
             The WorkSpace is a dictionary that will get
             some temporary data during the calculation.
@@ -1489,6 +1495,9 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
 
         workSpace['S'] = S
         workSpace['rhs'] = rhs
+
+        if 'assembleOnly' in kwargs:
+            return
 
         solver = pg.LinSolver(False)
         solver.setMatrix(S, 0)

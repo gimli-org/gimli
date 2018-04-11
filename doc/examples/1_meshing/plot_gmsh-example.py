@@ -190,14 +190,14 @@ except OSError:
     print("Gmsh needs to be installed for this example.")
     gmsh = False
 
+fig, ax = plt.subplots()
 if gmsh:
     mesh = readGmsh("mesh.msh", verbose=True)
-    pg.show(mesh, mesh.cellMarkers(), showLater=True, cmap="BrBG")
-    plt.xlim(0, 50)
-    plt.ylim(-50, 0)
+    pg.show(mesh, ax=ax, markers=True, hold=True)
+    ax.set_xlim(0, 50)
+    ax.set_ylim(-50, 0)
 else:
-    plt.figure()
-    plt.title("Gmsh needs to be installed for this example")
+    ax.set_title("Gmsh needs to be installed for this example")
 
 ###############################################################################
 # .. figure:: ../../_static/gmsh/mod_inv.png
@@ -217,4 +217,4 @@ else:
 #     Additional Gmsh examples: a) Laboratory sandbox model. b) Finite
 #     discretization of a ring-shaped electrode. c) And more!
 
-plt.show()
+pg.wait()

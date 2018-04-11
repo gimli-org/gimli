@@ -11,7 +11,7 @@ import numpy as np
 from matplotlib.colors import LinearSegmentedColormap
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-from pygimli.mplviewer import saveFigure, updateAxes
+from pygimli.mplviewer import saveFigure, updateAxes, prettyFloat
 
 
 cdict = {'red': ((0.0, 0.0, 0.0), (0.5, 1.0, 1.0), (1.0, 1.0, 1.0)),
@@ -29,9 +29,9 @@ def autolevel(z, nLevs, logScale=None, zmin=None, zmax=None):
     >>> from pygimli.mplviewer import autolevel
     >>> x = np.linspace(1, 10, 100)
     >>> autolevel(x, 3)
-    array([ 1.,  4.,  7., 10.])
+    array([  1.,   4.,   7.,  10.])
     >>> autolevel(x, 3, logScale=True)
-    array([  0.1,   1. ,  10. , 100. ])
+    array([   0.1,    1. ,   10. ,  100. ])
     """
     locator = None
     if logScale and min(z) > 0:
@@ -350,28 +350,6 @@ def createColorBarOnly(cMin=1, cMax=100, logScale=False, cMap=None, nLevs=5,
         saveFigure(fig, savefig)
 
     return fig
-
-
-def prettyFloat(v):
-    """Return a pretty string for a given value suitable for graphical output."""
-    if abs(round(v)-v) < 1e-4 and abs(v) < 1e3:
-        return str(int(v))
-    elif abs(v) == 0.0:
-        return "0"
-    elif abs(v) > 1e3 or abs(v) <= 1e-3:
-        return str("%.1e" % v)
-    elif abs(v) < 1e-2:
-        return str("%.4f" % v)
-    elif abs(v) < 1e-1:
-        return str("%.3f" % v)
-    elif abs(v) < 1e0:
-        return str("%.2f" % v)
-    elif abs(v) < 1e1:
-        return str("%.1f" % v)
-    elif abs(v) < 1e2:
-        return str("%.1f" % v)
-    else:
-        return str("%.0f" % v)
 
 
 def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5):

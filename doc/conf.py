@@ -65,8 +65,7 @@ needs_sphinx = '1.3' # and lower 1.6
 
 # Check for external sphinx extensions
 deps = ['sphinxcontrib-programoutput',
-        #'sphinxcontrib-bibtex',
-        # 'sphinxcontrib-doxylink',
+        'sphinxcontrib-bibtex',
         'numpydoc']
 modules = [str(m).rsplit()[0] for m in pip.get_installed_distributions()]
 
@@ -91,10 +90,9 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.mathjax',
               'sphinx.ext.doctest',
               'sphinx.ext.intersphinx',
+              'sphinx.ext.imgconverter',
               'matplotlib.sphinxext.only_directives',
               'matplotlib.sphinxext.plot_directive',
-              'myexec_directive',
-              'myliterate_directive',
               'doxylink'
               ]
 
@@ -118,8 +116,11 @@ try:
             'numpy': 'http://docs.scipy.org/doc/numpy'
         },
 
+        # Don't report time of fast scripts (< 10 sec)
+        "min_reported_time": 10,
+
         # path where to store your example linker templates
-        'mod_example_dir': 'pygimliapi/_generated',
+        'backreferences_dir': 'pygimliapi/_generated',
 
         # Your documented modules. You can use a string or a list of strings
         'doc_module': 'pygimli'

@@ -92,9 +92,9 @@ def createRectangle(start=None, end=None, pos=None, size=None, **kwargs):
     ...                             marker=4, area=0.1)
     >>> _ = pg.show(rectangle)
     """
-    if not ((start and end) or (pos and size)):
-        raise BaseException("createRectangle pls. give either start and end"
-                            "OR pos and size.")
+    #if not ((start and end) or (pos and size)):
+        #raise BaseException("createRectangle pls. give either start and end"
+                            #"OR pos and size.")
     if start is None:
         start = [-0.5, 0.5]
     if end is None:

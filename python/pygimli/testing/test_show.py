@@ -57,17 +57,6 @@ axs[2][4].set_title('mesh, cells, tri=True, shading=gouraud')
 ##pg.show(mesh, mesh.cellMarker(), label(markers), axs[1][1])
 
 
-
-
-
-
-
-
-
-
-
-
+#pg.plt.tight_layout()
 pg.wait()
 
-
-#top=0.99, bottom=0.05

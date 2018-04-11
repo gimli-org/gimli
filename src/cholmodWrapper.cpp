@@ -27,9 +27,11 @@
     #include <cholmod.h>
     #define USE_CHOLMOD 1
 
-    #if UMFPACK_FOUND
-        #include <umfpack.h>
-        #define USE_UMFPACK 1
+    #if defined(UMFPACK_FOUND)
+        #if (UMFPACK_FOUND == TRUE)
+            #include <umfpack.h>
+            #define USE_UMFPACK 1
+        #endif
     #endif
 #endif
 

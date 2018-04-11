@@ -130,6 +130,7 @@ public:
     /*! Return the complete sensor positions as read-only. */
     inline const std::vector< RVector3 > & sensorPositions() const { return sensorPoints_; }
 
+
     /*! Set the position for the i-th sensor. Resize sensors if necessary.*/
     void setSensorPosition(uint i, const RVector3 & pos);
 
@@ -140,6 +141,9 @@ public:
     /*! Return a single sensor position. Syntactic sugar.*/
     inline const RVector3 & sensorPosition(double i) const {
         return sensorPoints_[(uint)i]; }
+
+    /*! Return the complete sensor positions as read-only. */
+    inline const std::vector< RVector3 > & sensors() const { return sensorPositions(); }
 
     /*! Return a single sensor position. Syntactic sugar.*/
     inline const RVector3 & sensor(long i) const {

@@ -1,4 +1,4 @@
-# python/pygimli/_version.py export-subst
+python/pygimli/_version.py export-subst
 # Set the default behavior, in case people don't have core.autocrlf set.
 * text=auto
 
@@ -15,3 +15,5 @@
 # Denote all files that are truly binary and should not be modified.
 *.png binary
 *.jpg binary
+*.bms binary
+*.pdf binary

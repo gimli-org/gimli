@@ -59,7 +59,7 @@ def cellDataToNodeData(mesh, data, style='mean'):
     >>> celldata = np.array([1, 2, 3, 4])
     >>> nodedata = pg.meshtools.cellDataToNodeData(grid, celldata)
     >>> print(nodedata.array())
-    [1.  1.5 2.  2.  2.5 3.  3.  3.5 4. ]
+    [ 1.   1.5  2.   2.   2.5  3.   3.   3.5  4. ]
     """
     if len(data) != mesh.cellCount():
         raise BaseException("Dimension mismatch, expecting cellCount(): " +
@@ -425,7 +425,7 @@ def interpolate(*args, **kwargs):
     TODO
 
     * 2D parametric to points (method=['linear, 'spline', 'harmonic'])
-    * 2D/3D point cloud to points/grids (Delauney, 'linear, 'spline', 'harmonic')
+    * 2D/3D point cloud to points/grids ('Delauney', 'linear, 'spline', 'harmonic')
     * Mesh to points based on nearest neighbour values (pg.core)
 
     Examples
@@ -460,22 +460,16 @@ def interpolate(*args, **kwargs):
     if pgcore:
         if len(args) == 3: # args: outData = (inMesh, inData, outPos)
 
-            if args[1].ndim == 2: # outData = (inMesh, vR3 )
-                if args[1].ndim == 2: # outData = (inMesh, vR3, vR3)
+            if args[1].ndim == 2: # outData = (inMesh, mat, vR3)
 
-                    outMat = pg.Matrix()
-                    pg.core._pygimli_.interpolate(args[0],
-                                                  inMat=np.array(args[1]).T,
-                                                  destPos=args[2],
-                                                  outMat=outMat,
-                                                  **kwargs)
-                    return np.array(outMat).T
+                outMat = pg.Matrix()
+                pg.core._pygimli_.interpolate(args[0],
+                                              inMat=np.array(args[1]).T,
+                                              destPos=args[2],
+                                              outMat=outMat,
+                                              **kwargs)
+                return np.array(outMat).T
 
-                # outData = (inMesh, vR, vR3)
-                return pg.core._pygimli_.interpolate(args[0],
-                                                     args[1],
-                                                     destPos=args[2],
-                                                     **kwargs)
         if len(args) == 4: # args: (inMesh, inData, outPos, outData)
 
             if args[1].ndim == 1 and args[2].ndim == 1 and args[3].ndim == 1:
@@ -565,7 +559,7 @@ def interpolate(*args, **kwargs):
                 return harmfitNative(u, x=x, nc=coeff, xc=xi, err=None)[0]
 
             if 'spline' in method:
-                if pg.io.opt_import("scipy", requiredFor="use interpolate splines."):
+                if pg.optImport("scipy", requiredFor="use interpolate splines."):
                     from scipy import interpolate
                     tck = interpolate.splrep(x, u, s=0)
                     return interpolate.splev(xi, tck, der=0)

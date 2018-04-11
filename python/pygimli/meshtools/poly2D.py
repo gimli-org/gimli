@@ -15,7 +15,6 @@ import pygimli as pg
 from pygimli.meshtools import createMesh, createParaMeshPLC
 
 from pygimli.mplviewer.meshview import drawMesh
-from pygimli.io import opt_import
 from pygimli.meshtools import writePLC
 
 
@@ -46,7 +45,7 @@ class Poly2D(object):
 
     def load(self, polyfile):
         """Read polygon info from XML file (see example.xml)."""
-        ET = opt_import("xml.etree.cElementTree", "read in XML files")
+        ET = pg.optImport("xml.etree.cElementTree", "read in XML files")
         self.doc = ET.parse(polyfile)
         self.parse()
 

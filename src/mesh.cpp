@@ -147,6 +147,7 @@ void Mesh::clear(){
 }
 
 Node * Mesh::createNode_(const RVector3 & pos, int marker, int id){
+    rangesKnown_ = false;
     if (id == -1) id = nodeCount();
     nodeVector_.push_back(new Node(pos));
     nodeVector_.back()->setMarker(marker);
@@ -571,13 +572,10 @@ Cell * Mesh::findCell(const RVector3 & pos, size_t & count,
 }
 
 std::vector < Cell * > Mesh::findCellsAlongRay(const RVector3 & start,
-                                               const RVector3 & end,
+                                               const RVector3 & dir,
                                                R3Vector & pos) const {
     pos.clean();
     std::vector < Cell * > cells;
-
-    RVector3 dir(end- start);
-    dir.normalize();
 
     RVector3 inPos(start);
 
@@ -588,7 +586,8 @@ std::vector < Cell * > Mesh::findCellsAlongRay(const RVector3 & start,
     pos.push_back(inPos);
 
     double stepTol = 1e-1;
-    while (inPos != end){
+
+    while (1){
         Cell *c = this->findCell(inPos + dir*stepTol, false);
         if (!c) break;
 
@@ -596,7 +595,7 @@ std::vector < Cell * > Mesh::findCellsAlongRay(const RVector3 & start,
         for (Index i = 0; i < c->boundaryCount(); i++){
             Shape * s = c->boundary(i)->pShape();
 
-            if (s->intersectRay(start, dir, outPos)){
+            if (s->intersectRay(inPos, dir, outPos)){
                 if (outPos.dist(inPos) > stepTol){
                     outPos.setValid(true);
                     break;

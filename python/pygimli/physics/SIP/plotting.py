@@ -4,8 +4,15 @@
 
 import matplotlib.pyplot as plt
 
+def showAmplitudeSpectrum(*args, **kwargs):
+    pg.deprecated('drawAmplitudeSpectrum')
+    return drawAmplitudeSpectrum(*args, **kwargs)
 
-def showAmplitudeSpectrum(ax, freq, amp, ylabel=r'$\rho$ ($\Omega$m)',
+def showPhaseSpectrum(*args, **kwargs):
+    pg.deprecated('drawPhaseSpectrum')
+    return drawPhaseSpectrum(*args, **kwargs)
+
+def drawAmplitudeSpectrum(ax, freq, amp, ylabel=r'$\rho$ ($\Omega$m)',
                           grid=True, marker='+', ylog=True, **kwargs):
     """Show amplitude spectrum (resistivity as a function of f)."""
     lab = kwargs.pop('label', 'obs')
@@ -20,11 +27,12 @@ def showAmplitudeSpectrum(ax, freq, amp, ylabel=r'$\rho$ ($\Omega$m)',
     ax.grid(grid)
 
 
-def showPhaseSpectrum(ax, freq, phi, ylabel=r'$-\phi$ (mrad)',
+def drawPhaseSpectrum(ax, freq, phi, ylabel=r'$-\phi$ (mrad)',
                       grid=True, marker='+', ylog=False, **kwargs):
     """Show phase spectrum (-phi as a function of f)."""
     if 'label' not in kwargs:
         kwargs['label'] = 'obs'
+
     ax.semilogx(freq, phi, marker=marker, **kwargs)
     if ylog:
         ax.set_yscale('log')
@@ -33,9 +41,22 @@ def showPhaseSpectrum(ax, freq, phi, ylabel=r'$-\phi$ (mrad)',
     ax.grid(grid)
 
 
+def showSpectrum(freq, amp, phi, nrows=2, ylog=None, axs=None, **kwargs):
+    """Show amplitude and phase spectra in two subplots."""
+    if axs is None:
+        fig, axs = plt.subplots(nrows=nrows, sharex=(nrows == 2))
+    else:
+        fig = axs[0].figure
+    drawAmplitudeSpectrum(axs[0], freq, amp, ylog=ylog, **kwargs)
+    drawPhaseSpectrum(axs[1], freq, phi, ylog=ylog, **kwargs)
+    return fig, axs
+
 def plotSpectrum(ax, freq, vals, ylabel=r'$-\phi$ (mrad)',
                  grid=True, marker='+', ylog=True, **kwargs):
-    """Plot some spectrum (redundant)."""
+    """Plot some spectrum (redundant).
+    DEPRECATED
+    """
+    pg.deprecated('drawSpectrum')
     if 'label' not in kwargs:
         kwargs['label'] = 'obs'
     ax.loglog(freq, vals, marker=marker, **kwargs)
@@ -46,15 +67,6 @@ def plotSpectrum(ax, freq, vals, ylabel=r'$-\phi$ (mrad)',
     ax.grid(grid)
 
 
-def showSpectrum(freq, amp, phi, nrows=2, ylog=None, ax=None):
-    """Show amplitude and phase spectra in two subplots."""
-    if ax is None:
-        fig, ax = plt.subplots(nrows=nrows, sharex=(nrows == 2))
-    else:
-        fig = ax[0].figure
-    showAmplitudeSpectrum(ax[0], freq, amp, ylog=ylog)
-    showPhaseSpectrum(ax[1], freq, phi, ylog=ylog)
-    return fig, ax
 
 
 if __name__ == "__main__":

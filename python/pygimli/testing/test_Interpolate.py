@@ -47,7 +47,7 @@ class TestInterpolate(unittest.TestCase):
 
         # api test https://github.com/gimli-org/gimli/issues/131
         x = np.linspace(grid.xmin(), grid.xmax(), 11)
-        np.testing.assert_allclose(pg.interpolate(grid, pg.x(grid.positions()), x), x)
+        np.testing.assert_allclose(pg.interpolate(grid, pg.x(grid), x), x)
         np.testing.assert_allclose(pg.interpolate(grid, pg.x(grid.positions()), x=x), x)
         np.testing.assert_allclose(pg.interpolate(grid, pg.x(grid.positions()), x, x*0.), x)
         np.testing.assert_allclose(pg.interpolate(grid, pg.x(grid.positions()), x=x, y=x*0), x)

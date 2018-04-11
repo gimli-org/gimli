@@ -23,11 +23,12 @@ def createMesh(poly, quality=30, area=0.0, smooth=None, switches=None,
 
     Parameters
     ----------
-    poly: :gimliapi:`GIMLI::Mesh` or list
+    poly: :gimliapi:`GIMLI::Mesh` or list or ndarray
         * 2D or 3D gimli mesh that contains the PLC.
         * 2D mesh needs edges
         * 3D mesh needs ... to be implemented
         * List of x y pairs [[x0, y0], ... ,[xN, yN]]
+        * ndarray [x_i, y_i]
         * PLC or list of PLC
     quality: float
         2D triangle quality sets a minimum angle constraint.
@@ -64,8 +65,10 @@ def createMesh(poly, quality=30, area=0.0, smooth=None, switches=None,
                 pg.meshtools.mergePLC(poly), quality, area, smooth, switches,
                 verbose)
     # poly == [pos, pos, ]
-    if isinstance(poly, list) or isinstance(poly, type(zip)) or \
-        type(poly) == pg.stdVectorRVector3:
+    if isinstance(poly, list) or \
+        isinstance(poly, type(zip)) or \
+        type(poly) == pg.stdVectorRVector3 or \
+        (isinstance(poly, np.ndarray) and poly.ndim == 2):
         delPLC = pg.Mesh(2)
         for p in poly:
             delPLC.createNode(p[0], p[1], 0.0)
@@ -82,10 +85,15 @@ def createMesh(poly, quality=30, area=0.0, smooth=None, switches=None,
             # -D Conforming delaunay
             # -F Uses Steven Fortune's sweepline algorithm
             # no -a here ignores per region area
-            switches = 'pazeA'
+            switches = 'pzeA'
 
             if area > 0:
-                switches += 'a' + str(area)
+                #switches += 'a' + str(area)
+                # The str function turns everything smaller
+                # than 0.0001 into the scientific notation 1e-5
+                # which can not be read by triangle. The following
+                # avoids this even for very small numbers
+                switches += 'a' + '{:.20f}'.format(area)
                 pass
             else:
                 switches += 'a'
@@ -805,8 +813,8 @@ def readHDF5Mesh(filename, group='mesh', indices='cell_indices',
         :gimliapi:`GIMLI::Mesh`
 
     """
-    h5py = pg.io.opt_import('h5py',
-                            requiredFor='import mesh in .h5 data format')
+    h5py = pg.optImport('h5py',
+                        requiredFor='import mesh in .h5 data format')
     h5 = h5py.File(filename, 'r')
     if verbose:
         print('loaded hdf5 mesh:', h5)
@@ -839,8 +847,9 @@ def exportHDF5Mesh(mesh, exportname, group='mesh', indices='cell_indices',
 
     Keywords are explained in :py:mod:`pygimli.meshtools.readHDFS`
     """
-    h5py = pg.io.opt_import('h5py',
-                            requiredFor='export mesh in .h5 data format')
+    h5py = pg.optImport('h5py',
+                        requiredFor='export mesh in .h5 data format')
+
     if not isinstance(mesh, pg.Mesh):
         mesh = pg.Mesh(mesh)
 

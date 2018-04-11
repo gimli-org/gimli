@@ -59,8 +59,6 @@ from ._version import get_versions
 from .core import *
 from .testing import test
 
-from ._logger import *
-
 __version__ = get_versions()['version']
 del get_versions
 
@@ -68,3 +66,4 @@ def version():
     """Shortcut to show and return current version."""
     logger.info('Version: ' + __version__ + " core:" + pg.versionStr())
     return __version__
+
