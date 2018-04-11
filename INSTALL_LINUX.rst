@@ -37,23 +37,22 @@ Install Miniconda (only once):
 Add the gimli and conda-forge channel (only once):
 
 .. code-block:: bash
-
+    
     conda config --add channels gimli --add channels conda-forge
+    conda update --all
 
 Install pygimli (and its dependencies) and test if everything works correctly via:
 
 .. code-block:: bash
 
-    conda install -f pygimli
+    conda install pygimli
     python -c "import pygimli; pygimli.test()"
-
-
 
 Update your pygimli installation if want to have the newest functionality:
 
 .. code-block:: bash
 
-    conda update -f pygimli
+    conda update pygimli
 
 The only drawback using conda is that you are bound to the rhythm we update the binary packages.
 Conda also can be seen as a sandbox Linux inside your system and it might be difficult to combine system python packages and conda GIMLi.
