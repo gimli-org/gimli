@@ -460,7 +460,7 @@ def interpolate(*args, **kwargs):
     if pgcore:
         if len(args) == 3: # args: outData = (inMesh, inData, outPos)
 
-            if args[1].ndim == 2: # outData = (inMesh, vR3, vR3)
+            if args[1].ndim == 2: # outData = (inMesh, mat, vR3)
 
                 outMat = pg.Matrix()
                 pg.core._pygimli_.interpolate(args[0],
@@ -470,11 +470,6 @@ def interpolate(*args, **kwargs):
                                               **kwargs)
                 return np.array(outMat).T
 
-            # ELSE outData = (inMesh, vR, vR3)
-            return pg.core._pygimli_.interpolate(srcMesh=args[0],
-                                                 inVec=args[1],
-                                                 destPos=args[2],
-                                                 **kwargs)
         if len(args) == 4: # args: (inMesh, inData, outPos, outData)
 
             if args[1].ndim == 1 and args[2].ndim == 1 and args[3].ndim == 1:

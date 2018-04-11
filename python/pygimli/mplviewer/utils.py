@@ -12,8 +12,6 @@ import pygimli as pg
 holdAxes__ = 0
 
 
-
-
 def updateAxes(ax, a=None):
     """For internal use."""
     if not holdAxes__:

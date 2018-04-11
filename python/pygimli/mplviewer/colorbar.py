@@ -11,7 +11,7 @@ import numpy as np
 from matplotlib.colors import LinearSegmentedColormap
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-from pygimli.mplviewer import saveFigure, updateAxes
+from pygimli.mplviewer import saveFigure, updateAxes, prettyFloat
 
 
 cdict = {'red': ((0.0, 0.0, 0.0), (0.5, 1.0, 1.0), (1.0, 1.0, 1.0)),
@@ -379,7 +379,7 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5):
 
     cbarLevelsString = []
     for i in cbarLevels:
-        cbarLevelsString.append(pg.mplviewer.prettyFloat(i))
+        cbarLevelsString.append(prettyFloat(i))
 
     if hasattr(cbar, 'mappable'):
         cbar.mappable.set_clim(vmin=cMin, vmax=cMax)

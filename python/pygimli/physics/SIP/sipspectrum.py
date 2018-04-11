@@ -200,13 +200,13 @@ class SIPSpectrum():
                 re, im = self.realimag(cond=cond)
 
             fig, ax = showSpectrum(self.f, re, im, ylog=cond, nrows=nrows,
-                                   ax=ax, **kwargs)
+                                   axs=ax, **kwargs)
             self.fig['data'] = fig
             ax[0].set_ylabel('real part'+addstr)
             ax[1].set_ylabel('imaginary part'+addstr)
         else:
-            fig, ax = showSpectrum(self.f, self.amp, self.phi*1000, ax=ax,
-                                   **kwargs)
+            fig, ax = showSpectrum(self.f, self.amp, self.phi*1000,
+                                   axs=ax, **kwargs)
             self.fig['data'] = fig
 
         plt.show(block=False)
