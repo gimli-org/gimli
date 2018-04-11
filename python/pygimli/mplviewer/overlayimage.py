@@ -339,11 +339,15 @@ def underlayMap(ax, proj, vendor='OSM', zoom=-1, pixelLimit=None,
 
     extent = np.asarray([imUL[0], imLR[0], imLR[1], imUL[1]])
 
+    print(extent)
     gci = ax.imshow(image, extent=extent)
 
     if not fitMap:
         ax.set_xlim(origXLimits)
         ax.set_ylim(origYLimits)
+    else:
+        ax.set_xlim(extent[0], extent[1])
+        ax.set_ylim(extent[2], extent[3])
 
     return gci
 
