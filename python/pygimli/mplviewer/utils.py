@@ -12,18 +12,6 @@ import pygimli as pg
 holdAxes__ = 0
 
 
-def insertUnitAtNextLastTick(ax, unit, xlabel=True, position=-2):
-    """Replace the last-but-one tick label by unit symbol."""
-    if xlabel:
-        labels = ax.get_xticks().tolist()
-        labels[position] = unit
-        ax.set_xticklabels(labels)
-    else:
-        labels = ax.get_yticks().tolist()
-        labels[position] = unit
-        ax.set_yticklabels(labels)
-
-
 def updateAxes(ax, a=None):
     """For internal use."""
     if not holdAxes__:
@@ -49,21 +37,6 @@ def wait(**kwargs):
     plt.show(**kwargs)
 
 
-def adjustWorldAxes(ax):
-    """Set some common default properties for an axe."""
-    ax.set_ylabel('Depth [m]')
-    ax.set_xlabel('$x$ [m]')
-
-    ticks = ax.yaxis.get_majorticklocs()
-    tickLabels = []
-    for t in ticks:
-        tickLabels.append(str(int(abs(t))))
-
-    ax.set_yticklabels(tickLabels)
-    plt.tight_layout()
-    time.sleep(0.05)
-
-
 def saveFigure(fig, filename, pdfTrim=False):
     """Save figure as pdf."""
     fig.savefig(filename + '.pdf', bbox_inches='tight')
@@ -82,8 +55,64 @@ def saveAxes(ax, filename, adjust=False):
     if adjust:
         adjustWorldAxes(ax)
 
-    time.sleep(0.05)
+    updateAxes(ax)
     saveFigure(ax.figure, filename)
+
+
+def prettyFloat(v):
+    """Return a pretty string for a given value suitable for graphical output."""
+    if abs(round(v)-v) < 1e-4 and abs(v) < 1e3:
+        return str(int(v))
+    elif abs(v) == 0.0:
+        return "0"
+    elif abs(v) > 1e3 or abs(v) <= 1e-3:
+        return str("%.1e" % v)
+    elif abs(v) < 1e-2:
+        return str("%.4f" % v)
+    elif abs(v) < 1e-1:
+        return str("%.3f" % v)
+    elif abs(v) < 1e0:
+        return str("%.2f" % v)
+    elif abs(v) < 1e1:
+        return str("%.1f" % v)
+    elif abs(v) < 1e2:
+        return str("%.1f" % v)
+    else:
+        return str("%.0f" % v)
+
+
+def renameDepthTicks(ax):
+    """Switch signs of depth ticks to be positive"""
+    ticks = ax.yaxis.get_majorticklocs()
+    tickLabels = []
+    for t in ticks:
+        tickLabels.append(prettyFloat(-t))
+
+    ax.set_yticklabels(tickLabels)
+    insertUnitAtNextLastTick(ax, 'm', xlabel=False)
+    updateAxes(ax)
+
+
+def insertUnitAtNextLastTick(ax, unit, xlabel=True, position=-2):
+    """Replace the last-but-one tick label by unit symbol."""
+    if xlabel:
+        labels = ax.get_xticklabels()
+        labels[position] = unit
+        ax.set_xticklabels(labels)
+    else:
+        labels = ax.get_yticklabels()
+        labels[-position] = unit
+        ax.set_yticklabels(labels)
+
+
+def adjustWorldAxes(ax):
+    """Set some common default properties for an axe."""
+    ax.set_ylabel('Depth (m)')
+    ax.set_xlabel('$x$ (m)')
+
+    renameDepthTicks(ax)
+    plt.tight_layout()
+    updateAxes(ax)
 
 
 def setOutputStyle(dim='w', paperMargin=5, xScale=1.0, yScale=1.0, fontsize=9,

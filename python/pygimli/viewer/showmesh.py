@@ -303,8 +303,16 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
                 drawMesh(ax, mesh, **kwargs)
 
     if mesh.cellCount() == 0:
-        pg.mplviewer.drawPLC(ax, mesh, **kwargs)
         showMesh = False
+        if mesh.boundaryCount() == 0:
+            pg.mplviewer.drawPLC(ax, mesh, showNodes=True,
+                                 fillRegion=False, showBoundary=False,
+                                 **kwargs)
+            showBoundary = False
+            #ax.plot(pg.x(mesh), pg.y(mesh), '.', color='black')
+        else:
+            pg.mplviewer.drawPLC(ax, mesh, **kwargs)
+
 
     if showMesh:
         if gci is not None and hasattr(gci, 'set_antialiased'):

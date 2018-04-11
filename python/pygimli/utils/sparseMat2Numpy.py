@@ -12,6 +12,8 @@ import pygimli as pg
 def sparseMatrix2csr(A):
     """Convert SparseMatrix to scipy.csr_matrix.
 
+    Compressed Sparse Row matrix
+
     Parameters
     ----------
     A: pg.SparseMapMatrix | pg.SparseMatrix

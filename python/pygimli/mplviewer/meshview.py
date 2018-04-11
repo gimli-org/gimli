@@ -559,7 +559,7 @@ def drawMeshBoundaries(ax, mesh, hideMesh=False, useColorMap=False, **kwargs):
 
 
 def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
-            **kwargs):
+            showNodes=False, **kwargs):
     """Draw 2D PLC into given axes.
 
     Parameters
@@ -573,6 +573,9 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
 
     boundaryMarker: bool [False]
         show boundary marker
+
+    showNodes: bool [False]
+        draw all nodes
 
     **kwargs
 
@@ -609,14 +612,15 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
                             linewidth=0.0,
                             tri=True,
                             snap=True,
-                            **kwargs)
+                            )
 
             if regionMarker:
-                kwargs["cMap"] = plt.cm.get_cmap("Set3", len(uniquemarkers))
-                kwargs["cMin"] = -0.5
-                kwargs["cMax"] = len(uniquemarkers) - 0.5
                 cbar = createColorBar(gci, label="Region markers")
-                updateColorBar(cbar, **kwargs)
+                updateColorBar(cbar,
+                               cMap=plt.cm.get_cmap("Set3", len(uniquemarkers)),
+                               cMin=-0.5,
+                               cMax=len(uniquemarkers) - 0.5,
+                               )
                 ticks = np.arange(len(uniquemarkers))
 
                 cbar.set_ticks(ticks)
@@ -635,18 +639,21 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
         if kwargs.pop('showBoundary', True):
             drawMeshBoundaries(ax, mesh)
 
-    for n in mesh.nodes():
-        col = (0.0, 0.0, 0.0, 0.5)
+    if showNodes:
+        for n in mesh.nodes():
+            col = (0.0, 0.0, 0.0, 0.5)
 
-        if n.marker() == pg.MARKER_NODE_SENSOR:
-            col = (0.0, 0.0, 0.0, 1.0)
+            if n.marker() == pg.MARKER_NODE_SENSOR:
+                col = (0.0, 0.0, 0.0, 1.0)
 
-#        ms = kwargs.pop('markersize', 5)
-#        ax.plot(n.pos()[0], n.pos()[1], 'bo', markersize=ms, color=col)
-        cols.append(col)
+            #ms = kwargs.pop('markersize', 5)
+            ax.plot(n.pos()[0], n.pos()[1], 'bo', color=col, **kwargs)
 
-#        eCircles.append(mpl.patches.Circle((n.pos()[0], n.pos()[1])))
-#        eCircles.append(mpl.patches.Circle((n.pos()[0], n.pos()[1]), 0.1))
+    #        eCircles.append(mpl.patches.Circle((n.pos()[0], n.pos()[1])))
+    #        eCircles.append(mpl.patches.Circle((n.pos()[0], n.pos()[1]), 0.1))
+    #        cols.append(col)
+    #    p = mpl.collections.PatchCollection(eCircles, color=cols)
+    #    ax.add_collection(p)
 
     if boundaryMarker:
         for b in mesh.boundaries():
@@ -655,9 +662,6 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
             bbox_props = dict(boxstyle="circle,pad=0.1", fc="w", ec="k")
             ax.text(x, y, str(b.marker()), color="k", va="center", ha="center",
                     zorder=20, bbox=bbox_props, fontsize=9)
-
-#    p = mpl.collections.PatchCollection(eCircles, color=cols)
-#    ax.add_collection(p)
 
     if regionMarker:
 

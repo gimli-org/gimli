@@ -12,7 +12,6 @@ Module containing submodules for various geophysical methods.
     em
     ert
     gravimetry
-    joint
     petro
     seismics
     SIP

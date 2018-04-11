@@ -1,5 +1,7 @@
 #!/ussr/bin/env python
 # -*- coding: utf-8 -*-
+# sphinx_gallery_thumbnail_number = 2
+
 r"""
 
 Modelling
