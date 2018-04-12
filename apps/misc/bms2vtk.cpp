@@ -36,7 +36,7 @@ using namespace GIMLI;
 
 //** should be moved to some other place into the library
 void setAllNeumannBoundaryConditions( Mesh & mesh ){
-    RBoundingBox bbox( mesh.boundingBox() );
+    BoundingBox bbox( mesh.boundingBox() );
     mesh.createNeighbourInfos();
     for ( uint i = 0; i < mesh.boundaryCount(); i ++ ){
         RVector3 cen( mesh.boundary( i ).center() );
@@ -51,7 +51,7 @@ void setAllNeumannBoundaryConditions( Mesh & mesh ){
 }
 
 void setDefaultWorldBoundaryConditions( Mesh & mesh ){
-    RBoundingBox bbox( mesh.boundingBox() );
+    BoundingBox bbox( mesh.boundingBox() );
     mesh.createNeighbourInfos();
     for ( uint i = 0; i < mesh.boundaryCount(); i ++ ){
         RVector3 cen( mesh.boundary( i ).center() );
@@ -148,7 +148,7 @@ int main( int argc, char *argv [] ){
                             num = 2;
                         }
                     }
-                } else { //! a 3D mesh                    
+                } else { //! a 3D mesh
                     if ( midpoint[ 0 ] > xmin && midpoint[ 0 ] < xmax && midpoint[ 1 ] > ymin && midpoint[ 1 ] < ymax && midpoint[ 2 ] > zmin ) {
                         num = 2;
                     }
