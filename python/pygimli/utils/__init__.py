@@ -18,6 +18,6 @@ from .utils import (ProgressBar, boxprint, chi2, cumDist, diff, dist,
                     trimDocString, unicodeToAscii, unique, unique_everseen,
                     unique_rows, uniqueAndSum, )
 
-from .gps import readGPX, findUTMZone, getUTMProjection
+from .gps import readGPX, findUTMZone, getUTMProjection, getProjection, GKtoUTM
 
 __all__ = [name for name in dir() if '_' not in name]
