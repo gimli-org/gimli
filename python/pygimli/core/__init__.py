@@ -37,7 +37,7 @@ except ImportError as e:
     sys.stderr.write("ERROR: cannot import the library '_pygimli_'.\n")
 
 #######################################
-###  Global convinience functions #####
+###  Global convenience functions #####
 #######################################
 
 from .. _logger import *
