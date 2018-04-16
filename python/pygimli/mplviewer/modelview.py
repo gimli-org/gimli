@@ -11,6 +11,7 @@ import matplotlib.colors as colors
 import pygimli as pg
 
 from pygimli.mplviewer.colorbar import setMappableData
+# from pygimli.mplviewer.modelview import cmapFromName
 from pygimli.utils import rndig
 from .utils import updateAxes as updateAxes_
 
@@ -152,7 +153,7 @@ def draw1DColumn(ax, x, val, thk, width=30, ztopo=0, cmin=1, cmax=1000,
 
     if cmap is not None:
         if isinstance(cmap, str):
-            pp.set_cmap(cmapFromName(cmap))
+            pp.set_cmap(pg.mplviewer.cmapFromName(cmap))
         else:
             pp.set_cmap(cmap)
 

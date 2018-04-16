@@ -629,9 +629,10 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
                     areas[reg.marker()] = reg.area()
                 labels = []
                 for marker in uniquemarkers:
-                    label = "%d" % marker
-                    if marker in areas:
-                        label += "\n(area: %s)" % areas[marker]
+                    label = "{:d}".format(marker)
+                    if marker in areas and areas[marker] > 0:
+                        label += "\n$A$={:g}".format(areas[marker])
+                        # label += "\n(area: %s)" % areas[marker]
                     labels.append(label)
                 cbar.set_ticklabels(labels)
 
