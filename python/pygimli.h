@@ -336,13 +336,9 @@ DEFINE_XVECTOR_STUFF__(RVector) //RVector last since auto rhs conversion will fa
 
     template double det(const RMatrix & a);
 
-
-    template double sum(const RVector & v);
-    template Complex sum(const CVector & v);
-
     template double min(const RVector & v);
     template double max(const RVector & v);
-    //template Complex sum(const CVector & v);
+
     template double rms(const RVector & a);
     template double rms(const RVector & a, const RVector & b);
     template double rrms(const RVector & a, const RVector & b);

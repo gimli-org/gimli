@@ -295,6 +295,7 @@ def generate(defined_symbols, extraIncludes):
         'register_numpyint_to_long_conversion',
         'register_pytuple_to_rvector3_conversion',
         'register_pysequence_to_rvector_conversion',
+        #'register_pysequence_to_cvector_conversion', .. will not work
         # 'register_pysequence_to_bvector_conversion',
         'register_pysequence_to_indexvector_conversion',
         'register_pysequence_to_r3vector_conversion',

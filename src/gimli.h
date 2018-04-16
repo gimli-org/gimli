@@ -146,6 +146,8 @@ typedef int64_t int64;
 #define VECTORASCSUFFIX ".vector"
 #define NOT_DEFINED "notDefined"
 
+#define ASSERT_EQUAL_SIZE(m, n) if (m.size() != n.size()) \
+    throwLengthError(1, WHERE_AM_I + " " + str(m.size()) + " != " + str(n.size()));
 #define ASSERT_EQUAL(m, n) if (m != n) \
     throwLengthError(1, WHERE_AM_I + " " + str(m) + " != " + str(n));
 #define ASSERT_RANGE(i, start, end) if (i < start || i >= end) \
@@ -392,17 +394,19 @@ inline std::string type(const uint32        & var) { return "uint32"; }
 inline std::string type(const uint64        & var) { return "uint64"; }
 inline std::string type(const float         & var) { return "float"; }
 inline std::string type(const double        & var) { return "double"; }
+inline std::string type(const Complex       & var) { return "complex"; }
 inline std::string type(const std::string   & var) { return "string"; }
 inline std::string type(const std::vector < std::string >  & var) { return "string"; }
 #if defined ( __APPLE__ )
 inline std::string type(const long unsigned int & var) { return "long unsigned int"; }
 #endif
-inline std::string type(const RVector & var)  { return "RVector"; }
+
+inline std::string type(const RVector  & var)  { return "RVector"; }
 inline std::string type(const RVector3 & var) { return "RVector3"; }
 inline std::string type(const R3Vector & var) { return "R3Vector"; }
-inline std::string type(const CVector & var)  { return "CVector"; }
-inline std::string type(const RMatrix & var)  { return "RMatrix"; }
-inline std::string type(const CMatrix & var)  { return "CMatrix"; }
+inline std::string type(const CVector  & var)  { return "CVector"; }
+inline std::string type(const RMatrix  & var)  { return "RMatrix"; }
+inline std::string type(const CMatrix  & var)  { return "CMatrix"; }
 
 
 inline int       toInt(const std::string & str){ return std::atoi(str.c_str()); }

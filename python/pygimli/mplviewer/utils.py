@@ -12,16 +12,16 @@ import pygimli as pg
 holdAxes__ = 0
 
 
-def updateAxes(ax, a=None):
+def updateAxes(ax, a=None, force=False):
     """For internal use."""
     if not holdAxes__:
         try:
-            time.sleep(0.1)
-            #ax.canvas.draw_onIdle()#figure
-            # plt.pause seems to be broken in mpl:2.1
-            # plt.pause(0.1)
-        except BaseException as _:
-            print(ax, a)
+            ax.figure.canvas.draw_idle()
+            if force:
+                time.sleep(0.1)
+        except BaseException as e:
+            pg.warn("Exception raised", e)
+            print(ax, a, e)
 
 
 def hold(val=1):
@@ -33,7 +33,7 @@ def wait(**kwargs):
     """TODO WRITEME."""
     # plt.pause seems to be broken in mpl:2.1
     #ax.canvas.draw_onIdle()
-    time.sleep(0.2)
+    updateAxes(plt.gca())
     plt.show(**kwargs)
 
 
@@ -55,7 +55,7 @@ def saveAxes(ax, filename, adjust=False):
     if adjust:
         adjustWorldAxes(ax)
 
-    updateAxes(ax)
+    updateAxes(ax, force=True)
     saveFigure(ax.figure, filename)
 
 
