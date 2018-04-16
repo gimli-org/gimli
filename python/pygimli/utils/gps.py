@@ -35,7 +35,7 @@ def findUTMZone(lon, lat):
         return str(zone) + 'S'
 
 
-def getUTMProjection(zone, ellipsoid='WGS84'):
+def getUTMProjection(zone, ellps='WGS84'):
     """Create and return the current coordinate projection.
 
     This is a proxy for pyproj.
@@ -53,12 +53,30 @@ def getUTMProjection(zone, ellipsoid='WGS84'):
     Pyproj Projection
 
     """
-
     pyproj = pg.optImport('pyproj', 'Coordinate transformations.')
 
-    return pyproj.Proj(proj='utm', zone=zone, ellps=ellipsoid)
+    return pyproj.Proj(proj='utm', zone=zone, ellps=ellps)
 
+def getProjection(name, ref=None, **kwargs):
+    """Syntactic sugar to get some default Projections.
+    https://svn.oss.deltares.nl/repos/openearthtools//websites/trunk/python/applications/osm2hydro/dist/win32/osm2hydro/pyproj-1.9.0-py2.7-win32.egg/pyproj/data/epsg
+    """
+    pyproj = pg.optImport('pyproj', 'Coordinate transformations.')
 
+    if name == 'utm':
+        return getUTMProjection(**kwargs)
+    elif name == 'RD83':
+        return pyproj.Proj(init="epsg:4745")
+    elif name == 'gk2':
+        return pyproj.Proj(init="epsg:31466")
+    elif name == 'gk3':
+        return pyproj.Proj(init="epsg:31467")
+    elif name == 'gk4':
+        return pyproj.Proj(init="epsg:31468")
+    elif name == 'gk5':
+        return pyproj.Proj(init="epsg:31469")
+    elif name == 'Soldner':
+        return pyproj.Proj(init="epsg:3068")
 
 def _getXMLData(ele, name, default):
     ret = default
@@ -203,6 +221,10 @@ def GK4toUTM(ea, no=None, zone=32):
     """Transform Gauss-Krueger zone 4 into UTM (for backward compatibility)."""
     return GKtoUTM(ea, no, zone, gkzone=4)
 
+def GK5toUTM(ea, no=None, zone=32):
+    """Transform Gauss-Krueger zone 5 into UTM (for backward compatibility)."""
+    return GKtoUTM(ea, no, zone, gkzone=5)
+
 
 def GKtoUTM(ea, no=None, zone=32, gk=None, gkzone=None):
     """Transform any Gauss-Krueger to UTM autodetect GK zone from offset."""
@@ -216,12 +238,11 @@ def GKtoUTM(ea, no=None, zone=32, gk=None, gkzone=None):
                 rr = ea
 
         gkzone = int(floor(rr * 1e-6))
-        print(gkzone)
 
         if gkzone <= 0 or gkzone >= 5:
             print("cannot detect valid GK zone")
 
-    pyproj = optImport('pyproj', 'coordinate transformations')
+    pyproj = pg.optImport('pyproj', 'coordinate transformations')
     if pyproj is None:
         return None
 
