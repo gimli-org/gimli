@@ -288,6 +288,8 @@ _pygimli_.BVector.__init__ = __newBVectorInit__
 # RVector + int fails .. so we need to tweak this command
 __oldRVectorAdd__ = _pygimli_.RVector.__add__
 def __newRVectorAdd__(a, b):
+    if type(b) == np.ndarray and b.dtype == complex:
+        return __oldRVectorAdd__(a, pg.CVector(b))
     if type(b) == int:
         return __oldRVectorAdd__(a, float(b))
     if type(a) == int:
