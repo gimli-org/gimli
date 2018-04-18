@@ -76,6 +76,12 @@ def covarianceMatrix(mesh, nodes=False, **kwargs):
     return covarianceMatrixPos(pos, **kwargs)
 
 
+def generateGeostatisticalModel(mesh, **kwargs):
+    """ """
+    return np.random.multivariate_normal(np.ones(mesh.cellCount()),
+                                         covarianceMatrix(mesh, **kwargs))
+
+
 def computeInverseRootMatrix(CM, thrsh=0.001, verbose=False):
     """Compute inverse square root (C^{-0.5} of matrix."""
     spl = pg.optImport('scipy.linalg', 'scipy linear algebra')
