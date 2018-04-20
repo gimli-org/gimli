@@ -1,89 +1,106 @@
-:orphan:
 {{ fullname }}
 {{ underline }}
 
-.. automodule:: {{ fullname }}
+.. currentmodule:: {{ fullname }}
 
-  Overview
-  --------
+{% if fullname == "pygimli.physics" %}
 
-  {% block functions %}
-  {% if functions %}
+.. autosummary::
+  :template: module.rst
+  :toctree: ./
 
-  .. rubric:: Functions
+  em
+  ert
+  gravimetry
+  petro
+  seismics
+  SIP
+  sNMR
+  traveltime
 
-  .. autosummary::
-  {% for function in functions %}
-    {{ function }}
-  {%- endfor %}
-  {% endif %}
-  {% endblock %}
+{% else %}
 
-  {% block classes %}
-  {% if classes %}
+Overview
+--------
 
-  .. rubric:: Classes
+{% block functions %}
+{% if functions %}
 
-  .. autosummary::
+.. rubric:: Functions
 
-  {% for class in classes %}
-    {{ class }}
-  {%- endfor %}
-  {% endif %}
-  {% endblock %}
+.. autosummary::
+{% for function in functions %}
+  {{ function }}
+{%- endfor %}
+{% endif %}
+{% endblock %}
+
+{% block classes %}
+{% if classes %}
+
+.. rubric:: Classes
+
+.. autosummary::
+
+{% for class in classes %}
+  {{ class }}
+{%- endfor %}
+{% endif %}
+{% endblock %}
 
 
-  {% block exceptions %}
-  {% if exceptions %}
+{% block exceptions %}
+{% if exceptions %}
 
-  Exceptions
-  ----------
+Exceptions
+----------
 
-  .. autosummary::
-  {% for exception in exceptions %}
-    {{ exception }}
-  {%- endfor %}
-  {% endif %}
-  {% endblock %}
+.. autosummary::
+{% for exception in exceptions %}
+  {{ exception }}
+{%- endfor %}
+{% endif %}
+{% endblock %}
 
-  {% block functionapi %}
-  {% if functions %}
+{% block functionapi %}
+{% if functions %}
 
-  Functions
-  ---------
+Functions
+---------
 
-  {% for function in functions %}
-  .. rubric:: {{ function }}
+{% for function in functions %}
+.. rubric:: {{ function }}
 
-  .. autofunction:: {{ function }}
+.. autofunction:: {{ function }}
 
-  .. include:: {{fullname}}.{{function}}.examples
-      :end-line: 3
+.. include:: {{fullname}}.{{function}}.examples
+    :end-line: 3
 
-  .. include:: {{fullname}}.{{function}}.examples
-      :start-line: 4
+.. include:: {{fullname}}.{{function}}.examples
+    :start-line: 4
 
-  .. raw:: html
+.. raw:: html
 
-       <div style='clear:both'></div>
-  {%- endfor %}
-  {% endif %}
-  {% endblock %}
+     <div style='clear:both'></div>
+{%- endfor %}
+{% endif %}
+{% endblock %}
 
-  {% block classesapi %}
-  {% if classes %}
+{% block classesapi %}
+{% if classes %}
 
-  Classes
-  -------
+Classes
+-------
 
-  {% for class in classes %}
-  .. rubric:: {{ class }}
-  .. autoclass:: {{ class }}
-    :members:
-    :undoc-members:
-    :special-members: __init__
-    :inherited-members:
+{% for class in classes %}
+.. rubric:: {{ class }}
+.. autoclass:: {{ class }}
+  :members:
+  :undoc-members:
+  :special-members: __init__
+  :inherited-members:
 
-  {%- endfor %}
-  {% endif %}
-  {% endblock %}
+{%- endfor %}
+{% endif %}
+{% endblock %}
+{% endif %}
