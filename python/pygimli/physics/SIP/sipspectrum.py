@@ -16,7 +16,7 @@ from .tools import KramersKronig, fitCCEMPhi, fitCCC
 from .tools import fitCCCC, fitCCPhi, fit2CCPhi
 
 
-class SIPSpectrum():
+class SIPSpectrum(object):
     """SIP spectrum data analysis."""
 
     def __init__(self, filename=None, unify=False, onlydown=True,
@@ -29,6 +29,7 @@ class SIPSpectrum():
         >>> #sip = SIPSpectrum('sipexample.txt', unify=True) # unique f values
         >>> #sip = SIPSpectrum(f=f, amp=R, phi=phase, basename='new')
         """
+        self._verbose = False
         self.basename = basename
         self.fig = {}
         self.k = k
@@ -80,19 +81,22 @@ class SIPSpectrum():
 
         Import Data and try to assume the file format.
         """
+        verbose = kwargs.pop('verbose', self._verbose)
+
         with codecs.open(filename, 'r', encoding='iso-8859-15', errors='replace') as f:
             firstLine = f.readline()
         f.close()
 
         fnLow = filename.lower()
         if 'SIP Fuchs III' in firstLine:
-            print("Reading SIP Fuchs III file")
+            if verbose:
+                print("Reading SIP Fuchs III file")
             self.f, self.amp, self.phi, header = readFuchs3File(filename)
-            print(self.phi)
             self.phi *= -np.pi/180.
             # print(header) # not used?
         elif 'SIP-Fuchs Software rev.: 070903' in firstLine:
-            print("Reading SIP Fuchs file")
+            if verbose:
+                print("Reading SIP Fuchs file")
             self.f, self.amp, self.phi, drhoa, dphi = readRadicSIPFuchs(filename, **kwargs)
             self.phi *= -np.pi/180.
         elif fnLow.endswith('.txt') or fnLow.endswith('.csv'):

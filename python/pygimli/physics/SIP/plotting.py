@@ -4,6 +4,8 @@
 
 import matplotlib.pyplot as plt
 
+import pygimli as pg
+
 def showAmplitudeSpectrum(*args, **kwargs):
     pg.deprecated('drawAmplitudeSpectrum')
     return drawAmplitudeSpectrum(*args, **kwargs)
