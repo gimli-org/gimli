@@ -101,7 +101,32 @@ class MultLeftRightMatrix(pg.MatrixBase):
         """Multiplication from right-hand-side (dot product A.T*x)."""
         return self.A.transMult(x * self.left) * self.right
 
+
 LRMultRMatrix = MultLeftRightMatrix  # alias for backward compatibility
+
+
+class DiagonalMatrix(pg.MatrixBase):
+    """Square matrix with a vector on the main diagonal."""
+
+    def __init__(self, d):
+        super().__init__()
+        self.d = d
+
+    def mult(self, x):
+        """Return M*x = r*x (element-wise)"""
+        return x * self.d
+
+    def transMult(self, x):
+        """Return M.T*x=(A.T*x)*r"""
+        return x * self.d
+
+    def cols(self):
+        """Number of columns (length of diagonal)."""
+        return len(self.d)
+
+    def rows(self):
+        """Number of rows (length of diagonal)."""
+        return len(self.d)
 
 
 class Cm05Matrix(pg.MatrixBase):
