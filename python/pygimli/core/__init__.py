@@ -7,6 +7,7 @@ import sys
 import os
 import subprocess
 import traceback
+import numpy as np
 
 if sys.platform == 'win32':
     os.environ['PATH'] = __path__[0] + ';' + os.environ['PATH']
@@ -27,7 +28,6 @@ if not os.path.isfile(new) and os.path.isfile(old):
     print("INFO: Moving %s to %s" % (old, new))
     os.rename(old, new)
 ###############################################################################
-
 try:
     from . import _pygimli_
     from . _pygimli_ import *
@@ -37,15 +37,19 @@ except ImportError as e:
     sys.stderr.write("ERROR: cannot import the library '_pygimli_'.\n")
 
 #######################################
-###  Global convinience functions #####
+###  Global convenience functions #####
 #######################################
 
-#_pygimli_.load = None
+from .. _logger import *
 
-from pygimli.io import load
+_pygimli_.load = None
+from .load import load, optImport, opt_import, getConfigPath
+
 from pygimli.viewer import show, plt, wait
 from pygimli.solver import solve
 from pygimli.meshtools import interpolate
+from pygimli.utils import boxprint
+
 
 def showNow():
     pass
@@ -54,21 +58,37 @@ def showNow():
 __swatch__ = _pygimli_.Stopwatch()
 
 def tic(msg=None):
-    """Start global stopwatch."""
-    if msg is not None:
+    """Start global timer. Print elpased time with `pg.toc()`."""
+    if msg:
         print(msg)
     __swatch__.start()
 
 
-def toc(msg=None):
-    """Print elapsed time since stopwatch was started."""
-    if msg is not None:
+def toc(msg=None, box=False):
+    """Print elapsed time since global timer was started with `pg.tic()`."""
+    if msg:
         print(msg)
-    print('Elapsed time is:', dur(), "s")
+    seconds = dur()
+    m, s = divmod(seconds, 60)
+    h, m = divmod(m, 60)
+    type(m)
+    if h <= 0 and m <= 0:
+         time = "%.2f" % s
+    elif h <= 0:
+        if m == 1.0:
+            time = "%d minute and %.2f" % (m, s)
+        else:
+            time = "%d minutes and %.2f" % (m, s)
+    elif h == 1.0:
+        time = "%d hour, %d minutes and %.2f" % (h, m, s)
+    else:
+        time = "%d hours, %d minutes and %.2f" % (h, m, s)
+    p = print if not box else boxprint
+    p("Elapsed time is %s seconds." % time)
 
 
 def dur():
-    """Return time since the stopwatch was started."""
+    """Return time in seconds since global timer was started with `pg.tic()`."""
     return __swatch__.duration()
 
 
@@ -105,6 +125,9 @@ def RVector3_str(self):
 
 
 def R3Vector_str(self):
+    if self.size() < 20:
+        return self.array().__str__()
+
     return "R3Vector: n=" + str(self.size())
 
 
@@ -156,6 +179,16 @@ def ElementMatrix_str(self):
         s += '\n'
     return s
 
+def MeshEntity_str(self):
+    """Give mesh entity infos."""
+    s = str(type(self))
+    s += '\tID: ' + str(self.id()) + \
+         ', Marker: ' + str(self.marker()) + \
+         ', Size: ' + str(self.size()) + '\n'
+    for n in self.nodes():
+        s += '\t' + str(n.id()) + " " + str(n.pos()) + "\n"
+    return s
+
 
 _pygimli_.RVector.__str__ = RVector_str
 _pygimli_.CVector.__str__ = RVector_str
@@ -171,6 +204,7 @@ _pygimli_.Line.__str__ = Line_str
 _pygimli_.Mesh.__str__ = Mesh_str
 _pygimli_.DataContainer.__str__ = Data_str
 _pygimli_.ElementMatrix.__str__ = ElementMatrix_str
+_pygimli_.MeshEntity.__str__ = MeshEntity_str
 # _pygimli_.stdVectorIndex.size = _pygimli_.stdVectorIndex.__len__
 # _pygimli_.stdVectorIndex.__str__ = RVector_str
 
@@ -185,8 +219,12 @@ def nonzero_test(self):
                         "Use binary operators '&' or '|' instead. " +
                         "If you looking for the nonzero test, use len(v) > 0")
 
+def np_round__(self, r):
+    return np.round(self.array(), r)
+
 _pygimli_.RVector.__nonzero__ = nonzero_test
 _pygimli_.RVector.__bool__ = nonzero_test
+_pygimli_.RVector.__round__ = np_round__
 _pygimli_.R3Vector.__nonzero__ = nonzero_test
 _pygimli_.R3Vector.__bool__ = nonzero_test
 _pygimli_.BVector.__nonzero__ = nonzero_test
@@ -250,6 +288,8 @@ _pygimli_.BVector.__init__ = __newBVectorInit__
 # RVector + int fails .. so we need to tweak this command
 __oldRVectorAdd__ = _pygimli_.RVector.__add__
 def __newRVectorAdd__(a, b):
+    if type(b) == np.ndarray and b.dtype == complex:
+        return __oldRVectorAdd__(a, pg.CVector(b))
     if type(b) == int:
         return __oldRVectorAdd__(a, float(b))
     if type(a) == int:
@@ -525,6 +565,16 @@ _pygimli_.RMatrix.__len__ = RMatrix_len
 _pygimli_.CMatrix.__len__ = RMatrix_len
 
 
+_pygimli_.RVector.ndim = 1
+_pygimli_.BVector.ndim = 1
+_pygimli_.CVector.ndim = 1
+_pygimli_.RVector3.ndim = 1
+_pygimli_.IVector.ndim = 1
+_pygimli_.IndexArray.ndim = 1
+_pygimli_.RMatrix.ndim = 2
+_pygimli_.R3Vector.ndim = 2
+_pygimli_.stdVectorRVector3.ndim = 2
+
 ############################
 # Iterator support for RVector allow to apply python build-ins
 ############################
@@ -661,7 +711,6 @@ def __stdVectorRVector3ArrayCall(self, dtype=None):
     #if idx is not None:
         #print(self)
         #print(idx)
-        #raise Exception("we need to fix this")
     return _pygimli_.stdVectorRVector3ToR3Vector(self).array()
 
 _pygimli_.stdVectorRVector3.__array__ = __stdVectorRVector3ArrayCall
@@ -708,6 +757,8 @@ SparseMatrix = _pygimli_.RSparseMatrix
 Vector = _pygimli_.RVector
 Matrix = _pygimli_.RMatrix
 Inversion = _pygimli_.RInversion
+Pos = _pygimli_.RVector3
+PosVector = _pygimli_.R3Vector
 
 Trans = _pygimli_.RTrans
 TransLinear = _pygimli_.RTransLinear
@@ -979,20 +1030,77 @@ from .matrix import *
 # some backward compatibility
 ############################
 
-
-def deprecated(msg, hint):
-    print("Warning! " + msg + ", is deprecated, use:" + hint + " instead.")
-
-
 def __MeshGetCellMarker__(self):
     deprecated(msg='Mesh::cellMarker()', hint='Mesh::cellMarkers()')
     return self.cellMarkers()
-
 
 def __MeshSetCellMarker__(self, m):
     deprecated(msg='Mesh::setCellMarker()', hint='Mesh::setCellMarkers()')
     return self.setCellMarkers(m)
 
+pg.Mesh.cellMarker = __MeshGetCellMarker__
+pg.Mesh.setCellMarker = __MeshSetCellMarker__
 
-_pygimli_.Mesh.cellMarker = __MeshGetCellMarker__
-_pygimli_.Mesh.setCellMarker = __MeshSetCellMarker__
+
+def __getCoords(coord, dim, ent):
+    """Syntactic sugar to find all x-coordinates of a given entity.
+    """
+    if isinstance(ent, pg.R3Vector) or isinstance(ent, pg.stdVectorRVector3):
+        return getattr(_pygimli_, coord)(ent)
+    if type(ent) == list and isinstance(ent[0], pg.RVector3):
+        return getattr(_pygimli_, coord)(ent)
+    if isinstance(ent, pg.DataContainer):
+        return getattr(_pygimli_, coord)(ent.sensorPositions())
+    if isinstance(ent, pg.Mesh):
+        return getattr(_pygimli_, coord)(ent.positions())
+    if isinstance(ent, _pygimli_.stdVectorNodes):
+        return np.array([n.pos()[dim] for n in ent])
+
+    if hasattr(ent, 'ndim') and ent.ndim == 2 and len(ent[0] > dim):
+        return ent[:, dim]
+
+    # use logger here
+    raise Exception("Don't know how to find the " + coord + "-coordinates of entity:", ent)
+
+def x(instance):
+    """Syntactic sugar to find all x-coordinates of a given class instance.
+
+    Convenience function to return all associated x-coordinates
+    of a given class instance.
+
+    Parameters
+    ----------
+    instance : pg.DataContainer, pg.Mesh, pg.R3Vector, np.array, list(RVector3)
+        Return the associated coordinate positions for the given class instance.
+    """
+    return __getCoords('x', 0, instance)
+
+def y(instance):
+    """Syntactic sugar to find all y-coordinates of a given class instance.
+
+    Convenience function to return all associated x-coordinates
+    of a given class instance.
+
+    Parameters
+    ----------
+    instance : pg.DataContainer, pg.Mesh, pg.R3Vector, np.array, list(RVector3)
+        Return the associated coordinate positions for the given class instance.
+    """
+    return __getCoords('y', 1, instance)
+
+def z(instance):
+    """Syntactic sugar to find all z-coordinates of a given class instance.
+
+    Convenience function to return all associated x-coordinates
+    of a given class instance.
+
+    Parameters
+    ----------
+    instance : pg.DataContainer, pg.Mesh, pg.R3Vector, np.array, list(RVector3)
+        Return the associated coordinate positions for the given class instance.
+    """
+    return __getCoords('z', 2, instance)
+
+def search(what):
+    """Utility function to search docstrings for string `what`."""
+    np.lookfor(what, module="pygimli", import_modules=False)

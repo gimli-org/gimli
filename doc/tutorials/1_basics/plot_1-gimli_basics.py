@@ -69,12 +69,14 @@ print('Mesh: Nodes:', grid.nodeCount(),
 ###############################################################################
 #
 # You can iterate through all cells of the general type :gimliapi:`GIMLI::Cell`
-# that also provides a lot of methods:
-#
+# that also provides a lot of methods. Here we list the number of nodes and the
+# node ids per cell:
 
 for cell in grid.cells():
-    print("Cell-Nr:", cell.id(), 'Type:', type(cell),
-          'Nodes per Cell', cell.nodeCount())
+    print("Cell", cell.id(), "has", cell.nodeCount(),
+          "nodes. Node IDs:", [n.id() for n in cell.nodes()])
+
+print(type(grid.cell(0)))
 
 ###############################################################################
 # To find the grid generation input arrays ``x`` and ``y``, you can use the

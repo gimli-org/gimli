@@ -294,6 +294,17 @@ public:
     virtual bool isInside(const RVector3 & xyz, RVector & sf,
                           bool verbose=false) const;
 
+    /*!* Return true if the ray intersects the shape.
+     * On boundary means inside too. The intersection position is stored in pos.
+     * */
+    virtual bool intersectRay(const RVector3 & start, const RVector3 & dir,
+                              RVector3 & pos){
+        __MS(rtti() << " " << name())
+        THROW_TO_IMPL
+        return false;
+    };
+
+
     /*! Get the domain size of this shape, i.e., length, area or volume */
     double domainSize() const;
 
@@ -373,29 +384,21 @@ public:
     /*! See Shape::rst */
     virtual RVector3 rst(Index i) const;
 
-//     /*! See Shape::N. */
-//     virtual void N(const RVector3 & L, RVector & n) const;
-//
-//     /*! See Shape::dNdrst. */
-//     virtual RMatrix dNdrst(const RVector3 & rst) const;
-
-//     /*! Returns the partial derivative of the natural coordinates \f$L_i, i=0..1\f$ with respect to the cartesian coordinates
-//     \ref RVector3 pos \f$ (x) \f$:
-//         \f$ \frac{ \partial L_i(x) }{ \partial x } \f$ \n
-//     */
-//     virtual double deriveCoordinates(uint i, uint coord) const;
-
 //     virtual bool touch(const RVector3 & pos, bool verbose = false) const ;
 //
 //     virtual bool touch1(const RVector3 & pos, bool verbose, int & pFunIdx) const;
+
+    /*!* Return true if the ray intersects the shape.
+     * On boundary means inside too. The intersection position is stored in pos.
+     * */
+    virtual bool intersectRay(const RVector3 & start, const RVector3 & dir,
+                              RVector3 & pos);
 
     double length() const;
 
     virtual RVector3 norm() const;
 
 protected:
-//     /*! Return jacobian determinant of this edge */
-//     virtual double jacobianDeterminant_() const { return length(); }
 
     virtual double domainSize_() const { return length(); }
 };
@@ -440,6 +443,12 @@ public:
     double area() const;
 
     virtual RVector3 norm() const;
+
+    /*!* Return true if the ray intersects the shape.
+     * On boundary means inside too. The intersection position is stored in pos.
+     * */
+    virtual bool intersectRay(const RVector3 & start, const RVector3 & dir,
+                              RVector3 & pos);
 
 protected:
 
@@ -494,6 +503,9 @@ public:
 //     virtual RMatrix dNdrst(const RVector3 & rst) const;
 //
     virtual RVector3 norm() const;
+
+    virtual bool intersectRay(const RVector3 & start, const RVector3 & dir,
+                              RVector3 & pos);
 
 protected:
     virtual double domainSize_() const { return area(); }

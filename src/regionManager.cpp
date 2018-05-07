@@ -361,7 +361,7 @@ void Region::fillConstraints(RSparseMapMatrix & C, Index startConstraintsID){
 
         leftParaId = -1;
         rightParaId = -1;
-        if ((*it)->leftCell() ) leftParaId  = (*it)->leftCell()->marker();
+        if ((*it)->leftCell()) leftParaId  = (*it)->leftCell()->marker();
         if ((*it)->rightCell()) rightParaId = (*it)->rightCell()->marker();
 
         if (isPermuted_){

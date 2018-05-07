@@ -236,7 +236,7 @@ public:
         if (t > TOLERANCE) *this /= t;
         return *this;
     }
-    /*!DEPRECATED Normalise for backward comptibility.*/
+    /*!DEPRECATED Normalise for backward compatibility.*/
     Pos< ValueType > & normalise(){ return normalize(); }
 
     Pos< ValueType > cross(const Pos< ValueType > & p) const;
@@ -369,9 +369,31 @@ template < class ValueType > std::ostream & operator << (std::ostream & str, con
   return str;
 }
 
+/*! Sort increasing x and decreasing y*/
+inline bool posLesserXrY(const RVector3 & a, const RVector3 & b){
+    if (abs(a[0] - b[0]) < TOLERANCE) {
+        if (abs(a[1] - b[1]) < TOLERANCE) {
+            return a[2] < b[2];
+        } else {
+            return a[1] > b[1];
+        }
+    } else return a[0] < b[0];
+}
+
+/*! Sort increasing x and decreasing y*/
+inline bool posLesserXYrZ(const RVector3 & a, const RVector3 & b){
+    if (abs(a[0] - b[0]) < TOLERANCE) {
+        if (abs(a[1] - b[1]) < TOLERANCE) {
+            return a[2] > b[2];
+        } else {
+            return a[1] < b[1];
+        }
+    } else return a[0] < b[0];
+}
+
 inline bool posLesserX(const RVector3 & a, const RVector3 & b){
-    if (a[0] == b[0]) {
-        if (a[1] == b[1]) {
+    if (abs(a[0] - b[0]) < TOLERANCE) {
+        if (abs(a[1] - b[1]) < TOLERANCE) {
             return a[2] < b[2];
         } else {
             return a[1] < b[1];

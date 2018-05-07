@@ -4,13 +4,7 @@ Methods to calculate the model resolution.
 
 import numpy as np
 
-from pygimli.io import opt_import
-
-lin = opt_import("scipy.linalg", "calculate model resolion matrices")
-if lin:
-    import scipy.sparse as sp
-    from scipy.sparse import coo_matrix, csc_matrix
-    from scipy.sparse.linalg import aslinearoperator, LinearOperator, lsqr
+import pygimli as pg
 
 
 def computeR(J, C, alpha=0.5):
@@ -38,6 +32,12 @@ def computeR(J, C, alpha=0.5):
     alpha : float
         Regularization strength :math:`\alpha`.
     """
+    lin = pg.optImport("scipy.linalg", "Calculate model resolution matrices.")
+    if lin:
+        import scipy.sparse as sp
+        from scipy.sparse import coo_matrix, csc_matrix
+        from scipy.sparse.linalg import aslinearoperator, LinearOperator, lsqr
+
     JTJ = J.T.dot(J)
     CM_inv = C.T.dot(C)
 #    Jsharp = lin.solve(JTJ + alpha * CM_inv, J.T)

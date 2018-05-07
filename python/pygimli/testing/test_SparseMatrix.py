@@ -88,6 +88,10 @@ class TestSparseMatrix(unittest.TestCase):
         np.testing.assert_equal(sciA1.row, sciA2.row)
         np.testing.assert_equal(sciA1.col, sciA2.col)
 
+    def test_Access(self):
+        #addVal(0, 1, 1.2) kommt nach der konvertierung auch wieder [0], [1], [1.2]
+        pass
+
     def test_Operators(self):
         colIds = range(10)
         rowIds = range(10)
@@ -100,6 +104,7 @@ class TestSparseMatrix(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    test = TestSparseMatrix()
-    test.test_Operators()
-    #unittest.main()
+    #test = TestSparseMatrix()
+    #test.test_Operators()
+
+    unittest.main()

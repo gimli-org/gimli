@@ -22,12 +22,10 @@ patch = matplotlib.patches.PathPatch(logo_path)
 ###############################################################################
 # The vertices of the path are defined as mesh nodes and connected with edges.
 
-nodes = patch.get_verts() * 50
-nodes = pg.utils.unique_rows(nodes)  # remove duplicate nodes
 poly = pg.Mesh(2)
 
-for node in nodes:
-    poly.createNode(node[0], node[1], 0.0)
+for n in patch.get_verts() * 50:
+    poly.createNodeWithCheck(n)
 
 for i in range(poly.nodeCount() - 1):
     poly.createEdge(poly.node(i), poly.node(i + 1))
@@ -35,17 +33,10 @@ for i in range(poly.nodeCount() - 1):
 poly.createEdge(poly.node(poly.nodeCount() - 1), poly.node(0))
 
 ###############################################################################
-# We call the TriangleWrapper to generate the mesh and set the x values as the
+# We create mesh from the polygone and set the x values as the
 # data for a color transition.
 
-tri = pg.TriangleWrapper(poly)
-mesh = pg.Mesh(2)
-tri.setSwitches('-pzeAfa5q33')
-tri.generate(mesh)
-
-data = []
-for cell in mesh.cells():
-    data.append(cell.center().x())
+mesh = pg.meshtools.createMesh(poly, area=5)
 
 ###############################################################################
 # Last, we create a BERT caption, visualize the mesh and fine-tune the figure.
@@ -53,9 +44,10 @@ for cell in mesh.cells():
 fig, ax = plt.subplots(figsize=(4, 3))
 ax.axis('off')
 offset = -10
-t = ax.text(1.7, offset, 'BERT', fontsize=37, fontweight='bold')
-pg.show(mesh, data, ax=ax, cmap='RdBu', logScale=False, showLater=True)
-pg.show(mesh, ax=ax)
+t = ax.text(mesh.xmin() + (mesh.xmax()-mesh.xmin())/2, offset, 'BERT',
+            horizontalalignment='center', size=40, fontweight='bold')
+pg.show(mesh, pg.x(mesh.cellCenters()), ax=ax, cMap='RdBu',
+        logScale=False, showLater=True, showMesh=True)
 ax.set_ylim(offset, mesh.ymax())
 
 pg.wait()

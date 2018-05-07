@@ -442,10 +442,11 @@ class ERTModelling0(pg.ModellingBase):
             pg.ModellingBase.setMesh(self, mesh, ignoreRegionManager)
             # Landscape complains that ModellingBaseMT does not have setMesh
 
-    def calcGeometricFactor(self, data):
+    def calcGeometricFactors(self, data):
         """Calculate geometry factors for a given dataset."""
-        if pg.y(data.sensorPositions()) == pg.z(data.sensorPositions()):
+        if pg.y(data) == pg.z(data):
             k = np.zeros(data.size())
+
             for i in range(data.size()):
                 a = data.sensorPosition(data('a')[i])
                 b = data.sensorPosition(data('b')[i])
@@ -579,11 +580,13 @@ class ERTModelling0(pg.ModellingBase):
         u = np.zeros((nEle, nDof))
         self.subPotentials = [pg.RMatrix(nEle, nDof) for i in range(len(k))]
         for i, ki in enumerate(k):
+            ws = {'u': self.subPotentials[i]}
             uE = pg.solve(mesh, a=1./res, b=(ki * ki)/res, f=rhs,
-                          duB=self.mixedBC,
+                          bc={'Robin': self.mixedBC},
                           userData={'sourcePos': self.electrodes, 'k': ki},
-                          verbose=False, stat=0, debug=False,
-                          ret=self.subPotentials[i])
+                          verbose=self.verbose(), stats=0, debug=False,
+                          ws=ws
+                          )
             u += w[i] * uE
         # collect potential matrix,
         # i.e., potential for all electrodes and all injections
@@ -591,7 +594,6 @@ class ERTModelling0(pg.ModellingBase):
 
         for i in range(nEle):
             pM[i] = pg.interpolate(mesh, u[i, :], destPos=self.electrodes)
-
         # collect resistivity values for all 4 pole measurements
         r = np.zeros(nData)
 
@@ -736,7 +738,17 @@ class ERTManager0(MeshMethodManager0):
         fop.setMesh(mesh, ignoreRegionManager=True)
 
         if not scheme.allNonZero('k'):
-            scheme.set('k', pg.RVector(scheme.size(), -1))
+
+            if min(pg.y(scheme)) != max(pg.y(scheme)) or min(pg.z(scheme)) != max(pg.z(scheme)):
+                pg.info("Non flat earth topography found. "
+                    "We will set geometric factors to -1 to emulate "
+                    "electrical impedance tomography (EIT). If you want to "
+                    "use ERT will full topography support. "
+                    "Please consider the use of pyBERT.")
+
+                scheme.set('k', pg.RVector(scheme.size(), -1))
+            else:
+                scheme.set('k', fop.calcGeometricFactors(scheme))
 
         rhoa = None
         isArrayData = None
@@ -749,15 +761,21 @@ class ERTManager0(MeshMethodManager0):
         else:
             rhoa = fop.response(res)
 
+        pg.renameKwarg('noisify', 'noiseLevel', kwargs)
+
         noiseLevel = kwargs.pop('noiseLevel', 0.0)
+
         if noiseLevel > 0:
-            err = kwargs.pop('noiseLevel', 0.03) + kwargs.pop('noiseAbs',
-                                                              1e-4) / rhoa
+            noiseAbs = kwargs.pop('noiseAbs', 1e-4)
+            err = noiseLevel + noiseAbs / rhoa
             scheme.set('err', err)
+            if verbose:
+                pg.info("Set noise (" + str(noiseLevel*100) + "% + " + str(noiseAbs) + " V) min:",
+                      min(err), "max:", max(err))
             rhoa *= 1. + pg.randn(scheme.size()) * err
 
-            if not isArrayData:
-                scheme.set('rhoa', rhoa)
+        if isArrayData is None:
+            scheme.set('rhoa', rhoa)
 
         if kwargs.pop('returnArray', False):
             return rhoa
@@ -790,7 +808,7 @@ def createERTData(elecs, schemeName='none', **kwargs):
 
     isClosed = kwargs.pop('closed', False)
 
-    data = pg.DataContainer()
+    data = pg.DataContainerERT()
     data.registerSensorIndex('a')
     data.registerSensorIndex('b')
     data.registerSensorIndex('m')

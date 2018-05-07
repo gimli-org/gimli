@@ -427,6 +427,11 @@ RVector3 EdgeShape::rst(Index i) const{
     THROW_TO_IMPL; return RVector3(0.0, 0.0, 0.0);
 }
 
+bool EdgeShape::intersectRay(const RVector3 & start, const RVector3 & dir,
+                             RVector3 & pos){
+    return Line(node(0).pos(), node(1).pos()).intersectRay(start, dir, pos);
+}
+
 void TriangleShape::setNodes(Node * n0, Node * n1, Node * n2){
     setNode(0, *n0); setNode(1, *n1); setNode(2, *n2);
 }
@@ -485,6 +490,16 @@ void TriangleShape::xyz2rst(const RVector3 & pos, RVector3 & rst ) const {
     rst[1] = (x21 * yp1 - y21 * xp1) / J; // s
 }
 
+bool TriangleShape::intersectRay(const RVector3 & start, const RVector3 & dir,
+                                 RVector3 & pos){
+
+    Plane plane(node(0).pos(), node(1).pos(), node(2).pos());
+    pos = plane.intersect(Line(start, start + dir*1e6));
+    if (this->isInside(pos)) return true;
+    return false;
+}
+
+
 RVector3 QuadrangleShape::rst(Index i) const{
     if (i < nodeCount()) return RVector3(QuadCoordinates[i][0], QuadCoordinates[i][1], QuadCoordinates[i][2]);
     THROW_TO_IMPL; return RVector3(0.0, 0.0, 0.0);
@@ -517,6 +532,15 @@ RVector3 QuadrangleShape::norm() const {
     tri.setNodes(nodeVector_[0], nodeVector_[1], nodeVector_[2]);
     return tri.norm();
 }
+
+bool QuadrangleShape::intersectRay(const RVector3 & start, const RVector3 & dir,
+                                    RVector3 & pos){
+    Plane plane(node(0).pos(), node(1).pos(), node(2).pos());
+    pos = plane.intersect(Line(start, start + dir*1e6));
+    if (this->isInside(pos)) return true;
+    return false;
+}
+
 
 RVector3 TetrahedronShape::rst(Index i) const{
     if (i < nodeCount()) return RVector3(TetCoordinates[i][0], TetCoordinates[i][1], TetCoordinates[i][2]);

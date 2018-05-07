@@ -90,7 +90,7 @@ template < class ValueType > void * checkConvertibleSequenz(PyObject * obj){
 //             __DC(obj << "\t cannot convert")
 //             }
 
-            std::cout << WHERE_AM_I << "element cannot converted " << std::endl;
+            __DC(WHERE_AM_I << "element cannot converted ")
         }
 
     } else {
@@ -201,6 +201,90 @@ struct PySequence2RVector{
             (*vec)[i] = bp::extract< double >(py_sequence[i]);
         }
     }
+private:
+};
+
+struct PySequence2CVector{
+
+    /*! Check if the object is convertible */
+    static void * convertible(PyObject * obj){
+        __DC(obj << " -> CVector")
+        return checkConvertibleSequenz<GIMLI::Complex>(obj);
+    }
+
+    /*! Convert List[] or ndarray into RVector */
+    static void construct(PyObject* obj,
+                          bp::converter::rvalue_from_python_stage1_data * data){
+       __DC(obj << " constructing CVector:")
+
+        typedef bp::converter::rvalue_from_python_storage< GIMLI::Vector< GIMLI::Complex > > storage_t;
+        storage_t* the_storage = reinterpret_cast<storage_t*>(data);
+        void* memory_chunk = the_storage->storage.bytes;
+
+        bp::object py_sequence(bp::handle<>(bp::borrowed(obj)));
+        GIMLI::Vector< GIMLI::Complex > * vec =
+            new (memory_chunk) GIMLI::Vector< GIMLI::Complex >(len(py_sequence));
+        data->convertible = memory_chunk;
+
+        if (strcmp(obj->ob_type->tp_name, "numpy.ndarray") == 0){
+            PyArrayObject *arr = (PyArrayObject *)obj;
+            __DC("type is " << obj->ob_type->tp_name << " " << PyArray_TYPE(arr))
+
+            if (PyArray_TYPE(arr) == 12 && PyArray_ISONESEGMENT(arr)){
+                void * arrData = PyArray_DATA(arr);
+                std::memcpy(&(*vec)[0], arrData, vec->size() * sizeof(double));
+                return;
+            } else if (PyArray_TYPE(arr) == 7 && PyArray_ISONESEGMENT(arr)){ //numpy.int64
+                    __DC(arr << " ** from array of type " << PyArray_TYPE(arr))
+
+                    bp::object element;
+
+                    for (GIMLI::Index i = 0; i < vec->size(); i ++){
+                        element = py_sequence[i];
+                        (*vec)[i] = PyArrayScalar_VAL(element.ptr(), Int64);
+    //                     __DC(i << " a " << element);
+    //                     __DC(i << " a " << element.ptr()->ob_type->tp_name)
+    //                     __DC(i << " d " <<  PyArrayScalar_VAL(element.ptr(), Int64));
+                    }
+                    return;
+            } else if (PyArray_TYPE(arr) == 15 && PyArray_ISONESEGMENT(arr)){ //numpy.complex
+                __DC(arr << " ** from array of type " << PyArray_TYPE(arr))
+
+                bp::object element;
+
+                for (GIMLI::Index i = 0; i < vec->size(); i ++){
+                    element = py_sequence[i];
+
+                    (*vec)[i] = GIMLI::Complex(
+                            PyArrayScalar_VAL(element.ptr(), Complex128).real,
+                            PyArrayScalar_VAL(element.ptr(), Complex128).imag);
+
+                    //                     (*vec)[i] = PyArrayScalar_VAL(element.ptr(),
+//                     __DC(i << " a " << element);
+//                     __DC(i << " a "
+//                         << bp::extract< double >(element.attr('real')));
+//                     __DC(i << " a "
+//                     << bp::extract< double >(bp::extract<bp::tuple>(element)));
+//                     __DC(i << " a " << element.ptr()->ob_type->tp_name);
+//                     PyArrayScalar_VAL(element.ptr(), Complex128).real;
+//                     PyArrayScalar_VAL(element.ptr(), Complex128).imag;
+//                     __DC(i << " d " <<  PyArrayScalar_VAL(element.ptr(),
+//                                                           Complex128));
+                }
+                return;
+            } else {
+                 __DC("fixme: type="
+                 << PyArray_TYPE(arr) << " " << PyArray_ISONESEGMENT(arr))
+            }
+        }
+
+        // convert from list
+        __DC(obj << " ** from sequence not implemented")
+        GIMLI::throwToImplement("implementme: PySequence2CVector");
+//         for (GIMLI::Index i = 0; i < vec->size(); i ++){
+//             (*vec)[i] = bp::extract< double >(py_sequence[i]);
+//         }
+     }
 private:
 };
 
@@ -443,7 +527,6 @@ void register_numpyint_to_long_conversion(){
                                         & r_values_impl::NumpyInt2Long::construct,
                                         bp::type_id< long >());
 }
-
 void register_pysequence_to_indexvector_conversion(){
     bp::converter::registry::push_back(& r_values_impl::PySequence2IndexArray::convertible,
                                         & r_values_impl::PySequence2IndexArray::construct,
@@ -461,6 +544,12 @@ void register_pysequence_to_rvector_conversion(){
                                         & r_values_impl::PySequence2RVector::construct,
                                         bp::type_id< GIMLI::Vector< double > >());
 }
+void register_pysequence_to_cvector_conversion(){
+    bp::converter::registry::push_back(& r_values_impl::PySequence2CVector::convertible,
+                                        & r_values_impl::PySequence2CVector::construct,
+                                        bp::type_id< GIMLI::Vector< GIMLI::Complex > >());
+}
+
 // void register_pysequence_to_bvector_conversion(){
 //     bp::converter::registry::push_back(& r_values_impl::PySequence2BVector::convertible,
 //                                         & r_values_impl::PySequence2BVector::construct,

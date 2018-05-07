@@ -128,7 +128,7 @@ protected:
    \f$ f(x) = b + a \cdot x \f$. With factor \f$ a \f$ and offset \f$ b \f$. */
 template< class Vec > class TransLinear : public Trans < Vec > {
 public:
-    TransLinear(const Vec & factor=1.0, double offset=0.0)
+    TransLinear(const Vec & factor, double offset=0.0)
         : factor_(factor), offset_(Vec(factor.size(), offset)) {}
 
     virtual ~TransLinear() { }
@@ -174,7 +174,7 @@ protected:
 /*! Power transformation f(a) = pow(a / a_0, n). */
 template< class Vec > class TransPower : public Trans < Vec > {
 public:
-    TransPower(const double npower=-1.0, const double a0=1.0)
+    TransPower(double npower=-1.0, double a0=1.0)
         : npower_(npower), a0_(a0) {}
     virtual ~TransPower() { }
 
@@ -198,7 +198,7 @@ protected:
 template< class Vec > class TransExp : public Trans < Vec > {
 public:
     /*!*/
-    TransExp(const double a0=1.0, const double f0=1.0)
+    TransExp(double a0=1.0, double f0=1.0)
         : a0_(a0), f0_(f0) {}
 
     /*!*/
@@ -344,7 +344,7 @@ protected:
 template< class Vec > class TransCotLU : public Trans < Vec > {
 public:
 
-    TransCotLU(double lowerbound = 0.0, double upperbound = 0.0)
+    TransCotLU(double lowerbound=0.0, double upperbound=0.0)
         : lowerbound_(lowerbound), upperbound_(upperbound) { }
 
     virtual ~TransCotLU() { }

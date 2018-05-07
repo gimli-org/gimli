@@ -134,7 +134,7 @@ RVector geometricFactors(const DataContainerERT & data, int dim, bool forceFlatE
             }
             tmp.setSensorPosition(i, p);
         }
-        return geometricFactor(tmp, 3, forceFlatEarth);
+        return geometricFactors(tmp, 3, forceFlatEarth);
     }
 
     if (forceFlatEarth){
@@ -143,7 +143,7 @@ RVector geometricFactors(const DataContainerERT & data, int dim, bool forceFlatE
             RVector3 p(tmp.sensorPosition(i)); p[2] = 0.0;
             tmp.setSensorPosition(i, p);
         }
-        return geometricFactor(tmp, false);
+        return geometricFactors(tmp, false);
     } else {
 
         for (Index i = 0; i < k.size(); i ++){
@@ -199,7 +199,10 @@ double exactDCSolution(const RVector3 & v, const RVector3 & source,
     } else { // halfspace with mirrorspace
         if (k == 0.0) {
             //** 3D mirrorspace
-//             std::cout<< "Mirrorspace" << " " << sourceMirror << std::endl;
+//             std::cout<< "Mirrorspace" << " " << sourceMirror
+//                      << " s:" << source
+//                      << " v:" << v
+//                      << " r:" << r << "rm:" << v.distance(sourceMirror) << std::endl;
             return (1.0 / r + 1.0 / v.distance(sourceMirror)) / (4.0 * PI) ;
         } else {
             //** just for performance issues read this again
@@ -301,7 +304,7 @@ double DCParaDepth(const DataContainerERT & data){
         if (b > -1 && n > -1) bnq[i] = data.sensorPosition(b).distSquared(data.sensorPosition(n));
     }
 
-    RVector scale((2.0 * PI) / geometricFactor(data));
+    RVector scale((2.0 * PI) / geometricFactors(data));
     RVector tmp(data.size());
     double depth = 0.1, sens = 0.0;
     double depthQ = 4.0 * depth* depth;
@@ -316,7 +319,7 @@ double DCParaDepth(const DataContainerERT & data){
 }
 
 void setDefaultBERTBoundaryConditions(Mesh & mesh){
-    RBoundingBox bbox(mesh.boundingBox());
+    BoundingBox bbox(mesh.boundingBox());
     mesh.createNeighbourInfos();
     for (uint i = 0; i < mesh.boundaryCount(); i ++){
         RVector3 cen(mesh.boundary(i).center());
@@ -334,7 +337,7 @@ void setDefaultBERTBoundaryConditions(Mesh & mesh){
 }
 
 void setAllNeumannBoundaryConditions(Mesh & mesh){
-    RBoundingBox bbox(mesh.boundingBox());
+    BoundingBox bbox(mesh.boundingBox());
     mesh.createNeighbourInfos();
     for (uint i = 0; i < mesh.boundaryCount(); i ++){
         RVector3 cen(mesh.boundary(i).center());

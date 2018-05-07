@@ -65,6 +65,7 @@ def importGTT(filename, return_header=False):
         data.set('s', irev[SHOT].astype(float))
         data.set('g', irev[REC].astype(float))
         data.markValid(data('t') > 0.)
+        data.removeUnusedSensors()
         if return_header:
             return data, header
         else:

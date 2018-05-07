@@ -3,21 +3,22 @@
 """
 Module containing submodules for various geophysical methods.
 
-.. currentmodule:: pygimli.physics
+Submodules
+----------
 
-.. autosummary::
-    :template: module.rst
-    :toctree:
+# .. currentmodule:: pygimli
+#
+# .. autosummary::
+#
+#     pygimli.physics.em
+#     pygimli.physics.ert
+#     pygimli.physics.gravimetry
+#     pygimli.physics.petro
+#     pygimli.physics.seismics
+#     pygimli.physics.SIP
+#     pygimli.physics.sNMR
+#     pygimli.physics.traveltime
 
-    em
-    ert
-    gravimetry
-    joint
-    petro
-    seismics
-    SIP
-    sNMR
-    traveltime
 """
 
 from .constants import Constants

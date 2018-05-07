@@ -16,8 +16,6 @@ import numpy as np
 
 import pygimli as pg
 from pygimli.meshtools import appendTriangleBoundary, merge2Meshes
-from pygimli.mplviewer import drawMesh
-from pygimli.viewer import showMesh
 
 ###############################################################################
 # We continue by building a regular grid and assign the marker 2 to all cells.
@@ -84,13 +82,5 @@ mesh3 = merge2Meshes(mesh1, mesh2)
 mesh = appendTriangleBoundary(mesh3, -100., 100., quality=31, smooth=True,
                               marker=3, isSubSurface=True)
 
-ax, cbar = showMesh(mesh, mesh.cellMarkers(), cmap="summer",
-                    label="Region marker")
-
-drawMesh(ax, mesh)
-
-ax, _ = showMesh(mesh, mesh.cellMarkers(), logScale=False,
-                 label="Region marker")
-
-drawMesh(ax, mesh)
+pg.show(mesh, markers=True, showMesh=True)
 pg.wait()

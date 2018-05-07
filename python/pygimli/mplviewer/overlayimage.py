@@ -9,6 +9,8 @@ import random
 import numpy as np
 import matplotlib.image as mpimg
 
+import pygimli as pg
+
 
 class OverlayImageMPL(object):
     """TODO Documentme."""
@@ -80,6 +82,27 @@ class OverlayImageMPL(object):
             self.imAxes.set_yticks([])
 
 
+class MapTilesCacheSingleton(object):
+    __instance = None
+    _tilesCache = dict()
+
+    def __new__(cls):
+        if MapTilesCacheSingleton.__instance is None:
+            MapTilesCacheSingleton.__instance = object.__new__(cls)
+        return MapTilesCacheSingleton.__instance
+
+    def add(self, key, tile):
+        self._tilesCache[key] = tile
+
+    def get(self, key):
+        if key in self._tilesCache:
+            return self._tilesCache[key]
+        return None
+
+# We only want one instance of this global cache so its a singleton class
+__MatTilesCache__ = MapTilesCacheSingleton()
+
+
 def deg2MapTile(lon_deg, lat_deg, zoom):
     """TODO Documentme."""
     lat_rad = math.radians(lat_deg)
@@ -87,6 +110,24 @@ def deg2MapTile(lon_deg, lat_deg, zoom):
     xtile = int((lon_deg + 180.0) / 360.0 * n)
     ytile = int((1.0 - math.log(math.tan(lat_rad) +
                                 (1 / math.cos(lat_rad))) / math.pi) / 2.0 * n)
+
+
+
+    #correct the latitude to go from 0 (north) to 180 (south),
+    #instead of 90(north) to -90(south)
+    latitude=90 - lat_deg;
+    #//correct the longitude to go from 0 to 360
+    longitude=180 + lon_deg;
+
+    #//find tile size from zoom level
+    latTileSize = 180/(pow(2,(17-zoom)))
+    longTileSize = 360/(pow(2,(17-zoom)))
+
+    #//find the tile coordinates
+    tilex=(int)(longitude/longTileSize)
+    tiley=(int)(latitude/latTileSize)
+
+
     return (xtile, ytile)
 
 
@@ -107,18 +148,27 @@ def cacheFileName(fullname, vendor):
     """Createfilename and path to cache download data."""
     (dirName, fileName) = os.path.split(fullname)
 
-    path = './' + vendor + '/' + dirName
+    #os.path.joint(pg.getConfigPath(), fileName)
+
+    path = os.path.join(pg.getConfigPath(), vendor, dirName)
 
     try:
         os.makedirs(path)
     except OSError:
         pass
 
-    return path + '/' + fileName
+    return os.path.join(path, fileName)
 
 
 def getMapTile(xtile, ytile, zoom, vendor='OSM', verbose=False):
     """Get a map tile from public mapping server.
+
+    Its not recommended to use the google maps tile server without
+    the google maps api so if you use it to often your IP will be blacklisted
+
+    TODO: look here for more vendors https://github.com/Leaflet/Leaflet
+    TODO: Try http://scitools.org.uk/cartopy/docs/v0.14/index.html
+    TODO: Try https://github.com/jwass/mplleaflet
 
     Parameters
     ----------
@@ -130,7 +180,7 @@ def getMapTile(xtile, ytile, zoom, vendor='OSM', verbose=False):
 
     vendor : str
         . 'OSM' or 'Open Street Map' (tile.openstreetmap.org)
-        . 'GM' or 'Google Maps' (mt.google.com)
+        . 'GM' or 'Google Maps' (mt.google.com) (do not use it to much)
 
     verbose : bool [false]
         be verbose
@@ -143,42 +193,58 @@ def getMapTile(xtile, ytile, zoom, vendor='OSM', verbose=False):
         url = 'http://a.' + serverName + '/' + imagename + '.png'
         imFormat = '.png'
     elif vendor == 'GM' or vendor == 'Google Maps':
-        # http://mt1.google.com/vt/x=70389&s=&y=43016&z=17
-        # http://mt.google.com/vt/x=70389&s=&y=43016&z
-        serverName = 'mt.google.com'
-        nr = random.randint(0, 3)
-        url = 'http://mt' + str(nr) + '.google.com/vt/x=' + \
-            str(xtile) + '&y=' + str(ytile) + '&z=' + str(zoom)
+        # its not recommended to use the google maps tile server without
+        # google maps api .. if you use it to often your IP will be blacklisted
+        # mt.google.com will balance itself
+        serverName = 'http://mt.google.com'
+        #nr = random.randint(1, 4)
+        #serverName = 'http://mt' + str(nr) + '.google.com'
+        # LAYERS:
+        #h = roads only
+        #m = standard roadmap
+        #p = terrain
+        #r = somehow altered roadmap
+        #s = satellite only
+        #t = terrain only
+        #y = hybrid
+        #,transit
+
+        url = serverName + '/vt/lyrs=m' + \
+              '&x=' + str(xtile) + '&y=' + str(ytile) + \
+              '&hl=en' + '&z=' + str(zoom)
         imFormat = '.png'
-    elif vendor == 'GMS' or vendor == 'Google Maps Satellite':
-        serverName = 'khm.google.com'
-        nr = random.randint(0, 3)
-        url = 'http://khm' + str(nr) + '.google.com/kh/v=60&x=' + \
-            str(xtile) + '&y=' + str(ytile) + '&z=' + str(zoom)
-        imFormat = '.jpeg'
-#        http://khm0.google.com/kh/v=60&x=2197&y=1346&z=12
     else:
         raise "Vendor: " + vendor + \
             " not supported (currently only OSM (Open Street Map))"
 
     filename = cacheFileName(imagename, serverName) + imFormat
 
-    if os.path.exists(filename):
-        if verbose:
-            print(("Read image from disk", filename))
-        image = mpimg.imread(filename)
-        image = image[:, :, 0:3]
+    image = __MatTilesCache__.get(filename)
+
+    if image is None:
+
+        if os.path.exists(filename):
+            if verbose:
+                print(("Read image from disk", filename))
+            image = mpimg.imread(filename)
+            image = image[:, :, 0:3]
+        else:
+            if verbose:
+                print(("Get map from url maps", url))
+
+            image = mpimg.imread(url)
+            if verbose:
+                print(imagename)
+            mpimg.imsave(filename, image)
+
+        if imFormat == '.jpeg':
+            image = image[::-1, ...] / 256.
+
+        __MatTilesCache__.add(filename, image)
     else:
         if verbose:
-            print(("Get map from url maps", url))
+            print(("Took image from cache", filename))
 
-        image = mpimg.imread(url)
-        if verbose:
-            print(imagename)
-        mpimg.imsave(filename, image)
-
-    if imFormat == '.jpeg':
-        image = image[::-1, ...] / 256.
     return image
 # def getMapTile(...)
 
@@ -273,8 +339,92 @@ def underlayMap(ax, proj, vendor='OSM', zoom=-1, pixelLimit=None,
 
     extent = np.asarray([imUL[0], imLR[0], imLR[1], imUL[1]])
 
-    ax.imshow(image, extent=extent)
+    print(extent)
+    gci = ax.imshow(image, extent=extent)
 
     if not fitMap:
         ax.set_xlim(origXLimits)
         ax.set_ylim(origYLimits)
+    else:
+        ax.set_xlim(extent[0], extent[1])
+        ax.set_ylim(extent[2], extent[3])
+
+    return gci
+
+def getBKGaddress(xlim, ylim, imsize=1000, zone=32, service='dop40',
+                  usetls=False, epsg=0, uuid='', fmt='image/jpeg',
+                  layer='rgb'):
+    """Generate address for rendering web service image from BKG.
+
+    Assumes UTM in given zone.
+    """
+    url = 'https://sg.geodatenzentrum.de/wms_' + service
+    if usetls:
+        url = 'https://sgtls12.geodatenzentrum.de/wms_' + service  # new
+    stdarg = '&SERVICE=WMS&VERSION=1.1.0&LAYERS=' + layer
+    stdarg += '&STYLES=default&FORMAT=' + fmt
+    if epsg == 0:
+        epsg = 32600 + zone  # WGS 84 / UTM zone 32N
+#        epsg = 25800 + zone  # ETRS89 / UTM zone 32N
+    srsstr = 'SRS=EPSG:' + str(epsg)  # EPSG definition of UTM
+
+    if imsize is None or imsize <= 1:
+        imsize = int((xlim[1] - xlim[0])/0.4) + 1  # take 40cm DOP resolution
+        print('choose image size ', imsize)
+    box = ','.join(str(int(v)) for v in [xlim[0], ylim[0], xlim[1], ylim[1]])
+    ysize = int((imsize - 1.) * (ylim[1] - ylim[0]) / (xlim[1] - xlim[0])) + 1
+    sizestr = 'WIDTH=' + str(imsize) + '&HEIGHT=' + '%d' % ysize
+    if uuid:
+        url += '__' + uuid
+    addr = url + '?REQUEST=GetMap' + stdarg + '&' + srsstr + \
+        '&' + 'BBOX=' + box + '&' + sizestr
+
+    return addr, box
+
+
+def underlayBKGMap(ax, mode='DOP', utmzone=32, epsg=0, imsize=2500, uuid='',
+                   usetls=False):
+    """Underlay digital orthophoto or topographic (mode='DTK') map under axes.
+
+    First accessed, the image is obtained from BKG, saved and later loaded.
+
+    Parameters
+    ----------
+    mode : str
+        'DOP' (digital orthophoto 40cm) or
+        'DTK' (digital topo map 1:25000)
+
+    imsize : int
+        image width in pixels (height will be automatically determined
+
+    """
+    try:
+        import urllib.request as urllib2
+    except ImportError:
+        import urllib2
+
+    ext = {'DOP': '.jpg', 'DTK': '.png'}  # extensions for different map types
+    wms = {'DOP': 'dop40', 'DTK': 'dtk25'}  # wms service name for map types
+    fmt = {'DOP': 'image/jpeg', 'DTK': 'image/png'}  # format
+    lay = {'DOP': 'rgb', 'DTK': '0'}
+    if imsize < 1:  # 0, -1 or 0.4 could be reasonable parameters
+        ax = ax.get_xlim()
+        imsize = int((ax[1] - ax[0]) / 0.4)  # use original 40cm pixel size
+        if imsize > 5000:  # limit overly sized images
+            imsize = 2500  # default value
+    ad, box = getBKGaddress(ax.get_xlim(), ax.get_ylim(), imsize, zone=utmzone,
+                            service=wms[mode.upper()], usetls=usetls,
+                            uuid=uuid, epsg=epsg,
+                            fmt=fmt[mode.upper()], layer=lay[mode.upper()])
+    imname = mode + box + ext[mode]
+    if not os.path.isfile(imname):  # not already existing
+        print('Retrieving file from geodatenzentrum.de using URL: ' + ad)
+        req = urllib2.Request(ad)
+        response = urllib2.urlopen(req)
+        with open(imname, 'wb') as output:
+            output.write(response.read())
+
+    im = mpimg.imread(imname)
+    bb = [int(bi) for bi in box.split(',')]  # bounding box
+    ax.imshow(im, extent=[bb[0], bb[2], bb[1], bb[3]],
+              interpolation='nearest')

@@ -34,23 +34,19 @@ namespace GIMLI{
 
 class KDTreeWrapper;
 
-template < class T > class DLLEXPORT BoundingBox;
-typedef BoundingBox< double > RBoundingBox;
-typedef BoundingBox< double > IBoundingBox;
-
 //! A BoundingBox
-/*! A BoundingBox which contains a min and max Vector3< ValueType >. IBoundingBox and RBoundingBox typedefs an Integer and Real Boundingbox, respectivly. */
-template < class ValueType > class DLLEXPORT BoundingBox{
+/*! A BoundingBox which contains a min and max Vector3< double >*/
+class DLLEXPORT BoundingBox{
 public:
     /*! Default constructor, with BoundingBox[0.0, 0.0, 0.0; 1.0, 1.0, 1.0] */
-    BoundingBox(const Pos < ValueType > & min=Pos < double >(0, 0, 0),
-                const Pos < ValueType > & max=Pos < double >(1.0, 1.0, 1.0))
+    BoundingBox(const Pos < double > & min=Pos < double >(0, 0, 0),
+                const Pos < double > & max=Pos < double >(1.0, 1.0, 1.0))
         : min_(min), max_(max){
     }
 
     /*! Construct BBox from position vector */
-    BoundingBox(const std::vector < Pos < ValueType > > & vPos){
-        min_ = Pos < ValueType >((ValueType)MAX_DOUBLE, (ValueType)MAX_DOUBLE, (ValueType)MAX_DOUBLE);
+    BoundingBox(const R3Vector & vPos){
+        min_ = Pos < double>((double)MAX_DOUBLE, (double)MAX_DOUBLE, (double)MAX_DOUBLE);
         max_ = min_ * -1.0;
         for (uint i = 0; i < vPos.size(); i ++){
             min_[0] = std::min(vPos[i][0], min_[0]);
@@ -63,44 +59,66 @@ public:
     }
 
     /*! Copy constructor. */
-    BoundingBox(const BoundingBox < ValueType > & bbox){ this->copy_(bbox); }
+    BoundingBox(const BoundingBox & bbox){ this->copy_(bbox); }
 
     /*! Assignment operator. */
-    BoundingBox < ValueType > & operator = (const BoundingBox < ValueType > bbox){
+    BoundingBox & operator = (const BoundingBox & bbox){
     	if (this != & bbox){
             this->copy_(bbox);
         } return * this;
     }
 
     /*! Check if a point lie inside (with boundary). */
-    bool isInside(const Pos < ValueType > & p){
+    bool isInside(const Pos < double > & p){
         return ((p[0] <= max_[0] && p[0] >= min_[0]) &&
                 (p[1] <= max_[1] && p[1] >= min_[1]) &&
                 (p[2] <= max_[2] && p[2] >= min_[2]));
     }
 
     /*! Set minimum Position. */
-    void setMin(const Pos < ValueType > & min) { min_ = min; }
+    void setMin(const Pos < double > & min) { min_ = min; }
     /*! Return a copy of the minimum position. */
-    const Pos < ValueType > & min() const { return min_; }
+    const Pos < double > & min() const { return min_; }
 
     /*! Set maximum Position. */
-    void setMax(const Pos < ValueType > & max) { max_ = max; }
+    void setMax(const Pos < double > & max) { max_ = max; }
     /*! Return a copy of the maximum position. */
-    const Pos < ValueType > & max() const { return max_; }
+    const Pos < double > & max() const { return max_; }
+
+    /*! Return minimal x coordinate.*/
+    inline double xMin() const { return min_[0];}
+    /*! Return minimal y coordinate.*/
+    inline double yMin() const { return min_[1];}
+    /*! Return minimal z coordinate.*/
+    inline double zMin() const { return min_[2];}
+
+    /*! Return maximal x coordinate.*/
+    inline double xMax() const { return max_[0];}
+    /*! Return maximal y coordinate.*/
+    inline double yMax() const { return max_[1];}
+    /*! Return maximal z coordinate.*/
+    inline double zMax() const { return max_[2];}
+
+    /*! Return maximal x length.*/
+    inline double xSize() const { return abs(this->xMax()-this->xMin());}
+    /*! Return maximal y length.*/
+    inline double ySize() const { return abs(this->yMax()-this->yMin());}
+    /*! Return maximal z length.*/
+    inline double zSize() const { return abs(this->zMax()-this->zMin());}
+
 
 protected:
 
-    void copy_(const BoundingBox < ValueType > & bbox){
+    void copy_(const BoundingBox & bbox){
     	min_ = bbox.min();
         max_ = bbox.max();
     }
 
-    Pos < ValueType > min_;
-    Pos < ValueType > max_;
+    Pos < double > min_;
+    Pos < double > max_;
 };
 
-template < class ValueType > std::ostream & operator << (std::ostream & str, const BoundingBox< ValueType > & bb){
+inline std::ostream & operator << (std::ostream & str, const BoundingBox & bb){
     str << "BoundingBox [" << bb.min() << ", " << bb.max() << "]" ;
     return str;
 }
@@ -177,19 +195,19 @@ public:
     Node * createNodeWithCheck(const RVector3 & pos, double tol=1e-6,
                                bool warn=false);
 
-    Boundary * createBoundary(std::vector < Node * > & nodes, int marker=0);
+    Boundary * createBoundary(std::vector < Node * > & nodes, int marker=0, bool check=true);
     /*! Create a boundary from the given node indieces */
-    Boundary * createBoundary(const IndexArray & nodes, int marker=0);
-    Boundary * createBoundary(const Boundary & bound);
-    Boundary * createBoundary(const Cell & cell);
-    Boundary * createNodeBoundary(Node & n1, int marker = 0);
-    Boundary * createEdge(Node & n1, Node & n2, int marker = 0);
-    Boundary * createEdge3(Node & n1, Node & n2, Node & n3, int marker = 0);
-    Boundary * createTriangleFace(Node & n1, Node & n2, Node & n3, int marker = 0);
-    Boundary * createQuadrangleFace(Node & n1, Node & n2, Node & n3, Node & n4, int marker = 0);
+    Boundary * createBoundary(const IndexArray & nodes, int marker=0, bool check=true);
+    Boundary * createBoundary(const Boundary & bound, bool check=true);
+    Boundary * createBoundary(const Cell & cell, bool check=true);
+    Boundary * createNodeBoundary(Node & n1, int marker=0, bool check=true);
+    Boundary * createEdge(Node & n1, Node & n2, int marker=0, bool check=true);
+    Boundary * createEdge3(Node & n1, Node & n2, Node & n3, int marker=0, bool check=true);
+    Boundary * createTriangleFace(Node & n1, Node & n2, Node & n3, int marker=0, bool check=true);
+    Boundary * createQuadrangleFace(Node & n1, Node & n2, Node & n3, Node & n4, int marker=0, bool check=true);
 
     /*! Create empty cell without a node or a shape. */
-    Cell * createCell(int marker = 0);
+    Cell * createCell(int marker=0);
     Cell * createCell(std::vector < Node * > & nodes, int marker=0);
     /*! Create a cell from the given node indieces */
     Cell * createCell(const IndexArray & nodes, int marker=0);
@@ -198,10 +216,16 @@ public:
     Cell * createQuadrangle(Node & n1, Node & n2, Node & n3, Node & n4, int marker=0);
     Cell * createTetrahedron(Node & n1, Node & n2, Node & n3, Node & n4, int marker=0);
 
-    /*! Create a cell as a copy of a cell from an alternative mesh. Each Node of cell will be created with check. */
-    Cell * copyCell(const Cell & cell);
-    /*! Create a boundary as a copy of a boundary from an alternative mesh. Each Node of cell will be created with check. */
-    Boundary * copyBoundary(const Boundary & bound);
+    /*! Create a cell as a copy of a cell from an alternative mesh.
+     * Each node of the new cell will be created with duplication check and
+     * reused if there is already a node withing the tolerance distance tol.
+     * tol=-1 disables this duplication check. */
+    Cell * copyCell(const Cell & cell, double tol=1e-6);
+    /*! Create a boundary as a copy of a boundary from an alternative mesh.
+     * Each node of the new cell will be created with duplication check and
+     * reused if there is already a node withing the tolerance distance tol.
+     * tol=-1 disables this duplication check. */
+    Boundary * copyBoundary(const Boundary & bound, double tol=1e-6, bool check=true);
 
     /*! Delete all given cells from the given mesh. Warning will be really deleted.*/
     void deleteCells(const std::vector < Cell * > & cells);
@@ -279,13 +303,20 @@ public:
     /*! Return vector of node from index list */
     std::vector< Node * > nodes(const IndexArray & ids) const;
 
+    /*! Return a vector of nodes ptrs matching BVector b.*/
+    std::vector< Node * > nodes(const BVector & b) const;
+
     /*! Return vector of cells from index list */
     std::vector< Cell * > cells(const IndexArray & ids) const;
+
+    /*! Return a vector of cells ptrs matching BVector b.*/
+    std::vector< Cell * > cells(const BVector & b) const;
 
     /*! Return vector of boundaries from index list */
     std::vector< Boundary * > boundaries(const IndexArray & ids) const;
 
-
+    /*! Return a vector of boundary ptrs matching BVector b.*/
+    std::vector< Boundary * > boundaries(const BVector & b) const;
 
     inline Index nodeCount() const { return nodeVector_.size(); }
     Node & node(Index i) const;
@@ -330,8 +361,12 @@ public:
     R3Vector & boundarySizedNormals() const;
 
 
+    /*! DEPRECATED */
+    void setBoundaryMarker(const IndexArray & ids, int marker){
+        return setBoundaryMarkers(ids, marker);
+    }
     /*! Set the marker to all boundaries in index array. */
-    void setBoundaryMarker(const IndexArray & ids, int marker);
+    void setBoundaryMarkers(const IndexArray & ids, int marker);
 
     /*! Set all cell marker the values in attribute. */
     void setBoundaryMarkers(const IVector & marker);
@@ -361,7 +396,6 @@ public:
         for to equal open end set to = MAX_INT */
     std::vector < Boundary * > findBoundaryByMarker(int from, int to) const;
 
-
     /*! Return ptr to the cell that match position pos, counter holds amount of touch tests.
         Searching is done first by nearest-neighbour-kd-tree search,
         followed by slope-search if extensive is set. Return NULL if no cell can be found. */
@@ -382,6 +416,14 @@ public:
         For single attribute match to is set to 0.0, for open end set to = -1.0 */
     std::vector < Cell * > findCellByAttribute(double from, double to=0.0) const;
 
+    /*! Return vector of cells that are intersected with a given ray from start
+     * to end. Intersecting positions, i.e., the travel path are stored in pos.
+     Note this will not yet check if the ray lies completely along a boundary.
+     This will probably fail and need to be implemented.
+     */
+    std::vector < Cell * > findCellsAlongRay(const RVector3 & start,
+                                             const RVector3 & dir,
+                                             R3Vector & pos) const;
     //** end get infos stuff
 
     //** start mesh modification stuff
@@ -555,15 +597,15 @@ public:
      */
     void addExportData(const std::string & name, const RVector & data);
 
-    /*! Return the data with a given name.
+    /*! DEPRECATED Return the data with a given name.
      * If there is no such data an exception is thrown.*/
     RVector exportData(const std::string & name) const;
 
-    /*! Return the full data map read only. */
+    /*! DEPRECATED  Return the full data map read only. */
     const std::map< std::string, RVector > & exportDataMap() const {
         return exportDataMap_; }
 
-    /*! Set the full data map.*/
+    /*! DEPRECATED Set the full data map.*/
     void setExportDataMap(const std::map< std::string, RVector > & eMap) {
         exportDataMap_ = eMap; }
 
@@ -575,15 +617,29 @@ public:
         addExportData(name+"-Im", imag(data));
     }
 
-    /*!*/
+    /*! Add data to the mesh that will be saved with by using the binary mesh
+     * format v.2. or exported with the appropriate name in VTK format,
+     * if the size of data equals the amount of nodes, cells or boundaries.
+     */
     void addData(const std::string & name, const RVector & data){ addExportData(name, data); }
-    /*!*/
-    RVector data(const std::string & name) const { return exportData(name); }
-    /*!*/
-    bool haveData(const std::string & name) const { return exportDataMap_.count(name) > 0; }
-    /*!*/
-    const std::map< std::string, RVector > & dataMap() const { return exportDataMap_; }
 
+    /*! Return the data with a given name.
+     * If there is no such data an exception is thrown.*/
+    RVector data(const std::string & name) const { return exportData(name); }
+
+    /*! Return True if date with such a name exists.*/
+    bool haveData(const std::string & name) const {
+        return exportDataMap_.count(name) > 0;
+    }
+
+    /*! Return the full data map read only. */
+    const std::map< std::string, RVector > & dataMap() const {
+        return exportDataMap_;
+    }
+    /*! Replace the datamap by m */
+    void setDataMap(const std::map< std::string, RVector > m) {
+        exportDataMap_ = m;
+    }
     /*! Print data map info.*/
     void dataInfo() const;
 
@@ -632,7 +688,7 @@ public:
     double ymax() const { findRange_(); return maxRange_[1]; }
     double zmax() const { findRange_(); return maxRange_[2]; }
 
-    const RBoundingBox boundingBox() const { findRange_(); return RBoundingBox(minRange_, maxRange_);}
+    const BoundingBox boundingBox() const { findRange_(); return BoundingBox(minRange_, maxRange_);}
 
     /*! Return the interpolation matrix I from all node positions
      * to the query points q. I is a (len(q) x nodeCount()) SparseMapMatrix.
@@ -697,7 +753,9 @@ protected:
     }
 
     template < class B > Boundary * createBoundaryChecked_(
-        std::vector < Node * > & nodes, int marker){
+        std::vector < Node * > & nodes, int marker, bool check=true){
+
+        if (!check) return createBoundary_< B >(nodes, marker, boundaryCount());
 
         Boundary * b = findBoundary(nodes);
         if (!b) {

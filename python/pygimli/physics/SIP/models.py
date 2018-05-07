@@ -27,8 +27,15 @@ def ColeColeRho(f, rho, m, tau, c, a=1):
     * :math:`m` -- Chargeability after Seigel (1959) :cite:`Seigel1959` as
       being the ratio of voltage immediately after, to the voltage immediately
       before cessation of an infinitely long charging current.
+<<<<<<< HEAD
     * :math:`\tau` -- 'Time constant' relaxation time [s] for 1/e decay
     * :math:`c` - Cole-Cole exponent typically [0.1 .. 0.6]
+=======
+    * :math:`\tau` --
+      'Time constant' relaxation time [s] for 1/e decay
+    * :math:`c` - Rate of charge accumulation.
+      Cole-Cole exponent typically [0.1 .. 0.6]
+>>>>>>> dev
 
     Examples
     --------

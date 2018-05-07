@@ -7,7 +7,6 @@ from math import pi, sin, cos
 import numpy as np
 
 import pygimli as pg
-from pygimli.io import opt_import
 
 
 def covarianceMatrixVec(x, y, z=None, I=None, dip=0, strike=0, var=1):
@@ -77,9 +76,35 @@ def covarianceMatrix(mesh, nodes=False, **kwargs):
     return covarianceMatrixPos(pos, **kwargs)
 
 
+def generateGeostatisticalModel(mesh, **kwargs):
+    """Generate geostatistical model (cell or node) for given mesh.
+
+    Parameters
+    ----------
+    mesh : gimliapi:`GIMLI::Mesh`
+        Mesh
+    nodes : bool [False]
+        use node positions, otherwise (default) cell centers are used
+    **kwargs
+
+        I : float or list of floats
+            correlation lengths (range) in individual directions
+        dip : float
+            dip angle of major axis (I[0])
+        strike : float
+            strike angle (for 3D)
+
+    Returns
+    -------
+    res : np.array of size cellCount or nodeCount (nodes=True)
+    """
+    return np.random.multivariate_normal(np.ones(mesh.cellCount()),
+                                         covarianceMatrix(mesh, **kwargs))
+
+
 def computeInverseRootMatrix(CM, thrsh=0.001, verbose=False):
     """Compute inverse square root (C^{-0.5} of matrix."""
-    spl = opt_import('scipy.linalg', 'scipy linear algebra')
+    spl = pg.optImport('scipy.linalg', 'scipy linear algebra')
     if spl is None:
         return None
 

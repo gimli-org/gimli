@@ -134,7 +134,7 @@ def quality(mesh, measure="eta"):
     >>> mesh = pg.meshtools.createMesh([world, c1], quality=21.3)
     >>> # Compute and show quality
     >>> q = quality(mesh, measure="nsr")
-    >>> ax, _ = pg.show(mesh, q, cmap="RdYlGn", grid=True, cMin=0.5, cMax=1.0,
+    >>> ax, _ = pg.show(mesh, q, cmap="RdYlGn", showMesh=True, cMin=0.5, cMax=1.0,
     ...                 label="Normalized shape ratio")
 
     See also

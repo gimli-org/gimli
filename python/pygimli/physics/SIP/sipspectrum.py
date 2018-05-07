@@ -3,19 +3,21 @@
 """Spectral induced polarisation (SIP) spectrum class and modules."""
 
 import sys
+import codecs
+
 from math import log10, exp, pi
 import numpy as np
 import matplotlib.pyplot as plt
 
 import pygimli as pg
 from .importexport import readTXTSpectrum, readFuchs3File, readRadicSIPFuchs
-from .plotting import showAmplitudeSpectrum, showSpectrum, showPhaseSpectrum
+from .plotting import drawAmplitudeSpectrum, drawPhaseSpectrum, showSpectrum
 from .models import DebyePhi, DebyeComplex, relaxationTerm
 from .tools import KramersKronig, fitCCEMPhi, fitCCC
 from .tools import fitCCCC, fitCCPhi, fit2CCPhi
 
 
-class SIPSpectrum():
+class SIPSpectrum(object):
     """SIP spectrum data analysis."""
 
     def __init__(self, filename=None, unify=False, onlydown=True,
@@ -28,6 +30,7 @@ class SIPSpectrum():
         >>> #sip = SIPSpectrum('sipexample.txt', unify=True) # unique f values
         >>> #sip = SIPSpectrum(f=f, amp=R, phi=phase, basename='new')
         """
+        self._verbose = False
         self.basename = basename
         self.fig = {}
         self.k = k
@@ -79,20 +82,24 @@ class SIPSpectrum():
 
         Import Data and try to assume the file format.
         """
-        fi = open(filename)
-        firstLine = fi.readline()
-        fi.close()
+        verbose = kwargs.pop('verbose', self._verbose)
+
+        with codecs.open(filename, 'r', encoding='iso-8859-15', errors='replace') as f:
+            firstLine = f.readline()
+        f.close()
 
         fnLow = filename.lower()
         if 'SIP Fuchs III' in firstLine:
-            print("Reading SIP Fuchs III file")
+            if verbose:
+                print("Reading SIP Fuchs III file")
             self.f, self.amp, self.phi, header = readFuchs3File(filename)
-            self.phi *= -1./180.
+            self.phi *= -np.pi/180.
             # print(header) # not used?
         elif 'SIP-Fuchs Software rev.: 070903' in firstLine:
-            print("Reading SIP Fuchs file")
+            if verbose:
+                print("Reading SIP Fuchs file")
             self.f, self.amp, self.phi, drhoa, dphi = readRadicSIPFuchs(filename, **kwargs)
-            self.phi *= -1./180.
+            self.phi *= -np.pi/180.
         elif fnLow.endswith('.txt') or fnLow.endswith('.csv'):
             self.basename = filename[:-4]
             self.f, self.amp, self.phi = readTXTSpectrum(filename)
@@ -170,7 +177,7 @@ class SIPSpectrum():
             fig, ax = plt.subplots()
             self.fig['phase'] = fig
 
-        showPhaseSpectrum(ax, self.f, self.phi*1000, **kwargs)
+        drawPhaseSpectrum(ax, self.f, self.phi*1000, **kwargs)
 
     def showData(self, reim=False, znorm=False, cond=False, nrows=2, ax=None,
                  **kwargs):
@@ -199,13 +206,13 @@ class SIPSpectrum():
                 re, im = self.realimag(cond=cond)
 
             fig, ax = showSpectrum(self.f, re, im, ylog=cond, nrows=nrows,
-                                   ax=ax, **kwargs)
+                                   axs=ax, **kwargs)
             self.fig['data'] = fig
             ax[0].set_ylabel('real part'+addstr)
             ax[1].set_ylabel('imaginary part'+addstr)
         else:
-            fig, ax = showSpectrum(self.f, self.amp, self.phi*1000, ax=ax,
-                                   **kwargs)
+            fig, ax = showSpectrum(self.f, self.amp, self.phi*1000,
+                                   axs=ax, **kwargs)
             self.fig['data'] = fig
 
         plt.show(block=False)
@@ -558,7 +565,7 @@ class SIPSpectrum():
         self.fig['all'] = fig
         fig.subplots_adjust(hspace=0.25)
         # amplitude
-        showAmplitudeSpectrum(ax[0], self.f, self.amp, label='data', ylog=0)
+        drawAmplitudeSpectrum(ax[0], self.f, self.amp, label='data', ylog=0)
         if np.any(self.ampDD):
             ax[0].plot(self.f, self.ampDD, 'm-', label='DD response')
         if np.any(self.ampCC):

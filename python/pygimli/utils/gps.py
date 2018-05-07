@@ -7,14 +7,87 @@ import os
 from math import floor
 
 import numpy as np
-import matplotlib.image as mpimg
 
-from pygimli.io import opt_import
+import pygimli as pg
 
 
-def handleWPTS(wpts):
+def findUTMZone(lon, lat):
+    """Find utm zone for lon and lat values.
+
+    lon -180 -- -174 -> 1 ... 174 -- 180 -> 60
+    lat < 0 hemisphere = S, > 0 hemisphere = N
+
+    Parameters
+    ----------
+    lon : float
+    lat : float
+
+    Returns
+    -------
+    str :
+        zone + hemisphere
+    """
+    zone = int((int(lon) + 180) / 6) + 1
+
+    if lat > 0:
+        return str(zone) + 'N'
+    else:
+        return str(zone) + 'S'
+
+
+def getUTMProjection(zone, ellps='WGS84'):
+    """Create and return the current coordinate projection.
+
+    This is a proxy for pyproj.
+
+    Parameters
+    ----------
+    utmZone : str
+        Zone for for UTM
+
+    ellipsoid : str
+        ellipsoid based on ['wgs84']
+
+    Returns
+    -------
+    Pyproj Projection
+
+    """
+    pyproj = pg.optImport('pyproj', 'Coordinate transformations.')
+
+    return pyproj.Proj(proj='utm', zone=zone, ellps=ellps)
+
+def getProjection(name, ref=None, **kwargs):
+    """Syntactic sugar to get some default Projections.
+    https://svn.oss.deltares.nl/repos/openearthtools//websites/trunk/python/applications/osm2hydro/dist/win32/osm2hydro/pyproj-1.9.0-py2.7-win32.egg/pyproj/data/epsg
+    """
+    pyproj = pg.optImport('pyproj', 'Coordinate transformations.')
+
+    if name == 'utm':
+        return getUTMProjection(**kwargs)
+    elif name == 'RD83':
+        return pyproj.Proj(init="epsg:4745")
+    elif name == 'gk2':
+        return pyproj.Proj(init="epsg:31466")
+    elif name == 'gk3':
+        return pyproj.Proj(init="epsg:31467")
+    elif name == 'gk4':
+        return pyproj.Proj(init="epsg:31468")
+    elif name == 'gk5':
+        return pyproj.Proj(init="epsg:31469")
+    elif name == 'Soldner':
+        return pyproj.Proj(init="epsg:3068")
+
+def _getXMLData(ele, name, default):
+    ret = default
+    if ele.getElementsByTagName(name):
+        ret = ele.getElementsByTagName(name)[0].childNodes[0].data
+
+    return ret
+
+def _extractWPTS(wpts):
     """Handler for Waypoints in gpx xml-dom."""
-    w = []
+    w = dict()
 
     for wpt in wpts:
         if wpt.hasAttribute('lat'):
@@ -26,24 +99,48 @@ def handleWPTS(wpts):
         else:
             continue
 
-        name = wpt.getElementsByTagName('name')[0].childNodes[0].data
-        time = wpt.getElementsByTagName('time')[0].childNodes[0].data
+        name = _getXMLData(wpt, 'name', 'WP ' + str(len(w.keys())))
 
-        w.append((lon, lat, name, time))
+        w[name] = {'lat': lat,
+                   'lon': lon,
+                   'time': _getXMLData(wpt, 'time', 0),
+                   'desc': _getXMLData(wpt, 'desc', None),
+                   }
     return w
 
 
-def readGPX(filename):
+def readGPX(fileName):
     """Extract GPS Waypoint from GPS Exchange Format (GPX).
 
     Currently only simple waypoint extraction is supported.
+
+    <gpx version="1.0" creator="creator">
+
+    <metadata>
+    <name>Name</name>
+    </metadata>
+    <wpt lat="51." lon="11.">
+    <name>optional</name>
+    <time>optional</time>
+    <description>optional</description>
+    </wpt>
+
+    </gpx>
+
     """
     from xml.dom.minidom import parse
 
-    dom = parse(filename)
+    dom = parse(fileName)
+
+    name = fileName
+
+    meta = dom.getElementsByTagName("metadata")
+    if len(meta) > 0:
+        name = _getXMLData(meta[0], 'name', fileName)
+
     wpts = dom.getElementsByTagName("wpt")
 
-    return handleWPTS(wpts)
+    return _extractWPTS(wpts), name
 
 
 def readSimpleLatLon(filename, verbose=False):
@@ -124,6 +221,10 @@ def GK4toUTM(ea, no=None, zone=32):
     """Transform Gauss-Krueger zone 4 into UTM (for backward compatibility)."""
     return GKtoUTM(ea, no, zone, gkzone=4)
 
+def GK5toUTM(ea, no=None, zone=32):
+    """Transform Gauss-Krueger zone 5 into UTM (for backward compatibility)."""
+    return GKtoUTM(ea, no, zone, gkzone=5)
+
 
 def GKtoUTM(ea, no=None, zone=32, gk=None, gkzone=None):
     """Transform any Gauss-Krueger to UTM autodetect GK zone from offset."""
@@ -137,18 +238,19 @@ def GKtoUTM(ea, no=None, zone=32, gk=None, gkzone=None):
                 rr = ea
 
         gkzone = int(floor(rr * 1e-6))
-        print(gkzone)
 
         if gkzone <= 0 or gkzone >= 5:
             print("cannot detect valid GK zone")
 
-    pyproj = opt_import('pyproj', 'coordinate transformations')
+    pyproj = pg.optImport('pyproj', 'coordinate transformations')
     if pyproj is None:
         return None
 
     gk = pyproj.Proj(init="epsg:"+str(31464+gkzone))
-    wgs84 = pyproj.Proj(init="epsg:4326")  # pure ellipsoid to doubel transform
-    utm = pyproj.Proj(proj='utm', zone=zone, ellps='WGS84')  # UTM
+    wgs84 = pyproj.Proj(init="epsg:4326")  # pure ellipsoid to double transform
+
+    utm = getUTMProjection(zone=zone, ellps='WGS84')  # UTM
+
     if no is None:  # two-column matrix
         lon, lat = pyproj.transform(gk, wgs84, ea[0], ea[1])
     else:
@@ -189,80 +291,3 @@ def readGeoRefTIF(file_name):
     return im, bbox, projection
 
 
-def getBKGaddress(xlim, ylim, imsize=1000, zone=32, service='dop40',
-                  usetls=False, epsg=0, uuid='', fmt='image/jpeg',
-                  layer='rgb'):
-    """Generate address for rendering web service image from BKG.
-
-    Assumes UTM in given zone.
-    """
-    url = 'https://sg.geodatenzentrum.de/wms_' + service
-    if usetls:
-        url = 'https://sgtls12.geodatenzentrum.de/wms_' + service  # new
-    stdarg = '&SERVICE=WMS&VERSION=1.1.0&LAYERS=' + layer
-    stdarg += '&STYLES=default&FORMAT=' + fmt
-    if epsg == 0:
-        epsg = 32600 + zone  # WGS 84 / UTM zone 32N
-#        epsg = 25800 + zone  # ETRS89 / UTM zone 32N
-    srsstr = 'SRS=EPSG:' + str(epsg)  # EPSG definition of UTM
-
-    if imsize is None or imsize <= 1:
-        imsize = int((xlim[1] - xlim[0])/0.4) + 1  # take 40cm DOP resolution
-        print('choose image size ', imsize)
-    box = ','.join(str(int(v)) for v in [xlim[0], ylim[0], xlim[1], ylim[1]])
-    ysize = int((imsize - 1.) * (ylim[1] - ylim[0]) / (xlim[1] - xlim[0])) + 1
-    sizestr = 'WIDTH=' + str(imsize) + '&HEIGHT=' + '%d' % ysize
-    if uuid:
-        url += '__' + uuid
-    addr = url + '?REQUEST=GetMap' + stdarg + '&' + srsstr + \
-        '&' + 'BBOX=' + box + '&' + sizestr
-
-    return addr, box
-
-
-def underlayBKGMap(ax, mode='DOP', utmzone=32, epsg=0, imsize=2500, uuid='',
-                   usetls=False):
-    """Underlay digital orthophoto or topographic (mode='DTK') map under axes.
-
-    First accessed, the image is obtained from BKG, saved and later loaded.
-
-    Parameters
-    ----------
-    mode : str
-        'DOP' (digital orthophoto 40cm) or
-        'DTK' (digital topo map 1:25000)
-
-    imsize : int
-        image width in pixels (height will be automatically determined
-
-    """
-    try:
-        import urllib.request as urllib2
-    except ImportError:
-        import urllib2
-
-    ext = {'DOP': '.jpg', 'DTK': '.png'}  # extensions for different map types
-    wms = {'DOP': 'dop40', 'DTK': 'dtk25'}  # wms service name for map types
-    fmt = {'DOP': 'image/jpeg', 'DTK': 'image/png'}  # format
-    lay = {'DOP': 'rgb', 'DTK': '0'}
-    if imsize < 1:  # 0, -1 or 0.4 could be reasonable parameters
-        ax = ax.get_xlim()
-        imsize = int((ax[1] - ax[0]) / 0.4)  # use original 40cm pixel size
-        if imsize > 5000:  # limit overly sized images
-            imsize = 2500  # default value
-    ad, box = getBKGaddress(ax.get_xlim(), ax.get_ylim(), imsize, zone=utmzone,
-                            service=wms[mode.upper()], usetls=usetls,
-                            uuid=uuid, epsg=epsg,
-                            fmt=fmt[mode.upper()], layer=lay[mode.upper()])
-    imname = mode + box + ext[mode]
-    if not os.path.isfile(imname):  # not already existing
-        print('Retrieving file from geodatenzentrum.de using URL: ' + ad)
-        req = urllib2.Request(ad)
-        response = urllib2.urlopen(req)
-        with open(imname, 'wb') as output:
-            output.write(response.read())
-
-    im = mpimg.imread(imname)
-    bb = [int(bi) for bi in box.split(',')]  # bounding box
-    ax.imshow(im, extent=[bb[0], bb[2], bb[1], bb[3]],
-              interpolation='nearest')

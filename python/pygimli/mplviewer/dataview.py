@@ -288,6 +288,12 @@ def plotMatrix(mat, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
 
 
 def plotVecMatrix(xvec, yvec, vals, full=False, **kwargs):
+    """DEPRECATED for nameing
+    """
+    pg.deprecated('plotVecMatrix', 'showVecMatrix')
+    return showVecMatrix(xvec, yvec, vals, full, **kwargs)
+
+def showVecMatrix(xvec, yvec, vals, full=False, **kwargs):
     """Plot three vectors as matrix.
 
     Parameters

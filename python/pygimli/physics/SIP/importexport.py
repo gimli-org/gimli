@@ -47,8 +47,11 @@ def readFuchs3File(resfile, verbose=False):
     header = {}
     LINE = []
     dataAct = False
-    with open(resfile, 'r') as f:
+    with codecs.open(resfile, 'r', encoding='iso-8859-15', errors='replace') as f:
+    #with open(resfile, 'r') as f:
+
         for line in f:
+            line = line.replace('\r\n', '\n') # correct for carriage return
             if dataAct:
                 LINE.append(line)
                 if len(line) < 2:
@@ -90,7 +93,8 @@ def readFuchs3File(resfile, verbose=False):
                             header[token] = num
                         except BaseException as e:
                             # maybe beginning or end of a block
-                            print(e)
+                            #print(e)
+                            pass
 
                 else:
                     if activeBlock:
@@ -134,36 +138,37 @@ def readRadicSIPFuchs(filename, readSecond=False, delLast=True):
     phi : array [float]
         Measured phase error
     """
-    f = open(filename, 'r')
-    line = f.readline()
-    fr = []
-    rhoa = []
-    phi = []
-    drhoa = []
-    dphi = []
-    while True:
+    with codecs.open(resfile, 'r', encoding='iso-8859-15', errors='replace') as f:
+    #f = open(filename, 'r')
         line = f.readline()
-        if line.rfind('Freq') > -1:
-            break
-
-    if readSecond:
+        fr = []
+        rhoa = []
+        phi = []
+        drhoa = []
+        dphi = []
         while True:
-            if f.readline().rfind('Freq') > -1:
+            line = f.readline()
+            if line.rfind('Freq') > -1:
                 break
 
-    while True:
-        line = f.readline()
-        b = line.split('\t')
-        if len(b) < 5:
-            break
+        if readSecond:
+            while True:
+                if f.readline().rfind('Freq') > -1:
+                    break
 
-        fr.append(float(b[0]))
-        rhoa.append(float(b[1]))
-        phi.append(-float(b[2]) * np.pi / 180.)
-        drhoa.append(float(b[3]))
-        dphi.append(float(b[4]) * np.pi / 180.)
+        while True:
+            line = f.readline()
+            b = line.split('\t')
+            if len(b) < 5:
+                break
 
-    f.close()
+            fr.append(float(b[0]))
+            rhoa.append(float(b[1]))
+            phi.append(-float(b[2]) * np.pi / 180.)
+            drhoa.append(float(b[3]))
+            dphi.append(float(b[4]) * np.pi / 180.)
+
+        f.close()
 
     if delLast:
         fr.pop(0)
@@ -204,14 +209,26 @@ def readSIP256file(resfile, verbose=False):
     LINE = []
     dataAct = False
 
+<<<<<<< HEAD
+=======
+    with codecs.open(resfile, 'r', encoding='iso-8859-15', errors='replace') as f:
+>>>>>>> dev
 #    with open(resfile, 'r', errors='replace') as f:
-    with codecs.open(resfile, 'r', errors='replace') as f:
+    #with codecs.open(resfile, 'r', errors='replace') as f:
         for line in f:
             if dataAct:
                 LINE.append(line)
             elif len(line):
                 if line[0] == '[':
                     token = line[1:line.rfind(']')].replace(' ', '_')
+                    # handle 256D softwar bug
+                    if 'FrequencyParameterBegin' in token:
+                        token = token.replace('FrequencyParameterBegin',
+                                              'Begin_FrequencyParameter')
+                    if 'FrequencyParameterEnd' in token:
+                        token = token.replace('FrequencyParameterEnd',
+                                              'End_FrequencyParameter')
+
                     if token.replace(' ', '_') == 'Messdaten_SIP256':
                         dataAct = True
                     elif 'Messdaten' in token:
@@ -280,7 +297,7 @@ def readSIP256file(resfile, verbose=False):
                         part1 = sline[c][:-10]
                         part2 = sline[c][-10:]   # [11:]
                     sline = sline[:c] + [part1] + [part2] + sline[c + 1:]
-            data.append(np.array(sline[:5], dtype=float))
+            data.append(np.array(sline[:8], dtype=float))
 
     Data.append(np.array(data))
     DATA.append(Data)

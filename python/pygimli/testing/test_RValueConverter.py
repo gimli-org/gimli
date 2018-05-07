@@ -107,6 +107,20 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(pg.sum(a), sum(x))
         self.assertEqual(pg.sum(x), sum(x))
 
+    def test_NumpyToCVector(self):
+        pass
+        # will not work .. until an idea how to choose right api for function with and RVector and CVector, e.g. sum()
+        #
+        #x = 1. + np.arange(0, 1., 0.1) * 1j
+        #a = pg.CVector(x)
+
+        #self.assertEqual(a.size(), len(x))
+        #self.assertEqual(pg.real(a), x.real)
+        #self.assertEqual(pg.imag(a), x.imag)
+        #self.assertEqual(pg.sum(a), sum(x))
+
+        #self.assertEqual(pg.sum(pg.real(a)), len(x))
+
     def test_NumpyToRMatrix(self):
         """Implemented in custom_rvalue.cpp."""
         M = np.ndarray((5, 4))
@@ -230,13 +244,11 @@ class TestRVectorMethods(unittest.TestCase):
         A = np.array(pg.RMatrix(4,4))
 
 if __name__ == '__main__':
-
     pg.setDebug(0)
-    unittest.main()
-    #pg.setDebug(1)
-    #M = np.arange(16.).reshape((4,4))
-    #A = pg.RMatrix(M)
-    #M2 = np.array(A)
-    #print(M2)
 
-    #exit()
+    #test = TestRVectorMethods()
+    #test.test_NumpyToCVector()
+#    exit()
+
+
+    unittest.main()

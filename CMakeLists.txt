@@ -162,10 +162,12 @@ function(find_boost_from_distname_file)
     endif()
 endfunction(find_boost_from_distname_file)
 
-if (NOT WIN32)
-    set (USE_BOOST_THREAD FALSE)
-else()
-    set (USE_BOOST_THREAD TRUE)
+if (NOT USE_BOOST_THREAD)
+    if (NOT WIN32)
+        set (USE_BOOST_THREAD FALSE)
+    else()
+        set (USE_BOOST_THREAD TRUE)
+    endif()
 endif()
 
 if (USE_BOOST_THREAD)
@@ -247,11 +249,16 @@ endif()
 # list(APPEND OPTIONAL_PACKAGES "Python")
 # list(APPEND OPTIONAL_PACKAGES "Sphinx")
 
+set (UMFPACK_FOUND FALSE)
+
 find_or_build_package(Triangle triangle LOCAL)
 find_or_build_package(BLAS lapack)
 find_or_build_package(LAPACK lapack)
 find_or_build_package(CHOLMOD suitesparse)
-find_or_build_package(UMFPACK umfpack)
+#find_or_build_package(UMFPACK umfpack)
+find_package(UMFPACK)
+
+message(STATUS "************** ${UMFPACK_FOUND}")
 
 # Check if conda package is created
 if(DEFINED ENV{CONDA_BUILD})
@@ -342,6 +349,18 @@ else()
         # should find the right one
         find_package(Boost 1.46 COMPONENTS python)
     endif()
+
+    if (NOT Boost_PYTHON_FOUND)
+        # gentoo: /usr/lib/libboost_python-3.4.so
+        set(bp_version "${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}")
+        # should find the right one
+        find_package(Boost 1.46 COMPONENTS "python-${bp_version}")
+        if (${Boost_PYTHON-${bp_version}_FOUND})
+            set(Boost_PYTHON_FOUND ${Boost_PYTHON-${bp_version}_FOUND})
+            set(Boost_PYTHON_LIBRARY ${Boost_PYTHON-${bp_version}_LIBRARY_RELEASE})
+        endif()
+    endif()
+
 endif()
 
 if (NOT CASTER)

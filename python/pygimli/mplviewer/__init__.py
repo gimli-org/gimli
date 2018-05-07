@@ -6,6 +6,8 @@ from .utils import (hold,
                     wait,
                     show,
                     updateAxes,
+                    prettyFloat,
+                    renameDepthTicks,
                     insertUnitAtNextLastTick,
                     saveFigure,
                     saveAxes,
@@ -13,7 +15,9 @@ from .utils import (hold,
                     createAnimation,
                     saveAnimation,
                     setOutputStyle,
-                    setPlotStuff)
+                    setPlotStuff,
+                    plotLines,
+                    createTwinX, createTwinY)
 
 from .boreholes import BoreHole, BoreHoles, create_legend
 
@@ -26,12 +30,12 @@ from .colorbar import (createColorBar,
                        cmapFromName,
                        findAndMaskBestClim,
                        setCbarLevels,
+                       setMappableValues,
                        setMappableData)
 
 from .meshview import (CellBrowser,
                        createMeshPatches,
                        createTriangles,
-                       draw1DColumn,
                        drawField,
                        drawMesh,
                        drawMeshBoundaries,
@@ -43,28 +47,31 @@ from .meshview import (CellBrowser,
                        drawSelectedMeshBoundariesShadow,
                        drawSensors,
                        drawStreamLines,
-                       drawStreams,
-                       plotLines)
+                       drawStreams)
 
 from .overlayimage import (cacheFileName,
                            deg2MapTile,
                            getMapTile,
                            mapTile2deg,
-                           underlayMap)
+                           underlayMap,
+                           underlayBKGMap)
 
 # TODO example scripts for the following and refactor is needed
 # maybe ploter should named show or draw
 from .dataview import (drawSensorAsMarker,  # dups to meshview??
+                       showVecMatrix,
                        generateMatrix,
                        patchMatrix,
                        patchValMap,
                        plotDataContainerAsMatrix,
                        plotMatrix,
-                       plotVecMatrix)
+                       plotVecMatrix,
+                       )
 
 # which of these do we actually need?
 from .modelview import (drawModel1D,
                         showmymatrix,  # needed ?
+                        draw1DColumn, # needed or redundant ?
                         draw1dmodel,   # needed or redundant ?
                         show1dmodel,  # needed or redundant ?
                         draw1dmodelErr,  # needed or redundant ?
@@ -88,6 +95,15 @@ __all__ = [
     "drawStreams", "insertUnitAtNextLastTick", "plotLines", "cacheFileName",
     "deg2MapTile", "getMapTile", "mapTile2deg", "underlayMap", "updateAxes"
 ]
+
+# plt.subplots() resets locale setting to system default .. this went
+# horrible wrong for german 'decimal_point': ','
+# https://github.com/matplotlib/matplotlib/issues/6706
+# Qt5Agg resets it after importing figure;
+# TkAgg resets it after importing pyplot.
+# until its fixed we should maybe silently initialize the qt5agg backend and
+# refix the locale afterwards. If someone have a plan to do.
+#checkAndFixLocaleDecimal_point(verbose=True)
 
 
 def createColorbar(*args, **kwargs):

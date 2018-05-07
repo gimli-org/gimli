@@ -791,10 +791,6 @@ void DataContainer::removeUnusedSensors(bool verbose){
     }
 }
 
-bool idPosLesserX(const std::pair < RVector3, Index > & a, const std::pair < RVector3, Index > & b){
-    return posLesserX(a.first, b.first);
-}
-
 void DataContainer::setSensorPosition(uint i, const RVector3 & pos) {
     if (i >= sensorPoints_.size()) {
         std::cout << "Warning! .. sensor count was " << sensorCount() << " resize to " << i+1 << std::endl;
@@ -803,11 +799,29 @@ void DataContainer::setSensorPosition(uint i, const RVector3 & pos) {
     sensorPoints_[i] = pos;
 }
 
-void DataContainer::sortSensorsX(){
+bool idPosLesserX(const std::pair < RVector3, Index > & a, const std::pair < RVector3, Index > & b){
+    return posLesserX(a.first, b.first);
+}
+bool idPosLesserXrY(const std::pair < RVector3, Index > & a, const std::pair < RVector3, Index > & b){
+    return posLesserXrY(a.first, b.first);
+}
+bool idPosLesserXYrZ(const std::pair < RVector3, Index > & a, const std::pair < RVector3, Index > & b){
+    return posLesserXYrZ(a.first, b.first);
+}
+
+void DataContainer::sortSensorsX(bool incX, bool incY, bool incZ){
     std::vector < std::pair < RVector3, Index > > permSens(sensorCount());
     for (uint i = 0; i < sensorCount(); i ++) permSens[i] = std::pair< RVector3, Index >(sensorPoints_[i], i);
 
-    std::sort(permSens.begin(), permSens.end(), idPosLesserX);
+    if (incX && incY && incZ) {
+        std::sort(permSens.begin(), permSens.end(), idPosLesserX);
+    } else if (incX && !incY) {
+        std::sort(permSens.begin(), permSens.end(), idPosLesserXrY);
+    } else if (incX && incY && !incZ) {
+        std::sort(permSens.begin(), permSens.end(), idPosLesserXYrZ);
+    } else {
+        THROW_TO_IMPL
+    }
 
     IndexArray perm(sensorCount());
     for (uint i = 0; i < perm.size(); i ++){

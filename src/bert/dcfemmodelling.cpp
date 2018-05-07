@@ -1072,8 +1072,8 @@ RVector DCMultiElectrodeModelling::response(const RVector & model,
         RVector respRe(dMap.data(this->dataContainer(), false, false));
         RVector respIm(dMap.data(this->dataContainer(), false, true));
 
-        CVector resp(toComplex(respRe, respIm));
-        RVector am(abs(resp) * dataContainer_->get("k"));
+        CVector resp(toComplex(respRe, respIm) * dataContainer_->get("k"));
+        RVector am(abs(resp));
         RVector ph(-angle(resp));
 
         if (verbose_){
@@ -1471,7 +1471,7 @@ RVector DCMultiElectrodeModelling::calcGeometricFactor(const DataContainerERT & 
     if (verbose_) std::cout << "Obtaining geometric factors";
     if (!this->topography() && !buildCompleteElectrodeModel_) {
         if (verbose_) std::cout << " (analytical)" << std::endl;
-        return geometricFactor(data, mesh_->dimension(), false);
+        return geometricFactors(data, mesh_->dimension(), false);
     }
 
     if (electrodes_.size() == 0){
@@ -2013,7 +2013,7 @@ MEMINFO
                 if (primPotFileBody_.find(NOT_DEFINED) != std::string::npos){
                 //!** primary potential file body is NOT_DEFINED so we try to determine ourself
                     if (initVerbose){
-                        std::cout << std::endl << " no primary potential for secondary field calculation. Calculate analytical" << std::endl;
+                        std::cout << std::endl << " No primary potential for secondary field calculation. Calculating analytically..." << std::endl;
                         initVerbose = false;
                     }
                     // PLS CHECK some redundancy here see DCMultiElectrodeModelling::calculateKAnalyt
@@ -2022,7 +2022,7 @@ MEMINFO
 
                 } else {
                     if (initVerbose){
-                        std::cout << std::endl << " no primary potential for secondary field calculation. Load Potentials." << std::endl;
+                        std::cout << std::endl << " No primary potential for secondary field calculation. Loading potentials." << std::endl;
                         initVerbose = false;
                     }
                 //!** primary potential file body is given so we load it

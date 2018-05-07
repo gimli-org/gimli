@@ -16,16 +16,18 @@ ul {
     -webkit-box-shadow: 2px 0 10px #aaa, -2px 0 10px #aaa;
 }
 body {
-    font-family: "Open Sans", sans-serif;
-    /*font-family: "Fira Sans", sans-serif;*/
+    /* font-family: "Open Sans", sans-serif; */
+    font-family: "Fira Sans", sans-serif;
     font-size: 15px;
-    font-weight: 400;
+    /* font-weight: 400; */
     line-height: 21px;
 }
 a {
-    color: #107896
+    /* color: #107896 */
+    color: #337AB7
 }
 a:hover {
+    color: #107896;
     text-decoration: none;
 }
 
@@ -63,7 +65,7 @@ input, button, select, textarea {
 .gallery.figure .caption {
     text-align: left !important;
     font-size: 18px;
-    font-weight: 180;
+    /* font-weight: 180; */
     position: relative;
     top: -50%;
     left: +25%;
@@ -71,7 +73,7 @@ input, button, select, textarea {
 p.caption {
     text-align: center;
     margin-top: 1 em;
-    font-size: small;
+    /* font-size: small; */
 }
 .figure.align-center img {
     display: block;
@@ -189,26 +191,31 @@ input#url.security {
 }
 
 /*format of code cells lastcout directive*/
-
-
-}
 pre, code, blockquote {
-    font-family: "Inconsolata";
+    font-family: "Inconsolata", monospace;
     font-size: 15px;
 }
 
+dt {
+  font-weight: 500;
+}
+
+.nav-header {
+    font-weight: 500;
+}
 /*API module headers*/
 
 code.descname, code.descclassname, code.xref.py.py-mod.docutils.literal, code.xref.py.py-obj.docutils.literal {
     padding: 1px 1px;
-    color: #002b36;
     white-space: nowrap;
     background-color: transparent;
     border: none;
+    font-weight: bold;
 }
 
 table.longtable.docutils a {
     font-weight: bold;
+    font-family: Inconsolata;
 }
 
 table.longtable.docutils a:hover {
@@ -217,10 +224,12 @@ table.longtable.docutils a:hover {
 
 span.pre {
     padding: 1px 1px;
-    color: #002b36;
+    color: #337AB7;
+    /* color: #002b36; */
     white-space: nowrap;
     background-color: transparent;
     border: none;
+    font-size: 14px;
 }
 /*code.xref.py.py-mod.docutils.literal {
     font-size: 30px;
@@ -374,7 +383,7 @@ div.sphx-glr-download a {
   display: inline-block;
   /* Not valid in old browser, hence we keep the line above to override */
   display: table-caption;
-  font-weight: bold;
+  font-weight: 500;
   padding: 1ex;
   text-align: center;
 }
@@ -421,7 +430,7 @@ div.sphx-glr-download a:hover {
 }
 
 code.xref.download.docutils.literal {
-    font-family: "Open Sans";
+    font-family: "Roboto";
     font-size: 14px;
 }
 
@@ -481,14 +490,14 @@ blockquote p {
     font-size: 14px;
 }
 blockquote em {
-    font-weight: bold;
+    font-weight: 500;
     font-style: normal;
 }
 
 /*make source link of functions appear right*/
 .viewcode-link, .viewcode-back {
     float: right;
-    font-weight: bold;
+    font-weight: 500;
 }
 
 /* master content table */
@@ -573,6 +582,7 @@ dl.class, dl.function, dl.method, dl.attribute {
 }
 .descclassname {
     color: #aaa;
+    font-size: small;
     font-weight: normal;
     font-family: monospace;
 }
@@ -586,11 +596,16 @@ dl.class em, dl.function em, dl.class big, dl.function big {
     font-size: 14px;
     font-style: normal;
 }
+dl.class, dl.function {
+  font-size: 14px;
+}
+
 dl.class dd, dl.function dd {
     padding: 10px;
 }
 .docutils.field-list th {
     background-color: #eee;
+    font-weight: 500;
     padding: 10px;
     text-align: left;
     vertical-align: top;
@@ -603,18 +618,18 @@ dl.class dd, dl.function dd {
 }
 .docutils.field-list td blockquote p {
     font-size: 14px;
-    font-family: "Open Sans";
-    /*font-family: "Fira Sans";*/
+    /* font-family: "Open Sans"; */
+    font-family: "Roboto";
     line-height: 18px;
     font-weight: normal;
 }
 p.rubric {
-    font-weight: bold;
+    font-weight: 500;
     font-size: 15px;
     margin: 15px 0 10px 0;
 }
 p.admonition-title {
-    font-weight: 100;
+    /* font-weight: 100; */
     font-size: 18px;
     text-decoration: italic;
 }
@@ -645,12 +660,14 @@ i.icon-search {
     padding-left: 3px;
 }
 .highlight .nn {
-    color: #107896;
+    /* color: #107896; */
+    color: #337AB7;
     font-weight: bold;
 }
 div.highlight-python pre a {
     font-weight: bold;
-    color: #107896;
+    /* color: #107896; */
+    color: #337AB7;
     text-decoration: underline;
 }
 div.highlight-python pre a:hover {
@@ -666,4 +683,17 @@ img.wrap-fig {
 .alert-success a {
   color: #468847;
   font-weight: bold;
+}
+
+table.docutils.field-list {
+    font-size: 14px;
+    line-height: 6px;
+}
+
+span.sig-paren {
+  font-weight: 500;
+}
+
+strong {
+  font-weight: 500;
 }

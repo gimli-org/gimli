@@ -23,6 +23,14 @@
 
 namespace GIMLI{
 
+RVector LinSolver::operator()(const RVector & rhs) {
+    return this->solve(rhs);
+}
+
+CVector LinSolver::operator()(const CVector & rhs) {
+    return this->solve(rhs);
+}
+
 LinSolver::LinSolver(bool verbose)
     : verbose_(verbose){
     init_();

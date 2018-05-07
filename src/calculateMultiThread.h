@@ -75,7 +75,7 @@ template < class T > void distributeCalc(T calc, uint nCalcs, uint nThreads, boo
 #if USE_BOOST_THREAD
         boost::thread_group threads;
         for (uint i = 0; i < nThreads; i++) {
-            if (debug()) std::cout << "start thread: " << i << std::endl;
+            if (debug()) std::cout << "start boost::thread: " << i << std::endl;
             threads.create_thread(calcObjs[i]);
         }
         threads.join_all();
@@ -84,7 +84,7 @@ template < class T > void distributeCalc(T calc, uint nCalcs, uint nThreads, boo
         std::vector<std::thread> threads;
 
         for (uint i = 0; i < nThreads; i++) {
-            if (debug()) std::cout << "start thread: " << i << std::endl;
+            if (debug()) std::cout << "start std::thread: " << i << std::endl;
             threads.emplace_back(calcObjs[i]);
         }
 

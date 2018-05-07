@@ -1395,13 +1395,17 @@ template < class T, class A > T sum(const __VectorExpr< T, A > & a){
 //return std::accumulate(a[0], a[a.size()], T());
 }
 
-template < class T > T sum(const Vector < T > & v){
-     //std::cout << "sum(vector)" << std::endl;
-//     std::cout << *v.begin() << " "  << *v.end() << std::endl;
-
-    return std::accumulate(v.begin(), v.end(), T(0));
-    //return std::accumulate(v.begin(), v.end(), (T)0.0);
+//** Templates argue with python bindings
+inline Complex sum(const CVector & c){
+    return std::accumulate(c.begin(), c.end(), Complex(0));
+};
+inline double sum(const RVector & r){
+    return std::accumulate(r.begin(), r.end(), double(0));
 }
+inline int sum(const IVector & i){
+    return std::accumulate(i.begin(), i.end(), int(0));
+}
+
 
 template < class T, class A > T min(const __VectorExpr< T, A > & a){ return min(Vector< T >(a)); }
 template < class T, class A > T max(const __VectorExpr< T, A > & a){ return max(Vector< T >(a)); }
@@ -1733,6 +1737,13 @@ template < class ValueType >
 Vector < ValueType > angle(const Vector < std::complex< ValueType > > & z){
     Vector < ValueType > v(z.size());
     for (Index i = 0; i < z.size(); i ++) v[i] = std::atan2(imag(z[i]), real(z[i]));
+    return v;
+}
+
+inline RVector angle(const RVector & b, const RVector & a){
+    ASSERT_EQUAL_SIZE(b, a)
+    RVector v(b.size());
+    for (Index i = 0; i < b.size(); i ++) v[i] = std::atan2(b[i], a[i]);
     return v;
 }
 

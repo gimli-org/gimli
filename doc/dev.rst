@@ -216,12 +216,14 @@ https://github.com/numpy/numpy/blob/master/doc/HOWTO_DOCUMENT.rst.txt#sections
 
     See Also
     --------
-        average : Weighted average
+        average : Weighted average,
+        e.g., Link to tutorials :ref:`tut:Modelling_BC` assuming there
+        has been set a appropriate label in the tutorial.
 
     Raises
     ------
         LinAlgException
-            If the matrix is not numerically invertible.
+            If the matrix is not numerically invertable.
 
 
   """

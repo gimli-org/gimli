@@ -11,7 +11,8 @@ import numpy as np
 from matplotlib.colors import LinearSegmentedColormap
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-from pygimli.mplviewer import saveFigure, updateAxes
+from pygimli.mplviewer import saveFigure, updateAxes, prettyFloat
+
 
 cdict = {'red': ((0.0, 0.0, 0.0), (0.5, 1.0, 1.0), (1.0, 1.0, 1.0)),
          'green': ((0.0, 0.0, 0.0), (0.5, 1.0, 1.0), (1.0, 0.0, 0.0)),
@@ -19,32 +20,36 @@ cdict = {'red': ((0.0, 0.0, 0.0), (0.5, 1.0, 1.0), (1.0, 1.0, 1.0)),
 
 blueRedCMap = mpl.colors.LinearSegmentedColormap('my_colormap', cdict, 256)
 
-
-def autolevel(z, nLevs, logscale=None, zmin=None, zmax=None):
-    """Create N levels for the data array z based on matplotlib ticker.
+def autolevel(z, nLevs, logScale=None, zmin=None, zmax=None):
+    """Create nLevs bins for the data array z based on matplotlib ticker.
 
     Examples
     --------
     >>> import numpy as np
     >>> from pygimli.mplviewer import autolevel
-    >>> x = np.linspace(1,10,100)
+    >>> x = np.linspace(1, 10, 100)
     >>> autolevel(x, 3)
-    array([  0. ,   2.5,   5. ,   7.5,  10. ])
-    >>> autolevel(x, 3, logscale=True)
+    array([  1.,   4.,   7.,  10.])
+    >>> autolevel(x, 3, logScale=True)
     array([   0.1,    1. ,   10. ,  100. ])
     """
     locator = None
-    if logscale:
+    if logScale and min(z) > 0:
         locator = ticker.LogLocator()
     else:
-        locator = ticker.MaxNLocator(nLevs + 1)
+        #print('MaxNLocator(nBins=nLevs + 1)', nLevs)
+        locator = ticker.LinearLocator(numticks=nLevs+1)
+        #locator = ticker.MaxNLocator(nBins=nLevs + 1)
+        #locator = ticker.MaxNLocator(nBins='auto')
 
     if zmin is None:
-        zmin = min(z)
+        zmin = round(min(z), 2)
 
     if zmax is None:
-        zmax = max(z)
+        zmax = round(max(z), 2)
 
+    #print("autolevel", zmin, zmax)
+    #print(locator.tick_values(zmin, zmax))
     return locator.tick_values(zmin, zmax)
 
 
@@ -169,10 +174,30 @@ def findColorBar(ax):
     # return None
 
 
-def updateColorBar(cbar, gci=None, cMin=None, cMax=None, nLevs=5, label=None):
+def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
+                   logScale=None, nLevs=5, label=None):
     """Update colorbar values.
 
     Update limits and label of a given colorbar.
+
+    Parameters
+    ----------
+    cbar: matplotlib colorbar
+
+    gci : matplotlib graphical instance
+
+    cMin: float
+
+    cMax: float
+
+    cLog: bool
+
+    cMap: matplotlib colormap
+
+    nLevs: int
+
+    label: str
+
     """
     # print("update cbar:", cMin, cMax, label)
     if gci is not None:
@@ -180,7 +205,38 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, nLevs=5, label=None):
         # check the following first
         # cbar.on_mappable_changed(gci)
 
-    setCbarLevels(cbar, cMin, cMax, nLevs)
+    if cMap is not None:
+        if isinstance(cMap, str):
+            cMap = cmapFromName(cMap, ncols=256, bad=[1.0, 1.0, 1.0, 0.0])
+
+        cbar.mappable.set_cmap(cMap)
+
+    needLevelUpdate = False
+
+    if cMin is not None or cMax is not None or nLevs is not None:
+        needLevelUpdate = True
+
+    if logScale is not None:
+        needLevelUpdate = True
+
+        if cMin is None:
+            cMin = cbar.get_clim()[0]
+        if cMax is None:
+            cMax = cbar.get_clim()[1]
+
+        if logScale:
+            if cMin < 1e-12:
+                cMin = min(filter(lambda _x: _x > 0.0, cbar.mappable.get_array()))
+
+            norm = mpl.colors.LogNorm(vmin=cMin, vmax=cMax)
+        else:
+            norm = mpl.colors.Normalize(vmin=cMin, vmax=cMax)
+
+        cbar.set_norm(norm)
+        cbar.mappable.set_norm(norm)
+
+    if needLevelUpdate:
+        setCbarLevels(cbar, cMin, cMax, nLevs)
 
     if label is not None:
         cbar.set_label(label)
@@ -188,8 +244,7 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, nLevs=5, label=None):
     return cbar
 
 
-def createColorBar(patches, cMin=None, cMax=None, nLevs=5, label=None,
-                   orientation='horizontal', **kwargs):
+def createColorBar(gci, orientation='horizontal', size=0.2, pad=None, **kwargs):
     """Create a Colorbar.
 
     Shortcut to create a matplotlib colorbar within the ax for a given
@@ -197,9 +252,18 @@ def createColorBar(patches, cMin=None, cMax=None, nLevs=5, label=None,
 
     Parameters
     ----------
+
+    gci : matplotlib graphical instance
+
+    orientation : string
+
+    size : float
+
+    pad : float
+
+
     **kwargs :
-        * size : with or height of the colobar
-        * pad : padding distance from ax
+        Forwarded to updateColorBar
     """
     cbarTarget = plt
     cax = None
@@ -207,29 +271,26 @@ def createColorBar(patches, cMin=None, cMax=None, nLevs=5, label=None,
     #    if hasattr(patches, 'figure'):
     #       cbarTarget = patches.figure
 
-    if hasattr(patches, 'ax'):
-        divider = make_axes_locatable(patches.ax)
-    if hasattr(patches, 'axes'):
-        divider = make_axes_locatable(patches.axes)
-    elif hasattr(patches, 'get_axes'):
-        divider = make_axes_locatable(patches.get_axes())
+    if hasattr(gci, 'ax'):
+        divider = make_axes_locatable(gci.ax)
+    if hasattr(gci, 'axes'):
+        divider = make_axes_locatable(gci.axes)
+    elif hasattr(gci, 'get_axes'):
+        divider = make_axes_locatable(gci.get_axes())
 
     if divider:
         if orientation == 'horizontal':
-            size = kwargs.pop('size', 0.2)
-            pad = kwargs.pop('pad', 0.5)
+            if pad is None:
+                pad = 0.5
             cax = divider.append_axes("bottom", size=size, pad=pad)
         else:
-            size = kwargs.pop('size', 0.2)
-            pad = kwargs.pop('pad', 0.1)
+            if pad is None:
+                pad = 0.1
             cax = divider.append_axes("right", size=size, pad=pad)
 
-    patches.set_clim(vmin=cMin, vmax=cMax)
-    cbar = cbarTarget.colorbar(patches, cax=cax, orientation=orientation)
-    if label is not None:
-        cbar.set_label(label)
+    cbar = cbarTarget.colorbar(gci, cax=cax, orientation=orientation)
 
-    # updateColorBar(cbar, cMin=cMin, cMax=cMax, nLevs=nLevs, label=label)
+    updateColorBar(cbar, **kwargs)
 
     return cbar
 
@@ -280,12 +341,10 @@ def createColorBarOnly(cMin=1, cMax=100, logScale=False, cMap=None, nLevs=5,
     cbar = mpl.colorbar.ColorbarBase(ax, norm=norm, cmap=cmap,
                                      orientation=orientation, **kwargs)
 
-    setCbarLevels(cbar, cMin=None, cMax=None, nLevs=nLevs)
-
     #        cbar.labelpad = -20
     #        cbar.ax.yaxis.set_label_position('left')
-    if label is not None:
-        cbar.set_label(label)
+    updateColorBar(cbar, cMin=cMin, cMax=cMax, nLevs=nLevs, label=label
+                   **kwargs)
 
     if savefig is not None:
         saveFigure(fig, savefig)
@@ -320,35 +379,39 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5):
 
     cbarLevelsString = []
     for i in cbarLevels:
-        if abs(i) == 0.0:
-            cbarLevelsString.append("0")
-        elif abs(i) > 1e4 or abs(i) <= 1e-4:
-            cbarLevelsString.append("%.1e" % i)
-        elif abs(i) < 1e-3:
-            cbarLevelsString.append("%.5f" % i)
-        elif abs(i) < 1e-2:
-            cbarLevelsString.append("%.4f" % i)
-        elif abs(i) < 1e-1:
-            cbarLevelsString.append("%.3f" % i)
-        elif abs(i) < 1e0:
-            cbarLevelsString.append("%.2f" % i)
-        elif abs(i) < 1e1:
-            cbarLevelsString.append("%.1f" % i)
-        else:
-            cbarLevelsString.append("%.0f" % i)
+        cbarLevelsString.append(prettyFloat(i))
 
     if hasattr(cbar, 'mappable'):
         cbar.mappable.set_clim(vmin=cMin, vmax=cMax)
         cbar.set_clim(cMin, cMax)
 
+    #print('setCbarLevels.ticks ********************', cbarLevels)
+    #print('setCbarLevels.ticklabels ********************', cbarLevelsString)
     cbar.set_ticks(cbarLevels)
     cbar.set_ticklabels(cbarLevelsString)
 
     cbar.draw_all()
 
 
+def setMappableValues(mappable, dataIn):
+    """Change the data values for a given mapable."""
+    data = dataIn
+    if not isinstance(data, np.ma.core.MaskedArray):
+        data = np.array(dataIn)
+
+    # set bad value color to white
+    if mappable.get_cmap() is not None:
+        mappable.get_cmap().set_bad([1.0, 1.0, 1.0, 0.0])
+
+    mappable.set_array(data)
+
+
 def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=False):
-    """Change the data values for a given mappable."""
+    """Change the data values for a given mappable.
+
+    DEPRECATED
+    """
+    #DEPRECATED
     data = dataIn
 
     if not isinstance(data, np.ma.core.MaskedArray):
