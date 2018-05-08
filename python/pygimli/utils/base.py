@@ -11,8 +11,6 @@ from math import sqrt
 
 import pygimli as pg
 
-<<<<<<< HEAD
-=======
 def rms(v, axis=None):
     """Compute the root mean square."""
     ### abs for complex values
@@ -24,26 +22,17 @@ def nanrms(v, axis=None):
     ### abs for complex values
     return np.sqrt(np.nanmean(np.abs(v)**2, axis))
 
->>>>>>> dev
 
 def rrmswitherr(a, b, err, errtol=1):
     """Compute root mean square of values with error above a threshold"""
     fi = pg.find(err < errtol)
-<<<<<<< HEAD
-    return pg.rrms(a[fi], b[fi])
-=======
     return rms((a[fi]-b[fi])/a[fi])
->>>>>>> dev
 
 
 def rmswitherr(a, b, err, errtol=1):
     """Compute (abs-)root mean square of values with error above a threshold"""
     fi = pg.find(err < errtol)
-<<<<<<< HEAD
-    return sqrt(pg.mean(pg.pow(a[fi] - b[fi], 2)))
-=======
     return rms(a[fi] - b[fi])
->>>>>>> dev
 
 
 def gmat2numpy(mat):

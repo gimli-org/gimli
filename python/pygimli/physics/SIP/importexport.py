@@ -209,10 +209,7 @@ def readSIP256file(resfile, verbose=False):
     LINE = []
     dataAct = False
 
-<<<<<<< HEAD
-=======
     with codecs.open(resfile, 'r', encoding='iso-8859-15', errors='replace') as f:
->>>>>>> dev
 #    with open(resfile, 'r', errors='replace') as f:
     #with codecs.open(resfile, 'r', errors='replace') as f:
         for line in f:

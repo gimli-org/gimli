@@ -32,38 +32,9 @@ def hold(val=1):
 def wait(**kwargs):
     """TODO WRITEME."""
     # plt.pause seems to be broken in mpl:2.1
-<<<<<<< HEAD
-    # plt.pause(0.1)
-    plt.show()
-
-def show():
-    """TODO WRITEME."""
-    hold(False)
-    plt.ioff()
-    plt.show()
-    time.sleep(0.1)
-    # plt.pause seems to be broken in mpl:2.1
-    # plt.pause(0.1)
-
-
-def adjustWorldAxes(ax):
-    """Set some common default properties for an axe."""
-    ax.set_ylabel('Depth [m]')
-    ax.set_xlabel('$x$ [m]')
-
-    ticks = ax.yaxis.get_majorticklocs()
-    tickLabels = []
-    for t in ticks:
-        tickLabels.append(str(int(abs(t))))
-
-    ax.set_yticklabels(tickLabels)
-    plt.tight_layout()
-    plt.pause(0.01)
-=======
     #ax.canvas.draw_onIdle()
     updateAxes(plt.gca())
     plt.show(**kwargs)
->>>>>>> dev
 
 
 def saveFigure(fig, filename, pdfTrim=False):

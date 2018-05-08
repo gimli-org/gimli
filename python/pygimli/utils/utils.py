@@ -9,11 +9,6 @@ from math import floor, sqrt
 import numpy as np
 
 import pygimli as pg
-<<<<<<< HEAD
-from pygimli.io import opt_import
-=======
-
->>>>>>> dev
 
 class ProgressBar(object):
     """Animated text-based progressbar.
