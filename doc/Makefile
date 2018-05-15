@@ -58,7 +58,7 @@ api:
 gallery:
 	python3 ./sidebar_gallery.py
 
-html-nogallery:
+html-nogallery: api
 	$(SPHINXBUILD) -D plot_gallery=0 -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished without gallery. The HTML pages are in $(BUILDDIR)/html."

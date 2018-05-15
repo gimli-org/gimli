@@ -86,7 +86,7 @@ def boxprint(s, width=80, sym="#"):
     ++++++++++++++++++++++++++++++++++++++++
     """
     row = sym * width
-    centered = s.center(width - 2)
+    centered = str(s).center(width - 2)
     print("\n".join((row, centered.join((sym, sym)), row)))
 
 
