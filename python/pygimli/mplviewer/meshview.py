@@ -1338,13 +1338,13 @@ def drawParameterConstraints(ax, mesh, cMat, cWeight=None):
     colors = []
     linewidths = []
     for i, _ in enumerate(start):
-        lines.append(
-            list(zip([start[i].x(), end[i].x()], [start[i].y(), end[i].y()])))
+        lines.append(list(zip([start[i].x(), end[i].x()],
+                              [start[i].y(), end[i].y()])))
 
-            linewidth = 0.5
-            col = (0.0, 0.0, 1.0, 1.0)
-            colors.append(col)
-            linewidths.append(linewidth)
+        linewidth = 0.5
+        col = (0.0, 0.0, 1.0, 1.0)
+        colors.append(col)
+        linewidths.append(linewidth)
 
     linCol = mpl.collections.LineCollection(lines, antialiaseds=True)
     linCol.set_color(colors)

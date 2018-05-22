@@ -6,6 +6,8 @@ Created on Fri Jun 12 15:48:00 2015.
 
 No official maintenance by the GIMLi team.
 
+TODO: Will be removed soon. Who use this? 
+
 """
 
 import numpy as np
@@ -45,11 +47,7 @@ class Poly2D(object):
 
     def load(self, polyfile):
         """Read polygon info from XML file (see example.xml)."""
-<<<<<<< HEAD
-        ET = opt_import("xml.etree.cElementTree", "read in XML files")
-=======
         ET = pg.optImport("xml.etree.cElementTree", "read in XML files")
->>>>>>> dev
         self.doc = ET.parse(polyfile)
         self.parse()
 
