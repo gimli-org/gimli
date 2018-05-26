@@ -38,8 +38,8 @@ CLEAN=1 cmake ../trunk \
     -DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.5m.so \
     -DBoost_PYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libboost_python-py35.so
 
-make -j 16 gimli
-make pygimli J=12
+make -j 8 gimli
+make pygimli J=6
 
 #############################
 #  Testing & documentation  #
