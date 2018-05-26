@@ -76,7 +76,7 @@ for dep in deps:
 if req:
     msg = "Sorry, there are missing dependencies to build the docs.\n" + \
           "Try: sudo pip install %s.\n" % (' '.join(req)) + \
-          "Or install all dependencies with: pip install -r requirements.txt" + \
+          "Or install all dependencies with: pip install -r requirements.txt\n" + \
           "You can install them all in userspace by adding the --user flag."
     print(pip.get_installed_distributions())
     raise ImportError(msg)

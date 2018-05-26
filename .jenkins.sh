@@ -35,8 +35,8 @@ cd build
 CLEAN=1 cmake ../trunk \
     -DPYVERSION=3 \
     -DPYTHON_EXECUTABLE=/usr/bin/python3 \
-    -DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.4m.so \
-    -DBoost_PYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libboost_python-py34.so
+    -DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.5m.so \
+    -DBoost_PYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libboost_python-py35.so
 
 make -j 16 gimli
 make pygimli J=12
