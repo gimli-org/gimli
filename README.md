@@ -9,6 +9,7 @@ Readme for Github repository only. (Get's selected before *.rst file)
 <!-- Re-activate when jenkins is running again
 [![Build Status](https://www.pygimli.org/build_status.svg)](https://www.pygimli.org/build.html)
 -->
+[![Build Status](http://g4.geo.uni-bonn.de:8080/buildStatus/icon?job=pyGIMLi&style=flat)](http://g4.geo.uni-bonn.de:8080/job/pyGIMLi/)
 [![Code Health](https://landscape.io/github/gimli-org/gimli/master/landscape.svg)](https://landscape.io/github/gimli-org/gimli/master)
 [![license](https://img.shields.io/github/license/gimli-org/gimli.svg?style=flat-square)](https://pygimli.org/license.html)
 [![release](https://img.shields.io/github/release/gimli-org/gimli.svg?style=flat-square)](https://github.com/gimli-org/gimli/releases/latest)
