@@ -27,8 +27,8 @@ python -c "import matplotlib; print(matplotlib.__version__)"
 # just do this if something is wrong with the thirdparty sources
 #rm -rf thirdParty/src
 #rm -rf build # Uncomment for clean build (expensive, but necessary sometimes)
-rm -f build/build_tests.html # remove old test report
-rm -f build/CMakeCache.txt # clean old cache
+#rm -f build/build_tests.html # remove old test report
+#rm -f build/CMakeCache.txt # clean old cache
 
 mkdir -p build
 cd build
@@ -45,9 +45,6 @@ make pygimli J=4
 #  Testing & documentation  #
 #############################
 
-# Test gimli
-make pgtest
-
 # Test pygimli
 export PYTHONPATH=`pwd`/../trunk/python:$PYTHONPATH
 
@@ -58,7 +55,6 @@ pg.test(htmlreport='build_tests.html', abort=True)
 END
 
 # Build documentation
-export PATH=/opt/texbin:$PATH # for building pdf
 export PUBLISH="True" # for correct PATH settings in sidebar gallery
 export PATH=`pwd`/../trunk/python/apps:$PATH
 chmod +x ../trunk/python/apps/*
