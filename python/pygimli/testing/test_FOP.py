@@ -93,10 +93,12 @@ class TestFOP(unittest.TestCase):
 
         fop = ModellingMT(nPars, verbose=False)
         fop.setMultiThreadJacobian(1)
+        fop.setThreadCount(1)
         fop.createJacobian(m)
         J1 = pg.RMatrix(fop.jacobian())
 
         fop.setMultiThreadJacobian(nPars)
+        fop.setThreadCount(1)
         fop.createJacobian(m)
         J2 = fop.jacobian()
 
