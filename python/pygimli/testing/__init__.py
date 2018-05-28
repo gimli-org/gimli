@@ -11,6 +11,7 @@ Writing tests for pygimli
 Please check: https://pytest.org/latest/example/index.html
 """
 
+import pygimli as pg
 import numpy as np
 import sys
 from os.path import join, realpath

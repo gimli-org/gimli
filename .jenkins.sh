@@ -26,27 +26,25 @@ python -c "import matplotlib; print(matplotlib.__version__)"
 
 # just do this if something is wrong with the thirdparty sources
 #rm -rf thirdParty/src
-rm -rf build # Uncomment for clean build (expensive, but necessary sometimes)
-rm -f build/build_tests.html # remove old test report
-rm -f build/CMakeCache.txt # clean old cache
+#rm -rf build # Uncomment for clean build (expensive, but necessary sometimes)
+#rm -f build/build_tests.html # remove old test report
+#rm -f build/CMakeCache.txt # clean old cache
 
 mkdir -p build
 cd build
-CLEAN=1 cmake ../trunk \
+cmake ../trunk \
     -DPYVERSION=3 \
+    -DUSE_BOOST_THREAD=ON \
     -DPYTHON_EXECUTABLE=/usr/bin/python3 \
-    -DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.4m.so \
-    -DBoost_PYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libboost_python-py34.so
+    -DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.5m.so \
+    -DBoost_PYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libboost_python-py35.so
 
-make -j 16 gimli
-make pygimli J=12
+make -j 8 gimli
+make pygimli J=4
 
 #############################
 #  Testing & documentation  #
 #############################
-
-# Test gimli
-make gtest
 
 # Test pygimli
 export PYTHONPATH=`pwd`/../trunk/python:$PYTHONPATH
@@ -58,7 +56,6 @@ pg.test(htmlreport='build_tests.html', abort=True)
 END
 
 # Build documentation
-export PATH=/opt/texbin:$PATH # for building pdf
 export PUBLISH="True" # for correct PATH settings in sidebar gallery
 export PATH=`pwd`/../trunk/python/apps:$PATH
 chmod +x ../trunk/python/apps/*

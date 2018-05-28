@@ -265,7 +265,11 @@ int DataContainer::load(const std::string & fileName,
     }
 
     for (int i = 0; i < nSensors; i ++) {
+        Index oldCount = this->sensorCount();
         createSensor(RVector3(x[i], y[i], z[i]).round(1e-12));
+        if (this->sensorCount() != oldCount+1){
+            log(Warning, "Duplicated sensor position found at: " + str(RVector3(x[i], y[i], z[i])));
+        }
     }
     //****************************** Start read the data;
     row = getNonEmptyRow(file);
