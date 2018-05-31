@@ -33,11 +33,10 @@ python -c "import matplotlib; print(matplotlib.__version__)"
 mkdir -p build
 cd build
 cmake ../trunk \
-    -DPYVERSION=3 \
-    -DUSE_BOOST_THREAD=ON \
-    -DPYTHON_EXECUTABLE=/usr/bin/python3 \
-    -DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.5m.so \
-    -DBoost_PYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libboost_python-py35.so
+   -DPYVERSION=3 \
+   -DPYTHON_EXECUTABLE=/usr/bin/python3 \
+   -DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.5m.so \
+   -DBoost_PYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libboost_python-py35.so
 
 make -j 8 gimli
 make pygimli J=4
@@ -49,11 +48,7 @@ make pygimli J=4
 # Test pygimli
 export PYTHONPATH=`pwd`/../trunk/python:$PYTHONPATH
 
-python << END
-import pygimli as pg
-print(pg.__version__)
-pg.test(htmlreport='build_tests.html', abort=True)
-END
+OMP_THREAD_LIMIT=1 python -c "import pygimli; pygimli.test(show=False, abort=True, htmlreport=\"build_tests.html\")"
 
 # Build documentation
 export PUBLISH="True" # for correct PATH settings in sidebar gallery
