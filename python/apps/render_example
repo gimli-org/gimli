@@ -9,11 +9,12 @@ fi
 dirname=$(dirname $1)
 filename=$(basename -s .py $1)
 tmpfolder=$(mktemp -d)
+cwd=$(pwd)
 
 sphx_glr_python_to_jupyter.py $1 && mv "${dirname}/${filename}.ipynb" $tmpfolder
 echo "Executing in temporary folder $tmpfolder."
 cd $tmpfolder
 jupyter nbconvert --log-level="INFO" --execute --to html "${filename}.ipynb"
-xdg-open "${filename}.html"
+mv "${filename}.html" $cwd
 rm -rf $tmpfolder
-echo "DONE."
+echo "Moved ${filename}.html to ${cwd} and deleted ${tmpfolder}. DONE."
