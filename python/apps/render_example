@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# Small helper script to render single example / tutorials.
+if [[ $# -eq 0 ]] ; then
+    echo "Usage: render_example tutorial_or_example.py"
+    echo "This script takes no arguments."
+    exit 0
+fi
+
+dirname=$(dirname $1)
+filename=$(basename -s .py $1)
+tmpfolder=$(mktemp -d)
+
+sphx_glr_python_to_jupyter.py $1 && mv "${dirname}/${filename}.ipynb" $tmpfolder
+echo "Executing in temporary folder $tmpfolder."
+cd $tmpfolder
+jupyter nbconvert --log-level="INFO" --execute --to html "${filename}.ipynb"
+firefox "${filename}.html"
+rm -rf $tmpfolder
+echo "DONE."
