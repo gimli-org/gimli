@@ -291,7 +291,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
 
                 elif len(data) == mesh.nodeCount():
                     gci = drawField(ax, mesh, data, **kwargs)
-
+                    
                 cMap = kwargs.pop('cMap', None)
                 if cMap is not None:
                     gci.set_cmap(cmapFromName(cMap))
@@ -348,8 +348,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
 
         if colorBar is True or colorBar is 1:
             cbar = createColorBar(gci,
-                                  orientation=kwargs.pop('orientation',
-                                                         'horizontal'),
+                                  orientation=kwargs.pop('orientation', 'horizontal'),
                                   size=kwargs.pop('size', 0.2),
                                   pad=kwargs.pop('pad', None)
                                   )

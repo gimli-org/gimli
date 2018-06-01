@@ -469,7 +469,6 @@ configure_file("${PROJECT_SOURCE_DIR}/config.cmake.h.in" "${PROJECT_BINARY_DIR}/
 add_definitions(-DHAVE_CONFIG_CMAKE_H)
 
 find_package(Doxygen)
-
 find_package(Sphinx 1.5)
 
 if (SPHINX_FOUND)

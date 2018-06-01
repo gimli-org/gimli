@@ -899,7 +899,7 @@ def assembleLoadVector(mesh, f, userData=None):
     return rhs
 
 def _assembleUDirichlet(S, rhs, uDirIndex, uDirchlet):
-    """This should be moved directly into gimli"""
+    """This should be moved directly into the core"""
 
     if rhs is not None:
         udirTmp = pg.RVector(S.rows(), 0.0)
@@ -965,9 +965,6 @@ def assembleDirichletBC(S, boundaryPairs, rhs=None, time=0.0, userData=None,
     if not hasattr(boundaryPairs, '__getitem__'):
         raise BaseException("Boundary pairs need to be a list of "
                             "[boundary, value]")
-    if rhs is None:
-        raise BaseException("assembleDirichletBC needs RHS vector")
-
     uDirNodes = []
     uDirVal = dict()
 
@@ -1635,6 +1632,7 @@ def checkCFL(times, mesh, vMax):
                   "dx =", dx,
                   "dt <", dx/vMax,
                   " | N > ", int((times[-1]-times[0])/(dx/vMax))+1, ")")
+    return c
 
 def crankNicolson(times, theta, S, I, f, u0=None, progress=None, debug=None):
     """

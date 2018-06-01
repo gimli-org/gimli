@@ -33,13 +33,6 @@ class CellBrowserCacheSingleton(object):
 # We only want one instance of this global cache so its a singleton class
 __CBCache__ = CellBrowserCacheSingleton()
 
-
-def _fixNamingConventions(kwargs):
-    if 'cmap' in kwargs:
-        print("STYLE warning! .. please use cMap instead of cmap")
-        kwargs['cMap'] = kwargs.pop('cmap')
-
-
 def _setCMap(pp, cMap):
     """Set colormap to mpl object pp
         Ensure kwargs have argument with correct naming conventions.
@@ -191,7 +184,6 @@ class CellBrowser(object):
         self.highLight.set_facecolors([0.9, 0.9, 0.9, 0.4])
         self.ax.add_collection(self.highLight)
 
-
     def onPick(self, event):
         """Call `self.update()` on mouse pick event."""
         self.event = event
@@ -312,8 +304,9 @@ def drawMesh(ax, mesh, **kwargs):
     updateAxes_(ax)
 
 
-def drawModel(ax, mesh, data=None, logScale=True, cMin=None, cMax=None,
-              cmap=None, xlabel=None, ylabel=None, verbose=False,
+def drawModel(ax, mesh, data=None, 
+              cMin=None, cMax=None, cMap=None, logScale=False, 
+              xlabel=None, ylabel=None, verbose=False,
               tri=False, **kwargs):
     """Draw a 2d mesh and color the cell by the data.
 
@@ -356,7 +349,7 @@ def drawModel(ax, mesh, data=None, logScale=True, cMin=None, cMax=None,
 
     if tri:
         gci = drawMPLTri(ax, mesh, data,
-                         cMin=cMin, cMax=cMax, cmap=cmap, logScale=logScale,
+                         cMin=cMin, cMax=cMax, cMap=cMap, logScale=logScale,
                          **kwargs)
 
     else:
@@ -364,14 +357,12 @@ def drawModel(ax, mesh, data=None, logScale=True, cMin=None, cMax=None,
         ax.add_collection(gci)
 
         cMap = kwargs.pop('cMap', None)
-        if cMap is not None:
-            cmap = cMap
 
-        if cmap is not None:
-            if isinstance(cmap, str):
-                gci.set_cmap(cmapFromName(cmap))
+        if cMap is not None:
+            if isinstance(cMap, str):
+                gci.set_cmap(cmapFromName(cMap))
             else:
-                gci.set_cmap(cmap)
+                gci.set_cmap(cMap)
 
         if data is None:
             data = pg.RVector(mesh.cellCount())
@@ -801,7 +792,7 @@ def createTriangles(mesh, data=None):
 
 
 def drawMPLTri(ax, mesh, data=None,
-               cMin=None, cMax=None, cmap=None, logScale=True,
+               cMin=None, cMax=None, cMap=None, logScale=True,
                **kwargs):
     """Draw mesh based scalar field using matplotlib triplot.
 
@@ -831,10 +822,11 @@ def drawMPLTri(ax, mesh, data=None,
     """
     x, y, triangles, z, _ = createTriangles(mesh, data)
 
-    gci = None
 
+    gci = None
     levels = kwargs.pop('levels', [])
     nLevs = kwargs.pop('nLevs', 5)
+
     if len(levels) == 0:
         levels = autolevel(data, nLevs, zmin=cMin, zmax=cMax, logScale=logScale)
 
@@ -851,7 +843,7 @@ def drawMPLTri(ax, mesh, data=None,
         else:
             gci = ax.tripcolor(x, y, triangles, facecolors=z,
                                shading=shading, **kwargs)
-
+        
     elif len(z) == mesh.nodeCount():
         shading = kwargs.pop('shading', None)
 
@@ -874,7 +866,6 @@ def drawMPLTri(ax, mesh, data=None,
             #print(kwargs)
             #print('#'*100)
             if withContourLines:
-                kwargs.pop('cmap')
                 ax.tricontour(x, y, triangles, z, levels=levels,
                               colors=kwargs.pop('colors', ['0.5']), **kwargs)
     else:
@@ -938,8 +929,9 @@ def drawField(ax, mesh, data=None, cMap=None, **kwargs):
     cMin = kwargs.pop('cMin', None)
     cMax = kwargs.pop('cMax', None)
 
-    return drawMPLTri(ax, mesh, data, cMin=cMin, cMax=cMax,
-                      cMap=cMap, **kwargs)
+    return drawMPLTri(ax, mesh, data, 
+                      cMin=cMin, cMax=cMax, cMap=cMap,
+                      **kwargs)
 
 def drawStreamLines(ax, mesh, u, nx=25, ny=25, **kwargs):
     """Draw streamlines for the gradients of field values u on a mesh.

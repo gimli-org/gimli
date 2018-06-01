@@ -14,7 +14,7 @@ from pygimli.mplviewer import drawModel, drawMesh, CellBrowser, createColorBar
 from pygimli.utils.base import interperc, getSavePath
 from pygimli.mplviewer.dataview import plotVecMatrix
 
-from pygimli.manager import MethodManager  # , MethodManager0
+from pygimli.manager import MethodManager, MethodManager0
 
 # the explicit import with full name allow for:
 # python ~/src/gimli/gimli/python/pygimli/physics/traveltime/refraction.py
@@ -25,7 +25,7 @@ from . raplot import drawTravelTimeData
 from . importData import importGTT
 
 
-class Refraction(MethodManager):
+class Refraction(MethodManager0):
     """Manager for refraction seismics (traveltime tomography)
 
     TODO Document main members and use default MethodeManager interface
@@ -453,7 +453,7 @@ class Refraction(MethodManager):
             A DataContainer is return if noisify set to True.
 
         """
-        fop = Refraction0.createFOP(verbose=verbose)
+        fop = Refraction.createFOP(verbose=verbose)
 
         fop.setData(scheme)
         fop.setMesh(mesh, ignoreRegionManager=True)
@@ -479,7 +479,7 @@ class Refraction(MethodManager):
         if noiseLevel > 0:
             if not ret.allNonZero('err'):
                 ret.set('t', t)
-                ret.set('err', Refraction0.estimateError(
+                ret.set('err', Refraction.estimateError(
                         ret, absoluteError=kwargs.pop('noiseAbs', 1e-4),
                         relativeError=noiseLevel))
 
