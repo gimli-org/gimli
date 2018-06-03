@@ -702,14 +702,6 @@ void DataContainer::remove(const IndexArray & idx){
     this->removeInvalid();
 }
 
-DataContainer DataContainer::filter(const IndexArray & idx) const {
-    DataContainer data(*this);
-    data.markValid(find(data("valid") > -1), false);
-    data.markValid(idx, true);
-    data.removeInvalid();
-    return data;
-}
-
 IndexArray DataContainer::findSensorIndex(const RVector & d) const{
     IndexArray ret(d.size());
     for (Index i = 0; i < d.size(); i ++){
