@@ -203,6 +203,8 @@ def patchMatrix(mat, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
     pp.set_linewidths(0.0)
     if 'cmap' in kwargs:
         pp.set_cmap(kwargs.pop('cmap'))
+    if 'cMap' in kwargs:
+        pp.set_cmap(kwargs.pop('cMap'))
     pp.set_norm(norm)
     pp.set_array(np.array(vals))
     pp.set_clim(cMin, cMax)
@@ -262,6 +264,8 @@ def plotMatrix(mat, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
     im = ax.imshow(mat_, norm=norm, interpolation='nearest')
     if 'cmap' in kwargs:
         im.set_cmap(kwargs.pop('cmap'))
+    if 'cMap' in kwargs:
+        im.set_cmap(kwargs.pop('cMap'))
     ax.set_aspect(kwargs.pop('aspect', 1))
     cbar = None
     if kwargs.pop('colorBar', True):
