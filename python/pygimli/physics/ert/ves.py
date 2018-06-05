@@ -441,8 +441,8 @@ def VESManagerApp():
 class __VESManager():  # Should be derived from 1DManager
     """Vertical electrical sounding (VES) manager class."""
     def __init__(self,
-                 ab2,
-                 z,
+                 ab2,  # init with None?
+                 z,  # init with None?
                  mn2=None,
                  Type='smooth',
                  verbose=False):
@@ -463,7 +463,8 @@ class __VESManager():  # Should be derived from 1DManager
             block: number of layers
         """
         self.verbose = verbose
-        self.type = Type
+        self.type = Type  # better determined by type of z:
+        # self.type = 'block' if isinstance(z, int) else 'smooth'
 
         self.ab2 = ab2
 
@@ -569,7 +570,8 @@ class __VESManager():  # Should be derived from 1DManager
         self.applyDataTrans()
 
         if self.type == 'block':
-            print(kwargs.pop('lambdaFactor'))
+            # print(kwargs.pop('lambdaFactor'))  # cannot be popped twice!!!
+            print(kwargs.get('lambdaFactor'))
             self.INV.setMarquardtScheme(kwargs.pop('lambdaFactor', 0.8))
             self.INV.setRobustData(kwargs.pop('robust', False))
 
