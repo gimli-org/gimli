@@ -253,7 +253,11 @@ int DataContainer::load(const std::string & fileName,
     }
 
     for (int i = 0; i < nSensors; i ++) {
+        Index oldCount = this->sensorCount();
         createSensor(RVector3(x[i], y[i], z[i]).round(1e-12));
+        if (this->sensorCount() != oldCount+1){
+            log(Warning, "Duplicated sensor position found at: " + str(RVector3(x[i], y[i], z[i])));
+        }
     }
     //****************************** Start read the data;
     row = getNonEmptyRow(file);
@@ -696,14 +700,6 @@ void DataContainer::removeInvalid(){
 void DataContainer::remove(const IndexArray & idx){
     this->markValid(idx, false);
     this->removeInvalid();
-}
-
-DataContainer DataContainer::filter(const IndexArray & idx) const {
-    DataContainer data(*this);
-    data.markValid(find(data("valid") > -1), false);
-    data.markValid(idx, true);
-    data.removeInvalid();
-    return data;
 }
 
 IndexArray DataContainer::findSensorIndex(const RVector & d) const{

@@ -11,6 +11,7 @@ Writing tests for pygimli
 Please check: https://pytest.org/latest/example/index.html
 """
 
+import pygimli as pg
 import numpy as np
 import sys
 from os.path import join, realpath
@@ -108,10 +109,14 @@ def test(target=None, show=False, onlydoctests=False, coverage=False,
         if ph:
             cmd.extend(["--html", htmlreport])
 
+    plt.close("all")
     exitcode = pytest.main(cmd)
-    plt.switch_backend(old_backend)
+    if abort:
+        print("Exiting with exitcode", exitcode)
+        sys.exit(exitcode)
+
     plt.close('all')
+    plt.switch_backend(old_backend)
     np.set_printoptions(**printopt)
 
-    if abort:
-        sys.exit(exitcode)
+

@@ -68,8 +68,7 @@ def critical(*args):
     logger.critical(_msg(*args))
     raise Exception(msg)
 
-def deprecated(hint=''):
-    msg=''
+def deprecated(msg='', hint=''):
     caller = sys._getframe(1).f_code.co_name
     logger.warning(caller + "\n" + msg + ", is deprecated, please use:" + hint + " instead.")
 

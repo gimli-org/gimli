@@ -292,13 +292,24 @@ std::map < int, int > loadIntMap(const std::string & filename){
     return aMap;
 }
 
-std::string logStr_(LogType type){
+std::string logStrShort_(LogType type){
     switch (type){
         case Info: return "info"; break;
         case Warning: return "warn";  break;
         case Error: return "error";  break;
         case Debug: return "debug";  break;
         case Critical: return "critical";  break;
+        default: return str(type) + "-unknown";
+    }
+}
+
+std::string logStr_(LogType type){
+    switch (type){
+        case Info: return "Info"; break;
+        case Warning: return "Warning";  break;
+        case Debug: return "Debug";  break;
+        case Error: return "Error!";  break;
+        case Critical: return "!!! Critical !!!";  break;
         default: return str(type) + "-unknown";
     }
 }
@@ -322,20 +333,20 @@ void log(LogType type, const std::string & msg){
 
         if (logging == NULL){
             // running native? no python runtime?);
-                std::cout << logStr_(type) << ":" << msg << std::endl;
+                std::cout << logStr_(type) << " " << msg << std::endl;
         } else {
 
             logger = PyObject_CallMethod(logging, "getLogger", "s", "Core");
             string = Py_BuildValue("s", msg.c_str());
-            PyObject_CallMethod(logger, logStr_(type).c_str(), "O", string);
+            PyObject_CallMethod(logger, logStrShort_(type).c_str(), "O", string);
             Py_DECREF(string);
         }
     } else {
-        std::cout << logStr_(type) << ": " << msg << std::endl;
+        std::cout << logStr_(type) << " " << msg << std::endl;
     }
 
     #else
-        std::cout << logStr_(type) << ": " << msg << std::endl;
+        std::cout << logStr_(type) << " " << msg << std::endl;
     #endif
 }
 
