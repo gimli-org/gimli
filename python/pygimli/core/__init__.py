@@ -222,19 +222,39 @@ def nonzero_test(self):
 def np_round__(self, r):
     return np.round(self.array(), r)
 
-_pygimli_.RVector.__nonzero__ = nonzero_test
 _pygimli_.RVector.__bool__ = nonzero_test
-_pygimli_.RVector.__round__ = np_round__
-_pygimli_.R3Vector.__nonzero__ = nonzero_test
 _pygimli_.R3Vector.__bool__ = nonzero_test
-_pygimli_.BVector.__nonzero__ = nonzero_test
 _pygimli_.BVector.__bool__ = nonzero_test
-_pygimli_.CVector.__nonzero__ = nonzero_test
 _pygimli_.CVector.__bool__ = nonzero_test
-_pygimli_.IVector.__nonzero__ = nonzero_test
 _pygimli_.IVector.__bool__ = nonzero_test
-_pygimli_.IndexArray.__nonzero__ = nonzero_test
 _pygimli_.IndexArray.__bool__ = nonzero_test
+
+_pygimli_.RVector.__nonzero__ = nonzero_test
+_pygimli_.R3Vector.__nonzero__ = nonzero_test
+_pygimli_.BVector.__nonzero__ = nonzero_test
+_pygimli_.CVector.__nonzero__ = nonzero_test
+_pygimli_.IVector.__nonzero__ = nonzero_test
+_pygimli_.IndexArray.__nonzero__ = nonzero_test
+
+_pygimli_.RVector.__round__ = np_round__
+
+def _invertBVector_(self):
+    return _pygimli_.inv(self)
+_pygimli_.BVector.__invert__ = _invertBVector_
+_pygimli_.BVector.__inv__ = _invertBVector_
+
+def _lowerThen_(self, v2):
+    """Overwrite bvector = v1 < v2 since there is a wrong operator due to the 
+    boost binding generation
+    """
+    return _pygimli_.inv(self >= v2)
+
+_pygimli_.RVector.__lt__ = _lowerThen_
+_pygimli_.R3Vector.__lt__ = _lowerThen_
+_pygimli_.BVector.__lt__ = _lowerThen_
+_pygimli_.CVector.__lt__ = _lowerThen_
+_pygimli_.IVector.__lt__ = _lowerThen_
+_pygimli_.IndexArray.__lt__ = _lowerThen_
 
 ######################
 # special constructors

@@ -930,8 +930,6 @@ void Vector< ValueType >::add(const ElementMatrix < double >& A, const double & 
 template< typename ValueType >
 void Vector< ValueType >::add(const ElementMatrix < double >& A, const Vector< double> & a){THROW_TO_IMPL}
 
-
-
 template< class ValueType, class Iter > class AssignResult{
 public:
     AssignResult(Vector< ValueType > & a, const Iter & result, Index start, Index end)
@@ -1288,6 +1286,11 @@ inline BVector operator ~ (const BVector & a){
     BVector ret(a.size());
     for (Index i = 0; i < ret.size(); i ++) ret[i] = !a[i];
     return ret;
+}
+
+/*! For use in pygimli*/ 
+inline BVector inv(const BVector & a){
+    return ~a;
 }
 
 /*! Refactor with expression templates */

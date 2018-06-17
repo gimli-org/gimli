@@ -105,7 +105,11 @@ std::string DataContainer::translateAlias(const std::string & alias) const {
 }
 
 void DataContainer::clear(){
+    topoPoints_.clear();
+    sensorPoints_.clear();
+    dataSensorIdx_.clear();
     dataMap_.clear();
+    initDefaults();
 }
 
 void DataContainer::copy_(const DataContainer & data){
@@ -187,6 +191,7 @@ bool DataContainer::isSensorIndex(const std::string & token) const {
 int DataContainer::load(const std::string & fileName,
                         bool sensorIndicesFromOne,
                         bool removeInvalid){
+    clear();
     setSensorIndexOnFileFromOne(sensorIndicesFromOne);
 
 	std::fstream file; openInFile(fileName, & file, true);
