@@ -101,6 +101,7 @@ def load(fname, verbose=False):
         ".ohm": pg.DataContainer,  # BERT compatibility
         ".shm": pg.DataContainer,  # BERT compatibility
         ".sgt": pg.DataContainer,
+        ".collect": pg.DataMap,
         # Vectors
         ".dat": pg.RVector,
         ".vector": pg.RVector,
