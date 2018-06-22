@@ -422,7 +422,6 @@ void assembleCompleteElectrodeModel(CSparseMatrix & S,
     THROW_TO_IMPL
 }
 
-
 double mixedBoundaryCondition(const Boundary & boundary, const RVector3 & source, double k){
     if (!source.valid()){
         std::cerr << WHERE_AM_I << " no valid source found " << std::endl;
@@ -779,6 +778,8 @@ void DCMultiElectrodeModelling::searchElectrodes_(){
         throwError(1, "DCMultiElectrodeModelling::searchElectrodes_() have no mesh defined");
     }
     if (electrodes_.size() > 0) return;
+
+    passiveCEM_.clear();
 
     //** step 1 search the mesh for signs of electrodes
     std::vector < Index > sourceIdx = mesh_->findNodesIdxByMarker(MARKER_NODE_ELECTRODE);
@@ -1762,7 +1763,7 @@ MEMINFO
 //             //** FIXME this fails with passive bodies
             elecs.push_back(electrodeRef_);
         }
-        if (verbose_) std::cout << " assemble complete electrode model ... ";
+        if (verbose_) std::cout << " assemble complete electrode model ... " << std::endl;
 
         for (Index i = 0; i < passiveCEM_.size(); i ++) elecs.push_back(passiveCEM_[i]);
 

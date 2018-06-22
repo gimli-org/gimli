@@ -444,19 +444,19 @@ public:
 
     /*! Set multiple values. Throws out of range exception if index check fails. */
     inline Vector< ValueType > & setVal(const ValueType & val,
-                                        const IndexArray & iArray) {
-        for (Index i = 0; i < iArray.size(); i ++) setVal(val, iArray[i]);
+                                        const IndexArray & ids) {
+        for (Index i = 0; i < ids.size(); i ++) setVal(val, ids[i]);
         return *this;
     }
 
     /*! Set multiple values from vals at index position iArray.
      * Throws out of range exception if index check fails. */
     inline Vector< ValueType > & setVal(const Vector < ValueType > & vals,
-                                        const IndexArray & iArray) {
-        ASSERT_EQUAL(vals.size(), iArray.size())
-        for (Index i = 0; i < iArray.size(); i ++){
+                                        const IndexArray & ids) {
+        ASSERT_EQUAL(vals.size(), ids.size())
+        for (Index i = 0; i < ids.size(); i ++){
 //            data_[iArray[i]] = vals[i];
-           setVal(vals[i], iArray[i]);
+           setVal(vals[i], ids[i]);
         }
         return *this;
     }

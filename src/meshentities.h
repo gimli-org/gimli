@@ -584,6 +584,16 @@ public:
 protected:
 };
 
+//! Triangle
+/*! Triangle
+
+Node direction:
+    2
+   / \
+  /   \
+ /     \
+0-------1
+*/
 class DLLEXPORT Triangle : public Cell {
 public:
     Triangle(Node & n1, Node & n2, Node & n3);
@@ -616,6 +626,16 @@ public:
 protected:
 };
 
+//! Triangle6
+/*! Triangle6
+
+Node direction:
+    2
+   / \
+  5   4
+ /     \
+0---3---1
+*/
 class DLLEXPORT Triangle6 : public Triangle {
 public:
     Triangle6(std::vector < Node * > & nodes);

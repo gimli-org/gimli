@@ -205,6 +205,16 @@ _pygimli_.Mesh.__str__ = Mesh_str
 _pygimli_.DataContainer.__str__ = Data_str
 _pygimli_.ElementMatrix.__str__ = ElementMatrix_str
 _pygimli_.MeshEntity.__str__ = MeshEntity_str
+
+def Node_str(self):
+    """Give node infos."""
+    s = str(type(self))
+    s += '\tID: ' + str(self.id()) + \
+         ', Marker: ' + str(self.marker())
+    s += '\t' + str(self.pos())
+    return s
+
+_pygimli_.Node.__str__ = Node_str
 # _pygimli_.stdVectorIndex.size = _pygimli_.stdVectorIndex.__len__
 # _pygimli_.stdVectorIndex.__str__ = RVector_str
 
