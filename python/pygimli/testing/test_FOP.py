@@ -111,8 +111,8 @@ class TestFOP(unittest.TestCase):
 
 if __name__ == '__main__':
 
-    #fop  = TestFOP()
-    #fop.test_MT()
+    fop  = TestFOP()
+    fop.test_MT()
     #fop.test_multiResponseMT()
 
-    unittest.main()
+    #unittest.main()
