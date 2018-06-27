@@ -331,11 +331,9 @@ void assembleCompleteElectrodeModel_(RSparseMatrix & S,
         //** some scale value, can used for contact impedance
         double sumArea = elecs[elecID]->domainSize();
         uint mat_ID = oldMatSize + elecID;
-
-//             __MS(elecID)
-//             __MS(sumArea)
-//             __MS(elecs[elecID]->id())
-
+        // __MS(elecID)
+        // __MS(sumArea)
+        // __MS(elecs[elecID])
         elecs[elecID]->setMID(mat_ID);
 
         double contactResistance = vContactResistance[elecID];
