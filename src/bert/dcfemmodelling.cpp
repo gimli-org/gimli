@@ -1806,11 +1806,13 @@ MEMINFO
 //             S_.save("S-gimli.matrix");
 //             rhs.save("rhs.vec");
 //             save(sol, "sol.vec");
-//             mesh_->addData("sol" + str((kIdx) * nCurrentPattern + i), sol);
-// //             mesh_->addData("rhs", rhs);
-// //             mesh_->addData("soll",abs(log(sol)));
-//             mesh_->exportVTK("sol");
-// //             exit(0);
+            // __MS(eA[i])
+            // __MS(eB[i])
+            // mesh_->addData("sol" + str((kIdx) * nCurrentPattern + i), sol);
+            // mesh_->addData("rhs", rhs);
+            // mesh_->addData("soll", log(abs(sol)));
+            // mesh_->exportVTK("sol");
+            // exit(0);
 //         }
 //         mesh_->addData("sol" + str((kIdx) * nCurrentPattern + i), sol);
 //         S_.save("S-gimli.matrix");

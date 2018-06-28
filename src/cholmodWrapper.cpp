@@ -187,7 +187,6 @@ int CHOLMODWrapper::initializeMatrix_(RSparseMatrix & S){
             }
         }
 
-
         if (useUmfpack_){
 #if USE_UMFPACK
             int * ApT = (int*)S.colPtr();

@@ -472,11 +472,11 @@ def interpolate(*args, **kwargs):
 
                 outMat = pg.Matrix()
                 pg.core._pygimli_.interpolate(args[0],
-                                              inMat=np.array(args[1]).T,
+                                              inMat=np.array(args[1]),
                                               destPos=args[2],
                                               outMat=outMat,
                                               **kwargs)
-                return np.array(outMat).T
+                return np.array(outMat)
 
         if len(args) == 4: # args: (inMesh, inData, outPos, outData)
 
