@@ -530,6 +530,8 @@ def drawMeshBoundaries(ax, mesh, hideMesh=False, useColorMap=False, **kwargs):
 #    drawAA = True
 #    swatch = pg.Stopwatch(True)
     mesh.createNeighbourInfos()
+    
+    lw = kwargs.pop('lw', None)
 
     if not hideMesh:
         drawSelectedMeshBoundaries(ax,
@@ -539,21 +541,24 @@ def drawMeshBoundaries(ax, mesh, hideMesh=False, useColorMap=False, **kwargs):
 
     drawSelectedMeshBoundaries(ax,
                     mesh.findBoundaryByMarker(pg.MARKER_BOUND_HOMOGEN_NEUMANN),
-                    color=(0.0, 1.0, 0.0, 1.0), linewidth=1.0)
+                    color=(0.0, 1.0, 0.0, 1.0), 
+                    linewidth=lw or 1.0)
     drawSelectedMeshBoundaries(ax,
                     mesh.findBoundaryByMarker(pg.MARKER_BOUND_MIXED),
-                    color=(1.0, 0.0, 0.0, 1.0), linewidth=1.0)
+                    color=(1.0, 0.0, 0.0, 1.0), 
+                    linewidth=lw or 1.0)
 
     b0 = [b for b in mesh.boundaries() if b.marker() > 0]
     if useColorMap:
-        drawSelectedMeshBoundaries(ax, b0, color=None, linewidth=1.5)
+        drawSelectedMeshBoundaries(ax, b0, color=None, 
+                                   linewidth=lw or 1.5)
     else:
         drawSelectedMeshBoundaries(ax, b0, color=(0.0, 0.0, 0.0, 1.0),
-                                   linewidth=1.5)
+                                   linewidth=lw or 1.5)
 
     b4 = [b for b in mesh.boundaries() if b.marker() < -4]
     drawSelectedMeshBoundaries(ax, b4, color=(0.0, 0.0, 0.0, 1.0),
-                               linewidth=1.5)
+                               linewidth=lw or 1.5)
 
     updateAxes_(ax)
 

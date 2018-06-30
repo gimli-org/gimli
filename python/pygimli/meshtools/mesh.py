@@ -111,8 +111,9 @@ def createMesh(poly, quality=30, area=0.0, smooth=None, switches=None,
         mesh = tri.generate()
 
         if smooth is not None:
-            mesh.smooth(nodeMoving=kwargs.pop('node_move', False),
-                        edgeSwapping=False, smoothFunction=smooth[0],
+            mesh.smooth(nodeMoving=kwargs.pop('node_move', True),
+                        edgeSwapping=False, 
+                        smoothFunction=smooth[0],
                         smoothIteration=smooth[1])
         return mesh
 
