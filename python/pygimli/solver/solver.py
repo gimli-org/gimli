@@ -789,7 +789,7 @@ def linSolve(A, b, verbose=False):
     """
     x = pg.RVector(len(b), .0)
 
-    print(type(A))
+    #print(type(A))
     if isinstance(A, pg.RSparseMapMatrix):
         S = pg.RSparseMatrix(A)
         solver = pg.LinSolver(S, verbose=verbose)
