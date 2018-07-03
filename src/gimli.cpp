@@ -320,7 +320,8 @@ std::string logStr_(LogType type){
 #endif
 
 void log(LogType type, const std::string & msg){
-    #if defined(PYTHON_FOUND) && not defined(WIN32)
+
+#if defined(PYTHON_FOUND) && not defined(WIN32)
     //#if defined(RUN_FROM_PY) && defined(PYTHON_FOUND) && not defined(WIN32)
     static PyObject *logging = NULL;
     static PyObject *logger = NULL;
@@ -331,23 +332,18 @@ void log(LogType type, const std::string & msg){
         logging = PyImport_ImportModule("logging");
         //logging = PyImport_ImportModuleNoBlock("logging");
 
-        if (logging == NULL){
-            // running native? no python runtime?);
-                std::cout << logStr_(type) << " " << msg << std::endl;
-        } else {
-
+        if (logging != NULL){
             logger = PyObject_CallMethod(logging, "getLogger", "s", "Core");
             string = Py_BuildValue("s", msg.c_str());
             PyObject_CallMethod(logger, logStrShort_(type).c_str(), "O", string);
             Py_DECREF(string);
+            return;
         }
-    } else {
-        std::cout << logStr_(type) << " " << msg << std::endl;
     }
+#endif
 
-    #else
-        std::cout << logStr_(type) << " " << msg << std::endl;
-    #endif
+    std::cout << logStr_(type) << ": " << msg << std::endl;
+    
 }
 
 } // namespace GIMLI

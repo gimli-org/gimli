@@ -105,7 +105,11 @@ std::string DataContainer::translateAlias(const std::string & alias) const {
 }
 
 void DataContainer::clear(){
+    topoPoints_.clear();
+    sensorPoints_.clear();
+    dataSensorIdx_.clear();
     dataMap_.clear();
+    initDefaults();
 }
 
 void DataContainer::copy_(const DataContainer & data){
@@ -199,6 +203,7 @@ void DataContainer::setSensorPositions(const std::vector< RVector3 > & sensors) 
 int DataContainer::load(const std::string & fileName,
                         bool sensorIndicesFromOne,
                         bool removeInvalid){
+    clear();
     setSensorIndexOnFileFromOne(sensorIndicesFromOne);
 
 	std::fstream file; openInFile(fileName, & file, true);
@@ -712,14 +717,6 @@ void DataContainer::removeInvalid(){
 void DataContainer::remove(const IndexArray & idx){
     this->markValid(idx, false);
     this->removeInvalid();
-}
-
-DataContainer DataContainer::filter(const IndexArray & idx) const {
-    DataContainer data(*this);
-    data.markValid(find(data("valid") > -1), false);
-    data.markValid(idx, true);
-    data.removeInvalid();
-    return data;
 }
 
 IndexArray DataContainer::findSensorIndex(const RVector & d) const{

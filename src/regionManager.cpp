@@ -626,7 +626,7 @@ void RegionManager::setMesh(const Mesh & mesh, bool holdRegionInfos){
     bool singleOnly = false;
     if (regions.size() > 50){
         singleOnly = true;
-        if (verbose_) std::cout << " guessing singles only regions." << std::endl;
+        log(Info,"More than 50 regions so we assume singles only regions.");
     }
 
     std::map < int, std::vector< Cell * > > markerCellVectorMap;
@@ -652,6 +652,19 @@ void RegionManager::setMesh(const Mesh & mesh, bool holdRegionInfos){
     //** looking for and create inter-region interfaces
     this->findInterRegionInterfaces_();
 
+    if (singleOnly){
+        log(Info, "appling *:* interregion constraints.");
+        for (Index i = 0; i < regions.size(); i ++){
+            for (Index j = 0; j < regions.size(); j ++){
+                if (i != j){
+                    setInterRegionConstraint(i, j, 1.0);
+                                // if (verbose_) std::cout << minRegion[i] << " <-> "
+                                //                         << maxRegion[j] << " weight:"
+                                //                         << toDouble(row[2]) << std::endl;
+                }
+            }
+        }
+    }
     this->recountParaMarker_();
     this->createParaDomain_();
 }
@@ -770,14 +783,14 @@ void RegionManager::findInterRegionInterfaces_(){
             }
         }
     }
-//     if (verbose_ && interRegionInterfaceMap_.size()){
-//         for (std::map< std::pair< SIndex, SIndex >, std::list < Boundary * > >::iterator
-//                 it  = interRegionInterfaceMap_.begin();
-//                 it != interRegionInterfaceMap_.end(); it ++){
-//             std::cout << "(" << it->first.first << "," << it->first.second << ") "
-//                              << it->second.size() << " boundaries. " << std::endl;
-//         }
-//     }
+    // if (verbose_ && interRegionInterfaceMap_.size()){
+    //     for (std::map< std::pair< SIndex, SIndex >, std::list < Boundary * > >::iterator
+    //             it  = interRegionInterfaceMap_.begin();
+    //             it != interRegionInterfaceMap_.end(); it ++){
+    //         std::cout << "(" << it->first.first << "," << it->first.second << ") "
+    //                          << it->second.size() << " boundaries. " << std::endl;
+    //     }
+    // }
 }
 
 void RegionManager::fillStartModel(RVector & vec){
@@ -1188,8 +1201,18 @@ void RegionManager::loadMap(const std::string & fname){
                 for (Index j = 0; j < regionMarker.size(); j ++){
                     for (Index i = 1; i < row.size(); i ++){
                         if (regionAttributeMap.count(lower(token[i]))){
-                            if (verbose_) std::cout << regionMarker[j] << " : " << token[i]
-                                                      << " " << row[i] << std::endl;
+                            if (verbose_) {
+                                if (j < 5){
+                                    std::cout << regionMarker[j] << " : " << token[i]
+                                                                 << " " << row[i] << std::endl;
+                                } else if (j == 5 && j < regionMarker.size()-1){
+                                    std::cout << "..." << std::endl;
+                                } else if (j == regionMarker.size()-1){
+                                    std::cout << regionMarker[j] << " : " << token[i]
+                                                                 << " " << row[i] << std::endl;
+                                }
+                                
+                            }
                             (region(regionMarker[j])->*regionAttributeMap[lower(token[i])])(row[i]);
                         } else {
                             std::cerr << WHERE_AM_I << " no region attribute associated with key:"
@@ -1231,8 +1254,7 @@ void RegionManager::loadMap(const std::string & fname){
                 for (Index i = 0; i < minRegion.size(); i ++){
                     for (Index j = 0; j < maxRegion.size(); j ++){
                         if (minRegion[i] != maxRegion[j]){
-                            setInterRegionConstraint(minRegion[i], maxRegion[j],
-                                                     toDouble(row[2]));
+                            setInterRegionConstraint(minRegion[i], maxRegion[j], toDouble(row[2]));
                             // if (verbose_) std::cout << minRegion[i] << " <-> "
                             //                         << maxRegion[j] << " weight:"
                             //                         << toDouble(row[2]) << std::endl;
@@ -1275,9 +1297,9 @@ void RegionManager::loadMap(const std::string & fname){
         } else {
             std::cerr << WHERE_AM_I << " cannot interpret 1.st token: " << token[0] << std::endl;
             std::cerr << "Available are: " << std::endl
-            << "#no" << std::endl
-            << "#interface" << std::endl
-            << "#inter-region" << std::endl;
+                      << "#no" << std::endl
+                      << "#interface" << std::endl
+                      << "#inter-region" << std::endl;
             row = getRow(file); if (row.empty()) continue;
         }
     }
@@ -1295,7 +1317,6 @@ void RegionManager::setInterRegionConstraint(SIndex aIn, SIndex bIn, double c){
         std::cerr << WHERE_AM_I << " ignoring inter-region constraints "
                 << a << " == " << b << std::endl;
     } else {
-
         if (interRegionInterfaceMap_.find(std::pair< SIndex, SIndex >(a, b))
              != interRegionInterfaceMap_.end()){
             interRegionConstraints_[std::pair< SIndex, SIndex >(a, b)] = c;

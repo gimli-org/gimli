@@ -147,6 +147,9 @@ public:
 
     bool verbose() const { return verbose_; }
 
+    /*! Return number of rows */
+    inline Index size() const { return this->rows(); }
+
     /*! Return number of cols */
     virtual Index rows() const {
        THROW_TO_IMPL

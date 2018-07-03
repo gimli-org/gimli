@@ -331,11 +331,9 @@ void assembleCompleteElectrodeModel_(RSparseMatrix & S,
         //** some scale value, can used for contact impedance
         double sumArea = elecs[elecID]->domainSize();
         uint mat_ID = oldMatSize + elecID;
-
-//             __MS(elecID)
-//             __MS(sumArea)
-//             __MS(elecs[elecID]->id())
-
+        // __MS(elecID)
+        // __MS(sumArea)
+        // __MS(elecs[elecID])
         elecs[elecID]->setMID(mat_ID);
 
         double contactResistance = vContactResistance[elecID];
@@ -421,7 +419,6 @@ void assembleCompleteElectrodeModel(CSparseMatrix & S,
                                     uint oldMatSize, bool lastIsReferenz){
     THROW_TO_IMPL
 }
-
 
 double mixedBoundaryCondition(const Boundary & boundary, const RVector3 & source, double k){
     if (!source.valid()){
@@ -779,6 +776,8 @@ void DCMultiElectrodeModelling::searchElectrodes_(){
         throwError(1, "DCMultiElectrodeModelling::searchElectrodes_() have no mesh defined");
     }
     if (electrodes_.size() > 0) return;
+
+    passiveCEM_.clear();
 
     //** step 1 search the mesh for signs of electrodes
     std::vector < Index > sourceIdx = mesh_->findNodesIdxByMarker(MARKER_NODE_ELECTRODE);
@@ -1762,7 +1761,7 @@ MEMINFO
 //             //** FIXME this fails with passive bodies
             elecs.push_back(electrodeRef_);
         }
-        if (verbose_) std::cout << " assemble complete electrode model ... ";
+        if (verbose_) std::cout << " assemble complete electrode model ... " << std::endl;
 
         for (Index i = 0; i < passiveCEM_.size(); i ++) elecs.push_back(passiveCEM_[i]);
 
@@ -1807,11 +1806,13 @@ MEMINFO
 //             S_.save("S-gimli.matrix");
 //             rhs.save("rhs.vec");
 //             save(sol, "sol.vec");
-//             mesh_->addData("sol" + str((kIdx) * nCurrentPattern + i), sol);
-// //             mesh_->addData("rhs", rhs);
-// //             mesh_->addData("soll",abs(log(sol)));
-//             mesh_->exportVTK("sol");
-// //             exit(0);
+            // __MS(eA[i])
+            // __MS(eB[i])
+            // mesh_->addData("sol" + str((kIdx) * nCurrentPattern + i), sol);
+            // mesh_->addData("rhs", rhs);
+            // mesh_->addData("soll", log(abs(sol)));
+            // mesh_->exportVTK("sol");
+            // exit(0);
 //         }
 //         mesh_->addData("sol" + str((kIdx) * nCurrentPattern + i), sol);
 //         S_.save("S-gimli.matrix");

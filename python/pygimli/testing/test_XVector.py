@@ -275,6 +275,17 @@ class TestRVectorMethods(unittest.TestCase):
         np.testing.assert_array_equal(sum(I), 2)
         np.testing.assert_array_equal(np.sum(I), 2)
 
+    def testComparison(self):
+        a = pg.RVector(10, 1)
+        b = pg.RVector(10, 2)
+        
+        np.testing.assert_equal(len(a < 1), 10)
+        np.testing.assert_equal(len(a > 2), 10)
+
+        np.testing.assert_equal(len(a < b), 10)
+        np.testing.assert_equal(len(a > b), 10)
+        
+
 if __name__ == '__main__':
 
     unittest.main()

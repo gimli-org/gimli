@@ -538,6 +538,8 @@ def drawMeshBoundaries(ax, mesh, hideMesh=False, useColorMap=False, **kwargs):
 #    drawAA = True
 #    swatch = pg.Stopwatch(True)
     mesh.createNeighbourInfos()
+    
+    lw = kwargs.pop('lw', None)
 
     if not hideMesh:
         drawSelectedMeshBoundaries(ax,
@@ -547,21 +549,24 @@ def drawMeshBoundaries(ax, mesh, hideMesh=False, useColorMap=False, **kwargs):
 
     drawSelectedMeshBoundaries(ax,
                     mesh.findBoundaryByMarker(pg.MARKER_BOUND_HOMOGEN_NEUMANN),
-                    color=(0.0, 1.0, 0.0, 1.0), linewidth=1.0)
+                    color=(0.0, 1.0, 0.0, 1.0), 
+                    linewidth=lw or 1.0)
     drawSelectedMeshBoundaries(ax,
                     mesh.findBoundaryByMarker(pg.MARKER_BOUND_MIXED),
-                    color=(1.0, 0.0, 0.0, 1.0), linewidth=1.0)
+                    color=(1.0, 0.0, 0.0, 1.0), 
+                    linewidth=lw or 1.0)
 
     b0 = [b for b in mesh.boundaries() if b.marker() > 0]
     if useColorMap:
-        drawSelectedMeshBoundaries(ax, b0, color=None, linewidth=1.5)
+        drawSelectedMeshBoundaries(ax, b0, color=None, 
+                                   linewidth=lw or 1.5)
     else:
         drawSelectedMeshBoundaries(ax, b0, color=(0.0, 0.0, 0.0, 1.0),
-                                   linewidth=1.5)
+                                   linewidth=lw or 1.5)
 
     b4 = [b for b in mesh.boundaries() if b.marker() < -4]
     drawSelectedMeshBoundaries(ax, b4, color=(0.0, 0.0, 0.0, 1.0),
-                               linewidth=1.5)
+                               linewidth=lw or 1.5)
 
     updateAxes_(ax)
 
@@ -941,7 +946,8 @@ def drawStreamLines(ax, mesh, u, nx=25, ny=25, **kwargs):
     Additionally arguments are piped to streamplot.
 
     This works only for rectangular regions.
-    drawStreamLine is more comfortable and more flexible.
+    You should use pg.mplviewer.drawStreams, which is more comfortable and 
+    more flexible.
     """
     X, Y = np.meshgrid(
         np.linspace(mesh.xmin(), mesh.xmax(), nx),
@@ -965,9 +971,6 @@ def drawStreamLines(ax, mesh, u, nx=25, ny=25, **kwargs):
 
     updateAxes_(ax)
     return gci
-
-
-# def drawStreamLines(...)
 
 
 def drawStreamLine_(ax, mesh, c, data, dataMesh=None, linewidth=1.0,
@@ -1044,11 +1047,33 @@ def drawStreamLine_(ax, mesh, c, data, dataMesh=None, linewidth=1.0,
         dy = y[ymid + 1] - y[ymid]
         c = mesh.findCell([x[xmid], y[ymid]])
         dLength = c.center().dist(c.node(0).pos()) / 4.
+    
 
         if v[xmid] > dropTol:
-            ax.arrow(x[xmid], y[ymid], dx, dy, width=dLength / 3.,
-                     head_starts_at_zero=True, **kwargs)
+            # ax.arrow(x[xmid], y[ymid], dx, dy, 
+            #          #width=dLength / 3.,
+            #          width=0,
+            #          head_width=0.01,
+            #          head_length=0.02
+            #         #  head_width=dLength / 3.,
+            #         #  head_length=dLength / 3.,
+            #          head_starts_at_zero=True, 
+            #          length_includes_head=False,
+            #          lw=4,
+            #          ls=None,
+            #          **kwargs)
 
+            dx90 = -dy
+            dy90 = dx
+            aLen = 3
+            aWid = 1
+            xy = list(zip([x[xmid] + dx90*aWid, x[xmid] + dx*aLen, x[xmid] - dx90*aWid], 
+                          [y[ymid] + dy90*aWid, y[ymid] + dy*aLen, y[ymid] - dy90*aWid]))
+
+            arrow = mpl.patches.Polygon(xy, ls=None, lw=0, closed=True, **kwargs)
+            #arrow = mpl.collections.PolyCollection(xy, lines=None, closed=True, **kwargs)
+            ax.add_patch(arrow)
+            
     return lines
 
 
@@ -1190,9 +1215,6 @@ def drawStreams(ax, mesh, data, startStream=3, **kwargs):
         c.setValid(True)
 
     updateAxes_(ax)
-
-
-# def drawStreamLines2(...)
 
 
 def drawSensors(ax, sensors, diam=None, coords=None, verbose=False, **kwargs):

@@ -323,13 +323,8 @@ public:
     /*! Inplace remove data from index vector. Remove all data that are covered by idx. Sensors are preserved.*/
     virtual void remove(const IndexArray & idx);
 
-    /*! Create new DataContainer that only contains the values that are covered by idx. Sensors are preserved.*/
-    virtual DataContainer filter(const IndexArray & idx) const ;
-
-    /*! Create new DataContainer from bool vector marking subset. Sensors are preserved.*/
-    inline DataContainer filter(const BVector & bvec) const {
-        return filter(find(bvec));
-    }
+    /*! Inplace remove from Bvector. Sensors are preserved.*/
+    inline void remove(const BVector & bvec){ remove(find(bvec)); }
 
     /*! Mark data valid by index vector. Shortcut for this->ref("valid")->setVal(idx, valid). */
     inline void markValid(const IndexArray & idx, bool valid=true){
@@ -339,7 +334,6 @@ public:
     inline void markValid(const BVector & bvec, bool valid=true){
         dataMap_["valid"].setVal(valid, find(bvec));
     }
-
     /*! Mark single data valid. this->ref("valid")->setVal(idx, valid). */
     inline void markValid(Index idx, bool valid=true){
         dataMap_["valid" ].setVal(valid, idx);
