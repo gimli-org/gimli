@@ -7,6 +7,7 @@ Heat equation in 1D
 This tutorial aims for the following basic topics:
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 * Solving a partial differential equation using Finite Element Modeling (FEM) 
   applying preassembled FEM matrices
 * Handling of time discretization
@@ -32,6 +33,22 @@ We will solve for temperature :math:`u(t,x)` on the one dimensional
 domain :math:`\Omega = x = [0, 1]\text{m}` for a time interval 
 :math:`t \in [0,1] \text{s}`
 =======
+We will solve for temperature :math:`u(t,x)` on the one 
+dimensional domain :math:`\Omega = x = [0, 1]\text{m}` for a time interval :math:`t \in [0,1] \text{s}`
+>>>>>>> Stashed changes
+=======
+* Solving a partial differential equation using Finite Element Modeling (FEM) applying 
+  preassembled FEM matrices
+* Handling of time discretization
+
+As showcase we assume the homogeneous heat equation on isotropic and homogeneous media in one dimension:
+
+.. math::
+
+    \frac{\partial u(t,x)}{\partial t} - \Delta u(t,x) & = 0 \quad|\quad \text{on}\quad\Omega\\
+    u(t,x) & = 0\quad|\quad \text{on}\quad\partial\Omega \\
+    u(0,x) & = \sin(\pi x)
+
 We will solve for temperature :math:`u(t,x)` on the one 
 dimensional domain :math:`\Omega = x = [0, 1]\text{m}` for a time interval :math:`t \in [0,1] \text{s}`
 >>>>>>> Stashed changes
@@ -71,7 +88,11 @@ probeID = int(grid.nodeCount() / 2)
 # The time discretization is a simple array
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 times = np.arange(0, 1, 0.002)
+=======
+times = np.arange(0, 1.0, 0.04)
+>>>>>>> Stashed changes
 =======
 times = np.arange(0, 1.0, 0.04)
 >>>>>>> Stashed changes
@@ -80,7 +101,11 @@ times = np.arange(0, 1.0, 0.04)
 # We plot the exact solution as reference solution
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 #plt.plot(times, uAna(times, grid.node(probeID).pos()[0]), label='exact')
+=======
+plt.plot(times, uAna(times, grid.node(probeID).pos()[0]), label='exact')
+>>>>>>> Stashed changes
 =======
 plt.plot(times, uAna(times, grid.node(probeID).pos()[0]), label='exact')
 >>>>>>> Stashed changes
@@ -96,6 +121,9 @@ plt.plot(times, uAna(times, grid.node(probeID).pos()[0]), label='exact')
 ###############################################################################
 # with the time discretization step width :math:`h`.
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+>>>>>>> Stashed changes
 #
 # There are two principle ways to deal with such problems. Either solve it 
 # explicit, i.e., the solution is found iterative, step by step based on prior 
@@ -105,6 +133,7 @@ plt.plot(times, uAna(times, grid.node(probeID).pos()[0]), label='exact')
 # numerical unstable under some circumstances.
 # 
 # We start with the most basic way that is the explicit forward Euler method:
+<<<<<<< Updated upstream
 #
 #.. math::
 #
@@ -122,6 +151,11 @@ plt.plot(times, uAna(times, grid.node(probeID).pos()[0]), label='exact')
 #.. math::
 #
 >>>>>>> Stashed changes
+=======
+#
+#.. math::
+#
+>>>>>>> Stashed changes
 #  u(t+h, x) = u(t,x) + h \frac{\partial^2 u(t,x)}{\partial x^2}
 
 ###############################################################################
@@ -132,11 +166,13 @@ plt.plot(times, uAna(times, grid.node(probeID).pos()[0]), label='exact')
 #  \mathbf{A} &= \int u v \qquad\text{Mass element matrix} \\
 #  \mathbf{S} &= \int \nabla u \nabla v \qquad\text{Striffness matrix} 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
 ###############################################################################
 # .. warning::
 #   TODO We need to explain these matrices in a different tutorial. Clean 
 #   this when done
+=======
 =======
 
 ###############################################################################
@@ -201,6 +237,73 @@ for n in range(1, len(times)):
 
 >>>>>>> Stashed changes
 
+###############################################################################
+# .. warning::
+#   TODO We need to explain these matrices in a different tutorial. Clean 
+#   this when done
+
+<<<<<<< Updated upstream
+S = solver.createStiffnessMatrix(grid)
+M = solver.createMassMatrix(grid)
+=======
+dt = times[1] - times[0]
+>>>>>>> Stashed changes
+
+u = np.zeros((len(times), grid.nodeCount()))
+
+dirichletBC = [[1, 0],  # top
+               [2, 0]]  # bottom
+
+boundUdir = solver.parseArgToBoundaries(dirichletBC, grid)
+
+h = times[1] - times[0]
+
+for n in range(1, len(times)):
+    u[n] = M * u[n-1] + S * h * u[n-1]
+
+
+for n in range(1, len(times)):
+    b = (M - S * h) * u[n - 1]
+
+    S = M
+    solver.assembleDirichletBC(S, boundUdir)
+
+    solve = pg.LinSolver(S)
+    solve.solve(b, ut)
+
+    u[n] = ut
+
+
+for n in range(1, len(times)):
+    # u[n] = S / u[n-1]
+    b = M * u[n - 1]
+    S = M + A * h
+
+    solver.assembleDirichletBC(S, boundUdir)
+
+    solve = pg.LinSolver(S)
+    solve.solve(b, ut)
+
+    u[n] = ut
+
+
+
+
+<<<<<<< Updated upstream
+
+
+
+
+###############################################################################
+# or implicit with the backward Euler method:
+#
+#
+#.. math::
+#
+#  u(t+h, x) = u(t,x) + h \frac{\partial^2 u(t,x)}{\partial x^2}
+
+>>>>>>> Stashed changes
+
 S = solver.createStiffnessMatrix(grid)
 M = solver.createMassMatrix(grid)
 
@@ -220,6 +323,9 @@ h = times[1] - times[0]
 for n in range(1, len(times)):
     u[n] = M * u[n-1] + S * h * u[n-1]
 
+=======
+theta = 1
+>>>>>>> Stashed changes
 
 for n in range(1, len(times)):
     b = (M - S * h) * u[n - 1]
@@ -364,6 +470,7 @@ plt.show()
 
 # dt = times[1] - times[0]
 
+<<<<<<< Updated upstream
 # ut = pg.RVector(dof, 0.0)
 # rhs = pg.RVector(dof, 0.0)
 # b = pg.RVector(dof, 0.0)
@@ -413,6 +520,8 @@ plt.show()
 
 # plt.plot(times, u[:, probeID], label='Crank-Nicolson')
 
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 plt.xlabel("t (s) at x = " + str(round(grid.node(probeID).pos()[0], 2)))
