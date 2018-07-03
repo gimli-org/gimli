@@ -36,8 +36,7 @@ import pygimli.solver as solver
 # * boundary with marker is 1 is :math:`\partial\Omega` = left side
 # * boundary with marker is 2 is :math:`\partial\Omega` = right side
 
-x=np.linspace(0.0, 1.0, 11)
-grid = pg.createGrid(x)
+grid = pg.createGrid(x=np.linspace(0.0, 1.0, 100))
 
 ###############################################################################
 # Fortunately, we know the exact solution for the desired test case:
@@ -94,7 +93,7 @@ times = np.arange(0, 1, 0.002)
 #
 #.. math::
 #
-#  \mathbf{M}_{ij} = <u_i, u_j>&= \int_{\Omega} u_i u_j \qquad\text{Mass element matrix} \\
+#  \mathbf{A} &= \int u v \qquad\text{Mass element matrix} \\
 #  \mathbf{S} &= \int \nabla u \nabla v \qquad\text{Striffness matrix} 
 
 ###############################################################################
@@ -102,12 +101,65 @@ times = np.arange(0, 1, 0.002)
 #   TODO We need to explain these matrices in a different tutorial. Clean 
 #   this when done
 
+S = solver.createStiffnessMatrix(grid)
+M = solver.createMassMatrix(grid)
+
+u = np.zeros((len(times), grid.nodeCount()))
+
+dirichletBC = [[1, 0],  # top
+               [2, 0]]  # bottom
+
+boundUdir = solver.parseArgToBoundaries(dirichletBC, grid)
+
+h = times[1] - times[0]
+
+for n in range(1, len(times)):
+    u[n] = M * u[n-1] + S * h * u[n-1]
+
+
+for n in range(1, len(times)):
+    b = (M - S * h) * u[n - 1]
+
+    S = M
+    solver.assembleDirichletBC(S, boundUdir)
+
+    solve = pg.LinSolver(S)
+    solve.solve(b, ut)
+
+    u[n] = ut
+
+
+for n in range(1, len(times)):
+    # u[n] = S / u[n-1]
+    b = M * u[n - 1]
+    S = M + A * h
+
+    solver.assembleDirichletBC(S, boundUdir)
+
+    solve = pg.LinSolver(S)
+    solve.solve(b, ut)
+
+    u[n] = ut
+
+
+
+
+
+
+
+
+###############################################################################
+# or implicit with the backward Euler method:
+#
+#
+#.. math::
+#
+#  u(t+h, x) = u(t,x) + h \frac{\partial^2 u(t,x)}{\partial x^2}
+
+
 h = min(grid.cellSizes())
 
-S = solver.createStiffnessMatrix(grid)
-S_FD = S*(1./h)
-M = solver.createMassMatrix(grid)
-I = solver.identity(grid.nodeCount())
+dt = times[1] - times[0]
 
 dirichletBC = [[1, 0],  # top
                [2, 0]]  # bottom
