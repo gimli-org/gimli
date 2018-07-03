@@ -532,6 +532,7 @@ def drawMeshBoundaries(ax, mesh, hideMesh=False, useColorMap=False, **kwargs):
     mesh.createNeighbourInfos()
     
     lw = kwargs.pop('lw', None)
+    col = kwargs.pop('color', None)
 
     if not hideMesh:
         drawSelectedMeshBoundaries(ax,
@@ -553,11 +554,13 @@ def drawMeshBoundaries(ax, mesh, hideMesh=False, useColorMap=False, **kwargs):
         drawSelectedMeshBoundaries(ax, b0, color=None, 
                                    linewidth=lw or 1.5)
     else:
-        drawSelectedMeshBoundaries(ax, b0, color=(0.0, 0.0, 0.0, 1.0),
+        drawSelectedMeshBoundaries(ax, b0, 
+                                   color=col or (0.0, 0.0, 0.0, 1.0),
                                    linewidth=lw or 1.5)
 
     b4 = [b for b in mesh.boundaries() if b.marker() < -4]
-    drawSelectedMeshBoundaries(ax, b4, color=(0.0, 0.0, 0.0, 1.0),
+    drawSelectedMeshBoundaries(ax, b4, 
+                               color=col or (0.0, 0.0, 0.0, 1.0),
                                linewidth=lw or 1.5)
 
     updateAxes_(ax)
