@@ -110,7 +110,6 @@ plt.plot(times, u[:, probeID], label='Crank-Nicolson')
 plt.xlabel("t[s] at x = " + str(round(grid.node(probeID).pos()[0], 2)))
 plt.ylabel("u")
 plt.ylim(0.0, 1.0)
-plt.xlim(0.0, 0.5)
 plt.legend()
 plt.grid()
 

@@ -1172,7 +1172,6 @@ def assembleBC_(bc, mesh, S, rhs, time=None, userData=None):
         pg.logger.warn("Unknown boundary condition[s]" + \
                        str(bct.keys()) + " will be ignored")
 
-
 def createStiffnessMatrix(mesh, a=None):
     r"""Create the Stiffness matrix.
 
@@ -1623,7 +1622,13 @@ def checkCFL(times, mesh, vMax):
     """
     if times is not None:
         dt = times[1] - times[0]
-        dx = min(mesh.boundarySizes())
+        dx = 0.0
+        
+        if mesh.dimension() == 1:
+            dx = min(mesh.cellSizes())
+        else:
+            dx = min(mesh.boundarySizes())
+
         c = vMax * dt / dx
         if c > 1:
             print("Courant-Friedrichs-Lewy Number:", c,

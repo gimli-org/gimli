@@ -1,11 +1,8 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""
-Created on Thu Jul 20 17:20:46 2017
+"""Utility functions to convert pg SparseMatrices from and to numpy objects"""
 
-@author: skibbe
-"""
 import numpy as np
-
 import pygimli as pg
 
 
@@ -13,7 +10,7 @@ def sparseMatrix2csr(A):
     """Convert SparseMatrix to scipy.csr_matrix.
 
     Compressed Sparse Row matrix
-
+    
     Parameters
     ----------
     A: pg.SparseMapMatrix | pg.SparseMatrix
