@@ -6,11 +6,12 @@ Heat equation in 1D
 
 This tutorial aims for the following basic topics:
 
-* Solving a partial differential equation using Finite Element Modeling (FEM) applying 
-  preassembled FEM matrices
+* Solving a partial differential equation using Finite Element Modeling (FEM) 
+  applying preassembled FEM matrices
 * Handling of time discretization
 
-As showcase we assume the homogeneous heat equation on isotropic and homogeneous media in one dimension:
+As showcase we assume the homogeneous heat equation on isotropic and 
+homogeneous media in one dimension:
 
 .. math::
 
@@ -18,8 +19,9 @@ As showcase we assume the homogeneous heat equation on isotropic and homogeneous
     u(t,x) & = 0\quad|\quad \text{on}\quad\partial\Omega \\
     u(0,x) & = \sin(\pi x)
 
-We will solve for temperature :math:`u(t,x)` on the one 
-dimensional domain :math:`\Omega = x = [0, 1]\text{m}` for a time interval :math:`t \in [0,1] \text{s}`
+We will solve for temperature :math:`u(t,x)` on the one dimensional 
+domain :math:`\Omega = x = [0, 1]\text{m}` for a time interval 
+:math:`t \in [0,1] \text{s}`
 """
 
 import numpy as np
@@ -34,7 +36,8 @@ import pygimli.solver as solver
 # * boundary with marker is 1 is :math:`\partial\Omega` = left side
 # * boundary with marker is 2 is :math:`\partial\Omega` = right side
 
-grid = pg.createGrid(x=np.linspace(0.0, 1.0, 100))
+x=np.linspace(0.0, 1.0, 11)
+grid = pg.createGrid(x)
 
 ###############################################################################
 # Fortunately, we know the exact solution for the desired test case:
@@ -55,12 +58,12 @@ probeID = int(grid.nodeCount() / 2)
 ###############################################################################
 # The time discretization is a simple array
 
-times = np.arange(0, 1.0, 0.05)
+times = np.arange(0, 1, 0.002)
 
 ###############################################################################
 # We plot the exact solution as reference solution
 
-plt.plot(times, uAna(times, grid.node(probeID).pos()[0]), label='exact')
+#plt.plot(times, uAna(times, grid.node(probeID).pos()[0]), label='exact')
 
 ###############################################################################
 #For the numerical solution we review the main equation in a time discrete view
@@ -91,7 +94,7 @@ plt.plot(times, uAna(times, grid.node(probeID).pos()[0]), label='exact')
 #
 #.. math::
 #
-#  \mathbf{A} &= \int u v \qquad\text{Mass element matrix} \\
+#  \mathbf{M}_{ij} = <u_i, u_j>&= \int_{\Omega} u_i u_j \qquad\text{Mass element matrix} \\
 #  \mathbf{S} &= \int \nabla u \nabla v \qquad\text{Striffness matrix} 
 
 ###############################################################################
@@ -99,52 +102,88 @@ plt.plot(times, uAna(times, grid.node(probeID).pos()[0]), label='exact')
 #   TODO We need to explain these matrices in a different tutorial. Clean 
 #   this when done
 
-S = solver.createStiffnessMatrix(grid)
-M = solver.createMassMatrix(grid)
+h = min(grid.cellSizes())
 
-u = np.zeros((len(times), grid.nodeCount()))
-u[0] = np.sin(np.pi * pg.x(grid))
+S = solver.createStiffnessMatrix(grid)
+S_FD = S*(1./h)
+M = solver.createMassMatrix(grid)
+I = solver.identity(grid.nodeCount())
+
 dirichletBC = [[1, 0],  # top
                [2, 0]]  # bottom
 
 boundUdir = solver.parseArgToBoundaries(dirichletBC, grid)
-solver.assembleDirichletBC(S, boundUdir)
 
-h = times[1] - times[0]
+solver.assembleDirichletBC(S, boundUdir)
+solver.assembleDirichletBC(S_FD, boundUdir)
+solver.assembleDirichletBC(M, boundUdir)
+
+import scipy
+import scipy.sparse.linalg
+lam = scipy.sparse.linalg.eigsh(pg.utils.sparseMatrix2csr(S_FD), 
+                                k=S.rows()-2)[0]
+tau = 2/max(lam) # stable for FD
+
+lam = scipy.sparse.linalg.eigsh(pg.utils.sparseMatrix2csr(S), 
+                                k=S.rows()-2)[0]
+tau = (2*h)**2/max(lam)  # stable for FE
+
+#tau *= h
+#tau = 0.1 / (2/h)**2
+
+times = np.arange(0, 0.5, tau)
+print('max lambda:', max(lam), '/' , (2/h)**2, 'h:', h, 'tau:', tau, 'nTau', len(times))
+
+
+u = np.zeros((len(times), grid.nodeCount()))
+u[0] = np.sin(np.pi * pg.x(grid))
+u[0, 0] = 0.0
+u[0,-1] = 0.0
 
 print('c:', pg.solver.checkCFL(times, grid, 1))
-print('dt:', h, 'dx:', min(grid.boundarySizes()), 
-      'c:', 1 * h / min(grid.boundarySizes()))
+print('dt:', tau, 'dx:', h, 'c:', 1. * tau / h)
+print('h:', h, 'tau:', tau, 'tau: < ', 2*h**2, 'tau2: < ', 2/max(lam))
 
-
+# pg.solver.showSparseMatrix(S, full=True)
+# pg.solver.showSparseMatrix(M, full=True)
+pg.tic()
+SFD = (I - S_FD * tau)
 for n in range(1, len(times)):
-    u[n] = u[n-1] - (S * h * u[n-1])
+    #u[n] = u[n-1] - (S * (tau/h)) * u[n-1]
+    u[n] = SFD * u[n-1]
+pg.toc('FD Solution')
 
-plt.plot(times, u[:, probeID], 'x', label='explicit1')
 
+#plt.plot(pg.x(grid), np.log10(u[-1]), '-.')
+#plt.plot(times, u[:, probeID], 'x', label='explicit FD')
+
+pg.tic()
 ut = pg.RVector(grid.nodeCount(), 0.0)
+solve = pg.LinSolver(M)
 for n in range(1, len(times)):
     # M * u[n] = M * u[n-1] + h * S * u[n-1]
-    b = (M - S * h) * u[n-1]
-    A = M
-
-    solve = pg.LinSolver(A)
+    b = (M - S * tau) * u[n-1]
     u[n] = solve.solve(b)
+pg.toc('FE Solution')
 
-plt.plot(times, u[:, probeID], label='explicit2')
+# for i in np.linspace(0, len(u)-1, 10):
+#     plt.plot(pg.x(grid), np.log10(u[int(i)]))
+
+# #plt.ylim(-6., 1.0)
+# pg.wait()
+plt.plot(times, u[:, probeID], label='explicit')
 
 for n in range(1, len(times)):
     # (M + h * S ) u[n] = M * u[n-1]
     b = M * u[n - 1]
-    A = M + S * h
+    A = M + S * tau
 
     solve = pg.LinSolver(A)
     u[n] = solve.solve(b)
 
 plt.plot(times, u[:, probeID], label='implicit')
 
-
-#plt.show()
+plt.show()
 
 
 
@@ -214,7 +253,6 @@ plt.plot(times, u[:, probeID], label='implicit')
 plt.xlabel("t (s) at x = " + str(round(grid.node(probeID).pos()[0], 2)))
 plt.ylabel("u")
 plt.ylim(0.0, 1.0)
-plt.xlim(0.0, 0.5)
 plt.legend()
 plt.grid()
 

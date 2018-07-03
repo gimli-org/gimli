@@ -9,7 +9,8 @@ BOOST_URL=http://sourceforge.net/projects/boost/files/boost/
 LAPACK_VERSION=3.4.2
 LAPACK_URL=http://www.netlib.org/lapack/
 
-SUITESPARSE_VERSION=4.4.4
+SUITESPARSE_VERSION=5.2.0
+#SUITESPARSE_VERSION=4.4.4
 SUITESPARSE_URL=http://faculty.cse.tamu.edu/davis/SuiteSparse/
 
 TRIANGLE_URL=http://www.netlib.org/voronoi/

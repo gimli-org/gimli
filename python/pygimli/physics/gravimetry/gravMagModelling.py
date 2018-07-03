@@ -82,8 +82,7 @@ def BaZSphere(pnts, R, pos, M):
 
 
 def BaZCylinderHoriz(pnts, R, pos, M):
-    r"""
-    Magnetic anomaly for a horizontal cylinder.
+    r"""Magnetic anomaly for a horizontal cylinder.
 
     Calculate the vertical component of the anomalous magnetic field Bz for a
     buried horizontal cylinder at position pos with radius R for a given
@@ -268,7 +267,7 @@ def gradGZCylinderHoriz(r, a, rho, pos=(0., 0.)):
     t = pos[1]
 
     gz_xz = np.asarray([-2.0 * r[:, 0] * (t - r[:, 1]),
-                        1.0 * (- r[:, 0]**2 + (t - r[:, 1])**2)])
+                       (-r[:, 0]**2 + (t - r[:, 1])**2)])
 
     return (G * deltaACyl(a, rho) / rabs(r - p)**4. * gz_xz).T
 # def gZSphere(...)

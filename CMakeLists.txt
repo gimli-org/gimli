@@ -254,7 +254,7 @@ set (UMFPACK_FOUND FALSE)
 find_or_build_package(Triangle triangle LOCAL)
 find_or_build_package(BLAS lapack)
 find_or_build_package(LAPACK lapack)
-find_or_build_package(CHOLMOD suitesparse)
+find_or_build_package(CHOLMOD suitesparse ${CHOLMOD_LOCAL})
 #find_or_build_package(UMFPACK umfpack)
 find_package(UMFPACK)
 

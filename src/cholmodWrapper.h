@@ -26,15 +26,13 @@ namespace GIMLI{
 
 class DLLEXPORT CHOLMODWrapper : public SolverWrapper {
 public:
-    CHOLMODWrapper(RSparseMatrix & S, bool verbose=false, int stype=-2);
+    CHOLMODWrapper(RSparseMatrix & S, bool verbose=false, int stype=-2, bool forceUmfpack=false);
 
-    CHOLMODWrapper(CSparseMatrix & S, bool verbose=false, int stype=-2);
+    CHOLMODWrapper(CSparseMatrix & S, bool verbose=false, int stype=-2, bool forceUmfpack=false);
 
     virtual ~CHOLMODWrapper();
 
     static bool valid();
-
-    int factorise();
 
     virtual int solve(const RVector & rhs, RVector & solution);
 
@@ -56,10 +54,10 @@ protected:
     template < class ValueType >
     int solveCHOL_(const Vector < ValueType > & rhs, Vector < ValueType > & solution);
 
-
     template < class ValueType >
     int solveUmf_(const Vector < ValueType > & rhs, Vector < ValueType > & solution);
 
+    int factorise_();
 
     int stype_;
 
@@ -68,6 +66,7 @@ protected:
     void *L_;
 
     bool useUmfpack_;
+    bool forceUmfpack_;
     void *Numeric_;
     void *NumericD_;
     int * Ap_;
@@ -77,7 +76,6 @@ protected:
 
     RVector *AxV_;
     RVector *AzV_;
-
 };
 
 } //namespace GIMLI;

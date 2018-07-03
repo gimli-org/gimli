@@ -789,21 +789,28 @@ def linSolve(A, b, verbose=False):
     """
     x = pg.RVector(len(b), .0)
 
-    #print(type(A))
-    if isinstance(A, pg.RSparseMapMatrix):
+    if isinstance(A, pg.RSparseMatrix):
+        solver = pg.LinSolver(A, verbose=verbose)
+        solver.solve(b, x)
+        return x
+    elif isinstance(A, pg.RSparseMapMatrix):
         S = pg.RSparseMatrix(A)
         solver = pg.LinSolver(S, verbose=verbose)
         solver.solve(b, x)
+        return x
     elif isinstance(A, np.ndarray):
         return np.linalg.solve(A, b)
-    elif isinstance(A, scipy.sparse.csr.csr_matrix):
+
+    import scipy.sparse
+    #pg.optImport('scipy.sparse')
+    #print(type(A))
+    if type(A) == scipy.sparse.csr.csr_matrix:
         return scipy.sparse.linalg.spsolve(A, b)
     else:
-        solver = pg.LinSolver(A, verbose=verbose)
-        solver.solve(b, x)
+        raise StandardException("Don't know how to lineare solve a system"
+                                " with matrixtype:" + type(A))
 
     return x
-
 
 def assembleForceVector(mesh, f, userData=None):
     """
@@ -876,20 +883,20 @@ def assembleLoadVector(mesh, f, userData=None):
 #            print("Remove revtest in assembleForceVector after check")
 
         elif len(fArray) == mesh.nodeCount():
+            fA = pg.RVector(fArray)
             b_l = pg.ElementMatrix()
             for c in mesh.cells():
                 b_l.u(c)
                 # rhs.addVal(b_l.row(0) * fArray[b_l.idx()], b_l.idx())
-                rhs.add(b_l, fArray)
-
-            print("test reference solution:")
-            rhsRef = pg.RVector(mesh.nodeCount(), 0)
-            for c in mesh.cells():
-                b_l.u(c)
-                for i, idx in enumerate(b_l.idx()):
-                    rhsRef[idx] += b_l.row(0)[i] * fArray[idx]
-            np.testing.assert_allclose(rhs, rhsRef)
-            print("Remove revtest in assembleForceVector after check")
+                rhs.add(b_l, fA)
+            # print("test reference solution:")
+            # rhsRef = pg.RVector(mesh.nodeCount(), 0)
+            # for c in mesh.cells():
+            #     b_l.u(c)
+            #     for i, idx in enumerate(b_l.idx()):
+            #         rhsRef[idx] += b_l.row(0)[i] * fArray[idx]
+            # np.testing.assert_allclose(rhs, rhsRef)
+            # print("Remove revtest in assembleForceVector after check")
 
             # rhs = pg.RVector(fArray)
         else:
@@ -1065,9 +1072,6 @@ def assembleNeumannBC(S, boundaryPairs, rhs=None, time=0.0, userData=None):
         val = pair[1]
         g = generateBoundaryValue(boundary, val, time, userData)
 
-        #print("Neumann")
-        #print(boundary)
-
         if g is not 0.0 and g is not None:
             Se.u(boundary)
             rhs.add(Se, g)
@@ -1131,8 +1135,6 @@ def assembleRobinBC(S, boundaryPairs, rhs=None, time=0.0, userData=None):
         #q = -41.0
         q = None
 
-        #print("Robin")
-        #print(boundary)
         if p is not 0.0 and p is not None:
             Sp.u2(boundary)
             S.add(Sp, p)
@@ -1170,11 +1172,13 @@ def assembleBC_(bc, mesh, S, rhs, time=None, userData=None):
         pg.logger.warn("Unknown boundary condition[s]" + \
                        str(bct.keys()) + " will be ignored")
 
+def createLoadVector(mesh, f, userData=None):
+    return assembleLoadVector(mesh, f, userData)
 
 def createStiffnessMatrix(mesh, a=None):
     r"""Create the Stiffness matrix.
 
-    Calculates the scaled stiffness matrix for the given mesh scaled
+    Calculates the Stiffness matrix :math:`{\bf S}` for the given mesh scaled
     with the per cell values a.
 
     ..math::
@@ -1222,14 +1226,10 @@ def createStiffnessMatrix(mesh, a=None):
 
 
 def createMassMatrix(mesh, b=None):
-    r"""Create the mass element matrix.
+    r"""Create the mass matrix.
 
-    TODO remove b .. not necessary .. b should be scaled in final equation
-    not here.
-
-
-    Calculates the mass element matrix for the given mesh scaled with the
-    per cell values b.
+    Calculates the Mass matrix (Finite element identity matrix)
+    the given mesh.
 
     ..math::
             ...
@@ -1268,6 +1268,90 @@ def createMassMatrix(mesh, b=None):
     #    B_l *= b[c.id()]
     #    B += B_l
     # return B
+
+
+def _feNorm(u, A):
+    """Create a norm within a Finite Element space.
+
+    Create the Finite Element Norm with a preassembled system matrix.
+    """
+    return np.sqrt(pg.dot(u, A.mult(u)))
+    
+
+def L2Norm(u, M=None, mesh=None):
+    r"""Create Lebesgue (L2) norm for the finite element space.
+
+    Finde the L2 Norm for a solution in the finite element space.
+    :math:`u` exact solution
+    :math:`{\bf M}` Mass matrix, i.e., Finite element identity matrix.
+
+    .. math::
+
+        L2(f(x)) = || f(x) ||_{L^2} & = (\int |f(x)|^2 \d x)^{1/2} \\
+                 & \approx h (\sum |f(x)|^2 )^{1/2}
+        L2(u) = || u ||_{L^2} & = (\int |u|^2 \d x)^{1/2} \\
+                 & \approx (\sum M (u)) ^{1/2}
+        e_{L2_rel} = \frac{L2(u)}{L2(u)} & = 
+                \frac{(\sum M(u))^{1/2}}{(\sum M u)^{1/2}}
+
+    The error for any approximated solution :math:`u_h` correlates to the L2 
+    norm of 'L2Norm(u - u_h, M)'. If you like relative values, you can also 
+    normalize this error with 'L2Norm(u - u_h, M) / L2Norm(u, M)*100'.
+
+    Parameters
+    ----------
+    u : iterable
+        Node based value to compute the L2 norm for.
+
+    M : Matrix
+        Mass element matrix.
+        
+    mesh : :gimliapi:`GIMLI::Mesh`
+        Mesh with the FE space to generate M if necessary.
+
+    Returns
+    -------
+    ret : float
+        :math:`L2(u)` norm.
+
+    """
+    if M is None and mesh is not None:
+        M = solver.createMassMatrix(mesh)
+
+    if M is None:
+        # M is Identity matrix
+        return np.sqrt(pg.dot(u, u))
+
+    return _feNorm(u, M)
+
+
+def H1Norm(u, S=None, mesh=None):
+    r"""Create (H1) norm for the finite element space.
+
+    Parameters
+    ----------
+    u : iterable
+        Node based value to compute the H1 norm for.
+
+    S : Matrix
+        Stiffness matrix.
+        
+    mesh : :gimliapi:`GIMLI::Mesh`
+        Mesh with the FE space to generate S if necessary.
+
+    Returns
+    -------
+    ret : float
+        :math:`H1(u)` norm.
+
+    """
+    if S is None and mesh is not None:
+        S = solver.createStiffnessMatrix(mesh)
+
+    if S is None:
+        raise StandardException("Need S or mesh here to calculate H1Norm")
+        
+    return _feNorm(u, S)
 
 
 def solve(mesh, **kwargs):
@@ -1436,21 +1520,18 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
 
     # check for material parameter
     a = parseArgToArray(a, nDof=mesh.cellCount(), mesh=mesh, userData=userData)
-    b = parseArgToArray(b, nDof=mesh.cellCount(), mesh=mesh, userData=userData)
 
-    if debug:
-        print("2: ", swatch2.duration(True))
-    # assemble the stiffness matrix
-    A = createStiffnessMatrix(mesh, a)
+    S = createStiffnessMatrix(mesh, a)
+    M = createMassMatrix(mesh)
 
-    if debug:
-        print("3: ", swatch2.duration(True))
-    M = createMassMatrix(mesh, b)
+    A = None
 
-    if debug:
-        print("4: ", swatch2.duration(True))
-    S = A + M
-
+    if b != 0:
+        b = parseArgToArray(b, nDof=mesh.cellCount(), mesh=mesh, userData=userData)
+        A = S + M * b
+    else:
+        A = S
+    
     if debug:
         print("5: ", swatch2.duration(True))
 
@@ -1492,6 +1573,8 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
         # showSparseMatrix(S)
 
         workSpace['S'] = S
+        workSpace['M'] = M
+        workSpace['A'] = A
         workSpace['rhs'] = rhs
 
         if 'assembleOnly' in kwargs:
@@ -1530,9 +1613,10 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
         M = createMassMatrix(mesh)
         F = assembleForceVector(mesh, f)
 
+        u0 = np.zeros(dof)
         if 'u0' in kwargs:
             u0 = parseArgToArray(kwargs['u0'], dof, mesh, userData)
-
+        
         progress = None
         if 'progress' in kwargs:
             from pygimli.utils import ProgressBar
@@ -1542,11 +1626,9 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
         dynamic = kwargs.pop('dynamic', False)
 
         if not dynamic:
-            A = createStiffnessMatrix(mesh, a)
-
-            assembleBC_(bc, mesh, A, F, time=0.0, userData=userData)
-
-            return crankNicolson(times, theta, A, M, F, u0=u0, progress=progress)
+            S = createStiffnessMatrix(mesh, a)
+            assembleBC_(bc, mesh, S, F, time=0.0, userData=userData)
+            return crankNicolson(times, theta, S, M, F, u0=u0, progress=progress)
 
         rhs = np.zeros((len(times), dof))
         # rhs kann zeitabhängig sein ..wird hier nicht berücksichtigt
@@ -1575,7 +1657,7 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
             swatch.reset()
             # (A + a*B)u is fastest,
             # followed by A*u + (B*u)*a and finally A*u + a*B*u and
-            b = (M + (dt * (theta - 1.)) * A) * U[n - 1] + \
+            b = (M + (dt * (theta - 1.)) * S) * U[n - 1] + \
                 dt * ((1.0 - theta) * rhs[n - 1] + theta * rhs[n])
 
             # print ('a',swatch.duration(True))
@@ -1590,7 +1672,7 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
 
             measure += swatch.duration()
 
-            S = M + A * dt * theta
+            A = M + S * dt * theta
 
             assembleBC_(bc, mesh, S, b, time=times[n], userData=userData)
 
@@ -1615,7 +1697,11 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
         return U
 
 def checkCFL(times, mesh, vMax):
-    """
+    """Check Courant-Friedrichs-Lewy condition.
+
+    For advection and flow problems. CFL Number should be lower then 1 to 
+    ensure stability.
+
     Parameters
     ----------
     """
@@ -1639,35 +1725,31 @@ def crankNicolson(times, theta, S, I, f, u0=None, progress=None, debug=None):
         S = constant over time
         f = constant over time
     """
-
     if len(times) < 2:
-        raise BaseException("We need at least 2 times for Crank "
-                            "Nicolsen time discretization." + str(len(times)))
+        raise BaseException("We need at least 2 times for "
+                            "Crank-Nicolsen time discretization." + str(len(times)))
     sw = pg.Stopwatch(True)
 
     if u0 is None:
         u0 = np.zeros(len(f))
 
     u = np.zeros((len(times), len(f)))
-    u[0,:] = u0
+    u[0, :] = u0
     dt = times[1] - times[0]
 
     rhs = np.zeros((len(times), len(f)))
-
     rhs[:] = f
-
-    A = I + S * dt * theta
-
-    solver = pg.LinSolver(A, verbose=False)
 
     timeAssemble = []
     timeSolve = []
-    # print('0', min(u[0]), max(u[0]), min(f), max(f))
 
     timeMeasure = False
     if progress:
         timeMeasure = True
 
+    A = I + S * (dt * theta)
+    solver = pg.LinSolver(A, verbose=False)
+    St = I - S * dt # cache what is possible the theta=0
     for n in range(1, len(times)):
 
         if timeMeasure:
@@ -1684,10 +1766,14 @@ def crankNicolson(times, theta, S, I, f, u0=None, progress=None, debug=None):
 #        pg.toc()
 #
 #        pg.tic()
-        b = I * u[n - 1] + S.mult(dt * (theta - 1.) * u[n - 1]) + \
-            dt * ((1.0 - theta) * rhs[n - 1] + theta * rhs[n])
+    
+        if theta == 0:
+            b = St * u[n - 1] + dt * rhs[n - 1]
+        else:
+            b = I * u[n - 1] + S.mult(dt * (theta - 1.) * u[n - 1]) + \
+                dt * ((1.0 - theta) * rhs[n - 1] + theta * rhs[n])
+
 #        pg.toc()
-#
 #        print(np.linalg.norm(b-b1))
         #np.testing.assert_allclose(bRef, b)
 

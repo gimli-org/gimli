@@ -114,11 +114,6 @@ void LinSolver::setMatrix(CSparseMatrix & S, int stype){
     initialize_(S, stype);
 }
 
-// template <> void LinSolver::solve(const RVector & rhs, RVector & solution);
-// template <> void LinSolver::solve(const CVector & rhs, CVector & solution);
-// template <> RVector LinSolver::solve(const RVector & rhs);
-// template <> CVector LinSolver::solve(const CVector & rhs);
-
 void LinSolver::solve(const RVector & rhs, RVector & solution){
     solution.resize(rows_);
     if (rhs.size() != cols_){
@@ -155,9 +150,10 @@ void LinSolver::initialize_(RSparseMatrix & S, int stype){
     switch(solverType_){
         case LDL:     solver_ = new LDLWrapper(S, verbose_); break;
         case CHOLMOD: solver_ = new CHOLMODWrapper(S, verbose_, stype); break;
-        case UNKNOWN:
+        case UMFPACK: solver_ = new CHOLMODWrapper(S, verbose_, stype, true); break;
+        case UNKNOWN: 
     default:
-            std::cerr << WHERE_AM_I << " no valid solver found"  << std::endl;
+        std::cerr << WHERE_AM_I << " no valid solver found"  << std::endl;
     }
 }
 
@@ -169,9 +165,10 @@ void LinSolver::initialize_(CSparseMatrix & S, int stype){
     switch(solverType_){
         case LDL:     solver_ = new LDLWrapper(S, verbose_); break;
         case CHOLMOD: solver_ = new CHOLMODWrapper(S, verbose_, stype); break;
+        case UMFPACK: solver_ = new CHOLMODWrapper(S, verbose_, stype, true); break;
         case UNKNOWN:
     default:
-            std::cerr << WHERE_AM_I << " no valid solver found"  << std::endl;
+        std::cerr << WHERE_AM_I << " no valid solver found"  << std::endl;
     }
 }
 
@@ -180,6 +177,7 @@ std::string LinSolver::solverName() const {
   switch(solverType_){
   case LDL:     return "LDL"; break;
   case CHOLMOD: return "CHOLMOD"; break;
+  case UMFPACK: return "UMFPACK"; break;
   case UNKNOWN:
   default: return " no valid solver installed";
   }

@@ -67,7 +67,7 @@ def tic(msg=None):
 def toc(msg=None, box=False):
     """Print elapsed time since global timer was started with `pg.tic()`."""
     if msg:
-        print(msg)
+        print(msg, end=' ')
     seconds = dur()
     m, s = divmod(seconds, 60)
     h, m = divmod(m, 60)
