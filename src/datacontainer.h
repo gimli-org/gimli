@@ -154,8 +154,8 @@ public:
         return sensorPoints_[i];
     }
     /*! Set sensor positions. Syntactic sugar.*/
-    inline void setSensor(long i, const RVector & pos ) const {
-        return setSensorPosition(i, pos);
+    inline void setSensor(long i, const RVector3 & pos) {
+        this->setSensorPosition((uint)i, pos);
     }
 
     /*! Create a valid sensor at a given position and returns the id of the sensor.
