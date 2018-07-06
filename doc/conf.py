@@ -175,6 +175,10 @@ copyright = '2018 - GIMLi Development Team'
 #
 # The short X.Y version.
 version = pygimli.__version__
+rst_epilog = """
+.. |version| replace:: pyGIMLi {versionnum}
+""".format(versionnum = version)
+
 # The full version, including alpha/beta/rc tags.
 release = pygimli.__version__
 
@@ -264,7 +268,7 @@ html_use_smartypants = True
 
 # Additional templates that should be rendered to pages, maps page names to
 # template names.
-html_additional_pages = {'index': 'index.html', 'contact': 'contact.html'}
+html_additional_pages = {'index': 'index.html'}
 
 # If false, no module index is generated.
 html_domain_indices = True

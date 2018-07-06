@@ -39,3 +39,14 @@ pyGIMLi API Reference
     :glob:
 
     _generated/*
+
+.. note::
+
+  This documentation is valid for |version|. Check your installed version with
+
+  .. code-block:: python
+
+    import pygimli as pg
+    print(pg.__version__)
+
+  and consider updating your installation.
