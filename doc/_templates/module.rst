@@ -1,24 +1,8 @@
-{{ fullname }}
-{{ underline }}
+{{ fullname | escape | underline }}
 
 .. currentmodule:: {{ fullname }}
 
-{% if fullname == "pygimli.physics" %}
-
-.. autosummary::
-  :template: module.rst
-  :toctree: ./
-
-  em
-  ert
-  gravimetry
-  petro
-  seismics
-  SIP
-  sNMR
-  traveltime
-
-{% else %}
+.. automodule:: {{ fullname }}
 
 Overview
 --------
@@ -29,6 +13,7 @@ Overview
 .. rubric:: Functions
 
 .. autosummary::
+
 {% for function in functions %}
   {{ function }}
 {%- endfor %}
@@ -56,6 +41,7 @@ Exceptions
 ----------
 
 .. autosummary::
+
 {% for exception in exceptions %}
   {{ exception }}
 {%- endfor %}
@@ -103,4 +89,3 @@ Classes
 {%- endfor %}
 {% endif %}
 {% endblock %}
-{% endif %}
