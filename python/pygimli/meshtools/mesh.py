@@ -289,8 +289,10 @@ def readGmsh(fname, verbose=False):
                     elif entry[0] == 4:
                         tets.append((entry[-4], entry[-3], entry[-2],
                                      entry[-1], entry[2]))
-    fid.close()
+                    elif entry[0] in [3, 6]:
+                        pg.error("Qudrangles and prisms are not supported yet.")
 
+    fid.close()
     lines = np.asarray(lines)
     triangles = np.asarray(triangles)
     tets = np.asarray(tets)
