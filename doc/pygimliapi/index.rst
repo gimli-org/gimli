@@ -33,13 +33,6 @@ pyGIMLi API Reference
   utils
   viewer
 
-.. only:: latex
-
-  .. toctree::
-    :glob:
-
-    _generated/*
-
 .. note::
 
   This documentation is valid for |version|. Check your installed version with
