@@ -11,19 +11,19 @@ Installation
     <ul class="nav nav-pills">
         <li role="presentation" class="active">
             <a href="#install_win" role="tab" data-toggle="tab">
-                <i class="icon-windows"></i> Windows</a>
+                <i class="fab fa-windows"></i> Windows</a>
         </li>
         <li role="presentation">
             <a href="#install_lin" role="tab" data-toggle="tab">
-                <i class="icon-linux"></i> Linux</a>
+                <i class="fab fa-linux"></i> Linux</a>
         </li>
         <li role="presentation">
             <a href="#install_mac" role="tab" data-toggle="tab">
-                <i class="icon-apple"></i> Mac OS</a>
+                <i class="fab fa-apple"></i> Mac OS</a>
         </li>
         <li role="presentation">
             <a href="#install_pre" role="tab" data-toggle="tab">
-                <i class="icon-info"></i> Prerequisites</a>
+                <i class="fas fa-info"></i> Prerequisites</a>
         </li>
     </ul>
     <div class="tab-content">
@@ -69,5 +69,3 @@ Installation
 
     </div>
     </div>
-
-

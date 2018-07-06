@@ -601,9 +601,6 @@ dl.class, dl.function {
 }
 
 dl.class dd, dl.function dd {
-    padding: 10px;
-}
-dl.class dd, dl.function dd {
     margin-left: 10px;
     padding: 5px 0px 0px 0px;
 }
@@ -701,4 +698,7 @@ span.sig-paren {
 
 strong {
   font-weight: 500;
+}
+.nav-list>li>a {
+    padding: 4px 13px;
 }
