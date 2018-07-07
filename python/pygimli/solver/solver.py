@@ -897,6 +897,65 @@ def assembleLoadVector(mesh, f, userData=None):
 
     return rhs
 
+
+def assembleNeumannBC(S, boundaryPairs, rhs=None, time=0.0, userData=None):
+    r"""Apply Neumann condition to the system matrix S.
+
+    Apply Neumann condition to the system matrix S.
+    .. math::
+        \frac{\partial u(\arr{r}, t)}{\partial\textbf{n}}
+        = \textbf{n}\grad u(\arr{r}, t) = g \quad\text{with}\quad\arr{r}
+        \quad\text{on}\quad \partial\Omega
+
+    Parameters
+    ----------
+
+    S : :gimliapi:`GIMLI::RSparseMatrix`
+        System matrix of the system equation.
+
+    boundaryPair : list()
+        List of pairs [ :gimliapi:`GIMLI::Boundary`, g ].
+        The value g will assigned to the nodes of the boundaries.
+        Later assignment overwrites prior.
+
+        :math:`g` need to be a scalar value (float or int) or
+        a value generator function that will be executed at run time.
+        See :py:mod:`pygimli.solver.solver.parseArgToBoundaries`
+
+        See tutorial section for an example,
+        e.g., Modeling with Boundary Conditions
+
+    rhs :
+        TODO DOCU
+    time : float
+        Will be forwarded to value generator.
+
+    userData : class
+        Will be forwarded to value generator.
+    """
+    Se = pg.ElementMatrix()
+
+    if not hasattr(boundaryPairs, '__getitem__'):
+        raise BaseException("Boundary pairs need to be a list of "
+                            "[boundary, value]")
+
+    for pair in boundaryPairs:
+        boundary = pair[0]
+
+        val = pair[1]
+
+        g = generateBoundaryValue(boundary, val, time, userData)
+
+        if g is not 0.0 and g is not None:
+
+            #Se.u(boundary)
+            #if rhs is not None:
+                #rhs.add(Se, g)
+
+            # check for robyn condition
+            Se.u2(boundary)
+            Se *= g
+
 def _assembleUDirichlet(S, rhs, uDirIndex, uDirchlet):
     """This should be moved directly into gimli"""
 
@@ -1001,10 +1060,12 @@ def assembleDirichletBC(S, boundaryPairs, rhs=None, time=0.0, userData=None,
         uDirchlet.append(uDirVal[n.id()])
 
     if nodePairs is not None:
-        #print("nodePairs", nodePairs)
+        print("nodePairs", nodePairs)
 
-        if len(nodePairs) == 2 and type(nodePairs[0]) == int:
+        if len(nodePairs) == 2 and type(nodePairs[0]) == int :
+            # assume a single Node [NodeId, val]
             nodePairs = [nodePairs]
+
 
         for i, [n, val] in enumerate(nodePairs):
             uDirIndex.append(n)
@@ -1455,10 +1516,26 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
     if debug:
         print("5: ", swatch2.duration(True))
 
+    neumannBC = kwargs.pop('duB', None)
+    dirichletBC = kwargs.pop('uB', None)
+    dirichletNodes = kwargs.pop('uN', None)
+
     if times is None:
         rhs = assembleForceVector(mesh, f, userData=userData)
 
-        assembleBC_(bc, mesh, S, rhs, time=None, userData=userData)
+        if neumannBC is not None:
+            assembleNeumannBC(S, parseArgToBoundaries(neumannBC, mesh),
+                              rhs=rhs, time=None, userData=userData)
+
+        if dirichletBC is not None:
+            assembleDirichletBC(S, parseArgToBoundaries(dirichletBC, mesh),
+                                rhs=rhs, time=None, userData=userData)
+
+        if dirichletNodes is not None:
+            assembleDirichletBC(S, [],
+                                nodePairs=dirichletNodes,
+                                rhs=rhs, time=None, userData=userData)
+
 
         if debug:
             print("6c: ", swatch2.duration(True))
@@ -1545,7 +1622,19 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
         if not dynamic:
             A = createStiffnessMatrix(mesh, a)
 
-            assembleBC_(bc, mesh, A, F, time=0.0, userData=userData)
+            if neumannBC is not None:
+                assembleNeumannBC(A, parseArgToBoundaries(neumannBC, mesh),
+                                  rhs=F, time=0.0, userData=userData)
+
+            if dirichletBC is not None:
+                assembleDirichletBC(A, parseArgToBoundaries(dirichletBC, mesh),
+                                    rhs=F, time=0.0, userData=userData)
+
+            if dirichletNodes is not None:
+                assembleDirichletBC(A, [],
+                                    nodePairs=dirichletNodes,
+                                    rhs=F, time=0.0, userData=userData)
+
 
             return crankNicolson(times, theta, A, M, F, u0=u0, progress=progress)
 
@@ -1593,7 +1682,18 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
 
             S = M + A * dt * theta
 
-            assembleBC_(bc, mesh, S, b, time=times[n], userData=userData)
+            if neumannBC is not None:
+                assembleNeumannBC(S, parseArgToBoundaries(neumannBC, mesh),
+                                  rhs=b, time=times[n], userData=userData)
+
+            if dirichletBC is not None:
+                assembleDirichletBC(S, parseArgToBoundaries(dirichletBC, mesh),
+                                    rhs=b, time=times[n], userData=userData)
+
+            if dirichletNodes is not None:
+                assembleDirichletBC(S, [],
+                                    nodePairs=dirichletNodes,
+                                    rhs=b, time=times[n], userData=userData)
 
             # u = S/b
             t_prep = swatch.duration(True)
