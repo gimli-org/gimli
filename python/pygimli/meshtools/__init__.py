@@ -13,9 +13,11 @@ from .grid import (createGrid, appendTetrahedronBoundary, appendTriangleBoundary
 from .mesh import (createMesh, createParaMesh, createParaMesh2DGrid,
                    merge2Meshes, refineQuad2Tri,
                    mergeMeshes, readGmsh, readHydrus2dMesh,
-                   readHydrus3dMesh, readTetgen, readTriangle, convertHDF5Mesh,
-                   readHDF5Mesh, readFenicsHDF5Mesh, exportHDF5Mesh,
-                   exportFenicsHDF5Mesh)
+                   readHydrus3dMesh, readTetgen, readTriangle, 
+                   convertHDF5Mesh, readHDF5Mesh, readFenicsHDF5Mesh, 
+                   exportHDF5Mesh, exportFenicsHDF5Mesh,
+                   readSTL,
+                   )
 from .polytools import createParaDomain2D  # keep for backward compatibility
 from .polytools import (createCircle, createLine, createParaMeshPLC,
                         createPolygon, createRectangle, createWorld, mergePLC,
@@ -45,6 +47,7 @@ __all__ = ['appendTriangleBoundary',
            'readHydrus3dMesh',
            'readHDF5Mesh',
            'readFenicsHDF5Mesh',
+           'readSTL',
            'refineQuad2Tri',
            'mergeMeshes',
            'merge2Meshes',

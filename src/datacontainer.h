@@ -32,12 +32,16 @@ namespace GIMLI{
 
 //! DataContainer to store, load and save data in the GIMLi unified data format.
 /*! DataContainer to store, load and save data in the GIMLi unified data format.
- The DataContainer contains a data map that holds the data itself. Each map entry can be identified by tokens.
- By default there is a data field with the token 'valid' to mark the validity of the data.
- There is also a vector of unique sensor positions that holds sensor locations and a set of additional points, e.g., topographic positions.
- A vector of indices to the sensor positions can be defined for each datum. e.g., Store an index-vector 'a' to the first current electrode 'A' of a ERT measurement.
- If you need a special DataContainer you should derive a child and specify a token translator and sensor index entries.
- There is also a unit test for the DataContainer that may help to understand what is it good for. */
+ The DataContainer contains a data map that holds the data itself. Each map
+ entry can be identified by tokens. By default there is a data field with the
+ token 'valid' to mark the validity of the data. There is also a vector of
+ unique sensor positions that holds sensor locations and a set of additional
+ points, e.g., topographic positions. A vector of indices to the sensor
+ positions can be defined for each datum. e.g., Store an index-vector 'a' to the
+ first current electrode 'A' of a ERT measurement. If you need a special
+ DataContainer you should derive a child and specify a token translator and
+ sensor index entries. There is also a unit test for the DataContainer that may
+ help to understand what is it good for. */
 
 class DLLEXPORT DataContainer{
 public:
@@ -117,7 +121,6 @@ public:
     /*! Return the complete data descriptions map */
     inline const std::map< std::string, std::string > & dataDescription() const { return dataDescription_; }
 
-
     /*!
      * Add data to this DataContainer and snap new sensor positions by tolerance snap. Data fields from this data are preserved.
      */
@@ -152,6 +155,10 @@ public:
     inline const RVector3 & sensor(long i) const {
         ASSERT_RANGE(SIndex(i), 0, this->sensorCount())
         return sensorPoints_[i];
+    }
+    /*! Set sensor positions. Syntactic sugar.*/
+    inline void setSensor(long i, const RVector3 & pos) {
+        this->setSensorPosition((uint)i, pos);
     }
 
     /*! Create a valid sensor at a given position and returns the id of the sensor.

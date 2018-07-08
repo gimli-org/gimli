@@ -1399,7 +1399,7 @@ void Mesh::importMod(const std::string & filename){
 void Mesh::importSTL(const std::string & fileName, bool isBinary ){
     double tolerance = 1e-3;
 
-    std::vector < RVector3 > allVerts;
+    std::vector< std::vector < RVector3 > > allVerts;
 
     if (!isBinary){ // try import ascii
         std::fstream file; openInFile(fileName, & file);
@@ -1411,21 +1411,27 @@ void Mesh::importSTL(const std::string & fileName, bool isBinary ){
             file.close();
             importSTL(fileName, true);
         }
+        allVerts.push_back(std::vector < RVector3 >());
 
-        bool finish = false;
-        while (!finish){
+        while (!file.eof()){
             row = getNonEmptyRow(file);
-            if (row[0] == "facet" && row[1] == "normal"){ //** facet normal  0.0  0.0  0.0
-                row = getNonEmptyRow(file);  //** outer loop
-                row = getNonEmptyRow(file); //** vertex x y z;
-                allVerts.push_back(RVector3(toDouble(row[1]), toDouble(row[2]), toDouble(row[3])));
-                row = getNonEmptyRow(file); //** vertex x y z
-                allVerts.push_back(RVector3(toDouble(row[1]), toDouble(row[2]), toDouble(row[3])));
-                row = getNonEmptyRow(file); //** vertex x y z
-                allVerts.push_back(RVector3(toDouble(row[1]), toDouble(row[2]), toDouble(row[3])));
-                row = getNonEmptyRow(file);  //** endloop
-            row = getNonEmptyRow(file);  //** endfacet;
-            } else finish = true;
+            if (row.size() > 0){
+                if (row[0] == "solid"){
+                    allVerts.push_back(std::vector < RVector3 >());
+
+                } else if (row[0] == "facet" && row[1] == "normal"){ //** facet normal  0.0  0.0  0.0
+                    row = getNonEmptyRow(file);  //** outer loop
+                    row = getNonEmptyRow(file); //** vertex x y z;
+                    allVerts.back().push_back(RVector3(toDouble(row[1]), toDouble(row[2]), toDouble(row[3])));
+                    row = getNonEmptyRow(file); //** vertex x y z
+                    allVerts.back().push_back(RVector3(toDouble(row[1]), toDouble(row[2]), toDouble(row[3])));
+                    row = getNonEmptyRow(file); //** vertex x y z
+                    allVerts.back().push_back(RVector3(toDouble(row[1]), toDouble(row[2]), toDouble(row[3])));
+                    row = getNonEmptyRow(file);  //** endloop
+                    row = getNonEmptyRow(file);  //** endfacet;
+                } else if (row[0] == "endsolid"){
+                } 
+            }
         }
         file.close();
     } else { // import Binary Format
@@ -1462,16 +1468,18 @@ void Mesh::importSTL(const std::string & fileName, bool isBinary ){
     } // end import binary STL format
 
     Node *n1, *n2, *n3;
-    if (allVerts.size() % 3 == 0 && allVerts.size() > 0){
-        for (uint i = 0; i < allVerts.size() / 3; i ++){
-            n1 = createNodeWithCheck(allVerts[i * 3], tolerance);
-            n2 = createNodeWithCheck(allVerts[i * 3 + 1], tolerance);
-            n3 = createNodeWithCheck(allVerts[i * 3 + 2], tolerance);
-            this->createTriangleFace(*n1, *n2, *n3, 0);
+    for (Index j = 0; j < allVerts.size(); j ++ ){
+        if (allVerts[j].size() % 3 == 0 && allVerts[j].size() > 0){
+            for (uint i = 0; i < allVerts[j].size() / 3; i ++){
+                n1 = createNodeWithCheck(allVerts[j][i * 3], tolerance);
+                n2 = createNodeWithCheck(allVerts[j][i * 3 + 1], tolerance);
+                n3 = createNodeWithCheck(allVerts[j][i * 3 + 2], tolerance);
+                this->createTriangleFace(*n1, *n2, *n3, j);
+            }
+        } else {
+            throwError(1,  WHERE_AM_I + " there is something wrong in ascii-stl-format "
+                    + toStr(allVerts.size()) + " " + toStr(allVerts.size() % 3));
         }
-    } else {
-        throwError(1,  WHERE_AM_I + " there is something wrong in ascii-stl-format "
-                + toStr(allVerts.size()) + " " + toStr(allVerts.size() % 3));
     }
 }
 

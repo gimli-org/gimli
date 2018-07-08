@@ -1576,24 +1576,17 @@ void Mesh::createMeshByBoundaries(const Mesh & mesh, const std::vector < Boundar
 
 }
 
-void Mesh::createMeshByCellIdx(const Mesh & mesh, const IndexArray & idxListIn){
+void Mesh::createMeshByCells(const Mesh & mesh, const std::vector < Cell * > & cells){
     this->clear();
     this->setDimension(mesh.dim());
 
     std::map < int, Node* > nodeMap;
-
-    IndexArray idxList = unique(sort(idxListIn));
-
-    if (idxList.size() != idxListIn.size()){
-        std::cerr << "This should not happen: double values in idxListIn: "
-                  << str(idxListIn.size()) << " "
-                  << str(idxList.size()) << std::endl;
-    }
+    IndexArray idxList;
 
     //** Create new nodes
-    for (Index i = 0; i < idxList.size(); i ++){
+    for (Index i = 0; i < cells.size(); i ++){
 
-        Cell * cell = & mesh.cell(idxList[i]);
+        Cell * cell = cells[i];
 
         for (Index j = 0; j < cell->nodeCount(); j ++){
             if (nodeMap.count(cell->node(j).id()) == 0){
@@ -1606,8 +1599,9 @@ void Mesh::createMeshByCellIdx(const Mesh & mesh, const IndexArray & idxListIn){
     }
 
     //! Create new cells
-    for (Index i = 0; i < idxList.size(); i ++){
-        Cell * cell = &mesh.cell(idxList[i]);
+    for (Index i = 0; i < cells.size(); i ++){
+        Cell * cell = cells[i];
+
         std::vector < Node * > nodes(cell->nodeCount());
 
         for (Index j = 0; j < nodes.size(); j ++){
@@ -1615,6 +1609,7 @@ void Mesh::createMeshByCellIdx(const Mesh & mesh, const IndexArray & idxListIn){
         }
 
         createCell(nodes, cell->marker());
+        idxList.push_back(cell->id());
     }
 
     //! copy all boundary with marker != 0
@@ -1659,6 +1654,36 @@ void Mesh::createMeshByCellIdx(const Mesh & mesh, const IndexArray & idxListIn){
     createNeighbourInfos();
 }
 
+
+void Mesh::createMeshByCellIdx(const Mesh & mesh, const IndexArray & idxListIn){
+    this->clear();
+    this->setDimension(mesh.dim());
+
+    IndexArray idxList = unique(sort(idxListIn));
+
+    if (idxList.size() != idxListIn.size()){
+        std::cerr << "This should not happen: double values in idxListIn: "
+                  << str(idxListIn.size()) << " "
+                  << str(idxList.size()) << std::endl;
+    }
+
+    return createMeshByCells(mesh, mesh.cells(idxList));
+    // for (Index i = 0; i < idxList.size(); i ++){
+
+    //     Cell * cell = & mesh.cell(idxList[i]);
+
+    //     for (Index j = 0; j < cell->nodeCount(); j ++){
+    //         if (nodeMap.count(cell->node(j).id()) == 0){
+
+    //             nodeMap[cell->node(j).id()] =
+    //                     this->createNode(cell->node(j).pos(),
+    //                                      cell->node(j).marker());
+    //         }
+    //     }
+    // }
+
+}
+
 Mesh Mesh::createMeshByCellIdx(const IndexArray & idxList){
     Mesh mesh(dimension());
     mesh.createMeshByCellIdx(*this, idxList);
@@ -1678,6 +1703,25 @@ void Mesh::createMeshByMarker(const Mesh & mesh, int from, int to){
     }
     createMeshByCellIdx(mesh, cellIdx);
 }
+
+Mesh Mesh::extract(const std::vector< Cell * > & cells) const {
+    Mesh mesh(dimension());
+    mesh.createMeshByCells(*this, cells);
+    return mesh;
+}
+
+Mesh Mesh::extract(const std::vector< Boundary * > & bounds) const {
+    Mesh mesh(dimension());
+    mesh.createMeshByBoundaries(*this, bounds);
+    return mesh;
+}
+
+Mesh Mesh::extract(const std::vector< Node * > & nodes) const {
+    Mesh mesh(dimension());
+    THROW_TO_IMPL
+    return mesh;
+}
+
 
 void Mesh::addExportData(const std::string & name, const RVector & data) {
   //  std::cout << "add export Data: " << name << " " << min(data) << " "  << max(data) << std::endl;

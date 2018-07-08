@@ -29,7 +29,7 @@ C. Contribute to the code
 .. note::
 
     To avoid redundant work, please `contact us
-    <https://www.pygimli.org/contact.html>`_ before you start working on a
+    <mailto:mail@pygimli.org>`_ before you start working on a
     non-trivial feature.
 
 The preferred way to contribute to the pygimli code base is via a pull request

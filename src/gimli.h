@@ -581,8 +581,6 @@ private:
     /*! Private so that it can not be called */
 
     /*! Copy constructor is private, so don't use it */
-
-
     static Classname * pInstance_;
 };
 

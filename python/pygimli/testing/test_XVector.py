@@ -57,6 +57,25 @@ class TestRVectorMethods(unittest.TestCase):
         vec.setVal(7.0, vec > 0.0)
         self.assertEqual(vec[0], 7.0)
 
+    def test_IVectorOP(self):
+        v = pg.IVector(5, 1)
+
+        # print(v + 2)
+        # print(v - 2)
+        # print(2 * v)
+        #print(v * 2)
+        #self.assertEqual(sum(v * 2), 10)
+
+        self.assertEqual(sum(v + 1), 10)
+        self.assertEqual(sum(v - 2), -5)
+        #self.assertEqual(sum(v * 2), 10)
+        self.assertEqual(sum(v / 1), 5)
+        self.assertEqual(sum(1 + v), 10)
+        self.assertEqual(sum(-1 - v), -10)
+        self.assertEqual(sum(2 * v), 10)
+        self.assertEqual(sum(1 / v), 5)
+
+
     def test_RVectorOP(self):
         v = pg.RVector(5, 1.0)
 
@@ -137,9 +156,6 @@ class TestRVectorMethods(unittest.TestCase):
 
         v.setVal(1.0, 1)
         np.testing.assert_array_equal(v, [5, 1, 1, 3, 5])
-
-
-
 
 
     def test_RVectorFuncts(self):
@@ -264,9 +280,7 @@ class TestRVectorMethods(unittest.TestCase):
 
         # RVector [IndexArray] ==  RVector [nd.array(int)]
         np.testing.assert_array_equal(ag[Ig], ag[In])
-
         # RVector(BVector) ==  RVector(nd.array(bool))
-
         # RVector(IndexArray) ==  RVector(nd.array(int))
 
     def test_IndexAccess(self):
@@ -288,9 +302,12 @@ class TestRVectorMethods(unittest.TestCase):
 
 if __name__ == '__main__':
 
+    # s = TestRVectorMethods()
+    # pg.setDebug(1)
+    # s.test_IVectorOP()
+    
     unittest.main()
 
-    #suite = unittest.TestSuite()
 
     #suite.addTest(TestRVectorMethods("test_R3VectorIndex"))
 

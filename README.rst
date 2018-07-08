@@ -29,19 +29,19 @@ What is pyGIMLi **NOT** suited for?
 Authors
 -------
 
-* **Carsten Rücker**
+* `Carsten Rücker <https://orcid.org/0000-0002-8231-9861>`_
 
   *Berlin University of Technology, Department of Applied Geophysics, Berlin, Germany*
 
   carsten@pygimli.org
 
-* **Thomas Günther**
+* `Thomas Günther <https://orcid.org/0000-0001-5409-0273>`_
 
   *Leibniz Institute for Applied Geophysics, Hannover, Germany*
 
   thomas@pygimli.org
 
-* **Florian Wagner**
+* `Florian Wagner <https://orcid.org/0000-0001-7407-9741>`_
 
   *University of Bonn, Department of Geophysics, Bonn, Germany*
 

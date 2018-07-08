@@ -53,7 +53,7 @@ clean:
 	rm -f _templates/gallery.html
 
 api:
-	sphinx-autogen -i pygimliapi/index.rst -t _templates
+	sphinx-autogen -i -t _templates pygimliapi/*.rst
 
 gallery:
 	python3 ./sidebar_gallery.py
