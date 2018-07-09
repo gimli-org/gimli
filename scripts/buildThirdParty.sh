@@ -3,7 +3,7 @@
 BOOST_VERSION_DEFAULT=1.61.0
 #since 63 libboost_numpy
 #since 64 python build broken
- 
+
 BOOST_URL=http://sourceforge.net/projects/boost/files/boost/
 
 LAPACK_VERSION=3.4.2
@@ -28,7 +28,7 @@ PYGCCXML_REV=648e8da38fa12004f0c83f6e1532349296425702 # current functional
 #PYGCCXML_RV=v1.7.3
 
 PYPLUSPLUS_URL=https://bitbucket.org/ompl/pyplusplus
-#PYPLUSPLUS_REV=5caf5ad8ce28 
+#PYPLUSPLUS_REV=5caf5ad8ce28
 PYPLUSPLUS_REV=be7b5b3a0859 # tag 1.8 current functional
 CPPUNIT_URL=http://svn.code.sf.net/p/cppunit/code/trunk
 
@@ -215,7 +215,7 @@ getWITH_SVN(){
 }
 
 getWITH_HG(){
-    HG="hg"
+    HG="hg --config ui.clonebundles=false"
     _URL_=$1
     _SRC_=$2
     _BRANCH_=$3
@@ -412,7 +412,7 @@ buildBOOST(){
         --with-system \
         $WITHPYTHON \
         --with-thread
-        
+
 
         # --with-date_time \
         # --with-chrono \
