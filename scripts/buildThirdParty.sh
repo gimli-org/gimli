@@ -226,18 +226,18 @@ getWITH_HG(){
     if ( [ -d $_SRC_ ] ); then
         pushd $_SRC_
 #            "$HG" fetch
-            "$HG" pull -u
-            "$HG" up
+            $HG pull -u
+            $HG up
         popd
     else
         pushd $SRC_DIR
-            "$HG --config ui.clonebundles=false" clone $_URL_ $_SRC_
+            ${HG} --config ui.clonebundles=false clone ${_URL_} ${_SRC_}
         popd
     fi
     if [ -n $_BRANCH_ ]; then
         pushd $_SRC_
           echo $_SRC_ $_BRANCH_
-          "$HG" checkout $_BRANCH_
+          $HG checkout $_BRANCH_
           #"$HG" revert -r $_BRANCH_ --all
         popd
     fi
