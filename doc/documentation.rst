@@ -94,6 +94,7 @@ Documentation
         :maxdepth: 4
 
         about.rst
+        citation.rst
         design.rst
         installation.rst
         faq.rst
@@ -102,4 +103,5 @@ Documentation
         tools.rst
         contrib.rst
         pygimliapi/index.rst
+        contrib.rst
         glossary.rst

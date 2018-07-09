@@ -419,11 +419,10 @@ class Refraction(MethodManager):
     def simulate(mesh, slowness, scheme, verbose=False, **kwargs):
         """Simulate a traveltime measurement.
 
-        Perform the forward task for a given mesh,
-        a slowness distribution (per cell) and return data
-        (Traveltime) for a measurement scheme.
-        This is a static method since it does not interfere with the Managers
-        inversion approaches.
+        Perform the forward task for a given mesh, a slowness distribution (per
+        cell) and return data (traveltime) for a measurement scheme. This is a
+        static method since it does not interfere with the managers inversion
+        approaches.
 
         Parameters
         ----------
@@ -440,9 +439,11 @@ class Refraction(MethodManager):
         scheme : :gimliapi:`GIMLI::DataContainer`
             data measurement scheme
 
-        **kwargs :
-            * noisify : add normal distributed noise based on scheme('err')
-                IMPLEMENTME
+        Other parameters
+        ----------------
+        noisify : boolean
+            add normal distributed noise based on scheme('err')
+            IMPLEMENTME
 
         Returns
         -------
