@@ -215,7 +215,7 @@ getWITH_SVN(){
 }
 
 getWITH_HG(){
-    HG="hg --config ui.clonebundles=false"
+    HG="hg"
     _URL_=$1
     _SRC_=$2
     _BRANCH_=$3
@@ -231,7 +231,7 @@ getWITH_HG(){
         popd
     else
         pushd $SRC_DIR
-            "$HG" clone $_URL_ $_SRC_
+            "$HG --config ui.clonebundles=false" clone $_URL_ $_SRC_
         popd
     fi
     if [ -n $_BRANCH_ ]; then
