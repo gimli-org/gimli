@@ -84,6 +84,29 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(a.size(), len(x))
         self.assertEqual(pg.sum(a), sum(x))
 
+    def test_NumpyToIVector(self):
+        """Implemented in custom_rvalue.cpp."""
+        x = np.array(range(-10, 10))
+        a = pg.IVector(x)
+        self.assertEqual(a.size(), len(x))
+        self.assertEqual(pg.sum(a), sum(x))
+
+        x = np.arange(-10, 10, dtype=np.int64)
+        a = pg.IVector(x)
+        self.assertEqual(a.size(), len(x))
+        self.assertEqual(pg.sum(a), sum(x))
+
+        x = np.arange(-10, 10, dtype="int")
+        a = pg.IVector(x)
+        self.assertEqual(a.size(), len(x))
+        self.assertEqual(pg.sum(a), sum(x))
+
+        x = np.array([-10, 100], dtype="int")
+        a = pg.IVector(x)
+        self.assertEqual(a.size(), len(x))
+        self.assertEqual(pg.sum(a), sum(x))
+
+
     def test_NumpyToRVector(self):
         """Implemented in custom_rvalue.cpp."""
         x = np.arange(0, 1., 0.2)
@@ -246,9 +269,10 @@ class TestRVectorMethods(unittest.TestCase):
 if __name__ == '__main__':
     pg.setDebug(0)
 
-    #test = TestRVectorMethods()
-    #test.test_NumpyToCVector()
-#    exit()
+    # test = TestRVectorMethods()
+    # #test.test_NumpyToCVector()
+    # test.test_NumpyToIVector()
+    # exit()
 
 
     unittest.main()

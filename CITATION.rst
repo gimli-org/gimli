@@ -1,5 +1,5 @@
 Citing pyGIMLi
-==============
+--------------
 
 If you use pyGIMLi for your work, please cite as:
 

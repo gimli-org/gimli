@@ -1065,12 +1065,11 @@ def assembleDirichletBC(S, boundaryPairs, rhs=None, time=0.0, userData=None,
         uDirchlet.append(uDirVal[n.id()])
 
     if nodePairs is not None:
-        print("nodePairs", nodePairs)
+        #print("nodePairs", nodePairs)
 
         if len(nodePairs) == 2 and type(nodePairs[0]) == int :
             # assume a single Node [NodeId, val]
             nodePairs = [nodePairs]
-
 
         for i, [n, val] in enumerate(nodePairs):
             uDirIndex.append(n)
@@ -1552,7 +1551,6 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
     >>> pc = drawField(ax, mesh, u)
     >>> drawMesh(ax, mesh)
     >>> plt.show()
-
     """
     if bc is None:
         bc={}
@@ -1560,10 +1558,10 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
         pg.deprecated('bc arg uB', "bc={'Dirichlet': uB}")
         bc['Dirichlet'] = kwargs.pop('uB')
     if 'duB' in kwargs:
-        pg.deprecated('bc arg uB', "bc={'Robin': duB}")
+        pg.deprecated('bc arg duB', "bc={'Neumann': duB}")
         bc['Neumann'] = kwargs.pop('duB')
     if 'uN' in kwargs:
-        pg.deprecated('bc arg uB', "bc={'Node': duB}")
+        pg.deprecated('bc arg uN', "bc={'Node': duB}")
         bc['Node'] = kwargs.pop('uN')
 
     workSpace = kwargs.pop('ws', dict())
@@ -1596,27 +1594,11 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
     if debug:
         print("5: ", swatch2.duration(True))
 
-    neumannBC = kwargs.pop('duB', None)
-    dirichletBC = kwargs.pop('uB', None)
-    dirichletNodes = kwargs.pop('uN', None)
-
     if times is None:
         rhs = assembleForceVector(mesh, f, userData=userData)
 
-        if neumannBC is not None:
-            assembleNeumannBC(S, parseArgToBoundaries(neumannBC, mesh),
-                              rhs=rhs, time=None, userData=userData)
-
-        if dirichletBC is not None:
-            assembleDirichletBC(S, parseArgToBoundaries(dirichletBC, mesh),
-                                rhs=rhs, time=None, userData=userData)
-
-        if dirichletNodes is not None:
-            assembleDirichletBC(S, [],
-                                nodePairs=dirichletNodes,
-                                rhs=rhs, time=None, userData=userData)
-
-
+        assembleBC_(bc, mesh, S, rhs, time=None, userData=userData)
+        
         if debug:
             print("6c: ", swatch2.duration(True))
 
@@ -1751,19 +1733,8 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
 
             A = M + S * dt * theta
 
-            if neumannBC is not None:
-                assembleNeumannBC(S, parseArgToBoundaries(neumannBC, mesh),
-                                  rhs=b, time=times[n], userData=userData)
-
-            if dirichletBC is not None:
-                assembleDirichletBC(S, parseArgToBoundaries(dirichletBC, mesh),
-                                    rhs=b, time=times[n], userData=userData)
-
-            if dirichletNodes is not None:
-                assembleDirichletBC(S, [],
-                                    nodePairs=dirichletNodes,
-                                    rhs=b, time=times[n], userData=userData)
-
+            assembleBC_(bc, mesh, S, b, time=times[n], userData=userData)
+            
             # u = S/b
             t_prep = swatch.duration(True)
             solver = pg.LinSolver(S, verbose)
