@@ -298,7 +298,6 @@ DEFINE_XVECTOR_STUFF__(IVector)
 DEFINE_XVECTOR_STUFF__(RVector) //RVector last since auto rhs conversion will fail else
 #undef DEFINE_XVECTOR_STUFF__
 
-
     template RVector fliplr(const RVector & a);
     template RVector round(const RVector & a, double tol);
     template RVector increasingRange(const double & first, const double & last, Index n);
@@ -323,7 +322,13 @@ DEFINE_XVECTOR_STUFF__(RVector) //RVector last since auto rhs conversion will fa
     template std::ostream & operator << (std::ostream & str, const ElementMatrix< double > & p);
 
     template RVector unique(const RVector & a);
+    // template IndexArray unique(const IndexArray & a);
+    template IVector unique(const IVector & a);
+    
     template RVector sort(const RVector & a);
+    // template IndexArray sort(const IndexArray & a);
+    template IVector sort(const IVector & a);
+    
     template RVector pow(const RVector & a, double power);
     template RVector pow(const RVector & a, int power);
     template RVector pow(const RVector & a, const RVector & power);

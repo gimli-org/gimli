@@ -316,6 +316,34 @@ struct PySequence2IndexArray{
 private:
 };
 
+struct PySequence2IVector{
+
+    /*! Check if the object is convertible */
+    static void * convertible(PyObject * obj){
+        __DC(obj << " -> IVector")
+        return checkConvertibleSequenz<GIMLI::SIndex>(obj);
+    }
+
+    /*! Convert obj into IndexArray */
+    static void construct(PyObject* obj, bp::converter::rvalue_from_python_stage1_data * data){
+        __DC(obj << "\t constructing IVector")
+        bp::object py_sequence(bp::handle<>(bp::borrowed(obj)));
+
+        typedef bp::converter::rvalue_from_python_storage< GIMLI::IVector> storage_t;
+
+        storage_t* the_storage = reinterpret_cast<storage_t*>(data);
+        void* memory_chunk = the_storage->storage.bytes;
+
+        GIMLI::IVector * vec = new (memory_chunk) GIMLI::IVector(len(py_sequence));
+        data->convertible = memory_chunk;
+        __DC(obj << "\t from list")
+        for (GIMLI::Index i = 0; i < vec->size(); i ++){
+            (*vec)[i] = bp::extract< GIMLI::SIndex >(py_sequence[i]);
+        }
+    }
+private:
+};
+
 struct PySequence2StdVectorRVector3{
 
     /*! Check if the object is convertible */
@@ -504,6 +532,13 @@ void register_pysequence_to_indexvector_conversion(){
                                         & r_values_impl::PySequence2IndexArray::construct,
                                         bp::type_id< GIMLI::IndexArray >());
 }
+
+void register_pysequence_to_ivector_conversion(){
+    bp::converter::registry::push_back(& r_values_impl::PySequence2IVector::convertible,
+                                        & r_values_impl::PySequence2IVector::construct,
+                                        bp::type_id< GIMLI::IVector >());
+}
+
 void register_pysequence_to_rvector_conversion(){
     bp::converter::registry::push_back(& r_values_impl::PySequence2RVector::convertible,
                                         & r_values_impl::PySequence2RVector::construct,

@@ -348,7 +348,6 @@ Boundary * Mesh::copyBoundary(const Boundary & bound, double tol, bool check){
     return b;
 }
 
-
 void Mesh::deleteCells(const std::vector < Cell * > & cells){
     THROW_TO_IMPL
 }

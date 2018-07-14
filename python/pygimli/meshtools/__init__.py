@@ -16,8 +16,9 @@ from .mesh import (createMesh, createParaMesh, createParaMesh2DGrid,
                    readHydrus3dMesh, readTetgen, readTriangle, 
                    convertHDF5Mesh, readHDF5Mesh, readFenicsHDF5Mesh, 
                    exportHDF5Mesh, exportFenicsHDF5Mesh,
-                   readSTL,
+                   readSTL, exportSTL,
                    )
+                   
 from .polytools import createParaDomain2D  # keep for backward compatibility
 from .polytools import (createCircle, createLine, createParaMeshPLC,
                         createPolygon, createRectangle, createWorld, mergePLC,

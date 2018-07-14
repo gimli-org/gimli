@@ -150,8 +150,8 @@ endsolid"""
         np.testing.assert_equal(mesh.nodeCount(), 5)
         np.testing.assert_equal(mesh.boundaryCount(), 2)
 
-        np.testing.assert_equal(pg.unique(pg.sort(mesh.boundaryMarkers())),
-                               [0.0, 1.0])
+        np.testing.assert_equal(np.array(pg.unique(pg.sort(mesh.boundaryMarkers()))),
+                               [0, 1])
         
         os.remove(fileName)
 
