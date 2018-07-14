@@ -761,6 +761,7 @@ def linsolve(A, b, verbose=False):
     pg.deprecated('linsolve', 'linSolve')
     return linSolve(A, b, verbose)
 
+
 def linSolve(A, b, verbose=False):
     r"""Direct solution after :math:`\textbf{x}` using core LinSolver.
 
@@ -812,11 +813,13 @@ def linSolve(A, b, verbose=False):
 
     return x
 
+
 def assembleForceVector(mesh, f, userData=None):
     """
     DEPRECATED use assembleLoadVector instead
     """
     return assembleLoadVector(mesh, f, userData)
+
 
 def assembleLoadVector(mesh, f, userData=None):
     """Create right hand side vector based on the given mesh and load
@@ -1009,7 +1012,6 @@ def assembleDirichletBC(S, boundaryPairs, rhs=None, time=0.0, userData=None,
         See :py:mod:`pygimli.solver.solver.parseArgToBoundaries`
         and :ref:`tut:modelling_bc` for example syntax,
 
-
     nodePairs : list()
         List of pairs [ nodeID, uD ].
         The value uD will assigned to the nodes given there ids.
@@ -1027,7 +1029,6 @@ def assembleDirichletBC(S, boundaryPairs, rhs=None, time=0.0, userData=None,
         Will be forwarded to value generator.
 
     """
-
     if not hasattr(boundaryPairs, '__getitem__'):
         raise BaseException("Boundary pairs need to be a list of "
                             "[boundary, value]")
@@ -1205,6 +1206,7 @@ def assembleRobinBC(S, boundaryPairs, rhs=None, time=0.0, userData=None):
                 Sq.u(boundary)
                 rhs.add(Sq, -p*q)
 
+
 def assembleBC_(bc, mesh, S, rhs, time=None, userData=None):
     r"""Shortcut to apply all boundary conditions.
 
@@ -1212,7 +1214,6 @@ def assembleBC_(bc, mesh, S, rhs, time=None, userData=None):
     Shortcut to apply all boundary conditions will only forward to
     appropriate assemble functions.
     """
-
     ## we can't iterate because we want the following fixed order
     bct = dict(bc)
     if 'Neumann' in bct:
@@ -1231,6 +1232,7 @@ def assembleBC_(bc, mesh, S, rhs, time=None, userData=None):
     if len(bct.keys()) > 0:
         pg.logger.warn("Unknown boundary condition[s]" + \
                        str(bct.keys()) + " will be ignored")
+
 
 def createLoadVector(mesh, f, userData=None):
     return assembleLoadVector(mesh, f, userData)
@@ -1596,18 +1598,16 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
 
     if times is None:
         rhs = assembleForceVector(mesh, f, userData=userData)
-
-        assembleBC_(bc, mesh, S, rhs, time=None, userData=userData)
         
-        if debug:
-            print("6c: ", swatch2.duration(True))
-
+        assembleBC_(bc, mesh, A, rhs, time=None, userData=userData)
+        
         # create result array
         u = None
         if 'u' in workSpace:
             u = workSpace['u']
 
         singleForce = True
+
         if hasattr(rhs, 'ndim'):
             if rhs.ndim == 2:
                 singleForce = False
@@ -1623,6 +1623,7 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
                     u = pg.RVector(rhs.size(), 0.0)
 
         assembleTime = swatch.duration(True)
+
         if stats:
             stats.assembleTime = assembleTime
 
@@ -1640,7 +1641,7 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
             return
 
         solver = pg.LinSolver(False)
-        solver.setMatrix(S, 0)
+        solver.setMatrix(A, 0)
 
         if singleForce:
             u = solver.solve(rhs)
@@ -1657,9 +1658,9 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
                 stats.solverTime = solverTime
             print(("Solving time: ", solverTime))
 
-
         if len(kwargs.keys()) > 0:
             print("Warning! Unused arguments", **kwargs)
+
         return u
 
     else: # times given
@@ -1733,11 +1734,11 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
 
             A = M + S * dt * theta
 
-            assembleBC_(bc, mesh, S, b, time=times[n], userData=userData)
+            assembleBC_(bc, mesh, A, b, time=times[n], userData=userData)
             
             # u = S/b
             t_prep = swatch.duration(True)
-            solver = pg.LinSolver(S, verbose)
+            solver = pg.LinSolver(A, verbose)
             solver.solve(b, u)
 
             if 'plotTimeStep' in kwargs:
