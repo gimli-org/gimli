@@ -1366,8 +1366,11 @@ void Mesh::create1DGrid(const RVector & x){
 
         for (Index i = 0; i < boundaryCount(); i ++){
             if (boundary(i).leftCell() == NULL || boundary(i).rightCell() == NULL){
-                if (abs(boundary(i).node(0).pos()[0] - x[0])< TOLERANCE) boundary(i).setMarker(1);
-                else if (abs(boundary(i).node(0).pos()[0] - x[x.size()-1])< TOLERANCE) boundary(i).setMarker(2);
+                if (std::fabs(boundary(i).node(0).pos()[0] - x[0]) < TOLERANCE) {
+                    boundary(i).setMarker(1);
+                } else if (std::fabs(boundary(i).node(0).pos()[0] - x[x.size()-1]) < TOLERANCE){
+                    boundary(i).setMarker(2);
+                }
             }
         }
 
