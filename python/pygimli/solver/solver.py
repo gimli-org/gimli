@@ -1590,18 +1590,12 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
         A = S + M * b
     else:
         A = S
-    
-    if debug:
-        print("5: ", swatch2.duration(True))
 
     if times is None:
         rhs = assembleForceVector(mesh, f, userData=userData)
 
-        assembleBC_(bc, mesh, S, rhs, time=None, userData=userData)
+        assembleBC_(bc, mesh, A, rhs, time=None, userData=userData)
         
-        if debug:
-            print("6c: ", swatch2.duration(True))
-
         # create result array
         u = None
         if 'u' in workSpace:
@@ -1640,7 +1634,7 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
             return
 
         solver = pg.LinSolver(False)
-        solver.setMatrix(S, 0)
+        solver.setMatrix(A, 0)
 
         if singleForce:
             u = solver.solve(rhs)
@@ -1657,9 +1651,9 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
                 stats.solverTime = solverTime
             print(("Solving time: ", solverTime))
 
-
         if len(kwargs.keys()) > 0:
             print("Warning! Unused arguments", **kwargs)
+
         return u
 
     else: # times given

@@ -14,18 +14,20 @@ class TestFiniteElementBasics(unittest.TestCase):
         """
         def _test_(mesh):
             vTest = 0.1
-            u = pg.solve(mesh, a=1,
+            u = pg.solve(mesh, a=1, f=1,
                         bc={'Node': [mesh.findNearestNode([0.0, 0.0]), 0.],
-                            'Neumann': [[1, -vTest], [2, vTest]]})
+                            'Neumann': [[1, -vTest], [2, vTest]]}, verbose=1)
 
+            # pg.plt.plot(pg.x(mesh), u)
+            # pg.wait()
             v = pg.solver.grad(mesh, u)
             #print("|v|:", min(pg.abs(v)), max(pg.abs(v)), pg.mean(pg.abs(v)))
             np.testing.assert_allclose(pg.abs(v), np.ones(mesh.cellCount())*vTest)
             return v
 
-        _test_(pg.createGrid(x=np.linspace(-2, 1, 11))) #1D
-        _test_(pg.createGrid(x=np.linspace(-2, 2, 41), y=np.linspace(0, 1, 21))) #2D reg
-        _test_(pg.createGrid(x=np.linspace(-0.04, 0.01, 21), y=np.linspace(-0.4, 0, 21))) #2D scaled
+        #_test_(pg.createGrid(x=np.linspace(-2, 1, 11))) #1D
+        #_test_(pg.createGrid(x=np.linspace(-2, 2, 41), y=np.linspace(0, 1, 21))) #2D reg
+        #_test_(pg.createGrid(x=np.linspace(-0.04, 0.01, 21), y=np.linspace(-0.4, 0, 21))) #2D scaled
         _test_(pg.createGrid(x=np.linspace(-2, 1, 11), y=np.linspace( 0, 1, 11),
                              z=np.linspace( 0, 1, 11))) #3D
 
