@@ -1349,11 +1349,11 @@ def L2Norm(u, M=None, mesh=None):
     .. math::
 
         L2(f(x)) = || f(x) ||_{L^2} & = (\int |f(x)|^2 \d x)^{1/2} \\
-                 & \approx h (\sum |f(x)|^2 )^{1/2}
+                                    & \approx h (\sum |f(x)|^2 )^{1/2} \\
         L2(u) = || u ||_{L^2} & = (\int |u|^2 \d x)^{1/2} \\
-                 & \approx (\sum M (u)) ^{1/2}
+                              & \approx (\sum M (u)) ^{1/2} \\
         e_{L2_rel} = \frac{L2(u)}{L2(u)} & = 
-                \frac{(\sum M(u))^{1/2}}{(\sum M u)^{1/2}}
+                               \frac{(\sum M(u))^{1/2}}{(\sum M u)^{1/2}}
 
     The error for any approximated solution :math:`u_h` correlates to the L2 
     norm of 'L2Norm(u - u_h, M)'. If you like relative values, you can also 
