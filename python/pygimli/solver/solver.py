@@ -1290,8 +1290,7 @@ def createStiffnessMatrix(mesh, a=None):
 def createMassMatrix(mesh, b=None):
     r"""Create the mass matrix.
 
-    Calculates the Mass matrix (Finite element identity matrix)
-    the given mesh.
+    Calculates the Mass matrix (Finite element identity matrix) the given mesh.
 
     ..math::
             ...
@@ -1581,15 +1580,15 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
 
     # check for material parameter
     a = parseArgToArray(a, nDof=mesh.cellCount(), mesh=mesh, userData=userData)
-
-    S = createStiffnessMatrix(mesh, a)
+    
     M = createMassMatrix(mesh)
+    S = createStiffnessMatrix(mesh, a)
 
     A = None
 
     if b != 0:
         b = parseArgToArray(b, nDof=mesh.cellCount(), mesh=mesh, userData=userData)
-        A = S + M * b
+        A = S + createMassMatrix(mesh, b)
     else:
         A = S
     

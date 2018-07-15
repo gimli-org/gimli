@@ -23,11 +23,11 @@ class TestFiniteElementBasics(unittest.TestCase):
             np.testing.assert_allclose(pg.abs(v), np.ones(mesh.cellCount())*vTest)
             return v
 
-        # _test_(pg.createGrid(x=np.linspace(-2, 1, 11))) #1D
-        # _test_(pg.createGrid(x=np.linspace(-2, 2, 41), y=np.linspace(0, 1, 21))) #2D reg
-        # _test_(pg.createGrid(x=np.linspace(-0.04, 0.01, 21), y=np.linspace(-0.4, 0, 21))) #2D scaled
-        # _test_(pg.createGrid(x=np.linspace(-2, 1, 11), y=np.linspace( 0, 1, 11),
-        #                      z=np.linspace( 0, 1, 11))) #3D
+        _test_(pg.createGrid(x=np.linspace(-2, 1, 11))) #1D
+        _test_(pg.createGrid(x=np.linspace(-2, 2, 41), y=np.linspace(0, 1, 21))) #2D reg
+        _test_(pg.createGrid(x=np.linspace(-0.04, 0.01, 21), y=np.linspace(-0.4, 0, 21))) #2D scaled
+        _test_(pg.createGrid(x=np.linspace(-2, 1, 11), y=np.linspace( 0, 1, 11),
+                             z=np.linspace( 0, 1, 11))) #3D
 
         # grid = pg.createGrid(x=np.linspace(-2, 2, 41), y=np.linspace(0, 1, 21))
         # grid.rotate([0, 0, np.pi/4])
