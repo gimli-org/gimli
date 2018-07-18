@@ -28,8 +28,8 @@ PYGCCXML_REV=648e8da38fa12004f0c83f6e1532349296425702 # current functional
 #PYGCCXML_RV=v1.7.3
 
 PYPLUSPLUS_URL=https://bitbucket.org/ompl/pyplusplus
-#PYPLUSPLUS_REV=5caf5ad8ce28
-PYPLUSPLUS_REV=be7b5b3a0859 # tag 1.8 current functional
+#PYPLUSPLUS_REV=be7b5b3a0859 # tag 1.8 last functional
+PYPLUSPLUS_REV=666e4d03d462 # tag 1.8.1 test
 
 CPPUNIT_URL=http://svn.code.sf.net/p/cppunit/code/trunk
 
@@ -535,6 +535,10 @@ buildPYGCCXML(){
     getWITH_GIT $PYGCCXML_URL $PYGCCXML_SRC $PYGCCXML_REV
     getWITH_HG $PYPLUSPLUS_URL $PYPLUSPLUS_SRC $PYPLUSPLUS_REV
 
+    pushd $PYPLUSPLUS_SRC
+        patch -p1 < $BUILDSCRIPT_HOME/patches/pyplusplus-slice-fix.patch
+    popd
+
     mkBuildDIR $PYGCCXML_BUILD $PYGCCXML_SRC 1
     pushd $PYGCCXML_BUILD
         "$PYTHONEXE" setup.py build
@@ -555,10 +559,10 @@ buildPYGCCXML(){
         if [ -n "$CLEAN" ]; then
             rm -rf $PYPLUSPLUS_DIST
         fi
-
+        
         cp -rf $PYPLUSPLUS_BUILD/build/lib*/pyplusplus $PYPLUSPLUS_DIST
         pushd $PYPLUSPLUS_DIST
-            patch -p1 < $BUILDSCRIPT_HOME/patches/pyplusplus-slice-fix.patch
+            
         popd
         #export PYTHONPATH=$PYTHONPATH:$PYGCCXML_DIST/Lib/site_packages/
         #python setup.py install --prefix=$PYGCCXML_DIST_WIN
