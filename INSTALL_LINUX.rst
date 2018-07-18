@@ -32,7 +32,7 @@ Install Miniconda (only once):
     wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
     chmod +x miniconda.sh
     ./miniconda.sh -b -p $HOME/miniconda
-    export PATH=$HOME/miniconda3/bin:$PATH # Note: Add this to your .bashrc for permanent use
+    export PATH=$HOME/miniconda/bin:$PATH # Note: Add this to your .bashrc for permanent use
 
 Add the gimli and conda-forge channel (only once):
 

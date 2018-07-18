@@ -1260,7 +1260,10 @@ def createStiffnessMatrix(mesh, a=None):
     A : :gimliapi:`GIMLI::RSparseMatrix`
         Stiffness matrix
     """
-
+    if mesh.cellCount() == 0:
+        print(mesh)
+        raise Exception("Mesh invalid")
+    
     if a is None:
         a = pg.RVector(mesh.cellCount(), 1.0)
 
@@ -1314,6 +1317,8 @@ def createMassMatrix(mesh, b=None):
     # need callable here
     if b is None:
         b = pg.RVector(mesh.cellCount(), 1.0)
+    elif not hasattr(b, '__iter__'):
+        b = pg.RVector(mesh.cellCount(), b)
 
     B = pg.RSparseMatrix()
     B.fillMassMatrix(mesh, b)

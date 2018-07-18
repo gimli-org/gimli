@@ -30,6 +30,7 @@ PYGCCXML_REV=648e8da38fa12004f0c83f6e1532349296425702 # current functional
 PYPLUSPLUS_URL=https://bitbucket.org/ompl/pyplusplus
 #PYPLUSPLUS_REV=5caf5ad8ce28
 PYPLUSPLUS_REV=be7b5b3a0859 # tag 1.8 current functional
+
 CPPUNIT_URL=http://svn.code.sf.net/p/cppunit/code/trunk
 
 checkTOOLSET(){
@@ -557,7 +558,7 @@ buildPYGCCXML(){
 
         cp -rf $PYPLUSPLUS_BUILD/build/lib*/pyplusplus $PYPLUSPLUS_DIST
         pushd $PYPLUSPLUS_DIST
-            #patch -p1 < $BUILDSCRIPT_HOME/patches/pyplusplus-caster.patch
+            patch -p1 < $BUILDSCRIPT_HOME/patches/pyplusplus-slice-fix.patch
         popd
         #export PYTHONPATH=$PYTHONPATH:$PYGCCXML_DIST/Lib/site_packages/
         #python setup.py install --prefix=$PYGCCXML_DIST_WIN
