@@ -535,10 +535,6 @@ buildPYGCCXML(){
     getWITH_GIT $PYGCCXML_URL $PYGCCXML_SRC $PYGCCXML_REV
     getWITH_HG $PYPLUSPLUS_URL $PYPLUSPLUS_SRC $PYPLUSPLUS_REV
 
-    pushd $PYPLUSPLUS_SRC
-        patch -p1 < $BUILDSCRIPT_HOME/patches/pyplusplus-slice-fix.patch
-    popd
-
     mkBuildDIR $PYGCCXML_BUILD $PYGCCXML_SRC 1
     pushd $PYGCCXML_BUILD
         "$PYTHONEXE" setup.py build
@@ -559,6 +555,13 @@ buildPYGCCXML(){
         if [ -n "$CLEAN" ]; then
             rm -rf $PYPLUSPLUS_DIST
         fi
+
+        pushd $PYPLUSPLUS_BUILD
+            # fix slice bug
+            sed -i -e 's/m_start = std::max/\/\/m_start = std::max/g' build/lib*/pyplusplus/code_repository/indexing_suite/slice_header.py
+            sed -i -e 's/m_stop = std::max/\/\/m_stop = std::max/g' build/lib*/pyplusplus/code_repository/indexing_suite/slice_header.py
+            #patch -p1 < $BUILDSCRIPT_HOME/patches/pyplusplus-slice-fix.patch
+        popd
         
         cp -rf $PYPLUSPLUS_BUILD/build/lib*/pyplusplus $PYPLUSPLUS_DIST
         pushd $PYPLUSPLUS_DIST
