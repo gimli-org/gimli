@@ -82,7 +82,6 @@ else()
     set(LIBGIMLI_VERSION "untaged")
 endif()
 
-
 set(PACKAGE_NAME \"${PROJECT_NAME}\")
 set(PACKAGE_VERSION \"${LIBGIMLI_VERSION}\")
 set(PACKAGE_BUGREPORT \"carsten@pygimli.org\")
@@ -120,7 +119,6 @@ endif()
 
 include(CheckIncludeFileCXX)
 find_package(Threads REQUIRED)
-
 
 if (PYVERSION)
     find_package(PythonInterp ${PYVERSION} REQUIRED)
@@ -299,17 +297,14 @@ endif()
 # Check for python stuff
 ################################################################################
 if (WIN32)
-    if (NOT PYTHON_LIBRARY)
-        get_filename_component(PYTHONPATH "${PYTHON_EXECUTABLE}" PATH )
-        if (${ADDRESSMODEL} EQUAL 32 OR ${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR} GREATER 34) # works at least for WinPython3.5
-            set (PYTHON_LIBRARY ${PYTHONPATH}/libs/libpython${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}.a)
-        else()
-            set (PYTHON_LIBRARY ${PYTHONPATH}/libs/libpython${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}.dll.a)
-        endif()
-        #set (PYTHON_LIBRARY ${PYTHONPATH}/libs/python${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}.lib)
-        #set (PYTHON_LIBRARY ${PYTHONPATH}/libs/libpython${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}.a)
-        #set (PYTHON_INCLUDE_DIR ${PYTHONPATH}/include)
-    endif()
+    #if (NOT PYTHON_LIBRARY)
+    #   get_filename_component(PYTHONPATH "${PYTHON_EXECUTABLE}" PATH )
+    #    if (${ADDRESSMODEL} EQUAL 32 OR ${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR} GREATER 34) # works at least for WinPython3.5
+    #        set (PYTHON_LIBRARY ${PYTHONPATH}/libs/libpython${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}.a)
+    #    else()
+    #        set (PYTHON_LIBRARY ${PYTHONPATH}/libs/libpython${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}.dll.a)
+    #    endif()
+    # endif()
 else()
 	set(Python_ADDITIONAL_VERSIONS ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR})
 	set(PythonLibs_FIND_VERSION ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR})
