@@ -82,10 +82,10 @@ else()
     set(LIBGIMLI_VERSION "untaged")
 endif()
 
-set(PACKAGE_NAME \"${PROJECT_NAME}\")
-set(PACKAGE_VERSION \"${LIBGIMLI_VERSION}\")
-set(PACKAGE_BUGREPORT \"carsten@pygimli.org\")
-set(PACKAGE_AUTHORS \"carsten@pygimli.org thomas@pygimli.org florian@pygimli.org\")
+set( PACKAGE_NAME  \"${PROJECT_NAME}\" )
+set( PACKAGE_VERSION  \"${LIBGIMLI_VERSION}\" )
+set( PACKAGE_BUGREPORT  \"carsten@pygimli.org\")
+set( PACKAGE_AUTHORS  \"carsten@pygimli.org thomas@pygimli.org florian@pygimli.org\")
 
 ################################################################################
 # Check for libs and other packages we might use.
@@ -355,7 +355,6 @@ else()
             set(Boost_PYTHON_LIBRARY ${Boost_PYTHON-${bp_version}_LIBRARY_RELEASE})
         endif()
     endif()
-
 endif()
 
 if (NOT CASTER)
@@ -420,49 +419,6 @@ if (Boost_PYTHON_LIBRARY)
     set (Boost_PYTHON_FOUND TRUE)
 endif()
 
-message(STATUS "**********************************************************************")
-message(STATUS "************************* Dependencies found *************************")
-message(STATUS "**********************************************************************")
-message(STATUS "THREADS            :${Threads_FOUND}    ${CMAKE_THREAD_LIBS_INIT}")
-message(STATUS "USE_BOOST_THREAD   :${USE_BOOST_THREAD} ${Boost_THREAD_LIBRARIES}")
-message(STATUS "CHOLMOD_LIBRARIES  :${CHOLMOD_LIBRARIES}")
-message(STATUS "UMFPACK_LIBRARIES  :${UMFPACK_LIBRARIES}")
-message(STATUS "TRIANGLE_FOUND     :${TRIANGLE_FOUND}    Triangle_LIBRARIES: ${Triangle_LIBRARIES}")
-message(STATUS "PYTHON_FOUND       :${PYTHON_FOUND}    PYTHON_EXECUTABLE: ${PYTHON_EXECUTABLE}" )
-message(STATUS "PYTHONLIBS_FOUND   :${PYTHONLIBS_FOUND}    PYTHON_LIBRARY: ${PYTHON_LIBRARY}" )
-if(WIN32)
-message(STATUS "PYTHON_INCLUDE_DIR :${PYTHON_INCLUDE_DIR}" )
-endif(WIN32)
-message(STATUS "Boost_PYTHON_FOUND :${Boost_PYTHON_FOUND}    Boost_PYTHON_LIBRARY: ${Boost_PYTHON_LIBRARY}" )
-message(STATUS "numpy_FOUND        :${numpy_FOUND}    PY_NUMPY: ${PY_NUMPY}" )
-message(STATUS "CASTER_FOUND       :${CASTER_FOUND}    Caster: ${CASTER_EXECUTABLE}")
-message(STATUS "PYGCCXML_FOUND     :${PYGCCXML_FOUND}    PYGCCXML: ${PYGCCXML_PATH}" )
-message(STATUS "PYPLUSPLUS_FOUND   :${PYPLUSPLUS_FOUND}    PYPLUSPLUS_PATH: ${PYPLUSPLUS_PATH}" )
-message(STATUS "**********************************************************************")
-
-if (PYTHON_EXECUTABLE
-    AND TRIANGLE_FOUND
-    AND PYTHON_FOUND
-    AND PYTHONLIBS_FOUND
-    AND Boost_PYTHON_FOUND
-    AND numpy_FOUND
-    AND CASTER_FOUND
-    AND PYGCCXML_FOUND
-    AND PYPLUSPLUS_FOUND
-)
-    set (PYGIMLI 1)
-    message (STATUS "pygimli can be build. run: make pygimli")
-    message(STATUS "**********************************************************************")
-    message(STATUS "")
-    message(STATUS "")
-else()
-    message (FATAL_ERROR "pygimli cannot be build due to some missing packages.
-Check above for python, castxml, pygccxml, pyplusplus, boost_python, numpy")
-endif ()
-
-configure_file("${PROJECT_SOURCE_DIR}/config.cmake.h.in" "${PROJECT_BINARY_DIR}/config.cmake.h" )
-add_definitions(-DHAVE_CONFIG_CMAKE_H)
-
 find_package(Doxygen)
 
 find_package(Sphinx 1.5)
@@ -484,6 +440,59 @@ if (SPHINX_FOUND)
     #endforeach()
 
 endif()
+
+message(STATUS "**********************************************************************")
+message(STATUS "************************* Dependencies found *************************")
+message(STATUS "**********************************************************************")
+message(STATUS "THREADS            :${Threads_FOUND}    ${CMAKE_THREAD_LIBS_INIT}")
+message(STATUS "USE_BOOST_THREAD   :${USE_BOOST_THREAD} ${Boost_THREAD_LIBRARIES}")
+message(STATUS "CHOLMOD_LIBRARIES  :${CHOLMOD_LIBRARIES}")
+message(STATUS "UMFPACK_LIBRARIES  :${UMFPACK_LIBRARIES}")
+message(STATUS "TRIANGLE_FOUND     :${TRIANGLE_FOUND}    Triangle_LIBRARIES: ${Triangle_LIBRARIES}")
+message(STATUS "PYTHON_FOUND       :${PYTHON_FOUND}    PYTHON_EXECUTABLE: ${PYTHON_EXECUTABLE}" )
+message(STATUS "PYTHONLIBS_FOUND   :${PYTHONLIBS_FOUND}    PYTHON_LIBRARY: ${PYTHON_LIBRARY}" )
+if(WIN32)
+message(STATUS "PYTHON_INCLUDE_DIR :${PYTHON_INCLUDE_DIR}" )
+endif(WIN32)
+message(STATUS "Boost_PYTHON_FOUND :${Boost_PYTHON_FOUND}    Boost_PYTHON_LIBRARY: ${Boost_PYTHON_LIBRARY}" )
+message(STATUS "numpy_FOUND        :${numpy_FOUND}    PY_NUMPY: ${PY_NUMPY}" )
+message(STATUS "CASTER_FOUND       :${CASTER_FOUND}    Caster: ${CASTER_EXECUTABLE}")
+message(STATUS "PYGCCXML_FOUND     :${PYGCCXML_FOUND}    PYGCCXML: ${PYGCCXML_PATH}" )
+message(STATUS "PYPLUSPLUS_FOUND   :${PYPLUSPLUS_FOUND}    PYPLUSPLUS_PATH: ${PYPLUSPLUS_PATH}" )
+message(STATUS "")
+message(STATUS "**********************************************************************")
+message(STATUS "*************** Optional Dependencies found **************************")
+message(STATUS "**********************************************************************")
+message(STATUS "CPPUNIT            :${CPPUNIT_FOUND}    ${CPPUNIT_LIBRARIES}")
+message(STATUS "Doxygen            :${DOXYGEN_FOUND}    ")
+message(STATUS "Sphinx             :${SPHINX_FOUND}    ")
+message(STATUS "**********************************************************************")
+
+if (PYTHON_EXECUTABLE
+    AND TRIANGLE_FOUND
+    AND PYTHON_FOUND
+    AND PYTHONLIBS_FOUND
+    AND Boost_PYTHON_FOUND
+    AND numpy_FOUND
+    AND CASTER_FOUND
+    AND PYGCCXML_FOUND
+    AND PYPLUSPLUS_FOUND
+)
+    set (PYGIMLI 1)
+    message(STATUS "")
+    message (STATUS "pygimli can be build. run: make pygimli")
+    message(STATUS "**********************************************************************")
+    message(STATUS "")
+    message(STATUS "")
+else()
+    message (FATAL_ERROR "pygimli cannot be build due to some missing packages.
+Check above for python, castxml, pygccxml, pyplusplus, boost_python, numpy")
+endif ()
+
+configure_file("${PROJECT_SOURCE_DIR}/config.cmake.h.in" "${PROJECT_BINARY_DIR}/config.cmake.h" )
+add_definitions(-DHAVE_CONFIG_CMAKE_H)
+
+
 
 add_custom_target(removedoc
    COMMAND

@@ -80,12 +80,9 @@ endif(WIN32)
 
 ADD_CUSTOM_TARGET(pgtest)
 ADD_CUSTOM_COMMAND(
-    COMMAND
-        ${PYTHON_EXECUTABLE}
-    ARGS
-         -c 'import pygimli\; pygimli.test(show=False, abort=True)'
-    TARGET
-        pgtest
+    COMMAND ${PYTHON_EXECUTABLE}
+    ARGS -c 'import pygimli\; pygimli.test(show=False, abort=True) ' 
+    TARGET pgtest
    )
 
 add_test(

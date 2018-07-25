@@ -9,7 +9,7 @@
     GIMLI::Placeholder x__;
 
     #include "testVector.h"
-    //#include "testGIMLiMisc.h" // not working on Win32 despite USE_IPC
+    #include "testGIMLiMisc.h" // not working on Win32 despite USE_IPC
     #include "testDataContainer.h"
 //
     #include "testMesh.h"
