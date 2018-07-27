@@ -570,13 +570,13 @@ def div(mesh, v):
     >>> v = lambda p: p
     >>> mesh = pg.createGrid(x=np.linspace(0, 1, 4))
     >>> print(pg.round(pg.solver.div(mesh, v(mesh.boundaryCenters())), 1e-5))
-    <class 'pygimli.core._pygimli_.RVector'> 3 [1.0, 1.0, 1.0]
+    3 [1.0, 1.0, 1.0]
     >>> print(pg.round(pg.solver.div(mesh, v(mesh.cellCenters())), 1e-5))
-    <class 'pygimli.core._pygimli_.RVector'> 3 [0.5, 1.0, 0.5]
+    3 [0.5, 1.0, 0.5]
     >>> mesh = pg.createGrid(x=np.linspace(0, 1, 4),
     ...                      y=np.linspace(0, 1, 4))
     >>> print(pg.round(pg.solver.div(mesh, v(mesh.boundaryCenters())), 1e-5))
-    <class 'pygimli.core._pygimli_.RVector'> 9 [2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0]
+    9 [2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0]
     >>> divCells = pg.solver.div(mesh, v(mesh.cellCenters()))
     >>> # divergence from boundary values are exact where the divergence from
     >>> # interpolated cell center values are wrong due to boundary interp
