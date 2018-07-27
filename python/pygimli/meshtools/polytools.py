@@ -862,12 +862,12 @@ def exportPLC(poly, fname, **kwargs):
     >>> import tempfile, os
     >>> fname = tempfile.mktemp() # Create temporary string for filename.
     >>> world2d = pg.meshtools.createWorld(start=[-10, 0], end=[20, 0])
-    >>> pg.meshtools.writePLC(world2d, fname)
+    >>> pg.meshtools.exportPLC(world2d, fname)
     >>> read2d = pg.meshtools.readPLC(fname)
     >>> print(read2d)
     Mesh: Nodes: 4 Cells: 0 Boundaries: 4
     >>> world3d = pg.createGrid([0, 1], [0, 1], [-1, 0])
-    >>> pg.meshtools.writePLC(world3d, fname)
+    >>> pg.meshtools.exportPLC(world3d, fname)
     >>> os.remove(fname)
     """
     if poly.dimension() == 2:
