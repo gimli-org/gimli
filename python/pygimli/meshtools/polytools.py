@@ -180,7 +180,7 @@ def createWorld(start, end, marker=1, area=0., layers=None, worldMarker=True):
 
     poly = pg.Mesh(2)
 
-    if type(area) == float or type(area) == int:
+    if isinstance(area, float) or isinstance(area, int):
         area = np.ones(len(z)) * float(area)
 
     for i, depth in enumerate(z):

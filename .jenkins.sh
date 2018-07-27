@@ -33,7 +33,8 @@ python -c "import matplotlib; print(matplotlib.__version__)"
 mkdir -p build
 cd build
 
-export CLEAN=1
+# CLEAN=1 force thirdparty rebuild
+export CLEAN=0
 
 cmake ../trunk \
    -DPYVERSION=3 \

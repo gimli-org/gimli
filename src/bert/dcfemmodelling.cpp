@@ -562,6 +562,17 @@ void DCMultiElectrodeModelling::init_(){
 
 }
 
+void DCMultiElectrodeModelling::setComplex(bool c) { 
+    if (complex_ != c){
+
+        if (subSolutions_ && subpotOwner_) {
+            delete subSolutions_;
+            subSolutions_ = 0;
+        }
+        complex_=c; 
+    }
+}
+
 DataContainerERT & DCMultiElectrodeModelling::dataContainer() const{
     return dynamic_cast < DataContainerERT & >(*dataContainer_);
 }
@@ -752,7 +763,7 @@ void DCMultiElectrodeModelling::updateMeshDependency_(){
     }
 //    mesh_->exportBoundaryVTU("meshBound");
     if (mesh_->haveData("AttributeReal") && mesh_->haveData("AttributeImag")){
-        complex_ = true;
+        this->setComplex(true);
     }
 
     //## new mesh but old data .. so we need search electrodes again
@@ -1485,7 +1496,9 @@ RVector DCMultiElectrodeModelling::calcGeometricFactor(const DataContainerERT & 
         } else {
             mesh_->setCellAttributes(RVector(mesh_->cellCount(), 1.0));
         }
+
         this->calculate(*primDataMap_);
+        
         mesh_->setCellAttributes(atts);
     } else {
         if (verbose_) std::cout << " (recover)" << std::endl;

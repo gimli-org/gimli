@@ -79,7 +79,7 @@ class VESModelling(Block1DModelling):
 
         if ab2 is not None and mn2 is not None:
 
-            if type(mn2) is float:
+            if isinstance(mn2, float):
                 mn2 = np.ones(len(ab2))*mn2
 
             if len(ab2) != len(mn2):
@@ -199,7 +199,7 @@ class VESCModelling(VESModelling):
         paE = err
 
         if err is not None:
-            if type(err) is float:
+            if isinstance(err, float):
                 err = np.ones(len(data))*err
 
             super(VESCModelling, self).drawData(ax, data[0:len(data)//2], err[0:len(data)//2],

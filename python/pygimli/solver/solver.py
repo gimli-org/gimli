@@ -805,7 +805,7 @@ def linSolve(A, b, verbose=False):
     import scipy.sparse
     #pg.optImport('scipy.sparse')
     #print(type(A))
-    if type(A) == scipy.sparse.csr.csr_matrix:
+    if isinstance(A, scipy.sparse.csr.csr_matrix):
         return scipy.sparse.linalg.spsolve(A, b)
     else:
         raise StandardException("Don't know how to lineare solve a system"

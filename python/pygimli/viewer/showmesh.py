@@ -258,8 +258,8 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
         #print('-----------------------------')
 
         ### data=[[marker, val], ....]
-        if type(data) is list and \
-            type(data[0]) is list and type(data[0][0]) is int:
+        if isinstance(data, list) and \
+            isinstance(data[0], list) and instance(data[0][0], int):
             data = pg.solver.parseMapToCellArray(data, mesh)
 
         if hasattr(data[0], '__len__') and not \
