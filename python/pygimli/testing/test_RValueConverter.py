@@ -103,10 +103,21 @@ class TestRVectorMethods(unittest.TestCase):
 
         x = np.arange(10, dtype=np.long)
         a = pg.RVector(x)
+        
         self.assertEqual(a.size(), len(x))
         self.assertEqual(pg.sum(a), sum(x))
+        
         self.assertEqual(pg.sum(x), sum(x))
 
+    def test_NumpyToIVector(self):
+        x = np.arange(10, dtype=np.long)
+        a = pg.IVector(x)
+        
+        self.assertEqual(a.size(), len(x))
+        self.assertEqual(pg.sum(a), sum(x))
+        
+        self.assertEqual(pg.sum(x), sum(x))
+         
     def test_NumpyToCVector(self):
         pass
         # will not work .. until an idea how to choose right api for function with and RVector and CVector, e.g. sum()
@@ -167,9 +178,12 @@ class TestRVectorMethods(unittest.TestCase):
         """Implemented through hand_made_wrapper.py"""
         # check ob wirklich from array genommen wird!
         # wird es noch nicht .. siehe __init__.py:__BVectorArrayCall__
+        v = pg.RVector(10, 1)
+        b = (v == 1)
+        self.assertEqual(type(b), pg.BVector)
+        
         v = pg.RVector(10, 1.1)
         b = (v == 1.1)
-
         self.assertEqual(type(b), pg.BVector)
 
         a = np.asarray(b)
@@ -246,9 +260,11 @@ class TestRVectorMethods(unittest.TestCase):
 if __name__ == '__main__':
     pg.setDebug(0)
 
-    #test = TestRVectorMethods()
-    #test.test_NumpyToCVector()
-#    exit()
+    # test = TestRVectorMethods()
+    # test.test_BVectorToNumpy()
+    # test.test_NumpyToIVector()
+    # test.test_NumpyToRVector()
+    # exit()
 
 
     unittest.main()

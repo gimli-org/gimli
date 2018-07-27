@@ -1406,8 +1406,8 @@ inline Complex sum(const CVector & c){
 inline double sum(const RVector & r){
     return std::accumulate(r.begin(), r.end(), double(0));
 }
-inline int sum(const IVector & i){
-    return std::accumulate(i.begin(), i.end(), int(0));
+inline SIndex sum(const IVector & i){
+    return std::accumulate(i.begin(), i.end(), SIndex(0));
 }
 
 

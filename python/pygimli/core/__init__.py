@@ -14,7 +14,6 @@ if sys.platform == 'win32':
 
 _pygimli_ = None
 
-
 ###############################################################################
 # TEMP: Avoid import errors for py bindings built before core submodule
 def bindingpath(relpath):
@@ -71,7 +70,7 @@ def toc(msg=None, box=False):
     seconds = dur()
     m, s = divmod(seconds, 60)
     h, m = divmod(m, 60)
-    type(m)
+    #type(m) CR ??
     if h <= 0 and m <= 0:
          time = "%.2f" % s
     elif h <= 0:
@@ -100,7 +99,7 @@ def RVector_str(self, valsOnly=False):
     s = str()
 
     if not valsOnly:
-        s = str(type(self)) + " " + str(self.size())
+        s = str(self.size())
 
     if len(self) == 0:
         return s
@@ -114,7 +113,7 @@ def RVector_str(self, valsOnly=False):
         s = s + str(self[len(self) - 1]) + "]"
         return s
     return (
-        str(type(self)) + " " + str(self.size()) +
+        str(self.size()) +
         " [" + str(self[0]) + ",...," + str(self[self.size() - 1]) + "]"
     )
 
@@ -318,29 +317,29 @@ _pygimli_.BVector.__init__ = __newBVectorInit__
 # RVector + int fails .. so we need to tweak this command
 __oldRVectorAdd__ = _pygimli_.RVector.__add__
 def __newRVectorAdd__(a, b):
-    if type(b) == np.ndarray and b.dtype == complex:
+    if isinstance(b, np.ndarray) and b.dtype == complex:
         return __oldRVectorAdd__(a, pg.CVector(b))
-    if type(b) == int:
+    if isinstance(b, int):
         return __oldRVectorAdd__(a, float(b))
-    if type(a) == int:
+    if isinstance(a, int):
         return __oldRVectorAdd__(float(a), b)
     return __oldRVectorAdd__(a, b)
 _pygimli_.RVector.__add__ = __newRVectorAdd__
 
 __oldRVectorSub__ = _pygimli_.RVector.__sub__
 def __newRVectorSub__(a, b):
-    if type(b) == int:
+    if isinstance(b, int):
         return __oldRVectorSub__(a, float(b))
-    if type(a) == int:
+    if isinstance(a, int):
         return __oldRVectorSub__(float(a), b)
     return __oldRVectorSub__(a, b)
 _pygimli_.RVector.__sub__ = __newRVectorSub__
 
 __oldRVectorMul__ = _pygimli_.RVector.__mul__
 def __newRVectorMul__(a, b):
-    if type(b) == int:
+    if isinstance(b, int):
         return __oldRVectorMul__(a, float(b))
-    if type(a) == int:
+    if isinstance(a, int):
         return __oldRVectorMul__(float(a), b)
     return __oldRVectorMul__(a, b)
 _pygimli_.RVector.__mul__ = __newRVectorMul__
@@ -348,18 +347,18 @@ _pygimli_.RVector.__mul__ = __newRVectorMul__
 try:
     __oldRVectorTrueDiv__ = _pygimli_.RVector.__truediv__
     def __newRVectorTrueDiv__(a, b):
-        if type(b) == int:
+        if isinstance(b, int):
             return __oldRVectorTrueDiv__(a, float(b))
-        if type(a) == int:
+        if isinstance(a, int):
             return __oldRVectorTrueDiv__(float(a), b)
         return __oldRVectorTrueDiv__(a, b)
     _pygimli_.RVector.__truediv__ = __newRVectorTrueDiv__
 except:
     __oldRVectorTrueDiv__ = _pygimli_.RVector.__div__
     def __newRVectorTrueDiv__(a, b):
-        if type(b) == int:
+        if isinstance(b, int):
             return __oldRVectorTrueDiv__(a, float(b))
-        if type(a) == int:
+        if isinstance(a, int):
             return __oldRVectorTrueDiv__(float(a), b)
         return __oldRVectorTrueDiv__(a, b)
     _pygimli_.RVector.__div__ = __newRVectorTrueDiv__
@@ -812,7 +811,7 @@ def abs(v):
         return _pygimli_.absR3(v)
     elif isinstance(v, np.ndarray):
         return _pygimli_.absR3(v)
-    elif type(v) == _pygimli_.RMatrix:
+    elif isinstance(v, _pygimli_.RMatrix):
         raise BaseException("IMPLEMENTME")
         for i in range(len(v)):
             v[i] = _pygimli_.abs(v[i])
@@ -854,7 +853,7 @@ _pygimli_.stdVectorSIndex.__eq__ = __EQ_stdVectorSIndex__
 _pygimli_.__EQ_RVector__ = _pygimli_.RVector.__eq__
 
 def __EQ_RVector__(self, val):
-    if type(val) == int:
+    if isinstance(val, int):
         val = float(val)
     return _pygimli_.__EQ_RVector__(self, val)
 
@@ -1030,7 +1029,7 @@ class ModellingBaseMT__(_pygimli_.ModellingBase):
             _pygimli_.ModellingBase.__init__(self, mesh=mesh,
                                              dataContainer=dataContainer,
                                              verbose=verbose)
-        elif type(mesh) is _pygimli_.Mesh:
+        elif isinstance(mesh, _pygimli_.Mesh):
             _pygimli_.ModellingBase.__init__(self, mesh=mesh, verbose=verbose)
         elif dataContainer:
             _pygimli_.ModellingBase.__init__(self, dataContainer=dataContainer,
@@ -1077,7 +1076,7 @@ def __getCoords(coord, dim, ent):
     """
     if isinstance(ent, pg.R3Vector) or isinstance(ent, pg.stdVectorRVector3):
         return getattr(_pygimli_, coord)(ent)
-    if type(ent) == list and isinstance(ent[0], pg.RVector3):
+    if isinstance(ent, list) and isinstance(ent[0], pg.RVector3):
         return getattr(_pygimli_, coord)(ent)
     if isinstance(ent, pg.DataContainer):
         return getattr(_pygimli_, coord)(ent.sensorPositions())

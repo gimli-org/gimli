@@ -94,7 +94,7 @@ class TestFiniteElementBasics(unittest.TestCase):
             
             np.testing.assert_allclose(ui, xi**2)
      
-        _testP1_(pg.createGrid(x=np.linspace(0, 1, 11)), show=True) #1D
+        _testP1_(pg.createGrid(x=np.linspace(0, 1, 11)), show=False) #1D
         _testP1_(pg.createGrid(x=np.linspace(-2, 1, 11), y=np.linspace(0, 1, 11))) #2D reg quad
         _testP1_(pg.createGrid(x=np.linspace(-0.04, 0.01, 11), y=np.linspace(-0.4, 0, 11))) #2D scaled
         _testP1_(pg.createGrid(x=np.linspace(-2, 1, 11), y=np.linspace( 0, 1, 11),

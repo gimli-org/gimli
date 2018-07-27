@@ -338,7 +338,13 @@ struct PySequence2IVector{
         data->convertible = memory_chunk;
         __DC(obj << "\t from list")
         for (GIMLI::Index i = 0; i < vec->size(); i ++){
+           
+        #ifdef WIN32
+             //__DC(obj << " " << i << " " << bp::extract< long >(py_sequence[i]))
+            (*vec)[i] = bp::extract< long >(py_sequence[i]);
+        #else
             (*vec)[i] = bp::extract< GIMLI::SIndex >(py_sequence[i]);
+        #endif
         }
     }
 private:
