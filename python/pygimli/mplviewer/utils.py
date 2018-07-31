@@ -39,6 +39,8 @@ def wait(**kwargs):
 
 def saveFigure(fig, filename, pdfTrim=False):
     """Save figure as pdf."""
+    if '.pdf' in filename:
+        filename = filename[0:filename.find('.pdf')]
     fig.savefig(filename + '.pdf', bbox_inches='tight')
     # pdfTrim=1
     if pdfTrim:
@@ -62,23 +64,23 @@ def saveAxes(ax, filename, adjust=False):
 def prettyFloat(v):
     """Return a pretty string for a given value suitable for graphical output."""
     if abs(round(v)-v) < 1e-4 and abs(v) < 1e3:
-        return str(int(v))
+        return str(int(round(v,1)))
     elif abs(v) == 0.0:
         return "0"
     elif abs(v) > 1e3 or abs(v) <= 1e-3:
         return str("%.1e" % v)
     elif abs(v) < 1e-2:
-        return str("%.4f" % v)
+        return str("%.4f" % round(v,4))
     elif abs(v) < 1e-1:
-        return str("%.3f" % v)
+        return str("%.3f" % round(v,3))
     elif abs(v) < 1e0:
-        return str("%.2f" % v)
+        return str("%.2f" % round(v,2))
     elif abs(v) < 1e1:
-        return str("%.1f" % v)
+        return str("%.1f" % round(v,1))
     elif abs(v) < 1e2:
-        return str("%.1f" % v)
+        return str("%.1f" % round(v,1))
     else:
-        return str("%.0f" % v)
+        return str("%.0f" % round(v,1))
 
 
 def renameDepthTicks(ax):

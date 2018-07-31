@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import os
+
 import unittest
 
 import pygimli as pg
@@ -9,7 +11,7 @@ import numpy as np
 
 class TestPLCIO(unittest.TestCase):
 
-    def test_io_trinagle(self):
+    def test_io_triangle(self):
         """
         """
         # create tempfile in most secure manner, only accesible by this process
@@ -54,6 +56,12 @@ class TestPLCIO(unittest.TestCase):
                                    np.sort(m.positions().array()))
         np.testing.assert_equal(poly.regionMarker()[0].area(), 42.42)
 
+        try:
+            os.remove(name2D)
+        except:
+            print("can't remove:", name2D)
+
+
     def test_io_tetgen(self):
         """
         """
@@ -63,7 +71,7 @@ class TestPLCIO(unittest.TestCase):
             return
 
         _, name3D = tmp.mkstemp(suffix='.poly')
-        print(name3D)
+        #print(name3D)
 
         # 3D, creating test tetgen poly
         minx = -2.0
@@ -106,6 +114,60 @@ class TestPLCIO(unittest.TestCase):
         np.testing.assert_allclose(np.sort(poly.positions().array()),
                                    np.sort(cube.positions().array()))
         np.testing.assert_equal(poly.regionMarker()[0].area(), 42.42)
+    
+        try:
+            os.remove(name3D)
+        except:
+            print("can't remove:", name3D)
 
+
+    def test_io_STL(self):
+        try:
+            import tempfile as tmp
+        except ImportError:
+            return
+
+        str = r"""solid name
+    facet normal 1.000000e+000 0.000000e+000 0.000000e+000 
+        outer loop 
+            vertex   6.100000e+002 -1.046773e+002 -2.818708e+003 
+            vertex   6.100000e+002 -1.249950e+002 -2.814064e+003 
+            vertex   6.100000e+002 -2.507565e+000 -2.930000e+003 
+        endloop
+    endfacet
+endsolid
+solid name
+    facet normal -2.568735e-007 1.396183e-002 -9.999025e-001
+        outer loop
+            vertex   1.350000e+002 3.839764e+001 -2.929429e+003
+            vertex   6.100000e+002 7.930283e+001 -2.928858e+003
+            vertex   6.100000e+002 -2.507565e+000 -2.930000e+003
+        endloop
+    endfacet
+endsolid"""
+        _, fileName = tmp.mkstemp(suffix='.stl')
+        fi = open(fileName, 'w')
+        fi.write(str)
+        fi.close()
+
+        mesh = pg.load(fileName, verbose=True)
+
+        np.testing.assert_equal(mesh.cellCount(), 0)
+        np.testing.assert_equal(mesh.nodeCount(), 5)
+        np.testing.assert_equal(mesh.boundaryCount(), 2)
+
+        np.testing.assert_equal(np.array(pg.unique(pg.sort(mesh.boundaryMarkers()))),
+                               [0, 1])
+        
+        try:
+            os.remove(fileName)
+        except:
+            print("can't remove:", fileName)
+
+            
 if __name__ == '__main__':
+
+    #test = TestPLCIO()
+    #test.test_io_STL()
+    #exit()
     unittest.main()

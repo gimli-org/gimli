@@ -1,11 +1,6 @@
 # -*- coding: utf-8 -*-
-"""pyGIMLi - An open-source library for modelling and inversion in geophysics
-
-Import convention:
-
-.. code-block:: python
-
-    import pygimli as pg
+"""
+pyGIMLi - An open-source library for modelling and inversion in geophysics
 """
 
 # py 2.7 compatiblity
@@ -66,4 +61,3 @@ def version():
     """Shortcut to show and return current version."""
     logger.info('Version: ' + __version__ + " core:" + pg.versionStr())
     return __version__
-

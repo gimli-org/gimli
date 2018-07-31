@@ -600,7 +600,7 @@ class MethodManagerTODO(object):
             print("Data:", dataVals)
             raise Exception("Data values for invert() call are mandatory.");
 
-        if type(errVals) == float:
+        if isinstance(errVals, float):
             errVals = self.estimateError(dataVals, errLevel=errVals)
 
         return self.inv.run(dataVals, errVals, **kwargs)

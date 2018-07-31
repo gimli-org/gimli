@@ -1,7 +1,14 @@
+{% if pagename == 'index' %}
 <div class="alert alert-success">
-  <button type="button" class="close" data-dismiss="alert">&times;</button>
-  <strong>News (Aug 2017):</strong><br> pyGIMLi Paper out now! Download PDF <a href="https://www.pygimli.org/citation.html">here</a>.
+  <small>
+  <table width="100%">
+  <tr><td style="white-space:nowrap;" valign="top"><strong>Nov 17:</strong></td><td>pyGIMLi @ <a href="https://agu17.pygimli.org">AGU in New Orleans</a></td></tr>
+  <tr><td style="white-space:nowrap;" valign="top"><strong>Aug 17:</strong></td><td>pyGIMLi paper out now! Download PDF <a href="https://www.pygimli.org/citation.html">here</a></td></tr>
+</table>
+  </small>
+
 </div>
+{% endif %}
 {%- if display_toc %}
 <h4 class="sidebar-box-heading">Contents</h4>
 <div class="well sidebar-box toc">
@@ -12,14 +19,14 @@
 <h4 class="sidebar-box-heading">{{ _('Navigation') }}</h4>
 <div class="well sidebar-box">
     <ul class="nav nav-list">
-        <li class="nav-header"><i class="icon-home"></i> Documentation Home</li>
+        <li class="nav-header"><i class="fas fa-home"></i> Documentation home</li>
         <li><a href="{{ pathto(master_doc) }}">Documentation Home</a></li>
         {%- if prev %}
-        <li class="nav-header"><i class="icon-caret-left"></i> Previous topic</li>
+        <li class="nav-header"><i class="fas fa-caret-left"></i> Previous topic</li>
         <li><a href="{{ prev.link|e }}" title="{{ _('previous chapter') }}">{{ prev.title }}</a></li>
         {%- endif %}
         {%- if next %}
-        <li class="nav-header"><i class="icon-caret-right"></i> Next topic</li>
+        <li class="nav-header"><i class="fas fa-caret-right"></i> Next topic</li>
         <li><a href="{{ next.link|e }}" title="{{ _('next chapter') }}">{{ next.title }}</a></li>
         {%- endif %}
     </ul>
@@ -31,31 +38,31 @@
     {% include 'gallery.html' %}
 </div>
 
-<h4 class="sidebar-box-heading">Code Status</h4>
+<h4 class="sidebar-box-heading">Quick links</h4>
 <div class="well sidebar-box">
-    <br>
-    <small><p align="center">Latest release:</small>
-    <br>
+    <ul class="nav nav-list">
+    <li><a href="{{ pathto('pygimliapi/index.html', 1) }}"><i class="fas fa-book fa-fw"></i> API documentation</a></li>
+    <li><a target="_blank" href="https://github.com/gimli-org/gimli"><i class="fab fa-github fa-fw"></i> Code repository</a></li>
+    <li><a target="_blank" href="https://github.com/gimli-org/gimli/issues"><i class="fas fa-bug fa-fw"></i> Report a bug</a></li>
+    <li><a target="_blank" href="https://www.researchgate.net/project/pyGIMLi-Geophysical-Inversion-and-Modelling-Library-in-Python"><i class="fab fa-researchgate fa-fw"></i> Researchgate project</a></li>
+    <li><a href="https://www.pygimli.org/citation.html"><i class="fas fa-quote-right fa-fw"></i> Citation</a></li>
+    </ul>
+</div>
+
+<h4 class="sidebar-box-heading">Code status</h4>
+<div class="well sidebar-box">
+    <ul class="nav nav-list">
+        <li class="nav-header"><i class="fas fa-check"></i> Latest release</li>
     <p align="center">
     <a target="_blank" href="https://github.com/gimli-org/gimli/releases/latest"><img src="https://img.shields.io/github/release/gimli-org/gimli.svg?style=flat-square" alt="Latest release tag" /></a>
   </p>
-    <small><p align="center">Development version:</small>
-    <br>
+      <li class="nav-header"><i class="fas fa-flask"></i> Development version</li>
 <p align="center">
-    <!--Build log and badge icon are generated within automatic jenkins build and uploaded to pygimli.org-->
-    <!-- <a target="_blank" href="https://www.pygimli.org/build.html"><img src="https://www.pygimli.org/build_status.svg" alt="Build Status"></a> -->
-<!--<iframe src="https://ghbtns.com/github-btn.html?user=gimli-org&repo=gimli&type=star&count=true" frameborder="0" scrolling="0" width="170px" height="20px"></iframe>-->
     <a target="_blank" href="https://landscape.io/github/gimli-org/gimli/master"><img src="https://landscape.io/github/gimli-org/gimli/master/landscape.svg" alt="Code Quality" /></a>
+    <a href='http://g4.geo.uni-bonn.de:8080/job/pyGIMLi/'><img src='http://g4.geo.uni-bonn.de:8080/buildStatus/icon?job=pyGIMLi'></a>
     <a target="_blank" href="https://github.com/gimli-org/gimli/tree/dev"><img src="https://img.shields.io/github/commits-since/gimli-org/gimli/latest.svg" alt="Commits since latest release" /></a>
     </p>
 </div>
 
-<h4 class="sidebar-box-heading">Links</h4>
-<div class="well sidebar-box">
-    <ul class="nav nav-list">
-    <li><a target="_blank" href="https://github.com/gimli-org/gimli"><i class="icon-fixed-width icon-github"></i> Code repository</a></li>
-    <li><a target="_blank" href="https://github.com/gimli-org/gimli/issues"><i class="icon-fixed-width icon-bug"></i> Report a bug</a></li>
-    </ul>
-</div>
 <br>
 <br>

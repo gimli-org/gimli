@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.collections import PatchCollection
 from matplotlib.colors import LogNorm, Normalize
-from matplotlib.patches import Rectangle
+from matplotlib.patches import Rectangle, Wedge
 
 import pygimli as pg
 
@@ -83,6 +83,9 @@ def patchValMap(vals, xvec=None, yvec=None, ax=None, cMin=None, cMax=None,
         logarithmic colour scale [min(vals)>0]
     label : string
         colorbar label
+    ** kwargs:
+        * circular : bool
+            Plot in polar coordinates.
     """
     if cMin is None:
         cMin = np.min(vals)
@@ -102,21 +105,69 @@ def patchValMap(vals, xvec=None, yvec=None, ax=None, cMin=None, cMax=None,
         ax = plt.subplots()[1]
 
     recs = []
-    if dy is None:  # map y values to unique
-        ymap = {xy: ii for ii, xy in enumerate(np.unique(yvec))}
-        for i in range(len(vals)):
-            recs.append(Rectangle((xvec[i] - dx / 2, ymap[yvec[i]] - 0.5),
-                                  dx, 1))
+    
+    circular = kwargs.pop('circular', False)
+    if circular:
+        recs = [None] * len(xvec)
+        if dy is None:  # map y values to unique
+            ymap = {xy: ii for ii, xy in enumerate(np.unique(yvec))}
+
+            xyMap = {}
+            for i, y in enumerate(yvec):
+                if y not in xyMap:
+                     xyMap[y] = []
+                xyMap[y].append(i)
+
+            maxR = max(ymap.values())
+            dR = 1 / (len(ymap.values())+1)
+            
+            dOff = np.pi/2
+
+            for y, xIds in xyMap.items():
+                r = 1. - dR*(ymap[y]+1)
+                # ax.plot(r * np.cos(xvec[xIds]), 
+                #         r * np.sin(xvec[xIds]), 'o')
+
+                # print(y, ymap[y])
+                for i in xIds:
+                    phi = xvec[i]
+                    x = r * np.cos(phi)
+                    y = r * np.sin(phi)
+
+                    dPhi = (xvec[1] - xvec[0])
+                   
+                    recs[i] = Wedge((0., 0.), r + dR/1.5,
+                                    (phi - dPhi)*360/(2*np.pi),
+                                    (phi + dPhi)*360/(2*np.pi),
+                                    width=dR,
+                                    zorder=1+r)
+                    # if i < 5:
+                    #     ax.text(x, y, str(i))
+                   # #pg.wait()
+        else:
+            raise("Implementme")
     else:
-        for i in range(len(vals)):
-            recs.append(Rectangle((xvec[i] - dx / 2, yvec[i] - dy / 2),
-                                  dx, dy))
+        if dy is None:  # map y values to unique
+            ymap = {xy: ii for ii, xy in enumerate(np.unique(yvec))}
+            for i in range(len(vals)):
+                recs.append(Rectangle((xvec[i] - dx / 2, ymap[yvec[i]] - 0.5),
+                                    dx, 1))
+        else:
+            for i in range(len(vals)):
+                recs.append(Rectangle((xvec[i] - dx / 2, yvec[i] - dy / 2),
+                                    dx, dy))
+        ax.set_xlim(min(xvec) - dx / 2, max(xvec) + dx / 2)
+        ax.set_ylim(len(ymap) - 0.5, -0.5)
 
     pp = PatchCollection(recs)
     # ax.clear()
     col = ax.add_collection(pp)
     pp.set_edgecolor(None)
     pp.set_linewidths(0.0)
+
+    if circular:
+        pp.set_edgecolor('black')
+        pp.set_linewidths(0.1)
 
     cmap = pg.mplviewer.cmapFromName(**kwargs)
     if kwargs.pop('markOutside', False):
@@ -129,9 +180,7 @@ def patchValMap(vals, xvec=None, yvec=None, ax=None, cMin=None, cMax=None,
     pp.set_norm(norm)
     pp.set_array(vals)
     pp.set_clim(cMin, cMax)
-    ax.set_xlim(min(xvec) - dx / 2, max(xvec) + dx / 2)
-    ax.set_ylim(len(ymap) - 0.5, -0.5)
-
+    
     updateAxes_(ax)
     cbar = kwargs.pop('colorBar', True)
     ori = kwargs.pop('orientation', 'horizontal')

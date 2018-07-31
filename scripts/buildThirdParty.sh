@@ -3,7 +3,7 @@
 BOOST_VERSION_DEFAULT=1.61.0
 #since 63 libboost_numpy
 #since 64 python build broken
- 
+
 BOOST_URL=http://sourceforge.net/projects/boost/files/boost/
 
 LAPACK_VERSION=3.4.2
@@ -28,8 +28,9 @@ PYGCCXML_REV=648e8da38fa12004f0c83f6e1532349296425702 # current functional
 #PYGCCXML_RV=v1.7.3
 
 PYPLUSPLUS_URL=https://bitbucket.org/ompl/pyplusplus
-#PYPLUSPLUS_REV=5caf5ad8ce28 
-PYPLUSPLUS_REV=be7b5b3a0859 # tag 1.8 current functional
+#PYPLUSPLUS_REV=be7b5b3a0859 # tag 1.8 last functional
+PYPLUSPLUS_REV=666e4d03d462 # tag 1.8.1 test
+
 CPPUNIT_URL=http://svn.code.sf.net/p/cppunit/code/trunk
 
 checkTOOLSET(){
@@ -226,18 +227,18 @@ getWITH_HG(){
     if ( [ -d $_SRC_ ] ); then
         pushd $_SRC_
 #            "$HG" fetch
-            "$HG" pull -u
-            "$HG" up
+            $HG pull -u
+            $HG up
         popd
     else
         pushd $SRC_DIR
-            "$HG" clone $_URL_ $_SRC_
+            ${HG} --config ui.clonebundles=false clone ${_URL_} ${_SRC_}
         popd
     fi
     if [ -n $_BRANCH_ ]; then
         pushd $_SRC_
           echo $_SRC_ $_BRANCH_
-          "$HG" checkout $_BRANCH_
+          $HG checkout $_BRANCH_
           #"$HG" revert -r $_BRANCH_ --all
         popd
     fi
@@ -412,7 +413,7 @@ buildBOOST(){
         --with-system \
         $WITHPYTHON \
         --with-thread
-        
+
 
         # --with-date_time \
         # --with-chrono \
@@ -555,9 +556,16 @@ buildPYGCCXML(){
             rm -rf $PYPLUSPLUS_DIST
         fi
 
+        pushd $PYPLUSPLUS_BUILD
+            # fix slice bug
+            sed -i -e 's/m_start = std::max/\/\/m_start = std::max/g' build/lib*/pyplusplus/code_repository/indexing_suite/slice_header.py
+            sed -i -e 's/m_stop = std::max/\/\/m_stop = std::max/g' build/lib*/pyplusplus/code_repository/indexing_suite/slice_header.py
+            #patch -p1 < $BUILDSCRIPT_HOME/patches/pyplusplus-slice-fix.patch
+        popd
+        
         cp -rf $PYPLUSPLUS_BUILD/build/lib*/pyplusplus $PYPLUSPLUS_DIST
         pushd $PYPLUSPLUS_DIST
-            #patch -p1 < $BUILDSCRIPT_HOME/patches/pyplusplus-caster.patch
+            
         popd
         #export PYTHONPATH=$PYTHONPATH:$PYGCCXML_DIST/Lib/site_packages/
         #python setup.py install --prefix=$PYGCCXML_DIST_WIN

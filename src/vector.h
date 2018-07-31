@@ -444,19 +444,19 @@ public:
 
     /*! Set multiple values. Throws out of range exception if index check fails. */
     inline Vector< ValueType > & setVal(const ValueType & val,
-                                        const IndexArray & iArray) {
-        for (Index i = 0; i < iArray.size(); i ++) setVal(val, iArray[i]);
+                                        const IndexArray & ids) {
+        for (Index i = 0; i < ids.size(); i ++) setVal(val, ids[i]);
         return *this;
     }
 
     /*! Set multiple values from vals at index position iArray.
      * Throws out of range exception if index check fails. */
     inline Vector< ValueType > & setVal(const Vector < ValueType > & vals,
-                                        const IndexArray & iArray) {
-        ASSERT_EQUAL(vals.size(), iArray.size())
-        for (Index i = 0; i < iArray.size(); i ++){
+                                        const IndexArray & ids) {
+        ASSERT_EQUAL(vals.size(), ids.size())
+        for (Index i = 0; i < ids.size(); i ++){
 //            data_[iArray[i]] = vals[i];
-           setVal(vals[i], iArray[i]);
+           setVal(vals[i], ids[i]);
         }
         return *this;
     }
@@ -930,8 +930,6 @@ void Vector< ValueType >::add(const ElementMatrix < double >& A, const double & 
 template< typename ValueType >
 void Vector< ValueType >::add(const ElementMatrix < double >& A, const Vector< double> & a){THROW_TO_IMPL}
 
-
-
 template< class ValueType, class Iter > class AssignResult{
 public:
     AssignResult(Vector< ValueType > & a, const Iter & result, Index start, Index end)
@@ -1290,6 +1288,11 @@ inline BVector operator ~ (const BVector & a){
     return ret;
 }
 
+/*! For use in pygimli*/ 
+inline BVector inv(const BVector & a){
+    return ~a;
+}
+
 /*! Refactor with expression templates */
 inline BVector operator & (const BVector & a, const BVector & b){
     BVector ret(a.size());
@@ -1403,8 +1406,8 @@ inline Complex sum(const CVector & c){
 inline double sum(const RVector & r){
     return std::accumulate(r.begin(), r.end(), double(0));
 }
-inline int sum(const IVector & i){
-    return std::accumulate(i.begin(), i.end(), int(0));
+inline SIndex sum(const IVector & i){
+    return std::accumulate(i.begin(), i.end(), SIndex(0));
 }
 
 

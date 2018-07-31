@@ -11,9 +11,11 @@ pyGIMLi API Reference
     For a reference of the C++ core library of the code, please visit:
     http://pygimli.org/gimliapi/.
 
-.. rubric:: Module overview
-
 .. currentmodule:: pygimli
+
+.. automodule:: pygimli
+
+.. rubric:: Module overview
 
 .. autosummary::
   :toctree: _generated
@@ -37,3 +39,14 @@ pyGIMLi API Reference
     :glob:
 
     _generated/*
+    
+.. note::
+
+  This documentation is valid for |version|. Check your installed version with
+
+  .. code-block:: python
+
+    import pygimli as pg
+    print(pg.__version__)
+
+  and consider updating your installation.

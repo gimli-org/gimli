@@ -390,6 +390,7 @@ public:
 
         BVector b(y > x);
         CPPUNIT_ASSERT((y > x).size() == 10);
+        CPPUNIT_ASSERT((y < x).size() == 10);
         CPPUNIT_ASSERT(find(y > x).size() == 9);
         CPPUNIT_ASSERT(find(x > y).size() == 1);
         CPPUNIT_ASSERT(find(x > y)[0] == 5);

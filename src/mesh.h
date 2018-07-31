@@ -261,7 +261,8 @@ public:
         create3DGrid(x, y, z, markerType, worldBoundaryMarker);
     }
 
-    /*! Fill this 3D mesh with 3D boundary elements from the 2D mesh cells. Increase mesh dimension. Mesh should contain 2D cells. */
+    /*! Fill this 3D mesh with 3D boundary elements from 2D mesh cells. 
+    Increase mesh dimension. Mesh should contain 2D cells. */
     void createHull(const Mesh & mesh);
 
     void createClosedGeometry(const std::vector < RVector3 > & vPos, int nSegments, double dxInner);
@@ -277,17 +278,32 @@ public:
     /*! Create and copy global P2 mesh of this mesh.*/
     Mesh createP2() const;
 
+    /*! Create a partly mesh without cells from mesh, based on a vector of ptrs to boundaries */
+    void createMeshByCells(const Mesh & mesh, const std::vector < Cell * > & cells);
+
+    /*! Create a partly mesh without cells from mesh, based on a vector of ptrs to boundaries */
+    void createMeshByBoundaries(const Mesh & mesh, const std::vector < Boundary * > & bounds);
+    
     /*! Create a new mesh that is a part from this mesh, based on cell-ids */
     Mesh createMeshByCellIdx(const IndexArray & idxList);
 
     /*! Create a partly mesh from mesh, based on cell-ids */
     void createMeshByCellIdx(const Mesh & mesh, const IndexArray & idxList);
 
-    /*! Create a partly mesh without cells from mesh, based on a vector of ptrs to boundaries */
-    void createMeshByBoundaries(const Mesh & mesh, const std::vector < Boundary * > & bounds);
-
-    /*! Create a partly mesh from mesh, based on meshs attributes. For a single attribute set to to 0, for unlimited set to to -1 */
+    /*! Create a partly mesh from mesh, based on meshs attributes. 
+    For a single attribute set to to 0, for unlimited set to to -1 */
     void createMeshByMarker(const Mesh & mesh, int from, int to=-1);
+
+    /*! Syntactic sugar to extract a part of the mesh based on cells.*/
+    Mesh extract(const std::vector< Cell * > & cells) const;
+
+    /*! Syntactic sugar to extract a part of the mesh based on boundaries.*/
+    Mesh extract(const std::vector< Boundary * > & bounds) const;
+
+    /*! Syntactic sugar to extract a part of the mesh based on 
+    nodes with associated cells and boundaries.*/
+    Mesh extract(const std::vector< Node * > & nodes) const;
+
     //** end creation stuff
 
     //! Show some infos

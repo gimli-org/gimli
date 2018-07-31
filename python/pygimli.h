@@ -156,7 +156,13 @@ namespace GIMLI{
     inline RVector operator OP (const double & a, const RVector & b){ \
         RVector ret(b.size()); for (Index i = 0; i < b.size(); i ++) ret[i] = a OP b[i]; return ret; } \
     inline RVector operator OP (const RVector & a, const RVector & b){ \
-         RVector ret(a);   ret OP##=b; return ret; }                           \
+        RVector ret(a);   ret OP##=b; return ret; }                           \
+    inline IVector operator OP (const IVector & a, const IVector & b){ \
+        IVector ret(a);   ret OP##=b; return ret; }                           \
+    inline IVector operator OP (const IVector & a, int b){ \
+        IVector ret(a);   ret OP##=b; return ret; }                           \
+    inline IVector operator OP (int a, const IVector & b){ \
+        IVector ret(b.size()); for (Index i = 0; i < b.size(); i ++) ret[i] = a OP b[i]; return ret; } \
     inline CVector operator OP (const CVector & a, const CVector & b){ \
         CVector c(a);   c OP##=b; return c; }                           \
     inline CVector operator OP (const CVector & a, const Complex & b){ \
@@ -292,7 +298,6 @@ DEFINE_XVECTOR_STUFF__(IVector)
 DEFINE_XVECTOR_STUFF__(RVector) //RVector last since auto rhs conversion will fail else
 #undef DEFINE_XVECTOR_STUFF__
 
-
     template RVector fliplr(const RVector & a);
     template RVector round(const RVector & a, double tol);
     template RVector increasingRange(const double & first, const double & last, Index n);
@@ -317,7 +322,13 @@ DEFINE_XVECTOR_STUFF__(RVector) //RVector last since auto rhs conversion will fa
     template std::ostream & operator << (std::ostream & str, const ElementMatrix< double > & p);
 
     template RVector unique(const RVector & a);
+    // template IndexArray unique(const IndexArray & a);
+    template IVector unique(const IVector & a);
+    
     template RVector sort(const RVector & a);
+    // template IndexArray sort(const IndexArray & a);
+    template IVector sort(const IVector & a);
+    
     template RVector pow(const RVector & a, double power);
     template RVector pow(const RVector & a, int power);
     template RVector pow(const RVector & a, const RVector & power);

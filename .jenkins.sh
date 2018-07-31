@@ -32,6 +32,10 @@ python -c "import matplotlib; print(matplotlib.__version__)"
 
 mkdir -p build
 cd build
+
+# CLEAN=1 force thirdparty rebuild
+export CLEAN=0
+
 cmake ../trunk \
    -DPYVERSION=3 \
    -DPYTHON_EXECUTABLE=/usr/bin/python3 \

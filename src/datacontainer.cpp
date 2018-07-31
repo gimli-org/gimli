@@ -41,6 +41,7 @@ DataContainer::DataContainer(const std::string & fileName,
                              bool sensorIndicesFromOne,
                              bool removeInvalid){
     initDefaults();
+
     std::vector < std::string > tokenList = getSubstrings(sensorTokens);
     for (Index i=0 ; i < tokenList.size() ; i++) registerSensorIndex(tokenList[i]);
     this->load(fileName, sensorIndicesFromOne, removeInvalid);
@@ -105,7 +106,12 @@ std::string DataContainer::translateAlias(const std::string & alias) const {
 }
 
 void DataContainer::clear(){
+    topoPoints_.clear();
+    sensorPoints_.clear();
+    // sensor token list should not be cleared
+    // dataSensorIdx_.clear();
     dataMap_.clear();
+    initDefaults();
 }
 
 void DataContainer::copy_(const DataContainer & data){
@@ -187,6 +193,7 @@ bool DataContainer::isSensorIndex(const std::string & token) const {
 int DataContainer::load(const std::string & fileName,
                         bool sensorIndicesFromOne,
                         bool removeInvalid){
+    clear();
     setSensorIndexOnFileFromOne(sensorIndicesFromOne);
 
 	std::fstream file; openInFile(fileName, & file, true);
@@ -352,7 +359,6 @@ int DataContainer::load(const std::string & fileName,
     if (sensorIndexOnFileFromOne_){
         for (std::map< std::string, RVector >::iterator it = dataMap_.begin();
              it!= dataMap_.end(); it ++){
-
             if (isSensorIndex(it->first) && size() > 0){
                 it->second -= RVector(size(), 1.);
             }

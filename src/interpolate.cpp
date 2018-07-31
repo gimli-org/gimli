@@ -78,6 +78,7 @@ void interpolate(const Mesh & mesh, const RMatrix & vData,
                 throwLengthError(EXIT_VECTOR_SIZE_INVALID,
                                  WHERE_AM_I +
                                  " data.size not nodeCount and cellCount " +
+                                 toStr(vData.size()) + " x " +
                                  toStr(vData[i].size()) + " != " +
                                  toStr(mesh.nodeCount()) + " != " +
                                  toStr(mesh.cellCount()));

@@ -111,8 +111,9 @@ def createMesh(poly, quality=30, area=0.0, smooth=None, switches=None,
         mesh = tri.generate()
 
         if smooth is not None:
-            mesh.smooth(nodeMoving=kwargs.pop('node_move', False),
-                        edgeSwapping=False, smoothFunction=smooth[0],
+            mesh.smooth(nodeMoving=kwargs.pop('node_move', True),
+                        edgeSwapping=False, 
+                        smoothFunction=smooth[0],
                         smoothIteration=smooth[1])
         return mesh
 
@@ -288,8 +289,10 @@ def readGmsh(fname, verbose=False):
                     elif entry[0] == 4:
                         tets.append((entry[-4], entry[-3], entry[-2],
                                      entry[-1], entry[2]))
-    fid.close()
+                    elif entry[0] in [3, 6]:
+                        pg.error("Qudrangles and prisms are not supported yet.")
 
+    fid.close()
     lines = np.asarray(lines)
     triangles = np.asarray(triangles)
     tets = np.asarray(tets)
@@ -589,7 +592,7 @@ def readHydrus2dMesh(fname='MESHTRIA.TXT'):
     return mesh
 
 
-def readHydrus3dMesh(filename='MESHTRIA.TXT'):
+def readHydrus3dMesh(fileName='MESHTRIA.TXT'):
     """Import mesh from Hydrus3D.
 
     Parameters
@@ -605,7 +608,7 @@ def readHydrus3dMesh(filename='MESHTRIA.TXT'):
     ----------
     .. http://www.pc-progress.com/en/Default.aspx?h3d-description
     """
-    f = open(filename, 'r')
+    f = open(fileName, 'r')
     for i in range(6):
         line1 = f.readline()
 
@@ -639,7 +642,7 @@ def readHydrus3dMesh(filename='MESHTRIA.TXT'):
     return mesh
 
 
-def readGambitNeutral(filename, verbose=False):
+def readGambitNeutral(fileName, verbose=False):
     r"""Import Gambit Neutral meshes *.neu.
 
     See. https://www.sharcnet.ca/Software/Gambit/html/users_guide/ug01.htm
@@ -655,7 +658,7 @@ def readGambitNeutral(filename, verbose=False):
     verbose : boolean, optional
         Be verbose during import.
     """
-    with open(filename, 'r') as fi:
+    with open(fileName, 'r') as fi:
         content = fi.readlines()
     fi.close()
 
@@ -754,7 +757,7 @@ def convertHDF5Mesh(h5Mesh, group='mesh', indices='cell_indices',
     return mesh
 
 
-def readHDF5Mesh(filename, group='mesh', indices='cell_indices',
+def readHDF5Mesh(fileName, group='mesh', indices='cell_indices',
                  pos='coordinates', cells='topology', marker='values',
                  marker_default=0, dimension=3, verbose=True,
                  useFenicsIndices=False):
@@ -773,7 +776,7 @@ def readHDF5Mesh(filename, group='mesh', indices='cell_indices',
     Parameters
     ----------
 
-    filename: string
+    fileName: string
         Name of the mesh that has to be transformed into :term:`pyGIMLi`
         format.
 
@@ -815,7 +818,7 @@ def readHDF5Mesh(filename, group='mesh', indices='cell_indices',
     """
     h5py = pg.optImport('h5py',
                         requiredFor='import mesh in .h5 data format')
-    h5 = h5py.File(filename, 'r')
+    h5 = h5py.File(fileName, 'r')
     if verbose:
         print('loaded hdf5 mesh:', h5)
 
@@ -828,11 +831,11 @@ def readHDF5Mesh(filename, group='mesh', indices='cell_indices',
     return mesh
 
 
-def readFenicsHDF5Mesh(filename, group='mesh', verbose=True):
+def readFenicsHDF5Mesh(fileName, group='mesh', verbose=True):
     """ Reads :term:`FEniCS` mesh from file format .h5 and returns a
     :gimliapi:`GIMLI::Mesh`.
     """
-    mesh = readHDF5Mesh(filename, group=group, indices='cell_indices',
+    mesh = readHDF5Mesh(fileName, group=group, indices='cell_indices',
                         pos='coordinates', cells='topology', marker='values',
                         marker_default=0, dimension=3, verbose=verbose,
                         useFenicsIndices=False)
@@ -884,12 +887,35 @@ def exportHDF5Mesh(mesh, exportname, group='mesh', indices='cell_indices',
     return True
 
 
+def exportFenicsHDF5Mesh(mesh, exportname, **kwargs):
+    """Exports Gimli mesh in HDF5 format suitable for Fenics.
+
+    Equivalent to calling the function
+    :py:mod:`pygimli.meshtools.exportHDF5Mesh(mesh, exportname, group=['mesh',
+    'domains'], indices='cell_indices', pos='coordinates', cells='topology',
+    marker='values')`.
+
+    Parameters
+    ----------
+
+    mesh: :gimliapi:GIMLI::Mesh`
+        Mesh to be saved.
+
+    exportname: string
+        Name under which the mesh is saved.
+
+    """
+    return exportHDF5Mesh(mesh, exportname, group=['mesh', 'domains'],
+                          indices='cell_indices', pos='coordinates',
+                          cells='topology', marker='values')
+
+
 def readEIDORSMesh(fileName, matlabVarname, verbose=False):
     """Reads finite element model in EIDORS format and returns pygimli mesh.
 
     Parameters
     ----------
-    filename : str
+    fileName : str
         name of the .mat file containing the EIDORS model
     matlabVarname : str
         variable name of .mat file in MATLAB workspace
@@ -915,7 +941,7 @@ def readEIDORSMesh(fileName, matlabVarname, verbose=False):
                 dict[key] = todict(dict[key])
         return dict
 
-    def loadmat(filename):
+    def loadmat(fileName):
         data = spio.loadmat(fileName, struct_as_record=False, squeeze_me=True)
         return check_keys(data)
 
@@ -1019,28 +1045,101 @@ def readEIDORSMesh(fileName, matlabVarname, verbose=False):
 
     return mesh
 
+   
+def readSTL(fileName, ascii=True):
+    """Read :term:`STL` surface mesh and returns a :gimliapi:`GIMLI::Mesh`.
 
-def exportFenicsHDF5Mesh(mesh, exportname, **kwargs):
-    """Exports Gimli mesh in HDF5 format suitable for Fenics.
+    Read :term:`STL` surface mesh and returns a :gimliapi:`GIMLI::Mesh` 
+    of triangle boundary faces. Multiple solids are supported with increasing
+    boundary marker.
 
-    Equivalent to calling the function
-    :py:mod:`pygimli.meshtools.exportHDF5Mesh(mesh, exportname, group=['mesh',
-    'domains'], indices='cell_indices', pos='coordinates', cells='topology',
-    marker='values')`.
+    TODO: ASCII=False, read binary STL
 
     Parameters
     ----------
 
-    mesh: :gimliapi:GIMLI::Mesh`
-        Mesh to be saved.
+    fileName : str
+        name of the .stl file containing the STL surface mesh
 
-    exportname: string
-        Name under which the mesh is saved.
+    ascii : bool [True]
+        STL Ascii format
 
     """
-    return exportHDF5Mesh(mesh, exportname, group=['mesh', 'domains'],
-                          indices='cell_indices', pos='coordinates',
-                          cells='topology', marker='values')
+    mesh = pg.Mesh(dim=3)
+    mesh.importSTL(fileName)
+    return mesh
+
+    # readPos = lambda s: pg.pos(float(s[0], float(s[1]), float(s[2])))
+
+    # with open(fileName, 'r') as fi:
+    #     content = fi.readlines()
+    # fi.close()
+
+    # marker = -1
+
+    # for i, line in enumerate(content):
+    #     if 'solid' in line:
+    #         marker += 1
+    #     elif 'facet' in line:
+    #         norm = readPos(content[i].split()[2:5])
+    #         v1 = readPos(content[i+2].split()[1:4])
+    #         v2 = readPos(content[i+2].split()[1:4])
+    #         v3 = readPos(content[i+2].split()[1:4])
+
+    #         mesh.createBoundary([v1, v2, v3], marker=marker)
+    #         i += 7
+
+    # return mesh
+
+def exportSTL(mesh, fileName, ascii=True):
+    """Write :term:`STL` surface mesh and returns a :gimliapi:`GIMLI::Mesh`.
+
+    Export a three dimensional boundary :gimliapi:`GIMLI::Mesh` into a
+    :term:`STL` surface mesh. Boundaries with different marker 
+    will be separated into different STL solids.
+
+    TODO: 
+        * ASCII=False, write binary STL
+        * QuadrangleFace Boundaries
+        * p2 Boundaries
+
+    Parameters
+    ----------
+    mesh : :gimliapi:`GIMLI::Mesh`
+        Mesh to be exported. Only Boundaries of type TriangleFace will be 
+        exported.
+
+    fileName : str
+        name of the .stl file containing the STL surface mesh
+
+    ascii : bool [True]
+        STL Ascii format
+    
+    """
+    marker = pg.unique(pg.sort(mesh.boundaryMarkers()))
+
+    if not '.stl' in fileName:
+        fileName = fileName + '.stl'
+
+    fi = open(fileName, 'w')
+    for m in marker:
+        me = mesh.extract(mesh.boundaries(mesh.boundaryMarkers() == m))
+
+        fi.write('solid ' + str(m) + '\n')
+
+        for b in me.boundaries():
+            n = b.norm()
+            fi.write('facet normal %f %f %f\n' %(n[0], n[1], n[2])) 
+            fi.write('\touter loop\n')
+            fi.write('\t\tvertex %f %f %f\n' %(b.node(0).pos()[0], b.node(0).pos()[1], b.node(0).pos()[2]))
+            fi.write('\t\tvertex %f %f %f\n' %(b.node(1).pos()[0], b.node(1).pos()[1], b.node(1).pos()[2]))
+            fi.write('\t\tvertex %f %f %f\n' %(b.node(2).pos()[0], b.node(2).pos()[1], b.node(2).pos()[2]))
+            fi.write('\tendloop\n')
+            fi.write('endfacet\n')
+        
+        fi.write('endsolid\n')
+
+    fi.close()
 
 
 def transform2DMeshTo3D(mesh, x, y, z=None):

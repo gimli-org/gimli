@@ -180,7 +180,7 @@ def createWorld(start, end, marker=1, area=0., layers=None, worldMarker=True):
 
     poly = pg.Mesh(2)
 
-    if type(area) == float or type(area) == int:
+    if isinstance(area, float) or isinstance(area, int):
         area = np.ones(len(z)) * float(area)
 
     for i, depth in enumerate(z):
@@ -728,7 +728,7 @@ def readPLC(filename, comment='#'):
         del(content[j])
 
     # Read header
-    headerLine = content[0].split()
+    headerLine = content[0].split('\r\n')[0].split()
 
     if len(headerLine) != 4:
         raise Exception("Format unknown! header size != 4", headerLine)
@@ -743,7 +743,7 @@ def readPLC(filename, comment='#'):
 
     # Nodes section
     for i in range(nVerts):
-        row = content[1 + i].split()
+        row = content[1 + i].split('\r\n')[0].split()
 
         if len(row) == (1 + dimension + nPointsAttributes + haveNodeMarker):
             if i == 0:
@@ -757,8 +757,8 @@ def readPLC(filename, comment='#'):
                 n.setMarker(int(row[-1]))
 
         else:
-            raise Exception("Poly file seams corrupt: node section line: " +
-                            str(i) + " " + row)
+            print(i, len(row), row, (1 + dimension + nPointsAttributes + haveNodeMarker))
+            raise Exception("Poly file seams corrupt: node section line: " + content[1 + i])
 
     # Segment section
     row = content[1 + nVerts].split()
@@ -865,12 +865,12 @@ def exportPLC(poly, fname, **kwargs):
     >>> import tempfile, os
     >>> fname = tempfile.mktemp() # Create temporary string for filename.
     >>> world2d = pg.meshtools.createWorld(start=[-10, 0], end=[20, 0])
-    >>> pg.meshtools.writePLC(world2d, fname)
+    >>> pg.meshtools.exportPLC(world2d, fname)
     >>> read2d = pg.meshtools.readPLC(fname)
     >>> print(read2d)
     Mesh: Nodes: 4 Cells: 0 Boundaries: 4
     >>> world3d = pg.createGrid([0, 1], [0, 1], [-1, 0])
-    >>> pg.meshtools.writePLC(world3d, fname)
+    >>> pg.meshtools.exportPLC(world3d, fname)
     >>> os.remove(fname)
     """
     if poly.dimension() == 2:
@@ -944,13 +944,12 @@ def writeTrianglePoly(*args, **kwargs):
 
 
 def exportTetgenPoly(poly, filename, float_format='.12e', **kwargs):
-    """
-    Writes a given piecewise linear complex (mesh/poly ) into a Ascii file in
+    r"""
+    Writes a given piecewise linear complex (mesh/poly) into a Ascii file in
     :term:`Tetgen` .poly format.
 
     Parameters
     ----------
-
     filename: string
         Name in which the result will be written. The recommended file
         ending is '.poly'.
@@ -961,12 +960,12 @@ def exportTetgenPoly(poly, filename, float_format='.12e', **kwargs):
     float_format: format string ('.12e')
         Format that will be used to write float values in the Ascii file.
         Default is the exponential float form with a precision of 12 digits.
-
     """
     if filename[-5:] != '.poly':
         filename = filename + '.poly'
     polytxt = ''
     sep = '\t'  # standard tab seperated file
+    linesep = '\n' # os.linesep does not work in mingwshell, testit!!
     assert poly.dim() == 3, 'Exit, only for 3D meshes.'
     boundary_marker = 1
     attribute_count = 0
@@ -977,14 +976,14 @@ def exportTetgenPoly(poly, filename, float_format='.12e', **kwargs):
     polytxt += '{0}{5}{1}{5}{2}{5}{3}{4}'.format(poly.nodeCount(), 3,
                                                  attribute_count,
                                                  boundary_marker,
-                                                 os.linesep, sep)
+                                                 linesep, sep)
     # loop over positions, attributes and marker(node)
     # <point idx> <x> <y> <z> [attributes] [boundary marker]
     point_str = '{:d}'  # index of the point
     for i in range(3):
         # coords as float with given precision
         point_str += sep + '{:%s}' % (float_format)
-    point_str += sep + '{:d}' + os.linesep  # node marker
+    point_str += sep + '{:d}' + linesep  # node marker
     for j, node in enumerate(poly.nodes()):
         fill = [node.id()]
         fill.extend([pos for pos in node.pos()])
@@ -1007,14 +1006,14 @@ def exportTetgenPoly(poly, filename, float_format='.12e', **kwargs):
         print("Detected ", len(extraBoundaries), " extra boundaries!")
 
     nBoundaries += len(extraBoundaries)
-    polytxt += '{0:d}{2}1{1}'.format(nBoundaries, os.linesep, sep)
+    polytxt += '{0:d}{2}1{1}'.format(nBoundaries, linesep, sep)
     # loop over facets, each facet can contain an arbitrary number of holes
     # and polygons, in our case, there is always one polygon per facet.
     for bound in poly.boundaries():
         # one line per facet
         # <# of polygons> [# of holes] [boundary marker]
         npolys = 1
-        polytxt += '1{2}0{2}{0:d}{1}'.format(bound.marker(), os.linesep, sep)
+        polytxt += '1{2}0{2}{0:d}{1}'.format(bound.marker(), linesep, sep)
         # inner loop over polygons
         # <# of corners> <corner 1> <corner 2> ... <corner #>
         for l in range(npolys):
@@ -1022,7 +1021,7 @@ def exportTetgenPoly(poly, filename, float_format='.12e', **kwargs):
             for ind in bound.ids():
                 poly_str += sep + '{:d}'.format(ind)
 
-            polytxt += '{0}{1}'.format(poly_str, os.linesep)
+            polytxt += '{0}{1}'.format(poly_str, linesep)
         # inner loop over holes
         # not necessary yet ?! why is there an extra hole section?
         # because this is for 2D holes in facets only
@@ -1031,26 +1030,26 @@ def exportTetgenPoly(poly, filename, float_format='.12e', **kwargs):
     for nodes in extraBoundaries:
         # <# of polygons> [# of holes] [boundary marker]
         npolys = 1
-        polytxt += '1{2}0{2}{0:d}{1}'.format(111, os.linesep, sep)
+        polytxt += '1{2}0{2}{0:d}{1}'.format(111, linesep, sep)
         # <# of corners> <corner 1> <corner 2> ... <corner #>
         poly_str = '{:d}'.format(len(nodes))
         for ind in nodes:
             poly_str += sep + '{:d}'.format(ind)
 
-        polytxt += '{0}{1}'.format(poly_str, os.linesep)
+        polytxt += '{0}{1}'.format(poly_str, linesep)
 
     # part 3/4: hole list
     # intro line
     # <# of holes>
     holes = poly.holeMarker()
-    polytxt += '{:d}{}'.format(len(holes), os.linesep)
+    polytxt += '{:d}{}'.format(len(holes), linesep)
     # loop over hole markers
     # <hole #> <x> <y> <z>
     hole_str = '{:d}'
     for m in range(3):
         hole_str += sep + '{:%s}' % float_format
 
-    hole_str += os.linesep
+    hole_str += linesep
     for n, hole in enumerate(holes):
         polytxt += hole_str.format(n, *hole)
 
@@ -1058,14 +1057,14 @@ def exportTetgenPoly(poly, filename, float_format='.12e', **kwargs):
     # intro line
     # <# of regions>
     regions = poly.regionMarker()
-    polytxt += '{:d}{}'.format(len(regions), os.linesep)
+    polytxt += '{:d}{}'.format(len(regions), linesep)
     # loop over region markers
     # <region #> <x> <y> <z> <region number> <region attribute>
     region_str = '{:d}'
     for o in range(3):
         region_str += sep + '{:%s}' % (float_format)
 
-    region_str += sep + '{:d}%s{:%s}' % (sep, float_format) + os.linesep
+    region_str += sep + '{:d}%s{:%s}' % (sep, float_format) + linesep
     for p, region in enumerate(regions):
         polytxt += region_str.format(p, region.x(), region.y(), region.z(),
                                      region.marker(),

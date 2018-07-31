@@ -128,6 +128,7 @@ public:
      */
 
     void assembleStiffnessMatrixDCFEMByPass(RSparseMatrix & S);
+
     void assembleStiffnessMatrixDCFEMByPass(CSparseMatrix & S);
 
     virtual void createJacobian(const RVector & model);
@@ -197,7 +198,7 @@ public:
     bool neumann() const { return neumannDomain_; }
 
     /*! Force complex resistivity calculation if it not set in prior to the mesh.*/
-    void setComplex(bool c) { complex_=c; }
+    void setComplex(bool c);
 
     /*! Return true if the valuetype is complex.*/
     bool complex() const { return complex_; }

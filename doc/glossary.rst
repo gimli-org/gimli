@@ -86,6 +86,11 @@ Glossary
         The tools used to generate the :term:`GIMLi` documentation. See:
         http://sphinx-doc.org
 
+    STL
+        Unstructured triangulated surface file format native to the "stereolithography"
+        CAD software created by 3D Systems. https://en.wikipedia.org/wiki/STL_%28file_format%29
+
+    
     SuiteSparse
         SuiteSparse is a single archive that contains packages for solving
         large sparse problems using Sparse Cholesky factorization.

@@ -5,7 +5,7 @@ import os.path
 from importlib import import_module
 
 import pygimli as pg
-from pygimli.meshtools import readFenicsHDF5Mesh, readGmsh, readPLC
+from pygimli.meshtools import readFenicsHDF5Mesh, readGmsh, readPLC, readSTL
 
 
 def optImport(module, requiredFor="use the full functionality"):
@@ -101,6 +101,7 @@ def load(fname, verbose=False):
         ".ohm": pg.DataContainer,  # BERT compatibility
         ".shm": pg.DataContainer,  # BERT compatibility
         ".sgt": pg.DataContainer,
+        ".collect": pg.DataMap,
         # Vectors
         ".dat": pg.RVector,
         ".vector": pg.RVector,
@@ -115,6 +116,7 @@ def load(fname, verbose=False):
         ".msh": readGmsh,
         ".mod": pg.Mesh,
         ".vtk": pg.Mesh,
+        ".stl": readSTL,
         ".h5": readFenicsHDF5Mesh  # fenics specs as default
     }
 

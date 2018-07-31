@@ -53,7 +53,7 @@ clean:
 	rm -f _templates/gallery.html
 
 api:
-	sphinx-autogen -i pygimliapi/index.rst -t _templates
+	sphinx-autogen -i -t _templates pygimliapi/*.rst
 
 gallery:
 	python3 ./sidebar_gallery.py
@@ -107,7 +107,7 @@ latex:
 	@echo "Run \`make' in that directory to run these through (pdf)latex" \
 	      "(use \`make latexpdf' here to do that automatically)."
 
-pdf:
+pdf: api
 	$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) $(BUILDDIR)/pdf
 	@echo "Running LaTeX files through pdflatex..."
 	$(MAKE) -C $(BUILDDIR)/pdf all-pdf

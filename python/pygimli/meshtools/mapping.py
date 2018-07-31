@@ -356,6 +356,7 @@ def tapeMeasureToCoordinates(tape, pos):
     pg.deprecated("tapeMeasureToCoordinates", "interpolateAlongCurve")
     return interpolateAlongCurve(tape, pos)
 
+
 def interpolate(*args, **kwargs):
     r"""Interpolation convinience function.
 
@@ -370,6 +371,10 @@ def interpolate(*args, **kwargs):
             Arguments forwarded to :gimliapi:`GIMLI::interpolate`
         kwargs:
             Arguments forwarded to :gimliapi:`GIMLI::interpolate`
+            
+        `interpolate(srcMesh, destMesh)`
+            All data from inMesh are interpolated to outMesh
+
       Returns:
         Interpolated values
 
@@ -378,9 +383,8 @@ def interpolate(*args, **kwargs):
       Parameters:
         args: :gimliapi:`GIMLI::Mesh`, :gimliapi:`GIMLI::Mesh`, iterable
             `outData = interpolate(outMesh, inMesh, vals)`
-
             Data values vals can be scalar or vector for all nodes or cells in inMesh.
-
+            
       Returns:
         Interpolated values
 
@@ -452,6 +456,10 @@ def interpolate(*args, **kwargs):
 
     elif len(args) > 0:
         if isinstance(args[0], pg.Mesh):
+            if len(args) == 2 and isinstance(args[1], pg.Mesh):
+                return pg.core._pygimli_.interpolate(args[0], args[1],
+                                                     **kwargs)
+
             if len(args) == 3 and isinstance(args[1], pg.Mesh):
                 pgcore = False # (outMesh, inMesh, vals)
             else:
@@ -464,11 +472,11 @@ def interpolate(*args, **kwargs):
 
                 outMat = pg.Matrix()
                 pg.core._pygimli_.interpolate(args[0],
-                                              inMat=np.array(args[1]).T,
+                                              inMat=np.array(args[1]),
                                               destPos=args[2],
                                               outMat=outMat,
                                               **kwargs)
-                return np.array(outMat).T
+                return np.array(outMat)
 
         if len(args) == 4: # args: (inMesh, inData, outPos, outData)
 

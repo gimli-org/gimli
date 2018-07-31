@@ -8,16 +8,16 @@ Meshing the Omega aka. BERT logo
 This is a fun example creating a logo for the BERT software. It illustrates the
 possibility to hand over matplotlib path objects to the TriangleWrapper."""
 
+import matplotlib as mpl
 import matplotlib.pyplot as plt
-import matplotlib.textpath
 import pygimli as pg
 
 ###############################################################################
 # We start by generating a matplotlib path respresenting the :math:`\Omega`
 # character.
 
-logo_path = matplotlib.textpath.TextPath((0, 0), r'$\Omega$', size=1)
-patch = matplotlib.patches.PathPatch(logo_path)
+logo_path = mpl.textpath.TextPath((0, 0), r'$\Omega$', size=1)
+patch = mpl.patches.PathPatch(logo_path)
 
 ###############################################################################
 # The vertices of the path are defined as mesh nodes and connected with edges.
