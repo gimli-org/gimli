@@ -526,15 +526,15 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
     """Create a PLC mesh for an inversion parameter mesh.
 
     Create a PLC mesh for an inversion parameter mesh with for a given list of
-    sensor positions.
-    Sensor position assumed on the surface and must be sorted and unique.
+    sensor positions. Sensor positions are assumed to lie on the surface and
+    must be sorted and unique.
 
-    You can create a parameter mesh without sensors if you just set
-    [xmin, xmax] as sensors.
+    You can create a parameter mesh without sensors if you just set [xmin, xmax]
+    as sensors.
 
-    The PLC is a :gimliapi:`GIMLI::Mesh` and contain nodes, edges and
-    two region markers, one for the parameters domain (marker=2) and
-    a larger boundary around the outside (marker=1)
+    The PLC is a :gimliapi:`GIMLI::Mesh` and contain nodes, edges and two region
+    markers, one for the parameters domain (marker=2) and a larger boundary
+    around the outside (marker=1)
 
     TODO:
 
@@ -549,9 +549,9 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
         Sensor positions. Must be sorted and unique in positive x direction.
         Depth need to be y-coordinate.
     paraDX : float [1]
-        Relativ distance for refinement nodes between two electrodes (1=none),
-        e.g., 0.5 means 1 additional node between two neighboring electrodes
-        e.g., 0.33 means 2 additional equidistant nodes between two electrodes
+        Relativ distance for refinement nodes between two sensors (1=none),
+        e.g., 0.5 means 1 additional node between two neighboring sensors
+        e.g., 0.33 means 2 additional equidistant nodes between two sensors
     paraDepth : float, optional
         Maximum depth for parametric domain, 0 (default) means 0.4 * maximum
         sensor range.
@@ -577,9 +577,9 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
     >>> import pygimli as pg
     >>> import pygimli.meshtools as plc
     >>> # Create the simplest paramesh PLC with a para box of 10 m without
-    >>> # electrodes
+    >>> # sensors
     >>> p = plc.createParaMeshPLC([0,10])
-    >>> # you can add subsurface electrodes now with
+    >>> # you can add subsurface sensors now with
     >>> for z in range(1,4):
     ...     n = p.createNode((5,-z), -99)
     >>> ax,_ = pg.show(p)
