@@ -18,6 +18,14 @@ endif()
 
 project(libgimli)
 
+# Check if conda package is created
+if(DEFINED ENV{CONDA_BUILD})
+    message(STATUS "Conda package is being created.")
+    set(CONDA_BUILD TRUE)
+else()
+    set(CONDA_BUILD FALSE)
+endif()
+
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 
     set(CMAKE_CXX_FLAGS_RELEASE "-O2 -pipe -ansi -Wall -Wno-long-long -Wno-unused-result -Wno-unused-variable")
@@ -26,12 +34,11 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" ST
 
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -p -O2 -ansi -pedantic -fno-omit-frame-pointer -Wall")
 
-    if (WIN32)
+    if (WIN32 OR CONDA_BUILD)
         set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-deprecated-declarations")
     endif()
-    
-    
-    if(NOT WIN32 AND ASAN)
+
+    if (NOT WIN32 AND ASAN)
         set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address")
     endif()
 
@@ -39,24 +46,22 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" ST
 #     if (NOT WIN32)
 #         add_definitions(-std=c++0x)
     add_definitions(-std=c++11)
-    #endif()
-    #add_definitions(-std=gnu++0x)
-
-    #-Wl,--no-undefined
-    #set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Os -static-libgcc -Wl,-O2 -Wl,--as-needed -Wl,--sort-common")
-#set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Os -static-libgcc")
-   # set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Os -Wl,--no-undefined -static-libgcc -Wl,-O2 -Wl,--as-needed -Wl,--sort-common")
-#     set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "${CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS} -lbfd")
+    
+    # add_definitions(-std=gnu++0x)
+    # -Wl,--no-undefined
+    # set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Os -static-libgcc -Wl,-O2 -Wl,--as-needed -Wl,--sort-common")
+    # set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Os -static-libgcc")
+    # set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Os -Wl,--no-undefined -static-libgcc -Wl,-O2 -Wl,--as-needed -Wl,--sort-common")
+    # set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "${CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS} -lbfd")
 
     if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
         set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-overloaded-virtual")
         set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Qunused-arguments")
 
         if (APPLE)
-        #If it's libc++ and you're on <= 10.8, you need to compile with clang++ -stdlib=libc++. If it's libstdc++ and you're on 10.9 or later, you need to compile with clang++ -stdlib=libstdc++.
-
-        #add_compile_options(-stdlib=libstdc++)
-        #add_compile_options(-stdlib=libc++)
+            # If it's libc++ and you're on <= 10.8, you need to compile with clang++ -stdlib=libc++. If it's libstdc++ and you're on 10.9 or later, you need to compile with clang++ -stdlib=libstdc++.
+            # add_compile_options(-stdlib=libstdc++)
+            # add_compile_options(-stdlib=libc++)
         endif()
     else() # if gcc
 
@@ -260,16 +265,6 @@ find_or_build_package(LAPACK lapack)
 find_or_build_package(CHOLMOD suitesparse)
 #find_or_build_package(UMFPACK umfpack)
 find_package(UMFPACK)
-
-message(STATUS "************** ${UMFPACK_FOUND}")
-
-# Check if conda package is created
-if(DEFINED ENV{CONDA_BUILD})
-    message(STATUS "Conda package is being created.")
-    set(CONDA_BUILD TRUE)
-else()
-    set(CONDA_BUILD FALSE)
-endif()
 
 if (";${BLAS_LIBRARIES};" MATCHES "openblas")
     message(STATUS "openblas is used: ${BLAS_LIBRARIES}")

@@ -312,7 +312,8 @@ void dcfemBoundaryAssembleStiffnessMatrix(CSparseMatrix & S, const Mesh & mesh,
 
 void assembleCompleteElectrodeModel_(RSparseMatrix & S,
                                     const std::vector < ElectrodeShape * > & elecs,
-                                    uint oldMatSize, bool lastIsReferenz){
+                                    uint oldMatSize, bool lastIsReferenz, 
+                                    const RVector & contactImpedances){
     RSparseMapMatrix mapS(S);
     ElementMatrix < double > Se;
 
@@ -320,12 +321,14 @@ void assembleCompleteElectrodeModel_(RSparseMatrix & S,
     mapS.setRows(oldMatSize + nElectrodes);
     mapS.setCols(oldMatSize + nElectrodes);
 
-    std::vector < double > vContactResistance(nElectrodes, 1.0); // Ohm
-    std::vector < double > vContactImpedance( nElectrodes, 1.0); // Ohm * m^2
+    // RVector vContactImpedance( nElectrodes, 1.0); // Ohm * m^2
 
-    bool hasImp = checkIfMapFileExistAndLoadToVector("contactImpedance.map",  vContactImpedance);
+    // bool hasImp = checkIfMapFileExistAndLoadToVector("contactImpedance.map",  vContactImpedance);
+    
+    bool hasImp = true;
+    RVector vContactResistance(nElectrodes, 1.0); // Ohm
     bool hasRes = checkIfMapFileExistAndLoadToVector("contactResistance.map", vContactResistance);
-
+    
     for (uint elecID = 0; elecID < nElectrodes; elecID ++){
 
         //** some scale value, can used for contact impedance
@@ -337,7 +340,7 @@ void assembleCompleteElectrodeModel_(RSparseMatrix & S,
         elecs[elecID]->setMID(mat_ID);
 
         double contactResistance = vContactResistance[elecID];
-        double contactImpedance  = vContactImpedance[elecID];
+        double contactImpedance  = contactImpedances[elecID];
 
         std::vector < MeshEntity * > electrodeEnts(elecs[elecID]->entities());
         if (hasImp || hasRes){
@@ -410,13 +413,15 @@ void assembleCompleteElectrodeModel_(RSparseMatrix & S,
 
 void assembleCompleteElectrodeModel(RSparseMatrix & S,
                                     const std::vector < ElectrodeShape * > & elecs,
-                                    uint oldMatSize, bool lastIsReferenz){
-    assembleCompleteElectrodeModel_(S, elecs, oldMatSize, lastIsReferenz);
+                                    uint oldMatSize, bool lastIsReferenz,
+                                    const RVector & contactImpedances){
+    assembleCompleteElectrodeModel_(S, elecs, oldMatSize, lastIsReferenz, contactImpedances);
 }
 
 void assembleCompleteElectrodeModel(CSparseMatrix & S,
                                     const std::vector < ElectrodeShape * > & elecs,
-                                    uint oldMatSize, bool lastIsReferenz){
+                                    uint oldMatSize, bool lastIsReferenz,
+                                    const RVector & contactImpedances){
     THROW_TO_IMPL
 }
 
@@ -779,6 +784,10 @@ void DCMultiElectrodeModelling::updateDataDependency_(){
 
     electrodeRef_        = NULL;
     if (mesh_) searchElectrodes_();
+}
+
+void DCMultiElectrodeModelling::setContactImpedances(const RVector & zi){
+    vContactImpedance_ = zi;
 }
 
 void DCMultiElectrodeModelling::searchElectrodes_(){
@@ -1442,7 +1451,7 @@ void DCMultiElectrodeModelling::createCurrentPattern(std::vector < ElectrodeShap
         //** this is only useful for the forward calculation since the reciprocity potentials are needed for sensitivity calculation.
         if (dataContainer_){
             //** reciprocity disabled
-            std::set < SIndex > inject(this->dataContainer().currentPattern(false));
+            std::set < Index > inject(this->dataContainer().currentPattern(false));
             if (verbose_) std::cout << "Found " << inject.size()
                                         << " dipole-current pattern" << std::endl;
             eA.resize(inject.size(), NULL);
@@ -1450,7 +1459,7 @@ void DCMultiElectrodeModelling::createCurrentPattern(std::vector < ElectrodeShap
             CurrentPattern cp;
             uint i = 0;
 
-            for (std::set < SIndex >::iterator it = inject.begin(); it != inject.end(); it ++, i++){
+            for (std::set < Index >::iterator it = inject.begin(); it != inject.end(); it ++, i++){
                 currentPatternIdxMap_[(*it)] = i;
                 cp = this->dataContainer().currentPatternToElectrode((*it));
                 if (cp.first < nElecs && cp.second < nElecs){
@@ -1778,9 +1787,23 @@ MEMINFO
 
         for (Index i = 0; i < passiveCEM_.size(); i ++) elecs.push_back(passiveCEM_[i]);
 
-        assembleCompleteElectrodeModel(S_, elecs, oldMatSize, lastIsReferenz_);
+        if (vContactImpedance_.size() == 0){
+            vContactImpedance_.resize(elecs.size(), 1.0); // Ohm
+            // RVector vContactResistance(nElectrodes, 1.0); // Ohm
+            // RVector vContactImpedance( nElectrodes, 1.0); // Ohm * m^2
+
+            bool hasImp = checkIfMapFileExistAndLoadToVector("contactImpedance.map",
+                                                             vContactImpedance_);
+            if (hasImp){
+                if (verbose_) std::cout << "Loaded: contactImpedance.map." << std::endl;
+            }
+        }
+                
+        assembleCompleteElectrodeModel(S_, elecs, oldMatSize, lastIsReferenz_,
+                                           vContactImpedance_);
 
         potentialsCEM_.resize(nCurrentPattern, lastValidElectrode);
+        
     } // end CEM
 
     this->assembleStiffnessMatrixDCFEMByPass(S_);
@@ -1875,11 +1898,13 @@ void DCMultiElectrodeModelling::calculateK(const std::vector < ElectrodeShape * 
     calculateK_(eA, eB, solutionK, kIdx);
 }
 
+
 void DCMultiElectrodeModelling::calculateK(const std::vector < ElectrodeShape * > & eA,
                                            const std::vector < ElectrodeShape * > & eB,
                                            CMatrix & solutionK, int kIdx){
     calculateK_(eA, eB, solutionK, kIdx);
 }
+
 
 void DCSRMultiElectrodeModelling::updateMeshDependency_(){
     DCMultiElectrodeModelling::updateMeshDependency_();

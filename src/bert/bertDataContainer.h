@@ -67,11 +67,11 @@ public:
 
     virtual void checkDataValidityLocal();
 
-    CurrentPattern currentPatternToElectrode(SIndex pattern);
+    CurrentPattern currentPatternToElectrode(Index pattern);
 
-    SIndex electrodeToCurrentPattern(SIndex a, SIndex b) const;
+    Index electrodeToCurrentPattern(Index a, Index b) const;
 
-    std::set < SIndex > currentPattern(bool reciprocity=false);
+    std::set < Index > currentPattern(bool reciprocity=false);
 
     /*! Merge duplicate data by averaging. Sort the DataContainerERT as well.*/
     void averageDuplicateData(bool verbose=false);
