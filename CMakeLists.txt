@@ -248,22 +248,12 @@ set(CMAKE_LIBRARY_PATH ${EXTERNAL_DIR}/lib $ENV{EXTERNAL_DIR}/lib ${CMAKE_LIBRAR
 if (J) # dummy to avoid error msg
 endif()
 
-# set(OPTIONAL_PACKAGES "")
-# list(APPEND OPTIONAL_PACKAGES "Triangle")
-# list(APPEND OPTIONAL_PACKAGES "UMFPACK")
-# list(APPEND OPTIONAL_PACKAGES "CHOLMOD")
-# list(APPEND OPTIONAL_PACKAGES "readproc")
-# list(APPEND OPTIONAL_PACKAGES "cppunit")
-# list(APPEND OPTIONAL_PACKAGES "Python")
-# list(APPEND OPTIONAL_PACKAGES "Sphinx")
-
 set (UMFPACK_FOUND FALSE)
 
 find_or_build_package(Triangle triangle LOCAL)
 find_or_build_package(BLAS lapack)
 find_or_build_package(LAPACK lapack)
 find_or_build_package(CHOLMOD suitesparse)
-#find_or_build_package(UMFPACK umfpack)
 find_package(UMFPACK)
 
 if (";${BLAS_LIBRARIES};" MATCHES "openblas")
