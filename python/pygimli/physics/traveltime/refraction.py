@@ -483,7 +483,7 @@ class Refraction(MethodManager):
             if not ret.allNonZero('err'):
                 ret.set('t', t)
                 ret.set('err', pg.physics.Refraction.estimateError(
-                    ret, absoluteError=noiseAbs)
+                    ret, absoluteError=noiseAbs))
 
             if verbose:
                 print("Data error estimates (min:max) ",
