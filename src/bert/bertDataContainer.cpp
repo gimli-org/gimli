@@ -146,25 +146,25 @@ void DataContainerERT::checkDataValidityLocal(){
     }
 }
 
-SIndex DataContainerERT::electrodeToCurrentPattern(SIndex a, SIndex b) const {
+Index DataContainerERT::electrodeToCurrentPattern(Index a, Index b) const {
     //std::cout << a << " " << b << " " << electrodes_.size() << std::endl;
     /*! +1 ensures that -1 (pol) electrodes are considered. */
     return (a + 1) * (sensorCount() + 1) + b + 1; //** better take min(a,b) and max(a,b)?
 }
 
-CurrentPattern DataContainerERT::currentPatternToElectrode(SIndex pattern){
+CurrentPattern DataContainerERT::currentPatternToElectrode(Index pattern){
     /*! +1 ensures that -1 (pol) electrodes are considered. */
 
-    SIndex nElecs = sensorCount() + 1;
-    SIndex a = (SIndex)ceil(pattern / nElecs);
-    SIndex b = pattern - a * nElecs;
+    Index nElecs = sensorCount() + 1;
+    Index a = (SIndex)ceil(pattern / nElecs);
+    Index b = pattern - a * nElecs;
     a-=1; b-=1;
     //std::cout << pattern << " " << a << " " << b << std::endl;
     return CurrentPattern(a, b);
 }
 
-std::set < SIndex > DataContainerERT::currentPattern(bool reciprocity){
-    std::set < SIndex > pattern;
+std::set < Index > DataContainerERT::currentPattern(bool reciprocity){
+    std::set < Index > pattern;
 
     const RVector & valid = dataMap_["valid"];
     const RVector & a = dataMap_["a"];
