@@ -229,7 +229,8 @@ void dcfemDomainAssembleStiffnessMatrix(SparseMatrix < ValueType > & S, const Me
 
 void dcfemDomainAssembleStiffnessMatrix(RSparseMatrix & S, const Mesh & mesh,
                                         double k, bool fix){
-    dcfemDomainAssembleStiffnessMatrix(S, mesh, mesh.cellAttributes(), k, fix);
+    dcfemDomainAssembleStiffnessMatrix(S, mesh, mesh.cellAttributes(), 
+                                       k, fix);
 }
 void dcfemDomainAssembleStiffnessMatrix(CSparseMatrix & S, const Mesh & mesh,
                                         double k, bool fix){
@@ -307,7 +308,8 @@ void dcfemBoundaryAssembleStiffnessMatrix(RSparseMatrix & S, const Mesh & mesh,
 void dcfemBoundaryAssembleStiffnessMatrix(CSparseMatrix & S, const Mesh & mesh,
                                           const RVector3 & source,
                                           double k){
-    dcfemBoundaryAssembleStiffnessMatrix(S, mesh, getComplexResistivities(mesh), source, k);
+    dcfemBoundaryAssembleStiffnessMatrix(S, mesh, getComplexResistivities(mesh), 
+                                         source, k);
 }
 
 void assembleCompleteElectrodeModel_(RSparseMatrix & S,
@@ -2195,29 +2197,31 @@ MEMINFO
         rhoSource = rhoSource / count;
         prim *= rhoSource;
 
-        bool newWay = true;
-        if (newWay){
-            rhs = S1 * prim / rhoSource - S_ * prim;
-            //rhs = (1.0 / (rhoSource)) * S1 * prim - S_ * prim;
-        } else {
+        rhs = S1 * prim / rhoSource - S_ * prim;
 
-//             RSparseMatrix Stmp(S_);
-//             RVector tmpRho2(mesh_->cellAttributes());
-//             for (uint t = 0; t < mesh_->cellCount(); t ++) {
-//                 if (std::fabs(mesh_->cell(t).attribute() - rhoSource) < 1e-10) {
-//                     //std::cout << "mesh_->cell(t).setAttribute(0.0); " << std::endl;
-//                     mesh_->cell(t).setAttribute(0.0);
-//                 } else {
-//                     mesh_->cell(t).setAttribute(1.0 /
-//                                 ( 1.0 / rhoSource - 1.0 / mesh_->cell(t).attribute())) ;
-//                 }
-//             }
-//             dcfemDomainAssembleStiffnessMatrix(Stmp, *mesh_, k, false);
-//             dcfemBoundaryAssembleStiffnessMatrix(Stmp, *mesh_, sourceCenterPos_, k);
-//             mesh_->setCellAttributes(tmpRho2);
-//
-//             rhs = Stmp * prim;
-        }
+//         bool newWay = true;
+//         if (newWay){
+//         rhs = S1 * prim / rhoSource - S_ * prim;
+//             //rhs = (1.0 / (rhoSource)) * S1 * prim - S_ * prim;
+//         } else {
+
+// //             RSparseMatrix Stmp(S_);
+// //             RVector tmpRho2(mesh_->cellAttributes());
+// //             for (uint t = 0; t < mesh_->cellCount(); t ++) {
+// //                 if (std::fabs(mesh_->cell(t).attribute() - rhoSource) < 1e-10) {
+// //                     //std::cout << "mesh_->cell(t).setAttribute(0.0); " << std::endl;
+// //                     mesh_->cell(t).setAttribute(0.0);
+// //                 } else {
+// //                     mesh_->cell(t).setAttribute(1.0 /
+// //                                 ( 1.0 / rhoSource - 1.0 / mesh_->cell(t).attribute())) ;
+// //                 }
+// //             }
+// //             dcfemDomainAssembleStiffnessMatrix(Stmp, *mesh_, k, false);
+// //             dcfemBoundaryAssembleStiffnessMatrix(Stmp, *mesh_, sourceCenterPos_, k);
+// //             mesh_->setCellAttributes(tmpRho2);
+// //
+// //             rhs = Stmp * prim;
+//         }
 
         //** fill calibration points
         for (uint j = 0; j < calibrationSourceIdx_.size(); j ++) {
