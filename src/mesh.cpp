@@ -1706,19 +1706,19 @@ void Mesh::createMeshByMarker(const Mesh & mesh, int from, int to){
     createMeshByCellIdx(mesh, cellIdx);
 }
 
-Mesh Mesh::extract(const std::vector< Cell * > & cells) const {
+Mesh Mesh::createSubMesh(const std::vector< Cell * > & cells) const {
     Mesh mesh(dimension());
     mesh.createMeshByCells(*this, cells);
     return mesh;
 }
 
-Mesh Mesh::extract(const std::vector< Boundary * > & bounds) const {
+Mesh Mesh::createSubMesh(const std::vector< Boundary * > & bounds) const {
     Mesh mesh(dimension());
     mesh.createMeshByBoundaries(*this, bounds);
     return mesh;
 }
 
-Mesh Mesh::extract(const std::vector< Node * > & nodes) const {
+Mesh Mesh::createSubMesh(const std::vector< Node * > & nodes) const {
     Mesh mesh(dimension());
     THROW_TO_IMPL
     return mesh;

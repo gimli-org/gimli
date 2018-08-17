@@ -295,14 +295,14 @@ public:
     void createMeshByMarker(const Mesh & mesh, int from, int to=-1);
 
     /*! Syntactic sugar to extract a part of the mesh based on cells.*/
-    Mesh extract(const std::vector< Cell * > & cells) const;
+    Mesh createSubMesh(const std::vector< Cell * > & cells) const;
 
     /*! Syntactic sugar to extract a part of the mesh based on boundaries.*/
-    Mesh extract(const std::vector< Boundary * > & bounds) const;
+    Mesh createSubMesh(const std::vector< Boundary * > & bounds) const;
 
     /*! Syntactic sugar to extract a part of the mesh based on 
     nodes with associated cells and boundaries.*/
-    Mesh extract(const std::vector< Node * > & nodes) const;
+    Mesh createSubMesh(const std::vector< Node * > & nodes) const;
 
     //** end creation stuff
 
