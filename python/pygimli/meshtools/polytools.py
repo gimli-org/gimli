@@ -313,7 +313,7 @@ def createCircle(pos=None, radius=1, segments=12, start=0, end=2. * math.pi,
     return poly
 
 
-def createLine(start, end, segments, **kwargs):
+def createLine(start, end, segments=1, **kwargs):
     """Create simple line polygon.
 
     Create simple line polygon from start to end.
@@ -453,9 +453,11 @@ def mergePLC(pols, tol=1e-3):
 
     Merge multiply polygons into a single polygon.
     Common nodes and common edges will be checked and removed.
+    When a node touches and edge the edge will be split.
 
-    Crossing or touching edges or Node/Edge intersections will NOT be
-    recognized yet. -> TODO
+    TODO:
+        * Crossing or Node/Edge intersections will NOT be
+        recognized yet.
 
     Parameters
     ----------
@@ -494,7 +496,8 @@ def mergePLC(pols, tol=1e-3):
     for p in pols:
         nodes = []
         for n in p.nodes():
-            nn = poly.createNodeWithCheck(n.pos(), tol)
+            nn = poly.createNodeWithCheck(n.pos(), tol, 
+                                          warn=False, edgeCheck=True)
             if n.marker() != 0:
                 nn.setMarker(n.marker())
             nodes.append(nn)

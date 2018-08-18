@@ -198,13 +198,16 @@ Node * Mesh::createNodeWithCheck(const RVector3 & pos, double tol, bool warn, bo
                                      "edgeCheck is currently only supported for 2d meshes");
         } else {
             for (Index i = 0; i < this->boundaryVector_.size(); i ++ ){
-                int pIn;
                 Boundary *b = this->boundaryVector_[i];
                 if (b->rtti() == MESH_EDGE_RTTI){
+                    int pIn;
                     Line(b->node(0).pos(), b->node(1).pos()).touch1(newNode->pos(), pIn);
                     if (pIn == 3){
                         Node *n1 = &b->node(0);
                         Node *n2 = &b->node(1);
+                        // __MS(*n1)
+                        // __MS(*n2)
+                        // __MS(*newNode)
                         dynamic_cast< Edge * >(b)->setNodes(*n1, *newNode, true);
                         this->createEdge(*newNode, *n2, b->marker());
                         break;
