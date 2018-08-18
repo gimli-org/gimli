@@ -22,7 +22,9 @@
 #include "memwatch.h"
 #include "meshentities.h"
 #include "node.h"
+#include "line.h"
 #include "shape.h"
+
 #include "sparsematrix.h"
 #include "stopwatch.h"
 
@@ -167,7 +169,7 @@ Node * Mesh::createNode(const RVector3 & pos, int marker){
     return createNode_(pos, marker, -1);
 }
 
-Node * Mesh::createNodeWithCheck(const RVector3 & pos, double tol, bool warn){
+Node * Mesh::createNodeWithCheck(const RVector3 & pos, double tol, bool warn, bool edgeCheck){
     bool useTree = false;
     if (tol > -1.0){
         fillKDTree_();
@@ -177,7 +179,7 @@ Node * Mesh::createNodeWithCheck(const RVector3 & pos, double tol, bool warn){
         if (refNode){
             if (pos.distance(refNode->pos()) < tol) {
                 if (warn || debug()) log(LogType::Warning,
-                    "Duplicated node found for: " + str(pos));
+                                         "Duplicated node found for: " + str(pos));
                 return refNode;
             }
         }
@@ -189,6 +191,32 @@ Node * Mesh::createNodeWithCheck(const RVector3 & pos, double tol, bool warn){
 
     Node * newNode = createNode(pos);
     if (useTree) tree_->insert(newNode);
+
+    if (edgeCheck){
+        if (this->dim() != 2){
+            if (warn || debug()) log(LogType::Warning,
+                                     "edgeCheck is currently only supported for 2d meshes");
+        } else {
+            for (Index i = 0; i < this->boundaryVector_.size(); i ++ ){
+                int pIn;
+                Boundary *b = this->boundaryVector_[i];
+                if (b->rtti() == MESH_EDGE_RTTI){
+                    Line(b->node(0).pos(), b->node(1).pos()).touch1(newNode->pos(), pIn);
+                    if (pIn == 3){
+                        Node *n1 = &b->node(0);
+                        Node *n2 = &b->node(1);
+                        dynamic_cast< Edge * >(b)->setNodes(*n1, *newNode, true);
+                        this->createEdge(*newNode, *n2, b->marker());
+                        break;
+                    }
+                } else {
+                    log(LogType::Error,
+                        "edge split is currently only supported for 2d edges");
+                }
+            }
+        }
+    }
+
     return newNode;
 }
 
