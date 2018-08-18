@@ -79,6 +79,13 @@ def show(mesh=None, data=None, **kwargs):
 
     if isinstance(mesh, pg.Mesh):
         if mesh.dim() == 2:
+            if pg.zero(pg.y(mesh)):
+                pg.info("swap z<->y coordinates for visualization.")
+                meshSwap = pg.Mesh(mesh)
+                for n in meshSwap.nodes():
+                    n.pos()[1] = n.pos()[2]
+                return showMesh(meshSwap, data, **kwargs)
+
             return showMesh(mesh, data, **kwargs)
         elif mesh.dim() == 3:
 
@@ -86,7 +93,7 @@ def show(mesh=None, data=None, **kwargs):
 
             return showMesh3D(mesh, data, **kwargs)
         else:
-            print("ERROR: Mesh not valid.")
+            pg.error("ERROR: Mesh not valid.", mesh)
 
     ax = kwargs.pop('ax', None)
 
