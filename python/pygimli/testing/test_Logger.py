@@ -40,3 +40,10 @@ def testMethod(**kwargs):
     pg.warnNonEmptyArgs(kwargs)
 
 testMethod(a=1, b='foo')
+#
+
+# teste colored output
+print(pg.green('Green'))
+print(pg.red('Red'))
+print(pg.grey('Grey'))
+print(pg.color('6;30;42', 'more', 'then', 'one'))

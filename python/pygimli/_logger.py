@@ -14,6 +14,7 @@ import sys
 import logging
 from . import core
 
+
 logger = logging.getLogger('pyGIMLi')
 
 def setDebug(d):
@@ -50,6 +51,27 @@ def _msg(*args):
         if i < len(args)-1:
             msg += ' '
     return msg
+
+colors = {'RED':'\033[0;31m',
+          'GREEN':'\033[0;32m',
+          'DARK_GREY':'\033[1;30m',
+          'NC':'\033[0m', # No Color
+           }
+
+def color(col, *args):
+    # will probably only for linux
+    if '\033' in col:
+        return col + _msg(*args) + colors['NC']    
+    return '\x1b[' + col + 'm' + _msg(*args) + colors['NC']
+
+def green(*args):
+    return color(colors['GREEN'], *args)
+
+def red(*args):
+    return color(colors['RED'], *args)
+    
+def grey(*args):
+    return color(colors['DARK_GREY'], *args)
 
 def info(*args):
     logger.info(_msg(*args))
