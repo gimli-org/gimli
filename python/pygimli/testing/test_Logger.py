@@ -43,7 +43,6 @@ testMethod(a=1, b='foo')
 #
 
 # teste colored output
-print(pg.green('Green'))
-print(pg.red('Red'))
-print(pg.grey('Grey'))
-print(pg.color('6;30;42', 'more', 'then', 'one'))
+print(pg._('Green', c='g'), pg._('Red', c='r'), pg._('Yellow', c='y'))
+#print(pg._g('Green'), pg._g('Red'), pg._y('Yellow'))
+print(pg._('more', 'then', 'one', c='6;30;42'))
