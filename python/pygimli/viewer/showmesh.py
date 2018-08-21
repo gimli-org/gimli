@@ -40,7 +40,13 @@ def show(mesh=None, data=None, **kwargs):
         2D or 3D GIMLi mesh
 
     **kwargs :
-        Will be forwarded to the appropriate show functions.
+        * fitView : bool [True]
+            Scale x and y limits to match the view.
+
+        * ax : axe [None]
+            Matplotlib axes object. Create a new if necessary.
+
+        * Will be forwarded to the appropriate show functions.
 
     Returns
     -------
@@ -56,7 +62,9 @@ def show(mesh=None, data=None, **kwargs):
 
     if isinstance(mesh, list):
         ax = kwargs.pop('ax', None)
-        ax, cbar = show(mesh[0], data, hold=1, ax=ax, **kwargs)
+        fitView = kwargs.pop('fitView', True)
+        
+        ax, cbar = show(mesh[0], data, hold=1, ax=ax, fitView=fitView, **kwargs)
         xmin = mesh[0].xmin()
         xmax = mesh[0].xmax()
         ymin = mesh[0].ymin()
@@ -69,11 +77,11 @@ def show(mesh=None, data=None, **kwargs):
             ymin = min(ymin, m.ymin())
             ymax = max(ymax, m.ymax())
 
-
 #        ax.relim()
 #        ax.autoscale_view(tight=True)
-        ax.set_xlim([xmin, xmax])
-        ax.set_ylim([ymin, ymax])
+        if fitView is not False:
+            ax.set_xlim([xmin, xmax])
+            ax.set_ylim([ymin, ymax])
         #        print(ax.get_data_interval())
         return ax, cbar
 
@@ -215,7 +223,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
     colobar : matplotlib.colorbar
     """
     pg.renameKwarg('cmap', 'cMap', kwargs)
-
+    
     if ax is None:
         ax = plt.subplots()[1]
 
@@ -337,7 +345,8 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
                                                 color=(0.0, 0.0, 0.0, 1.0),
                                                 linewidth=1.4)
 
-    if kwargs.pop('fitView', True):
+    fitView = kwargs.pop('fitView', True)
+    if fitView:
         ax.set_xlim(mesh.xmin(), mesh.xmax())
         ax.set_ylim(mesh.ymin(), mesh.ymax())
         ax.set_aspect('equal')
@@ -380,15 +389,6 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
         else:
             raise BaseException('toImplement')
             # addCoverageAlpha(gci, pg.cellDataToPointData(mesh, coverage))
-
-    if showMesh:
-        drawMesh(ax, mesh, **kwargs)
-
-    if showBoundary is True or showBoundary is 1:
-        b = mesh.boundaries(pg.find(mesh.boundaryMarkers() != 0))
-        pg.mplviewer.drawSelectedMeshBoundaries(ax, b,
-                                                color=(0.0, 0.0, 0.0, 1.0),
-                                                linewidth=1.4)
 
     if not hold or block is not False and plt.get_backend() is not "Agg":
         if data is not None:

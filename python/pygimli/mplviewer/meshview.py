@@ -646,7 +646,7 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
 
     else:
         if kwargs.pop('showBoundary', True):
-            drawMeshBoundaries(ax, mesh)
+            drawMeshBoundaries(ax, mesh, **kwargs)
 
     if showNodes:
         for n in mesh.nodes():
