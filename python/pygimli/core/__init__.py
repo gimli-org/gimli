@@ -587,6 +587,29 @@ _pygimli_.CVector.__len__ = PGVector_len
 _pygimli_.IVector.__len__ = PGVector_len
 _pygimli_.IndexArray.__len__ = PGVector_len
 
+############################
+# abs(RVector), RMatrix
+############################
+_pygimli_.RVector.__abs__ = _pygimli_.fabs
+_pygimli_.CVector.__abs__ = _pygimli_.mag
+_pygimli_.R3Vector.__abs__ = _pygimli_.absR3
+
+
+def abs(v):
+    if isinstance(v, _pygimli_.CVector):
+        return _pygimli_.mag(v)
+    elif isinstance(v, _pygimli_.R3Vector):
+        return _pygimli_.absR3(v)
+    elif isinstance(v, np.ndarray):
+        return _pygimli_.absR3(v)
+    elif isinstance(v, _pygimli_.RMatrix):
+        raise BaseException("IMPLEMENTME")
+        for i in range(len(v)):
+            v[i] = _pygimli_.abs(v[i])
+        return v
+
+    return _pygimli_.fabs(v)
+
 
 def RMatrix_len(self):
     return self.rows()
