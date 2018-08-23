@@ -86,13 +86,22 @@ class TestMisc(unittest.TestCase):
         self.assertEqual(sum(data('m')), 8*2)
         self.assertEqual(sum(data('n')), 8*3)
 
+    def test_PosConstMember(self):
+        p1 = pg.Pos(1.0, 0.0, 0.0)
+        p2 = pg.Pos(0.0, 1.0, 0.0)
+
+        p3 = p1.cross(p2)
+        self.assertEqual(p3, pg.Pos(0.0, 0.0, 1.0))
+                
+
 if __name__ == '__main__':
 
-    pg.setDebug(0)
-    t = TestMisc()
-    t.test_DataContainerSensors()
+    # pg.setDebug(0)
+    # t = TestMisc()
+    # t.test_PosConstMember()
+    #t.test_DataContainerSensors()
     #t.test_Int64Problem()
 
-    #unittest.main()
+    unittest.main()
 
 

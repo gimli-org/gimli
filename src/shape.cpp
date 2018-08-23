@@ -375,7 +375,7 @@ bool Shape::isInside(const RVector3 & xyz, bool verbose) const {
 }
 
 bool Shape::isInside(const RVector3 & xyz, RVector & sf, bool verbose) const {
-
+    //** works only for dimensional aligned shapes, i.e, Edge 1D (x), Triangle 2D (x,y) etc.
     sf = N(rst(xyz));
     double minsf = min(sf);
 

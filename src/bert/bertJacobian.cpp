@@ -476,29 +476,29 @@ RVector prepExportSensitivityData(const Mesh & mesh, const RVector & data, doubl
 
     return logTransDropTol(data/modelSizes, logdrop, true)(mesh.cellMarkers());
 
-    //RVector tmp(data/mesh.cellSizes());
-    if ((uint)data.size() != (uint)mesh.cellCount()){
+    // //RVector tmp(data/mesh.cellSizes());
+    // if ((uint)data.size() != (uint)mesh.cellCount()){
 
-        throwLengthError(-1, WHERE_AM_I + " Datasize missmatch: " + toStr(mesh.cellCount())+
-                            " " + toStr(data.size()));
-    } else {
-        //for (uint i = 0; i < tmp.size(); i ++) tmp[i] = tmp[i] / mesh.cell(i).shape().domainSize();
-    }
-    RVector tmp(data/mesh.cellSizes());
+    //     throwLengthError(-1, WHERE_AM_I + " Datasize missmatch: " + toStr(mesh.cellCount())+
+    //                         " " + toStr(data.size()));
+    // } else {
+    //     //for (uint i = 0; i < tmp.size(); i ++) tmp[i] = tmp[i] / mesh.cell(i).shape().domainSize();
+    // }
+    // RVector tmp(data/mesh.cellSizes());
 
-    RVector s(sign(tmp));
+    // RVector s(sign(tmp));
 
-    double tmpMax = max(abs(tmp));
-    tmp /= tmpMax;
+    // double tmpMax = max(abs(tmp));
+    // tmp /= tmpMax;
 
-    for (uint i = 0; i < tmp.size(); i ++) {
-        tmp[i] = std::fabs(tmp[i] / logdrop);
-        if (tmp[i] < 1.0) tmp[i] = 1.0;
-    }
+    // for (uint i = 0; i < tmp.size(); i ++) {
+    //     tmp[i] = std::fabs(tmp[i] / logdrop);
+    //     if (tmp[i] < 1.0) tmp[i] = 1.0;
+    // }
 
-    tmp = log10(tmp);
-    tmp /= max(tmp) * s;
-    return tmp;
+    // tmp = log10(tmp);
+    // tmp /= max(tmp) * s;
+    // return tmp;
 }
 
 void exportSensitivityVTK(const std::string & fileName,
@@ -591,5 +591,30 @@ RVector coverageDCtrans(const MatrixBase & S, const RVector & dd, const RVector 
     return cov / abs(mm);
 }
 
+RVector createCoverage(const MatrixBase & S, const Mesh & mesh){
+    return createCoverage(S, mesh, RVector(S.rows(), 1.0), RVector(S.cols(), 1.0));
+}
 
+RVector createCoverage(const MatrixBase & S, const Mesh & mesh,
+                       const RVector & response, const RVector & model){
+
+    RVector cov(coverageDCtrans(S, 1.0 / response, 1.0 / model));
+
+    if (mesh.cellCount() == model.size()) {
+        cov /= mesh.cellSizes();
+    } else {
+        RVector modelCellSizes(cov.size(), 0.0);
+        for (Index i = 0; i < mesh.cellCount(); i ++){
+            Cell *c = &mesh.cell(i);
+            modelCellSizes[c->marker()] += c->shape().domainSize();
+        }
+        if (min(modelCellSizes) > TOLERANCE){
+            cov /= modelCellSizes;
+        } else {
+            log(Error, "Coverage fails:" + str(mesh.cellCount()) + " " + str(model.size()));
+        }
+    }
+    
+    return cov(mesh.cellMarkers());
+}
 } // namespace GIMLI

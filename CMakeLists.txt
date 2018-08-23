@@ -18,6 +18,15 @@ endif()
 
 project(libgimli)
 
+# Check if conda package is created
+if(DEFINED ENV{CONDA_BUILD})
+    message(STATUS "Conda package is being created.")
+    set(CONDA_BUILD TRUE)
+    set(Boost_INCLUDE_DIR "${CMAKE_PREFIX_PATH}/include")
+else()
+    set(CONDA_BUILD FALSE)
+endif()
+
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 
     set(CMAKE_CXX_FLAGS_RELEASE "-O2 -pipe -ansi -Wall -Wno-long-long -Wno-unused-result -Wno-unused-variable")
@@ -26,12 +35,11 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" ST
 
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -p -O2 -ansi -pedantic -fno-omit-frame-pointer -Wall")
 
-    if (WIN32)
+    if (WIN32 OR CONDA_BUILD)
         set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-deprecated-declarations")
     endif()
-    
-    
-    if(NOT WIN32 AND ASAN)
+
+    if (NOT WIN32 AND ASAN)
         set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address")
     endif()
 
@@ -39,24 +47,22 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" ST
 #     if (NOT WIN32)
 #         add_definitions(-std=c++0x)
     add_definitions(-std=c++11)
-    #endif()
-    #add_definitions(-std=gnu++0x)
-
-    #-Wl,--no-undefined
-    #set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Os -static-libgcc -Wl,-O2 -Wl,--as-needed -Wl,--sort-common")
-#set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Os -static-libgcc")
-   # set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Os -Wl,--no-undefined -static-libgcc -Wl,-O2 -Wl,--as-needed -Wl,--sort-common")
-#     set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "${CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS} -lbfd")
+    
+    # add_definitions(-std=gnu++0x)
+    # -Wl,--no-undefined
+    # set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Os -static-libgcc -Wl,-O2 -Wl,--as-needed -Wl,--sort-common")
+    # set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Os -static-libgcc")
+    # set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Os -Wl,--no-undefined -static-libgcc -Wl,-O2 -Wl,--as-needed -Wl,--sort-common")
+    # set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "${CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS} -lbfd")
 
     if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
         set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-overloaded-virtual")
         set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Qunused-arguments")
 
         if (APPLE)
-        #If it's libc++ and you're on <= 10.8, you need to compile with clang++ -stdlib=libc++. If it's libstdc++ and you're on 10.9 or later, you need to compile with clang++ -stdlib=libstdc++.
-
-        #add_compile_options(-stdlib=libstdc++)
-        #add_compile_options(-stdlib=libc++)
+            # If it's libc++ and you're on <= 10.8, you need to compile with clang++ -stdlib=libc++. If it's libstdc++ and you're on 10.9 or later, you need to compile with clang++ -stdlib=libstdc++.
+            # add_compile_options(-stdlib=libstdc++)
+            # add_compile_options(-stdlib=libc++)
         endif()
     else() # if gcc
 
@@ -243,33 +249,13 @@ set(CMAKE_LIBRARY_PATH ${EXTERNAL_DIR}/lib $ENV{EXTERNAL_DIR}/lib ${CMAKE_LIBRAR
 if (J) # dummy to avoid error msg
 endif()
 
-# set(OPTIONAL_PACKAGES "")
-# list(APPEND OPTIONAL_PACKAGES "Triangle")
-# list(APPEND OPTIONAL_PACKAGES "UMFPACK")
-# list(APPEND OPTIONAL_PACKAGES "CHOLMOD")
-# list(APPEND OPTIONAL_PACKAGES "readproc")
-# list(APPEND OPTIONAL_PACKAGES "cppunit")
-# list(APPEND OPTIONAL_PACKAGES "Python")
-# list(APPEND OPTIONAL_PACKAGES "Sphinx")
-
 set (UMFPACK_FOUND FALSE)
 
 find_or_build_package(Triangle triangle LOCAL)
 find_or_build_package(BLAS lapack)
 find_or_build_package(LAPACK lapack)
 find_or_build_package(CHOLMOD suitesparse)
-#find_or_build_package(UMFPACK umfpack)
 find_package(UMFPACK)
-
-message(STATUS "************** ${UMFPACK_FOUND}")
-
-# Check if conda package is created
-if(DEFINED ENV{CONDA_BUILD})
-    message(STATUS "Conda package is being created.")
-    set(CONDA_BUILD TRUE)
-else()
-    set(CONDA_BUILD FALSE)
-endif()
 
 if (";${BLAS_LIBRARIES};" MATCHES "openblas")
     message(STATUS "openblas is used: ${BLAS_LIBRARIES}")
@@ -449,6 +435,9 @@ endif()
 message(STATUS "**********************************************************************")
 message(STATUS "************************* Dependencies found *************************")
 message(STATUS "**********************************************************************")
+if (CONDA_BUILD)
+    message(STATUS "CONDA_BUILD: ${CONDA_BUILD}")
+endif()
 message(STATUS "THREADS            :${Threads_FOUND}    ${CMAKE_THREAD_LIBS_INIT}")
 message(STATUS "USE_BOOST_THREAD   :${USE_BOOST_THREAD} ${Boost_THREAD_LIBRARIES}")
 message(STATUS "CHOLMOD_LIBRARIES  :${CHOLMOD_LIBRARIES}")
@@ -456,9 +445,8 @@ message(STATUS "UMFPACK_LIBRARIES  :${UMFPACK_LIBRARIES}")
 message(STATUS "TRIANGLE_FOUND     :${TRIANGLE_FOUND}    Triangle_LIBRARIES: ${Triangle_LIBRARIES}")
 message(STATUS "PYTHON_FOUND       :${PYTHON_FOUND}    PYTHON_EXECUTABLE: ${PYTHON_EXECUTABLE}" )
 message(STATUS "PYTHONLIBS_FOUND   :${PYTHONLIBS_FOUND}    PYTHON_LIBRARY: ${PYTHON_LIBRARY}" )
-if(WIN32)
-message(STATUS "PYTHON_INCLUDE_DIR :${PYTHON_INCLUDE_DIR}" )
-endif(WIN32)
+message(STATUS "PYTHON_INCLUDE_DIR :${PYTHON_INCLUDE_DIR} ${PYTHON_INCLUDE}" )
+message(STATUS "Boost_INCLUDE_DIR  :${Boost_INCLUDE_DIR}")
 message(STATUS "Boost_PYTHON_FOUND :${Boost_PYTHON_FOUND}    Boost_PYTHON_LIBRARY: ${Boost_PYTHON_LIBRARY}" )
 message(STATUS "numpy_FOUND        :${numpy_FOUND}    PY_NUMPY: ${PY_NUMPY}" )
 message(STATUS "CASTER_FOUND       :${CASTER_FOUND}    Caster: ${CASTER_EXECUTABLE}")

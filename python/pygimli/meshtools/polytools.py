@@ -313,7 +313,7 @@ def createCircle(pos=None, radius=1, segments=12, start=0, end=2. * math.pi,
     return poly
 
 
-def createLine(start, end, segments, **kwargs):
+def createLine(start, end, segments=1, **kwargs):
     """Create simple line polygon.
 
     Create simple line polygon from start to end.
@@ -453,9 +453,11 @@ def mergePLC(pols, tol=1e-3):
 
     Merge multiply polygons into a single polygon.
     Common nodes and common edges will be checked and removed.
+    When a node touches and edge the edge will be split.
 
-    Crossing or touching edges or Node/Edge intersections will NOT be
-    recognized yet. -> TODO
+    TODO:
+        * Crossing or Node/Edge intersections will NOT be
+        recognized yet.
 
     Parameters
     ----------
@@ -494,7 +496,8 @@ def mergePLC(pols, tol=1e-3):
     for p in pols:
         nodes = []
         for n in p.nodes():
-            nn = poly.createNodeWithCheck(n.pos(), tol)
+            nn = poly.createNodeWithCheck(n.pos(), tol, 
+                                          warn=False, edgeCheck=True)
             if n.marker() != 0:
                 nn.setMarker(n.marker())
             nodes.append(nn)
@@ -526,15 +529,15 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
     """Create a PLC mesh for an inversion parameter mesh.
 
     Create a PLC mesh for an inversion parameter mesh with for a given list of
-    sensor positions.
-    Sensor position assumed on the surface and must be sorted and unique.
+    sensor positions. Sensor positions are assumed to lie on the surface and
+    must be sorted and unique.
 
-    You can create a parameter mesh without sensors if you just set
-    [xmin, xmax] as sensors.
+    You can create a parameter mesh without sensors if you just set [xmin, xmax]
+    as sensors.
 
-    The PLC is a :gimliapi:`GIMLI::Mesh` and contain nodes, edges and
-    two region markers, one for the parameters domain (marker=2) and
-    a larger boundary around the outside (marker=1)
+    The PLC is a :gimliapi:`GIMLI::Mesh` and contain nodes, edges and two region
+    markers, one for the parameters domain (marker=2) and a larger boundary
+    around the outside (marker=1)
 
     TODO:
 
@@ -549,9 +552,9 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
         Sensor positions. Must be sorted and unique in positive x direction.
         Depth need to be y-coordinate.
     paraDX : float [1]
-        Relativ distance for refinement nodes between two electrodes (1=none),
-        e.g., 0.5 means 1 additional node between two neighboring electrodes
-        e.g., 0.33 means 2 additional equidistant nodes between two electrodes
+        Relativ distance for refinement nodes between two sensors (1=none),
+        e.g., 0.5 means 1 additional node between two neighboring sensors
+        e.g., 0.33 means 2 additional equidistant nodes between two sensors
     paraDepth : float, optional
         Maximum depth for parametric domain, 0 (default) means 0.4 * maximum
         sensor range.
@@ -577,9 +580,9 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
     >>> import pygimli as pg
     >>> import pygimli.meshtools as plc
     >>> # Create the simplest paramesh PLC with a para box of 10 m without
-    >>> # electrodes
+    >>> # sensors
     >>> p = plc.createParaMeshPLC([0,10])
-    >>> # you can add subsurface electrodes now with
+    >>> # you can add subsurface sensors now with
     >>> for z in range(1,4):
     ...     n = p.createNode((5,-z), -99)
     >>> ax,_ = pg.show(p)

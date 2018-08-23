@@ -2,15 +2,16 @@
 # -*- coding: utf-8 -*-
 """"WRITEME"""
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+
 import pygimli as pg
 
 
 def drawFirstPicks(ax, data, tt=None, plotva=False, marker='x-'):
     """Naming convention. drawFOO(ax, ... )"""
-    return plotFirstPicks(ax=ax, data=data, tt=tt,
-                          plotva=plotva, marker=marker)
+    return plotFirstPicks(ax=ax, data=data, tt=tt, plotva=plotva,
+                          marker=marker)
 
 
 def drawVA(ax, data, usePos=True):
@@ -55,11 +56,11 @@ def drawTravelTimeData(ax, data, t=None):
 
     # draw shot points
     ax.plot(x[[int(i__ - startOffsetIDX) for i__ in shots]],
-              np.zeros(len(shots)) + 8. * yPixel, 'gv', markersize=8)
+            np.zeros(len(shots)) + 8. * yPixel, 'gv', markersize=8)
 
     # draw geophone points
     ax.plot(x[[int(i__ - startOffsetIDX) for i__ in geoph]],
-              np.zeros(len(geoph)) + 3. * yPixel, 'r^', markersize=8)
+            np.zeros(len(geoph)) + 3. * yPixel, 'r^', markersize=8)
 
     ax.grid()
     ax.set_ylim([max(tShow), +16. * yPixel])
@@ -67,6 +68,8 @@ def drawTravelTimeData(ax, data, t=None):
 
     ax.set_xlabel('x-Coordinate [m]')
     ax.set_ylabel('Traveltime [ms]')
+
+
 # def drawTravelTimeData(...)
 
 
@@ -81,15 +84,23 @@ def plotFirstPicks(ax, data, tt=None, plotva=False, marker='x-'):
         tt = np.absolute(gx - sx) / tt
 
     uns = np.unique(sx)
-    cols = 'brgcmyk'
+
+    cols = plt.cm.tab10(np.arange(10))
+
     for i, si in enumerate(uns):
         ti = tt[sx == si]
         gi = gx[sx == si]
         ii = gi.argsort()
-        ax.plot(gi[ii], ti[ii], marker, color=cols[i % 7])
-        ax.plot(si, 0., 's', color=cols[i % 7], markersize=8)
+        ax.plot(gi[ii], ti[ii], marker, color=cols[i % 10])
+        ax.plot(si, 0., 's', color=cols[i % 10], markersize=8)
 
     ax.grid(True)
+    if plotva:
+        ax.set_ylabel("Apparent velocity (m/s)")
+    else:
+        ax.set_ylabel("Traveltime (s)")
+    ax.set_xlabel("x (m)")
+    ax.invert_yaxis()
 
 
 def showVA(ax, data, usepos=True):

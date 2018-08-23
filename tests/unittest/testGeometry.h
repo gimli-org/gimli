@@ -20,7 +20,20 @@ public:
     }
 
     void testTouch(){
+        GIMLI::Line l(GIMLI::RVector3(0.0, 0.0), GIMLI::RVector3(1.0, 0.0));
 
+        int p = 0;
+        CPPUNIT_ASSERT(l.touch1(GIMLI::RVector3(-1.0, 0.0), p) == true);
+        CPPUNIT_ASSERT(p == 1);
+        CPPUNIT_ASSERT(l.touch1(GIMLI::RVector3(0.0, 0.0), p) == true);
+        CPPUNIT_ASSERT(p == 2);
+        CPPUNIT_ASSERT(l.touch1(GIMLI::RVector3(0.5, 0.0), p) == true);
+        CPPUNIT_ASSERT(p == 3);
+        CPPUNIT_ASSERT(l.touch1(GIMLI::RVector3(1.0, 0.0), p) == true);
+        CPPUNIT_ASSERT(p == 4);
+        CPPUNIT_ASSERT(l.touch1(GIMLI::RVector3(2.0, 0.0), p) == true);
+        CPPUNIT_ASSERT(p == 5);
+                                   
     }
 
     void testIntersection(){
