@@ -329,15 +329,15 @@ class Refraction(MethodManager):
 
         Parameters
         ----------
-        useGradient : bool
+        useGradient : bool [True]
             Create gradient for starting model from vtop to vbottom.
-        vtop, vbottom : float
+        vtop, vbottom : float [500, 5000]
             starting (gradient) model velocities on top/at bottom of the mesh
-        lam : float
+        lam : float [20]
             regularization parameter describing the strength of smoothness
         zWeight : float
             relative weight for purely vertical boundaries
-        maxIter : int
+        maxIter : int [20]
             Maximum number of iterations
         startModel : array
             Slowness starting model for the inversion
