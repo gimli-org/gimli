@@ -289,6 +289,10 @@ DLLEXPORT bool pythonGIL();
 DLLEXPORT void setDebug(bool s);
 DLLEXPORT bool debug();
 
+/*! For several levels of deep debugging. Mainly used for python rvalue conversion. */
+DLLEXPORT void setDeepDebug(int level);
+DLLEXPORT int deepDebug();
+
 /*! Set maximum amount of threads used by thirdparty software (e.g. openblas).
 Default is number of CPU. */
 DLLEXPORT void setThreadCount(Index nThreads);

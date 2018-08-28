@@ -292,7 +292,6 @@ def generate(defined_symbols, extraIncludes):
     logger.info("Apply custom rvalues.")
     # START manual r-value converters
     rvalue_converters = [
-        'register_numpyint_to_long_conversion',
         'register_pytuple_to_rvector3_conversion',
         'register_pysequence_to_rvector_conversion',
         #'register_pysequence_to_cvector_conversion', .. will not work
@@ -301,6 +300,10 @@ def generate(defined_symbols, extraIncludes):
         'register_pysequence_to_r3vector_conversion',
         'register_pysequence_to_StdVectorRVector3_conversion',
         'register_numpy_to_rmatrix_conversion',
+        'register_numpy_to_long_conversion',
+        'register_numpy_to_ulong_conversion',
+        'register_numpy_to_int_conversion',
+        'register_numpy_to_uint_conversion',
     ]
 
     for converter in rvalue_converters:

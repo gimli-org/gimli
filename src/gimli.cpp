@@ -39,6 +39,8 @@ namespace GIMLI{
 
 static bool __SAVE_PYTHON_GIL__ = false;
 static bool __GIMLI_DEBUG__ = false;
+static int __GIMLI_DEEP_DEBUG__ = 0;
+
 static Index __GIMLI_THREADCOUNT__ = numberOfCPU();
 
 // //** end forward declaration
@@ -51,6 +53,9 @@ bool pythonGIL(){ return __SAVE_PYTHON_GIL__; }
 
 void setDebug(bool s){ __GIMLI_DEBUG__ = s; }
 bool debug(){ return __GIMLI_DEBUG__;}
+
+void setDeepDebug(int level){__GIMLI_DEEP_DEBUG__ = level;}
+int deepDebug(){ return __GIMLI_DEEP_DEBUG__; }
 
 void setThreadCount(Index nThreads){
     log(Debug, "Set amount of threads to " + str(nThreads));

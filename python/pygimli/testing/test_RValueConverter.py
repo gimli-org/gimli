@@ -257,10 +257,28 @@ class TestRVectorMethods(unittest.TestCase):
         np.testing.assert_equal(M, M2)
         A = np.array(pg.RMatrix(4,4))
 
-if __name__ == '__main__':
-    pg.setDebug(0)
+    def test_NumpyToScalar(self):
+        """Implemented through automatic iterator """
+        x = pg.RVector(2)
+        x3 = pg.R3Vector(2)
+        w = pg.RVector()
+        # HarmonicModelling(size_t nh, const RVector & tvec);
+        pg.HarmonicModelling(np.int32(1), x);
+        pg.HarmonicModelling(np.uint32(1), x);
+        pg.HarmonicModelling(np.int64(1), x);
+        pg.HarmonicModelling(np.uint64(1), x);
 
-    # test = TestRVectorMethods()
+        pg.PolynomialModelling(1, np.int32(1), x3, x);
+        pg.PolynomialModelling(1, np.int64(1), x3, x);
+        pg.PolynomialModelling(1, np.uint32(1), x3, x);
+        pg.PolynomialModelling(1, np.uint64(1), x3, x);
+
+if __name__ == '__main__':
+    pg.setDeepDebug(0)
+
+    test = TestRVectorMethods()
+    # test.test_NumpyToScalar()
+    # exit()
     # test.test_BVectorToNumpy()
     # test.test_NumpyToIVector()
     # test.test_NumpyToRVector()
