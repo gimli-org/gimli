@@ -779,6 +779,13 @@ std::vector < PolynomialFunction < double > > Quadrangle8Face::createShapeFuncti
     return createPolynomialShapeFunctions(*this, 3, true, true);
 }
 
+PolygonFace::PolygonFace(const std::vector < Node * > & nodes) : Boundary(nodes){
+    shape_ = new PolygonShape(nodes.size());
+    fillShape_();
+}
+        
+PolygonFace::~PolygonFace(){
+}
 
 EdgeCell::EdgeCell(const std::vector < Node * > & nodes) : Cell(nodes){
     shape_ = new EdgeShape();

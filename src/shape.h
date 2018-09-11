@@ -511,6 +511,29 @@ protected:
     virtual double domainSize_() const { return area(); }
 };
 
+
+class DLLEXPORT PolygonShape : public Shape {
+public:
+    PolygonShape(Index nodeCount);
+    
+    virtual ~PolygonShape();
+ 
+    virtual int rtti() const { return MESH_SHAPE_POLYGON_FACE_RTTI; }
+
+    virtual int dim() const { return 3; }
+
+    virtual std::string name() const { return "PolygonFaceShape"; }
+
+    virtual RVector3 norm() const;
+
+    virtual RVector3 rst(Index i) const;
+
+    virtual bool isInside(const RVector3 & xyz, bool verbose) const;
+
+protected:
+};
+
+
 static const double TetCoordinates[4][3] = {
     {0.0, 0.0, 0.0},
     {1.0, 0.0, 0.0},

@@ -1318,6 +1318,7 @@ void Mesh::addVTUPiece_(std::fstream & file, const Mesh & mesh,
             case MESH_TETRAHEDRON10_RTTI: file << "24 "; break;
             case MESH_HEXAHEDRON_RTTI: file    << "12 "; break;
             case MESH_HEXAHEDRON20_RTTI: file  << "25 "; break;
+            case MESH_POLYGON_FACE_RTTI: file  << "7 "; break; // VTK_POLYGON
             default: std::cerr << WHERE_AM_I << " nothing know about." << cells[i]->rtti() << std::endl;
         }
     }

@@ -138,6 +138,7 @@ int DataMap::load(const std::string & filename){
                 break;
             default:
                 std::cerr << WHERE_AM_I << " WARNING: rowsize unknown " << row.size() << std::endl;
+                THROW_TO_IMPL
                 break;
         }
     }

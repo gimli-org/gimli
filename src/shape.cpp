@@ -172,6 +172,8 @@ std::vector < PolynomialFunction < double > > Shape::createShapeFunctions() cons
             pascale = true;
             serendipity = true;
             break;
+        case MESH_SHAPE_POLYGON_FACE_RTTI:
+            return std::vector < PolynomialFunction < double > >();
     }
 
     return createPolynomialShapeFunctions(*this, nCoeff, pascale, serendipity);
@@ -515,7 +517,7 @@ double QuadrangleShape::area() const {
 
     return sum;
 
-    //** Gau sche Trapezformel fails for surface boundaries
+    //** Gaußsche Trapezformel fails for surface boundaries
 
 /*
   double x13 = nodeVector_[0]->pos()[0]- nodeVector_[2]->pos()[0];
@@ -541,6 +543,27 @@ bool QuadrangleShape::intersectRay(const RVector3 & start, const RVector3 & dir,
     return false;
 }
 
+
+PolygonShape::PolygonShape(Index nodeCount){ 
+    resizeNodeSize_(nodeCount); 
+}
+
+PolygonShape::~PolygonShape(){ 
+}
+
+RVector3 PolygonShape::norm() const{
+    RVector3 n;
+    THROW_TO_IMPL
+    return n;
+}
+
+RVector3 PolygonShape::rst(Index i) const {
+    return RVector3(0.0, 0.0, 0.0);
+}
+
+bool PolygonShape::isInside(const RVector3 & xyz, bool verbose) const {
+     return false;
+}
 
 RVector3 TetrahedronShape::rst(Index i) const{
     if (i < nodeCount()) return RVector3(TetCoordinates[i][0], TetCoordinates[i][1], TetCoordinates[i][2]);

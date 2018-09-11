@@ -253,22 +253,22 @@ public:
     }
 
     inline Pos < ValueType > & rotateX(double phi){
-        double mat[3][3] ={     { 1.0, 0.0,              0.0},
-                                    { 0.0, std::cos(phi), -std::sin(phi) },
-                                    { 0.0, std::sin(phi),  std::cos(phi) } };
+        double mat[3][3] ={{ 1.0,           0.0,            0.0},
+                           { 0.0, std::cos(phi), -std::sin(phi)},
+                           { 0.0, std::sin(phi),  std::cos(phi)} };
         return this->transform(mat);
     }
     inline Pos < ValueType > & rotateY(double phi){
-        double mat[3][3] =  {   { std::cos(phi),  0.0, std::sin(phi) },
-                                    { 0.0,              1.0, 0.0 },
-                                    { -std::sin(phi), 0.0, std::cos(phi) } };
+        double mat[3][3] =  {{std::cos(phi),  0.0, std::sin(phi)},
+                             {0.0,            1.0,           0.0},
+                             {-std::sin(phi), 0.0, std::cos(phi)}};
 
         return this->transform(mat);
     }
     inline Pos < ValueType > & rotateZ(double phi){
-        double mat[3][3] = {    { std::cos(phi), -std::sin(phi), 0.0 },
-                                    { std::sin(phi),  std::cos(phi), 0.0 },
-                                    { 0.0,              0.0,             1.0 } };
+        double mat[3][3] = {{std::cos(phi), -std::sin(phi), 0.0},
+                            {std::sin(phi),  std::cos(phi), 0.0},
+                            {          0.0,            0.0, 1.0}};
         return this->transform(mat);
     }
 

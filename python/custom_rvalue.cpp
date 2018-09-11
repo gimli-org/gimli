@@ -464,6 +464,32 @@ struct Numpy2RMatrix{
 private:
 };
 
+void * checkConvertibleNumpyIndex(PyObject * obj){
+   __DC(obj << "\tNumpyScalar -> Index")
+    if (!obj){
+        __DC(obj << "\t !Object")
+        return NULL;
+    }
+    if (PySequence_Check(obj)){
+        __DC(obj << "\t check is Sequenz : ")
+        return NULL;
+    }
+    if (PyObject_HasAttrString(obj, "dtype")){
+        if ((strcmp(obj->ob_type->tp_name, "numpy.float32") == 0) || 
+            (strcmp(obj->ob_type->tp_name, "numpy.float64") == 0)) {
+            __DC(obj << "\t Object is numpy.float .. non convert")    
+            return NULL;
+        }
+        __DC(obj << "\t Object has dtype .. assuming numpy")
+        return obj;
+    } else {
+        __DC(obj << "\t Object no dtype")
+        return NULL;
+    }
+
+    return NULL;
+}
+
 template < class ValueType > void * checkConvertibleNumpyScalar(PyObject * obj){
     __DC(obj << "\tNumpyScalar -> " + GIMLI::type(ValueType(0)))
     if (!obj){
@@ -543,7 +569,7 @@ private:
 struct Numpy2ULong{
     static void * convertible(PyObject * obj){
         __DC(obj << " -> Index")
-        return checkConvertibleNumpyScalar< GIMLI::Index >(obj);
+        return checkConvertibleNumpyIndex(obj);
     }
     static void construct(PyObject* obj, bp::converter::rvalue_from_python_stage1_data * data){
         return convertFromNumpyScalar< GIMLI::Index >(obj, data);
@@ -575,6 +601,18 @@ struct Numpy2UInt{
 private:
 };
 
+//template <typename T, NPY_TYPES NumPyScalarType>
+struct Numpy2Double{
+    static void * convertible(PyObject * obj){
+        __DC(obj << " -> double")
+        return checkConvertibleNumpyScalar< double >(obj);
+    }
+    static void construct(PyObject* obj, bp::converter::rvalue_from_python_stage1_data * data){
+        return convertFromNumpyScalar< double >(obj, data);
+    }
+private:
+};
+
 } //r_values_impl
 
 void register_numpy_to_long_conversion(){
@@ -596,6 +634,11 @@ void register_numpy_to_uint_conversion(){
     bp::converter::registry::push_back(& r_values_impl::Numpy2UInt::convertible,
                                         & r_values_impl::Numpy2UInt::construct,
                                         bp::type_id< uint >());
+}
+void register_numpy_to_double_conversion(){
+    bp::converter::registry::push_back(& r_values_impl::Numpy2Double::convertible,
+                                        & r_values_impl::Numpy2Double::construct,
+                                        bp::type_id< double >());
 }
 void register_pysequence_to_indexvector_conversion(){
     bp::converter::registry::push_back(& r_values_impl::PySequence2IndexArray::convertible,

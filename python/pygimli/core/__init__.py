@@ -178,14 +178,19 @@ def ElementMatrix_str(self):
         s += '\n'
     return s
 
+
 def MeshEntity_str(self):
     """Give mesh entity infos."""
-    s = str(type(self))
+    s = self.__repr__()
     s += '\tID: ' + str(self.id()) + \
          ', Marker: ' + str(self.marker()) + \
          ', Size: ' + str(self.size()) + '\n'
-    for n in self.nodes():
-        s += '\t' + str(n.id()) + " " + str(n.pos()) + "\n"
+
+    if isinstance(self, _pygimli_.PolygonFace):
+        s += '\t' + str(self.nodeCount()) + " Nodes.\n"
+    else:
+        for n in self.nodes():
+            s += '\t' + str(n.id()) + " " + str(n.pos()) + "\n"
     return s
 
 
@@ -207,10 +212,10 @@ _pygimli_.MeshEntity.__str__ = MeshEntity_str
 
 def Node_str(self):
     """Give node infos."""
-    s = str(type(self))
+    s = self.__repr__()
     s += '\tID: ' + str(self.id()) + \
          ', Marker: ' + str(self.marker())
-    s += '\t' + str(self.pos())
+    s += '\t' + str(self.pos()) + '\n'
     return s
 
 _pygimli_.Node.__str__ = Node_str
