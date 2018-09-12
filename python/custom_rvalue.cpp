@@ -615,25 +615,25 @@ private:
 
 } //r_values_impl
 
-void register_numpy_to_long_conversion(){
+void register_numpy_to_int64_conversion(){
     bp::converter::registry::push_back(& r_values_impl::Numpy2Long::convertible,
                                         & r_values_impl::Numpy2Long::construct,
                                         bp::type_id< GIMLI::SIndex >());
 }
-void register_numpy_to_ulong_conversion(){
+void register_numpy_to_uint64_conversion(){
     bp::converter::registry::push_back(& r_values_impl::Numpy2ULong::convertible,
                                         & r_values_impl::Numpy2ULong::construct,
                                         bp::type_id< GIMLI::Index >());
 }
-void register_numpy_to_int_conversion(){
+void register_numpy_to_int32_conversion(){
     bp::converter::registry::push_back(& r_values_impl::Numpy2Int::convertible,
                                         & r_values_impl::Numpy2Int::construct,
-                                        bp::type_id< int >());
+                                        bp::type_id< GIMLI::int32 >());
 }
-void register_numpy_to_uint_conversion(){
+void register_numpy_to_uint32_conversion(){
     bp::converter::registry::push_back(& r_values_impl::Numpy2UInt::convertible,
                                         & r_values_impl::Numpy2UInt::construct,
-                                        bp::type_id< uint >());
+                                        bp::type_id< GIMLI::uint32 >());
 }
 void register_numpy_to_double_conversion(){
     bp::converter::registry::push_back(& r_values_impl::Numpy2Double::convertible,
