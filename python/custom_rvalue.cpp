@@ -581,10 +581,10 @@ private:
 struct Numpy2Int{
     static void * convertible(PyObject * obj){
         __DC(obj << " -> int")
-        return checkConvertibleNumpyScalar< int >(obj);
+        return checkConvertibleNumpyScalar< GIMLI::int32 >(obj);
     }
     static void construct(PyObject* obj, bp::converter::rvalue_from_python_stage1_data * data){
-        return convertFromNumpyScalar< int >(obj, data);
+        return convertFromNumpyScalar< GIMLI::int32 >(obj, data);
     }
 private:
 };
@@ -593,10 +593,10 @@ private:
 struct Numpy2UInt{
     static void * convertible(PyObject * obj){
         __DC(obj << " -> uint")
-        return checkConvertibleNumpyScalar< uint >(obj);
+        return checkConvertibleNumpyScalar< GIMLI::uint32 >(obj);
     }
     static void construct(PyObject* obj, bp::converter::rvalue_from_python_stage1_data * data){
-        return convertFromNumpyScalar< uint >(obj, data);
+        return convertFromNumpyScalar< GIMLI::uint32 >(obj, data);
     }
 private:
 };
