@@ -15,7 +15,6 @@
  *   limitations under the License.                                           *
  *                                                                            *
  ******************************************************************************/
-
 //** Idea taken from
 //
 // @Article{Veldhuizen95b,
@@ -58,7 +57,6 @@
 #else
     #include <functional>
 #endif
-
 
 namespace GIMLI{
 
@@ -644,10 +642,9 @@ DEFINE_COMPARE_OPERATOR__(>, std::greater)
 //         return ret;
 //     }
 
-
 #define DEFINE_UNARY_MOD_OPERATOR__(OP, FUNCT) \
   inline Vector< ValueType > & operator OP##= (const Vector < ValueType > & v) { \
-        ASSERT_EMPTY(v) \
+        ASSERT_EQUAL_SIZE((*this), v) \
         std::transform(data_, data_ + size_, &v[0], data_, FUNCT()); return *this; } \
   inline Vector< ValueType > & operator OP##= (const ValueType & val) { \
         for (Index i = 0; i < size_; i ++) data_[i] OP##= val; return *this; } \
@@ -1405,8 +1402,8 @@ inline Complex sum(const CVector & c){
 inline double sum(const RVector & r){
     return std::accumulate(r.begin(), r.end(), double(0));
 }
-inline int sum(const IVector & i){
-    return std::accumulate(i.begin(), i.end(), int(0));
+inline SIndex sum(const IVector & i){
+    return std::accumulate(i.begin(), i.end(), SIndex(0));
 }
 
 

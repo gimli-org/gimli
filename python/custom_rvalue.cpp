@@ -24,7 +24,7 @@ namespace bp = boost::python;
 
 // #define __DC(str) ;
 
-#define __DC(str) if (GIMLI::debug()) __MS(str)
+#define __DC(str) if (GIMLI::deepDebug() > 0) __MS(str)
 
 // ** TODO check if we need a delete somewhere for all the new stuff
 
@@ -32,7 +32,6 @@ namespace bp = boost::python;
 std::ostream & operator << (std::ostream & os, const bp::object& o){
     return os << bp::extract<std::string>(bp::str(o))();
 }
-
 namespace r_values_impl{
 
 template < class ValueType > void * checkConvertibleSequenz(PyObject * obj){
@@ -338,7 +337,13 @@ struct PySequence2IVector{
         data->convertible = memory_chunk;
         __DC(obj << "\t from list")
         for (GIMLI::Index i = 0; i < vec->size(); i ++){
+           
+        #ifdef WIN32
+             //__DC(obj << " " << i << " " << bp::extract< long >(py_sequence[i]))
+            (*vec)[i] = bp::extract< long >(py_sequence[i]);
+        #else
             (*vec)[i] = bp::extract< GIMLI::SIndex >(py_sequence[i]);
+        #endif
         }
     }
 private:
@@ -459,73 +464,181 @@ struct Numpy2RMatrix{
 private:
 };
 
-//template <typename T, NPY_TYPES NumPyScalarType>
-struct NumpyInt2Long{
-
-    /*! Check if the object is convertible */
-    static void * convertible(PyObject * obj){
-        __DC(obj << "\tNumpyInt -> long")
-        if (!obj){
-            __DC(obj << "\t !Object")
+void * checkConvertibleNumpyIndex(PyObject * obj){
+   __DC(obj << "\tNumpyScalar -> Index")
+    if (!obj){
+        __DC(obj << "\t !Object")
+        return NULL;
+    }
+    if (PySequence_Check(obj)){
+        __DC(obj << "\t check is Sequenz : ")
+        return NULL;
+    }
+    if (PyObject_HasAttrString(obj, "dtype")){
+        if ((strcmp(obj->ob_type->tp_name, "numpy.float32") == 0) || 
+            (strcmp(obj->ob_type->tp_name, "numpy.float64") == 0)) {
+            __DC(obj << "\t Object is numpy.float .. non convert")    
             return NULL;
         }
-        if (PySequence_Check(obj)){
-            __DC(obj << "\t check is Sequenz : ")
-            return NULL;
-        }
-
-        if (PyObject_HasAttrString(obj, "dtype")){
-            return obj;
-        } else {
-            __DC(obj << "\t Object no dtype")
-            return NULL;
-        }
-
-
+        __DC(obj << "\t Object has dtype .. assuming numpy")
+        return obj;
+    } else {
+        __DC(obj << "\t Object no dtype")
         return NULL;
     }
 
+    return NULL;
+}
+
+template < class ValueType > void * checkConvertibleNumpyScalar(PyObject * obj){
+    __DC(obj << "\tNumpyScalar -> " + GIMLI::type(ValueType(0)))
+    if (!obj){
+        __DC(obj << "\t !Object")
+        return NULL;
+    }
+    if (PySequence_Check(obj)){
+        __DC(obj << "\t check is Sequenz : ")
+        return NULL;
+    }
+    if (PyObject_HasAttrString(obj, "dtype")){
+        __DC(obj << "\t Object has dtype .. assuming numpy")
+        return obj;
+    } else {
+        __DC(obj << "\t Object no dtype")
+        return NULL;
+    }
+    __DC(obj << "\t does not found convertible")
+    return NULL;
+}
+
+template < class ValueType > void convertFromNumpyScalar(PyObject* obj, 
+                        bp::converter::rvalue_from_python_stage1_data * data){
+    __DC(obj << "\tNumpyScalar -> " + GIMLI::type(ValueType(0)) + " check OK: ")
+    //bp::object py_sequence(bp::handle<>(bp::borrowed(obj)));
+
+    typedef bp::converter::rvalue_from_python_storage< ValueType > storage_t;
+
+    storage_t* the_storage = reinterpret_cast<storage_t*>(data);
+    void* memory_chunk = the_storage->storage.bytes;
+
+    ValueType * val = new (memory_chunk) ValueType[1];
+    data->convertible = memory_chunk;
+
+    // expensive test here but the following segfault
+    // __DC(obj << "\tNumpyInt -> long OK: " << PyArray_CheckScalar(arr))
+    // __DC(obj << "\tNumpyInt -> long OK: " << PyArray_IsScalar(arr, Int64))
+    if (strcmp(obj->ob_type->tp_name, "numpy.int64") == 0){
+        *val = PyArrayScalar_VAL(obj, Int64);
+        __DC(obj << "\tnumpy.int64 = " << *val)
+    } else if (strcmp(obj->ob_type->tp_name, "numpy.uint64") == 0){
+        *val = PyArrayScalar_VAL(obj, UInt64);
+        __DC(obj << "\tnumpy.uint64 = " << *val)
+    } else if (strcmp(obj->ob_type->tp_name, "numpy.int32") == 0){
+        *val = PyArrayScalar_VAL(obj, Int32);
+        __DC(obj << "\tnumpy.int32 = " << *val)
+    } else if (strcmp(obj->ob_type->tp_name, "numpy.uint32") == 0){
+        *val = PyArrayScalar_VAL(obj, UInt32);
+        __DC(obj << "\tnumpy.uint32 = " << *val)
+    } else if (strcmp(obj->ob_type->tp_name, "numpy.float32") == 0){
+        *val = PyArrayScalar_VAL(obj, Float32);
+        __DC(obj << "\tnumpy.float32 = " << *val)
+    } else if (strcmp(obj->ob_type->tp_name, "numpy.float64") == 0){
+        *val = PyArrayScalar_VAL(obj, Float64);
+        __DC(obj << "\tnumpy.float64 = " << *val)
+    } else {
+        __DC(obj << "\tNumpyInt -> undefined dtype")
+        __DC(obj << "\tNumpyInt -> long OK: " << obj->ob_type->tp_name)
+        __DC(obj << "\tNumpyInt -> long OK: " << Py_TYPE(obj))
+    }
+}
+
+
+//template <typename T, NPY_TYPES NumPyScalarType>
+struct Numpy2Long{
+    static void * convertible(PyObject * obj){
+        __DC(obj << " -> SIndex")
+        return checkConvertibleNumpyScalar< GIMLI::SIndex >(obj);
+    }
     static void construct(PyObject* obj, bp::converter::rvalue_from_python_stage1_data * data){
-        __DC(obj << "\tNumpyInt -> long OK: ")
-        //bp::object py_sequence(bp::handle<>(bp::borrowed(obj)));
+        return convertFromNumpyScalar< GIMLI::SIndex >(obj, data);
+    }
+private:
+};
 
-        typedef bp::converter::rvalue_from_python_storage< long > storage_t;
+//template <typename T, NPY_TYPES NumPyScalarType>
+struct Numpy2ULong{
+    static void * convertible(PyObject * obj){
+        __DC(obj << " -> Index")
+        return checkConvertibleNumpyIndex(obj);
+    }
+    static void construct(PyObject* obj, bp::converter::rvalue_from_python_stage1_data * data){
+        return convertFromNumpyScalar< GIMLI::Index >(obj, data);
+    }
+private:
+};
 
-        storage_t* the_storage = reinterpret_cast<storage_t*>(data);
-        void* memory_chunk = the_storage->storage.bytes;
+//template <typename T, NPY_TYPES NumPyScalarType>
+struct Numpy2Int{
+    static void * convertible(PyObject * obj){
+        __DC(obj << " -> int")
+        return checkConvertibleNumpyScalar< GIMLI::int32 >(obj);
+    }
+    static void construct(PyObject* obj, bp::converter::rvalue_from_python_stage1_data * data){
+        return convertFromNumpyScalar< GIMLI::int32 >(obj, data);
+    }
+private:
+};
 
-        long * val = new (memory_chunk) long[1];
-        data->convertible = memory_chunk;
+//template <typename T, NPY_TYPES NumPyScalarType>
+struct Numpy2UInt{
+    static void * convertible(PyObject * obj){
+        __DC(obj << " -> uint")
+        return checkConvertibleNumpyScalar< GIMLI::uint32 >(obj);
+    }
+    static void construct(PyObject* obj, bp::converter::rvalue_from_python_stage1_data * data){
+        return convertFromNumpyScalar< GIMLI::uint32 >(obj, data);
+    }
+private:
+};
 
-        // expensive test here but the following segfault
-        // __DC(obj << "\tNumpyInt -> long OK: " << PyArray_CheckScalar(arr))
-        // __DC(obj << "\tNumpyInt -> long OK: " << PyArray_IsScalar(arr, Int64))
-        if (strcmp(obj->ob_type->tp_name, "numpy.int64") == 0){
-            *val = PyArrayScalar_VAL(obj, Int64);
-        } else if (strcmp(obj->ob_type->tp_name, "numpy.int32") == 0){
-            *val = PyArrayScalar_VAL(obj, Int32);
-        } else if (strcmp(obj->ob_type->tp_name, "numpy.float32") == 0){
-            *val = PyArrayScalar_VAL(obj, Float32);
-        } else if (strcmp(obj->ob_type->tp_name, "numpy.float64") == 0){
-            *val = PyArrayScalar_VAL(obj, Float64);
-        } else {
-            __DC(obj << "\tNumpyInt -> undefined dtype")
-            __DC(obj << "\tNumpyInt -> long OK: " << obj->ob_type->tp_name)
-            __DC(obj << "\tNumpyInt -> long OK: " << Py_TYPE(obj))
-
-        }
-
-        //GIMLI::throwToImplement("implementme");
+//template <typename T, NPY_TYPES NumPyScalarType>
+struct Numpy2Double{
+    static void * convertible(PyObject * obj){
+        __DC(obj << " -> double")
+        return checkConvertibleNumpyScalar< double >(obj);
+    }
+    static void construct(PyObject* obj, bp::converter::rvalue_from_python_stage1_data * data){
+        return convertFromNumpyScalar< double >(obj, data);
     }
 private:
 };
 
 } //r_values_impl
 
-void register_numpyint_to_long_conversion(){
-    bp::converter::registry::push_back(& r_values_impl::NumpyInt2Long::convertible,
-                                        & r_values_impl::NumpyInt2Long::construct,
-                                        bp::type_id< long >());
+void register_numpy_to_int64_conversion(){
+    bp::converter::registry::push_back(& r_values_impl::Numpy2Long::convertible,
+                                        & r_values_impl::Numpy2Long::construct,
+                                        bp::type_id< GIMLI::SIndex >());
+}
+void register_numpy_to_uint64_conversion(){
+    bp::converter::registry::push_back(& r_values_impl::Numpy2ULong::convertible,
+                                        & r_values_impl::Numpy2ULong::construct,
+                                        bp::type_id< GIMLI::Index >());
+}
+void register_numpy_to_int32_conversion(){
+    bp::converter::registry::push_back(& r_values_impl::Numpy2Int::convertible,
+                                        & r_values_impl::Numpy2Int::construct,
+                                        bp::type_id< GIMLI::int32 >());
+}
+void register_numpy_to_uint32_conversion(){
+    bp::converter::registry::push_back(& r_values_impl::Numpy2UInt::convertible,
+                                        & r_values_impl::Numpy2UInt::construct,
+                                        bp::type_id< GIMLI::uint32 >());
+}
+void register_numpy_to_double_conversion(){
+    bp::converter::registry::push_back(& r_values_impl::Numpy2Double::convertible,
+                                        & r_values_impl::Numpy2Double::construct,
+                                        bp::type_id< double >());
 }
 void register_pysequence_to_indexvector_conversion(){
     bp::converter::registry::push_back(& r_values_impl::PySequence2IndexArray::convertible,

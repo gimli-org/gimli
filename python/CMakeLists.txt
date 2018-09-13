@@ -77,15 +77,16 @@ if(WIN32)
     include_directories(${PYTHON_INCLUDE_DIR})
 endif(WIN32)
 
+if(CONDA_BUILD)
+    include_directories(${Boost_INCLUDE_DIR})
+endif(CONDA_BUILD)
+
 
 ADD_CUSTOM_TARGET(pgtest)
 ADD_CUSTOM_COMMAND(
-    COMMAND
-        ${PYTHON_EXECUTABLE}
-    ARGS
-         -c 'import pygimli\; pygimli.test(show=False, abort=True)'
-    TARGET
-        pgtest
+    COMMAND ${PYTHON_EXECUTABLE}
+    ARGS -c 'import pygimli\; pygimli.test(show=False, abort=True) ' 
+    TARGET pgtest
    )
 
 add_test(

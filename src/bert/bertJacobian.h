@@ -90,6 +90,10 @@ DLLEXPORT RVector coverageDCtrans(const MatrixBase & S,
                                   const RVector & dd,
                                   const RVector & mm);
 
+DLLEXPORT RVector createCoverage(const MatrixBase & S, const Mesh & mesh);
+
+DLLEXPORT RVector createCoverage(const MatrixBase & S, const Mesh & mesh,
+                                 const RVector & response, const RVector & model);
 
 } // namespace BERT
 

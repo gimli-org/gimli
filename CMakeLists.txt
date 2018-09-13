@@ -18,6 +18,15 @@ endif()
 
 project(libgimli)
 
+# Check if conda package is created
+if(DEFINED ENV{CONDA_BUILD})
+    message(STATUS "Conda package is being created.")
+    set(CONDA_BUILD TRUE)
+    set(Boost_INCLUDE_DIR "${CMAKE_PREFIX_PATH}/include")
+else()
+    set(CONDA_BUILD FALSE)
+endif()
+
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 
     set(CMAKE_CXX_FLAGS_RELEASE "-O2 -pipe -ansi -Wall -Wno-long-long -Wno-unused-result -Wno-unused-variable")
@@ -26,7 +35,11 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" ST
 
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -p -O2 -ansi -pedantic -fno-omit-frame-pointer -Wall")
 
-    if(NOT WIN32 AND ASAN)
+    if (WIN32 OR CONDA_BUILD)
+        set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-deprecated-declarations")
+    endif()
+
+    if (NOT WIN32 AND ASAN)
         set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address")
     endif()
 
@@ -34,24 +47,22 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" ST
 #     if (NOT WIN32)
 #         add_definitions(-std=c++0x)
     add_definitions(-std=c++11)
-    #endif()
-    #add_definitions(-std=gnu++0x)
-
-    #-Wl,--no-undefined
-    #set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Os -static-libgcc -Wl,-O2 -Wl,--as-needed -Wl,--sort-common")
-#set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Os -static-libgcc")
-   # set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Os -Wl,--no-undefined -static-libgcc -Wl,-O2 -Wl,--as-needed -Wl,--sort-common")
-#     set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "${CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS} -lbfd")
+    
+    # add_definitions(-std=gnu++0x)
+    # -Wl,--no-undefined
+    # set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Os -static-libgcc -Wl,-O2 -Wl,--as-needed -Wl,--sort-common")
+    # set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Os -static-libgcc")
+    # set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Os -Wl,--no-undefined -static-libgcc -Wl,-O2 -Wl,--as-needed -Wl,--sort-common")
+    # set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "${CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS} -lbfd")
 
     if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
         set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-overloaded-virtual")
         set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Qunused-arguments")
 
         if (APPLE)
-        #If it's libc++ and you're on <= 10.8, you need to compile with clang++ -stdlib=libc++. If it's libstdc++ and you're on 10.9 or later, you need to compile with clang++ -stdlib=libstdc++.
-
-        #add_compile_options(-stdlib=libstdc++)
-        #add_compile_options(-stdlib=libc++)
+            # If it's libc++ and you're on <= 10.8, you need to compile with clang++ -stdlib=libc++. If it's libstdc++ and you're on 10.9 or later, you need to compile with clang++ -stdlib=libstdc++.
+            # add_compile_options(-stdlib=libstdc++)
+            # add_compile_options(-stdlib=libc++)
         endif()
     else() # if gcc
 
@@ -82,11 +93,10 @@ else()
     set(LIBGIMLI_VERSION "untaged")
 endif()
 
-
-set(PACKAGE_NAME \"${PROJECT_NAME}\")
-set(PACKAGE_VERSION \"${LIBGIMLI_VERSION}\")
-set(PACKAGE_BUGREPORT \"carsten@pygimli.org\")
-set(PACKAGE_AUTHORS \"carsten@pygimli.org thomas@pygimli.org florian@pygimli.org\")
+set( PACKAGE_NAME  \"${PROJECT_NAME}\" )
+set( PACKAGE_VERSION  \"${LIBGIMLI_VERSION}\" )
+set( PACKAGE_BUGREPORT  \"carsten@pygimli.org\")
+set( PACKAGE_AUTHORS  \"carsten@pygimli.org thomas@pygimli.org florian@pygimli.org\")
 
 ################################################################################
 # Check for libs and other packages we might use.
@@ -120,7 +130,6 @@ endif()
 
 include(CheckIncludeFileCXX)
 find_package(Threads REQUIRED)
-
 
 if (PYVERSION)
     find_package(PythonInterp ${PYVERSION} REQUIRED)
@@ -240,33 +249,18 @@ set(CMAKE_LIBRARY_PATH ${EXTERNAL_DIR}/lib $ENV{EXTERNAL_DIR}/lib ${CMAKE_LIBRAR
 if (J) # dummy to avoid error msg
 endif()
 
-# set(OPTIONAL_PACKAGES "")
-# list(APPEND OPTIONAL_PACKAGES "Triangle")
-# list(APPEND OPTIONAL_PACKAGES "UMFPACK")
-# list(APPEND OPTIONAL_PACKAGES "CHOLMOD")
-# list(APPEND OPTIONAL_PACKAGES "readproc")
-# list(APPEND OPTIONAL_PACKAGES "cppunit")
-# list(APPEND OPTIONAL_PACKAGES "Python")
-# list(APPEND OPTIONAL_PACKAGES "Sphinx")
-
 set (UMFPACK_FOUND FALSE)
 
 find_or_build_package(Triangle triangle LOCAL)
 find_or_build_package(BLAS lapack)
 find_or_build_package(LAPACK lapack)
+<<<<<<< HEAD
 find_or_build_package(CHOLMOD suitesparse ${CHOLMOD_LOCAL})
 #find_or_build_package(UMFPACK umfpack)
+=======
+find_or_build_package(CHOLMOD suitesparse)
+>>>>>>> dev
 find_package(UMFPACK)
-
-message(STATUS "************** ${UMFPACK_FOUND}")
-
-# Check if conda package is created
-if(DEFINED ENV{CONDA_BUILD})
-    message(STATUS "Conda package is being created.")
-    set(CONDA_BUILD TRUE)
-else()
-    set(CONDA_BUILD FALSE)
-endif()
 
 if (";${BLAS_LIBRARIES};" MATCHES "openblas")
     message(STATUS "openblas is used: ${BLAS_LIBRARIES}")
@@ -299,17 +293,14 @@ endif()
 # Check for python stuff
 ################################################################################
 if (WIN32)
-    if (NOT PYTHON_LIBRARY)
-        get_filename_component(PYTHONPATH "${PYTHON_EXECUTABLE}" PATH )
-        if (${ADDRESSMODEL} EQUAL 32 OR ${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR} GREATER 34) # works at least for WinPython3.5
-            set (PYTHON_LIBRARY ${PYTHONPATH}/libs/libpython${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}.a)
-        else()
-            set (PYTHON_LIBRARY ${PYTHONPATH}/libs/libpython${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}.dll.a)
-        endif()
-        #set (PYTHON_LIBRARY ${PYTHONPATH}/libs/python${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}.lib)
-        #set (PYTHON_LIBRARY ${PYTHONPATH}/libs/libpython${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}.a)
-        #set (PYTHON_INCLUDE_DIR ${PYTHONPATH}/include)
-    endif()
+    #if (NOT PYTHON_LIBRARY)
+    #   get_filename_component(PYTHONPATH "${PYTHON_EXECUTABLE}" PATH )
+    #    if (${ADDRESSMODEL} EQUAL 32 OR ${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR} GREATER 34) # works at least for WinPython3.5
+    #        set (PYTHON_LIBRARY ${PYTHONPATH}/libs/libpython${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}.a)
+    #    else()
+    #        set (PYTHON_LIBRARY ${PYTHONPATH}/libs/libpython${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}.dll.a)
+    #    endif()
+    # endif()
 else()
 	set(Python_ADDITIONAL_VERSIONS ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR})
 	set(PythonLibs_FIND_VERSION ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR})
@@ -360,7 +351,6 @@ else()
             set(Boost_PYTHON_LIBRARY ${Boost_PYTHON-${bp_version}_LIBRARY_RELEASE})
         endif()
     endif()
-
 endif()
 
 if (NOT CASTER)
@@ -425,9 +415,34 @@ if (Boost_PYTHON_LIBRARY)
     set (Boost_PYTHON_FOUND TRUE)
 endif()
 
+find_package(Doxygen)
+
+find_package(Sphinx 1.5)
+
+if (SPHINX_FOUND)
+    add_subdirectory(doc EXCLUDE_FROM_ALL)
+    file(GLOB_RECURSE DOCFILES RELATIVE "${CMAKE_SOURCE_DIR}" "${CMAKE_SOURCE_DIR}" "*.rst")
+    file(GLOB_RECURSE PNGFILES RELATIVE "${CMAKE_SOURCE_DIR}" "${CMAKE_SOURCE_DIR}" "*.png")
+    list(APPEND DOCFILES ${PNGFILES})
+    file(GLOB_RECURSE BIBFILES RELATIVE "${CMAKE_SOURCE_DIR}" "${CMAKE_SOURCE_DIR}" "*.bib")
+    list(APPEND DOCFILES ${BIBFILES})
+    file(GLOB_RECURSE PYFILES RELATIVE "${CMAKE_SOURCE_DIR}" "${CMAKE_SOURCE_DIR}" "doc/paper/*.py")
+    list(APPEND DOCFILES ${PYFILES})
+
+    set(RSTFILES ${DOCFILES} CACHE INTERNAL "RST source file that we need to copy")
+
+    #foreach(file ${DOCFILES})
+        #message(${file})
+    #endforeach()
+
+endif()
+
 message(STATUS "**********************************************************************")
 message(STATUS "************************* Dependencies found *************************")
 message(STATUS "**********************************************************************")
+if (CONDA_BUILD)
+    message(STATUS "CONDA_BUILD: ${CONDA_BUILD}")
+endif()
 message(STATUS "THREADS            :${Threads_FOUND}    ${CMAKE_THREAD_LIBS_INIT}")
 message(STATUS "USE_BOOST_THREAD   :${USE_BOOST_THREAD} ${Boost_THREAD_LIBRARIES}")
 message(STATUS "CHOLMOD_LIBRARIES  :${CHOLMOD_LIBRARIES}")
@@ -435,14 +450,20 @@ message(STATUS "UMFPACK_LIBRARIES  :${UMFPACK_LIBRARIES}")
 message(STATUS "TRIANGLE_FOUND     :${TRIANGLE_FOUND}    Triangle_LIBRARIES: ${Triangle_LIBRARIES}")
 message(STATUS "PYTHON_FOUND       :${PYTHON_FOUND}    PYTHON_EXECUTABLE: ${PYTHON_EXECUTABLE}" )
 message(STATUS "PYTHONLIBS_FOUND   :${PYTHONLIBS_FOUND}    PYTHON_LIBRARY: ${PYTHON_LIBRARY}" )
-if(WIN32)
-message(STATUS "PYTHON_INCLUDE_DIR :${PYTHON_INCLUDE_DIR}" )
-endif(WIN32)
+message(STATUS "PYTHON_INCLUDE_DIR :${PYTHON_INCLUDE_DIR} ${PYTHON_INCLUDE}" )
+message(STATUS "Boost_INCLUDE_DIR  :${Boost_INCLUDE_DIR}")
 message(STATUS "Boost_PYTHON_FOUND :${Boost_PYTHON_FOUND}    Boost_PYTHON_LIBRARY: ${Boost_PYTHON_LIBRARY}" )
 message(STATUS "numpy_FOUND        :${numpy_FOUND}    PY_NUMPY: ${PY_NUMPY}" )
 message(STATUS "CASTER_FOUND       :${CASTER_FOUND}    Caster: ${CASTER_EXECUTABLE}")
 message(STATUS "PYGCCXML_FOUND     :${PYGCCXML_FOUND}    PYGCCXML: ${PYGCCXML_PATH}" )
 message(STATUS "PYPLUSPLUS_FOUND   :${PYPLUSPLUS_FOUND}    PYPLUSPLUS_PATH: ${PYPLUSPLUS_PATH}" )
+message(STATUS "")
+message(STATUS "**********************************************************************")
+message(STATUS "*************** Optional Dependencies found **************************")
+message(STATUS "**********************************************************************")
+message(STATUS "CPPUNIT            :${CPPUNIT_FOUND}    ${CPPUNIT_LIBRARIES}")
+message(STATUS "Doxygen            :${DOXYGEN_FOUND}    ")
+message(STATUS "Sphinx             :${SPHINX_FOUND}    ")
 message(STATUS "**********************************************************************")
 
 if (PYTHON_EXECUTABLE
@@ -456,6 +477,7 @@ if (PYTHON_EXECUTABLE
     AND PYPLUSPLUS_FOUND
 )
     set (PYGIMLI 1)
+    message(STATUS "")
     message (STATUS "pygimli can be build. run: make pygimli")
     message(STATUS "**********************************************************************")
     message(STATUS "")
@@ -468,6 +490,7 @@ endif ()
 configure_file("${PROJECT_SOURCE_DIR}/config.cmake.h.in" "${PROJECT_BINARY_DIR}/config.cmake.h" )
 add_definitions(-DHAVE_CONFIG_CMAKE_H)
 
+<<<<<<< HEAD
 find_package(Doxygen)
 find_package(Sphinx 1.5)
 
@@ -488,6 +511,9 @@ if (SPHINX_FOUND)
     #endforeach()
 
 endif()
+=======
+
+>>>>>>> dev
 
 add_custom_target(removedoc
    COMMAND

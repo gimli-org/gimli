@@ -46,9 +46,9 @@ DLLEXPORT double mixedBoundaryCondition(const Boundary & boundary,
                                         double k=0.0);
 
 DLLEXPORT void assembleCompleteElectrodeModel(RSparseMatrix & S,
-                                              const std::vector < ElectrodeShape * > & elecs,                                               uint oldMatSize, bool lastIsReferenz);
-
-// DLLEXPORT std::vector < ElectrodeShape * > findCEMElectrodes(const Mesh & mesh);
+                                              const std::vector < ElectrodeShape * > & elecs,                                               
+                                              uint oldMatSize, bool lastIsReferenz,
+                                              const RVector & contactImpedances);
 
 /*!ERT utility function for the handling of complex resistivity
  * values vs. amplitude/phase data.
@@ -128,6 +128,7 @@ public:
      */
 
     void assembleStiffnessMatrixDCFEMByPass(RSparseMatrix & S);
+
     void assembleStiffnessMatrixDCFEMByPass(CSparseMatrix & S);
 
     virtual void createJacobian(const RVector & model);
@@ -197,7 +198,7 @@ public:
     bool neumann() const { return neumannDomain_; }
 
     /*! Force complex resistivity calculation if it not set in prior to the mesh.*/
-    void setComplex(bool c) { complex_=c; }
+    void setComplex(bool c);
 
     /*! Return true if the valuetype is complex.*/
     bool complex() const { return complex_; }
@@ -222,7 +223,7 @@ public:
 
     /*! Return dipole current pattern map.
      *  corresponds to < CurrentPattern,Idx of Potentialmatrix > */
-    inline const std::map < long, uint > & currentPatternIdxMap() const {
+    inline const std::map < Index, Index > & currentPatternIdxMap() const {
         return currentPatternIdxMap_;
     }
 
@@ -244,6 +245,8 @@ public:
     inline const std::vector< ElectrodeShape * > & electrodes() const {
         return electrodes_;
     }
+
+    void setContactImpedances(const RVector & zi);
 
     virtual RVector calcGeometricFactor(const DataContainerERT & data,
                                         Index nModel=0);
@@ -324,9 +327,10 @@ protected:
     bool buildCompleteElectrodeModel_;
 
     bool dipoleCurrentPattern_;
-    std::map < long, uint > currentPatternIdxMap_;
+    std::map < Index, Index > currentPatternIdxMap_;
 
     RMatrix potentialsCEM_;
+    RVector vContactImpedance_;
 
     DataMap * primDataMap_;
 };

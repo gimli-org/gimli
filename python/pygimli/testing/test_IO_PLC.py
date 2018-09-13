@@ -56,7 +56,10 @@ class TestPLCIO(unittest.TestCase):
                                    np.sort(m.positions().array()))
         np.testing.assert_equal(poly.regionMarker()[0].area(), 42.42)
 
-        os.remove(name2D)
+        try:
+            os.remove(name2D)
+        except:
+            print("can't remove:", name2D)
 
 
     def test_io_tetgen(self):
@@ -112,7 +115,10 @@ class TestPLCIO(unittest.TestCase):
                                    np.sort(cube.positions().array()))
         np.testing.assert_equal(poly.regionMarker()[0].area(), 42.42)
     
-        os.remove(name3D)
+        try:
+            os.remove(name3D)
+        except:
+            print("can't remove:", name3D)
 
 
     def test_io_STL(self):
@@ -150,11 +156,18 @@ endsolid"""
         np.testing.assert_equal(mesh.nodeCount(), 5)
         np.testing.assert_equal(mesh.boundaryCount(), 2)
 
-        np.testing.assert_equal(pg.unique(pg.sort(mesh.boundaryMarkers())),
-                               [0.0, 1.0])
+        np.testing.assert_equal(np.array(pg.unique(pg.sort(mesh.boundaryMarkers()))),
+                               [0, 1])
         
-        os.remove(fileName)
+        try:
+            os.remove(fileName)
+        except:
+            print("can't remove:", fileName)
 
-
+            
 if __name__ == '__main__':
+
+    #test = TestPLCIO()
+    #test.test_io_STL()
+    #exit()
     unittest.main()

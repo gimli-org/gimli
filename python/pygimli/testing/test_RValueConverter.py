@@ -126,10 +126,20 @@ class TestRVectorMethods(unittest.TestCase):
 
         x = np.arange(10, dtype=np.long)
         a = pg.RVector(x)
+        
         self.assertEqual(a.size(), len(x))
         self.assertEqual(pg.sum(a), sum(x))
+        
         self.assertEqual(pg.sum(x), sum(x))
 
+    def test_NumpyToIVector(self):
+        x = np.arange(10, dtype=np.long)
+        a = pg.IVector(x)
+        self.assertEqual(a.size(), len(x))
+        self.assertEqual(pg.sum(a), sum(x))
+        
+        self.assertEqual(pg.sum(x), sum(x))
+         
     def test_NumpyToCVector(self):
         pass
         # will not work .. until an idea how to choose right api for function with and RVector and CVector, e.g. sum()
@@ -190,9 +200,12 @@ class TestRVectorMethods(unittest.TestCase):
         """Implemented through hand_made_wrapper.py"""
         # check ob wirklich from array genommen wird!
         # wird es noch nicht .. siehe __init__.py:__BVectorArrayCall__
+        v = pg.RVector(10, 1)
+        b = (v == 1)
+        self.assertEqual(type(b), pg.BVector)
+        
         v = pg.RVector(10, 1.1)
         b = (v == 1.1)
-
         self.assertEqual(type(b), pg.BVector)
 
         a = np.asarray(b)
@@ -266,12 +279,51 @@ class TestRVectorMethods(unittest.TestCase):
         np.testing.assert_equal(M, M2)
         A = np.array(pg.RMatrix(4,4))
 
-if __name__ == '__main__':
-    pg.setDebug(0)
+    def test_NumpyToScalar(self):
+        """Implemented through automatic iterator """
+        x = pg.RVector(2)
+        x3 = pg.R3Vector(2)
+        w = pg.RVector()
 
-    # test = TestRVectorMethods()
-    # #test.test_NumpyToCVector()
+        x += np.float32(1.0)
+        np.testing.assert_equal(sum(x + 1.0), 4.0)
+        np.testing.assert_equal(sum(x + np.float32(1)), 4.0)
+        np.testing.assert_equal(sum(x + np.float64(1)), 4.0)
+        np.testing.assert_equal(sum(x - 1.0), 0.0)
+        np.testing.assert_equal(sum(x - np.float32(1)), 0.0)
+        np.testing.assert_equal(sum(x - np.float64(1)), 0.0)
+        
+        # HarmonicModelling(size_t nh, const RVector & tvec);
+        pg.HarmonicModelling(np.int32(1), x);
+        pg.HarmonicModelling(np.uint32(1), x);
+        pg.HarmonicModelling(np.int64(1), x);
+        pg.HarmonicModelling(np.uint64(1), x);
+
+        pg.PolynomialModelling(1, np.int32(1), x3, x);
+        pg.PolynomialModelling(1, np.int64(1), x3, x);
+        pg.PolynomialModelling(1, np.uint32(1), x3, x);
+        pg.PolynomialModelling(1, np.uint64(1), x3, x);
+
+        x = pg.Pos(0.0, 0.0, 0.0)
+        x += np.float32(1)
+
+        np.testing.assert_equal(x, pg.Pos(1.0, 1.0, 1.0))
+        np.testing.assert_equal(x -1 , pg.Pos(0.0, 0.0, 0.0))
+        np.testing.assert_equal(x - np.float32(1), pg.Pos(0.0, 0.0, 0.0))
+        np.testing.assert_equal(x - np.float64(1), pg.Pos(0.0, 0.0, 0.0))
+        
+
+if __name__ == '__main__':
+    pg.setDeepDebug(0)
+    test = TestRVectorMethods()
+    
+    #test.test_IndexArrayToNumpy()
+    #test.test_NumpyToIVector()
+    #test.test_NumpyToScalar()
+    #exit()
+    # test.test_BVectorToNumpy()
     # test.test_NumpyToIVector()
+    # test.test_NumpyToRVector()
     # exit()
 
 

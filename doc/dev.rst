@@ -112,6 +112,8 @@ To produce a new version, type:
 Coding rules
 ------------
 
+* General we try to use Pep 8 https://www.python.org/dev/peps/pep-0008/?
+
 * All names should be literally and in CamelShape style.
 
 * Classes starts with Upper Case Letter.
@@ -121,6 +123,8 @@ Coding rules
 * All class member (self.member) need to be initialized in the Constructor.
 
 * (ugly²) Do not use multi initialize in one line, e.g., a, b, c = 0, 0, 0
+
+* check for data types with 'if isinstance(var, type):' instead 'if type(var) == type:'
 
 Behaviour by name for global functions:
 .......................................

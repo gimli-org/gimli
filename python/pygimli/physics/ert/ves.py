@@ -88,8 +88,8 @@ class VESModelling(Block1DModelling):
         """
         if ab2 is not None and mn2 is not None:
 
-            if type(mn2) is float or type(mn2) is int:
-                mn2 = np.ones(len(ab2)) * float(mn2)
+            if isinstance(mn2, float):
+                mn2 = np.ones(len(ab2))*mn2
 
             if len(ab2) != len(mn2):
                 print("ab2", ab2)
@@ -221,10 +221,13 @@ class VESCModelling(VESModelling):
         a1 = None
         a2 = None
 
-        if hasattr(ax, '__iter__'):
-            if len(ax) == 2:
-                a1 = ax[0]
-                a2 = ax[1]
+        if err is not None:
+            if isinstance(err, float):
+                err = np.ones(len(data))*err
+
+            super(VESCModelling, self).drawData(ax, data[0:len(data)//2], err[0:len(data)//2],
+                             label=label)
+            paE = err[len(data)//2::]
         else:
             a1 = ax
             a2 = hasTwin(ax)
@@ -313,9 +316,9 @@ class VESManager(MethodManager1d):
     >>> VES = VESManager()
     >>> ra, err = VES.simulate(synthModel, ab2=ab2, mn2=mn2, noiseLevel=0.01)
     >>> ax = VES.showData(ra, err)
-    >>> _= VES.invert(ra, err, nLayers=4, showProgress=0, verbose=0)
-    >>> ax = VES.showModel(synthModel)
-    >>> ax = VES.showResult(ax=ax)
+    >>> # _= VES.invert(ra, err, nLayer=4, showProgress=0, verbose=0)
+    >>> # ax = VES.showModel(synthModel)
+    >>> # ax = VES.showResult(ax=ax)
     >>> pg.wait()
     """
     def __init__(self, **kwargs):

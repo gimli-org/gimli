@@ -47,6 +47,16 @@ class TestMisc(unittest.TestCase):
         #data.markInvalid(np.array([0, 100], dtype="int")) # fails
         #data.markInvalid(np.array([0, 100], dtype=np.int64)) # fails
 
+    def test_DataContainerSensors(self):
+        data = pg.DataContainer()
+        
+        sensors = [[x, 0.0] for x in range(5)]
+        data.setSensorPositions(sensors)
+        data.setSensorPositions(data.sensors()[::-1])
+        
+        self.assertEqual(data.sensor(0), [4., 0.0, 0.0])
+        self.assertEqual(data.sensor(4), [0., 0.0, 0.0])
+
     def test_Operators(self):
         t = pg.RVector(10, 1.0)
         self.assertEqual(len(t == 1.0), len(t > 0))
@@ -76,10 +86,20 @@ class TestMisc(unittest.TestCase):
         self.assertEqual(sum(data('m')), 8*2)
         self.assertEqual(sum(data('n')), 8*3)
 
+    def test_PosConstMember(self):
+        p1 = pg.Pos(1.0, 0.0, 0.0)
+        p2 = pg.Pos(0.0, 1.0, 0.0)
+
+        p3 = p1.cross(p2)
+        self.assertEqual(p3, pg.Pos(0.0, 0.0, 1.0))
+                
+
 if __name__ == '__main__':
 
-    pg.setDebug(0)
-    #t = TestMisc()
+    # pg.setDebug(0)
+    # t = TestMisc()
+    # t.test_PosConstMember()
+    #t.test_DataContainerSensors()
     #t.test_Int64Problem()
 
     unittest.main()

@@ -145,15 +145,24 @@ if (CHOLMOD_LIBRARY)
         endif()
     endif()
 
-    find_program(GFORTRAN_EXECUTABLE gfortran)
-    if (GFORTRAN_EXECUTABLE)
-        execute_process(COMMAND ${GFORTRAN_EXECUTABLE} -print-file-name=libgfortran.so
-                        OUTPUT_VARIABLE GFORTRAN_LIBRARY
-                        OUTPUT_STRIP_TRAILING_WHITESPACE)
-        if (EXISTS "${GFORTRAN_LIBRARY}")
-            set(CHOLMOD_LIBRARIES ${CHOLMOD_LIBRARIES} ${GFORTRAN_LIBRARY})
-        endif()
-    endif(GFORTRAN_EXECUTABLE)
+    if (CONDA_BUILD)
+        find_library(GFORTRAN_LIBRARY gfortran
+            DOC "The gfortran library"
+        )
+
+        set(CHOLMOD_LIBRARIES ${CHOLMOD_LIBRARIES} ${GFORTRAN_LIBRARY})
+    else()
+
+        find_program(GFORTRAN_EXECUTABLE gfortran)
+        if (GFORTRAN_EXECUTABLE)
+            execute_process(COMMAND ${GFORTRAN_EXECUTABLE} -print-file-name=libgfortran.so
+                            OUTPUT_VARIABLE GFORTRAN_LIBRARY
+                            OUTPUT_STRIP_TRAILING_WHITESPACE)
+            if (EXISTS "${GFORTRAN_LIBRARY}")
+                set(CHOLMOD_LIBRARIES ${CHOLMOD_LIBRARIES} ${GFORTRAN_LIBRARY})
+            endif()
+        endif(GFORTRAN_EXECUTABLE)
+    endif()
 
     IF(WIN32)
   

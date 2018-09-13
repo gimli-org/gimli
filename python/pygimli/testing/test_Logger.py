@@ -14,7 +14,13 @@ pg.version()
 # test pygimli log
 pg.info("Start numeric log test." + str(pg.log(pg.RVector(1, 1.))))
 pg.warn("Start warning test.")
-pg.error("Start error test.: int", 1, " vec", pg.RVector(2))
+
+def testTraceback1():
+    def testTraceback2():
+        pg.error("Start error test.: int", 1, " vec", pg.RVector(2))
+    testTraceback2()
+testTraceback1()
+
 #pg.critical("Start critical test.")
 
 pg.debug("debug 0")
@@ -40,3 +46,9 @@ def testMethod(**kwargs):
     pg.warnNonEmptyArgs(kwargs)
 
 testMethod(a=1, b='foo')
+#
+
+# teste colored output
+print(pg._('Green', c='g'), pg._('Red', c='r'), pg._('Yellow', c='y'))
+#print(pg._g('Green'), pg._g('Red'), pg._y('Yellow'))
+print(pg._('more', 'then', 'one', c='6;30;42'))

@@ -570,13 +570,13 @@ def div(mesh, v):
     >>> v = lambda p: p
     >>> mesh = pg.createGrid(x=np.linspace(0, 1, 4))
     >>> print(pg.round(pg.solver.div(mesh, v(mesh.boundaryCenters())), 1e-5))
-    <class 'pygimli.core._pygimli_.RVector'> 3 [1.0, 1.0, 1.0]
+    3 [1.0, 1.0, 1.0]
     >>> print(pg.round(pg.solver.div(mesh, v(mesh.cellCenters())), 1e-5))
-    <class 'pygimli.core._pygimli_.RVector'> 3 [0.5, 1.0, 0.5]
+    3 [0.5, 1.0, 0.5]
     >>> mesh = pg.createGrid(x=np.linspace(0, 1, 4),
     ...                      y=np.linspace(0, 1, 4))
     >>> print(pg.round(pg.solver.div(mesh, v(mesh.boundaryCenters())), 1e-5))
-    <class 'pygimli.core._pygimli_.RVector'> 9 [2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0]
+    9 [2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0]
     >>> divCells = pg.solver.div(mesh, v(mesh.cellCenters()))
     >>> # divergence from boundary values are exact where the divergence from
     >>> # interpolated cell center values are wrong due to boundary interp
@@ -805,7 +805,7 @@ def linSolve(A, b, verbose=False):
     import scipy.sparse
     #pg.optImport('scipy.sparse')
     #print(type(A))
-    if type(A) == scipy.sparse.csr.csr_matrix:
+    if isinstance(A, scipy.sparse.csr.csr_matrix):
         return scipy.sparse.linalg.spsolve(A, b)
     else:
         raise StandardException("Don't know how to lineare solve a system"
@@ -1262,7 +1262,10 @@ def createStiffnessMatrix(mesh, a=None):
     A : :gimliapi:`GIMLI::RSparseMatrix`
         Stiffness matrix
     """
-
+    if mesh.cellCount() == 0:
+        print(mesh)
+        raise Exception("Mesh invalid")
+    
     if a is None:
         a = pg.RVector(mesh.cellCount(), 1.0)
 
@@ -1292,8 +1295,7 @@ def createStiffnessMatrix(mesh, a=None):
 def createMassMatrix(mesh, b=None):
     r"""Create the mass matrix.
 
-    Calculates the Mass matrix (Finite element identity matrix)
-    the given mesh.
+    Calculates the Mass matrix (Finite element identity matrix) the given mesh.
 
     ..math::
             ...
@@ -1317,6 +1319,8 @@ def createMassMatrix(mesh, b=None):
     # need callable here
     if b is None:
         b = pg.RVector(mesh.cellCount(), 1.0)
+    elif not hasattr(b, '__iter__'):
+        b = pg.RVector(mesh.cellCount(), b)
 
     B = pg.RSparseMatrix()
     B.fillMassMatrix(mesh, b)
@@ -1352,11 +1356,11 @@ def L2Norm(u, M=None, mesh=None):
     .. math::
 
         L2(f(x)) = || f(x) ||_{L^2} & = (\int |f(x)|^2 \d x)^{1/2} \\
-                 & \approx h (\sum |f(x)|^2 )^{1/2}
+                                    & \approx h (\sum |f(x)|^2 )^{1/2} \\
         L2(u) = || u ||_{L^2} & = (\int |u|^2 \d x)^{1/2} \\
-                 & \approx (\sum M (u)) ^{1/2}
+                              & \approx (\sum M (u)) ^{1/2} \\
         e_{L2_rel} = \frac{L2(u)}{L2(u)} & = 
-                \frac{(\sum M(u))^{1/2}}{(\sum M u)^{1/2}}
+                               \frac{(\sum M(u))^{1/2}}{(\sum M u)^{1/2}}
 
     The error for any approximated solution :math:`u_h` correlates to the L2 
     norm of 'L2Norm(u - u_h, M)'. If you like relative values, you can also 
@@ -1583,15 +1587,15 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
 
     # check for material parameter
     a = parseArgToArray(a, nDof=mesh.cellCount(), mesh=mesh, userData=userData)
-
-    S = createStiffnessMatrix(mesh, a)
+    
     M = createMassMatrix(mesh)
+    S = createStiffnessMatrix(mesh, a)
 
     A = None
 
     if b != 0:
         b = parseArgToArray(b, nDof=mesh.cellCount(), mesh=mesh, userData=userData)
-        A = S + M * b
+        A = S + createMassMatrix(mesh, b)
     else:
         A = S
 

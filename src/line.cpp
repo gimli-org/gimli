@@ -236,12 +236,17 @@ bool Line::touch1(const RVector3 & pos, int & pFunIdx, double tol) const{
     double tsol = this->t(pos, dist);
     if (verbose) std::cout << p0_ << pos << p1_ << "Tsol: " << tsol << std::endl;
 
-    if (std::fabs(tsol) < tol) pFunIdx =  2;
-    if (tsol < 0) pFunIdx = 1;
-    if (std::fabs(1 - tsol) < tol) pFunIdx = 4;
-    if (tsol > 1) pFunIdx = 5;
-
-    pFunIdx = 3;
+    if (std::fabs(tsol) < tol) { // left end
+        pFunIdx = 2;
+    } else if (std::fabs(1 - tsol) < tol) {// on right end
+        pFunIdx = 4;
+    } else if (tsol < 0) { // below left end
+        pFunIdx = 1;
+    } else if (tsol > 1) { // below right end
+        pFunIdx = 5;
+    } else{ // inside
+        pFunIdx = 3;
+    }
     return true;
 }
 

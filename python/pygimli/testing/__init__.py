@@ -54,7 +54,7 @@ def test(target=None, show=False, onlydoctests=False, coverage=False,
     printopt = np.get_printoptions()
 
     # Numpy compatibility (array string representation has changed)
-    if np.__version__[:4] == "1.14":
+    if np.__version__[:4] in ("1.14", "1.15"):
         np.set_printoptions(legacy="1.13")
 
     old_backend = plt.get_backend()

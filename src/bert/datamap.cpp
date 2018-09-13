@@ -17,6 +17,7 @@
  ******************************************************************************/
 
 #include "datamap.h"
+
 #include "bertDataContainer.h"
 #include "electrode.h"
 
@@ -137,6 +138,7 @@ int DataMap::load(const std::string & filename){
                 break;
             default:
                 std::cerr << WHERE_AM_I << " WARNING: rowsize unknown " << row.size() << std::endl;
+                THROW_TO_IMPL
                 break;
         }
     }
@@ -212,15 +214,16 @@ RVector DataMap::data(const DataContainerERT & data, bool reciprocity, bool imag
 
         uVec[i] = (uAM - uAN) - (uBM - uBN);
 
-        if (std::fabs(uVec[i]) < TOLERANCE || std::isnan(uVec[i])){
+        if (std::fabs(uVec[i]) < TOLERANCE/1000. || std::isnan(uVec[i])){
             if (!imag){
-
+                
                 std::stringstream str1;
                 str1 << WHERE_AM_I << std::endl << " a = " << a
                     << " b = " << b << " m = " << m << " n = " << n 	<< std::endl
                     <<  " " << uAM <<  " " << uAN <<  " " << uBM <<  " " << uBN
                     << " U = " << uVec[i] << std::endl;
-                throwLengthError(EXIT_DATACONTAINER_SIZE, str1.str());
+                log(Warning, str1.str());
+                //throwLengthError(EXIT_DATACONTAINER_SIZE, str1.str());
             }
         }
     }

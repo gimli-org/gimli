@@ -180,7 +180,7 @@ def createWorld(start, end, marker=1, area=0., layers=None, worldMarker=True):
 
     poly = pg.Mesh(2)
 
-    if type(area) == float or type(area) == int:
+    if isinstance(area, float) or isinstance(area, int):
         area = np.ones(len(z)) * float(area)
 
     for i, depth in enumerate(z):
@@ -313,7 +313,7 @@ def createCircle(pos=None, radius=1, segments=12, start=0, end=2. * math.pi,
     return poly
 
 
-def createLine(start, end, segments, **kwargs):
+def createLine(start, end, segments=1, **kwargs):
     """Create simple line polygon.
 
     Create simple line polygon from start to end.
@@ -453,9 +453,11 @@ def mergePLC(pols, tol=1e-3):
 
     Merge multiply polygons into a single polygon.
     Common nodes and common edges will be checked and removed.
+    When a node touches and edge the edge will be split.
 
-    Crossing or touching edges or Node/Edge intersections will NOT be
-    recognized yet. -> TODO
+    TODO:
+        * Crossing or Node/Edge intersections will NOT be
+        recognized yet.
 
     Parameters
     ----------
@@ -494,7 +496,8 @@ def mergePLC(pols, tol=1e-3):
     for p in pols:
         nodes = []
         for n in p.nodes():
-            nn = poly.createNodeWithCheck(n.pos(), tol)
+            nn = poly.createNodeWithCheck(n.pos(), tol, 
+                                          warn=False, edgeCheck=True)
             if n.marker() != 0:
                 nn.setMarker(n.marker())
             nodes.append(nn)
@@ -526,15 +529,15 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
     """Create a PLC mesh for an inversion parameter mesh.
 
     Create a PLC mesh for an inversion parameter mesh with for a given list of
-    sensor positions.
-    Sensor position assumed on the surface and must be sorted and unique.
+    sensor positions. Sensor positions are assumed to lie on the surface and
+    must be sorted and unique.
 
-    You can create a parameter mesh without sensors if you just set
-    [xmin, xmax] as sensors.
+    You can create a parameter mesh without sensors if you just set [xmin, xmax]
+    as sensors.
 
-    The PLC is a :gimliapi:`GIMLI::Mesh` and contain nodes, edges and
-    two region markers, one for the parameters domain (marker=2) and
-    a larger boundary around the outside (marker=1)
+    The PLC is a :gimliapi:`GIMLI::Mesh` and contain nodes, edges and two region
+    markers, one for the parameters domain (marker=2) and a larger boundary
+    around the outside (marker=1)
 
     TODO:
 
@@ -549,9 +552,9 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
         Sensor positions. Must be sorted and unique in positive x direction.
         Depth need to be y-coordinate.
     paraDX : float [1]
-        Relativ distance for refinement nodes between two electrodes (1=none),
-        e.g., 0.5 means 1 additional node between two neighboring electrodes
-        e.g., 0.33 means 2 additional equidistant nodes between two electrodes
+        Relativ distance for refinement nodes between two sensors (1=none),
+        e.g., 0.5 means 1 additional node between two neighboring sensors
+        e.g., 0.33 means 2 additional equidistant nodes between two sensors
     paraDepth : float, optional
         Maximum depth for parametric domain, 0 (default) means 0.4 * maximum
         sensor range.
@@ -577,9 +580,9 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
     >>> import pygimli as pg
     >>> import pygimli.meshtools as plc
     >>> # Create the simplest paramesh PLC with a para box of 10 m without
-    >>> # electrodes
+    >>> # sensors
     >>> p = plc.createParaMeshPLC([0,10])
-    >>> # you can add subsurface electrodes now with
+    >>> # you can add subsurface sensors now with
     >>> for z in range(1,4):
     ...     n = p.createNode((5,-z), -99)
     >>> ax,_ = pg.show(p)
@@ -725,7 +728,7 @@ def readPLC(filename, comment='#'):
         del(content[j])
 
     # Read header
-    headerLine = content[0].split()
+    headerLine = content[0].split('\r\n')[0].split()
 
     if len(headerLine) != 4:
         raise Exception("Format unknown! header size != 4", headerLine)
@@ -740,7 +743,7 @@ def readPLC(filename, comment='#'):
 
     # Nodes section
     for i in range(nVerts):
-        row = content[1 + i].split()
+        row = content[1 + i].split('\r\n')[0].split()
 
         if len(row) == (1 + dimension + nPointsAttributes + haveNodeMarker):
             if i == 0:
@@ -754,8 +757,8 @@ def readPLC(filename, comment='#'):
                 n.setMarker(int(row[-1]))
 
         else:
-            raise Exception("Poly file seams corrupt: node section line: " +
-                            str(i) + " " + row)
+            print(i, len(row), row, (1 + dimension + nPointsAttributes + haveNodeMarker))
+            raise Exception("Poly file seams corrupt: node section line: " + content[1 + i])
 
     # Segment section
     row = content[1 + nVerts].split()
@@ -784,17 +787,22 @@ def readPLC(filename, comment='#'):
             row = content[2 + nVerts + i + segment_offset].split()
             numBounds = int(row[0])
             numHoles = row[1]
-            assert numHoles == '0', 'Can\'t handle Boundaries with holes yet'
+            assert numHoles == '0', 'Can\'t handle 3D Boundaries with holes yet'
             marker = 0
             if haveBoundaryMarker:
                 marker = int(row[2])
 
             for k in range(numBounds):
-                bound_row = content[2 + nVerts + i + segment_offset + 1]\
+                boundRow = content[2 + nVerts + i + segment_offset + 1]\
                     .split()
-                ivec = [int(bound_row[1]), int(bound_row[2]),
-                        int(bound_row[3]), int(bound_row[4])]
-                poly.createBoundary(ivec, marker=marker)
+                #nNodes = int(boundRow[0])
+                nodeIdx = [int(_b) for _b in boundRow[1:]]
+                # if nNodes == :
+                #     poly.createBoundary(ivec, marker=marker)
+
+                # ivec = [int(boundRow[1]), int(boundRow[2]),
+                #         int(boundRow[3]), int(boundRow[4])]
+                poly.createBoundary(nodeIdx, marker=marker)
                 segment_offset += 1
         nSegments += segment_offset
 
@@ -862,12 +870,12 @@ def exportPLC(poly, fname, **kwargs):
     >>> import tempfile, os
     >>> fname = tempfile.mktemp() # Create temporary string for filename.
     >>> world2d = pg.meshtools.createWorld(start=[-10, 0], end=[20, 0])
-    >>> pg.meshtools.writePLC(world2d, fname)
+    >>> pg.meshtools.exportPLC(world2d, fname)
     >>> read2d = pg.meshtools.readPLC(fname)
     >>> print(read2d)
     Mesh: Nodes: 4 Cells: 0 Boundaries: 4
     >>> world3d = pg.createGrid([0, 1], [0, 1], [-1, 0])
-    >>> pg.meshtools.writePLC(world3d, fname)
+    >>> pg.meshtools.exportPLC(world3d, fname)
     >>> os.remove(fname)
     """
     if poly.dimension() == 2:
@@ -941,13 +949,12 @@ def writeTrianglePoly(*args, **kwargs):
 
 
 def exportTetgenPoly(poly, filename, float_format='.12e', **kwargs):
-    """
-    Writes a given piecewise linear complex (mesh/poly ) into a Ascii file in
+    r"""
+    Writes a given piecewise linear complex (mesh/poly) into a Ascii file in
     :term:`Tetgen` .poly format.
 
     Parameters
     ----------
-
     filename: string
         Name in which the result will be written. The recommended file
         ending is '.poly'.
@@ -958,12 +965,17 @@ def exportTetgenPoly(poly, filename, float_format='.12e', **kwargs):
     float_format: format string ('.12e')
         Format that will be used to write float values in the Ascii file.
         Default is the exponential float form with a precision of 12 digits.
+    
+    kwargs:
+        * extraBoundaries:
+            Add additional polygons (#c42 still needed?)
 
     """
     if filename[-5:] != '.poly':
         filename = filename + '.poly'
     polytxt = ''
     sep = '\t'  # standard tab seperated file
+    linesep = '\n' # os.linesep does not work in mingwshell, testit!!
     assert poly.dim() == 3, 'Exit, only for 3D meshes.'
     boundary_marker = 1
     attribute_count = 0
@@ -974,14 +986,14 @@ def exportTetgenPoly(poly, filename, float_format='.12e', **kwargs):
     polytxt += '{0}{5}{1}{5}{2}{5}{3}{4}'.format(poly.nodeCount(), 3,
                                                  attribute_count,
                                                  boundary_marker,
-                                                 os.linesep, sep)
+                                                 linesep, sep)
     # loop over positions, attributes and marker(node)
     # <point idx> <x> <y> <z> [attributes] [boundary marker]
     point_str = '{:d}'  # index of the point
     for i in range(3):
         # coords as float with given precision
         point_str += sep + '{:%s}' % (float_format)
-    point_str += sep + '{:d}' + os.linesep  # node marker
+    point_str += sep + '{:d}' + linesep  # node marker
     for j, node in enumerate(poly.nodes()):
         fill = [node.id()]
         fill.extend([pos for pos in node.pos()])
@@ -1004,14 +1016,14 @@ def exportTetgenPoly(poly, filename, float_format='.12e', **kwargs):
         print("Detected ", len(extraBoundaries), " extra boundaries!")
 
     nBoundaries += len(extraBoundaries)
-    polytxt += '{0:d}{2}1{1}'.format(nBoundaries, os.linesep, sep)
+    polytxt += '{0:d}{2}1{1}'.format(nBoundaries, linesep, sep)
     # loop over facets, each facet can contain an arbitrary number of holes
     # and polygons, in our case, there is always one polygon per facet.
     for bound in poly.boundaries():
         # one line per facet
         # <# of polygons> [# of holes] [boundary marker]
         npolys = 1
-        polytxt += '1{2}0{2}{0:d}{1}'.format(bound.marker(), os.linesep, sep)
+        polytxt += '1{2}0{2}{0:d}{1}'.format(bound.marker(), linesep, sep)
         # inner loop over polygons
         # <# of corners> <corner 1> <corner 2> ... <corner #>
         for l in range(npolys):
@@ -1019,7 +1031,7 @@ def exportTetgenPoly(poly, filename, float_format='.12e', **kwargs):
             for ind in bound.ids():
                 poly_str += sep + '{:d}'.format(ind)
 
-            polytxt += '{0}{1}'.format(poly_str, os.linesep)
+            polytxt += '{0}{1}'.format(poly_str, linesep)
         # inner loop over holes
         # not necessary yet ?! why is there an extra hole section?
         # because this is for 2D holes in facets only
@@ -1028,26 +1040,26 @@ def exportTetgenPoly(poly, filename, float_format='.12e', **kwargs):
     for nodes in extraBoundaries:
         # <# of polygons> [# of holes] [boundary marker]
         npolys = 1
-        polytxt += '1{2}0{2}{0:d}{1}'.format(111, os.linesep, sep)
+        polytxt += '1{2}0{2}{0:d}{1}'.format(111, linesep, sep)
         # <# of corners> <corner 1> <corner 2> ... <corner #>
         poly_str = '{:d}'.format(len(nodes))
         for ind in nodes:
             poly_str += sep + '{:d}'.format(ind)
 
-        polytxt += '{0}{1}'.format(poly_str, os.linesep)
+        polytxt += '{0}{1}'.format(poly_str, linesep)
 
     # part 3/4: hole list
     # intro line
     # <# of holes>
     holes = poly.holeMarker()
-    polytxt += '{:d}{}'.format(len(holes), os.linesep)
+    polytxt += '{:d}{}'.format(len(holes), linesep)
     # loop over hole markers
     # <hole #> <x> <y> <z>
     hole_str = '{:d}'
     for m in range(3):
         hole_str += sep + '{:%s}' % float_format
 
-    hole_str += os.linesep
+    hole_str += linesep
     for n, hole in enumerate(holes):
         polytxt += hole_str.format(n, *hole)
 
@@ -1055,14 +1067,14 @@ def exportTetgenPoly(poly, filename, float_format='.12e', **kwargs):
     # intro line
     # <# of regions>
     regions = poly.regionMarker()
-    polytxt += '{:d}{}'.format(len(regions), os.linesep)
+    polytxt += '{:d}{}'.format(len(regions), linesep)
     # loop over region markers
     # <region #> <x> <y> <z> <region number> <region attribute>
     region_str = '{:d}'
     for o in range(3):
         region_str += sep + '{:%s}' % (float_format)
 
-    region_str += sep + '{:d}%s{:%s}' % (sep, float_format) + os.linesep
+    region_str += sep + '{:d}%s{:%s}' % (sep, float_format) + linesep
     for p, region in enumerate(regions):
         polytxt += region_str.format(p, region.x(), region.y(), region.z(),
                                      region.marker(),

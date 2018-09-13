@@ -117,7 +117,6 @@ void TriangleWrapper::init_(){
 #endif
 }
 
-
 void TriangleWrapper::setSwitches(const std::string & s){
     switches_ = s;
 }

@@ -92,7 +92,6 @@ Boundary * findCommonBoundary(const Cell & c1, const Cell & c2){
     return NULL;
 }
 
-
 Cell * findCommonCell(const std::vector < Node * > & n, bool warn) {
   //** search the cell[s] which is[are] the intersection of all cells in n
     std::vector < std::set< Cell * > > bs;
@@ -200,7 +199,7 @@ MeshEntity::MeshEntity()
     : BaseEntity(){
 }
 
-MeshEntity::MeshEntity(std::vector < Node * > & nodes)
+MeshEntity::MeshEntity(const std::vector < Node * > & nodes)
     : BaseEntity(){
     setNodes_(nodes);
 }
@@ -215,7 +214,6 @@ RVector3 MeshEntity::center() const {
 double MeshEntity::size() const {
     return shape_->domainSize();
 }
-
 
 void MeshEntity::fillShape_(){
     if (shape_){
@@ -232,7 +230,7 @@ void MeshEntity::fillShape_(){
     }
 }
 
-void MeshEntity::setNodes_(std::vector < Node * > & nodes){
+void MeshEntity::setNodes_(const std::vector < Node * > & nodes){
     if (nodes.size() > 0){
         if (nodeVector_.size() != nodes.size()) nodeVector_.resize(nodes.size());
         std::copy(nodes.begin(), nodes.end(), &nodeVector_[0]);
@@ -329,7 +327,7 @@ RVector3 MeshEntity::grad(const RVector3 & xyz, const RVector & u) const {
 Cell::Cell() : MeshEntity(), attribute_(){
 }
 
-Cell::Cell(std::vector < Node * > & nodes)
+Cell::Cell(const std::vector < Node * > & nodes)
     : MeshEntity(nodes), attribute_(0.0){
     registerNodes_();
 }
@@ -337,7 +335,6 @@ Cell::Cell(std::vector < Node * > & nodes)
 Cell::~Cell(){
     deRegisterNodes_();
 }
-
 
 Node * Cell::oppositeTo(const Boundary & bound){
     THROW_TO_IMPL
@@ -547,7 +544,7 @@ bool Boundary::normShowsOutside(const Cell & cell) const {
     return (cc-(bc+n)).abs() > (cc-(bc-n)).abs();
 }
 
-NodeBoundary::NodeBoundary(std::vector < Node * > & nodes) : Boundary(nodes){
+NodeBoundary::NodeBoundary(const std::vector < Node * > & nodes) : Boundary(nodes){
     shape_ = new NodeShape();
     fillShape_();
 }
@@ -576,7 +573,7 @@ RVector3 NodeBoundary::norm(const Cell & c) const{
 }
 
 
-Edge::Edge(std::vector < Node * > & nodes) : Boundary(nodes){
+Edge::Edge(const std::vector < Node * > & nodes) : Boundary(nodes){
     shape_ = new EdgeShape();
     fillShape_();
 }
@@ -665,7 +662,7 @@ int Edge::swap(){
 //     return shape_->N(L);
 // }
 
-Edge3::Edge3(std::vector < Node * > & nodes) : Edge(nodes){
+Edge3::Edge3(const std::vector < Node * > & nodes) : Edge(nodes){
 }
 
 Edge3::~Edge3(){
@@ -680,7 +677,7 @@ std::vector < PolynomialFunction < double > > Edge3::createShapeFunctions() cons
     return createPolynomialShapeFunctions(*this, 3, true, false);
 }
 
-TriangleFace::TriangleFace(std::vector < Node * > & nodes) : Boundary(nodes){
+TriangleFace::TriangleFace(const std::vector < Node * > & nodes) : Boundary(nodes){
     shape_ = new TriangleShape();
     fillShape_();
 }
@@ -712,7 +709,7 @@ void TriangleFace::setNodes(Node & n1, Node & n2, Node & n3, bool changed ){
     fillShape_();
 }
 
-Triangle6Face::Triangle6Face(std::vector < Node * > & nodes) : TriangleFace(nodes){
+Triangle6Face::Triangle6Face(const std::vector < Node * > & nodes) : TriangleFace(nodes){
 }
 
 Triangle6Face::~Triangle6Face(){
@@ -730,7 +727,7 @@ RVector3 Triangle6Face::rst(uint i) const {
 }
 
 
-QuadrangleFace::QuadrangleFace(std::vector < Node * > & nodes) : Boundary(nodes){
+QuadrangleFace::QuadrangleFace(const std::vector < Node * > & nodes) : Boundary(nodes){
     shape_ = new QuadrangleShape();
     fillShape_();
 }
@@ -764,7 +761,7 @@ std::vector < PolynomialFunction < double > > QuadrangleFace::createShapeFunctio
     return createPolynomialShapeFunctions(*this, 2, true, true);
 }
 
-Quadrangle8Face::Quadrangle8Face(std::vector < Node * > & nodes) : QuadrangleFace(nodes){
+Quadrangle8Face::Quadrangle8Face(const std::vector < Node * > & nodes) : QuadrangleFace(nodes){
 }
 
 Quadrangle8Face::~Quadrangle8Face(){
@@ -782,8 +779,15 @@ std::vector < PolynomialFunction < double > > Quadrangle8Face::createShapeFuncti
     return createPolynomialShapeFunctions(*this, 3, true, true);
 }
 
+PolygonFace::PolygonFace(const std::vector < Node * > & nodes) : Boundary(nodes){
+    shape_ = new PolygonShape(nodes.size());
+    fillShape_();
+}
+        
+PolygonFace::~PolygonFace(){
+}
 
-EdgeCell::EdgeCell(std::vector < Node * > & nodes) : Cell(nodes){
+EdgeCell::EdgeCell(const std::vector < Node * > & nodes) : Cell(nodes){
     shape_ = new EdgeShape();
     fillShape_();
     neighbourCells_.resize(this->neighbourCellCount(), NULL);
@@ -840,7 +844,7 @@ std::vector < PolynomialFunction < double > > EdgeCell::createShapeFunctions() c
 //     return dN;
 // }
 
-Edge3Cell::Edge3Cell(std::vector < Node * > & nodes) : EdgeCell(nodes){
+Edge3Cell::Edge3Cell(const std::vector < Node * > & nodes) : EdgeCell(nodes){
 }
 
 Edge3Cell::~Edge3Cell(){
@@ -855,7 +859,7 @@ std::vector < PolynomialFunction < double > > Edge3Cell::createShapeFunctions() 
     return createPolynomialShapeFunctions(*this, 3, true, false);
 }
 
-Triangle::Triangle(std::vector < Node * > & nodes) : Cell(nodes){
+Triangle::Triangle(const std::vector < Node * > & nodes) : Cell(nodes){
     shape_ = new TriangleShape();
     fillShape_();
     neighbourCells_.resize(this->neighbourCellCount(), NULL);
@@ -901,7 +905,7 @@ std::vector < Node * > Triangle::boundaryNodes(Index i) const{
     return nodes;
 }
 
-Triangle6::Triangle6(std::vector < Node * > & nodes) : Triangle(nodes){
+Triangle6::Triangle6(const std::vector < Node * > & nodes) : Triangle(nodes){
 }
 
 Triangle6::~Triangle6(){
@@ -911,7 +915,7 @@ std::vector < PolynomialFunction < double > > Triangle6::createShapeFunctions() 
     return createPolynomialShapeFunctions(*this, 3, true, false);
 }
 
-Quadrangle::Quadrangle(std::vector < Node * > & nodes) : Cell(nodes){
+Quadrangle::Quadrangle(const std::vector < Node * > & nodes) : Cell(nodes){
     shape_ = new QuadrangleShape();
     fillShape_();
     neighbourCells_.resize(this->neighbourCellCount(), NULL);
@@ -982,7 +986,7 @@ std::vector < Node * > Quadrangle::boundaryNodes(Index i) const {
     return nodes;
 }
 
-Quadrangle8::Quadrangle8(std::vector < Node * > & nodes) : Quadrangle(nodes){
+Quadrangle8::Quadrangle8(const std::vector < Node * > & nodes) : Quadrangle(nodes){
 }
 
 Quadrangle8::~Quadrangle8(){
@@ -993,7 +997,7 @@ std::vector < PolynomialFunction < double > > Quadrangle8::createShapeFunctions(
     return createPolynomialShapeFunctions(*this, 3, true, true);
 }
 
-Tetrahedron::Tetrahedron(std::vector < Node * > & nodes) : Cell(nodes){
+Tetrahedron::Tetrahedron(const std::vector < Node * > & nodes) : Cell(nodes){
     shape_ = new TetrahedronShape();
     fillShape_();
     neighbourCells_.resize(this->neighbourCellCount(), NULL);
@@ -1047,7 +1051,7 @@ std::vector < Node * > Tetrahedron::boundaryNodes(Index i) const {
     return nodes;
 }
 
-Tetrahedron10::Tetrahedron10(std::vector < Node * > & nodes) : Tetrahedron(nodes){
+Tetrahedron10::Tetrahedron10(const std::vector < Node * > & nodes) : Tetrahedron(nodes){
 }
 
 Tetrahedron10::~Tetrahedron10(){
@@ -1057,7 +1061,7 @@ std::vector < PolynomialFunction < double > > Tetrahedron10::createShapeFunction
     return createPolynomialShapeFunctions(*this, 3, true, false);
 }
 
-Hexahedron::Hexahedron(std::vector < Node * > & nodes) : Cell(nodes) {
+Hexahedron::Hexahedron(const std::vector < Node * > & nodes) : Cell(nodes) {
     shape_ = new HexahedronShape();
     fillShape_();
     neighbourCells_.resize(this->neighbourCellCount(), NULL);
@@ -1099,7 +1103,7 @@ std::vector < Node * > Hexahedron::boundaryNodes(Index i) const {
     return nodes;
 }
 
-Hexahedron20::Hexahedron20(std::vector < Node * > & nodes) : Hexahedron(nodes) {
+Hexahedron20::Hexahedron20(const std::vector < Node * > & nodes) : Hexahedron(nodes) {
 }
 
 Hexahedron20::~Hexahedron20(){
@@ -1117,7 +1121,7 @@ std::vector < Node * > Hexahedron20::boundaryNodes(Index i) const {
     return nodes;
 }
 
-TriPrism::TriPrism(std::vector < Node * > & nodes) : Cell(nodes){
+TriPrism::TriPrism(const std::vector < Node * > & nodes) : Cell(nodes){
     shape_ = new TriPrismShape();
     fillShape_();
     neighbourCells_.resize(this->neighbourCellCount(), NULL);
@@ -1159,7 +1163,7 @@ std::vector < Node * > TriPrism::boundaryNodes(Index i) const {
     return nodes;
 }
 
-TriPrism15::TriPrism15(std::vector < Node * > & nodes) : TriPrism(nodes){
+TriPrism15::TriPrism15(const std::vector < Node * > & nodes) : TriPrism(nodes){
 }
 
 TriPrism15::~TriPrism15(){
@@ -1193,7 +1197,7 @@ std::vector < PolynomialFunction < double > > TriPrism15::createShapeFunctions()
     //#return createPolynomialShapeFunctions(*this, 3, true, true);
 }
 
-Pyramid::Pyramid(std::vector < Node * > & nodes): Cell(nodes){
+Pyramid::Pyramid(const std::vector < Node * > & nodes): Cell(nodes){
     shape_ = new PyramidShape();
     fillShape_();
     neighbourCells_.resize(this->neighbourCellCount(), NULL);
@@ -1212,7 +1216,7 @@ std::vector < Node * > Pyramid::boundaryNodes(Index i) const {
     return std::vector < Node * > ();
 }
 
-Pyramid13::Pyramid13(std::vector < Node * > & nodes): Pyramid(nodes){
+Pyramid13::Pyramid13(const std::vector < Node * > & nodes): Pyramid(nodes){
 }
 
 Pyramid13::~Pyramid13(){

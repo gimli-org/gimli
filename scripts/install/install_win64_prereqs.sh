@@ -1,9 +1,9 @@
 #!/bin/env bash
 
-pacman -Sy
-pacman -Su
-pacman -Sy
-pacman -Su
+pacman --noconfirm -Sy
+pacman --noconfirm -Su
+pacman --noconfirm -Sy
+pacman --noconfirm -Su
 
 echo "#########################################################################"
 echo "### Maybe you need to restart msys after update of system components! ###"

@@ -572,7 +572,7 @@ class MethodManager0(object):
         return self.__repr__()
 
     def __repr__(self):
-        """String representation of the class."""
+        """String representation of the instance."""
         out = type(self).__name__ + " object"
         if hasattr(self, 'dataContainer'):
             out += "\n" + self.dataContainer.__str__()

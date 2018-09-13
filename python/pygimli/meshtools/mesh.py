@@ -1063,9 +1063,7 @@ def readSTL(fileName, ascii=True):
 
     ascii : bool [True]
         STL Ascii format
-    
-    Examples
-    --------
+
     """
     mesh = pg.Mesh(dim=3)
     mesh.importSTL(fileName)
@@ -1092,6 +1090,56 @@ def readSTL(fileName, ascii=True):
     #         i += 7
 
     # return mesh
+
+def exportSTL(mesh, fileName, ascii=True):
+    """Write :term:`STL` surface mesh and returns a :gimliapi:`GIMLI::Mesh`.
+
+    Export a three dimensional boundary :gimliapi:`GIMLI::Mesh` into a
+    :term:`STL` surface mesh. Boundaries with different marker 
+    will be separated into different STL solids.
+
+    TODO: 
+        * ASCII=False, write binary STL
+        * QuadrangleFace Boundaries
+        * p2 Boundaries
+
+    Parameters
+    ----------
+    mesh : :gimliapi:`GIMLI::Mesh`
+        Mesh to be exported. Only Boundaries of type TriangleFace will be 
+        exported.
+
+    fileName : str
+        name of the .stl file containing the STL surface mesh
+
+    ascii : bool [True]
+        STL Ascii format
+    
+    """
+    marker = pg.unique(pg.sort(mesh.boundaryMarkers()))
+
+    if not '.stl' in fileName:
+        fileName = fileName + '.stl'
+
+    fi = open(fileName, 'w')
+    for m in marker:
+        me = mesh.extract(mesh.boundaries(mesh.boundaryMarkers() == m))
+
+        fi.write('solid ' + str(m) + '\n')
+
+        for b in me.boundaries():
+            n = b.norm()
+            fi.write('facet normal %f %f %f\n' %(n[0], n[1], n[2])) 
+            fi.write('\touter loop\n')
+            fi.write('\t\tvertex %f %f %f\n' %(b.node(0).pos()[0], b.node(0).pos()[1], b.node(0).pos()[2]))
+            fi.write('\t\tvertex %f %f %f\n' %(b.node(1).pos()[0], b.node(1).pos()[1], b.node(1).pos()[2]))
+            fi.write('\t\tvertex %f %f %f\n' %(b.node(2).pos()[0], b.node(2).pos()[1], b.node(2).pos()[2]))
+            fi.write('\tendloop\n')
+            fi.write('endfacet\n')
+        
+        fi.write('endsolid\n')
+
+    fi.close()
 
 
 def transform2DMeshTo3D(mesh, x, y, z=None):
@@ -1140,13 +1188,11 @@ def rot2DGridToWorld(mesh, start, end):
     """
     mesh.rotate(pg.degToRad(pg.RVector3(-90.0, 0.0, 0.0)))
 
-    src = pg.RVector3(0.0, 0.0, 0.0).norm(
-        pg.RVector3(0.0, 0.0, -10.0), pg.RVector3(10.0, 0.0, -10.0))
+    src = pg.RVector3(0.0, 0.0, 0.0).norm(pg.RVector3(0.0, 0.0, -10.0), 
+                                          pg.RVector3(10.0, 0.0, -10.0))
     dest = start.norm(start - pg.RVector3(0.0, 0.0, 10.0), end)
 
-    q = pg.getRotation(src, dest)
-    rot = pg.RMatrix(4, 4)
-    q.rotMatrix(rot)
+    rot = pg.getRotation(src, dest)
     mesh.transform(rot)
     mesh.translate(start)
 

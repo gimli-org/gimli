@@ -78,7 +78,7 @@ public:
     MeshEntity();
 
     /*! Construct the entity from the given nodes.*/
-    MeshEntity(std::vector < Node * > & nodes);
+    MeshEntity(const std::vector < Node * > & nodes);
 
     /*! Default destructor.*/
     virtual ~MeshEntity();
@@ -92,9 +92,13 @@ public:
     /*! To separate between major MeshEntity families e.g. Cell and Boundary. */
     virtual uint parentType() const { return MESH_MESHENTITY_RTTI; }
 
-    inline Node & node(uint i) { return *nodeVector_[i]; }
+    inline Node & node(uint i) { 
+        ASSERT_RANGE(i, 0, nodeCount()); return *nodeVector_[i]; 
+    }
 
-    inline Node & node(uint i) const { return *nodeVector_[i]; }
+    inline Node & node(uint i) const { 
+        ASSERT_RANGE(i, 0, nodeCount()); return *nodeVector_[i]; 
+    }
 
     inline uint nodeCount() const { return nodeVector_.size(); }
 
@@ -173,7 +177,7 @@ public:
 protected:
     void fillShape_();
 
-    void setNodes_(std::vector < Node * > & nodes);
+    void setNodes_(const std::vector < Node * > & nodes);
 
     void deRegisterNodes_();
 
@@ -209,7 +213,7 @@ public:
     Cell();
 
     /*! Construct cell from vector of nodes. */
-    Cell(std::vector < Node * > & nodes);
+    Cell(const std::vector < Node * > & nodes);
 
     /*! Default destructor. */
     ~Cell();
@@ -295,7 +299,7 @@ public:
     Boundary() : MeshEntity(){
     }
 
-    Boundary(std::vector < Node * > & nodes)
+    Boundary(const std::vector < Node * > & nodes)
         : MeshEntity(nodes), leftCell_(NULL), rightCell_(NULL) {
         registerNodes_();
     }
@@ -363,7 +367,7 @@ class DLLEXPORT NodeBoundary : public Boundary{
 public:
     NodeBoundary(Node & n1);
 
-    NodeBoundary(std::vector < Node * > & nodes);
+    NodeBoundary(const std::vector < Node * > & nodes);
 
     virtual ~NodeBoundary();
 
@@ -388,7 +392,7 @@ class DLLEXPORT Edge : public Boundary{
 public:
     Edge(Node & n1, Node & n2);
 
-    Edge(std::vector < Node * > & nodes);
+    Edge(const std::vector < Node * > & nodes);
 
     virtual ~Edge();
 
@@ -398,7 +402,7 @@ public:
 
     virtual std::vector < PolynomialFunction < double > > createShapeFunctions() const;
 
-    void setNodes(Node & n1, Node & n2, bool changed = true);
+    void setNodes(Node & n1, Node & n2, bool changed=true);
 
     /*! Swap edge between two triangular neighbor cells. Only defined if both neighbors are triangles. */
     int swap();
@@ -416,7 +420,7 @@ protected:
 class DLLEXPORT Edge3 : public Edge{
 public:
 
-    Edge3(std::vector < Node * > & nodes);
+    Edge3(const std::vector < Node * > & nodes);
 
     virtual ~Edge3();
 
@@ -442,7 +446,7 @@ class DLLEXPORT TriangleFace : public Boundary{
 public:
     TriangleFace(Node & n1, Node & n2, Node & n3);
 
-    TriangleFace(std::vector < Node * > & nodes);
+    TriangleFace(const std::vector < Node * > & nodes);
 
     virtual ~TriangleFace();
 
@@ -450,11 +454,11 @@ public:
 
     virtual uint rtti() const { return MESH_TRIANGLEFACE_RTTI; }
 
-    void setNodes(Node & n1, Node & n2, Node & n3, bool changed = true);
+    void setNodes(Node & n1, Node & n2, Node & n3, bool changed=true);
 
     friend std::ostream & operator << (std::ostream & str, const TriangleFace & e);
 
-    /*! hate this method need refactoring */
+    /*! this method need refactoring */
     virtual std::vector < PolynomialFunction < double > > createShapeFunctions() const;
 
 protected:
@@ -475,16 +479,16 @@ protected:
 
 class DLLEXPORT Triangle6Face : public TriangleFace{
 public:
-    Triangle6Face(std::vector < Node * > & nodes);
+    Triangle6Face(const std::vector < Node * > & nodes);
 
     ~Triangle6Face();
 
     virtual uint rtti() const { return MESH_TRIANGLEFACE6_RTTI; }
 
-    /*! hate this method need refactoring */
+    /*! this method need refactoring */
     virtual std::vector < PolynomialFunction < double > > createShapeFunctions() const;
 
-    /*! hate this method need refactoring */
+    /*! this method need refactoring */
     virtual RVector3 rst(uint i) const;
 
 protected:
@@ -494,7 +498,7 @@ class DLLEXPORT QuadrangleFace : public Boundary{
 public:
     QuadrangleFace(Node & n1, Node & n2, Node & n3, Node & n4);
 
-    QuadrangleFace(std::vector < Node * > & nodes);
+    QuadrangleFace(const std::vector < Node * > & nodes);
 
     virtual ~QuadrangleFace();
 
@@ -502,7 +506,7 @@ public:
 
     virtual uint rtti() const { return MESH_QUADRANGLEFACE_RTTI; }
 
-    /*! hate this method need refactoring */
+    /*! this method need refactoring */
     virtual std::vector < PolynomialFunction < double > > createShapeFunctions() const;
 
     void setNodes(Node & n1, Node & n2, Node & n3, Node & n4, bool changed = true);
@@ -519,16 +523,16 @@ protected:
 class DLLEXPORT Quadrangle8Face : public QuadrangleFace{
 public:
 
-    Quadrangle8Face(std::vector < Node * > & nodes);
+    Quadrangle8Face(const std::vector < Node * > & nodes);
 
     virtual ~Quadrangle8Face();
 
     virtual uint rtti() const { return MESH_QUADRANGLEFACE8_RTTI; }
 
-    /*! hate this method need refactoring */
+    /*! this method need refactoring */
     virtual std::vector < PolynomialFunction < double > > createShapeFunctions() const;
 
-    /*! hate this method need refactoring */
+    /*! this method need refactoring */
     virtual RVector3 rst(uint i) const;
 
 protected:
@@ -537,11 +541,26 @@ private:
 
 };
 
+class DLLEXPORT PolygonFace : public Boundary {
+    /*! */
+    public:
+        PolygonFace(const std::vector < Node * > & nodes);
+        
+        ~PolygonFace();
+
+        virtual uint dim() const { return 3; }
+
+        virtual uint rtti() const { return MESH_POLYGON_FACE_RTTI; }    
+
+    protected:
+    private:
+};
+
 class DLLEXPORT EdgeCell : public Cell {
 public:
     EdgeCell(Node & n1, Node & n2);
 
-    EdgeCell(std::vector < Node * > & nodes);
+    EdgeCell(const std::vector < Node * > & nodes);
 
     virtual ~EdgeCell();
 
@@ -571,7 +590,7 @@ protected:
 /*! count: 0-1, 2(0-1) */
 class DLLEXPORT Edge3Cell : public EdgeCell {
 public:
-    Edge3Cell(std::vector < Node * > & nodes);
+    Edge3Cell(const std::vector < Node * > & nodes);
 
     virtual ~Edge3Cell();
 
@@ -598,7 +617,7 @@ class DLLEXPORT Triangle : public Cell {
 public:
     Triangle(Node & n1, Node & n2, Node & n3);
 
-    Triangle(std::vector < Node * > & nodes);
+    Triangle(const std::vector < Node * > & nodes);
 
     virtual ~Triangle();
 
@@ -638,7 +657,7 @@ Node direction:
 */
 class DLLEXPORT Triangle6 : public Triangle {
 public:
-    Triangle6(std::vector < Node * > & nodes);
+    Triangle6(const std::vector < Node * > & nodes);
 
     virtual ~Triangle6();
 
@@ -670,7 +689,7 @@ class DLLEXPORT Quadrangle : public Cell {
 public:
     Quadrangle(Node & n1, Node & n2, Node & n3, Node & n4);
 
-    Quadrangle(std::vector < Node * > & nodes);
+    Quadrangle(const std::vector < Node * > & nodes);
 
     virtual ~Quadrangle();
 
@@ -707,7 +726,7 @@ protected:
 */
 class DLLEXPORT Quadrangle8 : public Quadrangle {
 public:
-    Quadrangle8(std::vector < Node * > & nodes);
+    Quadrangle8(const std::vector < Node * > & nodes);
 
     virtual ~Quadrangle8();
 
@@ -752,7 +771,7 @@ class DLLEXPORT Tetrahedron : public Cell {
 public:
     Tetrahedron(Node & n1, Node & n2, Node & n3, Node & n4);
 
-    Tetrahedron(std::vector < Node * > & nodes);
+    Tetrahedron(const std::vector < Node * > & nodes);
 
     virtual ~Tetrahedron();
 
@@ -808,7 +827,7 @@ static const uint8 Tet10NodeSplitZienk[10][2] = {
 
 class DLLEXPORT Tetrahedron10 : public Tetrahedron {
 public:
-    Tetrahedron10(std::vector < Node * > & nodes);
+    Tetrahedron10(const std::vector < Node * > & nodes);
 
     virtual ~Tetrahedron10();
 
@@ -860,7 +879,7 @@ static const uint8 HexahedronFacesID[6][4] = {
 
 class DLLEXPORT Hexahedron: public Cell {
 public:
-    Hexahedron(std::vector < Node * > & nodes);
+    Hexahedron(const std::vector < Node * > & nodes);
 
     virtual ~Hexahedron();
 
@@ -919,7 +938,7 @@ Node direction:
 */
 class DLLEXPORT Hexahedron20: public Hexahedron {
 public:
-    Hexahedron20(std::vector < Node * > & nodes);
+    Hexahedron20(const std::vector < Node * > & nodes);
 
     virtual ~Hexahedron20();
 
@@ -958,7 +977,7 @@ static const uint8 TriPrismFacesID[5][4] = {
 
 class DLLEXPORT TriPrism : public Cell {
 public:
-    TriPrism(std::vector < Node * > & nodes);
+    TriPrism(const std::vector < Node * > & nodes);
 
     virtual ~TriPrism();
 
@@ -1004,7 +1023,7 @@ static const uint8 Prism15NodeSplit[15][2] = {
 
 class DLLEXPORT TriPrism15 : public TriPrism {
 public:
-    TriPrism15(std::vector < Node * > & nodes);
+    TriPrism15(const std::vector < Node * > & nodes);
 
     virtual ~TriPrism15();
 
@@ -1042,7 +1061,7 @@ static const uint8 PyramidFacesID[5][4] = {
 
 class DLLEXPORT Pyramid : public Cell {
 public:
-    Pyramid(std::vector < Node * > & nodes);
+    Pyramid(const std::vector < Node * > & nodes);
 
     virtual ~Pyramid();
 
@@ -1087,7 +1106,7 @@ Node direction:
 
 class DLLEXPORT Pyramid13 : public Pyramid {
 public:
-    Pyramid13(std::vector < Node * > & nodes);
+    Pyramid13(const std::vector < Node * > & nodes);
 
     virtual ~Pyramid13();
 

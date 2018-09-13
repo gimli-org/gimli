@@ -316,7 +316,7 @@ class Refraction(MethodManager0):
 
         if relativeError >= 0.5:  # obviously in %
             print("relativeError set to a value > 0.5 .. assuming this "
-                  "is a percentile Error level dividing them by 100")
+                  "is a percentile error level dividing them by 100")
             relativeError /= 100.
 
         error = absoluteError + data('t') * relativeError
@@ -440,11 +440,13 @@ class Refraction(MethodManager0):
         scheme : :gimliapi:`GIMLI::DataContainer`
             data measurement scheme
 
+        verbose : boolean
+            Be verbose.
+
         Other parameters
         ----------------
         noisify : boolean
             add normal distributed noise based on scheme('err')
-            IMPLEMENTME
 
         Returns
         -------
@@ -476,13 +478,13 @@ class Refraction(MethodManager0):
         ret.set('t', t)
 
         noiseLevel = kwargs.pop('noiseLevel', 0)
+        noiseAbs = kwargs.pop('noiseAbs', 0)
 
-        if noiseLevel > 0:
+        if noiseLevel > 0 or noiseAbs > 0:
             if not ret.allNonZero('err'):
                 ret.set('t', t)
-                ret.set('err', Refraction.estimateError(
-                        ret, absoluteError=kwargs.pop('noiseAbs', 1e-4),
-                        relativeError=noiseLevel))
+                ret.set('err', pg.physics.Refraction.estimateError(
+                    ret, absoluteError=noiseAbs))
 
             if verbose:
                 print("Data error estimates (min:max) ",
