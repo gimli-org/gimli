@@ -7,10 +7,22 @@ import pygimli as pg
 
 class TestMeshGenerator(unittest.TestCase):
 
+    def test_createGrid(self):
+        mesh = pg.createGrid(3)
+        self.assertEqual(mesh.xmax(), 2.0)
+        mesh = pg.createGrid(3, 3)
+        self.assertEqual(mesh.ymax(), 2.0)
+        mesh = pg.createGrid(3, 3, 3)
+        self.assertEqual(mesh.zmax(), 2.0)
+        # mesh = pg.createMesh1D(10, 1)
+        # print(mesh)
+        # self.assertEqual(mesh.cellCount(), 10.0)
+
     def test_createMesh1D(self):
 
         mesh = pg.createMesh1D(10, 1)
         self.assertEqual(mesh.cellCount(), 10.0)
+        self.assertEqual(mesh.xmax(), 10.0)
 
         mesh = pg.createMesh1D(nCells=10)
         self.assertEqual(mesh.cellCount(), 10.0)
@@ -52,7 +64,6 @@ class TestMeshGenerator(unittest.TestCase):
         mesh = pg.createMesh2D(np.linspace(0, 1, 6),np.linspace(0, 1, 3))
         self.assertEqual(mesh.cellCount(), 10.0)
 
-
     def test_createMesh3D(self):
 
         mesh = pg.createMesh3D(xDim=5, yDim=3, zDim=2)
@@ -82,7 +93,10 @@ class TestMeshGenerator(unittest.TestCase):
 
 if __name__ == '__main__':
 
-    #t = TestMeshGenerator()
-    #t.test_MeshCreatePolyList()
+    pg.setDeepDebug(1)
+
+    t = TestMeshGenerator()
+    t.test_createGrid()
+    exit()
 
     unittest.main()

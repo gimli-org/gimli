@@ -581,10 +581,10 @@ private:
 struct Numpy2Int{
     static void * convertible(PyObject * obj){
         __DC(obj << " -> int")
-        return checkConvertibleNumpyScalar< int >(obj);
+        return checkConvertibleNumpyScalar< GIMLI::int32 >(obj);
     }
     static void construct(PyObject* obj, bp::converter::rvalue_from_python_stage1_data * data){
-        return convertFromNumpyScalar< int >(obj, data);
+        return convertFromNumpyScalar< GIMLI::int32 >(obj, data);
     }
 private:
 };
@@ -593,10 +593,10 @@ private:
 struct Numpy2UInt{
     static void * convertible(PyObject * obj){
         __DC(obj << " -> uint")
-        return checkConvertibleNumpyScalar< uint >(obj);
+        return checkConvertibleNumpyScalar< GIMLI::uint32 >(obj);
     }
     static void construct(PyObject* obj, bp::converter::rvalue_from_python_stage1_data * data){
-        return convertFromNumpyScalar< uint >(obj, data);
+        return convertFromNumpyScalar< GIMLI::uint32 >(obj, data);
     }
 private:
 };
@@ -615,25 +615,25 @@ private:
 
 } //r_values_impl
 
-void register_numpy_to_long_conversion(){
+void register_numpy_to_int64_conversion(){
     bp::converter::registry::push_back(& r_values_impl::Numpy2Long::convertible,
                                         & r_values_impl::Numpy2Long::construct,
                                         bp::type_id< GIMLI::SIndex >());
 }
-void register_numpy_to_ulong_conversion(){
+void register_numpy_to_uint64_conversion(){
     bp::converter::registry::push_back(& r_values_impl::Numpy2ULong::convertible,
                                         & r_values_impl::Numpy2ULong::construct,
                                         bp::type_id< GIMLI::Index >());
 }
-void register_numpy_to_int_conversion(){
+void register_numpy_to_int32_conversion(){
     bp::converter::registry::push_back(& r_values_impl::Numpy2Int::convertible,
                                         & r_values_impl::Numpy2Int::construct,
-                                        bp::type_id< int >());
+                                        bp::type_id< GIMLI::int32 >());
 }
-void register_numpy_to_uint_conversion(){
+void register_numpy_to_uint32_conversion(){
     bp::converter::registry::push_back(& r_values_impl::Numpy2UInt::convertible,
                                         & r_values_impl::Numpy2UInt::construct,
-                                        bp::type_id< uint >());
+                                        bp::type_id< GIMLI::uint32 >());
 }
 void register_numpy_to_double_conversion(){
     bp::converter::registry::push_back(& r_values_impl::Numpy2Double::convertible,

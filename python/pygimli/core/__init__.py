@@ -46,7 +46,7 @@ from .load import load, optImport, opt_import, getConfigPath
 
 from pygimli.viewer import show, plt, wait
 from pygimli.solver import solve
-from pygimli.meshtools import interpolate
+from pygimli.meshtools import interpolate, createGrid
 from pygimli.utils import boxprint
 
 

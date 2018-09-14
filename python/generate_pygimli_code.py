@@ -299,12 +299,12 @@ def generate(defined_symbols, extraIncludes):
         'register_pysequence_to_indexvector_conversion',
         'register_pysequence_to_r3vector_conversion',
         'register_pysequence_to_StdVectorRVector3_conversion',
-        'register_numpy_to_long_conversion',
-        'register_numpy_to_ulong_conversion',
+        'register_numpy_to_int64_conversion',
+        'register_numpy_to_uint64_conversion',
         'register_numpy_to_double_conversion',
         'register_numpy_to_rmatrix_conversion',
-        'register_numpy_to_int_conversion',
-        'register_numpy_to_uint_conversion',
+        'register_numpy_to_int32_conversion',
+        'register_numpy_to_uint32_conversion',
     ]
 
     for converter in rvalue_converters:
