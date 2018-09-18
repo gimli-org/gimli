@@ -57,7 +57,7 @@ def createGrid(x=None, y=None, z=None, **kwargs):
         if isinstance(z, int):
             z = list(range(z))
         kwargs['z'] = z
-    print(kwargs)
+
     return pg.core._pygimli_.createGrid(**kwargs)
 
 def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1, quality=34.0,
