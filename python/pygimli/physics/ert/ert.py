@@ -16,7 +16,7 @@ from pygimli.manager import MeshMethodManager, MeshMethodManager0
 
 
 class ERTModelling(MeshModelling):
-    """Minimal Forward Operator for 2.5D Electrical resistivity Tomography."""
+    """Reference implementation for 2.5D Electrical Resistivity Tomography."""
 
     def __init__(self, **kwargs):
         """"Constructor, optional with data container and mesh."""
@@ -73,11 +73,12 @@ class ERTModelling(MeshModelling):
         u = np.zeros((nEle, nDof))
         self.subPotentials = [pg.RMatrix(nEle, nDof) for i in range(len(k))]
         for i, ki in enumerate(k):
+            ws = dict()
             uE = pg.solve(mesh, a=1./res, b=(ki * ki)/res, f=rhs,
-                          duB=self.mixedBC,
+                          bc={'Robin': ['*', self.mixedBC]},
                           userData={'sourcePos': elecs, 'k': ki},
-                          verbose=False, stat=0, debug=False,
-                          ret=self.subPotentials[i])
+                          verbose=False, stats=0, debug=False)
+            self.subPotentials[i] = uE
             u += w[i] * uE
         # collect potential matrix,
         # i.e., potential for all electrodes and all injections
@@ -194,7 +195,6 @@ class ERTModelling(MeshModelling):
             vals, mid, sep, dx=dx, ax=ax, logScale=True,
             label=r'Apparent resistivity in $\Omega$m')
 
-
     def calcGeometricFactor(self, data):
         """Calculate geometry factors for a given dataset."""
         if pg.y(data.sensorPositions()) == pg.z(data.sensorPositions()):
@@ -247,7 +247,7 @@ class ERTModelling(MeshModelling):
         return pg.cat(kLeg, kLag), pg.cat(wLeg, wLag)
 
     def mixedBC(self, boundary, userData):
-        """TODO WRITEME."""
+        """Apply mixed boundary conditions."""
         if boundary.marker() != pg.MARKER_BOUND_MIXED:
             return 0
 
@@ -312,7 +312,6 @@ class ERTManager(MeshMethodManager):
         self._dataToken = 'rhoa'
 
         self.transData = pg.RTransLog()
-
 
     def createForwardOperator(self, **kwargs):
         fop = ERTModelling(**kwargs)

@@ -9,8 +9,8 @@ import pygimli as pg
 
 from pygimli.frameworks import Block1DModelling
 
-class VMDModelling(Block1DModelling):
 
+class VMDModelling(Block1DModelling):
     r"""Modelling operator for a Vertical Magnetic Dipole (VMD).
 
     Modelling operator for a Vertical Magnetic Dipole (VMD) to calculate the
@@ -34,14 +34,12 @@ class VMDModelling(Block1DModelling):
         """
         super(VMDModelling, self).__init__(**kwargs)
 
-
     def createStartModel(self, rhoa, nLayer):
         r"""Create suitable starting model.
 
             Create suitable starting model based on median apparent resistivity
             values and skin depth approximation.
         """
-
         self.setLayers(nLayer)
 
         skinDepth = np.sqrt(max(self.t) * pg.median(rhoa)) * 500
@@ -54,11 +52,8 @@ class VMDModelling(Block1DModelling):
         # resistivity properties
         self.setRegionProperties(1, startModel=np.median(rhoa), trans='log')
 
-        # find a better way on forced update this seems  to be in user space here
-        sm = self.regionManager().createStartModel()
-        self.setStartModel(sm)
-        return sm
-
+        return super(VMDModelling, self).createStartModel()
+        
     def response_mt(self, par, i=0):
         """Compute response vector for a set of model parameter.
 
@@ -67,7 +62,7 @@ class VMDModelling(Block1DModelling):
         par : iterabale
             DOCUMENTME
         """
-        raise BaseException("IMPLEMENTME")
+        raise pg.critical("IMPLEMENTME")
 
     def response(self, par):
         return self.response_mt(par)

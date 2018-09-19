@@ -10,43 +10,78 @@ from copy import copy
 import pygimli as pg
 
 
+DEFAULT_COLORS ={'Data': 'C2',
+                 'Response': 'C0'}
+
+
 class Modelling(pg.ModellingBase):
     """Abstract Forward Operator.
 
-    Abstract Forward Operator that use one or more different ModellingBase classes.
+    Abstract Forward Operator that is or can use a Modelling instance.
     Can be seen as some kind of proxy Forward Operator.
 
+    TODO: 
+        * describe members (model transformation, dictionary of region property)
+        * think about splitting MeshModelling from it
+        * clarify difference: setData(array|DC), setDataContainer(DC), setDataValues(array)
+        * clarify dataBasis: The unique spatial or temporal origin of a datapoint (time, coordinates, 4-point-positions,
+                                                                     receiver/transmitter positions
+                                                                     counter)
+            - Every inversion needs, dataValues and dataBasis
+            - DataContainer contain, dataValues and dataBasis
     """
     def __init__(self, **kwargs):
+        """
+        Parameters
+        ----------
+        **kwargs :
+            fop : Modelling
 
+        """
         fop = kwargs.pop('fop', None)
         super(Modelling, self).__init__(**kwargs)
-        self._regionProperties = {}
-        self._transModel = pg.RTransLog()
-        self.fop = None
 
+        self._regionProperties = {}
+        self._modelTrans = pg.RTransLog() # Model transformation operator
+
+        self.fop = None
         self.data = None # dataContainer
 
         if fop is not None:
             self.setForwardOperator(fop)
 
     @property
-    def transModel(self):
+    def modelTrans(self):
         self._applyRegionProperties()
         if self.regionManager().haveLocalTrans():
             return self.regionManager().transModel()
-        return self._transModel
+        return self._modelTrans
 
-    @transModel.setter
-    def transModel(self, tm):
-        self._transModel = tm
+    @modelTrans.setter
+    def modelTrans(self, tm):
+        self._modelTrans = tm
+
+    def createStartModel(self, **kwargs):
+        """ Create Starting model.
+
+        Create Starting model based on current data values and additional args.
+
+        TODO
+
+            * Howto ensure childs sets self.setStartModel(sm)?
+
+        """
+        sm = self.regionManager().createStartModel()
+        self.setStartModel(sm)
+        return sm
 
     def regionManager(self):
         """
         """
-        # init RM if necessary
+        ### initialize RM if necessary
         super(Modelling, self).regionManager()
-        # set all local properties
+
+        ### set all local properties
         self._applyRegionProperties()
         return super(Modelling, self).regionManager()
 
@@ -54,9 +89,10 @@ class Modelling(pg.ModellingBase):
         self.fop = fop
 
     def setMesh(self, mesh, ignoreRegionManager=False):
+        """ 
+        """
         self.clearRegionProperties()
         if self.fop is not None:
-            print("Modelling:setMesh", self.fop)
             self.fop.setMesh(mesh, ignoreRegionManager)
 
             if (not ignoreRegionManager):
@@ -65,12 +101,25 @@ class Modelling(pg.ModellingBase):
             super(Modelling, self).setMesh(mesh, ignoreRegionManager)
 
     def clearRegionProperties(self):
+        """Clear all region parameter."""
         self._regionProperties = {}
+
+    def regionProperties(self, regionNr):
+        """Return dictionary of all properties for region number regionNr."""
+        try:
+            return self._regionProperties[regionNr]
+        except:
+            print(self._regionProperties)
+            pg.error("no region for regionNr:", regionNr)
 
     def setRegionProperties(self, regionNr,
                             startModel=None, limits=None, trans=None,
                             cType=None, zWeight=None, modelControl=None):
-        """
+        """ Set region properties. regionNr can be wildcard '*' for all regions.
+
+        Parameters
+        ----------
+
         """
         #print("#", regionNr, startModel, limits, trans,
               #cType, zWeight, modelControl)
@@ -94,17 +143,21 @@ class Modelling(pg.ModellingBase):
 
         def _setProperty(name, val):
             if val is not None:
-                v = None
-                if hasattr(val, '__iter__'):
-                    if rC == len(val):
-                        v = val[regionNr - 1]
-                    elif rC == len(val) + 1:
-                        v = val[regionNr]
-                    else:
-                        print(regionNr, name, val)
-                        raise Exception("Value range for region property invalid.")
-                else:
-                    v = val
+                
+                v = val
+
+                # v = None
+                # if hasattr(val, '__iter__') and not isinstance(val, str):
+                #     if rC == len(val):
+                #         v = val[regionNr - 1]
+                #     elif rC == len(val) + 1:
+                #         v = val[regionNr]
+                #     else:
+                #         print(regionNr, rC, name, val)
+                #         raise Exception("Value range for region property invalid.")
+                # else:
+                #     v = val
+
                 if v is not None:
                     #print("Set ", regionNr, name, v)
                     self._regionProperties[regionNr][name] = v
@@ -116,78 +169,86 @@ class Modelling(pg.ModellingBase):
         _setProperty('zWeight', zWeight)
         _setProperty('modelControl', modelControl)
 
-
     def _applyRegionProperties(self):
         """
         """
-        RM = super(Modelling, self).regionManager()
+        ### call super class her because self.regionManager() calls always 
+        ###  __applyRegionProperies itself
+        rMgr = super(Modelling, self).regionManager()
 
         for rID, vals in self._regionProperties.items():
             if 'startModel' in vals:
                 if vals['startModel'] is not None:
-                    RM.region(rID).setConstraintType(vals['cType'])
+                    rMgr.region(rID).setStartModel(vals['startModel'])
 
-            RM.region(rID).setModelTransStr_(vals['trans'])
+            rMgr.region(rID).setModelTransStr_(vals['trans'])
 
             if 'cType' in vals:
-                RM.region(rID).setConstraintType(vals['cType'])
+                rMgr.region(rID).setConstraintType(vals['cType'])
 
             if 'zWeight' in vals:
-                RM.region(rID).setZWeight(vals['zWeight'])
+                rMgr.region(rID).setZWeight(vals['zWeight'])
 
             if 'modelControl' in vals:
-                RM.region(rID).setModelControl(vals['modelControl'])
+                rMgr.region(rID).setModelControl(vals['modelControl'])
 
-            if vals['limits'][0] > 0:
-                RM.region(rID).setLowerBound(vals['limits'][0])
+            if vals['limits'][0] >= 0:
+                rMgr.region(rID).setLowerBound(vals['limits'][0])
 
-            if vals['limits'][1] > 0:
-                RM.region(rID).setUpperBound(vals['limits'][1])
-
-
-    def createStartModel(self, dataValues, **kwargs):
-        """ Create Starting model.
-
-        Create Starting model based on current data values and additional args.
-        """
-        raise Exception("Implement me in derived classes")
+            if vals['limits'][1] >= 0:
+                rMgr.region(rID).setUpperBound(vals['limits'][1])
 
     def setData(self, data):
-        #raise Exception("Needed? Implement me in derived classes")
+        if isinstance(data, pg.DataContainer):
+            self.setDataContainer(data)
+
+        raise Exception("nothing known to do? Implement me in derived classes")
+        
+    def setDataBasis(self, **kwargs):
+        """Set Data basis, e.g., DataContainer, times, coordinates."""
         if self.fop is not None:
-            self.fop.setData(data)
+            self.fop.setDataBasis(**kwargs)
+        else:
+            data = kwargs.pop('dataContainer', None)
+            if isinstance(data, pg.DataContainer):
+                self.setDataContainer(data)
+        
+            raise Exception("nothing known to do? Implement me in derived classes")
 
     def setDataContainer(self, data):
+        """ 
+        """
         if self.fop is not None:
             self.fop.setData(data)
         else:
             super(Modelling, self).setData(data)
             self.data = data
 
-    def setDataBasis(self, **kwargs):
-        """Set Data basis, e.g., DataContainer, times, coordinates."""
-        data = kwargs.pop('dataContainer', None)
-        if isinstance(data, pg.DataContainer):
-            self.setDataContainer(data)
-
     def estimateError(self, data, **kwargs):
-        """Create
+        """Create data error fallback when the data error is not known. 
+            Should be implemented method depending.
         """
         raise Exception("Needed?? Implement me in derived classes")
         #data = data * (pg.randn(len(data)) * errPerc / 100. + 1.)
         #return data
 
-    def drawModel(self, ax, model):
+    def drawModel(self, ax, model, **kwargs):
         """
         """
-        print(ax, model)
-        raise Exception("No yet implemented")
+        if self.fop is not None:
+            self.fop.drawModel(ax, model, **kwargs)
+        else:
+            print(kwargs)
+            raise Exception("No yet implemented")
 
-    def drawData(self, ax, data, err=None, label=None):
+    def drawData(self, ax, data, **kwargs):
         """
         """
-        print(ax, data, err, label)
-        raise Exception("No yet implemented")
+        if self.fop is not None:
+            self.fop.drawData(ax, data, **kwargs)
+        else:
+            print(kwargs)
+            raise Exception("No yet implemented")
 
 
 class Block1DModelling(Modelling):
@@ -197,38 +258,54 @@ class Block1DModelling(Modelling):
         super(Block1DModelling, self).__init__(**kwargs)
         self._withMultiThread = True
         self._nBlocks = nBlocks
+        self._nLayers = 0
 
     def setLayers(self, nLayers):
+        """Set number of layers for the 1D block model"""
+        if nLayers == self._nLayers:
+            return;
+
         if nLayers < 2:
-            raise Exception("Number of layers need to be at least 2")
+            pg.critical("Number of layers need to be at least 2")
+
+        self._nLayers = nLayers
 
         mesh = pg.createMesh1DBlock(nLayers, self._nBlocks)
         self.setMesh(mesh)
-        #self.setStartModel(pg.RVector(0))
-
+        
         for i in range(self._nBlocks + 1):
             self.setRegionProperties(i, trans='log')
-
+            
         if self._withMultiThread:
             self.setMultiThreadJacobian(2*nLayers - 1)
 
         self._applyRegionProperties()
-
-    def drawModel(self, ax, model):
+        
+    def drawModel(self, ax, model, **kwargs):
         pg.mplviewer.drawModel1D(ax=ax,
                                  model=model,
                                  plot='loglog',
-                                 xlabel='Model parameter')
+                                 xlabel=kwargs.pop('xlabel', 'Model parameter'),
+                                 **kwargs)
         return ax
 
-    def drawData(self, ax, data, err=None, label=None):
+    def drawData(self, ax, data, err=None, label=None, **kwargs):
+        r"""Default data view.
+        
+        Probably ugly and you should overwrite it in your derived forward 
+        operator. 
+        """
         nData = len(data)
         yVals = range(nData)
-        ax.loglog(data, yVals, 'rx-')
+        ax.loglog(data, yVals, 'x-', 
+                  label=label,
+                  color=DEFAULT_COLORS.get(label, 'black'))
+
         if err is not None:
             ax.errorbar(data, yVals,
                         xerr=err*data,
-                        linewidth=1, color='red', linestyle='-')
+                        label='Error',
+                        linewidth=1, color='red', linestyle='-', alpha=0.5)
 
         ax.set_ylim(max(yVals), min(yVals))
         ax.set_xlabel('Data')
@@ -246,9 +323,9 @@ class MeshModelling(Modelling):
     def paraDomain(self):
         return self.regionManager().paraDomain()
 
-    def setMesh(self, mesh, ignoreRegionManager=False):
+    # def setMesh(self, mesh, ignoreRegionManager=False):
 
-        super(MeshModelling, self).setMesh(mesh, ignoreRegionManager)
+    #     super(MeshModelling, self).setMesh(mesh, ignoreRegionManager)
 
     def drawModel(self, ax, model):
         pg.mplviewer.drawModel(ax=ax,
@@ -271,7 +348,7 @@ class PetroModelling(Modelling):
 
         super(PetroModelling, self).__init__(**kwargs)
         self.fop = fop      # class defining f(p)
-        self.trans = trans  # class defining m(p)
+        self._petroTrans = trans  # class defining m(p)
 
         print("Petro_init:", self, self.fop)
 
@@ -286,24 +363,20 @@ class PetroModelling(Modelling):
         self.setJacobian(self._jac)
 
         #TODO global TransModel will break RegionConcept
-        self._transModel = pg.RTransLogLU()
-
-    def drawModel(self, ax, model):
-        self.fop.drawModel(ax, model)
+        self._modelTrans = pg.RTransLogLU()
 
     def response(self, model):
         """Use inverse transformation to get p(m) and compute response."""
-        tModel = self.trans(model)
+        tModel = self._petroTrans(model)
         ret = self.fop.response(tModel)
         return ret
 
     def createJacobian(self, model):
         """Fill the individual jacobian matrices."""
-        self.fop.createJacobian(self.trans(model))
-        self._jac.r = self.trans.deriv(model)  # set inner derivative
+        self.fop.createJacobian(self._petroTrans(model))
+        self._jac.r = self._petroTrans.deriv(model)  # set inner derivative
 
-    def setDataBasis(self, **kwargs):
-        self.fop.setDataBasis(**kwargs)
+
 
     #def setMesh(self, mesh):
         #"""TODO."""
@@ -382,7 +455,7 @@ class LCModelling(Modelling):
 
         Parameters
         ----------
-        nLayer : int
+        nLayers : int
             Numbers of depth layers
 
         nSoundings : int

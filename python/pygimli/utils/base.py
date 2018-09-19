@@ -11,11 +11,17 @@ from math import sqrt
 
 import pygimli as pg
 
-<<<<<<< Updated upstream
+
 def rms(v, axis=None):
     """Compute the root mean square."""
     ### abs for complex values
     return np.sqrt(np.mean(np.abs(v)**2, axis))
+
+
+def rrms(a, b, axis=None):
+    """Compute the relative (regarding a) root mean square."""
+    ### abs for complex values
+    return rms((a-b)/a, axis)
 
 
 def nanrms(v, axis=None):
@@ -23,27 +29,17 @@ def nanrms(v, axis=None):
     ### abs for complex values
     return np.sqrt(np.nanmean(np.abs(v)**2, axis))
 
-=======
->>>>>>> Stashed changes
 
-def rrmswitherr(a, b, err, errtol=1):
-    """Compute root mean square of values with error above a threshold"""
-    fi = pg.find(err < errtol)
-<<<<<<< Updated upstream
-    return rms((a[fi]-b[fi])/a[fi])
-=======
-    return pg.rrms(a[fi], b[fi])
->>>>>>> Stashed changes
-
-
-def rmswitherr(a, b, err, errtol=1):
+def rmsWithErr(a, b, err, errtol=1):
     """Compute (abs-)root mean square of values with error above a threshold"""
     fi = pg.find(err < errtol)
-<<<<<<< Updated upstream
     return rms(a[fi] - b[fi])
-=======
-    return sqrt(pg.mean(pg.pow(a[fi] - b[fi], 2)))
->>>>>>> Stashed changes
+
+
+def rrmsWithErr(a, b, err, errtol=1):
+    """Compute root mean square of values with error above a threshold"""
+    fi = pg.find(err < errtol)
+    return rms((a[fi]-b[fi])/a[fi])
 
 
 def gmat2numpy(mat):

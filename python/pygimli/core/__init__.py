@@ -831,14 +831,15 @@ TransCumulative = _pygimli_.RTransCumulative
 # non automatic exposed functions
 ############################
 
-
 def abs(v):
+    print(v, type(v))
+    print(v, v.__name__)
     if isinstance(v, _pygimli_.CVector):
         return _pygimli_.mag(v)
     elif isinstance(v, _pygimli_.R3Vector):
         return _pygimli_.absR3(v)
     elif isinstance(v, np.ndarray):
-        return _pygimli_.absR3(v)
+        return _pygimli_.abs(v)
     elif isinstance(v, _pygimli_.RMatrix):
         raise BaseException("IMPLEMENTME")
         for i in range(len(v)):

@@ -31,7 +31,8 @@ class Inversion(object):
         self._errorVals = None
 
         # might be overwritten
-        self.transData = pg.RTransLin()
+        self.dataTrans = pg.RTransLin()
+        
         self._preStep = None
         self._postStep = None
 
@@ -158,8 +159,8 @@ class Inversion(object):
     def run(self, dataVals, errorVals, **kwargs):
         """Run inversion.
 
-        The inversion will always start from the starting model given to the
-        forward operator.
+        The inversion will always starts from the starting model taken from
+        the forward operator.
         If you want to run the inversion from a specified prior model,
         e.g., from a other run, set this model as starting model to the FOP
         (fop.setStartModel).
@@ -182,8 +183,8 @@ class Inversion(object):
 
         lam = kwargs.pop('lam', 20)
 
-        self.inv.setTransModel(self.fop.transModel)
-        self.inv.setTransData(self.transData)
+        self.inv.setTransModel(self.fop.modelTrans)
+        self.inv.setTransData(self.dataTrans)
 
         if dataVals is not None:
             self._dataVals = dataVals
@@ -271,7 +272,12 @@ class Inversion(object):
         return self.inv.model()
 
     def showProgress(self, style='all'):
-        """Called if showProgress=True is set for the inversion run."""
+        r"""Called if showProgress=True is set for the inversion run.
+        
+        TODO
+            * think .. its a useful function but breaks a little
+             the FrameWork work only concept. 
+        """
 
         if self.axs is None:
             axs = None
@@ -292,16 +298,19 @@ class Inversion(object):
             for other_ax in ax[0].figure.axes:
                 other_ax.clear()
 
-            self.fop.drawModel(ax[0], self.inv.model())
+            self.fop.drawModel(ax[0], self.inv.model(), label='Model')
 
             self.fop.drawData(ax[1], self._dataVals, self._errorVals, label='Data')
             self.fop.drawData(ax[1], self.inv.response(), label='Response')
 
-            ax[1].text(0.01, 0.96,
+            ax[1].text(0.01, 1.005,
                     "iter: %d, rrms: %.2g, $\chi^2$: %.2g" %
                         (self.inv.iter(), self.inv.relrms(), self.inv.chi2()),
-                        transform=ax[1].transAxes)
+                        transform=ax[1].transAxes,
+                        horizontalalignment='left',
+                        verticalalignment='bottom')
 
+            ax[1].figure.tight_layout()
         pg.plt.pause(0.05)
 
 
@@ -315,7 +324,12 @@ class MarquardtInversion(Inversion):
         self.inv.setLambdaFactor(0.8)
 
     def run(self, data, error, **kwargs):
-
+        r"""Parameters
+        ----------
+        **kwargs:
+            Forwarded to the parent class.
+            See: :py:mod:`pygimli.modelling.Inversion`
+        """
         self.fop.regionManager().setConstraintType(0)
         self.fop.setRegionProperties('*', cType=0)
 
@@ -326,32 +340,83 @@ class Block1DInversion(MarquardtInversion):
     def __init__(self, fop=None, **kwargs):
         super(Block1DInversion, self).__init__(fop, **kwargs)
 
-    def run(self, dataVals, errVals, nLayers=4, fixLayers=None, **kwargs):
-        """
+    def setForwardOperator(self, fop):
+        if not isinstance(fop, pg.frameworks.Block1DModelling):
+            pg.critical('fop need to be derived from '
+                        'pg.modelling.Block1DModelling but is of type:', fop)
+            
+        return super(Block1DInversion, self).setForwardOperator(fop)
+        
+    def setLayers(self, layers):
+        """Set amount of Layers"""
+        self.fop.setLayers(layers)
+        
+    def fixLayers(self, fixLayers):
+        """Fix layer thicknesses.
+
         Parameters
         ----------
-
+        fixLayers : bool | [float]
+            Fix all layers to the last value or set the fix layer 
+            thickness for all layers
         """
-        #if len(self.fop.startModel()) == 0:
-        # somehow update model space if nlayers has been changed
-        # and update regions for the first time
-        self.fop.createStartModel(dataVals, nLayers)
-
         if fixLayers is False:
             self.fop.setRegionProperties(0, modelControl=1.0)
         elif fixLayers is not None:
             self.fop.setRegionProperties(0, modelControl=1e6)
             if hasattr(fixLayers, '__iter__'):
-                if len(fixLayers) != nLayers-1:
+                if len(fixLayers) != self.fop.nLayers:
                     print("fixLayers:", fixLayers)
-                    raise Exception("fixlayers need to have a length of nLayers-1=" + str(nLayers-1))
+                    raise Exception("fixlayers need to have a length of nLayers-1=" + str(self.fop.nLayers-1))
                 self.fop.setRegionProperties(0, startModel=fixLayers)
 
             # TODO DRY to self.fop.createStartModel
             self.fop.setStartModel(self.fop.regionManager().createStartModel())
+        
+    def setLayerLimits(self, limits):
+        """Set min and max layer thickness.
+
+        Parameters
+        ----------
+        limits : False | [min, max]
+        """
+        if limits is False:
+            self.fop.setRegionProperties(0, limits=[0.0, 0.0], trans='log')
+        else:
+            self.fop.setRegionProperties(0, limits=limits, trans='log')
+        
+    def run(self, dataVals, errVals, 
+            nLayers=4, fixLayers=None, layerLimits=None,
+            **kwargs):
+        r"""
+
+        Parameters
+        ----------
+        nLayers : int [4]
+            Number of layers.
+        fixLayers : bool | [thicknesses]
+            For fixLayers=None, preset or defaults are uses.
+            See: :py:mod:`pygimli.modelling.Block1DInversion.fixLayers`
+        layerLimits : [min, max]
+            For layerLimits=None, preset or defaults are uses.
+            Set minimum or maximum layer t hickness. 
+
+        **kwargs:
+            Forwarded to the parent class.
+            See: :py:mod:`pygimli.modelling.MarquardtInversion`
+        """
+        ### Create model space if nLayers has been changed or called for the
+        ### first time, Fop is responsible
+        self.fop.createStartModel(dataVals, nLayers)
+
+        if layerLimits is not None:
+            self.setLayerLimits(layerLimits)                
+
+        if fixLayers is not None:
+            self.fixLayers(fixLayers)                
 
         return super(Block1DInversion, self).run(dataVals, errVals, **kwargs)
-
+   
 
 class MeshInversion(Inversion):
     def __init__(self, fop=None, **kwargs):
@@ -438,7 +503,7 @@ class LCInversion(Inversion):
             f = pg.frameworks.LCModelling(fop, **kwargs)
 
         super(LCInversion, self).__init__(f, **kwargs)
-        self.transData = pg.RTransLog()
+        self.dataTrans = pg.RTransLog()
         #self.setDeltaChiStop(0.1)
         self._startModel = None
 

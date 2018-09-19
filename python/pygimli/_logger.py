@@ -31,7 +31,7 @@ def _msg(*args):
             msg += ' '
     return msg
 
-
+    
 def _(*args, c=None):
     # will probably only for linux
     if c is None:
@@ -42,6 +42,10 @@ def _(*args, c=None):
         return __ANSICOLORS__[c] + _msg(*args) + __ANSICOLORS__['NC']
     except:
         return '\033[' + c + 'm' + _msg(*args) + __ANSICOLORS__['NC']
+
+
+def p(*args, c='y'):
+    print(_(*args, c=c))
 
 
 class ColorFormatter(logging.Formatter):
@@ -105,7 +109,7 @@ def debug(*args):
 
 def critical(*args):
     logger.critical(_msg(*args))
-    raise Exception(msg)
+    raise Exception(_msg(*args))
 
 def deprecated(msg='', hint=''):
     caller = sys._getframe(1).f_code.co_name

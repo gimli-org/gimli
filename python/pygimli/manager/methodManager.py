@@ -34,7 +34,7 @@ class MethodManager(object):
         Forward Operator instance .. knows the physics.
         fop is initialized by
         :py:mod:`pygimli.manager.MethodManager.initForwardOperator`
-        and needs a valid
+        and calls a valid
         :py:mod:`pygimli.manager.MethodManager.createForwardOperator` method
         in any derived classes.
 
@@ -49,12 +49,14 @@ class MethodManager(object):
         self._debug = kwargs.pop('debug', False)
         self._dataToken = 'nan'
 
-        self._fw = None
+        ### The inversion framework
+        self._fw = None 
 
-        self.initInversionFramework(verbose=self._verbose,
+        self._initInversionFramework(verbose=self._verbose,
                                     debug=self._debug)
 
-        self.initForwardOperator(verbose=self._verbose, **kwargs)
+        ### The forward operator is stored in self._fw
+        self._initForwardOperator(verbose=self._verbose, **kwargs)
 
 
 
@@ -73,7 +75,7 @@ class MethodManager(object):
         return self.__repr__()
 
     def __repr__(self):
-        """String representation of the class."""
+        """String representation of the instance."""
         out = type(self).__name__ + " object"
         if hasattr(self, 'dataContainer'):
             out += "\n" + self.dataContainer.__str__()
@@ -106,6 +108,10 @@ class MethodManager(object):
         return self._fw.model
 
     @property
+    def fw(self):
+        return self._fw
+        
+    @property
     def fop(self):
         return self._fw.fop
 
@@ -113,18 +119,17 @@ class MethodManager(object):
     def inv(self):
         return self._fw
 
-
     def dataVals(self, data):
-        """Return pure data values from a given DataContainer."""
+        """Return data values from a given DataContainer."""
         if self._dataToken == 'nan':
             raise Exception('_dataToken should be set in class', self)
         return data(self._dataToken)
 
     def relErrVals(self, data):
-        """Return pure data values from a given DataContainer."""
+        """Return error values from a given DataContainer."""
         return data('err')
 
-    def initForwardOperator(self, **kwargs):
+    def _initForwardOperator(self, **kwargs):
         """Initialize or re-initialize the forward operator.
 
         Called once in the constructor to force the manager to create the
@@ -160,7 +165,7 @@ class MethodManager(object):
         raise Exception("This is a abstract function. "
                         "Override in derived class")
 
-    def initInversionFramework(self, **kwargs):
+    def _initInversionFramework(self, **kwargs):
         """Initialize or re-initialize the inversion framework.
 
         Called once in the constructor to force the manager to create the
@@ -245,6 +250,10 @@ class MethodManager(object):
         Invert the data values by calling self.inv.run() with mandatory data and
         error values.
 
+
+        TODO
+            *need dataVals mandatory? what about already loaded data
+
         Parameters
         ----------
         dataVals : iterable
@@ -307,24 +316,36 @@ class MethodManager(object):
 
         """
         if ax is None:
-            fig, ax =  pg.plt.subplots(ncols=1)
+            fig, ax = pg.plt.subplots(ncols=1)
 
         self._fw.fop.drawData(ax, data, **kwargs)
         return ax
 
     def showResult(self, ax=None, **kwargs):
         """Show the last inversion result."""
-        ax = self.showModel(ax=ax, model=self.model, **kwargs)
+        ax = self.showModel(ax=ax, model=self.model, label='Model', **kwargs)
         return ax
 
     def showFit(self, ax=None, **kwargs):
         """Show the last inversion date and response."""
         ax = self.showData(ax=ax,
                            data=self.inv.dataVals,
-                           error=self.inv.errorVals, **kwargs)
+                           error=self.inv.errorVals, 
+                           label='Data', **kwargs)
         ax = self.showData(ax=ax,
                            data=self.inv.response,
                            label='Response', **kwargs)
+
+        if not kwargs.pop('hideFittingAnnotation', False):
+            ax.text(0.01, 1.0025, "rrms: %.2g, $\chi^2$: %.2g" %
+                                (self.fw.inv.relrms(), self.fw.inv.chi2()),
+                    transform=ax.transAxes,
+                    horizontalalignment='left',
+                    verticalalignment='bottom')
+
+        if not kwargs.pop('hideLegend', False):
+            ax.legend()
+
         return ax
 
     def showResultAndFit(self, axs=None, **kwargs):
@@ -334,6 +355,8 @@ class MethodManager(object):
 
         self.showResult(ax=axs[0], **kwargs)
         self.showFit(ax=axs[1], **kwargs)
+
+        axs[0].figure.tight_layout()
         return axs
 
     @staticmethod
@@ -392,11 +415,11 @@ class MethodManager1d(MethodManager):
         #self.nProperties = kwargs.pop('nProperties', 1)
         #self.Occam = kwargs.pop('Occam', False)  # member nameing!
 
-
     def createInversionFramework(self, **kwargs):
         """
         """
         return pg.frameworks.Block1DInversion(**kwargs)
+
 
 class MeshMethodManager(MethodManager):
     def __init__(self, **kwargs):

@@ -198,6 +198,7 @@ def parseArgPairToBoundaryArray(pair, mesh):
         - [marker, arg]
         - [[marker, ...], arg]
         - [boundary, arg]
+        - ['*', arg]
         - [[boundary,...], arg]
         - [node, arg]
         - [marker, callable, *kwargs]
@@ -207,6 +208,8 @@ def parseArgPairToBoundaryArray(pair, mesh):
         :py:mod:`pygimli.solver.solver.generateBoundaryValue`
         and distributed to each boundary.
         Callable functions will be executed at run time.
+        '*' will be interpreted as 
+        'all boundary elements with one neighbour cell'
 
     mesh : :gimliapi:`GIMLI::Mesh`
         Used to find boundaries by marker.
@@ -214,14 +217,19 @@ def parseArgPairToBoundaryArray(pair, mesh):
     Returns
     -------
 
-    boundaries : list()
-        [ :gimliapi:`GIMLI::Boundary`, value|callable ]
+    bc : list()
+        [:gimliapi:`GIMLI::Boundary`, value|callable]
     """
-    boundaries = []
+    bc = []
     bounds = []
 
     #print('*'*30, pair)
-    if isinstance(pair[0], int):
+    if pair[0] == '*':
+        for b in mesh.boundaries():
+            if b.leftCell() is not None and b.rightCell() is None:
+                bounds.append(b)
+
+    elif isinstance(pair[0], int):
         bounds = mesh.findBoundaryByMarker(pair[0])
     elif isinstance(pair[0], list):
         # [[,,..], ]
@@ -232,11 +240,11 @@ def parseArgPairToBoundaryArray(pair, mesh):
     elif isinstance(pair[0], pg.stdVectorBounds):
         bounds = pair[0]
     elif isinstance(pair[0], pg.Boundary):
-        boundaries.append(pair)
-        return boundaries
+        bc.append(pair)
+        return bc
     elif isinstance(pair[0], pg.Node):
-        boundaries.append(pair)
-        return boundaries
+        bc.append(pair)
+        return bc
 
     for b in bounds:
         val = None
@@ -252,10 +260,10 @@ def parseArgPairToBoundaryArray(pair, mesh):
                 val = pair[1]
         else:
             val = generateBoundaryValue(b, pair[1])
-        boundaries.append([b, val])
+        bc.append([b, val])
 
     #print('#'*30)
-    return boundaries
+    return bc
 
 
 def parseArgToBoundaries(args, mesh):
@@ -1232,10 +1240,7 @@ def assembleBC_(bc, mesh, S, rhs, time=None, userData=None):
         pg.logger.warn("Unknown boundary condition[s]" + \
                        str(bct.keys()) + " will be ignored")
 
-<<<<<<< HEAD
-=======
 
->>>>>>> dev
 def createLoadVector(mesh, f, userData=None):
     return assembleLoadVector(mesh, f, userData)
 

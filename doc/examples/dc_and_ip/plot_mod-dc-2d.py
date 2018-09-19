@@ -59,6 +59,10 @@ def mixedBC(boundary, userData):
     direction :math:`\vec{n}`. So we can define the value for the Neumann type
     Boundary conditions for the boundaries in the subsurface.
     """
+    ### ignore surface boundaries for wildcard boundary condition
+    if boundary.norm()[1] == 1.0:
+        return 0
+
     sourcePos = userData['sourcePos']
     k = userData['k']
     r1 = boundary.center() - sourcePos
@@ -101,10 +105,6 @@ grid = grid.createP2()
 sourcePosA = [-5.0, -4.0]
 sourcePosB = [+5.0, -4.0]
 
-robBC = [[1, mixedBC],  # left boundary
-         [2, mixedBC],  # right boundary
-         [4, mixedBC]]  # bottom boundary
-
 k = 1e-3
 sigma = 1
 u = solve(grid, a=sigma, b=sigma * k*k, f=pointSource,
@@ -113,7 +113,7 @@ u = solve(grid, a=sigma, b=sigma * k*k, f=pointSource,
           verbose=True)
 
 u -= solve(grid, a=sigma, b=sigma * k*k, f=pointSource,
-           bc={'Robin': robBC},
+           bc={'Robin': ['*', mixedBC]},
            userData={'sourcePos': sourcePosB, 'k': k},
            verbose=True)
 

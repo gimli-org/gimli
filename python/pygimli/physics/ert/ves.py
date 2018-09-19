@@ -43,7 +43,8 @@ class VESModelling(Block1DModelling):
         Only used for output and auto generated.
     """
     def __init__(self, ab2=None, mn2=None, **kwargs):
-
+        r"""Constructor
+        """
         self.am = None
         self.bm = None
         self.an = None
@@ -54,29 +55,24 @@ class VESModelling(Block1DModelling):
         super(VESModelling, self).__init__(**kwargs)
 
         self.setDataBasis(ab2=ab2, mn2=mn2)
-
+        
     def createStartModel(self, rhoa, nLayers):
+        r"""
+        """
         self.setLayers(nLayers)
 
-        #print(self.mn2)
-        #print(self.ab2)
         startThicks = np.logspace(np.log10(min(self.mn2)/2),
                                   np.log10(max(self.ab2)/5), nLayers-1)
         startThicks = pg.utils.diff(pg.cat([0.0], startThicks))
 
-        #print(startThicks)
-        #exit()
-
         # layer thickness properties
         self.setRegionProperties(0, startModel=startThicks, trans='log')
-
+                
         # resistivity properties
         self.setRegionProperties(1, startModel=np.median(rhoa), trans='log')
 
-        # find a better way on forced update this seems  to be in user space here
-        sm = self.regionManager().createStartModel()
-        self.setStartModel(sm)
-        return sm
+        return super(VESModelling, self).createStartModel()
+        
 
     def setDataBasis(self, ab2=None, mn2=None,
                      am=None, bm=None, an=None, bn=None,
@@ -112,7 +108,7 @@ class VESModelling(Block1DModelling):
 
         if self.am is not None and self.bm is not None:
             self.ab2 = (self.am + self.bm) / 2
-            self.mn2 = pg.abs((self.am - self.an)) / 2
+            self.mn2 = abs(self.am - self.an) / 2
 
             self.k = (2.0 * np.pi) / (1.0/self.am - 1.0/self.an -
                                     1.0/self.bm + 1.0/self.bn)
@@ -135,7 +131,8 @@ class VESModelling(Block1DModelling):
         pg.mplviewer.drawModel1D(ax=ax,
                                  model=model,
                                  plot=kwargs.pop('plot', 'loglog'),
-                                 xlabel='Resistivity [$\Omega$m]', **kwargs)
+                                 xlabel=r'Resistivity ($\Omega$m)', **kwargs)
+        ax.set_ylabel('Depth in (m)')
 
     def drawData(self, ax, data, error=None, label=None, **kwargs):
         """
@@ -143,16 +140,14 @@ class VESModelling(Block1DModelling):
         ra = data
         raE = error
 
-        col = kwargs.pop('color', 'green')
-        if label == 'Response':
-            col = 'blue'
-
+        col = pg.frameworks.modelling.DEFAULT_COLORS.get(label, 'black')
+        
         ab2 = kwargs.pop('ab2', self.ab2)
         mn2 = kwargs.pop('mn2', self.mn2)
         plot = kwargs.pop('plot', 'loglog')
 
         plot = getattr(ax, plot)
-        plot(ra, ab2, 'x-', color=col, **kwargs)
+        plot(ra, ab2, 'x-', color=col, label=label, **kwargs)
 
         if raE is not None:
             ax.errorbar(ra, ab2,
@@ -160,9 +155,10 @@ class VESModelling(Block1DModelling):
                         linewidth=0, color='red')
 
         ax.set_ylim(max(ab2), min(ab2))
-        ax.set_xlabel('Apparent resistivity [$\Omega$m]')
-        ax.set_ylabel('AB/2 in [m]')
+        ax.set_xlabel(r'Apparent resistivity ($\Omega$m)')
+        ax.set_ylabel('AB/2 in (m)')
         ax.grid(True)
+        ax.legend()
 
 
 class VESCModelling(VESModelling):
@@ -218,23 +214,14 @@ class VESCModelling(VESModelling):
 
     def drawModel(self, ax, model, **kwargs):
         """Draw 1D VESC Modell."""
-        a1 = None
-        a2 = None
+        a1 = ax
+        a2 = hasTwin(ax)
+        if a2 is None:
+            a2 = ax.twiny()
 
-        if err is not None:
-            if isinstance(err, float):
-                err = np.ones(len(data))*err
-
-            super(VESCModelling, self).drawData(ax, data[0:len(data)//2], err[0:len(data)//2],
-                             label=label)
-            paE = err[len(data)//2::]
-        else:
-            a1 = ax
-            a2 = hasTwin(ax)
-            if a2 is None:
-                a2 = ax.twiny()
-
-        super(VESCModelling, self).drawModel(a1, self.resModel(model), **kwargs)
+        super(VESCModelling, self).drawModel(a1, 
+                                             model=self.resModel(model), 
+                                             **kwargs)
 
         plot = kwargs.pop('plot', 'semilogy')
         if plot is 'loglog':
@@ -245,9 +232,12 @@ class VESCModelling(VESModelling):
         pg.mplviewer.drawModel1D(ax=a2,
                                  model=self.phaseModel(model),
                                  plot=plot,
-                                 color='green',
-                                 xlabel='Phase [mrad]', **kwargs)
-
+                                 color='C2',
+                                 xlabel='Phase [mrad]', 
+                                 **kwargs)
+        
+        a2.set_xlabel('neg. phase (mRad)', color='C2')
+        
     def drawData(self, ax, data, error=None, label=None, ab2=None, mn2=None,
                  **kwargs):
         """Draw 1D VESC Data."""
@@ -272,6 +262,7 @@ class VESCModelling(VESModelling):
 
         phiE = None # abs err
         raE = None # rel err
+
         if error is not None:
             if type(error) is float:
                 raE = np.ones(len(data)//2) * error
@@ -281,22 +272,26 @@ class VESCModelling(VESModelling):
                 phiE = error[len(data)//2::]
 
         super(VESCModelling, self).drawData(a1, ra, error=raE,
-                                            color='black',
                                             label=label, **kwargs)
 
-        a2.semilogy(phi, self.ab2, 'x-', color='green', **kwargs)
+        col = 'C6'
+        if label == 'Response':
+            col = 'C4'
+
+        a2.semilogy(phi, self.ab2, 'x-', color=col, 
+                    label='Phase',
+                    **kwargs)
 
         if phiE is not None:
             a2.errorbar(phi, self.ab2,
                         xerr=phiE, elinewidth=2, barsabove=True,
                         linewidth=0, color='red')
 
-
         a2.set_ylim(max(self.ab2), min(self.ab2))
-        a2.set_xlabel('Apparent phase [mRad]', color='green')
-        a2.set_ylabel('AB/2 in [m]')
+        a2.set_xlabel('Apparent neg. phase (mRad)', color='C6')
+        a2.set_ylabel('AB/2 in (m)')
         a2.grid(True)
-
+        
 
 class VESManager(MethodManager1d):
     """Vertical electrical sounding (VES) manager class.
@@ -339,11 +334,12 @@ class VESManager(MethodManager1d):
 
         super(VESManager, self).__init__(**kwargs)
 
-        self.transData = None
-        self.transRho = pg.TransLog()
-        self.transPhi = pg.TransLin()
-        #self.transPhi = pg.TransLog()
+        self.inv.setDeltaChiStop(1)
 
+        self.dataTrans = None
+        self.rhoaTrans = pg.TransLog()
+        self.phiaTrans = pg.TransLin()
+        
     @property
     def complex(self):
         return self.__complex
@@ -376,6 +372,8 @@ class VESManager(MethodManager1d):
 
         Parameters
         ----------
+        **kwargs: 
+            Forwarded to the inversion frameworks
 
         Returns
         -------
@@ -388,17 +386,13 @@ class VESManager(MethodManager1d):
 
         nData = len(data)//2
         if self.complex:
-            self.transData = pg.TransCumulative()
-            self.transData.add(self.transRho, nData)
-            self.transData.add(self.transPhi, nData)
+            self.dataTrans = pg.TransCumulative()
+            self.dataTrans.add(self.rhoaTrans, nData)
+            self.dataTrans.add(self.phiaTrans, nData)
         else:
-            self.transData = pg.TransLog()
+            self.dataTrans = pg.TransLog()
 
-        self.inv.transData = self.transData
-
-        self.fop.setRegionProperties(0, limits=[1., 1000.])
-        self.fop.setRegionProperties(1, limits=[5., 10000.])
-        self.fop.setRegionProperties(2, limits=[0.1/1000, 6./1000.])
+        self.inv.dataTrans = self.dataTrans
 
         errVals = err
         if len(err) == 2 and self.complex:
@@ -407,6 +401,14 @@ class VESManager(MethodManager1d):
             #assume [relative resistivity Err, absolute phase Err]
 
         #ensure data and error sizes here
+
+        # only useful for blockInversion
+        layerLimits = kwargs.pop('layerLimits', None)
+        
+        if layerLimits is not False:
+            # this should be set in the parent invert call since nLayer can be
+            # set and changed 
+            kwargs['layerLimits'] = [min(self.fop.mn2)/5, max(self.fop.ab2)/2]
 
         return super(VESManager, self).invert(dataVals=data, errVals=errVals,
                                               **kwargs)
@@ -443,15 +445,16 @@ class VESManager(MethodManager1d):
                             data[:nData], error[:nData],
                             data[nData:], error[nData:]
                             ]).T
-            np.savetxt(fileName, mat, header='ab/2\tmn/2\trhoa\terr\tphia\terrphi')
+            np.savetxt(fileName, mat, header=r'ab/2\tmn/2\trhoa\terr\tphia\terrphi')
         else:
             mat = np.array([ab2, mn2, data, error]).T
-            np.savetxt(fileName, mat, header='ab/2\tmn/2\trhoa\terr')
+            np.savetxt(fileName, mat, header=r'ab/2\tmn/2\trhoa\terr')
 
 
 def test_VESManager(showProgress=False):
     """
-        run from console with: python -c 'import pygimli.physics.ert.ves as pg; pg.test_VESManager(1)'
+        run from console with: python -c 'import pygimli.physics.ert.ves as pg; 
+        pg.test_VESManager(1)'
     """
     thicks = [2., 10.]
     res = [100., 5., 30]
