@@ -63,7 +63,7 @@ def show(mesh=None, data=None, **kwargs):
     if isinstance(mesh, list):
         ax = kwargs.pop('ax', None)
         fitView = kwargs.pop('fitView', True)
-        
+
         ax, cbar = show(mesh[0], data, hold=1, ax=ax, fitView=fitView, **kwargs)
         xmin = mesh[0].xmin()
         xmax = mesh[0].xmax()
@@ -223,7 +223,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
     colobar : matplotlib.colorbar
     """
     pg.renameKwarg('cmap', 'cMap', kwargs)
-    
+
     if ax is None:
         ax = plt.subplots()[1]
 
@@ -274,7 +274,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
 
         ### data=[[marker, val], ....]
         if isinstance(data, list) and \
-            isinstance(data[0], list) and instance(data[0][0], int):
+            isinstance(data[0], list) and isinstance(data[0][0], int):
             data = pg.solver.parseMapToCellArray(data, mesh)
 
         if hasattr(data[0], '__len__') and not \
