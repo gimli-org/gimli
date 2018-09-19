@@ -282,6 +282,16 @@ def plotLines(ax, line_filename, linewidth=1.0, step=1):
         ax.plot(xz[:, 0], xz[:, 1], 'k-', linewidth=linewidth)
 
 
+def twin(ax):
+    """Return the twin of ax if exist."""
+    for other_ax in ax.figure.axes:
+        if other_ax is ax:
+            continue
+        if other_ax.bbox.bounds == ax.bbox.bounds:
+            return other_ax
+    return None
+
+
 def createTwinX(ax):
     """Utility function to create or return an existing a twin x axes for ax."""
     return _createTwin(ax, 'twinx')
@@ -294,12 +304,7 @@ def createTwinY(ax):
 
 def _createTwin(ax, funct):
     """Utility function to create or return an existing a twin x axes for ax."""
-    tax = None
-    for other_ax in ax.figure.axes:
-        if other_ax is ax:
-            continue
-        if other_ax.bbox.bounds == ax.bbox.bounds:
-            tax = other_ax
+    tax = twin(ax)
 
     if tax is None:
         tax = getattr(ax, funct)()

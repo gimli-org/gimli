@@ -295,8 +295,15 @@ class Inversion(object):
 
             self.fop.drawModel(ax, self.inv.model())
         else:
-            for other_ax in ax[0].figure.axes:
-                other_ax.clear()
+            # for other_ax in ax[0].figure.axes:
+            #     other_ax.clear()
+            for _ax in self.axs:
+                _ax.clear()
+                try:
+                    pg.mplviewer.twin(_ax).clear()
+                except:
+                    pass
+
 
             self.fop.drawModel(ax[0], self.inv.model(), label='Model')
 

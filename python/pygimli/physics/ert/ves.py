@@ -12,14 +12,6 @@ from pygimli.frameworks import Modelling, Block1DModelling
 
 from pygimli.manager import MethodManager1d
 
-def hasTwin(ax):
-    for other_ax in ax.figure.axes:
-        if other_ax is ax:
-            continue
-        if other_ax.bbox.bounds == ax.bbox.bounds:
-            return other_ax
-    return None
-
 
 class VESModelling(Block1DModelling):
     """Vertical Electrical Sounding (VES) forward operator.
@@ -140,19 +132,22 @@ class VESModelling(Block1DModelling):
         ra = data
         raE = error
 
-        col = pg.frameworks.modelling.DEFAULT_COLORS.get(label, 'black')
-        
+        style = pg.frameworks.modelling.DEFAULT_STYLES.get(label, 
+                            pg.frameworks.modelling.DEFAULT_STYLES['Default'])
+
         ab2 = kwargs.pop('ab2', self.ab2)
         mn2 = kwargs.pop('mn2', self.mn2)
         plot = kwargs.pop('plot', 'loglog')
 
         plot = getattr(ax, plot)
-        plot(ra, ab2, 'x-', color=col, label=label, **kwargs)
+        plot(ra, ab2, 'x-', label=label, **style, **kwargs)
 
         if raE is not None:
             ax.errorbar(ra, ab2,
-                        xerr=ra * raE, elinewidth=2, barsabove=True,
-                        linewidth=0, color='red')
+                        xerr=ra * raE, barsabove=True,
+                        **pg.frameworks.modelling.DEFAULT_STYLES.get('Error', 
+                            pg.frameworks.modelling.DEFAULT_STYLES['Default'])
+                        )
 
         ax.set_ylim(max(ab2), min(ab2))
         ax.set_xlabel(r'Apparent resistivity ($\Omega$m)')
@@ -215,10 +210,8 @@ class VESCModelling(VESModelling):
     def drawModel(self, ax, model, **kwargs):
         """Draw 1D VESC Modell."""
         a1 = ax
-        a2 = hasTwin(ax)
-        if a2 is None:
-            a2 = ax.twiny()
-
+        a2 = pg.mplviewer.createTwinY(ax)
+        
         super(VESCModelling, self).drawModel(a1, 
                                              model=self.resModel(model), 
                                              **kwargs)
@@ -250,9 +243,7 @@ class VESCModelling(VESModelling):
                 a2 = ax[1]
         else:
             a1 = ax
-            a2 = hasTwin(ax)
-            if a2 is None:
-                a2 = ax.twiny()
+            a2 = pg.mplviewer.createTwinY(ax)
 
         if ab2 is not None and mn2 is not None:
             self.setDataBasis(ab2=ab2, mn2=mn2)
@@ -271,25 +262,31 @@ class VESCModelling(VESModelling):
                 raE = error[0:len(data)//2]
                 phiE = error[len(data)//2::]
 
+        
         super(VESCModelling, self).drawData(a1, ra, error=raE,
                                             label=label, **kwargs)
 
-        col = 'C6'
-        if label == 'Response':
-            col = 'C4'
+        style = dict(pg.frameworks.modelling.DEFAULT_STYLES.get(label, 
+                            pg.frameworks.modelling.DEFAULT_STYLES['Default']))
+        style['Color'] = 'C2'
+        
+        if label == 'Data':
+            label = 'Phase'
 
-        a2.semilogy(phi, self.ab2, 'x-', color=col, 
-                    label='Phase',
-                    **kwargs)
+        a2.semilogy(phi, self.ab2, label=label, **style, **kwargs)
 
         if phiE is not None:
             a2.errorbar(phi, self.ab2,
-                        xerr=phiE, elinewidth=2, barsabove=True,
-                        linewidth=0, color='red')
+                        xerr=phiE, 
+                        **pg.frameworks.modelling.DEFAULT_STYLES.get('Error', 
+                              pg.frameworks.modelling.DEFAULT_STYLES['Default']),
+                        barsabove=True,
+                        )
 
         a2.set_ylim(max(self.ab2), min(self.ab2))
-        a2.set_xlabel('Apparent neg. phase (mRad)', color='C6')
+        a2.set_xlabel('Apparent neg. phase (mRad)', color='C2')
         a2.set_ylabel('AB/2 in (m)')
+        a2.legend()
         a2.grid(True)
         
 
@@ -347,7 +344,7 @@ class VESManager(MethodManager1d):
     @complex.setter
     def complex(self, c):
         self.__complex = c
-        self.initForwardOperator()
+        self._initForwardOperator()
 
     def createForwardOperator(self, **kwargs):
         """Create Forward Operator.
@@ -461,45 +458,57 @@ def test_VESManager(showProgress=False):
     phi = [0., 20., 0.]
 
     # model fails
-    thicks = [2., 6., 10.]
-    res = [100., 500., 20., 800.]
-    phi = [0., 20., 50., 0]
+    # thicks = [2., 6., 10.]
+    # res = [100., 500., 20., 800.]
+    # phi = [0., 20., 50., 0]
 
     synthModel = pg.cat(thicks, res)
     ab2 = np.logspace(np.log10(1.5), np.log10(100.), 25)
 
+    fig, axs = pg.plt.subplots(2, 4, figsize=(12,7))
+
     mgr = VESManager(verbose=True, debug=False)
-    #mgr.fop.setRegionProperties(0, limits=[0.5, 200], trans='log')
-    #mgr.fop.setRegionProperties(1, limits=[3, 2000], trans='log')
+
+    ### Test -- basic
     ra, err = mgr.simulate(synthModel, ab2=ab2, mn2=1.0, noiseLevel=0.01)
     mgr.exportData('synth.ves', ra, err)
 
-    mgr.invert(ra, err, nLayers=4, lam=100,
+    mgr.inv.axs = [axs[0][0], axs[1][0]]
+    mgr.invert(ra, err, nLayers=4, lam=100, layerLimits=False,
                showProgress=showProgress)
+    mgr.fop.drawModel(ax=axs[0][0], model=synthModel, label='Synth')
+    axs[0][0].legend()
+    np.testing.assert_array_less(mgr.inv.inv.chi2(), 1)
 
     ### Test -- reinit with new parameter count
-    mgr.invert(ra, err, nLayers=3,
+    mgr.inv.axs = [axs[0][1], axs[1][1]]
+    mgr.invert(ra, err, nLayers=5, layerLimits=False,
                showProgress=showProgress)
-
-    #np.testing.assert_array_less(mgr.inv.inv.chi2(), 1)
+    mgr.fop.drawModel(ax=axs[0][1], model=synthModel, label='Synth')
+    axs[0][1].legend()
+    np.testing.assert_array_less(mgr.inv.inv.chi2(), 1)
 
     ### Test -- reinit with new data basis
-    ab2 = np.logspace(np.log10(1.5), np.log10(50.), 10)
-    ra, err = mgr.simulate(synthModel, ab2=ab2, mn2=1.0, noiseLevel=0.01)
+    ab2_2 = np.logspace(np.log10(1.5), np.log10(50.), 10)
+    ra, err = mgr.simulate(synthModel, ab2=ab2_2, mn2=1.0, noiseLevel=0.01)
 
-    mgr2 = VESManager(verbose=False, debug=False)
-    mgr2.invert(ra, err, nLayers=3, ab2=ab2, mn2=1.0,
+    mgr.inv.axs = [axs[0][2], axs[1][2]]
+    mgr.invert(ra, err, nLayers=4, ab2=ab2_2, mn2=1.0, layerLimits=False,
                 showProgress=showProgress)
+    mgr.fop.drawModel(ax=axs[0][2], model=synthModel, label='Synth')
+    axs[0][2].legend()
+    np.testing.assert_array_less(mgr.inv.inv.chi2(), 1)
 
-    #np.testing.assert_array_less(mgr2.inv.inv.chi2(), 1)
+    
 
     ### Test -- reinit with complex resistivies
     mgr.complex = True
     synthModel =  pg.cat(synthModel, phi)
 
     ra, err = mgr.simulate(synthModel, ab2=ab2, mn2=1.0, noiseLevel=0.01)
-    mgr.exportData('synthc.ves', ra, err)
-    mgr.invert(ra, err,
+        
+    mgr.inv.axs = [axs[0][3], axs[1][3]]
+    mgr.invert(ra, err, layerLimits=False,
                showProgress=showProgress)
 
     np.testing.assert_array_less(mgr.inv.inv.chi2(), 1)

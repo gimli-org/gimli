@@ -10,8 +10,18 @@ from copy import copy
 import pygimli as pg
 
 
-DEFAULT_COLORS ={'Data': 'C2',
-                 'Response': 'C0'}
+DEFAULT_STYLES={'Default': {'color': 'C0', 
+                           'lw' : 1.5, 'linestyle': '-'},
+                'Data': {'color' : 'C0', #blueish
+                        'lw'  : 1, 'linestyle' : ':',
+                        'marker' : 'o'},
+                'Response': {'color': 'C0', #blueish
+                            'lw': 1.5, 'linestyle' : '-', 
+                            'marker' : 'None'},
+                'Error': {'color': 'C3',  #reddish
+                          'lw': 0, 'linestyle' : '-', 
+                          'elinewidth': 2, 'alpha' : 0.5},
+                }
 
 
 class Modelling(pg.ModellingBase):
@@ -299,13 +309,15 @@ class Block1DModelling(Modelling):
         yVals = range(nData)
         ax.loglog(data, yVals, 'x-', 
                   label=label,
-                  color=DEFAULT_COLORS.get(label, 'black'))
+                  **DEFAULT_STYLES.get(label, DEFAULT_STYLES['Default'])
+                  )
 
         if err is not None:
             ax.errorbar(data, yVals,
                         xerr=err*data,
                         label='Error',
-                        linewidth=1, color='red', linestyle='-', alpha=0.5)
+                        **DEFAULT_STYLES.get('Error', DEFAULT_STYLES['Default'])
+                        )
 
         ax.set_ylim(max(yVals), min(yVals))
         ax.set_xlabel('Data')

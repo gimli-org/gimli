@@ -16,7 +16,7 @@ from .utils import (hold,
                     setOutputStyle,
                     setPlotStuff,
                     plotLines,
-                    createTwinX, createTwinY)
+                    twin, createTwinX, createTwinY)
 
 from .boreholes import BoreHole, BoreHoles, create_legend
 
