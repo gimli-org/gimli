@@ -11,12 +11,19 @@ import pygimli as pg
 class Inversion(object):
     """Basic inversion framework.
 
+    Changes to prior Versions (remove me)
+
+        * holds the starting model itself, fop only provide a creator for SM
+        fop.createStartModel(dataValues)
+
     Attributes
     ----------
     verbose : bool
         Give verbose output
     debug : bool
         Give debug output
+    startModel : bool
+        Holds the current starting model
     """
     def __init__(self, fop=None, inv=None, **kwargs):
         self._verbose = kwargs.pop('verbose', False)
@@ -38,6 +45,8 @@ class Inversion(object):
 
         self._inv = None
         self._fop = None
+
+        self._startModel = None
 
         if inv is not None:
             self._inv = inv
@@ -84,6 +93,31 @@ class Inversion(object):
             self.inv.setDoSave(self._debug)
 
     @property
+    def startModel(self):
+        """ Gives the current default starting model.
+
+        Returns the current default starting model or 
+        call fop.createStartmodel(dataValus) if non is defined.
+        """
+        if self._startModel is None:
+            self._startModel = self.fop.createStartModel(self._dataVals)
+        return self._startModel
+
+    @startModel.setter
+    def startModel(self, model):
+        """
+        model: [float] | float
+            Model used as starting model. 
+            Float value is used as constant model.
+        """
+        if model is None:
+            self._startModel = None
+        elif type(model) is float or type(model) is int:
+            self._startModel = np.ones(self.parameterCount) * float(model)
+        elif hasattr(model, '__iter__'):
+            self._startModel = model
+        
+    @property
     def maxIter(self):
         return self.inv.maxIter()
     @maxIter.setter
@@ -107,9 +141,11 @@ class Inversion(object):
     # backward compatibility
     @property
     def dataErrs(self):
+        pg.warn('do not use')
         return self._errorVals
     @dataErrs.setter
     def dataErrs(self, v):
+        pg.warn('do not use')
         self._errorVals = v
 
     @property
@@ -147,15 +183,6 @@ class Inversion(object):
         else:
             self._dataVals = data
 
-    def setStartModel(self, model):
-        if model is not None:
-            if type(model) is float or type(model) is int:
-                nModel = self.parameterCount
-                sm = pg.Vector(nModel, model)
-                self.fop.setStartModel(sm)
-            elif hasattr(model, '__iter__'):
-                self.fop.setStartModel(model)
-
     def run(self, dataVals, errorVals, **kwargs):
         """Run inversion.
 
@@ -175,12 +202,9 @@ class Inversion(object):
         self.verbose = kwargs.pop('verbose', self.verbose)
         self.debug   = kwargs.pop('debug', self.debug)
         self.maxIter = kwargs.pop('maxIter', self.maxIter)
-
-        self.setStartModel(kwargs.pop('startModel', None))
-
+        
         progress = kwargs.pop('progress', None)
         showProgress = kwargs.pop('showProgress', False)
-
         lam = kwargs.pop('lam', 20)
 
         self.inv.setTransModel(self.fop.modelTrans)
@@ -198,6 +222,12 @@ class Inversion(object):
         if self._errorVals is None:
             raise Exception("Inversion framework need data error values to run")
 
+        sm = kwargs.pop('startModel', None)
+        if sm is not None:
+            self.startModel = sm
+
+        self.inv.setModel(self.startModel)
+
         self.inv.setData(self._dataVals)
         self.inv.setRelativeError(self._errorVals)
         self.inv.setLambda(lam)
@@ -208,7 +238,7 @@ class Inversion(object):
         if self.verbose:
             print("inv.start()")
 
-        ### To ensure reproducability of the run call inv.start() will
+        ### To ensure reproduceability of the run() call inv.start() will
         ### reset self.inv.model() to fop.startModel().
         self.inv.start()
         self.maxIter = maxIter
@@ -346,6 +376,11 @@ class MarquardtInversion(Inversion):
 class Block1DInversion(MarquardtInversion):
     def __init__(self, fop=None, **kwargs):
         super(Block1DInversion, self).__init__(fop, **kwargs)
+        # attributes:
+        # nLayers, layerLimits, fixLayers      
+        
+        self._nLayers = 4
+        
 
     def setForwardOperator(self, fop):
         if not isinstance(fop, pg.frameworks.Block1DModelling):
@@ -354,9 +389,10 @@ class Block1DInversion(MarquardtInversion):
             
         return super(Block1DInversion, self).setForwardOperator(fop)
         
-    def setLayers(self, layers):
+    def setLayers(self, nLayers):
         """Set amount of Layers"""
-        self.fop.setLayers(layers)
+        self._nLayers = nLayers
+        self.fop.initModelSpace(nLayers=nLayers)
         
     def fixLayers(self, fixLayers):
         """Fix layer thicknesses.
@@ -393,7 +429,7 @@ class Block1DInversion(MarquardtInversion):
             self.fop.setRegionProperties(0, limits=limits, trans='log')
         
     def run(self, dataVals, errVals, 
-            nLayers=4, fixLayers=None, layerLimits=None,
+            nLayers=None, fixLayers=None, layerLimits=None,
             **kwargs):
         r"""
 
@@ -406,15 +442,17 @@ class Block1DInversion(MarquardtInversion):
             See: :py:mod:`pygimli.modelling.Block1DInversion.fixLayers`
         layerLimits : [min, max]
             For layerLimits=None, preset or defaults are uses.
-            Set minimum or maximum layer t hickness. 
+            Set minimum or maximum layer thickness. 
 
         **kwargs:
             Forwarded to the parent class.
             See: :py:mod:`pygimli.modelling.MarquardtInversion`
         """
-        ### Create model space if nLayers has been changed or called for the
-        ### first time, Fop is responsible
-        self.fop.createStartModel(dataVals, nLayers)
+        if nLayers is None:
+            nLayers = self._nLayers
+
+        ## initialize model space if needed
+        self.setLayers(nLayers)
 
         if layerLimits is not None:
             self.setLayerLimits(layerLimits)                

@@ -31,14 +31,19 @@ class Modelling(pg.ModellingBase):
     Can be seen as some kind of proxy Forward Operator.
 
     TODO: 
-        * describe members (model transformation, dictionary of region property)
-        * think about splitting MeshModelling from it
+        * Modelling or Modeling?
+        * Docu:
+            - describe members (model transformation, dictionary of region properties)
+            - 
+        * think about splitting all mes related into MeshModelling
         * clarify difference: setData(array|DC), setDataContainer(DC), setDataValues(array)
         * clarify dataBasis: The unique spatial or temporal origin of a datapoint (time, coordinates, 4-point-positions,
                                                                      receiver/transmitter positions
                                                                      counter)
             - Every inversion needs, dataValues and dataBasis
             - DataContainer contain, dataValues and dataBasis
+            - maybe better Name for dataBase -> dataSpace, for model (modelSpace)
+                - initialze both with initDataSpace(), initMdelSpace
     """
     def __init__(self, **kwargs):
         """
@@ -71,6 +76,9 @@ class Modelling(pg.ModellingBase):
     def modelTrans(self, tm):
         self._modelTrans = tm
 
+    def initModelSpace(self, **kwargs):
+        """API"""    
+        
     def createStartModel(self, **kwargs):
         """ Create Starting model.
 
@@ -96,6 +104,8 @@ class Modelling(pg.ModellingBase):
         return super(Modelling, self).regionManager()
 
     def setForwardOperator(self, fop):
+        """ 
+        """
         self.fop = fop
 
     def setMesh(self, mesh, ignoreRegionManager=False):
@@ -209,21 +219,24 @@ class Modelling(pg.ModellingBase):
                 rMgr.region(rID).setUpperBound(vals['limits'][1])
 
     def setData(self, data):
+        """ 
+        """
         if isinstance(data, pg.DataContainer):
             self.setDataContainer(data)
 
         raise Exception("nothing known to do? Implement me in derived classes")
         
-    def setDataBasis(self, **kwargs):
-        """Set Data basis, e.g., DataContainer, times, coordinates."""
+    def setDataSpace(self, **kwargs):
+        """Set data space, e.g., DataContainer, times, coordinates."""
         if self.fop is not None:
-            self.fop.setDataBasis(**kwargs)
+            self.fop.setDataSpace(**kwargs)
         else:
             data = kwargs.pop('dataContainer', None)
             if isinstance(data, pg.DataContainer):
                 self.setDataContainer(data)
-        
-            raise Exception("nothing known to do? Implement me in derived classes")
+            else:
+                print(data)
+                pg.critical("nothing known to do? Implement me in derived classes")
 
     def setDataContainer(self, data):
         """ 
@@ -262,15 +275,35 @@ class Modelling(pg.ModellingBase):
 
 
 class Block1DModelling(Modelling):
+    """General forward operator for 1D layered models.
+
+    Find the data space for the model space [thickness_i, parameter_jk], 
+    with i = 0 - nLayers-1, j = (0 .. nLayers), k=(0 .. nPara)
     """
-    """
-    def __init__(self, nBlocks=1, **kwargs):
+    def __init__(self, nPara=1, **kwargs):
+        """Constructor
+
+        Parameters
+        ----------
+        * nPara : int [1]
+            Number of parameters per layer. e.g.: 2 for resistivity and phase.
+            While the number of parameter is defined by the physics yout want 
+            to simulate, nPara need to be set from the derived class and 
+            cannot be changed in runtime.
+        """
         super(Block1DModelling, self).__init__(**kwargs)
         self._withMultiThread = True
-        self._nBlocks = nBlocks
-        self._nLayers = 0
+        self._nPara = nPara # number of parameters per layer
 
-    def setLayers(self, nLayers):
+        # store this to avoid reinitialization of not needed
+        self._nLayers = 0 
+
+    @property
+    def nLayers(self):
+        return self._nLayers
+
+    def initModelSpace(self, nLayers):
+        
         """Set number of layers for the 1D block model"""
         if nLayers == self._nLayers:
             return;
@@ -280,16 +313,17 @@ class Block1DModelling(Modelling):
 
         self._nLayers = nLayers
 
-        mesh = pg.createMesh1DBlock(nLayers, self._nBlocks)
+        mesh = pg.createMesh1DBlock(nLayers, self._nPara)
         self.setMesh(mesh)
         
-        for i in range(self._nBlocks + 1):
+        for i in range(self._nPara + 1):
             self.setRegionProperties(i, trans='log')
             
         if self._withMultiThread:
             self.setMultiThreadJacobian(2*nLayers - 1)
 
         self._applyRegionProperties()
+
         
     def drawModel(self, ax, model, **kwargs):
         pg.mplviewer.drawModel1D(ax=ax,
@@ -339,11 +373,11 @@ class MeshModelling(Modelling):
 
     #     super(MeshModelling, self).setMesh(mesh, ignoreRegionManager)
 
-    def drawModel(self, ax, model):
+    def drawModel(self, ax, model, **kwargs):
         pg.mplviewer.drawModel(ax=ax,
                                mesh=self.paraDomain,
                                data=model,
-                               label='Model parameter')
+                               **kwargs)
         return ax
 
 
@@ -435,12 +469,14 @@ class LCModelling(Modelling):
         for f in self._fops1D:
             f.setDataBasis(**kwargs)
 
-    def createStartModel(self, models, nLayers):
+    def initModelSpace(self, nLayers):
+        for i, f in enumerate(self._fops1D):
+            f.initModelSpace(nLayers)
+
+    def createStartModel(self, models):
         sm = pg.RVector()
         for i, f in enumerate(self._fops1D):
-            sm = pg.cat(sm, f.createStartModel(models[i], nLayers))
-
-        self.setStartModel(sm)
+            sm = pg.cat(sm, f.createStartModel(models[i]))
         return sm
 
     def response(self, par):

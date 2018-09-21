@@ -307,7 +307,7 @@ def drawMesh(ax, mesh, **kwargs):
 def drawModel(ax, mesh, data=None, 
               cMin=None, cMax=None, cMap=None, logScale=False, 
               xlabel=None, ylabel=None, verbose=False,
-              tri=False, **kwargs):
+              tri=False,  rasterized=False, **kwargs):
     """Draw a 2d mesh and color the cell by the data.
 
     Parameters
@@ -356,8 +356,8 @@ def drawModel(ax, mesh, data=None,
                          **kwargs)
 
     else:
-        gci = pg.mplviewer.createMeshPatches(ax, mesh, verbose=verbose,
-                                             rasterized=rasterized)
+        gci = pg.mplviewer.createMeshPatches(ax, mesh, rasterized=rasterized,
+                                             verbose=verbose)
         ax.add_collection(gci)
 
         cMap = kwargs.pop('cMap', None)
@@ -712,7 +712,7 @@ def _createCellPolygon(cell):
 
     pg.warn("Unknown shape to patch: ", cell)
 
-def createMeshPatches(ax, mesh, verbose=True, rasterized=False):
+def createMeshPatches(ax, mesh, rasterized=False, verbose=True):
     """Utility function to create 2d mesh patches within a given ax."""
     if not mesh:
         pg.error("drawMeshBoundaries(ax, mesh): invalid mesh:", mesh)

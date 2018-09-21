@@ -302,28 +302,29 @@ class ERTModelling(MeshModelling):
 
 
 class ERTManager(MeshMethodManager):
-    """Minimalistic ERT Manager to keep compatibility.
-
-    More advanced version comes with BERT.
+    """ERT Manager.
     """
     def __init__(self, **kwargs):
         """Constructor."""
         super(ERTManager, self).__init__(**kwargs)
         self._dataToken = 'rhoa'
-
-        self.transData = pg.RTransLog()
+        self.dataTrans = pg.RTransLog()
+        self.inv.dataTrans = self.dataTrans
 
     def createForwardOperator(self, **kwargs):
-        fop = ERTModelling(**kwargs)
-        return fop
+        """Create and choose forward operator. """
+        useBert = kwargs.pop('useBert', False)
 
-    @staticmethod
-    def simulate(mesh, model, scheme, **kwargs):
-        print("static")
-        pass
+        if useBert:
+            pg.critical('implementme')
+        else:
+            fop = ERTModelling(**kwargs)
+
+        return fop
 
     def simulate(self, mesh, model, scheme, **kwargs):
         """Forward calculation for given mesh, data and resistivity."""
+        pg.critical('implementme')
 
         fop = self.createForwardOperator()
 
@@ -359,27 +360,28 @@ class ERTManager(MeshMethodManager):
             return rhoa
         return scheme
 
-
-    def invert(self, data=None, err=None, mesh=None, **kwargs):
+    def invert(self, data=None, err=None, **kwargs):
         """Invert measured data.
         """
-
         #ensure data and error sizes here
-        dataVal = None
+        dataVals = None
         if isinstance(data, pg.DataContainer):
-            self.fop.setDataBasis(dataContainer=data)
-
-            dataVals = self.dataVals(data)
-            errVals = self.relErrVals(data)
+            self.fop.setDataSpace(dataContainer=data)
+            dataVals = self.dataValues(data)
+            errVals = self.errorValues(data, relative=True)
+            print(errVals)
         else:
             dataVal = data
+            errVals = err
 
-        self.transData = pg.RTransLog()
-        self.inv.transData = self.transData
+        if errVals is None or min(errVals) <= 0.0:
+            pg.critical('implement me')
+
+        if min(dataVals) <= 0.0:
+            pg.critical('implement me')
 
         return super(ERTManager, self).invert(dataVals=dataVals,
                                               errVals=errVals,
-                                              mesh=mesh,
                                               **kwargs)
 
 

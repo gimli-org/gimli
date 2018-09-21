@@ -53,7 +53,7 @@ class MethodManager(object):
         self._fw = None 
 
         self._initInversionFramework(verbose=self._verbose,
-                                    debug=self._debug)
+                                     debug=self._debug)
 
         ### The forward operator is stored in self._fw
         self._initForwardOperator(verbose=self._verbose, **kwargs)
@@ -119,13 +119,13 @@ class MethodManager(object):
     def inv(self):
         return self._fw
 
-    def dataVals(self, data):
+    def dataValues(self, data):
         """Return data values from a given DataContainer."""
         if self._dataToken == 'nan':
             raise Exception('_dataToken should be set in class', self)
         return data(self._dataToken)
 
-    def relErrVals(self, data):
+    def errorValues(self, data, relative=True):
         """Return error values from a given DataContainer."""
         return data('err')
 
@@ -250,7 +250,6 @@ class MethodManager(object):
         Invert the data values by calling self.inv.run() with mandatory data and
         error values.
 
-
         TODO
             *need dataVals mandatory? what about already loaded data
 
@@ -266,11 +265,19 @@ class MethodManager(object):
         """
         if dataVals is None:
             print("Data:", dataVals)
-            raise Exception("Data values for invert() call are mandatory.");
+            pg.critical("Data values for invert() call are mandatory.");
 
+        if errVals is None:
+            print("Error:", dataVals)
+            pg.critical("Error values for invert() call are mandatory.");
+            
         if type(errVals) == float:
             errVals = self.estimateError(dataVals, errLevel=errVals)
 
+        if min(errVals) <= 0.0:
+            print("Error:", errVals)
+            pg.critical("Error values for invert() need to be greater 0.0.");
+    
         self._fw.run(dataVals, errVals, **kwargs)
         return self.model
 
@@ -439,7 +446,7 @@ class MeshMethodManager(MethodManager):
         """Run a simulation aka the forward task.
         """
         print(mesh, model)
-        pass
+        pg.critical('Need to be implemented in derived class')
 
     def invert(self, dataVals=None, errVals=None, mesh=None, **kwargs):
         """Run the full inversion.
@@ -466,13 +473,10 @@ class MeshMethodManager(MethodManager):
 
         self._fw.fop.regionManager().setZWeight(zWeight)
 
-        if startModel in kwargs:
-            self._fw.fop.createStartModel(dataVals)
-
-        self.model = super(MeshMethodManager, self).invert(dataVals=dataVals,
-                                                           errVals=errVals,
-                                                           **kwargs)
-        return self.model
+        return super(MeshMethodManager, self).invert(dataVals=dataVals,
+                                                     errVals=errVals,
+                                                     **kwargs)
+        
 
     def setMesh(self, mesh, refine=True):
         """Set the internal mesh for this Manager.
