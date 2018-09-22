@@ -106,6 +106,18 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(a.size(), len(x))
         self.assertEqual(pg.sum(a), sum(x))
 
+        x = np.arange(10, dtype=np.long)
+        a = pg.IVector(x)
+        self.assertEqual(a.size(), len(x))
+        self.assertEqual(pg.sum(a), sum(x))
+        self.assertEqual(pg.sum(x), sum(x))
+        
+    def test_NumpyToBVector(self):
+        """Implemented in custom_rvalue.cpp."""
+        x = np.array(range(-10, 10), dtype=float)
+        b = pg.BVector(x > 0.)
+        self.assertEqual(b[10], False)
+        self.assertEqual(b[11], True)
 
     def test_NumpyToRVector(self):
         """Implemented in custom_rvalue.cpp."""
@@ -132,14 +144,7 @@ class TestRVectorMethods(unittest.TestCase):
         
         self.assertEqual(pg.sum(x), sum(x))
 
-    def test_NumpyToIVector(self):
-        x = np.arange(10, dtype=np.long)
-        a = pg.IVector(x)
-        self.assertEqual(a.size(), len(x))
-        self.assertEqual(pg.sum(a), sum(x))
-        
-        self.assertEqual(pg.sum(x), sum(x))
-         
+
     def test_NumpyToCVector(self):
         pass
         # will not work .. until an idea how to choose right api for function with and RVector and CVector, e.g. sum()
@@ -320,7 +325,8 @@ if __name__ == '__main__':
     #test.test_IndexArrayToNumpy()
     #test.test_NumpyToIVector()
     #test.test_NumpyToScalar()
-    #exit()
+    # test.test_NumpyToBVector()
+    # exit()
     # test.test_BVectorToNumpy()
     # test.test_NumpyToIVector()
     # test.test_NumpyToRVector()
