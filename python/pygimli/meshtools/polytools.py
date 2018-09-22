@@ -453,11 +453,12 @@ def mergePLC(pols, tol=1e-3):
 
     Merge multiply polygons into a single polygon.
     Common nodes and common edges will be checked and removed.
-    When a node touches and edge the edge will be split.
+    When a node touches an edge, the edge will be splited.
 
     TODO:
         * Crossing or Node/Edge intersections will NOT be
         recognized yet.
+        * Edge on Node touch
 
     Parameters
     ----------
