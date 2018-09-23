@@ -71,11 +71,17 @@ template < class ValueType > void * checkConvertibleSequenz(PyObject * obj){
     if (len(py_sequence) > 0) {
         __DC(obj << "\t len: " << len(py_sequence) << " type: " << GIMLI::type(ValueType(0)) << ": " << typeid(ValueType).name())
         bp::object element = py_sequence[0];
-        __DC(obj << "\t seq[0]: " << element << " :" << typeid(element).name() << " "  << " type: " << GIMLI::type(ValueType(0)))
+        __DC(obj << "\t seq[0]: " << element << " is of type: " << element.ptr()->ob_type->tp_name)
 
-        if (PyBool_Check(element.ptr())) {
-            if (typeid(ValueType) != typeid(bool)) {
-                __DC(obj << "\t sequenz of bools cannot convertert now")
+        if (typeid(ValueType) == typeid(GIMLI::Index)){
+            if (strcmp(element.ptr()->ob_type->tp_name, "bool") == 0) {
+                __DC(obj << "\t abborting: Index requested but sequence of "<< element.ptr()->ob_type->tp_name)
+                return NULL;
+            }
+        } else if (typeid(ValueType) == typeid(bool)){
+            // special check for BVector .. we oonly want to convert sequence of bool objects
+            if (strcmp(element.ptr()->ob_type->tp_name, "bool") != 0) {
+                __DC(obj << "\t abborting: bools requested but sequence of "<< element.ptr()->ob_type->tp_name)
                 return NULL;
             }
         }
