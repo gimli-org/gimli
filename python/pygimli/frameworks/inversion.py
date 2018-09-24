@@ -22,8 +22,10 @@ class Inversion(object):
         Give verbose output
     debug : bool
         Give debug output
-    startModel : bool
+    startModel : array
         Holds the current starting model
+    model : array
+        Holds the last active model
     """
     def __init__(self, fop=None, inv=None, **kwargs):
         self._verbose = kwargs.pop('verbose', False)
@@ -47,6 +49,7 @@ class Inversion(object):
         self._fop = None
 
         self._startModel = None
+        self._model = None
 
         if inv is not None:
             self._inv = inv
@@ -112,18 +115,28 @@ class Inversion(object):
         """
         if model is None:
             self._startModel = None
-        elif type(model) is float or type(model) is int:
+        elif isinstance(model, float) or isinstance(model, int):
             self._startModel = np.ones(self.parameterCount) * float(model)
         elif hasattr(model, '__iter__'):
             self._startModel = model
         
     @property
-    def maxIter(self):
-        return self.inv.maxIter()
-    @maxIter.setter
-    def maxIter(self, v):
-        if self.inv is not None:
-            self.inv.setMaxIter(v)
+    def model(self):
+        """The last active model."""
+        if self._model is None:
+            if hasattr(self.inv, 'model'):
+                ### inv is RInversion()
+                if len(self.inv.model()) > 0:
+                    return self.inv.model()
+                else:
+                    raise pg.critical("There was no inversion run so there is no last model")
+            else:
+                return self.inv.model        
+        return self._model
+    @model.setter
+    def model(self, m):
+        self._model = m
+
 
     @property
     def response(self):
@@ -131,12 +144,6 @@ class Inversion(object):
             return self.inv.response()
         else:
             raise Exception("There was no inversion run so there is no response yet")
-    @property
-    def model(self):
-        if len(self.inv.model()) > 0:
-            return self.inv.model()
-        else:
-            raise Exception("There was no inversion run so there is last model")
 
     # backward compatibility
     @property
@@ -158,6 +165,14 @@ class Inversion(object):
     @property
     def parameterCount(self):
         return self.fop.regionManager().parameterCount()
+
+    @property
+    def maxIter(self):
+        return self.inv.maxIter()
+    @maxIter.setter
+    def maxIter(self, v):
+        if self.inv is not None:
+            self.inv.setMaxIter(v)
 
     def echoStatus(self):
         self.inv.echoStatus()
@@ -226,8 +241,6 @@ class Inversion(object):
         if sm is not None:
             self.startModel = sm
 
-        self.inv.setModel(self.startModel)
-
         self.inv.setData(self._dataVals)
         self.inv.setRelativeError(self._errorVals)
         self.inv.setLambda(lam)
@@ -238,8 +251,10 @@ class Inversion(object):
         if self.verbose:
             print("inv.start()")
 
-        ### To ensure reproduceability of the run() call inv.start() will
+        ### To ensure reproducability of the run() call inv.start() will
         ### reset self.inv.model() to fop.startModel().
+        self.fop.setStartModel(self.startModel)
+
         self.inv.start()
         self.maxIter = maxIter
 
@@ -295,11 +310,11 @@ class Inversion(object):
 
             lastChi2 = chi2
 
-
         if len(kwargs.keys()) > 0:
-            print("Warning! unhandled keyword arguments", kwargs)
+            print("Warning! unused keyword arguments", kwargs)
 
-        return self.inv.model()
+        self.model = self.inv.model()
+        return self.model
 
     def showProgress(self, style='all'):
         r"""Called if showProgress=True is set for the inversion run.
@@ -370,8 +385,8 @@ class MarquardtInversion(Inversion):
         self.fop.regionManager().setConstraintType(0)
         self.fop.setRegionProperties('*', cType=0)
 
-        return super(MarquardtInversion, self).run(data, error, **kwargs)
-
+        self.model = super(MarquardtInversion, self).run(data, error, **kwargs)
+        return self.model
 
 class Block1DInversion(MarquardtInversion):
     def __init__(self, fop=None, **kwargs):
@@ -460,40 +475,72 @@ class Block1DInversion(MarquardtInversion):
         if fixLayers is not None:
             self.fixLayers(fixLayers)                
 
-        return super(Block1DInversion, self).run(dataVals, errVals, **kwargs)
+        self.model = super(Block1DInversion, self).run(dataVals, errVals, **kwargs)
+        return self.model
    
 
 class MeshInversion(Inversion):
+    """
+    Attributes
+    ----------
+    mesh
+    
+    zWeight
+
+    """
     def __init__(self, fop=None, **kwargs):
+    
         super(MeshInversion, self).__init__(fop, **kwargs)
-        self._model = None
+        self._mesh = None
+        self._zWeight = 1.0
 
-    def setMesh(self, mesh):
-        self.fop.setMesh(mesh)
+    def setMesh(self, mesh, refine=True):
+        """Set the internal mesh for this Framework.
 
-    @property
-    def model(self):
-        return self._model
-    @model.setter
-    def model(self, m):
-        self._model = m
+        Injects the mesh in the internal fop.
 
-    def run(self, dataVals, errVals, mesh=None, zWeight=1.0, **kwargs):
+        Initialize RegionManager.
+        For more than two regions the first is assumed to be background.
 
-        print("------------------------------------------------")
-        print("MeshInversion:run()")
+        TODO:
+            Optional the forward mesh can be refined for higher numerical accuracy.
+
+        Parameters
+        ----------
+
+        DOCUMENTME!!!
+
+        """
+        if isinstance(mesh, str):
+            mesh = pg.load(mesh)
+
+        self._mesh = pg.Mesh(mesh) # need to copy?
+        self._mesh.createNeighbourInfos()
+
+        self.fop.setMesh(self._mesh)
+        
+        if len(self.fop.regionManager().regionIdxs()) > 1:
+            bk = pg.unique(self.fop.regionIdxs())[0]
+            self.fop.setRegionProperties(bk, background=True)
+            
+    def run(self, dataVals, errVals, mesh=None, zWeight=None, **kwargs):
+        """
+        """
         if mesh is not None:
             self.setMesh(mesh)
 
-        # check for valid mesh here.
+        if self._mesh is None:
+            pg.critical("no valid mesh set.")
 
-        # configure regions defaults here??
+        if zWeight is None:
+            zWeight = self._zWeight
 
-        self.fop.regionManager().setZWeight(zWeight)
+        pg.p(zWeight)
+        self.fop.setRegionProperties('*', zWeight=zWeight)
+        
+        #### more mesh related inversion attributes to set?
 
-        model = super(MeshInversion, self).run(dataVals, errVals, **kwargs)
-
-        self.model = model(self.fop.regionManager().paraDomain().cellMarkers())
+        self.model = super(MeshInversion, self).run(dataVals, errVals, **kwargs)
         return self.model
 
 
@@ -603,53 +650,3 @@ class LCInversion(Inversion):
         print(kwargs)
         print('#'*50)
         return super(LCInversion, self).run(dataVec, errVec, lam=lam, **kwargs)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-class MeshInversion0(Inversion):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        INUSEQUESTION
-
-    def setMesh(self, mesh):
-        self.fop.setMesh(mesh)
-
-    def invert(self, data=None, mesh=None, lam=20, **kwargs):
-        INUSEQUESTION
-        if data is not None:
-            self.setData(data)
-
-        if mesh is not None:
-            self.setMesh(mesh)
-
-        startModel = kwargs.pop('startModel', None)
-        nModel = self.fop.regionManager().parameterCount()
-        startModel = pg.Vector(nModel, startModel)
-        self.fop.setStartModel(startModel)
-
-        zWeight = kwargs.pop('zWeight', 1.0)
-        self.fop.regionManager().setZWeight(zWeight)
-        self.inv.setData(self.dataVals)
-        self.inv.setRelativeError(self.errorVals)
-        self.inv.setLambda(lam)
-
-        self.mod = self.inv.run()
-        self.mod = self.mod(self.fop.regionManager().paraDomain().cellMarkers())
-        return self.mod

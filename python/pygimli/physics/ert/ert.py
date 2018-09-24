@@ -9,9 +9,7 @@ https://gitlab.com/resistivity-net/bert
 import numpy as np
 
 import pygimli as pg
-
 from pygimli.frameworks import MeshModelling
-
 from pygimli.manager import MeshMethodManager, MeshMethodManager0
 
 
@@ -34,7 +32,6 @@ class ERTModelling(MeshModelling):
 
     def createStartModel(self, rhoa):
         sm = pg.RVector(self.regionManager().parameterCount(), pg.median(rhoa))
-        self.setStartModel(sm)
         return sm
 
     def response(self, model):
@@ -45,7 +42,6 @@ class ERTModelling(MeshModelling):
         """
         ### NOTE TODO can't be MT until mixed boundary condition depends on
         ### self.resistivity
-
         mesh = self.mesh()
 
         nDof = mesh.nodeCount()
@@ -74,12 +70,15 @@ class ERTModelling(MeshModelling):
         self.subPotentials = [pg.RMatrix(nEle, nDof) for i in range(len(k))]
         for i, ki in enumerate(k):
             ws = dict()
+            # pg.p(ki, min(res), max(res))
             uE = pg.solve(mesh, a=1./res, b=(ki * ki)/res, f=rhs,
                           bc={'Robin': ['*', self.mixedBC]},
                           userData={'sourcePos': elecs, 'k': ki},
                           verbose=False, stats=0, debug=False)
+            # pg.p(min(uE.flat), max(uE.flat))
             self.subPotentials[i] = uE
             u += w[i] * uE
+        
         # collect potential matrix,
         # i.e., potential for all electrodes and all injections
         pM = np.zeros((nEle, nEle))
@@ -326,6 +325,7 @@ class ERTManager(MeshMethodManager):
         """Forward calculation for given mesh, data and resistivity."""
         pg.critical('implementme')
 
+        # use !!self.fop!!
         fop = self.createForwardOperator()
 
         fop.setDataBasis(dataContainer=scheme)
@@ -369,16 +369,9 @@ class ERTManager(MeshMethodManager):
             self.fop.setDataSpace(dataContainer=data)
             dataVals = self.dataValues(data)
             errVals = self.errorValues(data, relative=True)
-            print(errVals)
         else:
             dataVal = data
             errVals = err
-
-        if errVals is None or min(errVals) <= 0.0:
-            pg.critical('implement me')
-
-        if min(dataVals) <= 0.0:
-            pg.critical('implement me')
 
         return super(ERTManager, self).invert(dataVals=dataVals,
                                               errVals=errVals,

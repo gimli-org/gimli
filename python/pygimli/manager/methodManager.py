@@ -433,7 +433,10 @@ class MeshMethodManager(MethodManager):
         """Constructor."""
         super(MeshMethodManager, self).__init__(**kwargs)
 
-        self.mesh = None
+    def createInversionFramework(self, **kwargs):
+        """
+        """
+        return pg.frameworks.MeshInversion(**kwargs)
 
     def createMesh(self, **kwargs):
         """
@@ -441,12 +444,6 @@ class MeshMethodManager(MethodManager):
         print(**kwargs)
         raise Exception("Implement me!")
         pass
-
-    def simulate(self, mesh, model, **kwargs):
-        """Run a simulation aka the forward task.
-        """
-        print(mesh, model)
-        pg.critical('Need to be implemented in derived class')
 
     def invert(self, dataVals=None, errVals=None, mesh=None, **kwargs):
         """Run the full inversion.
@@ -460,60 +457,17 @@ class MeshMethodManager(MethodManager):
         ----------
 
         """
-        if mesh is not None:
-            self.setMesh(mesh)
-
-        if self.mesh is None:
-            self.createMesh(depth=kwargs.pop('depth', None),
-                            quality=kwargs.pop('quality', 34.0),
-                            maxCellArea=kwargs.pop('maxCellArea', 0.0),
-                            paraDX=kwargs.pop('paraDX', 0.3))
-
-        zWeight = kwargs.pop('zWeight', 0.7)
-
-        self._fw.fop.regionManager().setZWeight(zWeight)
+        if mesh is None:
+            mesh = self.createMesh(depth=kwargs.pop('depth', None),
+                                   quality=kwargs.pop('quality', 34.0),
+                                   maxCellArea=kwargs.pop('maxCellArea', 0.0),
+                                   paraDX=kwargs.pop('paraDX', 0.3))
 
         return super(MeshMethodManager, self).invert(dataVals=dataVals,
                                                      errVals=errVals,
+                                                     mesh=mesh,
                                                      **kwargs)
-        
-
-    def setMesh(self, mesh, refine=True):
-        """Set the internal mesh for this Manager.
-
-        Inject the mesh in the internal fop und inv.
-
-        Initialize RegionManager.
-        For more than two regions the first is assumed to be background.
-
-        Optional the forward mesh can be refined for higher numerical accuracy.
-
-        Parameters
-        ----------
-
-        DOCUMENTME!!!
-
-        """
-        if isinstance(mesh, str):
-            mesh = pg.load(mesh)
-
-        if self.verbose:
-            print(mesh)
-
-        self.mesh = pg.Mesh(mesh)
-        self.mesh.createNeighbourInfos()
-
-        self.fop.setMesh(self.mesh)
-        self.fop.regionManager().setConstraintType(1)
-
-        if self.fop.regionManager().regionCount() > 1:
-            self.fop.regionManager().region(1).setBackground(True)
-#            self.fop.regionManager().regions().begin().second.setBackground(1)
-
-        self.fop.createRefinedForwardMesh(refine)
-        self.inv.setForwardOperator(self.fop)  # necessary? CR: check this
-
-
+   
 
 
 

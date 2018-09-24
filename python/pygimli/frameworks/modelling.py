@@ -9,7 +9,6 @@ from copy import copy
 
 import pygimli as pg
 
-
 DEFAULT_STYLES={'Default': {'color': 'C0', 
                            'lw' : 1.5, 'linestyle': '-'},
                 'Data': {'color' : 'C0', #blueish
@@ -37,13 +36,12 @@ class Modelling(pg.ModellingBase):
             - 
         * think about splitting all mes related into MeshModelling
         * clarify difference: setData(array|DC), setDataContainer(DC), setDataValues(array)
-        * clarify dataBasis: The unique spatial or temporal origin of a datapoint (time, coordinates, 4-point-positions,
+        * clarify dataSpace(comp. ModelSpace): The unique spatial or temporal origin of a datapoint (time, coordinates, 4-point-positions,
                                                                      receiver/transmitter positions
                                                                      counter)
-            - Every inversion needs, dataValues and dataBasis
-            - DataContainer contain, dataValues and dataBasis
-            - maybe better Name for dataBase -> dataSpace, for model (modelSpace)
-                - initialze both with initDataSpace(), initMdelSpace
+            - Every inversion needs, dataValues and dataSpace
+            - DataContainer contain, dataValues and dataSpace
+            - initialze both with initDataSpace(), initModelSpace
     """
     def __init__(self, **kwargs):
         """
@@ -57,6 +55,7 @@ class Modelling(pg.ModellingBase):
         super(Modelling, self).__init__(**kwargs)
 
         self._regionProperties = {}
+        self._regionsNeedUpdate = False
         self._modelTrans = pg.RTransLog() # Model transformation operator
 
         self.fop = None
@@ -90,7 +89,6 @@ class Modelling(pg.ModellingBase):
 
         """
         sm = self.regionManager().createStartModel()
-        self.setStartModel(sm)
         return sm
 
     def regionManager(self):
@@ -132,22 +130,19 @@ class Modelling(pg.ModellingBase):
             print(self._regionProperties)
             pg.error("no region for regionNr:", regionNr)
 
-    def setRegionProperties(self, regionNr,
-                            startModel=None, limits=None, trans=None,
-                            cType=None, zWeight=None, modelControl=None):
+    def setRegionProperties(self, regionNr, **kwargs):
         """ Set region properties. regionNr can be wildcard '*' for all regions.
 
+                            startModel=None, limits=None, trans=None,
+                            cType=None, zWeight=None, modelControl=None,
+                            background=None, single=None, fix=None):
         Parameters
         ----------
 
         """
-        #print("#", regionNr, startModel, limits, trans,
-              #cType, zWeight, modelControl)
-
         if regionNr is '*':
             for regionNr in self.regionManager().regionIdxs():
-                self.setRegionProperties(regionNr, startModel, limits, trans,
-                                         cType, zWeight, modelControl)
+                self.setRegionProperties(regionNr, **kwargs)
             return
 
         if regionNr not in self._regionProperties:
@@ -157,66 +152,56 @@ class Modelling(pg.ModellingBase):
                                                 'cType': 1,
                                                 'limits': [0, 0],
                                                 'trans': 'Log',
+                                                'background': None,
+                                                'single': None,
+                                                'fix': None,
                                               }
-
-        rC = self.regionManager().regionCount()
-
-        def _setProperty(name, val):
+        
+        for key, val in kwargs.items():
             if val is not None:
-                
-                v = val
-
-                # v = None
-                # if hasattr(val, '__iter__') and not isinstance(val, str):
-                #     if rC == len(val):
-                #         v = val[regionNr - 1]
-                #     elif rC == len(val) + 1:
-                #         v = val[regionNr]
-                #     else:
-                #         print(regionNr, rC, name, val)
-                #         raise Exception("Value range for region property invalid.")
-                # else:
-                #     v = val
-
-                if v is not None:
-                    #print("Set ", regionNr, name, v)
-                    self._regionProperties[regionNr][name] = v
-
-        _setProperty('startModel', startModel)
-        _setProperty('limits', limits)
-        _setProperty('trans', trans)
-        _setProperty('cType', cType)
-        _setProperty('zWeight', zWeight)
-        _setProperty('modelControl', modelControl)
+                if self._regionProperties[regionNr][key] != val:
+                    self._regionsNeedUpdate = True
+                    self._regionProperties[regionNr][key] = val
 
     def _applyRegionProperties(self):
         """
         """
+        if not self._regionsNeedUpdate:
+            return 
+
         ### call super class her because self.regionManager() calls always 
         ###  __applyRegionProperies itself
         rMgr = super(Modelling, self).regionManager()
-
+        pg.p("apply region")
         for rID, vals in self._regionProperties.items():
-            if 'startModel' in vals:
-                if vals['startModel'] is not None:
-                    rMgr.region(rID).setStartModel(vals['startModel'])
+
+            if vals['background'] is not None:
+                pg.critical('implementme')
+                continue
+
+            if vals['single'] is not None:
+                pg.critical('implementme')
+                continue
+
+            if vals['fix'] is not None:
+                pg.critical('implementme')
+                continue
+
+            if vals['startModel'] is not None:
+                rMgr.region(rID).setStartModel(vals['startModel'])
 
             rMgr.region(rID).setModelTransStr_(vals['trans'])
+            rMgr.region(rID).setConstraintType(vals['cType'])
+            rMgr.region(rID).setZWeight(vals['zWeight'])
+            rMgr.region(rID).setModelControl(vals['modelControl'])
 
-            if 'cType' in vals:
-                rMgr.region(rID).setConstraintType(vals['cType'])
-
-            if 'zWeight' in vals:
-                rMgr.region(rID).setZWeight(vals['zWeight'])
-
-            if 'modelControl' in vals:
-                rMgr.region(rID).setModelControl(vals['modelControl'])
-
-            if vals['limits'][0] >= 0:
+            if vals['limits'][0] > 0:
                 rMgr.region(rID).setLowerBound(vals['limits'][0])
 
-            if vals['limits'][1] >= 0:
+            if vals['limits'][1] > 0:
                 rMgr.region(rID).setUpperBound(vals['limits'][1])
+
+        self._regionsNeedUpdate = False
 
     def setData(self, data):
         """ 

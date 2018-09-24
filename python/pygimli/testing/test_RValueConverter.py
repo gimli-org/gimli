@@ -138,12 +138,11 @@ class TestRVectorMethods(unittest.TestCase):
 
         x = np.arange(10, dtype=np.long)
         a = pg.RVector(x)
-        
+
         self.assertEqual(a.size(), len(x))
         self.assertEqual(pg.sum(a), sum(x))
-        
-        self.assertEqual(pg.sum(x), sum(x))
 
+        self.assertEqual(pg.sum(x), sum(x))
 
     def test_NumpyToCVector(self):
         pass
@@ -208,7 +207,7 @@ class TestRVectorMethods(unittest.TestCase):
         v = pg.RVector(10, 1)
         b = (v == 1)
         self.assertEqual(type(b), pg.BVector)
-        
+
         v = pg.RVector(10, 1.1)
         b = (v == 1.1)
         self.assertEqual(type(b), pg.BVector)
@@ -297,7 +296,7 @@ class TestRVectorMethods(unittest.TestCase):
         np.testing.assert_equal(sum(x - 1.0), 0.0)
         np.testing.assert_equal(sum(x - np.float32(1)), 0.0)
         np.testing.assert_equal(sum(x - np.float64(1)), 0.0)
-        
+
         # HarmonicModelling(size_t nh, const RVector & tvec);
         pg.HarmonicModelling(np.int32(1), x);
         pg.HarmonicModelling(np.uint32(1), x);
@@ -316,12 +315,12 @@ class TestRVectorMethods(unittest.TestCase):
         np.testing.assert_equal(x -1 , pg.Pos(0.0, 0.0, 0.0))
         np.testing.assert_equal(x - np.float32(1), pg.Pos(0.0, 0.0, 0.0))
         np.testing.assert_equal(x - np.float64(1), pg.Pos(0.0, 0.0, 0.0))
-        
+
 
 if __name__ == '__main__':
     pg.setDeepDebug(0)
     test = TestRVectorMethods()
-    
+
     #test.test_IndexArrayToNumpy()
     #test.test_NumpyToIVector()
     #test.test_NumpyToScalar()
