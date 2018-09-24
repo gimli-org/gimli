@@ -330,13 +330,13 @@ public:
     /*! Inplace remove from Bvector. Sensors are preserved.*/
     inline void remove(const BVector & bvec){ remove(find(bvec)); }
 
-    /*! Mark data valid by index vector. Shortcut for this->ref("valid")->setVal(idx, valid). */
-    inline void markValid(const IndexArray & idx, bool valid=true){
-        dataMap_["valid"].setVal(valid, idx);
-    }
     /*! Mark data valid by index vector. Shortcut for this->ref("valid")->setVal(bool vector, valid). */
     inline void markValid(const BVector & bvec, bool valid=true){
         dataMap_["valid"].setVal(valid, find(bvec));
+    }
+    /*! Mark data valid by index vector. Shortcut for this->ref("valid")->setVal(idx, valid). */
+    inline void markValid(const IndexArray & idx, bool valid=true){
+        dataMap_["valid"].setVal(valid, idx);
     }
     /*! Mark single data valid. this->ref("valid")->setVal(idx, valid). */
     inline void markValid(Index idx, bool valid=true){
@@ -344,10 +344,10 @@ public:
     }
 
     /*! Mark data invalid by index vector. */
-    inline void markInvalid(const IndexArray & idx){ markValid(idx, false); }
+    inline void markInvalid(const BVector & bvec){ markValid(find(bvec), false); }
 
     /*! Mark data invalid by index vector. */
-    inline void markInvalid(const BVector & bvec){ markValid(find(bvec), false); }
+    inline void markInvalid(const IndexArray & idx){ markValid(idx, false); }
 
     /*! Mark data invalid by index. */
     inline void markInvalid(Index idx){ markValid(idx, false); }
