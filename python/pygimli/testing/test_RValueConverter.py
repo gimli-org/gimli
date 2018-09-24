@@ -276,10 +276,10 @@ class TestRVectorMethods(unittest.TestCase):
         pg.HarmonicModelling(np.int64(1), x);
         pg.HarmonicModelling(np.uint64(1), x);
 
-        pg.PolynomialModelling(1, np.int32(1), x3, x);
-        pg.PolynomialModelling(1, np.int64(1), x3, x);
-        pg.PolynomialModelling(1, np.uint32(1), x3, x);
-        pg.PolynomialModelling(1, np.uint64(1), x3, x);
+        # pg.PolynomialModelling(1, np.int32(1), x3, x);
+        # pg.PolynomialModelling(1, np.int64(1), x3, x);
+        # pg.PolynomialModelling(1, np.uint32(1), x3, x);
+        # pg.PolynomialModelling(1, np.uint64(1), x3, x);
 
         x = pg.Pos(0.0, 0.0, 0.0)
         x += np.float32(1)
