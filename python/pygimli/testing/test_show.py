@@ -7,16 +7,22 @@ import pygimli as pg
 import pygimli.meshtools as mt
 
 # Create geometry definition for the modeling domain
+print(pg._("merge", c='g'))
 world = mt.createWorld(start=[-10, 0], end=[10, -16],
                        layers=[-8], worldMarker=False)
 
+pg.show(world)
+pg.wait()
+print(pg._("merge", c='g'))
 # Create a heterogeneous block
 block = mt.createRectangle(start=[-6, -3.5], end=[6, -6.0],
                            marker=4,  boundaryMarker=10, area=0.1)
 
+print(pg._("merge", c='g'))
 circ = mt.createCircle(pos=[0, -11], radius=2, boundaryMarker=11, isHole=True)
 
 # Merge geometrical entities
+print(pg._("merge", c='g'))
 geom = mt.mergePLC([world, block, circ])
 mesh = mt.createMesh(geom)
 
