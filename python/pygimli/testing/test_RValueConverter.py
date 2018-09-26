@@ -84,6 +84,41 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(a.size(), len(x))
         self.assertEqual(pg.sum(a), sum(x))
 
+    def test_NumpyToIVector(self):
+        """Implemented in custom_rvalue.cpp."""
+        x = np.array(range(-10, 10))
+        a = pg.IVector(x)
+        self.assertEqual(a.size(), len(x))
+        self.assertEqual(pg.sum(a), sum(x))
+
+        x = np.arange(-10, 10, dtype=np.int64)
+        a = pg.IVector(x)
+        self.assertEqual(a.size(), len(x))
+        self.assertEqual(pg.sum(a), sum(x))
+
+        x = np.arange(-10, 10, dtype="int")
+        a = pg.IVector(x)
+        self.assertEqual(a.size(), len(x))
+        self.assertEqual(pg.sum(a), sum(x))
+
+        x = np.array([-10, 100], dtype="int")
+        a = pg.IVector(x)
+        self.assertEqual(a.size(), len(x))
+        self.assertEqual(pg.sum(a), sum(x))
+
+        x = np.arange(10, dtype=np.long)
+        a = pg.IVector(x)
+        self.assertEqual(a.size(), len(x))
+        self.assertEqual(pg.sum(a), sum(x))
+        self.assertEqual(pg.sum(x), sum(x))
+
+    def test_NumpyToBVector(self):
+        """Implemented in custom_rvalue.cpp."""
+        x = np.array(range(-10, 10), dtype=float)
+        b = pg.BVector(x > 0.)
+        self.assertEqual(b[10], False)
+        self.assertEqual(b[11], True)
+
     def test_NumpyToRVector(self):
         """Implemented in custom_rvalue.cpp."""
         x = np.arange(0, 1., 0.2)
@@ -103,20 +138,13 @@ class TestRVectorMethods(unittest.TestCase):
 
         x = np.arange(10, dtype=np.long)
         a = pg.RVector(x)
-        
+
         self.assertEqual(a.size(), len(x))
         self.assertEqual(pg.sum(a), sum(x))
-        
+
         self.assertEqual(pg.sum(x), sum(x))
 
-    def test_NumpyToIVector(self):
-        x = np.arange(10, dtype=np.long)
-        a = pg.IVector(x)
-        self.assertEqual(a.size(), len(x))
-        self.assertEqual(pg.sum(a), sum(x))
-        
-        self.assertEqual(pg.sum(x), sum(x))
-         
+
     def test_NumpyToCVector(self):
         pass
         # will not work .. until an idea how to choose right api for function with and RVector and CVector, e.g. sum()
@@ -180,7 +208,7 @@ class TestRVectorMethods(unittest.TestCase):
         v = pg.RVector(10, 1)
         b = (v == 1)
         self.assertEqual(type(b), pg.BVector)
-        
+
         v = pg.RVector(10, 1.1)
         b = (v == 1.1)
         self.assertEqual(type(b), pg.BVector)
@@ -269,7 +297,7 @@ class TestRVectorMethods(unittest.TestCase):
         np.testing.assert_equal(sum(x - 1.0), 0.0)
         np.testing.assert_equal(sum(x - np.float32(1)), 0.0)
         np.testing.assert_equal(sum(x - np.float64(1)), 0.0)
-        
+
         # HarmonicModelling(size_t nh, const RVector & tvec);
         pg.HarmonicModelling(np.int32(1), x);
         pg.HarmonicModelling(np.uint32(1), x);
@@ -288,16 +316,17 @@ class TestRVectorMethods(unittest.TestCase):
         np.testing.assert_equal(x -1 , pg.Pos(0.0, 0.0, 0.0))
         np.testing.assert_equal(x - np.float32(1), pg.Pos(0.0, 0.0, 0.0))
         np.testing.assert_equal(x - np.float64(1), pg.Pos(0.0, 0.0, 0.0))
-        
+
 
 if __name__ == '__main__':
     pg.setDeepDebug(0)
     test = TestRVectorMethods()
-    
+
     #test.test_IndexArrayToNumpy()
     #test.test_NumpyToIVector()
     #test.test_NumpyToScalar()
-    #exit()
+    # test.test_NumpyToBVector()
+    # exit()
     # test.test_BVectorToNumpy()
     # test.test_NumpyToIVector()
     # test.test_NumpyToRVector()

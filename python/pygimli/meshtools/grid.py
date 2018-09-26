@@ -10,7 +10,7 @@ import pygimli as pg
 from .polytools import polyAddVIP, polyCreateWorld, tetgen
 
 
-def createGrid(**kwargs):
+def createGrid(x=None, y=None, z=None, **kwargs):
     """Create grid style mesh.
 
     Generate simple grid with defined node positions for each dimension.
@@ -18,10 +18,8 @@ def createGrid(**kwargs):
     and consists out of edges (1D - x), quads (2D- x and y), or
     hexahedrons(3D- x, y, and z).
 
-
     Parameters
     ----------
-
     kwargs :
         x : array
             x-coordinates for all Nodes (1D, 2D, 3D)
@@ -47,6 +45,19 @@ def createGrid(**kwargs):
     >>> _ = pg.show(mesh)
     >>> pg.wait()
     """
+    if x is not None:
+        if isinstance(x, int):
+            x = list(range(x))
+        kwargs['x'] = x
+    if y is not None:
+        if isinstance(y, int):
+            y = list(range(y))
+        kwargs['y'] = y
+    if z is not None:
+        if isinstance(z, int):
+            z = list(range(z))
+        kwargs['z'] = z
+
     return pg.core._pygimli_.createGrid(**kwargs)
 
 def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1, quality=34.0,

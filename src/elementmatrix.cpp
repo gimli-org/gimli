@@ -26,7 +26,7 @@
 
 namespace GIMLI{
 
-template < > ElementMatrix < double > &
+template < > DLLEXPORT ElementMatrix < double > &
 ElementMatrix < double >::u(const MeshEntity & ent,
                             const RVector & w,
                             const R3Vector & x,
@@ -62,7 +62,7 @@ ElementMatrix < double >::u(const MeshEntity & ent,
     return *this;
 }
 
-template < > ElementMatrix < double > & ElementMatrix < double >::dudi(const MeshEntity & ent,
+template <> DLLEXPORT ElementMatrix < double > & ElementMatrix < double >::dudi(const MeshEntity & ent,
                                                         const RVector & w,
                                                         const R3Vector & x,
                                                         Index dim,
@@ -113,7 +113,7 @@ template < > ElementMatrix < double > & ElementMatrix < double >::dudi(const Mes
 }
 
 template < >
-ElementMatrix < double > & ElementMatrix < double >::u2(const MeshEntity & ent,
+DLLEXPORT ElementMatrix < double > & ElementMatrix < double >::u2(const MeshEntity & ent,
                                                         const RVector & w,
                                                         const R3Vector & x,
                                                         bool verbose){
@@ -157,7 +157,7 @@ ElementMatrix < double > & ElementMatrix < double >::u2(const MeshEntity & ent,
 }
 
 template < >
-ElementMatrix < double > & ElementMatrix < double >::ux2(const MeshEntity & ent,
+DLLEXPORT ElementMatrix < double > & ElementMatrix < double >::ux2(const MeshEntity & ent,
                                                          const RVector & w,
                                                          const R3Vector & x,
                                                          bool verbose){
@@ -188,7 +188,7 @@ ElementMatrix < double > & ElementMatrix < double >::ux2(const MeshEntity & ent,
 }
 
 template < > ElementMatrix < double > &
-ElementMatrix < double >::ux2uy2(const MeshEntity & ent,
+DLLEXPORT ElementMatrix < double >::ux2uy2(const MeshEntity & ent,
                                  const RVector & w,
                                  const R3Vector & x,
                                  bool verbose){
@@ -249,7 +249,7 @@ ElementMatrix < double >::ux2uy2(const MeshEntity & ent,
     return *this;
 }
 
-template < > ElementMatrix < double > &
+template < > DLLEXPORT ElementMatrix < double > &
 ElementMatrix < double >::ux2uy2uz2(const MeshEntity & ent,
                                     const RVector & w,
                                     const R3Vector & x,
@@ -323,7 +323,7 @@ ElementMatrix < double >::ux2uy2uz2(const MeshEntity & ent,
     return *this;
 }
 
-template < > ElementMatrix < double > &
+template < > DLLEXPORT ElementMatrix < double > &
 ElementMatrix < double >::u(const MeshEntity & ent){
     uint nVerts = ent.nodeCount();
     if (size() != nVerts) resize(nVerts);
@@ -372,7 +372,7 @@ ElementMatrix < double >::u(const MeshEntity & ent){
     return *this;
 }
 
-template < > ElementMatrix < double > & ElementMatrix < double >::u2(const MeshEntity & ent){
+template < > DLLEXPORT ElementMatrix < double > & ElementMatrix < double >::u2(const MeshEntity & ent){
     uint nVerts = ent.nodeCount();
     if (size() != nVerts) resize(nVerts);
 
@@ -490,7 +490,8 @@ template < > ElementMatrix < double > & ElementMatrix < double >::u2(const MeshE
     return *this;
 }
 
-template < > ElementMatrix < double > & ElementMatrix < double >::ux2uy2uz2(const Cell & cell, bool useCache){
+template < > DLLEXPORT ElementMatrix < double > & 
+ElementMatrix < double >::ux2uy2uz2(const Cell & cell, bool useCache){
 
     uint dim = cell.nodeCount();
     if (size() != dim) resize(dim);
