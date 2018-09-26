@@ -183,7 +183,9 @@ long DataContainer::createSensor(const RVector3 & pos, double tolerance){
 
 void DataContainer::registerSensorIndex(const std::string & token) {
     dataSensorIdx_.insert(token);
-    this->set(token, RVector(this->size(), -1.0));
+    if (!this->exists(token)){
+        this->set(token, RVector(this->size(), -1.0));
+    }
 }
 
 bool DataContainer::isSensorIndex(const std::string & token) const {
