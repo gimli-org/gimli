@@ -96,16 +96,11 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(sum(2.0 * v), 10)
         self.assertEqual(sum(1.0 / v), 5)
 
-
-        v2 = np.zeros(len(v)) + 0.01
-        print(v)
-        print(v2)
-        # test np * pg
-        self.assertEqual(sum(v2*v), 5*0.01)
-        # test pg * np
-        self.assertEqual(sum(v*v2), 5*0.01)
-        print(v*v2)
-        exit()
+        v2 = np.ones(len(v))* 0.01
+        # check pg * np
+        self.assertEqual(sum(v * v2), 5*0.01)
+        # check np * pg
+        self.assertEqual(sum(v2 * v), 5*0.01)
 
         #v = pg.CVector(5, 1.0)
 

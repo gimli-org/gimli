@@ -159,7 +159,7 @@ class Modelling(pg.ModellingBase):
         
         for key, val in kwargs.items():
             if val is not None:
-                if self._regionProperties[regionNr][key] != val:
+                if not self._regionProperties[regionNr][key] is val:
                     self._regionsNeedUpdate = True
                     self._regionProperties[regionNr][key] = val
 
@@ -172,7 +172,6 @@ class Modelling(pg.ModellingBase):
         ### call super class her because self.regionManager() calls always 
         ###  __applyRegionProperies itself
         rMgr = super(Modelling, self).regionManager()
-        pg.p("apply region")
         for rID, vals in self._regionProperties.items():
 
             if vals['background'] is not None:

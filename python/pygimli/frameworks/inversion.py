@@ -562,7 +562,6 @@ class PetroInversion(Inversion):
         super(PetroInversion, self).__init__(fop=fop, **kwargs)
 
     def setForwardOperator(self, fop):
-        pg.p('cehck')
         if not isinstance(fop, pg.frameworks.PetroModelling):
             pg.critical('fop need to be derived from '
                         'pg.modelling.PetroModelling but is of type:', fop)
