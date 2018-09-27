@@ -105,7 +105,7 @@ class Modelling(pg.ModellingBase):
         """ 
         """
         self.fop = fop
-
+        
     def setMesh(self, mesh, ignoreRegionManager=False):
         """ 
         """
@@ -208,8 +208,9 @@ class Modelling(pg.ModellingBase):
         """
         if isinstance(data, pg.DataContainer):
             self.setDataContainer(data)
-
-        raise Exception("nothing known to do? Implement me in derived classes")
+        else:
+            print(data)
+            pg.critical("nothing known to do? Implement me in derived classes")
         
     def setDataSpace(self, **kwargs):
         """Set data space, e.g., DataContainer, times, coordinates."""
@@ -280,7 +281,7 @@ class Block1DModelling(Modelling):
         self._withMultiThread = True
         self._nPara = nPara # number of parameters per layer
 
-        # store this to avoid reinitialization of not needed
+        # store this to avoid reinitialization if not needed
         self._nLayers = 0 
 
     @property

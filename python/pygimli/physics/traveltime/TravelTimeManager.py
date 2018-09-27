@@ -13,8 +13,9 @@ from . raplot import drawTravelTimeData
 
 class TravelTimeDijkstraModelling(MeshModelling):
     def __init__(self, **kwargs):
-        super(TravelTimeDijkstraModelling, self).__init__(**kwargs)
-        self.fop = pg.TravelTimeDijkstraModelling()
+        fop = pg.TravelTimeDijkstraModelling()
+        
+        super(TravelTimeDijkstraModelling, self).__init__(fop=fop, **kwargs)
 
         self.response = self.fop.response
         self.jacobian = self.fop.jacobian
@@ -22,7 +23,9 @@ class TravelTimeDijkstraModelling(MeshModelling):
         self.setJacobian(self.fop.jacobian())
 
     def createStartModel(self, t):
+        pg.p('createStartModel', pg.median(t))
         sm = self.fop.createDefaultStartModel()
+        pg.p(sm)
         return sm
 
     def drawData(self, ax, data, err=None, label=None):
@@ -182,10 +185,6 @@ class TravelTimeManager(MeshMethodManager):
             fop = TravelTimeDijkstraModelling(**kwargs)
 
         return fop
-
-    @staticmethod
-    def simulate(mesh, slowness, scheme, verbose=False, **kwargs):
-        print( "static")
 
     def simulate(self, mesh, slowness, scheme, **kwargs):
         """

@@ -389,13 +389,18 @@ class MarquardtInversion(Inversion):
         return self.model
 
 class Block1DInversion(MarquardtInversion):
+    """
+    Attributes
+    ----------
+    nLayers : int
+
+    """
     def __init__(self, fop=None, **kwargs):
-        super(Block1DInversion, self).__init__(fop, **kwargs)
+        super(Block1DInversion, self).__init__(fop=fop, **kwargs)
         # attributes:
         # nLayers, layerLimits, fixLayers      
-        
+       
         self._nLayers = 4
-        
 
     def setForwardOperator(self, fop):
         if not isinstance(fop, pg.frameworks.Block1DModelling):
@@ -490,7 +495,7 @@ class MeshInversion(Inversion):
     """
     def __init__(self, fop=None, **kwargs):
     
-        super(MeshInversion, self).__init__(fop, **kwargs)
+        super(MeshInversion, self).__init__(fop=fop, **kwargs)
         self._mesh = None
         self._zWeight = 1.0
 
@@ -546,16 +551,23 @@ class MeshInversion(Inversion):
 
 class PetroInversion(Inversion):
     def __init__(self, petro, mgr=None, fop=None, **kwargs):
-        self.mgr = None
+        self.mgr = mgr
 
-        if mgr is not None:
+        if self.mgr is not None:
             fop = self.mgr.createForwardOperator(**kwargs)
 
-        f = None
         if fop is not None:
-            f = pg.frameworks.PetroModelling(fop, petro)
+            fop = pg.frameworks.PetroModelling(fop, petro)
 
-        super(PetroInversion, self).__init__(f, **kwargs)
+        super(PetroInversion, self).__init__(fop=fop, **kwargs)
+
+    def setForwardOperator(self, fop):
+        pg.p('cehck')
+        if not isinstance(fop, pg.frameworks.PetroModelling):
+            pg.critical('fop need to be derived from '
+                        'pg.modelling.PetroModelling but is of type:', fop)
+            
+        return super(PetroInversion, self).setForwardOperator(fop)
 
     def run(self, dataVals, errVals, **kwargs):
         """

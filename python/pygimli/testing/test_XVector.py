@@ -96,6 +96,17 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(sum(2.0 * v), 10)
         self.assertEqual(sum(1.0 / v), 5)
 
+
+        v2 = np.zeros(len(v)) + 0.01
+        print(v)
+        print(v2)
+        # test np * pg
+        self.assertEqual(sum(v2*v), 5*0.01)
+        # test pg * np
+        self.assertEqual(sum(v*v2), 5*0.01)
+        print(v*v2)
+        exit()
+
         #v = pg.CVector(5, 1.0)
 
         #self.assertEqual(sum(v + 1), 10)
@@ -301,9 +312,9 @@ class TestRVectorMethods(unittest.TestCase):
         
 
 if __name__ == '__main__':
-    # pg.setDeepDebug(1)
-    # t = TestRVectorMethods()
-    # # t.test_IVectorOP()
+    pg.setDeepDebug(1)
+    t = TestRVectorMethods()
+    t.test_RVectorOP()
     # t.test_Slices()
     
     unittest.main()

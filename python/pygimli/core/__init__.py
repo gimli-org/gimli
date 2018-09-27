@@ -832,8 +832,9 @@ TransCumulative = _pygimli_.RTransCumulative
 ############################
 
 def abs(v):
-    print(v, type(v))
-    print(v, v.__name__)
+    """Should not necessary
+    TODO expose .core.__abs()
+    """
     if isinstance(v, _pygimli_.CVector):
         return _pygimli_.mag(v)
     elif isinstance(v, _pygimli_.R3Vector):
