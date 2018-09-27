@@ -1,8 +1,6 @@
 #ifndef PYTHON_PYGIMLI__H
 #define PYTHON_PYGIMLI__H
 
-
-
 //See best practices section in Py++ documentation
 
 //# gcc 4.8 with linux complains about a couple of atomic problems
@@ -36,7 +34,6 @@
 
 //#define PYTEST
 #ifdef PYTEST
-
 
  #include <iostream>
  #include <fstream>
