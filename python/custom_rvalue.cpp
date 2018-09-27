@@ -61,6 +61,13 @@ template < class ValueType > void * checkConvertibleSequenz(PyObject * obj){
                 __DC(obj << "\t Object is nd.array with dtype == bool* .. non convertable to GIMLI::IVector")    
                 return NULL;
             }
+        } else if (typeid(ValueType) == typeid(bool)){
+            PyArrayObject *arr = (PyArrayObject *)obj;
+
+            if (PyArray_TYPE(arr) != NPY_BOOL){
+                __DC(obj << "\t Object is nd.array with dtype != bool .. non convertable to GIMLI::BVector")    
+                return NULL;
+            }
         }
 
         return obj;
