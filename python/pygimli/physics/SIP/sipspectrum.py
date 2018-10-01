@@ -8,6 +8,7 @@ import codecs
 from math import log10, exp, pi
 import numpy as np
 import matplotlib.pyplot as plt
+
 import pygimli as pg
 from .importexport import readTXTSpectrum, readFuchs3File, readRadicSIPFuchs
 from .plotting import drawAmplitudeSpectrum, drawPhaseSpectrum, showSpectrum
@@ -90,14 +91,16 @@ class SIPSpectrum(object):
         fnLow = filename.lower()
         if 'SIP Fuchs III' in firstLine:
             if verbose:
-                print("Reading SIP Fuchs III file")
-            self.f, self.amp, self.phi, header = readFuchs3File(filename)
+                pg.info("Reading SIP Fuchs III file")
+            self.f, self.amp, self.phi, header = readFuchs3File(filename, 
+                                                    verbose=verbose, **kwargs)
             self.phi *= -np.pi/180.
             # print(header) # not used?
         elif 'SIP-Fuchs Software rev.: 070903' in firstLine:
             if verbose:
-                print("Reading SIP Fuchs file")
-            self.f, self.amp, self.phi, drhoa, dphi = readRadicSIPFuchs(filename, **kwargs)
+                pg.info("Reading SIP Fuchs file")
+            self.f, self.amp, self.phi, drhoa, dphi = readRadicSIPFuchs(filename, 
+                                                    verbose=verbose, **kwargs)
             self.phi *= -np.pi/180.
         elif fnLow.endswith('.txt') or fnLow.endswith('.csv'):
             self.basename = filename[:-4]
@@ -135,6 +138,7 @@ class SIPSpectrum(object):
         """Sort data along increasing frequency (e.g. useful for KK)."""
         if self.f is None:
             return
+
         ind = np.argsort(self.f)
         self.amp = self.amp[ind]
         self.phi = self.phi[ind]
@@ -527,6 +531,7 @@ class SIPSpectrum(object):
                 ax[2].grid(True)
                 ax[2].set_xlabel(r'$\tau$ (s)')
                 ax[2].set_ylabel('$m$ (-)')
+
         else:
             self.phiDD = IDD.response()
             if showFit:
@@ -616,14 +621,13 @@ def test_SIPSPectrum():
 
 def run_SIPSPectrum(myfile):
     sip = SIPSpectrum(myfile)
-
     #    sip.showData(znorm=True)
     if True:  # Pelton
         sip.fitCCEM()
     else:
         sip.removeEpsilonEffect()
         sip.fitColeCole(useCond=False)
-    #    sip.showDataKK()
+
     # %%
     sip.fitDebyeModel()  # , showFit=True)
     # %% create titles and plot data, fit and model
@@ -635,12 +639,3 @@ if __name__ == "__main__":
         test_SIPSPectrum()
     else:
         run_SIPSPectrum(sys.argv[1])
-
-    pg.wait()
-
-
-
-
-
-
-
