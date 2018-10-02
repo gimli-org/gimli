@@ -13,20 +13,36 @@ from . raplot import drawTravelTimeData
 
 class TravelTimeDijkstraModelling(MeshModelling):
     def __init__(self, **kwargs):
-        fop = pg.TravelTimeDijkstraModelling()
+        self.dijkstra = pg.TravelTimeDijkstraModelling()
         
-        super(TravelTimeDijkstraModelling, self).__init__(fop=fop, **kwargs)
+        super(TravelTimeDijkstraModelling, self).__init__(**kwargs)
 
-        self.response = self.fop.response
-        self.jacobian = self.fop.jacobian
-        self.createJacobian = self.fop.createJacobian
-        self.setJacobian(self.fop.jacobian())
+        # expose 
+        self.jacobian = self.dijkstra.jacobian
+        self.createJacobian = self.dijkstra.createJacobian
 
+        self.setJacobian(self.dijkstra.jacobian())
+ 
+    def regionManagerRef(self):
+        # necessary because core dijkstra use its own RM
+        return self.dijkstra.regionManagerRef()
+     
+    def setMesh(self, mesh, ignoreRegionManager=False):
+        """
+        """
+        # necessary because core dijkstra use its own mesh management
+        self.dijkstra.setMesh(mesh)
+        super(TravelTimeDijkstraModelling, self).setMesh(mesh, ignoreRegionManager)
+
+    def setData(self, data):
+        self.dijkstra.setData(data)
+        
     def createStartModel(self, t):
-        pg.p('createStartModel', pg.median(t))
-        sm = self.fop.createDefaultStartModel()
-        pg.p(sm)
-        return sm
+        pg.p(t)
+        return self.dijkstra.createDefaultStartModel()
+        
+    def response(self, par):
+        return self.dijkstra.response(par)
 
     def drawData(self, ax, data, err=None, label=None):
         """

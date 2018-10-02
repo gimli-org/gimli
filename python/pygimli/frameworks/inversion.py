@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """pyGIMLi - Inversion Frameworks.
 
-These are basic inversion frameworks that usually need a forward operator to run.
+These are basic inversion frameworks that usually needs a forward operator to run.
 """
 import numpy as np
 
@@ -133,10 +133,10 @@ class Inversion(object):
             else:
                 return self.inv.model        
         return self._model
+
     @model.setter
     def model(self, m):
         self._model = m
-
 
     @property
     def response(self):
@@ -164,7 +164,10 @@ class Inversion(object):
 
     @property
     def parameterCount(self):
-        return self.fop.regionManager().parameterCount()
+        pC = self.fop.regionManager().parameterCount()
+        if pC == 0:
+            pg.warn("Parameter count is 0")
+        return pC
 
     @property
     def maxIter(self):
@@ -212,7 +215,7 @@ class Inversion(object):
             return self._inv.run(dataVals, errorVals, **kwargs)
 
         if self.fop is None:
-            raise Exception("Need a valid forward operator for inversion run.")
+            raise Exception("Need a valid forward operator for the inversion run.")
 
         self.verbose = kwargs.pop('verbose', self.verbose)
         self.debug   = kwargs.pop('debug', self.debug)
@@ -232,10 +235,10 @@ class Inversion(object):
             self._errorVals = errorVals
 
         if self._dataVals is None:
-            raise Exception("Inversion framework need data values to run")
+            raise Exception("Inversion framework needs data values to run")
 
         if self._errorVals is None:
-            raise Exception("Inversion framework need data error values to run")
+            raise Exception("Inversion framework needs data error values to run")
 
         sm = kwargs.pop('startModel', None)
         if sm is not None:
@@ -250,6 +253,12 @@ class Inversion(object):
 
         if self.verbose:
             print("inv.start()")
+            print("fop:", self.inv.fop())
+            print("Data transformation:", self.inv.transData())
+            print("Model transformation:", self.inv.transModel())
+            print("min/max (data): {0:.2e}, {1:.2e}".format(min(self._dataVals), max(self._dataVals)))
+            print("min/max (error): {0:.3f}%, {1:.3f}%".format(100*min(self._errorVals), 100*max(self._errorVals)))
+            print("min/max (start model): {0:.2f}, {1:.2f}".format(min(self.startModel), max(self.startModel)))
 
         ### To ensure reproducability of the run() call inv.start() will
         ### reset self.inv.model() to fop.startModel().
@@ -404,9 +413,9 @@ class Block1DInversion(MarquardtInversion):
 
     def setForwardOperator(self, fop):
         if not isinstance(fop, pg.frameworks.Block1DModelling):
-            pg.critical('fop need to be derived from '
+            pg.critical('Forward operator needs to be an instance of '
                         'pg.modelling.Block1DModelling but is of type:', fop)
-            
+                        
         return super(Block1DInversion, self).setForwardOperator(fop)
         
     def setLayers(self, nLayers):
@@ -430,7 +439,7 @@ class Block1DInversion(MarquardtInversion):
             if hasattr(fixLayers, '__iter__'):
                 if len(fixLayers) != self.fop.nLayers:
                     print("fixLayers:", fixLayers)
-                    raise Exception("fixlayers need to have a length of nLayers-1=" + str(self.fop.nLayers-1))
+                    raise Exception("fixlayers needs to have a length of nLayers-1=" + str(self.fop.nLayers-1))
                 self.fop.setRegionProperties(0, startModel=fixLayers)
 
             # TODO DRY to self.fop.createStartModel
@@ -528,9 +537,11 @@ class MeshInversion(Inversion):
             bk = pg.unique(self.fop.regionIdxs())[0]
             self.fop.setRegionProperties(bk, background=True)
             
+
     def run(self, dataVals, errVals, mesh=None, zWeight=None, **kwargs):
         """
         """
+        pg.p('MeshInv')
         if mesh is not None:
             self.setMesh(mesh)
 
@@ -540,9 +551,9 @@ class MeshInversion(Inversion):
         if zWeight is None:
             zWeight = self._zWeight
 
-        pg.p(zWeight)
         self.fop.setRegionProperties('*', zWeight=zWeight)
-        
+
+        print(self.fop.regionProperties())        
         #### more mesh related inversion attributes to set?
 
         self.model = super(MeshInversion, self).run(dataVals, errVals, **kwargs)
@@ -563,37 +574,23 @@ class PetroInversion(Inversion):
 
     def setForwardOperator(self, fop):
         if not isinstance(fop, pg.frameworks.PetroModelling):
-            pg.critical('fop need to be derived from '
+            pg.critical('Forward operator needs to be an instance of '
                         'pg.modelling.PetroModelling but is of type:', fop)
-            
+                        
         return super(PetroInversion, self).setForwardOperator(fop)
 
     def run(self, dataVals, errVals, **kwargs):
         """
         """
-        ## this is Managers job
-        #if isinstance(data, pg.DataContainer):
-            #self.fop.setDataContainer(data)
-            #dataVals = self.mgr.dataVals(data)
-            #errVals = self.mgr.relErrVals(data)
-        #else:
-            #raise Exception("Implement me")
-        print("------------------------------------------------")
-        print("PetroInversion:run()")
-
+        pg.p('PetroInv')
         if 'limits' in kwargs:
             limits = kwargs.pop('limits', [0., 1.])
-            self.fop._transModel.setLowerBound(limits[0])
-            self.fop._transModel.setUpperBound(limits[1])
 
-        #self.tM.setLowerBound(limits[0])
-        #self.tM.setUpperBound(limits[1])
-        #self.inv.setTransModel(self.tM)
-
-
-        #**kwargs['startModel'] automatic here
-
-
+            if len(self.fop.regionManager().regionIdxs()) > 1:
+                pg.critical('implement')
+            else:
+                self.fop.setRegionProperties('*', limits=limits)
+                
         return super(PetroInversion, self).run(dataVals, errVals, **kwargs)
 
 

@@ -41,7 +41,7 @@ class Modelling(pg.ModellingBase):
                                                                      counter)
             - Every inversion needs, dataValues and dataSpace
             - DataContainer contain, dataValues and dataSpace
-            - initialze both with initDataSpace(), initModelSpace
+            - initialize both with initDataSpace(), initModelSpace
     """
     def __init__(self, **kwargs):
         """
@@ -77,11 +77,12 @@ class Modelling(pg.ModellingBase):
 
     def initModelSpace(self, **kwargs):
         """API"""    
+        pass
         
-    def createStartModel(self, **kwargs):
-        """ Create Starting model.
+    def createStartModel(self, dataVals=None):
+        """Create starting model.
 
-        Create Starting model based on current data values and additional args.
+        Create starting model based on current data values and additional args.
 
         TODO
 
@@ -104,16 +105,21 @@ class Modelling(pg.ModellingBase):
     def setForwardOperator(self, fop):
         """ 
         """
+        if not isinstance(fop, pg.frameworks.Modelling):
+            pg.critical('Forward operator needs to be an instance of '
+                        'pg.modelling.Modelling but is of type:', fop)
+
         self.fop = fop
         
     def setMesh(self, mesh, ignoreRegionManager=False):
         """ 
         """
         self.clearRegionProperties()
+
         if self.fop is not None:
             self.fop.setMesh(mesh, ignoreRegionManager)
-
-            if (not ignoreRegionManager):
+            
+            if not ignoreRegionManager:
                 self.setRegionManager(self.fop.regionManagerRef())
         else:
             super(Modelling, self).setMesh(mesh, ignoreRegionManager)
@@ -122,8 +128,11 @@ class Modelling(pg.ModellingBase):
         """Clear all region parameter."""
         self._regionProperties = {}
 
-    def regionProperties(self, regionNr):
+    def regionProperties(self, regionNr=None):
         """Return dictionary of all properties for region number regionNr."""
+        if regionNr is None:
+            return self._regionProperties
+            
         try:
             return self._regionProperties[regionNr]
         except:
@@ -367,60 +376,44 @@ class MeshModelling(Modelling):
 
 
 class PetroModelling(Modelling):
-    """
-    Combine petrophysical relation m(p) with modeling class f(p).
+    """Combine petrophysical relation with the modeling class f(p).
 
-    Combine petrophysical relation m(p) with modeling class f(p) to invert
-    for m (or any inversion transformation) instead of p.
+    Combine petrophysical relation :math:`p(m)` with a modeling class 
+    :math:`f(p)` to invert for the petrophysical model :math:`p` instead 
+    of the geophysical model :math:`m`.
+
+    :math:`p` be the petrophysical model, e.g., porosity, saturation, ...
+    :math:`m` be the geophysical model, e.g., slowness, resistivity, ...
+    
     """
     def __init__(self, fop, trans, **kwargs):
         """Save forward class and transformation, create Jacobian matrix."""
         mesh = kwargs.pop('mesh', None)
 
-        super(PetroModelling, self).__init__(**kwargs)
-        self.fop = fop      # class defining f(p)
-        self._petroTrans = trans  # class defining m(p)
-
-        print("Petro_init:", self, self.fop)
-
-        print(self.fop.regionManagerRef())
-
-        if mesh is not None:
-            self.setMesh(mesh)
-
-        self.setRegionManager(self.fop.regionManagerRef())
+        super(PetroModelling, self).__init__(fop=fop, **kwargs)
+        # petroTrans.fwd(): p(m), petroTrans.inv(): m(p)
+        self._petroTrans = trans  # class defining p(m)
 
         self._jac = pg.MultRightMatrix(self.fop.jacobian())
         self.setJacobian(self._jac)
-
-        #TODO global TransModel will break RegionConcept
-        self._modelTrans = pg.RTransLogLU()
-
+       
+    def createStartModel(self, data):
+        """Use inverse transformation to get m(p) for the starting model."""
+        sm = self.fop.createStartModel(data)
+        pModel = self._petroTrans.inv(sm)
+        return pModel
+        
     def response(self, model):
-        """Use inverse transformation to get p(m) and compute response."""
+        """Use transformation to get p(m) and compute response f(p)."""
         tModel = self._petroTrans(model)
         ret = self.fop.response(tModel)
         return ret
 
     def createJacobian(self, model):
         """Fill the individual jacobian matrices."""
-        self.fop.createJacobian(self._petroTrans(model))
+        tModel = self._petroTrans(model)
+        self.fop.createJacobian(tModel)
         self._jac.r = self._petroTrans.deriv(model)  # set inner derivative
-
-
-
-    #def setMesh(self, mesh):
-        #"""TODO."""
-        #if mesh is None and self.fop.mesh() is None:
-            #raise BaseException("Please provide a mesh for "
-                                #"this forward operator")
-
-        #if mesh is not None:
-            #self.fop.setMesh(mesh)
-            #self.fop.createRefinedForwardMesh(refine=False)
-
-        ## self.setMesh(f.mesh(), ignoreRegionManager=True) # not really nessary
-        #self.setRegionManager(self.fop.regionManagerRef())
 
 
 class LCModelling(Modelling):

@@ -91,14 +91,16 @@ class SIPSpectrum(object):
         fnLow = filename.lower()
         if 'SIP Fuchs III' in firstLine:
             if verbose:
-                print("Reading SIP Fuchs III file")
-            self.f, self.amp, self.phi, header = readFuchs3File(filename)
+                pg.info("Reading SIP Fuchs III file")
+            self.f, self.amp, self.phi, header = readFuchs3File(filename, 
+                                                    verbose=verbose, **kwargs)
             self.phi *= -np.pi/180.
             # print(header) # not used?
         elif 'SIP-Fuchs Software rev.: 070903' in firstLine:
             if verbose:
-                print("Reading SIP Fuchs file")
-            self.f, self.amp, self.phi, drhoa, dphi = readRadicSIPFuchs(filename, **kwargs)
+                pg.info("Reading SIP Fuchs file")
+            self.f, self.amp, self.phi, drhoa, dphi = readRadicSIPFuchs(filename, 
+                                                    verbose=verbose, **kwargs)
             self.phi *= -np.pi/180.
         elif fnLow.endswith('.txt') or fnLow.endswith('.csv'):
             self.basename = filename[:-4]

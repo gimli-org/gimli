@@ -266,7 +266,7 @@ public:
 
     /*! Save this matrix into the file filename given. */
     virtual void save(const std::string & filename) const {
-        THROW_TO_IMPL
+        log(Warning, "save for this matrix type is not supported");
     }
 
 protected:

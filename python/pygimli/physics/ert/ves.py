@@ -188,7 +188,6 @@ class VESCModelling(VESModelling):
                                  trans='log')
 
         sm = self.regionManager().createStartModel()
-        self.setStartModel(sm)
         return sm
 
     def response_mt(self, par, i=0):

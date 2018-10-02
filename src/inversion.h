@@ -259,7 +259,6 @@ public:
             error_ = errorDefault_();
         }
 
-
         dataWeight_ = 1.0 / tD_->error(fixZero(data_, TOLERANCE), error_);
 
         if (verbose_) std::cout << "min/max(dweight) = " << min(dataWeight_) << "/"
