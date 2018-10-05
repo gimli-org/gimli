@@ -1,5 +1,4 @@
 .. _sec:install_win:
-test
 Installation on Windows
 -----------------------
 
