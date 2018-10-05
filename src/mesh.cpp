@@ -99,9 +99,6 @@ void Mesh::copy_(const Mesh & mesh){
     cellVector_.reserve(mesh.cellCount());
     for (Index i = 0; i < mesh.cellCount(); i ++){
         this->createCell(mesh.cell(i));
-        for (Index j = 0; j < mesh.cell(i).secondaryNodes().size(); j ++){
-            this->cell(i).addSecondaryNode(mesh.cell(i).secondaryNodes()[j]);
-        }
     }
 
     for (Index i = 0; i < mesh.regionMarker().size(); i ++){
@@ -253,7 +250,12 @@ Boundary * Mesh::createBoundary(std::vector < Node * > & nodes, int marker, bool
 Boundary * Mesh::createBoundary(const Boundary & bound, bool check){
     std::vector < Node * > nodes(bound.nodeCount());
     for (Index i = 0; i < bound.nodeCount(); i ++) nodes[i] = &node(bound.node(i).id());
-    return createBoundary(nodes, bound.marker(), check);
+
+    Boundary *b = createBoundary(nodes, bound.marker(), check);
+    for (Index j = 0; j < bound.secondaryNodes().size(); j ++){
+        b->addSecondaryNode(& this->node(bound.secondaryNodes()[j]->id()));
+    }
+    return b;
 }
 
 Boundary * Mesh::createBoundary(const Cell & cell, bool check){
@@ -340,7 +342,12 @@ Cell * Mesh::createCell(std::vector < Node * > & nodes, int marker){
 Cell * Mesh::createCell(const Cell & cell){
     std::vector < Node * > nodes(cell.nodeCount());
     for (Index i = 0; i < cell.nodeCount(); i ++) nodes[i] = &node(cell.node(i).id());
-    return createCell(nodes, cell.marker());
+    
+    Cell *c = createCell(nodes, cell.marker());
+    for (Index j = 0; j < cell.secondaryNodes().size(); j ++){
+        c->addSecondaryNode(& this->node(cell.secondaryNodes()[j]->id()));
+    }
+    return c;
 }
 
 Cell * Mesh::createTriangle(Node & n1, Node & n2, Node & n3, int marker){
