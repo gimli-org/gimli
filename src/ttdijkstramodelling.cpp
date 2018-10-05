@@ -147,12 +147,6 @@ Graph TravelTimeDijkstraModelling::createGraph(const RVector & slownessPerCell) 
               Node *nb = mesh_->cell(i).allNodes()[k];
               dist = na->pos().distance(nb->pos());
 
-              std::cout << "I:" << i << std::endl;
-              std::cout << "J:" << j << std::endl;
-              std::cout << "K:" << k << std::endl;
-              std::cout << "A:" << na->id() << std::endl;
-              std::cout << "B:" << nb->id() << std::endl;
-
               oldTime = meshGraph[na->id()][nb->id()];
               newTime = dist * slownessPerCell[mesh_->cell(i).id()];
 
@@ -161,6 +155,7 @@ Graph TravelTimeDijkstraModelling::createGraph(const RVector & slownessPerCell) 
               }
 
               meshGraph[na->id()][nb->id()] = newTime;
+              // Florian: Does not seem necessary due to j and k loops
               // meshGraph[nb->id()][na->id()] = newTime;
             }
         }
