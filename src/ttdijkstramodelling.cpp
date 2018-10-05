@@ -160,33 +160,33 @@ Graph TravelTimeDijkstraModelling::createGraph(const RVector & slownessPerCell) 
                 meshGraph[nb->id()][na->id()] = newTime; 
             }
         }
+        // obsolete
+        // if (mesh_->cell(i).rtti() == MESH_TETRAHEDRON_RTTI ||
+        //     mesh_->cell(i).rtti() == MESH_TETRAHEDRON10_RTTI) {
 
-        if (mesh_->cell(i).rtti() == MESH_TETRAHEDRON_RTTI ||
-            mesh_->cell(i).rtti() == MESH_TETRAHEDRON10_RTTI) {
+        //     Node *na = &mesh_->cell(i).node(0);
+        //     Node *nb = &mesh_->cell(i).node(2);
 
-            Node *na = &mesh_->cell(i).node(0);
-            Node *nb = &mesh_->cell(i).node(2);
+        //     dist = na->pos().distance(nb->pos());
+        //     oldTime = meshGraph[na->id()][nb->id()];
+        //     newTime = dist * slownessPerCell[mesh_->cell(i).id()];
 
-            dist = na->pos().distance(nb->pos());
-            oldTime = meshGraph[na->id()][nb->id()];
-            newTime = dist * slownessPerCell[mesh_->cell(i).id()];
+        //     meshGraph[na->id()][nb->id()] = newTime;
+        //     meshGraph[nb->id()][na->id()] = newTime;
 
-            meshGraph[na->id()][nb->id()] = newTime;
-            meshGraph[nb->id()][na->id()] = newTime;
+        //     na = &mesh_->cell(i).node(1);
+        //     nb = &mesh_->cell(i).node(3);
 
-            na = &mesh_->cell(i).node(1);
-            nb = &mesh_->cell(i).node(3);
+        //     dist = na->pos().distance(nb->pos());
+        //     oldTime = meshGraph[na->id()][nb->id()];
+        //     newTime = dist * slownessPerCell[mesh_->cell(i).id()];
+        //     meshGraph[na->id()][nb->id()] = newTime;
+        //     meshGraph[nb->id()][na->id()] = newTime;
+        // }
 
-            dist = na->pos().distance(nb->pos());
-            oldTime = meshGraph[na->id()][nb->id()];
-            newTime = dist * slownessPerCell[mesh_->cell(i).id()];
-            meshGraph[na->id()][nb->id()] = newTime;
-            meshGraph[nb->id()][na->id()] = newTime;
-        }
-
-        if (mesh_->cell(i).rtti() > MESH_TETRAHEDRON10_RTTI){
-            THROW_TO_IMPL
-        }
+        // if (mesh_->cell(i).rtti() > MESH_TETRAHEDRON10_RTTI){
+        //     THROW_TO_IMPL
+        // }
     }
 
     if (meshGraph.size() < mesh_->nodeCount()){
