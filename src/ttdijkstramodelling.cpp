@@ -140,23 +140,24 @@ Graph TravelTimeDijkstraModelling::createGraph(const RVector & slownessPerCell) 
     double dist, oldTime, newTime;
 
     for (Index i = 0; i < mesh_->cellCount(); i ++) {
+        
         // j and k do not need to iterate over allNodes. This could be optimized.
         for (Index j = 0; j < mesh_->cell(i).allNodeCount(); j ++) {
             Node *na = mesh_->cell(i).allNodes()[j];
-            for (Index k = 0; k < mesh_->cell(i).allNodeCount(); k ++) {
-              Node *nb = mesh_->cell(i).allNodes()[k];
-              dist = na->pos().distance(nb->pos());
+            for (Index k = j + 1; k < mesh_->cell(i).allNodeCount(); k ++) {
+                Node *nb = mesh_->cell(i).allNodes()[k];
+                dist = na->pos().distance(nb->pos());
 
-              oldTime = meshGraph[na->id()][nb->id()];
-              newTime = dist * slownessPerCell[mesh_->cell(i).id()];
+                oldTime = meshGraph[na->id()][nb->id()];
+                newTime = dist * slownessPerCell[mesh_->cell(i).id()];
 
-              if (oldTime != 0) {
-                  newTime = std::min(newTime, oldTime);
-              }
+                if (oldTime != 0) {
+                    newTime = std::min(newTime, oldTime);
+                }
 
-              meshGraph[na->id()][nb->id()] = newTime;
-              // Florian: Does not seem necessary due to j and k loops
-              // meshGraph[nb->id()][na->id()] = newTime;
+                // set both to ensure all foreign(from other cells) paths becoming the shortest time
+                meshGraph[na->id()][nb->id()] = newTime;
+                meshGraph[nb->id()][na->id()] = newTime; 
             }
         }
 
