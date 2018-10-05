@@ -790,17 +790,22 @@ def readPLC(filename, comment='#'):
             row = content[2 + nVerts + i + segment_offset].split()
             numBounds = int(row[0])
             numHoles = row[1]
-            assert numHoles == '0', 'Can\'t handle Boundaries with holes yet'
+            assert numHoles == '0', 'Can\'t handle 3D Boundaries with holes yet'
             marker = 0
             if haveBoundaryMarker:
                 marker = int(row[2])
 
             for k in range(numBounds):
-                bound_row = content[2 + nVerts + i + segment_offset + 1]\
+                boundRow = content[2 + nVerts + i + segment_offset + 1]\
                     .split()
-                ivec = [int(bound_row[1]), int(bound_row[2]),
-                        int(bound_row[3]), int(bound_row[4])]
-                poly.createBoundary(ivec, marker=marker)
+                #nNodes = int(boundRow[0])
+                nodeIdx = [int(_b) for _b in boundRow[1:]]
+                # if nNodes == :
+                #     poly.createBoundary(ivec, marker=marker)
+
+                # ivec = [int(boundRow[1]), int(boundRow[2]),
+                #         int(boundRow[3]), int(boundRow[4])]
+                poly.createBoundary(nodeIdx, marker=marker)
                 segment_offset += 1
         nSegments += segment_offset
 
@@ -963,6 +968,11 @@ def exportTetgenPoly(poly, filename, float_format='.12e', **kwargs):
     float_format: format string ('.12e')
         Format that will be used to write float values in the Ascii file.
         Default is the exponential float form with a precision of 12 digits.
+    
+    kwargs:
+        * extraBoundaries:
+            Add additional polygons (#c42 still needed?)
+
     """
     if filename[-5:] != '.poly':
         filename = filename + '.poly'

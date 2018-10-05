@@ -1188,13 +1188,11 @@ def rot2DGridToWorld(mesh, start, end):
     """
     mesh.rotate(pg.degToRad(pg.RVector3(-90.0, 0.0, 0.0)))
 
-    src = pg.RVector3(0.0, 0.0, 0.0).norm(
-        pg.RVector3(0.0, 0.0, -10.0), pg.RVector3(10.0, 0.0, -10.0))
+    src = pg.RVector3(0.0, 0.0, 0.0).norm(pg.RVector3(0.0, 0.0, -10.0), 
+                                          pg.RVector3(10.0, 0.0, -10.0))
     dest = start.norm(start - pg.RVector3(0.0, 0.0, 10.0), end)
 
-    q = pg.getRotation(src, dest)
-    rot = pg.RMatrix(4, 4)
-    q.rotMatrix(rot)
+    rot = pg.getRotation(src, dest)
     mesh.transform(rot)
     mesh.translate(start)
 

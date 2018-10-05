@@ -89,3 +89,9 @@ Segfault on import
 
 Try `python -s -c "import pygimli"`. The `-s` option ensures that only system
 packages are used. This avoids conflicts with local (pip) packages.
+
+CXXABI_1.3.9 not included in libstdc++.so.6
+...........................................
+When installing conda packages on older machines, the above error may occur. If so, 
+check out the suggestion made 
+`here <https://github.com/ContinuumIO/anaconda-issues/issues/5191#issuecomment-368243432>`_.

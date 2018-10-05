@@ -96,6 +96,14 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(sum(2.0 * v), 10)
         self.assertEqual(sum(1.0 / v), 5)
 
+
+        v2 = np.ones(len(v))* 0.01
+        # check pg * np
+        self.assertEqual(sum(v * v2), 5*0.01)
+        # check np * pg
+        self.assertEqual(sum(v2 * v), 5*0.01)
+
+
         #v = pg.CVector(5, 1.0)
 
         #self.assertEqual(sum(v + 1), 10)
@@ -301,19 +309,9 @@ class TestRVectorMethods(unittest.TestCase):
         
 
 if __name__ == '__main__':
-
-    # s = TestRVectorMethods()
-    # pg.setDebug(1)
-    # s.test_IVectorOP()
+    # pg.setDeepDebug(1)
+    # t = TestRVectorMethods()
+    # # t.test_IVectorOP()
+    # t.test_Slices()
     
     unittest.main()
-
-
-    #suite.addTest(TestRVectorMethods("test_R3VectorIndex"))
-
-    ###suite.addTest(TestRVectorMethods("test_RVectorOP"))
-    ##suite.addTest(TestRVectorMethods("test_IndexAccess"))
-    ###suite.addTest(TestRVectorMethods("test_Slices"))
-
-    #runner = unittest.TextTestRunner()
-    #runner.run(suite)

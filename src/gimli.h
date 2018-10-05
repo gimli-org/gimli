@@ -177,6 +177,7 @@ static const uint8 MESH_TRIANGLEFACE_RTTI    = 24;
 static const uint8 MESH_TRIANGLEFACE6_RTTI   = 25;
 static const uint8 MESH_QUADRANGLEFACE_RTTI  = 26;
 static const uint8 MESH_QUADRANGLEFACE8_RTTI = 27;
+static const uint8 MESH_POLYGON_FACE_RTTI    = 28;
 static const uint8 MESH_CELL_RTTI            = 30;
 static const uint8 MESH_EDGE_CELL_RTTI       = 31;
 static const uint8 MESH_EDGE3_CELL_RTTI      = 32;
@@ -198,6 +199,7 @@ static const uint8 MESH_SHAPE_NODE_RTTI        = 210;
 static const uint8 MESH_SHAPE_EDGE_RTTI        = 211;
 static const uint8 MESH_SHAPE_TRIANGLE_RTTI    = 221;
 static const uint8 MESH_SHAPE_QUADRANGLE_RTTI  = 222;
+static const uint8 MESH_SHAPE_POLYGON_FACE_RTTI = 223;
 static const uint8 MESH_SHAPE_TETRAHEDRON_RTTI = 231;
 static const uint8 MESH_SHAPE_HEXAHEDRON_RTTI  = 232;
 static const uint8 MESH_SHAPE_TRIPRISM_RTTI    = 233;
@@ -288,6 +290,10 @@ DLLEXPORT bool pythonGIL();
 /*! Set global gimli debug flag on or off */
 DLLEXPORT void setDebug(bool s);
 DLLEXPORT bool debug();
+
+/*! For several levels of deep debugging. Mainly used for python rvalue conversion. */
+DLLEXPORT void setDeepDebug(int level);
+DLLEXPORT int deepDebug();
 
 /*! Set maximum amount of threads used by thirdparty software (e.g. openblas).
 Default is number of CPU. */

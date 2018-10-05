@@ -55,8 +55,27 @@ from ._logger import _
 from .core import *
 from .testing import test
 
+
+def _get_branch():
+    """Get current git branch."""
+    from os.path import join, abspath, exists
+    gitpath = abspath(join(__path__[0], "../../.git"))
+
+    if exists(gitpath):
+        from subprocess import check_output
+        out = check_output(["git", "--git-dir", gitpath, "branch"]).decode("utf8")
+        current = next(line for line in out.split("\n") if line.startswith("*"))
+        branch = current.strip("*").strip()
+        if not "HEAD" in branch:
+            return branch
+
+_branch = _get_branch()
 __version__ = get_versions()['version']
-del get_versions
+if get_versions()["dirty"]:
+    __version__ = __version__.replace("dirty", "with.local.changes.on")
+if _branch:
+    __version__ += ".%s" % _branch
+del get_versions, _get_branch, _branch
 
 def version():
     """Shortcut to show and return current version."""

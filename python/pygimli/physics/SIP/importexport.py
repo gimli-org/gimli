@@ -3,9 +3,10 @@
 """Import/Export for SIP data."""
 
 import codecs
-
 import numpy as np
 import re
+
+import pygimli as pg
 
 
 def fstring(fri):
@@ -41,21 +42,26 @@ def readTXTSpectrum(filename):
     return np.asarray(f), np.asarray(amp), np.asarray(phi)
 
 
-def readFuchs3File(resfile, verbose=False):
-    """Read Fuchs III (SIP spectrum) data file."""
+def readFuchs3File(resfile, k=1.0, verbose=False):
+    """Read Fuchs III (SIP spectrum) data file.
+    
+    Parameters
+    ----------
+    k : float
+        Overwrite internal geometric factor from device.
+
+    """
     activeBlock = ''
     header = {}
     LINE = []
     dataAct = False
     with codecs.open(resfile, 'r', encoding='iso-8859-15', errors='replace') as f:
-    #with open(resfile, 'r') as f:
-
         for line in f:
             line = line.replace('\r\n', '\n') # correct for carriage return
             if dataAct:
                 LINE.append(line)
                 if len(line) < 2:
-                    f, amp, phi = [], [], []
+                    f, amp, phi, kIn = [], [], [], []
                     for li in LINE:
                         sline = li.split()
                         if len(sline) > 12:
@@ -64,16 +70,20 @@ def readFuchs3File(resfile, verbose=False):
                                 f.append(fi)
                                 amp.append(float(sline[12]))
                                 phi.append(float(sline[13]))
+                                kIn.append(float(sline[9]))
 
-                    return np.array(f), np.array(amp), np.array(phi), header
+                    if k != 1.0 and verbose is True:
+                        pg.info("Geometric value changed to:", k)
+
+                    return np.array(f), np.array(amp)/np.array(kIn) * k, \
+                           np.array(phi), header
             elif len(line):
                 if line.rfind('Current') >= 0:
                     if dataAct:
                         break
                     else:
                         dataAct = True
-                        if verbose:
-                            print(line)
+
                 if line[0] == '[':
                     token = line[1:line.rfind(']')].replace(' ', '_')
                     if token[:3] == 'End':
@@ -177,7 +187,6 @@ def readRadicSIPFuchs(filename, readSecond=False, delLast=True):
         dphi.pop(0)
 
     return np.array(fr), np.array(rhoa), np.array(phi), np.array(drhoa), np.array(dphi)
-
 
 def readSIP256file(resfile, verbose=False):
     """Read SIP256 file (RES format) - mostly used for 2d SIP by pybert.sip.

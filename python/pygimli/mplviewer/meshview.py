@@ -297,7 +297,7 @@ def drawMesh(ax, mesh, **kwargs):
 
 def drawModel(ax, mesh, data=None, logScale=True, cMin=None, cMax=None,
               cmap=None, xlabel=None, ylabel=None, verbose=False,
-              tri=False, **kwargs):
+              tri=False, rasterized=False, **kwargs):
     """Draw a 2d mesh and color the cell by the data.
 
     Parameters
@@ -311,6 +311,9 @@ def drawModel(ax, mesh, data=None, logScale=True, cMin=None, cMax=None,
         corresponding `mesh`.
     tri : boolean, optional
         use MPL tripcolor (experimental)
+    rasterized : boolean, optional
+        Rasterize mesh patches to reduce file size and avoid zooming artifacts
+        in some PDF viewers.
     **kwargs : Additional keyword arguments
         Will be forwarded to the draw functions and matplotlib methods,
         respectively.
@@ -343,7 +346,8 @@ def drawModel(ax, mesh, data=None, logScale=True, cMin=None, cMax=None,
                          **kwargs)
 
     else:
-        gci = pg.mplviewer.createMeshPatches(ax, mesh, verbose=verbose)
+        gci = pg.mplviewer.createMeshPatches(ax, mesh, verbose=verbose,
+                                             rasterized=rasterized)
         ax.add_collection(gci)
 
         cMap = kwargs.pop('cMap', None)
@@ -530,7 +534,7 @@ def drawMeshBoundaries(ax, mesh, hideMesh=False, useColorMap=False, **kwargs):
 #    drawAA = True
 #    swatch = pg.Stopwatch(True)
     mesh.createNeighbourInfos()
-    
+
     lw = kwargs.pop('lw', None)
     col = kwargs.pop('color', None)
 
@@ -542,24 +546,24 @@ def drawMeshBoundaries(ax, mesh, hideMesh=False, useColorMap=False, **kwargs):
 
     drawSelectedMeshBoundaries(ax,
                     mesh.findBoundaryByMarker(pg.MARKER_BOUND_HOMOGEN_NEUMANN),
-                    color=(0.0, 1.0, 0.0, 1.0), 
+                    color=(0.0, 1.0, 0.0, 1.0),
                     linewidth=lw or 1.0)
     drawSelectedMeshBoundaries(ax,
                     mesh.findBoundaryByMarker(pg.MARKER_BOUND_MIXED),
-                    color=(1.0, 0.0, 0.0, 1.0), 
+                    color=(1.0, 0.0, 0.0, 1.0),
                     linewidth=lw or 1.0)
 
     b0 = [b for b in mesh.boundaries() if b.marker() > 0]
     if useColorMap:
-        drawSelectedMeshBoundaries(ax, b0, color=None, 
+        drawSelectedMeshBoundaries(ax, b0, color=None,
                                    linewidth=lw or 1.5)
     else:
-        drawSelectedMeshBoundaries(ax, b0, 
+        drawSelectedMeshBoundaries(ax, b0,
                                    color=col or (0.0, 0.0, 0.0, 1.0),
                                    linewidth=lw or 1.5)
 
     b4 = [b for b in mesh.boundaries() if b.marker() < -4]
-    drawSelectedMeshBoundaries(ax, b4, 
+    drawSelectedMeshBoundaries(ax, b4,
                                color=col or (0.0, 0.0, 0.0, 1.0),
                                linewidth=lw or 1.5)
 
@@ -700,7 +704,7 @@ def _createCellPolygon(cell):
 
     pg.warn("Unknown shape to patch: ", cell)
 
-def createMeshPatches(ax, mesh, verbose=True):
+def createMeshPatches(ax, mesh, verbose=True, rasterized=False):
     """Utility function to create 2d mesh patches within a given ax."""
     if not mesh:
         pg.error("drawMeshBoundaries(ax, mesh): invalid mesh:", mesh)
@@ -712,7 +716,8 @@ def createMeshPatches(ax, mesh, verbose=True):
 
     pg.tic()
     polys = [_createCellPolygon(c) for c in mesh.cells()]
-    patches = mpl.collections.PolyCollection(polys, picker=True)
+    patches = mpl.collections.PolyCollection(polys, picker=True,
+                                             rasterized=rasterized)
 
     if verbose:
         pg.info("Creation of mesh patches took = ", pg.toc())
@@ -937,7 +942,7 @@ def drawStreamLines(ax, mesh, u, nx=25, ny=25, **kwargs):
     Additionally arguments are piped to streamplot.
 
     This works only for rectangular regions.
-    You should use pg.mplviewer.drawStreams, which is more comfortable and 
+    You should use pg.mplviewer.drawStreams, which is more comfortable and
     more flexible.
     """
     X, Y = np.meshgrid(
@@ -1038,17 +1043,17 @@ def drawStreamLine_(ax, mesh, c, data, dataMesh=None, linewidth=1.0,
         dy = y[ymid + 1] - y[ymid]
         c = mesh.findCell([x[xmid], y[ymid]])
         dLength = c.center().dist(c.node(0).pos()) / 4.
-    
+
 
         if v[xmid] > dropTol:
-            # ax.arrow(x[xmid], y[ymid], dx, dy, 
+            # ax.arrow(x[xmid], y[ymid], dx, dy,
             #          #width=dLength / 3.,
             #          width=0,
             #          head_width=0.01,
             #          head_length=0.02
             #         #  head_width=dLength / 3.,
             #         #  head_length=dLength / 3.,
-            #          head_starts_at_zero=True, 
+            #          head_starts_at_zero=True,
             #          length_includes_head=False,
             #          lw=4,
             #          ls=None,
@@ -1058,13 +1063,13 @@ def drawStreamLine_(ax, mesh, c, data, dataMesh=None, linewidth=1.0,
             dy90 = dx
             aLen = 3
             aWid = 1
-            xy = list(zip([x[xmid] + dx90*aWid, x[xmid] + dx*aLen, x[xmid] - dx90*aWid], 
+            xy = list(zip([x[xmid] + dx90*aWid, x[xmid] + dx*aLen, x[xmid] - dx90*aWid],
                           [y[ymid] + dy90*aWid, y[ymid] + dy*aLen, y[ymid] - dy90*aWid]))
 
             arrow = mpl.patches.Polygon(xy, ls=None, lw=0, closed=True, **kwargs)
             #arrow = mpl.collections.PolyCollection(xy, lines=None, closed=True, **kwargs)
             ax.add_patch(arrow)
-            
+
     return lines
 
 

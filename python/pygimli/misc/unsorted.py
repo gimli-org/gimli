@@ -8,22 +8,6 @@ import sys
 import pygimli as pg
 
 
-def rot2DGridToWorld(mesh, start, end):
-    """Rotate 2D grid to the plane (start[-z], end) """
-    print(mesh, start, end)
-    mesh.rotate(pg.degToRad(pg.RVector3(-90.0, 0.0, 0.0)))
-
-    src = pg.RVector3(0.0, 0.0, 0.0).norm(pg.RVector3(0.0, 0.0, -10.0),
-                                          pg.RVector3(10.0, 0.0, -10.0))
-    dest = start.norm(start - pg.RVector3(0.0, 0.0, 10.0), end)
-
-    q = pg.getRotation(src, dest)
-    rot = pg.RMatrix(4, 4)
-    q.rotMatrix(rot)
-    mesh.transform(rot)
-    mesh.translate(start)
-
-
 def streamline(mesh, field, startCoord, dLengthSteps, dataMesh=None,
                maxSteps=1000, verbose=False, coords=(0, 1)):
     """

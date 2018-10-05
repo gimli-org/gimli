@@ -2196,7 +2196,6 @@ MEMINFO
 //S_sig*u_s = (sig_0 * S1 - S_sig) u_p = sig_0 * S1 * u_p - S_sig * u_p
         rhoSource = rhoSource / count;
         prim *= rhoSource;
-
         rhs = S1 * prim / rhoSource - S_ * prim;
 
 //         bool newWay = true;

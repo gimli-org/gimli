@@ -99,6 +99,9 @@ void Mesh::copy_(const Mesh & mesh){
     cellVector_.reserve(mesh.cellCount());
     for (Index i = 0; i < mesh.cellCount(); i ++){
         this->createCell(mesh.cell(i));
+        for (Index j = 0; j < mesh.cell(i).secondaryNodes().size(); j ++){
+            this->cell(i).addSecondaryNode(mesh.cell(i).secondaryNodes()[j]);
+        }
     }
 
     for (Index i = 0; i < mesh.regionMarker().size(); i ++){
@@ -231,15 +234,17 @@ Boundary * Mesh::createBoundary(const IndexArray & idx, int marker, bool check){
 
 Boundary * Mesh::createBoundary(std::vector < Node * > & nodes, int marker, bool check){
     switch (nodes.size()){
-      case 1: return createBoundaryChecked_< NodeBoundary >(nodes, marker, check); break;
-      case 2: return createBoundaryChecked_< Edge >(nodes, marker, check); break;
-      case 3: {
-        if (dimension_ == 2)
-            return createBoundaryChecked_< Edge3 >(nodes, marker, check);
-        return createBoundaryChecked_< TriangleFace >(nodes, marker, check); } break;
-      case 4: return createBoundaryChecked_< QuadrangleFace >(nodes, marker, check); break;
-      case 6: return createBoundaryChecked_< Triangle6Face >(nodes, marker, check); break;
-      case 8: return createBoundaryChecked_< Quadrangle8Face >(nodes, marker, check); break;
+        case 1: return createBoundaryChecked_< NodeBoundary >(nodes, marker, check); break;
+        case 2: return createBoundaryChecked_< Edge >(nodes, marker, check); break;
+        case 3: {
+            if (dimension_ == 2)
+                return createBoundaryChecked_< Edge3 >(nodes, marker, check);
+            return createBoundaryChecked_< TriangleFace >(nodes, marker, check); } break;
+        case 4: return createBoundaryChecked_< QuadrangleFace >(nodes, marker, check); break;
+        case 6: return createBoundaryChecked_< Triangle6Face >(nodes, marker, check); break;
+        case 8: return createBoundaryChecked_< Quadrangle8Face >(nodes, marker, check); break;
+        default:
+            return createBoundaryChecked_< PolygonFace >(nodes, marker, check); break;
     }
     std::cout << WHERE_AM_I << "WHERE_AM_I << cannot determine boundary for nodes: " << nodes.size() << std::endl;
     return NULL;
@@ -439,7 +444,14 @@ void Mesh::findRange_() const{
     }
 }
 
-void Mesh::createHull(const Mesh & mesh){
+Mesh Mesh::createHull() const{
+    Mesh out(3);
+    out.createHull_(*this);
+    return out;
+}
+
+void Mesh::createHull_(const Mesh & mesh){
+
     if (this->dim() == 3 && mesh.dim() == 2){
         clear();
         rangesKnown_ = false;

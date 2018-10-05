@@ -92,9 +92,13 @@ public:
     /*! To separate between major MeshEntity families e.g. Cell and Boundary. */
     virtual uint parentType() const { return MESH_MESHENTITY_RTTI; }
 
-    inline Node & node(uint i) { return *nodeVector_[i]; }
+    inline Node & node(uint i) { 
+        ASSERT_RANGE(i, 0, nodeCount()); return *nodeVector_[i]; 
+    }
 
-    inline Node & node(uint i) const { return *nodeVector_[i]; }
+    inline Node & node(uint i) const { 
+        ASSERT_RANGE(i, 0, nodeCount()); return *nodeVector_[i]; 
+    }
 
     inline uint nodeCount() const { return nodeVector_.size(); }
 
@@ -170,6 +174,15 @@ public:
 
     const RMatrix & uxCache() const { return uxCache_; }
 
+    void addSecondaryNode(Node * n);
+
+    const std::vector < Node * > & secondaryNodes() const;
+
+    /*! Return primary and secondary nodes */
+    const std::vector < Node * > allNodes() const;
+
+    Index allNodeCount() const;
+    
 protected:
     void fillShape_();
 
@@ -180,6 +193,7 @@ protected:
     Shape * shape_;
 
     std::vector < Node * > nodeVector_;
+    std::vector < Node * > secondaryNodes_;
 
     /*! Cache for derivation matrixes */
     //mutable ElementMatrix < double > uxCache_; // to expensive maybe, lightweight baseclass here
@@ -269,6 +283,7 @@ protected:
     void deRegisterNodes_();
 
     std::vector < Cell * > neighbourCells_;
+
 
     double attribute_;
 
@@ -450,11 +465,11 @@ public:
 
     virtual uint rtti() const { return MESH_TRIANGLEFACE_RTTI; }
 
-    void setNodes(Node & n1, Node & n2, Node & n3, bool changed = true);
+    void setNodes(Node & n1, Node & n2, Node & n3, bool changed=true);
 
     friend std::ostream & operator << (std::ostream & str, const TriangleFace & e);
 
-    /*! hate this method need refactoring */
+    /*! this method need refactoring */
     virtual std::vector < PolynomialFunction < double > > createShapeFunctions() const;
 
 protected:
@@ -481,10 +496,10 @@ public:
 
     virtual uint rtti() const { return MESH_TRIANGLEFACE6_RTTI; }
 
-    /*! hate this method need refactoring */
+    /*! this method need refactoring */
     virtual std::vector < PolynomialFunction < double > > createShapeFunctions() const;
 
-    /*! hate this method need refactoring */
+    /*! this method need refactoring */
     virtual RVector3 rst(uint i) const;
 
 protected:
@@ -502,7 +517,7 @@ public:
 
     virtual uint rtti() const { return MESH_QUADRANGLEFACE_RTTI; }
 
-    /*! hate this method need refactoring */
+    /*! this method need refactoring */
     virtual std::vector < PolynomialFunction < double > > createShapeFunctions() const;
 
     void setNodes(Node & n1, Node & n2, Node & n3, Node & n4, bool changed = true);
@@ -525,16 +540,31 @@ public:
 
     virtual uint rtti() const { return MESH_QUADRANGLEFACE8_RTTI; }
 
-    /*! hate this method need refactoring */
+    /*! this method need refactoring */
     virtual std::vector < PolynomialFunction < double > > createShapeFunctions() const;
 
-    /*! hate this method need refactoring */
+    /*! this method need refactoring */
     virtual RVector3 rst(uint i) const;
 
 protected:
 
 private:
 
+};
+
+class DLLEXPORT PolygonFace : public Boundary {
+    /*! */
+    public:
+        PolygonFace(const std::vector < Node * > & nodes);
+        
+        ~PolygonFace();
+
+        virtual uint dim() const { return 3; }
+
+        virtual uint rtti() const { return MESH_POLYGON_FACE_RTTI; }    
+
+    protected:
+    private:
 };
 
 class DLLEXPORT EdgeCell : public Cell {

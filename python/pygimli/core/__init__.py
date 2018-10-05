@@ -14,19 +14,6 @@ if sys.platform == 'win32':
 
 _pygimli_ = None
 
-###############################################################################
-# TEMP: Avoid import errors for py bindings built before core submodule
-def bindingpath(relpath):
-    path = os.path.join(os.path.dirname(__file__), relpath)
-    return os.path.abspath(os.path.join(path, "_pygimli_.so"))
-
-new = bindingpath(".")
-old = bindingpath("..")
-
-if not os.path.isfile(new) and os.path.isfile(old):
-    print("INFO: Moving %s to %s" % (old, new))
-    os.rename(old, new)
-###############################################################################
 try:
     from . import _pygimli_
     from . _pygimli_ import *
@@ -46,7 +33,7 @@ from .load import load, optImport, opt_import, getConfigPath
 
 from pygimli.viewer import show, plt, wait
 from pygimli.solver import solve
-from pygimli.meshtools import interpolate
+from pygimli.meshtools import interpolate, createGrid
 from pygimli.utils import boxprint
 
 
@@ -70,7 +57,6 @@ def toc(msg=None, box=False):
     seconds = dur()
     m, s = divmod(seconds, 60)
     h, m = divmod(m, 60)
-    #type(m) CR ??
     if h <= 0 and m <= 0:
          time = "%.2f" % s
     elif h <= 0:
@@ -178,14 +164,19 @@ def ElementMatrix_str(self):
         s += '\n'
     return s
 
+
 def MeshEntity_str(self):
     """Give mesh entity infos."""
-    s = str(type(self))
+    s = self.__repr__()
     s += '\tID: ' + str(self.id()) + \
          ', Marker: ' + str(self.marker()) + \
          ', Size: ' + str(self.size()) + '\n'
-    for n in self.nodes():
-        s += '\t' + str(n.id()) + " " + str(n.pos()) + "\n"
+
+    if isinstance(self, _pygimli_.PolygonFace):
+        s += '\t' + str(self.nodeCount()) + " Nodes.\n"
+    else:
+        for n in self.nodes():
+            s += '\t' + str(n.id()) + " " + str(n.pos()) + "\n"
     return s
 
 
@@ -207,10 +198,10 @@ _pygimli_.MeshEntity.__str__ = MeshEntity_str
 
 def Node_str(self):
     """Give node infos."""
-    s = str(type(self))
+    s = self.__repr__()
     s += '\tID: ' + str(self.id()) + \
          ', Marker: ' + str(self.marker())
-    s += '\t' + str(self.pos())
+    s += '\t' + str(self.pos()) + '\n'
     return s
 
 _pygimli_.Node.__str__ = Node_str
@@ -253,7 +244,7 @@ _pygimli_.BVector.__invert__ = _invertBVector_
 _pygimli_.BVector.__inv__ = _invertBVector_
 
 def _lowerThen_(self, v2):
-    """Overwrite bvector = v1 < v2 since there is a wrong operator due to the 
+    """Overwrite bvector = v1 < v2 since there is a wrong operator due to the
     boost binding generation
     """
     return _pygimli_.inv(self >= v2)
@@ -912,21 +903,6 @@ def asvector(array):
     print("do not use asvector(ndarray) use ndarray directly .. "
           "this method will be removed soon")
     return _pygimli_.RVector(array)
-
-
-def __gitversion__(path=__path__[0]):
-    """Return version str based on git tags and commits."""
-    try:
-        v = subprocess.check_output(['git', '-C', path, 'describe', '--always',
-                                     '--tags', '--dirty=-modified', '--long'],
-                                    stderr=subprocess.STDOUT)
-        return v.decode('ascii').strip()
-    except BaseException as e:
-        return "unknown", e
-
-# __version__ = __gitversion__()
-# if __version__ == "unknown":
-#     __version__ = _pygimli_.versionStr()
 
 
 # ##########################

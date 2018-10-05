@@ -21,7 +21,7 @@
 #include "elementmatrix.h"
 
 namespace GIMLI{
-
+    
 template<>
 void Vector<double>::add(const ElementMatrix < double >& A){
     for (Index i = 0, imax = A.size(); i < imax; i++){
@@ -41,6 +41,11 @@ void Vector<double>::add(const ElementMatrix < double >& A, const RVector & a){
     for (Index i = 0, imax = A.size(); i < imax; i++){
         data_[A.idx(i)] += A.row(0)[i] * a[A.idx(i)];
     }
+}
+
+template<>
+void Vector<RVector3>::clean(){
+     if (size_ > 0) for (Index i = 0; i < size_; i ++) data_[i] =RVector3();
 }
 
 } // namespace GIMLI{

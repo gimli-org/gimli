@@ -36,16 +36,34 @@ class TestMisc(unittest.TestCase):
         """
         """
         data = pg.DataContainer()
-        data.resize(101)
-        data.markInvalid([0, 100])
+        data.resize(5)
 
-        x = np.array([0, 100], dtype="int")
-        a = pg.IndexArray(x)
-        data.markInvalid(a)
+        data.markValid([0, 4])
+        self.assertEqual(data('valid'), [1.0, 0.0, 0.0, 0.0, 1.0])
 
-        data.markInvalid(pg.IndexArray(np.array([0, 100], dtype="int")))
-        #data.markInvalid(np.array([0, 100], dtype="int")) # fails
-        #data.markInvalid(np.array([0, 100], dtype=np.int64)) # fails
+        data.markInvalid(pg.IndexArray(np.arange(5, dtype="long")))
+        self.assertEqual(data('valid'), [0.0, 0.0, 0.0, 0.0, 0.0])
+        
+        data.markValid(np.arange(5, dtype="long"))
+        self.assertEqual(data('valid'), [1.0, 1.0, 1.0, 1.0, 1.0])
+        
+        data.markInvalid(range(5))
+        self.assertEqual(data('valid'), [0.0, 0.0, 0.0, 0.0, 0.0])
+
+        x = np.arange(5, dtype='float')
+
+        data.markValid(pg.Vector(x) > 2.0)
+        self.assertEqual(data('valid'), [0.0, 0.0, 0.0, 1.0, 1.0])
+        
+        data.markValid(pg.BVector(x < 2.0))
+        self.assertEqual(data('valid'), [1.0, 1.0, 0.0, 1.0, 1.0])
+
+        data.markInvalid(pg.find(x > 3.0))
+        self.assertEqual(data('valid'), [1.0, 1.0, 0.0, 1.0, 0.0])
+        
+        data.markInvalid(x < 1.0)
+        self.assertEqual(data('valid'), [0.0, 1.0, 0.0, 1.0, 0.0])
+        
 
     def test_DataContainerSensors(self):
         data = pg.DataContainer()
@@ -95,9 +113,12 @@ class TestMisc(unittest.TestCase):
                 
 
 if __name__ == '__main__':
+    # pg.setDeepDebug(1)
 
-    # pg.setDebug(0)
     # t = TestMisc()
+    # t.test_DataContainerFilter()
+    # exit()
+    
     # t.test_PosConstMember()
     #t.test_DataContainerSensors()
     #t.test_Int64Problem()

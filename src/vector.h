@@ -15,7 +15,6 @@
  *   limitations under the License.                                           *
  *                                                                            *
  ******************************************************************************/
-
 //** Idea taken from
 //
 // @Article{Veldhuizen95b,
@@ -29,7 +28,6 @@
 //   year =         "1995",
 //   note =         "Reprinted in C++ Gems, ed. Stanley Lippman"
 // }
-
 
 #ifndef GIMLI_VECTOR__H
 #define GIMLI_VECTOR__H
@@ -59,7 +57,6 @@
 #else
     #include <functional>
 #endif
-
 
 namespace GIMLI{
 
@@ -645,10 +642,9 @@ DEFINE_COMPARE_OPERATOR__(>, std::greater)
 //         return ret;
 //     }
 
-
 #define DEFINE_UNARY_MOD_OPERATOR__(OP, FUNCT) \
   inline Vector< ValueType > & operator OP##= (const Vector < ValueType > & v) { \
-        ASSERT_EMPTY(v) \
+        ASSERT_EQUAL_SIZE((*this), v) \
         std::transform(data_, data_ + size_, &v[0], data_, FUNCT()); return *this; } \
   inline Vector< ValueType > & operator OP##= (const ValueType & val) { \
         for (Index i = 0; i < size_; i ++) data_[i] OP##= val; return *this; } \

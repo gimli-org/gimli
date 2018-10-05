@@ -26,10 +26,10 @@ class VESModelling(Block1DModelling):
         B is second power, M is first potential electrode.
     an :
         Part of data basis. Distances between A and N electrodes.
-        A is first power, M is second potential electrode.
+        A is first power, N is second potential electrode.
     bn :
         Part of data basis. Distances between B and N electrodes.
-        B is second power, M is second potential electrode.
+        B is second power, N is second potential electrode.
     ab2 :
         Half distance between A and B.
         Only used for output and auto generated.

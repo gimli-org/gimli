@@ -140,48 +140,53 @@ Graph TravelTimeDijkstraModelling::createGraph(const RVector & slownessPerCell) 
     double dist, oldTime, newTime;
 
     for (Index i = 0; i < mesh_->cellCount(); i ++) {
-        for (Index j = 0; j < mesh_->cell(i).nodeCount(); j ++) {
-            Node *na = &mesh_->cell(i).node(j);
-            Node *nb = &mesh_->cell(i).node((j + 1)%mesh_->cell(i).nodeCount());
-            dist = na->pos().distance(nb->pos());
+        
+        // j and k do not need to iterate over allNodes. This could be optimized.
+        for (Index j = 0; j < mesh_->cell(i).allNodeCount(); j ++) {
+            Node *na = mesh_->cell(i).allNodes()[j];
+            for (Index k = j + 1; k < mesh_->cell(i).allNodeCount(); k ++) {
+                Node *nb = mesh_->cell(i).allNodes()[k];
+                dist = na->pos().distance(nb->pos());
 
-            oldTime = meshGraph[na->id()][nb->id()];
-            newTime = dist * slownessPerCell[mesh_->cell(i).id()];
+                oldTime = meshGraph[na->id()][nb->id()];
+                newTime = dist * slownessPerCell[mesh_->cell(i).id()];
 
-            if (oldTime != 0) {
-                newTime = std::min(newTime, oldTime);
+                if (oldTime != 0) {
+                    newTime = std::min(newTime, oldTime);
+                }
+
+                // set both to ensure all foreign(from other cells) paths becoming the shortest time
+                meshGraph[na->id()][nb->id()] = newTime;
+                meshGraph[nb->id()][na->id()] = newTime; 
             }
-
-            meshGraph[na->id()][nb->id()] = newTime;
-            meshGraph[nb->id()][na->id()] = newTime;
         }
+        // obsolete
+        // if (mesh_->cell(i).rtti() == MESH_TETRAHEDRON_RTTI ||
+        //     mesh_->cell(i).rtti() == MESH_TETRAHEDRON10_RTTI) {
 
-        if (mesh_->cell(i).rtti() == MESH_TETRAHEDRON_RTTI ||
-            mesh_->cell(i).rtti() == MESH_TETRAHEDRON10_RTTI) {
+        //     Node *na = &mesh_->cell(i).node(0);
+        //     Node *nb = &mesh_->cell(i).node(2);
 
-            Node *na = &mesh_->cell(i).node(0);
-            Node *nb = &mesh_->cell(i).node(2);
+        //     dist = na->pos().distance(nb->pos());
+        //     oldTime = meshGraph[na->id()][nb->id()];
+        //     newTime = dist * slownessPerCell[mesh_->cell(i).id()];
 
-            dist = na->pos().distance(nb->pos());
-            oldTime = meshGraph[na->id()][nb->id()];
-            newTime = dist * slownessPerCell[mesh_->cell(i).id()];
+        //     meshGraph[na->id()][nb->id()] = newTime;
+        //     meshGraph[nb->id()][na->id()] = newTime;
 
-            meshGraph[na->id()][nb->id()] = newTime;
-            meshGraph[nb->id()][na->id()] = newTime;
+        //     na = &mesh_->cell(i).node(1);
+        //     nb = &mesh_->cell(i).node(3);
 
-            na = &mesh_->cell(i).node(1);
-            nb = &mesh_->cell(i).node(3);
+        //     dist = na->pos().distance(nb->pos());
+        //     oldTime = meshGraph[na->id()][nb->id()];
+        //     newTime = dist * slownessPerCell[mesh_->cell(i).id()];
+        //     meshGraph[na->id()][nb->id()] = newTime;
+        //     meshGraph[nb->id()][na->id()] = newTime;
+        // }
 
-            dist = na->pos().distance(nb->pos());
-            oldTime = meshGraph[na->id()][nb->id()];
-            newTime = dist * slownessPerCell[mesh_->cell(i).id()];
-            meshGraph[na->id()][nb->id()] = newTime;
-            meshGraph[nb->id()][na->id()] = newTime;
-        }
-
-        if (mesh_->cell(i).rtti() > MESH_TETRAHEDRON10_RTTI){
-            THROW_TO_IMPL
-        }
+        // if (mesh_->cell(i).rtti() > MESH_TETRAHEDRON10_RTTI){
+        //     THROW_TO_IMPL
+        // }
     }
 
     if (meshGraph.size() < mesh_->nodeCount()){

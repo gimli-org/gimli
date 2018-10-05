@@ -263,9 +263,11 @@ public:
         create3DGrid(x, y, z, markerType, worldBoundaryMarker);
     }
 
-    /*! Fill this 3D mesh with 3D boundary elements from 2D mesh cells. 
+    void createHull_(const Mesh & mesh);
+
+    /*! Create 3D mesh with 3D boundary elements from this 2D mesh cells. 
     Increase mesh dimension. Mesh should contain 2D cells. */
-    void createHull(const Mesh & mesh);
+    Mesh createHull() const;
 
     void createClosedGeometry(const std::vector < RVector3 > & vPos, int nSegments, double dxInner);
 

@@ -1,8 +1,6 @@
 #ifndef PYTHON_PYGIMLI__H
 #define PYTHON_PYGIMLI__H
 
-
-
 //See best practices section in Py++ documentation
 
 //# gcc 4.8 with linux complains about a couple of atomic problems
@@ -36,7 +34,6 @@
 
 //#define PYTEST
 #ifdef PYTEST
-
 
  #include <iostream>
  #include <fstream>
@@ -151,11 +148,11 @@ namespace pyplusplus{ namespace aliases{
 namespace GIMLI{
 
 #define DEFINE_PY_VEC_OPERATOR__(OP)                      \
-    inline RVector operator OP (const RVector & a, const double & b){ \
+    inline RVector operator OP (const RVector & a, const RVector & b){ \
         RVector ret(a);   ret OP##=b; return ret; }                           \
     inline RVector operator OP (const double & a, const RVector & b){ \
         RVector ret(b.size()); for (Index i = 0; i < b.size(); i ++) ret[i] = a OP b[i]; return ret; } \
-    inline RVector operator OP (const RVector & a, const RVector & b){ \
+    inline RVector operator OP (const RVector & a, const double & b){ \
         RVector ret(a);   ret OP##=b; return ret; }                           \
     inline IVector operator OP (const IVector & a, const IVector & b){ \
         IVector ret(a);   ret OP##=b; return ret; }                           \

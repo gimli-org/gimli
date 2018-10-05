@@ -11,12 +11,13 @@ Writing tests for pygimli
 Please check: https://pytest.org/latest/example/index.html
 """
 
-import pygimli as pg
-import numpy as np
 import sys
 from os.path import join, realpath
 
 import matplotlib.pyplot as plt
+import numpy as np
+
+import pygimli as pg
 
 
 def test(target=None, show=False, onlydoctests=False, coverage=False,
@@ -50,8 +51,13 @@ def test(target=None, show=False, onlydoctests=False, coverage=False,
         Return correct exit code, e.g. abort documentation build when a test
         fails.
     """
+    # Remove figure warnings
+    plt.rcParams["figure.max_open_warning"] = 1000
 
     printopt = np.get_printoptions()
+
+    if verbose:
+        pg.boxprint("Testing pygimli %s" % pg.__version__, sym="+")
 
     # Numpy compatibility (array string representation has changed)
     if np.__version__[:4] in ("1.14", "1.15"):
@@ -93,8 +99,10 @@ def test(target=None, show=False, onlydoctests=False, coverage=False,
     if onlydoctests:
         excluded.append("testing")
 
-    cmd = (["-v", "-rsxX", "--color", "yes", "--doctest-modules",
-            "--durations", 5, cwd])
+    cmd = ([
+        "-v", "-rsxX", "--color", "yes", "--doctest-modules", "--durations", 5,
+        cwd
+    ])
     for directory in excluded:
         cmd.extend(["--ignore", join(cwd, directory)])
 
@@ -115,8 +123,5 @@ def test(target=None, show=False, onlydoctests=False, coverage=False,
         print("Exiting with exitcode", exitcode)
         sys.exit(exitcode)
 
-    plt.close('all')
     plt.switch_backend(old_backend)
     np.set_printoptions(**printopt)
-
-
