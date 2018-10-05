@@ -239,15 +239,15 @@ void MeshEntity::setNodes_(const std::vector < Node * > & nodes){
     }
 }
 
-void MeshEntity::addSecondaryNode(Node * n) { 
+void MeshEntity::addSecondaryNode(Node * n) {
     secondaryNodes_.push_back(n);
 };
 
-const std::vector < Node * > & MeshEntity::secondaryNodes() const { 
+const std::vector < Node * > & MeshEntity::secondaryNodes() const {
     return secondaryNodes_;
 };
 
-std::vector < Node * > MeshEntity::allNodes() const { 
+std::vector < Node * > MeshEntity::allNodes() const {
     std::vector < Node * > ns;
     for (Index i = 0; i < this->nodeVector_.size(); i++ ){
         ns.push_back(this->nodeVector_[i]);
@@ -806,7 +806,7 @@ PolygonFace::PolygonFace(const std::vector < Node * > & nodes) : Boundary(nodes)
     shape_ = new PolygonShape(nodes.size());
     fillShape_();
 }
-        
+
 PolygonFace::~PolygonFace(){
 }
 

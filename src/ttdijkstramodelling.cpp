@@ -140,20 +140,29 @@ Graph TravelTimeDijkstraModelling::createGraph(const RVector & slownessPerCell) 
     double dist, oldTime, newTime;
 
     for (Index i = 0; i < mesh_->cellCount(); i ++) {
-        for (Index j = 0; j < mesh_->cell(i).nodeCount(); j ++) {
-            Node *na = &mesh_->cell(i).node(j);
-            Node *nb = &mesh_->cell(i).node((j + 1)%mesh_->cell(i).nodeCount());
-            dist = na->pos().distance(nb->pos());
+        // j and k do not need to iterate over allNodes. This could be optimized.
+        for (Index j = 0; j < mesh_->cell(i).allNodeCount(); j ++) {
+            Node *na = mesh_->cell(i).allNodes()[j];
+            for (Index k = 0; k < mesh_->cell(i).allNodeCount(); k ++) {
+              Node *nb = mesh_->cell(i).allNodes()[k];
+              dist = na->pos().distance(nb->pos());
 
-            oldTime = meshGraph[na->id()][nb->id()];
-            newTime = dist * slownessPerCell[mesh_->cell(i).id()];
+              std::cout << "I:" << i << std::endl;
+              std::cout << "J:" << j << std::endl;
+              std::cout << "K:" << k << std::endl;
+              std::cout << "A:" << na->id() << std::endl;
+              std::cout << "B:" << nb->id() << std::endl;
 
-            if (oldTime != 0) {
-                newTime = std::min(newTime, oldTime);
+              oldTime = meshGraph[na->id()][nb->id()];
+              newTime = dist * slownessPerCell[mesh_->cell(i).id()];
+
+              if (oldTime != 0) {
+                  newTime = std::min(newTime, oldTime);
+              }
+
+              meshGraph[na->id()][nb->id()] = newTime;
+              // meshGraph[nb->id()][na->id()] = newTime;
             }
-
-            meshGraph[na->id()][nb->id()] = newTime;
-            meshGraph[nb->id()][na->id()] = newTime;
         }
 
         if (mesh_->cell(i).rtti() == MESH_TETRAHEDRON_RTTI ||

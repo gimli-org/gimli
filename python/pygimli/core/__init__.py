@@ -14,19 +14,6 @@ if sys.platform == 'win32':
 
 _pygimli_ = None
 
-###############################################################################
-# TEMP: Avoid import errors for py bindings built before core submodule
-def bindingpath(relpath):
-    path = os.path.join(os.path.dirname(__file__), relpath)
-    return os.path.abspath(os.path.join(path, "_pygimli_.so"))
-
-new = bindingpath(".")
-old = bindingpath("..")
-
-if not os.path.isfile(new) and os.path.isfile(old):
-    print("INFO: Moving %s to %s" % (old, new))
-    os.rename(old, new)
-###############################################################################
 try:
     from . import _pygimli_
     from . _pygimli_ import *
@@ -70,7 +57,6 @@ def toc(msg=None, box=False):
     seconds = dur()
     m, s = divmod(seconds, 60)
     h, m = divmod(m, 60)
-    #type(m) CR ??
     if h <= 0 and m <= 0:
          time = "%.2f" % s
     elif h <= 0:
@@ -258,7 +244,7 @@ _pygimli_.BVector.__invert__ = _invertBVector_
 _pygimli_.BVector.__inv__ = _invertBVector_
 
 def _lowerThen_(self, v2):
-    """Overwrite bvector = v1 < v2 since there is a wrong operator due to the 
+    """Overwrite bvector = v1 < v2 since there is a wrong operator due to the
     boost binding generation
     """
     return _pygimli_.inv(self >= v2)
@@ -917,21 +903,6 @@ def asvector(array):
     print("do not use asvector(ndarray) use ndarray directly .. "
           "this method will be removed soon")
     return _pygimli_.RVector(array)
-
-
-def __gitversion__(path=__path__[0]):
-    """Return version str based on git tags and commits."""
-    try:
-        v = subprocess.check_output(['git', '-C', path, 'describe', '--always',
-                                     '--tags', '--dirty=-modified', '--long'],
-                                    stderr=subprocess.STDOUT)
-        return v.decode('ascii').strip()
-    except BaseException as e:
-        return "unknown", e
-
-# __version__ = __gitversion__()
-# if __version__ == "unknown":
-#     __version__ = _pygimli_.versionStr()
 
 
 # ##########################

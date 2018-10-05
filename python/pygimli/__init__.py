@@ -65,7 +65,9 @@ def _get_branch():
         from subprocess import check_output
         out = check_output(["git", "--git-dir", gitpath, "branch"]).decode("utf8")
         current = next(line for line in out.split("\n") if line.startswith("*"))
-        return current.strip("*").strip()
+        branch = current.strip("*").strip()
+        if not "HEAD" in branch:
+            return branch
 
 _branch = _get_branch()
 __version__ = get_versions()['version']
