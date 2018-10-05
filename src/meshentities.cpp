@@ -247,7 +247,7 @@ const std::vector < Node * > & MeshEntity::secondaryNodes() const {
     return secondaryNodes_;
 };
 
-std::vector < Node * > MeshEntity::allNodes() const {
+const std::vector < Node * > MeshEntity::allNodes() const { 
     std::vector < Node * > ns;
     for (Index i = 0; i < this->nodeVector_.size(); i++ ){
         ns.push_back(this->nodeVector_[i]);

@@ -179,7 +179,7 @@ public:
     const std::vector < Node * > & secondaryNodes() const;
 
     /*! Return primary and secondary nodes */
-    std::vector < Node * > allNodes() const;
+    const std::vector < Node * > allNodes() const;
 
     Index allNodeCount() const;
     
