@@ -239,6 +239,26 @@ void MeshEntity::setNodes_(const std::vector < Node * > & nodes){
     }
 }
 
+void MeshEntity::addSecondaryNode(Node * n) { 
+    secondaryNodes_.push_back(n);
+};
+
+const std::vector < Node * > & MeshEntity::secondaryNodes() const { 
+    return secondaryNodes_;
+};
+
+std::vector < Node * > MeshEntity::allNodes() const { 
+    std::vector < Node * > ns;
+    for (Index i = 0; i < this->nodeVector_.size(); i++ ){
+        ns.push_back(this->nodeVector_[i]);
+    }
+    for (Index i = 0; i < secondaryNodes_.size(); i++ ){
+        ns.push_back(secondaryNodes_[i]);
+    }
+    return ns;
+};
+
+
 void MeshEntity::deRegisterNodes_(){
 }
 

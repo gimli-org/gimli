@@ -174,6 +174,13 @@ public:
 
     const RMatrix & uxCache() const { return uxCache_; }
 
+    void addSecondaryNode(Node * n);
+
+    const std::vector < Node * > & secondaryNodes() const;
+
+    /*! Return primary and secondary nodes */
+    std::vector < Node * > allNodes() const;
+    
 protected:
     void fillShape_();
 
@@ -184,6 +191,7 @@ protected:
     Shape * shape_;
 
     std::vector < Node * > nodeVector_;
+    std::vector < Node * > secondaryNodes_;
 
     /*! Cache for derivation matrixes */
     //mutable ElementMatrix < double > uxCache_; // to expensive maybe, lightweight baseclass here
@@ -273,6 +281,7 @@ protected:
     void deRegisterNodes_();
 
     std::vector < Cell * > neighbourCells_;
+
 
     double attribute_;
 
