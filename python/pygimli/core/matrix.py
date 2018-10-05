@@ -6,6 +6,11 @@ from pygimli.core import _pygimli_ as pg
 import numpy as np
 
 
+# make core matrices (now in pg, later pg.core) known here for tab-completion
+BlockMatrix = pg.BlockMatrix
+IdentityMatrix = pg.IdentityMatrix
+
+
 class MultLeftMatrix(pg.MatrixBase):
     """Matrix consisting of actual RMatrix and lef-side vector."""
 
@@ -34,6 +39,7 @@ class MultLeftMatrix(pg.MatrixBase):
     def transMult(self, x):
         """Multiplication from right-hand-side (dot product A.T * x)"""
         return self.A.transMult(x * self.left)
+
 
 LMultRMatrix = MultLeftMatrix  # alias for backward compatibility
 
@@ -65,6 +71,7 @@ class MultRightMatrix(pg.MatrixBase):
     def rows(self):
         """Number of rows."""
         return self.A.rows()
+
 
 RMultRMatrix = MultRightMatrix  # alias for backward compatibility
 
@@ -103,6 +110,59 @@ class MultLeftRightMatrix(pg.MatrixBase):
 
 
 LRMultRMatrix = MultLeftRightMatrix  # alias for backward compatibility
+
+
+class Add2Matrix(pg.MatrixBase):
+    """Matrix by adding two matrices."""
+
+    def __init__(self, A, B):
+        super().__init__()
+        self.A = A
+        self.B = B
+        assert A.rows() == B.rows()
+        assert A.cols() == B.cols()
+
+    def mult(self, x):
+        """Return M*x = A*(r*x)"""
+        return self.A.mult(x) + self.B.mult(x)
+
+    def transMult(self, x):
+        """Return M.T*x=(A.T*x)*r"""
+        return self.A.transMult(x) + self.B.transMult(x)
+
+    def cols(self):
+        """Number of columns."""
+        return self.A.cols()
+
+    def rows(self):
+        """Number of rows."""
+        return self.A.rows()
+
+
+class Mult2Matrix(pg.MatrixBase):
+    """Matrix  by multiplying two matrices."""
+
+    def __init__(self, A, B):
+        super().__init__()
+        self.A = A
+        self.B = B
+        assert A.cols() == B.rows()
+
+    def mult(self, x):
+        """Return M*x = A*(r*x)"""
+        return self.A.mult(self.B.mult(x))
+
+    def transMult(self, x):
+        """Return M.T*x=(A.T*x)*r"""
+        return self.B.transMult(self.A.transMult(x))
+
+    def cols(self):
+        """Number of columns."""
+        return self.B.cols()
+
+    def rows(self):
+        """Number of rows."""
+        return self.A.rows()
 
 
 class DiagonalMatrix(pg.MatrixBase):
