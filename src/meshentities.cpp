@@ -258,6 +258,9 @@ std::vector < Node * > MeshEntity::allNodes() const {
     return ns;
 };
 
+Index MeshEntity::allNodeCount() const{
+    return nodeCount() + secondaryNodes_.size();
+}
 
 void MeshEntity::deRegisterNodes_(){
 }

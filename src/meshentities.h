@@ -180,6 +180,8 @@ public:
 
     /*! Return primary and secondary nodes */
     std::vector < Node * > allNodes() const;
+
+    Index allNodeCount() const;
     
 protected:
     void fillShape_();
