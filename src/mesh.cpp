@@ -99,6 +99,9 @@ void Mesh::copy_(const Mesh & mesh){
     cellVector_.reserve(mesh.cellCount());
     for (Index i = 0; i < mesh.cellCount(); i ++){
         this->createCell(mesh.cell(i));
+        for (Index j = 0; j < mesh.cell(i).secondaryNodes().size(); j ++){
+            this->cell(i).addSecondaryNode(mesh.cell(i).secondaryNodes()[j]);
+        }
     }
 
     for (Index i = 0; i < mesh.regionMarker().size(); i ++){
@@ -446,9 +449,9 @@ Mesh Mesh::createHull() const{
     out.createHull_(*this);
     return out;
 }
-    
+
 void Mesh::createHull_(const Mesh & mesh){
-    
+
     if (this->dim() == 3 && mesh.dim() == 2){
         clear();
         rangesKnown_ = false;
