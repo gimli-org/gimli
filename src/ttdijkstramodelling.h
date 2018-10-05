@@ -27,9 +27,9 @@
 namespace GIMLI {
 
 //** sorted vector
-typedef std::map< int, double > NodeDistMap;
+typedef std::map< Index, double > NodeDistMap;
 //** sorted matrix
-typedef std::map< int, NodeDistMap > Graph;
+typedef std::map< Index, NodeDistMap > Graph;
 
 /*! Dijkstra's shortest path finding*/
 class DLLEXPORT Dijkstra {
@@ -44,19 +44,18 @@ public:
 
     void setStartNode(Index startNode);
 
-    std::vector < Index > shortestPathTo(Index node) const;
+    IndexArray shortestPathTo(Index node) const;
 
-    inline double distance(int node) { return distances_[node]; }
+    inline double distance(Index node) { return distances_[node]; }
 
     RVector distances() const;
 
-
-    class edge_ : std::pair< int, int > {
+    class edge_ : std::pair< Index, Index > {
     public:
         edge_() : start(0), end(0) {}
-        edge_(int a, int b) : start(a), end(b) {}
-        int start;
-        int end;
+        edge_(Index a, Index b) : start(a), end(b) {}
+        Index start;
+        Index end;
     };
 
     /*! Definition for the priority queue */
@@ -80,7 +79,7 @@ protected:
     std::vector < edge_ > pathMatrix_;
     NodeDistMap distances_;
     Graph graph_;
-    int root_;
+    Index root_;
 };
 
 //! Modelling class for travel time problems using the Dijkstra algorithm
@@ -127,13 +126,13 @@ protected:
     double background_;
 
     /*! Nearest nodes for the current mesh for all shot points.*/
-    std::vector < Index > shotNodeId_;
+    IndexArray shotNodeId_;
 
     /*! Map shot id to sequential shot node number of shotNodeId_ */
     std::map< Index, Index > shotsInv_;
 
     /*! Nearest nodes for the current mesh for all receiver points.*/
-    std::vector < Index > receNodeId_;
+    IndexArray receNodeId_;
 
     /*! Map receiver id to sequential receiver node number of receNodeId_ */
     std::map< Index, Index > receiInv_;

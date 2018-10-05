@@ -70,12 +70,12 @@ void Dijkstra::setStartNode(Index startNode) {
         dummy = priQueue.top();
 
         double distance = dummy.first;
-        int node = dummy.second.end;
+        Index node = dummy.second.end;
         priQueue.pop();
 
         if (distances_.count(node) == 0) {
             distances_[node] = distance;
-            if ((int)pathMatrix_.size() <= node){
+            if ((Index)pathMatrix_.size() <= node){
                 throwError(1, WHERE_AM_I + " Warning! Dijkstra graph invalid" );
             }
             pathMatrix_[node] = edge_(dummy.second);
@@ -92,10 +92,10 @@ void Dijkstra::setStartNode(Index startNode) {
     }
 }
 
-std::vector < Index > Dijkstra::shortestPathTo(Index node) const {
-    std::vector < Index > way;
+IndexArray Dijkstra::shortestPathTo(Index node) const {
+    IndexArray way;
 
-    int parentNode = -1, endNode = node;
+    Index parentNode = -1, endNode = node;
 
     while (parentNode != root_) {
         parentNode = pathMatrix_[endNode].start;
@@ -105,7 +105,7 @@ std::vector < Index > Dijkstra::shortestPathTo(Index node) const {
 
     way.push_back(root_);
 
-    std::vector < Index > rway(way.size());
+    IndexArray rway(way.size());
     for (Index i = 0; i < way.size(); i ++) rway[i] = way[way.size() - i - 1];
 
     return rway;
@@ -371,7 +371,7 @@ void TravelTimeDijkstraModelling::createJacobian(RSparseMapMatrix & jacobian,
     jacobian.setCols(nModel);
 
     //** for each shot: vector<  way(shot->geoph) >;
-    std::vector < std::vector < std::vector < Index > > > wayMatrix(nShots);
+    std::vector < std::vector < IndexArray > > wayMatrix(nShots);
 
     for (Index shot = 0; shot < nShots; shot ++) {
         dijkstra_.setStartNode(shotNodeId_[shot]);
@@ -441,7 +441,7 @@ TTModellingWithOffset::TTModellingWithOffset(Mesh & mesh, DataContainer & dataCo
     shots_ = unique(sort(dataContainer.get("s")));
     std::cout << "found " << shots_.size() << " shots." << std::endl;
     for (Index i = 0 ; i < shots_.size() ; i++) {
-        shotMap_.insert(std::pair< int, int >((Index)shots_[i], i));
+        shotMap_.insert(std::pair< Index, Index >((Index)shots_[i], i));
     }
 
     //! create new region containing offsets with special marker
