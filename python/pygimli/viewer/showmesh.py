@@ -375,12 +375,10 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
 
         if markers:
             ticks = np.arange(len(uniquemarkers))
-            #print('show.ticks ********************', ticks)
             cbar.set_ticks(ticks)
             labels = []
             for marker in uniquemarkers:
                 labels.append(str((marker)))
-            #print('show.labels ********************', labels)
             cbar.set_ticklabels(labels)
 
     if coverage is not None:
@@ -418,7 +416,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
             try:
                 print("trying eps2pdf ... ")
                 os.system('epstopdf ' + savefig)
-            except BaseException as _:
+            except BaseException:
                 pass
         print('..done')
 
