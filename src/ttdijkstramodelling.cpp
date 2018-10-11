@@ -148,46 +148,51 @@ void fillGraph_(Graph & graph, const Node & a, const Node & b, double slowness, 
     if (a.id() == b.id()) return;
 
     SIndex rightID = -1;
-
+        
     double dist = a.pos().distance(b.pos());
     double newTime = dist * slowness;
     double oldTime = graph[b.id()][a.id()].time();
-
-    if (V_){
-        __MS("a:" << a.id() << " b:"  << b.id() << " L:" << leftID << " R:" << rightID)
-    }
+    
+    // if (V_){
+    //     __MS("a:" << a.id() << " b:"  << b.id() << " L:" << leftID << " R:" << rightID << " " << oldTime)
+    // }
 
     if (oldTime > 0.0) {
         newTime = std::min(newTime, oldTime);
 
-        if (graph[b.id()][a.id()].leftCellID() > 0){
-            rightID = graph[b.id()][a.id()].leftCellID();
+        SIndex l = graph[b.id()][a.id()].leftCellID();
+        SIndex r = graph[b.id()][a.id()].rightCellID();
+
+        if (l > 0){
+            rightID = leftID;
+            leftID = l;
         } else {
-            rightID = graph[b.id()][a.id()].rightCellID();
+            rightID = r;
         }
-        graph[b.id()][a.id()].setTime(newTime);
-        graph[b.id()][a.id()].setRightCellID(leftID);
-    }
+        // if (V_)__MS("\t" << l<<" " << leftID << " "<< rightID)
+    } 
+    
     graph[a.id()][b.id()] = GraphDistInfo(newTime, dist, leftID, rightID);
+    graph[b.id()][a.id()] = GraphDistInfo(newTime, dist, rightID, leftID);
 }
 
-void fillGraph_(Graph & graph, const Cell & c, double slowness){
+void fillGraph_(Graph & graph, Cell & c, double slowness){
 
     std::vector< Node * > ni;
 
     if (c.secondaryNodes().size() > 0){
         ni = c.allNodes();
     } else {
-        for (Index j(0); j < c.boundaryCount(); j++){
-            // Boundary *b = c.boundary(j);
-                
-            // if (b){
-            //     // for (auto n : c.boundary(j)->allNodes()){
-            //     //     ni.push_back(n);
-            //     // }
-            // } else {
-            //     log(Critical, "No boundary found.");
-            // }
+        ni = c.nodes();
+        for (Index i(0); i < c.boundaryCount(); i++){
+            Boundary *b = c.boundary(i);
+            if (b){
+                for (auto & n : b->secondaryNodes()){
+                    ni.push_back(n);
+                }
+            } else {
+                log(Critical, "No boundary found.");
+            }
         }
     }
 
@@ -198,88 +203,20 @@ void fillGraph_(Graph & graph, const Cell & c, double slowness){
     }
 }
 
-void fillGraph_(Graph & graph, const Boundary & b, 
-                double slowness, SIndex leftID){
-
-    std::vector< Node * > n(b.nodes());
-    std::vector< Node * > nS(b.secondaryNodes());
-    
-    if (nS.size() == 0){
-        for (Index i(0); i < n.size()-1; i ++) {
-            for (Index j(i+1); j < n.size(); j ++) {
-                fillGraph_(graph, *n[i], *n[j], slowness, leftID);        
-            }
-        }
-    } else {
-        for (Index i(0); i < nS.size(); i ++) {
-            for (Index j(0); j < n.size(); j ++) {
-                fillGraph_(graph, *n[i], *n[j], slowness, leftID);        
-            }
-            for (Index j(0); j < nS.size(); j ++) {
-                fillGraph_(graph, *n[i], *n[j], slowness, leftID);        
-            }
-        }
-    }
-}
-
-void fillGraph_(Graph & graph, const std::vector< Node * > & na, const std::vector< Node * > & nb, 
-                double slowness, SIndex leftID){
-    for (Index i(0); i < na.size(); i ++) {
-        for (Index j(0); j < nb.size(); j ++) {
-            if ((i == 0 && j == 0) ||
-                (i == 0 && j == nb.size()-1) ||
-                (i == 1 && j == 0) ||
-                (i == na.size()-1 && j == nb.size()-1)) continue;
-
-            if (na[i] != nb[i]){
-                
-                if (V_) __MS(na[i]->id() << " " <<  nb[j]->id())
-
-                fillGraph_(graph, *na[i], *nb[j], slowness, leftID);
-            }
-        }
-    }
-}
-
-
 Graph TravelTimeDijkstraModelling::createGraph(const RVector & slownessPerCell) const {
     Graph graph;
     mesh_->createNeighbourInfos();
 
     for (Index i = 0; i < mesh_->cellCount(); i ++) {
         Cell & c = mesh_->cell(i);
-        if (c.secondaryNodes().size() > 0){
-            fillGraph_(graph, c, slownessPerCell[c.id()]);
-        } else {
+        // if (c.id() == 21 || c.id() == 24) {
+        //     V_=true;
+        //     __MS(c.id())
+        // } else {
+        //     V_=false;
+        // }
 
-            if (c.id() == 33 || c.id() == 42) {
-                V_=true;
-                __MS(c.id())
-            } else {
-                V_=false;
-            }
-
-            std::vector < Boundary * > bounds;
-            std::vector < std::vector < Node * > > n;
-            for (Index j(0); j < c.boundaryCount(); j++){
-                Boundary *b = c.boundary(j);
-                
-                if (b){
-                    bounds.push_back(b);
-                    n.push_back(c.boundary(j)->allNodes());
-                } else {
-                    log(Critical, "No boundary found.");
-                }
-            }
-
-            for (Index j(0); j < bounds.size(); j ++){
-                fillGraph_(graph, *bounds[j], slownessPerCell[c.id()], c.id());
-
-                for (Index k(j+1); k < n.size(); k ++){
-                    fillGraph_(graph, n[j], n[k], slownessPerCell[c.id()], c.id());
-                }
-            }
-        }
+        fillGraph_(graph, c, slownessPerCell[c.id()]);
     }
 
     if (graph.size() < mesh_->nodeCount()){
