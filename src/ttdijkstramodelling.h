@@ -37,21 +37,14 @@ public:
     }
 
     /*! Travel time for the current way element. Depends on the graph initialization.*/
-    void setTime(double time){ time_ = time; }
-
-    /*! Travel time for the current way element. Depends on the graph initialization.*/
     double time() const { return time_; }
 
-    void setDist(double dist){ dist_ = dist; }
     /*! Distance of the way element.*/
     double dist() const { return dist_; }
 
-    void setLeftCellID(SIndex i ) {l_ = i; }
-    
     /*! Index for the left cell., -1 for None. */
     SIndex leftCellID() const { return l_; }
 
-    void setRightCellID(SIndex i ) {r_ = i; }
     /*! Index for the right cell., -1 for None. Depends on the graph initialization.*/
     SIndex rightCellID() const { return r_; }
 
