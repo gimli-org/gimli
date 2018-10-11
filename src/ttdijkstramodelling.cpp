@@ -27,6 +27,7 @@
 #include "pos.h"
 #include "mesh.h"
 #include "meshgenerators.h"
+#include "meshentities.h"
 #include "numericbase.h"
 #include "regionManager.h"
 #include "sparsematrix.h"
@@ -41,10 +42,14 @@ Dijkstra::Dijkstra(const Graph & graph) : graph_(graph) {
     pathMatrix_.resize(graph.size());
 }
 
+double Dijkstra::distance(Index node) { 
+    return distances_[node].time(); 
+}
+
 RVector Dijkstra::distances() const {
     RVector ret(0);
     for (auto const & it: distances_){
-        ret.push_back(it.second);
+        ret.push_back(it.second.time());
     }
     return ret;
 }
@@ -58,13 +63,13 @@ void Dijkstra::setGraph(const Graph & graph) {
 void Dijkstra::setStartNode(Index startNode) {
     distances_.clear();
     root_ = startNode;
-    std::priority_queue< distancePair_,
-                         std::vector< distancePair_ >,
-                         comparePairsClass_< distancePair_ > > priQueue;
+    std::priority_queue< DistancePair_,
+                         std::vector< DistancePair_ >,
+                         ComparePairsClass_< DistancePair_ > > priQueue;
 
-    edge_ e(startNode, startNode);
-    priQueue.push(distancePair_(0.0, e));
-    distancePair_ dummy;
+    Edge_ e(startNode, startNode);
+    priQueue.push(DistancePair_(0.0, e));
+    DistancePair_ dummy;
 
     while (!priQueue.empty()) {
         dummy = priQueue.top();
@@ -74,11 +79,14 @@ void Dijkstra::setStartNode(Index startNode) {
         priQueue.pop();
 
         if (distances_.count(node) == 0) {
-            distances_[node] = distance;
+            //distances_[node] = distance;
+            
+            distances_[node] = GraphDistInfo(distance, 0, -1, -1);
+
             if ((Index)pathMatrix_.size() <= node){
                 throwError(1, WHERE_AM_I + " Warning! Dijkstra graph invalid" );
             }
-            pathMatrix_[node] = edge_(dummy.second);
+            pathMatrix_[node] = Edge_(dummy.second);
 
             NodeDistMap::iterator start = graph_[node].begin();
             NodeDistMap::iterator stop = graph_[node].end();
@@ -86,7 +94,7 @@ void Dijkstra::setStartNode(Index startNode) {
             for (; start != stop; ++start) {
                 e.start = node;
                 e.end = (*start).first;
-                priQueue.push(distancePair_(distance + (*start).second, e));
+                priQueue.push(DistancePair_(distance + (*start).second.time(), e));
             }
         }
     }
@@ -117,7 +125,7 @@ IndexArray Dijkstra::shortestPathTo(Index node) const {
 //    }
 
 TravelTimeDijkstraModelling::TravelTimeDijkstraModelling(bool verbose)
-: ModellingBase(verbose), background_(1e16){
+    : ModellingBase(verbose), background_(1e16){
     this->initJacobian();
 }
 
@@ -134,72 +142,89 @@ RVector TravelTimeDijkstraModelling::createDefaultStartModel() {
     return RVector(this->regionManager().parameterCount(), findMedianSlowness());
 }
 
-Graph TravelTimeDijkstraModelling::createGraph(const RVector & slownessPerCell) const {
-    Graph meshGraph;
+bool V_ = false;
 
-    double dist, oldTime, newTime;
+void fillGraph_(Graph & graph, const Node & a, const Node & b, double slowness, SIndex leftID){
+    if (a.id() == b.id()) return;
+
+    SIndex rightID = -1;
+        
+    double dist = a.pos().distance(b.pos());
+    double newTime = dist * slowness;
+    double oldTime = graph[b.id()][a.id()].time();
+    
+    // if (V_){
+    //     __MS("a:" << a.id() << " b:"  << b.id() << " L:" << leftID << " R:" << rightID << " " << oldTime)
+    // }
+
+    if (oldTime > 0.0) {
+        newTime = std::min(newTime, oldTime);
+
+        SIndex l = graph[b.id()][a.id()].leftCellID();
+        SIndex r = graph[b.id()][a.id()].rightCellID();
+
+        if (l > 0){
+            rightID = leftID;
+            leftID = l;
+        } else {
+            rightID = r;
+        }
+        // if (V_)__MS("\t" << l<<" " << leftID << " "<< rightID)
+    } 
+    
+    graph[a.id()][b.id()] = GraphDistInfo(newTime, dist, leftID, rightID);
+    graph[b.id()][a.id()] = GraphDistInfo(newTime, dist, rightID, leftID);
+}
+
+void fillGraph_(Graph & graph, Cell & c, double slowness){
+
+    std::vector< Node * > ni;
+
+    if (c.secondaryNodes().size() > 0){
+        ni = c.allNodes();
+    } else {
+        ni = c.nodes();
+        for (Index i(0); i < c.boundaryCount(); i++){
+            Boundary *b = c.boundary(i);
+            if (b){
+                for (auto & n : b->secondaryNodes()){
+                    ni.push_back(n);
+                }
+            } else {
+                log(Critical, "No boundary found.");
+            }
+        }
+    }
+
+    for (Index j = 0; j < ni.size()-1; j ++) {
+        for (Index k = j + 1; k < ni.size(); k ++) {
+            fillGraph_(graph, *ni[j], *ni[k], slowness, c.id());
+        }
+    }
+}
+
+Graph TravelTimeDijkstraModelling::createGraph(const RVector & slownessPerCell) const {
+    Graph graph;
+    mesh_->createNeighbourInfos();
 
     for (Index i = 0; i < mesh_->cellCount(); i ++) {
-        unsigned nc = mesh_->cell(i).allNodeCount();
-        std::vector< Node*> ni(mesh_->cell(i).allNodes());
-        for (Index j = 0; j < nc; j ++) {
-            Node *na = ni[j];
-            for (Index k = j + 1; k < nc; k ++) {
-                Node *nb = ni[k];
-                dist = na->pos().distance(nb->pos());
-
-                oldTime = meshGraph[na->id()][nb->id()];
-                newTime = dist * slownessPerCell[mesh_->cell(i).id()];
-
-                if (oldTime != 0) {
-                    newTime = std::min(newTime, oldTime);
-                }
-
-                // set both to ensure all foreign(from other cells) paths becoming the shortest time
-                meshGraph[na->id()][nb->id()] = newTime;
-                meshGraph[nb->id()][na->id()] = newTime;
-            }
-        }
-        // obsolete
-        // if (mesh_->cell(i).rtti() == MESH_TETRAHEDRON_RTTI ||
-        //     mesh_->cell(i).rtti() == MESH_TETRAHEDRON10_RTTI) {
-
-        //     Node *na = &mesh_->cell(i).node(0);
-        //     Node *nb = &mesh_->cell(i).node(2);
-
-        //     dist = na->pos().distance(nb->pos());
-        //     oldTime = meshGraph[na->id()][nb->id()];
-        //     newTime = dist * slownessPerCell[mesh_->cell(i).id()];
-
-        //     meshGraph[na->id()][nb->id()] = newTime;
-        //     meshGraph[nb->id()][na->id()] = newTime;
-
-        //     na = &mesh_->cell(i).node(1);
-        //     nb = &mesh_->cell(i).node(3);
-
-        //     dist = na->pos().distance(nb->pos());
-        //     oldTime = meshGraph[na->id()][nb->id()];
-        //     newTime = dist * slownessPerCell[mesh_->cell(i).id()];
-        //     meshGraph[na->id()][nb->id()] = newTime;
-        //     meshGraph[nb->id()][na->id()] = newTime;
+        Cell & c = mesh_->cell(i);
+        // if (c.id() == 21 || c.id() == 24) {
+        //     V_=true;
+        //     __MS(c.id())
+        // } else {
+        //     V_=false;
         // }
 
-        // if (mesh_->cell(i).rtti() > MESH_TETRAHEDRON10_RTTI){
-        //     THROW_TO_IMPL
-        // }
+        fillGraph_(graph, c, slownessPerCell[c.id()]);
     }
 
-    if (meshGraph.size() < mesh_->nodeCount()){
+    if (graph.size() < mesh_->nodeCount()){
         std::cerr << WHERE_AM_I <<
                 " there seems to be unassigned nodes within the mesh. Dijkstra Path will be maybe invalid."
-                 << meshGraph.size() << " < " << mesh_->nodeCount() << std::endl;
-        for (Index i = 0; i < mesh_->nodeCount(); i ++){
-            if (mesh_->node(i).cellSet().empty()){
-                std::cout << mesh_->node(i) << std::endl;
-            }
-        }
+                 << graph.size() << " < " << mesh_->nodeCount() << std::endl;
     }
-    return meshGraph;
+    return graph;
 }
 
 double TravelTimeDijkstraModelling::findMedianSlowness() const {
