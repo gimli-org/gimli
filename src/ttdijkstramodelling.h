@@ -26,10 +26,41 @@
 
 namespace GIMLI {
 
+class GraphDistInfo{
+public:    
+    GraphDistInfo()
+        :  time_(0.0), dist_(0.0),  l_(-1), r_(-1){
+
+    }
+    GraphDistInfo(double t, double d, SIndex l, SIndex r)
+        :  time_(t), dist_(d),  l_(l), r_(r){
+    }
+
+    /*! Travel time for the current way element. Depends on the graph initialization.*/
+    double time() const { return time_; }
+    
+    /*! Distance of the way element.*/
+    double dist() const { return dist_; }
+
+    /*! Index for the left cell., -1 for None. */
+    SIndex leftCellID() const { return l_; }
+
+    /*! Index for the right cell., -1 for None. Depends on the graph initialization.*/
+    SIndex rightCellID() const { return r_; }
+
+protected:
+
+    double time_;
+    double dist_;
+    SIndex l_;
+    SIndex r_;
+};
+
 //** sorted vector
-typedef std::map< Index, double > NodeDistMap;
+typedef std::map< Index, GraphDistInfo > NodeDistMap;
 //** sorted matrix
 typedef std::map< Index, NodeDistMap > Graph;
+
 
 /*! Dijkstra's shortest path finding*/
 class DLLEXPORT Dijkstra {
@@ -46,29 +77,37 @@ public:
 
     IndexArray shortestPathTo(Index node) const;
 
-    inline double distance(Index node) { return distances_[node]; }
+    double distance(Index node); 
 
     RVector distances() const;
 
-    class edge_ : std::pair< Index, Index > {
+    Graph & graph() {
+        return graph_;
+    }
+
+    GraphDistInfo & graphInfo(Index na, Index nb) {
+        return graph_[na][nb];
+    }
+
+    class Edge_ : std::pair< Index, Index > {
     public:
-        edge_() : start(0), end(0) {}
-        edge_(Index a, Index b) : start(a), end(b) {}
+        Edge_() : start(0), end(0) {}
+        Edge_(Index a, Index b) : start(a), end(b) {}
         Index start;
         Index end;
     };
 
     /*! Definition for the priority queue */
-    class distancePair_ : std::pair< float, edge_ > { // weigth, vertex;
+    class DistancePair_ : std::pair< double, Edge_ > {
     public:
-        distancePair_() : first(0.0) {}
-        distancePair_(double f, edge_ & s) : first(f), second(s) {}
+        DistancePair_() : first(0.0) {}
+        DistancePair_(double f, Edge_ & s) : first(f), second(s) {}
 
         double first;
-        edge_ second;
+        Edge_ second;
     };
 
-    template < class T > class comparePairsClass_ : public std::binary_function< T, T, T > {
+    template < class T > class ComparePairsClass_ : public std::binary_function< T, T, T > {
     public:
         bool operator() (const T & lhs, const T & rhs) {
             return lhs.first > rhs.first;
@@ -76,8 +115,10 @@ public:
     };
 
 protected:
-    std::vector < edge_ > pathMatrix_;
+    std::vector < Edge_ > pathMatrix_;
+    
     NodeDistMap distances_;
+
     Graph graph_;
     Index root_;
 };
