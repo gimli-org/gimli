@@ -81,7 +81,7 @@ void Dijkstra::setStartNode(Index startNode) {
         if (distances_.count(node) == 0) {
             //distances_[node] = distance;
             
-            distances_[node] = GraphDistInfo(distance, 0, -1, -1);
+            distances_[node] = GraphDistInfo(distance, 0);
 
             if ((Index)pathMatrix_.size() <= node){
                 throwError(1, WHERE_AM_I + " Warning! Dijkstra graph invalid" );
@@ -147,33 +147,42 @@ bool V_ = false;
 void fillGraph_(Graph & graph, const Node & a, const Node & b, double slowness, SIndex leftID){
     if (a.id() == b.id()) return;
 
-    SIndex rightID = -1;
-        
     double dist = a.pos().distance(b.pos());
     double newTime = dist * slowness;
-    double oldTime = graph[b.id()][a.id()].time();
+    double oldTime = graph[a.id()][b.id()].time();
     
     // if (V_){
-    //     __MS("a:" << a.id() << " b:"  << b.id() << " L:" << leftID << " R:" << rightID << " " << oldTime)
+    //     __MS("a:" << a.id() << " b:"  << b.id() << " L:" << leftID << " t:" << " " << newTime << " " << oldTime)
     // }
 
     if (oldTime > 0.0) {
         newTime = std::min(newTime, oldTime);
 
-        SIndex l = graph[b.id()][a.id()].leftCellID();
-        SIndex r = graph[b.id()][a.id()].rightCellID();
+        // way pair already exist so set time to min and add leftID
+        
+        NodeDistMap::iterator ita(graph[a.id()].find(b.id()));
+        ita->second.cellIDs().insert(leftID);
+        ita->second.setTime(newTime);
+        
+        NodeDistMap::iterator itb(graph[b.id()].find(a.id()));
+        itb->second.cellIDs().insert(leftID);
+        itb->second.setTime(newTime);
+        // SIndex l = graph[b.id()][a.id()].leftCellID();
+        // SIndex r = graph[b.id()][a.id()].rightCellID();
 
-        if (l > 0){
-            rightID = leftID;
-            leftID = l;
-        } else {
-            rightID = r;
-        }
+        // if (l > 0){
+        //     rightID = leftID;
+        //     leftID = l;
+        // } else {
+        //     rightID = r;
+        // }
+        // graph[b.id()][a.id()] = GraphDistInfo(newTime, dist, leftID);    
         // if (V_)__MS("\t" << l<<" " << leftID << " "<< rightID)
-    } 
-    
-    graph[a.id()][b.id()] = GraphDistInfo(newTime, dist, leftID, rightID);
-    graph[b.id()][a.id()] = GraphDistInfo(newTime, dist, rightID, leftID);
+    } else {
+        // first time fill
+        graph[a.id()][b.id()] = GraphDistInfo(newTime, dist, leftID);   
+        graph[b.id()][a.id()] = GraphDistInfo(newTime, dist, leftID);    
+    }
 }
 
 void fillGraph_(Graph & graph, Cell & c, double slowness){
@@ -209,7 +218,8 @@ Graph TravelTimeDijkstraModelling::createGraph(const RVector & slownessPerCell) 
 
     for (Index i = 0; i < mesh_->cellCount(); i ++) {
         Cell & c = mesh_->cell(i);
-        // if (c.id() == 21 || c.id() == 24) {
+
+        // if (c.id() == 27 || c.id() == 70) {
         //     V_=true;
         //     __MS(c.id())
         // } else {
@@ -383,8 +393,8 @@ void TravelTimeDijkstraModelling::createJacobian(RSparseMapMatrix & jacobian,
         background_ = 1e16;
     }
 
-    this->mapModel(slowness, background_);
-    dijkstra_.setGraph(createGraph(mesh_->cellAttributes()));
+    RVector slowPerCell(this->createMappedModel(slowness, background_));
+    dijkstra_.setGraph(createGraph(slowPerCell));
 
     Index nShots = shotNodeId_.size();
     Index nRecei = receNodeId_.size();
@@ -409,6 +419,7 @@ void TravelTimeDijkstraModelling::createJacobian(RSparseMapMatrix & jacobian,
     for (Index dataIdx = 0; dataIdx < nData; dataIdx ++) {
         Index s = shotsInv_[Index((*dataContainer_)("s")[dataIdx])];
         Index g = receiInv_[Index((*dataContainer_)("g")[dataIdx])];
+
         std::set < Cell * > neighborCells;
 
         for (Index i = 0; i < wayMatrix[s][g].size()-1; i ++) {
@@ -418,25 +429,29 @@ void TravelTimeDijkstraModelling::createJacobian(RSparseMapMatrix & jacobian,
             double slo = 0.0;
 
             intersectionSet(neighborCells, mesh_->node(aId).cellSet(), mesh_->node(bId).cellSet());
+            // __MS(aId << " " << bId)
 
             if (!neighborCells.empty()) {
-                double mins = 1e16, dequal = 1e-3;
+                double mins = 1e16, dEqual = 1e-3;
                 int nfast = 0;
                 /*! first detect cells with minimal slowness */
                 for (std::set < Cell * >::iterator it = neighborCells.begin(); it != neighborCells.end(); it ++) {
-                    slo = (*it)->attribute();
-                    if (std::fabs(slo / mins -1) < dequal) nfast++; // check for equality
+                    slo = slowPerCell[(*it)->id()];
+                    if (std::fabs(slo / mins -1) < dEqual) nfast++; // check for equality
                     else if (slo < mins) {
                         nfast = 1;
                         mins = slo;
                     }
                 }
+                
+                // __MS(aId << " " << bId << "" << slo)
+
                 /*! now write edgelength divided by two into jacobian matrix */
                 for (std::set < Cell * >::iterator it = neighborCells.begin(); it != neighborCells.end(); it ++) {
                     int marker = (*it)->marker();
                     if (nfast > 0) {
-                        slo = (*it)->attribute();
-                        if ((slo > 0.0) && (std::fabs(slo / mins - 1) < dequal)) {
+                        slo = slowPerCell[(*it)->id()];
+                        if ((slo > 0.0) && (std::fabs(slo / mins - 1) < dEqual)) {
                             if (marker > (int)nModel - 1) {
                                 std::cerr << "Warning! request invalid model cell: " << *(*it) << std::endl;
                             } else {
@@ -446,6 +461,7 @@ void TravelTimeDijkstraModelling::createJacobian(RSparseMapMatrix & jacobian,
 //                                         SIndex regionMarker = -(marker - MARKER_FIXEDVALUE_REGION);
 //                                         double val = regionManager_->region(regionMarker)->fixValue();
                                 } else {
+                                    __MS(aId << " " << bId << " " << marker << " "<< edgeLength / nfast)
                                     jacobian[dataIdx][marker] += edgeLength / nfast; //nur wohin?? CA nur wohin was??
                                 }
                             }

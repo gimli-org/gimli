@@ -29,12 +29,18 @@ namespace GIMLI {
 class GraphDistInfo{
 public:    
     GraphDistInfo()
-        :  time_(0.0), dist_(0.0),  l_(-1), r_(-1){
-
+        :  time_(0.0), dist_(0.0){
     }
-    GraphDistInfo(double t, double d, SIndex l, SIndex r)
-        :  time_(t), dist_(d),  l_(l), r_(r){
+    GraphDistInfo(double t, double d)
+        :  time_(t), dist_(d){
     }
+    GraphDistInfo(double t, double d, Index cellID)
+        :  time_(t), dist_(d){
+        cells_.insert(cellID);
+    }
+    
+    /*! Travel time for the current way element. Depends on the graph initialization.*/
+    void setTime(double t) { time_ = t; }
 
     /*! Travel time for the current way element. Depends on the graph initialization.*/
     double time() const { return time_; }
@@ -42,18 +48,17 @@ public:
     /*! Distance of the way element.*/
     double dist() const { return dist_; }
 
-    /*! Index for the left cell., -1 for None. */
-    SIndex leftCellID() const { return l_; }
+    /*! Index for all cells containing this wayelement*/
+    std::set < Index > & cellIDs() { return cells_; }
 
-    /*! Index for the right cell., -1 for None. Depends on the graph initialization.*/
-    SIndex rightCellID() const { return r_; }
+    /*! Index for all cells containing this wayelement*/
+    const std::set < Index > & cellIDs() const { return cells_; }
 
 protected:
 
     double time_;
     double dist_;
-    SIndex l_;
-    SIndex r_;
+    std::set < Index > cells_;
 };
 
 //** sorted vector
