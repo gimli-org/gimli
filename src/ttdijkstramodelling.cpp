@@ -148,6 +148,10 @@ void fillGraph_(Graph & graph, const Node & a, const Node & b, double slowness, 
     if (a.id() == b.id()) return;
 
     double dist = a.pos().distance(b.pos());
+
+    // ensure connection between 3d boundaries
+    dist = max(1e-8, dist);
+
     double newTime = dist * slowness;
     double oldTime = graph[a.id()][b.id()].time();
     
@@ -380,6 +384,11 @@ void TravelTimeDijkstraModelling::initJacobian(){
     ownJacobian_ = true;
 }
 
+const IndexArray & TravelTimeDijkstraModelling::way(Index sht, Index rec) const{
+    ASSERT_SIZE(wayMatrix_, sht)
+    ASSERT_SIZE(wayMatrix_[sht], rec)
+    return wayMatrix_[sht][rec];
+}
 
 void TravelTimeDijkstraModelling::createJacobian(const RVector & slowness) {
     RSparseMapMatrix * jacobian = dynamic_cast < RSparseMapMatrix * > (jacobian_);
@@ -406,13 +415,14 @@ void TravelTimeDijkstraModelling::createJacobian(RSparseMapMatrix & jacobian,
     jacobian.setCols(nModel);
 
     //** for each shot: vector<  way(shot->geoph) >;
-    std::vector < std::vector < IndexArray > > wayMatrix(nShots);
+    wayMatrix_.clear();
+    wayMatrix_.resize(nShots);
 
     for (Index shot = 0; shot < nShots; shot ++) {
         dijkstra_.setStartNode(shotNodeId_[shot]);
 
         for (Index i = 0; i < nRecei; i ++) {
-            wayMatrix[shot].push_back(dijkstra_.shortestPathTo(receNodeId_[i]));
+            wayMatrix_[shot].push_back(dijkstra_.shortestPathTo(receNodeId_[i]));
         }
     }
 
@@ -422,55 +432,81 @@ void TravelTimeDijkstraModelling::createJacobian(RSparseMapMatrix & jacobian,
 
         std::set < Cell * > neighborCells;
 
-        for (Index i = 0; i < wayMatrix[s][g].size()-1; i ++) {
-            Index aId = wayMatrix[s][g][i];
-            Index bId = wayMatrix[s][g][i + 1];
-            double edgeLength = mesh_->node(aId).pos().distance(mesh_->node(bId).pos());
+        for (Index i = 0; i < wayMatrix_[s][g].size()-1; i ++) {
+            neighborCells.clear();
+
+            Index aId = wayMatrix_[s][g][i];
+            Index bId = wayMatrix_[s][g][i + 1];
+       
+            const GraphDistInfo & way = dijkstra_.graphInfo(aId, bId);
+            
+            double edgeLength = way.dist();
+            //double edgeLength = mesh_->node(aId).pos().distance(mesh_->node(bId).pos());
             double slo = 0.0;
 
-            intersectionSet(neighborCells, mesh_->node(aId).cellSet(), mesh_->node(bId).cellSet());
-            // __MS(aId << " " << bId)
+            double minSlow = 9e99;
 
-            if (!neighborCells.empty()) {
-                double mins = 1e16, dEqual = 1e-3;
-                int nfast = 0;
-                /*! first detect cells with minimal slowness */
-                for (std::set < Cell * >::iterator it = neighborCells.begin(); it != neighborCells.end(); it ++) {
-                    slo = slowPerCell[(*it)->id()];
-                    if (std::fabs(slo / mins -1) < dEqual) nfast++; // check for equality
-                    else if (slo < mins) {
-                        nfast = 1;
-                        mins = slo;
-                    }
-                }
-                
-                // __MS(aId << " " << bId << "" << slo)
-
-                /*! now write edgelength divided by two into jacobian matrix */
-                for (std::set < Cell * >::iterator it = neighborCells.begin(); it != neighborCells.end(); it ++) {
-                    int marker = (*it)->marker();
-                    if (nfast > 0) {
-                        slo = slowPerCell[(*it)->id()];
-                        if ((slo > 0.0) && (std::fabs(slo / mins - 1) < dEqual)) {
-                            if (marker > (int)nModel - 1) {
-                                std::cerr << "Warning! request invalid model cell: " << *(*it) << std::endl;
-                            } else {
-
-                                if (marker <= MARKER_FIXEDVALUE_REGION){
-                                    // neighbor is fixed region
-//                                         SIndex regionMarker = -(marker - MARKER_FIXEDVALUE_REGION);
-//                                         double val = regionManager_->region(regionMarker)->fixValue();
-                                } else {
-                                    __MS(aId << " " << bId << " " << marker << " "<< edgeLength / nfast)
-                                    jacobian[dataIdx][marker] += edgeLength / nfast; //nur wohin?? CA nur wohin was??
-                                }
-                            }
-                        }
-                    }
-                }
-            } else { // neighborCells.empty()
-                std::cerr << WHERE_AM_I << " no neighbor cells found for edge: " << aId << " " << bId << std::endl;
+            for (const auto &iCD : way.cellIDs()){
+                minSlow = min(minSlow, slowPerCell[iCD]);
             }
+            
+            for (const auto &iCD : way.cellIDs()){
+                if (std::fabs(slowPerCell[iCD] - minSlow) < 1e-4){
+                    Cell *c = & mesh_->cell(iCD);
+                    neighborCells.insert(c);
+                }
+            }
+
+            for (const auto &c : neighborCells){
+                jacobian[dataIdx][c->marker()] += edgeLength / neighborCells.size();
+            } 
+
+//             continue;
+
+
+//             intersectionSet(neighborCells, mesh_->node(aId).cellSet(), mesh_->node(bId).cellSet());
+//             // __MS(aId << " " << bId)
+
+//             if (!neighborCells.empty()) {
+//                 double mins = 1e16, dEqual = 1e-3;
+//                 int nfast = 0;
+//                 /*! first detect cells with minimal slowness */
+//                 for (std::set < Cell * >::iterator it = neighborCells.begin(); it != neighborCells.end(); it ++) {
+//                     slo = slowPerCell[(*it)->id()];
+//                     if (std::fabs(slo / mins -1) < dEqual) nfast++; // check for equality
+//                     else if (slo < mins) {
+//                         nfast = 1;
+//                         mins = slo;
+//                     }
+//                 }
+                
+//                 // __MS(aId << " " << bId << "" << slo)
+
+//                 /*! now write edgelength divided by two into jacobian matrix */
+//                 for (std::set < Cell * >::iterator it = neighborCells.begin(); it != neighborCells.end(); it ++) {
+//                     int marker = (*it)->marker();
+//                     if (nfast > 0) {
+//                         slo = slowPerCell[(*it)->id()];
+//                         if ((slo > 0.0) && (std::fabs(slo / mins - 1) < dEqual)) {
+//                             if (marker > (int)nModel - 1) {
+//                                 std::cerr << "Warning! request invalid model cell: " << *(*it) << std::endl;
+//                             } else {
+
+//                                 if (marker <= MARKER_FIXEDVALUE_REGION){
+//                                     // neighbor is fixed region
+// //                                         SIndex regionMarker = -(marker - MARKER_FIXEDVALUE_REGION);
+// //                                         double val = regionManager_->region(regionMarker)->fixValue();
+//                                 } else {
+//                                     __MS(aId << " " << bId << " " << marker << " "<< edgeLength / nfast)
+//                                     jacobian[dataIdx][marker] += edgeLength / nfast; //nur wohin?? CA nur wohin was??
+//                                 }
+//                             }
+//                         }
+//                     }
+//                 }
+//             } else { // neighborCells.empty()
+//                 std::cerr << WHERE_AM_I << " no neighbor cells found for edge: " << aId << " " << bId << std::endl;
+//             }
         }
     }
 }

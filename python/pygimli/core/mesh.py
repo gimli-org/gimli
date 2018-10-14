@@ -51,6 +51,9 @@ def createSecondaryNodes(self, n=3):
     """Create `n` equally distributed secondary nodes on boundaries of the mesh.
     This is useful to increase the accuracy of traveltime calculations.
 
+    TODO:
+        * Fill on 2D boundaries
+
     Parameters
     ----------
     n : int

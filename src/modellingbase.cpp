@@ -151,23 +151,6 @@ void ModellingBase::createRefinedForwardMesh(bool refine, bool pRefine){
     }
 }
 
-void ModellingBase::setRefinedMesh(const Mesh & mesh){
-    setMesh(mesh, true);
-    DEPRECATED
-    __MS("use setMesh(mesh, true)")
-
-//     if (verbose_) {
-//         std::cout << "set external secondary mesh:" << std::endl;
-//     }
-//     setMesh_(mesh, true);
-//     if (verbose_) {
-//         std::cout << "nModel = " << regionManager_->parameterCount() << std::endl;
-//         IVector m(unique(sort(mesh_->cellMarkers())));
-//         std::cout << "secMesh marker = [" << m[0] <<", " << m[1] << ", " << m[2]
-//          << ", ... ,  " << m[-1] << "]" << std::endl;
-//     }
-}
-
 void ModellingBase::setMesh(const Mesh & mesh, bool ignoreRegionManager) {
     Stopwatch swatch(true);
     if (regionManagerInUse_ && !ignoreRegionManager){
@@ -386,9 +369,6 @@ RSparseMapMatrix & ModellingBase::constraintsRef() {
 RVector ModellingBase::createMappedModel(const RVector & model, double background) const {
     if (mesh_ == 0) throwError(1, "ModellingBase has no mesh for ModellingBase::createMappedModel");
 
-    if (model.size() == mesh_->cellCount()) return model;
-//     __M
-//     mesh_->exportVTK("premap");
     RVector cellAtts(mesh_->cellCount());
 
     int marker = -1;

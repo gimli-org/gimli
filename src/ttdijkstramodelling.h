@@ -90,7 +90,11 @@ public:
         return graph_;
     }
 
-    GraphDistInfo & graphInfo(Index na, Index nb) {
+    const Graph & graph() const {
+        return graph_;
+    }
+
+    GraphDistInfo graphInfo(Index na, Index nb) {
         return graph_[na][nb];
     }
 
@@ -163,6 +167,15 @@ public:
 
     void createJacobian(RSparseMapMatrix & jacobian, const RVector & slowness);
 
+    /*! Returns the mesh node indieces for the way from shot to receiver, 
+    respective the data for the last jacobian calculation. If you want further infos about the way element. 
+    You can ask the dijkstra about the graph infos. */
+    const IndexArray & way(Index sht, Index rec) const;
+
+    /*! Read only access to the recent dijktra. */
+    const Dijkstra & dijkstra() const { return dijkstra_; };
+
+
 protected:
 
     /*! Automatically looking for shot and receiver points if the mesh is changed. */
@@ -182,6 +195,9 @@ protected:
 
     /*! Map receiver id to sequential receiver node number of receNodeId_ */
     std::map< Index, Index > receiInv_;
+
+    /*! Way matrix of the last full jacobian generation. */
+    std::vector < std::vector < IndexArray > > wayMatrix_;
 
 };
 
