@@ -173,22 +173,15 @@ _pygimli_.Line.__str__ = Line_str
 _pygimli_.DataContainer.__str__ = Data_str
 _pygimli_.ElementMatrix.__str__ = ElementMatrix_str
 
-
-
-# _pygimli_.stdVectorIndex.size = _pygimli_.stdVectorIndex.__len__
-# _pygimli_.stdVectorIndex.__str__ = RVector_str
-
 ############################
 # compatibility stuff
 ############################
-
 
 def nonzero_test(self):
     raise BaseException("Warning! there is no 'and' and 'or' for "
                         "BVector and RVector. " +
                         "Use binary operators '&' or '|' instead. " +
                         "If you looking for the nonzero test, use len(v) > 0")
-
 
 def np_round__(self, r):
     return np.round(self.array(), r)
@@ -454,10 +447,6 @@ def __getVal(self, idx):
     if isinstance(idx, _pygimli_.BVector) or isinstance(
             idx, _pygimli_.IVector) or isinstance(idx, _pygimli_.IndexArray):
         # print("BVector, IVector, IndexArray", idx)
-        return self(idx)
-    elif isinstance(idx, _pygimli_.
-                    stdVectorSIndex):  # // or isinstance(idx, stdVectorIndex):
-        # print("stdVectorSIndex", idx)
         return self(idx)
     elif isinstance(idx, slice):
 
@@ -862,36 +851,6 @@ def abs(v):
         return v
 
     return _pygimli_.fabs(v)
-
-
-########################################################
-# compare operators for stdVector
-########################################################
-
-
-def __CMP_stdVectorSIndex__(self, val):
-    raise BaseException("__CMP_stdVectorSIndex__ do not use")
-
-    # print("__CMP_stdVectorSIndex__")
-    # ret = _pygimli_.BVector(len(self))
-    # for i, v in enumerate(ret):
-    #     print(self[i] < val, int(self[i] < val))
-    #     #v = int(self[i] < val)
-    # print(ret)
-
-
-def __EQ_stdVectorSIndex__(self, val):
-    raise Exception("__EQ_stdVectorSIndex__ do not use")
-
-    # ret = _pygimli_.BVector(len(self))
-    # for i, v in enumerate(ret):
-    #    print(self[i] == val, int(self[i] == val))
-    #    v = self[i] == val
-    # print(ret)
-
-
-_pygimli_.stdVectorSIndex.__cmp__ = __CMP_stdVectorSIndex__
-_pygimli_.stdVectorSIndex.__eq__ = __EQ_stdVectorSIndex__
 
 # default BVector operator == (RVector, int) will be casted to
 # BVector operator == (RVector, RVector(int)) and fails

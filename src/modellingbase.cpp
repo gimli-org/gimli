@@ -369,6 +369,14 @@ RSparseMapMatrix & ModellingBase::constraintsRef() {
 RVector ModellingBase::createMappedModel(const RVector & model, double background) const {
     if (mesh_ == 0) throwError(1, "ModellingBase has no mesh for ModellingBase::createMappedModel");
 
+    if (model.size() == mesh_->cellCount()) {
+        IVector cM(mesh_->cellMarkers());
+        
+        // test if model are cell values instead of model that needs mapping
+        if (unique(sort(cM[cM > -1])).size() != model.size()) return model;
+        //if (unique(sort(cM[cM > -1])).size() != model.size()) return model;
+    }
+
     RVector cellAtts(mesh_->cellCount());
 
     int marker = -1;

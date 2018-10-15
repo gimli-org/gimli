@@ -332,9 +332,9 @@ public:
      * Return a new vector that based on indices's.
      * Throws exception if indices's are out of bound
      */
-    inline Vector < ValueType > operator () (const SIndexArray & siArray) const {
-        return get_(siArray);
-    }
+    // inline Vector < ValueType > operator () (const SIndexArray & siArray) const {
+    //     return get_(siArray);
+    // }
     inline Vector < ValueType > operator () (const IVector & iVec) const {
         return get_(iVec);
     }
@@ -1512,16 +1512,19 @@ template < class T > Vector< T > sort(const Vector < T > & a){
     return Vector < T > (0);
 }
 
-/*! Returning a copy of the vector and replacing all consecutive occurrences of a value by a single instance of that value. e.g. [0 1 1 2 1 1] -> [0 1 2 1]. To remove all double values from the vector use an additionally sorting. e.g. unique(sort(v)) gets you [0 1 2]. */
+/*! Returning a copy of the vector and replacing all consecutive occurrences 
+    of a value by a single instance of that value. e.g. [0 1 1 2 1 1] -> [0 1 2 1]. 
+    To remove all double values from the vector use an additionally sorting. 
+    e.g. unique(sort(v)) gets you [0 1 2]. */
 template < class T > Vector< T > unique(const Vector < T > & a){
-    #ifndef PYGIMLI_CAST
+#ifndef PYGIMLI_CAST
     std::vector < T > tmp(a.size()), u;
     for (Index i = 0; i < a.size(); i ++) tmp[i] = a[i];
     std::unique_copy(tmp.begin(), tmp.end(), back_inserter(u));
 
     Vector < T > ret(u);
     return ret;
-    #endif // fixme .. implement me without std::vector
+#endif // fixme .. implement me without std::vector
     return Vector < T >(0);
 }
 

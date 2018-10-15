@@ -259,7 +259,7 @@ typedef Vector < SIndex > IVector;
 typedef Vector < Index > IndexArray;
 //typedef std::vector < Index > IndexArray;
 // typedef IVector IndexArray;
-typedef std::vector < SIndex > SIndexArray;
+//typedef std::vector < SIndex > SIndexArray;
 
 
 typedef Matrix < double > RMatrix;
