@@ -537,12 +537,11 @@ def drawMeshBoundaries(ax, mesh, hideMesh=False, useColorMap=False, **kwargs):
 
     lw = kwargs.pop('lw', None)
     col = kwargs.pop('color', None)
-
     if not hideMesh:
         drawSelectedMeshBoundaries(ax,
                                    mesh.findBoundaryByMarker(0),
                                    color=(0.0, 0.0, 0.0, 1.0),
-                                   linewidth=kwargs.pop('linewidth', 0.3))
+                                   linewidth=lw or 0.3)
 
     drawSelectedMeshBoundaries(ax,
                     mesh.findBoundaryByMarker(pg.MARKER_BOUND_HOMOGEN_NEUMANN),

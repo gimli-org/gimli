@@ -8,7 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import pygimli as pg
-from pygimli.meshtools import createParaMeshPLC, createMesh
+import pygimli.meshtools as mt
 from pygimli.mplviewer import drawModel, drawMesh, CellBrowser, createColorBar
 from pygimli.utils.base import interperc, getSavePath
 from pygimli.mplviewer.dataview import plotVecMatrix
@@ -225,7 +225,7 @@ class Refraction(MethodManager):
         return ax
 
     def createMesh(self, depth=None, quality=34.3, paraDX=0.5, boundary=0,
-                   paraBoundary=5, apply=True, refine=False, **kwargs):
+                   paraBoundary=5, secNodes=1, apply=True, **kwargs):
         """Create (inversion) mesh using createParaDomain2D
 
         Parameters
@@ -247,8 +247,9 @@ class Refraction(MethodManager):
             mesh quality (smallest angle allowed)
         apply : bool, optional
             set mesh property of the underlying forward operator
-        refine : bool, optional
-            Refine mesh.
+        secNodes : int (1)
+            Amount of secondary nodes to improve accuracy of the forward 
+            solution.
         **kwargs: Additional keyword arguments passed to
             pygimli.meshtools.createParaMeshPLC
 
@@ -261,23 +262,41 @@ class Refraction(MethodManager):
 
         if depth is None:
             depth = self.getDepth()
-        self.poly = createParaMeshPLC(self.dataContainer.sensorPositions(),
+
+
+        self.poly = mt.createParaMeshPLC(self.dataContainer.sensorPositions(),
                                       paraDepth=depth, paraDX=paraDX,
                                       paraBoundary=paraBoundary,
                                       boundary=boundary, **kwargs)
-        mesh = createMesh(self.poly, quality=quality, smooth=(1, 10))
-#        mesh.createNeighbourInfos()
+        mesh = mt.createMesh(self.poly, quality=quality, smooth=(1, 10))
+
         if apply:
-            self.setMesh(mesh, refine=refine)
+            self.setMesh(mesh, secNodes=secNodes)
+
         return mesh
 
-    def setMesh(self, mesh, refine=False):
-        """Set mesh. To be removed from class once derived from MeshManager."""
+    def setMesh(self, mesh, refine=False, secNodes=1):
+        """Set mesh. To be removed from class once derived from MeshManager.
+
+        Parameters
+        ----------
+
+        secNodes : int (1)
+            Amount of secondary nodes to improve accuracy of the forward 
+            solution
+        """
         self.mesh = mesh
         self.mesh.createNeighbourInfos()
         self.fop.setMesh(self.mesh)
         self.fop.regionManager().setConstraintType(1)
-        self.fop.createRefinedForwardMesh(refine)
+
+        if refine:
+            pg.warn("argument refine is deprecated .. use secnodes instead")
+            secNodes = 1
+
+        mesh = self.fop.regionManager().mesh().createSecondaryNodes(secNodes)
+        self.fop.setMesh(mesh, ignoreRegionManager=True)
+
         self.inv.setForwardOperator(self.fop)
 
     def showMesh(self, ax=None, name='mesh'):

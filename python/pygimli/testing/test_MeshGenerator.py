@@ -93,7 +93,7 @@ class TestMeshGenerator(unittest.TestCase):
 
 if __name__ == '__main__':
 
-    pg.setDeepDebug(1)
+    pg.setDeepDebug(0)
 
     t = TestMeshGenerator()
     t.test_createGrid()

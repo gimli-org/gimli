@@ -433,7 +433,7 @@ def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=False):
     if cMin > 0.0 and logScale:
         mappable.set_norm(mpl.colors.LogNorm())
     else:
-        mappable.set_norm(mpl.colors.Normalize())
+        mappable.set_norm(mpl.colors.Normalize(vmin=cMin, vmax=cMax))
 
 #   print("set mappable data, log: ", logScale, "cmin: ", cMin, "cmax: ", cMax)
     mappable.set_array(data)

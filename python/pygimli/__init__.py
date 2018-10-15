@@ -79,5 +79,5 @@ del get_versions, _get_branch, _branch
 
 def version():
     """Shortcut to show and return current version."""
-    logger.info('Version: ' + __version__ + " core:" + pg.versionStr())
+    logger.info('Version: ' + __version__ + " core:" + versionStr())
     return __version__

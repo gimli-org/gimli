@@ -54,7 +54,6 @@ template < class ValueType > void * checkConvertibleSequenz(PyObject * obj){
         __DC(obj << "\t numpy.ndarray to " << typeid(ValueType).name() << " " << typeid(bool).name()<< " " << typeid(float).name()<< "... okay")
 
         if (typeid(ValueType) == typeid(GIMLI::Index)){
-            
             PyArrayObject *arr = (PyArrayObject *)obj;
 
             if (PyArray_TYPE(arr) == NPY_BOOL){

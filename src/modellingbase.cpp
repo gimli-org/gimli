@@ -151,23 +151,6 @@ void ModellingBase::createRefinedForwardMesh(bool refine, bool pRefine){
     }
 }
 
-void ModellingBase::setRefinedMesh(const Mesh & mesh){
-    setMesh(mesh, true);
-    DEPRECATED
-    __MS("use setMesh(mesh, true)")
-
-//     if (verbose_) {
-//         std::cout << "set external secondary mesh:" << std::endl;
-//     }
-//     setMesh_(mesh, true);
-//     if (verbose_) {
-//         std::cout << "nModel = " << regionManager_->parameterCount() << std::endl;
-//         IVector m(unique(sort(mesh_->cellMarkers())));
-//         std::cout << "secMesh marker = [" << m[0] <<", " << m[1] << ", " << m[2]
-//          << ", ... ,  " << m[-1] << "]" << std::endl;
-//     }
-}
-
 void ModellingBase::setMesh(const Mesh & mesh, bool ignoreRegionManager) {
     Stopwatch swatch(true);
     if (regionManagerInUse_ && !ignoreRegionManager){
@@ -383,12 +366,9 @@ RSparseMapMatrix & ModellingBase::constraintsRef() {
     return *dynamic_cast < RSparseMapMatrix *>(constraints_);
 }
 
-RVector ModellingBase::createMappedModel(const RVector & model, double background) const{
+RVector ModellingBase::createMappedModel(const RVector & model, double background) const {
     if (mesh_ == 0) throwError(1, "ModellingBase has no mesh for ModellingBase::createMappedModel");
 
-    if (model.size() == mesh_->cellCount()) return model;
-//     __M
-//     mesh_->exportVTK("premap");
     RVector cellAtts(mesh_->cellCount());
 
     int marker = -1;
@@ -450,66 +430,8 @@ RVector ModellingBase::createMappedModel(const RVector & model, double backgroun
 }
 
 void ModellingBase::mapModel(const RVector & model, double background){
-    // implement "readonly version"!!!!!!!!!!!
+    // non readonly version"!!!!!!!!!!!
     mesh_->setCellAttributes(createMappedModel(model, background));
-
-    return;
-
-    mesh_->setCellAttributes(RVector(mesh_->cellCount(), 0.0));
-
-    int marker = -1;
-    std::vector< Cell * > emptyList;
-    mesh_->createNeighbourInfos();
-
-    for (Index i = 0, imax = mesh_->cellCount(); i < imax; i ++){
-        marker = mesh_->cell(i).marker();
-        if (marker >= 0) {
-            if ((size_t)marker >= model.size()){
-                mesh_->exportVTK("mapModelfail");
-                std::cerr << WHERE_AM_I << std::endl
-                          << "Wrong mesh here .. see mapModelfail.vtk" << std::endl
-                          << *mesh_ << std::endl
-                          << "mesh contains " << unique(sort(mesh_->cellMarkers())).size() << " unique marker. " << std::endl;
-                throwLengthError(1, WHERE_AM_I + " marker greater = then model.size() " + toStr(marker)
-                       + " >= " + toStr(model.size()));
-            }
-            if (model[marker] < TOLERANCE){
-                emptyList.push_back(&mesh_->cell(i));
-            }
-            mesh_->cell(i).setAttribute(model[marker]);
-
-        } else {
-            // general background without fixed values, fixed values will be set at the end
-            if (marker == -1) {
-                mesh_->cell(i).setAttribute(0.0);
-                emptyList.push_back(&mesh_->cell(i));
-            }
-        }
-    }
-
-    // if background == 0.0 .. empty cells are allowed
-    if (emptyList.size() == mesh_->cellCount() && background != 0.0){
-        throwLengthError(1, WHERE_AM_I + " too many empty cells" + toStr(emptyList.size())
-                       + " == " + toStr(mesh_->cellCount()));
-    }
-
-    if (background != 0.0){
-        mesh_->fillEmptyCells(emptyList, background);
-    }
-
-    // setting fixed values
-    if (regionManagerInUse_){
-        for (Index i = 0, imax = mesh_->cellCount(); i < imax; i ++){
-            if (abs(mesh_->cell(i).attribute()) < TOLERANCE){
-                if (mesh_->cell(i).marker() <= MARKER_FIXEDVALUE_REGION){
-                    SIndex regionMarker = -(mesh_->cell(i).marker() - MARKER_FIXEDVALUE_REGION);
-                    double val = regionManager_->region(regionMarker)->fixValue();
-//                     __MS("fixing region: " << regionMarker << " to: " << val)
-                    mesh_->cell(i).setAttribute(val);
-                }
-            }
-        }
-    }
 }
 
 void ModellingBase::initRegionManager() {

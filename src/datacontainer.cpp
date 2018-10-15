@@ -33,7 +33,6 @@ DataContainer::DataContainer(const std::string & fileName,
                              bool removeInvalid){
     initDefaults();
     this->load(fileName, sensorIndicesFromOne, removeInvalid);
-    //std::cout << "DataContainer(const std::string & fileName){" << std::endl;
 }
 
 DataContainer::DataContainer(const std::string & fileName,
@@ -43,7 +42,7 @@ DataContainer::DataContainer(const std::string & fileName,
     initDefaults();
 
     std::vector < std::string > tokenList = getSubstrings(sensorTokens);
-    for (Index i=0 ; i < tokenList.size() ; i++) registerSensorIndex(tokenList[i]);
+    for (Index i=0; i < tokenList.size(); i++) registerSensorIndex(tokenList[i]);
     this->load(fileName, sensorIndicesFromOne, removeInvalid);
     //std::cout << "DataContainer(const std::string & fileName){" << std::endl;
 }
