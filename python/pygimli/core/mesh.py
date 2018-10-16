@@ -47,7 +47,7 @@ def __MeshSetCellMarker__(self, m):
 Mesh.cellMarker = __MeshGetCellMarker__
 Mesh.setCellMarker = __MeshSetCellMarker__
 
-def createSecondaryNodes(self, n=3):
+def createSecondaryNodes(self, n=3, verbose=False):
     """Create `n` equally distributed secondary nodes on boundaries of the mesh.
     This is useful to increase the accuracy of traveltime calculations.
 
@@ -58,6 +58,8 @@ def createSecondaryNodes(self, n=3):
     ----------
     n : int
         Number of secondary nodes (the default is 3).
+    verbose : bool
+        Optionally output number of added nodes.
 
     Returns
     -------
@@ -79,7 +81,8 @@ def createSecondaryNodes(self, n=3):
                 secNode = secMesh.createNode(line.at((i + 1) / (n + 1)))
                 b.addSecondaryNode(secNode)
                 count += 1
-    info("Added %d secondary nodes to mesh." % count)
+    if verbose:
+        info("Added %d secondary nodes to mesh." % count)
     return secMesh
 
 Mesh.createSecondaryNodes = createSecondaryNodes
