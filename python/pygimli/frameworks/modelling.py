@@ -42,6 +42,7 @@ class Modelling(pg.ModellingBase):
             - Every inversion needs, dataValues and dataSpace
             - DataContainer contain, dataValues and dataSpace
             - initialize both with initDataSpace(), initModelSpace
+        * createJacobian should also return J
     """
     def __init__(self, **kwargs):
         """
@@ -132,7 +133,7 @@ class Modelling(pg.ModellingBase):
         """Return dictionary of all properties for region number regionNr."""
         if regionNr is None:
             return self._regionProperties
-            
+
         try:
             return self._regionProperties[regionNr]
         except:

@@ -26,10 +26,9 @@
 
 namespace GIMLI {
 
-//** sorted vector
-typedef std::map< int, double > NodeDistMap;
-//** sorted matrix
-typedef std::map< int, NodeDistMap > Graph;
+typedef std::map< Index, double > NodeDistMap;
+
+typedef std::map< Index, NodeDistMap > Graph;
 
 /*! Dijkstra's shortest path finding*/
 class DLLEXPORT Dijkstra {
@@ -44,19 +43,18 @@ public:
 
     void setStartNode(Index startNode);
 
-    std::vector < Index > shortestPathTo(Index node) const;
+    IndexArray shortestPathTo(Index node) const;
 
-    inline double distance(int node) { return distances_[node]; }
+    inline double distance(Index node) { return distances_[node]; }
 
     RVector distances() const;
 
-
-    class edge_ : std::pair< int, int > {
+    class edge_ : std::pair< Index, Index > {
     public:
         edge_() : start(0), end(0) {}
-        edge_(int a, int b) : start(a), end(b) {}
-        int start;
-        int end;
+        edge_(Index a, Index b) : start(a), end(b) {}
+        Index start;
+        Index end;
     };
 
     /*! Definition for the priority queue */
@@ -80,7 +78,7 @@ protected:
     std::vector < edge_ > pathMatrix_;
     NodeDistMap distances_;
     Graph graph_;
-    int root_;
+    Index root_;
 };
 
 //! Modelling class for travel time problems using the Dijkstra algorithm
@@ -158,9 +156,9 @@ public:
     size_t nShots(){ return shots_.size(); }
 
 protected:
-    RVector                 shots_;
-    std::map< int, int >    shotMap_;
-    Mesh                    offsetMesh_;
+    RVector                  shots_;
+    std::map< Index, Index > shotMap_;
+    Mesh                     offsetMesh_;
 };
 
 
