@@ -277,11 +277,11 @@ DEFINE_COMPARE_OPERATOR__(>)
     template class TransLogLU< RVector >;
     template class TransCotLU< RVector >;
 
-    // c-42 to be removed
-    // template std::vector< Index > unique(const std::vector < Index > & a);
-    // template std::vector< SIndex > unique(const std::vector < SIndex > & a);
-    // template std::vector< Index > sort(const std::vector < Index > & a);
-    // template std::vector< SIndex > sort(const std::vector < SIndex > & a);
+    template std::vector< Index > unique(const std::vector < Index > & a);
+    template std::vector< SIndex > unique(const std::vector < SIndex > & a);
+
+    template std::vector< Index > sort(const std::vector < Index > & a);
+    template std::vector< SIndex > sort(const std::vector < SIndex > & a);
 
 #define DEFINE_XVECTOR_STUFF__(VEC) \
 template bool haveInfNaN(const VEC & v); \
@@ -557,11 +557,10 @@ namespace pyplusplus{ namespace aliases{
 
     typedef GIMLI::Expr< GIMLI::ExprIdentity >              ExprExprIdent;
 
-    // c-42 to be removed
-    // typedef std::vector< std::string >                  stdVectorString;
-    // typedef std::vector< int >                          stdVectorI;
-    // typedef std::vector< GIMLI::SIndex >                stdVectorSIndex;
-    // typedef std::vector< GIMLI::Index >                 stdVectorIndex;
+    typedef std::vector< std::string >                  stdVectorString;
+    typedef std::vector< int >                          stdVectorI;
+    typedef std::vector< GIMLI::SIndex >                stdVectorSIndex;
+    typedef std::vector< GIMLI::Index >                 stdVectorIndex;
 
     //typedef std::vector< long int >                     stdVectorLI;
     //typedef std::vector< double >                       stdVectorR;

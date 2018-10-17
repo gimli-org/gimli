@@ -46,7 +46,7 @@ double Dijkstra::distance(Index node) {
     return distances_[node].time(); 
 }
 
-RVector Dijkstra::distances() const {
+RVector Dijkstra::distances(bool withSecNodes) const {
     RVector ret(0);
     for (auto const & it: distances_){
         ret.push_back(it.second.time());

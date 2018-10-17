@@ -332,9 +332,9 @@ public:
      * Return a new vector that based on indices's.
      * Throws exception if indices's are out of bound
      */
-    // inline Vector < ValueType > operator () (const SIndexArray & siArray) const {
-    //     return get_(siArray);
-    // }
+    inline Vector < ValueType > operator () (const SIndexArray & siArray) const {
+        return get_(siArray);
+    }
     inline Vector < ValueType > operator () (const IVector & iVec) const {
         return get_(iVec);
     }
@@ -1524,7 +1524,7 @@ template < class T > Vector< T > unique(const Vector < T > & a){
 
     Vector < T > ret(u);
     return ret;
-#endif // fixme .. implement me without std::vector
+    #endif // fixme .. implement me without std::vector
     return Vector < T >(0);
 }
 
