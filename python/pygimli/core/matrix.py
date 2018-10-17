@@ -7,8 +7,8 @@ import numpy as np
 
 
 # make core matrices (now in pg, later pg.core) known here for tab-completion
-BlockMatrix = pg.BlockMatrix
-IdentityMatrix = pg.IdentityMatrix
+# BlockMatrix = pg.BlockMatrix
+# IdentityMatrix = pg.IdentityMatrix
 
 
 class MultLeftMatrix(pg.MatrixBase):
