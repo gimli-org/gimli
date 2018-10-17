@@ -187,11 +187,11 @@ public:
 
     //** start creation stuff
     Node * createNode(double x, double y, double z, int marker=0);
-
     Node * createNode(const Node & node);
-
     Node * createNode(const RVector3 & pos, int marker=0);
 
+    Node * createSecondaryNode(const RVector3 & pos);
+        
     /*! Create new Node with duplication checks. Returns the already existing node when its within a tolerance distance to pos.
     If edgeCheck is set, any 2d (p1) boundary edges will be checked for any intersection with pos and splitted if necessary.*/
     Node * createNodeWithCheck(const RVector3 & pos, double tol=1e-6,
@@ -338,9 +338,13 @@ public:
     /*! Return a vector of boundary ptrs matching BVector b.*/
     std::vector< Boundary * > boundaries(const BVector & b) const;
 
-    inline Index nodeCount() const { return nodeVector_.size(); }
+    Index nodeCount(bool withSecNodes=false) const;
     Node & node(Index i) const;
     Node & node(Index i);
+
+    inline Index secondaryNodeCount() const { return secNodeVector_.size(); }
+    Node & secondaryNode(Index id) const;
+    Node & secondaryNode(Index id);
 
     Index cellCount() const { return cellVector_.size(); }
     Cell & cell(Index i) const;
@@ -351,12 +355,12 @@ public:
     Boundary & boundary(Index i);
 
     /*! Return a vector of all node positions */
-    R3Vector positions() const;
+    R3Vector positions(bool withSecNodes=false) const;
 
     /*! Return a vector of node positions for an index vector */
     R3Vector positions(const IndexArray & idx) const;
 
-    /*! Return all node positions. */
+    /*! DEPRECATED Return all node positions. */
     R3Vector nodeCenters() const;
 
     /*! Return a vector of all cell center positions*/
@@ -762,6 +766,8 @@ protected:
 
     Node * createNode_(const RVector3 & pos, int marker, int id);
 
+    Node * createSecondaryNode_(const RVector3 & pos);
+
     template < class B > Boundary * createBoundary_(
         std::vector < Node * > & nodes, int marker, int id){
 
@@ -806,6 +812,7 @@ protected:
     void fillKDTree_() const;
 
     std::vector< Node * >     nodeVector_;
+    std::vector< Node * >     secNodeVector_;
     std::vector< Boundary * > boundaryVector_;
     std::vector< Cell * >     cellVector_;
 

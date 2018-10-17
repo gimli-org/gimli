@@ -71,7 +71,7 @@ def createSecondaryNodes(self, n=3):
         B = b.node(1).pos()
         line = Line(A, B)
         for i in range(n):
-            secNode = secMesh.createNode(line.at((i + 1) / (n + 1)))
+            secNode = secMesh.createSecondaryNode(line.at((i + 1) / (n + 1)))
             b.addSecondaryNode(secNode)
     return secMesh
 

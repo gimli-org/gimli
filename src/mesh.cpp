@@ -86,9 +86,14 @@ void Mesh::copy_(const Mesh & mesh){
     setStaticGeometry(mesh.staticGeometry());
     dimension_ = mesh.dim();
     nodeVector_.reserve(mesh.nodeCount());
+    secNodeVector_.reserve(mesh.secondaryNodeCount());
 
     for (Index i = 0; i < mesh.nodeCount(); i ++){
         this->createNode(mesh.node(i));
+    }
+    
+    for (Index i = 0; i < mesh.secondaryNodeCount(); i ++){
+        this->createSecondaryNode(mesh.secondaryNode(i).pos());
     }
 
     boundaryVector_.reserve(mesh.boundaryCount());
@@ -140,6 +145,9 @@ void Mesh::clear(){
     for_each(nodeVector_.begin(), nodeVector_.end(), deletePtr());
     nodeVector_.clear();
 
+    for_each(secNodeVector_.begin(), secNodeVector_.end(), deletePtr());
+    secNodeVector_.clear();
+
     if (cellToBoundaryInterpolationCache_){
         delete cellToBoundaryInterpolationCache_;
     }
@@ -167,6 +175,27 @@ Node * Mesh::createNode(double x, double y, double z, int marker){
 
 Node * Mesh::createNode(const RVector3 & pos, int marker){
     return createNode_(pos, marker, -1);
+}
+
+Node * Mesh::createSecondaryNode_(const RVector3 & pos){
+    Index id = this->secondaryNodeCount();
+    secNodeVector_.push_back(new Node(pos));
+    secNodeVector_.back()->setId(this->nodeCount() + id);
+    return secNodeVector_.back();
+}
+
+Node * Mesh::createSecondaryNode(const RVector3 & pos){
+    return createSecondaryNode_(pos);
+}
+
+Node & Mesh::secondaryNode(Index i) {
+    ASSERT_RANGE(i, 0, this->secondaryNodeCount())
+    return *secNodeVector_[i];
+}
+
+Node & Mesh::secondaryNode(Index i) const {
+    ASSERT_RANGE(i, 0, this->secondaryNodeCount())
+    return *secNodeVector_[i];
 }
 
 Node * Mesh::createNodeWithCheck(const RVector3 & pos, double tol, bool warn, bool edgeCheck){
@@ -397,6 +426,8 @@ void Mesh::deleteCells(const std::vector < Cell * > & cells){
 
 Node & Mesh::node(Index i) {
     if (i > nodeCount() - 1){
+        if (i < nodeCount() + secondaryNodeCount()) 
+            return this->secondaryNode(i - this->nodeCount());
         std::cerr << WHERE_AM_I << " requested node: " << i << " does not exist." << std::endl;
         exit(EXIT_MESH_NO_NODE);
     } return *nodeVector_[i];
@@ -404,6 +435,8 @@ Node & Mesh::node(Index i) {
 
 Node & Mesh::node(Index i) const {
     if (i > nodeCount() - 1){
+        if (i < nodeCount() + secondaryNodeCount()) 
+            return this->secondaryNode(i - this->nodeCount());
         std::cerr << WHERE_AM_I << " requested node: " << i << " does not exist." << std::endl;
         exit(EXIT_MESH_NO_NODE);
     } return *nodeVector_[i];
@@ -727,9 +760,14 @@ std::vector < Cell * > Mesh::findCellByAttribute(double from, double to) const {
     return vCell;
 }
 
+Index Mesh::nodeCount(bool withSecNodes) const { 
+    if (withSecNodes) return nodeVector_.size() + secNodeVector_.size(); 
+    return nodeVector_.size(); 
+}
+
 std::vector< Node * > Mesh::nodes(const IndexArray & ids) const{
     std::vector < Node * > v(ids.size());
-    for (Index i = 0; i < ids.size(); i ++) v[i] = nodeVector_[ids[i]];
+    for (Index i = 0; i < ids.size(); i ++) v[i] = &node(ids[i]);
     return v;
 }
 
@@ -803,8 +841,8 @@ IndexArray Mesh::findNodesIdxByMarker(int marker) const {
 //     return idx;
 // }
 
-R3Vector Mesh::positions() const {
-    IndexArray idx(this->nodeCount());
+R3Vector Mesh::positions(bool withSecNodes) const {
+    IndexArray idx(this->nodeCount(withSecNodes));
     std::generate(idx.begin(), idx.end(), IncrementSequence< Index >(0));
     return this->positions(idx);
 }
@@ -818,6 +856,7 @@ R3Vector Mesh::positions(const IndexArray & idx) const {
 }
 
 R3Vector Mesh::nodeCenters() const {
+    log(Warning, "DEPRECATED do not use");
     R3Vector p(this->nodeCount());
     for (Index i = 0; i < nodeVector_.size(); i ++ ) p[i] = nodeVector_[i]->pos();
     return p;

@@ -84,7 +84,7 @@ public:
 
     double distance(Index node); 
 
-    RVector distances() const;
+    RVector distances(bool withSecNodes=false) const;
 
     Graph & graph() {
         return graph_;
