@@ -346,9 +346,12 @@ RVector TravelTimeDijkstraModelling::response(const RVector & slowness) {
         background_ = 1e16;
     }
 
-    this->mapModel(slowness, background_);
+    RVector slowPerCell(this->createMappedModel(slowness, background_));
+    dijkstra_.setGraph(createGraph(slowPerCell));
 
-    dijkstra_.setGraph(createGraph(mesh_->cellAttributes()));
+    // this->mapModel(slowness, background_);
+    // dijkstra_.setGraph(createGraph(mesh_->cellAttributes()));
+
     Index nShots = shotNodeId_.size();
     Index nRecei = receNodeId_.size();
     RMatrix dMap(nShots, nRecei);
