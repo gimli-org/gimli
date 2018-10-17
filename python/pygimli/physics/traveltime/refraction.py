@@ -6,6 +6,7 @@
 from math import pi
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.collections import LineCollection
 
 import pygimli as pg
 import pygimli.meshtools as mt
@@ -155,7 +156,7 @@ class Refraction(MethodManager):
 
     def loadData(self, filename):
         """Load data from file."""
-        if filename.lower()[-4:] == '.gtt':
+        if filename.endswith('.gtt'):
             data = importGTT(filename)
         else:
             data = pg.DataContainer(filename, sensorTokens='s g')
@@ -248,7 +249,7 @@ class Refraction(MethodManager):
         apply : bool, optional
             set mesh property of the underlying forward operator
         secNodes : int (1)
-            Amount of secondary nodes to improve accuracy of the forward 
+            Amount of secondary nodes to improve accuracy of the forward
             solution.
         **kwargs: Additional keyword arguments passed to
             pygimli.meshtools.createParaMeshPLC
@@ -280,10 +281,9 @@ class Refraction(MethodManager):
 
         Parameters
         ----------
-
         secNodes : int (1)
-            Amount of secondary nodes to improve accuracy of the forward 
-            solution
+            Number of secondary nodes to improve accuracy of the forward
+            solution.
         """
         self.mesh = mesh
         self.mesh.createNeighbourInfos()
@@ -517,16 +517,16 @@ class Refraction(MethodManager):
         return ret
 
     @staticmethod
-    def drawTravelTimeData(ax, data, t=None):
-        """Plot travel time data as lines and points."""
-        drawTravelTimeData(ax, data, t)
-
-    @staticmethod
     def drawApparentVelocities(ax, data, t=None, **kwargs):
         """Plot data in for of apparent velocity image."""
         tt = Refraction()
         tt.setDataContainer(data)
         tt.showVA(ax=ax, t=t, **kwargs)
+
+    @staticmethod
+    def drawTravelTimeData(ax, data, t=None):
+        """Plot travel time data as lines and points."""
+        drawTravelTimeData(ax, data, t)
 
     def getOffset(self, data=None, full=False):
         """Return vector of offsets (in m) between shot and receiver."""
@@ -603,6 +603,45 @@ class Refraction(MethodManager):
         C = self.fop.constraintsRef()
         return np.sign(np.absolute(C.transMult(C * coverage)))
 
+    def showRayPaths(self, model=None, ax=None, **kwargs):
+        """Show ray paths for `model` or last model for which the Jacobian was
+        calculated.
+
+        Parameters
+        ----------
+        model : array
+            Velocity model for which to calculate and visualize ray paths (the
+            default is model for last Jacobian calculation in self.velocity).
+        ax : matplotlib.axes
+            Axes for the plot (the default is None).
+        **kwargs : type
+            Additional arguments passed to LineCollection (alpha, linewidths,
+            color, linestyles).
+        """
+        if model is not None:
+            if not np.allclose(model, self.velocity):
+                self.fop.createJacobian(1/model)
+            ax, cbar = self.showResult(ax=ax, val=model)
+            _ = kwargs.setdefault("color", "w")
+            _ = kwargs.setdefault("alpha", 0.5)
+            _ = kwargs.setdefault("linewidths", 0.8)
+        else:
+            ax = self.showMesh(ax=ax)
+
+        # Due to different numbering scheme of way matrix
+        _, shots = np.unique(self.dataContainer("s"), return_inverse=True)
+        _, receivers = np.unique(self.dataContainer("g"), return_inverse=True)
+
+        # Collecting way segments for all shot/receiver combinations
+        segs = []
+        for s, g in zip(shots, receivers):
+            wi = self.fop.way(s, g)
+            points = self.fop.mesh().positions()[wi]
+            segs.append(np.column_stack((pg.x(points), pg.y(points))))
+
+        line_segments = LineCollection(segs, **kwargs)
+        ax.add_collection(line_segments)
+
     def showCoverage(self, ax=None, name='coverage', **kwargs):
         """shows the ray coverage in logscale"""
         if ax is None:
@@ -619,7 +658,7 @@ class Refraction(MethodManager):
         return self.showResult(ax=ax, val=vals, **kwargs)
 
     def showResult(self, val=None, ax=None, cMin=None, cMax=None,
-                   logScale=False, name='result', **kwargs):
+                   logScale=False, rays=False, name='result', **kwargs):
         """Show resulting velocity vector.
 
         Parameters
@@ -632,6 +671,11 @@ class Refraction(MethodManager):
             minimum and maximum values for ranging colorbar
         logScale : bool [False]
             use logarithmic scale
+        rays : bool [False]
+            Show ray paths as well.
+
+        Other parameters
+        ----------------
         useCoverage : bool [True]
             use standardized (0 or 1) ray coverage as alpha-shading
         label : str
@@ -656,20 +700,25 @@ class Refraction(MethodManager):
         coverage = 1
         if kwargs.pop('useCoverage', True):
             coverage = self.standardizedCoverage()
+        label = kwargs.get("label", "Velocity (m/s)")
         if ax is None:
             fig, ax = plt.subplots()
             self.figs[name] = fig
             ax, cbar = pg.show(mesh, val, logScale=logScale, ax=ax,
                                colorBar=True, cMin=cMin, cMax=cMax,
-                               coverage=coverage, **kwargs)
+                               coverage=coverage, label=label, hold=True,
+                               **kwargs)
             self.figs[name] = plt.gcf()
         else:
             gci = drawModel(ax, mesh, val, logScale=logScale,
                             colorBar=True, cMin=cMin, cMax=cMax,
                             coverage=coverage, **kwargs)
-            labels = ['cMin', 'cMax', 'nLevs', 'orientation', 'label']
+            labels = ['cMin', 'cMax', 'nLevs', 'orientation']
             subkwargs = {key: kwargs[key] for key in labels if key in kwargs}
-            cbar = createColorBar(gci, **subkwargs)
+            cbar = createColorBar(gci, label=label, **subkwargs)
+        if rays:
+            self.showRayPaths(ax=ax, alpha=0.5, color="w", linewidths=.8)
+
         browser = CellBrowser(self.mesh, val, ax)
         browser.connect()
 
