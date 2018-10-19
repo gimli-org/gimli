@@ -20,6 +20,7 @@ from pygimli.manager import MethodManager  # , MethodManager0
 from pygimli.physics.traveltime.ratools import createGradientModel2D
 from pygimli.physics.traveltime.raplot import drawFirstPicks, plotLines
 
+from . fatray import FatrayDijkstraModelling
 from . raplot import drawTravelTimeData
 from . importData import importGTT
 
@@ -95,8 +96,18 @@ class Refraction(MethodManager):
         """
         self.fop = Refraction.createFOP(usefmm=fmm)
 
+    def useFatray(self, fatray=True, frequency=100):
+        """Define whether to use Fast Marching Method (FMM).
+
+        Note that this method is more accurate but currently a lot slower!
+        """
+        self.fop = Refraction.createFOP(fatray=fatray)
+        if fatray:
+            self.fop.frequency = frequency
+            self.fop.setData(self.dataContainer)
+
     @staticmethod
-    def createFOP(verbose=False, usefmm=False):
+    def createFOP(verbose=False, usefmm=False, fatray=False):
         """Create default forward operator for Traveltime modelling.
 
         usefmm forces Fast Marching Method, otherwise Dijkstra is used.
@@ -105,7 +116,10 @@ class Refraction(MethodManager):
             from .FMModelling import TravelTimeFMM
             fop = TravelTimeFMM(verbose=verbose)
         else:
-            fop = pg.TravelTimeDijkstraModelling(verbose=verbose)
+            if fatray:
+                fop = FatrayDijkstraModelling(verbose=verbose)
+            else:
+                fop = pg.TravelTimeDijkstraModelling(verbose=verbose)
 
         return fop
 
@@ -225,7 +239,7 @@ class Refraction(MethodManager):
         return ax
 
     def createMesh(self, depth=None, quality=34.3, paraDX=0.5, boundary=0,
-                   paraBoundary=5, secNodes=1, apply=True, **kwargs):
+                   paraBoundary=5, secNodes=3, apply=True, **kwargs):
         """Create (inversion) mesh using createParaDomain2D
 
         Parameters
@@ -248,7 +262,7 @@ class Refraction(MethodManager):
         apply : bool, optional
             set mesh property of the underlying forward operator
         secNodes : int (1)
-            Amount of secondary nodes to improve accuracy of the forward 
+            Amount of secondary nodes to improve accuracy of the forward
             solution.
         **kwargs: Additional keyword arguments passed to
             pygimli.meshtools.createParaMeshPLC
@@ -263,11 +277,10 @@ class Refraction(MethodManager):
         if depth is None:
             depth = self.getDepth()
 
-
         self.poly = mt.createParaMeshPLC(self.dataContainer.sensorPositions(),
-                                      paraDepth=depth, paraDX=paraDX,
-                                      paraBoundary=paraBoundary,
-                                      boundary=boundary, **kwargs)
+                                         paraDepth=depth, paraDX=paraDX,
+                                         paraBoundary=paraBoundary,
+                                         boundary=boundary, **kwargs)
         mesh = mt.createMesh(self.poly, quality=quality, smooth=(1, 10))
 
         if apply:
@@ -275,14 +288,14 @@ class Refraction(MethodManager):
 
         return mesh
 
-    def setMesh(self, mesh, refine=False, secNodes=1):
+    def setMesh(self, mesh, refine=False, secNodes=3, **kwargs):
         """Set mesh. To be removed from class once derived from MeshManager.
 
         Parameters
         ----------
 
         secNodes : int (1)
-            Amount of secondary nodes to improve accuracy of the forward 
+            Amount of secondary nodes to improve accuracy of the forward
             solution
         """
         self.mesh = mesh
@@ -295,7 +308,7 @@ class Refraction(MethodManager):
             secNodes = 1
 
         mesh = self.fop.regionManager().mesh().createSecondaryNodes(secNodes)
-        self.fop.setMesh(mesh, ignoreRegionManager=True)
+        self.fop.setMesh(mesh, **kwargs)
 
         self.inv.setForwardOperator(self.fop)
 
@@ -775,6 +788,7 @@ def main():
     ra.invert(lam=options.lam, max_iter=options.maxIter,
               robustData=options.robustData, blockyModel=options.blockyModel)
     ra.showResult()
+
 
 if __name__ == '__main__':
     main()
