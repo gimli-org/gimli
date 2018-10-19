@@ -4,17 +4,19 @@ import pygimli as pg
 
 class FatrayDijkstraModelling(pg.TravelTimeDijkstraModelling):
     """Shortest-path (Dijkstra) based travel time with fat ray jacobian."""
-    def __init__(self, frequency=1000., verbose=False):
+    def __init__(self, frequency=100., verbose=False):
         super().__init__(verbose)
         self.frequency = frequency
 
-    def setMesh(self, mesh, secondaryNodes=3):
+    def setMesh(self, mesh, **kwargs):  # secondaryNodes=3):
         """Set mesh and create secondary Nodes."""
-        super().setMesh(mesh)
-#        self.mesh0 = mesh
-#        self.mesh1 = self.mesh().createSecondaryNodes(secondaryNodes)
-#        self.setMesh(self.mesh1, ignoreRegionManager=True)
-        self.IM = self.mesh().interpolationMatrix(self.mesh().cellCenters())
+        self.IM = mesh.interpolationMatrix(mesh.cellCenters())
+        # self.mesh_ = mesh
+        mesh.createSecondaryNodes(kwargs.pop('secondaryNodes', 3))
+        # tmpmesh = self.mesh().createSecondaryNodes(secondaryNodes=3)
+        super().setMesh(mesh, **kwargs)  # ignoreRegionManager=True)
+        print("mesh()", self.mesh())
+        # print("mesh_", self.mesh_)
 
     def createJacobian(self, slowness):
         """Generate Jacobian matrix using fat-ray after Jordi et al. (2016)."""
@@ -29,7 +31,7 @@ class FatrayDijkstraModelling(pg.TravelTimeDijkstraModelling):
         Dmat = pg.RMatrix(numS, numS)
         for i, node in enumerate(self.sensorNodes):
             Di.setStartNode(node)
-            Tmat[i] = Di.distances()(0, numN)
+            Tmat[i] = Di.distances()  # (0, numN)
             Dmat[i] = Tmat[i][self.sensorNodes]
 
         for i in range(data.size()):

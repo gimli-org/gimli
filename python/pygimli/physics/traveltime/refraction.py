@@ -23,6 +23,7 @@ from pygimli.physics.traveltime.raplot import drawFirstPicks, plotLines
 
 from . raplot import drawTravelTimeData
 from . importData import importGTT
+from . fatray import FatrayDijkstraModelling
 
 
 class Refraction(MethodManager):
@@ -32,7 +33,8 @@ class Refraction(MethodManager):
     e.g., self.inv, self.fop, self.paraDomain, self.mesh, self.data
     """
 
-    def __init__(self, data=None, verbose=True, debug=False, **kwargs):
+    def __init__(self, data=None, verbose=True, debug=False, fatray=False,
+                 frequency=1000., **kwargs):
         """Init function with optional data load"""
         super(Refraction, self).__init__(verbose=verbose, debug=debug,
                                          **kwargs)
@@ -55,7 +57,8 @@ class Refraction(MethodManager):
 
         # CR!, check if this should be better a static member TG: no idea
         self.dataToken_ = 't'
-
+        if fatray:
+            self.useFatray(True, frequency)
         if isinstance(data, str):
             self.loadData(data)
         elif isinstance(data, pg.DataContainer):
@@ -96,8 +99,14 @@ class Refraction(MethodManager):
         """
         self.fop = Refraction.createFOP(usefmm=fmm)
 
+    def useFatray(self, fatray=True, frequency=300.):
+        """Define whether to use Fatray jacobian computation."""
+        self.fop = Refraction.createFOP(fatray=fatray)
+        if fatray:
+            self.fop.frequency = frequency
+
     @staticmethod
-    def createFOP(verbose=False, usefmm=False):
+    def createFOP(verbose=False, usefmm=False, fatray=False):
         """Create default forward operator for Traveltime modelling.
 
         usefmm forces Fast Marching Method, otherwise Dijkstra is used.
@@ -106,7 +115,10 @@ class Refraction(MethodManager):
             from .FMModelling import TravelTimeFMM
             fop = TravelTimeFMM(verbose=verbose)
         else:
-            fop = pg.TravelTimeDijkstraModelling(verbose=verbose)
+            if fatray:
+                fop = FatrayDijkstraModelling(verbose=verbose)
+            else:
+                fop = pg.TravelTimeDijkstraModelling(verbose=verbose)
 
         return fop
 
@@ -264,11 +276,10 @@ class Refraction(MethodManager):
         if depth is None:
             depth = self.getDepth()
 
-
         self.poly = mt.createParaMeshPLC(self.dataContainer.sensorPositions(),
-                                      paraDepth=depth, paraDX=paraDX,
-                                      paraBoundary=paraBoundary,
-                                      boundary=boundary, **kwargs)
+                                         paraDepth=depth, paraDX=paraDX,
+                                         paraBoundary=paraBoundary,
+                                         boundary=boundary, **kwargs)
         mesh = mt.createMesh(self.poly, quality=quality, smooth=(1, 10))
 
         if apply:
@@ -742,6 +753,19 @@ class Refraction(MethodManager):
             name = 'out'
         for key in self.figs:
             self.figs[key].savefig(name+'-'+key+'.'+ext, bbox_inches='tight')
+
+    def makeJacobianPDF(self, ind=None):
+        """Make multipage Jacobian PDF."""
+        from matplotlib.backends.backend_pdf import PdfPages
+        if ind is None:
+            ind = range(self.dataContainer.size())
+        with PdfPages(self.basename+'-jacobian.pdf') as pdf:
+            fig, ax = pg.plt.subplots()
+            for ii in ind:
+                jj = self.fop.jacobian()[ii]
+                pg.show(self.mesh, jj, ax=ax)
+                fig.savefig(pdf, format='pdf')
+                ax.cla()
 
     def saveResult(self, folder=None, size=(16, 10), **kwargs):
         """Save the results in the specified folder.
