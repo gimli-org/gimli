@@ -763,7 +763,7 @@ class Refraction(MethodManager):
             fig, ax = pg.plt.subplots()
             for ii in ind:
                 jj = self.fop.jacobian().row(ii)
-                pg.show(self.mesh, jj, ax=ax)
+                pg.show(self.mesh, jj, ax=ax, coverage=(jj > 0))
                 fig.savefig(pdf, format='pdf')
                 ax.cla()
 
