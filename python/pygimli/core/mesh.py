@@ -5,9 +5,15 @@ Import and extensions of the core Mesh class.
 from .._logger import deprecated, warn, info
 from ._pygimli_ import Mesh, MeshEntity, Node, PolygonFace, Line
 
+
 def Mesh_str(self):
-    return ("Mesh: Nodes: " + str(self.nodeCount()) + " Cells: " + str(
-        self.cellCount()) + " Boundaries: " + str(self.boundaryCount()))
+    st = "Mesh: Nodes: " + str(self.nodeCount()) + " Cells: " + str(
+        self.cellCount()) + " Boundaries: " + str(self.boundaryCount())
+    if (self.secondaryNodeCount() > 0):
+        st += " secNodes: " + str(self.secondaryNodeCount())
+
+    return st
+
 
 def MeshEntity_str(self):
     """Give mesh entity infos."""
@@ -23,6 +29,7 @@ def MeshEntity_str(self):
             s += '\t' + str(n.id()) + " " + str(n.pos()) + "\n"
     return s
 
+
 def Node_str(self):
     """Give node infos."""
     s = self.__repr__()
@@ -31,9 +38,11 @@ def Node_str(self):
     s += '\t' + str(self.pos()) + '\n'
     return s
 
+
 Node.__str__ = Node_str
 Mesh.__str__ = Mesh_str
 MeshEntity.__str__ = MeshEntity_str
+
 
 def __MeshGetCellMarker__(self):
     deprecated(msg='Mesh::cellMarker()', hint='Mesh::cellMarkers()')
@@ -44,8 +53,10 @@ def __MeshSetCellMarker__(self, m):
     deprecated(msg='Mesh::setCellMarker()', hint='Mesh::setCellMarkers()')
     return self.setCellMarkers(m)
 
+
 Mesh.cellMarker = __MeshGetCellMarker__
 Mesh.setCellMarker = __MeshSetCellMarker__
+
 
 def createSecondaryNodes(self, n=3, verbose=False):
     """Create `n` equally distributed secondary nodes on boundaries of the mesh.
@@ -84,5 +95,6 @@ def createSecondaryNodes(self, n=3, verbose=False):
     if verbose:
         info("Added %d secondary nodes to mesh." % count)
     return secMesh
+
 
 Mesh.createSecondaryNodes = createSecondaryNodes
