@@ -762,7 +762,7 @@ class Refraction(MethodManager):
         with PdfPages(self.basename+'-jacobian.pdf') as pdf:
             fig, ax = pg.plt.subplots()
             for ii in ind:
-                jj = self.fop.jacobian()[ii]
+                jj = self.fop.jacobian().row(ii)
                 pg.show(self.mesh, jj, ax=ax)
                 fig.savefig(pdf, format='pdf')
                 ax.cla()
