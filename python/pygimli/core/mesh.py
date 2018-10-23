@@ -3,7 +3,7 @@ Import and extensions of the core Mesh class.
 """
 
 from .._logger import deprecated, warn, info
-from ._pygimli_ import Mesh, MeshEntity, Node, PolygonFace, Line
+from ._pygimli_ import Mesh, MeshEntity, Node, PolygonFace, Line, TriangleFace
 
 
 def Mesh_str(self):
@@ -97,9 +97,15 @@ def createSecondaryNodes(self, n=3, verbose=False):
                 for b in self.boundaries():
                     bs = b.shape()
                     for sx in range(n):
-                        for sy in range(n):
-                            pos = bs.xyz([(sx+1)/(n+1),
-                                          (sy+1)/(n+1)])
+                        nmax = n
+                        if isinstance(b, TriangleFace):
+                            nmax = n - sx
+                        for sy in range(nmax):
+                            if isinstance(b, TriangleFace):
+                                pos = bs.xyz([(sx+1)/(n+2), (sy+1)/(n+2)])
+                            else:
+                                pos = bs.xyz([(sx+1)/(n+1), (sy+1)/(n+1)])
+
                             sn = self.createSecondaryNode(pos)
                             b.addSecondaryNode(sn)
         else:
