@@ -84,14 +84,27 @@ def createSecondaryNodes(self, n=3, verbose=False):
     if secMesh.boundary(0).nodeCount() != secMesh.boundary(0).allNodeCount():
         warn("Mesh already contains secondary nodes. Not adding any more.")
     else:
-        for b in secMesh.boundaries():
-            A = b.node(0).pos()
-            B = b.node(1).pos()
-            line = Line(A, B)
-            for i in range(n):
-                secNode = secMesh.createNode(line.at((i + 1) / (n + 1)))
-                b.addSecondaryNode(secNode)
-                count += 1
+        if self.dim() == 2:
+            for b in secMesh.boundaries():
+                A = b.node(0).pos()
+                B = b.node(1).pos()
+                line = Line(A, B)
+                for i in range(n):
+                    secNode = secMesh.createNode(line.at((i + 1) / (n + 1)))
+                    b.addSecondaryNode(secNode)
+                    count += 1
+        elif self.dim() == 3:  # so far only working well for hexahedra!
+                for b in self.boundaries():
+                    bs = b.shape()
+                    for sx in range(n):
+                        for sy in range(n):
+                            pos = bs.xyz([(sx+1)/(n+1),
+                                          (sy+1)/(n+1)])
+                            sn = self.createSecondaryNode(pos)
+                            b.addSecondaryNode(sn)
+        else:
+            warn("Unknown dimension. Don't know what to do.")
+
     if verbose:
         info("Added %d secondary nodes to mesh." % count)
     return secMesh

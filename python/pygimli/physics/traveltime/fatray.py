@@ -58,26 +58,12 @@ class FatrayDijkstraModellingMidpoint(pg.TravelTimeDijkstraModelling):
         print(self.mesh(), self.mesh().secondaryNodeCount())
         self.mids = pg.IVector()
         self.nnodes = self.mesh().nodeCount()
-        for pos in self.mesh().cellCenters():
-            n = self.mesh().createSecondaryNode(pos)
+        for c in self.mesh().cells():
+            n = self.mesh().createSecondaryNode(c.center())
+            c.addSecondaryNode(n)
             self.mids.push_back(n.id())
 
-        print(self.mesh(), self.mesh().secondaryNodeCount())
-
-    def setMeshOld(self, mesh, **kwargs):  # secondaryNodes=3):
-        """Set mesh and create additional secondary Nodes in cell centers.
-
-        Old version where interpolationMatrix did not work with secNodes"""
-        self.mids = pg.IVector()
-        print(mesh)
-        self.nnodes = mesh.nodeCount()
-        for pos in mesh.cellCenters():
-            n = mesh.createSecondaryNode(pos)
-            self.mids.push_back(n.id())
-
-        print(mesh)
-        super().setMesh(mesh, **kwargs)  # ignoreRegionManager=True)
-        print(self.mesh(), self.mesh().secondaryNodeCount())
+        print(self.mesh())
 
     def createJacobian(self, slowness):
         """Generate Jacobian matrix using fat-ray after Jordi et al. (2016)."""
@@ -119,4 +105,4 @@ class FatrayDijkstraModellingMidpoint(pg.TravelTimeDijkstraModelling):
 
 
 FatrayDijkstraModelling = FatrayDijkstraModellingInterpolate
-#FatrayDijkstraModelling = FatrayDijkstraModellingMidpoint
+# FatrayDijkstraModelling = FatrayDijkstraModellingMidpoint
