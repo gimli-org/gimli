@@ -44,34 +44,103 @@ IntegrationRules::~IntegrationRules(){
 // std::cout << " delete IntegrationRules" << std::endl;
 }
 
+const R3Vector & IntegrationRules::gauAbscissa(Index order) const { 
+    ASSERT_SIZE(gauAbscissa_, order)
+    return gauAbscissa_[order]; 
+}
+
+const RVector & IntegrationRules::gauWeights(Index order) const { 
+    ASSERT_SIZE(gauWeights_, order)
+    return gauWeights_[order]; 
+}
+
+const R3Vector & IntegrationRules::triGLAbscissa(Index order) const { 
+    ASSERT_SIZE(triGLAbscissa_, order)
+    return triGLAbscissa_[order]; 
+}
+
+const RVector & IntegrationRules::triGLWeights(Index order) const { 
+    ASSERT_SIZE(triGLWeights_, order)
+    return triGLWeights_[order]; 
+}
+
+const R3Vector & IntegrationRules::edgAbscissa(Index order) const { 
+    ASSERT_SIZE(edgAbscissa_, order)
+    return edgAbscissa_[order]; 
+}
+const RVector & IntegrationRules::edgWeights(Index order) const { 
+    ASSERT_SIZE(edgWeights_, order)
+    return edgWeights_[order]; 
+}
+const R3Vector & IntegrationRules::triAbscissa(Index order) const { 
+    ASSERT_SIZE(triAbscissa_, order)
+    return triAbscissa_[order]; 
+}
+const RVector & IntegrationRules::triWeights(Index order) const { 
+    ASSERT_SIZE(triWeights_, order)
+    return triWeights_[order]; 
+}
+const R3Vector & IntegrationRules::tetAbscissa(Index order) const { 
+    ASSERT_SIZE(tetAbscissa_, order)
+    return tetAbscissa_[order]; 
+}
+const RVector & IntegrationRules::tetWeights(Index order) const { 
+    ASSERT_SIZE(tetWeights_, order)
+    return tetWeights_[order]; 
+}
+const R3Vector & IntegrationRules::quaAbscissa(Index order) const { 
+    ASSERT_SIZE(quaAbscissa_, order)
+    return quaAbscissa_[order]; 
+}
+const RVector & IntegrationRules::quaWeights(Index order) const { 
+    ASSERT_SIZE(quaWeights_, order)
+    return quaWeights_[order]; 
+}
+const R3Vector & IntegrationRules::hexAbscissa(Index order) const { 
+    ASSERT_SIZE(hexAbscissa_, order)
+    return hexAbscissa_[order]; 
+}
+const RVector & IntegrationRules::hexWeights(Index order) const { 
+    ASSERT_SIZE(hexWeights_, order)
+    return hexWeights_[order]; 
+}
+const R3Vector & IntegrationRules::priAbscissa(Index order) const { 
+    ASSERT_SIZE(priAbscissa_, order)
+    return priAbscissa_[order]; 
+}
+const RVector & IntegrationRules::priWeights(Index order) const { 
+    ASSERT_SIZE(priWeights_, order)
+    return priWeights_[order]; 
+}
+    
 const R3Vector & IntegrationRules::abscissa(const Shape & shape, uint order) const {
     switch(shape.rtti()){
-        case MESH_SHAPE_EDGE_RTTI: return edgAbscissa_[order];
+        case MESH_SHAPE_EDGE_RTTI: return edgAbscissa(order);
         case MESH_SHAPE_TRIANGLE_RTTI:
-             if (triUseGaussLegendre_) return triGLAbscissa_[order];
+             if (triUseGaussLegendre_) return triGLAbscissa(order);
              else return triAbscissa_[order];
-        case MESH_SHAPE_QUADRANGLE_RTTI: return quaAbscissa_[order];
-        case MESH_SHAPE_TETRAHEDRON_RTTI: return tetAbscissa_[order];
-        case MESH_SHAPE_HEXAHEDRON_RTTI: return hexAbscissa_[order];
+        case MESH_SHAPE_QUADRANGLE_RTTI: return quaAbscissa(order);
+        case MESH_SHAPE_TETRAHEDRON_RTTI: return tetAbscissa(order);
+        case MESH_SHAPE_HEXAHEDRON_RTTI: return hexAbscissa(order);
         default:
             break;
     }
-    return gauAbscissa_[order];
+    return gauAbscissa(order);
 }
 
 const RVector & IntegrationRules::weights(const Shape & shape, uint order) const {
     switch(shape.rtti()){
-        case MESH_SHAPE_EDGE_RTTI: return edgWeights_[order];
+        case MESH_SHAPE_EDGE_RTTI: return edgWeights(order);
         case MESH_SHAPE_TRIANGLE_RTTI:
-            if (triUseGaussLegendre_) return triGLWeights_[order];
+            if (triUseGaussLegendre_) return triGLWeights(order);
             else return triWeights_[order];
-        case MESH_SHAPE_QUADRANGLE_RTTI: return quaWeights_[order];
-        case MESH_SHAPE_TETRAHEDRON_RTTI: return tetWeights_[order];
-        case MESH_SHAPE_HEXAHEDRON_RTTI: return hexWeights_[order];
+        case MESH_SHAPE_QUADRANGLE_RTTI: return quaWeights(order);
+        case MESH_SHAPE_TETRAHEDRON_RTTI: return tetWeights(order);
+        case MESH_SHAPE_HEXAHEDRON_RTTI: return hexWeights(order);
         default:
             break;
     }
-    return gauWeights_[order];
+    return gauWeights(order);
 }
 
 void IntegrationRules::initGau_(){
