@@ -3,11 +3,17 @@ Import and extensions of the core Mesh class.
 """
 
 from .._logger import deprecated, warn, info
-from ._pygimli_ import Mesh, MeshEntity, Node, PolygonFace, Line
+from ._pygimli_ import Mesh, MeshEntity, Node, PolygonFace, Line, TriangleFace
+
 
 def Mesh_str(self):
-    return ("Mesh: Nodes: " + str(self.nodeCount()) + " Cells: " + str(
-        self.cellCount()) + " Boundaries: " + str(self.boundaryCount()))
+    st = "Mesh: Nodes: " + str(self.nodeCount()) + " Cells: " + str(
+        self.cellCount()) + " Boundaries: " + str(self.boundaryCount())
+    if (self.secondaryNodeCount() > 0):
+        st += " secNodes: " + str(self.secondaryNodeCount())
+
+    return st
+
 
 def MeshEntity_str(self):
     """Give mesh entity infos."""
@@ -23,6 +29,7 @@ def MeshEntity_str(self):
             s += '\t' + str(n.id()) + " " + str(n.pos()) + "\n"
     return s
 
+
 def Node_str(self):
     """Give node infos."""
     s = self.__repr__()
@@ -31,9 +38,11 @@ def Node_str(self):
     s += '\t' + str(self.pos()) + '\n'
     return s
 
+
 Node.__str__ = Node_str
 Mesh.__str__ = Mesh_str
 MeshEntity.__str__ = MeshEntity_str
+
 
 def __MeshGetCellMarker__(self):
     deprecated(msg='Mesh::cellMarker()', hint='Mesh::cellMarkers()')
@@ -44,8 +53,10 @@ def __MeshSetCellMarker__(self, m):
     deprecated(msg='Mesh::setCellMarker()', hint='Mesh::setCellMarkers()')
     return self.setCellMarkers(m)
 
+
 Mesh.cellMarker = __MeshGetCellMarker__
 Mesh.setCellMarker = __MeshSetCellMarker__
+
 
 def createSecondaryNodes(self, n=3, verbose=False):
     """Create `n` equally distributed secondary nodes on boundaries of the mesh.
@@ -73,16 +84,36 @@ def createSecondaryNodes(self, n=3, verbose=False):
     if secMesh.boundary(0).nodeCount() != secMesh.boundary(0).allNodeCount():
         warn("Mesh already contains secondary nodes. Not adding any more.")
     else:
-        for b in secMesh.boundaries():
-            A = b.node(0).pos()
-            B = b.node(1).pos()
-            line = Line(A, B)
-            for i in range(n):
-                secNode = secMesh.createNode(line.at((i + 1) / (n + 1)))
-                b.addSecondaryNode(secNode)
-                count += 1
+        if self.dim() == 2:
+            for b in secMesh.boundaries():
+                A = b.node(0).pos()
+                B = b.node(1).pos()
+                line = Line(A, B)
+                for i in range(n):
+                    secNode = secMesh.createNode(line.at((i + 1) / (n + 1)))
+                    b.addSecondaryNode(secNode)
+                    count += 1
+        elif self.dim() == 3:  # so far only working well for hexahedra!
+                for b in self.boundaries():
+                    bs = b.shape()
+                    for sx in range(n):
+                        nmax = n
+                        if isinstance(b, TriangleFace):
+                            nmax = n - sx
+                        for sy in range(nmax):
+                            if isinstance(b, TriangleFace):
+                                pos = bs.xyz([(sx+1)/(n+2), (sy+1)/(n+2)])
+                            else:
+                                pos = bs.xyz([(sx+1)/(n+1), (sy+1)/(n+1)])
+
+                            sn = self.createSecondaryNode(pos)
+                            b.addSecondaryNode(sn)
+        else:
+            warn("Unknown dimension. Don't know what to do.")
+
     if verbose:
         info("Added %d secondary nodes to mesh." % count)
     return secMesh
+
 
 Mesh.createSecondaryNodes = createSecondaryNodes
