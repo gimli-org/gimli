@@ -177,17 +177,6 @@ Node * Mesh::createNode(const RVector3 & pos, int marker){
     return createNode_(pos, marker, -1);
 }
 
-Node * Mesh::createSecondaryNode_(const RVector3 & pos){
-    Index id = this->secondaryNodeCount();
-    secNodeVector_.push_back(new Node(pos));
-    secNodeVector_.back()->setId(this->nodeCount() + id);
-    return secNodeVector_.back();
-}
-
-Node * Mesh::createSecondaryNode(const RVector3 & pos){
-    return createSecondaryNode_(pos);
-}
-
 Node & Mesh::secondaryNode(Index i) {
     ASSERT_RANGE(i, 0, this->secondaryNodeCount())
     return *secNodeVector_[i];
@@ -196,6 +185,31 @@ Node & Mesh::secondaryNode(Index i) {
 Node & Mesh::secondaryNode(Index i) const {
     ASSERT_RANGE(i, 0, this->secondaryNodeCount())
     return *secNodeVector_[i];
+}
+
+Node * Mesh::createSecondaryNode_(const RVector3 & pos){
+    Index id = this->secondaryNodeCount();
+    secNodeVector_.push_back(new Node(pos));
+    secNodeVector_.back()->setId(this->nodeCount() + id);
+    return secNodeVector_.back();
+}
+
+Node * Mesh::createSecondaryNode(const RVector3 & pos, double tol){
+    bool useTree = false;
+    if (tol > 0.0){
+        fillKDTree_();
+        useTree = true;
+
+        Node * refNode = tree_->nearest(pos);
+        if (refNode){
+            if (pos.distance(refNode->pos()) < tol) {
+                return refNode;
+            }
+        }
+    }
+    Node *newNode = createSecondaryNode_(pos);
+    if (useTree) tree_->insert(newNode);
+    return newNode;
 }
 
 Node * Mesh::createNodeWithCheck(const RVector3 & pos, double tol, bool warn, bool edgeCheck){

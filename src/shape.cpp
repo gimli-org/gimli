@@ -643,7 +643,7 @@ double HexahedronShape::volume() const {
     TetrahedronShape tet;
     for (uint i = 0; i < 5; i ++){
         tet.setNodes(nodeVector_[HexahedronSplit5TetID[i][0]], nodeVector_[HexahedronSplit5TetID[i][1]],
-                      nodeVector_[HexahedronSplit5TetID[i][2]], nodeVector_[HexahedronSplit5TetID[i][3]]);
+                     nodeVector_[HexahedronSplit5TetID[i][2]], nodeVector_[HexahedronSplit5TetID[i][3]]);
         sum += tet.volume();
     }
 
