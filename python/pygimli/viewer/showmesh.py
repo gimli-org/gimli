@@ -8,6 +8,7 @@ import traceback
 
 # plt should not be used outside of mplviewer
 import matplotlib.pyplot as plt
+
 import numpy as np
 
 try:
@@ -240,9 +241,10 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
     if block:
         hold = True
 
-    if hold:
-        lastHoldStatus = pg.mplviewer.utils.holdAxes__
+    lastHoldStatus = pg.mplviewer.utils.holdAxes__
+    if not lastHoldStatus or hold:
         pg.mplviewer.hold(val=1)
+        hold = True
 
     gci = None
     validData = False
