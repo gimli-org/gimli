@@ -190,7 +190,10 @@ public:
     Node * createNode(const Node & node);
     Node * createNode(const RVector3 & pos, int marker=0);
 
-    Node * createSecondaryNode(const RVector3 & pos);
+    /*! Create a secondary node, which is stored in an aditional list for additional use. 
+    If tolerance tol set to a value > 0, then it will be checked if there is already a node 
+    at this position and return a ptr to the existing node instead of creating a new. */
+    Node * createSecondaryNode(const RVector3 & pos, double tol=-1);
         
     /*! Create new Node with duplication checks. Returns the already existing node when its within a tolerance distance to pos.
     If edgeCheck is set, any 2d (p1) boundary edges will be checked for any intersection with pos and splitted if necessary.*/
