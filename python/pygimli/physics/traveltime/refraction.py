@@ -12,7 +12,7 @@ import pygimli as pg
 import pygimli.meshtools as mt
 from pygimli.mplviewer import drawModel, drawMesh, CellBrowser, createColorBar
 from pygimli.utils.base import interperc, getSavePath
-from pygimli.mplviewer.dataview import plotVecMatrix
+from pygimli.mplviewer.dataview import showVecMatrix
 
 from pygimli.manager import MethodManager  # , MethodManager0
 
@@ -567,7 +567,7 @@ class Refraction(MethodManager):
         return (gx + sx) / 2
 
     def showVA(self, data=None, t=None, name='va', pseudosection=False,
-               squeeze=True, full=True, ax=None):
+               squeeze=True, full=True, ax=None, cmap=None):
         """Show apparent velocity as image plot.
 
         TODO showXXX commands need to return ax and cbar .. if there is one
@@ -592,11 +592,12 @@ class Refraction(MethodManager):
 
         if pseudosection:
             midpoint = (gx + sx) / 2
-            plotVecMatrix(midpoint, offset, va, squeeze=True, ax=ax,
-                          label='Apparent slowness [s/m]')
+            showVecMatrix(midpoint, offset, va, squeeze=True, ax=ax,
+                          label='Apparent slowness [s/m]', cmap=cmap)
         else:
-            plotVecMatrix(gx, sx, va, squeeze=squeeze, ax=ax,
-                          label='Apparent velocity [m/s]')
+            showVecMatrix(gx, sx, va, squeeze=squeeze, ax=ax,
+                          label='Apparent velocity [m/s]', cmap=cmap)
+        fig.show()
         return ax  # va
 
     def getDepth(self):
