@@ -3,7 +3,9 @@ Import and extensions of the core Mesh class.
 """
 
 from .._logger import deprecated, warn, info
-from ._pygimli_ import Mesh, MeshEntity, Node, PolygonFace, Line, TriangleFace
+from ._pygimli_ import (Mesh, MeshEntity, Node, PolygonFace, 
+                        Line, TriangleFace,
+                        HexahedronShape, TetrahedronShape)
 
 
 def Mesh_str(self):
@@ -62,12 +64,9 @@ Mesh.cellMarker = __MeshGetCellMarker__
 Mesh.setCellMarker = __MeshSetCellMarker__
 
 
-def createSecondaryNodes(self, n=3, verbose=False):
+def __createSecondaryNodes__(self, n=3, verbose=False):
     """Create `n` equally distributed secondary nodes on boundaries of the mesh.
     This is useful to increase the accuracy of traveltime calculations.
-
-    TODO:
-        * Fill on 2D boundaries
 
     Parameters
     ----------
@@ -79,46 +78,85 @@ def createSecondaryNodes(self, n=3, verbose=False):
     Returns
     -------
     pg.Mesh
-        Mesh with secondary nodes.
+        Copy of the given mesh with secondary nodes.
     """
-    secMesh = Mesh(self)
-    secMesh.createNeighbourInfos()
-    count = 0
-
-    if secMesh.boundary(0).nodeCount() != secMesh.boundary(0).allNodeCount():
+    self.createNeighbourInfos()
+    
+    if self.boundary(0).nodeCount() != self.boundary(0).allNodeCount():
         warn("Mesh already contains secondary nodes. Not adding any more.")
     else:
         if self.dim() == 2:
-            for b in secMesh.boundaries():
+            for b in self.boundaries():
                 A = b.node(0).pos()
                 B = b.node(1).pos()
                 line = Line(A, B)
                 for i in range(n):
-                    secNode = secMesh.createNode(line.at((i + 1) / (n + 1)))
-                    b.addSecondaryNode(secNode)
-                    count += 1
-        elif self.dim() == 3:  # so far only working well for hexahedra!
-                for b in self.boundaries():
-                    bs = b.shape()
-                    for sx in range(n):
-                        nmax = n
+                    sn = self.createSecondaryNode(line.at((i + 1) / (n + 1)))
+                    b.addSecondaryNode(sn)
+    
+        elif self.dim() == 3: 
+            for b in self.boundaries():
+                bs = b.shape()
+                for sx in range(n):
+                    nmax = n
+                    if isinstance(b, TriangleFace):
+                        nmax = n - sx
+                    for sy in range(nmax):
                         if isinstance(b, TriangleFace):
-                            nmax = n - sx
-                        for sy in range(nmax):
-                            if isinstance(b, TriangleFace):
-                                pos = bs.xyz([(sx+1)/(n+2), (sy+1)/(n+2)])
-                            else:
-                                pos = bs.xyz([(sx+1)/(n+1), (sy+1)/(n+1)])
+                            pos = bs.xyz([(sx+1)/(n+2), (sy+1)/(n+2)])
+                        else:
+                            pos = bs.xyz([(sx+1)/(n+1), (sy+1)/(n+1)])
 
-                            sn = self.createSecondaryNode(pos)
-                            b.addSecondaryNode(sn)
-                            count += 1
+                        sn = self.createSecondaryNode(pos)
+                        b.addSecondaryNode(sn)
+
+            # for c in self.cells():
+            #     # add secondary nodes to the edges of 3 Entities
+                
+            #     edges = []
+            #     if isinstance(c.shape(), HexahedronShape):
+            #             #   7------6 
+            #             #  /|     /| 
+            #             # 4------5 | 
+            #             # | 3----|-2 
+            #             # |/     |/  
+            #             # 0------1   
+            #         edges.append([c.shape().node(0), c.shape().node(1)])
+            #         edges.append([c.shape().node(1), c.shape().node(2)])
+            #         edges.append([c.shape().node(2), c.shape().node(3)])
+            #         edges.append([c.shape().node(3), c.shape().node(0)])
+
+            #         edges.append([c.shape().node(0), c.shape().node(4)])
+            #         edges.append([c.shape().node(1), c.shape().node(5)])
+            #         edges.append([c.shape().node(2), c.shape().node(6)])
+            #         edges.append([c.shape().node(3), c.shape().node(7)])
+
+            #         edges.append([c.shape().node(4), c.shape().node(5)])
+            #         edges.append([c.shape().node(5), c.shape().node(6)])
+            #         edges.append([c.shape().node(6), c.shape().node(7)])
+            #         edges.append([c.shape().node(7), c.shape().node(4)])
+            #     elif isinstance(c.shape(), TetrahedronShape):
+            #         warn('Implement me')
+            #     else:
+            #         print(c)
+            #         warn('cell type unknown')
+
+            #     for e in edges:
+            #         line = Line(e[0].pos(), e[1].pos())
+            #         for i in range(n):
+            #             sn = self.createSecondaryNode(line.at((i + 1) / (n + 1)), tol=1e-6)
+            #             c.addSecondaryNode(sn)
         else:
             warn("Unknown dimension. Don't know what to do.")
 
     if verbose:
-        info("Added %d secondary nodes to mesh." % count)
-    return secMesh
+        info("Added %d secondary nodes to mesh." % self.secondaryNodeCount())
 
 
-Mesh.createSecondaryNodes = createSecondaryNodes
+def __createMeshWithSecondaryNodes__(self, n=3, verbose=False):
+    m = Mesh(self)
+    m.createSecondaryNodes(n, verbose)
+    return m
+    
+Mesh.createSecondaryNodes = __createSecondaryNodes__
+Mesh.createMeshWithSecondaryNodes = __createMeshWithSecondaryNodes__

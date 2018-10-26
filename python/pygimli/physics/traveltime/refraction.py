@@ -305,7 +305,7 @@ class Refraction(MethodManager):
             pg.warn("argument refine is deprecated .. use secnodes instead")
             secNodes = 1
 
-        mesh = self.fop.regionManager().mesh().createSecondaryNodes(secNodes)
+        mesh = self.fop.regionManager().mesh().createMeshWithSecondaryNodes(secNodes)
         self.fop.setMesh(mesh, ignoreRegionManager=True)
 
         self.inv.setForwardOperator(self.fop)
