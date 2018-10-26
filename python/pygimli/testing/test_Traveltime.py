@@ -24,13 +24,13 @@ def test_withoutSecNodes():
     np.testing.assert_allclose(t_normal, 1 + np.sqrt(2))
 
 def test_withSecNodes():
-    mesh2 = mesh.createSecondaryNodes(n=3)
+    mesh2 = mesh.createMeshWithSecondaryNodes(n=3)
     fop = pg.TravelTimeDijkstraModelling(mesh2, data)
     t_refined = fop.response(slo)
     np.testing.assert_allclose(t_refined, np.sqrt(5)) # only works if n_secNodes is odd number
 
 def test_Jacobian():
-    mesh2 = mesh.createSecondaryNodes(n=5)
+    mesh2 = mesh.createMeshWithSecondaryNodes(n=5)
     fop = pg.TravelTimeDijkstraModelling(mesh2, data)
     fop.createJacobian(slo)
     J = fop.jacobian()
