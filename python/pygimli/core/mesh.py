@@ -110,47 +110,53 @@ def __createSecondaryNodes__(self, n=3, verbose=False):
                         sn = self.createSecondaryNode(pos)
                         b.addSecondaryNode(sn)
 
-            # for c in self.cells():
-            #     # add secondary nodes to the edges of 3 Entities
+            for c in self.cells():
+                # add secondary nodes to the edges of 3 Entities
                 
-            #     edges = []
-            #     if isinstance(c.shape(), HexahedronShape):
-            #             #   7------6 
-            #             #  /|     /| 
-            #             # 4------5 | 
-            #             # | 3----|-2 
-            #             # |/     |/  
-            #             # 0------1   
-            #         edges.append([c.shape().node(0), c.shape().node(1)])
-            #         edges.append([c.shape().node(1), c.shape().node(2)])
-            #         edges.append([c.shape().node(2), c.shape().node(3)])
-            #         edges.append([c.shape().node(3), c.shape().node(0)])
+                edges = []
+                if isinstance(c.shape(), HexahedronShape):
+                        #   7------6 
+                        #  /|     /| 
+                        # 4------5 | 
+                        # | 3----|-2 
+                        # |/     |/  
+                        # 0------1   
+                    edges.append([c.shape().node(0), c.shape().node(1)])
+                    edges.append([c.shape().node(1), c.shape().node(2)])
+                    edges.append([c.shape().node(2), c.shape().node(3)])
+                    edges.append([c.shape().node(3), c.shape().node(0)])
 
-            #         edges.append([c.shape().node(0), c.shape().node(4)])
-            #         edges.append([c.shape().node(1), c.shape().node(5)])
-            #         edges.append([c.shape().node(2), c.shape().node(6)])
-            #         edges.append([c.shape().node(3), c.shape().node(7)])
+                    edges.append([c.shape().node(0), c.shape().node(4)])
+                    edges.append([c.shape().node(1), c.shape().node(5)])
+                    edges.append([c.shape().node(2), c.shape().node(6)])
+                    edges.append([c.shape().node(3), c.shape().node(7)])
 
-            #         edges.append([c.shape().node(4), c.shape().node(5)])
-            #         edges.append([c.shape().node(5), c.shape().node(6)])
-            #         edges.append([c.shape().node(6), c.shape().node(7)])
-            #         edges.append([c.shape().node(7), c.shape().node(4)])
-            #     elif isinstance(c.shape(), TetrahedronShape):
-            #         warn('Implement me')
-            #     else:
-            #         print(c)
-            #         warn('cell type unknown')
+                    edges.append([c.shape().node(4), c.shape().node(5)])
+                    edges.append([c.shape().node(5), c.shape().node(6)])
+                    edges.append([c.shape().node(6), c.shape().node(7)])
+                    edges.append([c.shape().node(7), c.shape().node(4)])
+                elif isinstance(c.shape(), TetrahedronShape):
+                    edges.append([c.shape().node(0), c.shape().node(1)])
+                    edges.append([c.shape().node(0), c.shape().node(2)])
+                    edges.append([c.shape().node(0), c.shape().node(3)])
+                    
+                    edges.append([c.shape().node(1), c.shape().node(2)])
+                    edges.append([c.shape().node(2), c.shape().node(3)])
+                    edges.append([c.shape().node(3), c.shape().node(1)])
+                else:
+                    print(c)
+                    warn('cell type unknown')
 
-            #     for e in edges:
-            #         line = Line(e[0].pos(), e[1].pos())
-            #         for i in range(n):
-            #             sn = self.createSecondaryNode(line.at((i + 1) / (n + 1)), tol=1e-6)
-            #             c.addSecondaryNode(sn)
+                for e in edges:
+                    line = Line(e[0].pos(), e[1].pos())
+                    for i in range(n):
+                        sn = self.createSecondaryNode(line.at((i + 1) / (n + 1)), tol=1e-6)
+                        c.addSecondaryNode(sn)
         else:
             warn("Unknown dimension. Don't know what to do.")
 
     if verbose:
-        info("Added %d secondary nodes to mesh." % self.secondaryNodeCount())
+        info("Added %d secondary nodes." % self.secondaryNodeCount())
 
 
 def __createMeshWithSecondaryNodes__(self, n=3, verbose=False):
