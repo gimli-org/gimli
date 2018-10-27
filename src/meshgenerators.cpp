@@ -24,7 +24,6 @@
 namespace GIMLI{
 
 Mesh createGrid(const RVector & x, int marker){
-    __MS(x  << " " << marker)
     Mesh mesh(1);
     mesh.createGrid(x);
     mesh.setCellMarkers(RVector(mesh.cellCount(), marker));

@@ -7,12 +7,16 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def rhoafromU(UbyI, t, Tx, Rx=None):
-    """Apparent resistivity curve from classical TEM (U or dB/dt)
+def rhoafromU(U, t, Tx, current=1.0, Rx=None):
+    r"""Apparent resistivity curve from classical TEM (U or dB/dt)
 
     rhoafromU(U/I, t, TXarea[, RXarea])
-    .. math:: \rho_a = ( (A_{Rx} *A_{Tx} * \mu_0)/ (20 U/I) )^2/3*t^{-5/3}*4e-7
+
+    .. math::
+
+        \rho_a = ( A_{Rx} *A_{Tx} * \mu_0 / 20 / (U/I) )^2/3*t^{-5/3}*4e-7
     """
+    UbyI = U / current
     if Rx is None:
         Rx = Tx  # assume single/coincident loop
 
@@ -22,13 +26,15 @@ def rhoafromU(UbyI, t, Tx, Rx=None):
     return rhoa
 
 
-def rhoafromB(B, t, Tx, I=1):
-    """Apparent resistivity from B-field TEM
+def rhoafromB(B, t, Tx, current=1):
+    r"""Apparent resistivity from B-field TEM
 
-    .. math:: \rho_a = ( (A_{Tx}*I*\mu_0 ) / (30B) )^2/3 * 4e-7 / t
+    .. math::
+
+        \rho_a = ( (A_{Tx}*I*\mu_0 ) / (30B) )^2/3 * 4e-7 / t
     """
     mu0 = 4e-7 * pi
-    rhoa = (I * Tx * mu0 / 30. / B)**(2. / 3.) * mu0 / pi / t
+    rhoa = (current * Tx * mu0 / 30. / B)**(2. / 3.) * mu0 / pi / t
     return rhoa
 
 
@@ -55,7 +61,7 @@ def RxArea(snd):
     return Rx
 
 
-def get_rhoa(snd, cal=260e-9, corrramp=True):
+def get_rhoa(snd, cal=260e-9, corrramp=False, verbose=False):
     """Compute apparent resistivity from sounding (usf) dict."""
     Tx = TxArea(snd)
     Rx = RxArea(snd)
@@ -64,6 +70,8 @@ def get_rhoa(snd, cal=260e-9, corrramp=True):
     else:
         Rx = Tx
 
+    if verbose:
+        print("Tx/Rx", Tx, Rx)
     v = snd['VOLTAGE']
     istart, istop = 0, len(v)  # default: take all
     mav = np.arange(len(v))[v == max(v)]
@@ -73,21 +81,26 @@ def get_rhoa(snd, cal=260e-9, corrramp=True):
     if min(v) < 0.0:  # negative values: stop at first
         istop = np.argmax(v[20:] < 0.0) + 20
 
-    print(istart, istop)
+    if verbose:
+        print(istart, istop)
     v = v[istart:istop]
     if 'ST_DEV' in snd:
         dv = snd['ST_DEV'][istart:istop]  # / snd['CURRENT']
     else:
         dv = v * 0.01
 
-    t = snd['TIME'][istart:istop]
+    t = snd['TIME'][istart:istop] * 1.0
     if corrramp and 'RAMP_TIME' in snd:
-        t = t - snd['RAMP_TIME']
+        t = t - snd['RAMP_TIME'] / 2
 
     if Rx == 1:  # apparently B-field not dB/dt
-        rhoa = rhoafromB(v * cal, t, Tx)
+        rhoa = rhoafromB(B=v*cal, t=t, Tx=Tx)
     else:
-        rhoa = rhoafromU(v, t, Tx, Rx)
+        if verbose:
+            print("Using rhoafromU:", v, t, Tx, Rx)
+        rhoa = rhoafromU(U=v, t=t, Tx=Tx, Rx=Rx)
+        if verbose:
+            print(rhoa[0], rhoa[10], rhoa[-1])
 
     rhoaerr = dv / v * (2. / 3.)
     return rhoa, t, rhoaerr
@@ -333,7 +346,7 @@ class TDEM():
         elif filename.lower().endswith('.txt'):
             self.DATA = readSiroTEMData(filename)
         elif filename.lower().endswith('.tem'):
-            self.DATA = readTEMfastFile(filename)
+            self.DATA.append(readTEMfastFile(filename))
         elif filename.lower().endswith('.dat'):  # dangerous
             self.DATA = readUniKTEMData(filename)
 
@@ -379,24 +392,25 @@ class TDEM():
         """Plot all apparent resistivity curves into one window."""
         if ax is None:
             fig, ax = plt.subplots()
-        else:
-            fig = ax.get_figure()
 
-        cols = 'rgbmcyk'
+#        cols = 'rgbmcyk'
         for i, data in enumerate(self.DATA):
             rhoa, t, err = get_rhoa(data)
             err[err > .99] = .99
-            col = cols[i % len(cols)]
-            ax.loglog(t, rhoa, marker='.', label=getname(data), color=col,
-                      **kwargs)
+#            col = cols[i % len(cols)]
+            col = 'C'+str(i % 10)
+            ax.loglog(rhoa, t, marker='.', label=getname(data),  # color=col,
+                      color=col, **kwargs)
             if ploterror:
-                ax.errorbar(t, rhoa, yerr=rhoa * err, color=col)
+                ax.errorbar(rhoa, t, xerr=rhoa * err, color=col)
 
-        ax.set_xlabel('t [s]')
-        ax.set_ylabel(r'$\rho_a$ [$\Omega$m]')
+        ax.set_ylabel('t [s]')
+        ax.set_xlabel(r'$\rho_a$ [$\Omega$m]')
         ax.legend(loc='best')
         ax.grid(True)
-        return fig, ax
+        ax.set_ylim(ax.get_ylim()[::-1])
+        return ax
+
 
 if __name__ == '__main__':
     print("do some tests here")

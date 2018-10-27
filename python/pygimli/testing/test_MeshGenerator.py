@@ -90,6 +90,18 @@ class TestMeshGenerator(unittest.TestCase):
         self.assertEqual(mesh.cellCount(), 2)
         self.assertEqual(mesh.boundaryCount(), 5)
 
+    def test_MeshCreateSecNodes(self):
+        x = [0, 1, 2, 3, 42]
+        y = [0, 1, 2, 3]
+        z = [0, 1, 3]
+
+        mesh = pg.createGrid(x, y, z)
+        mesh.createSecondaryNodes(n=1)
+        self.assertEqual(mesh.secondaryNodeCount(), mesh.boundaryCount() + \
+                                                    (len(x)-1)*len(y)*len(z) + \
+                                                    (len(y)-1)*len(z)*len(x) + \
+                                                    (len(z)-1)*len(x)*len(y)) 
+        
 
 if __name__ == '__main__':
 

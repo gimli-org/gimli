@@ -433,7 +433,7 @@ def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=False):
     if cMin > 0.0 and logScale:
         mappable.set_norm(mpl.colors.LogNorm())
     else:
-        mappable.set_norm(mpl.colors.Normalize())
+        mappable.set_norm(mpl.colors.Normalize(vmin=cMin, vmax=cMax))
 
 #   print("set mappable data, log: ", logScale, "cmin: ", cMin, "cmax: ", cMax)
     mappable.set_array(data)
@@ -502,15 +502,6 @@ def addCoverageAlpha(patches, coverage, dropThreshold=0.4):
         updateAxes(patches.ax)
     elif hasattr(patches, 'get_axes'):
         updateAxes(patches.get_axes())
-
-parameters = {'xp':
-              [22.674387857633945, 11.221508276482126, -14.356589454756971,
-               -47.18817758739222, -34.59001004812521, -6.0516291196352654],
-              'yp': [-20.102530541012214, -33.08246073298429,
-                     -42.24476439790574, -5.595549738219887, 42.5065445026178,
-                     40.13395157135497],
-              'min_JK': 18.8671875,
-              'max_JK': 92.5}
 
 viridis_data = [
     [0.26700401, 0.00487433, 0.32941519], [0.26851048, 0.00960483, 0.33542652],

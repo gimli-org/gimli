@@ -67,7 +67,7 @@ def prettyFloat(v):
         return str(int(round(v,1)))
     elif abs(v) == 0.0:
         return "0"
-    elif abs(v) > 1e3 or abs(v) <= 1e-3:
+    elif abs(v) > 1e4 or abs(v) <= 1e-3:
         return str("%.1e" % v)
     elif abs(v) < 1e-2:
         return str("%.4f" % round(v,4))

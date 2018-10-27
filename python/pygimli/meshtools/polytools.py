@@ -591,7 +591,10 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
     if hasattr(sensors, 'sensorPositions'):  # obviously a DataContainer type
         sensors = sensors.sensorPositions()
     elif isinstance(sensors, np.ndarray):
-        sensors = [pg.RVector3(s) for s in sensors]
+        if sensors.ndim == 1:
+            sensors = [pg.RVector3(s, 0) for s in sensors]
+        else:  # assume 2d array with 2 or 3 values per item
+            sensors = [pg.RVector3(s) for s in sensors]
     elif isinstance(sensors, list):
         if len(sensors) == 2:
             # guess we have just a desired Pbox with

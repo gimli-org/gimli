@@ -4,7 +4,7 @@
 from .TravelTimeManager import TravelTimeManager, TravelTimeDijkstraModelling
 
 from .raplot import drawTravelTimeData, drawVA, drawFirstPicks
-from .ratools import createRAData
+from .ratools import createRAData, createGradientModel2D
 from .refraction import Refraction
 
 from .tomography import Tomography
@@ -14,6 +14,7 @@ __all__ = ['drawTravelTimeData',
            'drawVA',
            'drawFirstPicks',
            'createRAData',
+           'createGradientModel2D',
            'Tomography',
            'Refraction',
            'fastMarch']

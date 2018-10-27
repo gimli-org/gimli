@@ -410,6 +410,7 @@ def chi2(a, b, err, trans=None):
     """Return chi square value."""
     if trans is None:
         trans = pg.RTrans()
+
     d = (trans(a) - trans(b)) / trans.error(a, err)
     return pg.dot(d, d) / len(d)
 

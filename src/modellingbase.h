@@ -89,9 +89,6 @@ public:
 
     void createRefinedForwardMesh(bool refine=true, bool pRefine=false);
 
-    /*!DEPRECATED Set refined mesh for forward calculation. */
-    void setRefinedMesh(const Mesh & mesh);
-
     /*! Delete the actual mesh. */
     void deleteMesh();
 

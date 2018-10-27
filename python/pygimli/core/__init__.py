@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
 
 """
+pygimli.core
+------------
+
+Imports and extensions of the C++ bindings.
 """
 
 import sys
 import os
-import subprocess
 import traceback
 import numpy as np
 
@@ -14,22 +17,9 @@ if sys.platform == 'win32':
 
 _pygimli_ = None
 
-###############################################################################
-# TEMP: Avoid import errors for py bindings built before core submodule
-def bindingpath(relpath):
-    path = os.path.join(os.path.dirname(__file__), relpath)
-    return os.path.abspath(os.path.join(path, "_pygimli_.so"))
-
-new = bindingpath(".")
-old = bindingpath("..")
-
-if not os.path.isfile(new) and os.path.isfile(old):
-    print("INFO: Moving %s to %s" % (old, new))
-    os.rename(old, new)
-###############################################################################
 try:
     from . import _pygimli_
-    from . _pygimli_ import *
+    from ._pygimli_ import *
 except ImportError as e:
     print(e)
     traceback.print_exc(file=sys.stdout)
@@ -57,22 +47,21 @@ def showNow():
 __swatch__ = _pygimli_.Stopwatch()
 
 def tic(msg=None):
-    """Start global timer. Print elpased time with `pg.toc()`."""
+    """Start global timer. Print elpased time with `toc()`."""
     if msg:
         print(msg)
     __swatch__.start()
 
 
 def toc(msg=None, box=False):
-    """Print elapsed time since global timer was started with `pg.tic()`."""
+    """Print elapsed time since global timer was started with `tic()`."""
     if msg:
         print(msg, end=' ')
     seconds = dur()
     m, s = divmod(seconds, 60)
     h, m = divmod(m, 60)
-    #type(m) CR ??
     if h <= 0 and m <= 0:
-         time = "%.2f" % s
+        time = "%.2f" % s
     elif h <= 0:
         if m == 1.0:
             time = "%d minute and %.2f" % (m, s)
@@ -87,13 +76,14 @@ def toc(msg=None, box=False):
 
 
 def dur():
-    """Return time in seconds since global timer was started with `pg.tic()`."""
+    """Return time in seconds since global timer was started with `tic()`."""
     return __swatch__.duration()
 
 
 ############################
 # print function for gimli stuff
 ############################
+
 
 def RVector_str(self, valsOnly=False):
     s = str()
@@ -112,15 +102,13 @@ def RVector_str(self, valsOnly=False):
 
         s = s + str(self[len(self) - 1]) + "]"
         return s
-    return (
-        str(self.size()) +
-        " [" + str(self[0]) + ",...," + str(self[self.size() - 1]) + "]"
-    )
+    return (str(self.size()) + " [" + str(self[0]) + ",...," + str(
+        self[self.size() - 1]) + "]")
 
 
 def RVector3_str(self):
-    return("RVector3: (" + str(self.x()) + ", " +
-           str(self.y()) + ", " + str(self.z()) + ")")
+    return ("RVector3: (" + str(self.x()) + ", " + str(self.y()) + ", " + str(
+        self.z()) + ")")
 
 
 def R3Vector_str(self):
@@ -154,17 +142,9 @@ def Line_str(self):
     return "Line: " + str(self.p0()) + "  " + str(self.p1())
 
 
-def Mesh_str(self):
-    return ("Mesh: Nodes: " + str(self.nodeCount()) + " Cells: " +
-            str(self.cellCount()) + " Boundaries: " +
-            str(self.boundaryCount()))
-
-
 def Data_str(self):
-    return (
-        "Data: Sensors: " +
-        str(self.sensorCount()) + " data: " + str(self.size())
-    )
+    return ("Data: Sensors: " + str(self.sensorCount()) + " data: " + str(
+        self.size()))
 
 
 def ElementMatrix_str(self):
@@ -179,21 +159,6 @@ def ElementMatrix_str(self):
     return s
 
 
-def MeshEntity_str(self):
-    """Give mesh entity infos."""
-    s = self.__repr__()
-    s += '\tID: ' + str(self.id()) + \
-         ', Marker: ' + str(self.marker()) + \
-         ', Size: ' + str(self.size()) + '\n'
-
-    if isinstance(self, _pygimli_.PolygonFace):
-        s += '\t' + str(self.nodeCount()) + " Nodes.\n"
-    else:
-        for n in self.nodes():
-            s += '\t' + str(n.id()) + " " + str(n.pos()) + "\n"
-    return s
-
-
 _pygimli_.RVector.__str__ = RVector_str
 _pygimli_.CVector.__str__ = RVector_str
 _pygimli_.BVector.__str__ = RVector_str
@@ -205,27 +170,12 @@ _pygimli_.R3Vector.__str__ = R3Vector_str
 _pygimli_.RMatrix.__str__ = RMatrix_str
 _pygimli_.CMatrix.__str__ = CMatrix_str
 _pygimli_.Line.__str__ = Line_str
-_pygimli_.Mesh.__str__ = Mesh_str
 _pygimli_.DataContainer.__str__ = Data_str
 _pygimli_.ElementMatrix.__str__ = ElementMatrix_str
-_pygimli_.MeshEntity.__str__ = MeshEntity_str
-
-def Node_str(self):
-    """Give node infos."""
-    s = self.__repr__()
-    s += '\tID: ' + str(self.id()) + \
-         ', Marker: ' + str(self.marker())
-    s += '\t' + str(self.pos()) + '\n'
-    return s
-
-_pygimli_.Node.__str__ = Node_str
-# _pygimli_.stdVectorIndex.size = _pygimli_.stdVectorIndex.__len__
-# _pygimli_.stdVectorIndex.__str__ = RVector_str
 
 ############################
 # compatibility stuff
 ############################
-
 
 def nonzero_test(self):
     raise BaseException("Warning! there is no 'and' and 'or' for "
@@ -235,6 +185,7 @@ def nonzero_test(self):
 
 def np_round__(self, r):
     return np.round(self.array(), r)
+
 
 _pygimli_.RVector.__bool__ = nonzero_test
 _pygimli_.R3Vector.__bool__ = nonzero_test
@@ -252,16 +203,21 @@ _pygimli_.IndexArray.__nonzero__ = nonzero_test
 
 _pygimli_.RVector.__round__ = np_round__
 
+
 def _invertBVector_(self):
     return _pygimli_.inv(self)
+
+
 _pygimli_.BVector.__invert__ = _invertBVector_
 _pygimli_.BVector.__inv__ = _invertBVector_
 
+
 def _lowerThen_(self, v2):
-    """Overwrite bvector = v1 < v2 since there is a wrong operator due to the 
+    """Overwrite bvector = v1 < v2 since there is a wrong operator due to the
     boost binding generation
     """
     return _pygimli_.inv(self >= v2)
+
 
 _pygimli_.RVector.__lt__ = _lowerThen_
 _pygimli_.R3Vector.__lt__ = _lowerThen_
@@ -291,6 +247,7 @@ def __newIndexArrayInit__(self, arr, val=None):
         else:
             __origIndexArrayInit__(self, arr)
 
+
 _pygimli_.IndexArray.__init__ = __newIndexArrayInit__
 
 # Overwrite constructor for BVector
@@ -312,8 +269,8 @@ def __newBVectorInit__(self, arr, val=None):
         else:
             __origBVectorInit__(self, arr)
 
-_pygimli_.BVector.__init__ = __newBVectorInit__
 
+_pygimli_.BVector.__init__ = __newBVectorInit__
 
 ######################
 # special overwrites
@@ -321,122 +278,160 @@ _pygimli_.BVector.__init__ = __newBVectorInit__
 
 # RVector + int fails .. so we need to tweak this command
 __oldRVectorAdd__ = _pygimli_.RVector.__add__
+
+
 def __newRVectorAdd__(a, b):
     if isinstance(b, np.ndarray) and b.dtype == complex:
-        return __oldRVectorAdd__(a, pg.CVector(b))
+        return __oldRVectorAdd__(a, CVector(b))
     if isinstance(b, int):
         return __oldRVectorAdd__(a, float(b))
     if isinstance(a, int):
         return __oldRVectorAdd__(float(a), b)
     return __oldRVectorAdd__(a, b)
+
+
 _pygimli_.RVector.__add__ = __newRVectorAdd__
 
 __oldRVectorSub__ = _pygimli_.RVector.__sub__
+
+
 def __newRVectorSub__(a, b):
     if isinstance(b, int):
         return __oldRVectorSub__(a, float(b))
     if isinstance(a, int):
         return __oldRVectorSub__(float(a), b)
     return __oldRVectorSub__(a, b)
+
+
 _pygimli_.RVector.__sub__ = __newRVectorSub__
 
 __oldRVectorMul__ = _pygimli_.RVector.__mul__
+
+
 def __newRVectorMul__(a, b):
     if isinstance(b, int):
         return __oldRVectorMul__(a, float(b))
     if isinstance(a, int):
         return __oldRVectorMul__(float(a), b)
     return __oldRVectorMul__(a, b)
+
+
 _pygimli_.RVector.__mul__ = __newRVectorMul__
 
 try:
     __oldRVectorTrueDiv__ = _pygimli_.RVector.__truediv__
+
     def __newRVectorTrueDiv__(a, b):
         if isinstance(b, int):
             return __oldRVectorTrueDiv__(a, float(b))
         if isinstance(a, int):
             return __oldRVectorTrueDiv__(float(a), b)
         return __oldRVectorTrueDiv__(a, b)
+
     _pygimli_.RVector.__truediv__ = __newRVectorTrueDiv__
 except:
     __oldRVectorTrueDiv__ = _pygimli_.RVector.__div__
+
     def __newRVectorTrueDiv__(a, b):
         if isinstance(b, int):
             return __oldRVectorTrueDiv__(a, float(b))
         if isinstance(a, int):
             return __oldRVectorTrueDiv__(float(a), b)
         return __oldRVectorTrueDiv__(a, b)
-    _pygimli_.RVector.__div__ = __newRVectorTrueDiv__
 
+    _pygimli_.RVector.__div__ = __newRVectorTrueDiv__
 
 ################################################################################
 # override wrong default conversion from int to IndexArray(int) for setVal     #
 ################################################################################
 __origRVectorSetVal__ = _pygimli_.RVector.setVal
+
+
 def __newRVectorSetVal__(self, *args, **kwargs):
     #print('__newRVectorSetVal__', *args, **kwargs)
-    if len(args)==2:
+    if len(args) == 2:
         if isinstance(args[1], int):
             if args[1] < 0:
-                return __origRVectorSetVal__(self, args[0], i=len(self)+args[1])
+                return __origRVectorSetVal__(self, args[0],
+                                             i=len(self) + args[1])
             else:
                 return __origRVectorSetVal__(self, args[0], i=args[1])
         if isinstance(args[1], _pygimli_.BVector):
             return __origRVectorSetVal__(self, args[0], bv=args[1])
     return __origRVectorSetVal__(self, *args, **kwargs)
+
+
 _pygimli_.RVector.setVal = __newRVectorSetVal__
 
-
 __origR3VectorSetVal__ = _pygimli_.R3Vector.setVal
+
+
 def __newR3VectorSetVal__(self, *args, **kwargs):
     #print('__newRVectorSetVal__', *args, **kwargs)
-    if len(args)==2:
+    if len(args) == 2:
         if isinstance(args[1], int):
             return __origR3VectorSetVal__(self, args[0], i=args[1])
         if isinstance(args[1], _pygimli_.BVector):
             return __origR3VectorSetVal__(self, args[0], bv=args[1])
     return __origR3VectorSetVal__(self, *args, **kwargs)
+
+
 _pygimli_.R3Vector.setVal = __newR3VectorSetVal__
 
-
 __origBVectorSetVal__ = _pygimli_.BVector.setVal
+
+
 def __newBVectorSetVal__(self, *args, **kwargs):
-    if len(args)==2:
+    if len(args) == 2:
         if isinstance(args[1], int):
             return __origBVectorSetVal__(self, args[0], i=args[1])
         if isinstance(args[1], _pygimli_.BVector):
             return __origBVectorSetVal__(self, args[0], bv=args[1])
     return __origBVectorSetVal__(self, *args, **kwargs)
+
+
 _pygimli_.BVector.setVal = __newBVectorSetVal__
 
 __origCVectorSetVal__ = _pygimli_.CVector.setVal
+
+
 def __newCVectorSetVal__(self, *args, **kwargs):
-    if len(args)==2:
+    if len(args) == 2:
         if isinstance(args[1], int):
             return __origCVectorSetVal__(self, args[0], i=args[1])
         if isinstance(args[1], _pygimli_.BVector):
             return __origCVectorSetVal__(self, args[0], bv=args[1])
     return __origCVectorSetVal__(self, *args, **kwargs)
+
+
 _pygimli_.CVector.setVal = __newCVectorSetVal__
 
 __origIVectorSetVal__ = _pygimli_.IVector.setVal
+
+
 def __newIVectorSetVal__(self, *args, **kwargs):
-    if len(args)==2:
+    if len(args) == 2:
         if isinstance(args[1], int):
             return __origIVectorSetVal__(self, args[0], i=args[1])
         if isinstance(args[1], _pygimli_.BVector):
             return __origIVectorSetVal__(self, args[0], bv=args[1])
     return __origIVectorSetVal__(self, *args, **kwargs)
+
+
 _pygimli_.IVector.setVal = __newIVectorSetVal__
 
 __origIndexArraySetVal__ = _pygimli_.IndexArray.setVal
+
+
 def __newIndexArraySetVal__(self, *args, **kwargs):
-    if len(args)==2:
+    if len(args) == 2:
         if isinstance(args[1], int):
             return __origIndexArraySetVal__(self, args[0], i=args[1])
         if isinstance(args[1], _pygimli_.BVector):
             return __origIndexArraySetVal__(self, args[0], bv=args[1])
     return __origIndexArraySetVal__(self, *args, **kwargs)
+
+
 _pygimli_.IndexArray.setVal = __newIndexArraySetVal__
 
 
@@ -449,11 +444,9 @@ def __getVal(self, idx):
 
     # print("getval", type(idx), idx)
     # print(dir(idx))
-    if isinstance(idx, _pygimli_.BVector) or isinstance(idx, _pygimli_.IVector) or isinstance(idx, _pygimli_.IndexArray):
+    if isinstance(idx, _pygimli_.BVector) or isinstance(
+            idx, _pygimli_.IVector) or isinstance(idx, _pygimli_.IndexArray):
         # print("BVector, IVector, IndexArray", idx)
-        return self(idx)
-    elif isinstance(idx, _pygimli_.stdVectorSIndex): # // or isinstance(idx, stdVectorIndex):
-        # print("stdVectorSIndex", idx)
         return self(idx)
     elif isinstance(idx, slice):
 
@@ -470,7 +463,7 @@ def __getVal(self, idx):
             #print(s,e,idx.step)
             step = idx.step
             if step < 0 and idx.start is None and idx.stop is None:
-                ids = range(e-1, s-1, idx.step)
+                ids = range(e - 1, s - 1, idx.step)
             else:
                 ids = range(s, e, idx.step)
 
@@ -513,9 +506,9 @@ def __setVal(self, idx, val):
         self.rowR(int(idx[0])).setVal(val, int(idx[1]))
         return
     # if isinstance(idx, _pygimli_.BVector):
-        # print("__setVal", self, idx, 'val:', val)
-        # self.setVal(val, bv=idx)
-        # return
+    # print("__setVal", self, idx, 'val:', val)
+    # self.setVal(val, bv=idx)
+    # return
     self.setVal(val, idx)
 
 
@@ -552,6 +545,7 @@ def __getValMatrix(self, idx):
 
     return self.rowR(idx)
 
+
 _pygimli_.RVector.__setitem__ = __setVal
 _pygimli_.RVector.__getitem__ = __getVal  # very slow -- inline is better
 
@@ -584,6 +578,7 @@ _pygimli_.CMatrix.__setitem__ = __setVal
 ############################
 def PGVector_len(self):
     return self.size()
+
 
 _pygimli_.RVector.__len__ = PGVector_len
 _pygimli_.R3Vector.__len__ = PGVector_len
@@ -618,9 +613,10 @@ def abs(v):
 
 def RMatrix_len(self):
     return self.rows()
+
+
 _pygimli_.RMatrix.__len__ = RMatrix_len
 _pygimli_.CMatrix.__len__ = RMatrix_len
-
 
 _pygimli_.RVector.ndim = 1
 _pygimli_.BVector.ndim = 1
@@ -631,6 +627,7 @@ _pygimli_.IndexArray.ndim = 1
 _pygimli_.RMatrix.ndim = 2
 _pygimli_.R3Vector.ndim = 2
 _pygimli_.stdVectorRVector3.ndim = 2
+
 
 ############################
 # Iterator support for RVector allow to apply python build-ins
@@ -658,6 +655,7 @@ def __VectorIterCall__(self):
     # don't use pygimli iterators here until the reference for temporary
     # vectors are collected
     # return _pygimli_.RVectorIter(self.beginPyIter())
+
 
 _pygimli_.RVector.__iter__ = __VectorIterCall__
 _pygimli_.R3Vector.__iter__ = __VectorIterCall__
@@ -692,6 +690,7 @@ class DefaultContainerIter:
 def __MatIterCall__(self):
     return DefaultContainerIter(self)
 
+
 _pygimli_.RMatrix.__iter__ = __MatIterCall__
 _pygimli_.CMatrix.__iter__ = __MatIterCall__
 
@@ -701,6 +700,7 @@ class Vector3Iter():
     Simple iterator for RVector3, cause it lacks the core function
     .beginPyIter()
     """
+
     def __init__(self, vec):
         self.vec = vec
         self.length = 3
@@ -723,6 +723,7 @@ class Vector3Iter():
 def __Vector3IterCall__(self):
     return Vector3Iter(self)
 
+
 _pygimli_.RVector3.__iter__ = __Vector3IterCall__
 
 
@@ -730,11 +731,12 @@ _pygimli_.RVector3.__iter__ = __Vector3IterCall__
 # default converter from RVector3 to numpy array
 def __RVector3ArrayCall__(self, dtype=None):
     #if idx:
-        #print(self)
-        #print(idx)
-        #raise Exception("we need to fix this")
+    #print(self)
+    #print(idx)
+    #raise Exception("we need to fix this")
     import numpy as np
     return np.array([self.getVal(0), self.getVal(1), self.getVal(2)])
+
 
 # default converter from RVector to numpy array
 
@@ -742,9 +744,9 @@ def __RVector3ArrayCall__(self, dtype=None):
 def __RVectorArrayCall__(self, dtype=None):
 
     #if idx and not isinstance(idx, numpy.dtype):
-        #print("self:", self)
-        #print("idx:", idx, type(idx) )
-        #raise Exception("we need to fix this")
+    #print("self:", self)
+    #print("idx:", idx, type(idx) )
+    #raise Exception("we need to fix this")
     # probably fixed!!!
     # import numpy as np
     # we need to copy the array until we can handle increasing the reference
@@ -752,6 +754,7 @@ def __RVectorArrayCall__(self, dtype=None):
     # test in testRValueConverter.py:testNumpyFromRVec()
     # return np.array(self.array())
     return self.array()
+
 
 # default converter from RVector to numpy array
 
@@ -763,23 +766,24 @@ _pygimli_.BVector.__array__ = __RVectorArrayCall__
 _pygimli_.R3Vector.__array__ = __RVectorArrayCall__
 _pygimli_.RVector3.__array__ = __RVector3ArrayCall__
 
+
 # hackish until stdVectorRVector3 will be removed
 def __stdVectorRVector3ArrayCall(self, dtype=None):
     #if idx is not None:
-        #print(self)
-        #print(idx)
+    #print(self)
+    #print(idx)
     return _pygimli_.stdVectorRVector3ToR3Vector(self).array()
+
 
 _pygimli_.stdVectorRVector3.__array__ = __stdVectorRVector3ArrayCall
 
 # _pygimli_.RVector3.__array__ = _pygimli_.RVector3.array
 # del _pygimli_.RVector.__array__
 
-
-
 ##################################
 # custom rvalues for special cases
 ##################################
+
 
 def find(v):
     if hasattr(v, 'dtype') and hasattr(v, '__iter__'):
@@ -788,6 +792,7 @@ def find(v):
     else:
         # print('orig find')
         return _pygimli_.find(v)
+
 
 def pow(v, p):
     """
@@ -801,8 +806,9 @@ def pow(v, p):
 
 def __RVectorPower(self, m):
     return pow(self, m)
-_pygimli_.RVector.__pow__ = __RVectorPower
 
+
+_pygimli_.RVector.__pow__ = __RVectorPower
 
 ##################################
 # usefull aliases
@@ -820,12 +826,11 @@ PosVector = _pygimli_.R3Vector
 Trans = _pygimli_.RTrans
 TransLinear = _pygimli_.RTransLinear
 TransLin = _pygimli_.RTransLin
-TransPower =_pygimli_.RTransPower
+TransPower = _pygimli_.RTransPower
 TransLog = _pygimli_.RTransLog
 TransLogLU = _pygimli_.RTransLogLU
 TransCotLU = _pygimli_.RTransCotLU
 TransCumulative = _pygimli_.RTransCumulative
-
 
 ############################
 # non automatic exposed functions
@@ -849,45 +854,20 @@ def abs(v):
 
     return _pygimli_.fabs(v)
 
-
-########################################################
-# compare operators for stdVector
-########################################################
-
-def __CMP_stdVectorSIndex__(self, val):
-    raise BaseException("__CMP_stdVectorSIndex__ do not use")
-
-    # print("__CMP_stdVectorSIndex__")
-    # ret = _pygimli_.BVector(len(self))
-    # for i, v in enumerate(ret):
-    #     print(self[i] < val, int(self[i] < val))
-    #     #v = int(self[i] < val)
-    # print(ret)
-
-
-def __EQ_stdVectorSIndex__(self, val):
-    raise Exception("__EQ_stdVectorSIndex__ do not use")
-
-    # ret = _pygimli_.BVector(len(self))
-    # for i, v in enumerate(ret):
-    #    print(self[i] == val, int(self[i] == val))
-    #    v = self[i] == val
-    # print(ret)
-
-_pygimli_.stdVectorSIndex.__cmp__ = __CMP_stdVectorSIndex__
-_pygimli_.stdVectorSIndex.__eq__ = __EQ_stdVectorSIndex__
-
 # default BVector operator == (RVector, int) will be casted to
 # BVector operator == (RVector, RVector(int)) and fails
 # this needs a monkey patch for BVector operator == (RVector, int)
 _pygimli_.__EQ_RVector__ = _pygimli_.RVector.__eq__
+
 
 def __EQ_RVector__(self, val):
     if isinstance(val, int):
         val = float(val)
     return _pygimli_.__EQ_RVector__(self, val)
 
+
 _pygimli_.RVector.__eq__ = __EQ_RVector__
+
 
 ############################
 # usefull stuff
@@ -904,14 +884,13 @@ def toIVector(v):
 #__catOrig__ = _pygimli_.cat
 
 #def __cat__(v1, v2):
-    #print("mycat")
-    #if isinstance(v1, ndarray) and isinstance(v2, ndarray):
-        #return pg.cat(RVector(v1), v2)
-    #else:
-        #return __catOrig__(v1, v2)
+#print("mycat")
+#if isinstance(v1, ndarray) and isinstance(v2, ndarray):
+#return cat(RVector(v1), v2)
+#else:
+#return __catOrig__(v1, v2)
 
 #_pygimli_.cat = __cat__
-
 
 
 # DEPRECATED for backward compatibility should be removed
@@ -921,24 +900,10 @@ def asvector(array):
     return _pygimli_.RVector(array)
 
 
-def __gitversion__(path=__path__[0]):
-    """Return version str based on git tags and commits."""
-    try:
-        v = subprocess.check_output(['git', '-C', path, 'describe', '--always',
-                                     '--tags', '--dirty=-modified', '--long'],
-                                    stderr=subprocess.STDOUT)
-        return v.decode('ascii').strip()
-    except BaseException as e:
-        return "unknown", e
-
-# __version__ = __gitversion__()
-# if __version__ == "unknown":
-#     __version__ = _pygimli_.versionStr()
-
-
 # ##########################
 # We want ModellingBase with multi threading jacobian brute force
 # ##########################
+
 
 def __GLOBAL__response_mt_shm_(fop, model, shm, i):
     resp = fop.response_mt(model, i)
@@ -966,23 +931,24 @@ def __ModellingBase__createJacobian_mt__(self, model, resp):
     self.setThreadCount(1)
 
     # print("Model/Data/nProcs", nModel, nData, nProcs, int(ceil(float(nModel)/nProcs)))
-    for pCount in range(int(ceil(float(nModel)/nProcs))):
+    for pCount in range(int(ceil(float(nModel) / nProcs))):
         procs = []
         #if self.verbose():
         tic()
         if self.verbose():
-            print("Jacobian MT:(", pCount*nProcs, "--" ,
-                                  (pCount+1)*nProcs, ") /" , nModel, '... ')
+            print("Jacobian MT:(", pCount * nProcs, "--",
+                  (pCount + 1) * nProcs, ") /", nModel, '... ')
 
-        for i in range(int(pCount*nProcs), int((pCount+1)*nProcs)):
+        for i in range(int(pCount * nProcs), int((pCount + 1) * nProcs)):
             if i < nModel:
                 modelChange = _pygimli_.RVector(model)
                 modelChange[i] *= fak
-                dModel[i] = modelChange[i]-model[i]
+                dModel[i] = modelChange[i] - model[i]
 
                 shm.append(Array('d', len(resp)))
-                procs.append(Process(target=__GLOBAL__response_mt_shm_,
-                                     args=(self, modelChange, shm[i], i)))
+                procs.append(
+                    Process(target=__GLOBAL__response_mt_shm_,
+                            args=(self, modelChange, shm[i], i)))
 
         for i, p in enumerate(procs):
             p.start()
@@ -996,7 +962,7 @@ def __ModellingBase__createJacobian_mt__(self, model, resp):
 
     for i in range(nModel):
         dData = np.array(shm[i]) - resp
-        self._J.setCol(i, dData/dModel[i])
+        self._J.setCol(i, dData / dModel[i])
 
 
 def __ModellingBase__responses_mt__(self, models, respos):
@@ -1029,16 +995,17 @@ def __ModellingBase__responses_mt__(self, models, respos):
     # print("*"*100)
     # print(nModel, nProcs)
     # print("*"*100)
-    for pCount in range(int(ceil(nModel/nProcs))):
+    for pCount in range(int(ceil(nModel / nProcs))):
         procs = []
         if self.verbose():
-            print(pCount*nProcs, "/", nModel)
-        for i in range(int(pCount*nProcs), int((pCount+1)*nProcs)):
+            print(pCount * nProcs, "/", nModel)
+        for i in range(int(pCount * nProcs), int((pCount + 1) * nProcs)):
 
             if i < nModel:
                 shm.append(Array('d', nData))
-                procs.append(Process(target=__GLOBAL__response_mt_shm_,
-                                     args=(self, models[i], shm[i], i)))
+                procs.append(
+                    Process(target=__GLOBAL__response_mt_shm_,
+                            args=(self, models[i], shm[i], i)))
 
         for i, p in enumerate(procs):
             p.start()
@@ -1054,11 +1021,11 @@ def __ModellingBase__responses_mt__(self, models, respos):
 
 
 class ModellingBaseMT__(_pygimli_.ModellingBase):
+
     def __init__(self, mesh=None, dataContainer=None, verbose=False):
         if mesh and dataContainer:
-            _pygimli_.ModellingBase.__init__(self, mesh=mesh,
-                                             dataContainer=dataContainer,
-                                             verbose=verbose)
+            _pygimli_.ModellingBase.__init__(
+                self, mesh=mesh, dataContainer=dataContainer, verbose=verbose)
         elif isinstance(mesh, _pygimli_.Mesh):
             _pygimli_.ModellingBase.__init__(self, mesh=mesh, verbose=verbose)
         elif dataContainer:
@@ -1070,11 +1037,11 @@ class ModellingBaseMT__(_pygimli_.ModellingBase):
         self._J = _pygimli_.RMatrix()
         self.setJacobian(self._J)
 
+
 ModellingBaseMT__.createJacobian_mt = __ModellingBase__createJacobian_mt__
 ModellingBaseMT__.responses = __ModellingBase__responses_mt__
 
 ModellingBase = ModellingBaseMT__
-
 
 ###########################
 # unsorted stuff
@@ -1083,34 +1050,21 @@ ModellingBase = ModellingBaseMT__
 # DEPRECATED
 # _pygimli_.interpolate = _pygimli_.interpolate_GILsave__
 
-from .matrix import *
-
 ############################
 # some backward compatibility
 ############################
-
-def __MeshGetCellMarker__(self):
-    deprecated(msg='Mesh::cellMarker()', hint='Mesh::cellMarkers()')
-    return self.cellMarkers()
-
-def __MeshSetCellMarker__(self, m):
-    deprecated(msg='Mesh::setCellMarker()', hint='Mesh::setCellMarkers()')
-    return self.setCellMarkers(m)
-
-pg.Mesh.cellMarker = __MeshGetCellMarker__
-pg.Mesh.setCellMarker = __MeshSetCellMarker__
 
 
 def __getCoords(coord, dim, ent):
     """Syntactic sugar to find all x-coordinates of a given entity.
     """
-    if isinstance(ent, pg.R3Vector) or isinstance(ent, pg.stdVectorRVector3):
+    if isinstance(ent, R3Vector) or isinstance(ent, stdVectorRVector3):
         return getattr(_pygimli_, coord)(ent)
-    if isinstance(ent, list) and isinstance(ent[0], pg.RVector3):
+    if isinstance(ent, list) and isinstance(ent[0], RVector3):
         return getattr(_pygimli_, coord)(ent)
-    if isinstance(ent, pg.DataContainer):
+    if isinstance(ent, DataContainer):
         return getattr(_pygimli_, coord)(ent.sensorPositions())
-    if isinstance(ent, pg.Mesh):
+    if isinstance(ent, Mesh):
         return getattr(_pygimli_, coord)(ent.positions())
     if isinstance(ent, _pygimli_.stdVectorNodes):
         return np.array([n.pos()[dim] for n in ent])
@@ -1119,7 +1073,9 @@ def __getCoords(coord, dim, ent):
         return ent[:, dim]
 
     # use logger here
-    raise Exception("Don't know how to find the " + coord + "-coordinates of entity:", ent)
+    raise Exception(
+        "Don't know how to find the " + coord + "-coordinates of entity:", ent)
+
 
 def x(instance):
     """Syntactic sugar to find all x-coordinates of a given class instance.
@@ -1129,10 +1085,11 @@ def x(instance):
 
     Parameters
     ----------
-    instance : pg.DataContainer, pg.Mesh, pg.R3Vector, np.array, list(RVector3)
+    instance : DataContainer, Mesh, R3Vector, np.array, list(RVector3)
         Return the associated coordinate positions for the given class instance.
     """
     return __getCoords('x', 0, instance)
+
 
 def y(instance):
     """Syntactic sugar to find all y-coordinates of a given class instance.
@@ -1142,10 +1099,11 @@ def y(instance):
 
     Parameters
     ----------
-    instance : pg.DataContainer, pg.Mesh, pg.R3Vector, np.array, list(RVector3)
+    instance : DataContainer, Mesh, R3Vector, np.array, list(RVector3)
         Return the associated coordinate positions for the given class instance.
     """
     return __getCoords('y', 1, instance)
+
 
 def z(instance):
     """Syntactic sugar to find all z-coordinates of a given class instance.
@@ -1155,11 +1113,17 @@ def z(instance):
 
     Parameters
     ----------
-    instance : pg.DataContainer, pg.Mesh, pg.R3Vector, np.array, list(RVector3)
+    instance : DataContainer, Mesh, R3Vector, np.array, list(RVector3)
         Return the associated coordinate positions for the given class instance.
     """
     return __getCoords('z', 2, instance)
 
+
 def search(what):
     """Utility function to search docstrings for string `what`."""
     np.lookfor(what, module="pygimli", import_modules=False)
+
+# Import from submodules at the end
+from .matrix import (Cm05Matrix, LMultRMatrix, LRMultRMatrix, MultLeftMatrix,
+                     MultLeftRightMatrix, MultRightMatrix, RMultRMatrix)
+from .mesh import Mesh, MeshEntity, Node

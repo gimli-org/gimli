@@ -11,7 +11,6 @@ Writing tests for pygimli
 Please check: https://pytest.org/latest/example/index.html
 """
 
-import platform
 import sys
 from os.path import join, realpath
 
@@ -67,6 +66,8 @@ def test(target=None, show=False, onlydoctests=False, coverage=False,
     old_backend = plt.get_backend()
     if not show:
         plt.switch_backend("Agg")
+    else:
+        plt.ion()
 
     if target:
         if isinstance(target, str):
@@ -101,8 +102,8 @@ def test(target=None, show=False, onlydoctests=False, coverage=False,
         excluded.append("testing")
 
     cmd = ([
-        "-v", "-rsxX", "--color", "yes", "--doctest-modules", "--durations", 5,
-        cwd
+        "-v", "-rsxX", "--color", "yes", "--doctest-modules", "--durations",
+        "5", cwd
     ])
     for directory in excluded:
         cmd.extend(["--ignore", join(cwd, directory)])

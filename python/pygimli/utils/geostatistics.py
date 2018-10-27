@@ -14,6 +14,19 @@ def covarianceMatrixVec(x, y, z=None, I=None, dip=0, strike=0, var=1):
 
     Parameters
     ----------
+    **kwargs
+
+        I : float or list of floats
+            correlation lengths (range) in individual directions
+        dip : float
+            dip angle (in degrees) of major axis (I[0])
+        strike : float
+            strike angle (for 3D)
+
+    Returns
+    -------
+    Cm : np.array (square matrix of size cellCount/nodeCount)
+        covariance matrix
 
     """
     if I is None:
@@ -60,7 +73,7 @@ def covarianceMatrix(mesh, nodes=False, **kwargs):
         I : float or list of floats
             correlation lengths (range) in individual directions
         dip : float
-            dip angle of major axis (I[0])
+            dip angle (in degree) of major axis (I[0])
         strike : float
             strike angle (for 3D)
 

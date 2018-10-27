@@ -228,12 +228,13 @@ def draw1dmodelLU(x, xL, xU, thk=None, **kwargs):
 
 
 def showStitchedModels(models, ax=None, x=None, cmin=None, cmax=None,
-                       islog=True, title=None, zMin=0, zMax=0, zLog=True,
-                       cmap='jet'):
+                       islog=True, title=None, zMin=0, zMax=0, zLog=False,
+                       cmap='jet', **kwargs):
     """Show several 1d block models as (stitched) section."""
     if x is None:
         x = np.arange(len(models))
 
+    topo = kwargs.pop('topo', x*0)
     nlay = int(np.floor((len(models[0]) + 1) / 2.))
 
     fig = None
@@ -243,6 +244,7 @@ def showStitchedModels(models, ax=None, x=None, cmin=None, cmax=None,
     dxmed2 = np.median(np.diff(x)) / 2.
     vals = np.zeros((len(models), nlay))
     patches = []
+    zMinLimit = 9e99
     zMaxLimit = 0
 
     for i, imod in enumerate(models):
@@ -260,7 +262,9 @@ def showStitchedModels(models, ax=None, x=None, cmin=None, cmax=None,
             thk = np.hstack((thk, thk[-1]*3))
             z = np.hstack((0., np.cumsum(thk)))
 
-        zMaxLimit = max(zMaxLimit, z[-1])
+        z = topo[i] - z
+        zMinLimit = min(zMinLimit, z[-1])
+        zMaxLimit = max(zMaxLimit, z[0])
 
         for j in range(nlay):
             rect = Rectangle((x[i] - dxmed2, z[j]),
@@ -276,7 +280,8 @@ def showStitchedModels(models, ax=None, x=None, cmin=None, cmax=None,
     setMappableData(p, vals.ravel(), logScale=islog)
     ax.add_collection(p)
 
-    ax.set_ylim((zMaxLimit, zMin))
+#    ax.set_ylim((zMaxLimit, zMin))
+    ax.set_ylim((zMinLimit, zMaxLimit))
 
     if zLog:
         ax.set_yscale("log", nonposy='clip')

@@ -47,7 +47,7 @@ class DLLEXPORT DataContainer{
 public:
     /*! Simple Constructor, builds an empty data container.*/
     DataContainer();
-
+    
     /*! Constructor, builds a data container and fills the data from a file.
      * See \ref load.
       \param fileName String of the file name
