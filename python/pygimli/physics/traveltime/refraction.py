@@ -643,13 +643,13 @@ class Refraction(MethodManager):
         >>> from pygimli.physics.traveltime import createRAData
         >>>
         >>> x, y = 8, 6
-        >>> mesh = pg.createGrid(x, y).createSecondaryNodes(5)
+        >>> mesh = pg.createGrid(x, y)
         >>> data = createRAData([(0,0)] + [(x, i) for i in range(y)], shotdistance=y+1)
         >>> data.set("t", pg.RVector(data.size(), 1.0))
         >>> rst = Refraction()
         >>> rst.setDataContainer(data)
         Data: Sensors: 7 data: 6
-        >>> rst.setMesh(mesh)
+        >>> rst.setMesh(mesh, 5)
         >>> ax, _ = rst.showRayPaths()
         """
         cbar = None
