@@ -84,6 +84,7 @@ void Dijkstra::setStartNode(Index startNode) {
             distances_[node] = GraphDistInfo(distance, 0);
 
             if ((Index)pathMatrix_.size() <= node){
+                std::cout << "startNodeID:" << startNode << " NodeID:" << node << std::endl;
                 throwError(1, WHERE_AM_I + " Warning! Dijkstra graph invalid" );
             }
             pathMatrix_[node] = Edge_(dummy.second);
@@ -163,7 +164,7 @@ void fillGraph_(Graph & graph, const Node & a, const Node & b, double slowness, 
         newTime = std::min(newTime, oldTime);
 
         // way pair already exist so set time to min and add leftID
-        
+
         NodeDistMap::iterator ita(graph[a.id()].find(b.id()));
         ita->second.cellIDs().insert(leftID);
         ita->second.setTime(newTime);
@@ -171,17 +172,7 @@ void fillGraph_(Graph & graph, const Node & a, const Node & b, double slowness, 
         NodeDistMap::iterator itb(graph[b.id()].find(a.id()));
         itb->second.cellIDs().insert(leftID);
         itb->second.setTime(newTime);
-        // SIndex l = graph[b.id()][a.id()].leftCellID();
-        // SIndex r = graph[b.id()][a.id()].rightCellID();
-
-        // if (l > 0){
-        //     rightID = leftID;
-        //     leftID = l;
-        // } else {
-        //     rightID = r;
-        // }
-        // graph[b.id()][a.id()] = GraphDistInfo(newTime, dist, leftID);    
-        // if (V_)__MS("\t" << l<<" " << leftID << " "<< rightID)
+        
     } else {
         // first time fill
         graph[a.id()][b.id()] = GraphDistInfo(newTime, dist, leftID);   
@@ -191,22 +182,21 @@ void fillGraph_(Graph & graph, const Node & a, const Node & b, double slowness, 
 
 void fillGraph_(Graph & graph, Cell & c, double slowness){
 
-    std::vector< Node * > ni;
+    std::vector< Node * > ni(c.nodes());
 
-    if (c.secondaryNodes().size() > 0){
-        ni = c.allNodes();
-    } else {
-        ni = c.nodes();
-        for (Index i(0); i < c.boundaryCount(); i++){
-            Boundary *b = c.boundary(i);
-            if (b){
-                for (auto & n : b->secondaryNodes()){
-                    ni.push_back(n);
-                }
-            } else {
-                log(Critical, "No boundary found.");
+    for (Index i(0); i < c.boundaryCount(); i++){
+        Boundary *b = c.boundary(i);
+        if (b){
+            for (auto & n : b->secondaryNodes()){
+                ni.push_back(n);
             }
+        } else {
+            log(Critical, "No boundary found.");
         }
+    }
+
+    for (auto & n : c.secondaryNodes()){
+        ni.push_back(n);
     }
 
     for (Index j = 0; j < ni.size()-1; j ++) {
