@@ -212,14 +212,6 @@ Graph TravelTimeDijkstraModelling::createGraph(const RVector & slownessPerCell) 
 
     for (Index i = 0; i < mesh_->cellCount(); i ++) {
         Cell & c = mesh_->cell(i);
-
-        // if (c.id() == 27 || c.id() == 70) {
-        //     V_=true;
-        //     __MS(c.id())
-        // } else {
-        //     V_=false;
-        // }
-
         fillGraph_(graph, c, slownessPerCell[c.id()]);
     }
 
