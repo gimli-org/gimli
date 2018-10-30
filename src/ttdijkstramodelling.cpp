@@ -402,10 +402,8 @@ public:
 
     virtual void calc(Index tNr=0){
         Stopwatch swatch(true);
-        if (debug()){
-            log(Debug, "Thread #" + str(tNr) + ": on CPU " + str(sched_getcpu()) + " slice " + str(start_) + ":" + str(end_));
-        } 
-        
+        log(Debug, "Thread #" + str(tNr) + ": on CPU " + str(sched_getcpu()) + " slice " + str(start_) + ":" + str(end_));
+                
         for (Index shot = start_; shot < end_; shot ++) {
             _dijkstra.setStartNode((*_shotNodeIds)[shot]);
             
@@ -414,7 +412,7 @@ public:
             }
         }
         //__MS(tNr << " " << start_ << "  "<< end_)
-        std::cout << " " << tNr <<  " " << swatch.duration() << std::endl;
+        log(Debug, "time: #" + str(tNr) + " " + str(swatch.duration()) + "s");
     }
 
 protected:
