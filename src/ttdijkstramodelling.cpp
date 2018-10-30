@@ -393,8 +393,7 @@ public:
                         const IndexArray      & shotNodes,
                         const IndexArray      & recNodes,
                         bool verbose)
-    : BaseCalcMT(verbose), 
-      _wayMatrix(&wayM), _dijkstra(dijk), 
+    : BaseCalcMT(verbose), _wayMatrix(&wayM[0]), _dijkstra(dijk), 
       _shotNodeIds(&shotNodes), _recNodeIds(&recNodes){
  
     }
@@ -402,21 +401,24 @@ public:
     virtual ~CreateDijkstraRowMT(){}
 
     virtual void calc(Index tNr=0){
-        // Stopwatch swatch(true);
-        // __MS(start_ << "  "<< end_)
+        Stopwatch swatch(true);
+        if (debug()){
+            log(Debug, "Thread #" + str(tNr) + ": on CPU " + str(sched_getcpu()) + " slice " + str(start_) + ":" + str(end_));
+        } 
+        
         for (Index shot = start_; shot < end_; shot ++) {
             _dijkstra.setStartNode((*_shotNodeIds)[shot]);
             
             for (Index i = 0; i < _recNodeIds->size(); i ++) {
-                (*_wayMatrix)[shot].push_back(_dijkstra.shortestPathTo((*_recNodeIds)[i]));
+                _wayMatrix[shot][i] = _dijkstra.shortestPathTo((*_recNodeIds)[i]);
             }
         }
-        // __MS(start_ << "  "<< end_)
-        // __MS(swatch.duration())
+        //__MS(tNr << " " << start_ << "  "<< end_)
+        std::cout << " " << tNr <<  " " << swatch.duration() << std::endl;
     }
 
 protected:
-    std::vector < std::vector < IndexArray > >  * _wayMatrix;
+    std::vector < IndexArray > * _wayMatrix;
     Dijkstra                _dijkstra;
     const IndexArray        * _shotNodeIds;
     const IndexArray        * _recNodeIds;
@@ -451,6 +453,7 @@ void TravelTimeDijkstraModelling::createJacobian(RSparseMapMatrix & jacobian,
     //** for each shot: vector<  way(shot->geoph) >;
     wayMatrix_.clear();
     wayMatrix_.resize(nShots);
+    for (auto &w : wayMatrix_) w.resize(nRecei);
 
     bool verbose = this->verbose();
     
@@ -466,8 +469,11 @@ void TravelTimeDijkstraModelling::createJacobian(RSparseMapMatrix & jacobian,
     #else
             std::cout << "-std::mt";
     #endif
-            std::cout << ") " << swatch.duration(true);
+            std::cout << ") " << swatch.duration(true) << std::flush;
     }
+    
+    std::cout << std::endl;
+
     distributeCalc(CreateDijkstraRowMT(wayMatrix_, dijkstra_, 
                                        shotNodeId_, receNodeId_, verbose),
                    nShots, nThreads, verbose);

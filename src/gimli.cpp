@@ -347,6 +347,7 @@ void log(LogType type, const std::string & msg){
     }
 #endif
 
+    if (type == Debug && !debug()) return;
     std::cout << logStr_(type) << ": " << msg << std::endl;
     
 }
