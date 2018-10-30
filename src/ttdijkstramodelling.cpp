@@ -410,6 +410,8 @@ public:
     virtual ~CreateDijkstraRowMT(){}
 
     virtual void calc(Index tNr=0){
+        // Stopwatch swatch(true);
+        // __MS(start_ << "  "<< end_)
         for (Index shot = start_; shot < end_; shot ++) {
             _dijkstra.setStartNode((*_shotNodeIds)[shot]);
             
@@ -417,6 +419,8 @@ public:
                 (*_wayMatrix)[shot].push_back(_dijkstra.shortestPathTo((*_recNodeIds)[i]));
             }
         }
+        // __MS(start_ << "  "<< end_)
+        // __MS(swatch.duration())
     }
 
 protected:
@@ -435,7 +439,6 @@ void TravelTimeDijkstraModelling::createJacobian(const RVector & slowness) {
 void TravelTimeDijkstraModelling::createJacobian(RSparseMapMatrix & jacobian,
                                                  const RVector & slowness) {
     Stopwatch swatch(true);
-    
     if (background_ < TOLERANCE) {
         std::cout << "Background: " << background_ << " ->" << 1e16 << std::endl;
         background_ = 1e16;
@@ -473,7 +476,6 @@ void TravelTimeDijkstraModelling::createJacobian(RSparseMapMatrix & jacobian,
     #endif
             std::cout << ") " << swatch.duration(true);
     }
-
     distributeCalc(CreateDijkstraRowMT(wayMatrix_, dijkstra_, 
                                        shotNodeId_, receNodeId_, verbose),
                    nShots, nThreads, verbose);
@@ -488,7 +490,6 @@ void TravelTimeDijkstraModelling::createJacobian(RSparseMapMatrix & jacobian,
     //         wayMatrix_[shot].push_back(dijkstra_.shortestPathTo(receNodeId_[i]));
     //     }
     // }
-
 
     for (Index dataIdx = 0; dataIdx < nData; dataIdx ++) {
         Index s = shotsInv_[Index((*dataContainer_)("s")[dataIdx])];
