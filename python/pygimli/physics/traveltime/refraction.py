@@ -301,7 +301,7 @@ class Refraction(MethodManager):
         self.fop.setMesh(self.mesh)
         self.fop.regionManager().setConstraintType(1)
 
-        if refine:
+        if refine is True:
             pg.warn("argument refine is deprecated .. use secnodes instead")
             secNodes = 1
 
@@ -629,10 +629,41 @@ class Refraction(MethodManager):
         **kwargs : type
             Additional arguments passed to LineCollection (alpha, linewidths,
             color, linestyles).
+
+        Returns
+        -------
+        ax : matplotlib.axes object
+        cbar : matplotlib.colorbar object (only if model is provided)
+
+        Examples
+        --------
+        >>> # No reason to import matplotlib
+        >>> import pygimli as pg
+        >>> from pygimli.physics import Refraction
+        >>> from pygimli.physics.traveltime import createRAData
+        >>>
+        >>> x, y = 8, 6
+        >>> mesh = pg.createGrid(x, y)
+        >>> data = createRAData([(0,0)] + [(x, i) for i in range(y)], shotdistance=y+1)
+        >>> data.set("t", pg.RVector(data.size(), 1.0))
+        >>> rst = Refraction()
+        >>> rst.setDataContainer(data)
+        Data: Sensors: 7 data: 6
+        >>> rst.setMesh(mesh, 5)
+        >>> ax, _ = rst.showRayPaths()
         """
+        cbar = None
+        if model is None and self.velocity is None:
+            pg.info("No previous inversion result found and no model given.",
+                    "Using homogeneous slowness model.")
+                    
+            self.velocity = pg.RVector(self.mesh.cellCount(), 1.0)
+            self.fop.createJacobian(1./self.velocity)
         if model is not None:
-            if not np.allclose(model, self.velocity):
-                self.fop.createJacobian(1/model)
+            if self.velocity is not None:
+                if not np.allclose(model, self.velocity):
+                    self.fop.createJacobian(1/model)
+
             ax, cbar = self.showResult(ax=ax, val=model)
             _ = kwargs.setdefault("color", "w")
             _ = kwargs.setdefault("alpha", 0.5)
@@ -644,15 +675,17 @@ class Refraction(MethodManager):
         _, shots = np.unique(self.dataContainer("s"), return_inverse=True)
         _, receivers = np.unique(self.dataContainer("g"), return_inverse=True)
 
+
         # Collecting way segments for all shot/receiver combinations
         segs = []
         for s, g in zip(shots, receivers):
             wi = self.fop.way(s, g)
-            points = self.fop.mesh().positions()[wi]
+            points = self.fop.mesh().positions(withSecNodes=True)[wi]
             segs.append(np.column_stack((pg.x(points), pg.y(points))))
 
         line_segments = LineCollection(segs, **kwargs)
         ax.add_collection(line_segments)
+        return ax, cbar
 
     def showCoverage(self, ax=None, name='coverage', **kwargs):
         """shows the ray coverage in logscale"""

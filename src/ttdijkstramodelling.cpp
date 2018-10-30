@@ -31,6 +31,7 @@
 #include "numericbase.h"
 #include "regionManager.h"
 #include "sparsematrix.h"
+#include "calculateMultiThread.h"
 
 #include <vector>
 #include <queue>
@@ -42,11 +43,21 @@ Dijkstra::Dijkstra(const Graph & graph) : graph_(graph) {
     pathMatrix_.resize(graph.size());
 }
 
+double Dijkstra::distance(Index root, Index node) {
+    this->setStartNode(root);
+    return distance(node);
+}
+
 double Dijkstra::distance(Index node) { 
     return distances_[node].time(); 
 }
 
-RVector Dijkstra::distances(bool withSecNodes) const {
+RVector Dijkstra::distances(Index root) {
+    this->setStartNode(root);
+    return distances();
+}
+
+RVector Dijkstra::distances() const {
     RVector ret(0);
     for (auto const & it: distances_){
         ret.push_back(it.second.time());
@@ -375,6 +386,43 @@ const IndexArray & TravelTimeDijkstraModelling::way(Index sht, Index rec) const{
     return wayMatrix_[sht][rec];
 }
 
+class CreateDijkstraRowMT : public GIMLI::BaseCalcMT{
+public:
+    CreateDijkstraRowMT(std::vector < std::vector < IndexArray > > & wayM,
+                        const Dijkstra        & dijk,
+                        const IndexArray      & shotNodes,
+                        const IndexArray      & recNodes,
+                        bool verbose)
+    : BaseCalcMT(verbose), 
+      _wayMatrix(&wayM), _dijkstra(dijk), 
+      _shotNodeIds(&shotNodes), _recNodeIds(&recNodes){
+ 
+    }
+
+    virtual ~CreateDijkstraRowMT(){}
+
+    virtual void calc(Index tNr=0){
+        // Stopwatch swatch(true);
+        // __MS(start_ << "  "<< end_)
+        for (Index shot = start_; shot < end_; shot ++) {
+            _dijkstra.setStartNode((*_shotNodeIds)[shot]);
+            
+            for (Index i = 0; i < _recNodeIds->size(); i ++) {
+                (*_wayMatrix)[shot].push_back(_dijkstra.shortestPathTo((*_recNodeIds)[i]));
+            }
+        }
+        // __MS(start_ << "  "<< end_)
+        // __MS(swatch.duration())
+    }
+
+protected:
+    std::vector < std::vector < IndexArray > >  * _wayMatrix;
+    Dijkstra                _dijkstra;
+    const IndexArray        * _shotNodeIds;
+    const IndexArray        * _recNodeIds;
+};
+
+
 void TravelTimeDijkstraModelling::createJacobian(const RVector & slowness) {
     RSparseMapMatrix * jacobian = dynamic_cast < RSparseMapMatrix * > (jacobian_);
     this->createJacobian(*jacobian, slowness);
@@ -382,6 +430,7 @@ void TravelTimeDijkstraModelling::createJacobian(const RVector & slowness) {
 
 void TravelTimeDijkstraModelling::createJacobian(RSparseMapMatrix & jacobian,
                                                  const RVector & slowness) {
+    Stopwatch swatch(true);
     if (background_ < TOLERANCE) {
         std::cout << "Background: " << background_ << " ->" << 1e16 << std::endl;
         background_ = 1e16;
@@ -403,13 +452,36 @@ void TravelTimeDijkstraModelling::createJacobian(RSparseMapMatrix & jacobian,
     wayMatrix_.clear();
     wayMatrix_.resize(nShots);
 
-    for (Index shot = 0; shot < nShots; shot ++) {
-        dijkstra_.setStartNode(shotNodeId_[shot]);
+    bool verbose = this->verbose();
+    
+    Index nThreads = getEnvironment("GIMLI_NUM_THREADS", 0, verbose_);
+    if (nThreads > 0) this->setThreadCount(nThreads);
 
-        for (Index i = 0; i < nRecei; i ++) {
-            wayMatrix_[shot].push_back(dijkstra_.shortestPathTo(receNodeId_[i]));
-        }
+    nThreads = this->threadCount();
+
+    if (verbose){
+        std::cout << "J(" << numberOfCPU() << "/" << nThreads; //**check!!!
+    #if USE_BOOST_THREAD
+            std::cout << "-boost::mt";
+    #else
+            std::cout << "-std::mt";
+    #endif
+            std::cout << ") " << swatch.duration(true);
     }
+    distributeCalc(CreateDijkstraRowMT(wayMatrix_, dijkstra_, 
+                                       shotNodeId_, receNodeId_, verbose),
+                   nShots, nThreads, verbose);
+
+    if (verbose){
+        std::cout << "/" << swatch.duration(true);
+    }
+    // for (Index shot = 0; shot < nShots; shot ++) {
+    //     dijkstra_.setStartNode(shotNodeId_[shot]);
+
+    //     for (Index i = 0; i < nRecei; i ++) {
+    //         wayMatrix_[shot].push_back(dijkstra_.shortestPathTo(receNodeId_[i]));
+    //     }
+    // }
 
     for (Index dataIdx = 0; dataIdx < nData; dataIdx ++) {
         Index s = shotsInv_[Index((*dataContainer_)("s")[dataIdx])];
@@ -445,54 +517,10 @@ void TravelTimeDijkstraModelling::createJacobian(RSparseMapMatrix & jacobian,
             for (const auto &c : neighborCells){
                 jacobian[dataIdx][c->marker()] += edgeLength / neighborCells.size();
             } 
-
-//             continue;
-
-
-//             intersectionSet(neighborCells, mesh_->node(aId).cellSet(), mesh_->node(bId).cellSet());
-//             // __MS(aId << " " << bId)
-
-//             if (!neighborCells.empty()) {
-//                 double mins = 1e16, dEqual = 1e-3;
-//                 int nfast = 0;
-//                 /*! first detect cells with minimal slowness */
-//                 for (std::set < Cell * >::iterator it = neighborCells.begin(); it != neighborCells.end(); it ++) {
-//                     slo = slowPerCell[(*it)->id()];
-//                     if (std::fabs(slo / mins -1) < dEqual) nfast++; // check for equality
-//                     else if (slo < mins) {
-//                         nfast = 1;
-//                         mins = slo;
-//                     }
-//                 }
-                
-//                 // __MS(aId << " " << bId << "" << slo)
-
-//                 /*! now write edgelength divided by two into jacobian matrix */
-//                 for (std::set < Cell * >::iterator it = neighborCells.begin(); it != neighborCells.end(); it ++) {
-//                     int marker = (*it)->marker();
-//                     if (nfast > 0) {
-//                         slo = slowPerCell[(*it)->id()];
-//                         if ((slo > 0.0) && (std::fabs(slo / mins - 1) < dEqual)) {
-//                             if (marker > (int)nModel - 1) {
-//                                 std::cerr << "Warning! request invalid model cell: " << *(*it) << std::endl;
-//                             } else {
-
-//                                 if (marker <= MARKER_FIXEDVALUE_REGION){
-//                                     // neighbor is fixed region
-// //                                         SIndex regionMarker = -(marker - MARKER_FIXEDVALUE_REGION);
-// //                                         double val = regionManager_->region(regionMarker)->fixValue();
-//                                 } else {
-//                                     __MS(aId << " " << bId << " " << marker << " "<< edgeLength / nfast)
-//                                     jacobian[dataIdx][marker] += edgeLength / nfast; //nur wohin?? CA nur wohin was??
-//                                 }
-//                             }
-//                         }
-//                     }
-//                 }
-//             } else { // neighborCells.empty()
-//                 std::cerr << WHERE_AM_I << " no neighbor cells found for edge: " << aId << " " << bId << std::endl;
-//             }
         }
+    }
+    if (verbose){
+        std::cout << "/" << swatch.duration(true) << " ";
     }
 }
 

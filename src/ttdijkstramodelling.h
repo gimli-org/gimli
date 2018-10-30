@@ -80,12 +80,21 @@ public:
 
     void setStartNode(Index startNode);
 
-    IndexArray shortestPathTo(Index node) const;
+    /*!Set a root note for all distance calculations.*/
+    IndexArray shortestPathTo(Index root) const;
 
+    /*!Distance from root to node.*/
+    double distance(Index root, Index node);
+    
+    /*!Distance to node to the last known root.*/
     double distance(Index node); 
 
-    RVector distances(bool withSecNodes=false) const;
-
+    /*!All distances to root.*/
+    RVector distances(Index root);
+    
+    /*!All distances from to last known root.*/
+    RVector distances() const;
+    
     Graph & graph() {
         return graph_;
     }
@@ -174,7 +183,6 @@ public:
 
     /*! Read only access to the recent dijktra. */
     const Dijkstra & dijkstra() const { return dijkstra_; };
-
 
 protected:
 
