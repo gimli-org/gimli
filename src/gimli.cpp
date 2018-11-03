@@ -18,6 +18,7 @@
 
 #include "gimli.h"
 
+
 #include <cerrno>
 #include <cstring>
 #include <fstream>
@@ -33,6 +34,14 @@
     #else
         #include <openblas/cblas.h>
     #endif
+#endif
+
+#if USE_BOOST_THREAD
+    #include <boost/thread.hpp>
+    boost::mutex __GIMLILogWriteMutex__;
+#else
+    #include <mutex>
+    std::mutex __GIMLILogWriteMutex__;
 #endif
 
 namespace GIMLI{
@@ -320,11 +329,19 @@ std::string logStr_(LogType type){
 }
 
 #ifdef PYTHON_FOUND
-#define HAVE_ROUND 1
-#include <Python.h>
+    #define HAVE_ROUND 1
+    #include <Python.h>
 #endif
 
+
 void log(LogType type, const std::string & msg){
+#if USE_BOOST_THREAD
+    #ifndef PYGIMLI_CAST // fails because of boost threads and clang problems
+        boost::mutex::scoped_lock lock(__GIMLILogWriteMutex__);
+    #endif
+#else
+    std::unique_lock < std::mutex > lock(__GIMLILogWriteMutex__);
+#endif
 
 #if defined(PYTHON_FOUND) && not defined(WIN32)
     //#if defined(RUN_FROM_PY) && defined(PYTHON_FOUND) && not defined(WIN32)

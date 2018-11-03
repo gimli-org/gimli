@@ -107,8 +107,8 @@ if __name__ == '__main__':
 
     pg.setDeepDebug(0)
 
-    t = TestMeshGenerator()
-    t.test_MeshCreateSecNodes()
-    exit()
+    # t = TestMeshGenerator()
+    # t.test_MeshCreateSecNodes()
+    # exit()
 
     unittest.main()
