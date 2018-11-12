@@ -78,7 +78,9 @@ data = ra.simulate(mesh, 1.0 / vp, scheme, noiseLevel=0.001, noiseAbs=0.001,
 
 ra = Refraction(data)
 ra.showData()
-ra.createMesh(depth=30., paraMaxCellSize=5.0)  # can be omitted
+ra.createMesh(depth=30., paraMaxCellSize=5.0, secNodes=1)  # can be omitted
+# ra.fop.createJacobian(np.ones(ra.fop.regionManager().parameterCount()))
+# exit()
 vest = ra.invert()  # estimated velocity distribution
 
 ###############################################################################

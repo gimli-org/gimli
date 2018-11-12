@@ -136,7 +136,7 @@ fig, ax = plt.subplots(figsize=(10, 5))
 drawMesh(ax, mesh)
 ax.set_xlabel('x [m]')
 ax.set_ylabel('y [m]')
-drawField(ax, mesh, times, cmap='Spectral', fillContour=True)
+pg.show(mesh, times, cMap='Spectral', fillContour=True, ax=ax)
 drawStreamLines(ax, mesh, -times, nx=50, ny=50)
 
 ###############################################################################

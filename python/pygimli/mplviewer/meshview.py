@@ -10,7 +10,7 @@ import numpy as np
 import pygimli as pg
 from pygimli.misc import streamline
 
-from .colorbar import autolevel, cmapFromName, createColorBar, updateColorBar
+from .colorbar import autolevel, createColorBar, updateColorBar
 from .utils import updateAxes as updateAxes_
 
 
@@ -296,7 +296,7 @@ def drawMesh(ax, mesh, **kwargs):
 
 
 def drawModel(ax, mesh, data=None, logScale=True, cMin=None, cMax=None,
-              cmap=None, xlabel=None, ylabel=None, verbose=False,
+              xlabel=None, ylabel=None, verbose=False,
               tri=False, rasterized=False, **kwargs):
     """Draw a 2d mesh and color the cell by the data.
 
@@ -337,28 +337,22 @@ def drawModel(ax, mesh, data=None, logScale=True, cMin=None, cMax=None,
     >>> drawModel(ax, mesh, data)
     <matplotlib.collections.PolyCollection object at ...>
     """
+    # deprecated .. remove me
+    if 'cMap' in kwargs or 'cmap' in kwargs:
+        pg.warn('cMap|cmap argument is Deprecated for draw functions use show or custumize a colorbar')
+    # deprecated .. remove me
+
     if mesh.nodeCount() == 0:
         pg.error("drawModel: The mesh is empty.", mesh)
 
     if tri:
         gci = drawMPLTri(ax, mesh, data,
-                         cMin=cMin, cMax=cMax, cmap=cmap, logScale=logScale,
+                         cMin=cMin, cMax=cMax, logScale=logScale,
                          **kwargs)
-
     else:
         gci = pg.mplviewer.createMeshPatches(ax, mesh, verbose=verbose,
                                              rasterized=rasterized)
         ax.add_collection(gci)
-
-        cMap = kwargs.pop('cMap', None)
-        if cMap is not None:
-            cmap = cMap
-
-        if cmap is not None:
-            if isinstance(cmap, str):
-                gci.set_cmap(cmapFromName(cmap))
-            else:
-                gci.set_cmap(cmap)
 
         if data is None:
             data = pg.RVector(mesh.cellCount())
@@ -796,7 +790,7 @@ def createTriangles(mesh, data=None):
 
 
 def drawMPLTri(ax, mesh, data=None,
-               cMin=None, cMax=None, cmap=None, logScale=True,
+               cMin=None, cMax=None, logScale=True,
                **kwargs):
     """Draw mesh based scalar field using matplotlib triplot.
 
@@ -824,12 +818,18 @@ def drawMPLTri(ax, mesh, data=None,
     --------
     >>>
     """
+    # deprecated remove me
+    if 'cMap' in kwargs or 'cmap' in kwargs:
+        pg.warn('cMap|cmap argument is Deprecated for draw functions use show or custumize a colorbar')
+    # deprecated remove me
+
     x, y, triangles, z, _ = createTriangles(mesh, data)
 
     gci = None
 
     levels = kwargs.pop('levels', [])
     nLevs = kwargs.pop('nLevs', 5)
+
     if len(levels) == 0:
         levels = autolevel(data, nLevs, zmin=cMin, zmax=cMax, logScale=logScale)
 
@@ -855,17 +855,21 @@ def drawMPLTri(ax, mesh, data=None,
         else:
 
             fillContour = kwargs.pop('fillContour', True)
+            contourLines = kwargs.pop('withContourLines', True)
+            
             if fillContour:
-                gci = ax.tricontourf(x, y, triangles, z, levels=levels,
+                # add outer climits to fill lower and upper too
+                l = np.array(levels)
+
+                if min(z) < min(levels):
+                    l = np.hstack([min(z), l])
+
+                if max(z) > max(levels):
+                    l = np.hstack([l, max(z)])
+
+                gci = ax.tricontourf(x, y, triangles, z, levels=l,
                                      **kwargs)
-
-            omitLines = kwargs.pop('omitLines', False)
-            if omitLines:
-                print("don't use omitLines any more -> "
-                      "change to withContourLines=False")
-
-            withContourLines = kwargs.pop('withContourLines', True)
-            if withContourLines:
+            if contourLines:
                 ax.tricontour(x, y, triangles, z, levels=levels,
                               colors=kwargs.pop('colors', ['0.5']), **kwargs)
     else:
@@ -876,12 +880,6 @@ def drawMPLTri(ax, mesh, data=None,
     if gci and cMin and cMax:
         gci.set_clim(cMin, cMax)
 
-    if cmap is not None:
-        if cmap == 'b2r':
-            gci.set_cmap(cmapFromName('b2r'))
-        else:
-            gci.set_cmap(cmap)
-
     if kwargs.pop('fitView', True):
         ax.set_xlim(mesh.xmin(), mesh.xmax())
         ax.set_ylim(mesh.ymin(), mesh.ymax())
@@ -891,7 +889,7 @@ def drawMPLTri(ax, mesh, data=None,
     return gci
 
 
-def drawField(ax, mesh, data=None, cmap=None, **kwargs):
+def drawField(ax, mesh, data=None, **kwargs):
     """Draw a mesh-related (node or cell based) field onto a given MPL axis.
 
         Only for triangle/quadrangle meshes currently
@@ -930,7 +928,7 @@ def drawField(ax, mesh, data=None, cmap=None, **kwargs):
     >>> drawField(ax, mesh, data)
     <matplotlib.tri.tricontour.TriContourSet ...>
     """
-    return drawMPLTri(ax, mesh, data, cmap=cmap, **kwargs)
+    return drawMPLTri(ax, mesh, data, **kwargs)
 
 
 def drawStreamLines(ax, mesh, u, nx=25, ny=25, **kwargs):

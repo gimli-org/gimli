@@ -223,14 +223,6 @@ Graph TravelTimeDijkstraModelling::createGraph(const RVector & slownessPerCell) 
 
     for (Index i = 0; i < mesh_->cellCount(); i ++) {
         Cell & c = mesh_->cell(i);
-
-        // if (c.id() == 27 || c.id() == 70) {
-        //     V_=true;
-        //     __MS(c.id())
-        // } else {
-        //     V_=false;
-        // }
-
         fillGraph_(graph, c, slownessPerCell[c.id()]);
     }
 
@@ -401,8 +393,7 @@ public:
                         const IndexArray      & shotNodes,
                         const IndexArray      & recNodes,
                         bool verbose)
-    : BaseCalcMT(verbose), 
-      _wayMatrix(&wayM), _dijkstra(dijk), 
+    : BaseCalcMT(verbose), _wayMatrix(&wayM[0]), _dijkstra(dijk), 
       _shotNodeIds(&shotNodes), _recNodeIds(&recNodes){
  
     }
@@ -410,17 +401,22 @@ public:
     virtual ~CreateDijkstraRowMT(){}
 
     virtual void calc(Index tNr=0){
+        Stopwatch swatch(true);
+        log(Debug, "Thread #" + str(tNr) + ": on CPU " + str(sched_getcpu()) + " slice " + str(start_) + ":" + str(end_));
+                
         for (Index shot = start_; shot < end_; shot ++) {
             _dijkstra.setStartNode((*_shotNodeIds)[shot]);
             
             for (Index i = 0; i < _recNodeIds->size(); i ++) {
-                (*_wayMatrix)[shot].push_back(_dijkstra.shortestPathTo((*_recNodeIds)[i]));
+                _wayMatrix[shot][i] = _dijkstra.shortestPathTo((*_recNodeIds)[i]);
             }
         }
+        //__MS(tNr << " " << start_ << "  "<< end_)
+        log(Debug, "time: #" + str(tNr) + " " + str(swatch.duration()) + "s");
     }
 
 protected:
-    std::vector < std::vector < IndexArray > >  * _wayMatrix;
+    std::vector < IndexArray > * _wayMatrix;
     Dijkstra                _dijkstra;
     const IndexArray        * _shotNodeIds;
     const IndexArray        * _recNodeIds;
@@ -435,7 +431,6 @@ void TravelTimeDijkstraModelling::createJacobian(const RVector & slowness) {
 void TravelTimeDijkstraModelling::createJacobian(RSparseMapMatrix & jacobian,
                                                  const RVector & slowness) {
     Stopwatch swatch(true);
-    
     if (background_ < TOLERANCE) {
         std::cout << "Background: " << background_ << " ->" << 1e16 << std::endl;
         background_ = 1e16;
@@ -456,6 +451,7 @@ void TravelTimeDijkstraModelling::createJacobian(RSparseMapMatrix & jacobian,
     //** for each shot: vector<  way(shot->geoph) >;
     wayMatrix_.clear();
     wayMatrix_.resize(nShots);
+    for (auto &w : wayMatrix_) w.resize(nRecei);
 
     bool verbose = this->verbose();
     
@@ -471,8 +467,10 @@ void TravelTimeDijkstraModelling::createJacobian(RSparseMapMatrix & jacobian,
     #else
             std::cout << "-std::mt";
     #endif
-            std::cout << ") " << swatch.duration(true);
+            std::cout << ") " << swatch.duration(true) << std::flush;
     }
+    
+    std::cout << std::endl;
 
     distributeCalc(CreateDijkstraRowMT(wayMatrix_, dijkstra_, 
                                        shotNodeId_, receNodeId_, verbose),
@@ -488,7 +486,6 @@ void TravelTimeDijkstraModelling::createJacobian(RSparseMapMatrix & jacobian,
     //         wayMatrix_[shot].push_back(dijkstra_.shortestPathTo(receNodeId_[i]));
     //     }
     // }
-
 
     for (Index dataIdx = 0; dataIdx < nData; dataIdx ++) {
         Index s = shotsInv_[Index((*dataContainer_)("s")[dataIdx])];

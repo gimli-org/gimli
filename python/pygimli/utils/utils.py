@@ -17,6 +17,9 @@ class ProgressBar(object):
     Animated text-based progressbar for intensive loops. Should work in the
     console and in the IPython Notebook.
 
+    TODO:
+     * optional: 'estimated time' instead of 'x of y complete'
+
     Parameters
     ----------
     its : int

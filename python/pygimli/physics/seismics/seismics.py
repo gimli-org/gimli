@@ -10,7 +10,7 @@ import pygimli as pg
 import pygimli.solver
 
 
-def ricker(t, f, t0=0.0):
+def ricker(f, t, t0=0.0):
     """
     Create Ricker wavelet.
 
@@ -18,11 +18,11 @@ def ricker(t, f, t0=0.0):
 
     Parameters
     ----------
-    t : array [float]
-        Time base definition
-
     f : float
         Frequency of the wavelet in Hz
+    
+    t : array [float]
+        Time base definition
 
     t0 : float
         Offset time. Use 1/f to move the wavelet to start nearly from zero.
@@ -34,12 +34,12 @@ def ricker(t, f, t0=0.0):
 
     Examples
     --------
-    Create 100 Hz Wavelet inside 1000 Hz sampled signal of length 0.1s.
+    Create a 100 Hz Wavelet inside 1000 Hz sampled signal of length 0.1s.
 
-    >>> from pygimli.physics.seismics import ricker
     >>> import matplotlib.pyplot as plt
     >>> import numpy as np
-    >>> sampleFrequenz = 1000 # Hz
+    >>> from pygimli.physics.seismics import ricker
+    >>> sampleFrequenz = 1000 #Hz
     >>> t = np.arange(0, 0.1, 1./sampleFrequenz)
     >>> r = ricker(100., t, 1./100)
     >>> lines = plt.plot(t,r,'-x')
@@ -149,7 +149,6 @@ def drawSeismogramm(ax, mesh, u, dt, ids=None, pos=None, i=None):
     for iw, n in enumerate(ids):
         pos = mesh.node(n).pos()
         ax.plot(pos[0], 0.05, '^', color='black')
-        print(pos)
         trace = pg.cat(pg.RVector(0), u[:(i+1), n])
 #        print(i+1, n)
 #        print(trace, (max(pg.abs(trace))))
@@ -253,6 +252,8 @@ def solvePressureWave(mesh, velocities, times, sourcePos, uSource, verbose):
     timeIter3 = np.zeros(len(times))
     timeIter4 = np.zeros(len(times))
 
+    progress = pg.utils.ProgressBar(its=len(times), width=40, sign='+')    
+
     for n in range(1, len(times)):
         u[n - 1, sourceID] = uSource[n - 1]
 
@@ -282,22 +283,11 @@ def solvePressureWave(mesh, velocities, times, sourcePos, uSource, verbose):
 
         t1 = swatch.duration(True)
 
-        if verbose and (n % verbose == 0):
-            print(str(n) + "/" + str(len(times)),
-                  times[n],
-                  dt,
-                  t1,
-                  min(u[n]),
-                  max(u[n]))
+        if verbose:
+            progress(n)
 
-#    plt.figure()
-#    plt.plot(timeIter1, label='Ass:1')
-#    plt.plot(timeIter2, label='Sol:1')
-#    plt.plot(timeIter3, label='Ass:2')
-#    plt.plot(timeIter4, label='Sol:2')
-#    plt.legend()
-#    plt.figure()
     return u
+
 
 if __name__ == "__main__":
     # from pygimli.physics.seismics import drawWiggle  # alternatively ricker
