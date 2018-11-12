@@ -339,7 +339,7 @@ def drawModel(ax, mesh, data=None, logScale=True, cMin=None, cMax=None,
     """
     # deprecated .. remove me
     if 'cMap' in kwargs or 'cmap' in kwargs:
-        pg.warning('cMap|cmap argument is Deprecated for draw functions use show or custumize a colorbar')
+        pg.warn('cMap|cmap argument is Deprecated for draw functions use show or custumize a colorbar')
     # deprecated .. remove me
 
     if mesh.nodeCount() == 0:
@@ -820,7 +820,7 @@ def drawMPLTri(ax, mesh, data=None,
     """
     # deprecated remove me
     if 'cMap' in kwargs or 'cmap' in kwargs:
-        pg.warning('cMap|cmap argument is Deprecated for draw functions use show or custumize a colorbar')
+        pg.warn('cMap|cmap argument is Deprecated for draw functions use show or custumize a colorbar')
     # deprecated remove me
 
     x, y, triangles, z, _ = createTriangles(mesh, data)
