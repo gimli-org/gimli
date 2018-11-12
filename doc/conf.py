@@ -23,6 +23,8 @@ import pygimli
 from pygimli.utils import boxprint
 from sidebar_gallery import make_gallery
 
+import pkg_resources
+
 # for doc rendering on headless machines (jenkins server)
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -57,7 +59,9 @@ needs_sphinx = '1.3' # and lower 1.6
 deps = ['sphinxcontrib-programoutput',
         'sphinxcontrib-bibtex',
         'numpydoc']
-modules = [str(m).rsplit()[0] for m in pip.get_installed_distributions()]
+
+# check for p.version too
+modules = [p.project_name for p in pkg_resources.working_set]
 
 req = []
 for dep in deps:
@@ -68,7 +72,8 @@ if req:
           "Try: sudo pip install %s.\n" % (' '.join(req)) + \
           "Or install all dependencies with: pip install -r requirements.txt\n" + \
           "You can install them all in userspace by adding the --user flag."
-    print(pip.get_installed_distributions())
+    print(pkg_resources.working_set)
+    #print(pip.get_installed_distributions())
     raise ImportError(msg)
 
 # Add any Sphinx extension module names here, as strings.
