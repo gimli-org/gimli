@@ -60,6 +60,7 @@ deps = ['sphinxcontrib-programoutput',
         'sphinxcontrib-bibtex',
         'numpydoc']
 
+<<<<<<< Updated upstream
 # check for p.version too
 modules = [p.project_name for p in pkg_resources.working_set]
 
@@ -75,6 +76,24 @@ if req:
     print(pkg_resources.working_set)
     #print(pip.get_installed_distributions())
     raise ImportError(msg)
+=======
+try:
+    modules = [str(m).rsplit()[0] for m in pip.get_installed_distributions()]
+
+    req = []
+    for dep in deps:
+        if dep not in modules:
+            req.append(dep)
+    if req:
+        msg = "Sorry, there are missing dependencies to build the docs.\n" + \
+            "Try: sudo pip install %s.\n" % (' '.join(req)) + \
+            "Or install all dependencies with: pip install -r requirements.txt\n" + \
+            "You can install them all in userspace by adding the --user flag."
+        print(pip.get_installed_distributions())
+        raise ImportError(msg)
+except:
+    pass
+>>>>>>> Stashed changes
 
 # Add any Sphinx extension module names here, as strings.
 # They can be extensions coming with Sphinx (named 'sphinx.ext.*')
@@ -83,9 +102,9 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.viewcode',
               'sphinx.ext.autosummary',
               'sphinx.ext.mathjax',
-              'sphinx.ext.doctest',
               'sphinx.ext.intersphinx',
               'sphinx.ext.imgconverter',
+              'sphinx.ext.autosectionlabel',
               'matplotlib.sphinxext.only_directives',
               'matplotlib.sphinxext.plot_directive',
               'doxylink'
@@ -159,6 +178,13 @@ numpydoc_use_plots = True
 # MPL plot directive settings
 plot_formats = [('png', 96), ('pdf', 96)]
 plot_include_source = True
+plot_html_show_source_link = False
+plot_pre_code = """
+import pygimli as pg
+import numpy as np
+import matplotlib.pyplot as plt
+mesh = pg.createGrid([1,2],[1,2])
+"""
 
 
 # The suffix of source filenames.
