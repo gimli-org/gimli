@@ -44,12 +44,6 @@ Node.__str__ = Node_str
 Mesh.__str__ = Mesh_str
 MeshEntity.__str__ = MeshEntity_str
 
-# For Jupyer Notebook use
-Node.__repr__ = Node_str
-Mesh.__repr__ = Mesh_str
-MeshEntity.__repr__ = MeshEntity_str
-
-
 def __MeshGetCellMarker__(self):
     deprecated(msg='Mesh::cellMarker()', hint='Mesh::cellMarkers()')
     return self.cellMarkers()
