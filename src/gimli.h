@@ -209,8 +209,9 @@ static const uint8 MESH_SHAPE_PYRAMID_RTTI     = 234;
 
 static const uint8 GIMLI_MATRIXBASE_RTTI        = 0;
 static const uint8 GIMLI_MATRIX_RTTI            = 1;
-static const uint8 GIMLI_SPARSEMAPMATRIX_RTTI   = 2;
-static const uint8 GIMLI_BLOCKMATRIX_RTTI       = 3;
+static const uint8 GIMLI_SPARSE_MAP_MATRIX_RTTI = 2;
+static const uint8 GIMLI_SPARSE_CRS_MATRIX_RTTI = 3;
+static const uint8 GIMLI_BLOCKMATRIX_RTTI       = 4;
 
 /*! Flag load/save Ascii or binary */
 enum IOFormat{Ascii, Binary};

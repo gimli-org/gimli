@@ -22,11 +22,10 @@
 #include "gimli.h"
 
 #ifndef PYTEST
-#include "sparsematrix.h"
+    #include "sparsematrix.h"
 #endif
 
 #include "matrix.h"
-
 
 namespace GIMLI{
 
@@ -91,6 +90,11 @@ public:
     }
 
     std::vector< MatrixBase * > & matrices() { return matrices_; }
+
+    /*! Syntaxtic sugar for addMatrix */
+    Index add(MatrixBase * matrix, Index rowStart, Index colStart){
+        return addMatrix(matrix, rowStart, colStart);
+    }
 
     /*!Add an existing matrix to this block matrix and return a unique index.
      * The Matrix will not be used until the matrix index has been assigned to a
@@ -188,6 +192,40 @@ public:
     virtual void save(const std::string & filename) const {
         std::cerr << WHERE_AM_I << "WARNING " << " don't save blockmatrix."  << std::endl;
 //         THROW_TO_IMPL
+    }
+
+    std::vector< BlockMatrixEntry > entries() const {
+        return entries_;
+    }
+
+    RSparseMapMatrix sparseMapMatrix() const {
+        
+        RSparseMapMatrix ret(this->rows(), this->cols());
+
+        for (Index i = 0; i < entries_.size(); i++){
+            BlockMatrixEntry entry(entries_[i]);
+
+            MatrixBase *mat = matrices_[entry.matrixID];
+
+            RVector vals(0);
+            IndexArray rows(0);
+            IndexArray cols(0);
+
+            switch (mat->rtti()){
+                case GIMLI_SPARSE_CRS_MATRIX_RTTI:{
+                    RSparseMapMatrix S(*dynamic_cast< RSparseMatrix * >(mat));
+                    S.fillArrays(vals, rows, cols);
+                }  break;
+                case GIMLI_SPARSE_MAP_MATRIX_RTTI:
+                    dynamic_cast< RSparseMapMatrix * >(mat)->fillArrays(vals, rows, cols);
+                    break;
+                default:
+                    log(Critical, "Matrix type need to be either SparseMatrix or SparseMapMatrix");
+                    return ret;
+            }
+            ret.insert(rows + entry.rowStart, cols + entry.colStart, vals * entry.scale);
+        }
+        return ret;
     }
 
 protected:
