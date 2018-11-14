@@ -44,7 +44,7 @@ Node.__str__ = Node_str
 Mesh.__str__ = Mesh_str
 MeshEntity.__str__ = MeshEntity_str
 
-# For Jupyer Notebook use
+# For Jupyer Notebook use.. checkme
 # Node.__repr__ = Node_str
 # Mesh.__repr__ = Mesh_str
 # MeshEntity.__repr__ = MeshEntity_str
