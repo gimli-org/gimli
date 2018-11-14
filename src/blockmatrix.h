@@ -194,9 +194,9 @@ public:
 //         THROW_TO_IMPL
     }
 
-    std::vector< BlockMatrixEntry > entries() const {
-        return entries_;
-    }
+    // std::vector< BlockMatrixEntry > entries() const {
+    //     return entries_;
+    // }
 
     RSparseMapMatrix sparseMapMatrix() const {
         
