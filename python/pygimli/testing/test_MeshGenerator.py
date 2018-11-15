@@ -102,13 +102,18 @@ class TestMeshGenerator(unittest.TestCase):
                                                     (len(y)-1)*len(z)*len(x) + \
                                                     (len(z)-1)*len(x)*len(y)) 
         
+    def test_MeshStr(self):
+        mesh= pg.createGrid(2,2,2)
+        print(mesh.node(0))
+        
 
 if __name__ == '__main__':
 
     pg.setDeepDebug(0)
 
-    # t = TestMeshGenerator()
+    t = TestMeshGenerator()
+    t.test_MeshStr()
     # t.test_MeshCreateSecNodes()
-    # exit()
+    exit()
 
     unittest.main()

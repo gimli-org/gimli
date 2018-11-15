@@ -733,16 +733,18 @@ def showSparseMatrix(A, full=False):
         Show as dense matrix.
     """
     S = A
-    if isinstance(A, pg.RSparseMapMatrix):
-        return showSparseMatrix(pg.SparseMatrix(A), full)
+    if isinstance(S, pg.RSparseMapMatrix):
+        S_ = pg.SparseMatrix(S)
+        return showSparseMatrix(S_, full)
     else:
         rows = S.vecRowIdx()
         cols = S.vecColPtr()
         vals = S.vecVals()
 
+        Sd = None
         if full:
             Sd = pg.RMatrix(S.rows(), S.cols())
-
+                        
         for i in range(S.rows()):
             for j in range(cols[i], cols[i + 1]):
                 if full:
@@ -762,7 +764,7 @@ def linsolve(A, b, verbose=False):
     return linSolve(A, b, verbose)
 
 
-def linSolve(A, b, verbose=False):
+def linSolve(A, b, solver=None, verbose=False):
     r"""Direct solution after :math:`\textbf{x}` using core LinSolver.
 
     .. math::
@@ -779,6 +781,11 @@ def linSolve(A, b, verbose=False):
     b : iterable array
         Right hand side of the equation.
 
+    solver : str [None]
+        Try to choose a solver, 'pg' for pygimli core cholmod or umpfack.
+        'np' for numpy linalg or scipy.sparse.linalg.
+        Automatic choosing if solver is None depending on matrixtype.
+
     verbose : bool [False]
         Be verbose.
 
@@ -790,26 +797,43 @@ def linSolve(A, b, verbose=False):
     """
     x = pg.RVector(len(b), .0)
 
-    if isinstance(A, pg.RSparseMatrix):
-        solver = pg.LinSolver(A, verbose=verbose)
-        solver.solve(b, x)
-        return x
-    elif isinstance(A, pg.RSparseMapMatrix):
-        S = pg.RSparseMatrix(A)
-        solver = pg.LinSolver(S, verbose=verbose)
-        solver.solve(b, x)
-        return x
-    elif isinstance(A, np.ndarray):
-        return np.linalg.solve(A, b)
-
-    import scipy.sparse
-    #pg.optImport('scipy.sparse')
-    #print(type(A))
-    if isinstance(A, scipy.sparse.csr.csr_matrix):
-        return scipy.sparse.linalg.spsolve(A, b)
+    if solver is None:
+        if isinstance(A, pg.RSparseMatrix) or \
+           isinstance(A, pg.RSparseMapMatrix) or \
+            isinstance(A, pg.RBlockMatrix):
+            solver = 'pg'
+        
+    if solver == 'pg':
+        S = A
+        
+        if isinstance(A, pg.RSparseMatrix):
+            pass
+        elif isinstance(A, pg.RSparseMapMatrix):
+            S = pg.RSparseMatrix(A)    
+        elif isinstance(A, pg.RBlockMatrix):    
+            S = A.sparseMapMatrix()
+        else:
+            pg.critical("Solver '" + solver + "' does not know how to "
+                        "solve linear system with matrixtype:" + A)
+        
+        ls = pg.LinSolver(S, verbose=verbose)
+        ls.solve(b, x)
     else:
-        raise StandardException("Don't know how to lineare solve a system"
-                                " with matrixtype:" + type(A))
+    
+        if isinstance(A, np.ndarray):
+            return np.linalg.solve(A, b)
+        
+        import scipy.sparse
+        from scipy.sparse.linalg import spsolve
+        
+        if isinstance(A, scipy.sparse.csr.csr_matrix) or \
+            isinstance(A, scipy.sparse.coo.coo_matrix):
+            if verbose:
+                pg.info("linSolve use scipy.sparse")
+            return spsolve(A, b)
+
+        return linSolve(pg.utils.sparseMatrix2csr(A), b, 
+                        solver='np', verbose=verbose)
 
     return x
 
@@ -908,64 +932,6 @@ def assembleLoadVector(mesh, f, userData=None):
 
     return rhs
 
-
-def assembleNeumannBC(S, boundaryPairs, rhs=None, time=0.0, userData=None):
-    r"""Apply Neumann condition to the system matrix S.
-
-    Apply Neumann condition to the system matrix S.
-    .. math::
-        \frac{\partial u(\arr{r}, t)}{\partial\textbf{n}}
-        = \textbf{n}\grad u(\arr{r}, t) = g \quad\text{with}\quad\arr{r}
-        \quad\text{on}\quad \partial\Omega
-
-    Parameters
-    ----------
-
-    S : :gimliapi:`GIMLI::RSparseMatrix`
-        System matrix of the system equation.
-
-    boundaryPair : list()
-        List of pairs [ :gimliapi:`GIMLI::Boundary`, g ].
-        The value g will assigned to the nodes of the boundaries.
-        Later assignment overwrites prior.
-
-        :math:`g` need to be a scalar value (float or int) or
-        a value generator function that will be executed at run time.
-        See :py:mod:`pygimli.solver.solver.parseArgToBoundaries`
-
-        See tutorial section for an example,
-        e.g., Modeling with Boundary Conditions
-
-    rhs :
-        TODO DOCU
-    time : float
-        Will be forwarded to value generator.
-
-    userData : class
-        Will be forwarded to value generator.
-    """
-    Se = pg.ElementMatrix()
-
-    if not hasattr(boundaryPairs, '__getitem__'):
-        raise BaseException("Boundary pairs need to be a list of "
-                            "[boundary, value]")
-
-    for pair in boundaryPairs:
-        boundary = pair[0]
-
-        val = pair[1]
-
-        g = generateBoundaryValue(boundary, val, time, userData)
-
-        if g is not 0.0 and g is not None:
-
-            #Se.u(boundary)
-            #if rhs is not None:
-                #rhs.add(Se, g)
-
-            # check for robyn condition
-            Se.u2(boundary)
-            Se *= g
 
 def _assembleUDirichlet(S, rhs, uDirIndex, uDirchlet):
     """This should be moved directly into the core"""
@@ -1081,7 +1047,7 @@ def assembleDirichletBC(S, boundaryPairs, rhs=None, time=0.0, userData=None,
     _assembleUDirichlet(S, rhs, uDirIndex, uDirchlet)
 
 
-def assembleNeumannBC(S, boundaryPairs, rhs=None, time=0.0, userData=None):
+def assembleNeumannBC(rhs, boundaryPairs, a=None, time=0.0, userData=None):
     r"""Apply Neumann condition to the system matrix S.
 
     Apply Neumann condition to the system matrix S.
@@ -1096,8 +1062,8 @@ def assembleNeumannBC(S, boundaryPairs, rhs=None, time=0.0, userData=None):
     Parameters
     ----------
 
-    S : :gimliapi:`GIMLI::SparseMatrix`
-        System matrix of the system equation.
+    rhs : :py:mod:`Vector`
+        Right hand side vector of length node count.
 
     boundaryPair : list()
         List of pairs [ :gimliapi:`GIMLI::Boundary`, g ].
@@ -1110,8 +1076,9 @@ def assembleNeumannBC(S, boundaryPairs, rhs=None, time=0.0, userData=None):
         See :py:mod:`pygimli.solver.solver.parseArgToBoundaries`
         and :ref:`tut:modelling_bc` for example syntax,
 
-    rhs :
-        TODO
+    a : iterable
+        Per cell values to scale the Neumann part regarding weak formulation.
+
     time : float
         Will be forwarded to value generator.
 
@@ -1133,9 +1100,20 @@ def assembleNeumannBC(S, boundaryPairs, rhs=None, time=0.0, userData=None):
         val = pair[1]
         g = generateBoundaryValue(boundary, val, time, userData)
 
+        if a is not None:
+            try:
+                g *= a[boundary.leftCell().id()]
+                pass
+            except:
+                print(boundary.leftCell())
+                print(boundary.leftCell().id())
+                print(a)
+                pg.warn('insufficient cell informations')
+
         if g is not 0.0 and g is not None:
             Se.u(boundary)
             rhs.add(Se, g)
+
 
 def assembleRobinBC(S, boundaryPairs, rhs=None, time=0.0, userData=None):
     r"""Apply Robin boundary condition.
@@ -1207,7 +1185,7 @@ def assembleRobinBC(S, boundaryPairs, rhs=None, time=0.0, userData=None):
                 rhs.add(Sq, -p*q)
 
 
-def assembleBC_(bc, mesh, S, rhs, time=None, userData=None):
+def assembleBC_(bc, mesh, S, rhs, a, time=None, userData=None):
     r"""Shortcut to apply all boundary conditions.
 
     This is a helper function for the solver call.
@@ -1217,8 +1195,8 @@ def assembleBC_(bc, mesh, S, rhs, time=None, userData=None):
     ## we can't iterate because we want the following fixed order
     bct = dict(bc)
     if 'Neumann' in bct:
-        assembleNeumannBC(S, parseArgToBoundaries(bct.pop('Neumann'), mesh),
-                          rhs=rhs, time=time, userData=userData)
+        assembleNeumannBC(rhs, parseArgToBoundaries(bct.pop('Neumann'), mesh),
+                          a=a, time=time, userData=userData)
     if 'Robin' in bct:
         assembleRobinBC(S, parseArgToBoundaries(bct.pop('Robin'), mesh),
                         rhs=rhs, time=time, userData=userData)
@@ -1524,7 +1502,8 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
             Give some calculation progress.
 
         assembleOnly : bool
-            if set stops after matrix asssemblation
+            Stops after matrix asssemblation. 
+            Returns the system matrix A and the rhs vector. 
 
         ws : dict
             The WorkSpace is a dictionary that will get
@@ -1586,14 +1565,16 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
     # check for material parameter
     a = parseArgToArray(a, nDof=mesh.cellCount(), mesh=mesh, userData=userData)
     
-    M = createMassMatrix(mesh)
     S = createStiffnessMatrix(mesh, a)
-
+    M = None
     A = None
 
     if b != 0:
         b = parseArgToArray(b, nDof=mesh.cellCount(), mesh=mesh, userData=userData)
-        A = S + createMassMatrix(mesh, b)
+        M = createMassMatrix(mesh, b)
+        #pg.warn("checkme")
+        A = S - M 
+        #A = S - createMassMatrix(mesh, b)
     else:
         A = S
     
@@ -1603,7 +1584,7 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
     if times is None:
         rhs = assembleForceVector(mesh, f, userData=userData)
         
-        assembleBC_(bc, mesh, A, rhs, time=None, userData=userData)
+        assembleBC_(bc, mesh, A, rhs, a, time=None, userData=userData)
         
         # create result array
         u = None
@@ -1642,7 +1623,7 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
         workSpace['rhs'] = rhs
 
         if 'assembleOnly' in kwargs:
-            return
+            return A, rhs
 
         solver = pg.LinSolver(False)
         solver.setMatrix(A, 0)
@@ -1691,11 +1672,11 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
 
         if not dynamic:
             S = createStiffnessMatrix(mesh, a)
-            assembleBC_(bc, mesh, S, F, time=0.0, userData=userData)
+            assembleBC_(bc, mesh, S, F, a, time=0.0, userData=userData)
             return crankNicolson(times, theta, S, M, F, u0=u0, progress=progress)
 
         rhs = np.zeros((len(times), dof))
-        # rhs kann zeitabhängig sein ..wird hier nicht berücksichtigt
+        # no time dependency for rhs so far ... TODO
         rhs[:] = F  # this is slow: optimize
 
         if debug:
@@ -1721,16 +1702,16 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
             swatch.reset()
             # (A + a*B)u is fastest,
             # followed by A*u + (B*u)*a and finally A*u + a*B*u and
-            b = (M + (dt * (theta - 1.)) * S) * U[n - 1] + \
+            br = (M + (dt * (theta - 1.)) * S) * U[n - 1] + \
                 dt * ((1.0 - theta) * rhs[n - 1] + theta * rhs[n])
 
             # print ('a',swatch.duration(True))
-            # b = M * U[n - 1] - (A * U[n - 1]) * (dt*(1.0 - theta)) + \
+            # br = M * U[n - 1] - (A * U[n - 1]) * (dt*(1.0 - theta)) + \
             # dt * ((1.0 - theta) * rhs[n - 1] + theta * rhs[n])
 
-            # print ('b',swatch.duration(True))
+            # print ('br',swatch.duration(True))
 
-            # b = M * U[n - 1] - (dt*(1.0 - theta)) * A * U[n - 1] + \
+            # br = M * U[n - 1] - (dt*(1.0 - theta)) * A * U[n - 1] + \
             # dt * ((1.0 - theta) * rhs[n - 1] + theta * rhs[n])
             # print ('c',swatch.duration(True))
 
@@ -1738,12 +1719,15 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
 
             A = M + S * dt * theta
 
-            assembleBC_(bc, mesh, A, b, time=times[n], userData=userData)
+            assembleBC_(bc, mesh, A, br, a, time=times[n], userData=userData)
             
+            if 'assembleOnly' in kwargs:
+                return A, br
+
             # u = S/b
             t_prep = swatch.duration(True)
             solver = pg.LinSolver(A, verbose)
-            solver.solve(b, u)
+            solver.solve(br, u)
 
             if 'plotTimeStep' in kwargs:
                 kwargs['plotTimeStep'](u, times[n])
