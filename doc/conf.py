@@ -472,7 +472,7 @@ for dist in pkg_resources.find_distributions(SPHINXDOC_PATH +
 # End pybtex stuff
 
 # -- Options for doxylink -----------------------------------------------------
-doxylink = {'gimliapi': (join(DOXY_BUILD_DIR, 'gimli.tag'), 'gimliapi')}
+doxylink = {'gimliapi': (join(DOXY_BUILD_DIR, 'gimli.tag'), 'https://www.pygimli.org/gimliapi')}
 
 # Create small gallery of all tutorials and examples in the sidebar.
 # from pygimli.misc.sidebar_gallery import make_gallery
