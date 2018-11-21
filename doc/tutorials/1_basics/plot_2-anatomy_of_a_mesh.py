@@ -8,9 +8,9 @@ The anatomy of a pyGIMLi mesh
 In this tutorial we look a the anatomy of a :gimliapi:`GIMLI::Mesh`. Although
 the example is simplisitic and two-dimensional, the individual members of the
 Mesh class and their methods can be inspected similarly for more complex meshes
-in 2D and 3D. This example is heavily inspired by the [anatomy of a matplotlib
-plot](https://matplotlib.org/examples/showcase/anatomy.html), which we can also
-highly recommend for visualization with the pygimli.mplviewer.
+in 2D and 3D. This example is heavily inspired by the `anatomy of a matplotlib
+plot <https://matplotlib.org/examples/showcase/anatomy.html>`_, which we can 
+also highly recommend for visualization with the :py:mod:`pygimli.mplviewer`.
 
 We start by importing matplotlib and defining some helper functions for
 plotting.
@@ -32,11 +32,10 @@ def circle(x, y, text=None, radius=0.15, c="blue"):
             ha='center', va='top', weight='bold', color=c)
 
 ################################################################################
-# We now import pygimli and create simple 3x3 grid/mesh.
+# We now import pygimli and create simple grid/mesh with 3x3 cells.
 
 import pygimli as pg
 m = pg.createGrid(4,4)
-
 
 ################################################################################
 # The following code creates the main plot and shows how the different mesh
@@ -73,6 +72,10 @@ circle(m.node(1).x(), m.node(1).y(), "m.node(1).pos()", c="green")
 p = [0.8, 0.8]
 circle(p[0], p[1], "p = %s" % p, radius=0.01, c="black")
 
+cell = m.findCell(p)
+circle(cell.center().x(), cell.center().y(), "m.findCell(p).center()",
+       radius=0.12)
+
 # Find closest node to point p
 nid = m.findNearestNode(p)
 n = m.node(nid)
@@ -83,10 +86,6 @@ ax.annotate('nid = m.findNearestNode(p)\nm.node(nid).pos()', xy=(n.x(), n.y()),
             arrowprops=dict(arrowstyle='->',
                             connectionstyle="arc",
                             color="green"))
-
-cell = m.findCell(p)
-circle(cell.center().x(), cell.center().y(), "m.findCell(p).center()",
-       radius=0.12)
 
 # Mark boundary center
 bid = 15
@@ -117,7 +116,7 @@ circle(left.center().x(), left.center().y(),
 circle(right.center().x(), right.center().y(),
        "b.rightCell().center()", c="blue")
 
-ax.text(3.0, -0.55, "Made with matplotlib & pyGIMLi",
+ax.text(3.0, -0.5, "Made with matplotlib & pyGIMLi",
         fontsize=10, ha="right", color='.5')
-fig.tight_layout(pad=5.5)
+fig.tight_layout(pad=5.7)
 pg.wait()
