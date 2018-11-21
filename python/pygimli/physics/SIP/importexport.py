@@ -111,7 +111,7 @@ def readFuchs3File(resfile, k=1.0, verbose=False):
                         header[activeBlock].append(nums)
 
 
-def readRadicSIPFuchs(filename, readSecond=False, delLast=True):
+def readRadicSIPFuchs(filename, readSecond=False, delLast=True, verbose=True):
     """Read SIP-Fuchs Software rev.: 070903
 
     Read Radic instrument res file containing a single spectrum.
@@ -189,6 +189,8 @@ def readRadicSIPFuchs(filename, readSecond=False, delLast=True):
     fr = np.array(fr)
     rhoa = np.array(rhoa)
     phia = np.array(phia)
+    if np.median(np.sign(phia)):
+        phia *= -1.0
     drhoa = np.array(drhoa)
     dphia = np.array(dphia)
 
