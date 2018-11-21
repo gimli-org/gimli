@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 
 import pygimli as pg
 from .importexport import readTXTSpectrum, readFuchs3File, readRadicSIPFuchs
+# from .importexport import readRadicSIPQuad
 from .plotting import drawAmplitudeSpectrum, drawPhaseSpectrum, showSpectrum
 from .models import DebyePhi, DebyeComplex, relaxationTerm
 from .tools import KramersKronig, fitCCEMPhi, fitCCC
@@ -97,12 +98,19 @@ class SIPSpectrum(object):
                     filename, verbose=verbose, **kwargs)
             self.phi *= -np.pi/180.
             # print(header) # not used?
+        elif 'SIP-Quad' in firstLine:
+            if verbose:
+                pg.info("Reading SIP Quad file")
+            self.f, self.amp, self.phi, header = readFuchs3File(
+                    filename, verbose=verbose, quad=True, **kwargs)
+            self.phi *= -np.pi/180.
 #        elif 'SIP-Fuchs Software rev.: 070903' in firstLine:
         elif 'SIP-Fuchs' in firstLine:
             if verbose:
                 pg.info("Reading SIP Fuchs file")
             self.f, self.amp, self.phi, drhoa, dphi = readRadicSIPFuchs(
-                    filename, verbose=verbose, **kwargs)
+                    filename, verbose=verbose, quad='SIP-Quad' in firstLine,
+                    **kwargs)
             self.phi *= -np.pi/180.
         elif fnLow.endswith('.txt') or fnLow.endswith('.csv'):
             self.basename = filename[:-4]

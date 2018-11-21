@@ -42,7 +42,7 @@ def readTXTSpectrum(filename):
     return np.asarray(f), np.asarray(amp), np.asarray(phi)
 
 
-def readFuchs3File(resfile, k=1.0, verbose=False):
+def readFuchs3File(resfile, k=1.0, verbose=False, quad=False):
     """Read Fuchs III (SIP spectrum) data file.
 
     Parameters
@@ -55,6 +55,9 @@ def readFuchs3File(resfile, k=1.0, verbose=False):
     header = {}
     LINE = []
     dataAct = False
+    cols = [11, 12, 13, 9]
+    if quad:
+        cols = [9, 10, 11, 7]
     with codecs.open(resfile, 'r', encoding='iso-8859-15',
                      errors='replace') as f:
         for line in f:
@@ -66,12 +69,12 @@ def readFuchs3File(resfile, k=1.0, verbose=False):
                     for li in LINE:
                         sline = li.split()
                         if len(sline) > 12:
-                            fi = float(sline[11])
+                            fi = float(sline[cols[0]])
                             if np.isfinite(fi):
                                 f.append(fi)
-                                amp.append(float(sline[12]))
-                                phi.append(float(sline[13]))
-                                kIn.append(float(sline[9]))
+                                amp.append(float(sline[cols[1]]))
+                                phi.append(float(sline[cols[2]]))
+                                kIn.append(float(sline[cols[3]]))
 
                     if k != 1.0 and verbose is True:
                         pg.info("Geometric value changed to:", k)
