@@ -305,7 +305,8 @@ class Refraction(MethodManager):
             pg.warn("argument refine is deprecated .. use secnodes instead")
             secNodes = 1
 
-        mesh = self.fop.regionManager().mesh().createMeshWithSecondaryNodes(secNodes)
+        mesh = self.fop.regionManager().mesh().createMeshWithSecondaryNodes(
+                secNodes)
         self.fop.setMesh(mesh, ignoreRegionManager=True)
 
         self.inv.setForwardOperator(self.fop)
@@ -656,7 +657,7 @@ class Refraction(MethodManager):
         if model is None and self.velocity is None:
             pg.info("No previous inversion result found and no model given.",
                     "Using homogeneous slowness model.")
-                    
+
             self.velocity = pg.RVector(self.mesh.cellCount(), 1.0)
             self.fop.createJacobian(1./self.velocity)
         if model is not None:
@@ -674,7 +675,6 @@ class Refraction(MethodManager):
         # Due to different numbering scheme of way matrix
         _, shots = np.unique(self.dataContainer("s"), return_inverse=True)
         _, receivers = np.unique(self.dataContainer("g"), return_inverse=True)
-
 
         # Collecting way segments for all shot/receiver combinations
         segs = []
@@ -882,6 +882,7 @@ def main():
     ra.invert(lam=options.lam, max_iter=options.maxIter,
               robustData=options.robustData, blockyModel=options.blockyModel)
     ra.showResult()
+
 
 if __name__ == '__main__':
     main()
