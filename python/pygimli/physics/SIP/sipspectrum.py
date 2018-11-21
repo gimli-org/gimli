@@ -34,9 +34,9 @@ class SIPSpectrum(object):
         self.basename = basename
         self.fig = {}
         self.k = k
-        self.f = None ## mandarory frequencies.
-        self.amp = None ## mandarory amplitides
-        self.phi = None ## mandarory phases
+        self.f = None  # mandarory frequencies.
+        self.amp = None  # mandarory amplitides
+        self.phi = None  # mandarory phases
 
         self.epsilon0 = 8.854e-12
 
@@ -84,7 +84,8 @@ class SIPSpectrum(object):
         """
         verbose = kwargs.pop('verbose', self._verbose)
 
-        with codecs.open(filename, 'r', encoding='iso-8859-15', errors='replace') as f:
+        with codecs.open(filename, 'r', encoding='iso-8859-15',
+                         errors='replace') as f:
             firstLine = f.readline()
         f.close()
 
@@ -92,23 +93,25 @@ class SIPSpectrum(object):
         if 'SIP Fuchs III' in firstLine:
             if verbose:
                 pg.info("Reading SIP Fuchs III file")
-            self.f, self.amp, self.phi, header = readFuchs3File(filename, 
-                                                    verbose=verbose, **kwargs)
+            self.f, self.amp, self.phi, header = readFuchs3File(
+                    filename, verbose=verbose, **kwargs)
             self.phi *= -np.pi/180.
             # print(header) # not used?
-        elif 'SIP-Fuchs Software rev.: 070903' in firstLine:
+#        elif 'SIP-Fuchs Software rev.: 070903' in firstLine:
+        elif 'SIP-Fuchs' in firstLine:
             if verbose:
                 pg.info("Reading SIP Fuchs file")
-            self.f, self.amp, self.phi, drhoa, dphi = readRadicSIPFuchs(filename, 
-                                                    verbose=verbose, **kwargs)
+            self.f, self.amp, self.phi, drhoa, dphi = readRadicSIPFuchs(
+                    filename, verbose=verbose, **kwargs)
             self.phi *= -np.pi/180.
         elif fnLow.endswith('.txt') or fnLow.endswith('.csv'):
             self.basename = filename[:-4]
             self.f, self.amp, self.phi = readTXTSpectrum(filename)
             self.amp *= self.k
+        else:
+            raise Exception("Don't know how to read data.")
 
         return self.f, self.amp, self.phi
-
 
     def unifyData(self, onlydown=False):
         """Unify data (only one value per frequency) by mean or selection."""
@@ -144,14 +147,24 @@ class SIPSpectrum(object):
         self.phi = self.phi[ind]
         self.f = self.f[ind]
 
-    def cutF(self, fcut=1e99):
+    def cutF(self, fcut=1e99, down=False):
         """Cut (delete) frequencies above a certain value fcut."""
-        self.amp = self.amp[self.f <= fcut]
-        self.phi = self.phi[self.f <= fcut]
+        if down:
+            ind = self.f >= fcut
+        else:
+            ind = self.f <= fcut
+
+        self.amp = self.amp[ind]
+        self.phi = self.phi[ind]
         if np.any(self.phiOrg):
-            self.phiOrg = self.phiOrg[self.f <= fcut]
-        # finally cut f
-        self.f = self.f[self.f <= fcut]
+            self.phiOrg = self.phiOrg[ind]
+        self.f = self.f[ind]
+#        self.amp = self.amp[self.f <= fcut]
+#        self.phi = self.phi[self.f <= fcut]
+#        if np.any(self.phiOrg):
+#            self.phiOrg = self.phiOrg[self.f <= fcut]
+#        # finally cut f
+#        self.f = self.f[self.f <= fcut]
 
     def omega(self):
         """Angular frequency."""
@@ -513,6 +526,7 @@ class SIPSpectrum(object):
         IDD.setLambdaFactor(lamFactor)
         self.mDD = IDD.run()
         IDD.echoStatus()
+        print("ARMS=", IDD.absrms(), "RRMS=", IDD.absrms()/max(Znorm)*100)
         if new:
             resp = np.array(IDD.response())
             respRe = resp[:nf]
