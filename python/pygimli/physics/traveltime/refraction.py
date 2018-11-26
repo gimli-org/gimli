@@ -304,7 +304,8 @@ class Refraction(MethodManager):
             pg.warn("argument refine is deprecated .. use secnodes instead")
             secNodes = 1
 
-        mesh = self.fop.regionManager().mesh().createMeshWithSecondaryNodes(secNodes)
+        mesh = self.fop.regionManager().mesh().createMeshWithSecondaryNodes(
+                secNodes)
         self.fop.setMesh(mesh, ignoreRegionManager=True)
 
         self.inv.setForwardOperator(self.fop)
@@ -880,6 +881,7 @@ def main():
     ra.invert(lam=options.lam, max_iter=options.maxIter,
               robustData=options.robustData, blockyModel=options.blockyModel)
     ra.showResult()
+
 
 if __name__ == '__main__':
     main()
