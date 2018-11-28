@@ -6,6 +6,7 @@ import time
 
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
 
 import pygimli as pg
 
@@ -20,8 +21,8 @@ def updateAxes(ax, a=None, force=False):
             if force:
                 time.sleep(0.1)
         except BaseException as e:
-            pg.warn("Exception raised", e)
             print(ax, a, e)
+            pg.warn("Exception raised", e)
 
 
 def hold(val=1):
@@ -83,16 +84,6 @@ def prettyFloat(v):
         return str("%.0f" % round(v,1))
 
 
-def renameDepthTicks(ax):
-    """Switch signs of depth ticks to be positive"""
-    ticks = ax.yaxis.get_majorticklocs()
-    tickLabels = []
-    for t in ticks:
-        tickLabels.append(prettyFloat(-t))
-
-    ax.set_yticklabels(tickLabels)
-    #insertUnitAtNextLastTick(ax, 'm', xlabel=False)
-    updateAxes(ax)
 
 
 def insertUnitAtNextLastTick(ax, unit, xlabel=True, position=-2):
@@ -114,6 +105,16 @@ def adjustWorldAxes(ax):
 
     renameDepthTicks(ax)
     plt.tight_layout()
+    updateAxes(ax)
+
+
+def renameDepthTicks(ax):
+    """Switch signs of depth ticks to be positive"""
+    @ticker.FuncFormatter
+    def major_formatter(x, pos):
+        return prettyFloat(-x) % x
+
+    ax.yaxis.set_major_formatter(major_formatter)
     updateAxes(ax)
 
 
