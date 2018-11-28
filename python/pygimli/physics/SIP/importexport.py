@@ -42,9 +42,9 @@ def readTXTSpectrum(filename):
     return np.asarray(f), np.asarray(amp), np.asarray(phi)
 
 
-def readFuchs3File(resfile, k=1.0, verbose=False):
+def readFuchs3File(resfile, k=1.0, verbose=False, quad=False):
     """Read Fuchs III (SIP spectrum) data file.
-    
+
     Parameters
     ----------
     k : float
@@ -55,9 +55,13 @@ def readFuchs3File(resfile, k=1.0, verbose=False):
     header = {}
     LINE = []
     dataAct = False
-    with codecs.open(resfile, 'r', encoding='iso-8859-15', errors='replace') as f:
+    cols = [11, 12, 13, 9]
+    if quad:
+        cols = [9, 10, 11, 7]
+    with codecs.open(resfile, 'r', encoding='iso-8859-15',
+                     errors='replace') as f:
         for line in f:
-            line = line.replace('\r\n', '\n') # correct for carriage return
+            line = line.replace('\r\n', '\n')  # correct for carriage return
             if dataAct:
                 LINE.append(line)
                 if len(line) < 2:
@@ -65,18 +69,17 @@ def readFuchs3File(resfile, k=1.0, verbose=False):
                     for li in LINE:
                         sline = li.split()
                         if len(sline) > 12:
-                            fi = float(sline[11])
+                            fi = float(sline[cols[0]])
                             if np.isfinite(fi):
                                 f.append(fi)
-                                amp.append(float(sline[12]))
-                                phi.append(float(sline[13]))
-                                kIn.append(float(sline[9]))
+                                amp.append(float(sline[cols[1]]))
+                                phi.append(float(sline[cols[2]]))
+                                kIn.append(float(sline[cols[3]]))
 
                     if k != 1.0 and verbose is True:
                         pg.info("Geometric value changed to:", k)
-
-                    return np.array(f), np.array(amp)/np.array(kIn) * k, \
-                           np.array(phi), header
+                    rhoa = np.array(amp)/np.array(kIn) * k
+                    return np.array(f), rhoa, np.array(phi), header
             elif len(line):
                 if line.rfind('Current') >= 0:
                     if dataAct:
@@ -102,7 +105,7 @@ def readFuchs3File(resfile, k=1.0, verbose=False):
                             header[token] = num
                         except BaseException as e:
                             # maybe beginning or end of a block
-                            #print(e)
+                            # print(e)
                             pass
 
                 else:
@@ -111,7 +114,7 @@ def readFuchs3File(resfile, k=1.0, verbose=False):
                         header[activeBlock].append(nums)
 
 
-def readRadicSIPFuchs(filename, readSecond=False, delLast=True):
+def readRadicSIPFuchs(filename, readSecond=False, delLast=True, verbose=True):
     """Read SIP-Fuchs Software rev.: 070903
 
     Read Radic instrument res file containing a single spectrum.
@@ -147,14 +150,14 @@ def readRadicSIPFuchs(filename, readSecond=False, delLast=True):
     phi : array [float]
         Measured phase error
     """
-    with codecs.open(resfile, 'r', encoding='iso-8859-15', errors='replace') as f:
-    #f = open(filename, 'r')
+    with codecs.open(filename, 'r', encoding='iso-8859-15',
+                     errors='replace') as f:
         line = f.readline()
         fr = []
         rhoa = []
-        phi = []
+        phia = []
         drhoa = []
-        dphi = []
+        dphia = []
         while True:
             line = f.readline()
             if line.rfind('Freq') > -1:
@@ -173,20 +176,29 @@ def readRadicSIPFuchs(filename, readSecond=False, delLast=True):
 
             fr.append(float(b[0]))
             rhoa.append(float(b[1]))
-            phi.append(-float(b[2]) * np.pi / 180.)
+            phia.append(-float(b[2]) * np.pi / 180.)
             drhoa.append(float(b[3]))
-            dphi.append(float(b[4]) * np.pi / 180.)
+            dphia.append(float(b[4]) * np.pi / 180.)
 
         f.close()
 
     if delLast:
         fr.pop(0)
         rhoa.pop(0)
-        phi.pop(0)
+        phia.pop(0)
         drhoa.pop(0)
-        dphi.pop(0)
+        dphia.pop(0)
 
-    return np.array(fr), np.array(rhoa), np.array(phi), np.array(drhoa), np.array(dphi)
+    fr = np.array(fr)
+    rhoa = np.array(rhoa)
+    phia = np.array(phia)
+    if np.median(np.sign(phia)):
+        phia *= -1.0
+    drhoa = np.array(drhoa)
+    dphia = np.array(dphia)
+
+    return fr, rhoa, phia, drhoa, dphia
+
 
 def readSIP256file(resfile, verbose=False):
     """Read SIP256 file (RES format) - mostly used for 2d SIP by pybert.sip.
@@ -218,9 +230,10 @@ def readSIP256file(resfile, verbose=False):
     LINE = []
     dataAct = False
 
-    with codecs.open(resfile, 'r', encoding='iso-8859-15', errors='replace') as f:
 #    with open(resfile, 'r', errors='replace') as f:
-    #with codecs.open(resfile, 'r', errors='replace') as f:
+#    with codecs.open(resfile, 'r', errors='replace') as f:
+    with codecs.open(resfile, 'r', encoding='iso-8859-15',
+                     errors='replace') as f:
         for line in f:
             if dataAct:
                 LINE.append(line)
@@ -303,7 +316,12 @@ def readSIP256file(resfile, verbose=False):
                         part1 = sline[c][:-10]
                         part2 = sline[c][-10:]   # [11:]
                     sline = sline[:c] + [part1] + [part2] + sline[c + 1:]
-            data.append(np.array(sline[:8], dtype=float))
+
+            base = np.array(sline[:5], dtype=float)
+            ext = np.array(sline[6:8], dtype=float)
+            data.append(np.hstack((base, [1.0], ext)))
+            # data.append(np.array(sline[:5], dtype=float))  # SIP256C
+            # data.append(np.array(sline[:8], dtype=float))  # SIP256D
 
     Data.append(np.array(data))
     DATA.append(Data)

@@ -36,8 +36,7 @@ class Refraction(MethodManager):
     def __init__(self, data=None, verbose=True, debug=False, fatray=False,
                  frequency=1000., **kwargs):
         """Init function with optional data load"""
-        super(Refraction, self).__init__(verbose=verbose, debug=debug,
-                                         **kwargs)
+        super().__init__(verbose=verbose, debug=debug, **kwargs)
         self.figs = {}
         self.axs = {}
 
@@ -301,11 +300,12 @@ class Refraction(MethodManager):
         self.fop.setMesh(self.mesh)
         self.fop.regionManager().setConstraintType(1)
 
-        if refine is True:
+        if refine:
             pg.warn("argument refine is deprecated .. use secnodes instead")
             secNodes = 1
 
-        mesh = self.fop.regionManager().mesh().createMeshWithSecondaryNodes(secNodes)
+        mesh = self.fop.regionManager().mesh().createMeshWithSecondaryNodes(
+                secNodes)
         self.fop.setMesh(mesh, ignoreRegionManager=True)
 
         self.inv.setForwardOperator(self.fop)
@@ -567,7 +567,7 @@ class Refraction(MethodManager):
         return (gx + sx) / 2
 
     def showVA(self, data=None, t=None, name='va', pseudosection=False,
-               squeeze=True, full=True, ax=None, cmap=None):
+               squeeze=True, full=True, ax=None, cmap=None, **kwargs):
         """Show apparent velocity as image plot.
 
         TODO showXXX commands need to return ax and cbar .. if there is one
@@ -593,10 +593,10 @@ class Refraction(MethodManager):
         if pseudosection:
             midpoint = (gx + sx) / 2
             showVecMatrix(midpoint, offset, va, squeeze=True, ax=ax,
-                          label='Apparent slowness [s/m]', cmap=cmap)
+                          label='Apparent slowness [s/m]', cmap=cmap, **kwargs)
         else:
             showVecMatrix(gx, sx, va, squeeze=squeeze, ax=ax,
-                          label='Apparent velocity [m/s]', cmap=cmap)
+                          label='Apparent velocity [m/s]', cmap=cmap, **kwargs)
         fig.show()
         return ax  # va
 
@@ -656,9 +656,9 @@ class Refraction(MethodManager):
         if model is None and self.velocity is None:
             pg.info("No previous inversion result found and no model given.",
                     "Using homogeneous slowness model.")
-                    
             self.velocity = pg.RVector(self.mesh.cellCount(), 1.0)
             self.fop.createJacobian(1./self.velocity)
+
         if model is not None:
             if self.velocity is not None:
                 if not np.allclose(model, self.velocity):
@@ -674,7 +674,6 @@ class Refraction(MethodManager):
         # Due to different numbering scheme of way matrix
         _, shots = np.unique(self.dataContainer("s"), return_inverse=True)
         _, receivers = np.unique(self.dataContainer("g"), return_inverse=True)
-
 
         # Collecting way segments for all shot/receiver combinations
         segs = []
@@ -745,7 +744,7 @@ class Refraction(MethodManager):
         coverage = 1
         if kwargs.pop('useCoverage', True):
             coverage = self.standardizedCoverage()
-        label = kwargs.get("label", "Velocity (m/s)")
+        label = kwargs.pop("label", "Velocity (m/s)")
         if ax is None:
             fig, ax = plt.subplots()
             self.figs[name] = fig
@@ -882,6 +881,7 @@ def main():
     ra.invert(lam=options.lam, max_iter=options.maxIter,
               robustData=options.robustData, blockyModel=options.blockyModel)
     ra.showResult()
+
 
 if __name__ == '__main__':
     main()
