@@ -91,6 +91,7 @@ class SIPSpectrum(object):
         f.close()
 
         fnLow = filename.lower()
+        self.basename = filename[:-4]
         if 'SIP Fuchs III' in firstLine:
             if verbose:
                 pg.info("Reading SIP Fuchs III file")
@@ -104,7 +105,6 @@ class SIPSpectrum(object):
             self.f, self.amp, self.phi, header = readFuchs3File(
                     filename, verbose=verbose, quad=True, **kwargs)
             self.phi *= -np.pi/180.
-#        elif 'SIP-Fuchs Software rev.: 070903' in firstLine:
         elif 'SIP-Fuchs' in firstLine:
             if verbose:
                 pg.info("Reading SIP Fuchs file")
@@ -113,7 +113,6 @@ class SIPSpectrum(object):
                     **kwargs)
             self.phi *= -np.pi/180.
         elif fnLow.endswith('.txt') or fnLow.endswith('.csv'):
-            self.basename = filename[:-4]
             self.f, self.amp, self.phi = readTXTSpectrum(filename)
             self.amp *= self.k
         else:
@@ -128,11 +127,13 @@ class SIPSpectrum(object):
         fu = np.unique(self.f)
         if len(fu) < len(self.f) or onlydown:
             if onlydown:
-                wende = min(np.nonzero(np.diff(self.f) > 0)[0])
-                if wende > 0:
-                    self.f = self.f[wende::-1]
-                    self.amp = self.amp[wende::-1]
-                    self.phi = self.phi[wende::-1]
+                nonzero = np.nonzero(np.diff(self.f) > 0)[0]
+                if len(nonzero) > 0:
+                    wende = min(nonzero)
+                    if wende > 0:
+                        self.f = self.f[wende::-1]
+                        self.amp = self.amp[wende::-1]
+                        self.phi = self.phi[wende::-1]
             else:
                 amp = np.zeros(fu.shape)
                 phi = np.zeros(fu.shape)
@@ -520,7 +521,7 @@ class SIPSpectrum(object):
             fDD = DebyeComplex(self.f, self.tau)
             Znorm = pg.cat(reNorm, imNorm)
             IDD = pg.RInversion(Znorm, fDD, tLog, tM, False)
-            IDD.setAbsoluteError(max(Znorm)*0.003+0.01)
+            IDD.setAbsoluteError(max(Znorm)*0.003+ePhi)
         else:
             fDD = DebyePhi(self.f, self.tau)
             IDD = pg.RInversion(phi, fDD, tLin, tM, True)
