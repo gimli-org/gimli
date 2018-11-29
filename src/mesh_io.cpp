@@ -282,7 +282,7 @@ void Mesh::loadBinary(const std::string & fbody){
     this->setDimension(dim);
     //** read vertex dummy-infos
     int dummy[127]; ret = fread(dummy, sizeof(int), 127, file);
-    this->isGeometry_ = bool(dummy[0]);
+    this->setGeometry(bool(dummy[0]));
 
     int nVerts; ret = fread(&nVerts, sizeof(int), 1, file);
     double * coords = new double[dimension_ * nVerts];
@@ -312,11 +312,11 @@ void Mesh::loadBinary(const std::string & fbody){
     //** create Nodes;
     nodeVector_.reserve(nVerts);
     for (int i = 0; i < nVerts; i ++){
-        createNode(RVector3(0.0, 0.0, 0.0));
+        RVector3 pos;
         for (uint j = 0; j < dimension_; j ++){
-            node(i).pos()[j] = coords[i * dimension_ + j];
+            pos[j] = coords[i * dimension_ + j];
         }
-        node(i).setMarker(nodeMarker[i]);
+        createNode(pos, nodeMarker[i]);
     }
 
     //** create Cells;
