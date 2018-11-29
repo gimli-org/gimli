@@ -48,21 +48,23 @@ First, you need a Linux-like command shell along with a gcc compiler.
 Although there might be different solutions (Cygwin, Git Bash, MinGW/MSYS),
 we only support the MSYS2 (Minimal System 2) hosted at http://www.msys2.org.
 As computers and modern Windows (>=7) are 64bit we only test this.
-Avoid installing into strange Windows folders, e.g. c:\msys64 is fine.
+Avoid installing into strange Windows folders, e.g., c:\ProgramData\mys64 is fine.
 
 After installing MSYS, start the console once so it builds your personal home
 directory where you find a .bashrc file, e.g. in
 
 .. code-block:: bash
 
-    c:/msys64/home/YOUR_USERNAME
+    c:\ProgramData\mys64\home\YOUR_USERNAME
 
-Edit .bashrc so that the WinPython installation path is added to your default
+Edit .bashrc so that the Anaconda or WinPython installation path is added to your default
 PATH.
+
+e.g.:
 
 .. code-block:: bash
 
-    export PATH=$PATH:/c/PATH_TO_YOUR_WINPYTHON/WinPython-64bit-3.5.1.2/python-3.5.1/
+    export PATH=/c/ProgramData/Anaconda3
 
 This is necessary since gimli needs to know valid python installation and
 version. Ideally the following one-liner will suffice to compile pyGIMLi in the
@@ -122,7 +124,7 @@ using the MSYS makefile generator:
 
 .. code-block:: bash
 
-    cmake ../trunk -G 'MSYS Makefiles' -DBLAS_LIBRARIES=/mingw64/lib/libopenblas.a
+    cmake ../gimli -G 'Unix Makefiles' -DBLAS_LIBRARIES=/mingw64/lib/libopenblas.a
 
 If cmake complains about missing python stuff, make sure the Python interpreter
 is in your execution path. If openblas is not installed you should of course omit

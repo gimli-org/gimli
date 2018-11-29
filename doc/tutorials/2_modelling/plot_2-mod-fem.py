@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # sphinx_gallery_thumbnail_number = 2
 
-"""
+r"""
 Basics of finite element modelling
 ----------------------------------
 
@@ -35,8 +35,8 @@ space :math:`\mathbf{r} = (x, y, z)`.
 On the boundary :math:`\partial\Omega` of the domain we want 
 known values of :math:`u=g` as the so called Dirichlet boundary conditions.
 
-An approximated solution :math:`u_h\approx u` for our numerical problem, will probably
-only satisfy :math:`\Delta u_h + f = R` with a rest :math:`R`.
+An approximated solution :math:`u_h\approx u` for our numerical problem will probably
+only satisfy with a rest :math:`R`: :math:`\Delta u_h + f = R`.
 If we choose some weighting functions :math:`w`, we can try to minimize 
 these residuum over our modelling domain.
 
