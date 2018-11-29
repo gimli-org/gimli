@@ -39,12 +39,13 @@ std::ostream & operator << (std::ostream & str, const Mesh & mesh){
     return str;
 }
 
-Mesh::Mesh(Index dim)
+Mesh::Mesh(Index dim, bool isGeometry)
     : dimension_(dim),
     rangesKnown_(false),
     neighboursKnown_(false),
     tree_(NULL),
-    staticGeometry_(true){
+    staticGeometry_(true),
+    isGeometry_(isGeometry){
 
     oldTet10NumberingStyle_ = true;
     cellToBoundaryInterpolationCache_ = 0;
@@ -54,8 +55,8 @@ Mesh::Mesh(const std::string & filename, bool createNeighbourInfos)
     : rangesKnown_(false),
     neighboursKnown_(false),
     tree_(NULL),
-    staticGeometry_(true){
-
+    staticGeometry_(true),
+    isGeometry_(false){
     dimension_ = 3;
     oldTet10NumberingStyle_ = true;
     cellToBoundaryInterpolationCache_ = 0;
@@ -66,7 +67,8 @@ Mesh::Mesh(const Mesh & mesh)
     : rangesKnown_(false),
     neighboursKnown_(false),
     tree_(NULL),
-    staticGeometry_(true){
+    staticGeometry_(true),
+    isGeometry_(false){
 
     oldTet10NumberingStyle_ = true;
     cellToBoundaryInterpolationCache_ = 0;
@@ -82,8 +84,8 @@ Mesh & Mesh::operator = (const Mesh & mesh){
 void Mesh::copy_(const Mesh & mesh){
     clear();
     rangesKnown_ = false;
-
     setStaticGeometry(mesh.staticGeometry());
+    setGeometry(mesh.isGeometry());
     dimension_ = mesh.dim();
     nodeVector_.reserve(mesh.nodeCount());
     secNodeVector_.reserve(mesh.secondaryNodeCount());
@@ -130,6 +132,10 @@ void Mesh::setStaticGeometry(bool stat){
     staticGeometry_ = stat;
 }
 
+void Mesh::setGeometry(bool b) { 
+    isGeometry_ = b;
+}
+
 void Mesh::clear(){
     if (tree_) {
         deletePtr()(tree_);
@@ -156,25 +162,36 @@ void Mesh::clear(){
     neighboursKnown_ = false;
 }
 
-Node * Mesh::createNode_(const RVector3 & pos, int marker, int id){
+    
+Node * Mesh::createNode_(const RVector3 & pos, int marker){
     rangesKnown_ = false;
-    if (id == -1) id = nodeCount();
+    Index id = nodeCount();
     nodeVector_.push_back(new Node(pos));
     nodeVector_.back()->setMarker(marker);
     nodeVector_.back()->setId(id);
     return nodeVector_.back();
 }
 
+Node * Mesh::createNodeGC_(const RVector3 & pos, int marker){
+    if (this->isGeometry_){
+        Node *n = this->createNodeWithCheck(pos);
+        n->setMarker(marker);
+        return n;
+    } else {
+        return this->createNode_(pos, marker);
+    }
+}
+
 Node * Mesh::createNode(const Node & node){
-    return createNode_(node.pos(), node.marker(), -1);
+    return createNodeGC_(node.pos(), node.marker());
 }
 
 Node * Mesh::createNode(double x, double y, double z, int marker){
-    return createNode_(RVector3(x, y, z), marker, -1);
+    return createNodeGC_(RVector3(x, y, z), marker);
 }
 
 Node * Mesh::createNode(const RVector3 & pos, int marker){
-    return createNode_(pos, marker, -1);
+    return createNodeGC_(pos, marker);
 }
 
 Node & Mesh::secondaryNode(Index i) {
@@ -232,7 +249,7 @@ Node * Mesh::createNodeWithCheck(const RVector3 & pos, double tol, bool warn, bo
     //     }
     }
 
-    Node * newNode = createNode(pos);
+    Node * newNode = this->createNode_(pos);
     if (useTree) tree_->insert(newNode);
 
     if (edgeCheck){

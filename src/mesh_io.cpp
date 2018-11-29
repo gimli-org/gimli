@@ -107,6 +107,7 @@ int Mesh::saveBinary(const std::string & fbody) const {
 
     //! write vertex dummy-infos;
     int dummy[127]; memset(dummy, 0, 127 * sizeof(int));
+    dummy[0] = int(isGeometry_);
     if (!fwrite(dummy, sizeof(int), 127, file)) {
     }
 
@@ -247,7 +248,7 @@ int Mesh::saveBinary(const std::string & fbody) const {
 void Mesh::loadBinary(const std::string & fbody){
 //   sizeof(int) = 4 byte
 //   int[1] dimension
-//   int[127] dummy vertices information
+//   int[127] dummy vertices information, dummy[0] = isGeometry_
 //   int[1] nVerts, number of vertices
 //   double[dimension * nVerts]; coordinates,  dimension == 2 (x, y), dimension == 3 (x, y, z)
 //   int[nVerts] vertex markers
@@ -281,6 +282,8 @@ void Mesh::loadBinary(const std::string & fbody){
     this->setDimension(dim);
     //** read vertex dummy-infos
     int dummy[127]; ret = fread(dummy, sizeof(int), 127, file);
+    this->isGeometry_ = bool(dummy[0]);
+
     int nVerts; ret = fread(&nVerts, sizeof(int), 1, file);
     double * coords = new double[dimension_ * nVerts];
     ret = fread(coords, sizeof(double), dimension_ * nVerts, file);
