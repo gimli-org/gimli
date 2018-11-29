@@ -23,6 +23,8 @@ import pygimli
 from pygimli.utils import boxprint
 from sidebar_gallery import make_gallery
 
+import pkg_resources
+
 # for doc rendering on headless machines (jenkins server)
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -57,7 +59,9 @@ needs_sphinx = '1.3' # and lower 1.6
 deps = ['sphinxcontrib-programoutput',
         'sphinxcontrib-bibtex',
         'numpydoc']
-modules = [str(m).rsplit()[0] for m in pip.get_installed_distributions()]
+
+# check for p.version too
+modules = [p.project_name for p in pkg_resources.working_set]
 
 req = []
 for dep in deps:
@@ -68,7 +72,8 @@ if req:
           "Try: sudo pip install %s.\n" % (' '.join(req)) + \
           "Or install all dependencies with: pip install -r requirements.txt\n" + \
           "You can install them all in userspace by adding the --user flag."
-    print(pip.get_installed_distributions())
+    print(pkg_resources.working_set)
+    #print(pip.get_installed_distributions())
     raise ImportError(msg)
 
 # Add any Sphinx extension module names here, as strings.
@@ -78,9 +83,9 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.viewcode',
               'sphinx.ext.autosummary',
               'sphinx.ext.mathjax',
-              'sphinx.ext.doctest',
               'sphinx.ext.intersphinx',
               'sphinx.ext.imgconverter',
+              'sphinx.ext.autosectionlabel',
               'matplotlib.sphinxext.only_directives',
               'matplotlib.sphinxext.plot_directive',
               'doxylink'
@@ -154,6 +159,13 @@ numpydoc_use_plots = True
 # MPL plot directive settings
 plot_formats = [('png', 96), ('pdf', 96)]
 plot_include_source = True
+plot_html_show_source_link = False
+plot_pre_code = """
+import pygimli as pg
+import numpy as np
+import matplotlib.pyplot as plt
+mesh = pg.createGrid([1,2],[1,2])
+"""
 
 
 # The suffix of source filenames.
@@ -460,7 +472,7 @@ for dist in pkg_resources.find_distributions(SPHINXDOC_PATH +
 # End pybtex stuff
 
 # -- Options for doxylink -----------------------------------------------------
-doxylink = {'gimliapi': (join(DOXY_BUILD_DIR, 'gimli.tag'), 'gimliapi')}
+doxylink = {'gimliapi': (join(DOXY_BUILD_DIR, 'gimli.tag'), 'https://www.pygimli.org/gimliapi')}
 
 # Create small gallery of all tutorials and examples in the sidebar.
 # from pygimli.misc.sidebar_gallery import make_gallery

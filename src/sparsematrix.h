@@ -211,13 +211,13 @@ public:
 
     virtual ~SparseMapMatrix() {}
 
+    /*! Return entity rtti value. */
+    virtual uint rtti() const { return GIMLI_SPARSE_MAP_MATRIX_RTTI; }
+
     void resize(Index rows, Index cols){
         rows_ = rows;
         cols_ = cols;
     }
-
-    /*! Return entity rtti value. */
-    virtual uint rtti() const { return GIMLI_SPARSEMAPMATRIX_RTTI; }
 
     void copy_(const SparseMatrix< ValueType > & S){
         clear();
@@ -233,6 +233,15 @@ public:
             for (int j = colPtr[i]; j < colPtr[i + 1]; j ++){
                 (*this)[i][rowIdx[j]] = vals[j];
             }
+        }
+    }
+
+    inline void insert(const IndexArray & rows, const IndexArray & cols, const RVector & vals) {
+        ASSERT_EQUAL(vals.size(), rows.size())
+        ASSERT_EQUAL(vals.size(), cols.size())
+
+        for (Index i = 0; i < vals.size(); i ++){
+            (*this)[rows[i]][cols[i]] = vals[i];
         }
     }
 
@@ -392,6 +401,7 @@ public:
                              );
         }
     }
+    
 
     /*! Return this * a  */
     virtual Vector < ValueType > mult(const Vector < ValueType > & a) const {
@@ -781,6 +791,8 @@ public:
         }
         return *this;
     }
+
+    virtual uint rtti() const { return GIMLI_SPARSE_CRS_MATRIX_RTTI; }
 
     /*! Return this * a  */
     virtual Vector < ValueType > mult(const Vector < ValueType > & a) const {

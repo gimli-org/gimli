@@ -85,6 +85,8 @@ public:
         const RVector *dm = &(*data_)("m");
         const RVector *dn = &(*data_)("n");
 
+        log(Debug, "Thread #" + str(tNr) + ": on CPU " + str(sched_getcpu()) + " slice " + str(start_) + ":" + str(end_));
+        
         for (Index cellID = start_; cellID < end_; cellID ++) {
 
             cell    = (*para_)[cellID];
@@ -575,7 +577,7 @@ RVector coverageDCtrans(const MatrixBase & S, const RVector & dd, const RVector 
         for (size_t i = 0; i < S.rows(); i ++) {
             cov += abs((*Sl)[i] * dd[i]);
         }
-    } else if (S.rtti() == GIMLI_SPARSEMAPMATRIX_RTTI){
+    } else if (S.rtti() == GIMLI_SPARSE_MAP_MATRIX_RTTI){
 
         const RSparseMapMatrix * Sl = dynamic_cast< const RSparseMapMatrix * >(&S);
 

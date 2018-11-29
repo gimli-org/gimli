@@ -178,6 +178,13 @@ public:
     /*! Return true if this mesh have static geometry. [Default=True]*/
     inline bool staticGeometry() const { return staticGeometry_; }
 
+    /*! Mesh is marked as geometry definition or PLC 
+    so createNode will allways with check. */
+    void setGeometry(bool b);
+
+    /*! Return if the mesh is a geometry definition.*/
+    bool isGeometry() const { return isGeometry_; }
+
     /*! Set the dimension of the mesh. [Default = 2] */
     void setDimension(uint dim){ dimension_ = dim;}
 

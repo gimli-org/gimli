@@ -222,7 +222,6 @@ public:
     virtual void calc(Index tNr=0){
         RVector modelChange(*model_);
         modelChange[tNr] *= 1.05;
-        __MS(tNr)
         fop_->response_mt(modelChange, tNr);
 //         RVector respChange();
 

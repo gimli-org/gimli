@@ -100,7 +100,6 @@ class TestSparseMatrix(unittest.TestCase):
         S = pg.SparseMatrix(A)
 
         S2 = S + S * 0.1 * 0.3
-        print(S2)
 
 
 if __name__ == '__main__':

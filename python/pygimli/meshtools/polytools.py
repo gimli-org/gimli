@@ -99,8 +99,8 @@ def createRectangle(start=None, end=None, pos=None, size=None, **kwargs):
         start = [-0.5, 0.5]
     if end is None:
         end = [0.5, -0.5]
-    poly = pg.Mesh(2)
-
+    poly = pg.Mesh(dim=2, isGeometry=True)
+    
     sPos = pg.RVector3(start)
     ePos = pg.RVector3(end)
 
@@ -178,14 +178,13 @@ def createWorld(start, end, marker=1, area=0., layers=None, worldMarker=True):
     # ensure - decreasing order if layers are out of bounding box
     z = pg.sort(z)[::-1]
 
-    poly = pg.Mesh(2)
-
+    poly = pg.Mesh(dim=2, isGeometry=True)
+    
     if isinstance(area, float) or isinstance(area, int):
         area = np.ones(len(z)) * float(area)
 
     for i, depth in enumerate(z):
         n = poly.createNode([start[0], depth])
-
         if i > 0:
             if len(z) == 2:
                 poly.addRegionMarker(n.pos() + [0.2, 0.2], marker=marker,
@@ -274,7 +273,7 @@ def createCircle(pos=None, radius=1, segments=12, start=0, end=2. * math.pi,
     if pos is None:
         pos = [0.0, 0.0]
 
-    poly = pg.Mesh(2)
+    poly = pg.Mesh(dim=2, isGeometry=True)
 
     dPhi = (end - start) / (segments)
     nPhi = segments + 1
@@ -355,7 +354,7 @@ def createLine(start, end, segments=1, **kwargs):
     >>> ax, _ = pg.show([w, l1, l2,], ax=ax, fillRegion=False)
     >>> pg.wait()
     """
-    poly = pg.Mesh(2)
+    poly = pg.Mesh(dim=2, isGeometry=True)
     startPos = pg.RVector3(start)
     endPos = pg.RVector3(end)
     a = endPos - startPos
@@ -420,7 +419,7 @@ def createPolygon(verts, isClosed=False, isHole=False, **kwargs):
     ...                       isClosed=True, marker=3, area=0.1, isHole=True)
     >>> ax, _ = pg.show(mt.mergePLC([p1,p2]))
     """
-    poly = pg.Mesh(2)
+    poly = pg.Mesh(dim=2, isGeometry=True)
 
     for v in verts:
         poly.createNodeWithCheck(v, warn=True)
@@ -491,7 +490,7 @@ def mergePLC(pols, tol=1e-3):
     >>> drawMesh(ax, createMesh(plc))
     >>> plt.show()
     """
-    poly = pg.Mesh(2)
+    poly = pg.Mesh(dim=2, isGeometry=True)
 
     for p in pols:
         nodes = []
@@ -624,7 +623,7 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
     if paraDepth == 0:
         paraDepth = 0.4 * (xmax - xmin)
 
-    poly = pg.Mesh(2)
+    poly = pg.Mesh(dim=2, isGeometry=True)
     # define para domain without surface
     n1 = poly.createNode([xmin - paraBound, sensors[0][iz]])
     n2 = poly.createNode([xmin - paraBound, sensors[0][iz] - paraDepth])
@@ -742,8 +741,8 @@ def readPLC(filename, comment='#'):
     nPointsAttributes = int(headerLine[2])
     haveNodeMarker = int(headerLine[3])
 
-    poly = pg.Mesh(dimension)
-
+    poly = pg.Mesh(dim=dimension, isGeometry=True)
+    
     # Nodes section
     for i in range(nVerts):
         row = content[1 + i].split('\r\n')[0].split()
@@ -872,7 +871,7 @@ def exportPLC(poly, fname, **kwargs):
     >>> import pygimli as pg
     >>> import tempfile, os
     >>> fname = tempfile.mktemp() # Create temporary string for filename.
-    >>> world2d = pg.meshtools.createWorld(start=[-10, 0], end=[20, 0])
+    >>> world2d = pg.meshtools.createWorld(start=[-10, 0], end=[20, -10])
     >>> pg.meshtools.exportPLC(world2d, fname)
     >>> read2d = pg.meshtools.readPLC(fname)
     >>> print(read2d)

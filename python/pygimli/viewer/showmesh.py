@@ -270,10 +270,6 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
     elif isinstance(data, pg.R3Vector):
         drawStreams(ax, mesh, data, **kwargs)
     else:
-        #print('-----------------------------')
-        #print(data, type(data))
-        #print('-----------------------------')
-
         ### data=[[marker, val], ....]
         if isinstance(data, list) and \
             isinstance(data[0], list) and isinstance(data[0][0], int):
@@ -301,6 +297,8 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
         else:
             validData = True
             try:
+                cMap = kwargs.pop('cMap', None)
+                
                 if len(data) == mesh.cellCount():
                     gci = drawModel(ax, mesh, data, **kwargs)
                     if showBoundary is None:
@@ -309,9 +307,9 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
                 elif len(data) == mesh.nodeCount():
                     gci = drawField(ax, mesh, data, **kwargs)
                     
-                cMap = kwargs.pop('cMap', None)
                 if cMap is not None:
                     gci.set_cmap(cmapFromName(cMap))
+                    #gci.cmap.set_under('k')
 
             except BaseException as e:
                 print("Exception occured: ", e)

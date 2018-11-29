@@ -162,7 +162,6 @@ void Mesh::clear(){
     neighboursKnown_ = false;
 }
 
-    
 Node * Mesh::createNode_(const RVector3 & pos, int marker){
     rangesKnown_ = false;
     Index id = nodeCount();
@@ -249,7 +248,7 @@ Node * Mesh::createNodeWithCheck(const RVector3 & pos, double tol, bool warn, bo
     //     }
     }
 
-    Node * newNode = this->createNode_(pos);
+    Node * newNode = this->createNode_(pos, 0);
     if (useTree) tree_->insert(newNode);
 
     if (edgeCheck){
@@ -1790,20 +1789,6 @@ void Mesh::createMeshByCellIdx(const Mesh & mesh, const IndexArray & idxListIn){
     }
 
     return createMeshByCells(mesh, mesh.cells(idxList));
-    // for (Index i = 0; i < idxList.size(); i ++){
-
-    //     Cell * cell = & mesh.cell(idxList[i]);
-
-    //     for (Index j = 0; j < cell->nodeCount(); j ++){
-    //         if (nodeMap.count(cell->node(j).id()) == 0){
-
-    //             nodeMap[cell->node(j).id()] =
-    //                     this->createNode(cell->node(j).pos(),
-    //                                      cell->node(j).marker());
-    //         }
-    //     }
-    // }
-
 }
 
 Mesh Mesh::createMeshByCellIdx(const IndexArray & idxList){
@@ -1941,27 +1926,6 @@ void Mesh::mapCellAttributes(const std::map < float, float > & aMap){
 void Mesh::mapAttributeToParameter(const IndexArray & cellMapIndex,
                                     const RVector & attributeMap, double defaultVal){
     DEPRECATED
-//     RVector mapModel(attributeMap.size() + 2);
-//     mapModel[1] = defaultVal;
-//   //mapModel[std::slice(2, (int)attributeMap.size(), 1)] = attributeMap;
-//     for (Index i = 0; i < attributeMap.size(); i ++) mapModel[i + 2] = attributeMap[i];
-//
-//     std::vector< Cell * > emptyList;
-//
-//     for (Index i = 0, imax = cellCount(); i < imax; i ++){
-//         if (cellMapIndex[i] > (int)mapModel.size() -1){
-//             std::cerr << WHERE_AM_I << " cellMapIndex[i] > attributeMap " << cellMapIndex[i]
-//                     << " " << mapModel.size() << std::endl;
-//         }
-//
-//         cell(i).setAttribute(mapModel[cellMapIndex[i]]);
-//
-//         if (mapModel[cellMapIndex[i]] < TOLERANCE){
-//             emptyList.push_back(&cell(i));
-//         }
-//     }
-
-    //fillEmptyCells(emptyList);
 }
 
 void Mesh::mapBoundaryMarker(const std::map < int, int > & aMap){
@@ -2263,10 +2227,10 @@ void Mesh::smooth(bool nodeMoving, bool edgeSliding, uint smoothFunction, uint s
 void Mesh::fillKDTree_() const {
 
     if (!tree_) tree_ = new KDTreeWrapper();
-
+    
     if (tree_->size() != nodeCount(true)){
         if (tree_->size() == 0){
-//            for (Index i = 0; i < nodeCount(); i ++) tree_->insert(nodeVector_[i]);
+
             for_each(nodeVector_.begin(), nodeVector_.end(), boost::bind(&KDTreeWrapper::insert, tree_, _1));
             for_each(secNodeVector_.begin(), secNodeVector_.end(), boost::bind(&KDTreeWrapper::insert, tree_, _1));
 

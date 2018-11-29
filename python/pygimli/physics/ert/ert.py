@@ -446,20 +446,35 @@ class ERTModelling0(pg.ModellingBase):
                 b = data.sensorPosition(data('b')[i])
                 m = data.sensorPosition(data('m')[i])
                 n = data.sensorPosition(data('n')[i])
-                k[i] = 1./(2.*np.pi) * (1./a.dist(m) - 1./a.dist(n) -
-                                        1./b.dist(m) + 1./b.dist(n))
-                # what the hell is this! wrong formula and typos
-#                k[i] = 1./(2.*np.pi) * \
-#                       1./(a.dist(m) - a.dist(n) - b.dist(m) + b.dist(b))
+                k[i] = 2.*np.pi * 1./(1./a.dist(m) - 1./a.dist(n) - 
+                                      1./b.dist(m) + 1./b.dist(n))
             return k
         else:
             raise BaseException("Please use BERT for non-standard "
                                 "data sets" + str(data))
 
     def uAnalytical(self, p, sourcePos, k):
-        """Calculate analytical potential for homogeneous halfspace
+        """Calculates the analytical solution for the 2.5D geoelectrical problem.
+    
+        Solves the 2.5D geoelectrical problem for one wave number k.
+        It calculates the normalized (for injection current 1 A and sigma=1 S/m) 
+        potential at position p for a current injection at position sourcePos.
+        Injection at the subsurface is recognized via mirror sources along the
+        surface at depth=0.
+        
+        Parameters
+        ----------
+        p : pg.Pos
+            Position for the sought potential
+        sourcePos : pg.Pos
+            Current injection position.
+        k : float
+            Wave number 
 
-            using a standard sigma = 1 [S/m] that can be scaled.
+        Returns
+        -------
+        u : float
+            Solution u(p)
         """
         r1A = (p - sourcePos).abs()
         # Mirror on surface at depth=0
@@ -554,7 +569,7 @@ class ERTModelling0(pg.ModellingBase):
         nDof = mesh.nodeCount()
         nEle = len(self.electrodes)
         nData = self.data.size()
-
+ 
         self.resistivity = res = self.createMappedModel(model, -1.0)
 
         if self.verbose():
@@ -573,15 +588,18 @@ class ERTModelling0(pg.ModellingBase):
         # store all potential fields
         u = np.zeros((nEle, nDof))
         self.subPotentials = [pg.RMatrix(nEle, nDof) for i in range(len(k))]
+
         for i, ki in enumerate(k):
             ws = {'u': self.subPotentials[i]}
-            uE = pg.solve(mesh, a=1./res, b=(ki * ki)/res, f=rhs,
+            uE = pg.solve(mesh, a=1./res, b=-(ki * ki)/res, f=rhs,
                           bc={'Robin': self.mixedBC},
                           userData={'sourcePos': self.electrodes, 'k': ki},
                           verbose=self.verbose(), stats=0, debug=False,
                           ws=ws
                           )
+            pg.show(mesh, np.log10(abs(uE[0])) )
             u += w[i] * uE
+
         # collect potential matrix,
         # i.e., potential for all electrodes and all injections
         pM = np.zeros((nEle, nEle))
@@ -697,6 +715,7 @@ class ERTManager0(MeshMethodManager0):
             vals = data('rhoa')
 
         # why is plotERT data not used instead?
+        # #c42: because pybert is not yet part of pygimli
         mid, sep = midconfERT(data)
         dx = np.median(np.diff(np.unique(mid)))*2
         ax, _, _ = pg.mplviewer.patchValMap(

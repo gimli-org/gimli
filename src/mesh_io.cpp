@@ -107,7 +107,7 @@ int Mesh::saveBinary(const std::string & fbody) const {
 
     //! write vertex dummy-infos;
     int dummy[127]; memset(dummy, 0, 127 * sizeof(int));
-    dummy[0] = int(isGeometry_);
+    dummy[0] = int(this->isGeometry_);
     if (!fwrite(dummy, sizeof(int), 127, file)) {
     }
 
@@ -292,22 +292,22 @@ void Mesh::loadBinary(const std::string & fbody){
     //** read cell dummy-infos
     ret = fread(dummy, sizeof(int), 127, file);
 
-  int nCells; ret = fread(&nCells, sizeof(int), 1, file);
-  int * cellVerts = new int[nCells]; ret = fread(cellVerts, sizeof(int), nCells, file);
-  int nCellIdx = 0; for (int i = 0; i < nCells; i ++) nCellIdx += cellVerts[i];
-  int * cellIdx = new int[nCellIdx]; ret = fread(cellIdx, sizeof(int), nCellIdx, file);
-  double * attribute = new double[nCells]; ret = fread(attribute, sizeof(double), nCells, file);
+    int nCells; ret = fread(&nCells, sizeof(int), 1, file);
+    int * cellVerts = new int[nCells]; ret = fread(cellVerts, sizeof(int), nCells, file);
+    int nCellIdx = 0; for (int i = 0; i < nCells; i ++) nCellIdx += cellVerts[i];
+    int * cellIdx = new int[nCellIdx]; ret = fread(cellIdx, sizeof(int), nCellIdx, file);
+    double * attribute = new double[nCells]; ret = fread(attribute, sizeof(double), nCells, file);
 
-  //** read boundary dummy-infos
-  ret = fread(dummy, sizeof(int), 127, file);
+    //** read boundary dummy-infos
+    ret = fread(dummy, sizeof(int), 127, file);
 
-  int nBounds; ret = fread(&nBounds, sizeof(int), 1, file);
-  int * boundVerts = new int[nBounds]; ret = fread(boundVerts, sizeof(int), nBounds, file);
-  int nBoundIdx = 0; for (int i = 0; i < nBounds; i ++) nBoundIdx += boundVerts[i];
-  int * boundIdx = new int[nBoundIdx]; ret = fread(boundIdx, sizeof(int), nBoundIdx, file);
-  int * boundMarker = new int[nBounds]; ret = fread(boundMarker, sizeof(int), nBounds, file);
-  int * left = new int[nBounds]; ret = fread(left, sizeof(int), nBounds, file);
-  int * right = new int[nBounds]; ret = fread(right, sizeof(int), nBounds, file);
+    int nBounds; ret = fread(&nBounds, sizeof(int), 1, file);
+    int * boundVerts = new int[nBounds]; ret = fread(boundVerts, sizeof(int), nBounds, file);
+    int nBoundIdx = 0; for (int i = 0; i < nBounds; i ++) nBoundIdx += boundVerts[i];
+    int * boundIdx = new int[nBoundIdx]; ret = fread(boundIdx, sizeof(int), nBoundIdx, file);
+    int * boundMarker = new int[nBounds]; ret = fread(boundMarker, sizeof(int), nBounds, file);
+    int * left = new int[nBounds]; ret = fread(left, sizeof(int), nBounds, file);
+    int * right = new int[nBounds]; ret = fread(right, sizeof(int), nBounds, file);
 
     //** create Nodes;
     nodeVector_.reserve(nVerts);

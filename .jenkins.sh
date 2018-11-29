@@ -36,6 +36,8 @@ cd build
 # CLEAN=1 force thirdparty rebuild
 export CLEAN=0
 
+export GIMLI_NUM_THREADS=4
+
 cmake ../trunk \
    -DPYVERSION=3 \
    -DPYTHON_EXECUTABLE=/usr/bin/python3 \

@@ -9,7 +9,7 @@ import pygimli as pg
 def sparseMatrix2csr(A):
     """Convert SparseMatrix to scipy.csr_matrix.
 
-    Compressed Sparse Row matrix
+    Compressed Sparse Row matrix, i.e., Compressed Row Storage (CRS)
     
     Parameters
     ----------
@@ -32,11 +32,14 @@ def sparseMatrix2csr(A):
         return csr_matrix((A.vecVals().array(),
                            A.vecRowIdx(),
                            A.vecColPtr()))
+    elif isinstance(A, pg.RBlockMatrix):
+        M = A.sparseMapMatrix()
+        return sparseMatrix2csr(M)
 
     return csr_matrix(A)
 
 
-def sparseMatrix2coo(A):
+def sparseMatrix2coo(A, rowOffset=0, colOffset=0):
     """Convert SparseMatrix to scipy.coo_matrix.
 
     Parameters
@@ -56,10 +59,14 @@ def sparseMatrix2coo(A):
     if isinstance(A, pg.SparseMatrix):
         C = pg.RSparseMapMatrix(A)
         C.fillArrays(vals=vals, rows=rows, cols=cols)
-        return coo_matrix(vals, (rows, cols))
+        rows += rowOffset
+        cols += colOffset
+        return coo_matrix((vals, (rows, cols)), shape=(A.rows(), A.cols()))
     elif isinstance(A, pg.SparseMapMatrix):
         A.fillArrays(vals, rows, cols)
-        return coo_matrix(vals, (rows, cols))
+        rows += rowOffset
+        cols += colOffset
+        return coo_matrix((vals, (rows, cols)), shape=(A.rows(), A.cols()))
 
     return coo_matrix(A)
 
