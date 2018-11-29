@@ -219,9 +219,9 @@ public:
     size_t nShots(){ return shots_.size(); }
 
 protected:
-    RVector                 shots_;
-    std::map< int, int >    shotMap_;
-    Mesh                    offsetMesh_;
+    RVector                  shots_;
+    std::map< Index, Index > shotMap_;
+    Mesh                     offsetMesh_;
 };
 
 
