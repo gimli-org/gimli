@@ -6,6 +6,7 @@ import time
 
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
 
 import pygimli as pg
 
@@ -20,8 +21,8 @@ def updateAxes(ax, a=None, force=False):
             if force:
                 time.sleep(0.1)
         except BaseException as e:
-            pg.warn("Exception raised", e)
             print(ax, a, e)
+            pg.warn("Exception raised", e)
 
 
 def hold(val=1):
@@ -62,37 +63,32 @@ def saveAxes(ax, filename, adjust=False):
 
 
 def prettyFloat(v):
-    """Return pretty string for a given value suitable for graphical output."""
+    """Return a pretty string for a given value suitable for graphical output."""
     if abs(round(v)-v) < 1e-4 and abs(v) < 1e3:
-        return str(int(round(v, 1)))
+        string = str(int(round(v,1)))
     elif abs(v) == 0.0:
-        return "0"
+        string = "0"
     elif abs(v) > 1e4 or abs(v) <= 1e-3:
-        return str("%.1e" % v)
+        string = str("%.1e" % v)
     elif abs(v) < 1e-2:
-        return str("%.4f" % round(v, 4))
+        string = str("%.4f" % round(v,4))
     elif abs(v) < 1e-1:
-        return str("%.3f" % round(v, 3))
+        string = str("%.3f" % round(v,3))
     elif abs(v) < 1e0:
-        return str("%.2f" % round(v, 2))
+        string = str("%.2f" % round(v,2))
     elif abs(v) < 1e1:
-        return str("%.1f" % round(v, 1))
+        string = str("%.1f" % round(v,1))
     elif abs(v) < 1e2:
-        return str("%.1f" % round(v, 1))
+        string = str("%.1f" % round(v,1))
     else:
-        return str("%.0f" % round(v, 1))
+        string = str("%.0f" % round(v,1))
+
+    if string.endswith(".0"):
+        return string.replace(".0", "")
+    else:
+        return string
 
 
-def renameDepthTicks(ax):
-    """Switch signs of depth ticks to be positive"""
-    ticks = ax.yaxis.get_majorticklocs()
-    tickLabels = []
-    for t in ticks:
-        tickLabels.append(prettyFloat(-t))
-
-    ax.set_yticklabels(tickLabels)
-    # insertUnitAtNextLastTick(ax, 'm', xlabel=False)
-    updateAxes(ax)
 
 
 def insertUnitAtNextLastTick(ax, unit, xlabel=True, position=-2):
@@ -114,6 +110,16 @@ def adjustWorldAxes(ax):
 
     renameDepthTicks(ax)
     plt.tight_layout()
+    updateAxes(ax)
+
+
+def renameDepthTicks(ax):
+    """Switch signs of depth ticks to be positive"""
+    @ticker.FuncFormatter
+    def major_formatter(x, pos):
+        return prettyFloat(-x) % x
+
+    ax.yaxis.set_major_formatter(major_formatter)
     updateAxes(ax)
 
 
