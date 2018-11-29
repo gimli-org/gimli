@@ -372,8 +372,8 @@ def drawModel(ax, mesh, data=None, logScale=True, cMin=None, cMax=None,
                                      logScale=logScale)
 
     gci.set_antialiased(True)
-    gci.set_linewidth(0.1)
-    gci.set_edgecolor('face')
+    gci.set_linewidths(0.1)
+    gci.set_edgecolors("face")
 
     if xlabel is not None:
         ax.set_xlabel(xlabel)
