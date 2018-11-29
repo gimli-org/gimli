@@ -2,25 +2,15 @@
 # -*- coding: utf-8 -*-
 """Define special colorbar behavior."""
 
-from distutils.version import LooseVersion
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import numpy as np
-from matplotlib.colors import LinearSegmentedColormap
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 import pygimli as pg
 from pygimli.mplviewer import saveFigure, updateAxes, prettyFloat
-
-# CR DEPRECATED: to be removed
-# cdict = {'red': ((0.0, 0.0, 0.0), (0.5, 1.0, 1.0), (1.0, 1.0, 1.0)),
-#          'green': ((0.0, 0.0, 0.0), (0.5, 1.0, 1.0), (1.0, 0.0, 0.0)),
-#          'blue': ((0.0, 1.0, 1.0), (0.5, 1.0, 1.0), (1.0, 0.0, 0.0))}
-
-# blueRedCMap = mpl.colors.LinearSegmentedColormap('my_colormap', cdict, 256)
-
 
 def autolevel(z, nLevs, logScale=None, zmin=None, zmax=None):
     """Create nLevs bins for the data array z based on matplotlib ticker.
@@ -96,15 +86,7 @@ def cmapFromName(cmapname='jet', ncols=256, bad=None, **kwargs):
 
     if cmapname == 'b2r':
         pg.warn("Don't use manual b2r cMap, use MPL internal 'RdBu' instead.")
-        cMap = mpl.colors.LinearSegmentedColormap('my_colormap', cdict, ncols)
-    # elif cmapname == 'viridis' and \
-    #         LooseVersion(mpl.__version__) < LooseVersion('1.5.0'):
-
-    #     print("Mpl:", mpl.__version__, " using HB viridis")
-    #     cmap = LinearSegmentedColormap.from_list('viridis', viridis_data[::-1])
-    # elif cmapname == 'viridis_r':
-    #     print("Using HB viridis_r")
-    #     cmap = LinearSegmentedColormap.from_list('viridis', viridis_data)
+        cMap = "RdBu_r"
     else:
         try:
             cMap = mpl.cm.get_cmap(cmapname, ncols)
@@ -389,12 +371,12 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5):
         cbar.mappable.set_clim(vmin=cMin, vmax=cMax)
         cbar.set_clim(cMin, cMax)
 
-    #print('setCbarLevels.ticks ********************', cbarLevels)
-    #print('setCbarLevels.ticklabels ********************', cbarLevelsString)
     cbar.set_ticks(cbarLevels)
     cbar.set_ticklabels(cbarLevelsString)
-
     cbar.draw_all()
+
+    # necessary since mpl 3.0
+    cbar.ax.minorticks_off()
 
 
 def setMappableValues(mappable, dataIn):
@@ -506,7 +488,7 @@ def addCoverageAlpha(patches, coverage, dropThreshold=0.4):
         updateAxes(patches.get_axes())
 
 # CR DEPRECATED: to be removed
-# 
+#
 # # viridis_data = [
 #     [0.26700401, 0.00487433, 0.32941519], [0.26851048, 0.00960483, 0.33542652],
 #     [0.26994384, 0.01462494, 0.34137895], [0.27130489, 0.01994186, 0.34726862],
