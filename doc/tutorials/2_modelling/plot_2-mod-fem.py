@@ -3,10 +3,10 @@
 # sphinx_gallery_thumbnail_number = 2
 
 """
-Modelling
----------
+Basics of finite element modelling
+----------------------------------
 
-This tutorial covers the first steps into finite element computaion
+This tutorial covers the first steps into finite element computation
 using the *M* (Modelling) in *GIMLi*.
 
 We will not dig into deep details about the theory of finite elements
@@ -19,23 +19,42 @@ start with some basics.
 
 Assuming the Poisson equation for a simple partial differention equation
 that needs to be solved for the unknown scalar field
-:math:`u(\mathbf{r})` for a non zero right hand side function :math:`f`.
+:math:`u(\mathbf{r})` within a modelling domain :math:`\mathbf{r}\in\Omega` 
+for a non zero right hand side function :math:`f`.
 
-.. raw:: latex
-
-   \begin{align}
-   - \Delta u & = f \quad{\mathrm{in}}\quad\Omega\\
+.. math::
+   
+   - \Delta u & = f \quad{\mathrm{in}}\quad~\Omega\\
             u & = g \quad{\mathrm{on}}\quad\partial\Omega
-   \end{align}
 
-:math:`\Delta` is the Laplacian operator within the modelling domain
-:math:`\Omega`, defined at positions in the 1d space
-:math:`\mathbf{r} = (x)`, the 2d :math:`\mathbf{r} = (x, y)` and 3d
-space :math:`\mathbf{r} = (x, y, z)` respectively. As the solution for
-:math:`u` is non unique until some addional conditions are given, we set
-some known values of :math:`u=g` on the boundary :math:`\partial\Omega`
-of the domain, called as Dirichlet boundary conditions.
+The Laplace operator :math:`\Delta = \nabla\cdot\nabla` given by the divergence of the gradient
+is the sum of second partial derivatives 
+the of the field :math:`u(\mathbf{r})` with respect to the Cartesian coordinates
+in 1d space :math:`\mathbf{r} = (x)`, in 2d :math:`\mathbf{r} = (x, y)`, or 3d
+space :math:`\mathbf{r} = (x, y, z)`. 
+On the boundary :math:`\partial\Omega` of the domain we want 
+known values of :math:`u=g` as the so called Dirichlet boundary conditions.
 
+An approximated solution :math:`u_h\approx u` for our numerical problem, will probably
+only satisfy :math:`\Delta u_h + f = R` with a rest :math:`R`.
+If we choose some weighting functions :math:`w`, we can try to minimize 
+these residuum over our modelling domain.
+
+.. math::
+
+    \int_{\Omega} R w &= 0 \\
+    \int_{\Omega} - \Delta u w & = \int_{\Omega} f w
+
+It is preferable to eliminate the second derivative in the Laplace operator 
+either due to integration by parts or by applying production rule and Gauss's law.
+This leads to the so called weak formulation:
+
+.. math::
+
+    \int_{\Omega} \nabla u \nabla w - \int_{\partial \Omega}\mathbf{n}\nabla u w & = \int_{\Omega} f w \\
+    \int_{\Omega} \nabla u \nabla w & = \int_{\Omega} f w + \int_{\partial \Omega}\frac{\partial u}{\partial\mathbf{n}} w
+
+to be continued soon ...
 """
 
 import pygimli as pg
