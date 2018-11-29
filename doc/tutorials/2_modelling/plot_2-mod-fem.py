@@ -2,41 +2,40 @@
 # -*- coding: utf-8 -*-
 # sphinx_gallery_thumbnail_number = 2
 
-r"""
-
+"""
 Modelling
 ---------
 
-This is the first step for the modelling tutorial where we actually use
-finite elements computation.
+This tutorial covers the first steps into finite element computaion
+using the *M* (Modelling) in *GIMLi*.
 
-We will not go in deep detail about the finite elements theory here,
-as this can be found in several books, e.g., :cite:`Zienkiewicz1977`
+We will not dig into deep details about the theory of finite elements
+here, as this can be found in several books, e.g.,
+:cite:``Zienkiewicz1977``.
 
-In this modelling tutorial we just want to solve some simple problems
-to show how the *M* (Modelling) in *GIMLi* works.
+However, there is a little need for theory to understand what it means
+to use the finite elements method to solve a modelling problem, so we
+start with some basics.
 
-We start with a simple elliptic partial differential equation and
-with zero boundary values, but a nonzero right hand side.
+Assuming the Poisson equation for a simple partial differention equation
+that needs to be solved for the unknown scalar field
+:math:`u(\mathbf{r})` for a non zero right hand side function :math:`f`.
 
-.. math::
+.. raw:: latex
 
-    \nabla\cdot(A \cdot \nabla u ) + B u + C & =
-    0 \quad{\mathrm{in}}\quad\Omega \\
-    \alpha u + \beta \frac{\partial u }{\partial n} & =
-    0 \quad{\mathrm{on}}\quad\partial\Omega
+   \begin{align}
+   - \Delta u & = f \quad{\mathrm{in}}\quad\Omega\\
+            u & = g \quad{\mathrm{on}}\quad\partial\Omega
+   \end{align}
 
-Let :math:`A=1,\,B=0\,` and :math:`C = 1` we get the simplest Poisson equation:
+:math:`\Delta` is the Laplacian operator within the modelling domain
+:math:`\Omega`, defined at positions in the 1d space
+:math:`\mathbf{r} = (x)`, the 2d :math:`\mathbf{r} = (x, y)` and 3d
+space :math:`\mathbf{r} = (x, y, z)` respectively. As the solution for
+:math:`u` is non unique until some addional conditions are given, we set
+some known values of :math:`u=g` on the boundary :math:`\partial\Omega`
+of the domain, called as Dirichlet boundary conditions.
 
-.. math::
-
-    - \Delta u & = 1 \quad{\mathrm{in}}\quad\Omega\\
-             u & = 0 \quad{\mathrm{on}}\quad\partial\Omega\\
-
-
-Model domain is the unit square: :math:`\Omega=[-1, 1]^2`
-
-We start by importing the pygimli package.
 """
 
 import pygimli as pg
