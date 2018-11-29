@@ -130,13 +130,8 @@ u = solve(grid, a=sigma, b=-sigma * k*k, f=pointSource,
           userData={'sourcePos': sourcePosA, 'k': k},
           verbose=True)
 
-<<<<<<< HEAD
-u -= solve(grid, a=sigma, b=sigma * k*k, f=pointSource,
-           bc={'Robin': ['*', mixedBC]},
-=======
 u -= solve(grid, a=sigma, b=-sigma * k*k, f=pointSource,
-           bc={'Robin': robBC},
->>>>>>> dev
+           bc={'Robin': ['*', mixedBC]},
            userData={'sourcePos': sourcePosB, 'k': k},
            verbose=True)
 

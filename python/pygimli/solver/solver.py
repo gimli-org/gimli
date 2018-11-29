@@ -1587,13 +1587,8 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
 
     if times is None:
         rhs = assembleForceVector(mesh, f, userData=userData)
-<<<<<<< HEAD
-
-        assembleBC_(bc, mesh, A, rhs, time=None, userData=userData)
-=======
         
         assembleBC_(bc, mesh, A, rhs, a, time=None, userData=userData)
->>>>>>> dev
         
         # create result array
         u = None

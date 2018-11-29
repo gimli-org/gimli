@@ -194,13 +194,6 @@ public:
     /*! Shortcut for \ref dimension.*/
     uint dim() const { return dimension_; }
 
-    /*! Mesh is marked as geometry definition or PLC 
-    so createNode will allways with check. */
-    void setGeometry(bool b);
-
-    /*! Return if the mesh is a geometry definition.*/
-    bool isGeometry() const { return this->isGeometry_; }
-
     //** start creation stuff
     Node * createNode(double x, double y, double z, int marker=0);
     Node * createNode(const Node & node);
