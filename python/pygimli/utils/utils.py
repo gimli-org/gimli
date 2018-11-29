@@ -647,7 +647,8 @@ def uniqueAndSum(indices, to_sum, return_index=False, verbose=False):
         print('Get {} indices for sorting'.format(np.shape(indices)))
     if flag_mult:
         ar = indices.ravel().view(
-            np.dtype((np.void, indices.dtype.itemsize * indices.shape[1]))).flatten()
+            np.dtype((np.void,
+                      indices.dtype.itemsize * indices.shape[1]))).flatten()
     else:
         ar = np.asanyarray(indices).flatten()
 

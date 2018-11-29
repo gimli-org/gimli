@@ -97,7 +97,8 @@ class CellBrowser(object):
         """Connect to matplotlib figure canvas."""
         if not self._connected:
             self.pid = self.fig.canvas.mpl_connect('pick_event', self.onPick)
-            self.kid = self.fig.canvas.mpl_connect('key_press_event', self.onPress)
+            self.kid = self.fig.canvas.mpl_connect('key_press_event',
+                                                   self.onPress)
             __CBCache__.add(self)
             self._connected = True
 
@@ -108,16 +109,6 @@ class CellBrowser(object):
             self.fig.canvas.mpl_disconnect(self.pid)
             self.fig.canvas.mpl_disconnect(self.kid)
             self._connected = False
-
-    def initText(self):
-        bbox = dict(boxstyle='round, pad=0.5', fc='w', alpha=0.5)
-        arrowprops = dict(arrowstyle='->', connectionstyle='arc3,rad=0.5')
-        kwargs = dict(fontproperties='monospace', visible=False,
-                      fontsize=mpl.rcParams['font.size'] - 2, weight='bold',
-                      xytext=(50, 20), arrowprops=arrowprops,
-                      textcoords='offset points', bbox=bbox, va='center')
-
-        self.text = self.ax.annotate(None, xy=(0, 0), **kwargs)
 
     def initText(self):
         bbox = dict(boxstyle='round, pad=0.5', fc='w', alpha=0.5)
@@ -142,8 +133,8 @@ class CellBrowser(object):
                 self.data = pg.meshtools.nodeDataToCellData(self.mesh, data)
             else:
                 pg.warn('Data length mismatch mesh.cellCount(): ' +
-                      str(len(data)) + "!=" + str(mesh.cellCount()) +
-                      ". Mapping data to cellMarkers().")
+                        str(len(data)) + "!=" + str(self.mesh.cellCount()) +
+                        ". Mapping data to cellMarkers().")
                 self.data = data[self.mesh.cellMarkers()]
 
     def hide(self):
@@ -174,7 +165,6 @@ class CellBrowser(object):
         self.highLight.set_facecolors([0.9, 0.9, 0.9, 0.4])
         self.ax.add_collection(self.highLight)
 
-
     def onPick(self, event):
         """Call `self.update()` on mouse pick event."""
         self.event = event
@@ -182,11 +172,11 @@ class CellBrowser(object):
 
         if self.data is None:
             self.data = self.artist.get_array()
-            #self.edgeColors = self.artist.get_edgecolors()
+            # self.edgeColors = self.artist.get_edgecolors()
 
         if 'mouseevent' in event.__dict__.keys():
-            #print(event.__dict__.keys())
-            #print(event.mouseevent)
+            # print(event.__dict__.keys())
+            # print(event.mouseevent)
             if (event.mouseevent.xdata is not None and
                 event.mouseevent.ydata is not None and
                 event.mouseevent.button == 1):
@@ -236,8 +226,8 @@ class CellBrowser(object):
                 data = self.data[self.cellID]
                 header = "Cell %d:\n" % self.cellID
                 header += "-" * (len(header) - 1)
-                info = "\nx: {:.2f}\n y: {:.2f}\n data: {:.2e}\n marker: {:d}".format(
-                    x, y, data, marker)
+                istr = "\nx: {:.2f}\n y: {:.2f}\n data: {:.2e}\n marker: {:d}"
+                info = istr.format(x, y, data, marker)
                 text = header + textwrap.dedent(info)
 
                 if self.text is None or self.text not in self.ax.texts:
@@ -339,7 +329,8 @@ def drawModel(ax, mesh, data=None, logScale=True, cMin=None, cMax=None,
     """
     # deprecated .. remove me
     if 'cMap' in kwargs or 'cmap' in kwargs:
-        pg.warn('cMap|cmap argument is deprecated for draw functions. Please use show or customize a colorbar.')
+        pg.warn('cMap|cmap argument is deprecated for draw functions. ' +
+                'Please use show or customize a colorbar.')
     # deprecated .. remove me
 
     if mesh.nodeCount() == 0:
@@ -537,14 +528,14 @@ def drawMeshBoundaries(ax, mesh, hideMesh=False, useColorMap=False, **kwargs):
                                    color=(0.0, 0.0, 0.0, 1.0),
                                    linewidth=lw or 0.3)
 
-    drawSelectedMeshBoundaries(ax,
-                    mesh.findBoundaryByMarker(pg.MARKER_BOUND_HOMOGEN_NEUMANN),
-                    color=(0.0, 1.0, 0.0, 1.0),
-                    linewidth=lw or 1.0)
-    drawSelectedMeshBoundaries(ax,
-                    mesh.findBoundaryByMarker(pg.MARKER_BOUND_MIXED),
-                    color=(1.0, 0.0, 0.0, 1.0),
-                    linewidth=lw or 1.0)
+    drawSelectedMeshBoundaries(
+            ax, mesh.findBoundaryByMarker(pg.MARKER_BOUND_HOMOGEN_NEUMANN),
+            color=(0.0, 1.0, 0.0, 1.0),
+            linewidth=lw or 1.0)
+    drawSelectedMeshBoundaries(
+            ax, mesh.findBoundaryByMarker(pg.MARKER_BOUND_MIXED),
+            color=(1.0, 0.0, 0.0, 1.0),
+            linewidth=lw or 1.0)
 
     b0 = [b for b in mesh.boundaries() if b.marker() > 0]
     if useColorMap:
@@ -600,9 +591,6 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
     >>> pg.mplviewer.drawPLC(ax, geom)
     """
     #    eCircles = []
-    cols = []
-
-    #print('draw PLC ********************')
     if fillRegion and mesh.boundaryCount() > 2:
         tmpMesh = pg.meshtools.createMesh(mesh, quality=20, area=0)
         if tmpMesh.cellCount() == 0:
@@ -621,11 +609,9 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
 
             if regionMarker:
                 cbar = createColorBar(gci, label="Region markers")
-                updateColorBar(cbar,
-                               cMap=plt.cm.get_cmap("Set3", len(uniquemarkers)),
-                               cMin=-0.5,
-                               cMax=len(uniquemarkers) - 0.5,
-                               )
+                updateColorBar(
+                        cbar, cMap=plt.cm.get_cmap("Set3", len(uniquemarkers)),
+                        cMin=-0.5, cMax=len(uniquemarkers) - 0.5)
                 ticks = np.arange(len(uniquemarkers))
 
                 cbar.set_ticks(ticks)
@@ -652,7 +638,7 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
             if n.marker() == pg.MARKER_NODE_SENSOR:
                 col = (0.0, 0.0, 0.0, 1.0)
 
-            #ms = kwargs.pop('markersize', 5)
+            # ms = kwargs.pop('markersize', 5)
             ax.plot(n.pos()[0], n.pos()[1], 'bo', color=col, **kwargs)
 
     #        eCircles.append(mpl.patches.Circle((n.pos()[0], n.pos()[1])))
@@ -682,20 +668,22 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
 
     updateAxes_(ax)
 
+
 def _createCellPolygon(cell):
     """Utility function to polygon for cell shape to be used by MPL."""
     if cell.shape().nodeCount() == 3:
         return list(zip([cell.node(0).x(), cell.node(1).x(),
-                                   cell.node(2).x()],
-                                  [cell.node(0).y(), cell.node(1).y(),
-                                   cell.node(2).y()]))
+                         cell.node(2).x()],
+                        [cell.node(0).y(), cell.node(1).y(),
+                         cell.node(2).y()]))
     elif cell.shape().nodeCount() == 4:
         return list(zip([cell.node(0).x(), cell.node(1).x(),
-                                   cell.node(2).x(), cell.node(3).x()],
-                                  [cell.node(0).y(), cell.node(1).y(),
-                                   cell.node(2).y(), cell.node(3).y()]))
+                         cell.node(2).x(), cell.node(3).x()],
+                        [cell.node(0).y(), cell.node(1).y(),
+                         cell.node(2).y(), cell.node(3).y()]))
 
     pg.warn("Unknown shape to patch: ", cell)
+
 
 def createMeshPatches(ax, mesh, verbose=True, rasterized=False):
     """Utility function to create 2d mesh patches within a given ax."""
@@ -820,7 +808,8 @@ def drawMPLTri(ax, mesh, data=None,
     """
     # deprecated remove me
     if 'cMap' in kwargs or 'cmap' in kwargs:
-        pg.warn('cMap|cmap argument is deprecated for draw functions. Please use show or customize a colorbar.')
+        pg.warn('cMap|cmap argument is deprecated for draw functions.' +
+                'Please use show or customize a colorbar.')
     # deprecated remove me
 
     x, y, triangles, z, _ = createTriangles(mesh, data)
@@ -831,14 +820,14 @@ def drawMPLTri(ax, mesh, data=None,
     nLevs = kwargs.pop('nLevs', 5)
 
     if len(levels) == 0:
-        levels = autolevel(data, nLevs, zmin=cMin, zmax=cMax, logScale=logScale)
+        levels = autolevel(data, nLevs, zmin=cMin, zmax=cMax,
+                           logScale=logScale)
 
     if len(z) == len(triangles):
         shading = kwargs.pop('shading', 'flat')
 
-        #bounds = np.linspace(levels[0], levels[-1], nLevs)
-        #norm = colors.BoundaryNorm(boundaries=bounds, ncolors=256)
-
+        # bounds = np.linspace(levels[0], levels[-1], nLevs)
+        # norm = colors.BoundaryNorm(boundaries=bounds, ncolors=256)
         if shading == 'gouraud':
             z = pg.meshtools.cellDataToNodeData(mesh, data)
             gci = ax.tripcolor(x, y, triangles, z,
@@ -859,15 +848,15 @@ def drawMPLTri(ax, mesh, data=None,
 
             if fillContour:
                 # add outer climits to fill lower and upper too
-                l = np.array(levels)
+                levs = np.array(levels)
 
                 if min(z) < min(levels):
-                    l = np.hstack([min(z), l])
+                    levs = np.hstack([min(z), levs])
 
                 if max(z) > max(levels):
-                    l = np.hstack([l, max(z)])
+                    levs = np.hstack([levs, max(z)])
 
-                gci = ax.tricontourf(x, y, triangles, z, levels=l,
+                gci = ax.tricontourf(x, y, triangles, z, levels=levs,
                                      **kwargs)
             if contourLines:
                 ax.tricontour(x, y, triangles, z, levels=levels,
@@ -1026,7 +1015,8 @@ def drawStreamLine_(ax, mesh, c, data, dataMesh=None, linewidth=1.0,
         lwidths = pg.RVector(len(v), linewidth)
         lwidths[pg.find(pg.RVector(v) < dropTol)] = 0.0
 
-        lines = mpl.collections.LineCollection(segments, linewidths=lwidths, **kwargs)
+        lines = mpl.collections.LineCollection(
+            segments, linewidths=lwidths, **kwargs)
         ax.add_collection(lines)
 
         # probably the limits are wrong without plot call
@@ -1039,8 +1029,7 @@ def drawStreamLine_(ax, mesh, c, data, dataMesh=None, linewidth=1.0,
         dx = x[xmid + 1] - x[xmid]
         dy = y[ymid + 1] - y[ymid]
         c = mesh.findCell([x[xmid], y[ymid]])
-        dLength = c.center().dist(c.node(0).pos()) / 4.
-
+        # dLength = c.center().dist(c.node(0).pos()) / 4.  # NOT USED
 
         if v[xmid] > dropTol:
             # ax.arrow(x[xmid], y[ymid], dx, dy,
@@ -1060,11 +1049,15 @@ def drawStreamLine_(ax, mesh, c, data, dataMesh=None, linewidth=1.0,
             dy90 = dx
             aLen = 3
             aWid = 1
-            xy = list(zip([x[xmid] + dx90*aWid, x[xmid] + dx*aLen, x[xmid] - dx90*aWid],
-                          [y[ymid] + dy90*aWid, y[ymid] + dy*aLen, y[ymid] - dy90*aWid]))
+            xy = list(zip([x[xmid] + dx90*aWid, x[xmid] + dx*aLen,
+                           x[xmid] - dx90*aWid],
+                          [y[ymid] + dy90*aWid, y[ymid] + dy*aLen,
+                           y[ymid] - dy90*aWid]))
 
-            arrow = mpl.patches.Polygon(xy, ls=None, lw=0, closed=True, **kwargs)
-            #arrow = mpl.collections.PolyCollection(xy, lines=None, closed=True, **kwargs)
+            arrow = mpl.patches.Polygon(xy, ls=None, lw=0, closed=True,
+                                        **kwargs)
+            # arrow = mpl.collections.PolyCollection(xy, lines=None,
+            #                                        closed=True, **kwargs)
             ax.add_patch(arrow)
 
     return lines
