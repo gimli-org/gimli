@@ -20,7 +20,7 @@ pacman -S --needed --noconfirm \
         diffutils \
         patch
 
-pacman -S --needed --noconfirm --force \
+pacman -S --needed --noconfirm --overwrite \
         mingw-w64-x86_64-cmake \
         mingw-w64-x86_64-gcc \
         mingw-w64-x86_64-gcc-fortran \

@@ -75,6 +75,7 @@ include_directories(${PY_NUMPY}/core/include/)
 
 if(WIN32)
     include_directories(${PYTHON_INCLUDE_DIR})
+    include_directories(${Boost_INCLUDE_DIR})
 endif(WIN32)
 
 if(CONDA_BUILD)

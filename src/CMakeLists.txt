@@ -43,6 +43,10 @@ if (PYTHON_FOUND)
     target_link_libraries(${libgimli_TARGET_NAME} ${PYTHON_LIBRARY})
 endif (PYTHON_FOUND)
 
+if (Boost_INCLUDE_DIR)
+    include_directories(${Boost_INCLUDE_DIR})
+endif()
+
 if (CONDA_BUILD)
     include_directories(${CONDA_PREFIX})
 endif()

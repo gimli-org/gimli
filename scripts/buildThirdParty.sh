@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-BOOST_VERSION_DEFAULT=1.61.0
+BOOST_VERSION_DEFAULT=1.68.0
 #since 63 libboost_numpy
 #since 64 python build broken
 
@@ -411,10 +411,10 @@ buildBOOST(){
         --platform=msys \
         --layout=tagged \
         --debug-configuration \
-        --with-system \
-        $WITHPYTHON \
-        --with-thread
-
+        $WITHPYTHON 
+    
+    	#--with-system \
+        #--with-thread 
 
         # --with-date_time \
         # --with-chrono \
