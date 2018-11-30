@@ -15,8 +15,6 @@ We start by importing the necessary packages.
 """
 # sphinx_gallery_thumbnail_number = 3
 
-from itertools import product
-
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
@@ -26,7 +24,6 @@ import pygimli.meshtools as mt
 from pygimli.physics.traveltime import Refraction
 
 mpl.rcParams['image.cmap'] = 'inferno_r'
-
 
 ################################################################################
 # Next, we build the crosshole acquisition geometry with two shallow boreholes.
@@ -59,7 +56,7 @@ for sen in sensors:
 
 mesh_fwd = mt.createMesh(geom, quality=34, area=.25)
 model = np.array([2000., 2300, 1700])[mesh_fwd.cellMarkers()]
-pg.show(mesh_fwd, model, label="Velocity (m/s)", nLevs=3)
+pg.show(mesh_fwd, model, label="Velocity (m/s)", nLevs=3, logScale=False)
 
 ################################################################################
 # Create inversion mesh
@@ -74,8 +71,9 @@ ax.plot(sensors[:, 0], sensors[:, 1], "ro")
 ################################################################################
 # Next, we create an empty DataContainer and fill it with sensor positions and
 # all possible shot-recevier pairs for the two-borehole scenario using the
-# prouct funtion in the itertools module (Python standard library).
+# product funtion in the itertools module (Python standard library).
 
+from itertools import product
 numbers = np.arange(len(depth))
 rays = list(product(numbers, numbers + len(numbers)))
 
@@ -116,18 +114,20 @@ data = tt.simulate(mesh=mesh_fwd, scheme=scheme, slowness=1. / model,
 
 ttinv = Refraction()
 ttinv.setData(data)  # Set previously simulated data
-ttinv.setMesh(mesh.createMeshWithSecondaryNodes(5))
-invmodel = ttinv.invert(lam=3000, vtop=2000, vbottom=2000)
-print("chi^2 =", ttinv.inv.getChi2())  # Look at the data fit
+ttinv.setMesh(mesh, secNodes=5)
+invmodel = ttinv.invert(lam=1100, vtop=2000, vbottom=2000, zWeight=1.0)
+print("chi^2 = %.2f" % ttinv.inv.getChi2())  # Look at the data fit
 
 ################################################################################
 # Finally, we visualize the true model and the inversion result next to each
 # other.
-fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(8, 8), sharex=True, sharey=True)
+
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(8, 7), sharex=True, sharey=True)
 ax1.set_title("True model")
 ax2.set_title("Inversion result")
 
-pg.show(mesh_fwd, model, ax=ax1, showMesh=True, label="Velocity (m/s)", nLevs=3)
+pg.show(mesh_fwd, model, ax=ax1, showMesh=True, label="Velocity (m/s)",
+        logScale=False, nLevs=3)
 
 for ax in (ax1, ax2):
     ax.plot(sensors[:, 0], sensors[:, 1], "wo")
@@ -137,5 +137,15 @@ ttinv.showRayPaths(ax=ax2, color="0.8", alpha=0.3)
 fig.tight_layout()
 
 ################################################################################
-# Note how the rays are attracted by the high velocity anomaly while 
-# circumventing the low velocity region.
+# Note how the rays are attracted by the high velocity anomaly while
+# circumventing the low velocity region. This is also reflected in the coverage,
+# which can be visualized as follows:
+
+fig, ax = plt.subplots()
+ttinv.showCoverage(ax=ax, cMap="Greens")
+ttinv.showRayPaths(ax=ax, color="k", alpha=0.3)
+ax.plot(sensors[:, 0], sensors[:, 1], "ko")
+
+################################################################################
+# White regions indicate the model null space, i.e. cells that are not traversed
+# by any ray.
