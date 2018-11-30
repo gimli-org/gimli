@@ -59,7 +59,7 @@ for sen in sensors:
 
 mesh_fwd = mt.createMesh(geom, quality=34, area=.25)
 model = np.array([2000., 2300, 1700])[mesh_fwd.cellMarkers()]
-pg.show(mesh_fwd, model, label="Velocity (m/s)")
+pg.show(mesh_fwd, model, label="Velocity (m/s)", nLevs=3)
 
 ################################################################################
 # Create inversion mesh
@@ -127,7 +127,7 @@ fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(8, 8), sharex=True, sharey=True)
 ax1.set_title("True model")
 ax2.set_title("Inversion result")
 
-pg.show(mesh_fwd, model, ax=ax1, showMesh=True, label="Velocity (m/s)")
+pg.show(mesh_fwd, model, ax=ax1, showMesh=True, label="Velocity (m/s)", nLevs=3)
 
 for ax in (ax1, ax2):
     ax.plot(sensors[:, 0], sensors[:, 1], "wo")
@@ -135,3 +135,7 @@ for ax in (ax1, ax2):
 ttinv.showResult(ax=ax2)
 ttinv.showRayPaths(ax=ax2, color="0.8", alpha=0.3)
 fig.tight_layout()
+
+################################################################################
+# Note how the rays are attracted by the high velocity anomaly while 
+# circumventing the low velocity region.
