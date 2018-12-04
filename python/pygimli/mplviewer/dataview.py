@@ -118,10 +118,9 @@ def patchValMap(vals, xvec=None, yvec=None, ax=None, cMin=None, cMax=None,
                     xyMap[y] = []
                 xyMap[y].append(i)
 
-            maxR = max(ymap.values())  # what's that for? not used
+            # maxR = max(ymap.values())  # what's that for? not used
             dR = 1 / (len(ymap.values())+1)
-
-            dOff = np.pi / 2  # what's that for? not used
+            # dOff = np.pi / 2  # what's that for? not used
 
             for y, xIds in xyMap.items():
                 r = 1. - dR*(ymap[y]+1)
@@ -131,7 +130,7 @@ def patchValMap(vals, xvec=None, yvec=None, ax=None, cMin=None, cMax=None,
                 # print(y, ymap[y])
                 for i in xIds:
                     phi = xvec[i]
-                    x = r * np.cos(phi)  # what's that for? not used
+                    # x = r * np.cos(phi)  # what's that for? not used
                     y = r * np.sin(phi)
 
                     dPhi = (xvec[1] - xvec[0])
@@ -290,12 +289,22 @@ def plotMatrix(mat, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
         logarithmic colour scale [min(A)>0]
     label : string
         colorbar label
+
+    Returns
+    -------
+    ax : matplotlib axes object
+        axes object
+    cb : matplotlib colorbar
+        colorbar object
     """
     if xmap is None:
         xmap = {i: i for i in range(mat.shape[0])}
     if ymap is None:
         ymap = {i: i for i in range(mat.shape[1])}
-    mat_ = np.ma.masked_where(mat == 0.0, mat, False)
+    if isinstance(mat, np.ma.MaskedArray):
+        mat_ = mat
+    else:
+        mat_ = np.ma.masked_where(mat == 0.0, mat, False)
 
     if cMin is None:
         cMin = np.min(mat_)
@@ -318,8 +327,9 @@ def plotMatrix(mat, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
     ax.set_aspect(kwargs.pop('aspect', 1))
     cbar = None
     if kwargs.pop('colorBar', True):
+        ori = kwargs.pop('orientation', 'horizontal')
         cbar = pg.mplviewer.createColorBar(im, cMin=cMin, cMax=cMax, nLevs=5,
-                                           label=label)
+                                           label=label, orientation=ori)
     ax.grid(True)
     xt = np.unique(ax.get_xticks().clip(0, len(xmap) - 1))
     yt = np.unique(ax.get_xticks().clip(0, len(ymap) - 1))
@@ -367,6 +377,13 @@ def showVecMatrix(xvec, yvec, vals, full=False, **kwargs):
             Lgarithmic colour scale [min(A)>0]
         * label : string
             Colorbar label
+
+    Returns
+    -------
+    ax : matplotlib axes object
+        axes object
+    cb : matplotlib colorbar
+        colorbar object
     """
     A, xmap, ymap = generateMatrix(xvec, yvec, vals, full=full)
     return plotMatrix(A, xmap, ymap, **kwargs)

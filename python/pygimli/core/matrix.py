@@ -209,13 +209,12 @@ class Cm05Matrix(pg.MatrixBase):
         t = time.time()
         self.ew, self.EV = eigh(A)
         self.mul = np.sqrt(1./self.ew)
-        elapsed = time.time() - t
-        print('(C) Calculation time for eigenvalue decomposition:\n%s sec'
-              % elapsed)
+        if verbose:
+            pg.info('(C) Time for eigenvalue decomposition:{:.1f} s'.format(
+                time.time() - t))
 
         self.A = A
         super().__init__(verbose)  # only in Python 3
-#        pg.MatrixBase.__init__(self)  # the Python 2 variant
 
     def rows(self):
         """Return number of rows (using underlying matrix)."""
