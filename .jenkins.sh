@@ -41,7 +41,7 @@ export GIMLI_NUM_THREADS=4
 mkdir -p build
 cd build
 
-if [ $core_update -ge 1 ]; then
+if (( $core_update -ge 1 )); then
   echo "# Core changes detected. #"
   cmake ../trunk \
      -DPYVERSION=3 \
