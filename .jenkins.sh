@@ -21,7 +21,7 @@ python -c "import numpy; print(numpy.__version__)"
 python -c "import matplotlib; print(matplotlib.__version__)"
 
 # Check if core was changed
-core_update=`git --git-dir=trunk/.git diff-tree -r $GIT_COMMIT | grep -c src/`
+core_update=$(git --git-dir=trunk/.git diff-tree -r $GIT_COMMIT | grep -c src || true)
 
 # Set this to 1 if you want clean build (also of dependencies)
 export CLEAN=0
@@ -41,7 +41,7 @@ export GIMLI_NUM_THREADS=4
 mkdir -p build
 cd build
 
-if (( $core_update -ge 1 )); then
+if [[ $core_update -ge 1 ]]; then
   echo "# Core changes detected. #"
   cmake ../trunk \
      -DPYVERSION=3 \
