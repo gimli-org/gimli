@@ -3,10 +3,12 @@ import numpy as np
 import pygimli as pg
 
 
-def refractionNlayer(offsets, thk, vel):
+def refractionNlayer(offsets, thk, vel, muteDirect=0):
     """First arrival of n-layered medium."""
     s = 1./np.array(vel)
     tt = offsets * s[0]
+    if muteDirect:
+        tt[:] = max(tt)
     nlay = len(vel)
     for i in range(1, nlay):  # i-th refracted
         tn = offsets * s[i]  # slope
@@ -52,7 +54,8 @@ class RefractionNLayer(pg.ModellingBase):
 
 class RefractionNLayerFix1stLayer(pg.ModellingBase):
     """FOP for 1D Refraction seismic with layered model (e.g. water layer)."""
-    def __init__(self, offset=0, nlay=3, v0=1465, d0=200, verbose=True):
+    def __init__(self, offset=0, nlay=3, v0=1465, d0=200, muteDirect=0,
+                 verbose=True):
         """Init forward operator for velocity increases with fixed 1st layer.
 
         Parameters
@@ -70,6 +73,7 @@ class RefractionNLayerFix1stLayer(pg.ModellingBase):
         self.nlay = nlay
         self.offset = offset
         self.v0 = v0
+        self.mDirect = muteDirect
         mesh = pg.createMesh1DBlock(nlay)
         self.setMesh(mesh)
 
@@ -83,7 +87,7 @@ class RefractionNLayerFix1stLayer(pg.ModellingBase):
     def response(self, model):
         """Return forward response f(m)."""
         assert len(model) == self.nlay*2-1
-        return refractionNlayer(self.offset, *self.thkVel(model))
+        return refractionNlayer(self.offset, *self.thkVel(model), self.mDirect)
 
 
 if __name__ == '__main__':
