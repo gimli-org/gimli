@@ -237,7 +237,7 @@ class Refraction(MethodManager):
         return ax
 
     def createMesh(self, depth=None, quality=34.3, paraDX=1, boundary=0,
-                   paraBoundary=5, secNodes=3, apply=True, **kwargs):
+                   paraBoundary=0, secNodes=3, apply=True, **kwargs):
         """Create (inversion) mesh using createParaDomain2D
 
         Parameters
@@ -419,6 +419,8 @@ class Refraction(MethodManager):
         self.inv.setData(self.dataContainer('t'))
         self.inv.setLambda(kwargs.pop('lam', 30.))
 
+        if 'threadCount' in kwargs:  # just for backward compatibility
+            self.fop.setThreadCount(kwargs.pop('threadCount'))
         if 'max_iter' in kwargs:  # just for backward compatibility
             self.inv.setMaxIter(kwargs.pop('max_iter'))
         if 'maxIter' in kwargs:  # the better way
