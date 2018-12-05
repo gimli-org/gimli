@@ -25,7 +25,7 @@ macro(add_python_module PYTHON_MODULE_NAME SOURCE_DIR EXTRA_LIBS OUTDIR)
     target_link_libraries(${PYTHON_TARGET_NAME} ${EXTRA_LIBS})
     target_link_libraries(${PYTHON_TARGET_NAME} ${PYTHON_LIBRARY})
     target_link_libraries(${PYTHON_TARGET_NAME} ${Boost_PYTHON_LIBRARY})
-
+       
     set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES PREFIX "")
 
     if (WIN32)
@@ -112,7 +112,7 @@ function(find_python_module module)
             "import re, ${module}; print(re.compile('\\__init__.py.*').sub('',${module}.__file__))"
             RESULT_VARIABLE _${module}_status
             OUTPUT_VARIABLE _${module}_location
-            ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
+            OUTPUT_STRIP_TRAILING_WHITESPACE)
 
         if(NOT _${module}_status)
             set(PY_${module_upper} ${_${module}_location} CACHE STRING

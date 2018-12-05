@@ -85,8 +85,11 @@ public:
         const RVector *dm = &(*data_)("m");
         const RVector *dn = &(*data_)("n");
 
-        log(Debug, "Thread #" + str(tNr) + ": on CPU " + str(sched_getcpu()) + " slice " + str(start_) + ":" + str(end_));
-        
+        #if defined(WIN32)
+            log(Debug, "Thread #" + str(tNr) + ": on CPU " + str("?") + " slice " + str(start_) + ":" + str(end_));
+        #else
+            log(Debug, "Thread #" + str(tNr) + ": on CPU " + str(sched_getcpu()) + " slice " + str(start_) + ":" + str(end_));
+        #endif
         for (Index cellID = start_; cellID < end_; cellID ++) {
 
             cell    = (*para_)[cellID];

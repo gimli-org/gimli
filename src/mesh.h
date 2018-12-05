@@ -150,8 +150,10 @@ public:
     typedef RVector3 HoleMarker;
     typedef std::vector< RVector3 > HoleMarkerList;
 
-    /*! Default constructor, create empty mesh with dimension dim */
-    Mesh(Index dim=2);
+    /*! Default constructor, create empty mesh with dimension dim 
+    If this mesh is supposed to be a geometry definition, all 
+    created nodes will be checked for duplicates.*/
+    Mesh(Index dim=2, bool isGeometry=false);
 
     /*! Constructor, read mesh from filename */
     Mesh(const std::string & filename, bool createNeighbourInfos=true);
@@ -175,6 +177,13 @@ public:
 
     /*! Return true if this mesh have static geometry. [Default=True]*/
     inline bool staticGeometry() const { return staticGeometry_; }
+
+    /*! Mesh is marked as geometry definition or PLC 
+    so createNode will allways with check. */
+    void setGeometry(bool b);
+
+    /*! Return if the mesh is a geometry definition.*/
+    bool isGeometry() const { return isGeometry_; }
 
     /*! Set the dimension of the mesh. [Default = 2] */
     void setDimension(uint dim){ dimension_ = dim;}
@@ -767,7 +776,10 @@ protected:
 
     void findRange_() const ;
 
-    Node * createNode_(const RVector3 & pos, int marker, int id);
+    /*!Ensure is geometry check*/
+    Node * createNodeGC_(const RVector3 & pos, int marker);
+
+    Node * createNode_(const RVector3 & pos, int marker);
 
     Node * createSecondaryNode_(const RVector3 & pos);
 
@@ -831,6 +843,7 @@ protected:
 
     /*! A static geometry mesh caches geometry informations. */
     bool staticGeometry_;
+    bool isGeometry_; // mesh is marked as PLC
     mutable RVector cellSizesCache_;
     mutable RVector boundarySizesCache_;
     mutable R3Vector boundarySizedNormCache_;
