@@ -21,7 +21,7 @@ python -c "import numpy; print(numpy.__version__)"
 python -c "import matplotlib; print(matplotlib.__version__)"
 
 # Check if core was changed
-core_update=`git --git-dir=trunkt/.git diff-tree -r $GIT_COMMIT | grep -c src/`
+core_update=`git --git-dir=trunk/.git diff-tree -r $GIT_COMMIT | grep -c src/`
 
 # Set this to 1 if you want clean build (also of dependencies)
 export CLEAN=0
