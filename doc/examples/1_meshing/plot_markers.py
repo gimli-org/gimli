@@ -36,10 +36,10 @@ circle_inner = mt.createCircle(
 
 plc = mt.mergePLC([circle_outer, circle_inner])
 
-ax, cb = pg.show(plc, marker=True, savefig="plc_naive.pdf")
+ax, cb = pg.show(plc, markers=True)
 
 ###############################################################################
-# the solution to this problem are the region marker, which define the marker
+# The solution to this problem are the region marker, which define the marker
 # value of the region they are placed in. By default all region markers are
 # assigned the position (0,0,0), thereby overwriting each other (see dots in
 # figure below). If no region marker is present in a region, a marker value of
@@ -53,10 +53,10 @@ for nr, marker in enumerate(plc.regionMarker()):
     )
     ax.scatter(marker.x(), marker.y(), s=(2 - nr) * 20)
 ax.set_title('marker positions')
-fig.savefig('plc_naive_marker_positions.pdf', bbox_inches='tight')
+fig.show()
 
 ###############################################################################
-# Let fix this issue by assigning region marker positions that are not
+# Let us fix this issue by assigning region marker positions that are not
 # overwritten by other objects when the geometries are merged:
 circle_outer = mt.createCircle(
     pos=[0.0, 0.0],
@@ -76,7 +76,7 @@ circle_inner = mt.createCircle(
 
 plc = mt.mergePLC([circle_outer, circle_inner])
 
-ax, cb = pg.show(plc, marker=True, savefig="plc_fixed.pdf")
+ax, cb = pg.show(plc, markers=True)
 
 fig = ax.get_figure()
 for nr, marker in enumerate(plc.regionMarker()):
@@ -86,4 +86,11 @@ for nr, marker in enumerate(plc.regionMarker()):
     )
     ax.scatter(marker.x(), marker.y(), s=(2 - nr) * 20)
 ax.set_title('marker positions')
-fig.savefig('plc_fixed_marker_positions.pdf', bbox_inches='tight')
+fig.show()
+
+###############################################################################
+# .. note::
+# 
+#   This example was kindly contributed by Maximilian Weigand (University of
+#   Bonn). If you also want to contribute an interesting example, check out
+#   our `contribution guidelines <https://www.pygimli.org/contrib.html>`_.
