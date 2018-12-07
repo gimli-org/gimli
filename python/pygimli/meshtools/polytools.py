@@ -239,6 +239,8 @@ def createCircle(pos=None, radius=1, segments=12, start=0, end=2. * math.pi,
 
         marker : int [1]
             Marker for the resulting triangle cells after mesh generation
+        markerPosition : floats [x, y] [0.0, 0.0]
+            Position of the marker (works for both regions and holes)
         area : float [0]
             Maximum cell size for resulting triangles after mesh generation
         boundaryMarker : int [1]
@@ -291,16 +293,21 @@ def createCircle(pos=None, radius=1, segments=12, start=0, end=2. * math.pi,
         yp = np.sin(phi)
         poly.createNode([xp, yp])
 
-    if kwargs.pop('isHole', False):
-        poly.addHoleMarker([0.0, 0.0])
-    else:
-        poly.addRegionMarker([0.0, 0.0], marker=kwargs.pop('marker', 1),
-                             area=kwargs.pop('area', 0))
+    markerposition = kwargs.pop('markerPosition', [0.0, 0.0])
 
     if hasattr(radius, '__len__'):
         poly.scale(radius)
     else:
         poly.scale([radius, radius])
+
+    if kwargs.pop('isHole', False):
+        poly.addHoleMarker(markerposition)
+    else:
+        poly.addRegionMarker(
+            markerposition,
+            marker=kwargs.pop('marker', 1),
+            area=kwargs.pop('area', 0)
+        )
 
     poly.translate(pos)
 
