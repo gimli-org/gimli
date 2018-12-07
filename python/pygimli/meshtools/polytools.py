@@ -4,7 +4,7 @@
 Please note there is currently no collision or intersection check at all.
 
 Volunteers welcome to help creating, adapting or interfacing a basic
-geometry system. A lot of thinks are needed:
+geometry system. A lot of things are needed:
 
     * 2D
     * 3D
@@ -74,7 +74,7 @@ def createRectangle(start=None, end=None, pos=None, size=None, **kwargs):
         leftDirection : bool [True]
             TODO Rotational direction
         isHole : bool [False]
-            The Polygone will become a hole instead of a triangulation
+            The polygon will become a hole instead of a triangulation
         isClosed : bool [True]
             Add closing edge between last and first node.
 
@@ -246,7 +246,7 @@ def createCircle(pos=None, radius=1, segments=12, start=0, end=2. * math.pi,
         leftDirection : bool [True]
             Rotational direction
         isHole : bool [False]
-            The Polygone will become a hole instead of a triangulation
+            The polygon will become a hole instead of a triangulation
         isClosed : bool [True]
             Add closing edge between last and first node.
 
@@ -398,7 +398,7 @@ def createPolygon(verts, isClosed=False, isHole=False, **kwargs):
         * area : float [0]
             Maximum cell size for resulting triangles after mesh generation
         * isHole : bool [False]
-            The Polygone will become a hole instead of a triangulation
+            The polygon will become a hole instead of a triangulation
 
     isClosed : bool [True]
         Add closing edge between last and first node.
