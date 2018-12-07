@@ -1,6 +1,6 @@
 # Requirements to test and build the documentation
 # Install via pip: sudo pip install -U -r requirements.txt
-sphinx == 1.6.1
+sphinx >= 1.6.1
 matplotlib>=2.0,<3.0
 numpy>=1.12
 numpydoc>=0.7
