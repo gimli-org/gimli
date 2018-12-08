@@ -384,10 +384,10 @@ def createLine(start, end, segments=1, **kwargs):
 def createPolygon(verts, isClosed=False, isHole=False, **kwargs):
     """Create a polygon from a list of vertices.
 
-    All vertices needs to be unique and duplicate vertices will be ignored.
+    All vertices need to be unique and duplicate vertices will be ignored.
     If you want the polygon be a closed region you can set the 'isCloses' flag.
     Closed region can be attributed by assigning a region marker.
-    The automatic region marker is set in the center of all vertices.
+    The automatic region marker is placed in the center of all vertices.
 
     Parameters
     ----------
