@@ -92,15 +92,15 @@ def createRectangle(start=None, end=None, pos=None, size=None, **kwargs):
     ...                             marker=4, area=0.1)
     >>> _ = pg.show(rectangle)
     """
-    #if not ((start and end) or (pos and size)):
-        #raise BaseException("createRectangle pls. give either start and end"
-                            #"OR pos and size.")
+#    if not ((start and end) or (pos and size)):
+#        raise BaseException("createRectangle pls. give either start and end"
+#                            "OR pos and size.")
     if start is None:
         start = [-0.5, 0.5]
     if end is None:
         end = [0.5, -0.5]
     poly = pg.Mesh(dim=2, isGeometry=True)
-    
+
     sPos = pg.RVector3(start)
     ePos = pg.RVector3(end)
 
@@ -179,7 +179,7 @@ def createWorld(start, end, marker=1, area=0., layers=None, worldMarker=True):
     z = pg.sort(z)[::-1]
 
     poly = pg.Mesh(dim=2, isGeometry=True)
-    
+
     if isinstance(area, float) or isinstance(area, int):
         area = np.ones(len(z)) * float(area)
 
@@ -495,7 +495,7 @@ def mergePLC(pols, tol=1e-3):
     for p in pols:
         nodes = []
         for n in p.nodes():
-            nn = poly.createNodeWithCheck(n.pos(), tol, 
+            nn = poly.createNodeWithCheck(n.pos(), tol,
                                           warn=False, edgeCheck=True)
             if n.marker() != 0:
                 nn.setMarker(n.marker())
@@ -531,10 +531,10 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
     sensor positions. Sensor positions are assumed to lie on the surface and
     must be sorted and unique.
 
-    You can create a parameter mesh without sensors if you just set [xmin, xmax]
+    You can create a parameter mesh without sensors by setting [xmin, xmax]
     as sensors.
 
-    The PLC is a :gimliapi:`GIMLI::Mesh` and contain nodes, edges and two region
+    The PLC is a :gimliapi:`GIMLI::Mesh` and contains nodes, edges and 2 region
     markers, one for the parameters domain (marker=2) and a larger boundary
     around the outside (marker=1)
 
@@ -742,7 +742,7 @@ def readPLC(filename, comment='#'):
     haveNodeMarker = int(headerLine[3])
 
     poly = pg.Mesh(dim=dimension, isGeometry=True)
-    
+
     # Nodes section
     for i in range(nVerts):
         row = content[1 + i].split('\r\n')[0].split()
@@ -759,8 +759,10 @@ def readPLC(filename, comment='#'):
                 n.setMarker(int(row[-1]))
 
         else:
-            print(i, len(row), row, (1 + dimension + nPointsAttributes + haveNodeMarker))
-            raise Exception("Poly file seams corrupt: node section line: " + content[1 + i])
+            print(i, len(row), row,
+                  (1 + dimension + nPointsAttributes + haveNodeMarker))
+            raise Exception("Poly file seams corrupt: node section line: " +
+                            content[1 + i])
 
     # Segment section
     row = content[1 + nVerts].split()
@@ -789,7 +791,7 @@ def readPLC(filename, comment='#'):
             row = content[2 + nVerts + i + segment_offset].split()
             numBounds = int(row[0])
             numHoles = row[1]
-            assert numHoles == '0', 'Can\'t handle 3D Boundaries with holes yet'
+            assert numHoles == '0', 'Can\'t handle 3D Boundaries with holes'
             marker = 0
             if haveBoundaryMarker:
                 marker = int(row[2])
@@ -797,7 +799,7 @@ def readPLC(filename, comment='#'):
             for k in range(numBounds):
                 boundRow = content[2 + nVerts + i + segment_offset + 1]\
                     .split()
-                #nNodes = int(boundRow[0])
+                # nNodes = int(boundRow[0])
                 nodeIdx = [int(_b) for _b in boundRow[1:]]
                 # if nNodes == :
                 #     poly.createBoundary(ivec, marker=marker)
@@ -967,7 +969,7 @@ def exportTetgenPoly(poly, filename, float_format='.12e', **kwargs):
     float_format: format string ('.12e')
         Format that will be used to write float values in the Ascii file.
         Default is the exponential float form with a precision of 12 digits.
-    
+
     kwargs:
         * extraBoundaries:
             Add additional polygons (#c42 still needed?)
@@ -977,7 +979,7 @@ def exportTetgenPoly(poly, filename, float_format='.12e', **kwargs):
         filename = filename + '.poly'
     polytxt = ''
     sep = '\t'  # standard tab seperated file
-    linesep = '\n' # os.linesep does not work in mingwshell, testit!!
+    linesep = '\n'  # os.linesep does not work in mingwshell, testit!!
     assert poly.dim() == 3, 'Exit, only for 3D meshes.'
     boundary_marker = 1
     attribute_count = 0
