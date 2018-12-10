@@ -122,16 +122,16 @@ def createRectangle(start=None, end=None, pos=None, size=None, **kwargs):
 
     markerposition = kwargs.pop('markerPosition', None)
 
-    def addMarker(markerposition):
+    def addMarker(mposition):
         # use defaults
-        if markerposition is None:
-            markerposition = sPos + (ePos - sPos) * 0.2
+        if mposition is None:
+            mposition = sPos + (ePos - sPos) * 0.2
 
         if kwargs.pop('isHole', False):
-            poly.addHoleMarker(markerposition)
+            poly.addHoleMarker(mposition)
         else:
             poly.addRegionMarker(
-                markerposition,
+                mposition,
                 marker=kwargs.pop('marker', 1),
                 area=kwargs.pop('area', 0)
             )
