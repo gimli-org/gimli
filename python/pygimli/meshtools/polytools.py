@@ -1087,7 +1087,8 @@ def exportTetgenPoly(poly, filename, float_format='.12e', **kwargs):
         out.write(polytxt)
 
 
-def tetgen(filename, quality=1.2, preserveBoundary=False, verbose=False):
+def syscallTetgen(filename, quality=1.2, area=0, preserveBoundary=False,
+                  verbose=False):
     """Create a mesh with :term:`Tetgen` from file.
 
     Create a :term:`Tetgen` :cite:`Si2004` mesh from a PLC.
@@ -1101,6 +1102,9 @@ def tetgen(filename, quality=1.2, preserveBoundary=False, verbose=False):
     quality: float [1.2]
         Refines mesh (to improve mesh quality). [1.1 ... ]
 
+    area: float [0.0]
+        Maximum cell size (m³)
+
     preserveBoundary: bool [False]
         Preserve PLC boundary mesh
 
@@ -1112,7 +1116,11 @@ def tetgen(filename, quality=1.2, preserveBoundary=False, verbose=False):
     mesh : :gimliapi:`GIMLI::Mesh`
     """
     filebody = filename.replace('.poly', '')
-    syscal = 'tetgen -pazAC'
+    syscal = 'tetgen -pzAC'
+    if area > 0:
+        syscal += 'a' + str(area)
+    else:
+        syscal += 'a'
     syscal += 'q' + str(quality)
 
     if not verbose:
@@ -1125,11 +1133,11 @@ def tetgen(filename, quality=1.2, preserveBoundary=False, verbose=False):
 
     syscal += ' ' + filebody + '.poly'
 
-    if verbose:
-        print(syscal)
+    pg.debug(syscal)
 
     system(syscal)
     system('meshconvert -it -BD -o ' + filebody + ' ' + filebody + '.1')
+
     try:
         os.remove(filebody + '.1.node')
         os.remove(filebody + '.1.ele')
@@ -1138,89 +1146,6 @@ def tetgen(filename, quality=1.2, preserveBoundary=False, verbose=False):
         print(e)
     mesh = pg.Mesh(filebody)
     return mesh
-
-
-def polyAddVIP(filename, pos, marker=0, isRegionMarker=False,
-               isHoleMarker=False, maxCellSize=0, verbose=False):
-    """Add very important point (VIP) to a PLC file.
-
-    Add very important point (VIP) to a PLC.
-    Out of core wrapper for dcfemlib::polytools::polyAddVIP.
-
-    If you wan add these points to a plc directly use
-    :gimliapi:`GIMLI::Mesh::createNode`,
-    :gimliapi:`GIMLI::Mesh::addRegionMarker` or
-    :gimliapi:`GIMLI::Mesh::addHoleMarker`.
-
-    Parameters
-    ----------
-
-    Returns
-    -------
-    """
-    raise BaseException('obsolete use mesh methods directly')
-#     syscal = "polyAddVIP -x " + str(pos[0]) + \
-#         " -y " + str(pos[1]) + \
-#         " -z " + str(pos[2])
-#
-#     if isHoleMarker:
-#         syscal += " -H "
-#     else:
-#         syscal += " -m " + str(marker)
-#
-#     if isRegionMarker:
-#         syscal += " -R "
-#
-#     if maxCellSize > 0:
-#         syscal += " -a " + str(maxCellSize)
-#
-#     syscal += " " + filename
-#
-#     if verbose:
-#         print(syscal)
-#     system(syscal)
-# # def polyAddVIP
-
-
-def polyAddRectangle(filename, rect, marker=0, depth=0, clean=True):
-    """Add horizontal plane to a PLC.
-
-    Add horizontal plane to a PLC.
-    Out of core wrapper for dcfemlib::polytools::polytools.
-    Merge a meshed horizontal Rectangle with given marker[0] to
-    a 3D PLC at a given depth [0] clean removes all out of core files
-
-    Parameters
-    ----------
-
-    Returns
-    -------
-    """
-    raise BaseException('obsolete use mesh methods directly')
-#     rect.writeXY("__pad.xy", close=True)
-#     system("polyCreateWorld -d2 -t __pad.xy -C __pad")
-#     a = rect.area() / 29.0
-#
-#     system("dctriangle -a " + str(a) + " -q34.0 -S __pad")
-#     system("polyCreateFacet -o __pad3d -m " + str(marker) + " __pad.bms")
-#     system("polyTranslate -z " + str(depth) + " __pad3d")
-#
-#     # add node to the center of the rectangle
-# #    system("polyAddVIP -x " + str(rect.start[0])
-# #                    + " -y " + str(rect.start[1])
-# #                    + " -m -1 __pad3d")
-#     system("polyMerge " + filename + " __pad3d " + filename)
-#
-# #    system("polyCreateFacet -o __pad3d -m 1 __pad.bms")
-# #    system("polyTranslate -z -0.1 __pad3d")
-# #    system("polyMerge " + filename + " __pad3d " + filename)
-#
-#     if clean:
-#         os.remove('__pad.xy')
-#         os.remove('__pad.poly')
-#         os.remove('__pad.bms')
-#         os.remove('__pad3d.poly')
-# def polyAddRectangle
 
 
 def polyCreateWorld(filename, x=None, depth=None, y=None, marker=0,
@@ -1270,23 +1195,68 @@ def polyCreateWorld(filename, x=None, depth=None, y=None, marker=0,
     os.system(syscal)
 
 
-def polyTranslate(filename, x=0.0, y=0.0, z=0.0):
-    """Translate (move) a PLC.
+def createCylinder(radius, height, nSegments=8, area=0.0, pos=None, marker=1):
+    """Create plc of a cylinder.
 
     Out of core wrapper for dcfemlib::polytools.
-    Spatial translate (move) the PLC (filename) by x, y and z
+    
+    Note, there is a bug in the old polytools which ignores the area settings 
+    for marker == 0.
 
     Parameters
     ----------
+    radius : float
+        Radius of the cylinder.
+
+    height : float
+        Height of the cylinder
+
+    nSegments : int [8]
+        Number of segments of the cylinder.
+    
+    area : float [0.0]
+        Largest size for the resulting tetrahedrons.
+
+    pos : pg.Pos [None]
+        The center position, default is at the origin.
+
+    marker : int [1]
+        Cell marker the resulting tetrahedrons.
 
     Returns
     -------
+    poly : :gimliapi:`GIMLI::Mesh`
+        The resulting polygon is a :gimliapi:`GIMLI::Mesh`.
+
     """
-    raise BaseException('obsolete use mesh methods directly')
-    # system("polyTranslate " +
-    #        " -x " + str(x) +
-    #        " -y " + str(y) +
-    #        " -z " + str(z) + " " + filename)
+    tmp = pg.optImport('tempfile')
+
+    _, namePLC = tmp.mkstemp(suffix='.poly')
+
+    print(namePLC)
+    syscal = 'polyCreateCube -Z '  \
+        + ' -s ' + str(nSegments) \
+        + ' -m ' + str(marker) \
+        + ' -a ' + str(area)
+
+    syscal = syscal + ' ' + namePLC
+
+    pg.debug(syscal)
+    os.system(syscal)
+
+    poly = readPLC(namePLC)
+
+    poly.scale([radius, radius, height])
+    
+    if pos is not None:
+        poly.translate(pos)
+
+    try:
+        os.remove(namePLC)
+    except:
+        print("can't remove:", namePLC)
+
+    return poly
 
 
 if __name__ == "__main__":

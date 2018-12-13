@@ -783,10 +783,8 @@ void Mesh::exportVTK(const std::string & fbody,
         for (std::map < std::string, RVector >::iterator
             it = data.begin(); it != data.end(); ){
 
-            if (verbose){
-                std::cout << it->first << " " << it->second.size() << std::endl;
-            }
-
+            log(Debug, "writing cell data: " + it->first + " " + str(it->second.size()));
+            
             if (it->second.size() == (uint)cellCount()){
                 file << "SCALARS " << strReplaceBlankWithUnderscore(it->first)
                         << " double 1" << std::endl;
@@ -852,9 +850,10 @@ void Mesh::exportVTK(const std::string & fbody,
                         case MESH_TRIANGLEFACE6_RTTI: file     << "22 "; break;
                         case MESH_QUADRANGLEFACE_RTTI: file    << "9 "; break;
                         case MESH_QUADRANGLEFACE8_RTTI: file   << "23 "; break;
+                        case MESH_POLYGON_FACE_RTTI: file      << "7 "; break;
                     default:
                         std::cerr << WHERE_AM_I
-                                  << " nothing know about." << boundary(i).rtti()
+                                  << " nothing known about." << boundary(i).rtti()
                                   << std::endl;
                     }
                 }
@@ -875,10 +874,7 @@ void Mesh::exportVTK(const std::string & fbody,
             for (std::map < std::string, RVector >::iterator
                 it = data.begin(); it != data.end(); ){
 
-                if (verbose){
-                    std::cout << it->first << " "
-                              << it->second.size() << std::endl;
-                }
+                log(Debug, "writing boundry data: " + it->first + " " + str(it->second.size()));
 
                 if (it->second.size() == (uint)boundaryCount()){
 
