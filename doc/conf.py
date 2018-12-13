@@ -21,7 +21,6 @@ import sphinx
 
 import pygimli
 from pygimli.utils import boxprint
-from sidebar_gallery import make_gallery
 
 import pkg_resources
 
@@ -31,6 +30,7 @@ import pkg_resources
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(0, os.path.abspath('.'))
+from sidebar_gallery import make_gallery
 
 try:
     # from _build.doc.conf_environment import *

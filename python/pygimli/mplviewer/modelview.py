@@ -228,10 +228,34 @@ def draw1dmodelLU(x, xL, xU, thk=None, **kwargs):
     # return li
 
 
-def showStitchedModels(models, ax=None, x=None, cmin=None, cmax=None,
-                       islog=True, title=None, zMin=0, zMax=0, zLog=False,
+def showStitchedModels(models, ax=None, x=None, cMin=None, cMax=None,
+                       logScale=True, title=None, zMin=0, zMax=0, zLog=False,
                        cmap='jet', **kwargs):
-    """Show several 1d block models as (stitched) section."""
+    """Show several 1d block models as (stitched) section.
+
+    Parameters
+    ----------
+    model : iterable of iterable (np.ndarray or list of np.array)
+        1D models (consisting of thicknesses and values) to plot
+    ax : matplotlib axes [None - create new]
+        axes object to plot in
+    x : iterable
+        positions of individual models
+    cMin/cMax : float [None - autodetection from range]
+        minimum and maximum colorscale range
+    logScale : bool [True]
+        use logarithmic color scaling
+    zMin/zMax : float [0 - automatic]
+        range for z (y axis) limits
+    zLog : bool
+        use logarithmic z (y axis) instead of linear
+    topo : iterable
+        vector of elevation for shifting
+    Returns
+    -------
+    ax : matplotlib axes [None - create new]
+        axes object to plot in
+    """
     if x is None:
         x = np.arange(len(models))
 
@@ -274,11 +298,11 @@ def showStitchedModels(models, ax=None, x=None, cmin=None, cmax=None,
 
     p = PatchCollection(patches, cmap=cmap, linewidths=0)
 
-    if cmin is not None:
-        p.set_clim(cmin, cmax)
+    if cMin is not None:
+        p.set_clim(cMin, cMax)
 
 #    p.set_array( np.log10( vals.ravel() ) )
-    setMappableData(p, vals.ravel(), logScale=islog)
+    setMappableData(p, vals.ravel(), logScale=logScale)
     ax.add_collection(p)
 
 #    ax.set_ylim((zMaxLimit, zMin))
@@ -292,14 +316,16 @@ def showStitchedModels(models, ax=None, x=None, cmin=None, cmax=None,
     if title is not None:
         ax.set_title(title)
 
-    pg.mplviewer.createColorBar(p, cMin=cmin, cMax=cmax, nLevs=5)
-
+    if kwargs.pop('colorBar', True):
+        cb = pg.mplviewer.createColorBar(p, cMin=cMin, cMax=cMax, nLevs=5)
 #    cb = plt.colorbar(p, orientation='horizontal',aspect=50,pad=0.1)
-#    xt = [10, 20, 50, 100, 200, 500]
-#    cb.set_ticks( xt, [str(xti) for xti in xt] )
+        if 'cticks' in kwargs:
+            xt = np.unique(np.clip(kwargs['cticks'], cMin, cMax))
+            cb.set_ticks(xt)
+            cb.set_ticklabels([str(xti) for xti in xt])
 
     plt.draw()
-    return fig, ax
+    return ax  # maybe return cb as well?
 
 
 def showStitchedModels_Redundant(mods, ax=None,

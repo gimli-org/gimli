@@ -236,8 +236,8 @@ class Refraction(MethodManager):
 
         return ax
 
-    def createMesh(self, depth=None, quality=34.3, paraDX=0.5, boundary=0,
-                   paraBoundary=5, secNodes=1, apply=True, **kwargs):
+    def createMesh(self, depth=None, quality=34.3, paraDX=1, boundary=0,
+                   paraBoundary=0, secNodes=3, apply=True, **kwargs):
         """Create (inversion) mesh using createParaDomain2D
 
         Parameters
@@ -419,6 +419,8 @@ class Refraction(MethodManager):
         self.inv.setData(self.dataContainer('t'))
         self.inv.setLambda(kwargs.pop('lam', 30.))
 
+        if 'threadCount' in kwargs:  # just for backward compatibility
+            self.fop.setThreadCount(kwargs.pop('threadCount'))
         if 'max_iter' in kwargs:  # just for backward compatibility
             self.inv.setMaxIter(kwargs.pop('max_iter'))
         if 'maxIter' in kwargs:  # the better way
@@ -592,13 +594,15 @@ class Refraction(MethodManager):
 
         if pseudosection:
             midpoint = (gx + sx) / 2
-            showVecMatrix(midpoint, offset, va, squeeze=True, ax=ax,
-                          label='Apparent slowness [s/m]', cmap=cmap, **kwargs)
+            _, cb = showVecMatrix(midpoint, offset, va, squeeze=True, ax=ax,
+                                  label='Apparent slowness [s/m]', cmap=cmap,
+                                  **kwargs)
         else:
-            showVecMatrix(gx, sx, va, squeeze=squeeze, ax=ax,
-                          label='Apparent velocity [m/s]', cmap=cmap, **kwargs)
+            _, cb = showVecMatrix(gx, sx, va, squeeze=squeeze, ax=ax,
+                                  label='Apparent velocity [m/s]', cmap=cmap,
+                                  **kwargs)
         fig.show()
-        return ax  # va
+        return ax, cb  # va
 
     def getDepth(self):
         """return a (a-priori guessed) depth of investigation"""
@@ -633,7 +637,7 @@ class Refraction(MethodManager):
         Returns
         -------
         ax : matplotlib.axes object
-        cbar : matplotlib.colorbar object (only if model is provided)
+        cb : matplotlib.colorbar object (only if model is provided)
 
         Examples
         --------
@@ -650,7 +654,7 @@ class Refraction(MethodManager):
         >>> rst.setDataContainer(data)
         Data: Sensors: 7 data: 6
         >>> rst.setMesh(mesh, 5)
-        >>> ax, _ = rst.showRayPaths()
+        >>> ax, cb = rst.showRayPaths()
         """
         cbar = None
         if model is None and self.velocity is None:
@@ -694,8 +698,8 @@ class Refraction(MethodManager):
 
         self.axs[name] = ax
         cov = self.rayCoverage()
-        pg.show(self.mesh, pg.log10(cov+min(cov[cov > 0])*.5), ax=ax,
-                coverage=self.standardizedCoverage(), **kwargs)
+        return pg.show(self.mesh, pg.log10(cov+min(cov[cov > 0])*.5), ax=ax,
+                       coverage=self.standardizedCoverage(), **kwargs)
 
     def showModel(self, ax=None, vals=None, **kwargs):
         """WRITEME"""
