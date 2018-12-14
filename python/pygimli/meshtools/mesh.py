@@ -254,13 +254,14 @@ def readGmsh(fname, verbose=False):
     Mesh: Nodes: 3 Cells: 1 Boundaries: 3
     >>> os.remove(fname)
     """
-    inNodes, inElements, ncount = 0, 0, 0
+    inNodes, inElements, inEntities, inHeader, ncount, entcount, elecount = 0, 0, 0, 0, 0, 0, 0
+    nreads, readahead = 0,0
     fid = open(fname)
     if verbose:
         print('Reading %s... \n' % fname)
-
+    
     for line in fid:
-
+    #        print(line)
         if line[0] == '$':
             if line.find('Nodes') > 0:
                 inNodes = 1
@@ -268,41 +269,150 @@ def readGmsh(fname, verbose=False):
                 inNodes = 0
             if line.find('Elements') > 0:
                 inElements = 1
+                firstLine = 1
             if line.find('EndElements') > 0:
                 inElements = 0
-
+            if line.find('Entities') > 0:
+                inEntities = 1
+            if line.find('EndEntities') > 0:
+                inEntities = 0
+            if line.find('MeshFormat') > 0:
+                inHeader = 1
+            if line.find('EndMeshFormat') > 0:
+                inHeader = 0
         else:
-            if inNodes == 1:
-                if len(line.split()) == 1:
-                    nodes = np.zeros((int(line), 3))
-                    if verbose:
-                        print('  Nodes: %s' % int(line))
-                else:
-                    nodes[ncount, :] = np.array(line.split(), 'float')[1:]
-                    ncount += 1
+            if inHeader:
+                meshVersion = float(line.split()[0])
+                print('Mesh version: %s' % meshVersion)
+                
+            if inEntities: # v4 meshes only.
+                tLine = [float(e_) for e_ in line.split()]
+                if len(tLine) == 4: # Header line
+                    nPoints = int(tLine[0])
+                    # Initialize arrays with maximum number of entries
+                    # Docs suggest this should be 8, but adding phys node to it makes it 9 units long...
+                    pointsList = np.zeros((nPoints,9))
+                    nCurves = int(tLine[1])
+                    curvesList = np.zeros((nCurves,12))
+                    nSurfaces = int(tLine[2])
+                    surfacesList = np.zeros((nSurfaces,18))
+                    nVolumes = int(tLine[3])
+                    volumesList = np.zeros((nVolumes,10))
+                    
+                    pCount, cCount, sCount, vCount = 0, 0, 0, 0
 
+                    nEntities = (nPoints + nCurves + nSurfaces + nVolumes)
+#                    entityList = np.zeros((nEntities,12))
+                    print('Expecting %s total entitites...' % nEntities, "(",nPoints, nCurves, nSurfaces, nVolumes,")")
+               
+                else: # Load entities (This could be improved)
+                    if entcount in range(nPoints):
+                        pointsList[pCount,:] = np.pad(tLine,(0,abs(len(tLine) - pointsList.shape[1])),'constant')
+                        pCount += 1
+                    elif entcount in range(nPoints, nCurves + nPoints):
+                        curvesList[cCount,:] = np.pad(tLine,(0,abs(len(tLine) - curvesList.shape[1])),'constant')
+                        cCount += 1
+                    elif entcount in range(nCurves + nPoints, nSurfaces + (nCurves + nPoints)):
+                        surfacesList[sCount,:] = np.pad(tLine,(0,abs(len(tLine) - surfacesList.shape[1])),'constant')
+                        sCount += 1
+                    elif entcount in range(nEntities - nVolumes, nEntities + nVolumes):
+                        volumesList[vCount,:] = np.pad(tLine,(0,abs(len(tLine) - volumesList.shape[1])),'constant')
+                        vCount += 1
+                    entcount += 1
+  
+            elif inNodes == 1:
+                if meshVersion < 4: # Old importer
+                    if len(line.split()) == 1:
+                        nodes = np.zeros((int(line), 3))
+                        if verbose:
+                            print('  Nodes: %s' % int(line))
+                    else:
+                        nodes[ncount, :] = np.array(line.split(), 'float')[1:]
+                        ncount += 1        
+                else: # New 
+                    tLine = [float(e_) for e_ in line.split()]
+                    tLine[0] = int(tLine[0])
+                    if len(line.split()) == 2: # 2 Entries is the header for Nodes section
+#                        entities = np.zeros((int(line.split()[0]), 3))
+                        nodes = np.zeros((int(line.split()[1]), 3))
+                        if verbose:
+                            print('   Nodes: %s' % tLine[0])
+                            print('   Entities: %s' % tLine[1])
+                    elif len(line.split()) == 4: # 4 Entries is for each nodes or entity 
+                        headerline = 0
+                        if tLine[1] in range(nSurfaces+1) and tLine[2] == 0:
+                            readahead = tLine[-1]
+                            headerline = 1
+                            nreads = 0
+                        elif nreads < readahead and headerline != 1:
+                            nodes[tLine[0]-1, :] = tLine[1:]
+                            nreads += 1
+                        
             elif inElements == 1:
-                if len(line.split()) == 1:
-                    if verbose:
-                        print('  Entries: %s' % int(line))
-                    points, lines, triangles, tets = [], [], [], []
-
-                else:
-                    entry = [int(e_) for e_ in line.split()][1:]
-
-                    if entry[0] == 15:
-                        points.append((entry[-2], entry[-3]))
-                    elif entry[0] == 1:
-                        lines.append((entry[-2], entry[-1], entry[2]))
-                    elif entry[0] == 2:
-                        triangles.append((entry[-3], entry[-2], entry[-1],
-                                          entry[2]))
-                    elif entry[0] == 4:
-                        tets.append((entry[-4], entry[-3], entry[-2],
-                                     entry[-1], entry[2]))
-                    elif entry[0] in [3, 6]:
-                        pg.error("Qudrangles and prisms are not supported yet.")
-
+                if meshVersion < 4: # Standard import sequence
+                    if len(line.split()) == 1:
+                        if verbose:
+                            print('  Entries: %s' % int(line))
+                        points, lines, triangles, tets = [], [], [], []
+    
+                    else:
+                        entry = [int(e_) for e_ in line.split()][1:]
+    
+                        if entry[0] == 15:
+                            points.append((entry[-2], entry[-3]))
+                        elif entry[0] == 1:
+                            lines.append((entry[-2], entry[-1], entry[2]))
+                        elif entry[0] == 2:
+                            triangles.append((entry[-3], entry[-2], entry[-1],
+                                              entry[2]))
+                        elif entry[0] == 4:
+                            tets.append((entry[-4], entry[-3], entry[-2],
+                                         entry[-1], entry[2]))
+                        elif entry[0] in [3, 6]:
+                            pg.error("Quadrangles and prisms are not supported yet.")                 
+                else: # New import sequence
+                    if firstLine == 1:
+                        totalEles = int(line.split()[1])
+                        print('#Elements = %s' %totalEles)
+                        firstLine = 0 # Deflag section header
+                        numEle = 0
+                        eCount, addPoints, addTriangles, addLines = 0, 0, 0, 0 # Initialize variables
+                        points, lines, triangles, tets = [], [], [], []
+                    else:
+                        tLine = [int(e_) for e_ in line.split()]
+                        if eCount < numEle:
+                            if addPoints == 1:
+                                points.append(tLine[-1])
+                                eCount += 1
+                            elif addLines == 1:
+                                lines.append((tLine[1],tLine[2]))
+                                eCount += 1
+                            elif tLine[1] == tLine[2] == 2:
+                                addTriangles = 0
+                            elif addTriangles == 1:
+                                triangles.append((tLine[1],tLine[2],tLine[3], tagEnt))
+                                eCount += 1
+                                
+                        elif eCount >= numEle:
+                            addPoints = 0
+                            addLines = 0
+                            addTriangles = 0
+                            eCount = 0
+ 
+                        if len(line.split()) == 4 and addTriangles == 0:
+                            tagEnt = tLine[0]
+                            dimEnt = tLine[1]
+                            typeEle = tLine[2]
+                            numEle = tLine[3]
+                            
+                            if typeEle == 15: # Flag points on
+                                addPoints = 1
+                            elif typeEle == 1: # Flag lines on
+                                addLines = 0 # Disabled until I work out BOUNDS
+                            elif typeEle == 2: # Flag triangles on
+                                addTriangles = 1
+                            else:
+                                print('typeEle not initialized;')
     fid.close()
     lines = np.asarray(lines)
     triangles = np.asarray(triangles)
@@ -313,6 +423,7 @@ def readGmsh(fname, verbose=False):
         print('    Lines: %s' % len(lines))
         print('    Triangles: %s' % len(triangles))
         print('    Tetrahedra: %s \n' % len(tets))
+        
         print('Creating mesh object... \n')
 
     # check dimension
@@ -387,9 +498,13 @@ def readGmsh(fname, verbose=False):
 
     # assign marker to corresponding nodes (sensors, reference nodes, etc.)
     if points:
-        for point in points:
-            mesh.node(point[0] - 1).setMarker(-point[1])
-
+        try:
+            points = np.c_[points, pointsList[pointsList[:,7] > 0][:nPoints,-1]]
+            points = [[int(p_) for p_ in p] for p in points]
+            for point in points:
+                mesh.node(point[0] - 1).setMarker(-point[1])
+        except ValueError:
+            print("Something went wrong with setting point markers.")
     if verbose:
         if points:
             points = np.asarray(points)
