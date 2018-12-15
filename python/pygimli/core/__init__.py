@@ -502,9 +502,13 @@ def __setVal(self, idx, val):
         else:
             print("not yet implemented")
     elif isinstance(idx, tuple):
-        # print(idx, type(idx))
-        self.rowR(int(idx[0])).setVal(val, int(idx[1]))
-        return
+        # print("tuple", idx, type(idx))
+        if isinstance(self, _pygimli_.RMatrix):
+            self.rowRef(int(idx[0])).setVal(val, int(idx[1]))
+            return
+        else:
+            pg.error("cant set index with tuple", idx, "for", self)
+            return
     # if isinstance(idx, _pygimli_.BVector):
     # print("__setVal", self, idx, 'val:', val)
     # self.setVal(val, bv=idx)
@@ -538,12 +542,12 @@ def __getValMatrix(self, idx):
                     ret[i] = t[idx[1]]
                 return ret
         else:
-            return self.rowR(int(idx[0])).__getitem__(idx[1])
+            return self.row(int(idx[0])).__getitem__(idx[1])
 
     if idx == -1:
         idx = len(self) - 1
-
-    return self.rowR(idx)
+    
+    return self.row(idx)
 
 
 _pygimli_.RVector.__setitem__ = __setVal

@@ -148,6 +148,8 @@ typedef int64_t int64;
 
 #define ASSERT_EQUAL_SIZE(m, n) if (m.size() != n.size()) \
     throwLengthError(1, WHERE_AM_I + " " + str(m.size()) + " != " + str(n.size()));
+#define ASSERT_THIS_SIZE(n) if (n < 0 || n >= this->size()) \
+    throwLengthError(1, WHERE_AM_I + " " + str(this->size()) + " <= " + str(n));
 #define ASSERT_SIZE(vec, n) if (n < 0 || n >= vec.size()) \
     throwLengthError(1, WHERE_AM_I + " " + str(vec.size()) + " <= " + str(n));
 #define ASSERT_EQUAL(m, n) if (m != n) \
