@@ -101,16 +101,17 @@ def mixedBC(boundary, userData):
 #
 #
 
-def pointSource(cell, f, userData):
+def pointSource(mesh, source):
     """Define function for the current source term.
 
     :math:`\delta(x-pos), \int f(x) \delta(x-pos)=f(pos)=N(pos)`
     Right hand side entries will be shape functions(pos)
     """
-    sourcePos = userData['sourcePos']
-
-    if cell.shape().isInside(sourcePos):
-        f.setVal(cell.N(cell.shape().rst(sourcePos)), cell.ids())
+    rhs = pg.RVector(mesh.nodeCount())
+    
+    cell = mesh.findCell(source)
+    rhs.setVal(cell.N(cell.shape().rst(source)), cell.ids())
+    return rhs
 
 grid = pg.createGrid(x=np.linspace(-10.0, 10.0, 41),
                      y=np.linspace(-15.0,  0.0, 31))
@@ -126,12 +127,12 @@ robBC = [[1, mixedBC],  # left boundary
 
 k = 1e-3
 sigma = 1
-u = solve(grid, a=sigma, b=-sigma * k*k, f=pointSource,
+u = solve(grid, a=sigma, b=-sigma * k*k, f=pointSource(grid, sourcePosA),
           bc={'Robin': [[1,2,4], mixedBC]},
           userData={'sourcePos': sourcePosA, 'k': k},
           verbose=True)
 
-u -= solve(grid, a=sigma, b=-sigma * k*k, f=pointSource,
+u -= solve(grid, a=sigma, b=-sigma * k*k, f=pointSource(grid, sourcePosB),
            bc={'Robin': robBC},
            userData={'sourcePos': sourcePosB, 'k': k},
            verbose=True)

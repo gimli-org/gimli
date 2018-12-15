@@ -7,7 +7,7 @@ import numpy as np
 
 import pygimli as pg
 
-from .polytools import polyAddVIP, polyCreateWorld, tetgen
+from .polytools import polyCreateWorld, syscallTetgen
 
 
 def createGrid(x=None, y=None, z=None, **kwargs):
@@ -331,6 +331,7 @@ def appendTetrahedronBoundary(mesh, xbound=100, ybound=100, zbound=100,
     -----
     Boundaries of mesh need marker 1.
     """
+    DeprecationWarning()
     # create boundary for mesh from boundary marker == 1
 
     if isSubSurface:
