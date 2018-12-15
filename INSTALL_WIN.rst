@@ -16,6 +16,8 @@ Make sure you have an appropriate Python version (3.5.x or 3.6.x, 64bit) install
 There are two ways, exe installers and wheels. The latter can be easily installed by a
 package manager like the WinPython Control Panel (located in the WinPython main directory).
 
+..  image:: https://img.shields.io/badge/pyGIMLi1.0.9_win64-Python_3.6_Wheel-green.svg
+   :target: https://github.com/gimli-org/gimli/releases/download/v1.0.9/pygimli-1.0.9-cp36-cp36m-win_amd64.whl
 ..  image:: https://img.shields.io/badge/pyGIMLi1.0.8_win64-Python_3.6_Wheel-green.svg
    :target: https://github.com/gimli-org/gimli/releases/download/v1.0.8/pygimli-1.0.8-cp36-cp36m-win_amd64.whl
 
@@ -33,6 +35,10 @@ Uninstall can be made also with the Control Panel or by pip uninstall.
 
 Alternatively you can use the MSI installer where you can choose your Python installation
 
+..  image:: https://img.shields.io/badge/pyGIMLi1.0.10RC1_win64-MSI_for_Python_3.7-green.svg
+   :target: https://resistivity.net/download/pygimli-1.0.10.win-amd64-py37.msi
+..  image:: https://img.shields.io/badge/pyGIMLi1.0.9_win64-MSI_for_Python_3.6-green.svg
+   :target: https://github.com/gimli-org/gimli/releases/download/v1.0.9/pygimli-1.0.9.win-amd64-py36.msi
 ..  image:: https://img.shields.io/badge/pyGIMLi1.0.8_win64-MSI_for_Python_3.6-green.svg
    :target: https://github.com/gimli-org/gimli/releases/download/v1.0.8/pygimli-1.0.8.win-amd64.msi
 

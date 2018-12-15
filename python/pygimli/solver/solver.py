@@ -854,12 +854,23 @@ def assembleLoadVector(mesh, f, userData=None):
 
     Parameters
     ----------
-    f: float, array, callable(cell, [userData]), [...]
+    f: float, array, callable(cell, [rhs], [userData]), [...]
+
+        Your callable need to return a load value for each cell with optional 
+        userData. `f_cell = f(cell, [userData=None])`
 
         Force Values
         float -> ones(mesh.nodeCount()) * vals,
         for each node [0 .. mesh.nodeCount()]
         for each cell [0 .. mesh.cellCount()]
+    
+    Returns
+    -------
+
+    rhs: pg.Vector(mesh.nodeCount())
+
+        Right hand side Load vector of
+
     """
     if isinstance(f, list) or hasattr(f, 'ndim'):
         if isinstance(f, list):
@@ -877,28 +888,30 @@ def assembleLoadVector(mesh, f, userData=None):
 
     rhs = pg.RVector(mesh.nodeCount(), 0)
 
+    fArray = None
+    
     if hasattr(f, '__call__') and not isinstance(f, pg.RVector):
+        fArray = pg.RVector(mesh.cellCount())
         for c in mesh.cells():
             if userData is not None:
-                f(c, rhs, userData)
+                fArray[c.id()] = f(c, userData)
             else:
-                f(c, rhs)
-    else:
-        fArray = None
-        if hasattr(f, '__len__'):
-            if len(f) == mesh.cellCount() or len(f) == mesh.nodeCount():
-                fArray = f
+                fArray[c.id()] = f(c)
 
-        if fArray is None:
-            fArray = parseArgToArray(f, mesh.cellCount(), mesh, userData)
+    if hasattr(f, '__len__'):
+        if len(f) == mesh.cellCount() or len(f) == mesh.nodeCount():
+            fArray = f
 
-        if len(fArray) == mesh.cellCount():
-            b_l = pg.ElementMatrix()
+    if fArray is None:
+        fArray = parseArgToArray(f, mesh.cellCount(), mesh, userData)
 
-            for c in mesh.cells():
-                if fArray[c.id()] != 0.0:
-                    b_l.u(c)
-                    rhs.add(b_l, fArray[c.id()])
+    if len(fArray) == mesh.cellCount():
+        b_l = pg.ElementMatrix()
+
+        for c in mesh.cells():
+            if fArray[c.id()] != 0.0:
+                b_l.u(c)
+                rhs.add(b_l, fArray[c.id()])
 
 #            print("test reference solution:")
 #            rhsRef = pg.RVector(mesh.nodeCount(), 0)
@@ -909,13 +922,13 @@ def assembleLoadVector(mesh, f, userData=None):
 #            np.testing.assert_allclose(rhs, rhsRef)
 #            print("Remove revtest in assembleForceVector after check")
 
-        elif len(fArray) == mesh.nodeCount():
-            fA = pg.RVector(fArray)
-            b_l = pg.ElementMatrix()
-            for c in mesh.cells():
-                b_l.u(c)
+    elif len(fArray) == mesh.nodeCount():
+        fA = pg.RVector(fArray)
+        b_l = pg.ElementMatrix()
+        for c in mesh.cells():
+            b_l.u(c)
                 # rhs.addVal(b_l.row(0) * fArray[b_l.idx()], b_l.idx())
-                rhs.add(b_l, fA)
+            rhs.add(b_l, fA)
             # print("test reference solution:")
             # rhsRef = pg.RVector(mesh.nodeCount(), 0)
             # for c in mesh.cells():
@@ -926,9 +939,9 @@ def assembleLoadVector(mesh, f, userData=None):
             # print("Remove revtest in assembleForceVector after check")
 
             # rhs = pg.RVector(fArray)
-        else:
-            raise Exception("Forcevector have the wrong size: " +
-                            str(len(fArray)))
+    else:
+        raise Exception("Forcevector have the wrong size: " +
+                        str(len(fArray)))
 
     return rhs
 
@@ -1325,7 +1338,7 @@ def _feNorm(u, A):
 def L2Norm(u, M=None, mesh=None):
     r"""Create Lebesgue (L2) norm for the finite element space.
 
-    Finde the L2 Norm for a solution in the finite element space.
+    Find the L2 Norm for a solution in the finite element space.
     :math:`u` exact solution
     :math:`{\bf M}` Mass matrix, i.e., Finite element identity matrix.
 
@@ -1359,6 +1372,10 @@ def L2Norm(u, M=None, mesh=None):
         :math:`L2(u)` norm.
 
     """
+    if isinstance(M, pg.Mesh):
+        mesh = M
+        M = None
+        
     if M is None and mesh is not None:
         M = pg.solver.createMassMatrix(mesh)
 
@@ -1389,9 +1406,13 @@ def H1Norm(u, S=None, mesh=None):
         :math:`H1(u)` norm.
 
     """
-    if S is None and mesh is not None:
-        S = solver.createStiffnessMatrix(mesh)
+    if isinstance(S, pg.Mesh):
+        mesh = S
+        S = None
 
+    if S is None and mesh is not None:
+        S = pg.solver.createStiffnessMatrix(mesh)
+        
     if S is None:
         raise StandardException("Need S or mesh here to calculate H1Norm")
         

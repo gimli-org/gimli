@@ -241,7 +241,7 @@ def showStitchedModels(models, ax=None, x=None, cMin=None, cMax=None,
         axes object to plot in
     x : iterable
         positions of individual models
-    cmin/cmax : float [None - autodetection from range]
+    cMin/cMax : float [None - autodetection from range]
         minimum and maximum colorscale range
     logScale : bool [True]
         use logarithmic color scaling
@@ -316,14 +316,16 @@ def showStitchedModels(models, ax=None, x=None, cMin=None, cMax=None,
     if title is not None:
         ax.set_title(title)
 
-    pg.mplviewer.createColorBar(p, cMin=cMin, cMax=cMax, nLevs=5)
-
+    if kwargs.pop('colorBar', True):
+        cb = pg.mplviewer.createColorBar(p, cMin=cMin, cMax=cMax, nLevs=5)
 #    cb = plt.colorbar(p, orientation='horizontal',aspect=50,pad=0.1)
-#    xt = [10, 20, 50, 100, 200, 500]
-#    cb.set_ticks( xt, [str(xti) for xti in xt] )
+        if 'cticks' in kwargs:
+            xt = np.unique(np.clip(kwargs['cticks'], cMin, cMax))
+            cb.set_ticks(xt)
+            cb.set_ticklabels([str(xti) for xti in xt])
 
     plt.draw()
-    return ax
+    return ax  # maybe return cb as well?
 
 
 def showStitchedModels_Redundant(mods, ax=None,
