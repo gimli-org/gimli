@@ -198,16 +198,19 @@ class VMDTimeDomainModelling(VMDModelling):
         else:
             self.rxarea = rxarea
 
-    def createStartModel(self, rhoa, nLayer):
+    def createStartModel(self, rhoa, nLayer, thickness=None):
         r"""Create suitable starting model.
 
             Create suitable starting model based on median apparent resistivity
             values and skin depth approximation.
         """
         res = np.ones(nLayer) * pg.median(rhoa)
-        skinDepth = np.sqrt(max(self.t) * pg.median(rhoa)) * 500
-        thk = np.arange(nLayer)/sum(np.arange(nLayer)) * skinDepth / 2.
-        thk = thk[1:]
+        if thickness is None:
+            skinDepth = np.sqrt(max(self.t) * pg.median(rhoa)) * 500
+            thk = np.arange(nLayer) / sum(np.arange(nLayer)) * skinDepth / 2.
+            thk = thk[1:]
+        else:
+            thk = np.ones(nLayer-1) * thickness
         self.setStartModel(pg.cat(thk, res))
         return self.startModel()
 

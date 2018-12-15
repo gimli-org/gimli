@@ -5,6 +5,8 @@ import sys
 from math import pi
 import numpy as np
 import matplotlib.pyplot as plt
+import pygimli as pg
+from . vmd import VMDTimeDomainModelling
 
 
 def rhoafromU(U, t, Tx, current=1.0, Rx=None):
@@ -106,7 +108,7 @@ def get_rhoa(snd, cal=260e-9, corrramp=False, verbose=False):
     return rhoa, t, rhoaerr
 
 
-def readusffile(filename):
+def readusffile(filename, stripnoise=True):
     """Read data from single USF (universal sounding file) file
 
     Examples
@@ -118,12 +120,13 @@ def readusffile(filename):
     DATA = []
     columns = []
     nr = 0
+    station = {}
     sounding = {}
     sounding['FILENAME'] = filename
     isdata = False
     fid = open(filename)
     for line in fid:
-        zeile = line.rstrip('\n').replace(',', '')  # commas useless here
+        zeile = line.rstrip('\n').replace(',', ' ')  # commas useless here
         if zeile:  # anything at all
             if zeile[0] == '/':  # comment-like
                 if zeile[1:4] == 'END':  # end of a sounding
@@ -137,7 +140,12 @@ def readusffile(filename):
                             if 'terraTEM' in sounding['INSTRUMENT']:
                                 sounding['ST_DEV'] *= 0.01
                                 print('taking default stdev')
-                        DATA.append(sounding)
+
+                        sounding.update(station)
+                        if not(stripnoise and 'SWEEP_IS_NOISE' in sounding and
+                               sounding['SWEEP_IS_NOISE'] == 1):
+                            DATA.append(sounding)
+
                         sounding = {}
 
                     isdata = not isdata  # turn off data mode
@@ -149,6 +157,8 @@ def readusffile(filename):
                     except:
                         sounding[key] = value
 
+                    if 'SWEEP' in key and len(station) == 0:  # first sweep
+                        station = sounding.copy()  # save global settings
             else:
                 if isdata:
                     values = zeile.split()
@@ -388,16 +398,15 @@ class TDEM():
         ax.grid(True)
         return fig, ax
 
-    def plotRhoa(self, ax=None, ploterror=False, **kwargs):
+    def plotRhoa(self, ax=None, ploterror=False, corrramp=False, **kwargs):
         """Plot all apparent resistivity curves into one window."""
         if ax is None:
             fig, ax = plt.subplots()
 
-#        cols = 'rgbmcyk'
+        plotLegend = kwargs.pop('legend', True)
         for i, data in enumerate(self.DATA):
-            rhoa, t, err = get_rhoa(data)
+            rhoa, t, err = get_rhoa(data, corrramp=corrramp)
             err[err > .99] = .99
-#            col = cols[i % len(cols)]
             col = 'C'+str(i % 10)
             ax.loglog(rhoa, t, marker='.', label=getname(data),  # color=col,
                       color=col, **kwargs)
@@ -406,10 +415,64 @@ class TDEM():
 
         ax.set_ylabel('t [s]')
         ax.set_xlabel(r'$\rho_a$ [$\Omega$m]')
-        ax.legend(loc='best')
+        if plotLegend:
+            ax.legend(loc='best')
         ax.grid(True)
         ax.set_ylim(ax.get_ylim()[::-1])
         return ax
+
+    def __call__(self, i=0):
+        """Return a single sounding."""
+        return self.DATA[i]
+
+    def getFOP(self, nr=0):
+        """Return forward operator."""
+        snd = self.DATA[0]
+        return VMDTimeDomainModelling(snd['TIME'], TxArea(snd), 1) # RxArea(snd))
+        # return VMDTimeDomainModelling(snd['TIME'], TxArea(snd), RxArea(snd))
+
+    def invert(self, nr=0, nlay=4, thickness=None):
+        """Do inversion."""
+        self.fop = self.getFOP(nr)
+        snd = self.DATA[nr]
+        rhoa, t, err = get_rhoa(snd)
+        self.fop.t = t
+        model = self.fop.createStartModel(rhoa, nlay, thickness=None)
+        self.INV = pg.Inversion(rhoa, self.fop)
+        self.INV.setMarquardtScheme(0.9)
+        self.INV.setModel(model)
+        self.INV.setLambda(1000)
+        self.INV.setRelativeError(snd.pop('ST_DEV', 0)/snd['VOLTAGE']+0.03)
+        self.model = self.INV.run()
+        return self.model
+
+    def stackAll(self, tmin=0, tmax=100):
+        """Stack all measurements yielding a new TDEM class instance."""
+        t = self.DATA[0]['TIME']
+        v = np.zeros_like(t)
+        V = np.zeros((len(v), len(self.DATA)))
+        sumstacks = 0
+        for i, snd in enumerate(self.DATA):
+            if np.allclose(snd['TIME'], t):
+                stacks = snd.pop('STACK_SIZE', 1)
+                v += snd['VOLTAGE'] * stacks
+                sumstacks += stacks
+                V[:, i] = snd['VOLTAGE']
+            else:
+                print("sounding {} does not have the same time!".format(i))
+
+        v /= sumstacks
+        VM = np.ma.masked_less_equal(V, 0)
+        err = np.std(VM, axis=1).data
+        snd = self.DATA[0].copy()
+        fi = np.nonzero((t >= tmin) & (t <= tmax))[0]
+        snd['TIME'] = t[fi]
+        snd['VOLTAGE'] = v[fi]
+        snd['ST_DEV'] = err[fi]
+        del snd['data']
+        tem = TDEM()
+        tem.DATA = [snd]
+        return tem
 
 
 if __name__ == '__main__':
