@@ -822,7 +822,7 @@ def drawMPLTri(ax, mesh, data=None,
     if len(levels) == 0:
         levels = autolevel(data, nLevs, zmin=cMin, zmax=cMax,
                            logScale=logScale)
-
+        
     if len(z) == len(triangles):
         shading = kwargs.pop('shading', 'flat')
 
