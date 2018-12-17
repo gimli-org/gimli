@@ -830,35 +830,36 @@ void DataContainer::sortSensorsX(bool incX, bool incY, bool incZ){
     }
 }
 
-bool ididLesser(const std::pair < Index, Index > & a, const std::pair < Index, Index > & b){
-    return a.first < b.first;
-}
-
-void DataContainer::sortSensorsIndex(){
-
-    std::vector < std::pair < Index, Index > > permSens(this->size());
+IndexArray DataContainer::dataIndex(){
+    IndexArray ids(this->size());
     Index nSensorsIdx = dataSensorIdx_.size();
-
-    for (uint i = 0; i < this->size(); i ++) {
+    for (Index i = 0; i < this->size(); i ++) {
         Index sensorUniqueID = 0;
         Index count = nSensorsIdx;
         for (std::set< std::string >::iterator it = dataSensorIdx_.begin(); it!= dataSensorIdx_.end(); it ++){
             count --;
             sensorUniqueID += ((Index)dataMap_[*it][i] + 1) * (Index)powInt(this->sensorCount(), count);
         }
-        permSens[i] = std::pair< Index, Index >(sensorUniqueID, i);
+        ids[i] = sensorUniqueID;
     }
+    return ids;
+}
+    
+IndexArray DataContainer::sortSensorsIndex(){
 
-    std::sort(permSens.begin(), permSens.end(), ididLesser);
+    IndexArray ids(this->dataIndex());
 
-    IndexArray perm(this->size());
-    for (uint i = 0; i < perm.size(); i ++){
-        perm[i] = permSens[i].second ;
-    }
+    // use IndexArray instead of std::vector would be nice but need some more advanced iterator definition -> TODO
+    std::vector< Index > perm(this->size());
+    std::iota(perm.begin(), perm.end(), 0);
+    
+    auto idxComp = [&ids](Index i1, Index i2) { return ids[i1] < ids[i2]; };
+    std::sort(perm.begin(), perm.end(), idxComp);
 
     for (std::map< std::string, RVector >::iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++){
         it->second = it->second(perm);
     }
+    return perm;
 }
 
 void DataContainer::markInvalidSensorIndices(){

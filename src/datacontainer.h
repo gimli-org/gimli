@@ -214,8 +214,15 @@ public:
     /*! Scale all sensor positions by scale. */
     void scale(const RVector3 & scale);
 
-    /*! Sort all data regarding their sensor indices and sensorIdxNames. */
-    void sortSensorsIndex();
+    /*! Return unique sortable data index, based on sensor index.
+    $$id_i = \sum_j sensorIndex[i](j) * nSensors^j$$
+    */ 
+    IndexArray dataIndex();
+
+    /*! Sort all data regarding there sensor indices and sensorIdxNames. 
+    Return the resulting permuation index array.
+    */
+    IndexArray sortSensorsIndex();
 
     // END Sensor related section
 
@@ -274,8 +281,9 @@ public:
     /*! Shortcut for \ref save(fileName, formatData, "x y z", verbose); */
     inline int save(const std::string & fileName,
                     const std::string & formatData="all",
+                    bool noFilter=false,
                     bool verbose=false) const {
-        return save(fileName, formatData, "x y z", false, verbose); }
+        return save(fileName, formatData, "x y z", noFilter, verbose); }
 
     /*! Show some information that belongs to the DataContainer.*/
     void showInfos() const ;
