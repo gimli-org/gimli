@@ -4,7 +4,7 @@
 Please note there is currently no collision or intersection check at all.
 
 Volunteers welcome to help creating, adapting or interfacing a basic
-geometry system. A lot of thinks are needed:
+geometry system. A lot of things are needed:
 
     * 2D
     * 3D
@@ -61,12 +61,16 @@ def createRectangle(start=None, end=None, pos=None, size=None, **kwargs):
     pos : [x, y]
         Center position. The rectangle will be moved.
     size : [x, y]
-        width and height. The rectangle will be scaled.
+        Factors for x and y by which the rectangle, defined by **start** and
+        **width**, are scaled.
 
     **kwargs:
 
         marker : int [1]
             Marker for the resulting triangle cells after mesh generation
+        markerPosition : floats [x, y] [pos + (end - start) * 0.2]
+            Absolute position of the marker (works for both regions and
+            holes).
         area : float [0]
             Maximum cell size for resulting triangles after mesh generation
         boundaryMarker : int [1]
@@ -74,7 +78,7 @@ def createRectangle(start=None, end=None, pos=None, size=None, **kwargs):
         leftDirection : bool [True]
             TODO Rotational direction
         isHole : bool [False]
-            The Polygone will become a hole instead of a triangulation
+            The polygon will become a hole instead of a triangulation
         isClosed : bool [True]
             Add closing edge between last and first node.
 
@@ -91,10 +95,14 @@ def createRectangle(start=None, end=None, pos=None, size=None, **kwargs):
     >>> rectangle = createRectangle(start=[4, -4], end=[6, -6],
     ...                             marker=4, area=0.1)
     >>> _ = pg.show(rectangle)
+
+    >>> import matplotlib.pyplot as plt
+    >>> import pygimli as pg
+    >>> from pygimli.meshtools import createRectangle
+    >>> rectangle = createRectangle(pos=[5, -5], size=[2, 2],
+    ...                             marker=4, area=0.1)
+    >>> _ = pg.show(rectangle)
     """
-#    if not ((start and end) or (pos and size)):
-#        raise BaseException("createRectangle pls. give either start and end"
-#                            "OR pos and size.")
     if start is None:
         start = [-0.5, 0.5]
     if end is None:
@@ -109,18 +117,39 @@ def createRectangle(start=None, end=None, pos=None, size=None, **kwargs):
     poly.createNode(ePos)
     poly.createNode([ePos[0], sPos[1]])
 
-    if kwargs.pop('isHole', False):
-        poly.addHoleMarker(sPos + (ePos - sPos) * 0.2)
-    else:
-        poly.addRegionMarker(sPos + (ePos - sPos) * 0.2,
-                             marker=kwargs.pop('marker', 1),
-                             area=kwargs.pop('area', 0))
+    markerposition = kwargs.pop('markerPosition', None)
 
+    def addMarker(mposition):
+        # use defaults
+        if mposition is None:
+            mposition = sPos + (ePos - sPos) * 0.2
+
+        if kwargs.pop('isHole', False):
+            poly.addHoleMarker(mposition)
+        else:
+            poly.addRegionMarker(
+                mposition,
+                marker=kwargs.pop('marker', 1),
+                area=kwargs.pop('area', 0)
+            )
+
+    # if the user supplies an absolute marker position, we need to add it after
+    # transforming the polygon
+    marker_added = False
+    if markerposition is None:
+        addMarker(markerposition)
+        marker_added = True
+
+    # Note that we do not support the usage of start/end AND size/pos. Only one
+    # of the pairs. Otherwise strange things will happen with the region
+    # markers!
     if size is not None:
         poly.scale(size)
     if pos is not None:
         poly.translate(pos)
 
+    if not marker_added:
+        addMarker(markerposition)
     polyCreateDefaultEdges_(poly, **kwargs)
 
     return poly
@@ -146,7 +175,6 @@ def createWorld(start, end, marker=1, area=0., layers=None, worldMarker=True):
     area : float | list
         Maximum cell size for resulting triangles after mesh generation.
         If area is a float set it global, if area is a list set it per layer.
-
     layers : [float]
         Add some layers to the world.
     worldMarker : [bool]
@@ -187,11 +215,11 @@ def createWorld(start, end, marker=1, area=0., layers=None, worldMarker=True):
         n = poly.createNode([start[0], depth])
         if i > 0:
             if len(z) == 2:
-                poly.addRegionMarker(n.pos() + [0.2, 0.2], marker=marker,
-                                     area=area[0])
+                poly.addRegionMarker(
+                    n.pos() + [0.2, 0.2], marker=marker, area=area[0])
             else:
-                poly.addRegionMarker(n.pos() + [0.2, 0.2], marker=i,
-                                     area=area[i-1])
+                poly.addRegionMarker(
+                    n.pos() + [0.2, 0.2], marker=i, area=area[i - 1])
 
     for i, depth in enumerate(z[::-1]):
         poly.createNode([end[0], depth])
@@ -239,6 +267,8 @@ def createCircle(pos=None, radius=1, segments=12, start=0, end=2. * math.pi,
 
         marker : int [1]
             Marker for the resulting triangle cells after mesh generation
+        markerPosition : floats [x, y] [0.0, 0.0]
+            Position of the marker (works for both regions and holes)
         area : float [0]
             Maximum cell size for resulting triangles after mesh generation
         boundaryMarker : int [1]
@@ -246,7 +276,7 @@ def createCircle(pos=None, radius=1, segments=12, start=0, end=2. * math.pi,
         leftDirection : bool [True]
             Rotational direction
         isHole : bool [False]
-            The Polygone will become a hole instead of a triangulation
+            The polygon will become a hole instead of a triangulation
         isClosed : bool [True]
             Add closing edge between last and first node.
 
@@ -291,16 +321,21 @@ def createCircle(pos=None, radius=1, segments=12, start=0, end=2. * math.pi,
         yp = np.sin(phi)
         poly.createNode([xp, yp])
 
-    if kwargs.pop('isHole', False):
-        poly.addHoleMarker([0.0, 0.0])
-    else:
-        poly.addRegionMarker([0.0, 0.0], marker=kwargs.pop('marker', 1),
-                             area=kwargs.pop('area', 0))
+    markerposition = kwargs.pop('markerPosition', [0.0, 0.0])
 
     if hasattr(radius, '__len__'):
         poly.scale(radius)
     else:
         poly.scale([radius, radius])
+
+    if kwargs.pop('isHole', False):
+        poly.addHoleMarker(markerposition)
+    else:
+        poly.addRegionMarker(
+            markerposition,
+            marker=kwargs.pop('marker', 1),
+            area=kwargs.pop('area', 0)
+        )
 
     poly.translate(pos)
 
@@ -377,10 +412,10 @@ def createLine(start, end, segments=1, **kwargs):
 def createPolygon(verts, isClosed=False, isHole=False, **kwargs):
     """Create a polygon from a list of vertices.
 
-    All vertices needs to be unique and duplicate vertices will be ignored.
-    If you want the polygon be a closed region you can set the 'isCloses' flag.
+    All vertices need to be unique and duplicate vertices will be ignored.
+    If you want the polygon be a closed region you can set the 'isClosed' flag.
     Closed region can be attributed by assigning a region marker.
-    The automatic region marker is set in the center of all vertices.
+    The automatic region marker is placed in the center of all vertices.
 
     Parameters
     ----------
@@ -389,16 +424,19 @@ def createPolygon(verts, isClosed=False, isHole=False, **kwargs):
 
     **kwargs:
 
-        * boundaryMarker : int [1]
-            Marker for the resulting boundary edges
-        * leftDirection : bool [True]
-            Rotational direction
-        * marker : int [None]
+        marker : int [None]
             Marker for the resulting triangle cells after mesh generation.
-        * area : float [0]
+        markerPosition : floats [x, y] [0.0, 0.0]
+            Position (absolute) of the marker (works for both regions and
+            holes)
+        boundaryMarker : int [1]
+            Marker for the resulting boundary edges
+        leftDirection : bool [True]
+            Rotational direction
+        area : float [0]
             Maximum cell size for resulting triangles after mesh generation
-        * isHole : bool [False]
-            The Polygone will become a hole instead of a triangulation
+        isHole : bool [False]
+            The polygon will become a hole instead of a triangulation
 
     isClosed : bool [True]
         Add closing edge between last and first node.
@@ -433,15 +471,15 @@ def createPolygon(verts, isClosed=False, isHole=False, **kwargs):
                             boundaryMarker=boundaryMarker)
 
     if isClosed and marker is not None or area > 0:
+        markerposition = kwargs.pop(
+            'markerPosition', pg.center(poly.positions())
+        )
         if isHole:
-            poly.addHoleMarker(pg.center(poly.positions()))
+            poly.addHoleMarker(markerposition)
         else:
             if marker is None:  # in case marker is None but area is given
                 marker = 0
-            poly.addRegionMarker(pg.center(poly.positions()),
-                                 marker=marker, area=area)
-
-    # set a regionmarker here .. somewhere
+            poly.addRegionMarker(markerposition, marker=marker, area=area)
 
     pg.warnNonEmptyArgs(kwargs)
     return poly
@@ -531,12 +569,12 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
     sensor positions. Sensor positions are assumed to lie on the surface and
     must be sorted and unique.
 
-    You can create a parameter mesh without sensors by setting [xmin, xmax]
-    as sensors.
+    You can create a parameter mesh without sensors if you just set [xmin,
+    xmax] as sensors.
 
-    The PLC is a :gimliapi:`GIMLI::Mesh` and contains nodes, edges and 2 region
-    markers, one for the parameters domain (marker=2) and a larger boundary
-    around the outside (marker=1)
+    The PLC is a :gimliapi:`GIMLI::Mesh` and contain nodes, edges and two
+    region markers, one for the parameters domain (marker=2) and a larger
+    boundary around the outside (marker=1)
 
     TODO:
 
@@ -791,7 +829,8 @@ def readPLC(filename, comment='#'):
             row = content[2 + nVerts + i + segment_offset].split()
             numBounds = int(row[0])
             numHoles = row[1]
-            assert numHoles == '0', 'Can\'t handle 3D Boundaries with holes'
+            assert numHoles == '0', \
+                'Can\'t handle 3D Boundaries with holes yet'
             marker = 0
             if haveBoundaryMarker:
                 marker = int(row[2])
