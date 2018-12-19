@@ -34,7 +34,7 @@ def __DataContainer_setSensors(self, sensors):
 DataContainer.setSensors = __DataContainer_setSensors
 
 
-def __DataContainerERT_addFourPointData(self, *args):
+def __DataContainerERT_addFourPointData(self, *args, **kwargs):
     """Add a new data point to the end of the dataContainer.
     
     Add a new 4 point measurement to the end of the dataContainer and increase
@@ -44,6 +44,8 @@ def __DataContainerERT_addFourPointData(self, *args):
     ----------
     *args: [int]
         At least for index values for A, B, M and N.
+    **args: dict
+        Values for the actual data configuration.
 
     Returns
     -------
@@ -57,22 +59,30 @@ def __DataContainerERT_addFourPointData(self, *args):
     >>> d.setSensors(pg.utils.grange(0, 3, n=4))
     >>> d.addFourPointData(0,1,2,3)
     0
-    >>> d.addFourPointData([3,2,1,0])
+    >>> d.addFourPointData([3,2,1,0], rhoa=1.0)
     1
     >>> print(d)
     Data: Sensors: 4 data: 2
+    >>> print(d('rhoa'))
+    2 [0.0, 1.0]
     """
     try:
         if len(args) == 1:
-            return self.createFourPointData(self.size(), 
+            idx =  self.createFourPointData(self.size(), 
                                             args[0][0], args[0][1], 
                                             args[0][2], args[0][3])
         else:
-            return self.createFourPointData(self.size(), 
+            idx = self.createFourPointData(self.size(), 
                                             args[0], args[1], 
                                             args[2], args[3])
     except:
         print("args:", args)
         critical("Can't interpret arguments:", *args)
+
+    for k, v in kwargs.items():
+        if not self.haveData(k):
+            self.add(k)
+        self.ref(k)[idx] = v
+    return idx
     
 DataContainerERT.addFourPointData = __DataContainerERT_addFourPointData
