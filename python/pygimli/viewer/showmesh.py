@@ -33,7 +33,7 @@ def show(mesh=None, data=None, **kwargs):
     :py:mod:`pygimli.viewer.showMesh` or
     :py:mod:`pygimli.viewer.mayaview.showMesh3D` to show most of the typical 2D
     and 3D content. See tutorials and examples for usage hints. An empty show
-    call create an empty ax window.
+    call creates an empty ax window.
 
     Parameters
     ----------
@@ -119,7 +119,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
     """2D Mesh visualization.
 
     Create an axis object and plot a 2D mesh with given node or cell data.
-    Returns the axis and the color bar. The type of data determine the
+    Returns the axis and the color bar. The type of data determines the
     appropriate draw method.
 
     Parameters
@@ -179,8 +179,8 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
         Weight data by the given coverage array and fadeout the color.
 
     ax : matplotlib.Axes [None]
-        Instead of create a new and empty ax, just draw into the a given.
-        Useful to combine draws.
+        Instead of creating a new and empty ax, just draw into the given one.
+        Useful to combine multiple plots into one figure.
 
     savefig: string
         Filename for a direct save to disc.
