@@ -7,7 +7,7 @@ from .._logger import deprecated, info, warn, critical
 from ._pygimli_ import (RVector3, RVector, DataContainer, DataContainerERT)
 
 
-def __DataContainerERT_setSensors(self, sensors):
+def __DataContainer_setSensors(self, sensors):
     """Set Sensor positions.
 
     Set all sensor positions. 
@@ -31,7 +31,8 @@ def __DataContainerERT_setSensors(self, sensors):
         else:
             self.createSensor(RVector3(s))
     
-DataContainer.setSensors = __DataContainerERT_setSensors
+DataContainer.setSensors = __DataContainer_setSensors
+
 
 def __DataContainerERT_addFourPointData(self, *args):
     """Add a new data point to the end of the dataContainer.
