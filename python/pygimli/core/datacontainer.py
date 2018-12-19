@@ -23,7 +23,7 @@ def __DataContainerERT_setSensors(self, sensors):
     >>> import pygimli as pg
     >>> d = pg.DataContainerERT()
     >>> d.setSensors(pg.utils.grange(0.0, 3, n=4))
-    >>> assert d.sensorCount() != 4
+    >>> assert d.sensorCount() == 4
     """
     for s in sensors:
         if isinstance(s, float) or isinstance(s, int):
@@ -55,9 +55,11 @@ def __DataContainerERT_addFourPointData(self, *args):
     >>> d = pg.DataContainerERT()
     >>> d.setSensors(pg.utils.grange(0, 3, n=4))
     >>> d.addFourPointData(0,1,2,3)
+    0
     >>> d.addFourPointData([3,2,1,0])
+    1
     >>> print(d)
-    ... Data: Sensors: 4 data: 2
+    Data: Sensors: 4 data: 2
     """
     try:
         if len(args) == 1:
