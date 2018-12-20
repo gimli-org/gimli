@@ -43,7 +43,7 @@ cd build
 
 if [ ! -f build/CMakeCache.txt ]; then
     # Always rebuild core when Cmake cache does not exist
-    $core_update = 2
+    core_update=2
 fi
 
 if [[ $core_update -ge 1 ]]; then
