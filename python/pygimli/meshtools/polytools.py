@@ -112,10 +112,16 @@ def createRectangle(start=None, end=None, pos=None, size=None, **kwargs):
     sPos = pg.RVector3(start)
     ePos = pg.RVector3(end)
 
-    poly.createNode(sPos)
-    poly.createNode([sPos[0], ePos[1]])
-    poly.createNode(ePos)
-    poly.createNode([ePos[0], sPos[1]])
+    verts = [sPos, [sPos[0], ePos[1]], ePos, [ePos[0], sPos[1]]]
+    
+    #TODO refactor with polyCreatePolygon
+
+    if kwargs.pop("leftDirection", False):
+        for v in verts[::-1]:
+            poly.createNode(v)
+    else:
+        for v in verts:
+            poly.createNode(v)
 
     markerposition = kwargs.pop('markerPosition', None)
 
@@ -300,6 +306,7 @@ def createCircle(pos=None, radius=1, segments=12, start=0, end=2. * math.pi,
     >>> drawMesh(ax, plc, fillRegion=False)
     >>> plt.show()
     """
+    #TODO refactor with polyCreatePolygon
     if pos is None:
         pos = [0.0, 0.0]
 
@@ -389,6 +396,7 @@ def createLine(start, end, segments=1, **kwargs):
     >>> ax, _ = pg.show([w, l1, l2,], ax=ax, fillRegion=False)
     >>> pg.wait()
     """
+    #TODO refactor with polyCreatePolygon
     poly = pg.Mesh(dim=2, isGeometry=True)
     startPos = pg.RVector3(start)
     endPos = pg.RVector3(end)
@@ -459,8 +467,12 @@ def createPolygon(verts, isClosed=False, isHole=False, **kwargs):
     """
     poly = pg.Mesh(dim=2, isGeometry=True)
 
-    for v in verts:
-        poly.createNodeWithCheck(v, warn=True)
+    if kwargs.pop("leftDirection", False):
+        for v in verts[::-1]:
+            poly.createNodeWithCheck(v, warn=True)
+    else:
+        for v in verts:
+            poly.createNodeWithCheck(v, warn=True)
 
     boundaryMarker = kwargs.pop('boundaryMarker', 1)
     marker = kwargs.pop('marker', None)
