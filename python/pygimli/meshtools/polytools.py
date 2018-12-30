@@ -26,7 +26,7 @@ import pygimli as pg
 
 
 def polyCreateDefaultEdges_(poly, boundaryMarker=1,
-                            isClosed=True, isHole=False):
+                            isClosed=True, isHole=False, **kwargs):
     """INTERNAL."""
     nEdges = poly.nodeCount() - 1 + isClosed
     bm = None
@@ -44,7 +44,8 @@ def polyCreateDefaultEdges_(poly, boundaryMarker=1,
 
     if isClosed:
         poly.createEdge(poly.node(poly.nodeCount() - 1), poly.node(0), bm[-1])
-
+    
+    pg.warnNonEmptyArgs(kwargs)
 
 def createRectangle(start=None, end=None, pos=None, size=None, **kwargs):
     """Create rectangle polygon.
