@@ -86,7 +86,6 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.intersphinx',
               'sphinx.ext.imgconverter',
               'sphinx.ext.autosectionlabel',
-              'matplotlib.sphinxext.only_directives',
               'matplotlib.sphinxext.plot_directive',
               'doxylink'
               ]
@@ -103,13 +102,9 @@ try:
         'examples_dirs': [join(SPHINXDOC_PATH, 'examples'),
                           join(SPHINXDOC_PATH, 'tutorials')],
         'gallery_dirs': ['_examples_auto', '_tutorials_auto'],
-        'reference_url': {
-            # The module you locally document uses a None
-            'pygimli': None,
-            # External python modules use their documentation websites
-            'matplotlib': 'http://matplotlib.org',
-            'numpy': 'http://docs.scipy.org/doc/numpy'
-        },
+        # 'reference_url': {
+        #     'pygimli': None,
+        # },
 
         # Don't report time of fast scripts (< 10 sec)
         "min_reported_time": 10,
@@ -118,8 +113,11 @@ try:
         'backreferences_dir': 'pygimliapi/_generated',
 
         # Your documented modules. You can use a string or a list of strings
-        'doc_module': 'pygimli'
-    }
+        'doc_module': 'pygimli',
+
+        'first_notebook_cell': ("# Checkout www.pygimli.org for more examples\n"
+                                "%matplotlib inline")
+        }
 
 except ImportError:
     err = """
@@ -135,7 +133,12 @@ except ImportError:
         app.warn(err)
 
 
-intersphinx_mapping = {'http://docs.python.org/': None}
+intersphinx_mapping = {
+    'python': ('https://docs.python.org/{.major}'.format(sys.version_info), None),
+    'numpy': ('https://docs.scipy.org/doc/numpy', None),
+    'scipy': ('https://docs.scipy.org/doc/scipy/reference', None),
+    'matplotlib': ('https://matplotlib.org/', None),
+}
 
 autodoc_default_flags = ["no-members"]
 autoclass_content = "class"
