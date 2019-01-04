@@ -102,9 +102,12 @@ try:
         'examples_dirs': [join(SPHINXDOC_PATH, 'examples'),
                           join(SPHINXDOC_PATH, 'tutorials')],
         'gallery_dirs': ['_examples_auto', '_tutorials_auto'],
-        # 'reference_url': {
-        #     'pygimli': None,
-        # },
+        'reference_url': {
+            'pygimli': "https://pygimli.org",
+            'numpy': 'https://docs.scipy.org/doc/numpy',
+            'scipy': 'https://docs.scipy.org/doc/scipy/reference',
+            'matplotlib': 'https://matplotlib.org/',
+        },
 
         # Don't report time of fast scripts (< 10 sec)
         "min_reported_time": 10,
