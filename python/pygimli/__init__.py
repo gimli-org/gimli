@@ -63,18 +63,20 @@ def _get_branch():
 
     if exists(gitpath):
         from subprocess import check_output
-        out = check_output(["git", "--git-dir", gitpath, "branch"]).decode("utf8")
-        current = next(line for line in out.split("\n") if line.startswith("*"))
-        branch = current.strip("*").strip()
+        out = check_output(["git", "--git-dir", gitpath, "rev-parse",
+                            "--abbrev-ref", "HEAD"]).decode("utf8")
+        branch = out.split("\n")[0]
         if not "HEAD" in branch:
             return branch
 
 _branch = _get_branch()
 __version__ = get_versions()['version']
 if get_versions()["dirty"]:
-    __version__ = __version__.replace("dirty", "with.local.changes.on")
+    __version__ = __version__.replace(".dirty", " (with local changes")
 if _branch:
-    __version__ += ".%s" % _branch
+    __version__ += " on %s branch)" % _branch
+else:
+    __version__ += ")"
 del get_versions, _get_branch, _branch
 
 def version():
