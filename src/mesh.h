@@ -1,5 +1,5 @@
 /******************************************************************************
- *   Copyright (C) 2006-2018 by the GIMLi development team                    *
+ *   Copyright (C) 2006-2019 by the GIMLi development team                    *
  *   Carsten Rücker carsten@gimli.org                                         *
  *                                                                            *
  *   Licensed under the Apache License, Version 2.0 (the "License");          *
@@ -150,8 +150,10 @@ public:
     typedef RVector3 HoleMarker;
     typedef std::vector< RVector3 > HoleMarkerList;
 
-    /*! Default constructor, create empty mesh with dimension dim */
-    Mesh(Index dim=2);
+    /*! Default constructor, create empty mesh with dimension dim 
+    If this mesh is supposed to be a geometry definition, all 
+    created nodes will be checked for duplicates.*/
+    Mesh(Index dim=2, bool isGeometry=false);
 
     /*! Constructor, read mesh from filename */
     Mesh(const std::string & filename, bool createNeighbourInfos=true);
@@ -176,6 +178,13 @@ public:
     /*! Return true if this mesh have static geometry. [Default=True]*/
     inline bool staticGeometry() const { return staticGeometry_; }
 
+    /*! Mesh is marked as geometry definition or PLC 
+    so createNode will allways with check. */
+    void setGeometry(bool b);
+
+    /*! Return if the mesh is a geometry definition.*/
+    bool isGeometry() const { return isGeometry_; }
+
     /*! Set the dimension of the mesh. [Default = 2] */
     void setDimension(uint dim){ dimension_ = dim;}
 
@@ -187,11 +196,14 @@ public:
 
     //** start creation stuff
     Node * createNode(double x, double y, double z, int marker=0);
-
     Node * createNode(const Node & node);
-
     Node * createNode(const RVector3 & pos, int marker=0);
 
+    /*! Create a secondary node, which is stored in an aditional list for additional use. 
+    If tolerance tol set to a value > 0, then it will be checked if there is already a node 
+    at this position and return a ptr to the existing node instead of creating a new. */
+    Node * createSecondaryNode(const RVector3 & pos, double tol=-1);
+        
     /*! Create new Node with duplication checks. Returns the already existing node when its within a tolerance distance to pos.
     If edgeCheck is set, any 2d (p1) boundary edges will be checked for any intersection with pos and splitted if necessary.*/
     Node * createNodeWithCheck(const RVector3 & pos, double tol=1e-6,
@@ -338,9 +350,13 @@ public:
     /*! Return a vector of boundary ptrs matching BVector b.*/
     std::vector< Boundary * > boundaries(const BVector & b) const;
 
-    inline Index nodeCount() const { return nodeVector_.size(); }
+    Index nodeCount(bool withSecNodes=false) const;
     Node & node(Index i) const;
     Node & node(Index i);
+
+    inline Index secondaryNodeCount() const { return secNodeVector_.size(); }
+    Node & secondaryNode(Index id) const;
+    Node & secondaryNode(Index id);
 
     Index cellCount() const { return cellVector_.size(); }
     Cell & cell(Index i) const;
@@ -351,12 +367,12 @@ public:
     Boundary & boundary(Index i);
 
     /*! Return a vector of all node positions */
-    R3Vector positions() const;
+    R3Vector positions(bool withSecNodes=false) const;
 
     /*! Return a vector of node positions for an index vector */
     R3Vector positions(const IndexArray & idx) const;
 
-    /*! Return all node positions. */
+    /*! DEPRECATED Return all node positions. */
     R3Vector nodeCenters() const;
 
     /*! Return a vector of all cell center positions*/
@@ -760,7 +776,12 @@ protected:
 
     void findRange_() const ;
 
-    Node * createNode_(const RVector3 & pos, int marker, int id);
+    /*!Ensure is geometry check*/
+    Node * createNodeGC_(const RVector3 & pos, int marker);
+
+    Node * createNode_(const RVector3 & pos, int marker);
+
+    Node * createSecondaryNode_(const RVector3 & pos);
 
     template < class B > Boundary * createBoundary_(
         std::vector < Node * > & nodes, int marker, int id){
@@ -806,6 +827,7 @@ protected:
     void fillKDTree_() const;
 
     std::vector< Node * >     nodeVector_;
+    std::vector< Node * >     secNodeVector_;
     std::vector< Boundary * > boundaryVector_;
     std::vector< Cell * >     cellVector_;
 
@@ -821,6 +843,7 @@ protected:
 
     /*! A static geometry mesh caches geometry informations. */
     bool staticGeometry_;
+    bool isGeometry_; // mesh is marked as PLC
     mutable RVector cellSizesCache_;
     mutable RVector boundarySizesCache_;
     mutable R3Vector boundarySizedNormCache_;

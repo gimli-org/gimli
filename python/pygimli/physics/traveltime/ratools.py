@@ -6,7 +6,7 @@ import numpy as np
 import pygimli as pg
 
 
-def createRAData(sensors):
+def createRAData(sensors, shotdistance=1):
     """Create a refraction data container.
 
     Default data container for shot and geophon at every sensor position.
@@ -35,7 +35,7 @@ def createRAData(sensors):
         data.setSensorPositions(sensors)
 
     S, G = [], []
-    for s in range(data.sensorCount()):
+    for s in range(0, data.sensorCount(), shotdistance):
         for g in range(data.sensorCount()):
             if s is not g:
                 S.append(s)

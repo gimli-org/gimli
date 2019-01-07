@@ -1,5 +1,5 @@
 /******************************************************************************
- *   Copyright (C) 2006-2018 by the GIMLi development team                    *
+ *   Copyright (C) 2006-2019 by the GIMLi development team                    *
  *   Carsten Rücker carsten@resistivity.net                                   *
  *                                                                            *
  *   Licensed under the Apache License, Version 2.0 (the "License");          *
@@ -149,6 +149,10 @@ typedef int64_t int64;
 
 #define ASSERT_EQUAL_SIZE(m, n) if (m.size() != n.size()) \
     throwLengthError(1, WHERE_AM_I + " " + str(m.size()) + " != " + str(n.size()));
+#define ASSERT_THIS_SIZE(n) if (n < 0 || n >= this->size()) \
+    throwLengthError(1, WHERE_AM_I + " " + str(this->size()) + " <= " + str(n));
+#define ASSERT_SIZE(vec, n) if (n < 0 || n >= vec.size()) \
+    throwLengthError(1, WHERE_AM_I + " " + str(vec.size()) + " <= " + str(n));
 #define ASSERT_EQUAL(m, n) if (m != n) \
     throwLengthError(1, WHERE_AM_I + " " + str(m) + " != " + str(n));
 #define ASSERT_RANGE(i, start, end) if (i < start || i >= end) \
@@ -208,8 +212,9 @@ static const uint8 MESH_SHAPE_PYRAMID_RTTI     = 234;
 
 static const uint8 GIMLI_MATRIXBASE_RTTI        = 0;
 static const uint8 GIMLI_MATRIX_RTTI            = 1;
-static const uint8 GIMLI_SPARSEMAPMATRIX_RTTI   = 2;
-static const uint8 GIMLI_BLOCKMATRIX_RTTI       = 3;
+static const uint8 GIMLI_SPARSE_MAP_MATRIX_RTTI = 2;
+static const uint8 GIMLI_SPARSE_CRS_MATRIX_RTTI = 3;
+static const uint8 GIMLI_BLOCKMATRIX_RTTI       = 4;
 
 /*! Flag load/save Ascii or binary */
 enum IOFormat{Ascii, Binary};
@@ -256,8 +261,7 @@ typedef Vector < RVector3 > R3Vector;
 typedef Vector < bool > BVector;
 typedef Vector < SIndex > IVector;
 typedef Vector < Index > IndexArray;
-//typedef std::vector < Index > IndexArray;
-// typedef IVector IndexArray;
+
 typedef std::vector < SIndex > SIndexArray;
 
 

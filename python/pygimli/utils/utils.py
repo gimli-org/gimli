@@ -16,6 +16,9 @@ class ProgressBar(object):
     Animated text-based progressbar for intensive loops. Should work in the
     console and in the IPython Notebook.
 
+    TODO:
+     * optional: 'estimated time' instead of 'x of y complete'
+
     Parameters
     ----------
     its : int
@@ -410,6 +413,7 @@ def chi2(a, b, err, trans=None):
     """Return chi square value."""
     if trans is None:
         trans = pg.RTrans()
+
     d = (trans(a) - trans(b)) / trans.error(a, err)
     return pg.dot(d, d) / len(d)
 
@@ -642,7 +646,8 @@ def uniqueAndSum(indices, to_sum, return_index=False, verbose=False):
         print('Get {} indices for sorting'.format(np.shape(indices)))
     if flag_mult:
         ar = indices.ravel().view(
-            np.dtype((np.void, indices.dtype.itemsize * indices.shape[1]))).flatten()
+            np.dtype((np.void,
+                      indices.dtype.itemsize * indices.shape[1]))).flatten()
     else:
         ar = np.asanyarray(indices).flatten()
 

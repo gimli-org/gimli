@@ -8,6 +8,7 @@ import traceback
 
 # plt should not be used outside of mplviewer
 import matplotlib.pyplot as plt
+
 import numpy as np
 
 try:
@@ -32,7 +33,7 @@ def show(mesh=None, data=None, **kwargs):
     :py:mod:`pygimli.viewer.showMesh` or
     :py:mod:`pygimli.viewer.mayaview.showMesh3D` to show most of the typical 2D
     and 3D content. See tutorials and examples for usage hints. An empty show
-    call create an empty ax window.
+    call creates an empty ax window.
 
     Parameters
     ----------
@@ -118,7 +119,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
     """2D Mesh visualization.
 
     Create an axis object and plot a 2D mesh with given node or cell data.
-    Returns the axis and the color bar. The type of data determine the
+    Returns the axis and the color bar. The type of data determines the
     appropriate draw method.
 
     Parameters
@@ -178,8 +179,8 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
         Weight data by the given coverage array and fadeout the color.
 
     ax : matplotlib.Axes [None]
-        Instead of create a new and empty ax, just draw into the a given.
-        Useful to combine draws.
+        Instead of creating a new and empty ax, just draw into the given one.
+        Useful to combine multiple plots into one figure.
 
     savefig: string
         Filename for a direct save to disc.
@@ -240,9 +241,10 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
     if block:
         hold = True
 
-    if hold:
-        lastHoldStatus = pg.mplviewer.utils.holdAxes__
+    lastHoldStatus = pg.mplviewer.utils.holdAxes__
+    if not lastHoldStatus or hold:
         pg.mplviewer.hold(val=1)
+        hold = True
 
     gci = None
     validData = False
@@ -268,10 +270,6 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
     elif isinstance(data, pg.R3Vector):
         drawStreams(ax, mesh, data, **kwargs)
     else:
-        #print('-----------------------------')
-        #print(data, type(data))
-        #print('-----------------------------')
-
         ### data=[[marker, val], ....]
         if isinstance(data, list) and \
             isinstance(data[0], list) and isinstance(data[0][0], int):
@@ -299,6 +297,8 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
         else:
             validData = True
             try:
+                cMap = kwargs.pop('cMap', None)
+                
                 if len(data) == mesh.cellCount():
                     gci = drawModel(ax, mesh, data, **kwargs)
                     if showBoundary is None:
@@ -306,10 +306,9 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
 
                 elif len(data) == mesh.nodeCount():
                     gci = drawField(ax, mesh, data, **kwargs)
-                    
-                cMap = kwargs.pop('cMap', None)
                 if cMap is not None:
                     gci.set_cmap(cmapFromName(cMap))
+                    #gci.cmap.set_under('k')
 
             except BaseException as e:
                 print("Exception occured: ", e)
@@ -374,12 +373,10 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
 
         if markers:
             ticks = np.arange(len(uniquemarkers))
-            #print('show.ticks ********************', ticks)
             cbar.set_ticks(ticks)
             labels = []
             for marker in uniquemarkers:
                 labels.append(str((marker)))
-            #print('show.labels ********************', labels)
             cbar.set_ticklabels(labels)
 
     if coverage is not None:
@@ -417,7 +414,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
             try:
                 print("trying eps2pdf ... ")
                 os.system('epstopdf ' + savefig)
-            except BaseException as _:
+            except BaseException:
                 pass
         print('..done')
 

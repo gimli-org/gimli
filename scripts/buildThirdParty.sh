@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-BOOST_VERSION_DEFAULT=1.61.0
+BOOST_VERSION_DEFAULT=1.68.0
 #since 63 libboost_numpy
 #since 64 python build broken
 
@@ -18,10 +18,11 @@ TRIANGLE_URL=http://www.netlib.org/voronoi/
 CASTXML_URL=https://github.com/CastXML/CastXML.git
 #CASTXML_REV=d5934bd08651dbda95a65ccadcc5f39637d7bc59 #current functional
 #CASTXML_REV=9d7a46d639ce921b8ddd36ecaa23c567d003294a #last functional
-CASTXMLBIN_URL=https://midas3.kitware.com/midas/download/item
-#https://midas3.kitware.com/midas/download/item/318762/castxml-maxosx.tar.gz
-#https://midas3.kitware.com/midas/download/item/318227/castxml-linux.tar.gz
-#https://midas3.kitware.com/midas/download/item/318228/castxml-windows.zip
+
+# Check for changes here: https://data.kitware.com/#folder/57b5de948d777f10f2696370
+CASTXML_BIN_LINUX=https://data.kitware.com/api/v1/file/57b5dea08d777f10f2696379/download
+CASTXML_BIN_MAC=https://data.kitware.com/api/v1/file/57b5de9f8d777f10f2696378/download
+CASTXML_BIN_WIN=https://data.kitware.com/api/v1/file/5b68bfc28d777f06857c1f44/download
 
 PYGCCXML_URL=https://github.com/gccxml/pygccxml
 PYGCCXML_REV=648e8da38fa12004f0c83f6e1532349296425702 # current functional
@@ -411,10 +412,10 @@ buildBOOST(){
         --platform=msys \
         --layout=tagged \
         --debug-configuration \
-        --with-system \
-        $WITHPYTHON \
-        --with-thread
-
+        $WITHPYTHON 
+    
+    	#--with-system \
+        #--with-thread 
 
         # --with-date_time \
         # --with-chrono \
@@ -437,15 +438,15 @@ buildCASTXMLBIN(){
     prepCASTXMLBIN
 
     if [ "$SYSTEM" == "WIN" ]; then
-        getWITH_WGET $CASTXMLBIN_URL/318228 $CASTXML_SRC castxml-windows.zip
+        getWITH_WGET $CASTXML_BIN_WIN $CASTXML_SRC castxml-windows.zip
         cp -r $CASTXML_SRC/castxml/* $CASTXML_DIST
         CASTXMLBIN=castxml.exe
     elif [ "$SYSTEM" == "MAC" ]; then
-        getWITH_WGET $CASTXMLBIN_URL/318762 $CASTXML_SRC castxml-macosx.tar.gz
+        getWITH_WGET $CASTXML_BIN_MAC $CASTXML_SRC castxml-macosx.tar.gz
         cp -r $CASTXML_SRC/* $CASTXML_DIST
         CASTXMLBIN=castxml
     else
-        getWITH_WGET $CASTXMLBIN_URL/318227 $CASTXML_SRC castxml-linux.tar.gz
+        getWITH_WGET $CASTXML_BIN_LINUX $CASTXML_SRC castxml-linux.tar.gz
         cp -r $CASTXML_SRC/* $CASTXML_DIST
         CASTXMLBIN=castxml
     fi
@@ -563,10 +564,10 @@ buildPYGCCXML(){
             sed -i -e 's/m_stop = std::max/\/\/m_stop = std::max/g' build/lib*/pyplusplus/code_repository/indexing_suite/slice_header.py
             #patch -p1 < $BUILDSCRIPT_HOME/patches/pyplusplus-slice-fix.patch
         popd
-        
+
         cp -rf $PYPLUSPLUS_BUILD/build/lib*/pyplusplus $PYPLUSPLUS_DIST
         pushd $PYPLUSPLUS_DIST
-            
+
         popd
         #export PYTHONPATH=$PYTHONPATH:$PYGCCXML_DIST/Lib/site_packages/
         #python setup.py install --prefix=$PYGCCXML_DIST_WIN

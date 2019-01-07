@@ -45,10 +45,16 @@ for automatic warnings in case you are about to push to the master branch.
 
 6. Pull the latest developments from GitHub using automatic rebase:
   For more info see: http://kernowsoul.com/blog/2012/06/20/4-ways-to-avoid-merge-commits-in-git/
-
+    
     .. code-block:: bash
 
        git pull --rebase
+
+You can set the rebase behavior on default with:
+
+    .. code-block:: bash
+
+        git config --global branch.autosetuprebase always
 
 7. Push to the origin development branch:
 

@@ -199,7 +199,7 @@ def readSIP256file(resfile, verbose=False):
     filename: str
         *.RES file (SIP256 raw output file)
 
-    verbose:    bool
+    verbose: bool
         do some output [False]
 
     Returns

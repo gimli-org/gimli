@@ -273,7 +273,10 @@ class TravelTimeFMM(pg.ModellingBase):
             if self.debug:
                 print(pg.sum(pg.sign(weight)))
             wa = weight * cellSizes
-            self.jacobian()[i] = wa / np.sum(wa) * tsr / slowness
+            if np.sum(wa) > 0:  # only if all values are zero
+                wa /= np.sum(wa)
+            self.jacobian()[i] = wa * tsr / slowness
+            # self.jacobian()[i] = wa / np.sum(wa) * tsr / slowness
             # TODO: check "invalid value in true divide" warning
 
     def createDefaultStartModel(self):

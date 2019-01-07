@@ -1,5 +1,5 @@
 /******************************************************************************
- *   Copyright (C) 2005-2018 by the GIMLi development team                    *
+ *   Copyright (C) 2005-2019 by the GIMLi development team                    *
  *   Carsten Rücker carsten@resistivity.net                                   *
  *                                                                            *
  *   Licensed under the Apache License, Version 2.0 (the "License");          *
@@ -88,9 +88,6 @@ public:
     inline Mesh * mesh() { return mesh_; }
 
     void createRefinedForwardMesh(bool refine=true, bool pRefine=false);
-
-    /*!DEPRECATED Set refined mesh for forward calculation. */
-    void setRefinedMesh(const Mesh & mesh);
 
     /*! Delete the actual mesh. */
     void deleteMesh();

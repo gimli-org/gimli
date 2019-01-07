@@ -1,5 +1,5 @@
 /******************************************************************************
- *   Copyright (C) 2006-2018 by the resistivity.net development team          *
+ *   Copyright (C) 2006-2019 by the resistivity.net development team          *
  *   Carsten Rücker carsten@resistivity.net                                   *
  *                                                                            *
  *   Licensed under the Apache License, Version 2.0 (the "License");          *
@@ -85,6 +85,11 @@ public:
         const RVector *dm = &(*data_)("m");
         const RVector *dn = &(*data_)("n");
 
+        #if defined(WIN32)
+            log(Debug, "Thread #" + str(tNr) + ": on CPU " + str("?") + " slice " + str(start_) + ":" + str(end_));
+        #else
+            log(Debug, "Thread #" + str(tNr) + ": on CPU " + str(sched_getcpu()) + " slice " + str(start_) + ":" + str(end_));
+        #endif
         for (Index cellID = start_; cellID < end_; cellID ++) {
 
             cell    = (*para_)[cellID];
@@ -575,7 +580,7 @@ RVector coverageDCtrans(const MatrixBase & S, const RVector & dd, const RVector 
         for (size_t i = 0; i < S.rows(); i ++) {
             cov += abs((*Sl)[i] * dd[i]);
         }
-    } else if (S.rtti() == GIMLI_SPARSEMAPMATRIX_RTTI){
+    } else if (S.rtti() == GIMLI_SPARSE_MAP_MATRIX_RTTI){
 
         const RSparseMapMatrix * Sl = dynamic_cast< const RSparseMapMatrix * >(&S);
 
@@ -598,23 +603,23 @@ RVector createCoverage(const MatrixBase & S, const Mesh & mesh){
 RVector createCoverage(const MatrixBase & S, const Mesh & mesh,
                        const RVector & response, const RVector & model){
 
-    RVector cov(coverageDCtrans(S, 1.0 / response, 1.0 / model));
-
+    RVector covModel(coverageDCtrans(S, 1.0 / response, 1.0 / model));
+	RVector covMesh(covModel(mesh.cellMarkers()));
     if (mesh.cellCount() == model.size()) {
-        cov /= mesh.cellSizes();
+        covMesh /= mesh.cellSizes();
     } else {
-        RVector modelCellSizes(cov.size(), 0.0);
+        RVector modelCellSizes(covMesh.size(), 0.0);
         for (Index i = 0; i < mesh.cellCount(); i ++){
             Cell *c = &mesh.cell(i);
             modelCellSizes[c->marker()] += c->shape().domainSize();
         }
         if (min(modelCellSizes) > TOLERANCE){
-            cov /= modelCellSizes;
+            covMesh /= modelCellSizes;
         } else {
             log(Error, "Coverage fails:" + str(mesh.cellCount()) + " " + str(model.size()));
         }
     }
     
-    return cov(mesh.cellMarkers());
+    return covMesh;
 }
 } // namespace GIMLI

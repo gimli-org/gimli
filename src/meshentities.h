@@ -1,5 +1,5 @@
 /******************************************************************************
- *   Copyright (C) 2006-2018 by the GIMLi development team                    *
+ *   Copyright (C) 2006-2019 by the GIMLi development team                    *
  *   Carsten Rücker carsten@resistivity.net                                   *
  *                                                                            *
  *   Licensed under the Apache License, Version 2.0 (the "License");          *
@@ -174,6 +174,15 @@ public:
 
     const RMatrix & uxCache() const { return uxCache_; }
 
+    void addSecondaryNode(Node * n);
+
+    const std::vector < Node * > & secondaryNodes() const;
+
+    /*! Return primary and secondary nodes */
+    const std::vector < Node * > allNodes() const;
+
+    Index allNodeCount() const;
+    
 protected:
     void fillShape_();
 
@@ -184,6 +193,7 @@ protected:
     Shape * shape_;
 
     std::vector < Node * > nodeVector_;
+    std::vector < Node * > secondaryNodes_;
 
     /*! Cache for derivation matrixes */
     //mutable ElementMatrix < double > uxCache_; // to expensive maybe, lightweight baseclass here
@@ -273,6 +283,7 @@ protected:
     void deRegisterNodes_();
 
     std::vector < Cell * > neighbourCells_;
+
 
     double attribute_;
 

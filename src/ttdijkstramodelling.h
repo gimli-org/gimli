@@ -1,5 +1,5 @@
 /******************************************************************************
- *   Copyright (C) 2006-2018 by the GIMLi development team                    *
+ *   Copyright (C) 2006-2019 by the GIMLi development team                    *
  *   Carsten Rücker carsten@resistivity.net                                   *
  *   Thomas Günther thomas@resistivity.net                                    *
  *                                                                            *
@@ -26,9 +26,46 @@
 
 namespace GIMLI {
 
-typedef std::map< Index, double > NodeDistMap;
+class GraphDistInfo{
+public:    
+    GraphDistInfo()
+        :  time_(0.0), dist_(0.0){
+    }
+    GraphDistInfo(double t, double d)
+        :  time_(t), dist_(d){
+    }
+    GraphDistInfo(double t, double d, Index cellID)
+        :  time_(t), dist_(d){
+        cells_.insert(cellID);
+    }
+    
+    /*! Travel time for the current way element. Depends on the graph initialization.*/
+    void setTime(double t) { time_ = t; }
 
+    /*! Travel time for the current way element. Depends on the graph initialization.*/
+    double time() const { return time_; }
+
+    /*! Distance of the way element.*/
+    double dist() const { return dist_; }
+
+    /*! Index for all cells containing this wayelement*/
+    std::set < Index > & cellIDs() { return cells_; }
+
+    /*! Index for all cells containing this wayelement*/
+    const std::set < Index > & cellIDs() const { return cells_; }
+
+protected:
+
+    double time_;
+    double dist_;
+    std::set < Index > cells_;
+};
+
+//** sorted vector
+typedef std::map< Index, GraphDistInfo > NodeDistMap;
+//** sorted matrix
 typedef std::map< Index, NodeDistMap > Graph;
+
 
 /*! Dijkstra's shortest path finding*/
 class DLLEXPORT Dijkstra {
@@ -43,31 +80,52 @@ public:
 
     void setStartNode(Index startNode);
 
-    IndexArray shortestPathTo(Index node) const;
+    /*!Set a root note for all distance calculations.*/
+    IndexArray shortestPathTo(Index root) const;
 
-    inline double distance(Index node) { return distances_[node]; }
+    /*!Distance from root to node.*/
+    double distance(Index root, Index node);
+    
+    /*!Distance to node to the last known root.*/
+    double distance(Index node); 
 
+    /*!All distances to root.*/
+    RVector distances(Index root);
+    
+    /*!All distances from to last known root.*/
     RVector distances() const;
+    
+    Graph & graph() {
+        return graph_;
+    }
 
-    class edge_ : std::pair< Index, Index > {
+    const Graph & graph() const {
+        return graph_;
+    }
+
+    GraphDistInfo graphInfo(Index na, Index nb) {
+        return graph_[na][nb];
+    }
+
+    class Edge_ : std::pair< Index, Index > {
     public:
-        edge_() : start(0), end(0) {}
-        edge_(Index a, Index b) : start(a), end(b) {}
+        Edge_() : start(0), end(0) {}
+        Edge_(Index a, Index b) : start(a), end(b) {}
         Index start;
         Index end;
     };
 
     /*! Definition for the priority queue */
-    class distancePair_ : std::pair< float, edge_ > { // weigth, vertex;
+    class DistancePair_ : std::pair< double, Edge_ > {
     public:
-        distancePair_() : first(0.0) {}
-        distancePair_(double f, edge_ & s) : first(f), second(s) {}
+        DistancePair_() : first(0.0) {}
+        DistancePair_(double f, Edge_ & s) : first(f), second(s) {}
 
         double first;
-        edge_ second;
+        Edge_ second;
     };
 
-    template < class T > class comparePairsClass_ : public std::binary_function< T, T, T > {
+    template < class T > class ComparePairsClass_ : public std::binary_function< T, T, T > {
     public:
         bool operator() (const T & lhs, const T & rhs) {
             return lhs.first > rhs.first;
@@ -75,8 +133,10 @@ public:
     };
 
 protected:
-    std::vector < edge_ > pathMatrix_;
+    std::vector < Edge_ > pathMatrix_;
+    
     NodeDistMap distances_;
+
     Graph graph_;
     Index root_;
 };
@@ -116,6 +176,14 @@ public:
 
     void createJacobian(RSparseMapMatrix & jacobian, const RVector & slowness);
 
+    /*! Returns the mesh node indieces for the way from shot to receiver, 
+    respective the data for the last jacobian calculation. If you want further infos about the way element. 
+    You can ask the dijkstra about the graph infos. */
+    const IndexArray & way(Index sht, Index rec) const;
+
+    /*! Read only access to the recent dijktra. */
+    const Dijkstra & dijkstra() const { return dijkstra_; };
+
 protected:
 
     /*! Automatically looking for shot and receiver points if the mesh is changed. */
@@ -125,16 +193,19 @@ protected:
     double background_;
 
     /*! Nearest nodes for the current mesh for all shot points.*/
-    std::vector < Index > shotNodeId_;
+    IndexArray shotNodeId_;
 
     /*! Map shot id to sequential shot node number of shotNodeId_ */
     std::map< Index, Index > shotsInv_;
 
     /*! Nearest nodes for the current mesh for all receiver points.*/
-    std::vector < Index > receNodeId_;
+    IndexArray receNodeId_;
 
     /*! Map receiver id to sequential receiver node number of receNodeId_ */
     std::map< Index, Index > receiInv_;
+
+    /*! Way matrix of the last full jacobian generation. */
+    std::vector < std::vector < IndexArray > > wayMatrix_;
 
 };
 

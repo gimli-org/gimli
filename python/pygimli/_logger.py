@@ -50,13 +50,13 @@ def p(*args, c='y'):
 
 class ColorFormatter(logging.Formatter):
     def __init__(self, fmt='%(asctime)s - %(name)s - %(levelname)s - %(message)s'):
-        logging.Formatter.__init__(self, fmt)
+        logging.Formatter.__init__(self, fmt, "%d/%m/%y - %H:%M:%S")
         self._formatter = {
-            logging.INFO: logging.PercentStyle('%(asctime)s - %(name)s - %(levelname)s - %(message)s'),
-            logging.ERROR: logging.PercentStyle('%(asctime)s - %(name)s - ' + _('%(levelname)s', c='r') + '- %(message)s'),
-            logging.WARNING: logging.PercentStyle('%(asctime)s - %(name)s - ' + _('%(levelname)s', c='y') + '- %(message)s'),
-            logging.CRITICAL: logging.PercentStyle('%(asctime)s - %(name)s - ' + _('%(levelname)s', c='5;31;1;49') + '- %(message)s'),
-            logging.DEBUG: logging.PercentStyle('%(asctime)s - %(name)s - ' + _('%(levelname)s', c='m') + '- %(message)s'),
+            logging.INFO: logging.PercentStyle('%(asctime)s - %(name)s - ' + _('%(levelname)s', c='g') + ' - %(message)s'),
+            logging.ERROR: logging.PercentStyle('%(asctime)s - %(name)s - ' + _('%(levelname)s', c='r') + ' - %(message)s'),
+            logging.WARNING: logging.PercentStyle('%(asctime)s - %(name)s - ' + _('%(levelname)s', c='y') + ' - %(message)s'),
+            logging.CRITICAL: logging.PercentStyle('%(asctime)s - %(name)s - ' + _('%(levelname)s', c='5;31;1;49') + ' - %(message)s'),
+            logging.DEBUG: logging.PercentStyle('%(asctime)s - %(name)s - ' + _('%(levelname)s', c='m') + ' - %(message)s'),
             'DEFAULT': logging.PercentStyle('%(asctime)s - %(name)s - %(levelname)s - %(message)s'),
         }
 
@@ -80,7 +80,7 @@ def setDebug(d):
         core._pygimli_.setDebug(False)
         level = logging.INFO
         logger.debug("Set debug mode: off")
-    
+
     logger.setLevel(level)
     logging.getLogger('Core').setLevel(level)
     logging.basicConfig(level=level,
@@ -126,4 +126,3 @@ def warnNonEmptyArgs(kwargs):
         caller = sys._getframe(1).f_code.co_name
         logger.warning("Unrecognized keyword arguments for method: '" + caller
                        + "' "  + _msg(kwargs))
-

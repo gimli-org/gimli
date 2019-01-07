@@ -1,5 +1,5 @@
 /******************************************************************************
- *   Copyright (C) 2006-2018 by the resistivity.net development team          *
+ *   Copyright (C) 2006-2019 by the resistivity.net development team          *
  *   Carsten Rücker carsten@resistivity.net                                   *
  *                                                                            *
  *   Licensed under the Apache License, Version 2.0 (the "License");          *
@@ -1145,7 +1145,7 @@ RVector DCMultiElectrodeModelling::response(const RVector & model,
 
     if (verbose_){
         if (min(resp) < 0 && 1){
-            std::cout << "found neg. resp, save and abort." << std::endl;
+            std::cout << "Found neg. resp, save and abort." << std::endl;
                 for (uint i = 0; i < resp.size(); i ++){
                     if (resp[i ] < 0) {
                         int a = (*dataContainer_)("a")[i];
@@ -1216,7 +1216,7 @@ void DCMultiElectrodeModelling::mapERTModel(const RVector & model,
 template < class ValueType >
 DataMap DCMultiElectrodeModelling::response_(const Vector < ValueType > & model,
                                              ValueType background){
-    if (verbose_) std::cout << "Calculate response for model: min = " << min(model)
+    if (verbose_) std::cout << "Calculating response for model: min = " << min(model)
                             << " max = " << max(model) << std::endl;
     DataMap dMap;
 
@@ -1250,17 +1250,26 @@ DataMap DCMultiElectrodeModelling::response_(const Vector < ValueType > & model,
 
 template < class ValueType >
 Matrix < ValueType > * DCMultiElectrodeModelling::prepareJacobianT_(const Vector< ValueType > & model){
-//TIC__
+TIC__
     this->searchElectrodes_();
     if (dataContainer_){
         if (!subSolutions_){
+            if (verbose_) {
+                std::cout << "Creating new subpotentials for createJacobian."  << std::endl;
+            }
             subpotOwner_ = true;
             subSolutions_ = new Matrix< ValueType >;
+        }  else {
+            if (verbose_) {
+                std::cout << "Using existing subpotentials for createJacobian."  << std::endl;
+            }
         }
         Matrix< ValueType > *u = NULL;
         u = dynamic_cast< Matrix< ValueType > * >(subSolutions_);
         if (u->rows() == 0){
-
+            if (verbose_) {
+                std::cout << "Subpotentials matrix is empty."  << std::endl;
+            }
 // //            std::cout << WHERE_AM_I << " " << mean(model) << " " << model.size() << std::endl;
 //__MS(toc__)
             this->mapERTModel(model, ValueType(-1.0)); // very slow
@@ -1271,11 +1280,11 @@ Matrix < ValueType > * DCMultiElectrodeModelling::prepareJacobianT_(const Vector
                                   buildCompleteElectrodeModel_ ||
                                   stdDev(model) > TOLERANCE*1e5));
             if (verbose_) {
-                std::cout << "Calculate subpotentials analytical for createJacobian:("
+                std::cout << "Calculating subpotentials analytical for createJacobian: " 
+                          << this->analytical() << " ("
                           << "top: " << this->topography() << "|"
                           << "cem: " << buildCompleteElectrodeModel_ << "|"
-                          << "het: " << stdDev(model) << ")"
-                          << this->analytical() << std::endl;
+                          << "het: " << bool(stdDev(model) > TOLERANCE*1e5) << ")" << std::endl;
             }
 //__MS(toc__)
             //** first geometric factors .. since this will overwrite u
@@ -1286,9 +1295,9 @@ Matrix < ValueType > * DCMultiElectrodeModelling::prepareJacobianT_(const Vector
             }
 
             DataContainerERT tmp(this->dataContainer());
-//__MS(toc__)
+__MS(toc__)
             this->calculate(tmp);
-//__MS(toc__)
+__MS(toc__)
             /*! We have to scale subSolutions_ for the analytical solution to match the model */
             if (this->analytical()){
                 if (verbose_) std::cout << "Scale subpotentials with " << model[0] << std::endl;
@@ -1655,6 +1664,7 @@ void DCMultiElectrodeModelling::calculate(const std::vector < ElectrodeShape * >
 
     Stopwatch swatch(true);
 
+    // create or find primary potentials
     preCalculate(eA, eB);
 
 #ifdef HAVE_LIBBOOST_THREAD
@@ -1737,7 +1747,7 @@ void DCMultiElectrodeModelling::calculateK_(const std::vector < ElectrodeShape *
     bool debug = false;
     Stopwatch swatch(true);
 
-    if (debug) std::cout << "start calculateK ... " << std::endl;
+    if (debug) std::cout << "Starting calculateK ... " << std::endl;
 
     uint nCurrentPattern = eA.size();
     double k = kValues_[kIdx];
@@ -1751,7 +1761,7 @@ void DCMultiElectrodeModelling::calculateK_(const std::vector < ElectrodeShape *
         return calculateKAnalyt(eA, eB, solutionK, k, kIdx);
     }
 
-    if (debug) std::cout << "build sparsity pattern ... " ;
+    if (debug) std::cout << "Building sparsity pattern ... " ;
 
     SparseMatrix < ValueType > S_;
     S_.buildSparsityPattern(*mesh_);
@@ -1759,7 +1769,7 @@ void DCMultiElectrodeModelling::calculateK_(const std::vector < ElectrodeShape *
 MEMINFO
 
 //** START  assemble matrix
-    if (verbose_) std::cout << "assemble matrix ... " ;
+    if (verbose_) std::cout << "Assembling system matrix ... " ;
     dcfemDomainAssembleStiffnessMatrix(S_, *mesh_, k);
     dcfemBoundaryAssembleStiffnessMatrix(S_, *mesh_, sourceCenterPos_, k);
 
@@ -1785,7 +1795,7 @@ MEMINFO
 //             //** FIXME this fails with passive bodies
             elecs.push_back(electrodeRef_);
         }
-        if (verbose_) std::cout << " assemble complete electrode model ... " << std::endl;
+        if (verbose_) std::cout << "Assembling complete electrode model ... " << std::endl;
 
         for (Index i = 0; i < passiveCEM_.size(); i ++) elecs.push_back(passiveCEM_[i]);
 
@@ -1821,7 +1831,7 @@ MEMINFO
     //solver.setSolverType(LDL);
     //    std::cout << "solver: " << solver.solverName() << std::endl;
 
-    if (verbose_) std::cout << "Factorize (" << solver.solverName() << ") matrix ... ";
+    if (verbose_) std::cout << "Factorizing (" << solver.solverName() << ") system matrix ... ";
     solver.setMatrix(S_, 1);
 
 MEMINFO
@@ -1907,7 +1917,6 @@ void DCMultiElectrodeModelling::calculateK(const std::vector < ElectrodeShape * 
     calculateK_(eA, eB, solutionK, kIdx);
 }
 
-
 void DCSRMultiElectrodeModelling::updateMeshDependency_(){
     DCMultiElectrodeModelling::updateMeshDependency_();
     if (primMeshOwner_ && primMesh_) delete primMesh_;
@@ -1955,7 +1964,7 @@ void DCSRMultiElectrodeModelling::checkPrimpotentials_(const std::vector < Elect
     if (!primPot_) {
 
         //! First check if primPot can be recovered by loading binary matrix
-        if (verbose_) std::cout << "Allocate memory for primary potential..." ;
+        if (verbose_) std::cout << "Allocating memory for primary potential..." ;
 
         primPot_ = new RMatrix(nCurrentPattern * kValues_.size(), mesh_->nodeCount());
         primPot_->rowFlag().fill(0);
@@ -1963,7 +1972,7 @@ void DCSRMultiElectrodeModelling::checkPrimpotentials_(const std::vector < Elect
         if (verbose_) std::cout << "... " << swatch.duration(true) << std::endl;
 
         if (primPotFileBody_.rfind(".bmat") != std::string::npos){
-            std::cout << std::endl << "No primary potential for secondary field. recovering " + primPotFileBody_ << std::endl;
+            std::cout << std::endl << "No primary potential for secondary field. Recovering " + primPotFileBody_ << std::endl;
             loadMatrixSingleBin(*primPot_, primPotFileBody_);
             std::cout << std::endl << " ... done " << std::endl;
 MEMINFO
@@ -1973,7 +1982,7 @@ MEMINFO
             if (topography() && primPotFileBody_.find(NOT_DEFINED) != std::string::npos){
                 if (verbose_) {
                     std::cout << std::endl
-                            << "No primary potential for secondary field calculation with topography "
+                            << "No primary potential for secondary field calculation with topography."
                             << std::endl;
                 }
 
@@ -1985,7 +1994,7 @@ MEMINFO
                     primMeshOwner_ = true;
 
                     if (verbose_) {
-                        std::cout<< "create P2-Primmesh:\t"; primMesh_->showInfos();
+                        std::cout<< "Creating P2-Primmesh:\t"; primMesh_->showInfos();
                     }
                 }
 
@@ -1998,7 +2007,7 @@ MEMINFO
                 f.calculate(*primDataMap_);
 
                 if (verbose_){
-                    std::cout << "interpolate to secmesh" << std::endl;
+                    std::cout << "Interpolating to secondary mesh" << std::endl;
                 }
 
 //                 for (Index i = 0; i < primPotentials.rows(); i ++ ){
@@ -2020,9 +2029,12 @@ MEMINFO
         }
     } else {// if (!primPot_)
         // we assume that given primPotentials are ok
+        if (verbose_){
+            std::cout << "Using existing primary potentials." << std::endl;
+        }
+        
         primPot_->rowFlag().fill(1);
     }
-
 
     //! First check ready!
 
@@ -2031,8 +2043,8 @@ MEMINFO
     if (primPot_->rows() != kValues_.size() * nCurrentPattern ||
          primPot_->cols() != mesh_->nodeCount()){
 
-        std::cout << "Warning! primary potential matrix size invalid for secondary field calculation. "
-                  << "Matrix size is " << primPot_->rows() << " x " <<  primPot_->cols()
+        std::cout << "Warning! primary potential matrix size is invalid for secondary field calculation." << std::endl
+                  << "\tMatrix size is " << primPot_->rows() << " x " <<  primPot_->cols()
                   << "instead of " <<  kValues_.size() * nCurrentPattern << " x " << mesh_->nodeCount() << std::endl;
 
         primPot_->resize(kValues_.size() * nCurrentPattern, mesh_->nodeCount());
@@ -2054,7 +2066,8 @@ MEMINFO
                 if (primPotFileBody_.find(NOT_DEFINED) != std::string::npos){
                 //!** primary potential file body is NOT_DEFINED so we try to determine ourself
                     if (initVerbose){
-                        std::cout << std::endl << " No primary potential for secondary field calculation. Calculating analytically..." << std::endl;
+                        std::cout << std::endl << "No primary potential for secondary field calculation. "
+                                                  "Calculating analytically..." << std::endl;
                         initVerbose = false;
                     }
                     // PLS CHECK some redundancy here see DCMultiElectrodeModelling::calculateKAnalyt
@@ -2063,7 +2076,8 @@ MEMINFO
 
                 } else {
                     if (initVerbose){
-                        std::cout << std::endl << " No primary potential for secondary field calculation. Loading potentials." << std::endl;
+                        std::cout << std::endl << "No primary potential for secondary field calculation. "
+                                                  "Loading potentials." << std::endl;
                         initVerbose = false;
                     }
                 //!** primary potential file body is given so we load it

@@ -13,6 +13,10 @@ import os
 from os import path
 import numpy as np
 
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+import matplotlib.transforms as mtransforms
+
 try:
     import pygimli as pg
 except ImportError:
@@ -25,9 +29,6 @@ from pygimli.mplviewer.colorbar import cmapFromName
 from pygimli.mplviewer import drawParameterConstraints, CellBrowser
 from pygimli.utils.base import interperc
 
-import matplotlib as mpl
-import matplotlib.pyplot as plt
-import matplotlib.transforms as mtransforms
 from pygimli.physics.em.hemmodelling import registerDAEROcmap
 
 __verbose__ = False
