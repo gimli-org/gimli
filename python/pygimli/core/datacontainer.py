@@ -25,11 +25,16 @@ def __DataContainer_setSensors(self, sensors):
     >>> d.setSensors(pg.utils.grange(0.0, 3, n=4))
     >>> assert d.sensorCount() == 4
     """
-    for s in sensors:
+    for i, s in enumerate(sensors):
+        nS = s
         if isinstance(s, float) or isinstance(s, int):
-            self.createSensor(RVector3(s, 0.0))
+            nS = RVector3(s, 0.0)
+            
+        if i > self.sensorCount():
+            self.createSensor(nS)
         else:
-            self.createSensor(RVector3(s))
+            self.setSensorPosition(i, nS)
+
     
 DataContainer.setSensors = __DataContainer_setSensors
 
