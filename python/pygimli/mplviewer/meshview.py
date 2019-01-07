@@ -381,7 +381,8 @@ def drawModel(ax, mesh, data=None, logScale=True, cMin=None, cMax=None,
     return gci
 
 
-def drawSelectedMeshBoundaries(ax, boundaries, color=None, linewidth=1.0):
+def drawSelectedMeshBoundaries(ax, boundaries, color=None, linewidth=1.0,
+                               linestyles="-"):
     """Draw mesh boundaries into a given axes.
 
     Parameters
@@ -394,6 +395,7 @@ def drawSelectedMeshBoundaries(ax, boundaries, color=None, linewidth=1.0):
         matching color or string, else colors are according to markers
     linewidth : float [1.0]
         line width
+    linestyles : linestyle for line collection, i.e. solid or dashed
 
     Returns
     -------
@@ -419,6 +421,7 @@ def drawSelectedMeshBoundaries(ax, boundaries, color=None, linewidth=1.0):
         lineCollection.set_color(color)
 
     lineCollection.set_linewidth(linewidth)
+    lineCollection.set_linestyles(linestyles)
     ax.add_collection(lineCollection)
 
     updateAxes_(ax)
@@ -822,7 +825,7 @@ def drawMPLTri(ax, mesh, data=None,
     if len(levels) == 0:
         levels = autolevel(data, nLevs, zmin=cMin, zmax=cMax,
                            logScale=logScale)
-        
+
     if len(z) == len(triangles):
         shading = kwargs.pop('shading', 'flat')
 
