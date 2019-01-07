@@ -11,9 +11,6 @@ sys.path.insert(0, os.path.abspath('.'))
 from os import path
 from os.path import join
 
-from paper_carousel import showcase
-random.shuffle(showcase) # mix it up
-html_context = {"showcase": showcase}
 
 import matplotlib
 # Does not work properly with sphinx gallery. Leaving this out for the moment.
@@ -487,3 +484,8 @@ doxylink = {'gimliapi': (join(DOXY_BUILD_DIR, 'gimli.tag'), 'https://www.pygimli
 
 # Create small gallery of all tutorials and examples in the sidebar.
 make_gallery(SPHINXDOC_PATH, DOC_BUILD_DIR)
+
+# Add carousel to start page
+from paper_carousel import showcase
+random.shuffle(showcase) # mix it up
+html_context = {"showcase": showcase}
