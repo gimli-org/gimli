@@ -57,7 +57,6 @@ Mesh::Mesh(const std::string & filename, bool createNeighbourInfos)
     tree_(NULL),
     staticGeometry_(true),
     isGeometry_(false){
-
     dimension_ = 3;
     oldTet10NumberingStyle_ = true;
     cellToBoundaryInterpolationCache_ = 0;
@@ -85,7 +84,6 @@ Mesh & Mesh::operator = (const Mesh & mesh){
 void Mesh::copy_(const Mesh & mesh){
     clear();
     rangesKnown_ = false;
-
     setStaticGeometry(mesh.staticGeometry());
     setGeometry(mesh.isGeometry());
     dimension_ = mesh.dim();
@@ -250,7 +248,7 @@ Node * Mesh::createNodeWithCheck(const RVector3 & pos, double tol, bool warn, bo
     //     }
     }
 
-    Node * newNode = createNode_(pos, 0);
+    Node * newNode = this->createNode_(pos, 0);
     if (useTree) tree_->insert(newNode);
 
     if (edgeCheck){

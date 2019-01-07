@@ -306,6 +306,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
 
                 elif len(data) == mesh.nodeCount():
                     gci = drawField(ax, mesh, data, **kwargs)
+                    
                 if cMap is not None:
                     gci.set_cmap(cmapFromName(cMap))
                     #gci.cmap.set_under('k')

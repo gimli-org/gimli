@@ -248,7 +248,7 @@ int Mesh::saveBinary(const std::string & fbody) const {
 void Mesh::loadBinary(const std::string & fbody){
 //   sizeof(int) = 4 byte
 //   int[1] dimension
-//   int[127] dummy vertices information
+//   int[127] dummy vertices information, dummy[0] = isGeometry_
 //   int[1] nVerts, number of vertices
 //   double[dimension * nVerts]; coordinates,  dimension == 2 (x, y), dimension == 3 (x, y, z)
 //   int[nVerts] vertex markers
