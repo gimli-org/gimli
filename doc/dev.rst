@@ -45,7 +45,7 @@ for automatic warnings in case you are about to push to the master branch.
 
 6. Pull the latest developments from GitHub using automatic rebase:
   For more info see: http://kernowsoul.com/blog/2012/06/20/4-ways-to-avoid-merge-commits-in-git/
-    
+
     .. code-block:: bash
 
        git pull --rebase
@@ -297,3 +297,21 @@ Read api documentation from shell:
 More information on pygimli's native testing function:
 
 .. autofunction:: pygimli.test
+
+Adding an example to the paper carousel
+.......................................
+
+1. Put a catchy figure in *doc/_static/usecases*. It should be 750X380 px. You can use this command:
+
+.. code-block:: bash
+
+  mogrify -path converted -format png -resize "750x380^" -gravity North -crop 750x380+0+0 +repage *.png
+
+2. Add a new dictionary with additional information into *doc/paper_carousel.py*. The format should be like this:
+
+.. code-block:: python
+
+  dict(img="jordi2018.png",
+       title="Improved geophysical images through geostatistical regularization",
+       subtitle="Jordi et al. (2018), Geophysical Journal International",
+       link="https://doi.org/10.1093/gji/ggy055")

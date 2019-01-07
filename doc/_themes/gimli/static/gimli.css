@@ -106,8 +106,17 @@ img.align-center {
 }
 .carousel-caption {
     color: #fff;
+    line-height: 1.5;
+    font-size: 17px;
 }
 
+.carousel-inner img {
+    display: block;
+    line-height: 1;
+    height: auto;
+    max-width: 100%;
+    width: 100%;
+}
 /*header format*/
 
 h1, h2, h3, h4, h5, h6 {
@@ -569,6 +578,7 @@ dd {
 /*index page*/
 .hero-unit {
     padding: 30px;
+    margin-bottom: 0px;
 }
 .hero-unit h1 {
     font-size: 50px;

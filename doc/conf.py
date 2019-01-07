@@ -3,11 +3,17 @@
 pyGIMLi sphinx configuration file.
 """
 
+import random
 import os
 import re
 import sys
+sys.path.insert(0, os.path.abspath('.'))
 from os import path
 from os.path import join
+
+from paper_carousel import showcase
+random.shuffle(showcase) # mix it up
+html_context = {"showcase": showcase}
 
 import matplotlib
 # Does not work properly with sphinx gallery. Leaving this out for the moment.
@@ -29,7 +35,6 @@ import pkg_resources
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0, os.path.abspath('.'))
 from sidebar_gallery import make_gallery
 
 try:
@@ -72,7 +77,7 @@ if req:
           "Try: sudo pip install %s.\n" % (' '.join(req)) + \
           "Or install all dependencies with: pip install -r requirements.txt\n" + \
           "You can install them all in userspace by adding the --user flag."
-    print(pkg_resources.working_set)
+    print((pkg_resources.working_set))
     #print(pip.get_installed_distributions())
     raise ImportError(msg)
 
@@ -151,7 +156,7 @@ autosummary_generate = True
 # Formulas disappear after scrolling
 # mathjax_path = "https://www.pygimli.org/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
 # Slow, but works
-mathjax_path = "https://cdn.mathjax.org/mathjax/latest/MathJax.js" +\
+mathjax_path = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js" +\
                "?config=TeX-AMS-MML_HTMLorMML"
 
 # Add any paths that contain templates here, relative to this directory.
@@ -481,7 +486,4 @@ for dist in pkg_resources.find_distributions(SPHINXDOC_PATH +
 doxylink = {'gimliapi': (join(DOXY_BUILD_DIR, 'gimli.tag'), 'https://www.pygimli.org/gimliapi')}
 
 # Create small gallery of all tutorials and examples in the sidebar.
-# from pygimli.misc.sidebar_gallery import make_gallery
-sys.path.insert(0, os.path.abspath('.'))
-
 make_gallery(SPHINXDOC_PATH, DOC_BUILD_DIR)
