@@ -41,7 +41,7 @@ export GIMLI_NUM_THREADS=4
 mkdir -p build
 cd build
 
-if [ ! -f build/CMakeCache.txt ]; then
+if [ ! -f CMakeCache.txt ]; then
     # Always rebuild core when Cmake cache does not exist
     core_update=2
 fi
