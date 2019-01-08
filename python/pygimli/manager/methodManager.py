@@ -4,7 +4,6 @@
 """TODO WRITEME"""
 
 import numpy as np
-
 import pygimli as pg
 
 
@@ -129,6 +128,14 @@ class MethodManager(object):
         """Return error values from a given DataContainer."""
         return data('err')
 
+    def reinitForwardOperator(self, **kwargs):
+        """Reinitialize the forward operator.
+        
+        Sometimes it can be useful to reinitialize the forward operator.
+        Keyword arguments will be forwarded to 'self.createForwardOperator'.
+        """
+        self._initForwardOperator(**kwargs)
+            
     def _initForwardOperator(self, **kwargs):
         """Initialize or re-initialize the forward operator.
 
@@ -335,13 +342,11 @@ class MethodManager(object):
 
     def showFit(self, ax=None, **kwargs):
         """Show the last inversion date and response."""
-        ax = self.showData(ax=ax,
-                           data=self.inv.dataVals,
+        ax = self.showData(data=self.inv.dataVals,
                            error=self.inv.errorVals, 
-                           label='Data', **kwargs)
-        ax = self.showData(ax=ax,
-                           data=self.inv.response,
-                           label='Response', **kwargs)
+                           label='Data', ax=ax, **kwargs)
+        ax = self.showData(data=self.inv.response,
+                           label='Response', ax=ax, **kwargs)
 
         if not kwargs.pop('hideFittingAnnotation', False):
             ax.text(0.01, 1.0025, "rrms: %.2g, $\chi^2$: %.2g" %

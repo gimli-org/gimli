@@ -10,7 +10,7 @@ import numpy as np
 
 import pygimli as pg
 from pygimli.frameworks import MeshModelling
-from pygimli.manager import MeshMethodManager, MeshMethodManager0
+from pygimli.manager import MeshMethodManager
 
 
 class ERTModelling(MeshModelling):
@@ -300,22 +300,62 @@ class ERTModelling(MeshModelling):
         return rhs
 
 
+def simulate(mesh, res, scheme, verbose=False, **kwargs):
+    """Convenience function of you like static functions.
+    
+    Parameters
+    ----------
+    
+    """
+    sr = kwargs.pop('sr', True)
+    ert = ERTManager(verbose=verbose)
+    ert.setSingularityRemoval(sr)
+
+    if isinstance(mesh, str):
+        mesh = pg.load(mesh)
+
+    if isinstance(scheme, str):
+        scheme = pb.load(scheme)
+
+    return ert.simulate(mesh, res, scheme, verbose, **kwargs)
+
+
 class ERTManager(MeshMethodManager):
     """ERT Manager.
     """
     def __init__(self, **kwargs):
-        """Constructor."""
+        """Constructor.
+        
+        Parameters
+        ----------
+        * useBert: bool [False]
+            Use Bert forward operator instead of the reference implementation.
+        * sr: bool [True]
+            Use singularity removal technique to solve the forward problem
+            Currently only possible by the BERT solver.
+        """
+        kwargs['useBert'] = kwargs.pop('useBert', False)
+        kwargs['sr'] = kwargs.pop('sr', True)
+
         super(ERTManager, self).__init__(**kwargs)
         self._dataToken = 'rhoa'
         self.dataTrans = pg.RTransLog()
         self.inv.dataTrans = self.dataTrans
+
+    def setSingularityRemoval(self, sr=True):
+        """Turn on singularity removal."""
+        self.reinitForwardOperator(sr=True)
 
     def createForwardOperator(self, **kwargs):
         """Create and choose forward operator. """
         useBert = kwargs.pop('useBert', False)
 
         if useBert:
-            pg.critical('implementme')
+            sr = kwargs.pop('sr', True)
+            if sr:
+                fop = pb.DCSRMultiElectrodeModelling(verbose=verbose)
+            else:
+                fop = pb.DCMultiElectrodeModelling(verbose=verbose)
         else:
             fop = ERTModelling(**kwargs)
 
@@ -378,6 +418,56 @@ class ERTManager(MeshMethodManager):
                                               **kwargs)
 
 
+def createERTData(elecs, schemeName='none', **kwargs):
+    """ Simple data creator for compatibility (advanced version in BERT)."""
+    if schemeName is not "dd":
+        import pybert as pb  # that's bad!!! TODO: remove pybert deps
+        return pb.createData(elecs, schemeName, **kwargs)
+
+    if isinstance(elecs, pg.RVector):
+        sPos = []
+        for e in elecs:
+            sPos.append(pg.RVector3(e, 0., 0.))
+        elecs = sPos
+
+    isClosed = kwargs.pop('closed', False)
+
+    data = pg.DataContainerERT()
+    data.registerSensorIndex('a')
+    data.registerSensorIndex('b')
+    data.registerSensorIndex('m')
+    data.registerSensorIndex('n')
+    data.setSensorPositions(elecs)
+    nElecs = len(elecs)
+    a = []
+    b = []
+    m = []
+    n = []
+    eb = 0
+    for i in range(nElecs):
+        for j in range(eb + 2, nElecs):
+            ea = i
+            eb = ea + 1
+            em = j
+            en = em + 1
+
+            if isClosed:
+                en = en % nElecs
+
+            if en < nElecs and en != ea:
+                a.append(ea)
+                b.append(eb)
+                m.append(em)
+                n.append(en)
+
+    data.resize(len(a))
+    data.add('a', a)
+    data.add('b', b)
+    data.add('m', m)
+    data.add('n', n)
+    data.set('valid', np.ones(len(a)))
+    
+    return data
 
 
 
@@ -401,8 +491,7 @@ class ERTManager(MeshMethodManager):
 
 
 
-
-
+from pygimli.manager import MeshMethodManager0
 
 
 class ERTModelling0(pg.ModellingBase):
@@ -806,57 +895,6 @@ class ERTManager0(MeshMethodManager0):
         """Return pure data values from a given DataContainer."""
         return data('err')
 
-
-def createERTData(elecs, schemeName='none', **kwargs):
-    """ Simple data creator for compatibility (advanced version in BERT)."""
-    if schemeName is not "dd":
-        import pybert as pb  # that's bad!!! TODO: remove pybert deps
-        return pb.createData(elecs, schemeName, **kwargs)
-
-    if isinstance(elecs, pg.RVector):
-        sPos = []
-        for e in elecs:
-            sPos.append(pg.RVector3(e, 0., 0.))
-        elecs = sPos
-
-    isClosed = kwargs.pop('closed', False)
-
-    data = pg.DataContainerERT()
-    data.registerSensorIndex('a')
-    data.registerSensorIndex('b')
-    data.registerSensorIndex('m')
-    data.registerSensorIndex('n')
-    data.setSensorPositions(elecs)
-    nElecs = len(elecs)
-    a = []
-    b = []
-    m = []
-    n = []
-    eb = 0
-    for i in range(nElecs):
-        for j in range(eb + 2, nElecs):
-            ea = i
-            eb = ea + 1
-            em = j
-            en = em + 1
-
-            if isClosed:
-                en = en % nElecs
-
-            if en < nElecs and en != ea:
-                a.append(ea)
-                b.append(eb)
-                m.append(em)
-                n.append(en)
-
-    data.resize(len(a))
-    data.add('a', a)
-    data.add('b', b)
-    data.add('m', m)
-    data.add('n', n)
-    data.set('valid', np.ones(len(a)))
-
-    return data
 
 def midconfERT(data):
     """Return the midpoint and configuration key for ERT data.

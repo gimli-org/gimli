@@ -139,21 +139,24 @@ class VESModelling(Block1DModelling):
         mn2 = kwargs.pop('mn2', self.mn2)
         plot = kwargs.pop('plot', 'loglog')
 
-        plot = getattr(ax, plot)
-        plot(ra, ab2, 'x-', label=label, **style, **kwargs)
+        a1 = ax
+        plot = getattr(a1, plot)
+        plot(ra, ab2, 'x-', 
+             label=r'Data $\varrho_a$' or label, 
+             **style, **kwargs)
 
         if raE is not None:
-            ax.errorbar(ra, ab2,
+            a1.errorbar(ra, ab2,
                         xerr=ra * raE, barsabove=True,
                         **pg.frameworks.modelling.DEFAULT_STYLES.get('Error', 
                             pg.frameworks.modelling.DEFAULT_STYLES['Default'])
                         )
 
-        ax.set_ylim(max(ab2), min(ab2))
-        ax.set_xlabel(r'Apparent resistivity ($\Omega$m)')
-        ax.set_ylabel('AB/2 in (m)')
-        ax.grid(True)
-        ax.legend()
+        a1.set_ylim(max(ab2), min(ab2))
+        a1.set_xlabel(r'Apparent resistivity ($\Omega$m)')
+        a1.set_ylabel(r'AB/2 (m)')
+        a1.grid(True)
+        a1.legend()
 
 
 class VESCModelling(VESModelling):
@@ -303,12 +306,12 @@ class VESManager(MethodManager1d):
     >>> # and layer thickness of 4, 6, 10 m
     >>> # over a Halfspace of 800 Ohmm
     >>> synthModel = pg.cat([4., 6., 10.], [100., 5., 20., 800.])
-    >>> VES = VESManager()
-    >>> ra, err = VES.simulate(synthModel, ab2=ab2, mn2=mn2, noiseLevel=0.01)
-    >>> ax = VES.showData(ra, err)
-    >>> # _= VES.invert(ra, err, nLayer=4, showProgress=0, verbose=0)
-    >>> # ax = VES.showModel(synthModel)
-    >>> # ax = VES.showResult(ax=ax)
+    >>> ves = VESManager()
+    >>> ra, err = ves.simulate(synthModel, ab2=ab2, mn2=mn2, noiseLevel=0.01)
+    >>> ax = ves.showData(ra, error=err)
+    >>> # _= ves.invert(ra, err, nLayer=4, showProgress=0, verbose=0)
+    >>> # ax = ves.showModel(synthModel)
+    >>> # ax = ves.showResult(ax=ax)
     >>> pg.wait()
     """
     def __init__(self, **kwargs):
@@ -325,7 +328,7 @@ class VESManager(MethodManager1d):
         complex : bool
             Accept complex resistivities.
         """
-        self.__complex = kwargs.pop('complex', False)
+        self._complex = kwargs.pop('complex', False)
 
         super(VESManager, self).__init__(**kwargs)
 
@@ -337,12 +340,12 @@ class VESManager(MethodManager1d):
         
     @property
     def complex(self):
-        return self.__complex
+        return self._complex
 
     @complex.setter
     def complex(self, c):
-        self.__complex = c
-        self._initForwardOperator()
+        self._complex = c
+        self.reinitForwardOperator()
 
     def createForwardOperator(self, **kwargs):
         """Create Forward Operator.
