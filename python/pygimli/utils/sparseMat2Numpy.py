@@ -53,6 +53,7 @@ def sparseMatrix2coo(A, rowOffset=0, colOffset=0):
         Matrix to convert into.
     """
     from scipy.sparse import coo_matrix
+
     vals = pg.RVector()
     rows = pg.IndexArray([0])
     cols = pg.IndexArray([0])
@@ -66,6 +67,7 @@ def sparseMatrix2coo(A, rowOffset=0, colOffset=0):
         A.fillArrays(vals, rows, cols)
         rows += rowOffset
         cols += colOffset
+
         return coo_matrix((vals, (rows, cols)), shape=(A.rows(), A.cols()))
 
     return coo_matrix(A)
@@ -75,7 +77,7 @@ def convertCRSIndex2Map(rowIdx, colPtr):
     """Converts CRS indices to uncompressed indices (row, col)."""
     ii = []
     jj = []
-    for i in range(len(colPtr) - 1):
+    for i in range(len(colPtr)-1):
         for j in range(colPtr[i], colPtr[i + 1]):
             ii.append(i)
             jj.append(rowIdx[j])

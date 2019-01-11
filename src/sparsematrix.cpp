@@ -28,36 +28,54 @@ void SparseMatrix< double >::copy_(const SparseMapMatrix< double, Index > & S){
     double val;
     cols_ = S.cols();
     rows_ = S.rows();
-    std::vector < std::map < Index, double > > idxMap(S.cols());
+    std::vector < std::map < Index, double > > rowColMap(S.rows());
 
     for (typename SparseMapMatrix< double, Index>::const_iterator
         it = S.begin(); it != S.end(); it ++){
         row = S.idx1(it);
         col = S.idx2(it);
         val = S.val(it);
-        idxMap[col].insert(std::pair< Index, double >(row, val));
+        rowColMap[row].insert(std::pair< Index, double >(col, val));
     }
-    colPtr_.resize(S.cols() + 1);
+    colPtr_.resize(S.rows() + 1);
     rowIdx_.resize(S.nVals());
     vals_.resize(S.nVals());
     stype_  = S.stype();
 
-    colPtr_[0] = 0;
+    this->colPtr_[0] = 0;
 
-    Index colCounter = 0, rowCounter = 0;
+    Index colPtr = 0; 
+    row = 0;
     for (typename std::vector < std::map < Index, double > >::iterator
-         it = idxMap.begin(); it != idxMap.end(); it++){
-
+         it = rowColMap.begin(); it != rowColMap.end(); it++){
         for (typename std::map < Index, double >::iterator
              itR = (*it).begin(); itR != (*it).end(); itR++){
-            rowIdx_[rowCounter] = itR->first;
-            vals_[rowCounter] = (double)itR->second;
-            rowCounter ++;
+            rowIdx_[colPtr] = itR->first;
+            vals_[colPtr] = (double)itR->second;
+            colPtr ++;
         }
-        colCounter ++;
-        colPtr_[colCounter] = rowCounter;
+        row ++;
+        this->colPtr_[row] = colPtr;
     }
     valid_ = true;
+}
+
+template<>
+void SparseMapMatrix< double, Index >::copy_(const SparseMatrix< double > & S){
+    clear();
+    cols_ = S.cols();
+    rows_ = S.rows();
+    stype_ = S.stype();
+
+    // std::vector < int > colPtr(S.vecColPtr());
+    // std::vector < int > rowIdx(S.vecRowIdx());
+    // Vector < ValueType > vals(S.vecVals());
+
+    for (Index i = 0; i < S.rows(); i++){
+        for (int j = S.vecColPtr()[i]; j < S.vecColPtr()[i + 1]; j ++){
+            (*this)[i][S.vecRowIdx()[j]] = S.vecVals()[j];
+        }
+    }
 }
 
 

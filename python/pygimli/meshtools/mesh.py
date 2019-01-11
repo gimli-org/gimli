@@ -8,7 +8,7 @@ import numpy as np
 import pygimli as pg
 
 
-def createMesh(poly, quality=30, area=0.0, smooth=None, switches=None,
+def createMesh(poly, quality=32, area=0.0, smooth=None, switches=None,
                verbose=False, **kwargs):
     """Create a mesh for a given geometry polygon.
 

@@ -13,6 +13,35 @@ from pygimli.frameworks import MeshModelling
 from pygimli.manager import MeshMethodManager
 
 
+def simulate(mesh, res, scheme, verbose=False, **kwargs):
+    """Convenience function to use the ERT modelling operator.
+    
+    Convenience function to use the ERT modelling operator
+    when you like static functions.
+    
+    Parameters
+    ----------
+
+    mesh: Mesh
+
+    res: rhoMap, iterable
+
+    scheme: str, DataContainerERT
+    
+    """
+    sr = kwargs.pop('sr', True)
+    ert = ERTManager(verbose=verbose)
+    ert.setSingularityRemoval(sr)
+
+    if isinstance(mesh, str):
+        mesh = pg.load(mesh)
+
+    if isinstance(scheme, str):
+        scheme = pb.load(scheme)
+
+    return ert.simulate(mesh, res, scheme, verbose, **kwargs)
+
+
 class ERTModelling(MeshModelling):
     """Reference implementation for 2.5D Electrical Resistivity Tomography."""
 
@@ -298,26 +327,6 @@ class ERTModelling(MeshModelling):
             c = mesh.findCell(e)
             rhs[i][c.ids()] = c.N(c.shape().rst(e))
         return rhs
-
-
-def simulate(mesh, res, scheme, verbose=False, **kwargs):
-    """Convenience function of you like static functions.
-    
-    Parameters
-    ----------
-    
-    """
-    sr = kwargs.pop('sr', True)
-    ert = ERTManager(verbose=verbose)
-    ert.setSingularityRemoval(sr)
-
-    if isinstance(mesh, str):
-        mesh = pg.load(mesh)
-
-    if isinstance(scheme, str):
-        scheme = pb.load(scheme)
-
-    return ert.simulate(mesh, res, scheme, verbose, **kwargs)
 
 
 class ERTManager(MeshMethodManager):

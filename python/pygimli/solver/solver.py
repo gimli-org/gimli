@@ -751,18 +751,18 @@ def showSparseMatrix(A, full=False):
 
         Sd = None
         if full:
-            Sd = pg.RMatrix(S.rows(), S.cols())
+            Sd = pg.Matrix(S.rows(), S.cols())
                         
         for i in range(S.rows()):
             for j in range(cols[i], cols[i + 1]):
                 if full:
-                    Sd[i].setVal(vals[j], rows[j])
+                    Sd[i, rows[j]] = vals[j]
                 else:
                     print(i, rows[j], vals[j])
 
         if full:
             print(np.array(Sd))
-
+    
 
 def linsolve(A, b, verbose=False):
     """

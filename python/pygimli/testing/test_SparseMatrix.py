@@ -42,48 +42,62 @@ class TestSparseMatrix(unittest.TestCase):
 
         np.testing.assert_equal((CSR*v15).size(), 3)
         np.testing.assert_equal((CSR.transMult(v3)).size(), 15)
-
+        
         np.testing.assert_equal(MAP1.cols(), MAP2.cols())
         np.testing.assert_equal(CSR.cols(), MAP1.cols())
         np.testing.assert_equal(CSR.rows(), MAP1.rows())
         np.testing.assert_equal(MAP1.rows(), MAP2.rows())
 
         # testing SparseMatrix to Numpy
-        csr = pg.SparseMapMatrix(r=4, c=5)
+        mm = pg.SparseMapMatrix(r=4, c=5)
         check_rows = [0, 0, 1, 2, 3]
         check_cols = [0, 1, 2, 3, 4]
-        check_csr_rows = [0, 1, 2, 3, 4]
-        check_col_s_e = [0, 2, 3, 4, 5, 5]
+
         check_vals = np.array([1.0, 3, np.pi, 1e-12, -1.12345e13])
         for i in range(len(check_rows)):
-            csr.addVal(check_rows[i], check_cols[i], check_vals[i])
+            mm.addVal(check_rows[i], check_cols[i], check_vals[i])
 
-        r1, c1, v1 = pg.utils.sparseMatrix2Array(csr)
+        # pg.solver.showSparseMatrix(mm, full=True)
+                
+        check_csr_rows = [0, 1, 2, 3, 4]
+        check_csr_colPtr = [0, 2, 3, 4, 5]
+
+        check_csc_cols = [0, 0, 1, 2, 3]
+        check_csc_rowptr = [0, 1, 2, 3, 4, 5]
+
+        r1, c1, v1 = pg.utils.sparseMatrix2Array(mm)
         np.testing.assert_allclose(r1, check_csr_rows)
-        np.testing.assert_allclose(c1, check_col_s_e)
+        np.testing.assert_allclose(c1, check_csr_colPtr)
         np.testing.assert_allclose(v1, check_vals)
 
-        r2, c2, v2 = pg.utils.sparseMatrix2Array(pg.SparseMatrix(csr),
+        sciA1 = pg.utils.sparseMatrix2csr(pg.SparseMatrix(mm))
+        np.testing.assert_equal(sciA1.indices, check_csr_rows)
+        np.testing.assert_equal(sciA1.indptr, check_csr_colPtr)
+
+        sciA1 = pg.utils.sparseMatrix2csr(mm)
+        np.testing.assert_equal(sciA1.indices, check_csr_rows)
+        np.testing.assert_equal(sciA1.indptr, check_csr_colPtr)
+
+        r2, c2, v2 = pg.utils.sparseMatrix2Array(pg.SparseMatrix(mm),
                                                  getInCRS=False)
         np.testing.assert_allclose(r2, check_rows)
         np.testing.assert_allclose(c2, check_cols)
         np.testing.assert_allclose(v2, check_vals)
 
-
         A1 = pg.SparseMapMatrix(colIds, rowIds, vals)
         A2 = pg.SparseMapMatrix(colIds, rowIds, vals)
         A1 += A2
 
-        sciA1 = pg.utils.sparseMatrix2csr(pg.SparseMatrix(csr))
-        sciA2 = pg.utils.sparseMatrix2csr(csr)
-        np.testing.assert_equal(len(sciA1.data), csr.size())
+        sciA1 = pg.utils.sparseMatrix2csr(pg.SparseMatrix(mm))
+        sciA2 = pg.utils.sparseMatrix2csr(mm)
+        np.testing.assert_equal(len(sciA1.data), mm.size())
         np.testing.assert_equal(sciA1.data, sciA2.data)
         np.testing.assert_equal(sciA1.indices, sciA2.indices)
         np.testing.assert_equal(sciA1.indptr, sciA2.indptr)
 
-        sciA1 = pg.utils.sparseMatrix2coo(pg.SparseMatrix(csr))
-        sciA2 = pg.utils.sparseMatrix2coo(csr)
-        np.testing.assert_equal(len(sciA1.data), csr.size())
+        sciA1 = pg.utils.sparseMatrix2coo(pg.SparseMatrix(mm))
+        sciA2 = pg.utils.sparseMatrix2coo(mm)
+        np.testing.assert_equal(len(sciA1.data), mm.size())
         np.testing.assert_equal(sciA1.data, sciA2.data)
         np.testing.assert_equal(sciA1.row, sciA2.row)
         np.testing.assert_equal(sciA1.col, sciA2.col)
