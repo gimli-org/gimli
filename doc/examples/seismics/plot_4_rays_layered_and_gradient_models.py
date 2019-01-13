@@ -28,7 +28,7 @@ from pygimli.mplviewer import drawMesh
 # We start by building a regular grid.
 
 mesh_layered = mt.createGrid(
-    np.arange(-20, 155, step=5), np.linspace(-60, 0, 15))
+    np.arange(-20, 155, step=5), np.linspace(-60, 0, 13))
 
 ################################################################################
 # We now construct the velocity vector for the two-layer case by iterating over
