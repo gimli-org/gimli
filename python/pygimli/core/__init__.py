@@ -388,13 +388,10 @@ def __newBVectorSetVal__(self, *args, **kwargs):
         if isinstance(args[1], _pygimli_.BVector):
             return __origBVectorSetVal__(self, args[0], bv=args[1])
     return __origBVectorSetVal__(self, *args, **kwargs)
-
-
 _pygimli_.BVector.setVal = __newBVectorSetVal__
 
+
 __origCVectorSetVal__ = _pygimli_.CVector.setVal
-
-
 def __newCVectorSetVal__(self, *args, **kwargs):
     if len(args) == 2:
         if isinstance(args[1], int):
@@ -402,13 +399,10 @@ def __newCVectorSetVal__(self, *args, **kwargs):
         if isinstance(args[1], _pygimli_.BVector):
             return __origCVectorSetVal__(self, args[0], bv=args[1])
     return __origCVectorSetVal__(self, *args, **kwargs)
-
-
 _pygimli_.CVector.setVal = __newCVectorSetVal__
 
+
 __origIVectorSetVal__ = _pygimli_.IVector.setVal
-
-
 def __newIVectorSetVal__(self, *args, **kwargs):
     if len(args) == 2:
         if isinstance(args[1], int):
@@ -416,13 +410,10 @@ def __newIVectorSetVal__(self, *args, **kwargs):
         if isinstance(args[1], _pygimli_.BVector):
             return __origIVectorSetVal__(self, args[0], bv=args[1])
     return __origIVectorSetVal__(self, *args, **kwargs)
-
-
 _pygimli_.IVector.setVal = __newIVectorSetVal__
 
+
 __origIndexArraySetVal__ = _pygimli_.IndexArray.setVal
-
-
 def __newIndexArraySetVal__(self, *args, **kwargs):
     if len(args) == 2:
         if isinstance(args[1], int):
@@ -494,25 +485,29 @@ def __setVal(self, idx, val):
     """
         Index write access []
     """
-    # print("__setVal", self, 'idx', idx, 'val:', val)
     if isinstance(idx, slice):
         if idx.step is None:
             self.setVal(val, int(idx.start), int(idx.stop))
             return
         else:
-            print("not yet implemented")
+            pg.critical("not yet implemented")
     elif isinstance(idx, tuple):
         # print("tuple", idx, type(idx))
         if isinstance(self, _pygimli_.RMatrix):
             self.rowRef(int(idx[0])).setVal(val, int(idx[1]))
             return
         else:
-            pg.error("cant set index with tuple", idx, "for", self)
+            pg.error("Can't set index with tuple", idx, "for", self)
             return
     # if isinstance(idx, _pygimli_.BVector):
     # print("__setVal", self, idx, 'val:', val)
     # self.setVal(val, bv=idx)
     # return
+    if isinstance(val, np.complex):
+        if isinstance(idx, int):
+            return self.setVal(val=val, id=idx)    
+        else:
+            return self.setVal(val=val, ids=idx)    
     self.setVal(val, idx)
 
 

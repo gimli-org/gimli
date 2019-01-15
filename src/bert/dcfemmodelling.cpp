@@ -1250,7 +1250,7 @@ DataMap DCMultiElectrodeModelling::response_(const Vector < ValueType > & model,
 
 template < class ValueType >
 Matrix < ValueType > * DCMultiElectrodeModelling::prepareJacobianT_(const Vector< ValueType > & model){
-TIC__
+
     this->searchElectrodes_();
     if (dataContainer_){
         if (!subSolutions_){
@@ -1295,9 +1295,9 @@ TIC__
             }
 
             DataContainerERT tmp(this->dataContainer());
-__MS(toc__)
+
             this->calculate(tmp);
-__MS(toc__)
+
             /*! We have to scale subSolutions_ for the analytical solution to match the model */
             if (this->analytical()){
                 if (verbose_) std::cout << "Scale subpotentials with " << model[0] << std::endl;
@@ -2161,6 +2161,7 @@ MEMINFO
     dcfemBoundaryAssembleStiffnessMatrix(S1, mesh1_, sourceCenterPos_, k);
     assembleStiffnessMatrixHomogenDirichletBC(S1, calibrationSourceIdx_);
 
+    if (verbose_) std::cout << "Assembling system matrix (SR) ... " < std::endl;
 //     if (verbose_) std::cout << "Assembling: " << swatch.duration() << std::endl;
     //mesh_->setCellAttributes(tmpRho);
 

@@ -13,33 +13,40 @@ from pygimli.frameworks import MeshModelling
 from pygimli.manager import MeshMethodManager
 
 
-def simulate(mesh, res, scheme, verbose=False, **kwargs):
+def simulate(mesh, res, scheme, sr=True, useBert=True, 
+             verbose=False, **kwargs):
     """Convenience function to use the ERT modelling operator.
     
     Convenience function to use the ERT modelling operator
-    when you like static functions.
+    if you like static functions.
+    
+    See :py:mod:`pygimli.ert.ERTManager.simulate` for description 
+    of the arguments. 
     
     Parameters
     ----------
-
-    mesh: Mesh
-
-    res: rhoMap, iterable
-
-    scheme: str, DataContainerERT
-    
+    res : see :py:mod:`pygimli.ert.ERTManager.simulate`
+        Resistivity distribution.
+    mesh : :gimliapi:`GIMLI::Mesh` | str
+        Modeling domain. Mesh can be a file name here.
+    scheme : :gimliapi:`GIMLI::DataContainerERT` | str
+        Data configuration. Scheme can be a file name here.
+    sr : bool [True]
+        Use singularity removal technique.
+    useBert : bool [True]
+        Use Bert forward operator instead of the reference implementation.
+    **kwargs:
+        Forwarded to :py:mod:`pygimli.ert.ERTManager.simulate`
     """
-    sr = kwargs.pop('sr', True)
-    ert = ERTManager(verbose=verbose)
-    ert.setSingularityRemoval(sr)
-
+    ert = ERTManager(useBert=useBert, sr=sr, verbose=verbose)
+    
     if isinstance(mesh, str):
         mesh = pg.load(mesh)
 
     if isinstance(scheme, str):
         scheme = pb.load(scheme)
 
-    return ert.simulate(mesh, res, scheme, verbose, **kwargs)
+    return ert.simulate(mesh, res, scheme, verbose=verbose, **kwargs)
 
 
 class ERTModelling(MeshModelling):
@@ -331,83 +338,328 @@ class ERTModelling(MeshModelling):
 
 class ERTManager(MeshMethodManager):
     """ERT Manager.
+
+    Method Manager for Electrical Resistivity Tomography (ERT)
+    
+    TODO:
+        * 2d
+        * 2dtopo
+        * 3d
+        * 3dtopo
+        * complex on/off
+        * closed geometry
+        * transdim
+        * singularity removal
+        * ERT specific inversion options:
+            * ...
     """
     def __init__(self, **kwargs):
         """Constructor.
         
         Parameters
         ----------
-        * useBert: bool [False]
+        * useBert: bool [True]
             Use Bert forward operator instead of the reference implementation.
         * sr: bool [True]
-            Use singularity removal technique to solve the forward problem
-            Currently only possible by the BERT solver.
+            Calculate with singularity removal technique. 
+            Recommended but needs the primary potential. 
+            For flat earth cases the primary potential will be calculated 
+            analytical. For domains with topography the primary potential 
+            will be calculated numerical using a p2 refined mesh or 
+            you provide primary potentials with setPrimPot.
         """
-        kwargs['useBert'] = kwargs.pop('useBert', False)
+        kwargs['useBert'] = kwargs.pop('useBert', True)
         kwargs['sr'] = kwargs.pop('sr', True)
 
         super(ERTManager, self).__init__(**kwargs)
-        self._dataToken = 'rhoa'
-        self.dataTrans = pg.RTransLog()
-        self.inv.dataTrans = self.dataTrans
+        
+        self.inv.dataTrans = pg.RTransLogLU()
+
+
+        ### maybe obsolete
+        # self._dataToken = 'rhoa'
 
     def setSingularityRemoval(self, sr=True):
-        """Turn on singularity removal."""
+        """Turn singularity removal on or off."""
         self.reinitForwardOperator(sr=True)
 
     def createForwardOperator(self, **kwargs):
         """Create and choose forward operator. """
         useBert = kwargs.pop('useBert', False)
-
+        verbose = kwargs.pop('verbose', False)
         if useBert:
             sr = kwargs.pop('sr', True)
             if sr:
-                fop = pb.DCSRMultiElectrodeModelling(verbose=verbose)
+                fop = pg.DCSRMultiElectrodeModelling(verbose=verbose)
             else:
-                fop = pb.DCMultiElectrodeModelling(verbose=verbose)
+                fop = pg.DCMultiElectrodeModelling(verbose=verbose)
         else:
             fop = ERTModelling(**kwargs)
 
         return fop
 
-    def simulate(self, mesh, model, scheme, **kwargs):
-        """Forward calculation for given mesh, data and resistivity."""
-        pg.critical('implementme')
+    def setPrimPot(self, pot):
+        """
+        """
+        Implementme
 
-        # use !!self.fop!!
-        fop = self.createForwardOperator()
+    def simulate(self, mesh, res, scheme, **kwargs):
+        """Simulate an ERT measurement.
 
-        fop.setDataBasis(dataContainer=scheme)
+        Perform the forward task for a given mesh, a resistivity distribution
+        (per cell), a measurement
+        scheme and will return data (apparent resistivity) or potential fields.
+
+        This function can also operate on complex resistivity models, thereby
+        computing complex apparent resistivities.
+
+        The forward operator itself only calculate potential values
+        for the given scheme file.
+        To calculate apparent resistivities, geometric factors (k) are needed.
+        If there are no values k in the DataContainerERT scheme, then we will 
+        try to calculate them, either analytic or by using a p2-refined 
+        version of the given mesh.
+
+        TODO
+        ----
+            * 2D + Complex + SR
+
+
+        Parameters
+        ----------
+        mesh : :gimliapi:`GIMLI::Mesh`
+            2D or 3D Mesh to calculate for. 
+
+        res : array(mesh.cellCount()) | array(N, mesh.cellCount()) | list
+            Resistivity distribution for the given mesh cells can be:
+                * single array of length mesh.cellCount() 
+                * matrix of N resistivity distributions of length 
+                mesh.cellCount()
+                * resistivity map as [[regionMarker0, res0],
+                                      [regionMarker0, res1], ...]
+
+        scheme : :bertapi:`Bert::DataContainerERT`
+            Data measurement scheme.
+
+        **kwargs :
+            * verbose : bool[False]
+                Be verbose. Will override class settings.
+
+            * calcOnly : bool [False]
+                Use fop.calculate instead of fop.response. Useful if you want
+                to force the calculation of impedances for homogeneous models.
+                No noise handling. Solution is put in scheme('u') and
+                a dataMap instance will be returned.
+
+            * noiseLevel : float[0.0]
+                add normal distributed noise based on
+                scheme('err') or on noiseLevel if scheme did not contain 'err'
+
+            * noiseAbs : float[0.0]
+                Absolute voltage error in V
+
+            * returnArray : bool [False]
+                Returns an array of apparent resistivities instead of
+                a DataContainerERT
+
+            * returnFields : bool [False]
+                Returns a matrix of all potential values (per mesh nodes) 
+                for each injection electrodes.
+
+        Returns
+        -------
+        rhoa : DataContainerERT | array(N, data.size()) | array(N, data.size()),
+        array(N, data.size())
+            Data container with resulting apparent resistivity data and 
+            errors (if noisify == True).
+            Optional returns a Matrix of rhoa values 
+            (for returnArray==True forces noiseLevel=0).
+            In case of a complex valued resistivity model, phase values will be
+            returned in the DataContainerERT (see example below), or as an
+            additional returned array.
+
+        Examples
+        --------
+        >>> world = pg.meshtools.createWorld(start=[-20, 0], end=[20, -10],
+        >>>                                  layers=[-1,-3])
+        >>> mesh = pg.meshtools.createMesh(world, quality=33, area=0.1,
+        >>>                                smooth=[1,2])
+        >>> rhoMap = [[1, 1.0], [2, 10.0], [3, 1.0]]
+        >>> ax, _ = pg.show(mesh, pg.solver.parseArgToArray(rhoMap,
+        >>>                 mesh.cellCount(), mesh),
+        >>>                 label='Resistivity ($\Omega$m)')
+        >>> pg.show(mesh, axes=ax)
+        >>> scheme = pb.createData(np.linspace(0, 10., 11), schemeName='dd')
+        >>> rhoa1 = ERTManager.simulate(mesh, res=rhoMap, scheme=scheme)
+        >>> rhoa2 = ERTManager.simulate(mesh, res=pg.solver.parseArgToArray(
+        >>>     rhoMap, mesh.cellCount(), mesh), scheme=scheme)
+        >>> np.testing.assert_array_equal(rhoa1, rhoa2)
+        >>> pb.show(scheme, vals=rhoa1)
+
+        >>> import pybert as pb
+        >>> import pygimli as pg
+        >>> import pygimli.meshtools as mt
+        >>> world = mt.createWorld(start=[-50, 0], end=[50, -50],
+        ...                        layers=[-1, -5], worldMarker=True)
+        >>> scheme = pb.createData(
+        ... elecs=pg.utils.grange(start=-10, end=10, n=21), schemeName='dd')
+        >>> for pos in scheme.sensorPositions():
+        ... world.createNode(pos)
+        ... world.createNode(pos + pg.RVector3(0, -0.1))
+        >>> mesh = mt.createMesh(world, quality=34)
+        >>> rhomap = [
+        ...    [1, 100. + 0j],
+        ...    [2, 50. + 0j],
+        ...    [3, 10.+ 0j],
+        ... ]
+        >>> ert = pb.ERTManager()
+        >>> data = ert.simulate(mesh, res=rhomap, scheme=scheme, verbose=True)
+        >>> rhoa = data.get('rhoa').array()
+        >>> phia = data.get('phia').array()
+        """
+        verbose = kwargs.pop('verbose', self.verbose)
+        calcOnly = kwargs.pop('calcOnly', False)
+        returnFields = kwargs.pop("returnFields", False)
+        returnArray = kwargs.pop('returnArray', False)
+        noiseLevel = kwargs.pop('noiseLevel', 0.0)
+        noiseAbs = kwargs.pop('noiseAbs', 1e-4)
+
+        fop = self.fop
+        fop.setData(scheme)
         fop.setMesh(mesh, ignoreRegionManager=True)
 
-        if not scheme.allNonZero('k'):
-            scheme.set('k', pg.RVector(scheme.size(), -1))
-
-        res = model
         rhoa = None
-        isArrayData = None
+        phia = None
 
-        if hasattr(res[0], '__iter__'):
-            isArrayData = True
+        isArrayData = False
+        # parse the given res into mesh-cell-sized array
+        if hasattr(res[0], '__iter__'):  # ndim == 2
+            if len(res[0]) == 2:  # res seems to be a res map
+                res = pg.solver.parseArgToArray(res, mesh.cellCount(), mesh)
+            else:  # probably nData x nCells array
+                # better check for array data here
+                isArrayData = True
+
+        if isinstance(res[0], np.complex) or isinstance(res, pg.CVector):
+            pg.info("Complex resistivity values found.")
+            fop.setComplex(True)    
+        else:
+            fop.setComplex(False)    
+
+        if not scheme.allNonZero('k') and not calcOnly:
+            if verbose:
+                pg.info('Calculate geometric factors.')
+            scheme.set('k', fop.calcGeometricFactor(scheme))
+
+        if isArrayData:
             rhoa = np.zeros((len(res), scheme.size()))
             for i, r in enumerate(res):
                 rhoa[i] = fop.response(r)
+                if verbose:
+                    print(i, "/", len(res), " : ", pg.dur(), "s",
+                          "min r:", min(r), "max r:", max(r),
+                          "min r_a:", min(rhoa[i]), "max r_a:", max(rhoa[i]))
+        else:  # res is single resistivity array
+            if len(res) == mesh.cellCount():
+                if isinstance(res, pg.CVector):
+                    res = pg.cat(pg.real(res), -pg.abs(pg.imag(res)))
+                elif isinstance(res[0], np.complex):
+                    res = pg.cat(res.real, -abs(res.imag))
+
+                if calcOnly:
+                    fop.mesh().setCellAttributes(res)
+                    dMap = pg.DataMap()
+                    fop.calculate(dMap)
+                    scheme.set("u", dMap.data(scheme))
+
+                    if returnFields:
+                        return pg.Matrix(fop.solution())
+                    return dMap
+                else:
+                    resp = fop.response(res)
+
+                if fop.complex():
+                    rhoa = pg.abs(resp(0, scheme.size()))
+                    phia = pg.abs(resp(scheme.size(), -1))
+                    print(min(phia), max(phia))
+                else:
+                    rhoa = resp
+            else:
+                print(mesh)
+                print("res: ", res)
+                raise BaseException("Simulate called with wrong resistivity array.")
+
+        ret = pg.DataContainerERT(scheme)
+        if not isArrayData:
+            ret.set('rhoa', rhoa)
+
+            if phia is not None:
+                ret.set('phia', phia)
         else:
-            rhoa = fop.response(res)
+            ret.set('rhoa', rhoa[0])
+            if phia is not None:
+                ret.set('phia', phia[0])
 
-        noiseLevel = kwargs.pop('noiseLevel', 0.0)
-        if noiseLevel > 0:
-            err = kwargs.pop('noiseLevel', 0.03) + kwargs.pop('noiseAbs',
-                                                              1e-4) / rhoa
-            scheme.set('err', err)
-            rhoa *= 1. + pg.randn(scheme.size()) * err
+        if returnFields:
+            return pg.Matrix(fop.solution())
+       
+        if noiseLevel > 0:  # if errors in data noiseLevel=1 just triggers
+            if not ret.allNonZero('err'):
+                # 1A  and #100µV
+                ret.set('err', ERTManager.estimateError(
+                    ret,
+                    relativeError=noiseLevel,
+                    absoluteUError=noisAbs,
+                    absoluteCurrent=1)
+                )
+                print("Data error estimate (min:max) ",
+                      min(ret('err')), ":", max(ret('err')))
 
-            if not isArrayData:
-                scheme.set('rhoa', rhoa)
+            rhoa *= 1. + pg.randn(ret.size()) * ret('err')
+            ret.set('rhoa', rhoa)
 
-        if kwargs.pop('returnArray', False):
-            return rhoa
-        return scheme
+            ipError = None
+            if phia is not None:
+                if scheme.allNonZero('iperr'):
+                    ipError = scheme('iperr')
+                else:
+                    # np.abs(self.data("phia") +TOLERANCE) * 1e-4absoluteError
+                    if noiseLevel > 0.5:
+                        noiseLevel /= 100.
+
+                    ipError = ret("phia") * noiseLevel
+
+                    if verbose:
+                        print("Data IP abs error estimate (min:max) ",
+                               min(ipError), ":", max(ipError))
+
+                phia *= (1. + pg.randn(ret.size()) * noiseLevel)
+                ret.set('iperr', ipError)
+                ret.set('phia', phia)
+
+        # check what needs to be setup and returned
+
+        if returnArray:
+            if phia is not None:
+                return rhoa, phia
+            else:
+                return rhoa
+
+        return ret
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     def invert(self, data=None, err=None, **kwargs):
         """Invert measured data.

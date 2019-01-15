@@ -436,12 +436,11 @@ def parseMapToCellArray(attributeMap, mesh, default=0.0):
                     #print('---------------------')
                     #print(atts, idx, pair[1], type(pair[1]), float(pair[1]))
                     if isinstance(pair[1], np.complex):
-                        #print('+++++++++++++++++')
                         if not isinstance(atts, pg.CVector):
                             atts = pg.toComplex(atts)
-                        atts[idx] = pair[1]
+                        atts.setVal(val=pair[1], ids=idx)
                     else:
-                        atts[idx] = float(pair[1])
+                        atts.setVal(val=float(pair[1]), ids=idx)
             else:
                 raise Exception("Please provide a list of [int, value] pairs" +
                                 str(pair))

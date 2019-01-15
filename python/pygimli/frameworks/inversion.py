@@ -39,9 +39,6 @@ class Inversion(object):
         self._dataVals = None
         self._errorVals = None
 
-        # might be overwritten
-        self.dataTrans = pg.RTransLin()
-        
         self._preStep = None
         self._postStep = None
 
@@ -57,6 +54,8 @@ class Inversion(object):
         else:
             self._inv = pg.Inversion(self._verbose, self._debug)
 
+        self._dataTrans = pg.RTransLin()
+        
         self.axs = None # for showProgress only
 
         self.maxIter = kwargs.pop('maxIter', 20)
@@ -94,6 +93,15 @@ class Inversion(object):
         self._debug = v
         if self.inv is not None:
             self.inv.setDoSave(self._debug)
+
+    @property
+    def dataTrans(self):
+        return self._dataTrans
+        
+    @dataTrans.setter
+    def dataTrans(self, dt):
+        self._dataTrans = dt
+        self.inv.setTransData(self._dataTrans)
 
     @property
     def startModel(self):
@@ -226,8 +234,7 @@ class Inversion(object):
         lam = kwargs.pop('lam', 20)
 
         self.inv.setTransModel(self.fop.modelTrans)
-        self.inv.setTransData(self.dataTrans)
-
+        
         if dataVals is not None:
             self._dataVals = dataVals
 

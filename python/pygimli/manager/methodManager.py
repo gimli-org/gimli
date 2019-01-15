@@ -1,7 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""TODO WRITEME"""
+"""Method Manager
+
+Provide the end user interface for method (geophysical) dependent
+modelling and inversion as well as data and model visualization.
+"""
 
 import numpy as np
 import pygimli as pg
@@ -10,24 +14,24 @@ import pygimli as pg
 class MethodManager(object):
     """General manager to maintenance a measurement method.
 
-    Method Manager are the interface to End-user interaction and can be seen as
-    basic but complete application classes which manage all tasks of
+    Method Manager are the interface to end-user interaction and can be seen as
+    simple but complete application classes which manage all tasks of
     geophysical data processing.
 
-    The method manager holds one instance of a forward operator and a
+    The method manager holds one instance of a forward operator and an
     appropriate inversion framework to handle modeling and data inversion.
 
-    Method Manager also import and export of data and results,
+    Method Manager also helps with data import and export,
     handle measurement data error estimation as well as model and data
     visualization.
 
     Attributes
     ----------
     verbose : bool
-        Give verbose output
+        Give verbose output.
 
     debug : bool
-        Give debug output
+        Give debug output.
 
     fop : :py:mod:`pygimli.frameworks.Modelling`
         Forward Operator instance .. knows the physics.
@@ -39,14 +43,14 @@ class MethodManager(object):
 
     inv : :py:mod:`pygimli.frameworks.Inversion`.
         Inversion framework instance .. knows the reconstruction approach.
-        The attribute inv is initialized by
+        The attribute inv is initialized by default but can be changed 
+        overwriting
         :py:mod:`pygimli.manager.MethodManager.initInversionFramework`
     """
     def __init__(self, **kwargs):
         """Constructor."""
         self._verbose = kwargs.pop('verbose', False)
         self._debug = kwargs.pop('debug', False)
-        self._dataToken = 'nan'
 
         ### The inversion framework
         self._fw = None 
@@ -63,6 +67,7 @@ class MethodManager(object):
 
 
         # maybe obsolete
+        self._dataToken = 'nan' # check if used?
         self.figs = {}
         self.errIsAbsolute = False
 
