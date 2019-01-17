@@ -226,7 +226,8 @@ def grange(start, end, dx=0, n=0, log=False):
     n: int
         Amount of steps
     log: bool
-
+        Logarithmic increasing range of length = n from start to end. 
+        dx will be ignored.
     Examples
     --------
     >>> from pygimli.utils import grange
@@ -246,7 +247,7 @@ def grange(start, end, dx=0, n=0, log=False):
     e = float(end)
     d = float(dx)
 
-    if dx != 0:
+    if dx != 0 and not log:
         if end < start and dx > 0:
             # print("grange: decreasing range but increasing dx, swap dx sign")
             d = -d
@@ -262,7 +263,7 @@ def grange(start, end, dx=0, n=0, log=False):
         if not log:
             return grange(start, end, dx=(e - s) / (n - 1))
         else:
-            return pg.increasingRange(start, end, n)
+            return pg.increasingRange(start, end, n)[1:]
     else:
         raise Exception('Either dx or n have to be given.')
 
@@ -618,8 +619,8 @@ def uniqueAndSum(indices, to_sum, return_index=False, verbose=False):
         The indices of the first occurrences of the unique values in the
         original array. Only provided if `return_index` is True.
 
-    Example
-    -------
+    Examples
+    --------
     >>> import numpy as np
     >>> from pygimli.utils import uniqueAndSum
     >>> idx1 = np.array([0, 0, 1, 1, 2, 2])

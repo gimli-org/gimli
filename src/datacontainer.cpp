@@ -796,7 +796,7 @@ void DataContainer::removeUnusedSensors(bool verbose){
 
 void DataContainer::setSensorPosition(uint i, const RVector3 & pos) {
     if (i >= sensorPoints_.size()) {
-        std::cout << "Warning! .. sensor count was " << sensorCount() << " resize to " << i+1 << std::endl;
+        // std::cout << "Warning! .. sensor count was " << sensorCount() << " resize to " << i+1 << std::endl;
         sensorPoints_.resize((i+1));
     }
     sensorPoints_[i] = pos;

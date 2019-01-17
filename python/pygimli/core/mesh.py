@@ -50,6 +50,13 @@ MeshEntity.__str__ = __MeshEntity_str
 # Mesh.__repr__ = Mesh_str
 # MeshEntity.__repr__ = MeshEntity_str
 
+def __MeshBoundingBox__(self):
+    bb = self.boundingBox()
+    mi = [ bb.min()[i] for i in range(self.dim()) ]
+    ma = [ bb.max()[i] for i in range(self.dim()) ]
+    return [mi, ma]
+Mesh.bb = __MeshBoundingBox__
+
 
 def __MeshGetCellMarker__(self):
     deprecated(msg='Mesh::cellMarker()', hint='Mesh::cellMarkers()')

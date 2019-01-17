@@ -2161,7 +2161,7 @@ MEMINFO
     dcfemBoundaryAssembleStiffnessMatrix(S1, mesh1_, sourceCenterPos_, k);
     assembleStiffnessMatrixHomogenDirichletBC(S1, calibrationSourceIdx_);
 
-    if (verbose_) std::cout << "Assembling system matrix (SR) ... " < std::endl;
+    if (verbose_) std::cout << "Assembling system matrix (SR) ... " << std::endl;
 //     if (verbose_) std::cout << "Assembling: " << swatch.duration() << std::endl;
     //mesh_->setCellAttributes(tmpRho);
 

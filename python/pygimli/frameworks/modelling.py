@@ -330,6 +330,8 @@ class Block1DModelling(Modelling):
 
     def drawData(self, ax, data, err=None, label=None, **kwargs):
         r"""Default data view.
+
+        Modelling creates the data and should know best how to draw them.
         
         Probably ugly and you should overwrite it in your derived forward 
         operator. 

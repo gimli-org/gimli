@@ -4,7 +4,7 @@
 """Method Manager
 
 Provide the end user interface for method (geophysical) dependent
-modelling and inversion as well as data and model visualization.
+modeling and inversion as well as data and model visualization.
 """
 
 import numpy as np

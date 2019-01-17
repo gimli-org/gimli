@@ -581,7 +581,6 @@ class ERTManager(MeshMethodManager):
                 if fop.complex():
                     rhoa = pg.abs(resp(0, scheme.size()))
                     phia = pg.abs(resp(scheme.size(), -1))
-                    print(min(phia), max(phia))
                 else:
                     rhoa = resp
             else:
@@ -680,7 +679,25 @@ class ERTManager(MeshMethodManager):
 
 
 def createERTData(elecs, schemeName='none', **kwargs):
-    """ Simple data creator for compatibility (advanced version in BERT)."""
+    """ Simple data creator for compatibility (advanced version in BERT).
+    
+    Parameters
+    ----------
+    sounding : bool [False]
+        Create a 1D VES Schlumberger configuration. 
+        elecs need to be an array with elecs[0] = mn/2 and elecs[1:] = ab/2.
+
+    """
+    if kwargs.pop('sounding', False):
+        data = pg.DataContainerERT()
+        data.setSensors(pg.cat(-elecs[::-1], elecs))
+        
+        nElecs = len(elecs)
+        for i in range(nElecs-1):
+            data.createFourPointData(i, i, 2*nElecs-i-1, nElecs-1, nElecs)
+
+        return data
+
     if schemeName is not "dd":
         import pybert as pb  # that's bad!!! TODO: remove pybert deps
         return pb.createData(elecs, schemeName, **kwargs)

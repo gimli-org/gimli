@@ -18,7 +18,7 @@ from .utils import updateAxes as updateAxes_
 
 def drawModel1D(ax, thickness=None, values=None, model=None, depths=None,
                 plot='plot',
-                xlabel=r'Resistivity $[\Omega$m$]$', zlabel='Depth [m]',
+                xlabel=r'Resistivity $(\Omega$m$)$', zlabel='Depth (m)',
                 z0=0,
                 **kwargs):
     """Draw 1d block model into axis ax.
@@ -58,7 +58,7 @@ def drawModel1D(ax, thickness=None, values=None, model=None, depths=None,
         Label for y axis.
 
     z0 : float
-        Starting depth [m]
+        Starting depth in m
 
     **kwargs : dict()
         Forwarded to the plot routine

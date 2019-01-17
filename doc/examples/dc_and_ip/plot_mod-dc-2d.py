@@ -103,7 +103,6 @@ def mixedBC(boundary, userData):
 ###############################################################################
 #
 #
-
 def pointSource(mesh, source):
     """Define function for the current source term.
 
@@ -131,7 +130,7 @@ u = solve(grid, a=sigma, b=-sigma * k*k, f=pointSource(grid, sourcePosA),
           userData={'sourcePos': sourcePosA, 'k': k},
           verbose=True)
 
-u -= solve(grid, a=sigma, b=-sigma * k*k, f=pointSource,
+u -= solve(grid, a=sigma, b=-sigma * k*k, f=pointSource(grid, sourcePosB),
            bc={'Robin': ['*', mixedBC]},
            userData={'sourcePos': sourcePosB, 'k': k},
            verbose=True)
