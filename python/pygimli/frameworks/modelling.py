@@ -9,7 +9,6 @@ from copy import copy
 
 import pygimli as pg
 
-
 DEFAULT_STYLES={'Default': {'color': 'C0', 
                            'lw' : 1.5, 'linestyle': '-'},
                 'Data': {'color' : 'C0', #blueish
@@ -37,13 +36,13 @@ class Modelling(pg.ModellingBase):
             - 
         * think about splitting all mes related into MeshModelling
         * clarify difference: setData(array|DC), setDataContainer(DC), setDataValues(array)
-        * clarify dataBasis: The unique spatial or temporal origin of a datapoint (time, coordinates, 4-point-positions,
+        * clarify dataSpace(comp. ModelSpace): The unique spatial or temporal origin of a datapoint (time, coordinates, 4-point-positions,
                                                                      receiver/transmitter positions
                                                                      counter)
-            - Every inversion needs, dataValues and dataBasis
-            - DataContainer contain, dataValues and dataBasis
-            - maybe better Name for dataBase -> dataSpace, for model (modelSpace)
-                - initialze both with initDataSpace(), initMdelSpace
+            - Every inversion needs, dataValues and dataSpace
+            - DataContainer contain, dataValues and dataSpace
+            - initialize both with initDataSpace(), initModelSpace
+        * createJacobian should also return J
     """
     def __init__(self, **kwargs):
         """
@@ -57,6 +56,7 @@ class Modelling(pg.ModellingBase):
         super(Modelling, self).__init__(**kwargs)
 
         self._regionProperties = {}
+        self._regionsNeedUpdate = False
         self._modelTrans = pg.RTransLog() # Model transformation operator
 
         self.fop = None
@@ -78,11 +78,12 @@ class Modelling(pg.ModellingBase):
 
     def initModelSpace(self, **kwargs):
         """API"""    
+        pass
         
-    def createStartModel(self, **kwargs):
-        """ Create Starting model.
+    def createStartModel(self, dataVals=None):
+        """Create starting model.
 
-        Create Starting model based on current data values and additional args.
+        Create starting model based on current data values and additional args.
 
         TODO
 
@@ -90,7 +91,6 @@ class Modelling(pg.ModellingBase):
 
         """
         sm = self.regionManager().createStartModel()
-        self.setStartModel(sm)
         return sm
 
     def regionManager(self):
@@ -106,16 +106,21 @@ class Modelling(pg.ModellingBase):
     def setForwardOperator(self, fop):
         """ 
         """
-        self.fop = fop
+        if not isinstance(fop, pg.frameworks.Modelling):
+            pg.critical('Forward operator needs to be an instance of '
+                        'pg.modelling.Modelling but is of type:', fop)
 
+        self.fop = fop
+        
     def setMesh(self, mesh, ignoreRegionManager=False):
         """ 
         """
         self.clearRegionProperties()
+
         if self.fop is not None:
             self.fop.setMesh(mesh, ignoreRegionManager)
-
-            if (not ignoreRegionManager):
+            
+            if not ignoreRegionManager:
                 self.setRegionManager(self.fop.regionManagerRef())
         else:
             super(Modelling, self).setMesh(mesh, ignoreRegionManager)
@@ -124,30 +129,30 @@ class Modelling(pg.ModellingBase):
         """Clear all region parameter."""
         self._regionProperties = {}
 
-    def regionProperties(self, regionNr):
+    def regionProperties(self, regionNr=None):
         """Return dictionary of all properties for region number regionNr."""
+        if regionNr is None:
+            return self._regionProperties
+
         try:
             return self._regionProperties[regionNr]
         except:
             print(self._regionProperties)
             pg.error("no region for regionNr:", regionNr)
 
-    def setRegionProperties(self, regionNr,
-                            startModel=None, limits=None, trans=None,
-                            cType=None, zWeight=None, modelControl=None):
+    def setRegionProperties(self, regionNr, **kwargs):
         """ Set region properties. regionNr can be wildcard '*' for all regions.
 
+                            startModel=None, limits=None, trans=None,
+                            cType=None, zWeight=None, modelControl=None,
+                            background=None, single=None, fix=None):
         Parameters
         ----------
 
         """
-        #print("#", regionNr, startModel, limits, trans,
-              #cType, zWeight, modelControl)
-
         if regionNr is '*':
             for regionNr in self.regionManager().regionIdxs():
-                self.setRegionProperties(regionNr, startModel, limits, trans,
-                                         cType, zWeight, modelControl)
+                self.setRegionProperties(regionNr, **kwargs)
             return
 
         if regionNr not in self._regionProperties:
@@ -157,74 +162,64 @@ class Modelling(pg.ModellingBase):
                                                 'cType': 1,
                                                 'limits': [0, 0],
                                                 'trans': 'Log',
+                                                'background': None,
+                                                'single': None,
+                                                'fix': None,
                                               }
-
-        rC = self.regionManager().regionCount()
-
-        def _setProperty(name, val):
+        
+        for key, val in kwargs.items():
             if val is not None:
-                
-                v = val
-
-                # v = None
-                # if hasattr(val, '__iter__') and not isinstance(val, str):
-                #     if rC == len(val):
-                #         v = val[regionNr - 1]
-                #     elif rC == len(val) + 1:
-                #         v = val[regionNr]
-                #     else:
-                #         print(regionNr, rC, name, val)
-                #         raise Exception("Value range for region property invalid.")
-                # else:
-                #     v = val
-
-                if v is not None:
-                    #print("Set ", regionNr, name, v)
-                    self._regionProperties[regionNr][name] = v
-
-        _setProperty('startModel', startModel)
-        _setProperty('limits', limits)
-        _setProperty('trans', trans)
-        _setProperty('cType', cType)
-        _setProperty('zWeight', zWeight)
-        _setProperty('modelControl', modelControl)
+                if not self._regionProperties[regionNr][key] is val:
+                    self._regionsNeedUpdate = True
+                    self._regionProperties[regionNr][key] = val
 
     def _applyRegionProperties(self):
         """
         """
+        if not self._regionsNeedUpdate:
+            return 
+
         ### call super class her because self.regionManager() calls always 
         ###  __applyRegionProperies itself
         rMgr = super(Modelling, self).regionManager()
-
         for rID, vals in self._regionProperties.items():
-            if 'startModel' in vals:
-                if vals['startModel'] is not None:
-                    rMgr.region(rID).setStartModel(vals['startModel'])
+
+            if vals['background'] is not None:
+                pg.critical('implementme')
+                continue
+
+            if vals['single'] is not None:
+                pg.critical('implementme')
+                continue
+
+            if vals['fix'] is not None:
+                pg.critical('implementme')
+                continue
+
+            if vals['startModel'] is not None:
+                rMgr.region(rID).setStartModel(vals['startModel'])
 
             rMgr.region(rID).setModelTransStr_(vals['trans'])
+            rMgr.region(rID).setConstraintType(vals['cType'])
+            rMgr.region(rID).setZWeight(vals['zWeight'])
+            rMgr.region(rID).setModelControl(vals['modelControl'])
 
-            if 'cType' in vals:
-                rMgr.region(rID).setConstraintType(vals['cType'])
-
-            if 'zWeight' in vals:
-                rMgr.region(rID).setZWeight(vals['zWeight'])
-
-            if 'modelControl' in vals:
-                rMgr.region(rID).setModelControl(vals['modelControl'])
-
-            if vals['limits'][0] >= 0:
+            if vals['limits'][0] > 0:
                 rMgr.region(rID).setLowerBound(vals['limits'][0])
 
-            if vals['limits'][1] >= 0:
+            if vals['limits'][1] > 0:
                 rMgr.region(rID).setUpperBound(vals['limits'][1])
+
+        self._regionsNeedUpdate = False
 
     def setData(self, data):
         """ 
         """
         if isinstance(data, pg.DataContainer):
             self.setDataContainer(data)
-
-        raise Exception("nothing known to do? Implement me in derived classes")
+        else:
+            print(data)
+            pg.critical("nothing known to do? Implement me in derived classes")
         
     def setDataSpace(self, **kwargs):
         """Set data space, e.g., DataContainer, times, coordinates."""
@@ -295,7 +290,7 @@ class Block1DModelling(Modelling):
         self._withMultiThread = True
         self._nPara = nPara # number of parameters per layer
 
-        # store this to avoid reinitialization of not needed
+        # store this to avoid reinitialization if not needed
         self._nLayers = 0 
 
     @property
@@ -335,6 +330,8 @@ class Block1DModelling(Modelling):
 
     def drawData(self, ax, data, err=None, label=None, **kwargs):
         r"""Default data view.
+
+        Modelling creates the data and should know best how to draw them.
         
         Probably ugly and you should overwrite it in your derived forward 
         operator. 
@@ -382,60 +379,44 @@ class MeshModelling(Modelling):
 
 
 class PetroModelling(Modelling):
-    """
-    Combine petrophysical relation m(p) with modeling class f(p).
+    """Combine petrophysical relation with the modeling class f(p).
 
-    Combine petrophysical relation m(p) with modeling class f(p) to invert
-    for m (or any inversion transformation) instead of p.
+    Combine petrophysical relation :math:`p(m)` with a modeling class 
+    :math:`f(p)` to invert for the petrophysical model :math:`p` instead 
+    of the geophysical model :math:`m`.
+
+    :math:`p` be the petrophysical model, e.g., porosity, saturation, ...
+    :math:`m` be the geophysical model, e.g., slowness, resistivity, ...
+    
     """
     def __init__(self, fop, trans, **kwargs):
         """Save forward class and transformation, create Jacobian matrix."""
         mesh = kwargs.pop('mesh', None)
 
-        super(PetroModelling, self).__init__(**kwargs)
-        self.fop = fop      # class defining f(p)
-        self._petroTrans = trans  # class defining m(p)
-
-        print("Petro_init:", self, self.fop)
-
-        print(self.fop.regionManagerRef())
-
-        if mesh is not None:
-            self.setMesh(mesh)
-
-        self.setRegionManager(self.fop.regionManagerRef())
+        super(PetroModelling, self).__init__(fop=fop, **kwargs)
+        # petroTrans.fwd(): p(m), petroTrans.inv(): m(p)
+        self._petroTrans = trans  # class defining p(m)
 
         self._jac = pg.MultRightMatrix(self.fop.jacobian())
         self.setJacobian(self._jac)
-
-        #TODO global TransModel will break RegionConcept
-        self._modelTrans = pg.RTransLogLU()
-
+       
+    def createStartModel(self, data):
+        """Use inverse transformation to get m(p) for the starting model."""
+        sm = self.fop.createStartModel(data)
+        pModel = self._petroTrans.inv(sm)
+        return pModel
+        
     def response(self, model):
-        """Use inverse transformation to get p(m) and compute response."""
+        """Use transformation to get p(m) and compute response f(p)."""
         tModel = self._petroTrans(model)
         ret = self.fop.response(tModel)
         return ret
 
     def createJacobian(self, model):
         """Fill the individual jacobian matrices."""
-        self.fop.createJacobian(self._petroTrans(model))
+        tModel = self._petroTrans(model)
+        self.fop.createJacobian(tModel)
         self._jac.r = self._petroTrans.deriv(model)  # set inner derivative
-
-
-
-    #def setMesh(self, mesh):
-        #"""TODO."""
-        #if mesh is None and self.fop.mesh() is None:
-            #raise BaseException("Please provide a mesh for "
-                                #"this forward operator")
-
-        #if mesh is not None:
-            #self.fop.setMesh(mesh)
-            #self.fop.createRefinedForwardMesh(refine=False)
-
-        ## self.setMesh(f.mesh(), ignoreRegionManager=True) # not really nessary
-        #self.setRegionManager(self.fop.regionManagerRef())
 
 
 class LCModelling(Modelling):

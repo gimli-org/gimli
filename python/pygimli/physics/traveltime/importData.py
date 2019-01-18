@@ -40,7 +40,8 @@ def importGTT(filename, return_header=False):
                 RPOS[recid, :] = rpos[:3]
                 tt = struct.unpack(">f", block[20:24])[0]
                 # print(shotid, recid, tt)
-                SHOT.append(shotid)
+                SHOT.append(i+1)  # shotid)
+#                SHOT.append(shotid)
                 REC.append(recid)
                 TT.append(tt)
                 X.append(rpos[0])
@@ -62,10 +63,14 @@ def importGTT(filename, return_header=False):
 
         data.resize(len(TT))
         data.set('t', np.array(TT))
+        data.set('va', np.array(VA))
         data.set('s', irev[SHOT].astype(float))
         data.set('g', irev[REC].astype(float))
         data.markValid(data('t') > 0.)
         data.removeUnusedSensors()
+        data.markInvalid(data('g') >= data.sensorCount())
+        data.markInvalid(data('s') >= data.sensorCount())
+        data.removeInvalid()
         if return_header:
             return data, header
         else:

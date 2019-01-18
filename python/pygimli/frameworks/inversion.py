@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """pyGIMLi - Inversion Frameworks.
 
-These are basic inversion frameworks that usually need a forward operator to run.
+These are basic inversion frameworks that usually needs a forward operator to run.
 """
 import numpy as np
 
@@ -22,8 +22,10 @@ class Inversion(object):
         Give verbose output
     debug : bool
         Give debug output
-    startModel : bool
+    startModel : array
         Holds the current starting model
+    model : array
+        Holds the last active model
     """
     def __init__(self, fop=None, inv=None, **kwargs):
         self._verbose = kwargs.pop('verbose', False)
@@ -37,9 +39,6 @@ class Inversion(object):
         self._dataVals = None
         self._errorVals = None
 
-        # might be overwritten
-        self.dataTrans = pg.RTransLin()
-        
         self._preStep = None
         self._postStep = None
 
@@ -47,6 +46,7 @@ class Inversion(object):
         self._fop = None
 
         self._startModel = None
+        self._model = None
 
         if inv is not None:
             self._inv = inv
@@ -54,6 +54,8 @@ class Inversion(object):
         else:
             self._inv = pg.Inversion(self._verbose, self._debug)
 
+        self._dataTrans = pg.RTransLin()
+        
         self.axs = None # for showProgress only
 
         self.maxIter = kwargs.pop('maxIter', 20)
@@ -93,6 +95,15 @@ class Inversion(object):
             self.inv.setDoSave(self._debug)
 
     @property
+    def dataTrans(self):
+        return self._dataTrans
+        
+    @dataTrans.setter
+    def dataTrans(self, dt):
+        self._dataTrans = dt
+        self.inv.setTransData(self._dataTrans)
+
+    @property
     def startModel(self):
         """ Gives the current default starting model.
 
@@ -112,18 +123,28 @@ class Inversion(object):
         """
         if model is None:
             self._startModel = None
-        elif type(model) is float or type(model) is int:
+        elif isinstance(model, float) or isinstance(model, int):
             self._startModel = np.ones(self.parameterCount) * float(model)
         elif hasattr(model, '__iter__'):
             self._startModel = model
         
     @property
-    def maxIter(self):
-        return self.inv.maxIter()
-    @maxIter.setter
-    def maxIter(self, v):
-        if self.inv is not None:
-            self.inv.setMaxIter(v)
+    def model(self):
+        """The last active model."""
+        if self._model is None:
+            if hasattr(self.inv, 'model'):
+                ### inv is RInversion()
+                if len(self.inv.model()) > 0:
+                    return self.inv.model()
+                else:
+                    raise pg.critical("There was no inversion run so there is no last model")
+            else:
+                return self.inv.model        
+        return self._model
+
+    @model.setter
+    def model(self, m):
+        self._model = m
 
     @property
     def response(self):
@@ -131,12 +152,6 @@ class Inversion(object):
             return self.inv.response()
         else:
             raise Exception("There was no inversion run so there is no response yet")
-    @property
-    def model(self):
-        if len(self.inv.model()) > 0:
-            return self.inv.model()
-        else:
-            raise Exception("There was no inversion run so there is last model")
 
     # backward compatibility
     @property
@@ -157,7 +172,18 @@ class Inversion(object):
 
     @property
     def parameterCount(self):
-        return self.fop.regionManager().parameterCount()
+        pC = self.fop.regionManager().parameterCount()
+        if pC == 0:
+            pg.warn("Parameter count is 0")
+        return pC
+
+    @property
+    def maxIter(self):
+        return self.inv.maxIter()
+    @maxIter.setter
+    def maxIter(self, v):
+        if self.inv is not None:
+            self.inv.setMaxIter(v)
 
     def echoStatus(self):
         self.inv.echoStatus()
@@ -197,7 +223,7 @@ class Inversion(object):
             return self._inv.run(dataVals, errorVals, **kwargs)
 
         if self.fop is None:
-            raise Exception("Need a valid forward operator for inversion run.")
+            raise Exception("Need a valid forward operator for the inversion run.")
 
         self.verbose = kwargs.pop('verbose', self.verbose)
         self.debug   = kwargs.pop('debug', self.debug)
@@ -208,8 +234,7 @@ class Inversion(object):
         lam = kwargs.pop('lam', 20)
 
         self.inv.setTransModel(self.fop.modelTrans)
-        self.inv.setTransData(self.dataTrans)
-
+        
         if dataVals is not None:
             self._dataVals = dataVals
 
@@ -217,16 +242,14 @@ class Inversion(object):
             self._errorVals = errorVals
 
         if self._dataVals is None:
-            raise Exception("Inversion framework need data values to run")
+            raise Exception("Inversion framework needs data values to run")
 
         if self._errorVals is None:
-            raise Exception("Inversion framework need data error values to run")
+            raise Exception("Inversion framework needs data error values to run")
 
         sm = kwargs.pop('startModel', None)
         if sm is not None:
             self.startModel = sm
-
-        self.inv.setModel(self.startModel)
 
         self.inv.setData(self._dataVals)
         self.inv.setRelativeError(self._errorVals)
@@ -237,9 +260,17 @@ class Inversion(object):
 
         if self.verbose:
             print("inv.start()")
+            print("fop:", self.inv.fop())
+            print("Data transformation:", self.inv.transData())
+            print("Model transformation:", self.inv.transModel())
+            print("min/max (data): {0:.2e}, {1:.2e}".format(min(self._dataVals), max(self._dataVals)))
+            print("min/max (error): {0:.3f}%, {1:.3f}%".format(100*min(self._errorVals), 100*max(self._errorVals)))
+            print("min/max (start model): {0:.2f}, {1:.2f}".format(min(self.startModel), max(self.startModel)))
 
-        ### To ensure reproduceability of the run() call inv.start() will
+        ### To ensure reproducability of the run() call inv.start() will
         ### reset self.inv.model() to fop.startModel().
+        self.fop.setStartModel(self.startModel)
+
         self.inv.start()
         self.maxIter = maxIter
 
@@ -295,11 +326,11 @@ class Inversion(object):
 
             lastChi2 = chi2
 
-
         if len(kwargs.keys()) > 0:
-            print("Warning! unhandled keyword arguments", kwargs)
+            print("Warning! unused keyword arguments", kwargs)
 
-        return self.inv.model()
+        self.model = self.inv.model()
+        return self.model
 
     def showProgress(self, style='all'):
         r"""Called if showProgress=True is set for the inversion run.
@@ -370,23 +401,28 @@ class MarquardtInversion(Inversion):
         self.fop.regionManager().setConstraintType(0)
         self.fop.setRegionProperties('*', cType=0)
 
-        return super(MarquardtInversion, self).run(data, error, **kwargs)
-
+        self.model = super(MarquardtInversion, self).run(data, error, **kwargs)
+        return self.model
 
 class Block1DInversion(MarquardtInversion):
+    """
+    Attributes
+    ----------
+    nLayers : int
+
+    """
     def __init__(self, fop=None, **kwargs):
-        super(Block1DInversion, self).__init__(fop, **kwargs)
+        super(Block1DInversion, self).__init__(fop=fop, **kwargs)
         # attributes:
         # nLayers, layerLimits, fixLayers      
-        
+       
         self._nLayers = 4
-        
 
     def setForwardOperator(self, fop):
         if not isinstance(fop, pg.frameworks.Block1DModelling):
-            pg.critical('fop need to be derived from '
+            pg.critical('Forward operator needs to be an instance of '
                         'pg.modelling.Block1DModelling but is of type:', fop)
-            
+                        
         return super(Block1DInversion, self).setForwardOperator(fop)
         
     def setLayers(self, nLayers):
@@ -410,7 +446,7 @@ class Block1DInversion(MarquardtInversion):
             if hasattr(fixLayers, '__iter__'):
                 if len(fixLayers) != self.fop.nLayers:
                     print("fixLayers:", fixLayers)
-                    raise Exception("fixlayers need to have a length of nLayers-1=" + str(self.fop.nLayers-1))
+                    raise Exception("fixlayers needs to have a length of nLayers-1=" + str(self.fop.nLayers-1))
                 self.fop.setRegionProperties(0, startModel=fixLayers)
 
             # TODO DRY to self.fop.createStartModel
@@ -460,82 +496,108 @@ class Block1DInversion(MarquardtInversion):
         if fixLayers is not None:
             self.fixLayers(fixLayers)                
 
-        return super(Block1DInversion, self).run(dataVals, errVals, **kwargs)
+        self.model = super(Block1DInversion, self).run(dataVals, errVals, **kwargs)
+        return self.model
    
 
 class MeshInversion(Inversion):
+    """
+    Attributes
+    ----------
+    mesh
+    
+    zWeight
+
+    """
     def __init__(self, fop=None, **kwargs):
-        super(MeshInversion, self).__init__(fop, **kwargs)
-        self._model = None
+    
+        super(MeshInversion, self).__init__(fop=fop, **kwargs)
+        self._mesh = None
+        self._zWeight = 1.0
 
-    def setMesh(self, mesh):
-        self.fop.setMesh(mesh)
+    def setMesh(self, mesh, refine=True):
+        """Set the internal mesh for this Framework.
 
-    @property
-    def model(self):
-        return self._model
-    @model.setter
-    def model(self, m):
-        self._model = m
+        Injects the mesh in the internal fop.
 
-    def run(self, dataVals, errVals, mesh=None, zWeight=1.0, **kwargs):
+        Initialize RegionManager.
+        For more than two regions the first is assumed to be background.
 
-        print("------------------------------------------------")
-        print("MeshInversion:run()")
+        TODO:
+            Optional the forward mesh can be refined for higher numerical accuracy.
+
+        Parameters
+        ----------
+
+        DOCUMENTME!!!
+
+        """
+        if isinstance(mesh, str):
+            mesh = pg.load(mesh)
+
+        self._mesh = pg.Mesh(mesh) # need to copy?
+        self._mesh.createNeighbourInfos()
+
+        self.fop.setMesh(self._mesh)
+        
+        if len(self.fop.regionManager().regionIdxs()) > 1:
+            bk = pg.unique(self.fop.regionIdxs())[0]
+            self.fop.setRegionProperties(bk, background=True)
+            
+
+    def run(self, dataVals, errVals, mesh=None, zWeight=None, **kwargs):
+        """
+        """
+        pg.p('MeshInv')
         if mesh is not None:
             self.setMesh(mesh)
 
-        # check for valid mesh here.
+        if self._mesh is None:
+            pg.critical("no valid mesh set.")
 
-        # configure regions defaults here??
+        if zWeight is None:
+            zWeight = self._zWeight
 
-        self.fop.regionManager().setZWeight(zWeight)
+        self.fop.setRegionProperties('*', zWeight=zWeight)
 
-        model = super(MeshInversion, self).run(dataVals, errVals, **kwargs)
+        print(self.fop.regionProperties())        
+        #### more mesh related inversion attributes to set?
 
-        self.model = model(self.fop.regionManager().paraDomain().cellMarkers())
+        self.model = super(MeshInversion, self).run(dataVals, errVals, **kwargs)
         return self.model
 
 
 class PetroInversion(Inversion):
     def __init__(self, petro, mgr=None, fop=None, **kwargs):
-        self.mgr = None
+        self.mgr = mgr
 
-        if mgr is not None:
+        if self.mgr is not None:
             fop = self.mgr.createForwardOperator(**kwargs)
 
-        f = None
         if fop is not None:
-            f = pg.frameworks.PetroModelling(fop, petro)
+            fop = pg.frameworks.PetroModelling(fop, petro)
 
-        super(PetroInversion, self).__init__(f, **kwargs)
+        super(PetroInversion, self).__init__(fop=fop, **kwargs)
+
+    def setForwardOperator(self, fop):
+        if not isinstance(fop, pg.frameworks.PetroModelling):
+            pg.critical('Forward operator needs to be an instance of '
+                        'pg.modelling.PetroModelling but is of type:', fop)
+                        
+        return super(PetroInversion, self).setForwardOperator(fop)
 
     def run(self, dataVals, errVals, **kwargs):
         """
         """
-        ## this is Managers job
-        #if isinstance(data, pg.DataContainer):
-            #self.fop.setDataContainer(data)
-            #dataVals = self.mgr.dataVals(data)
-            #errVals = self.mgr.relErrVals(data)
-        #else:
-            #raise Exception("Implement me")
-        print("------------------------------------------------")
-        print("PetroInversion:run()")
-
+        pg.p('PetroInv')
         if 'limits' in kwargs:
             limits = kwargs.pop('limits', [0., 1.])
-            self.fop._transModel.setLowerBound(limits[0])
-            self.fop._transModel.setUpperBound(limits[1])
 
-        #self.tM.setLowerBound(limits[0])
-        #self.tM.setUpperBound(limits[1])
-        #self.inv.setTransModel(self.tM)
-
-
-        #**kwargs['startModel'] automatic here
-
-
+            if len(self.fop.regionManager().regionIdxs()) > 1:
+                pg.critical('implement')
+            else:
+                self.fop.setRegionProperties('*', limits=limits)
+                
         return super(PetroInversion, self).run(dataVals, errVals, **kwargs)
 
 
@@ -603,53 +665,3 @@ class LCInversion(Inversion):
         print(kwargs)
         print('#'*50)
         return super(LCInversion, self).run(dataVec, errVec, lam=lam, **kwargs)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-class MeshInversion0(Inversion):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        INUSEQUESTION
-
-    def setMesh(self, mesh):
-        self.fop.setMesh(mesh)
-
-    def invert(self, data=None, mesh=None, lam=20, **kwargs):
-        INUSEQUESTION
-        if data is not None:
-            self.setData(data)
-
-        if mesh is not None:
-            self.setMesh(mesh)
-
-        startModel = kwargs.pop('startModel', None)
-        nModel = self.fop.regionManager().parameterCount()
-        startModel = pg.Vector(nModel, startModel)
-        self.fop.setStartModel(startModel)
-
-        zWeight = kwargs.pop('zWeight', 1.0)
-        self.fop.regionManager().setZWeight(zWeight)
-        self.inv.setData(self.dataVals)
-        self.inv.setRelativeError(self.errorVals)
-        self.inv.setLambda(lam)
-
-        self.mod = self.inv.run()
-        self.mod = self.mod(self.fop.regionManager().paraDomain().cellMarkers())
-        return self.mod

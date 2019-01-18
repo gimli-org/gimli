@@ -1,5 +1,5 @@
 /******************************************************************************
- *   Copyright (C) 2009-2018 by the GIMLi development team                    *
+ *   Copyright (C) 2009-2019 by the GIMLi development team                    *
  *   Thomas Günther thomas@resistivity.net                                    *
  *   Carsten Rücker carsten@resistivity.net                                   *
  *                                                                            *

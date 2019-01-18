@@ -26,10 +26,10 @@ class VESModelling(Block1DModelling):
         B is second power, M is first potential electrode.
     an :
         Part of data basis. Distances between A and N electrodes.
-        A is first power, M is second potential electrode.
+        A is first power, N is second potential electrode.
     bn :
         Part of data basis. Distances between B and N electrodes.
-        B is second power, M is second potential electrode.
+        B is second power, N is second potential electrode.
     ab2 :
         Half distance between A and B.
         Only used for output and auto generated.
@@ -115,8 +115,7 @@ class VESModelling(Block1DModelling):
             nLayers = (len(par)+1) // 2
             fop = pg.DC1dModelling(nLayers, self.am, self.bm, self.an, self.bn)
         else:
-            raise Exception("I have no data basis .. "
-                            "don't know what to calculate.")
+            pg.critical("No data space defined don't know what to calculate.")
 
         return fop.response(par)
 
@@ -128,36 +127,66 @@ class VESModelling(Block1DModelling):
         ax.set_ylabel('Depth in (m)')
 
     def drawData(self, ax, data, error=None, label=None, **kwargs):
-        """
-        """
-        ra = data
-        raE = error
+        r"""Draw modeled apparent resistivity data.
 
-        style = pg.frameworks.modelling.DEFAULT_STYLES.get(label, 
-                            pg.frameworks.modelling.DEFAULT_STYLES['Default'])
+        Parameters
+        ----------
+        ax: axes
+            Matplotlib axes object to draw into.
 
+        data: iterable
+            Apparent resistivity values to draw.
+
+        error: iterable [None]
+            Adds an error bar if you have error values.
+
+        label: str ['$\varrho_a$']
+            Set legend label for the amplitude.
+
+        **kwrags 
+            * ab2: iterable
+                Override ab2 that fits data size.
+            * mn2: iterable
+                Override mn2 that fits data size.
+            * plot: function name
+                Matplotlib plot function, e.g., plot, loglog, semilogx or semilogy
+        """
         ab2 = kwargs.pop('ab2', self.ab2)
         mn2 = kwargs.pop('mn2', self.mn2)
         plot = kwargs.pop('plot', 'loglog')
 
-        plot = getattr(ax, plot)
-        plot(ra, ab2, 'x-', label=label, **style, **kwargs)
+        ra = data
+        raE = error
+
+        if label is None:
+            label = r'$\varrho_a$'
+        style = dict(pg.frameworks.modelling.DEFAULT_STYLES.get(label, 
+                            pg.frameworks.modelling.DEFAULT_STYLES['Default']))
+        style.update(kwargs)
+        a1 = ax
+        plot = getattr(a1, plot)
+        plot(ra, ab2, 'x-', label=label, **style)
 
         if raE is not None:
-            ax.errorbar(ra, ab2,
+            a1.errorbar(ra, ab2,
                         xerr=ra * raE, barsabove=True,
                         **pg.frameworks.modelling.DEFAULT_STYLES.get('Error', 
-                            pg.frameworks.modelling.DEFAULT_STYLES['Default'])
-                        )
+                            pg.frameworks.modelling.DEFAULT_STYLES['Default']),
+                        label='_nolegend_')
 
-        ax.set_ylim(max(ab2), min(ab2))
-        ax.set_xlabel(r'Apparent resistivity ($\Omega$m)')
-        ax.set_ylabel('AB/2 in (m)')
-        ax.grid(True)
-        ax.legend()
+        a1.set_ylim(max(ab2), min(ab2))
+        a1.set_xlabel(r'Apparent resistivity ($\Omega$m)')
+        a1.set_ylabel(r'AB/2 (m)')
+        a1.grid(True)
+        a1.legend()
 
 
 class VESCModelling(VESModelling):
+    """Vertical Electrical Sounding (VES) forward operator. (complex)
+
+    Vertical Electrical Sounding (VES) forward operator for complex
+    resistivity values. see: :py:mod:`pygimli.physics.ert.VESModelling`
+    """
     def __init__(self, **kwargs):
         super(VESCModelling, self).__init__(nPara=2, **kwargs)
         self.phiAxe = None
@@ -189,7 +218,6 @@ class VESCModelling(VESModelling):
                                  trans='log')
 
         sm = self.regionManager().createStartModel()
-        self.setStartModel(sm)
         return sm
 
     def response_mt(self, par, i=0):
@@ -226,14 +254,40 @@ class VESCModelling(VESModelling):
                                  model=self.phaseModel(model),
                                  plot=plot,
                                  color='C2',
-                                 xlabel='Phase [mrad]', 
+                                 xlabel='Phase (mrad)', 
                                  **kwargs)
         
         a2.set_xlabel('neg. phase (mRad)', color='C2')
         
-    def drawData(self, ax, data, error=None, label=None, ab2=None, mn2=None,
+    def drawData(self, ax, data, error=None, labels=None, ab2=None, mn2=None,
                  **kwargs):
-        """Draw 1D VESC Data."""
+        r"""Draw modeled apparent resistivity and apparent phase data.
+
+        Parameters
+        ----------
+        ax: axes
+            Matplotlib axes object to draw into.
+
+        data: iterable
+            Apparent resistivity values to draw. [rhoa phia]. 
+
+        error: iterable [None]
+            Rhoa in Ohm m and phia in radiand.
+            Adds an error bar if you have error values. [err_rhoas err_phia]
+            The error of amplitudes are assumed to be relative and the error
+            of the phases is assumed to be absolute in mrad.
+
+        labels: str [r'$\varrho_a$', r'$\varphi_a$']
+            Set legend labels for amplitude and phase.
+
+        **kwrags:
+            * ab2: iterable
+                Override ab2 that fits data size.
+            * mn2: iterable
+                Override mn2 that fits data size.
+            * plot: function name
+                Matplotlib plot function, e.g., plot, loglog, semilogx or semilogy
+        """
         a1 = None
         a2 = None
 
@@ -262,18 +316,18 @@ class VESCModelling(VESModelling):
                 raE = error[0:len(data)//2]
                 phiE = error[len(data)//2::]
 
+        if labels is None:
+            labels = [r'$\varrho_a$', r'$\varphi_a$']
         
         super(VESCModelling, self).drawData(a1, ra, error=raE,
-                                            label=label, **kwargs)
+                                            label=labels[0], **kwargs)
 
-        style = dict(pg.frameworks.modelling.DEFAULT_STYLES.get(label, 
+        style = dict(pg.frameworks.modelling.DEFAULT_STYLES.get(labels[1], 
                             pg.frameworks.modelling.DEFAULT_STYLES['Default']))
         style['Color'] = 'C2'
-        
-        if label == 'Data':
-            label = 'Phase'
+        style.update(kwargs)
 
-        a2.semilogy(phi, self.ab2, label=label, **style, **kwargs)
+        a2.semilogy(phi, self.ab2, label=labels[1], **style)
 
         if phiE is not None:
             a2.errorbar(phi, self.ab2,
@@ -281,6 +335,7 @@ class VESCModelling(VESModelling):
                         **pg.frameworks.modelling.DEFAULT_STYLES.get('Error', 
                               pg.frameworks.modelling.DEFAULT_STYLES['Default']),
                         barsabove=True,
+                        label='_nolegend_'
                         )
 
         a2.set_ylim(max(self.ab2), min(self.ab2))
@@ -291,7 +346,7 @@ class VESCModelling(VESModelling):
         
 
 class VESManager(MethodManager1d):
-    """Vertical electrical sounding (VES) manager class.
+    r"""Vertical electrical sounding (VES) manager class.
 
     Examples
     --------
@@ -305,12 +360,12 @@ class VESManager(MethodManager1d):
     >>> # and layer thickness of 4, 6, 10 m
     >>> # over a Halfspace of 800 Ohmm
     >>> synthModel = pg.cat([4., 6., 10.], [100., 5., 20., 800.])
-    >>> VES = VESManager()
-    >>> ra, err = VES.simulate(synthModel, ab2=ab2, mn2=mn2, noiseLevel=0.01)
-    >>> ax = VES.showData(ra, err)
-    >>> # _= VES.invert(ra, err, nLayer=4, showProgress=0, verbose=0)
-    >>> # ax = VES.showModel(synthModel)
-    >>> # ax = VES.showResult(ax=ax)
+    >>> ves = VESManager()
+    >>> ra, err = ves.simulate(synthModel, ab2=ab2, mn2=mn2, noiseLevel=0.01)
+    >>> ax = ves.showData(ra, error=err)
+    >>> # _= ves.invert(ra, err, nLayer=4, showProgress=0, verbose=0)
+    >>> # ax = ves.showModel(synthModel)
+    >>> # ax = ves.showResult(ax=ax)
     >>> pg.wait()
     """
     def __init__(self, **kwargs):
@@ -327,7 +382,7 @@ class VESManager(MethodManager1d):
         complex : bool
             Accept complex resistivities.
         """
-        self.__complex = kwargs.pop('complex', False)
+        self._complex = kwargs.pop('complex', False)
 
         super(VESManager, self).__init__(**kwargs)
 
@@ -339,12 +394,12 @@ class VESManager(MethodManager1d):
         
     @property
     def complex(self):
-        return self.__complex
+        return self._complex
 
     @complex.setter
     def complex(self, c):
-        self.__complex = c
-        self._initForwardOperator()
+        self._complex = c
+        self.reinitForwardOperator()
 
     def createForwardOperator(self, **kwargs):
         """Create Forward Operator.
@@ -591,7 +646,7 @@ def VESManagerApp():
 #             potential electrodes.
 
 #         z: array_like, case specific
-#             smooth: z discretisation [m]\n
+#             smooth: z discretisation (m)\n
 #             block: number of layers
 #         """
 #         self.verbose = verbose
@@ -833,7 +888,7 @@ def VESManagerApp():
 #         ax.set_ylim((max(self.ab2), min(self.ab2)))
 #         ax.grid(True, which='both')
 #         ax.set_xlabel(r'$\rho_a$ [$\Omega$m]')
-#         ax.set_ylabel('AB/2 [m]')
+#         ax.set_ylabel('AB/2 (m)')
 #         ax.legend(loc='best')
 #         return ax
 

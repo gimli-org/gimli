@@ -1,5 +1,5 @@
 /******************************************************************************
- *   Copyright (C) 2007-2018 by the GIMLi development team                    *
+ *   Copyright (C) 2007-2019 by the GIMLi development team                    *
  *   Carsten Rücker carsten@resistivity.net                                   *
  *                                                                            *
  *   Licensed under the Apache License, Version 2.0 (the "License");          *
@@ -266,7 +266,7 @@ public:
 
     /*! Save this matrix into the file filename given. */
     virtual void save(const std::string & filename) const {
-        THROW_TO_IMPL
+        log(Warning, "save for this matrix type is not supported");
     }
 
 protected:
@@ -385,18 +385,12 @@ public:
 
     /*! Index operator for write operations without boundary check. */
     Vector< ValueType > & operator [] (Index i) {
-// //         if (i < 0 || i > mat_.size()-1) {
-//             throwLengthError(1, WHERE_AM_I + " row bounds out of range " +
-//                                 toStr(i) + " " + toStr(this->rows())) ;
-//         }
-//
-        return mat_[i];
+        return rowRef(i);
     }
 
     /*! Read only C style index operator, without boundary check. */
     const Vector< ValueType > & operator [] (Index i) const {
-//         __MS(this << " " << &mat_[i] << " " << mat_[i].size() )
-        return mat_[i];
+        return row(i);
     }
 
     /*! Implicite type converter. */
@@ -418,42 +412,38 @@ public:
     }
 
     /*! Return number of rows. */
-    inline Index rows() const { return mat_.size(); }
+    inline Index rows() const { 
+        return mat_.size(); 
+    }
 
     /*! Return number of colums. */
-    inline Index cols() const { if (mat_.size() > 0) return mat_[0].size(); return 0; }
+    inline Index cols() const { 
+        if (mat_.size() > 0) return mat_[0].size(); 
+        return 0; 
+    }
+
+    /*! Set a value. Throws out of range exception if index check fails. */
+    inline void setRow(const Vector < ValueType > & val, Index i) {
+        ASSERT_THIS_SIZE(i)
+        mat_[i] = val;
+    }
 
     /*! Set a value. Throws out of range exception if index check fails. */
     inline void setVal(const Vector < ValueType > & val, Index i) {
-        if (i >= 0 && i < mat_.size()) {
-            mat_[i] = val;
-        } else {
-            throwRangeError(1, WHERE_AM_I, i, 0, this->rows());
-        }
+        return setRow(val, i);
     }
 
     /*! Readonly getter. */
-    inline const Vector < ValueType > & getVal(Index i) const {
-        if (i < 0 || i > mat_.size()-1) {
-            throwLengthError(1, WHERE_AM_I + " row bounds out of range " +
-                                toStr(i) + " " + toStr(this->rows())) ;
-        }
+    inline const Vector < ValueType > & row(Index i) const {
+        ASSERT_THIS_SIZE(i)
         return mat_[i];
     }
 
     /*! Return reference to row. Used for pygimli. */
-    inline Vector < ValueType > & rowR(Index i) {
-        if (i < 0 || i > mat_.size()-1) {
-            throwLengthError(1, WHERE_AM_I + " row bounds out of range " +
-                                toStr(i) + " " + toStr(this->rows())) ;
-        }
+    inline Vector < ValueType > & rowRef(Index i) {
+        ASSERT_THIS_SIZE(i)
         return mat_[i];
     }
-
-    /*! Readonly row entry of matrix, with boundary check.*/
-    virtual const Vector< ValueType > row(Index i) const {
-        //__M
-        return getVal(i); }
 
     /*! Readonly column entry of matrix, with boundary check. Probably slow.*/
     virtual const Vector< ValueType > col(Index i) const {
@@ -476,16 +466,6 @@ public:
 
     /*! Return last row vector. */
     inline Vector< ValueType > & back() { return mat_.back(); }
-
-//     /*! Set one specific column */
-//     virtual void setCol(Index col, const RVector & v){
-//         return setCol_(col, v);
-//     }
-//
-//     /*! Set one specific column */
-//     virtual void setCol(Index col, const CVector & v){
-//         return setCol_(col, v);
-//     }
 
     /*! Set one specific column */
     inline void setCol(Index col, const Vector < ValueType > & v){

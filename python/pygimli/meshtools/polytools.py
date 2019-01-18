@@ -4,7 +4,7 @@
 Please note there is currently no collision or intersection check at all.
 
 Volunteers welcome to help creating, adapting or interfacing a basic
-geometry system. A lot of thinks are needed:
+geometry system. A lot of things are needed:
 
     * 2D
     * 3D
@@ -25,8 +25,7 @@ import numpy as np
 import pygimli as pg
 
 
-def polyCreateDefaultEdges_(poly, boundaryMarker=1,
-                            isClosed=True, isHole=False):
+def _polyCreateDefaultEdges(poly, boundaryMarker=1, isClosed=True, **kwargs):
     """INTERNAL."""
     nEdges = poly.nodeCount() - 1 + isClosed
     bm = None
@@ -44,7 +43,53 @@ def polyCreateDefaultEdges_(poly, boundaryMarker=1,
 
     if isClosed:
         poly.createEdge(poly.node(poly.nodeCount() - 1), poly.node(0), bm[-1])
+    
 
+def setPolyRegionMarker(poly, marker=1, area=0.0, markerPosition=None, 
+                        isHole=False):
+    """Internal to set region markers to single elementary geometry. 
+    
+    Internal to set region markers.
+    If no absolute marker position is given. 
+    The region marker is placed 1mm beside the first node in direction to the 
+    geometry center.
+
+    Parameters
+    ----------
+
+    poly : :gimliapi:`GIMLI::Mesh`
+        The Polygon that will get a marker
+
+    marker : int[1]
+        The region marker, every resulting mesh cell will get this marker.
+
+    area : float[0]
+        The region max cell size, every resulting mesh cell will get a cell 
+        size lower than area in m² or m³ for 3D, respectively.
+    
+    markerPosition : pg.Pos
+        Absolute marker position if you don't want the marker in the center of
+        the geometry.
+
+    isHole : bool [False]
+        Marks the geometry as a hole and will be cut in any merge mesh.
+
+    """
+    pos = None
+    if markerPosition is not None:
+        pos = markerPosition
+    else:
+        center = pg.center(poly.positions())
+        p0 = poly.node(0).pos()
+        # region marker is 1mm in direction to the center
+        # should be safer than the center itself
+        pos = p0 + (center-p0).norm() * 0.001 
+
+    if isHole is True:
+        poly.addHoleMarker(pos)
+    else:
+        poly.addRegionMarker(pos, marker=marker, area=area)
+    
 
 def createRectangle(start=None, end=None, pos=None, size=None, **kwargs):
     """Create rectangle polygon.
@@ -61,22 +106,24 @@ def createRectangle(start=None, end=None, pos=None, size=None, **kwargs):
     pos : [x, y]
         Center position. The rectangle will be moved.
     size : [x, y]
-        width and height. The rectangle will be scaled.
+        Factors for x and y by which the rectangle, defined by **start** and
+        **width**, are scaled.
 
     **kwargs:
 
         marker : int [1]
             Marker for the resulting triangle cells after mesh generation
+        markerPosition : floats [x, y] [pos + (end - start) * 0.2]
+            Absolute position of the marker (works for both regions and
+            holes).
         area : float [0]
             Maximum cell size for resulting triangles after mesh generation
+        isHole : bool [False]
+            The polygon will become a hole instead of a triangulation
         boundaryMarker : int [1]
             Marker for the resulting boundary edges
         leftDirection : bool [True]
             TODO Rotational direction
-        isHole : bool [False]
-            The Polygone will become a hole instead of a triangulation
-        isClosed : bool [True]
-            Add closing edge between last and first node.
 
     Returns
     -------
@@ -85,43 +132,50 @@ def createRectangle(start=None, end=None, pos=None, size=None, **kwargs):
 
     Examples
     --------
-    >>> import matplotlib.pyplot as plt
+    >>>  # no need to import matplotlib. pygimli's show does
     >>> import pygimli as pg
-    >>> from pygimli.meshtools import createRectangle
-    >>> rectangle = createRectangle(start=[4, -4], end=[6, -6],
-    ...                             marker=4, area=0.1)
-    >>> _ = pg.show(rectangle)
+    >>> import pygimli.meshtools as mt
+    >>> r1 = mt.createRectangle(pos=[1, -1], size=[4.0, 4.0],
+    ...                      marker=1, area=0.1, markerPosition=[0, -2])
+    >>> r2 = mt.createRectangle(start=[0.5, -0.5], end=[2, -2],
+    ...                      marker=2, area=1.1)
+    >>> _ = pg.show(mt.mergePLC([r1, r2]))
+    >>> pg.wait()
     """
-    #if not ((start and end) or (pos and size)):
-        #raise BaseException("createRectangle pls. give either start and end"
-                            #"OR pos and size.")
     if start is None:
         start = [-0.5, 0.5]
     if end is None:
         end = [0.5, -0.5]
-    poly = pg.Mesh(2)
 
-    sPos = pg.RVector3(start)
-    ePos = pg.RVector3(end)
+    poly = pg.Mesh(dim=2, isGeometry=True)
 
-    poly.createNode(sPos)
-    poly.createNode([sPos[0], ePos[1]])
-    poly.createNode(ePos)
-    poly.createNode([ePos[0], sPos[1]])
+    sPos = pg.Pos(start)
+    ePos = pg.Pos(end)
 
-    if kwargs.pop('isHole', False):
-        poly.addHoleMarker(sPos + (ePos - sPos) * 0.2)
+    verts = [sPos, [sPos[0], ePos[1]], ePos, [ePos[0], sPos[1]]]
+    
+    #TODO refactor with polyCreatePolygon
+
+    if kwargs.pop("leftDirection", False):
+        for v in verts[::-1]:
+            poly.createNode(v)
     else:
-        poly.addRegionMarker(sPos + (ePos - sPos) * 0.2,
-                             marker=kwargs.pop('marker', 1),
-                             area=kwargs.pop('area', 0))
+        for v in verts:
+            poly.createNode(v)
 
+    # Note that we do not support the usage of start/end AND size/pos. Only one
+    # of the pairs. Otherwise strange things will happen with the region
+    # markers!
     if size is not None:
         poly.scale(size)
     if pos is not None:
         poly.translate(pos)
 
-    polyCreateDefaultEdges_(poly, **kwargs)
+    _polyCreateDefaultEdges(poly, **kwargs)
+
+    kwargs['markerPosition'] = kwargs.pop('markerPosition', sPos + (ePos - sPos) * 0.2)
+
+    setPolyRegionMarker(poly, **kwargs)    
 
     return poly
 
@@ -146,7 +200,6 @@ def createWorld(start, end, marker=1, area=0., layers=None, worldMarker=True):
     area : float | list
         Maximum cell size for resulting triangles after mesh generation.
         If area is a float set it global, if area is a list set it per layer.
-
     layers : [float]
         Add some layers to the world.
     worldMarker : [bool]
@@ -178,26 +231,25 @@ def createWorld(start, end, marker=1, area=0., layers=None, worldMarker=True):
     # ensure - decreasing order if layers are out of bounding box
     z = pg.sort(z)[::-1]
 
-    poly = pg.Mesh(2)
+    poly = pg.Mesh(dim=2, isGeometry=True)
 
     if isinstance(area, float) or isinstance(area, int):
         area = np.ones(len(z)) * float(area)
 
     for i, depth in enumerate(z):
         n = poly.createNode([start[0], depth])
-
         if i > 0:
             if len(z) == 2:
-                poly.addRegionMarker(n.pos() + [0.2, 0.2], marker=marker,
-                                     area=area[0])
+                poly.addRegionMarker(
+                    n.pos() + [0.2, 0.2], marker=marker, area=area[0])
             else:
-                poly.addRegionMarker(n.pos() + [0.2, 0.2], marker=i,
-                                     area=area[i-1])
+                poly.addRegionMarker(
+                    n.pos() + [0.2, 0.2], marker=i, area=area[i - 1])
 
     for i, depth in enumerate(z[::-1]):
         poly.createNode([end[0], depth])
 
-    polyCreateDefaultEdges_(poly,
+    _polyCreateDefaultEdges(poly,
                             boundaryMarker=range(1, poly.nodeCount() + 1))
 
     if worldMarker:
@@ -217,7 +269,7 @@ def createWorld(start, end, marker=1, area=0., layers=None, worldMarker=True):
     return poly
 
 
-def createCircle(pos=None, radius=1, segments=12, start=0, end=2. * math.pi,
+def createCircle(pos=None, radius=1, segments=12, start=0, end=2.*math.pi,
                  **kwargs):
     """Create simple circle polygon.
 
@@ -240,14 +292,16 @@ def createCircle(pos=None, radius=1, segments=12, start=0, end=2. * math.pi,
 
         marker : int [1]
             Marker for the resulting triangle cells after mesh generation
+        markerPosition : floats [x, y] [0.0, 0.0]
+            Position of the marker (works for both regions and holes)
         area : float [0]
             Maximum cell size for resulting triangles after mesh generation
+        isHole : bool [False]
+            The polygon will become a hole instead of a triangulation
         boundaryMarker : int [1]
             Marker for the resulting boundary edges
         leftDirection : bool [True]
             Rotational direction
-        isHole : bool [False]
-            The Polygone will become a hole instead of a triangulation
         isClosed : bool [True]
             Add closing edge between last and first node.
 
@@ -258,23 +312,25 @@ def createCircle(pos=None, radius=1, segments=12, start=0, end=2. * math.pi,
 
     Examples
     --------
-    >>> import matplotlib.pyplot as plt
+    >>>  # no need to import matplotlib. pygimli's show does
     >>> import math
     >>> from pygimli.mplviewer import drawMesh
-    >>> from pygimli.meshtools import polytools as plc
-    >>> c0 = plc.createCircle(pos=(-5.0, 0.0), radius=2, segments=6)
-    >>> c1 = plc.createCircle(pos=(0.0, 0.0), segments=5, start=0, end=math.pi)
-    >>> c2 = plc.createCircle(pos=(5.0, 0.0), segments=3, start=math.pi,
-    ...                       end=1.5*math.pi, isClosed=False)
-    >>> plc = plc.mergePLC([c0, c1, c2])
-    >>> fig, ax = plt.subplots()
+    >>> import pygimli.meshtools as mt
+    >>> c0 = mt.createCircle(pos=(-5.0, 0.0), radius=2, segments=6)
+    >>> c1 = mt.createCircle(pos=(-2.0, 2.0), radius=1, area=0.01, marker=2)
+    >>> c2 = mt.createCircle(pos=(0.0, 0.0), segments=5, start=0, end=math.pi)
+    >>> c3 = mt.createCircle(pos=(5.0, 0.0), segments=3, start=math.pi,
+    ...                      end=1.5*math.pi, isClosed=False)
+    >>> plc = mt.mergePLC([c0, c1, c2, c3])
+    >>> fig, ax = pg.plt.subplots()
     >>> drawMesh(ax, plc, fillRegion=False)
-    >>> plt.show()
+    >>> pg.wait()
     """
+    #TODO refactor with polyCreatePolygon
     if pos is None:
         pos = [0.0, 0.0]
 
-    poly = pg.Mesh(2)
+    poly = pg.Mesh(dim=2, isGeometry=True)
 
     dPhi = (end - start) / (segments)
     nPhi = segments + 1
@@ -292,20 +348,16 @@ def createCircle(pos=None, radius=1, segments=12, start=0, end=2. * math.pi,
         yp = np.sin(phi)
         poly.createNode([xp, yp])
 
-    if kwargs.pop('isHole', False):
-        poly.addHoleMarker([0.0, 0.0])
-    else:
-        poly.addRegionMarker([0.0, 0.0], marker=kwargs.pop('marker', 1),
-                             area=kwargs.pop('area', 0))
-
     if hasattr(radius, '__len__'):
         poly.scale(radius)
     else:
         poly.scale([radius, radius])
-
     poly.translate(pos)
 
-    polyCreateDefaultEdges_(poly, **kwargs)
+    _polyCreateDefaultEdges(poly, **kwargs)
+
+    if isClosed:
+        setPolyRegionMarker(poly, **kwargs)
 
     # need a better way mess with these or wrong kwargs
     # pg.warnNonEmptyArgs(kwargs)
@@ -355,7 +407,8 @@ def createLine(start, end, segments=1, **kwargs):
     >>> ax, _ = pg.show([w, l1, l2,], ax=ax, fillRegion=False)
     >>> pg.wait()
     """
-    poly = pg.Mesh(2)
+    #TODO refactor with polyCreatePolygon
+    poly = pg.Mesh(dim=2, isGeometry=True)
     startPos = pg.RVector3(start)
     endPos = pg.RVector3(end)
     a = endPos - startPos
@@ -371,38 +424,42 @@ def createLine(start, end, segments=1, **kwargs):
 
         poly.createNode(p)
 
-    polyCreateDefaultEdges_(poly, isClosed=False, **kwargs)
+    _polyCreateDefaultEdges(poly, isClosed=False, **kwargs)
     return poly
 
 
-def createPolygon(verts, isClosed=False, isHole=False, **kwargs):
+def createPolygon(verts, isClosed=False, **kwargs):
     """Create a polygon from a list of vertices.
 
-    All vertices needs to be unique and duplicate vertices will be ignored.
-    If you want the polygon be a closed region you can set the 'isCloses' flag.
+    All vertices need to be unique and duplicate vertices will be ignored.
+    If you want the polygon be a closed region you can set the 'isClosed' flag.
     Closed region can be attributed by assigning a region marker.
-    The automatic region marker is set in the center of all vertices.
+    The automatic region marker is placed in the center of all vertices.
 
     Parameters
     ----------
     verts : []
         * List of x y pairs [[x0, y0], ... ,[xN, yN]]
 
-    **kwargs:
-
-        * boundaryMarker : int [1]
-            Marker for the resulting boundary edges
-        * leftDirection : bool [True]
-            Rotational direction
-        * marker : int [None]
-            Marker for the resulting triangle cells after mesh generation.
-        * area : float [0]
-            Maximum cell size for resulting triangles after mesh generation
-        * isHole : bool [False]
-            The Polygone will become a hole instead of a triangulation
-
     isClosed : bool [True]
         Add closing edge between last and first node.
+
+    **kwargs:
+
+        marker : int [None]
+            Marker for the resulting triangle cells after mesh generation.
+        markerPosition : floats [x, y] [0.0, 0.0]
+            Position (absolute) of the marker (works for both regions and
+            holes)
+        area : float [0]
+            Maximum cell size for resulting triangles after mesh generation
+        isHole : bool [False]
+            The polygon will become a hole instead of a triangulation
+        boundaryMarker : int [1]
+            Marker for the resulting boundary edges
+        leftDirection : bool [True]
+            Rotational direction
+
 
     Returns
     -------
@@ -417,34 +474,25 @@ def createPolygon(verts, isClosed=False, isHole=False, **kwargs):
     >>> p1 = mt.createPolygon([[0.0, 0.0], [1.0, 0.0], [1.0, 1.0]],
     ...                       isClosed=True, marker=3, area=0.1)
     >>> p2 = mt.createPolygon([[0.3, 0.15], [0.85, 0.15], [0.85, 0.7]],
-    ...                       isClosed=True, marker=3, area=0.1, isHole=True)
+    ...                       isClosed=True, isHole=True)
     >>> ax, _ = pg.show(mt.mergePLC([p1,p2]))
+    >>> pg.wait()
     """
-    poly = pg.Mesh(2)
+    poly = pg.Mesh(dim=2, isGeometry=True)
 
-    for v in verts:
-        poly.createNodeWithCheck(v, warn=True)
+    if kwargs.pop("leftDirection", False):
+        for v in verts[::-1]:
+            poly.createNodeWithCheck(v, warn=True)
+    else:
+        for v in verts:
+            poly.createNodeWithCheck(v, warn=True)
+    
+    _polyCreateDefaultEdges(poly, isClosed=isClosed,
+                            boundaryMarker=kwargs.pop('boundaryMarker', 1))
 
-    boundaryMarker = kwargs.pop('boundaryMarker', 1)
-    marker = kwargs.pop('marker', None)
-    area = kwargs.pop('area', 0)
-    isHole = kwargs.pop('isHole', False)
-
-    polyCreateDefaultEdges_(poly, isClosed=isClosed, isHole=False,
-                            boundaryMarker=boundaryMarker)
-
-    if isClosed and marker is not None or area > 0:
-        if isHole:
-            poly.addHoleMarker(pg.center(poly.positions()))
-        else:
-            if marker is None:  # in case marker is None but area is given
-                marker = 0
-            poly.addRegionMarker(pg.center(poly.positions()),
-                                 marker=marker, area=area)
-
-    # set a regionmarker here .. somewhere
-
-    pg.warnNonEmptyArgs(kwargs)
+    if isClosed:
+        setPolyRegionMarker(poly, **kwargs)
+    
     return poly
 
 
@@ -475,29 +523,28 @@ def mergePLC(pols, tol=1e-3):
 
     Examples
     --------
-    >>> from pygimli.meshtools import polytools as plc
-    >>> from pygimli.meshtools import createMesh
+    >>>  # no need to import matplotlib. pygimli's show does
+    >>> import pygimli.meshtools as mt
     >>> from pygimli.mplviewer import drawMesh
-    >>> import matplotlib.pyplot as plt
-    >>> world = plc.createWorld(start=[-10, 0], end=[10, -10], marker=1)
-    >>> c1 = plc.createCircle([-1, -4], radius=1.5, area=0.1,
-    ...                       marker=2, segments=4)
-    >>> c2 = plc.createCircle([-6, -5], radius=[1.5, 3.5], isHole=1)
-    >>> r1 = plc.createRectangle(pos=[3, -5], size=[2, 2], marker=3)
-    >>> r2 = plc.createRectangle(start=[4, -4], end=[6, -6],
+    >>> world = mt.createWorld(start=[-10, 0], end=[10, -10], marker=1)
+    >>> c1 = mt.createCircle([-1, -4], radius=1.5, area=0.1,
+    ...                       marker=2, segments=5)
+    >>> c2 = mt.createCircle([-6, -5], radius=[1.5, 3.5], isHole=1)
+    >>> r1 = mt.createRectangle(pos=[3, -5], size=[2, 2], marker=3)
+    >>> r2 = mt.createRectangle(start=[4, -4], end=[6, -6],
     ...                          marker=4, area=0.1)
-    >>> plc = plc.mergePLC([world, c1, c2, r1, r2])
+    >>> plc = mt.mergePLC([world, c1, c2, r1, r2])
     >>> fig, ax = plt.subplots()
     >>> drawMesh(ax, plc)
-    >>> drawMesh(ax, createMesh(plc))
+    >>> drawMesh(ax, mt.createMesh(plc))
     >>> plt.show()
     """
-    poly = pg.Mesh(2)
+    poly = pg.Mesh(dim=2, isGeometry=True)
 
     for p in pols:
         nodes = []
         for n in p.nodes():
-            nn = poly.createNodeWithCheck(n.pos(), tol, 
+            nn = poly.createNodeWithCheck(n.pos(), tol,
                                           warn=False, edgeCheck=True)
             if n.marker() != 0:
                 nn.setMarker(n.marker())
@@ -533,12 +580,12 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
     sensor positions. Sensor positions are assumed to lie on the surface and
     must be sorted and unique.
 
-    You can create a parameter mesh without sensors if you just set [xmin, xmax]
-    as sensors.
+    You can create a parameter mesh without sensors if you just set [xmin,
+    xmax] as sensors.
 
-    The PLC is a :gimliapi:`GIMLI::Mesh` and contain nodes, edges and two region
-    markers, one for the parameters domain (marker=2) and a larger boundary
-    around the outside (marker=1)
+    The PLC is a :gimliapi:`GIMLI::Mesh` and contain nodes, edges and two
+    region markers, one for the parameters domain (marker=2) and a larger
+    boundary around the outside (marker=1)
 
     TODO:
 
@@ -592,7 +639,10 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
     if hasattr(sensors, 'sensorPositions'):  # obviously a DataContainer type
         sensors = sensors.sensorPositions()
     elif isinstance(sensors, np.ndarray):
-        sensors = [pg.RVector3(s) for s in sensors]
+        if sensors.ndim == 1:
+            sensors = [pg.RVector3(s, 0) for s in sensors]
+        else:  # assume 2d array with 2 or 3 values per item
+            sensors = [pg.RVector3(s) for s in sensors]
     elif isinstance(sensors, list):
         if len(sensors) == 2:
             # guess we have just a desired Pbox with
@@ -622,7 +672,7 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
     if paraDepth == 0:
         paraDepth = 0.4 * (xmax - xmin)
 
-    poly = pg.Mesh(2)
+    poly = pg.Mesh(dim=2, isGeometry=True)
     # define para domain without surface
     n1 = poly.createNode([xmin - paraBound, sensors[0][iz]])
     n2 = poly.createNode([xmin - paraBound, sensors[0][iz] - paraDepth])
@@ -740,7 +790,7 @@ def readPLC(filename, comment='#'):
     nPointsAttributes = int(headerLine[2])
     haveNodeMarker = int(headerLine[3])
 
-    poly = pg.Mesh(dimension)
+    poly = pg.Mesh(dim=dimension, isGeometry=True)
 
     # Nodes section
     for i in range(nVerts):
@@ -758,8 +808,10 @@ def readPLC(filename, comment='#'):
                 n.setMarker(int(row[-1]))
 
         else:
-            print(i, len(row), row, (1 + dimension + nPointsAttributes + haveNodeMarker))
-            raise Exception("Poly file seams corrupt: node section line: " + content[1 + i])
+            print(i, len(row), row,
+                  (1 + dimension + nPointsAttributes + haveNodeMarker))
+            raise Exception("Poly file seams corrupt: node section line: " +
+                            content[1 + i])
 
     # Segment section
     row = content[1 + nVerts].split()
@@ -788,7 +840,8 @@ def readPLC(filename, comment='#'):
             row = content[2 + nVerts + i + segment_offset].split()
             numBounds = int(row[0])
             numHoles = row[1]
-            assert numHoles == '0', 'Can\'t handle 3D Boundaries with holes yet'
+            assert numHoles == '0', \
+                'Can\'t handle 3D Boundaries with holes yet'
             marker = 0
             if haveBoundaryMarker:
                 marker = int(row[2])
@@ -796,7 +849,7 @@ def readPLC(filename, comment='#'):
             for k in range(numBounds):
                 boundRow = content[2 + nVerts + i + segment_offset + 1]\
                     .split()
-                #nNodes = int(boundRow[0])
+                # nNodes = int(boundRow[0])
                 nodeIdx = [int(_b) for _b in boundRow[1:]]
                 # if nNodes == :
                 #     poly.createBoundary(ivec, marker=marker)
@@ -870,7 +923,7 @@ def exportPLC(poly, fname, **kwargs):
     >>> import pygimli as pg
     >>> import tempfile, os
     >>> fname = tempfile.mktemp() # Create temporary string for filename.
-    >>> world2d = pg.meshtools.createWorld(start=[-10, 0], end=[20, 0])
+    >>> world2d = pg.meshtools.createWorld(start=[-10, 0], end=[20, -10])
     >>> pg.meshtools.exportPLC(world2d, fname)
     >>> read2d = pg.meshtools.readPLC(fname)
     >>> print(read2d)
@@ -966,7 +1019,7 @@ def exportTetgenPoly(poly, filename, float_format='.12e', **kwargs):
     float_format: format string ('.12e')
         Format that will be used to write float values in the Ascii file.
         Default is the exponential float form with a precision of 12 digits.
-    
+
     kwargs:
         * extraBoundaries:
             Add additional polygons (#c42 still needed?)
@@ -976,7 +1029,7 @@ def exportTetgenPoly(poly, filename, float_format='.12e', **kwargs):
         filename = filename + '.poly'
     polytxt = ''
     sep = '\t'  # standard tab seperated file
-    linesep = '\n' # os.linesep does not work in mingwshell, testit!!
+    linesep = '\n'  # os.linesep does not work in mingwshell, testit!!
     assert poly.dim() == 3, 'Exit, only for 3D meshes.'
     boundary_marker = 1
     attribute_count = 0
@@ -1086,7 +1139,8 @@ def exportTetgenPoly(poly, filename, float_format='.12e', **kwargs):
         out.write(polytxt)
 
 
-def tetgen(filename, quality=1.2, preserveBoundary=False, verbose=False):
+def syscallTetgen(filename, quality=1.2, area=0, preserveBoundary=False,
+                  verbose=False):
     """Create a mesh with :term:`Tetgen` from file.
 
     Create a :term:`Tetgen` :cite:`Si2004` mesh from a PLC.
@@ -1100,6 +1154,9 @@ def tetgen(filename, quality=1.2, preserveBoundary=False, verbose=False):
     quality: float [1.2]
         Refines mesh (to improve mesh quality). [1.1 ... ]
 
+    area: float [0.0]
+        Maximum cell size (m³)
+
     preserveBoundary: bool [False]
         Preserve PLC boundary mesh
 
@@ -1111,7 +1168,11 @@ def tetgen(filename, quality=1.2, preserveBoundary=False, verbose=False):
     mesh : :gimliapi:`GIMLI::Mesh`
     """
     filebody = filename.replace('.poly', '')
-    syscal = 'tetgen -pazAC'
+    syscal = 'tetgen -pzAC'
+    if area > 0:
+        syscal += 'a' + str(area)
+    else:
+        syscal += 'a'
     syscal += 'q' + str(quality)
 
     if not verbose:
@@ -1124,11 +1185,11 @@ def tetgen(filename, quality=1.2, preserveBoundary=False, verbose=False):
 
     syscal += ' ' + filebody + '.poly'
 
-    if verbose:
-        print(syscal)
+    pg.debug(syscal)
 
     system(syscal)
     system('meshconvert -it -BD -o ' + filebody + ' ' + filebody + '.1')
+
     try:
         os.remove(filebody + '.1.node')
         os.remove(filebody + '.1.ele')
@@ -1137,89 +1198,6 @@ def tetgen(filename, quality=1.2, preserveBoundary=False, verbose=False):
         print(e)
     mesh = pg.Mesh(filebody)
     return mesh
-
-
-def polyAddVIP(filename, pos, marker=0, isRegionMarker=False,
-               isHoleMarker=False, maxCellSize=0, verbose=False):
-    """Add very important point (VIP) to a PLC file.
-
-    Add very important point (VIP) to a PLC.
-    Out of core wrapper for dcfemlib::polytools::polyAddVIP.
-
-    If you wan add these points to a plc directly use
-    :gimliapi:`GIMLI::Mesh::createNode`,
-    :gimliapi:`GIMLI::Mesh::addRegionMarker` or
-    :gimliapi:`GIMLI::Mesh::addHoleMarker`.
-
-    Parameters
-    ----------
-
-    Returns
-    -------
-    """
-    raise BaseException('obsolete use mesh methods directly')
-#     syscal = "polyAddVIP -x " + str(pos[0]) + \
-#         " -y " + str(pos[1]) + \
-#         " -z " + str(pos[2])
-#
-#     if isHoleMarker:
-#         syscal += " -H "
-#     else:
-#         syscal += " -m " + str(marker)
-#
-#     if isRegionMarker:
-#         syscal += " -R "
-#
-#     if maxCellSize > 0:
-#         syscal += " -a " + str(maxCellSize)
-#
-#     syscal += " " + filename
-#
-#     if verbose:
-#         print(syscal)
-#     system(syscal)
-# # def polyAddVIP
-
-
-def polyAddRectangle(filename, rect, marker=0, depth=0, clean=True):
-    """Add horizontal plane to a PLC.
-
-    Add horizontal plane to a PLC.
-    Out of core wrapper for dcfemlib::polytools::polytools.
-    Merge a meshed horizontal Rectangle with given marker[0] to
-    a 3D PLC at a given depth [0] clean removes all out of core files
-
-    Parameters
-    ----------
-
-    Returns
-    -------
-    """
-    raise BaseException('obsolete use mesh methods directly')
-#     rect.writeXY("__pad.xy", close=True)
-#     system("polyCreateWorld -d2 -t __pad.xy -C __pad")
-#     a = rect.area() / 29.0
-#
-#     system("dctriangle -a " + str(a) + " -q34.0 -S __pad")
-#     system("polyCreateFacet -o __pad3d -m " + str(marker) + " __pad.bms")
-#     system("polyTranslate -z " + str(depth) + " __pad3d")
-#
-#     # add node to the center of the rectangle
-# #    system("polyAddVIP -x " + str(rect.start[0])
-# #                    + " -y " + str(rect.start[1])
-# #                    + " -m -1 __pad3d")
-#     system("polyMerge " + filename + " __pad3d " + filename)
-#
-# #    system("polyCreateFacet -o __pad3d -m 1 __pad.bms")
-# #    system("polyTranslate -z -0.1 __pad3d")
-# #    system("polyMerge " + filename + " __pad3d " + filename)
-#
-#     if clean:
-#         os.remove('__pad.xy')
-#         os.remove('__pad.poly')
-#         os.remove('__pad.bms')
-#         os.remove('__pad3d.poly')
-# def polyAddRectangle
 
 
 def polyCreateWorld(filename, x=None, depth=None, y=None, marker=0,
@@ -1269,23 +1247,145 @@ def polyCreateWorld(filename, x=None, depth=None, y=None, marker=0,
     os.system(syscal)
 
 
-def polyTranslate(filename, x=0.0, y=0.0, z=0.0):
-    """Translate (move) a PLC.
+def createCube(size=[1.0, 1.0, 1.0], area=0.0, pos=None, 
+               boundaryMarker=0, **kwargs):
+    """Create plc of a cube
 
     Out of core wrapper for dcfemlib::polytools.
-    Spatial translate (move) the PLC (filename) by x, y and z
+    
+    Note, there is a bug in the old polytools which ignores the area settings 
+    for marker == 0.
 
     Parameters
     ----------
+    size : [x, y, z]
+        x, y, and z-size of the cube. Default = [1.0, 1.0, 1.0] in m
+
+    area : float [0.0]
+        Largest size for the resulting tetrahedrons.
+
+    pos : pg.Pos [None]
+        The center position, default is at the origin.
+
+    boundaryMarker : int[0]
+        Boundary marker for the resulting faces.
+
+    ** kwargs:
+        Marker related arguments:
+        See :py:mod:`pygimli.meshtools.polytools.setPolyRegionMarker`
+
+    Examples
+    --------
+    >>> import pygimli.meshtools as mt
+    >>> cube = mt.createCube()
+    >>> print(cube)
+    Mesh: Nodes: 8 Cells: 0 Boundaries: 6
+    >>> cube = mt.createCube([10, 10, 1])
+    >>> print(cube.bb())
+    [[-5.0, -5.0, -0.5], [5.0, 5.0, 0.5]]
+    >>> cube = mt.createCube([10, 10, 1], pos=[-4.0, 0.0, 0.0])
+    >>> print(pg.center(cube.positions()))
+    RVector3: (-4.0, 0.0, 0.0)
 
     Returns
     -------
+    poly : :gimliapi:`GIMLI::Mesh`
+        The resulting polygon is a :gimliapi:`GIMLI::Mesh`.
+
     """
-    raise BaseException('obsolete use mesh methods directly')
-    # system("polyTranslate " +
-    #        " -x " + str(x) +
-    #        " -y " + str(y) +
-    #        " -z " + str(z) + " " + filename)
+    tmp = pg.optImport('tempfile')
+    _, namePLC = tmp.mkstemp(suffix='.poly')
+
+    pg.debug("Create temporary file:", namePLC)
+    syscal = 'polyCreateCube '  
+    syscal = syscal + ' ' + namePLC
+
+    pg.debug(syscal)
+    os.system(syscal)
+    poly = readPLC(namePLC)
+    try:
+        os.remove(namePLC)
+    except:
+        print("can't remove:", namePLC)
+
+    poly.scale(size)
+
+    if pos is not None:
+        poly.translate(pos)
+
+    setPolyRegionMarker(poly, **kwargs)
+
+    return poly
+
+
+def createCylinder(radius, height, nSegments=8, area=0.0, pos=None, **kwargs):
+    """Create plc of a cylinder.
+
+    Out of core wrapper for dcfemlib::polytools.
+    
+    Note, there is a bug in the old polytools which ignores the area settings 
+    for marker == 0.
+
+    Parameters
+    ----------
+    radius : float
+        Radius of the cylinder.
+
+    height : float
+        Height of the cylinder
+
+    nSegments : int [8]
+        Number of segments of the cylinder.
+    
+    area : float [0.0]
+        Largest size for the resulting tetrahedrons.
+
+    pos : pg.Pos [None]
+        The center position, default is at the origin.
+
+    marker : int [1]
+        Cell marker the resulting tetrahedrons.
+
+    ** kwargs:
+        
+        set 
+
+    Returns
+    -------
+    poly : :gimliapi:`GIMLI::Mesh`
+        The resulting polygon is a :gimliapi:`GIMLI::Mesh`.
+
+    """
+    tmp = pg.optImport('tempfile')
+
+    _, namePLC = tmp.mkstemp(suffix='.poly')
+
+    pg.debug("Create temporary file:", namePLC)
+    syscal = 'polyCreateCube -Z '  \
+        + ' -s ' + str(nSegments) \
+        + ' -m ' + str(marker) \
+        + ' -a ' + str(area)
+
+    syscal = syscal + ' ' + namePLC
+
+    pg.debug(syscal)
+    os.system(syscal)
+
+    poly = readPLC(namePLC)
+
+    poly.scale([radius, radius, height])
+    
+    if pos is not None:
+        poly.translate(pos)
+
+    try:
+        os.remove(namePLC)
+    except:
+        print("can't remove:", namePLC)
+
+    setPolyRegionMarker(**kwargs)
+
+    return poly
 
 
 if __name__ == "__main__":

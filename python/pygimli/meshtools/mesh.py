@@ -8,7 +8,7 @@ import numpy as np
 import pygimli as pg
 
 
-def createMesh(poly, quality=30, area=0.0, smooth=None, switches=None,
+def createMesh(poly, quality=32, area=0.0, smooth=None, switches=None,
                verbose=False, **kwargs):
     """Create a mesh for a given geometry polygon.
 
@@ -26,7 +26,7 @@ def createMesh(poly, quality=30, area=0.0, smooth=None, switches=None,
     poly: :gimliapi:`GIMLI::Mesh` or list or ndarray
         * 2D or 3D gimli mesh that contains the PLC.
         * 2D mesh needs edges
-        * 3D mesh needs ... to be implemented
+        * 3D mesh needs a plc and tetgen as system component
         * List of x y pairs [[x0, y0], ... ,[xN, yN]]
         * ndarray [x_i, y_i]
         * PLC or list of PLC
@@ -118,8 +118,19 @@ def createMesh(poly, quality=30, area=0.0, smooth=None, switches=None,
         return mesh
 
     else:
-        raise Exception('not yet implemented')
 
+        tmp = pg.optImport('tempfile')
+        _, namePLC = tmp.mkstemp(suffix='.poly')
+
+        pg.meshtools.exportPLC(poly, namePLC)
+        mesh = pg.meshtools.syscallTetgen(namePLC, quality, area, verbose=verbose)
+
+        try:
+            os.remove(namePLC)
+        except:
+            print("can't remove:", namePLC)
+
+        return mesh
 
 def refineQuad2Tri(mesh, style=1):
     """Refine mesh of quadrangles into a mesh of triangle cells.

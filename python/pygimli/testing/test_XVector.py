@@ -96,6 +96,12 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(sum(2.0 * v), 10)
         self.assertEqual(sum(1.0 / v), 5)
 
+        v2 = np.ones(len(v))* 0.01
+        # check pg * np
+        self.assertEqual(sum(v * v2), 5*0.01)
+        # check np * pg
+        self.assertEqual(sum(v2 * v), 5*0.01)
+
         #v = pg.CVector(5, 1.0)
 
         #self.assertEqual(sum(v + 1), 10)
@@ -298,22 +304,28 @@ class TestRVectorMethods(unittest.TestCase):
 
         np.testing.assert_equal(len(a < b), 10)
         np.testing.assert_equal(len(a > b), 10)
+
+    def testRMatrixIndex(self):
+        A = pg.Matrix(4,4)
+        A[0] = pg.Vector(4,1)
         
+        np.testing.assert_equal(sum(A[0]), 4)
+        
+        A[1,2] = 2.0
+        # np.testing.assert_equal(sum(A[1]), 2)
+        np.testing.assert_equal(A[1,2], 2)
 
+        ## will not work because A[2] refer to A[2]__getItem__ which only can 
+        # return a const reference. use the tuple idx above
+        # A[2][2] = 2.0
+        # np.testing.assert_equal(sum(A[2]), 2)
+        
 if __name__ == '__main__':
-
-    # s = TestRVectorMethods()
-    # pg.setDebug(1)
-    # s.test_IVectorOP()
+    # pg.setDeepDebug(1)
+    # t = TestRVectorMethods()
+    
+    # # t.test_IVectorOP()
+    # t.test_Slices()
+    # t.testRMatrixIndex()
     
     unittest.main()
-
-
-    #suite.addTest(TestRVectorMethods("test_R3VectorIndex"))
-
-    ###suite.addTest(TestRVectorMethods("test_RVectorOP"))
-    ##suite.addTest(TestRVectorMethods("test_IndexAccess"))
-    ###suite.addTest(TestRVectorMethods("test_Slices"))
-
-    #runner = unittest.TextTestRunner()
-    #runner.run(suite)

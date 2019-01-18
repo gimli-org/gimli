@@ -1,5 +1,5 @@
 /******************************************************************************
- *   Copyright (C) 2006-2018 by the GIMLi development team                    *
+ *   Copyright (C) 2006-2019 by the GIMLi development team                    *
  *   Carsten Rücker carsten@resistivity.net                                   *
  *                                                                            *
  *   Licensed under the Apache License, Version 2.0 (the "License");          *
@@ -211,28 +211,23 @@ public:
 
     virtual ~SparseMapMatrix() {}
 
+    /*! Return entity rtti value. */
+    virtual uint rtti() const { return GIMLI_SPARSE_MAP_MATRIX_RTTI; }
+
+    void copy_(const SparseMatrix< double > & S);
+    void copy_(const SparseMatrix< Complex > & S);
+
     void resize(Index rows, Index cols){
         rows_ = rows;
         cols_ = cols;
     }
 
-    /*! Return entity rtti value. */
-    virtual uint rtti() const { return GIMLI_SPARSEMAPMATRIX_RTTI; }
+    inline void insert(const IndexArray & rows, const IndexArray & cols, const RVector & vals) {
+        ASSERT_EQUAL(vals.size(), rows.size())
+        ASSERT_EQUAL(vals.size(), cols.size())
 
-    void copy_(const SparseMatrix< ValueType > & S){
-        clear();
-        cols_ = S.cols();
-        rows_ = S.rows();
-        stype_ = S.stype();
-
-        std::vector < int > colPtr(S.vecColPtr());
-        std::vector < int > rowIdx(S.vecRowIdx());
-        Vector < ValueType > vals(S.vecVals());
-
-        for (Index i = 0; i < S.size(); i++){
-            for (int j = colPtr[i]; j < colPtr[i + 1]; j ++){
-                (*this)[i][rowIdx[j]] = vals[j];
-            }
+        for (Index i = 0; i < vals.size(); i ++){
+            (*this)[rows[i]][cols[i]] = vals[i];
         }
     }
 
@@ -392,8 +387,9 @@ public:
                              );
         }
     }
+    
 
-    /*! Return this * a  */
+    /*! Return SparseMapMatrix: this * a  */
     virtual Vector < ValueType > mult(const Vector < ValueType > & a) const {
         Vector < ValueType > ret(this->rows(), 0.0);
 
@@ -431,7 +427,7 @@ public:
         return ret;
     }
 
-    /*! Return this.T * a */
+    /*! Return SparseMapMatrix this.T * a */
     virtual Vector < ValueType > transMult(const Vector < ValueType > & a) const {
         Vector < ValueType > ret(this->cols(), 0.0);
 
@@ -705,8 +701,8 @@ public:
 
         vals_.resize(nVals);
         stype_ = stype;
-        rows_ = max(rowIdx_) + 1;
-        cols_ = colPtr_.size() - 1;
+        cols_ = max(rowIdx_) + 1;
+        rows_ = colPtr_.size() - 1;
         THROW_TO_IMPL
 //         std::copy(colPtr[0], colPtr[dim], colPtr_[0]);
 //         std::copy(rowIdx[0], rowIdx[nVals - 1], rowIdx_[0]);
@@ -734,10 +730,6 @@ public:
         this->copy_(S);
         return *this;
     }
-
-//     void copy(const SparseMapMatrix< ValueType, Index > & S){
-//         this->copy_(S);
-//     }
 
     #define DEFINE_SPARSEMATRIX_UNARY_MOD_OPERATOR__(OP, FUNCT) \
         void FUNCT(int i, int j, ValueType val){ \
@@ -782,6 +774,8 @@ public:
         return *this;
     }
 
+    virtual uint rtti() const { return GIMLI_SPARSE_CRS_MATRIX_RTTI; }
+
     /*! Return this * a  */
     virtual Vector < ValueType > mult(const Vector < ValueType > & a) const {
         if (a.size() < this->cols()){
@@ -792,7 +786,9 @@ public:
         Vector < ValueType > ret(this->rows(), 0.0);
 
         if (stype_ == 0){
+            // for each row
             for (Index i = 0; i < ret.size(); i++){
+                // iterate through compressed col
                 for (int j = this->vecColPtr()[i]; j < this->vecColPtr()[i + 1]; j ++){
                     ret[i] += a[this->vecRowIdx()[j]] * this->vecVals()[j];
                 }
@@ -833,7 +829,7 @@ public:
         return ret;
     }
 
-    /*! Return this.T * a */
+    /*! Return SparseMatrix this.T * a */
     virtual Vector < ValueType > transMult(const Vector < ValueType > & a) const {
 
         if (a.size() < this->rows()){
@@ -844,7 +840,7 @@ public:
         Vector < ValueType > ret(this->cols(), 0.0);
 
         if (stype_ == 0){
-            for (Index i = 0; i < ret.size(); i++){
+            for (Index i = 0; i < this->rows(); i++){
                 for (int j = this->vecColPtr()[i]; j < this->vecColPtr()[i + 1]; j ++){
                     ret[this->vecRowIdx()[j]] += a[i] * this->vecVals()[j];
                 }
@@ -908,18 +904,18 @@ public:
         return ValueType(0);
     }
 
-    void cleanRow(int i){
-         for (int k = colPtr_[i]; k < colPtr_[i + 1]; k ++){
-            vals_[k] = ValueType(0);
+    void cleanRow(int row){
+        ASSERT_RANGE(row, 0, (int)this->rows())
+         for (int col = colPtr_[row]; col < colPtr_[row + 1]; col ++){
+            vals_[col] = ValueType(0);
          }
     }
 
-    void cleanCol(int i){
-        for (int k = colPtr_[i]; k < colPtr_[i + 1]; k ++){
-            for (int j = colPtr_[rowIdx_[k]]; j < colPtr_[rowIdx_[k] + 1]; j ++){
-                if (rowIdx_[j] == i) {
-                    vals_[j] = ValueType(0);
-                }
+    void cleanCol(int col){
+        ASSERT_RANGE(col, 0, (int)this->cols())
+        for (int i = 0; i < (int)this->rowIdx_.size(); i++){
+            if (rowIdx_[i] == col) {
+                vals_[i] = ValueType(0);
             }
         }
     }
@@ -991,8 +987,8 @@ public:
             colPtr_[row] = k;
         }
         valid_ = true;
-        cols_ = colPtr_.size() - 1;
-        rows_ = max(rowIdx_) + 1;
+        rows_ = colPtr_.size() - 1;
+        cols_ = max(rowIdx_) + 1;
         //** freeing idxMap ist expensive
     }
 
@@ -1046,7 +1042,7 @@ public:
     inline const Vector < ValueType > & vecVals() const { return vals_; }
     inline Vector < ValueType > & vecVals() { return vals_; }
 
-    inline Index size() const { return colPtr_.size() - 1; }
+    inline Index size() const { return rows(); }
     inline Index nVals() const { return vals_.size(); }
     inline Index cols() const { return cols_; }
     inline Index rows() const { return rows_; }
@@ -1093,6 +1089,14 @@ template< typename ValueType >
 void SparseMatrix< ValueType >::copy_(const SparseMapMatrix< double, Index > & S){THROW_TO_IMPL}
 template< typename ValueType >
 void SparseMatrix< ValueType >::copy_(const SparseMapMatrix< Complex, Index > & S){THROW_TO_IMPL}
+
+// /*! Implement specialized type traits in sparsematrix.cpp */
+template <> DLLEXPORT void SparseMapMatrix< double, Index >::copy_(const SparseMatrix<double> & S);
+
+template< typename ValueType, typename Index >
+void SparseMapMatrix< ValueType, Index >::copy_(const SparseMatrix< double > & S){THROW_TO_IMPL}
+template< typename ValueType, typename Index >
+void SparseMapMatrix< ValueType, Index >::copy_(const SparseMatrix< Complex > & S){THROW_TO_IMPL}
 
 
 template < class ValueType >

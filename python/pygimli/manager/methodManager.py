@@ -1,34 +1,37 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""TODO WRITEME"""
+"""Method Manager
+
+Provide the end user interface for method (geophysical) dependent
+modeling and inversion as well as data and model visualization.
+"""
 
 import numpy as np
-
 import pygimli as pg
 
 
 class MethodManager(object):
     """General manager to maintenance a measurement method.
 
-    Method Manager are the interface to End-user interaction and can be seen as
-    basic but complete application classes which manage all tasks of
+    Method Manager are the interface to end-user interaction and can be seen as
+    simple but complete application classes which manage all tasks of
     geophysical data processing.
 
-    The method manager holds one instance of a forward operator and a
+    The method manager holds one instance of a forward operator and an
     appropriate inversion framework to handle modeling and data inversion.
 
-    Method Manager also import and export of data and results,
+    Method Manager also helps with data import and export,
     handle measurement data error estimation as well as model and data
     visualization.
 
     Attributes
     ----------
     verbose : bool
-        Give verbose output
+        Give verbose output.
 
     debug : bool
-        Give debug output
+        Give debug output.
 
     fop : :py:mod:`pygimli.frameworks.Modelling`
         Forward Operator instance .. knows the physics.
@@ -40,14 +43,14 @@ class MethodManager(object):
 
     inv : :py:mod:`pygimli.frameworks.Inversion`.
         Inversion framework instance .. knows the reconstruction approach.
-        The attribute inv is initialized by
+        The attribute inv is initialized by default but can be changed 
+        overwriting
         :py:mod:`pygimli.manager.MethodManager.initInversionFramework`
     """
     def __init__(self, **kwargs):
         """Constructor."""
         self._verbose = kwargs.pop('verbose', False)
         self._debug = kwargs.pop('debug', False)
-        self._dataToken = 'nan'
 
         ### The inversion framework
         self._fw = None 
@@ -64,6 +67,7 @@ class MethodManager(object):
 
 
         # maybe obsolete
+        self._dataToken = 'nan' # check if used?
         self.figs = {}
         self.errIsAbsolute = False
 
@@ -129,6 +133,14 @@ class MethodManager(object):
         """Return error values from a given DataContainer."""
         return data('err')
 
+    def reinitForwardOperator(self, **kwargs):
+        """Reinitialize the forward operator.
+        
+        Sometimes it can be useful to reinitialize the forward operator.
+        Keyword arguments will be forwarded to 'self.createForwardOperator'.
+        """
+        self._initForwardOperator(**kwargs)
+            
     def _initForwardOperator(self, **kwargs):
         """Initialize or re-initialize the forward operator.
 
@@ -335,13 +347,11 @@ class MethodManager(object):
 
     def showFit(self, ax=None, **kwargs):
         """Show the last inversion date and response."""
-        ax = self.showData(ax=ax,
-                           data=self.inv.dataVals,
+        ax = self.showData(data=self.inv.dataVals,
                            error=self.inv.errorVals, 
-                           label='Data', **kwargs)
-        ax = self.showData(ax=ax,
-                           data=self.inv.response,
-                           label='Response', **kwargs)
+                           label='Data', ax=ax, **kwargs)
+        ax = self.showData(data=self.inv.response,
+                           label='Response', ax=ax, **kwargs)
 
         if not kwargs.pop('hideFittingAnnotation', False):
             ax.text(0.01, 1.0025, "rrms: %.2g, $\chi^2$: %.2g" %
@@ -433,7 +443,10 @@ class MeshMethodManager(MethodManager):
         """Constructor."""
         super(MeshMethodManager, self).__init__(**kwargs)
 
-        self.mesh = None
+    def createInversionFramework(self, **kwargs):
+        """
+        """
+        return pg.frameworks.MeshInversion(**kwargs)
 
     def createMesh(self, **kwargs):
         """
@@ -441,12 +454,6 @@ class MeshMethodManager(MethodManager):
         print(**kwargs)
         raise Exception("Implement me!")
         pass
-
-    def simulate(self, mesh, model, **kwargs):
-        """Run a simulation aka the forward task.
-        """
-        print(mesh, model)
-        pg.critical('Need to be implemented in derived class')
 
     def invert(self, dataVals=None, errVals=None, mesh=None, **kwargs):
         """Run the full inversion.
@@ -460,60 +467,17 @@ class MeshMethodManager(MethodManager):
         ----------
 
         """
-        if mesh is not None:
-            self.setMesh(mesh)
-
-        if self.mesh is None:
-            self.createMesh(depth=kwargs.pop('depth', None),
-                            quality=kwargs.pop('quality', 34.0),
-                            maxCellArea=kwargs.pop('maxCellArea', 0.0),
-                            paraDX=kwargs.pop('paraDX', 0.3))
-
-        zWeight = kwargs.pop('zWeight', 0.7)
-
-        self._fw.fop.regionManager().setZWeight(zWeight)
+        if mesh is None:
+            mesh = self.createMesh(depth=kwargs.pop('depth', None),
+                                   quality=kwargs.pop('quality', 34.0),
+                                   maxCellArea=kwargs.pop('maxCellArea', 0.0),
+                                   paraDX=kwargs.pop('paraDX', 0.3))
 
         return super(MeshMethodManager, self).invert(dataVals=dataVals,
                                                      errVals=errVals,
+                                                     mesh=mesh,
                                                      **kwargs)
-        
-
-    def setMesh(self, mesh, refine=True):
-        """Set the internal mesh for this Manager.
-
-        Inject the mesh in the internal fop und inv.
-
-        Initialize RegionManager.
-        For more than two regions the first is assumed to be background.
-
-        Optional the forward mesh can be refined for higher numerical accuracy.
-
-        Parameters
-        ----------
-
-        DOCUMENTME!!!
-
-        """
-        if isinstance(mesh, str):
-            mesh = pg.load(mesh)
-
-        if self.verbose:
-            print(mesh)
-
-        self.mesh = pg.Mesh(mesh)
-        self.mesh.createNeighbourInfos()
-
-        self.fop.setMesh(self.mesh)
-        self.fop.regionManager().setConstraintType(1)
-
-        if self.fop.regionManager().regionCount() > 1:
-            self.fop.regionManager().region(1).setBackground(True)
-#            self.fop.regionManager().regions().begin().second.setBackground(1)
-
-        self.fop.createRefinedForwardMesh(refine)
-        self.inv.setForwardOperator(self.fop)  # necessary? CR: check this
-
-
+   
 
 
 

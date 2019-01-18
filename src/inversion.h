@@ -1,5 +1,5 @@
 /******************************************************************************
- *   Copyright (C) 2006-2018 by the GIMLi development team                    *
+ *   Copyright (C) 2006-2019 by the GIMLi development team                    *
  *   Carsten Rücker carsten@resistivity.net                                   *
  *   Thomas Günther thomas@resistivity.net                                    *
  *                                                                            *
@@ -258,7 +258,6 @@ public:
             std::cerr << WHERE_AM_I << " Warning error contains zero values, reset to default. " << std::endl;
             error_ = errorDefault_();
         }
-
 
         dataWeight_ = 1.0 / tD_->error(fixZero(data_, TOLERANCE), error_);
 

@@ -9,6 +9,45 @@ import numpy as np
 
 class TestFiniteElementBasics(unittest.TestCase):
 
+    def test_Helmholtz(self):
+        """
+            d² u / d x² + k u + f = 0
+            k = 2
+            a) P1(exact)
+                u = x
+                f = -2x
+            b) P2(exact)
+                u = x*x
+                f = -(2 + 2x*x)
+        """
+        h = np.pi/2 / 21
+        x = np.arange(0.0, np.pi/2, h)
+        mesh = pg.createGrid(x)
+
+        ### test a)
+        k = 2.0
+        u = lambda _x: _x
+        f = lambda _x: -(k * u(_x))
+
+        x = pg.x(mesh)
+        dirichletBC = [[1, u(min(x))], [2, u(max(x))]]
+        uFEM = pg.solve(mesh, a=1, b=k, f=f(x), bc={'Dirichlet': dirichletBC})
+        np.testing.assert_allclose(uFEM, u(x))
+
+        ### test b)
+        u = lambda _x: _x * _x
+        f = lambda _x: -(2. + k *u(_x))
+
+        mesh = mesh.createP2()
+        x = pg.x(mesh)
+        dirichletBC = [[1, u(min(x))], [2, u(max(x))]]
+        uFEM = pg.solve(mesh, a=1, b=k, f=f(x), bc={'Dirichlet': dirichletBC})
+        np.testing.assert_allclose(uFEM, u(x), atol=1e-6)
+
+        # pg.plt.plot(x, uFEM, '.')
+        # pg.plt.plot(pg.sort(x), u(pg.sort(x)))
+        # pg.wait()
+    
     def test_Neumann(self):
         """
         """
@@ -123,6 +162,7 @@ class TestFiniteElementBasics(unittest.TestCase):
         #TODO 3D Tet
 
 if __name__ == '__main__':
+    
     # test = TestFiniteElementBasics()
     # test.test_Neumann()
     # test.test_Dirichlet()

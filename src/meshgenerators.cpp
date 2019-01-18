@@ -1,5 +1,5 @@
 /******************************************************************************
- *   Copyright (C) 2008-2018 by the GIMLi development team                    *
+ *   Copyright (C) 2008-2019 by the GIMLi development team                    *
  *   Carsten Rücker carsten@resistivity.net                                   *
  *                                                                            *
  *   Licensed under the Apache License, Version 2.0 (the "License");          *
@@ -24,7 +24,6 @@
 namespace GIMLI{
 
 Mesh createGrid(const RVector & x, int marker){
-    __MS(x  << " " << marker)
     Mesh mesh(1);
     mesh.createGrid(x);
     mesh.setCellMarkers(RVector(mesh.cellCount(), marker));

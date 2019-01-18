@@ -360,11 +360,25 @@ def tapeMeasureToCoordinates(tape, pos):
 def interpolate(*args, **kwargs):
     r"""Interpolation convinience function.
 
-    Convinience function to interpolate different kind of data.
+    Convenience function to interpolate different kind of data.
     Currently supported interpolation schemes are:
 
+    * Interpolate mesh based data from one mesh to another
+     (syntactic sugar for the core based interpolate (see below))
+
+      Parameters:
+        args: :gimliapi:`GIMLI::Mesh`, :gimliapi:`GIMLI::Mesh`, iterable
+            `outData = interpolate(outMesh, inMesh, vals)`
+            Interpolate values based on inMesh to outMesh.
+            Values can be of length inMesh.cellCount() interpolated to 
+            outMesh.cellCenters() or inMesh.nodeCount() which are interpolated tp 
+            outMesh.positions().            
+            
+      Returns:
+        Interpolated values.
+
     * Mesh based values to arbitrary points, based on finite element
-      interpolation (c++ core)
+      interpolation (from gimli core).
 
       Parameters:
         args: :gimliapi:`GIMLI::Mesh`, ...
@@ -375,16 +389,6 @@ def interpolate(*args, **kwargs):
         `interpolate(srcMesh, destMesh)`
             All data from inMesh are interpolated to outMesh
 
-      Returns:
-        Interpolated values
-
-    * Mesh based to map data from one mesh to another (syntactic sugar)
-
-      Parameters:
-        args: :gimliapi:`GIMLI::Mesh`, :gimliapi:`GIMLI::Mesh`, iterable
-            `outData = interpolate(outMesh, inMesh, vals)`
-            Data values vals can be scalar or vector for all nodes or cells in inMesh.
-            
       Returns:
         Interpolated values
 

@@ -17,7 +17,7 @@ Geoelectrical modeling example in 2.5D. CR"""
 # The source term is 3 dimensional but the distribution of the electrical
 # conductivity :math:`\sigma(x,y)` should by 2 dimensional so we need a
 # Fourier-Cosine-Transform from :math:`u(x,y,z) \mapsto u(x,y,k)` with the
-# wavenumber :math:`k`
+# wave number :math:`k`. :math:`D^(a)(u(x,y,z)) \mapsto i^|a|k^a u(x,y)`
 #
 # .. math::
 #     \nabla\cdot( \sigma \nabla u ) - \sigma k^2 u
@@ -39,12 +39,31 @@ from pygimli.mplviewer import drawStreams
 
 
 def uAnalytical(p, sourcePos, k):
-    """Analytical solution for one source location."""
+    """Calculates the analytical solution for the 2.5D geoelectrical problem.
+    
+    Solves the 2.5D geoelectrical problem for one wave number k.
+    It calculates the normalized (for injection current 1 A and sigma=1 S/m) 
+    potential at position p for a current injection at position sourcePos.
+    Injection at the subsurface is recognized via mirror sources along the
+    surface at depth=0.
+    
+    Parameters
+    ----------
+    p : pg.Pos
+        Position for the sought potential
+    sourcePos : pg.Pos
+        Current injection position.
+    k : float
+        Wave number 
+
+    Returns
+    -------
+    u : float
+        Solution u(p)
+    """
     r1A = (p - sourcePos).abs()
     # Mirror on surface at depth=0
     r2A = (p - pg.RVector3(1.0, -1.0, 1.0) * sourcePos).abs()
-
-    # need rho here!!!!!!!!!!!!!!!!!!!!!!!!!!!1
 
     if r1A > 1e-12 and r2A > 1e-12:
         return (pg.besselK0(r1A * k) + pg.besselK0(r2A * k)) / (2.0 * np.pi)
@@ -66,14 +85,13 @@ def mixedBC(boundary, userData):
     sourcePos = userData['sourcePos']
     k = userData['k']
     r1 = boundary.center() - sourcePos
+    
     # Mirror on surface at depth=0
     r2 = boundary.center() - pg.RVector3(1.0, -1.0, 1.0) * sourcePos
     r1A = r1.abs()
     r2A = r2.abs()
 
     n = boundary.norm()
-    # need rho here !!!!!!!!!!!!!!!!!!!!!!!!!!!1
-
     if r1A > 1e-12 and r2A > 1e-12:
         return k * ((r1.dot(n)) / r1A * pg.besselK1(r1A * k) +
                     (r2.dot(n)) / r2A * pg.besselK1(r2A * k)) / \
@@ -85,17 +103,17 @@ def mixedBC(boundary, userData):
 ###############################################################################
 #
 #
-
-def pointSource(cell, f, userData):
+def pointSource(mesh, source):
     """Define function for the current source term.
 
     :math:`\delta(x-pos), \int f(x) \delta(x-pos)=f(pos)=N(pos)`
     Right hand side entries will be shape functions(pos)
     """
-    sourcePos = userData['sourcePos']
-
-    if cell.shape().isInside(sourcePos):
-        f.setVal(cell.N(cell.shape().rst(sourcePos)), cell.ids())
+    rhs = pg.RVector(mesh.nodeCount())
+    
+    cell = mesh.findCell(source)
+    rhs.setVal(cell.N(cell.shape().rst(source)), cell.ids())
+    return rhs
 
 grid = pg.createGrid(x=np.linspace(-10.0, 10.0, 41),
                      y=np.linspace(-15.0,  0.0, 31))
@@ -107,12 +125,12 @@ sourcePosB = [+5.0, -4.0]
 
 k = 1e-3
 sigma = 1
-u = solve(grid, a=sigma, b=sigma * k*k, f=pointSource,
+u = solve(grid, a=sigma, b=-sigma * k*k, f=pointSource(grid, sourcePosA),
           bc={'Robin': [[1,2,4], mixedBC]},
           userData={'sourcePos': sourcePosA, 'k': k},
           verbose=True)
 
-u -= solve(grid, a=sigma, b=sigma * k*k, f=pointSource,
+u -= solve(grid, a=sigma, b=-sigma * k*k, f=pointSource(grid, sourcePosB),
            bc={'Robin': ['*', mixedBC]},
            userData={'sourcePos': sourcePosB, 'k': k},
            verbose=True)

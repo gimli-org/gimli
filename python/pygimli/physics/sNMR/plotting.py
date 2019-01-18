@@ -34,7 +34,7 @@ from pygimli.mplviewer import drawModel1D
 #     except Exception as e:
 #         print(e)
 #
-#     ax.set_ylabel('Depth [m]')
+#     ax.set_ylabel('Depth (m)')
 #     ax.set_xlabel(xlabel)
 #     ax.set_ylim(pz[-1], pz[0])
 #     ax.grid(True)

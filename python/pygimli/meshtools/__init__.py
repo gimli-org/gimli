@@ -22,7 +22,8 @@ from .mesh import (createMesh, createParaMesh, createParaMesh2DGrid,
 from .polytools import createParaDomain2D  # keep for backward compatibility
 from .polytools import (createCircle, createLine, createParaMeshPLC,
                         createPolygon, createRectangle, createWorld, mergePLC,
-                        readPLC, exportPLC, writePLC)
+                        createCylinder, createCube,
+                        readPLC, exportPLC, writePLC, syscallTetgen)
 from .quality import (quality)
 
 from .mapping import (nodeDataToCellData,

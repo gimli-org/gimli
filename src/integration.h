@@ -1,5 +1,5 @@
 /******************************************************************************
- *   Copyright (C) 2006-2018 by the GIMLi development team                    *
+ *   Copyright (C) 2006-2019 by the GIMLi development team                    *
  *   Carsten Rücker carsten@resistivity.net                                   *
  *                                                                            *
  *   Licensed under the Apache License, Version 2.0 (the "License");          *
@@ -29,10 +29,10 @@ public:
     friend class Singleton< IntegrationRules >;
 
     /*! Return Gauss-Legendre quadrature point upto order <10. */
-    inline const R3Vector & gauAbscissa(uint order) const { return gauAbscissa_[order]; }
-
+    const R3Vector & gauAbscissa(Index order) const;
+    
     /*! Return Gauss-Legendre quadrature weights upto order <10. */
-    inline const RVector & gauWeights(uint order) const { return gauWeights_[order]; }
+    const RVector & gauWeights(Index order) const;
 
     /*!
      * Generic quadrature positions for a triangle based on Gauss-Legendre quadrature
@@ -40,32 +40,33 @@ public:
      Gauss Legendre quadrature over a triangle.
      J. Indian Inst. Sci., Sept.-Oct. 2004, 84, 183-188
     */
-    inline const R3Vector & triGLAbscissa(uint order) const { return triGLAbscissa_[order]; }
+    const R3Vector & triGLAbscissa(Index order) const;
+
     /*!
      * Generic quadrature weights for a triangle based on Gauss-Legendre quadrature
      H.T. RATHOD, K. V. NAGARAJA, B. VENKATESUDU AND N. L. RAMESH.
      Gauss Legendre quadrature over a triangle.
      J. Indian Inst. Sci., Sept.-Oct. 2004, 84, 183-188
     */
-    inline const RVector & triGLWeights(uint order) const { return triGLWeights_[order]; }
+    const RVector & triGLWeights(Index order) const;
 
-    inline const R3Vector & edgAbscissa(uint order) const { return edgAbscissa_[order]; }
-    inline const RVector & edgWeights(uint order) const { return edgWeights_[order]; }
+    const R3Vector & edgAbscissa(Index order) const;
+    const RVector & edgWeights(Index order) const;
 
-    inline const R3Vector & triAbscissa(uint order) const { return triAbscissa_[order]; }
-    inline const RVector & triWeights(uint order) const { return triWeights_[order]; }
+    const R3Vector & triAbscissa(Index order) const;
+    const RVector & triWeights(Index order) const;
 
-    inline const R3Vector & tetAbscissa(uint order) const { return tetAbscissa_[order]; }
-    inline const RVector & tetWeights(uint order) const { return tetWeights_[order]; }
+    const R3Vector & tetAbscissa(Index order) const;
+    const RVector & tetWeights(Index order) const;
 
-    inline const R3Vector & quaAbscissa(uint order) const { return quaAbscissa_[order]; }
-    inline const RVector & quaWeights(uint order) const { return quaWeights_[order]; }
+    const R3Vector & quaAbscissa(Index order) const;
+    const RVector & quaWeights(Index order) const;
 
-    inline const R3Vector & hexAbscissa(uint order) const { return hexAbscissa_[order]; }
-    inline const RVector & hexWeights(uint order) const { return hexWeights_[order]; }
+    const R3Vector & hexAbscissa(Index order) const;
+    const RVector & hexWeights(Index order) const;
 
-    inline const R3Vector & priAbscissa(uint order) const { return priAbscissa_[order]; }
-    inline const RVector & priWeights(uint order) const { return priWeights_[order]; }
+    const R3Vector & priAbscissa(Index order) const;
+    const RVector & priWeights(Index order) const;
     /*!
      * Return Gauss-Legendre quadrature positions for a given shape of the \ref MeshEntity upto order 10
      */

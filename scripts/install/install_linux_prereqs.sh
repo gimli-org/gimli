@@ -10,6 +10,9 @@ case "$(grep "ID=" /etc/os-release)" in
         *"arch"*)
             echo "Arch system found"
         ;;
+        *"manjaro"*)
+            echo "Manjaro system found"
+        ;;
         *"ubuntu"*)
             echo "Ubuntu system found"
         ;;

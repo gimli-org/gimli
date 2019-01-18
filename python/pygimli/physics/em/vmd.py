@@ -52,7 +52,6 @@ class VMDModelling(Block1DModelling):
 
         # resistivity properties
         self.setRegionProperties(1, startModel=np.median(rhoa), trans='log')
-
         return super(VMDModelling, self).createStartModel()
         
     def response_mt(self, par, i=0):
@@ -219,7 +218,23 @@ class VMDTimeDomainModelling(VMDModelling):
         if rxArea is None:
             self.rxArea = txArea
         else:
-            self.rxArea = rxArea
+            self.rxarea = rxarea
+
+    def createStartModel(self, rhoa, nLayer, thickness=None):
+        r"""Create suitable starting model.
+
+            Create suitable starting model based on median apparent resistivity
+            values and skin depth approximation.
+        """
+        res = np.ones(nLayer) * pg.median(rhoa)
+        if thickness is None:
+            skinDepth = np.sqrt(max(self.t) * pg.median(rhoa)) * 500
+            thk = np.arange(nLayer) / sum(np.arange(nLayer)) * skinDepth / 2.
+            thk = thk[1:]
+        else:
+            thk = np.ones(nLayer-1) * thickness
+        self.setStartModel(pg.cat(thk, res))
+        return self.startModel()
 
     def response_mt(self, par, i=0):
         """

@@ -32,6 +32,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" ST
     set(CMAKE_CXX_FLAGS_RELEASE "-O2 -pipe -ansi -Wall -Wno-long-long -Wno-unused-result -Wno-unused-variable")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-unused-value -Wno-strict-aliasing -Wno-unused-local-typedefs")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-int-in-bool-context")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-class-memaccess")
 
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -p -O2 -ansi -pedantic -fno-omit-frame-pointer -Wall")
 
@@ -39,7 +40,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" ST
         set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-deprecated-declarations -Wno-class-memaccess")
         set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-class-memaccess") # new since gcc.8 maybe need to be checked
         set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-parentheses") # from boost since gcc.8 maybe need to be checked
-        
+        set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-attributes") # from gcc-8.2 + boost
     endif()
 
     if (NOT WIN32 AND ASAN)
@@ -178,12 +179,12 @@ if (NOT USE_BOOST_THREAD)
     if (NOT WIN32)
         set (USE_BOOST_THREAD FALSE)
     else()
-        set (USE_BOOST_THREAD TRUE)
+        set (USE_BOOST_THREAD FALSE)
     endif()
 endif()
 
-if (USE_BOOST_THREAD)
-        message(STATUS "Trying to guess boost installation:")
+if (YES)
+    message(STATUS "Trying to guess boost installation:")
     if (NOT Boost_INCLUDE_DIR)
         message(STATUS "no BOOST_INCLUDE_DIR")
         if (BOOST_ROOT)
@@ -208,31 +209,13 @@ if (USE_BOOST_THREAD)
         message(STATUS "BOOST_ROOT, ${BOOST_ROOT}")
     endif(NOT Boost_INCLUDE_DIR)
 
+    message(STATUS "BOOST_ROOT, ${BOOST_ROOT}")
     message(STATUS "Boost_INCLUDE_DIR, ${Boost_INCLUDE_DIR}")
 
     if (USE_BOOST_THREAD)
         find_package(Boost 1.46.0 COMPONENTS system thread REQUIRED)
         link_directories(${BOOST_LIBRARYDIR})
     endif()
-
-    if (Boost_INCLUDE_DIR)
-        message(STATUS "boost include: ${Boost_INCLUDE_DIR}")
-        include_directories(${Boost_INCLUDE_DIR})
-        set (CMAKE_REQUIRED_INCLUDES ${Boost_INCLUDE_DIR})
-            check_include_file_cxx(boost/interprocess/managed_shared_memory.hpp HAVE_BOOST_INTERPROCESS_MANAGED_SHARED_MEMORY_HPP
-                            HINT ${Boost_INCLUDE_DIR})
-            check_include_file_cxx(boost/bind.hpp BOOST_BIND_FOUND
-                            HINT ${Boost_INCLUDE_DIR})
-            set(BOOST_BIND_FOUND ON)
-        if (HAVE_BOOST_INTERPROCESS_MANAGED_SHARED_MEMORY_HPP)
-            message( STATUS "HAVE_BOOST_INTERPROCESS_MANAGED_SHARED_MEMORY_HPP ${HAVE_BOOST_INTERPROCESS_MANAGED_SHARED_MEMORY_HPP} ${Boost_INCLUDE_DIR}")
-            option (USE_IPC "Use support for interprocess communication" ON)
-        else()
-            message( "HAVE_BOOST_INTERPROCESS_MANAGED_SHARED_MEMORY_HPP 0 ${HAVE_BOOST_INTERPROCESS_MANAGED_SHARED_MEMORY_HPP} ${Boost_INCLUDE_DIR}")
-            set(USE_IPC  OFF)
-            set(HAVE_BOOST_INTERPROCESS_MANAGED_SHARED_MEMORY_HPP 0 )
-        endif()
-    endif (Boost_INCLUDE_DIR)
 
     mark_as_advanced(Boost_INCLUDE_DIR BOOST_ROOT)
 endif()
@@ -305,13 +288,22 @@ else()
 endif()
 
 find_package(PythonLibs)
-
 find_python_module(numpy)
 
 if (Boost_PYTHON_LIBRARY)
     #set (Boost_PYTHON_LIBRARY ${Boost_PYTHON_LIBRARY})
 else()
-    #find_package(Boost 1.46.0 COMPONENTS python)
+    message(STATUS "searching for boost-python ...")
+    if (WIN32)
+        set(bp_version "${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}-mt")
+        find_package(Boost 1.46.0 COMPONENTS  "python${bp_version}")
+        if (NOT Boost_PYTHON_FOUND)
+            set(BOOST_FOUND TRUE)
+            set(Boost_PYTHON_FOUND TRUE})
+            set(Boost_PYTHON_LIBRARY ${BOOST_ROOT}/lib/libboost_python${bp_version}.dll)
+        endif()
+        
+    endif()
 
     # the name for py3 boost-python library lacks probably py3 suffix, which is different for different OS
 

@@ -105,7 +105,7 @@ def patchValMap(vals, xvec=None, yvec=None, ax=None, cMin=None, cMax=None,
         ax = plt.subplots()[1]
 
     recs = []
-    
+
     circular = kwargs.pop('circular', False)
     if circular:
         recs = [None] * len(xvec)
@@ -115,27 +115,26 @@ def patchValMap(vals, xvec=None, yvec=None, ax=None, cMin=None, cMax=None,
             xyMap = {}
             for i, y in enumerate(yvec):
                 if y not in xyMap:
-                     xyMap[y] = []
+                    xyMap[y] = []
                 xyMap[y].append(i)
 
-            maxR = max(ymap.values())
+            # maxR = max(ymap.values())  # what's that for? not used
             dR = 1 / (len(ymap.values())+1)
-            
-            dOff = np.pi/2
+            # dOff = np.pi / 2  # what's that for? not used
 
             for y, xIds in xyMap.items():
                 r = 1. - dR*(ymap[y]+1)
-                # ax.plot(r * np.cos(xvec[xIds]), 
+                # ax.plot(r * np.cos(xvec[xIds]),
                 #         r * np.sin(xvec[xIds]), 'o')
 
                 # print(y, ymap[y])
                 for i in xIds:
                     phi = xvec[i]
-                    x = r * np.cos(phi)
+                    # x = r * np.cos(phi)  # what's that for? not used
                     y = r * np.sin(phi)
 
                     dPhi = (xvec[1] - xvec[0])
-                   
+
                     recs[i] = Wedge((0., 0.), r + dR/1.5,
                                     (phi - dPhi)*360/(2*np.pi),
                                     (phi + dPhi)*360/(2*np.pi),
@@ -143,7 +142,7 @@ def patchValMap(vals, xvec=None, yvec=None, ax=None, cMin=None, cMax=None,
                                     zorder=1+r)
                     # if i < 5:
                     #     ax.text(x, y, str(i))
-                   # #pg.wait()
+                    # pg.wait()
         else:
             raise("Implementme")
     else:
@@ -151,11 +150,11 @@ def patchValMap(vals, xvec=None, yvec=None, ax=None, cMin=None, cMax=None,
             ymap = {xy: ii for ii, xy in enumerate(np.unique(yvec))}
             for i in range(len(vals)):
                 recs.append(Rectangle((xvec[i] - dx / 2, ymap[yvec[i]] - 0.5),
-                                    dx, 1))
+                                      dx, 1))
         else:
             for i in range(len(vals)):
                 recs.append(Rectangle((xvec[i] - dx / 2, yvec[i] - dy / 2),
-                                    dx, dy))
+                                      dx, dy))
         ax.set_xlim(min(xvec) - dx / 2, max(xvec) + dx / 2)
         ax.set_ylim(len(ymap) - 0.5, -0.5)
 
@@ -180,7 +179,7 @@ def patchValMap(vals, xvec=None, yvec=None, ax=None, cMin=None, cMax=None,
     pp.set_norm(norm)
     pp.set_array(vals)
     pp.set_clim(cMin, cMax)
-    
+
     updateAxes_(ax)
     cbar = kwargs.pop('colorBar', True)
 
@@ -254,6 +253,8 @@ def patchMatrix(mat, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
     pp.set_linewidths(0.0)
     if 'cmap' in kwargs:
         pp.set_cmap(kwargs.pop('cmap'))
+    if 'cMap' in kwargs:
+        pp.set_cmap(kwargs.pop('cMap'))
     pp.set_norm(norm)
     pp.set_array(np.array(vals))
     pp.set_clim(cMin, cMax)
@@ -290,12 +291,22 @@ def plotMatrix(mat, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
         logarithmic colour scale [min(A)>0]
     label : string
         colorbar label
+
+    Returns
+    -------
+    ax : matplotlib axes object
+        axes object
+    cb : matplotlib colorbar
+        colorbar object
     """
     if xmap is None:
         xmap = {i: i for i in range(mat.shape[0])}
     if ymap is None:
         ymap = {i: i for i in range(mat.shape[1])}
-    mat_ = np.ma.masked_where(mat == 0.0, mat, False)
+    if isinstance(mat, np.ma.MaskedArray):
+        mat_ = mat
+    else:
+        mat_ = np.ma.masked_where(mat == 0.0, mat, False)
 
     if cMin is None:
         cMin = np.min(mat_)
@@ -313,11 +324,14 @@ def plotMatrix(mat, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
     im = ax.imshow(mat_, norm=norm, interpolation='nearest')
     if 'cmap' in kwargs:
         im.set_cmap(kwargs.pop('cmap'))
+    if 'cMap' in kwargs:
+        im.set_cmap(kwargs.pop('cMap'))
     ax.set_aspect(kwargs.pop('aspect', 1))
     cbar = None
     if kwargs.pop('colorBar', True):
+        ori = kwargs.pop('orientation', 'horizontal')
         cbar = pg.mplviewer.createColorBar(im, cMin=cMin, cMax=cMax, nLevs=5,
-                                           label=label)
+                                           label=label, orientation=ori)
     ax.grid(True)
     xt = np.unique(ax.get_xticks().clip(0, len(xmap) - 1))
     yt = np.unique(ax.get_xticks().clip(0, len(ymap) - 1))
@@ -342,6 +356,7 @@ def plotVecMatrix(xvec, yvec, vals, full=False, **kwargs):
     pg.deprecated('plotVecMatrix', 'showVecMatrix')
     return showVecMatrix(xvec, yvec, vals, full, **kwargs)
 
+
 def showVecMatrix(xvec, yvec, vals, full=False, **kwargs):
     """Plot three vectors as matrix.
 
@@ -364,6 +379,13 @@ def showVecMatrix(xvec, yvec, vals, full=False, **kwargs):
             Lgarithmic colour scale [min(A)>0]
         * label : string
             Colorbar label
+
+    Returns
+    -------
+    ax : matplotlib axes object
+        axes object
+    cb : matplotlib colorbar
+        colorbar object
     """
     A, xmap, ymap = generateMatrix(xvec, yvec, vals, full=full)
     return plotMatrix(A, xmap, ymap, **kwargs)
@@ -385,7 +407,7 @@ def plotDataContainerAsMatrix(data, x=None, y=None, v=None, **kwargs):
     if len(x) != len(y) or len(x) != len(v):
         raise Exception("lengths x/y/v not matching: {:d}!={:d}!={:d}".format(
             len(x), len(y), len(v)))
-    return plotVecMatrix(x, y, v, **kwargs)
+    return showVecMatrix(x, y, v, **kwargs)
 
 
 def drawSensorAsMarker(ax, data):

@@ -1,5 +1,5 @@
 /******************************************************************************
- *   Copyright (C) 2006-2018 by the GIMLi development team                    *
+ *   Copyright (C) 2006-2019 by the GIMLi development team                    *
  *   Carsten Rücker carsten@resistivity.net                                   *
  *                                                                            *
  *   Licensed under the Apache License, Version 2.0 (the "License");          *
@@ -33,7 +33,6 @@ DataContainer::DataContainer(const std::string & fileName,
                              bool removeInvalid){
     initDefaults();
     this->load(fileName, sensorIndicesFromOne, removeInvalid);
-    //std::cout << "DataContainer(const std::string & fileName){" << std::endl;
 }
 
 DataContainer::DataContainer(const std::string & fileName,
@@ -43,7 +42,7 @@ DataContainer::DataContainer(const std::string & fileName,
     initDefaults();
 
     std::vector < std::string > tokenList = getSubstrings(sensorTokens);
-    for (Index i=0 ; i < tokenList.size() ; i++) registerSensorIndex(tokenList[i]);
+    for (Index i=0; i < tokenList.size(); i++) registerSensorIndex(tokenList[i]);
     this->load(fileName, sensorIndicesFromOne, removeInvalid);
     //std::cout << "DataContainer(const std::string & fileName){" << std::endl;
 }
@@ -183,7 +182,9 @@ long DataContainer::createSensor(const RVector3 & pos, double tolerance){
 
 void DataContainer::registerSensorIndex(const std::string & token) {
     dataSensorIdx_.insert(token);
-    this->set(token, RVector(this->size(), -1.0));
+    if (!this->exists(token)){
+        this->set(token, RVector(this->size(), -1.0));
+    }
 }
 
 bool DataContainer::isSensorIndex(const std::string & token) const {
@@ -795,7 +796,7 @@ void DataContainer::removeUnusedSensors(bool verbose){
 
 void DataContainer::setSensorPosition(uint i, const RVector3 & pos) {
     if (i >= sensorPoints_.size()) {
-        std::cout << "Warning! .. sensor count was " << sensorCount() << " resize to " << i+1 << std::endl;
+        // std::cout << "Warning! .. sensor count was " << sensorCount() << " resize to " << i+1 << std::endl;
         sensorPoints_.resize((i+1));
     }
     sensorPoints_[i] = pos;
@@ -841,35 +842,36 @@ void DataContainer::sortSensorsX(bool incX, bool incY, bool incZ){
     }
 }
 
-bool ididLesser(const std::pair < Index, Index > & a, const std::pair < Index, Index > & b){
-    return a.first < b.first;
-}
-
-void DataContainer::sortSensorsIndex(){
-
-    std::vector < std::pair < Index, Index > > permSens(this->size());
+IndexArray DataContainer::dataIndex(){
+    IndexArray ids(this->size());
     Index nSensorsIdx = dataSensorIdx_.size();
-
-    for (uint i = 0; i < this->size(); i ++) {
+    for (Index i = 0; i < this->size(); i ++) {
         Index sensorUniqueID = 0;
         Index count = nSensorsIdx;
         for (std::set< std::string >::iterator it = dataSensorIdx_.begin(); it!= dataSensorIdx_.end(); it ++){
             count --;
             sensorUniqueID += ((Index)dataMap_[*it][i] + 1) * (Index)powInt(this->sensorCount(), count);
         }
-        permSens[i] = std::pair< Index, Index >(sensorUniqueID, i);
+        ids[i] = sensorUniqueID;
     }
+    return ids;
+}
+    
+IndexArray DataContainer::sortSensorsIndex(){
 
-    std::sort(permSens.begin(), permSens.end(), ididLesser);
+    IndexArray ids(this->dataIndex());
 
-    IndexArray perm(this->size());
-    for (uint i = 0; i < perm.size(); i ++){
-        perm[i] = permSens[i].second ;
-    }
+    // use IndexArray instead of std::vector would be nice but need some more advanced iterator definition -> TODO
+    std::vector< Index > perm(this->size());
+    std::iota(perm.begin(), perm.end(), 0);
+    
+    auto idxComp = [&ids](Index i1, Index i2) { return ids[i1] < ids[i2]; };
+    std::sort(perm.begin(), perm.end(), idxComp);
 
     for (std::map< std::string, RVector >::iterator it = dataMap_.begin(); it!= dataMap_.end(); it ++){
         it->second = it->second(perm);
     }
+    return perm;
 }
 
 void DataContainer::markInvalidSensorIndices(){

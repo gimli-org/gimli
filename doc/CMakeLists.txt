@@ -57,37 +57,30 @@ foreach(file ${RSTFILES})
     )
 endforeach()
 
-add_custom_command(
-    COMMAND
-        cmake -E copy_if_different ${CMAKE_SOURCE_DIR}/doc/conf.py ${SPHINX_SRCBUILD_DIR}/doc
-    TARGET
-        sphinx_check_sources
-    VERBATIM
-        COMMENT
-        "Updating documentation sources files into build path: conf.py"
-)
+set(PYFILES conf.py; sidebar_gallery.py; paper_carousel.py)
 
-# add_custom_target(doctests
-#     ALL
-#         ${SPHINX_EXECUTABLE} -b doctest  ${SPHINX_SRCBUILD_DIR}
-#         ${SPHINX_CACHE_DIR}/doctests
-#     COMMENT "Running doctests"
-#     DEPENDS
-#         sphinx_check_sources
-#         sphinxapi
-# )
+foreach(file ${PYFILES})
+    add_custom_command(
+        COMMAND
+            cmake -E copy_if_different ${CMAKE_SOURCE_DIR}/doc/${file} ${SPHINX_SRCBUILD_DIR}/doc
+        TARGET
+            sphinx_check_sources
+        VERBATIM
+            COMMENT
+            "Updating documentation sources files into build path: conf.py"
+    )
+endforeach()
 
 add_custom_target(sphinxapi
     ALL
         # Copy build scripts for API doc generation
     COMMAND
-        cmake -E copy_if_different ${SPHINX_SRC_DIR}/doc/sidebar_gallery.py ${SPHINX_SRCBUILD_DIR}/doc
-    COMMAND
-	      sphinx-autogen -i ${SPHINX_SRC_DIR}/doc/pygimliapi/index.rst ${SPHINX_SRC_DIR}/doc/pygimliapi/physics.rst -t ${SPHINX_SRC_DIR}/doc/_templates -o ${SPHINX_SRCBUILD_DIR}/doc/pygimliapi/_generated
+	    sphinx-autogen -i ${SPHINX_SRC_DIR}/doc/pygimliapi/index.rst ${SPHINX_SRC_DIR}/doc/pygimliapi/physics.rst -t ${SPHINX_SRC_DIR}/doc/_templates -o ${SPHINX_SRCBUILD_DIR}/doc/pygimliapi/_generated
     COMMENT
         "Building pygimli api doc"
     DEPENDS
         doxygen
+        sphinx_check_sources
 )
 
 add_custom_target(sphinxhtml ALL
@@ -108,7 +101,6 @@ add_custom_target(sphinxhtml ALL
          "Building HTML documentation with sphinx"
      DEPENDS
         sphinxapi
-        sphinx_check_sources
 )
 
 add_custom_target(sphinxhtml-nogallery ALL
@@ -129,7 +121,6 @@ add_custom_target(sphinxhtml-nogallery ALL
      COMMENT
          "Building HTML documentation with sphinx"
      DEPENDS
-        sphinx_check_sources
         sphinxapi
 )
 
@@ -164,7 +155,6 @@ add_custom_target(sphinxlatex ALL
     COMMENT
         "Building PDF documentation with sphinx"
     DEPENDS
-        sphinx_check_sources
         sphinxapi
 )
 

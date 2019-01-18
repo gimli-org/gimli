@@ -1,5 +1,5 @@
 /******************************************************************************
- *   Copyright (C) 2008-2018 by the GIMLi development team                    *
+ *   Copyright (C) 2008-2019 by the GIMLi development team                    *
  *   Carsten Rücker carsten@resistivity.net                                   *
  *                                                                            *
  *   Licensed under the Apache License, Version 2.0 (the "License");          *
@@ -653,7 +653,7 @@ void RegionManager::setMesh(const Mesh & mesh, bool holdRegionInfos){
     this->findInterRegionInterfaces_();
 
     if (singleOnly){
-        log(Info, "appling *:* interregion constraints.");
+        log(Info, "Applying *:* interregion constraints.");
         for (Index i = 0; i < regions.size(); i ++){
             for (Index j = 0; j < regions.size(); j ++){
                 if (i != j){
@@ -854,7 +854,7 @@ void RegionManager::fillConstraintsWeight(RVector & vec){
 
     //!** fill constraints weights from inter regions constrains
     if (interRegionConstraints_.size() > 0){
-        if (verbose_) std::cout << "apply inter region constraints weights " << std::endl;
+        if (verbose_) std::cout << "Applying inter region constraints weights." << std::endl;
 
         for (std::map< std::pair< SIndex, SIndex >, double >::iterator
                         it = interRegionConstraints_.begin();
@@ -1035,7 +1035,7 @@ void RegionManager::fillConstraints(RSparseMapMatrix & C){
     }
 
     if (interRegionConstraints_.size() > 0){
-        if (verbose_) std::cout << "apply inter region constraints " << std::endl;
+        if (verbose_) std::cout << "Applying inter region constraints." << std::endl;
 
         for (std::map< std::pair< SIndex, SIndex >, double >::iterator
                 it  = interRegionConstraints_.begin();
@@ -1052,6 +1052,7 @@ void RegionManager::fillConstraints(RSparseMapMatrix & C){
             RVector *lMC = lR->modelControl();
             RVector *rMC = rR->modelControl();
             if (lMC->size() == 0 || rMC->size() == 0){
+                __MS(lR->parameterCount() << "  " << rR->parameterCount())
                 throwLengthError(1, WHERE_AM_I + " left | right  MC size == 0 " + toStr(lMC->size())
                 + " "+ toStr(rMC->size()));
             }
@@ -1267,8 +1268,8 @@ void RegionManager::loadMap(const std::string & fname){
 
         } else if (lower(token[0]) == "interface"){
             if (verbose_){
-                std::cout << "Apply interface properties" << std::endl;
-                std::cout << "WARNING! no inner interfaces yet" << std::endl;
+                std::cout << "Applying interface properties." << std::endl;
+                std::cout << "WARNING! no inner interfaces yet." << std::endl;
             }
 
             if (row.size() == 2){ // interface constraint

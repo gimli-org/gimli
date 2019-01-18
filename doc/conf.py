@@ -3,11 +3,14 @@
 pyGIMLi sphinx configuration file.
 """
 
+import random
 import os
 import re
 import sys
+sys.path.insert(0, os.path.abspath('.'))
 from os import path
 from os.path import join
+
 
 import matplotlib
 # Does not work properly with sphinx gallery. Leaving this out for the moment.
@@ -21,14 +24,15 @@ import sphinx
 
 import pygimli
 from pygimli.utils import boxprint
-from sidebar_gallery import make_gallery
+
+import pkg_resources
 
 # for doc rendering on headless machines (jenkins server)
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0, os.path.abspath('.'))
+from sidebar_gallery import make_gallery
 
 try:
     # from _build.doc.conf_environment import *
@@ -57,7 +61,9 @@ needs_sphinx = '1.3' # and lower 1.6
 deps = ['sphinxcontrib-programoutput',
         'sphinxcontrib-bibtex',
         'numpydoc']
-modules = [str(m).rsplit()[0] for m in pip.get_installed_distributions()]
+
+# check for p.version too
+modules = [p.project_name for p in pkg_resources.working_set]
 
 req = []
 for dep in deps:
@@ -68,7 +74,8 @@ if req:
           "Try: sudo pip install %s.\n" % (' '.join(req)) + \
           "Or install all dependencies with: pip install -r requirements.txt\n" + \
           "You can install them all in userspace by adding the --user flag."
-    print(pip.get_installed_distributions())
+    print((pkg_resources.working_set))
+    #print(pip.get_installed_distributions())
     raise ImportError(msg)
 
 # Add any Sphinx extension module names here, as strings.
@@ -78,10 +85,9 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.viewcode',
               'sphinx.ext.autosummary',
               'sphinx.ext.mathjax',
-              'sphinx.ext.doctest',
               'sphinx.ext.intersphinx',
               'sphinx.ext.imgconverter',
-              'matplotlib.sphinxext.only_directives',
+              'sphinx.ext.autosectionlabel',
               'matplotlib.sphinxext.plot_directive',
               'doxylink'
               ]
@@ -99,11 +105,10 @@ try:
                           join(SPHINXDOC_PATH, 'tutorials')],
         'gallery_dirs': ['_examples_auto', '_tutorials_auto'],
         'reference_url': {
-            # The module you locally document uses a None
-            'pygimli': None,
-            # External python modules use their documentation websites
-            'matplotlib': 'http://matplotlib.org',
-            'numpy': 'http://docs.scipy.org/doc/numpy'
+            'pygimli': "https://pygimli.org",
+            'numpy': 'https://docs.scipy.org/doc/numpy',
+            'scipy': 'https://docs.scipy.org/doc/scipy/reference',
+            'matplotlib': 'https://matplotlib.org/',
         },
 
         # Don't report time of fast scripts (< 10 sec)
@@ -113,8 +118,11 @@ try:
         'backreferences_dir': 'pygimliapi/_generated',
 
         # Your documented modules. You can use a string or a list of strings
-        'doc_module': 'pygimli'
-    }
+        'doc_module': 'pygimli',
+
+        'first_notebook_cell': ("# Checkout www.pygimli.org for more examples\n"
+                                "%matplotlib inline")
+        }
 
 except ImportError:
     err = """
@@ -130,7 +138,12 @@ except ImportError:
         app.warn(err)
 
 
-intersphinx_mapping = {'http://docs.python.org/': None}
+intersphinx_mapping = {
+    'python': ('https://docs.python.org/{.major}'.format(sys.version_info), None),
+    'numpy': ('https://docs.scipy.org/doc/numpy', None),
+    'scipy': ('https://docs.scipy.org/doc/scipy/reference', None),
+    'matplotlib': ('https://matplotlib.org/', None),
+}
 
 autodoc_default_flags = ["no-members"]
 autoclass_content = "class"
@@ -140,7 +153,7 @@ autosummary_generate = True
 # Formulas disappear after scrolling
 # mathjax_path = "https://www.pygimli.org/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
 # Slow, but works
-mathjax_path = "https://cdn.mathjax.org/mathjax/latest/MathJax.js" +\
+mathjax_path = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js" +\
                "?config=TeX-AMS-MML_HTMLorMML"
 
 # Add any paths that contain templates here, relative to this directory.
@@ -154,6 +167,13 @@ numpydoc_use_plots = True
 # MPL plot directive settings
 plot_formats = [('png', 96), ('pdf', 96)]
 plot_include_source = True
+plot_html_show_source_link = False
+plot_pre_code = """
+import pygimli as pg
+import numpy as np
+import matplotlib.pyplot as plt
+mesh = pg.createGrid([1,2],[1,2])
+"""
 
 
 # The suffix of source filenames.
@@ -167,7 +187,7 @@ master_doc = 'documentation'
 
 # General information about the project.
 project = 'pyGIMLi'
-copyright = '2018 - GIMLi Development Team'
+copyright = '2019 - GIMLi Development Team'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -460,10 +480,12 @@ for dist in pkg_resources.find_distributions(SPHINXDOC_PATH +
 # End pybtex stuff
 
 # -- Options for doxylink -----------------------------------------------------
-doxylink = {'gimliapi': (join(DOXY_BUILD_DIR, 'gimli.tag'), 'gimliapi')}
+doxylink = {'gimliapi': (join(DOXY_BUILD_DIR, 'gimli.tag'), 'https://www.pygimli.org/gimliapi')}
 
 # Create small gallery of all tutorials and examples in the sidebar.
-# from pygimli.misc.sidebar_gallery import make_gallery
-sys.path.insert(0, os.path.abspath('.'))
-
 make_gallery(SPHINXDOC_PATH, DOC_BUILD_DIR)
+
+# Add carousel to start page
+from paper_carousel import showcase
+random.shuffle(showcase) # mix it up
+html_context = {"showcase": showcase}

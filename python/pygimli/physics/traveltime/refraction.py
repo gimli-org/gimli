@@ -6,13 +6,14 @@
 from math import pi
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.collections import LineCollection
 
 
 import pygimli as pg
-from pygimli.meshtools import createParaMeshPLC, createMesh
+import pygimli.meshtools as mt
 from pygimli.mplviewer import drawModel, drawMesh, CellBrowser, createColorBar
 from pygimli.utils.base import interperc, getSavePath
-from pygimli.mplviewer.dataview import plotVecMatrix
+from pygimli.mplviewer.dataview import showVecMatrix
 
 from pygimli.manager import MethodManager, MethodManager0
 
@@ -23,6 +24,7 @@ from pygimli.physics.traveltime.raplot import drawFirstPicks, plotLines
 
 from . raplot import drawTravelTimeData
 from . importData import importGTT
+from . fatray import FatrayDijkstraModelling
 
 
 class Refraction(MethodManager0):
@@ -32,10 +34,10 @@ class Refraction(MethodManager0):
     e.g., self.inv, self.fop, self.paraDomain, self.mesh, self.data
     """
 
-    def __init__(self, data=None, verbose=True, debug=False, **kwargs):
+    def __init__(self, data=None, verbose=True, debug=False, fatray=False,
+                 frequency=1000., **kwargs):
         """Init function with optional data load"""
-        super(Refraction, self).__init__(verbose=verbose, debug=debug,
-                                         **kwargs)
+        super().__init__(verbose=verbose, debug=debug, **kwargs)
         self.figs = {}
         self.axs = {}
 
@@ -55,7 +57,8 @@ class Refraction(MethodManager0):
 
         # CR!, check if this should be better a static member TG: no idea
         self.dataToken_ = 't'
-
+        if fatray:
+            self.useFatray(True, frequency)
         if isinstance(data, str):
             self.loadData(data)
         elif isinstance(data, pg.DataContainer):
@@ -96,8 +99,14 @@ class Refraction(MethodManager0):
         """
         self.fop = Refraction.createFOP(usefmm=fmm)
 
+    def useFatray(self, fatray=True, frequency=300.):
+        """Define whether to use Fatray jacobian computation."""
+        self.fop = Refraction.createFOP(fatray=fatray)
+        if fatray:
+            self.fop.frequency = frequency
+
     @staticmethod
-    def createFOP(verbose=False, usefmm=False):
+    def createFOP(verbose=False, usefmm=False, fatray=False):
         """Create default forward operator for Traveltime modelling.
 
         usefmm forces Fast Marching Method, otherwise Dijkstra is used.
@@ -106,7 +115,10 @@ class Refraction(MethodManager0):
             from .FMModelling import TravelTimeFMM
             fop = TravelTimeFMM(verbose=verbose)
         else:
-            fop = pg.TravelTimeDijkstraModelling(verbose=verbose)
+            if fatray:
+                fop = FatrayDijkstraModelling(verbose=verbose)
+            else:
+                fop = pg.TravelTimeDijkstraModelling(verbose=verbose)
 
         return fop
 
@@ -156,7 +168,7 @@ class Refraction(MethodManager0):
 
     def loadData(self, filename):
         """Load data from file."""
-        if filename.lower()[-4:] == '.gtt':
+        if filename.endswith('.gtt'):
             data = importGTT(filename)
         else:
             data = pg.DataContainer(filename, sensorTokens='s g')
@@ -225,8 +237,8 @@ class Refraction(MethodManager0):
 
         return ax
 
-    def createMesh(self, depth=None, quality=34.3, paraDX=0.5, boundary=0,
-                   paraBoundary=5, apply=True, refine=False, **kwargs):
+    def createMesh(self, depth=None, quality=34.3, paraDX=1, boundary=0,
+                   paraBoundary=0, secNodes=3, apply=True, **kwargs):
         """Create (inversion) mesh using createParaDomain2D
 
         Parameters
@@ -248,8 +260,9 @@ class Refraction(MethodManager0):
             mesh quality (smallest angle allowed)
         apply : bool, optional
             set mesh property of the underlying forward operator
-        refine : bool, optional
-            Refine mesh.
+        secNodes : int (1)
+            Amount of secondary nodes to improve accuracy of the forward
+            solution.
         **kwargs: Additional keyword arguments passed to
             pygimli.meshtools.createParaMeshPLC
 
@@ -262,23 +275,40 @@ class Refraction(MethodManager0):
 
         if depth is None:
             depth = self.getDepth()
-        self.poly = createParaMeshPLC(self.dataContainer.sensorPositions(),
-                                      paraDepth=depth, paraDX=paraDX,
-                                      paraBoundary=paraBoundary,
-                                      boundary=boundary, **kwargs)
-        mesh = createMesh(self.poly, quality=quality, smooth=(1, 10))
-#        mesh.createNeighbourInfos()
+
+        self.poly = mt.createParaMeshPLC(self.dataContainer.sensorPositions(),
+                                         paraDepth=depth, paraDX=paraDX,
+                                         paraBoundary=paraBoundary,
+                                         boundary=boundary, **kwargs)
+        mesh = mt.createMesh(self.poly, quality=quality, smooth=(1, 10))
+
         if apply:
-            self.setMesh(mesh, refine=refine)
+            self.setMesh(mesh, secNodes=secNodes)
+
         return mesh
 
-    def setMesh(self, mesh, refine=False):
-        """Set mesh. To be removed from class once derived from MeshManager."""
+    def setMesh(self, mesh, refine=False, secNodes=1):
+        """Set mesh. To be removed from class once derived from MeshManager.
+
+        Parameters
+        ----------
+        secNodes : int (1)
+            Number of secondary nodes to improve accuracy of the forward
+            solution.
+        """
         self.mesh = mesh
         self.mesh.createNeighbourInfos()
         self.fop.setMesh(self.mesh)
         self.fop.regionManager().setConstraintType(1)
-        self.fop.createRefinedForwardMesh(refine)
+
+        if refine:
+            pg.warn("argument refine is deprecated .. use secnodes instead")
+            secNodes = 1
+
+        mesh = self.fop.regionManager().mesh().createMeshWithSecondaryNodes(
+                secNodes)
+        self.fop.setMesh(mesh, ignoreRegionManager=True)
+
         self.inv.setForwardOperator(self.fop)
 
     def showMesh(self, ax=None, name='mesh'):
@@ -390,6 +420,8 @@ class Refraction(MethodManager0):
         self.inv.setData(self.dataContainer('t'))
         self.inv.setLambda(kwargs.pop('lam', 30.))
 
+        if 'threadCount' in kwargs:  # just for backward compatibility
+            self.fop.setThreadCount(kwargs.pop('threadCount'))
         if 'max_iter' in kwargs:  # just for backward compatibility
             self.inv.setMaxIter(kwargs.pop('max_iter'))
         if 'maxIter' in kwargs:  # the better way
@@ -499,16 +531,16 @@ class Refraction(MethodManager0):
         return ret
 
     @staticmethod
-    def drawTravelTimeData(ax, data, t=None):
-        """Plot travel time data as lines and points."""
-        drawTravelTimeData(ax, data, t)
-
-    @staticmethod
     def drawApparentVelocities(ax, data, t=None, **kwargs):
         """Plot data in for of apparent velocity image."""
         tt = Refraction()
         tt.setDataContainer(data)
         tt.showVA(ax=ax, t=t, **kwargs)
+
+    @staticmethod
+    def drawTravelTimeData(ax, data, t=None):
+        """Plot travel time data as lines and points."""
+        drawTravelTimeData(ax, data, t)
 
     def getOffset(self, data=None, full=False):
         """Return vector of offsets (in m) between shot and receiver."""
@@ -538,7 +570,7 @@ class Refraction(MethodManager0):
         return (gx + sx) / 2
 
     def showVA(self, data=None, t=None, name='va', pseudosection=False,
-               squeeze=True, full=True, ax=None):
+               squeeze=True, full=True, ax=None, cmap=None, **kwargs):
         """Show apparent velocity as image plot.
 
         TODO showXXX commands need to return ax and cbar .. if there is one
@@ -563,12 +595,15 @@ class Refraction(MethodManager0):
 
         if pseudosection:
             midpoint = (gx + sx) / 2
-            plotVecMatrix(midpoint, offset, va, squeeze=True, ax=ax,
-                          label='Apparent slowness [s/m]')
+            _, cb = showVecMatrix(midpoint, offset, va, squeeze=True, ax=ax,
+                                  label='Apparent slowness [s/m]', cmap=cmap,
+                                  **kwargs)
         else:
-            plotVecMatrix(gx, sx, va, squeeze=squeeze, ax=ax,
-                          label='Apparent velocity [m/s]')
-        return ax  # va
+            _, cb = showVecMatrix(gx, sx, va, squeeze=squeeze, ax=ax,
+                                  label='Apparent velocity [m/s]', cmap=cmap,
+                                  **kwargs)
+        fig.show()
+        return ax, cb  # va
 
     def getDepth(self):
         """return a (a-priori guessed) depth of investigation"""
@@ -585,6 +620,77 @@ class Refraction(MethodManager0):
         C = self.fop.constraintsRef()
         return np.sign(np.absolute(C.transMult(C * coverage)))
 
+    def showRayPaths(self, model=None, ax=None, **kwargs):
+        """Show ray paths for `model` or last model for which the Jacobian was
+        calculated.
+
+        Parameters
+        ----------
+        model : array
+            Velocity model for which to calculate and visualize ray paths (the
+            default is model for last Jacobian calculation in self.velocity).
+        ax : matplotlib.axes
+            Axes for the plot (the default is None).
+        **kwargs : type
+            Additional arguments passed to LineCollection (alpha, linewidths,
+            color, linestyles).
+
+        Returns
+        -------
+        ax : matplotlib.axes object
+        cb : matplotlib.colorbar object (only if model is provided)
+
+        Examples
+        --------
+        >>> # No reason to import matplotlib
+        >>> import pygimli as pg
+        >>> from pygimli.physics import Refraction
+        >>> from pygimli.physics.traveltime import createRAData
+        >>>
+        >>> x, y = 8, 6
+        >>> mesh = pg.createGrid(x, y)
+        >>> data = createRAData([(0,0)] + [(x, i) for i in range(y)], shotdistance=y+1)
+        >>> data.set("t", pg.RVector(data.size(), 1.0))
+        >>> rst = Refraction()
+        >>> rst.setDataContainer(data)
+        Data: Sensors: 7 data: 6
+        >>> rst.setMesh(mesh, 5)
+        >>> ax, cb = rst.showRayPaths()
+        """
+        cbar = None
+        if model is None and self.velocity is None:
+            pg.info("No previous inversion result found and no model given.",
+                    "Using homogeneous slowness model.")
+            self.velocity = pg.RVector(self.mesh.cellCount(), 1.0)
+            self.fop.createJacobian(1./self.velocity)
+
+        if model is not None:
+            if self.velocity is not None:
+                if not np.allclose(model, self.velocity):
+                    self.fop.createJacobian(1/model)
+
+            ax, cbar = self.showResult(ax=ax, val=model)
+            _ = kwargs.setdefault("color", "w")
+            _ = kwargs.setdefault("alpha", 0.5)
+            _ = kwargs.setdefault("linewidths", 0.8)
+        else:
+            ax = self.showMesh(ax=ax)
+
+        # Due to different numbering scheme of way matrix
+        _, shots = np.unique(self.dataContainer("s"), return_inverse=True)
+        _, receivers = np.unique(self.dataContainer("g"), return_inverse=True)
+
+        # Collecting way segments for all shot/receiver combinations
+        segs = []
+        for s, g in zip(shots, receivers):
+            wi = self.fop.way(s, g)
+            points = self.fop.mesh().positions(withSecNodes=True)[wi]
+            segs.append(np.column_stack((pg.x(points), pg.y(points))))
+
+        line_segments = LineCollection(segs, **kwargs)
+        ax.add_collection(line_segments)
+        return ax, cbar
+
     def showCoverage(self, ax=None, name='coverage', **kwargs):
         """shows the ray coverage in logscale"""
         if ax is None:
@@ -593,15 +699,15 @@ class Refraction(MethodManager0):
 
         self.axs[name] = ax
         cov = self.rayCoverage()
-        pg.show(self.mesh, pg.log10(cov+min(cov[cov > 0])*.5), ax=ax,
-                coverage=self.standardizedCoverage(), **kwargs)
+        return pg.show(self.mesh, pg.log10(cov+min(cov[cov > 0])*.5), ax=ax,
+                       coverage=self.standardizedCoverage(), **kwargs)
 
     def showModel(self, ax=None, vals=None, **kwargs):
         """WRITEME"""
         return self.showResult(ax=ax, val=vals, **kwargs)
 
     def showResult(self, val=None, ax=None, cMin=None, cMax=None,
-                   logScale=False, name='result', **kwargs):
+                   logScale=False, rays=False, name='result', **kwargs):
         """Show resulting velocity vector.
 
         Parameters
@@ -614,6 +720,11 @@ class Refraction(MethodManager0):
             minimum and maximum values for ranging colorbar
         logScale : bool [False]
             use logarithmic scale
+        rays : bool [False]
+            Show ray paths as well.
+
+        Other parameters
+        ----------------
         useCoverage : bool [True]
             use standardized (0 or 1) ray coverage as alpha-shading
         label : str
@@ -638,20 +749,25 @@ class Refraction(MethodManager0):
         coverage = 1
         if kwargs.pop('useCoverage', True):
             coverage = self.standardizedCoverage()
+        label = kwargs.pop("label", "Velocity (m/s)")
         if ax is None:
             fig, ax = plt.subplots()
             self.figs[name] = fig
             ax, cbar = pg.show(mesh, val, logScale=logScale, ax=ax,
                                colorBar=True, cMin=cMin, cMax=cMax,
-                               coverage=coverage, **kwargs)
+                               coverage=coverage, label=label, hold=True,
+                               **kwargs)
             self.figs[name] = plt.gcf()
         else:
             gci = drawModel(ax, mesh, val, logScale=logScale,
                             colorBar=True, cMin=cMin, cMax=cMax,
                             coverage=coverage, **kwargs)
-            labels = ['cMin', 'cMax', 'nLevs', 'orientation', 'label']
+            labels = ['cMin', 'cMax', 'nLevs', 'orientation']
             subkwargs = {key: kwargs[key] for key in labels if key in kwargs}
-            cbar = createColorBar(gci, **subkwargs)
+            cbar = createColorBar(gci, label=label, **subkwargs)
+        if rays:
+            self.showRayPaths(ax=ax, alpha=0.5, color="w", linewidths=.8)
+
         browser = CellBrowser(self.mesh, val, ax)
         browser.connect()
 
@@ -675,6 +791,19 @@ class Refraction(MethodManager0):
             name = 'out'
         for key in self.figs:
             self.figs[key].savefig(name+'-'+key+'.'+ext, bbox_inches='tight')
+
+    def makeJacobianPDF(self, ind=None):
+        """Make multipage Jacobian PDF."""
+        from matplotlib.backends.backend_pdf import PdfPages
+        if ind is None:
+            ind = range(self.dataContainer.size())
+        with PdfPages(self.basename+'-jacobian.pdf') as pdf:
+            fig, ax = pg.plt.subplots()
+            for ii in ind:
+                jj = self.fop.jacobian().row(ii)
+                pg.show(self.mesh, jj, ax=ax, coverage=(jj > 0))
+                fig.savefig(pdf, format='pdf')
+                ax.cla()
 
     def saveResult(self, folder=None, size=(16, 10), **kwargs):
         """Save the results in the specified folder.
@@ -757,6 +886,7 @@ def main():
     ra.invert(lam=options.lam, max_iter=options.maxIter,
               robustData=options.robustData, blockyModel=options.blockyModel)
     ra.showResult()
+
 
 if __name__ == '__main__':
     main()

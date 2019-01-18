@@ -1,5 +1,5 @@
 /******************************************************************************
- *   Copyright (C) 2006-2018 by the GIMLi development team                    *
+ *   Copyright (C) 2006-2019 by the GIMLi development team                    *
  *   Carsten Rücker carsten@resistivity.net                                   *
  *                                                                            *
  *   Licensed under the Apache License, Version 2.0 (the "License");          *
@@ -643,7 +643,7 @@ double HexahedronShape::volume() const {
     TetrahedronShape tet;
     for (uint i = 0; i < 5; i ++){
         tet.setNodes(nodeVector_[HexahedronSplit5TetID[i][0]], nodeVector_[HexahedronSplit5TetID[i][1]],
-                      nodeVector_[HexahedronSplit5TetID[i][2]], nodeVector_[HexahedronSplit5TetID[i][3]]);
+                     nodeVector_[HexahedronSplit5TetID[i][2]], nodeVector_[HexahedronSplit5TetID[i][3]]);
         sum += tet.volume();
     }
 

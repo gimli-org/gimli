@@ -1,5 +1,5 @@
 /******************************************************************************
- *   Copyright (C) 2006-2018 by the resistivity.net development team          *
+ *   Copyright (C) 2006-2019 by the resistivity.net development team          *
  *   Carsten R�cker carsten@resistivity.net                                   *
  *                                                                            *
  *   Licensed under the Apache License, Version 2.0 (the "License");          *
@@ -19,10 +19,6 @@
 #ifndef _BERT_BERT__H
 #define _BERT_BERT__H
 
-#define BERT_PACKAGE_NAME "bert"
-#define BERT_PACKAGE_VERSION "2.2.0"
-#define BERT_PACKAGE_BUGREPORT "carsten@gimli.org"
-
 #ifdef bert_EXPORTS
 	#define gimli_EXPORTS
 #endif
@@ -30,12 +26,6 @@
 #include <gimli.h>
 
 namespace GIMLI{
-
-inline std::string versionStrBert(){
-    std::string vers( (std::string)(BERT_PACKAGE_NAME) + "-" + BERT_PACKAGE_VERSION);
-    vers += "(" + GIMLI::versionStr() + ")";
-    return vers;
-}
 
 static const int MARKER_NODE_ELECTRODE = -99;
 static const int MARKER_NODE_REFERENCEELECTRODE = -999;

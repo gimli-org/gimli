@@ -20,6 +20,14 @@ python --version
 python -c "import numpy; print(numpy.__version__)"
 python -c "import matplotlib; print(matplotlib.__version__)"
 
+# Check if core was changed
+core_update=$(git --git-dir=trunk/.git diff-tree -r $GIT_COMMIT | grep -c src || true)
+
+# Set this to 1 if you want clean build (also of dependencies)
+export CLEAN=0
+
+export GIMLI_NUM_THREADS=4
+
 ################
 #  Main build  #
 ################
@@ -33,17 +41,23 @@ python -c "import matplotlib; print(matplotlib.__version__)"
 mkdir -p build
 cd build
 
-# CLEAN=1 force thirdparty rebuild
-export CLEAN=0
+if [ ! -f CMakeCache.txt ]; then
+    # Always rebuild core when Cmake cache does not exist
+    core_update=2
+fi
 
-cmake ../trunk \
-   -DPYVERSION=3 \
-   -DPYTHON_EXECUTABLE=/usr/bin/python3 \
-   -DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.5m.so \
-   -DBoost_PYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libboost_python-py35.so
-
-make -j 8 gimli
-make pygimli J=4
+if [[ $core_update -ge 1 ]]; then
+  echo "# Core changes detected. #"
+  cmake ../trunk \
+     -DPYVERSION=3 \
+     -DPYTHON_EXECUTABLE=/usr/bin/python3 \
+     -DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.5m.so \
+     -DBoost_PYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libboost_python-py35.so
+  make -j 8 gimli
+  make pygimli J=4
+else
+  echo "# No core changes detected. #"
+fi
 
 #############################
 #  Testing & documentation  #

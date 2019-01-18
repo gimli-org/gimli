@@ -39,11 +39,11 @@ def make_gallery(src_path, out_path):
         with open(fname) as f:
             titles = re.findall(rst_titles, f.read())
             if verbose:
-                print("File:", fname)
-                print("Title:", titles)
+                print(("File:", fname))
+                print(("Title:", titles))
         # go through lines only if compiled regex fails (py2/py3 issue)
         if not titles:
-            print("WARNING: Problem reading section title in", fname)
+            print(("WARNING: Problem reading section title in", fname))
             with open(fname) as f:
                 title = "unknown"
                 for line in f.readlines():
@@ -66,11 +66,11 @@ def make_gallery(src_path, out_path):
 
     # Create HTML gallery for sidebar with random start item
     gallery = examples + tutorials
-    print("\nAdding %d examples/tutorials to sidebar gallery.\n" %
-          len(gallery))
-    print("\t{:40}{}\n\t".format("Title", "File") + "-" * 80)
+    print(("\nAdding %d examples/tutorials to sidebar gallery.\n" %
+          len(gallery)))
+    print(("\t{:40}{}\n\t".format("Title", "File") + "-" * 80))
     for line in zip(titles, gallery):
-        print("\t{:40}{}".format(*line))
+        print(("\t{:40}{}".format(*line)))
     print("\n")
 
     html_top = """\
@@ -88,7 +88,7 @@ def make_gallery(src_path, out_path):
     <div class="item">
     <a href="{}">
     <img src="{}">
-    <div class="carousel-caption">
+    <div class="carousel-caption" style="position: relative; padding: 8px; font-size: 14px">
     {}
     </div>
     </a>

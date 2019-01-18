@@ -38,17 +38,17 @@ class TestMisc(unittest.TestCase):
         data = pg.DataContainer()
         data.resize(5)
 
-        # data.markValid([0, 4])
-        # self.assertEqual(data('valid'), [1.0, 0.0, 0.0, 0.0, 1.0])
+        data.markValid([0, 4])
+        self.assertEqual(data('valid'), [1.0, 0.0, 0.0, 0.0, 1.0])
 
-        # data.markInvalid(pg.IndexArray(np.arange(5, dtype="long")))
-        # self.assertEqual(data('valid'), [0.0, 0.0, 0.0, 0.0, 0.0])
+        data.markInvalid(pg.IndexArray(np.arange(5, dtype="long")))
+        self.assertEqual(data('valid'), [0.0, 0.0, 0.0, 0.0, 0.0])
         
-        # data.markValid(np.arange(5, dtype="long"))
-        # self.assertEqual(data('valid'), [1.0, 1.0, 1.0, 1.0, 1.0])
+        data.markValid(np.arange(5, dtype="long"))
+        self.assertEqual(data('valid'), [1.0, 1.0, 1.0, 1.0, 1.0])
         
-        # data.markInvalid(range(5))
-        # self.assertEqual(data('valid'), [0.0, 0.0, 0.0, 0.0, 0.0])
+        data.markInvalid(range(5))
+        self.assertEqual(data('valid'), [0.0, 0.0, 0.0, 0.0, 0.0])
 
         x = np.arange(5, dtype='float')
 
@@ -63,7 +63,6 @@ class TestMisc(unittest.TestCase):
         
         data.markInvalid(x < 1.0)
         self.assertEqual(data('valid'), [0.0, 1.0, 0.0, 1.0, 0.0])
-        
 
     def test_DataContainerSensors(self):
         data = pg.DataContainer()
@@ -113,8 +112,7 @@ class TestMisc(unittest.TestCase):
                 
 
 if __name__ == '__main__':
-    pg.setDebug(0)
-    #pg.setDeepDebug(1)
+    # pg.setDeepDebug(1)
 
     # t = TestMisc()
     # t.test_DataContainerFilter()
