@@ -61,6 +61,45 @@ void SparseMatrix< double >::copy_(const SparseMapMatrix< double, Index > & S){
 }
 
 template<>
+void SparseMatrix< Complex >::copy_(const SparseMapMatrix< Complex, Index > & S){
+    this->clear();
+    Index col = 0, row = 0;
+    Complex val;
+    cols_ = S.cols();
+    rows_ = S.rows();
+    std::vector < std::map < Index, Complex > > rowColMap(S.rows());
+
+    for (typename SparseMapMatrix< Complex, Index>::const_iterator
+        it = S.begin(); it != S.end(); it ++){
+        row = S.idx1(it);
+        col = S.idx2(it);
+        val = S.val(it);
+        rowColMap[row].insert(std::pair< Index, Complex >(col, val));
+    }
+    colPtr_.resize(S.rows() + 1);
+    rowIdx_.resize(S.nVals());
+    vals_.resize(S.nVals());
+    stype_  = S.stype();
+
+    this->colPtr_[0] = 0;
+
+    Index colPtr = 0; 
+    row = 0;
+    for (typename std::vector < std::map < Index, Complex > >::iterator
+         it = rowColMap.begin(); it != rowColMap.end(); it++){
+        for (typename std::map < Index, Complex >::iterator
+             itR = (*it).begin(); itR != (*it).end(); itR++){
+            rowIdx_[colPtr] = itR->first;
+            vals_[colPtr] = (Complex)itR->second;
+            colPtr ++;
+        }
+        row ++;
+        this->colPtr_[row] = colPtr;
+    }
+    valid_ = true;
+}
+
+template<>
 void SparseMapMatrix< double, Index >::copy_(const SparseMatrix< double > & S){
     clear();
     cols_ = S.cols();

@@ -1084,6 +1084,7 @@ protected:
 
 // /*! Implement specialized type traits in sparsematrix.cpp */
 template <> DLLEXPORT void SparseMatrix<double>::copy_(const SparseMapMatrix< double, Index > & S);
+template <> DLLEXPORT void SparseMatrix<Complex>::copy_(const SparseMapMatrix< Complex, Index > & S);
 
 template< typename ValueType >
 void SparseMatrix< ValueType >::copy_(const SparseMapMatrix< double, Index > & S){THROW_TO_IMPL}

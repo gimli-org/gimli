@@ -20,6 +20,7 @@ class ShapeTest : public CppUnit::TestFixture  {
     CPPUNIT_TEST(testJacobiDeterminat);
     CPPUNIT_TEST(testTouch);
     CPPUNIT_TEST(testTouch1);
+    CPPUNIT_TEST(testTouch2);
     CPPUNIT_TEST(testInterpolate);
     CPPUNIT_TEST(testSplit);
     CPPUNIT_TEST(testGridGen);
@@ -129,6 +130,39 @@ public:
         q.shape().isInside(GIMLI::RVector3(5.0, 1.0), sf,  false); CPPUNIT_ASSERT(sortIdx(sf)[0] ==0);
         q.shape().isInside(GIMLI::RVector3(5.5, 1.0), sf,  false); CPPUNIT_ASSERT(sortIdx(sf)[0] ==0);
         q.shape().isInside(GIMLI::RVector3(6.0, 1.0), sf,  false); CPPUNIT_ASSERT(sortIdx(sf)[0] ==1);
+    }
+
+    // touch against 3D boundary faces
+    void testTouch2(){
+        GIMLI::Node n0(0.0, 0.0, -0.5); n0.setId(0);
+        GIMLI::Node n1(1.0, 0.0, -0.5); n1.setId(1);
+        GIMLI::Node n2(1.0, 0.0,  0.5); n2.setId(2);
+        GIMLI::Node n3(0.0, 0.0,  0.5); n3.setId(3);
+        GIMLI::Node n4(0.0, 1.0, -0.5); n4.setId(4);
+        GIMLI::Node n5(1.0, 1.0, -0.5); n5.setId(5);
+        GIMLI::Node n6(1.0, 1.0,  0.5); n6.setId(6);
+        GIMLI::Node n7(0.0, 1.0,  0.5); n7.setId(7);
+
+        GIMLI::QuadrangleFace q1(n1, n2, n6, n5);
+
+        // test on Node
+        CPPUNIT_ASSERT(q1.shape().touch(q1.node(0).pos()) == true);
+        CPPUNIT_ASSERT(q1.shape().touch(q1.node(1).pos()) == true);
+        CPPUNIT_ASSERT(q1.shape().touch(q1.node(2).pos()) == true);
+        CPPUNIT_ASSERT(q1.shape().touch(q1.node(3).pos()) == true);
+        
+        // test on Segment
+        CPPUNIT_ASSERT(q1.shape().touch((q1.node(0).pos() + q1.node(1).pos())/2) == true);
+
+        // test on Facet
+        CPPUNIT_ASSERT(q1.shape().touch((q1.node(0).pos() + 
+                                         q1.node(1).pos() + 
+                                         q1.node(2).pos())/3) == true);
+
+        // test free arbitrary        
+        CPPUNIT_ASSERT(q1.shape().touch(GIMLI::RVector3(1.0, -1.0, -0.5)) == false);
+        CPPUNIT_ASSERT(q1.shape().touch(GIMLI::RVector3(1.1, 0.0, 0.0)) == false);
+        CPPUNIT_ASSERT(q1.shape().touch(GIMLI::RVector3(1.0, 0.0, 0.0)) == true);
     }
 
     void testInterpolate(){

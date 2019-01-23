@@ -175,7 +175,22 @@ Node * Mesh::createNodeGC_(const RVector3 & pos, int marker){
     if (this->isGeometry_){
         Node *n = this->createNodeWithCheck(pos);
         n->setMarker(marker);
+        
+        if (this->dim() == 3){
+
+            for (Index i = 0; i < this->boundaryVector_.size(); i ++ ){
+                Boundary *b = this->boundaryVector_[i];
+                // __MS(*b)
+                if (b->shape().isInside(n->pos())){
+                    __MS(*b)
+                    __MS(*n)
+                    b->addSecondaryNode(n);
+                    
+                }
+            }
+        }
         return n;
+
     } else {
         return this->createNode_(pos, marker);
     }
@@ -254,8 +269,9 @@ Node * Mesh::createNodeWithCheck(const RVector3 & pos, double tol, bool warn, bo
     if (edgeCheck){
         if (this->dim() != 2){
             if (warn || debug()) log(LogType::Warning,
-                                     "edgeCheck is currently only supported for 2d meshes");
+                "edgeCheck is currently only supported for 2d meshes");
         } else {
+            ///// TODO refaktor in extra function
             for (Index i = 0; i < this->boundaryVector_.size(); i ++ ){
                 Boundary *b = this->boundaryVector_[i];
                 if (b->rtti() == MESH_EDGE_RTTI){

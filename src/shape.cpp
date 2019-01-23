@@ -282,7 +282,6 @@ void Shape::createJacobian(RMatrix3 & J) const {
     }
 }
 
-
 RVector3 Shape::xyz(const RVector3 & rst) const{
     RVector3 xyz(0.0, 0.0, 0.0);
     rst2xyz(rst, xyz);
@@ -391,6 +390,40 @@ bool Shape::isInside(const RVector3 & xyz, RVector & sf, bool verbose) const {
     if (minsf > 0.0) return true; //** inside
     return false;
 }
+    
+bool Shape::touch(const RVector3 & pos, double tol, bool verbose) const {
+    if (this->nodeCount() < 3) {
+        log(Critical, "Shape need at least 3 nodes and should be a 3D boundary face.");
+    }
+    Plane plane(node(0).pos(), node(1).pos(), node(2).pos());
+    if (!plane.touch(pos, tol)) return false;
+    
+    // test ray along the plane
+    RVector3 rayDir(((node(1).pos() + node(2).pos()) / 2.0 - node(0).pos()));
+
+    RVector3 iP;
+    bool touch = false;
+    for (Index i = 0; i < nodeCount(); i ++){
+        Line segment(node(i).pos(), node((i+1)%nodeCount()).pos());
+        // __MS(segment)
+        if (segment.intersectRay(pos, rayDir, iP)){
+            // __MS(iP << " " << pos)
+            if (iP.valid()){
+                if (iP.dist(pos) < 1e-6) return true;
+
+                double t = segment.t(iP);
+                
+                // __MS(iP << " " << t)
+                if (t >= 0.0 && t < 1.0){
+                    // if intersection pos between [node, nextNode)
+                    touch = !touch;
+                    // __MS("touch: " << touch)
+                }
+            } 
+        }
+    }
+    return touch;
+}
 
 double Shape::domainSize() const {
     if (!hasDomSize_) {
@@ -427,6 +460,11 @@ RVector3 EdgeShape::rst(Index i) const{
                         EdgeCoordinates[i][1],
                         EdgeCoordinates[i][2]);
     THROW_TO_IMPL; return RVector3(0.0, 0.0, 0.0);
+}
+
+bool EdgeShape::touch(const RVector3 & pos, double tol, bool verbose) const{
+    THROW_TO_IMPL
+    return false;
 }
 
 bool EdgeShape::intersectRay(const RVector3 & start, const RVector3 & dir,
@@ -562,6 +600,7 @@ RVector3 PolygonShape::rst(Index i) const {
 }
 
 bool PolygonShape::isInside(const RVector3 & xyz, bool verbose) const {
+     THROW_TO_IMPL
      return false;
 }
 

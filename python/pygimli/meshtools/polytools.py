@@ -1075,11 +1075,14 @@ def exportTetgenPoly(poly, filename, float_format='.12e', **kwargs):
     for bound in poly.boundaries():
         # one line per facet
         # <# of polygons> [# of holes] [boundary marker]
-        npolys = 1
-        polytxt += '1{2}0{2}{0:d}{1}'.format(bound.marker(), linesep, sep)
+        print(bound)
+        print(len(bound.secondaryNodes()))
+        npolys = 1 + len(bound.secondaryNodes())
+        polytxt += '{3}{2}0{2}{0:d}{1}'.format(bound.marker(), linesep, 
+                                               sep, npolys)
         # inner loop over polygons
         # <# of corners> <corner 1> <corner 2> ... <corner #>
-        for l in range(npolys):
+        for l in range(1):
             poly_str = '{:d}'.format(bound.nodeCount())
             for ind in bound.ids():
                 poly_str += sep + '{:d}'.format(ind)
@@ -1089,6 +1092,16 @@ def exportTetgenPoly(poly, filename, float_format='.12e', **kwargs):
         # not necessary yet ?! why is there an extra hole section?
         # because this is for 2D holes in facets only
 
+        # loop over secondaryNodes add them as single points
+        for l in range(len(bound.secondaryNodes())):
+            ind = bound.secondaryNodes()[l].id()
+            poly_str = '{:d}'.format(2)
+            poly_str += sep + '{0:d} {0:d}'.format(ind)
+            polytxt += '{0}{1}'.format(poly_str, linesep)
+
+    print(polytxt)
+    sys.exit()
+        
     # part 2b: extra boundaries that cannot be part of mesh class
     for nodes in extraBoundaries:
         # <# of polygons> [# of holes] [boundary marker]
