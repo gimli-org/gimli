@@ -1187,7 +1187,7 @@ def assembleRobinBC(S, boundaryPairs, rhs=None, time=0.0, userData=None):
         #q = -41.0
         q = None
 
-        if p is not 0.0 and p is not None:
+        if p != 0.0 and p is not None:
             Sp.u2(boundary)
             S.add(Sp, p)
             #Sp *= p
@@ -1653,10 +1653,7 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
             u = solver.solve(rhs)
         else:
             for i, r in enumerate(rhs):
-                if isinstance(u[i], pg.RVector):
-                    solver.solve(r, u[i])
-                else:
-                    u[i] = solver.solve(r)
+                u[i] = solver.solve(r)
 
         solverTime = swatch.duration(True)
         if verbose:
