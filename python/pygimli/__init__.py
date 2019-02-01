@@ -3,8 +3,6 @@
 pyGIMLi - An open-source library for modelling and inversion in geophysics
 """
 
-# py 2.7 compatiblity
-from __future__ import division, print_function
 
 import locale
 import sys

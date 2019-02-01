@@ -44,19 +44,40 @@ def showNow():
     pass
 #    showLater(0)  # not working anymore
 
+
 __swatch__ = _pygimli_.Stopwatch()
 
+
 def tic(msg=None):
-    """Start global timer. Print elpased time with `toc()`."""
+    """Start global timer. Print elpased time with `toc()`.
+
+    Parameters
+    ----------
+    msg : string, optional
+        Print message string just before starting the timer.
+    """
     if msg:
         print(msg)
     __swatch__.start()
 
 
 def toc(msg=None, box=False):
-    """Print elapsed time since global timer was started with `tic()`."""
+    """Print elapsed time since global timer was started with `tic()`.
+
+    Parameters
+    ----------
+    msg : string, optional
+        Print message string just after printing the elapsed time. If box is
+        True, then embed msg into its own box
+    box : bool, optional
+        Embed the time in an ascii box
+
+    """
     if msg:
-        print(msg, end=' ')
+        if box:
+            boxprint(msg)
+        else:
+            print(msg, end=' ')
     seconds = dur()
     m, s = divmod(seconds, 60)
     h, m = divmod(m, 60)
