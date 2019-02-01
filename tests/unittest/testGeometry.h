@@ -11,7 +11,7 @@ class GeometryTest : public CppUnit::TestFixture{
     CPPUNIT_TEST(testTouch);
     CPPUNIT_TEST(testIntersection2d);
     CPPUNIT_TEST(testIntersection3d);
-
+    
     //CPPUNIT_TEST_EXCEPTION(funct, exception);
     CPPUNIT_TEST_SUITE_END();
 
@@ -113,7 +113,6 @@ public:
         pq = GIMLI::RVector3(-14.0, -1.0, -1.0);
         CPPUNIT_ASSERT(l.intersectRay(pq, -3.14 * (tp-pq), t) == false);
         CPPUNIT_ASSERT(t == tp);
-
     }
 
 private:

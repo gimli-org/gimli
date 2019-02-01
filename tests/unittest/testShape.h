@@ -138,10 +138,10 @@ public:
         GIMLI::Node n1(1.0, 0.0, -0.5); n1.setId(1);
         GIMLI::Node n2(1.0, 0.0,  0.5); n2.setId(2);
         GIMLI::Node n3(0.0, 0.0,  0.5); n3.setId(3);
-        GIMLI::Node n4(0.0, 1.0, -0.5); n4.setId(4);
-        GIMLI::Node n5(1.0, 1.0, -0.5); n5.setId(5);
-        GIMLI::Node n6(1.0, 1.0,  0.5); n6.setId(6);
-        GIMLI::Node n7(0.0, 1.0,  0.5); n7.setId(7);
+        GIMLI::Node n4(0.0, 0.5, -0.5); n4.setId(4);
+        GIMLI::Node n5(1.0, 0.5, -0.5); n5.setId(5);
+        GIMLI::Node n6(1.0, 0.5,  0.5); n6.setId(6);
+        GIMLI::Node n7(0.0, 0.5,  0.5); n7.setId(7);
 
         GIMLI::QuadrangleFace q1(n1, n2, n6, n5);
 
@@ -163,6 +163,18 @@ public:
         CPPUNIT_ASSERT(q1.shape().touch(GIMLI::RVector3(1.0, -1.0, -0.5)) == false);
         CPPUNIT_ASSERT(q1.shape().touch(GIMLI::RVector3(1.1, 0.0, 0.0)) == false);
         CPPUNIT_ASSERT(q1.shape().touch(GIMLI::RVector3(1.0, 0.0, 0.0)) == true);
+
+        GIMLI::QuadrangleFace q2(n0, n1, n2, n3);
+        CPPUNIT_ASSERT(q2.shape().touch(GIMLI::RVector3(3.5e-2, 0.0, 0.0)) == true);
+
+        GIMLI::QuadrangleFace q3(n5, n4, n6, n7);
+        CPPUNIT_ASSERT(q3.shape().touch(GIMLI::RVector3(3.5e-2, 0.0, 0.0)) == false);
+
+        GIMLI::QuadrangleFace q4(n4, n5, n1, n0);
+        CPPUNIT_ASSERT(q4.shape().touch(GIMLI::RVector3(3.5e-2, 0.0, 0.0)) == false);
+
+        GIMLI::QuadrangleFace q5(n6, n7, n3, n2);
+        CPPUNIT_ASSERT(q5.shape().touch(GIMLI::RVector3(3.5e-2, 0.0, 0.0)) == false);
     }
 
     void testInterpolate(){

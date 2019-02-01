@@ -219,6 +219,7 @@ public:
     Boundary * createEdge3(Node & n1, Node & n2, Node & n3, int marker=0, bool check=true);
     Boundary * createTriangleFace(Node & n1, Node & n2, Node & n3, int marker=0, bool check=true);
     Boundary * createQuadrangleFace(Node & n1, Node & n2, Node & n3, Node & n4, int marker=0, bool check=true);
+    Boundary * createPolygonFace(std::vector < Node * > & nodes, int marker, bool check);
 
     /*! Create empty cell without a node or a shape. */
     Cell * createCell(int marker=0);

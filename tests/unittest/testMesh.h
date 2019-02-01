@@ -14,6 +14,8 @@ class MeshTest : public CppUnit::TestFixture{
     CPPUNIT_TEST(testRefine2d);
     CPPUNIT_TEST(testRefine3d);
         
+    CPPUNIT_TEST(testPolygonInsertion);
+    
     //CPPUNIT_TEST_EXCEPTION(funct, exception);
     CPPUNIT_TEST_SUITE_END();
     
@@ -132,6 +134,31 @@ public:
         CPPUNIT_ASSERT(q.nodeCount() == 27);
     }
     
+    void testPolygonInsertion(){
+        GIMLI::Node n0(0.0, 0.0, -0.5); n0.setId(0);
+        GIMLI::Node n1(1.0, 0.0, -0.5); n1.setId(1);
+        GIMLI::Node n2(1.0, 0.0,  0.5); n2.setId(2);
+        GIMLI::Node n3(0.0, 0.0,  0.5); n3.setId(3);
+        GIMLI::Node n4(0.0, 0.5, -0.5); n4.setId(4);
+        GIMLI::Node n5(1.0, 0.5, -0.5); n5.setId(5);
+        GIMLI::Node n6(1.0, 0.5,  0.5); n6.setId(6);
+        GIMLI::Node n7(0.0, 0.5,  0.5); n7.setId(7);
+        GIMLI::Node n8(0.5, 0.0, -0.5); n8.setId(8);
+
+        std::vector< Node * > nodes;
+        nodes.push_back(&n0);
+        nodes.push_back(&n4);
+        nodes.push_back(&n5);
+        nodes.push_back(&n1);
+
+        GIMLI::PolygonFace q1(nodes);
+
+
+        q1.insertNode(&n8);
+        CPPUNIT_ASSERT(q1.secondaryNodes().size() == 0);
+        CPPUNIT_ASSERT(q1.allNodeCount() == 5);
+    }
+
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(MeshTest);

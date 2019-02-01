@@ -182,7 +182,7 @@ public:
     const std::vector < Node * > allNodes() const;
 
     Index allNodeCount() const;
-    
+
 protected:
     void fillShape_();
 
@@ -366,8 +366,8 @@ protected:
     /*! Don't call this class directly */
     Boundary & operator = (const Boundary & boundary){
         if (this != &boundary) {
+            std::cerr << "Assignment for boundaries not yet supported." << std::endl;
             THROW_TO_IMPL
-            std::cerr << "boundary=boundary" << std::endl;
         }
         return *this;
     }
@@ -562,6 +562,11 @@ class DLLEXPORT PolygonFace : public Boundary {
         virtual uint dim() const { return 3; }
 
         virtual uint rtti() const { return MESH_POLYGON_FACE_RTTI; }    
+
+        /*Insert node into the polygon. Node needs to touch the polygon.
+        The node will be inserted in the nodeList or as secondary node if its 
+        not on an edge.*/
+        void insertNode(Node * node, double tol=TOLERANCE);
 
     protected:
     private:

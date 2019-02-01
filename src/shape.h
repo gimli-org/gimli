@@ -147,8 +147,6 @@ private:
     /*! Assignment operator is private, so don't use it */
     void operator = (const ShapeFunctionCache &){};
 
-
-
 protected:
 
     /*! Cache for shape functions. */
@@ -331,9 +329,9 @@ public:
 
     //     double jacobianDeterminant() const { return det(this->createJacobian()); }
 
-protected:
-
     inline void resizeNodeSize_(uint n) { nodeVector_.resize(n, NULL);  }
+
+protected:
 
     /*! Virtual method to calculate the domain size i.e length, area, volume of the shapes */
     virtual double domainSize_() const { return 0.0; }

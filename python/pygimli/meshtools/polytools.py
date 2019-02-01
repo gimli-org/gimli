@@ -1075,8 +1075,6 @@ def exportTetgenPoly(poly, filename, float_format='.12e', **kwargs):
     for bound in poly.boundaries():
         # one line per facet
         # <# of polygons> [# of holes] [boundary marker]
-        print(bound)
-        print(len(bound.secondaryNodes()))
         npolys = 1 + len(bound.secondaryNodes())
         polytxt += '{3}{2}0{2}{0:d}{1}'.format(bound.marker(), linesep, 
                                                sep, npolys)
@@ -1099,9 +1097,6 @@ def exportTetgenPoly(poly, filename, float_format='.12e', **kwargs):
             poly_str += sep + '{0:d} {0:d}'.format(ind)
             polytxt += '{0}{1}'.format(poly_str, linesep)
 
-    print(polytxt)
-    sys.exit()
-        
     # part 2b: extra boundaries that cannot be part of mesh class
     for nodes in extraBoundaries:
         # <# of polygons> [# of holes] [boundary marker]
@@ -1180,17 +1175,21 @@ def syscallTetgen(filename, quality=1.2, area=0, preserveBoundary=False,
     mesh : :gimliapi:`GIMLI::Mesh`
     """
     filebody = filename.replace('.poly', '')
+    
+    ##tetgen -pazVAC -q1.2 $MESH 
     syscal = 'tetgen -pzAC'
     if area > 0:
         syscal += 'a' + str(area)
     else:
         syscal += 'a'
+
     syscal += 'q' + str(quality)
 
     if not verbose:
         syscal += 'Q'
     else:
-        syscal += 'V'
+        pass
+        #syscal += 'V'
 
     if preserveBoundary:
         syscal += 'Y'
