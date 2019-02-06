@@ -240,8 +240,6 @@ DEFINE_COMPARE_OPERATOR__(>)
     template class Matrix3< double >;
 
     template class BlockMatrix< double >;
-
-    template class Pos< double >;
     template class Quaternion< double >;
 
     template class PolynomialElement< double >;
@@ -300,7 +298,7 @@ DEFINE_XVECTOR_STUFF__(RVector) //RVector last since auto rhs conversion will fa
     template RVector increasingRange(const double & first, const double & last, Index n);
 
     template Mesh & Mesh::transform(const Matrix < double > & mat);
-    template Pos< double > & Pos< double >::transform(const Matrix < double > & mat);
+    template Pos & Pos::transform(const Matrix < double > & mat);
 
     template class SparseMatrix< double >;
     template class SparseMatrix< GIMLI::Complex >;
@@ -500,7 +498,7 @@ DEFINE_XVECTOR_STUFF__(RVector) //RVector last since auto rhs conversion will fa
 //** define some aliases to avoid insane method names
 namespace pyplusplus{ namespace aliases{
     typedef std::complex< double >                       Complex;
-    typedef GIMLI::Pos< double >                         RVector3;
+    typedef GIMLI::Pos                                   RVector3;
 
     typedef GIMLI::Vector< bool >                        BVector;
     typedef GIMLI::Vector< double >                      RVector;

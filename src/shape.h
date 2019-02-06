@@ -320,6 +320,10 @@ public:
     /*! Returns the norm vector if possible otherwise returns non valid Vector3 */
     virtual RVector3 norm() const;
 
+    /*! Returns the a plane for this shape if its possible (2D or 3D plane shapes) 
+    otherwise returns non valid Plane. */
+    virtual Plane plane() const;
+
     /*! Notify this shape that the inverse Jacobian matrix and the domain size are not longer valid and need recalculation. This method is called if a node has bee transformed. */
     void changed();
 

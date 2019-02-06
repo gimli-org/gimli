@@ -850,12 +850,10 @@ def readPLC(filename, comment='#'):
                     .split()
                 # nNodes = int(boundRow[0])
                 nodeIdx = [int(_b) for _b in boundRow[1:]]
-                # if nNodes == :
-                #     poly.createBoundary(ivec, marker=marker)
-
-                # ivec = [int(boundRow[1]), int(boundRow[2]),
-                #         int(boundRow[3]), int(boundRow[4])]
-                poly.createBoundary(nodeIdx, marker=marker)
+                
+                poly.createPolygonFace(poly.nodes(nodeIdx), 
+                                       marker=marker, check=True)
+                # poly.createBoundary(nodeIdx, marker=marker)
                 segment_offset += 1
         nSegments += segment_offset
 
@@ -1367,6 +1365,7 @@ def createCylinder(radius, height, nSegments=8, area=0.0, pos=None, **kwargs):
         The resulting polygon is a :gimliapi:`GIMLI::Mesh`.
 
     """
+    marker = kwargs.pop('marker', 1)
     tmp = pg.optImport('tempfile')
 
     _, namePLC = tmp.mkstemp(suffix='.poly')
@@ -1393,9 +1392,8 @@ def createCylinder(radius, height, nSegments=8, area=0.0, pos=None, **kwargs):
         os.remove(namePLC)
     except:
         print("can't remove:", namePLC)
-
-    setPolyRegionMarker(**kwargs)
-
+    
+    #setPolyRegionMarker(**kwargs)
     return poly
 
 

@@ -122,8 +122,8 @@ bool Plane::checkValidity(double tol){
     if (std::fabs(norm_.abs() - 1.0) < tol){
         valid_ = true;
     } else {
-        std::cerr << WHERE_AM_I << " WARNING! Plane NOT valid " << std::fabs(norm_.abs() - 1.0) << " / "
-	           << tol << std::endl;
+        std::cerr << WHERE_AM_I << " WARNING! Plane NOT valid " 
+                  << std::fabs(norm_.abs() - 1.0) << " / " << tol << std::endl;
         valid_ = false;
     }
     return false;

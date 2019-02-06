@@ -118,10 +118,9 @@ std::ostream & operator << (std::ostream & str, const Matrix3 < ValueType > & ve
     return str;
 }
 
-
 template < class ValueType > \
-Pos< ValueType > operator * (const Matrix3 < ValueType > & A, const Pos < ValueType > & b) {
-    return Pos< ValueType > (A[0] * b[0] + A[1] * b[1] + A[2] * b[2],
+Pos operator * (const Matrix3 < ValueType > & A, const Pos & b) {
+    return Pos (A[0] * b[0] + A[1] * b[1] + A[2] * b[2],
                              A[3] * b[0] + A[4] * b[1] + A[5] * b[2],
                              A[6] * b[0] + A[7] * b[1] + A[8] * b[2]);
 }

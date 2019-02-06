@@ -39,14 +39,14 @@ class KDTreeWrapper;
 class DLLEXPORT BoundingBox{
 public:
     /*! Default constructor, with BoundingBox[0.0, 0.0, 0.0; 1.0, 1.0, 1.0] */
-    BoundingBox(const Pos < double > & min=Pos < double >(0, 0, 0),
-                const Pos < double > & max=Pos < double >(1.0, 1.0, 1.0))
+    BoundingBox(const Pos & min=Pos(0, 0, 0),
+                const Pos & max=Pos(1.0, 1.0, 1.0))
         : min_(min), max_(max){
     }
 
     /*! Construct BBox from position vector */
     BoundingBox(const R3Vector & vPos){
-        min_ = Pos < double>((double)MAX_DOUBLE, (double)MAX_DOUBLE, (double)MAX_DOUBLE);
+        min_ = Pos((double)MAX_DOUBLE, (double)MAX_DOUBLE, (double)MAX_DOUBLE);
         max_ = min_ * -1.0;
         for (uint i = 0; i < vPos.size(); i ++){
             min_[0] = std::min(vPos[i][0], min_[0]);
@@ -69,21 +69,21 @@ public:
     }
 
     /*! Check if a point lie inside (with boundary). */
-    bool isInside(const Pos < double > & p){
+    bool isInside(const Pos & p){
         return ((p[0] <= max_[0] && p[0] >= min_[0]) &&
                 (p[1] <= max_[1] && p[1] >= min_[1]) &&
                 (p[2] <= max_[2] && p[2] >= min_[2]));
     }
 
     /*! Set minimum Position. */
-    void setMin(const Pos < double > & min) { min_ = min; }
+    void setMin(const Pos & min) { min_ = min; }
     /*! Return a copy of the minimum position. */
-    const Pos < double > & min() const { return min_; }
+    const Pos & min() const { return min_; }
 
     /*! Set maximum Position. */
-    void setMax(const Pos < double > & max) { max_ = max; }
+    void setMax(const Pos & max) { max_ = max; }
     /*! Return a copy of the maximum position. */
-    const Pos < double > & max() const { return max_; }
+    const Pos & max() const { return max_; }
 
     /*! Return minimal x coordinate.*/
     inline double xMin() const { return min_[0];}
@@ -114,8 +114,8 @@ protected:
         max_ = bbox.max();
     }
 
-    Pos < double > min_;
-    Pos < double > max_;
+    Pos min_;
+    Pos max_;
 };
 
 inline std::ostream & operator << (std::ostream & str, const BoundingBox & bb){
@@ -219,7 +219,7 @@ public:
     Boundary * createEdge3(Node & n1, Node & n2, Node & n3, int marker=0, bool check=true);
     Boundary * createTriangleFace(Node & n1, Node & n2, Node & n3, int marker=0, bool check=true);
     Boundary * createQuadrangleFace(Node & n1, Node & n2, Node & n3, Node & n4, int marker=0, bool check=true);
-    Boundary * createPolygonFace(std::vector < Node * > & nodes, int marker, bool check);
+    Boundary * createPolygonFace(std::vector < Node * > & nodes, int marker, bool check=true);
 
     /*! Create empty cell without a node or a shape. */
     Cell * createCell(int marker=0);

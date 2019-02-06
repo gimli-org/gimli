@@ -391,13 +391,30 @@ bool Shape::isInside(const RVector3 & xyz, RVector & sf, bool verbose) const {
     return false;
 }
     
+Plane Shape::plane() const{
+    Index lastID = 2;
+
+    while (lastID < this->nodeCount()){
+        // search for a valid plane for this shape
+        RVector3 n(node(0).pos().norm(node(1).pos(), node(lastID).pos()));
+        if (std::fabs(n.abs() - 1.0) < TOLERANCE){
+            Plane plane(node(0).pos(), node(1).pos(), node(lastID).pos());
+            return plane;
+        }
+    }
+    return Plane();
+}
+
 bool Shape::touch(const RVector3 & pos, double tol, bool verbose) const {
     if (this->nodeCount() < 3) {
         log(Critical, "Shape need at least 3 nodes and should be a 3D boundary face.");
     }
-    Plane plane(node(0).pos(), node(1).pos(), node(2).pos());
-    if (!plane.touch(pos, tol)) return false;
-    
+
+    Plane plane(this->plane());
+    if (!plane.touch(pos, tol)) {
+        return false;
+    }
+
     // test ray along the plane
     RVector3 rayDir(((node(1).pos() + node(2).pos()) / 2.0 - node(0).pos()));
 
@@ -580,7 +597,6 @@ bool QuadrangleShape::intersectRay(const RVector3 & start, const RVector3 & dir,
     if (this->isInside(pos)) return true;
     return false;
 }
-
 
 PolygonShape::PolygonShape(Index nodeCount){ 
     resizeNodeSize_(nodeCount); 

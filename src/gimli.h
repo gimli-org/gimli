@@ -234,10 +234,9 @@ class Region;
 class RegionManager;
 class Shape;
 class Stopwatch;
+class Pos;
 
-template < class ValueType > class Pos;
-typedef Pos< int >          IntPos;
-typedef Pos< double >       RVector3;
+typedef Pos RVector3;
 typedef std::complex < double > Complex;
 
 template < class ValueType >        class SparseMatrix;
