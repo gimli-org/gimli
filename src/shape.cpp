@@ -401,6 +401,7 @@ Plane Shape::plane() const{
             Plane plane(node(0).pos(), node(1).pos(), node(lastID).pos());
             return plane;
         }
+        lastID++;
     }
     return Plane();
 }

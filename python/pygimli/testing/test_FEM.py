@@ -66,7 +66,6 @@ class TestFiniteElementBasics(unittest.TestCase):
                 pg.wait()
             
             v = pg.solver.grad(mesh, u)
-            #print("|v|:", min(pg.abs(v)), max(pg.abs(v)), pg.mean(pg.abs(v)))
             np.testing.assert_allclose(pg.abs(v), np.ones(mesh.cellCount())*vTest)
             return v
 

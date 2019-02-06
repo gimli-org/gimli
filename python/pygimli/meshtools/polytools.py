@@ -21,7 +21,6 @@ import os
 from os import system
 
 import numpy as np
-
 import pygimli as pg
 
 
@@ -46,7 +45,7 @@ def _polyCreateDefaultEdges(poly, boundaryMarker=1, isClosed=True, **kwargs):
     
 
 def setPolyRegionMarker(poly, marker=1, area=0.0, markerPosition=None, 
-                        isHole=False):
+                        isHole=False, **kwargs):
     """Internal to set region markers to single elementary geometry. 
     
     Internal to set region markers.
@@ -74,6 +73,8 @@ def setPolyRegionMarker(poly, marker=1, area=0.0, markerPosition=None,
     isHole : bool [False]
         Marks the geometry as a hole and will be cut in any merge mesh.
 
+    **kwargs:
+        unused
     """
     pos = None
     if markerPosition is not None:
@@ -356,7 +357,7 @@ def createCircle(pos=None, radius=1, segments=12, start=0, end=2.*math.pi,
 
     _polyCreateDefaultEdges(poly, **kwargs)
 
-    if isClosed:
+    if kwargs.pop('isClosed', True):
         setPolyRegionMarker(poly, **kwargs)
 
     # need a better way mess with these or wrong kwargs
@@ -496,12 +497,14 @@ def createPolygon(verts, isClosed=False, **kwargs):
     return poly
 
 
-def mergePLC(pols, tol=1e-3):
+def mergePLC(plcs, tol=1e-3):
     """Merge multiply polygons.
 
     Merge multiply polygons into a single polygon.
     Common nodes and common edges will be checked and removed.
     When a node touches and edge the edge will be split.
+
+    3D only OOC with polytools
 
     TODO:
         * Crossing or Node/Edge intersections will NOT be
@@ -509,15 +512,15 @@ def mergePLC(pols, tol=1e-3):
 
     Parameters
     ----------
-    pols: [:gimliapi:`GIMLI::Mesh`]
-        List of polygons that need to be merged
+    plcs: [:gimliapi:`GIMLI::Mesh`]
+        List of PLC that want to be merged into one new PLC
 
     tol : double
         Tolerance to check for duplicated nodes. [1e-3]
 
     Returns
     -------
-    poly : :gimliapi:`GIMLI::Mesh`
+    plc : :gimliapi:`GIMLI::Mesh`
         The resulting polygon is a :gimliapi:`GIMLI::Mesh`.
 
     Examples
@@ -533,35 +536,60 @@ def mergePLC(pols, tol=1e-3):
     >>> r2 = mt.createRectangle(start=[4, -4], end=[6, -6],
     ...                          marker=4, area=0.1)
     >>> plc = mt.mergePLC([world, c1, c2, r1, r2])
-    >>> fig, ax = plt.subplots()
+    >>> fig, ax = pg.plt.subplots()
     >>> drawMesh(ax, plc)
     >>> drawMesh(ax, mt.createMesh(plc))
-    >>> plt.show()
+    >>> pg.wait()
     """
-    poly = pg.Mesh(dim=2, isGeometry=True)
+    if plcs[0].dim() == 3:
+        
+        tmp = pg.optImport('tempfile')
+        names = []
+        for p in plcs:    
+            _, namePLC = tmp.mkstemp(suffix='.poly')
+            pg.meshtools.exportPLC(p, namePLC)
+            names.append(namePLC)
 
-    for p in pols:
+        for n in names[1:]:
+            syscal = 'polyMerge {0} {1} {0}'.format(names[0], n)
+            pg.debug(syscal)
+            os.system(syscal)
+
+        plc = readPLC(names[0])
+        
+        for n in names:
+            try:
+                pg.debug('Remove:', n)
+                os.remove(n)
+            except:
+                print("can't remove:", n)
+
+        return plc
+
+    plc = pg.Mesh(dim=2, isGeometry=True)
+
+    for p in plcs:
         nodes = []
         for n in p.nodes():
-            nn = poly.createNodeWithCheck(n.pos(), tol,
-                                          warn=False, edgeCheck=True)
+            nn = plc.createNodeWithCheck(n.pos(), tol,
+                                         warn=False, edgeCheck=True)
             if n.marker() != 0:
                 nn.setMarker(n.marker())
             nodes.append(nn)
 
         for e in p.boundaries():
-            poly.createEdge(nodes[e.node(0).id()], nodes[e.node(1).id()],
+            plc.createEdge(nodes[e.node(0).id()], nodes[e.node(1).id()],
                             e.marker())
 
         if len(p.regionMarker()) > 0:
             for rm in p.regionMarker():
-                poly.addRegionMarker(rm)
+                plc.addRegionMarker(rm)
 
         if len(p.holeMarker()) > 0:
             for hm in p.holeMarker():
-                poly.addHoleMarker(hm)
+                plc.addHoleMarker(hm)
 
-    return poly
+    return plc
 
 
 def createParaDomain2D(*args, **kwargs):
@@ -740,10 +768,6 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
         poly.createEdge(nSurface[i], nSurface[i - 1],
                         pg.MARKER_BOUND_HOMOGEN_NEUMANN)
 
-    # print(poly)
-    # pg.meshtools.writePLC(poly, "test.poly")
-    # pg.show(poly)
-    # pg.wait()
     return poly
 
 
@@ -845,15 +869,21 @@ def readPLC(filename, comment='#'):
             if haveBoundaryMarker:
                 marker = int(row[2])
 
+            face = None
             for k in range(numBounds):
                 boundRow = content[2 + nVerts + i + segment_offset + 1]\
                     .split()
                 # nNodes = int(boundRow[0])
                 nodeIdx = [int(_b) for _b in boundRow[1:]]
                 
-                poly.createPolygonFace(poly.nodes(nodeIdx), 
-                                       marker=marker, check=True)
-                # poly.createBoundary(nodeIdx, marker=marker)
+                if k == 0:
+                    face = poly.createPolygonFace(poly.nodes(nodeIdx), 
+                                           marker=marker, check=True)
+                else:
+                    if len(nodeIdx) == 2:
+                        if nodeIdx[0] == nodeIdx[1]:
+                            face.addSecondaryNode(poly.node(nodeIdx[0]))
+                
                 segment_offset += 1
         nSegments += segment_offset
 
@@ -1306,9 +1336,8 @@ def createCube(size=[1.0, 1.0, 1.0], area=0.0, pos=None,
     _, namePLC = tmp.mkstemp(suffix='.poly')
 
     pg.debug("Create temporary file:", namePLC)
-    syscal = 'polyCreateCube '  
-    syscal = syscal + ' ' + namePLC
-
+    syscal = 'polyCreateCube ' + namePLC
+    
     pg.debug(syscal)
     os.system(syscal)
     poly = readPLC(namePLC)
@@ -1316,6 +1345,9 @@ def createCube(size=[1.0, 1.0, 1.0], area=0.0, pos=None,
         os.remove(namePLC)
     except:
         print("can't remove:", namePLC)
+
+    for b in poly.boundaries():
+        b.setMarker(boundaryMarker)
 
     poly.scale(size)
 

@@ -129,8 +129,7 @@ def createMesh(poly, quality=32, area=0.0, smooth=None, switches=None,
                                           verbose=verbose)
 
         try:
-            #os.remove(namePLC)
-            pass
+            os.remove(namePLC)
         except:
             print("can't remove:", namePLC)
 

@@ -143,22 +143,23 @@ public:
         GIMLI::Node n5(1.0, 0.5, -0.5); n5.setId(5);
         GIMLI::Node n6(1.0, 0.5,  0.5); n6.setId(6);
         GIMLI::Node n7(0.0, 0.5,  0.5); n7.setId(7);
-        GIMLI::Node n8(0.5, 0.0, -0.5); n8.setId(8);
-
+        GIMLI::Node n8(0.5, 0.5, -0.5); n8.setId(8);
+                            
         std::vector< Node * > nodes;
-        nodes.push_back(&n0);
         nodes.push_back(&n4);
         nodes.push_back(&n5);
         nodes.push_back(&n1);
+        nodes.push_back(&n0);
 
         GIMLI::PolygonFace q1(nodes);
 
-
         q1.insertNode(&n8);
         CPPUNIT_ASSERT(q1.secondaryNodes().size() == 0);
-        CPPUNIT_ASSERT(q1.allNodeCount() == 5);
-    }
 
+        CPPUNIT_ASSERT(q1.allNodeCount() == 5);    
+        CPPUNIT_ASSERT(q1.node(0).id() == 4);
+        CPPUNIT_ASSERT(q1.node(1).id() == 8);
+    }
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(MeshTest);

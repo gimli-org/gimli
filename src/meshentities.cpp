@@ -819,7 +819,7 @@ void PolygonFace::insertNode(Node * n, double tol){
             __MS(*this)
             __MS(n)
             log(Error, "PolygonFace::insertNode. Duplicate node position found. "
-                        "Node need to touch the Polygon face or its edge but not the corner nodes.");
+                       "Node need to touch the Polygon face or its edge but not the corner nodes.");
         }
         
         Line segment(this->node(i).pos(), 
@@ -829,9 +829,13 @@ void PolygonFace::insertNode(Node * n, double tol){
             if (pFkt == 3){
                 // __MS("insert edge")
                 std::vector < Node * > nodes;
-                for (Index j = 0; j < i; j ++){ nodes.push_back(&this->node(j));}
+                for (Index j = 0; j < i + 1; j ++){ 
+                    nodes.push_back(&this->node(j));
+                }
                 nodes.push_back(n);
-                for (Index j = i; j < this->nodeCount(); j ++){ nodes.push_back(&this->node(j));}
+                for (Index j = i + 1; j < this->nodeCount(); j ++){ 
+                    nodes.push_back(&this->node(j));
+                }
                 deRegisterNodes_();
                 setNodes_(nodes);
                 registerNodes_();

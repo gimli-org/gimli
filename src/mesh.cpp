@@ -191,7 +191,6 @@ Node * Mesh::createNodeGC_(const RVector3 & pos, int marker){
             }
         }
         return n;
-
     } else {
         return this->createNode_(pos, marker);
     }
