@@ -449,8 +449,8 @@ class ERTManager(MeshMethodManager):
             * calcOnly : bool [False]
                 Use fop.calculate instead of fop.response. Useful if you want
                 to force the calculation of impedances for homogeneous models.
-                No noise handling. Solution is put in scheme('u') and
-                a dataMap instance will be returned.
+                No noise handling. Solution is put as token 'u' in the returned 
+                DataContainerERT.
 
             * noiseLevel : float[0.0]
                 add normal distributed noise based on
@@ -541,6 +541,8 @@ class ERTManager(MeshMethodManager):
                 pg.info('Calculate geometric factors.')
             scheme.set('k', fop.calcGeometricFactor(scheme))
 
+        ret = pg.DataContainerERT(scheme)
+
         if isArrayData:
             rhoa = np.zeros((len(res), scheme.size()))
             for i, r in enumerate(res):
@@ -560,11 +562,15 @@ class ERTManager(MeshMethodManager):
                     fop.mesh().setCellAttributes(res)
                     dMap = pg.DataMap()
                     fop.calculate(dMap)
-                    scheme.set("u", dMap.data(scheme))
-
+                    if fop.complex():
+                        pg.critical('Implement me')
+                    else:
+                        ret.set("u", dMap.data(scheme))
+                        ret.set("i", np.ones(ret.size()))
+                    
                     if returnFields:
                         return pg.Matrix(fop.solution())
-                    return dMap
+                    return ret
                 else:
                     resp = fop.response(res)
 
@@ -578,7 +584,7 @@ class ERTManager(MeshMethodManager):
                 print("res: ", res)
                 raise BaseException("Simulate called with wrong resistivity array.")
 
-        ret = pg.DataContainerERT(scheme)
+        
         if not isArrayData:
             ret.set('rhoa', rhoa)
 
