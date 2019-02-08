@@ -72,13 +72,13 @@ public:
 
     inline RVector3 & pos() { return pos_; }
 
-    inline void insertBoundary(Boundary & bound){ boundSet_.insert(&bound); }
+    inline void insertBoundary(Boundary * bound){ boundSet_.insert(bound); }
 
-    inline void eraseBoundary(Boundary & bound){ boundSet_.erase(&bound); }
+    inline void eraseBoundary(Boundary * bound){ boundSet_.erase(bound); }
 
-    inline void insertCell(Cell & cell){ cellSet_.insert(&cell); }
+    inline void insertCell(Cell * cell){ cellSet_.insert(cell); }
 
-    inline void eraseCell(Cell & cell){ cellSet_.erase(&cell); }
+    inline void eraseCell(Cell * cell){ cellSet_.erase(cell); }
 
     inline const std::set < Boundary * > & boundSet() const { return boundSet_; }
 

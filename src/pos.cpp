@@ -22,8 +22,8 @@
 
 namespace GIMLI{
 
-std::vector < RVector3 > loadRVector3(const std::string & fileName){
-    std::vector < RVector3 > l;
+std::vector < Pos > loadRVector3(const std::string & fileName){
+    std::vector < Pos > l;
     std::fstream file; openInFile(fileName, & file, true);
     std::vector < std::string > row;
 
@@ -40,14 +40,14 @@ std::vector < RVector3 > loadRVector3(const std::string & fileName){
     return l;
 }
 
-void saveRVector3(const std::vector < RVector3 > l, const std::string & fileName){
+void saveRVector3(const std::vector < Pos > l, const std::string & fileName){
     std::fstream file; openOutFile(fileName, & file);
     for (uint i = 0; i < l.size(); i ++) file << l[i] << std::endl;
     file.close();
 }
 
 RVector3 center(const R3Vector & vPos){
-  RVector3 pos(0.0, 0.0, 0.0);
+  Pos pos(0.0, 0.0, 0.0);
 
   //  std::cout << WHERE_AM_I << vPos.size() << std::endl;
 
@@ -66,14 +66,14 @@ R3Vector normalise(const R3Vector & vPos){
     return ret;
 }
 
-double jacobianDetXY(const RVector3 & p1, const RVector3 & p2, const RVector3 & p3){
+double jacobianDetXY(const Pos & p1, const Pos & p2, const Pos & p3){
   double x1 = p1.x(), x2 = p2.x(), x3 = p3.x();
   double y1 = p1.y(), y2 = p2.y(), y3 = p3.y();
 
   return (x2 - x1) * (y3 - y1) - (x3 - x1) * (y2 - y1);
 }
 
-double angle(const RVector3 & p1, const RVector3 & p2, const RVector3 & p3){
+double angle(const Pos & p1, const Pos & p2, const Pos & p3){
   double angle = p2.angle(p1, p3);
   if (jacobianDetXY(p1, p2, p3) > 0) angle = 2.0 * PI - angle;
   return angle;
@@ -154,20 +154,19 @@ RMatrix toMatrix(const R3Vector & vec){
     return ret;
 }
 
-R3Vector stdVectorRVector3ToR3Vector(const std::vector < RVector3 > & rv){
+R3Vector stdVectorRVector3ToR3Vector(const std::vector < Pos > & rv){
     R3Vector ret(rv.size());
     for (Index i = 0; i < rv.size(); i ++) ret[i] = rv[i];
     return ret;
 }
 
-std::vector < RVector3 > R3VectorTostdVectorRVector3(const R3Vector & rv){
-    std::vector < RVector3 > ret(rv.size());
+std::vector < Pos > R3VectorTostdVectorRVector3(const R3Vector & rv){
+    std::vector < Pos > ret(rv.size());
     for (Index i = 0; i < rv.size(); i ++) ret[i] = rv[i];
     return ret;
 }
 
-template <> DLLEXPORT 
-RVector3 RVector3::cross(const RVector3 & p) const{
+RVector3 RVector3::cross(const Pos & p) const{
 //     r[0] = (a2 * b3 - a3 * b2);
 //     r[1] = (a3 * b1 - a1 * b3);
 //     r[2] = (a1 * b2 - a2 * b1);
@@ -176,24 +175,36 @@ RVector3 RVector3::cross(const RVector3 & p) const{
                    (*this)[0] * p[1] - (*this)[1] * p[0]));
 }
 
-template <> DLLEXPORT 
-RVector3 RVector3::norm(const RVector3 & p1, const RVector3 & p2) const {
-    RVector3 a(p1 - (*this));
-    RVector3 b(p2 - (*this));
-    RVector3 r(a.cross(b));
+RVector3 RVector3::norm(const Pos & p1, const Pos & p2) const {
+    Pos a(p1 - (*this));
+    Pos b(p2 - (*this));
+    Pos r(a.cross(b));
     return r.norm();
 }
 
-template <> DLLEXPORT 
-RVector3 RVector3::normXY(const RVector3 & p) const {
-    RVector3 result((*this + p) / 2.0);
+RVector3 RVector3::normXY(const Pos & p) const {
+    Pos result((*this + p) / 2.0);
     result.setZ(1.0);
     result = result.norm(*this, p);
     result.setZ(0.0);
     return result;
 }
 
-// template <> double RVector3::angle(const RVector3 & p) const {
+double Pos::angle(const Pos & p1, const Pos & p3) const {
+    Pos a(p1 - (*this));
+    Pos b(p3 - (*this));
+    return (a).angle(b);
+}
+
+double Pos::angle(const Pos & p) const {
+    double result = acos(this->dot(p) / (this->abs() * p.abs()));
+    if (isnan(result) || isinf(result)){
+        result = 0.0;
+    }
+    return result;
+}
+
+// template <> double RVector3::angle(const Pos & p) const {
 //   double result = acos(this->dot(p) / (this->abs() * p.abs()));
 //   if (std::isnan(result) || std::isinf(result)) {
 //     result = 0.0;
@@ -201,9 +212,9 @@ RVector3 RVector3::normXY(const RVector3 & p) const {
 //   return result;
 // }
 
-// template <> double RVector3::angle(const RVector3 & p1, const RVector3 & p3) const {
-//   RVector3 a(p1 - (*this));
-//   RVector3 b(p3 - (*this));
+// template <> double RVector3::angle(const Pos & p1, const Pos & p3) const {
+//   Pos a(p1 - (*this));
+//   Pos b(p3 - (*this));
 //   return (a).angle(b);
 // }
 

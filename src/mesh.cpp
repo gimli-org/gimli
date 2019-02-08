@@ -175,6 +175,21 @@ Node * Mesh::createNodeGC_(const RVector3 & pos, int marker){
     if (this->isGeometry_){
         Node *n = this->createNodeWithCheck(pos);
         n->setMarker(marker);
+        
+        if (this->dim() == 3){
+
+            for (Index i = 0; i < this->boundaryVector_.size(); i ++ ){
+                Boundary *b = this->boundaryVector_[i];
+                if (b->rtti() == MESH_POLYGON_FACE_RTTI){
+                    if (b->shape().touch(n->pos())){
+                        dynamic_cast< PolygonFace* >(b)->insertNode(n);
+                    }
+                } else {
+                    __MS(*b)
+                    log(Error, "Adding a node in a non Polygon Face is not supported.");
+                }
+            }
+        }
         return n;
     } else {
         return this->createNode_(pos, marker);
@@ -254,8 +269,9 @@ Node * Mesh::createNodeWithCheck(const RVector3 & pos, double tol, bool warn, bo
     if (edgeCheck){
         if (this->dim() != 2){
             if (warn || debug()) log(LogType::Warning,
-                                     "edgeCheck is currently only supported for 2d meshes");
+                "edgeCheck is currently only supported for 2d meshes");
         } else {
+            ///// TODO refaktor in extra function
             for (Index i = 0; i < this->boundaryVector_.size(); i ++ ){
                 Boundary *b = this->boundaryVector_[i];
                 if (b->rtti() == MESH_EDGE_RTTI){
@@ -346,6 +362,10 @@ Boundary * Mesh::createTriangleFace(Node & n1, Node & n2, Node & n3, int marker,
 Boundary * Mesh::createQuadrangleFace(Node & n1, Node & n2, Node & n3, Node & n4, int marker, bool check){
     std::vector < Node * > nodes(4);  nodes[0] = & n1; nodes[1] = & n2; nodes[2] = & n3, nodes[3] = & n4;
     return createBoundaryChecked_< QuadrangleFace >(nodes, marker, check);
+}
+
+Boundary * Mesh::createPolygonFace(std::vector < Node * > & nodes, int marker, bool check){
+    return createBoundaryChecked_< PolygonFace >(nodes, marker, check);
 }
 
 Cell * Mesh::createCell(int marker){
@@ -1245,6 +1265,7 @@ void Mesh::createRefined_(const Mesh & mesh, bool p2, bool h2){
                                                     nodeMatrix);
                 }
                 if (h2){
+                    log(Error, "Sorry, p2-refine for an already p2-refined mesh is not supported.");
                     THROW_TO_IMPL
                 }
                 break;

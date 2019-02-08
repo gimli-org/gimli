@@ -102,7 +102,7 @@ def parseArgToArray(arg, nDof, mesh=None, userData=None):
                 else:
                     ret[b.id()] = arg(boundary=b)
         else:
-            raise Exception("Cannot parse callable argument " + str(ndof) +
+            raise Exception("Cannot parse callable argument " + str(nDof) +
                             " nodes: " + str(mesh.nodeCount()) +
                             " cells: " + str(mesh.cellCount()))
 

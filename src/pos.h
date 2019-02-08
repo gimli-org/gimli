@@ -24,7 +24,9 @@
 
 namespace GIMLI{
 
-template < class ValueType > std::ostream & operator << (std::ostream & str, const Pos< ValueType > & pos);
+std::ostream & operator << (std::ostream & str, const Pos & pos);
+std::istream & operator >> (std::istream & is, Pos & pos);
+
 
 DLLEXPORT RVector3 center(const R3Vector & vPos);
 DLLEXPORT R3Vector normalise(const R3Vector & vPos);
@@ -68,9 +70,7 @@ DLLEXPORT std::vector < RVector3 > R3VectorTostdVectorRVector3(const R3Vector & 
 //! 3 dimensional vector
 /*! 3 dimensional vector */
 
-template < class ValueType >
 class DLLEXPORT Pos {
-//template < class ValueType > class DLLEXPORT Pos : public TinyVector< ValueType >{
 public:
 
   //  static const RVector3 ZERO(0.0, 0.0, 0.0);
@@ -88,17 +88,17 @@ public:
     /*! Construct an empty in 3d at (0, 0, 0). Optional set valid flag. */
     Pos(bool valid) : valid_(valid) { assign(0.0, 0.0, 0.0); }
 
-    Pos(ValueType x, ValueType y) : valid_(true) { assign(x, y, 0.0); }
-    Pos(ValueType x, ValueType y, ValueType z) : valid_(true) { assign(x, y, z); }
+    Pos(double x, double y) : valid_(true) { assign(x, y, 0.0); }
+    Pos(double x, double y, double z) : valid_(true) { assign(x, y, z); }
 
-    Pos(const Pos< ValueType > & pos) { copy_(pos); }
+    Pos(const Pos & pos) { copy_(pos); }
 
     /*! Assignment operator */
-    Pos < ValueType > & operator = (const Pos < ValueType > & pos){
+    Pos & operator = (const Pos & pos){
         if (this != & pos){ copy_(pos); } return *this; }
 
     /*! Assignment operator */
-    Pos < ValueType > & operator = (const Vector < ValueType > & v){
+    Pos & operator = (const Vector < double > & v){
         if (v.size() > 2) {
             mat_[0] = v[0];
             mat_[1] = v[1];
@@ -110,13 +110,13 @@ public:
 
     }
 
-    inline ValueType & operator [] (Index i) { return mat_[i]; }
+    inline double & operator [] (Index i) { return mat_[i]; }
 
-    inline const ValueType & operator [] (Index i) const { return mat_[i]; }
+    inline const double & operator [] (Index i) const { return mat_[i]; }
 
     #define DEFINE_UNARY_MOD_OPERATOR__(OP) \
-    inline Pos < double > & operator OP##= (const double & b){ mat_[0] OP##= b; mat_[1] OP##= b; mat_[2] OP##= b; return *this; }\
-    inline Pos < double > & operator OP##= (const Pos < double > & b){ mat_[0] OP##= b[0]; mat_[1] OP##= b[1]; mat_[2] OP##= b[2]; return *this; }\
+    inline Pos & operator OP##= (const double & b){ mat_[0] OP##= b; mat_[1] OP##= b; mat_[2] OP##= b; return *this; }\
+    inline Pos & operator OP##= (const Pos & b){ mat_[0] OP##= b[0]; mat_[1] OP##= b[1]; mat_[2] OP##= b[2]; return *this; }\
 
     DEFINE_UNARY_MOD_OPERATOR__(+)
     DEFINE_UNARY_MOD_OPERATOR__(-)
@@ -125,25 +125,25 @@ public:
 
     #undef DEFINE_UNARY_MOD_OPERATOR__
 
-    Pos < ValueType > operator - () const { return *this * -1.0; }
+    Pos operator - () const { return Pos(-mat_[0], -mat_[1], -mat_[2]); }
 
     inline void setValid(bool valid) { valid_ = valid; }
     inline bool valid() const { return valid_; }
 
-    inline void assign(const ValueType & x, const ValueType & y, const ValueType & z) {
+    inline void assign(const double & x, const double & y, const double & z) {
         mat_[0] = x; mat_[1] = y; mat_[2] = z;
       //  x_ = x; y_ = y; z_ = z;
     }
 
-    inline const ValueType & x() const { return mat_[0]; }
-    inline const ValueType & y() const { return mat_[1]; }
-    inline const ValueType & z() const { return mat_[2]; }
-    inline void setX(ValueType x) { mat_[0] = x; }
-    inline void setY(ValueType y) { mat_[1] = y; }
-    inline void setZ(ValueType z) { mat_[2] = z; }
+    inline const double & x() const { return mat_[0]; }
+    inline const double & y() const { return mat_[1]; }
+    inline const double & z() const { return mat_[2]; }
+    inline void setX(double x) { mat_[0] = x; }
+    inline void setY(double y) { mat_[1] = y; }
+    inline void setZ(double z) { mat_[2] = z; }
 
     /*! Set a value. Throws out of range exception if index check fails. */
-    inline void setVal(const ValueType & val, Index i) {
+    inline void setVal(const double & val, Index i) {
         if (i < 3) {
             mat_[i] = val;
         } else {
@@ -152,7 +152,7 @@ public:
     }
 
     /*! Get a value. Throws out of range exception if index check fails. */
-    inline const ValueType & getVal(Index i) const {
+    inline const double & getVal(Index i) const {
         if (i < 3) {
             return mat_[i];
         } else {
@@ -161,90 +161,75 @@ public:
         return mat_[0];
     }
 
-    Pos< ValueType > & round(double tol){
+    /*! Inline round to tol.*/
+    inline Pos & round(double tol){
         mat_[0] = rint(mat_[0] / tol) * tol;
         mat_[1] = rint(mat_[1] / tol) * tol;
         mat_[2] = rint(mat_[2] / tol) * tol;
         return *this;
     }
 
-//     Pos< ValueType > & round(double tol) const {
-//         return Pos< ValueType >(*this).round(tol);
-//     }
-
-    inline double distSquared(const Pos < ValueType > & p) const {
+    /*! Return the squared distance to p.*/
+    inline double distSquared(const Pos & p) const {
         return  ((mat_[0] - p[0]) * (mat_[0] - p[0]) +
                    (mat_[1] - p[1]) * (mat_[1] - p[1]) +
                    (mat_[2] - p[2]) * (mat_[2] - p[2]));
     }
 
-    inline double dist(const Pos < ValueType > & p) const { return std::sqrt(distSquared(p)); }
+    /*! Return the distance to p.*/
+    inline double dist(const Pos & p) const { return std::sqrt(distSquared(p)); }
 
-    inline double distance(const Pos < ValueType > & p) const { return dist(p); }
+    /*! Return the distance to p.*/
+    inline double distance(const Pos & p) const { return dist(p); }
 
-//     /*! Test if this is faster than dist() */
-//     inline double distT(const Pos < ValueType > & p) const {
-//         return std::sqrt((x_ - p.x_) * (x_ - p.x_) +
-//                             (y_ - p.y_) * (y_ - p.y_) +
-//                             (z_ - p.z_) * (z_ - p.z_));
-//     }
-
-    inline double abs() const { return length(); }
-
+    /*! Return the squared length of this position vector.*/
     inline double distSquared() const {
         return  mat_[0] * mat_[0] + mat_[1] * mat_[1] + mat_[2] * mat_[2];
     }
+    /*! Return the length of this position vector, same as length.*/
+    inline double abs() const { return length(); }
 
+    /*! Return the length of this position vector.*/
     inline double length() const { return std::sqrt(distSquared()); }
 
     /*! Return the angle between (this, (origin), p).*/
-    double angle(const Pos < ValueType > & p) const {
-        double result = acos(this->dot(p) / (this->abs() * p.abs()));
-        if (isnan(result) || isinf(result)){
-            result = 0.0;
-        }
-        return result;
-    }
-
+    double angle(const Pos & p) const;
+    
     /*! Return the angle between (p1, this, p2).*/
-    double angle(const RVector3 & p1, const RVector3 & p3) const {
-        RVector3 a(p1 - (*this));
-        RVector3 b(p3 - (*this));
-        return (a).angle(b);
-    }
+    double angle(const RVector3 & p1, const RVector3 & p3) const;
 
-    inline ValueType dot(const Pos < ValueType > & p) const {
+    inline double dot(const Pos & p) const {
         return mat_[0] * p[0] + mat_[1] * p[1] + mat_[2] * p[2];
     }
 
-    inline ValueType sum() const {
+    inline double sum() const {
         return mat_[0] + mat_[1] + mat_[2];
     }
 
-    Pos< ValueType > norm(const Pos< ValueType > & p1, const Pos< ValueType > & p2) const;
+    Pos norm(const Pos & p1, const Pos & p2) const;
 
     /*! Return normalised copy of this Pos. */
-    Pos< ValueType > norm() const {
-        double t = this->abs();
-        if (t > TOLERANCE) return *this / t;
-        return RVector3(0.0, 0.0, 0.0);
+    Pos norm() const {
+        Pos p(*this);
+        p.normalize();
+        return p;
     }
 
     /*! Normalize this Pos and return itself. */
-    Pos< ValueType > & normalize(){
+    Pos & normalize(){
         double t = this->abs();
         if (t > TOLERANCE) *this /= t;
         return *this;
     }
     
     /*!DEPRECATED Normalise for backward compatibility.*/
-    Pos< ValueType > & normalise(){ return normalize(); }
+    Pos & normalise(){ return normalize(); }
 
-    Pos< ValueType > cross(const Pos< ValueType > & p) const;
+    Pos cross(const Pos & p) const;
 
-    Pos< ValueType > normXY(const Pos< ValueType > & p) const;
+    Pos normXY(const Pos & p) const;
 
-    template < class Matrix > Pos < ValueType > & transform(const Matrix & wm){
+    template < class Matrix > Pos & transform(const Matrix & wm){
         double x = mat_[0], y = mat_[1], z = mat_[2];
 
         mat_[0] = x * wm[0][0] + y * wm[0][1] + z * wm[0][2];
@@ -253,36 +238,36 @@ public:
         return *this;
     }
 
-    inline Pos < ValueType > & rotateX(double phi){
+    inline Pos & rotateX(double phi){
         double mat[3][3] ={{ 1.0,           0.0,            0.0},
                            { 0.0, std::cos(phi), -std::sin(phi)},
                            { 0.0, std::sin(phi),  std::cos(phi)} };
         return this->transform(mat);
     }
-    inline Pos < ValueType > & rotateY(double phi){
+    inline Pos & rotateY(double phi){
         double mat[3][3] =  {{std::cos(phi),  0.0, std::sin(phi)},
                              {0.0,            1.0,           0.0},
                              {-std::sin(phi), 0.0, std::cos(phi)}};
 
         return this->transform(mat);
     }
-    inline Pos < ValueType > & rotateZ(double phi){
+    inline Pos & rotateZ(double phi){
         double mat[3][3] = {{std::cos(phi), -std::sin(phi), 0.0},
                             {std::sin(phi),  std::cos(phi), 0.0},
                             {          0.0,            0.0, 1.0}};
         return this->transform(mat);
     }
 
-    inline Pos < ValueType > & rotate(const RVector3 & r){
+    inline Pos & rotate(const RVector3 & r){
         return this->rotateX(r[0]).rotateY(r[1]).rotateZ(r[2]);
     }
-    inline Pos < ValueType > & rotate(double phiX, double phiY, double phiZ){
+    inline Pos & rotate(double phiX, double phiY, double phiZ){
         return this->rotateX(phiX).rotateY(phiY).rotateZ(phiZ);
     }
 
-    inline Pos < ValueType > & scale(const RVector3 & s){ return (*this) *= s;}
+    inline Pos & scale(const RVector3 & s){ return (*this) *= s;}
 
-    inline Pos < ValueType > & translate(const RVector3 & t){ return (*this) += t;}
+    inline Pos & translate(const RVector3 & t){ return (*this) += t;}
 
     RVector vec() const {
         RVector tmp(3);
@@ -292,38 +277,36 @@ public:
         return tmp;
     }
 
-//     ValueType x_, y_, z_;
+//     double x_, y_, z_;
 
 protected:
 
-    inline void copy_(const Pos < ValueType > & pos) {
+    inline void copy_(const Pos & pos) {
         valid_ = pos.valid(); assign(pos[0], pos[1], pos[2]);
     }
 
     bool valid_;
 
-    ValueType mat_[3];
+    double mat_[3];
 
 };
 
-// template < class ValueType > const RVector3 RVector3::ZERO(0.0, 0.0, 0.0);
-// template < class ValueType > const RVector3 RVector3::UNIT_X(1.0, 0.0, 0.0);
-// template < class ValueType > const RVector3 RVector3::UNIT_Y(0.0, 1.0, 0.0);
-// template < class ValueType > const RVector3 RVector3::UNIT_Z(0.0, 0.0, 1.0);
-// template < class ValueType > const RVector3 RVector3::NEGATIVE_UNIT_X(-1.0,  0.0,  0.0);
-// template < class ValueType > const RVector3 RVector3::NEGATIVE_UNIT_Y(0.0, -1.0,  0.0);
-// template < class ValueType > const RVector3 RVector3::NEGATIVE_UNIT_Z(0.0,  0.0, -1.0);
-// template < class ValueType > const RVector3 RVector3::UNIT_SCALE(1.0, 1.0, 1.0);
+// template < class double > const RVector3 RVector3::ZERO(0.0, 0.0, 0.0);
+// template < class double > const RVector3 RVector3::UNIT_X(1.0, 0.0, 0.0);
+// template < class double > const RVector3 RVector3::UNIT_Y(0.0, 1.0, 0.0);
+// template < class double > const RVector3 RVector3::UNIT_Z(0.0, 0.0, 1.0);
+// template < class double > const RVector3 RVector3::NEGATIVE_UNIT_X(-1.0,  0.0,  0.0);
+// template < class double > const RVector3 RVector3::NEGATIVE_UNIT_Y(0.0, -1.0,  0.0);
+// template < class double > const RVector3 RVector3::NEGATIVE_UNIT_Z(0.0,  0.0, -1.0);
+// template < class double > const RVector3 RVector3::UNIT_SCALE(1.0, 1.0, 1.0);
 
 inline bool operator == (const RVector3 & a , const RVector3 & b){
     if (a.valid() != b.valid()) return false;
     if (a.distSquared(b) < TOLERANCE) return true; else return false;
 }
-
 inline bool operator != (const RVector3 & a , const RVector3 & b){
     return !(a == b);
 }
-
 inline bool operator < (const RVector3 & a , const RVector3 & b){
     std::cout << WHERE_AM_I << std::endl; return true;
 }
@@ -342,32 +325,32 @@ inline RVector3 RINT(const RVector3 & a) {
 }
 
 #define DEFINE_POS_BIN_OPERATOR__(OP)                      \
-inline Pos < double > operator OP (const Pos< double > & a, const Pos< double > & b){ \
-    Pos < double > tmp(a); return tmp OP##= b; } \
-inline Pos < double > operator OP (const Pos< double > & a, const double & b){ \
-    Pos < double > tmp(a); return tmp OP##= b; } \
-inline Pos < double > operator OP (const double & a, const Pos< double > & b){ \
-    Pos < double > tmp(a, a, a); return tmp OP##= b; } \
+inline Pos operator OP (const Pos & a, const Pos & b){ \
+    Pos tmp(a); return tmp OP##= b; } \
+inline Pos operator OP (const Pos & a, const double & b){ \
+    Pos tmp(a); return tmp OP##= b; } \
+inline Pos operator OP (const double & a, const Pos & b){ \
+    Pos tmp(a, a, a); return tmp OP##= b; } \
 \
 
 DEFINE_POS_BIN_OPERATOR__(+)
-DEFINE_POS_BIN_OPERATOR__(-)
 DEFINE_POS_BIN_OPERATOR__(*)
 DEFINE_POS_BIN_OPERATOR__(/)
+DEFINE_POS_BIN_OPERATOR__(-)
 
 
-template < class ValueType > std::istream & operator >> (std::istream & str, Pos< ValueType > & pos){
-    THROW_TO_IMPL
-    return str;
-}
-
-template < class ValueType > std::ostream & operator << (std::ostream & str, const Pos< ValueType > & pos){
+inline std::ostream & operator << (std::ostream & str, const Pos & pos){
   if (pos.valid()){
     str << pos[0] << "\t" << pos[1] << "\t" << pos[2];
   } else {
     str << " pos is not valid";
   }
   return str;
+}
+
+inline std::istream & operator >> (std::istream & is, Pos & pos){
+    THROW_TO_IMPL
+    return is;
 }
 
 /*! Sort increasing x and decreasing y*/

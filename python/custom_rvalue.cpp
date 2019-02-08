@@ -412,7 +412,7 @@ struct PySequence2StdVectorRVector3{
     /*! Check if the object is convertible */
     static void * convertible(PyObject * obj){
          __DC(obj << " -> StdVectorRVector3")
-        return checkConvertibleSequenz<GIMLI::Pos< double > >(obj);
+        return checkConvertibleSequenz< GIMLI::Pos >(obj);
     }
 
     /*! Convert obj into RVector */
@@ -420,16 +420,16 @@ struct PySequence2StdVectorRVector3{
         __DC(obj << "\t constructing RVector3")
         bp::object py_sequence(bp::handle<>(bp::borrowed(obj)));
 
-        typedef bp::converter::rvalue_from_python_storage< std::vector < GIMLI::Pos< double > > > storage_t;
+        typedef bp::converter::rvalue_from_python_storage< std::vector < GIMLI::Pos > > storage_t;
 
         storage_t* the_storage = reinterpret_cast<storage_t*>(data);
         void* memory_chunk = the_storage->storage.bytes;
 
-        std::vector < GIMLI::Pos < double > > *vec = new (memory_chunk) std::vector < GIMLI::Pos < double > >(len(py_sequence));
+        std::vector < GIMLI::Pos > *vec = new (memory_chunk) std::vector < GIMLI::Pos >(len(py_sequence));
         data->convertible = memory_chunk;
 
         for (GIMLI::Index i = 0; i < vec->size(); i ++){
-            (*vec)[i] = bp::extract< GIMLI::Pos < double > >(py_sequence[i]);
+            (*vec)[i] = bp::extract< GIMLI::Pos >(py_sequence[i]);
         }
     }
 private:
@@ -440,7 +440,7 @@ struct PySequence2R3Vector{
     /*! Check if the object is convertible */
     static void * convertible(PyObject * obj){
         __DC(obj << " -> R3Vector")
-        return checkConvertibleSequenz<GIMLI::Pos< double > >(obj);
+        return checkConvertibleSequenz< GIMLI::Pos >(obj);
     }
 
     /*! Convert obj into RVector */
@@ -457,7 +457,7 @@ struct PySequence2R3Vector{
         data->convertible = memory_chunk;
 
         for (GIMLI::Index i = 0; i < vec->size(); i ++){
-            (*vec)[i] = bp::extract< GIMLI::Pos < double > >(py_sequence[i]);
+            (*vec)[i] = bp::extract< GIMLI::Pos >(py_sequence[i]);
         }
     }
 private:
@@ -516,7 +516,7 @@ struct Numpy2RMatrix{
          + " to GIMLI::RMatrix");
 
 //         for (GIMLI::Index i = 0; i < vec->size(); i ++){
-//             //(*mat)[i] = bp::extract< GIMLI::Pos < double > >(py_sequence[i]);
+//             //(*mat)[i] = bp::extract< GIMLI::Pos >(py_sequence[i]);
 //         }
     }
 private:
@@ -713,7 +713,7 @@ void register_pysequence_to_bvector_conversion(){
 void register_pysequence_to_StdVectorRVector3_conversion(){
     bp::converter::registry::push_back(& r_values_impl::PySequence2StdVectorRVector3::convertible,
                                         & r_values_impl::PySequence2StdVectorRVector3::construct,
-                                        bp::type_id< std::vector< GIMLI::Pos< double > > >());
+                                        bp::type_id< std::vector< GIMLI::Pos > >());
 }
 void register_pysequence_to_r3vector_conversion(){
     bp::converter::registry::push_back(& r_values_impl::PySequence2R3Vector::convertible,
@@ -723,7 +723,7 @@ void register_pysequence_to_r3vector_conversion(){
 void register_pytuple_to_rvector3_conversion(){
     bp::converter::registry::push_back(& r_values_impl::PyTuple2RVector3::convertible,
                                         & r_values_impl::PyTuple2RVector3::construct,
-                                        bp::type_id< GIMLI::Pos< double > >());
+                                        bp::type_id< GIMLI::Pos >());
 }
 void register_numpy_to_rmatrix_conversion(){
     bp::converter::registry::push_back(& r_values_impl::Numpy2RMatrix::convertible,

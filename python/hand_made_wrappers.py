@@ -232,12 +232,12 @@ def apply(mb):
     #rt.add_declaration_code(WRAPPER_DEFINITION_IndexArray)
     #apply_reg(rt, WRAPPER_REGISTRATION_IndexArray)
 
-    rt = mb.class_('Vector< GIMLI::Pos< double > >')
+    rt = mb.class_('Vector< GIMLI::Pos >')
     rt.add_declaration_code(WRAPPER_DEFINITION_R3Vector)
     apply_reg(rt, WRAPPER_REGISTRATION_R3Vector)
 
     try:
-        rt = mb.class_('Pos<double>')
+        rt = mb.class_('Pos')
         rt.add_declaration_code(WRAPPER_DEFINITION_RVector3)
         apply_reg(rt, WRAPPER_REGISTRATION_RVector3)
         #rt.add_registration_code ("""def(bp::init< PyObject * >((bp::arg("value"))))""")

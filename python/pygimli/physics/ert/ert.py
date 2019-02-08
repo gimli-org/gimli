@@ -430,8 +430,9 @@ class ERTManager(MeshMethodManager):
         mesh : :gimliapi:`GIMLI::Mesh`
             2D or 3D Mesh to calculate for. 
 
-        res : array(mesh.cellCount()) | array(N, mesh.cellCount()) | list
+        res : float, array(mesh.cellCount()) | array(N, mesh.cellCount()) | list
             Resistivity distribution for the given mesh cells can be:
+                * float for homogeneous resistivty
                 * single array of length mesh.cellCount() 
                 * matrix of N resistivity distributions of length 
                 mesh.cellCount()
@@ -448,8 +449,8 @@ class ERTManager(MeshMethodManager):
             * calcOnly : bool [False]
                 Use fop.calculate instead of fop.response. Useful if you want
                 to force the calculation of impedances for homogeneous models.
-                No noise handling. Solution is put in scheme('u') and
-                a dataMap instance will be returned.
+                No noise handling. Solution is put as token 'u' in the returned 
+                DataContainerERT.
 
             * noiseLevel : float[0.0]
                 add normal distributed noise based on
@@ -480,32 +481,17 @@ class ERTManager(MeshMethodManager):
 
         Examples
         --------
-        >>> world = pg.meshtools.createWorld(start=[-20, 0], end=[20, -10],
-        >>>                                  layers=[-1,-3])
-        >>> mesh = pg.meshtools.createMesh(world, quality=33, area=0.1,
-        >>>                                smooth=[1,2])
-        >>> rhoMap = [[1, 1.0], [2, 10.0], [3, 1.0]]
-        >>> ax, _ = pg.show(mesh, pg.solver.parseArgToArray(rhoMap,
-        >>>                 mesh.cellCount(), mesh),
-        >>>                 label='Resistivity ($\Omega$m)')
-        >>> pg.show(mesh, axes=ax)
-        >>> scheme = pb.createData(np.linspace(0, 10., 11), schemeName='dd')
-        >>> rhoa1 = ERTManager.simulate(mesh, res=rhoMap, scheme=scheme)
-        >>> rhoa2 = ERTManager.simulate(mesh, res=pg.solver.parseArgToArray(
-        >>>     rhoMap, mesh.cellCount(), mesh), scheme=scheme)
-        >>> np.testing.assert_array_equal(rhoa1, rhoa2)
-        >>> pb.show(scheme, vals=rhoa1)
-
         >>> import pybert as pb
         >>> import pygimli as pg
         >>> import pygimli.meshtools as mt
         >>> world = mt.createWorld(start=[-50, 0], end=[50, -50],
         ...                        layers=[-1, -5], worldMarker=True)
         >>> scheme = pb.createData(
-        ... elecs=pg.utils.grange(start=-10, end=10, n=21), schemeName='dd')
+        ...                     elecs=pg.utils.grange(start=-10, end=10, n=21), 
+        ...                     schemeName='dd')
         >>> for pos in scheme.sensorPositions():
-        ... world.createNode(pos)
-        ... world.createNode(pos + pg.RVector3(0, -0.1))
+        ...     _= world.createNode(pos)
+        ...     _= world.createNode(pos + [0.0, -0.1])
         >>> mesh = mt.createMesh(world, quality=34)
         >>> rhomap = [
         ...    [1, 100. + 0j],
@@ -533,7 +519,11 @@ class ERTManager(MeshMethodManager):
 
         isArrayData = False
         # parse the given res into mesh-cell-sized array
-        if hasattr(res[0], '__iter__'):  # ndim == 2
+        if isinstance(res, int) or isinstance(res, float):
+            res = np.ones(mesh.cellCount()) * float(res)
+        elif isinstance(res, complex):
+            res = np.ones(mesh.cellCount()) * res
+        elif hasattr(res[0], '__iter__'):  # ndim == 2
             if len(res[0]) == 2:  # res seems to be a res map
                 res = pg.solver.parseArgToArray(res, mesh.cellCount(), mesh)
             else:  # probably nData x nCells array
@@ -550,6 +540,8 @@ class ERTManager(MeshMethodManager):
             if verbose:
                 pg.info('Calculate geometric factors.')
             scheme.set('k', fop.calcGeometricFactor(scheme))
+
+        ret = pg.DataContainerERT(scheme)
 
         if isArrayData:
             rhoa = np.zeros((len(res), scheme.size()))
@@ -570,11 +562,15 @@ class ERTManager(MeshMethodManager):
                     fop.mesh().setCellAttributes(res)
                     dMap = pg.DataMap()
                     fop.calculate(dMap)
-                    scheme.set("u", dMap.data(scheme))
-
+                    if fop.complex():
+                        pg.critical('Implement me')
+                    else:
+                        ret.set("u", dMap.data(scheme))
+                        ret.set("i", np.ones(ret.size()))
+                    
                     if returnFields:
                         return pg.Matrix(fop.solution())
-                    return dMap
+                    return ret
                 else:
                     resp = fop.response(res)
 
@@ -588,7 +584,7 @@ class ERTManager(MeshMethodManager):
                 print("res: ", res)
                 raise BaseException("Simulate called with wrong resistivity array.")
 
-        ret = pg.DataContainerERT(scheme)
+        
         if not isArrayData:
             ret.set('rhoa', rhoa)
 

@@ -20,6 +20,7 @@
 
 #include "node.h"
 #include "shape.h"
+#include "line.h"
 
 #include <map>
 #include <algorithm>
@@ -522,25 +523,25 @@ void Cell::findNeighbourCell(uint i){
 
 void Cell::registerNodes_(){
     for (uint i = 0; i < this->nodeCount(); i ++){
-        if (nodeVector_[i]) nodeVector_[i]->insertCell(*this);
+        if (nodeVector_[i]) nodeVector_[i]->insertCell(this);
     }
 }
 
 void Cell::deRegisterNodes_(){
     for (uint i = 0; i < this->nodeCount(); i ++){
-        if (nodeVector_[i]) nodeVector_[i]->eraseCell(*this);
+        if (nodeVector_[i]) nodeVector_[i]->eraseCell(this);
     }
 }
 
 void Boundary::registerNodes_(){
     for (uint i = 0; i < this->nodeCount(); i ++){
-        if (nodeVector_[i]) nodeVector_[i]->insertBoundary(*this);
+        if (nodeVector_[i]) nodeVector_[i]->insertBoundary(this);
     }
 }
 
 void Boundary::deRegisterNodes_(){
     for (uint i = 0; i < this->nodeCount(); i ++){
-        if (nodeVector_[i]) nodeVector_[i]->eraseBoundary(*this);
+        if (nodeVector_[i]) nodeVector_[i]->eraseBoundary(this);
     }
 }
 
@@ -718,7 +719,7 @@ std::vector < PolynomialFunction < double > > TriangleFace::createShapeFunctions
     return createPolynomialShapeFunctions(*this, 2, true, false);
 }
 
-void TriangleFace::setNodes(Node & n1, Node & n2, Node & n3, bool changed ){
+void TriangleFace::setNodes(Node & n1, Node & n2, Node & n3, bool changed){
     if ((&n1 == &n2) || (&n1 == &n3) || (&n2 == &n3)){
         std::cerr << WHERE << " TriangleFace nodes not valid " << n1 << " " << n2 << " " <<  n3 << std::endl;
         throwError(EXIT_MESH_NO_ELEMENT, WHERE);
@@ -808,6 +809,43 @@ PolygonFace::PolygonFace(const std::vector < Node * > & nodes) : Boundary(nodes)
 }
 
 PolygonFace::~PolygonFace(){
+}
+
+void PolygonFace::insertNode(Node * n, double tol){
+    for (Index i = 0; i < nodeCount(); i ++){
+        if (n->id() == this->node(i).id()) return;
+
+        if (this->node(i).pos().distance(n->pos()) < tol){
+            __MS(*this)
+            __MS(n)
+            log(Error, "PolygonFace::insertNode. Duplicate node position found. "
+                       "Node need to touch the Polygon face or its edge but not the corner nodes.");
+        }
+        
+        Line segment(this->node(i).pos(), 
+                     this->node((i+1)%this->nodeCount()).pos());
+        int pFkt;                     
+        if (segment.touch1(n->pos(), pFkt, tol)){
+            if (pFkt == 3){
+                // __MS("insert edge")
+                std::vector < Node * > nodes;
+                for (Index j = 0; j < i + 1; j ++){ 
+                    nodes.push_back(&this->node(j));
+                }
+                nodes.push_back(n);
+                for (Index j = i + 1; j < this->nodeCount(); j ++){ 
+                    nodes.push_back(&this->node(j));
+                }
+                deRegisterNodes_();
+                setNodes_(nodes);
+                registerNodes_();
+                shape_->resizeNodeSize_(this->nodeCount());
+                fillShape_();
+                return;
+            }
+        } 
+    }
+    this->addSecondaryNode(n);
 }
 
 EdgeCell::EdgeCell(const std::vector < Node * > & nodes) : Cell(nodes){

@@ -147,8 +147,6 @@ private:
     /*! Assignment operator is private, so don't use it */
     void operator = (const ShapeFunctionCache &){};
 
-
-
 protected:
 
     /*! Cache for shape functions. */
@@ -285,14 +283,23 @@ public:
         return invJacobian()[rstI * 3 + xyzJ];}
 
     /*! Return true if the Cartesian coordinates xyz are inside the shape.
-     * On boundary means inside too. */
+     * On boundary means inside too. 
+     Works only for shapes dedicated as cells because they need to 
+     be aligned to the dimension. See also \ref touch. */
     virtual bool isInside(const RVector3 & xyz, bool verbose=false) const;
 
     /*! Return true if the Cartesian coordinates xyz are inside the shape.
      * On boundary means inside too.
-     * sf contains the complete shape function to identify next neighbor. */
+     * sf contains the complete shape function to identify next neighbor.
+     Works only for shapes dedicated as cells because they need to 
+     be aligned to the dimension. See also \ref touch.*/
     virtual bool isInside(const RVector3 & xyz, RVector & sf,
                           bool verbose=false) const;
+
+    /*! Check if the position touches the entity. 
+    Works only for shapes dedicated as boundaries.
+    On edge of the boundary means inside too. See also \ref isInside.*/
+    virtual bool touch(const RVector3 & pos, double tol=1e-6, bool verbose=false) const;
 
     /*!* Return true if the ray intersects the shape.
      * On boundary means inside too. The intersection position is stored in pos.
@@ -304,7 +311,6 @@ public:
         return false;
     };
 
-
     /*! Get the domain size of this shape, i.e., length, area or volume */
     double domainSize() const;
 
@@ -313,6 +319,10 @@ public:
 
     /*! Returns the norm vector if possible otherwise returns non valid Vector3 */
     virtual RVector3 norm() const;
+
+    /*! Returns the a plane for this shape if its possible (2D or 3D plane shapes) 
+    otherwise returns non valid Plane. */
+    virtual Plane plane() const;
 
     /*! Notify this shape that the inverse Jacobian matrix and the domain size are not longer valid and need recalculation. This method is called if a node has bee transformed. */
     void changed();
@@ -323,9 +333,9 @@ public:
 
     //     double jacobianDeterminant() const { return det(this->createJacobian()); }
 
-protected:
-
     inline void resizeNodeSize_(uint n) { nodeVector_.resize(n, NULL);  }
+
+protected:
 
     /*! Virtual method to calculate the domain size i.e length, area, volume of the shapes */
     virtual double domainSize_() const { return 0.0; }
@@ -356,8 +366,6 @@ public:
 
     virtual double domainSize_() const { return 1.0; }
 
-//     virtual bool touch1(const RVector3 & pos, bool verbose, int & pFunIdx) const;
-
     virtual RVector3 norm() const;
 
 protected:
@@ -384,15 +392,16 @@ public:
     /*! See Shape::rst */
     virtual RVector3 rst(Index i) const;
 
-//     virtual bool touch(const RVector3 & pos, bool verbose = false) const ;
-//
-//     virtual bool touch1(const RVector3 & pos, bool verbose, int & pFunIdx) const;
-
     /*!* Return true if the ray intersects the shape.
      * On boundary means inside too. The intersection position is stored in pos.
      * */
     virtual bool intersectRay(const RVector3 & start, const RVector3 & dir,
                               RVector3 & pos);
+
+    /*! Check if the position touches the entity. 
+    Works only for shapes dedicated as boundaries.
+    On edge of the boundary means inside too. See also \ref isInside.*/
+    virtual bool touch(const RVector3 & pos, double tol=1e-6, bool verbose=false) const;
 
     double length() const;
 
