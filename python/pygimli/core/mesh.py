@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Import and extensions of the core Mesh class.
 """
@@ -7,7 +8,7 @@ from ._pygimli_ import (HexahedronShape, Line, Mesh, MeshEntity, Node,
                         PolygonFace, TetrahedronShape, TriangleFace)
 
 
-def Mesh_str(self):
+def __Mesh_str(self):
     st = "Mesh: Nodes: " + str(self.nodeCount()) + " Cells: " + str(
         self.cellCount()) + " Boundaries: " + str(self.boundaryCount())
     if (self.secondaryNodeCount() > 0):
@@ -16,7 +17,7 @@ def Mesh_str(self):
     return st
 
 
-def MeshEntity_str(self):
+def __MeshEntity_str(self):
     """Give mesh entity infos."""
     s = self.__repr__()
     s += '\tID: ' + str(self.id()) + \
@@ -31,7 +32,7 @@ def MeshEntity_str(self):
     return s
 
 
-def Node_str(self):
+def __Node_str(self):
     """Give node infos."""
     s = self.__repr__()
     s += '\tID: ' + str(self.id()) + \
@@ -40,9 +41,9 @@ def Node_str(self):
     return s
 
 
-Node.__str__ = Node_str
-Mesh.__str__ = Mesh_str
-MeshEntity.__str__ = MeshEntity_str
+Node.__str__ = __Node_str
+Mesh.__str__ = __Mesh_str
+MeshEntity.__str__ = __MeshEntity_str
 
 # For Jupyer Notebook use.. checkme
 # Node.__repr__ = Node_str

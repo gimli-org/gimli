@@ -502,9 +502,13 @@ def __setVal(self, idx, val):
         else:
             print("not yet implemented")
     elif isinstance(idx, tuple):
-        # print(idx, type(idx))
-        self.rowR(int(idx[0])).setVal(val, int(idx[1]))
-        return
+        # print("tuple", idx, type(idx))
+        if isinstance(self, _pygimli_.RMatrix):
+            self.rowRef(int(idx[0])).setVal(val, int(idx[1]))
+            return
+        else:
+            pg.error("cant set index with tuple", idx, "for", self)
+            return
     # if isinstance(idx, _pygimli_.BVector):
     # print("__setVal", self, idx, 'val:', val)
     # self.setVal(val, bv=idx)
@@ -538,12 +542,12 @@ def __getValMatrix(self, idx):
                     ret[i] = t[idx[1]]
                 return ret
         else:
-            return self.rowR(int(idx[0])).__getitem__(idx[1])
+            return self.row(int(idx[0])).__getitem__(idx[1])
 
     if idx == -1:
         idx = len(self) - 1
-
-    return self.rowR(idx)
+    
+    return self.row(idx)
 
 
 _pygimli_.RVector.__setitem__ = __setVal
@@ -594,26 +598,8 @@ _pygimli_.RVector.__abs__ = _pygimli_.fabs
 _pygimli_.CVector.__abs__ = _pygimli_.mag
 _pygimli_.R3Vector.__abs__ = _pygimli_.absR3
 
-
-def abs(v):
-    if isinstance(v, _pygimli_.CVector):
-        return _pygimli_.mag(v)
-    elif isinstance(v, _pygimli_.R3Vector):
-        return _pygimli_.absR3(v)
-    elif isinstance(v, np.ndarray):
-        return _pygimli_.absR3(v)
-    elif isinstance(v, _pygimli_.RMatrix):
-        raise BaseException("IMPLEMENTME")
-        for i in range(len(v)):
-            v[i] = _pygimli_.abs(v[i])
-        return v
-
-    return _pygimli_.fabs(v)
-
-
 def RMatrix_len(self):
     return self.rows()
-
 
 _pygimli_.RMatrix.__len__ = RMatrix_len
 _pygimli_.CMatrix.__len__ = RMatrix_len
@@ -835,7 +821,6 @@ TransCumulative = _pygimli_.RTransCumulative
 ############################
 # non automatic exposed functions
 ############################
-
 
 def abs(v):
     if isinstance(v, _pygimli_.CVector):
@@ -1125,3 +1110,4 @@ def search(what):
 from .matrix import (Cm05Matrix, LMultRMatrix, LRMultRMatrix, MultLeftMatrix,
                      MultLeftRightMatrix, MultRightMatrix, RMultRMatrix)
 from .mesh import Mesh, MeshEntity, Node
+from .datacontainer import DataContainer, DataContainerERT

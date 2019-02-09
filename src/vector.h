@@ -1,5 +1,5 @@
 /******************************************************************************
- *   Copyright (C) 2007-2018 by the GIMLi development team                    *
+ *   Copyright (C) 2007-2019 by the GIMLi development team                    *
  *   Carsten Rücker carsten@resistivity.net                                   *
  *                                                                            *
  *   Licensed under the Apache License, Version 2.0 (the "License");          *
@@ -141,7 +141,6 @@ public:
          return old;           // return the copy (the old) value.
     }
 
-
     inline bool operator == (const VectorIterator< ValueType > & a) const { return val_ == a.val_; }
     inline bool operator != (const VectorIterator< ValueType > & a) const { return val_ != a.val_; }
 
@@ -153,7 +152,9 @@ public:
     inline bool hasMore() const { return val_ != end_; }
 
     /*!Return the current and advance the iterator to the next.*/
-    inline ValueType nextVal(){//__MS(this) __MS(val_) __MS(*val_)
+    inline ValueType nextVal(){
+        // __MS(this) __MS(val_) __MS(*val_)
+        // __MS(this->hasMore())
         return *val_++; }
 
     inline ValueType nextForPy(){// __MS(val_) __MS(*val_)
@@ -165,7 +166,6 @@ public:
         }
         return nextVal();
     }
-
 
     ValueType * val_;
     Index maxSize_;
@@ -295,9 +295,15 @@ public:
         return *this;
     }
 
-    inline const ValueType & operator[](const Index i) const { return data_[i]; }
+    inline const ValueType & operator[](const Index i) const { 
+        // ASSERT_THIS_SIZE(i)  // will not work for std::copy, std::sort etc.
+        return data_[i]; 
+    }
 
-    inline ValueType & operator[](const Index i) { return data_[i]; }
+    inline ValueType & operator[](const Index i) { 
+        // ASSERT_THIS_SIZE(i)  // will not work for std::copy, std::sort etc.
+        return data_[i];
+    }
 
     inline const Vector < ValueType > operator[](const IndexArray & i) const { return (*this)(i); }
 
@@ -890,7 +896,9 @@ protected:
             //"" check speed for memcpy here
              //std::memcpy(data_, v.data_, sizeof(ValType)*v.size());
              // memcpy is approx 0.3% faster but copy is extensively testet
-             std::copy(&v[0], &v[v.size()], data_);
+             // cleanest solution needs iterator rewriting: 
+             // std::copy(v.begin(), v.end(), this->begin());
+             std::copy(&v[0], &v[v.size()], data_); // only works without bound check in subscription operator
         }
 //         __MS(data_)
 //         __MS(*this)
