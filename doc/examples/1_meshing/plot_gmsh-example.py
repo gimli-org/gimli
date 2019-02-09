@@ -175,13 +175,15 @@ regions using an external mesh generator (`Gmsh <http://www.gmsh.info>`_).
 # saved to the binary format.
 
 import subprocess
+from urllib.request import urlretrieve
 
 import matplotlib.pyplot as plt
 
 import pygimli as pg
 from pygimli.meshtools import readGmsh
 
-subprocess.call(["wget", "https://www.pygimli.org/_downloads/mesh.geo"])
+
+urlretrieve("https://www.pygimli.org/_downloads/mesh.geo", filename="mesh.geo")
 
 try:
     subprocess.call(

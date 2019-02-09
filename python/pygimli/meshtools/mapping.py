@@ -481,7 +481,7 @@ def interpolate(*args, **kwargs):
                                               outMat=outMat,
                                               **kwargs)
                 return np.array(outMat)
-
+            
         if len(args) == 4: # args: (inMesh, inData, outPos, outData)
 
             if args[1].ndim == 1 and args[2].ndim == 1 and args[3].ndim == 1:
@@ -515,7 +515,7 @@ def interpolate(*args, **kwargs):
                                                      y=args[3],
                                                      z=args[4],
                                                      **kwargs)
-
+        
         return pg.core._pygimli_.interpolate(*args, **kwargs)
         # end if pg.core:
 
@@ -581,7 +581,7 @@ def interpolate(*args, **kwargs):
     if len(args) == 2: # args curve, t
         curve = args[0]
         t = args[1]
-        return interpolateAlongCurve(curve, args, **kwargs)
+        return interpolateAlongCurve(curve, t, **kwargs)
 
 
 if __name__ == '__main__':

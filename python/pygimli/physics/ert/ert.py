@@ -954,13 +954,13 @@ class ERTModelling0(pg.ModellingBase):
 
         for i, ki in enumerate(k):
             ws = {'u': self.subPotentials[i]}
+
             uE = pg.solve(mesh, a=1./res, b=-(ki * ki)/res, f=rhs,
                           bc={'Robin': self.mixedBC},
                           userData={'sourcePos': self.electrodes, 'k': ki},
                           verbose=self.verbose(), stats=0, debug=False,
-                          ws=ws
+                          ws=ws,
                           )
-            pg.show(mesh, np.log10(abs(uE[0])) )
             u += w[i] * uE
 
         # collect potential matrix,
