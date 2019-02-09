@@ -337,7 +337,7 @@ def createColorBarOnly(cMin=1, cMax=100, logScale=False, cMap=None, nLevs=5,
     if savefig is not None:
         saveFigure(fig, savefig)
 
-    return fig
+    return ax
 
 
 def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5):
