@@ -27,6 +27,8 @@
 #include <vector>
 #include <set>
 #include <map>
+#include <iostream>
+#include <fstream>
 
 namespace GIMLI{
 
@@ -134,7 +136,7 @@ public:
     void setSensorPositions(const std::vector< RVector3 > & sensors);
 
     /*! Return the complete sensor positions as read-only. */
-    inline const std::vector< RVector3 > & sensorPositions() const { return sensorPoints_; }
+    inline const R3Vector & sensorPositions() const { return sensorPoints_; }
 
 
     /*! Set the position for the i-th sensor. Resize sensors if necessary.*/
@@ -149,7 +151,7 @@ public:
         return sensorPoints_[(uint)i]; }
 
     /*! Return the complete sensor positions as read-only. */
-    inline const std::vector< RVector3 > & sensors() const { return sensorPositions(); }
+    inline const R3Vector & sensors() const { return sensorPositions(); }
 
     /*! Return a single sensor position. Syntactic sugar.*/
     inline const RVector3 & sensor(long i) const {
@@ -230,7 +232,7 @@ public:
     // END Sensor related section
 
     /*! Return the additional points. */
-    inline const std::vector < RVector3 > & additionalPoints() const { return topoPoints_; }
+    inline const PosVector & additionalPoints() const { return topoPoints_; }
 
     /*! Return true if token data exist and all elements != 0.0.
      Return false if the data contains one zero value. */
@@ -288,6 +290,11 @@ public:
                     bool verbose=false) const {
         return save(fileName, formatData, "x y z", noFilter, verbose); }
 
+    virtual int write(std::fstream & os,
+                     const std::string & fmtData,
+                     const std::string & fmtSensor,
+                     bool noFilter=false,
+                     bool verbose=false) const;
     /*! Show some information that belongs to the DataContainer.*/
     void showInfos() const ;
 
@@ -387,6 +394,9 @@ public:
     inline const std::string & inputFormatString() const {
         return inputFormatString_; }
 
+    /*! Return a unique hash value.*/
+    Index hash() const;
+
 protected:
     virtual void copy_(const DataContainer & data);
 
@@ -400,7 +410,7 @@ protected:
 
     //! Sensor positions
     /*! Stores the sensor positions. */
-    std::vector < RVector3 > sensorPoints_;
+    PosVector sensorPoints_;
 
     //! Data field that is sensor index
     /*! Stores the field token that represent sensor indices */
@@ -411,7 +421,7 @@ protected:
     std::map< std::string, std::string > dataDescription_;
 
     /*! Store additionally points */
-    std::vector < RVector3 > topoPoints_;
+    PosVector topoPoints_;
 
     /*! tokenTranslator for renaming formats to known cases */
     std::map< std::string, std::string > tT_;

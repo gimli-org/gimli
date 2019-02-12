@@ -631,11 +631,11 @@ int Mesh::exportSimple(const std::string & fbody, const RVector & data) const {
 }
 
 void Mesh::exportVTK(const std::string & fbody, bool writeCells) const {
-    return exportVTK(fbody, exportDataMap_, std::vector < RVector3 >(0), writeCells);
+    return exportVTK(fbody, exportDataMap_, PosVector(0), writeCells);
 }
 
 void Mesh::exportVTK(const std::string & fbody,
-                     const std::vector < RVector3 > & vec,
+                     const PosVector & vec,
                      bool writeCells) const {
     return exportVTK(fbody, exportDataMap_, vec, writeCells);
 }
@@ -643,18 +643,18 @@ void Mesh::exportVTK(const std::string & fbody,
 void Mesh::exportVTK(const std::string & fbody,
                      const std::map< std::string,
                      RVector > & dataMap, bool writeCells) const {
-    return exportVTK(fbody, dataMap, std::vector < RVector3 >(0), writeCells);
+    return exportVTK(fbody, dataMap, PosVector(0), writeCells);
 }
 
 void Mesh::exportVTK(const std::string & fbody, const RVector & arr) const {
     std::map< std::string, RVector > m(exportDataMap_);
     m.insert(std::pair< std::string, RVector >("arr", arr));
-    return exportVTK(fbody, m, std::vector < RVector3 >(0), true);
+    return exportVTK(fbody, m, PosVector(0), true);
 }
 
 void Mesh::exportVTK(const std::string & fbody,
                      const std::map< std::string, RVector > & dataMap,
-                     const std::vector < RVector3 > & vec, bool cells) const {
+                     const PosVector & vec, bool cells) const {
     bool verbose = debug();
 
     if (verbose){

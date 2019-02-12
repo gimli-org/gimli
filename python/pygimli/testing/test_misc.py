@@ -109,19 +109,79 @@ class TestMisc(unittest.TestCase):
 
         p3 = p1.cross(p2)
         self.assertEqual(p3, pg.Pos(0.0, 0.0, 1.0))
-                
+
+    def test_Hash(self):
+        v1 = pg.Vector(10, 2.)
+        v2 = pg.Vector(10, 2.)
+
+        self.assertFalse(pg.Vector(1, 0.).hash() == pg.Vector(2, 0.).hash())
+        
+        self.assertEqual(v1.hash(), v2.hash())
+        self.assertEqual(hash(v1), hash(v2))
+        v2[2] = 3.
+        self.assertFalse(v1.hash() is v2.hash())
+        v2[2] = 2.
+        self.assertTrue(v1.hash() == v2.hash())
+        self.assertEqual(v1.hash(), pg.Vector(10, 2.).hash())
+
+    def test_HashData(self):
+        d1 = pg.DataContainerERT()
+        d2 = pg.DataContainerERT()
+        
+        self.assertEqual(d1.hash(), d2.hash())
+        d1.createSensor([1.0, 0.0])
+        d2.createSensor([2.0, 0.0])
+        self.assertFalse(d1.hash() == d2.hash())
+        d2.setSensor(0, [1.0, 0.0])
+        self.assertTrue(d1.hash() == d2.hash())
+
+        d1.resize(10)
+        d2.resize(12)
+        d1.add('a', pg.Vector(d1.size(), 1.0))
+        d2.add('a', pg.Vector(d2.size(), 1.0))
+        self.assertFalse(d1.hash() == d2.hash())
+
+        d2.resize(10)
+        self.assertTrue(d1.hash() == d2.hash())
+        d2('a')[3] = 2.0
+        self.assertFalse(d1.hash() == d2.hash())
+        d2('a')[3] = 1.0
+        self.assertTrue(d1.hash() == d2.hash())
+
+    def test_HashMesh(self):
+        m1 = pg.Mesh()
+        m2 = pg.Mesh()
+
+        self.assertTrue(m1.hash() == m2.hash())
+
+        m1.createNode([1.0, 0.0])
+        m2.createNode([2.0, 0.0])
+        self.assertFalse(m1.hash() == m2.hash())
+        m2.node(0).setPos([1.0, 0.0])
+        self.assertTrue(m1.hash() == m2.hash())
+
+    # does not work .. need time to implement          
+    # def test_DataContainerWrite(self):
+    #     data = pg.DataContainer()
+    #     data.save('test.dat')
+    #     fi = open('test2.dat', 'w')
+    #     data.write(fi)
+    #     fi.close()
 
 if __name__ == '__main__':
     # pg.setDeepDebug(1)
 
-    # t = TestMisc()
-    # t.test_DataContainerFilter()
-    # exit()
+    t = TestMisc()
+    t.test_Hash()
+    t.test_HashData()
+    t.test_HashMesh()
+    exit()
     
     # t.test_PosConstMember()
     #t.test_DataContainerSensors()
     #t.test_Int64Problem()
 
     unittest.main()
+
 
 

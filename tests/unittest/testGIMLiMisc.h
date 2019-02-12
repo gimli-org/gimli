@@ -20,6 +20,7 @@ class GIMLIMiscTest : public CppUnit::TestFixture  {
     CPPUNIT_TEST(testStringFunctions);
     //CPPUNIT_TEST(testIPCSHM);
     CPPUNIT_TEST(testMemWatch);
+    CPPUNIT_TEST(testHash);
     CPPUNIT_TEST(testPolynomialFunction);
 //     CPPUNIT_TEST(testRotationByQuaternion);
     
@@ -117,7 +118,27 @@ public:
         mat.clear();
         GIMLI::MemWatch::pInstance()->info(WHERE);
     }
-    
+    void testHash(){
+        
+        GIMLI::Pos p0(0.0, 0.0, 0.0);
+        GIMLI::Pos p1(1.0, 0.0, 0.0);
+
+        CPPUNIT_ASSERT(std::hash<GIMLI::Pos>()(p0) == std::hash<GIMLI::Pos>()(p0));
+        CPPUNIT_ASSERT(std::hash<GIMLI::Pos>()(p0) != std::hash<GIMLI::Pos>()(p1));
+        
+        p1[0] = 0.0;
+        CPPUNIT_ASSERT(std::hash<GIMLI::Pos>()(p0) == std::hash<GIMLI::Pos>()(p1));
+
+        GIMLI::RVector v0(10, 2.0);
+        GIMLI::RVector v1(10, 2.0);
+        CPPUNIT_ASSERT(v0.hash() == v1.hash());
+        v1[1] = 3.0;
+        CPPUNIT_ASSERT(v0.hash() != v1.hash());
+        v1[1] = 2.0;
+        CPPUNIT_ASSERT(v0.hash() == v1.hash());
+
+    }
+
     void testPolynomialFunction(){
         CPPUNIT_ASSERT(GIMLI::PolynomialFunction< double > (GIMLI::RVector(0.0))(GIMLI::RVector3(3.14, 0.0, 0.0)) == 0.0);
         

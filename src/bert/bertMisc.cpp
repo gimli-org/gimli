@@ -28,7 +28,7 @@
 namespace GIMLI{
 
 void initKWaveList(const Mesh & mesh, RVector & kValues, RVector & weights,
-                   const std::vector < RVector3 > & sources, bool verbose){
+                   const PosVector & sources, bool verbose){
     kValues.clear();
     weights.clear();
 

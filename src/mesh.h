@@ -587,7 +587,7 @@ public:
 
     void exportVTK(const std::string & fbody,
                    const std::map< std::string, RVector > & data,
-                   const std::vector < RVector3 > & vec,
+                   const PosVector & vec,
                    bool writeCells=true) const;
 
     void exportVTK(const std::string & fbody,
@@ -599,7 +599,7 @@ public:
 
     /*! Export mesh and whole exportData map and vector data in vec*/
     void exportVTK(const std::string & fbody,
-                   const std::vector < RVector3 > & vec,
+                   const PosVector & vec,
                    bool writeCells=true) const;
 
     /*! Export mesh with one additional array that will called 'arr' */
@@ -771,6 +771,8 @@ public:
 
     /*!Return read only reference for all defined hole regions. */
     const HoleMarkerList & holeMarker() const { return holeMarker_; }
+
+    Index hash() const;
 
 protected:
     void copy_(const Mesh & mesh);

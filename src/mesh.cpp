@@ -707,6 +707,8 @@ std::vector < Cell * > Mesh::findCellsAlongRay(const RVector3 & start,
                                                const RVector3 & dir,
                                                R3Vector & pos) const {
     pos.clean();
+    Pos d(dir);
+    d.normalize();
     std::vector < Cell * > cells;
 
     RVector3 inPos(start);
@@ -717,7 +719,7 @@ std::vector < Cell * > Mesh::findCellsAlongRay(const RVector3 & start,
 
     pos.push_back(inPos);
 
-    double stepTol = 1e-1;
+    double stepTol = 1e-5;
 
     while (1){
         Cell *c = this->findCell(inPos + dir*stepTol, false);
@@ -728,7 +730,7 @@ std::vector < Cell * > Mesh::findCellsAlongRay(const RVector3 & start,
             Shape * s = c->boundary(i)->pShape();
 
             if (s->intersectRay(inPos, dir, outPos)){
-                if (outPos.dist(inPos) > stepTol){
+                if (outPos != inPos){
                     outPos.setValid(true);
                     break;
                 } else {
@@ -2437,6 +2439,12 @@ RVector Mesh::divergence(const R3Vector & V) const{
     return ret / this->cellSizes();
 }
 
-
+Index Mesh::hash() const{
+    log(Warning, "Mesh.hash() not complete. TODO");
+    return GIMLI::hash(this->positions(true), 
+                       this->cellMarkers(), 
+                       this->boundaryMarkers(),
+                       this->nodeMarkers());
+}
 
 } // namespace GIMLI

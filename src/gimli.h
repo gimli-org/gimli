@@ -256,7 +256,8 @@ template < class ValueType > class Vector;
 
 typedef Vector < double > RVector;
 typedef Vector < Complex > CVector;
-typedef Vector < RVector3 > R3Vector;
+typedef Vector < Pos > PosVector;
+typedef PosVector R3Vector;
 typedef Vector < bool > BVector;
 typedef Vector < SIndex > IVector;
 typedef Vector < Index > IndexArray;
@@ -417,7 +418,6 @@ inline std::string type(const R3Vector & var) { return "R3Vector"; }
 inline std::string type(const CVector  & var)  { return "CVector"; }
 inline std::string type(const RMatrix  & var)  { return "RMatrix"; }
 inline std::string type(const CMatrix  & var)  { return "CMatrix"; }
-
 
 inline int       toInt(const std::string & str){ return std::atoi(str.c_str()); }
 inline float   toFloat(const std::string & str){ return (float)std::atof(str.c_str()); }
@@ -593,6 +593,29 @@ private:
     static Classname * pInstance_;
 };
 
+/*! Combine 
+https://www.boost.org/doc/libs/1_37_0/doc/html/hash/reference.html#boost.hash_combine */
+template <typename T>
+void hashCombine(Index & seed, const T& val){
+    seed ^= std::hash<T>()(val) + 0x9e3779b9 + (seed<<6) + (seed>>2);
+}
+template <typename T, typename... Types> 
+void hashCombine (Index & seed, const T & val, const Types&... args){
+    hashCombine(seed, val);
+    hashCombine(seed, args...);
+}
+inline void hashCombine (Index & seed){} 
+template <typename... Types> 
+Index hash(const Types&... args){
+    Index seed = 0;
+    hashCombine(seed, args...);
+    return seed;
+}
+
+template void hashCombine(Index & seed, const Index & hash);
+// template void hashCombine(Index & seed, const PosVector & val);
+// template void hashCombine(Index & seed, const Pos & val);
+// template void hashCombine(Index & seed, const DataContainer & val);
 
 } // namespace GIMLI
 

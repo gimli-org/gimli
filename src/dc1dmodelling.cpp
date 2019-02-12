@@ -56,7 +56,7 @@ bm_(RVector(data.size(), 9e9)), bn_(RVector(data.size(), 9e9)){
     init_();
     setMesh(createMesh1DBlock(nlayers));
     setData(data);
-    std::vector< RVector3 > spos = data.sensorPositions();
+    R3Vector spos(data.sensorPositions());
     for (Index i = 0 ; i < data.size() ; i++){
         int ia = (int) data("a")[i];
         int ib = (int) data("b")[i];

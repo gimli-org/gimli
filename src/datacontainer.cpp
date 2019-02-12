@@ -485,8 +485,15 @@ int DataContainer::save(const std::string & fileName,
                         const std::string & formatSensor,
                         bool noFilter,
                         bool verbose) const {
-
     std::fstream file; if (!openOutFile(fileName, & file)) return 0;
+    return write(file, formatData, formatSensor, noFilter, verbose);
+}
+
+int DataContainer::write(std::fstream & file,
+                        const std::string & formatData,
+                        const std::string & formatSensor,
+                        bool noFilter,
+                        bool verbose) const {
 
     file.precision(14);
 
@@ -588,11 +595,6 @@ int DataContainer::save(const std::string & fileName,
 //     }
 
     file.close();
-
-    if (verbose){
-        std::cout << "Wrote: " << fileName << " with " << sensorPoints_.size()
-                << " sensors and " << count << " data." <<  std::endl;
-    }
     return 1;
 }
 
@@ -623,6 +625,13 @@ void DataContainer::showInfos() const {
     }
     std::cout << std::endl << tokenList() << std::endl;
 }
+
+Index DataContainer::hash() const{
+    Index seed = GIMLI::hash(this->sensorPoints_, this->topoPoints_, 
+                             this->dataMap_);
+    return seed;
+}
+
 
 void DataContainer::add(const std::string & token, const RVector & data, const std::string & description){
     this->set(token, data);
@@ -770,7 +779,7 @@ void DataContainer::removeUnusedSensors(bool verbose){
 
     IndexArray perm(this->sensorCount(), 0);
 
-    std::vector < RVector3 > tmp(sensorPoints_);
+    R3Vector tmp(sensorPoints_);
     sensorPoints_.clear();
 
     for (size_t i = 0; i < activeSensors.size(); i ++) {
