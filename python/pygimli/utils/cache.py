@@ -106,7 +106,9 @@ class CacheManager(object):
             argHash = argHash ^ hash(a)
         
         for k, v in kwargs.items():
-            pg.hashCombine(argHash, hash(v))
+            print(k, v, hash(v))
+            argHash = argHash ^ hash(v)
+            #pg.hashCombine(argHash, hash(v))
                 
         return funcHash ^ codeHash ^ argHash
 
