@@ -9,7 +9,7 @@ https://gitlab.com/resistivity-net/bert
 import numpy as np
 
 import pygimli as pg
-from pygimli.frameworks import MeshModelling
+from pygimli.frameworks import Modelling, MeshModelling
 from pygimli.manager import MeshMethodManager
 
 
@@ -47,6 +47,30 @@ def simulate(mesh, res, scheme, sr=True, useBert=True,
         scheme = pb.load(scheme)
 
     return ert.simulate(mesh, res, scheme, verbose=verbose, **kwargs)
+
+
+class BertModelling(MeshModelling):
+    def __init__(self, sr, verbose=False):
+        """"Constructor, optional with data container and mesh."""
+        super().__init__()
+
+        if sr:
+            self.fop = pg.DCSRMultiElectrodeModelling(verbose=verbose)
+        else:
+            self.fop = pg.DCMultiElectrodeModelling(verbose=verbose)
+
+        self.response = self.fop.response
+        self.createJacobian = self.fop.createJacobian   
+
+        ## called from the Manager .. needet?
+        self.setComplex = self.fop.setComplex
+        self.complex = self.fop.complex
+        self.mesh = self.fop.mesh
+        self.calculate = self.fop.calculate
+        self.calcGeometricFactor = self.fop.calcGeometricFactor
+
+    def setDataSpace(self, dataContainer):
+        self.fop.setData(dataContainer)
 
 
 class ERTModelling(MeshModelling):
@@ -388,11 +412,7 @@ class ERTManager(MeshMethodManager):
         useBert = kwargs.pop('useBert', False)
         verbose = kwargs.pop('verbose', False)
         if useBert:
-            sr = kwargs.pop('sr', True)
-            if sr:
-                fop = pg.DCSRMultiElectrodeModelling(verbose=verbose)
-            else:
-                fop = pg.DCMultiElectrodeModelling(verbose=verbose)
+            fop = BertModelling(sr=kwargs.pop('sr', True))
         else:
             fop = ERTModelling(**kwargs)
 
@@ -642,30 +662,30 @@ class ERTManager(MeshMethodManager):
 
         return ret
 
+    def _ensureRhoa(self, data):
+        """"""
+        # check for valid rhoa here
+        return data('rhoa')
 
-
-
-
-
-
-
-
-
-
-
-
-
+    def _ensureError(self, data):
+        """"""
+        # check for valid err here
+        return data('err')
 
     def invert(self, data=None, err=None, **kwargs):
         """Invert measured data.
         """
-        #ensure data and error sizes here
         dataVals = None
-        if isinstance(data, pg.DataContainer):
+        errVals = None
+        
+        if isinstance(data, pg.DataContainerERT):
             self.fop.setDataSpace(dataContainer=data)
-            dataVals = self.dataValues(data)
-            errVals = self.errorValues(data, relative=True)
+
+            dataVals = self._ensureRhoa(data)
+            errVals = self._ensureError(data)
         else:
+
+            # check if fop has dataContainer
             dataVal = data
             errVals = err
 
