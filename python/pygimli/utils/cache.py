@@ -24,6 +24,7 @@ import os
 import hashlib
 import sys
 import json
+import time
 
 import pygimli as pg
 
@@ -32,44 +33,74 @@ class Cache(object):
         self._value = None
         self._hash = hashValue
         self._name = CacheManager().cachingPath(str(self._hash))
+        self._info = None
         self.restore()
-        
+
+    @property
+    def info(self):
+        if self._info is None:
+            self._info = {'type': '',
+                          'file': '',
+                          'date': 0,
+                          'dur': 0.0,
+                          'restored': 0,
+                          'codeinfo': '',
+                          'args': '',
+                          'kwargs': {},
+                          }
+        return self._info
+
+    @info.setter
+    def info(self, i):
+        self._info = i
+
     @property
     def value(self):
         return self._value
 
     @value.setter
     def value(self, v):
-        pack = {'type': str(type(v).__name__),
-                'file': self._name }
+        self.info['type'] = str(type(v).__name__)
         
-        with open(self._name + '.json', 'w') as of:
-            json.dump(pack, of)   
+        # if len(self.info['type']) != 1:
+        #     pg.error('only single return caches supported for now.')    
+        #     return 
+
+        self.info['file'] = self._name
         
+        self.updateCacheInfo()
+
         v.save(self._name)
         self._value = v
         pg.info('Cache stored:', self._name)
 
+    def updateCacheInfo(self):
+        with open(self._name + '.json', 'w') as of:
+            json.dump(self.info, of, sort_keys=False,
+                      indent=4, separators=(',', ': '))   
+
     def restore(self):
         if os.path.exists(self._name):
             
-            pg.info('Restoring cache:', self._name)
-
             try:
                 with open(self._name + '.json', 'r') as file:
-                    pack = json.load(file)
+                    self.info = json.load(file)
                 
-                if pack['type'] == 'DataContainerERT':
-                    self._value = pg.DataContainerERT(pack['file'])
+                # if len(self.info['type']) != 1:
+                #     pg.error('only single return caches supported for now.')    
+
+                if self.info['type'] == 'DataContainerERT':
+                    self._value = pg.DataContainerERT(self.info['file'])
+                    
+                if self.value is not None:
+                    self.info['restored'] = self.info['restored'] + 1
+                    self.updateCacheInfo()
+                    pg.info('Cache restored ({1}s x {0}): {2}'.format(self.info['restored'], 
+                                                                    round(self.info['dur'], 1),
+                                                                    self._name))
             except Exception as e:
                 print(e)
                 pg.error('Cache restoring failed.')
-
-    def load(self, fileName):
-        try:
-            self._value = np.load(CacheManager().cachingPath(fileName))
-        except:
-            pass
 
 class CacheManager(object):
     __instance = None
@@ -95,10 +126,14 @@ class CacheManager(object):
             os.mkdir('.cache')
         return os.path.join('.cache/', fName)
 
+    def functInfo(self, funct):
+        """Return unique info string about the called function."""
+        return funct.__code__.co_filename + ":" + funct.__qualname__ + ":" + pg.versionStr()
+
     def hash(self, funct, *args, **kwargs):
         """"Create a hash value"""
-        funcIdent = funct.__code__.co_filename + ":" + funct.__qualname__ 
-        funcHash = int(hashlib.sha224(funcIdent.encode()).hexdigest()[:16], 16)
+        functInfo = self.functInfo(funct)
+        funcHash = int(hashlib.sha224(functInfo.encode()).hexdigest()[:16], 16)
         codeHash = int(hashlib.sha224(funct.__code__.co_code).hexdigest()[:16], 16)
 
         argHash = 0
@@ -106,9 +141,7 @@ class CacheManager(object):
             argHash = argHash ^ hash(a)
         
         for k, v in kwargs.items():
-            print(k, v, hash(v))
             argHash = argHash ^ hash(v)
-            #pg.hashCombine(argHash, hash(v))
                 
         return funcHash ^ codeHash ^ argHash
 
@@ -117,17 +150,28 @@ class CacheManager(object):
         hashVal = self.hash(funct, *args, **kwargs)
 
         cache = Cache(hashVal)
+        cache.info['codeinfo'] = self.functInfo(funct)
+        cache.info['args'] = str(args)
+        cache.info['kwargs'] = str(kwargs)
+
         return cache
 
 
 def cache(funct):
     """Cache decorator."""
+    pg.tic()
     def wrapper(*args, **kwargs):
+        
         cache = CacheManager().cache(funct, *args, **kwargs)
-        if cache.value:
+        # pg.toc('restore')
+        if cache.value is not None:
             return cache.value
         else:
             rv = funct(*args, **kwargs)
+            cache.info['date'] = time.time()
+            cache.info['dur'] = pg.dur()
             cache.value = rv
+            # pg.toc('store')
             return rv
+    # pg.toc('cache')
     return wrapper
