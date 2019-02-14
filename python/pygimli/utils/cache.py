@@ -21,6 +21,7 @@ def myLongRunningStuff(*args, **kwargs):
     return results
 """
 import os 
+import inspect
 import hashlib
 import sys
 import json
@@ -80,7 +81,7 @@ class Cache(object):
                       indent=4, separators=(',', ': '))   
 
     def restore(self):
-        if os.path.exists(self._name):
+        if os.path.exists(self._name + '.json'):
             
             try:
                 with open(self._name + '.json', 'r') as file:
@@ -91,15 +92,24 @@ class Cache(object):
 
                 if self.info['type'] == 'DataContainerERT':
                     self._value = pg.DataContainerERT(self.info['file'])
-                    
+                elif self.info['type'] == 'RVector':
+                    self._value = pg.RVector(self.info['file'])
+                elif self.info['type'] == 'Mesh':
+                    self._value = pg.Mesh(self.info['file'] + '.bms')
+                
+                print(self._value)
                 if self.value is not None:
                     self.info['restored'] = self.info['restored'] + 1
                     self.updateCacheInfo()
                     pg.info('Cache restored ({1}s x {0}): {2}'.format(self.info['restored'], 
                                                                     round(self.info['dur'], 1),
                                                                     self._name))
+                else:
+                    pg.warn('Could not restore cache of type {0}.'.format(self.info['type']))
+    
             except Exception as e:
-                print(e)
+                import traceback
+                traceback.print_exc(file=sys.stdout)
                 pg.error('Cache restoring failed.')
 
 class CacheManager(object):
@@ -134,7 +144,9 @@ class CacheManager(object):
         """"Create a hash value"""
         functInfo = self.functInfo(funct)
         funcHash = int(hashlib.sha224(functInfo.encode()).hexdigest()[:16], 16)
-        codeHash = int(hashlib.sha224(funct.__code__.co_code).hexdigest()[:16], 16)
+        codeHash = int(hashlib.sha224(inspect.getsource(funct).encode()).hexdigest()[:16], 16)
+
+        print(codeHash)
 
         argHash = 0
         for a in args:
