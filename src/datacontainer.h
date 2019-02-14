@@ -133,10 +133,10 @@ public:
     void setSensorPositions(const RVector & sensors);
 
     /*! Set the positions for all sensors. */
-    void setSensorPositions(const std::vector< RVector3 > & sensors);
+    void setSensorPositions(const PosVector & sensors);
 
     /*! Return the complete sensor positions as read-only. */
-    inline const R3Vector & sensorPositions() const { return sensorPoints_; }
+    inline const PosVector & sensorPositions() const { return sensorPoints_; }
 
 
     /*! Set the position for the i-th sensor. Resize sensors if necessary.*/

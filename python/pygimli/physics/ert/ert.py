@@ -52,7 +52,7 @@ def simulate(mesh, res, scheme, sr=True, useBert=True,
 class BertModelling(MeshModelling):
     def __init__(self, sr, verbose=False):
         """"Constructor, optional with data container and mesh."""
-        super().__init__()
+        super(BertModelling, self).__init__()
 
         if sr:
             self.fop = pg.DCSRMultiElectrodeModelling(verbose=verbose)
@@ -78,7 +78,7 @@ class ERTModelling(MeshModelling):
 
     def __init__(self, **kwargs):
         """"Constructor, optional with data container and mesh."""
-        super().__init__()
+        super(ERTModelling, self).__init__()
 
         self.subPotentials = None
         self.lastResponse = None

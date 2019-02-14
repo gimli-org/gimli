@@ -97,7 +97,6 @@ class Cache(object):
                 elif self.info['type'] == 'Mesh':
                     self._value = pg.Mesh(self.info['file'] + '.bms')
                 
-                print(self._value)
                 if self.value is not None:
                     self.info['restored'] = self.info['restored'] + 1
                     self.updateCacheInfo()
@@ -140,20 +139,27 @@ class CacheManager(object):
         """Return unique info string about the called function."""
         return funct.__code__.co_filename + ":" + funct.__qualname__ + ":" + pg.versionStr()
 
+    def strhash(self, string):
+        return int(hashlib.sha224(string.encode()).hexdigest()[:16], 16)
+
     def hash(self, funct, *args, **kwargs):
         """"Create a hash value"""
         functInfo = self.functInfo(funct)
-        funcHash = int(hashlib.sha224(functInfo.encode()).hexdigest()[:16], 16)
-        codeHash = int(hashlib.sha224(inspect.getsource(funct).encode()).hexdigest()[:16], 16)
-
-        print(codeHash)
+        funcHash = self.strhash(functInfo)
+        codeHash = self.strhash(inspect.getsource(funct))
 
         argHash = 0
         for a in args:
-            argHash = argHash ^ hash(a)
+            if isinstance(a, str):
+                argHash = argHash ^ self.strhash(a)
+            else:
+                argHash = argHash ^ hash(a)
         
         for k, v in kwargs.items():
-            argHash = argHash ^ hash(v)
+            if isinstance(v, str):
+                argHash = argHash ^ self.strhash(v)
+            else:
+                argHash = argHash ^ hash(v)
                 
         return funcHash ^ codeHash ^ argHash
 

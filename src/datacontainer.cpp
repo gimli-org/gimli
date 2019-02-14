@@ -199,7 +199,7 @@ void DataContainer::setSensorPositions(const RVector & sensors){
     return this->setSensorPositions(s);
 }
 
-void DataContainer::setSensorPositions(const std::vector< RVector3 > & sensors) {
+void DataContainer::setSensorPositions(const PosVector & sensors) {
     sensorPoints_ = sensors;
 }
 

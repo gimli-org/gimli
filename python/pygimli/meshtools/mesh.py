@@ -164,7 +164,6 @@ def refineQuad2Tri(mesh, style=1):
     >>> ax, _ = pg.show(mt.refineQuad2Tri(quads, style=1))
     >>> ax, _ = pg.show(mt.refineQuad2Tri(quads, style=2))
     >>> pg.wait()
-
     """
     out = pg.Mesh(2)
     newNode = None
@@ -197,6 +196,70 @@ def refineQuad2Tri(mesh, style=1):
 
     return out
 
+
+def refineHex2Tet(mesh, style=1):
+    """Refine mesh of quadrangles into a mesh of triangle cells.
+
+    TODO
+    ----
+        * mixes meshes
+        * boundaries
+
+    Parameters
+    ----------
+    mesh : :gimliapi:`GIMLI::Mesh`
+        Mesh containing hexrahedron cells, e.g., from a grid.
+
+    style: int [1]
+        * 1 bisect each hexahedron int 5 tetrahedrons
+        * 2 bisect each hexahedron int 6 tetrahedrons
+        
+    Returns
+    -------
+    ret : :gimliapi:`GIMLI::Mesh`
+        Mesh containing tetrahedrons cells.
+    >>> # no need to import matplotlib. pygimli's show does
+    >>> import pygimli as pg
+    >>> import pygimli.meshtools as mt
+    >>> hex = pg.createGrid(2, 2)
+    >>> print(hex)
+    >>> tet = mt.refineHex2Tet(hex, style=1)
+    >>> print(tet)
+    >>> tet = mt.refineHex2Tet(hex, style=2)
+    >>> print(tet)
+    """
+    out = pg.Mesh(3)
+    
+    for n in mesh.nodes():
+        out.createNode(n.pos())
+
+    HexahedronSplit5TetID = [[1, 4, 5, 6],
+                             [3, 6, 7, 4],
+                             [1, 0, 4, 3],
+                             [1, 2, 3, 6],
+                             [1, 4, 6, 3]]
+
+    HexahedronSplit6TetID = [[0, 1, 2, 6],
+                            [0, 2, 3, 6],
+                            [0, 1, 6, 5],
+                            [0, 4, 5, 6],
+                            [0, 3, 7, 6],
+                            [0, 4, 6, 7]]
+
+    for c in mesh.cells():
+        if style == 1:
+            for i, tet in enumerate(HexahedronSplit5TetID):
+                out.createCell([c.node(tet[0]).id(),
+                               c.node(tet[1]).id(),
+                               c.node(tet[2]).id(),
+                               c.node(tet[3]).id()], c.marker())
+        elif style == 2:
+            for i, tet in enumerate(HexahedronSplit6TetID):
+                out.createCell([c.node(tet[0]).id(),
+                               c.node(tet[1]).id(),
+                               c.node(tet[2]).id(),
+                               c.node(tet[3]).id()], c.marker())
+    return out
 
 def readGmsh(fname, verbose=False):
     r"""Read :term:`Gmsh` ASCII file and return instance of GIMLI::Mesh class.

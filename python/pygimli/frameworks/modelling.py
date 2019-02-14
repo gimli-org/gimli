@@ -185,7 +185,7 @@ class Modelling(pg.ModellingBase):
         for rID, vals in self._regionProperties.items():
 
             if vals['background'] is not None:
-                pg.critical('implementme')
+                rMgr.region(rID).setBackground(vals['background'])
                 continue
 
             if vals['single'] is not None:

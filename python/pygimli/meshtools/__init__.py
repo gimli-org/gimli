@@ -11,7 +11,7 @@ Mesh generation and modification.
 from .grid import (createGrid, appendTetrahedronBoundary, appendTriangleBoundary)
 
 from .mesh import (createMesh, createParaMesh, createParaMesh2DGrid,
-                   merge2Meshes, refineQuad2Tri,
+                   merge2Meshes, refineQuad2Tri, refineHex2Tet,
                    mergeMeshes, readGmsh, readHydrus2dMesh,
                    readHydrus3dMesh, readTetgen, readTriangle, 
                    convertHDF5Mesh, readHDF5Mesh, readFenicsHDF5Mesh, 

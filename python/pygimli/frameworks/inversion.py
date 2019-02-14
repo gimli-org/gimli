@@ -314,12 +314,12 @@ class Inversion(object):
 
             if chi2 < 1:
                 if self.verbose:
-                    print("Abbort criteria reached: chi² < 1")
+                    print("Abort criteria reached: chi² < 1")
                 break
 
             if abs((1-lastChi2/chi2) * 100) < self.inv.deltaPhiAbortPercent():
                 if self.verbose:
-                    print(lastChi2/chi2, "Abbort criteria reached: dChi²=",
+                    print(lastChi2/chi2, "Abort criteria reached: dChi²=",
                           round((1-lastChi2/chi2) * 100, 2),
                          "(", self.inv.deltaPhiAbortPercent(), '%)')
                 break
@@ -364,7 +364,6 @@ class Inversion(object):
                     pg.mplviewer.twin(_ax).clear()
                 except:
                     pass
-
 
             self.fop.drawModel(ax[0], self.inv.model(), label='Model')
 
@@ -515,13 +514,14 @@ class MeshInversion(Inversion):
         self._mesh = None
         self._zWeight = 1.0
 
-    def setMesh(self, mesh, refine=True):
+    def setMesh(self, mesh, refine=True, refineP2=False, omitBackground=False):
         """Set the internal mesh for this Framework.
 
         Injects the mesh in the internal fop.
 
         Initialize RegionManager.
-        For more than two regions the first is assumed to be background.
+        For more than two regions the region with smallest marker is assumed 
+        to be background.
 
         TODO:
             Optional the forward mesh can be refined for higher numerical accuracy.
@@ -540,10 +540,18 @@ class MeshInversion(Inversion):
 
         self.fop.setMesh(self._mesh)
         
-        if len(self.fop.regionManager().regionIdxs()) > 1:
-            bk = pg.unique(self.fop.regionIdxs())[0]
-            self.fop.setRegionProperties(bk, background=True)
-            
+        regionId = self.fop.regionManager().regionIdxs()
+        if len(regionId) > 1:
+            bk = pg.sort(regionId)[0]
+            pg.info("Setting region with smallest smarker to background (marker={0})".format(bk))
+            self.fop.regionManager().region(bk).setBackground(True)
+            # need to set the properties here but then the fop.mesh is invalid since missing createRefinedForwardMesh infos
+            # FIXME
+            # self.fop.setRegionProperties(bk, background=True)
+        
+        self.fop.createRefinedForwardMesh(refine, refineP2)
+        self.paraDomain = self.fop.regionManager().paraDomain()
+        self.setForwardOperator(self.fop)  # necessary?
 
     def run(self, dataVals, errVals, mesh=None, zWeight=None, **kwargs):
         """
