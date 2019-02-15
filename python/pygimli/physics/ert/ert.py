@@ -53,7 +53,7 @@ class BertModelling(MeshModelling):
     def __init__(self, sr, verbose=False):
         """Constructor, optional with data container and mesh."""
         super(BertModelling, self).__init__()
-
+        
         if sr:
             self.fop = pg.DCSRMultiElectrodeModelling(verbose=verbose)
         else:
@@ -66,9 +66,15 @@ class BertModelling(MeshModelling):
         self.solution = self.fop.solution
         self.setComplex = self.fop.setComplex
         self.complex = self.fop.complex
+        # self.setMesh = self.fop.setMesh
         self.mesh = self.fop.mesh
         self.calculate = self.fop.calculate
         self.calcGeometricFactor = self.fop.calcGeometricFactor
+
+    def setMesh(self, mesh):
+        pg._s(mesh)
+        self.fop.setMesh(mesh)
+        pg._s(self.fop.mesh())
 
     def setDataSpace(self, dataContainer):
         self.fop.setData(dataContainer)
@@ -105,7 +111,14 @@ class ERTModelling(MeshModelling):
         pg.p(model)
         ### NOTE TODO can't be MT until mixed boundary condition depends on
         ### self.resistivity
+        if not self.data.allNonZero('k'):
+            pg.error('Need valid geometric factors: "k".')
+            pg.warn('Fallback "k" values to -sign("rhoa")')
+            self.data.set('k', -pg.sign(self.data('rhoa')))
+        
         mesh = self.mesh()
+
+        pg.p(mesh)
 
         nDof = mesh.nodeCount()
         elecs = self.data.sensorPositions()
@@ -126,6 +139,9 @@ class ERTModelling(MeshModelling):
         self.k = k
         self.w = w
 
+        # pg.show(mesh, res, label='res')
+        # pg.wait()
+
         rhs = self.createRHS(mesh, elecs)
 
         # store all potential fields
@@ -134,7 +150,7 @@ class ERTModelling(MeshModelling):
         for i, ki in enumerate(k):
             ws = dict()
             # pg.p(ki, min(res), max(res))
-            uE = pg.solve(mesh, a=1./res, b=(ki * ki)/res, f=rhs,
+            uE = pg.solve(mesh, a=1./res, b=-(ki * ki)/res, f=rhs,
                           bc={'Robin': ['*', self.mixedBC]},
                           userData={'sourcePos': elecs, 'k': ki},
                           verbose=False, stats=0, debug=False)
@@ -584,6 +600,8 @@ class ERTManager(MeshMethodManager):
 
                 if calcOnly:
                     fop.mesh().setCellAttributes(res)
+
+
                     dMap = pg.DataMap()
                     fop.calculate(dMap)
                     if fop.complex():

@@ -1976,7 +1976,7 @@ void Mesh::prolongateEmptyCellsValues(RVector & vals, double background) const {
     Index prolongatedValues = 0;
 
     if (emptyList.size() > 0){
-        if (debug()) {
+        if (deepDebug()) {
             std::cout << "Prolongate " << emptyList.size() << " empty cells. ("
             << this->cellCount() << ")" << std::endl;
         }

@@ -538,7 +538,7 @@ class MeshInversion(Inversion):
         DOCUMENTME!!!
 
         """
-        # pg.p(mesh)
+        pg._s(mesh)
         if isinstance(mesh, str):
             mesh = pg.load(mesh)
 
@@ -550,15 +550,19 @@ class MeshInversion(Inversion):
         regionId = self.fop.regionManager().regionIdxs()
         if len(regionId) > 1:
             bk = pg.sort(regionId)[0]
-            pg.info("Setting region with smallest smarker to background (marker={0})".format(bk))
+            pg.info("Setting region with smallest marker to background (marker={0})".format(bk))
             self.fop.regionManager().region(bk).setBackground(True)
+            
             # need to set the properties here but then the fop.mesh is invalid since missing createRefinedForwardMesh infos
             # FIXME
-            # self.fop.setRegionProperties(bk, background=True)
+            self.fop.setRegionProperties(bk, background=True)
         
+        pg.p(self.fop)
+        pg.p(self.fop.mesh())
         self.fop.createRefinedForwardMesh(refine, refineP2)
-        self.paraDomain = self.fop.regionManager().paraDomain()
-        self.setForwardOperator(self.fop)  # necessary?
+        pg.p(self.fop.mesh())
+        #self.setForwardOperator(self.fop)  # necessary?
+
 
     def run(self, dataVals, errVals, mesh=None, zWeight=None, **kwargs):
         """
@@ -575,8 +579,10 @@ class MeshInversion(Inversion):
 
         self.fop.setRegionProperties('*', zWeight=zWeight)
 
-        print(self.fop.regionProperties())        
+        pg.debug('run with: ', self.fop.regionProperties())
         #### more mesh related inversion attributes to set?
+        
+        self.paraDomain = self.fop.regionManager().paraDomain()
 
         self.model = super(MeshInversion, self).run(dataVals, errVals, **kwargs)
         return self.model
