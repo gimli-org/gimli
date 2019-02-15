@@ -342,16 +342,20 @@ class MethodManager(object):
 
     def showResult(self, ax=None, **kwargs):
         """Show the last inversion result."""
-        ax = self.showModel(ax=ax, model=self.model, label='Model', **kwargs)
+        ax = self.showModel(ax=ax, model=self.model, 
+                            #label='Model',
+                            **kwargs)
         return ax
 
     def showFit(self, ax=None, **kwargs):
         """Show the last inversion date and response."""
         ax = self.showData(data=self.inv.dataVals,
                            error=self.inv.errorVals, 
-                           label='Data', ax=ax, **kwargs)
+                           #label='Data',
+                           ax=ax, **kwargs)
         ax = self.showData(data=self.inv.response,
-                           label='Response', ax=ax, **kwargs)
+                           #label='Response',
+                           ax=ax, **kwargs)
 
         if not kwargs.pop('hideFittingAnnotation', False):
             ax.text(0.01, 1.0025, "rrms: %.2g, $\chi^2$: %.2g" %

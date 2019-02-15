@@ -365,10 +365,16 @@ class Inversion(object):
                 except:
                     pass
 
-            self.fop.drawModel(ax[0], self.inv.model(), label='Model')
+            self.fop.drawModel(ax[0], self.inv.model(), 
+                               #label='Model'
+                               )
 
-            self.fop.drawData(ax[1], self._dataVals, self._errorVals, label='Data')
-            self.fop.drawData(ax[1], self.inv.response(), label='Response')
+            self.fop.drawData(ax[1], self._dataVals, self._errorVals, 
+                              #label='Data'
+                              )
+            self.fop.drawData(ax[1], self.inv.response(), 
+                              #label='Response'
+                              )
 
             ax[1].text(0.01, 1.005,
                     "iter: %d, rrms: %.2g, $\chi^2$: %.2g" %

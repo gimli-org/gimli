@@ -624,7 +624,7 @@ class ERTManager(MeshMethodManager):
                 ret.set('err', ERTManager.estimateError(
                     ret,
                     relativeError=noiseLevel,
-                    absoluteUError=noisAbs,
+                    absoluteUError=noiseAbs,
                     absoluteCurrent=1)
                 )
                 print("Data error estimate (min:max) ",
@@ -661,6 +661,71 @@ class ERTManager(MeshMethodManager):
                 return rhoa
 
         return ret
+
+    @staticmethod
+    def estimateError(data, absoluteError=0.001, relativeError=0.03,
+                      absoluteUError=None, absoluteCurrent=0.1):
+        """ Estimate error composed of an absolute and a relative part.
+        This is a static method and will not alter any member of the Manager
+
+        Parameters
+        ----------
+        absoluteError : float [0.001]
+            Absolute data error in Ohm m. Need 'rhoa' values in data.
+
+        relativeError : float [0.03]
+            relative error level in %/100
+
+        absoluteUError : float [0.001]
+            Absolute potential error in V. Need 'u' values in data. Or
+            calculate them from 'rhoa', 'k' and absoluteCurrent if no 'i'
+            is given
+
+        absoluteCurrent : float [0.1]
+            Current level in A for reconstruction for absolute potential V
+
+        Returns
+        -------
+        error : Array
+        """
+
+        if relativeError >= 0.5:
+            print("relativeError set to a value > 0.5 .. assuming this "
+                  "is a percentage Error level dividing them by 100")
+            relativeError /= 100.0
+
+        if absoluteUError is None:
+            if not data.allNonZero('rhoa'):
+                raise BaseException("We need apparent resistivity values "
+                                    "(rhoa) in the data to estimate a "
+                                    "data error.")
+            error = relativeError + absoluteError / data('rhoa')
+        else:
+            u = None
+            i = absoluteCurrent
+            if data.haveData("i"):
+                i = data('i')
+
+            if data.haveData("u"):
+                u = data('u')
+            else:
+                if data.haveData("r"):
+                    u = data('r') * i
+                elif data.haveData("rhoa"):
+                    if data.haveData("k"):
+                        u = data('rhoa') / data('k') * i
+                    else:
+                        raise BaseException("We need (rhoa) and (k) in the"
+                                            "data to estimate data error.")
+
+                else:
+                    raise BaseException("We need apparent resistivity values "
+                                        "(rhoa) or impedances (r) "
+                                        "in the data to estimate data error.")
+
+            error = pg.abs(absoluteUError / u) + relativeError
+
+        return error
 
     def _ensureRhoa(self, data):
         """"""

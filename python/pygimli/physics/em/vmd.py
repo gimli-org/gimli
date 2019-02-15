@@ -218,9 +218,9 @@ class VMDTimeDomainModelling(VMDModelling):
         if rxArea is None:
             self.rxArea = txArea
         else:
-            self.rxarea = rxarea
+            self.rxArea = rxArea
 
-    def createStartModel(self, rhoa, nLayer, thickness=None):
+    def createStartModel(self, rhoa, nLayer=4, thickness=None):
         r"""Create suitable starting model.
 
             Create suitable starting model based on median apparent resistivity
