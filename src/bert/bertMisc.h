@@ -68,7 +68,7 @@ DLLEXPORT void initKWaveList(double rMin, double rMax,
 
 DLLEXPORT void initKWaveList(const Mesh & mesh,
                              RVector & kValues, RVector & weights,
-                             const std::vector < RVector3 > & sources,
+                             const R3Vector & sources,
                              bool verbose=false);
 
 DLLEXPORT void initKWaveList(const Mesh & mesh,

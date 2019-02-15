@@ -12,6 +12,7 @@
 
 import sys
 import logging
+import inspect
 from . import core
 
 __ANSICOLORS__ = {'r':'\033[0;31;49m', #normal, #FG red; #BG black
@@ -43,9 +44,24 @@ def _(*args, c=None):
     except:
         return '\033[' + c + 'm' + _msg(*args) + __ANSICOLORS__['NC']
 
+def _get_class_from_frame(fr):
+    args, _, _, value_dict = inspect.getargvalues(fr)
+    if len(args) and args[0] == 'self':
+        instance = value_dict.get('self', None)
+        if instance:
+            return getattr(instance, '__class__', None)
+    return None
+
+def whereAmI(nr=2):
+    clsName = _get_class_from_frame(inspect.stack()[nr][0])
+    method = inspect.stack()[nr][3]
+    return str(clsName) + '.' + method
 
 def p(*args, c='y'):
     print(_(*args, c=c))
+
+def _s(*args, c='y'):
+    print(_(whereAmI(), ':', *args, c=c))
 
 
 class ColorFormatter(logging.Formatter):
@@ -84,9 +100,9 @@ def setDebug(d):
     logger.setLevel(level)
     logging.getLogger('Core').setLevel(level)
     logging.basicConfig(level=level,
-                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                    datefmt='%m/%d/%Y %H:%M:%S',
-                    #filename='pygimli.log'
+                        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                        datefmt='%m/%d/%Y %H:%M:%S',
+                        #filename='pygimli.log'
                     )
 
 if '--debug' in sys.argv:
@@ -101,19 +117,17 @@ def warn(*args):
     logger.warning(_msg(*args))
 
 def error(*args):
-    caller = sys._getframe(1).f_code.co_name
-    logger.error(caller + "\n" + _msg(*args))
+    logger.error(whereAmI() + "\n" + _msg(*args))
 
 def debug(*args):
     logger.debug(_msg(*args))
 
 def critical(*args):
-    logger.critical(_msg(*args))
+    logger.critical(whereAmI() + "\n" + _msg(*args))
     raise Exception(_msg(*args))
 
 def deprecated(msg='', hint=''):
-    caller = sys._getframe(1).f_code.co_name
-    logger.warning(caller + "\n" + msg + ", is deprecated, please use:" + hint + " instead.")
+    logger.warning(whereAmI() + "\n" + msg + ", is deprecated, please use:" + hint + " instead.")
 
 def renameKwarg(old, new, kwargs):
     if old in kwargs:
@@ -123,6 +137,4 @@ def renameKwarg(old, new, kwargs):
 
 def warnNonEmptyArgs(kwargs):
     if len(kwargs) > 0:
-        caller = sys._getframe(1).f_code.co_name
-        logger.warning("Unrecognized keyword arguments for method: '" + caller
-                       + "' "  + _msg(kwargs))
+        logger.warning(whereAmI() + "Unrecognized keyword arguments for method:" + _msg(kwargs))

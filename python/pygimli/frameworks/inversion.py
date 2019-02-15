@@ -314,12 +314,12 @@ class Inversion(object):
 
             if chi2 < 1:
                 if self.verbose:
-                    print("Abbort criteria reached: chi² < 1")
+                    print("Abort criteria reached: chi² < 1")
                 break
 
             if abs((1-lastChi2/chi2) * 100) < self.inv.deltaPhiAbortPercent():
                 if self.verbose:
-                    print(lastChi2/chi2, "Abbort criteria reached: dChi²=",
+                    print(lastChi2/chi2, "Abort criteria reached: dChi²=",
                           round((1-lastChi2/chi2) * 100, 2),
                          "(", self.inv.deltaPhiAbortPercent(), '%)')
                 break
@@ -365,11 +365,16 @@ class Inversion(object):
                 except:
                     pass
 
+            self.fop.drawModel(ax[0], self.inv.model(), 
+                               #label='Model'
+                               )
 
-            self.fop.drawModel(ax[0], self.inv.model(), label='Model')
-
-            self.fop.drawData(ax[1], self._dataVals, self._errorVals, label='Data')
-            self.fop.drawData(ax[1], self.inv.response(), label='Response')
+            self.fop.drawData(ax[1], self._dataVals, self._errorVals, 
+                              #label='Data'
+                              )
+            self.fop.drawData(ax[1], self.inv.response(), 
+                              #label='Response'
+                              )
 
             ax[1].text(0.01, 1.005,
                     "iter: %d, rrms: %.2g, $\chi^2$: %.2g" %
@@ -515,13 +520,14 @@ class MeshInversion(Inversion):
         self._mesh = None
         self._zWeight = 1.0
 
-    def setMesh(self, mesh, refine=True):
+    def setMesh(self, mesh, refine=True, refineP2=False, omitBackground=False):
         """Set the internal mesh for this Framework.
 
         Injects the mesh in the internal fop.
 
         Initialize RegionManager.
-        For more than two regions the first is assumed to be background.
+        For more than two regions the region with smallest marker is assumed 
+        to be background.
 
         TODO:
             Optional the forward mesh can be refined for higher numerical accuracy.
@@ -532,6 +538,7 @@ class MeshInversion(Inversion):
         DOCUMENTME!!!
 
         """
+        pg._s(mesh)
         if isinstance(mesh, str):
             mesh = pg.load(mesh)
 
@@ -540,10 +547,22 @@ class MeshInversion(Inversion):
 
         self.fop.setMesh(self._mesh)
         
-        if len(self.fop.regionManager().regionIdxs()) > 1:
-            bk = pg.unique(self.fop.regionIdxs())[0]
-            self.fop.setRegionProperties(bk, background=True)
+        regionId = self.fop.regionManager().regionIdxs()
+        if len(regionId) > 1:
+            bk = pg.sort(regionId)[0]
+            pg.info("Setting region with smallest marker to background (marker={0})".format(bk))
+            self.fop.regionManager().region(bk).setBackground(True)
             
+            # need to set the properties here but then the fop.mesh is invalid since missing createRefinedForwardMesh infos
+            # FIXME
+            self.fop.setRegionProperties(bk, background=True)
+        
+        pg.p(self.fop)
+        pg.p(self.fop.mesh())
+        self.fop.createRefinedForwardMesh(refine, refineP2)
+        pg.p(self.fop.mesh())
+        #self.setForwardOperator(self.fop)  # necessary?
+
 
     def run(self, dataVals, errVals, mesh=None, zWeight=None, **kwargs):
         """
@@ -560,8 +579,10 @@ class MeshInversion(Inversion):
 
         self.fop.setRegionProperties('*', zWeight=zWeight)
 
-        print(self.fop.regionProperties())        
+        pg.debug('run with: ', self.fop.regionProperties())
         #### more mesh related inversion attributes to set?
+        
+        self.paraDomain = self.fop.regionManager().paraDomain()
 
         self.model = super(MeshInversion, self).run(dataVals, errVals, **kwargs)
         return self.model

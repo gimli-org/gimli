@@ -277,6 +277,10 @@ public:
         return tmp;
     }
 
+    Index hash() const {
+        return GIMLI::hash(mat_[0], mat_[1], mat_[2], valid_);
+    }
+
 //     double x_, y_, z_;
 
 protected:
@@ -387,4 +391,12 @@ inline bool posLesserX(const RVector3 & a, const RVector3 & b){
 
 } // namespace GIMLI;
 
+namespace std {
+    template<> struct hash<GIMLI::Pos> {
+        GIMLI::Index operator()(const GIMLI::Pos & p) const noexcept {
+            return p.hash();
+        }
+    };
+}
+ 
 #endif // _GIMLI_POS__H

@@ -587,7 +587,7 @@ protected:
     virtual double domainSize_() const { return volume(); }
 };
 
-static const uint8 HexahedronSplit5TetID[5][4] = {
+static const int HexahedronSplit5TetID[5][4] = {
     {1, 4, 5, 6},
     {3, 6, 7, 4},
     {1, 0, 4, 3},
@@ -595,7 +595,7 @@ static const uint8 HexahedronSplit5TetID[5][4] = {
     {1, 4, 6, 3}
 };
 
-static const uint8 HexahedronSplit6TetID[6][4] = {
+static const int HexahedronSplit6TetID[6][4] = {
     {0, 1, 2, 6},
     {0, 2, 3, 6},
     {0, 1, 6, 5},

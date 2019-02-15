@@ -630,6 +630,19 @@ _pygimli_.RMatrix.ndim = 2
 _pygimli_.R3Vector.ndim = 2
 _pygimli_.stdVectorRVector3.ndim = 2
 
+############################
+# __hash__ settings
+############################
+_pygimli_.RVector.__hash__ = _pygimli_.RVector.hash
+_pygimli_.CVector.__hash__ = _pygimli_.CVector.hash
+_pygimli_.IVector.__hash__ = _pygimli_.IVector.hash
+_pygimli_.IndexArray.__hash__ = _pygimli_.IndexArray.hash
+_pygimli_.R3Vector.__hash__ = _pygimli_.R3Vector.hash
+_pygimli_.RVector3.__hash__ = _pygimli_.RVector3.hash
+_pygimli_.DataContainer.__hash__ = _pygimli_.DataContainer.hash
+_pygimli_.DataContainerERT.__hash__ = _pygimli_.DataContainerERT.hash
+_pygimli_.Mesh.__hash__ = _pygimli_.Mesh.hash
+
 
 ############################
 # Iterator support for RVector allow to apply python build-ins

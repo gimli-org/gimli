@@ -926,7 +926,6 @@ void DCMultiElectrodeModelling::searchElectrodes_(){
                 }
             }
 
-
             //** fill the missing with node independent electrodes
             if (!match){
                 Cell * cell = mesh_->findCell(ePos[i]);
@@ -1057,7 +1056,10 @@ void DCMultiElectrodeModelling::searchElectrodes_(){
                 std::cout << "Found neumann domain without reference electrode. " << std::endl
                             << "Choose last electrode as reference. " << std::endl;
             }
-
+            if (electrodes_.size() == 0){
+                log(Warning, "No electrodes defined.");
+                return;
+            }
             electrodeRef_ = electrodes_.back();
             lastIsReferenz_ = true;
         }

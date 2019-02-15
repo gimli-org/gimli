@@ -881,6 +881,13 @@ tolerance);
     VectorIterator< ValueType > begin() const { return VectorIterator< ValueType >(data_, size_); }
     VectorIterator< ValueType > end() const { return VectorIterator< ValueType >(data_ + size_, 0); }
 
+    Index hash() const {
+        Index seed = 0;
+        for (Index i = 0; i < this->size_; ++i) {
+            hashCombine(seed, this->data_[i]);
+        }
+        return seed;
+    }
 protected:
 
     void free_(){
@@ -1837,12 +1844,50 @@ bool saveVec(const Vector< ValueType > & a, const std::string & filename,
  Load vector from file. See Vector< ValueType >::load.
 */
 template < class ValueType >
-    bool loadVec(Vector < ValueType > & a,
-                 const std::string & filename,
-                 IOFormat format = Ascii){ return a.load(filename, format); }
-
-
+bool loadVec(Vector < ValueType > & a,
+             const std::string & filename,
+             IOFormat format = Ascii){ 
+    return a.load(filename, format); 
+}
 
 } // namespace GIMLI
+
+namespace std {
+    template<> struct hash< std::complex < double > > {
+        GIMLI::Index operator()(const std::complex < double > & p) const noexcept {
+            return GIMLI::hash(p.real(), p.imag());
+        }
+    };
+    template<> struct hash< GIMLI::RVector > {
+        GIMLI::Index operator()(const GIMLI::RVector & p) const noexcept {
+            return p.hash();
+        }
+    };
+    template<> struct hash< GIMLI::PosVector > {
+        GIMLI::Index operator()(const GIMLI::PosVector & p) const noexcept {
+            return p.hash();
+        }
+    };
+    template<> struct hash< GIMLI::IndexArray > {
+        GIMLI::Index operator()(const GIMLI::IndexArray & p) const noexcept {
+            return p.hash();
+        }
+    };
+    template<> struct hash< GIMLI::IVector > {
+        GIMLI::Index operator()(const GIMLI::IVector & p) const noexcept {
+            return p.hash();
+        }
+    };
+    template<> struct hash< std::map< std::string, GIMLI::RVector > > {
+        GIMLI::Index operator()(const std::map< std::string, GIMLI::RVector > & p) const noexcept {
+            GIMLI::Index seed = 0;
+            for (auto & x: p) {
+                hashCombine(seed, x.first, x.second);
+            }  
+            return seed;
+        }
+    };
+}
+
 
 #endif

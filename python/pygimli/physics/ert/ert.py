@@ -9,7 +9,7 @@ https://gitlab.com/resistivity-net/bert
 import numpy as np
 
 import pygimli as pg
-from pygimli.frameworks import MeshModelling
+from pygimli.frameworks import Modelling, MeshModelling
 from pygimli.manager import MeshMethodManager
 
 
@@ -49,12 +49,43 @@ def simulate(mesh, res, scheme, sr=True, useBert=True,
     return ert.simulate(mesh, res, scheme, verbose=verbose, **kwargs)
 
 
+class BertModelling(MeshModelling):
+    def __init__(self, sr, verbose=False):
+        """Constructor, optional with data container and mesh."""
+        super(BertModelling, self).__init__()
+        
+        if sr:
+            self.fop = pg.DCSRMultiElectrodeModelling(verbose=verbose)
+        else:
+            self.fop = pg.DCMultiElectrodeModelling(verbose=verbose)
+
+        self.response = self.fop.response
+        self.createJacobian = self.fop.createJacobian   
+
+        ## called from the Manager .. needed?
+        self.solution = self.fop.solution
+        self.setComplex = self.fop.setComplex
+        self.complex = self.fop.complex
+        # self.setMesh = self.fop.setMesh
+        self.mesh = self.fop.mesh
+        self.calculate = self.fop.calculate
+        self.calcGeometricFactor = self.fop.calcGeometricFactor
+
+    def setMesh(self, mesh):
+        pg._s(mesh)
+        self.fop.setMesh(mesh)
+        pg._s(self.fop.mesh())
+
+    def setDataSpace(self, dataContainer):
+        self.fop.setData(dataContainer)
+
+
 class ERTModelling(MeshModelling):
     """Reference implementation for 2.5D Electrical Resistivity Tomography."""
 
     def __init__(self, **kwargs):
         """"Constructor, optional with data container and mesh."""
-        super().__init__()
+        super(ERTModelling, self).__init__()
 
         self.subPotentials = None
         self.lastResponse = None
@@ -68,6 +99,7 @@ class ERTModelling(MeshModelling):
 
     def createStartModel(self, rhoa):
         sm = pg.RVector(self.regionManager().parameterCount(), pg.median(rhoa))
+        pg.p("startmodel", sm)
         return sm
 
     def response(self, model):
@@ -76,9 +108,17 @@ class ERTModelling(MeshModelling):
         Create apparent resistivity values for a given resistivity distribution
         for self.mesh.
         """
+        pg.p(model)
         ### NOTE TODO can't be MT until mixed boundary condition depends on
         ### self.resistivity
+        if not self.data.allNonZero('k'):
+            pg.error('Need valid geometric factors: "k".')
+            pg.warn('Fallback "k" values to -sign("rhoa")')
+            self.data.set('k', -pg.sign(self.data('rhoa')))
+        
         mesh = self.mesh()
+
+        pg.p(mesh)
 
         nDof = mesh.nodeCount()
         elecs = self.data.sensorPositions()
@@ -99,6 +139,9 @@ class ERTModelling(MeshModelling):
         self.k = k
         self.w = w
 
+        # pg.show(mesh, res, label='res')
+        # pg.wait()
+
         rhs = self.createRHS(mesh, elecs)
 
         # store all potential fields
@@ -107,7 +150,7 @@ class ERTModelling(MeshModelling):
         for i, ki in enumerate(k):
             ws = dict()
             # pg.p(ki, min(res), max(res))
-            uE = pg.solve(mesh, a=1./res, b=(ki * ki)/res, f=rhs,
+            uE = pg.solve(mesh, a=1./res, b=-(ki * ki)/res, f=rhs,
                           bc={'Robin': ['*', self.mixedBC]},
                           userData={'sourcePos': elecs, 'k': ki},
                           verbose=False, stats=0, debug=False)
@@ -143,6 +186,7 @@ class ERTModelling(MeshModelling):
 
     def createJacobian(self, model):
         """TODO WRITEME."""
+        pg.p(model)
         if self.subPotentials is None:
             self.response(model)
 
@@ -388,11 +432,7 @@ class ERTManager(MeshMethodManager):
         useBert = kwargs.pop('useBert', False)
         verbose = kwargs.pop('verbose', False)
         if useBert:
-            sr = kwargs.pop('sr', True)
-            if sr:
-                fop = pg.DCSRMultiElectrodeModelling(verbose=verbose)
-            else:
-                fop = pg.DCMultiElectrodeModelling(verbose=verbose)
+            fop = BertModelling(sr=kwargs.pop('sr', True))
         else:
             fop = ERTModelling(**kwargs)
 
@@ -560,6 +600,8 @@ class ERTManager(MeshMethodManager):
 
                 if calcOnly:
                     fop.mesh().setCellAttributes(res)
+
+
                     dMap = pg.DataMap()
                     fop.calculate(dMap)
                     if fop.complex():
@@ -604,7 +646,7 @@ class ERTManager(MeshMethodManager):
                 ret.set('err', ERTManager.estimateError(
                     ret,
                     relativeError=noiseLevel,
-                    absoluteUError=noisAbs,
+                    absoluteUError=noiseAbs,
                     absoluteCurrent=1)
                 )
                 print("Data error estimate (min:max) ",
@@ -642,30 +684,95 @@ class ERTManager(MeshMethodManager):
 
         return ret
 
+    @staticmethod
+    def estimateError(data, absoluteError=0.001, relativeError=0.03,
+                      absoluteUError=None, absoluteCurrent=0.1):
+        """ Estimate error composed of an absolute and a relative part.
+        This is a static method and will not alter any member of the Manager
 
+        Parameters
+        ----------
+        absoluteError : float [0.001]
+            Absolute data error in Ohm m. Need 'rhoa' values in data.
 
+        relativeError : float [0.03]
+            relative error level in %/100
 
+        absoluteUError : float [0.001]
+            Absolute potential error in V. Need 'u' values in data. Or
+            calculate them from 'rhoa', 'k' and absoluteCurrent if no 'i'
+            is given
 
+        absoluteCurrent : float [0.1]
+            Current level in A for reconstruction for absolute potential V
 
+        Returns
+        -------
+        error : Array
+        """
 
+        if relativeError >= 0.5:
+            print("relativeError set to a value > 0.5 .. assuming this "
+                  "is a percentage Error level dividing them by 100")
+            relativeError /= 100.0
 
+        if absoluteUError is None:
+            if not data.allNonZero('rhoa'):
+                raise BaseException("We need apparent resistivity values "
+                                    "(rhoa) in the data to estimate a "
+                                    "data error.")
+            error = relativeError + absoluteError / data('rhoa')
+        else:
+            u = None
+            i = absoluteCurrent
+            if data.haveData("i"):
+                i = data('i')
 
+            if data.haveData("u"):
+                u = data('u')
+            else:
+                if data.haveData("r"):
+                    u = data('r') * i
+                elif data.haveData("rhoa"):
+                    if data.haveData("k"):
+                        u = data('rhoa') / data('k') * i
+                    else:
+                        raise BaseException("We need (rhoa) and (k) in the"
+                                            "data to estimate data error.")
 
+                else:
+                    raise BaseException("We need apparent resistivity values "
+                                        "(rhoa) or impedances (r) "
+                                        "in the data to estimate data error.")
 
+            error = pg.abs(absoluteUError / u) + relativeError
 
+        return error
 
+    def _ensureRhoa(self, data):
+        """"""
+        # check for valid rhoa here
+        return data('rhoa')
 
+    def _ensureError(self, data):
+        """"""
+        # check for valid err here
+        return data('err')
 
     def invert(self, data=None, err=None, **kwargs):
         """Invert measured data.
         """
-        #ensure data and error sizes here
         dataVals = None
-        if isinstance(data, pg.DataContainer):
+        errVals = None
+        
+        if isinstance(data, pg.DataContainerERT):
             self.fop.setDataSpace(dataContainer=data)
-            dataVals = self.dataValues(data)
-            errVals = self.errorValues(data, relative=True)
+
+            dataVals = self._ensureRhoa(data)
+            errVals = self._ensureError(data)
         else:
+
+            # check if fop has dataContainer
             dataVal = data
             errVals = err
 
