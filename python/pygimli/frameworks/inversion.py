@@ -538,6 +538,7 @@ class MeshInversion(Inversion):
         DOCUMENTME!!!
 
         """
+        pg.p(mesh)
         if isinstance(mesh, str):
             mesh = pg.load(mesh)
 

@@ -47,6 +47,9 @@ def _(*args, c=None):
 def p(*args, c='y'):
     print(_(*args, c=c))
 
+def _s(*args, c='y'):
+    print(_(*args, c=c))
+
 
 class ColorFormatter(logging.Formatter):
     def __init__(self, fmt='%(asctime)s - %(name)s - %(levelname)s - %(message)s'):
@@ -84,9 +87,9 @@ def setDebug(d):
     logger.setLevel(level)
     logging.getLogger('Core').setLevel(level)
     logging.basicConfig(level=level,
-                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                    datefmt='%m/%d/%Y %H:%M:%S',
-                    #filename='pygimli.log'
+                        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                        datefmt='%m/%d/%Y %H:%M:%S',
+                        #filename='pygimli.log'
                     )
 
 if '--debug' in sys.argv:

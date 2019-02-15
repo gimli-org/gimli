@@ -51,7 +51,7 @@ def simulate(mesh, res, scheme, sr=True, useBert=True,
 
 class BertModelling(MeshModelling):
     def __init__(self, sr, verbose=False):
-        """"Constructor, optional with data container and mesh."""
+        """Constructor, optional with data container and mesh."""
         super(BertModelling, self).__init__()
 
         if sr:
@@ -62,7 +62,8 @@ class BertModelling(MeshModelling):
         self.response = self.fop.response
         self.createJacobian = self.fop.createJacobian   
 
-        ## called from the Manager .. needet?
+        ## called from the Manager .. needed?
+        self.solution = self.fop.solution
         self.setComplex = self.fop.setComplex
         self.complex = self.fop.complex
         self.mesh = self.fop.mesh
@@ -92,6 +93,7 @@ class ERTModelling(MeshModelling):
 
     def createStartModel(self, rhoa):
         sm = pg.RVector(self.regionManager().parameterCount(), pg.median(rhoa))
+        pg.p("startmodel", sm)
         return sm
 
     def response(self, model):
@@ -100,6 +102,7 @@ class ERTModelling(MeshModelling):
         Create apparent resistivity values for a given resistivity distribution
         for self.mesh.
         """
+        pg.p(model)
         ### NOTE TODO can't be MT until mixed boundary condition depends on
         ### self.resistivity
         mesh = self.mesh()
@@ -167,6 +170,7 @@ class ERTModelling(MeshModelling):
 
     def createJacobian(self, model):
         """TODO WRITEME."""
+        pg.p(model)
         if self.subPotentials is None:
             self.response(model)
 
