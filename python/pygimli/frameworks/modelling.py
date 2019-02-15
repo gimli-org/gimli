@@ -115,7 +115,7 @@ class Modelling(pg.ModellingBase):
     def setMesh(self, mesh, ignoreRegionManager=False):
         """ 
         """
-        pg.p(self, setMesh)
+        # pg.p(self, setMesh)
         self.clearRegionProperties()
 
         if self.fop is not None:
