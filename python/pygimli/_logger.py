@@ -58,9 +58,17 @@ def whereAmI(nr=2):
     return str(clsName) + '.' + method
 
 def p(*args, c='y'):
+    deprecated(hint='use _d instead')
     print(_(*args, c=c))
 
-def _s(*args, c='y'):
+def _g(*args):
+    _d(*args, c='g')
+
+def _y(*args):
+    _d(*args, c='y')
+
+def _d(*args, c='y'):
+    """Simplistic colored debug msg"""
     print(_(whereAmI(), ':', *args, c=c))
 
 

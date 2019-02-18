@@ -2444,7 +2444,8 @@ Index Mesh::hash() const{
     return GIMLI::hash(this->positions(true), 
                        this->cellMarkers(), 
                        this->boundaryMarkers(),
-                       this->nodeMarkers());
+                       this->nodeMarkers(), 
+                       this->exportDataMap_);
 }
 
 } // namespace GIMLI

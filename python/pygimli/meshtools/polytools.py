@@ -1416,7 +1416,7 @@ def createCylinder(radius, height, nSegments=8, area=0.0, pos=None, **kwargs):
 
     poly = readPLC(namePLC)
 
-    poly.scale([radius, radius, height])
+    poly.scale([radius*2, radius*2, height])
     
     if pos is not None:
         poly.translate(pos)

@@ -138,7 +138,6 @@ public:
     /*! Return the complete sensor positions as read-only. */
     inline const PosVector & sensorPositions() const { return sensorPoints_; }
 
-
     /*! Set the position for the i-th sensor. Resize sensors if necessary.*/
     void setSensorPosition(uint i, const RVector3 & pos);
 

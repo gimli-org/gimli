@@ -12,7 +12,6 @@ TODO:
   *   Output types:
         numpy.ndarray, pg.Mesh. pg.Vector, pg.Matrix
 
-
 To use just add the decorator.
 
 @pg.cache
@@ -46,6 +45,7 @@ class Cache(object):
                           'dur': 0.0,
                           'restored': 0,
                           'codeinfo': '',
+                          'version': '',
                           'args': '',
                           'kwargs': {},
                           }
@@ -71,7 +71,11 @@ class Cache(object):
         
         self.updateCacheInfo()
 
-        v.save(self._name)
+        if self.info['type'] == 'Mesh':
+            v.saveBinaryV2(self._name)
+        else:
+            v.save(self._name)
+
         self._value = v
         pg.info('Cache stored:', self._name)
 
@@ -96,19 +100,21 @@ class Cache(object):
                     self._value = pg.RVector(self.info['file'])
                 elif self.info['type'] == 'Mesh':
                     self._value = pg.Mesh(self.info['file'] + '.bms')
-                
+            
                 if self.value is not None:
                     self.info['restored'] = self.info['restored'] + 1
                     self.updateCacheInfo()
-                    pg.info('Cache restored ({1}s x {0}): {2}'.format(self.info['restored'], 
+                    pg.info('Cache {3} restored ({1}s x {0}): {2}'.format(self.info['restored'], 
                                                                     round(self.info['dur'], 1),
-                                                                    self._name))
+                                                                    self._name,
+                                                                    self.info['codeinfo']))
                 else:
                     pg.warn('Could not restore cache of type {0}.'.format(self.info['type']))
     
             except Exception as e:
                 import traceback
                 traceback.print_exc(file=sys.stdout)
+                print(self.info)
                 pg.error('Cache restoring failed.')
 
 class CacheManager(object):
@@ -137,7 +143,7 @@ class CacheManager(object):
 
     def functInfo(self, funct):
         """Return unique info string about the called function."""
-        return funct.__code__.co_filename + ":" + funct.__qualname__ + ":" + pg.versionStr()
+        return funct.__code__.co_filename + ":" + funct.__qualname__
 
     def strhash(self, string):
         return int(hashlib.sha224(string.encode()).hexdigest()[:16], 16)
@@ -146,6 +152,7 @@ class CacheManager(object):
         """"Create a hash value"""
         functInfo = self.functInfo(funct)
         funcHash = self.strhash(functInfo)
+        versionHash = self.strhash(pg.versionStr())
         codeHash = self.strhash(inspect.getsource(funct))
 
         argHash = 0
@@ -161,7 +168,7 @@ class CacheManager(object):
             else:
                 argHash = argHash ^ hash(v)
                 
-        return funcHash ^ codeHash ^ argHash
+        return funcHash ^ versionHash ^ codeHash ^ argHash
 
     def cache(self, funct, *args, **kwargs):
         """ Create a unique cache """
@@ -169,6 +176,7 @@ class CacheManager(object):
 
         cache = Cache(hashVal)
         cache.info['codeinfo'] = self.functInfo(funct)
+        cache.info['version'] = pg.versionStr()
         cache.info['args'] = str(args)
         cache.info['kwargs'] = str(kwargs)
 

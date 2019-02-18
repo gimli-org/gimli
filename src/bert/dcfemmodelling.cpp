@@ -1296,15 +1296,9 @@ Matrix < ValueType > * DCMultiElectrodeModelling::prepareJacobianT_(const Vector
             }
 
             DataContainerERT tmp(this->dataContainer());
-<<<<<<< HEAD
 
             this->calculate(tmp);
 
-=======
-// __MS(toc__)
-            this->calculate(tmp);
-// __MS(toc__)
->>>>>>> dev
             /*! We have to scale subSolutions_ for the analytical solution to match the model */
             if (this->analytical()){
                 if (verbose_) std::cout << "Scale subpotentials with " << model[0] << std::endl;

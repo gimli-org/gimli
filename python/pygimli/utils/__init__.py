@@ -3,9 +3,12 @@
 Useful utility functions.
 """
 
-from .base import (rms, rmswitherr, nanrms, createDateTimeString, createfolders, createResultFolder,
+from .base import (rms, rmsWithErr, nanrms, createDateTimeString, createfolders, createResultFolder,
                    getSavePath, gmat2numpy, interperc, interpExtrap, inthist,
                    num2str, numpy2gmat, rndig, saveResult)
+
+# backward compatibility
+from .base import rmsWithErr as rmswitherr
 
 from .geostatistics import (computeInverseRootMatrix, covarianceMatrix,
                             generateGeostatisticalModel)
