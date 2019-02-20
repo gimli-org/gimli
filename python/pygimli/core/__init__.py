@@ -32,7 +32,7 @@ except ImportError as e:
 from .. _logger import *
 
 _pygimli_.load = None
-from .load import load, optImport, opt_import, getConfigPath
+from .load import load, optImport, opt_import, getConfigPath, getExampleFile
 
 from pygimli.viewer import show, plt, wait
 from pygimli.solver import solve
@@ -546,7 +546,7 @@ def __getValMatrix(self, idx):
 
     if idx == -1:
         idx = len(self) - 1
-    
+
     return self.row(idx)
 
 

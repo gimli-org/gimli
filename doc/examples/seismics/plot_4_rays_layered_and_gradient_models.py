@@ -50,7 +50,6 @@ pg.show(mesh_layered, vel_layered, label="Velocity (m/s)")
 # the minimum of the direct and critically refracted wave, where the latter is
 # governed by Snell's law.
 
-
 def analyticalSolution2Layer(x, zlay=25, v1=1000, v2=3000):
     """Analytical solution for 2 layer case."""
     tdirect = np.abs(x) / v1  # direct wave
@@ -58,7 +57,6 @@ def analyticalSolution2Layer(x, zlay=25, v1=1000, v2=3000):
     xreflec = tan(alfa) * zlay * 2.  # first critically refracted
     trefrac = (x - xreflec) / v2 + xreflec * v2 / v1**2
     return np.minimum(tdirect, trefrac)
-
 
 ################################################################################
 # Vertical gradient model
@@ -92,7 +90,6 @@ pg.show(mesh_gradient, vel_gradient, label="Velocity (m/s)")
 #     v = \left|b^{-1}cosh^{-1}\left(1 + \frac{b^2 x^2}{2a^2}\right)\right|
 #
 
-
 def analyticalSolutionGradient(x, a=1000, b=100):
     """Analytical solution for gradient model."""
     tdirect = np.abs(x) / a  # direct wave
@@ -100,9 +97,8 @@ def analyticalSolutionGradient(x, a=1000, b=100):
     trefrac = np.abs(b**-1 * np.arccosh(tmp))
     return np.minimum(tdirect, trefrac)
 
-
 ################################################################################
-# The loop below calculates the traveltimes and makes comparison plot.
+# The loop below calculates the traveltimes and makes the final comparison plot.
 
 fig, ax = plt.subplots(3, 2, figsize=(10, 10), sharex=True)
 
