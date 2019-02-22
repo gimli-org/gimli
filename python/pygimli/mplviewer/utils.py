@@ -63,26 +63,26 @@ def saveAxes(ax, filename, adjust=False):
     saveFigure(ax.figure, filename)
 
 
-def prettyFloat(v):
+def prettyFloat(value, roundValue=True):
     """Return pretty string for a given value suitable for graphical output."""
-    if abs(round(v)-v) < 1e-4 and abs(v) < 1e3:
-        string = str(int(round(v, 1)))
-    elif abs(v) == 0.0:
+    if roundValue and abs(round(value)-value) < 1e-4 and abs(value) < 1e3:
+        string = str(int(round(value, 1)))
+    elif abs(value) == 0.0:
         string = "0"
-    elif abs(v) > 1e4 or abs(v) <= 1e-3:
-        string = str("%.1e" % v)
-    elif abs(v) < 1e-2:
-        string = str("%.4f" % round(v, 4))
-    elif abs(v) < 1e-1:
-        string = str("%.3f" % round(v, 3))
-    elif abs(v) < 1e0:
-        string = str("%.2f" % round(v, 2))
-    elif abs(v) < 1e1:
-        string = str("%.1f" % round(v, 1))
-    elif abs(v) < 1e2:
-        string = str("%.1f" % round(v, 1))
+    elif abs(value) > 1e4 or abs(value) <= 1e-3:
+        string = str("%.1e" % value)
+    elif abs(value) < 1e-2:
+        string = str("%.4f" % round(value, 4))
+    elif abs(value) < 1e-1:
+        string = str("%.3f" % round(value, 3))
+    elif abs(value) < 1e0:
+        string = str("%.2f" % round(value, 2))
+    elif abs(value) < 1e1:
+        string = str("%.1f" % round(value, 1))
+    elif abs(value) < 1e2:
+        string = str("%.1f" % round(value, 1))
     else:
-        string = str("%.0f" % round(v, 1))
+        string = str("%.0f" % round(value, 1))
 
     if string.endswith(".0"):
         return string.replace(".0", "")
