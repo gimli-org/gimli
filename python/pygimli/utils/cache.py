@@ -99,7 +99,10 @@ class Cache(object):
                 elif self.info['type'] == 'RVector':
                     self._value = pg.RVector(self.info['file'])
                 elif self.info['type'] == 'Mesh':
-                    self._value = pg.Mesh(self.info['file'] + '.bms')
+                    pg.tic()
+                    self._value = pg.Mesh()
+                    self._value.loadBinaryV2(self.info['file'] + '.bms')
+                    pg.debug("Restoring cache took:", pg.dur(), "s")    
             
                 if self.value is not None:
                     self.info['restored'] = self.info['restored'] + 1
@@ -111,6 +114,7 @@ class Cache(object):
                 else:
                     pg.warn('Could not restore cache of type {0}.'.format(self.info['type']))
     
+                pg.debug("Restoring cache took:", pg.dur(), "s")
             except Exception as e:
                 import traceback
                 traceback.print_exc(file=sys.stdout)
@@ -150,6 +154,7 @@ class CacheManager(object):
 
     def hash(self, funct, *args, **kwargs):
         """"Create a hash value"""
+        pg.tic()
         functInfo = self.functInfo(funct)
         funcHash = self.strhash(functInfo)
         versionHash = self.strhash(pg.versionStr())
@@ -168,6 +173,7 @@ class CacheManager(object):
             else:
                 argHash = argHash ^ hash(v)
                 
+        pg.debug("Hashing took:", pg.dur(), "s")
         return funcHash ^ versionHash ^ codeHash ^ argHash
 
     def cache(self, funct, *args, **kwargs):
@@ -185,11 +191,8 @@ class CacheManager(object):
 
 def cache(funct):
     """Cache decorator."""
-    pg.tic()
     def wrapper(*args, **kwargs):
-        
         cache = CacheManager().cache(funct, *args, **kwargs)
-        # pg.toc('restore')
         if cache.value is not None:
             return cache.value
         else:
@@ -197,7 +200,5 @@ def cache(funct):
             cache.info['date'] = time.time()
             cache.info['dur'] = pg.dur()
             cache.value = rv
-            # pg.toc('store')
             return rv
-    # pg.toc('cache')
     return wrapper
