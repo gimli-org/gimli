@@ -94,6 +94,38 @@ streamHandler.setFormatter(ColorFormatter())
 logger.root.addHandler(streamHandler)
 
 
+def addLogLevel(value, name):
+    """Add a new log level to the :mod:`logging` module.
+    
+    Parameters
+    ----------
+    value: int
+        log level number.
+    name: str
+        Name for the log level.
+    """
+    logging.addLevelName(value, name)
+    setattr(logging, name, value)
+
+VERBOSE=15
+addLogLevel(VERBOSE, 'VERBOSE')
+def __logVerbose(msg, *args, **kwargs):
+    if logger.isEnabledFor(VERBOSE):
+        logger._log(VERBOSE, msg, args, **kwargs)
+logger.verbose = __logVerbose
+
+
+def setVerbose(v):
+    level = logging.INFO
+    if v:
+        level = logging.VERBOSE
+        logger.verbose("Set verbose mode: on")
+    else:
+        level = logging.INFO
+
+    logger.setLevel(level)
+
+
 def setDebug(d):
     level = logging.INFO
     if d:
@@ -113,10 +145,16 @@ def setDebug(d):
                         #filename='pygimli.log'
                     )
 
-if '--debug' in sys.argv:
+if '--debug' in sys.argv or '-d' in sys.argv:
     setDebug(True)
 else:
     setDebug(False)
+
+if '--verbose' in sys.argv or '-v' in sys.argv:
+    setVerbose(True)
+else:
+    setVerbose(False)
+
 
 def info(*args):
     logger.info(_msg(*args))
@@ -129,6 +167,9 @@ def error(*args):
 
 def debug(*args):
     logger.debug(_msg(*args))
+
+def verbose(*args):
+    logger.verbose(_msg(*args))
 
 def critical(*args):
     logger.critical(whereAmI() + "\n" + _msg(*args))

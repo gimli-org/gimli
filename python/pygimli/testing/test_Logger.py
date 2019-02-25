@@ -13,6 +13,8 @@ pg.version()
 
 # test pygimli log
 pg.info("Start numeric log test." + str(pg.log(pg.RVector(1, 1.))))
+pg.setVerbose(1)
+pg.verbose("some verbose notes")
 pg.warn("Start warning test.")
 
 def testTraceback1():

@@ -3,7 +3,6 @@
 pyGIMLi - An open-source library for modelling and inversion in geophysics
 """
 
-
 import locale
 import sys
 
@@ -69,6 +68,7 @@ def _get_branch():
 
 _branch = _get_branch()
 __version__ = get_versions()['version']
+
 if get_versions()["dirty"]:
     __version__ = __version__.replace(".dirty", " (with local changes")
 if _branch:
