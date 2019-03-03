@@ -7,8 +7,8 @@ Raypaths in layered and gradient models
 This example performs raytracing for a two-layer and a vertical gradient model
 and compares the resulting traveltimes to existing analytical solutions. An
 approximation of the raypath is found by finding the shortest-path through a
-grid of nodes. The possible angular coverage is small when only corner points of
-a cell (primary nodes) are used for this purpose. The angular coverage, and
+grid of nodes. The possible angular coverage is small when only corner points
+of a cell (primary nodes) are used for this purpose. The angular coverage, and
 hence the numerical accuracy of traveltime calculations, can be significantly
 improved by a few secondary nodes along the cell edges. Details can be found in
 `Giroux & Larouche (2013) <https://doi.org/10.1016/j.cageo.2012.12.005>`_.
@@ -22,15 +22,15 @@ import pygimli as pg
 import pygimli.meshtools as mt
 from pygimli.mplviewer import drawMesh
 
-################################################################################
+###############################################################################
 # Two-layer model
 # ---------------
 # We start by building a regular grid.
 
 mesh_layered = mt.createGrid(
-    np.arange(-20, 155, step=5), np.linspace(-60, 0, 13))
+    np.arange(-20, 155, step=5, dtype=float), np.linspace(-60, 0, 13))
 
-################################################################################
+###############################################################################
 # We now construct the velocity vector for the two-layer case by iterating over
 # the cells. Cells above 25 m depth are assigned :math:`v = 1000` m/s and cells
 # below are assigned :math:`v = 3000` m/s.
@@ -45,10 +45,11 @@ for cell in mesh_layered.cells():
 
 pg.show(mesh_layered, vel_layered, label="Velocity (m/s)")
 
-################################################################################
-# We now define the analytical solution. The traveltime at a given offset `x` is
-# the minimum of the direct and critically refracted wave, where the latter is
-# governed by Snell's law.
+###############################################################################
+# We now define the analytical solution. The traveltime at a given offset `x`
+# is the minimum of the direct and critically refracted wave, where the latter
+# is governed by Snell's law.
+
 
 def analyticalSolution2Layer(x, zlay=25, v1=1000, v2=3000):
     """Analytical solution for 2 layer case."""
@@ -58,18 +59,19 @@ def analyticalSolution2Layer(x, zlay=25, v1=1000, v2=3000):
     trefrac = (x - xreflec) / v2 + xreflec * v2 / v1**2
     return np.minimum(tdirect, trefrac)
 
-################################################################################
+
+###############################################################################
 # Vertical gradient model
 # -----------------------
 # We first create an unstructured mesh:
 
-sensors = np.arange(131, step=10)
+sensors = np.arange(131, step=10.0)
 plc = mt.createWorld([-20, -60], [150, 0], worldMarker=False)
 for pos in sensors:
     plc.createNode([pos, 0.0])
 mesh_gradient = mt.createMesh(plc, quality=33, area=3)
 
-################################################################################
+###############################################################################
 # A vertical gradient model, i.e. :math:`v(z) = a + bz`, is defined per cell.
 
 a = 1000
@@ -82,13 +84,14 @@ vel_gradient = pg.meshtools.nodeDataToCellData(mesh_gradient,
                                                np.array(vel_gradient))
 pg.show(mesh_gradient, vel_gradient, label="Velocity (m/s)")
 
-################################################################################
+###############################################################################
 # The traveltime for a gradient velocity model is given by:
 #
 # .. math::
 #
 #     v = \left|b^{-1}cosh^{-1}\left(1 + \frac{b^2 x^2}{2a^2}\right)\right|
 #
+
 
 def analyticalSolutionGradient(x, a=1000, b=100):
     """Analytical solution for gradient model."""
@@ -97,8 +100,9 @@ def analyticalSolutionGradient(x, a=1000, b=100):
     trefrac = np.abs(b**-1 * np.arccosh(tmp))
     return np.minimum(tdirect, trefrac)
 
-################################################################################
-# The loop below calculates the traveltimes and makes the final comparison plot.
+
+###############################################################################
+# The loop below calculates the traveltimes and makes the comparison plot.
 
 fig, ax = plt.subplots(3, 2, figsize=(10, 10), sharex=True)
 
@@ -153,7 +157,7 @@ for j, (case, mesh, vel) in enumerate(
         else:
             mesh2 = mesh
 
-        # Perform traveltime calculations and log time with pg.tic() and pg.toc()
+        # Perform traveltime calculations and log time with pg.tic() & pg.toc()
         pg.tic()
         fop = pg.TravelTimeDijkstraModelling(mesh2, data)
         t_all.append(fop.response(1 / vel))
