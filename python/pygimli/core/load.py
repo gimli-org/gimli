@@ -3,10 +3,18 @@
 
 import os.path
 from importlib import import_module
+from urllib.request import urlretrieve
 
 import pygimli as pg
 from pygimli.meshtools import readFenicsHDF5Mesh, readGmsh, readPLC, readSTL
 from pygimli.utils import readGPX
+
+# Example data repository
+exampleDataRepository = ''.join((
+    'https://raw.githubusercontent.com/',  # RAW files
+    'gimli-org/example-data/',  # Organization and repository
+    'master/'  # Branch
+))
 
 
 def optImport(module, requiredFor="use the full functionality"):
@@ -52,6 +60,7 @@ def optImport(module, requiredFor="use the full functionality"):
         # raise Exception(msg % (module, requiredFor))
 
     return mod
+
 
 def opt_import(*args, **kwargs):
     pg.deprecated()
@@ -160,4 +169,10 @@ def load(fname, verbose=False, testAll=True):
                 pass
 
     raise Exception("File type of %s is unknown or file does not exist "
-                    "and could not be imported." % fname)
+                        "and could not be imported." % fname)
+
+def getExampleFile(path):
+    """Download and return temporary filename of file in example repository."""
+    # TODO: Cache locally and check hash sums for potential file corruption
+    url = exampleDataRepository + path
+    return urlretrieve(url)[0]

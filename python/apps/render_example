@@ -15,6 +15,7 @@ sphx_glr_python_to_jupyter.py $1 && mv "${dirname}/${filename}.ipynb" $tmpfolder
 echo "Executing in temporary folder $tmpfolder."
 cd $tmpfolder
 jupyter nbconvert --log-level="INFO" --execute --to html "${filename}.ipynb"
-mv "${filename}.html" $cwd
+mv "${filename}.html" $cwd && echo "Moved ${filename}.html to ${cwd} and deleted ${tmpfolder}. DONE."
 rm -rf $tmpfolder
-echo "Moved ${filename}.html to ${cwd} and deleted ${tmpfolder}. DONE."
+echo "Try to open in FireFox"
+cd $cwd && firefox ${filename}.html

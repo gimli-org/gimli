@@ -65,7 +65,11 @@
 
 #include <cmath>
 namespace GIMLI{
+/*!Return the number of available CPUs.*/
 DLLEXPORT int numberOfCPU();
+
+/*!Return the number of the currently used CPU from the scheduler.*/
+DLLEXPORT int schedGetCPU();
 
 // Microsoft Visual C++ 10 does not provide some C99 functions
 #if defined(_MSC_VER)
@@ -80,6 +84,7 @@ template< typename T > inline bool isnan(T value){return std::isnan(value);}
 template< typename T > inline bool isinf(T value){return std::isinf(value);}
 template< typename T > inline bool isnan(T value){return std::isnan(value);}
 #endif
+
 
 }
 
