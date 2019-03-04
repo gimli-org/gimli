@@ -563,6 +563,7 @@ class MeshInversion(Inversion):
         
         self.fop.createRefinedForwardMesh(**kwargs)
         
+        self.paraDomain = pg.Mesh(self.fop.regionManager().paraDomain())
 
     def run(self, dataVals, errVals, mesh=None, zWeight=None, **kwargs):
         """
@@ -581,9 +582,6 @@ class MeshInversion(Inversion):
         pg.debug('run with: ', self.fop.regionProperties())
         #### more mesh related inversion attributes to set?
         
-        # better copy to avoid ref counter problems
-        self.paraDomain = pg.Mesh(self.fop.regionManager().paraDomain())
-
         self.model = super(MeshInversion, self).run(dataVals, errVals, **kwargs)
         return self.model
 
