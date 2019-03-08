@@ -28,15 +28,15 @@
 </div>
 
 {% if pagename != 'index' %}
-  <script>
-    ! function($) {
-      $(function() {
-        $('#sidebar-example-gallery').carousel({
-          interval: 4000 // 4 sec
-        })
+<script>
+  ! function($) {
+    $(function() {
+      $('#sidebar-example-gallery').carousel({
+        interval: 4000 // 4 sec
       })
-    }(window.jQuery)
-  </script>
+    })
+  }(window.jQuery)
+</script>
 {% endif %}
 
 <h4 class="sidebar-box-heading">Quick links</h4>
@@ -47,8 +47,19 @@
     <li><a target="_blank" href="https://github.com/gimli-org/gimli/issues"><i class="fas fa-bug fa-fw"></i> Report a bug</a></li>
     <li><a target="_blank" href="https://www.researchgate.net/project/pyGIMLi-Geophysical-Inversion-and-Modelling-Library-in-Python"><i class="fab fa-researchgate fa-fw"></i> Researchgate project</a></li>
     <li><a href="https://www.pygimli.org/citation.html"><i class="fas fa-quote-right fa-fw"></i> Citation</a></li>
+    {% if 'index' not in pagename %}
+    {%- if show_srclink_url %}
+    <li class="divider"></li>
+    <li><a href="{{ show_srclink_url }}" rel="nofollow" target="_blank"><i class="fas fa-code fa-fw"></i> View page source</a></li>
+    {%- endif %} {%- if history_srclink_url %}
+    <li><a href="{{ history_srclink_url }}" rel="nofollow" target="_blank"><i class="fas fa-history fa-fw"></i> View page history</a></li>
+    {%- endif %} {%- if edit_srclink_url %}
+    <li><a href="{{ edit_srclink_url }}" rel="nofollow" style="font-weight: 550" target="_blank"><i class="fas fa-edit fa-fw"></i> Improve this page</a></li>
+    {%- endif %}
+    {%- endif %}
   </ul>
 </div>
+
 
 <h4 class="sidebar-box-heading">Code status</h4>
 <div class="well sidebar-box">
