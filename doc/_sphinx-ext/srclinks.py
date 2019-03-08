@@ -145,6 +145,12 @@ class Context(object):
         if rev is None:
             rev = self.branch
         if conf is None:
+            # Sphinx-gallery specific
+            if "auto" in path and "plot" in path:
+                path = path.replace(".rst", ".py")
+                path = path.replace("_examples_auto", "examples")
+                path = path.replace("_tutorials_auto", "tutorials")
+
             conf = dict(
                 project_url=self.project_url,
                 project=self.project,
@@ -153,6 +159,7 @@ class Context(object):
                 rev=rev,
                 src_path=self.src_path,
                 path=path,)
+
         return tmpl.format(**conf)
 
     @classmethod
@@ -518,4 +525,3 @@ def main(argv=None):
 
 if __name__ == "__main__":
     sys.exit(main(sys.argv))
-
