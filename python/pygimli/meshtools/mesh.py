@@ -19,8 +19,7 @@ def createMesh(poly, quality=32, area=0.0, smooth=None, switches=None,
 
     If poly is a list of coordinates a simple Delaunay mesh of the convex hull
     will be created.
-    TODO: Tetgen support need to be implemented
-
+    
     Parameters
     ----------
     poly: :gimliapi:`GIMLI::Mesh` or list or ndarray
@@ -30,18 +29,26 @@ def createMesh(poly, quality=32, area=0.0, smooth=None, switches=None,
         * List of x y pairs [[x0, y0], ... ,[xN, yN]]
         * ndarray [x_i, y_i]
         * PLC or list of PLC
+
     quality: float
         2D triangle quality sets a minimum angle constraint.
         Be careful with values above 34 degrees.
+        3D tetgen quality. Be careful with values below 1.12.
+
     area: float
-        2D maximum triangle size in m*m
+        Maximum element size. 2D maximum triangle size in m*², 3D max. 
+        tetrahedral size in m³.
+
     smooth: tuple
         [smoothing algorithm, number of iterations]
         0, no smoothing
         1, node center
         2, weighted node center
+
     switches: str
-        Force triangle to use the gives command switches.
+        Set additional triangle command switches.
+        https://www.cs.cmu.edu/~quake/triangle.switch.html
+        (If you know what your are doing.)
 
     Returns
     -------
@@ -77,36 +84,32 @@ def createMesh(poly, quality=32, area=0.0, smooth=None, switches=None,
     # poly == Mesh
     if poly.dim() == 2:
         if poly.nodeCount() == 0:
-            raise Exception("No nodes in poly to create a valid mesh")
-
-        tri = pg.TriangleWrapper(poly)
+            pg.critical("No nodes in poly to create a valid mesh")
 
         if switches is None:
             # -D Conforming delaunay
             # -F Uses Steven Fortune's sweepline algorithm
-            # no -a here ignores per region area
             switches = 'pzeA'
 
             if area > 0:
-                #switches += 'a' + str(area)
                 # The str function turns everything smaller
                 # than 0.0001 into the scientific notation 1e-5
                 # which can not be read by triangle. The following
                 # avoids this even for very small numbers
                 switches += 'a' + '{:.20f}'.format(area)
-                pass
             else:
+                # no -a here ignores per region area
                 switches += 'a'
 
             # switches = switches.replace('.', ',')
-            switches += 'q' + str(quality)
+            switches += 'q{0}'.format(quality)
 
         if not verbose:
             switches += 'Q'
 
-        if verbose:
-            print(switches)
+        pg.verbose(switches)
 
+        tri = pg.TriangleWrapper(poly)
         tri.setSwitches(switches)
         mesh = tri.generate()
 
@@ -118,6 +121,7 @@ def createMesh(poly, quality=32, area=0.0, smooth=None, switches=None,
         return mesh
 
     else:
+        # 3d case
         if quality == 32:
             quality = 1.2
 
