@@ -75,6 +75,7 @@ def createMesh(poly, quality=32, area=0.0, smooth=None, switches=None,
     if isinstance(poly, list) or \
         isinstance(poly, type(zip)) or \
         type(poly) == pg.stdVectorRVector3 or \
+        isinstance(poly, pg.R3Vector) or \
         (isinstance(poly, np.ndarray) and poly.ndim == 2):
         delPLC = pg.Mesh(2)
         for p in poly:
@@ -115,7 +116,7 @@ def createMesh(poly, quality=32, area=0.0, smooth=None, switches=None,
 
         if smooth is not None:
             mesh.smooth(nodeMoving=kwargs.pop('node_move', True),
-                        edgeSwapping=False, 
+                        edgeSwapping=False,
                         smoothFunction=smooth[0],
                         smoothIteration=smooth[1])
         return mesh
@@ -1126,11 +1127,11 @@ def readEIDORSMesh(fileName, matlabVarname, verbose=False):
 
     return mesh
 
-   
+
 def readSTL(fileName, ascii=True):
     """Read :term:`STL` surface mesh and returns a :gimliapi:`GIMLI::Mesh`.
 
-    Read :term:`STL` surface mesh and returns a :gimliapi:`GIMLI::Mesh` 
+    Read :term:`STL` surface mesh and returns a :gimliapi:`GIMLI::Mesh`
     of triangle boundary faces. Multiple solids are supported with increasing
     boundary marker.
 
@@ -1176,10 +1177,10 @@ def exportSTL(mesh, fileName, ascii=True):
     """Write :term:`STL` surface mesh and returns a :gimliapi:`GIMLI::Mesh`.
 
     Export a three dimensional boundary :gimliapi:`GIMLI::Mesh` into a
-    :term:`STL` surface mesh. Boundaries with different marker 
+    :term:`STL` surface mesh. Boundaries with different marker
     will be separated into different STL solids.
 
-    TODO: 
+    TODO:
         * ASCII=False, write binary STL
         * QuadrangleFace Boundaries
         * p2 Boundaries
@@ -1187,7 +1188,7 @@ def exportSTL(mesh, fileName, ascii=True):
     Parameters
     ----------
     mesh : :gimliapi:`GIMLI::Mesh`
-        Mesh to be exported. Only Boundaries of type TriangleFace will be 
+        Mesh to be exported. Only Boundaries of type TriangleFace will be
         exported.
 
     fileName : str
@@ -1195,7 +1196,7 @@ def exportSTL(mesh, fileName, ascii=True):
 
     ascii : bool [True]
         STL Ascii format
-    
+
     """
     marker = pg.unique(pg.sort(mesh.boundaryMarkers()))
 
@@ -1210,14 +1211,14 @@ def exportSTL(mesh, fileName, ascii=True):
 
         for b in me.boundaries():
             n = b.norm()
-            fi.write('facet normal %f %f %f\n' %(n[0], n[1], n[2])) 
+            fi.write('facet normal %f %f %f\n' %(n[0], n[1], n[2]))
             fi.write('\touter loop\n')
             fi.write('\t\tvertex %f %f %f\n' %(b.node(0).pos()[0], b.node(0).pos()[1], b.node(0).pos()[2]))
             fi.write('\t\tvertex %f %f %f\n' %(b.node(1).pos()[0], b.node(1).pos()[1], b.node(1).pos()[2]))
             fi.write('\t\tvertex %f %f %f\n' %(b.node(2).pos()[0], b.node(2).pos()[1], b.node(2).pos()[2]))
             fi.write('\tendloop\n')
             fi.write('endfacet\n')
-        
+
         fi.write('endsolid\n')
 
     fi.close()
@@ -1269,7 +1270,7 @@ def rot2DGridToWorld(mesh, start, end):
     """
     mesh.rotate(pg.degToRad(pg.RVector3(-90.0, 0.0, 0.0)))
 
-    src = pg.RVector3(0.0, 0.0, 0.0).norm(pg.RVector3(0.0, 0.0, -10.0), 
+    src = pg.RVector3(0.0, 0.0, 0.0).norm(pg.RVector3(0.0, 0.0, -10.0),
                                           pg.RVector3(10.0, 0.0, -10.0))
     dest = start.norm(start - pg.RVector3(0.0, 0.0, 10.0), end)
 

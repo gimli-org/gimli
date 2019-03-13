@@ -3,9 +3,18 @@
 
 import os.path
 from importlib import import_module
+from urllib.request import urlretrieve
 
 import pygimli as pg
 from pygimli.meshtools import readFenicsHDF5Mesh, readGmsh, readPLC, readSTL
+from pygimli.utils import readGPX
+
+# Example data repository
+exampleDataRepository = ''.join((
+    'https://raw.githubusercontent.com/',  # RAW files
+    'gimli-org/example-data/',  # Organization and repository
+    'master/'  # Branch
+))
 
 
 def optImport(module, requiredFor="use the full functionality"):
@@ -52,6 +61,7 @@ def optImport(module, requiredFor="use the full functionality"):
 
     return mod
 
+
 def opt_import(*args, **kwargs):
     pg.deprecated()
     return optImport(*args, **kwargs)
@@ -71,15 +81,15 @@ def getConfigPath():
     else:
         return os.path.join(os.environ['HOME'], '.config', 'gimli')
 
-
-
-def load(fname, verbose=False):
+def load(fname, verbose=False, testAll=True):
     """General import function to load data and meshes from file.
 
     Parameters
     ----------
     fname : string
         Filename or folder of files to load.
+    testAll : bool [True]    
+        Test all filter when file suffix is unknown or loading fails.
     verbose : bool
         Be verbose.
 
@@ -95,15 +105,16 @@ def load(fname, verbose=False):
     >>> mesh.cellCount()
     4
     """
-    import_routines = {
+    ImportFilter = {
         # Data
-        ".data": pg.DataContainer,
-        ".ohm": pg.DataContainer,  # BERT compatibility
-        ".shm": pg.DataContainer,  # BERT compatibility
+        ".dat": pg.DataContainerERT,
+        ".data": pg.DataContainerERT,
+        ".ohm": pg.DataContainerERT,  # BERT compatibility
+        ".shm": pg.DataContainerERT,  # BERT compatibility
         ".sgt": pg.DataContainer,
         ".collect": pg.DataMap,
         # Vectors
-        ".dat": pg.RVector,
+        #".dat": pg.RVector,
         ".vector": pg.RVector,
         ".vec": pg.RVector,
         ".idx": pg.IVector,
@@ -117,7 +128,9 @@ def load(fname, verbose=False):
         ".mod": pg.Mesh,
         ".vtk": pg.Mesh,
         ".stl": readSTL,
-        ".h5": readFenicsHDF5Mesh  # fenics specs as default
+        ".h5": readFenicsHDF5Mesh,  # fenics specs as default
+        # Misc
+        ".gpx": readGPX  # read gpx waypoints
     }
 
     if not os.path.exists(fname):
@@ -132,10 +145,10 @@ def load(fname, verbose=False):
 
     suffix = os.path.splitext(fname)[1]
 
-    if suffix in import_routines:
+    if suffix in ImportFilter:
         try:
-            return import_routines[suffix](fname)
-        except BaseException as e:
+            return ImportFilter[suffix](fname)
+        except Exception as e:
             if verbose:
                 import sys
                 import traceback
@@ -147,12 +160,19 @@ def load(fname, verbose=False):
         if verbose:
             print("File extension %s is unknown. Trying auto-detect." % suffix)
 
-    for routine in import_routines.values():
-        try:
-            return routine(fname)
-        except BaseException as _:
-            # print(e)
-            pass
+    if testAll:
+        for routine in ImportFilter.values():
+            try:
+                return routine(fname)
+            except Exception as _:
+                # print(e)
+                pass
 
-    raise BaseException("File type of %s is unknown or file does not exist "
+    raise Exception("File type of %s is unknown or file does not exist "
                         "and could not be imported." % fname)
+
+def getExampleFile(path):
+    """Download and return temporary filename of file in example repository."""
+    # TODO: Cache locally and check hash sums for potential file corruption
+    url = exampleDataRepository + path
+    return urlretrieve(url)[0]

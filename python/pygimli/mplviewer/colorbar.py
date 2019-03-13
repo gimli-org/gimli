@@ -285,7 +285,7 @@ def createColorBar(gci, orientation='horizontal', size=0.2, pad=None,
 
 def createColorBarOnly(cMin=1, cMax=100, logScale=False, cMap=None, nLevs=5,
                        label=None, orientation='horizontal', savefig=None,
-                       **kwargs):
+                       ax=None, **kwargs):
     """Create figure with a colorbar.
 
     Create figure with a colorbar.
@@ -311,12 +311,12 @@ def createColorBarOnly(cMin=1, cMax=100, logScale=False, cMap=None, nLevs=5,
     >>> #                   orientation='horizontal')
     >>> # pg.wait()
     """
-    fig = plt.figure()
-
-    if orientation is 'horizontal':
-        ax = fig.add_axes([0.035, 0.6, 0.93, 0.05])
-    else:
-        ax = fig.add_axes([0.30, 0.02, 0.22, 0.96])
+    if ax is None:
+        fig = plt.figure()
+        if orientation is 'horizontal':
+            ax = fig.add_axes([0.035, 0.6, 0.93, 0.05])
+        else:
+            ax = fig.add_axes([0.30, 0.02, 0.22, 0.96])
 
     norm = None
     if cMin > 0 and logScale is True:
@@ -337,7 +337,7 @@ def createColorBarOnly(cMin=1, cMax=100, logScale=False, cMap=None, nLevs=5,
     if savefig is not None:
         saveFigure(fig, savefig)
 
-    return fig
+    return ax
 
 
 def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5):

@@ -16,7 +16,7 @@ import pygimli as pg
 # We start by generating a matplotlib path respresenting the :math:`\Omega`
 # character.
 
-logo_path = mpl.textpath.TextPath((0, 0), r'$\Omega$', size=1)
+logo_path = mpl.textpath.TextPath((0, 0), r'$\Omega$', size=5)
 patch = mpl.patches.PathPatch(logo_path)
 
 ###############################################################################
@@ -24,7 +24,7 @@ patch = mpl.patches.PathPatch(logo_path)
 
 poly = pg.Mesh(2)
 
-for n in patch.get_verts() * 50:
+for n in patch.get_verts() * 10:
     poly.createNodeWithCheck(n)
 
 for i in range(poly.nodeCount() - 1):
@@ -46,7 +46,7 @@ ax.axis('off')
 offset = -10
 t = ax.text(mesh.xmin() + (mesh.xmax()-mesh.xmin())/2, offset, 'BERT',
             horizontalalignment='center', size=40, fontweight='bold')
-pg.show(mesh, pg.x(mesh.cellCenters()), ax=ax, cMap='RdBu',
+pg.show(mesh, pg.x(mesh.cellCenters()), ax=ax, cMap='Spectral_r',
         logScale=False, showLater=True, showMesh=True)
 ax.set_ylim(offset, mesh.ymax())
 
