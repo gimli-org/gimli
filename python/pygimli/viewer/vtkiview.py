@@ -91,14 +91,14 @@ def showMesh3DVTKI(mesh, data=None, **kwargs):
         s3d.addDataToMesh(params)
         sys.exit(app.exec_())
 
-    elif notebook is True:
-        tool = vtki.OrthogonalSlicer(grid)
-        # Get the plotter for adding more datasets:
-        p = tool.plotter
-        p.show()
+    # elif notebook is True:
+    #     tool = vtki.OrthogonalSlicer(grid)
+    #     # Get the plotter for adding more datasets:
+    #     p = tool.plotter
+    #     p.show()
 
     else:
-        plotter = vtki.Plotter()
+        plotter = vtki.Plotter(notebook=notebook)
         # add the x, y, z arrows
         plotter.add_bounds_axes()
         plotter.add_axes()
