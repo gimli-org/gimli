@@ -15,17 +15,6 @@ if vtki is None:
 else:
     callback = 'showMesh3DVTKI'
 
-# try:
-#     import vtki
-#     callback = 'showMesh3DVTKI'
-# except ImportError:
-#     from mpl_toolkits.mplot3d import Axes3D
-#     import matplotlib.pyplot as plt
-#     callback = 'showMesh3DFallback'
-#     error_msg = """Proper visualization in 3D requires VTKI.\n""" + \
-#                 """Try 'pip install vtki' depending on your system.\n""" + \
-#                 """Fallback to matplotlib \n"""
-#     sys.stderr.write(error_msg)
 
 PyQt5 = pg.optImport('PyQt5', requiredFor="Make use of pyGIMLi 3D viewer")
 if PyQt5 is None:
@@ -34,16 +23,6 @@ else:
     from .view3d import Show3D
     from PyQt5 import Qt
     use_gui = True
-
-# try:
-#     # pg.optImport
-#     from PyQt5 import Qt
-#     from .view3d import Show3D
-#     use_gui = True
-# except ImportError:
-#     use_gui = False
-#     error_msg = """Install PyQt5 to make use of pyGIMLi's viewer."""
-#     sys.stderr.write(error_msg)
 
 
 def showMesh3D(mesh, data, **kwargs):
