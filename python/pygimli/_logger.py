@@ -12,6 +12,9 @@
 
 import sys
 import logging
+import inspect
+import traceback
+
 from . import core
 
 __ANSICOLORS__ = {'r':'\033[0;31;49m', #normal, #FG red; #BG black
@@ -30,10 +33,9 @@ def _msg(*args):
         if i < len(args)-1:
             msg += ' '
     return msg
-
     
 def _(*args, c=None):
-    # will probably only for linux
+    # will probably only for linux or any msys like shell
     if c is None:
         return _msg(*args)
     elif '\033' in c:
@@ -43,12 +45,35 @@ def _(*args, c=None):
     except:
         return '\033[' + c + 'm' + _msg(*args) + __ANSICOLORS__['NC']
 
+def _get_class_from_frame(fr):
+    args, _, _, value_dict = inspect.getargvalues(fr)
+    if len(args) and args[0] == 'self':
+        instance = value_dict.get('self', None)
+        if instance:
+            return getattr(instance, '__class__', None)
+    return None
+
+def whereAmI(nr=2):
+    clsName = _get_class_from_frame(inspect.stack()[nr][0])
+    method = inspect.stack()[nr][3]
+    return str(clsName) + '.' + method
 
 def p(*args, c='y'):
+    deprecated(hint='use _d instead')
     print(_(*args, c=c))
 
-def _s(*args, c='y'):
-    print(_(*args, c=c))
+def _g(*args):
+    _d(*args, c='g')
+
+def _y(*args):
+    _d(*args, c='y')
+
+def _r(*args):
+    _d(*args, c='r')
+
+def _d(*args, c='y'):
+    """Simplistic colored debug msg"""
+    print(_(whereAmI(), ':', *args, c=c))
 
 
 class ColorFormatter(logging.Formatter):
@@ -73,16 +98,107 @@ streamHandler.setFormatter(ColorFormatter())
 logger.root.addHandler(streamHandler)
 
 
+def addLogLevel(value, name):
+    """Add a new log level to the :mod:`logging` module.
+    
+    Parameters
+    ----------
+    value: int
+        log level number.
+    name: str
+        Name for the log level.
+    """
+    logging.addLevelName(value, name)
+    setattr(logging, name, value)
+
+# CRITICAL = 50
+# ERROR = 40
+# WARNING = 30
+# INFO = 20
+VERBOSE = 15
+# DEBUG = 10
+# NOTSET = 0
+addLogLevel(VERBOSE, 'VERBOSE')
+def __logVerbose(msg, *args, **kwargs):
+    if logger.isEnabledFor(VERBOSE):
+        logger._log(VERBOSE, msg, args, **kwargs)
+logger.verbose = __logVerbose
+
+__verbose_level__ = 0
+
+def setVerbose(v):
+    level = logging.INFO
+    if v:
+        __verbose_level__ = 1
+        level = logging.VERBOSE
+    else:
+        __verbose_level__ = 0
+        level = logging.INFO
+    logger.setLevel(level)
+
+def v(funct):
+    """Decorator to enable verbose messages for the scope of a function.
+
+    Examples
+    --------
+    import pygimli as pg
+    >>> @pg.v
+    >>> def foo():
+    ...     pg.verbose('foo')
+    >>> foo()
+    >>> def bar(d):
+    ...     pg.verbose('bar', d)
+    >>> bar('verbose should be off')
+    >>> pg.setVerbose(1)
+    >>> bar('verbose should be on (1)')
+    >>> pg.setVerbose(0)
+    >>> pg.v(bar)('verbose should be on (2)')
+    """
+    def wrapper(*args, **kwargs):
+        o = logger.level
+        logger.setLevel(logging.VERBOSE)
+        rv = funct(*args, **kwargs)
+        logger.setLevel(o)
+        return rv
+    return wrapper
+
+def d(funct):
+    """Decorator to enable debug messages for the scope of a function.
+    
+    Examples
+    --------
+    import pygimli as pg
+    >>> @pg.d
+    >>> def foo():
+    ...     pg.debug('foo')
+    >>> foo()
+    >>> def bar(d):
+    ...     pg.debug('bar', d)
+    >>> bar('debug should be off')
+    >>> pg.setDebug(1)
+    >>> bar('debug should be on (1)')
+    >>> pg.setDebug(0)
+    >>> pg.d(bar)('debug should be on (2)')
+    """
+    def wrapper(*args, **kwargs):
+        o = logger.level
+        logger.setLevel(logging.DEBUG)
+        rv = funct(*args, **kwargs)
+        logger.setLevel(o)
+        return rv
+    return wrapper
+
+def verbose():
+    return __verbose_level__
+
 def setDebug(d):
     level = logging.INFO
     if d:
         core._pygimli_.setDebug(True)
         level = logging.DEBUG
-        logger.debug("Set debug mode: on")
     else:
         core._pygimli_.setDebug(False)
         level = logging.INFO
-        logger.debug("Set debug mode: off")
 
     logger.setLevel(level)
     logging.getLogger('Core').setLevel(level)
@@ -92,10 +208,16 @@ def setDebug(d):
                         #filename='pygimli.log'
                     )
 
-if '--debug' in sys.argv:
+if '--debug' in sys.argv or '-d' in sys.argv:
     setDebug(True)
 else:
     setDebug(False)
+
+if '--verbose' in sys.argv or '-v' in sys.argv:
+    setVerbose(True)
+else:
+    setVerbose(False)
+
 
 def info(*args):
     logger.info(_msg(*args))
@@ -104,19 +226,26 @@ def warn(*args):
     logger.warning(_msg(*args))
 
 def error(*args):
-    caller = sys._getframe(1).f_code.co_name
-    logger.error(caller + "\n" + _msg(*args))
+    logger.error(whereAmI() + "\n" + _msg(*args))
 
-def debug(*args):
+def debug(*args, withTrace=False):
+    """
+    Parameters
+    ----------
+    """
+    if withTrace:
+        traceback.print_exc()
     logger.debug(_msg(*args))
 
+def verbose(*args):
+    logger.verbose(_msg(*args))
+
 def critical(*args):
-    logger.critical(_msg(*args))
+    logger.critical(whereAmI() + "\n" + _msg(*args))
     raise Exception(_msg(*args))
 
 def deprecated(msg='', hint=''):
-    caller = sys._getframe(1).f_code.co_name
-    logger.warning(caller + "\n" + msg + ", is deprecated, please use:" + hint + " instead.")
+    logger.warning(whereAmI() + "\n" + msg + ", is deprecated, please use:" + hint + " instead.")
 
 def renameKwarg(old, new, kwargs):
     if old in kwargs:
@@ -126,6 +255,4 @@ def renameKwarg(old, new, kwargs):
 
 def warnNonEmptyArgs(kwargs):
     if len(kwargs) > 0:
-        caller = sys._getframe(1).f_code.co_name
-        logger.warning("Unrecognized keyword arguments for method: '" + caller
-                       + "' "  + _msg(kwargs))
+        logger.warning(whereAmI() + "Unrecognized keyword arguments for method:" + _msg(kwargs))

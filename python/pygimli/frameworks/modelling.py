@@ -144,12 +144,12 @@ class Modelling(pg.ModellingBase):
     def setRegionProperties(self, regionNr, **kwargs):
         """ Set region properties. regionNr can be wildcard '*' for all regions.
 
-                            startModel=None, limits=None, trans=None,
-                            cType=None, zWeight=None, modelControl=None,
-                            background=None, single=None, fix=None):
+            startModel=None, limits=None, trans=None,
+            cType=None, zWeight=None, modelControl=None,
+            background=None, single=None, fix=None
+
         Parameters
         ----------
-
         """
         if regionNr is '*':
             for regionNr in self.regionManager().regionIdxs():
@@ -168,11 +168,15 @@ class Modelling(pg.ModellingBase):
                                                 'fix': None,
                                               }
         
-        for key, val in kwargs.items():
+        for key in list(kwargs.keys()):
+            val = kwargs.pop(key)
             if val is not None:
                 if not self._regionProperties[regionNr][key] is val:
                     self._regionsNeedUpdate = True
                     self._regionProperties[regionNr][key] = val
+            
+        if len(kwargs.items()) > 0:
+            pg.warn('Unhandled region properties:', kwargs)
 
     def _applyRegionProperties(self):
         """

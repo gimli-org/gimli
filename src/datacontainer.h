@@ -135,9 +135,10 @@ public:
     /*! Set the positions for all sensors. */
     void setSensorPositions(const PosVector & sensors);
 
+    // will be remove on 1.1
+#define GIMLI_USE_POSVECTOR
     /*! Return the complete sensor positions as read-only. */
     inline const PosVector & sensorPositions() const { return sensorPoints_; }
-
 
     /*! Set the position for the i-th sensor. Resize sensors if necessary.*/
     void setSensorPosition(uint i, const RVector3 & pos);

@@ -19,8 +19,7 @@ def createMesh(poly, quality=32, area=0.0, smooth=None, switches=None,
 
     If poly is a list of coordinates a simple Delaunay mesh of the convex hull
     will be created.
-    TODO: Tetgen support need to be implemented
-
+    
     Parameters
     ----------
     poly: :gimliapi:`GIMLI::Mesh` or list or ndarray
@@ -30,18 +29,26 @@ def createMesh(poly, quality=32, area=0.0, smooth=None, switches=None,
         * List of x y pairs [[x0, y0], ... ,[xN, yN]]
         * ndarray [x_i, y_i]
         * PLC or list of PLC
+
     quality: float
         2D triangle quality sets a minimum angle constraint.
         Be careful with values above 34 degrees.
+        3D tetgen quality. Be careful with values below 1.12.
+
     area: float
-        2D maximum triangle size in m*m
+        Maximum element size. 2D maximum triangle size in m*², 3D max. 
+        tetrahedral size in m³.
+
     smooth: tuple
         [smoothing algorithm, number of iterations]
         0, no smoothing
         1, node center
         2, weighted node center
+
     switches: str
-        Force triangle to use the gives command switches.
+        Set additional triangle command switches.
+        https://www.cs.cmu.edu/~quake/triangle.switch.html
+        (If you know what your are doing.)
 
     Returns
     -------
@@ -68,6 +75,7 @@ def createMesh(poly, quality=32, area=0.0, smooth=None, switches=None,
     if isinstance(poly, list) or \
         isinstance(poly, type(zip)) or \
         type(poly) == pg.stdVectorRVector3 or \
+        isinstance(poly, pg.R3Vector) or \
         (isinstance(poly, np.ndarray) and poly.ndim == 2):
         delPLC = pg.Mesh(2)
         for p in poly:
@@ -77,47 +85,44 @@ def createMesh(poly, quality=32, area=0.0, smooth=None, switches=None,
     # poly == Mesh
     if poly.dim() == 2:
         if poly.nodeCount() == 0:
-            raise Exception("No nodes in poly to create a valid mesh")
-
-        tri = pg.TriangleWrapper(poly)
+            pg.critical("No nodes in poly to create a valid mesh")
 
         if switches is None:
             # -D Conforming delaunay
             # -F Uses Steven Fortune's sweepline algorithm
-            # no -a here ignores per region area
             switches = 'pzeA'
 
             if area > 0:
-                #switches += 'a' + str(area)
                 # The str function turns everything smaller
                 # than 0.0001 into the scientific notation 1e-5
                 # which can not be read by triangle. The following
                 # avoids this even for very small numbers
                 switches += 'a' + '{:.20f}'.format(area)
-                pass
             else:
+                # no -a here ignores per region area
                 switches += 'a'
 
             # switches = switches.replace('.', ',')
-            switches += 'q' + str(quality)
+            switches += 'q{0}'.format(quality)
 
         if not verbose:
             switches += 'Q'
 
-        if verbose:
-            print(switches)
+        pg.verbose(switches)
 
+        tri = pg.TriangleWrapper(poly)
         tri.setSwitches(switches)
         mesh = tri.generate()
 
         if smooth is not None:
             mesh.smooth(nodeMoving=kwargs.pop('node_move', True),
-                        edgeSwapping=False, 
+                        edgeSwapping=False,
                         smoothFunction=smooth[0],
                         smoothIteration=smooth[1])
         return mesh
 
     else:
+        # 3d case
         if quality == 32:
             quality = 1.2
 
@@ -1122,11 +1127,11 @@ def readEIDORSMesh(fileName, matlabVarname, verbose=False):
 
     return mesh
 
-   
+
 def readSTL(fileName, ascii=True):
     """Read :term:`STL` surface mesh and returns a :gimliapi:`GIMLI::Mesh`.
 
-    Read :term:`STL` surface mesh and returns a :gimliapi:`GIMLI::Mesh` 
+    Read :term:`STL` surface mesh and returns a :gimliapi:`GIMLI::Mesh`
     of triangle boundary faces. Multiple solids are supported with increasing
     boundary marker.
 
@@ -1172,10 +1177,10 @@ def exportSTL(mesh, fileName, ascii=True):
     """Write :term:`STL` surface mesh and returns a :gimliapi:`GIMLI::Mesh`.
 
     Export a three dimensional boundary :gimliapi:`GIMLI::Mesh` into a
-    :term:`STL` surface mesh. Boundaries with different marker 
+    :term:`STL` surface mesh. Boundaries with different marker
     will be separated into different STL solids.
 
-    TODO: 
+    TODO:
         * ASCII=False, write binary STL
         * QuadrangleFace Boundaries
         * p2 Boundaries
@@ -1183,7 +1188,7 @@ def exportSTL(mesh, fileName, ascii=True):
     Parameters
     ----------
     mesh : :gimliapi:`GIMLI::Mesh`
-        Mesh to be exported. Only Boundaries of type TriangleFace will be 
+        Mesh to be exported. Only Boundaries of type TriangleFace will be
         exported.
 
     fileName : str
@@ -1191,7 +1196,7 @@ def exportSTL(mesh, fileName, ascii=True):
 
     ascii : bool [True]
         STL Ascii format
-    
+
     """
     marker = pg.unique(pg.sort(mesh.boundaryMarkers()))
 
@@ -1206,14 +1211,14 @@ def exportSTL(mesh, fileName, ascii=True):
 
         for b in me.boundaries():
             n = b.norm()
-            fi.write('facet normal %f %f %f\n' %(n[0], n[1], n[2])) 
+            fi.write('facet normal %f %f %f\n' %(n[0], n[1], n[2]))
             fi.write('\touter loop\n')
             fi.write('\t\tvertex %f %f %f\n' %(b.node(0).pos()[0], b.node(0).pos()[1], b.node(0).pos()[2]))
             fi.write('\t\tvertex %f %f %f\n' %(b.node(1).pos()[0], b.node(1).pos()[1], b.node(1).pos()[2]))
             fi.write('\t\tvertex %f %f %f\n' %(b.node(2).pos()[0], b.node(2).pos()[1], b.node(2).pos()[2]))
             fi.write('\tendloop\n')
             fi.write('endfacet\n')
-        
+
         fi.write('endsolid\n')
 
     fi.close()
@@ -1265,7 +1270,7 @@ def rot2DGridToWorld(mesh, start, end):
     """
     mesh.rotate(pg.degToRad(pg.RVector3(-90.0, 0.0, 0.0)))
 
-    src = pg.RVector3(0.0, 0.0, 0.0).norm(pg.RVector3(0.0, 0.0, -10.0), 
+    src = pg.RVector3(0.0, 0.0, 0.0).norm(pg.RVector3(0.0, 0.0, -10.0),
                                           pg.RVector3(10.0, 0.0, -10.0))
     dest = start.norm(start - pg.RVector3(0.0, 0.0, 10.0), end)
 

@@ -1976,7 +1976,7 @@ void Mesh::prolongateEmptyCellsValues(RVector & vals, double background) const {
     Index prolongatedValues = 0;
 
     if (emptyList.size() > 0){
-        if (debug()) {
+        if (deepDebug()) {
             std::cout << "Prolongate " << emptyList.size() << " empty cells. ("
             << this->cellCount() << ")" << std::endl;
         }
@@ -2444,7 +2444,8 @@ Index Mesh::hash() const{
     return GIMLI::hash(this->positions(true), 
                        this->cellMarkers(), 
                        this->boundaryMarkers(),
-                       this->nodeMarkers());
+                       this->nodeMarkers(), 
+                       this->exportDataMap_);
 }
 
 } // namespace GIMLI

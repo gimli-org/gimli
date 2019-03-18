@@ -471,7 +471,7 @@ class MeshMethodManager(MethodManager):
         ----------
 
         """
-        if mesh is None:
+        if mesh is None and self.inv.mesh is None:
             mesh = self.createMesh(depth=kwargs.pop('depth', None),
                                    quality=kwargs.pop('quality', 34.0),
                                    maxCellArea=kwargs.pop('maxCellArea', 0.0),

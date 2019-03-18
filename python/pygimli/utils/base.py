@@ -29,12 +29,12 @@ def nanrms(v, axis=None):
     ### abs for complex values
     return np.sqrt(np.nanmean(np.abs(v)**2, axis))
 
-
 def rmsWithErr(a, b, err, errtol=1):
     """Compute (abs-)root mean square of values with error above a threshold"""
     fi = pg.find(err < errtol)
     return rms(a[fi] - b[fi])
-
+# fc_cleaning compatibilty to bert
+rmswitherr = rmsWithErr
 
 def rrmsWithErr(a, b, err, errtol=1):
     """Compute root mean square of values with error above a threshold"""

@@ -35,12 +35,12 @@ K = pg.solver.parseMapToCellArray(kMap, mesh)
 # Dirichlet conditions for hydraulic potential
 pBound = [[[1, 2, 3], 0.75], [[5, 6, 7], 0.0]]
 # Solve for hydraulic potential
-p = pg.solver.solveFiniteElements(mesh, a=K, uB=pBound)
+p = pg.solver.solveFiniteElements(mesh, a=K, bc={'Dirichlet': pBound})
 # Solve velocity as gradient of hydraulic potential
 vel = -pg.solver.grad(mesh, p) * np.asarray([K, K, K]).T
 
 ax, _ = pg.show(mesh, data=K, label='Hydraulic conductivity $K$ in m$/$s',
-                cMin=1e-5, cMax=1e-2, nLevs=4, cmap='viridis')
+                cMin=1e-5, cMax=1e-2, nLevs=4, cMap='viridis')
 ax, _ = pg.show(mesh, data=pg.abs(vel), logScale=0,
                 label='Velocity $v$ in m$/$s')
 ax, _ = pg.show(mesh, data=vel, ax=ax, color='black', linewidth=0.5,

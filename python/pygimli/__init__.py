@@ -3,7 +3,6 @@
 pyGIMLi - An open-source library for modelling and inversion in geophysics
 """
 
-
 import locale
 import sys
 
@@ -49,7 +48,7 @@ if "conda" in __path__[0]:
 ################################################################################
 from . import core
 from ._version import get_versions
-from ._logger import _
+from ._logger import _, _d, _y, _g, _r
 from .core import *
 from .testing import test
 
@@ -69,6 +68,7 @@ def _get_branch():
 
 _branch = _get_branch()
 __version__ = get_versions()['version']
+
 if get_versions()["dirty"]:
     __version__ = __version__.replace(".dirty", " (with local changes")
 if _branch:

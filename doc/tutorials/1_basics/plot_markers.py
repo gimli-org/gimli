@@ -1,13 +1,16 @@
 #!/usr/bin/env python
 # encoding: utf-8
-
 r"""
 Region markers
 ==============
 
-This example highlights the usage of regionMarkers, as well as some properties
-of regions if the **pygimli.meshtools** package is used to create complex
-compound meshes.
+**Author:** *Maximilian Weigand, University of Bonn*
+
+A mesh can have different regions, which are defined by region markers for each
+cell. Region markers can be used to assign properties for forward modeling as
+well as to control the inversion behavior. This tutorial highlights the usage of
+regionMarkers, as well as some properties of regions if the
+**pygimli.meshtools** package is used to create complex compound meshes.
 
 When constructing complex geometries out of basic geometric shapes (e.g.,
 circle, rectangle, ...) we need to be careful with the region markers and their
@@ -15,8 +18,6 @@ positions. This example shows how to use markerPositions to properly set region
 markers.
 """
 
-###############################################################################
-# imports
 import pygimli as pg
 import pygimli.meshtools as mt
 
@@ -27,19 +28,14 @@ import pygimli.meshtools as mt
 # marker=1 for the larger circle? A marker value of 0 is assigned to a region
 # if no region marker is found, indicating that the marker for the outer ring
 # was overwritten/ignored by the inner circle, which was added later.
-circle_outer = mt.createCircle(
-    pos=[0.0, 0.0],
-    radius=3.0,
-    marker=1
-)
+circle_outer = mt.createCircle(pos=[0.0, 0.0], radius=3.0, marker=1)
 
 circle_inner = mt.createCircle(
     pos=[0.0, 0.0],
     radius=1.0,
     # area=.3,
     boundaryMarker=0,
-    marker=2
-)
+    marker=2)
 
 plc = mt.mergePLC([circle_outer, circle_inner])
 
@@ -54,10 +50,8 @@ ax, cb = pg.show(plc, markers=True)
 
 fig = ax.get_figure()
 for nr, marker in enumerate(plc.regionMarker()):
-    print(
-        'Position marker number {}:'.format(nr + 1),
-        marker.x(), marker.y(), marker.z()
-    )
+    print('Position marker number {}:'.format(nr + 1), marker.x(), marker.y(),
+          marker.z())
     ax.scatter(marker.x(), marker.y(), s=(2 - nr) * 30, color='k')
 ax.set_title('marker positions - non-working example')
 fig.show()
@@ -86,10 +80,8 @@ ax, cb = pg.show(plc, markers=True)
 
 fig = ax.get_figure()
 for nr, marker in enumerate(plc.regionMarker()):
-    print(
-        'Position marker number {}:'.format(nr + 1),
-        marker.x(), marker.y(), marker.z()
-    )
+    print('Position marker number {}:'.format(nr + 1), marker.x(), marker.y(),
+          marker.z())
     ax.scatter(marker.x(), marker.y(), s=(2 - nr) * 30, color='k')
 ax.set_title('marker positions - working example')
 fig.show()
@@ -115,10 +107,8 @@ ax, cb = pg.show(plc, markers=True)
 
 fig = ax.get_figure()
 for nr, marker in enumerate(plc.regionMarker()):
-    print(
-        'Position marker number {}:'.format(nr + 1),
-        marker.x(), marker.y(), marker.z()
-    )
+    print('Position marker number {}:'.format(nr + 1), marker.x(), marker.y(),
+          marker.z())
     ax.scatter(marker.x(), marker.y(), s=(4 - nr) * 20, color='k')
 ax.set_title('marker positions - non-working example')
 fig.show()
@@ -144,10 +134,8 @@ ax, cb = pg.show(plc, markers=True)
 
 fig = ax.get_figure()
 for nr, marker in enumerate(plc.regionMarker()):
-    print(
-        'Position marker number {}:'.format(nr + 1),
-        marker.x(), marker.y(), marker.z()
-    )
+    print('Position marker number {}:'.format(nr + 1), marker.x(), marker.y(),
+          marker.z())
     ax.scatter(marker.x(), marker.y(), s=(4 - nr) * 20, color='k')
 ax.set_title('marker positions - working example')
 fig.show()
@@ -174,10 +162,8 @@ ax, cb = pg.show(plc, markers=True)
 
 fig = ax.get_figure()
 for nr, marker in enumerate(plc.regionMarker()):
-    print(
-        'Position marker number {}:'.format(nr + 1),
-        marker.x(), marker.y(), marker.z()
-    )
+    print('Position marker number {}:'.format(nr + 1), marker.x(), marker.y(),
+          marker.z())
     ax.scatter(marker.x(), marker.y(), s=(4 - nr) * 20, color='k')
 ax.set_title('marker positions - non-working example')
 fig.show()
@@ -206,10 +192,8 @@ ax, cb = pg.show(plc, markers=True)
 
 fig = ax.get_figure()
 for nr, marker in enumerate(plc.regionMarker()):
-    print(
-        'Position marker number {}:'.format(nr + 1),
-        marker.x(), marker.y(), marker.z()
-    )
+    print('Position marker number {}:'.format(nr + 1), marker.x(), marker.y(),
+          marker.z())
     ax.scatter(marker.x(), marker.y(), s=(4 - nr) * 20, color='k')
 ax.set_title('marker positions - working example')
 fig.show()
@@ -217,6 +201,6 @@ fig.show()
 ###############################################################################
 # .. note::
 #
-#   This example was kindly contributed by Maximilian Weigand (University of
+#   This tutorial was kindly contributed by Maximilian Weigand (University of
 #   Bonn). If you also want to contribute an interesting example, check out
 #   our `contribution guidelines <https://www.pygimli.org/contrib.html>`_.

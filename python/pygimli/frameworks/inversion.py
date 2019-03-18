@@ -55,9 +55,7 @@ class Inversion(object):
             self._inv = pg.Inversion(self._verbose, self._debug)
 
         self._dataTrans = pg.RTransLin()
-        
         self.axs = None # for showProgress only
-
         self.maxIter = kwargs.pop('maxIter', 20)
 
         if fop is not None:
@@ -82,8 +80,8 @@ class Inversion(object):
     @verbose.setter
     def verbose(self, v):
         self._verbose = v
-        if self.inv is not None:
-            self.inv.setVerbose(self._verbose)
+        self.inv.setVerbose(self._verbose)
+        self.fop.setVerbose(self._verbose)
 
     @property
     def debug(self):
@@ -91,8 +89,7 @@ class Inversion(object):
     @debug.setter
     def debug(self, v):
         self._debug = v
-        if self.inv is not None:
-            self.inv.setDoSave(self._debug)
+        self.inv.setDoSave(self._debug)
 
     @property
     def dataTrans(self):
@@ -209,6 +206,9 @@ class Inversion(object):
         else:
             self._dataVals = data
 
+    def chi2(self):
+        return self.inv.chi2()
+
     def run(self, dataVals, errorVals, **kwargs):
         """Run inversion.
 
@@ -259,17 +259,18 @@ class Inversion(object):
         self.maxIter = 1
 
         if self.verbose:
-            print("inv.start()")
+            pg.info('Starting inversion.')
             print("fop:", self.inv.fop())
             print("Data transformation:", self.inv.transData())
             print("Model transformation:", self.inv.transModel())
-            print("min/max (data): {0:.2e}, {1:.2e}".format(min(self._dataVals), max(self._dataVals)))
+            print("min/max (data): {0:.2f}, {1:.2f}".format(min(self._dataVals), max(self._dataVals)))
             print("min/max (error): {0:.3f}%, {1:.3f}%".format(100*min(self._errorVals), 100*max(self._errorVals)))
             print("min/max (start model): {0:.2f}, {1:.2f}".format(min(self.startModel), max(self.startModel)))
 
         ### To ensure reproducability of the run() call inv.start() will
         ### reset self.inv.model() to fop.startModel().
         self.fop.setStartModel(self.startModel)
+        self.inv.setReferenceModel(self.fop.startModel())
 
         self.inv.start()
         self.maxIter = maxIter
@@ -520,14 +521,18 @@ class MeshInversion(Inversion):
         self._mesh = None
         self._zWeight = 1.0
 
-    def setMesh(self, mesh, refine=True, refineP2=False, omitBackground=False):
+    @property
+    def mesh(self):
+        return self._mesh
+
+    def setMesh(self, mesh, **kwargs):
         """Set the internal mesh for this Framework.
 
         Injects the mesh in the internal fop.
 
         Initialize RegionManager.
         For more than two regions the region with smallest marker is assumed 
-        to be background.
+        to be a background region.
 
         TODO:
             Optional the forward mesh can be refined for higher numerical accuracy.
@@ -538,7 +543,6 @@ class MeshInversion(Inversion):
         DOCUMENTME!!!
 
         """
-        # pg.p(mesh)
         if isinstance(mesh, str):
             mesh = pg.load(mesh)
 
@@ -550,20 +554,20 @@ class MeshInversion(Inversion):
         regionId = self.fop.regionManager().regionIdxs()
         if len(regionId) > 1:
             bk = pg.sort(regionId)[0]
-            pg.info("Setting region with smallest smarker to background (marker={0})".format(bk))
+            pg.info("Setting region with smallest marker to background (marker={0})".format(bk))
             self.fop.regionManager().region(bk).setBackground(True)
+            
             # need to set the properties here but then the fop.mesh is invalid since missing createRefinedForwardMesh infos
             # FIXME
-            # self.fop.setRegionProperties(bk, background=True)
+            self.fop.setRegionProperties(bk, background=True)
         
-        self.fop.createRefinedForwardMesh(refine, refineP2)
-        self.paraDomain = self.fop.regionManager().paraDomain()
-        self.setForwardOperator(self.fop)  # necessary?
+        self.fop.createRefinedForwardMesh(**kwargs)
+        
+        self.paraDomain = pg.Mesh(self.fop.regionManager().paraDomain())
 
     def run(self, dataVals, errVals, mesh=None, zWeight=None, **kwargs):
         """
         """
-        pg.p('MeshInv')
         if mesh is not None:
             self.setMesh(mesh)
 
@@ -575,9 +579,9 @@ class MeshInversion(Inversion):
 
         self.fop.setRegionProperties('*', zWeight=zWeight)
 
-        print(self.fop.regionProperties())        
+        pg.debug('run with: ', self.fop.regionProperties())
         #### more mesh related inversion attributes to set?
-
+        
         self.model = super(MeshInversion, self).run(dataVals, errVals, **kwargs)
         return self.model
 
@@ -604,7 +608,6 @@ class PetroInversion(Inversion):
     def run(self, dataVals, errVals, **kwargs):
         """
         """
-        pg.p('PetroInv')
         if 'limits' in kwargs:
             limits = kwargs.pop('limits', [0., 1.])
 

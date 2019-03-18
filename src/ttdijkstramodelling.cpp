@@ -402,12 +402,9 @@ public:
 
     virtual void calc(Index tNr=0){
         Stopwatch swatch(true);
-        #if defined(WIN32)
-            log(Debug, "Thread #" + str(tNr) + ": on CPU " + str("?") + " slice " + str(start_) + ":" + str(end_));
-        #else
-            log(Debug, "Thread #" + str(tNr) + ": on CPU " + str(sched_getcpu()) + " slice " + str(start_) + ":" + str(end_));
-        #endif
-                
+        log(Debug, "Thread #" + str(tNr) + ": on CPU " + str(schedGetCPU()) + 
+                   " slice " + str(start_) + ":" + str(end_));
+                        
         for (Index shot = start_; shot < end_; shot ++) {
             _dijkstra.setStartNode((*_shotNodeIds)[shot]);
             

@@ -1252,7 +1252,6 @@ DataMap DCMultiElectrodeModelling::response_(const Vector < ValueType > & model,
 
 template < class ValueType >
 Matrix < ValueType > * DCMultiElectrodeModelling::prepareJacobianT_(const Vector< ValueType > & model){
-
     this->searchElectrodes_();
     if (dataContainer_){
         if (!subSolutions_){

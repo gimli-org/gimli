@@ -446,15 +446,20 @@ public:
         if ((forward_->jacobian()->rows() == data_.size() &&
             forward_->jacobian()->cols() == model_.size()) && !force) return;
 
-        if (verbose_ && forward_->jacobian()->rows() + forward_->jacobian()->cols() > 0){
+        if (verbose_ && 
+                (forward_->jacobian()->rows() != data_.size() ||
+                 forward_->jacobian()->cols() != model_.size())
+            ){
             std::cout << "check Jacobian: wrong dimensions: "
                         << "(" << forward_->jacobian()->rows()  << "x" << forward_->jacobian()->cols() << ") should be "
                         << "(" << data_.size() << "x" << model_.size()  << ") " << " force: " << force << std::endl;
             std::cout << "jacobian size invalid, forced recalc: " << force << std::endl;
         }
+
         Stopwatch swatch(true);
-        if (verbose_) std::cout << "calculating jacobian matrix ...";
+        if (verbose_) std::cout << "calculating jacobian matrix (forced=" << force << ")...";
         forward_->createJacobian(model_);
+        jacobiNeedRecalc_ = false;
         if (verbose_) std::cout << "... " << swatch.duration(true) << " s" << std::endl;
     }
 
@@ -1093,12 +1098,14 @@ template < class Vec > bool Inversion< Vec>::oneStep() {
     Vec responseNew( data_.size());
     Vec roughness(constraintsH_.size(), 0.0);
 
-    if ((recalcJacobian_ && iter_ > 1) || jacobiNeedRecalc_ ) {
-        Stopwatch swatch(true);
-        if (verbose_) std::cout << "recalculating jacobian matrix ...";
-        forward_->createJacobian(model_);
-        if (verbose_) std::cout << swatch.duration(true) << " s" << std::endl;
-    }
+    this->checkJacobian((recalcJacobian_ && iter_ > 1) || jacobiNeedRecalc_);
+
+    // if ((recalcJacobian_ && iter_ > 1) || jacobiNeedRecalc_ ) {
+    //     Stopwatch swatch(true);
+    //     if (verbose_) std::cout << "recalculating jacobian matrix ...";
+    //     forward_->createJacobian(model_);
+    //     if (verbose_) std::cout << swatch.duration(true) << " s" << std::endl;
+    // }
 
     if (!localRegularization_) {
         DOSAVE echoMinMax(model_, "model: ");

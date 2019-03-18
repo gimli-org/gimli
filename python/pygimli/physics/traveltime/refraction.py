@@ -574,7 +574,6 @@ class Refraction(MethodManager0):
         """Show apparent velocity as image plot.
 
         TODO showXXX commands need to return ax and cbar .. if there is one
-
         """
         if data is None:
             data = self.dataContainer
@@ -588,22 +587,26 @@ class Refraction(MethodManager0):
             t = data('t')
 
         px = pg.x(data.sensorPositions())
+        py = pg.y(data.sensorPositions())
+        if len(np.unique(py)) > len(np.unique(px)):  # probably crosshole
+            px = py
+
         gx = np.array([px[int(g)] for g in data("g")])
         sx = np.array([px[int(s)] for s in data("s")])
         offset = self.getOffset(data=data, full=full)
-        va = offset / t
+        kwargs.setdefault('vals', offset / t)
 
         if pseudosection:
             midpoint = (gx + sx) / 2
-            _, cb = showVecMatrix(midpoint, offset, va, squeeze=True, ax=ax,
+            _, cb = showVecMatrix(midpoint, offset, squeeze=True, ax=ax,
                                   label='Apparent slowness [s/m]', cmap=cmap,
                                   **kwargs)
         else:
-            _, cb = showVecMatrix(gx, sx, va, squeeze=squeeze, ax=ax,
+            _, cb = showVecMatrix(gx, sx, squeeze=squeeze, ax=ax,
                                   label='Apparent velocity [m/s]', cmap=cmap,
                                   **kwargs)
-        fig.show()
-        return ax, cb  # va
+        ax.figure.show()
+        return ax, cb
 
     def getDepth(self):
         """return a (a-priori guessed) depth of investigation"""

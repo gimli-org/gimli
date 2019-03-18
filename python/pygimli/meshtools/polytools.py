@@ -82,7 +82,7 @@ def setPolyRegionMarker(poly, marker=1, area=0.0, markerPosition=None,
     else:
         center = pg.center(poly.positions())
         p0 = poly.node(0).pos()
-        # region marker is 1mm in direction to the center
+        # region marker near node 0; 1mm in direction to the center
         # should be safer than the center itself
         pos = p0 + (center-p0).norm() * 0.001 
 
@@ -461,7 +461,6 @@ def createPolygon(verts, isClosed=False, **kwargs):
         leftDirection : bool [True]
             Rotational direction
 
-
     Returns
     -------
     poly : :gimliapi:`GIMLI::Mesh`
@@ -502,13 +501,14 @@ def mergePLC(plcs, tol=1e-3):
 
     Merge multiply polygons into a single polygon.
     Common nodes and common edges will be checked and removed.
-    When a node touches and edge the edge will be split.
+    When a node touches an edge, the edge will be splited.
 
     3D only OOC with polytools
 
     TODO:
         * Crossing or Node/Edge intersections will NOT be
         recognized yet.
+        * Edge on Node touch
 
     Parameters
     ----------
@@ -626,19 +626,25 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
     sensors : [RVector3] | DataContainer with sensorPositions() | [xmin, xmax]
         Sensor positions. Must be sorted and unique in positive x direction.
         Depth need to be y-coordinate.
+
     paraDX : float [1]
         Relativ distance for refinement nodes between two sensors (1=none),
         e.g., 0.5 means 1 additional node between two neighboring sensors
         e.g., 0.33 means 2 additional equidistant nodes between two sensors
+
     paraDepth : float, optional
         Maximum depth for parametric domain, 0 (default) means 0.4 * maximum
         sensor range.
+
     paraBoundary : float, optional
         Margin for parameter domain in absolute sensor distances. 2 (default).
+
     paraMaxCellSize: double, optional
         Maximum size for parametric size in m*m
+
     boundaryMaxCellSize: double, optional
         Maximum cells size in the boundary region in m*m
+
     boundary : float, optional
         Boundary width to be appended for domain prolongation in absolute
         para domain width.
@@ -942,6 +948,7 @@ def exportPLC(poly, fname, **kwargs):
     ----------
     poly : :gimliapi:`GIMLI::Mesh`
         The polygon to be written.
+
     fname : string
         Filename of the file to write (\\*.n, \\*.e).
 
@@ -973,7 +980,7 @@ def writePLC(*args, **kwargs):
     return exportPLC(*args, **kwargs)
 
 
-def exportTrianglePoly(poly, fname, float_format='.15e', **kwargs):
+def exportTrianglePoly(poly, fname, float_format='.15e'):
     r"""Write :term:`Triangle` poly.
 
     Write :term:`Triangle` :cite:`Shewchuk96b` ASCII file.
@@ -983,8 +990,10 @@ def exportTrianglePoly(poly, fname, float_format='.15e', **kwargs):
     ----------
     poly : :gimliapi:`GIMLI::Mesh`
         mesh PLC holding nodes, edges, holes & regions
+
     fname : string
         Filename of the file to read (\\*.n, \\*.e)
+
     float_format : string
         format string for floats according to str.format()
 
@@ -1286,8 +1295,7 @@ def polyCreateWorld(filename, x=None, depth=None, y=None, marker=0,
     os.system(syscal)
 
 
-def createCube(size=[1.0, 1.0, 1.0], area=0.0, pos=None, 
-               boundaryMarker=0, **kwargs):
+def createCube(size=[1.0, 1.0, 1.0], pos=None, boundaryMarker=0, **kwargs):
     """Create plc of a cube
 
     Out of core wrapper for dcfemlib::polytools.
@@ -1299,9 +1307,6 @@ def createCube(size=[1.0, 1.0, 1.0], area=0.0, pos=None,
     ----------
     size : [x, y, z]
         x, y, and z-size of the cube. Default = [1.0, 1.0, 1.0] in m
-
-    area : float [0.0]
-        Largest size for the resulting tetrahedrons.
 
     pos : pg.Pos [None]
         The center position, default is at the origin.
@@ -1343,8 +1348,8 @@ def createCube(size=[1.0, 1.0, 1.0], area=0.0, pos=None,
     poly = readPLC(namePLC)
     try:
         os.remove(namePLC)
-    except:
-        print("can't remove:", namePLC)
+    except Exception as e:
+        pg.error("can't remove:", namePLC)
 
     for b in poly.boundaries():
         b.setMarker(boundaryMarker)
@@ -1388,8 +1393,8 @@ def createCylinder(radius, height, nSegments=8, area=0.0, pos=None, **kwargs):
         Cell marker the resulting tetrahedrons.
 
     ** kwargs:
-        
-        set 
+        Marker related arguments:
+        See :py:mod:`pygimli.meshtools.polytools.setPolyRegionMarker`
 
     Returns
     -------
@@ -1415,15 +1420,15 @@ def createCylinder(radius, height, nSegments=8, area=0.0, pos=None, **kwargs):
 
     poly = readPLC(namePLC)
 
-    poly.scale([radius, radius, height])
+    poly.scale([radius*2, radius*2, height])
     
     if pos is not None:
         poly.translate(pos)
 
     try:
         os.remove(namePLC)
-    except:
-        print("can't remove:", namePLC)
+    except Exception as e:
+        pg.error("can't remove:", namePLC)
     
     #setPolyRegionMarker(**kwargs)
     return poly
