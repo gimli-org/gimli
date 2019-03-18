@@ -98,7 +98,7 @@ def show(mesh=None, data=None, **kwargs):
             return showMesh(mesh, data, **kwargs)
         elif mesh.dim() == 3:
 
-            from .mayaview import showMesh3D
+            from .vtkiview import showMesh3D
 
             return showMesh3D(mesh, data, **kwargs)
         else:

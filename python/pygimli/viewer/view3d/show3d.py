@@ -187,7 +187,7 @@ class Show3D(QMainWindow):
         self.toolbar.le_cmax.setText(self.toolbar.le_cmax.text().replace(',', '.'))
 
     def toggleBbox(self):
-        checked = self.toolbar.btn_bbox.isChecked()
+        checked = not self.toolbar.btn_bbox.isChecked()
         self.vtk_widget.add_bounds_axes(
             show_xaxis=checked,
             show_yaxis=checked,
@@ -269,6 +269,7 @@ class GToolBar(QToolBar):
             tooltip="Toggle data axis grid",
             checkable=True
         )
+        self.btn_bbox.setChecked(True)
 
         # cMin and cMax
         self.le_cmin = GLineEdit("The min of the current range")
