@@ -68,6 +68,7 @@
 #include <stdint.h>
 #include <complex>
 #include <algorithm>
+#include <functional>
 
 #include "platform.h"
 
