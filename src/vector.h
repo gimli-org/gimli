@@ -1852,6 +1852,7 @@ bool loadVec(Vector < ValueType > & a,
 
 } // namespace GIMLI
 
+#ifndef PYGIMLI_CAST
 namespace std {
     template<> struct hash< std::complex < double > > {
         GIMLI::Index operator()(const std::complex < double > & p) const noexcept {
@@ -1888,6 +1889,6 @@ namespace std {
         }
     };
 }
-
+#endif // PYGIMLI_CAST
 
 #endif

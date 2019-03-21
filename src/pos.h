@@ -391,6 +391,7 @@ inline bool posLesserX(const RVector3 & a, const RVector3 & b){
 
 } // namespace GIMLI;
 
+#ifndef PYGIMLI_CAST
 namespace std {
     template<> struct hash<GIMLI::Pos> {
         GIMLI::Index operator()(const GIMLI::Pos & p) const noexcept {
@@ -398,5 +399,5 @@ namespace std {
         }
     };
 }
- 
+#endif // PYGIMLI_CAST
 #endif // _GIMLI_POS__H
