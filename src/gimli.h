@@ -612,7 +612,6 @@ Index hash(const Types&... args){
     hashCombine(seed, args...);
     return seed;
 }
-
 template void hashCombine(Index & seed, const Index & hash);
 // template void hashCombine(Index & seed, const PosVector & val);
 // template void hashCombine(Index & seed, const Pos & val);
