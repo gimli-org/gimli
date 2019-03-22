@@ -20,7 +20,8 @@ CASTXML_URL=https://github.com/CastXML/CastXML.git
 #CASTXML_REV=9d7a46d639ce921b8ddd36ecaa23c567d003294a #last functional
 
 # Check for changes here: https://data.kitware.com/#folder/57b5de948d777f10f2696370
-CASTXML_BIN_LINUX=https://data.kitware.com/api/v1/file/57b5dea08d777f10f2696379/download
+CASTXML_BIN_LINUX=https://data.kitware.com/api/v1/item/57b5de948d777f10f2696371/download
+#CASTXML_BIN_LINUX=https://data.kitware.com/api/v1/file/57b5dea08d777f10f2696379/download # old ok
 CASTXML_BIN_MAC=https://data.kitware.com/api/v1/file/57b5de9f8d777f10f2696378/download
 CASTXML_BIN_WIN=https://data.kitware.com/api/v1/file/5b68bfc28d777f06857c1f44/download
 
@@ -171,6 +172,8 @@ getWITH_WGET(){
     _URL_=$1
     _SRC_=$2
     _PAC_=$3
+
+    echo "** get with wget ** " $_URL_ $_SRC_ $_PAC_
     echo "wget -nc -nd $_URL_/$_PAC_"
 
     if [ -n "$CLEAN" ]; then
@@ -181,7 +184,21 @@ getWITH_WGET(){
     if [ ! -d $_SRC_ ]; then
         echo "Copying sources into $_SRC_"
         pushd $SRC_DIR
-            wget -nc -nd $_URL_/$_PAC_
+            if [[ `wget -S --spider $_URL_/$_PAC_  2>&1 | grep 'HTTP/1.1 200 OK'` ]]; then
+                echo $_URL_/$_PAC_ " found. Downloading."
+                wget -nc -nd $_URL_/$_PAC_
+            else
+                echo $_URL_/$_PAC_ " not found. Downloading index.html and copying to " $_PAC_
+                wget -nc -nd $_URL_
+
+                echo "cp download" $_PAC_
+                cp download download.tar.gz
+                cmake -E tar -xzf download.tar.gz
+                mv $_PAC_ download.dir/
+                echo "cp download.dir/$_PAC_ ."
+                mv download.dir/$_PAC_ .
+            fi
+            
             if [ "${_PAC_##*.}" = "zip" ]; then
                 mkdir -p $_SRC_
                 pushd $_SRC_
@@ -192,7 +209,7 @@ getWITH_WGET(){
             fi
         popd
     else
-        echo "Skipping .. sourcetree already exists. Use with CLEAN=1 if you want to force installation."
+        echo "Skipping .. source tree already exists. Use with CLEAN=1 if you want to force installation."
     fi
 
 }

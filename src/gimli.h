@@ -594,11 +594,18 @@ private:
     static Classname * pInstance_;
 };
 
+template < typename T > Index hash_(T v){
+    #ifndef PYGIMLI_CAST
+        return std::hash<T>()(v);
+    #endif
+    __M
+    return 0;
+}
 /*! Combine 
 https://www.boost.org/doc/libs/1_37_0/doc/html/hash/reference.html#boost.hash_combine */
 template <typename T>
 void hashCombine(Index & seed, const T& val){
-    seed ^= std::hash<T>()(val) + 0x9e3779b9 + (seed<<6) + (seed>>2);
+    seed ^= hash_(val) + 0x9e3779b9 + (seed<<6) + (seed>>2);
 }
 template <typename T, typename... Types> 
 void hashCombine (Index & seed, const T & val, const Types&... args){
@@ -612,7 +619,6 @@ Index hash(const Types&... args){
     hashCombine(seed, args...);
     return seed;
 }
-
 template void hashCombine(Index & seed, const Index & hash);
 // template void hashCombine(Index & seed, const PosVector & val);
 // template void hashCombine(Index & seed, const Pos & val);
