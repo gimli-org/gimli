@@ -2,11 +2,7 @@
 Todo
 ----
 
-+ data-arg als pg.Vector und label-arg als name, dict optional
-+ cmin/cmax
 + log scale
-+ screenshot button
-+ bounds on/off (able to siwtch on but not off)
 """
 
 
@@ -26,7 +22,7 @@ from PyQt5.QtWidgets import (
     QMainWindow, QFrame, QVBoxLayout, QToolBar, QComboBox,
     QPushButton, QFileDialog, QLineEdit, QWidget, QHBoxLayout
 )
-import vtki
+vtki = pg.optImport('vtki', requiredFor="Proper visualization in 3D")
 
 
 # predefined color maps
