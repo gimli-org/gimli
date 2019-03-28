@@ -44,6 +44,7 @@
     std::mutex __GIMLILogWriteMutex__;
 #endif
 
+
 namespace GIMLI{
 
 static bool __SAVE_PYTHON_GIL__ = false;

@@ -89,6 +89,7 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.imgconverter',
               'sphinx.ext.autosectionlabel',
               'matplotlib.sphinxext.plot_directive',
+              'srclinks',
               'doxylink'
               ]
 
@@ -489,3 +490,7 @@ make_gallery(SPHINXDOC_PATH, DOC_BUILD_DIR)
 from paper_carousel import showcase
 random.shuffle(showcase) # mix it up
 html_context = {"showcase": showcase}
+
+srclink_project = 'https://github.com/gimli-org/gimli'
+srclink_src_path = 'doc/'
+srclink_branch = 'dev'

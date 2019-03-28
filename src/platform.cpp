@@ -65,15 +65,12 @@ int numberOfCPU(){
 
 int schedGetCPU(){
 #if defined(WINDOWS) || defined(_WIN32)
-    return -1
-#endif
-
-#if defined(__APPLE__)
-    return -1
-#endif
-
+    return -1;
+#elif defined(__APPLE__)
+    return -1;
+#else
     return sched_getcpu();
+#endif
 }
-
 
 } // namespace GIMLI{
