@@ -98,12 +98,12 @@ def createMesh(poly, quality=32, area=0.0, smooth=None, switches=None,
                 # which can not be read by triangle. The following
                 # avoids this even for very small numbers
                 switches += 'a' + '{:.20f}'.format(area)
-            else:
-                # no -a here ignores per region area
-                switches += 'a'
 
             # switches = switches.replace('.', ',')
-            switches += 'q{0}'.format(quality)
+            switches += 'q' + str(quality)
+            
+            # an EXTRA! -a here else it ignores per region area
+            switches += 'a'
 
         if not verbose:
             switches += 'Q'
