@@ -164,6 +164,12 @@ class CacheManager(object):
         for a in args:
             if isinstance(a, str):
                 argHash = argHash ^ self.strhash(a)
+            elif isinstance(a, list):
+                for item in a:
+                    if isinstance(item, str):
+                        argHash = argHash ^ self.strhash(item)
+                    else:
+                        argHash = argHash ^ hash(item)
             else:
                 argHash = argHash ^ hash(a)
         

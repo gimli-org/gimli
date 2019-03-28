@@ -87,8 +87,8 @@ def showMesh3DVTKI(mesh, data=None, **kwargs):
         s3d.addMesh(grid, cmap=cmap)
         # FIXME: using the qt interface somehow seems to delete the content of
         # cell-arrays
-        # if data is not None:
-        s3d.addDataToMesh(params)
+        if data is not None:
+            s3d.addDataToMesh(params)
         sys.exit(app.exec_())
 
     # elif notebook is True:

@@ -2,11 +2,7 @@
 Todo
 ----
 
-+ data-arg als pg.Vector und label-arg als name, dict optional
-+ cmin/cmax
 + log scale
-+ screenshot button
-+ bounds on/off (able to siwtch on but not off)
 """
 
 
@@ -26,7 +22,7 @@ from PyQt5.QtWidgets import (
     QMainWindow, QFrame, QVBoxLayout, QToolBar, QComboBox,
     QPushButton, QFileDialog, QLineEdit, QWidget, QHBoxLayout
 )
-import vtki
+vtki = pg.optImport('vtki', requiredFor="Proper visualization in 3D")
 
 
 # predefined color maps
@@ -167,19 +163,22 @@ class Show3D(QMainWindow):
         When user set limits are made and finished/accepted the color bar
         needs to change.
         """
-        # get the user defined limits
-        cmin = float(self.toolbar.le_cmin.text())
-        cmax = float(self.toolbar.le_cmax.text())
-        if cmax > cmin:
-            # get the active scalar/parameter that is displayed currently
-            param = self.mesh.active_scalar_name
+        content_min = self.toolbar.le_cmin.text()
+        content_max = self.toolbar.le_cmax.text()
+        if content_min != '' or content_max != '':
+            # get the user defined limits
+            cmin = float(content_min)
+            cmax = float(content_max)
+            if cmax > cmin:
+                # get the active scalar/parameter that is displayed currently
+                param = self.mesh.active_scalar_name
 
-            # update the user extrema
-            self.extrema[param]['user']['min'] = str(cmin)
-            self.extrema[param]['user']['max'] = str(cmax)
+                # update the user extrema
+                self.extrema[param]['user']['min'] = str(cmin)
+                self.extrema[param]['user']['max'] = str(cmax)
 
-            # actually update the range
-            self.vtk_widget.update_scalar_bar_range([cmin, cmax], name=param)
+                # actually update the range
+                self.vtk_widget.update_scalar_bar_range([cmin, cmax], name=param)
         self.vtk_widget.update()
 
     def _checkDecimalPoint(self):
