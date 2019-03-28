@@ -1184,7 +1184,7 @@ def exportTetgenPoly(poly, filename, float_format='.12e', **kwargs):
 
 
 def syscallTetgen(filename, quality=1.2, area=0, preserveBoundary=False,
-                  verbose=False):
+                  verbose=False, tetgen='tetgen'):
     """Create a mesh with :term:`Tetgen` from file.
 
     Create a :term:`Tetgen` :cite:`Si2004` mesh from a PLC.
@@ -1207,6 +1207,10 @@ def syscallTetgen(filename, quality=1.2, area=0, preserveBoundary=False,
     verbose: bool [False]
         be verbose
 
+    tetgen: str | path ['tetgen']
+        Binary for tetgen. Given as complete path or simple the binary name 
+        if its known in the system path.
+
     Returns
     -------
     mesh : :gimliapi:`GIMLI::Mesh`
@@ -1214,7 +1218,8 @@ def syscallTetgen(filename, quality=1.2, area=0, preserveBoundary=False,
     filebody = filename.replace('.poly', '')
     
     ##tetgen -pazVAC -q1.2 $MESH 
-    syscal = 'tetgen -pzAC'
+    syscal = tetgen + ' -pzAC -O2'
+
     if area > 0:
         syscal += 'a' + str(area)
     else:
@@ -1233,17 +1238,28 @@ def syscallTetgen(filename, quality=1.2, area=0, preserveBoundary=False,
 
     syscal += ' ' + filebody + '.poly'
 
+    print(syscal)
     pg.debug(syscal)
 
     system(syscal)
-    system('meshconvert -it -BD -o ' + filebody + ' ' + filebody + '.1')
 
-    try:
-        os.remove(filebody + '.1.node')
-        os.remove(filebody + '.1.ele')
-        os.remove(filebody + '.1.face')
-    except BaseException as e:
-        print(e)
+    if os.path.isfile(filebody + '.1.node'):
+        system('meshconvert -it -BD -o ' + filebody + ' ' + filebody + '.1')
+        try:
+            os.remove(filebody + '.1.node')
+            os.remove(filebody + '.1.ele')
+            os.remove(filebody + '.1.face')
+        except BaseException as e:
+            print(e)
+    else:
+        system('meshconvert -it -BD -o ' + filebody + ' ' + filebody + '-1')
+        try:
+            os.remove(filebody + '-1.node')
+            os.remove(filebody + '-1.ele')
+            os.remove(filebody + '-1.face')
+        except BaseException as e:
+            print(e)
+
     mesh = pg.Mesh(filebody)
     return mesh
 

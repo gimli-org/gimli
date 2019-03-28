@@ -21,7 +21,9 @@ from .utils import (ProgressBar, boxprint, chi2, cumDist, diff, dist,
                     filterIndex, filterLinesByCommentStr, findNearest,
                     getIndex, grange, logDropTol, niceLogspace, rand, randN,
                     trimDocString, unicodeToAscii, unique, unique_everseen,
-                    unique_rows, uniqueAndSum, )
+                    unique_rows, uniqueAndSum)
+
+from .cache import cache
 
 from .gps import readGPX, findUTMZone, getUTMProjection, getProjection, GKtoUTM
 

@@ -454,6 +454,8 @@ def interpolate(*args, **kwargs):
     ...         color='green', label='harmonic')
     >>> _= ax.legend()
     """
+    fallback = kwargs.pop('fallback', 0.0)
+    verbose = kwargs.pop('verbose', False)
     pgcore = False
     if 'srcMesh' in kwargs:
         pgcore = True
@@ -462,7 +464,8 @@ def interpolate(*args, **kwargs):
         if isinstance(args[0], pg.Mesh):
             if len(args) == 2 and isinstance(args[1], pg.Mesh):
                 return pg.core._pygimli_.interpolate(args[0], args[1],
-                                                     **kwargs)
+                                                     fillValue=fallback,
+                                                     verbose=verbose)
 
             if len(args) == 3 and isinstance(args[1], pg.Mesh):
                 pgcore = False # (outMesh, inMesh, vals)
@@ -479,7 +482,8 @@ def interpolate(*args, **kwargs):
                                               inMat=np.array(args[1]),
                                               destPos=args[2],
                                               outMat=outMat,
-                                              **kwargs)
+                                              fillValue=fallback,
+                                              verbose=verbose)
                 return np.array(outMat)
             
         if len(args) == 4: # args: (inMesh, inData, outPos, outData)
@@ -489,7 +493,8 @@ def interpolate(*args, **kwargs):
                                                      inVec=args[1],
                                                      x=args[2],
                                                      y=args[3],
-                                                     **kwargs)
+                                                     fillValue=fallback,
+                                                     verbose=verbose)
 
             if isinstance(args[1], pg.RMatrix) and \
                isinstance(args[3], pg.RMatrix):
@@ -497,14 +502,16 @@ def interpolate(*args, **kwargs):
                                                      inMat=args[1],
                                                      destPos=args[2],
                                                      outMat=args[3],
-                                                     **kwargs)
+                                                     fillValue=fallback,
+                                                     verbose=verbose)
             if isinstance(args[1], pg.RVector) and \
                isinstance(args[3], pg.RVector):
                 return pg.core._pygimli_.interpolate(args[0],
                                                      inVec=args[1],
                                                      destPos=args[2],
                                                      outVec=args[3],
-                                                     **kwargs)
+                                                     fillValue=fallback,
+                                                     verbose=verbose)
 
         if len(args) == 5:
             if args[1].ndim == 1 and args[2].ndim == 1 and \
@@ -514,9 +521,12 @@ def interpolate(*args, **kwargs):
                                                      x=args[2],
                                                      y=args[3],
                                                      z=args[4],
-                                                     **kwargs)
+                                                     fillValue=fallback,
+                                                     verbose=verbose)
         
-        return pg.core._pygimli_.interpolate(*args, **kwargs)
+        return pg.core._pygimli_.interpolate(*args, **kwargs, 
+                                             fillValue=fallback,
+                                             verbose=verbose)
         # end if pg.core:
 
     if len(args) == 3:

@@ -913,8 +913,8 @@ void DCMultiElectrodeModelling::searchElectrodes_(){
             //** match the known node-electrodes
             if (!match){
                 for (std::vector< Index >::iterator it = sourceIdx.begin(); it != sourceIdx.end(); it ++){
-//                     std::cout << ePos[i] << " " << mesh_->node(*it).pos() <<
-//                             " " << ePos[i].dist(mesh_->node(*it).pos()) << std::endl;
+                    //  std::cout << ePos[i] << " " << mesh_->node(*it).pos() <<
+                    //                          " " << ePos[i].dist(mesh_->node(*it).pos()) << std::endl;
                     if (ePos[i].dist(mesh_->node(*it).pos()) < 0.01){ //CR 1cm?? really??
                         electrodes_.push_back(new ElectrodeShapeNode(mesh_->node(*it)));
                         electrodes_.back()->setId(i);
@@ -934,6 +934,11 @@ void DCMultiElectrodeModelling::searchElectrodes_(){
                 } else{
                     electrodes_.push_back(new ElectrodeShape(ePos[i]));
                     std::cerr << WHERE_AM_I << " " << ePos[i] << " mesh " << mesh_->boundingBox() << std::endl;
+
+                    for (auto &n : sourceIdx){
+                        std::cout << ePos[i] << " " << mesh_->node(n).pos() <<
+                                                " " << ePos[i].dist(mesh_->node(n).pos()) << std::endl;
+                    }
                     throwError(1, "There is a requested electrode that does not match the given mesh. ");
                 }
 

@@ -578,13 +578,13 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
         Fill the regions with default colormap.
 
     regionMarker: bool [True]
-        show region marker
+        Show region marker.
 
     boundaryMarker: bool [False]
-        show boundary marker
+        Show boundary marker.
 
     showNodes: bool [False]
-        draw all nodes
+        Draw all nodes as little dots.
 
     **kwargs
 
@@ -603,6 +603,7 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
     >>> geom = mt.mergePLC([world, block])
     >>> pg.mplviewer.drawPLC(ax, geom)
     """
+    fitView = kwargs.pop('fitView', True)
     #    eCircles = []
     if fillRegion and mesh.boundaryCount() > 2:
         tmpMesh = pg.meshtools.createMesh(mesh, quality=20, area=0)
@@ -674,7 +675,7 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
             ax.text(hole[0], hole[1], 'H', color='black',
                     va="center", ha="center")
 
-    if kwargs.pop('fitView', True):
+    if fitView:
         ax.set_xlim(mesh.xmin(), mesh.xmax())
         ax.set_ylim(mesh.ymin(), mesh.ymax())
         ax.set_aspect('equal')

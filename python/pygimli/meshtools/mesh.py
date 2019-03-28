@@ -131,7 +131,7 @@ def createMesh(poly, quality=32, area=0.0, smooth=None, switches=None,
 
         pg.meshtools.exportPLC(poly, namePLC)
         mesh = pg.meshtools.syscallTetgen(namePLC, quality, area, 
-                                          verbose=verbose)
+                                          verbose=verbose, **kwargs)
 
         try:
             os.remove(namePLC)

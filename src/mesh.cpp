@@ -173,20 +173,21 @@ Node * Mesh::createNode_(const RVector3 & pos, int marker){
 
 Node * Mesh::createNodeGC_(const RVector3 & pos, int marker){
     if (this->isGeometry_){
+        Index oldCount = this->nodeCount();
         Node *n = this->createNodeWithCheck(pos);
         n->setMarker(marker);
         
-        if (this->dim() == 3){
+        if ((this->dim() == 3) and (this->nodeCount() > oldCount)){
 
             for (Index i = 0; i < this->boundaryVector_.size(); i ++ ){
                 Boundary *b = this->boundaryVector_[i];
-                if (b->rtti() == MESH_POLYGON_FACE_RTTI){
-                    if (b->shape().touch(n->pos())){
+                if (b->shape().touch(n->pos())){
+                    if (b->rtti() == MESH_POLYGON_FACE_RTTI){
                         dynamic_cast< PolygonFace* >(b)->insertNode(n);
+                    } else {
+                        __MS(*b)
+                        log(Error, "Adding a node in a non Polygon Face is not supported.");
                     }
-                } else {
-                    __MS(*b)
-                    log(Error, "Adding a node in a non Polygon Face is not supported.");
                 }
             }
         }

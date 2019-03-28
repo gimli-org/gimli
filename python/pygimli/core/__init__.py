@@ -37,7 +37,7 @@ from .load import load, optImport, opt_import, getConfigPath, getExampleFile
 from pygimli.viewer import show, plt, wait
 from pygimli.solver import solve
 from pygimli.meshtools import interpolate, createGrid
-from pygimli.utils import boxprint
+from pygimli.utils import boxprint, cache
 
 
 def showNow():
@@ -106,7 +106,7 @@ def dur():
 ############################
 
 
-def RVector_str(self, valsOnly=False):
+def __RVector_str(self, valsOnly=False):
     s = str()
 
     if not valsOnly:
@@ -127,19 +127,19 @@ def RVector_str(self, valsOnly=False):
         self[self.size() - 1]) + "]")
 
 
-def RVector3_str(self):
+def __RVector3_str(self):
     return ("RVector3: (" + str(self.x()) + ", " + str(self.y()) + ", " + str(
         self.z()) + ")")
 
 
-def R3Vector_str(self):
+def __R3Vector_str(self):
     if self.size() < 20:
         return self.array().__str__()
 
     return "R3Vector: n=" + str(self.size())
 
 
-def RMatrix_str(self):
+def __RMatrix_str(self):
     s = "RMatrix: " + str(self.rows()) + " x " + str(self.cols())
 
     if self.rows() < 6:
@@ -149,7 +149,7 @@ def RMatrix_str(self):
     return s
 
 
-def CMatrix_str(self):
+def __CMatrix_str(self):
     s = "CMatrix: " + str(self.rows()) + " x " + str(self.cols())
 
     if self.rows() < 6:
@@ -159,16 +159,16 @@ def CMatrix_str(self):
     return s
 
 
-def Line_str(self):
+def __Line_str(self):
     return "Line: " + str(self.p0()) + "  " + str(self.p1())
 
 
-def Data_str(self):
+def __Data_str(self):
     return ("Data: Sensors: " + str(self.sensorCount()) + " data: " + str(
         self.size()))
 
 
-def ElementMatrix_str(self):
+def __ElementMatrix_str(self):
 
     s = ''
     for i in range(self.size()):
@@ -179,20 +179,26 @@ def ElementMatrix_str(self):
         s += '\n'
     return s
 
+def __BoundingBox_str(self):
+    s = ''
+    s += "BoundingBox [{0}, {1}]".format(self.min(), self.max())
+    return s
 
-_pygimli_.RVector.__str__ = RVector_str
-_pygimli_.CVector.__str__ = RVector_str
-_pygimli_.BVector.__str__ = RVector_str
-_pygimli_.IVector.__str__ = RVector_str
-_pygimli_.IndexArray.__str__ = RVector_str
-_pygimli_.RVector3.__str__ = RVector3_str
-_pygimli_.R3Vector.__str__ = R3Vector_str
 
-_pygimli_.RMatrix.__str__ = RMatrix_str
-_pygimli_.CMatrix.__str__ = CMatrix_str
-_pygimli_.Line.__str__ = Line_str
-_pygimli_.DataContainer.__str__ = Data_str
-_pygimli_.ElementMatrix.__str__ = ElementMatrix_str
+_pygimli_.RVector.__str__ = __RVector_str
+_pygimli_.CVector.__str__ = __RVector_str
+_pygimli_.BVector.__str__ = __RVector_str
+_pygimli_.IVector.__str__ = __RVector_str
+_pygimli_.IndexArray.__str__ = __RVector_str
+_pygimli_.RVector3.__str__ = __RVector3_str
+_pygimli_.R3Vector.__str__ = __R3Vector_str
+
+_pygimli_.RMatrix.__str__ = __RMatrix_str
+_pygimli_.CMatrix.__str__ = __CMatrix_str
+_pygimli_.Line.__str__ = __Line_str
+_pygimli_.DataContainer.__str__ = __Data_str
+_pygimli_.ElementMatrix.__str__ = __ElementMatrix_str
+_pygimli_.BoundingBox.__str__ = __BoundingBox_str
 
 ############################
 # compatibility stuff
