@@ -58,6 +58,10 @@ class TestSparseMatrix(unittest.TestCase):
         for i in range(len(check_rows)):
             csr.addVal(check_rows[i], check_cols[i], check_vals[i])
 
+        pg.solver.showSparseMatrix(csr, full=True)
+        exit()
+
+
         r1, c1, v1 = pg.utils.sparseMatrix2Array(csr)
         np.testing.assert_allclose(r1, check_csr_rows)
         np.testing.assert_allclose(c1, check_col_s_e)

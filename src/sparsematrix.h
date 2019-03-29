@@ -958,8 +958,8 @@ public:
             idxMap[col].insert(std::pair< Index, ValueType >(row, val));
         }
 
-        colPtr_.reserve(S.cols() + 1);
-        colPtr_.resize(S.cols() + 1);
+        colPtr_.reserve(S.rows() + 1);
+        colPtr_.resize(S.rows() + 1);
 
         rowIdx_.reserve(S.nVals());
         rowIdx_.resize(S.nVals());

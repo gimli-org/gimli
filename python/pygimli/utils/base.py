@@ -23,16 +23,16 @@ def nanrms(v, axis=None):
     return np.sqrt(np.nanmean(np.abs(v)**2, axis))
 
 
-def rrmswitherr(a, b, err, errtol=1):
-    """Compute root mean square of values with error above a threshold"""
-    fi = pg.find(err < errtol)
-    return rms((a[fi]-b[fi])/a[fi])
-
-
-def rmswitherr(a, b, err, errtol=1):
+def rmsWithErr(a, b, err, errtol=1):
     """Compute (abs-)root mean square of values with error above a threshold"""
     fi = pg.find(err < errtol)
     return rms(a[fi] - b[fi])
+
+
+def rrmsWithErr(a, b, err, errtol=1):
+    """Compute root mean square of values with error above a threshold"""
+    fi = pg.find(err < errtol)
+    return rms((a[fi]-b[fi])/a[fi])
 
 
 def gmat2numpy(mat):
