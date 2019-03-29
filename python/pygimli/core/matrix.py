@@ -72,7 +72,6 @@ class MultRightMatrix(pg.MatrixBase):
         """Number of rows."""
         return self.A.rows()
 
-
 RMultRMatrix = MultRightMatrix  # alias for backward compatibility
 
 
@@ -107,7 +106,6 @@ class MultLeftRightMatrix(pg.MatrixBase):
     def transMult(self, x):
         """Multiplication from right-hand-side (dot product A.T*x)."""
         return self.A.transMult(x * self.left) * self.right
-
 
 LRMultRMatrix = MultLeftRightMatrix  # alias for backward compatibility
 

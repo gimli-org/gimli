@@ -593,7 +593,6 @@ private:
     static Classname * pInstance_;
 };
 
-
 } // namespace GIMLI
 
 #endif // _GIMLI_GIMLI__H

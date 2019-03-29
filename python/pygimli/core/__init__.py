@@ -491,9 +491,7 @@ def __getVal(self, idx):
 
 
 def __setVal(self, idx, val):
-    """
-        Index write access []
-    """
+    """ Index write access [] """
     # print("__setVal", self, 'idx', idx, 'val:', val)
     if isinstance(idx, slice):
         if idx.step is None:
@@ -517,7 +515,6 @@ def __setVal(self, idx, val):
 
 
 def __getValMatrix(self, idx):
-
     #    print(idx, type(idx))
     if isinstance(idx, slice):
         step = idx.step
