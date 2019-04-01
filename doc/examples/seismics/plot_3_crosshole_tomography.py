@@ -9,7 +9,7 @@ image the shallow subsurface. While novel developments focus on inverting the
 full waveform, ray-based approximations are still widely used in practice and
 offer a computationally efficient alternative. Here we demonstrate the modeling
 of traveltimes and their inversion for the underlying slowness distribution for
-a  crosshole scenario.
+a crosshole scenario.
 
 We start by importing the necessary packages.
 """
@@ -71,7 +71,7 @@ ax.plot(sensors[:, 0], sensors[:, 1], "ro")
 ################################################################################
 # Next, we create an empty DataContainer and fill it with sensor positions and
 # all possible shot-recevier pairs for the two-borehole scenario using the
-# product funtion in the itertools module (Python standard library).
+# product function in the itertools module (Python standard library).
 
 from itertools import product
 numbers = np.arange(len(depth))
