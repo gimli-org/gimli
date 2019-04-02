@@ -231,6 +231,9 @@ def interpolateAlongCurve(curve, t, **kwargs):
         If kwargs are given an additional curve smoothing is applied using
         :py:mod:`pygimli.meshtools.interpolate`. The kwargs will be delegated.
 
+        periodic : bool [False]
+            Curve is periodic. 
+            Usefull for closed parametric spline interpolation.
     Returns
     -------
 
@@ -294,6 +297,8 @@ def interpolateAlongCurve(curve, t, **kwargs):
         yC = pg.y(curve)
         zC = pg.z(curve)
     else:
+        curve = np.array(curve)
+
         if curve.shape[1] == 2:
             xC = curve[:, 0]
             zC = curve[:, 1]
@@ -303,10 +308,13 @@ def interpolateAlongCurve(curve, t, **kwargs):
             yC = curve[:, 1]
             zC = curve[:, 2]
 
-    if len(kwargs.keys()) > 0:
+    if len(kwargs.keys()) > 0 and \
+        (kwargs.get('method', 'linear') != 'linear'):
+
         #interpolate more curve points to get a smooth line
-        dTi = min(pg.utils.dist(pg.utils.diff(curve))) / 10.
-        ti = np.arange(min(tCurve), max(tCurve)+dTi, dTi)
+        dTi = min(pg.utils.dist(pg.utils.diff(curve))) / 20.
+        #ti = np.arange(min(tCurve), max(tCurve) + dTi, dTi)
+        ti = np.linspace(min(tCurve), max(tCurve), (max(tCurve)-min(tCurve))/dTi)
         xC = pg.interpolate(ti, tCurve, xC, **kwargs)
         zC = pg.interpolate(ti, tCurve, zC, **kwargs)
 
@@ -397,10 +405,14 @@ def interpolate(*args, **kwargs):
 
       Parameters:
         args: curve, t
-
+        
         kwargs:
             Arguments forwarded to
             :py:mod:`pygimli.meshtools.interpolateAlongCurve`
+        
+            periodic : bool [False]
+                Curve is periodic. 
+                Useful for closed parametric spline interpolation.
 
     * 1D point set :math:`u(x)` for ascending :math:`x`.
       Find interpolation function :math:`I = u(x)` and
@@ -421,6 +433,9 @@ def interpolate(*args, **kwargs):
                 Specify interpolation method 'linear, 'spline', 'harmonic'
             * nc : int
                 Number of harmonic coefficients for the 'harmonic' method.
+            * periodic : bool [False]
+                Curve is periodic. 
+                Useful for closed parametric spline interpolation.
 
       Returns:
         ui: array of length xi
@@ -581,9 +596,10 @@ def interpolate(*args, **kwargs):
                 return harmfitNative(u, x=x, nc=coeff, xc=xi, err=None)[0]
 
             if 'spline' in method:
-                if pg.optImport("scipy", requiredFor="use interpolate splines."):
+                if pg.optImport("scipy", requiredFor="Spline interpolation."):
                     from scipy import interpolate
-                    tck = interpolate.splrep(x, u, s=0)
+                    tck = interpolate.splrep(x, u, s=0, 
+                                             per=kwargs.pop('periodic', False))
                     return interpolate.splev(xi, tck, der=0)
                 else:
                     return xi*0.

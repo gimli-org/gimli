@@ -429,7 +429,7 @@ def createLine(start, end, segments=1, **kwargs):
     return poly
 
 
-def createPolygon(verts, isClosed=False, **kwargs):
+def createPolygon(verts, isClosed=False, addNodes=0, **kwargs):
     """Create a polygon from a list of vertices.
 
     All vertices need to be unique and duplicate vertices will be ignored.
@@ -445,6 +445,9 @@ def createPolygon(verts, isClosed=False, **kwargs):
     isClosed : bool [True]
         Add closing edge between last and first node.
 
+    addNodes : int [1]
+        Number of additional nodes to be added equidistant between sensors.
+    
     **kwargs:
 
         marker : int [None]
@@ -475,11 +478,37 @@ def createPolygon(verts, isClosed=False, **kwargs):
     ...                       isClosed=True, marker=3, area=0.1)
     >>> p2 = mt.createPolygon([[0.3, 0.15], [0.85, 0.15], [0.85, 0.7]],
     ...                       isClosed=True, isHole=True)
-    >>> ax, _ = pg.show(mt.mergePLC([p1,p2]))
+    >>> p3 = mt.createPolygon([[-0.1, 0.2], [-1.1, 0.2], [-1.1, 1.2], [-0.1, 1.2]],
+    ...                       isClosed=True, addNodes=3, marker=2)
+    >>> p4 = mt.createPolygon([[-0.1, 0.2], [-1.1, 0.2], [-1.1, 1.2], [-0.1, 1.2]],
+    ...                       isClosed=True, addNodes=5, method='spline', 
+    ...                       marker=4)
+    >>> ax, _ = pg.show(mt.mergePLC([p1, p2, p3, p4]), showNodes=True)
     >>> pg.wait()
     """
     poly = pg.Mesh(dim=2, isGeometry=True)
 
+    if addNodes > 0:
+        if isClosed:
+            verts = np.array(verts)
+            verts = np.vstack([verts, verts[0]])
+
+        tV = pg.utils.cumDist(verts)
+        tI = []
+        
+        for i, t in enumerate(tV[0:len(tV)-1]):
+            tI.append(t)
+            for j in range(addNodes):
+                dt = (tV[i+1]-tV[i]) / (addNodes+1)
+                tI.append(tV[i] + dt*(j+1))
+
+        if not isClosed:
+            tI.append(tV[-1])
+        
+        verts = pg.meshtools.interpolate(verts, tI, 
+                                         method=kwargs.pop('method', 'linear'),
+                                         periodic=isClosed)
+        
     if kwargs.pop("leftDirection", False):
         for v in verts[::-1]:
             poly.createNodeWithCheck(v, warn=True)
@@ -594,13 +623,13 @@ def mergePLC(plcs, tol=1e-3):
 
 def createParaDomain2D(*args, **kwargs):
     """API change here .. use createParaMeshPLC instead."""
-    print("createParaDomain2D: API change: use createParaMeshPLC instead")
+    pg.deprecated("createParaDomain2D: API change: use createParaMeshPLC instead")
     return createParaMeshPLC(*args, **kwargs)
 
 
 def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
                       paraMaxCellSize=0.0, boundary=-1, boundaryMaxCellSize=0,
-                      **kwargs):
+                      isClosed=False, addNodes=1, **kwargs):
     """Create a PLC mesh for an inversion parameter mesh.
 
     Create a PLC mesh for an inversion parameter mesh with for a given list of
@@ -615,10 +644,8 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
     boundary around the outside (marker=1)
 
     TODO:
-
-        * closed domains (boundary == 0)
         * additional topopoints
-        * spline interpolations between sensorpoints or addpoints
+        * spline interpolations between sensorpoints or addpoints for non closed
         * subsurface sensors (partly .. see example)
 
     Parameters
@@ -649,6 +676,13 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
         Boundary width to be appended for domain prolongation in absolute
         para domain width.
         Values lover 0 force the boundary to be 4 times para domain width.
+    
+    isClosed : bool [False]
+        Create a closed geometry from sensor positions.
+        Region marker is 1. Boundary marker is -1 (homogeneous Neumann)
+
+    addNodes : int [1]
+        Number of additional nodes to be added equidistant between sensors.
 
     Returns
     -------
@@ -668,6 +702,13 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
     ...     n = p.createNode((5,-z), -99)
     >>> ax,_ = pg.show(p)
     """
+    if isClosed:
+        plc = createPolygon(sensors, isClosed=True, addNodes=addNodes,
+                            boundaryMarker=-1, marker=1, 
+                            area=paraMaxCellSize, **kwargs)
+        
+        return plc
+
     noSensors = False
     if hasattr(sensors, 'sensorPositions'):  # obviously a DataContainer type
         sensors = sensors.sensorPositions()
