@@ -59,7 +59,7 @@ def cellDataToNodeData(mesh, data, style='mean'):
     >>> celldata = np.array([1, 2, 3, 4])
     >>> nodedata = pg.meshtools.cellDataToNodeData(grid, celldata)
     >>> print(nodedata.array())
-    [ 1.   1.5  2.   2.   2.5  3.   3.   3.5  4. ]
+    [1.  1.5 2.  2.  2.5 3.  3.  3.5 4. ]
     """
     if len(data) != mesh.cellCount():
         raise BaseException("Dimension mismatch, expecting cellCount(): " +
@@ -370,10 +370,10 @@ def interpolate(*args, **kwargs):
         args: :gimliapi:`GIMLI::Mesh`, :gimliapi:`GIMLI::Mesh`, iterable
             `outData = interpolate(outMesh, inMesh, vals)`
             Interpolate values based on inMesh to outMesh.
-            Values can be of length inMesh.cellCount() interpolated to 
-            outMesh.cellCenters() or inMesh.nodeCount() which are interpolated tp 
-            outMesh.positions().            
-            
+            Values can be of length inMesh.cellCount() interpolated to
+            outMesh.cellCenters() or inMesh.nodeCount() which are interpolated tp
+            outMesh.positions().
+
       Returns:
         Interpolated values.
 
@@ -385,7 +385,7 @@ def interpolate(*args, **kwargs):
             Arguments forwarded to :gimliapi:`GIMLI::interpolate`
         kwargs:
             Arguments forwarded to :gimliapi:`GIMLI::interpolate`
-            
+
         `interpolate(srcMesh, destMesh)`
             All data from inMesh are interpolated to outMesh
 
@@ -481,7 +481,7 @@ def interpolate(*args, **kwargs):
                                               outMat=outMat,
                                               **kwargs)
                 return np.array(outMat)
-            
+
         if len(args) == 4: # args: (inMesh, inData, outPos, outData)
 
             if args[1].ndim == 1 and args[2].ndim == 1 and args[3].ndim == 1:
@@ -515,7 +515,7 @@ def interpolate(*args, **kwargs):
                                                      y=args[3],
                                                      z=args[4],
                                                      **kwargs)
-        
+
         return pg.core._pygimli_.interpolate(*args, **kwargs)
         # end if pg.core:
 
