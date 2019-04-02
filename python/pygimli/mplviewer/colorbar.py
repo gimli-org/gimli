@@ -22,9 +22,9 @@ def autolevel(z, nLevs, logScale=None, zmin=None, zmax=None):
     >>> from pygimli.mplviewer import autolevel
     >>> x = np.linspace(1, 10, 100)
     >>> autolevel(x, 3)
-    array([  1.,   4.,   7.,  10.])
+    array([ 1.,  4.,  7., 10.])
     >>> autolevel(x, 3, logScale=True)
-    array([   0.1,    1. ,   10. ,  100. ])
+    array([  0.1,   1. ,  10. , 100. ])
     """
     locator = None
     if logScale and min(z) > 0:
