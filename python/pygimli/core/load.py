@@ -5,9 +5,11 @@ import os.path
 from importlib import import_module
 from urllib.request import urlretrieve
 
+import numpy as np
 import pygimli as pg
 from pygimli.meshtools import readFenicsHDF5Mesh, readGmsh, readPLC, readSTL
 from pygimli.utils import readGPX
+
 
 # Example data repository
 exampleDataRepository = ''.join((
@@ -130,7 +132,8 @@ def load(fname, verbose=False, testAll=True):
         ".stl": readSTL,
         ".h5": readFenicsHDF5Mesh,  # fenics specs as default
         # Misc
-        ".gpx": readGPX  # read gpx waypoints
+        ".gpx": readGPX,  # read gpx waypoints
+        ".xy": np.loadtxt,  # 
     }
 
     if not os.path.exists(fname):
@@ -147,6 +150,8 @@ def load(fname, verbose=False, testAll=True):
 
     if suffix in ImportFilter:
         try:
+            if verbose:
+                print("Import {0} ({1})".format(fname, ImportFilter[suffix]))
             return ImportFilter[suffix](fname)
         except Exception as e:
             if verbose:
@@ -158,7 +163,7 @@ def load(fname, verbose=False, testAll=True):
                       "Trying auto-detect." % suffix)
     else:
         if verbose:
-            print("File extension %s is unknown. Trying auto-detect." % suffix)
+            print("File extension {0} is unknown. Trying auto-detect.".format(suffix))
 
     if testAll:
         for routine in ImportFilter.values():
@@ -168,8 +173,8 @@ def load(fname, verbose=False, testAll=True):
                 # print(e)
                 pass
 
-    raise Exception("File type of %s is unknown or file does not exist "
-                        "and could not be imported." % fname)
+    raise Exception("File type of {0} is unknown or file does not exist "
+                        "and could not be imported.".format(suffix))
 
 def getExampleFile(path):
     """Download and return temporary filename of file in example repository."""

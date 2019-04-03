@@ -5,11 +5,26 @@ import time
 from pygimli.core import _pygimli_ as pg
 import numpy as np
 
-
 # make core matrices (now in pg, later pg.core) known here for tab-completion
 # BlockMatrix = pg.BlockMatrix
 # IdentityMatrix = pg.IdentityMatrix
 
+class MultMatrix(pg.MatrixBase):
+    def __init__(self, A, verbose=False):
+        self._A = A
+        super(MultMatrix, self).__init__(verbose)  # only in Python 3
+
+    def rows(self):
+        """Return number of rows (using underlying matrix)."""
+        return self._A.rows()
+
+    def cols(self):
+        """Return number of columns (using underlying matrix)."""
+        return self._A.cols()
+
+    def save(self, filename):
+        """So it can be used in inversion with dosave flag"""
+        pass
 
 class MultLeftMatrix(pg.MatrixBase):
     """Matrix consisting of actual RMatrix and lef-side vector."""
@@ -18,28 +33,17 @@ class MultLeftMatrix(pg.MatrixBase):
         """Constructor saving matrix and vector."""
         if A.rows() != len(left):
             raise Exception("Matrix columns do not fit vector length!")
+        super(MultLeftMatrix, self).__init__(A, verbose)  # only in Python 3
 
-        self.A = A
-        self.left = left
-        super().__init__(verbose)  # only in Python 3
-#        pg.MatrixBase.__init__(self)  # the Python 2 variant
-
-    def rows(self):
-        """Return number of rows (using underlying matrix)."""
-        return self.A.rows()
-
-    def cols(self):
-        """Return number of columns (using underlying matrix)."""
-        return self.A.cols()
+        self._l = left
 
     def mult(self, x):
         """Multiplication from right-hand-side (dot product A*x)."""
-        return self.A.mult(x) * self.left
+        return self._A.mult(x) * self._l
 
     def transMult(self, x):
         """Multiplication from right-hand-side (dot product A.T * x)"""
-        return self.A.transMult(x * self.left)
-
+        return self._A.transMult(x * self._l)
 
 LMultRMatrix = MultLeftMatrix  # alias for backward compatibility
 
@@ -48,29 +52,20 @@ class MultRightMatrix(pg.MatrixBase):
     """Some Matrix, multiplied with a right hand side vector r."""
 
     def __init__(self, A, r=None):
-        super().__init__()
-        self.A = A
-
+        super(MultRightMatrix, self).__init__(A, verbose)
+        
         if r is None:
-            self.r = pg.RVector(A.cols(), 1.0)
+            self._r = pg.RVector(self.cols(), 1.0)
         else:
-            self.r = r
+            self._r = r
 
     def mult(self, x):
         """Return M*x = A*(r*x)"""
-        return self.A.mult(x * self.r)
+        return self._A.mult(x * self._r)
 
     def transMult(self, x):
         """Return M.T*x=(A.T*x)*r"""
-        return self.A.transMult(x) * self.r
-
-    def cols(self):
-        """Number of columns."""
-        return self.A.cols()
-
-    def rows(self):
-        """Number of rows."""
-        return self.A.rows()
+        return self._A.transMult(x) * self._r
 
 RMultRMatrix = MultRightMatrix  # alias for backward compatibility
 
@@ -85,27 +80,17 @@ class MultLeftRightMatrix(pg.MatrixBase):
         if A.rows() != len(left):
             raise Exception("Matrix rows do not fit left vector length!")
 
-        self.A = A
-        self.right = right
-        self.left = left
-        super().__init__(verbose)  # only in Python 3
-#        pg.MatrixBase.__init__(self)  # the Python 2 variant
-
-    def rows(self):
-        """Number of rows (using the underlying matrix)."""
-        return self.A.rows()
-
-    def cols(self):
-        """Number of columns (using the underlying matrix)."""
-        return self.A.cols()
+        super(MultLeftRightMatrix, self).__init__(A, verbose)
+        self._r = right
+        self._l = left
 
     def mult(self, x):
         """Multiplication from right-hand-side (dot product A*x)."""
-        return self.A.mult(x * self.right) * self.left
+        return self._A.mult(x * self._r) * self._l
 
     def transMult(self, x):
         """Multiplication from right-hand-side (dot product A.T*x)."""
-        return self.A.transMult(x * self.left) * self.right
+        return self._A.transMult(x * self._l) * self._r
 
 LRMultRMatrix = MultLeftRightMatrix  # alias for backward compatibility
 
