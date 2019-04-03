@@ -72,7 +72,7 @@ instructions and many examples.
 
 #### Citing pyGIMLi
 
-More information ca be found in [this paper]. If you use pyGIMLi for your work, please cite as:
+More information can be found in [this paper]. If you use pyGIMLi for your work, please cite as:
 
 > Rücker, C., Günther, T., Wagner, F.M., 2017. pyGIMLi: An open-source library for modelling and inversion in geophysics, Computers and Geosciences, 109, 106-123, doi: 10.1016/j.cageo.2017.07.011.
 
