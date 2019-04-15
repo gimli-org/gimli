@@ -17,8 +17,10 @@ def showPhaseSpectrum(*args, **kwargs):
 def drawAmplitudeSpectrum(ax, freq, amp, ylabel=r'$\rho$ ($\Omega$m)',
                           grid=True, marker='+', ylog=True, **kwargs):
     """Show amplitude spectrum (resistivity as a function of f)."""
-    lab = kwargs.pop('label', 'obs')
-    gci = ax.semilogx(freq, amp, marker=marker, label=lab, **kwargs)
+    if 'label' not in kwargs:
+        kwargs['label'] = 'obs'
+        
+    gci = ax.semilogx(freq, amp, marker=marker, **kwargs)
     if ylog is None:
         ylog = (min(amp) > 0)
     if ylog:
@@ -28,7 +30,6 @@ def drawAmplitudeSpectrum(ax, freq, amp, ylabel=r'$\rho$ ($\Omega$m)',
     ax.set_ylabel(ylabel)
     ax.grid(grid)
     return gci
-
 
 def drawPhaseSpectrum(ax, freq, phi, ylabel=r'$-\phi$ (mrad)',
                       grid=True, marker='+', ylog=False, **kwargs):

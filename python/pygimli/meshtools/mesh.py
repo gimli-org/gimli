@@ -628,7 +628,7 @@ def readTetgen(fname, comment='#', verbose=True, default_cell_marker=0,
     return mesh
 
 
-def readHydrus2dMesh(fname='MESHTRIA.TXT'):
+def readHydrus2dMesh(fileName='MESHTRIA.TXT'):
     """
     Import mesh from Hydrus2D.
 
@@ -645,8 +645,11 @@ def readHydrus2dMesh(fname='MESHTRIA.TXT'):
     ----------
     .. http://www.pc-progress.com/en/Default.aspx?h3d-description
     """
-    fid = open(fname)
+    fid = open(fileName)
     line = fid.readline().split()
+    if 'HYDRUS' in line:
+        return readHydrusMeshV3(fileName)
+        
     nnodes = int(line[1])
     ncells = int(line[3])
     mesh = pg.Mesh()
@@ -691,7 +694,11 @@ def readHydrus3dMesh(fileName='MESHTRIA.TXT'):
     .. http://www.pc-progress.com/en/Default.aspx?h3d-description
     """
     f = open(fileName, 'r')
-    for i in range(6):
+
+    if 'HYDRUS' in f.readline():
+        return readHydrusMeshV3(fileName)
+
+    for i in range(5):
         line1 = f.readline()
 
     nnodes = int(line1.split()[0])
@@ -721,6 +728,100 @@ def readHydrus3dMesh(fileName='MESHTRIA.TXT'):
 
     f.close()
     mesh.createNeighbourInfos()
+    return mesh
+
+
+def readHydrusMeshV3(fileName):
+    """Import mesh from Hydrus3D. File Version 3.
+    
+    TODO:
+    ----
+    * 3D
+     
+    Parameters
+    ----------
+    fileName : str
+        Filename of Hydrus output file.
+    
+    """ 
+    with open(fileName) as fid:
+        lines = fid.readlines()
+        mesh = None
+        nNodes = 0
+        nBound = 0
+        nCells = 0
+        for i, line in enumerate(lines):
+            if 'Mesh Dim' in line: 
+                dim = int(line.split('\r\n')[0].split(':')[1])
+                if dim != 2:
+                    pg.error('3D mesh not yet implemented due to the lack of a testfile.')
+
+                mesh = pg.Mesh(dim=dim)
+
+            if 'DIMENSIONS' in line:
+                nNodes, nEle1, nEle2, nEle3 = lines[i+8].split('\r\n')[0].split()
+                if mesh.dim() == 1:
+                    nNodes = int(nNodes)
+                    nCells = int(nEle1)
+                elif mesh.dim() == 2:
+                    nNodes = int(nNodes)
+                    nBound = int(nEle1)
+                    nCells = int(nEle2)
+                else:
+                    nNodes = int(nNodes)
+                    nBound = int(nEle2)
+                    nCells = int(nEle3)
+                
+                print(nNodes, nBound, nCells)
+
+            if 'NODAL' in line:
+                for line in lines[i+7:i+7+nNodes]:
+                    vals = line.split('\r\n')[0].split()
+                    if mesh.dim() == 1:
+                        mesh.createNode([float(vals[1]), 0.0])
+                    elif mesh.dim() == 2:
+                        mesh.createNode([float(vals[1]), float(vals[2])])
+                    elif mesh.dim() == 3:
+                        mesh.createNode([float(vals[1]), float(vals[2]), float(vals[3])])
+                i = i + 7 + nNodes
+
+            if '1D-ELEMENTS' in line:
+                for line in lines[i + 8:]:
+                    vals = line.split('\r\n')[0].split()
+                    if mesh.dim() == 2:
+                        try:
+                            mesh.createBoundary([int(vals[2])-1, int(vals[3])-1],
+                                                marker=int(vals[1]))
+                        except Exception as e:
+                            if mesh.boundaryCount() != nBound:
+                                print(e)
+                                pg.error('Something is wrong in the file. {0} 1D-Elements '
+                                        'elements are announced but only {1} found'.format(nBound, mesh.boundaryCount())) 
+                                i = i + 8 + mesh.boundaryCount()
+                            break
+                    else:
+                        pg.error('Something wrong with mesh dimension')
+                
+            if '2D-ELEMENTS' in line:
+                for line in lines[i + 10:]:
+                    vals = line.split('\r\n')[0].split()
+                    if mesh.dim() == 2:
+                        try:
+                            nn = [int(vals[2])-1, int(vals[3])-1, int(vals[4])-1]
+                            if int(vals[5]) > 0:
+                                nn.append(int(vals[5])-1)
+
+                            mesh.createCell(nn, marker=int(vals[1]))
+                        except Exception as e:
+                            if mesh.cellCount() != nCells:
+                                print(e)
+                                pg.error('Something is wrong in the file. {0} 2D-Elements '
+                                        'elements announced but only {1} found'.format(nCells, mesh.cellCount())) 
+                                i = i + 10 + mesh.cellCount()
+                                break
+                    else:
+                        pg.error('3D mesh not yet implemented. We need an example file.')
+                                
     return mesh
 
 
