@@ -65,4 +65,8 @@ showcase = [
          title="Structural contraints on ERT derived from reflection seismics",
          subtitle="Bergmann et al. (2014), Geophysics",
          link="https://doi.org/10.1190/GEO2013-0131.1"),
+    dict(img="steiner2019.png",
+         title="Structurally constrained RST for improved permafrost characterization",
+         subtitle="Steiner et al. (2019), The Cryosphere Discuss.",
+         link="https://doi.org/10.5194/tc-2019-52"),
 ]

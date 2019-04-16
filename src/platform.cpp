@@ -63,4 +63,14 @@ int numberOfCPU(){
     return nprocs_max;
 }
 
+int schedGetCPU(){
+#if defined(WINDOWS) || defined(_WIN32)
+    return -1;
+#elif defined(__APPLE__)
+    return -1;
+#else
+    return sched_getcpu();
+#endif
+}
+
 } // namespace GIMLI{

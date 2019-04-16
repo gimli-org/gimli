@@ -60,10 +60,9 @@ def test(target=None, show=False, onlydoctests=False, coverage=False,
         pg.boxprint("Testing pygimli %s" % pg.__version__, sym="+")
 
     # Numpy compatibility (array string representation has changed)
-    if np.__version__[:4] in ("1.14", "1.15"):
-        np.set_printoptions(legacy="1.13")
-
-
+    if np.__version__[:4] == "1.14":
+        pg.warn("Some doctests will fail due to old numpy version.",
+                "Consider upgrading to numpy >= 1.15")
 
     if target:
         if isinstance(target, str):
@@ -75,7 +74,7 @@ def test(target=None, show=False, onlydoctests=False, coverage=False,
             mod_name, func_name = target.rsplit('.', 1)
             mod = importlib.import_module(mod_name)
             target = getattr(mod, func_name)
-         
+
         if show: # Keep figure openend if single function is tested
             plt.ioff()
 

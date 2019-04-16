@@ -85,23 +85,21 @@ def createMesh(poly, quality=30, area=0.0, smooth=None, switches=None,
         if switches is None:
             # -D Conforming delaunay
             # -F Uses Steven Fortune's sweepline algorithm
-            # no -a here ignores per region area
             switches = 'pzeA'
 
             if area > 0:
-                #switches += 'a' + str(area)
                 # The str function turns everything smaller
                 # than 0.0001 into the scientific notation 1e-5
                 # which can not be read by triangle. The following
                 # avoids this even for very small numbers
                 switches += 'a' + '{:.20f}'.format(area)
-                pass
-            else:
-                switches += 'a'
-
+            
             # switches = switches.replace('.', ',')
             switches += 'q' + str(quality)
 
+            # an EXTRA! -a here else he ignores per region area settings
+            switches += 'a'
+            
         if not verbose:
             switches += 'Q'
 
