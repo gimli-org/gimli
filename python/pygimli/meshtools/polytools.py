@@ -429,7 +429,8 @@ def createLine(start, end, segments=1, **kwargs):
     return poly
 
 
-def createPolygon(verts, isClosed=False, addNodes=0, **kwargs):
+def createPolygon(verts, isClosed=False, addNodes=0, interpolate='linear', 
+                  **kwargs):
     """Create a polygon from a list of vertices.
 
     All vertices need to be unique and duplicate vertices will be ignored.
@@ -447,6 +448,9 @@ def createPolygon(verts, isClosed=False, addNodes=0, **kwargs):
 
     addNodes : int [1]
         Number of additional nodes to be added equidistant between sensors.
+    
+    interpolate : str ['linear']
+        Interpolation rule for addnodes. 'linear' or 'spline'. TODO 'harmfit'
     
     **kwargs:
 
@@ -481,7 +485,7 @@ def createPolygon(verts, isClosed=False, addNodes=0, **kwargs):
     >>> p3 = mt.createPolygon([[-0.1, 0.2], [-1.1, 0.2], [-1.1, 1.2], [-0.1, 1.2]],
     ...                       isClosed=True, addNodes=3, marker=2)
     >>> p4 = mt.createPolygon([[-0.1, 0.2], [-1.1, 0.2], [-1.1, 1.2], [-0.1, 1.2]],
-    ...                       isClosed=True, addNodes=5, method='spline', 
+    ...                       isClosed=True, addNodes=5, interpolate='spline', 
     ...                       marker=4)
     >>> ax, _ = pg.show(mt.mergePLC([p1, p2, p3, p4]), showNodes=True)
     >>> pg.wait()
@@ -506,7 +510,7 @@ def createPolygon(verts, isClosed=False, addNodes=0, **kwargs):
             tI.append(tV[-1])
         
         verts = pg.meshtools.interpolate(verts, tI, 
-                                         method=kwargs.pop('method', 'linear'),
+                                         method=interpolate,
                                          periodic=isClosed)
         
     if kwargs.pop("leftDirection", False):

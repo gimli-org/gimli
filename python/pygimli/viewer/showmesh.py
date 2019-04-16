@@ -188,7 +188,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
         an epstopdf if the .eps suffix is found in savefig
 
     showMesh : bool [False]
-        Shows the mesh itself aditional.
+        Shows the mesh itself additional.
 
     showBoundary : bool [None]
         Shows all boundary with marker != 0. A value None means automatic
@@ -263,6 +263,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
 
     if data is None:
         showMesh = True
+        mesh.createNeighbourInfos()
         if showBoundary is None:
             showBoundary = True
     elif isinstance(data, pg.stdVectorRVector3):

@@ -496,59 +496,62 @@ public:
     BVector & rowFlag(){ return rowFlag_; }
 
     /*! Multiplication (A*b) with a vector of the same value type. */
-    Vector < ValueType > mult(const Vector < ValueType > & b) const {
-        Index cols = this->cols();
-        Index rows = this->rows();
+    Vector < ValueType > mult(const Vector < ValueType > & b) const;
+    //  {
+    //     Index cols = this->cols();
+    //     Index rows = this->rows();
 
-        Vector < ValueType > ret(rows, 0.0);
+    //     Vector < ValueType > ret(rows, 0.0);
 
-        //ValueType tmpval = 0;
-        if (b.size() == cols){
-            for (Index i = 0; i < rows; ++i){
-                ret[i] = sum((*this)[i] * b);
-            }
-        } else {
-            throwLengthError(1, WHERE_AM_I + " " + toStr(cols) + " != " + toStr(b.size()));
-        }
-        return ret;
-    }
+    //     //ValueType tmpval = 0;
+    //     if (b.size() == cols){
+    //         for (Index i = 0; i < rows; ++i){
+    //             ret[i] = sum(mat_[i] * b);
+    //         }
+    //     } else {
+    //         throwLengthError(1, WHERE_AM_I + " " + toStr(cols) + " != " + toStr(b.size()));
+    //     }
+    //     return ret;
+    // }
 
     /*! Multiplication (A*b) with a part of a vector between two defined indices. */
-    Vector < ValueType > mult(const Vector < ValueType > & b, Index startI, Index endI) const {
-        Index cols = this->cols();
-        Index rows = this->rows();
-        Index bsize = Index(endI - startI);
+    Vector < ValueType > mult(const Vector < ValueType > & b, Index startI, Index endI) const;
+    //  {
+    //     Index cols = this->cols();
+    //     Index rows = this->rows();
+    //     Index bsize = Index(endI - startI);
 
-        if (bsize != cols) {
-            throwLengthError(1, WHERE_AM_I + " " + toStr(cols) + " < " + toStr(endI) + "-" + toStr(startI));
-        }
-        Vector < ValueType > ret(rows, 0.0);
-        for (Index i = 0; i < rows; ++i){
-            for (Index j = startI; j < endI; j++) {
-                ret[i] += (*this)[i][j] * b[j];
-            }
-        }
-        return ret;
-    }
+    //     if (bsize != cols) {
+    //         throwLengthError(1, WHERE_AM_I + " " + toStr(cols) + " < " + toStr(endI) + "-" + toStr(startI));
+    //     }
+    //     Vector < ValueType > ret(rows, 0.0);
+    //     for (Index i = 0; i < rows; ++i){
+    //         for (Index j = startI; j < endI; j++) {
+    //             ret[i] += mat_[i][j] * b[j];
+    //         }
+    //     }
+    //     return ret;
+    // }
 
     /*! Transpose multiplication (A^T*b) with a vector of the same value type. */
-    Vector< ValueType > transMult(const Vector < ValueType > & b) const {
-        Index cols = this->cols();
-        Index rows = this->rows();
-        Vector < ValueType > ret(cols, 0.0);
-        //ValueType tmpval = 0;
+    Vector< ValueType > transMult(const Vector < ValueType > & b) const;
+    //  {
+    //     Index cols = this->cols();
+    //     Index rows = this->rows();
+    //     Vector < ValueType > ret(cols, 0.0);
+    //     //ValueType tmpval = 0;
 
-        if (b.size() == rows){
-            for(Index i = 0; i < rows; i++){
-                for(Index j = 0; j < cols; j++){
-                    ret[j] +=  (*this)[i][j] * b[i];
-                }
-            }
-        } else {
-            throwLengthError(1, WHERE_AM_I + " " + toStr(rows) + " != " + toStr(b.size()));
-        }
-        return ret;
-    }
+    //     if (b.size() == rows){
+    //         for(Index i = 0; i < rows; i++){
+    //             for(Index j = 0; j < cols; j++){
+    //                 ret[j] +=  mat_[i][j] * b[i];
+    //             }
+    //         }
+    //     } else {
+    //         throwLengthError(1, WHERE_AM_I + " " + toStr(rows) + " != " + toStr(b.size()));
+    //     }
+    //     return ret;
+    // }
 
     /*! Save matrix to file. */
     virtual void save(const std::string & filename) const {
@@ -560,6 +563,7 @@ public:
         for (Index i = 0; i < mat_.size(); i ++) mat_[i].round(tolerance);
         // ??? std::for_each(mat_.begin, mat_.end, boost::bind(&Vector< ValueType >::round, tolerance));
     }
+	std::vector < Vector< ValueType > > mat_;
 
 protected:
 
@@ -579,11 +583,26 @@ protected:
         for (Index i = 0; i < mat_.size(); i ++) mat_[i] = mat[i];
     }
 
-	std::vector < Vector< ValueType > > mat_;
 
     /*! BVector flag(rows) for free use, e.g., check if rows are set valid. */
     BVector rowFlag_;
 };
+
+template <> DLLEXPORT Vector<double> 
+Matrix<double>::mult(const Vector < double > & b, Index startI, Index endI) const;
+template <> DLLEXPORT Vector<Complex> 
+Matrix<Complex>::mult(const Vector < Complex > & b, Index startI, Index endI) const;
+
+template <> DLLEXPORT Vector<double> 
+Matrix<double>::mult(const Vector < double > & b) const;
+template <> DLLEXPORT Vector<Complex> 
+Matrix<Complex>::mult(const Vector < Complex > & b) const;
+
+template <> DLLEXPORT Vector<double> 
+Matrix<double>::transMult(const Vector < double > & b) const;
+template <> DLLEXPORT Vector<Complex> 
+Matrix<Complex>::transMult(const Vector < Complex > & b) const;
+
 
 #define DEFINE_BINARY_OPERATOR__(OP, NAME) \
 template < class ValueType > \
@@ -645,7 +664,6 @@ Vector < ValueType > multMT(const Matrix < ValueType > & A, const Vector < Value
     return mult(A, b);
 #endif
 }
-
 
 template < class ValueType >
 bool operator == (const Matrix< ValueType > & A, const Matrix< ValueType > & B){
@@ -1002,7 +1020,6 @@ template < class ValueType > double det(const Matrix3< ValueType > & A){
     return A.det();
 }
 
-
 /*! Return determinant for Matrix A. This function is a stub. Only Matrix dimensions of 2 and 3 are considered. */
 template < class Matrix > double det(const Matrix & A){
     //** das geht viel schoener, aber nicht mehr heute.;
@@ -1021,7 +1038,6 @@ template < class Matrix > double det(const Matrix & A){
     }
     return det;
 }
-
 
 /*! Return the inverse of Matrix A3. This function is a stub. Only Matrix dimensions of 2 and 3 are considered. */
 template < class ValueType > inline Matrix3<ValueType> inv(const Matrix3< ValueType > & A){
@@ -1057,7 +1073,6 @@ template < class Matrix > Matrix inv(const Matrix & A){
     inv(A, I);
     return I;
 }
-
 
 /*! Return the inverse of Matrix A. This function is a stub. Only Matrix dimensions of 2 and 3 are considered. */
 template < class Matrix > void inv(const Matrix & A, Matrix & I){

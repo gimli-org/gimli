@@ -22,9 +22,9 @@ def autolevel(z, nLevs, logScale=None, zmin=None, zmax=None):
     >>> from pygimli.mplviewer import autolevel
     >>> x = np.linspace(1, 10, 100)
     >>> autolevel(x, 3)
-    array([  1.,   4.,   7.,  10.])
+    array([ 1.,  4.,  7., 10.])
     >>> autolevel(x, 3, logScale=True)
-    array([   0.1,    1. ,   10. ,  100. ])
+    array([  0.1,   1. ,  10. , 100. ])
     """
     locator = None
     if logScale and min(z) > 0:
@@ -37,10 +37,10 @@ def autolevel(z, nLevs, logScale=None, zmin=None, zmax=None):
 
     if zmin is None:
         zmin = min(z)
-            
+
     if zmax is None:
         zmax = max(z)
-        
+
     return locator.tick_values(zmin, zmax)
 
 
@@ -98,20 +98,10 @@ def cmapFromName(cmapname='jet', ncols=256, bad=None, **kwargs):
     return cMap
 
 
-def findAndMaskBestClim(dataIn,
-                        cMin=None,
-                        cMax=None,
-                        dropColLimitsPerc=5,
+def findAndMaskBestClim(dataIn, cMin=None, cMax=None, dropColLimitsPerc=5,
                         logScale=True):
     """TODO Documentme."""
     data = np.asarray(dataIn)
-
-    # if type( dataIn ) == g.RVector:
-    # data = np.asarray( dataIn )
-    # elif type( dataIn ) == list:
-    # data = np.array( dataIn )
-    # else:
-    # data = array( dataIn )
 
     if min(data) < 0:
         logScale = False
@@ -341,7 +331,7 @@ def createColorBarOnly(cMin=1, cMax=100, logScale=False, cMap=None, nLevs=5,
 
 
 def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5):
-    """TODO Documentme."""
+    """Set colorbar levels given a number of levels and min/max values."""
     if cMin is None:
         cMin = cbar.get_clim()[0]
     if cMax is None:
@@ -362,12 +352,17 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5):
     else:
         cbarLevels = np.linspace(cMin, cMax, nLevs)
 
-    # print(cbarLevels)
     # FIXME: [10.1, 10.2, 10.3] mapped to [10 10 10]
 
     cbarLevelsString = []
+    if np.all(np.array(cbarLevels) < 1e-2):
+        pg.debug("All values smaller than 1e-4, avoiding additional rounding.")
+        roundValue = False
+    else:
+        roundValue = True
+
     for i in cbarLevels:
-        cbarLevelsString.append(prettyFloat(i))
+        cbarLevelsString.append(prettyFloat(i, roundValue))
         # print(i, prettyFloat(i))
 
     if hasattr(cbar, 'mappable'):

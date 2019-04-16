@@ -71,10 +71,10 @@ __version__ = get_versions()['version']
 
 if get_versions()["dirty"]:
     __version__ = __version__.replace(".dirty", " (with local changes")
-if _branch:
-    __version__ += " on %s branch)" % _branch
-else:
-    __version__ += ")"
+    if _branch:
+        __version__ += " on %s branch)" % _branch
+    else:
+        __version__ += ")"
 del get_versions, _get_branch, _branch
 
 def version():
