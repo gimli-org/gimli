@@ -70,7 +70,7 @@ class Show3D(QMainWindow):
 
         self.show()
 
-    def addMesh(self, mesh, cmap):
+    def addMesh(self, mesh, cMap):
         """
         Add a mesh to the pyqt frame.
 
@@ -78,23 +78,23 @@ class Show3D(QMainWindow):
         ---------
         mesh: vtki.pointset.UnstructuredGrid
             The grid as it was read by vtki in vtkiview.
-        cmap: str
+        cMap: str
             The MPL colormap that should be used to display parameters.
         """
         self.mesh = mesh
-        self.vtk_widget.add_mesh(self.mesh, cmap=cmap)
+        self.vtk_widget.add_mesh(self.mesh, cmap=cMap)
         self.vtk_widget.add_bounds_axes()
         self.vtk_widget.reset_camera()
 
         # set the correctly chosen colormap
-        if cmap.endswith('_r'):
-            cmap = cmap[:-2]
+        if cMap.endswith('_r'):
+            cMap = cMap[:-2]
             self.toolbar.btn_reverse.setChecked(2)
         # check if given cmap is in list and implement if it isn't
-        if cmap not in CMAPS:
-            self.toolbar.addExtraCMap(cmap)
+        if cMap not in CMAPS:
+            self.toolbar.addExtraCMap(cMap)
 
-        self.toolbar.cbbx_cmap.setCurrentText(cmap)
+        self.toolbar.cbbx_cmap.setCurrentText(cMap)
         self._allowSignals()
 
     def addDataToMesh(self, data):
@@ -151,10 +151,10 @@ class Show3D(QMainWindow):
             self.toolbar.le_cmin.setText(self.extrema[param]['user']['min'])
             self.toolbar.le_cmax.setText(self.extrema[param]['user']['max'])
 
-        cmap = self.toolbar.cbbx_cmap.currentText()
+        cMap = self.toolbar.cbbx_cmap.currentText()
         if self.toolbar.btn_reverse.isChecked():
-            cmap += '_r'
-        self.vtk_widget.add_mesh(self.mesh, cmap=cmap)
+            cMap += '_r'
+        self.vtk_widget.add_mesh(self.mesh, cmap=cMap)
         # self.vtk_widget.update()
         self.updateScalarBar()
 
@@ -308,8 +308,8 @@ class GToolBar(QToolBar):
         wt.setLayout(lt)
         self.addWidget(wt)
 
-    def addExtraCMap(self, cmap):
-        for icon, name in self._createPixmap([cmap]):
+    def addExtraCMap(self, cMap):
+        for icon, name in self._createPixmap([cMap]):
             self.cbbx_cmap.addItem(icon, name)
             self.cbbx_cmap.setIconSize(QSize(40, 15))
 

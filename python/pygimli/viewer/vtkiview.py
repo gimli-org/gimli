@@ -79,17 +79,18 @@ def showMesh3DVTKI(mesh, data=None, **kwargs):
     
     params = grid.cell_arrays
 
-    cmap = kwargs.pop('cmap', 'viridis')
+    cMap = kwargs.pop('cMap', 'viridis')
     notebook = kwargs.pop('notebook', False)
     if use_gui and notebook is False:
+        # app = Qt.QApplication()
         app = Qt.QApplication(sys.argv)
         s3d = Show3D()
-        s3d.addMesh(grid, cmap=cmap)
+        s3d.addMesh(grid, cMap=cMap)
         # FIXME: using the qt interface somehow seems to delete the content of
         # cell-arrays
         if data is not None:
             s3d.addDataToMesh(params)
-        sys.exit(app.exec_())
+        app.exec_()
 
     # elif notebook is True:
     #     tool = vtki.OrthogonalSlicer(grid)
