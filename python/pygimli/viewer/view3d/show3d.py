@@ -111,6 +111,12 @@ class Show3D(QMainWindow):
         This apparantly needs to happen when using the gui since on call the
         cell_arrays will be emptied...
         """
+        # enable only when there is something to show
+        self.toolbar.btn_apply.setEnabled(True)
+        self.toolbar.btn_reset.setEnabled(True)
+        self.toolbar.le_cmin.setEnabled(True)
+        self.toolbar.le_cmax.setEnabled(True)
+
         for k, v in data.items():
             self.mesh._add_cell_scalar(v, k)
             self.extrema[k] = {
@@ -272,18 +278,23 @@ class GToolBar(QToolBar):
 
         # cMin and cMax
         self.le_cmin = GLineEdit("The min of the current range")
+        self.le_cmin.setEnabled(False)
         self.le_cmax = GLineEdit("The max of the current range")
+        self.le_cmax.setEnabled(False)
 
         # if not hit by key his button accepts changes to the color range
         self.btn_apply = GButton(
             text="Apply",
             tooltip="Apply changes in color range"
             )
+        self.btn_apply.setEnabled(False)
+
         # resets the color range to its original range
         self.btn_reset = GButton(
             text="Reset",
             tooltip="Reset changes in color range"
             )
+        self.btn_reset.setEnabled(False)
 
         # button to take a screenshot
         self.btn_screenshot = GButton(
