@@ -76,7 +76,7 @@ def showMesh3DVTKI(mesh, data=None, **kwargs):
     # add given data from argument
     if data is not None:
         grid.cell_arrays['data'] = np.asarray(data)
-    
+
     params = grid.cell_arrays
 
     cMap = kwargs.pop('cMap', 'viridis')
@@ -84,7 +84,7 @@ def showMesh3DVTKI(mesh, data=None, **kwargs):
     if use_gui and notebook is False:
         # app = Qt.QApplication()
         app = Qt.QApplication(sys.argv)
-        s3d = Show3D()
+        s3d = Show3D(tmp)
         s3d.addMesh(grid, cMap=cMap)
         # FIXME: using the qt interface somehow seems to delete the content of
         # cell-arrays

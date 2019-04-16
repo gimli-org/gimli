@@ -8,6 +8,7 @@ Todo
 
 import matplotlib as mpl
 import numpy as np
+from shutil import copyfile
 import sys
 import time
 
@@ -45,8 +46,9 @@ CMAPS = ['viridis',
 
 class Show3D(QMainWindow):
 
-    def __init__(self, parent=None):
+    def __init__(self, tmpMesh, parent=None):
         super(Show3D, self).__init__(parent)
+        self.tmpMesh = tmpMesh
         # storage for the minima and maxima
         self.extrema = {}
         self.setupWidget()
@@ -212,6 +214,15 @@ class Show3D(QMainWindow):
                 fname += '.png'
             self.vtk_widget.screenshot(fname)
 
+    def exportMesh(self):
+        f = QFileDialog.getSaveFileName(
+            self, 'Export VTK', None, "VTK file (*.vtk)"
+            )[0]
+        if f:
+            f = f + '.vtk' if not f.lower().endswith('.vtk') else f
+            copyfile(self.tmpMesh, f)
+
+
     def resetExtrema(self):
         # get the active scalar/parameter that is displayed currently
         param = self.mesh.active_scalar_name
@@ -228,6 +239,7 @@ class Show3D(QMainWindow):
         self.toolbar.btn_reverse.clicked.connect(self.updateParameterView)
         self.toolbar.btn_bbox.pressed.connect(self.toggleBbox)
         self.toolbar.btn_screenshot.clicked.connect(self.takeScreenShot)
+        self.toolbar.btn_exportVTK.clicked.connect(self.exportMesh)
         self.toolbar.btn_apply.clicked.connect(self.updateScalarBar)
         self.toolbar.btn_reset.clicked.connect(self.resetExtrema)
         self.toolbar.le_cmin.editingFinished.connect(self.updateScalarBar)
@@ -298,8 +310,13 @@ class GToolBar(QToolBar):
 
         # button to take a screenshot
         self.btn_screenshot = GButton(
-            text="screenshot",
-            tooltip="Save screenshot of the scene"
+            text="Screenshot",
+            tooltip="Save screenshot of the current scene"
+            )
+
+        self.btn_exportVTK = GButton(
+            text="Export VTK",
+            tooltip="Save displayed mesh as VTK"
             )
 
         # widget for the toolbar to better organize the widgets
@@ -315,6 +332,7 @@ class GToolBar(QToolBar):
         lt.addWidget(self.btn_reset)
         lt.addStretch(1)
         lt.addWidget(self.btn_screenshot)
+        lt.addWidget(self.btn_exportVTK)
         lt.setContentsMargins(0, 0, 0, 0)
         wt.setLayout(lt)
         self.addWidget(wt)
