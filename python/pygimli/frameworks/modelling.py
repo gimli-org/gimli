@@ -46,24 +46,51 @@ class Modelling(pg.ModellingBase):
     """
     def __init__(self, **kwargs):
         """
+        Attributes
+        ----------
+        fop : pg.frameworks.Modeling
+
+        data : pg.DataContainer
+
+        modelTrans : [pg.RTransLog()]
+        
         Parameters
         ----------
         **kwargs :
-            fop : Modelling
+            fop : Modeling
 
         """
-        fop = kwargs.pop('fop', None)
+        self._fop = None  # pg.frameworks.Modeling
+        self._data = None # dataContainer
+        self._modelTrans = None
+
+        self.fop = kwargs.pop('fop', None)
         super(Modelling, self).__init__(**kwargs)
 
         self._regionProperties = {}
         self._regionsNeedUpdate = False
-        self._modelTrans = pg.RTransLog() # Model transformation operator
+        self.modelTrans = pg.RTransLog() # Model transformation operator
 
-        self.fop = None
-        self.data = None # dataContainer
+    @property
+    def fop(self):
+        return self._fop
+    @fop.setter
+    def fop(self, f):
+        if f is not None:
+            if not isinstance(f, pg.frameworks.Modelling):
+                pg.critical('Forward operator needs to be an instance of '
+                            'pg.modelling.Modelling but is of type:', f)
 
-        if fop is not None:
-            self.setForwardOperator(fop)
+            self._fop = f
+                    
+    @property
+    def data(self):
+        if self._fop is not None:
+            return self._fop.data
+        return self._data
+    @data.setter
+    def data(self, d):
+        self.setData(d)
 
     @property
     def modelTrans(self):
@@ -103,15 +130,6 @@ class Modelling(pg.ModellingBase):
         self._applyRegionProperties()
         return super(Modelling, self).regionManager()
 
-    def setForwardOperator(self, fop):
-        """ 
-        """
-        if not isinstance(fop, pg.frameworks.Modelling):
-            pg.critical('Forward operator needs to be an instance of '
-                        'pg.modelling.Modelling but is of type:', fop)
-
-        self.fop = fop
-        
     def setMesh(self, mesh, ignoreRegionManager=False):
         """ 
         """
@@ -245,7 +263,7 @@ class Modelling(pg.ModellingBase):
             self.fop.setData(data)
         else:
             super(Modelling, self).setData(data)
-            self.data = data
+            self._data = data
 
     def estimateError(self, data, **kwargs):
         """Create data error fallback when the data error is not known. 

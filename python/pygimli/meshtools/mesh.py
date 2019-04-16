@@ -208,7 +208,7 @@ def refineHex2Tet(mesh, style=1):
     TODO
     ----
         * mixes meshes
-        * boundaries
+        * preserve boundary informations
 
     Parameters
     ----------
@@ -223,15 +223,20 @@ def refineHex2Tet(mesh, style=1):
     -------
     ret : :gimliapi:`GIMLI::Mesh`
         Mesh containing tetrahedrons cells.
-    >>> # no need to import matplotlib. pygimli's show does
+
+    Examples
+    --------
     >>> import pygimli as pg
     >>> import pygimli.meshtools as mt
-    >>> hex = pg.createGrid(2, 2)
+    >>> hex = pg.createGrid(2, 2, 2)
     >>> print(hex)
+    Mesh: Nodes: 8 Cells: 1 Boundaries: 6
     >>> tet = mt.refineHex2Tet(hex, style=1)
     >>> print(tet)
+    Mesh: Nodes: 8 Cells: 5 Boundaries: 0
     >>> tet = mt.refineHex2Tet(hex, style=2)
     >>> print(tet)
+    Mesh: Nodes: 8 Cells: 6 Boundaries: 0
     """
     out = pg.Mesh(3)
     
@@ -255,15 +260,15 @@ def refineHex2Tet(mesh, style=1):
         if style == 1:
             for i, tet in enumerate(HexahedronSplit5TetID):
                 out.createCell([c.node(tet[0]).id(),
-                               c.node(tet[1]).id(),
-                               c.node(tet[2]).id(),
-                               c.node(tet[3]).id()], c.marker())
+                                c.node(tet[1]).id(),
+                                c.node(tet[2]).id(),
+                                c.node(tet[3]).id()], c.marker())
         elif style == 2:
             for i, tet in enumerate(HexahedronSplit6TetID):
                 out.createCell([c.node(tet[0]).id(),
-                               c.node(tet[1]).id(),
-                               c.node(tet[2]).id(),
-                               c.node(tet[3]).id()], c.marker())
+                                c.node(tet[1]).id(),
+                                c.node(tet[2]).id(),
+                                c.node(tet[3]).id()], c.marker())
     return out
 
 def readGmsh(fname, verbose=False):

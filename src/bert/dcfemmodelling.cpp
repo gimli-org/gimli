@@ -1115,12 +1115,18 @@ RVector DCMultiElectrodeModelling::response(const RVector & model,
         }
 
         return cat(am, ph);
-    }
-    // else no complex here
-// __MS("nächste Zeile wieder rein TMPHACK**************")
-    if (::fabs(max(model) - min(model)) < TOLERANCE){
-        return RVector(dataContainer_->size(), min(model));
-    }
+    } // if complex
+
+    //** to following can lead to problematic situations https://gitlab.com/resistivity-net/bert/issues/41
+    // but costs one forward calucaltion so its probably better to 
+    // remove it (temporary comment)
+    // if (::fabs(max(model) - min(model)) < TOLERANCE){
+    //     if (!this->topography_ ){
+    //         return RVector(dataContainer_->size(), min(model));
+    //     } else {
+    //         std::cout << "Calcuating numerical response for homogeneous model due to topography";
+    //     }
+    // } 
 
     DataMap dMap(response_(model, background));
     RVector resp(dMap.data(this->dataContainer()));
@@ -1152,7 +1158,7 @@ RVector DCMultiElectrodeModelling::response(const RVector & model,
 
     if (verbose_){
         if (min(resp) < 0 && 1){
-            std::cout << "Found neg. resp, save and abort." << std::endl;
+            std::cout << "Found neg. resp (saving)." << std::endl;
                 for (uint i = 0; i < resp.size(); i ++){
                     if (resp[i ] < 0) {
                         int a = (*dataContainer_)("a")[i];

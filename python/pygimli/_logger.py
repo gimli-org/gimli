@@ -141,11 +141,11 @@ def v(funct):
 
     Examples
     --------
-    import pygimli as pg
-    >>> @pg.v
-    >>> def foo():
-    ...     pg.verbose('foo')
-    >>> foo()
+    >>> import pygimli as pg                                    
+    >>> @pg.v                                                  # doctest: +SKIP
+    >>> def foo():                                             # doctest: +SKIP
+    ...     pg.verbose('foo')                                  # doctest: +SKIP 
+    >>> foo()                                                  # doctest: +SKIP
     >>> def bar(d):
     ...     pg.verbose('bar', d)
     >>> bar('verbose should be off')
@@ -167,11 +167,11 @@ def d(funct):
     
     Examples
     --------
-    import pygimli as pg
-    >>> @pg.d
-    >>> def foo():
-    ...     pg.debug('foo')
-    >>> foo()
+    >>> import pygimli as pg                                   
+    >>> @pg.d                                                  # doctest: +SKIP
+    >>> def foo():                                             # doctest: +SKIP
+    ...     pg.debug('foo')                                    # doctest: +SKIP
+    >>> foo()                                                  # doctest: +SKIP
     >>> def bar(d):
     ...     pg.debug('bar', d)
     >>> bar('debug should be off')
