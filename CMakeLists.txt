@@ -91,10 +91,10 @@ else()
     set(LIBGIMLI_VERSION "untaged")
 endif()
 
-set( PACKAGE_NAME  \"${PROJECT_NAME}\" )
-set( PACKAGE_VERSION  \"${LIBGIMLI_VERSION}\" )
-set( PACKAGE_BUGREPORT  \"carsten@pygimli.org\")
-set( PACKAGE_AUTHORS  \"carsten@pygimli.org thomas@pygimli.org florian@pygimli.org\")
+set(PACKAGE_NAME  \"${PROJECT_NAME}\" )
+set(PACKAGE_VERSION  \"${LIBGIMLI_VERSION}\" )
+set(PACKAGE_BUGREPORT  \"carsten@pygimli.org\")
+set(PACKAGE_AUTHORS  \"carsten@pygimli.org thomas@pygimli.org florian@pygimli.org\")
 
 ################################################################################
 # Check for libs and other packages we might use.
@@ -284,10 +284,14 @@ endif()
 find_package(PythonLibs)
 find_python_module(numpy)
 
+################################################################################
+# Manuall check for boost python
+################################################################################
+
 if (Boost_PYTHON_LIBRARY)
     #set (Boost_PYTHON_LIBRARY ${Boost_PYTHON_LIBRARY})
 else()
-    message(STATUS "searching for boost-python ...")
+    message(STATUS "boost-python not found by cmake find ... trying to determine boost-python now again ...")
     if (WIN32)
         set(bp_version "${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}-mt")
         find_package(Boost 1.46.0 COMPONENTS  "python${bp_version}")
@@ -296,21 +300,26 @@ else()
             set(Boost_PYTHON_FOUND TRUE})
             set(Boost_PYTHON_LIBRARY ${BOOST_ROOT}/lib/libboost_python${bp_version}.dll)
         endif()
-        
-    endif()
-
-    # the name for py3 boost-python library lacks probably py3 suffix, which is different for different OS
-
-    #debian /usr/lib/x86_64-linux-gnu/libboost_python-py34.so
-    set(bp_version "${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}")
-    find_package(Boost 1.46 COMPONENTS "python-py${bp_version}")
-    if (${Boost_PYTHON-PY${bp_version}_FOUND})
-        set(Boost_PYTHON_FOUND ${Boost_PYTHON-PY${bp_version}_FOUND})
-        set(Boost_PYTHON_LIBRARY ${Boost_PYTHON-PY${bp_version}_LIBRARY_RELEASE})
     endif()
 
     if (NOT Boost_PYTHON_FOUND)
-        # arch style /usr/lib/libboost_python3.so.1.64.0
+        find_package(Boost 1.46 COMPONENTS python)
+    endif()
+    
+    # the name for py3 boost-python library lacks probably py3 suffix, which is different for different OS
+
+    #/usr/lib/x86_64-linux-gnu/libboost_python-py34.so (debian)
+    if (NOT Boost_PYTHON_FOUND)
+        set(bp_version "${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}")
+        find_package(Boost 1.46 COMPONENTS "python-py${bp_version}")
+        if (${Boost_PYTHON-PY${bp_version}_FOUND})
+            set(Boost_PYTHON_FOUND ${Boost_PYTHON-PY${bp_version}_FOUND})
+            set(Boost_PYTHON_LIBRARY ${Boost_PYTHON-PY${bp_version}_LIBRARY_RELEASE})
+        endif()
+    endif()
+
+    # /usr/lib/libboost_python3.so.1.64.0 (arch style)
+    if (NOT Boost_PYTHON_FOUND)
         set(bp_version "${PYTHON_VERSION_MAJOR}")
         find_package(Boost 1.46 COMPONENTS "python${bp_version}")
         if (${Boost_PYTHON${bp_version}_FOUND})
@@ -318,15 +327,9 @@ else()
             set(Boost_PYTHON_LIBRARY ${Boost_PYTHON${bp_version}_LIBRARY_RELEASE})
         endif()
     endif()
-
+    
+    # /usr/lib/libboost_python-3.4.so (gentoo <boost-1.70)
     if (NOT Boost_PYTHON_FOUND)
-        # gentoo: /usr/lib/libboost_python-3.4.so
-        # should find the right one
-        find_package(Boost 1.46 COMPONENTS python)
-    endif()
-
-    if (NOT Boost_PYTHON_FOUND)
-        # gentoo: /usr/lib/libboost_python-3.4.so
         set(bp_version "${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}")
         # should find the right one
         find_package(Boost 1.46 COMPONENTS "python-${bp_version}")
@@ -335,6 +338,24 @@ else()
             set(Boost_PYTHON_LIBRARY ${Boost_PYTHON-${bp_version}_LIBRARY_RELEASE})
         endif()
     endif()
+    
+    # /usr/lib/libboost_python37.so # gentoo >=boost-1.70) 
+    if (NOT Boost_PYTHON_FOUND)
+        set(bp_version "${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}")
+        find_package(Boost 1.46 COMPONENTS "python${bp_version}")
+        if (${Boost_PYTHON${bp_version}_FOUND})
+            set(Boost_PYTHON_FOUND ${Boost_PYTHON${bp_version}_FOUND})
+            set(Boost_PYTHON_LIBRARY ${Boost_PYTHON${bp_version}_LIBRARY_RELEASE})
+        endif()
+    endif()
+    
+    if (Boost_PYTHON_FOUND)
+        message(STATUS "found: ${Boost_PYTHON_FOUND}: ${Boost_PYTHON_LIBRARY}")
+    else()
+        message(STATUS "Sorry but no boost-python found. Please search for any libboost_python* on your system and "
+                       "provide it to the authors so we can try to fix this here.")
+    endif()
+
 endif()
 
 if (NOT CASTER)
