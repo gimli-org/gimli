@@ -292,9 +292,9 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
             else:
                 pg.warn("No valid stream data:", data.shape, data.ndim)
                 showMesh = True
-        elif min(data) == max(data):  # or pg.haveInfNaN(data):
-            pg.warn("No valid data: ", min(data), max(data), pg.haveInfNaN(data))
-            showMesh = True
+        # elif min(data) == max(data):  # or pg.haveInfNaN(data):
+        #     pg.warn("No valid data: ", min(data), max(data), pg.haveInfNaN(data))
+        #     showMesh = True
         else:
             validData = True
             try:

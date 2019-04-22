@@ -34,7 +34,7 @@ class Modelling(pg.ModellingBase):
         * Docu:
             - describe members (model transformation, dictionary of region properties)
             - 
-        * think about splitting all mes related into MeshModelling
+        * think about splitting all mesh related into MeshModelling
         * clarify difference: setData(array|DC), setDataContainer(DC), setDataValues(array)
         * clarify dataSpace(comp. ModelSpace): The unique spatial or temporal origin of a datapoint (time, coordinates, 4-point-positions,
                                                                      receiver/transmitter positions
@@ -93,6 +93,13 @@ class Modelling(pg.ModellingBase):
         self.setData(d)
 
     @property
+    def mesh(self):
+        if self._fop is not None:
+            return self._fop.mesh
+        else:
+            return super(Modelling, self).mesh()
+
+    @property
     def modelTrans(self):
         self._applyRegionProperties()
         if self.regionManager().haveLocalTrans():
@@ -130,6 +137,10 @@ class Modelling(pg.ModellingBase):
         self._applyRegionProperties()
         return super(Modelling, self).regionManager()
 
+    def setMeshPost(self, data):
+        """Called when the mesh has been set sucessfully."""
+        pass
+
     def setMesh(self, mesh, ignoreRegionManager=False):
         """ 
         """
@@ -143,6 +154,8 @@ class Modelling(pg.ModellingBase):
                 self.setRegionManager(self.fop.regionManagerRef())
         else:
             super(Modelling, self).setMesh(mesh, ignoreRegionManager)
+
+        self.setMeshPost(self.mesh)
 
     def clearRegionProperties(self):
         """Clear all region parameter."""
@@ -235,6 +248,7 @@ class Modelling(pg.ModellingBase):
 
         self._regionsNeedUpdate = False
 
+            
     def setData(self, data):
         """ 
         """
@@ -256,6 +270,10 @@ class Modelling(pg.ModellingBase):
                 print(data)
                 pg.critical("nothing known to do? Implement me in derived classes")
 
+    def setDataPost(self, data):
+        """Called when the dataContainer has been set sucessfully."""
+        pass
+
     def setDataContainer(self, data):
         """ 
         """
@@ -264,6 +282,8 @@ class Modelling(pg.ModellingBase):
         else:
             super(Modelling, self).setData(data)
             self._data = data
+        
+        self.setDataPost(self.data)
 
     def estimateError(self, data, **kwargs):
         """Create data error fallback when the data error is not known. 
@@ -394,12 +414,13 @@ class MeshModelling(Modelling):
     #     super(MeshModelling, self).setMesh(mesh, ignoreRegionManager)
 
     def drawModel(self, ax, model, **kwargs):
-        pg.mplviewer.drawModel(ax=ax,
-                               mesh=self.paraDomain,
-                               data=model,
-                               **kwargs)
-        return ax
-
+        ax, cbar = pg.show(mesh=self.paraDomain,
+                           data=model,
+                           label=kwargs.pop('label', 'Model parameter'),
+                           ax=ax,
+                           **kwargs)
+        return ax, cbar
+        
 
 class PetroModelling(Modelling):
     """Combine petrophysical relation with the modeling class f(p).

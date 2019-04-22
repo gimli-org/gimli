@@ -510,7 +510,6 @@ class MeshInversion(Inversion):
     """
     Attributes
     ----------
-    mesh
     
     zWeight
 
@@ -518,12 +517,16 @@ class MeshInversion(Inversion):
     def __init__(self, fop=None, **kwargs):
     
         super(MeshInversion, self).__init__(fop=fop, **kwargs)
-        self._mesh = None
+        # self._mesh = None
         self._zWeight = 1.0
 
     @property
     def mesh(self):
         return self._mesh
+
+    @property
+    def paraDomain(self):
+        return self.fop.paraDomain
 
     def setMesh(self, mesh, **kwargs):
         """Set the internal mesh for this Framework.
@@ -543,6 +546,7 @@ class MeshInversion(Inversion):
         DOCUMENTME!!!
 
         """
+        pg.critical("move this to the fop")
         if isinstance(mesh, str):
             mesh = pg.load(mesh)
 
@@ -582,7 +586,9 @@ class MeshInversion(Inversion):
         pg.debug('run with: ', self.fop.regionProperties())
         #### more mesh related inversion attributes to set?
         
-        self.model = super(MeshInversion, self).run(dataVals, errVals, **kwargs)
+        model = super(MeshInversion, self).run(dataVals, errVals, **kwargs)
+        self.model = model(self.paraDomain.cellMarkers())
+
         return self.model
 
 

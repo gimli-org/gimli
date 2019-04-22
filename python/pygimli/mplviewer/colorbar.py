@@ -151,7 +151,7 @@ def findColorBar(ax):
 
 
 def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
-                   logScale=None, nLevs=5, label=None):
+                   logScale=None, nLevs=5, label=None, **kwargs):
     """Update colorbar values.
 
     Update limits and label of a given colorbar.

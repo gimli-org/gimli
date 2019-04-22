@@ -723,9 +723,9 @@ class ERTManager(MeshMethodManager):
 
         if absoluteUError is None:
             if not data.allNonZero('rhoa'):
-                raise BaseException("We need apparent resistivity values "
-                                    "(rhoa) in the data to estimate a "
-                                    "data error.")
+                pg.critical("We need apparent resistivity values "
+                            "(rhoa) in the data to estimate a "
+                            "data error.")
             error = relativeError + absoluteError / data('rhoa')
         else:
             u = None
@@ -742,38 +742,38 @@ class ERTManager(MeshMethodManager):
                     if data.haveData("k"):
                         u = data('rhoa') / data('k') * i
                     else:
-                        raise BaseException("We need (rhoa) and (k) in the"
-                                            "data to estimate data error.")
+                        pg.critical("We need (rhoa) and (k) in the"
+                                    "data to estimate data error.")
 
                 else:
-                    raise BaseException("We need apparent resistivity values "
-                                        "(rhoa) or impedances (r) "
-                                        "in the data to estimate data error.")
+                    pg.critical("We need apparent resistivity values "
+                                "(rhoa) or impedances (r) "
+                                "in the data to estimate data error.")
 
             error = pg.abs(absoluteUError / u) + relativeError
 
         return error
 
-    def _ensureRhoa(self, data):
-        """"""
+    def _ensureData(self, data):
+        """Check data validity"""
         vals = data
         if isinstance(data, pg.DataContainer):
             vals = data('rhoa')
 
         if min(vals) <= 0:
             print(min(vals), max(vals))
-            pg.critical("Ensure apparent resistivity values larger then 0.")
+            pg.critical("Ensure apparent resistivity values are larger then 0.")
         return vals
 
     def _ensureError(self, data):
-        """"""
+        """Check error validity"""
         vals = data
         if isinstance(data, pg.DataContainer):
             vals = data('err')
 
         if min(vals) <= 0:
             print(min(vals), max(vals))
-            pg.critical("Ensure all error values larger then 0.")
+            pg.critical("Ensure all error values are larger then 0.")
 
         return vals
 
@@ -782,10 +782,13 @@ class ERTManager(MeshMethodManager):
         
         Parameters
         ----------
-        data : pg.DataContainer()
+        data : pg.DataContainerERT() 
+            Data container with at least SensorIndieces 'a b m n' and 
+            data values 'rhoa' (apparent resistivities) and 'err' 
+            (relative error in %/100)
 
         """
-        dataVals = self._ensureRhoa(data)
+        dataVals = self._ensureData(data)
         errVals = self._ensureError(data)
         
         if isinstance(data, pg.DataContainer):

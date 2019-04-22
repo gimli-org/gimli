@@ -53,10 +53,14 @@ def _get_class_from_frame(fr):
             return getattr(instance, '__class__', None)
     return None
 
-def whereAmI(nr=2):
+def whereAmI(nr=3):
     clsName = _get_class_from_frame(inspect.stack()[nr][0])
-    method = inspect.stack()[nr][3]
-    return str(clsName) + '.' + method
+    method = inspect.stack()[nr].function
+    fileN = inspect.stack()[nr].filename.split('/')[-1]
+    line = inspect.stack()[nr].lineno
+    # print(inspect.stack()[nr])
+    # print('{0}:{1}'.format(fileN, line))
+    return str(clsName) + '.' + method + '({0}:{1})'.format(fileN, line)
 
 def p(*args, c='y'):
     deprecated(hint='use _d instead')
@@ -245,7 +249,8 @@ def critical(*args):
     raise Exception(_msg(*args))
 
 def deprecated(msg='', hint=''):
-    logger.warning(whereAmI() + "\n" + msg + ", is deprecated, please use:" + hint + " instead.")
+    logger.warning("Deprecated code usage at:") 
+    logger.warning(whereAmI() + "\n" + msg + " " + hint)
 
 def renameKwarg(old, new, kwargs):
     if old in kwargs:

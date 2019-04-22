@@ -62,32 +62,10 @@ class MethodManager(object):
         self._initForwardOperator(verbose=self._verbose, **kwargs)
 
 
-
-
-
-
         # maybe obsolete
         self._dataToken = 'nan' # check if used?
         self.figs = {}
         self.errIsAbsolute = False
-
-        self.mesh = None  # to be deleted if MethodManagerMesh is used # TODO
-        self.dataContainer = None  # dto.
-
-    def __str__(self):
-        """String representation of the class."""
-        return self.__repr__()
-
-    def __repr__(self):
-        """String representation of the instance."""
-        out = type(self).__name__ + " object"
-        if hasattr(self, 'dataContainer'):
-            out += "\n" + self.dataContainer.__str__()
-        if hasattr(self, 'mesh'):
-            out += "\n" + self.mesh.__str__()
-        # some other stuff (data and model size)?
-        return out
-        # return "Method Manager: " + str(self.__class__)
 
     @property
     def verbose(self):
@@ -122,16 +100,6 @@ class MethodManager(object):
     @property
     def inv(self):
         return self._fw
-
-    def dataValues(self, data):
-        """Return data values from a given DataContainer."""
-        if self._dataToken == 'nan':
-            raise Exception('_dataToken should be set in class', self)
-        return data(self._dataToken)
-
-    def errorValues(self, data, relative=True):
-        """Return error values from a given DataContainer."""
-        return data('err')
 
     def reinitForwardOperator(self, **kwargs):
         """Reinitialize the forward operator.
@@ -207,10 +175,57 @@ class MethodManager(object):
         """
         return pg.frameworks.Inversion(**kwargs)
 
-    def loadData(self, filename, **kwargs):
-        """Mandatory interface for derived classes."""
-        raise Exception("This is a abstract function. "
-                        "Override in derived class")
+    # NOT PART of the MM
+    # def loadData(self, filename, **kwargs):
+    #     """Mandatory interface for derived classes.
+    #         
+    #     """
+    #     raise Exception("This is a abstract function. "
+    #                     "Override in derived class")
+
+    def dataValues(self, data):
+        """Return data values from a given DataContainer."""
+        if self._dataToken == 'nan':
+            pg.critical('self._dataToken nan, should be set in class', self)
+        return data(self._dataToken)
+
+    def errorValues(self, data):
+        """Return error values from a given DataContainer."""
+        if not data.haveData('err'):
+            pg.error('Datacontainer have no "err" values. Fallback set to 0.01')
+            return pg.Vector(data.size(), 0.01)
+        return data('err')
+
+    def _ensureData(self, data):
+        """Check data validity"""
+        vals = data
+        if isinstance(data, pg.DataContainer):
+            vals = self.dataValues(data)
+
+        if abs(min(vals)) < 1e-12:
+            print(min(vals), max(vals))
+            pg.critical("There are zero data values.")
+
+        return vals
+
+    def _ensureError(self, err, data):
+        """Check error validity"""
+        vals = err
+        
+        if isinstance(vals, float):
+            dV = self._ensureData(data)
+            vals = self.estimateError(dV, errLevel=err)
+        else:
+            if isinstance(data, pg.DataContainer):
+                vals = self.errorValues(data)
+
+        if min(vals) <= 0:
+            print(min(vals), max(vals))
+            pg.critical("All error values need to be larger then 0."
+                        " either give and err argument or fill dataContainer "
+                        " with a valid 'err' ")
+
+        return vals
 
     def estimateError(self, data, errLevel=0.01, absError=None):
         """Estimate data error.
@@ -256,7 +271,7 @@ class MethodManager(object):
 
         return ra
 
-    def invert(self, dataVals=None, errVals=None, **kwargs):
+    def invert(self, data=None, err=None, **kwargs):
         """Invert the data.
 
         Invert the data values by calling self.inv.run() with mandatory data and
@@ -275,23 +290,11 @@ class MethodManager(object):
             If errVals is float we assume this means to be a global relative
             error and force self.estimateError to be called.
         """
-        if dataVals is None:
-            print("Data:", dataVals)
-            pg.critical("Data values for invert() call are mandatory.");
+        dataVals = self._ensureData(data)
+        errVals = self._ensureError(err, data)
 
-        if errVals is None:
-            print("Error:", dataVals)
-            pg.critical("Error values for invert() call are mandatory.");
-            
-        if type(errVals) == float:
-            errVals = self.estimateError(dataVals, errLevel=errVals)
-
-        if min(errVals) <= 0.0:
-            print("Error:", errVals)
-            pg.critical("Error values for invert() need to be greater 0.0.");
-    
-        self._fw.run(dataVals, errVals, **kwargs)
-        return self.model
+        self.fw.run(dataVals, errVals, **kwargs)
+        return self.fw.model
 
     def showModel(self, model, ax=None, **kwargs):
         """Shows a model.
@@ -348,7 +351,7 @@ class MethodManager(object):
         return ax
 
     def showFit(self, ax=None, **kwargs):
-        """Show the last inversion date and response."""
+        """Show the last inversion data and response."""
         ax = self.showData(data=self.inv.dataVals,
                            error=self.inv.errorVals, 
                            #label='Data',
@@ -459,31 +462,106 @@ class MeshMethodManager(MethodManager):
         raise Exception("Implement me!")
         pass
 
-    def invert(self, dataVals=None, errVals=None, mesh=None, **kwargs):
-        """Run the full inversion.
-
-        The data and error needed to be set before.
-        The meshes will be created if necessary.
-
-        DOCUMENT ME!!!
-
-        Parameters
-        ----------
+    def setMesh(self, mesh, **kwargs):
+        """Set mesh
+        
+        TODO
+        ----
+        finish me and document me
 
         """
-        if mesh is None and self.inv.mesh is None:
+        if mesh is None and self.fw.mesh is None:
+            pg.warn("No mesh defined. Try to create a suitable mesh.")
             mesh = self.createMesh(depth=kwargs.pop('depth', None),
                                    quality=kwargs.pop('quality', 34.0),
                                    maxCellArea=kwargs.pop('maxCellArea', 0.0),
                                    paraDX=kwargs.pop('paraDX', 0.3))
 
-        return super(MeshMethodManager, self).invert(dataVals=dataVals,
-                                                     errVals=errVals,
-                                                     mesh=mesh,
+
+        if mesh is not None:   
+            self.fw.setMesh(mesh)
+
+    def setData(self, data):
+        """
+        """
+        if data is not None:
+            self.fw.setData(data)
+
+    def invert(self, data, mesh=None, **kwargs):
+        """Run the full inversion.
+
+        Parameters
+        ----------
+
+        data : pg.DataContainer | iterable
+
+
+        mesh : pg.Mesh [None]
+            
+
+        """
+        # set the data basis here, some fop needs them before 
+        # setting the mesh basis
+        self.fop.setData(data) 
+        self.setMesh(mesh, **kwargs)
+        
+        return super(MeshMethodManager, self).invert(data=data,
                                                      **kwargs)
+
+
+    def showModel(self, model=None, ax=None, **kwargs):
+        """"""
+        if model is None:
+            model = self.model
+
+        ax, cbar = pg.show(mesh=self.fop.paraDomain,
+                           data=model,
+                           label=kwargs.pop('label', 'Model parameter'),
+                           ax=ax,
+                           **kwargs)
+        return ax, cbar
+
+
    
+    def showFit(self, axs=None, **kwargs):
+        """Show the last inversion data and response."""
+        orientation='vertical',
+        if axs is None:
+            fig, axs = pg.plt.subplots(nrows=1, ncols=2)
+            orientation='horizontal'
 
 
+        self.showData(data=self.inv.dataVals,
+                      label='Data', orientation=orientation,
+                      ax=axs[0], **kwargs)
+        self.showData(data=self.inv.response,
+                      label='Response', orientation=orientation,
+                      ax=axs[1], **kwargs)
+
+        if not kwargs.pop('hideFittingAnnotation', False):
+            axs[0].text(0.01, 1.0025, "rrms: %.2g, $\chi^2$: %.2g" %
+                                (self.fw.inv.relrms(), self.fw.inv.chi2()),
+                    transform=axs[0].transAxes,
+                    horizontalalignment='left',
+                    verticalalignment='bottom')
+
+        return axs
+
+    def showResultAndFit(self, **kwargs):
+        """Calls showResults and showFit."""
+        
+        fig = pg.plt.figure()
+        ax = fig.add_subplot(1, 2, 1)
+        
+        self.showResult(ax=ax, **kwargs)
+        
+        ax1 = fig.add_subplot(2, 2, 2)
+        ax2 = fig.add_subplot(2, 2, 4)
+       
+        self.showFit(axs=[ax1, ax2], **kwargs)
+
+        fig.tight_layout()
+        return fig
 
 
 

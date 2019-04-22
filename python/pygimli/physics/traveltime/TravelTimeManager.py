@@ -4,11 +4,14 @@
 """Class for managing first arrival travel time inversions"""
 import numpy as np
 
+from matplotlib.collections import LineCollection
+
+
 import pygimli as pg
 from pygimli.frameworks import MeshModelling
 from pygimli.manager import MeshMethodManager
 
-from . raplot import drawTravelTimeData
+from . raplot import drawTravelTimeData, drawVA, showVA
 
 
 class TravelTimeDijkstraModelling(MeshModelling):
@@ -17,7 +20,6 @@ class TravelTimeDijkstraModelling(MeshModelling):
         
         super(TravelTimeDijkstraModelling, self).__init__(**kwargs)
 
-        # expose 
         self.jacobian = self.dijkstra.jacobian
         self.createJacobian = self.dijkstra.createJacobian
 
@@ -27,93 +29,42 @@ class TravelTimeDijkstraModelling(MeshModelling):
         # necessary because core dijkstra use its own RM
         return self.dijkstra.regionManagerRef()
      
-    def setMesh(self, mesh, ignoreRegionManager=False):
+    def setMeshPost(self, mesh):
         """
         """
-        # necessary because core dijkstra use its own mesh management
+        pg._r("+"*100)
         self.dijkstra.setMesh(mesh)
-        super(TravelTimeDijkstraModelling, self).setMesh(mesh, ignoreRegionManager)
 
-    def setData(self, data):
+    def setDataPost(self, data):
+        """
+        """
+        pg._r("*"*100)
         self.dijkstra.setData(data)
         
     def createStartModel(self, t):
-        pg.p(t)
+        pg._y('startmodel', t)
         return self.dijkstra.createDefaultStartModel()
         
     def response(self, par):
         return self.dijkstra.response(par)
 
-    def drawData(self, ax, data, err=None, label=None):
-        """
-        """
-        print("showData", ax, data, err, label)
-        return self.showVA(data, ax=ax)
-
-    def showVA(self, data, t=None, name='va', pseudosection=False,
-               squeeze=True, full=True, ax=None):
-        """Show apparent velocity as image plot.
-
-        TODO showXXX commands need to return ax and cbar .. if there is one
-
-        """
-        if data is None:
-            data = self.dataContainer
-
-        if ax is None:
-            fig, ax = plt.subplots()
-
-        if t is None:
-            t = data('t')
-
-        px = pg.x(data.sensorPositions())
-        gx = np.array([px[int(g)] for g in data("g")])
-        sx = np.array([px[int(s)] for s in data("s")])
-        offset = self.getOffset(data=data, full=full)
-        va = offset / t
-
-        if pseudosection:
-            midpoint = (gx + sx) / 2
-            pg.mplviewer.dataview.plotVecMatrix(midpoint, offset, va, squeeze=True, ax=ax,
-                          label='Apparent slowness [s/m]')
-        else:
-            pg.mplviewer.dataview.plotVecMatrix(gx, sx, va, squeeze=squeeze, ax=ax,
-                          label='Apparent velocity [m/s]')
-        return va
-
-    def getOffset(self, data=None, full=False):
-        """Return vector of offsets (in m) between shot and receiver."""
-
-        if data is None:
-            data = self.dataContainer
-
-        if full:
-            pos = data.sensorPositions()
-            s, g = data('s'), data('g')
-            nd = data.size()
-            off = [pos[int(s[i])].distance(pos[int(g[i])]) for i in range(nd)]
-            return np.absolute(off)
-        else:
-            px = pg.x(data.sensorPositions())
-            gx = np.array([px[int(g)] for g in data("g")])
-            sx = np.array([px[int(s)] for s in data("s")])
-            return np.absolute(gx - sx)
-
-    def getMidpoint(self, data=None):
-        """Return vector of offsets (in m) between shot and receiver."""
-        if data is None:
-            data = self.dataContainer
-
-        px = pg.x(data.sensorPositions())
-        gx = np.array([px[int(g)] for g in data("g")])
-        sx = np.array([px[int(s)] for s in data("s")])
-        return (gx + sx) / 2
-
+    def drawModel(self, ax, model, **kwargs):
+        kwargs['label'] = pg.unit('vel')
+        super(TravelTimeDijkstraModelling, self).drawModel(ax=ax,
+                                                           model=model,
+                                                           **kwargs)
+        return ax
+    
+    def drawData(self, ax, data, err=None, **kwargs):
+        kwargs['label'] = pg.unit('as')
+        return showVA(self.data, vals=data, usePos=False, 
+                      ax=ax, **kwargs)
+    
 
 class TravelTimeManager(MeshMethodManager):
     """Manager for refraction seismics (traveltime tomography)
 
-    TODO Document main members and use default MethodeManager interface
+    TODO Document main members and use default MethodManager interface
     e.g., self.inv, self.fop, self.paraDomain, self.mesh, self.data
     """
 
@@ -124,81 +75,15 @@ class TravelTimeManager(MeshMethodManager):
         super(TravelTimeManager, self).__init__(**kwargs)
 
         self._dataToken = 't'
-
-
-
-        # check if needed
-
-        self.figs = {}
-        self.axs = {}
-
-        self.errIsAbsolute = True
-
-        # should be forwarded so it can be accessed from outside
-        self.mesh = None
-        self.poly = None
-        self.error = None
-        self.velocity = None
-        self.response = None
-        self.__dict__.update(**kwargs)
-        # self.start = []
-        self.pd = None
-
-
-
-        data = kwargs.pop('data', None)
-        if isinstance(data, str):
-            self.loadData(data)
-        elif isinstance(data, pg.DataContainer):
-            self.setDataContainer(data)
-            self.basename = kwargs.pop('name', 'new')
-
-#        if self.dataContainer is not None:
-#            self.createMesh()
-#        self.fop = self.createFOP(verbose=self.verbose)
-#        self.inv = self.createInv(self.fop,
-#                                  verbose=self.verbose, doSave=self.doSave)
-
-#    def __str__(self):  # no need to overwrite with identical content
-#        """string representation of the class"""
-#        return self.__repr__()
-#
-    def __repr__(self):  # to be moved to Mesh/Data Method manager
-        """String representation of the class for the print function"""
-        out = type(self).__name__ + " object"
-        if hasattr(self, 'dataContainer'):
-            out += "\n" + self.dataContainer.__str__()
-        if hasattr(self, 'mesh'):
-            out += "\n" + self.mesh.__str__()
-        return out
-
-    @property
-    def useFMM(self):
-        return self.__useFMM
-
-    @useFMM.setter
-    def useFMM(self, u):
-        self.__useFMM = u
-        self.initForwardOperator()
-
-    def relErrVals(self, data):
-        """Return pure data values from a given DataContainer."""
-        return pg.abs(data('err')) / pg.abs(self.dataVals(data))
+        self.inv.dataTrans = pg.RTransLog()
 
     def createForwardOperator(self, **kwargs):
         """Create default forward operator for Traveltime modelling.
 
-        Your want your Manager use a special forward operator use
-        Set self.useFMM = True to forces Fast Marching Method,
-        otherwise Dijkstra is used.
+        Your want your Manager use a special forward operator you can add them
+        here on default Dijkstra is used.
         """
-        useFMM = kwargs.pop('useFMM', False)
-
-        if self._useFMM or useFMM:
-            from .FMModelling import TravelTimeFMM
-            fop = TravelTimeFMM(**kwargs)
-        else:
-            fop = TravelTimeDijkstraModelling(**kwargs)
+        fop = TravelTimeDijkstraModelling(**kwargs)
 
         return fop
 
@@ -282,37 +167,107 @@ class TravelTimeManager(MeshMethodManager):
 
         return ret
 
+    def invert(self, data=None, **kwargs):
+        """Invert data.
 
-    def invert(self, data=None, err=None, mesh=None, **kwargs):
-        """Invert measured data.
+        Parameters
+        ----------
+        data : pg.DataContainer() 
+            Data container with at least SensorIndieces 's g' and 
+            data values 't' (traveltime in ms) and 'err' (absolute error in ms)
         """
 
-        #ensure data and error sizes here
-        dataVal = None
-        if isinstance(data, pg.DataContainer):
-            self.fop.setDataBasis(dataContainer=data)
+        self.fop.setData(data) 
+        mesh = kwargs.pop('mesh', None)
+        secNodes = kwargs.pop('secNodes', 3)
+        mesh = mesh.createMeshWithSecondaryNodes(secNodes)
+        self.setMesh(mesh)
+        
+        # mesh = self.fop.regionManager().mesh().createMeshWithSecondaryNodes(secNodes)
+        # self.fop.setMeshPost(mesh)
 
-            dataVals = self.dataVals(data)
-            errVals = self.relErrVals(data)
+        # startModel = kwargs.pop('startModel', pg.median(dataVals))
+        # self.fop.setRegionProperties('*', startModel=startModel)
 
-        else:
-            dataVal = data
-
-        self.transData = pg.RTransLog()
-        self.inv.transData = self.transData
-
-        slowness = super(TravelTimeManager, self).invert(dataVals=dataVals,
-                                                         errVals=errVals,
-                                                         mesh=mesh,
+        slowness = super(MeshMethodManager, self).invert(data=data,
                                                          **kwargs)
-        self.model = 1./slowness
+        self.fw.model = 1./slowness
         return self.model
 
-    def loadData(self, filename, **kwargs):
-        """"""
-        dat = pg.DataContainer(filename, 's g')
-        self.fop.setDataContainer(dat)
-        return dat
+
+    def showRayPaths(self, model=None, ax=None, **kwargs):
+        """Show model with ray paths for `model` or last model for 
+        which the last Jacobian was calculated.
+
+        Parameters
+        ----------
+        model : array
+            Velocity model for which to calculate and visualize ray paths (the
+            default is model for last Jacobian calculation in self.velocity).
+        ax : matplotlib.axes object
+            To draw the model and the path into.
+        **kwargs : type
+            Additional arguments passed to LineCollection (alpha, linewidths,
+            color, linestyles).
+
+        Returns
+        -------
+        ax : matplotlib.axes object
+        cb : matplotlib.colorbar object (only if model is provided)
+
+        Examples
+        --------
+        >>> # No reason to import matplotlib
+        >>> import pygimli as pg
+        >>> from pygimli.physics import Refraction
+        >>> from pygimli.physics.traveltime import createRAData
+        >>>
+        >>> x, y = 8, 6
+        >>> mesh = pg.createGrid(x, y)
+        >>> data = createRAData([(0,0)] + [(x, i) for i in range(y)], shotdistance=y+1)
+        >>> data.set("t", pg.RVector(data.size(), 1.0))
+        >>> rst = Refraction()
+        >>> rst.setDataContainer(data)
+        Data: Sensors: 7 data: 6
+        >>> rst.setMesh(mesh, 5)
+        >>> ax, cb = rst.showRayPaths()
+        """
+        cbar = None
+
+        if model is None:
+            model = self.model
+
+        if model is None:
+            pg.info("No previous inversion result found and no model given.",
+                    "Using homogeneous slowness model.")
+            vel = pg.Vector(self.fop.parameterCount(), 1.0)
+            self.fop.createJacobian(1./vel)
+        else:
+            if self.model is not None:
+                if not np.allclose(model, self.model):
+                    self.fop.createJacobian(1/model)
+    
+        ax, cbar = self.showModel(ax=ax, model=model)
+
+        _ = kwargs.setdefault("color", "w")
+        _ = kwargs.setdefault("alpha", 0.5)
+        _ = kwargs.setdefault("linewidths", 0.8)
+
+        # Due to different numbering scheme of way matrix
+        _, shots = np.unique(self.fop.data("s"), return_inverse=True)
+        _, receivers = np.unique(self.fop.data("g"), return_inverse=True)
+
+        # Collecting way segments for all shot/receiver combinations
+        segs = []
+        for s, g in zip(shots, receivers):
+            wi = self.fop.dijkstra.way(s, g)
+            points = self.fop.dijkstra.mesh().positions(withSecNodes=True)[wi]
+            segs.append(np.column_stack((pg.x(points), pg.y(points))))
+
+        line_segments = LineCollection(segs, **kwargs)
+        ax.add_collection(line_segments)
+        return ax, cbar
+
 
 if __name__ == '__main__':
     pg.wait()
