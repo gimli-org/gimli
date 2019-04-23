@@ -34,7 +34,7 @@ class Modelling(pg.ModellingBase):
         * Docu:
             - describe members (model transformation, dictionary of region properties)
             - 
-        * think about splitting all mes related into MeshModelling
+        * think about splitting all mesh related into MeshModelling
         * clarify difference: setData(array|DC), setDataContainer(DC), setDataValues(array)
         * clarify dataSpace(comp. ModelSpace): The unique spatial or temporal origin of a datapoint (time, coordinates, 4-point-positions,
                                                                      receiver/transmitter positions
@@ -46,24 +46,58 @@ class Modelling(pg.ModellingBase):
     """
     def __init__(self, **kwargs):
         """
+        Attributes
+        ----------
+        fop : pg.frameworks.Modeling
+
+        data : pg.DataContainer
+
+        modelTrans : [pg.RTransLog()]
+        
         Parameters
         ----------
         **kwargs :
-            fop : Modelling
+            fop : Modeling
 
         """
-        fop = kwargs.pop('fop', None)
+        self._fop = None  # pg.frameworks.Modeling
+        self._data = None # dataContainer
+        self._modelTrans = None
+
+        self.fop = kwargs.pop('fop', None)
         super(Modelling, self).__init__(**kwargs)
 
         self._regionProperties = {}
         self._regionsNeedUpdate = False
-        self._modelTrans = pg.RTransLog() # Model transformation operator
+        self.modelTrans = pg.RTransLog() # Model transformation operator
 
-        self.fop = None
-        self.data = None # dataContainer
+    @property
+    def fop(self):
+        return self._fop
+    @fop.setter
+    def fop(self, f):
+        if f is not None:
+            if not isinstance(f, pg.frameworks.Modelling):
+                pg.critical('Forward operator needs to be an instance of '
+                            'pg.modelling.Modelling but is of type:', f)
 
-        if fop is not None:
-            self.setForwardOperator(fop)
+            self._fop = f
+                    
+    @property
+    def data(self):
+        if self._fop is not None:
+            return self._fop.data
+        return self._data
+    @data.setter
+    def data(self, d):
+        self.setData(d)
+
+    @property
+    def mesh(self):
+        if self._fop is not None:
+            return self._fop.mesh
+        else:
+            return super(Modelling, self).mesh()
 
     @property
     def modelTrans(self):
@@ -103,15 +137,10 @@ class Modelling(pg.ModellingBase):
         self._applyRegionProperties()
         return super(Modelling, self).regionManager()
 
-    def setForwardOperator(self, fop):
-        """ 
-        """
-        if not isinstance(fop, pg.frameworks.Modelling):
-            pg.critical('Forward operator needs to be an instance of '
-                        'pg.modelling.Modelling but is of type:', fop)
+    def setMeshPost(self, data):
+        """Called when the mesh has been set sucessfully."""
+        pass
 
-        self.fop = fop
-        
     def setMesh(self, mesh, ignoreRegionManager=False):
         """ 
         """
@@ -125,6 +154,8 @@ class Modelling(pg.ModellingBase):
                 self.setRegionManager(self.fop.regionManagerRef())
         else:
             super(Modelling, self).setMesh(mesh, ignoreRegionManager)
+
+        self.setMeshPost(self.mesh)
 
     def clearRegionProperties(self):
         """Clear all region parameter."""
@@ -217,6 +248,7 @@ class Modelling(pg.ModellingBase):
 
         self._regionsNeedUpdate = False
 
+            
     def setData(self, data):
         """ 
         """
@@ -238,6 +270,10 @@ class Modelling(pg.ModellingBase):
                 print(data)
                 pg.critical("nothing known to do? Implement me in derived classes")
 
+    def setDataPost(self, data):
+        """Called when the dataContainer has been set sucessfully."""
+        pass
+
     def setDataContainer(self, data):
         """ 
         """
@@ -245,7 +281,9 @@ class Modelling(pg.ModellingBase):
             self.fop.setData(data)
         else:
             super(Modelling, self).setData(data)
-            self.data = data
+            self._data = data
+        
+        self.setDataPost(self.data)
 
     def estimateError(self, data, **kwargs):
         """Create data error fallback when the data error is not known. 
@@ -376,12 +414,13 @@ class MeshModelling(Modelling):
     #     super(MeshModelling, self).setMesh(mesh, ignoreRegionManager)
 
     def drawModel(self, ax, model, **kwargs):
-        pg.mplviewer.drawModel(ax=ax,
-                               mesh=self.paraDomain,
-                               data=model,
-                               **kwargs)
-        return ax
-
+        ax, cbar = pg.show(mesh=self.paraDomain,
+                           data=model,
+                           label=kwargs.pop('label', 'Model parameter'),
+                           ax=ax,
+                           **kwargs)
+        return ax, cbar
+        
 
 class PetroModelling(Modelling):
     """Combine petrophysical relation with the modeling class f(p).

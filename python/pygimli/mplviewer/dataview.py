@@ -48,18 +48,22 @@ def generateMatrix(xvec, yvec, vals, **kwargs):
             yu = np.arange(0, yu[-1] - yu[0] + dy * 0.5, dy) + yu[0]
         xmap = {xx: ii for ii, xx in enumerate(xu)}
         ymap = {yy: ii for ii, yy in enumerate(yu)}
+    
     A = np.zeros((len(ymap), len(xmap)))
     inot = []
     nshow = min([len(xvec), len(yvec), len(vals)])
+    
     for i in range(nshow):
         xi, yi = xvec[i], yvec[i]
         if A[ymap[yi], xmap[xi]]:
             inot.append(i)
         A[ymap[yi], xmap[xi]] = vals[i]
+
     if len(inot) > 0:
         print(len(inot), "data of", nshow, "not shown")
         if len(inot) < 30:
             print(inot)
+
     return A, xmap, ymap
 
 
@@ -271,33 +275,56 @@ def patchMatrix(mat, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
     return ax, cbar
 
 
-def plotMatrix(mat, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
-               logScale=None, label=None, **kwargs):
-    """Plot previously generated (generateVecMatrix) matrix.
+def plotMatrix(mat, ax=None, **kwargs):
+    """Naming conventions. Use drawMatrix or showMatrix"""
+    pg.deprecated("use drawMatrix or showMatrix")
+    return showMatrix(ax, mat, **kwargs)
 
-    Parameters
-    ----------
-    mat : numpy.array2d
-        matrix to show
-    xmap : dict {i:num}
-        dict (must match A.shape[0])
-    ymap : iterable
-        vector for x axis (must match A.shape[0])
-    ax : mpl.axis
-        axis to plot, if not given a new figure is created
-    cMin/cMax : float
-        minimum/maximum color values
-    logScale : bool
-        logarithmic colour scale [min(A)>0]
-    label : string
-        colorbar label
-
+def showMatrix(mat, ax=None, **kwargs):
+    """Naming conventions. Use drawMatrix or showMatrix
+    
     Returns
     -------
     ax : matplotlib axes object
         axes object
     cb : matplotlib colorbar
         colorbar object
+    """
+    ax, _ = pg.show(ax=ax)
+
+    pg._r(ax)
+
+    gci = drawMatrix(ax, mat, **kwargs)
+    pg._y(**kwargs)
+    
+    cbar = None
+    if kwargs.pop('colorBar', True):
+        ori = kwargs.pop('orientation', 'horizontal')
+        cbar = pg.mplviewer.createColorBar(gci, cMin=cMin, cMax=cMax, nLevs=5,
+                                           label=label, orientation=ori)
+
+    return ax, cbar
+
+def drawMatrix(ax, mat, xmap=None, ymap=None, cMin=None, cMax=None,
+               logScale=None, label=None, **kwargs):
+    """Draw previously generated (generateVecMatrix) matrix.
+
+    Parameters
+    ----------
+    ax : mpl.axis
+        axis to plot, if not given a new figure is created
+    mat : numpy.array2d
+        matrix to show
+    xmap : dict {i:num}
+        dict (must match A.shape[0])
+    ymap : iterable
+        vector for x axis (must match A.shape[0])
+    cMin/cMax : float
+        minimum/maximum color values
+    logScale : bool
+        logarithmic colour scale [min(A)>0]
+    label : string
+        colorbar label
     """
     if xmap is None:
         xmap = {i: i for i in range(mat.shape[0])}
@@ -318,20 +345,15 @@ def plotMatrix(mat, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
         norm = LogNorm(vmin=cMin, vmax=cMax)
     else:
         norm = Normalize(vmin=cMin, vmax=cMax)
-    if ax is None:
-        ax = plt.subplots()[1]
-
-    im = ax.imshow(mat_, norm=norm, interpolation='nearest')
+    
+    gci = ax.imshow(mat_, norm=norm, interpolation='nearest')
     if 'cmap' in kwargs:
-        im.set_cmap(kwargs.pop('cmap'))
+        pg.deprecated('use cMap') #190422
+        gci.set_cmap(kwargs.pop('cmap'))
     if 'cMap' in kwargs:
-        im.set_cmap(kwargs.pop('cMap'))
+        gci.set_cmap(kwargs.pop('cMap'))
     ax.set_aspect(kwargs.pop('aspect', 1))
-    cbar = None
-    if kwargs.pop('colorBar', True):
-        ori = kwargs.pop('orientation', 'horizontal')
-        cbar = pg.mplviewer.createColorBar(im, cMin=cMin, cMax=cMax, nLevs=5,
-                                           label=label, orientation=ori)
+
     ax.grid(True)
     xt = np.unique(ax.get_xticks().clip(0, len(xmap) - 1))
     yt = np.unique(ax.get_xticks().clip(0, len(ymap) - 1))
@@ -344,16 +366,17 @@ def plotMatrix(mat, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
     xx = np.sort([k for k in xmap])
     ax.set_xticks(xt)
     ax.set_xticklabels(['{:g}'.format(round(xx[int(ti)], 2)) for ti in xt])
+
     yy = np.unique([k for k in ymap])
     ax.set_yticks(yt)
     ax.set_yticklabels(['{:g}'.format(round(yy[int(ti)], 2)) for ti in yt])
-    return ax, cbar
+    return gci
 
 
 def plotVecMatrix(xvec, yvec, vals, full=False, **kwargs):
     """DEPRECATED for nameing
     """
-    pg.deprecated('plotVecMatrix', 'showVecMatrix')
+    pg.deprecated("use drawVecMatrix or showVecMatrix")
     return showVecMatrix(xvec, yvec, vals, full, **kwargs)
 
 
@@ -388,7 +411,11 @@ def showVecMatrix(xvec, yvec, vals, full=False, **kwargs):
         colorbar object
     """
     A, xmap, ymap = generateMatrix(xvec, yvec, vals, full=full)
-    return plotMatrix(A, xmap, ymap, **kwargs)
+    return showMatrix(A, xmap=xmap, ymap=ymap, **kwargs)
+
+def drawVecMatrix(ax, xvec, yvec, vals, full=False, **kwargs):
+    A, xmap, ymap = generateMatrix(xvec, yvec, vals, full=full)
+    return drawMatrix(ax, A, xmap=xmap, ymap=ymap, **kwargs)
 
 
 def plotDataContainerAsMatrix(data, x=None, y=None, v=None, **kwargs):

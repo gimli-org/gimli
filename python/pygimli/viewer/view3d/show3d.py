@@ -3,6 +3,8 @@ Todo
 ----
 
 + log scale
++ coverage, i.e. with opacity?
++ slider to look in volume
 """
 
 
@@ -10,7 +12,6 @@ import matplotlib as mpl
 import numpy as np
 from shutil import copyfile
 import sys
-import time
 
 import pygimli as pg
 
@@ -23,7 +24,7 @@ from PyQt5.QtWidgets import (
     QMainWindow, QFrame, QVBoxLayout, QToolBar, QComboBox, QPushButton,
     QFileDialog, QLineEdit, QWidget, QHBoxLayout, QSlider
 )
-vtki = pg.optImport('vtki', requiredFor="Proper visualization in 3D")
+vtki = pg.optImport('vtki', requiredFor="proper visualization in 3D")
 
 
 # predefined color maps
@@ -84,8 +85,8 @@ class Show3D(QMainWindow):
             The MPL colormap that should be used to display parameters.
         """
         self.mesh = mesh
-        self.vtk_widget.add_mesh(self.mesh, cmap=cMap)
-        self.vtk_widget.add_bounds_axes()
+        self.vtk_widget.add_mesh(self.mesh, cmap=cmap)
+        self.vtk_widget.show_bounds()
         self.vtk_widget.reset_camera()
 
         # set the correctly chosen colormap
@@ -328,7 +329,7 @@ class GToolBar(QToolBar):
 
         # button to make bounding box visible
         self.btn_bbox = GButton(
-            text="BBox",
+            text="Toggle Grid",
             tooltip="Toggle data axis grid",
             checkable=True
         )

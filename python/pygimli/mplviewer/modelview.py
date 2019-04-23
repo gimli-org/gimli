@@ -165,12 +165,12 @@ def draw1DColumn(ax, x, val, thk, width=30, ztopo=0, cmin=1, cmax=1000,
         ax.text(x+textoffset, ztopo, name, ha='center', va='bottom')
 
     updateAxes_(ax)
-
     return col
 
 
 def showmymatrix(mat, x, y, dx=2, dy=1, xlab=None, ylab=None, cbar=None):
     """What is this good for?."""
+    pg.error('who use this?')
     plt.imshow(mat, interpolation='nearest')
     plt.xticks(np.arange(0, len(x), dx), ["%g" % rndig(xi, 2) for xi in x])
     plt.yticks(np.arange(0, len(y), dy), ["%g" % rndig(yi, 2) for yi in y])

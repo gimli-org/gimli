@@ -27,4 +27,6 @@ from .cache import cache
 
 from .gps import readGPX, findUTMZone, getUTMProjection, getProjection, GKtoUTM
 
+from .units import unit
+
 __all__ = [name for name in dir() if '_' not in name]

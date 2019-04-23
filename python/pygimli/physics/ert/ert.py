@@ -50,7 +50,7 @@ def simulate(mesh, res, scheme, sr=True, useBert=True,
 
 
 class BertModelling(MeshModelling):
-    def __init__(self, sr, verbose=False):
+    def __init__(self, sr=True, verbose=False):
         """Constructor, optional with data container and mesh."""
         super(BertModelling, self).__init__()
         
@@ -90,6 +90,7 @@ class BertModelling(MeshModelling):
         self.bertFop.setMesh(self.mesh(), ignoreRegionManager=True)
 
     def setData(self, scheme):
+        """"""
         super(BertModelling, self).setData(scheme)
         self.bertFop.setData(scheme)
 
@@ -431,10 +432,6 @@ class ERTManager(MeshMethodManager):
         
         self.inv.dataTrans = pg.RTransLogLU()
 
-
-        ### maybe obsolete
-        # self._dataToken = 'rhoa'
-
     def setSingularityRemoval(self, sr=True):
         """Turn singularity removal on or off."""
         self.reinitForwardOperator(sr=True)
@@ -563,7 +560,7 @@ class ERTManager(MeshMethodManager):
         noiseAbs = kwargs.pop('noiseAbs', 1e-4)
 
         fop = self.fop
-        fop.setData(scheme)
+        fop.data = scheme
         fop.setMesh(mesh, ignoreRegionManager=True)
 
         rhoa = None
@@ -654,12 +651,10 @@ class ERTManager(MeshMethodManager):
         if noiseLevel > 0:  # if errors in data noiseLevel=1 just triggers
             if not ret.allNonZero('err'):
                 # 1A  and #100µV
-                ret.set('err', ERTManager.estimateError(
-                    ret,
-                    relativeError=noiseLevel,
-                    absoluteUError=noiseAbs,
-                    absoluteCurrent=1)
-                )
+                ret.set('err', self.estimateError(ret,
+                                                  relativeError=noiseLevel,
+                                                  absoluteUError=noiseAbs,
+                                                  absoluteCurrent=1))
                 print("Data error estimate (min:max) ",
                       min(ret('err')), ":", max(ret('err')))
 
@@ -695,8 +690,7 @@ class ERTManager(MeshMethodManager):
 
         return ret
 
-    @staticmethod
-    def estimateError(data, absoluteError=0.001, relativeError=0.03,
+    def estimateError(self, data, absoluteError=0.001, relativeError=0.03,
                       absoluteUError=None, absoluteCurrent=0.1):
         """ Estimate error composed of an absolute and a relative part.
         This is a static method and will not alter any member of the Manager
@@ -729,9 +723,9 @@ class ERTManager(MeshMethodManager):
 
         if absoluteUError is None:
             if not data.allNonZero('rhoa'):
-                raise BaseException("We need apparent resistivity values "
-                                    "(rhoa) in the data to estimate a "
-                                    "data error.")
+                pg.critical("We need apparent resistivity values "
+                            "(rhoa) in the data to estimate a "
+                            "data error.")
             error = relativeError + absoluteError / data('rhoa')
         else:
             u = None
@@ -748,44 +742,57 @@ class ERTManager(MeshMethodManager):
                     if data.haveData("k"):
                         u = data('rhoa') / data('k') * i
                     else:
-                        raise BaseException("We need (rhoa) and (k) in the"
-                                            "data to estimate data error.")
+                        pg.critical("We need (rhoa) and (k) in the"
+                                    "data to estimate data error.")
 
                 else:
-                    raise BaseException("We need apparent resistivity values "
-                                        "(rhoa) or impedances (r) "
-                                        "in the data to estimate data error.")
+                    pg.critical("We need apparent resistivity values "
+                                "(rhoa) or impedances (r) "
+                                "in the data to estimate data error.")
 
             error = pg.abs(absoluteUError / u) + relativeError
 
         return error
 
-    def _ensureRhoa(self, data):
-        """"""
-        # check for valid rhoa here
-        return data('rhoa')
+    def _ensureData(self, data):
+        """Check data validity"""
+        vals = data
+        if isinstance(data, pg.DataContainer):
+            vals = data('rhoa')
+
+        if min(vals) <= 0:
+            print(min(vals), max(vals))
+            pg.critical("Ensure apparent resistivity values are larger then 0.")
+        return vals
 
     def _ensureError(self, data):
-        """"""
-        # check for valid err here
-        return data('err')
+        """Check error validity"""
+        vals = data
+        if isinstance(data, pg.DataContainer):
+            vals = data('err')
 
-    def invert(self, data=None, err=None, **kwargs):
-        """Invert measured data.
-        """
-        dataVals = None
-        errVals = None
+        if min(vals) <= 0:
+            print(min(vals), max(vals))
+            pg.critical("Ensure all error values are larger then 0.")
+
+        return vals
+
+    def invert(self, data=None, **kwargs):
+        """Invert data.
         
-        if isinstance(data, pg.DataContainerERT):
-            self.fop.setDataSpace(dataContainer=data)
+        Parameters
+        ----------
+        data : pg.DataContainerERT() 
+            Data container with at least SensorIndieces 'a b m n' and 
+            data values 'rhoa' (apparent resistivities) and 'err' 
+            (relative error in %/100)
 
-            dataVals = self._ensureRhoa(data)
-            errVals = self._ensureError(data)
-        else:
-
-            # check if fop has dataContainer
-            dataVals = data
-            errVals = err
+        """
+        dataVals = self._ensureData(data)
+        errVals = self._ensureError(data)
+        
+        if isinstance(data, pg.DataContainer):
+            self.fop.data = data
 
         if 'mesh' in kwargs:
             self.inv.setMesh(kwargs.pop('mesh'))
@@ -793,11 +800,9 @@ class ERTManager(MeshMethodManager):
         startModel = kwargs.pop('startModel', pg.median(dataVals))
         self.fop.setRegionProperties('*', startModel=startModel)
 
-
         return super(ERTManager, self).invert(dataVals=dataVals,
                                               errVals=errVals,
                                               **kwargs)
-
 
     def coverage(self):
         """Return coverage vector considering the logarithmic transformation.

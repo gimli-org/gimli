@@ -9,7 +9,7 @@ from .em import FDEM, TDEM
 from .ert import ERTManager, ERTModelling, VESManager
 from .SIP import SIPSpectrum
 from .sNMR import MRS
-from .traveltime import Refraction
+from .traveltime import Refraction, TravelTimeManager
 
 constants = Constants
 

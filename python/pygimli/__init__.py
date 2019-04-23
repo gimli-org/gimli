@@ -51,6 +51,7 @@ from ._version import get_versions
 from ._logger import _, _d, _y, _g, _r
 from .core import *
 from .testing import test
+from .utils import unit
 
 
 def _get_branch():
