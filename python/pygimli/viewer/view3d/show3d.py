@@ -20,8 +20,8 @@ from PyQt5.QtGui import (
     QDoubleValidator
 )
 from PyQt5.QtWidgets import (
-    QMainWindow, QFrame, QVBoxLayout, QToolBar, QComboBox,
-    QPushButton, QFileDialog, QLineEdit, QWidget, QHBoxLayout
+    QMainWindow, QFrame, QVBoxLayout, QToolBar, QComboBox, QPushButton,
+    QFileDialog, QLineEdit, QWidget, QHBoxLayout, QSlider
 )
 vtki = pg.optImport('vtki', requiredFor="Proper visualization in 3D")
 
@@ -99,6 +99,17 @@ class Show3D(QMainWindow):
         self.toolbar.cbbx_cmap.setCurrentText(cMap)
         self._allowSignals()
 
+        _bounds = self.mesh.bounds
+        self.toolbar.slice_x.setMinimum(_bounds[0])
+        self.toolbar.slice_x.setMaximum(_bounds[1])
+        self.toolbar.slice_x.setValue(0.5 * (_bounds[0] + _bounds[1]))
+        self.toolbar.slice_y.setMinimum(_bounds[2])
+        self.toolbar.slice_y.setMaximum(_bounds[3])
+        self.toolbar.slice_y.setValue(0.5 * (_bounds[2] + _bounds[3]))
+        self.toolbar.slice_z.setMinimum(_bounds[4])
+        self.toolbar.slice_z.setMaximum(_bounds[5])
+        self.toolbar.slice_z.setValue(0.5 * (_bounds[4] + _bounds[5]))
+
     def addDataToMesh(self, data):
         """
         Supply data to visualize.
@@ -140,7 +151,7 @@ class Show3D(QMainWindow):
         # add to mainwindow
         self.addToolBar(self.toolbar)
 
-    def updateParameterView(self, param):
+    def updateParameterView(self, param=None):
         """
         Change the view to given Parameter values.
 
@@ -152,7 +163,7 @@ class Show3D(QMainWindow):
         ----
         Maybe overloaded.
         """
-        if param not in CMAPS and not isinstance(param, int):
+        if param is not None and param not in CMAPS and not isinstance(param, int):
             # change to the desired parameter distribution
             self.mesh.set_active_scalar(param)
             # update the minima and maxima
@@ -162,8 +173,21 @@ class Show3D(QMainWindow):
         cMap = self.toolbar.cbbx_cmap.currentText()
         if self.toolbar.btn_reverse.isChecked():
             cMap += '_r'
-        self.vtk_widget.add_mesh(self.mesh, cmap=cMap)
-        # self.vtk_widget.update()
+
+        if self.toolbar.btn_slice.isChecked():
+            x_val = self.toolbar.slice_x.value()
+            y_val = self.toolbar.slice_y.value()
+            z_val = self.toolbar.slice_z.value()
+
+            # multiBlock = self.mesh.slice_orthogonal(x=-0.05, y=-0.05, z=-0.05)
+            # multiBlock.plot()
+            # mesh = vtki.read(multiBlock)
+            # self.vtk_widget.plot(multiBlock, cmap=cMap)
+            # print(mesh)
+        # else:
+        mesh = self.mesh
+        # print(dir(self.vtk_widget))
+        self.vtk_widget.add_mesh(mesh, cmap=cMap)
         self.updateScalarBar()
 
     def updateScalarBar(self):
@@ -222,7 +246,6 @@ class Show3D(QMainWindow):
             f = f + '.vtk' if not f.lower().endswith('.vtk') else f
             copyfile(self.tmpMesh, f)
 
-
     def resetExtrema(self):
         # get the active scalar/parameter that is displayed currently
         param = self.mesh.active_scalar_name
@@ -231,6 +254,25 @@ class Show3D(QMainWindow):
 
         # display correctly
         self.updateParameterView(param)
+
+    def updateSlices(self):
+        # slicer = self.sender()
+        # orientation = slicer.toolTip()[4]
+        # slider = getattr(self, 'slice_'.format(orientation.lower()))
+        x_val = self.toolbar.slice_x.value()
+
+    def enableSlicers(self):
+        if self.toolbar.btn_slice.isChecked():
+            self.toolbar.slice_x.setEnabled(True)
+            self.toolbar.slice_y.setEnabled(True)
+            self.toolbar.slice_z.setEnabled(True)
+        else:
+            self.toolbar.slice_x.setEnabled(False)
+            self.toolbar.slice_x.setValue(self.toolbar.slice_x.minimum())
+            self.toolbar.slice_y.setEnabled(False)
+            self.toolbar.slice_y.setValue(self.toolbar.slice_y.minimum())
+            self.toolbar.slice_z.setEnabled(False)
+            self.toolbar.slice_z.setValue(self.toolbar.slice_z.minimum())
 
     def _allowSignals(self):
         # connect signals
@@ -242,6 +284,10 @@ class Show3D(QMainWindow):
         self.toolbar.btn_exportVTK.clicked.connect(self.exportMesh)
         self.toolbar.btn_apply.clicked.connect(self.updateScalarBar)
         self.toolbar.btn_reset.clicked.connect(self.resetExtrema)
+        self.toolbar.btn_slice.clicked.connect(self.enableSlicers)
+        self.toolbar.slice_x.sliderReleased.connect(self.updateParameterView)
+        self.toolbar.slice_y.sliderReleased.connect(self.updateParameterView)
+        self.toolbar.slice_z.sliderReleased.connect(self.updateParameterView)
         self.toolbar.le_cmin.editingFinished.connect(self.updateScalarBar)
         self.toolbar.le_cmax.editingFinished.connect(self.updateScalarBar)
 
@@ -308,6 +354,20 @@ class GToolBar(QToolBar):
             )
         self.btn_reset.setEnabled(False)
 
+        # slider for slicing
+        self.slice_x = GSlider("The X location of the YZ slice")
+        self.slice_x.setEnabled(False)
+        self.slice_y = GSlider("The Y location of the XZ slice")
+        self.slice_y.setEnabled(False)
+        self.slice_z = GSlider("The Z location of the XY slice")
+        self.slice_z.setEnabled(False)
+        # and a botton to control them
+        self.btn_slice = GButton(
+            text="Slice",
+            tooltip="Slice through volume",
+            checkable=True
+        )
+
         # button to take a screenshot
         self.btn_screenshot = GButton(
             text="Screenshot",
@@ -330,6 +390,10 @@ class GToolBar(QToolBar):
         lt.addWidget(self.le_cmax)
         lt.addWidget(self.btn_apply)
         lt.addWidget(self.btn_reset)
+        lt.addWidget(self.btn_slice)
+        lt.addWidget(self.slice_x)
+        lt.addWidget(self.slice_y)
+        lt.addWidget(self.slice_z)
         lt.addStretch(1)
         lt.addWidget(self.btn_screenshot)
         lt.addWidget(self.btn_exportVTK)
@@ -395,6 +459,62 @@ class GComboBox(QComboBox):
     def __init__(self, tooltip=None):
         super(GComboBox, self).__init__(None)
         self.setToolTip(tooltip)
+
+
+class _GDoubleSlider(QSlider):
+    # https://gist.github.com/dennis-tra/994a65d6165a328d4eabaadbaedac2cc
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.decimals = 5
+        self._max_int = 10 ** self.decimals
+
+        super().setMinimum(0)
+        super().setMaximum(self._max_int)
+
+        self._min_value = 0.0
+        self._max_value = 1.0
+
+    @property
+    def _value_range(self):
+        return self._max_value - self._min_value
+
+    def value(self):
+        return float(super().value()) / self._max_int * self._value_range + self._min_value
+
+    def setValue(self, value):
+        super().setValue(int((value - self._min_value) / self._value_range * self._max_int))
+
+    def setMinimum(self, value):
+        if value > self._max_value:
+            raise ValueError("Minimum limit cannot be higher than maximum")
+
+        self._min_value = value
+        self.setValue(self.value())
+
+    def setMaximum(self, value):
+        if value < self._min_value:
+            raise ValueError("Minimum limit cannot be higher than maximum")
+
+        self._max_value = value
+        self.setValue(self.value())
+
+    def minimum(self):
+        return self._min_value
+
+    def maximum(self):
+        return self._max_value
+
+
+class GSlider(_GDoubleSlider):
+
+    def __init__(self, tooltip=None):
+        super(GSlider, self).__init__(None)
+        self.setOrientation(Qt.Horizontal)
+        self.setToolTip(tooltip)
+        # self.setMinimum(smin)
+        # self.setMaximum(smax)
+        # self.setSingleStep(1)
 
 
 if __name__ == '__main__':
