@@ -287,6 +287,19 @@ find_python_module(numpy)
 ################################################################################
 # Manuall check for boost python
 ################################################################################
+function(find_boost_python_manual bp_version)
+    message(STATUS " ... searching for libboost_python${bp_version}") 
+    find_package(Boost 1.46 COMPONENTS "python${bp_version}")
+    if (${Boost_PYTHON${bp_version}_FOUND})
+        set(Boost_PYTHON_FOUND 
+            ${Boost_PYTHON${bp_version}_FOUND} PARENT_SCOPE)
+        set(Boost_PYTHON_LIBRARY 
+            ${Boost_PYTHON${bp_version}_LIBRARY_RELEASE} PARENT_SCOPE)
+        message(STATUS " ... found: ${Boost_PYTHON_LIBRARY}") 
+    else()
+        message(STATUS " ... not found.") 
+    endif()
+endfunction()
 
 if (Boost_PYTHON_LIBRARY)
     #set (Boost_PYTHON_LIBRARY ${Boost_PYTHON_LIBRARY})
@@ -298,62 +311,44 @@ else()
         if (NOT Boost_PYTHON_FOUND)
             set(BOOST_FOUND TRUE)
             set(Boost_PYTHON_FOUND TRUE})
-            set(Boost_PYTHON_LIBRARY ${BOOST_ROOT}/lib/libboost_python${bp_version}.dll)
+            set(Boost_PYTHON_LIBRARY 
+                    ${BOOST_ROOT}/lib/libboost_python${bp_version}.dll)
         endif()
-    endif()
-
-    if (NOT Boost_PYTHON_FOUND)
-        find_package(Boost 1.46 COMPONENTS python)
     endif()
     
     # the name for py3 boost-python library lacks probably py3 suffix, which is different for different OS
+    set (Boost_PYTHON_FOUND False)
+    set (Boost_PYTHON_LIBRARY "None")
+    message(STATUS "***** ${Boost_PYTHON_FOUND}, ${Boost_PYTHON_LIBRARY}")
 
-    #/usr/lib/x86_64-linux-gnu/libboost_python-py34.so (debian)
     if (NOT Boost_PYTHON_FOUND)
-        set(bp_version "${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}")
-        find_package(Boost 1.46 COMPONENTS "python-py${bp_version}")
-        if (${Boost_PYTHON-PY${bp_version}_FOUND})
-            set(Boost_PYTHON_FOUND ${Boost_PYTHON-PY${bp_version}_FOUND})
-            set(Boost_PYTHON_LIBRARY ${Boost_PYTHON-PY${bp_version}_LIBRARY_RELEASE})
-        endif()
+        #/usr/lib/x86_64-linux-gnu/libboost_python-py34.so (debian)
+        set(bp_version "-py${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}")
+        find_boost_python_manual(${bp_version})
     endif()
-
-    # /usr/lib/libboost_python3.so.1.64.0 (arch style)
     if (NOT Boost_PYTHON_FOUND)
+        # /usr/lib/libboost_python3.so.1.64.0 (arch style)
         set(bp_version "${PYTHON_VERSION_MAJOR}")
-        find_package(Boost 1.46 COMPONENTS "python${bp_version}")
-        if (${Boost_PYTHON${bp_version}_FOUND})
-            set(Boost_PYTHON_FOUND ${Boost_PYTHON${bp_version}_FOUND})
-            set(Boost_PYTHON_LIBRARY ${Boost_PYTHON${bp_version}_LIBRARY_RELEASE})
-        endif()
+        find_boost_python_manual(${bp_version})
     endif()
-    
-    # /usr/lib/libboost_python-3.4.so (gentoo <boost-1.70)
     if (NOT Boost_PYTHON_FOUND)
-        set(bp_version "${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}")
-        # should find the right one
-        find_package(Boost 1.46 COMPONENTS "python-${bp_version}")
-        if (${Boost_PYTHON-${bp_version}_FOUND})
-            set(Boost_PYTHON_FOUND ${Boost_PYTHON-${bp_version}_FOUND})
-            set(Boost_PYTHON_LIBRARY ${Boost_PYTHON-${bp_version}_LIBRARY_RELEASE})
-        endif()
+        # /usr/lib/libboost_python-3.4.so (gentoo <boost-1.70)
+        set(bp_version "-${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}")
+        find_boost_python_manual(${bp_version})
     endif()
-    
-    # /usr/lib/libboost_python37.so # gentoo >=boost-1.70) 
     if (NOT Boost_PYTHON_FOUND)
+        # /usr/lib/libboost_python37.so # gentoo >=boost-1.70) 
         set(bp_version "${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}")
-        find_package(Boost 1.46 COMPONENTS "python${bp_version}")
-        if (${Boost_PYTHON${bp_version}_FOUND})
-            set(Boost_PYTHON_FOUND ${Boost_PYTHON${bp_version}_FOUND})
-            set(Boost_PYTHON_LIBRARY ${Boost_PYTHON${bp_version}_LIBRARY_RELEASE})
-        endif()
+        find_boost_python_manual(${bp_version})
     endif()
-    
+        
     if (Boost_PYTHON_FOUND)
         message(STATUS "found: ${Boost_PYTHON_FOUND}: ${Boost_PYTHON_LIBRARY}")
     else()
-        message(STATUS "Sorry but no boost-python found. Please search for any libboost_python* on your system and "
-                       "provide it to the authors so we can try to fix this here.")
+        message(STATUS "Sorry but no boost-python found. Please search for "
+                       "any libboost_python* on your system and "
+                       "provide it to the authors so we can try to fix "
+                       "this here.")
     endif()
 
 endif()
@@ -455,8 +450,8 @@ message(STATUS "UMFPACK_LIBRARIES  :${UMFPACK_LIBRARIES}")
 message(STATUS "TRIANGLE_FOUND     :${TRIANGLE_FOUND}    Triangle_LIBRARIES: ${Triangle_LIBRARIES}")
 message(STATUS "PYTHON_FOUND       :${PYTHON_FOUND}    PYTHON_EXECUTABLE: ${PYTHON_EXECUTABLE}" )
 message(STATUS "PYTHONLIBS_FOUND   :${PYTHONLIBS_FOUND}    PYTHON_LIBRARY: ${PYTHON_LIBRARY}" )
-message(STATUS "PYTHON_INCLUDE_DIR :${PYTHON_INCLUDE_DIR} ${PYTHON_INCLUDE}" )
-message(STATUS "Boost_INCLUDE_DIR  :${Boost_INCLUDE_DIR}")
+message(STATUS "PYTHON_INCLUDE_DIR :        ${PYTHON_INCLUDE_DIR} ${PYTHON_INCLUDE}" )
+message(STATUS "Boost_INCLUDE_DIR  :        ${Boost_INCLUDE_DIR}")
 message(STATUS "Boost_PYTHON_FOUND :${Boost_PYTHON_FOUND}    Boost_PYTHON_LIBRARY: ${Boost_PYTHON_LIBRARY}" )
 message(STATUS "numpy_FOUND        :${numpy_FOUND}    PY_NUMPY: ${PY_NUMPY}" )
 message(STATUS "CASTER_FOUND       :${CASTER_FOUND}    Caster: ${CASTER_EXECUTABLE}")
