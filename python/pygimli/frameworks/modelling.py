@@ -415,9 +415,9 @@ class MeshModelling(Modelling):
         pg.info("Creating forward mesh from region infos.")
         self._mesh = pg.Mesh(self.regionManager().mesh())
         self.refineFwdMesh()
-        super(Modelling, self).setMesh(self._mesh, ignoreRegionManager=True)
         self.setMeshPost(self._mesh) 
         self._regionChanged = False
+        super(Modelling, self).setMesh(self._mesh, ignoreRegionManager=True)
 
     def mesh(self):
         """"""
@@ -429,8 +429,6 @@ class MeshModelling(Modelling):
     def setMesh(self, mesh, ignoreRegionManager=False):
         """ 
         """
-        # pg._y(mesh, ignoreRegionManager)
-        
         if ignoreRegionManager or self._regionManagerInUse == False:
             if self.fop is not None:
                 pg._r("checkme")
@@ -448,14 +446,14 @@ class MeshModelling(Modelling):
         self.setDefaultBackground()
 
     def setDefaultBackground(self):
-
+        """ 
+        """
         regionIds = self.regionManager().regionIdxs()
         if len(regionIds) > 1:
             bk = pg.sort(regionIds)[0]
-            pg.info("Setting region with smallest marker to background (marker={0})".format(bk))
+            pg.info("Region with smallest marker set to background (marker={0})".format(bk))
             self.setRegionProperties(bk, background=True)
-
-
+        
     def drawModel(self, ax, model, **kwargs):
         ax, cbar = pg.show(mesh=self.paraDomain,
                            data=model,

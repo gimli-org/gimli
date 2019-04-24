@@ -41,10 +41,12 @@ class TravelTimeDijkstraModelling(MeshModelling):
         pg._r("*"*100)
         self.dijkstra.setData(data)
         
-    def createStartModel(self, t):
-        pg._y('startmodel', t)
-        return self.dijkstra.createDefaultStartModel()
-        
+    # def createStartModel(self, t):
+    #     pg._y('startmodel', t)
+    #     s = self.dijkstra.createDefaultStartModel()
+    #     pg._r(s)
+    #     return s
+
     def response(self, par):
         return self.dijkstra.response(par)
 
@@ -177,6 +179,22 @@ class TravelTimeManager(MeshMethodManager):
             data values 't' (traveltime in ms) and 'err' (absolute error in ms)
         """
 
+        if isinstance(data, pg.DataContainer):
+            self.fop.data = data
+
+        if 'mesh' in kwargs:
+            self.fop.setMesh(kwargs.pop('mesh'))
+
+        dataVals = self._ensureData(data)
+        errVals = self._ensureError(data)
+
+        # startModel = kwargs.pop('startModel', pg.median(dataVals))
+        self.fop.setRegionProperties('*', startModel=1/500)
+
+        return self.fw.run(dataVals, errVals, **kwargs)
+
+        
+        
         self.fop.setData(data) 
         mesh = kwargs.pop('mesh', None)
         secNodes = kwargs.pop('secNodes', 3)
@@ -195,7 +213,7 @@ class TravelTimeManager(MeshMethodManager):
         return self.model
 
 
-    def showRayPaths(self, model=None, ax=None, **kwargs):
+    def showRayPaths(self, model=None, complete=False, ax=None, **kwargs):
         """Show model with ray paths for `model` or last model for 
         which the last Jacobian was calculated.
 
@@ -206,6 +224,9 @@ class TravelTimeManager(MeshMethodManager):
             default is model for last Jacobian calculation in self.velocity).
         ax : matplotlib.axes object
             To draw the model and the path into.
+        complete : bool [False]
+            Draw all shot-receiver combination instead of the used in 
+            self.data.
         **kwargs : type
             Additional arguments passed to LineCollection (alpha, linewidths,
             color, linestyles).
@@ -253,16 +274,24 @@ class TravelTimeManager(MeshMethodManager):
         _ = kwargs.setdefault("alpha", 0.5)
         _ = kwargs.setdefault("linewidths", 0.8)
 
-        # Due to different numbering scheme of way matrix
-        _, shots = np.unique(self.fop.data("s"), return_inverse=True)
-        _, receivers = np.unique(self.fop.data("g"), return_inverse=True)
+        if complete:
+            # Due to different numbering scheme of way matrix
+            _, shots = np.unique(self.fop.data("s"), return_inverse=True)
+            _, receivers = np.unique(self.fop.data("g"), return_inverse=True)
 
-        # Collecting way segments for all shot/receiver combinations
-        segs = []
-        for s, g in zip(shots, receivers):
-            wi = self.fop.dijkstra.way(s, g)
-            points = self.fop.dijkstra.mesh().positions(withSecNodes=True)[wi]
-            segs.append(np.column_stack((pg.x(points), pg.y(points))))
+            # Collecting way segments for all shot/receiver combinations
+            segs = []
+            for s, g in zip(shots, receivers):
+                print(s,g)
+                wi = self.fop.dijkstra.way(s, g)
+                points = self.fop.dijkstra.mesh().positions(withSecNodes=True)[wi]
+                segs.append(np.column_stack((pg.x(points), pg.y(points))))
+        else:
+            for s, g in zip(self.fop.data("s"), self.fop.data("g")):
+                print(s,g)
+                wi = self.fop.dijkstra.way(s-1, g-1)
+                points = self.fop.dijkstra.mesh().positions(withSecNodes=True)[wi]
+                segs.append(np.column_stack((pg.x(points), pg.y(points))))
 
         line_segments = LineCollection(segs, **kwargs)
         ax.add_collection(line_segments)

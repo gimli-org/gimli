@@ -111,7 +111,7 @@ class Inversion(object):
         call fop.createStartmodel(dataValus) if non is defined.
         """
         if self._startModel is None:
-            self._startModel = self.fop.createStartModel(self._dataVals)
+            self._startModel = self.fop.createStartModel(self.dataVals)
         return self._startModel
 
     @startModel.setter
