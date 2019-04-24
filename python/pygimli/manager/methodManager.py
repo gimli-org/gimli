@@ -208,16 +208,12 @@ class MethodManager(object):
 
         return vals
 
-    def _ensureError(self, err, data):
+    def _ensureError(self, data):
         """Check error validity"""
-        vals = err
+        vals = data
         
-        if isinstance(vals, float):
-            dV = self._ensureData(data)
-            vals = self.estimateError(dV, errLevel=err)
-        else:
-            if isinstance(data, pg.DataContainer):
-                vals = self.errorValues(data)
+        if isinstance(data, pg.DataContainer):
+            vals = self.errorValues(data)
 
         if min(vals) <= 0:
             print(min(vals), max(vals))
@@ -470,7 +466,7 @@ class MeshMethodManager(MethodManager):
         finish me and document me
 
         """
-        if mesh is None and self.fw.mesh is None:
+        if mesh is None and self.fop.mesh is None:
             pg.warn("No mesh defined. Try to create a suitable mesh.")
             mesh = self.createMesh(depth=kwargs.pop('depth', None),
                                    quality=kwargs.pop('quality', 34.0),
@@ -479,7 +475,7 @@ class MeshMethodManager(MethodManager):
 
 
         if mesh is not None:   
-            self.fw.setMesh(mesh)
+            self.fop.setMesh(mesh)
 
     def setData(self, data):
         """
@@ -503,7 +499,7 @@ class MeshMethodManager(MethodManager):
         # set the data basis here, some fop needs them before 
         # setting the mesh basis
         self.fop.setData(data) 
-        self.setMesh(mesh, **kwargs)
+        self.fop.setMesh(mesh, **kwargs)
         
         return super(MeshMethodManager, self).invert(data=data,
                                                      **kwargs)

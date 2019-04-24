@@ -429,7 +429,7 @@ class ERTManager(MeshMethodManager):
         kwargs['sr'] = kwargs.pop('sr', True)
 
         super(ERTManager, self).__init__(**kwargs)
-        
+        self._dataToken = 'rhoa'
         self.inv.dataTrans = pg.RTransLogLU()
 
     def setSingularityRemoval(self, sr=True):
@@ -754,28 +754,16 @@ class ERTManager(MeshMethodManager):
 
         return error
 
-    def _ensureData(self, data):
-        """Check data validity"""
-        vals = data
-        if isinstance(data, pg.DataContainer):
-            vals = data('rhoa')
+    # def _ensureData(self, data):
+    #     """Check data validity"""
+    #     vals = data
+    #     if isinstance(data, pg.DataContainer):
+    #         vals = data('rhoa')
 
-        if min(vals) <= 0:
-            print(min(vals), max(vals))
-            pg.critical("Ensure apparent resistivity values are larger then 0.")
-        return vals
-
-    def _ensureError(self, data):
-        """Check error validity"""
-        vals = data
-        if isinstance(data, pg.DataContainer):
-            vals = data('err')
-
-        if min(vals) <= 0:
-            print(min(vals), max(vals))
-            pg.critical("Ensure all error values are larger then 0.")
-
-        return vals
+    #     if min(vals) <= 0:
+    #         print(min(vals), max(vals))
+    #         pg.critical("Ensure apparent resistivity values are larger then 0.")
+    #     return vals
 
     def invert(self, data=None, **kwargs):
         """Invert data.
@@ -788,21 +776,23 @@ class ERTManager(MeshMethodManager):
             (relative error in %/100)
 
         """
-        dataVals = self._ensureData(data)
-        errVals = self._ensureError(data)
         
         if isinstance(data, pg.DataContainer):
             self.fop.data = data
 
         if 'mesh' in kwargs:
-            self.inv.setMesh(kwargs.pop('mesh'))
+            self.fop.setMesh(kwargs.pop('mesh'))
+
+        dataVals = self._ensureData(data)
+        errVals = self._ensureError(data)
 
         startModel = kwargs.pop('startModel', pg.median(dataVals))
         self.fop.setRegionProperties('*', startModel=startModel)
 
-        return super(ERTManager, self).invert(dataVals=dataVals,
-                                              errVals=errVals,
-                                              **kwargs)
+        return self.fw.run(dataVals, errVals, **kwargs)
+
+        # return super(ERTManager, self).invert(data=data,
+        #                                       **kwargs)
 
     def coverage(self):
         """Return coverage vector considering the logarithmic transformation.

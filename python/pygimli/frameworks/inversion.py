@@ -4,7 +4,6 @@
 These are basic inversion frameworks that usually needs a forward operator to run.
 """
 import numpy as np
-
 import pygimli as pg
 
 
@@ -101,6 +100,10 @@ class Inversion(object):
         self.inv.setTransData(self._dataTrans)
 
     @property
+    def modelTrans(self):
+        return self.fop.modelTrans
+
+    @property
     def startModel(self):
         """ Gives the current default starting model.
 
@@ -163,9 +166,42 @@ class Inversion(object):
     @property
     def dataVals(self):
         return self._dataVals
+    @dataVals.setter
+    def dataVals(self, d):
+        """Set mandatory data values. 
+        
+        Values == 0.0. Will be set to Tolerance
+        """
+        self._dataVals = d
+
+        if self._dataVals is None:
+            pg._y(d)
+            pg.critical("Inversion framework needs data values to run")
+
+        if min(abs(self._dataVals)) < 1e-12:
+            print(self._dataVals)
+            pg.warn("Found zero data values. Setting them to a TOLERANCE value of 1e-12")
+            pg.fixZero(self._dataVals, 1e-12)
+
     @property
     def errorVals(self):
         return self._errorVals
+    @errorVals.setter
+    def errorVals(self, d):
+        """Set mandatory error values. 
+        
+        Values == 0.0. Will be set to Tolerance
+        """
+        self._errorVals = d
+
+        if self._errorVals is None:
+            pg._y(d)
+            pg.critical("Inversion framework needs error values to run")
+
+        if min(abs(self._errorVals)) < 1e-12:
+            print(self._errorVals)
+            pg.warn("Found zero error values. Setting them to a Fallback value of 1")
+            pg.fixZero(self._errorVals, 1)
 
     @property
     def parameterCount(self):
@@ -190,6 +226,8 @@ class Inversion(object):
 
     def setForwardOperator(self, fop):
         self._fop = fop
+        # we need to initialize the regionmanager by calling it once       
+        self._fop.regionManager()
         self._inv.setForwardOperator(fop)
 
     def setPostStep(self, p):
@@ -204,10 +242,37 @@ class Inversion(object):
             raise Exception("should not been here .. its Managers job")
             self.fop.setData(data)
         else:
-            self._dataVals = data
+            self.dataVals = data
 
     def chi2(self):
         return self.inv.chi2()
+
+    def phiData(self, response=None):
+        """ """
+        if response is None:
+            response = self.response
+
+        dT = self.dataTrans
+        dData = (dT.trans(self.dataVals) - dT.trans(response)) / \
+                 dT.error(self.dataVals, self.errorVals)
+
+        return pg.dot(dData, dData)
+
+    def phiModel(self, model=None):
+        """ """
+        if model is None:
+            model = self.model
+
+        rough = self.inv.roughness(model)
+        return pg.dot(rough, rough)
+
+    def phi(self, model=None, response=None):
+        """ """
+        phiD = self.phiData(response)
+        if self.inv.localRegularization():
+            return phiD
+        else:
+            return phiD + self.phiModel(model) * self.inv.getLambda()
 
     def run(self, dataVals, errorVals, **kwargs):
         """Run inversion.
@@ -235,18 +300,9 @@ class Inversion(object):
 
         self.inv.setTransModel(self.fop.modelTrans)
         
-        if dataVals is not None:
-            self._dataVals = dataVals
-
-        if errorVals is not None:
-            self._errorVals = errorVals
-
-        if self._dataVals is None:
-            raise Exception("Inversion framework needs data values to run")
-
-        if self._errorVals is None:
-            raise Exception("Inversion framework needs data error values to run")
-
+        self.dataVals = dataVals
+        self.errorVals = errorVals
+        
         sm = kwargs.pop('startModel', None)
         if sm is not None:
             self.startModel = sm
@@ -261,8 +317,8 @@ class Inversion(object):
         if self.verbose:
             pg.info('Starting inversion.')
             print("fop:", self.inv.fop())
-            print("Data transformation:", self.inv.transData())
-            print("Model transformation:", self.inv.transModel())
+            print("Data transformation:", self.dataTrans)
+            print("Model transformation:", self.modelTrans)
             print("min/max (data): {0:.2f}, {1:.2f}".format(min(self._dataVals), max(self._dataVals)))
             print("min/max (error): {0:.3f}%, {1:.3f}%".format(100*min(self._errorVals), 100*max(self._errorVals)))
             print("min/max (start model): {0:.2f}, {1:.2f}".format(min(self.startModel), max(self.startModel)))
@@ -278,8 +334,8 @@ class Inversion(object):
         if showProgress:
             self.showProgress(showProgress)
 
-        lastChi2 = self.inv.chi2()
-        chi2History = [lastChi2]
+        lastPhi = self.phi()
+        chi2History = [self.chi2()]
 
         for i in range(1, self.maxIter):
 
@@ -287,7 +343,7 @@ class Inversion(object):
                 self._preStep(i, self.inv)
 
             if self.verbose:
-                print("inv.iter", i, "...", end='')
+                print("inv.iter", i, "... ", end='')
 
             self.inv.oneStep()
             resp = self.inv.response()
@@ -309,23 +365,25 @@ class Inversion(object):
             if self._postStep and callable(self._postStep):
                 self._postStep(i, self.inv)
 
+            phi = self.phi()
+            dPhi = (1-lastPhi / phi) * 100.
+
             if self.verbose:
-                print("chi² =", round(chi2,2),
-                      '(dchi² =', round((1.-lastChi2/chi2) * 100, 2), "%), lam:", self.inv.getLambda())
+                print("chi² = {0} (dPhi = {1}%) lam: {2}".format(
+                       round(chi2, 2), round(dPhi, 2), self.inv.getLambda()))
 
             if chi2 < 1:
                 if self.verbose:
-                    print("Abort criteria reached: chi² < 1")
+                    print("Abort criteria reached: chi² <= 1")
                 break
 
-            if abs((1-lastChi2/chi2) * 100) < self.inv.deltaPhiAbortPercent():
+            if abs(dPhi) < self.inv.deltaPhiAbortPercent():
                 if self.verbose:
-                    print(lastChi2/chi2, "Abort criteria reached: dChi²=",
-                          round((1-lastChi2/chi2) * 100, 2),
-                         "(", self.inv.deltaPhiAbortPercent(), '%)')
+                    print("Abort criteria reached: dPhi = {0} (< {1}%)".format(
+                        round(dPhi, 2), self.inv.deltaPhiAbortPercent()))
                 break
 
-            lastChi2 = chi2
+            lastPhi = phi
 
         if len(kwargs.keys()) > 0:
             print("Warning! unused keyword arguments", kwargs)
@@ -526,7 +584,7 @@ class MeshInversion(Inversion):
 
     @property
     def paraDomain(self):
-        return self.fop.paraDomain
+        return self.fop.regionManager().paraDomain()
 
     def setMesh(self, mesh, **kwargs):
         """Set the internal mesh for this Framework.
@@ -573,15 +631,13 @@ class MeshInversion(Inversion):
         """
         """
         if mesh is not None:
-            self.setMesh(mesh)
+            self.fop.setMesh(mesh)
 
-        if self._mesh is None:
-            pg.critical("no valid mesh set.")
-
+        # maybe move this to the fop
         if zWeight is None:
             zWeight = self._zWeight
-
         self.fop.setRegionProperties('*', zWeight=zWeight)
+        # maybe move this to the fop
 
         pg.debug('run with: ', self.fop.regionProperties())
         #### more mesh related inversion attributes to set?
@@ -636,10 +692,6 @@ class LCInversion(Inversion):
         super(LCInversion, self).__init__(f, **kwargs)
         self.dataTrans = pg.RTransLog()
         #self.setDeltaChiStop(0.1)
-        self._startModel = None
-
-    def setStartModel(self, model):
-        self._startModel = model
 
     def prepare(self, dataVals, errVals, nLayers=4, **kwargs):
         dataVec = pg.RVector()

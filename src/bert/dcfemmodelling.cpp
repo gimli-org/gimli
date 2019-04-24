@@ -1118,7 +1118,7 @@ RVector DCMultiElectrodeModelling::response(const RVector & model,
     } // if complex
 
     //** to following can lead to problematic situations https://gitlab.com/resistivity-net/bert/issues/41
-    // but costs one forward calucaltion so its probably better to 
+    // but costs one forward calculation so its probably better to 
     // remove it (temporary comment)
     // if (::fabs(max(model) - min(model)) < TOLERANCE){
     //     if (!this->topography_ ){
