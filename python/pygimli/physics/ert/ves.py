@@ -47,7 +47,7 @@ class VESModelling(Block1DModelling):
         super(VESModelling, self).__init__(**kwargs)
 
         self.setDataSpace(ab2=ab2, mn2=mn2)
-        
+
     def createStartModel(self, rhoa):
         r"""
         """
@@ -55,18 +55,18 @@ class VESModelling(Block1DModelling):
             pg.critical("Model space is not been initialized.")
 
         startThicks = np.logspace(np.log10(min(self.mn2)/2),
-                                  np.log10(max(self.ab2)/5), 
+                                  np.log10(max(self.ab2)/5),
                                   self.nLayers - 1)
         startThicks = pg.utils.diff(pg.cat([0.0], startThicks))
 
         # layer thickness properties
         self.setRegionProperties(0, startModel=startThicks, trans='log')
-                
+
         # resistivity properties
         self.setRegionProperties(1, startModel=np.median(rhoa), trans='log')
 
         return super(VESModelling, self).createStartModel()
-        
+
     def setDataSpace(self, ab2=None, mn2=None,
                      am=None, bm=None, an=None, bn=None,
                      **kwargs):
@@ -143,13 +143,14 @@ class VESModelling(Block1DModelling):
         label: str ['$\varrho_a$']
             Set legend label for the amplitude.
 
-        **kwrags 
-            * ab2: iterable
-                Override ab2 that fits data size.
-            * mn2: iterable
-                Override mn2 that fits data size.
-            * plot: function name
-                Matplotlib plot function, e.g., plot, loglog, semilogx or semilogy
+        Other parameters
+        ----------------
+        ab2: iterable
+            Override ab2 that fits data size.
+        mn2: iterable
+            Override mn2 that fits data size.
+        plot: function name
+            Matplotlib plot function, e.g., plot, loglog, semilogx or semilogy
         """
         ab2 = kwargs.pop('ab2', self.ab2)
         mn2 = kwargs.pop('mn2', self.mn2)
@@ -160,7 +161,7 @@ class VESModelling(Block1DModelling):
 
         if label is None:
             label = r'$\varrho_a$'
-        style = dict(pg.frameworks.modelling.DEFAULT_STYLES.get(label, 
+        style = dict(pg.frameworks.modelling.DEFAULT_STYLES.get(label,
                             pg.frameworks.modelling.DEFAULT_STYLES['Default']))
         style.update(kwargs)
         a1 = ax
@@ -170,7 +171,7 @@ class VESModelling(Block1DModelling):
         if raE is not None:
             a1.errorbar(ra, ab2,
                         xerr=ra * raE, barsabove=True,
-                        **pg.frameworks.modelling.DEFAULT_STYLES.get('Error', 
+                        **pg.frameworks.modelling.DEFAULT_STYLES.get('Error',
                             pg.frameworks.modelling.DEFAULT_STYLES['Default']),
                         label='_nolegend_')
 
@@ -203,7 +204,7 @@ class VESCModelling(VESModelling):
 
     def createStartModel(self, rhoa):
         startThicks = np.logspace(np.log10(min(self.mn2)/2),
-                                  np.log10(max(self.ab2)/5), 
+                                  np.log10(max(self.ab2)/5),
                                   self._nLayers-1)
         startThicks = pg.utils.diff(pg.cat([0.0], startThicks))
 
@@ -239,9 +240,9 @@ class VESCModelling(VESModelling):
         """Draw 1D VESC Modell."""
         a1 = ax
         a2 = pg.mplviewer.createTwinY(ax)
-        
-        super(VESCModelling, self).drawModel(a1, 
-                                             model=self.resModel(model), 
+
+        super(VESCModelling, self).drawModel(a1,
+                                             model=self.resModel(model),
                                              **kwargs)
 
         plot = kwargs.pop('plot', 'semilogy')
@@ -254,11 +255,11 @@ class VESCModelling(VESModelling):
                                  model=self.phaseModel(model),
                                  plot=plot,
                                  color='C2',
-                                 xlabel='Phase (mrad)', 
+                                 xlabel='Phase (mrad)',
                                  **kwargs)
-        
+
         a2.set_xlabel('neg. phase (mRad)', color='C2')
-        
+
     def drawData(self, ax, data, error=None, labels=None, ab2=None, mn2=None,
                  **kwargs):
         r"""Draw modeled apparent resistivity and apparent phase data.
@@ -269,7 +270,7 @@ class VESCModelling(VESModelling):
             Matplotlib axes object to draw into.
 
         data: iterable
-            Apparent resistivity values to draw. [rhoa phia]. 
+            Apparent resistivity values to draw. [rhoa phia].
 
         error: iterable [None]
             Rhoa in Ohm m and phia in radiand.
@@ -280,13 +281,14 @@ class VESCModelling(VESModelling):
         labels: str [r'$\varrho_a$', r'$\varphi_a$']
             Set legend labels for amplitude and phase.
 
-        **kwrags:
-            * ab2: iterable
-                Override ab2 that fits data size.
-            * mn2: iterable
-                Override mn2 that fits data size.
-            * plot: function name
-                Matplotlib plot function, e.g., plot, loglog, semilogx or semilogy
+        Other parameters:
+        -----------------
+        ab2: iterable
+            Override ab2 that fits data size.
+        mn2: iterable
+            Override mn2 that fits data size.
+        plot: function name
+            Matplotlib plot function, e.g., plot, loglog, semilogx or semilogy
         """
         a1 = None
         a2 = None
@@ -318,11 +320,11 @@ class VESCModelling(VESModelling):
 
         if labels is None:
             labels = [r'$\varrho_a$', r'$\varphi_a$']
-        
+
         super(VESCModelling, self).drawData(a1, ra, error=raE,
                                             label=labels[0], **kwargs)
 
-        style = dict(pg.frameworks.modelling.DEFAULT_STYLES.get(labels[1], 
+        style = dict(pg.frameworks.modelling.DEFAULT_STYLES.get(labels[1],
                             pg.frameworks.modelling.DEFAULT_STYLES['Default']))
         style['Color'] = 'C2'
         style.update(kwargs)
@@ -331,8 +333,8 @@ class VESCModelling(VESModelling):
 
         if phiE is not None:
             a2.errorbar(phi, self.ab2,
-                        xerr=phiE, 
-                        **pg.frameworks.modelling.DEFAULT_STYLES.get('Error', 
+                        xerr=phiE,
+                        **pg.frameworks.modelling.DEFAULT_STYLES.get('Error',
                               pg.frameworks.modelling.DEFAULT_STYLES['Default']),
                         barsabove=True,
                         label='_nolegend_'
@@ -343,7 +345,7 @@ class VESCModelling(VESModelling):
         a2.set_ylabel('AB/2 in (m)')
         a2.legend()
         a2.grid(True)
-        
+
 
 class VESManager(MethodManager1d):
     r"""Vertical electrical sounding (VES) manager class.
@@ -391,7 +393,7 @@ class VESManager(MethodManager1d):
         self.dataTrans = None
         self.rhoaTrans = pg.TransLog()
         self.phiaTrans = pg.TransLin()
-        
+
     @property
     def complex(self):
         return self._complex
@@ -424,7 +426,7 @@ class VESManager(MethodManager1d):
 
         Parameters
         ----------
-        **kwargs: 
+        **kwargs:
             Forwarded to the inversion frameworks
 
         Returns
@@ -456,10 +458,10 @@ class VESManager(MethodManager1d):
 
         # only useful for blockInversion
         layerLimits = kwargs.pop('layerLimits', None)
-        
+
         if layerLimits is not False:
             # this should be set in the parent invert call since nLayer can be
-            # set and changed 
+            # set and changed
             kwargs['layerLimits'] = [min(self.fop.mn2)/5, max(self.fop.ab2)/2]
 
         return super(VESManager, self).invert(dataVals=data, errVals=errVals,
@@ -505,7 +507,7 @@ class VESManager(MethodManager1d):
 
 def test_VESManager(showProgress=False):
     """
-        run from console with: python -c 'import pygimli.physics.ert.ves as pg; 
+        run from console with: python -c 'import pygimli.physics.ert.ves as pg;
         pg.test_VESManager(1)'
     """
     thicks = [2., 10.]
@@ -559,7 +561,7 @@ def test_VESManager(showProgress=False):
     synthModel =  pg.cat(synthModel, phi)
 
     ra, err = mgr.simulate(synthModel, ab2=ab2, mn2=1.0, noiseLevel=0.01)
-        
+
     mgr.inv.axs = [axs[0][3], axs[1][3]]
     mgr.invert(ra, err, layerLimits=False,
                showProgress=showProgress)

@@ -471,7 +471,7 @@ class ERTManager(MeshMethodManager):
 
         TODO
         ----
-            * 2D + Complex + SR
+        * 2D + Complex + SR
 
 
         Parameters
@@ -481,52 +481,52 @@ class ERTManager(MeshMethodManager):
 
         res : float, array(mesh.cellCount()) | array(N, mesh.cellCount()) | list
             Resistivity distribution for the given mesh cells can be:
-                * float for homogeneous resistivty
-                * single array of length mesh.cellCount()
-                * matrix of N resistivity distributions of length
-                mesh.cellCount()
-                * resistivity map as [[regionMarker0, res0],
-                                      [regionMarker0, res1], ...]
+            . float for homogeneous resistivty
+            . single array of length mesh.cellCount()
+            . matrix of N resistivity distributions of length mesh.cellCount()
+            . resistivity map as [[regionMarker0, res0],
+                                  [regionMarker0, res1], ...]
 
         scheme : :bertapi:`Bert::DataContainerERT`
             Data measurement scheme.
 
-        **kwargs :
-            * verbose : bool[False]
-                Be verbose. Will override class settings.
+        Other Parameters
+        ----------------
+        verbose : bool[False]
+            Be verbose. Will override class settings.
 
-            * calcOnly : bool [False]
-                Use fop.calculate instead of fop.response. Useful if you want
-                to force the calculation of impedances for homogeneous models.
-                No noise handling. Solution is put as token 'u' in the returned
-                DataContainerERT.
+        calcOnly : bool [False]
+            Use fop.calculate instead of fop.response. Useful if you want
+            to force the calculation of impedances for homogeneous models.
+            No noise handling. Solution is put as token 'u' in the returned
+            DataContainerERT.
 
-            * noiseLevel : float[0.0]
-                add normal distributed noise based on
-                scheme('err') or on noiseLevel if scheme did not contain 'err'
+        noiseLevel : float [0.0]
+            add normally distributed noise based on
+            scheme('err') or on noiseLevel if scheme did not contain 'err'
 
-            * noiseAbs : float[0.0]
-                Absolute voltage error in V
+        noiseAbs : float [0.0]
+            Absolute voltage error in V
 
-            * returnArray : bool [False]
-                Returns an array of apparent resistivities instead of
-                a DataContainerERT
+        returnArray : bool [False]
+            Returns an array of apparent resistivities instead of
+            a DataContainerERT
 
-            * returnFields : bool [False]
-                Returns a matrix of all potential values (per mesh nodes)
-                for each injection electrodes.
+        returnFields : bool [False]
+            Returns a matrix of all potential values (per mesh nodes)
+            for each injection electrodes.
 
         Returns
         -------
         rhoa : DataContainerERT | array(N, data.size()) | array(N, data.size()),
-        array(N, data.size())
-            Data container with resulting apparent resistivity data and
-            errors (if noisify == True).
-            Optional returns a Matrix of rhoa values
-            (for returnArray==True forces noiseLevel=0).
-            In case of a complex valued resistivity model, phase values will be
-            returned in the DataContainerERT (see example below), or as an
-            additional returned array.
+            array(N, data.size())
+                Data container with resulting apparent resistivity data and
+                errors (if noisify == True).
+                Optional returns a Matrix of rhoa values
+                (for returnArray==True forces noiseLevel=0).
+                In case of a complex valued resistivity model, phase values will be
+                returned in the DataContainerERT (see example below), or as an
+                additional returned array.
 
         Examples
         --------

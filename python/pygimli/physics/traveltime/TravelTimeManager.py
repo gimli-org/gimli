@@ -17,18 +17,18 @@ from . raplot import drawTravelTimeData, drawVA, showVA
 class TravelTimeDijkstraModelling(MeshModelling):
     def __init__(self, **kwargs):
         self.dijkstra = pg.TravelTimeDijkstraModelling()
-        
+
         super(TravelTimeDijkstraModelling, self).__init__(**kwargs)
 
         self.jacobian = self.dijkstra.jacobian
         self.createJacobian = self.dijkstra.createJacobian
 
         self.setJacobian(self.dijkstra.jacobian())
- 
+
     def regionManagerRef(self):
         # necessary because core dijkstra use its own RM
         return self.dijkstra.regionManagerRef()
-     
+
     def setMeshPost(self, mesh):
         """
         """
@@ -40,7 +40,7 @@ class TravelTimeDijkstraModelling(MeshModelling):
         """
         pg._r("*"*100)
         self.dijkstra.setData(data)
-        
+
     # def createStartModel(self, t):
     #     pg._y('startmodel', t)
     #     s = self.dijkstra.createDefaultStartModel()
@@ -56,12 +56,12 @@ class TravelTimeDijkstraModelling(MeshModelling):
                                                            model=model,
                                                            **kwargs)
         return ax
-    
+
     def drawData(self, ax, data, err=None, **kwargs):
         kwargs['label'] = pg.unit('as')
-        return showVA(self.data, vals=data, usePos=False, 
+        return showVA(self.data, vals=data, usePos=False,
                       ax=ax, **kwargs)
-    
+
 
 class TravelTimeManager(MeshMethodManager):
     """Manager for refraction seismics (traveltime tomography)
@@ -107,16 +107,17 @@ class TravelTimeManager(MeshMethodManager):
         slowness : array(mesh.cellCount()) | array(N, mesh.cellCount())
             slowness distribution for the given mesh cells can be:
 
-            * a single array of len mesh.cellCount()
-            * a matrix of N slowness distributions of len mesh.cellCount()
-            * a res map as [[marker0, res0], [marker1, res1], ...]
+            . a single array of len mesh.cellCount()
+            . a matrix of N slowness distributions of len mesh.cellCount()
+            . a res map as [[marker0, res0], [marker1, res1], ...]
 
         scheme : :gimliapi:`GIMLI::DataContainer`
             data measurement scheme
 
-        **kwargs :
-            * noisify : add normal distributed noise based on scheme('err')
-                IMPLEMENTME
+        Other parameters
+        ----------------
+        noisify : add normal distributed noise based on scheme('err')
+            IMPLEMENTME
 
         Returns
         -------
@@ -174,8 +175,8 @@ class TravelTimeManager(MeshMethodManager):
 
         Parameters
         ----------
-        data : pg.DataContainer() 
-            Data container with at least SensorIndieces 's g' and 
+        data : pg.DataContainer()
+            Data container with at least SensorIndieces 's g' and
             data values 't' (traveltime in ms) and 'err' (absolute error in ms)
         """
 
@@ -193,14 +194,14 @@ class TravelTimeManager(MeshMethodManager):
 
         return self.fw.run(dataVals, errVals, **kwargs)
 
-        
-        
-        self.fop.setData(data) 
+
+
+        self.fop.setData(data)
         mesh = kwargs.pop('mesh', None)
         secNodes = kwargs.pop('secNodes', 3)
         mesh = mesh.createMeshWithSecondaryNodes(secNodes)
         self.setMesh(mesh)
-        
+
         # mesh = self.fop.regionManager().mesh().createMeshWithSecondaryNodes(secNodes)
         # self.fop.setMeshPost(mesh)
 
@@ -214,7 +215,7 @@ class TravelTimeManager(MeshMethodManager):
 
 
     def showRayPaths(self, model=None, complete=False, ax=None, **kwargs):
-        """Show model with ray paths for `model` or last model for 
+        """Show model with ray paths for `model` or last model for
         which the last Jacobian was calculated.
 
         Parameters
@@ -225,7 +226,7 @@ class TravelTimeManager(MeshMethodManager):
         ax : matplotlib.axes object
             To draw the model and the path into.
         complete : bool [False]
-            Draw all shot-receiver combination instead of the used in 
+            Draw all shot-receiver combination instead of the used in
             self.data.
         **kwargs : type
             Additional arguments passed to LineCollection (alpha, linewidths,
@@ -267,7 +268,7 @@ class TravelTimeManager(MeshMethodManager):
             if self.model is not None:
                 if not np.allclose(model, self.model):
                     self.fop.createJacobian(1/model)
-    
+
         ax, cbar = self.showModel(ax=ax, model=model)
 
         _ = kwargs.setdefault("color", "w")

@@ -292,7 +292,7 @@ def showMatrix(mat, ax=None, **kwargs):
     """
     ax, _ = pg.show(ax=ax)
 
-    pg._r(ax)
+    # pg._r(ax)
 
     gci = drawMatrix(ax, mat, **kwargs)
     # pg._y(**kwargs)
