@@ -28,9 +28,6 @@
 namespace GIMLI{
 
 void initKWaveList(const Mesh & mesh, RVector & kValues, RVector & weights,
-<<<<<<< HEAD
-                   const PosVector & sources, bool verbose){
-=======
                    bool verbose){
     std::vector < RVector3 > sources;
     initKWaveList(mesh, kValues, weights, sources, verbose);
@@ -38,7 +35,6 @@ void initKWaveList(const Mesh & mesh, RVector & kValues, RVector & weights,
 
 void initKWaveList(const Mesh & mesh, RVector & kValues, RVector & weights,
                    const std::vector < RVector3 > & sources, bool verbose){
->>>>>>> dev
     kValues.clear();
     weights.clear();
 
@@ -370,5 +366,5 @@ RVector prepExportPotentialData(const RVector & data, double logdrop){
     return tmp;
 }
 
-}
+} //namespace GIMLI
 
