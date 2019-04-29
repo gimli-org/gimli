@@ -13,16 +13,16 @@ from pygimli.frameworks import Modelling, MeshModelling
 from pygimli.manager import MeshMethodManager
 
 
-def simulate(mesh, res, scheme, sr=True, useBert=True, 
+def simulate(mesh, res, scheme, sr=True, useBert=True,
              verbose=False, **kwargs):
     """Convenience function to use the ERT modelling operator.
-    
+
     Convenience function to use the ERT modelling operator
     if you like static functions.
-    
-    See :py:mod:`pygimli.ert.ERTManager.simulate` for description 
-    of the arguments. 
-    
+
+    See :py:mod:`pygimli.ert.ERTManager.simulate` for description
+    of the arguments.
+
     Parameters
     ----------
     res : see :py:mod:`pygimli.ert.ERTManager.simulate`
@@ -39,7 +39,7 @@ def simulate(mesh, res, scheme, sr=True, useBert=True,
         Forwarded to :py:mod:`pygimli.ert.ERTManager.simulate`
     """
     ert = ERTManager(useBert=useBert, sr=sr, verbose=verbose)
-    
+
     if isinstance(mesh, str):
         mesh = pg.load(mesh)
 
@@ -53,9 +53,9 @@ class BertModelling(MeshModelling):
     def __init__(self, sr=True, verbose=False):
         """Constructor, optional with data container and mesh."""
         super(BertModelling, self).__init__()
-        
+
         # don't use DC*fop or its regionmanager directly
-        # 
+        #
         self.bertFop = None
         if sr:
             self.bertFop = pg.DCSRMultiElectrodeModelling(verbose=verbose)
@@ -83,7 +83,7 @@ class BertModelling(MeshModelling):
         # feed self regionManager
         super(BertModelling, self).setMesh(mesh, ignoreRegionManager)
         self.bertFop.setMesh(self.mesh(), ignoreRegionManager=True)
-    
+
     def createRefinedForwardMesh(self, **kwargs):
         """"""
         super(BertModelling, self).createRefinedForwardMesh(**kwargs)
@@ -133,7 +133,7 @@ class ERTModelling(MeshModelling):
             pg.error('Need valid geometric factors: "k".')
             pg.warn('Fallback "k" values to -sign("rhoa")')
             self.data.set('k', -pg.sign(self.data('rhoa')))
-        
+
         mesh = self.mesh()
 
         nDof = mesh.nodeCount()
@@ -171,7 +171,7 @@ class ERTModelling(MeshModelling):
                           verbose=False, stats=0, debug=False)
             self.subPotentials[i] = uE
             u += w[i] * uE
-        
+
         # collect potential matrix,
         # i.e., potential for all electrodes and all injections
         pM = np.zeros((nEle, nEle))
@@ -397,7 +397,7 @@ class ERTManager(MeshMethodManager):
     """ERT Manager.
 
     Method Manager for Electrical Resistivity Tomography (ERT)
-    
+
     TODO:
         * 2d
         * 2dtopo
@@ -412,24 +412,24 @@ class ERTManager(MeshMethodManager):
     """
     def __init__(self, **kwargs):
         """Constructor.
-        
+
         Parameters
         ----------
         * useBert: bool [True]
             Use Bert forward operator instead of the reference implementation.
         * sr: bool [True]
-            Calculate with singularity removal technique. 
-            Recommended but needs the primary potential. 
-            For flat earth cases the primary potential will be calculated 
-            analytical. For domains with topography the primary potential 
-            will be calculated numerical using a p2 refined mesh or 
+            Calculate with singularity removal technique.
+            Recommended but needs the primary potential.
+            For flat earth cases the primary potential will be calculated
+            analytical. For domains with topography the primary potential
+            will be calculated numerical using a p2 refined mesh or
             you provide primary potentials with setPrimPot.
         """
         kwargs['useBert'] = kwargs.pop('useBert', True)
         kwargs['sr'] = kwargs.pop('sr', True)
 
         super(ERTManager, self).__init__(**kwargs)
-        
+        self._dataToken = 'rhoa'
         self.inv.dataTrans = pg.RTransLogLU()
 
     def setSingularityRemoval(self, sr=True):
@@ -465,92 +465,93 @@ class ERTManager(MeshMethodManager):
         The forward operator itself only calculate potential values
         for the given scheme file.
         To calculate apparent resistivities, geometric factors (k) are needed.
-        If there are no values k in the DataContainerERT scheme, then we will 
-        try to calculate them, either analytic or by using a p2-refined 
+        If there are no values k in the DataContainerERT scheme, then we will
+        try to calculate them, either analytic or by using a p2-refined
         version of the given mesh.
 
         TODO
         ----
-            * 2D + Complex + SR
+        * 2D + Complex + SR
 
 
         Parameters
         ----------
         mesh : :gimliapi:`GIMLI::Mesh`
-            2D or 3D Mesh to calculate for. 
+            2D or 3D Mesh to calculate for.
 
         res : float, array(mesh.cellCount()) | array(N, mesh.cellCount()) | list
             Resistivity distribution for the given mesh cells can be:
-                * float for homogeneous resistivty
-                * single array of length mesh.cellCount() 
-                * matrix of N resistivity distributions of length 
-                mesh.cellCount()
-                * resistivity map as [[regionMarker0, res0],
-                                      [regionMarker0, res1], ...]
+            . float for homogeneous resistivty
+            . single array of length mesh.cellCount()
+            . matrix of N resistivity distributions of length mesh.cellCount()
+            . resistivity map as [[regionMarker0, res0],
+                                  [regionMarker0, res1], ...]
 
         scheme : :bertapi:`Bert::DataContainerERT`
             Data measurement scheme.
 
-        **kwargs :
-            * verbose : bool[False]
-                Be verbose. Will override class settings.
+        Other Parameters
+        ----------------
+        verbose : bool[False]
+            Be verbose. Will override class settings.
 
-            * calcOnly : bool [False]
-                Use fop.calculate instead of fop.response. Useful if you want
-                to force the calculation of impedances for homogeneous models.
-                No noise handling. Solution is put as token 'u' in the returned 
-                DataContainerERT.
+        calcOnly : bool [False]
+            Use fop.calculate instead of fop.response. Useful if you want
+            to force the calculation of impedances for homogeneous models.
+            No noise handling. Solution is put as token 'u' in the returned
+            DataContainerERT.
 
-            * noiseLevel : float[0.0]
-                add normal distributed noise based on
-                scheme('err') or on noiseLevel if scheme did not contain 'err'
+        noiseLevel : float [0.0]
+            add normally distributed noise based on
+            scheme('err') or on noiseLevel if scheme did not contain 'err'
 
-            * noiseAbs : float[0.0]
-                Absolute voltage error in V
+        noiseAbs : float [0.0]
+            Absolute voltage error in V
 
-            * returnArray : bool [False]
-                Returns an array of apparent resistivities instead of
-                a DataContainerERT
+        returnArray : bool [False]
+            Returns an array of apparent resistivities instead of
+            a DataContainerERT
 
-            * returnFields : bool [False]
-                Returns a matrix of all potential values (per mesh nodes) 
-                for each injection electrodes.
+        returnFields : bool [False]
+            Returns a matrix of all potential values (per mesh nodes)
+            for each injection electrodes.
 
         Returns
         -------
         rhoa : DataContainerERT | array(N, data.size()) | array(N, data.size()),
-        array(N, data.size())
-            Data container with resulting apparent resistivity data and 
-            errors (if noisify == True).
-            Optional returns a Matrix of rhoa values 
-            (for returnArray==True forces noiseLevel=0).
-            In case of a complex valued resistivity model, phase values will be
-            returned in the DataContainerERT (see example below), or as an
-            additional returned array.
+            array(N, data.size())
+                Data container with resulting apparent resistivity data and
+                errors (if noisify == True).
+                Optional returns a Matrix of rhoa values
+                (for returnArray==True forces noiseLevel=0).
+                In case of a complex valued resistivity model, phase values will be
+                returned in the DataContainerERT (see example below), or as an
+                additional returned array.
 
         Examples
         --------
-        >>> import pybert as pb
-        >>> import pygimli as pg
-        >>> import pygimli.meshtools as mt
-        >>> world = mt.createWorld(start=[-50, 0], end=[50, -50],
-        ...                        layers=[-1, -5], worldMarker=True)
-        >>> scheme = pb.createData(
-        ...                     elecs=pg.utils.grange(start=-10, end=10, n=21), 
-        ...                     schemeName='dd')
-        >>> for pos in scheme.sensorPositions():
-        ...     _= world.createNode(pos)
-        ...     _= world.createNode(pos + [0.0, -0.1])
-        >>> mesh = mt.createMesh(world, quality=34)
-        >>> rhomap = [
-        ...    [1, 100. + 0j],
-        ...    [2, 50. + 0j],
-        ...    [3, 10.+ 0j],
-        ... ]
-        >>> ert = pb.ERTManager()
-        >>> data = ert.simulate(mesh, res=rhomap, scheme=scheme, verbose=True)
-        >>> rhoa = data.get('rhoa').array()
-        >>> phia = data.get('phia').array()
+        # TODO: Remove pybert dependencies
+        # >>> import pybert as pb
+        # >>> import pygimli as pg
+        # >>> import pygimli.meshtools as mt
+        # >>> world = mt.createWorld(start=[-50, 0], end=[50, -50],
+        # ...                        layers=[-1, -5], worldMarker=True)
+        # >>> scheme = pb.createData(
+        # ...                     elecs=pg.utils.grange(start=-10, end=10, n=21),
+        # ...                     schemeName='dd')
+        # >>> for pos in scheme.sensorPositions():
+        # ...     _= world.createNode(pos)
+        # ...     _= world.createNode(pos + [0.0, -0.1])
+        # >>> mesh = mt.createMesh(world, quality=34)
+        # >>> rhomap = [
+        # ...    [1, 100. + 0j],
+        # ...    [2, 50. + 0j],
+        # ...    [3, 10.+ 0j],
+        # ... ]
+        # >>> ert = pb.ERTManager()
+        # >>> data = ert.simulate(mesh, res=rhomap, scheme=scheme, verbose=True)
+        # >>> rhoa = data.get('rhoa').array()
+        # >>> phia = data.get('phia').array()
         """
         verbose = kwargs.pop('verbose', self.verbose)
         calcOnly = kwargs.pop('calcOnly', False)
@@ -581,9 +582,9 @@ class ERTManager(MeshMethodManager):
 
         if isinstance(res[0], np.complex) or isinstance(res, pg.CVector):
             pg.info("Complex resistivity values found.")
-            fop.setComplex(True)    
+            fop.setComplex(True)
         else:
-            fop.setComplex(False)    
+            fop.setComplex(False)
 
         if not scheme.allNonZero('k') and not calcOnly:
             if verbose:
@@ -609,7 +610,7 @@ class ERTManager(MeshMethodManager):
 
                 if calcOnly:
                     fop.mapERTModel(res, 0)
-                    
+
                     dMap = pg.DataMap()
                     fop.calculate(dMap)
                     if fop.complex():
@@ -617,7 +618,7 @@ class ERTManager(MeshMethodManager):
                     else:
                         ret.set("u", dMap.data(scheme))
                         ret.set("i", np.ones(ret.size()))
-                    
+
                     if returnFields:
                         return pg.Matrix(fop.solution())
                     return ret
@@ -634,7 +635,7 @@ class ERTManager(MeshMethodManager):
                 print("res: ", res)
                 raise BaseException("Simulate called with wrong resistivity array.")
 
-        
+
         if not isArrayData:
             ret.set('rhoa', rhoa)
 
@@ -647,7 +648,7 @@ class ERTManager(MeshMethodManager):
 
         if returnFields:
             return pg.Matrix(fop.solution())
-       
+
         if noiseLevel > 0:  # if errors in data noiseLevel=1 just triggers
             if not ret.allNonZero('err'):
                 # 1A  and #100µV
@@ -754,55 +755,45 @@ class ERTManager(MeshMethodManager):
 
         return error
 
-    def _ensureData(self, data):
-        """Check data validity"""
-        vals = data
-        if isinstance(data, pg.DataContainer):
-            vals = data('rhoa')
+    # def _ensureData(self, data):
+    #     """Check data validity"""
+    #     vals = data
+    #     if isinstance(data, pg.DataContainer):
+    #         vals = data('rhoa')
 
-        if min(vals) <= 0:
-            print(min(vals), max(vals))
-            pg.critical("Ensure apparent resistivity values are larger then 0.")
-        return vals
-
-    def _ensureError(self, data):
-        """Check error validity"""
-        vals = data
-        if isinstance(data, pg.DataContainer):
-            vals = data('err')
-
-        if min(vals) <= 0:
-            print(min(vals), max(vals))
-            pg.critical("Ensure all error values are larger then 0.")
-
-        return vals
+    #     if min(vals) <= 0:
+    #         print(min(vals), max(vals))
+    #         pg.critical("Ensure apparent resistivity values are larger then 0.")
+    #     return vals
 
     def invert(self, data=None, **kwargs):
         """Invert data.
-        
+
         Parameters
         ----------
-        data : pg.DataContainerERT() 
-            Data container with at least SensorIndieces 'a b m n' and 
-            data values 'rhoa' (apparent resistivities) and 'err' 
+        data : pg.DataContainerERT()
+            Data container with at least SensorIndieces 'a b m n' and
+            data values 'rhoa' (apparent resistivities) and 'err'
             (relative error in %/100)
 
         """
-        dataVals = self._ensureData(data)
-        errVals = self._ensureError(data)
-        
+
         if isinstance(data, pg.DataContainer):
             self.fop.data = data
 
         if 'mesh' in kwargs:
-            self.inv.setMesh(kwargs.pop('mesh'))
+            self.fop.setMesh(kwargs.pop('mesh'))
+
+        dataVals = self._ensureData(data)
+        errVals = self._ensureError(data)
 
         startModel = kwargs.pop('startModel', pg.median(dataVals))
         self.fop.setRegionProperties('*', startModel=startModel)
 
-        return super(ERTManager, self).invert(dataVals=dataVals,
-                                              errVals=errVals,
-                                              **kwargs)
+        return self.fw.run(dataVals, errVals, **kwargs)
+
+        # return super(ERTManager, self).invert(data=data,
+        #                                       **kwargs)
 
     def coverage(self):
         """Return coverage vector considering the logarithmic transformation.
@@ -820,18 +811,18 @@ class ERTManager(MeshMethodManager):
 
 def createERTData(elecs, schemeName='none', **kwargs):
     """ Simple data creator for compatibility (advanced version in BERT).
-    
+
     Parameters
     ----------
     sounding : bool [False]
-        Create a 1D VES Schlumberger configuration. 
+        Create a 1D VES Schlumberger configuration.
         elecs need to be an array with elecs[0] = mn/2 and elecs[1:] = ab/2.
 
     """
     if kwargs.pop('sounding', False):
         data = pg.DataContainerERT()
         data.setSensors(pg.cat(-elecs[::-1], elecs))
-        
+
         nElecs = len(elecs)
         for i in range(nElecs-1):
             data.createFourPointData(i, i, 2*nElecs-i-1, nElecs-1, nElecs)
@@ -884,7 +875,7 @@ def createERTData(elecs, schemeName='none', **kwargs):
     data.add('m', m)
     data.add('n', n)
     data.set('valid', np.ones(len(a)))
-    
+
     return data
 
 

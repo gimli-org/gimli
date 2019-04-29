@@ -11,6 +11,9 @@ echo `git --git-dir trunk/.git log -1 --pretty="Last change by %cn (%h): %B"`
 ln -sf /usr/bin/python3 python
 export PATH=`pwd`:$PATH
 
+# Make polytools available (needed by mt.createCube for example)
+export PATH="/var/lib/jenkins/workspace/pyBERT/build/bin/":$PATH
+
 # Show system information
 lsb_release -d
 uname -a

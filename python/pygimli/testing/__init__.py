@@ -57,7 +57,7 @@ def test(target=None, show=False, onlydoctests=False, coverage=False,
     printopt = np.get_printoptions()
 
     if verbose:
-        pg.boxprint("Testing pygimli %s" % pg.__version__, sym="+")
+        pg.boxprint("Testing pygimli %s" % pg.__version__, sym="+", width=90)
 
     # Numpy compatibility (array string representation has changed)
     if np.__version__[:4] == "1.14":

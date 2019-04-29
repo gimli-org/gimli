@@ -1263,7 +1263,8 @@ def syscallTetgen(filename, quality=1.2, area=0, preserveBoundary=False,
     filebody = filename.replace('.poly', '')
     
     ##tetgen -pazVAC -q1.2 $MESH 
-    syscal = tetgen + ' -pzAC -O2'
+    # test -O2 
+    syscal = tetgen + ' -pzAC'
 
     if area > 0:
         syscal += 'a' + str(area)

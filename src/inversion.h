@@ -614,17 +614,22 @@ public:
 
     /*! Return (C * m * m_w) * c_w */
     RVector roughness(const RVector & model) const {
-       return *forward_->constraints() * Vec(tM_->trans(model) * modelWeight_) * constraintsWeight_;
-    }
+       RVector r(*forward_->constraints() 
+                  * Vec(tM_->trans(model) * modelWeight_) 
+                  * constraintsWeight_);
 
-    /*! Return (C * m) , i.e. the pure (unweighted) roughness */
-    RVector pureRoughness(const RVector & model) const {
-       return *forward_->constraints() * Vec(tM_->trans(model));
+        if (haveReferenceModel_) {
+            r = r - constraintsH_;
+        }
+        return r;
     }
-
     /*! Shortcut for roughness for the current model vector */
     RVector roughness() const {
        return roughness(model_);
+    }
+    /*! Return (C * m) , i.e. the pure (unweighted) roughness */
+    RVector pureRoughness(const RVector & model) const {
+       return *forward_->constraints() * Vec(tM_->trans(model));
     }
 
     /*! Return data objective function (sum of squared data-weighted misfit) */
@@ -650,8 +655,7 @@ public:
 //        if (haveReferenceModel_) dModel = dModel - tM_->trans(modelRef_);
 //        Vec roughness(Vec(forward_->constraints() * dModel) * constraintsWeight_);
         Vec rough(this->roughness(model));
-        if (haveReferenceModel_) rough = rough - constraintsH_;
-
+        
         double ret = dot(rough, rough);
         if (isnan(ret) || isinf(ret)){
             DOSAVE std::cerr << "haveReferenceModel_: " << haveReferenceModel_<< std::endl;
@@ -1109,13 +1113,7 @@ template < class Vec > bool Inversion< Vec>::oneStep() {
 
     if (!localRegularization_) {
         DOSAVE echoMinMax(model_, "model: ");
-
         roughness = this->roughness();
-
-        if (haveReferenceModel_) {
-            DOSAVE echoMinMax(modelRef_,  "reference model");
-            roughness = roughness - constraintsH_;
-        }
     } else {
         if (verbose_) std::cout << "use local regularization" << std::endl;
     }
@@ -1247,11 +1245,6 @@ ALLOW_PYTHON_THREADS
     if (!localRegularization_) {
         DOSAVE echoMinMax(model_, "model: ");
         roughness = this->roughness();
-
-        if (haveReferenceModel_) {
-            if (verbose_) echoMinMax(modelRef_,  "reference model");
-            roughness = roughness - constraintsH_;
-        }
     } else {
         if (verbose_) std::cout << "use local regularization" << std::endl;
     }

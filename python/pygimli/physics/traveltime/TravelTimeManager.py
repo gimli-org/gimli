@@ -17,18 +17,18 @@ from . raplot import drawTravelTimeData, drawVA, showVA
 class TravelTimeDijkstraModelling(MeshModelling):
     def __init__(self, **kwargs):
         self.dijkstra = pg.TravelTimeDijkstraModelling()
-        
+
         super(TravelTimeDijkstraModelling, self).__init__(**kwargs)
 
         self.jacobian = self.dijkstra.jacobian
         self.createJacobian = self.dijkstra.createJacobian
 
         self.setJacobian(self.dijkstra.jacobian())
- 
+
     def regionManagerRef(self):
         # necessary because core dijkstra use its own RM
         return self.dijkstra.regionManagerRef()
-     
+
     def setMeshPost(self, mesh):
         """
         """
@@ -40,11 +40,13 @@ class TravelTimeDijkstraModelling(MeshModelling):
         """
         pg._r("*"*100)
         self.dijkstra.setData(data)
-        
-    def createStartModel(self, t):
-        pg._y('startmodel', t)
-        return self.dijkstra.createDefaultStartModel()
-        
+
+    # def createStartModel(self, t):
+    #     pg._y('startmodel', t)
+    #     s = self.dijkstra.createDefaultStartModel()
+    #     pg._r(s)
+    #     return s
+
     def response(self, par):
         return self.dijkstra.response(par)
 
@@ -54,12 +56,12 @@ class TravelTimeDijkstraModelling(MeshModelling):
                                                            model=model,
                                                            **kwargs)
         return ax
-    
+
     def drawData(self, ax, data, err=None, **kwargs):
         kwargs['label'] = pg.unit('as')
-        return showVA(self.data, vals=data, usePos=False, 
+        return showVA(self.data, vals=data, usePos=False,
                       ax=ax, **kwargs)
-    
+
 
 class TravelTimeManager(MeshMethodManager):
     """Manager for refraction seismics (traveltime tomography)
@@ -105,16 +107,17 @@ class TravelTimeManager(MeshMethodManager):
         slowness : array(mesh.cellCount()) | array(N, mesh.cellCount())
             slowness distribution for the given mesh cells can be:
 
-            * a single array of len mesh.cellCount()
-            * a matrix of N slowness distributions of len mesh.cellCount()
-            * a res map as [[marker0, res0], [marker1, res1], ...]
+            . a single array of len mesh.cellCount()
+            . a matrix of N slowness distributions of len mesh.cellCount()
+            . a res map as [[marker0, res0], [marker1, res1], ...]
 
         scheme : :gimliapi:`GIMLI::DataContainer`
             data measurement scheme
 
-        **kwargs :
-            * noisify : add normal distributed noise based on scheme('err')
-                IMPLEMENTME
+        Other parameters
+        ----------------
+        noisify : add normal distributed noise based on scheme('err')
+            IMPLEMENTME
 
         Returns
         -------
@@ -172,17 +175,33 @@ class TravelTimeManager(MeshMethodManager):
 
         Parameters
         ----------
-        data : pg.DataContainer() 
-            Data container with at least SensorIndieces 's g' and 
+        data : pg.DataContainer()
+            Data container with at least SensorIndieces 's g' and
             data values 't' (traveltime in ms) and 'err' (absolute error in ms)
         """
 
-        self.fop.setData(data) 
+        if isinstance(data, pg.DataContainer):
+            self.fop.data = data
+
+        if 'mesh' in kwargs:
+            self.fop.setMesh(kwargs.pop('mesh'))
+
+        dataVals = self._ensureData(data)
+        errVals = self._ensureError(data)
+
+        # startModel = kwargs.pop('startModel', pg.median(dataVals))
+        self.fop.setRegionProperties('*', startModel=1/500)
+
+        return self.fw.run(dataVals, errVals, **kwargs)
+
+
+
+        self.fop.setData(data)
         mesh = kwargs.pop('mesh', None)
         secNodes = kwargs.pop('secNodes', 3)
         mesh = mesh.createMeshWithSecondaryNodes(secNodes)
         self.setMesh(mesh)
-        
+
         # mesh = self.fop.regionManager().mesh().createMeshWithSecondaryNodes(secNodes)
         # self.fop.setMeshPost(mesh)
 
@@ -195,8 +214,8 @@ class TravelTimeManager(MeshMethodManager):
         return self.model
 
 
-    def showRayPaths(self, model=None, ax=None, **kwargs):
-        """Show model with ray paths for `model` or last model for 
+    def showRayPaths(self, model=None, complete=False, ax=None, **kwargs):
+        """Show model with ray paths for `model` or last model for
         which the last Jacobian was calculated.
 
         Parameters
@@ -206,6 +225,9 @@ class TravelTimeManager(MeshMethodManager):
             default is model for last Jacobian calculation in self.velocity).
         ax : matplotlib.axes object
             To draw the model and the path into.
+        complete : bool [False]
+            Draw all shot-receiver combination instead of the used in
+            self.data.
         **kwargs : type
             Additional arguments passed to LineCollection (alpha, linewidths,
             color, linestyles).
@@ -246,23 +268,31 @@ class TravelTimeManager(MeshMethodManager):
             if self.model is not None:
                 if not np.allclose(model, self.model):
                     self.fop.createJacobian(1/model)
-    
+
         ax, cbar = self.showModel(ax=ax, model=model)
 
         _ = kwargs.setdefault("color", "w")
         _ = kwargs.setdefault("alpha", 0.5)
         _ = kwargs.setdefault("linewidths", 0.8)
 
-        # Due to different numbering scheme of way matrix
-        _, shots = np.unique(self.fop.data("s"), return_inverse=True)
-        _, receivers = np.unique(self.fop.data("g"), return_inverse=True)
+        if complete:
+            # Due to different numbering scheme of way matrix
+            _, shots = np.unique(self.fop.data("s"), return_inverse=True)
+            _, receivers = np.unique(self.fop.data("g"), return_inverse=True)
 
-        # Collecting way segments for all shot/receiver combinations
-        segs = []
-        for s, g in zip(shots, receivers):
-            wi = self.fop.dijkstra.way(s, g)
-            points = self.fop.dijkstra.mesh().positions(withSecNodes=True)[wi]
-            segs.append(np.column_stack((pg.x(points), pg.y(points))))
+            # Collecting way segments for all shot/receiver combinations
+            segs = []
+            for s, g in zip(shots, receivers):
+                print(s,g)
+                wi = self.fop.dijkstra.way(s, g)
+                points = self.fop.dijkstra.mesh().positions(withSecNodes=True)[wi]
+                segs.append(np.column_stack((pg.x(points), pg.y(points))))
+        else:
+            for s, g in zip(self.fop.data("s"), self.fop.data("g")):
+                print(s,g)
+                wi = self.fop.dijkstra.way(s-1, g-1)
+                points = self.fop.dijkstra.mesh().positions(withSecNodes=True)[wi]
+                segs.append(np.column_stack((pg.x(points), pg.y(points))))
 
         line_segments = LineCollection(segs, **kwargs)
         ax.add_collection(line_segments)

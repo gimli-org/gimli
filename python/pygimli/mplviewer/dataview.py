@@ -48,11 +48,11 @@ def generateMatrix(xvec, yvec, vals, **kwargs):
             yu = np.arange(0, yu[-1] - yu[0] + dy * 0.5, dy) + yu[0]
         xmap = {xx: ii for ii, xx in enumerate(xu)}
         ymap = {yy: ii for ii, yy in enumerate(yu)}
-    
+
     A = np.zeros((len(ymap), len(xmap)))
     inot = []
     nshow = min([len(xvec), len(yvec), len(vals)])
-    
+
     for i in range(nshow):
         xi, yi = xvec[i], yvec[i]
         if A[ymap[yi], xmap[xi]]:
@@ -282,7 +282,7 @@ def plotMatrix(mat, ax=None, **kwargs):
 
 def showMatrix(mat, ax=None, **kwargs):
     """Naming conventions. Use drawMatrix or showMatrix
-    
+
     Returns
     -------
     ax : matplotlib axes object
@@ -292,14 +292,17 @@ def showMatrix(mat, ax=None, **kwargs):
     """
     ax, _ = pg.show(ax=ax)
 
-    pg._r(ax)
+    # pg._r(ax)
 
     gci = drawMatrix(ax, mat, **kwargs)
-    pg._y(**kwargs)
-    
+    # pg._y(**kwargs)
+
     cbar = None
     if kwargs.pop('colorBar', True):
         ori = kwargs.pop('orientation', 'horizontal')
+        cMin = kwargs.pop('cMin', None)
+        cMax = kwargs.pop('cMax', None)
+        label = kwargs.pop('label', None)
         cbar = pg.mplviewer.createColorBar(gci, cMin=cMin, cMax=cMax, nLevs=5,
                                            label=label, orientation=ori)
 
@@ -345,7 +348,7 @@ def drawMatrix(ax, mat, xmap=None, ymap=None, cMin=None, cMax=None,
         norm = LogNorm(vmin=cMin, vmax=cMax)
     else:
         norm = Normalize(vmin=cMin, vmax=cMax)
-    
+
     gci = ax.imshow(mat_, norm=norm, interpolation='nearest')
     if 'cmap' in kwargs:
         pg.deprecated('use cMap') #190422

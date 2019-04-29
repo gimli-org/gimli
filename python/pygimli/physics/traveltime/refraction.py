@@ -464,10 +464,9 @@ class Refraction(MethodManager0):
 
         slowness : array(mesh.cellCount()) | array(N, mesh.cellCount())
             slowness distribution for the given mesh cells can be:
-
-            * a single array of len mesh.cellCount()
-            * a matrix of N slowness distributions of len mesh.cellCount()
-            * a res map as [[marker0, res0], [marker1, res1], ...]
+            . a single array of len mesh.cellCount()
+            . a matrix of N slowness distributions of len mesh.cellCount()
+            . a res map as [[marker0, res0], [marker1, res1], ...]
 
         scheme : :gimliapi:`GIMLI::DataContainer`
             data measurement scheme
@@ -478,7 +477,7 @@ class Refraction(MethodManager0):
         Other parameters
         ----------------
         noisify : boolean
-            add normal distributed noise based on scheme('err')
+            add normally distributed noise based on scheme('err')
 
         Returns
         -------

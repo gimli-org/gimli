@@ -69,6 +69,8 @@ class Modelling(pg.ModellingBase):
 
         self._regionProperties = {}
         self._regionsNeedUpdate = False
+        self._regionChanged = True
+        self._regionManagerInUse = False
         self.modelTrans = pg.RTransLog() # Model transformation operator
 
     @property
@@ -91,13 +93,6 @@ class Modelling(pg.ModellingBase):
     @data.setter
     def data(self, d):
         self.setData(d)
-
-    @property
-    def mesh(self):
-        if self._fop is not None:
-            return self._fop.mesh
-        else:
-            return super(Modelling, self).mesh()
 
     @property
     def modelTrans(self):
@@ -130,6 +125,8 @@ class Modelling(pg.ModellingBase):
     def regionManager(self):
         """
         """
+        # pg._y('regionManager')
+        self._regionManagerInUse = True
         ### initialize RM if necessary
         super(Modelling, self).regionManager()
 
@@ -137,28 +134,9 @@ class Modelling(pg.ModellingBase):
         self._applyRegionProperties()
         return super(Modelling, self).regionManager()
 
-    def setMeshPost(self, data):
-        """Called when the mesh has been set sucessfully."""
-        pass
-
-    def setMesh(self, mesh, ignoreRegionManager=False):
-        """ 
-        """
-        # pg.p(self, setMesh)
-        self.clearRegionProperties()
-
-        if self.fop is not None:
-            self.fop.setMesh(mesh, ignoreRegionManager)
-            
-            if not ignoreRegionManager:
-                self.setRegionManager(self.fop.regionManagerRef())
-        else:
-            super(Modelling, self).setMesh(mesh, ignoreRegionManager)
-
-        self.setMeshPost(self.mesh)
-
     def clearRegionProperties(self):
         """Clear all region parameter."""
+        self._regionChanged = True
         self._regionProperties = {}
 
     def regionProperties(self, regionNr=None):
@@ -170,7 +148,7 @@ class Modelling(pg.ModellingBase):
             return self._regionProperties[regionNr]
         except:
             print(self._regionProperties)
-            pg.error("no region for regionNr:", regionNr)
+            pg.error("no region for region #:", regionNr)
 
     def setRegionProperties(self, regionNr, **kwargs):
         """ Set region properties. regionNr can be wildcard '*' for all regions.
@@ -222,14 +200,17 @@ class Modelling(pg.ModellingBase):
 
             if vals['background'] is not None:
                 rMgr.region(rID).setBackground(vals['background'])
+                self._regionChanged = True
                 continue
 
             if vals['single'] is not None:
                 pg.critical('implementme')
+                self._regionChanged = True
                 continue
 
             if vals['fix'] is not None:
                 pg.critical('implementme')
+                self._regionChanged = True
                 continue
 
             if vals['startModel'] is not None:
@@ -404,15 +385,75 @@ class MeshModelling(Modelling):
     """
     def __init__(self, **kwargs):
         super(MeshModelling, self).__init__(**kwargs)
+        self._mesh = None
+        self._meshNeedsUpdate = True
+
+    @property
+    def mesh(self):
+        if self._fop is not None:
+            pg._r("inuse ?")
+            return self._fop.mesh
+        else:
+            return super(Modelling, self).mesh()
 
     @property
     def paraDomain(self):
         return self.regionManager().paraDomain()
 
-    # def setMesh(self, mesh, ignoreRegionManager=False):
+    def setMeshPost(self, data):
+        """Called when the mesh has been set successfully."""
+        pass
+ 
+    def refineFwdMesh(self):
+        """"""
+        pg.info("Creating refined mesh to solve forward task.")
+        self._mesh = self._mesh.createH2()
+        print(self._mesh)
 
-    #     super(MeshModelling, self).setMesh(mesh, ignoreRegionManager)
+    def createFwdMesh_(self):
+        """"""
+        pg.info("Creating forward mesh from region infos.")
+        self._mesh = pg.Mesh(self.regionManager().mesh())
+        self.refineFwdMesh()
+        self.setMeshPost(self._mesh) 
+        self._regionChanged = False
+        super(Modelling, self).setMesh(self._mesh, ignoreRegionManager=True)
 
+    def mesh(self):
+        """"""
+        # pg._r("getMesh()", self._regionChanged, self._regionManagerInUse)
+        if self._regionChanged and self._regionManagerInUse:
+            self.createFwdMesh_()
+        return super(Modelling, self).mesh()
+
+    def setMesh(self, mesh, ignoreRegionManager=False):
+        """ 
+        """
+        if ignoreRegionManager or self._regionManagerInUse == False:
+            if self.fop is not None:
+                pg._r("checkme")
+                self.fop.setMesh(mesh, ignoreRegionManager=True)
+            else:
+                pg._r("checkme")
+                super(Modelling, self).setMesh(mesh, ignoreRegionManager=True)
+
+            return
+
+        self.clearRegionProperties()
+    
+        # copy the mesh to the region manager who renumber cell markers
+        self.regionManager().setMesh(mesh)
+        self.setDefaultBackground()
+
+    def setDefaultBackground(self):
+        """ 
+        """
+        regionIds = self.regionManager().regionIdxs()
+        if len(regionIds) > 1:
+            bk = pg.sort(regionIds)[0]
+            pg.info("Region with smallest marker set to background (marker={0})".format(bk))
+            self.setRegionProperties(bk, background=True)
+        
     def drawModel(self, ax, model, **kwargs):
         ax, cbar = pg.show(mesh=self.paraDomain,
                            data=model,

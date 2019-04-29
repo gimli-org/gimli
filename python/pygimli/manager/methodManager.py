@@ -43,7 +43,7 @@ class MethodManager(object):
 
     inv : :py:mod:`pygimli.frameworks.Inversion`.
         Inversion framework instance .. knows the reconstruction approach.
-        The attribute inv is initialized by default but can be changed 
+        The attribute inv is initialized by default but can be changed
         overwriting
         :py:mod:`pygimli.manager.MethodManager.initInversionFramework`
     """
@@ -53,7 +53,7 @@ class MethodManager(object):
         self._debug = kwargs.pop('debug', False)
 
         ### The inversion framework
-        self._fw = None 
+        self._fw = None
 
         self._initInversionFramework(verbose=self._verbose,
                                      debug=self._debug)
@@ -92,7 +92,7 @@ class MethodManager(object):
     @property
     def fw(self):
         return self._fw
-        
+
     @property
     def fop(self):
         return self._fw.fop
@@ -103,12 +103,12 @@ class MethodManager(object):
 
     def reinitForwardOperator(self, **kwargs):
         """Reinitialize the forward operator.
-        
+
         Sometimes it can be useful to reinitialize the forward operator.
         Keyword arguments will be forwarded to 'self.createForwardOperator'.
         """
         self._initForwardOperator(**kwargs)
-            
+
     def _initForwardOperator(self, **kwargs):
         """Initialize or re-initialize the forward operator.
 
@@ -178,7 +178,7 @@ class MethodManager(object):
     # NOT PART of the MM
     # def loadData(self, filename, **kwargs):
     #     """Mandatory interface for derived classes.
-    #         
+    #
     #     """
     #     raise Exception("This is a abstract function. "
     #                     "Override in derived class")
@@ -208,16 +208,12 @@ class MethodManager(object):
 
         return vals
 
-    def _ensureError(self, err, data):
+    def _ensureError(self, data):
         """Check error validity"""
-        vals = err
-        
-        if isinstance(vals, float):
-            dV = self._ensureData(data)
-            vals = self.estimateError(dV, errLevel=err)
-        else:
-            if isinstance(data, pg.DataContainer):
-                vals = self.errorValues(data)
+        vals = data
+
+        if isinstance(data, pg.DataContainer):
+            vals = self.errorValues(data)
 
         if min(vals) <= 0:
             print(min(vals), max(vals))
@@ -345,7 +341,7 @@ class MethodManager(object):
 
     def showResult(self, ax=None, **kwargs):
         """Show the last inversion result."""
-        ax = self.showModel(ax=ax, model=self.model, 
+        ax = self.showModel(ax=ax, model=self.model,
                             #label='Model',
                             **kwargs)
         return ax
@@ -353,7 +349,7 @@ class MethodManager(object):
     def showFit(self, ax=None, **kwargs):
         """Show the last inversion data and response."""
         ax = self.showData(data=self.inv.dataVals,
-                           error=self.inv.errorVals, 
+                           error=self.inv.errorVals,
                            #label='Data',
                            ax=ax, **kwargs)
         ax = self.showData(data=self.inv.response,
@@ -389,17 +385,12 @@ class MethodManager(object):
 
         Create default argument parser for the following options:
 
-            -Q, --quiet
-
-            -R, --robustData: options.robustData
-
-            -B, --blockyModel: options.blockyModel
-
-            -l, --lambda: options.lam
-
-            -i, --maxIter: options.maxIter
-
-            --depth: options.depth
+        -Q, --quiet
+        -R, --robustData: options.robustData
+        -B, --blockyModel: options.blockyModel
+        -l, --lambda: options.lam
+        -i, --maxIter: options.maxIter
+        --depth: options.depth
         """
         import argparse
 
@@ -456,21 +447,19 @@ class MeshMethodManager(MethodManager):
         return pg.frameworks.MeshInversion(**kwargs)
 
     def createMesh(self, **kwargs):
-        """
-        """
         print(**kwargs)
         raise Exception("Implement me!")
         pass
 
     def setMesh(self, mesh, **kwargs):
         """Set mesh
-        
+
         TODO
         ----
         finish me and document me
 
         """
-        if mesh is None and self.fw.mesh is None:
+        if mesh is None and self.fop.mesh is None:
             pg.warn("No mesh defined. Try to create a suitable mesh.")
             mesh = self.createMesh(depth=kwargs.pop('depth', None),
                                    quality=kwargs.pop('quality', 34.0),
@@ -478,12 +467,10 @@ class MeshMethodManager(MethodManager):
                                    paraDX=kwargs.pop('paraDX', 0.3))
 
 
-        if mesh is not None:   
-            self.fw.setMesh(mesh)
+        if mesh is not None:
+            self.fop.setMesh(mesh)
 
     def setData(self, data):
-        """
-        """
         if data is not None:
             self.fw.setData(data)
 
@@ -492,25 +479,19 @@ class MeshMethodManager(MethodManager):
 
         Parameters
         ----------
-
         data : pg.DataContainer | iterable
-
-
         mesh : pg.Mesh [None]
-            
-
         """
-        # set the data basis here, some fop needs them before 
+        # set the data basis here, some fop needs them before
         # setting the mesh basis
-        self.fop.setData(data) 
-        self.setMesh(mesh, **kwargs)
-        
+        self.fop.setData(data)
+        self.fop.setMesh(mesh, **kwargs)
+
         return super(MeshMethodManager, self).invert(data=data,
                                                      **kwargs)
 
 
     def showModel(self, model=None, ax=None, **kwargs):
-        """"""
         if model is None:
             model = self.model
 
@@ -522,7 +503,7 @@ class MeshMethodManager(MethodManager):
         return ax, cbar
 
 
-   
+
     def showFit(self, axs=None, **kwargs):
         """Show the last inversion data and response."""
         orientation='vertical',
@@ -549,15 +530,15 @@ class MeshMethodManager(MethodManager):
 
     def showResultAndFit(self, **kwargs):
         """Calls showResults and showFit."""
-        
+
         fig = pg.plt.figure()
         ax = fig.add_subplot(1, 2, 1)
-        
+
         self.showResult(ax=ax, **kwargs)
-        
+
         ax1 = fig.add_subplot(2, 2, 2)
         ax2 = fig.add_subplot(2, 2, 4)
-       
+
         self.showFit(axs=[ax1, ax2], **kwargs)
 
         fig.tight_layout()
