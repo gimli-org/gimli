@@ -26,7 +26,8 @@ class MultMatrix(pg.MatrixBase):
         """So it can be used in inversion with dosave flag"""
         pass
 
-class MultLeftMatrix(pg.MatrixBase):
+
+class MultLeftMatrix(MultMatrix):
     """Matrix consisting of actual RMatrix and lef-side vector."""
 
     def __init__(self, A, left, verbose=False):
@@ -48,7 +49,7 @@ class MultLeftMatrix(pg.MatrixBase):
 LMultRMatrix = MultLeftMatrix  # alias for backward compatibility
 
 
-class MultRightMatrix(pg.MatrixBase):
+class MultRightMatrix(MultMatrix):
     """Some Matrix, multiplied with a right hand side vector r."""
 
     def __init__(self, A, r=None):
@@ -70,7 +71,7 @@ class MultRightMatrix(pg.MatrixBase):
 RMultRMatrix = MultRightMatrix  # alias for backward compatibility
 
 
-class MultLeftRightMatrix(pg.MatrixBase):
+class MultLeftRightMatrix(MultMatrix):
     """Matrix consisting of actual RMatrix and left-hand-side vector."""
 
     def __init__(self, A, left, right, verbose=False):

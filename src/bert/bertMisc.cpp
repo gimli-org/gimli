@@ -28,7 +28,17 @@
 namespace GIMLI{
 
 void initKWaveList(const Mesh & mesh, RVector & kValues, RVector & weights,
+<<<<<<< HEAD
                    const PosVector & sources, bool verbose){
+=======
+                   bool verbose){
+    std::vector < RVector3 > sources;
+    initKWaveList(mesh, kValues, weights, sources, verbose);
+}
+
+void initKWaveList(const Mesh & mesh, RVector & kValues, RVector & weights,
+                   const std::vector < RVector3 > & sources, bool verbose){
+>>>>>>> dev
     kValues.clear();
     weights.clear();
 
@@ -42,6 +52,8 @@ void initKWaveList(const Mesh & mesh, RVector & kValues, RVector & weights,
 
     if (sources.empty()){
         sourcesPos = mesh.positions(mesh.findNodesIdxByMarker(MARKER_NODE_ELECTRODE));
+        if (verbose) std::cout << "No sensors given for initializing the k wave list .. "
+                                  " mesh contains " << sourcesPos.size() << " nodes with marker=-99" << std::endl;
     } else sourcesPos = sources;
 
     int nElecs = sourcesPos.size();
@@ -73,7 +85,7 @@ void initKWaveList(const Mesh & mesh, RVector & kValues, RVector & weights,
 
     initKWaveList(rMin, rMax, nGauLegendre, nGauLaguerre, kValues, weights);
 
-    if (verbose) std::cout << "NGauLeg + NGauLag, for inverse Fouriertransformation: " << nGauLegendre << " + " << nGauLaguerre << std::endl;
+    if (verbose) std::cout << "NGauLeg + NGauLag for inverse Fouriertransformation: " << nGauLegendre << " + " << nGauLaguerre << std::endl;
 
 }
 
@@ -260,12 +272,6 @@ RVector exactDCSolution(const Mesh & mesh, int aID, int bID,
 
 RVector exactDCSolution(const Mesh & mesh, int aID, double k, double surfaceZ){
     return exactDCSolution(mesh, mesh.node(aID).pos(), k, surfaceZ);
-}
-
-void initKWaveList(const Mesh & mesh, RVector & kValues, RVector & weights,
-                   bool verbose){
-    std::vector < RVector3 > sources;
-    initKWaveList(mesh, kValues, weights, sources, verbose);
 }
 
 int countKWave(const Mesh & mesh){
