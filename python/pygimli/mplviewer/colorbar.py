@@ -10,8 +10,8 @@ import numpy as np
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 import pygimli as pg
-from pygimli.mplviewer import saveFigure, updateAxes, prettyFloat
-
+from pygimli.mplviewer import saveFigure, updateAxes
+from pygimli.utils import prettyFloat
 
 def autolevel(z, nLevs, logScale=None, zmin=None, zmax=None):
     """Create nLevs bins for the data array z based on matplotlib ticker.

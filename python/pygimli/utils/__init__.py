@@ -17,7 +17,8 @@ from .postinversion import iterateBounds, modCovar
 from .sparseMat2Numpy import (convertCRSIndex2Map, sparseMatrix2Array,
                               sparseMatrix2csr, sparseMatrix2coo)
 
-from .utils import (ProgressBar, boxprint, chi2, cumDist, diff, dist,
+from .utils import (ProgressBar, boxprint, 
+                    prettyFloat, chi2, cumDist, diff, dist,
                     filterIndex, filterLinesByCommentStr, findNearest,
                     getIndex, grange, logDropTol, niceLogspace, rand, randN,
                     trimDocString, unicodeToAscii, unique, unique_everseen,

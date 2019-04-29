@@ -9,6 +9,8 @@ import pygimli as pg
 
 from pygimli.mplviewer import createColorBar, updateColorBar
 
+from .ratools import shotReceiverDistances
+
 def drawTravelTimeData(ax, data, t=None):
     """
         Draw first arrival traveltime data into mpl ax a.
@@ -96,21 +98,10 @@ def drawFirstPicks(ax, data, tt=None, plotva=False, marker='x-'):
     ax.set_xlabel("x (m)")
     ax.invert_yaxis()
 
-
 def _getOffset(data, full=False):
     """Return vector of offsets (in m) between shot and receiver."""
-
-    if full:
-        pos = data.sensorPositions()
-        s, g = data('s'), data('g')
-        nd = data.size()
-        off = [pos[int(s[i])].distance(pos[int(g[i])]) for i in range(nd)]
-        return np.absolute(off)
-    else:
-        px = pg.x(data.sensorPositions())
-        gx = np.array([px[int(g)] for g in data("g")])
-        sx = np.array([px[int(s)] for s in data("s")])
-        return np.absolute(gx - sx)
+    pg.deprecated('use shotReceiverDistances') #190429
+    return shotReceiverDistances(data, full)
 
 
 def showVA(data, usePos=True, ax=None, **kwargs):
@@ -152,10 +143,10 @@ def drawVA(ax, data, vals=None, usePos=True, pseudosection=False, **kwargs):
         vals = data('t')
 
     px = pg.x(data)
-    gx = np.asarray([px[int(g)] for g in data("g")])
-    sx = np.asarray([px[int(s)] for s in data("s")])
+    gx = np.asarray([px[g] for g in data.id("g")])
+    sx = np.asarray([px[s] for s in data.id("s")])
 
-    offset = _getOffset(data, full=True)
+    offset = shotReceiverDistances(data, full=True)
     va = offset / vals
 
     if pseudosection:

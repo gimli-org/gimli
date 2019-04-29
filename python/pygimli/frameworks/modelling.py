@@ -405,10 +405,14 @@ class MeshModelling(Modelling):
         pass
  
     def refineFwdMesh(self):
-        """"""
-        pg.info("Creating refined mesh to solve forward task.")
+        """Refine the current mesh for higher accuracy.
+        
+        This is called automatic when accesing self.mesh() so it ensures any 
+        effect of changing region properties (background, single).
+        """
+        pg.info("Creating refined mesh (H2) to solve forward task.")
         self._mesh = self._mesh.createH2()
-        print(self._mesh)
+        pg.verbose(self._mesh)
 
     def createFwdMesh_(self):
         """"""

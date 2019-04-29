@@ -4,7 +4,7 @@
 from .TravelTimeManager import TravelTimeManager, TravelTimeDijkstraModelling
 
 from .raplot import drawTravelTimeData, drawVA, drawFirstPicks
-from .ratools import createRAData, createGradientModel2D
+from .ratools import createRAData, createGradientModel2D, shotReceiverDistances
 
 from .refraction import (Refraction, Tomography)
 

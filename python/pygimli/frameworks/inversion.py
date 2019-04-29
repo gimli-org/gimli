@@ -283,20 +283,28 @@ class Inversion(object):
         e.g., from a other run, set this model as starting model to the FOP
         (fop.setStartModel).
         Any self.inv.setModel() settings will be overwritten.
+
+        Other Parameters
+        ----------------
+        maxIter : int
+            Overwrite class settings for maximal iterations number.
+
         """
         if self.isFrameWork:
             return self._inv.run(dataVals, errorVals, **kwargs)
 
         if self.fop is None:
             raise Exception("Need a valid forward operator for the inversion run.")
-
+        
+        maxIter = kwargs.pop('maxIter', self.maxIter)
+        
         self.verbose = kwargs.pop('verbose', self.verbose)
         self.debug   = kwargs.pop('debug', self.debug)
-        self.maxIter = kwargs.pop('maxIter', self.maxIter)
-        
+                
+        lam = kwargs.pop('lam', 20)
+
         progress = kwargs.pop('progress', None)
         showProgress = kwargs.pop('showProgress', False)
-        lam = kwargs.pop('lam', 20)
 
         self.inv.setTransModel(self.fop.modelTrans)
         
@@ -311,7 +319,8 @@ class Inversion(object):
         self.inv.setRelativeError(self._errorVals)
         self.inv.setLambda(lam)
 
-        maxIter = self.maxIter
+        # temporary set max iter to one for the initial run call
+        maxIterTmp = self.maxIter
         self.maxIter = 1
 
         if self.verbose:
@@ -329,7 +338,7 @@ class Inversion(object):
         self.inv.setReferenceModel(self.fop.startModel())
 
         self.inv.start()
-        self.maxIter = maxIter
+        self.maxIter = maxIterTmp
 
         if showProgress:
             self.showProgress(showProgress)
@@ -337,7 +346,7 @@ class Inversion(object):
         lastPhi = self.phi()
         chi2History = [self.chi2()]
 
-        for i in range(1, self.maxIter):
+        for i in range(1, maxIter):
 
             if self._preStep and callable(self._preStep):
                 self._preStep(i, self.inv)
@@ -575,57 +584,14 @@ class MeshInversion(Inversion):
     def __init__(self, fop=None, **kwargs):
     
         super(MeshInversion, self).__init__(fop=fop, **kwargs)
-        # self._mesh = None
         self._zWeight = 1.0
 
-    @property
-    def mesh(self):
-        return self._mesh
-
-    @property
-    def paraDomain(self):
-        return self.fop.regionManager().paraDomain()
-
-    def setMesh(self, mesh, **kwargs):
-        """Set the internal mesh for this Framework.
-
-        Injects the mesh in the internal fop.
-
-        Initialize RegionManager.
-        For more than two regions the region with smallest marker is assumed 
-        to be a background region.
-
-        TODO:
-            Optional the forward mesh can be refined for higher numerical accuracy.
-
-        Parameters
-        ----------
-
-        DOCUMENTME!!!
-
-        """
-        pg.critical("move this to the fop")
-        if isinstance(mesh, str):
-            mesh = pg.load(mesh)
-
-        self._mesh = pg.Mesh(mesh) # need to copy?
-        self._mesh.createNeighbourInfos()
-
-        self.fop.setMesh(self._mesh)
-        
-        regionId = self.fop.regionManager().regionIdxs()
-        if len(regionId) > 1:
-            bk = pg.sort(regionId)[0]
-            pg.info("Setting region with smallest marker to background (marker={0})".format(bk))
-            self.fop.regionManager().region(bk).setBackground(True)
-            
-            # need to set the properties here but then the fop.mesh is invalid since missing createRefinedForwardMesh infos
-            # FIXME
-            self.fop.setRegionProperties(bk, background=True)
-        
-        self.fop.createRefinedForwardMesh(**kwargs)
-        
-        self.paraDomain = pg.Mesh(self.fop.regionManager().paraDomain())
+    def setForwardOperator(self, fop):
+        if not isinstance(fop, pg.frameworks.MeshModelling):
+            pg.critical('Forward operator needs to be an instance of '
+                        'pg.modelling.MeshModelling but is of type:', fop)
+                        
+        return super(MeshInversion, self).setForwardOperator(fop)
 
     def run(self, dataVals, errVals, mesh=None, zWeight=None, **kwargs):
         """
@@ -642,8 +608,10 @@ class MeshInversion(Inversion):
         pg.debug('run with: ', self.fop.regionProperties())
         #### more mesh related inversion attributes to set?
         
-        model = super(MeshInversion, self).run(dataVals, errVals, **kwargs)
-        self.model = model(self.paraDomain.cellMarkers())
+        # ensure the mesh is generated
+        self.fop.mesh()
+
+        self.model = super(MeshInversion, self).run(dataVals, errVals, **kwargs)
 
         return self.model
 

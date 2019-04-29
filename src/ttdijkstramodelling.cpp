@@ -400,9 +400,9 @@ public:
 
     virtual ~CreateDijkstraRowMT(){}
 
-    virtual void calc(Index tNr=0){
+    virtual void calc(){
         Stopwatch swatch(true);
-        log(Debug, "Thread #" + str(tNr) + ": on CPU " + str(schedGetCPU()) + 
+        log(Debug, "Thread #" + str(_threadNumber) + ": on CPU " + str(schedGetCPU()) + 
                    " slice " + str(start_) + ":" + str(end_));
                         
         for (Index shot = start_; shot < end_; shot ++) {
@@ -412,8 +412,7 @@ public:
                 _wayMatrix[shot][i] = _dijkstra.shortestPathTo((*_recNodeIds)[i]);
             }
         }
-        //__MS(tNr << " " << start_ << "  "<< end_)
-        log(Debug, "time: #" + str(tNr) + " " + str(swatch.duration()) + "s");
+        log(Debug, "time: #" + str(_threadNumber) + " " + str(swatch.duration()) + "s");
     }
 
 protected:

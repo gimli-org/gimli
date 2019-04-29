@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 
 import pygimli as pg
+from pygimli.utils import prettyFloat
 
 holdAxes__ = 0
 
@@ -61,33 +62,6 @@ def saveAxes(ax, filename, adjust=False):
 
     updateAxes(ax, force=True)
     saveFigure(ax.figure, filename)
-
-
-def prettyFloat(value, roundValue=True):
-    """Return pretty string for a given value suitable for graphical output."""
-    if roundValue and abs(round(value)-value) < 1e-4 and abs(value) < 1e3:
-        string = str(int(round(value, 1)))
-    elif abs(value) == 0.0:
-        string = "0"
-    elif abs(value) > 1e4 or abs(value) <= 1e-3:
-        string = str("%.1e" % value)
-    elif abs(value) < 1e-2:
-        string = str("%.4f" % round(value, 4))
-    elif abs(value) < 1e-1:
-        string = str("%.3f" % round(value, 3))
-    elif abs(value) < 1e0:
-        string = str("%.2f" % round(value, 2))
-    elif abs(value) < 1e1:
-        string = str("%.1f" % round(value, 1))
-    elif abs(value) < 1e2:
-        string = str("%.1f" % round(value, 1))
-    else:
-        string = str("%.0f" % round(value, 1))
-
-    if string.endswith(".0"):
-        return string.replace(".0", "")
-    else:
-        return string
 
 
 def insertUnitAtNextLastTick(ax, unit, xlabel=True, position=-2):
