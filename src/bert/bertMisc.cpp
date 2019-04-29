@@ -29,12 +29,12 @@ namespace GIMLI{
 
 void initKWaveList(const Mesh & mesh, RVector & kValues, RVector & weights,
                    bool verbose){
-    std::vector < RVector3 > sources;
+    R3Vector sources;
     initKWaveList(mesh, kValues, weights, sources, verbose);
 }
 
 void initKWaveList(const Mesh & mesh, RVector & kValues, RVector & weights,
-                   const std::vector < RVector3 > & sources, bool verbose){
+                   const R3Vector & sources, bool verbose){
     kValues.clear();
     weights.clear();
 
