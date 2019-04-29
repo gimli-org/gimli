@@ -44,14 +44,12 @@ class TravelTimeDijkstraModelling(MeshModelling):
     def setMeshPost(self, mesh):
         """
         """
-        pg._r("+"*100)
         self.dijkstra.setMesh(mesh)
         #self.dijkstra.setMesh(pg.Mesh(mesh))
 
     def setDataPost(self, data):
         """
         """
-        pg._r("*"*100)
         self.dijkstra.setData(data)
 
     def createStartModel(self, t):
@@ -97,6 +95,13 @@ class TravelTimeManager(MeshMethodManager):
         self._dataToken = 't'
         self.inv.dataTrans = pg.RTransLog()
 
+    def setMesh(self, mesh, secNodes=0):
+        """ """
+        if secNodes > 0:
+            self.fop._refineSecNodes = secNodes
+
+        self.fop.setMesh(mesh)
+
     def createForwardOperator(self, **kwargs):
         """Create default forward operator for Traveltime modelling.
 
@@ -132,9 +137,10 @@ class TravelTimeManager(MeshMethodManager):
         scheme : :gimliapi:`GIMLI::DataContainer`
             data measurement scheme
 
-        **kwargs :
-            * noisify : add normal distributed noise based on scheme('err')
-                IMPLEMENTME
+        Other Parameters
+        ----------------
+        noisify : add normal distributed noise based on scheme('err')
+            IMPLEMENTME
 
         Returns
         -------
@@ -235,7 +241,7 @@ class TravelTimeManager(MeshMethodManager):
 
     def drawRayPaths(self, ax, model=None, **kwargs):
         """Draw the the ray paths for `model` or last model for 
-        which the last Jacobian was calculated.
+        which the last Jacobian was calculated. 
 
         Parameters
         ----------
@@ -252,18 +258,10 @@ class TravelTimeManager(MeshMethodManager):
         -------
         lc : matplotlib.LineCollection
         """
-        if model is None:
-            model = self.model
-
-        if model is None:
-            pg.info("No previous inversion result found and no model given.",
-                    "Using homogeneous slowness model.")
-            vel = pg.Vector(self.fop.parameterCount(), 1.0)
-            self.fop.createJacobian(1./vel)
+        if model is not None:
+            self.fop.createJacobian(1/model)
         else:
-            if self.model is not None:
-                if not np.allclose(model, self.model):
-                    self.fop.createJacobian(1/model)
+            model = self.model
 
         _ = kwargs.setdefault("color", "w")
         _ = kwargs.setdefault("alpha", 0.5)
@@ -306,20 +304,28 @@ class TravelTimeManager(MeshMethodManager):
         --------
         >>> # No reason to import matplotlib
         >>> import pygimli as pg
-        >>> from pygimli.physics import Refraction
+        >>> from pygimli.physics import TravelTimeManager
         >>> from pygimli.physics.traveltime import createRAData
         >>>
         >>> x, y = 8, 6
         >>> mesh = pg.createGrid(x, y)
         >>> data = createRAData([(0,0)] + [(x, i) for i in range(y)], shotdistance=y+1)
         >>> data.set("t", pg.RVector(data.size(), 1.0))
-        >>> rst = Refraction()
-        >>> rst.setDataContainer(data)
-        Data: Sensors: 7 data: 6
-        >>> rst.setMesh(mesh, 5)
-        >>> ax, cb = rst.showRayPaths()
+        >>> tt = TravelTimeManager()
+        >>> tt.fop.setData(data)
+        >>> tt.setMesh(mesh, secNodes=10)
+        >>> ax, cb = tt.showRayPaths(showMesh=True, diam=0.1)
         """
+        if model is None:
+            if self.fop.jacobian().size() == 0:
+                self.fop.mesh() # initialize any meshs .. just to be sure is 1
+                model = pg.Vector(self.fop.regionManager().parameterCount(),
+                                  1.0)
+            else:
+                model = self.model
+
         ax, cbar = self.showModel(ax=ax, model=model, 
+                                  showMesh=kwargs.pop('showMesh', None),
                                   diam=kwargs.pop('diam', None))
         self.drawRayPaths(ax, model=model, **kwargs)
 
