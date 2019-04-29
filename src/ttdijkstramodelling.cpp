@@ -380,10 +380,12 @@ void TravelTimeDijkstraModelling::initJacobian(){
     ownJacobian_ = true;
 }
 
-const IndexArray & TravelTimeDijkstraModelling::way(Index sht, Index rec) const{
-    ASSERT_SIZE(wayMatrix_, sht)
-    ASSERT_SIZE(wayMatrix_[sht], rec)
-    return wayMatrix_[sht][rec];
+const IndexArray & TravelTimeDijkstraModelling::way(Index sht, Index rec) const {
+    Index s = shotsInv_.at(sht);
+    Index r = receiInv_.at(rec);
+    ASSERT_SIZE(wayMatrix_, s)
+    ASSERT_SIZE(wayMatrix_[s], r)
+    return wayMatrix_[s][r];
 }
 
 class CreateDijkstraRowMT : public GIMLI::BaseCalcMT{
@@ -417,7 +419,7 @@ public:
 
 protected:
     std::vector < IndexArray > * _wayMatrix;
-    Dijkstra                _dijkstra;
+    Dijkstra                     _dijkstra;
     const IndexArray        * _shotNodeIds;
     const IndexArray        * _recNodeIds;
 };

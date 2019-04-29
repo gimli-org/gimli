@@ -233,7 +233,7 @@ class TravelTimeManager(MeshMethodManager):
         self.fw.model = velocity
         return velocity
 
-    def drawRayPaths(self, ax, model=None, complete=False, **kwargs):
+    def drawRayPaths(self, ax, model=None, **kwargs):
         """Draw the the ray paths for `model` or last model for 
         which the last Jacobian was calculated.
 
@@ -244,9 +244,6 @@ class TravelTimeManager(MeshMethodManager):
             default is model for last Jacobian calculation in self.velocity).
         ax : matplotlib.axes object
             To draw the model and the path into.
-        complete : bool [False]
-            Draw for all shot-receiver combination instead of the used in 
-            last dataself.data.
         **kwargs : type
             Additional arguments passed to LineCollection (alpha, linewidths,
             color, linestyles).
@@ -272,16 +269,8 @@ class TravelTimeManager(MeshMethodManager):
         _ = kwargs.setdefault("alpha", 0.5)
         _ = kwargs.setdefault("linewidths", 0.8)
 
-        shots, recei = None, None
-        if complete == True:
-            # Due to different numbering scheme of way matrix
-            _, shots = np.unique(self.fop.data("s"), return_inverse=True)
-            _, recei = np.unique(self.fop.data("g"), return_inverse=True)
-        else:
-            shots = self.fop.data.id("s")
-            recei = self.fop.data.id("g")
-            
-            # Collecting way segments for all shot/receiver combinations
+        shots = self.fop.data.id("s")
+        recei = self.fop.data.id("g")
             
         segs = []
         for s, g in zip(shots, recei):
