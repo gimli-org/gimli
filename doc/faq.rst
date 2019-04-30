@@ -19,7 +19,7 @@ General
 What is the difference between BERT and GIMLi?
 ..............................................
 
-GIMLi is a general library for modeling and inversion in geophysics. BERT
+GIMLi is a general library for modelling and inversion in geophysics. BERT
 builds upon this framework and provides numerous high-level and user-friendly
 functions and applications specifically tailored for DC resistivity studies.
 

@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import pygimli as pg
 import pygimli.meshtools as mt
 
-# Create geometry definition for the modeling domain
+# Create geometry definition for the modelling domain
 world = mt.createWorld(start=[-10, 0], end=[10, -16],
                        layers=[-8], worldMarker=False)
 

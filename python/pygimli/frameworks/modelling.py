@@ -9,16 +9,16 @@ from copy import copy
 
 import pygimli as pg
 
-DEFAULT_STYLES={'Default': {'color': 'C0', 
+DEFAULT_STYLES={'Default': {'color': 'C0',
                            'lw' : 1.5, 'linestyle': '-'},
                 'Data': {'color' : 'C0', #blueish
                         'lw'  : 1, 'linestyle' : ':',
                         'marker' : 'o'},
                 'Response': {'color': 'C0', #blueish
-                            'lw': 1.5, 'linestyle' : '-', 
+                            'lw': 1.5, 'linestyle' : '-',
                             'marker' : 'None'},
                 'Error': {'color': 'C3',  #reddish
-                          'lw': 0, 'linestyle' : '-', 
+                          'lw': 0, 'linestyle' : '-',
                           'elinewidth': 2, 'alpha' : 0.5},
                 }
 
@@ -29,11 +29,11 @@ class Modelling(pg.ModellingBase):
     Abstract Forward Operator that is or can use a Modelling instance.
     Can be seen as some kind of proxy Forward Operator.
 
-    TODO: 
-        * Modelling or Modeling?
+    TODO:
+        * Modelling or Modelling?
         * Docu:
             - describe members (model transformation, dictionary of region properties)
-            - 
+            -
         * think about splitting all mesh related into MeshModelling
         * clarify difference: setData(array|DC), setDataContainer(DC), setDataValues(array)
         * clarify dataSpace(comp. ModelSpace): The unique spatial or temporal origin of a datapoint (time, coordinates, 4-point-positions,
@@ -48,19 +48,19 @@ class Modelling(pg.ModellingBase):
         """
         Attributes
         ----------
-        fop : pg.frameworks.Modeling
+        fop : pg.frameworks.Modelling
 
         data : pg.DataContainer
 
         modelTrans : [pg.RTransLog()]
-        
+
         Parameters
         ----------
         **kwargs :
-            fop : Modeling
+            fop : Modelling
 
         """
-        self._fop = None  # pg.frameworks.Modeling
+        self._fop = None  # pg.frameworks.Modelling
         self._data = None # dataContainer
         self._modelTrans = None
 
@@ -84,7 +84,7 @@ class Modelling(pg.ModellingBase):
                             'pg.modelling.Modelling but is of type:', f)
 
             self._fop = f
-                    
+
     @property
     def data(self):
         if self._fop is not None:
@@ -106,9 +106,9 @@ class Modelling(pg.ModellingBase):
         self._modelTrans = tm
 
     def initModelSpace(self, **kwargs):
-        """API"""    
+        """API"""
         pass
-        
+
     def createStartModel(self, dataVals=None):
         """Create starting model.
 
@@ -176,14 +176,14 @@ class Modelling(pg.ModellingBase):
                                                 'single': None,
                                                 'fix': None,
                                               }
-        
+
         for key in list(kwargs.keys()):
             val = kwargs.pop(key)
             if val is not None:
                 if not self._regionProperties[regionNr][key] is val:
                     self._regionsNeedUpdate = True
                     self._regionProperties[regionNr][key] = val
-            
+
         if len(kwargs.items()) > 0:
             pg.warn('Unhandled region properties:', kwargs)
 
@@ -191,9 +191,9 @@ class Modelling(pg.ModellingBase):
         """
         """
         if not self._regionsNeedUpdate:
-            return 
+            return
 
-        ### call super class her because self.regionManager() calls always 
+        ### call super class her because self.regionManager() calls always
         ###  __applyRegionProperies itself
         rMgr = super(Modelling, self).regionManager()
         for rID, vals in self._regionProperties.items():
@@ -229,16 +229,16 @@ class Modelling(pg.ModellingBase):
 
         self._regionsNeedUpdate = False
 
-            
+
     def setData(self, data):
-        """ 
+        """
         """
         if isinstance(data, pg.DataContainer):
             self.setDataContainer(data)
         else:
             print(data)
             pg.critical("nothing known to do? Implement me in derived classes")
-        
+
     def setDataSpace(self, **kwargs):
         """Set data space, e.g., DataContainer, times, coordinates."""
         if self.fop is not None:
@@ -256,18 +256,18 @@ class Modelling(pg.ModellingBase):
         pass
 
     def setDataContainer(self, data):
-        """ 
+        """
         """
         if self.fop is not None:
             self.fop.setData(data)
         else:
             super(Modelling, self).setData(data)
             self._data = data
-        
+
         self.setDataPost(self.data)
 
     def estimateError(self, data, **kwargs):
-        """Create data error fallback when the data error is not known. 
+        """Create data error fallback when the data error is not known.
             Should be implemented method depending.
         """
         raise Exception("Needed?? Implement me in derived classes")
@@ -296,7 +296,7 @@ class Modelling(pg.ModellingBase):
 class Block1DModelling(Modelling):
     """General forward operator for 1D layered models.
 
-    Find the data space for the model space [thickness_i, parameter_jk], 
+    Find the data space for the model space [thickness_i, parameter_jk],
     with i = 0 - nLayers-1, j = (0 .. nLayers), k=(0 .. nPara)
     """
     def __init__(self, nPara=1, **kwargs):
@@ -306,8 +306,8 @@ class Block1DModelling(Modelling):
         ----------
         * nPara : int [1]
             Number of parameters per layer. e.g.: 2 for resistivity and phase.
-            While the number of parameter is defined by the physics yout want 
-            to simulate, nPara need to be set from the derived class and 
+            While the number of parameter is defined by the physics yout want
+            to simulate, nPara need to be set from the derived class and
             cannot be changed in runtime.
         """
         super(Block1DModelling, self).__init__(**kwargs)
@@ -315,14 +315,14 @@ class Block1DModelling(Modelling):
         self._nPara = nPara # number of parameters per layer
 
         # store this to avoid reinitialization if not needed
-        self._nLayers = 0 
+        self._nLayers = 0
 
     @property
     def nLayers(self):
         return self._nLayers
 
     def initModelSpace(self, nLayers):
-        
+
         """Set number of layers for the 1D block model"""
         if nLayers == self._nLayers:
             return;
@@ -334,16 +334,16 @@ class Block1DModelling(Modelling):
 
         mesh = pg.createMesh1DBlock(nLayers, self._nPara)
         self.setMesh(mesh)
-        
+
         for i in range(self._nPara + 1):
             self.setRegionProperties(i, trans='log')
-            
+
         if self._withMultiThread:
             self.setMultiThreadJacobian(2*nLayers - 1)
 
         self._applyRegionProperties()
 
-        
+
     def drawModel(self, ax, model, **kwargs):
         pg.mplviewer.drawModel1D(ax=ax,
                                  model=model,
@@ -356,13 +356,13 @@ class Block1DModelling(Modelling):
         r"""Default data view.
 
         Modelling creates the data and should know best how to draw them.
-        
-        Probably ugly and you should overwrite it in your derived forward 
-        operator. 
+
+        Probably ugly and you should overwrite it in your derived forward
+        operator.
         """
         nData = len(data)
         yVals = range(nData)
-        ax.loglog(data, yVals, 'x-', 
+        ax.loglog(data, yVals, 'x-',
                   label=label,
                   **DEFAULT_STYLES.get(label, DEFAULT_STYLES['Default'])
                   )
@@ -403,11 +403,11 @@ class MeshModelling(Modelling):
     def setMeshPost(self, data):
         """Called when the mesh has been set successfully."""
         pass
- 
+
     def refineFwdMesh(self):
         """Refine the current mesh for higher accuracy.
-        
-        This is called automatic when accesing self.mesh() so it ensures any 
+
+        This is called automatic when accesing self.mesh() so it ensures any
         effect of changing region properties (background, single).
         """
         pg.info("Creating refined mesh (H2) to solve forward task.")
@@ -419,7 +419,7 @@ class MeshModelling(Modelling):
         pg.info("Creating forward mesh from region infos.")
         self._mesh = pg.Mesh(self.regionManager().mesh())
         self.refineFwdMesh()
-        self.setMeshPost(self._mesh) 
+        self.setMeshPost(self._mesh)
         self._regionChanged = False
         super(Modelling, self).setMesh(self._mesh, ignoreRegionManager=True)
 
@@ -431,7 +431,7 @@ class MeshModelling(Modelling):
         return super(Modelling, self).mesh()
 
     def setMesh(self, mesh, ignoreRegionManager=False):
-        """ 
+        """
         """
         if ignoreRegionManager or self._regionManagerInUse == False:
             if self.fop is not None:
@@ -444,20 +444,20 @@ class MeshModelling(Modelling):
             return
 
         self.clearRegionProperties()
-    
+
         # copy the mesh to the region manager who renumber cell markers
         self.regionManager().setMesh(mesh)
         self.setDefaultBackground()
 
     def setDefaultBackground(self):
-        """ 
+        """
         """
         regionIds = self.regionManager().regionIdxs()
         if len(regionIds) > 1:
             bk = pg.sort(regionIds)[0]
             pg.info("Region with smallest marker set to background (marker={0})".format(bk))
             self.setRegionProperties(bk, background=True)
-        
+
     def drawModel(self, ax, model, **kwargs):
         ax, cbar = pg.show(mesh=self.paraDomain,
                            data=model,
@@ -465,18 +465,18 @@ class MeshModelling(Modelling):
                            ax=ax,
                            **kwargs)
         return ax, cbar
-        
+
 
 class PetroModelling(Modelling):
-    """Combine petrophysical relation with the modeling class f(p).
+    """Combine petrophysical relation with the modelling class f(p).
 
-    Combine petrophysical relation :math:`p(m)` with a modeling class 
-    :math:`f(p)` to invert for the petrophysical model :math:`p` instead 
+    Combine petrophysical relation :math:`p(m)` with a modelling class
+    :math:`f(p)` to invert for the petrophysical model :math:`p` instead
     of the geophysical model :math:`m`.
 
     :math:`p` be the petrophysical model, e.g., porosity, saturation, ...
     :math:`m` be the geophysical model, e.g., slowness, resistivity, ...
-    
+
     """
     def __init__(self, fop, trans, **kwargs):
         """Save forward class and transformation, create Jacobian matrix."""
@@ -488,13 +488,13 @@ class PetroModelling(Modelling):
 
         self._jac = pg.MultRightMatrix(self.fop.jacobian())
         self.setJacobian(self._jac)
-       
+
     def createStartModel(self, data):
         """Use inverse transformation to get m(p) for the starting model."""
         sm = self.fop.createStartModel(data)
         pModel = self._petroTrans.inv(sm)
         return pModel
-        
+
     def response(self, model):
         """Use transformation to get p(m) and compute response f(p)."""
         tModel = self._petroTrans(model)

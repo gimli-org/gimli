@@ -54,7 +54,7 @@ protected:
     RVector3 pos_;
 };
 
-//! Abstract class for an electrode with a shape, which is required for modeling
+//! Abstract class for an electrode with a shape, which is required for modelling
 class DLLEXPORT ElectrodeShape : public Electrode{
 public:
     ElectrodeShape();

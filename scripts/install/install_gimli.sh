@@ -47,7 +47,7 @@ function boxprint()
   tput sgr 0
 }
 
-boxprint "Geophysical Inversion and Modeling Library (www.gimli.org)"
+boxprint "Geophysical Inversion and Modelling Library (www.gimli.org)"
 
 help(){
     echo "====================================================================="

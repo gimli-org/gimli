@@ -593,7 +593,7 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
     >>> import matplotlib.pyplot as plt
     >>> import pygimli as pg
     >>> import pygimli.meshtools as mt
-    >>> # Create geometry definition for the modeling domain
+    >>> # Create geometry definition for the modelling domain
     >>> world = mt.createWorld(start=[-20, 0], end=[20, -16],
     ...                        layers=[-2, -8], worldMarker=False)
     >>> # Create a heterogeneous block

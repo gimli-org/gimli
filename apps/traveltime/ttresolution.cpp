@@ -1,7 +1,7 @@
 /***************************************************************************
  *   Copyright (C) 2006-2008 by the resistivity.net development team       *
- *   Thomas Günther thomas@resistivity.net                                 *
- *   Carsten Rücker carsten@resistivity.net                                *
+ *   Thomas Gï¿½nther thomas@resistivity.net                                 *
+ *   Carsten Rï¿½cker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -147,7 +147,7 @@ int main( int argc, char *argv [] ){
 	<< " min = " << min( dataIn.err() ) * 100 << "%"
 	<< " max = " << max( dataIn.err() ) * 100 << "%" << endl;
 
-  //** set up TT modeling class;
+  //** set up TT modelling class;
 #ifdef WITH_OFFSET
   TravelTimeDijkstraModellingOffset f( secDomain, dataIn );
 #else

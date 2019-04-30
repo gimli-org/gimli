@@ -7,7 +7,7 @@ Region markers
 **Author:** *Maximilian Weigand, University of Bonn*
 
 A mesh can have different regions, which are defined by region markers for each
-cell. Region markers can be used to assign properties for forward modeling as
+cell. Region markers can be used to assign properties for forward modelling as
 well as to control the inversion behavior. This tutorial highlights the usage of
 regionMarkers, as well as some properties of regions if the
 **pygimli.meshtools** package is used to create complex compound meshes.

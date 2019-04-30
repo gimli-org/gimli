@@ -28,7 +28,7 @@ def simulate(mesh, res, scheme, sr=True, useBert=True,
     res : see :py:mod:`pygimli.ert.ERTManager.simulate`
         Resistivity distribution.
     mesh : :gimliapi:`GIMLI::Mesh` | str
-        Modeling domain. Mesh can be a file name here.
+        Modelling domain. Mesh can be a file name here.
     scheme : :gimliapi:`GIMLI::DataContainerERT` | str
         Data configuration. Scheme can be a file name here.
     sr : bool [True]

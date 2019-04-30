@@ -4,7 +4,7 @@
 """Method Manager
 
 Provide the end user interface for method (geophysical) dependent
-modeling and inversion as well as data and model visualization.
+modelling and inversion as well as data and model visualization.
 """
 
 import numpy as np
@@ -19,7 +19,7 @@ class MethodManager(object):
     geophysical data processing.
 
     The method manager holds one instance of a forward operator and an
-    appropriate inversion framework to handle modeling and data inversion.
+    appropriate inversion framework to handle modelling and data inversion.
 
     Method Manager also helps with data import and export,
     handle measurement data error estimation as well as model and data
@@ -88,7 +88,7 @@ class MethodManager(object):
     @property
     def fw(self):
         return self._fw
-    
+
     @property
     def fop(self):
         return self.fw.fop
@@ -323,7 +323,7 @@ class MethodManager(object):
         Draw data values into a given axes or show the data values from
         the last run.
         Forwards on default to the self.fop.drawData function
-        of the modeling operator.
+        of the modelling operator.
         If there is no given function given, you have to override this method.
 
         Parameters
@@ -343,7 +343,7 @@ class MethodManager(object):
 
     def showResult(self, ax=None, **kwargs):
         """Show the last inversion result.
-        
+
         TODO
         ----
          DRY: decide showModel or showResult
@@ -464,7 +464,7 @@ class MeshMethodManager(MethodManager):
             return model
         else:
             model(self.fop.paraDomain.cellMarkers())
-        
+
     def invert(self, data, mesh=None, **kwargs):
         """Run the full inversion.
 
@@ -483,15 +483,15 @@ class MeshMethodManager(MethodManager):
                                                      **kwargs)
 
     def showModel(self, model=None, ax=None, **kwargs):
-        """""" 
+        """"""
         diam = kwargs.pop('diam', None)
-        
+
         ax, cbar = pg.show(mesh=self.fop.paraDomain,
                            data=self.paraModel(model),
                            label=kwargs.pop('label', 'Model parameter'),
                            ax=ax, **kwargs)
 
-        pg.mplviewer.drawSensors(ax, 
+        pg.mplviewer.drawSensors(ax,
                                  self.fop.data.sensors(),
                                  color='black',
                                  diam=diam)
@@ -514,7 +514,7 @@ class MeshMethodManager(MethodManager):
 
         if not kwargs.pop('hideFittingAnnotation', False):
             axs[0].text(0.01, 1.0025, "rrms: {0}, $\chi^2$: {1}"
-                    .format(pg.utils.prettyFloat(self.fw.inv.relrms()), 
+                    .format(pg.utils.prettyFloat(self.fw.inv.relrms()),
                             pg.utils.prettyFloat(self.fw.inv.chi2())),
                     transform=axs[0].transAxes,
                     horizontalalignment='left',

@@ -5,7 +5,7 @@ r"""
 Geoelectrics in 2.5D
 --------------------
 
-Geoelectrical modeling example in 2.5D. CR"""
+Geoelectrical modelling example in 2.5D. CR"""
 
 ###############################################################################
 # Let us start with a mathematical formulation ...
