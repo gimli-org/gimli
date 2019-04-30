@@ -17,7 +17,7 @@ from . ratools import shotReceiverDistances
 class TravelTimeDijkstraModelling(MeshModelling):
     def __init__(self, **kwargs):
         self.dijkstra = pg.TravelTimeDijkstraModelling()
-        
+
         super(TravelTimeDijkstraModelling, self).__init__(**kwargs)
 
         self._refineSecNodes = 3
@@ -25,15 +25,15 @@ class TravelTimeDijkstraModelling(MeshModelling):
         self.createJacobian = self.dijkstra.createJacobian
 
         self.setJacobian(self.dijkstra.jacobian())
- 
+
     def regionManagerRef(self):
         # necessary because core dijkstra use its own RM
         return self.dijkstra.regionManagerRef()
-     
+
     def refineFwdMesh(self):
         """Refine the current mesh for higher accuracy.
-        
-        This is called automatic when accesing self.mesh() so it ensures any 
+
+        This is called automatic when accesing self.mesh() so it ensures any
         effect of changing region properties (background, single).
         """
         pg.info("Creating refined mesh (secnodes: {0}) to "
@@ -72,12 +72,12 @@ class TravelTimeDijkstraModelling(MeshModelling):
                                                            model=model,
                                                            **kwargs)
         return ax
-    
+
     def drawData(self, ax, data, err=None, **kwargs):
         kwargs['label'] = pg.unit('va')
-        return showVA(self.data, vals=data, usePos=False, 
+        return showVA(self.data, vals=data, usePos=False,
                       ax=ax, **kwargs)
-    
+
 
 class TravelTimeManager(MeshMethodManager):
     """Manager for refraction seismics (traveltime tomography)
@@ -182,7 +182,7 @@ class TravelTimeManager(MeshMethodManager):
                         relativeError=noiseLevel))
 
             if self.verbose:
-                print("Data error estimates (min:max) ",
+                print("Data error estimates (min:mpythonax) ",
                       min(ret('err')), ":", max(ret('err')))
 
             t += pg.randn(ret.size()) * ret('err')
@@ -198,13 +198,13 @@ class TravelTimeManager(MeshMethodManager):
 
         Parameters
         ----------
-        data : pg.DataContainer() 
-            Data container with at least SensorIndieces 's g' and 
+        data : pg.DataContainer()
+            Data container with at least SensorIndieces 's g' and
             data values 't' (traveltime in ms) and 'err' (absolute error in ms)
 
         Other Parameters
         ----------------
-        secNodes: int [2] 
+        secNodes: int [2]
             Amount of secondary nodes used for ensure accuracy of the forward
             operator.
         """
@@ -240,8 +240,8 @@ class TravelTimeManager(MeshMethodManager):
         return velocity
 
     def drawRayPaths(self, ax, model=None, **kwargs):
-        """Draw the the ray paths for `model` or last model for 
-        which the last Jacobian was calculated. 
+        """Draw the the ray paths for `model` or last model for
+        which the last Jacobian was calculated.
 
         Parameters
         ----------
@@ -269,20 +269,20 @@ class TravelTimeManager(MeshMethodManager):
 
         shots = self.fop.data.id("s")
         recei = self.fop.data.id("g")
-            
+
         segs = []
         for s, g in zip(shots, recei):
             wi = self.fop.dijkstra.way(s, g)
             points = self.fop.dijkstra.mesh().positions(withSecNodes=True)[wi]
             segs.append(np.column_stack((pg.x(points), pg.y(points))))
-        
+
         lc = LineCollection(segs, **kwargs)
         ax.add_collection(lc)
 
         return lc
 
     def showRayPaths(self, model=None, ax=None, **kwargs):
-        """Show the model with ray paths for `model` or last model for 
+        """Show the model with ray paths for `model` or last model for
         which the last Jacobian was calculated.
 
         Parameters
@@ -293,7 +293,7 @@ class TravelTimeManager(MeshMethodManager):
         ax : matplotlib.axes object
             To draw the model and the path into.
         **kwargs : type
-            forward to drawRayPaths 
+            forward to drawRayPaths
 
         Returns
         -------
@@ -309,7 +309,8 @@ class TravelTimeManager(MeshMethodManager):
         >>>
         >>> x, y = 8, 6
         >>> mesh = pg.createGrid(x, y)
-        >>> data = createRAData([(0,0)] + [(x, i) for i in range(y)], shotdistance=y+1)
+        >>> data = createRAData([(0,0)] + [(x, i) for i in range(y)],
+        ...                     shotdistance=y+1)
         >>> data.set("t", pg.RVector(data.size(), 1.0))
         >>> tt = TravelTimeManager()
         >>> tt.fop.setData(data)
@@ -324,7 +325,7 @@ class TravelTimeManager(MeshMethodManager):
             else:
                 model = self.model
 
-        ax, cbar = self.showModel(ax=ax, model=model, 
+        ax, cbar = self.showModel(ax=ax, model=model,
                                   showMesh=kwargs.pop('showMesh', None),
                                   diam=kwargs.pop('diam', None))
         self.drawRayPaths(ax, model=model, **kwargs)
