@@ -93,7 +93,7 @@ class Inversion(object):
     @property
     def dataTrans(self):
         return self._dataTrans
-        
+
     @dataTrans.setter
     def dataTrans(self, dt):
         self._dataTrans = dt
@@ -107,7 +107,7 @@ class Inversion(object):
     def startModel(self):
         """ Gives the current default starting model.
 
-        Returns the current default starting model or 
+        Returns the current default starting model or
         call fop.createStartmodel(dataValus) if non is defined.
         """
         if self._startModel is None:
@@ -118,7 +118,7 @@ class Inversion(object):
     def startModel(self, model):
         """
         model: [float] | float
-            Model used as starting model. 
+            Model used as starting model.
             Float value is used as constant model.
         """
         if model is None:
@@ -127,7 +127,7 @@ class Inversion(object):
             self._startModel = np.ones(self.parameterCount) * float(model)
         elif hasattr(model, '__iter__'):
             self._startModel = model
-        
+
     @property
     def model(self):
         """The last active model."""
@@ -139,7 +139,7 @@ class Inversion(object):
                 else:
                     raise pg.critical("There was no inversion run so there is no last model")
             else:
-                return self.inv.model        
+                return self.inv.model
         return self._model
 
     @model.setter
@@ -168,8 +168,8 @@ class Inversion(object):
         return self._dataVals
     @dataVals.setter
     def dataVals(self, d):
-        """Set mandatory data values. 
-        
+        """Set mandatory data values.
+
         Values == 0.0. Will be set to Tolerance
         """
         self._dataVals = d
@@ -188,8 +188,8 @@ class Inversion(object):
         return self._errorVals
     @errorVals.setter
     def errorVals(self, d):
-        """Set mandatory error values. 
-        
+        """Set mandatory error values.
+
         Values == 0.0. Will be set to Tolerance
         """
         self._errorVals = d
@@ -226,7 +226,7 @@ class Inversion(object):
 
     def setForwardOperator(self, fop):
         self._fop = fop
-        # we need to initialize the regionmanager by calling it once       
+        # we need to initialize the regionmanager by calling it once
         self._fop.regionManager()
         self._inv.setForwardOperator(fop)
 
@@ -295,22 +295,22 @@ class Inversion(object):
 
         if self.fop is None:
             raise Exception("Need a valid forward operator for the inversion run.")
-        
+
         maxIter = kwargs.pop('maxIter', self.maxIter)
-        
+
         self.verbose = kwargs.pop('verbose', self.verbose)
         self.debug   = kwargs.pop('debug', self.debug)
-                
+
         lam = kwargs.pop('lam', 20)
 
         progress = kwargs.pop('progress', None)
         showProgress = kwargs.pop('showProgress', False)
 
         self.inv.setTransModel(self.fop.modelTrans)
-        
+
         self.dataVals = dataVals
         self.errorVals = errorVals
-        
+
         sm = kwargs.pop('startModel', None)
         if sm is not None:
             self.startModel = sm
@@ -352,7 +352,8 @@ class Inversion(object):
                 self._preStep(i, self.inv)
 
             if self.verbose:
-                print("inv.iter", i, "... ", end='')
+                print("-" * 80)
+                print("inv.iter", i + 1, "... ", end='')
 
             self.inv.oneStep()
             resp = self.inv.response()
@@ -379,17 +380,18 @@ class Inversion(object):
 
             if self.verbose:
                 print("chi² = {0} (dPhi = {1}%) lam: {2}".format(
-                       round(chi2, 2), round(dPhi, 2), self.inv.getLambda()))
+                            round(chi2, 2), round(dPhi, 2), self.inv.getLambda()))
 
-            if chi2 < 1:
+            if chi2 <= 1:
+                print("\n")
                 if self.verbose:
-                    print("Abort criteria reached: chi² <= 1")
+                    pg.boxprint("Abort criteria reached: chi² <= 1")
                 break
 
             if abs(dPhi) < self.inv.deltaPhiAbortPercent():
                 if self.verbose:
-                    print("Abort criteria reached: dPhi = {0} (< {1}%)".format(
-                        round(dPhi, 2), self.inv.deltaPhiAbortPercent()))
+                    pg.boxprint("Abort criteria reached: dPhi = {0} (< {1}%)".format(
+                                round(dPhi, 2), self.inv.deltaPhiAbortPercent()))
                 break
 
             lastPhi = phi
@@ -402,10 +404,10 @@ class Inversion(object):
 
     def showProgress(self, style='all'):
         r"""Called if showProgress=True is set for the inversion run.
-        
+
         TODO
             * think .. its a useful function but breaks a little
-             the FrameWork work only concept. 
+             the FrameWork work only concept.
         """
 
         if self.axs is None:
@@ -433,14 +435,14 @@ class Inversion(object):
                 except:
                     pass
 
-            self.fop.drawModel(ax[0], self.inv.model(), 
+            self.fop.drawModel(ax[0], self.inv.model(),
                                #label='Model'
                                )
 
-            self.fop.drawData(ax[1], self._dataVals, self._errorVals, 
+            self.fop.drawData(ax[1], self._dataVals, self._errorVals,
                               #label='Data'
                               )
-            self.fop.drawData(ax[1], self.inv.response(), 
+            self.fop.drawData(ax[1], self.inv.response(),
                               #label='Response'
                               )
 
@@ -487,29 +489,29 @@ class Block1DInversion(MarquardtInversion):
     def __init__(self, fop=None, **kwargs):
         super(Block1DInversion, self).__init__(fop=fop, **kwargs)
         # attributes:
-        # nLayers, layerLimits, fixLayers      
-       
+        # nLayers, layerLimits, fixLayers
+
         self._nLayers = 4
 
     def setForwardOperator(self, fop):
         if not isinstance(fop, pg.frameworks.Block1DModelling):
             pg.critical('Forward operator needs to be an instance of '
                         'pg.modelling.Block1DModelling but is of type:', fop)
-                        
+
         return super(Block1DInversion, self).setForwardOperator(fop)
-        
+
     def setLayers(self, nLayers):
         """Set amount of Layers"""
         self._nLayers = nLayers
         self.fop.initModelSpace(nLayers=nLayers)
-        
+
     def fixLayers(self, fixLayers):
         """Fix layer thicknesses.
 
         Parameters
         ----------
         fixLayers : bool | [float]
-            Fix all layers to the last value or set the fix layer 
+            Fix all layers to the last value or set the fix layer
             thickness for all layers
         """
         if fixLayers is False:
@@ -524,7 +526,7 @@ class Block1DInversion(MarquardtInversion):
 
             # TODO DRY to self.fop.createStartModel
             self.fop.setStartModel(self.fop.regionManager().createStartModel())
-        
+
     def setLayerLimits(self, limits):
         """Set min and max layer thickness.
 
@@ -536,8 +538,8 @@ class Block1DInversion(MarquardtInversion):
             self.fop.setRegionProperties(0, limits=[0.0, 0.0], trans='log')
         else:
             self.fop.setRegionProperties(0, limits=limits, trans='log')
-        
-    def run(self, dataVals, errVals, 
+
+    def run(self, dataVals, errVals,
             nLayers=None, fixLayers=None, layerLimits=None,
             **kwargs):
         r"""
@@ -551,7 +553,7 @@ class Block1DInversion(MarquardtInversion):
             See: :py:mod:`pygimli.modelling.Block1DInversion.fixLayers`
         layerLimits : [min, max]
             For layerLimits=None, preset or defaults are uses.
-            Set minimum or maximum layer thickness. 
+            Set minimum or maximum layer thickness.
 
         **kwargs:
             Forwarded to the parent class.
@@ -564,25 +566,25 @@ class Block1DInversion(MarquardtInversion):
         self.setLayers(nLayers)
 
         if layerLimits is not None:
-            self.setLayerLimits(layerLimits)                
+            self.setLayerLimits(layerLimits)
 
         if fixLayers is not None:
-            self.fixLayers(fixLayers)                
+            self.fixLayers(fixLayers)
 
         self.model = super(Block1DInversion, self).run(dataVals, errVals, **kwargs)
         return self.model
-   
+
 
 class MeshInversion(Inversion):
     """
     Attributes
     ----------
-    
+
     zWeight
 
     """
     def __init__(self, fop=None, **kwargs):
-    
+
         super(MeshInversion, self).__init__(fop=fop, **kwargs)
         self._zWeight = 1.0
 
@@ -590,7 +592,7 @@ class MeshInversion(Inversion):
         if not isinstance(fop, pg.frameworks.MeshModelling):
             pg.critical('Forward operator needs to be an instance of '
                         'pg.modelling.MeshModelling but is of type:', fop)
-                        
+
         return super(MeshInversion, self).setForwardOperator(fop)
 
     def run(self, dataVals, errVals, mesh=None, zWeight=None, **kwargs):
@@ -607,7 +609,7 @@ class MeshInversion(Inversion):
 
         pg.debug('run with: ', self.fop.regionProperties())
         #### more mesh related inversion attributes to set?
-        
+
         # ensure the mesh is generated
         self.fop.mesh()
 
@@ -632,7 +634,7 @@ class PetroInversion(Inversion):
         if not isinstance(fop, pg.frameworks.PetroModelling):
             pg.critical('Forward operator needs to be an instance of '
                         'pg.modelling.PetroModelling but is of type:', fop)
-                        
+
         return super(PetroInversion, self).setForwardOperator(fop)
 
     def run(self, dataVals, errVals, **kwargs):
@@ -645,7 +647,7 @@ class PetroInversion(Inversion):
                 pg.critical('implement')
             else:
                 self.fop.setRegionProperties('*', limits=limits)
-                
+
         return super(PetroInversion, self).run(dataVals, errVals, **kwargs)
 
 

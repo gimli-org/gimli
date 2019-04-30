@@ -175,7 +175,8 @@ class Modelling(pg.ModellingBase):
                                                 'background': None,
                                                 'single': None,
                                                 'fix': None,
-                                              }
+                                                }
+
 
         for key in list(kwargs.keys()):
             val = kwargs.pop(key)
@@ -304,7 +305,7 @@ class Block1DModelling(Modelling):
 
         Parameters
         ----------
-        * nPara : int [1]
+        nPara : int [1]
             Number of parameters per layer. e.g.: 2 for resistivity and phase.
             While the number of parameter is defined by the physics yout want
             to simulate, nPara need to be set from the derived class and
