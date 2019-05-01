@@ -523,14 +523,7 @@ class MeshMethodManager(MethodManager):
         # Limits is no mesh related argument here or base??
         limits=kwargs.pop('limits', None)
 
-        if limits is not None:
-            if limits[0] > 1:
-                tmp = limits[0]
-                limits[0] = 1.0 / limits[1]
-                limits[1] = 1.0 / tmp
-
         self.fop.setRegionProperties('*', limits=limits)
-
 
         self.preRun(**kwargs)
 

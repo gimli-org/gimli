@@ -220,6 +220,12 @@ class TravelTimeManager(MeshMethodManager):
 
         self.fop._refineSecNodes = kwargs.pop('secNodes', 2)
 
+        if 'limits' in kwargs:
+            if kwargs['limits'][0] > 1:
+                tmp = kwargs['limits'][0]
+                kwargs['limits'][0] = 1.0 / kwargs['limits'][1]
+                kwargs['limits'][1] = 1.0 / tmp
+
         slowness = super(TravelTimeManager, self).invert(data, **kwargs)
         velocity = 1.0 / slowness
         self.fw.model = velocity
