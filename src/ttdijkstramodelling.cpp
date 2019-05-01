@@ -316,8 +316,9 @@ void TravelTimeDijkstraModelling::updateMeshDependency_(){
 
     for (Index i = 0; i < shots.size(); i ++){
         shotNodeId_[i] = mesh_->findNearestNode(dataContainer_->sensorPosition((Index)shots[i]));
-        if (mesh_->node(shotNodeId_[i]).cellSet().size() == 0){
-            __MS("no cells found")
+        if (mesh_->node(shotNodeId_[i]).cellSet().size() == 0 &&
+            mesh_->node(shotNodeId_[i]).id() < (int)mesh_->nodeCount()){
+            __MS("no cells found for node "  << shotNodeId_[i])
         }
         shotsInv_[Index(shots[i])] = i;
     }

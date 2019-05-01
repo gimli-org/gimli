@@ -109,16 +109,27 @@ class Modelling(pg.ModellingBase):
         """API"""
         pass
 
-    def createStartModel(self, dataVals=None):
-        """Create starting model.
+    def createDefaultStartModel(self, dataVals):
+        """Create the default startmodel as the median of the data values.
+        """
+        mv = pg.median(dataVals)
+        pg.info("Set default startmodel to median(data values)={0}".format(mv))
+        sm = pg.RVector(self.regionManager().parameterCount(), mv)
+        return sm
 
-        Create starting model based on current data values and additional args.
+    def createStartModel(self):
+        """Create starting model based on region settings. 
+
+        Create starting model based on region setting. 
+        Should not be overwritten. Its used by inverion to create a valid 
+        startmodel..
 
         TODO
 
             * Howto ensure childs sets self.setStartModel(sm)?
 
         """
+        pg._r()
         sm = self.regionManager().createStartModel()
         return sm
 
@@ -436,10 +447,8 @@ class MeshModelling(Modelling):
         """
         if ignoreRegionManager or self._regionManagerInUse == False:
             if self.fop is not None:
-                pg._r("checkme")
                 self.fop.setMesh(mesh, ignoreRegionManager=True)
             else:
-                pg._r("checkme")
                 super(Modelling, self).setMesh(mesh, ignoreRegionManager=True)
 
             return
@@ -490,7 +499,7 @@ class PetroModelling(Modelling):
         self._jac = pg.MultRightMatrix(self.fop.jacobian())
         self.setJacobian(self._jac)
 
-    def createStartModel(self, data):
+    def createDefaultStartModel(self, data):
         """Use inverse transformation to get m(p) for the starting model."""
         sm = self.fop.createStartModel(data)
         pModel = self._petroTrans.inv(sm)
@@ -544,10 +553,10 @@ class LCModelling(Modelling):
         for i, f in enumerate(self._fops1D):
             f.initModelSpace(nLayers)
 
-    def createStartModel(self, models):
+    def createDefaultStartModel(self, models):
         sm = pg.RVector()
         for i, f in enumerate(self._fops1D):
-            sm = pg.cat(sm, f.createStartModel(models[i]))
+            sm = pg.cat(sm, f.createDefaultStartModel(models[i]))
         return sm
 
     def response(self, par):

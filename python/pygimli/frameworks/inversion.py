@@ -108,10 +108,14 @@ class Inversion(object):
         """ Gives the current default starting model.
 
         Returns the current default starting model or
-        call fop.createStartmodel(dataValus) if non is defined.
+        call fop.createStartmodel() if non is defined.
         """
         if self._startModel is None:
-            self._startModel = self.fop.createStartModel(self.dataVals)
+            self._startModel = self.fop.createStartModel()
+
+        if self._startModel is None:
+            self._startModel = self.fop.createDefaultStartModel(self.dataVals)
+
         return self._startModel
 
     @startModel.setter
@@ -284,11 +288,15 @@ class Inversion(object):
         (fop.setStartModel).
         Any self.inv.setModel() settings will be overwritten.
 
+        Parameters
+        ----------
+        errorVals : iterable
+            Relative error values. dv / v
+
         Other Parameters
         ----------------
         maxIter : int
             Overwrite class settings for maximal iterations number.
-
         """
         if self.isFrameWork:
             return self._inv.run(dataVals, errorVals, **kwargs)
@@ -335,7 +343,7 @@ class Inversion(object):
         ### To ensure reproducability of the run() call inv.start() will
         ### reset self.inv.model() to fop.startModel().
         self.fop.setStartModel(self.startModel)
-        self.inv.setReferenceModel(self.fop.startModel())
+        self.inv.setReferenceModel(self.startModel)
 
         self.inv.start()
         self.maxIter = maxIterTmp

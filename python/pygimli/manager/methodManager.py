@@ -465,22 +465,80 @@ class MeshMethodManager(MethodManager):
         else:
             model(self.fop.paraDomain.cellMarkers())
 
-    def invert(self, data, mesh=None, **kwargs):
+    def preRun(self, *args, **kwargs):
+        """Called just before the inversion run starts."""
+        pass
+
+    def postRun(self, *args, **kwargs):
+        """Called just after the inversion run."""
+        pass
+
+    def invert(self, data, mesh=None, zWeight=1.0, startModel=None,
+               **kwargs):
         """Run the full inversion.
 
         Parameters
         ----------
-        data : pg.DataContainer | iterable
+        data : pg.DataContainer
+        
         mesh : pg.Mesh [None]
+        
+        zWeight : float [1.0]
+
+        startModel : float | iterable [None]
+
+            If set to None fop.createDefaultStartModel(dataValues) is called.
+        
+        Other Parameters
+        ----------------
+        forwarded to Inversion.run
+
+        Returns
+        -------
+        model : array
+            Model mapped for match the paraDomain Cell markers. 
+            The calculated model is in self.fw.model.
         """
-        # set the data basis here, some fop needs them before
-        # setting the mesh basis, FIXME .. setData in Parent class
-        self.fop.setData(data)
+        if isinstance(data, pg.DataContainer):
+            self.fop.data = data
+        else:
+            pg.critical("setting data array is not yet implemented.")
+        
+        self.fop.setMesh(mesh)
 
-        self.fop.setMesh(mesh, **kwargs)
+        if self.fop.mesh() is None:
+            pg.critical('Please provide a mesh')
+        
+        dataVals = self._ensureData(data)
+        errVals = self._ensureError(data)
 
-        return super(MeshMethodManager, self).invert(data=data,
-                                                     **kwargs)
+        if startModel is None:
+            startModel=self.fop.createDefaultStartModel(dataVals)
+        
+        self.fop.setRegionProperties('*', 
+                                     startModel=startModel,
+                                     zWeight=zWeight,
+                                    )
+        
+        # Limits is no mesh related argument here or base??
+        limits=kwargs.pop('limits', None)
+
+        if limits is not None:
+            if limits[0] > 1:
+                tmp = limits[0]
+                limits[0] = 1.0 / limits[1]
+                limits[1] = 1.0 / tmp
+
+        self.fop.setRegionProperties('*', limits=limits)
+
+
+        self.preRun(**kwargs)
+
+        self.fw.run(dataVals, errVals, **kwargs)
+
+        self.postRun(**kwargs)
+        return self.paraModel(self.fw.model)
+
 
     def showModel(self, model=None, ax=None, **kwargs):
         """"""

@@ -44,20 +44,22 @@ class TravelTimeDijkstraModelling(MeshModelling):
     def setMeshPost(self, mesh):
         """
         """
+        pg._r(mesh)
         self.dijkstra.setMesh(mesh)
         #self.dijkstra.setMesh(pg.Mesh(mesh))
 
     def setDataPost(self, data):
         """
         """
+        pg._r()
         self.dijkstra.setData(data)
 
-    def createStartModel(self, t):
+    def createDefaultStartModel(self, dataVals):
         """
         """
         dists = shotReceiverDistances(self.data, full=True)
 
-        aSlow = 1. / (dists / self.data('t'))
+        aSlow = 1. / (dists / dataVals)
 
         sm = pg.Vector(self.regionManager().parameterCount(),
                        pg.median(aSlow))
@@ -95,6 +97,13 @@ class TravelTimeManager(MeshMethodManager):
         self._dataToken = 't'
         self.inv.dataTrans = pg.RTransLog()
 
+    def errorValues(self, data):
+        """Return relative error values from a given DataContainer."""
+        if not data.haveData('err'):
+            pg.error('Datacontainer have no "err" values. Fallback set to 0.01')
+            
+        return pg.Vector(data('err') / data('t'))
+        
     def setMesh(self, mesh, secNodes=0):
         """ """
         if secNodes > 0:
@@ -112,7 +121,7 @@ class TravelTimeManager(MeshMethodManager):
 
         return fop
 
-    def simulate(self, mesh, slowness, scheme, **kwargs):
+    def simulate(self, mesh, slowness, scheme, secNodes=2, **kwargs):
         """
         Simulate an Traveltime measurement.
 
@@ -150,11 +159,10 @@ class TravelTimeManager(MeshMethodManager):
             A DataContainer is return if noisify set to True.
 
         """
-
         fop = self.createForwardOperator()
 
         fop.setData(scheme)
-        fop.setMesh(mesh, ignoreRegionManager=True)
+        self.setMesh(mesh, secNodes=secNodes)
 
         if len(slowness) == mesh.cellCount():
             if max(slowness) > 1.:
@@ -212,29 +220,7 @@ class TravelTimeManager(MeshMethodManager):
 
         self.fop._refineSecNodes = kwargs.pop('secNodes', 2)
 
-        if isinstance(data, pg.DataContainer):
-            self.fop.data = data
-
-        if 'mesh' in kwargs:
-            self.fop.setMesh(kwargs.pop('mesh'))
-
-        dataVals = self._ensureData(data)
-        errVals = self._ensureError(data)
-
-        limits=kwargs.pop('limits', None)
-
-        if limits is not None:
-            if limits[0] > 1:
-                tmp = limits[0]
-                limits[0] = 1.0 / limits[1]
-                limits[1] = 1.0 / tmp
-
-        self.fop.setRegionProperties('*', limits=limits)
-
-        # startModel = kwargs.pop('startModel', pg.median(dataVals))
-        # self.fop.setRegionProperties('*', startModel=1/500)
-
-        slowness = self.fw.run(dataVals, errVals, **kwargs)
+        slowness = super(TravelTimeManager, self).invert(data, **kwargs)
         velocity = 1.0 / slowness
         self.fw.model = velocity
         return velocity
