@@ -64,7 +64,7 @@ public:
             return operator = (rhs.asValue());  // see above
         } return *this;
     }
-
+    
   /* The constructor initializes the private variables with all
      information that is needed. The container itself is located in
      the sparseMatrix class; here, the reference to it is entered.

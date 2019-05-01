@@ -577,6 +577,7 @@ class Block1DInversion(MarquardtInversion):
 
 class MeshInversion(Inversion):
     """
+    ** UNUSED ** TO BE REMOVED
     Attributes
     ----------
 
@@ -584,7 +585,7 @@ class MeshInversion(Inversion):
 
     """
     def __init__(self, fop=None, **kwargs):
-
+        TO_BE_REMOVED
         super(MeshInversion, self).__init__(fop=fop, **kwargs)
         self._zWeight = 1.0
 

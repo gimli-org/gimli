@@ -450,10 +450,10 @@ class MeshMethodManager(MethodManager):
         """Constructor."""
         super(MeshMethodManager, self).__init__(**kwargs)
 
-    def createInversionFramework(self, **kwargs):
-        """
-        """
-        return pg.frameworks.MeshInversion(**kwargs)
+    # def createInversionFramework(self, **kwargs):
+    #     """
+    #     """
+    #     return pg.frameworks.MeshInversion(**kwargs)
 
     def paraModel(self, model=None):
         """Give the model parameter regarding the parameter mesh."""

@@ -129,6 +129,7 @@ class ERTModelling(MeshModelling):
         """
         ### NOTE TODO can't be MT until mixed boundary condition depends on
         ### self.resistivity
+        pg.tic()
         if not self.data.allNonZero('k'):
             pg.error('Need valid geometric factors: "k".')
             pg.warn('Fallback "k" values to -sign("rhoa")')
@@ -163,6 +164,9 @@ class ERTModelling(MeshModelling):
         # store all potential fields
         u = np.zeros((nEle, nDof))
         self.subPotentials = [pg.RMatrix(nEle, nDof) for i in range(len(k))]
+
+        pg._r('0', pg.dur())
+
         for i, ki in enumerate(k):
             ws = dict()
             uE = pg.solve(mesh, a=1./res, b=-(ki * ki)/res, f=rhs,
@@ -172,6 +176,9 @@ class ERTModelling(MeshModelling):
             self.subPotentials[i] = uE
             u += w[i] * uE
 
+            pg._r('1', i, pg.dur())
+
+        pg._r('2', i, pg.dur())
         # collect potential matrix,
         # i.e., potential for all electrodes and all injections
         pM = np.zeros((nEle, nEle))
@@ -193,8 +200,12 @@ class ERTModelling(MeshModelling):
 
         self.lastResponse = r * self.data('k')
 
+        pg._r('3', pg.dur())
+
         if self.verbose:
-            print("Resp: ", min(self.lastResponse), max(self.lastResponse))
+            print("Resp min/max: {0} {1} {2}s".format(min(self.lastResponse), 
+                                                      max(self.lastResponse),
+                                                      pg.dur()))
 
         return self.lastResponse
 
@@ -777,7 +788,6 @@ class ERTManager(MeshMethodManager):
             (relative error in %/100)
 
         """
-
         if isinstance(data, pg.DataContainer):
             self.fop.data = data
 
@@ -790,7 +800,9 @@ class ERTManager(MeshMethodManager):
         startModel = kwargs.pop('startModel', pg.median(dataVals))
         self.fop.setRegionProperties('*', startModel=startModel)
 
-        return self.fw.run(dataVals, errVals, **kwargs)
+        model = self.fw.run(dataVals, errVals, **kwargs)
+
+        return model
 
         # return super(ERTManager, self).invert(data=data,
         #                                       **kwargs)

@@ -1650,6 +1650,7 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
             return A, rhs
 
         solver = pg.LinSolver(False)
+        # pg._r('4', pg.dur())
         solver.setMatrix(A, 0)
 
         if singleForce:
@@ -1666,7 +1667,7 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
 
         if len(kwargs.keys()) > 0:
             print("Warning! Unused arguments", **kwargs)
-
+        # pg._r('5', pg.dur())
         return u
 
     else: # times given
