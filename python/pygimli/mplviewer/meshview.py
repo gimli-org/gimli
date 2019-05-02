@@ -1263,66 +1263,71 @@ def drawSensors(ax, sensors, diam=None, coords=None, verbose=False, **kwargs):
     updateAxes_(ax)
 
 
-def _createParameterContraintsLines(mesh, cMat, cWeight=None):
+def _createParameterContraintsLines(mesh, cMat, cWeights=None):
     """TODO Documentme."""
     C = None
 
-    if not isinstance(cMat, pg.SparseMapMatrix):
-        throwToImplement
-        #cMat.save('tmpC.matrix')
-        #pg.loadMatrixCol(C, 'tmpC.matrix')
+    if isinstance(cMat, pg.SparseMapMatrix):
+
+        tmp = pg.optImport('tempfile')
+        _, nameTMP = tmp.mkstemp(suffix='.matrix')
+        C = pg.RMatrix()
+        cMat.save(nameTMP)
+        pg.loadMatrixCol(C, nameTMP)
+
+        try:
+            os.remove(nameTMP)
+        except:
+            print("can't remove:", nameTMP)
+
     else:
         C = cMat
 
-    paraMarker = mesh.cellMarkers()
     cellList = dict()
-
     for c in mesh.cells():
         pID = c.marker()
-
         if pID not in cellList:
             cellList[pID] = []
         cellList[pID].append(c)
-
+        
     paraCenter = dict()
-    for cID, vals in list(cellList.items()):
+    for pID, vals in list(cellList.items()):
         p = pg.RVector3(0.0, 0.0, 0.0)
         for c in vals:
             p += c.center()
         p /= float(len(vals))
-        paraCenter[cID] = p
+        paraCenter[pID] = p
 
     nConstraints = C[0].size()
-    print(C[0])
+    
     start = []
     end = []
     #    swatch = pg.Stopwatch(True)  # not used
     for i in range(0, int(nConstraints / 2)):
         # print i
-        # if i == 1000: break;
+        # if i == 3: break;
 
         idL = int(C[1][i * 2])
         idR = int(C[1][i * 2 + 1])
-
+        
         p1 = paraCenter[idL]
         p2 = paraCenter[idR]
 
-        if cWeight is not None:
-            pa = pg.RVector3(p1 + (p2 - p1) / 2.0 * (1.0 - cWeight[i]))
-            pb = pg.RVector3(p2 + (p1 - p2) / 2.0 * (1.0 - cWeight[i]))
+        if cWeights is not None:
+            pa = pg.RVector3(p1 + (p2 - p1) / 2.0 * (1.0 - cWeights[i]))
+            pb = pg.RVector3(p2 + (p1 - p2) / 2.0 * (1.0 - cWeights[i]))
         else:
             pa = p1
             pb = p2
 
+        # print(i, idL, idR, p1, p2)
+
         start.append(pa)
         end.append(pb)
 
-
-#    updateAxes_(ax)  # not existing
-
     return start, end
 
-def drawParameterConstraints(ax, mesh, cMat, cWeight=None):
+def drawParameterConstraints(ax, mesh, cMat, cWeights=None):
     """Draw inter parameter constraints between cells.
 
     Parameters
@@ -1330,13 +1335,13 @@ def drawParameterConstraints(ax, mesh, cMat, cWeight=None):
     ax : MPL axes
     mesh :
     """
-    start, end = _createParameterContraintsLines(mesh, cMat, cWeight)
+    start, end = _createParameterContraintsLines(mesh, cMat, cWeights)
 
     lines = []
     colors = []
     linewidths = []
     for i, _ in enumerate(start):
-        lines.append(list(zip([start[i].x(), end[i].x()],
+        lines.append(list(zip([start[i].x(), end[i].x()], 
                               [start[i].y(), end[i].y()])))
 
         linewidth = 0.5
