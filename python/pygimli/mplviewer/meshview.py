@@ -1266,6 +1266,7 @@ def drawSensors(ax, sensors, diam=None, coords=None, verbose=False, **kwargs):
 def _createParameterContraintsLines(mesh, cMat, cWeight=None):
     """TODO Documentme."""
     C = None
+
     if not isinstance(cMat, pg.SparseMapMatrix):
         throwToImplement
         #cMat.save('tmpC.matrix')
@@ -1292,32 +1293,17 @@ def _createParameterContraintsLines(mesh, cMat, cWeight=None):
         paraCenter[cID] = p
 
     nConstraints = C[0].size()
+    print(C[0])
     start = []
     end = []
     #    swatch = pg.Stopwatch(True)  # not used
     for i in range(0, int(nConstraints / 2)):
         # print i
         # if i == 1000: break;
+
         idL = int(C[1][i * 2])
         idR = int(C[1][i * 2 + 1])
-        # leftCells = []
-        # rightCells = []
-        #        for c, index in enumerate(paraMarker):
-        #            if idL == index:
-        #                leftCells.append(mesh.cell(c))
-        #            if idR == index:
-        #                rightCells.append(mesh.cell(c))
 
-        #        p1 = pg.RVector3(0.0,0.0);
-        #        for c in leftCells:
-        #            p1 += c.center()
-        #        p1 /= float(len(leftCells))
-
-        #        p2 = pg.RVector3(0.0,0.0);
-        #        for c in rightCells:
-        #            p2 += c.center()
-        #        print cWeight[i]
-        #        p2 /= float(len(rightCells))
         p1 = paraCenter[idL]
         p2 = paraCenter[idR]
 
