@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 """
-VES inversion for a blocky model
-================================
+DC1dBlock
+---------
 
 This tutorial shows how an built-in forward operator is used for inversion.
 A DC 1D (VES) modelling is used to generate data, noisify and invert them.

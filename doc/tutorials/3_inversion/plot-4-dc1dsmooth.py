@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 r"""
-VES inversion for a smooth model
-================================
+DC1dSmooth
+==========
 
 This tutorial shows how an built-in forward operator is used for an Occam type
 (smoothness-constrained) inversion with fixed regularization (most natural).
