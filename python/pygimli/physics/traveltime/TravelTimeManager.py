@@ -51,7 +51,7 @@ class TravelTimeDijkstraModelling(MeshModelling):
     def setDataPost(self, data):
         """
         """
-        pg._r()
+        # pg._r()
         self.dijkstra.setData(data)
 
     def createDefaultStartModel(self, dataVals):
@@ -101,9 +101,9 @@ class TravelTimeManager(MeshMethodManager):
         """Return relative error values from a given DataContainer."""
         if not data.haveData('err'):
             pg.error('Datacontainer have no "err" values. Fallback set to 0.01')
-            
+
         return pg.Vector(data('err') / data('t'))
-        
+
     def setMesh(self, mesh, secNodes=0):
         """ """
         if secNodes > 0:
