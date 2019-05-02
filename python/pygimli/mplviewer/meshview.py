@@ -1263,21 +1263,20 @@ def _createParameterContraintsLines(mesh, cMat, cWeight=None):
     else:
         C = cMat
 
-    paraMarker = mesh.cellMarkers()
     cellList = dict()
-
-    for cID in range(len(paraMarker)):
-        if cID not in cellList:
-            cellList[cID] = []
-        cellList[cID].append(mesh.cell(cID))
-
+    for c in mesh.cells():
+        pID = c.marker()
+        if pID not in cellList:
+            cellList[pID] = []
+        cellList[pID].append(c)
+        
     paraCenter = dict()
-    for cID, vals in list(cellList.items()):
+    for pID, vals in list(cellList.items()):
         p = pg.RVector3(0.0, 0.0, 0.0)
         for c in vals:
             p += c.center()
         p /= float(len(vals))
-        paraCenter[cID] = p
+        paraCenter[pID] = p
 
     nConstraints = C[0].size()
     start = []
@@ -1285,27 +1284,11 @@ def _createParameterContraintsLines(mesh, cMat, cWeight=None):
     #    swatch = pg.Stopwatch(True)  # not used
     for i in range(0, int(nConstraints / 2)):
         # print i
-        # if i == 1000: break;
+        # if i == 3: break;
+
         idL = int(C[1][i * 2])
         idR = int(C[1][i * 2 + 1])
-        # leftCells = []
-        # rightCells = []
-        #        for c, index in enumerate(paraMarker):
-        #            if idL == index:
-        #                leftCells.append(mesh.cell(c))
-        #            if idR == index:
-        #                rightCells.append(mesh.cell(c))
-
-        #        p1 = pg.RVector3(0.0,0.0);
-        #        for c in leftCells:
-        #            p1 += c.center()
-        #        p1 /= float(len(leftCells))
-
-        #        p2 = pg.RVector3(0.0,0.0);
-        #        for c in rightCells:
-        #            p2 += c.center()
-        #        print cWeight[i]
-        #        p2 /= float(len(rightCells))
+        
         p1 = paraCenter[idL]
         p2 = paraCenter[idR]
 
@@ -1315,6 +1298,8 @@ def _createParameterContraintsLines(mesh, cMat, cWeight=None):
         else:
             pa = p1
             pb = p2
+
+        # print(i, idL, idR, p1, p2)
 
         start.append(pa)
         end.append(pb)
@@ -1339,8 +1324,8 @@ def drawParameterConstraints(ax, mesh, cMat, cWeight=None):
     colors = []
     linewidths = []
     for i, _ in enumerate(start):
-        lines.append(
-            list(zip([start[i].x(), end[i].x()], [start[i].y(), end[i].y()])))
+        lines.append(list(zip([start[i].x(), end[i].x()], 
+                              [start[i].y(), end[i].y()])))
 
         linewidth = 0.5
         col = (0.0, 0.0, 1.0, 1.0)
