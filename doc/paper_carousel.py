@@ -69,4 +69,8 @@ showcase = [
          title="Structurally constrained RST for improved permafrost characterization",
          subtitle="Steiner et al. (2019), The Cryosphere Discuss.",
          link="https://doi.org/10.5194/tc-2019-52"),
+    dict(img="pasquale2019.png",
+         title="Probabilistic inference of subsurface heterogeneity and interface geometry",
+         subtitle="de Pasquale et al. (2019), Geophysical Journal International",
+         link="https://doi.org/10.1093/gji/ggz055"),
 ]

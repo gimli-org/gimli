@@ -16,7 +16,7 @@ from pygimli.physics.petro import transFwdWyllieS as WyllieTrans
 
 
 def createSynthModel():
-    """Return the modeling mesh, the porosity distribution and the
+    """Return the modelling mesh, the porosity distribution and the
        parametric mesh for inversion.
     """
     # Create the synthetic model

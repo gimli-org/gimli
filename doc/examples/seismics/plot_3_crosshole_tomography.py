@@ -7,7 +7,7 @@ Crosshole traveltime tomography
 Seismic and ground penetrating radar (GPR) methods are frequently applied to
 image the shallow subsurface. While novel developments focus on inverting the
 full waveform, ray-based approximations are still widely used in practice and
-offer a computationally efficient alternative. Here we demonstrate the modeling
+offer a computationally efficient alternative. Here we demonstrate the modelling
 of traveltimes and their inversion for the underlying slowness distribution for
 a crosshole scenario.
 

@@ -1,4 +1,4 @@
-/******************************************************************************
+    /******************************************************************************
  *   Copyright (C) 2006-2019 by the GIMLi development team                    *
  *   Carsten Rücker carsten@resistivity.net                                   *
  *                                                                            *
@@ -64,7 +64,7 @@ public:
             return operator = (rhs.asValue());  // see above
         } return *this;
     }
-
+    
   /* The constructor initializes the private variables with all
      information that is needed. The container itself is located in
      the sparseMatrix class; here, the reference to it is entered.
@@ -160,7 +160,7 @@ public:
     }
 
     SparseMapMatrix(const std::string & filename)
-        : MatrixBase(){
+        : MatrixBase(), rows_(0), cols_(0), stype_(0) {
         this->load(filename);
     }
 

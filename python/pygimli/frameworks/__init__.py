@@ -6,7 +6,7 @@ from .modelling import (Modelling, Block1DModelling, MeshModelling,
                         PetroModelling, LCModelling)
 
 from .inversion import (Inversion, MarquardtInversion, Block1DInversion,
-                        MeshInversion, PetroInversion, LCInversion)
+                        PetroInversion, LCInversion)
 
 from .resolution import computeR
 

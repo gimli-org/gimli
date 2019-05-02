@@ -1,7 +1,7 @@
 /***************************************************************************
  *   Copyright (C) 2006-2013 by the resistivity.net development team       *
- *   Thomas Günther thomas@resistivity.net                                 *
- *   Carsten Rücker carsten@resistivity.net                                *
+ *   Thomas Gï¿½nther thomas@resistivity.net                                 *
+ *   Carsten Rï¿½cker carsten@resistivity.net                                *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -118,7 +118,7 @@ int main(int argc, char *argv []) {
         paraMesh.setCellMarkers(RVector(paraMesh.cellCount(), 2));
     }
         
-    //!** set up TT modeling class;
+    //!** set up TT modelling class;
     TravelTimeDijkstraModelling f(paraMesh, dataIn, verbose);
     RVector appSlowness(f.getApparentSlowness());
     vcout << "min/max apparent velocity = " << 1.0 / max(appSlowness) 

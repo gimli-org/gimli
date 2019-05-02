@@ -58,16 +58,18 @@ public:
 
     virtual ~CreateSensitivityColMT(){}
 
-    virtual void calc(Index tNr=0){
+    virtual void calc(){
 
         if (calc1_){
-            calc1(tNr);
+            calc1();
         }else {
-            calc2(tNr);
+            calc2();
         }
     }
 
-    virtual void calc2(Index tNr=0){
+    virtual void calc2(){
+        log(Debug, "Thread #" + str(_threadNumber) + ": on CPU " + str(schedGetCPU()) + 
+                   " slice " + str(start_) + ":" + str(end_));
         ElementMatrix < double > S_i;
         ElementMatrix < double > S1_i;
 
@@ -85,9 +87,6 @@ public:
         const RVector *dm = &(*data_)("m");
         const RVector *dn = &(*data_)("n");
 
-        log(Debug, "Thread #" + str(tNr) + ": on CPU " + str(schedGetCPU()) + 
-                   " slice " + str(start_) + ":" + str(end_));
-        
         for (Index cellID = start_; cellID < end_; cellID ++) {
 
             cell    = (*para_)[cellID];
@@ -120,7 +119,9 @@ public:
         }
     }
 
-    virtual void calc1(Index tNr=0){
+    virtual void calc1(){
+        log(Debug, "Thread #" + str(_threadNumber) + ": on CPU " + str(schedGetCPU()) + 
+                   " slice " + str(start_) + ":" + str(end_));
         bool haveCurrentPatterns = false;
 
         if (currPatternIdx_->size() * weights_->size() == pots_->rows()) {

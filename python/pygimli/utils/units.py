@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Collection of frequently used physical quantities with units and 
+"""Collection of frequently used physical quantities with units and
 there abbreviations."""
 
 import pygimli as pg
@@ -8,14 +8,14 @@ import pygimli as pg
 quants = {
     'rhoa': {
         'name': 'Apparent resistivity',
-        'unit': '$\Omega m$',
+        'unit': '$\Omega$m',
         'ger': 'scheinbarer spez. elektr. Widerstand',
-        },
+    },
     'res': {
         'name': 'Resistivity',
-        'unit': '$\Omega m$',
+        'unit': '$\Omega$m',
         'ger': 'spez. elektr. Widerstand',
-        },
+    },
     'va': {
         'name': 'Apparent velocity',
         'unit': 'm/s',
@@ -36,17 +36,17 @@ quants = {
         'unit': 's/m',
         'ger': 'Slowness',
     },
-
 }
 
 rc = {
     'lang': 'english',
-    'unitStyle': 2, # quantity (unit)
+    'unitStyle': 2,  # quantity (unit)
 }
+
 
 def unit(name, unit='auto'):
     """ Return the name of a physical quantity with its unit.
-    
+
     TODO
     ----
         * example
@@ -56,7 +56,7 @@ def unit(name, unit='auto'):
     ----------
     """
     quantity = None
-        
+
     if name.lower() not in quants:
         for k, v in quants.items():
             if v['name'].lower() == name.lower():
@@ -69,13 +69,13 @@ def unit(name, unit='auto'):
         ## fall back if the name is given instead of the abbreviation
         print(quants)
         pg.error('Please give abbreviation or full name '
-                    'for the quantity name: {0}'.format(name))
+                 'for the quantity name: {0}'.format(name))
     else:
         if rc['lang'] == 'german':
             name = quantity['ger']
         else:
             name = quantity['name']
-        
+
         if unit == 'auto':
             unit = quantity['unit']
 
@@ -83,9 +83,3 @@ def unit(name, unit='auto'):
         return '{0} in {1}'.format(name, unit)
     else:
         return '{0} ({1})'.format(name, unit)
-        
-
-
-
-
-

@@ -593,7 +593,7 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
     >>> import matplotlib.pyplot as plt
     >>> import pygimli as pg
     >>> import pygimli.meshtools as mt
-    >>> # Create geometry definition for the modeling domain
+    >>> # Create geometry definition for the modelling domain
     >>> world = mt.createWorld(start=[-20, 0], end=[20, -16],
     ...                        layers=[-2, -8], worldMarker=False)
     >>> # Create a heterogeneous block
@@ -1253,8 +1253,8 @@ def drawSensors(ax, sensors, diam=None, coords=None, verbose=False, **kwargs):
     for i, e in enumerate(sensors):
         if verbose:
             print(e, diam, e[coords[0]], e[coords[1]])
-        eCircles.append(
-            mpl.patches.Circle((e[coords[0]], e[coords[1]]), diam, **kwargs))
+        eCircles.append(mpl.patches.Circle((e[coords[0]], 
+                                            e[coords[1]]), diam, **kwargs))
 
     p = mpl.collections.PatchCollection(eCircles, **kwargs)
     p.set_zorder(100)

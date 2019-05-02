@@ -458,7 +458,7 @@ man_pages = [('index', 'GIMLi', 'GIMLi Documentation', ['GIMLi Group'], 1)]
 #  dir menu entry, description, category)
 texinfo_documents = [
     ('index', 'GIMLi', 'GIMLi Documentation', 'GIMLi Group', 'GIMLi',
-     'Geophysical Inversion and Modeling Library', 'Miscellaneous'),
+     'Geophysical Inversion and Modelling Library', 'Miscellaneous'),
 ]
 
 # Documents to append as an appendix to all manuals.

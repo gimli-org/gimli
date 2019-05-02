@@ -4,7 +4,7 @@
 """Method Manager
 
 Provide the end user interface for method (geophysical) dependent
-modeling and inversion as well as data and model visualization.
+modelling and inversion as well as data and model visualization.
 """
 
 import numpy as np
@@ -19,7 +19,7 @@ class MethodManager(object):
     geophysical data processing.
 
     The method manager holds one instance of a forward operator and an
-    appropriate inversion framework to handle modeling and data inversion.
+    appropriate inversion framework to handle modelling and data inversion.
 
     Method Manager also helps with data import and export,
     handle measurement data error estimation as well as model and data
@@ -74,7 +74,7 @@ class MethodManager(object):
     @verbose.setter
     def verbose(self, v):
         self._verbose = v
-        self._fw.verbose = self._verbose
+        self.fw.verbose = self._verbose
 
     @property
     def debug(self):
@@ -83,11 +83,7 @@ class MethodManager(object):
     @debug.setter
     def debug(self, v):
         self._debug = v
-        self._fw.debug = self._debug
-
-    @property
-    def model(self):
-        return self._fw.model
+        self.fw.debug = self._debug
 
     @property
     def fw(self):
@@ -95,11 +91,15 @@ class MethodManager(object):
 
     @property
     def fop(self):
-        return self._fw.fop
+        return self.fw.fop
 
     @property
     def inv(self):
-        return self._fw
+        return self.fw
+
+    @property
+    def model(self):
+        return self.fw.model
 
     def reinitForwardOperator(self, **kwargs):
         """Reinitialize the forward operator.
@@ -120,10 +120,12 @@ class MethodManager(object):
         fop = self.createForwardOperator(**kwargs)
 
         if fop is None:
-            raise Exception("It seems that createForwardOperator method "
+            pg.critical("It seems that createForwardOperator method "
                             "does not return a valid forward operator.")
-        if self._fw is not None:
-            self._fw.setForwardOperator(fop)
+        if self.fw is not None:
+            self.fw.setForwardOperator(fop)
+        else:
+            pg.critical("No inversion framwork defined.")
 
     def createForwardOperator(self, **kwargs):
         """Mandatory interface for derived classes.
@@ -153,9 +155,9 @@ class MethodManager(object):
         """
         self._fw = self.createInversionFramework(**kwargs)
 
-        if self._fw is None:
-            raise BaseException("createInversionFramework does not return "
-                                "valid inversion framework.")
+        if self.fw is None:
+            pg.critical("createInversionFramework does not return "
+                        "valid inversion framework.")
 
     def createInversionFramework(self, **kwargs):
         """Create default Inversion framework.
@@ -312,7 +314,7 @@ class MethodManager(object):
         if ax is None:
             fig, ax = pg.plt.subplots(ncols=1)
 
-        self._fw.fop.drawModel(ax, model, **kwargs)
+        self.fop.drawModel(ax, model, **kwargs)
         return ax
 
     def showData(self, data, ax=None, **kwargs):
@@ -321,7 +323,7 @@ class MethodManager(object):
         Draw data values into a given axes or show the data values from
         the last run.
         Forwards on default to the self.fop.drawData function
-        of the modeling operator.
+        of the modelling operator.
         If there is no given function given, you have to override this method.
 
         Parameters
@@ -336,11 +338,16 @@ class MethodManager(object):
         if ax is None:
             fig, ax = pg.plt.subplots(ncols=1)
 
-        self._fw.fop.drawData(ax, data, **kwargs)
+        self.fop.drawData(ax, data, **kwargs)
         return ax
 
     def showResult(self, ax=None, **kwargs):
-        """Show the last inversion result."""
+        """Show the last inversion result.
+
+        TODO
+        ----
+         DRY: decide showModel or showResult
+        """
         ax = self.showModel(ax=ax, model=self.model,
                             #label='Model',
                             **kwargs)
@@ -382,6 +389,8 @@ class MethodManager(object):
     @staticmethod
     def createArgParser(dataSuffix='dat'):
         """Create default argument parser.
+
+        TODO move this to some kind of app class
 
         Create default argument parser for the following options:
 
@@ -441,76 +450,111 @@ class MeshMethodManager(MethodManager):
         """Constructor."""
         super(MeshMethodManager, self).__init__(**kwargs)
 
-    def createInversionFramework(self, **kwargs):
-        """
-        """
-        return pg.frameworks.MeshInversion(**kwargs)
+    # def createInversionFramework(self, **kwargs):
+    #     """
+    #     """
+    #     return pg.frameworks.MeshInversion(**kwargs)
 
-    def createMesh(self, **kwargs):
-        print(**kwargs)
-        raise Exception("Implement me!")
+    def paraModel(self, model=None):
+        """Give the model parameter regarding the parameter mesh."""
+        if model is None:
+            model = self.fw.model
+
+        if len(model) == self.fw.parameterCount:
+            return model
+        else:
+            model(self.fop.paraDomain.cellMarkers())
+
+    def preRun(self, *args, **kwargs):
+        """Called just before the inversion run starts."""
         pass
 
-    def setMesh(self, mesh, **kwargs):
-        """Set mesh
+    def postRun(self, *args, **kwargs):
+        """Called just after the inversion run."""
+        pass
 
-        TODO
-        ----
-        finish me and document me
-
-        """
-        if mesh is None and self.fop.mesh is None:
-            pg.warn("No mesh defined. Try to create a suitable mesh.")
-            mesh = self.createMesh(depth=kwargs.pop('depth', None),
-                                   quality=kwargs.pop('quality', 34.0),
-                                   maxCellArea=kwargs.pop('maxCellArea', 0.0),
-                                   paraDX=kwargs.pop('paraDX', 0.3))
-
-
-        if mesh is not None:
-            self.fop.setMesh(mesh)
-
-    def setData(self, data):
-        if data is not None:
-            self.fw.setData(data)
-
-    def invert(self, data, mesh=None, **kwargs):
+    def invert(self, data, mesh=None, zWeight=1.0, startModel=None,
+               **kwargs):
         """Run the full inversion.
 
         Parameters
         ----------
-        data : pg.DataContainer | iterable
+        data : pg.DataContainer
+        
         mesh : pg.Mesh [None]
-        """
-        # set the data basis here, some fop needs them before
-        # setting the mesh basis
-        self.fop.setData(data)
-        self.fop.setMesh(mesh, **kwargs)
+        
+        zWeight : float [1.0]
 
-        return super(MeshMethodManager, self).invert(data=data,
-                                                     **kwargs)
+        startModel : float | iterable [None]
+
+            If set to None fop.createDefaultStartModel(dataValues) is called.
+        
+        Other Parameters
+        ----------------
+        forwarded to Inversion.run
+
+        Returns
+        -------
+        model : array
+            Model mapped for match the paraDomain Cell markers. 
+            The calculated model is in self.fw.model.
+        """
+        if isinstance(data, pg.DataContainer):
+            self.fop.data = data
+        else:
+            pg.critical("setting data array is not yet implemented.")
+        
+        self.fop.setMesh(mesh)
+
+        if self.fop.mesh() is None:
+            pg.critical('Please provide a mesh')
+        
+        dataVals = self._ensureData(data)
+        errVals = self._ensureError(data)
+
+        if startModel is None:
+            startModel=self.fop.createDefaultStartModel(dataVals)
+        
+        self.fop.setRegionProperties('*', 
+                                     startModel=startModel,
+                                     zWeight=zWeight,
+                                    )
+        
+        # Limits is no mesh related argument here or base??
+        limits=kwargs.pop('limits', None)
+
+        self.fop.setRegionProperties('*', limits=limits)
+
+        self.preRun(**kwargs)
+
+        self.fw.run(dataVals, errVals, **kwargs)
+
+        self.postRun(**kwargs)
+        return self.paraModel(self.fw.model)
 
 
     def showModel(self, model=None, ax=None, **kwargs):
-        if model is None:
-            model = self.model
+        """"""
+        diam = kwargs.pop('diam', None)
 
         ax, cbar = pg.show(mesh=self.fop.paraDomain,
-                           data=model,
+                           data=self.paraModel(model),
                            label=kwargs.pop('label', 'Model parameter'),
-                           ax=ax,
-                           **kwargs)
+                           ax=ax, **kwargs)
+
+        pg.mplviewer.drawSensors(ax,
+                                 self.fop.data.sensors(),
+                                 color='black',
+                                 diam=diam)
+
         return ax, cbar
-
-
 
     def showFit(self, axs=None, **kwargs):
         """Show the last inversion data and response."""
-        orientation='vertical',
+        orientation='vertical'
         if axs is None:
             fig, axs = pg.plt.subplots(nrows=1, ncols=2)
             orientation='horizontal'
-
 
         self.showData(data=self.inv.dataVals,
                       label='Data', orientation=orientation,
@@ -520,8 +564,9 @@ class MeshMethodManager(MethodManager):
                       ax=axs[1], **kwargs)
 
         if not kwargs.pop('hideFittingAnnotation', False):
-            axs[0].text(0.01, 1.0025, "rrms: %.2g, $\chi^2$: %.2g" %
-                                (self.fw.inv.relrms(), self.fw.inv.chi2()),
+            axs[0].text(0.01, 1.0025, "rrms: {0}, $\chi^2$: {1}"
+                    .format(pg.utils.prettyFloat(self.fw.inv.relrms()),
+                            pg.utils.prettyFloat(self.fw.inv.chi2())),
                     transform=axs[0].transAxes,
                     horizontalalignment='left',
                     verticalalignment='bottom')

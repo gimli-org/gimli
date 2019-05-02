@@ -210,31 +210,33 @@ public:
                    const ModellingBase & fop,
                    const RVector & resp,
                    const RVector & model,
-                   Index count,
                    bool verbose)
-    : BaseCalcMT(count, verbose), J_(J), fop_(&fop), resp_(&resp),
-    model_(&model) {
-
+    : BaseCalcMT(verbose), J_(J), fop_(&fop), _resp(&resp),
+      _model(&model) {
     }
 
     virtual ~JacobianBaseMT(){}
 
-    virtual void calc(Index tNr=0){
-        RVector modelChange(*model_);
-        modelChange[tNr] *= 1.05;
-        fop_->response_mt(modelChange, tNr);
-//         RVector respChange();
+    virtual void calc(){
+        log(Debug, "Thread #" + str(_threadNumber) + ": on CPU " + str(schedGetCPU()) + 
+                   " slice " + str(start_) + ":" + str(end_));
 
-        //J_->setCol(tNr, (respChange - *resp_)/(modelChange[tNr] - (*model_)[tNr]));
+        RMatrix *J = dynamic_cast< RMatrix * >(J_);
+
+        for (Index i = start_; i < end_; i ++) {                   
+            RVector modelChange(*_model);
+            modelChange[i] *= 1.05;
+            RVector respChange(fop_->response_mt(modelChange, i));
+            J->setCol(i, (respChange - *_resp) / (modelChange[i] - (*_model)[i]));
+        }
     }
 
 protected:
     MatrixBase              * J_;
     const ModellingBase     * fop_;
-    const RVector           * resp_;
-    const RVector           * model_;
+    const RVector           * _resp;
+    const RVector           * _model;
 };
-
 
 void ModellingBase::createJacobian_mt(const RVector & model,
                                       const RVector & resp){
@@ -250,9 +252,8 @@ void ModellingBase::createJacobian_mt(const RVector & model,
     RMatrix *J = dynamic_cast< RMatrix * >(jacobian_);
     if (J->rows() != resp.size()){ J->resize(resp.size(), model.size()); }
 
-
     ALLOW_PYTHON_THREADS
-    distributeCalc(JacobianBaseMT(jacobian_, *this, resp, model, 0, verbose_),
+    distributeCalc(JacobianBaseMT(jacobian_, *this, resp, model, verbose_),
                    jacobian_->rows(), nThreadsJacobian_, verbose_);
     swatch.stop();
     if (verbose_) std::cout << " ... " << swatch.duration() << " s." << std::endl;

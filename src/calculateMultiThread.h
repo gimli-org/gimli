@@ -31,32 +31,30 @@ namespace GIMLI{
 
 class BaseCalcMT{
 public:
-    BaseCalcMT(Index count=0, bool verbose=false)
-        : verbose_(verbose), start_(0), end_(0), threadNumber_(count){
+    BaseCalcMT(bool verbose=false)
+        : verbose_(verbose), start_(0), end_(0), _threadNumber(0){
     }
 
     virtual ~BaseCalcMT(){ }
 
-    void operator () () { calc(threadNumber_); }
+    void operator () () { calc(); }
 
     void setRange(Index start, Index end, Index threadNumber=0){
         start_ = start;
         end_ = end;
-        if (threadNumber_ > 0){
-            threadNumber_ = threadNumber;
-        }
+        _threadNumber = threadNumber;
     }
 
-    virtual void calc(Index tNr=0)=0;
+    virtual void calc()=0;
 
 protected:
     bool verbose_;
     Index start_;
     Index end_;
-    Index threadNumber_;
+    Index _threadNumber;
 };
-
 template < class T > void distributeCalc(T calc, uint nCalcs, uint nThreads, bool verbose=false){
+    log(Debug, "Create distributed calculation of " + str(nCalcs) + " jobs on " + str(nThreads) + " threads.");
     if (nThreads == 1){
         calc.setRange(0, nCalcs);
         calc();
@@ -67,9 +65,8 @@ template < class T > void distributeCalc(T calc, uint nCalcs, uint nThreads, boo
         for (uint i = 0; i < nThreads; i ++){
             calcObjs.push_back(calc);
             Index start = singleCalcCount * i;
-            Index end   = singleCalcCount * (i + 1);
-            if (i == nThreads -1) end = nCalcs;
-            log(Debug, "Threaded calculation: " + str(i) + ": " + str(start)  +" " + str(end));
+            Index end   = min(singleCalcCount * (i + 1), nCalcs);
+            log(Debug, "Threaded calculation: #" + str(i) + ": " + str(start)  +" " + str(end));
             calcObjs.back().setRange(start, end, i);
             if (end >= nCalcs) break;
         }

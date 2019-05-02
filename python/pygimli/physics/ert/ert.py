@@ -28,7 +28,7 @@ def simulate(mesh, res, scheme, sr=True, useBert=True,
     res : see :py:mod:`pygimli.ert.ERTManager.simulate`
         Resistivity distribution.
     mesh : :gimliapi:`GIMLI::Mesh` | str
-        Modeling domain. Mesh can be a file name here.
+        Modelling domain. Mesh can be a file name here.
     scheme : :gimliapi:`GIMLI::DataContainerERT` | str
         Data configuration. Scheme can be a file name here.
     sr : bool [True]
@@ -78,26 +78,13 @@ class BertModelling(MeshModelling):
         self.calcGeometricFactor = self.bertFop.calcGeometricFactor
         self.mapERTModel = self.bertFop.mapERTModel
 
-    def setMesh(self, mesh, ignoreRegionManager=False):
+    def setDataPost(self, data):
         """"""
-        # feed self regionManager
-        super(BertModelling, self).setMesh(mesh, ignoreRegionManager)
-        self.bertFop.setMesh(self.mesh(), ignoreRegionManager=True)
+        self.bertFop.setData(data)
 
-    def createRefinedForwardMesh(self, **kwargs):
+    def setMeshPost(self, mesh):
         """"""
-        super(BertModelling, self).createRefinedForwardMesh(**kwargs)
-        self.bertFop.setMesh(self.mesh(), ignoreRegionManager=True)
-
-    def setData(self, scheme):
-        """"""
-        super(BertModelling, self).setData(scheme)
-        self.bertFop.setData(scheme)
-
-    def setDataSpace(self, dataContainer):
-        """"""
-        super(BertModelling, self).setData(dataContainer)
-        self.bertFop.setData(dataContainer)
+        self.bertFop.setMesh(mesh, ignoreRegionManager=True)
 
 
 class ERTModelling(MeshModelling):
@@ -117,10 +104,6 @@ class ERTModelling(MeshModelling):
         self.k = None
         self.w = None
 
-    def createStartModel(self, rhoa):
-        sm = pg.RVector(self.regionManager().parameterCount(), pg.median(rhoa))
-        return sm
-
     def response(self, model):
         """Solve forward task.
 
@@ -129,6 +112,7 @@ class ERTModelling(MeshModelling):
         """
         ### NOTE TODO can't be MT until mixed boundary condition depends on
         ### self.resistivity
+        pg.tic()
         if not self.data.allNonZero('k'):
             pg.error('Need valid geometric factors: "k".')
             pg.warn('Fallback "k" values to -sign("rhoa")')
@@ -163,6 +147,7 @@ class ERTModelling(MeshModelling):
         # store all potential fields
         u = np.zeros((nEle, nDof))
         self.subPotentials = [pg.RMatrix(nEle, nDof) for i in range(len(k))]
+
         for i, ki in enumerate(k):
             ws = dict()
             uE = pg.solve(mesh, a=1./res, b=-(ki * ki)/res, f=rhs,
@@ -194,7 +179,9 @@ class ERTModelling(MeshModelling):
         self.lastResponse = r * self.data('k')
 
         if self.verbose:
-            print("Resp: ", min(self.lastResponse), max(self.lastResponse))
+            print("Resp min/max: {0} {1} {2}s".format(min(self.lastResponse), 
+                                                      max(self.lastResponse),
+                                                      pg.dur()))
 
         return self.lastResponse
 
@@ -765,35 +752,6 @@ class ERTManager(MeshMethodManager):
     #         print(min(vals), max(vals))
     #         pg.critical("Ensure apparent resistivity values are larger then 0.")
     #     return vals
-
-    def invert(self, data=None, **kwargs):
-        """Invert data.
-
-        Parameters
-        ----------
-        data : pg.DataContainerERT()
-            Data container with at least SensorIndieces 'a b m n' and
-            data values 'rhoa' (apparent resistivities) and 'err'
-            (relative error in %/100)
-
-        """
-
-        if isinstance(data, pg.DataContainer):
-            self.fop.data = data
-
-        if 'mesh' in kwargs:
-            self.fop.setMesh(kwargs.pop('mesh'))
-
-        dataVals = self._ensureData(data)
-        errVals = self._ensureError(data)
-
-        startModel = kwargs.pop('startModel', pg.median(dataVals))
-        self.fop.setRegionProperties('*', startModel=startModel)
-
-        return self.fw.run(dataVals, errVals, **kwargs)
-
-        # return super(ERTManager, self).invert(data=data,
-        #                                       **kwargs)
 
     def coverage(self):
         """Return coverage vector considering the logarithmic transformation.

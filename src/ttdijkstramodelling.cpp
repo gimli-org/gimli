@@ -316,8 +316,9 @@ void TravelTimeDijkstraModelling::updateMeshDependency_(){
 
     for (Index i = 0; i < shots.size(); i ++){
         shotNodeId_[i] = mesh_->findNearestNode(dataContainer_->sensorPosition((Index)shots[i]));
-        if (mesh_->node(shotNodeId_[i]).cellSet().size() == 0){
-            __MS("no cells found")
+        if (mesh_->node(shotNodeId_[i]).cellSet().size() == 0 &&
+            mesh_->node(shotNodeId_[i]).id() < (int)mesh_->nodeCount()){
+            __MS("no cells found for node "  << shotNodeId_[i])
         }
         shotsInv_[Index(shots[i])] = i;
     }
@@ -380,10 +381,12 @@ void TravelTimeDijkstraModelling::initJacobian(){
     ownJacobian_ = true;
 }
 
-const IndexArray & TravelTimeDijkstraModelling::way(Index sht, Index rec) const{
-    ASSERT_SIZE(wayMatrix_, sht)
-    ASSERT_SIZE(wayMatrix_[sht], rec)
-    return wayMatrix_[sht][rec];
+const IndexArray & TravelTimeDijkstraModelling::way(Index sht, Index rec) const {
+    Index s = shotsInv_.at(sht);
+    Index r = receiInv_.at(rec);
+    ASSERT_SIZE(wayMatrix_, s)
+    ASSERT_SIZE(wayMatrix_[s], r)
+    return wayMatrix_[s][r];
 }
 
 class CreateDijkstraRowMT : public GIMLI::BaseCalcMT{
@@ -400,9 +403,9 @@ public:
 
     virtual ~CreateDijkstraRowMT(){}
 
-    virtual void calc(Index tNr=0){
+    virtual void calc(){
         Stopwatch swatch(true);
-        log(Debug, "Thread #" + str(tNr) + ": on CPU " + str(schedGetCPU()) + 
+        log(Debug, "Thread #" + str(_threadNumber) + ": on CPU " + str(schedGetCPU()) + 
                    " slice " + str(start_) + ":" + str(end_));
                         
         for (Index shot = start_; shot < end_; shot ++) {
@@ -412,13 +415,12 @@ public:
                 _wayMatrix[shot][i] = _dijkstra.shortestPathTo((*_recNodeIds)[i]);
             }
         }
-        //__MS(tNr << " " << start_ << "  "<< end_)
-        log(Debug, "time: #" + str(tNr) + " " + str(swatch.duration()) + "s");
+        log(Debug, "time: #" + str(_threadNumber) + " " + str(swatch.duration()) + "s");
     }
 
 protected:
     std::vector < IndexArray > * _wayMatrix;
-    Dijkstra                _dijkstra;
+    Dijkstra                     _dijkstra;
     const IndexArray        * _shotNodeIds;
     const IndexArray        * _recNodeIds;
 };
