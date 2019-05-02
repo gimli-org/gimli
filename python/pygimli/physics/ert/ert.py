@@ -45,7 +45,7 @@ def simulate(mesh, res, scheme, sr=True, useBert=True,
 
     if isinstance(scheme, str):
         scheme = pb.load(scheme)
-
+    
     return ert.simulate(mesh, res, scheme, verbose=verbose, **kwargs)
 
 
@@ -550,6 +550,7 @@ class ERTManager(MeshMethodManager):
         fop = self.fop
         fop.data = scheme
         fop.setMesh(mesh, ignoreRegionManager=True)
+        fop.verbose = verbose
 
         rhoa = None
         phia = None

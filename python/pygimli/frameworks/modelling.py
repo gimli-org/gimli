@@ -445,12 +445,13 @@ class MeshModelling(Modelling):
     def setMesh(self, mesh, ignoreRegionManager=False):
         """
         """
-        if ignoreRegionManager or self._regionManagerInUse == False:
+        if ignoreRegionManager == True or self._regionManagerInUse == False:
             if self.fop is not None:
                 self.fop.setMesh(mesh, ignoreRegionManager=True)
             else:
                 super(Modelling, self).setMesh(mesh, ignoreRegionManager=True)
 
+            self.setMeshPost(mesh)
             return
 
         self.clearRegionProperties()
