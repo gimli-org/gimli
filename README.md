@@ -2,6 +2,8 @@
 Readme for Github repository only. (Get's selected before *.rst file)
 -->
 
+**Temporary fw_cleaning docs (by jenkins)**: http://www2.geo.uni-bonn.de/~wagner/pg
+
 <a href="https://www.pygimli.org">
   <img src="https://www.pygimli.org/_static/gimli_logo.svg" width="50%">
 </a>
