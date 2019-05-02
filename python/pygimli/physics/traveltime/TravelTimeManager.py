@@ -44,7 +44,7 @@ class TravelTimeDijkstraModelling(MeshModelling):
     def setMeshPost(self, mesh):
         """
         """
-        pg._r(mesh)
+        # pg._r(mesh)
         self.dijkstra.setMesh(mesh)
         #self.dijkstra.setMesh(pg.Mesh(mesh))
 
