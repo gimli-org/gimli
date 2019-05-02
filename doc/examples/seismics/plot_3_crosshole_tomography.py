@@ -133,7 +133,7 @@ for ax in (ax1, ax2):
     ax.plot(sensors[:, 0], sensors[:, 1], "wo")
 
 ttinv.showResult(ax=ax2)
-ttinv.showRayPaths(ax=ax2, color="0.8", alpha=0.3)
+# ttinv.showRayPaths(ax=ax2, color="0.8", alpha=0.3)
 fig.tight_layout()
 
 ################################################################################
@@ -143,7 +143,7 @@ fig.tight_layout()
 
 fig, ax = plt.subplots()
 ttinv.showCoverage(ax=ax, cMap="Greens")
-ttinv.showRayPaths(ax=ax, color="k", alpha=0.3)
+# ttinv.showRayPaths(ax=ax, color="k", alpha=0.3)
 ax.plot(sensors[:, 0], sensors[:, 1], "ko")
 
 ################################################################################
