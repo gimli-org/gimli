@@ -1264,7 +1264,10 @@ def drawSensors(ax, sensors, diam=None, coords=None, verbose=False, **kwargs):
 
 
 def _createParameterContraintsLines(mesh, cMat, cWeights=None):
-    """TODO Documentme."""
+    """Create line segments representing constrains.
+
+        
+    """
     C = None
 
     if isinstance(cMat, pg.SparseMapMatrix):
