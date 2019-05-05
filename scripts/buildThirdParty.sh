@@ -483,7 +483,6 @@ buildCASTXMLBIN(){
         rm $CASTXML_DIST/bin/*
         rm -rf $CASTXML_DIST/share/castxml
     fi
-
 }
 
 prepCASTXML(){
