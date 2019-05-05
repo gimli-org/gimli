@@ -19,8 +19,9 @@ CASTXML_URL=https://github.com/CastXML/CastXML.git
 #CASTXML_REV=d5934bd08651dbda95a65ccadcc5f39637d7bc59 #current functional
 #CASTXML_REV=9d7a46d639ce921b8ddd36ecaa23c567d003294a #last functional
 
-# Check for changes here: https://data.kitware.com/#folder/57b5de948d777f10f2696370
-CASTXML_BIN_LINUX=https://data.kitware.com/api/v1/item/57b5de948d777f10f2696371/download
+# Check for updates https://data.kitware.com/#search/results?query=castxml&mode=text
+CASTXML_BIN_LINUX=https://data.kitware.com/api/v1/file/5b6c5b4d8d777f06857c323b/download
+#CASTXML_BIN_LINUX=https://data.kitware.com/api/v1/item/57b5de948d777f10f2696371/download # seems broken
 #CASTXML_BIN_LINUX=https://data.kitware.com/api/v1/file/57b5dea08d777f10f2696379/download # old ok
 CASTXML_BIN_MAC=https://data.kitware.com/api/v1/file/57b5de9f8d777f10f2696378/download
 CASTXML_BIN_WIN=https://data.kitware.com/api/v1/file/5b68bfc28d777f06857c1f44/download
@@ -456,6 +457,9 @@ buildCASTXMLBIN(){
     prepCASTXMLBIN
 
     if [ "$SYSTEM" == "WIN" ]; then
+        if [ -n "$CLEAN" ]; then
+            rm -f $SRC_DIR/castxml-windows.zip
+        ]
         getWITH_WGET $CASTXML_BIN_WIN $CASTXML_SRC castxml-windows.zip
         cp -r $CASTXML_SRC/castxml/* $CASTXML_DIST
         CASTXMLBIN=castxml.exe
@@ -464,6 +468,9 @@ buildCASTXMLBIN(){
         cp -r $CASTXML_SRC/* $CASTXML_DIST
         CASTXMLBIN=castxml
     else
+        if [ -n "$CLEAN" ]; then
+            rm -f $SRC_DIR/castxml-linux.tar.gz
+        fi
         getWITH_WGET $CASTXML_BIN_LINUX $CASTXML_SRC castxml-linux.tar.gz
         cp -r $CASTXML_SRC/* $CASTXML_DIST
         CASTXMLBIN=castxml
