@@ -339,6 +339,7 @@ template< typename T > inline std::string str(const T & v){
     return os.str();
 }
 
+#ifndef PYGIMLI_CAST // castxml complains on older gcc/clang
 template<typename Value, typename... Values>
 std::string str(Value v, Values... vs){
     std::ostringstream os;
@@ -347,6 +348,7 @@ std::string str(Value v, Values... vs){
     (void) expander{ 0, (os << " " << vs, void(), 0)... };
     return os.str();
 }
+#endif 
 
 enum LogType {Info, Warning, Error, Debug, Critical};
 DLLEXPORT void log(LogType type, const std::string & msg);
