@@ -459,7 +459,7 @@ buildCASTXMLBIN(){
     if [ "$SYSTEM" == "WIN" ]; then
         if [ -n "$CLEAN" ]; then
             rm -f $SRC_DIR/castxml-windows.zip
-        ]
+        fi
         getWITH_WGET $CASTXML_BIN_WIN $CASTXML_SRC castxml-windows.zip
         cp -r $CASTXML_SRC/castxml/* $CASTXML_DIST
         CASTXMLBIN=castxml.exe
