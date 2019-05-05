@@ -469,19 +469,10 @@ template < typename ValueType > void setEnvironment(const std::string & name,
             throwError(1, "name is NULL, points to a string of length 0, or contains an '=' character.");
         case ENOMEM:
             __MS(name << " " << val)
-            throwError(1, "name is NULL, points to a string of length 0, or contains an '=' character.");
+            throwError(1, "name is NULL, Insufficient memory to add a new variable to the environment.");
     }
-//     EINVAL
-//
-//     ENOMEM Insufficient memory to add a new variable to the environment.
-
     if (verbose) std::cout << "set: export " << name << "=" << val << std::endl;
 }
-
-// //! Deprecated! use str() instead, General template for conversion to string, should supersede all sprintf etc.
-// template< typename T > inline std::string toStr(const T & value){
-//     return str(value);
-// }
 
 inline std::string strReplaceBlankWithUnderscore(const std::string & str) {
     std::string res(str);
