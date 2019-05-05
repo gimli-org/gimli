@@ -7,19 +7,21 @@ import time
 import numpy as np
 import pygimli as pg
 import pygimli.meshtools as mt
+from pygimli.frameworks import MeshModelling
 
-class TestMod(pg.ModellingBase):
+class TestMod(MeshModelling):
     def __init__(self, mesh, verbose=True):
-        super(TestMod, self).__init__(verbose)
+        super(TestMod, self).__init__()
         self.meshlist = []
         for i in range(2):
             for cell in mesh.cells():
                 cell.setMarker(i + 1)
             self.meshlist.append(pg.Mesh(mesh))
+            self.regionManager().setMesh(self.meshlist[i])
             self.regionManager().addRegion(i + 1, self.meshlist[i])
             self.regionManager().region(i + 1).setConstraintType(1)
 
-        self.mesh = self.meshlist[0]
+        # self.setMesh(self.meshlist[0], ignoreRegionManager=True)
 
 
 class TestRM(unittest.TestCase):

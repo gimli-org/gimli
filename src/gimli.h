@@ -161,9 +161,6 @@ typedef int64_t int64;
 #define ASSERT_EMPTY(v) if (v.size()==0) \
     throwLengthError(1, WHERE_AM_I + " array size is zero.");
 
-enum LogType {Info, Warning, Error, Debug, Critical};
-DLLEXPORT void log(LogType type, const std::string & msg);
-
 static const int MARKER_BOUND_HOMOGEN_NEUMANN = -1;
 static const int MARKER_BOUND_MIXED = -2;
 static const int MARKER_BOUND_HOMOGEN_DIRICHLET = -3;
@@ -335,11 +332,28 @@ private:
 //     #include <Python.h>
 #endif
 
-//! General template for conversion to ing, should supersede all sprintf etc.
-template< typename T > inline std::string str(const T & value){
-    std::ostringstream streamOut;
-    streamOut << value;
-    return streamOut.str();
+//! General template for conversion to string, should supersede all sprintf etc.
+template< typename T > inline std::string str(const T & v){
+    std::ostringstream os;
+    os << v;
+    return os.str();
+}
+
+template<typename Value, typename... Values>
+std::string str(Value v, Values... vs){
+    std::ostringstream os;
+    using expander = int[];
+    os << v; // first
+    (void) expander{ 0, (os << " " << vs, void(), 0)... };
+    return os.str();
+}
+
+enum LogType {Info, Warning, Error, Debug, Critical};
+DLLEXPORT void log(LogType type, const std::string & msg);
+
+template<typename... Values>
+void log(LogType type, Values... vs){
+    return log(type, str(vs...));
 }
 
 //! DEPRECATED do not use
@@ -479,9 +493,9 @@ inline std::string lower(const std::string & str){
     return lo;
 }
 
-template < typename T > inline void swapVal(T & a, T & m){
-    T tmp(a); a = m; m = tmp;
-}
+// template < typename T > inline void swapVal(T & a, T & m){
+//     T tmp(a); a = m; m = tmp;
+// }
 
 /*! General template for deleting an object. This is not exception-safe unless you use some kind of smart pointer.\n
 Example: Delete all objects in a container.

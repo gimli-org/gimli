@@ -26,9 +26,10 @@ CASTXML_BIN_MAC=https://data.kitware.com/api/v1/file/57b5de9f8d777f10f2696378/do
 CASTXML_BIN_WIN=https://data.kitware.com/api/v1/file/5b68bfc28d777f06857c1f44/download
 
 PYGCCXML_URL=https://github.com/gccxml/pygccxml
-PYGCCXML_REV=648e8da38fa12004f0c83f6e1532349296425702 # current functional
-#PYGCCXML_REV=6c6e6e038f24cf4accd94a11dabe74e8303e383d # last functional
-#PYGCCXML_RV=v1.7.3
+             
+PYGCCXML_REV=2b1efbb9e37ceb2ae925c7f3ce1570f476db9e1e # current functional
+#PYGCCXML_REV=648e8da38fa12004f0c83f6e1532349296425702 # last functional
+#PYGCCXML_BRANCH=develop
 
 PYPLUSPLUS_URL=https://bitbucket.org/ompl/pyplusplus
 #PYPLUSPLUS_REV=be7b5b3a0859 # tag 1.8 last functional

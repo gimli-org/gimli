@@ -53,9 +53,6 @@ public:
     /*! Return the region marker id. */
     inline SIndex marker() const { return marker_; }
 
-    /*! Returns read_only acccess to the boundaries of this region */
-    const std::vector < Boundary * > & boundaries() const { return bounds_; }
-
     /*! Set new parameter cells, i.e. update the related mesh and all sizes. */
     void resize(const Mesh & mesh);
 
@@ -109,47 +106,36 @@ public:
     void fillConstraints(RSparseMapMatrix & C, Index startConstraintsID);
 
     /*! Set region wide constant constraints weight, (default = 1). If this method is called background is forced to false. */
-    void setConstraintsWeight(double bc);
+    void setConstraintWeights(double bc);
 
     /*! Set region wide variable constraints weight from RVector cw. If this method is called background is forced to false. */
-    void setConstraintsWeight(const RVector & cw);
+    void setConstraintWeights(const RVector & cw);
 
-    /*! Return Read-only vector of given constraints weights as RVector (default RVector(constraintCount, 1.0) */
-    inline const RVector & constraintsWeight() const { return constraintsWeight_; }
+    /*! Return constraint weights as RVector (default RVector(constraintCount, 1.0) */
+    const RVector & constraintWeights();
 
     /*! Fill global constraints weight vector started at constraintStart. */
-    void fillConstraintsWeight(RVector & vec, Index constraintStart);
+    void fillConstraintWeights(RVector & vec, Index constraintStart);
+
+    /*! Helper method that convert cWeight parameter into individual
+     * constraintsWeights depending on the associated boundary norm.
+     * At the moment only zWeight is considered. */
+    void _createConstraintWeights();
 
     /*! Set Region-Wide horizontal(z) weighting parameter for anisotropic smoothing \n
         1 - isotrope, 0 -- no vertical smoothing
     */
     inline void setZWeight(double zw){
         zWeight_ = zw;
-        this->fillConstraintsWeightWithFlatWeight();
+        this->constraintWeights_.clear();
     }
     /*! Return Region-Wide horizontal(z)-weighting parameter*/
     inline double zWeight() const { return zWeight_; }
-
-    /*! Possible DEPRECATED ?? */
-    inline void setZPower(double zp){
-        __MS("DEPRECATED")
-        zPower_ = zp; zWeight_ = 0.01;
-        fillConstraintsWeightWithFlatWeight();
-    }
-    inline double zPower() const { return zPower_; }
 
     /*! Set fixed value for background regions that will not
      * part of any value prolongation.*/
     void setFixValue(double val);
     inline double fixValue() const { return fixValue_;}
-
-    /*! Helper method that convert cWeight parameter into individual
-     * constraintsWeights depending on the associated boundary norm.
-     * At the moment only zWeight is considered. */
-    void fillConstraintsWeightWithFlatWeight();
-
-//DEPRECATED ??
-//      inline RVector * constraintsWeight() { return & boundaryControl_; }
 
     void fillBoundaryNorm(std::vector< RVector3 > & vnorm, Index boundCount);
 
@@ -160,6 +146,9 @@ public:
 //     void fillStartVector(RVector & vec);
 
     void fillModelControl(RVector & vec);
+
+    /*! Returns read_only acccess to the boundaries of this region */
+    const std::vector < Boundary * > & boundaries() const { return bounds_; }
 
     const std::vector < Cell * > & cells() const { return cells_; }
 
@@ -194,7 +183,6 @@ public:
     inline const RVector & modelControl() const { return modelControl_; }
     inline RVector * modelControl() { return & modelControl_; }
 
-    void setModelTransformation(const Trans< RVector > & tM);
     void setTransModel(Trans< RVector > & tM);
 
     /*! Return a cumulative transform function based on transform functions for each region.
@@ -209,14 +197,10 @@ public:
     /*! set start and upper/lower bounds for region */
     void setParameters(double start, double lb, double ub, std::string transString="");
 
-    /*! Create Constraints weight values from constrains type and weighting.*/
-    void createConstraintsWeight_();
-
     void setModelTransStr_(const std::string & val);
 
     void setModelControlStr_(  const std::string & val){ setModelControl(toDouble(val)); }
     void setStartModelStr_(    const std::string & val){ setStartModel(toDouble(val)); }
-    void setZPowerStr_(        const std::string & val){ setZPower(toDouble(val)); }
     void setZWeightStr_(       const std::string & val){ setZWeight(toDouble(val)); }
     void setFixValueStr_(      const std::string & val){ setFixValue(toDouble(val)); }
     void setConstraintTypeStr_(const std::string & val){ setConstraintType(toInt(val)); }
@@ -249,9 +233,8 @@ protected:
 
     RVector startModel_;
     RVector modelControl_;
-    RVector constraintsWeight_;
+    RVector constraintWeights_;
 
-    double zPower_;
     double zWeight_;
     double fixValue_;
 
@@ -299,14 +282,14 @@ public:
     Index regionCount() const { return regionMap_.size(); }
 
     /*!Return all region Indieces.*/
-    IVector regionIdxs() const;
+    IVector regionIdxs() const {
+        return this->allRegionMarker_(false);
+    }
 
     /*! Returns a ptr to the region with the given marker. If no region exist an exception is thrown. */
     Region * region(SIndex marker);
 
     inline bool regionExists(SIndex marker) { return (regionMap_.count(marker) > 0); }
-
-    void setInterRegionConstraint(SIndex a, SIndex b, double c);
 
     /*! load region parameters from region control file */
     void loadMap(const std::string & fname);
@@ -332,7 +315,7 @@ public:
     void fillStartModel(RVector & vec);
 
     /*! DEPRECATED use setStartModel */
-     void fillStartVector(RVector & vec){DEPRECATED;
+    void fillStartVector(RVector & vec){DEPRECATED;
          fillStartModel(vec);}
 
     /*! DEPRECATED use setStartModel */
@@ -345,11 +328,11 @@ public:
     /*! Fill global model-weight vector */
     void fillModelControl(RVector & vec);
 
-    /*! Create and fill global constraints-weight vector */
-    RVector createConstraintsWeight();
+    /*! Return constraint weights. They are created together with the constraints matrix */
+    RVector constraintWeights();
 
-    /*! Fill global constraints-weight vector */
-    void fillConstraintsWeight(RVector & vec);
+    /*! Fill global constraints-weight vector. DEPRECATED */
+    void fillConstraintWeights(RVector & vec);
 
     /*! Fill global constraints-matrix
         no regions: fill with 0th-order constraints */
@@ -368,8 +351,6 @@ public:
 
     std::vector < RVector3 > boundaryNorm() const;
 
-//     RVector createFlatWeight(double zPower, double zWeight) const;
-
     /*!Permute all parameter marker after successful filled the
      * Regionmanager. */
     void permuteParameterMarker(const IVector & p);
@@ -383,6 +364,22 @@ public:
     void setLocalTransFlag(bool flag);
 
     bool haveLocalTrans() const { return haveLocalTrans_; }
+
+    /*!Set inter region constraint weights between region a and b.*/
+    void setInterRegionConstraint(SIndex a, SIndex b, double weight);
+
+    /*!Retrun inter region constraint weights for all connecting regions.*/
+    const std::map< std::pair< SIndex, SIndex >, double > interRegionConstraints() const { 
+        return this->interRegionConstraints_; 
+    }
+    /*!Set interface constraints weight for boundaries with a given marker.*/
+    void setInterfaceConstraint(SIndex marker, double weight) { 
+        this->interfaceConstraints_[marker] = weight; 
+    }
+    /*!Return read only access to the interface constraint weights map.*/
+    const std::map< SIndex, double > interfaceConstraints() const { 
+        return this->interfaceConstraints_; 
+    }
 
 protected:
     void copy_(const RegionManager & rm);
@@ -400,11 +397,13 @@ protected:
      */
     Region * createSingleRegion_(SIndex marker, const std::vector < Cell * > & cells);
 
-    std::vector < SIndex > allRegionMarker_(bool exludeBoundary=false){
-        std::vector < SIndex > tmp;
-        for (std::map < SIndex, Region * > ::const_iterator
-                it = regionMap_.begin(); it != regionMap_.end(); it++){
-            if (!it->second->isBackground()) tmp.push_back(it->first);
+    IVector allRegionMarker_(bool exludeBoundary=false) const {
+        IVector tmp;
+        for (auto & x: regionMap_){
+            if (exludeBoundary && x.second->isBackground()){
+                continue;
+            }
+            tmp.push_back(x.first);
         }
         return tmp;
     }
@@ -420,9 +419,11 @@ protected:
     std::map < SIndex, Region * > regionMap_;
     std::map< std::pair< SIndex, SIndex >, std::list < Boundary * > > interRegionInterfaceMap_;
     std::map< std::pair< SIndex, SIndex >, double > interRegionConstraints_;
-    std::map< SIndex, double > interfaceConstraint_;
+    std::map< SIndex, double > interfaceConstraints_;
 
-    double interRegionConstraintsZWeight_;
+    RVector _cWeights; // cache cWeights to avoid double creation.
+
+    double interRegionConstraintZWeights_;
 
     TransCumulative < RVector > localTrans_;
     bool haveLocalTrans_;

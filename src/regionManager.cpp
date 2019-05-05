@@ -69,7 +69,6 @@ void Region::init_() {
     startParameter_ = 0;
     endParameter_   = 0;
     parameterCount_ = 0;
-    zPower_         = 0.0;
     zWeight_        = 1.0;
     fixValue_       = 0.0;
     lowerBound_     = 0.0;
@@ -96,6 +95,7 @@ void Region::setBackground(bool background){
         parent_->recountParaMarker_();
         parent_->createParaDomain_();
         bounds_.clear();
+        this->constraintWeights_.clear();
     }
 }
 
@@ -103,6 +103,7 @@ void Region::setFixValue(double val){
     fixValue_ = val;
     markBackground(false);
     setBackground(true);
+    this->constraintWeights_.clear();
 }
 
 void Region::setSingle(bool single){
@@ -111,6 +112,7 @@ void Region::setSingle(bool single){
         parent_->recountParaMarker_();
         parent_->createParaDomain_();
         bounds_.clear();
+        this->constraintWeights_.clear();
     }
 }
 
@@ -131,35 +133,28 @@ void Region::resize(const Mesh & mesh){
             leftParaId = false;
             rightParaId = false;
 
-            if (mesh.boundary(i).marker() == 0){
-                if (mesh.boundary(i).leftCell() != NULL) {
-                    leftParaId = (mesh.boundary(i).leftCell()->marker() == marker_);
-                }
-                if (mesh.boundary(i).rightCell() != NULL){
-                    rightParaId = (mesh.boundary(i).rightCell()->marker() == marker_);
-                }
-
-                if (leftParaId && rightParaId) bounds_.push_back(&mesh.boundary(i));
+            if (mesh.boundary(i).leftCell() != NULL) {
+                leftParaId = (mesh.boundary(i).leftCell()->marker() == marker_);
             }
+            if (mesh.boundary(i).rightCell() != NULL){
+                rightParaId = (mesh.boundary(i).rightCell()->marker() == marker_);
+            }
+            if (leftParaId && rightParaId) bounds_.push_back(&mesh.boundary(i));
         }
     }
-//    std::cout <<WHERE_AM_I << " " << marker_ << " " << bounds_.size() << std::endl;
-    if (zWeight_ != 1.0){
-        fillConstraintsWeightWithFlatWeight();
-    } else {
-//         std::cout << "Region::resize(const Mesh & mesh)" <<  parameterCount_ << " " << constraintType_ << " " << this->constraintCount() << std::endl;
-        constraintsWeight_.resize(constraintCount(), 1.0);
-    }
+    this->constraintWeights_.clear();
 }
 
 void Region::resize(const std::vector < Cell * > & cells){
+    // don't use it until -- bounds_.clear() will lead to invalid constraints
+    log(Error, WHERE_AM_I, "In use?");
     cells_ = cells;
-    bounds_.clear();
-    if (zWeight_ != 1.0){
-        fillConstraintsWeightWithFlatWeight();
-    } else {
-        constraintsWeight_.resize(constraintCount(), 1.0);
-    }
+    // bounds_.clear();
+    // if (zWeight_ != 1.0){
+    //     fillConstraintWeightsWithFlatWeight();
+    // } else {
+    //     constraintWeights_.resize(constraintCount(), 1.0);
+    // }
 }
 
 void Region::countParameter(Index start){
@@ -325,12 +320,12 @@ void Region::fillConstraints(RSparseMapMatrix & C, Index startConstraintsID){
 
     SIndex leftParaId = -1, rightParaId = -1;
     if (constraintType_ == 2 || constraintType_ == 20) { //** 2nd order constraints (opt. mixed with 0th)
-        for (std::vector < Boundary * >::iterator it = bounds_.begin(), itmax = bounds_.end();
-            it != itmax; it ++){
+        for (auto & it : this->bounds_){
+            Boundary * b = (it);
             leftParaId = -1;
             rightParaId = -1;
-            if ((*it)->leftCell() ) leftParaId  = (*it)->leftCell()->marker();
-            if ((*it)->rightCell()) rightParaId = (*it)->rightCell()->marker();
+            if (b->leftCell() ) leftParaId  = b->leftCell()->marker();
+            if (b->rightCell()) rightParaId = b->rightCell()->marker();
 
             if (isPermuted_){
             // better check if cell is part of this region or not ..  mesh.data(regionMarker)
@@ -356,13 +351,13 @@ void Region::fillConstraints(RSparseMapMatrix & C, Index startConstraintsID){
     }
     //** 1st order constraints (opt. combined with 0th order)
     Index cID = startConstraintsID;
-    for (std::vector < Boundary * >::iterator it = bounds_.begin(), itmax = bounds_.end();
-        it != itmax; it ++){
+    for (auto & it : this->bounds_){
+        Boundary * b = (it);
 
         leftParaId = -1;
         rightParaId = -1;
-        if ((*it)->leftCell()) leftParaId  = (*it)->leftCell()->marker();
-        if ((*it)->rightCell()) rightParaId = (*it)->rightCell()->marker();
+        if (b->leftCell()) leftParaId  = b->leftCell()->marker();
+        if (b->rightCell()) rightParaId = b->rightCell()->marker();
 
         if (isPermuted_){
             // unsure if necessary ..bounds_ should be valid
@@ -400,70 +395,64 @@ void Region::setConstraintType(Index type) {
     constraintType_ = type;
 }
 
-void Region::setConstraintsWeight(double val){
-    setBackground(false);
-    zWeight_ = 1.0;
-    //std::cout << "Region::setConstraintsWeight(double val) " << val << " " <<  this->constraintCount() << std::endl;
-    constraintsWeight_.resize(this->constraintCount());
-    constraintsWeight_.fill(val);
+void Region::setConstraintWeights(double val){
+    return setConstraintWeights(RVector(this->constraintCount(), val));
 }
 
-void Region::setConstraintsWeight(const RVector & sw){
+void Region::setConstraintWeights(const RVector & cw){
     //std::cout << "Region::setConstraintsWeight(const RVector & sw) " << sw.size() << " " <<  this->constraintCount() << std::endl;
-    setBackground(false);
-    if (sw.size() == this->constraintCount()){
-        constraintsWeight_ = sw;
+    if (cw.size() == this->constraintCount()){
+        setBackground(false);
         zWeight_ = 1.0;
+        this->constraintWeights_ = cw;
     } else {
-        throwLengthError(1, WHERE_AM_I + " " + toStr(sw.size()) + " != " + toStr(constraintCount()));
+        throwLengthError(1, WHERE_AM_I + " " + toStr(cw.size()) + " != " + toStr(constraintCount()));
     }
 }
 
-void Region::createConstraintsWeight_(){
-    if (constraintsWeight_.size() != this->constraintCount()){
-        constraintsWeight_.resize(this->constraintCount(), 1);
+const RVector & Region::constraintWeights(){
+    if (this->constraintWeights_.size() != this->constraintCount()){
+        this->_createConstraintWeights();
     }
-    if (zWeight_ != 1.0) this->fillConstraintsWeightWithFlatWeight();
+    return this->constraintWeights_;
 }
 
-void Region::fillConstraintsWeight(RVector & vec, Index constraintStart){
+void Region::fillConstraintWeights(RVector & vec, Index cIDStart){
     if (isBackground_) return;
-    this->createConstraintsWeight_();
-
-    for (Index i = 0, imax = constraintCount(); i < imax; i ++) {
-        //std::cout << i << " " << constraintsWeight_[i] << std::endl;
-        vec[constraintStart + i] = constraintsWeight_[i];
-    }
+    vec.setVal(this->constraintWeights(), cIDStart);
 }
 
-void Region::fillConstraintsWeightWithFlatWeight(){
-    if (isBackground_ ||
-        isSingle_ ||
-        (constraintType() == 0) ||
+void Region::_createConstraintWeights(){
+    if (isBackground_ || isSingle_ || (constraintType() == 0) ||
         (constraintType() == 2)) return;
 
-    constraintsWeight_.resize(constraintCount(), 1.0);
+    this->constraintWeights_.resize(constraintCount(), 1.0);
 
-    for (Index i = 0, imax = bounds_.size(); i < imax; i ++) {
+    int dim = parent_->mesh().dim();
 
-        double zDir = std::fabs(bounds_[i]->norm()[parent_->mesh().dim() -1]); //! z-component
-//        double horizDir = std::sqrt(1.0 - zDir * zDir); //! horizontal component
+    Index cId = 0;
+    for (auto & it : this->bounds_){
+        Boundary * b = (it);
 
-        if (zPower_ != 0.0){ //! zPower controls and zweight is minimum zweight
-            __MS("DEPRECATED")
-            constraintsWeight_[i] = max(zWeight_, std::pow(1.0 - zDir, zPower_));
-        } else { //! zweight controls and is power factor, includes
-            //** for a temporary back conversion hack: this was the old zWeight function:
-            //constraintsWeight_[i] = 1.0 + zWeight_ - zDir; //! rather linear for bigger angles
+        double cWeight = 1.0;
+        if (b->marker() != 0){
+            if (this->parent_->interfaceConstraints().count(b->marker())){
+                cWeight = this->parent_->interfaceConstraints().at(b->marker());
+            } else {
+               cWeight = 0.0;
+            }
+        } 
+            
+        double zDir = std::fabs(b->norm()[dim-1]); //! z-component
 
-//            constraintsWeight_[i] = std::pow(zWeight_, std::fabs(zDir / 3.0)); //! rather logarithmically
-            //** this is the new and better one:
-            constraintsWeight_[i] = 1.0 + zDir * (zWeight_ - 1.0); //! rather linear for bigger angles
-        }
+        this->constraintWeights_[cId] = cWeight*(1.0 + zDir * (zWeight_ - 1.0)); //! rather linear for bigger angles
+        
+        cId ++;
     }
 }
 
 void Region::fillBoundaryNorm(std::vector< RVector3 > & vnorm, Index boundStart){
+    log(Warning, WHERE_AM_I, "Who use this. Is needed?"); //190505
     if (isBackground_ || isSingle_ || (constraintType() == 0)) return;
 
     for (Index i = 0, imax = bounds_.size(); i < imax; i ++) {
@@ -472,16 +461,12 @@ void Region::fillBoundaryNorm(std::vector< RVector3 > & vnorm, Index boundStart)
 }
 
 void Region::fillBoundarySize(RVector & vec, Index boundStart){
+    log(Warning, WHERE_AM_I, "Who use this. Is needed?"); //190505
     if (isBackground_ || isSingle_ || (constraintType() == 0)) return;
 
     for (Index i = 0, imax = bounds_.size(); i < imax; i ++) {
         vec[i + boundStart] = bounds_[i]->shape().domainSize();
     }
-}
-
-void Region::setModelTransformation(const Trans< RVector > & tM){
-THROW_TO_IMPL
-
 }
 
 void Region::setTransModel(Trans< RVector > & tM){
@@ -546,7 +531,7 @@ RegionManager::RegionManager(bool verbose) : verbose_(verbose), mesh_(NULL){
     haveLocalTrans_ = false;
     isPermuted_ = false;
     localTransHaveChanges_ = true;
-    interRegionConstraintsZWeight_ = 1.0;
+    interRegionConstraintZWeights_ = 1.0;
 }
 
 RegionManager & RegionManager::operator = (const RegionManager & rm){
@@ -588,8 +573,9 @@ void RegionManager::clear(){
     regionMap_.clear();
     interRegionInterfaceMap_.clear();
     interRegionConstraints_.clear();
-    interfaceConstraint_.clear();
+    interfaceConstraints_.clear();
     isPermuted_ = false;
+    _cWeights.clear();
 
     if (paraDomain_) { paraDomain_->clear(); }
     if (mesh_) { delete mesh_; mesh_ = NULL; }
@@ -702,15 +688,6 @@ Region * RegionManager::addRegion(SIndex marker, const Mesh & mesh){
     Region * region = createRegion_(marker, mesh);
     recountParaMarker_(); //** make sure the counter is right
     return region;
-}
-
-IVector RegionManager::regionIdxs() const{
-    IVector ret;
-    for (std::map< SIndex, Region* >::const_iterator
-         it = regionMap_.begin(), end = regionMap_.end(); it != end; it ++){
-        ret.push_back(it->first);
-    }
-    return ret;
 }
 
 void RegionManager::createParaDomain_(){
@@ -833,118 +810,28 @@ RVector RegionManager::createModelControl(){
     return vec;
 }
 
-RVector RegionManager::createConstraintsWeight(){
-    RVector vec(constraintCount(), 1.0);
-    fillConstraintsWeight(vec);
-    return vec;
+RVector RegionManager::constraintWeights(){
+    if (this->_cWeights.size() == 0){
+        log(Error, "no cWeights defined. You should create constraints matrix first.");
+    }
+    return this->_cWeights;
 }
 
-void RegionManager::fillConstraintsWeight(RVector & vec){
-
-    //!** no regions: fill 0th-order constraints
-    if (regionMap_.empty()){
-        vec.resize(this->parameterCount(), 1.0);
-        return;
+void RegionManager::fillConstraintWeights(RVector & vec){
+    log(Error, WHERE_AM_I, "in use??");
+    if (this->_cWeights.size() == 0){
+        log(Error, "no cWeights defined. You should create constraints matrix first.");
     }
-    vec.resize(constraintCount(), 1.0);
-
-    //!** fill constraints weights from individual regions
-    Index cID = 0;
-    for (auto & x: regionMap_){
-        x.second->fillConstraintsWeight(vec, cID);
-        cID += x.second->constraintCount();
-    }
-
-    //!** fill constraints weights from inter regions constrains
-    if (interRegionConstraints_.size() > 0){
-        if (verbose_) std::cout << "Applying inter region constraints weights." 
-                                << std::endl;
-
-        for (auto & x: interRegionConstraints_){
-            //< <a, b>, weights>
-            std::pair< SIndex, SIndex > ab = x.first;
-            double cWeight = x.second;
-            if (verbose_) std::cout << "\t" 
-                                    << ab.first << "<->" 
-                                    << ab.second << "(" << cWeight << ")"
-                                    << std::endl;
-            Region * regA = regionMap_.find(ab.first)->second;
-            Region * regB = regionMap_.find(ab.second)->second;
-
-            std::map< std::pair< SIndex, SIndex >, std::list < Boundary * > >::const_iterator iRMapIter = interRegionInterfaceMap_.find(ab);
-
-            if (iRMapIter != interRegionInterfaceMap_.end()){
-                
-                std::list< Boundary * > bounds = iRMapIter->second;
-
-                for (auto & bIter : bounds){
-                    const Boundary & b = *bIter;
-                    //** interfaceConstraint_ overwrite interRegionConstraints_
-                    if (interfaceConstraint_.count(b.marker())) {
-                        vec[cID] = interfaceConstraint_[b.marker()];
-                        if (debug()){
-                            std::cout << b << " Interface weight: " << cWeight << ": " << interfaceConstraint_[b.marker()] << std::endl;
-                        }
-                    } else {
-                        if (std::fabs(interRegionConstraintsZWeight_ - 1.0) 
-                                < TOLERANCE){
-                            if (debug()){
-                                std::cout << b << " Inter region weight: " << cWeight  << std::endl;
-                            }
-                            
-                            vec[cID] = cWeight;
-                        } else {
-                            RVector3 meanNorm(0.0, 0.0, 0.0);
-
-                            RVector3 left(0.0, 0.0, 0.0);
-                            for (auto & c: regA->cells()){
-                                left += c->center();
-                            }
-                            left /= regA->cells().size();
-
-                            RVector3 right(0.0, 0.0, 0.0);
-                            for (auto & c: regB->cells()){
-                                right += c->center();
-                            }
-                            right /= regB->cells().size();
-
-                            meanNorm = left-right;
-                            meanNorm.normalise();
-
-                            //! z-component
-                            double zDir = std::fabs(meanNorm[mesh_->dim() -1]); 
-
-                            //! rather linear for bigger angles
-
-                            double zWeight = cWeight * (1.0 +                                  (interRegionConstraintsZWeight_ - 
-                                            1.0) * zDir);
-                                
-                            if (debug()){
-                                std::cout << b << " Inter region-z-weight: " <<                     zWeight  << std::endl;
-                            }
-                            vec[cID] = zWeight;
-                        }
-                    }
-                    cID ++;
-
-                    if (regA->isSingle() && regB->isSingle()){
-                        break;
-                    }
-                }
-            }
-        }
-    } // if (interRegionConstraints_.size() > 0)
-
-//     if (interfaceConstraintMap_
-//     interfaceConstraintMap_[it->second->boundaries()[i]->marker()] = toDouble(row[1]);
+    vec = this->_cWeights;
+    return;
 }
 
 void RegionManager::fillBoundarySize(RVector & vec){
-    __MS("in use??")
+    log(Error, WHERE_AM_I, "in use??");
     vec.resize(constraintCount(), 1.0);
 
     Index boundCount = 0;
-    for (auto & x: regionMap_){
+    for (auto & x: this->regionMap_){
         x.second->fillBoundarySize(vec, boundCount);
         boundCount += x.second->constraintCount();
     }
@@ -962,7 +849,7 @@ Index RegionManager::parameterCount() const {
     }
 
     Index count = 0;
-    for (auto & x: regionMap_){
+    for (auto & x: this->regionMap_){
         count += x.second->parameterCount();
     }
     return count;
@@ -972,21 +859,21 @@ Index RegionManager::constraintCount() const {
     if (regionMap_.empty()) {
         return parameterCount_;
     }
-    Index count = 0;
-    for (auto & x: regionMap_){
-        count += x.second->constraintCount();
+    Index cID = 0;
+    for (auto & x: this->regionMap_){
+        cID += x.second->constraintCount();
     }
-    return count + interRegionConstraintsCount();
+    return cID + interRegionConstraintsCount();
 }
 
 Index RegionManager::interRegionConstraintsCount() const {
     Index count = 0;
 
-    for (auto & x: interRegionConstraints_){
+    for (auto & x: this->interRegionConstraints_){
         std::pair< SIndex, SIndex > ab(x.first);
 
         if (regionMap_.find(ab.first )->second->isSingle() &&
-             regionMap_.find(ab.second)->second->isSingle()){
+            regionMap_.find(ab.second)->second->isSingle()){
              count += 1;
         } else {
             if (interRegionInterfaceMap_.find(ab) !=     
@@ -1002,6 +889,7 @@ void RegionManager::fillConstraints(RSparseMapMatrix & C){
     Index nModel  = parameterCount();
     Index nConstr = constraintCount();
 
+    this->_cWeights.resize(nConstr);
     C.clear();
 
     //!** no regions: fill 0th-order constraints
@@ -1009,7 +897,10 @@ void RegionManager::fillConstraints(RSparseMapMatrix & C){
         C.setCols(nModel);
         C.setRows(nModel);
 
-        for (Index i = 0; i < parameterCount(); i++) C[i][i] = 1;
+        for (Index i = 0; i < parameterCount(); i++) {
+            C[i][i] = 1.0;
+            this->_cWeights[i] = 1.0;
+        }
         return;
     }
 
@@ -1020,6 +911,7 @@ void RegionManager::fillConstraints(RSparseMapMatrix & C){
 
     for (auto & x : this->regionMap_){
         x.second->fillConstraints(C, cID);
+        x.second->fillConstraintWeights(this->_cWeights, cID);
         cID += x.second->constraintCount();
     }
 
@@ -1028,93 +920,103 @@ void RegionManager::fillConstraints(RSparseMapMatrix & C){
 
         for (auto & it : this->interRegionConstraints_){
         
-//             if (verbose_) std::cout << "regions: " << it->first.first << " "
-//                                       << it->first.second << std::endl;
-            std::map< std::pair< SIndex, SIndex >, std::list < Boundary * > >::const_iterator iRMapIter;
-            iRMapIter = interRegionInterfaceMap_.find(it.first);
+            std::pair< SIndex, SIndex > ab = it.first;
+            double cWeight = it.second;
+            if (verbose_) std::cout << "\t" 
+                                    << ab.first << "<->" 
+                                    << ab.second << "(" << cWeight << ")"
+                                    << std::endl;
+            Region * regA = regionMap_.find(ab.first)->second;
+            Region * regB = regionMap_.find(ab.second)->second;
 
-            Region * lR = region(it.first.first);
-            Region * rR = region(it.first.second);
-            size_t lStart = lR->startParameter();
-            size_t rStart = rR->startParameter();
-            RVector *lMC = lR->modelControl();
-            RVector *rMC = rR->modelControl();
-            if (lMC->size() == 0 || rMC->size() == 0){
-                __MS(lR->parameterCount() << "  " << rR->parameterCount())
-                throwLengthError(1, WHERE_AM_I + " left | right  MC size == 0 " + toStr(lMC->size())
-                + " "+ toStr(rMC->size()));
+            RVector & mcA = *regA->modelControl();
+            RVector & mcB = *regB->modelControl();
+
+            if (mcA.size() == 0 || mcB.size() == 0){
+                throwLengthError(1, WHERE_AM_I + " left | right model control size == 0 " + toStr(mcA.size())
+                + " "+ toStr(mcB.size()));
             }
-//             if (verbose_){
-//                 std::cout << "left : " << lMC->size() << " min " << min(*lMC) << " max " << max(*lMC) << " start " << lStart << std::endl;
-//                 std::cout << "right: " << rMC->size() << " min " << min(*rMC) << " max " << max(*rMC) << " start " << rStart << std::endl;
-//             }
+
+            Index aStartParam = regA->startParameter();
+            Index bStartParam = regB->startParameter();
+            
+            std::map< std::pair< SIndex, SIndex >, std::list < Boundary * > >::const_iterator iRMapIter = interRegionInterfaceMap_.find(ab);
 
             if (iRMapIter != interRegionInterfaceMap_.end()){
-                for (std::list < Boundary * >::const_iterator bIter  = iRMapIter->second.begin();
-                                                               bIter != iRMapIter->second.end(); bIter++){
+                
+                std::list< Boundary * > bounds = iRMapIter->second;
 
-                    size_t lMarker = (*bIter)->leftCell()->marker();
-                    size_t rMarker = (*bIter)->rightCell()->marker();
-                    if (lMarker < lStart || rMarker < rStart){ //** interchange left/right
-                        size_t dummy = lMarker;
-                        lMarker = rMarker;
-                        rMarker = dummy;
+                for (auto & bIter : bounds){
+
+                    Boundary & b = *bIter;
+
+                    Index aMarker = b.leftCell()->marker();
+                    Index bMarker = b.rightCell()->marker();
+                    
+                    if (aMarker < aStartParam || bMarker < bStartParam){ //** interchange left/right
+                        std::swap(aMarker, bMarker);
                     }
-//                    std::cout << lMarker << " " << rMarker << " " << lMarker - lStart << " " << rMarker - rStart << std::endl;
 
-                    C[cID][lMarker] = +1.0 / (*lMC)[size_t(lMarker - lStart)];
-                    C[cID][rMarker] = -1.0 / (*rMC)[size_t(rMarker - rStart)];
+                    C[cID][aMarker] = +1.0 / mcA[Index(aMarker - aStartParam)];
+                    C[cID][bMarker] = -1.0 / mcB[Index(bMarker - bStartParam)];
+
+                    // setting cWeights
+                    if (interfaceConstraints_.count(b.marker())) {
+                        // setting interface constraints between regions over inter region constraints .. 
+                        // inner interfaces are allready mentioned in the regions itself
+                        this->_cWeights[cID] = interfaceConstraints_[b.marker()];
+                        if (debug()){
+                            std::cout << b << " Interface weight: " << interfaceConstraints_[b.marker()] << std::endl;
+                        }
+                    } else {
+                        double zWeight = interRegionConstraintZWeights_;
+                        if (std::fabs(zWeight - 1.0) < TOLERANCE){
+                            if (debug()){
+                                std::cout << b << " Inter region weight: " << cWeight  << std::endl;
+                            }
+                            this->_cWeights[cID] = cWeight;
+                        } else {
+
+                            double zDir = std::fabs(b.norm()[this->mesh_->dim() -1]); //! z-component
+
+                            if (debug()){
+                                std::cout << b << " Inter region-z-weight: " << zWeight << std::endl;
+                            }
+                            this->_cWeights[cID] = cWeight * (1.0 + zDir * (zWeight - 1.0));
+                        }
+                    }
+
                     cID ++;
 
-                    if (regionMap_.find(it.first.first )->second->isSingle() &&
-                        regionMap_.find(it.first.second)->second->isSingle()){
+                    if (regA->isSingle() && regB->isSingle()){
+                        // only 1 weight so we can break the loop
                         break;
                     }
-                }
+                } // for each boundary off the A B Interface
+            } else {
+                log(Error, "No boundaries for the inter region interface.");
             }
-        }
-    }
-//     __MS(C.rtti())
+        } // for each inter region combination with weight > 0
+    } // if have inter regions
 }
 
 std::vector < RVector3 > RegionManager::boundaryNorm() const {
+    log(Warning, WHERE_AM_I, "Who use this. Is needed?"); //190505
     std::vector < RVector3 > vnorm(constraintCount(), RVector3(0.0, 0.0, 0.0));
-    Index consCount = 0;
+    Index cID = 0;
 
-    for (std::map< SIndex, Region* >::const_iterator it = regionMap_.begin(), end = regionMap_.end();
-          it != end; it ++){
-        it->second->fillBoundaryNorm(vnorm, consCount);
-        consCount += it->second->constraintCount();
+    for (auto & x : this->regionMap_){
+        x.second->fillBoundaryNorm(vnorm, cID);
+        cID += x.second->constraintCount();
     }
     return vnorm;
 }
-
-// RVector RegionManager::createFlatWeight(double zPower, double zWeight) const {
-//     DEPRECATED
-//     RVector tmp(constraintCount());
-//     RVector normDir;
-//     if (mesh_->dim() == 2){
-//         normDir = y(boundaryNorm());
-//     } else {
-//         normDir = z(boundaryNorm());
-//     }
-//     for (size_t i = 0, imax = normDir.size(); i < imax; i++) {
-//         if (zPower != 0) { //! zpower controls, zweight is minimal zweight
-//             tmp[i] = std::pow(1.0 - std::fabs(normDir[i]), zPower);
-//             if (tmp[i] < zWeight) tmp[i] = zWeight;
-//         } else if (zWeight != 1.0) { //! zweight controls and is power factor, includes
-//             tmp[i] = std::pow(std::fabs(normDir[i]), zWeight);
-//         }
-//     }
-//     return tmp;
-// }
 
 void RegionManager::loadMap(const std::string & fname){
 
     std::map< std::string, void (Region::*)(const std::string & val) > regionAttributeMap;
     regionAttributeMap[lower("MC")]       = &Region::setModelControlStr_;
     regionAttributeMap[lower("start")]    = &Region::setStartModelStr_;
-    regionAttributeMap[lower("zPower")]   = &Region::setZPowerStr_;
     regionAttributeMap[lower("zWeight")]  = &Region::setZWeightStr_;
     regionAttributeMap[lower("fix")]      = &Region::setFixValueStr_;
     regionAttributeMap[lower("Ctype")]    = &Region::setConstraintTypeStr_;
@@ -1174,7 +1076,7 @@ void RegionManager::loadMap(const std::string & fname){
             }
 
             if (token.size() >= row.size()){
-                std::vector < SIndex > regionMarker;
+                IVector regionMarker;
 
                 if (row[0] != "*"){
                     //std::cout << row[0] << std::endl;
@@ -1228,8 +1130,8 @@ void RegionManager::loadMap(const std::string & fname){
             }
 
             if (row.size() == 3){
-                std::vector < SIndex > minRegion;
-                std::vector < SIndex > maxRegion;
+                IVector minRegion;
+                IVector maxRegion;
                 if (row[0] != "*"){
                     minRegion.push_back(toInt(row[0]));
                 } else {
@@ -1255,43 +1157,37 @@ void RegionManager::loadMap(const std::string & fname){
             }
 
         } else if (lower(token[0]) == "interface"){
-            if (verbose_){
-                std::cout << "Applying interface properties." << std::endl;
-                std::cout << "WARNING! no inner interfaces yet." << std::endl;
-            }
-
             if (row.size() == 2){ // interface constraint
+                double cw = toDouble(row[1]);
                 if (row[0] == "*"){
-                    THROW_TO_IMPL
                     for (auto & x: regionMap_){
                         Region * reg = x.second;
-                        for (Index i = 0; i < reg->boundaries().size(); i ++){
-                            if (verbose_) 
-                                std::cout << reg->boundaries()[i]->marker() << std::endl;
-                            if (reg->boundaries()[i]->marker() != 0){
-                                interfaceConstraint_[
-                                    reg->boundaries()[i]->marker()] = \
-                                        toDouble(row[1]);
+                        for (auto & it: reg->boundaries()){
+                            Boundary *b = it;
+                            if (b->marker() != 0){
+                                log(Debug, "Applying interface constaint: ", b->marker(), "=", cw);            
+                                this->setInterfaceConstraint(b->marker(), cw);
                             }
                         }
                     }
                 } else {
-                    interfaceConstraint_[toInt(row[0])] = toDouble(row[1]);
+                    SIndex iF = toInt(row[0]);
+                    log(Debug, "Applying interface constaint: ", iF, "=", cw);
+                    this->setInterfaceConstraint(iF, cw);
                 }
             } else {
                 for (Index i = 0; i < row.size(); i ++){
                     if (verbose_) std::cout << row[i] << " ";
                 }
-                if (verbose_) std::cout << std::endl;
-                std::cerr << "Format unknown: (interfaceNo constraint) " << std::endl;
+                log(Error, "Format for interface settings unknown.");
             }
 
         } else {
             std::cerr << WHERE_AM_I << " cannot interpret 1.st token: " << token[0] << std::endl;
             std::cerr << "Available are: " << std::endl
                       << "#no" << std::endl
-                      << "#interface" << std::endl
-                      << "#inter-region" << std::endl;
+                      << "#inter-region" << std::endl
+                      << "#interface" << std::endl;
             row = getRow(file); if (row.empty()) continue;
         }
     }
@@ -1363,7 +1259,7 @@ void RegionManager::setZWeight(double z){
     for (auto & x: regionMap_){
         x.second->setZWeight(z);
     }
-    interRegionConstraintsZWeight_ = z;
+    interRegionConstraintZWeights_ = z;
 }
 
 void RegionManager::setConstraintType(Index type){

@@ -464,6 +464,18 @@ public:
         return *this;
     }
 
+    /*! Insert vals from Index start. Resized if necesary.*/
+    inline Vector< ValueType > & setVal(const Vector < ValueType > & vals,
+                                        Index start) {
+        Index vS = vals.size();
+        if (vS > 0){
+            if (this->size() < this->size() + vS) this->resize(this->size() + vS);
+            this->setVal(vals, start, start + vS);
+        }
+        return *this;
+    }
+
+
     /*! Set values from slice. If vals.size() == this.size() copy vals[start, end) -> this[start, end) else
         assume vals is a slice itsself, so copy vals[0, end-start] -> this[start, end)
          if end larger than this size() sets end = size. Throws exception on violating boundaries. */

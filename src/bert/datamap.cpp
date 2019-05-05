@@ -177,8 +177,8 @@ RVector DataMap::data(const DataContainerERT & data, bool reciprocity, bool imag
         int n = data("n")[i];
 
         if (reciprocity){
-            swapVal(a, m);
-            swapVal(b, n);
+            std::swap(a, m);
+            std::swap(b, n);
         }
 
         if ((a > (int)nElecs - 1) || (a < -1) || (b > (int)nElecs - 1) || (b < -1) ||
