@@ -376,7 +376,7 @@ MEMINFO
             //S.round(1e-8);
 MEMINFO
 
-            S.save("sensPart_" + toStr(start) + "-" + toStr(end));
+            S.save("sensPart_" + str(start) + "-" + str(end));
 
             matrixClusterIds.push_back(std::pair < Index, Index >(start, end));
 
@@ -483,8 +483,8 @@ RVector prepExportSensitivityData(const Mesh & mesh, const RVector & data, doubl
     // //RVector tmp(data/mesh.cellSizes());
     // if ((uint)data.size() != (uint)mesh.cellCount()){
 
-    //     throwLengthError(-1, WHERE_AM_I + " Datasize missmatch: " + toStr(mesh.cellCount())+
-    //                         " " + toStr(data.size()));
+    //     throwLengthError(-1, WHERE_AM_I + " Datasize missmatch: " + str(mesh.cellCount())+
+    //                         " " + str(data.size()));
     // } else {
     //     //for (uint i = 0; i < tmp.size(); i ++) tmp[i] = tmp[i] / mesh.cell(i).shape().domainSize();
     // }

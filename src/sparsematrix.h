@@ -329,8 +329,8 @@ public:
 //             __MS( stype_ << " " << c << " " << Row )
             if ((c < 0 || c >= maxColumns) || (stype_ < 0 && c < Row) || (stype_ > 0 && c > Row)) {
                 throwLengthError(EXIT_SPARSE_SIZE,
-                                  WHERE_AM_I + " idx = " + toStr(c) + ", " + str(Row) + " maxcol = "
-                                  + toStr(maxColumns) + " stype: " + toStr(stype_));
+                                  WHERE_AM_I + " idx = " + str(c) + ", " + str(Row) + " maxcol = "
+                                  + str(maxColumns) + " stype: " + str(stype_));
             }
             return MatElement(C, Row, c);
         }
@@ -343,8 +343,8 @@ public:
     Aux operator [] (IndexType r) {
         if (r < 0 || r >= rows_){
             throwLengthError(EXIT_SPARSE_SIZE,
-                              WHERE_AM_I + " idx = " + toStr(r) + " maxrow = "
-                              + toStr(rows_));
+                              WHERE_AM_I + " idx = " + str(r) + " maxrow = "
+                              + str(rows_));
         }
         return Aux(r, cols(), C_, stype_);
     }
@@ -369,8 +369,8 @@ public:
         } else {
             throwLengthError(EXIT_SPARSE_SIZE,
                               WHERE_AM_I +
-                              " i = " + toStr(i) + " max_row = " + toStr(rows_) +
-                              " j = " + toStr(j) + " max_col = " + toStr(cols_)
+                              " i = " + str(i) + " max_row = " + str(rows_) +
+                              " j = " + str(j) + " max_col = " + str(cols_)
                              );
         }
     }
@@ -382,8 +382,8 @@ public:
         } else {
             throwLengthError(EXIT_SPARSE_SIZE,
                               WHERE_AM_I +
-                              " i = " + toStr(i) + " max_row = " + toStr(rows_) +
-                              " j = " + toStr(j) + " max_col = " + toStr(cols_)
+                              " i = " + str(i) + " max_row = " + str(rows_) +
+                              " j = " + str(j) + " max_col = " + str(cols_)
                              );
         }
     }
@@ -625,11 +625,11 @@ void scaleMatrix(SparseMapMatrix< double, Index > & S,
                  const Vec & l, const Vec & r) {
 
     if (S.cols() != r.size())
-        throwLengthError(EXIT_SPARSE_SIZE, WHERE_AM_I + " " + toStr(S.cols())
-                                            + " != " + toStr(r.size()));
+        throwLengthError(EXIT_SPARSE_SIZE, WHERE_AM_I + " " + str(S.cols())
+                                            + " != " + str(r.size()));
     if (S.rows() != l.size())
-        throwLengthError(EXIT_SPARSE_SIZE, WHERE_AM_I + " " + toStr(S.rows())
-                                            + " != " + toStr(l.size()));
+        throwLengthError(EXIT_SPARSE_SIZE, WHERE_AM_I + " " + str(S.rows())
+                                            + " != " + str(l.size()));
 
     for (SparseMapMatrix< double, Index >::iterator it = S.begin(); it != S.end(); it ++){
                 S.val(it) *= l[S.idx1(it)] * r[S.idx2(it)];
@@ -644,11 +644,11 @@ void scaleMatrix(SparseMapMatrix< double, Index > & S,
 template< class Vec >
 void rank1Update(SparseMapMatrix< double, Index > & S, const Vec & u, const Vec & v) {
     if (S.cols() != v.size())
-        throwLengthError(EXIT_SPARSE_SIZE, WHERE_AM_I + " " + toStr(S.cols())
-                                + " != " + toStr(v.size()));
+        throwLengthError(EXIT_SPARSE_SIZE, WHERE_AM_I + " " + str(S.cols())
+                                + " != " + str(v.size()));
     if (S.rows() != u.size())
-        throwLengthError(EXIT_SPARSE_SIZE, WHERE_AM_I + " " + toStr(S.rows())
-                                + " != " + toStr(u.size()));
+        throwLengthError(EXIT_SPARSE_SIZE, WHERE_AM_I + " " + str(S.rows())
+                                + " != " + str(u.size()));
 
     for (SparseMapMatrix< double, Index >::iterator it = S.begin(); it != S.end(); it ++){
         S.val(it) += u[S.idx1(it)] * v[S.idx2(it)];
@@ -779,8 +779,8 @@ public:
     /*! Return this * a  */
     virtual Vector < ValueType > mult(const Vector < ValueType > & a) const {
         if (a.size() < this->cols()){
-            throwLengthError(1, WHERE_AM_I + " SparseMatrix size(): " + toStr(this->cols()) + " a.size(): " +
-                                toStr(a.size())) ;
+            throwLengthError(1, WHERE_AM_I + " SparseMatrix size(): " + str(this->cols()) + " a.size(): " +
+                                str(a.size())) ;
         }
 
         Vector < ValueType > ret(this->rows(), 0.0);
@@ -833,8 +833,8 @@ public:
     virtual Vector < ValueType > transMult(const Vector < ValueType > & a) const {
 
         if (a.size() < this->rows()){
-            throwLengthError(1, WHERE_AM_I + " SparseMatrix size(): " + toStr(this->rows()) + " a.size(): " +
-                                toStr(a.size())) ;
+            throwLengthError(1, WHERE_AM_I + " SparseMatrix size(): " + str(this->rows()) + " a.size(): " +
+                                str(a.size())) ;
         }
 
         Vector < ValueType > ret(this->cols(), 0.0);

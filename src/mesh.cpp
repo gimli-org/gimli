@@ -1927,7 +1927,7 @@ RVector Mesh::cellAttributes() const{
 
 void Mesh::setCellAttributes(const RVector & attr){
     if (attr.size() != (uint)cellCount()){
-        throwError(1, WHERE_AM_I + " std::vector attr.size() != cellCount()" + toStr(attr.size()) + " " + toStr(cellCount()));
+        throwError(1, WHERE_AM_I + " std::vector attr.size() != cellCount()" + str(attr.size()) + " " + str(cellCount()));
     }
     for (Index i = 0; i < cellCount(); i ++) cell(i).setAttribute(attr[i]);
 }
@@ -2260,8 +2260,8 @@ void Mesh::fillKDTree_() const {
 
             tree_->tree()->optimize();
         } else {
-            throwError(1, WHERE_AM_I + toStr(this) + " kd-tree is only partially filled: this should no happen: nodeCount = " + toStr(nodeCount())
-                                      + " tree-size() " + toStr(tree_->size()));
+            throwError(1, WHERE_AM_I + str(this) + " kd-tree is only partially filled: this should no happen: nodeCount = " + str(nodeCount())
+                                      + " tree-size() " + str(tree_->size()));
         }
     }
 

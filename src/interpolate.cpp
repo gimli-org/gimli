@@ -78,10 +78,10 @@ void interpolate(const Mesh & mesh, const RMatrix & vData,
                 throwLengthError(EXIT_VECTOR_SIZE_INVALID,
                                  WHERE_AM_I +
                                  " data.size not nodeCount and cellCount " +
-                                 toStr(vData.size()) + " x " +
-                                 toStr(vData[i].size()) + " != " +
-                                 toStr(mesh.nodeCount()) + " != " +
-                                 toStr(mesh.cellCount()));
+                                 str(vData.size()) + " x " +
+                                 str(vData[i].size()) + " != " +
+                                 str(mesh.nodeCount()) + " != " +
+                                 str(mesh.cellCount()));
             }
 
             for (uint j = 0; j < pos.size(); j ++) {
@@ -158,7 +158,7 @@ RVector interpolate(const Mesh & mesh, const RVector & data,
 
     if (x.size() != y.size() || x.size() != z.size()) {
         throwLengthError(EXIT_VECTOR_SIZE_INVALID, " x.size invalid y.size invalid z.size() "
-                + toStr(x.size()) + " != " + toStr(y.size()) + " != " + toStr(z.size()));
+                + str(x.size()) + " != " + str(y.size()) + " != " + str(z.size()));
     }
 
     std::vector < RVector3 > pos(x.size());
@@ -259,7 +259,7 @@ void triangleMesh_(const Mesh & mesh, Mesh & tmpMesh){
 RVector cellDataToPointData(const Mesh & mesh, const RVector & cellData){
     if (cellData.size() != mesh.cellCount()){
         throwLengthError(EXIT_VECTOR_SIZE_INVALID, " vector size invalid mesh.cellCount "
-                        + toStr(mesh.cellCount()) + " != " + toStr(cellData.size()));
+                        + str(mesh.cellCount()) + " != " + str(cellData.size()));
     }
 
     RVector ret(mesh.nodeCount());

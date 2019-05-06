@@ -218,7 +218,7 @@ void Region::setStartModel(const RVector & start){
        startModel_ = start;
     } else {
         throwLengthError(1, WHERE_AM_I + " sizes missmatch for region " +
-        toStr(this->marker_) + " " +toStr(start.size()) + " != " + toStr(parameterCount_));
+        str(this->marker_) + " " +str(start.size()) + " != " + str(parameterCount_));
     }
 }
 
@@ -256,7 +256,7 @@ void Region::setModelControl(const RVector & mc){
     if (mc.size() == parameterCount_){
        modelControl_ = mc;
     } else {
-        throwLengthError(1, WHERE_AM_I + " " + toStr(mc.size()) + " != " + toStr(parameterCount_));
+        throwLengthError(1, WHERE_AM_I + " " + str(mc.size()) + " != " + str(parameterCount_));
     }
 }
 
@@ -406,7 +406,7 @@ void Region::setConstraintWeights(const RVector & cw){
         zWeight_ = 1.0;
         this->constraintWeights_ = cw;
     } else {
-        throwLengthError(1, WHERE_AM_I + " " + toStr(cw.size()) + " != " + toStr(constraintCount()));
+        throwLengthError(1, WHERE_AM_I + " " + str(cw.size()) + " != " + str(constraintCount()));
     }
 }
 
@@ -520,7 +520,7 @@ void Region::setParameters(double start, double lb, double ub, std::string trans
             setModelTransStr_(transString_);
         }
     } else {
-        throwError(EXIT_FAILURE, WHERE_AM_I + " bounds not matching: " + toStr(lb) + ">=" + toStr(ub));
+        throwError(EXIT_FAILURE, WHERE_AM_I + " bounds not matching: " + str(lb) + ">=" + str(ub));
     }
 }
 
@@ -558,7 +558,7 @@ const Mesh & RegionManager::mesh() const {
 
 Region * RegionManager::region(SIndex marker){
     if (regionMap_.count(marker) == 0){
-        throwError(EXIT_DEFAULT, WHERE_AM_I + " no region with marker " + toStr(marker));
+        throwError(EXIT_DEFAULT, WHERE_AM_I + " no region with marker " + str(marker));
     } else {
         return regionMap_[marker];
     }
@@ -933,8 +933,8 @@ void RegionManager::fillConstraints(RSparseMapMatrix & C){
             RVector & mcB = *regB->modelControl();
 
             if (mcA.size() == 0 || mcB.size() == 0){
-                throwLengthError(1, WHERE_AM_I + " left | right model control size == 0 " + toStr(mcA.size())
-                + " "+ toStr(mcB.size()));
+                throwLengthError(1, WHERE_AM_I + " left | right model control size == 0 " + str(mcA.size())
+                + " "+ str(mcB.size()));
             }
 
             Index aStartParam = regA->startParameter();

@@ -276,11 +276,6 @@ typedef BlockMatrix < double > RBlockMatrix;
 template < class ValueType > class PolynomialFunction;
 typedef PolynomialFunction< double > RPolynomialFunction;
 
-template < class ModelValType > class Inversion;
-
-/*! standard classes for easier use: inversion with full and sparse jacobian */
-typedef GIMLI::Inversion< double > RInversion;
-
 template < class ValueType > class ElementMatrix;
 typedef ElementMatrix < double > RElementMatrix;
 
@@ -332,12 +327,15 @@ private:
 //     #include <Python.h>
 #endif
 
+inline std::string str(){ return "";}
 //! General template for conversion to string, should supersede all sprintf etc.
 template< typename T > inline std::string str(const T & v){
     std::ostringstream os;
     os << v;
     return os.str();
 }
+enum LogType {Info, Warning, Error, Debug, Critical};
+DLLEXPORT void log(LogType type, const std::string & msg);
 
 #ifndef PYGIMLI_CAST // castxml complains on older gcc/clang
 template<typename Value, typename... Values>
@@ -348,18 +346,11 @@ std::string str(Value v, Values... vs){
     (void) expander{ 0, (os << " " << vs, void(), 0)... };
     return os.str();
 }
-#endif 
-
-enum LogType {Info, Warning, Error, Debug, Critical};
-DLLEXPORT void log(LogType type, const std::string & msg);
-
 template<typename... Values>
 void log(LogType type, Values... vs){
     return log(type, str(vs...));
 }
-
-//! DEPRECATED do not use
-template< typename T > inline std::string toStr(const T & value){ return str(value);}
+#endif 
 
 inline std::string versionStr(){
     std::string vers(str(PACKAGE_NAME) + "-" + PACKAGE_VERSION);

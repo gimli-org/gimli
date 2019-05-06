@@ -104,7 +104,7 @@ public:
             mat_[1] = v[1];
             mat_[2] = v[2];
         } else {
-            throwLengthError(1, WHERE_AM_I + " v.size() < 2 " + toStr(v.size()));
+            throwLengthError(1, WHERE_AM_I + " v.size() < 2 " + str(v.size()));
         }
         return *this;
 

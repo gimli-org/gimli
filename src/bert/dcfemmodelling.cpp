@@ -170,8 +170,8 @@ void dcfemDomainAssembleStiffnessMatrix(SparseMatrix < ValueType > & S, const Me
     ElementMatrix < double > Se, Stmp;
 
     if (atts.size() != mesh.cellCount()){
-       throwLengthError(1, WHERE_AM_I + " attribute size missmatch" + toStr(atts.size())
-                       + " != " + toStr(mesh.cellCount()));
+       throwLengthError(1, WHERE_AM_I + " attribute size missmatch" + str(atts.size())
+                       + " != " + str(mesh.cellCount()));
     }
     ValueType rho = 0.0;
     Stopwatch swatch(true);
@@ -1741,8 +1741,8 @@ void DCMultiElectrodeModelling::calculateKAnalyt(const std::vector < ElectrodeSh
 
     uint nCurrentPattern = eA.size();
     if (solutionK.rows() < (kIdx + 1) * nCurrentPattern) {
-        throwLengthError(1, WHERE_AM_I + " workspace size insufficient" + toStr(solutionK.rows())
-            + " " + toStr((kIdx+1)*nCurrentPattern));
+        throwLengthError(1, WHERE_AM_I + " workspace size insufficient" + str(solutionK.rows())
+            + " " + str((kIdx+1)*nCurrentPattern));
     }
 
     for (uint i = 0; i < nCurrentPattern; i ++) {
@@ -1765,8 +1765,8 @@ void DCMultiElectrodeModelling::calculateK_(const std::vector < ElectrodeShape *
     double k = kValues_[kIdx];
 
     if (solutionK.rows() < (kIdx+1) * nCurrentPattern) {
-        throwLengthError(1, WHERE_AM_I + " workspace size insufficient" + toStr(solutionK.rows())
-            + " " + toStr((kIdx+1) * nCurrentPattern));
+        throwLengthError(1, WHERE_AM_I + " workspace size insufficient" + str(solutionK.rows())
+            + " " + str((kIdx+1) * nCurrentPattern));
     }
 
     if (analytical_) {
@@ -2096,16 +2096,16 @@ MEMINFO
                     if (k == 0.0){
                         //!** load 3D potential
                         if (initVerbose) std::cout << std::endl << "Loading primary potential: "
-                                        << primPotFileBody_ + "." + toStr(i) + ".pot" << std::endl;
-                        load((*primPot_)[potID], primPotFileBody_ + "." + toStr(i) + ".pot", Binary);
+                                        << primPotFileBody_ + "." + str(i) + ".pot" << std::endl;
+                        load((*primPot_)[potID], primPotFileBody_ + "." + str(i) + ".pot", Binary);
                     } else {
                         //!** else load 2D potential
                         //!** first try new style "name_Nr.s.pot"
                         if (!load((*primPot_)[potID], primPotFileBody_ + "." +
-                                    toStr(kIdx * nCurrentPattern + i) + ".s.pot", Binary, false)){
+                                    str(kIdx * nCurrentPattern + i) + ".s.pot", Binary, false)){
 
                             if (!load((*primPot_)[potID], primPotFileBody_ + "." +
-                                toStr(i) + "_" + toStr(kIdx) + ".pot", Binary)){
+                                str(i) + "_" + str(kIdx) + ".pot", Binary)){
                                 throwError(-1, WHERE_AM_I + " neither new-style potential ("
                                     + primPotFileBody_ + ".XX.s.pot nor old-style ("
                                     + primPotFileBody_ + ".XX_k.pot) found");
@@ -2143,8 +2143,8 @@ void DCSRMultiElectrodeModelling::calculateK(const std::vector < ElectrodeShape 
 
     uint nCurrentPattern = eA.size();
     if (solutionK.rows() < (kIdx + 1) * nCurrentPattern) {
-        throwLengthError(1, WHERE_AM_I + " workspace size insufficient" + toStr(solutionK.rows())
-            + " " + toStr((kIdx + 1)*nCurrentPattern));
+        throwLengthError(1, WHERE_AM_I + " workspace size insufficient" + str(solutionK.rows())
+            + " " + str((kIdx + 1)*nCurrentPattern));
     }
 
     if (analytical_){

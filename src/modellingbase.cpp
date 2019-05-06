@@ -392,8 +392,8 @@ RVector ModellingBase::createMappedModel(const RVector & model, double backgroun
                           << "Wrong mesh here .. see mapModelfail.vtk" << std::endl
                           << *mesh_ << std::endl
                           << "mesh contains " << unique(sort(mesh_->cellMarkers())).size() << " unique markers. " << std::endl;
-                throwLengthError(1, WHERE_AM_I + " marker >= than model.size() " + toStr(marker)
-                       + " >= " + toStr(model.size()));
+                throwLengthError(1, WHERE_AM_I + " marker >= than model.size() " + str(marker)
+                       + " >= " + str(model.size()));
             }
             if (model[marker] < TOLERANCE){
                 emptyList.push_back(&mesh_->cell(i));
@@ -411,8 +411,8 @@ RVector ModellingBase::createMappedModel(const RVector & model, double backgroun
 
         // if background == 0.0 .. empty cells are allowed
     if (emptyList.size() == mesh_->cellCount() && background != 0.0){
-        throwLengthError(1, WHERE_AM_I + " too many empty cells" + toStr(emptyList.size())
-                       + " == " + toStr(mesh_->cellCount()));
+        throwLengthError(1, WHERE_AM_I + " too many empty cells" + str(emptyList.size())
+                       + " == " + str(mesh_->cellCount()));
     }
 
     if (background != 0.0){
@@ -499,7 +499,7 @@ LinearModelling::LinearModelling(MatrixBase & A, bool verbose)
 RVector LinearModelling::response(const RVector & model) {
     if (jacobian_->cols() != model.size()){
         throwLengthError(1, WHERE_AM_I + " Jacobian col size != model.size()"
-                                + toStr(jacobian_->cols()) + " != " + toStr(model.size()));
+                                + str(jacobian_->cols()) + " != " + str(model.size()));
     }
     return *jacobian_ * model;
 }

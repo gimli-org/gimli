@@ -98,22 +98,22 @@ def fitCCC(f, amp, phi, eRho=0.01, ePhi=0.001, lam=1000., mstart=None,
     """Fit complex spectrum by Cole-Cole model."""
     fCC = ColeColeComplex(f)
     tLog = pg.RTransLog()
-    fCC.region(0).setStartValue(max(amp))
+    fCC.region(0).setStartModel(max(amp))
     if mstart is None:  # compute from amplitude decay
         mstart = 1. - min(amp) / max(amp)
     fCC.region(1).setParameters(mstart, 0, 1)    # m (start,lower,upper)
     fCC.region(2).setParameters(*taupar)  # tau
     fCC.region(3).setParameters(*cpar)   # c
     data = pg.cat(amp, phi)
-    ICC = pg.RInversion(data, fCC, False)  # set up inversion class
+    ICC = pg.RInversion(data, fCC, True, True)  # set up inversion class
     ICC.setTransModel(tLog)
     error = pg.cat(eRho*amp, pg.RVector(len(f), ePhi))
     ICC.setAbsoluteError(error)  # perr + ePhi/data)
     ICC.setLambda(lam)  # start with large damping and cool later
     ICC.setMarquardtScheme(0.8)  # lower lambda by 20%/it., no stop chi=1
-    model = np.asarray(ICC.run())  # run inversion
+    model = ICC.run()  # run inversion
     ICC.echoStatus()
-    response = np.asarray(ICC.response())
+    response = ICC.response()
     return model, response[:len(f)], response[len(f):]
 
 
