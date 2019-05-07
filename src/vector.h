@@ -464,14 +464,13 @@ public:
         return *this;
     }
 
-    /*! Insert vals from Index start. Resized if necesary.*/
+    /*! Insert vals from start index. Resize if necessary.*/
     inline Vector< ValueType > & setVal(const Vector < ValueType > & vals,
                                         Index start) {
-        Index vS = vals.size();
-        if (vS > 0){
-            if (this->size() < this->size() + vS) this->resize(this->size() + vS);
-            this->setVal(vals, start, start + vS);
-        }
+        Index newS = start + vals.size();
+        if (this->size() < newS) this->resize(newS);
+        this->setVal(vals, start, newS);
+        
         return *this;
     }
 

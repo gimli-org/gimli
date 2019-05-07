@@ -43,7 +43,7 @@ Z = ColeColeRho(f, rho=100, m=0.1, tau=0.01, c=0.5)
 # TODO data need some noise
 
 sip = SIPSpectrum(f=f, amp=np.abs(Z), phi=-np.angle(Z))
-sip.fitColeCole(useCond=False)  # works for both rho and sigma models
+sip.fitColeCole(useCond=False, verbose=False)  # works for both rho and sigma models
 sip.showAll()
 
 ###############################################################################
@@ -58,7 +58,7 @@ Z = rho0 * (Z1 + Z2)
 
 # TODO data need some noise
 sip = SIPSpectrum(f=f, amp=np.abs(Z), phi=-np.angle(Z))
-sip.fitCCEM() # fit an SIP Cole-Cole term and an EM term (also Cole-Cole)
+sip.fitCCEM(verbose=False) # fit an SIP Cole-Cole term and an EM term (also Cole-Cole)
 sip.showAll()
 
 ###############################################################################

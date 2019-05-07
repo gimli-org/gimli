@@ -21,7 +21,7 @@ import numpy as np
 
 import pygimli as pg
 import pygimli.meshtools as mt
-from pygimli.physics.traveltime import Refraction
+from pygimli.physics.traveltime import TravelTimeManager, Refraction
 
 mpl.rcParams['image.cmap'] = 'inferno_r'
 
@@ -54,7 +54,7 @@ geom = mt.mergePLC([world, c0, c1])
 for sen in sensors:
     geom.createNode(sen)
 
-mesh_fwd = mt.createMesh(geom, quality=34, area=.25)
+mesh_fwd = mt.createMesh(geom, quality=34, area=0.25)
 model = np.array([2000., 2300, 1700])[mesh_fwd.cellMarkers()]
 pg.show(mesh_fwd, model, label="Velocity (m/s)", nLevs=3, logScale=False)
 
@@ -103,20 +103,25 @@ scheme.registerSensorIndex("g")
 # paper by `Giroux & Larouche (2013)
 # <https://doi.org/10.1016/j.cageo.2012.12.005>`_ to learn more about it.
 
-tt = Refraction()
-mesh_fwd.createSecondaryNodes(5)
-data = tt.simulate(mesh=mesh_fwd, scheme=scheme, slowness=1. / model,
-                   noiseLevel=0.001, noiseAbs=1e-5)
+tt = TravelTimeManager()
+data = tt.simulate(mesh=mesh_fwd, scheme=scheme, slowness=1./model,
+                   secNodes=5, noiseLevel=0.001, noiseAbs=1e-5)
 
 ################################################################################
 # For the inversion we create a new instance of the Refraction manager to avoid
 # confusion, since it is working on a different mesh.
 
-ttinv = Refraction()
-ttinv.setData(data)  # Set previously simulated data
-ttinv.setMesh(mesh, secNodes=5)
-invmodel = ttinv.invert(lam=1100, vtop=2000, vbottom=2000, zWeight=1.0)
-print("chi^2 = %.2f" % ttinv.inv.getChi2())  # Look at the data fit
+# ttinv = Refraction()
+# ttinv.setData(data)  # Set previously simulated data
+# ttinv.setMesh(mesh, secNodes=5)
+# invmodel = ttinv.invert(lam=1100, vtop=2000, vbottom=2000, zWeight=1.0)
+# print("chi^2 = %.2f" % ttinv.inv.getChi2())  # Look at the data fit
+
+ttinv = TravelTimeManager()
+invmodel = ttinv.invert(data, mesh=mesh, secNodes=5, 
+                        lam=1100, #limits=[1500, 2500], 
+                        zWeight=1.0, verbose=True)
+print("chi^2 = %.2f" % ttinv.inv.chi2())  # Look at the data fit
 
 ################################################################################
 # Finally, we visualize the true model and the inversion result next to each
@@ -133,7 +138,7 @@ for ax in (ax1, ax2):
     ax.plot(sensors[:, 0], sensors[:, 1], "wo")
 
 ttinv.showResult(ax=ax2)
-# ttinv.showRayPaths(ax=ax2, color="0.8", alpha=0.3)
+ttinv.showRayPaths(ax=ax2, color="0.8", alpha=0.3)
 fig.tight_layout()
 
 ################################################################################
@@ -143,9 +148,10 @@ fig.tight_layout()
 
 fig, ax = plt.subplots()
 ttinv.showCoverage(ax=ax, cMap="Greens")
-# ttinv.showRayPaths(ax=ax, color="k", alpha=0.3)
+ttinv.showRayPaths(ax=ax, color="k", alpha=0.3)
 ax.plot(sensors[:, 0], sensors[:, 1], "ko")
 
 ################################################################################
 # White regions indicate the model null space, i.e. cells that are not traversed
 # by any ray.
+pg.wait()

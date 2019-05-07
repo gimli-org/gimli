@@ -99,7 +99,6 @@ const RVector & RInversion::run(){ ALLOW_PYTHON_THREADS
     }
 
     abort_ = false;
-    ipc_.setBool("abort", false);
 
     //** check if transfunctions are valid
     this->checkTransFunctions();
@@ -191,10 +190,8 @@ const RVector & RInversion::run(){ ALLOW_PYTHON_THREADS
     modelHist_.push_back(model_);
 
     isRunning_ = true;
-    ipc_.setBool("running", true);
 
     while (iter_ < maxiter_ && !abort_){
-        if (ipc_.getBool("abort")) break;
         if (verbose_) std::cout << "Iter: " << iter_ << std::endl;
 
         if (!oneStep()) break;
@@ -210,7 +207,6 @@ const RVector & RInversion::run(){ ALLOW_PYTHON_THREADS
             if (verbose_) std::cout << "Reached data fit criteria (chi^2 <= 1). Stop." << std::endl;
             break;
         }
-
         double phi = getPhi();
         if (phi / oldphi > (1.0 - dPhiAbortPercent_ / 100.0) && iter_ > 2) {
             if (verbose_) std::cout << "Reached data fit criteria (delta phi < " << dPhiAbortPercent_
@@ -226,13 +222,11 @@ const RVector & RInversion::run(){ ALLOW_PYTHON_THREADS
 
     } //** while iteration;
     isRunning_ = false;
-    ipc_.setBool("running", false);
     return model_;
 } //** run
 
 bool RInversion::oneStep() {
     iter_++;
-    ipc_.setInt("Iter", iter_);
 
     deltaModelIter_.resize(model_.size());
     deltaModelIter_ *= 0.0;
@@ -347,8 +341,6 @@ bool RInversion::oneStep() {
     if (saveModelHistory_) save(model_, "model_" + str(iter_) PLUS_TMP_VECSUFFIX);
 
     if (verbose_) echoStatus();
-
-    ipc_.setDouble("Chi2", getPhiD() / data_.size());
 
     if (doBroydenUpdate_) { //** perform Broyden update;
     // did not yet reflect moving jacobian into modellingbase

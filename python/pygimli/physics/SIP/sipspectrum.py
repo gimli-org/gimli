@@ -372,7 +372,7 @@ class SIPSpectrum(object):
         return er
 
     def fitCCPhi(self, ePhi=0.001, lam=1000., mpar=(0, 0, 1),
-                 taupar=(0, 1e-5, 100), cpar=(0.3, 0, 1)):
+                 taupar=(0, 1e-5, 100), cpar=(0.3, 0, 1), verbose=False):
         """fit a Cole-Cole term to phase only
 
         Parameters
@@ -400,7 +400,7 @@ class SIPSpectrum(object):
 
     def fit2CCPhi(self, ePhi=0.001, lam=1000., mpar=(0, 0, 1),
                   taupar1=(0, 1e-5, 1), taupar2=(0, 1e-1, 1000),
-                  cpar=(0.5, 0, 1)):
+                  cpar=(0.5, 0, 1), verbose=False):
         """fit a Cole-Cole term to phase only
 
         Parameters
@@ -431,7 +431,7 @@ class SIPSpectrum(object):
 
     def fitCCEM(self, ePhi=0.001, lam=1000., remove=True,
                 mpar=(0.2, 0, 1), taupar=(1e-2, 1e-5, 100),
-                cpar=(0.25, 0, 1), empar=(1e-7, 1e-9, 1e-5)):
+                cpar=(0.25, 0, 1), empar=(1e-7, 1e-9, 1e-5), verbose=False):
         """Fit a Cole-Cole term with additional EM term to phase
 
         Parameters
@@ -447,7 +447,7 @@ class SIPSpectrum(object):
             for Cole-Cole parameters (m, tau, c) and EM relaxation time (em)
         """
         self.mCC, self.phiCC = fitCCEMPhi(self.f, self.phi, ePhi, lam, mpar,
-                                          taupar, cpar, empar)
+                                          taupar, cpar, empar, verbose=verbose)
         # correct EM term from data
         if remove:
             self.phiOrg = self.phi
@@ -482,7 +482,7 @@ class SIPSpectrum(object):
 
     def fitDebyeModel(self, ePhi=0.001, lam=1e3, lamFactor=0.8,
                       mint=None, maxt=None, nt=None, new=True,
-                      showFit=False, cType=1):
+                      showFit=False, cType=1, verbose=False):
         """Fit a (smooth) continuous Debye model (Debye decomposition).
 
         Parameters

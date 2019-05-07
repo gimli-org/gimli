@@ -30,7 +30,7 @@ class TravelTimeDijkstraModelling(MeshModelling):
         # necessary because core dijkstra use its own RM
         return self.dijkstra.regionManagerRef()
 
-    def refineFwdMesh(self):
+    def createRefinedFwdMesh(self, mesh):
         """Refine the current mesh for higher accuracy.
 
         This is called automatic when accesing self.mesh() so it ensures any
@@ -38,8 +38,9 @@ class TravelTimeDijkstraModelling(MeshModelling):
         """
         pg.info("Creating refined mesh (secnodes: {0}) to "
                 "solve forward task.".format(self._refineSecNodes))
-        self._mesh = self._mesh.createMeshWithSecondaryNodes(self._refineSecNodes)
-        pg.verbose(self._mesh)
+        m = mesh.createMeshWithSecondaryNodes(self._refineSecNodes)
+        pg.verbose(m)
+        return m
 
     def setMeshPost(self, mesh):
         """
@@ -104,12 +105,14 @@ class TravelTimeManager(MeshMethodManager):
 
         return pg.Vector(data('err') / data('t'))
 
-    def setMesh(self, mesh, secNodes=0):
+    def setMesh(self, mesh, secNodes=0, ignoreRegionManager=False):
         """ """
         if secNodes > 0:
             self.fop._refineSecNodes = secNodes
+            if ignoreRegionManager:
+                mesh = self.fop.createRefinedFwdMesh(mesh)
 
-        self.fop.setMesh(mesh)
+        self.fop.setMesh(mesh, ignoreRegionManager=ignoreRegionManager)
 
     def createForwardOperator(self, **kwargs):
         """Create default forward operator for Traveltime modelling.
@@ -121,7 +124,8 @@ class TravelTimeManager(MeshMethodManager):
 
         return fop
 
-    def simulate(self, mesh, slowness, scheme, secNodes=2, **kwargs):
+    def simulate(self, mesh, slowness, scheme, secNodes=2, 
+                 noiseLevel=0.0, noiseAbs=0.0, **kwargs):
         """
         Simulate an Traveltime measurement.
 
@@ -135,63 +139,67 @@ class TravelTimeManager(MeshMethodManager):
         ----------
         mesh : :gimliapi:`GIMLI::Mesh`
             Mesh to calculate for.
-
         slowness : array(mesh.cellCount()) | array(N, mesh.cellCount())
-            slowness distribution for the given mesh cells can be:
+            Slowness distribution for the given mesh cells can be:
 
             * a single array of len mesh.cellCount()
             * a matrix of N slowness distributions of len mesh.cellCount()
             * a res map as [[marker0, res0], [marker1, res1], ...]
-
-        scheme : :gimliapi:`GIMLI::DataContainer`
-            data measurement scheme
+        scheme: :gimliapi:`GIMLI::DataContainer`
+            Data measurement scheme needs 's' for shot and 'g' for geophone 
+            data token.
+        secNodes: int [2]
+            Number of refinement nodes to increase accuracy of the forward
+            calculation.       
+        noiseLevel: float [0.0]
+            Add relative noise to the simulated data. noiseLevel*100 in %
+        noiseAbs: float [0.0]
+            Add absolute noise to the simulated data in ms.        
 
         Other Parameters
         ----------------
-        noisify : add normal distributed noise based on scheme('err')
-            IMPLEMENTME
+        returnArray: [False]
+            Return only the calculated times.
+        verbose: [self.verbose]
+            Overwrite verbose level.
+        **kwargs
+            Additional kwargs ...
 
         Returns
         -------
         t : array(N, data.size()) | DataContainer
             The resulting simulated travel time values.
             Either one column array or matrix in case of slowness matrix.
-            A DataContainer is return if noisify set to True.
-
         """
-        fop = self.createForwardOperator()
+        verbose = kwargs.pop('verbose', self.verbose)
 
-        fop.setData(scheme)
-        self.setMesh(mesh, secNodes=secNodes)
-
+        fop = self.fop
+        fop.data = scheme
+        fop.verbose = verbose
+        self.setMesh(mesh, secNodes=secNodes, ignoreRegionManager=True)
+                
         if len(slowness) == mesh.cellCount():
             if max(slowness) > 1.:
-                print('Warning: slowness values larger than 1 (' +
-                      str(max(slowness)) + ').. assuming that are velocity '
-                      'values .. building reciprocity')
+                pg.warn('slowness values larger than 1 ({0}), assuming velocity values .. building reciprocity.'.format(max(slowness)))
                 t = fop.response(1./slowness)
             else:
                 t = fop.response(slowness)
         else:
             print(mesh)
             print("slowness: ", slowness)
-            raise BaseException("Simulate called with wrong slowness array.")
+            pg.critical("Simulate called with wrong slowness array.")
 
         ret = pg.DataContainer(scheme)
         ret.set('t', t)
 
-        noiseLevel = kwargs.pop('noiseLevel', 0)
-
-        if noiseLevel > 0:
+        if noiseLevel > 0 or noiseAbs > 0:
             if not ret.allNonZero('err'):
                 ret.set('t', t)
-                ret.set('err', pg.physics.Refraction.estimateError(
-                        ret, absoluteError=kwargs.pop('noiseAbs', 1e-4),
-                        relativeError=noiseLevel))
+                err = noiseAbs + t * noiseLevel
+                ret.set('err', err)
 
-            if self.verbose:
-                print("Data error estimates (min:mpythonax) ",
-                      min(ret('err')), ":", max(ret('err')))
+            pg.verbose("Absolute data error estimates (min:max) {0}:{1}".format(
+                        min(ret('err')), max(ret('err'))))
 
             t += pg.randn(ret.size()) * ret('err')
             ret.set('t', t)
@@ -323,6 +331,32 @@ class TravelTimeManager(MeshMethodManager):
         self.drawRayPaths(ax, model=model, **kwargs)
 
         return ax, cbar
+
+    def rayCoverage(self):
+        """ray coverage
+        TODO little more
+        """
+        return self.fop.jacobian().transMult(np.ones(self.fop.data.size()))
+
+    def standardizedCoverage(self):
+        """standardized coverage vector (0|1) using neighbor info
+        TODO little more
+        """
+        coverage = self.rayCoverage()
+        C = self.fop.constraintsRef()
+        return np.sign(np.absolute(C.transMult(C * coverage)))
+
+    def showCoverage(self, ax=None, name='coverage', **kwargs):
+        """shows the ray coverage in logscale"""
+        if ax is None:
+            fig, ax = plt.subplots()
+            self.figs[name] = fig
+
+        cov = self.rayCoverage()
+        return pg.show(self.fop.paraDomain, 
+                       pg.log10(cov+min(cov[cov > 0])*.5), ax=ax,
+                       coverage=self.standardizedCoverage(), **kwargs)
+
 
 
 if __name__ == '__main__':

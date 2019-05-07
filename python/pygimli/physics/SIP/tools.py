@@ -9,16 +9,16 @@ from .models import ColeColeComplex, ColeColeComplexSigma, PeltonPhiEM
 from .models import ColeColeAbs, ColeColePhi, DoubleColeColePhi
 
 
-def fitCCEMPhi(f, phi,  ePhi=0.001, lam=1000., verbose=True,
+def fitCCEMPhi(f, phi,  ePhi=0.001, lam=1000., 
                mpar=(0.2, 0, 1), taupar=(1e-2, 1e-5, 100),
-               cpar=(0.25, 0, 1), empar=(1e-7, 1e-9, 1e-5)):
+               cpar=(0.25, 0, 1), empar=(1e-7, 1e-9, 1e-5), verbose=True):
     """Fit a Cole-Cole term with additional EM term to phase."""
     fCCEM = PeltonPhiEM(f)
     fCCEM.region(0).setParameters(*mpar)    # m (start,lower,upper)
     fCCEM.region(1).setParameters(*taupar)  # tau
     fCCEM.region(2).setParameters(*cpar)   # c
     fCCEM.region(3).setParameters(*empar)   # tau-EM
-    ICC = pg.RInversion(phi, fCCEM, False)  # set up inversion class
+    ICC = pg.RInversion(phi, fCCEM, verbose, verbose)  # set up inversion class
     ICC.setAbsoluteError(ePhi)  # 1 mrad
     ICC.setLambda(lam)  # start with large damping and cool later
     ICC.setMarquardtScheme(0.8)  # lower lambda by 20%/it., no stop chi=1
@@ -94,7 +94,7 @@ def fitCCAbs(f, amp, error=0.01, lam=1000., mstart=None,
 
 
 def fitCCC(f, amp, phi, eRho=0.01, ePhi=0.001, lam=1000., mstart=None,
-           taupar=(1e-2, 1e-5, 100), cpar=(0.5, 0, 1)):
+           taupar=(1e-2, 1e-5, 100), cpar=(0.5, 0, 1), verbose=False):
     """Fit complex spectrum by Cole-Cole model."""
     fCC = ColeColeComplex(f)
     tLog = pg.RTransLog()
@@ -105,7 +105,7 @@ def fitCCC(f, amp, phi, eRho=0.01, ePhi=0.001, lam=1000., mstart=None,
     fCC.region(2).setParameters(*taupar)  # tau
     fCC.region(3).setParameters(*cpar)   # c
     data = pg.cat(amp, phi)
-    ICC = pg.RInversion(data, fCC, True, True)  # set up inversion class
+    ICC = pg.RInversion(data, fCC, verbose, verbose)  # set up inversion class
     ICC.setTransModel(tLog)
     error = pg.cat(eRho*amp, pg.RVector(len(f), ePhi))
     ICC.setAbsoluteError(error)  # perr + ePhi/data)

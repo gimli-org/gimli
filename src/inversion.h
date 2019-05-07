@@ -339,7 +339,8 @@ public:
     inline double lambdaMinimum() const { return lambdaMin_; }
 
     /*! Set whether regularization is global or local (e.g. Marquardt method) */
-    void setLocalRegularization(bool localReg){ localRegularization_ = localReg; }
+    void setLocalRegularization(bool localReg){ 
+        localRegularization_ = localReg; }
     /*! Return whether regularization is global or local (e.g. Marquardt method) */
     bool localRegularization() const { return localRegularization_; }
 
