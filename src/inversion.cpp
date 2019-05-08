@@ -46,10 +46,14 @@ void RInversion::checkConstraints() {
         model_.resize(nModelC);
     }
 
+    forward_->regionManager().fillModelControl(modelWeight_);
+
     if (modelWeight_.size() != model_.size()){
         modelWeight_.resize(model_.size(), 1.0);
     }
-
+    if (activateFillConstraintWeights_) {
+        constraintWeights_ = forward_->regionManager().constraintWeights();
+    }
     if (constraintWeights_.size() != nCWeightC) {
         constraintWeights_.resize(nCWeightC, 1.0);
     }
@@ -115,25 +119,6 @@ const RVector & RInversion::run(){ ALLOW_PYTHON_THREADS
 
     //! validate and rebuild the constraint matrix if necessary
     this->checkConstraints();
-
-    forward_->regionManager().fillModelControl(modelWeight_);
-
-    if (activateFillConstraintWeights_) {
-        constraintWeights_ = forward_->regionManager().constraintWeights();
-    }
-
-    if (constraintWeights_.size() != forward_->constraints()->rows()){
-        std::cout << WHERE_AM_I << " Fixing cweight.size()" << std::endl;
-        std::cout << constraintWeights_.size() << " "
-                  << forward_->constraints()->rows() << std::endl;
-        constraintWeights_.resize(forward_->constraints()->rows(), 1.0);
-    }
-    if (modelWeight_.size() != forward_->constraints()->cols()){
-        std::cout << WHERE_AM_I << " Fixing mweight.size()" << std::endl;
-        std::cout << modelWeight_.size() << " "
-                  << forward_->constraints()->cols() << std::endl;
-        modelWeight_.resize(forward_->constraints()->cols(), 1.0);
-    }
 
     if (haveReferenceModel_) {
         //! compute roughness constraint and correct it for inter-region constraints

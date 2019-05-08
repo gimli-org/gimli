@@ -84,7 +84,7 @@ fEM.region(1).setTransModel(transRes)
 ###############################################################################
 # We set up the independent EM inversion and run the model.
 
-invEM = pg.RInversion(dataEM, fEM, transEM, verbose)
+invEM = pg.RInversion(dataEM, fEM, transEM, True, True)
 modelEM = pg.RVector(nlay * 2 - 1, 50.)
 invEM.setModel(modelEM)
 invEM.setAbsoluteError(noiseEM)

@@ -430,11 +430,12 @@ if (SPHINX_FOUND)
     list(APPEND DOCFILES ${PYFILES})
 
     set(RSTFILES ${DOCFILES} CACHE INTERNAL "RST source file that we need to copy")
-
-    #foreach(file ${DOCFILES})
-        #message(${file})
-    #endforeach()
-
+    
+    set(RSTFILES ${DOCFILES} CACHE INTERNAL "RST source file that we need to copy")
+    execute_process(
+        COMMAND ${SPHINX_EXECUTABLE} --version
+        OUTPUT_VARIABLE SPHINX_VERSION
+    )
 endif()
 
 message(STATUS "**********************************************************************")
@@ -463,7 +464,7 @@ message(STATUS "*************** Optional Dependencies found ********************
 message(STATUS "**********************************************************************")
 message(STATUS "CPPUNIT            :${CPPUNIT_FOUND}    ${CPPUNIT_LIBRARIES}")
 message(STATUS "Doxygen            :${DOXYGEN_FOUND}    ")
-message(STATUS "Sphinx             :${SPHINX_FOUND}    ")
+message(STATUS "Sphinx             :${SPHINX_FOUND}     ${SPHINX_EXECUTABLE} ${SPHINX_VERSION}")
 message(STATUS "**********************************************************************")
 
 if (PYTHON_EXECUTABLE

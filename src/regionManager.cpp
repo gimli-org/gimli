@@ -888,7 +888,7 @@ Index RegionManager::interRegionConstraintsCount() const {
 void RegionManager::fillConstraints(RSparseMapMatrix & C){
     Index nModel  = parameterCount();
     Index nConstr = constraintCount();
-    this->_cWeights.resize(nConstr);
+    this->_cWeights.resize(nConstr, 1.0);
     
     C.clear();
 

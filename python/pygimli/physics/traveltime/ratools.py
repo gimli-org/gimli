@@ -18,8 +18,8 @@ def shotReceiverDistances(data, full=False):
         Get distances between shot and receiver posisiton when full is True or
         only form x coordinate if full is False
 
-    Exits
-    -----
+    Returns
+    -------
     dists :  array
         Array of distances
 
