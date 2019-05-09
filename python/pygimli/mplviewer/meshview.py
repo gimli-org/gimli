@@ -53,8 +53,8 @@ class CellBrowser(object):
 
     Parameters
     ----------
-    mesh : 2D pygimli.Mesh instance
-        The plotted mesh to browse through.
+    mesh : :gimliapi:`GIMLI::Mesh`
+        The plotted 2D mesh to browse through.
     data : iterable
         Cell data.
     ax : mpl axis instance, optional
@@ -255,21 +255,29 @@ class CellBrowser(object):
             print(e)
 
 
-def drawMesh(ax, mesh, **kwargs):
+def drawMesh(ax, mesh, fitView=True, **kwargs):
     """Draw a 2d mesh into a given ax.
 
     Set the limits of the ax tor the mesh extent.
 
     Parameters
     ----------
-
+    ax : mpl axe instance
+        Axis instance where the mesh is plotted.
     mesh : :gimliapi:`GIMLI::Mesh`
-        The plotted mesh to browse through.
-    ax : mpl axe instance, optional
-        Axis instance where the mesh is plotted (default is current axis).
-    fitView: bool [True]
+        The 2D mesh which will be drawn.
+    fitView : bool [True]
         Adjust ax limits to mesh bounding box.
 
+    Other Parameters
+    ----------------
+    **kwargs
+        Additional kwargs forward to drawPLC or drawMeshBoundaries
+        
+    %(drawMeshBoundaries)
+
+    %(drawPLC)
+   
     Examples
     --------
     >>> import numpy as np
@@ -287,7 +295,7 @@ def drawMesh(ax, mesh, **kwargs):
     else:
         pg.mplviewer.drawMeshBoundaries(ax, mesh, **kwargs)
 
-    if kwargs.pop('fitView', True):
+    if fitView is True:
         ax.set_xlim(mesh.xmin(), mesh.xmax())
         ax.set_ylim(mesh.ymin(), mesh.ymax())
         ax.set_aspect('equal')
@@ -295,17 +303,18 @@ def drawMesh(ax, mesh, **kwargs):
     updateAxes_(ax)
 
 
-def drawModel(ax, mesh, data=None, logScale=True, cMin=None, cMax=None,
-              xlabel=None, ylabel=None, verbose=False,
-              tri=False, rasterized=False, **kwargs):
+def drawModel(ax, mesh, data=None, tri=False, rasterized=False,
+              logScale=True, cMin=None, cMax=None,
+              xlabel=None, ylabel=None, fitView=True, verbose=False,
+              **kwargs):
     """Draw a 2d mesh and color the cell by the data.
 
     Parameters
     ----------
-    mesh : :gimliapi:`GIMLI::Mesh`
-        The plotted mesh to browse through.
     ax : mpl axis instance, optional
         Axis instance where the mesh is plotted (default is current axis).
+    mesh : :gimliapi:`GIMLI::Mesh`
+        The plotted mesh to browse through.
     data : array, optional
         Data to draw. Should either equal numbers of cells or nodes of the
         corresponding `mesh`.
@@ -314,8 +323,13 @@ def drawModel(ax, mesh, data=None, logScale=True, cMin=None, cMax=None,
     rasterized : boolean, optional
         Rasterize mesh patches to reduce file size and avoid zooming artifacts
         in some PDF viewers.
-    **kwargs : Additional keyword arguments
-        Will be forwarded to the draw functions and matplotlib methods,
+    fitView : bool [True]
+        Adjust ax limits to mesh bounding box.
+        
+    Other Parameters
+    ----------------
+    **kwargs
+        Additional kwargs forwarded to the draw functions and mpl methods,
         respectively.
 
     Returns
@@ -347,7 +361,7 @@ def drawModel(ax, mesh, data=None, logScale=True, cMin=None, cMax=None,
         pg.error("drawModel: The mesh is empty.", mesh)
 
     if tri:
-        gci = drawMPLTri(ax, mesh, data,
+        gci = drawField(ax, mesh, data,
                          cMin=cMin, cMax=cMax, logScale=logScale,
                          **kwargs)
     else:
@@ -382,7 +396,7 @@ def drawModel(ax, mesh, data=None, logScale=True, cMin=None, cMax=None,
     if ylabel is not None:
         ax.set_ylabel(ylabel)
 
-    if kwargs.pop('fitView', True):
+    if fitView is True:
         ax.set_xlim(mesh.xmin(), mesh.xmax())
         ax.set_ylim(mesh.ymin(), mesh.ymax())
         ax.set_aspect('equal')
@@ -481,23 +495,26 @@ def drawSelectedMeshBoundariesShadow(ax, boundaries, first='x', second='y',
     return collection
 
 
-def drawMeshBoundaries(ax, mesh, hideMesh=False, useColorMap=False, **kwargs):
+def drawMeshBoundaries(ax, mesh, hideMesh=False, useColorMap=False,
+                       fitView=True, lw=None, color=None):
     """Draw mesh on ax with boundary conditions colorized.
 
     Parameters
     ----------
+    mesh : :gimliapi:`GIMLI::Mesh`
 
-    hideMesh: bool [False]
+    hideMesh : bool [False]
         Show only the boundary of the mesh and omit inner edges that
         separate the cells.
-
-    useColorMap: bool[False]
+    useColorMap : bool[False]
         Apply the default colormap to boundaries with marker values > 0
-
-    **kwargs:
-        * fitView : bool [True]
-        * linewidth : float [0.3]
-            linewidth for edges with marker == 0 if hideMesh is False.
+    fitView : bool [True]
+        Adjust ax limits to mesh bounding box.
+    lw : float [None]
+        Linewidth. When set to None then lw depends on boundary marker.
+        Linewidth [0.3] for edges with marker == 0 if hideMesh is False.
+    color : None
+        Color for special lines. If set to None automatic "black". 
 
     Examples
     --------
@@ -525,7 +542,7 @@ def drawMeshBoundaries(ax, mesh, hideMesh=False, useColorMap=False, **kwargs):
         raise Exception("drawMeshBoundaries(ax, mesh): to few nodes",
                         mesh.nodeCount())
 
-    if kwargs.pop('fitView', True):
+    if fitView is True:
         ax.set_xlim(mesh.xmin() - 0.05, mesh.xmax() + 0.05)
         ax.set_ylim(mesh.ymin() - 0.05, mesh.ymax() + 0.05)
 
@@ -533,8 +550,6 @@ def drawMeshBoundaries(ax, mesh, hideMesh=False, useColorMap=False, **kwargs):
 #    swatch = pg.Stopwatch(True)
     mesh.createNeighbourInfos()
 
-    lw = kwargs.pop('lw', None)
-    col = kwargs.pop('color', None)
     if not hideMesh:
         drawSelectedMeshBoundaries(ax,
                                    mesh.findBoundaryByMarker(0),
@@ -549,6 +564,8 @@ def drawMeshBoundaries(ax, mesh, hideMesh=False, useColorMap=False, **kwargs):
             ax, mesh.findBoundaryByMarker(pg.MARKER_BOUND_MIXED),
             color=(1.0, 0.0, 0.0, 1.0),
             linewidth=lw or 1.0)
+
+    col = color
 
     b0 = [b for b in mesh.boundaries() if b.marker() > 0]
     if useColorMap:
@@ -568,25 +585,31 @@ def drawMeshBoundaries(ax, mesh, hideMesh=False, useColorMap=False, **kwargs):
 
 
 def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
-            showNodes=False, **kwargs):
+            showNodes=False, fitView=True, **kwargs):
     """Draw 2D PLC into given axes.
 
     Parameters
     ----------
+    ax : mpl axe
+        
+    mesh : :gimliapi:`GIMLI::Mesh`
 
     fillRegion: bool [True]
         Fill the regions with default colormap.
-
     regionMarker: bool [True]
         Show region marker.
-
     boundaryMarker: bool [False]
         Show boundary marker.
-
     showNodes: bool [False]
         Draw all nodes as little dots.
+    fitView : bool [True]
+        Adjust ax limits to mesh bounding box.
 
+    Other Parameters
+    ----------------
     **kwargs
+        Additional kwargs forwarded to the draw functions and mpl methods,
+        respectively.
 
     Examples
     --------
@@ -603,7 +626,6 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
     >>> geom = mt.mergePLC([world, block])
     >>> pg.mplviewer.drawPLC(ax, geom)
     """
-    fitView = kwargs.pop('fitView', True)
     #    eCircles = []
     if fillRegion and mesh.boundaryCount() > 2:
         tmpMesh = pg.meshtools.createMesh(mesh, quality=20, area=0)
@@ -725,7 +747,7 @@ def createTriangles(mesh, data=None):
     Parameters
     ----------
     mesh : :gimliapi:`GIMLI::Mesh`
-        pyGimli mesh to plot
+        2D mesh
     data : iterable [None]
         cell-based values to plot
 
@@ -789,48 +811,75 @@ def createTriangles(mesh, data=None):
 
     return x, y, triangles, z, dataIdx
 
+def drawMPLTri(*args, **kwargs):
+    pg.deprecated("use drawField")
+    return drawField(*args, **kwargs)
 
-def drawMPLTri(ax, mesh, data=None,
-               cMin=None, cMax=None, logScale=True,
-               **kwargs):
-    """Draw mesh based scalar field using matplotlib triplot.
+
+def drawField(ax, mesh, data=None, levels=[], nLevs=5,
+              cMin=None, cMax=None, logScale=False, fitView=True,
+              **kwargs):
+    """Draw mesh with scalar field data.
 
     Draw scalar field into MPL axes using matplotlib triplot.
-
-    TODO
-        * Examples
-        * Doc: Interpolation variants
+    Only for triangle/quadrangle meshes currently
 
     Parameters
     ----------
+    ax : mpl axe 
+
+    mesh : :gimliapi:`GIMLI::Mesh`
+        2D mesh
     data: iterable
         Scalar field values. Can be of length mesh.cellCount()
         or mesh.nodeCount().
+    levels : iterable [float]
+        Values for contour lines. If empty auto generated from nLevs.
+    nLevs : int
+        Number of contour levels based on cMin, cMax and logScale.
+    cMin : float [None]
+        Minimal contour value. If None min(data).
+    cMax : float [None]
+        Maximal contour value. If None max(data).
+    logScale : bool [False]
+        Levels and colors distributes with logarithmic scale.
+    fitView : bool [True]
+        Adjust ax limits to mesh bounding box.
 
-    **kwargs:
-        * shading: interpolation algorithm [flat]
-        * fillContour: [True]
-        * withContourLines: [True]
+    Other Parameters
+    ----------------
+    shading: 'flat' | 'gouraud'
+    
+    fillContour: [True]
+    
+    withContourLines: [True]
+    **kwargs
+        Additional kwargs forwarded to ax.tripcolor, 
+        ax.tricontour, ax.tricontourf
+        
     Returns
     -------
-        gci : image object
-            The current image object useful for post color scaling
+    gci : image object
+        The current image object useful for post color scaling
+
     Examples
     --------
-    >>>
+    >>> import numpy as np
+    >>> import matplotlib.pyplot as plt
+    >>> import pygimli as pg
+    >>> from pygimli.mplviewer import drawField
+    >>> n = np.linspace(0, -2, 11)
+    >>> mesh = pg.createGrid(x=n, y=n)
+    >>> nx = pg.x(mesh.positions())
+    >>> ny = pg.y(mesh.positions())
+    >>> data = np.cos(1.5 * nx) * np.sin(1.5 * ny)
+    >>> fig, ax = plt.subplots()
+    >>> drawField(ax, mesh, data)
+    <matplotlib.tri.tricontour.TriContourSet ...>
     """
-    # deprecated remove me
-    if 'cMap' in kwargs or 'cmap' in kwargs:
-        pg.warn('cMap|cmap argument is deprecated for draw functions.' +
-                'Please use show or customize a colorbar.')
-    # deprecated remove me
-
     x, y, triangles, z, _ = createTriangles(mesh, data)
 
-
     gci = None
-    levels = kwargs.pop('levels', [])
-    nLevs = kwargs.pop('nLevs', 5)
 
     if len(levels) == 0:
         levels = autolevel(data, nLevs, zmin=cMin, zmax=cMax,
@@ -882,7 +931,7 @@ def drawMPLTri(ax, mesh, data=None,
     if gci and cMin and cMax:
         gci.set_clim(cMin, cMax)
 
-    if kwargs.pop('fitView', True):
+    if fitView is True:
         ax.set_xlim(mesh.xmin(), mesh.xmax())
         ax.set_ylim(mesh.ymin(), mesh.ymax())
         ax.set_aspect('equal')
@@ -890,47 +939,6 @@ def drawMPLTri(ax, mesh, data=None,
     updateAxes_(ax)
     return gci
 
-
-def drawField(ax, mesh, data=None, **kwargs):
-    """Draw a mesh-related (node or cell based) field onto a given MPL axis.
-
-        Only for triangle/quadrangle meshes currently
-
-    Parameters
-    ----------
-    ax : MPL axes
-
-    mesh : :gimliapi:`GIMLI::Mesh`
-
-    data: iterable
-        Scalar field values. Can be of length mesh.cellCount()
-        or mesh.nodeCount().
-
-    **kwargs:
-        * shading: interpolation algorithm [flat]
-        * fillContour: [True]
-        * withContourLines: [True]
-    Returns
-    -------
-        gci : image object
-            The current image object useful for post color scaling
-
-    Examples
-    --------
-    >>> import numpy as np
-    >>> import matplotlib.pyplot as plt
-    >>> import pygimli as pg
-    >>> from pygimli.mplviewer import drawField
-    >>> n = np.linspace(0, -2, 11)
-    >>> mesh = pg.createGrid(x=n, y=n)
-    >>> nx = pg.x(mesh.positions())
-    >>> ny = pg.y(mesh.positions())
-    >>> data = np.cos(1.5 * nx) * np.sin(1.5 * ny)
-    >>> fig, ax = plt.subplots()
-    >>> drawField(ax, mesh, data)
-    <matplotlib.tri.tricontour.TriContourSet ...>
-    """
-    return drawMPLTri(ax, mesh, data, **kwargs)
 
 def drawStreamLines(ax, mesh, u, nx=25, ny=25, **kwargs):
     """Draw streamlines for the gradients of field values u on a mesh.
@@ -942,6 +950,16 @@ def drawStreamLines(ax, mesh, u, nx=25, ny=25, **kwargs):
     This works only for rectangular regions.
     You should use pg.mplviewer.drawStreams, which is more comfortable and
     more flexible.
+
+    Parameters
+    ----------
+    ax : mpl axe 
+
+    mesh : :gimliapi:`GIMLI::Mesh`
+        2D mesh
+    u : iterable float
+        Scalar data field.
+
     """
     X, Y = np.meshgrid(
         np.linspace(mesh.xmin(), mesh.xmax(), nx),
@@ -982,33 +1000,27 @@ def drawStreamLine_(ax, mesh, c, data, dataMesh=None, linewidth=1.0,
 
     Parameters
     ----------
-
     ax : matplotlib.ax
         ax to draw into
-
     mesh : :gimliapi:`GIMLI::Mesh`
-        2d Mesh to draw the streamline
-
+        2d mesh 
     c : :gimliapi:`GIMLI::Cell`
-        start cell
-
+        Start point is c.center()
     data : iterable float | [float, float]
         If data is an array (per cell or node) gradients are calculated
         otherwise the data will be interpreted as vector field.
-
     dataMesh : :gimliapi:`GIMLI::Mesh` [None]
-
         Optional mesh for the data. If you want high resolution
         data to plot on coarse draw mesh.
-
     linewidth : float [1.0]
-
         Streamline linewidth
-
     dropTol : float [0.0]
-
         Don't draw stream lines with velocity lower than drop tolerance.
 
+    Other Parameters
+    ----------------
+    **kwargs
+        Additional kwargs forwarded to mpl.LineCollection, mpl.Polygon
     """
     x, y, v = streamline(mesh, data, startCoord=c.center(), dLengthSteps=5,
                          dataMesh=dataMesh, maxSteps=10000, verbose=False,
@@ -1075,7 +1087,8 @@ def drawStreamLine_(ax, mesh, c, data, dataMesh=None, linewidth=1.0,
     return lines
 
 
-def drawStreams(ax, mesh, data, startStream=3, **kwargs):
+def drawStreams(ax, mesh, data, startStream=3, coarseMesh=None, quiver=False, 
+                **kwargs):
     """Draw streamlines based on an unstructured mesh.
 
     Every cell contains only one streamline and every new stream line
@@ -1084,31 +1097,26 @@ def drawStreams(ax, mesh, data, startStream=3, **kwargs):
 
     Parameters
     ----------
-
     ax : matplotlib.ax
         ax to draw into
-
     mesh : :gimliapi:`GIMLI::Mesh`
-        2d Mesh to draw the streamline
-
+        2d mesh
     data : iterable float | [float, float] | pg.R3Vector
         If data is an array (per cell or node) gradients are calculated
         otherwise the data will be interpreted as vector field.
-
     startStream : int
         variate the start stream drawing, try values from 1 to 3 what every
         you like more.
+    coarseMesh : :gimliapi:`GIMLI::Mesh`
+        Instead of draw a stream for every cell in mesh, draw a streamline
+        segment for each cell in coarseMesh.
+    quiver : bool [False]
+        Draw arrows instead of streamlines.
 
-    **kwargs: forward to drawStreamLine_
-
-        * coarseMesh
-
-            Instead of draw a stream for every cell in mesh, draw a streamline
-            segment for each cell in coarseMesh.
-
-        * quiver: bool
-
-            Draw arrows instead of streamlines.
+    Other Parameters
+    ----------------
+    **kwargs
+        Additional kwargs forwarded to axe.quiver, drawStreamLine_
 
     Examples
     --------
@@ -1131,8 +1139,6 @@ def drawStreams(ax, mesh, data, startStream=3, **kwargs):
     """
     viewMesh = None
     dataMesh = None
-
-    quiver = kwargs.pop('quiver', False)
 
     if quiver:
 
@@ -1163,11 +1169,10 @@ def drawStreams(ax, mesh, data, startStream=3, **kwargs):
         updateAxes_(ax)
         return
 
-    if 'coarseMesh' in kwargs:
-        viewMesh = kwargs['coarseMesh']
+    if coarseMesh is not None:
+        viewMesh = coarseMesh
         dataMesh = mesh
         dataMesh.createNeighbourInfos()
-        del kwargs['coarseMesh']
     else:
         viewMesh = mesh
 
@@ -1215,17 +1220,24 @@ def drawStreams(ax, mesh, data, startStream=3, **kwargs):
     updateAxes_(ax)
 
 
-def drawSensors(ax, sensors, diam=None, coords=None, verbose=False, **kwargs):
+def drawSensors(ax, sensors, diam=None, coords=None, **kwargs):
     """Draw sensor positions as black dots with a given diameter.
 
     Parameters
     ----------
+    ax : mpl axe instance
+
     sensors : vector or list of RVector3
         list of positions to plot
     diam : float [None]
         diameter of circles (None leads to point distance by 8)
     coords: (int, int) [0, 1]
         Coordinates to take (usually x and y)
+
+    Other Parameters
+    ----------------
+    **kwargs
+        Additional kwargs forwarded to mpl.PatchCollection, mpl.Circle
 
     Examples
     --------
@@ -1251,8 +1263,6 @@ def drawSensors(ax, sensors, diam=None, coords=None, verbose=False, **kwargs):
         diam = eSpacing / 8.0
 
     for i, e in enumerate(sensors):
-        if verbose:
-            print(e, diam, e[coords[0]], e[coords[1]])
         eCircles.append(mpl.patches.Circle((e[coords[0]], 
                                             e[coords[1]]), diam, **kwargs))
 
@@ -1263,90 +1273,115 @@ def drawSensors(ax, sensors, diam=None, coords=None, verbose=False, **kwargs):
     updateAxes_(ax)
 
 
-def _createParameterContraintsLines(mesh, cMat, cWeight=None):
-    """TODO Documentme."""
+def _createParameterContraintsLines(mesh, cMat, cWeights=None):
+    """Create line segments representing constrains.
+    """
     C = None
 
-    if not isinstance(cMat, pg.SparseMapMatrix):
-        throwToImplement
-        #cMat.save('tmpC.matrix')
-        #pg.loadMatrixCol(C, 'tmpC.matrix')
+    if isinstance(cMat, pg.SparseMapMatrix):
+
+        tmp = pg.optImport('tempfile')
+        _, tmpFile = tmp.mkstemp(suffix='.matrix')
+        C = pg.RMatrix()
+        cMat.save(tmpFile)
+        pg.loadMatrixCol(C, tmpFile)
+
+        try:
+            import os
+            os.remove(tmpFile)
+        except Exception as e:
+            pg.error(e)
+            print("can't remove:", tmpFile)
+
     else:
         C = cMat
 
-    paraMarker = mesh.cellMarkers()
     cellList = dict()
-
     for c in mesh.cells():
         pID = c.marker()
-
         if pID not in cellList:
             cellList[pID] = []
         cellList[pID].append(c)
-
+        
     paraCenter = dict()
-    for cID, vals in list(cellList.items()):
+    for pID, vals in list(cellList.items()):
         p = pg.RVector3(0.0, 0.0, 0.0)
         for c in vals:
             p += c.center()
         p /= float(len(vals))
-        paraCenter[cID] = p
+        paraCenter[pID] = p
 
-    nConstraints = C[0].size()
-    print(C[0])
+    nConstraints = cMat.rows()
+    
     start = []
     end = []
     #    swatch = pg.Stopwatch(True)  # not used
-    for i in range(0, int(nConstraints / 2)):
-        # print i
-        # if i == 1000: break;
+    i = -1
+    while i < C[0].size():
+        cID = C[0][i]
+        
+            
+        a = C[1][i]
+        b = None
 
-        idL = int(C[1][i * 2])
-        idR = int(C[1][i * 2 + 1])
+        if i < C[0].size()-1:
+            if C[0][i+1] == cID:
+                b = C[1][i+1]
+                i += 1
+        if b is not None:
+            if cWeights[cID] > 0:
+                p1 = paraCenter[a]
+                p2 = paraCenter[b]
 
-        p1 = paraCenter[idL]
-        p2 = paraCenter[idR]
-
-        if cWeight is not None:
-            pa = pg.RVector3(p1 + (p2 - p1) / 2.0 * (1.0 - cWeight[i]))
-            pb = pg.RVector3(p2 + (p1 - p2) / 2.0 * (1.0 - cWeight[i]))
+                if cWeights is not None:
+                    pa = pg.RVector3(p1 + (p2 - p1) / 2.0 * (1.0 - cWeights[cID]))
+                    pb = pg.RVector3(p2 + (p1 - p2) / 2.0 * (1.0 - cWeights[cID]))
+                else:
+                    pa = p1
+                    pb = p2
+                start.append(pa)
+                end.append(pb)
         else:
-            pa = p1
-            pb = p2
-
-        start.append(pa)
-        end.append(pb)
-
-
-#    updateAxes_(ax)  # not existing
+            start.append(paraCenter[a])
+            end.append(paraCenter[a])
+                
+        i += 1
 
     return start, end
 
-def drawParameterConstraints(ax, mesh, cMat, cWeight=None):
+def drawParameterConstraints(ax, mesh, cMat, cWeights=None):
     """Draw inter parameter constraints between cells.
 
     Parameters
     ----------
     ax : MPL axes
-    mesh :
+
+    mesh : :gimliapi:`GIMLI::Mesh`
+        2d mesh
+    cMat : :gimliapi:`GIMLI::SparseMapMatrix`
+        ConstraintsMatrix
+    cWeights : iterable float
+        Weights for all constraints. Need to have a lengths == cMat.rows()
     """
-    start, end = _createParameterContraintsLines(mesh, cMat, cWeight)
+    start, end = _createParameterContraintsLines(mesh, cMat, cWeights)
 
     lines = []
     colors = []
     linewidths = []
+    col = (0.0, 0.0, 1.0, 1.0)
     for i, _ in enumerate(start):
-        lines.append(list(zip([start[i].x(), end[i].x()],
-                              [start[i].y(), end[i].y()])))
+        if start[i] == end[i]:
+            ax.plot(start[i].x(), end[i].y(), '.', color=col, markersize=2)
+        else:
+            lines.append(list(zip([start[i].x(), end[i].x()], 
+                                  [start[i].y(), end[i].y()])))
 
-        linewidth = 0.5
-        col = (0.0, 0.0, 1.0, 1.0)
+            linewidths.append(0.5)
         colors.append(col)
-        linewidths.append(linewidth)
 
-    linCol = mpl.collections.LineCollection(lines, antialiaseds=True)
-    linCol.set_color(colors)
-    linCol.set_linewidth(linewidths)
-    ax.add_collection(linCol)
+    lc = mpl.collections.LineCollection(lines, antialiaseds=True)
+    lc.set_color(colors)
+    lc.set_linewidth(linewidths)
+    ax.add_collection(lc)
 
     updateAxes_(ax)

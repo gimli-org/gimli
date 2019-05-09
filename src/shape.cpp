@@ -61,7 +61,6 @@ createPolynomialShapeFunctions(const std::vector < RVector3 > & pnts,
 //         std::cout << "base: " << tmp << std::endl;
 //     }
 
-
     std::vector < PolynomialFunction < double > > ret;
 
     for (Index i = 0; i < pnts.size(); i ++){
@@ -71,11 +70,14 @@ createPolynomialShapeFunctions(const std::vector < RVector3 > & pnts,
         RVector N(pnts.size(), 0.0);
         N[i] = 1.0;
         RInversion inv(N, fop, verbose, verbose);
+        //inv.setLocalRegularization(true); // fails for unknown reason .. check and correct
+        // inv.setCWeight(RVector(nCoeff, 1));
         inv.setRelativeError(0.0);
         inv.stopAtChi1(false);
         inv.setCGLSTolerance(1e-40);
         inv.setLambda(0);
         inv.setMaxIter(20);
+        // #inv.setMarquardtScheme();
         inv.run();
 
         if (verbose) std::cout << "N" << i << ": " << fop.polynomialFunction() << std::endl;

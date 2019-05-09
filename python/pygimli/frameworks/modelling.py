@@ -129,7 +129,6 @@ class Modelling(pg.ModellingBase):
             * Howto ensure childs sets self.setStartModel(sm)?
 
         """
-        pg._r()
         sm = self.regionManager().createStartModel()
         return sm
 
@@ -397,7 +396,6 @@ class MeshModelling(Modelling):
     """
     def __init__(self, **kwargs):
         super(MeshModelling, self).__init__(**kwargs)
-        self._mesh = None
         self._meshNeedsUpdate = True
 
     @property
@@ -416,24 +414,25 @@ class MeshModelling(Modelling):
         """Called when the mesh has been set successfully."""
         pass
 
-    def refineFwdMesh(self):
+    def createRefinedFwdMesh(self, mesh):
         """Refine the current mesh for higher accuracy.
 
         This is called automatic when accesing self.mesh() so it ensures any
         effect of changing region properties (background, single).
         """
         pg.info("Creating refined mesh (H2) to solve forward task.")
-        self._mesh = self._mesh.createH2()
-        pg.verbose(self._mesh)
+        m = mesh.createH2()
+        pg.verbose(m)
+        return m
 
     def createFwdMesh_(self):
         """"""
         pg.info("Creating forward mesh from region infos.")
-        self._mesh = pg.Mesh(self.regionManager().mesh())
-        self.refineFwdMesh()
-        self.setMeshPost(self._mesh)
+        m = pg.Mesh(self.regionManager().mesh())
+        m = self.createRefinedFwdMesh(m)
+        self.setMeshPost(m)
         self._regionChanged = False
-        super(Modelling, self).setMesh(self._mesh, ignoreRegionManager=True)
+        super(Modelling, self).setMesh(m, ignoreRegionManager=True)
 
     def mesh(self):
         """"""

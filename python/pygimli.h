@@ -265,8 +265,6 @@ DEFINE_COMPARE_OPERATOR__(>)
     template double besselK0< double >(const double & x);
     template double besselK1< double >(const double & x);
 
-    template class Inversion< double >;
-
     template class Trans< RVector >;
     template class TransLinear< RVector >;
     template class TransLin< RVector >;
@@ -525,7 +523,6 @@ namespace pyplusplus{ namespace aliases{
     typedef GIMLI::PolynomialFunction< double >          RPolynomialFunction;
     typedef GIMLI::PolynomialElement< double >           RPolynomialElement;
 
-    typedef GIMLI::Inversion< double >                   RInversion;
 //     typedef GIMLI::RollalongInSpace< double >            RRollalongInSpace;
 
     typedef GIMLI::ElementMatrix< double >                   ElementMatrix;

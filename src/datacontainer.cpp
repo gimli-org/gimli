@@ -640,7 +640,7 @@ void DataContainer::add(const std::string & token, const RVector & data, const s
 //         dataMap_.insert(make_pair(token, data));
 //         this->setDataDescription(token, description);
 //     } else {
-//         throwError(1, WHERE_AM_I + " wrong data size: " + toStr(this->size()) + " " + toStr(data.size()));
+//         throwError(1, WHERE_AM_I + " wrong data size: " + str(this->size()) + " " + str(data.size()));
 //     }
 }
 
@@ -648,7 +648,7 @@ void DataContainer::set(const std::string & token, const RVector & data){
     if (data.size() == this->size()){
         dataMap_[token] = data;
     } else {
-        throwError(1, WHERE_AM_I + " wrong data size: " + toStr(this->size()) + " " + toStr(data.size()));
+        throwError(1, WHERE_AM_I + " wrong data size: " + str(this->size()) + " " + str(data.size()));
     }
 }
 

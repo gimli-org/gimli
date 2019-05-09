@@ -482,21 +482,14 @@ def grad(mesh, u, r=None):
     If you need other positions than the cell center,
     provide an appropriate array of coordinates :math:`\mathbf{r}`.
 
-    See also
-    --------
-    GIMLI::Mesh::cellDataToBoundaryGradient
-    GIMLI::Mesh::boundaryDataToCellGradient
-
     Parameters
     ----------
     mesh : :gimliapi:`GIMLI::Mesh`
         Discretization base, interpolation will be performed via finite element
         base shape functions.
-
     u : array | callable
         Scalar field per mesh node position or an appropriate
         callable([[x,y,z]])
-
     r : ndarray((M, 3)) [mesh.cellCenter()]
         Alternative target coordinates :math:`\mathbf{r} for the resulting
         gradient field. i.e., the positions where the vector field is defined.
@@ -524,7 +517,6 @@ def grad(mesh, u, r=None):
     ...             linewidth=0.4)
     >>> plt.show()
     """
-
     if r is None:
         r = mesh.cellCenters()
 

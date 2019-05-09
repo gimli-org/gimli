@@ -464,6 +464,17 @@ public:
         return *this;
     }
 
+    /*! Insert vals from start index. Resize if necessary.*/
+    inline Vector< ValueType > & setVal(const Vector < ValueType > & vals,
+                                        Index start) {
+        Index newS = start + vals.size();
+        if (this->size() < newS) this->resize(newS);
+        this->setVal(vals, start, newS);
+        
+        return *this;
+    }
+
+
     /*! Set values from slice. If vals.size() == this.size() copy vals[start, end) -> this[start, end) else
         assume vals is a slice itsself, so copy vals[0, end-start] -> this[start, end)
          if end larger than this size() sets end = size. Throws exception on violating boundaries. */
@@ -471,7 +482,7 @@ public:
                                         Index start, Index end) {
         if (start > this->size()){
             throwLengthError(1, WHERE_AM_I + " vals.size() < start " +
-                                toStr(vals.size()) + " " + toStr(start) + " " + toStr(end)) ;
+                                str(vals.size()) + " " + str(start) + " " + str(end)) ;
         }
 
         if (end > this->size()) end = this->size();
@@ -479,7 +490,7 @@ public:
 
         if (vals.size() < (end - start)){
             throwLengthError(1, WHERE_AM_I + " vals.size() < (end-start) " +
-                                toStr(vals.size()) + " " + toStr(start) + " " + toStr(end)) ;
+                                str(vals.size()) + " " + str(start) + " " + str(end)) ;
         }
 
         if (this->size() == vals.size()){
@@ -509,7 +520,7 @@ public:
 
         if (vals.size() < end - start){
             throwLengthError(1, WHERE_AM_I + " vals.size() < (end-start) " +
-                                toStr(vals.size()) + " " + toStr(start) + " " + toStr(end)) ;
+                                str(vals.size()) + " " + str(start) + " " + str(end)) ;
         }
 
         if (this->size() == vals.size()){
@@ -1606,15 +1617,16 @@ template < class ValueType >
 Vector< ValueType > increasingRange2(const ValueType & a,
                                      const ValueType & last, Index n){
     if (abs(a) < 1e-12){
-        throwError(1, "Can't create increasing range for start value of: " + toStr(a) );
+        throwError(1, "Can't create increasing range for start value of: " + 
+        str(a) );
     }
 
     if (sign(a) != sign(last)){
-        throwError(1, "Can't create increasing range from [0 " + toStr(a) + " to " + toStr(last) + "]");
+        throwError(1, "Can't create increasing range from [0 " + str(a) + " to " + str(last) + "]");
     }
 
     if (n < 3){
-        throwError(1, "need at least n > 2" + toStr(a) + " n(" + toStr(n) +") "+ toStr(last));
+        throwError(1, "need at least n > 2" + str(a) + " n(" + str(n) +") "+ str(last));
     }
 
 
@@ -1634,7 +1646,7 @@ template < class ValueType >
 Vector< ValueType > increasingRange(const ValueType & first,
                                     const ValueType & last, Index n){
     if (sign(first) != sign(last)){
-        throwError(1, "cant increase range from [0 " + toStr(first) + " to " + toStr(last) + "]");
+        throwError(1, "cant increase range from [0 " + str(first) + " to " + str(last) + "]");
     }
 
     Placeholder x__;

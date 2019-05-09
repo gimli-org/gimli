@@ -641,23 +641,6 @@ class Refraction(MethodManager0):
         -------
         ax : matplotlib.axes object
         cb : matplotlib.colorbar object (only if model is provided)
-
-        Examples
-        --------
-        >>> # No reason to import matplotlib
-        >>> import pygimli as pg
-        >>> from pygimli.physics import Refraction
-        >>> from pygimli.physics.traveltime import createRAData
-        >>>
-        >>> x, y = 8, 6
-        >>> mesh = pg.createGrid(x, y)
-        >>> data = createRAData([(0,0)] + [(x, i) for i in range(y)], shotdistance=y+1)
-        >>> data.set("t", pg.RVector(data.size(), 1.0))
-        >>> rst = Refraction()
-        >>> rst.setDataContainer(data)
-        Data: Sensors: 7 data: 6
-        >>> rst.setMesh(mesh, 5)
-        >>> ax, cb = rst.showRayPaths()
         """
         cbar = None
         if model is None and self.velocity is None:

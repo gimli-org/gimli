@@ -26,7 +26,6 @@
 
 #include "numericbase.h"
 
-
 #include <list>
 
 namespace GIMLI{
@@ -35,7 +34,6 @@ template< class ValueType > class PolynomialElement {
 public:
     PolynomialElement(Index i, Index j, Index k, const ValueType & val)
     :   i_(i), j_(j), k_(k), val_(val){
-
     }
 
     inline ValueType operator () (const Pos & xyz) const {
@@ -223,8 +221,8 @@ public:
             }
         } else {
             throwLengthError(1, WHERE_AM_I + " c size out of range " +
-                                toStr(c.size()) + " needed " + toStr(powInt(mat_.size(), 3)) +
-                                                    " or " + toStr(elementList_.size()));
+                                str(c.size()) + " needed " + str(powInt(mat_.size(), 3)) +
+                                                    " or " + str(elementList_.size()));
         }
         this->fillElementList();
         return *this;
@@ -431,10 +429,10 @@ operator * (const PolynomialFunction < ValueType > & f, const PolynomialFunction
     return h;
 }
 
-template < class ValueType > std::ostream & operator << (std::ostream & str, const PolynomialFunction < ValueType > & p){
-    str << "f(x,y,z) = ";
+template < class ValueType > std::ostream & operator << (std::ostream & os, const PolynomialFunction < ValueType > & p){
+    os << "f(x,y,z) = ";
 
-    if (p.size() == 0) str << "0";
+    if (p.size() == 0) os << "0";
 
     bool first = true;
     for (Index k = 0; k < p.size() ; k ++){ // z
@@ -449,11 +447,11 @@ template < class ValueType > std::ostream & operator << (std::ostream & str, con
                 if (v > 0.0) si = "+";
 
                 std::string xterm, yterm, zterm, val;
-                if (i == 0) xterm = ""; else if (i == 1) xterm = "x"; else xterm = "x^" + toStr(i);
-                if (j == 0) yterm = ""; else if (j == 1) yterm = "y"; else yterm = "y^" + toStr(j);
-                if (k == 0) zterm = ""; else if (k == 1) zterm = "z"; else zterm = "z^" + toStr(k);
+                if (i == 0) xterm = ""; else if (i == 1) xterm = "x"; else xterm = "x^" + str(i);
+                if (j == 0) yterm = ""; else if (j == 1) yterm = "y"; else yterm = "y^" + str(j);
+                if (k == 0) zterm = ""; else if (k == 1) zterm = "z"; else zterm = "z^" + str(k);
 
-                val = toStr(v);
+                val = str(v);
 
                 if (first){
                     if (v == -1.0) val = "-1";
@@ -463,14 +461,14 @@ template < class ValueType > std::ostream & operator << (std::ostream & str, con
                     else if (::fabs(v - 1.0) < TOLERANCE) val = "";
                 }
 
-                str << si << val << xterm;
-                if (yterm != "") str << yterm;
-                if (zterm != "") str << zterm;
+                os << si << val << xterm;
+                if (yterm != "") os << yterm;
+                if (zterm != "") os << zterm;
             }
         }
     }
 
-    return str;
+    return os;
 }
 
 

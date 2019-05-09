@@ -277,7 +277,7 @@ void Mesh::loadBinary(const std::string & fbody){
     uint ret = fread(&dim, sizeof(int), 1, file);
 
     if ((dim !=2 && dim !=3) || (ret == 0)){
-        throwError(1, WHERE_AM_I + " cannot determine dimension " + toStr(dim));
+        throwError(1, WHERE_AM_I + " cannot determine dimension " + str(dim));
     }
     this->setDimension(dim);
     //** read vertex dummy-infos
@@ -542,7 +542,7 @@ void Mesh::loadBinaryV2(const std::string & fbody) {
 
     uint8 dim; readFromFile(file, dim);
     if (dim !=2 && dim !=3){
-        throwError(1, WHERE_AM_I + " cannot determine dimension " + toStr(dim));
+        throwError(1, WHERE_AM_I + " cannot determine dimension " + str(dim));
     }
     this->setDimension(dim);
     uint8 version; readFromFile(file, version);
@@ -551,7 +551,7 @@ void Mesh::loadBinaryV2(const std::string & fbody) {
     uint32 nVerts; readFromFile(file, nVerts);
 
     if (nVerts > 1e9){
-        throwError(1, WHERE_AM_I + " probably something wrong: nVerts > 1e9 " + toStr(nVerts));
+        throwError(1, WHERE_AM_I + " probably something wrong: nVerts > 1e9 " + str(nVerts));
     }
 
     if (nVerts > 0){
@@ -1495,7 +1495,7 @@ void Mesh::importSTL(const std::string & fileName, bool isBinary ){
             }
         } else {
             throwError(1,  WHERE_AM_I + " there is something wrong in ascii-stl-format "
-                    + toStr(allVerts.size()) + " " + toStr(allVerts.size() % 3));
+                    + str(allVerts.size()) + " " + str(allVerts.size() % 3));
         }
     }
 }

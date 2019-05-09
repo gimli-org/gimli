@@ -411,7 +411,7 @@ bool addTriangleBoundary(Mesh & mesh, double xBoundary, double yBoundary, int ce
         mesh.save("inMesh");
         boundaryMesh.save("boundaryMesh");
         throwError(1, WHERE_AM_I + " Sorry!! Boundary mesh is not consistent to input mesh boundary. "
-                        + toStr(markedBoundaries.size()) + " != " + toStr(markedBoundaries2.size()));
+                        + str(markedBoundaries.size()) + " != " + str(markedBoundaries2.size()));
     }
 
     if (save){

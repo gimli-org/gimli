@@ -55,26 +55,23 @@ def setPolyRegionMarker(poly, marker=1, area=0.0, markerPosition=None,
 
     Parameters
     ----------
-
     poly : :gimliapi:`GIMLI::Mesh`
         The Polygon that will get a marker
-
     marker : int[1]
         The region marker, every resulting mesh cell will get this marker.
-
     area : float[0]
         The region max cell size, every resulting mesh cell will get a cell 
         size lower than area in m² or m³ for 3D, respectively.
-    
     markerPosition : pg.Pos
         Absolute marker position if you don't want the marker in the center of
         the geometry.
-
     isHole : bool [False]
         Marks the geometry as a hole and will be cut in any merge mesh.
 
-    **kwargs:
-        unused
+    Other Parameters
+    ----------------
+    **kwargs
+        Additional kwargs
     """
     pos = None
     if markerPosition is not None:
@@ -110,7 +107,10 @@ def createRectangle(start=None, end=None, pos=None, size=None, **kwargs):
         Factors for x and y by which the rectangle, defined by **start** and
         **width**, are scaled.
 
-    **kwargs:
+    Other Parameters
+    ----------------
+    **kwargs
+        Additional kwargs
 
         marker : int [1]
             Marker for the resulting triangle cells after mesh generation
@@ -1454,9 +1454,11 @@ def createCylinder(radius, height, nSegments=8, area=0.0, pos=None, **kwargs):
     marker : int [1]
         Cell marker the resulting tetrahedrons.
 
-    ** kwargs:
-        Marker related arguments:
-        See :py:mod:`pygimli.meshtools.polytools.setPolyRegionMarker`
+    Other Parameters
+    ----------------
+    **kwargs
+        Additional kwargs from 
+        :py:mod:`pygimli.meshtools.polytools.setPolyRegionMarker`
 
     Returns
     -------

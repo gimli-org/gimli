@@ -153,7 +153,7 @@ RVector3 Plane::intersect(const Line & line, double tol, bool inside){
 
     if (isnan(t) || isinf(t)) {
         std::cout << norm_.dot(x0 - line.p0()) << " " << norm_.dot(line.p1() - line.p0()) << std::endl;
-        throwError(1, WHERE_AM_I + " t is not valid " + toStr(t));
+        throwError(1, WHERE_AM_I + " t is not valid " + str(t));
         return RVector3(false);
     }
 
