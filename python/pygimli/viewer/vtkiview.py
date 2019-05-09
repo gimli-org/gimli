@@ -110,4 +110,4 @@ def showMesh3DVista(mesh, data=None, **kwargs):
         plotter.add_axes()
 
         plotter.add_mesh(grid, cmap=cMap, show_edges=True, opacity=0.1, color='grey')
-        plotter.plot()
+        plotter.show()
