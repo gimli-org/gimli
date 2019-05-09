@@ -7,13 +7,13 @@ import sys
 
 import pygimli as pg
 
-vtki = pg.optImport('vtki', requiredFor="Proper visualization in 3D")
-if vtki is None:
+vista = pg.optImport('vista', requiredFor="Proper visualization in 3D")
+if vista is None:
     from mpl_toolkits.mplot3d import Axes3D
     import matplotlib.pyplot as plt
     callback = 'showMesh3DFallback'
 else:
-    callback = 'showMesh3DVTKI'
+    callback = 'showMesh3DVista'
 
 
 PyQt5 = pg.optImport('PyQt5', requiredFor="Make use of pyGIMLi 3D viewer")
@@ -47,7 +47,7 @@ def showMesh3DFallback(mesh, data, **kwargs):
     plt.show()
 
 
-def showMesh3DVTKI(mesh, data=None, **kwargs):
+def showMesh3DVista(mesh, data=None, **kwargs):
     """
     Make use of the actual 3D visualization tool kit
 
@@ -67,8 +67,8 @@ def showMesh3DVTKI(mesh, data=None, **kwargs):
     tmp = "/tmp/gimli_3d_view_%s.vtk" % os.getpid()
     mesh.exportVTK(tmp)
 
-    # open with vtki
-    grid = vtki.read(tmp)
+    # open with vista
+    grid = vista.read(tmp)
 
     # add saved data from within the pg.mesh itself
     for k, v in mesh.dataMap():
@@ -93,17 +93,17 @@ def showMesh3DVTKI(mesh, data=None, **kwargs):
         app.exec_()
 
     # elif notebook is True:
-    #     tool = vtki.OrthogonalSlicer(grid)
+    #     tool = vista.OrthogonalSlicer(grid)
     #     # Get the plotter for adding more datasets:
     #     p = tool.plotter
     #     p.show()
 
     else:
-        plotter = vtki.Plotter(notebook=notebook)
+        plotter = vista.Plotter(notebook=notebook)
         # add the x, y, z arrows
         plotter.add_bounds_axes()
         plotter.add_axes()
 
-        plotter.add_mesh(grid, cmap=cmap)
+        plotter.add_mesh(grid, cmap=cMap)
         plotter.plot()
 
