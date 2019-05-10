@@ -420,12 +420,12 @@ inline std::string type(const std::vector < std::string >  & var) { return "stri
 inline std::string type(const long unsigned int & var) { return "long unsigned int"; }
 #endif
 
-inline std::string type(const RVector  & var)  { return "RVector"; }
+inline std::string type(const RVector  & var) { return "RVector"; }
 inline std::string type(const RVector3 & var) { return "RVector3"; }
 inline std::string type(const R3Vector & var) { return "R3Vector"; }
-inline std::string type(const CVector  & var)  { return "CVector"; }
-inline std::string type(const RMatrix  & var)  { return "RMatrix"; }
-inline std::string type(const CMatrix  & var)  { return "CMatrix"; }
+inline std::string type(const CVector  & var) { return "CVector"; }
+inline std::string type(const RMatrix  & var) { return "RMatrix"; }
+inline std::string type(const CMatrix  & var) { return "CMatrix"; }
 
 inline int       toInt(const std::string & str){ return std::atoi(str.c_str()); }
 inline float   toFloat(const std::string & str){ return (float)std::atof(str.c_str()); }
