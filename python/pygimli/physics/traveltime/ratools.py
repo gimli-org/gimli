@@ -58,7 +58,7 @@ def createRAData(sensors, shotdistance=1):
     data.registerSensorIndex('s')
     data.registerSensorIndex('g')
 
-    if not isinstance(sensors, np.ndarray):
+    if isinstance(sensors, np.ndarray):
         if len(sensors.shape) == 1:
             for x in sensors:
                 data.createSensor([x, 0.0, 0.0])
