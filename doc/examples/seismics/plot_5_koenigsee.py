@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 Field data inversion ("Koenigsee")
-----------------------------------
+==================================
 
 This minimalistic example shows how the Refraction Manager can be used to invert
 a field data set. Here, we consider the Koenigsee data set, which represents

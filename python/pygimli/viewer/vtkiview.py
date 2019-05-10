@@ -72,29 +72,35 @@ def showMesh3DVista(mesh, data=None, **kwargs):
     # open with vista
     grid = vista.read(tmp)
 
-    # add saved data from within the pg.mesh itself
-    for k, v in mesh.dataMap():
-        grid.cell_arrays[k] = np.asarray(v)
-    # add given data from argument
-    if data is not None:
-        grid.cell_arrays['data'] = np.asarray(data)
-        cMap = kwargs.pop('cMap', 'viridis')
-        opacity = 1
-    else:
-        opacity = 0
-        cMap = None
+    hold = kwargs.pop("hold", False)
+    cMap = kwargs.pop('cMap', 'viridis')
 
-    params = grid.cell_arrays
+    # add given data from argument
+    add_args = {}
+    if data is not None:
+        label = kwargs.pop("label", "data")
+        if len(data) == mesh.cellCount():
+            grid.cell_arrays[label] = np.asarray(data)
+        elif len(data) == mesh.nodeCount():
+            grid.point_arrays[label] = np.asarray(data)
+        grid.set_active_scalar(label)
+        add_args["opacity"] = 1
+    else:
+        add_args["opacity"] = 0.1
+        add_args["show_scalar_bar"] = False
 
     notebook = kwargs.pop('notebook', False)
     if notebook:
         vista.set_plot_theme('document')
 
     if use_gui and notebook is False:
+        # add saved data from within the pg.mesh itself
+        for k, v in mesh.dataMap():
+            grid.cell_arrays[k] = np.asarray(v)
         # app = Qt.QApplication()
         app = Qt.QApplication(sys.argv)
         s3d = Show3D(tmp)
-        s3d.addMesh(grid, cMap=cMap, show_edges=True, opacity=opacity)
+        s3d.addMesh(grid, cMap=cMap)
         app.exec_()
 
     # elif notebook is True:
@@ -105,9 +111,11 @@ def showMesh3DVista(mesh, data=None, **kwargs):
 
     else:
         plotter = vista.Plotter(notebook=notebook)
-        # add the x, y, z arrows
         plotter.show_bounds()
         plotter.add_axes()
-
-        plotter.add_mesh(grid, cmap=cMap, show_edges=True, opacity=0.1, color='grey')
-        plotter.show()
+        plotter.add_mesh(grid, cmap=cMap, show_edges=True, **add_args)
+        if data is not None:
+            plotter.mesh.set_active_scalar(label)
+        if not hold:
+            plotter.plot()
+        return plotter

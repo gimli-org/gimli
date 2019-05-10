@@ -18,10 +18,11 @@ import pygimli.meshtools as mt
 # We start by generating a 2D mesh.
 plc = mt.createCircle([-1, -4], radius=1.5, area=0.1, segments=25)
 circle = mt.createMesh(plc)
-
+for cell in circle.cells():
+    cell.setMarker(cell.id())
 ###############################################################################
-# We now extrude this mesh to 3D given a z vector.
+# We now extrude this mesh to 3D given a *z* vector.
 
 z = np.geomspace(1, 5, 5)
 cylinder = pg.createMesh3D(circle, z)
-pg.show(cylinder, notebook=True)
+pg.show(cylinder, cylinder.cellMarkers(), notebook=True, label="Cell markers")

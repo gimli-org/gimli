@@ -152,6 +152,7 @@ np.testing.assert_approx_equal(het('rhoa')[0], 9.95, 2)
 
 # np.testing.assert_approx_equal(het('k')[0], 0.820615269548)
 
+
 ###############################################################################
 # For such kind of simulations, the homogeneous part should be high accurate
 # because it is usually needed once after storing the geometric factors.
