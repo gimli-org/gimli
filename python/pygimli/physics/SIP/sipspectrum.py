@@ -18,6 +18,179 @@ from .tools import KramersKronig, fitCCEMPhi, fitCCC
 from .tools import fitCCCC, fitCCPhi, fit2CCPhi
 
 
+from pygimli.manager import MethodManager
+from pygimli.frameworks import Modelling
+
+
+def isComplex(vals):
+    """Check if have complex values"""
+    if len(vals) > 0:
+        if hasattr(vals, '__iter__'):
+         if isinstance(vals[0], np.complex) or isinstance(vals[0], pg.Complex):
+             return True
+    
+def unpack(c, polar=False):
+    """Unwrap complex valued array into [real, imag]
+    or [amp, -phase(mrad)] """
+    if isComplex(c):
+        vals = np.array(c)
+        if polar is True:
+            vals = pg.cat(np.abs(vals), -np.unwrap(np.angle(vals)) * 1000)
+        else:
+            vals = pg.cat(vals.real, vals.imag)
+        return vals
+    return c
+
+
+class SpectrumModelling(Modelling):
+    """Modelling framework with an array of freqencies as data space."""
+    def __init__(self, funct, **kwargs):
+        self._mTs = None # store modelTrans to keep the GC happy
+        self._complex = False
+        super(SpectrumModelling, self).__init__(verbose=True)
+        self._freqs = None
+        self._params = {}
+        self._initFunction(funct)
+
+    @property 
+    def complex(self):
+        return self._complex
+    
+    @complex.setter
+    def complex(self, c):
+        self._complex = c
+    
+    @property 
+    def f(self):
+        if self._freqs is None:
+            pg.critical("No frequencies defined.")
+        return self._freqs
+
+    @f.setter
+    def f(self, f):
+        self._freqs = f
+
+    def createDefaultStartModel(self, dataVals=None):
+        sm = np.zeros(self.regionManager().parmeterCount())
+        sm += 1.0
+        pg._r(sm)
+        return sm
+
+    def _initFunction(self, funct):
+        """Init any function and interpret possible args and kwargs."""
+        self._function = funct
+        # the first varname is suposed to be f or freqs
+        for varname in funct.__code__.co_varnames[1:]:
+            if varname != 'verbose':
+                self._params[varname] = 0.0
+
+        nPara = len(self._params.keys())
+        
+        for i, [k, p] in enumerate(self._params.items()):
+            self.regionManager().addRegion(i)
+            self.setRegionProperties(i, 
+                                     cType=0, 
+                                     single=True, 
+                                     trans='log', 
+                                     startModel=1)
+            
+
+    def response(self, params):
+        print('Respone:', params)
+        ret = self._function(self.f, *params)
+        if self.complex:
+            return unpack(ret)
+        return ret
+
+
+class SpectrumManager(MethodManager):
+    """Manager to work with spectra data."""
+    def __init__(self, fop=None, **kwargs):
+        self._complex = False
+        self._funct = fop
+        super(SpectrumManager, self).__init__(fop=fop, **kwargs)
+
+    def createForwardOperator(self, **kwargs):
+        """
+        """
+        if isinstance(self._funct, Modelling):
+            return self._funct
+        
+        fop = SpectrumModelling(self._funct, **kwargs)
+        return fop
+
+    def createInversionFramework(self, **kwargs):
+        """
+        """
+        return pg.frameworks.MarquardtInversion(**kwargs)
+
+    def simulate(self):
+        """ """
+        pass
+
+    def _ensureData(self, data):
+        """Check data validity"""
+        if isinstance(data, pg.DataContainer):
+            pg.critical("Implement me")
+
+        if isComplex(data):
+            self._complex = True
+            self.fop.complex = self._complex
+            vals = unpack(data)
+
+        if abs(min(vals)) < 1e-12:
+            print(min(vals), max(vals))
+            pg.critical("There are zero data values.")
+
+        return vals
+
+    def _ensureError(self, err, dataVals=None):
+        """Check data validity"""
+        if isinstance(err, pg.DataContainer):
+            pg.critical("Implement me")
+        
+        vals = err
+        if vals is None:
+            vals = np.ones(len(dataVals)) * 0.01
+            pg.info("Create default error of 1'%'")
+
+        if abs(min(vals)) < 1e-12:
+            print(min(vals), max(vals))
+            pg.critical("There are zero data values.")
+
+        return vals
+
+    def invert(self, data, f=None, **kwargs):
+        """"""
+        if f is not None:
+            self.fop.f = f
+
+        limits = kwargs.pop('limits', {})
+        
+        for k, v in limits.items():
+            self.fop.setParameters(k, v)
+
+
+        super(SpectrumManager, self).invert(data)
+   
+    def showResult(self):
+        pass
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class SIPSpectrum(object):
     """SIP spectrum data analysis."""
 

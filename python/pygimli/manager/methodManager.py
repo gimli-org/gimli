@@ -125,7 +125,7 @@ class MethodManager(object):
         if self.fw is not None:
             self.fw.setForwardOperator(fop)
         else:
-            pg.critical("No inversion framwork defined.")
+            pg.critical("No inversion framework defined.")
 
     def createForwardOperator(self, **kwargs):
         """Mandatory interface for derived classes.
@@ -210,7 +210,7 @@ class MethodManager(object):
 
         return vals
 
-    def _ensureError(self, data):
+    def _ensureError(self, err, data):
         """Check error validity"""
         vals = data
 
@@ -289,7 +289,7 @@ class MethodManager(object):
             error and force self.estimateError to be called.
         """
         dataVals = self._ensureData(data)
-        errVals = self._ensureError(err, data)
+        errVals = self._ensureError(err, dataVals)
 
         self.fw.run(dataVals, errVals, **kwargs)
         return self.fw.model
@@ -473,7 +473,7 @@ class MeshMethodManager(MethodManager):
         """Called just after the inversion run."""
         pass
 
-    def invert(self, data, mesh=None, zWeight=1.0, startModel=None,
+    def invert(self, data=None, mesh=None, zWeight=1.0, startModel=None,
                **kwargs):
         """Run the full inversion.
 
@@ -499,31 +499,33 @@ class MeshMethodManager(MethodManager):
             Model mapped for match the paraDomain Cell markers. 
             The calculated model is in self.fw.model.
         """
-        if isinstance(data, pg.DataContainer):
-            self.fop.data = data
-        else:
-            pg.critical("setting data array is not yet implemented.")
+        if data is not None:
+            if isinstance(data, pg.DataContainer):
+                self.fop.data = data
+            else:
+                pg.critical("setting data array is not yet implemented.")
         
-        self.fop.setMesh(mesh)
+        if mesh is not None:
+            self.fop.setMesh(mesh)
 
         if self.fop.mesh() is None:
             pg.critical('Please provide a mesh')
         
-        dataVals = self._ensureData(data)
-        errVals = self._ensureError(data)
+        dataVals = self._ensureData(self.fop.data)
+        errVals = self._ensureError(self.fop.data)
 
         if startModel is None:
-            startModel=self.fop.createDefaultStartModel(dataVals)
+            startModel = self.fop.createDefaultStartModel(dataVals)
         
         self.fop.setRegionProperties('*', 
-                                     startModel=startModel,
+                                     startModel=np.median(startModel),
                                      zWeight=zWeight,
                                     )
         
         # Limits is no mesh related argument here or base??
-        limits=kwargs.pop('limits', None)
-
-        self.fop.setRegionProperties('*', limits=limits)
+        limits = kwargs.pop('limits', None)
+        if limits is not None:
+            self.fop.setRegionProperties('*', limits=limits)
 
         self.preRun(**kwargs)
 

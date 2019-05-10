@@ -130,6 +130,7 @@ class Modelling(pg.ModellingBase):
 
         """
         sm = self.regionManager().createStartModel()
+        pg.warn(sm)
         return sm
 
     def regionManager(self):
@@ -215,7 +216,7 @@ class Modelling(pg.ModellingBase):
                 continue
 
             if vals['single'] is not None:
-                pg.critical('implementme')
+                rMgr.region(rID).setSingle(vals['single'])
                 self._regionChanged = True
                 continue
 

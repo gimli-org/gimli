@@ -569,16 +569,23 @@ private:
 template < typename Classname > class DLLEXPORT Singleton {
 public:
 
-    virtual ~Singleton() { delete pInstance_; pInstance_ = NULL; }
+    virtual ~Singleton() { 
+    #ifndef PYGIMLI_CAST
+        delete pInstance_; pInstance_ = NULL; 
+    #endif
+    }
 
     /*! This call create one instance of the class and return a pointer to it. */
     static Classname * pInstance() {
+    #ifndef PYGIMLI_CAST
         return pInstance_ ? pInstance_ : (pInstance_ = new Classname());
+    #endif
+        return 0;
     }
 
     /*! This call create one instance of the class and return a reference to it. */
     static Classname & instance() {
-        return * pInstance();
+        return *pInstance();
     }
 
 protected:
@@ -589,7 +596,9 @@ private:
     /*! Private so that it can not be called */
 
     /*! Copy constructor is private, so don't use it */
+#ifndef PYGIMLI_CAST
     static Classname * pInstance_;
+#endif
 };
 
 template < typename T > Index hash_(T v){
