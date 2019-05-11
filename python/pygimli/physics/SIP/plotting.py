@@ -25,10 +25,11 @@ def drawAmplitudeSpectrum(ax, freq, amp, ylabel=r'$\rho$ ($\Omega$m)',
         ylog = (min(amp) > 0)
     if ylog:
         ax.set_yscale('log')
-    ax.set_ylim(min(amp) * .99, max(amp * 1.01))
+    #ax.set_ylim(min(amp) * .99, max(amp * 1.01))
     ax.set_xlabel('f (Hz)')
     ax.set_ylabel(ylabel)
     ax.grid(grid)
+    ax.legend()
     return gci
 
 def drawPhaseSpectrum(ax, freq, phi, ylabel=r'$-\phi$ (mrad)',
@@ -43,6 +44,7 @@ def drawPhaseSpectrum(ax, freq, phi, ylabel=r'$-\phi$ (mrad)',
     ax.set_xlabel('f (Hz)')
     ax.set_ylabel(ylabel)
     ax.grid(grid)
+    ax.legend()
     return gci
 
 def showSpectrum(freq, amp, phi, nrows=2, ylog=None, axs=None, **kwargs):

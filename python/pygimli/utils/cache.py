@@ -19,10 +19,10 @@ def myLongRunningStuff(*args, **kwargs):
     #...
     return results
 """
+import sys
 import os 
 import inspect
 import hashlib
-import sys
 import json
 import time
 

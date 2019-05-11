@@ -23,15 +23,16 @@ from pygimli.frameworks import Modelling
 
 
 def isComplex(vals):
-    """Check if have complex values"""
+    """Check numpy or pg.Vector if have complex data type"""
     if len(vals) > 0:
         if hasattr(vals, '__iter__'):
          if isinstance(vals[0], np.complex) or isinstance(vals[0], pg.Complex):
              return True
-    
-def unpack(c, polar=False):
-    """Unwrap complex valued array into [real, imag]
-    or [amp, -phase(mrad)] """
+    return False
+
+
+def unpackComplex(c, polar=False):
+    """Unpack complex valued array into [real, imag] or [amp, -phase(mrad)]"""
     if isComplex(c):
         vals = np.array(c)
         if polar is True:
@@ -39,6 +40,11 @@ def unpack(c, polar=False):
         else:
             vals = pg.cat(vals.real, vals.imag)
         return vals
+    return c
+
+def packComplex(vals):
+    """Pack real valued array into complex.[vals//2 + i vals//2]"""
+    c = np.array(pg.toComplex(vals[0:len(vals)//2], vals[len(vals)//2:]))
     return c
 
 
@@ -73,8 +79,15 @@ class SpectrumModelling(Modelling):
     def createDefaultStartModel(self, dataVals=None):
         sm = np.zeros(self.regionManager().parmeterCount())
         sm += 1.0
-        pg._r(sm)
+        pg.warn('createDefaultStartModel', sm)
         return sm
+
+    def setRegionProperties(self, k, **kwargs):
+        """Set Region Properties by parameter name."""
+        if isinstance(k, int) or (k == '*'):
+            super(SpectrumModelling, self).setRegionProperties(k, **kwargs)
+        else:
+            self.setRegionProperties(self._params[k], **kwargs)
 
     def _initFunction(self, funct):
         """Init any function and interpret possible args and kwargs."""
@@ -87,6 +100,7 @@ class SpectrumModelling(Modelling):
         nPara = len(self._params.keys())
         
         for i, [k, p] in enumerate(self._params.items()):
+            self._params[k] = i
             self.regionManager().addRegion(i)
             self.setRegionProperties(i, 
                                      cType=0, 
@@ -94,19 +108,34 @@ class SpectrumModelling(Modelling):
                                      trans='log', 
                                      startModel=1)
             
-
     def response(self, params):
-        print('Respone:', params)
+        # self.drawModel(None, params)
         ret = self._function(self.f, *params)
         if self.complex:
-            return unpack(ret)
+            return unpackComplex(ret)
         return ret
+
+    def drawModel(self, ax, model):
+        """"""
+        str = ''
+        for k, p in self._params.items():
+            str += k + "={0} ".format(pg.utils.prettyFloat(model[p]))
+        pg.info("Model: ", str)
+
+    def drawData(self, ax, data, err=None, **kwargs):
+        """"""
+        if self.complex:
+            Z = packComplex(data)
+            showSpectrum(self.f, np.abs(Z), -np.angle(Z)*1000,
+                         axs=ax, **kwargs)
+        else:
+            ax.semilogx(self.f, data)
+            ax.legend()
 
 
 class SpectrumManager(MethodManager):
     """Manager to work with spectra data."""
     def __init__(self, fop=None, **kwargs):
-        self._complex = False
         self._funct = fop
         super(SpectrumManager, self).__init__(fop=fop, **kwargs)
 
@@ -134,9 +163,8 @@ class SpectrumManager(MethodManager):
             pg.critical("Implement me")
 
         if isComplex(data):
-            self._complex = True
-            self.fop.complex = self._complex
-            vals = unpack(data)
+            self.fop.complex = True
+            vals = unpackComplex(data)
 
         if abs(min(vals)) < 1e-12:
             print(min(vals), max(vals))
@@ -168,13 +196,27 @@ class SpectrumManager(MethodManager):
         limits = kwargs.pop('limits', {})
         
         for k, v in limits.items():
-            self.fop.setParameters(k, v)
-
-
-        super(SpectrumManager, self).invert(data)
+            sm = (v[1] - v[0]) / 2
+            if v[0] > 0:
+                sm = np.exp(np.log(v[0]) + (np.log(v[1]) - np.log(v[0])) / 2.)
+            
+            self.fop.setRegionProperties(k, limits=v, startModel=sm)
+ 
+        super(SpectrumManager, self).invert(data, **kwargs)
    
     def showResult(self):
-        pass
+        """"""
+        ax = None
+        if self.fop.complex:
+            fig, ax = pg.plt.subplots(nrows=2, ncols=1)
+        else:
+            fig, ax = pg.plt.subplots(nrows=1, ncols=1)
+
+        self.fop.drawModel(ax, self.fw.model)
+        self.fop.drawData(ax, self.fw.dataVals, label='data')
+        self.fop.drawData(ax, self.fw.response, label='response')
+
+        
 
 
 

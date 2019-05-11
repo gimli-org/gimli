@@ -535,8 +535,11 @@ class MeshMethodManager(MethodManager):
         return self.paraModel(self.fw.model)
 
 
-    def showModel(self, model=None, ax=None, **kwargs):
+    def showResult(self, model=None, ax=None, **kwargs):
         """"""
+        if model is None:
+            model = self.fw.model
+
         diam = kwargs.pop('diam', None)
 
         ax, cbar = pg.show(mesh=self.fop.paraDomain,

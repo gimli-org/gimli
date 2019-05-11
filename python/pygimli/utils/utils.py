@@ -157,7 +157,7 @@ def logDropTol(p, droptol=1e-3):
     return tmp
 
 
-def prettyFloat(value, roundValue=True):
+def prettyFloat(value, roundValue=False):
     """Return pretty string for a given value suitable for graphical output."""
     if roundValue and abs(round(value)-value) < 1e-4 and abs(value) < 1e3:
         string = str(int(round(value, 1)))
