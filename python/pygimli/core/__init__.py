@@ -32,12 +32,15 @@ except ImportError as e:
 from .. _logger import *
 
 _pygimli_.load = None
-from .load import load, optImport, opt_import, getConfigPath, getExampleFile
+
+from pygimli.utils import boxprint, cache
+
+from .load import (load, optImport, opt_import, getConfigPath, 
+                  getExampleFile, getExampleData)
 
 from pygimli.viewer import show, plt, wait
 from pygimli.solver import solve
 from pygimli.meshtools import interpolate, createGrid
-from pygimli.utils import boxprint, cache
 
 
 def showNow():

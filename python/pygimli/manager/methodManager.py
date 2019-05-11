@@ -210,12 +210,12 @@ class MethodManager(object):
 
         return vals
 
-    def _ensureError(self, err, data):
+    def _ensureError(self, err, dataVals=None):
         """Check error validity"""
-        vals = data
+        vals = err
 
-        if isinstance(data, pg.DataContainer):
-            vals = self.errorValues(data)
+        if isinstance(err, pg.DataContainer):
+            vals = self.errorValues(err)
 
         if min(vals) <= 0:
             print(min(vals), max(vals))

@@ -205,6 +205,10 @@ def cache(funct):
             rv = funct(*args, **kwargs)
             cache.info['date'] = time.time()
             cache.info['dur'] = pg.dur()
-            cache.value = rv
+            try:
+                cache.value = rv
+            except Exception as e:
+                print(e)
+                pg.warn("Can't cache:", rv)
             return rv
     return wrapper

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 r"""
 2D FEM modelling on two-layer example
-====================================
+=====================================
 
 Compare 2D FEM modelling with 1D VES sounding with and without complex
 resistivity values.

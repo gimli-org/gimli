@@ -9,6 +9,7 @@ import numpy as np
 import pygimli as pg
 from pygimli.meshtools import readFenicsHDF5Mesh, readGmsh, readPLC, readSTL
 from pygimli.utils import readGPX
+from pygimli.utils import cache
 
 
 # Example data repository
@@ -83,7 +84,7 @@ def getConfigPath():
     else:
         return os.path.join(os.environ['HOME'], '.config', 'gimli')
 
-def load(fname, verbose=False, testAll=True):
+def load(fname, verbose=False, testAll=True, realName=None):
     """General import function to load data and meshes from file.
 
     Parameters
@@ -92,6 +93,10 @@ def load(fname, verbose=False, testAll=True):
         Filename or folder of files to load.
     testAll : bool [True]    
         Test all filter when file suffix is unknown or loading fails.
+    realName : str [None]    
+        Real file name. 
+        When fname is generic (i.e. without suffix) we can test the 
+        realName for type info.
     verbose : bool
         Be verbose.
 
@@ -147,7 +152,11 @@ def load(fname, verbose=False, testAll=True):
             print("Reading %s with %d files..." % (fname, len(files)))
         return [load(f) for f in files]
 
-    suffix = os.path.splitext(fname)[1]
+    suffix = None
+    if realName is not None:
+        suffix = os.path.splitext(realName)[1]
+    else:
+        suffix = os.path.splitext(fname)[1]
 
     if suffix in ImportFilter:
         try:
@@ -177,8 +186,22 @@ def load(fname, verbose=False, testAll=True):
     raise Exception("File type of {0} is unknown or file does not exist "
                         "and could not be imported.".format(suffix))
 
-def getExampleFile(path):
+
+def getExampleFile(path, cacheName=True):
     """Download and return temporary filename of file in example repository."""
     # TODO: Cache locally and check hash sums for potential file corruption
     url = exampleDataRepository + path
-    return urlretrieve(url)[0]
+    fileName = path.split('/')[-1]
+    if not os.path.exists(fileName):
+        pg.info("Getting:", fileName)
+        return urlretrieve(url)[0]
+    else:
+        pg.info("File allready exists:", fileName)
+    return fileName
+
+@cache
+def getExampleData(path, type=None):
+    """Get data from example repository."""
+    url = getExampleFile(path)
+    dat = load(url, realName=path)
+    return dat
