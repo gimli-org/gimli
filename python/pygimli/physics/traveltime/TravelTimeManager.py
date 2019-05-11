@@ -317,6 +317,7 @@ class TravelTimeManager(MeshMethodManager):
         >>> tt.setMesh(mesh, secNodes=10)
         >>> ax, cb = tt.showRayPaths(showMesh=True, diam=0.1)
         """
+        print('##################################################')
         if model is None:
             if self.fop.jacobian().size() == 0:
                 self.fop.mesh() # initialize any meshs .. just to be sure is 1

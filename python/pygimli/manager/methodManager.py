@@ -535,11 +535,11 @@ class MeshMethodManager(MethodManager):
         return self.paraModel(self.fw.model)
 
 
-    def showResult(self, model=None, ax=None, **kwargs):
+    def showModel(self, model=None, ax=None, **kwargs):
         """"""
         if model is None:
             model = self.fw.model
-
+            
         diam = kwargs.pop('diam', None)
 
         ax, cbar = pg.show(mesh=self.fop.paraDomain,
@@ -553,6 +553,10 @@ class MeshMethodManager(MethodManager):
                                  diam=diam)
 
         return ax, cbar
+        
+    def showResult(self, ax=None, **kwargs):
+        """"""
+        self.showModel(self.fw.model, ax=ax, **kwargs)
 
     def showFit(self, axs=None, **kwargs):
         """Show the last inversion data and response."""
