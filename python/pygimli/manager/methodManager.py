@@ -123,6 +123,7 @@ class MethodManager(object):
             pg.critical("It seems that createForwardOperator method "
                             "does not return a valid forward operator.")
         if self.fw is not None:
+            self.fw.reset()
             self.fw.setForwardOperator(fop)
         else:
             pg.critical("No inversion framework defined.")
@@ -539,7 +540,7 @@ class MeshMethodManager(MethodManager):
         """"""
         if model is None:
             model = self.fw.model
-            
+
         diam = kwargs.pop('diam', None)
 
         ax, cbar = pg.show(mesh=self.fop.paraDomain,

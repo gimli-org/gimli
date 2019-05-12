@@ -35,18 +35,14 @@ class Inversion(object):
         # this will be probably removed in the future
         self.isFrameWork = False
 
-        self._dataVals = None
-        self._errorVals = None
-
         self._preStep = None
         self._postStep = None
 
         self._inv = None
         self._fop = None
 
-        self._startModel = None
-        self._model = None
-
+        self.reset()
+        
         if inv is not None:
             self._inv = inv
             self.isFrameWork = True
@@ -59,6 +55,13 @@ class Inversion(object):
 
         if fop is not None:
             self.setForwardOperator(fop)
+
+    def reset(self):
+        """"""
+        self._model = None
+        self._startModel = None
+        self._dataVals = None
+        self._errorVals = None
 
     @property
     def inv(self):

@@ -93,7 +93,8 @@ class SpectrumModelling(Modelling):
         """Init any function and interpret possible args and kwargs."""
         self._function = funct
         # the first varname is suposed to be f or freqs
-        for varname in funct.__code__.co_varnames[1:]:
+        args = funct.__code__.co_varnames[1:funct.__code__.co_argcount]
+        for varname in args:
             if varname != 'verbose':
                 self._params[varname] = 0.0
 
@@ -109,6 +110,7 @@ class SpectrumModelling(Modelling):
                                      startModel=1)
             
     def response(self, params):
+        # print(self._params)
         # self.drawModel(None, params)
         ret = self._function(self.f, *params)
         if self.complex:
@@ -138,6 +140,11 @@ class SpectrumManager(MethodManager):
     def __init__(self, fop=None, **kwargs):
         self._funct = fop
         super(SpectrumManager, self).__init__(fop=fop, **kwargs)
+
+    def setFunct(self, fop, **kwargs):
+        """"""
+        self._funct = fop
+        self.reinitForwardOperator(**kwargs)
 
     def createForwardOperator(self, **kwargs):
         """
@@ -196,7 +203,7 @@ class SpectrumManager(MethodManager):
         limits = kwargs.pop('limits', {})
         
         for k, v in limits.items():
-            sm = (v[1] - v[0]) / 2
+            sm = (v[1] + v[0]) / 2
             if v[0] > 0:
                 sm = np.exp(np.log(v[0]) + (np.log(v[1]) - np.log(v[0])) / 2.)
             
