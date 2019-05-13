@@ -10,53 +10,35 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import pygimli as pg
-from .importexport import readTXTSpectrum, readFuchs3File, readRadicSIPFuchs
-# from .importexport import readRadicSIPQuad
+from .importData import readTXTSpectrum, readFuchs3File, readRadicSIPFuchs
+
 from .plotting import drawAmplitudeSpectrum, drawPhaseSpectrum, showSpectrum
 from .models import DebyePhi, DebyeComplex, relaxationTerm
 from .tools import KramersKronig, fitCCEMPhi, fitCCC
 from .tools import fitCCCC, fitCCPhi, fit2CCPhi
-
+from .tools import isComplex, squeezeComplex, packComplex
 
 from pygimli.manager import MethodManager
 from pygimli.frameworks import Modelling
 
 
-def isComplex(vals):
-    """Check numpy or pg.Vector if have complex data type"""
-    if len(vals) > 0:
-        if hasattr(vals, '__iter__'):
-         if isinstance(vals[0], np.complex) or isinstance(vals[0], pg.Complex):
-             return True
-    return False
-
-
-def unpackComplex(c, polar=False):
-    """Unpack complex valued array into [real, imag] or [amp, -phase(mrad)]"""
-    if isComplex(c):
-        vals = np.array(c)
-        if polar is True:
-            vals = pg.cat(np.abs(vals), -np.unwrap(np.angle(vals)) * 1000)
-        else:
-            vals = pg.cat(vals.real, vals.imag)
-        return vals
-    return c
-
-def packComplex(vals):
-    """Pack real valued array into complex.[vals//2 + i vals//2]"""
-    c = np.array(pg.toComplex(vals[0:len(vals)//2], vals[len(vals)//2:]))
-    return c
-
-
 class SpectrumModelling(Modelling):
     """Modelling framework with an array of freqencies as data space."""
     def __init__(self, funct, **kwargs):
-        self._mTs = None # store modelTrans to keep the GC happy
+        self._function = None
         self._complex = False
         super(SpectrumModelling, self).__init__(verbose=True)
         self._freqs = None
         self._params = {}
         self._initFunction(funct)
+
+    @property 
+    def params(self):
+        return self._params
+
+    @property 
+    def function(self):
+        return self._function
 
     @property 
     def complex(self):
@@ -67,13 +49,13 @@ class SpectrumModelling(Modelling):
         self._complex = c
     
     @property 
-    def f(self):
+    def freqs(self):
         if self._freqs is None:
             pg.critical("No frequencies defined.")
         return self._freqs
 
-    @f.setter
-    def f(self, f):
+    @freqs.setter
+    def freqs(self, f):
         self._freqs = f
 
     def createDefaultStartModel(self, dataVals=None):
@@ -112,9 +94,9 @@ class SpectrumModelling(Modelling):
     def response(self, params):
         # print(self._params)
         # self.drawModel(None, params)
-        ret = self._function(self.f, *params)
+        ret = self._function(self.freqs, *params)
         if self.complex:
-            return unpackComplex(ret)
+            return squeezeComplex(ret)
         return ret
 
     def drawModel(self, ax, model):
@@ -128,10 +110,10 @@ class SpectrumModelling(Modelling):
         """"""
         if self.complex:
             Z = packComplex(data)
-            showSpectrum(self.f, np.abs(Z), -np.angle(Z)*1000,
+            showSpectrum(self.freqs, np.abs(Z), -np.angle(Z)*1000,
                          axs=ax, **kwargs)
         else:
-            ax.semilogx(self.f, data)
+            ax.semilogx(self.freqs, data)
             ax.legend()
 
 
@@ -164,6 +146,16 @@ class SpectrumManager(MethodManager):
         """ """
         pass
 
+    def setData(self, freqs=None, amp=None, phi=None):
+        """ """
+        self.fop.freqs = freqs
+        if phi is not None:
+            print(amp)
+            print(phi)
+            self.fw.dataVals = self._ensureData(packComplex(amp, phi))
+        else:
+            self.fw.dataVals = self._ensureData(amp)
+
     def _ensureData(self, data):
         """Check data validity"""
         if isinstance(data, pg.DataContainer):
@@ -171,7 +163,7 @@ class SpectrumManager(MethodManager):
 
         if isComplex(data):
             self.fop.complex = True
-            vals = unpackComplex(data)
+            vals = squeezeComplex(data)
 
         if abs(min(vals)) < 1e-12:
             print(min(vals), max(vals))
@@ -195,7 +187,7 @@ class SpectrumManager(MethodManager):
 
         return vals
 
-    def invert(self, data, f=None, **kwargs):
+    def invert(self, data=None, f=None, **kwargs):
         """"""
         if f is not None:
             self.fop.f = f

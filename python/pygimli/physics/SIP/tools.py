@@ -9,6 +9,39 @@ from .models import ColeColeComplex, ColeColeComplexSigma, PeltonPhiEM
 from .models import ColeColeAbs, ColeColePhi, DoubleColeColePhi
 
 
+def isComplex(vals):
+    """Check numpy or pg.Vector if have complex data type"""
+    if len(vals) > 0:
+        if hasattr(vals, '__iter__'):
+         if isinstance(vals[0], np.complex) or isinstance(vals[0], pg.Complex):
+             return True
+    return False
+
+def squeezeComplex(z, polar=False):
+    """Squeeze complex valued array into [real, imag] or [amp, -phase(mrad)]"""
+    if isComplex(z):
+        vals = np.array(z)
+        if polar is True:
+            vals = pg.cat(np.abs(vals), -np.unwrap(np.angle(vals)) * 1000)
+        else:
+            vals = pg.cat(vals.real, vals.imag)
+        return vals
+    return z
+
+def packComplex(vals, phi=None):
+    """Pack a real valued arrays into a complex array.
+
+    Variant 1: vals[0:N] - i vals[N:0] with N is len(vals)//2.
+    Variant 2: If phi is given in (neg rad) complex values are generated 
+    taken vals as amplitudes
+
+    """
+    if phi is not None:
+        return vals * (np.cos(phi) - 1j * np.sin(phi))
+
+    z = np.array(pg.toComplex(vals[0:len(vals)//2], vals[len(vals)//2:]))
+    return z
+
 def fitCCEMPhi(f, phi,  ePhi=0.001, lam=1000., 
                mpar=(0.2, 0, 1), taupar=(1e-2, 1e-5, 100),
                cpar=(0.25, 0, 1), empar=(1e-7, 1e-9, 1e-5), verbose=True):

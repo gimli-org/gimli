@@ -9,6 +9,58 @@ import re
 import pygimli as pg
 
 
+def load(fileName, verbose=False, **kwargs):
+    """Shortcut to load SIP spectral data.
+
+    Import Data and try to assume the file format.
+
+    Parameters
+    ----------
+    fileName: str
+
+    Returns
+    -------
+    freqs, amp, phi : np.array
+        Frequencies, amplitudes and phases phi in neg. radiant
+
+    """
+    firstLine = None
+    with codecs.open(fileName, 'r', encoding='iso-8859-15',
+                        errors='replace') as fi:
+        firstLine = fi.readline()
+        
+    f, amp, phi = None, None, None
+
+    fnLow = fileName.lower()
+
+    if 'SIP Fuchs III' in firstLine:
+        if verbose:
+            pg.info("Reading SIP Fuchs III file")
+        f, amp, phi, header = readFuchs3File(fileName, 
+                                             verbose=verbose, **kwargs)
+        phi *= -np.pi/180.
+        # print(header) # not used?
+    elif 'SIP-Quad' in firstLine:
+        if verbose:
+            pg.info("Reading SIP Quad file")
+        f, amp, phi, header = readFuchs3File(fileName, 
+                                             verbose=verbose, **kwargs)
+        phi *= -np.pi/180.
+    elif 'SIP-Fuchs' in firstLine:
+        if verbose:
+            pg.info("Reading SIP Fuchs file")
+        f, amp, phi, drhoa, dphi = readRadicSIPFuchs(fileName, 
+                                                     verbose=verbose, **kwargs)
+        phi *= -np.pi/180.
+    elif fnLow.endswith('.txt') or fnLow.endswith('.csv'):
+        f, amp, phi = readTXTSpectrum(filename)
+        amp *= 1.0 # scale it with k if available
+    else:
+        raise Exception("Don't know how to read data.")
+
+    return f, amp, phi
+
+
 def fstring(fri):
     """Format frequency to human-readable (mHz or kHz)."""
     if fri > 1e3:

@@ -201,6 +201,9 @@ class MethodManager(object):
 
     def _ensureData(self, data):
         """Check data validity"""
+        if data is None:
+            data = self.fw.dataVals
+
         vals = data
         if isinstance(data, pg.DataContainer):
             vals = self.dataValues(data)
@@ -213,8 +216,10 @@ class MethodManager(object):
 
     def _ensureError(self, err, dataVals=None):
         """Check error validity"""
-        vals = err
+        if err is None:
+            err = self.fw.errVals
 
+        vals = err
         if isinstance(err, pg.DataContainer):
             vals = self.errorValues(err)
 
