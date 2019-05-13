@@ -199,38 +199,6 @@ class MethodManager(object):
             return pg.Vector(data.size(), 0.01)
         return data('err')
 
-    def _ensureData(self, data):
-        """Check data validity"""
-        if data is None:
-            data = self.fw.dataVals
-
-        vals = data
-        if isinstance(data, pg.DataContainer):
-            vals = self.dataValues(data)
-
-        if abs(min(vals)) < 1e-12:
-            print(min(vals), max(vals))
-            pg.critical("There are zero data values.")
-
-        return vals
-
-    def _ensureError(self, err, dataVals=None):
-        """Check error validity"""
-        if err is None:
-            err = self.fw.errVals
-
-        vals = err
-        if isinstance(err, pg.DataContainer):
-            vals = self.errorValues(err)
-
-        if min(vals) <= 0:
-            print(min(vals), max(vals))
-            pg.critical("All error values need to be larger then 0."
-                        " either give and err argument or fill dataContainer "
-                        " with a valid 'err' ")
-
-        return vals
-
     def estimateError(self, data, errLevel=0.01, absError=None):
         """Estimate data error.
 
@@ -274,6 +242,38 @@ class MethodManager(object):
             return ra, err
 
         return ra
+
+    def _ensureData(self, data):
+        """Check data validity"""
+        if data is None:
+            data = self.fw.dataVals
+
+        vals = data
+        if isinstance(data, pg.DataContainer):
+            vals = self.dataValues(data)
+
+        if abs(min(vals)) < 1e-12:
+            print(min(vals), max(vals))
+            pg.critical("There are zero data values.")
+
+        return vals
+
+    def _ensureError(self, err, dataVals=None):
+        """Check error validity"""
+        if err is None:
+            err = self.fw.errorVals
+
+        vals = err
+        if isinstance(err, pg.DataContainer):
+            vals = self.errorValues(err)
+
+        if min(vals) <= 0:
+            print(min(vals), max(vals))
+            pg.critical("All error values need to be larger then 0."
+                        " either give and err argument or fill dataContainer "
+                        " with a valid 'err' ")
+
+        return vals
 
     def invert(self, data=None, err=None, **kwargs):
         """Invert the data.

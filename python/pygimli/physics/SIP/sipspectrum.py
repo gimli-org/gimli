@@ -93,8 +93,8 @@ class SpectrumModelling(Modelling):
                                      startModel=1)
             
     def response(self, params):
-        print(params)
-        self.drawModel(None, params)
+        #pg._r('response:', params)
+        #self.drawModel(None, params)
         ret = self._function(self.freqs, *params)
         if self.complex:
             return squeezeComplex(ret)
@@ -155,13 +155,16 @@ class SpectrumManager(MethodManager):
         else:
             self.fw.dataVals = self._ensureData(amp)
 
-        if err is None:
-            self.fw.errorVals = self._ensureError(0.01, self.fw.dataVals)
+        self.fw.errorVals = self._ensureError(err, self.fw.dataVals)
 
     def _ensureData(self, data):
         """Check data validity"""
+            
         if isinstance(data, pg.DataContainer):
             pg.critical("Implement me")
+        
+        if data is None:
+            data = self.fw.dataVals
 
         vals = data
         if isComplex(data):
@@ -179,6 +182,9 @@ class SpectrumManager(MethodManager):
         if isinstance(err, pg.DataContainer):
             pg.critical("Implement me")
         
+        if err is None:
+            err = self.fw.errorVals
+
         vals = err
         if vals is None:
             return self._ensureError(0.01, dataVals)
@@ -210,7 +216,7 @@ class SpectrumManager(MethodManager):
                 
                 self.fop.setRegionProperties(k, startModel=sm)
  
-        super(SpectrumManager, self).invert(data, **kwargs)
+        return super(SpectrumManager, self).invert(data, **kwargs)
    
     def showResult(self):
         """"""
