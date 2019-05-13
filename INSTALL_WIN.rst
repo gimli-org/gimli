@@ -4,14 +4,13 @@ Installation on Windows
 
 You need a Python installation with the modules numpy and matplotlib.
 There are minimalistic installers and pre-packaged distributions.
-We recommend `WinPython <http://winpython.github.io/#releases>`_ or
-`Anaconda <http://www.continuum.io/>`_ 64bit versions.
+We recommend `Anaconda <http://www.continuum.io/>`_ 64bit but `WinPython <http://winpython.github.io/#releases>`_ will to the job too.
 
 Binary installers
 .................
 
-To avoid the building the C++ core, we provide binary packages built against
-WinPython, but working as well with Anaconda.
+To avoid the building the C++ core, we provide binary packages built against Anaconda,
+but working as well with WinPython.
 Make sure you have an appropriate Python version (3.5.x or 3.6.x, 64bit) installed.
 There are two ways, exe installers and wheels. The latter can be easily installed by a
 package manager like the WinPython Control Panel (located in the WinPython main directory).
