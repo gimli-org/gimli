@@ -16,7 +16,7 @@ from .plotting import drawAmplitudeSpectrum, drawPhaseSpectrum, showSpectrum
 from .models import DebyePhi, DebyeComplex, relaxationTerm
 from .tools import KramersKronig, fitCCEMPhi, fitCCC
 from .tools import fitCCCC, fitCCPhi, fit2CCPhi
-from .tools import isComplex, squeezeComplex, packComplex
+from .tools import isComplex, squeezeComplex, toComplex
 
 from pygimli.manager import MethodManager
 from pygimli.frameworks import Modelling
@@ -56,6 +56,7 @@ class SpectrumModelling(Modelling):
 
     @freqs.setter
     def freqs(self, f):
+        pg._g(f)
         self._freqs = f
 
     def createDefaultStartModel(self, dataVals=None):
@@ -92,8 +93,8 @@ class SpectrumModelling(Modelling):
                                      startModel=1)
             
     def response(self, params):
-        # print(self._params)
-        # self.drawModel(None, params)
+        print(params)
+        self.drawModel(None, params)
         ret = self._function(self.freqs, *params)
         if self.complex:
             return squeezeComplex(ret)
@@ -109,7 +110,7 @@ class SpectrumModelling(Modelling):
     def drawData(self, ax, data, err=None, **kwargs):
         """"""
         if self.complex:
-            Z = packComplex(data)
+            Z = toComplex(data)
             showSpectrum(self.freqs, np.abs(Z), -np.angle(Z)*1000,
                          axs=ax, **kwargs)
         else:
@@ -146,21 +147,23 @@ class SpectrumManager(MethodManager):
         """ """
         pass
 
-    def setData(self, freqs=None, amp=None, phi=None):
+    def setData(self, freqs=None, amp=None, phi=None, err=None):
         """ """
         self.fop.freqs = freqs
         if phi is not None:
-            print(amp)
-            print(phi)
-            self.fw.dataVals = self._ensureData(packComplex(amp, phi))
+            self.fw.dataVals = self._ensureData(toComplex(amp, phi))
         else:
             self.fw.dataVals = self._ensureData(amp)
+
+        if err is None:
+            self.fw.errorVals = self._ensureError(0.01, self.fw.dataVals)
 
     def _ensureData(self, data):
         """Check data validity"""
         if isinstance(data, pg.DataContainer):
             pg.critical("Implement me")
 
+        vals = data
         if isComplex(data):
             self.fop.complex = True
             vals = squeezeComplex(data)
@@ -178,8 +181,11 @@ class SpectrumManager(MethodManager):
         
         vals = err
         if vals is None:
-            vals = np.ones(len(dataVals)) * 0.01
-            pg.info("Create default error of 1'%'")
+            return self._ensureError(0.01, dataVals)
+
+        if isinstance(vals, float):
+            pg.info("Create default error of {0}'%'".format(vals*100))
+            vals = np.ones(len(dataVals)) * vals
 
         if abs(min(vals)) < 1e-12:
             print(min(vals), max(vals))
@@ -190,16 +196,19 @@ class SpectrumManager(MethodManager):
     def invert(self, data=None, f=None, **kwargs):
         """"""
         if f is not None:
-            self.fop.f = f
+            self.fop.freqs = f
 
         limits = kwargs.pop('limits', {})
         
         for k, v in limits.items():
-            sm = (v[1] + v[0]) / 2
-            if v[0] > 0:
-                sm = np.exp(np.log(v[0]) + (np.log(v[1]) - np.log(v[0])) / 2.)
-            
-            self.fop.setRegionProperties(k, limits=v, startModel=sm)
+            self.fop.setRegionProperties(k, limits=v)
+
+            if not 'startmodel' in kwargs:
+                sm = (v[1] + v[0]) / 2
+                if v[0] > 0:
+                    sm = np.exp(np.log(v[0]) + (np.log(v[1]) - np.log(v[0])) / 2.)
+                
+                self.fop.setRegionProperties(k, startModel=sm)
  
         super(SpectrumManager, self).invert(data, **kwargs)
    

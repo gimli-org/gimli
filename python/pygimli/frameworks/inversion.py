@@ -251,8 +251,8 @@ class Inversion(object):
         else:
             self.dataVals = data
 
-    def chi2(self):
-        return self.inv.chi2()
+    def chi2(self, response=None):
+        return self.phiData(response) / len(self.dataVals)
 
     def phiData(self, response=None):
         """ """

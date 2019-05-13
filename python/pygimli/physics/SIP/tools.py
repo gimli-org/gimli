@@ -11,36 +11,72 @@ from .models import ColeColeAbs, ColeColePhi, DoubleColeColePhi
 
 def isComplex(vals):
     """Check numpy or pg.Vector if have complex data type"""
+    z = pg.CVector(2)
     if len(vals) > 0:
         if hasattr(vals, '__iter__'):
-         if isinstance(vals[0], np.complex) or isinstance(vals[0], pg.Complex):
+            if isinstance(vals[0], np.complex) or \
+               isinstance(vals[0], complex):
              return True
     return False
 
+def toComplex(amp, phi=None):
+    """Convert real values into into complex valued array.
+    
+    If no phases phi are given assuming z = amp[0:N] - i amp[N:0].
+
+    If phi is given in (neg rad) complex values are generated:
+    z = amp (cos(phi) -i sin(phi))
+
+    Parameters
+    ----------
+    amp: iterable (float)
+        Amplitudes or real unsqueezed real valued array.
+    phi: iterable (float)
+        Phases in neg radiant
+
+    Returns
+    -------
+    z: ndarray(dtype=np.complex)
+        Complex values
+    """
+    if phi is not None:
+        return amp * (np.cos(phi) - 1j *np.sin(phi))
+    N = len(amp) // 2 
+    return np.array(amp[0:N]) - 1j * np.array(amp[N:])
+    #return np.array(pg.toComplex(amp[0:N], amps[N:]))
+
+def toPolar(z):
+    """Convert complex values array into amplitude and phase in neg. mrad.
+
+    If z is real valued we assume its squeezed.
+
+    Parameters
+    ----------
+    z: iterable (floats, complex)
+        If z contains of floats and squeezedComplex is assumed [real, imag]
+        
+    Returns
+    -------
+    amp, phi: ndarray
+        Amplitude amp and neg. phase angle phi in radiant.
+    
+    """
+    if isComplex(z):
+        return np.abs(z), - np.angle(z)
+    else:
+        return toPolar(toComplex(z))
+
 def squeezeComplex(z, polar=False):
-    """Squeeze complex valued array into [real, imag] or [amp, -phase(mrad)]"""
+    """Squeeze complex valued array into [real, imag] or [amp, -phase(rad)]"""
     if isComplex(z):
         vals = np.array(z)
         if polar is True:
-            vals = pg.cat(np.abs(vals), -np.unwrap(np.angle(vals)) * 1000)
+            vals = pg.cat(toPolar[:])
         else:
             vals = pg.cat(vals.real, vals.imag)
         return vals
     return z
 
-def packComplex(vals, phi=None):
-    """Pack a real valued arrays into a complex array.
-
-    Variant 1: vals[0:N] - i vals[N:0] with N is len(vals)//2.
-    Variant 2: If phi is given in (neg rad) complex values are generated 
-    taken vals as amplitudes
-
-    """
-    if phi is not None:
-        return vals * (np.cos(phi) - 1j * np.sin(phi))
-
-    z = np.array(pg.toComplex(vals[0:len(vals)//2], vals[len(vals)//2:]))
-    return z
 
 def fitCCEMPhi(f, phi,  ePhi=0.001, lam=1000., 
                mpar=(0.2, 0, 1), taupar=(1e-2, 1e-5, 100),

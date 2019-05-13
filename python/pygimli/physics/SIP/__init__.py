@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """Spectral induced polarization (SIP) measurements and fittings."""
 
-from .tools import (isComplex, squeezeComplex, packComplex)
+from .tools import (isComplex, toComplex, toPolar, squeezeComplex)
 
 from .importData import (load)
 from .sipspectrum import (SpectrumManager, SIPSpectrum)
