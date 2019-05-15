@@ -44,7 +44,7 @@ def readTXTSpectrum(filename):
 
 def readFuchs3File(resfile, k=1.0, verbose=False):
     """Read Fuchs III (SIP spectrum) data file.
-    
+
     Parameters
     ----------
     k : float
@@ -268,7 +268,7 @@ def readSIP256file(resfile, verbose=False):
     # TG: yes, no better idea to handle blocks of blocks of data
     DATA, Data, data, AB, RU, ru = [], [], [], [], [], []
     for line in LINE:
-        sline = line.split()
+        sline = line.rstrip('\r\n').split()
         if line.find('Reading') == 0:
             rdno = int(sline[1])
             if rdno:
@@ -303,7 +303,13 @@ def readSIP256file(resfile, verbose=False):
                         part1 = sline[c][:-10]
                         part2 = sline[c][-10:]   # [11:]
                     sline = sline[:c] + [part1] + [part2] + sline[c + 1:]
-            data.append(np.array(sline[:8], dtype=float))
+                if sline[c].find('c') >= 0:
+                    sline[c] = '1.0'
+            try:
+                data.append(np.array(sline[:8], dtype=float))
+            except:
+                print(sline)
+                raise SystemExit
 
     Data.append(np.array(data))
     DATA.append(Data)
