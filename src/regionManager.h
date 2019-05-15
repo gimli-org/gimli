@@ -270,9 +270,10 @@ public:
 
     inline Mesh * pMesh() { return mesh_; }
 
-    /*!
-     * Add a external region to the RegionManager.
-     */
+    /*!Add an new single region.*/
+    Region * addRegion(SIndex marker);
+    
+    /*!Add an external region to the RegionManager.*/
     Region * addRegion(SIndex marker, const Mesh & mesh);
 #ifndef PYGIMLI_CAST
     const std::map < SIndex, Region * > & regions() const { return regionMap_; }

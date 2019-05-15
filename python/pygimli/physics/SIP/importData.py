@@ -9,6 +9,58 @@ import re
 import pygimli as pg
 
 
+def load(fileName, verbose=False, **kwargs):
+    """Shortcut to load SIP spectral data.
+
+    Import Data and try to assume the file format.
+
+    Parameters
+    ----------
+    fileName: str
+
+    Returns
+    -------
+    freqs, amp, phi : np.array
+        Frequencies, amplitudes and phases phi in neg. radiant
+
+    """
+    firstLine = None
+    with codecs.open(fileName, 'r', encoding='iso-8859-15',
+                     errors='replace') as fi:
+        firstLine = fi.readline()
+        
+    f, amp, phi = None, None, None
+
+    fnLow = fileName.lower()
+
+    if 'SIP Fuchs III' in firstLine:
+        if verbose:
+            pg.info("Reading SIP Fuchs III file")
+        f, amp, phi, header = readFuchs3File(fileName, 
+                                             verbose=verbose, **kwargs)
+        phi *= -np.pi/180.
+        # print(header) # not used?
+    elif 'SIP-Quad' in firstLine:
+        if verbose:
+            pg.info("Reading SIP Quad file")
+        f, amp, phi, header = readFuchs3File(fileName, 
+                                             verbose=verbose, **kwargs)
+        phi *= -np.pi/180.
+    elif 'SIP-Fuchs' in firstLine:
+        if verbose:
+            pg.info("Reading SIP Fuchs file")
+        f, amp, phi, drhoa, dphi = readRadicSIPFuchs(fileName, 
+                                                     verbose=verbose, **kwargs)
+        phi *= -np.pi/180.
+    elif fnLow.endswith('.txt') or fnLow.endswith('.csv'):
+        f, amp, phi = readTXTSpectrum(filename)
+        amp *= 1.0 # scale it with k if available
+    else:
+        raise Exception("Don't know how to read data.")
+
+    return f, amp, phi
+
+
 def fstring(fri):
     """Format frequency to human-readable (mHz or kHz)."""
     if fri > 1e3:
@@ -195,17 +247,15 @@ def readSIP256file(resfile, verbose=False):
 
     Parameters
     ----------
-
     filename: str
         *.RES file (SIP256 raw output file)
-
     verbose: bool
         do some output [False]
 
     Returns
     -------
         header - dictionary of measuring setup
-        DATA - data AB-list of MN-list of matrices with f, Z, phi, dZ, dphi
+        DATA - data AB-list of MN-list of matrices with f, amp, phi, dAmp, dPhi
         AB - list of current injection
         RU - list of remote units
 
@@ -218,83 +268,82 @@ def readSIP256file(resfile, verbose=False):
     LINE = []
     dataAct = False
 
-    with codecs.open(resfile, 'r', encoding='iso-8859-15', errors='replace') as f:
-#    with open(resfile, 'r', errors='replace') as f:
-    #with codecs.open(resfile, 'r', errors='replace') as f:
-        for line in f:
-            if dataAct:
-                LINE.append(line)
-            elif len(line):
-                if line[0] == '[':
-                    token = line[1:line.rfind(']')].replace(' ', '_')
-                    # handle 256D softwar bug
-                    if 'FrequencyParameterBegin' in token:
-                        token = token.replace('FrequencyParameterBegin',
-                                              'Begin_FrequencyParameter')
-                    if 'FrequencyParameterEnd' in token:
-                        token = token.replace('FrequencyParameterEnd',
-                                              'End_FrequencyParameter')
+    with codecs.open(resfile, 'r', encoding='iso-8859-15', 
+                                   errors='replace') as fi:
+        content = fi.readlines()
 
-                    if token.replace(' ', '_') == 'Messdaten_SIP256':
-                        dataAct = True
-                    elif 'Messdaten' in token:
-                        # res format changed into SIP256D .. so we are a
-                        # little bit more flexible with this.
-                        dataAct = True
-                    elif token[:3] == 'End':
-                        header[activeBlock] = np.array(header[activeBlock])
-                        activeBlock = ''
-                    elif token[:5] == 'Begin':
-                        activeBlock = token[6:]
-                        header[activeBlock] = []
-                    else:
-                        value = line[line.rfind(']') + 1:]
-                        try:  # direct line information
-                            if '.' in value:
-                                num = float(value)
-                            else:
-                                num = int(value)
-                            header[token] = num
-                        except BaseException as e:
-                            # maybe beginning or end of a block
-                            print(e)
+    for line in content:
+        if dataAct:
+            LINE.append(line)
+        elif len(line):
+            if line[0] == '[':
+                token = line[1:line.rfind(']')].replace(' ', '_')
+                # handle 256D software bug
+                if 'FrequencyParameterBegin' in token:
+                    token = token.replace('FrequencyParameterBegin',
+                                            'Begin_FrequencyParameter')
+                if 'FrequencyParameterEnd' in token:
+                    token = token.replace('FrequencyParameterEnd',
+                                            'End_FrequencyParameter')
 
+                if token.replace(' ', '_') == 'Messdaten_SIP256':
+                    dataAct = True
+                elif 'Messdaten' in token:
+                    # res format changed into SIP256D .. so we are a
+                    # little bit more flexible with this.
+                    dataAct = True
+                elif token[:3] == 'End':
+                    header[activeBlock] = np.array(header[activeBlock])
+                    activeBlock = ''
+                elif token[:5] == 'Begin':
+                    activeBlock = token[6:]
+                    header[activeBlock] = []
                 else:
-                    if activeBlock:
-                        nums = np.array(line.split(), dtype=float)
-                        header[activeBlock].append(nums)
+                    value = line[line.rfind(']') + 1:]
+                    try:  # direct line information
+                        if '.' in value:
+                            num = float(value)
+                        else:
+                            num = int(value)
+                        header[token] = num
+                    except BaseException as e:
+                        # maybe beginning or end of a block
+                        print(e)
+            else:
+                if activeBlock:
+                    nums = np.array(line.split(), dtype=float)
+                    header[activeBlock].append(nums)
 
-    # CR DATA, Data, data ?? really??
-    # TG: yes, no better idea to handle blocks of blocks of data
-    DATA, Data, data, AB, RU, ru = [], [], [], [], [], []
+    DATA, dReading, dFreq, AB, RU, ru = [], [], [], [], [], []
     for line in LINE:
+        line = line.replace(' nc ', ' 0 ') # no calibration should 0
+        line = line.replace(' c ', ' 1 ') # calibration should 1
         sline = line.split()
         if line.find('Reading') == 0:
             rdno = int(sline[1])
-            if rdno:
+            if rdno > 0:
                 AB.append((int(sline[4]), int(sline[6])))
             if ru:
                 RU.append(ru)
                 ru = []
-            if rdno > 1 and Data:
-                Data.append(np.array(data))
-                DATA.append(Data)
-                Data, data = [], []
+            if rdno > 1 and dReading:
+                dReading.append(np.array(dFreq))
+                DATA.append(dReading)
                 if verbose:
-                    print('Reading ' + str(rdno - 1) + ':' + str(len(Data)) +
-                          ' RUs')
+                    print('Reading {0}:{1} RUs'.format(rdno - 1, len(dReading)))
+                dReading, dFreq = [], []
         elif line.find('Remote Unit') == 0:
             ru.append(int(sline[2]))
-            if data:
-                Data.append(np.array(data))
-                data = []
+            if dFreq:
+                dReading.append(np.array(dFreq))
+                dFreq = []
         elif line.find('Freq') >= 0:
             pass
         elif len(sline) > 1 and rdno > 0:  # some data present
             if re.search('[0-9]-', line):  # missing whitespace before -
                 sline = re.sub('[0-9]-', '5 -', line).split()
 
-            for c in range(6):
+            for c in range(6): # this is expensive .. do we really need this?
                 if len(sline[c]) > 15:  # too long line / missing space
                     if c == 0:
                         part1 = sline[c][:-15]
@@ -303,12 +352,15 @@ def readSIP256file(resfile, verbose=False):
                         part1 = sline[c][:-10]
                         part2 = sline[c][-10:]   # [11:]
                     sline = sline[:c] + [part1] + [part2] + sline[c + 1:]
-            data.append(np.array(sline[:8], dtype=float))
+            
+            dFreq.append(np.array(sline[:8], dtype=float))
+            # print(dFreq)
+            # exit()
 
-    Data.append(np.array(data))
-    DATA.append(Data)
+    dReading.append(np.array(dFreq))
+    DATA.append(dReading)
     if verbose:
-        print('Reading ' + str(rdno) + ':' + str(len(Data)) + ' RUs')
+        print('Reading {0}:{1} RUs'.format(rdno - 1, len(dReading)))
 
     return header, DATA, AB, RU
 

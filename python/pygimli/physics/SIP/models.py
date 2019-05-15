@@ -193,8 +193,9 @@ class DoubleColeColePhi(pg.ModellingBase):
         """phase angle of the model"""
         spec1 = ColeCole(self.f_, 1.0, par[0], par[1], par[2])
         spec2 = ColeCole(self.f_, 1.0, par[3], par[4], par[5])
-        return -np.angle(spec1 * spec2)
-#        return -np.angle(spec1) - np.angle(spec2)
+        #return -np.angle(spec1 * spec2)
+        
+        return -np.angle(spec1) - np.angle(spec2)
 
 
 class ColeColeAbs(pg.ModellingBase):

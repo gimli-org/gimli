@@ -12,6 +12,7 @@ from os import path
 from os.path import join
 
 
+import numpy as np
 import matplotlib
 # Does not work properly with sphinx gallery. Leaving this out for the moment.
 # from mplstyle import plot_rcparams
@@ -24,6 +25,7 @@ import sphinx
 
 import pygimli
 from pygimli.utils import boxprint
+from pygimli.core import optImport
 
 import pkg_resources
 
@@ -98,6 +100,7 @@ extensions += [dep.replace('-', '.') for dep in deps]
 # Sphinx-gallery settings
 try:
     import sphinx_gallery
+    from sphinx_gallery.sorting import FileNameSortKey
     extensions += ["sphinx_gallery.gen_gallery"]
 
     # Setup automatic gallery generation
@@ -121,9 +124,18 @@ try:
         # Your documented modules. You can use a string or a list of strings
         'doc_module': 'pygimli',
 
+        # Sort gallery example by file name instead of number of lines (default)
+        "within_subsection_order": FileNameSortKey,
+
         'first_notebook_cell': ("# Checkout www.pygimli.org for more examples\n"
                                 "%matplotlib inline")
         }
+
+    vista = optImport("vista", "building the gallery with 3D visualizations")
+    if vista:
+        vista.OFF_SCREEN = True
+        vista.rcParams['window_size'] = np.array([1024, 768]) * 2
+        sphinx_gallery_conf["image_scrapers"] = (vista.Scraper(), 'matplotlib')
 
 except ImportError:
     err = """

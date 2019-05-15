@@ -41,9 +41,9 @@ Region::Region(SIndex marker, RegionManager * parent, bool single)
 }
 
 Region::Region(SIndex marker, const Mesh & mesh, RegionManager * parent)
-    : marker_(marker), parent_(parent)
-        , isBackground_(false), isSingle_(false)
-        , parameterCount_(0), tM_(NULL) {
+    : marker_(marker), parent_(parent),
+        isBackground_(false), isSingle_(false),
+        parameterCount_(0), tM_(NULL) {
     init_();
     this->resize(mesh);
 }
@@ -146,15 +146,14 @@ void Region::resize(const Mesh & mesh){
 }
 
 void Region::resize(const std::vector < Cell * > & cells){
-    // don't use it until -- bounds_.clear() will lead to invalid constraints
-    log(Error, WHERE_AM_I, "In use?");
     cells_ = cells;
-    // bounds_.clear();
-    // if (zWeight_ != 1.0){
-    //     fillConstraintWeightsWithFlatWeight();
-    // } else {
-    //     constraintWeights_.resize(constraintCount(), 1.0);
-    // }
+    bounds_.clear();
+    if (!isSingle_){
+        // find new bounds_ without the mesh
+        log(Error, WHERE_AM_I, "In use?");
+
+    }
+    this->constraintWeights_.clear();
 }
 
 void Region::countParameter(Index start){
@@ -284,7 +283,8 @@ void Region::fillModelControl(RVector & vec){
 
 //################ constraints behaviour
 Index Region::constraintCount() const {
-    if (isSingle_ && constraintType_ == 1) return 0;
+    if (isBackground_ ) return 0;
+    if (isSingle_ && constraintType_ == 0) return 0;
 
     if (constraintType_ == 0 || constraintType_ == 2 || constraintType_ == 20) return parameterCount();
     if (constraintType_ == 10) return bounds_.size() + parameterCount();
@@ -292,9 +292,9 @@ Index Region::constraintCount() const {
 }
 
 void Region::fillConstraints(RSparseMapMatrix & C, Index startConstraintsID){
-    if (isBackground_) return;
+    if (isBackground_ ) return;
 
-    if (isSingle_ && constraintType_ == 1) return;
+    if (isSingle_ && constraintType_ == 0) return;
 
     double cMixRatio = 1.0; // for mixing 1st or 2nd order with 0th order (constraintTypes 10 and 20)
     if (constraintType_ == 10 || constraintType_ == 20) cMixRatio = 1.0; //**retrieve from properties!!!
@@ -423,7 +423,7 @@ void Region::fillConstraintWeights(RVector & vec, Index cIDStart){
 }
 
 void Region::_createConstraintWeights(){
-    if (isBackground_ || isSingle_ || (constraintType() == 0) ||
+    if (isBackground_ || (constraintType() == 0) ||
         (constraintType() == 2)) return;
 
     this->constraintWeights_.resize(constraintCount(), 1.0);
@@ -665,8 +665,9 @@ Region * RegionManager::createSingleRegion_(SIndex marker, const std::vector < C
         THROW_TO_IMPL
         region = regionMap_[marker];
     }
-
-    region->resize(cells);
+    if (cells.size() > 0){
+        region->resize(cells);
+    }
     return region;
 }
 
@@ -681,6 +682,12 @@ Region * RegionManager::createRegion_(SIndex marker, const Mesh & mesh){
         region->resize(mesh);
         //std::cerr << WHERE_AM_I << " Region with marker " << marker << " already exists." << std::endl;
     }
+    return region;
+}
+
+Region * RegionManager::addRegion(SIndex marker){
+    Region * region = createSingleRegion_(marker, std::vector < Cell * > ());
+    recountParaMarker_(); //** make sure the counter is right
     return region;
 }
 
@@ -896,10 +903,9 @@ void RegionManager::fillConstraints(RSparseMapMatrix & C){
     if (regionMap_.empty() || nConstr == 0){
         C.setCols(nModel);
         C.setRows(nModel);
-
+        this->_cWeights.resize(nModel, 1.0);
         for (Index i = 0; i < parameterCount(); i++) {
             C[i][i] = 1.0;
-            this->_cWeights[i] = 1.0;
         }
         return;
     }

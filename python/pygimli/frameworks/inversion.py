@@ -25,6 +25,11 @@ class Inversion(object):
         Holds the current starting model
     model : array
         Holds the last active model
+    maxIter : int [20]
+        Maximal interation number.
+    stopAtChi1 : bool [True]
+        Stop iteration when chi² is one. If set to false the iteration stops
+        after maxIter or convergence reached (self.inv.deltaPhiAbortPercent())
     """
     def __init__(self, fop=None, inv=None, **kwargs):
         self._verbose = kwargs.pop('verbose', False)
@@ -34,9 +39,7 @@ class Inversion(object):
         # Inversion which allows us ........
         # this will be probably removed in the future
         self.isFrameWork = False
-
-        self._dataVals = None
-        self._errorVals = None
+        self._stopAtChi1 = True
 
         self._preStep = None
         self._postStep = None
@@ -44,9 +47,8 @@ class Inversion(object):
         self._inv = None
         self._fop = None
 
-        self._startModel = None
-        self._model = None
-
+        self.reset()
+        
         if inv is not None:
             self._inv = inv
             self.isFrameWork = True
@@ -59,6 +61,13 @@ class Inversion(object):
 
         if fop is not None:
             self.setForwardOperator(fop)
+
+    def reset(self):
+        """"""
+        self._model = None
+        self._startModel = None
+        self._dataVals = None
+        self._errorVals = None
 
     @property
     def inv(self):
@@ -221,6 +230,14 @@ class Inversion(object):
     def maxIter(self, v):
         if self.inv is not None:
             self.inv.setMaxIter(v)
+    
+    @property
+    def stopAtChi1(self):
+        return self._stopAtChi1
+    @stopAtChi1.setter
+    def stopAtChi1(self, b):
+        self._stopAtChi1 = b
+
 
     def echoStatus(self):
         self.inv.echoStatus()
@@ -248,8 +265,8 @@ class Inversion(object):
         else:
             self.dataVals = data
 
-    def chi2(self):
-        return self.inv.chi2()
+    def chi2(self, response=None):
+        return self.phiData(response) / len(self.dataVals)
 
     def phiData(self, response=None):
         """ """
@@ -390,7 +407,7 @@ class Inversion(object):
                 print("chi² = {0} (dPhi = {1}%) lam: {2}".format(
                             round(chi2, 2), round(dPhi, 2), self.inv.getLambda()))
 
-            if chi2 <= 1:
+            if chi2 <= 1 and self.stopAtChi1 == True:
                 print("\n")
                 if self.verbose:
                     pg.boxprint("Abort criteria reached: chi² <= 1")
@@ -470,8 +487,8 @@ class MarquardtInversion(Inversion):
     """
     def __init__(self, fop=None, **kwargs):
         super(MarquardtInversion, self).__init__(fop, **kwargs)
+        self.stopAtChi1 = False
         self.inv.setLocalRegularization(True)
-        self.inv.stopAtChi1(False)
         self.inv.setLambdaFactor(0.8)
 
     def run(self, data, error, **kwargs):

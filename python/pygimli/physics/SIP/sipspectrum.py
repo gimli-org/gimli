@@ -10,12 +10,247 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import pygimli as pg
-from .importexport import readTXTSpectrum, readFuchs3File, readRadicSIPFuchs
-# from .importexport import readRadicSIPQuad
+from .importData import readTXTSpectrum, readFuchs3File, readRadicSIPFuchs
+
 from .plotting import drawAmplitudeSpectrum, drawPhaseSpectrum, showSpectrum
 from .models import DebyePhi, DebyeComplex, relaxationTerm
 from .tools import KramersKronig, fitCCEMPhi, fitCCC
 from .tools import fitCCCC, fitCCPhi, fit2CCPhi
+from .tools import isComplex, squeezeComplex, toComplex
+
+from pygimli.manager import MethodManager
+from pygimli.frameworks import Modelling
+
+
+class SpectrumModelling(Modelling):
+    """Modelling framework with an array of freqencies as data space.
+    
+    Attributes
+    ----------
+    params: dict
+    function: callable
+    complex: bool
+
+    """
+    def __init__(self, funct, **kwargs):
+        self._function = None
+        self._complex = False
+        super(SpectrumModelling, self).__init__(verbose=True)
+        self._freqs = None
+        self._params = {}
+        self._initFunction(funct)
+
+    @property 
+    def params(self):
+        return self._params
+
+    @property 
+    def function(self):
+        return self._function
+
+    @property 
+    def complex(self):
+        return self._complex
+    
+    @complex.setter
+    def complex(self, c):
+        self._complex = c
+    
+    @property 
+    def freqs(self):
+        if self._freqs is None:
+            pg.critical("No frequencies defined.")
+        return self._freqs
+    @freqs.setter
+    def freqs(self, f):
+        self._freqs = f
+
+    def createDefaultStartModel(self, dataVals=None):
+        sm = np.zeros(self.regionManager().parmeterCount())
+        sm += 1.0
+        pg.warn('createDefaultStartModel', sm)
+        return sm
+
+    def setRegionProperties(self, k, **kwargs):
+        """Set Region Properties by parameter name."""
+        if isinstance(k, int) or (k == '*'):
+            super(SpectrumModelling, self).setRegionProperties(k, **kwargs)
+        else:
+            self.setRegionProperties(self._params[k], **kwargs)
+
+    def _initFunction(self, funct):
+        """Init any function and interpret possible args and kwargs."""
+        self._function = funct
+        # the first varname is suposed to be f or freqs
+        args = funct.__code__.co_varnames[1:funct.__code__.co_argcount]
+        for varname in args:
+            if varname != 'verbose':
+                self._params[varname] = 0.0
+
+        nPara = len(self._params.keys())
+        
+        for i, [k, p] in enumerate(self._params.items()):
+            self._params[k] = i
+            self.regionManager().addRegion(i)
+            self.setRegionProperties(i, 
+                                     cType=0, 
+                                     single=True, 
+                                     trans='log', 
+                                     startModel=1)
+            
+    def response(self, params):
+        #pg._r('response:', params)
+        #self.drawModel(None, params)
+        ret = self._function(self.freqs, *params)
+        if self.complex:
+            return squeezeComplex(ret)
+        return ret
+
+    def drawModel(self, ax, model):
+        """"""
+        str = ''
+        for k, p in self._params.items():
+            str += k + "={0} ".format(pg.utils.prettyFloat(model[p]))
+        pg.info("Model: ", str)
+
+    def drawData(self, ax, data, err=None, **kwargs):
+        """"""
+        if self.complex:
+            Z = toComplex(data)
+            showSpectrum(self.freqs, np.abs(Z), -np.angle(Z)*1000,
+                         axs=ax, **kwargs)
+        else:
+            ax.semilogx(self.freqs, data)
+            ax.legend()
+
+
+class SpectrumManager(MethodManager):
+    """Manager to work with spectra data."""
+    def __init__(self, fop=None, **kwargs):
+        self._funct = fop
+        super(SpectrumManager, self).__init__(fop=fop, **kwargs)
+
+    def setFunct(self, fop, **kwargs):
+        """"""
+        self._funct = fop
+        self.reinitForwardOperator(**kwargs)
+
+    def createForwardOperator(self, **kwargs):
+        """
+        """
+        if isinstance(self._funct, Modelling):
+            return self._funct
+        
+        fop = SpectrumModelling(self._funct, **kwargs)
+        return fop
+
+    def createInversionFramework(self, **kwargs):
+        """
+        """
+        return pg.frameworks.MarquardtInversion(**kwargs)
+
+    def simulate(self):
+        """ """
+        pass
+
+    def setData(self, freqs=None, amp=None, phi=None, err=None):
+        """ """
+        self.fop.freqs = freqs
+        if phi is not None:
+            self.fw.dataVals = self._ensureData(toComplex(amp, phi))
+        else:
+            self.fw.dataVals = self._ensureData(amp)
+
+        self.fw.errorVals = self._ensureError(err, self.fw.dataVals)
+
+    def _ensureData(self, data):
+        """Check data validity"""
+            
+        if isinstance(data, pg.DataContainer):
+            pg.critical("Implement me")
+        
+        if data is None:
+            data = self.fw.dataVals
+
+        vals = data
+        if isComplex(data):
+            self.fop.complex = True
+            vals = squeezeComplex(data)
+
+        if abs(min(vals)) < 1e-12:
+            print(min(vals), max(vals))
+            pg.critical("There are zero data values.")
+
+        return vals
+
+    def _ensureError(self, err, dataVals=None):
+        """Check data validity"""
+        if isinstance(err, pg.DataContainer):
+            pg.critical("Implement me")
+        
+        if err is None:
+            err = self.fw.errorVals
+
+        vals = err
+        if vals is None:
+            return self._ensureError(0.01, dataVals)
+
+        if isinstance(vals, float):
+            pg.info("Create default error of {0}'%'".format(vals*100))
+            vals = np.ones(len(dataVals)) * vals
+
+        if abs(min(vals)) < 1e-12:
+            print(min(vals), max(vals))
+            pg.critical("There are zero data values.")
+
+        return vals
+
+    def invert(self, data=None, f=None, **kwargs):
+        """"""
+        if f is not None:
+            self.fop.freqs = f
+
+        limits = kwargs.pop('limits', {})
+        
+        for k, v in limits.items():
+            self.fop.setRegionProperties(k, limits=v)
+
+            if not 'startmodel' in kwargs:
+                sm = (v[1] + v[0]) / 2
+                if v[0] > 0:
+                    sm = np.exp(np.log(v[0]) + (np.log(v[1]) - np.log(v[0])) / 2.)
+                
+                self.fop.setRegionProperties(k, startModel=sm)
+ 
+        return super(SpectrumManager, self).invert(data, **kwargs)
+   
+    def showResult(self):
+        """"""
+        ax = None
+        if self.fop.complex:
+            fig, ax = pg.plt.subplots(nrows=2, ncols=1)
+        else:
+            fig, ax = pg.plt.subplots(nrows=1, ncols=1)
+
+        self.fop.drawModel(ax, self.fw.model)
+        self.fop.drawData(ax, self.fw.dataVals, label='data')
+        self.fop.drawData(ax, self.fw.response, label='response')
+
+        return ax
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 class SIPSpectrum(object):

@@ -130,6 +130,7 @@ class Modelling(pg.ModellingBase):
 
         """
         sm = self.regionManager().createStartModel()
+        pg.info("Createing startmodel from region infos:", sm)
         return sm
 
     def regionManager(self):
@@ -139,7 +140,6 @@ class Modelling(pg.ModellingBase):
         self._regionManagerInUse = True
         ### initialize RM if necessary
         super(Modelling, self).regionManager()
-
         ### set all local properties
         self._applyRegionProperties()
         return super(Modelling, self).regionManager()
@@ -214,15 +214,14 @@ class Modelling(pg.ModellingBase):
                 self._regionChanged = True
                 continue
 
-            if vals['single'] is not None:
-                pg.critical('implementme')
-                self._regionChanged = True
-                continue
-
             if vals['fix'] is not None:
                 pg.critical('implementme')
                 self._regionChanged = True
                 continue
+
+            if vals['single'] is not None:
+                rMgr.region(rID).setSingle(vals['single'])
+                self._regionChanged = True
 
             if vals['startModel'] is not None:
                 rMgr.region(rID).setStartModel(vals['startModel'])

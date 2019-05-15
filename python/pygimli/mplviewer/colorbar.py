@@ -438,7 +438,6 @@ def addCoverageAlpha(patches, coverage, dropThreshold=0.4):
         relative minimum coverage
     """
     patches.set_antialiaseds(True)
-    patches.set_linewidth(0.000)
 
     # generate individual color values here
     patches.update_scalarmappable()
@@ -475,7 +474,7 @@ def addCoverageAlpha(patches, coverage, dropThreshold=0.4):
     cols[:, 3] = C
 
     patches._facecolors = cols
-    # patches._edgecolor = 'None'
+    patches._edgecolors = 'face'
 
     # delete patch data to avoid automatically rewrite of _facecolors
     patches._A = None

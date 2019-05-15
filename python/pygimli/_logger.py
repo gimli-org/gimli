@@ -54,6 +54,7 @@ def _get_class_from_frame(fr):
     return None
 
 def whereAmI(nr=3):
+    nr = min(len(inspect.stack())-1, nr)
     clsName = _get_class_from_frame(inspect.stack()[nr][0])
     method = inspect.stack()[nr].function
     fileN = inspect.stack()[nr].filename.split('/')[-1]

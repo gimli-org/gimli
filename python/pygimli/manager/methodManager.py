@@ -123,9 +123,10 @@ class MethodManager(object):
             pg.critical("It seems that createForwardOperator method "
                             "does not return a valid forward operator.")
         if self.fw is not None:
+            self.fw.reset()
             self.fw.setForwardOperator(fop)
         else:
-            pg.critical("No inversion framwork defined.")
+            pg.critical("No inversion framework defined.")
 
     def createForwardOperator(self, **kwargs):
         """Mandatory interface for derived classes.
@@ -198,33 +199,6 @@ class MethodManager(object):
             return pg.Vector(data.size(), 0.01)
         return data('err')
 
-    def _ensureData(self, data):
-        """Check data validity"""
-        vals = data
-        if isinstance(data, pg.DataContainer):
-            vals = self.dataValues(data)
-
-        if abs(min(vals)) < 1e-12:
-            print(min(vals), max(vals))
-            pg.critical("There are zero data values.")
-
-        return vals
-
-    def _ensureError(self, data):
-        """Check error validity"""
-        vals = data
-
-        if isinstance(data, pg.DataContainer):
-            vals = self.errorValues(data)
-
-        if min(vals) <= 0:
-            print(min(vals), max(vals))
-            pg.critical("All error values need to be larger then 0."
-                        " either give and err argument or fill dataContainer "
-                        " with a valid 'err' ")
-
-        return vals
-
     def estimateError(self, data, errLevel=0.01, absError=None):
         """Estimate data error.
 
@@ -269,6 +243,38 @@ class MethodManager(object):
 
         return ra
 
+    def _ensureData(self, data):
+        """Check data validity"""
+        if data is None:
+            data = self.fw.dataVals
+
+        vals = data
+        if isinstance(data, pg.DataContainer):
+            vals = self.dataValues(data)
+
+        if abs(min(vals)) < 1e-12:
+            print(min(vals), max(vals))
+            pg.critical("There are zero data values.")
+
+        return vals
+
+    def _ensureError(self, err, dataVals=None):
+        """Check error validity"""
+        if err is None:
+            err = self.fw.errorVals
+
+        vals = err
+        if isinstance(err, pg.DataContainer):
+            vals = self.errorValues(err)
+
+        if min(vals) <= 0:
+            print(min(vals), max(vals))
+            pg.critical("All error values need to be larger then 0."
+                        " either give and err argument or fill dataContainer "
+                        " with a valid 'err' ")
+
+        return vals
+
     def invert(self, data=None, err=None, **kwargs):
         """Invert the data.
 
@@ -289,7 +295,7 @@ class MethodManager(object):
             error and force self.estimateError to be called.
         """
         dataVals = self._ensureData(data)
-        errVals = self._ensureError(err, data)
+        errVals = self._ensureError(err, dataVals)
 
         self.fw.run(dataVals, errVals, **kwargs)
         return self.fw.model
@@ -473,7 +479,7 @@ class MeshMethodManager(MethodManager):
         """Called just after the inversion run."""
         pass
 
-    def invert(self, data, mesh=None, zWeight=1.0, startModel=None,
+    def invert(self, data=None, mesh=None, zWeight=1.0, startModel=None,
                **kwargs):
         """Run the full inversion.
 
@@ -499,31 +505,33 @@ class MeshMethodManager(MethodManager):
             Model mapped for match the paraDomain Cell markers. 
             The calculated model is in self.fw.model.
         """
-        if isinstance(data, pg.DataContainer):
-            self.fop.data = data
-        else:
-            pg.critical("setting data array is not yet implemented.")
+        if data is not None:
+            if isinstance(data, pg.DataContainer):
+                self.fop.data = data
+            else:
+                pg.critical("setting data array is not yet implemented.")
         
-        self.fop.setMesh(mesh)
+        if mesh is not None:
+            self.fop.setMesh(mesh)
 
         if self.fop.mesh() is None:
             pg.critical('Please provide a mesh')
         
-        dataVals = self._ensureData(data)
-        errVals = self._ensureError(data)
+        dataVals = self._ensureData(self.fop.data)
+        errVals = self._ensureError(self.fop.data)
 
         if startModel is None:
-            startModel=self.fop.createDefaultStartModel(dataVals)
+            startModel = self.fop.createDefaultStartModel(dataVals)
         
         self.fop.setRegionProperties('*', 
-                                     startModel=startModel,
+                                     startModel=np.median(startModel),
                                      zWeight=zWeight,
                                     )
         
         # Limits is no mesh related argument here or base??
-        limits=kwargs.pop('limits', None)
-
-        self.fop.setRegionProperties('*', limits=limits)
+        limits = kwargs.pop('limits', None)
+        if limits is not None:
+            self.fop.setRegionProperties('*', limits=limits)
 
         self.preRun(**kwargs)
 
@@ -535,6 +543,9 @@ class MeshMethodManager(MethodManager):
 
     def showModel(self, model=None, ax=None, **kwargs):
         """"""
+        if model is None:
+            model = self.fw.model
+
         diam = kwargs.pop('diam', None)
 
         ax, cbar = pg.show(mesh=self.fop.paraDomain,
@@ -548,6 +559,10 @@ class MeshMethodManager(MethodManager):
                                  diam=diam)
 
         return ax, cbar
+        
+    def showResult(self, ax=None, **kwargs):
+        """"""
+        self.showModel(self.fw.model, ax=ax, **kwargs)
 
     def showFit(self, axs=None, **kwargs):
         """Show the last inversion data and response."""

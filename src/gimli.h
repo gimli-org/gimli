@@ -420,12 +420,12 @@ inline std::string type(const std::vector < std::string >  & var) { return "stri
 inline std::string type(const long unsigned int & var) { return "long unsigned int"; }
 #endif
 
-inline std::string type(const RVector  & var)  { return "RVector"; }
+inline std::string type(const RVector  & var) { return "RVector"; }
 inline std::string type(const RVector3 & var) { return "RVector3"; }
 inline std::string type(const R3Vector & var) { return "R3Vector"; }
-inline std::string type(const CVector  & var)  { return "CVector"; }
-inline std::string type(const RMatrix  & var)  { return "RMatrix"; }
-inline std::string type(const CMatrix  & var)  { return "CMatrix"; }
+inline std::string type(const CVector  & var) { return "CVector"; }
+inline std::string type(const RMatrix  & var) { return "RMatrix"; }
+inline std::string type(const CMatrix  & var) { return "CMatrix"; }
 
 inline int       toInt(const std::string & str){ return std::atoi(str.c_str()); }
 inline float   toFloat(const std::string & str){ return (float)std::atof(str.c_str()); }
@@ -569,16 +569,23 @@ private:
 template < typename Classname > class DLLEXPORT Singleton {
 public:
 
-    virtual ~Singleton() { delete pInstance_; pInstance_ = NULL; }
+    virtual ~Singleton() { 
+    #ifndef PYGIMLI_CAST
+        delete pInstance_; pInstance_ = NULL; 
+    #endif
+    }
 
     /*! This call create one instance of the class and return a pointer to it. */
     static Classname * pInstance() {
+    #ifndef PYGIMLI_CAST
         return pInstance_ ? pInstance_ : (pInstance_ = new Classname());
+    #endif
+        return 0;
     }
 
     /*! This call create one instance of the class and return a reference to it. */
     static Classname & instance() {
-        return * pInstance();
+        return *pInstance();
     }
 
 protected:
@@ -589,7 +596,9 @@ private:
     /*! Private so that it can not be called */
 
     /*! Copy constructor is private, so don't use it */
+#ifndef PYGIMLI_CAST
     static Classname * pInstance_;
+#endif
 };
 
 template < typename T > Index hash_(T v){

@@ -9,7 +9,7 @@ import pygimli as pg
 def shotReceiverDistances(data, full=False):
     """Return vector of all distances (in m) between shot and receiver.
     for earch 's' and 'g' in data.
-    
+
     Parameters
     ----------
     data : pg.DataContainerERT
@@ -59,8 +59,12 @@ def createRAData(sensors, shotdistance=1):
     data.registerSensorIndex('g')
 
     if isinstance(sensors, np.ndarray):
-        for x in sensors:
-            data.createSensor([x, 0.0, 0.0])
+        if len(sensors.shape) == 1:
+            for x in sensors:
+                data.createSensor([x, 0.0, 0.0])
+        else:
+            data.setSensorPositions(sensors)
+
     else:
         data.setSensorPositions(sensors)
 
