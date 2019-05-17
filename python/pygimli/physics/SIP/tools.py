@@ -22,10 +22,10 @@ def isComplex(vals):
 def toComplex(amp, phi=None):
     """Convert real values into into complex valued array.
     
-    If no phases phi are given assuming z = amp[0:N] - i amp[N:0].
+    If no phases phi are given assuming z = amp[0:N] + i amp[N:0].
 
     If phi is given in (neg rad) complex values are generated:
-    z = amp (cos(phi) -i sin(phi))
+    z = amp*(cos(phi) + i sin(phi))
 
     Parameters
     ----------
@@ -40,13 +40,13 @@ def toComplex(amp, phi=None):
         Complex values
     """
     if phi is not None:
-        return amp * (np.cos(phi) - 1j *np.sin(phi))
+        return amp * (np.cos(phi) + 1j *np.sin(phi))
     N = len(amp) // 2 
-    return np.array(amp[0:N]) - 1j * np.array(amp[N:])
+    return np.array(amp[0:N]) + 1j * np.array(amp[N:])
     #return np.array(pg.toComplex(amp[0:N], amps[N:]))
 
 def toPolar(z):
-    """Convert complex values array into amplitude and phase in neg. mrad.
+    """Convert complex values array into amplitude and phase in radiant
 
     If z is real valued we assume its squeezed.
 
@@ -58,11 +58,11 @@ def toPolar(z):
     Returns
     -------
     amp, phi: ndarray
-        Amplitude amp and neg. phase angle phi in radiant.
+        Amplitude amp and phase angle phi in radiant.
     
     """
     if isComplex(z):
-        return np.abs(z), - np.angle(z)
+        return np.abs(z), np.angle(z)
     else:
         return toPolar(toComplex(z))
 

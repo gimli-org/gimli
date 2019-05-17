@@ -1053,36 +1053,37 @@ def drawStreamLine_(ax, mesh, c, data, dataMesh=None, linewidth=1.0,
         dx = x[xmid + 1] - x[xmid]
         dy = y[ymid + 1] - y[ymid]
         c = mesh.findCell([x[xmid], y[ymid]])
-        # dLength = c.center().dist(c.node(0).pos()) / 4.  # NOT USED
-
+        
         if v[xmid] > dropTol:
-            # ax.arrow(x[xmid], y[ymid], dx, dy,
-            #          #width=dLength / 3.,
-            #          width=0,
-            #          head_width=0.01,
-            #          head_length=0.02
-            #         #  head_width=dLength / 3.,
-            #         #  head_length=dLength / 3.,
-            #          head_starts_at_zero=True,
-            #          length_includes_head=False,
-            #          lw=4,
-            #          ls=None,
-            #          **kwargs)
 
-            dx90 = -dy
-            dy90 = dx
-            aLen = 3
-            aWid = 1
-            xy = list(zip([x[xmid] + dx90*aWid, x[xmid] + dx*aLen,
-                           x[xmid] - dx90*aWid],
-                          [y[ymid] + dy90*aWid, y[ymid] + dy*aLen,
-                           y[ymid] - dy90*aWid]))
+            absArrowSize = True
+            if absArrowSize:
+                markerSize = kwargs.pop('size', 12)
+                ax.annotate('',
+                    xytext=(x[xmid]-dx, y[ymid]-dy),
+                    xy=(x[xmid], y[ymid]),
+                    arrowprops=dict(arrowstyle="-|>", color='black'),
+                    size=markerSize, **kwargs,
+                )
+            else:
+                ax.arrow(x[xmid], y[ymid], dx, dy, 
+                        shape='full', lw=0, 
+                        length_includes_head=True, 
+                        fc='black', 
+                        head_width=.35, **kwargs)
 
-            arrow = mpl.patches.Polygon(xy, ls=None, lw=0, closed=True,
-                                        **kwargs)
-            # arrow = mpl.collections.PolyCollection(xy, lines=None,
-            #                                        closed=True, **kwargs)
-            ax.add_patch(arrow)
+            # dx90 = -dy
+            # dy90 = dx
+            # aLen = 3
+            # aWid = 1
+            # xy = list(zip([x[xmid] + dx90*aWid, x[xmid] + dx*aLen,
+            #                x[xmid] - dx90*aWid],
+            #               [y[ymid] + dy90*aWid, y[ymid] + dy*aLen,
+            #                y[ymid] - dy90*aWid]))
+
+            # arrow = mpl.patches.Polygon(xy, ls=None, lw=0, closed=True,
+            #                             **kwargs)
+            #ax.add_patch(arrow)
 
     return lines
 

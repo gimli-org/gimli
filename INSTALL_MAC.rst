@@ -56,7 +56,7 @@ directory.
 
     # The version (here 3.6.4_2) needs to be set to the installed python3 version
 
-    cmake ../gimli -DPYTHON_EXECUTABLE="/usr/local/bin/python3" -DPYTHON_INCLUDE_DIR=”/usr/local/Cellar/python3/3.6.4_2/Frameworks/Python.framework/Versions/3.6/include/python3.6m” -DPYTHON_LIBRARY="/usr/local/Cellar/python3/3.6.4_2/Frameworks/Python.framework/Versions/3.6/lib/libpython3.6.dylib" -DPY_NUMPY="/usr/local/lib/python3.6/site-packages/numpy”
+    cmake ../gimli -DPYTHON_EXECUTABLE=/usr/local/bin/python3 -DPYTHON_INCLUDE_DIR=/usr/local/Cellar/python3/3.6.4_2/Frameworks/Python.framework/Versions/3.6/include/python3.6m -DPYTHON_LIBRARY=/usr/local/Cellar/python3/3.6.4_2/Frameworks/Python.framework/Versions/3.6/lib/libpython3.6.dylib -DPY_NUMPY=/usr/local/lib/python3.6/site-packages/numpy
 
     # This was needed for the compilation of some c++ stuff
     export CPLUS_INCLUDE_PATH=/usr/local/Cellar/python3/3.6.4_2/Frameworks/Python.framework/Versions/3.6/Headers

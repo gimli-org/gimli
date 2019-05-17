@@ -23,7 +23,15 @@ from pygimli.frameworks import Modelling
 
 
 class SpectrumModelling(Modelling):
-    """Modelling framework with an array of freqencies as data space."""
+    """Modelling framework with an array of freqencies as data space.
+    
+    Attributes
+    ----------
+    params: dict
+    function: callable
+    complex: bool
+
+    """
     def __init__(self, funct, **kwargs):
         self._function = None
         self._complex = False
@@ -53,10 +61,8 @@ class SpectrumModelling(Modelling):
         if self._freqs is None:
             pg.critical("No frequencies defined.")
         return self._freqs
-
     @freqs.setter
     def freqs(self, f):
-        pg._g(f)
         self._freqs = f
 
     def createDefaultStartModel(self, dataVals=None):
@@ -230,7 +236,7 @@ class SpectrumManager(MethodManager):
         self.fop.drawData(ax, self.fw.dataVals, label='data')
         self.fop.drawData(ax, self.fw.response, label='response')
 
-        
+        return ax
 
 
 
