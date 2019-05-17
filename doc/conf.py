@@ -131,11 +131,11 @@ try:
                                 "%matplotlib inline")
         }
 
-    vista = optImport("vista", "building the gallery with 3D visualizations")
-    if vista:
-        vista.OFF_SCREEN = True
-        vista.rcParams['window_size'] = np.array([1024, 768]) * 2
-        sphinx_gallery_conf["image_scrapers"] = (vista.Scraper(), 'matplotlib')
+    pyvista = optImport("pyvista", "building the gallery with 3D visualizations")
+    if pyvista:
+        pyvista.OFF_SCREEN = True
+        pyvista.rcParams['window_size'] = np.array([1024, 768]) * 2
+        sphinx_gallery_conf["image_scrapers"] = (pyvista.Scraper(), 'matplotlib')
 
 except ImportError:
     err = """

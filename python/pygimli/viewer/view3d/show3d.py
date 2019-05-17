@@ -24,7 +24,7 @@ from PyQt5.QtWidgets import (
     QMainWindow, QFrame, QVBoxLayout, QToolBar, QComboBox, QPushButton,
     QFileDialog, QLineEdit, QWidget, QHBoxLayout, QSlider
 )
-vista = pg.optImport('vista', requiredFor="proper visualization in 3D")
+pyvista = pg.optImport('pyvista', requiredFor="proper visualization in 3D")
 
 
 # predefined color maps
@@ -60,10 +60,10 @@ class Show3D(QMainWindow):
         vlayout = QVBoxLayout()
         vlayout.setContentsMargins(0, 0, 0, 0)
 
-        # add the vista interactor object
-        self.vista_widget = vista.QtInteractor(self.frame)
+        # add the pyvista interactor object
+        self.pyvista_widget = pyvista.QtInteractor(self.frame)
 
-        vlayout.addWidget(self.vista_widget)
+        vlayout.addWidget(self.pyvista_widget)
 
         self.frame.setLayout(vlayout)
         self.setupToolBar()
@@ -79,15 +79,15 @@ class Show3D(QMainWindow):
 
         Parameter
         ---------
-        mesh: vista.pointset.UnstructuredGrid
-            The grid as it was read by vista in vistaview.
+        mesh: pyvista.pointset.UnstructuredGrid
+            The grid as it was read by pyvista in vistaview.
         cMap: str
             The MPL colormap that should be used to display parameters.
         """
         self.mesh = mesh
-        self.vista_widget.add_mesh(self.mesh, cmap=cMap)
-        self.vista_widget.show_bounds()
-        self.vista_widget.reset_camera()
+        self.pyvista_widget.add_mesh(self.mesh, cmap=cMap)
+        self.pyvista_widget.show_bounds()
+        self.pyvista_widget.reset_camera()
 
         # set the correctly chosen colormap
         if cMap.endswith('_r'):
@@ -182,13 +182,13 @@ class Show3D(QMainWindow):
 
             # multiBlock = self.mesh.slice_orthogonal(x=-0.05, y=-0.05, z=-0.05)
             # multiBlock.plot()
-            # mesh = vista.read(multiBlock)
-            # self.vista_widget.plot(multiBlock, cmap=cMap)
+            # mesh = pyvista.read(multiBlock)
+            # self.pyvista_widget.plot(multiBlock, cmap=cMap)
             # print(mesh)
         # else:
         mesh = self.mesh
-        # print(dir(self.vista_widget))
-        self.vista_widget.add_mesh(mesh, cmap=cMap)
+        # print(dir(self.pyvista_widget))
+        self.pyvista_widget.add_mesh(mesh, cmap=cMap)
         self.updateScalarBar()
 
     def updateScalarBar(self):
@@ -211,8 +211,8 @@ class Show3D(QMainWindow):
                 self.extrema[param]['user']['max'] = str(cmax)
 
                 # actually update the range
-                self.vista_widget.update_scalar_bar_range([cmin, cmax], name=param)
-        self.vista_widget.update()
+                self.pyvista_widget.update_scalar_bar_range([cmin, cmax], name=param)
+        self.pyvista_widget.update()
 
     def _checkDecimalPoint(self):
         self.toolbar.le_cmin.setText(self.toolbar.le_cmin.text().replace(',', '.'))
@@ -220,7 +220,7 @@ class Show3D(QMainWindow):
 
     def toggleBbox(self):
         checked = not self.toolbar.btn_bbox.isChecked()
-        self.vista_widget.show_grid(
+        self.pyvista_widget.show_grid(
             show_xaxis=checked,
             show_yaxis=checked,
             show_zaxis=checked,
@@ -228,7 +228,7 @@ class Show3D(QMainWindow):
             show_ylabels=checked,
             show_zlabels=checked
         )
-        self.vista_widget.update()
+        self.pyvista_widget.update()
 
     def takeScreenShot(self):
         fname = QFileDialog.getSaveFileName(
@@ -237,7 +237,7 @@ class Show3D(QMainWindow):
         if fname:
             if not len(fname.split('.')) == 2:
                 fname += '.png'
-            self.vista_widget.screenshot(fname)
+            self.pyvista_widget.screenshot(fname)
 
     def exportMesh(self):
         f = QFileDialog.getSaveFileName(
