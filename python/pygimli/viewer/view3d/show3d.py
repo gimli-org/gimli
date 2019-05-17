@@ -80,7 +80,7 @@ class Show3D(QMainWindow):
         Parameter
         ---------
         mesh: vista.pointset.UnstructuredGrid
-            The grid as it was read by vista in vtkiview.
+            The grid as it was read by vista in vistaview.
         cMap: str
             The MPL colormap that should be used to display parameters.
         """

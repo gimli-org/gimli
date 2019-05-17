@@ -98,7 +98,7 @@ def show(mesh=None, data=None, **kwargs):
             return showMesh(mesh, data, **kwargs)
         elif mesh.dim() == 3:
 
-            from .vtkiview import showMesh3D
+            from .vistaview import showMesh3D
 
             return showMesh3D(mesh, data, **kwargs)
         else:
