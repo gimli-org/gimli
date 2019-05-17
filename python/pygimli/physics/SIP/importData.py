@@ -263,6 +263,8 @@ def readSIP256file(resfile, verbose=False):
     --------
         header, DATA, AB, RU = readSIP256file('myfile.res', True)
     """
+    v = pg.VerboseScope(verbose)
+
     activeBlock = ''
     header = {}
     LINE = []
@@ -278,7 +280,7 @@ def readSIP256file(resfile, verbose=False):
         elif len(line):
             if line[0] == '[':
                 token = line[1:line.rfind(']')].replace(' ', '_')
-                # handle 256D software bug
+                # handle early 256D software bug
                 if 'FrequencyParameterBegin' in token:
                     token = token.replace('FrequencyParameterBegin',
                                             'Begin_FrequencyParameter')
@@ -304,7 +306,11 @@ def readSIP256file(resfile, verbose=False):
                         if '.' in value:
                             num = float(value)
                         else:
-                            num = int(value)
+                            try:
+                                num = int(value)
+                            except:
+                                num = 0
+                                pass
                         header[token] = num
                     except BaseException as e:
                         # maybe beginning or end of a block
@@ -329,8 +335,7 @@ def readSIP256file(resfile, verbose=False):
             if rdno > 1 and dReading:
                 dReading.append(np.array(dFreq))
                 DATA.append(dReading)
-                if verbose:
-                    print('Reading {0}:{1} RUs'.format(rdno - 1, len(dReading)))
+                pg.verbose('Reading {0}:{1} RUs'.format(rdno-1, len(dReading)))
                 dReading, dFreq = [], []
         elif line.find('Remote Unit') == 0:
             ru.append(int(sline[2]))
@@ -354,14 +359,10 @@ def readSIP256file(resfile, verbose=False):
                     sline = sline[:c] + [part1] + [part2] + sline[c + 1:]
             
             dFreq.append(np.array(sline[:8], dtype=float))
-            # print(dFreq)
-            # exit()
 
     dReading.append(np.array(dFreq))
     DATA.append(dReading)
-    if verbose:
-        print('Reading {0}:{1} RUs'.format(rdno - 1, len(dReading)))
-
+    pg.verbose('Reading {0}:{1} RUs'.format(rdno, len(dReading)))
     return header, DATA, AB, RU
 
 

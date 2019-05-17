@@ -131,6 +131,19 @@ logger.verbose = __logVerbose
 
 __verbose_level__ = 0
 
+class VerboseScope(object):
+    def __init__(self, verb):
+        self._oldState = __verbose_level__
+        self._state = verb
+        setVerbose(self._state)
+    def __del__(self):
+        setVerbose(self._oldState)
+    def __bool__(self):
+        if self._state == 1:
+            return True
+        else:
+            return False
+
 def setVerbose(v):
     level = logging.INFO
     if v:
