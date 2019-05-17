@@ -117,5 +117,5 @@ def showMesh3DVista(mesh, data=None, **kwargs):
         if data is not None:
             plotter.mesh.set_active_scalar(label)
         if not hold:
-            plotter.plot()
+            plotter.show()
         return plotter
