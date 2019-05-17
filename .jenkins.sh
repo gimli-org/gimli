@@ -76,7 +76,7 @@ OMP_THREAD_LIMIT=1 python -c "import pygimli; pygimli.test(show=False, abort=Tru
 # Setup for 3D visualizations
 # ------------------------------------------------
 export DISPLAY=:99.0
-export VISTA_OFF_SCREEN=True
+export PYVISTA_OFF_SCREEN=True
 # ------------------------------------------------
 export PUBLISH="True" # for correct PATH settings in sidebar gallery
 export PATH=`pwd`/../trunk/python/apps:$PATH
