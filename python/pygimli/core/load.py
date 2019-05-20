@@ -199,9 +199,10 @@ def getExampleFile(path, cacheName=True):
         pg.info("File allready exists:", fileName)
     return fileName
 
-@cache
-def getExampleData(path, type=None):
-    """Get data from example repository."""
-    url = getExampleFile(path)
-    dat = load(url, realName=path)
-    return dat
+# maybe better move this in getExampleFile
+# @cache
+# def getExampleData(path, type=None):
+#     """Get data from example repository."""
+#     url = getExampleFile(path)
+#     dat = load(url, realName=path)
+#     return dat

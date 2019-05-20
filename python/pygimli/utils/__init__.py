@@ -3,12 +3,15 @@
 Useful utility functions.
 """
 
-from .base import rmsWithErr as rmswitherr
-# backward compatibility
-from .base import (createDateTimeString, createfolders, createResultFolder,
+from .base import (rms, rmsWithErr, nanrms, createDateTimeString, 
+                   createfolders, #remove me Nameing convention
+                   createFolders, createResultFolder,
                    getSavePath, gmat2numpy, interperc, interpExtrap, inthist,
-                   nanrms, num2str, numpy2gmat, rms, rndig, saveResult)
-from .cache import cache
+                   num2str, numpy2gmat, rndig, saveResult)
+
+# compatibility for fw_cleaning
+from .base import rmsWithErr as rmswitherr
+
 from .geostatistics import (computeInverseRootMatrix, covarianceMatrix,
                             generateGeostatisticalModel)
 from .gps import GKtoUTM, findUTMZone, getProjection, getUTMProjection, readGPX

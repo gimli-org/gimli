@@ -52,9 +52,9 @@ LMultRMatrix = MultLeftMatrix  # alias for backward compatibility
 class MultRightMatrix(MultMatrix):
     """Some Matrix, multiplied with a right hand side vector r."""
 
-    def __init__(self, A, r=None):
+    def __init__(self, A, r=None, verbose=False):
         super(MultRightMatrix, self).__init__(A, verbose)
-        
+
         if r is None:
             self._r = pg.RVector(self.cols(), 1.0)
         else:

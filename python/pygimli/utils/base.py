@@ -29,12 +29,16 @@ def nanrms(v, axis=None):
     ### abs for complex values
     return np.sqrt(np.nanmean(np.abs(v)**2, axis))
 
+
 def rmsWithErr(a, b, err, errtol=1):
     """Compute (abs-)root mean square of values with error above a threshold"""
     fi = pg.find(err < errtol)
     return rms(a[fi] - b[fi])
+
+
 # fc_cleaning compatibilty to bert
 rmswitherr = rmsWithErr
+
 
 def rrmsWithErr(a, b, err, errtol=1):
     """Compute root mean square of values with error above a threshold"""
@@ -126,14 +130,14 @@ def getSavePath(folder=None, subfolder='', now=None):
     if folder is None:
         path = createResultFolder(subfolder, now)
     else:
-        path = createfolders([folder, subfolder])
+        path = createFolders([folder, subfolder])
     return path
 
 
 def createResultFolder(subfolder, now=None):
     """Create a result Folder."""
     result = createDateTimeString(now)
-    return createfolders(['./', result, subfolder])
+    return createFolders(['./', result, subfolder])
 
 
 def createDateTimeString(now=None):
@@ -147,6 +151,10 @@ def createDateTimeString(now=None):
 
 
 def createfolders(foldername_list):
+    pg.deprecated("use createFolders") #190520
+    return createFolders(foldername_list)
+    
+def createFolders(foldername_list):
     """Create the folder structure specified by the list."""
     path = ''
 

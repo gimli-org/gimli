@@ -36,7 +36,7 @@ _pygimli_.load = None
 from pygimli.utils import boxprint, cache
 
 from .load import (load, optImport, opt_import, getConfigPath, 
-                  getExampleFile, getExampleData)
+                   getExampleFile)
 
 from pygimli.viewer import show, plt, wait
 from pygimli.solver import solve
