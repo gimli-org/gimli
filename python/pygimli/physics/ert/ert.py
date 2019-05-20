@@ -754,6 +754,36 @@ class ERTManager(MeshMethodManager):
     #         pg.critical("Ensure apparent resistivity values are larger then 0.")
     #     return vals
 
+    # def invert(self, data=None, **kwargs):
+    #     """Invert data.
+
+    #     Parameters
+    #     ----------
+    #     data : pg.DataContainerERT()
+    #         Data container with at least SensorIndieces 'a b m n' and
+    #         data values 'rhoa' (apparent resistivities) and 'err'
+    #         (relative error in %/100)
+
+    #     """
+    #     if isinstance(data, pg.DataContainer):
+    #         self.fop.data = data
+
+    #     if 'mesh' in kwargs:
+    #         self.fop.setMesh(kwargs.pop('mesh'))
+
+    #     dataVals = self._ensureData(data)
+    #     errVals = self._ensureError(data)
+
+    #     startModel = kwargs.pop('startModel', pg.median(dataVals))
+    #     self.fop.setRegionProperties('*', startModel=startModel)
+
+    #     model = self.fw.run(dataVals, errVals, **kwargs)
+
+    #     return model
+
+        # return super(ERTManager, self).invert(data=data,
+        #                                       **kwargs)
+
     def coverage(self):
         """Return coverage vector considering the logarithmic transformation.
         """
