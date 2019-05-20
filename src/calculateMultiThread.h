@@ -57,6 +57,7 @@ protected:
 };
 
 template < class T > void distributeCalc(T calc, uint nCalcs, uint nThreads, bool verbose=false){
+    log(Debug, "Create distributed calculation of " + str(nCalcs) + " jobs on " + str(nThreads) + " threads.");
     if (nThreads == 1){
         calc.setRange(0, nCalcs);
         calc();
@@ -67,9 +68,8 @@ template < class T > void distributeCalc(T calc, uint nCalcs, uint nThreads, boo
         for (uint i = 0; i < nThreads; i ++){
             calcObjs.push_back(calc);
             Index start = singleCalcCount * i;
-            Index end   = singleCalcCount * (i + 1);
-            if (i == nThreads -1) end = nCalcs;
-            log(Debug, "Threaded calculation: " + str(i) + ": " + str(start)  +" " + str(end));
+            Index end   = min(singleCalcCount * (i + 1), nCalcs);
+            log(Debug, "Threaded calculation: #" + str(i) + ": " + str(start)  +" " + str(end));
             calcObjs.back().setRange(start, end, i);
             if (end >= nCalcs) break;
         }
