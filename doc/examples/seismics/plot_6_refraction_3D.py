@@ -17,6 +17,8 @@ medium.
 import numpy as np
 import pygimli as pg
 import pygimli.meshtools as mt
+from pygimli.physics import traveltime
+
 pyvista = pg.optImport("pyvista")
 
 ################################################################################
@@ -51,7 +53,7 @@ if pyvista:
 ################################################################################
 # Set-up data container.
 
-data = pg.physics.traveltime.createRAData(sensors)
+data = traveltime.createRAData(sensors)
 data.markInvalid(data("s") > 1)
 data.set("t", np.zeros(data.size()))
 data.removeInvalid()
