@@ -1433,7 +1433,7 @@ def solve(mesh, **kwargs):
     return solveFiniteElements(mesh, **kwargs)
 
 
-def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
+def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
                         times=None, userData=None,
                         verbose=False, **kwargs):
     r"""Solve partial differential equation with Finite Elements.
@@ -1464,19 +1464,15 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
 
     Parameters
     ----------
-    mesh : :gimliapi:`GIMLI::Mesh`
+    mesh: :gimliapi:`GIMLI::Mesh`
         Mesh represents spatial discretization of the calculation domain
-
-    a   : value | array | callable(cell, userData)
+    a: value | array | callable(cell, userData)
         Cell values
-
-    b   : value | array | callable(cell, userData)
-        Cell values
-
-    f : value | array(cells) | array(nodes) | callable(args, kwargs)
+    b: value | array | callable(cell, userData) [None]
+        Cell values. None means the termin is unused.
+    f: value | array(cells) | array(nodes) | callable(args, kwargs)
         force values
-
-    bc : dict()
+    bc: dict()
         Dictionary of boundary conditions.
         Current supported boundary conditions are by dictionary keys:
         'Dirichlet', 'Neumann', 'Robin'.
@@ -1488,47 +1484,32 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
         indices can by be given. e.g., bc={'Node': [nodeID, value]}.
         Note this is only a shortcut for
         bc={'Dirichlet': [mesh.node(nodeID), value]}.
-
-    times : array [None]
+    times: array [None]
         Solve as time dependent problem for the given times.
-
-    **kwargs:
-
-        u0 : value | array | callable(pos, userData)
+    
+    Other Parameters
+    ----------------
+    **kwargs
+        u0: value | array | callable(pos, userData)
             Node values
-
-        uB : value | array | callable(pos, userData)
-            DEPRECATED use bc={'Dirichlet' | uB}
-
-        uN : list([node, value])
-            DEPRECATED use bc={'Node' | uN}
-
-        duB : value | array | callable(pos, userData)
-            DEPRECATED use bc={'Neumann' | duB}
-
-        theta : float [1]
+        theta: float [1]
             - :math:`theta = 0` means explicit Euler, maybe stable for
             :math:`\Delta t \quad\text{near}\quad h`
             - :math:`theta = 0.5`, Crank-Nicolsen, maybe instable
             - :math:`theta = 1`, implicit Euler
 
             If unsure choose :math:`\theta = 0.5 + \epsilon`, which is probably stable.
-
-        stats : bool
+        stats: bool
             Give some statistics.
-
-        progress : bool
+        progress: bool
             Give some calculation progress.
-
-        assembleOnly : bool
+        assembleOnly: bool
             Stops after matrix asssemblation. 
             Returns the system matrix A and the rhs vector. 
-
-        ws : dict
+        ws: dict
             The WorkSpace is a dictionary that will get
             some temporary data during the calculation.
             Any keyvalue 'u' in the dictionary will be used for the resulting array.
-
     Returns
     -------
     u : array
@@ -1588,8 +1569,9 @@ def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
     M = None
     A = None
 
-    if b != 0:
-        b = parseArgToArray(b, nDof=mesh.cellCount(), mesh=mesh, userData=userData)
+    if b is not None:
+        b = parseArgToArray(b, nDof=mesh.cellCount(), 
+                            mesh=mesh, userData=userData)
         M = createMassMatrix(mesh, b)
         #pg.warn("checkme")
         A = S - M 
