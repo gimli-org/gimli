@@ -1032,9 +1032,9 @@ void DCMultiElectrodeModelling::searchElectrodes_(){
 
         if (kValues_.empty() || weights_.empty()){
             if (dataContainer_){
-                initKWaveList(*mesh_, kValues_, weights_, dataContainer_->sensorPositions(), false);
+                initKWaveList(*mesh_, kValues_, weights_, dataContainer_->sensorPositions(), verbose_);
             } else {
-                initKWaveList(*mesh_, kValues_, weights_, false);
+                initKWaveList(*mesh_, kValues_, weights_, verbose_);
             }
         }
     } else {

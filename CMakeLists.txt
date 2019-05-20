@@ -29,12 +29,16 @@ endif()
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 
-    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -pipe -ansi -Wall -Wno-long-long -Wno-unused-result -Wno-unused-variable")
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-unused-value -Wno-strict-aliasing -Wno-unused-local-typedefs")
+    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -pipe -ansi -Wall -Wno-long-long -Wno-unused-result")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-unused-variable")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-unused-value")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-unused-local-typedefs")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-strict-aliasing")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-int-in-bool-context")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-class-memaccess")
-
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O3 -ansi -pedantic -fno-omit-frame-pointer -Wall")
+    add_definitions(-std=c++11)
+    
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -p -O2 -std=c++11 -g -ansi -pedantic -fno-omit-frame-pointer -Wall")
 
     if (WIN32 OR CONDA_BUILD)
         set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-deprecated-declarations -Wno-class-memaccess")
@@ -48,16 +52,6 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" ST
     endif()
 
     set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Os")
-#     if (NOT WIN32)
-#         add_definitions(-std=c++0x)
-    add_definitions(-std=c++11)
-    
-    # add_definitions(-std=gnu++0x)
-    # -Wl,--no-undefined
-    # set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Os -static-libgcc -Wl,-O2 -Wl,--as-needed -Wl,--sort-common")
-    # set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Os -static-libgcc")
-    # set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Os -Wl,--no-undefined -static-libgcc -Wl,-O2 -Wl,--as-needed -Wl,--sort-common")
-    # set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "${CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS} -lbfd")
 
     if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
         set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-overloaded-virtual")
@@ -97,10 +91,10 @@ else()
     set(LIBGIMLI_VERSION "untaged")
 endif()
 
-set( PACKAGE_NAME  \"${PROJECT_NAME}\" )
-set( PACKAGE_VERSION  \"${LIBGIMLI_VERSION}\" )
-set( PACKAGE_BUGREPORT  \"carsten@pygimli.org\")
-set( PACKAGE_AUTHORS  \"carsten@pygimli.org thomas@pygimli.org florian@pygimli.org\")
+set(PACKAGE_NAME  \"${PROJECT_NAME}\" )
+set(PACKAGE_VERSION  \"${LIBGIMLI_VERSION}\" )
+set(PACKAGE_BUGREPORT  \"carsten@pygimli.org\")
+set(PACKAGE_AUTHORS  \"carsten@pygimli.org thomas@pygimli.org florian@pygimli.org\")
 
 ################################################################################
 # Check for libs and other packages we might use.
@@ -290,57 +284,73 @@ endif()
 find_package(PythonLibs)
 find_python_module(numpy)
 
+################################################################################
+# Manuall check for boost python
+################################################################################
+function(find_boost_python_manual bp_version)
+    message(STATUS " ... searching for libboost_python${bp_version}") 
+    find_package(Boost 1.46 COMPONENTS "python${bp_version}")
+    if (${Boost_PYTHON${bp_version}_FOUND})
+        set(Boost_PYTHON_FOUND 
+            ${Boost_PYTHON${bp_version}_FOUND} PARENT_SCOPE)
+        set(Boost_PYTHON_LIBRARY 
+            ${Boost_PYTHON${bp_version}_LIBRARY_RELEASE} PARENT_SCOPE)
+        message(STATUS " ... found: ${Boost_PYTHON_LIBRARY}") 
+    else()
+        message(STATUS " ... not found.") 
+    endif()
+endfunction()
+
 if (Boost_PYTHON_LIBRARY)
     #set (Boost_PYTHON_LIBRARY ${Boost_PYTHON_LIBRARY})
 else()
-    message(STATUS "searching for boost-python ...")
+    message(STATUS "boost-python not found by cmake find ... trying to determine boost-python now again ...")
     if (WIN32)
         set(bp_version "${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}-mt")
         find_package(Boost 1.46.0 COMPONENTS  "python${bp_version}")
         if (NOT Boost_PYTHON_FOUND)
             set(BOOST_FOUND TRUE)
             set(Boost_PYTHON_FOUND TRUE})
-            set(Boost_PYTHON_LIBRARY ${BOOST_ROOT}/lib/libboost_python${bp_version}.dll)
+            set(Boost_PYTHON_LIBRARY 
+                    ${BOOST_ROOT}/lib/libboost_python${bp_version}.dll)
         endif()
-        
     endif()
-
+    
     # the name for py3 boost-python library lacks probably py3 suffix, which is different for different OS
-
-    #debian /usr/lib/x86_64-linux-gnu/libboost_python-py34.so
-    set(bp_version "${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}")
-    find_package(Boost 1.46 COMPONENTS "python-py${bp_version}")
-    if (${Boost_PYTHON-PY${bp_version}_FOUND})
-        set(Boost_PYTHON_FOUND ${Boost_PYTHON-PY${bp_version}_FOUND})
-        set(Boost_PYTHON_LIBRARY ${Boost_PYTHON-PY${bp_version}_LIBRARY_RELEASE})
-    endif()
+    set (Boost_PYTHON_FOUND False)
+    set (Boost_PYTHON_LIBRARY "None")
+    message(STATUS "***** ${Boost_PYTHON_FOUND}, ${Boost_PYTHON_LIBRARY}")
 
     if (NOT Boost_PYTHON_FOUND)
-        # arch style /usr/lib/libboost_python3.so.1.64.0
+        #/usr/lib/x86_64-linux-gnu/libboost_python-py34.so (debian)
+        set(bp_version "-py${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}")
+        find_boost_python_manual(${bp_version})
+    endif()
+    if (NOT Boost_PYTHON_FOUND)
+        # /usr/lib/libboost_python3.so.1.64.0 (arch style)
         set(bp_version "${PYTHON_VERSION_MAJOR}")
-        find_package(Boost 1.46 COMPONENTS "python${bp_version}")
-        if (${Boost_PYTHON${bp_version}_FOUND})
-            set(Boost_PYTHON_FOUND ${Boost_PYTHON${bp_version}_FOUND})
-            set(Boost_PYTHON_LIBRARY ${Boost_PYTHON${bp_version}_LIBRARY_RELEASE})
-        endif()
+        find_boost_python_manual(${bp_version})
+    endif()
+    if (NOT Boost_PYTHON_FOUND)
+        # /usr/lib/libboost_python-3.4.so (gentoo <boost-1.70)
+        set(bp_version "-${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}")
+        find_boost_python_manual(${bp_version})
+    endif()
+    if (NOT Boost_PYTHON_FOUND)
+        # /usr/lib/libboost_python37.so # gentoo >=boost-1.70) 
+        set(bp_version "${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}")
+        find_boost_python_manual(${bp_version})
+    endif()
+        
+    if (Boost_PYTHON_FOUND)
+        message(STATUS "found: ${Boost_PYTHON_FOUND}: ${Boost_PYTHON_LIBRARY}")
+    else()
+        message(STATUS "Sorry but no boost-python found. Please search for "
+                       "any libboost_python* on your system and "
+                       "provide it to the authors so we can try to fix "
+                       "this here.")
     endif()
 
-    if (NOT Boost_PYTHON_FOUND)
-        # gentoo: /usr/lib/libboost_python-3.4.so
-        # should find the right one
-        find_package(Boost 1.46 COMPONENTS python)
-    endif()
-
-    if (NOT Boost_PYTHON_FOUND)
-        # gentoo: /usr/lib/libboost_python-3.4.so
-        set(bp_version "${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}")
-        # should find the right one
-        find_package(Boost 1.46 COMPONENTS "python-${bp_version}")
-        if (${Boost_PYTHON-${bp_version}_FOUND})
-            set(Boost_PYTHON_FOUND ${Boost_PYTHON-${bp_version}_FOUND})
-            set(Boost_PYTHON_LIBRARY ${Boost_PYTHON-${bp_version}_LIBRARY_RELEASE})
-        endif()
-    endif()
 endif()
 
 if (NOT CASTER)
@@ -440,8 +450,8 @@ message(STATUS "UMFPACK_LIBRARIES  :${UMFPACK_LIBRARIES}")
 message(STATUS "TRIANGLE_FOUND     :${TRIANGLE_FOUND}    Triangle_LIBRARIES: ${Triangle_LIBRARIES}")
 message(STATUS "PYTHON_FOUND       :${PYTHON_FOUND}    PYTHON_EXECUTABLE: ${PYTHON_EXECUTABLE}" )
 message(STATUS "PYTHONLIBS_FOUND   :${PYTHONLIBS_FOUND}    PYTHON_LIBRARY: ${PYTHON_LIBRARY}" )
-message(STATUS "PYTHON_INCLUDE_DIR :${PYTHON_INCLUDE_DIR} ${PYTHON_INCLUDE}" )
-message(STATUS "Boost_INCLUDE_DIR  :${Boost_INCLUDE_DIR}")
+message(STATUS "PYTHON_INCLUDE_DIR :        ${PYTHON_INCLUDE_DIR} ${PYTHON_INCLUDE}" )
+message(STATUS "Boost_INCLUDE_DIR  :        ${Boost_INCLUDE_DIR}")
 message(STATUS "Boost_PYTHON_FOUND :${Boost_PYTHON_FOUND}    Boost_PYTHON_LIBRARY: ${Boost_PYTHON_LIBRARY}" )
 message(STATUS "numpy_FOUND        :${numpy_FOUND}    PY_NUMPY: ${PY_NUMPY}" )
 message(STATUS "CASTER_FOUND       :${CASTER_FOUND}    Caster: ${CASTER_EXECUTABLE}")
@@ -479,7 +489,6 @@ endif ()
 
 configure_file("${PROJECT_SOURCE_DIR}/config.cmake.h.in" "${PROJECT_BINARY_DIR}/config.cmake.h" )
 add_definitions(-DHAVE_CONFIG_CMAKE_H)
-
 
 
 add_custom_target(removedoc

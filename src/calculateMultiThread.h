@@ -55,7 +55,6 @@ protected:
     Index end_;
     Index threadNumber_;
 };
-
 template < class T > void distributeCalc(T calc, uint nCalcs, uint nThreads, bool verbose=false){
     log(Debug, "Create distributed calculation of " + str(nCalcs) + " jobs on " + str(nThreads) + " threads.");
     if (nThreads == 1){
