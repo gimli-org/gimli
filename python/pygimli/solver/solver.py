@@ -1433,7 +1433,7 @@ def solve(mesh, **kwargs):
     return solveFiniteElements(mesh, **kwargs)
 
 
-def solveFiniteElements(mesh, a=1.0, b=0.0, f=0.0, bc=None,
+def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
                         times=None, userData=None,
                         verbose=False, **kwargs):
     r"""Solve partial differential equation with Finite Elements.
