@@ -17,8 +17,9 @@ def createMesh(poly, quality=32, area=0.0, smooth=None, switches=None,
     The geometry needs to contain nodes and boundaries and should be valid
     in the sense that the boundaries are non intersecting.
 
-    If poly is a list of coordinates a simple Delaunay mesh of the convex hull
-    will be created.
+    If poly is a list of coordinates, a simple Delaunay mesh of the convex hull
+    will be created. Quality and area arguments are ignored for this case to 
+    create mesh with one node for each coordinate position. 
     
     Parameters
     ----------

@@ -1061,7 +1061,10 @@ Node * Mesh::createRefinementNode_(Node * n0, Node * n1, std::map< std::pair < I
 }
 
 void Mesh::createRefined_(const Mesh & mesh, bool p2, bool h2){
-
+    if (this == &mesh) {
+        log(Error, WHERE_AM_I, "This mesh and the given mesh need to be different instances.");
+        return;
+    }
     this->clear();
 
     std::map< std::pair < Index, Index >, Node * > nodeMatrix;
@@ -1693,6 +1696,10 @@ void Mesh::create3DGrid(const RVector & x, const RVector & y, const RVector & z,
 }
 
 void Mesh::createMeshByBoundaries(const Mesh & mesh, const std::vector < Boundary * > & bounds){
+    if (this == &mesh) {
+        log(Error, WHERE_AM_I, "This mesh and the given mesh need to be different instances.");
+        return;
+    }
     this->clear();
     this->setDimension(mesh.dim());
 
@@ -1722,6 +1729,10 @@ void Mesh::createMeshByBoundaries(const Mesh & mesh, const std::vector < Boundar
 }
 
 void Mesh::createMeshByCells(const Mesh & mesh, const std::vector < Cell * > & cells){
+    if (this == &mesh) {
+        log(Error, WHERE_AM_I, "This mesh and the given mesh need to be different instances.");
+        return;
+    }
     this->clear();
     this->setDimension(mesh.dim());
 
@@ -1801,6 +1812,10 @@ void Mesh::createMeshByCells(const Mesh & mesh, const std::vector < Cell * > & c
 
 
 void Mesh::createMeshByCellIdx(const Mesh & mesh, const IndexArray & idxListIn){
+    if (this == &mesh) {
+        log(Error, WHERE_AM_I, "This mesh and the given mesh need to be different instances.");
+        return;
+    }
     this->clear();
     this->setDimension(mesh.dim());
 
@@ -1822,6 +1837,10 @@ Mesh Mesh::createMeshByCellIdx(const IndexArray & idxList){
 }
 
 void Mesh::createMeshByMarker(const Mesh & mesh, int from, int to){
+    if (this == &mesh) {
+        log(Error, WHERE_AM_I, "This mesh and the given mesh need to be different instances.");
+        return;
+    }
     if (to == -1) to = MAX_INT;
     else if (to == 0) to = from + 1;
 
