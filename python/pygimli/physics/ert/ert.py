@@ -148,6 +148,11 @@ class ERTModelling(MeshModelling):
         u = np.zeros((nEle, nDof))
         self.subPotentials = [pg.RMatrix(nEle, nDof) for i in range(len(k))]
 
+<<<<<<< Updated upstream
+=======
+        pg._r('0', pg.dur())
+
+>>>>>>> Stashed changes
         for i, ki in enumerate(k):
             ws = dict()
             uE = pg.solve(mesh, a=1./res, b=-(ki * ki)/res, f=rhs,
@@ -157,6 +162,9 @@ class ERTModelling(MeshModelling):
             self.subPotentials[i] = uE
             u += w[i] * uE
 
+            pg._r('1', i, pg.dur())
+
+        pg._r('2', i, pg.dur())
         # collect potential matrix,
         # i.e., potential for all electrodes and all injections
         pM = np.zeros((nEle, nEle))
@@ -177,6 +185,8 @@ class ERTModelling(MeshModelling):
             r[i] = uAB[iM] - uAB[iN]
 
         self.lastResponse = r * self.data('k')
+
+        pg._r('3', pg.dur())
 
         if self.verbose:
             print("Resp min/max: {0} {1} {2}s".format(min(self.lastResponse), 
@@ -742,47 +752,6 @@ class ERTManager(MeshMethodManager):
             error = pg.abs(absoluteUError / u) + relativeError
 
         return error
-
-    # def _ensureData(self, data):
-    #     """Check data validity"""
-    #     vals = data
-    #     if isinstance(data, pg.DataContainer):
-    #         vals = data('rhoa')
-
-    #     if min(vals) <= 0:
-    #         print(min(vals), max(vals))
-    #         pg.critical("Ensure apparent resistivity values are larger then 0.")
-    #     return vals
-
-    # def invert(self, data=None, **kwargs):
-    #     """Invert data.
-
-    #     Parameters
-    #     ----------
-    #     data : pg.DataContainerERT()
-    #         Data container with at least SensorIndieces 'a b m n' and
-    #         data values 'rhoa' (apparent resistivities) and 'err'
-    #         (relative error in %/100)
-
-    #     """
-    #     if isinstance(data, pg.DataContainer):
-    #         self.fop.data = data
-
-    #     if 'mesh' in kwargs:
-    #         self.fop.setMesh(kwargs.pop('mesh'))
-
-    #     dataVals = self._ensureData(data)
-    #     errVals = self._ensureError(data)
-
-    #     startModel = kwargs.pop('startModel', pg.median(dataVals))
-    #     self.fop.setRegionProperties('*', startModel=startModel)
-
-    #     model = self.fw.run(dataVals, errVals, **kwargs)
-
-    #     return model
-
-        # return super(ERTManager, self).invert(data=data,
-        #                                       **kwargs)
 
     def coverage(self):
         """Return coverage vector considering the logarithmic transformation.
