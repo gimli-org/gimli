@@ -17,7 +17,7 @@ medium.
 import numpy as np
 import pygimli as pg
 import pygimli.meshtools as mt
-vista = pg.optImport("vista")
+pyvista = pg.optImport("pyvista")
 
 ################################################################################
 # Build mesh.
@@ -44,7 +44,7 @@ mesh.createSecondaryNodes(1)
 
 vel = 300 + -pg.z(mesh.cellCenters()) * 100
 
-if vista:
+if pyvista:
     label = pg.utils.unit("vel")
     pg.show(mesh, vel, label=label, notebook=True)
 
@@ -78,15 +78,15 @@ for receiver in sensors[1:]:
 ################################################################################
 # Plot final ray paths.
 
-if vista:
+if pyvista:
     plotter = pg.show(mesh, notebook=True, hold=True, label=label)
-    points = vista.PolyData(sensors)
+    points = pyvista.PolyData(sensors)
     plotter.add_mesh(points, point_size=10, color="k")
 
     for ray in rays:
         for i in range(len(ray) - 1):
             start = tuple(ray[i])
             stop = tuple(ray[i + 1])
-            line = vista.Line(start, stop)
+            line = pyvista.Line(start, stop)
             plotter.add_mesh(line, color='green', line_width=2)
     plotter.plot()

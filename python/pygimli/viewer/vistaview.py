@@ -7,8 +7,8 @@ import sys
 
 import pygimli as pg
 
-vista = pg.optImport('vista', requiredFor="proper visualization in 3D")
-if vista is None:
+pyvista = pg.optImport('pyvista', requiredFor="proper visualization in 3D")
+if pyvista is None:
     from mpl_toolkits.mplot3d import Axes3D
     import matplotlib.pyplot as plt
     callback = 'showMesh3DFallback'
@@ -44,7 +44,7 @@ def showMesh3DFallback(mesh, data, **kwargs):
         y = pg.y(mesh.positions())
         z = pg.z(mesh.positions())
         ax.scatter(x, y, z, 'ko')
-    ax.set_title('Fallback, install vista for proper 3D visualization')
+    ax.set_title('Fallback, install pyvista for proper 3D visualization')
 
     return ax
 
@@ -69,8 +69,8 @@ def showMesh3DVista(mesh, data=None, **kwargs):
     tmp = "/tmp/gimli_3d_view_%s.vtk" % os.getpid()
     mesh.exportVTK(tmp)
 
-    # open with vista
-    grid = vista.read(tmp)
+    # open with pyvista
+    grid = pyvista.read(tmp)
 
     hold = kwargs.pop("hold", False)
     cMap = kwargs.pop('cMap', 'viridis')
@@ -91,7 +91,7 @@ def showMesh3DVista(mesh, data=None, **kwargs):
 
     notebook = kwargs.pop('notebook', False)
     if notebook:
-        vista.set_plot_theme('document')
+        pyvista.set_plot_theme('document')
 
     if use_gui and notebook is False:
         # add saved data from within the pg.mesh itself
@@ -104,18 +104,18 @@ def showMesh3DVista(mesh, data=None, **kwargs):
         app.exec_()
 
     # elif notebook is True:
-    #     tool = vista.OrthogonalSlicer(grid)
+    #     tool = pyvista.OrthogonalSlicer(grid)
     #     # Get the plotter for adding more datasets:
     #     p = tool.plotter
     #     p.show()
 
     else:
-        plotter = vista.Plotter(notebook=notebook)
+        plotter = pyvista.Plotter(notebook=notebook)
         plotter.show_bounds()
         plotter.add_axes()
         plotter.add_mesh(grid, cmap=cMap, show_edges=True, **add_args)
         if data is not None:
             plotter.mesh.set_active_scalar(label)
         if not hold:
-            plotter.plot()
+            plotter.show()
         return plotter
