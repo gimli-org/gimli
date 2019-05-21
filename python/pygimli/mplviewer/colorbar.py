@@ -474,7 +474,6 @@ def addCoverageAlpha(patches, coverage, dropThreshold=0.4):
     cols[:, 3] = C
 
     patches._facecolors = cols
-    patches._edgecolors = 'face'
 
     # delete patch data to avoid automatically rewrite of _facecolors
     patches._A = None

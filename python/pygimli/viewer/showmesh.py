@@ -299,7 +299,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
             validData = True
             try:
                 cMap = kwargs.pop('cMap', None)
-                
+
                 if len(data) == mesh.cellCount():
                     gci = drawModel(ax, mesh, data, **kwargs)
                     if showBoundary is None:
@@ -307,7 +307,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
 
                 elif len(data) == mesh.nodeCount():
                     gci = drawField(ax, mesh, data, **kwargs)
-                    
+
                 if cMap is not None:
                     gci.set_cmap(cmapFromName(cMap))
                     #gci.cmap.set_under('k')
@@ -340,7 +340,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
                                                     color="0.1", linewidth=0.3)
             #drawMesh(ax, mesh, **kwargs)
 
-    if showBoundary is True or showBoundary is 1:
+    if showBoundary == True or showBoundary == 1:
         b = mesh.boundaries(mesh.boundaryMarkers() != 0)
         pg.mplviewer.drawSelectedMeshBoundaries(ax, b,
                                                 color=(0.0, 0.0, 0.0, 1.0),

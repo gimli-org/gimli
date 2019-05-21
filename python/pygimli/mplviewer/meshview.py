@@ -273,11 +273,11 @@ def drawMesh(ax, mesh, fitView=True, **kwargs):
     ----------------
     **kwargs
         Additional kwargs forward to drawPLC or drawMeshBoundaries
-        
+
     %(drawMeshBoundaries)
 
     %(drawPLC)
-   
+
     Examples
     --------
     >>> import numpy as np
@@ -325,7 +325,7 @@ def drawModel(ax, mesh, data=None, tri=False, rasterized=False,
         in some PDF viewers.
     fitView : bool [True]
         Adjust ax limits to mesh bounding box.
-        
+
     Other Parameters
     ----------------
     **kwargs
@@ -387,7 +387,7 @@ def drawModel(ax, mesh, data=None, tri=False, rasterized=False,
                                      logScale=logScale)
 
     gci.set_antialiased(True)
-    gci.set_linewidths(0.1)
+    gci.set_linewidths(0.001)
     gci.set_edgecolors("face")
 
     if xlabel is not None:
@@ -514,7 +514,7 @@ def drawMeshBoundaries(ax, mesh, hideMesh=False, useColorMap=False,
         Linewidth. When set to None then lw depends on boundary marker.
         Linewidth [0.3] for edges with marker == 0 if hideMesh is False.
     color : None
-        Color for special lines. If set to None automatic "black". 
+        Color for special lines. If set to None automatic "black".
 
     Examples
     --------
@@ -591,7 +591,7 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
     Parameters
     ----------
     ax : mpl axe
-        
+
     mesh : :gimliapi:`GIMLI::Mesh`
 
     fillRegion: bool [True]
@@ -826,7 +826,7 @@ def drawField(ax, mesh, data=None, levels=[], nLevs=5,
 
     Parameters
     ----------
-    ax : mpl axe 
+    ax : mpl axe
 
     mesh : :gimliapi:`GIMLI::Mesh`
         2D mesh
@@ -849,14 +849,14 @@ def drawField(ax, mesh, data=None, levels=[], nLevs=5,
     Other Parameters
     ----------------
     shading: 'flat' | 'gouraud'
-    
+
     fillContour: [True]
-    
+
     withContourLines: [True]
     **kwargs
-        Additional kwargs forwarded to ax.tripcolor, 
+        Additional kwargs forwarded to ax.tripcolor,
         ax.tricontour, ax.tricontourf
-        
+
     Returns
     -------
     gci : image object
@@ -897,7 +897,7 @@ def drawField(ax, mesh, data=None, levels=[], nLevs=5,
         else:
             gci = ax.tripcolor(x, y, triangles, facecolors=z,
                                shading=shading, **kwargs)
-        
+
     elif len(z) == mesh.nodeCount():
         shading = kwargs.pop('shading', None)
 
@@ -953,7 +953,7 @@ def drawStreamLines(ax, mesh, u, nx=25, ny=25, **kwargs):
 
     Parameters
     ----------
-    ax : mpl axe 
+    ax : mpl axe
 
     mesh : :gimliapi:`GIMLI::Mesh`
         2D mesh
@@ -1003,7 +1003,7 @@ def drawStreamLine_(ax, mesh, c, data, dataMesh=None, linewidth=1.0,
     ax : matplotlib.ax
         ax to draw into
     mesh : :gimliapi:`GIMLI::Mesh`
-        2d mesh 
+        2d mesh
     c : :gimliapi:`GIMLI::Cell`
         Start point is c.center()
     data : iterable float | [float, float]
@@ -1088,7 +1088,7 @@ def drawStreamLine_(ax, mesh, c, data, dataMesh=None, linewidth=1.0,
     return lines
 
 
-def drawStreams(ax, mesh, data, startStream=3, coarseMesh=None, quiver=False, 
+def drawStreams(ax, mesh, data, startStream=3, coarseMesh=None, quiver=False,
                 **kwargs):
     """Draw streamlines based on an unstructured mesh.
 
@@ -1264,7 +1264,7 @@ def drawSensors(ax, sensors, diam=None, coords=None, **kwargs):
         diam = eSpacing / 8.0
 
     for i, e in enumerate(sensors):
-        eCircles.append(mpl.patches.Circle((e[coords[0]], 
+        eCircles.append(mpl.patches.Circle((e[coords[0]],
                                             e[coords[1]]), diam, **kwargs))
 
     p = mpl.collections.PatchCollection(eCircles, **kwargs)
@@ -1303,7 +1303,7 @@ def _createParameterContraintsLines(mesh, cMat, cWeights=None):
         if pID not in cellList:
             cellList[pID] = []
         cellList[pID].append(c)
-        
+
     paraCenter = dict()
     for pID, vals in list(cellList.items()):
         p = pg.RVector3(0.0, 0.0, 0.0)
@@ -1313,15 +1313,15 @@ def _createParameterContraintsLines(mesh, cMat, cWeights=None):
         paraCenter[pID] = p
 
     nConstraints = cMat.rows()
-    
+
     start = []
     end = []
     #    swatch = pg.Stopwatch(True)  # not used
     i = -1
     while i < C[0].size():
         cID = C[0][i]
-        
-            
+
+
         a = C[1][i]
         b = None
 
@@ -1345,7 +1345,7 @@ def _createParameterContraintsLines(mesh, cMat, cWeights=None):
         else:
             start.append(paraCenter[a])
             end.append(paraCenter[a])
-                
+
         i += 1
 
     return start, end
@@ -1374,7 +1374,7 @@ def drawParameterConstraints(ax, mesh, cMat, cWeights=None):
         if start[i] == end[i]:
             ax.plot(start[i].x(), end[i].y(), '.', color=col, markersize=2)
         else:
-            lines.append(list(zip([start[i].x(), end[i].x()], 
+            lines.append(list(zip([start[i].x(), end[i].x()],
                                   [start[i].y(), end[i].y()])))
 
             linewidths.append(0.5)
