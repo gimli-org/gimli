@@ -52,12 +52,12 @@ class TestSparseMatrix(unittest.TestCase):
         mm = pg.SparseMapMatrix(r=4, c=5)
         check_rows = [0, 0, 1, 2, 3]
         check_cols = [0, 1, 2, 3, 4]
-
         check_vals = np.array([1.0, 3, np.pi, 1e-12, -1.12345e13])
+
         for i in range(len(check_rows)):
             mm.addVal(check_rows[i], check_cols[i], check_vals[i])
 
-        # pg.solver.showSparseMatrix(mm, full=True)
+        #pg.solver.showSparseMatrix(mm, full=True)
                 
         check_csr_rows = [0, 1, 2, 3, 4]
         check_csr_colPtr = [0, 2, 3, 4, 5]
@@ -69,7 +69,7 @@ class TestSparseMatrix(unittest.TestCase):
         np.testing.assert_allclose(r1, check_csr_rows)
         np.testing.assert_allclose(c1, check_csr_colPtr)
         np.testing.assert_allclose(v1, check_vals)
-
+        
         sciA1 = pg.utils.sparseMatrix2csr(pg.SparseMatrix(mm))
         np.testing.assert_equal(sciA1.indices, check_csr_rows)
         np.testing.assert_equal(sciA1.indptr, check_csr_colPtr)
