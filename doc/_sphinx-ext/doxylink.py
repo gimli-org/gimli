@@ -408,7 +408,8 @@ def create_role(app, tag_filename, rootdir):
             app.info('Sub-cache is up-to-date')
     except IOError:
         tag_file = None
-        app.warn(standout('Could not open tag file %s. Make sure your `doxylink` config variable is set correctly.' % tag_filename))
+        # not working with sphinx 2.0.1
+        # app.warn(standout('Could not open tag file %s. Make sure your `doxylink` config variable is set correctly.' % tag_filename))
 
     def find_doxygen_link(name, rawtext, text, lineno, inliner, options={}, content=[]):
         text = utils.unescape(text)
