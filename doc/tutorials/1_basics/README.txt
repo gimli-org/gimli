@@ -1,4 +1,4 @@
-.. _tut:inversion:
+.. _tut:basics:
 
 Basics
 ------
