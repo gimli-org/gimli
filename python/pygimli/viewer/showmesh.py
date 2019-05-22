@@ -388,7 +388,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
             raise BaseException('toImplement')
             # addCoverageAlpha(gci, pg.cellDataToPointData(mesh, coverage))
 
-    if not hold or block is not False and plt.get_backend() is not "Agg":
+    if not hold or block is not False and plt.get_backend() != "Agg":
         if data is not None:
             if len(data) == mesh.cellCount():
                 cb = CellBrowser(mesh, data, ax=ax)
