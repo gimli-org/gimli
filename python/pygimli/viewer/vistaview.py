@@ -22,6 +22,7 @@ PyQt5 = pg.optImport('PyQt5', requiredFor="pyGIMLi 3D viewer")
 inline = plt.get_backend().lower() == "agg"
 if PyQt5 is None or inline:
     use_gui = False
+    inline = True
 else:
     from .view3d import Show3D
     from PyQt5 import Qt
