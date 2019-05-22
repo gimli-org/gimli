@@ -1438,9 +1438,6 @@ def solve(mesh, **kwargs):
 def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
                         times=None, userData=None,
                         verbose=False, **kwargs):
-def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
-                        times=None, userData=None,
-                        verbose=False, **kwargs):
     r"""Solve partial differential equation with Finite Elements.
 
     This is a syntactic sugar convenience function for using the Finite Element
