@@ -36,7 +36,7 @@ T = pg.solver.solveFiniteElements(mesh,
                                   a=[[1, 1.0], [2, 2.0], [3, 3.0], [4, 0.1]],
                                   uB=[[8, 1.0], [4, 0.0]], verbose=True)
 
-ax, _ = pg.show(mesh, data=T, label='Temperature $T$', cmap="hot_r")
+ax, _ = pg.show(mesh, data=T, label='Temperature $T$', cMap="hot_r")
 pg.show(geom, ax=ax, fillRegion=False)
 
 # just hold figure windows open if run outside from spyder, ipython or similar
