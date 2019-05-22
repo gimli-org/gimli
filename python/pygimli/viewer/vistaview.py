@@ -1,23 +1,26 @@
 # -*- coding: utf-8 -*-
 """Plot 3D mesh."""
 
-import numpy as np
 import os
 import sys
+
+import matplotlib.pyplot as plt
+import numpy as np
 
 import pygimli as pg
 
 pyvista = pg.optImport('pyvista', requiredFor="proper visualization in 3D")
 if pyvista is None:
     from mpl_toolkits.mplot3d import Axes3D
-    import matplotlib.pyplot as plt
     callback = 'showMesh3DFallback'
 else:
     callback = 'showMesh3DVista'
 
-
 PyQt5 = pg.optImport('PyQt5', requiredFor="pyGIMLi 3D viewer")
-if PyQt5 is None:
+
+# True for Jupyter notebooks and sphinx-builds
+inline = plt.get_backend().lower() == "agg"
+if PyQt5 is None or inline:
     use_gui = False
 else:
     from .view3d import Show3D
@@ -89,7 +92,7 @@ def showMesh3DVista(mesh, data=None, **kwargs):
         add_args["opacity"] = 0.1
         add_args["show_scalar_bar"] = False
 
-    notebook = kwargs.pop('notebook', False)
+    notebook = kwargs.pop('notebook', inline)
     if notebook:
         pyvista.set_plot_theme('document')
 

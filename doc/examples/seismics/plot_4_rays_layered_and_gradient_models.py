@@ -111,9 +111,9 @@ for j, (case, mesh, vel) in enumerate(
             [mesh_layered, mesh_gradient],
             [vel_layered, vel_gradient])):
     pg.boxprint(case)
-    if case is "gradient":
+    if case == "gradient":
         ana = analyticalSolutionGradient
-    elif case is "layered":
+    elif case == "layered":
         ana = analyticalSolution2Layer
     for boundary in mesh.boundaries():
         boundary.setMarker(0)
