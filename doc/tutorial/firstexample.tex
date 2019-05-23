@@ -37,7 +37,7 @@ protected:
 \end{lstlisting}
 
 In the constructor the $\x$ vector and the number of coefficients are saved as protected variables\footnote{Usually all variables are denoted with an underscore and declared as protected. Instead of accessing the values directly, we use set and get functions that control the validity of the arguments.}.
-The function \cw{setParameterCount} setups the parameterisation as a 0d mesh of \cw{nc} unknowns.
+The function \cw{setParameterCount} setups the parameterization as a 0d mesh of \cw{nc} unknowns.
 The main type used is \cw{RVector}, a vector of real (\cw{double}) values.
 
 We now want to apply the function to the real inversion of data and write a main program.
