@@ -22,8 +22,8 @@ class TravelTimeDijkstraModelling(MeshModelling):
 
         self._refineSecNodes = 3
         self.jacobian = self.dijkstra.jacobian
-        self.createJacobian = self.dijkstra.createJacobian
-
+        self.setThreadCount = self.dijkstra.setThreadCount
+        #self.createJacobian = self.dijkstra.createJacobian
         self.setJacobian(self.dijkstra.jacobian())
 
     def regionManagerRef(self):
@@ -66,7 +66,14 @@ class TravelTimeDijkstraModelling(MeshModelling):
                        pg.median(aSlow))
         return sm
 
+    def createJacobian(self, par):
+        if not self.mesh():
+            pg.critical("no mesh")
+        return self.dijkstra.createJacobian(par)
+
     def response(self, par):
+        if not self.mesh():
+            pg.critical("no mesh")
         return self.dijkstra.response(par)
 
     def drawModel(self, ax, model, **kwargs):
@@ -107,8 +114,8 @@ class TravelTimeManager(MeshMethodManager):
 
     def setMesh(self, mesh, secNodes=0, ignoreRegionManager=False):
         """ """
+        self.fop._refineSecNodes = secNodes
         if secNodes > 0:
-            self.fop._refineSecNodes = secNodes
             if ignoreRegionManager:
                 mesh = self.fop.createRefinedFwdMesh(mesh)
 
@@ -176,16 +183,18 @@ class TravelTimeManager(MeshMethodManager):
         fop = self.fop
         fop.data = scheme
         fop.verbose = verbose
-        self.setMesh(mesh, secNodes=secNodes, ignoreRegionManager=True)
+        
+        if mesh is not None:
+            self.setMesh(mesh, secNodes=secNodes, ignoreRegionManager=True)
                 
-        if len(slowness) == mesh.cellCount():
+        if len(slowness) == self.fop.mesh().cellCount():
             if max(slowness) > 1.:
                 pg.warn('slowness values larger than 1 ({0}), assuming velocity values .. building reciprocity.'.format(max(slowness)))
                 t = fop.response(1./slowness)
             else:
                 t = fop.response(slowness)
         else:
-            print(mesh)
+            print(self.fop.mesh())
             print("slowness: ", slowness)
             pg.critical("Simulate called with wrong slowness array.")
 

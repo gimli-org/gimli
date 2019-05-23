@@ -87,7 +87,7 @@ void ModellingBase::setVerbose(bool verbose) {
 }
 
 void ModellingBase::setThreadCount(Index nThreads) {
-    nThreads_=max(1, (int)nThreads);
+    nThreads_ = max(1, (int)nThreads);
     GIMLI::setThreadCount(nThreads);
 }
 

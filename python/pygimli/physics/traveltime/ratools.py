@@ -36,7 +36,7 @@ def shotReceiverDistances(data, full=False):
         return np.absolute(gx - sx)
 
 
-def createRAData(sensors, shotdistance=1):
+def createRAData(sensors, shotDistance=1):
     """Create a refraction data container.
 
     Default data container for shot and geophon at every sensor position.
@@ -45,9 +45,11 @@ def createRAData(sensors, shotdistance=1):
 
     Parameters
     ----------
-    sensors : ndarray | R3Vector
+    sensors: ndarray | R3Vector
         Geophon and shot positions (same)
-
+    shotDistances: int [1]
+        Distance between shot indieces.
+        
     Returns
     -------
     data : DataContainer
@@ -69,7 +71,7 @@ def createRAData(sensors, shotdistance=1):
         data.setSensorPositions(sensors)
 
     S, G = [], []
-    for s in range(0, data.sensorCount(), shotdistance):
+    for s in range(0, data.sensorCount(), shotDistance):
         for g in range(data.sensorCount()):
             if s is not g:
                 S.append(s)
