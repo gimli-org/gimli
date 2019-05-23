@@ -54,8 +54,8 @@ a, cbar = pg.show(modelMesh, model)
 #a, cbar = pg.show(modelMesh, model, tri=1, interpolate=0, shading='gouraud', axes=ax[2])
 
 #sens = pb.prepExportSensitivityData(modelMesh, S[110])
-#a, cbar = pg.show(modelMesh, sens, axes=ax[3], cmap='b2r')
-                  
+#a, cbar = pg.show(modelMesh, sens, axes=ax[3], cMap='b2r')
+
 #for i in range(4):
     #pg.show(modelMesh, data.sensorPositions(), axes=ax[i])
     #pg.show(modelMesh, axes=ax[i])

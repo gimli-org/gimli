@@ -3,36 +3,36 @@ Basics of Finite Element Analysis
 ---------------------------------
 
 This tutorial covers the first steps into Finite Element computation
-referring the *M* (Modeling) in *GIMLi*.
+referring the *M* (Modeling) in *pyGIMLi*.
 
 We will not dig into deep details about the theory of the Finite Elements Analysis (FEA)
-here, as this can be found in several books, e.g., :cite:``Zienkiewicz1977``.
+here, as this can be found in several books, e.g., :cite:`Zienkiewicz1977`.
 
 Anyhow, there is a little need for theory to understand what it means
-to use FEA for the solution of a boundary value problem. 
+to use FEA for the solution of a boundary value problem.
 So we start with some basics.
 
 Assuming Poisson's equation as a simple partial differential problem
-to be solved for the sought scalar field :math:`u(\mathbf{r})` within 
-a modeling domain :math:`\mathbf{r}\in\Omega` 
+to be solved for the sought scalar field :math:`u(\mathbf{r})` within
+a modeling domain :math:`\mathbf{r}\in\Omega`
 with a non zero right hand side function :math:`f`.
 
 .. math::
-   
+
    - \Delta u & = f \quad{\mathrm{in}}\quad~\Omega\\
             u & = g \quad{\mathrm{on}}\quad\partial\Omega\;.
-            
-The Laplace operator :math:`\Delta = \nabla\cdot\nabla` given by the 
-divergence of the gradient, is the sum of the second partial derivatives 
-the of the field :math:`u(\mathbf{r})` with respect to the Cartesian coordinates
-in 1d space :math:`\mathbf{r} = (x)`, in 2d :math:`\mathbf{r} = (x, y)`, or 3d
-space :math:`\mathbf{r} = (x, y, z)`. 
-On the boundary :math:`\partial\Omega` of the domain, we want 
-known values of :math:`u=g` as the so called Dirichlet boundary conditions.
 
-A common approach to solve our little problem is the method of weighted residuals.
-The base assumption states that an approximated solution :math:`u_h\approx u` will 
-only satisfy the differential equation with a rest :math:`R`: :math:`\Delta u_h + f = R`. If we choose some weighting functions :math:`w`, 
+The Laplace operator :math:`\Delta = \nabla\cdot\nabla` given by the divergence
+of the gradient, is the sum of the second partial derivatives of the field
+:math:`u(\mathbf{r})` with respect to the Cartesian coordinates
+in 1D space :math:`\mathbf{r} = (x)`, in 2D :math:`\mathbf{r} = (x, y)`, or 3D
+space :math:`\mathbf{r} = (x, y, z)`.
+On the boundary :math:`\partial\Omega` of the domain, we want
+known values of :math:`u=g` as so called Dirichlet boundary conditions.
+
+A common approach to solve this problem is the method of weighted residuals.
+The base assumption states that an approximated solution :math:`u_h\approx u` will
+only satisfy the differential equation with a rest :math:`R`: :math:`\Delta u_h + f = R`. If we choose some weighting functions :math:`w`,
 we can try to minimize the resulting residuum over our modeling domain as:
 
 .. math::
@@ -43,10 +43,10 @@ which leads to:
 
 .. math::
 
-    \int_{\Omega} - \Delta u_h w & = \int_{\Omega} f w\;.
+    \int_{\Omega} - \Delta u_h w = \int_{\Omega} f w\;.
 
 It is preferable to eliminate the second derivative in the Laplace operator,
-either due to integration by parts or by applying the product rule and 
+either due to integration by parts or by applying the product rule and
 Gauss's law.
 This leads to the so called weak formulation:
 
@@ -55,18 +55,17 @@ This leads to the so called weak formulation:
     \int_{\Omega} \nabla u_h \nabla w - \int_{\partial \Omega}\mathbf{n}\nabla u_h w & = \int_{\Omega} f w \\
     \int_{\Omega} \nabla u_h \nabla w & = \int_{\Omega} f w + \int_{\partial \Omega}\frac{\partial u_h}{\partial\mathbf{n}} w\;.
 
-We can solve these integrals after choosing an appropriate basis 
+We can solve these integrals after choosing an appropriate basis
 for an approximate solution :math:`u_h` as:
 
 .. math::
 
     u_h = \sum_i \mathrm{u}_i N_i\quad\text{with}\quad i = 0\ldots\mathcal{N}\;.
 
-The latter fundamental FEA relation discretize the continuous solution :math:`u_h` 
-into a discrete values :math:`\mathrm{u} = \{\mathrm{u}_i\}` for an amount 
-of :math:`i = 0\ldots\mathcal{N}` discrete points, usually called nodes.
+The latter fundamental FEA relation discretizes the continuous solution :math:`u_h`
+into a discrete values :math:`\mathrm{u} = \{\mathrm{u}_i\}` for a number of :math:`i = 0\ldots\mathcal{N}` discrete points, usually called nodes.
 
-The basis functions :math:`N_i` can be understand as interpolation rules for
+The basis functions :math:`N_i` can be understood as interpolation rules for
 the discrete solution between adjacent nodes and will be chosen later.
 
 Now we can set the unknown weighting functions to be the same as the basis
@@ -74,8 +73,8 @@ functions :math:`w=N_j` with :math:`j=0\ldots\mathcal{N}` (Galerkin method)
 
 .. math::
 
-    \int_{\Omega} \sum_i \mathrm{u}_i \nabla N_i \nabla N_j & = \int_{\Omega} f_j N_j + \int_{\partial \Omega} h N_j
-    \quad \text{with}\quad h = \frac{\partial u}{\partial \mathbf{n}}
+    \int_{\Omega} \sum_i \mathrm{u}_i \nabla N_i \nabla N_j\\ & = \int_{\Omega} f_j N_j + \int_{\partial \Omega} h N_j
+    \quad \text{with}\quad h\\ & = \frac{\partial u}{\partial \mathbf{n}}
 
 this can be rewritten with :math:`h=0` as:
 
@@ -86,34 +85,32 @@ this can be rewritten with :math:`h=0` as:
     \mathrm{A} & = \{\mathrm{a}_{i,j}\} = \int_{\Omega}\nabla N_i \nabla N_j \quad\text{known as 'Stiffness matrix'}\\
     \mathrm{b} & = \{\mathrm{b}_j\} = \int_{\Omega} f_j N_j \quad\text{known as 'Load vector'}
 
-The solution of this linear system of equations leads to the 
-discrete solution :math:`\mathrm{u} = \{\mathrm{u}_i\}` for all 
+The solution of this linear system of equations leads to the
+discrete solution :math:`\mathrm{u} = \{\mathrm{u}_i\}` for all
 :math:`i=1\ldots\mathcal{N}` nodes inside the modeling domain.
 
-For the practical part, the choice of the nodes is crucial. 
-If we choose to little, the accuracy of the sought solution might to small. 
-If we choose to much, the dimension of the system matrix will be to large, 
-which leads to higher memory needs and calculation times.
+For the practical part, the choice of the nodes is crucial. If we choose too
+little, the accuracy of the sought solution might be too small. If we choose too
+many, the dimension of the system matrix will be too large, which leads to
+higher memory consumption and calculation times.
 
-To define the nodes, we discretize our modeling domain into cells, 
-or the eponymous elements.
-Cells are basic geometric shapes like triangles or hexahedrons and are 
-constructed from the nodes and collected in a mesh.
-See the tutorials about the mesh basics (links here!!).
-In summary, the discrete solution of the differential equation using 
-FEA on a specific mesh are defined on the node positions inside the mesh. 
+To define the nodes, we discretize our modeling domain into cells, or the
+eponymous elements. Cells are basic geometric shapes like triangles or
+hexahedrons and are constructed from the nodes and collected in a mesh. See the
+tutorials about the mesh basics (:ref:`tut:basics`). In summary, the discrete
+solutions of the differential equation using FEA on a specific mesh are defined
+on the node positions of the mesh.
 
 The chosen mesh cells also define the base functions and the integration rules
-that are necessary to assemble the stiffness matrix and the load vector and 
-will be discussed in a different tutorial (TOWRITE link here.)
+that are necessary to assemble the stiffness matrix and the load vector and will
+be discussed in a different tutorial (TOWRITE link here).
 
-To finally solve our little example we still need to handle the application of the 
-boundary condition :math:`u=g` which is called Dirichlet condition.
-Setting explicit values for our solution is not covered by the general 
-Galerkin weighted residuum method but we can solve it algebraic.
-We simple reduce the linear system of equations by the known 
-solutions :math:`g={g_k}` for all :math:`k` nodes on the affected 
-boundary elements: (maybe move this to the BC tutorial)
+To finally solve our little example we still need to handle the application of
+the boundary condition :math:`u=g` which is called Dirichlet condition. Setting
+explicit values for our solution is not covered by the general Galerkin weighted
+residuum method but we can solve it algebraically. We reduce the linear system
+of equations by the known solutions :math:`g={g_k}` for all :math:`k` nodes on
+the affected boundary elements: (maybe move this to the BC tutorial)
 
 .. math::
 
@@ -122,12 +119,12 @@ boundary elements: (maybe move this to the BC tutorial)
     \mathrm{A_D} & = \{\mathrm{a}_{i,j}\}\quad\forall i, j ~\notin~ k ~\text{and}~1~\text{for}~i,j \in k\\
     \mathrm{b_D} & = \{\mathrm{b}_j\} - \mathrm{A}\cdot\mathrm{g}\quad\forall j \notin k~\text{and}~g_k~\text{for}~j \in k
 
-Now we have all parts together to assemble :math:`\mathrm{A_D}` and 
+Now we have all parts together to assemble :math:`\mathrm{A_D}` and
 :math:`\mathrm{b_D}` and finally solve the given boundary value problem.
 
-Its usually a good idea to test a numerical approach with known solutions. 
+It is usually a good idea to test a numerical approach with known solutions.
 To keep things simple we create a modeling problem from the reverse direction.
-We choose a solution, calculate the right hand side function 
+We choose a solution, calculate the right hand side function
 and select the domain geometry suitable for nice Dirichlet values.
 
 .. math::
@@ -137,8 +134,8 @@ and select the domain geometry suitable for nice Dirichlet values.
     \Omega \in I\!R^2 & \quad \text{on}\quad 0 \leq x \leq 2\pi,~~  0 \leq y \leq 2\pi \\
     u & = g = 0 \quad \text{on}\quad \partial \Omega
 
-We now can solve the Poison equation applying the FEA capabilities of pygimli 
-and compare the resulting approximate solution :math:`\mathrm{u}` 
+We now can solve the Poison equation applying the FEA capabilities of pygimli
+and compare the resulting approximate solution :math:`\mathrm{u}`
 with our known exact solution :math:`u(x,y)`.
 """
 
@@ -146,11 +143,11 @@ import numpy as np
 import pygimli as pg
 
 ###############################################################################
-# We start do define the modeling domain and functions for the exact solution 
+# We start to define the modeling domain and functions for the exact solution
 # and the values for the load vector.
-# The desired mesh of our domain will be a grid with equidistant spacing in 
-# x and y direction. 
-# 
+# The desired mesh of our domain will be a grid with equidistant spacing in
+# x and y directions.
+#
 domain = pg.createGrid(x=np.linspace(0.0, 2*np.pi, 25),
                        y=np.linspace(0.0, 2*np.pi, 25))
 
@@ -158,44 +155,44 @@ uExact = lambda pos: np.sin(pos[0]) * np.sin(pos[1])
 f = lambda cell: 2.0 * np.sin(cell.center()[0]) * np.sin(cell.center()[1])
 
 ###############################################################################
-# We use the existing shortcut functions for the assembling of the basic FEA  
-# system matrices and vectors. 
-# The implemented parts of the solving process are supposed 
-# to be dimension independent. You only need to find a valid mesh with the 
-# supported element types. 
+# We use the existing shortcut functions for the assembling of the basic FEA
+# system matrices and vectors.
+# The implemented parts of the solving process are supposed
+# to be dimension independent. You only need to find a valid mesh with the
+# supported element types.
 #
 A = pg.solver.createStiffnessMatrix(domain)
 b = pg.solver.createLoadVector(domain, f)
 
 ###############################################################################
-# To apply the boundary condition we first need to identify all boundary 
-# elements. The default grid applies the following boundary marker on the 
+# To apply the boundary condition we first need to identify all boundary
+# elements. The default grid applies the following boundary marker on the
 # outermost boundaries: 1 (left), 2(right), 3(top), and 4(bottom).
 boundaries = pg.solver.parseArgToBoundaries([[1, 2, 3, 4], 0.0], domain)
 
 ###############################################################################
-# parseArgToBoundaries is a helper function to collect a list of 
-# tupels (Boundary element, value), which can be used to apply the Dirichlet 
+# `parseArgToBoundaries` is a helper function to collect a list of
+# tupels (Boundary element, value), which can be used to apply the Dirichlet
 # conditions.
 #
 pg.solver.assembleDirichletBC(A, boundaries, b)
 
 ###############################################################################
-# The approximate solution :math:`\mathrm{u}` can then be found as the 
+# The approximate solution :math:`\mathrm{u}` can then be found as the
 # solution of the linear system of equations.
 #
 u = pg.solver.linSolve(A, b)
 
 ###############################################################################
-# The resulting scalar field can displayed with the pg.show shortcut.
+# The resulting scalar field can displayed with the `pg.show` shortcut.
 #
 pg.show(domain, u, label='Approximated solution $\mathrm{u}$', nLevs=7)
 
 ###############################################################################
-# For analysing the accuracy for the approximation we apply the 
-# L2 norm for the finite element space :py:mod:`pygimli.solver.L2Norm` for a 
-# set of different solutions with decreasing cell size. Instead of using the 
-# the singe assembing steps again we apply our Finite Element shortcut function
+# For analysing the accuracy for the approximation we apply the
+# L2 norm for the finite element space :py:mod:`pygimli.solver.L2Norm` for a
+# set of different solutions with decreasing cell size. Instead of using the
+# the single assembling steps again, we apply our Finite Element shortcut function
 # :py:mod:`pygimli.solver.solve`.
 #
 domain = pg.createGrid(x=np.linspace(0.0, 2*np.pi, 3),
@@ -209,7 +206,7 @@ for i in range(5):
     u = np.array([uExact(_) for _ in domain.positions()])
     l2.append(pg.solver.L2Norm(u - u_h, domain))
     h.append(min(domain.boundarySizes()))
-    print("NodeCount: {0}, h:{1}m, L2:{2}%".format(domain.nodeCount(), 
+    print("NodeCount: {0}, h:{1}m, L2:{2}%".format(domain.nodeCount(),
                                                    h[-1], l2[-1]))
 
 ax,_ = pg.show()
