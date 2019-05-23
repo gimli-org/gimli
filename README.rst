@@ -29,6 +29,10 @@ What is pyGIMLi **NOT** suited for?
 Authors
 -------
 
+.. image:: https://img.shields.io/github/contributors/gimli-org/gimli.svg
+
+We gratefully acknowledge all contributors to the pyGIMLi open-source project and look forward to `your contribution <https://pygimli.org/contrib.html>`_!
+
 * `Carsten Rücker <https://orcid.org/0000-0002-8231-9861>`_
 
   *Berlin University of Technology, Department of Applied Geophysics, Berlin, Germany*
