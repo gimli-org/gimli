@@ -344,11 +344,9 @@ RVector TravelTimeDijkstraModelling::response(const RVector & slowness) {
         std::cout << "Background: " << background_ << "->" << 1e16 << std::endl;
         background_ = 1e16;
     }
-    Index nData = dataContainer_->size();
     this->createJacobian(slowness);
-    return jacobian_->mult(slowness);
-
     RVector slowPerCell(this->createMappedModel(slowness, background_));
+    return jacobian_->mult(slowPerCell);
 
     dijkstra_.setGraph(createGraph(slowPerCell));
 // __MS(toc__)
@@ -367,6 +365,7 @@ RVector TravelTimeDijkstraModelling::response(const RVector & slowness) {
     }
     Index s = 0, g = 0;
 
+    Index nData = dataContainer_->size();
     RVector resp(nData);
 
     for (Index dataIdx = 0; dataIdx < nData; dataIdx ++) {
