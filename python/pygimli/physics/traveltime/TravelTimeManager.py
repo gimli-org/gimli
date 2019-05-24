@@ -3,6 +3,7 @@
 
 """Class for managing first arrival travel time inversions"""
 import numpy as np
+import matplotlib.pyplot as plt
 
 from matplotlib.collections import LineCollection
 
@@ -136,11 +137,10 @@ class TravelTimeManager(MeshMethodManager):
         """
         Simulate an Traveltime measurement.
 
-        Perform the forward task for a given mesh,
-        a slowness distribution (per cell) and return data
-        (Traveltime) for a measurement scheme.
-        This is a static method since it does not interfere with the Managers
-        inversion approaches.
+        Perform the forward task for a given mesh, a slowness distribution (per
+        cell) and return data (traveltime) for a measurement scheme. This is a
+        static method since it does not interfere with the managers inversion
+        approaches.
 
         Parameters
         ----------
@@ -184,17 +184,16 @@ class TravelTimeManager(MeshMethodManager):
         fop.data = scheme
         fop.verbose = verbose
 
-        if mesh is not None:
-            self.setMesh(mesh, secNodes=secNodes, ignoreRegionManager=True)
+        self.setMesh(mesh, secNodes=secNodes, ignoreRegionManager=True)
+        fop._regionManagerInUse = False
 
-        if len(slowness) == self.fop.mesh().cellCount():
+        if len(slowness) == mesh.cellCount():
             if max(slowness) > 1.:
                 pg.warn('slowness values larger than 1 ({0}), assuming velocity values .. building reciprocity.'.format(max(slowness)))
                 t = fop.response(1./slowness)
             else:
                 t = fop.response(slowness)
         else:
-            print(self.fop.mesh())
             print("slowness: ", slowness)
             pg.critical("Simulate called with wrong slowness array.")
 
