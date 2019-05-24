@@ -68,8 +68,8 @@ public:
     }
 
     virtual void calc2(){
-        log(Debug, "Thread #" + str(_threadNumber) + ": on CPU " + str(schedGetCPU()) + 
-                   " slice " + str(start_) + ":" + str(end_));
+        // log(Debug, "Thread #" + str(_threadNumber) + ": on CPU " + str(schedGetCPU()) + 
+        //            " slice " + str(start_) + ":" + str(end_));
         ElementMatrix < double > S_i;
         ElementMatrix < double > S1_i;
 
@@ -120,8 +120,8 @@ public:
     }
 
     virtual void calc1(){
-        log(Debug, "Thread #" + str(_threadNumber) + ": on CPU " + str(schedGetCPU()) + 
-                   " slice " + str(start_) + ":" + str(end_));
+        // log(Debug, "Thread #" + str(_threadNumber) + ": on CPU " + str(schedGetCPU()) + 
+        //            " slice " + str(start_) + ":" + str(end_));
         bool haveCurrentPatterns = false;
 
         if (currPatternIdx_->size() * weights_->size() == pots_->rows()) {

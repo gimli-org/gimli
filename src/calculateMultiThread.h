@@ -24,6 +24,7 @@
 #ifdef USE_BOOST_THREAD
     #include <boost/thread.hpp>
 #else
+    #include <mutex>
     #include <thread>
 #endif
 
@@ -47,6 +48,8 @@ public:
 
     virtual void calc()=0;
 
+    Index start() const { return start_;}
+    Index end() const { return end_;}
 protected:
     bool verbose_;
     Index start_;
@@ -54,7 +57,9 @@ protected:
     Index _threadNumber;
 };
 template < class T > void distributeCalc(T calc, uint nCalcs, uint nThreads, bool verbose=false){
-    log(Debug, "Create distributed calculation of " + str(nCalcs) + " jobs on " + str(nThreads) + " threads.");
+    log(Debug, "Create distributed calculation of " + str(nCalcs) + " jobs on " 
+        + str(nThreads) + " threads for "  
+        + str(std::thread::hardware_concurrency()) + " CPU");
     if (nThreads == 1){
         calc.setRange(0, nCalcs);
         calc();
@@ -78,16 +83,31 @@ template < class T > void distributeCalc(T calc, uint nCalcs, uint nThreads, boo
         threads.join_all();
 #else
 
-        std::vector<std::thread> threads;
+        std::mutex iomutex;
+        std::vector<std::thread> threads(calcObjs.size());
 
         for (uint i = 0; i < calcObjs.size(); i++) {
-            threads.emplace_back(calcObjs[i]);
+            //threads.emplace_back(calcObjs[i]);
+            threads[i] = std::thread( [&iomutex, i, &calcObjs] {
+                // Stopwatch swatch(true);
+                {
+                    std::lock_guard<std::mutex> iolock(iomutex);
+                    
+                    log(Debug, "Thread #" + str(i) + ": on CPU " 
+                    + str(schedGetCPU()) + " slice " + str(calcObjs[i].start()) + ":" + str(calcObjs[i].end()));
+                }
+                calcObjs[i]();
+                {
+                    // std::lock_guard<std::mutex> iolock(iomutex);
+                    
+                    // log(Debug, "time: #" + str(i) + " " + str(swatch.duration()) + "s");
+                }
+
+            });
         }
 
-        for (auto & th : threads) if (th.joinable()) th.join();
+        for (auto & t: threads) if (t.joinable()) t.join();
 
-//         std::vector boost::thread_group threads;
-//         for (uint i = 0; i < nThreads; i++) calcObjs[i]();
 #endif
     }
 }

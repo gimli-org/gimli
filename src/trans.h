@@ -319,10 +319,12 @@ public:
     }
 
     virtual Vec invTrans(const Vec & a) const {
-        if (std::fabs(upperbound_) < TOLERANCE) return TransLog< Vec >::invTrans(a);
-
-        //return ((exp(a) * upperbound_ + this->lowerBound()) / (exp(a) + this->lowerBound())); //** keine Ahnung
-        return ((exp(a) * upperbound_ + this->lowerBound()) / (exp(a) + 1.0));
+        if (std::fabs(upperbound_) < TOLERANCE) 
+            return TransLog< Vec >::invTrans(a);
+        Vec expm(a);
+        maxify(expm, 50.0);
+        expm = exp(expm);
+        return (expm * this->upperbound_ + this->lowerBound()) / (expm + 1.0);
     }
 
     virtual Vec deriv(const Vec & a) const {
