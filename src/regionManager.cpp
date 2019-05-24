@@ -739,7 +739,7 @@ void RegionManager::recountParaMarker_(){
         it->second->countParameter(count);
         count += it->second->parameterCount();
     }
-    if (verbose_) std::cout << "Recounted parameter: " << count << std::endl;
+    // if (verbose_) std::cout << "Recounted parameter: " << count << std::endl;
 }
 
 void RegionManager::findInterRegionInterfaces_(){

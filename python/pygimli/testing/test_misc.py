@@ -32,6 +32,12 @@ class TestMisc(unittest.TestCase):
         self.assertEqual(f.inv(6.0), 1.0)
         self.assertEqual(f.invTrans(6.0), 1.0)
 
+        f = pg.TransLogLU(lowerbound=0, upperbound=10)
+        # print(f.update([1.], [100.]))
+        np.testing.assert_array_equal(f.update([1.], [100.]), [10.0])
+        # print(f.update([1.], [1000.]))
+        # np.testing.assert_array_equal(f.update([1.], [1000.]), [10.0])
+
     def test_DataContainerFilter(self):
         """
         """
@@ -171,11 +177,12 @@ class TestMisc(unittest.TestCase):
 if __name__ == '__main__':
     # pg.setDeepDebug(1)
 
-    t = TestMisc()
-    t.test_Hash()
-    t.test_HashData()
-    t.test_HashMesh()
-    exit()
+    # t = TestMisc()
+    # t.test_Trans()
+    # t.test_Hash()
+    # t.test_HashData()
+    # t.test_HashMesh()
+    # exit()
     
     # t.test_PosConstMember()
     #t.test_DataContainerSensors()

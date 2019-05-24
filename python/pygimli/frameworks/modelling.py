@@ -130,7 +130,7 @@ class Modelling(pg.ModellingBase):
 
         """
         sm = self.regionManager().createStartModel()
-        pg.info("Createing startmodel from region infos:", sm)
+        pg.info("Creating startmodel from region infos:", sm)
         return sm
 
     def regionManager(self):

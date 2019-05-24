@@ -48,7 +48,7 @@ if "conda" in __path__[0]:
 ################################################################################
 from . import core
 from ._version import get_versions
-from ._logger import _, _d, _y, _g, _r
+from ._logger import _, _d, _y, _g, _r, setLogLevel
 from .core import *
 from .testing import test
 from .utils import unit

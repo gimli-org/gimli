@@ -2,12 +2,14 @@
 # -*- coding: utf-8 -*-
 """Spectral induced polarization (SIP) measurements and fittings."""
 
-from .tools import (isComplex, toComplex, toPolar, squeezeComplex)
+from .tools import (isComplex, toComplex, toPolar, squeezeComplex,
+                    KramersKronig)
 
 from .importData import (load)
 from .sipspectrum import (SpectrumManager, SIPSpectrum)
 
-from .models import (ColeColeRho, ColeColeSigma, ColeColePhi, DoubleColeColePhi,
+from .models import (ColeColeRho, ColeColeRhoDouble, 
+                    ColeColeSigma, ColeColePhi, DoubleColeColePhi,
                     tauRhoToTauSigma)
 
 from .plotting import showSpectrum, drawPhaseSpectrum, drawAmplitudeSpectrum

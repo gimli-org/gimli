@@ -7,11 +7,12 @@ from .base import (rms, rmsWithErr, nanrms, createDateTimeString,
                    createfolders, #remove me Nameing convention
                    createFolders, createResultFolder,
                    getSavePath, gmat2numpy, interperc, interpExtrap, inthist,
-                   num2str, numpy2gmat, rndig, saveResult)
+                   nanrms, num2str, numpy2gmat, rrms, rms, rndig, saveResult)
 
 # compatibility for fw_cleaning
 from .base import rmsWithErr as rmswitherr
 
+from .cache import cache
 from .geostatistics import (computeInverseRootMatrix, covarianceMatrix,
                             generateGeostatisticalModel)
 from .gps import GKtoUTM, findUTMZone, getProjection, getUTMProjection, readGPX

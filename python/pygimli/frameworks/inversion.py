@@ -381,8 +381,14 @@ class Inversion(object):
                 print("inv.iter", i + 1, "... ", end='')
 
             self.inv.oneStep()
+            
+            if np.isnan(self.model).any():
+                print(model)
+                pg.critical('invalid model')
+            
             resp = self.inv.response()
             chi2 = self.inv.chi2()
+
 
             if showProgress:
                 self.showProgress(showProgress)

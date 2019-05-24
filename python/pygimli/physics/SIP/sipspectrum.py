@@ -101,6 +101,9 @@ class SpectrumModelling(Modelling):
     def response(self, params):
         #pg._r('response:', params)
         #self.drawModel(None, params)
+        if np.isnan([*params]).any():
+            print(params)
+            pg.critical('invalid params for response')
         ret = self._function(self.freqs, *params)
         if self.complex:
             return squeezeComplex(ret)

@@ -102,6 +102,10 @@ streamHandler = logging.StreamHandler()
 streamHandler.setFormatter(ColorFormatter())
 logger.root.addHandler(streamHandler)
 
+def setLogLevel(level):
+    """Shortcut to change the current log level"""
+    logger.setLevel(level)
+
 
 def addLogLevel(value, name):
     """Add a new log level to the :mod:`logging` module.
@@ -116,6 +120,7 @@ def addLogLevel(value, name):
     logging.addLevelName(value, name)
     setattr(logging, name, value)
 
+   
 # CRITICAL = 50
 # ERROR = 40
 # WARNING = 30

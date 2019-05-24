@@ -21,7 +21,7 @@ def rms(v, axis=None):
 def rrms(a, b, axis=None):
     """Compute the relative (regarding a) root mean square."""
     ### abs for complex values
-    return rms((a-b)/a, axis)
+    return rms(np.abs(a-b)/np.abs(a), axis)
 
 
 def nanrms(v, axis=None):

@@ -1459,6 +1459,11 @@ template < class T > T max(const Vector < T > & v){
     return *std::max_element(&v[0], &v[0] + v.size());
 }
 
+template < class T > void restrictMax(Vector < T > & v, T max){
+    ASSERT_EMPTY(v)
+    for (Index i = 0; i < v.size(); i ++ ) v[i] = min(v[i], max);
+}
+
 template < class ValueType >
     ValueType mean(const Vector < ValueType > & a){
         return sum(a) / ValueType(a.size());

@@ -22,7 +22,7 @@ def isComplex(vals):
 def toComplex(amp, phi=None):
     """Convert real values into into complex valued array.
     
-    If no phases phi are given assuming z = amp[0:N] + i amp[N:0].
+    If no phases phi are given assuming z = amp[0:N] + i amp[N:2N].
 
     If phi is given in (neg rad) complex values are generated:
     z = amp*(cos(phi) + i sin(phi))
@@ -218,30 +218,33 @@ def KramersKronig(f, re, im, usezero=False):
     """
     from scipy.integrate import simps
 
-    x = f * 2. * pi
+    x = 2. * pi * f
     im2 = np.zeros(im.shape)
     re2 = np.zeros(im.shape)
     re3 = np.zeros(im.shape)
     drdx = np.diff(re) / np.diff(x)
-    dredx = np.hstack((drdx[0], (drdx[:-1] + drdx[1:]) / 2, drdx[-1]))
     didx = np.diff(im) / np.diff(x)
-    dimdx = np.hstack((didx[0], (didx[:-1] + didx[1:]) / 2, didx[-1]))
+    dRedx = np.hstack((drdx[0], (drdx[:-1] + drdx[1:]) / 2, drdx[-1]))
+    dImdx = np.hstack((didx[0], (didx[:-1] + didx[1:]) / 2, didx[-1]))
     for num, w in enumerate(x):
         x2w2 = x**2 - w**2
         x2w2[num] = 1e-12
+        
         fun1 = (re - re[num]) / x2w2
-        fun1[num] = dredx[num] / 2 / w
-        im2[num] = -simps(fun1, x) * 2. * w / pi
-        fun2 = (im * w / x - im[num]) / x2w2
-        re2[num] = simps(fun2, x) * 2. * w / pi + re[0]
-        fun3 = (im * x - im[num] * w) / x2w2
-        fun3[num] = (im[num] / w + dimdx[num]) / 2
-        re3[num] = simps(fun3, x) * 2. / pi + re[-1]
+        fun1[num] = dRedx[num] / 2 / w
+        im2[num] = -2./pi * w * simps(fun1, x)
+        
+        if usezero:
+            fun2 = (im * w / x - im[num]) / x2w2
+            re2[num] = 2./pi * w * simps(fun2, x)  + re[0]
+        else:
+            fun2 = (im * x - im[num] * w) / x2w2
+            fun2[num] = (im[num] / w + dImdx[num]) / 2
+            re2[num] = 2./pi * simps(fun2, x) + re[-1]
 
-    if usezero:
-        re3 = re2
+        # re3 = re2
 
-    return re3, im2
+    return re2, im2
 
 
 if __name__ == "__main__":

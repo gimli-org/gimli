@@ -81,6 +81,42 @@ void RInversion::checkJacobian(bool force) {
     if (verbose_) std::cout << "... " << swatch.duration(true) << " s" << std::endl;
 }
 
+double RInversion::getPhiD(const Vec & response) const {
+    Vec deltaData((tD_->trans(data_) - tD_->trans(response)) /
+                    tD_->error(fixZero(data_, TOLERANCE), error_)) ;
+
+    double ret = dot(deltaData, deltaData);
+    if (isnan(ret) || isinf(ret)){
+        save(tD_->trans(data_),          "Nan_PhiD_tD_data");
+        save(response,                     "Nan_PhiD_response");
+        save(tD_->trans(response),       "Nan_PhiD_tD_response");
+        save(tD_->error(data_, error_), "Nan_PhiD_tD_error");
+
+        throwError(1, WHERE_AM_I + " getPhiD == " + str(ret));
+    }
+    return ret;
+}
+
+double RInversion::getPhiM(const Vec & model) const {
+//        Vec dModel(tM_->trans(model));
+//        if (haveReferenceModel_) dModel = dModel - tM_->trans(modelRef_);
+//        Vec roughness(Vec(forward_->constraints() * dModel) * constraintWeights_);
+    Vec rough(this->roughness(model));
+    
+    double ret = dot(rough, rough);
+    if (isnan(ret) || isinf(ret)){
+        DOSAVE std::cerr << "haveReferenceModel_: " << haveReferenceModel_<< std::endl;
+        DOSAVE save(model,       "Nan_PhiM_model");
+        DOSAVE save(modelRef_,  "Nan_PhiM_modelref");
+//            DOSAVE save(dModel,      "Nan_PhiM_tM_dmodel");
+        DOSAVE save(rough,   "Nan_PhiM_roughness");
+        DOSAVE save(constraintWeights_,   "Nan_PhiM_cweight");
+
+        throwError(1, WHERE_AM_I + " getPhiM == " + str(ret));
+    }
+    return ret;
+}
+
 const RVector & RInversion::invert(const RVector & data){
     this->reset();
     this->setData(data);
@@ -294,9 +330,17 @@ bool RInversion::oneStep() {
         } // else no broyden
     } // else no optimization
 
+    //restrictMax(deltaModelIter_, 50.0); // only work for log trans
     DOSAVE echoMinMax(deltaModelIter_, "dm");
 
     modelNew = tM_->update(model_, deltaModelIter_);
+
+    if (haveInfNaN(modelNew)){
+        save(deltaModelIter_, "dmodel_Nan" PLUS_TMP_VECSUFFIX);
+        save(model_, "mmodel_Nan" PLUS_TMP_VECSUFFIX);
+        save(modelNew, "newmodel_Nan" PLUS_TMP_VECSUFFIX);
+        log(Error, "Model contains nan values.");    
+    }
 
     DOSAVE save(model_, "oldmodel");
     DOSAVE save(deltaModelIter_, "deltaModel");

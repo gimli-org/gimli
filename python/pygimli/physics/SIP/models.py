@@ -68,8 +68,23 @@ def ColeColeRho(f, rho, m, tau, c, a=1):
     >>> _= ax4.set_ylim(-0.2, 0)
     >>> pg.plt.show()
     """
-    return (1. - m * (1. - relaxationTerm(f, tau, c, a))) * rho
+    z = (1. - m * (1. - relaxationTerm(f, tau, c, a))) * rho
+    if np.isnan(z).any():
+        print(f, 'rho', rho, 'm', m, 'tau', tau, 'c', c)
+        print(z)
+        exit()
+    return z
 
+def ColeColeRhoDouble(f, rho, m1, t1, c1, m2, t2, c2):
+    """Frequency-domain Double Cole-Cole impedance model
+    
+    Frequency-domain Double Cole-Cole impedance model returns the sum of 
+    two Cole-Cole Models with a common amplitude. 
+    Z = rho * (Z1(Cole-Cole) + Z2(Cole-Cole))
+    """
+    Z1 = ColeColeRho(f, rho=1, m=m1, tau=t1, c=c1, a=1)
+    Z2 = ColeColeRho(f, rho=1, m=m2, tau=t2, c=c2, a=1)
+    return rho * (Z1 + Z2)
 
 def ColeColeSigma(f, sigma, m, tau, c, a=1):
     """Complex-valued conductivity Cole-Cole model"""
