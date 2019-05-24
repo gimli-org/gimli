@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Spectral induced polarisation (SIP) plotting tools"""
+"""Spectral induced polarization (SIP) plotting tools"""
 
 import matplotlib.pyplot as plt
 

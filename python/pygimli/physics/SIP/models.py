@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Spectral induced polarisation (SIP) relaxations models."""
+"""Spectral induced polarization (SIP) relaxations models."""
 
 from math import pi
 import numpy as np

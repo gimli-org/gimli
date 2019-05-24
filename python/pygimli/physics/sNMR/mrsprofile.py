@@ -232,7 +232,7 @@ class MRSprofile():
         nlay : int [2]
             number of layers
         lam : float
-            regularisation parameter
+            regularization parameter
         startModel : array/vector
             starting model (see MRS.run parameters)
         """

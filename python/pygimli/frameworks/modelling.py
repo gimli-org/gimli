@@ -9,18 +9,32 @@ from copy import copy
 
 import pygimli as pg
 
-DEFAULT_STYLES={'Default': {'color': 'C0',
-                           'lw' : 1.5, 'linestyle': '-'},
-                'Data': {'color' : 'C0', #blueish
-                        'lw'  : 1, 'linestyle' : ':',
-                        'marker' : 'o'},
-                'Response': {'color': 'C0', #blueish
-                            'lw': 1.5, 'linestyle' : '-',
-                            'marker' : 'None'},
-                'Error': {'color': 'C3',  #reddish
-                          'lw': 0, 'linestyle' : '-',
-                          'elinewidth': 2, 'alpha' : 0.5},
-                }
+DEFAULT_STYLES = {
+    'Default': {
+        'color': 'C0',
+        'lw': 1.5,
+        'linestyle': '-'
+    },
+    'Data': {
+        'color': 'C0',  #blueish
+        'lw': 1,
+        'linestyle': ':',
+        'marker': 'o'
+    },
+    'Response': {
+        'color': 'C0',  #blueish
+        'lw': 1.5,
+        'linestyle': '-',
+        'marker': 'None'
+    },
+    'Error': {
+        'color': 'C3',  #reddish
+        'lw': 0,
+        'linestyle': '-',
+        'elinewidth': 2,
+        'alpha': 0.5
+    },
+}
 
 
 class Modelling(pg.ModellingBase):
@@ -118,10 +132,10 @@ class Modelling(pg.ModellingBase):
         return sm
 
     def createStartModel(self):
-        """Create starting model based on region settings. 
+        """Create starting model based on region settings.
 
-        Create starting model based on region setting. 
-        Should not be overwritten. Its used by inverion to create a valid 
+        Create starting model based on region setting.
+        Should not be overwritten. Its used by inverion to create a valid
         startmodel..
 
         TODO
@@ -170,7 +184,7 @@ class Modelling(pg.ModellingBase):
         Parameters
         ----------
         """
-        if regionNr is '*':
+        if regionNr == '*':
             for regionNr in self.regionManager().regionIdxs():
                 self.setRegionProperties(regionNr, **kwargs)
             return
@@ -187,7 +201,6 @@ class Modelling(pg.ModellingBase):
                                                 'fix': None,
                                                 }
 
-
         for key in list(kwargs.keys()):
             val = kwargs.pop(key)
             if val is not None:
@@ -195,7 +208,7 @@ class Modelling(pg.ModellingBase):
                     self._regionsNeedUpdate = True
                     self._regionProperties[regionNr][key] = val
 
-        if len(kwargs.items()) > 0:
+        if len(kwargs) > 0:
             pg.warn('Unhandled region properties:', kwargs)
 
     def _applyRegionProperties(self):
@@ -335,7 +348,7 @@ class Block1DModelling(Modelling):
 
         """Set number of layers for the 1D block model"""
         if nLayers == self._nLayers:
-            return;
+            return
 
         if nLayers < 2:
             pg.critical("Number of layers need to be at least 2")

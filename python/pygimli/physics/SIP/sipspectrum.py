@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Spectral induced polarisation (SIP) spectrum class and modules."""
+"""Spectral induced polarization (SIP) spectrum class and modules."""
 
 import sys
 import codecs

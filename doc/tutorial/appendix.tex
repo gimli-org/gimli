@@ -21,7 +21,7 @@ setTransModel( transModel );         //! set model transformation
 setLineSearch( bool isLinesearch );  //! switch line search on/off
 setRobustData( bool isRobust );      //! IRLS (robust) data weighting
 setBlockyModel( bool isBlocky );     //! IRLS (blocky) model constraints
-setLambda( double lambda );          //! regularisation strength
+setLambda( double lambda );          //! regularization strength
 setOptimizeLambda( bool optLambda ); //! L-curve optimization
 setMaxIter( int maxIter );           //! define maximum iteration number
 setModel( Vec model );               //! set model vector
@@ -34,7 +34,7 @@ Getter%Vec error();
 ModellingBase & forwardOperator();     //! forward operator
 uint boundaryCount(), modelCount(), dataCount();//! # boundaries/cells/data
 bool lineSearch(), blockyModel(), robustData(), optimizeLambda();//!options
-double getLambda();                   //! regularisation strength
+double getLambda();                   //! regularization strength
 int maxIter();                        //! maximum iteration number
 Vec model(), response(), roughness(); //! model/response/roughness vector
 Vec cWeight(), mWeight();             //! constraint/model control vector

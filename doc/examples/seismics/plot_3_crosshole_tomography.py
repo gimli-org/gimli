@@ -118,9 +118,8 @@ data = tt.simulate(mesh=mesh_fwd, scheme=scheme, slowness=1./model,
 # print("chi^2 = %.2f" % ttinv.inv.getChi2())  # Look at the data fit
 
 ttinv = TravelTimeManager()
-invmodel = ttinv.invert(data, mesh=mesh, secNodes=5, 
-                        lam=1100, #limits=[1500, 2500], 
-                        zWeight=1.0, verbose=True)
+invmodel = ttinv.invert(data, mesh=mesh, secNodes=5, lam=1100, zWeight=1.0,
+                        verbose=True)
 print("chi^2 = %.2f" % ttinv.inv.chi2())  # Look at the data fit
 
 ################################################################################
@@ -137,7 +136,7 @@ pg.show(mesh_fwd, model, ax=ax1, showMesh=True, label="Velocity (m/s)",
 for ax in (ax1, ax2):
     ax.plot(sensors[:, 0], sensors[:, 1], "wo")
 
-ttinv.showResult(ax=ax2)
+ttinv.showResult(ax=ax2, cMin=np.min(model), cMax=np.max(model))
 ttinv.showRayPaths(ax=ax2, color="0.8", alpha=0.3)
 fig.tight_layout()
 
@@ -154,4 +153,3 @@ ax.plot(sensors[:, 0], sensors[:, 1], "ko")
 ################################################################################
 # White regions indicate the model null space, i.e. cells that are not traversed
 # by any ray.
-pg.wait()

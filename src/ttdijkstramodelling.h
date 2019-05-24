@@ -80,8 +80,11 @@ public:
 
     void setStartNode(Index startNode);
 
-    /*!Set a root note for all distance calculations.*/
-    IndexArray shortestPathTo(Index root) const;
+    /*!Get the shortest way from root to node. Inline version.*/
+    void shortestPathTo(Index node, IndexArray & way) const;
+
+    /*!Get the shortest way from root to node.*/
+    IndexArray shortestPathTo(Index node) const;
 
     /*!Distance from root to node.*/
     double distance(Index root, Index node);

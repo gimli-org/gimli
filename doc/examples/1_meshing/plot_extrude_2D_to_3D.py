@@ -25,4 +25,4 @@ for cell in circle.cells():
 
 z = np.geomspace(1, 5, 5)
 cylinder = pg.createMesh3D(circle, z)
-pg.show(cylinder, cylinder.cellMarkers(), notebook=True, label="Cell markers")
+pg.show(cylinder, cylinder.cellMarkers(), label="Cell markers")

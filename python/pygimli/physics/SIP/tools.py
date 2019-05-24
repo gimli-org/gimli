@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Different spectral induced polarisation (SIP) tools."""
+"""Different spectral induced polarization (SIP) tools."""
 
 from math import pi
 import numpy as np
