@@ -131,7 +131,7 @@ class TravelTimeManager(MeshMethodManager):
 
         return fop
 
-    def simulate(self, mesh, slowness, scheme, secNodes=2, 
+    def simulate(self, mesh, slowness, scheme, secNodes=2,
                  noiseLevel=0.0, noiseAbs=0.0, **kwargs):
         """
         Simulate an Traveltime measurement.
@@ -153,15 +153,15 @@ class TravelTimeManager(MeshMethodManager):
             * a matrix of N slowness distributions of len mesh.cellCount()
             * a res map as [[marker0, res0], [marker1, res1], ...]
         scheme: :gimliapi:`GIMLI::DataContainer`
-            Data measurement scheme needs 's' for shot and 'g' for geophone 
+            Data measurement scheme needs 's' for shot and 'g' for geophone
             data token.
         secNodes: int [2]
             Number of refinement nodes to increase accuracy of the forward
-            calculation.       
+            calculation.
         noiseLevel: float [0.0]
             Add relative noise to the simulated data. noiseLevel*100 in %
         noiseAbs: float [0.0]
-            Add absolute noise to the simulated data in ms.        
+            Add absolute noise to the simulated data in ms.
 
         Other Parameters
         ----------------
@@ -183,10 +183,10 @@ class TravelTimeManager(MeshMethodManager):
         fop = self.fop
         fop.data = scheme
         fop.verbose = verbose
-        
+
         if mesh is not None:
             self.setMesh(mesh, secNodes=secNodes, ignoreRegionManager=True)
-                
+
         if len(slowness) == self.fop.mesh().cellCount():
             if max(slowness) > 1.:
                 pg.warn('slowness values larger than 1 ({0}), assuming velocity values .. building reciprocity.'.format(max(slowness)))
@@ -319,7 +319,7 @@ class TravelTimeManager(MeshMethodManager):
         >>> x, y = 8, 6
         >>> mesh = pg.createGrid(x, y)
         >>> data = createRAData([(0,0)] + [(x, i) for i in range(y)],
-        ...                     shotdistance=y+1)
+        ...                     shotDistance=y+1)
         >>> data.set("t", pg.RVector(data.size(), 1.0))
         >>> tt = TravelTimeManager()
         >>> tt.fop.setData(data)
@@ -362,7 +362,7 @@ class TravelTimeManager(MeshMethodManager):
             self.figs[name] = fig
 
         cov = self.rayCoverage()
-        return pg.show(self.fop.paraDomain, 
+        return pg.show(self.fop.paraDomain,
                        pg.log10(cov+min(cov[cov > 0])*.5), ax=ax,
                        coverage=self.standardizedCoverage(), **kwargs)
 
