@@ -10,6 +10,7 @@ modelling and inversion as well as data and model visualization.
 import numpy as np
 import pygimli as pg
 
+from pygimli.utils import prettyFloat as pf
 
 class MethodManager(object):
     """General manager to maintenance a measurement method.
@@ -252,16 +253,25 @@ class MethodManager(object):
         if isinstance(data, pg.DataContainer):
             vals = self.dataValues(data)
 
+        if data is None:
+            pg.critical("There are no data values.")
+
         if abs(min(vals)) < 1e-12:
             print(min(vals), max(vals))
             pg.critical("There are zero data values.")
 
         return vals
 
+    def preErrorCheck(self, err, dataVals=None):
+        """Overwrite for special checks"""
+        return err
+            
     def _ensureError(self, err, dataVals=None):
         """Check error validity"""
         if err is None:
             err = self.fw.errorVals
+
+        err = self.preErrorCheck(err, dataVals)
 
         vals = err
         if isinstance(err, pg.DataContainer):
@@ -363,18 +373,21 @@ class MethodManager(object):
         """Show the last inversion data and response."""
         ax = self.showData(data=self.inv.dataVals,
                            error=self.inv.errorVals,
-                           #label='Data',
+                           label='Data',
                            ax=ax, **kwargs)
         ax = self.showData(data=self.inv.response,
-                           #label='Response',
+                           label='Response',
                            ax=ax, **kwargs)
 
         if not kwargs.pop('hideFittingAnnotation', False):
-            ax.text(0.01, 1.0025, "rrms: %.2g, $\chi^2$: %.2g" %
-                                (self.fw.inv.relrms(), self.fw.inv.chi2()),
-                    transform=ax.transAxes,
-                    horizontalalignment='left',
-                    verticalalignment='bottom')
+            ax.text(0.99, 0.005,
+                    "rrms: {0}, $\chi^2$: {1}"
+                        .format(pf(self.fw.inv.relrms()), 
+                                pf(self.fw.inv.chi2())),
+                        transform=ax.transAxes,
+                        horizontalalignment='right',
+                        verticalalignment='bottom',
+                        fontsize=8)
 
         if not kwargs.pop('hideLegend', False):
             ax.legend()
@@ -439,17 +452,15 @@ class MethodManager1d(MethodManager):
         """Constructor."""
         super(MethodManager1d, self).__init__(**kwargs)
 
-        #self.nlay = kwargs.pop('nlay', 2)
-        #if 'nLayers' in kwargs:
-            #self.nlay = kwargs['nLayers']
-        #self.nProperties = kwargs.pop('nProperties', 1)
-        #self.Occam = kwargs.pop('Occam', False)  # member nameing!
-
     def createInversionFramework(self, **kwargs):
         """
         """
         return pg.frameworks.Block1DInversion(**kwargs)
 
+    def invert(self, data=None, err=None, **kwargs):
+        """ """
+        return super(MethodManager1d, self).invert(data=data, err=err,
+                                                   **kwargs)
 
 class MeshMethodManager(MethodManager):
     def __init__(self, **kwargs):

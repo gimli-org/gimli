@@ -827,7 +827,7 @@ def createERTData(elecs, schemeName='none', **kwargs):
     return data
 
 
-def test_VESManager(showProgress=False):
+def test_ERTManager(showProgress=False):
     pass
 
 

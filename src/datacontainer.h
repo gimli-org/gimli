@@ -307,7 +307,8 @@ public:
      * If withAnnotation sets the List separated by the Words "SensorIndex:" and "Data:" */
     std::string tokenList(bool withAnnotation=true) const;
 
-    /*! Add new data field with optional description. Throws an exception if the data field size is not the same size of the DataContainer.
+    /*! Add new data field with optional description. Throws an exception if the data 
+    field size is not the same size of the DataContainer.
         \param token String to identify the data
         \param data \ref RVector of the data
         \param description String that describe the data */

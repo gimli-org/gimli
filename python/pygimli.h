@@ -32,7 +32,7 @@
 //typedef struct { long double x, y; } __float128;
 #endif
 
-//#define PYTEST
+//#define PYTES
 #ifdef PYTEST
 
  #include <iostream>
@@ -601,6 +601,8 @@ namespace pyplusplus{ namespace aliases{
 
     typedef std::map<std::pair<unsigned long, unsigned long>, double > stdMapL_L_D;
     typedef std::map<std::pair<unsigned long, unsigned long>, std::complex< double > > stdMapL_L_C;
+
+    typedef std::map< GIMLI::Index, GIMLI::GraphDistInfo > NodeDistMap;
 
     #ifdef _WIN64
         typedef std::map<std::pair<unsigned long long, unsigned long long>, double > stdMapLL_LL_D;

@@ -52,7 +52,7 @@ class VMDModelling(Block1DModelling):
 
         # resistivity properties
         self.setRegionProperties(1, startModel=np.median(rhoa), trans='log')
-        return super(VMDModelling, self).createStartModel()
+        return super(VMDModelling, self).regionManager().createStartModel()
         
     def response_mt(self, par, i=0):
         """Compute response vector for a set of model parameter.

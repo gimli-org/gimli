@@ -633,7 +633,8 @@ Index DataContainer::hash() const{
 }
 
 
-void DataContainer::add(const std::string & token, const RVector & data, const std::string & description){
+void DataContainer::add(const std::string & token, const RVector & data, 
+                        const std::string & description){
     this->set(token, data);
     this->setDataDescription(token, description);
 //     if (data.size() == this->size()) {

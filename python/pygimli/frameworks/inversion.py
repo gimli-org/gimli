@@ -6,6 +6,7 @@ These are basic inversion frameworks that usually needs a forward operator to ru
 import numpy as np
 import pygimli as pg
 
+from pygimli.utils import prettyFloat as pf
 
 class Inversion(object):
     """Basic inversion framework.
@@ -120,10 +121,16 @@ class Inversion(object):
         call fop.createStartmodel() if non is defined.
         """
         if self._startModel is None:
-            self._startModel = self.fop.createStartModel()
+            sm = self.fop.regionManager().createStartModel()
+            if max(abs(sm)) > 0.0:
+                self._startModel = sm
+                pg.info("Creating startmodel from region infos:", sm)
+            else:
+                pg.verbose("No region infos for startmodel")
 
         if self._startModel is None:
-            self._startModel = self.fop.createDefaultStartModel(self.dataVals)
+            self._startModel = self.fop.createStartModel(self.dataVals)
+            pg.info("Creating startmodel from forward operator:", sm)
 
         return self._startModel
 
@@ -238,12 +245,17 @@ class Inversion(object):
     def stopAtChi1(self, b):
         self._stopAtChi1 = b
 
+    @property
+    def minDPhi(self):
+        return self.inv.deltaPhiAbortPercent()
+    @minDPhi.setter
+    def minDPhi(self, dPhi):
+        return self.setDeltaChiStop(dPhi)
+    def setDeltaChiStop(self, it):
+        self.inv.setDeltaPhiAbortPercent(it)
 
     def echoStatus(self):
         self.inv.echoStatus()
-
-    def setDeltaChiStop(self, it):
-        self.inv.setDeltaPhiAbortPercent(it)
 
     def setForwardOperator(self, fop):
         self._fop = fop
@@ -314,6 +326,9 @@ class Inversion(object):
         ----------------
         maxIter : int
             Overwrite class settings for maximal iterations number.
+        dPhi : float [1]
+            Overwrite class settings for delta data phi abbort criteria.
+            Default is 1%
         """
         if self.isFrameWork:
             return self._inv.run(dataVals, errorVals, **kwargs)
@@ -322,6 +337,7 @@ class Inversion(object):
             raise Exception("Need a valid forward operator for the inversion run.")
 
         maxIter = kwargs.pop('maxIter', self.maxIter)
+        minDPhi = kwargs.pop('dPhi', self.minDPhi)
 
         self.verbose = kwargs.pop('verbose', self.verbose)
         self.debug   = kwargs.pop('debug', self.debug)
@@ -389,7 +405,6 @@ class Inversion(object):
             resp = self.inv.response()
             chi2 = self.inv.chi2()
 
-
             if showProgress:
                 self.showProgress(showProgress)
 
@@ -419,10 +434,10 @@ class Inversion(object):
                     pg.boxprint("Abort criteria reached: chi² <= 1")
                 break
 
-            if abs(dPhi) < self.inv.deltaPhiAbortPercent():
+            if abs(dPhi) < minDPhi:
                 if self.verbose:
                     pg.boxprint("Abort criteria reached: dPhi = {0} (< {1}%)".format(
-                                round(dPhi, 2), self.inv.deltaPhiAbortPercent()))
+                                round(dPhi, 2), minDPhi))
                 break
 
             lastPhi = phi
@@ -467,22 +482,21 @@ class Inversion(object):
                     pass
 
             self.fop.drawModel(ax[0], self.inv.model(),
-                               #label='Model'
-                               )
-
+                               label='Model')
             self.fop.drawData(ax[1], self._dataVals, self._errorVals,
-                              #label='Data'
-                              )
-            self.fop.drawData(ax[1], self.inv.response(),
-                              #label='Response'
-                              )
+                              label='Data')
+            self.fop.drawData(ax[1], self.inv.response(), 
+                              label='Response')
 
-            ax[1].text(0.01, 1.005,
-                    "iter: %d, rrms: %.2g, $\chi^2$: %.2g" %
-                        (self.inv.iter(), self.inv.relrms(), self.inv.chi2()),
+            ax[1].text(0.99, 0.005,
+                    "Iter: {0}, rrms: {1}, $\chi^2$: {2}"
+                        .format(self.inv.iter(), 
+                                pf(self.inv.relrms()), 
+                                pf(self.inv.chi2())),
                         transform=ax[1].transAxes,
-                        horizontalalignment='left',
-                        verticalalignment='bottom')
+                        horizontalalignment='right',
+                        verticalalignment='bottom',
+                        fontsize=8)
 
             ax[1].figure.tight_layout()
         pg.plt.pause(0.05)
@@ -519,10 +533,6 @@ class Block1DInversion(MarquardtInversion):
     """
     def __init__(self, fop=None, **kwargs):
         super(Block1DInversion, self).__init__(fop=fop, **kwargs)
-        # attributes:
-        # nLayers, layerLimits, fixLayers
-
-        self._nLayers = 4
 
     def setForwardOperator(self, fop):
         if not isinstance(fop, pg.frameworks.Block1DModelling):
@@ -530,11 +540,6 @@ class Block1DInversion(MarquardtInversion):
                         'pg.modelling.Block1DModelling but is of type:', fop)
 
         return super(Block1DInversion, self).setForwardOperator(fop)
-
-    def setLayers(self, nLayers):
-        """Set amount of Layers"""
-        self._nLayers = nLayers
-        self.fop.initModelSpace(nLayers=nLayers)
 
     def fixLayers(self, fixLayers):
         """Fix layer thicknesses.
@@ -548,15 +553,15 @@ class Block1DInversion(MarquardtInversion):
         if fixLayers is False:
             self.fop.setRegionProperties(0, modelControl=1.0)
         elif fixLayers is not None:
+            # how do we fix values without modelControl?
+            # maybe set the region to be fixed here
             self.fop.setRegionProperties(0, modelControl=1e6)
             if hasattr(fixLayers, '__iter__'):
                 if len(fixLayers) != self.fop.nLayers:
                     print("fixLayers:", fixLayers)
-                    raise Exception("fixlayers needs to have a length of nLayers-1=" + str(self.fop.nLayers-1))
+                    pg.error("fixlayers needs to have a length of nLayers-1="
+                             + str(self.fop.nLayers-1))
                 self.fop.setRegionProperties(0, startModel=fixLayers)
-
-            # TODO DRY to self.fop.createStartModel
-            self.fop.setStartModel(self.fop.regionManager().createStartModel())
 
     def setLayerLimits(self, limits):
         """Set min and max layer thickness.
@@ -570,8 +575,16 @@ class Block1DInversion(MarquardtInversion):
         else:
             self.fop.setRegionProperties(0, limits=limits, trans='log')
 
+    def setParaLimits(self, limits):
+        """Set the limits for each parameter region."""
+        for i in range(1, 1 + self.fop.nPara):
+            if self.fop.nPara == 1:
+                self.fop.setRegionProperties(i, limits=limits, trans='log')
+            else:
+                self.fop.setRegionProperties(i, limits=limits[i-1], trans='log')
+
     def run(self, dataVals, errVals,
-            nLayers=None, fixLayers=None, layerLimits=None,
+            nLayers=None, fixLayers=None, layerLimits=None, paraLimits=None,
             **kwargs):
         r"""
 
@@ -580,27 +593,30 @@ class Block1DInversion(MarquardtInversion):
         nLayers : int [4]
             Number of layers.
         fixLayers : bool | [thicknesses]
-            For fixLayers=None, preset or defaults are uses.
             See: :py:mod:`pygimli.modelling.Block1DInversion.fixLayers`
-        layerLimits : [min, max]
+            For fixLayers=None, preset or defaults are uses.
+        layerLimits : [min, max] 
+            Limits the thickness off all layers.
             For layerLimits=None, preset or defaults are uses.
-            Set minimum or maximum layer thickness.
+        paraLimits : [min, max] | [[min, max],...]
+            Limits the range of the model parameter. If you have multiple
+            parameters you can set them with a list of limits.
 
         **kwargs:
             Forwarded to the parent class.
             See: :py:mod:`pygimli.modelling.MarquardtInversion`
         """
-        if nLayers is None:
-            nLayers = self._nLayers
-
-        ## initialize model space if needed
-        self.setLayers(nLayers)
+        if nLayers is not None:
+            self.fop.nLayers = nLayers
 
         if layerLimits is not None:
             self.setLayerLimits(layerLimits)
 
         if fixLayers is not None:
             self.fixLayers(fixLayers)
+
+        if paraLimits is not None:
+            self.setParaLimits(paraLimits)
 
         self.model = super(Block1DInversion, self).run(dataVals, errVals, **kwargs)
         return self.model

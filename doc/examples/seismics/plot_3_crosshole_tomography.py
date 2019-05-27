@@ -87,9 +87,9 @@ for sen in sensors:
 # Add measurements
 rays = np.array(rays)
 scheme.resize(len(rays))
-scheme.add("s", rays[:, 0])
-scheme.add("g", rays[:, 1])
-scheme.add("valid", np.ones(len(rays)))
+scheme["s"] = rays[:, 0]
+scheme["g"] = rays[:, 1]
+scheme["valid"] = np.ones(len(rays))
 scheme.registerSensorIndex("s")
 scheme.registerSensorIndex("g")
 

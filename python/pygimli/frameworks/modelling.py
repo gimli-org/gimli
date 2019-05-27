@@ -17,15 +17,17 @@ DEFAULT_STYLES = {
     },
     'Data': {
         'color': 'C0',  #blueish
-        'lw': 1,
+        'lw': 0.5,
         'linestyle': ':',
-        'marker': 'o'
+        'marker': 'o',
+        'ms': 4
     },
     'Response': {
         'color': 'C0',  #blueish
-        'lw': 1.5,
+        'lw': 2.0,
         'linestyle': '-',
-        'marker': 'None'
+        'marker': 'None',
+        'alpha': 0.4
     },
     'Error': {
         'color': 'C3',  #reddish
@@ -126,25 +128,22 @@ class Modelling(pg.ModellingBase):
     def createDefaultStartModel(self, dataVals):
         """Create the default startmodel as the median of the data values.
         """
+        pg.critical("'don't use me")
+        # mv = pg.median(dataVals)
+        # pg.info("Set default startmodel to median(data values)={0}".format(mv))
+        # sm = pg.RVector(self.regionManager().parameterCount(), mv)
+        # return sm
+
+    def createStartModel(self, dataVals):
+        """Create the default startmodel as the median of the data values.
+        
+        Overwriting might be a good idea. 
+        Its used by inverion to create a valid startmodel if there are 
+        no starting values from the regions. 
+        """
         mv = pg.median(dataVals)
         pg.info("Set default startmodel to median(data values)={0}".format(mv))
         sm = pg.RVector(self.regionManager().parameterCount(), mv)
-        return sm
-
-    def createStartModel(self):
-        """Create starting model based on region settings.
-
-        Create starting model based on region setting.
-        Should not be overwritten. Its used by inverion to create a valid
-        startmodel..
-
-        TODO
-
-            * Howto ensure childs sets self.setStartModel(sm)?
-
-        """
-        sm = self.regionManager().createStartModel()
-        pg.info("Creating startmodel from region infos:", sm)
         return sm
 
     def regionManager(self):
@@ -319,53 +318,58 @@ class Modelling(pg.ModellingBase):
 class Block1DModelling(Modelling):
     """General forward operator for 1D layered models.
 
-    Find the data space for the model space [thickness_i, parameter_jk],
+    Model space: [thickness_i, parameter_jk],
     with i = 0 - nLayers-1, j = (0 .. nLayers), k=(0 .. nPara)
     """
-    def __init__(self, nPara=1, **kwargs):
+    def __init__(self, nPara=1, nLayers=4, **kwargs):
         """Constructor
 
         Parameters
         ----------
+        nLayers : int [4]
+            Number of layers.
         nPara : int [1]
-            Number of parameters per layer. e.g.: 2 for resistivity and phase.
-            While the number of parameter is defined by the physics yout want
-            to simulate, nPara need to be set from the derived class and
-            cannot be changed in runtime.
+            Number of parameters per layer 
+            (e.g. nPara=2 for resistivity and phase)
         """
+        self._nLayers = 0
         super(Block1DModelling, self).__init__(**kwargs)
         self._withMultiThread = True
         self._nPara = nPara # number of parameters per layer
 
-        # store this to avoid reinitialization if not needed
-        self._nLayers = 0
+        self.initModelSpace(nLayers)
+
+    @property
+    def nPara(self):
+        return self._nPara
 
     @property
     def nLayers(self):
         return self._nLayers
 
-    def initModelSpace(self, nLayers):
+    @nLayers.setter
+    def nLayers(self, nLayers):
+        return self.initModelSpace(nLayers)
 
+    def initModelSpace(self, nLayers):
         """Set number of layers for the 1D block model"""
         if nLayers == self._nLayers:
             return
+        self._nLayers = nLayers
 
         if nLayers < 2:
             pg.critical("Number of layers need to be at least 2")
 
-        self._nLayers = nLayers
-
         mesh = pg.createMesh1DBlock(nLayers, self._nPara)
         self.setMesh(mesh)
-
-        for i in range(self._nPara + 1):
+        # setting region 0 (layers) and 1..nPara (values)
+        for i in range(1 + self._nPara):
             self.setRegionProperties(i, trans='log')
 
         if self._withMultiThread:
             self.setMultiThreadJacobian(2*nLayers - 1)
 
-        self._applyRegionProperties()
-
+        # self._applyRegionProperties()
 
     def drawModel(self, ax, model, **kwargs):
         pg.mplviewer.drawModel1D(ax=ax,
@@ -385,7 +389,7 @@ class Block1DModelling(Modelling):
         """
         nData = len(data)
         yVals = range(nData)
-        ax.loglog(data, yVals, 'x-',
+        ax.loglog(data, yVals, 
                   label=label,
                   **DEFAULT_STYLES.get(label, DEFAULT_STYLES['Default'])
                   )
@@ -416,7 +420,7 @@ class MeshModelling(Modelling):
             pg._r("inuse ?")
             return self._fop.mesh
         else:
-            return super(Modelling, self).mesh()
+            return self.mesh()
 
     @property
     def paraDomain(self):
@@ -448,8 +452,7 @@ class MeshModelling(Modelling):
 
     def mesh(self):
         """"""
-        # pg._r("getMesh()", self._regionChanged, self._regionManagerInUse)
-        if self._regionChanged and self._regionManagerInUse:
+        if self._regionManagerInUse and self._regionChanged:
             self.createFwdMesh_()
         return super(Modelling, self).mesh()
 
@@ -457,6 +460,7 @@ class MeshModelling(Modelling):
         """
         """
         if ignoreRegionManager == True or self._regionManagerInUse == False:
+            self._regionManagerInUse = False
             if self.fop is not None:
                 self.fop.setMesh(mesh, ignoreRegionManager=True)
             else:
@@ -464,7 +468,6 @@ class MeshModelling(Modelling):
 
             self.setMeshPost(mesh)
             return
-
         self.clearRegionProperties()
 
         # copy the mesh to the region manager who renumber cell markers

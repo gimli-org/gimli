@@ -293,18 +293,18 @@ public:
         Vec tmp(a);
         double lb1 = this->lowerBound() * (1.0 + TRANSTOL);
         if (min(a) < lb1){
-            std::cerr << WHERE_AM_I << " Warning! " << min(a)
-                      << " <=" << this->lowerBound() << " lower bound" << std::endl;
-            for (uint i = 0; i < a.size(); i ++){
+            // std::cerr << WHERE_AM_I << " Warning! " << min(a)
+            //           << " <=" << this->lowerBound() << " lower bound" << std::endl;
+            for (Index i = 0; i < a.size(); i ++){
                 tmp[i] = max(a[i], lb1);
             }
         }
 
         double ub1 = upperbound_ * (1.0 - TRANSTOL);
         if (max(a) > ub1 ){
-            std::cerr << WHERE_AM_I << " Warning! " << max(a) << " > "
-                      << upperbound_ << " upper bound" << std::endl;
-            for (uint i = 0; i < a.size(); i ++){
+            // std::cerr << WHERE_AM_I << " Warning! " << max(a) << " > "
+            //           << upperbound_ << " upper bound" << std::endl;
+            for (Index i = 0; i < a.size(); i ++){
                 tmp[i] = min(tmp[i], ub1);
             }
         }

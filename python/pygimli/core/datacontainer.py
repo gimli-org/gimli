@@ -2,9 +2,10 @@
 """
 Extensions to the core DataContainer class[es].
 """
-
-from .._logger import deprecated, info, warn, critical
-from ._pygimli_ import (RVector3, RVector, DataContainer, DataContainerERT)
+import numpy as np
+from .._logger import deprecated, info, warn, critical, verbose
+from ._pygimli_ import (RVector3, RVector, IndexArray,
+                        DataContainer, DataContainerERT)
 
 
 def __DataContainer_setSensors(self, sensors):
@@ -34,9 +35,21 @@ def __DataContainer_setSensors(self, sensors):
             self.createSensor(nS)
         else:
             self.setSensorPosition(i, nS)
-
-    
+            
 DataContainer.setSensors = __DataContainer_setSensors
+
+def __DC_setVal(self, key, val):
+    if len(val) >  self.size():
+        verbose("DataContainer resized to:", len(val))
+        self.resize(len(val))
+    self.set(key, val)
+DataContainer.__setitem__ = __DC_setVal
+
+def __DC_getVal(self, key):
+    if self.isSensorIndex(key):
+        return np.array(self(key), dtype=int)
+    return self(key)
+DataContainer.__getitem__ = __DC_getVal
 
 
 def __DataContainerERT_addFourPointData(self, *args, **kwargs):

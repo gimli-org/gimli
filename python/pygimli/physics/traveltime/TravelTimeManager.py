@@ -132,20 +132,17 @@ class TravelTimeManager(MeshMethodManager):
 
         return fop
 
-    def simulate(self, mesh, slowness, scheme, secNodes=2,
+    def simulate(self, slowness, scheme, mesh=None, secNodes=2,
                  noiseLevel=0.0, noiseAbs=0.0, **kwargs):
-        """
-        Simulate an Traveltime measurement.
+        """Simulate Traveltime measurements.
 
         Perform the forward task for a given mesh, a slowness distribution (per
-        cell) and return data (traveltime) for a measurement scheme. This is a
-        static method since it does not interfere with the managers inversion
-        approaches.
+        cell) and return data (traveltime) for a measurement scheme. 
 
         Parameters
         ----------
         mesh : :gimliapi:`GIMLI::Mesh`
-            Mesh to calculate for.
+            Mesh to calculate for or use the last known mesh.
         slowness : array(mesh.cellCount()) | array(N, mesh.cellCount())
             Slowness distribution for the given mesh cells can be:
 
@@ -183,17 +180,18 @@ class TravelTimeManager(MeshMethodManager):
         fop = self.fop
         fop.data = scheme
         fop.verbose = verbose
-
-        self.setMesh(mesh, secNodes=secNodes, ignoreRegionManager=True)
-        fop._regionManagerInUse = False
-
-        if len(slowness) == mesh.cellCount():
+        
+        if mesh is not None:
+            self.setMesh(mesh, secNodes=secNodes, ignoreRegionManager=True)
+        
+        if len(slowness) == self.fop.mesh().cellCount():
             if max(slowness) > 1.:
                 pg.warn('slowness values larger than 1 ({0}), assuming velocity values .. building reciprocity.'.format(max(slowness)))
                 t = fop.response(1./slowness)
             else:
                 t = fop.response(slowness)
         else:
+            print(self.fop.mesh())
             print("slowness: ", slowness)
             pg.critical("Simulate called with wrong slowness array.")
 
@@ -364,8 +362,3 @@ class TravelTimeManager(MeshMethodManager):
         return pg.show(self.fop.paraDomain,
                        pg.log10(cov+min(cov[cov > 0])*.5), ax=ax,
                        coverage=self.standardizedCoverage(), **kwargs)
-
-
-
-if __name__ == '__main__':
-    pg.wait()

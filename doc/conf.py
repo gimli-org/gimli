@@ -62,6 +62,7 @@ needs_sphinx = '1.3' # and lower 1.6
 # Check for external sphinx extensions
 deps = ['sphinxcontrib-programoutput',
         'sphinxcontrib-bibtex',
+        'sphinxcontrib-doxylink',
         'numpydoc']
 
 # check for p.version too
@@ -92,7 +93,7 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.autosectionlabel',
               'matplotlib.sphinxext.plot_directive',
               'srclinks',
-              'doxylink'
+              #'doxylink'
               ]
 
 extensions += [dep.replace('-', '.') for dep in deps]

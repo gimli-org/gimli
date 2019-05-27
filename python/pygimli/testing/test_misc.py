@@ -80,6 +80,23 @@ class TestMisc(unittest.TestCase):
         self.assertEqual(data.sensor(0), [4., 0.0, 0.0])
         self.assertEqual(data.sensor(4), [0., 0.0, 0.0])
 
+    def test_DataContainerIndex(self):
+        data = pg.DataContainer()
+        data['b'] = np.ones(2) * 3.14
+        np.testing.assert_array_equal(data['b'], np.ones(2)*3.14)
+        self.assertEqual(type(data['b']), type(pg.RVector()))
+        
+        data.registerSensorIndex('a')
+        data['a'] = np.ones(2)
+        np.testing.assert_array_equal(data['a'], np.ones(2))
+        self.assertEqual(type(data['a']), type(np.array(1)))
+        self.assertEqual(data['a'].dtype, 'int')
+    
+        data['a'] = np.ones(2)*1.2
+        np.testing.assert_array_equal(data['a'], np.ones(2))
+        self.assertEqual(type(data['a']), type(np.array(1)))
+        self.assertEqual(data['a'].dtype, 'int')
+
     def test_Operators(self):
         t = pg.RVector(10, 1.0)
         self.assertEqual(len(t == 1.0), len(t > 0))

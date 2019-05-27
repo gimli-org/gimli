@@ -62,7 +62,9 @@ template < class T > void distributeCalc(T calc, uint nCalcs, uint nThreads, boo
         + str(std::thread::hardware_concurrency()) + " CPU");
     if (nThreads == 1){
         calc.setRange(0, nCalcs);
+        Stopwatch swatch(true);
         calc();
+        log(Debug, "time: " + str(swatch.duration()) + "s");
     } else {
         uint singleCalcCount = (uint)ceil((double)nCalcs / (double)nThreads);
 
@@ -89,18 +91,16 @@ template < class T > void distributeCalc(T calc, uint nCalcs, uint nThreads, boo
         for (uint i = 0; i < calcObjs.size(); i++) {
             //threads.emplace_back(calcObjs[i]);
             threads[i] = std::thread( [&iomutex, i, &calcObjs] {
-                // Stopwatch swatch(true);
+                Stopwatch swatch(true);
                 {
                     std::lock_guard<std::mutex> iolock(iomutex);
-                    
                     log(Debug, "Thread #" + str(i) + ": on CPU " 
                     + str(schedGetCPU()) + " slice " + str(calcObjs[i].start()) + ":" + str(calcObjs[i].end()));
                 }
                 calcObjs[i]();
                 {
-                    // std::lock_guard<std::mutex> iolock(iomutex);
-                    
-                    // log(Debug, "time: #" + str(i) + " " + str(swatch.duration()) + "s");
+                    std::lock_guard<std::mutex> iolock(iomutex);
+                    log(Debug, "time: #" + str(i) + " " + str(swatch.duration()) + "s");
                 }
 
             });
