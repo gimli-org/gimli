@@ -129,9 +129,9 @@ class Inversion(object):
                 pg.verbose("No region infos for startmodel")
 
         if self._startModel is None:
-            self._startModel = self.fop.createStartModel(self.dataVals)
+            sm = self.fop.createStartModel(self.dataVals)
             pg.info("Creating startmodel from forward operator:", sm)
-
+            self._startModel = sm
         return self._startModel
 
     @startModel.setter
@@ -330,6 +330,7 @@ class Inversion(object):
             Overwrite class settings for delta data phi abbort criteria.
             Default is 1%
         """
+        self.reset()
         if self.isFrameWork:
             return self._inv.run(dataVals, errorVals, **kwargs)
 

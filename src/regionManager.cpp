@@ -74,7 +74,7 @@ void Region::init_() {
     lowerBound_     = 0.0;
     upperBound_     = 0.0;
     mcDefault_      = 1.0;
-    startDefault_   = 1.0;
+    startDefault_   = 0.0;
     ownsTrans_ = true;
 
     transString_    = "Log";

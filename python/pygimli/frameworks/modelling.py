@@ -134,16 +134,19 @@ class Modelling(pg.ModellingBase):
         # sm = pg.RVector(self.regionManager().parameterCount(), mv)
         # return sm
 
-    def createStartModel(self, dataVals):
+    def createStartModel(self, dataVals=None):
         """Create the default startmodel as the median of the data values.
         
         Overwriting might be a good idea. 
         Its used by inverion to create a valid startmodel if there are 
         no starting values from the regions. 
         """
-        mv = pg.median(dataVals)
-        pg.info("Set default startmodel to median(data values)={0}".format(mv))
-        sm = pg.RVector(self.regionManager().parameterCount(), mv)
+        if dataVals is not None:
+            mv = pg.median(dataVals)
+            pg.info("Set default startmodel to median(data values)={0}".format(mv))
+            sm = pg.RVector(self.regionManager().parameterCount(), mv)
+        else:
+            sm = self.regionManager().createStartModel()
         return sm
 
     def regionManager(self):
@@ -361,6 +364,7 @@ class Block1DModelling(Modelling):
             pg.critical("Number of layers need to be at least 2")
 
         mesh = pg.createMesh1DBlock(nLayers, self._nPara)
+        self.clearRegionProperties()
         self.setMesh(mesh)
         # setting region 0 (layers) and 1..nPara (values)
         for i in range(1 + self._nPara):
