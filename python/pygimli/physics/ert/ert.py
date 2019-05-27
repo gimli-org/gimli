@@ -827,9 +827,5 @@ def createERTData(elecs, schemeName='none', **kwargs):
     return data
 
 
-def test_ERTManager(showProgress=False):
-    pass
-
-
 if __name__ == "__main__":
     pass

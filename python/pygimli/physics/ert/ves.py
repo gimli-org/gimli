@@ -209,7 +209,8 @@ class VESCModelling(VESModelling):
         startThicks = pg.utils.diff(pg.cat([0.0], startThicks))
 
         # layer thickness properties
-        self.setRegionProperties(0, startModel=startThicks, trans='log')
+        self.setRegionProperties(0, startModel=startThicks, 
+                                 trans='log')
 
         # resistivity properties
         self.setRegionProperties(1, startModel=np.median(rhoa),
@@ -231,8 +232,7 @@ class VESCModelling(VESModelling):
             nLayers = (len(par) + 1) // 3
             fop = pg.DC1dModellingC(nLayers, self.am, self.bm, self.an, self.bn)
         else:
-            raise Exception("I have no data basis .. "
-                            "don't know what to calculate.")
+            pg.critical("No data basis known.")
 
         return fop.response(par)
 
@@ -321,15 +321,16 @@ class VESCModelling(VESModelling):
         if labels is None:
             labels = [r'$\varrho_a$', r'$\varphi_a$']
 
-        if "label" in kwargs:
-            kwargs.pop('label')
-        super(VESCModelling, self).drawData(a1, ra, error=raE,
-                                            label=labels[0], **kwargs)
+        label = kwargs.pop('label', 'Data')
 
-        style = dict(pg.frameworks.modelling.DEFAULT_STYLES.get(labels[1],
+        style = dict(pg.frameworks.modelling.DEFAULT_STYLES.get(label,
                             pg.frameworks.modelling.DEFAULT_STYLES['Default']))
-        style['Color'] = 'C2'
         style.update(kwargs)
+        
+        super(VESCModelling, self).drawData(a1, ra, error=raE,
+                                            label=labels[0], **style)
+
+        style['Color'] = 'C2'
 
         a2.semilogy(phi, self.ab2, label=labels[1], **style)
 
@@ -470,6 +471,11 @@ class VESManager(MethodManager1d):
         if not 'layerLimits' in kwargs:
             kwargs['layerLimits'] = [min(self.fop.mn2)/5,
                                      max(self.fop.ab2)/2]
+
+        if 'paraLimits' in kwargs and self.complex:
+            pL = kwargs['paraLimits'][1]
+            kwargs['paraLimits'][1] = [pL[0]/1000, pL[1]/1000]
+            
 
         return super(VESManager, self).invert(data=data, err=err,
                                               **kwargs)
