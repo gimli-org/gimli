@@ -49,7 +49,7 @@ class Inversion(object):
         self._fop = None
 
         self.reset()
-        
+
         if inv is not None:
             self._inv = inv
             self.isFrameWork = True
@@ -237,7 +237,7 @@ class Inversion(object):
     def maxIter(self, v):
         if self.inv is not None:
             self.inv.setMaxIter(v)
-    
+
     @property
     def stopAtChi1(self):
         return self._stopAtChi1
@@ -428,16 +428,21 @@ class Inversion(object):
                 print("chi² = {0} (dPhi = {1}%) lam: {2}".format(
                             round(chi2, 2), round(dPhi, 2), self.inv.getLambda()))
 
-            if chi2 <= 1 and self.stopAtChi1 == True:
+            if chi2 <= 1 and self.stopAtChi1:
                 print("\n")
                 if self.verbose:
-                    pg.boxprint("Abort criteria reached: chi² <= 1")
+                    pg.boxprint("Abort criterion reached: chi² <= 1 (%.2f)" % chi2)
                 break
 
             if abs(dPhi) < minDPhi:
                 if self.verbose:
+<<<<<<< HEAD
                     pg.boxprint("Abort criteria reached: dPhi = {0} (< {1}%)".format(
                                 round(dPhi, 2), minDPhi))
+=======
+                    pg.boxprint("Abort criterion reached: dPhi = {0} (< {1}%)".format(
+                                round(dPhi, 2), self.inv.deltaPhiAbortPercent()))
+>>>>>>> b381dea1872592d396b59c69e774e2a279b8a3d9
                 break
 
             lastPhi = phi

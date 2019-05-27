@@ -120,7 +120,6 @@ data = tt.simulate(mesh=mesh_fwd, scheme=scheme, slowness=1./model,
 ttinv = TravelTimeManager()
 invmodel = ttinv.invert(data, mesh=mesh, secNodes=5, lam=1100, zWeight=1.0,
                         verbose=True)
-print("chi^2 = %.2f" % ttinv.inv.chi2())  # Look at the data fit
 
 ################################################################################
 # Finally, we visualize the true model and the inversion result next to each
