@@ -8,6 +8,7 @@ import numpy as np
 
 import pygimli as pg
 from pygimli.physics import VESManager
+from pygimli.physics.em import VMDTimeDomainModelling
 
 
 class TestManagers(unittest.TestCase):
@@ -19,8 +20,27 @@ class TestManagers(unittest.TestCase):
         pass
 
     def test_VMD(self, showProgress=False):
-        pass
+        t = np.logspace(-5.5, -2.2, 20)
+        fop = VMDTimeDomainModelling(times=t, txArea=10000.0, rxArea=10000.0)
+        # [thick[3], res[4]] nLay=4
 
+        vmdMgr = pg.manager.MethodManager1d(fop)
+        synthModel = np.array([25., 5., 100., 150., 1., 10., 4.])
+       
+        ra = vmdMgr.simulate(synthModel)
+
+        err = abs(np.log(t)/2) * 0.01
+        ra *= 1. + pg.randn(len(ra)) * err
+
+        model = vmdMgr.invert(ra, err, nLayers=4, layerLimits=[2, 500],
+                              maxIter=20,
+                              showProgress=showProgress, verbose=False)
+
+        np.testing.assert_array_less(vmdMgr.fw.chi2(), 1)
+        if showProgress:
+            axs = vmdMgr.showResult()
+            fop.drawModel(ax=axs[0], model=synthModel, label='Synth')
+        
     def test_VES(self, showProgress=False):
         """
         """
@@ -83,16 +103,19 @@ class TestManagers(unittest.TestCase):
 
         np.testing.assert_array_less(mgr.inv.inv.chi2(), 1)
 
-        if showProgress:
-            print("test done")
-            pg.wait()
-
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:
 
         test = TestManagers()
-        test.test_VES(showProgress=True)
+
+        if sys.argv[1].lower() == 'ves':
+            test.test_VES(showProgress=True)
+        elif sys.argv[1].lower() == 'vmd':
+            test.test_VMD(showProgress=True)
+
+        pg.info("test done")
+        pg.wait()
     else:       
         unittest.main()
 

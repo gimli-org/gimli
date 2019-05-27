@@ -48,8 +48,9 @@ class MethodManager(object):
         overwriting
         :py:mod:`pygimli.manager.MethodManager.initInversionFramework`
     """
-    def __init__(self, **kwargs):
+    def __init__(self, fop=None, **kwargs):
         """Constructor."""
+        self._fop = fop
         self._verbose = kwargs.pop('verbose', False)
         self._debug = kwargs.pop('debug', False)
 
@@ -146,8 +147,11 @@ class MethodManager(object):
         Modelling
             Instance of any kind of :py:mod:`pygimli.framework.Modelling`.
         """
-        raise Exception("This is a abstract function. "
-                        "Override in derived class")
+        if self._fop is not None:
+            return self._fop
+        
+        pg.critical("No forward operator defined, either give one or"
+                    "overwrite in derived class")
 
     def _initInversionFramework(self, **kwargs):
         """Initialize or re-initialize the inversion framework.
@@ -448,9 +452,9 @@ class MethodManager(object):
 
 class MethodManager1d(MethodManager):
     """Method Manager base class for managers on a 1d discretization."""
-    def __init__(self, **kwargs):
+    def __init__(self, fop=None, **kwargs):
         """Constructor."""
-        super(MethodManager1d, self).__init__(**kwargs)
+        super(MethodManager1d, self).__init__(fop, **kwargs)
 
     def createInversionFramework(self, **kwargs):
         """
