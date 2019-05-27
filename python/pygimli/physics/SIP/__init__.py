@@ -6,7 +6,7 @@ from .tools import (isComplex, toComplex, toPolar, squeezeComplex,
                     KramersKronig)
 
 from .importData import (load)
-from .sipspectrum import (SpectrumManager, SIPSpectrum)
+from .sipspectrum import (SpectrumManager, SpectrumModelling, SIPSpectrum)
 
 from .models import (ColeColeRho, ColeColeRhoDouble, 
                     ColeColeSigma, ColeColePhi, DoubleColeColePhi,

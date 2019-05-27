@@ -122,7 +122,7 @@ class Inversion(object):
         """
         if self._startModel is None:
             sm = self.fop.regionManager().createStartModel()
-            if max(abs(sm)) > 0.0:
+            if len(sm) > 0 and max(abs(np.atleast_1d(sm))) > 0.0:
                 self._startModel = sm
                 pg.info("Creating startmodel from region infos:", sm)
             else:
@@ -386,7 +386,8 @@ class Inversion(object):
             self.showProgress(showProgress)
 
         lastPhi = self.phi()
-        chi2History = [self.chi2()]
+        self.chi2History = [self.chi2()]
+        self.modelHistory = [self.startModel]
 
         for i in range(1, maxIter):
 
@@ -397,7 +398,12 @@ class Inversion(object):
                 print("-" * 80)
                 print("inv.iter", i + 1, "... ", end='')
 
-            self.inv.oneStep()
+            try:
+                self.inv.oneStep()
+            except RuntimeError as e:
+                print(e)
+                pg.error('One step failed. '
+                         'Aborting and going back to last model')
             
             if np.isnan(self.model).any():
                 print(model)
@@ -405,6 +411,9 @@ class Inversion(object):
             
             resp = self.inv.response()
             chi2 = self.inv.chi2()
+
+            self.chi2History.append(chi2)
+            self.modelHistory.append(self.model)
 
             if showProgress:
                 self.showProgress(showProgress)
@@ -417,7 +426,6 @@ class Inversion(object):
             if self.inv.blockyModel():
                 self.inv.constrainBlocky()
 
-            chi2History.append(chi2)
 
             if self._postStep and callable(self._postStep):
                 self._postStep(i, self.inv)

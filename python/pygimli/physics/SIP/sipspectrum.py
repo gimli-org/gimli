@@ -32,13 +32,15 @@ class SpectrumModelling(Modelling):
     complex: bool
 
     """
-    def __init__(self, funct, **kwargs):
+    def __init__(self, funct=None, **kwargs):
         self._function = None
         self._complex = False
-        super(SpectrumModelling, self).__init__(verbose=True)
+        super(SpectrumModelling, self).__init__(**kwargs)
         self._freqs = None
         self._params = {}
-        self._initFunction(funct)
+
+        if funct is not None:
+            self._initFunction(funct)
 
     @property 
     def params(self):
@@ -65,18 +67,22 @@ class SpectrumModelling(Modelling):
     def freqs(self, f):
         self._freqs = f
 
-    def createDefaultStartModel(self, dataVals=None):
-        sm = np.zeros(self.regionManager().parmeterCount())
-        sm += 1.0
-        pg.warn('createDefaultStartModel', sm)
-        return sm
-
     def setRegionProperties(self, k, **kwargs):
         """Set Region Properties by parameter name."""
         if isinstance(k, int) or (k == '*'):
             super(SpectrumModelling, self).setRegionProperties(k, **kwargs)
         else:
             self.setRegionProperties(self._params[k], **kwargs)
+
+    def addParameter(self, name, id=None, **kwargs):
+        """
+        """
+        if id is None:
+            id = len(self._params)
+        self._params[name] = id
+        self.regionManager().addRegion(id)
+        self.setRegionProperties(name, **kwargs)
+        return id
 
     def _initFunction(self, funct):
         """Init any function and interpret possible args and kwargs."""
@@ -90,14 +96,11 @@ class SpectrumModelling(Modelling):
         nPara = len(self._params.keys())
         
         for i, [k, p] in enumerate(self._params.items()):
-            self._params[k] = i
-            self.regionManager().addRegion(i)
-            self.setRegionProperties(i, 
-                                     cType=0, 
-                                     single=True, 
-                                     trans='log', 
-                                     startModel=1)
-            
+            self.addParameter(k, id=i, cType=0, 
+                                       single=True, 
+                                       trans='log', 
+                                       startModel=1)
+    
     def response(self, params):
         #pg._r('response:', params)
         #self.drawModel(None, params)
@@ -131,7 +134,7 @@ class SpectrumManager(MethodManager):
     """Manager to work with spectra data."""
     def __init__(self, fop=None, **kwargs):
         self._funct = fop
-        super(SpectrumManager, self).__init__(fop=fop, **kwargs)
+        super(SpectrumManager, self).__init__(**kwargs)
 
     def setFunct(self, fop, **kwargs):
         """"""
@@ -141,7 +144,7 @@ class SpectrumManager(MethodManager):
     def createForwardOperator(self, **kwargs):
         """
         """
-        if isinstance(self._funct, Modelling):
+        if isinstance(self._funct, SpectrumModelling):
             return self._funct
         
         fop = SpectrumModelling(self._funct, **kwargs)
