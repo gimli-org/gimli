@@ -436,13 +436,8 @@ class Inversion(object):
 
             if abs(dPhi) < minDPhi:
                 if self.verbose:
-<<<<<<< HEAD
                     pg.boxprint("Abort criteria reached: dPhi = {0} (< {1}%)".format(
                                 round(dPhi, 2), minDPhi))
-=======
-                    pg.boxprint("Abort criterion reached: dPhi = {0} (< {1}%)".format(
-                                round(dPhi, 2), self.inv.deltaPhiAbortPercent()))
->>>>>>> b381dea1872592d396b59c69e774e2a279b8a3d9
                 break
 
             lastPhi = phi
