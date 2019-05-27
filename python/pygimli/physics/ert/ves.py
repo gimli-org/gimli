@@ -158,7 +158,7 @@ class VESModelling(Block1DModelling):
 
         ra = data
         raE = error
-    
+
         style = dict(pg.frameworks.modelling.DEFAULT_STYLES.get(label,
                             pg.frameworks.modelling.DEFAULT_STYLES['Default']))
         style.update(kwargs)
@@ -321,7 +321,8 @@ class VESCModelling(VESModelling):
         if labels is None:
             labels = [r'$\varrho_a$', r'$\varphi_a$']
 
-        kwargs.pop('label')
+        if "label" in kwargs:
+            kwargs.pop('label')
         super(VESCModelling, self).drawData(a1, ra, error=raE,
                                             label=labels[0], **kwargs)
 
@@ -430,7 +431,7 @@ class VESManager(MethodManager1d):
             if len(err) == 2:
                 nData = len(datavals) // 2
                 err = pg.cat(np.ones(nData)*err[0],
-                             np.abs(err[1] / datavals[nData:]))    
+                             np.abs(err[1] / datavals[nData:]))
         else:
             if len(err) == 1:
                 err = np.ones(nData)*err[0]
@@ -442,11 +443,11 @@ class VESManager(MethodManager1d):
 
         Parameters
         ----------
-        
+
         Other Parameters
         ----------------
         **kwargs
-            Additional kwargs inherited from %(MethodManager1d.invert) and 
+            Additional kwargs inherited from %(MethodManager1d.invert) and
             %(Inversion.run)
 
         Returns
@@ -467,7 +468,7 @@ class VESManager(MethodManager1d):
             self.inv.dataTrans = self.dataTrans
 
         if not 'layerLimits' in kwargs:
-            kwargs['layerLimits'] = [min(self.fop.mn2)/5, 
+            kwargs['layerLimits'] = [min(self.fop.mn2)/5,
                                      max(self.fop.ab2)/2]
 
         return super(VESManager, self).invert(data=data, err=err,
@@ -536,4 +537,3 @@ def VESManagerApp():
 
 if __name__ == '__main__':
     VESManagerApp()
-
