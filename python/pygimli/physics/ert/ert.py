@@ -11,7 +11,7 @@ import numpy as np
 import pygimli as pg
 from pygimli.frameworks import Modelling, MeshModelling
 from pygimli.manager import MeshMethodManager
-
+from .visualization import showERTData
 
 def simulate(mesh, res, scheme, sr=True, useBert=True,
              verbose=False, **kwargs):
@@ -49,7 +49,26 @@ def simulate(mesh, res, scheme, sr=True, useBert=True,
     return ert.simulate(mesh, res, scheme, verbose=verbose, **kwargs)
 
 
-class BertModelling(MeshModelling):
+class ERTModellingBase(MeshModelling):
+    def __init__(self, **kwargs):
+        super(ERTModellingBase, self).__init__(**kwargs)
+
+    def drawData(self, ax, data=None, **kwargs):
+        """Draw data in given axe."""
+
+        if hasattr(data, '__iter__'):
+            vals = data
+            data = self.data
+        elif data is None:
+            data = self.data
+
+        if vals is None:
+            vals = data['rhoa']
+
+        return showERTData(data, vals=vals, ax=ax, **kwargs)
+        
+    
+class BertModelling(ERTModellingBase):
     def __init__(self, sr=True, verbose=False):
         """Constructor, optional with data container and mesh."""
         super(BertModelling, self).__init__()
@@ -87,7 +106,7 @@ class BertModelling(MeshModelling):
         self.bertFop.setMesh(mesh, ignoreRegionManager=True)
 
 
-class ERTModelling(MeshModelling):
+class ERTModelling(ERTModellingBase):
     """Reference implementation for 2.5D Electrical Resistivity Tomography."""
 
     def __init__(self, **kwargs):
@@ -252,28 +271,6 @@ class ERTModelling(MeshModelling):
                   " min = ", pg.min(sumsens),
                   " max = ", pg.max(sumsens))
 
-    def drawData(self, ax, data, err=None, label=None, vals=None, **kwargs):
-        """Draw data in given axe."""
-
-        if hasattr(data, '__iter__'):
-            vals = data
-            data = self.data
-        elif data is None:
-            data = self.data
-
-        if vals is None:
-            vals = data('rhoa')
-
-        #ISSUE
-        # why is plotERT data not used instead?
-        # CR: plotERT is BERT function and should not used in lib pygimli directly
-
-        mid, sep = midconfERT(data)
-        dx = np.median(np.diff(np.unique(mid))) * 2
-        ax, _, ymap = pg.mplviewer.patchValMap(
-            vals, mid, sep, dx=dx, ax=ax, logScale=True,
-            label=r'Apparent resistivity in $\Omega$m')
-
     def calcGeometricFactor(self, data):
         """Calculate geometry factors for a given dataset."""
         if pg.y(data.sensorPositions()) == pg.z(data.sensorPositions()):
@@ -416,7 +413,6 @@ class ERTManager(MeshMethodManager):
         kwargs['sr'] = kwargs.pop('sr', True)
 
         super(ERTManager, self).__init__(**kwargs)
-        self._dataToken = 'rhoa'
         self.inv.dataTrans = pg.RTransLogLU()
 
     def setSingularityRemoval(self, sr=True):
@@ -678,6 +674,14 @@ class ERTManager(MeshMethodManager):
                 return rhoa
 
         return ret
+
+    def dataCheck(self, data):
+        """Return data from container"""
+        if isinstance(data, pg.DataContainer):
+            if not data.haveData('rhoa'):
+                pg.critical('Datacontainer have no "rhoa" values.')
+            return data['rhoa']
+        return data
 
     def estimateError(self, data, absoluteError=0.001, relativeError=0.03,
                       absoluteUError=None, absoluteCurrent=0.1):

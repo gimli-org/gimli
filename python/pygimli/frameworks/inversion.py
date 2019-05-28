@@ -319,6 +319,8 @@ class Inversion(object):
 
         Parameters
         ----------
+        dataVals : iterable
+            Data values
         errorVals : iterable
             Relative error values. dv / v
 
@@ -327,7 +329,7 @@ class Inversion(object):
         maxIter : int
             Overwrite class settings for maximal iterations number.
         dPhi : float [1]
-            Overwrite class settings for delta data phi abbort criteria.
+            Overwrite class settings for delta data phi aborting criteria.
             Default is 1%
         """
         self.reset()
@@ -425,7 +427,6 @@ class Inversion(object):
 
             if self.inv.blockyModel():
                 self.inv.constrainBlocky()
-
 
             if self._postStep and callable(self._postStep):
                 self._postStep(i, self.inv)

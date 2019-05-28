@@ -1,3 +1,0 @@
-Please note that this is only a lightweight ERT implementation, mainly done for documentation purpose. The more powerful BERT system including managers and tools for data processing, modelling and inversion is contained in a dedicated package BERT and hosted in a separate repository on gitlab.com:
-https://gitlab.com/resistivity-net/bert
-Get yourself an account and ask the developers for permission to access the source code.

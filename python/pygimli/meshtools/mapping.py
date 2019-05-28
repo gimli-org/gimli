@@ -320,11 +320,12 @@ def interpolateAlongCurve(curve, t, **kwargs):
     if len(kwargs.keys()) > 0 and \
         (kwargs.get('method', 'linear') != 'linear'):
 
-        #interpolate more curve points to get a smooth line
-        dTi = min(pg.utils.dist(pg.utils.diff(curve))) / 20.
-        #ti = np.arange(min(tCurve), max(tCurve) + dTi, dTi)
-        ti = np.linspace(min(tCurve), max(tCurve),
-                         int((max(tCurve) - min(tCurve)) / dTi))
+        # interpolate more curve points to get a smooth line, guarantee to keep
+        # original positions
+        ti = np.array([np.linspace(tCurve[i], tCurve[i+1], 20)[:-1] \
+            for i in range(len(tCurve)-1)]).flatten()
+        ti = np.append(ti, tCurve[-1])
+
         xC = pg.interpolate(ti, tCurve, xC, **kwargs)
         zC = pg.interpolate(ti, tCurve, zC, **kwargs)
 

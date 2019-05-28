@@ -9,3 +9,5 @@
 
 from .ert import ERTManager, ERTModelling, createERTData, simulate
 from .ves import VESModelling, VESCModelling, VESManager
+
+from .visualization import showERTData

@@ -488,12 +488,12 @@ class MeshModelling(Modelling):
             self.setRegionProperties(bk, background=True)
 
     def drawModel(self, ax, model, **kwargs):
-        ax, cbar = pg.show(mesh=self.paraDomain,
+        ax, cBar = pg.show(mesh=self.paraDomain,
                            data=model,
                            label=kwargs.pop('label', 'Model parameter'),
                            ax=ax,
                            **kwargs)
-        return ax, cbar
+        return ax, cBar
 
 
 class PetroModelling(Modelling):

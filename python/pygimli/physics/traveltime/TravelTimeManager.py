@@ -56,11 +56,10 @@ class TravelTimeDijkstraModelling(MeshModelling):
         # pg._r()
         self.dijkstra.setData(data)
 
-    def createDefaultStartModel(self, dataVals):
+    def createStartModel(self, dataVals):
         """
         """
         dists = shotReceiverDistances(self.data, full=True)
-
         aSlow = 1. / (dists / dataVals)
 
         sm = pg.Vector(self.regionManager().parameterCount(),
@@ -79,10 +78,10 @@ class TravelTimeDijkstraModelling(MeshModelling):
 
     def drawModel(self, ax, model, **kwargs):
         kwargs['label'] = pg.unit('vel')
-        super(TravelTimeDijkstraModelling, self).drawModel(ax=ax,
+        ax, cBar = super(TravelTimeDijkstraModelling, self).drawModel(ax=ax,
                                                            model=model,
                                                            **kwargs)
-        return ax
+        return ax, cBar
 
     def drawData(self, ax, data, err=None, **kwargs):
         kwargs['label'] = pg.unit('va')
@@ -103,15 +102,34 @@ class TravelTimeManager(MeshMethodManager):
 
         super(TravelTimeManager, self).__init__(**kwargs)
 
-        self._dataToken = 't'
         self.inv.dataTrans = pg.RTransLog()
 
-    def errorValues(self, data):
-        """Return relative error values from a given DataContainer."""
-        if not data.haveData('err'):
-            pg.error('Datacontainer have no "err" values. Fallback set to 0.01')
+    def createForwardOperator(self, **kwargs):
+        """Create default forward operator for Traveltime modelling.
 
-        return pg.Vector(data('err') / data('t'))
+        Your want your Manager use a special forward operator you can add them
+        here on default Dijkstra is used.
+        """
+        fop = TravelTimeDijkstraModelling(**kwargs)
+        return fop
+
+    def dataCheck(self, data):
+        """Return data from container"""
+        if isinstance(data, pg.DataContainer):
+            if not data.haveData('t'):
+                pg.critical('Datacontainer have no "t" values.')
+            return data['t']
+        
+        return data
+
+    def errorCheck(self, err, dataVals):
+        """Return relative error"""
+        if isinstance(err, pg.DataContainer):
+            if not err.haveData('err'):
+                pg.error('Datacontainer have no "err" values. Fallback set to 0.01')
+            return err['err'] / dataVals    
+
+        return err
 
     def setMesh(self, mesh, secNodes=0, ignoreRegionManager=False):
         """ """
@@ -121,16 +139,6 @@ class TravelTimeManager(MeshMethodManager):
                 mesh = self.fop.createRefinedFwdMesh(mesh)
 
         self.fop.setMesh(mesh, ignoreRegionManager=ignoreRegionManager)
-
-    def createForwardOperator(self, **kwargs):
-        """Create default forward operator for Traveltime modelling.
-
-        Your want your Manager use a special forward operator you can add them
-        here on default Dijkstra is used.
-        """
-        fop = TravelTimeDijkstraModelling(**kwargs)
-
-        return fop
 
     def simulate(self, slowness, scheme, mesh=None, secNodes=2,
                  noiseLevel=0.0, noiseAbs=0.0, **kwargs):

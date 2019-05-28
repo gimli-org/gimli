@@ -65,7 +65,6 @@ class MethodManager(object):
 
 
         # maybe obsolete
-        self._dataToken = 'nan' # check if used?
         self.figs = {}
         self.errIsAbsolute = False
 
@@ -183,27 +182,6 @@ class MethodManager(object):
         """
         return pg.frameworks.Inversion(**kwargs)
 
-    # NOT PART of the MM
-    # def loadData(self, filename, **kwargs):
-    #     """Mandatory interface for derived classes.
-    #
-    #     """
-    #     raise Exception("This is a abstract function. "
-    #                     "Override in derived class")
-
-    def dataValues(self, data):
-        """Return data values from a given DataContainer."""
-        if self._dataToken == 'nan':
-            pg.critical('self._dataToken nan, should be set in class', self)
-        return data(self._dataToken)
-
-    def errorValues(self, data):
-        """Return error values from a given DataContainer."""
-        if not data.haveData('err'):
-            pg.error('Datacontainer have no "err" values. Fallback set to 0.01')
-            return pg.Vector(data.size(), 0.01)
-        return data('err')
-
     def estimateError(self, data, errLevel=0.01, absError=None):
         """Estimate data error.
 
@@ -248,16 +226,21 @@ class MethodManager(object):
 
         return ra
 
+    def dataCheck(self, data):
+        """Overwrite for special checks to return data values"""
+        # if self._dataToken == 'nan':
+        #     pg.critical('self._dataToken nan, should be set in class', self)
+        #     return data(self._dataToken)
+        return data
+        
     def _ensureData(self, data):
         """Check data validity"""
         if data is None:
             data = self.fw.dataVals
 
-        vals = data
-        if isinstance(data, pg.DataContainer):
-            vals = self.dataValues(data)
-
-        if data is None:
+        vals = self.dataCheck(data)
+        
+        if vals is None:
             pg.critical("There are no data values.")
 
         if abs(min(vals)) < 1e-12:
@@ -266,21 +249,23 @@ class MethodManager(object):
 
         return vals
 
-    def preErrorCheck(self, err, dataVals=None):
-        """Overwrite for special checks"""
+    def errorCheck(self, err, dataVals):
+        """Return relative error. Default we assume 'err' are relative vales.
+        Overwrite is derived class if needed. """
+        if isinstance(err, pg.DataContainer):
+            if not err.haveData('err'):
+                pg.error('Datacontainer have no "err" values. Fallback set to 0.01')
+            return err['err']
+
         return err
-            
-    def _ensureError(self, err, dataVals=None):
+           
+    def _ensureError(self, err, dataVals):
         """Check error validity"""
         if err is None:
             err = self.fw.errorVals
 
-        err = self.preErrorCheck(err, dataVals)
-
-        vals = err
-        if isinstance(err, pg.DataContainer):
-            vals = self.errorValues(err)
-
+        vals = self.errorCheck(err, dataVals)
+        
         if min(vals) <= 0:
             print(min(vals), max(vals))
             pg.critical("All error values need to be larger then 0."
@@ -288,6 +273,14 @@ class MethodManager(object):
                         " with a valid 'err' ")
 
         return vals
+
+    def preRun(self, *args, **kwargs):
+        """Called just before the inversion run starts."""
+        pass
+
+    def postRun(self, *args, **kwargs):
+        """Called just after the inversion run."""
+        pass
 
     def invert(self, data=None, err=None, **kwargs):
         """Invert the data.
@@ -311,7 +304,10 @@ class MethodManager(object):
         dataVals = self._ensureData(data)
         errVals = self._ensureError(err, dataVals)
 
+        self.preRun(**kwargs)
         self.fw.run(dataVals, errVals, **kwargs)
+        self.postRun(**kwargs)
+
         return self.fw.model
 
     def showModel(self, model, ax=None, **kwargs):
@@ -331,6 +327,7 @@ class MethodManager(object):
         model : iterable
             Model data to be draw.
         """
+        pg._r()
         if ax is None:
             fig, ax = pg.plt.subplots(ncols=1)
 
@@ -358,6 +355,7 @@ class MethodManager(object):
         if ax is None:
             fig, ax = pg.plt.subplots(ncols=1)
 
+        pg._g(**kwargs)
         self.fop.drawData(ax, data, **kwargs)
         return ax
 
@@ -375,6 +373,7 @@ class MethodManager(object):
 
     def showFit(self, ax=None, **kwargs):
         """Show the last inversion data and response."""
+        pg._g(**kwargs)
         ax = self.showData(data=self.inv.dataVals,
                            error=self.inv.errorVals,
                            label='Data',
@@ -471,11 +470,6 @@ class MeshMethodManager(MethodManager):
         """Constructor."""
         super(MeshMethodManager, self).__init__(**kwargs)
 
-    # def createInversionFramework(self, **kwargs):
-    #     """
-    #     """
-    #     return pg.frameworks.MeshInversion(**kwargs)
-
     def paraModel(self, model=None):
         """Give the model parameter regarding the parameter mesh."""
         if model is None:
@@ -485,14 +479,6 @@ class MeshMethodManager(MethodManager):
             return model
         else:
             model(self.fop.paraDomain.cellMarkers())
-
-    def preRun(self, *args, **kwargs):
-        """Called just before the inversion run starts."""
-        pass
-
-    def postRun(self, *args, **kwargs):
-        """Called just after the inversion run."""
-        pass
 
     def invert(self, data=None, mesh=None, zWeight=1.0, startModel=None,
                **kwargs):
@@ -533,13 +519,13 @@ class MeshMethodManager(MethodManager):
             pg.critical('Please provide a mesh')
         
         dataVals = self._ensureData(self.fop.data)
-        errVals = self._ensureError(self.fop.data)
+        errVals = self._ensureError(self.fop.data, dataVals)
 
         if startModel is None:
-            startModel = self.fop.createDefaultStartModel(dataVals)
+            startModel = self.fop.createStartModel(dataVals)
         
         self.fop.setRegionProperties('*', 
-                                     startModel=np.median(startModel),
+                                     startModel=startModel,
                                      zWeight=zWeight,
                                     )
         
@@ -549,9 +535,7 @@ class MeshMethodManager(MethodManager):
             self.fop.setRegionProperties('*', limits=limits)
 
         self.preRun(**kwargs)
-
         self.fw.run(dataVals, errVals, **kwargs)
-
         self.postRun(**kwargs)
         return self.paraModel(self.fw.model)
 
@@ -560,20 +544,18 @@ class MeshMethodManager(MethodManager):
         """"""
         if model is None:
             model = self.fw.model
+        if ax is None:
+            fig, ax = pg.plt.subplots(ncols=1)
+
+        ax, cBar = self.fop.drawModel(ax, model, **kwargs)
 
         diam = kwargs.pop('diam', None)
-
-        ax, cbar = pg.show(mesh=self.fop.paraDomain,
-                           data=self.paraModel(model),
-                           label=kwargs.pop('label', 'Model parameter'),
-                           ax=ax, **kwargs)
-
         pg.mplviewer.drawSensors(ax,
                                  self.fop.data.sensors(),
                                  color='black',
                                  diam=diam)
 
-        return ax, cbar
+        return ax, cBar
         
     def showResult(self, ax=None, **kwargs):
         """"""
@@ -587,19 +569,34 @@ class MeshMethodManager(MethodManager):
             orientation='horizontal'
 
         self.showData(data=self.inv.dataVals,
-                      label='Data', orientation=orientation,
+                      orientation=orientation,
                       ax=axs[0], **kwargs)
-        self.showData(data=self.inv.response,
-                      label='Response', orientation=orientation,
-                      ax=axs[1], **kwargs)
-
-        if not kwargs.pop('hideFittingAnnotation', False):
-            axs[0].text(0.01, 1.0025, "rrms: {0}, $\chi^2$: {1}"
-                    .format(pg.utils.prettyFloat(self.fw.inv.relrms()),
-                            pg.utils.prettyFloat(self.fw.inv.chi2())),
+        axs[0].text(0.0, 1.03, "Data", 
                     transform=axs[0].transAxes,
                     horizontalalignment='left',
-                    verticalalignment='bottom')
+                    verticalalignment='center')
+        
+        self.showData(data=self.inv.response,
+                      orientation=orientation,
+                      ax=axs[1], **kwargs)
+        axs[1].text(0.0, 1.03, "Response",
+                    transform=axs[1].transAxes,
+                    horizontalalignment='left',
+                    verticalalignment='center')
+        axs[1].text(1.0, 1.03, "rrms: {0}, $\chi^2$: {1}"
+                     .format(pg.utils.prettyFloat(self.fw.inv.relrms()),
+                             pg.utils.prettyFloat(self.fw.inv.chi2())),
+                    transform=axs[1].transAxes,
+                    horizontalalignment='right',
+                    verticalalignment='center')
+
+        # if not kwargs.pop('hideFittingAnnotation', False):
+        #     axs[0].text(0.01, 1.0025, "rrms: {0}, $\chi^2$: {1}"
+        #             .format(pg.utils.prettyFloat(self.fw.inv.relrms()),
+        #                     pg.utils.prettyFloat(self.fw.inv.chi2())),
+        #             transform=axs[0].transAxes,
+        #             horizontalalignment='left',
+        #             verticalalignment='bottom')
 
         return axs
 

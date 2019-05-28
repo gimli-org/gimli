@@ -512,7 +512,7 @@ def createPolygon(verts, isClosed=False, addNodes=0, interpolate='linear',
         verts = pg.meshtools.interpolate(verts, tI, 
                                          method=interpolate,
                                          periodic=isClosed)
-        
+
     if kwargs.pop("leftDirection", False):
         for v in verts[::-1]:
             poly.createNodeWithCheck(v, warn=True)
@@ -648,7 +648,7 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
     boundary around the outside (marker=1)
 
     TODO:
-        * additional topopoints
+        * additional topo points
         * spline interpolations between sensorpoints or addpoints for non closed
         * subsurface sensors (partly .. see example)
 
@@ -710,7 +710,6 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
         plc = createPolygon(sensors, isClosed=True, addNodes=addNodes,
                             boundaryMarker=-1, marker=1, 
                             area=paraMaxCellSize, **kwargs)
-        
         return plc
 
     noSensors = False
