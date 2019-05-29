@@ -1783,7 +1783,7 @@ def crankNicolson(times, theta, S, I, f, u0=None, progress=None, debug=None):
 
     u = np.zeros((len(times), len(f)))
     u[0, :] = u0
-    dt = times[1] - times[0]
+    dt = float(times[1] - times[0])
 
     rhs = np.zeros((len(times), len(f)))
     rhs[:] = f
@@ -1797,6 +1797,7 @@ def crankNicolson(times, theta, S, I, f, u0=None, progress=None, debug=None):
 
     A = I + S * (dt * theta)
     solver = pg.LinSolver(A, verbose=False)
+    
     St = I - S * dt # cache what is possible the theta=0
     for n in range(1, len(times)):
 

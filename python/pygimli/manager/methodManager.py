@@ -327,7 +327,6 @@ class MethodManager(object):
         model : iterable
             Model data to be draw.
         """
-        pg._r()
         if ax is None:
             fig, ax = pg.plt.subplots(ncols=1)
 
@@ -355,7 +354,6 @@ class MethodManager(object):
         if ax is None:
             fig, ax = pg.plt.subplots(ncols=1)
 
-        pg._g(**kwargs)
         self.fop.drawData(ax, data, **kwargs)
         return ax
 
@@ -373,7 +371,6 @@ class MethodManager(object):
 
     def showFit(self, ax=None, **kwargs):
         """Show the last inversion data and response."""
-        pg._g(**kwargs)
         ax = self.showData(data=self.inv.dataVals,
                            error=self.inv.errorVals,
                            label='Data',
