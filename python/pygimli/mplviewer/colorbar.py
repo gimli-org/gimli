@@ -134,6 +134,7 @@ def findColorBar(ax):
 
     Find the colorbar that is associated with given axes or return None.
     """
+    pg.critical('Who use this?') #190530
     for i, ai in enumerate(ax.figure.axes):
         print(i, ai)
 
@@ -177,9 +178,7 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
     """
     # print("update cbar:", cMin, cMax, label)
     if gci is not None:
-        pass
-        # check the following first
-        # cbar.on_mappable_changed(gci)
+        cbar.on_mappable_changed(gci)
 
     if cMap is not None:
         if isinstance(cMap, str):
@@ -226,19 +225,18 @@ def createColorBar(gci, orientation='horizontal', size=0.2, pad=None,
     """Create a Colorbar.
 
     Shortcut to create a matplotlib colorbar within the ax for a given
-    patchset.
+    patchset. The colorbar is stored in the axes object as __cBar__
+    to avoid duplicates. 
 
     Parameters
     ----------
+    gci: matplotlib graphical instance
 
-    gci : matplotlib graphical instance
+    orientation: string
 
-    orientation : string
+    size: float
 
-    size : float
-
-    pad : float
-
+    pad: float
 
     **kwargs :
         Forwarded to updateColorBar
@@ -249,26 +247,36 @@ def createColorBar(gci, orientation='horizontal', size=0.2, pad=None,
     #    if hasattr(patches, 'figure'):
     #       cbarTarget = patches.figure
 
+    ax = None
     if hasattr(gci, 'ax'):
-        divider = make_axes_locatable(gci.ax)
+        ax = gci.ax
     if hasattr(gci, 'axes'):
-        divider = make_axes_locatable(gci.axes)
+        ax = gci.axes
     elif hasattr(gci, 'get_axes'):
-        divider = make_axes_locatable(gci.get_axes())
+        ax = gci.get_axes()
+        
+    cbar = None
+    if hasattr(ax, '__cBar__'):
+        cbar = ax.__cBar__
+        updateColorBar(cbar, gci, **kwargs)
+    else:
+        divider = make_axes_locatable(ax)
 
-    if divider:
-        if orientation == 'horizontal':
-            if pad is None:
-                pad = 0.5
-            cax = divider.append_axes("bottom", size=size, pad=pad)
-        else:
-            if pad is None:
-                pad = 0.1
-            cax = divider.append_axes("right", size=size, pad=pad)
+        if divider:
+            if orientation == 'horizontal':
+                if pad is None:
+                    pad = 0.5
+                cax = divider.append_axes("bottom", size=size, pad=pad)
+            else:
+                if pad is None:
+                    pad = 0.1
+                cax = divider.append_axes("right", size=size, pad=pad)
 
-    cbar = cbarTarget.colorbar(gci, cax=cax, orientation=orientation)
+        cbar = cbarTarget.colorbar(gci, cax=cax, orientation=orientation)
+        #store the cbar into the axes to reuse it on the next call
+        ax.__cBar__ = cbar
 
-    updateColorBar(cbar, **kwargs)
+        updateColorBar(cbar, **kwargs)
 
     return cbar
 

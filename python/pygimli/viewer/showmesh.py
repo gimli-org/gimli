@@ -6,10 +6,9 @@ import sys
 import time
 import traceback
 
+import numpy as np
 # plt should not be used outside of mplviewer
 import matplotlib.pyplot as plt
-
-import numpy as np
 
 try:
     import pygimli as pg
@@ -22,8 +21,8 @@ try:
 except ImportError as e:
     print(e)
     traceback.print_exc(file=sys.stdout)
-    raise Exception('''ERROR: cannot import the library 'pygimli'.
-        Ensure that pygimli is in your PYTHONPATH ''')
+    pg.critical("ERROR: cannot import the library 'pygimli'."
+                "Ensure that pygimli is in your PYTHONPATH ")
 
 
 def show(mesh=None, data=None, **kwargs):
@@ -37,21 +36,25 @@ def show(mesh=None, data=None, **kwargs):
 
     Parameters
     ----------
-    mesh : :gimliapi:`GIMLI::Mesh` or list of meshes
+    mesh: :gimliapi:`GIMLI::Mesh` or list of meshes
         2D or 3D GIMLi mesh
+    data: iterable
+        Optionally data to visualize. See appropriate show function.
 
-    **kwargs :
+    Other Parameters
+    ----------------
+    **kwargs
+        Additional kwargs forward to appropriate show functions.
+        
+        * ax : axe [None]
+            Matplotlib axes object. Create a new if necessary.
         * fitView : bool [True]
             Scale x and y limits to match the view.
 
-        * ax : axe [None]
-            Matplotlib axes object. Create a new if necessary.
-
-        * Will be forwarded to the appropriate show functions.
-
     Returns
     -------
-    Return the results from the showMesh* functions.
+    Return the results from the showMesh* functions. Usually the axe object
+    and a colorbar.
 
     See Also
     --------
@@ -124,11 +127,9 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
 
     Parameters
     ----------
-
-    mesh : :gimliapi:`GIMLI::Mesh`
+    mesh: :gimliapi:`GIMLI::Mesh`
         2D or 3D GIMLi mesh
-
-    data : iterable [None]
+    data: iterable [None]
         Optionally data to visualize.
 
         . None (draw mesh only)
@@ -154,59 +155,47 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
 
         . pg.stdVectorRVector3 -- sensor positions
             forward to :py:mod:`pygimli.mplviewer.drawSensors`
-
-
-    hold : bool [false]
+    hold: bool [false]
         Set interactive plot mode for matplotlib.
         If this is set to false [default] your script will open
         a window with the figure and draw your content.
         If set to true nothing happens until you either force another show with
         hold=False, you call plt.show() or pg.wait().
         If you want show with stopping your script set block = True.
-
-    block : bool [false]
+    block: bool [false]
         Force show drawing your content and block the script until you
         close the current figure.
-
-    colorBar : bool [None], Colorbar
+    colorBar: bool [None], Colorbar
         Create and show a colorbar. If colorBar is a valid colorbar then only
         its values will be updated.
-
-    label : str
+    label: str
         Set colorbar label. If set colorbar is toggled to True. [None]
-
-    coverage : iterable [None]
+    coverage: iterable [None]
         Weight data by the given coverage array and fadeout the color.
-
-    ax : matplotlib.Axes [None]
+    ax: matplotlib.Axes [None]
         Instead of creating a new and empty ax, just draw into the given one.
         Useful to combine multiple plots into one figure.
-
     savefig: string
         Filename for a direct save to disc.
         The matplotlib pdf-output is a little bit big so we try
         an epstopdf if the .eps suffix is found in savefig
-
-    showMesh : bool [False]
+    showMesh: bool [False]
         Shows the mesh itself additional.
-
-    showBoundary : bool [None]
+    showBoundary: bool [None]
         Shows all boundary with marker != 0. A value None means automatic
         True for cell data and False for node data.
-
-    marker : bool [False]
+    marker: bool [False]
         Show mesh and boundary marker.
 
-    **kwargs :
-        * xlabel : str [None]
+    Other Parameters
+    ----------------
+    **kwargs:
+        * xlabel: str [None]
             Add label to the x axis
-
-        * ylabel : str [None]
+        * ylabel: str [None]
             Add label to the y axis
-
-        * all remaining
-            Will be forwarded to the draw functions and matplotlib methods,
-            respectively.
+        All remaining will be forwarded to the draw functions 
+        and matplotlib methods, respectively.
 
     Examples
     --------
@@ -228,15 +217,9 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
     if ax is None:
         ax = plt.subplots()[1]
 
-    # print('1*'*50)
-    # print(locale.localeconv())
-
     # plt.subplots() resets locale setting to system default .. this went
     # horrible wrong for german 'decimal_point': ','
     pg.checkAndFixLocaleDecimal_point(verbose=False)
-
-    # print('2*'*50)
-    # print(locale.localeconv())
 
     if block:
         hold = True
@@ -328,7 +311,6 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
             #ax.plot(pg.x(mesh), pg.y(mesh), '.', color='black')
         else:
             pg.mplviewer.drawPLC(ax, mesh, **kwargs)
-
 
     if showMesh:
         if gci is not None and hasattr(gci, 'set_antialiased'):

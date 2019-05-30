@@ -473,12 +473,14 @@ class Inversion(object):
             elif style == 'Model':
                 fig, axs = pg.plt.subplots(1, 1)
             self.axs = axs
-
         ax = self.axs
 
         if style == 'Model':
             for other_ax in ax.figure.axes:
-                other_ax.clear()
+                # pg._y(type(other_ax).mro())
+                if type(other_ax).mro()[0] == type(ax):
+                    # only clear Axes not Colorbars
+                    other_ax.clear()
 
             self.fop.drawModel(ax, self.inv.model())
         else:

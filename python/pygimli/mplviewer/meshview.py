@@ -272,7 +272,7 @@ def drawMesh(ax, mesh, fitView=True, **kwargs):
     Other Parameters
     ----------------
     **kwargs
-        Additional kwargs forward to drawPLC or drawMeshBoundaries
+        Additional kwargs forward to drawPLC or drawMeshBoundaries.
 
     %(drawMeshBoundaries)
 
