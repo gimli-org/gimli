@@ -1459,9 +1459,14 @@ template < class T > T max(const Vector < T > & v){
     return *std::max_element(&v[0], &v[0] + v.size());
 }
 
-template < class T > void maxify(Vector < T > & v, T max){
+template < class T > void capMax(Vector < T > & v, T max){
     ASSERT_EMPTY(v)
     for (Index i = 0; i < v.size(); i ++ ) v[i] = min(v[i], max);
+}
+
+template < class T > void capMin(Vector < T > & v, T min){
+    ASSERT_EMPTY(v)
+    for (Index i = 0; i < v.size(); i ++ ) v[i] = max(v[i], min);
 }
 
 template < class ValueType >
@@ -1878,11 +1883,6 @@ namespace std {
     };
     template<> struct hash< GIMLI::RVector > {
         GIMLI::Index operator()(const GIMLI::RVector & p) const noexcept {
-            return p.hash();
-        }
-    };
-    template<> struct hash< GIMLI::PosVector > {
-        GIMLI::Index operator()(const GIMLI::PosVector & p) const noexcept {
             return p.hash();
         }
     };

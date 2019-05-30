@@ -289,28 +289,8 @@ public:
     virtual ~TransLogLU() { }
 
     /*!WHAT IS THIS?*/
-    Vec rangify(const Vec & a) const {
-        Vec tmp(a);
-        double lb1 = this->lowerBound() * (1.0 + TRANSTOL);
-        if (min(a) < lb1){
-            // std::cerr << WHERE_AM_I << " Warning! " << min(a)
-            //           << " <=" << this->lowerBound() << " lower bound" << std::endl;
-            for (Index i = 0; i < a.size(); i ++){
-                tmp[i] = max(a[i], lb1);
-            }
-        }
-
-        double ub1 = upperbound_ * (1.0 - TRANSTOL);
-        if (max(a) > ub1 ){
-            // std::cerr << WHERE_AM_I << " Warning! " << max(a) << " > "
-            //           << upperbound_ << " upper bound" << std::endl;
-            for (Index i = 0; i < a.size(); i ++){
-                tmp[i] = min(tmp[i], ub1);
-            }
-        }
-        return tmp;
-    }
-
+    Vec rangify(const Vec & a) const;
+        
     virtual Vec trans(const Vec & a) const {
         if (std::fabs(upperbound_) < TOLERANCE) return TransLog< Vec >::trans(a);
 
@@ -319,10 +299,9 @@ public:
     }
 
     virtual Vec invTrans(const Vec & a) const {
-        if (std::fabs(upperbound_) < TOLERANCE) 
-            return TransLog< Vec >::invTrans(a);
+        if (std::fabs(upperbound_) < TOLERANCE) return TransLog< Vec >::invTrans(a);
         Vec expm(a);
-        maxify(expm, 50.0);
+        capMax(expm, 50.0);
         expm = exp(expm);
         return (expm * this->upperbound_ + this->lowerBound()) / (expm + 1.0);
     }
@@ -341,6 +320,10 @@ public:
 protected:
   double upperbound_;
 };
+
+/*! Implement specialized type traits in trans.cpp. */
+template <> DLLEXPORT RVector TransLogLU<RVector>::rangify(const RVector & a) const;
+
 
 /*! Cotangens barrier method, e.g. for water content (NMR) */
 template< class Vec > class TransCotLU : public Trans < Vec > {

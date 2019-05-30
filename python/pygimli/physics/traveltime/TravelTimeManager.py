@@ -247,6 +247,8 @@ class TravelTimeManager(MeshMethodManager):
                 tmp = kwargs['limits'][0]
                 kwargs['limits'][0] = 1.0 / kwargs['limits'][1]
                 kwargs['limits'][1] = 1.0 / tmp
+                pg.verbose('Switching velocity limits to slowness limits.', 
+                            kwargs['limits'])
 
         slowness = super(TravelTimeManager, self).invert(data, **kwargs)
         velocity = 1.0 / slowness

@@ -296,6 +296,8 @@ bool RInversion::oneStep() {
         DOSAVE echoMinMax(modelWeight_,  "mW");
         DOSAVE echoMinMax(model_,    "mod");
         DOSAVE echoMinMax(response_, "resp");
+        DOSAVE echoMinMax(tD_->deriv(response_), "tD");
+        DOSAVE echoMinMax(tM_->deriv(model_), "tM");
 //        DOSAVE echoMinMax(deltaModel0, "dM0");
         DOSAVE echoMinMax(constraintsH_, "constraintsH");
         DOSAVE save(constraintsH_, "constraintsH");
@@ -322,9 +324,12 @@ bool RInversion::oneStep() {
 //                                    lambda_, roughness, maxCGLSIter_, verbose_);
 
             solveCGLSCDWWhtrans(*forward_->jacobian(), *forward_->constraints(),
-                                dataWeight_, deltaDataIter_, deltaModelIter_,
+                                dataWeight_, 
+                                deltaDataIter_, 
+                                deltaModelIter_,
                                 constraintWeights_, modelWeight_,
-                                tM_->deriv(model_), tD_->deriv(response_),
+                                tM_->deriv(model_), 
+                                tD_->deriv(response_),
                                 lambda_, roughness, maxCGLSIter_, CGLStol_,
                                 dosave_);
         } // else no broyden

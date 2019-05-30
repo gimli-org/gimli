@@ -398,6 +398,11 @@ namespace std {
             return p.hash();
         }
     };
+    template<> struct hash< GIMLI::PosVector > {
+        GIMLI::Index operator()(const GIMLI::PosVector & p) const noexcept {
+            return p.hash();
+        }
+    };
 }
 #endif // PYGIMLI_CAST
 #endif // _GIMLI_POS__H

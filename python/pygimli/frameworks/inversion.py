@@ -372,15 +372,19 @@ class Inversion(object):
             print("fop:", self.inv.fop())
             print("Data transformation:", self.dataTrans)
             print("Model transformation:", self.modelTrans)
-            print("min/max (data): {0:.2f}, {1:.2f}".format(min(self._dataVals), max(self._dataVals)))
-            print("min/max (error): {0:.3f}%, {1:.3f}%".format(100*min(self._errorVals), 100*max(self._errorVals)))
-            print("min/max (start model): {0:.2f}, {1:.2f}".format(min(self.startModel), max(self.startModel)))
+            print("min/max (data): {0}/{1}".format(pf(min(self._dataVals)), 
+                                                    pf(max(self._dataVals))))
+            print("min/max (error): {0}%/{1}%".format(pf(100*min(self._errorVals)), 
+                                                       pf(100*max(self._errorVals))))
+            print("min/max (start model): {0}/{1}".format(pf(min(self.startModel)),
+                                                          pf(max(self.startModel))))
 
         ### To ensure reproducability of the run() call inv.start() will
         ### reset self.inv.model() to fop.startModel().
         self.fop.setStartModel(self.startModel)
         self.inv.setReferenceModel(self.startModel)
 
+        print("-" * 80)
         self.inv.start()
         self.maxIter = maxIterTmp
 

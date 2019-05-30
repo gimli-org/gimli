@@ -334,7 +334,7 @@ template< typename T > inline std::string str(const T & v){
     os << v;
     return os.str();
 }
-enum LogType {Info, Warning, Error, Debug, Critical};
+enum LogType {Verbose, Info, Warning, Error, Debug, Critical};
 DLLEXPORT void log(LogType type, const std::string & msg);
 
 #ifndef PYGIMLI_CAST // castxml complains on older gcc/clang

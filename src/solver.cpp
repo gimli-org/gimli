@@ -24,9 +24,12 @@
 namespace GIMLI{
 
 int solveCGLSCDWWhtrans(const MatrixBase & S, const MatrixBase & C,
-                        const Vec & dWeight, const Vec & b, Vec & x,
+                        const Vec & dWeight, 
+                        const Vec & b, // deltaData
+                        Vec & x,       // deltaModel
                         const Vec & wc, const Vec & wm,
-                        const Vec & tm, const Vec & td,
+                        const Vec & tm, // m/d mod
+                        const Vec & td, // d/d resp
                         double lambda, const Vec & roughness,
                         int maxIter, double tol,
                         bool verbose){ //ALLOW_PYTHON_THREADS
@@ -51,8 +54,19 @@ int solveCGLSCDWWhtrans(const MatrixBase & S, const MatrixBase & C,
 //Ch  Vec cdx(transMult(C, Vec(wc * wc * (C * Vec(wm * deltaX)))) * wm * lambda); // nModel
     Vec cdx(transMult(C, Vec(wc * roughness)) * wm * lambda); // nModel
     Vec z((b - S * Vec(x / tm) * td) * dWeight); // nData
-    Vec p(transMult(S, Vec(z * dWeight * td)) / tm - cdx - transMult(C, Vec(wc * wc * (C * Vec(wm * x)))) * wm * lambda);// nModel
+    Vec p(transMult(S, Vec(z * dWeight * td)) / tm   
+          - transMult(C, Vec(wc * wc * (C * Vec(wm * x)))) * wm * lambda
+          - cdx );// nModel
     Vec r(transMult(S, Vec(b * dWeight * dWeight * td)) / tm - cdx); // nModel
+
+// __MS(min(cdx) << " " << max(cdx))
+// __MS(min(z) << " " << max(z))
+// __MS(min(p) << " " << max(p))
+// __MS(min(r) << " " << max(r))
+// __MS(min(tm) << " " << max(tm))
+// __MS(min(Vec(b * dWeight * dWeight * td)) << " " << max(Vec(b * dWeight * dWeight * td)))
+// __MS(min(transMult(S,Vec(b.size(), 1))) << " " << max(transMult(S,Vec(b.size(), 1))))
+// if (z.size() > 100 )exit(1);
 
     double accuracy = tol;
     if (accuracy < 0.0) accuracy = max(TOLERANCE, 1e-08 * dot(r, r));
@@ -76,13 +90,16 @@ int solveCGLSCDWWhtrans(const MatrixBase & S, const MatrixBase & C,
 
         alpha = normR2 / (dot(q, q) + lambda * dot(wcp, wcp));
         x += p * alpha;
+
         if((count % 10) == -1) { // TOM
             z = b - S * Vec(x / tm) * td; // z exakt durch extra Mult.
             z *= dWeight;
         } else {
             z -= q * alpha;
         }
-        r = transMult(S, Vec(z * dWeight * td)) / tm - transMult(C, Vec(wc * wc * (C * Vec(wm * x)))) * wm * lambda - cdx;
+        r = transMult(S, Vec(z * dWeight * td)) / tm 
+            - transMult(C, Vec(wc * wc * (C * Vec(wm * x)))) * wm * lambda 
+            - cdx;
 
         normR2old = normR2;
         normR2 = dot(r, r);
