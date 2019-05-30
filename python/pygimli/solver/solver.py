@@ -1141,30 +1141,26 @@ def assembleRobinBC(S, boundaryPairs, rhs=None, time=0.0, userData=None):
     TODO
         * b!=1 and g!=0 variable
         * check for b = 0 and move to dirichlet
+        * fixme, testme
 
     Parameters
     ----------
-
-    S : :gimliapi:`GIMLI::SparseMatrix`
+    S: :gimliapi:`GIMLI::SparseMatrix`
         System matrix of the system equation.
-
-    boundaryPair : list()
-        List of pairs [ :gimliapi:`GIMLI::Boundary`, :math:`\alpha` ].
+    boundaryPair: list()
+        List of pairs [:gimliapi:`GIMLI::Boundary`, :math:`\alpha`].
         The value :math:`\alpha` will assigned to the nodes of the boundaries.
         Later assignment overwrites prior.
 
         :math:`\alpha` needs to be a scalar value (float or int) or
-        a value generator function that will be executed at run time.
+        a value generator (callable) which will be executed at run time.
         See :py:mod:`pygimli.solver.solver.parseArgToBoundaries`
         and :ref:`tut:modelling_bc` for example syntax,
-
-    time : float
+    time: float
         Will be forwarded to value generator.
-
-    userData : class
+    userData: dict
         Will be forwarded to value generator.
     """
-
     if not hasattr(boundaryPairs, '__getitem__'):
         raise BaseException("Boundary pairs need to be a list of "
                             "[boundary, value]")
@@ -1178,7 +1174,11 @@ def assembleRobinBC(S, boundaryPairs, rhs=None, time=0.0, userData=None):
     for pair in boundaryPairs:
         boundary = pair[0]
         val = pair[1]
-        ### p = alpha / alpha
+        # BC = a u + b * du/dn = g
+        # solve
+        # either du/dn = g/b for a=0 (Neumann)
+        # or u = g/a for b = 0 (Dirichlet)
+        ### p = gamma / beta
         p = generateBoundaryValue(boundary, val, time, userData)
         #### p = gamma / alpha
         #p = 20.
@@ -1186,6 +1186,7 @@ def assembleRobinBC(S, boundaryPairs, rhs=None, time=0.0, userData=None):
         q = None
 
         if p != 0.0 and p is not None:
+            print(p)
             Sp.u2(boundary)
             S.add(Sp, p)
             #Sp *= p
@@ -1755,8 +1756,8 @@ def checkCFL(times, mesh, vMax):
             dx = min(mesh.cellSizes())
         else:
             dx = min(mesh.boundarySizes())
-
         c = vMax * dt / dx
+        pg._r(c)
         if c > 1:
             print("Courant-Friedrichs-Lewy Number:", c,
                   "but sould be lower 1 to ensure movement inside a cell "
@@ -1794,8 +1795,11 @@ def crankNicolson(times, theta, S, I, f, u0=None, progress=None, debug=None):
     timeMeasure = False
     if progress:
         timeMeasure = True
-
-    A = I + S * (dt * theta)
+    
+    A = I
+    if theta > 0:
+        A = I + S * (dt * theta)
+    
     solver = pg.LinSolver(A, verbose=False)
     
     St = I - S * dt # cache what is possible the theta=0
@@ -1817,10 +1821,10 @@ def crankNicolson(times, theta, S, I, f, u0=None, progress=None, debug=None):
 #        pg.tic()
     
         if theta == 0:
-            b = St * u[n - 1] + dt * rhs[n - 1]
+            b = St * u[n-1] + dt * rhs[n-1]
         else:
-            b = I * u[n - 1] + S.mult(dt * (theta - 1.) * u[n - 1]) + \
-                dt * ((1.0 - theta) * rhs[n - 1] + theta * rhs[n])
+            b = I * u[n-1] + S.mult(dt * (theta - 1.) * u[n-1]) + \
+                dt * ((1.0 - theta) * rhs[n-1] + theta * rhs[n])
 
 #        pg.toc()
 #        print(np.linalg.norm(b-b1))
@@ -1828,11 +1832,9 @@ def crankNicolson(times, theta, S, I, f, u0=None, progress=None, debug=None):
 
         if timeMeasure:
             timeAssemble.append(pg.dur())
-
-        if timeMeasure:
             pg.tic()
 
-        u[n, :] = solver.solve(b)
+        u[n,:] = solver.solve(b)
 
         if timeMeasure:
             timeSolve.append(pg.dur())
