@@ -83,6 +83,12 @@ class Inversion(object):
     def fop(self, f):
         self.setForwardOperator(f)
 
+    def setForwardOperator(self, fop):
+        self._fop = fop
+        # we need to initialize the regionmanager by calling it once
+        self._fop.regionManager()
+        self._inv.setForwardOperator(fop)
+
     @property
     def verbose(self):
         return self._verbose
@@ -257,12 +263,6 @@ class Inversion(object):
     def echoStatus(self):
         self.inv.echoStatus()
 
-    def setForwardOperator(self, fop):
-        self._fop = fop
-        # we need to initialize the regionmanager by calling it once
-        self._fop.regionManager()
-        self._inv.setForwardOperator(fop)
-
     def setPostStep(self, p):
         self._postStep = p
 
@@ -371,7 +371,13 @@ class Inversion(object):
             pg.info('Starting inversion.')
             print("fop:", self.inv.fop())
             print("Data transformation:", self.dataTrans)
-            print("Model transformation:", self.modelTrans)
+            if isinstance(self.modelTrans, pg.RTransCumulative):
+                print("Model transformation (cummulative):")
+                for i in range(self.modelTrans.size()):
+                    print("\t", self.modelTrans.at(i))
+            else:
+                print("Model transformation:", self.modelTrans)
+
             print("min/max (data): {0}/{1}".format(pf(min(self._dataVals)), 
                                                     pf(max(self._dataVals))))
             print("min/max (error): {0}%/{1}%".format(pf(100*min(self._errorVals)), 
@@ -683,14 +689,14 @@ class MeshInversion(Inversion):
 
 
 class PetroInversion(Inversion):
-    def __init__(self, petro, mgr=None, fop=None, **kwargs):
-        self.mgr = mgr
-
-        if self.mgr is not None:
-            fop = self.mgr.createForwardOperator(**kwargs)
-
+    def __init__(self, petro, fop=None, **kwargs):
+        """
+        Parameters
+        ----------
+        """
         if fop is not None:
-            fop = pg.frameworks.PetroModelling(fop, petro)
+            if not isinstance(fop, pg.frameworks.PetroModelling):
+                fop = pg.frameworks.PetroModelling(fop, petro)
 
         super(PetroInversion, self).__init__(fop=fop, **kwargs)
 
@@ -705,13 +711,15 @@ class PetroInversion(Inversion):
         """
         """
         if 'limits' in kwargs:
-            limits = kwargs.pop('limits', [0., 1.])
+            limits = kwargs.pop('limits')
 
             if len(self.fop.regionManager().regionIdxs()) > 1:
                 pg.critical('implement')
             else:
                 self.fop.setRegionProperties('*', limits=limits)
 
+        #ensure the mesh
+        self.fop.mesh()        
         return super(PetroInversion, self).run(dataVals, errVals, **kwargs)
 
 

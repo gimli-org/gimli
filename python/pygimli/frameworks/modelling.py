@@ -91,19 +91,22 @@ class Modelling(pg.ModellingBase):
 
     @property
     def fop(self):
+        """"""
         return self._fop
     @fop.setter
-    def fop(self, f):
-        if f is not None:
-            if not isinstance(f, pg.frameworks.Modelling):
+    def fop(self, fop):
+        """"""
+        if fop is not None:
+            if not isinstance(fop, pg.frameworks.Modelling):
                 pg.critical('Forward operator needs to be an instance of '
-                            'pg.modelling.Modelling but is of type:', f)
+                            'pg.modelling.Modelling but is of type:', fop)
 
-            self._fop = f
+            self._fop = fop
 
     @property
     def data(self):
         if self._fop is not None:
+            pg.critical('in use?')
             return self._fop.data
         return self._data
     @data.setter
@@ -137,9 +140,9 @@ class Modelling(pg.ModellingBase):
     def createStartModel(self, dataVals=None):
         """Create the default startmodel as the median of the data values.
         
-        Overwriting might be a good idea. 
-        Its used by inverion to create a valid startmodel if there are 
-        no starting values from the regions. 
+        Overwriting might be a good idea.
+        Its used by inverion to create a valid startmodel if there are
+        no starting values from the regions.
         """
         if dataVals is not None:
             mv = pg.median(dataVals)
@@ -172,7 +175,7 @@ class Modelling(pg.ModellingBase):
 
         try:
             return self._regionProperties[regionNr]
-        except:
+        except KeyError:
             print(self._regionProperties)
             pg.error("no region for region #:", regionNr)
 
@@ -267,6 +270,7 @@ class Modelling(pg.ModellingBase):
     def setDataSpace(self, **kwargs):
         """Set data space, e.g., DataContainer, times, coordinates."""
         if self.fop is not None:
+            pg.critical('in use?')
             self.fop.setDataSpace(**kwargs)
         else:
             data = kwargs.pop('dataContainer', None)
@@ -284,6 +288,7 @@ class Modelling(pg.ModellingBase):
         """
         """
         if self.fop is not None:
+            pg.critical('in use?')
             self.fop.setData(data)
         else:
             super(Modelling, self).setData(data)
@@ -303,6 +308,7 @@ class Modelling(pg.ModellingBase):
         """
         """
         if self.fop is not None:
+            pg.critical('in use?')
             self.fop.drawModel(ax, model, **kwargs)
         else:
             print(kwargs)
@@ -458,6 +464,7 @@ class MeshModelling(Modelling):
         """"""
         if self._regionManagerInUse and self._regionChanged:
             self.createFwdMesh_()
+
         return super(Modelling, self).mesh()
 
     def setMesh(self, mesh, ignoreRegionManager=False):
@@ -466,9 +473,11 @@ class MeshModelling(Modelling):
         if ignoreRegionManager == True or self._regionManagerInUse == False:
             self._regionManagerInUse = False
             if self.fop is not None:
+                pg.critical('in use?')
                 self.fop.setMesh(mesh, ignoreRegionManager=True)
             else:
                 super(Modelling, self).setMesh(mesh, ignoreRegionManager=True)
+                pass
 
             self.setMeshPost(mesh)
             return
@@ -482,6 +491,7 @@ class MeshModelling(Modelling):
         """
         """
         regionIds = self.regionManager().regionIdxs()
+        pg.info("Found {} regions.".format(len(regionIds)))
         if len(regionIds) > 1:
             bk = pg.sort(regionIds)[0]
             pg.info("Region with smallest marker set to background (marker={0})".format(bk))
@@ -496,7 +506,7 @@ class MeshModelling(Modelling):
         return ax, cBar
 
 
-class PetroModelling(Modelling):
+class PetroModelling(MeshModelling):
     """Combine petrophysical relation with the modelling class f(p).
 
     Combine petrophysical relation :math:`p(m)` with a modelling class
@@ -509,31 +519,40 @@ class PetroModelling(Modelling):
     """
     def __init__(self, fop, trans, **kwargs):
         """Save forward class and transformation, create Jacobian matrix."""
-        mesh = kwargs.pop('mesh', None)
+        self._f = fop
+        self.createRefinedFwdMesh = self._f.createRefinedFwdMesh
 
-        super(PetroModelling, self).__init__(fop=fop, **kwargs)
+        super(PetroModelling, self).__init__(fop=None, **kwargs)
         # petroTrans.fwd(): p(m), petroTrans.inv(): m(p)
         self._petroTrans = trans  # class defining p(m)
 
-        self._jac = pg.MultRightMatrix(self.fop.jacobian())
+        self._jac = pg.MultRightMatrix(self._f.jacobian())
         self.setJacobian(self._jac)
 
-    def createDefaultStartModel(self, data):
+    def setMeshPost(self, mesh):
+        """ """
+        self._f.setMesh(mesh)
+
+    def setDataPost(self, data):
+        """ """
+        self._f.setData(data)
+
+    def createStartModel(self, data):
         """Use inverse transformation to get m(p) for the starting model."""
-        sm = self.fop.createStartModel(data)
+        sm = self._f.createStartModel(data)
         pModel = self._petroTrans.inv(sm)
         return pModel
 
     def response(self, model):
         """Use transformation to get p(m) and compute response f(p)."""
-        tModel = self._petroTrans(model)
-        ret = self.fop.response(tModel)
+        tModel = self._petroTrans.fwd(model)
+        ret = self._f.response(tModel)
         return ret
 
     def createJacobian(self, model):
         """Fill the individual jacobian matrices."""
-        tModel = self._petroTrans(model)
-        self.fop.createJacobian(tModel)
+        tModel = self._petroTrans.fwd(model)
+        self._f.createJacobian(tModel)
         self._jac.r = self._petroTrans.deriv(model)  # set inner derivative
 
 

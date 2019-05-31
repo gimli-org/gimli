@@ -296,8 +296,8 @@ bool RInversion::oneStep() {
         DOSAVE echoMinMax(modelWeight_,  "mW");
         DOSAVE echoMinMax(model_,    "mod");
         DOSAVE echoMinMax(response_, "resp");
-        DOSAVE echoMinMax(tD_->deriv(response_), "tD");
-        DOSAVE echoMinMax(tM_->deriv(model_), "tM");
+        DOSAVE echoMinMax(tD_->deriv(response_), "dtD");
+        DOSAVE echoMinMax(tM_->deriv(model_), "dtM");
 //        DOSAVE echoMinMax(deltaModel0, "dM0");
         DOSAVE echoMinMax(constraintsH_, "constraintsH");
         DOSAVE save(constraintsH_, "constraintsH");

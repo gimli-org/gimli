@@ -291,27 +291,11 @@ public:
     /*!WHAT IS THIS?*/
     Vec rangify(const Vec & a) const;
         
-    virtual Vec trans(const Vec & a) const {
-        if (std::fabs(upperbound_) < TOLERANCE) return TransLog< Vec >::trans(a);
+    virtual Vec trans(const Vec & a) const;
 
-        Vec tmp = rangify(a);
-        return (log(tmp - this->lowerBound()) - log(upperbound_ - tmp));
-    }
+    virtual Vec invTrans(const Vec & a) const;
 
-    virtual Vec invTrans(const Vec & a) const {
-        if (std::fabs(upperbound_) < TOLERANCE) return TransLog< Vec >::invTrans(a);
-        Vec expm(a);
-        capMax(expm, 50.0);
-        expm = exp(expm);
-        return (expm * this->upperbound_ + this->lowerBound()) / (expm + 1.0);
-    }
-
-    virtual Vec deriv(const Vec & a) const {
-        if (std::fabs(upperbound_) < TOLERANCE) return TransLog< Vec >::deriv(a);
-
-        Vec tmp = rangify(a);
-        return (1.0 / (tmp - this->lowerBound()) + 1.0 / (upperbound_ - tmp));
-    }
+    virtual Vec deriv(const Vec & a) const;
 
     inline void setUpperBound(double ub) { upperbound_ = ub; }
 
@@ -323,6 +307,9 @@ protected:
 
 /*! Implement specialized type traits in trans.cpp. */
 template <> DLLEXPORT RVector TransLogLU<RVector>::rangify(const RVector & a) const;
+template <> DLLEXPORT RVector TransLogLU<RVector>::trans(const RVector & a) const;
+template <> DLLEXPORT RVector TransLogLU<RVector>::invTrans(const RVector & a) const;
+template <> DLLEXPORT RVector TransLogLU<RVector>::deriv(const RVector & a) const;
 
 
 /*! Cotangens barrier method, e.g. for water content (NMR) */
@@ -622,6 +609,13 @@ public:
         transVec_.push_back(&trans);
         indices_.push_back(indices);
     }
+    
+    /*!Return the containing transformationb object.*/
+    Trans < Vec > & at(Index i) { return *transVec_.at(i);}
+    
+    const std::pair< Index, Index> & slice(Index i) const { return slice_.at(i);}
+
+    const IVector & indices(Index i) const { return indices_.at(i);}
 
 protected:
     std::vector < Trans< Vec > * > transVec_;

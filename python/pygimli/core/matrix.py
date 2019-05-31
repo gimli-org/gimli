@@ -38,6 +38,13 @@ class MultLeftMatrix(MultMatrix):
 
         self._l = left
 
+    @property
+    def l(self):
+        return self._l
+    @l.setter
+    def r(self, l):
+        self._l = l
+
     def mult(self, x):
         """Multiplication from right-hand-side (dot product A*x)."""
         return self._A.mult(x) * self._l
@@ -59,6 +66,13 @@ class MultRightMatrix(MultMatrix):
             self._r = pg.RVector(self.cols(), 1.0)
         else:
             self._r = r
+
+    @property
+    def r(self):
+        return self._r
+    @r.setter
+    def r(self, r):
+        self._r = r
 
     def mult(self, x):
         """Return M*x = A*(r*x)"""
@@ -84,6 +98,20 @@ class MultLeftRightMatrix(MultMatrix):
         super(MultLeftRightMatrix, self).__init__(A, verbose)
         self._r = right
         self._l = left
+
+    @property
+    def l(self):
+        return self._l
+    @l.setter
+    def r(self, l):
+        self._l = l
+    @property
+    def r(self):
+        return self._r
+    @r.setter
+    def r(self, r):
+        self._r = r
+
 
     def mult(self, x):
         """Multiplication from right-hand-side (dot product A*x)."""
