@@ -87,7 +87,7 @@ rc = ves.response([10.0, 100.0, 1.0, phases[0]/1000, phases[1]/1000])
 ###############################################################################
 # We can apply the default drawing routines for 1D VES data as well.
 fig, ax = pg.plt.subplots(1, 1)
-ves.drawData(ax, pg.cat(data('rhoa'), data('phia')),
+ves.drawData(ax, pg.cat(data('rhoa'), -data('phia')),
             labels=[r'$\varrho_a$ 2D FEM', r'$\varphi_a$ 2D FEM'],
             marker='o', linestyle='none')
 ves.drawData(ax, rc,
@@ -95,6 +95,6 @@ ves.drawData(ax, rc,
              marker=None)
 
 np.testing.assert_approx_equal(data('rhoa')[0], 30.663512498880323)
-np.testing.assert_approx_equal(data('phia')[0], 0.0013217386540598291)
+np.testing.assert_approx_equal(-data('phia')[0], 0.0013217386540598291)
 
 pg.wait()

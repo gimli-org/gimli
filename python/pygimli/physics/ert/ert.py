@@ -473,7 +473,7 @@ class ERTManager(MeshMethodManager):
 
         res : float, array(mesh.cellCount()) | array(N, mesh.cellCount()) | list
             Resistivity distribution for the given mesh cells can be:
-            . float for homogeneous resistivty
+            . float for homogeneous resistivity
             . single array of length mesh.cellCount()
             . matrix of N resistivity distributions of length mesh.cellCount()
             . resistivity map as [[regionMarker0, res0],
@@ -508,7 +508,7 @@ class ERTManager(MeshMethodManager):
         rhoa : DataContainerERT | array(N, data.size()) | array(N, data.size()),
             array(N, data.size())
                 Data container with resulting apparent resistivity data and
-                errors (if noisify == True).
+                errors (if noiseLevel or noiseAbs is set).
                 Optional returns a Matrix of rhoa values
                 (for returnArray==True forces noiseLevel=0).
                 In case of a complex valued resistivity model, phase values will be
@@ -591,12 +591,7 @@ class ERTManager(MeshMethodManager):
                           "min r_a:", min(rhoa[i]), "max r_a:", max(rhoa[i]))
         else:  # res is single resistivity array
             if len(res) == mesh.cellCount():
-                if isinstance(res, pg.CVector):
-                    res = pg.cat(pg.real(res), pg.abs(pg.imag(res)))
-
-                elif isinstance(res[0], np.complex):
-                    res = pg.cat(res.real, abs(res.imag))
-
+                    
                 if calcOnly:
                     fop.mapERTModel(res, 0)
 
@@ -612,14 +607,17 @@ class ERTManager(MeshMethodManager):
                         return pg.Matrix(fop.solution())
                     return ret
                 else:
-                    print(res)
+                    if fop.complex():
+                        res = pg.physics.SIP.squeezeComplex(res)
+                    
                     resp = fop.response(res)
 
-                if fop.complex():
-                    rhoa = pg.abs(resp(0, scheme.size()))
-                    phia = pg.abs(resp(scheme.size(), -1))
-                else:
-                    rhoa = resp
+                    if fop.complex():
+                        rhoa, phia = pg.physics.SIP.toPolar(resp)
+                        rhoa *= scheme['k']
+                        phia *= 1.0 # we don't want to change the sign
+                    else:
+                        rhoa = resp
             else:
                 print(mesh)
                 print("res: ", res)
