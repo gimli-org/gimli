@@ -62,7 +62,7 @@ class TravelTimeDijkstraModelling(MeshModelling):
         dists = shotReceiverDistances(self.data, full=True)
         aSlow = 1. / (dists / dataVals)
 
-        pg._r(self.regionManager().parameterCount())
+        # pg._r(self.regionManager().parameterCount())
         sm = pg.Vector(self.regionManager().parameterCount(),
                        pg.median(aSlow))
         return sm
@@ -120,7 +120,7 @@ class TravelTimeManager(MeshMethodManager):
             if not data.haveData('t'):
                 pg.critical('Datacontainer have no "t" values.')
             return data['t']
-        
+
         return data
 
     def errorCheck(self, err, dataVals):
@@ -128,7 +128,7 @@ class TravelTimeManager(MeshMethodManager):
         if isinstance(err, pg.DataContainer):
             if not err.haveData('err'):
                 pg.error('Datacontainer have no "err" values. Fallback set to 0.01')
-            return err['err'] / dataVals    
+            return err['err'] / dataVals
 
         return err
 
@@ -146,7 +146,7 @@ class TravelTimeManager(MeshMethodManager):
         """Simulate Traveltime measurements.
 
         Perform the forward task for a given mesh, a slowness distribution (per
-        cell) and return data (traveltime) for a measurement scheme. 
+        cell) and return data (traveltime) for a measurement scheme.
 
         Parameters
         ----------
@@ -189,10 +189,10 @@ class TravelTimeManager(MeshMethodManager):
         fop = self.fop
         fop.data = scheme
         fop.verbose = verbose
-        
+
         if mesh is not None:
             self.setMesh(mesh, secNodes=secNodes, ignoreRegionManager=True)
-        
+
         if len(slowness) == self.fop.mesh().cellCount():
             if max(slowness) > 1.:
                 pg.warn('slowness values larger than 1 ({0}), assuming velocity values .. building reciprocity.'.format(max(slowness)))
@@ -248,7 +248,7 @@ class TravelTimeManager(MeshMethodManager):
                 tmp = kwargs['limits'][0]
                 kwargs['limits'][0] = 1.0 / kwargs['limits'][1]
                 kwargs['limits'][1] = 1.0 / tmp
-                pg.verbose('Switching velocity limits to slowness limits.', 
+                pg.verbose('Switching velocity limits to slowness limits.',
                             kwargs['limits'])
 
         slowness = super(TravelTimeManager, self).invert(data, **kwargs)
