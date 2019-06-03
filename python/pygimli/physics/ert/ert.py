@@ -10,7 +10,7 @@ import numpy as np
 
 import pygimli as pg
 from pygimli.frameworks import Modelling, MeshModelling
-from pygimli.manager import MeshMethodManager
+from pygimli.frameworks import MeshMethodManager
 from .visualization import showERTData
 
 def simulate(mesh, res, scheme, sr=True, useBert=True,
@@ -45,7 +45,7 @@ def simulate(mesh, res, scheme, sr=True, useBert=True,
 
     if isinstance(scheme, str):
         scheme = pb.load(scheme)
-    
+
     return ert.simulate(mesh, res, scheme, verbose=verbose, **kwargs)
 
 
@@ -66,8 +66,18 @@ class ERTModellingBase(MeshModelling):
             vals = data['rhoa']
 
         return showERTData(data, vals=vals, ax=ax, **kwargs)
-        
-    
+
+    def drawModel(self, ax, model, **kwargs):
+        """Draw the para domain with option model values"""
+        ax, cBar = pg.show(mesh=self.paraDomain,
+                           data=model,
+                           label=kwargs.pop('label', pg.utils.unit('res')),
+                           ax=ax,
+                           cMap=pg.utils.cMap('res'),
+                           **kwargs)
+        return ax, cBar
+
+
 class BertModelling(ERTModellingBase):
     def __init__(self, sr=True, verbose=False):
         """Constructor, optional with data container and mesh."""
@@ -198,7 +208,7 @@ class ERTModelling(ERTModellingBase):
         self.lastResponse = r * self.data('k')
 
         if self.verbose:
-            print("Resp min/max: {0} {1} {2}s".format(min(self.lastResponse), 
+            print("Resp min/max: {0} {1} {2}s".format(min(self.lastResponse),
                                                       max(self.lastResponse),
                                                       pg.dur()))
 
@@ -456,7 +466,6 @@ class ERTManager(MeshMethodManager):
         ----
         * 2D + Complex + SR
 
-
         Parameters
         ----------
         mesh : :gimliapi:`GIMLI::Mesh`
@@ -475,27 +484,22 @@ class ERTManager(MeshMethodManager):
 
         Other Parameters
         ----------------
-        verbose : bool[False]
+        verbose: bool[False]
             Be verbose. Will override class settings.
-
-        calcOnly : bool [False]
+        calcOnly: bool [False]
             Use fop.calculate instead of fop.response. Useful if you want
             to force the calculation of impedances for homogeneous models.
             No noise handling. Solution is put as token 'u' in the returned
             DataContainerERT.
-
-        noiseLevel : float [0.0]
+        noiseLevel: float [0.0]
             add normally distributed noise based on
             scheme('err') or on noiseLevel if scheme did not contain 'err'
-
-        noiseAbs : float [0.0]
+        noiseAbs: float [0.0]
             Absolute voltage error in V
-
-        returnArray : bool [False]
+        returnArray: bool [False]
             Returns an array of apparent resistivities instead of
             a DataContainerERT
-
-        returnFields : bool [False]
+        returnFields: bool [False]
             Returns a matrix of all potential values (per mesh nodes)
             for each injection electrodes.
 
@@ -588,9 +592,10 @@ class ERTManager(MeshMethodManager):
         else:  # res is single resistivity array
             if len(res) == mesh.cellCount():
                 if isinstance(res, pg.CVector):
-                    res = pg.cat(pg.real(res), -pg.abs(pg.imag(res)))
+                    res = pg.cat(pg.real(res), pg.abs(pg.imag(res)))
+
                 elif isinstance(res[0], np.complex):
-                    res = pg.cat(res.real, -abs(res.imag))
+                    res = pg.cat(res.real, abs(res.imag))
 
                 if calcOnly:
                     fop.mapERTModel(res, 0)
@@ -607,6 +612,7 @@ class ERTManager(MeshMethodManager):
                         return pg.Matrix(fop.solution())
                     return ret
                 else:
+                    print(res)
                     resp = fop.response(res)
 
                 if fop.complex():
@@ -785,20 +791,11 @@ def createERTData(elecs, schemeName='none', **kwargs):
         import pybert as pb  # that's bad!!! TODO: remove pybert deps
         return pb.createData(elecs, schemeName, **kwargs)
 
-    if isinstance(elecs, pg.RVector):
-        sPos = []
-        for e in elecs:
-            sPos.append(pg.RVector3(e, 0., 0.))
-        elecs = sPos
-
     isClosed = kwargs.pop('closed', False)
 
     data = pg.DataContainerERT()
-    data.registerSensorIndex('a')
-    data.registerSensorIndex('b')
-    data.registerSensorIndex('m')
-    data.registerSensorIndex('n')
-    data.setSensorPositions(elecs)
+    data.setSensors(elecs)
+
     nElecs = len(elecs)
     a = []
     b = []

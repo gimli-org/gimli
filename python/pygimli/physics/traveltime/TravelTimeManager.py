@@ -9,7 +9,7 @@ from matplotlib.collections import LineCollection
 
 import pygimli as pg
 from pygimli.frameworks import MeshModelling
-from pygimli.manager import MeshMethodManager
+from pygimli.frameworks import MeshMethodManager
 
 from . raplot import drawTravelTimeData, drawVA, showVA
 from . ratools import shotReceiverDistances
@@ -62,6 +62,7 @@ class TravelTimeDijkstraModelling(MeshModelling):
         dists = shotReceiverDistances(self.data, full=True)
         aSlow = 1. / (dists / dataVals)
 
+        pg._r(self.regionManager().parameterCount())
         sm = pg.Vector(self.regionManager().parameterCount(),
                        pg.median(aSlow))
         return sm

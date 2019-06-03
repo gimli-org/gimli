@@ -66,6 +66,88 @@ def generateMatrix(xvec, yvec, vals, **kwargs):
 
     return A, xmap, ymap
 
+def showValMapPatches(vals, xVec=None, yVec=None, dx=1, dy=None, **kwargs):
+    """ """
+    ax, _ = pg.show(ax=kwargs.pop('ax', None))
+
+    gci, ymap = drawValMapPatches(ax, vals, xVec=xVec, yVec=yVec, dx=dx, dy=dy,
+                            **kwargs)
+    
+    cbar = None
+    if not kwargs.pop('colorBar', False):
+        cbar = pg.mplviewer.createColorBar(gci, **kwargs)
+
+    return ax, cbar, ymap
+
+def drawValMapPatches(ax, vals, xVec=None, yVec=None, dx=1, dy=None, **kwargs):
+    """ """
+    recs = []
+
+    circular = kwargs.pop('circular', False)
+    if circular:
+        recs = [None] * len(xVec)
+        if dy is None:  # map y values to unique
+            ymap = {xy: ii for ii, xy in enumerate(np.unique(yVec))}
+
+            xyMap = {}
+            for i, y in enumerate(yVec):
+                if y not in xyMap:
+                    xyMap[y] = []
+                xyMap[y].append(i)
+
+            # maxR = max(ymap.values())  # what's that for? not used
+            dR = 1 / (len(ymap.values())+1)
+            # dOff = np.pi / 2  # what's that for? not used
+
+            for y, xIds in xyMap.items():
+                r = 1. - dR*(ymap[y]+1)
+                # ax.plot(r * np.cos(xvec[xIds]),
+                #         r * np.sin(xvec[xIds]), 'o')
+
+                # print(y, ymap[y])
+                for i in xIds:
+                    phi = xVec[i]
+                    # x = r * np.cos(phi)  # what's that for? not used
+                    y = r * np.sin(phi)
+
+                    dPhi = (xVec[1] - xVec[0])
+
+                    recs[i] = Wedge((0., 0.), r + dR/1.5,
+                                    (phi - dPhi)*360/(2*np.pi),
+                                    (phi + dPhi)*360/(2*np.pi),
+                                    width=dR,
+                                    zorder=1+r)
+                    # if i < 5:
+                    #     ax.text(x, y, str(i))
+                    # pg.wait()
+        else:
+            raise("Implementme")
+    else:
+        if dy is None:  # map y values to unique
+            ymap = {xy: ii for ii, xy in enumerate(np.unique(yVec))}
+            for i in range(len(vals)):
+                recs.append(Rectangle((xVec[i] - dx / 2, ymap[yVec[i]] - 0.5),
+                                      dx, 1))
+        else:
+            for i in range(len(vals)):
+                recs.append(Rectangle((xVec[i] - dx / 2, yVec[i] - dy / 2),
+                                      dx, dy))
+        ax.set_xlim(min(xVec) - dx / 2, max(xVec) + dx / 2)
+        ax.set_ylim(len(ymap) - 0.5, -0.5)
+
+    pp = PatchCollection(recs)
+    pp.set_edgecolor(None)
+    pp.set_linewidths(0.0)
+    pp.set_array(vals)
+    # ax.clear()
+    gci = ax.add_collection(pp)
+
+    if circular:
+        pp.set_edgecolor('black')
+        pp.set_linewidths(0.1)
+
+    return gci, ymap
+
 
 def patchValMap(vals, xvec=None, yvec=None, ax=None, cMin=None, cMax=None,
                 logScale=None, label=None, dx=1, dy=None, **kwargs):
@@ -275,13 +357,13 @@ def patchMatrix(mat, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
     return ax, cbar
 
 
-def plotMatrix(mat, ax=None, **kwargs):
+def plotMatrix(mat, *args, **kwargs):
     """Naming conventions. Use drawMatrix or showMatrix"""
     pg.deprecated("use drawMatrix or showMatrix")
-    return showMatrix(ax, mat, **kwargs)
+    return showMatrix(*args, **kwargs)
 
-def showMatrix(mat, ax=None, **kwargs):
-    """Naming conventions. Use drawMatrix or showMatrix
+def showMatrix(mat, xmap=None, ymap=None, **kwargs):
+    """Show value map as matrix.
 
     Returns
     -------
@@ -290,7 +372,7 @@ def showMatrix(mat, ax=None, **kwargs):
     cb : matplotlib colorbar
         colorbar object
     """
-    ax, _ = pg.show(ax=ax)
+    ax, _ = pg.show(ax=kwargs.pop('ax', None))
 
     # pg._r(ax)
 

@@ -25,19 +25,21 @@ except ImportError as e:
                 "Ensure that pygimli is in your PYTHONPATH ")
 
 
-def show(mesh=None, data=None, **kwargs):
+def show(obj=None, data=None, **kwargs):
     """Mesh and model visualization.
 
-    Syntactic sugar to show a mesh with data. Forwards to
+    Syntactic sugar to show a obj with data. Forwards to
+    a known visualization for obj. Typical is 
     :py:mod:`pygimli.viewer.showMesh` or
     :py:mod:`pygimli.viewer.mayaview.showMesh3D` to show most of the typical 2D
-    and 3D content. See tutorials and examples for usage hints. An empty show
+    and 3D content. 
+    See tutorials and examples for usage hints. An empty show
     call creates an empty ax window.
 
     Parameters
     ----------
-    mesh: :gimliapi:`GIMLI::Mesh` or list of meshes
-        2D or 3D GIMLi mesh
+    obj: :gimliapi:`GIMLI::Mesh` or list of meshes | DataContainer
+        Mesh or data object
     data: iterable
         Optionally data to visualize. See appropriate show function.
 
@@ -63,6 +65,12 @@ def show(mesh=None, data=None, **kwargs):
     if "axes" in kwargs:
         print("Deprecation Warning: Please use keyword `ax` instead of `axes`")
         kwargs['ax'] = kwargs.pop('axes', None)
+
+    if isinstance(obj, pg.DataContainerERT):
+        from pygimli.physics.ert import showERTData
+        return showERTData(obj, vals=kwargs.pop('vals', data), **kwargs)
+
+    mesh = kwargs.pop('mesh', obj)
 
     if isinstance(mesh, list):
         ax = kwargs.pop('ax', None)

@@ -16,8 +16,8 @@ from pygimli.physics.ert import VESModelling, VESCModelling
 from pygimli.physics.ert import createERTData
 
 ###############################################################################
-# First we create a data configuration of a 1D Schlumberger sounding with 20 electrodes
-# and and increasing MN/2 electrode spacing from 1m to 24m.
+# First we create a data configuration of a 1D Schlumberger sounding with
+# 20 electrodes and and increasing MN/2 electrode spacing from 1m to 24m.
 scheme = createERTData(pg.utils.grange(start=1, end=24, dx=1, n=10, log=True),
                                        sounding=True)
 
@@ -32,8 +32,8 @@ plc = mt.createWorld(start=[-200, -100], end=[200, 0],
 ###############################################################################
 # To achieve a necessary numerical accuracy, we need some local mesh refinement
 # in the vicinity of the electrodes. However, since we don't need the
-# electrode (aka sensor) positions into the geometry, we only add forced mesh nodes
-# near the electrode positions, right below the earths surface.
+# electrode (aka sensor) positions into the geometry, we only add forced mesh
+# nodes near the electrode positions, right below the earths surface.
 for s in scheme.sensors():
     plc.createNode(s + [0.0, -0.2])
 
@@ -64,7 +64,7 @@ ves = VESModelling(ab2=ab2, mn2=mn2)
 
 ###############################################################################
 # Plot results
-fig, ax = pg.plt.subplots(1,1)
+fig, ax = pg.plt.subplots(1, 1)
 ax.plot(ab2, data('rhoa'), '-o', label='2D (FEM)')
 ax.plot(ab2, ves.response([10.0, 100.0, 1.0]), '-x', label='1D (VES)')
 ax.set_xlabel('AB/2 (m)')
@@ -86,7 +86,7 @@ rc = ves.response([10.0, 100.0, 1.0, phases[0]/1000, phases[1]/1000])
 
 ###############################################################################
 # We can apply the default drawing routines for 1D VES data as well.
-fig, ax = pg.plt.subplots(1,1)
+fig, ax = pg.plt.subplots(1, 1)
 ves.drawData(ax, pg.cat(data('rhoa'), data('phia')),
             labels=[r'$\varrho_a$ 2D FEM', r'$\varphi_a$ 2D FEM'],
             marker='o', linestyle='none')

@@ -76,7 +76,7 @@ class Modelling(pg.ModellingBase):
             fop : Modelling
 
         """
-        self._fop = None  # pg.frameworks.Modelling
+        self._fop = None  # pg.frameworks.Modelling .. not needed .. remove it
         self._data = None # dataContainer
         self._modelTrans = None
 
@@ -88,6 +88,14 @@ class Modelling(pg.ModellingBase):
         self._regionChanged = True
         self._regionManagerInUse = False
         self.modelTrans = pg.RTransLog() # Model transformation operator
+
+    def __hash__(self):
+        """Create a hash for Method Manager"""
+        # ^ pg.utils.dirHash(self._regionProperties)
+        if self._data is not None:
+            return pg.utils.strHash(str(type(self))) ^ hash(self._data)
+        else:
+            return pg.utils.strHash(str(type(self)))
 
     @property
     def fop(self):
@@ -139,7 +147,7 @@ class Modelling(pg.ModellingBase):
 
     def createStartModel(self, dataVals=None):
         """Create the default startmodel as the median of the data values.
-        
+
         Overwriting might be a good idea.
         Its used by inverion to create a valid startmodel if there are
         no starting values from the regions.
@@ -338,7 +346,7 @@ class Block1DModelling(Modelling):
         nLayers : int [4]
             Number of layers.
         nPara : int [1]
-            Number of parameters per layer 
+            Number of parameters per layer
             (e.g. nPara=2 for resistivity and phase)
         """
         self._nLayers = 0
@@ -399,7 +407,7 @@ class Block1DModelling(Modelling):
         """
         nData = len(data)
         yVals = range(nData)
-        ax.loglog(data, yVals, 
+        ax.loglog(data, yVals,
                   label=label,
                   **DEFAULT_STYLES.get(label, DEFAULT_STYLES['Default'])
                   )
@@ -423,6 +431,9 @@ class MeshModelling(Modelling):
     def __init__(self, **kwargs):
         super(MeshModelling, self).__init__(**kwargs)
         self._meshNeedsUpdate = True
+
+    def __hash__(self):
+        return super(MeshModelling, self).__hash__() ^ hash(self.mesh())
 
     @property
     def mesh(self):
@@ -498,6 +509,7 @@ class MeshModelling(Modelling):
             self.setRegionProperties(bk, background=True)
 
     def drawModel(self, ax, model, **kwargs):
+        """Draw the para domain with option model values"""
         ax, cBar = pg.show(mesh=self.paraDomain,
                            data=model,
                            label=kwargs.pop('label', 'Model parameter'),
@@ -520,6 +532,9 @@ class PetroModelling(MeshModelling):
     def __init__(self, fop, trans, **kwargs):
         """Save forward class and transformation, create Jacobian matrix."""
         self._f = fop
+        # self._f createStartModel might be called and depends on the regionMgr
+        self._f.regionManager = self.regionManager
+        # self.createRefinedFwdMesh depends on te refinement strategy of self._f
         self.createRefinedFwdMesh = self._f.createRefinedFwdMesh
 
         super(PetroModelling, self).__init__(fop=None, **kwargs)
@@ -531,7 +546,7 @@ class PetroModelling(MeshModelling):
 
     def setMeshPost(self, mesh):
         """ """
-        self._f.setMesh(mesh)
+        self._f.setMesh(mesh, ignoreRegionManager=True)
 
     def setDataPost(self, data):
         """ """
@@ -724,3 +739,49 @@ class LCModelling(Modelling):
         pg.mplviewer.showStitchedModels(mods, ax=ax, useMesh=True,
                                         x=self.soundingPos,
                                         **kwargs)
+
+
+
+class ParameterModelling(Modelling):
+    """Model with symbolic parameter names instead of numbers"""
+    def __init__(self, funct=None, **kwargs):
+        self._function = None
+        self._params = {}
+
+        super(ParameterModelling, self).__init__(**kwargs)
+
+        if funct is not None:
+            self._initFunction(funct)
+
+    @property
+    def params(self):
+        return self._params
+
+    @property
+    def function(self):
+        return self._function
+
+    def setRegionProperties(self, k, **kwargs):
+        """Set Region Properties by parameter name."""
+        if isinstance(k, int) or (k == '*'):
+            super(ParameterModelling, self).setRegionProperties(k, **kwargs)
+        else:
+            self.setRegionProperties(self._params[k], **kwargs)
+
+    def addParameter(self, name, id=None, **kwargs):
+        """
+        """
+        if id is None:
+            id = len(self._params)
+        self._params[name] = id
+        self.regionManager().addRegion(id)
+        self.setRegionProperties(name, **kwargs)
+        return id
+
+    def drawModel(self, ax, model):
+        """"""
+        str = ''
+        for k, p in self._params.items():
+            str += k + "={0} ".format(pg.utils.prettyFloat(model[p]))
+        pg.info("Model: ", str)
+

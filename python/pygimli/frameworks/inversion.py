@@ -37,9 +37,9 @@ class Inversion(object):
         self._debug = kwargs.pop('debug', False)
 
         # If this class or its derived is a Framework the _inv holds another
-        # Inversion which allows us ........
+        # Inversion which allows us (remove me)........
         # this will be probably removed in the future
-        self.isFrameWork = False
+        self.isFrameWork = False # check if needed
         self._stopAtChi1 = True
 
         self._preStep = None
@@ -73,6 +73,7 @@ class Inversion(object):
     @property
     def inv(self):
         if self.isFrameWork:
+            pg.critial('in use?')
             return self._inv.inv
         else:
             return self._inv
@@ -334,6 +335,7 @@ class Inversion(object):
         """
         self.reset()
         if self.isFrameWork:
+            pg.critial('in use?')
             return self._inv.run(dataVals, errorVals, **kwargs)
 
         if self.fop is None:
@@ -472,10 +474,9 @@ class Inversion(object):
         r"""Called if showProgress=True is set for the inversion run.
 
         TODO
-            * think .. its a useful function but breaks a little
-             the FrameWork work only concept.
+            *Discuss .. its a useful function but breaks a little
+                the FrameWork work only concept.
         """
-
         if self.axs is None:
             axs = None
             if style == 'all' or style == True:
@@ -654,7 +655,7 @@ class MeshInversion(Inversion):
 
     """
     def __init__(self, fop=None, **kwargs):
-        TO_BE_REMOVED
+        pg.critical('Obsolete .. to be removed.')
         super(MeshInversion, self).__init__(fop=fop, **kwargs)
         self._zWeight = 1.0
 
@@ -694,6 +695,7 @@ class PetroInversion(Inversion):
         Parameters
         ----------
         """
+        pg.critical('Obsolete .. to be removed.')
         if fop is not None:
             if not isinstance(fop, pg.frameworks.PetroModelling):
                 fop = pg.frameworks.PetroModelling(fop, petro)

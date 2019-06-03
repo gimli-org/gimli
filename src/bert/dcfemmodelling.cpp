@@ -229,7 +229,7 @@ void dcfemDomainAssembleStiffnessMatrix(SparseMatrix < ValueType > & S, const Me
 
 void dcfemDomainAssembleStiffnessMatrix(RSparseMatrix & S, const Mesh & mesh,
                                         double k, bool fix){
-    dcfemDomainAssembleStiffnessMatrix(S, mesh, mesh.cellAttributes(), 
+    dcfemDomainAssembleStiffnessMatrix(S, mesh, mesh.cellAttributes(),
                                        k, fix);
 }
 void dcfemDomainAssembleStiffnessMatrix(CSparseMatrix & S, const Mesh & mesh,
@@ -308,13 +308,13 @@ void dcfemBoundaryAssembleStiffnessMatrix(RSparseMatrix & S, const Mesh & mesh,
 void dcfemBoundaryAssembleStiffnessMatrix(CSparseMatrix & S, const Mesh & mesh,
                                           const RVector3 & source,
                                           double k){
-    dcfemBoundaryAssembleStiffnessMatrix(S, mesh, getComplexResistivities(mesh), 
+    dcfemBoundaryAssembleStiffnessMatrix(S, mesh, getComplexResistivities(mesh),
                                          source, k);
 }
 
 void assembleCompleteElectrodeModel_(RSparseMatrix & S,
                                     const std::vector < ElectrodeShape * > & elecs,
-                                    uint oldMatSize, bool lastIsReferenz, 
+                                    uint oldMatSize, bool lastIsReferenz,
                                     const RVector & contactImpedances){
     RSparseMapMatrix mapS(S);
     ElementMatrix < double > Se;
@@ -326,11 +326,11 @@ void assembleCompleteElectrodeModel_(RSparseMatrix & S,
     // RVector vContactImpedance( nElectrodes, 1.0); // Ohm * m^2
 
     // bool hasImp = checkIfMapFileExistAndLoadToVector("contactImpedance.map",  vContactImpedance);
-    
+
     bool hasImp = true;
     RVector vContactResistance(nElectrodes, 1.0); // Ohm
     bool hasRes = checkIfMapFileExistAndLoadToVector("contactResistance.map", vContactResistance);
-    
+
     for (uint elecID = 0; elecID < nElectrodes; elecID ++){
 
         //** some scale value, can used for contact impedance
@@ -569,14 +569,14 @@ void DCMultiElectrodeModelling::init_(){
 
 }
 
-void DCMultiElectrodeModelling::setComplex(bool c) { 
+void DCMultiElectrodeModelling::setComplex(bool c) {
     if (complex_ != c){
 
         if (subSolutions_ && subpotOwner_) {
             delete subSolutions_;
             subSolutions_ = 0;
         }
-        complex_=c; 
+        complex_=c;
     }
 }
 
@@ -1087,14 +1087,18 @@ RVector DCMultiElectrodeModelling::createDefaultStartModel(){
     return vec;
 }
 
-
 RVector DCMultiElectrodeModelling::response(const RVector & model,
                                             double background){
     if (complex()){
 //         __MS("Pls check response complex scale -1")
 
+        if (min(model(0, model.size()/2)) < TOLERANCE){
+            model.save("modelFail.vector");
+            log(Critical, " complex response for abs model with negative or zero resistivity is not defined.");
+        }
+
         DataMap dMap(response_(toComplex(model(0, model.size()/2),
-                                         -model(model.size()/2, model.size())),
+                                         model(model.size()/2, model.size())),
                                Complex(background, 0)));
 
         RVector respRe(dMap.data(this->dataContainer(), false, false));
@@ -1105,10 +1109,10 @@ RVector DCMultiElectrodeModelling::response(const RVector & model,
         RVector ph(-angle(resp));
 
         if (verbose_){
-            std::cout << "Response: min(RE) = " << min(am)
-                               << " max(RE) = " << max(am)
-                               << " min(IM) = " << min(ph)
-                               << " max(IM) = " << max(ph)
+            std::cout << "Response: min(amp) = " << min(am)
+                               << " max(amp) = " << max(am)
+                               << " min(-phi) = " << min(ph)
+                               << " max(-phi) = " << max(ph)
                                << std::endl;
             std::cout << "not yet implemented Reciprocity rms(modelReciprocity) "
                       << std::endl;
@@ -1118,7 +1122,7 @@ RVector DCMultiElectrodeModelling::response(const RVector & model,
     } // if complex
 
     //** to following can lead to problematic situations https://gitlab.com/resistivity-net/bert/issues/41
-    // but costs one forward calculation so its probably better to 
+    // but costs one forward calculation so its probably better to
     // remove it (temporary comment)
     // if (::fabs(max(model) - min(model)) < TOLERANCE){
     //     if (!this->topography_ ){
@@ -1126,7 +1130,12 @@ RVector DCMultiElectrodeModelling::response(const RVector & model,
     //     } else {
     //         std::cout << "Calcuating numerical response for homogeneous model due to topography";
     //     }
-    // } 
+    // }
+
+    if (min(model) < TOLERANCE){
+        model.save("modelFail.vector");
+        log(Critical, " response for model with negative or zero resistivity is not defined.");
+    }
 
     DataMap dMap(response_(model, background));
     RVector resp(dMap.data(this->dataContainer()));
@@ -1237,16 +1246,6 @@ DataMap DCMultiElectrodeModelling::response_(const Vector < ValueType > & model,
 
     if (dataContainer_ != NULL){
 
-        if (min(model) < TOLERANCE) {
-            model.save("modelFail.vector");
-            throwError(EXIT_FEM_NO_RHO, WHERE_AM_I + " response for model with negative or zero resistivity is not defined.");
-        }
-
-        if (GIMLI::abs(max(model)) < TOLERANCE &&
-            GIMLI::abs(min(model)) < TOLERANCE) {
-            throwError(EXIT_FEM_NO_RHO, WHERE_AM_I);
-        }
-
         if (dipoleCurrentPattern_){
             THROW_TO_IMPL
             calculate(this->dataContainer(), false);
@@ -1292,7 +1291,7 @@ Matrix < ValueType > * DCMultiElectrodeModelling::prepareJacobianT_(const Vector
                                   buildCompleteElectrodeModel_ ||
                                   stdDev(model) > TOLERANCE*1e5));
             if (verbose_) {
-                std::cout << "Calculating subpotentials analytical for createJacobian: " 
+                std::cout << "Calculating subpotentials analytical for createJacobian: "
                           << this->analytical() << " ("
                           << "top: " << this->topography() << "|"
                           << "cem: " << buildCompleteElectrodeModel_ << "|"
@@ -1530,7 +1529,7 @@ RVector DCMultiElectrodeModelling::calcGeometricFactor(const DataContainerERT & 
         }
 
         this->calculate(*primDataMap_);
-        
+
         mesh_->setCellAttributes(atts);
     } else {
         if (verbose_) std::cout << " (recover)" << std::endl;
@@ -1822,12 +1821,12 @@ MEMINFO
                 if (verbose_) std::cout << "Loaded: contactImpedance.map." << std::endl;
             }
         }
-                
+
         assembleCompleteElectrodeModel(S_, elecs, oldMatSize, lastIsReferenz_,
                                            vContactImpedance_);
 
         potentialsCEM_.resize(nCurrentPattern, lastValidElectrode);
-        
+
     } // end CEM
 
     this->assembleStiffnessMatrixDCFEMByPass(S_);
@@ -2044,7 +2043,7 @@ MEMINFO
         if (verbose_){
             std::cout << "Using existing primary potentials." << std::endl;
         }
-        
+
         primPot_->rowFlag().fill(1);
     }
 

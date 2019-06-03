@@ -15,7 +15,7 @@ from pygimli.mplviewer import drawModel, drawMesh, CellBrowser, createColorBar
 from pygimli.utils.base import interperc, getSavePath
 from pygimli.mplviewer.dataview import showVecMatrix
 
-from pygimli.manager import MethodManager, MethodManager0
+from pygimli.frameworks import MethodManager, MethodManager0
 
 # the explicit import with full name allow for:
 # python ~/src/gimli/gimli/python/pygimli/physics/traveltime/refraction.py
@@ -37,6 +37,7 @@ class Refraction(MethodManager0):
     def __init__(self, data=None, verbose=True, debug=False, fatray=False,
                  frequency=1000., **kwargs):
         """Init function with optional data load"""
+        pg.deprecated('Use TravelTimeManager insteas')
         super().__init__(verbose=verbose, debug=debug, **kwargs)
         self.figs = {}
         self.axs = {}

@@ -23,19 +23,19 @@
 #include <sys/timeb.h>
 
 #if defined(__i386__)
-static __inline__ size_t rdtsc__( void ){
+static __inline__ size_t rdtsc__(void){
     size_t x;
-    __asm__ volatile (".byte 0x0f, 0x31" : "=A" ( x ));
+    __asm__ volatile (".byte 0x0f, 0x31" : "=A" (x));
     return x;
 }
 #elif defined(__x86_64__)
-static __inline__ size_t rdtsc__( void ){
+static __inline__ size_t rdtsc__(void){
     unsigned hi, lo;
     __asm__ __volatile__ ("rdtsc" : "=a"(lo), "=d"(hi));
-    return ( (size_t )lo)|( ((size_t )hi)<<32 );
+    return ((size_t)lo)|(((size_t)hi)<<32);
 }
 #else
-static inline size_t rdtsc__( void ){
+static inline size_t rdtsc__(void){
     return 0;
 }
 #endif
@@ -44,13 +44,13 @@ namespace GIMLI{
 
 class DLLEXPORT CycleCounter{
 public:
-    CycleCounter() : var_( 0 ) {}
+    CycleCounter() : var_(0) {}
 
     ~CycleCounter(){}
 
-    inline void tic( ){ var_ = rdtsc__(); }
+    inline void tic(){ var_ = rdtsc__(); }
 
-    inline size_t toc( ) const { return ( rdtsc__() - var_ ); }
+    inline size_t toc() const { return (rdtsc__() - var_); }
 
 protected:
 
@@ -59,13 +59,13 @@ protected:
 
 class DLLEXPORT Stopwatch {
 public:
-    Stopwatch( bool start = false );
+    Stopwatch(bool start=true);
 
     ~Stopwatch();
 
     void start();
 
-    void stop( bool verbose=false );
+    void stop(bool verbose=false);
 
     /*! Restart the stopwatch.*/
     void restart();
@@ -74,10 +74,10 @@ public:
     void reset();
 
     /*! Returns the current duration in seconds. Optional you can restart the stopwatch.*/
-    double duration( bool restart=false );
+    double duration(bool restart=false);
 
     /*! Returns the cpu cycles. Optional you can restart the stopwatch.*/
-    size_t cycles( bool restart=false );
+    size_t cycles(bool restart=false);
 
     const CycleCounter & cycleCounter() const { return cCounter_; }
 
@@ -87,8 +87,8 @@ protected:
     CycleCounter cCounter_;
 };
 
-#define TIC__ std::cout.precision( 12 ); GIMLI::Stopwatch __swatch__( true );
-#define TOC__ std::cout << __swatch__.duration( true ) << std::endl;
+#define TIC__ std::cout.precision(12); GIMLI::Stopwatch __swatch__(true);
+#define TOC__ std::cout << __swatch__.duration(true) << std::endl;
 #define toc__ __swatch__.duration()
 
 } // namespace GIMLI

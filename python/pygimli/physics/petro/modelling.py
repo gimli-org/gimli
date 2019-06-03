@@ -3,7 +3,7 @@
 """Special meta forward operator for modelling with petrophysical relations."""
 
 import pygimli as pg
-from pygimli.manager import MethodManager
+from pygimli.frameworks import MethodManager
 
 
 class PetroModelling(pg.ModellingBase):
@@ -16,6 +16,7 @@ class PetroModelling(pg.ModellingBase):
 
     def __init__(self, fop, trans, mesh=None, verbose=False):
         """Save forward class and transformation, create Jacobian matrix."""
+        pg.warning('do not use')
         super().__init__(verbose=verbose)
         self.fop = fop
         self.trans = trans  # class defining m(p)
@@ -64,6 +65,7 @@ class PetroJointModelling(pg.ModellingBase):
 
     def __init__(self, f=None, p=None, mesh=None, verbose=True):
         """Constructor."""
+        pg.warning('do not use')
         super().__init__(verbose=verbose)
 
         self.fops = None
@@ -123,6 +125,7 @@ class JointPetroInversion(MethodManager):
 
     def __init__(self, managers, trans, verbose=False, debug=False, **kwargs):
         """TODO."""
+        pg.warning('do not use')
         MethodManager.__init__(self, verbose=verbose, debug=debug, **kwargs)
 
         self.managers = managers

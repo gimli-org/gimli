@@ -28,6 +28,10 @@ import time
 
 import pygimli as pg
 
+
+def strHash(string):
+    return int(hashlib.sha224(string.encode()).hexdigest()[:16], 16)
+    
 class Cache(object):
     def __init__(self, hashValue):
         self._value = None
@@ -149,25 +153,22 @@ class CacheManager(object):
         """Return unique info string about the called function."""
         return funct.__code__.co_filename + ":" + funct.__qualname__
 
-    def strhash(self, string):
-        return int(hashlib.sha224(string.encode()).hexdigest()[:16], 16)
-
     def hash(self, funct, *args, **kwargs):
         """"Create a hash value"""
         pg.tic()
         functInfo = self.functInfo(funct)
-        funcHash = self.strhash(functInfo)
-        versionHash = self.strhash(pg.versionStr())
-        codeHash = self.strhash(inspect.getsource(funct))
+        funcHash = strHash(functInfo)
+        versionHash = strHash(pg.versionStr())
+        codeHash = strHash(inspect.getsource(funct))
 
         argHash = 0
         for a in args:
             if isinstance(a, str):
-                argHash = argHash ^ self.strhash(a)
+                argHash = argHash ^ strHash(a)
             elif isinstance(a, list):
                 for item in a:
                     if isinstance(item, str):
-                        argHash = argHash ^ self.strhash(item)
+                        argHash = argHash ^ strHash(item)
                     else:
                         argHash = argHash ^ hash(item)
             else:
@@ -175,7 +176,7 @@ class CacheManager(object):
         
         for k, v in kwargs.items():
             if isinstance(v, str):
-                argHash = argHash ^ self.strhash(v)
+                argHash = argHash ^ strHash(v)
             else:
                 argHash = argHash ^ hash(v)
                 
@@ -202,9 +203,11 @@ def cache(funct):
         if cache.value is not None:
             return cache.value
         else:
+            # pg.tic will not work because there is only one global __swatch__ 
+            sw = pg.Stopwatch(True) 
             rv = funct(*args, **kwargs)
             cache.info['date'] = time.time()
-            cache.info['dur'] = pg.dur()
+            cache.info['dur'] = sw.duration()
             try:
                 cache.value = rv
             except Exception as e:

@@ -18,11 +18,11 @@ from .tools import KramersKronig, fitCCEMPhi, fitCCC
 from .tools import fitCCCC, fitCCPhi, fit2CCPhi
 from .tools import isComplex, squeezeComplex, toComplex
 
-from pygimli.manager import MethodManager
-from pygimli.frameworks import Modelling
+from pygimli.frameworks import MethodManager
+from pygimli.frameworks import ParameterModelling
 
 
-class SpectrumModelling(Modelling):
+class SpectrumModelling(ParameterModelling):
     """Modelling framework with an array of freqencies as data space.
     
     Attributes
@@ -33,22 +33,9 @@ class SpectrumModelling(Modelling):
 
     """
     def __init__(self, funct=None, **kwargs):
-        self._function = None
         self._complex = False
-        super(SpectrumModelling, self).__init__(**kwargs)
+        super(SpectrumModelling, self).__init__(funct=funct, **kwargs)
         self._freqs = None
-        self._params = {}
-
-        if funct is not None:
-            self._initFunction(funct)
-
-    @property 
-    def params(self):
-        return self._params
-
-    @property 
-    def function(self):
-        return self._function
 
     @property 
     def complex(self):
@@ -67,23 +54,6 @@ class SpectrumModelling(Modelling):
     def freqs(self, f):
         self._freqs = f
 
-    def setRegionProperties(self, k, **kwargs):
-        """Set Region Properties by parameter name."""
-        if isinstance(k, int) or (k == '*'):
-            super(SpectrumModelling, self).setRegionProperties(k, **kwargs)
-        else:
-            self.setRegionProperties(self._params[k], **kwargs)
-
-    def addParameter(self, name, id=None, **kwargs):
-        """
-        """
-        if id is None:
-            id = len(self._params)
-        self._params[name] = id
-        self.regionManager().addRegion(id)
-        self.setRegionProperties(name, **kwargs)
-        return id
-
     def _initFunction(self, funct):
         """Init any function and interpret possible args and kwargs."""
         self._function = funct
@@ -100,7 +70,7 @@ class SpectrumModelling(Modelling):
                                        single=True, 
                                        trans='log', 
                                        startModel=1)
-    
+
     def response(self, params):
         #pg._r('response:', params)
         #self.drawModel(None, params)
@@ -111,13 +81,6 @@ class SpectrumModelling(Modelling):
         if self.complex:
             return squeezeComplex(ret)
         return ret
-
-    def drawModel(self, ax, model):
-        """"""
-        str = ''
-        for k, p in self._params.items():
-            str += k + "={0} ".format(pg.utils.prettyFloat(model[p]))
-        pg.info("Model: ", str)
 
     def drawData(self, ax, data, err=None, **kwargs):
         """"""

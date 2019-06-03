@@ -10,11 +10,25 @@ quants = {
         'name': 'Apparent resistivity',
         'unit': '$\Omega$m',
         'ger': 'scheinbarer spez. elektr. Widerstand',
+        'cMap': 'Spectral_r',
     },
     'res': {
         'name': 'Resistivity',
         'unit': '$\Omega$m',
         'ger': 'spez. elektr. Widerstand',
+        'cMap': 'Spectral_r',
+    },
+    'ip': {
+        'name': 'neg. phase',
+        'unit': 'mrad',
+        'ger': 'neg. Phase',
+        'cMap': 'viridis',
+    },
+    'ipa': {
+        'name': 'neg. apparent phase',
+        'unit': 'mrad',
+        'ger': 'neg. scheinbare Phase',
+        'cMap': 'viridis',
     },
     'va': {
         'name': 'Apparent velocity',
@@ -43,6 +57,27 @@ rc = {
     'unitStyle': 2,  # quantity (unit)
 }
 
+def quantity(name):
+    """ """
+    quantity = None
+    
+    if name.lower() not in quants:
+        for k, v in quants.items():
+            if v['name'].lower() == name.lower():
+                quantity = v
+                break
+    else:
+        quantity = quants[name]
+    return quantity
+
+def cMap(name):
+    """Return default colormap for physical quantity name."""
+    q = quantity(name)
+    if q is None:
+        pg.warning('No information about quantity name', name)
+        return 'vididis'
+    return q.get('cMap', 'vididis')
+
 
 def unit(name, unit='auto'):
     """ Return the name of a physical quantity with its unit.
@@ -55,29 +90,21 @@ def unit(name, unit='auto'):
     Parameters
     ----------
     """
-    quantity = None
+    q = quantity(name)
 
-    if name.lower() not in quants:
-        for k, v in quants.items():
-            if v['name'].lower() == name.lower():
-                quantity = v
-                break
-    else:
-        quantity = quants[name]
-
-    if unit == 'auto' and quantity is None:
+    if unit == 'auto' and q is None:
         ## fall back if the name is given instead of the abbreviation
         print(quants)
         pg.error('Please give abbreviation or full name '
                  'for the quantity name: {0}'.format(name))
     else:
         if rc['lang'] == 'german':
-            name = quantity['ger']
+            name = q['ger']
         else:
-            name = quantity['name']
+            name = q['name']
 
         if unit == 'auto':
-            unit = quantity['unit']
+            unit = q['unit']
 
     if rc['unitStyle'] == 1 or rc['lang'] == 'german':
         return '{0} in {1}'.format(name, unit)

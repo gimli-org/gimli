@@ -10,7 +10,7 @@ from pygimli.mplviewer import drawModel1D
 
 from pygimli.frameworks import Modelling, Block1DModelling
 
-from pygimli.manager import MethodManager1d
+from pygimli.frameworks import MethodManager1d
 
 
 class VESModelling(Block1DModelling):

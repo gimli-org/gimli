@@ -12,7 +12,7 @@ from .base import (rms, rmsWithErr, nanrms, createDateTimeString,
 # compatibility for fw_cleaning
 from .base import rmsWithErr as rmswitherr
 
-from .cache import cache
+from .cache import (cache, strHash)
 from .geostatistics import (computeInverseRootMatrix, covarianceMatrix,
                             generateGeostatisticalModel)
 from .gps import GKtoUTM, findUTMZone, getProjection, getUTMProjection, readGPX
@@ -20,7 +20,9 @@ from .hankel import hankelFC
 from .postinversion import iterateBounds, modCovar
 from .sparseMat2Numpy import (convertCRSIndex2Map, sparseMatrix2Array,
                               sparseMatrix2coo, sparseMatrix2csr)
-from .units import unit
+
+from .units import (unit, cMap)
+
 from .utils import (ProgressBar, boxprint, chi2, cumDist, diff, dist,
                     filterIndex, filterLinesByCommentStr, findNearest,
                     getIndex, grange, logDropTol, niceLogspace, prettyFloat,

@@ -66,7 +66,7 @@ IndexArray find(const BVector & v);
 
 #ifndef PYGIMLI_CAST
 inline void Dump(const void * mem, unsigned int n) {
-    const char * p = reinterpret_cast< const char *>( mem );
+    const char * p = reinterpret_cast< const char *>(mem);
     for (unsigned int i = 0; i < n; i++) {
         std::cout << std::hex << int(p[i]) << " ";
     }
@@ -295,12 +295,12 @@ public:
         return *this;
     }
 
-    inline const ValueType & operator[](const Index i) const { 
+    inline const ValueType & operator[](const Index i) const {
         // ASSERT_THIS_SIZE(i)  // will not work for std::copy, std::sort etc.
-        return data_[i]; 
+        return data_[i];
     }
 
-    inline ValueType & operator[](const Index i) { 
+    inline ValueType & operator[](const Index i) {
         // ASSERT_THIS_SIZE(i)  // will not work for std::copy, std::sort etc.
         return data_[i];
     }
@@ -470,7 +470,7 @@ public:
         Index newS = start + vals.size();
         if (this->size() < newS) this->resize(newS);
         this->setVal(vals, start, newS);
-        
+
         return *this;
     }
 
@@ -914,7 +914,7 @@ protected:
             //"" check speed for memcpy here
              //std::memcpy(data_, v.data_, sizeof(ValType)*v.size());
              // memcpy is approx 0.3% faster but copy is extensively testet
-             // cleanest solution needs iterator rewriting: 
+             // cleanest solution needs iterator rewriting:
              // std::copy(v.begin(), v.end(), this->begin());
              std::copy(&v[0], &v[v.size()], data_); // only works without bound check in subscription operator
         }
@@ -1310,7 +1310,7 @@ inline BVector operator ~ (const BVector & a){
     return ret;
 }
 
-/*! For use in pygimli*/ 
+/*! For use in pygimli*/
 inline BVector inv(const BVector & a){
     return ~a;
 }
@@ -1548,9 +1548,9 @@ template < class T > Vector< T > sort(const Vector < T > & a){
     return Vector < T > (0);
 }
 
-/*! Returning a copy of the vector and replacing all consecutive occurrences 
-    of a value by a single instance of that value. e.g. [0 1 1 2 1 1] -> [0 1 2 1]. 
-    To remove all double values from the vector use an additionally sorting. 
+/*! Returning a copy of the vector and replacing all consecutive occurrences
+    of a value by a single instance of that value. e.g. [0 1 1 2 1 1] -> [0 1 2 1].
+    To remove all double values from the vector use an additionally sorting.
     e.g. unique(sort(v)) gets you [0 1 2]. */
 template < class T > Vector< T > unique(const Vector < T > & a){
 #ifndef PYGIMLI_CAST
@@ -1627,7 +1627,7 @@ template < class ValueType >
 Vector< ValueType > increasingRange2(const ValueType & a,
                                      const ValueType & last, Index n){
     if (abs(a) < 1e-12){
-        throwError(1, "Can't create increasing range for start value of: " + 
+        throwError(1, "Can't create increasing range for start value of: " +
         str(a) );
     }
 
@@ -1868,8 +1868,8 @@ bool saveVec(const Vector< ValueType > & a, const std::string & filename,
 template < class ValueType >
 bool loadVec(Vector < ValueType > & a,
              const std::string & filename,
-             IOFormat format = Ascii){ 
-    return a.load(filename, format); 
+             IOFormat format = Ascii){
+    return a.load(filename, format);
 }
 
 } // namespace GIMLI
@@ -1901,7 +1901,7 @@ namespace std {
             GIMLI::Index seed = 0;
             for (auto & x: p) {
                 hashCombine(seed, x.first, x.second);
-            }  
+            }
             return seed;
         }
     };

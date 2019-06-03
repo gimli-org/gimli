@@ -7,10 +7,96 @@ import numpy as np
 from numpy import ma
 
 import pygimli as pg
-from pygimli.mplviewer.dataview import patchValMap
+from pygimli.mplviewer.dataview import showValMapPatches
 
 
-def showERTData(data, **kwargs):
+def showERTData(data, vals=None, **kwargs):
+    """Plot ERT data as pseudosection matrix (position over separation).
+
+    Creates figure, axis and draw a pseudosection.
+
+    Parameters
+    ----------
+
+    data : :gimliapi:`BERT::DataContainerERT`
+
+    **kwargs :
+
+        * axes : matplotlib.axes
+            Axes to plot into. Default is None and a new figure and
+            axes are created.
+        * vals : Array[nData]
+            Values to be plotted. Default is data('rhoa').
+    """
+    var = kwargs.pop('var', 0)
+    if var > 0:
+        import pybert as pb
+        pg._g(kwargs)
+        return pb.showData(data, vals, var=var, **kwargs)
+
+    # remove ax keyword global
+    ax = kwargs.pop('ax', None)
+
+    if ax is None:
+        fig = pg.plt.figure()
+        ax = None
+        axTopo = None
+        if 'showTopo' in kwargs:
+            ax = fig.add_subplot(1, 1, 1)
+#            axs = fig.subplots(2, 1, sharex=True)
+#            # Remove horizontal space between axes
+#            fig.subplots_adjust(hspace=0)
+#            ax = axs[1]
+#            axTopo = axs[0]
+        else:
+            ax = fig.add_subplot(1, 1, 1)
+
+    pg.checkAndFixLocaleDecimal_point(verbose=False)
+
+    if vals is None:
+        vals = 'rhoa'
+
+    if isinstance(vals, str):
+        if data.haveData(vals):
+            vals = data(vals)
+        else:
+            pg.critical('field not in data container: ', vals)
+
+        kwargs['cMap'] = kwargs.pop('cMap', pg.utils.cMap('rhoa'))
+    
+    kwargs['logScale'] = kwargs.pop('logScale', True)
+
+    ax, cbar = drawERTData(ax, data, vals=vals, **kwargs)
+    
+    #TODO here cbar handling like pg.show
+
+    if 'xlabel' in kwargs:
+        ax.set_xlabel(kwargs['xlabel'])
+    if 'ylabel' in kwargs:
+        ax.set_ylabel(kwargs['ylabel'])
+
+    if 'showTopo' in kwargs:
+        # if axTopo is not None:
+        print(ax.get_position())
+        axTopo = pg.plt.axes([ax.get_position().x0,
+                           ax.get_position().y0,
+                           ax.get_position().x0+0.2,
+                           ax.get_position().y0+0.2])
+
+        x = pg.x(data)
+        x *= (ax.get_xlim()[1] - ax.get_xlim()[0]) / (max(x)-min(x))
+        x += ax.get_xlim()[0]
+        axTopo.plot(x, pg.z(data), '-o', markersize=4)
+        axTopo.set_ylim(min(pg.z(data)), max(pg.z(data)))
+        axTopo.set_aspect(1)
+
+    # ax.set_aspect('equal')
+    # plt.pause(0.1)
+    pg.mplviewer.updateAxes(ax)
+    return ax, cbar
+    
+
+def drawERTData(ax, data, vals=None, **kwargs):
     """Plot ERT data as pseudosection matrix (position over separation).
 
     Parameters
@@ -33,8 +119,6 @@ def showERTData(data, **kwargs):
             x-width of individual rectangles
         * ind : integer iterable or IVector
             indices to limit display
-        * var : int [0]
-            historical plotting styles (1, 2)
         * circular : bool
             Plot in polar coordinates when plotting via patchValMap
     Returns
@@ -44,7 +128,9 @@ def showERTData(data, **kwargs):
     cbar:
         The used Colorbar or None
     """
-    vals = kwargs.pop('vals', data('rhoa'))
+    if vals is None:
+        vals = data('rhoa')
+        
     valid = data.get("valid").array().astype("bool")
     vals = ma.array(vals, mask=~valid)
 
@@ -60,31 +146,10 @@ def showERTData(data, **kwargs):
     ax = None
     cbar = None
 
-    if var == 0:  # default style
-        dx = kwargs.pop('dx', np.median(np.diff(np.unique(mid))))*2
-        ax, cbar, ymap = patchValMap(vals, mid, sep, dx=dx, **kwargs)
-    else:  # only here for special cases
-        A, xmap, ymap = generateMatrix(mid, sep, vals, **kwargs)
-        if var == 1:
-            la = A.shape[1]
-            B = np.zeros((A.shape[0], la*2+2))
-#            for i in range(2):
-#                B[:, i:la*2+i-1:2] = A
-            for i in range(4):
-                B[:, i:la*2+i-1:2] += A
-
-            xmap2 = {}
-            for k in xmap:
-                xmap2[k * 2] = xmap[k]
-                xmap2[k*2 + 1] = xmap[k]
-
-            kwargs.setdefault('aspect', 2)
-            ax, cbar = plotMatrix(B, xmap2, ymap, showally=False, **kwargs)
-        elif var == 2:
-            ax, cbar = plotMatrix(A, xmap, ymap, showally=False, **kwargs)
-        else:
-            ax, cbar = patchMatrix(A, xmap, ymap, **kwargs)
-
+    dx = kwargs.pop('dx', np.median(np.diff(np.unique(mid))))*2
+    ax, cbar, ymap = showValMapPatches(vals, xVec=mid, yVec=sep, 
+                                       dx=dx, ax=ax, **kwargs)
+        
     if kwargs.get('circular', False):
         sM = np.mean(data.sensors(), axis=0)
         a = np.array([np.arctan2(s[1]-sM[1], s[0]-sM[0]) for s in data.sensors()])

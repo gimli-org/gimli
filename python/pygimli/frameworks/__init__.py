@@ -3,10 +3,19 @@
 
 
 from .modelling import (Modelling, Block1DModelling, MeshModelling,
-                        PetroModelling, LCModelling)
+                        PetroModelling, LCModelling, ParameterModelling)
 
-from .inversion import (Inversion, MarquardtInversion, Block1DInversion,
-                        PetroInversion, LCInversion)
+from .inversion import (Inversion, MarquardtInversion,
+                        Block1DInversion,
+                        LCInversion)
+
+from .methodManager import (MethodManager, MethodManager1d,
+                            ParameterInversionManager,
+                            MeshMethodManager, PetroInversionManager)
+
+# will be removed very soon
+from .methodManager import (MethodManager0,
+                            MeshMethodManager0)
 
 from .resolution import computeR
 

@@ -24,7 +24,7 @@ class TestManagers(unittest.TestCase):
         fop = VMDTimeDomainModelling(times=t, txArea=10000.0, rxArea=10000.0)
         # [thick[3], res[4]] nLay=4
 
-        vmdMgr = pg.manager.MethodManager1d(fop)
+        vmdMgr = pg.frameworks.MethodManager1d(fop)
         synthModel = np.array([25., 5., 100., 150., 1., 10., 4.])
        
         ra = vmdMgr.simulate(synthModel)

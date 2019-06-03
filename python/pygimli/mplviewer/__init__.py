@@ -57,15 +57,18 @@ from .overlayimage import (cacheFileName,
 # TODO example scripts for the following and refactor is needed
 # maybe ploter should named show or draw
 from .dataview import (drawSensorAsMarker,  # dups to meshview??
+                       showVecMatrix,
+                       drawVecMatrix,
+                       showValMapPatches,
+                       drawValMapPatches,
+                       showMatrix,
+                       drawMatrix,
                        generateMatrix,
-                       patchMatrix,
-                       patchValMap,
+                       patchMatrix, # deprectated (Naming)
+                       patchValMap, # deprectated (Naming)
                        plotDataContainerAsMatrix, # need renaming
                        plotMatrix, # deprectated (Naming)
                        plotVecMatrix,# deprectated (Naming)
-                       showMatrix,
-                       showVecMatrix,
-                       drawVecMatrix,
                        )
 
 # which of these do we actually need?
