@@ -85,7 +85,7 @@ class Show3D(QMainWindow):
             The MPL colormap that should be used to display parameters.
         """
         self.mesh = mesh
-        self.pyvista_widget.add_mesh(self.mesh, cmap=cMap)
+        self._actor = self.pyvista_widget.add_mesh(self.mesh, cmap=cMap)
         self.pyvista_widget.show_bounds()
         self.pyvista_widget.reset_camera()
 
@@ -100,6 +100,7 @@ class Show3D(QMainWindow):
         self.toolbar.cbbx_cmap.setCurrentText(cMap)
         self._allowSignals()
 
+        # set slicers to center after they're enabled
         _bounds = self.mesh.bounds
         self.toolbar.slice_x.setMinimum(_bounds[0])
         self.toolbar.slice_x.setMaximum(_bounds[1])
@@ -158,11 +159,11 @@ class Show3D(QMainWindow):
 
         Parameter
         ---------
-        param: Current text if the just triggered QComboBox
+        param: Current text of the just triggered QComboBox
 
         Note
         ----
-        Maybe overloaded.
+        May be overloaded.
         """
         if param is not None and param not in CMAPS and not isinstance(param, int):
             # change to the desired parameter distribution
@@ -180,16 +181,27 @@ class Show3D(QMainWindow):
             y_val = self.toolbar.slice_y.value()
             z_val = self.toolbar.slice_z.value()
 
-            # multiBlock = self.mesh.slice_orthogonal(x=-0.05, y=-0.05, z=-0.05)
-            # multiBlock.plot()
-            # mesh = pyvista.read(multiBlock)
-            # self.pyvista_widget.plot(multiBlock, cmap=cMap)
-            # print(mesh)
-        # else:
-        mesh = self.mesh
-        # print(dir(self.pyvista_widget))
-        self.pyvista_widget.add_mesh(mesh, cmap=cMap)
+
+            # get the actual slices
+            mesh = self.mesh.slice_orthogonal(x=x_val, y=y_val, z=z_val)
+
+        else:
+            mesh = self.mesh
+
+        # save the camera position
+        # NOTE: this returns [camera position, focal point, and view up]
+        self.camera_pos = self.pyvista_widget.camera_position[0]
+
+        # remove the currently displayed mesh
+        self.pyvista_widget.remove_actor(self._actor)
+        # add the modified one
+        self._actor = self.pyvista_widget.add_mesh(mesh, cmap=cMap)
+
+        # update stuff in the toolbar
         self.updateScalarBar()
+
+        # reset the camera position
+        self.pyvista_widget.set_position(self.camera_pos)
 
     def updateScalarBar(self):
         """
@@ -219,6 +231,9 @@ class Show3D(QMainWindow):
         self.toolbar.le_cmax.setText(self.toolbar.le_cmax.text().replace(',', '.'))
 
     def toggleBbox(self):
+        """
+        Toggle the visibility of the axis grid surrounding the model.
+        """
         checked = not self.toolbar.btn_bbox.isChecked()
         self.pyvista_widget.show_grid(
             show_xaxis=checked,
@@ -231,6 +246,14 @@ class Show3D(QMainWindow):
         self.pyvista_widget.update()
 
     def takeScreenShot(self):
+        """
+        Save the scene as image.
+
+        Todo
+        ----
+        + might come in handy to open a dialog where one can choose between 
+        black/white background and white/black axis grid and so on
+        """
         fname = QFileDialog.getSaveFileName(
             self, 'Open File', None, "Image files (*.jpg *.png)"
             )[0]
@@ -240,6 +263,9 @@ class Show3D(QMainWindow):
             self.pyvista_widget.screenshot(fname)
 
     def exportMesh(self):
+        """
+        Save the displayed data as VTK.
+        """
         f = QFileDialog.getSaveFileName(
             self, 'Export VTK', None, "VTK file (*.vtk)"
             )[0]
@@ -248,6 +274,9 @@ class Show3D(QMainWindow):
             copyfile(self.tmpMesh, f)
 
     def resetExtrema(self):
+        """
+        Reset user chosen values to the original ones.
+        """
         # get the active scalar/parameter that is displayed currently
         param = self.mesh.active_scalar_name
         self.extrema[param]['user']['min'] = self.extrema[param]['orig']['min']
@@ -256,24 +285,16 @@ class Show3D(QMainWindow):
         # display correctly
         self.updateParameterView(param)
 
-    def updateSlices(self):
-        # slicer = self.sender()
-        # orientation = slicer.toolTip()[4]
-        # slider = getattr(self, 'slice_'.format(orientation.lower()))
-        x_val = self.toolbar.slice_x.value()
-
-    def enableSlicers(self):
+    def _enableSlicers(self):
         if self.toolbar.btn_slice.isChecked():
             self.toolbar.slice_x.setEnabled(True)
             self.toolbar.slice_y.setEnabled(True)
             self.toolbar.slice_z.setEnabled(True)
         else:
             self.toolbar.slice_x.setEnabled(False)
-            self.toolbar.slice_x.setValue(self.toolbar.slice_x.minimum())
             self.toolbar.slice_y.setEnabled(False)
-            self.toolbar.slice_y.setValue(self.toolbar.slice_y.minimum())
             self.toolbar.slice_z.setEnabled(False)
-            self.toolbar.slice_z.setValue(self.toolbar.slice_z.minimum())
+        self.updateParameterView()
 
     def _allowSignals(self):
         # connect signals
@@ -285,7 +306,7 @@ class Show3D(QMainWindow):
         self.toolbar.btn_exportVTK.clicked.connect(self.exportMesh)
         self.toolbar.btn_apply.clicked.connect(self.updateScalarBar)
         self.toolbar.btn_reset.clicked.connect(self.resetExtrema)
-        self.toolbar.btn_slice.clicked.connect(self.enableSlicers)
+        self.toolbar.btn_slice.clicked.connect(self._enableSlicers)
         self.toolbar.slice_x.sliderReleased.connect(self.updateParameterView)
         self.toolbar.slice_y.sliderReleased.connect(self.updateParameterView)
         self.toolbar.slice_z.sliderReleased.connect(self.updateParameterView)
