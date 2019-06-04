@@ -2,6 +2,7 @@
 Todo
 ----
 
++ cache settings for next run
 + log scale
 + coverage, i.e. with opacity?
 + slider to look in volume
@@ -22,7 +23,8 @@ from PyQt5.QtGui import (
 )
 from PyQt5.QtWidgets import (
     QMainWindow, QFrame, QVBoxLayout, QToolBar, QComboBox, QPushButton,
-    QFileDialog, QLineEdit, QWidget, QHBoxLayout, QSlider
+    QFileDialog, QLineEdit, QWidget, QHBoxLayout, QSlider, QSplitter,
+    QGroupBox, QLabel, QLineEdit
 )
 pyvista = pg.optImport('pyvista', requiredFor="proper visualization in 3D")
 
@@ -57,16 +59,26 @@ class Show3D(QMainWindow):
     def setupWidget(self):
         # create the frame
         self.frame = QFrame()
-        vlayout = QVBoxLayout()
-        vlayout.setContentsMargins(0, 0, 0, 0)
 
         # add the pyvista interactor object
         self.pyvista_widget = pyvista.QtInteractor(self.frame)
 
-        vlayout.addWidget(self.pyvista_widget)
+        vlayout = QVBoxLayout()
+        vlayout.setContentsMargins(0, 0, 0, 0)
+        # vlayout.addWidget(self.pyvista_widget)
+
+        self.toolbar = GToolBar()
+
+        splitter = QSplitter(Qt.Horizontal)
+        splitter.addWidget(self.toolbar)
+        splitter.addWidget(self.pyvista_widget)
+        splitter.setStretchFactor(0, 2)
+        splitter.setStretchFactor(1, 5)
+
+        vlayout.addWidget(splitter)
 
         self.frame.setLayout(vlayout)
-        self.setupToolBar()
+        # self.setupToolBar()
 
         self.setCentralWidget(self.frame)
         self.setWindowTitle("pyGIMLi 3D Viewer")
@@ -144,14 +156,14 @@ class Show3D(QMainWindow):
         self.toolbar.le_cmin.setText(self.extrema['_Attribute']['orig']['min'])
         self.toolbar.le_cmax.setText(self.extrema['_Attribute']['orig']['max'])
 
-    def setupToolBar(self):
-        """
-        Set up the toolbar and provide actions.
-        """
-        # init toolbar
-        self.toolbar = GToolBar()
-        # add to mainwindow
-        self.addToolBar(self.toolbar)
+    # def setupToolBar(self):
+    #     """
+    #     Set up the toolbar and provide actions.
+    #     """
+    #     # init toolbar
+    #     self.toolbar = GToolBar()
+    #     # add to mainwindow
+    #     self.addToolBar(self.toolbar)
 
     def updateParameterView(self, param=None):
         """
@@ -176,11 +188,15 @@ class Show3D(QMainWindow):
         if self.toolbar.btn_reverse.isChecked():
             cMap += '_r'
 
-        if self.toolbar.btn_slice.isChecked():
+        if self.toolbar.grp_slice.isChecked():
             x_val = self.toolbar.slice_x.value()
             y_val = self.toolbar.slice_y.value()
             z_val = self.toolbar.slice_z.value()
 
+            # set slicer values into their boxes
+            self.toolbar.la_xval.setText(str(round(x_val, 8)))
+            self.toolbar.la_yval.setText(str(round(y_val, 8)))
+            self.toolbar.la_zval.setText(str(round(z_val, 8)))
 
             # get the actual slices
             mesh = self.mesh.slice_orthogonal(x=x_val, y=y_val, z=z_val)
@@ -286,7 +302,7 @@ class Show3D(QMainWindow):
         self.updateParameterView(param)
 
     def _enableSlicers(self):
-        if self.toolbar.btn_slice.isChecked():
+        if self.toolbar.grp_slice.isChecked():
             self.toolbar.slice_x.setEnabled(True)
             self.toolbar.slice_y.setEnabled(True)
             self.toolbar.slice_z.setEnabled(True)
@@ -306,7 +322,7 @@ class Show3D(QMainWindow):
         self.toolbar.btn_exportVTK.clicked.connect(self.exportMesh)
         self.toolbar.btn_apply.clicked.connect(self.updateScalarBar)
         self.toolbar.btn_reset.clicked.connect(self.resetExtrema)
-        self.toolbar.btn_slice.clicked.connect(self._enableSlicers)
+        self.toolbar.grp_slice.clicked.connect(self._enableSlicers)
         self.toolbar.slice_x.sliderReleased.connect(self.updateParameterView)
         self.toolbar.slice_y.sliderReleased.connect(self.updateParameterView)
         self.toolbar.slice_z.sliderReleased.connect(self.updateParameterView)
@@ -314,7 +330,7 @@ class Show3D(QMainWindow):
         self.toolbar.le_cmax.editingFinished.connect(self.updateScalarBar)
 
 
-class GToolBar(QToolBar):
+class GToolBar(QWidget):
     """
     Provide the toolbar for the 3D viewer with all buttons.
     This just provides the graphical features.
@@ -328,9 +344,6 @@ class GToolBar(QToolBar):
         """
         Get some actions..
         """
-        # restrict from shifting the toolbar since the wider buttons would
-        # make an awful wide sidebar
-        self.setMovable(False)
         # combobox to choose the given parameter from
         self.cbbx_params = GComboBox("Scroll/Click to select parameter")
 
@@ -383,12 +396,6 @@ class GToolBar(QToolBar):
         self.slice_y.setEnabled(False)
         self.slice_z = GSlider("The Z location of the XY slice")
         self.slice_z.setEnabled(False)
-        # and a botton to control them
-        self.btn_slice = GButton(
-            text="Slice",
-            tooltip="Slice through volume",
-            checkable=True
-        )
 
         # button to take a screenshot
         self.btn_screenshot = GButton(
@@ -401,27 +408,87 @@ class GToolBar(QToolBar):
             tooltip="Save displayed mesh as VTK"
             )
 
+        # parameter choosing
+        lyt_h1 = QHBoxLayout()
+        lyt_h1.addWidget(self.cbbx_cmap)
+        lyt_h1.addWidget(self.btn_reverse)
+        lyt_h1.setContentsMargins(2, 2, 2, 2)
+        lyt_v1 = QVBoxLayout()
+        lyt_v1.addWidget(self.cbbx_params)
+        lyt_v1.addLayout(lyt_h1)
+        lyt_v1.setContentsMargins(2, 2, 2, 2)
+        grp_param = QGroupBox("Parameter")
+        grp_param.setLayout(lyt_v1)
+
+        # limits
+        lyt_h3 = QHBoxLayout()
+        lyt_h3.addWidget(QLabel('Min'))
+        lyt_h3.addWidget(self.le_cmin)
+        lyt_h4 = QHBoxLayout()
+        lyt_h4.addWidget(QLabel('Max'))
+        lyt_h4.addWidget(self.le_cmax)
+        lyt_h5 = QHBoxLayout()
+        lyt_h5.addWidget(self.btn_apply)
+        lyt_h5.addWidget(self.btn_reset)
+        lyt_v3 = QVBoxLayout()
+        lyt_v3.addLayout(lyt_h3)
+        lyt_v3.addLayout(lyt_h4)
+        lyt_v3.addLayout(lyt_h5)
+        lyt_v3.setContentsMargins(2, 2, 2, 2)
+        grp_limits = QGroupBox("Limits")
+        grp_limits.setLayout(lyt_v3)
+
+        # slicer
+        lyt_v2 = QVBoxLayout()
+        hx = QHBoxLayout()
+        hx.addWidget(QLabel("x:"))
+        hx.addWidget(self.slice_x)
+        self.la_xval = QLineEdit()
+        self.la_xval.setReadOnly(True)
+        self.la_xval.setFixedWidth(100)
+        hx.addWidget(self.la_xval)
+        hy = QHBoxLayout()
+        hy.addWidget(QLabel("y:"))
+        hy.addWidget(self.slice_y)
+        self.la_yval = QLineEdit()
+        self.la_yval.setReadOnly(True)
+        self.la_yval.setFixedWidth(100)
+        hy.addWidget(self.la_yval)
+        hz = QHBoxLayout()
+        hz.addWidget(QLabel("z:"))
+        hz.addWidget(self.slice_z)
+        self.la_zval = QLineEdit()
+        self.la_zval.setReadOnly(True)
+        self.la_zval.setFixedWidth(100)
+        hz.addWidget(self.la_zval)
+        lyt_v2.addLayout(hx)
+        lyt_v2.addLayout(hy)
+        lyt_v2.addLayout(hz)
+        lyt_v2.setContentsMargins(2, 2, 2, 2)
+        self.grp_slice = QGroupBox("Slicing")
+        self.grp_slice.setCheckable(True)
+        self.grp_slice.setChecked(False)
+        self.grp_slice.setLayout(lyt_v2)
+
+        # export area
+        lyt_h2 = QHBoxLayout()
+        lyt_h2.addWidget(self.btn_screenshot)
+        lyt_h2.addWidget(self.btn_exportVTK)
+        lyt_h2.setContentsMargins(2, 2, 2, 2)
+        grp_export = QGroupBox("Export")
+        grp_export.setLayout(lyt_h2)
+
         # widget for the toolbar to better organize the widgets
-        wt = QWidget()
-        lt = QHBoxLayout()
-        lt.addWidget(self.cbbx_params)
-        lt.addWidget(self.cbbx_cmap)
-        lt.addWidget(self.btn_reverse)
-        lt.addWidget(self.btn_bbox)
-        lt.addWidget(self.le_cmin)
-        lt.addWidget(self.le_cmax)
-        lt.addWidget(self.btn_apply)
-        lt.addWidget(self.btn_reset)
-        lt.addWidget(self.btn_slice)
-        lt.addWidget(self.slice_x)
-        lt.addWidget(self.slice_y)
-        lt.addWidget(self.slice_z)
+        lt = QVBoxLayout()
+        lt.addWidget(grp_param)
+        lt.addWidget(grp_limits)
+        lt.addWidget(self.grp_slice)
         lt.addStretch(1)
-        lt.addWidget(self.btn_screenshot)
-        lt.addWidget(self.btn_exportVTK)
+        lt.addWidget(self.btn_bbox)
+        lt.addWidget(grp_export)
         lt.setContentsMargins(0, 0, 0, 0)
-        wt.setLayout(lt)
-        self.addWidget(wt)
+
+        self.setLayout(lt)
 
     def addExtraCMap(self, cMap):
         for icon, name in self._createPixmap([cMap]):
@@ -469,7 +536,7 @@ class GLineEdit(QLineEdit):
     def __init__(self, tooltip=None):
         super(GLineEdit, self).__init__(None)
         self.setToolTip(tooltip)
-        self.setFixedWidth(150)
+        self.setFixedWidth(200)
         # restrict acceptance to numbers only in that range
         # NOTE: will accept numbers outside of that range but the the
         # 'editingFinished' signal (hit enter/return when finished) won't
@@ -534,12 +601,7 @@ class GSlider(_GDoubleSlider):
         super(GSlider, self).__init__(None)
         self.setOrientation(Qt.Horizontal)
         self.setToolTip(tooltip)
-        # self.setMinimum(smin)
-        # self.setMaximum(smax)
-        # self.setSingleStep(1)
 
 
 if __name__ == '__main__':
-    app = Qt.QApplication(sys.argv)
-    window = Show3D()
-    sys.exit(app.exec_())
+    pass
