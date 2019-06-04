@@ -613,9 +613,9 @@ class ERTManager(MeshMethodManager):
                     resp = fop.response(res)
 
                     if fop.complex():
-                        rhoa, phia = pg.physics.SIP.toPolar(resp)
-                        rhoa *= scheme['k']
-                        phia *= 1.0 # we don't want to change the sign
+                        z = pg.physics.SIP.toComplex(resp)
+                        z *= scheme['k']
+                        rhoa, phia = pg.physics.SIP.toPolar(z)
                     else:
                         rhoa = resp
             else:

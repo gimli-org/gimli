@@ -64,7 +64,7 @@ def showERTData(data, vals=None, **kwargs):
 
         kwargs['cMap'] = kwargs.pop('cMap', pg.utils.cMap('rhoa'))
     
-    kwargs['logScale'] = kwargs.pop('logScale', True)
+    kwargs['logScale'] = kwargs.pop('logScale', min(vals) > 0.0)
 
     ax, cbar = drawERTData(ax, data, vals=vals, **kwargs)
     
@@ -143,7 +143,6 @@ def drawERTData(ax, data, vals=None, **kwargs):
         mid, sep = midconfERT(data, circular=kwargs.get('circular', False))
 
     var = kwargs.pop('var', 0)
-    ax = None
     cbar = None
 
     dx = kwargs.pop('dx', np.median(np.diff(np.unique(mid))))*2

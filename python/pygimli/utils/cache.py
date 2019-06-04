@@ -99,7 +99,9 @@ class Cache(object):
                 #     pg.error('only single return caches supported for now.')    
 
                 if self.info['type'] == 'DataContainerERT':
-                    self._value = pg.DataContainerERT(self.info['file'])
+                    self._value = pg.DataContainerERT(self.info['file'],
+                                                      removeInvalid=False)
+                    print(self._value)
                 elif self.info['type'] == 'RVector':
                     self._value = pg.RVector(self.info['file'])
                 elif self.info['type'] == 'Mesh':

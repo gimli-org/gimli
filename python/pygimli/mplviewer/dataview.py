@@ -139,7 +139,7 @@ def drawValMapPatches(ax, vals, xVec=None, yVec=None, dx=1, dy=None, **kwargs):
     pp.set_edgecolor(None)
     pp.set_linewidths(0.0)
     pp.set_array(vals)
-    # ax.clear()
+    
     gci = ax.add_collection(pp)
 
     if circular:
