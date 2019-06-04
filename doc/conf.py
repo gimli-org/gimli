@@ -128,6 +128,9 @@ try:
         # Sort gallery example by file name instead of number of lines (default)
         "within_subsection_order": FileNameSortKey,
 
+        'remove_config_comments': True,
+
+        # Only parse filenames starting with plot_
         'filename_pattern': '/plot_',
 
         'first_notebook_cell': ("# Checkout www.pygimli.org for more examples\n"
