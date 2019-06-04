@@ -115,10 +115,73 @@ class TestSparseMatrix(unittest.TestCase):
 
         S2 = S + S * 0.1 * 0.3
 
+    def test_ComplexMatrix(self):
+        verbose = False
+        grid = pg.createGrid(3, 3)
+        # print(grid)
+
+        alpha = pg.toComplex(np.ones(grid.cellCount()), 
+                             np.ones(grid.cellCount())*1.0
+                             )
+        
+        A = pg.solver.createStiffnessMatrix(grid, a=alpha)
+        pg.solver.solver._assembleUDirichlet(A, None, [0], [0.0])
+        #pg.solver.showSparseMatrix(A)
+        #pg.solver.assembleDirichletBC(A, [[grid.boundary(0), 0.0]])
+        
+        b = pg.toComplex(np.ones(A.rows()), np.ones(A.rows())*0.0)
+        x = pg.solver.linSolve(A, b, verbose=verbose, solver='pg')
+        np.testing.assert_allclose(A.mult(x), b, rtol=1e-10)
+        
+        x2 = pg.solver.linSolve(A, b, verbose=verbose, solver='scipy')
+        np.testing.assert_allclose(x2, x, rtol=1e-10)
+
+        import sys
+        import scipy.sparse
+        AValsR = np.array(A.vecVals().array().real)
+        AValsI = np.array(A.vecVals().array().imag)
+        AcsrR = scipy.sparse.csr_matrix((AValsR, A.vecRowIdx(),
+                                         A.vecColPtr()), dtype=float)
+        AcsrI = scipy.sparse.csr_matrix((AValsI, A.vecRowIdx(),
+                                         A.vecColPtr()), dtype=float)
+                
+        x2 = pg.solver.linSolve(AcsrR, pg.real(b), verbose=verbose, 
+                                solver='scipy')
+
+        AcooR = scipy.sparse.coo_matrix(AcsrR)
+        AcooI = scipy.sparse.coo_matrix(AcsrI)
+        Sr = pg.SparseMapMatrix(AcooR.row, AcooR.col, AcooR.data)
+        Si = pg.SparseMapMatrix(AcooI.row, AcooI.col, AcooI.data)
+        x3 = pg.solver.linSolve(Sr, pg.real(b), verbose=verbose, solver='pg')
+        np.testing.assert_allclose(x2, x3, rtol=1e-10)
+
+        S = pg.BlockMatrix()
+        rId = S.addMatrix(Sr)
+        iId = S.addMatrix(Si)
+
+        S.addMatrixEntry(rId, 0, 0, scale=1.0)
+        S.addMatrixEntry(iId, 0, Sr.cols(), scale=-1.0)
+        S.addMatrixEntry(rId, Sr.rows(), Sr.cols(), scale=1.0)
+        S.addMatrixEntry(iId, Sr.rows(), 0, scale=1.0)
+
+        xc = pg.solver.linSolve(S, pg.utils.squeezeComplex(b), 
+                                verbose=verbose, solver='pg')
+        xc = pg.utils.toComplex(xc)
+        # print(xc)
+        # print(x)
+        np.testing.assert_allclose(x, xc, rtol=1e-10)
+
+        # print(A.real)
+        #np.linalg.solve(A, b)
+        
+
 
 if __name__ == '__main__':
-    # test = TestSparseMatrix()
+    test = TestSparseMatrix()
+
+    # test.test_ComplexMatrix()
+    # exit()
     # test.test_Convert()
-    #test.test_Operators()
+    # test.test_Operators()
 
     unittest.main()

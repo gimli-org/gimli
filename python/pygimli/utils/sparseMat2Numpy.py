@@ -23,6 +23,11 @@ def sparseMatrix2csr(A):
     """
     #optImport(scipy.sparse, requiredFor="toCRS_matrix")
     from scipy.sparse import csr_matrix
+    if isinstance(A, pg.CSparseMapMatrix):
+        C = pg.CSparseMatrix(A)
+        return csr_matrix((C.vecVals().array(),
+                           C.vecRowIdx(),
+                           C.vecColPtr()), dtype=complex)
     if isinstance(A, pg.SparseMapMatrix):
         C = pg.SparseMatrix(A)
         return csr_matrix((C.vecVals().array(),
@@ -32,6 +37,11 @@ def sparseMatrix2csr(A):
         return csr_matrix((A.vecVals().array(),
                            A.vecRowIdx(),
                            A.vecColPtr()))
+    elif isinstance(A, pg.CSparseMatrix):
+        csr = csr_matrix((A.vecVals().array(),
+                           A.vecRowIdx(),
+                           A.vecColPtr()), dtype=complex)
+        return csr
     elif isinstance(A, pg.RBlockMatrix):
         M = A.sparseMapMatrix()
         return sparseMatrix2csr(M)

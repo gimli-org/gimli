@@ -706,7 +706,7 @@ Cell * Mesh::findCell(const RVector3 & pos, size_t & count,
 
 std::vector < Cell * > Mesh::findCellsAlongRay(const RVector3 & start,
                                                const RVector3 & dir,
-                                               R3Vector & pos) const {
+                                               PosVector & pos) const {
     pos.clean();
     Pos d(dir);
     d.normalize();
@@ -894,36 +894,27 @@ IndexArray Mesh::findNodesIdxByMarker(int marker) const {
 //     return idx;
 // }
 
-R3Vector Mesh::positions(bool withSecNodes) const {
+PosVector Mesh::positions(bool withSecNodes) const {
     IndexArray idx(this->nodeCount(withSecNodes));
     std::generate(idx.begin(), idx.end(), IncrementSequence< Index >(0));
     return this->positions(idx);
 }
 
-R3Vector Mesh::positions(const IndexArray & idx) const {
-    std::vector < RVector3 > pos; pos.reserve(idx.size());
-    for (Index i = 0; i < idx.size(); i ++) {
-        pos.push_back(node(idx[i]).pos());
-    }
+PosVector Mesh::positions(const IndexArray & idx) const {
+    PosVector pos(idx.size()); 
+    for (Index i = 0; i < idx.size(); i ++) { pos[i] = node(idx[i]).pos(); }
     return pos;
 }
 
-R3Vector Mesh::nodeCenters() const {
-    log(Warning, "DEPRECATED do not use");
-    R3Vector p(this->nodeCount());
-    for (Index i = 0; i < nodeVector_.size(); i ++ ) p[i] = nodeVector_[i]->pos();
-    return p;
-}
-
-R3Vector Mesh::cellCenters() const {
-    R3Vector pos(this->cellCount());
+PosVector Mesh::cellCenters() const {
+    PosVector pos(this->cellCount());
     std::transform(cellVector_.begin(), cellVector_.end(), pos.begin(),
                    std::mem_fun(&Cell::center));
     return pos;
 }
 
-R3Vector Mesh::boundaryCenters() const {
-    R3Vector pos(this->boundaryCount());
+PosVector Mesh::boundaryCenters() const {
+    PosVector pos(this->boundaryCount());
     std::transform(boundaryVector_.begin(), boundaryVector_.end(), pos.begin(),
                    std::mem_fun(&Boundary::center));
     return pos;
@@ -964,7 +955,7 @@ RVector & Mesh::boundarySizes() const{
     return boundarySizesCache_;
 }
 
-R3Vector & Mesh::boundarySizedNormals() const {
+PosVector & Mesh::boundarySizedNormals() const {
     if (boundarySizedNormCache_.size() != boundaryCount()){
         boundarySizedNormCache_.resize(boundaryCount());
 
@@ -1000,20 +991,20 @@ void Mesh::recountNodes(){
     for (Index i = 0; i < nodeVector_.size(); i ++) nodeVector_[i]->setId(i);
 }
 
-void Mesh::createClosedGeometry(const std::vector < RVector3 > & vPos, int nSegments, double dxInner){
+void Mesh::createClosedGeometry(const PosVector & vPos, int nSegments, double dxInner){
     THROW_TO_IMPL
     //this function should not be part of mesh
     //EAMeshWrapper eamesh(vPos, nSegments, dxInner, *this);
 }
 
-void Mesh::createClosedGeometryParaMesh(const std::vector < RVector3 > & vPos, int nSegments, double dxInner){
+void Mesh::createClosedGeometryParaMesh(const PosVector & vPos, int nSegments, double dxInner){
     createClosedGeometry(vPos, nSegments, dxInner);
     createNeighbourInfos();
     for (Index i = 0; i < cellCount(); i ++) cell(i).setMarker(i);
 }
 
-void Mesh::createClosedGeometryParaMesh(const std::vector < RVector3 > & vPos, int nSegments,
-                                         double dxInner, const std::vector < RVector3 > & addit){
+void Mesh::createClosedGeometryParaMesh(const PosVector & vPos, int nSegments,
+                                         double dxInner, const PosVector & addit){
     THROW_TO_IMPL
     //this function should not be part of meshEntities
 //   EAMeshWrapper eamesh;
@@ -2302,7 +2293,7 @@ void Mesh::addHoleMarker(const RVector3 & pos){
     holeMarker_.push_back(pos);
 }
 
-void Mesh::interpolationMatrix(const R3Vector & q, RSparseMapMatrix & I){
+void Mesh::interpolationMatrix(const PosVector & q, RSparseMapMatrix & I){
     I.resize(q.size(), this->nodeCount());
 
     Index count = 0;
@@ -2322,7 +2313,7 @@ void Mesh::interpolationMatrix(const R3Vector & q, RSparseMapMatrix & I){
     }
 }
 
-RSparseMapMatrix Mesh::interpolationMatrix(const R3Vector & q){
+RSparseMapMatrix Mesh::interpolationMatrix(const PosVector & q){
     RSparseMapMatrix I;
     interpolationMatrix(q, I);
     return I;
@@ -2373,17 +2364,17 @@ RSparseMapMatrix & Mesh::cellToBoundaryInterpolation() const {
     return *cellToBoundaryInterpolationCache_;
 }
 
-R3Vector Mesh::cellDataToBoundaryGradient(const RVector & cellData) const {
+PosVector Mesh::cellDataToBoundaryGradient(const RVector & cellData) const {
     return cellDataToBoundaryGradient(cellData,
       boundaryDataToCellGradient(this->cellToBoundaryInterpolation()*cellData));
 }
 
-R3Vector Mesh::cellDataToBoundaryGradient(const RVector & cellData,
-                                          const R3Vector & cellGrad) const{
+PosVector Mesh::cellDataToBoundaryGradient(const RVector & cellData,
+                                          const PosVector & cellGrad) const{
     if (!neighboursKnown_){
         throwError(1, "Please call once createNeighbourInfos() for the given mesh.");
     }
-    R3Vector ret(boundaryCount());
+    PosVector ret(boundaryCount());
 
     for (Index i = 0; i < boundaryCount(); i ++){
         Boundary * b = boundaryVector_[i];
@@ -2408,13 +2399,13 @@ R3Vector Mesh::cellDataToBoundaryGradient(const RVector & cellData,
     return ret;
 }
 
-R3Vector Mesh::boundaryDataToCellGradient(const RVector & v) const{
+PosVector Mesh::boundaryDataToCellGradient(const RVector & v) const{
     if (!neighboursKnown_){
         throwError(1, "Please call once createNeighbourInfos() for the given mesh.");
     }
-    R3Vector ret(this->cellCount());
+    PosVector ret(this->cellCount());
 
-    const R3Vector & flow = this->boundarySizedNormals();
+    const PosVector & flow = this->boundarySizedNormals();
     RVector3 vec(0.0, 0.0, 0.0);
     for (Index i = 0; i < this->boundaryCount(); i ++ ){
         Boundary * b = this->boundaryVector_[i];
@@ -2433,7 +2424,7 @@ R3Vector Mesh::boundaryDataToCellGradient(const RVector & v) const{
     return ret;
 }
 
-RVector Mesh::divergence(const R3Vector & V) const{
+RVector Mesh::divergence(const PosVector & V) const{
     RVector ret(this->cellCount());
 
     if (!neighboursKnown_){
@@ -2442,7 +2433,7 @@ RVector Mesh::divergence(const R3Vector & V) const{
 
     ASSERT_EQUAL(V.size(), this->boundaryCount());
 
-    const R3Vector & normB = this->boundarySizedNormals();
+    const PosVector & normB = this->boundarySizedNormals();
 
     for (Index i = 0; i < this->boundaryCount(); i ++){
         Boundary * b = this->boundaryVector_[i];

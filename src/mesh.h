@@ -45,7 +45,7 @@ public:
     }
 
     /*! Construct BBox from position vector */
-    BoundingBox(const R3Vector & vPos){
+    BoundingBox(const PosVector & vPos){
         min_ = Pos((double)MAX_DOUBLE, (double)MAX_DOUBLE, (double)MAX_DOUBLE);
         max_ = min_ * -1.0;
         for (uint i = 0; i < vPos.size(); i ++){
@@ -282,12 +282,14 @@ public:
     Increase mesh dimension. Mesh should contain 2D cells. */
     Mesh createHull() const;
 
-    void createClosedGeometry(const std::vector < RVector3 > & vPos, int nSegments, double dxInner);
+    void createClosedGeometry(const PosVector & vPos, int nSegments, 
+                              double dxInner);
 
-    void createClosedGeometryParaMesh(const std::vector < RVector3 > & vPos, int nSegments, double dxInner);
+    void createClosedGeometryParaMesh(const PosVector & vPos, int nSegments, 
+                                      double dxInner);
 
-    void createClosedGeometryParaMesh(const std::vector < RVector3 > & vPos, int nSegments, double dxInner,
-                                        const std::vector < RVector3 > & addit);
+    void createClosedGeometryParaMesh(const PosVector & vPos, int nSegments, 
+                                      double dxInner, const PosVector & addit);
 
     /*! Create and copy global H2 mesh of this mesh.*/
     Mesh createH2() const;
@@ -368,20 +370,17 @@ public:
     Boundary & boundary(Index i);
 
     /*! Return a vector of all node positions */
-    R3Vector positions(bool withSecNodes=false) const;
+    PosVector positions(bool withSecNodes=false) const;
 
     /*! Return a vector of node positions for an index vector */
-    R3Vector positions(const IndexArray & idx) const;
-
-    /*! DEPRECATED Return all node positions. */
-    R3Vector nodeCenters() const;
+    PosVector positions(const IndexArray & idx) const;
 
     /*! Return a vector of all cell center positions*/
-    R3Vector cellCenters() const;
-    R3Vector cellCenter() const { return cellCenters(); }
+    PosVector cellCenters() const;
+    PosVector cellCenter() const { return cellCenters(); }
 
     /*! Return a vector of all center positions for all boundaries */
-    R3Vector boundaryCenters() const;
+    PosVector boundaryCenters() const;
 
     /*! Return the reference to a RVector of all cell sizes. Cached for static geometry.*/
     RVector & cellSizes() const;
@@ -395,7 +394,7 @@ public:
      Where \f$ A_i\f$ is the size and \f$ \vec{n}_i\f$ the normal direction for the i-th boundary.
      If you want to use this, i.e. for the calculation of inside or outside flow through the boundary, you need to recognize the orientation of this boundary to the cell the flow goes into or comes from.
      For the left cell neighbor the normal direction should be always the outer normal.*/
-    R3Vector & boundarySizedNormals() const;
+    PosVector & boundarySizedNormals() const;
 
 
     /*! DEPRECATED */
@@ -460,7 +459,7 @@ public:
      */
     std::vector < Cell * > findCellsAlongRay(const RVector3 & start,
                                              const RVector3 & dir,
-                                             R3Vector & pos) const;
+                                             PosVector & pos) const;
     //** end get infos stuff
 
     //** start mesh modification stuff
@@ -731,10 +730,10 @@ public:
      * to the query points q. I is a (len(q) x nodeCount()) SparseMapMatrix.
      * To perform the interpolation just calculate the matrix vector product.
      * uInterpolated = I.mult(uPerNode) or uInterpolated = I * uPerNode */
-    RSparseMapMatrix interpolationMatrix(const R3Vector & q);
+    RSparseMapMatrix interpolationMatrix(const PosVector & q);
 
-    /*! Inplace version of \ref interpolationMatrix(const R3Vector & q) */
-    void interpolationMatrix(const R3Vector & q, RSparseMapMatrix & I);
+    /*! Inplace version of \ref interpolationMatrix(const PosVector & q) */
+    void interpolationMatrix(const PosVector & q, RSparseMapMatrix & I);
 
     /*! Return the reference to the matrix for cell value to boundary value interpolation matrix. */
     RSparseMapMatrix & cellToBoundaryInterpolation() const;
@@ -746,17 +745,17 @@ public:
      * \f$ d(cell) = \sum_boundaries V(boundary center) \cdot n(boundary)\f$
      * Higher order integration needs to be implemented.
      * Contact the author if you need this.*/
-    RVector divergence(const R3Vector & V) const;
+    RVector divergence(const PosVector & V) const;
 
     /*! Interpolate boundary based values to cell based gradients. */
-    R3Vector boundaryDataToCellGradient(const RVector & boundaryData) const;
+    PosVector boundaryDataToCellGradient(const RVector & boundaryData) const;
 
     /*! Interpolate cell based values to boundary based gradients. */
-    R3Vector cellDataToBoundaryGradient(const RVector & cellData) const;
+    PosVector cellDataToBoundaryGradient(const RVector & cellData) const;
 
     /*! Interpolate cell based values to boundary based gradients with a given cell Gradient.*/
-    R3Vector cellDataToBoundaryGradient(const RVector & cellData,
-                                        const R3Vector & cellGradient) const;
+    PosVector cellDataToBoundaryGradient(const RVector & cellData,
+                                        const PosVector & cellGradient) const;
 
     /*! Add a region marker for tetgen or triangle creation if the mesh
      *is a PLC, if area is < 0 a hole is added. */
@@ -849,7 +848,7 @@ protected:
     bool isGeometry_; // mesh is marked as PLC
     mutable RVector cellSizesCache_;
     mutable RVector boundarySizesCache_;
-    mutable R3Vector boundarySizedNormCache_;
+    mutable PosVector boundarySizedNormCache_;
 
     mutable RSparseMapMatrix * cellToBoundaryInterpolationCache_;
 

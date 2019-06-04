@@ -36,65 +36,54 @@ WRAPPER_DEFINITION_RVector =\
     """
 #include <numpy/arrayobject.h>
 
-boost::python::tuple RVector_getData(GIMLI::RVector & vec){
-    std::cout << "HEREAM_I boost::python::tuple RVector_getData(Gimli::RVector & vec )" << std::endl;
-    if (!vec.size()) return boost::python::make_tuple( "none", 0 );
-    return boost::python::make_tuple( "none", 0 );
-}
-
 PyObject * RVector_getArray(GIMLI::RVector & vec){
     import_array2("Cannot import numpy c-api from pygimli hand_make_wrapper", NULL);
     npy_intp length = (ssize_t)vec.size();
-
-    PyObject * ret = PyArray_SimpleNew(1, &length, NPY_DOUBLE);
-    // check if array is contiguous here
-    std::memcpy(PyArray_DATA(reinterpret_cast<PyArrayObject*>(ret)),
-                (void *)(&vec[0]), length * sizeof(double));
-
-    // ** possible fixed due to memcpy here
-    //PyArray_XINCREF(ret);
-    //Py_INCREF(ret); // das scheint ignoriert zu werden darum muessen wir aussen noch kopieren
-    //Py_DECREF(ret);
+    PyObject * ret = PyArray_SimpleNewFromData(1, &length, NPY_DOUBLE, 
+                                               (void *)(&vec[0]));
     return ret;
 }
 
 """
 WRAPPER_REGISTRATION_RVector = [
-    """def("getData", &RVector_getData,
-                "PyGIMLI Helper Function: extract an python object from a RVector ");""",
     """def("array", &RVector_getArray,
        "PyGIMLI Helper Function: extract a numpy array object from a RVector ");""",
+]
+
+WRAPPER_DEFINITION_CVector =\
+    """
+#include <numpy/arrayobject.h>
+
+PyObject * CVector_getArray(GIMLI::CVector & vec){
+    import_array2("Cannot import numpy c-api from pygimli hand_make_wrapper", NULL);
+    npy_intp length = (ssize_t)vec.size();
+    PyObject * ret = PyArray_SimpleNewFromData(1, &length, NPY_COMPLEX128, 
+                                               (void *)(&vec[0]));
+    return ret;
+}
+
+"""
+WRAPPER_REGISTRATION_CVector = [
+    """def("array", &CVector_getArray,
+           "PyGIMLI Helper Function: extract a numpy array object from a CVector ")
+    """,
 ]
 
 WRAPPER_DEFINITION_BVector =\
     """
 #include <numpy/arrayobject.h>
 
-boost::python::tuple BVector_getData(GIMLI::BVector & vec){
-    std::cout << "HEREAM_I boost::python::tuple BVector_getData(Gimli::RVector & vec )" << std::endl;
-    if (!vec.size()) return boost::python::make_tuple( "none", 0 );
-    return boost::python::make_tuple( "none", 0 );
-}
-
 PyObject * BVector_getArray(GIMLI::BVector & vec){
-    import_array2("Cannot import numpy c-api from pygimli hand_make_wrapper2", NULL);
+    import_array2("Cannot import numpy c-api from pygimli hand_make_wrapper", NULL);
     npy_intp length = (ssize_t)vec.size();
-
-    PyObject * ret = PyArray_SimpleNew(1, &length, NPY_BOOL);
-    // check if array is contiguous here
-    char * cout = (char *)PyArray_DATA(reinterpret_cast<PyArrayObject*>(ret));
-
-    for (ssize_t i=0; i<length; i++)  {
-        cout[i] = vec[i];
-    }
-
-    // ** possible fixed due to memcpy here
-    // PyArray_XINCREF(ret);
-    //Py_INCREF(ret); // das scheint ignoriert zu werden darum muessen wir aussen noch kopieren
-    //Py_DECREF(ret);
-    // return scalar if length = 0;
-    // return PyArray_Return(reinterpret_cast<PyArrayObject*>(ret));
+    PyObject * ret = PyArray_SimpleNewFromData(1, &length, NPY_BOOL, 
+                                               (void *)(&vec[0]));
     return ret;
+
+    //PyObject * ret = PyArray_SimpleNew(1, &length, NPY_BOOL);
+    //char * cout = (char *)PyArray_DATA(reinterpret_cast<PyArrayObject*>(ret));
+    //for (ssize_t i=0; i<length; i++)  { cout[i] = vec[i]; }
+    //return ret;
 }
 
 """
@@ -108,19 +97,10 @@ WRAPPER_DEFINITION_IndexArray =\
 #include <numpy/arrayobject.h>
 
 PyObject * IndexArray_getArray(GIMLI::IndexArray & vec){
-    import_array2("Cannot import numpy c-api from pygimli hand_make_wrapper2", NULL);
+    import_array2("Cannot import numpy c-api from pygimli hand_make_wrapper", NULL);
     npy_intp length = (ssize_t)vec.size();
-
-    PyObject * ret = PyArray_SimpleNew(1, &length, NPY_LONG);
-    // check if array is contiguous here
-__M
-    std::memcpy(PyArray_DATA(reinterpret_cast<PyArrayObject*>(ret)),
-                (void *)(&vec[0]), length * sizeof(NPY_LONG));
-
-    // ** possible fixed due to memcpy here
-    //PyArray_XINCREF(ret);
-    //Py_INCREF(ret); // das scheint ignoriert zu werden darum muessen wir aussen noch kopieren
-    //Py_DECREF(ret);
+    PyObject * ret = PyArray_SimpleNewFromData(1, &length, NPY_LONG, 
+                                               (void *)(&vec[0]));
     return ret;
 }
 
@@ -152,11 +132,6 @@ PyObject * R3Vector_getArray(GIMLI::R3Vector & vec){
     std::memcpy(PyArray_DATA(reinterpret_cast<PyArrayObject*>(ret)),
                 (void *) &GIMLI::toArray(vec)[0],
                 (length * 3) * sizeof(double));
-
-    // ** possible fixed due to memcpy here
-    //PyArray_XINCREF(ret);
-    //Py_INCREF(ret); // das scheint ignoriert zu werden darum muessen wir aussen noch kopieren
-    //Py_DECREF(ret);
     return ret;
 }
 
@@ -209,17 +184,22 @@ def iter_as_generator_vector(cls):
 ##########################################################################
 ##########################################################################
 
-
 def apply_reg(class_, code):
     for c in code:
         class_.add_registration_code(c)
 
-
 def apply(mb):
+    print("Register 'Vector<double>' handmade wrapper")
     rt = mb.class_('Vector<double>')
     rt.add_declaration_code(WRAPPER_DEFINITION_RVector)
     apply_reg(rt, WRAPPER_REGISTRATION_RVector)
+    
+    print("Register 'Vector<Complex>' handmade wrapper")
+    rt = mb.class_('Vector< std::complex< double > >')
+    rt.add_declaration_code(WRAPPER_DEFINITION_CVector)
+    apply_reg(rt, WRAPPER_REGISTRATION_CVector)
 
+    print("Register 'Vector<bool>' handmade wrapper")
     rt = mb.class_('Vector<bool>')
     rt.add_declaration_code(WRAPPER_DEFINITION_BVector)
     apply_reg(rt, WRAPPER_REGISTRATION_BVector)

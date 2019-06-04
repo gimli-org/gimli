@@ -19,15 +19,27 @@ quants = {
         'cMap': 'Spectral_r',
     },
     'ip': {
-        'name': 'neg. phase',
+        'name': 'Phase',
         'unit': 'mrad',
-        'ger': 'neg. Phase',
+        'ger': 'Phasenwinkel',
         'cMap': 'viridis',
     },
-    'ipa': {
-        'name': 'neg. apparent phase',
+   'ip_n': {
+        'name': 'neg. Phase',
         'unit': 'mrad',
-        'ger': 'neg. scheinbare Phase',
+        'ger': 'neg. Phasenwinkel',
+        'cMap': 'viridis',
+    }, 
+    'ipa': {
+        'name': 'Apparent phase',
+        'unit': 'mrad',
+        'ger': 'scheinbarer Phasenwinkel',
+        'cMap': 'viridis',
+    },
+    'ipa_n': {
+        'name': 'neg. Apparent phase',
+        'unit': 'mrad',
+        'ger': 'neg. scheinbarer Phasenwinkel',
         'cMap': 'viridis',
     },
     'va': {

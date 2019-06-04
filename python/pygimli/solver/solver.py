@@ -510,7 +510,7 @@ def grad(mesh, u, r=None):
     >>> fig, ax = plt.subplots()
     >>> mesh = pg.createGrid(x=np.linspace(0, 1, 20), y=np.linspace(0, 1, 20))
     >>> u = lambda p: pg.x(p)**2 * pg.y(p)
-    >>> _ = pg.show(mesh, u(mesh.nodeCenters()), ax=ax)
+    >>> _ = pg.show(mesh, u(mesh.positions()), ax=ax)
     >>> _ = pg.show(mesh, [2.*pg.y(mesh.cellCenters())*pg.x(mesh.cellCenters()),
     ...             pg.x(mesh.cellCenters())**2], ax=ax)
     >>> _ = pg.show(mesh, pg.solver.grad(mesh, u), ax=ax, color='w',
@@ -522,7 +522,7 @@ def grad(mesh, u, r=None):
 
     uv = u
     if callable(u) and not isinstance(u, pg.RVector):
-        uv = u(mesh.nodeCenters())
+        uv = u(mesh.positions())
 
     if len(uv) == mesh.cellCount():
         uv = pg.meshtools.cellDataToNodeData(mesh, uv)
@@ -753,14 +753,6 @@ def showSparseMatrix(A, full=False):
 
         if full:
             print(np.array(Sd))
-    
-
-def linsolve(A, b, verbose=False):
-    """
-    DEPRECATED wrong name style
-    """
-    pg.deprecated('linsolve', 'linSolve')
-    return linSolve(A, b, verbose)
 
 
 def linSolve(A, b, solver=None, verbose=False):
@@ -799,13 +791,15 @@ def linSolve(A, b, solver=None, verbose=False):
     if solver is None:
         if isinstance(A, pg.RSparseMatrix) or \
            isinstance(A, pg.RSparseMapMatrix) or \
-            isinstance(A, pg.RBlockMatrix):
+            isinstance(A, pg.RBlockMatrix) or \
+            isinstance(A, pg.CSparseMatrix):
             solver = 'pg'
         
     if solver == 'pg':
         S = A
-        
-        if isinstance(A, pg.RSparseMatrix):
+        if isinstance(A, pg.CSparseMatrix):
+            x = pg.CVector(len(b), 0)
+        elif isinstance(A, pg.RSparseMatrix):
             pass
         elif isinstance(A, pg.RSparseMapMatrix):
             S = pg.RSparseMatrix(A)    

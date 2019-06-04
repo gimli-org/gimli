@@ -199,6 +199,16 @@ class TestRVectorMethods(unittest.TestCase):
         a = np.array(v)
         self.assertEqual(type(a), np.ndarray)
         self.assertEqual(len(a), 10)
+        
+    def test_CVectorToNumpy(self):
+        """Implemented through hand_made_wrapper.py"""
+        # check ob wirklich from array genommen wird!
+        v = pg.CVector(10, 1.1 + 1j*3)
+        a = np.array(v)
+        self.assertEqual(type(a), np.ndarray)
+        self.assertEqual(a.dtype, np.complex)
+        self.assertEqual(len(a), 10)
+        self.assertEqual(a[0], 1.1 + 1j*3)
 
     def test_BVectorToNumpy(self):
         """Implemented through hand_made_wrapper.py"""
@@ -254,7 +264,7 @@ class TestRVectorMethods(unittest.TestCase):
         """Implemented through hand_made_wrapper.py"""
         mesh = pg.createGrid(x=[0, 1, 2], y=[0, 1, 2], z=[1, 2])
 
-        v = np.asarray(mesh.nodeCenters())
+        v = np.asarray(mesh.positions())
 
         self.assertEqual(type(v), np.ndarray)
         self.assertEqual(len(v), mesh.nodeCount())
@@ -263,7 +273,7 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(type(a), np.ndarray)
         self.assertEqual(len(a), mesh.cellCount())
 
-        self.assertEqual(mesh.nodeCenters()[0], v[0])
+        self.assertEqual(mesh.positions()[0], v[0])
 
     def test_RMatrixToNumpy(self):
         """Implemented through automatic iterator """
@@ -319,7 +329,9 @@ class TestRVectorMethods(unittest.TestCase):
 
 if __name__ == '__main__':
     pg.setDeepDebug(0)
-    test = TestRVectorMethods()
+    # test = TestRVectorMethods()
+    # test.test_CVectorToNumpy()
+    # sys.exit()
 
     #test.test_IndexArrayToNumpy()
     #test.test_NumpyToIVector()

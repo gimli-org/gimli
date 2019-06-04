@@ -759,9 +759,7 @@ def __RVector3ArrayCall__(self, dtype=None):
     import numpy as np
     return np.array([self.getVal(0), self.getVal(1), self.getVal(2)])
 
-
 # default converter from RVector to numpy array
-
 
 def __RVectorArrayCall__(self, dtype=None):
 
@@ -774,9 +772,22 @@ def __RVectorArrayCall__(self, dtype=None):
     # we need to copy the array until we can handle increasing the reference
     # counter in self.array() else it leads to strange behaviour
     # test in testRValueConverter.py:testNumpyFromRVec()
-    # return np.array(self.array())
+    return np.array(self.array())
     return self.array()
 
+def __CVectorArrayCall__(self, dtype=None):
+
+    #if idx and not isinstance(idx, numpy.dtype):
+    #print("self:", self)
+    #print("idx:", idx, type(idx) )
+    #raise Exception("we need to fix this")
+    # probably fixed!!! or not!!
+    # import numpy as np
+    # we need to copy the array until we can handle increasing the reference
+    # counter in self.array() else it leads to strange behaviour
+    # test in testRValueConverter.py:testNumpyFromRVec()
+    return np.array(self.array())
+    #return self.array()
 
 # default converter from RVector to numpy array
 
@@ -788,6 +799,8 @@ _pygimli_.BVector.__array__ = __RVectorArrayCall__
 _pygimli_.R3Vector.__array__ = __RVectorArrayCall__
 _pygimli_.RVector3.__array__ = __RVector3ArrayCall__
 
+# see bug description
+_pygimli_.CVector.__array__ = __CVectorArrayCall__
 
 # hackish until stdVectorRVector3 will be removed
 def __stdVectorRVector3ArrayCall(self, dtype=None):
