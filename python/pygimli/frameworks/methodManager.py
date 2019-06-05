@@ -123,7 +123,10 @@ class MethodManager(object):
         Can be recalled if you need to changed the mangers own forward operator
         object. If you want a own instance of a valid FOP call createForwardOperator.
         """
-        fop = self.createForwardOperator(**kwargs)
+        if self._fop is not None:
+            fop = self._fop
+        else:
+            fop = self.createForwardOperator(**kwargs)
 
         if fop is None:
             pg.critical("It seems that createForwardOperator method "
@@ -151,9 +154,6 @@ class MethodManager(object):
         Modelling
             Instance of any kind of :py:mod:`pygimli.framework.Modelling`.
         """
-        if self._fop is not None:
-            return self._fop
-
         pg.critical("No forward operator defined, either give one or"
                     "overwrite in derived class")
 

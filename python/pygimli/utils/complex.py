@@ -23,7 +23,7 @@ def toComplex(amp, phi=None):
     
     If no phases phi are given assuming z = amp[0:N] + i amp[N:2N].
 
-    If phi is given in (neg rad) complex values are generated:
+    If phi is given in (rad) complex values are generated:
     z = amp*(cos(phi) + i sin(phi))
 
     Parameters
@@ -39,7 +39,7 @@ def toComplex(amp, phi=None):
         Complex values
     """
     if phi is not None:
-        return amp * (np.cos(phi) + 1j *np.sin(phi))
+        return amp.array() * (np.cos(phi) + 1j *np.sin(phi))
     N = len(amp) // 2 
     return np.array(amp[0:N]) + 1j * np.array(amp[N:])
     #return np.array(pg.toComplex(amp[0:N], amps[N:]))

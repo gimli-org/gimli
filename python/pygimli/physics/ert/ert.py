@@ -94,10 +94,6 @@ class BertModelling(ERTModellingBase):
         self.bertFop.initJacobian()
         self.setJacobian(self.bertFop.jacobian())
 
-        self.response = self.bertFop.response
-        self.jacobian = self.bertFop.jacobian
-        self.createJacobian = self.bertFop.createJacobian
-
 
         ## called from the ERTManager .. needed?
         self.solution = self.bertFop.solution
@@ -106,6 +102,16 @@ class BertModelling(ERTModellingBase):
         self.calculate = self.bertFop.calculate
         self.calcGeometricFactor = self.bertFop.calcGeometricFactor
         self.mapERTModel = self.bertFop.mapERTModel
+
+    def response(self, mod):
+        return self.bertFop.response(mod)
+
+    def createJacobian(self, mod):
+        return self.bertFop.createJacobian(mod)
+
+    def jacobian(self):
+        return self.bertFop.jacobian()
+
 
     def setDataPost(self, data):
         """"""
@@ -434,8 +440,10 @@ class ERTManager(MeshMethodManager):
         useBert = kwargs.pop('useBert', False)
         verbose = kwargs.pop('verbose', False)
         if useBert:
+            pg._verbose('Create BertModelling FOP')
             fop = BertModelling(sr=kwargs.pop('sr', True), verbose=verbose)
         else:
+            pg._verbose('Create ERTModelling FOP')
             fop = ERTModelling(**kwargs)
 
         return fop
