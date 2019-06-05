@@ -19,7 +19,7 @@ class TestMisc(unittest.TestCase):
         np.testing.assert_array_equal(f(x), x)
         np.testing.assert_array_equal(f.inv(x), x)
         np.testing.assert_array_equal(f.inv(f(x)), x)
-        self.assertEqual(f.trans(x=1.0), 1.0)
+        self.assertEqual(f.trans(1.0), 1.0)
         self.assertEqual(f(1.0), 1.0)
         self.assertEqual(f.inv(1.0), 1.0)
 
