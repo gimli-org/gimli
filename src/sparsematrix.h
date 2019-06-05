@@ -581,9 +581,21 @@ inline CVector transMult(const CSparseMapMatrix & A, const RVector & b){
     return A.transMult(toComplex(b));
 }
 
-// inline R3Vector operator * (const RSparseMapMatrix & A, const R3Vector & b){
-//     return A.mult(b);
-// }
+inline RSparseMapMatrix real(const CSparseMapMatrix & A){
+    RSparseMapMatrix R(A.rows(), A.cols());
+    for (CSparseMapMatrix::const_iterator it = A.begin(); it != A.end(); it ++){
+        R.setVal(it->first.first, it->first.second, it->second.real());
+    }
+    return R;
+}
+
+inline RSparseMapMatrix imag(const CSparseMapMatrix & A){
+    RSparseMapMatrix R(A.rows(), A.cols());
+    for (CSparseMapMatrix::const_iterator it = A.begin(); it != A.end(); it ++){
+        R.setVal(it->first.first, it->first.second, it->second.imag());
+    }
+    return R;
+}
 
 inline RSparseMapMatrix operator + (const RSparseMapMatrix & A, const RSparseMapMatrix & B){
     RSparseMapMatrix tmp(A);
@@ -689,24 +701,17 @@ public:
         copy_(S);
     }
 
-    /*! Create Sparsematrix from c-arrays. Can't check for valid ranges, so please be carefull. */
-    SparseMatrix(uint dim, Index * colPtr, Index nVals, Index * rowIdx,
-                 ValueType * vals, int stype=0)
+    SparseMatrix(const std::vector < int > & colPtr,
+                 const std::vector < int > & rowIdx,
+                 const Vector < ValueType > vals, int stype=0)
         : MatrixBase(){
-        colPtr_.reserve(dim + 1);
-        colPtr_.resize(dim + 1);
-
-        rowIdx_.reserve(nVals);
-        rowIdx_.resize(nVals);
-
-        vals_.resize(nVals);
-        stype_ = stype;
-        cols_ = max(rowIdx_) + 1;
-        rows_ = colPtr_.size() - 1;
-        THROW_TO_IMPL
-//         std::copy(colPtr[0], colPtr[dim], colPtr_[0]);
-//         std::copy(rowIdx[0], rowIdx[nVals - 1], rowIdx_[0]);
-//         std::copy(vals[0], vals[nVals - 1], & vals_[0]);
+          colPtr_ = colPtr;
+          rowIdx_ = rowIdx;
+          vals_   = vals;
+          stype_  = stype;
+          valid_  = true;
+          cols_ = max(rowIdx_) + 1;
+          rows_ = colPtr_.size() - 1;
     }
 
     /*! Destructor */
@@ -1140,6 +1145,15 @@ inline CSparseMatrix operator + (const CSparseMatrix & A, const RSparseMatrix & 
     CSparseMatrix ret(A);
     ret.vecVals() += toComplex(B.vecVals());
     return ret;
+}
+
+inline RSparseMatrix real(const CSparseMatrix & A){
+    return RSparseMatrix(A.vecColPtr(), A.vecRowIdx(), 
+                         real(A.vecVals()), A.stype());
+}
+inline RSparseMatrix imag(const CSparseMatrix & A){
+    return RSparseMatrix(A.vecColPtr(), A.vecRowIdx(), 
+                         imag(A.vecVals()), A.stype());
 }
 
 } // namespace GIMLI

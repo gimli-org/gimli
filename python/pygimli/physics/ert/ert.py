@@ -608,14 +608,14 @@ class ERTManager(MeshMethodManager):
                     return ret
                 else:
                     if fop.complex():
-                        res = pg.physics.SIP.squeezeComplex(res)
+                        res = pg.utils.squeezeComplex(res)
                     
                     resp = fop.response(res)
 
                     if fop.complex():
-                        z = pg.physics.SIP.toComplex(resp)
+                        z = pg.utils.toComplex(resp)
                         z *= scheme['k']
-                        rhoa, phia = pg.physics.SIP.toPolar(z)
+                        rhoa, phia = pg.utils.toPolar(z)
                     else:
                         rhoa = resp
             else:

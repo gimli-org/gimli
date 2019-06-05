@@ -136,44 +136,11 @@ class TestSparseMatrix(unittest.TestCase):
         x2 = pg.solver.linSolve(A, b, verbose=verbose, solver='scipy')
         np.testing.assert_allclose(x2, x, rtol=1e-10)
 
-        import sys
-        import scipy.sparse
-        AValsR = np.array(A.vecVals().array().real)
-        AValsI = np.array(A.vecVals().array().imag)
-        AcsrR = scipy.sparse.csr_matrix((AValsR, A.vecRowIdx(),
-                                         A.vecColPtr()), dtype=float)
-        AcsrI = scipy.sparse.csr_matrix((AValsI, A.vecRowIdx(),
-                                         A.vecColPtr()), dtype=float)
-                
-        x2 = pg.solver.linSolve(AcsrR, pg.real(b), verbose=verbose, 
-                                solver='scipy')
-
-        AcooR = scipy.sparse.coo_matrix(AcsrR)
-        AcooI = scipy.sparse.coo_matrix(AcsrI)
-        Sr = pg.SparseMapMatrix(AcooR.row, AcooR.col, AcooR.data)
-        Si = pg.SparseMapMatrix(AcooI.row, AcooI.col, AcooI.data)
-        x3 = pg.solver.linSolve(Sr, pg.real(b), verbose=verbose, solver='pg')
-        np.testing.assert_allclose(x2, x3, rtol=1e-10)
-
-        S = pg.BlockMatrix()
-        rId = S.addMatrix(Sr)
-        iId = S.addMatrix(Si)
-
-        S.addMatrixEntry(rId, 0, 0, scale=1.0)
-        S.addMatrixEntry(iId, 0, Sr.cols(), scale=-1.0)
-        S.addMatrixEntry(rId, Sr.rows(), Sr.cols(), scale=1.0)
-        S.addMatrixEntry(iId, Sr.rows(), 0, scale=1.0)
-
-        xc = pg.solver.linSolve(S, pg.utils.squeezeComplex(b), 
+        x3 = pg.solver.linSolve(pg.utils.squeezeComplex(A), 
+                                pg.utils.squeezeComplex(b), 
                                 verbose=verbose, solver='pg')
-        xc = pg.utils.toComplex(xc)
-        # print(xc)
-        # print(x)
-        np.testing.assert_allclose(x, xc, rtol=1e-10)
 
-        # print(A.real)
-        #np.linalg.solve(A, b)
-        
+        np.testing.assert_allclose(pg.utils.toComplex(x3), x, rtol=1e-10)
 
 
 if __name__ == '__main__':

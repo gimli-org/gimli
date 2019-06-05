@@ -4,7 +4,6 @@
 import os
 import environment_for_pygimli_build
 
-# boost::python::numeric::array
 
 WRAPPER_DEFINITION_RVector3 =\
     """
@@ -39,8 +38,11 @@ WRAPPER_DEFINITION_RVector =\
 PyObject * RVector_getArray(GIMLI::RVector & vec){
     import_array2("Cannot import numpy c-api from pygimli hand_make_wrapper", NULL);
     npy_intp length = (ssize_t)vec.size();
-    PyObject * ret = PyArray_SimpleNewFromData(1, &length, NPY_DOUBLE, 
-                                               (void *)(&vec[0]));
+
+    PyObject * ret = PyArray_SimpleNew(1, &length, NPY_DOUBLE);
+    std::memcpy(PyArray_DATA(reinterpret_cast<PyArrayObject*>(ret)),
+                (void *)(&vec[0]), length * sizeof(double));
+        
     return ret;
 }
 
@@ -57,8 +59,11 @@ WRAPPER_DEFINITION_CVector =\
 PyObject * CVector_getArray(GIMLI::CVector & vec){
     import_array2("Cannot import numpy c-api from pygimli hand_make_wrapper", NULL);
     npy_intp length = (ssize_t)vec.size();
-    PyObject * ret = PyArray_SimpleNewFromData(1, &length, NPY_COMPLEX128, 
-                                               (void *)(&vec[0]));
+
+    PyObject * ret = PyArray_SimpleNew(1, &length, NPY_COMPLEX128);
+    std::memcpy(PyArray_DATA(reinterpret_cast<PyArrayObject*>(ret)),
+                (void *)(&vec[0]), length * sizeof(GIMLI::Complex));
+    
     return ret;
 }
 
@@ -76,8 +81,11 @@ WRAPPER_DEFINITION_BVector =\
 PyObject * BVector_getArray(GIMLI::BVector & vec){
     import_array2("Cannot import numpy c-api from pygimli hand_make_wrapper", NULL);
     npy_intp length = (ssize_t)vec.size();
-    PyObject * ret = PyArray_SimpleNewFromData(1, &length, NPY_BOOL, 
-                                               (void *)(&vec[0]));
+
+    PyObject * ret = PyArray_SimpleNew(1, &length, NPY_BOOL);
+    std::memcpy(PyArray_DATA(reinterpret_cast<PyArrayObject*>(ret)),
+                (void *)(&vec[0]), length * sizeof(bool));
+        
     return ret;
 
     //PyObject * ret = PyArray_SimpleNew(1, &length, NPY_BOOL);
@@ -99,8 +107,11 @@ WRAPPER_DEFINITION_IndexArray =\
 PyObject * IndexArray_getArray(GIMLI::IndexArray & vec){
     import_array2("Cannot import numpy c-api from pygimli hand_make_wrapper", NULL);
     npy_intp length = (ssize_t)vec.size();
-    PyObject * ret = PyArray_SimpleNewFromData(1, &length, NPY_LONG, 
-                                               (void *)(&vec[0]));
+
+    PyObject * ret = PyArray_SimpleNew(1, &length, NPY_LONG);
+    std::memcpy(PyArray_DATA(reinterpret_cast<PyArrayObject*>(ret)),
+                (void *)(&vec[0]), length * sizeof(GIMLI::Index));
+        
     return ret;
 }
 

@@ -12,8 +12,8 @@ from .base import (rms, rmsWithErr, nanrms, createDateTimeString,
 # compatibility for fw_cleaning
 from .base import rmsWithErr as rmswitherr
 
-from .complex import (isComplex, toComplex, toPolar, squeezeComplex,
-                     KramersKronig)
+from .complex import (isComplex, toComplex, toPolar, squeezeComplex, 
+                      toRealMatrix, KramersKronig)
                      
 from .cache import (cache, strHash)
 from .geostatistics import (computeInverseRootMatrix, covarianceMatrix,

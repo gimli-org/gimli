@@ -303,3 +303,4 @@ class VMDTimeDomainModelling(VMDModelling):
             ePhi[it] = ePhi[it] * dipm * sqrt(2/pi / t[it])
 
         return ePhi, t
+

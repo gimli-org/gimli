@@ -1131,6 +1131,18 @@ inline RVector transMult(const RMatrix & A, const RVector & b){
 inline CVector transMult(const CMatrix & A, const CVector & b){
     return A.transMult(b);
 }
+
+inline RMatrix real(const CMatrix & A){
+    RMatrix R(A.rows(), A.cols());
+    for (Index i = 0; i < A.rows(); i ++) R[i] = real(A[i]);
+    return R;
+}
+inline RMatrix imag(const CMatrix & A){
+    RMatrix R(A.rows(), A.cols());
+    for (Index i = 0; i < A.rows(); i ++) R[i] = imag(A[i]);
+    return R;
+}
+
 } //namespace GIMLI
 
 #endif // _GIMLI_MATRIX__H

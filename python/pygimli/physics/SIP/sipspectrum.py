@@ -10,13 +10,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import pygimli as pg
-from pygimli.utils import isComplex, squeezeComplex, toComplex
+from pygimli.utils import isComplex, squeezeComplex, toComplex, KramersKronig
 
 from .importData import readTXTSpectrum, readFuchs3File, readRadicSIPFuchs
 
 from .plotting import drawAmplitudeSpectrum, drawPhaseSpectrum, showSpectrum
 from .models import DebyePhi, DebyeComplex, relaxationTerm
-from .tools import KramersKronig, fitCCEMPhi, fitCCC
+from .tools import fitCCEMPhi, fitCCC
 from .tools import fitCCCC, fitCCPhi, fit2CCPhi
 
 from pygimli.frameworks import MethodManager

@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """Pygimli base functions to handle complex arrays"""
+
+from math import pi
+
 import numpy as np
 import pygimli as pg
 
@@ -64,6 +67,9 @@ def toPolar(z):
 
 def squeezeComplex(z, polar=False):
     """Squeeze complex valued array into [real, imag] or [amp, -phase(rad)]"""
+    if isinstance(z, pg.CSparseMapMatrix) or isinstance(z, pg.CSparseMatrix):
+        return toRealMatrix(z)
+
     if isComplex(z):
         vals = np.array(z)
         if polar is True:
@@ -72,6 +78,23 @@ def squeezeComplex(z, polar=False):
             vals = pg.cat(vals.real, vals.imag)
         return vals
     return z
+
+def toRealMatrix(C):
+    """Convert complex valued matrix into a real valued Blockmatrix"""
+    R = pg.BlockMatrix()
+    # we store the mats to keep the GC happy after leaving the scope
+    Cr = pg.real(C)
+    Ci = pg.imag(C)
+
+    R.__mats__ = [Cr, Ci]
+    rId = R.addMatrix(Cr)
+    iId = R.addMatrix(Ci)
+
+    R.addMatrixEntry(rId, 0,         0,         scale=1.0)
+    R.addMatrixEntry(rId, Cr.rows(), Cr.cols(), scale=1.0)
+    R.addMatrixEntry(iId, 0,         Cr.cols(), scale=-1.0)
+    R.addMatrixEntry(iId, Cr.rows(), 0,         scale=1.0)
+    return R
 
 def KramersKronig(f, re, im, usezero=False):
     """Return real/imaginary parts retrieved by Kramers-Kronig relations.

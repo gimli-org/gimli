@@ -1683,7 +1683,8 @@ template < class ValueType >
 Vector < std::complex < ValueType > > toComplex(const Vector < ValueType > & re,
                                                 const Vector < ValueType > & im){
     Vector < std::complex < ValueType > > cv(re.size());
-    for (Index i = 0; i < cv.size(); i ++) cv[i] = std::complex < ValueType >(re[i], im[i]);
+    for (Index i = 0; i < cv.size(); i ++) 
+        cv[i] = std::complex < ValueType >(re[i], im[i]);
     return cv;
 }
 
@@ -1708,6 +1709,7 @@ inline CVector toComplex(double re, const RVector & im){
 * To get the vice versa use abs(cvector) and phase(cvector). */
 inline CVector polarToComplex(const RVector & mag, const RVector & phi,
                               bool mRad=false){
+    log(Warning, "polarToComplex .. Do not use me" );
     ASSERT_EQUAL(mag.size(), phi.size())
     if (mRad){
         return polarToComplex(mag, phi / 1000.0, false);
