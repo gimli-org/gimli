@@ -1163,3 +1163,4 @@ from .matrix import (Cm05Matrix, LMultRMatrix, LRMultRMatrix, MultLeftMatrix,
                      MultLeftRightMatrix, MultRightMatrix, RMultRMatrix)
 from .mesh import Mesh, MeshEntity, Node
 from .datacontainer import DataContainer, DataContainerERT
+from .trans import *

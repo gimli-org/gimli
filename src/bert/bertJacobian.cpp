@@ -68,8 +68,6 @@ public:
     }
 
     virtual void calc2(){
-        // log(Debug, "Thread #" + str(_threadNumber) + ": on CPU " + str(schedGetCPU()) + 
-        //            " slice " + str(start_) + ":" + str(end_));
         ElementMatrix < double > S_i;
         ElementMatrix < double > S1_i;
 
@@ -113,7 +111,8 @@ public:
                     if (m > -1) vm = &(*pots_)[m + nElecs_ * kIdx]; else vm = &dummy;
                     if (n > -1) vn = &(*pots_)[n + nElecs_ * kIdx]; else vn = &dummy;
 
-                    (*S_)[dataIdx][modelIdx] += S_i.mult((*va), (*vb), (*vm), (*vn)) * (*weights_)[kIdx];
+                    (*S_)[dataIdx][modelIdx] += 
+                       S_i.mult((*va), (*vb), (*vm), (*vn)) * (*weights_)[kIdx];
                 }
             }
         }

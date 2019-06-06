@@ -1348,7 +1348,8 @@ void DCMultiElectrodeModelling::createJacobian_(const RVector & model,
 MEMINFO
 //         save(*u, "pots.bmat");
 
-    createSensitivityCol(*J, *mesh_, this->dataContainer(), u, weights_, kValues_,
+    createSensitivityCol(*J, *mesh_, this->dataContainer(), u, 
+                         weights_, kValues_,
                          matrixClusterIds, nThreads_, verbose_);
 
 MEMINFO
@@ -1441,6 +1442,25 @@ void DCMultiElectrodeModelling::createJacobian_(const CVector & model,
                          u,
                          this->weights_, this->kValues_,
                          matrixClusterIds, this->nThreads_, this->verbose_);
+
+    if (model.size() == J->cols()){
+        CVector m2(model*model);
+        if (model.size() == J->cols()){
+            for (Index i = 0; i < J->rows(); i ++) {
+                (*J)[i] /= (m2 / dataContainer_->get("k")[i]);
+            }
+        }
+    }
+    if (verbose_){
+        CVector sumsens(J->rows());
+        for (Index i = 0, imax = J->rows(); i < imax; i ++){
+            sumsens[i] = sum((*J)[i]);
+        }
+
+        // std::cout << "sens sum: median = " << median(sumsens)
+        //           << " min = " << min(sumsens)
+        //           << " max = " << max(sumsens) << std::endl;
+    }
 }
 
 void DCMultiElectrodeModelling::createJacobian(const RVector & model){

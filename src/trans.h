@@ -610,7 +610,7 @@ public:
         indices_.push_back(indices);
     }
     
-    /*!Return the containing transformationb object.*/
+    /*!Return the containing transformation object.*/
     Trans < Vec > & at(Index i) { return *transVec_.at(i);}
     
     const std::pair< Index, Index> & slice(Index i) const { return slice_.at(i);}
