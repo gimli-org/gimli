@@ -485,9 +485,12 @@ class ParameterInversionManager(MethodManager):
             self.fop.setRegionProperties(k, limits=v)
 
         startModel = kwargs.pop('startModel', {})
-
-        for k, v in startModel.items():
-            self.fop.setRegionProperties(k, startModel=v)
+        
+        if isinstance(startModel, dict):
+            for k, v in startModel.items():
+                self.fop.setRegionProperties(k, startModel=v)
+        else:
+            kwargs['startModel'] = startModel
 
         return super(ParameterInversionManager, self).invert(data=data,
                                                              err=err,
