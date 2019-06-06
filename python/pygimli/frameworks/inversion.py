@@ -39,7 +39,7 @@ class Inversion(object):
         # If this class or its derived is a Framework the _inv holds another
         # Inversion which allows us ........
         # this will be probably removed in the future
-        self.isFrameWork = False
+        self.isFrameWork = False # remove me not needed
         self._stopAtChi1 = True
 
         self._preStep = None
@@ -82,6 +82,12 @@ class Inversion(object):
     @fop.setter
     def fop(self, f):
         self.setForwardOperator(f)
+
+    def setForwardOperator(self, fop):
+        self._fop = fop
+        # we need to initialize the regionmanager by calling it once
+        self._fop.regionManager()
+        self._inv.setForwardOperator(fop)
 
     @property
     def verbose(self):
@@ -257,12 +263,6 @@ class Inversion(object):
     def echoStatus(self):
         self.inv.echoStatus()
 
-    def setForwardOperator(self, fop):
-        self._fop = fop
-        # we need to initialize the regionmanager by calling it once
-        self._fop.regionManager()
-        self._inv.setForwardOperator(fop)
-
     def setPostStep(self, p):
         self._postStep = p
 
@@ -319,7 +319,9 @@ class Inversion(object):
 
         Parameters
         ----------
-        errorVals : iterable
+        dataVals: iterable
+            Data values
+        errorVals: iterable
             Relative error values. dv / v
 
         Other Parameters
@@ -327,15 +329,20 @@ class Inversion(object):
         maxIter : int
             Overwrite class settings for maximal iterations number.
         dPhi : float [1]
-            Overwrite class settings for delta data phi abbort criteria.
+            Overwrite class settings for delta data phi aborting criteria.
             Default is 1%
         """
         self.reset()
         if self.isFrameWork:
+            pg.critical('in use?')
             return self._inv.run(dataVals, errorVals, **kwargs)
 
         if self.fop is None:
             raise Exception("Need a valid forward operator for the inversion run.")
+        
+        # called to be sure all necessary parts are initialized (e.g. mesh())
+        self.fop.ensureContent()
+
 
         maxIter = kwargs.pop('maxIter', self.maxIter)
         minDPhi = kwargs.pop('dPhi', self.minDPhi)
@@ -368,17 +375,35 @@ class Inversion(object):
         if self.verbose:
             pg.info('Starting inversion.')
             print("fop:", self.inv.fop())
-            print("Data transformation:", self.dataTrans)
-            print("Model transformation:", self.modelTrans)
-            print("min/max (data): {0:.2f}, {1:.2f}".format(min(self._dataVals), max(self._dataVals)))
-            print("min/max (error): {0:.3f}%, {1:.3f}%".format(100*min(self._errorVals), 100*max(self._errorVals)))
-            print("min/max (start model): {0:.2f}, {1:.2f}".format(min(self.startModel), max(self.startModel)))
+    
+            if isinstance(self.dataTrans, pg.RTransCumulative):
+                print("Data transformation (cummulative):")
+                for i in range(self.dataTrans.size()):
+                    print("\t", self.dataTrans.at(i))
+            else:
+                print("Data transformation:", self.dataTrans)
+                
+            if isinstance(self.modelTrans, pg.RTransCumulative):
+                print("Model transformation (cummulative):")
+                for i in range(self.modelTrans.size()):
+                    print("\t", self.modelTrans.at(i))
+            else:
+                print("Model transformation:", self.modelTrans)
+
+            print("min/max (data): {0}/{1}".format(pf(min(self._dataVals)), 
+                                                    pf(max(self._dataVals))))
+            print("min/max (error): {0}%/{1}%".format(pf(100*min(self._errorVals)), 
+                                                       pf(100*max(self._errorVals))))
+            print("min/max (start model): {0}/{1}".format(pf(min(self.startModel)),
+                                                          pf(max(self.startModel))))
 
         ### To ensure reproducability of the run() call inv.start() will
         ### reset self.inv.model() to fop.startModel().
         self.fop.setStartModel(self.startModel)
         self.inv.setReferenceModel(self.startModel)
 
+
+        print("-" * 80)
         self.inv.start()
         self.maxIter = maxIterTmp
 
@@ -461,22 +486,25 @@ class Inversion(object):
 
         TODO
             * think .. its a useful function but breaks a little
-             the FrameWork work only concept.
+             the FrameWork work only concept. 
+            * move it into a vis manager 
         """
-
         if self.axs is None:
             axs = None
             if style == 'all' or style == True:
                 fig, axs = pg.plt.subplots(1, 2)
             elif style == 'Model':
-                fig, axs = pg.plt.subplots(1, 1)
+                # fig, axs = pg.plt.subplots(1, 1)
+                pass
             self.axs = axs
 
         ax = self.axs
 
         if style == 'Model':
-            for other_ax in ax.figure.axes:
-                other_ax.clear()
+            # for other_ax in ax.figure.axes:
+            #     if type(other_ax).mro()[0] == type(ax):
+            #         # only clear Axes not Colorbars
+            #         other_ax.clear()
 
             self.fop.drawModel(ax, self.inv.model())
         else:
@@ -676,6 +704,7 @@ class MeshInversion(Inversion):
 
 class PetroInversion(Inversion):
     def __init__(self, petro, mgr=None, fop=None, **kwargs):
+        TO_BE_REMOVED
         self.mgr = mgr
 
         if self.mgr is not None:

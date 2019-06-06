@@ -132,6 +132,9 @@ class Modelling(pg.ModellingBase):
     def modelTrans(self, tm):
         self._modelTrans = tm
 
+    def ensureContent(self):
+        pass
+
     def initModelSpace(self, **kwargs):
         """API"""
         pass
@@ -446,6 +449,12 @@ class MeshModelling(Modelling):
     @property
     def paraDomain(self):
         return self.regionManager().paraDomain()
+
+    def ensureContent(self):
+        """"""
+        # Be sure the mesh is initialized when needed
+        self.mesh()
+        
 
     def setMeshPost(self, data):
         """Called when the mesh has been set successfully."""

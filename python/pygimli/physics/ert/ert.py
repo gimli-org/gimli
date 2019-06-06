@@ -52,6 +52,7 @@ def simulate(mesh, res, scheme, sr=True, useBert=True,
 class ERTModellingBase(MeshModelling):
     def __init__(self, **kwargs):
         super(ERTModellingBase, self).__init__(**kwargs)
+        self._axs = None
 
     def drawData(self, ax, data=None, **kwargs):
         """Draw data in given axe."""
@@ -69,6 +70,13 @@ class ERTModellingBase(MeshModelling):
 
     def drawModel(self, ax, model, **kwargs):
         """Draw the para domain with option model values"""
+        if ax is None:
+            if self._axs is None:
+                fig, self._axs = pg.plt.subplots(nrows=1, ncols=1, squeeze=False)
+            else:
+                self._axs[0][0].clear()
+            ax = self._axs[0][0]
+                
         ax, cBar = pg.show(mesh=self.paraDomain,
                            data=model,
                            label=kwargs.pop('label', pg.utils.unit('res')),
@@ -94,7 +102,6 @@ class BertModelling(ERTModellingBase):
         self.bertFop.initJacobian()
         self.setJacobian(self.bertFop.jacobian())
 
-
         ## called from the ERTManager .. needed?
         self.solution = self.bertFop.solution
         self.setComplex = self.bertFop.setComplex
@@ -111,7 +118,6 @@ class BertModelling(ERTModellingBase):
 
     def jacobian(self):
         return self.bertFop.jacobian()
-
 
     def setDataPost(self, data):
         """"""
@@ -440,10 +446,10 @@ class ERTManager(MeshMethodManager):
         useBert = kwargs.pop('useBert', False)
         verbose = kwargs.pop('verbose', False)
         if useBert:
-            pg._verbose('Create BertModelling FOP')
+            pg.verbose('Create BertModelling FOP')
             fop = BertModelling(sr=kwargs.pop('sr', True), verbose=verbose)
         else:
-            pg._verbose('Create ERTModelling FOP')
+            pg.verbose('Create ERTModelling FOP')
             fop = ERTModelling(**kwargs)
 
         return fop
@@ -621,9 +627,7 @@ class ERTManager(MeshMethodManager):
                     resp = fop.response(res)
 
                     if fop.complex():
-                        z = pg.utils.toComplex(resp)
-                        z *= scheme['k']
-                        rhoa, phia = pg.utils.toPolar(z)
+                        rhoa, phia = pg.utils.toPolar(resp)
                     else:
                         rhoa = resp
             else:

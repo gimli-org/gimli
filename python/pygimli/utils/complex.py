@@ -67,7 +67,8 @@ def toPolar(z):
 
 def squeezeComplex(z, polar=False):
     """Squeeze complex valued array into [real, imag] or [amp, -phase(rad)]"""
-    if isinstance(z, pg.CSparseMapMatrix) or isinstance(z, pg.CSparseMatrix):
+    if isinstance(z, pg.CSparseMapMatrix) or \
+       isinstance(z, pg.CSparseMatrix) or isinstance(z, pg.CMatrix):
         return toRealMatrix(z)
 
     if isComplex(z):
@@ -86,7 +87,6 @@ def toRealMatrix(C):
     Cr = pg.real(C)
     Ci = pg.imag(C)
 
-    R.__mats__ = [Cr, Ci]
     rId = R.addMatrix(Cr)
     iId = R.addMatrix(Ci)
 
@@ -94,6 +94,7 @@ def toRealMatrix(C):
     R.addMatrixEntry(rId, Cr.rows(), Cr.cols(), scale=1.0)
     R.addMatrixEntry(iId, 0,         Cr.cols(), scale=-1.0)
     R.addMatrixEntry(iId, Cr.rows(), 0,         scale=1.0)
+    pg._y(Cr.rows(), Cr.cols(), R.rows(), R.cols())
     return R
 
 def KramersKronig(f, re, im, usezero=False):

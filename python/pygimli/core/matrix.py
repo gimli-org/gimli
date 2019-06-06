@@ -112,7 +112,6 @@ class MultLeftRightMatrix(MultMatrix):
     def r(self, r):
         self._r = r
 
-
     def mult(self, x):
         """Multiplication from right-hand-side (dot product A*x)."""
         return self._A.mult(x * self._r) * self._l
@@ -122,6 +121,25 @@ class MultLeftRightMatrix(MultMatrix):
         return self._A.transMult(x * self._l) * self._r
 
 LRMultRMatrix = MultLeftRightMatrix  # alias for backward compatibility
+
+
+__BlockMatrix_addMatrix__ = pg.RBlockMatrix.addMatrix
+def __BlockMatrix_addMatrix_happy_GC__(self, M):
+    """Add an existing matrix to this block matrix and return a unique index.
+    
+    The Matrix will not be used until the matrix index has been assigned to a
+    row and column number by adding a matrix entry.
+
+    Monkeypatched to increases the reference counter of M to keep the gc happy.
+    """
+    if not hasattr(self, '__mats__'):
+        self.__mats__ = []
+    self.__mats__.append(M)
+    return __BlockMatrix_addMatrix__(self, M)
+
+pg.RBlockMatrix.addMatrix = __BlockMatrix_addMatrix_happy_GC__
+
+
 
 
 class Add2Matrix(pg.MatrixBase):

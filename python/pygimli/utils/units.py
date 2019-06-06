@@ -86,8 +86,8 @@ def cMap(name):
     """Return default colormap for physical quantity name."""
     q = quantity(name)
     if q is None:
-        pg.warning('No information about quantity name', name)
-        return 'vididis'
+        pg.warn('No information about quantity name', name)
+        return 'viridis'
     return q.get('cMap', 'vididis')
 
 

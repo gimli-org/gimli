@@ -556,6 +556,7 @@ void DCMultiElectrodeModelling::init_(){
 
     electrodeRef_        = NULL;
     JIsRMatrix_          = true;
+    JIsCMatrix_          = false;
 
     buildCompleteElectrodeModel_    = false;
     dipoleCurrentPattern_           = false;
@@ -1091,8 +1092,10 @@ RVector DCMultiElectrodeModelling::createDefaultStartModel(){
 
 RVector DCMultiElectrodeModelling::response(const RVector & model,
                                             double background){
+    if (!this->mesh_){
+        log(Critical, "Found no mesh so I can't calcuate a response.");
+    }
     if (complex()){
-//         __MS("Pls check response complex scale -1")
 
         if (min(model(0, model.size()/2)) < TOLERANCE){
             model.save("modelFail.vector");
@@ -1106,9 +1109,9 @@ RVector DCMultiElectrodeModelling::response(const RVector & model,
         RVector respRe(dMap.data(this->dataContainer(), false, false));
         RVector respIm(dMap.data(this->dataContainer(), false, true));
 
-        return cat(respRe, respIm);
-        
         CVector resp(toComplex(respRe, respIm) * dataContainer_->get("k"));
+        return cat(real(resp), imag(resp));
+        
         RVector am(abs(resp));
         RVector ph(-angle(resp));
 
@@ -1442,23 +1445,33 @@ void DCMultiElectrodeModelling::createJacobian_(const CVector & model,
 
 void DCMultiElectrodeModelling::createJacobian(const RVector & model){
     if (complex_){
+        CVector cMod(toComplex(model(0, model.size()/2),
+                               model(model.size()/2, model.size())));
+        
+        CMatrix * u = this->prepareJacobianT_(cMod);
 
-        CMatrix * u = prepareJacobianT_(toComplex(model(0, model.size()/2),
-                                         model(model.size()/2, model.size())));
+        if (!JIsCMatrix_){
+            log(Warning, "delete non complex Jacobian and create a new CMatrix");
+            delete jacobian_;
+            jacobian_ = new CMatrix();
+            JIsCMatrix_ = true;
+            JIsRMatrix_ = false;
 
-        THROW_TO_IMPL
-
-
+        }   
+        CMatrix * J = dynamic_cast< CMatrix * >(jacobian_);
+        this->createJacobian_(cMod, *u, J);
     } else {
-        RMatrix * u = prepareJacobianT_(model);
+        RMatrix * u = this->prepareJacobianT_(model);
         if (!JIsRMatrix_){
+            log(Warning, "delete non real Jacobian and create a new RMatrix");
             delete jacobian_;
             jacobian_ = new RMatrix();
             JIsRMatrix_ = true;
+            JIsCMatrix_ = false;
         }
 
         RMatrix * J = dynamic_cast< RMatrix * >(jacobian_);
-        createJacobian_(model, *u, J);
+        this->createJacobian_(model, *u, J);
     }
 }
 

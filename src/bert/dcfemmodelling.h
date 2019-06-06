@@ -299,6 +299,7 @@ protected:
     bool complex_;
 
     bool JIsRMatrix_;
+    bool JIsCMatrix_;
 
     bool analytical_;
     bool topography_;
