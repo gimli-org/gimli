@@ -2004,7 +2004,7 @@ void Mesh::prolongateEmptyCellsValues(RVector & vals, double background) const {
             for (Index j = 0; j < cell->neighbourCellCount(); j ++){
                 Cell * nCell = cell->neighbourCell(j);
                 if (nCell){
-                    if (vals[nCell->id()] > TOLERANCE){
+                    if (abs(vals[nCell->id()]) > TOLERANCE){
                         if (horizontalWeight){
                             Boundary * b=findCommonBoundary(*nCell, *cell);
                             if (b){
@@ -2029,16 +2029,16 @@ void Mesh::prolongateEmptyCellsValues(RVector & vals, double background) const {
             }
         }
 
-        if (!smooth){//**apply std::map< uint, val > prolongationMap;
-            for (std::map< Cell *, double >::iterator it = prolongationMap.begin();
-                 it != prolongationMap.end(); it ++){
-                vals[it->first->id()] = it->second;
+        if (!smooth){
+            for (auto & x: prolongationMap){
+                vals[x.first->id()] = x.second;
             }
         }
         if (!prolongatedValues){
             this->exportVTK("fillEmptyCellsFail");
-            log(Warning, "cannot fill emptyList: see fillEmptyCellsFail.vtk. Trying to fix ...");
+            log(Warning, "cannot fill emptyList: see fillEmptyCellsFail.vtk. Fill up empty with.", emptyList.size(), mean(vals));
             vals[emptyList] = mean(vals);
+            exit(1);
         }
         prolongateEmptyCellsValues(vals, background);
     }
