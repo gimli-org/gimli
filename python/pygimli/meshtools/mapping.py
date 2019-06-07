@@ -213,7 +213,7 @@ def fillEmptyToCellArray(mesh, vals, slope=True):
 
                             startCell = nextC
 
-    mesh.fillEmptyCells(mesh.findCellByAttribute(0.0), background=-1)
+    mesh.fillEmptyCells(mesh.findCellByAttribute(0.0), background=-9e99)
     atts = mesh.cellAttributes()
     mesh.setCellAttributes(oldAtts)
     return atts

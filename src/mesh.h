@@ -469,16 +469,16 @@ public:
      * This function is called recursively until all zero-attribute-cells in
      * emptyList are filled with an attribute greater than Zero. */
     void fillEmptyCells(const std::vector< Cell * > & emptyList,
-                        double background=-1.0);
+                        double background=-9e99);
 
     /*! Prolongate the empty (lower than \ref TOLERANCE.) cell values in vals
      * from its neighbouring cells.
      * This function is called recursively until all zero-attribute-values in
      * vals are filled with an attribute greater than Zero.
      * RVector vals need to be of size \ref cellCount().
-     * If Background is unequal -1.0 all empty values will be set to background.
+     * If Background is unequal -9e99 all empty values will be set to background.
      */
-    void prolongateEmptyCellsValues(RVector & vals, double background=-1.0) const;
+    void prolongateEmptyCellsValues(RVector & vals, double background=-9e99) const;
 
     void recountNodes();
 

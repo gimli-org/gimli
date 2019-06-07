@@ -166,9 +166,9 @@ public:
 
     /*! Read only extrapolation of model values given per cell marker to
      values given per cell. Exterior values will be set to background or
-     prolongated for background != -1.
+     prolongated for background != -9e99.
      */
-    RVector createMappedModel(const RVector & model, double background=-1) const;
+    RVector createMappedModel(const RVector & model, double background=-9e99) const;
 
     void setRegionManager(RegionManager * reg);
 

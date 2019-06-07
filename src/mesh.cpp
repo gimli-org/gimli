@@ -1973,12 +1973,11 @@ void Mesh::mapBoundaryMarker(const std::map < int, int > & aMap){
         }
     }
 }
-
 void Mesh::prolongateEmptyCellsValues(RVector & vals, double background) const {
     IndexArray emptyList(find(abs(vals) < TOLERANCE));
     if (emptyList.size() == 0) return;
 
-    if (background != -1.0){
+    if (background > -9e99){
         vals[emptyList] = background;
         return;
     }
@@ -1988,8 +1987,8 @@ void Mesh::prolongateEmptyCellsValues(RVector & vals, double background) const {
 
     if (emptyList.size() > 0){
         if (deepDebug()) {
-            std::cout << "Prolongate " << emptyList.size() << " empty cells. ("
-            << this->cellCount() << ")" << std::endl;
+            std::cout << "Prolongate " << emptyList.size() 
+                      << " empty cells. (" << this->cellCount() << ")" << std::endl;
         }
 
         std::map< Cell*, double > prolongationMap;
@@ -2031,16 +2030,14 @@ void Mesh::prolongateEmptyCellsValues(RVector & vals, double background) const {
         }
 
         if (!smooth){//**apply std::map< uint, val > prolongationMap;
-            for (std::map< Cell *, double >::iterator it= prolongationMap.begin();
-                it != prolongationMap.end(); it ++){
+            for (std::map< Cell *, double >::iterator it = prolongationMap.begin();
+                 it != prolongationMap.end(); it ++){
                 vals[it->first->id()] = it->second;
             }
         }
         if (!prolongatedValues){
             this->exportVTK("fillEmptyCellsFail");
-            std::cerr << WHERE_AM_I << " WARNING!! cannot fill emptyList: see fillEmptyCellsFail.vtk"<< std::endl;
-            std::cerr << "trying to fix"<< std::endl;
-
+            log(Warning, "cannot fill emptyList: see fillEmptyCellsFail.vtk. Trying to fix ...");
             vals[emptyList] = mean(vals);
         }
         prolongateEmptyCellsValues(vals, background);
@@ -2050,7 +2047,8 @@ void Mesh::prolongateEmptyCellsValues(RVector & vals, double background) const {
 void Mesh::fillEmptyCells(const std::vector< Cell * > & emptyList, double background){
     if (emptyList.size() == 0) return;
 
-    if (background != -1.0){
+    log(Error, WHERE_AM_I, "who use this"); // maybe obsolete #190607
+    if (background > -9e99){
         for (size_t i = 0; i < emptyList.size(); i ++) emptyList[i]->setAttribute(background);
         return;
     }

@@ -236,11 +236,12 @@ void dcfemDomainAssembleStiffnessMatrix(RSparseMatrix & S, const Mesh & mesh,
 }
 void dcfemDomainAssembleStiffnessMatrix(CSparseMatrix & S, const Mesh & mesh,
                                         double k, bool fix){
-    dcfemDomainAssembleStiffnessMatrix(S, mesh, getComplexResistivities(mesh),
-                                       k, fix);
+    CVector res(getComplexResistivities(mesh));
+    // if (min(imag(res)) < TOLERANCE){
+    //     log(Error, "Check *******************************************");
+    // }
+    dcfemDomainAssembleStiffnessMatrix(S, mesh, res, k, fix);
 }
-
-
 template < class ValueType >
 void dcfemBoundaryAssembleStiffnessMatrix(SparseMatrix < ValueType > & S,
                                           const Mesh & mesh,
@@ -274,7 +275,6 @@ void dcfemBoundaryAssembleStiffnessMatrix(SparseMatrix < ValueType > & S,
                     std::cerr << WHERE_AM_I << " parameter rho == 0.0 found " << rho << std::endl;
                 }
                 Se.u2(mesh.boundary(i));
-
                 S.add(Se, (mixedBoundaryCondition(mesh.boundary(i), source, k) / rho));
                 //Se *= (mixedBoundaryCondition(mesh.boundary(i), source, k) / rho);
                 // S += Se;
@@ -1104,7 +1104,7 @@ RVector DCMultiElectrodeModelling::response(const RVector & model,
 
         DataMap dMap(response_(toComplex(model(0, model.size()/2),
                                          model(model.size()/2, model.size())),
-                               Complex(background, 0)));
+                               Complex(background, -9e99)));
 
         RVector respRe(dMap.data(this->dataContainer(), false, false));
         RVector respIm(dMap.data(this->dataContainer(), false, true));
@@ -1223,12 +1223,8 @@ void DCMultiElectrodeModelling::mapERTModel(const CVector & model, Complex backg
     if (model.size() == this->mesh_->cellCount()){
         setComplexResistivities(*mesh_, model);
     } else {
-        mapModel(real(model), real(background));
-        RVector re(mesh_->cellAttributes());
-
-        mapModel(imag(model), imag(background));
-        RVector im(mesh_->cellAttributes());
-
+        RVector re(createMappedModel(real(model), background.real()));
+        RVector im(createMappedModel(imag(model), -9e99));
         setComplexResistivities(*mesh_, toComplex(re, im));
     }
 }
@@ -1290,7 +1286,7 @@ Matrix < ValueType > * DCMultiElectrodeModelling::prepareJacobianT_(const Vector
             }
 // //            std::cout << WHERE_AM_I << " " << mean(model) << " " << model.size() << std::endl;
 //__MS(toc__)
-            this->mapERTModel(model, ValueType(-1.0)); // very slow
+            this->mapERTModel(model, ValueType(-9e99)); // very slow
 //__MS(toc__)
             bool oldAna = this->analytical();
 
@@ -1560,7 +1556,7 @@ RVector DCMultiElectrodeModelling::calcGeometricFactor(const DataContainerERT & 
         if (verbose_) std::cout << " (numerical)" << std::endl;
         RVector atts(mesh_->cellAttributes());
         if (nModel > 0) {
-            this->mapERTModel(RVector(nModel, 1.0), -1.0);
+            this->mapERTModel(RVector(nModel, 1.0), -9e99);
         } else {
             mesh_->setCellAttributes(RVector(mesh_->cellCount(), 1.0));
         }
@@ -1640,6 +1636,7 @@ void DCMultiElectrodeModelling::calculate(DataContainerERT & data, bool reciproc
         DataMap dMap;
         this->calculate(dMap);
         if (complex_) {
+            log(Error, " DCMultiElectrodeModelling::calculate, don't use this.");
             setComplexData(data, dMap.data(data), dMap.data(data, false, true));
         } else {
             data.set("u", dMap.data(data));

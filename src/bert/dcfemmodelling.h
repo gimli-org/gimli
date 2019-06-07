@@ -147,21 +147,21 @@ public:
 
     /*! Map resistivity model to the cell attributes for further calculation.
      * Default is resistivity=model[cell.marker()].
-     * Empty cells will set to background or prolongated for background==-1.
+     * Empty cells will set to background or prolongated for background==-9e99.
      * If model size equals the mesh().cellCount() then the values are just
      * copied. i.e., resistivity=model[cell.id()]. */
     void mapERTModel(const CVector & model, Complex background);
 
     /*! Map resistivity model to the cell attributes for further calculation.
      * Default is resistivity=model[cell.marker()].
-     * Empty cells will set to background or prolongated for background==-1.
+     * Empty cells will set to background or prolongated for background==-9e99.
      * If model size equals the mesh().cellCount() then the values are just
      * copied. i.e., resistivity=model[cell.id()]. */
     void mapERTModel(const RVector & model, double background);
 
     /*! Calculate response for a given resistivity model.
      * Either cell based or marker based. See \ref mapERTModel */
-    virtual RVector response(const RVector & model){return response(model, -1);}
+    virtual RVector response(const RVector & model){return response(model, -9e99);}
 
     /*! Calculate response for a given resistivity model.
      * Either cell based or marker based. See \ref mapERTModel */

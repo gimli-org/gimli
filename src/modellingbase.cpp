@@ -395,8 +395,9 @@ RVector ModellingBase::createMappedModel(const RVector & model, double backgroun
                 throwLengthError(1, WHERE_AM_I + " marker >= than model.size() " + str(marker)
                        + " >= " + str(model.size()));
             }
-            if (model[marker] < TOLERANCE){
-                emptyList.push_back(&mesh_->cell(i));
+            if (abs(model[marker]) < TOLERANCE){
+                // Zero model can be valid 
+                // emptyList.push_back(&mesh_->cell(i));
             }
             cellAtts[i] = model[marker];
 
@@ -409,7 +410,7 @@ RVector ModellingBase::createMappedModel(const RVector & model, double backgroun
         }
     }
 
-        // if background == 0.0 .. empty cells are allowed
+    // if background == 0.0 .. empty cells are allowed
     if (emptyList.size() == mesh_->cellCount() && background != 0.0){
         throwLengthError(1, WHERE_AM_I + " too many empty cells" + str(emptyList.size())
                        + " == " + str(mesh_->cellCount()));

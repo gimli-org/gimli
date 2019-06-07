@@ -94,7 +94,6 @@ def toRealMatrix(C):
     R.addMatrixEntry(rId, Cr.rows(), Cr.cols(), scale=1.0)
     R.addMatrixEntry(iId, 0,         Cr.cols(), scale=-1.0)
     R.addMatrixEntry(iId, Cr.rows(), 0,         scale=1.0)
-    pg._y(Cr.rows(), Cr.cols(), R.rows(), R.cols())
     return R
 
 def KramersKronig(f, re, im, usezero=False):
