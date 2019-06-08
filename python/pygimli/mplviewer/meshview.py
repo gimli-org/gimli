@@ -440,7 +440,7 @@ def drawSelectedMeshBoundaries(ax, boundaries, color=None, linewidth=1.0,
 
     if color is None:
         viewdata = [b.marker() for b in boundaries]
-        pg.mplviewer.setMappableData(lineCollection, viewdata, logScale=False)
+        pg.mplviewer.setMappableValues(lineCollection, viewdata, logScale=False)
     else:
         lineCollection.set_color(color)
 

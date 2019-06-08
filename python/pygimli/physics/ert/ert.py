@@ -82,6 +82,7 @@ class ERTModellingBase(MeshModelling):
                            label=kwargs.pop('label', pg.utils.unit('res')),
                            ax=ax,
                            cMap=pg.utils.cMap('res'),
+                           logScale=True, 
                            **kwargs)
         return ax, cBar
 

@@ -355,11 +355,13 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
 
         if bool(colorBar):
             cbar = createColorBar(gci,
-                                  orientation=kwargs.pop('orientation', 'horizontal'),
+                                  orientation=kwargs.pop('orientation', 
+                                                         'horizontal'),
                                   size=kwargs.pop('size', 0.2),
-                                  pad=kwargs.pop('pad', None)
+                                  pad=kwargs.pop('pad', None),
+                                  **subkwargs
                                   )
-            updateColorBar(cbar, **subkwargs)
+            # updateColorBar(cbar, **subkwargs)
         elif colorBar is not False:
             cbar = updateColorBar(colorBar, **subkwargs)
 

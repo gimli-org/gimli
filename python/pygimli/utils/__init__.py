@@ -7,7 +7,8 @@ from .base import (rms, rmsWithErr, nanrms, createDateTimeString,
                    createfolders, #remove me Nameing convention
                    createFolders, createResultFolder,
                    getSavePath, gmat2numpy, interperc, interpExtrap, inthist,
-                   nanrms, num2str, numpy2gmat, rrms, rms, rndig, saveResult)
+                   nanrms, num2str, numpy2gmat, rrms, rms, rndig, saveResult,
+                   chi2)
 
 # compatibility for fw_cleaning
 from .base import rmsWithErr as rmswitherr
@@ -26,7 +27,7 @@ from .sparseMat2Numpy import (convertCRSIndex2Map, sparseMatrix2Array,
 
 from .units import (unit, cMap)
 
-from .utils import (ProgressBar, boxprint, chi2, cumDist, diff, dist,
+from .utils import (ProgressBar, boxprint, cumDist, cut, diff, dist,
                     filterIndex, filterLinesByCommentStr, findNearest,
                     getIndex, grange, logDropTol, niceLogspace, prettyFloat,
                     rand, randN, trimDocString, unicodeToAscii, unique,

@@ -401,13 +401,17 @@ class Inversion(object):
         self.fop.setStartModel(self.startModel)
         self.inv.setReferenceModel(self.startModel)
 
-        print("-" * 80)
+        
         self.inv.start()
         self.maxIter = maxIterTmp
 
+        print("-" * 80)
         if showProgress:
-            self.showProgress(showProgress)
-
+            if hasattr(showProgress, '__call__'):
+                showProgress(self)
+            else:
+                self.showProgress(showProgress)
+                    
         lastPhi = self.phi()
         self.chi2History = [self.chi2()]
         self.modelHistory = [self.startModel]
@@ -443,7 +447,10 @@ class Inversion(object):
             self.modelHistory.append(self.model)
 
             if showProgress:
-                self.showProgress(showProgress)
+                if hasattr(showProgress, '__call__'):
+                    showProgress(self)
+                else:
+                    self.showProgress(showProgress)
 
             self.inv.setLambda(self.inv.getLambda() * self.inv.lambdaFactor())
 

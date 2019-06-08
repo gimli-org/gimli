@@ -436,14 +436,12 @@ def cumDist(p):
     d[1:] = np.cumsum(dist(diff(p)))
     return d
 
-
-def chi2(a, b, err, trans=None):
-    """Return chi square value."""
-    if trans is None:
-        trans = pg.RTrans()
-
-    d = (trans(a) - trans(b)) / trans.error(a, err)
-    return pg.dot(d, d) / len(d)
+def cut(v, n=2):
+    """Cuts the array v into n parts"""
+    N = len(v)
+    Nc = N//n
+    cv = [v[i*Nc:(i+1)*Nc] for i in range(n)]
+    return cv
 
 
 def randN(n, minVal=0.0, maxVal=1.0):

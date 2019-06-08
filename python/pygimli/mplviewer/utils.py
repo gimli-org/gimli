@@ -15,17 +15,24 @@ from pygimli.utils import prettyFloat
 holdAxes__ = 0
 
 
-def updateAxes(ax, a=None, force=False):
+def updateFig(fig, force=False, sleep=.05):
     """For internal use."""
     if not holdAxes__:
         try:
-            ax.figure.canvas.draw_idle()
+            fig.canvas.draw_idle()
+            pg._r(force, sleep)
             if force:
-                time.sleep(0.1)
+                pg.plt.pause(sleep)
+                #time.sleep(sleep)
         except BaseException as e:
-            print(ax, a, e)
+            print(fig, e)
             pg.warn("Exception raised", e)
 
+
+def updateAxes(ax, force=False):
+    """For internal use."""
+    updateFig(ax.figure, force=force)
+    
 
 def hold(val=1):
     """TODO WRITEME."""

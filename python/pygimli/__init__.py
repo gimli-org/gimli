@@ -51,8 +51,7 @@ from ._version import get_versions
 from ._logger import _, _d, _y, _g, _r, setLogLevel
 from .core import *
 from .testing import test
-from .utils import unit
-
+from .utils import unit, cut
 
 def _get_branch():
     """Get current git branch."""

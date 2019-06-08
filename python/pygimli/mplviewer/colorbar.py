@@ -186,7 +186,7 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
 
         cbar.mappable.set_cmap(cMap)
 
-    needLevelUpdate = False
+    needLevelUpdate = True
 
     if cMin is not None or cMax is not None or nLevs is not None:
         needLevelUpdate = True
