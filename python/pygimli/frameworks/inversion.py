@@ -343,7 +343,6 @@ class Inversion(object):
         # called to be sure all necessary parts are initialized (e.g. mesh())
         self.fop.ensureContent()
 
-
         maxIter = kwargs.pop('maxIter', self.maxIter)
         minDPhi = kwargs.pop('dPhi', self.minDPhi)
 
@@ -355,7 +354,7 @@ class Inversion(object):
         progress = kwargs.pop('progress', None)
         showProgress = kwargs.pop('showProgress', False)
 
-        self.inv.setTransModel(self.fop.modelTrans)
+        self.inv.setTransModel(self.modelTrans)
 
         self.dataVals = dataVals
         self.errorVals = errorVals
@@ -402,7 +401,6 @@ class Inversion(object):
         self.fop.setStartModel(self.startModel)
         self.inv.setReferenceModel(self.startModel)
 
-
         print("-" * 80)
         self.inv.start()
         self.maxIter = maxIterTmp
@@ -424,6 +422,10 @@ class Inversion(object):
                 print("inv.iter", i + 1, "... ", end='')
 
             try:
+                # print("Model transformation:", self.modelTrans)
+                # print("Model transformation:", self.inv.transModel())
+                # print("Model transformation:", self.inv.transModel().at(0))
+                # print("Model transformation:", self.inv.transModel().at(0).trans(np.ones(10)*100))
                 self.inv.oneStep()
             except RuntimeError as e:
                 print(e)
@@ -455,7 +457,7 @@ class Inversion(object):
                 self._postStep(i, self.inv)
 
             phi = self.phi()
-            dPhi = (1-lastPhi / phi) * 100.
+            dPhi = (1 - lastPhi / phi) * 100.
 
             if self.verbose:
                 print("chi² = {0} (dPhi = {1}%) lam: {2}".format(
@@ -471,6 +473,11 @@ class Inversion(object):
                 if self.verbose:
                     pg.boxprint("Abort criteria reached: dPhi = {0} (< {1}%)".format(
                                 round(dPhi, 2), minDPhi))
+                break
+            
+            if i == maxIter-1:
+                if self.verbose:
+                    pg.boxprint("Abort criteria reached: maximum iteration.")
                 break
 
             lastPhi = phi

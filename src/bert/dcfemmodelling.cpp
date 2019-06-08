@@ -1141,7 +1141,8 @@ RVector DCMultiElectrodeModelling::response(const RVector & model,
 
     if (min(model) < TOLERANCE){
         model.save("modelFail.vector");
-        log(Critical, " response for model with negative or zero resistivity is not defined.");
+        log(Critical, " response for model with negative or zero resistivity is not defined.:", 
+                     min(model), max(model));
     }
 
     DataMap dMap(response_(model, background));

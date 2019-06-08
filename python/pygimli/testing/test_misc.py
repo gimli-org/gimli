@@ -13,7 +13,6 @@ class TestMisc(unittest.TestCase):
         """
         """
         f = pg.RTrans()
-
         x = pg.RVector(3, 1.0)
 
         np.testing.assert_array_equal(f(x), x)
@@ -37,6 +36,29 @@ class TestMisc(unittest.TestCase):
         np.testing.assert_array_equal(f.update([1.], [100.]), [10.0])
         # print(f.update([1.], [1000.]))
         # np.testing.assert_array_equal(f.update([1.], [1000.]), [10.0])
+
+        f = pg.TransCumulative()
+        f.add(pg.RTransLog(), 5)
+        f.add(pg.RTransLog(), 5)
+
+        np.testing.assert_array_equal(f.at(0).fwd(np.ones(10)*10), 
+                                      np.log(np.ones(10)*10))
+        np.testing.assert_array_equal(f.fwd(np.ones(10)*10), 
+                                      np.log(np.ones(10)*10))
+        # tm2 = pg.RTransLog()
+        # tc.add(tm2, 5, 10)
+        # fop._modelTrans = pg.TransCumulative()
+        # fop._modelTrans.add(tm2, size=nModel)
+
+
+        #fop._modelTrans = pg.TransLog()
+
+
+
+
+
+
+
 
     def test_DataContainerFilter(self):
         """
@@ -194,12 +216,12 @@ class TestMisc(unittest.TestCase):
 if __name__ == '__main__':
     # pg.setDeepDebug(1)
 
-    # t = TestMisc()
-    # t.test_Trans()
+    t = TestMisc()
+    t.test_Trans()
     # t.test_Hash()
     # t.test_HashData()
     # t.test_HashMesh()
-    # exit()
+    exit()
     
     # t.test_PosConstMember()
     #t.test_DataContainerSensors()

@@ -12,6 +12,11 @@ def __TransCumulative_addForGC_MP__(self, T, *args):
     if not hasattr(self, '__trans__'):
         self.__trans__ = []
     self.__trans__.append(T)
+
+    if len(args) == 1:
+        # be sure avoid auto conversion from int to IndexArray
+        if isinstance(args[0], int):
+            return __TransCumulative_addForGC__(self, T, size=args[0])    
     return __TransCumulative_addForGC__(self, T, *args)
 
 pg.RTransCumulative.add = __TransCumulative_addForGC_MP__

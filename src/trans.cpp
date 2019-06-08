@@ -62,4 +62,70 @@ template <> RVector TransLogLU<RVector>::deriv(const RVector & a) const {
     return (1.0 / (tmp - this->lowerBound()) + 1.0 / (this->upperBound() - tmp));
 }
 
+typedef RVector Vec;
+
+template <> Vec TransCumulative < Vec >::trans(const Vec & a) const {
+    Vec tmp(a.size());
+    if (indices_.size() > 0){
+        for (Index i = 0; i < transVec_.size(); i ++){
+            tmp.setVal(transVec_[i]->trans(a(indices_[i])),
+                        indices_[i]);
+        }
+    } else {
+        for (Index i = 0; i < transVec_.size(); i ++){
+            tmp.setVal(transVec_[i]->trans(a(slice_[i].first,
+                                            slice_[i].second)),
+                        slice_[i]);
+        }
+    }
+    return tmp;
+}
+
+template <> Vec TransCumulative < Vec >::invTrans(const Vec & a) const {
+    Vec tmp(a.size());
+    if (indices_.size() > 0){
+        for (Index i = 0; i < transVec_.size(); i ++){
+            tmp.setVal(transVec_[i]->invTrans(a(indices_[i])),
+                        indices_[i]);
+        }
+    } else {
+        for (Index i = 0; i < transVec_.size(); i ++){
+            tmp.setVal(transVec_[i]->invTrans(a(slice_[i].first, slice_[i].second)),
+                        slice_[i]);
+        }
+    }
+    return tmp;
+}
+
+template <> Vec TransCumulative < Vec >::deriv(const Vec & a) const {
+    Vec tmp(a.size());
+    if (indices_.size() > 0){
+        for (Index i = 0; i < transVec_.size(); i ++){
+            tmp.setVal(transVec_[i]->deriv(a(indices_[i])),
+                        indices_[i]);
+        }
+    } else {
+        for (Index i = 0; i < transVec_.size(); i ++){
+            tmp.setVal(transVec_[i]->deriv(a(slice_[i].first, slice_[i].second)),
+                        slice_[i]);
+        }
+    }
+    return tmp;
+}
+
+template <> void TransCumulative < Vec >::add(Trans< Vec > & trans, Index size) {
+    Index start = 0;
+    if (!slice_.empty()) start = slice_.back().second;
+    this->add(trans, start, start + size);
+}
+template <> void TransCumulative < Vec >::add(Trans< Vec > & trans, Index start, Index end) {
+    transVec_.push_back(&trans);
+    slice_.push_back(std::pair< Index, Index >(start, end));
+}
+template <> void TransCumulative < Vec >::add(Trans< Vec > & trans, const IVector & indices) {
+    transVec_.push_back(&trans);
+    indices_.push_back(indices);
+}
+
+
 } // namespace GIMLI
