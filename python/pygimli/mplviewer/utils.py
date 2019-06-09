@@ -20,7 +20,6 @@ def updateFig(fig, force=False, sleep=.05):
     if not holdAxes__:
         try:
             fig.canvas.draw_idle()
-            pg._r(force, sleep)
             if force:
                 pg.plt.pause(sleep)
                 #time.sleep(sleep)

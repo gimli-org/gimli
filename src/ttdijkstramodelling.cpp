@@ -549,7 +549,7 @@ TTModellingWithOffset::TTModellingWithOffset(Mesh & mesh, DataContainer & dataCo
         offsetMesh_.cell(i).setMarker(NEWREGION);
     }
 
-    regionManager().addRegion(NEWREGION, offsetMesh_);
+    regionManager().addRegion(NEWREGION, offsetMesh_, NEWREGION);
 
     this->initJacobian();
 }

@@ -132,6 +132,21 @@ class Modelling(pg.ModellingBase):
     def modelTrans(self, tm):
         self._modelTrans = tm
 
+    @property
+    def regionManager(self):
+        return self.regionManager()
+
+    def regionManager(self):
+        """
+        """
+        # pg._y('regionManager')
+        self._regionManagerInUse = True
+        ### initialize RM if necessary
+        super(Modelling, self).regionManager()
+        ### set all local properties
+        self._applyRegionProperties()
+        return super(Modelling, self).regionManager()
+
     def ensureContent(self):
         pass
 
@@ -163,16 +178,6 @@ class Modelling(pg.ModellingBase):
             sm = self.regionManager().createStartModel()
         return sm
 
-    def regionManager(self):
-        """
-        """
-        # pg._y('regionManager')
-        self._regionManagerInUse = True
-        ### initialize RM if necessary
-        super(Modelling, self).regionManager()
-        ### set all local properties
-        self._applyRegionProperties()
-        return super(Modelling, self).regionManager()
 
     def clearRegionProperties(self):
         """Clear all region parameter."""
@@ -434,6 +439,7 @@ class MeshModelling(Modelling):
     def __init__(self, **kwargs):
         super(MeshModelling, self).__init__(**kwargs)
         self._meshNeedsUpdate = True
+        self._baseMesh = None
 
     def __hash__(self):
         return super(MeshModelling, self).__hash__() ^ hash(self.mesh())
@@ -490,6 +496,7 @@ class MeshModelling(Modelling):
     def setMesh(self, mesh, ignoreRegionManager=False):
         """
         """
+        self._baseMesh = mesh
         if ignoreRegionManager == True or self._regionManagerInUse == False:
             self._regionManagerInUse = False
             if self.fop is not None:

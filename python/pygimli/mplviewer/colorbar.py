@@ -178,6 +178,11 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
     """
     # print("update cbar:", cMin, cMax, label)
     if gci is not None:
+        if min(mappable.get_array()) < 1e12:
+            norm = mpl.colors.Normalize(vmin=min(mappable.get_array()), 
+                                        vmax=min(mappable.get_array()))
+            cbar.set_norm(norm)
+            gci.set_norm(norm)    
         cbar.on_mappable_changed(gci)
 
     if cMap is not None:
@@ -186,7 +191,7 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
 
         cbar.mappable.set_cmap(cMap)
 
-    needLevelUpdate = True
+    needLevelUpdate = False
 
     if cMin is not None or cMax is not None or nLevs is not None:
         needLevelUpdate = True
@@ -398,18 +403,12 @@ def setMappableValues(mappable, dataIn):
     mappable.set_array(data)
 
 
-def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=False):
+def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=None):
     """Change the data values for a given mappable.
-
-    DEPRECATED
     """
     data = dataIn
-
     if not isinstance(data, np.ma.core.MaskedArray):
         data = np.array(dataIn)
-
-    if logScale and data.min() <= 0:
-        data = np.ma.masked_array(data, data <= 0.0)
 
     # set bad value color to white
     if mappable.get_cmap() is not None:
@@ -420,16 +419,23 @@ def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=False):
     if not cMax:
         cMax = data.max()
 
-    if cMin > 0.0 and logScale:
-        mappable.set_norm(mpl.colors.LogNorm())
-    else:
+    oldLog = None
+    if cMin <= 0.0:
+        oldLog = isinstance(mappable.norm, mpl.colors.LogNorm)
+        if oldLog is True or logScale is True:
+            cMin = min(data[data > 0.0])
+            data = np.ma.masked_array(data, data <= 0.0)
+    
+        if logScale:
+            mappable.set_norm(mpl.colors.LogNorm())
+    elif logScale is False:
         mappable.set_norm(mpl.colors.Normalize(vmin=cMin, vmax=cMax))
-
-#   print("set mappable data, log: ", logScale, "cmin: ", cMin, "cmax: ", cMax)
+    
     mappable.set_array(data)
-    # mappable.set_level(10)
     mappable.set_clim(cMin, cMax)
 
+    if mappable.colorbar is not None:
+        updateColorBar(mappable.colorbar, cMin=cMin, cMax=cMax)
 
 def addCoverageAlpha(patches, coverage, dropThreshold=0.4):
     """Add alpha values to the colors of a polygon collection.

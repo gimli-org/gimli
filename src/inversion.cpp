@@ -35,7 +35,7 @@ void RInversion::checkConstraints() {
 
     if (verbose_){
         std::cout << "constraint matrix of size(nBounds x nModel) "
-            << nCWeightC << " x " << nModelC << std::endl;
+                  << nCWeightC << " x " << nModelC << std::endl;
     }
 
     if (model_.size() != nModelC){

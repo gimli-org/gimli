@@ -41,6 +41,8 @@ public:
 
     Region(SIndex marker, const Mesh & mesh, RegionManager * parent);
 
+    Region(SIndex marker, const Mesh & mesh, SIndex cellMarker, RegionManager * parent);
+
     Region(const Region & region);
 
     Region & operator = (const Region & region);
@@ -54,7 +56,7 @@ public:
     inline SIndex marker() const { return marker_; }
 
     /*! Set new parameter cells, i.e. update the related mesh and all sizes. */
-    void resize(const Mesh & mesh);
+    void resize(const Mesh & mesh, SIndex cellMarker);
 
     /*! Set new parameter cells, i.e. update the related mesh and all sizes. Only for single region.*/
     void resize(const std::vector < Cell * > & cells);
@@ -76,6 +78,9 @@ public:
 
     /*! Return true if this region is a single parameter region */
     inline bool isSingle() const { return isSingle_ ; }
+
+    /*! Return true if the cells of this region are part of the primary paradomain. */
+    inline bool isInParaDomain() const { return _isInParaDomain; }
 
     /*! Return number of parameters for this region, 1 on single region */
     inline Index parameterCount() const { return parameterCount_; }
@@ -222,6 +227,7 @@ protected:
     bool isBackground_;
     bool isSingle_;
     bool isPermuted_;
+    bool _isInParaDomain;
 
     IndexArray paraIDs_;
 
@@ -273,8 +279,11 @@ public:
     /*!Add an new single region.*/
     Region * addRegion(SIndex marker);
     
+    Region * addRegion(SIndex marker, const Mesh & mesh){
+        return addRegion(marker, mesh, marker);
+    }
     /*!Add an external region to the RegionManager.*/
-    Region * addRegion(SIndex marker, const Mesh & mesh);
+    Region * addRegion(SIndex marker, const Mesh & mesh, SIndex cellMarker);
 #ifndef PYGIMLI_CAST
     const std::map < SIndex, Region * > & regions() const { return regionMap_; }
 
@@ -391,7 +400,7 @@ protected:
     /*!
      * Internal method to create a region. The method is called from \ref setMesh()
      */
-    Region * createRegion_(SIndex marker, const Mesh & mesh);
+    Region * createRegion_(SIndex marker, const Mesh & mesh, SIndex cellMarker);
 
     /*!
      * Internal method to create a single parameter region. The method is called from \ref setMesh()

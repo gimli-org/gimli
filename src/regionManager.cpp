@@ -45,7 +45,15 @@ Region::Region(SIndex marker, const Mesh & mesh, RegionManager * parent)
         isBackground_(false), isSingle_(false),
         parameterCount_(0), tM_(NULL) {
     init_();
-    this->resize(mesh);
+    this->resize(mesh, marker);
+}
+
+Region::Region(SIndex marker, const Mesh & mesh, SIndex cellMarker, RegionManager * parent)
+    : marker_(marker), parent_(parent),
+        isBackground_(false), isSingle_(false),
+        parameterCount_(0), tM_(NULL) {
+    init_();
+    this->resize(mesh, cellMarker);
 }
 
 Region::Region(const Region & region){
@@ -76,6 +84,7 @@ void Region::init_() {
     mcDefault_      = 1.0;
     startDefault_   = 0.0;
     ownsTrans_ = true;
+    _isInParaDomain = true;
 
     transString_    = "Log";
     tM_ = new Trans < RVector >;
@@ -116,8 +125,9 @@ void Region::setSingle(bool single){
     }
 }
 
-void Region::resize(const Mesh & mesh){
-    cells_ = mesh.findCellByMarker(marker_);
+void Region::resize(const Mesh & mesh, SIndex cellMarker){
+    if (cellMarker != marker_) _isInParaDomain = false;
+    cells_ = mesh.findCellByMarker(cellMarker);
     bounds_.clear();
 
     if (!isBackground_ && !isSingle_){
@@ -134,10 +144,10 @@ void Region::resize(const Mesh & mesh){
             rightParaId = false;
 
             if (mesh.boundary(i).leftCell() != NULL) {
-                leftParaId = (mesh.boundary(i).leftCell()->marker() == marker_);
+                leftParaId = (mesh.boundary(i).leftCell()->marker() == cellMarker);
             }
             if (mesh.boundary(i).rightCell() != NULL){
-                rightParaId = (mesh.boundary(i).rightCell()->marker() == marker_);
+                rightParaId = (mesh.boundary(i).rightCell()->marker() == cellMarker);
             }
             if (leftParaId && rightParaId) bounds_.push_back(&mesh.boundary(i));
         }
@@ -630,7 +640,7 @@ void RegionManager::setMesh(const Mesh & mesh, bool holdRegionInfos){
         if (singleOnly){
             createSingleRegion_(regions[i], markerCellVectorMap[regions[i]]);
         } else {
-            createRegion_(regions[i], *mesh_);
+            createRegion_(regions[i], *mesh_, regions[i]);
         }
     }
     //** looking for and create region interfaces
@@ -671,15 +681,15 @@ Region * RegionManager::createSingleRegion_(SIndex marker, const std::vector < C
     return region;
 }
 
-Region * RegionManager::createRegion_(SIndex marker, const Mesh & mesh){
+Region * RegionManager::createRegion_(SIndex marker, const Mesh & mesh, SIndex cellMarker){
     Region * region = NULL;
 
     if (regionMap_.count(marker) == 0){
-        region = new Region(marker, mesh, this);
+        region = new Region(marker, mesh, cellMarker, this);
         regionMap_.insert(std::make_pair(marker, region));
     } else {
         region = regionMap_[marker];
-        region->resize(mesh);
+        region->resize(mesh, cellMarker);
         //std::cerr << WHERE_AM_I << " Region with marker " << marker << " already exists." << std::endl;
     }
     return region;
@@ -691,8 +701,8 @@ Region * RegionManager::addRegion(SIndex marker){
     return region;
 }
 
-Region * RegionManager::addRegion(SIndex marker, const Mesh & mesh){
-    Region * region = createRegion_(marker, mesh);
+Region * RegionManager::addRegion(SIndex marker, const Mesh & mesh, SIndex cellMarker){
+    Region * region = createRegion_(marker, mesh, cellMarker);
     recountParaMarker_(); //** make sure the counter is right
     return region;
 }
@@ -703,16 +713,11 @@ void RegionManager::createParaDomain_(){
     IndexArray cellIdx;
     cellIdx.reserve(mesh_->cellCount());
 
-    for (std::map< SIndex, Region* >::const_iterator
-         it = regionMap_.begin(), end = regionMap_.end(); it != end; it ++){
-
-        if (!it->second->isBackground()){
-            for (std::vector < Cell * >::const_iterator itc = it->second->cells().begin();
-                 itc != it->second->cells().end(); itc++){
-                cellIdx.push_back((*itc)->id());
+    for (auto & x: this->regionMap_){
+        if (!x.second->isBackground() && x.second->isInParaDomain()){
+            for (auto & c: x.second->cells()){
+                cellIdx.push_back(c->id());
             }
-//             std::transform(it->second->cells().begin(), it->second->cells().end(),
-//                             std::back_inserter(cellIdx), std::mem_fun(&Cell::id));
         }
     }
 
@@ -722,24 +727,18 @@ void RegionManager::createParaDomain_(){
 
 void RegionManager::permuteParameterMarker(const IVector & p){
     isPermuted_ = true;
-    for (std::map< SIndex, Region* >::const_iterator it = regionMap_.begin(),
-         end = regionMap_.end(); it != end; it ++){
-        it->second->permuteParameterMarker(p);
+    for (auto & x: this->regionMap_){
+        x.second->permuteParameterMarker(p);
     }
     this->createParaDomain_();
 }
 
 void RegionManager::recountParaMarker_(){
     Index count = 0;
-
-    for (std::map< SIndex, Region* >::const_iterator it = regionMap_.begin(),
-        end = regionMap_.end();
-          it != end; it ++){
-//         __MS(it->second->marker() << "  " << it->second->fixValue())
-        it->second->countParameter(count);
-        count += it->second->parameterCount();
+    for (auto & x: this->regionMap_){
+        x.second->countParameter(count);
+        count += x.second->parameterCount();
     }
-    // if (verbose_) std::cout << "Recounted parameter: " << count << std::endl;
 }
 
 void RegionManager::findInterRegionInterfaces_(){
@@ -784,9 +783,9 @@ void RegionManager::findInterRegionInterfaces_(){
 
 void RegionManager::fillStartModel(RVector & vec){
     if (vec.size() != parameterCount()) vec.resize(parameterCount());
-    for (std::map< SIndex, Region* >::const_iterator it = regionMap_.begin(), end = regionMap_.end();
-          it != end; it ++){
-        it->second->fillStartModel(vec);
+    
+    for (auto & x: this->regionMap_){
+        x.second->fillStartModel(vec);
     }
 }
 
@@ -805,9 +804,8 @@ void RegionManager::fillModelControl(RVector & vec){
 
     if (vec.size() != parameterCount()) vec.resize(parameterCount(), 1.0);
 
-    for (std::map< SIndex, Region* >::const_iterator it = regionMap_.begin(), end = regionMap_.end();
-          it != end; it ++){
-        it->second->fillModelControl(vec);
+    for (auto & x: this->regionMap_){
+        x.second->fillModelControl(vec);
     }
 }
 
@@ -857,6 +855,7 @@ Index RegionManager::parameterCount() const {
 
     Index count = 0;
     for (auto & x: this->regionMap_){
+        // __MS(x.second->parameterCount())
         count += x.second->parameterCount();
     }
     return count;
@@ -893,8 +892,11 @@ Index RegionManager::interRegionConstraintsCount() const {
 }
 
 void RegionManager::fillConstraints(RSparseMapMatrix & C){
+    // __M
     Index nModel  = parameterCount();
+    // __MS(nModel)
     Index nConstr = constraintCount();
+    // __MS(nConstr)
     this->_cWeights.resize(nConstr, 1.0);
     
     C.clear();

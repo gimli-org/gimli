@@ -380,9 +380,6 @@ def drawModel(ax, mesh, data=None, tri=False, rasterized=False,
         else:
             viewdata = data
 
-        if min(data) <= 0:
-            logScale = False
-
         pg.mplviewer.setMappableData(gci, viewdata, cMin=cMin, cMax=cMax,
                                      logScale=logScale)
 
