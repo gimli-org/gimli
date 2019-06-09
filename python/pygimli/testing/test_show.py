@@ -83,9 +83,9 @@ def testColorbar():
     pg.mplviewer.setMappableData(cbar.mappable, pg.x(grid.cellCenter()))
     ###########################################################################
     grid = pg.createGrid(x=np.linspace(10., 110., 11)-25, y=np.linspace(0., 20, 2))
-    ax, cbar = pg.show(grid, data=pg.x(grid.cellCenter()), label='log x', 
+    ax, cbar = pg.show(grid, data=pg.x(grid.cellCenter()), label='log with neg. x', 
                        ax=axs[0][2], showMesh=True, cMap='Paired', logScale=True)
-    ax, cbar = pg.show(grid, data=pg.x(grid.cellCenter())-45, label='log x', 
+    ax, cbar = pg.show(grid, data=pg.x(grid.cellCenter())-45, label='log with neg. x', 
                        ax=axs[1][2], showMesh=True, cMap='Paired', logScale=True)
     pg.mplviewer.setMappableData(cbar.mappable, pg.x(grid.cellCenter()))
 

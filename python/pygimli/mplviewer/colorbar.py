@@ -392,6 +392,7 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5):
 
 def setMappableValues(mappable, dataIn):
     """Change the data values for a given mapable."""
+    pg.critical('remove me')
     data = dataIn
     if not isinstance(data, np.ma.core.MaskedArray):
         data = np.array(dataIn)
@@ -427,13 +428,15 @@ def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=None):
                 cMin = min(data[data > 0.0])
                 data = np.ma.masked_array(data, data <= 0.0)
             else:
+                # if all data are negative switch to lin scale
                 return setMappableData(mappable, dataIn, cMin, cMax, 
                                        logScale=False)
-        if logScale:
-            mappable.set_norm(mpl.colors.LogNorm())
+    if logScale is True:
+        mappable.set_norm(mpl.colors.LogNorm())
     elif logScale is False:
         mappable.set_norm(mpl.colors.Normalize(vmin=cMin, vmax=cMax))
     
+    #pg._g(oldLog, logScale, cMin, cMax, mappable.norm)
     mappable.set_array(data)
     mappable.set_clim(cMin, cMax)
 
