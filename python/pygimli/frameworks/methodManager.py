@@ -525,7 +525,7 @@ class MeshMethodManager(MethodManager):
         if len(model) == self.fw.parameterCount:
             return model
         else:
-            model(self.fop.paraDomain.cellMarkers())
+            self.fop.paraModel(model)
 
     def invert(self, data=None, mesh=None, zWeight=1.0, startModel=None,
                **kwargs):

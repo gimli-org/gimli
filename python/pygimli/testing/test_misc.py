@@ -216,12 +216,12 @@ class TestMisc(unittest.TestCase):
 if __name__ == '__main__':
     # pg.setDeepDebug(1)
 
-    t = TestMisc()
-    t.test_Trans()
-    # t.test_Hash()
-    # t.test_HashData()
-    # t.test_HashMesh()
-    exit()
+    # t = TestMisc()
+    # t.test_Trans()
+    # # t.test_Hash()
+    # # t.test_HashData()
+    # # t.test_HashMesh()
+    # exit()
     
     # t.test_PosConstMember()
     #t.test_DataContainerSensors()

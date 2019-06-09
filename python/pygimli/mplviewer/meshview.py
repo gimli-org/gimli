@@ -304,7 +304,7 @@ def drawMesh(ax, mesh, fitView=True, **kwargs):
 
 
 def drawModel(ax, mesh, data=None, tri=False, rasterized=False,
-              logScale=True, cMin=None, cMax=None,
+              logScale=False, cMin=None, cMax=None,
               xlabel=None, ylabel=None, fitView=True, verbose=False,
               **kwargs):
     """Draw a 2d mesh and color the cell by the data.

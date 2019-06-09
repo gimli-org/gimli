@@ -178,9 +178,9 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
     """
     # print("update cbar:", cMin, cMax, label)
     if gci is not None:
-        if min(mappable.get_array()) < 1e12:
-            norm = mpl.colors.Normalize(vmin=min(mappable.get_array()), 
-                                        vmax=min(mappable.get_array()))
+        if min(gci.get_array()) < 1e12:
+            norm = mpl.colors.Normalize(vmin=min(gci.get_array()), 
+                                        vmax=min(gci.get_array()))
             cbar.set_norm(norm)
             gci.set_norm(norm)    
         cbar.on_mappable_changed(gci)
@@ -423,9 +423,12 @@ def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=None):
     if cMin <= 0.0:
         oldLog = isinstance(mappable.norm, mpl.colors.LogNorm)
         if oldLog is True or logScale is True:
-            cMin = min(data[data > 0.0])
-            data = np.ma.masked_array(data, data <= 0.0)
-    
+            if cMax > 0:
+                cMin = min(data[data > 0.0])
+                data = np.ma.masked_array(data, data <= 0.0)
+            else:
+                return setMappableData(mappable, dataIn, cMin, cMax, 
+                                       logScale=False)
         if logScale:
             mappable.set_norm(mpl.colors.LogNorm())
     elif logScale is False:

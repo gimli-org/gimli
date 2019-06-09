@@ -456,6 +456,9 @@ class MeshModelling(Modelling):
     def paraDomain(self):
         return self.regionManager().paraDomain()
 
+    def paraModel(self, model):
+        return model(self.paraDomain.cellMarkers())
+
     def ensureContent(self):
         """"""
         # Be sure the mesh is initialized when needed

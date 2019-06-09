@@ -3,7 +3,7 @@
 Import and extensions of the core Mesh class.
 """
 
-from .._logger import deprecated, info, warn
+from .._logger import deprecated, info, warn, error
 from ._pygimli_ import (HexahedronShape, Line, Mesh, MeshEntity, Node,
                         PolygonFace, TetrahedronShape, TriangleFace)
 
@@ -15,6 +15,7 @@ def __Mesh_str(self):
         st += " secNodes: " + str(self.secondaryNodeCount())
 
     return st
+Mesh.__str__ = __Mesh_str
 
 
 def __MeshEntity_str(self):
@@ -30,6 +31,7 @@ def __MeshEntity_str(self):
         for n in self.nodes():
             s += '\t' + str(n.id()) + " " + str(n.pos()) + "\n"
     return s
+MeshEntity.__str__ = __MeshEntity_str
 
 
 def __Node_str(self):
@@ -39,16 +41,28 @@ def __Node_str(self):
          ', Marker: ' + str(self.marker())
     s += '\t' + str(self.pos()) + '\n'
     return s
-
-
 Node.__str__ = __Node_str
-Mesh.__str__ = __Mesh_str
-MeshEntity.__str__ = __MeshEntity_str
 
 # For Jupyer Notebook use.. checkme
 # Node.__repr__ = Node_str
 # Mesh.__repr__ = Mesh_str
 # MeshEntity.__repr__ = MeshEntity_str
+
+
+def __Mesh_setVal(self, key, val):
+    """Index access to the mesh data"""
+    self.addData(key, val)
+Mesh.__setitem__ = __Mesh_setVal
+
+
+def __Mesh_getVal(self, key):
+    """Index access to the mesh data"""
+    if self.haveData(key):
+        return self.data(key)
+    else:
+        error('The mesh does not have the requested data:', key)
+Mesh.__getitem__ = __Mesh_getVal
+
 
 def __MeshBoundingBox__(self):
     bb = self.boundingBox()

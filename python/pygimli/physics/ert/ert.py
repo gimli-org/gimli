@@ -70,20 +70,24 @@ class ERTModellingBase(MeshModelling):
 
     def drawModel(self, ax, model, **kwargs):
         """Draw the para domain with option model values"""
+        mod = self.paraModel(model)
         if ax is None:
             if self._axs is None:
-                fig, self._axs = pg.plt.subplots(nrows=1, ncols=1, squeeze=False)
-            else:
-                self._axs[0][0].clear()
-            ax = self._axs[0][0]
-                
-        ax, cBar = pg.show(mesh=self.paraDomain,
-                           data=model,
-                           label=kwargs.pop('label', pg.utils.unit('res')),
-                           ax=ax,
-                           cMap=pg.utils.cMap('res'),
-                           logScale=True, 
-                           **kwargs)
+                self._axs, _ = pg.show()
+            ax = self._axs
+            
+        if hasattr(ax, '__cBar__'):
+            #we assume the axes allready holds a valif mappable
+            cBar = ax.__cBar__
+            pg.mplviewer.setMappableData(cBar.mappable, mod, **kwargs)
+        else:
+            ax, cBar = pg.show(mesh=self.paraDomain,
+                            data=mod,
+                            label=kwargs.pop('label', pg.utils.unit('res')),
+                            ax=ax,
+                            cMap=pg.utils.cMap('res'),
+                            logScale=True, 
+                            **kwargs)
         return ax, cBar
 
 

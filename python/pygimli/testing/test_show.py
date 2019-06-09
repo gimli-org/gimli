@@ -66,19 +66,22 @@ def testColorbar():
 
     grid = pg.createGrid(x=np.linspace(10., 110., 11)-5, y=np.linspace(0., 20, 2))
     
-    fig, axs = plt.subplots(nrows=2, ncols=3, figsize=((10,4)))
+    fig, axs = plt.subplots(nrows=3, ncols=3, figsize=((10,6)))
     ax, cbar = pg.show(grid, data=pg.x(grid.cellCenter()), label='log x', 
-                       ax=axs[0][0], showMesh=True, cMap='Paired')
+                       ax=axs[0][0], showMesh=True, cMap='Paired', logScale=True)
     ax, cbar = pg.show(grid, data=pg.x(grid.cellCenter())+5., label='log x', 
-                       ax=axs[1][0], showMesh=True, cMap='Paired')
+                       ax=axs[1][0], showMesh=True, cMap='Paired', logScale=True)
     pg.mplviewer.setMappableData(cbar.mappable, pg.x(grid.cellCenter()))
-    #
+
+    ax, cbar = pg.show(grid, data=pg.x(grid.cellCenter()), logScale=True,
+                       ax=axs[2][0], showMesh=True, cMap='Paired')
+    ###########################################################################
     ax, cbar = pg.show(grid, data=pg.x(grid.cellCenter()), label='lin x', 
                        ax=axs[0][1], logScale=False, cMap='Paired')
     ax, cbar = pg.show(grid, data=pg.x(grid.cellCenter())+5, label='lin x', 
                        ax=axs[1][1], logScale=False, cMap='Paired')
     pg.mplviewer.setMappableData(cbar.mappable, pg.x(grid.cellCenter()))
-    #
+    ###########################################################################
     grid = pg.createGrid(x=np.linspace(10., 110., 11)-25, y=np.linspace(0., 20, 2))
     ax, cbar = pg.show(grid, data=pg.x(grid.cellCenter()), label='log x', 
                        ax=axs[0][2], showMesh=True, cMap='Paired', logScale=True)
@@ -90,6 +93,6 @@ def testColorbar():
     
 
 if __name__ == '__main__':
-    testShowVariants()
+    #testShowVariants()
     testColorbar()
     pg.wait()
