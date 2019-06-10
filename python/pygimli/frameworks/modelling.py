@@ -178,7 +178,6 @@ class Modelling(pg.ModellingBase):
             sm = self.regionManager().createStartModel()
         return sm
 
-
     def clearRegionProperties(self):
         """Clear all region parameter."""
         self._regionChanged = True
@@ -210,6 +209,8 @@ class Modelling(pg.ModellingBase):
                 self.setRegionProperties(regionNr, **kwargs)
             return
 
+        pg.verbose('Set property for region: {0}: {1}'.format(regionNr, 
+                                                              kwargs))
         if regionNr not in self._regionProperties:
             self._regionProperties[regionNr] = {'startModel': None,
                                                 'modelControl': 1.0,
@@ -244,8 +245,9 @@ class Modelling(pg.ModellingBase):
         for rID, vals in self._regionProperties.items():
 
             if vals['background'] is not None:
-                rMgr.region(rID).setBackground(vals['background'])
-                self._regionChanged = True
+                if rMgr.region(rID).isBackground() != vals['background']:
+                    rMgr.region(rID).setBackground(vals['background'])
+                    self._regionChanged = True
                 continue
 
             if vals['fix'] is not None:
@@ -254,8 +256,9 @@ class Modelling(pg.ModellingBase):
                 continue
 
             if vals['single'] is not None:
-                rMgr.region(rID).setSingle(vals['single'])
-                self._regionChanged = True
+                if rMgr.region(rID).isSingle() != vals['single']:
+                    rMgr.region(rID).setSingle(vals['single'])
+                    self._regionChanged = True
 
             if vals['startModel'] is not None:
                 rMgr.region(rID).setStartModel(vals['startModel'])
@@ -272,7 +275,6 @@ class Modelling(pg.ModellingBase):
                 rMgr.region(rID).setUpperBound(vals['limits'][1])
 
         self._regionsNeedUpdate = False
-
 
     def setData(self, data):
         """
@@ -438,6 +440,7 @@ class MeshModelling(Modelling):
     """
     def __init__(self, **kwargs):
         super(MeshModelling, self).__init__(**kwargs)
+        self._axs = None
         self._meshNeedsUpdate = True
         self._baseMesh = None
 
@@ -464,7 +467,6 @@ class MeshModelling(Modelling):
         # Be sure the mesh is initialized when needed
         self.mesh()
         
-
     def setMeshPost(self, data):
         """Called when the mesh has been set successfully."""
         pass
@@ -484,6 +486,16 @@ class MeshModelling(Modelling):
         """"""
         pg.info("Creating forward mesh from region infos.")
         m = pg.Mesh(self.regionManager().mesh())
+        
+        regionIds = self.regionManager().regionIdxs()
+        for iId in regionIds:
+            pg.verbose("\tRegion: {4}, Parameter: {0}, ParaDomain: {1}, Single: {2}, Background: {3}"
+                .format(self.regionManager().region(iId).parameterCount(), 
+                        self.regionManager().region(iId).isInParaDomain(), 
+                        self.regionManager().region(iId).isSingle(),
+                        self.regionManager().region(iId).isBackground(),
+                        iId))
+
         m = self.createRefinedFwdMesh(m)
         self.setMeshPost(m)
         self._regionChanged = False
@@ -528,15 +540,29 @@ class MeshModelling(Modelling):
             self.setRegionProperties(bk, background=True)
 
     def drawModel(self, ax, model, **kwargs):
-        """Draw the para domain with option model values"""
-        ax, cBar = pg.show(mesh=self.paraDomain,
-                           data=model,
-                           label=kwargs.pop('label', 'Model parameter'),
-                           ax=ax,
-                           **kwargs)
+        """ """
+        mod = self.paraModel(model)
+        if ax is None:
+            if self._axs is None:
+                self._axs, _ = pg.show()
+            ax = self._axs
+            
+        if hasattr(ax, '__cBar__'):
+            #we assume the axes allready holds a valif mappable
+            cBar = ax.__cBar__
+            kwargs.pop('label', None)
+            kwargs.pop('cMap', None)
+            pg.mplviewer.setMappableData(cBar.mappable, mod, **kwargs)
+        else:
+            ax, cBar = pg.show(mesh=self.paraDomain,
+                               data=mod,
+                               label=kwargs.pop('label', 'Model parameter'),
+                               ax=ax,
+                               logScale=True, 
+                               **kwargs)
         return ax, cBar
 
-
+    
 class PetroModelling(MeshModelling):
     """Combine petrophysical relation with the modelling class f(p).
 
@@ -563,6 +589,10 @@ class PetroModelling(MeshModelling):
         self._jac = pg.MultRightMatrix(self._f.jacobian())
         self.setJacobian(self._jac)
 
+    @property
+    def petro(self):
+        return self._petroTrans
+
     def setMeshPost(self, mesh):
         """ """
         self._f.setMesh(mesh, ignoreRegionManager=True)
@@ -584,10 +614,18 @@ class PetroModelling(MeshModelling):
         return ret
 
     def createJacobian(self, model):
-        """Fill the individual jacobian matrices."""
+        r"""Fill the individual jacobian matrices.
+        J = dF(m) / dm = dF(m) / dp  * dp / dm 
+        """
         tModel = self._petroTrans.fwd(model)
+
         self._f.createJacobian(tModel)
+        self._jac.A = self._f.jacobian()
         self._jac.r = self._petroTrans.deriv(model)  # set inner derivative
+        # print(self._jac.A.rows(), self._jac.A.cols())
+        # print(self._jac.r)
+        # pg._r("create Jacobian", self, self._jac)
+        self.setJacobian(self._jac) # to be sure .. test if necessary
 
 
 class LCModelling(Modelling):
@@ -758,7 +796,6 @@ class LCModelling(Modelling):
         pg.mplviewer.showStitchedModels(mods, ax=ax, useMesh=True,
                                         x=self.soundingPos,
                                         **kwargs)
-
 
 
 class ParameterModelling(Modelling):

@@ -299,15 +299,19 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
                 elif len(data) == mesh.nodeCount():
                     gci = drawField(ax, mesh, data, **kwargs)
 
-                if cMap is not None:
+                else:
+                    pg.error("Data size invalid")
+                    print("Data: ", len(data), min(data), max(data), pg.haveInfNaN(data))
+                    print("Mesh: ", mesh)
+                    validData = False
+                    gci = drawMesh(ax, mesh)
+
+                if cMap is not None and gci is not None:
                     gci.set_cmap(cmapFromName(cMap))
                     #gci.cmap.set_under('k')
 
             except BaseException as e:
-                print("Exception occured: ", e)
-                print("Data: ", min(data), max(data), pg.haveInfNaN(data))
-                print("Mesh: ", mesh)
-                drawMesh(ax, mesh, **kwargs)
+                pg.error("Exception occured: ", e)
 
     if mesh.cellCount() == 0:
         showMesh = False
@@ -361,7 +365,6 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
                                   pad=kwargs.pop('pad', None),
                                   **subkwargs
                                   )
-            # updateColorBar(cbar, **subkwargs)
         elif colorBar is not False:
             cbar = updateColorBar(colorBar, **subkwargs)
 

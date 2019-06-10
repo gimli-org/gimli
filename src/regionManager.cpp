@@ -1262,7 +1262,6 @@ TransCumulative < RVector > * RegionManager::transModel(){
     return & localTrans_;
 }
 
-
 void RegionManager::setZWeight(double z){
     for (auto & x: regionMap_){
         x.second->setZWeight(z);
@@ -1274,6 +1273,17 @@ void RegionManager::setConstraintType(Index type){
     for (auto & x: regionMap_){
         x.second->setConstraintType(type);
     }
+}
+
+IVector RegionManager::allRegionMarker_(bool excludeBoundary) const {
+    IVector tmp;
+    for (auto & x: regionMap_){
+        if (excludeBoundary && x.second->isBackground()){
+            continue;
+        }
+        tmp.push_back(x.first);
+    }
+    return tmp;
 }
 
 } // namespace GIMLI

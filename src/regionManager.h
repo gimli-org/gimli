@@ -407,16 +407,7 @@ protected:
      */
     Region * createSingleRegion_(SIndex marker, const std::vector < Cell * > & cells);
 
-    IVector allRegionMarker_(bool exludeBoundary=false) const {
-        IVector tmp;
-        for (auto & x: regionMap_){
-            if (exludeBoundary && x.second->isBackground()){
-                continue;
-            }
-            tmp.push_back(x.first);
-        }
-        return tmp;
-    }
+    IVector allRegionMarker_(bool excludeBoundary=false) const;
 
     bool verbose_;
     bool isPermuted_;

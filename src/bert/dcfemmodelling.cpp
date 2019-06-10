@@ -1092,12 +1092,25 @@ RVector DCMultiElectrodeModelling::createDefaultStartModel(){
 
 RVector DCMultiElectrodeModelling::response(const RVector & model,
                                             double background){
+    
+    if (std::fabs(min(dataContainer_->get("k"))) < TOLERANCE){
+        if (!(this->topography() || buildCompleteElectrodeModel_)){
+            dataContainer_->set("k",
+                              this->calcGeometricFactor(this->dataContainer()));
+            log(Warning, " data contains no K-factors but we find them "
+                         " analytical for the response call");
+
+        } else {
+            throwError(1, WHERE_AM_I + " data contains no K-factors ");
+        }
+    }
+
     if (!this->mesh_){
         log(Critical, "Found no mesh so I can't calcuate a response.");
     }
     if (complex()){
 
-        if (min(model(0, model.size()/2)) < TOLERANCE){
+        if (min(abs(model) < TOLERANCE)){
             model.save("modelFail.vector");
             log(Critical, " complex response for abs model with negative or zero resistivity is not defined.");
         }
@@ -1152,20 +1165,6 @@ RVector DCMultiElectrodeModelling::response(const RVector & model,
     if (resp.size() != dataContainer_->size() || respRez.size() != dataContainer_->size()){
         throwError(1, WHERE_AM_I + " size wrong: " + str(dataContainer_->size())
         + " " + str(resp.size()) + " " + str(respRez.size()));
-    }
-
-    if (std::fabs(min(dataContainer_->get("k"))) < TOLERANCE){
-        if (!(this->topography() || buildCompleteElectrodeModel_)){
-            dataContainer_->set("k",
-                              this->calcGeometricFactor(this->dataContainer()));
-            if (verbose_) {
-                std::cout << " data contains no K-factors but we find them "
-                " analytical for the response call" << std::endl;
-            }
-
-        } else {
-            throwError(1, WHERE_AM_I + " data contains no K-factors ");
-        }
     }
 
     resp    *= dataContainer_->get("k");
@@ -1225,6 +1224,8 @@ void DCMultiElectrodeModelling::mapERTModel(const CVector & model, Complex backg
         setComplexResistivities(*mesh_, model);
     } else {
         RVector re(createMappedModel(real(model), background.real()));
+        // RVector im(re*0.0);
+        // log(Warning, "imag part forced to zero");
         RVector im(createMappedModel(imag(model), -9e99));
         setComplexResistivities(*mesh_, toComplex(re, im));
     }
@@ -1468,7 +1469,7 @@ void DCMultiElectrodeModelling::createJacobian(const RVector & model){
         CMatrix * u = this->prepareJacobianT_(cMod);
 
         if (!JIsCMatrix_){
-            log(Warning, "delete non complex Jacobian and create a new CMatrix");
+            // log(Warning, "delete non complex Jacobian and create a new CMatrix");
             delete jacobian_;
             jacobian_ = new CMatrix();
             JIsCMatrix_ = true;

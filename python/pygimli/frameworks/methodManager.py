@@ -275,10 +275,9 @@ class MethodManager(object):
         vals = self.errorCheck(err, dataVals)
 
         if min(vals) <= 0:
-            print(min(vals), max(vals))
             pg.critical("All error values need to be larger then 0."
                         " either give and err argument or fill dataContainer "
-                        " with a valid 'err' ")
+                        " with a valid 'err' ", min(vals), max(vals))
 
         return vals
 
@@ -571,16 +570,20 @@ class MeshMethodManager(MethodManager):
         if startModel is None:
             startModel = self.fop.createStartModel(dataVals)
 
-        self.fop.setRegionProperties('*',
-                                     startModel=startModel,
-                                     zWeight=zWeight,
-                                    )
+        # pg._g('invert-dats', dataVals)
+        # pg._g('invert-err', errVals)
+        # pg._g('invert-sm', startModel)
+
+        kwargs['startModel'] = startModel
+
+        self.fop.setRegionProperties('*', zWeight=zWeight)
 
         # Limits is no mesh related argument here or base??
         limits = kwargs.pop('limits', None)
         if limits is not None:
             self.fop.setRegionProperties('*', limits=limits)
 
+        
         self.preRun(**kwargs)
         self.fw.run(dataVals, errVals, **kwargs)
         self.postRun(**kwargs)

@@ -405,7 +405,9 @@ class Inversion(object):
         self.inv.start()
         self.maxIter = maxIterTmp
 
-        print("-" * 80)
+        if self.verbose:
+            print("-" * 80)
+            
         if showProgress:
             if hasattr(showProgress, '__call__'):
                 showProgress(self)

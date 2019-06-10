@@ -62,6 +62,12 @@ quants = {
         'unit': 's/m',
         'ger': 'Slowness',
     },
+    'por': {
+        'name': 'Porosity',
+        'unit': None,
+        'ger': 'Porosität',
+    },
+
 }
 
 rc = {
@@ -88,7 +94,7 @@ def cMap(name):
     if q is None:
         pg.warn('No information about quantity name', name)
         return 'viridis'
-    return q.get('cMap', 'vididis')
+    return q.get('cMap', 'viridis')
 
 
 def unit(name, unit='auto'):
@@ -117,6 +123,9 @@ def unit(name, unit='auto'):
 
         if unit == 'auto':
             unit = q['unit']
+    
+    if unit is None:
+        return '{0}'.format(name)
 
     if rc['unitStyle'] == 1 or rc['lang'] == 'german':
         return '{0} in {1}'.format(name, unit)

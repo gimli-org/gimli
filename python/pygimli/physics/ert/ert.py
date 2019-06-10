@@ -52,8 +52,7 @@ def simulate(mesh, res, scheme, sr=True, useBert=True,
 class ERTModellingBase(MeshModelling):
     def __init__(self, **kwargs):
         super(ERTModellingBase, self).__init__(**kwargs)
-        self._axs = None
-
+        
     def drawData(self, ax, data=None, **kwargs):
         """Draw data in given axe."""
 
@@ -70,26 +69,11 @@ class ERTModellingBase(MeshModelling):
 
     def drawModel(self, ax, model, **kwargs):
         """Draw the para domain with option model values"""
-        mod = self.paraModel(model)
-        if ax is None:
-            if self._axs is None:
-                self._axs, _ = pg.show()
-            ax = self._axs
-            
-        if hasattr(ax, '__cBar__'):
-            #we assume the axes allready holds a valif mappable
-            cBar = ax.__cBar__
-            pg.mplviewer.setMappableData(cBar.mappable, mod, **kwargs)
-        else:
-            ax, cBar = pg.show(mesh=self.paraDomain,
-                            data=mod,
+        super(ERTModellingBase, self).drawModel(ax, model, 
                             label=kwargs.pop('label', pg.utils.unit('res')),
-                            ax=ax,
-                            cMap=pg.utils.cMap('res'),
-                            logScale=True, 
+                            cMap=kwargs.pop('cMap', pg.utils.cMap('res')),
                             **kwargs)
-        return ax, cBar
-
+                
 
 class BertModelling(ERTModellingBase):
     def __init__(self, sr=True, verbose=False):
@@ -103,7 +87,7 @@ class BertModelling(ERTModellingBase):
             self.bertFop = pg.DCSRMultiElectrodeModelling(verbose=verbose)
         else:
             self.bertFop = pg.DCMultiElectrodeModelling(verbose=verbose)
-
+        
         self.bertFop.initJacobian()
         self.setJacobian(self.bertFop.jacobian())
 
@@ -115,14 +99,46 @@ class BertModelling(ERTModellingBase):
         self.calcGeometricFactor = self.bertFop.calcGeometricFactor
         self.mapERTModel = self.bertFop.mapERTModel
 
+    def setDefaultBackground(self):
+        """
+        """
+        if self.complex():
+            self.regionManager().addRegion(3, self._baseMesh, 2)
+
+        regionIds = self.regionManager().regionIdxs()
+        pg.info("Found {} regions.".format(len(regionIds)))
+        if len(regionIds) > 1:
+            bk = pg.sort(regionIds)[0]
+            pg.info("Region with smallest marker set to background (marker={0})".format(bk))
+            self.setRegionProperties(bk, background=True)
+
+    def createStartModel(self, dataVals):
+        if self.complex():
+            dataC = pg.utils.toComplex(dataVals)
+            nModel = self.regionManager().parameterCount()
+            smRe = np.ones(nModel)* np.median(np.median(dataC.real))
+            smIm = np.ones(nModel)* np.median(np.median(dataC.imag))
+            sm = smRe + 1j * smIm
+            return pg.utils.squeezeComplex(sm) # complex impedance
+        else:
+            return super(BertModelling, self).createStartModel(dataVals)
+
     def response(self, mod):
-        return self.bertFop.response(mod)
+        resp = self.bertFop.response(mod)
+        # if self.complex(): ## tmp not needed
+        #     amp, phi = pg.utils.toPolar(resp)
+        #     if min(amp) < 1e-12:
+        #         pg.critical('response wrong', resp)
+        return resp
 
     def createJacobian(self, mod):
+        if self.complex():
+            self.bertFop.createJacobian(mod)
+            self._J = J = pg.utils.squeezeComplex(self.bertFop.jacobian())
+            self.setJacobian(self._J)
+            # pg._r("create Jacobian", self, self._J)
+            return
         return self.bertFop.createJacobian(mod)
-
-    def jacobian(self):
-        return self.bertFop.jacobian()
 
     def setDataPost(self, data):
         """"""
@@ -131,6 +147,24 @@ class BertModelling(ERTModellingBase):
     def setMeshPost(self, mesh):
         """"""
         self.bertFop.setMesh(mesh, ignoreRegionManager=True)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 class ERTModelling(ERTModellingBase):
@@ -699,10 +733,60 @@ class ERTManager(MeshMethodManager):
     def dataCheck(self, data):
         """Return data from container"""
         if isinstance(data, pg.DataContainer):
-            if not data.haveData('rhoa'):
-                pg.critical('Datacontainer have no "rhoa" values.')
-            return data['rhoa']
+            
+            if self.fop.complex():
+                if not data.haveData('rhoa'):
+                    pg.critical('Datacontainer have no "rhoa" values.')
+                if not data.haveData('ip'):
+                    pg.critical('Datacontainer have no "ip" values.')
+                
+                #pg.warn('check sign of phases')
+                rhoa = data['rhoa']
+                phia = -data['ip']/1000
+
+                return pg.utils.squeezeComplex(pg.utils.toComplex(rhoa, phia))
+
+            else:
+                if not data.haveData('rhoa'):
+                    pg.critical('Datacontainer have no "rhoa" values.')
+                return data['rhoa']
+
         return data
+
+    def errorCheck(self, err, dataVals):
+        """Return relative error. Default we assume 'err' are relative vales.
+        """
+        if isinstance(err, pg.DataContainer):
+            if self.fop.complex():
+                rae = None
+                ipe = None
+                
+                if err.haveData('err'):
+                    rae = err['err']
+                else:
+                    pg.error('Datacontainer have no "err" values. Fallback set to 0.01')
+                    rae = np.ones(err.size()) * 0.01
+                
+                if err.haveData('iperr'):
+                    amp, phi = pg.utils.toPolar(dataVals)
+                    # assuming ipErr are absolute dPhi in mrad
+                    ipe = err['iperr'] / abs((phi*1000))
+                else:
+                    pg.error('Datacontainer have no "ipoerr" values. Fallback set to 0.01')
+                    ipe = np.ones(err.size()) * 0.01
+                
+                # pg._y("err", min(rae), max(rae), rae)
+                # pg._y("iperr", min(ipe), max(ipe), ipe)
+                return pg.cat(rae, ipe)
+
+            else:
+
+                if not err.haveData('err'):
+                    pg.error('Datacontainer have no "err" values. Fallback set to 0.01')
+                return err['err']
+
+        return err
+
 
     def estimateError(self, data, absoluteError=0.001, relativeError=0.03,
                       absoluteUError=None, absoluteCurrent=0.1):

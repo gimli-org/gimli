@@ -14,13 +14,20 @@ class MultMatrix(pg.MatrixBase):
         self._A = A
         super(MultMatrix, self).__init__(verbose)  # only in Python 3
 
+    @property
+    def A(self):
+        return self._A
+    @A.setter
+    def A(self, A):
+        self._A = A
+        
     def rows(self):
         """Return number of rows (using underlying matrix)."""
-        return self._A.rows()
+        return self.A.rows()
 
     def cols(self):
         """Return number of columns (using underlying matrix)."""
-        return self._A.cols()
+        return self.A.cols()
 
     def save(self, filename):
         """So it can be used in inversion with dosave flag"""
@@ -47,11 +54,11 @@ class MultLeftMatrix(MultMatrix):
 
     def mult(self, x):
         """Multiplication from right-hand-side (dot product A*x)."""
-        return self._A.mult(x) * self._l
+        return self.A.mult(x) * self.l
 
     def transMult(self, x):
         """Multiplication from right-hand-side (dot product A.T * x)"""
-        return self._A.transMult(x * self._l)
+        return self.A.transMult(x * self.l)
 
 LMultRMatrix = MultLeftMatrix  # alias for backward compatibility
 
@@ -76,11 +83,17 @@ class MultRightMatrix(MultMatrix):
 
     def mult(self, x):
         """Return M*x = A*(r*x)"""
-        return self._A.mult(x * self._r)
+        # print('mult', self.A.rows(), " x " , self.A.cols(), x, self.r, )
+        if len(x)*2 == len(self.r):
+            # assuming A was complex
+            # print('ignore imag')
+            return self.A.mult(pg.cat(x, x) * self.r)    
+        return self.A.mult(x * self.r)
 
     def transMult(self, x):
         """Return M.T*x=(A.T*x)*r"""
-        return self._A.transMult(x) * self._r
+        # print('transmult', self.A.rows(), " x " , self.A.cols(), x, self.r, )
+        return self.A.transMult(x) * self.r
 
 RMultRMatrix = MultRightMatrix  # alias for backward compatibility
 
@@ -114,11 +127,11 @@ class MultLeftRightMatrix(MultMatrix):
 
     def mult(self, x):
         """Multiplication from right-hand-side (dot product A*x)."""
-        return self._A.mult(x * self._r) * self._l
+        return self.A.mult(x * self._r) * self._l
 
     def transMult(self, x):
         """Multiplication from right-hand-side (dot product A.T*x)."""
-        return self._A.transMult(x * self._l) * self._r
+        return self.A.transMult(x * self._l) * self._r
 
 LRMultRMatrix = MultLeftRightMatrix  # alias for backward compatibility
 
