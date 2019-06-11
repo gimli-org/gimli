@@ -3,11 +3,12 @@
 """Import/Export for SIP data."""
 
 import codecs
+from datetime import  datetime
+
 import numpy as np
 import re
 
 import pygimli as pg
-
 
 def load(fileName, verbose=False, **kwargs):
     """Shortcut to load SIP spectral data.
@@ -240,6 +241,20 @@ def readRadicSIPFuchs(filename, readSecond=False, delLast=True):
 
     return np.array(fr), np.array(rhoa), np.array(phi), np.array(drhoa), np.array(dphi)
 
+
+
+def toTime(t, d):
+    """ convert time format into timestamp
+    11:08:02, 21/02/2019
+    """
+    tim = [int(_t) for _t in t.split(':')]
+    day = [int(_t) for _t in d.split('/')]
+    dt = datetime(day[2], day[1], day[0], 
+                  hour=tim[0], minute=tim[1], second=tim[2])
+   
+    return dt.timestamp()
+    
+
 def readSIP256file(resfile, verbose=False):
     """Read SIP256 file (RES format) - mostly used for 2d SIP by pybert.sip.
 
@@ -321,6 +336,7 @@ def readSIP256file(resfile, verbose=False):
                     header[activeBlock].append(nums)
 
     DATA, dReading, dFreq, AB, RU, ru = [], [], [], [], [], []
+    tMeas = []
     for line in LINE:
         line = line.replace(' nc ', ' 0 ') # no calibration should 0
         line = line.replace(' c ', ' 1 ') # calibration should 1
@@ -356,10 +372,12 @@ def readSIP256file(resfile, verbose=False):
                     else:
                         part1 = sline[c][:-10]
                         part2 = sline[c][-10:]   # [11:]
-                    sline = sline[:c] + [part1] + [part2] + sline[c + 1:]
+                    sline = sline[:c] + [part1] + [part2] + sline[c + 1:] 
             
-            dFreq.append(np.array(sline[:8], dtype=float))
-
+            #Frequency /Hz       RA/Ohmm    PA/�      ERA/%     EPA/�     Cal?     IA/mA     K.-F./m    Gains  Time/h:m:s    Date/d.m.y
+            #20000.00000000        0.4609  -6.72598   0.02234   0.01280    1      20.067        1.00      0     11:08:02     21/02/2019
+            dFreq.append(np.array(sline[:8]+ [toTime(sline[9], sline[10])], dtype=float))
+            
     dReading.append(np.array(dFreq))
     DATA.append(dReading)
     pg.verbose('Reading {0}:{1} RUs'.format(rdno, len(dReading)))

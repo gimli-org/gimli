@@ -404,7 +404,8 @@ def setMappableValues(mappable, dataIn):
     mappable.set_array(data)
 
 
-def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=None):
+def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=None,
+                    **kwargs):
     """Change the data values for a given mappable.
     """
     data = dataIn

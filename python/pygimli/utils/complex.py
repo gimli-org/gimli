@@ -39,7 +39,7 @@ def toComplex(amp, phi=None):
         Complex values
     """
     if phi is not None:
-        return amp.array() * (np.cos(phi) + 1j *np.sin(phi))
+        return np.array(amp) * (np.cos(phi) + 1j *np.sin(phi))
     N = len(amp) // 2 
     return np.array(amp[0:N]) + 1j * np.array(amp[N:])
     #return np.array(pg.toComplex(amp[0:N], amps[N:]))
