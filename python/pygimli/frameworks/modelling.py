@@ -592,7 +592,7 @@ class PetroModelling(MeshModelling):
         # petroTrans.fwd(): p(m), petroTrans.inv(): m(p)
         self._petroTrans = trans  # class defining p(m)
 
-        self._jac = pg.MultRightMatrix(self._f.jacobian())
+        self._jac = pg.matrix.MultRightMatrix(self._f.jacobian())
         self.setJacobian(self._jac)
 
     @property
