@@ -50,7 +50,7 @@ sensors[:, 1] = np.hstack([depth] * 2)  # y
 # Create forward model and mesh
 c0 = mt.createCircle(pos=(7.0, -10.0), radius=3, segments=25, marker=1)
 c1 = mt.createCircle(pos=(12.0, -18.0), radius=4, segments=25, marker=2)
-geom = mt.mergePLC([world, c0, c1])
+geom = world + c0 + c1
 for sen in sensors:
     geom.createNode(sen)
 

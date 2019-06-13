@@ -14,7 +14,7 @@ world = mt.createWorld(start=[-20, 0], end=[20, -16], layers=[-2, -8],
 block = mt.createRectangle(start=[-6, -3.5], end=[6, -6.0],
                            marker=4,  boundaryMarker=10, area=0.1)
 # Merge geometrical entities
-geom = mt.mergePLC([world, block])
+geom = world + block
 pg.show(geom, boundaryMarker=True, savefig='geometry.pdf')
 
 # Create a mesh from the geometry definition
