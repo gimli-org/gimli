@@ -140,7 +140,7 @@ for j, (case, mesh, vel) in enumerate(
 
     ndata = len(px) - 1
     data.resize(ndata)
-    data.set('s', pg.RVector(ndata, source))  # only one shot at first sensor
+    data.set('s', pg.Vector(ndata, source))  # only one shot at first sensor
     data.set('g', pg.utils.grange(1, ndata, 1))  # all others and geophones
 
     # We compare the accuracy for 0-5 secondary nodes
@@ -159,13 +159,13 @@ for j, (case, mesh, vel) in enumerate(
 
         # Perform traveltime calculations and log time with pg.tic() & pg.toc()
         pg.tic()
-        fop = pg.TravelTimeDijkstraModelling(mesh2, data)
+        fop = pg.core.TravelTimeDijkstraModelling(mesh2, data)
         t_all.append(fop.response(1 / vel))
         durations.append(pg.dur())
         pg.toc("Raytracing with %d secondary nodes:" % n)
 
         # This is to show single raypaths.
-        dij = pg.Dijkstra(fop.createGraph(1 / vel))
+        dij = pg.core.Dijkstra(fop.createGraph(1 / vel))
         dij.setStartNode(mesh2.findNearestNode([0, 0]))
         paths_per_receiver = []
         for receiver in sensors:

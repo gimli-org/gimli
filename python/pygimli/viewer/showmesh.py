@@ -10,6 +10,8 @@ import numpy as np
 # plt should not be used outside of mplviewer
 import matplotlib.pyplot as plt
 
+from .. core.logger import renameKwarg
+
 try:
     import pygimli as pg
     from pygimli.mplviewer import drawMesh, drawModel, drawField
@@ -29,10 +31,10 @@ def show(obj=None, data=None, **kwargs):
     """Mesh and model visualization.
 
     Syntactic sugar to show a obj with data. Forwards to
-    a known visualization for obj. Typical is 
+    a known visualization for obj. Typical is
     :py:mod:`pygimli.viewer.showMesh` or
     :py:mod:`pygimli.viewer.mayaview.showMesh3D` to show most of the typical 2D
-    and 3D content. 
+    and 3D content.
     See tutorials and examples for usage hints. An empty show
     call creates an empty ax window.
 
@@ -47,7 +49,7 @@ def show(obj=None, data=None, **kwargs):
     ----------------
     **kwargs
         Additional kwargs forward to appropriate show functions.
-        
+
         * ax : axe [None]
             Matplotlib axes object. Create a new if necessary.
         * fitView : bool [True]
@@ -158,10 +160,10 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
         . iterable of type [float, float] -- vector field
             forward to :py:mod:`pygimli.mplviewer.drawStreams`
 
-        . pg.R3Vector -- vector field
+        . pg.core.R3Vector -- vector field
             forward to :py:mod:`pygimli.mplviewer.drawStreams`
 
-        . pg.stdVectorRVector3 -- sensor positions
+        . pg.core.stdVectorRVector3 -- sensor positions
             forward to :py:mod:`pygimli.mplviewer.drawSensors`
     hold: bool [false]
         Set interactive plot mode for matplotlib.
@@ -202,7 +204,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
             Add label to the x axis
         * ylabel: str [None]
             Add label to the y axis
-        All remaining will be forwarded to the draw functions 
+        All remaining will be forwarded to the draw functions
         and matplotlib methods, respectively.
 
     Examples
@@ -220,7 +222,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
 
     colobar : matplotlib.colorbar
     """
-    pg.renameKwarg('cmap', 'cMap', kwargs)
+    renameKwarg('cmap', 'cMap', kwargs)
 
     if ax is None:
         ax = plt.subplots()[1]
@@ -257,9 +259,9 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
         mesh.createNeighbourInfos()
         if showBoundary is None:
             showBoundary = True
-    elif isinstance(data, pg.stdVectorRVector3):
+    elif isinstance(data, pg.core.stdVectorRVector3):
         drawSensors(ax, data, **kwargs)
-    elif isinstance(data, pg.R3Vector):
+    elif isinstance(data, pg.core.R3Vector):
         drawStreams(ax, mesh, data, **kwargs)
     else:
         ### data=[[marker, val], ....]
@@ -283,8 +285,8 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
             else:
                 pg.warn("No valid stream data:", data.shape, data.ndim)
                 showMesh = True
-        # elif min(data) == max(data):  # or pg.haveInfNaN(data):
-        #     pg.warn("No valid data: ", min(data), max(data), pg.haveInfNaN(data))
+        # elif min(data) == max(data):  # or pg.core.haveInfNaN(data):
+        #     pg.warn("No valid data: ", min(data), max(data), pg.core.haveInfNaN(data))
         #     showMesh = True
         else:
             validData = True
@@ -301,7 +303,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
 
                 else:
                     pg.error("Data size invalid")
-                    print("Data: ", len(data), min(data), max(data), pg.haveInfNaN(data))
+                    print("Data: ", len(data), min(data), max(data), pg.core.haveInfNaN(data))
                     print("Mesh: ", mesh)
                     validData = False
                     gci = drawMesh(ax, mesh)
@@ -359,7 +361,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
 
         if bool(colorBar):
             cbar = createColorBar(gci,
-                                  orientation=kwargs.pop('orientation', 
+                                  orientation=kwargs.pop('orientation',
                                                          'horizontal'),
                                   size=kwargs.pop('size', 0.2),
                                   pad=kwargs.pop('pad', None),
@@ -381,7 +383,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
             addCoverageAlpha(gci, coverage)
         else:
             raise BaseException('toImplement')
-            # addCoverageAlpha(gci, pg.cellDataToPointData(mesh, coverage))
+            # addCoverageAlpha(gci, pg.core.cellDataToPointData(mesh, coverage))
 
     if not hold or block is not False and plt.get_backend().lower() != "agg":
         if data is not None:

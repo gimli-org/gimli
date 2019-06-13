@@ -98,11 +98,11 @@ grid = pg.createGrid(x=x)
 N = grid.cellCount()
 
 # force vector per cell
-f = pg.RVector(grid.cellCount(), 0.0)
+f = pg.Vector(grid.cellCount(), 0.0)
 # diffusions coefficient
-a = pg.RVector(grid.cellCount(), 2.1)
+a = pg.Vector(grid.cellCount(), 2.1)
 # velocity per cell [x-direction]
-v = pg.RVector(grid.cellCount(), 20.1)
+v = pg.Vector(grid.cellCount(), 20.1)
 
 print('Peclet-number:', v[0]/(a[0] / dx))
         

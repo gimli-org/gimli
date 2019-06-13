@@ -53,7 +53,7 @@ def parseArgToArray(arg, nDof, mesh=None, userData=None):
         nDofs = [nDof]
 
     try:
-        return pg.RVector(nDofs[0], float(arg))
+        return pg.Vector(nDofs[0], float(arg))
     except BaseException as _:
         pass
 
@@ -77,7 +77,7 @@ def parseArgToArray(arg, nDof, mesh=None, userData=None):
             raise Exception("Array 'arg' has the wrong size: " +
                             str(len(arg)) + " != " + str(nDof))
     elif hasattr(arg, '__call__'):
-        ret = pg.RVector(nDofs[0], 0.0)
+        ret = pg.Vector(nDofs[0], 0.0)
 
         if not mesh:
             raise Exception("Please provide a mesh for the callable"
@@ -166,7 +166,7 @@ def generateBoundaryValue(boundary, arg, time=0.0, userData=None):
             val = arg(**kwargs)
         except Exception as e:
             print(arg, "(", kwargs, ")")
-            pg.logger.critical(e)
+            pg.critical(e)
             raise Exception("Wrong arguments for callback function.")
 
     elif hasattr(arg, '__len__'):
@@ -237,12 +237,12 @@ def parseArgPairToBoundaryArray(pair, mesh):
             for bi in mesh.boundaries(pg.find(mesh.boundaryMarkers() == b)):
                 bounds.append(bi)
 
-    elif isinstance(pair[0], pg.stdVectorBounds):
+    elif isinstance(pair[0], pg.core.stdVectorBounds):
         bounds = pair[0]
-    elif isinstance(pair[0], pg.Boundary):
+    elif isinstance(pair[0], pg.core.Boundary):
         bc.append(pair)
         return bc
-    elif isinstance(pair[0], pg.Node):
+    elif isinstance(pair[0], pg.core.Node):
         bc.append(pair)
         return bc
 
@@ -417,7 +417,7 @@ def parseMapToCellArray(attributeMap, mesh, default=0.0):
         Array of length mesh.cellCount()
     """
 
-    atts = pg.RVector(mesh.cellCount(), default)
+    atts = pg.Vector(mesh.cellCount(), default)
 
     if isinstance(attributeMap, dict):
         raise Exception("Please implement me!")
@@ -437,7 +437,7 @@ def parseMapToCellArray(attributeMap, mesh, default=0.0):
                     #print(atts, idx, pair[1], type(pair[1]), float(pair[1]))
                     if isinstance(pair[1], np.complex):
                         if not isinstance(atts, pg.CVector):
-                            atts = pg.toComplex(atts)
+                            atts = pg.math.toComplex(atts)
                         atts.setVal(val=pair[1], ids=idx)
                     else:
                         atts.setVal(val=float(pair[1]), ids=idx)
@@ -521,7 +521,7 @@ def grad(mesh, u, r=None):
         r = mesh.cellCenters()
 
     uv = u
-    if callable(u) and not isinstance(u, pg.RVector):
+    if callable(u) and not isinstance(u, pg.Vector):
         uv = u(mesh.positions())
 
     if len(uv) == mesh.cellCount():
@@ -568,13 +568,13 @@ def div(mesh, v):
     >>> import numpy as np
     >>> v = lambda p: p
     >>> mesh = pg.createGrid(x=np.linspace(0, 1, 4))
-    >>> print(pg.round(pg.solver.div(mesh, v(mesh.boundaryCenters())), 1e-5))
+    >>> print(pg.math.round(pg.solver.div(mesh, v(mesh.boundaryCenters())), 1e-5))
     3 [1.0, 1.0, 1.0]
-    >>> print(pg.round(pg.solver.div(mesh, v(mesh.cellCenters())), 1e-5))
+    >>> print(pg.math.round(pg.solver.div(mesh, v(mesh.cellCenters())), 1e-5))
     3 [0.5, 1.0, 0.5]
     >>> mesh = pg.createGrid(x=np.linspace(0, 1, 4),
     ...                      y=np.linspace(0, 1, 4))
-    >>> print(pg.round(pg.solver.div(mesh, v(mesh.boundaryCenters())), 1e-5))
+    >>> print(pg.math.round(pg.solver.div(mesh, v(mesh.boundaryCenters())), 1e-5))
     9 [2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0]
     >>> divCells = pg.solver.div(mesh, v(mesh.cellCenters()))
     >>> # divergence from boundary values are exact where the divergence from
@@ -652,7 +652,7 @@ def divergence(mesh, F=None, normMap=None, order=1):
         if directionCheck:
             if b.leftCell() is None and b.rightCell() is None:
                 # print(b.id(), b.leftCell(), b.rightCell())
-                sw = pg.Stopwatch(True)
+                sw = pg.core.Stopwatch(True)
                 mesh.createNeighbourInfos()
                 print("NeighbourInfos()", sw.duration(True))
                 # return gauss(grid, F)
@@ -691,7 +691,7 @@ def divergence(mesh, F=None, normMap=None, order=1):
 
 def triDiagToeplitz(dom, a, l, r, start=0, end=-1):
     """Create tri-diagonal Toeplitz matrix."""
-    A = pg.RSparseMapMatrix(dom, dom)
+    A = pg.matrix.SparseMapMatrix(dom, dom)
 
     if end == -1:
         end = dom
@@ -708,7 +708,7 @@ def triDiagToeplitz(dom, a, l, r, start=0, end=-1):
 
 def identity(dom, start=0, end=-1, scale=1):
     """Create identity matrix."""
-    A = pg.RSparseMapMatrix(dom, dom)
+    A = pg.matrix.SparseMapMatrix(dom, dom)
 
     if end == -1:
         end = dom
@@ -732,8 +732,8 @@ def showSparseMatrix(A, full=False):
         Show as dense matrix.
     """
     S = A
-    if isinstance(S, pg.RSparseMapMatrix):
-        S_ = pg.SparseMatrix(S)
+    if isinstance(S, pg.matrix.SparseMapMatrix):
+        S_ = pg.matrix.SparseMatrix(S)
         return showSparseMatrix(S_, full)
     else:
         rows = S.vecRowIdx()
@@ -786,30 +786,30 @@ def linSolve(A, b, solver=None, verbose=False):
     x : :gimliapi:`GIMLI::RVector`
         Solution vector
     """
-    x = pg.RVector(len(b), .0)
+    x = pg.Vector(len(b), .0)
 
     if solver is None:
-        if isinstance(A, pg.RSparseMatrix) or \
-           isinstance(A, pg.RSparseMapMatrix) or \
-            isinstance(A, pg.RBlockMatrix) or \
-            isinstance(A, pg.CSparseMatrix):
+        if isinstance(A, pg.matrix.SparseMatrix) or \
+           isinstance(A, pg.matrix.SparseMapMatrix) or \
+            isinstance(A, pg.matrix.BlockMatrix) or \
+            isinstance(A, pg.matrix.CSparseMatrix):
             solver = 'pg'
         
     if solver == 'pg':
         S = A
-        if isinstance(A, pg.CSparseMatrix):
+        if isinstance(A, pg.matrix.CSparseMatrix):
             x = pg.CVector(len(b), 0)
-        elif isinstance(A, pg.RSparseMatrix):
+        elif isinstance(A, pg.matrix.SparseMatrix):
             pass
-        elif isinstance(A, pg.RSparseMapMatrix):
-            S = pg.RSparseMatrix(A)    
-        elif isinstance(A, pg.RBlockMatrix):    
+        elif isinstance(A, pg.matrix.SparseMapMatrix):
+            S = pg.matrix.SparseMatrix(A)    
+        elif isinstance(A, pg.matrix.BlockMatrix):    
             S = A.sparseMapMatrix()
         else:
             pg.critical("Solver '" + solver + "' does not know how to "
                         "solve linear system with matrixtype:" + A)
         
-        ls = pg.LinSolver(S, verbose=verbose)
+        ls = pg.core.LinSolver(S, verbose=verbose)
         ls.solve(b, x)
     else:
     
@@ -878,12 +878,12 @@ def assembleLoadVector(mesh, f, userData=None):
             # assume rhs [n, nNodes] array is already a valid
             return f
 
-    rhs = pg.RVector(mesh.nodeCount(), 0)
+    rhs = pg.Vector(mesh.nodeCount(), 0)
 
     fArray = None
     
-    if hasattr(f, '__call__') and not isinstance(f, pg.RVector):
-        fArray = pg.RVector(mesh.cellCount())
+    if hasattr(f, '__call__') and not isinstance(f, pg.Vector):
+        fArray = pg.Vector(mesh.cellCount())
         for c in mesh.cells():
             if userData is not None:
                 fArray[c.id()] = f(c, userData)
@@ -898,7 +898,7 @@ def assembleLoadVector(mesh, f, userData=None):
         fArray = parseArgToArray(f, mesh.cellCount(), mesh, userData)
 
     if len(fArray) == mesh.cellCount():
-        b_l = pg.ElementMatrix()
+        b_l = pg.matrix.ElementMatrix()
 
         for c in mesh.cells():
             if fArray[c.id()] != 0.0:
@@ -906,7 +906,7 @@ def assembleLoadVector(mesh, f, userData=None):
                 rhs.add(b_l, fArray[c.id()])
 
 #            print("test reference solution:")
-#            rhsRef = pg.RVector(mesh.nodeCount(), 0)
+#            rhsRef = pg.Vector(mesh.nodeCount(), 0)
 #            for c in mesh.cells():
 #                b_l.u(c)
 #                for i, idx in enumerate(b_l.idx()):
@@ -915,14 +915,14 @@ def assembleLoadVector(mesh, f, userData=None):
 #            print("Remove revtest in assembleForceVector after check")
 
     elif len(fArray) == mesh.nodeCount():
-        fA = pg.RVector(fArray)
-        b_l = pg.ElementMatrix()
+        fA = pg.Vector(fArray)
+        b_l = pg.matrix.ElementMatrix()
         for c in mesh.cells():
             b_l.u(c)
                 # rhs.addVal(b_l.row(0) * fArray[b_l.idx()], b_l.idx())
             rhs.add(b_l, fA)
             # print("test reference solution:")
-            # rhsRef = pg.RVector(mesh.nodeCount(), 0)
+            # rhsRef = pg.Vector(mesh.nodeCount(), 0)
             # for c in mesh.cells():
             #     b_l.u(c)
             #     for i, idx in enumerate(b_l.idx()):
@@ -930,7 +930,7 @@ def assembleLoadVector(mesh, f, userData=None):
             # np.testing.assert_allclose(rhs, rhsRef)
             # print("Remove revtest in assembleForceVector after check")
 
-            # rhs = pg.RVector(fArray)
+            # rhs = pg.Vector(fArray)
     else:
         raise Exception("Forcevector have the wrong size: " +
                         str(len(fArray)))
@@ -942,7 +942,7 @@ def _assembleUDirichlet(S, rhs, uDirIndex, uDirchlet):
     """This should be moved directly into the core"""
 
     if rhs is not None:
-        udirTmp = pg.RVector(S.rows(), 0.0)
+        udirTmp = pg.Vector(S.rows(), 0.0)
         udirTmp.setVal(uDirchlet, uDirIndex)
         rhs -= S * udirTmp
 
@@ -1012,7 +1012,7 @@ def assembleDirichletBC(S, boundaryPairs, rhs=None, time=0.0, userData=None,
         uD = generateBoundaryValue(boundary, val, time, userData)
 
         if uD is not None:
-            if isinstance(boundary, pg.Node):
+            if isinstance(boundary, pg.core.Node):
                 n = boundary
                 uDirNodes.append(n)
                 uDirVal[n.id()] = uD
@@ -1098,7 +1098,7 @@ def assembleNeumannBC(rhs, boundaryPairs, a=None, time=0.0, userData=None):
         raise BaseException("Boundary pairs need to be a list of "
                             "[boundary, value]")
 
-    Se = pg.ElementMatrix()
+    Se = pg.matrix.ElementMatrix()
 
     for pair in boundaryPairs:
         boundary = pair[0]
@@ -1159,11 +1159,11 @@ def assembleRobinBC(S, boundaryPairs, rhs=None, time=0.0, userData=None):
         raise BaseException("Boundary pairs need to be a list of "
                             "[boundary, value]")
 
-    Sp = pg.ElementMatrix()
-    Sq = pg.ElementMatrix()
+    Sp = pg.matrix.ElementMatrix()
+    Sq = pg.matrix.ElementMatrix()
 
     #if isinstance(rhs, np.ndarray):
-        #rhs = pg.RVector(rhs)
+        #rhs = pg.Vector(rhs)
 
     for pair in boundaryPairs:
         boundary = pair[0]
@@ -1214,7 +1214,7 @@ def assembleBC_(bc, mesh, S, rhs, a, time=None, userData=None):
                             rhs=rhs, time=time, userData=userData)
 
     if len(bct.keys()) > 0:
-        pg.logger.warn("Unknown boundary condition[s]" + \
+        pg.warn("Unknown boundary condition[s]" + \
                        str(bct.keys()) + " will be ignored")
 
 
@@ -1249,22 +1249,22 @@ def createStiffnessMatrix(mesh, a=None):
         raise Exception("Mesh invalid")
     
     if a is None:
-        a = pg.RVector(mesh.cellCount(), 1.0)
+        a = pg.Vector(mesh.cellCount(), 1.0)
 
     A = None
 
     if isinstance(a[0], float) or isinstance(a[0], np.float64):
-        A = pg.RSparseMatrix()
+        A = pg.matrix.SparseMatrix()
         A.fillStiffnessMatrix(mesh, a)
         return A
     else:
-        A = pg.CSparseMatrix()
+        A = pg.matrix.CSparseMatrix()
 
     # create matrix structure regarding the mesh
     A.buildSparsityPattern(mesh)
 
     # define a local element matrix
-    A_l = pg.ElementMatrix()
+    A_l = pg.matrix.ElementMatrix()
     for c in mesh.cells():
         A_l.ux2uy2uz2(c)
         A.add(A_l, scale=a[c.id()])
@@ -1300,18 +1300,18 @@ def createMassMatrix(mesh, b=None):
 
     # need callable here
     if b is None:
-        b = pg.RVector(mesh.cellCount(), 1.0)
+        b = pg.Vector(mesh.cellCount(), 1.0)
     elif not hasattr(b, '__iter__'):
-        b = pg.RVector(mesh.cellCount(), b)
+        b = pg.Vector(mesh.cellCount(), b)
 
-    B = pg.RSparseMatrix()
+    B = pg.matrix.SparseMatrix()
     B.fillMassMatrix(mesh, b)
     return B
 
     # create matrix structure regarding the mesh
     # B.buildSparsityPattern(mesh)
     # define a local element matrix
-    # B_l = pg.ElementMatrix()
+    # B_l = pg.matrix.ElementMatrix()
     # for c in mesh.cells():
     #    B_l.u2(c)
     # # check if b[i] == B*b
@@ -1325,7 +1325,7 @@ def _feNorm(u, A):
 
     Create the Finite Element Norm with a preassembled system matrix.
     """
-    return np.sqrt(pg.dot(u, A.mult(u)))
+    return np.sqrt(pg.math.dot(u, A.mult(u)))
     
 
 def L2Norm(u, M=None, mesh=None):
@@ -1374,7 +1374,7 @@ def L2Norm(u, M=None, mesh=None):
 
     if M is None:
         # M is Identity matrix
-        return np.sqrt(pg.dot(u, u))
+        return np.sqrt(pg.math.dot(u, u))
 
     return _feNorm(u, M)
 
@@ -1554,8 +1554,8 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
 
     dof = mesh.nodeCount()
 
-    swatch = pg.Stopwatch(True)
-    swatch2 = pg.Stopwatch(True)
+    swatch = pg.core.Stopwatch(True)
+    swatch2 = pg.core.Stopwatch(True)
 
     # check for material parameter
     a = parseArgToArray(a, nDof=mesh.cellCount(), mesh=mesh, userData=userData)
@@ -1595,10 +1595,10 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
             if isinstance(a[0], complex):
                 if u is None:
                     u = pg.CVector(rhs.size(), 0.0)
-                rhs = pg.toComplex(rhs)
+                rhs = pg.math.toComplex(rhs)
             else:
                 if u is None:
-                    u = pg.RVector(rhs.size(), 0.0)
+                    u = pg.Vector(rhs.size(), 0.0)
 
         assembleTime = swatch.duration(True)
 
@@ -1618,7 +1618,7 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
         if 'assembleOnly' in kwargs:
             return A, rhs
 
-        solver = pg.LinSolver(False)
+        solver = pg.core.LinSolver(False)
         solver.setMatrix(A, 0)
 
         if singleForce:
@@ -1674,7 +1674,7 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
         U[0, :] = u0
 
         # init state
-        u = pg.RVector(dof, 0.0)
+        u = pg.Vector(dof, 0.0)
 
         if debug:
             print("u0", swatch.duration())
@@ -1715,7 +1715,7 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
 
             # u = S/b
             t_prep = swatch.duration(True)
-            solver = pg.LinSolver(A, verbose)
+            solver = pg.core.LinSolver(A, verbose)
             solver.solve(br, u)
 
             if 'plotTimeStep' in kwargs:
@@ -1771,7 +1771,7 @@ def crankNicolson(times, theta, S, I, f, u0=None, progress=None, debug=None):
     if len(times) < 2:
         raise BaseException("We need at least 2 times for "
                             "Crank-Nicolsen time discretization." + str(len(times)))
-    sw = pg.Stopwatch(True)
+    sw = pg.core.Stopwatch(True)
 
     if u0 is None:
         u0 = np.zeros(len(f))
@@ -1794,7 +1794,7 @@ def crankNicolson(times, theta, S, I, f, u0=None, progress=None, debug=None):
     if theta > 0:
         A = I + S * (dt * theta)
     
-    solver = pg.LinSolver(A, verbose=False)
+    solver = pg.core.LinSolver(A, verbose=False)
     
     St = I - S * dt # cache what is possible the theta=0
     for n in range(1, len(times)):

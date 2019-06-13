@@ -12,8 +12,8 @@ class TestMisc(unittest.TestCase):
     def test_Trans(self):
         """
         """
-        f = pg.RTrans()
-        x = pg.RVector(3, 1.0)
+        f = pg.trans.Trans()
+        x = pg.Vector(3, 1.0)
 
         np.testing.assert_array_equal(f(x), x)
         np.testing.assert_array_equal(f.inv(x), x)
@@ -22,7 +22,7 @@ class TestMisc(unittest.TestCase):
         self.assertEqual(f(1.0), 1.0)
         self.assertEqual(f.inv(1.0), 1.0)
 
-        f = pg.RTransLin(factor=2., offset=4.)
+        f = pg.trans.TransLin(factor=2., offset=4.)
         np.testing.assert_array_equal(f(x), x*2. + 4.)
         np.testing.assert_array_equal(f.trans(x), x*2. + 4.)
         np.testing.assert_array_equal(f.inv(f(x)), x)
@@ -31,27 +31,27 @@ class TestMisc(unittest.TestCase):
         self.assertEqual(f.inv(6.0), 1.0)
         self.assertEqual(f.invTrans(6.0), 1.0)
 
-        f = pg.TransLogLU(lowerbound=0, upperbound=10)
+        f = pg.trans.TransLogLU(lowerbound=0, upperbound=10)
         # print(f.update([1.], [100.]))
         np.testing.assert_array_equal(f.update([1.], [100.]), [10.0])
         # print(f.update([1.], [1000.]))
         # np.testing.assert_array_equal(f.update([1.], [1000.]), [10.0])
 
-        f = pg.TransCumulative()
-        f.add(pg.RTransLog(), 5)
-        f.add(pg.RTransLog(), 5)
+        f = pg.trans.TransCumulative()
+        f.add(pg.trans.TransLog(), 5)
+        f.add(pg.trans.TransLog(), 5)
 
         np.testing.assert_array_equal(f.at(0).fwd(np.ones(10)*10), 
                                       np.log(np.ones(10)*10))
         np.testing.assert_array_equal(f.fwd(np.ones(10)*10), 
                                       np.log(np.ones(10)*10))
-        # tm2 = pg.RTransLog()
+        # tm2 = pg.trans.TransLog()
         # tc.add(tm2, 5, 10)
-        # fop._modelTrans = pg.TransCumulative()
+        # fop._modelTrans = pg.trans.TransCumulative()
         # fop._modelTrans.add(tm2, size=nModel)
 
 
-        #fop._modelTrans = pg.TransLog()
+        #fop._modelTrans = pg.trans.TransLog()
 
 
 
@@ -69,7 +69,7 @@ class TestMisc(unittest.TestCase):
         data.markValid([0, 4])
         self.assertEqual(data('valid'), [1.0, 0.0, 0.0, 0.0, 1.0])
 
-        data.markInvalid(pg.IndexArray(np.arange(5, dtype="long")))
+        data.markInvalid(pg.core.IndexArray(np.arange(5, dtype="long")))
         self.assertEqual(data('valid'), [0.0, 0.0, 0.0, 0.0, 0.0])
         
         data.markValid(np.arange(5, dtype="long"))
@@ -106,7 +106,7 @@ class TestMisc(unittest.TestCase):
         data = pg.DataContainer()
         data['b'] = np.ones(2) * 3.14
         np.testing.assert_array_equal(data['b'], np.ones(2)*3.14)
-        self.assertEqual(type(data['b']), type(pg.RVector()))
+        self.assertEqual(type(data['b']), type(pg.Vector()))
         
         data.registerSensorIndex('a')
         data['a'] = np.ones(2)
@@ -120,7 +120,7 @@ class TestMisc(unittest.TestCase):
         self.assertEqual(data['a'].dtype, 'int')
 
     def test_Operators(self):
-        t = pg.RVector(10, 1.0)
+        t = pg.Vector(10, 1.0)
         self.assertEqual(len(t == 1.0), len(t > 0))
         self.assertEqual(len(t == 1.0), len(t == 1))
 

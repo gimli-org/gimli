@@ -8,17 +8,18 @@ Mesh generation and modification.
     (unstructured), both objects are treated the same internally.
 """
 
-from .grid import (createGrid, appendTetrahedronBoundary, appendTriangleBoundary)
+from ..core import createMesh1D, createMesh1DBlock, createMesh2D, createMesh3D
+from .grid import appendTetrahedronBoundary, appendTriangleBoundary, createGrid
 
 from .mesh import (createMesh, createParaMesh, createParaMesh2DGrid,
                    merge2Meshes, refineQuad2Tri, refineHex2Tet,
                    mergeMeshes, readGmsh, readHydrus2dMesh,
-                   readHydrus3dMesh, readTetgen, readTriangle, 
-                   convertHDF5Mesh, readHDF5Mesh, readFenicsHDF5Mesh, 
+                   readHydrus3dMesh, readTetgen, readTriangle,
+                   convertHDF5Mesh, readHDF5Mesh, readFenicsHDF5Mesh,
                    exportHDF5Mesh, exportFenicsHDF5Mesh,
                    readSTL, exportSTL,
                    )
-                   
+
 from .polytools import createParaDomain2D  # keep for backward compatibility
 from .polytools import (createCircle, createLine, createParaMeshPLC,
                         createPolygon, createRectangle, createWorld, mergePLC,

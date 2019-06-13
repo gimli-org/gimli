@@ -15,16 +15,17 @@ import logging
 import inspect
 import traceback
 
-from . import core
+from . import _pygimli_
 
-__ANSICOLORS__ = {'r':'\033[0;31;49m', #normal, #FG red; #BG black
-                  'g':'\033[0;32;49m',
-                  'y':'\033[0;33;49m',
-                  'b':'\033[0;34;49m',
-                  'm':'\033[0;35;49m',
-                   'DARK_GREY':'\033[1;30m',
-                   'NC':'\033[0m', # No Color
-                    }
+__ANSICOLORS__ = {
+    'r': '\033[0;31;49m',  #normal, #FG red; #BG black
+    'g': '\033[0;32;49m',
+    'y': '\033[0;33;49m',
+    'b': '\033[0;34;49m',
+    'm': '\033[0;35;49m',
+    'DARK_GREY': '\033[1;30m',
+    'NC': '\033[0m',  # No Color
+}
 
 def _msg(*args):
     msg = ''
@@ -33,7 +34,7 @@ def _msg(*args):
         if i < len(args)-1:
             msg += ' '
     return msg
-    
+
 def _(*args, c=None):
     # will probably only for linux or any msys like shell
     if c is None:
@@ -109,7 +110,7 @@ def setLogLevel(level):
 
 def addLogLevel(value, name):
     """Add a new log level to the :mod:`logging` module.
-    
+
     Parameters
     ----------
     value: int
@@ -120,7 +121,7 @@ def addLogLevel(value, name):
     logging.addLevelName(value, name)
     setattr(logging, name, value)
 
-   
+
 # CRITICAL = 50
 # ERROR = 40
 # WARNING = 30
@@ -164,10 +165,10 @@ def v(funct):
 
     Examples
     --------
-    >>> import pygimli as pg                                    
+    >>> import pygimli as pg
     >>> @pg.v                                                  # doctest: +SKIP
     >>> def foo():                                             # doctest: +SKIP
-    ...     pg.verbose('foo')                                  # doctest: +SKIP 
+    ...     pg.verbose('foo')                                  # doctest: +SKIP
     >>> foo()                                                  # doctest: +SKIP
     >>> def bar(d):
     ...     pg.verbose('bar', d)
@@ -187,10 +188,10 @@ def v(funct):
 
 def d(funct):
     """Decorator to enable debug messages for the scope of a function.
-    
+
     Examples
     --------
-    >>> import pygimli as pg                                   
+    >>> import pygimli as pg
     >>> @pg.d                                                  # doctest: +SKIP
     >>> def foo():                                             # doctest: +SKIP
     ...     pg.debug('foo')                                    # doctest: +SKIP
@@ -217,10 +218,10 @@ def verbose():
 def setDebug(d):
     level = logging.INFO
     if d:
-        core._pygimli_.setDebug(True)
+        _pygimli_.setDebug(True)
         level = logging.DEBUG
     else:
-        core._pygimli_.setDebug(False)
+        _pygimli_.setDebug(False)
         level = logging.INFO
 
     logger.setLevel(level)
@@ -268,7 +269,7 @@ def critical(*args):
     raise Exception(_msg(*args))
 
 def deprecated(msg='', hint=''):
-    logger.warning("Deprecated code usage at:") 
+    logger.warning("Deprecated code usage at:")
     logger.warning(whereAmI() + "\n" + msg + " " + hint)
 
 def renameKwarg(old, new, kwargs):

@@ -39,7 +39,7 @@ DEFAULT_STYLES = {
 }
 
 
-class Modelling(pg.ModellingBase):
+class Modelling(pg.core.ModellingBase):
     """Abstract Forward Operator.
 
     Abstract Forward Operator that is or can use a Modelling instance.
@@ -68,7 +68,7 @@ class Modelling(pg.ModellingBase):
 
         data : pg.DataContainer
 
-        modelTrans : [pg.RTransLog()]
+        modelTrans : [pg.trans.TransLog()]
 
         Parameters
         ----------
@@ -87,7 +87,7 @@ class Modelling(pg.ModellingBase):
         self._regionsNeedUpdate = False
         self._regionChanged = True
         self._regionManagerInUse = False
-        self.modelTrans = pg.RTransLog() # Model transformation operator
+        self.modelTrans = pg.trans.TransLog() # Model transformation operator
 
     def __hash__(self):
         """Create a hash for Method Manager"""
@@ -158,9 +158,9 @@ class Modelling(pg.ModellingBase):
         """Create the default startmodel as the median of the data values.
         """
         pg.critical("'don't use me")
-        # mv = pg.median(dataVals)
+        # mv = pg.math.median(dataVals)
         # pg.info("Set default startmodel to median(data values)={0}".format(mv))
-        # sm = pg.RVector(self.regionManager().parameterCount(), mv)
+        # sm = pg.Vector(self.regionManager().parameterCount(), mv)
         # return sm
 
     def createStartModel(self, dataVals=None):
@@ -171,9 +171,9 @@ class Modelling(pg.ModellingBase):
         no starting values from the regions.
         """
         if dataVals is not None:
-            mv = pg.median(dataVals)
+            mv = pg.math.median(dataVals)
             pg.info("Set default startmodel to median(data values)={0}".format(mv))
-            sm = pg.RVector(self.regionManager().parameterCount(), mv)
+            sm = pg.Vector(self.regionManager().parameterCount(), mv)
         else:
             sm = self.regionManager().createStartModel()
         return sm
@@ -209,7 +209,7 @@ class Modelling(pg.ModellingBase):
                 self.setRegionProperties(regionNr, **kwargs)
             return
 
-        pg.verbose('Set property for region: {0}: {1}'.format(regionNr, 
+        pg.verbose('Set property for region: {0}: {1}'.format(regionNr,
                                                               kwargs))
         if regionNr not in self._regionProperties:
             self._regionProperties[regionNr] = {'startModel': None,
@@ -319,7 +319,7 @@ class Modelling(pg.ModellingBase):
             Should be implemented method depending.
         """
         raise Exception("Needed?? Implement me in derived classes")
-        #data = data * (pg.randn(len(data)) * errPerc / 100. + 1.)
+        #data = data * (pg.math.randn(len(data)) * errPerc / 100. + 1.)
         #return data
 
     def drawModel(self, ax, model, **kwargs):
@@ -387,7 +387,7 @@ class Block1DModelling(Modelling):
         if nLayers < 2:
             pg.critical("Number of layers need to be at least 2")
 
-        mesh = pg.createMesh1DBlock(nLayers, self._nPara)
+        mesh = pg.meshtools.createMesh1DBlock(nLayers, self._nPara)
         self.clearRegionProperties()
         self.setMesh(mesh)
         # setting region 0 (layers) and 1..nPara (values)
@@ -466,7 +466,7 @@ class MeshModelling(Modelling):
         """"""
         # Be sure the mesh is initialized when needed
         self.mesh()
-        
+
     def setMeshPost(self, data):
         """Called when the mesh has been set successfully."""
         pass
@@ -486,12 +486,12 @@ class MeshModelling(Modelling):
         """"""
         pg.info("Creating forward mesh from region infos.")
         m = pg.Mesh(self.regionManager().mesh())
-        
+
         regionIds = self.regionManager().regionIdxs()
         for iId in regionIds:
             pg.verbose("\tRegion: {4}, Parameter: {0}, ParaDomain: {1}, Single: {2}, Background: {3}"
-                .format(self.regionManager().region(iId).parameterCount(), 
-                        self.regionManager().region(iId).isInParaDomain(), 
+                .format(self.regionManager().region(iId).parameterCount(),
+                        self.regionManager().region(iId).isInParaDomain(),
                         self.regionManager().region(iId).isSingle(),
                         self.regionManager().region(iId).isBackground(),
                         iId))
@@ -546,7 +546,7 @@ class MeshModelling(Modelling):
             if self._axs is None:
                 self._axs, _ = pg.show()
             ax = self._axs
-            
+
         if hasattr(ax, '__cBar__'):
             #we assume the axes allready holds a valif mappable
             cBar = ax.__cBar__
@@ -558,11 +558,11 @@ class MeshModelling(Modelling):
                                data=mod,
                                label=kwargs.pop('label', 'Model parameter'),
                                ax=ax,
-                               logScale=True, 
+                               logScale=True,
                                **kwargs)
         return ax, cBar
 
-    
+
 class PetroModelling(MeshModelling):
     """Combine petrophysical relation with the modelling class f(p).
 
@@ -615,7 +615,7 @@ class PetroModelling(MeshModelling):
 
     def createJacobian(self, model):
         r"""Fill the individual jacobian matrices.
-        J = dF(m) / dm = dF(m) / dp  * dp / dm 
+        J = dF(m) / dm = dF(m) / dp  * dp / dm
         """
         tModel = self._petroTrans.fwd(model)
 
@@ -664,7 +664,7 @@ class LCModelling(Modelling):
             f.initModelSpace(nLayers)
 
     def createDefaultStartModel(self, models):
-        sm = pg.RVector()
+        sm = pg.Vector()
         for i, f in enumerate(self._fops1D):
             sm = pg.cat(sm, f.createDefaultStartModel(models[i]))
         return sm
@@ -673,7 +673,7 @@ class LCModelling(Modelling):
         """Cut together forward responses of all soundings."""
         mods = np.asarray(par).reshape(self._nSoundings, self._parPerSounding)
 
-        resp = pg.RVector(0)
+        resp = pg.Vector(0)
         for i in range(self._nSoundings):
             r = self._fops1D[i].response(mods[i])
             #print("i:", i, mods[i], r)
@@ -708,7 +708,7 @@ class LCModelling(Modelling):
         self._parPerSounding = nCols
         self._nSoundings = nSoundings
 
-        self._mesh = pg.createMesh2D(range(nCols + 1),
+        self._mesh = pg.meshtools.createMesh2D(range(nCols + 1),
                                      range(nSoundings + 1))
         self._mesh.rotate(pg.RVector3(0, 0, -np.pi/2))
 
@@ -757,7 +757,7 @@ class LCModelling(Modelling):
         if self._jac is not None:
             self._jac.clear()
         else:
-            self._jac = pg.BlockMatrix()
+            self._jac = pg.matrix.BlockMatrix()
 
         self.fops1D = []
         nData = 0
@@ -840,4 +840,3 @@ class ParameterModelling(Modelling):
         for k, p in self._params.items():
             str += k + "={0} ".format(pg.utils.prettyFloat(model[p]))
         pg.info("Model: ", str)
-

@@ -144,7 +144,7 @@ def createTestWorld1(maxArea=0.2, verbose=0):
    
     return mesh, plc
     
-swatch = pg.Stopwatch(True)
+swatch = pg.core.Stopwatch(True)
 
 mesh, plc = createTestWorld1(maxArea=0.2, verbose=0)
 

@@ -44,13 +44,13 @@ def loadSIPallData(filename, outnumpy=False):
         rhoa = A[1:, 2]
         PHI = A[1:, 3:]
     else:
-        A = pg.RMatrix()
+        A = pg.Matrix()
         pg.loadMatrixCol(A, 'sch/dc.ves')
         ndata = A.cols()
         ab2 = A[0](1, ndata)
         mn2 = A[1](1, ndata)
         rhoa = A[2](1, ndata)
-        PHI = pg.RMatrix()
+        PHI = pg.Matrix()
         fr = []
         for i in range(3, A.rows()):
             fr.append(A[i][0])
@@ -174,7 +174,7 @@ def showsip1ddata(PHI, fr, ab2, mn2=None, cmax=None, ylab=True, cbar=True):
     pal = P.cm.get_cmap()
     pal.set_under('w')
     pal.set_bad('w')
-    if isinstance(PHI, pg.RVector):
+    if isinstance(PHI, pg.Vector):
         PHI = N.asarray(PHI)
 
     im = P.imshow(PHI.reshape((len(ab2), len(fr))),
@@ -232,7 +232,7 @@ def showsip1dmodel(M, tau, thk, res=None, z=None,
     pal = P.cm.get_cmap()
     pal.set_under('w')
     pal.set_bad('w')
-    if isinstance(M, pg.RVector):
+    if isinstance(M, pg.Vector):
         M = N.asarray(M)
 
     if islog:
@@ -288,7 +288,7 @@ def showsip1dmodel(M, tau, thk, res=None, z=None,
     return lgm, tch
 
 
-class DebyeModelling(pg.ModellingBase):
+class DebyeModelling(pg.core.ModellingBase):
 
     """forward operator for Debye decomposition."""
 
@@ -297,20 +297,20 @@ class DebyeModelling(pg.ModellingBase):
         if tvec is None:
             tvec = N.logspace(-4, 0, 5)
 
-        mesh = pg.createMesh1D(len(tvec))
+        mesh = pg.meshtools.createMesh1D(len(tvec))
 
         if zero:
             mesh.cell(0).setMarker(-1)
             mesh.cell(len(tvec) - 1).setMarker(1)
 
-        pg.ModellingBase.__init__(self, mesh, verbose)
+        pg.core.ModellingBase.__init__(self, mesh, verbose)
         self.f_ = pg.asvector(fvec)
         self.t_ = tvec
         self.zero_ = zero
 
     def response(self, par):
         """phase spectrum as function of spectral chargeabilities."""
-        y = pg.RVector(len(self.f_), 0.0)
+        y = pg.Vector(len(self.f_), 0.0)
         for (t, p) in zip(self.t_, par):
             wt = self.f_ * 2.0 * P.pi * t
             y = y + wt / (wt * wt + 1.) * p
@@ -339,8 +339,8 @@ def DebyeDecomposition(fr, phi, maxfr=None, tv=None, verbose=False,
 
     f = DebyeModelling(fr1, tvec, zero=zero)
     tvec = f.t_
-    tm = pg.RTransLog()
-    start = pg.RVector(len(tvec), 1e-4)
+    tm = pg.trans.TransLog()
+    start = pg.Vector(len(tvec), 1e-4)
     if zero:
         f.region(-1).setConstraintType(0)  # smoothness
         f.region(0).setConstraintType(1)  # smoothness
@@ -355,8 +355,8 @@ def DebyeDecomposition(fr, phi, maxfr=None, tv=None, verbose=False,
     else:
         f.regionManager().setConstraintType(1)  # smoothness
 
-    inv = pg.RInversion(pg.asvector(phi1 * 1e-3), f, verbose)
-    inv.setAbsoluteError(pg.RVector(len(fr1), err))
+    inv = pg.Inversion(pg.asvector(phi1 * 1e-3), f, verbose)
+    inv.setAbsoluteError(pg.Vector(len(fr1), err))
     inv.setLambda(lam)
     inv.setModel(start)
     inv.setBlockyModel(blocky)
@@ -371,20 +371,20 @@ def DebyeDecomposition(fr, phi, maxfr=None, tv=None, verbose=False,
     return tvec, mvec, N.array(resp) * 1e3, idx
 
 
-class DoubleColeColeModelling(pg.ModellingBase):
+class DoubleColeColeModelling(pg.core.ModellingBase):
 
     """
         Modelling using two Cole-Cole terms
     """
 
     def __init__(self, mesh, fvec, si=1.0, verbose=False):
-        pg.ModellingBase.__init__(self, mesh, verbose)
+        pg.core.ModellingBase.__init__(self, mesh, verbose)
         self.f_ = fvec
         self.si_ = si
 
     def response(self, par):
         """yields phase response response of double Cole Cole model."""
-        y = pg.RVector(self.f_.size(), 0.0)
+        y = pg.Vector(self.f_.size(), 0.0)
         wti = self.f_ * par[1] * 2.0 * P.pi
         wte = self.f_ * par[4] * 2.0 * P.pi
         for i in range(0, y.size()):
@@ -405,24 +405,24 @@ def ReadAndRemoveEM(filename, readsecond=False, doplot=False,
                                               readsecond,
                                               dellast=dellast)
     # forward problem
-    mesh = pg.createMesh1D(1, 6)  # 6 independent parameters
+    mesh = pg.meshtools.createMesh1D(1, 6)  # 6 independent parameters
     f = DoubleColeColeModelling(mesh, pg.asvector(fr), phi[2] / abs(phi[2]))
     f.regionManager().loadMap("region.control")
     model = f.createStartVector()
 
     # inversion
-    inv = pg.RInversion(phi, f, True, False)
+    inv = pg.Inversion(phi, f, True, False)
     inv.setAbsoluteError(phi * ePerc * 0.01 + ePhi / 1000.)
     inv.setRobustData(True)
 
-    # inv.setCWeight(pg.RVector(6, 1.0)) # wozu war das denn gut?
+    # inv.setCWeight(pg.Vector(6, 1.0)) # wozu war das denn gut?
     inv.setMarquardtScheme(0.8)
     inv.setLambda(lam)
     inv.setModel(model)
     erg = inv.run()
     inv.echoStatus()
     chi2 = inv.chi2()
-    mod0 = pg.RVector(erg)
+    mod0 = pg.Vector(erg)
     mod0[0] = 0.0  # set IP term to zero to obtain pure EM term
     emphi = f.response(mod0)
     resid = (phi - emphi) * 1000.

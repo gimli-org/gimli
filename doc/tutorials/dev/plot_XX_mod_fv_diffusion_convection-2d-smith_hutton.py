@@ -19,7 +19,7 @@ from solverFVM import solveFiniteVolume, createFVPostProzessMesh, diffusionConve
 import matplotlib.pyplot as plt
 import numpy as np
 
-swatch = pg.Stopwatch(True)
+swatch = pg.core.Stopwatch(True)
 
 x = np.linspace(-1.0, 1.0, 41)
 y = np.linspace( 0.0, 1.0, 21)
@@ -30,7 +30,7 @@ print(dx,dy)
 grid = pg.createGrid(x=x, y=y)
 
 # force vector per cell
-f = pg.RVector(grid.cellCount(), 0.0)
+f = pg.Vector(grid.cellCount(), 0.0)
 #f[grid.findCell([-0.85, 0.55]).id()]=10.0
 
 # velocity per cell [x-direction, y-direction]
@@ -112,7 +112,7 @@ vB = np.array(list(map(lambda p_: [ (2.*p_[1] *(1.0 -p_[0]**2)),
                        mesh.boundaryCenters())))
 drawStreams(ax2, mesh, vC)
 
-f = pg.RVector(mesh.cellCount(), 0.0)
+f = pg.Vector(mesh.cellCount(), 0.0)
 ##f[mesh.findCell([-0.75, 0.75]).id()]=1000.0
 
 

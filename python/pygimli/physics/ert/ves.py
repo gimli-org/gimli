@@ -113,7 +113,7 @@ class VESModelling(Block1DModelling):
 
         if self.am is not None and self.bm is not None:
             nLayers = (len(par)+1) // 2
-            fop = pg.DC1dModelling(nLayers, self.am, self.bm, self.an, self.bn)
+            fop = pg.core.DC1dModelling(nLayers, self.am, self.bm, self.an, self.bn)
         else:
             pg.critical("No data space defined don't know what to calculate.")
 
@@ -230,7 +230,7 @@ class VESCModelling(VESModelling):
 
         if self.am is not None and self.bm is not None:
             nLayers = (len(par) + 1) // 3
-            fop = pg.DC1dModellingC(nLayers, self.am, self.bm, self.an, self.bn)
+            fop = pg.core.DC1dModellingC(nLayers, self.am, self.bm, self.an, self.bn)
         else:
             pg.critical("No data basis known.")
 
@@ -394,8 +394,8 @@ class VESManager(MethodManager1d):
         self.inv.setDeltaChiStop(1)
 
         self.dataTrans = None
-        self.rhoaTrans = pg.TransLog()
-        self.phiaTrans = pg.TransLin()
+        self.rhoaTrans = pg.trans.TransLog()
+        self.phiaTrans = pg.trans.TransLin()
 
     @property
     def complex(self):
@@ -460,11 +460,11 @@ class VESManager(MethodManager1d):
         if data is not None:
             if self.complex:
                 nData = len(data)//2
-                self.dataTrans = pg.TransCumulative()
+                self.dataTrans = pg.trans.TransCumulative()
                 self.dataTrans.add(self.rhoaTrans, nData)
                 self.dataTrans.add(self.phiaTrans, nData)
             else:
-                self.dataTrans = pg.TransLog()
+                self.dataTrans = pg.trans.TransLog()
 
             self.inv.dataTrans = self.dataTrans
 

@@ -59,7 +59,7 @@ def transFwdWylliePhi(sat=1, vm=4000, vw=1600, va=330):
     """Wyllie transformation function porosity(slowness)."""
     if va != 330 or sat != 1.0:
         raise BaseException('TODO')
-    return pg.RTransLin(1./vw - 1./vm, 1./vm)
+    return pg.trans.TransLin(1./vw - 1./vm, 1./vm)
 
 
 def transInvWylliePhi(sat=1, vm=4000, vw=1600, va=330):
@@ -68,7 +68,7 @@ def transInvWylliePhi(sat=1, vm=4000, vw=1600, va=330):
         raise BaseException('TODO')
     a1 = 1./vm
     b1 = 1./vw - 1./vm
-    return pg.RTransLin(1./b1, -a1/b1)
+    return pg.trans.TransLin(1./b1, -a1/b1)
 
 
 def transFwdWyllieS(phi, vm=4000, vw=1600, va=330):
@@ -76,14 +76,14 @@ def transFwdWyllieS(phi, vm=4000, vw=1600, va=330):
     if va != 330.0:
         print(va, "Air velocity is not 330.0 m/s")
         raise BaseException('TODO')
-    return pg.RTransLin((1/vw-1./va)*phi, (1-phi)/vm+phi/va)
+    return pg.trans.TransLin((1/vw-1./va)*phi, (1-phi)/vm+phi/va)
 
 
 def transInvWyllieS(phi, vm=4000, vw=1600, va=330):
     """Inverse Wyllie transformation function slowness(saturation)."""
     a2 = 1./vm * (1 - phi) + phi * 1./va
     b2 = phi * (1./vw - 1./va)
-    return pg.RTransLin(1./b2, -a2/b2)
+    return pg.trans.TransLin(1./b2, -a2/b2)
 
 
 def test_Wyllie():

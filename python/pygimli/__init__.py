@@ -46,12 +46,25 @@ if "conda" in __path__[0]:
     except ImportError:
         pass
 ################################################################################
-from . import core
+
+### Import everything that should be accessible through main namespace.
 from ._version import get_versions
-from ._logger import _, _d, _y, _g, _r, setLogLevel
-from .core import *
+from .core import (BVector, CVector, DataContainer, DataContainerERT, dur,
+                   Inversion, IVector, Line, Matrix, Mesh, Plane, Pos,
+                   RVector3, Vector, abs, cat, center, exp, find, interpolate,
+                   log, log10, logDropTol, math, matrix, min, search, setDebug,
+                   setThreadCount, sort, sum, tic, toc, trans, unique,
+                   versionStr, x, y, z, zero)
+from .core.load import getConfigPath, getExampleFile, load, optImport
+from .core.logger import (_, _d, _g, _r, _y, critical, d, debug, deprecated,
+                          error, info, setLogLevel, setVerbose, v, verbose,
+                          warn)
+from .meshtools import createGrid, interpolate
+from .solver import solve
+# from .core import *
 from .testing import test
-from .utils import unit, cut
+from .utils import boxprint, cache, cut, unit
+from .viewer import plt, show, wait
 
 def _get_branch():
     """Get current git branch."""
@@ -79,5 +92,5 @@ del get_versions, _get_branch, _branch
 
 def version():
     """Shortcut to show and return current version."""
-    logger.info('Version: ' + __version__ + " core:" + versionStr())
+    info('Version: ' + __version__ + " core:" + versionStr())
     return __version__

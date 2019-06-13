@@ -37,7 +37,7 @@ import time
 grid = pg.createGrid(x=np.linspace(-1.0, 1.0, 31),
                      y=np.linspace(-1.0, 1.0, 31))
 
-vals = pg.RVector(grid.cellCount(), 1.)
+vals = pg.Vector(grid.cellCount(), 1.)
 for c in grid.cells():
     if abs(c.center()[0]) < 0.1:
         vals[c.id()] = 10.0
@@ -63,7 +63,7 @@ ax.figure.canvas.draw()
     
 u = solve(grid, a=vals, f=0.5, 
           times=times,
-          u0=pg.RVector(grid.nodeCount(), 0.0),
+          u0=pg.Vector(grid.nodeCount(), 0.0),
           duBoundary=neumannBC,
           uBoundary=dirichletBC,
           ##plotTimeStep=updateDrawU,

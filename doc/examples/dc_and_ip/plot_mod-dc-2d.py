@@ -66,7 +66,7 @@ def uAnalytical(p, sourcePos, k):
     r2A = (p - pg.RVector3(1.0, -1.0, 1.0) * sourcePos).abs()
 
     if r1A > 1e-12 and r2A > 1e-12:
-        return (pg.besselK0(r1A * k) + pg.besselK0(r2A * k)) / (2.0 * np.pi)
+        return (pg.math.besselK0(r1A * k) + pg.math.besselK0(r2A * k)) / (2.0 * np.pi)
     else:
         return 0.
 
@@ -93,9 +93,9 @@ def mixedBC(boundary, userData):
 
     n = boundary.norm()
     if r1A > 1e-12 and r2A > 1e-12:
-        return k * ((r1.dot(n)) / r1A * pg.besselK1(r1A * k) +
-                    (r2.dot(n)) / r2A * pg.besselK1(r2A * k)) / \
-            (pg.besselK0(r1A * k) + pg.besselK0(r2A * k))
+        return k * ((r1.dot(n)) / r1A * pg.math.besselK1(r1A * k) +
+                    (r2.dot(n)) / r2A * pg.math.besselK1(r2A * k)) / \
+            (pg.math.besselK0(r1A * k) + pg.math.besselK0(r2A * k))
     else:
         return 0.
 
@@ -109,7 +109,7 @@ def pointSource(mesh, source):
     :math:`\delta(x-pos), \int f(x) \delta(x-pos)=f(pos)=N(pos)`
     Right hand side entries will be shape functions(pos)
     """
-    rhs = pg.RVector(mesh.nodeCount())
+    rhs = pg.Vector(mesh.nodeCount())
     
     cell = mesh.findCell(source)
     rhs.setVal(cell.N(cell.shape().rst(source)), cell.ids())
@@ -135,9 +135,9 @@ u -= solve(grid, a=sigma, b=-sigma * k*k, f=pointSource(grid, sourcePosB),
            userData={'sourcePos': sourcePosB, 'k': k},
            verbose=True)
 
-# uAna = pg.RVector(map(lambda p__: uAnalytical(p__, sourcePosA, k),
+# uAna = pg.Vector(map(lambda p__: uAnalytical(p__, sourcePosA, k),
 #                       grid.positions()))
-# uAna -= pg.RVector(map(lambda p__: uAnalytical(p__, sourcePosB, k),
+# uAna -= pg.Vector(map(lambda p__: uAnalytical(p__, sourcePosB, k),
 #                        grid.positions()))
 
 # err = (1.0 -u/uAna) * 100.0

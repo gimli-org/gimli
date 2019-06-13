@@ -67,25 +67,25 @@ import matplotlib.pyplot as plt
 # function must be filled.
 
 
-class FunctionModelling(pg.ModellingBase):
+class FunctionModelling(pg.core.ModellingBase):
     def __init__(self, nc, xvec, verbose=False):
-        pg.ModellingBase.__init__(self, verbose)
+        pg.core.ModellingBase.__init__(self, verbose)
         self.x_ = xvec
         self.nc_ = nc
         nx = len(xvec)
         self.regionManager().setParameterCount(nc)
         self.jacobian().resize(nx, nc)
         for i in range(self.nc_):
-            self.jacobian().setCol(i, pg.pow(self.x_, i))
+            self.jacobian().setCol(i, pg.math.pow(self.x_, i))
 
     def response(self, model):
         return self.jacobian() * model
 
     def responseDirect(self, model):
-        y = pg.RVector(len(self.x_), model[0])
+        y = pg.Vector(len(self.x_), model[0])
 
         for i in range(1, self.nc_):
-            y += pg.pow(self.x_, i) * model[i]
+            y += pg.math.pow(self.x_, i) * model[i]
 
         return y
 
@@ -93,7 +93,7 @@ class FunctionModelling(pg.ModellingBase):
         pass  # if J depends on the model you should work here
 
     def startModel(self):
-        return pg.RVector(self.nc_, 0.5)
+        return pg.Vector(self.nc_, 0.5)
 
 
 ###############################################################################
@@ -110,7 +110,7 @@ y += np.random.randn(len(y)) * noise
 fop = FunctionModelling(3, x)
 
 # initialize inversion with data and forward operator and set options
-inv = pg.RInversion(y, fop)
+inv = pg.Inversion(y, fop)
 
 # constant absolute error of 0.01 is 1% (not necessary, only for chi^2)
 inv.setAbsoluteError(noise)

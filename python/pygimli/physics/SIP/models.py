@@ -145,7 +145,7 @@ def ColeDavidson(f, R, m, tau, a=1):
     return ColeCole(f, R, m, tau, c=1, a=a)
 
 
-class ColeColePhi(pg.ModellingBase):
+class ColeColePhi(pg.core.ModellingBase):
     r"""Cole-Cole model with EM term after Pelton et al. (1978)
 
     Modelling operator for the Frequency Domain
@@ -166,9 +166,9 @@ class ColeColePhi(pg.ModellingBase):
 
     def __init__(self, f, verbose=False):
         """Setup class by specifying the frequency."""
-        pg.ModellingBase.__init__(self, verbose)
+        pg.core.ModellingBase.__init__(self, verbose)
         self.f_ = f
-        self.setMesh(pg.createMesh1D(1, 3))
+        self.setMesh(pg.meshtools.createMesh1D(1, 3))
 
     def response(self, par):
         """Phase angle of the model."""
@@ -176,7 +176,7 @@ class ColeColePhi(pg.ModellingBase):
         return -np.angle(spec)
 
 
-class DoubleColeColePhi(pg.ModellingBase):
+class DoubleColeColePhi(pg.core.ModellingBase):
     r"""Double Cole-Cole model with EM term after Pelton et al. (1978)
 
     Modelling operator for the Frequency Domain
@@ -200,9 +200,9 @@ class DoubleColeColePhi(pg.ModellingBase):
 
     def __init__(self, f, verbose=False):  # initialize class
         """Setup class by specifying the frequency."""
-        pg.ModellingBase.__init__(self, verbose)  # call default constructor
+        pg.core.ModellingBase.__init__(self, verbose)  # call default constructor
         self.f_ = f                               # save frequencies
-        self.setMesh(pg.createMesh1D(1, 6))       # 4 single parameters
+        self.setMesh(pg.meshtools.createMesh1D(1, 6))       # 4 single parameters
 
     def response(self, par):
         """phase angle of the model"""
@@ -213,13 +213,13 @@ class DoubleColeColePhi(pg.ModellingBase):
         return -np.angle(spec1) - np.angle(spec2)
 
 
-class ColeColeAbs(pg.ModellingBase):
+class ColeColeAbs(pg.core.ModellingBase):
     """Cole-Cole model with EM term after Pelton et al. (1978)"""
 
     def __init__(self, f, verbose=False):  # initialize class
-        pg.ModellingBase.__init__(self, verbose)  # call default constructor
+        pg.core.ModellingBase.__init__(self, verbose)  # call default constructor
         self.f_ = f                               # save frequencies
-        self.setMesh(pg.createMesh1D(1, 4))       # 3 single parameters
+        self.setMesh(pg.meshtools.createMesh1D(1, 4))       # 3 single parameters
 
     def response(self, par):
         """phase angle of the model"""
@@ -227,13 +227,13 @@ class ColeColeAbs(pg.ModellingBase):
         return np.abs(spec)
 
 
-class ColeColeComplex(pg.ModellingBase):
+class ColeColeComplex(pg.core.ModellingBase):
     """Cole-Cole model with EM term after Pelton et al. (1978)"""
 
     def __init__(self, f, verbose=False):  # initialize class
-        pg.ModellingBase.__init__(self, verbose)  # call default constructor
+        pg.core.ModellingBase.__init__(self, verbose)  # call default constructor
         self.f_ = f                               # save frequencies
-        self.setMesh(pg.createMesh1D(1, 4))       # 4 single parameters
+        self.setMesh(pg.meshtools.createMesh1D(1, 4))       # 4 single parameters
 
     def response(self, par):
         """phase angle of the model"""
@@ -241,13 +241,13 @@ class ColeColeComplex(pg.ModellingBase):
         return pg.cat(np.abs(spec), -np.angle(spec))
 
 
-class ColeColeComplexSigma(pg.ModellingBase):
+class ColeColeComplexSigma(pg.core.ModellingBase):
     """Cole-Cole model with EM term after Pelton et al. (1978)"""
 
     def __init__(self, f, verbose=False):  # initialize class
-        pg.ModellingBase.__init__(self, verbose)  # call default constructor
+        pg.core.ModellingBase.__init__(self, verbose)  # call default constructor
         self.f_ = f                               # save frequencies
-        self.setMesh(pg.createMesh1D(1, 4))       # 4 single parameters
+        self.setMesh(pg.meshtools.createMesh1D(1, 4))       # 4 single parameters
 
     def response(self, par):
         """phase angle of the model"""
@@ -255,13 +255,13 @@ class ColeColeComplexSigma(pg.ModellingBase):
         return pg.cat(np.real(spec), np.imag(spec))
 
 
-class PeltonPhiEM(pg.ModellingBase):
+class PeltonPhiEM(pg.core.ModellingBase):
     """Cole-Cole model with EM term after Pelton et al. (1978)"""
 
     def __init__(self, f, verbose=False):  # initialize class
-        pg.ModellingBase.__init__(self, verbose)  # call default constructor
+        pg.core.ModellingBase.__init__(self, verbose)  # call default constructor
         self.f_ = f                               # save frequencies
-        self.setMesh(pg.createMesh1D(1, 4))       # 4 single parameters
+        self.setMesh(pg.meshtools.createMesh1D(1, 4))       # 4 single parameters
 
     def response(self, par):
         """phase angle of the model"""
@@ -270,16 +270,16 @@ class PeltonPhiEM(pg.ModellingBase):
         return -np.angle(spec)
 
 
-class DebyePhi(pg.ModellingBase):
+class DebyePhi(pg.core.ModellingBase):
     """Debye decomposition (smooth Debye relaxations) phase only"""
 
     def __init__(self, fvec, tvec, verbose=False):  # save reference in class
         """constructor with frequecy and tau vector"""
-        pg.ModellingBase.__init__(self, verbose)
+        pg.core.ModellingBase.__init__(self, verbose)
         self.f_ = fvec
         self.nf_ = len(fvec)
         self.t_ = tvec
-        self.mesh = pg.createMesh1D(len(tvec))  # standard 1d discretization
+        self.mesh = pg.meshtools.createMesh1D(len(tvec))  # standard 1d discretization
         self.setMesh(self.mesh)
 
     def response(self, par):
@@ -291,7 +291,7 @@ class DebyePhi(pg.ModellingBase):
         return -np.angle(y)
 
 
-class DebyeComplex(pg.ModellingBase):
+class DebyeComplex(pg.core.ModellingBase):
     """Debye decomposition (smooth Debye relaxations) of complex data"""
 
     def __init__(self, fvec, tvec, verbose=False):  # save reference in class
@@ -300,13 +300,13 @@ class DebyeComplex(pg.ModellingBase):
         self.nf = len(fvec)
         self.t = tvec
         self.nt = len(tvec)
-        mesh = pg.createMesh1D(len(tvec))  # standard 1d discretization
-        pg.ModellingBase.__init__(self, mesh, verbose)
+        mesh = pg.meshtools.createMesh1D(len(tvec))  # standard 1d discretization
+        pg.core.ModellingBase.__init__(self, mesh, verbose)
         T, W = np.meshgrid(tvec, fvec * 2. * pi)
         WT = W*T
         self.A = WT**2 / (WT**2 + 1)
         self.B = WT / (WT**2+1)
-        self.J = pg.RMatrix()
+        self.J = pg.Matrix()
         self.J.resize(len(fvec)*2, len(tvec))
         for i in range(self.nf):
             wt = fvec[i] * 2.0 * pi * tvec

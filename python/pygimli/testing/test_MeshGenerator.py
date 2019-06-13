@@ -14,63 +14,63 @@ class TestMeshGenerator(unittest.TestCase):
         self.assertEqual(mesh.ymax(), 2.0)
         mesh = pg.createGrid(3, 3, 3)
         self.assertEqual(mesh.zmax(), 2.0)
-        # mesh = pg.createMesh1D(10, 1)
+        # mesh = pg.meshtools.createMesh1D(10, 1)
         # print(mesh)
         # self.assertEqual(mesh.cellCount(), 10.0)
 
     def test_createMesh1D(self):
 
-        mesh = pg.createMesh1D(10, 1)
+        mesh = pg.meshtools.createMesh1D(10, 1)
         self.assertEqual(mesh.cellCount(), 10.0)
         self.assertEqual(mesh.xmax(), 10.0)
 
-        mesh = pg.createMesh1D(nCells=10)
+        mesh = pg.meshtools.createMesh1D(nCells=10)
         self.assertEqual(mesh.cellCount(), 10.0)
 
-        mesh = pg.createMesh1D(nCells=5, nProperties=2)
+        mesh = pg.meshtools.createMesh1D(nCells=5, nProperties=2)
         self.assertEqual(mesh.cellCount(), 10.0)
 
-        mesh = pg.createMesh1D(5, 2)
+        mesh = pg.meshtools.createMesh1D(5, 2)
         self.assertEqual(mesh.cellCount(), 10.0)
 
-        mesh = pg.createMesh1D(10)
+        mesh = pg.meshtools.createMesh1D(10)
         self.assertEqual(mesh.cellCount(), 10.0)
 
     def test_createMesh1DBlock(self):
 
-        mesh = pg.createMesh1DBlock(nLayers=5)
+        mesh = pg.meshtools.createMesh1DBlock(nLayers=5)
         self.assertEqual(mesh.cellCount(), 9.0)
 
-        mesh = pg.createMesh1DBlock(5)
+        mesh = pg.meshtools.createMesh1DBlock(5)
         self.assertEqual(mesh.cellCount(), 9.0)
 
-        mesh = pg.createMesh1DBlock(5, 1)
+        mesh = pg.meshtools.createMesh1DBlock(5, 1)
         self.assertEqual(mesh.cellCount(), 9.0)
 
-        mesh = pg.createMesh1DBlock(nLayers=4, nProperties=2)
+        mesh = pg.meshtools.createMesh1DBlock(nLayers=4, nProperties=2)
         self.assertEqual(mesh.cellCount(), 11.0)
 
-        mesh = pg.createMesh1DBlock(4, 2)
+        mesh = pg.meshtools.createMesh1DBlock(4, 2)
         self.assertEqual(mesh.cellCount(), 11.0)
 
     def test_createMesh2D(self):
 
-        mesh = pg.createMesh2D(xDim=5, yDim=2)
+        mesh = pg.meshtools.createMesh2D(xDim=5, yDim=2)
         self.assertEqual(mesh.cellCount(), 10.0)
 
-        mesh = pg.createMesh2D(5, 2)
+        mesh = pg.meshtools.createMesh2D(5, 2)
         self.assertEqual(mesh.cellCount(), 10.0)
 
-        mesh = pg.createMesh2D(np.linspace(0, 1, 6),np.linspace(0, 1, 3))
+        mesh = pg.meshtools.createMesh2D(np.linspace(0, 1, 6),np.linspace(0, 1, 3))
         self.assertEqual(mesh.cellCount(), 10.0)
 
     def test_createMesh3D(self):
 
-        mesh = pg.createMesh3D(xDim=5, yDim=3, zDim=2)
+        mesh = pg.meshtools.createMesh3D(xDim=5, yDim=3, zDim=2)
         self.assertEqual(mesh.cellCount(), 30.0)
 
     def test_createPartMesh(self):
-        mesh = pg.createMesh1D(np.linspace(0, 1, 10))
+        mesh = pg.meshtools.createMesh1D(np.linspace(0, 1, 10))
         self.assertEqual(mesh.cellCount(), 9)
 
         mesh2 = mesh.createMeshByCellIdx(

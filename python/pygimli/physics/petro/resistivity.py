@@ -58,19 +58,19 @@ def resistivityArchie(rFluid, porosity, a=1.0, m=2.0, sat=1.0, n=2.0,
     rB = None
 
     if isinstance(rFluid, float):
-        rB = pg.RMatrix(1, mesh.cellCount())
+        rB = pg.Matrix(1, mesh.cellCount())
         rB[0] = pg.solver.parseArgToArray(rFluid, mesh.cellCount(), mesh)
 
-    elif isinstance(rFluid, pg.RVector):
-        rB = pg.RMatrix(1, len(rFluid))
+    elif isinstance(rFluid, pg.Vector):
+        rB = pg.Matrix(1, len(rFluid))
         rB[0] = pg.solver.parseArgToArray(rFluid, mesh.cellCount(), mesh)
 
     elif hasattr(rFluid, 'ndim') and rFluid.ndim == 1:
-        rB = pg.RMatrix(1, len(rFluid))
+        rB = pg.Matrix(1, len(rFluid))
         rB[0] = pg.solver.parseArgToArray(rFluid, mesh.cellCount(), mesh)
 
     elif hasattr(rFluid, 'ndim') and rFluid.ndim == 2:
-        rB = pg.RMatrix(len(rFluid), len(rFluid[0]))
+        rB = pg.Matrix(len(rFluid), len(rFluid[0]))
         for i, rFi in enumerate(rFluid):
             rB[i] = rFi
 
@@ -85,7 +85,7 @@ def resistivityArchie(rFluid, porosity, a=1.0, m=2.0, sat=1.0, n=2.0,
         pg.show(mesh, phi, label='p')
         pg.wait()
 
-    r = pg.RMatrix(len(rB), len(rB[0]))
+    r = pg.Matrix(len(rB), len(rB[0]))
     for i, _ in enumerate(r):
         r[i] = rB[i] * a * phi**(-m) * S**(-n)
 
@@ -96,7 +96,7 @@ def resistivityArchie(rFluid, porosity, a=1.0, m=2.0, sat=1.0, n=2.0,
             return r[0].copy()
         return r
 
-    rI = pg.RMatrix(len(r), meshI.cellCount())
+    rI = pg.Matrix(len(r), meshI.cellCount())
     if meshI:
         pg.interpolate(mesh, r, meshI.cellCenters(), rI)
 
@@ -146,7 +146,7 @@ def transFwdArchiePhi(rFluid=20, m=2):
     >>> print((r1-r2 < 1e-12)[0])
     True
     """
-    return pg.RTransPower(-m, rFluid**(1./m))
+    return pg.trans.TransPower(-m, rFluid**(1./m))
 
 
 def transInvArchiePhi(rFluid=20, m=2):  # phi(rho)
@@ -157,20 +157,20 @@ def transInvArchiePhi(rFluid=20, m=2):  # phi(rho)
     ---
     :py:mod:`pygimli.physics.petro.transFwdArchiePhi`
     """
-    return pg.RTransPower(-1/m, rFluid)
+    return pg.trans.TransPower(-1/m, rFluid)
 
 
 def transFwdArchieS(rFluid=20, phi=0.4, m=2, n=2):  # rho(S)
     """Inverse Archie transformation function resistivity(saturation)."""
     # rho = rFluid * phi^(-m) S^(-n)
-    return pg.RTransPower(-n, (rFluid*phi**(-m))**(1/n))
+    return pg.trans.TransPower(-n, (rFluid*phi**(-m))**(1/n))
 
 
 def transInvArchieS(rFluid=20, phi=0.4, m=2, n=2):  # S(rho)
     """Inverse Archie transformation function saturation(resistivity)."""
     # rFluid/rho = phi^m S^n => S=(rFluid/rho/phi^m)^(1/n)
     # S = (rho/rFluid/phi^-m)^(-1/n)
-    return pg.RTransPower(-1/n, rFluid*phi**(-m))
+    return pg.trans.TransPower(-1/n, rFluid*phi**(-m))
 
 
 def test_Archie():

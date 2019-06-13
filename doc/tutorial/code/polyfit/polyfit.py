@@ -5,12 +5,12 @@ import matplotlib.pyplot as plt
 import pygimli as pg
 
 
-class FunctionModelling(pg.ModellingBase):
+class FunctionModelling(pg.core.ModellingBase):
     """New modelling operator returning f(x) derived from modelling base."""
 
     def __init__(self, nc, xvec, verbose=False):
         """Constructor, nc: number of coefficients, xvec: abscissa."""
-        pg.ModellingBase.__init__(self, verbose)
+        pg.core.ModellingBase.__init__(self, verbose)
         self.x_ = xvec
         self.nc_ = nc
         self.regionManager().setParameterCount(nc)
@@ -19,15 +19,15 @@ class FunctionModelling(pg.ModellingBase):
         """
            the main thing - the forward operator: return f(x)
         """
-        y = pg.RVector(len(self.x_), par[0])
+        y = pg.Vector(len(self.x_), par[0])
         for i in range(1, self.nc_):
-            y += pg.pow(self.x_, i) * par[i]
+            y += pg.math.pow(self.x_, i) * par[i]
 
         return y
 
     def startModel(self):
         """Define the starting model."""
-        return pg.RVector(self.nc_, 0.5)
+        return pg.Vector(self.nc_, 0.5)
 
 if __name__ == "__main__":
     nc = 1  # polynomial degree
@@ -39,7 +39,7 @@ if __name__ == "__main__":
     f = FunctionModelling(nc + 1, x)
 
     # initialize inversion with data and forward operator and set options
-    inv = pg.RInversion(y, f, True, True)
+    inv = pg.Inversion(y, f, True, True)
 
     # constant absolute error of 0.01 (not necessary, only for chi^2)
     inv.setAbsoluteError(0.01)

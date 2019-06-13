@@ -21,7 +21,7 @@ from pygimli.mplviewer import drawMesh, drawModel
 
 def create_mesh_and_data(n):
     nc = np.linspace(-2.0, 0.0, n)
-    mesh = pg.createMesh2D(nc, nc)
+    mesh = pg.meshtools.createMesh2D(nc, nc)
     mcx = pg.x(mesh.cellCenter())
     mcy = pg.y(mesh.cellCenter())
     data = np.cos(1.5 * mcx) * np.sin(1.5 * mcy)
@@ -52,13 +52,13 @@ def nearest_neighbor_interpolation(inmesh, indata, outmesh, nan=99.9):
 
 def linear_interpolation(inmesh, indata, outmesh):
     """ Linear interpolation using `pg.interpolate()` """
-    outdata = pg.RVector()  # empty
+    outdata = pg.Vector()  # empty
     pg.interpolate(srcMesh=inmesh, inVec=indata,
                    destPos=outmesh.cellCenters(), outVec=outdata)
 
     # alternatively you can use the interpolation matrix
     outdata = inmesh.interpolationMatrix(outmesh.cellCenters()) * \
-              pg.cellDataToPointData(inmesh, indata)
+              pg.core.cellDataToPointData(inmesh, indata)
     return outdata
 
 ###############################################################################

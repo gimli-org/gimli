@@ -119,16 +119,16 @@ class Refraction(MethodManager0):
             if fatray:
                 fop = FatrayDijkstraModelling(verbose=verbose)
             else:
-                fop = pg.TravelTimeDijkstraModelling(verbose=verbose)
+                fop = pg.core.TravelTimeDijkstraModelling(verbose=verbose)
 
         return fop
 
     def createInv(self, fop, verbose=True, doSave=False):
         """Create default inversion instance for Traveltime inversion."""
-        self.tD = pg.RTrans()
-        self.tM = pg.RTransLogLU()
+        self.tD = pg.trans.Trans()
+        self.tM = pg.trans.TransLogLU()
 
-        inv = pg.RInversion(verbose, doSave)
+        inv = pg.Inversion(verbose, doSave)
         inv.setTransData(self.tD)
         inv.setTransModel(self.tM)
         inv.setForwardOperator(fop)
@@ -407,7 +407,7 @@ class Refraction(MethodManager0):
             else:
                 startModel = self.fop.createDefaultStartModel()
         if isinstance(startModel, (float, int)):
-            startModel = pg.RVector(self.pd.cellCount(), startModel)
+            startModel = pg.Vector(self.pd.cellCount(), startModel)
 
         self.fop.setStartModel(startModel)
 
@@ -522,7 +522,7 @@ class Refraction(MethodManager0):
                 print("Data error estimates (min:max) ",
                       min(ret('err')), ":", max(ret('err')))
 
-            t += pg.randn(ret.size()) * ret('err')
+            t += pg.math.randn(ret.size()) * ret('err')
             ret.set('t', t)
 
         if kwargs.pop('returnArray', False):
@@ -614,7 +614,7 @@ class Refraction(MethodManager0):
 
     def rayCoverage(self):
         """return ray coverage"""
-        one = pg.RVector(self.dataContainer.size(), 1.)
+        one = pg.Vector(self.dataContainer.size(), 1.)
         return self.fop.jacobian().transMult(one)
 
     def standardizedCoverage(self):
@@ -647,7 +647,7 @@ class Refraction(MethodManager0):
         if model is None and self.velocity is None:
             pg.info("No previous inversion result found and no model given.",
                     "Using homogeneous slowness model.")
-            self.velocity = pg.RVector(self.mesh.cellCount(), 1.0)
+            self.velocity = pg.Vector(self.mesh.cellCount(), 1.0)
             self.fop.createJacobian(1./self.velocity)
 
         if model is not None:
@@ -907,7 +907,7 @@ class Tomography(Refraction):
             plc.createEdge(nodes[i], nodes[i+1])
 
         plc.createEdge(nodes[-1], nodes[0])
-        tri = pg.TriangleWrapper(plc)
+        tri = pg.core.TriangleWrapper(plc)
         tri.setSwitches("-pzFq"+str(quality)+"a"+str(maxarea))
         self.setMesh(tri.generate())
 
@@ -927,7 +927,7 @@ class Tomography(Refraction):
         """create (gradient) starting model with vtop/vbottom bounds"""
         va = self.getVA()
         nModel = self.fop.regionManager().parameterCount()
-        return pg.RVector(nModel, 1./np.mean(va))
+        return pg.Vector(nModel, 1./np.mean(va))
 
     def showVA(self, t=None, ax=None, usepos=True, name='va', squeeze=True):
         """show apparent velocity as image plot"""

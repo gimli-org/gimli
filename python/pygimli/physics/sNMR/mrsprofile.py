@@ -19,10 +19,10 @@ from . mrs import MRS
 from . modelling import MRS1dBlockQTModelling
 
 
-class MultiFOP(pg.ModellingBase):  # classical joint FOP => frameworks
+class MultiFOP(pg.core.ModellingBase):  # classical joint FOP => frameworks
     def __init__(self, mrsAll, nlay=3):
-        mesh = pg.createMesh1DBlock(nlay, 2)  # thk, wc, T2*
-        pg.ModellingBase.__init__(self, mesh)
+        mesh = pg.meshtools.createMesh1DBlock(nlay, 2)  # thk, wc, T2*
+        pg.core.ModellingBase.__init__(self, mesh)
         self.fAll = []
         for mrs in mrsAll:
             mrs.createFOP(nlay)
@@ -30,7 +30,7 @@ class MultiFOP(pg.ModellingBase):  # classical joint FOP => frameworks
 
     def response(self, model):
         """compute response by concatenating individual responses."""
-        resp = pg.RVector()
+        resp = pg.Vector()
         for f in self.fAll:
             resp = pg.cat(resp, f.response(model))
         return resp
@@ -49,12 +49,12 @@ class JointMRSModelling(MRS1dBlockQTModelling):
 
     def response(self, model):
         """response function (all responses together)"""
-        response = pg.RVector()
+        response = pg.Vector()
         for mrs in self.mrs:
             response = pg.cat(response, mrs.f(model))
 
 
-class MRSLCI(pg.ModellingBase):
+class MRSLCI(pg.core.ModellingBase):
     """MRS Laterally constrained modelling based on BlockMatrices."""
 
     def __init__(self, profile, nlay=2, verbose=False):
@@ -63,12 +63,12 @@ class MRSLCI(pg.ModellingBase):
         self.nlay = nlay
         self.nx = len(profile)
         self.np = 3 * nlay - 1
-#        self.mesh2d = pg.createMesh2D(npar, self.nx)
-#        self.mesh2d = pg.createMesh2D(self.nx, self.np)
-        self.mesh2d = pg.createMesh2D(range(self.np+1), range(self.nx+1))
+#        self.mesh2d = pg.meshtools.createMesh2D(npar, self.nx)
+#        self.mesh2d = pg.meshtools.createMesh2D(self.nx, self.np)
+        self.mesh2d = pg.meshtools.createMesh2D(range(self.np+1), range(self.nx+1))
         self.mesh2d.rotate(pg.RVector3(0, 0, -np.pi/2))
         self.setMesh(self.mesh2d)
-        self.J = pg.RBlockMatrix()
+        self.J = pg.matrix.BlockMatrix()
         self.FOP1d = []
         ipos = 0
         for i, mrs in enumerate(profile):
@@ -86,7 +86,7 @@ class MRSLCI(pg.ModellingBase):
         """cut-together forward responses of all soundings"""
         modA = np.asarray(model).reshape(self.nx, self.np)
 #        modA = np.reshape(model, (self.nx, self.np))
-        resp = pg.RVector(0)
+        resp = pg.Vector(0)
         for i, modi in enumerate(modA):
             resp = pg.cat(resp, self.FOP1d[i].response(modi))
 
@@ -282,7 +282,7 @@ class MRSprofile():
     def block1dInversion(self, nlay=2, lam=100., show=False, verbose=True,
                          uncertainty=False):
         """Invert all data together by a 1D model (more general solution)."""
-        data, error = pg.RVector(), pg.RVector()
+        data, error = pg.Vector(), pg.Vector()
         for mrs in self.mrs:
             data = pg.cat(data, mrs.data)
             error = pg.cat(error, np.real(mrs.error))
@@ -294,7 +294,7 @@ class MRSprofile():
             f.region(i).setParameters(mrsobj.startval[i], mrsobj.lowerBound[i],
                                       mrsobj.upperBound[i])
 
-        INV = pg.RInversion(data, f, verbose)
+        INV = pg.Inversion(data, f, verbose)
         INV.setLambda(lam)
         INV.setMarquardtScheme(0.8)
 #        INV.stopAtChi1(False)  # should be already in MarquardtScheme
@@ -326,7 +326,7 @@ class MRSprofile():
 
     def blockLCInversion(self, nlay=2, startModel=None, **kwargs):
         """Laterally constrained (piece-wise 1D) block inversion."""
-        data, error, self.nData = pg.RVector(), pg.RVector(), []
+        data, error, self.nData = pg.Vector(), pg.Vector(), []
         for mrs in self.mrs:
             data = pg.cat(data, mrs.data)
             error = pg.cat(error, mrs.error)
@@ -335,11 +335,11 @@ class MRSprofile():
         fop = MRSLCI(self.mrs, nlay=nlay)
         fop.region(0).setZWeight(kwargs.pop('zWeight', 0))
         fop.region(0).setConstraintType(kwargs.pop('cType', 1))
-        transData, transMod = pg.RTrans(), pg.RTransLog()  # LU(1., 500.)
+        transData, transMod = pg.trans.Trans(), pg.trans.TransLog()  # LU(1., 500.)
         if startModel is None:
             startModel = self.block1dInversion(nlay, verbose=False)
         model = kwargs.pop('startvec', np.tile(startModel, len(self.mrs)))
-        INV = pg.RInversion(data, fop, transData, transMod, True, False)
+        INV = pg.Inversion(data, fop, transData, transMod, True, False)
         INV.setModel(model)
         INV.setReferenceModel(model)
         INV.setAbsoluteError(error)

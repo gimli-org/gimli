@@ -67,9 +67,9 @@ def calcSeismics(meshIn, vP):
     h2 = pg.findBoundary(c.boundaryNodes(1)).size()
     h3 = pg.findBoundary(c.boundaryNodes(2)).size()
     print([h1, h2, h3])
-    h = pg.median([h1, h2, h3])
+    h = pg.math.median([h1, h2, h3])
 
-    # h = pg.median(mesh.boundarySizes())
+    # h = pg.math.median(mesh.boundarySizes())
     f0scale = 0.25
     cfl = 0.5
     dt = cfl * h / max(vP)
@@ -101,7 +101,7 @@ def calcSeismics(meshIn, vP):
                               uSource=uSource, verbose=10)
 
         u.save(solutionName)
-        uI = pg.RMatrix()
+        uI = pg.Matrix()
         print("interpolate node to cell data ... ")
         pg.interpolate(mesh, u, mesh.cellCenters(), uI)
         print("... done")

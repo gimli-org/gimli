@@ -24,8 +24,6 @@ import pkg_resources
 import sphinx
 
 import pygimli
-from pygimli.utils import boxprint
-from pygimli.core import optImport
 
 import pkg_resources
 
@@ -39,13 +37,13 @@ from sidebar_gallery import make_gallery
 try:
     # from _build.doc.conf_environment import *
     from conf_environment import *
-    boxprint("Building documentation out-of-source. Good.")
+    pygimli.boxprint("Building documentation out-of-source. Good.")
 except ImportError:
     TRUNK_PATH = '..'
     SPHINXDOC_PATH = '.'
     DOC_BUILD_DIR = ''
     DOXY_BUILD_DIR = ''
-    boxprint("Building documentation in-source. Don't forget to make clean.")
+    pygimli.boxprint("Building documentation in-source. Don't forget to make clean.")
 
 sys.path.append(os.path.abspath(join(SPHINXDOC_PATH, '_sphinx-ext')))
 
@@ -137,7 +135,7 @@ try:
                                 "%matplotlib inline")
         }
 
-    pyvista = optImport("pyvista", "building the gallery with 3D visualizations")
+    pyvista = pygimli.optImport("pyvista", "building the gallery with 3D visualizations")
     if pyvista:
         pyvista.OFF_SCREEN = True
         pyvista.rcParams['window_size'] = np.array([1024, 768]) * 2
@@ -191,7 +189,6 @@ plot_pre_code = """
 import pygimli as pg
 import numpy as np
 import matplotlib.pyplot as plt
-mesh = pg.createGrid([1,2],[1,2])
 """
 
 

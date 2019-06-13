@@ -56,7 +56,7 @@ class Inversion(object):
         else:
             self._inv = pg.Inversion(self._verbose, self._debug)
 
-        self._dataTrans = pg.RTransLin()
+        self._dataTrans = pg.trans.TransLin()
         self.axs = None # for showProgress only
         self.maxIter = kwargs.pop('maxIter', 20)
 
@@ -289,7 +289,7 @@ class Inversion(object):
         dData = (dT.trans(self.dataVals) - dT.trans(response)) / \
                  dT.error(self.dataVals, self.errorVals)
 
-        return pg.dot(dData, dData)
+        return pg.math.dot(dData, dData)
 
     def phiModel(self, model=None):
         """ """
@@ -297,7 +297,7 @@ class Inversion(object):
             model = self.model
 
         rough = self.inv.roughness(model)
-        return pg.dot(rough, rough)
+        return pg.math.dot(rough, rough)
 
     def phi(self, model=None, response=None):
         """ """
@@ -339,7 +339,7 @@ class Inversion(object):
 
         if self.fop is None:
             raise Exception("Need a valid forward operator for the inversion run.")
-        
+
         # called to be sure all necessary parts are initialized (e.g. mesh())
         self.fop.ensureContent()
 
@@ -374,24 +374,24 @@ class Inversion(object):
         if self.verbose:
             pg.info('Starting inversion.')
             print("fop:", self.inv.fop())
-    
-            if isinstance(self.dataTrans, pg.RTransCumulative):
+
+            if isinstance(self.dataTrans, pg.trans.TransCumulative):
                 print("Data transformation (cummulative):")
                 for i in range(self.dataTrans.size()):
                     print("\t", self.dataTrans.at(i))
             else:
                 print("Data transformation:", self.dataTrans)
-                
-            if isinstance(self.modelTrans, pg.RTransCumulative):
+
+            if isinstance(self.modelTrans, pg.trans.TransCumulative):
                 print("Model transformation (cummulative):")
                 for i in range(self.modelTrans.size()):
                     print("\t", self.modelTrans.at(i))
             else:
                 print("Model transformation:", self.modelTrans)
 
-            print("min/max (data): {0}/{1}".format(pf(min(self._dataVals)), 
+            print("min/max (data): {0}/{1}".format(pf(min(self._dataVals)),
                                                     pf(max(self._dataVals))))
-            print("min/max (error): {0}%/{1}%".format(pf(100*min(self._errorVals)), 
+            print("min/max (error): {0}%/{1}%".format(pf(100*min(self._errorVals)),
                                                        pf(100*max(self._errorVals))))
             print("min/max (start model): {0}/{1}".format(pf(min(self.startModel)),
                                                           pf(max(self.startModel))))
@@ -401,19 +401,19 @@ class Inversion(object):
         self.fop.setStartModel(self.startModel)
         self.inv.setReferenceModel(self.startModel)
 
-        
+
         self.inv.start()
         self.maxIter = maxIterTmp
 
         if self.verbose:
             print("-" * 80)
-            
+
         if showProgress:
             if hasattr(showProgress, '__call__'):
                 showProgress(self)
             else:
                 self.showProgress(showProgress)
-                    
+
         lastPhi = self.phi()
         self.chi2History = [self.chi2()]
         self.modelHistory = [self.startModel]
@@ -437,11 +437,11 @@ class Inversion(object):
                 print(e)
                 pg.error('One step failed. '
                          'Aborting and going back to last model')
-            
+
             if np.isnan(self.model).any():
                 print(model)
                 pg.critical('invalid model')
-            
+
             resp = self.inv.response()
             chi2 = self.inv.chi2()
 
@@ -483,7 +483,7 @@ class Inversion(object):
                     pg.boxprint("Abort criteria reached: dPhi = {0} (< {1}%)".format(
                                 round(dPhi, 2), minDPhi))
                 break
-            
+
             if i == maxIter-1:
                 if self.verbose:
                     pg.boxprint("Abort criteria reached: maximum iteration.")
@@ -502,8 +502,8 @@ class Inversion(object):
 
         TODO
             * think .. its a useful function but breaks a little
-             the FrameWork work only concept. 
-            * move it into a vis manager 
+             the FrameWork work only concept.
+            * move it into a vis manager
         """
         if self.axs is None:
             axs = None
@@ -537,13 +537,13 @@ class Inversion(object):
                                label='Model')
             self.fop.drawData(ax[1], self._dataVals, self._errorVals,
                               label='Data')
-            self.fop.drawData(ax[1], self.inv.response(), 
+            self.fop.drawData(ax[1], self.inv.response(),
                               label='Response')
 
             ax[1].text(0.99, 0.005,
                     "Iter: {0}, rrms: {1}, $\chi^2$: {2}"
-                        .format(self.inv.iter(), 
-                                pf(self.inv.relrms()), 
+                        .format(self.inv.iter(),
+                                pf(self.inv.relrms()),
                                 pf(self.inv.chi2())),
                         transform=ax[1].transAxes,
                         horizontalalignment='right',
@@ -647,7 +647,7 @@ class Block1DInversion(MarquardtInversion):
         fixLayers : bool | [thicknesses]
             See: :py:mod:`pygimli.modelling.Block1DInversion.fixLayers`
             For fixLayers=None, preset or defaults are uses.
-        layerLimits : [min, max] 
+        layerLimits : [min, max]
             Limits the thickness off all layers.
             For layerLimits=None, preset or defaults are uses.
         paraLimits : [min, max] | [[min, max],...]
@@ -761,15 +761,15 @@ class LCInversion(Inversion):
             f = pg.frameworks.LCModelling(fop, **kwargs)
 
         super(LCInversion, self).__init__(f, **kwargs)
-        self.dataTrans = pg.RTransLog()
+        self.dataTrans = pg.trans.TransLog()
         #self.setDeltaChiStop(0.1)
 
     def prepare(self, dataVals, errVals, nLayers=4, **kwargs):
-        dataVec = pg.RVector()
+        dataVec = pg.Vector()
         for d in dataVals:
             dataVec = pg.cat(dataVec, d)
 
-        errVec = pg.RVector()
+        errVec = pg.Vector()
         for e in errVals:
             errVec = pg.cat(errVec, e)
 

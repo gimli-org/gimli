@@ -53,7 +53,7 @@ nB = poly.createNode(xmin, z2, 0.0)
 poly.createEdge(nA, nB)
 poly.createEdge(nB, nStart)
 
-tri = pg.TriangleWrapper(poly)
+tri = pg.core.TriangleWrapper(poly)
 tri.setSwitches('-pzeAfaq31')
 
 ###############################################################################

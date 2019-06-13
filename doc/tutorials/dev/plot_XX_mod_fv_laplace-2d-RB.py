@@ -33,9 +33,9 @@ def mixedBC(boundary, userData):
                 (r2A * r1A * (r1A + r2A))
                    
     elif r1A > 1e-12 and r2A > 1e-12:
-        return k * ((r1.dot(n)) / r1A * pg.besselK1(r1A * k) +
-                    (r2.dot(n)) / r2A * pg.besselK1(r2A * k)) / \
-        (pg.besselK0(r1A * k) + pg.besselK0(r2A * k))
+        return k * ((r1.dot(n)) / r1A * pg.math.besselK1(r1A * k) +
+                    (r2.dot(n)) / r2A * pg.math.besselK1(r2A * k)) / \
+        (pg.math.besselK0(r1A * k) + pg.math.besselK0(r2A * k))
     else:
         return 0.
 
@@ -48,7 +48,7 @@ def pointSource(cell, f, userData):
 grid = pg.createGrid(x=np.linspace(-10.0, 10.0, 50.),
                      y=np.linspace(-15.0,   .0, 50.))
 
-#a = pg.RVector(grid.cellCount(),1)
+#a = pg.Vector(grid.cellCount(),1)
 a = np.ones(grid.cellCount())
 for c in grid.cells():
     if c.center()[1] < -5:
@@ -79,7 +79,7 @@ ax1, cb = show(grid, uFE,
 drawMesh(ax1, grid)
 
 
-f = pg.RVector(grid.cellCount(), 0)
+f = pg.Vector(grid.cellCount(), 0)
 f[grid.findCell(sourcePosA).id()]=1.0/grid.findCell(sourcePosA).size()
 
 uFV = solveFiniteVolume(grid, a=a, b=k*k, f=f, 

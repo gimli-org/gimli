@@ -17,8 +17,8 @@ N=10001
 np1 = np.linspace(1.1, 1.1, N)
 np2 = np.linspace(2.1, 2.1, N)
 
-pg1 = pg.RVector(np1)
-pg2 = pg.RVector(np2)
+pg1 = pg.Vector(np1)
+pg2 = pg.Vector(np2)
 
 st = range(N)
 
@@ -31,13 +31,13 @@ class TestPerf(unittest.TestCase):
         """
         #pg.setDebug(True)
         
-        sw = pg.Stopwatch(True)
+        sw = pg.core.Stopwatch(True)
         #print(timeit.repeat('r = grid.cellSizes() * np1', setup=setup, number=1000))
         #print(timeit.repeat('r = c * np1', setup=setup, number=1000))
 
         print(("np(np)", timeit.repeat('np.array(np1)', setup=setup, number=5000)))
-        print(("pg(pg)", timeit.repeat('pg.RVector(pg1)', setup=setup, number=5000)))
-        print(("pg(np)", timeit.repeat('pg.RVector(np1)', setup=setup, number=5000)))
+        print(("pg(pg)", timeit.repeat('pg.Vector(pg1)', setup=setup, number=5000)))
+        print(("pg(np)", timeit.repeat('pg.Vector(np1)', setup=setup, number=5000)))
         print(("np(pg)", timeit.repeat('np.array(pg1)', setup=setup, number=5000)))
         print(("np * np", timeit.repeat('np3 = np1 * np2', setup=setup, number=5000)))
         print(("pg * pg", timeit.repeat('pg3 = pg1 * pg2', setup=setup, number=5000)))
@@ -54,8 +54,8 @@ class TestPerf(unittest.TestCase):
         np1 = np.linspace(1.1, 1.2, N)
         np2 = np.linspace(2.1, 2.1, N)
 
-        pg1 = pg.RVector(np1)
-        pg2 = pg.RVector(np2)
+        pg1 = pg.Vector(np1)
+        pg2 = pg.Vector(np2)
 
         # print(sw.duration(True))
         print((sum(np1 * np1)))

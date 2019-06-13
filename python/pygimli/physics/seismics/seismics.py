@@ -149,7 +149,7 @@ def drawSeismogramm(ax, mesh, u, dt, ids=None, pos=None, i=None):
     for iw, n in enumerate(ids):
         pos = mesh.node(n).pos()
         ax.plot(pos[0], 0.05, '^', color='black')
-        trace = pg.cat(pg.RVector(0), u[:(i+1), n])
+        trace = pg.cat(pg.Vector(0), u[:(i+1), n])
 #        print(i+1, n)
 #        print(trace, (max(pg.abs(trace))))
 
@@ -202,13 +202,13 @@ def solvePressureWave(mesh, velocities, times, sourcePos, uSource, verbose):
     --------
     See TODO write example
     """
-    A = pg.RSparseMatrix()
-    M = pg.RSparseMatrix()
+    A = pg.matrix.SparseMatrix()
+    M = pg.matrix.SparseMatrix()
 
-#    F = pg.RVector(mesh.nodeCount(), 0.0)
-    rhs = pg.RVector(mesh.nodeCount(), 0.0)
-    u = pg.RMatrix(len(times), mesh.nodeCount())
-    v = pg.RMatrix(len(times), mesh.nodeCount())
+#    F = pg.Vector(mesh.nodeCount(), 0.0)
+    rhs = pg.Vector(mesh.nodeCount(), 0.0)
+    u = pg.Matrix(len(times), mesh.nodeCount())
+    v = pg.Matrix(len(times), mesh.nodeCount())
 
     sourceID = mesh.findNearestNode(sourcePos)
 
@@ -229,8 +229,8 @@ def solvePressureWave(mesh, velocities, times, sourcePos, uSource, verbose):
 
         M = pygimli.solver.identity(len(rhs))
 
-        u = pg.RMatrix(len(times), mesh.cellCount())
-        v = pg.RMatrix(len(times), mesh.cellCount())
+        u = pg.Matrix(len(times), mesh.cellCount())
+        v = pg.Matrix(len(times), mesh.cellCount())
         sourceID = mesh.findCell(sourcePos).id()
 
     dt = times[1] - times[0]
@@ -240,12 +240,12 @@ def solvePressureWave(mesh, velocities, times, sourcePos, uSource, verbose):
     S1 = M + dt * dt * theta * theta * A
     S2 = M
 
-    solver1 = pg.LinSolver(S1, verbose=False)
-    solver2 = pg.LinSolver(S2, verbose=False)
-    swatch = pg.Stopwatch(True)
+    solver1 = pg.core.LinSolver(S1, verbose=False)
+    solver2 = pg.core.LinSolver(S2, verbose=False)
+    swatch = pg.core.Stopwatch(True)
 
-#    ut = pg.RVector(mesh.nodeCount(), .0)
-#    vt = pg.RVector(mesh.nodeCount(), .0)
+#    ut = pg.Vector(mesh.nodeCount(), .0)
+#    vt = pg.Vector(mesh.nodeCount(), .0)
 
     timeIter1 = np.zeros(len(times))
     timeIter2 = np.zeros(len(times))

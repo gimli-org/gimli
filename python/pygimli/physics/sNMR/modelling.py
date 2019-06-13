@@ -7,7 +7,7 @@ import pygimli as pg
 import numpy as np
 
 
-class MRS1dBlockQTModelling(pg.ModellingBase):
+class MRS1dBlockQTModelling(pg.core.ModellingBase):
     """
     MRS1dBlockQTModelling - pygimli modelling class for block-mono QT inversion
 
@@ -16,8 +16,8 @@ class MRS1dBlockQTModelling(pg.ModellingBase):
 
     def __init__(self, nlay, K, zvec, t, verbose=False):
         """Constructor with number of layers, kernel, z and t vectors."""
-        mesh = pg.createMesh1DBlock(nlay, 2)  # thk, wc, T2*
-        pg.ModellingBase.__init__(self, mesh)
+        mesh = pg.meshtools.createMesh1DBlock(nlay, 2)  # thk, wc, T2*
+        pg.core.ModellingBase.__init__(self, mesh)
         self.K_ = K
         self.zv_ = np.array(zvec)
         self.nl_ = nlay

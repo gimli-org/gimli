@@ -61,7 +61,7 @@ defined and the response function is defined.
 
 The pygimli library must once be imported (in this case under the name g) and
 all classes (e.pg. modelling operators) can be used by pg.classname, e.g.
-pg.RVector is the already known vector of real (double) values.
+pg.Vector is the already known vector of real (double) values.
 
 The main program is very easy then and the code is very similar to C++.
 Data are loaded, both forward operator and inversion are created.
@@ -75,27 +75,27 @@ routines for numerics and plotting, very much comparable to MatLab.
 """
 
 
-class FunctionModelling(pg.ModellingBase):
+class FunctionModelling(pg.core.ModellingBase):
     """Class for modelling a polynomial function."""
 
     def __init__(self, nc, xvec, verbose=False):
         """Init with number of coefficients and x vector."""
-        pg.ModellingBase.__init__(self, verbose)
+        pg.core.ModellingBase.__init__(self, verbose)
         self.x_ = xvec
         self.nc_ = nc
         self.regionManager().setParameterCount(nc)
 
     def response(self, par):
         """Yield response (function value for given coefficients)."""
-        y = pg.RVector(self.x_.size(), par[0])
+        y = pg.Vector(self.x_.size(), par[0])
 
         for i in range(1, self.nc_):
-            y += pg.pow(self.x_, i) * par[i]
+            y += pg.math.pow(self.x_, i) * par[i]
         return y
 
     def startModel(self):
         """Return a meaningful starting model."""
-        return pg.RVector(self.nc_, 0.5)
+        return pg.Vector(self.nc_, 0.5)
 
 
 x = np.arange(0., 10., 1)
@@ -111,7 +111,7 @@ nP = 3
 fop = FunctionModelling(nP, x)
 
 # initialize inversion with data and forward operator and set options
-inv = pg.RInversion(y, fop)
+inv = pg.Inversion(y, fop)
 
 # constant absolute error of 0.01 (not necessary, only for chi^2)
 inv.setAbsoluteError(0.01)

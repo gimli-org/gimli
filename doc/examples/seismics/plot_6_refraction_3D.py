@@ -61,10 +61,10 @@ data.removeInvalid()
 ################################################################################
 # Do raytracing.
 
-fop = pg.TravelTimeDijkstraModelling(mesh, data)
+fop = pg.core.TravelTimeDijkstraModelling(mesh, data)
 
 # This is to show single raypaths.
-dij = pg.Dijkstra(fop.createGraph(1 / vel))
+dij = pg.core.Dijkstra(fop.createGraph(1 / vel))
 dij.setStartNode(mesh.findNearestNode([15, -10, 0]))
 
 rays = []

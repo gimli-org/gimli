@@ -30,7 +30,7 @@ def divergenceCell(c, F):
 
 
 def divergence(mesh, F):
-    div = pg.RVector(mesh.cellCount())
+    div = pg.Vector(mesh.cellCount())
 
     for c in mesh.cells():
         div[c.id()] = divergenceCell(c, F)
@@ -44,7 +44,7 @@ print(grid, pot)
 plt.ion()
 show(grid, pot)
 
-pN = pg.cellDataToPointData(grid, pot)
+pN = pg.core.cellDataToPointData(grid, pot)
 
 ax, cbar = show(grid, pN)
 ax, cbar = show(grid, axes=ax)

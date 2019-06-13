@@ -20,11 +20,11 @@ plc = mt.createCircle([-1, -4], radius=1.5, area=0.1, segments=25)
 circle = mt.createMesh(plc)
 for cell in circle.cells():
     cell.setMarker(cell.id())
+pg.show(circle, circle.cellMarkers(), label="Cell Markers")
 
-pg.show(circle, circle.cellMarkers())
 ###############################################################################
 # We now extrude this mesh to 3D given a *z* vector.
 
 z = np.geomspace(1, 5, 5)
-cylinder = pg.createMesh3D(circle, z)
+cylinder = pg.meshtools.createMesh3D(circle, z)
 pg.show(cylinder, cylinder.cellMarkers(), label="Cell markers")

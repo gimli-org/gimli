@@ -25,40 +25,40 @@ from pygimli.mplviewer import drawModel1D
 synres = [100., 500., 20., 800.]  # synthetic resistivity
 synthk = [4, 6, 10]  # synthetic thickness (lay layer is infinite)
 ab2 = np.logspace(-1, 2, 25)  # 0.1 to 100 in 25 steps (8 points per decade)
-fBlock = pg.DC1dModelling(len(synres), ab2, ab2/3)
+fBlock = pg.core.DC1dModelling(len(synres), ab2, ab2/3)
 rhoa = fBlock(synthk+synres)
 # The data are noisified using a
 errPerc = 3.  # relative error of 3 percent
-rhoa = rhoa * (pg.randn(len(rhoa)) * errPerc / 100. + 1.)
+rhoa = rhoa * (pg.math.randn(len(rhoa)) * errPerc / 100. + 1.)
 ###############################################################################
 # The forward operator can be called by f.response(model) or simply f(model)
 thk = np.logspace(-0.5, 0.5, 30)
 f = pg.DC1dRhoModelling(thk, ab2, ab2/3)
 ###############################################################################
 # Create some transformations used for inversion
-transRho = pg.RTransLogLU(1, 1000)  # lower and upper bound
-transRhoa = pg.RTransLog()  # log transformation also for data
+transRho = pg.trans.TransLogLU(1, 1000)  # lower and upper bound
+transRhoa = pg.trans.TransLog()  # log transformation also for data
 ###############################################################################
 # Set up inversion
-inv = pg.RInversion(rhoa, f, transRhoa, transRho, False)  # data vector, f, ...
+inv = pg.Inversion(rhoa, f, transRhoa, transRho, False)  # data vector, f, ...
 # The transformations can also be omitted and set individually by
 # inv.setTransData(transRhoa)
 # inv.setTransModel(transRho)
 inv.setRelativeError(errPerc / 100.0)
 ###############################################################################
 # Create a homogeneous starting model
-model = pg.RVector(len(thk)+1, np.median(rhoa))  # uniform values
+model = pg.Vector(len(thk)+1, np.median(rhoa))  # uniform values
 inv.setModel(model)  #
 ###############################################################################
 # Set pretty large regularization strength and run inversion
 print("inversion with lam=200")
 inv.setLambda(100)
-res100 = inv.run()  # result is a pg.RVector, but compatible to numpy array
+res100 = inv.run()  # result is a pg.Vector, but compatible to numpy array
 print('rrms={:.2f}%, chi^2={:.3f}'.format(inv.relrms(), inv.chi2()))
 # Decrease the regularization (smoothness) and start (from old result)
 print("inversion with lam=20")
 inv.setLambda(10)
-res10 = inv.run()  # result is a pg.RVector, but compatible to numpy array
+res10 = inv.run()  # result is a pg.Vector, but compatible to numpy array
 print('rrms={:.2f}%, chi^2={:.3f}'.format(inv.relrms(), inv.chi2()))
 # We now optimize lambda such that data are fitted within noise (chi^2=1)
 print("chi^2=1 optimized inversion")

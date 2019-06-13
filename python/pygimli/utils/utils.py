@@ -147,13 +147,13 @@ def logDropTol(p, droptol=1e-3):
     >>> print(x.array())
     [-4. -3.  0.  3.  5.]
     """
-    tmp = pg.RVector(p)
+    tmp = pg.Vector(p)
 
     tmp = pg.abs(tmp / droptol)
     tmp.setVal(1.0, pg.find(tmp < 1.0))
 
     tmp = pg.log10(tmp)
-    tmp *= pg.sign(p)
+    tmp *= pg.math.sign(p)
     return tmp
 
 
@@ -281,7 +281,7 @@ def grange(start, end, dx=0, n=0, log=False):
         if end > start and dx < 0:
             # print("grange: increasing range but decreasing dx, swap dx sign")
             d = -d
-        ret = pg.RVector(range(int(floor(abs((e - s) / d)) + 1)))
+        ret = pg.Vector(range(int(floor(abs((e - s) / d)) + 1)))
         ret *= d
         ret += s
         return ret
@@ -290,7 +290,7 @@ def grange(start, end, dx=0, n=0, log=False):
         if not log:
             return grange(start, end, dx=(e - s) / (n - 1))
         else:
-            return pg.increasingRange(start, end, n)[1:]
+            return pg.core.increasingRange(start, end, n)[1:]
     else:
         raise Exception('Either dx or n have to be given.')
 
@@ -302,7 +302,7 @@ def diff(v):
 
     Parameters
     ----------
-    v : array(N) | pg.R3Vector(N)
+    v : array(N) | pg.core.R3Vector(N)
         Array of double values or positions
 
     Returns
@@ -314,7 +314,7 @@ def diff(v):
     --------
     >>> import pygimli as pg
     >>> from pygimli.utils import diff
-    >>> p = pg.R3Vector(4)
+    >>> p = pg.core.R3Vector(4)
     >>> p[0] = [0.0, 0.0]
     >>> p[1] = [0.0, 1.0]
     >>> print(diff(p)[0])
@@ -323,7 +323,7 @@ def diff(v):
     RVector3: (0.0, -1.0, 0.0)
     >>> print(diff(p)[2])
     RVector3: (0.0, 0.0, 0.0)
-    >>> p = pg.RVector(3)
+    >>> p = pg.Vector(3)
     >>> p[0] = 0.0
     >>> p[1] = 1.0
     >>> p[2] = 2.0
@@ -335,22 +335,22 @@ def diff(v):
     if isinstance(v, np.ndarray):
         if v.ndim == 2:
             if v.shape[1] < 4:
-                # v = pg.R3Vector(v.T)
+                # v = pg.core.R3Vector(v.T)
                 vt = v.copy()
-                v = pg.R3Vector(len(vt))
+                v = pg.core.R3Vector(len(vt))
                 for i, vi in enumerate(vt):
                     v.setVal(pg.RVector3(vi), i)
             else:
-                v = pg.R3Vector(v)
+                v = pg.core.R3Vector(v)
         else:
-            v = pg.RVector(v)
+            v = pg.Vector(v)
     elif isinstance(v, list):
-        v = pg.R3Vector(v)
+        v = pg.core.R3Vector(v)
 
-    if isinstance(v, pg.R3Vector) or isinstance(v, pg.stdVectorRVector3):
-        d = pg.R3Vector(len(v) - 1)
+    if isinstance(v, pg.core.R3Vector) or isinstance(v, pg.core.stdVectorRVector3):
+        d = pg.core.R3Vector(len(v) - 1)
     else:
-        d = pg.RVector(len(v) - 1)
+        d = pg.Vector(len(v) - 1)
 
     for i, _ in enumerate(d):
         d[i] = v[i + 1] - v[i]
@@ -362,7 +362,7 @@ def dist(p, c=None):
 
     Parameters
     ----------
-    p : ndarray(N,2) | ndarray(N,3) | pg.R3Vector
+    p : ndarray(N,2) | ndarray(N,3) | pg.core.R3Vector
 
         Position array
     c : [x,y,z] [None]
@@ -378,13 +378,13 @@ def dist(p, c=None):
     >>> import pygimli as pg
     >>> from pygimli.utils import dist
     >>> import numpy as np
-    >>> p = pg.R3Vector(4)
+    >>> p = pg.core.R3Vector(4)
     >>> p[0] = [0.0, 0.0]
     >>> p[1] = [0.0, 1.0]
     >>> print(dist(p))
     [0. 1. 0. 0.]
-    >>> x = pg.RVector(4, 0)
-    >>> y = pg.RVector(4, 1)
+    >>> x = pg.Vector(4, 0)
+    >>> y = pg.Vector(4, 1)
     >>> print(dist(np.array([x, y]).T))
     [1. 1. 1. 1.]
     """
@@ -411,7 +411,7 @@ def cumDist(p):
 
     Parameters
     ----------
-    p : ndarray(N,2) | ndarray(N,3) | pg.R3Vector
+    p : ndarray(N,2) | ndarray(N,3) | pg.core.R3Vector
         Position array
 
     Returns
@@ -424,7 +424,7 @@ def cumDist(p):
     >>> import pygimli as pg
     >>> from pygimli.utils import cumDist
     >>> import numpy as np
-    >>> p = pg.R3Vector(4)
+    >>> p = pg.core.R3Vector(4)
     >>> p[0] = [0.0, 0.0]
     >>> p[1] = [0.0, 1.0]
     >>> p[2] = [0.0, 1.0]
@@ -446,8 +446,8 @@ def cut(v, n=2):
 
 def randN(n, minVal=0.0, maxVal=1.0):
     """Create RVector of length n with normally distributed random numbers."""
-    r = pg.RVector(n)
-    pg.randn(r)
+    r = pg.Vector(n)
+    pg.math.randn(r)
     r *= (maxVal - minVal)
     r += minVal
     return r
@@ -455,7 +455,7 @@ def randN(n, minVal=0.0, maxVal=1.0):
 
 def rand(n, minVal=0.0, maxVal=1.0):
     """Create RVector of length n with normally distributed random numbers."""
-    r = pg.RVector(n)
+    r = pg.Vector(n)
     pg.rand(r, minVal, maxVal)
     return r
 
@@ -464,7 +464,7 @@ def getIndex(seq, f):
     """TODO DOCUMENTME."""
     # DEPRECATED_SLOW
     idx = []
-    if isinstance(seq, pg.RVector):
+    if isinstance(seq, pg.Vector):
         for i, _ in enumerate(seq):
             v = seq[i]
             if f(v):
@@ -478,9 +478,9 @@ def getIndex(seq, f):
 
 def filterIndex(seq, idx):
     """TODO DOCUMENTME."""
-    if isinstance(seq, pg.RVector):
+    if isinstance(seq, pg.Vector):
         # return seq(idx)
-        ret = pg.RVector(len(idx))
+        ret = pg.Vector(len(idx))
     else:
         ret = list(range(len(idx)))
 
@@ -494,7 +494,7 @@ def findNearest(x, y, xp, yp, radius=-1):
     """TODO DOCUMENTME."""
     idx = 0
     minDist = 1e9
-    startPointDist = pg.RVector(len(x))
+    startPointDist = pg.Vector(len(x))
     for i, _ in enumerate(x):
         startPointDist[i] = sqrt((x[i] - xp) * (x[i] - xp) + (y[i] - yp) * (y[
             i] - yp))
