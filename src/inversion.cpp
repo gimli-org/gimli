@@ -304,26 +304,9 @@ bool RInversion::oneStep() {
         DOSAVE save(tM_->deriv(model_), "modelTrans");
         DOSAVE save(tD_->deriv(response_), "responseTrans");
 
-        if (doBroydenUpdate_) { //!!! h-variante
-           if (verbose_) std::cout << "solve CGLSCDWW with lambda = " << lambda_ << std::endl;
-                THROW_TO_IMPL
-//                solveCGLSCDWW(*J_, forward_->constraints(), dataWeight_, deltaDataIter_, deltaModelIter_, constraintWeights_,
-//                                modelWeight_, lambda_, deltaModel0, maxCGLSIter_, dosave_);
-        } else {
-            if (verbose_) std::cout << "solve CGLSCDWWtrans with lambda = " << lambda_ << std::endl;
-//             solveCGLSCDWWtrans(*J_, forward_->constraints(), dataWeight_, deltaDataIter_, deltaModelIter_, constraintWeights_,
-//                                  modelWeight_, tM_->deriv(model_), tD_->deriv(response_),
-//                                lambda_, deltaModel0, maxCGLSIter_, verbose_);
+        if (verbose_) std::cout << "solve CGLSCDWWtrans with lambda = " << lambda_ << std::endl;
 
-            //save(forward_->jacobian(), "S"+ str(iter_) + ".mat", Ascii);
-
-            // wannebee
-//             DoubleWeightedMatrix scaledJacobian (forward_->jacobian(), tM_->deriv(model_), tD_->deriv(response_));
-//             DoubleWeightedMatrix weightedConstraints(forward_->constraints(), constraintWeights_, modelWeight_);
-//             solveCGLSCDWWhtransWB(scaledJacobian, weightedConstraints, dataWeight_, deltaDataIter_, deltaModelIter_,
-//                                    lambda_, roughness, maxCGLSIter_, verbose_);
-
-            solveCGLSCDWWhtrans(*forward_->jacobian(), *forward_->constraints(),
+        solveCGLSCDWWhtrans(*forward_->jacobian(), *forward_->constraints(),
                                 dataWeight_, 
                                 deltaDataIter_, 
                                 deltaModelIter_,
@@ -332,7 +315,6 @@ bool RInversion::oneStep() {
                                 tD_->deriv(response_),
                                 lambda_, roughness, maxCGLSIter_, CGLStol_,
                                 dosave_);
-        } // else no broyden
     } // else no optimization
 
     //restrictMax(deltaModelIter_, 50.0); // only work for log trans

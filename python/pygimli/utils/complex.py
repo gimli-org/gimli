@@ -32,7 +32,6 @@ def toComplex(amp, phi=None):
         Amplitudes or real unsqueezed real valued array.
     phi: iterable (float)
         Phases in neg radiant
-
     Returns
     -------
     z: ndarray(dtype=np.complex)

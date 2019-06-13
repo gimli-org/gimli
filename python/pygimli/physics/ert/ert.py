@@ -742,7 +742,8 @@ class ERTManager(MeshMethodManager):
                 
                 #pg.warn('check sign of phases')
                 rhoa = data['rhoa']
-                phia = -data['ip']/1000
+                phia = -data['ip']/1000 # 'ip' is defined for neg mrad.
+                # we should think about some 'phia' in rad
 
                 return pg.utils.squeezeComplex(pg.utils.toComplex(rhoa, phia))
 

@@ -89,8 +89,8 @@ class Cache(object):
                       indent=4, separators=(',', ': '))   
 
     def restore(self):
+        """Read data from json infos"""
         if os.path.exists(self._name + '.json'):
-            
             try:
                 with open(self._name + '.json', 'r') as file:
                     self.info = json.load(file)
@@ -113,10 +113,10 @@ class Cache(object):
                 if self.value is not None:
                     self.info['restored'] = self.info['restored'] + 1
                     self.updateCacheInfo()
-                    pg.info('Cache {3} restored ({1}s x {0}): {2}'.format(self.info['restored'], 
-                                                                    round(self.info['dur'], 1),
-                                                                    self._name,
-                                                                    self.info['codeinfo']))
+                    pg.info('Cache {3} restored ({1}s x {0}): {2}'.\
+                        format(self.info['restored'], 
+                               round(self.info['dur'], 1),
+                               self._name, self.info['codeinfo']))
                 else:
                     pg.warn('Could not restore cache of type {0}.'.format(self.info['type']))
     

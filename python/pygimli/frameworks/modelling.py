@@ -443,6 +443,7 @@ class MeshModelling(Modelling):
         self._axs = None
         self._meshNeedsUpdate = True
         self._baseMesh = None
+        self._pd = None
 
     def __hash__(self):
         return super(MeshModelling, self).__hash__() ^ hash(self.mesh())
@@ -457,10 +458,15 @@ class MeshModelling(Modelling):
 
     @property
     def paraDomain(self):
-        return self.regionManager().paraDomain()
+        """"""
+        # We need our own copy here because its possible that we want to use
+        # the mesh after the fop was deleted 
+        self._pd = pg.Mesh(self.regionManager().paraDomain())
+        return self._pd
 
     def paraModel(self, model):
-        return model(self.paraDomain.cellMarkers())
+        mod = model(self.paraDomain.cellMarkers())
+        return mod
 
     def ensureContent(self):
         """"""

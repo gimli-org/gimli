@@ -33,7 +33,7 @@ int solveCGLSCDWWhtrans(const MatrixBase & S, const MatrixBase & C,
                         double lambda, const Vec & roughness,
                         int maxIter, double tol,
                         bool verbose){ //ALLOW_PYTHON_THREADS
-
+    
     uint nData = b.size();
     uint nModel = x.size();
     uint nConst = C.rows();
@@ -117,6 +117,7 @@ int solveCGLSCDWWhtrans(const MatrixBase & S, const MatrixBase & C,
 #ifdef _WIN32
     if (verbose) std::cout << "[ " << count << "/" << normR2 << "]\t" << std::endl;
 #endif
+
     return 1;
 }
 
