@@ -3,9 +3,10 @@
 Import and extensions of the core Mesh class.
 """
 
-from . logger import deprecated, info, warn, error
-from . _pygimli_ import (HexahedronShape, Line, Mesh, MeshEntity, Node,
+from ._pygimli_ import (HexahedronShape, Line, Mesh, MeshEntity, Node,
                         PolygonFace, TetrahedronShape, TriangleFace)
+from .logger import deprecated, error, info, warn
+from ..meshtools import mergePLC
 
 
 def __Mesh_str(self):
@@ -17,6 +18,11 @@ def __Mesh_str(self):
     return st
 Mesh.__str__ = __Mesh_str
 
+def addPLCs(self, other):
+    if self.cellCount() + other.cellCount() > 0:
+        warn("Addition is only supported for PLCs, i.e. meshs without cells.")
+    return mergePLC([self, other])
+Mesh.__add__ = addPLCs
 
 def __MeshEntity_str(self):
     """Give mesh entity infos."""

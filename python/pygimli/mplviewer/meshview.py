@@ -620,7 +620,7 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
     >>> block = mt.createRectangle(start=[-6, -3.5], end=[6, -6.0],
     ...                            marker=10,  boundaryMarker=10, area=0.1)
     >>> fig, ax = plt.subplots()
-    >>> geom = mt.mergePLC([world, block])
+    >>> geom = world + block
     >>> pg.mplviewer.drawPLC(ax, geom)
     """
     #    eCircles = []

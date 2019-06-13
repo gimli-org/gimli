@@ -37,7 +37,7 @@ circle_inner = mt.createCircle(
     boundaryMarker=0,
     marker=2)
 
-plc = mt.mergePLC([circle_outer, circle_inner])
+plc = circle_outer + circle_inner
 
 ax, cb = pg.show(plc, markers=True)
 
@@ -74,7 +74,7 @@ circle_inner = mt.createCircle(
     markerPosition=[0.95, 0.0],
 )
 
-plc = mt.mergePLC([circle_outer, circle_inner])
+plc = circle_outer + circle_inner
 
 ax, cb = pg.show(plc, markers=True)
 
@@ -101,7 +101,7 @@ polygon2 = mt.createPolygon(
     marker=2,
 )
 
-plc = mt.mergePLC([polygon1, polygon2])
+plc = polygon1 + polygon2
 
 ax, cb = pg.show(plc, markers=True)
 
@@ -128,7 +128,7 @@ polygon2 = mt.createPolygon(
     marker=2,
 )
 
-plc = mt.mergePLC([polygon1, polygon2])
+plc = polygon1 + polygon2
 
 ax, cb = pg.show(plc, markers=True)
 
@@ -156,7 +156,7 @@ rect2 = mt.createRectangle(
     marker=2,
 )
 
-plc = mt.mergePLC([rect1, rect2])
+plc = rect1 + rect2
 
 ax, cb = pg.show(plc, markers=True)
 
@@ -186,7 +186,7 @@ rect2 = mt.createRectangle(
     marker=2,
 )
 
-plc = mt.mergePLC([rect1, rect2])
+plc = rect1 + rect2
 
 ax, cb = pg.show(plc, markers=True)
 

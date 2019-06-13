@@ -52,7 +52,7 @@ world = createWorld(start=[-200, 200], end=[200, -200], marker=1)
 
 # Add some nodes to the measurement points to increase the accuracy a bit
 [world.createNode(x_, 0.0,  1) for x_ in x]
-plc = mergePLC([world, circ])
+plc = world + circ
 mesh = createMesh(plc, quality=34)
 mesh = mesh.createP2()
 

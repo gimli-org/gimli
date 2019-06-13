@@ -26,7 +26,7 @@ layer3 = mt.createPolygon([[0.0, 110], [0.0, 126], [117.5, 153], [117.5, 110]],
 
 slope = (164 - 137) / 117.5
 
-geom = mt.mergePLC([layer1, layer2, layer3])
+geom = layer1 + layer2 + layer3
 mesh = mt.createMesh(geom, quality=34.3, area=3, smooth=[1, 10])
 pg.show(mesh)
 

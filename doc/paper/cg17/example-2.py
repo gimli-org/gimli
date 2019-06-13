@@ -203,7 +203,7 @@ def simulateSynth(model, tMax=5000, satSteps=150, ertSteps=10, area=0.1,
 
     block = mt.createRectangle(start=[-6, -3.5], end=[6, -6.0], marker=4,
                                boundaryMarker=11, area=area)
-    geom = mt.mergePLC([world, block])
+    geom = world + block
     geom.save(synthPath + 'synthGeom')
     # pg.show(geom, boundaryMarker=1)
 
