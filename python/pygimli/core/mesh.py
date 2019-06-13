@@ -18,11 +18,12 @@ def __Mesh_str(self):
     return st
 Mesh.__str__ = __Mesh_str
 
-def addPLCs(self, other):
-    if self.cellCount() + other.cellCount() > 0:
-        warn("Addition is only supported for PLCs, i.e. meshs without cells.")
-    return mergePLC([self, other])
-Mesh.__add__ = addPLCs
+def __addPLCs__(self, other):
+    if self.isGeometry() and other.isGeometry():
+        return mergePLC([self, other])
+    else:
+        error("Addition is only supported for PLCs, i.e. meshs without cells.")
+Mesh.__add__ = __addPLCs__
 
 def __MeshEntity_str(self):
     """Give mesh entity infos."""
