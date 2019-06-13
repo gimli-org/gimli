@@ -281,15 +281,15 @@ class MRS():
             self.K = kdata.K
             self.z = np.hstack((0., kdata.model.z))
         else:  # try load real/imag parts (backward compat.)
-            KR = pg.RMatrix(name + 'KR.bmat')
-            KI = pg.RMatrix(name + 'KI.bmat')
+            KR = pg.Matrix(name + 'KR.bmat')
+            KI = pg.Matrix(name + 'KI.bmat')
             self.K = np.zeros((KR.rows(), KR.cols()), dtype='complex')
             for i in range(KR.rows()):
                 self.K[i] = np.array(KR[i]) + np.array(KI[i]) * 1j
 
     def loadZVector(self, filename='zkernel.vec'):
         """Load the kernel vertical discretisation (z) vector."""
-        self.z = pg.RVector(filename)
+        self.z = pg.Vector(filename)
 
     def loadDir(self, dirname):
         """Load several standard files from dir (old Borkum stage)."""
@@ -401,7 +401,7 @@ class MRS():
         """Create inversion instance (and fop if necessary with nlay)."""
         self.fop = MRS.createFOP(nlay, self.K, self.z, self.t)
         self.setBoundaries()
-        self.INV = pg.RInversion(self.data, self.fop, verbose)
+        self.INV = pg.Inversion(self.data, self.fop, verbose)
         self.INV.setLambda(lam)
         self.INV.setMarquardtScheme(kwargs.pop('lambdaFactor', 0.8))
         self.INV.stopAtChi1(False)  # now in MarquardtScheme
@@ -622,14 +622,14 @@ class MRS():
         if self.fop is None or (nlay is not None and nlay is not self.nlay):
             self.fop = MRS.createFOP(nlay)
 
-        lowerBound = pg.cat(pg.cat(pg.RVector(self.nlay - 1,
+        lowerBound = pg.cat(pg.cat(pg.Vector(self.nlay - 1,
                                               self.lowerBound[0]),
-                                   pg.RVector(self.nlay, self.lowerBound[1])),
-                            pg.RVector(self.nlay, self.lowerBound[2]))
-        upperBound = pg.cat(pg.cat(pg.RVector(self.nlay - 1,
+                                   pg.Vector(self.nlay, self.lowerBound[1])),
+                            pg.Vector(self.nlay, self.lowerBound[2]))
+        upperBound = pg.cat(pg.cat(pg.Vector(self.nlay - 1,
                                               self.upperBound[0]),
-                                   pg.RVector(self.nlay, self.upperBound[1])),
-                            pg.RVector(self.nlay, self.upperBound[2]))
+                                   pg.Vector(self.nlay, self.upperBound[1])),
+                            pg.Vector(self.nlay, self.upperBound[2]))
         if self.logpar:
             self.lLB, self.lUB = pg.log(lowerBound), pg.log(
                 upperBound)  # ready mapping functions

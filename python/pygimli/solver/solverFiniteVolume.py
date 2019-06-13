@@ -153,7 +153,7 @@ def cellToFaceArithmetic(boundary, AMM):
 
 def cellDataToBoundaryDataMatrix(mesh):
     """TODO Documentme."""
-    AMM = pg.RSparseMapMatrix(mesh.boundaryCount(), mesh.cellCount())
+    AMM = pg.matrix.SparseMapMatrix(mesh.boundaryCount(), mesh.cellCount())
 
     for b in mesh.boundaries():
         cellToFaceArithmetic(b, AMM)
@@ -353,7 +353,7 @@ def diffusionConvectionKernel(mesh, a=None, b=0.0,
         RHS offset vector
     """
     if a is None:
-        a = pg.RVector(mesh.boundaryCount(), 1.0)
+        a = pg.Vector(mesh.boundaryCount(), 1.0)
 
     AScheme = None
     if scheme == 'CDS':
@@ -384,20 +384,20 @@ def diffusionConvectionKernel(mesh, a=None, b=0.0,
 
     S = None
     if sparse:
-        S = pg.RSparseMapMatrix(dof, dof, stype=0) + identity(dof, scale=b)
+        S = pg.matrix.SparseMapMatrix(dof, dof, stype=0) + identity(dof, scale=b)
     else:
         S = np.zeros((dof, dof))
 
     rhsBoundaryScales = np.zeros(dof)
 
-#    swatch = pg.Stopwatch(True)
+#    swatch = pg.core.Stopwatch(True)
 
     # we need this to fast identify uBoundary and value by boundary
     uBoundaryID = []
     uBoundaryVals = [None] * mesh.boundaryCount()
     for [boundary, val] in uB:
 
-        if not isinstance(boundary, pg.Boundary):
+        if not isinstance(boundary, pg.core.Boundary):
             raise BaseException("Please give boundary, value list")
 
         uBoundaryID.append(boundary.id())
@@ -407,7 +407,7 @@ def diffusionConvectionKernel(mesh, a=None, b=0.0,
     duBoundaryVals = [None] * mesh.boundaryCount()
 
     for [boundary, val] in duB:
-        if not isinstance(boundary, pg.Boundary):
+        if not isinstance(boundary, pg.core.Boundary):
             raise BaseException("Please give boundary, value list")
 
         duBoundaryID.append(boundary.id())
@@ -566,7 +566,7 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=None, u0=0.0,
     """
     verbose = kwargs.pop('verbose', False)
     # The Workspace is to hold temporary data or preserve matrix rebuild
-    # swatch = pg.Stopwatch(True)
+    # swatch = pg.core.Stopwatch(True)
     sparse = True
 
     workspace = pg.solver.WorkSpace()
@@ -662,11 +662,11 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=None, u0=0.0,
     if not hasattr(times, '__len__'):
 
         if sparse and not hasattr(workspace, 'solver'):
-            Sm = pg.RSparseMatrix(workspace.S)
+            Sm = pg.matrix.SparseMatrix(workspace.S)
             # hold Sm until we have reference counting,
             # loosing Sm here will kill LinSolver later
             workspace.Sm = Sm
-            workspace.solver = pg.LinSolver(Sm, verbose=verbose)
+            workspace.solver = pg.core.LinSolver(Sm, verbose=verbose)
 
         u = None
         if sparse:
@@ -980,7 +980,7 @@ def _test_ConvectionAdvection():
     y = np.linspace(-1.0, 1.0, Ny + 1)
     grid = pg.createGrid(x=x, y=y)
 
-    a = pg.RVector(grid.cellCount(), 1.0)
+    a = pg.Vector(grid.cellCount(), 1.0)
 
     b7 = grid.findBoundaryByMarker(1)[0]
     for b in grid.findBoundaryByMarker(1):
@@ -988,7 +988,7 @@ def _test_ConvectionAdvection():
             b7 = b
     b7.setMarker(7)
 
-    swatch = pg.Stopwatch(True)
+    swatch = pg.core.Stopwatch(True)
     velBoundary = [[1, [0.0, 0.0]],
                    [2, [0.0, 0.0]],
                    [3, [1.0, 0.0]],

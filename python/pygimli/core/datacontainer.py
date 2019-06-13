@@ -3,22 +3,22 @@
 Extensions to the core DataContainer class[es].
 """
 import numpy as np
-from .._logger import deprecated, info, warn, critical, verbose
-from ._pygimli_ import (RVector3, RVector, IndexArray,
+from . logger import deprecated, info, warn, critical, verbose
+from . _pygimli_ import (RVector3, RVector, IndexArray,
                         DataContainer, DataContainerERT)
 
 
 def __DataContainer_setSensors(self, sensors):
     """Set Sensor positions.
 
-    Set all sensor positions. 
+    Set all sensor positions.
     This is just syntactic sugar for setSensorPositions.
 
     Parameters
     ----------
     sensors: iterable
         Iterable that can be converted into a pg.Pos.
-    
+
     Tests
     -----
     >>> import pygimli as pg
@@ -30,12 +30,12 @@ def __DataContainer_setSensors(self, sensors):
         nS = s
         if isinstance(s, float) or isinstance(s, int):
             nS = RVector3(s, 0.0)
-            
+
         if i > self.sensorCount():
             self.createSensor(nS)
         else:
             self.setSensorPosition(i, nS)
-            
+
 DataContainer.setSensors = __DataContainer_setSensors
 
 def __DC_setVal(self, key, val):
@@ -54,10 +54,10 @@ DataContainer.__getitem__ = __DC_getVal
 
 def __DataContainerERT_addFourPointData(self, *args, **kwargs):
     """Add a new data point to the end of the dataContainer.
-    
+
     Add a new 4 point measurement to the end of the dataContainer and increase
     the data size by one. The index of the new data point is returned.
-     
+
     Parameters
     ----------
     *args: [int]
@@ -69,7 +69,7 @@ def __DataContainerERT_addFourPointData(self, *args, **kwargs):
     -------
     ret: int
         Index of this new data point.
-    
+
     Examples
     --------
     >>> import pygimli as pg
@@ -86,12 +86,12 @@ def __DataContainerERT_addFourPointData(self, *args, **kwargs):
     """
     try:
         if len(args) == 1:
-            idx =  self.createFourPointData(self.size(), 
-                                            args[0][0], args[0][1], 
+            idx =  self.createFourPointData(self.size(),
+                                            args[0][0], args[0][1],
                                             args[0][2], args[0][3])
         else:
-            idx = self.createFourPointData(self.size(), 
-                                            args[0], args[1], 
+            idx = self.createFourPointData(self.size(),
+                                            args[0], args[1],
                                             args[2], args[3])
     except:
         print("args:", args)
@@ -102,5 +102,5 @@ def __DataContainerERT_addFourPointData(self, *args, **kwargs):
             self.add(k)
         self.ref(k)[idx] = v
     return idx
-    
+
 DataContainerERT.addFourPointData = __DataContainerERT_addFourPointData

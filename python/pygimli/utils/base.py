@@ -39,10 +39,10 @@ def rmsWithErr(a, b, err, errtol=1):
 def chi2(a, b, err, trans=None):
     """Return chi square value."""
     if trans is None:
-        trans = pg.RTrans()
+        trans = pg.trans.Trans()
 
     d = (trans(a) - trans(b)) / trans.error(a, err)
-    return pg.dot(d, d) / len(d)
+    return pg.math.dot(d, d) / len(d)
 
 
 # fc_cleaning compatibilty to bert
@@ -71,7 +71,7 @@ def numpy2gmat(nmat):
 
     TODO implement correct rval
     """
-    gmat = pg.RMatrix()
+    gmat = pg.Matrix()
     for arr in nmat:
         gmat.push_back(arr)  # pg.asvector(arr))
     return gmat

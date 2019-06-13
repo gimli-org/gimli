@@ -3,8 +3,8 @@
 Import and extensions of the core Mesh class.
 """
 
-from .._logger import deprecated, info, warn, error
-from ._pygimli_ import (HexahedronShape, Line, Mesh, MeshEntity, Node,
+from . logger import deprecated, info, warn, error
+from . _pygimli_ import (HexahedronShape, Line, Mesh, MeshEntity, Node,
                         PolygonFace, TetrahedronShape, TriangleFace)
 
 

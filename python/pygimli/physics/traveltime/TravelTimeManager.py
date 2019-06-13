@@ -17,7 +17,7 @@ from . ratools import shotReceiverDistances
 
 class TravelTimeDijkstraModelling(MeshModelling):
     def __init__(self, **kwargs):
-        self.dijkstra = pg.TravelTimeDijkstraModelling()
+        self.dijkstra = pg.core.TravelTimeDijkstraModelling()
 
         super(TravelTimeDijkstraModelling, self).__init__(**kwargs)
 
@@ -64,7 +64,7 @@ class TravelTimeDijkstraModelling(MeshModelling):
 
         # pg._r(self.regionManager().parameterCount())
         sm = pg.Vector(self.regionManager().parameterCount(),
-                       pg.median(aSlow))
+                       pg.math.median(aSlow))
         return sm
 
     def createJacobian(self, par):
@@ -103,7 +103,7 @@ class TravelTimeManager(MeshMethodManager):
 
         super(TravelTimeManager, self).__init__(**kwargs)
 
-        self.inv.dataTrans = pg.RTransLog()
+        self.inv.dataTrans = pg.trans.TransLog()
 
     def createForwardOperator(self, **kwargs):
         """Create default forward operator for Traveltime modelling.
@@ -216,7 +216,7 @@ class TravelTimeManager(MeshMethodManager):
             pg.verbose("Absolute data error estimates (min:max) {0}:{1}".format(
                         min(ret('err')), max(ret('err'))))
 
-            t += pg.randn(ret.size()) * ret('err')
+            t += pg.math.randn(ret.size()) * ret('err')
             ret.set('t', t)
 
         if kwargs.pop('returnArray', False):
@@ -328,7 +328,7 @@ class TravelTimeManager(MeshMethodManager):
         >>> mesh = pg.createGrid(x, y)
         >>> data = createRAData([(0,0)] + [(x, i) for i in range(y)],
         ...                     shotDistance=y+1)
-        >>> data.set("t", pg.RVector(data.size(), 1.0))
+        >>> data.set("t", pg.Vector(data.size(), 1.0))
         >>> tt = TravelTimeManager()
         >>> tt.fop.setData(data)
         >>> tt.setMesh(mesh, secNodes=10)

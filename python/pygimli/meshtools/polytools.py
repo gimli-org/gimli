@@ -185,8 +185,8 @@ def createWorld(start, end, marker=1, area=0., layers=None, worldMarker=True):
     """Create simple rectangular world.
 
     Create simple rectangular world with appropriate boundary conditions.
-    Surface boundary is set do pg.MARKER_BOUND_HOMOGEN_NEUMANN, i.e, -1 and
-    inner subsurface is set to pg.MARKER_BOUND_MIXED, i.e., -2 or
+    Surface boundary is set do pg.core.MARKER_BOUND_HOMOGEN_NEUMANN, i.e, -1 and
+    inner subsurface is set to pg.core.MARKER_BOUND_MIXED, i.e., -2 or
     Numbered in ascending order in left direction starting upper left if
     worldMarker is set to false.
 
@@ -256,9 +256,9 @@ def createWorld(start, end, marker=1, area=0., layers=None, worldMarker=True):
     if worldMarker:
         for b in poly.boundaries():
             if b.norm()[1] == 1.0:
-                b.setMarker(pg.MARKER_BOUND_HOMOGEN_NEUMANN)
+                b.setMarker(pg.core.MARKER_BOUND_HOMOGEN_NEUMANN)
             else:
-                b.setMarker(pg.MARKER_BOUND_MIXED)
+                b.setMarker(pg.core.MARKER_BOUND_MIXED)
 
     if layers is not None:
         for i in range(len(layers)):
@@ -767,11 +767,11 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
         n14 = poly.createNode(n4.pos() + [bound, 0.])
         n13 = poly.createNode(n14.pos() - [0., bound + paraDepth])
 
-        poly.createEdge(n1, n11, pg.MARKER_BOUND_HOMOGEN_NEUMANN)
-        poly.createEdge(n11, n12, pg.MARKER_BOUND_MIXED)
-        poly.createEdge(n12, n13, pg.MARKER_BOUND_MIXED)
-        poly.createEdge(n13, n14, pg.MARKER_BOUND_MIXED)
-        poly.createEdge(n14, n4, pg.MARKER_BOUND_HOMOGEN_NEUMANN)
+        poly.createEdge(n1, n11, pg.core.MARKER_BOUND_HOMOGEN_NEUMANN)
+        poly.createEdge(n11, n12, pg.core.MARKER_BOUND_MIXED)
+        poly.createEdge(n12, n13, pg.core.MARKER_BOUND_MIXED)
+        poly.createEdge(n13, n14, pg.core.MARKER_BOUND_MIXED)
+        poly.createEdge(n14, n4, pg.core.MARKER_BOUND_HOMOGEN_NEUMANN)
         poly.addRegionMarker(n12.pos() + [1e-3, 1e-3], 1, boundaryMaxCellSize)
 
     poly.createEdge(n1, n2, 1)
@@ -790,7 +790,7 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
             if iz == 2:
                 e.rotateX(-math.pi / 2)
             if paraDX >= 0.5:
-                nSurface.append(poly.createNode(e, pg.MARKER_NODE_SENSOR))
+                nSurface.append(poly.createNode(e, pg.core.MARKER_NODE_SENSOR))
                 if i < len(sensors) - 1:
                     e1 = sensors[i + 1]
                     if iz == 2:
@@ -804,7 +804,7 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
                     if iz == 2:
                         e1.rotateX(-math.pi / 2)
                     nSurface.append(poly.createNode(e - (e - e1) * paraDX))
-                nSurface.append(poly.createNode(e, pg.MARKER_NODE_SENSOR))
+                nSurface.append(poly.createNode(e, pg.core.MARKER_NODE_SENSOR))
                 if i < len(sensors) - 1:
                     e1 = sensors[i + 1]
                     if iz == 2:
@@ -816,7 +816,7 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
 
     for i in range(len(nSurface) - 1, 0, -1):
         poly.createEdge(nSurface[i], nSurface[i - 1],
-                        pg.MARKER_BOUND_HOMOGEN_NEUMANN)
+                        pg.core.MARKER_BOUND_HOMOGEN_NEUMANN)
 
     return poly
 

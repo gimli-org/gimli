@@ -45,7 +45,7 @@ def simulateNlayerRefraction(offsets, thk, vel, muteDirect=False):
     return tt
 
 
-class RefractionNLayer(pg.ModellingBase):
+class RefractionNLayer(pg.core.ModellingBase):
     """Forward operator for 1D Refraction seismic with layered model."""
     def __init__(self, offset=0, nlay=3, vbase=1100, verbose=True):
         """Init forward operator. Model are velocity increases.
@@ -63,7 +63,7 @@ class RefractionNLayer(pg.ModellingBase):
         self.nlay = nlay
         self.offset = offset
         self.vbase = vbase
-        mesh = pg.createMesh1DBlock(nlay)
+        mesh = pg.meshtools.createMesh1DBlock(nlay)
         self.setMesh(mesh)
 
     def thkVel(self, model):
@@ -78,7 +78,7 @@ class RefractionNLayer(pg.ModellingBase):
         return simulateNlayerRefraction(self.offset, *self.thkVel(model))
 
 
-class RefractionNLayerFix1stLayer(pg.ModellingBase):
+class RefractionNLayerFix1stLayer(pg.core.ModellingBase):
     """FOP for 1D Refraction seismic with layered model (e.g. water layer)."""
     def __init__(self, offset=0, nlay=3, v0=1465, d0=200, muteDirect=False,
                  verbose=True):
@@ -103,7 +103,7 @@ class RefractionNLayerFix1stLayer(pg.ModellingBase):
         self.v0 = v0
         self.d0 = d0
         self.mDirect = muteDirect
-        mesh = pg.createMesh1DBlock(nlay)
+        mesh = pg.meshtools.createMesh1DBlock(nlay)
         self.setMesh(mesh)
 
     def thkVel(self, model):

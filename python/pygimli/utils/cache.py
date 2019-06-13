@@ -103,7 +103,7 @@ class Cache(object):
                                                       removeInvalid=False)
                     print(self._value)
                 elif self.info['type'] == 'RVector':
-                    self._value = pg.RVector(self.info['file'])
+                    self._value = pg.Vector(self.info['file'])
                 elif self.info['type'] == 'Mesh':
                     pg.tic()
                     self._value = pg.Mesh()
@@ -206,7 +206,7 @@ def cache(funct):
             return cache.value
         else:
             # pg.tic will not work because there is only one global __swatch__ 
-            sw = pg.Stopwatch(True) 
+            sw = pg.core.Stopwatch(True) 
             rv = funct(*args, **kwargs)
             cache.info['date'] = time.time()
             cache.info['dur'] = sw.duration()

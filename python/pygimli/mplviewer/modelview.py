@@ -272,7 +272,7 @@ def showStitchedModels(models, ax=None, x=None, cMin=None, cMax=None,
     zMaxLimit = 0
 
     for i, imod in enumerate(models):
-        if isinstance(imod, pg.RVector):
+        if isinstance(imod, pg.Vector):
             vals[i, :] = imod(nlay - 1, 2 * nlay - 1)
             thk = np.asarray(imod(0, nlay - 1))
         else:

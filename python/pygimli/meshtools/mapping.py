@@ -72,20 +72,20 @@ def cellDataToNodeData(mesh, data, style='mean'):
     if style == 'mean':
 
         if np.ndim(data) == 1:
-            return pg.cellDataToPointData(mesh, data)
+            return pg.core.cellDataToPointData(mesh, data)
 
         if mesh.dim() == 1:
-            return pg.cellDataToPointData(mesh, data)
+            return pg.core.cellDataToPointData(mesh, data)
         elif mesh.dim() == 2:
             return np.array([
-                pg.cellDataToPointData(mesh, data[:, 0]),
-                pg.cellDataToPointData(mesh, data[:, 1])
+                pg.core.cellDataToPointData(mesh, data[:, 0]),
+                pg.core.cellDataToPointData(mesh, data[:, 1])
             ]).T
         elif mesh.dim() == 3:
             return np.array([
-                pg.cellDataToPointData(mesh, data[0]),
-                pg.cellDataToPointData(mesh, data[1]),
-                pg.cellDataToPointData(mesh, data[2])
+                pg.core.cellDataToPointData(mesh, data[0]),
+                pg.core.cellDataToPointData(mesh, data[1]),
+                pg.core.cellDataToPointData(mesh, data[2])
             ])
     else:
         raise BaseException("Style '" + style + "'not yet implemented."
@@ -103,7 +103,7 @@ def nodeDataToBoundaryData(mesh, data):
             str(mesh.nodeCount()) + " got: " + str(len(data)),
             str(len(data[0])))
 
-    if isinstance(data, pg.R3Vector):
+    if isinstance(data, pg.core.R3Vector):
         ret = np.zeros((mesh.boundaryCount(), 3))
         for b in mesh.boundaries():
             ret[b.id()] = sum(data[b.ids()]) / b.nodeCount()
@@ -147,7 +147,7 @@ def cellDataToBoundaryData(mesh, data):
 
     CtB = mesh.cellToBoundaryInterpolation()
 
-    if isinstance(data, pg.R3Vector()):
+    if isinstance(data, pg.core.R3Vector()):
         return np.array([CtB * pg.x(data), CtB * pg.y(data),
                          CtB * pg.z(data)]).T
     else:
@@ -176,7 +176,7 @@ def fillEmptyToCellArray(mesh, vals, slope=True):
     atts : array
         Array of length mesh.cellCount()
     """
-    atts = pg.RVector(mesh.cellCount(), 0.0)
+    atts = pg.Vector(mesh.cellCount(), 0.0)
     oldAtts = mesh.cellAttributes()
     mesh.setCellAttributes(vals)
     mesh.createNeighbourInfos()
@@ -198,7 +198,7 @@ def fillEmptyToCellArray(mesh, vals, slope=True):
                         b = pg.findCommonBoundary(c, nc)
                         # search along a slope
                         pos = b.center() - b.norm() * 1000.
-                        sf = pg.RVector()
+                        sf = pg.Vector()
                         startCell = c
 
                         while startCell:
@@ -300,8 +300,8 @@ def interpolateAlongCurve(curve, t, **kwargs):
         ], axis=0)
         tCurve = np.append(tCurve, max(t))
 
-    if isinstance(curve, pg.R3Vector) or isinstance(curve,
-                                                    pg.stdVectorRVector3):
+    if isinstance(curve, pg.core.R3Vector) or isinstance(curve,
+                                                    pg.core.stdVectorRVector3):
         xC = pg.x(curve)
         yC = pg.y(curve)
         zC = pg.z(curve)
@@ -518,15 +518,15 @@ def interpolate(*args, **kwargs):
                                                      fillValue=fallback,
                                                      verbose=verbose)
 
-            if isinstance(args[1], pg.RMatrix) and \
-               isinstance(args[3], pg.RMatrix):
+            if isinstance(args[1], pg.Matrix) and \
+               isinstance(args[3], pg.Matrix):
                 return pg.core._pygimli_.interpolate(args[0], inMat=args[1],
                                                      destPos=args[2],
                                                      outMat=args[3],
                                                      fillValue=fallback,
                                                      verbose=verbose)
-            if isinstance(args[1], pg.RVector) and \
-               isinstance(args[3], pg.RVector):
+            if isinstance(args[1], pg.Vector) and \
+               isinstance(args[3], pg.Vector):
                 return pg.core._pygimli_.interpolate(args[0], inVec=args[1],
                                                      destPos=args[2],
                                                      outVec=args[3],
@@ -554,8 +554,8 @@ def interpolate(*args, **kwargs):
             inMesh = args[1]
             data = args[2]
 
-            if isinstance(data, pg.R3Vector) or isinstance(
-                    data, pg.stdVectorRVector3):
+            if isinstance(data, pg.core.R3Vector) or isinstance(
+                    data, pg.core.stdVectorRVector3):
                 x = pg.interpolate(outMesh, inMesh, pg.x(data))
                 y = pg.interpolate(outMesh, inMesh, pg.y(data))
                 z = pg.interpolate(outMesh, inMesh, pg.z(data))

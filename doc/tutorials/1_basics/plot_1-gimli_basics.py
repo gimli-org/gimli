@@ -81,7 +81,7 @@ print(type(grid.cell(0)))
 ###############################################################################
 # To find the grid generation input arrays ``x`` and ``y``, you can use the
 # build-in :gimliapi:`GIMLI::Vector` (pre-defined with value type double as
-# ``pg.RVector``), standard python lists or :term:`numpy` arrays,
+# ``pg.Vector``), standard python lists or :term:`numpy` arrays,
 # which are widely compatible with :term:`GIMLi` vectors.
 
 import numpy as np

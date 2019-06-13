@@ -29,7 +29,7 @@ def analyticalCircle2D(spnts, radius, pos, dDensity):
     depth = -pos[1]
     G = 6.67384e-11
 
-    gz = pg.RVector(len(spnts))
+    gz = pg.Vector(len(spnts))
     for i, p in enumerate(spnts):
         gz[i] = G * 2. * np.pi * radius ** 2. * dDensity * depth / \
             ((p[0]-pos[0])**2. + depth**2.) * 1e5
@@ -52,7 +52,7 @@ def analyticalSphere(spnts, radius, pos, dDensity):
 
     k = 1e5 * G * M * depth
 
-    gz = pg.RVector(len(spnts), 0.0)
+    gz = pg.Vector(len(spnts), 0.0)
     for i, p in enumerate(spnts):
         # r = (p-pos).abs()
         # gdr = G * M / ( r **2.) * 1e5
@@ -113,7 +113,7 @@ def calcPolydgdz(pnts, poly, density):
        relative density change. pnts must be numbered clockwise. Otherwise
        change the sign of the result. Return values are in mGal.
     """
-    gz = pg.RVector(len(pnts), 0.0)
+    gz = pg.Vector(len(pnts), 0.0)
 
     for i, p in enumerate(pnts):
         for j in range(len(poly)):
@@ -128,7 +128,7 @@ def calcPolydgdz(pnts, poly, density):
 def calcGBounds(pos, mesh, rho):
     """ ??
     """
-    G = pg.RMatrix(len(pos), mesh.cellCount())
+    G = pg.Matrix(len(pos), mesh.cellCount())
 
     for i, p in enumerate(pos):
         for cId, b in enumerate(mesh.boundaries()):
@@ -148,7 +148,7 @@ def calcGBounds(pos, mesh, rho):
 def calcGCells(pos, mesh, rho, nInt=0):
     """
     """
-    G = pg.RMatrix(len(pos), mesh.cellCount())
+    G = pg.Matrix(len(pos), mesh.cellCount())
     rules = pg.IntegrationRules()
 
     for i, p in enumerate(pos):
@@ -188,12 +188,12 @@ def test2d():
     x = np.arange(xMin, yMax, 1.)
 
     mesh.createNeighbourInfos()
-    rho = pg.RVector(len(mesh.cellAttributes()), 1.) * 2000.0
+    rho = pg.Vector(len(mesh.cellAttributes()), 1.) * 2000.0
     rho.setVal(0.0, pg.find(mesh.cellAttributes() == 1.0))
 
-    swatch = pg.Stopwatch(True)
+    swatch = pg.core.Stopwatch(True)
     pnts = []
-    spnts = pg.stdVectorRVector3()
+    spnts = pg.core.stdVectorRVector3()
 
     for i in x:
         pnts.append(pg.RVector3(i, 0.0001))
@@ -234,8 +234,8 @@ def test2d():
     # sphere polygone
     radius = 2.
     depth = 5.
-    poly1 = pg.stdVectorRVector3()
-    poly2 = pg.stdVectorRVector3()
+    poly1 = pg.core.stdVectorRVector3()
+    poly2 = pg.core.stdVectorRVector3()
     nSegment = 124
     for i in range(nSegment):
         xp = np.sin((i+1) * (2. * np.pi) / nSegment)
@@ -352,12 +352,12 @@ def test3d():
     p = pg.RVector3(d, d, 0.0)
 
     x = np.arange(-15, 15, 1.)
-    spnts = pg.stdVectorRVector3()
+    spnts = pg.core.stdVectorRVector3()
 
     for i in x:
         spnts.append(pg.RVector3(i, 0.0))
 
-    gz = pg.RVector(len(x), 0.0)
+    gz = pg.Vector(len(x), 0.0)
     for i, p in enumerate(spnts):
 
         for face in mesh.boundaries():
@@ -410,9 +410,9 @@ mesh.scale(pg.RVector3(3., 3.))
 print mesh.cellSizes()
 
 x = np.arange(-10, 10, 1.)
-rho = pg.RVector(len(mesh.cellAttributes()), 1.) * 2000.0
+rho = pg.Vector(len(mesh.cellAttributes()), 1.) * 2000.0
 print(rho)
-pnts = pg.stdVectorRVector3()
+pnts = pg.core.stdVectorRVector3()
 
 for i in x:
     pnts.append(pg.RVector3(i, 0.0001))

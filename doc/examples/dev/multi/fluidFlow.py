@@ -70,7 +70,7 @@ def calcConcentration(mesh, vel, times, injectPos, peclet=50, scale=1):
         print(e)
         print("Building .... ")
         
-        f = pg.RVector(mesh.cellCount(), 0.0)
+        f = pg.Vector(mesh.cellCount(), 0.0)
         sourceCell=mesh.findCell(injectPos)
         
         f[sourceCell.id()] = scale

@@ -14,7 +14,7 @@ class funct:
         self.f = f
 
     def __call__(self, vec):
-        ret = pg.RVector(len(vec))
+        ret = pg.Vector(len(vec))
         for i, arg in enumerate(vec):
             ret[i] = self.f(arg)
         return ret

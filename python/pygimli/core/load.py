@@ -91,11 +91,11 @@ def load(fname, verbose=False, testAll=True, realName=None):
     ----------
     fname : string
         Filename or folder of files to load.
-    testAll : bool [True]    
+    testAll : bool [True]
         Test all filter when file suffix is unknown or loading fails.
-    realName : str [None]    
-        Real file name. 
-        When fname is generic (i.e. without suffix) we can test the 
+    realName : str [None]
+        Real file name.
+        When fname is generic (i.e. without suffix) we can test the
         realName for type info.
     verbose : bool
         Be verbose.
@@ -119,16 +119,16 @@ def load(fname, verbose=False, testAll=True, realName=None):
         ".ohm": pg.DataContainerERT,  # BERT compatibility
         ".shm": pg.DataContainerERT,  # BERT compatibility
         ".sgt": pg.DataContainer,
-        ".collect": pg.DataMap,
+        ".collect": pg.core.DataMap,
         # Vectors
-        #".dat": pg.RVector,
-        ".vector": pg.RVector,
-        ".vec": pg.RVector,
+        #".dat": pg.Vector,
+        ".vector": pg.Vector,
+        ".vec": pg.Vector,
         ".idx": pg.IVector,
         # Matrices
-        ".bmat": pg.RMatrix,
-        ".mat": pg.RMatrix,
-        ".matrix": pg.SparseMapMatrix,
+        ".bmat": pg.Matrix,
+        ".mat": pg.Matrix,
+        ".matrix": pg.matrix.SparseMapMatrix,
         # Meshes
         ".poly": readPLC,
         ".bms": pg.Mesh,
@@ -139,7 +139,7 @@ def load(fname, verbose=False, testAll=True, realName=None):
         ".h5": readFenicsHDF5Mesh,  # fenics specs as default
         # Misc
         ".gpx": readGPX,  # read gpx waypoints
-        ".xy": np.loadtxt,  # 
+        ".xy": np.loadtxt,  #
     }
 
     if not os.path.exists(fname):

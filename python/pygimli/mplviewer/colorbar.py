@@ -10,8 +10,9 @@ import numpy as np
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 import pygimli as pg
-from pygimli.mplviewer import saveFigure, updateAxes
-from pygimli.utils import prettyFloat
+from .. mplviewer import saveFigure, updateAxes
+from .. utils import prettyFloat
+from .. core.logger import renameKwarg
 
 def autolevel(z, nLevs, logScale=None, zmin=None, zmax=None):
     """Create nLevs bins for the data array z based on matplotlib ticker.
@@ -74,7 +75,7 @@ def cmapFromName(cmapname='jet', ncols=256, bad=None, **kwargs):
     if not bad:
         bad = [1.0, 1.0, 1.0, 0.0]
 
-    pg.renameKwarg('cmap', 'cMap', kwargs)
+    renameKwarg('cmap', 'cMap', kwargs)
 
     if 'cmap' in kwargs:
         cmapname = kwargs.pop('cmap', cmapname)
@@ -179,10 +180,10 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
     # print("update cbar:", cMin, cMax, label)
     if gci is not None:
         if min(gci.get_array()) < 1e12:
-            norm = mpl.colors.Normalize(vmin=min(gci.get_array()), 
+            norm = mpl.colors.Normalize(vmin=min(gci.get_array()),
                                         vmax=min(gci.get_array()))
             cbar.set_norm(norm)
-            gci.set_norm(norm)    
+            gci.set_norm(norm)
         cbar.on_mappable_changed(gci)
 
     if cMap is not None:
@@ -231,7 +232,7 @@ def createColorBar(gci, orientation='horizontal', size=0.2, pad=None,
 
     Shortcut to create a matplotlib colorbar within the ax for a given
     patchset. The colorbar is stored in the axes object as __cBar__
-    to avoid duplicates. 
+    to avoid duplicates.
 
     Parameters
     ----------
@@ -259,7 +260,7 @@ def createColorBar(gci, orientation='horizontal', size=0.2, pad=None,
         ax = gci.axes
     elif hasattr(gci, 'get_axes'):
         ax = gci.get_axes()
-        
+
     cbar = None
     if hasattr(ax, '__cBar__'):
         cbar = ax.__cBar__
@@ -432,13 +433,13 @@ def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=None,
                 data = np.ma.masked_array(data, data <= 0.0)
             else:
                 # if all data are negative switch to lin scale
-                return setMappableData(mappable, dataIn, cMin, cMax, 
+                return setMappableData(mappable, dataIn, cMin, cMax,
                                        logScale=False)
     if logScale is True:
         mappable.set_norm(mpl.colors.LogNorm())
     elif logScale is False:
         mappable.set_norm(mpl.colors.Normalize(vmin=cMin, vmax=cMax))
-    
+
     #pg._g(oldLog, logScale, cMin, cMax, mappable.norm)
     mappable.set_array(data)
     mappable.set_clim(cMin, cMax)

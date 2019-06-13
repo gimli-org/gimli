@@ -370,7 +370,7 @@ def drawModel(ax, mesh, data=None, tri=False, rasterized=False,
         ax.add_collection(gci)
 
         if data is None:
-            data = pg.RVector(mesh.cellCount())
+            data = pg.Vector(mesh.cellCount())
 
         if len(data) != mesh.cellCount():
             print(data, mesh)
@@ -523,9 +523,9 @@ def drawMeshBoundaries(ax, mesh, hideMesh=False, useColorMap=False,
     >>> mesh = pg.createGrid(x=n, y=n)
     >>> for bound in mesh.boundaries():
     ...     if not bound.rightCell():
-    ...         bound.setMarker(pg.MARKER_BOUND_MIXED)
+    ...         bound.setMarker(pg.core.MARKER_BOUND_MIXED)
     ...     if bound.center().y() == 0:
-    ...         bound.setMarker(pg.MARKER_BOUND_HOMOGEN_NEUMANN)
+    ...         bound.setMarker(pg.core.MARKER_BOUND_HOMOGEN_NEUMANN)
     >>> fig, ax = plt.subplots()
     >>> drawMeshBoundaries(ax, mesh)
     """
@@ -544,7 +544,7 @@ def drawMeshBoundaries(ax, mesh, hideMesh=False, useColorMap=False,
         ax.set_ylim(mesh.ymin() - 0.05, mesh.ymax() + 0.05)
 
 #    drawAA = True
-#    swatch = pg.Stopwatch(True)
+#    swatch = pg.core.Stopwatch(True)
     mesh.createNeighbourInfos()
 
     if not hideMesh:
@@ -554,11 +554,11 @@ def drawMeshBoundaries(ax, mesh, hideMesh=False, useColorMap=False,
                                    linewidth=lw or 0.3)
 
     drawSelectedMeshBoundaries(
-            ax, mesh.findBoundaryByMarker(pg.MARKER_BOUND_HOMOGEN_NEUMANN),
+            ax, mesh.findBoundaryByMarker(pg.core.MARKER_BOUND_HOMOGEN_NEUMANN),
             color=(0.0, 1.0, 0.0, 1.0),
             linewidth=lw or 1.0)
     drawSelectedMeshBoundaries(
-            ax, mesh.findBoundaryByMarker(pg.MARKER_BOUND_MIXED),
+            ax, mesh.findBoundaryByMarker(pg.core.MARKER_BOUND_MIXED),
             color=(1.0, 0.0, 0.0, 1.0),
             linewidth=lw or 1.0)
 
@@ -668,7 +668,7 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
         for n in mesh.nodes():
             col = (0.0, 0.0, 0.0, 0.5)
 
-            if n.marker() == pg.MARKER_NODE_SENSOR:
+            if n.marker() == pg.core.MARKER_NODE_SENSOR:
                 col = (0.0, 0.0, 0.0, 1.0)
 
             # ms = kwargs.pop('markersize', 5)
@@ -1033,8 +1033,8 @@ def drawStreamLine_(ax, mesh, c, data, dataMesh=None, linewidth=1.0,
 
         segments = np.concatenate([points[:-1], points[1:]], axis=1)
 
-        lwidths = pg.RVector(len(v), linewidth)
-        lwidths[pg.find(pg.RVector(v) < dropTol)] = 0.0
+        lwidths = pg.Vector(len(v), linewidth)
+        lwidths[pg.find(pg.Vector(v) < dropTol)] = 0.0
 
         lines = mpl.collections.LineCollection(
             segments, linewidths=lwidths, **kwargs)
@@ -1050,7 +1050,7 @@ def drawStreamLine_(ax, mesh, c, data, dataMesh=None, linewidth=1.0,
         dx = x[xmid + 1] - x[xmid]
         dy = y[ymid + 1] - y[ymid]
         c = mesh.findCell([x[xmid], y[ymid]])
-        
+
         if v[xmid] > dropTol:
 
             absArrowSize = True
@@ -1063,10 +1063,10 @@ def drawStreamLine_(ax, mesh, c, data, dataMesh=None, linewidth=1.0,
                     size=markerSize, **kwargs,
                 )
             else:
-                ax.arrow(x[xmid], y[ymid], dx, dy, 
-                        shape='full', lw=0, 
-                        length_includes_head=True, 
-                        fc='black', 
+                ax.arrow(x[xmid], y[ymid], dx, dy,
+                        shape='full', lw=0,
+                        length_includes_head=True,
+                        fc='black',
                         head_width=.35, **kwargs)
 
             # dx90 = -dy
@@ -1099,7 +1099,7 @@ def drawStreams(ax, mesh, data, startStream=3, coarseMesh=None, quiver=False,
         ax to draw into
     mesh : :gimliapi:`GIMLI::Mesh`
         2d mesh
-    data : iterable float | [float, float] | pg.R3Vector
+    data : iterable float | [float, float] | pg.core.R3Vector
         If data is an array (per cell or node) gradients are calculated
         otherwise the data will be interpreted as vector field.
     startStream : int
@@ -1155,7 +1155,7 @@ def drawStreams(ax, mesh, data, startStream=3, coarseMesh=None, quiver=False,
             x = pg.x(mesh.boundaryCenters())
             y = pg.y(mesh.boundaryCenters())
 
-        if isinstance(data, pg.R3Vector):
+        if isinstance(data, pg.core.R3Vector):
             u = pg.x(data)
             v = pg.y(data)
         else:
@@ -1251,7 +1251,7 @@ def drawSensors(ax, sensors, diam=None, coords=None, **kwargs):
     """
     if coords is None:
         coords = [0, 2]
-        if pg.yVari(sensors):
+        if pg.core.yVari(sensors):
             coords = [0, 1]
 
     eCircles = []
@@ -1276,11 +1276,11 @@ def _createParameterContraintsLines(mesh, cMat, cWeights=None):
     """
     C = None
 
-    if isinstance(cMat, pg.SparseMapMatrix):
+    if isinstance(cMat, pg.matrix.SparseMapMatrix):
 
         tmp = pg.optImport('tempfile')
         _, tmpFile = tmp.mkstemp(suffix='.matrix')
-        C = pg.RMatrix()
+        C = pg.Matrix()
         cMat.save(tmpFile)
         pg.loadMatrixCol(C, tmpFile)
 
@@ -1313,7 +1313,7 @@ def _createParameterContraintsLines(mesh, cMat, cWeights=None):
 
     start = []
     end = []
-    #    swatch = pg.Stopwatch(True)  # not used
+    #    swatch = pg.core.Stopwatch(True)  # not used
     i = -1
     while i < C[0].size():
         cID = C[0][i]

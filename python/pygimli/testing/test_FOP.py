@@ -11,10 +11,10 @@ import pygimli.meshtools as mt
 
 run_solve = True
 
-class ModellingMT(pg.ModellingBase):
+class ModellingMT(pg.core.ModellingBase):
     def __init__(self, nPars, verbose):
         """ """
-        pg.ModellingBase.__init__(self, verbose)
+        pg.core.ModellingBase.__init__(self, verbose)
         self.regionManager().setParameterCount(nPars)
 
     def dummySolve(self, info):
@@ -49,15 +49,15 @@ class TestFOP(unittest.TestCase):
 
     def test_FOP(self):
         """ Test FOP """
-        # ab2 = pg.RVector(2, 1.0)
+        # ab2 = pg.Vector(2, 1.0)
         # ab2[1] = 2.0
-        # mn2 = pg.RVector(2, 3.0)
+        # mn2 = pg.Vector(2, 3.0)
         # mn2[1] = 4.0
 
         # nlay = 2
-        # model = pg.RVector(3, 10.)
+        # model = pg.Vector(3, 10.)
 
-        # F = pg.DC1dModelling(nlay, ab2, mn2)
+        # F = pg.core.DC1dModelling(nlay, ab2, mn2)
 
         # print(F.response(model))
 
@@ -67,7 +67,7 @@ class TestFOP(unittest.TestCase):
         """ Test FOP response - mt"""
         nPars = 4
         ####### temporary deactivated -- test me
-        # m = pg.RVector(nPars, 1)
+        # m = pg.Vector(nPars, 1)
         # fop = ModellingMT(nPars, verbose=True)
 
         # ms = np.array([m*2, m*3, m*4, m*5])
@@ -92,13 +92,13 @@ class TestFOP(unittest.TestCase):
         """ """
         nPars = 4
         ####### temporary deactivated -- test me
-        # m = pg.RVector(nPars, 1)
+        # m = pg.Vector(nPars, 1)
 
         # fop = ModellingMT(nPars, verbose=False)
         # fop.setMultiThreadJacobian(1)
         # fop.setThreadCount(1)
         # fop.createJacobian(m)
-        # J1 = pg.RMatrix(fop.jacobian())
+        # J1 = pg.Matrix(fop.jacobian())
 
         # fop.setMultiThreadJacobian(nPars)
         # fop.setThreadCount(1)

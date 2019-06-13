@@ -41,7 +41,7 @@ def toComplex(amp, phi=None):
         return np.array(amp) * (np.cos(phi) + 1j *np.sin(phi))
     N = len(amp) // 2 
     return np.array(amp[0:N]) + 1j * np.array(amp[N:])
-    #return np.array(pg.toComplex(amp[0:N], amps[N:]))
+    #return np.array(pg.math.toComplex(amp[0:N], amps[N:]))
 
 def toPolar(z):
     """Convert complex values array into amplitude and phase in radiant
@@ -66,8 +66,8 @@ def toPolar(z):
 
 def squeezeComplex(z, polar=False):
     """Squeeze complex valued array into [real, imag] or [amp, -phase(rad)]"""
-    if isinstance(z, pg.CSparseMapMatrix) or \
-       isinstance(z, pg.CSparseMatrix) or isinstance(z, pg.CMatrix):
+    if isinstance(z, pg.matrix.CSparseMapMatrix) or \
+       isinstance(z, pg.matrix.CSparseMatrix) or isinstance(z, pg.matrix.CMatrix):
         return toRealMatrix(z)
 
     if isComplex(z):
@@ -81,10 +81,10 @@ def squeezeComplex(z, polar=False):
 
 def toRealMatrix(C):
     """Convert complex valued matrix into a real valued Blockmatrix"""
-    R = pg.BlockMatrix()
+    R = pg.matrix.BlockMatrix()
     # we store the mats to keep the GC happy after leaving the scope
-    Cr = pg.real(C)
-    Ci = pg.imag(C)
+    Cr = pg.math.real(C)
+    Ci = pg.math.imag(C)
 
     rId = R.addMatrix(Cr)
     iId = R.addMatrix(Ci)

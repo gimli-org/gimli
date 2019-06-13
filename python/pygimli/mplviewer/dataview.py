@@ -18,7 +18,7 @@ def generateMatrix(xvec, yvec, vals, **kwargs):
 
     Parameters
     ----------
-    xvec, yvec, vals : iterables (list, np.array, pg.RVector) of same length
+    xvec, yvec, vals : iterables (list, np.array, pg.Vector) of same length
 
     full: bool [False]
         generate a fully symmetric matrix containing all unique xvec+yvec
@@ -470,7 +470,7 @@ def showVecMatrix(xvec, yvec, vals, full=False, **kwargs):
 
     Parameters
     ----------
-    xvec, yvec : iterable (e.g. list, np.array, pg.RVector) of identical length
+    xvec, yvec : iterable (e.g. list, np.array, pg.Vector) of identical length
         vectors defining the indices into the matrix
     vals : iterable of same length as xvec/yvec
         vector containing the values to show

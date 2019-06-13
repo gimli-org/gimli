@@ -30,7 +30,7 @@ class TestManagers(unittest.TestCase):
         ra = vmdMgr.simulate(synthModel)
 
         err = abs(np.log(t)/2) * 0.01
-        ra *= 1. + pg.randn(len(ra)) * err
+        ra *= 1. + pg.math.randn(len(ra)) * err
 
         model = vmdMgr.invert(ra, err, nLayers=4, layerLimits=[2, 500],
                               maxIter=20,

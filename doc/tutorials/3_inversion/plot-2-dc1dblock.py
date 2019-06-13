@@ -26,7 +26,7 @@ ab2 = np.logspace(-1, 2, 50)  # AB/2 distance (current electrodes)
 mn2 = ab2 / 3.  # MN/2 distance (potential electrodes)
 ###############################################################################
 # initialize the forward modelling operator
-f = pg.DC1dModelling(nlay, ab2, mn2)
+f = pg.core.DC1dModelling(nlay, ab2, mn2)
 ###############################################################################
 # other ways are by specifying a Data Container or am/an/bm/bn distances
 synres = [100., 500., 20., 800.]  # synthetic resistivity
@@ -34,12 +34,12 @@ synthk = [0.5, 3.5, 6.]  # synthetic thickness (nlay-th layer is infinite)
 ###############################################################################
 # the forward operator can be called by f.response(model) or simply f(model)
 rhoa = f(synthk+synres)
-rhoa = rhoa * (pg.randn(len(rhoa)) * errPerc / 100. + 1.)
+rhoa = rhoa * (pg.math.randn(len(rhoa)) * errPerc / 100. + 1.)
 ###############################################################################
 # create some transformations used for inversion
-transThk = pg.RTransLog()  # log-transform ensures thk>0
-transRho = pg.RTransLogLU(1, 1000)  # lower and upper bound
-transRhoa = pg.RTransLog()  # log transformation for data
+transThk = pg.trans.TransLog()  # log-transform ensures thk>0
+transRho = pg.trans.TransLogLU(1, 1000)  # lower and upper bound
+transRhoa = pg.trans.TransLog()  # log transformation for data
 ###############################################################################
 # set model transformation for thickness and resistivity
 f.region(0).setTransModel(transThk)  # 0=thickness
@@ -51,7 +51,7 @@ f.region(0).setStartValue(paraDepth / nlay / 2)
 f.region(1).setStartValue(np.median(rhoa))
 ###############################################################################
 # set up inversion
-inv = pg.RInversion(rhoa, f, transRhoa, True)  # data vector, fop, verbose
+inv = pg.Inversion(rhoa, f, transRhoa, True)  # data vector, fop, verbose
 # could also be set by inv.setTransData(transRhoa)
 ###############################################################################
 # set error model, regularization strength and Marquardt scheme
@@ -63,7 +63,7 @@ model[nlay] *= 1.5  # change default model by changing 2nd layer resistivity
 inv.setModel(model)  #
 ###############################################################################
 # run actual inversion and extract resistivity and thickness
-model = inv.run()  # result is a pg.RVector, but compatible to numpy array
+model = inv.run()  # result is a pg.Vector, but compatible to numpy array
 res, thk = model[nlay-1:nlay*2-1], model[0:nlay-1]
 print('rrms={:.2f}%, chi^2={:.3f}'.format(inv.relrms(), inv.chi2()))
 ###############################################################################

@@ -63,7 +63,7 @@ pg.show(mesh_fwd, model, label="Velocity (m/s)", nLevs=3, logScale=False)
 refinement = 0.25
 x = np.arange(0, bh_spacing + refinement, sensor_spacing * refinement)
 y = -np.arange(0.0, bh_length + 3, sensor_spacing * refinement)
-mesh = pg.createMesh2D(x, y)
+mesh = pg.meshtools.createMesh2D(x, y)
 
 ax, _ = pg.show(mesh, hold=True)
 ax.plot(sensors[:, 0], sensors[:, 1], "ro")

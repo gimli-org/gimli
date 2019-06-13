@@ -166,7 +166,7 @@ for n in range(1,len(times)):
         So we need to take a copy of the mass element matrix ourself to keep in
         safe environment.
     """
-    S = pg.RSparseMatrix(M)
+    S = pg.matrix.SparseMatrix(M)
     #S = M
 
     if n==1:
@@ -184,7 +184,7 @@ for n in range(1,len(times)):
     
     v[n] = solver.linsolve(S, rhs)
 
-    e[n] = 0.5 * (pg.dot(M * v[n], v[n]) + pg.dot(A * u[n], u[n]))
+    e[n] = 0.5 * (pg.math.dot(M * v[n], v[n]) + pg.math.dot(A * u[n], u[n]))
     
     print(n, times[n], "Energy", e[n], k/(h*h))
 

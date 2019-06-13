@@ -149,7 +149,7 @@ def computeInverseRootMatrix(CM, thrsh=0.001, verbose=False):
 
     if thrsh:
         nModel = len(CM)
-        RCM05 = pg.RSparseMapMatrix(nModel, nModel)
+        RCM05 = pg.matrix.SparseMapMatrix(nModel, nModel)
         for i in range(nModel):
             for j in range(nModel):
                 if np.abs(CM05[i][j]) > thrsh:

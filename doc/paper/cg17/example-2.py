@@ -42,7 +42,7 @@ def solveAdvection(mesh, vel, times, diffusion, verbose=False):
         print("Solve for concentration movement on", len(times),
               "time steps ...")
 
-    S = pg.RVector(mesh.cellCount(), 0.0)
+    S = pg.Vector(mesh.cellCount(), 0.0)
     injectPos = [-19.1, -4.6]
     sourceCell = mesh.findCell(injectPos)
     S[sourceCell.id()] = 1.0/sourceCell.size()
@@ -125,12 +125,12 @@ def solveERT(mesh, concentration, verbose=0):
     return meshERT, ertScheme, resis, rhoa, dRhoa, dErr
 
 
-class HydroGeophysicalModelling(pg.ModellingBase):
+class HydroGeophysicalModelling(pg.core.ModellingBase):
     """Forward Operator for fully coupled hydrogeophysical inversion."""
 
     def __init__(self, verbose=False, **kwargs):
         """Constructor."""
-        pg.ModellingBase.__init__(self, verbose=verbose)
+        pg.core.ModellingBase.__init__(self, verbose=verbose)
         self.init(kwargs.pop('mesh', None),
                   kwargs.pop('tMax', 50000),
                   kwargs.pop('satSteps', 50),
@@ -149,7 +149,7 @@ class HydroGeophysicalModelling(pg.ModellingBase):
         self.satSteps = satSteps
         self.ertSteps = ertSteps
         self.timesAdvection = np.linspace(1, tMax, satSteps)
-        self.timesERT = pg.IndexArray(np.floor(
+        self.timesERT = pg.core.IndexArray(np.floor(
             np.linspace(0, len(self.timesAdvection)-1, self.ertSteps)))
 
         self._J = pg.Matrix()
@@ -227,13 +227,13 @@ def simulateSynth(model, tMax=5000, satSteps=150, ertSteps=10, area=0.1,
 
     print('##### Simulate synthetic data ' + '#'*50)
     pg.tic()
-    rhoaR = fop.response(pg.RVector(model)[paraMesh.cellMarkers()])
+    rhoaR = fop.response(pg.Vector(model)[paraMesh.cellMarkers()])
     pg.toc()
     print('#'*100)
 
     # add some noise here
-    rand = pg.RVector(len(rhoaR))
-    pg.randn(rand)
+    rand = pg.Vector(len(rhoaR))
+    pg.math.randn(rand)
 
     rhoaR *= (1.0 + rand * fop.ws.derr.flatten())
     fop.ws.rhoaR = rhoaR.reshape(fop.ws.derr.shape)
@@ -358,14 +358,14 @@ if __name__ == '__main__':
         for j in range(i+1, fop.regionManager().regionCount()):
             fop.regionManager().setInterRegionConstraint(i, j, 1.0)
 
-    startModel = pg.RVector(fop.regionManager().parameterCount(), 1e-3)
+    startModel = pg.Vector(fop.regionManager().parameterCount(), 1e-3)
 
     fop.setStartModel(startModel)
 
-    inv = pg.RInversion(rhoaR.flatten(), fop, verbose=1, dosave=0)
+    inv = pg.Inversion(rhoaR.flatten(), fop, verbose=1, dosave=0)
 
-    tD = pg.RTransLog()
-    tM = pg.RTransLogLU(1e-9, 1e-2)
+    tD = pg.trans.TransLog()
+    tM = pg.trans.TransLogLU(1e-9, 1e-2)
     inv.setTransData(tD)
     inv.setTransModel(tM)
 

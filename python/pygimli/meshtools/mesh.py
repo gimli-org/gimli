@@ -18,9 +18,9 @@ def createMesh(poly, quality=32, area=0.0, smooth=None, switches=None,
     in the sense that the boundaries are non intersecting.
 
     If poly is a list of coordinates, a simple Delaunay mesh of the convex hull
-    will be created. Quality and area arguments are ignored for this case to 
-    create mesh with one node for each coordinate position. 
-    
+    will be created. Quality and area arguments are ignored for this case to
+    create mesh with one node for each coordinate position.
+
     Parameters
     ----------
     poly: :gimliapi:`GIMLI::Mesh` or list or ndarray
@@ -37,7 +37,7 @@ def createMesh(poly, quality=32, area=0.0, smooth=None, switches=None,
         3D tetgen quality. Be careful with values below 1.12.
 
     area: float
-        Maximum element size. 2D maximum triangle size in m*², 3D max. 
+        Maximum element size. 2D maximum triangle size in m*², 3D max.
         tetrahedral size in m³.
 
     smooth: tuple
@@ -75,8 +75,8 @@ def createMesh(poly, quality=32, area=0.0, smooth=None, switches=None,
     # poly == [pos, pos, ]
     if isinstance(poly, list) or \
         isinstance(poly, type(zip)) or \
-        type(poly) == pg.stdVectorRVector3 or \
-        isinstance(poly, pg.R3Vector) or \
+        type(poly) == pg.core.stdVectorRVector3 or \
+        isinstance(poly, pg.core.R3Vector) or \
         (isinstance(poly, np.ndarray) and poly.ndim == 2):
         delPLC = pg.Mesh(2)
         for p in poly:
@@ -102,7 +102,7 @@ def createMesh(poly, quality=32, area=0.0, smooth=None, switches=None,
 
             # switches = switches.replace('.', ',')
             switches += 'q' + str(quality)
-            
+
             # an EXTRA! -a here else it ignores per region area
             switches += 'a'
 
@@ -111,7 +111,7 @@ def createMesh(poly, quality=32, area=0.0, smooth=None, switches=None,
 
         pg.verbose(switches)
 
-        tri = pg.TriangleWrapper(poly)
+        tri = pg.core.TriangleWrapper(poly)
         tri.setSwitches(switches)
         mesh = tri.generate()
 
@@ -131,7 +131,7 @@ def createMesh(poly, quality=32, area=0.0, smooth=None, switches=None,
         _, namePLC = tmp.mkstemp(suffix='.poly')
 
         pg.meshtools.exportPLC(poly, namePLC)
-        mesh = pg.meshtools.syscallTetgen(namePLC, quality, area, 
+        mesh = pg.meshtools.syscallTetgen(namePLC, quality, area,
                                           verbose=verbose, **kwargs)
 
         try:
@@ -219,7 +219,7 @@ def refineHex2Tet(mesh, style=1):
     style: int [1]
         * 1 bisect each hexahedron int 5 tetrahedrons
         * 2 bisect each hexahedron int 6 tetrahedrons
-        
+
     Returns
     -------
     ret : :gimliapi:`GIMLI::Mesh`
@@ -240,7 +240,7 @@ def refineHex2Tet(mesh, style=1):
     Mesh: Nodes: 8 Cells: 6 Boundaries: 0
     """
     out = pg.Mesh(3)
-    
+
     for n in mesh.nodes():
         out.createNode(n.pos())
 
@@ -405,9 +405,9 @@ def readGmsh(fname, verbose=False):
     mesh = pg.Mesh(dim)
 
     # replacing boundary markers (gmsh does not allow negative phys. regions)
-    bound_marker = (pg.MARKER_BOUND_HOMOGEN_NEUMANN, pg.MARKER_BOUND_MIXED,
-                    pg.MARKER_BOUND_HOMOGEN_DIRICHLET,
-                    pg.MARKER_BOUND_DIRICHLET)
+    bound_marker = (pg.core.MARKER_BOUND_HOMOGEN_NEUMANN, pg.core.MARKER_BOUND_MIXED,
+                    pg.core.MARKER_BOUND_HOMOGEN_DIRICHLET,
+                    pg.core.MARKER_BOUND_DIRICHLET)
 
     if bounds.any():
         for i in range(4):
@@ -450,7 +450,7 @@ def readGmsh(fname, verbose=False):
     # Set Neumann on outer edges by default (can be overriden by Gmsh info)
     for b in mesh.boundaries():
         if not b.leftCell() or not b.rightCell():
-            b.setMarker(pg.MARKER_BOUND_HOMOGEN_NEUMANN)
+            b.setMarker(pg.core.MARKER_BOUND_HOMOGEN_NEUMANN)
 
     for bound in bounds:
         if dim == 2:
@@ -655,7 +655,7 @@ def readHydrus2dMesh(fileName='MESHTRIA.TXT'):
     line = fid.readline().split()
     if 'HYDRUS' in line:
         return readHydrusMeshV3(fileName)
-        
+
     nnodes = int(line[1])
     ncells = int(line[3])
     mesh = pg.Mesh()
@@ -739,17 +739,17 @@ def readHydrus3dMesh(fileName='MESHTRIA.TXT'):
 
 def readHydrusMeshV3(fileName):
     """Import mesh from Hydrus3D. File Version 3.
-    
+
     TODO:
     ----
     * 3D
-     
+
     Parameters
     ----------
     fileName : str
         Filename of Hydrus output file.
-    
-    """ 
+
+    """
     with open(fileName) as fid:
         lines = fid.readlines()
         mesh = None
@@ -757,7 +757,7 @@ def readHydrusMeshV3(fileName):
         nBound = 0
         nCells = 0
         for i, line in enumerate(lines):
-            if 'Mesh Dim' in line: 
+            if 'Mesh Dim' in line:
                 dim = int(line.split('\r\n')[0].split(':')[1])
                 if dim != 2:
                     pg.error('3D mesh not yet implemented due to the lack of a testfile.')
@@ -777,7 +777,7 @@ def readHydrusMeshV3(fileName):
                     nNodes = int(nNodes)
                     nBound = int(nEle2)
                     nCells = int(nEle3)
-                
+
                 print(nNodes, nBound, nCells)
 
             if 'NODAL' in line:
@@ -802,12 +802,12 @@ def readHydrusMeshV3(fileName):
                             if mesh.boundaryCount() != nBound:
                                 print(e)
                                 pg.error('Something is wrong in the file. {0} 1D-Elements '
-                                        'elements are announced but only {1} found'.format(nBound, mesh.boundaryCount())) 
+                                        'elements are announced but only {1} found'.format(nBound, mesh.boundaryCount()))
                                 i = i + 8 + mesh.boundaryCount()
                             break
                     else:
                         pg.error('Something wrong with mesh dimension')
-                
+
             if '2D-ELEMENTS' in line:
                 for line in lines[i + 10:]:
                     vals = line.split('\r\n')[0].split()
@@ -822,12 +822,12 @@ def readHydrusMeshV3(fileName):
                             if mesh.cellCount() != nCells:
                                 print(e)
                                 pg.error('Something is wrong in the file. {0} 2D-Elements '
-                                        'elements announced but only {1} found'.format(nCells, mesh.cellCount())) 
+                                        'elements announced but only {1} found'.format(nCells, mesh.cellCount()))
                                 i = i + 10 + mesh.cellCount()
                                 break
                     else:
                         pg.error('3D mesh not yet implemented. We need an example file.')
-                                
+
     return mesh
 
 
@@ -937,7 +937,7 @@ def convertHDF5Mesh(h5Mesh, group='mesh', indices='cell_indices',
         mesh.createNode(node)
 
     for i, cell in enumerate(mesh_cells):
-        mesh.createCell(pg.IndexArray(cell), marker=int(mesh_marker[i]))
+        mesh.createCell(pg.core.IndexArray(cell), marker=int(mesh_marker[i]))
 
     mesh.createNeighbourInfos()
 
@@ -1597,7 +1597,7 @@ def createParaMesh2DGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
     >>> import matplotlib.pyplot as plt
     >>>
     >>> from pygimli.meshtools import createParaMesh2DGrid
-    >>> mesh = createParaMesh2DGrid(sensors=pg.RVector(range(10)),
+    >>> mesh = createParaMesh2DGrid(sensors=pg.Vector(range(10)),
     ...                             boundary=1, paraDX=1,
     ...                             paraDZ=1, paraDepth=5)
     >>> ax, _ = pg.show(mesh, markers=True, showMesh=True)
@@ -1605,7 +1605,7 @@ def createParaMesh2DGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
     mesh = pg.Mesh(2)
 
     # maybe separate x y z and sort
-    if isinstance(sensors, np.ndarray) or isinstance(sensors, pg.RVector):
+    if isinstance(sensors, np.ndarray) or isinstance(sensors, pg.Vector):
         sensors = [pg.RVector3(s, 0) for s in sensors]
 
     if isinstance(sensors, pg.DataContainer):
@@ -1635,7 +1635,7 @@ def createParaMesh2DGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
     # print(xmin, xmax, dx)
     x = pg.utils.grange(xmin, xmax, dx=dx)
 
-    y = -pg.increasingRange(dz, paraDepth, nLayers)
+    y = -pg.core.increasingRange(dz, paraDepth, nLayers)
 
     mesh.createGrid(x, y)
     mesh.setCellMarkers([2] * mesh.cellCount())

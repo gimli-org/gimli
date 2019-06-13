@@ -10,14 +10,14 @@ import pygimli as pg
 pg.version()
 
 # test pygimli log
-pg.info("Start numeric log test." + str(pg.log(pg.RVector(1, 1.))))
+pg.info("Start numeric log test." + str(pg.log(pg.Vector(1, 1.))))
 pg.setVerbose(True)
 pg.verbose("some verbose notes")
 pg.warn("Start warning test.")
 
 def testTraceback1():
     def testTraceback2():
-        pg.error("Start error test.: int", 1, " vec", pg.RVector(2))
+        pg.error("Start error test.: int", 1, " vec", pg.Vector(2))
     testTraceback2()
 testTraceback1()
 
@@ -59,15 +59,15 @@ pg.debug("debug OFF")
 pg.setThreadCount(2)
 
 # test core log (should not be used outside the core)
-pg.log(pg.Info, "core log ")
-pg.log(pg.Warning, "core log ")
-pg.log(pg.Error, "core log ")
-pg.log(pg.Critical, "core log ")
+pg.log(pg.core.Info, "core log ")
+pg.log(pg.core.Warning, "core log ")
+pg.log(pg.core.Error, "core log ")
+pg.log(pg.core.Critical, "core log ")
 
-#pg.logger.exception("Exception")
+#pg.exception("Exception")
 
 def testMethod(**kwargs):
-    pg.warnNonEmptyArgs(kwargs)
+    pg.core.logger.warnNonEmptyArgs(kwargs)
 
 testMethod(a=1, b='foo')
 #

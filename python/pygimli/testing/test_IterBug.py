@@ -11,7 +11,7 @@ class TestIterBug(unittest.TestCase):
     def test_MissingRefCounter(self):
         """
         """
-        a = pg.RVector(10, 1)
+        a = pg.Vector(10, 1)
 
         # das geht schief wegen fehlendem referenzcounter. der Iter nutzt das
         # temporaere Object a(0,9) das nicht weiter gezaehlt wird

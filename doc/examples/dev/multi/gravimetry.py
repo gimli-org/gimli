@@ -39,9 +39,9 @@ class Gravimetry():
         return pg.physics.gravimetry.GravimetryModelling(verbose=verbose)
 
     def createInv(self, verbose):
-        self.tD = pg.RTrans()
-        self.tM = pg.RTrans()
-        inv = pg.RInversion(verbose=verbose, dosave=False)
+        self.tD = pg.trans.Trans()
+        self.tM = pg.trans.Trans()
+        inv = pg.Inversion(verbose=verbose, dosave=False)
         inv.setTransData(self.tD)
         inv.setTransModel(self.tM)
         return inv
@@ -71,7 +71,7 @@ class Gravimetry():
 
         self.setParaMesh(mesh)
 
-        startModel = pg.RVector(self.fop.regionManager().parameterCount(), 0.0)
+        startModel = pg.Vector(self.fop.regionManager().parameterCount(), 0.0)
 
         self.inv.setForwardOperator(self.fop)
 
@@ -87,13 +87,13 @@ class Gravimetry():
         values = model
         if values is not None:
 
-            if isinstance(values, pg.RVector):
+            if isinstance(values, pg.Vector):
                 values = [values]
             elif isinstance(values, np.ndarray):
                 if values.ndim == 1:
                     values = [values]
 
-            allModel = pg.RMatrix(len(values)+1, len(model))
+            allModel = pg.Matrix(len(values)+1, len(model))
             allModel[0] = model
             self.inv.setVerbose(False)
             for i in range(1, len(values)):
@@ -122,7 +122,7 @@ class Gravimetry():
 def calcInvBlock(mesh, dens, out='gravInv'):
 
     # extract block delta density
-    densBlock = pg.RVector(dens)
+    densBlock = pg.Vector(dens)
     densMarker2 = dens[pg.find(mesh.cellMarker() == 2)[0]]
 #    densBlock[(mesh.cellMarker() == 1)|(mesh.cellMarker() == 3)] = densMarker2
     densBlock[pg.find((mesh.cellMarker() == 1) | (mesh.cellMarker() == 3))] = \

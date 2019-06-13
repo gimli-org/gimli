@@ -719,22 +719,22 @@ class SIPSpectrum(object):
         # discretize tau, setup DD and perform DD inversion
         self.tau = np.logspace(log10(mint), log10(maxt), nt)
         phi = self.phi
-        tLin, tLog, tM = pg.RTrans(), pg.RTransLog(), pg.RTransLog()
-        # pg.RTransLogLU(0., 1.)
+        tLin, tLog, tM = pg.trans.Trans(), pg.trans.TransLog(), pg.trans.TransLog()
+        # pg.trans.TransLogLU(0., 1.)
         if new:
             reNorm, imNorm = self.zNorm()
             fDD = DebyeComplex(self.f, self.tau)
             Znorm = pg.cat(reNorm, imNorm)
-            IDD = pg.RInversion(Znorm, fDD, tLog, tM, False)
+            IDD = pg.Inversion(Znorm, fDD, tLog, tM, False)
             IDD.setAbsoluteError(max(Znorm)*0.003+ePhi)
         else:
             fDD = DebyePhi(self.f, self.tau)
-            IDD = pg.RInversion(phi, fDD, tLin, tM, True)
+            IDD = pg.Inversion(phi, fDD, tLin, tM, True)
             IDD.setAbsoluteError(ePhi)  # 1 mrad
 
         fDD.regionManager().setConstraintType(cType)
         IDD.stopAtChi1(False)
-        startModel = pg.RVector(nt, 0.01)
+        startModel = pg.Vector(nt, 0.01)
         IDD.setModel(startModel)
         IDD.setLambda(lam)
         IDD.setLambdaFactor(lamFactor)

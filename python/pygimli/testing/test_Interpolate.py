@@ -13,7 +13,7 @@ class TestInterpolate(unittest.TestCase):
 
     def test_Interpolate(self):
         grid = pg.createGrid(x=[0.0, 1.0], y=[0.0, 1.0])
-        u = pg.RVector(grid.nodeCount(), 1.)
+        u = pg.Vector(grid.nodeCount(), 1.)
 
         # test with pg.interpolate
         queryPos = [0.2, 0.2]
@@ -28,7 +28,7 @@ class TestInterpolate(unittest.TestCase):
         np.testing.assert_allclose(uI, 1.)
 
         # test with manual interpolationMatrix generation
-        I = pg.RSparseMapMatrix(1, grid.nodeCount())
+        I = pg.matrix.SparseMapMatrix(1, grid.nodeCount())
         cI = c.N(c.shape().rst(queryPos))
         for i in range(c.nodeCount()):
             I.addVal(0, c.node(i).id(), cI[i])

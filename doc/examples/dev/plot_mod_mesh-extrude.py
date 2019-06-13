@@ -28,11 +28,11 @@ border = plc.mergePLC([left, c1, mid, c2, right])
 depth = 20
 nz = 15
 newNodes = []
-y = pg.increasingRange(0.2, depth, nz)
-surface = pg.createMesh2D(border, y, 0, 0, False)
+y = pg.core.increasingRange(0.2, depth, nz)
+surface = pg.meshtools.createMesh2D(border, y, 0, 0, False)
 
 #for n in surface.nodes():
-    #yNodes = pg.increasingRange(yDefault[1], depth+n.y(), nz)
+    #yNodes = pg.core.increasingRange(yDefault[1], depth+n.y(), nz)
     #for y in yNodes[0:]:
         #newNodes.append([n.x(), n.y() -y])
 
@@ -49,12 +49,12 @@ ax, _ = pg.show(surface)
 ax.set_ylim([-21, 1])
 ax.set_xlim([-21, 21])
 
-zinc = pg.increasingRange(1, 10, 5)
+zinc = pg.core.increasingRange(1, 10, 5)
 zmid = np.linspace(1, 10, 20)
 z = pg.cat(-(np.asarray(zinc)[::-1]), zmid)
 z = pg.cat(z, 11+zinc)
 
-mesh3D = pg.createMesh3D(surface, z)
+mesh3D = pg.meshtools.createMesh3D(surface, z)
 mesh3D.exportVTK("mesh3d")
 
 pg.wait()

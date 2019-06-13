@@ -84,9 +84,9 @@ class BertModelling(ERTModellingBase):
         #
         self.bertFop = None
         if sr:
-            self.bertFop = pg.DCSRMultiElectrodeModelling(verbose=verbose)
+            self.bertFop = pg.core.DCSRMultiElectrodeModelling(verbose=verbose)
         else:
-            self.bertFop = pg.DCMultiElectrodeModelling(verbose=verbose)
+            self.bertFop = pg.core.DCMultiElectrodeModelling(verbose=verbose)
         
         self.bertFop.initJacobian()
         self.setJacobian(self.bertFop.jacobian())
@@ -196,7 +196,7 @@ class ERTModelling(ERTModellingBase):
         if not self.data.allNonZero('k'):
             pg.error('Need valid geometric factors: "k".')
             pg.warn('Fallback "k" values to -sign("rhoa")')
-            self.data.set('k', -pg.sign(self.data('rhoa')))
+            self.data.set('k', -pg.math.sign(self.data('rhoa')))
 
         mesh = self.mesh()
 
@@ -226,7 +226,7 @@ class ERTModelling(ERTModellingBase):
 
         # store all potential fields
         u = np.zeros((nEle, nDof))
-        self.subPotentials = [pg.RMatrix(nEle, nDof) for i in range(len(k))]
+        self.subPotentials = [pg.Matrix(nEle, nDof) for i in range(len(k))]
 
         for i, ki in enumerate(k):
             ws = dict()
@@ -274,8 +274,8 @@ class ERTModelling(ERTModellingBase):
         J.resize(self.data.size(), self.regionManager().parameterCount())
 
         cells = self.mesh().findCellByMarker(0, -1)
-        Si = pg.ElementMatrix()
-        St = pg.ElementMatrix()
+        Si = pg.matrix.ElementMatrix()
+        St = pg.matrix.ElementMatrix()
 
         u = self.subPotentials
 
@@ -284,7 +284,7 @@ class ERTModelling(ERTModellingBase):
             print("Calculate sensitivity matrix for model: ",
                   min(model), max(model))
 
-        Jt = pg.RMatrix(self.data.size(),
+        Jt = pg.Matrix(self.data.size(),
                         self.regionManager().parameterCount())
 
         for kIdx, w in enumerate(self.w):
@@ -292,7 +292,7 @@ class ERTModelling(ERTModellingBase):
             w = self.w[kIdx]
 
             Jt *= 0.
-            A = pg.ElementMatrixMap()
+            A = pg.matrix.ElementMatrixMap()
 
             for i, c in enumerate(cells):
                 modelIdx = c.marker()
@@ -328,7 +328,7 @@ class ERTModelling(ERTModellingBase):
             sumsens = np.zeros(J.rows())
             for i in range(J.rows()):
                 sumsens[i] = pg.sum(J[i])
-            print("sens sum: median = ", pg.median(sumsens),
+            print("sens sum: median = ", pg.math.median(sumsens),
                   " min = ", pg.min(sumsens),
                   " max = ", pg.max(sumsens))
 
@@ -359,7 +359,7 @@ class ERTModelling(ERTModellingBase):
         r2A = (p - pg.RVector3(1.0, -1.0, 1.0) * sourcePos).abs()
 
         if r1A > 1e-12 and r2A > 1e-12:
-            return (pg.besselK0(r1A * k) + pg.besselK0(r2A * k)) / \
+            return (pg.math.besselK0(r1A * k) + pg.math.besselK0(r2A * k)) / \
                     (2.0 * np.pi)
         else:
             return 0.
@@ -369,8 +369,8 @@ class ERTModelling(ERTModellingBase):
         nGauLegendre = max(int((6.0 * np.log10(rMax / rMin))), 4)
         nGauLaguerre = 4
 
-        k = pg.RVector()
-        w = pg.RVector()
+        k = pg.Vector()
+        w = pg.Vector()
 
         k0 = 1.0 / (2.0 * rMin)
         pg.GaussLegendre(0.0, 1.0, nGauLegendre, k, w)
@@ -385,7 +385,7 @@ class ERTModelling(ERTModellingBase):
 
     def mixedBC(self, boundary, userData):
         """Apply mixed boundary conditions."""
-        if boundary.marker() != pg.MARKER_BOUND_MIXED:
+        if boundary.marker() != pg.core.MARKER_BOUND_MIXED:
             return 0
 
         sourcePos = pg.center(userData['sourcePos'])
@@ -406,11 +406,11 @@ class ERTModelling(ERTModellingBase):
         n = boundary.norm()
 
         if r1A > 1e-12 and r2A > 1e-12:
-            if (pg.besselK0(r1A * k) + pg.besselK0(r2A * k)) > 1e-12:
+            if (pg.math.besselK0(r1A * k) + pg.math.besselK0(r2A * k)) > 1e-12:
 
-                return 1./rho * k * (r1.dot(n) / r1A * pg.besselK1(r1A * k) +
-                                     r2.dot(n) / r2A * pg.besselK1(r2A * k)) /\
-                                (pg.besselK0(r1A * k) + pg.besselK0(r2A * k))
+                return 1./rho * k * (r1.dot(n) / r1A * pg.math.besselK1(r1A * k) +
+                                     r2.dot(n) / r2A * pg.math.besselK1(r2A * k)) /\
+                                (pg.math.besselK0(r1A * k) + pg.math.besselK0(r2A * k))
             else:
                 return 0.
         else:
@@ -474,7 +474,7 @@ class ERTManager(MeshMethodManager):
         kwargs['sr'] = kwargs.pop('sr', True)
 
         super(ERTManager, self).__init__(**kwargs)
-        self.inv.dataTrans = pg.RTransLogLU()
+        self.inv.dataTrans = pg.trans.TransLogLU()
 
     def setSingularityRemoval(self, sr=True):
         """Turn singularity removal on or off."""
@@ -648,7 +648,7 @@ class ERTManager(MeshMethodManager):
                 if calcOnly:
                     fop.mapERTModel(res, 0)
 
-                    dMap = pg.DataMap()
+                    dMap = pg.core.DataMap()
                     fop.calculate(dMap)
                     if fop.complex():
                         pg.critical('Implement me')
@@ -698,7 +698,7 @@ class ERTManager(MeshMethodManager):
                 print("Data error estimate (min:max) ",
                       min(ret('err')), ":", max(ret('err')))
 
-            rhoa *= 1. + pg.randn(ret.size()) * ret('err')
+            rhoa *= 1. + pg.math.randn(ret.size()) * ret('err')
             ret.set('rhoa', rhoa)
 
             ipError = None
@@ -716,7 +716,7 @@ class ERTManager(MeshMethodManager):
                         print("Data IP abs error estimate (min:max) ",
                                min(ipError), ":", max(ipError))
 
-                phia *= (1. + pg.randn(ret.size()) * noiseLevel)
+                phia *= (1. + pg.math.randn(ret.size()) * noiseLevel)
                 ret.set('iperr', ipError)
                 ret.set('phia', phia)
 

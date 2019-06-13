@@ -7,10 +7,13 @@ pygimli.core
 Imports and extensions of the C++ bindings.
 """
 
-import sys
 import os
+import sys
 import traceback
+
 import numpy as np
+
+from ..utils import boxprint
 
 if sys.platform == 'win32':
     os.environ['PATH'] = __path__[0] + ';' + os.environ['PATH']
@@ -29,19 +32,8 @@ except ImportError as e:
 ###  Global convenience functions #####
 #######################################
 
-from .. _logger import *
 
 _pygimli_.load = None
-
-from pygimli.utils import boxprint, cache
-
-from .load import (load, optImport, opt_import, getConfigPath, 
-                   getExampleFile)
-
-from pygimli.viewer import show, plt, wait
-from pygimli.solver import solve
-from pygimli.meshtools import interpolate, createGrid
-
 
 def showNow():
     pass
@@ -534,9 +526,9 @@ def __setVal(self, idx, val):
     # return
     if isinstance(val, np.complex):
         if isinstance(idx, int):
-            return self.setVal(val=val, id=idx)    
+            return self.setVal(val=val, id=idx)
         else:
-            return self.setVal(val=val, ids=idx)    
+            return self.setVal(val=val, ids=idx)
     self.setVal(val, idx)
 
 
@@ -858,14 +850,6 @@ Inversion = _pygimli_.RInversion
 Pos = _pygimli_.RVector3
 PosVector = _pygimli_.R3Vector
 
-Trans = _pygimli_.RTrans
-TransLinear = _pygimli_.RTransLinear
-TransLin = _pygimli_.RTransLin
-TransPower = _pygimli_.RTransPower
-TransLog = _pygimli_.RTransLog
-TransLogLU = _pygimli_.RTransLogLU
-TransCotLU = _pygimli_.RTransCotLU
-TransCumulative = _pygimli_.RTransCumulative
 
 ############################
 # non automatic exposed functions
@@ -1159,8 +1143,8 @@ def search(what):
     np.lookfor(what, module="pygimli", import_modules=False)
 
 # Import from submodules at the end
-from .matrix import (Cm05Matrix, LMultRMatrix, LRMultRMatrix, MultLeftMatrix,
-                     MultLeftRightMatrix, MultRightMatrix, RMultRMatrix)
+# from .matrix import (Cm05Matrix, LMultRMatrix, LRMultRMatrix, MultLeftMatrix,
+#                      MultLeftRightMatrix, MultRightMatrix, RMultRMatrix)
 from .mesh import Mesh, MeshEntity, Node
 from .datacontainer import DataContainer, DataContainerERT
 from .trans import *

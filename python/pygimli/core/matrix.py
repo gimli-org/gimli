@@ -2,14 +2,24 @@
 """Some matrix specialization."""
 
 import time
-from pygimli.core import _pygimli_ as pg
+
 import numpy as np
 
-# make core matrices (now in pg, later pg.core) known here for tab-completion
-# BlockMatrix = pg.BlockMatrix
-# IdentityMatrix = pg.IdentityMatrix
+from . import _pygimli_ as pgcore
+from . import (CMatrix, CSparseMapMatrix, CSparseMatrix, ElementMatrix,
+               IVector, MatrixBase, R3Vector, RVector)
 
-class MultMatrix(pg.MatrixBase):
+# make core matrices (now in pgcore, later pgcore.core) known here for tab-completion
+BlockMatrix = pgcore.RBlockMatrix
+IdentityMatrix = pgcore.IdentityMatrix
+
+BlockMatrix = pgcore.RBlockMatrix
+SparseMapMatrix = pgcore.RSparseMapMatrix
+SparseMatrix = pgcore.RSparseMatrix
+Vector = pgcore.RVector
+Matrix = pgcore.RMatrix
+
+class MultMatrix(pgcore.MatrixBase):
     def __init__(self, A, verbose=False):
         self._A = A
         super(MultMatrix, self).__init__(verbose)  # only in Python 3
@@ -20,7 +30,7 @@ class MultMatrix(pg.MatrixBase):
     @A.setter
     def A(self, A):
         self._A = A
-        
+
     def rows(self):
         """Return number of rows (using underlying matrix)."""
         return self.A.rows()
@@ -70,7 +80,7 @@ class MultRightMatrix(MultMatrix):
         super(MultRightMatrix, self).__init__(A, verbose)
 
         if r is None:
-            self._r = pg.RVector(self.cols(), 1.0)
+            self._r = pgcore.RVector(self.cols(), 1.0)
         else:
             self._r = r
 
@@ -87,7 +97,7 @@ class MultRightMatrix(MultMatrix):
         if len(x)*2 == len(self.r):
             # assuming A was complex
             # print('ignore imag')
-            return self.A.mult(pg.cat(x, x) * self.r)    
+            return self.A.mult(pgcore.cat(x, x) * self.r)
         return self.A.mult(x * self.r)
 
     def transMult(self, x):
@@ -136,10 +146,10 @@ class MultLeftRightMatrix(MultMatrix):
 LRMultRMatrix = MultLeftRightMatrix  # alias for backward compatibility
 
 
-__BlockMatrix_addMatrix__ = pg.RBlockMatrix.addMatrix
+__BlockMatrix_addMatrix__ = pgcore.RBlockMatrix.addMatrix
 def __BlockMatrix_addMatrix_happy_GC__(self, M):
     """Add an existing matrix to this block matrix and return a unique index.
-    
+
     The Matrix will not be used until the matrix index has been assigned to a
     row and column number by adding a matrix entry.
 
@@ -150,12 +160,12 @@ def __BlockMatrix_addMatrix_happy_GC__(self, M):
     self.__mats__.append(M)
     return __BlockMatrix_addMatrix__(self, M)
 
-pg.RBlockMatrix.addMatrix = __BlockMatrix_addMatrix_happy_GC__
+pgcore.RBlockMatrix.addMatrix = __BlockMatrix_addMatrix_happy_GC__
 
 
 
 
-class Add2Matrix(pg.MatrixBase):
+class Add2Matrix(pgcore.MatrixBase):
     """Matrix by adding two matrices."""
 
     def __init__(self, A, B):
@@ -182,7 +192,7 @@ class Add2Matrix(pg.MatrixBase):
         return self.A.rows()
 
 
-class Mult2Matrix(pg.MatrixBase):
+class Mult2Matrix(pgcore.MatrixBase):
     """Matrix  by multiplying two matrices."""
 
     def __init__(self, A, B):
@@ -208,7 +218,7 @@ class Mult2Matrix(pg.MatrixBase):
         return self.A.rows()
 
 
-class DiagonalMatrix(pg.MatrixBase):
+class DiagonalMatrix(pgcore.MatrixBase):
     """Square matrix with a vector on the main diagonal."""
 
     def __init__(self, d):
@@ -232,7 +242,7 @@ class DiagonalMatrix(pg.MatrixBase):
         return len(self.d)
 
 
-class Cm05Matrix(pg.MatrixBase):
+class Cm05Matrix(pgcore.MatrixBase):
     """Matrix implicitly representing the inverse square-root."""
 
     def __init__(self, A, verbose=False):
@@ -245,7 +255,7 @@ class Cm05Matrix(pg.MatrixBase):
         """
         from scipy.linalg import eigh  # , get_blas_funcs
 
-        if A.shape[0] != A.shape[1]:  # rows/cols for pg matrix
+        if A.shape[0] != A.shape[1]:  # rows/cols for pgcore matrix
             raise Exception("Matrix must by square (and symmetric)!")
 
         self.size = A.shape[0]
@@ -253,7 +263,7 @@ class Cm05Matrix(pg.MatrixBase):
         self.ew, self.EV = eigh(A)
         self.mul = np.sqrt(1./self.ew)
         if verbose:
-            pg.info('(C) Time for eigenvalue decomposition:{:.1f} s'.format(
+            pgcore.info('(C) Time for eigenvalue decomposition:{:.1f} s'.format(
                 time.time() - t))
 
         self.A = A
@@ -276,3 +286,21 @@ class Cm05Matrix(pg.MatrixBase):
     def transMult(self, x):
         """Multiplication from right-hand side (dot product)."""
         return self.mult(x)  # matrix is symmetric by definition
+
+class NDMatrix(BlockMatrix):
+    """Diagonal block (block-Jacobi) matrix derived from pg.matrix.BlockMatrix.
+
+    (to be moved to a better place at a later stage)
+    """
+
+    def __init__(self, num, nrows, ncols):
+        super(NDMatrix, self).__init__()  # call inherited init function
+        self.Ji = []  # list of individual block matrices
+        for i in range(num):
+            self.Ji.append(pg.Matrix())
+            self.Ji[-1].resize(nrows, ncols)
+            n = self.addMatrix(self.Ji[-1])
+            self.addMatrixEntry(n, nrows * i, ncols * i)
+
+        self.recalcMatrixSize()
+        print(self.rows(), self.cols())

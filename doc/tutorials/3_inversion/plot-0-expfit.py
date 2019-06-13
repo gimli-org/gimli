@@ -37,11 +37,11 @@ import matplotlib.pyplot as plt
 # computed by brute force (forward calculations with altered parameters).
 
 
-class ExpModelling(pg.ModellingBase):
+class ExpModelling(pg.core.ModellingBase):
     def __init__(self, xvec, verbose=False):
-        pg.ModellingBase.__init__(self, verbose)
+        pg.core.ModellingBase.__init__(self, verbose)
         self.x = xvec
-        self.setMesh(pg.createMesh1D(1, 2))
+        self.setMesh(pg.meshtools.createMesh1D(1, 2))
         # self.regionManager().setParameterCount(2)
 
     def response(self, model):
@@ -79,7 +79,7 @@ data += np.random.randn(*data.shape)*error
 # output the inversion, another one prints more and saves files for debugging.
 
 f = ExpModelling(x)
-inv = pg.RInversion(data, f)
+inv = pg.Inversion(data, f)
 
 ###############################################################################
 # We create a real-valued logarithmic transformation and apply it to the model.
@@ -91,7 +91,7 @@ inv = pg.RInversion(data, f)
 # relatively large regularization strength to avoid overshoot.
 # Finally run yields the coefficient vector and we plot some statistics.
 
-tLog = pg.RTransLog()
+tLog = pg.trans.TransLog()
 inv.setTransModel(tLog)
 inv.setAbsoluteError(error)
 inv.setMarquardtScheme()

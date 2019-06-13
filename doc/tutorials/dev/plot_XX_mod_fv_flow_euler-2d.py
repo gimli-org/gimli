@@ -83,10 +83,10 @@ def calc(out, mesh, density, viscosity):
                 ]
 
 
-    densMatrix = pg.RMatrix()
+    densMatrix = pg.Matrix()
     vels = []
 
-    swatch = pg.Stopwatch(True)
+    swatch = pg.core.Stopwatch(True)
     class WS():
         pass
 

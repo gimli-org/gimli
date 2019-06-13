@@ -43,7 +43,7 @@ class VMDModelling(Block1DModelling):
         if self.nLayers == 0:
             pg.critical("Model space is not been initialized.")
 
-        skinDepth = np.sqrt(max(self.t) * pg.median(rhoa)) * 500
+        skinDepth = np.sqrt(max(self.t) * pg.math.median(rhoa)) * 500
         thk = np.arange(self.nLayers)/sum(np.arange(self.nLayers)) * skinDepth / 2.
         startThicks = thk[1:]
 
@@ -226,9 +226,9 @@ class VMDTimeDomainModelling(VMDModelling):
             Create suitable starting model based on median apparent resistivity
             values and skin depth approximation.
         """
-        res = np.ones(nLayer) * pg.median(rhoa)
+        res = np.ones(nLayer) * pg.math.median(rhoa)
         if thickness is None:
-            skinDepth = np.sqrt(max(self.t) * pg.median(rhoa)) * 500
+            skinDepth = np.sqrt(max(self.t) * pg.math.median(rhoa)) * 500
             thk = np.arange(nLayer) / sum(np.arange(nLayer)) * skinDepth / 2.
             thk = thk[1:]
         else:

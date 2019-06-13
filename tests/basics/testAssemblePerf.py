@@ -16,7 +16,7 @@ def test(N):
     print(mesh)
     pg.toc()
     
-    A = pg.RSparseMatrix()
+    A = pg.matrix.SparseMatrix()
     A.fillStiffnessMatrix(mesh)
     pg.toc()
 

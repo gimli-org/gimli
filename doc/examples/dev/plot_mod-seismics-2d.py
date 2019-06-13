@@ -53,7 +53,7 @@ mesh = pg.createGrid(x=x, y=y)
 mesh = createMesh2()
 print(mesh)
 
-h = pg.median(mesh.boundarySizes())
+h = pg.math.median(mesh.boundarySizes())
 
 v1 = 1000
 v2 = 3000
@@ -62,7 +62,7 @@ tmax = 10.1/v1
 z = 2.
 f0 = 1000.0 # A low wavelength of 50 Hz
 
-velocities = pg.RVector(mesh.cellCount(), v1)
+velocities = pg.Vector(mesh.cellCount(), v1)
 
 for c in mesh.cells():
     velocities[c.id()] = v1
