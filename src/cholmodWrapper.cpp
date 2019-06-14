@@ -126,7 +126,8 @@ int CHOLMODWrapper::initializeMatrix_(CSparseMatrix & S){
                     if (std::imag(S.vecVals()[j]) != 0.0){
                         if (S.vecVals()[j] == S.getVal(S.vecRowIdx()[j], i)){
                             // non-hermetian symmetric
-                            if (verbose_) std::cout << "non-hermetian symmetric matrix found .. switching to umfpack." << std::endl;
+                            // if (verbose_) std::cout << "non-hermetian symmetric " 
+                            // " matrix found .. switching to umfpack." << std::endl;
                             useUmfpack_ = true;
                             i = S.size();
                             break;
@@ -150,7 +151,7 @@ int CHOLMODWrapper::initializeMatrix_(CSparseMatrix & S){
             double *null = (double *) NULL;
             void *Symbolic;
 
-            if (verbose_) std::cout << "Using umfpack .. " << std::endl;
+            // if (verbose_) std::cout << "Using umfpack .. " << std::endl;
 
             umfpack_zi_symbolic (S.nRows(), S.nRows(), Ap_, Ai_, Ax_, Az_, &Symbolic, null, null) ;
             umfpack_zi_numeric (Ap_, Ai_, Ax_, Az_, Symbolic, &Numeric_, null, null) ;
@@ -216,7 +217,7 @@ int CHOLMODWrapper::initializeMatrix_(RSparseMatrix & S){
 
             void *Symbolic;
 
-            if (verbose_) std::cout << "Using umfpack .. " << std::endl;
+            // if (verbose_) std::cout << "Using umfpack .. " << std::endl;
             // beware transposed matrix here
             (void) umfpack_di_symbolic(S.nCols(), S.nRows(), ApR_, AiR_, Ax_, &Symbolic, null, null) ;
             (void) umfpack_di_numeric(ApR_, AiR_, Ax_, Symbolic, &NumericD_, null, null) ;
