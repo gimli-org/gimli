@@ -66,6 +66,8 @@ from .testing import test
 from .utils import boxprint, cache, cut, unit
 from .viewer import plt, show, wait
 
+from .mplviewer.utils import prettyFloat as pf
+
 def _get_branch():
     """Get current git branch."""
     from os.path import join, abspath, exists
