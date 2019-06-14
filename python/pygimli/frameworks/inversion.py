@@ -478,10 +478,15 @@ class Inversion(object):
                     pg.boxprint("Abort criterion reached: chi² <= 1 (%.2f)" % chi2)
                 break
 
-            if dPhi < minDPhi:
+            if abs(dPhi) < minDPhi:
                 if self.verbose:
                     pg.boxprint("Abort criteria reached: dPhi = {0} (< {1}%)".format(
                                 round(dPhi, 2), minDPhi))
+                break
+
+            if dPhi > 0:
+                if self.verbose:
+                    pg.boxprint("Abort due to diverging behaviour: dPhi = {0} (> 0%)".format(round(dPhi, 2)))
                 break
 
             if i == maxIter-1:

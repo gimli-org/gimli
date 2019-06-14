@@ -21,7 +21,9 @@ class TestManagers(unittest.TestCase):
 
     def test_VMD(self, showProgress=False):
         t = np.logspace(-5.5, -2.2, 20)
-        fop = VMDTimeDomainModelling(times=t, txArea=10000.0, rxArea=10000.0)
+        verbose = False
+        fop = VMDTimeDomainModelling(times=t, txArea=10000.0, rxArea=10000.0,
+                                    verbose=verbose)
         # [thick[3], res[4]] nLay=4
 
         vmdMgr = pg.frameworks.MethodManager1d(fop)
@@ -34,7 +36,7 @@ class TestManagers(unittest.TestCase):
 
         model = vmdMgr.invert(ra, err, nLayers=4, layerLimits=[2, 500],
                               maxIter=20,
-                              showProgress=showProgress, verbose=False)
+                              showProgress=showProgress, verbose=verbose)
 
         np.testing.assert_array_less(vmdMgr.fw.chi2(), 1)
         if showProgress:
