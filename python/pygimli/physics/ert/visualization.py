@@ -228,7 +228,7 @@ def midconfERT(data, ind=None, rnum=1, circular=False):
         if min(pg.y(data)) != max(pg.y(data)) or \
            min(pg.z(data)) != max(pg.z(data)):
             # Topography case
-            if (pg.max(abs(dx-dxM)) < dxM*0.9):
+            if (max(abs(dx-dxM)) < dxM*0.9):
                 # if the maximum spacing < meanSpacing/2 we assume equidistant
                 # spacing and no missing electrodes
                 dx = np.ones(len(dx)) * dxM

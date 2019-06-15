@@ -633,6 +633,7 @@ def createParaDomain2D(*args, **kwargs):
 
 def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
                       paraMaxCellSize=0.0, boundary=-1, boundaryMaxCellSize=0,
+                      balanceDepth=True,
                       isClosed=False, addNodes=1, **kwargs):
     """Create a PLC mesh for an inversion parameter mesh.
 
@@ -666,6 +667,8 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
     paraDepth : float, optional
         Maximum depth for parametric domain, 0 (default) means 0.4 * maximum
         sensor range.
+    balanceDepth: bool [True]
+        Equal depth for the parametric domain.
 
     paraBoundary : float, optional
         Margin for parameter domain in absolute sensor distances. 2 (default).
@@ -752,8 +755,13 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
     poly = pg.Mesh(dim=2, isGeometry=True)
     # define para domain without surface
     n1 = poly.createNode([xmin - paraBound, sensors[0][iz]])
-    n2 = poly.createNode([xmin - paraBound, sensors[0][iz] - paraDepth])
-    n3 = poly.createNode([xmax + paraBound, sensors[-1][iz] - paraDepth])
+    if balanceDepth:
+        bD = min(sensors[0][iz] - paraDepth, sensors[0][iz] - paraDepth)
+        n2 = poly.createNode([xmin - paraBound, bD])
+        n3 = poly.createNode([xmax + paraBound, bD])
+    else:
+        n2 = poly.createNode([xmin - paraBound, sensors[0][iz] - paraDepth])
+        n3 = poly.createNode([xmax + paraBound, sensors[-1][iz] - paraDepth])
     n4 = poly.createNode([xmax + paraBound, sensors[-1][iz]])
 
     if boundary < 0:

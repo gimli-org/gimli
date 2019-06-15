@@ -278,8 +278,6 @@ def readSIP256file(resfile, verbose=False):
     --------
         header, DATA, AB, RU = readSIP256file('myfile.res', True)
     """
-    v = pg.VerboseScope(verbose)
-
     activeBlock = ''
     header = {}
     LINE = []
