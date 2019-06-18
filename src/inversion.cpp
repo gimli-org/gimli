@@ -230,8 +230,8 @@ const RVector & RInversion::run(){ ALLOW_PYTHON_THREADS
         }
         double phi = getPhi();
         if (phi / oldphi > (1.0 - dPhiAbortPercent_ / 100.0) && iter_ > 2) {
-            if (verbose_) std::cout << "Reached data fit criteria (delta phi < " << dPhiAbortPercent_
-                        << "%). Stop." << std::endl;
+            if (verbose_) std::cout << "Reached data fit criteria (delta phi < " 
+                                    << dPhiAbortPercent_ << "%). Stop." << std::endl;
             break;
         }
 
@@ -319,7 +319,6 @@ bool RInversion::oneStep() {
 
     //restrictMax(deltaModelIter_, 50.0); // only work for log trans
     DOSAVE echoMinMax(deltaModelIter_, "dm");
-
     modelNew = tM_->update(model_, deltaModelIter_);
 
     if (haveInfNaN(modelNew)){
@@ -370,8 +369,10 @@ bool RInversion::oneStep() {
     //!** temporary stuff
     if (forward_->mesh()){
 // this forces pygimli/generatecode.py to create a ugly log10 declaration, which overwrites the valid log10 declarion
-//        DOSAVE forward_->mesh()->addExportData("F-op-model(log10)", log10(forward_->mesh()->cellAttributes()));
-        DOSAVE forward_->mesh()->addExportData("F-op-model", forward_->mesh()->cellAttributes());
+        // DOSAVE forward_->mesh()->addExportData("F-op-model(log10)", 
+        //                                         log10(forward_->mesh()->cellAttributes()));
+        DOSAVE forward_->mesh()->addExportData("F-op-model", 
+                                                forward_->mesh()->cellAttributes());
         DOSAVE forward_->mesh()->exportVTK("fop-model" + str(iter_));
         DOSAVE forward_->mesh()->clearExportData();
     }

@@ -157,8 +157,26 @@ def logDropTol(p, droptol=1e-3):
     return tmp
 
 
+def prettify(value, roundValue=False):
+    """Return prettified string for value .. if possible."""
+    if isinstance(value, dict):
+        import json
+        return json.dumps(value, indent=4)
+    elif isinstance(value, float):
+        return prettyFloat(value, roundValue)
+    pg.warning("Don't know how to prettify the string representation for ",
+               value)
+    return value
+
+
 def prettyFloat(value, roundValue=False):
-    """Return pretty string for a given value suitable for graphical output."""
+    """Return prettified string for a float value.
+    
+    TODO
+    ----
+        add flag for round to 
+        add test
+    """
     if roundValue and abs(round(value)-value) < 1e-4 and abs(value) < 1e3:
         string = str(int(round(value, 1)))
     elif abs(value) == 0.0:

@@ -139,7 +139,7 @@ public:
 
     /*! Set fixed value for background regions that will not
      * part of any value prolongation.*/
-    void setFixValue(double val);
+    void setFixValue(double val); 
     inline double fixValue() const { return fixValue_;}
 
     void fillBoundaryNorm(std::vector< RVector3 > & vnorm, Index boundCount);

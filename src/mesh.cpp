@@ -2448,6 +2448,16 @@ RVector Mesh::divergence(const PosVector & V) const{
     return ret / this->cellSizes();
 }
 
+RegionMarker * Mesh::regionMarker(SIndex marker){
+    for (Index i = 0; i < this->regionMarker_.size(); i++){
+        if (this->regionMarker_[i].marker() == marker){
+            return & this->regionMarker_[i];
+        }
+    }
+    throwError(1, "There is no regionMarker with marker = " + str(marker));
+    return 0;
+}
+
 Index Mesh::hash() const{
     log(Warning, "Mesh.hash() not complete. TODO");
     return GIMLI::hash(this->positions(true), 

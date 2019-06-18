@@ -126,16 +126,21 @@ inline std::ostream & operator << (std::ostream & str, const BoundingBox & bb){
 DLLEXPORT std::ostream & operator << (std::ostream & str, const Mesh & mesh);
 
 
-class DLLEXPORT RegionMarkerPLC : public RVector3{
+class DLLEXPORT RegionMarker : public RVector3{
 public:
-    RegionMarkerPLC(const RVector3 & pos, int marker, double area=0.0)
+    RegionMarker(const RVector3 & pos, int marker, double area=0.0)
     : RVector3(pos), marker_(marker), area_(area){}
 
-    ~RegionMarkerPLC(){}
+    ~RegionMarker(){}
 
+    inline void setMarker(SIndex marker) {marker_ = marker;}
     inline int marker() const {return marker_;}
+
+    inline void setArea(double area) {area_ = area;}
     inline double area() const {return area_;}
 
+    inline void setPos(const Pos & pos) {copy_(pos);}
+    
 protected:
     int marker_;
     double area_;
@@ -145,7 +150,6 @@ protected:
 class DLLEXPORT Mesh {
 
 public:
-    typedef RegionMarkerPLC RegionMarker;
     typedef std::vector< RegionMarker > RegionMarkerList;
     typedef RVector3 HoleMarker;
     typedef std::vector< RVector3 > HoleMarkerList;
@@ -763,6 +767,10 @@ public:
     void addRegionMarker(const RegionMarker & reg);
 
     const RegionMarkerList & regionMarker() const { return regionMarker_; }
+    
+    /*! Return the pointer to region marker with the marker is i or throws 
+    an exception of there is no such marker.*/
+    RegionMarker * regionMarker(SIndex i);
 
     /*! Add a hole marker for tetgen or triangle creation if the mesh
      * is a PLC */

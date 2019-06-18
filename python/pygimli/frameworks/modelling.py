@@ -226,7 +226,7 @@ class Modelling(pg.core.ModellingBase):
         for key in list(kwargs.keys()):
             val = kwargs.pop(key)
             if val is not None:
-                if not self._regionProperties[regionNr][key] is val:
+                if self._regionProperties[regionNr][key] != val:
                     self._regionsNeedUpdate = True
                     self._regionProperties[regionNr][key] = val
 
@@ -244,16 +244,18 @@ class Modelling(pg.core.ModellingBase):
         rMgr = super(Modelling, self).regionManager()
         for rID, vals in self._regionProperties.items():
 
+            if vals['fix'] is not None:
+                if rMgr.region(rID).fixValue() != vals['fix']:
+                    pg._r(vals['background'])
+                    vals['background'] = True
+                    rMgr.region(rID).setFixValue(vals['fix'])
+                    self._regionChanged = True
+
             if vals['background'] is not None:
                 if rMgr.region(rID).isBackground() != vals['background']:
+                    pg._y(vals['background'])
                     rMgr.region(rID).setBackground(vals['background'])
                     self._regionChanged = True
-                continue
-
-            if vals['fix'] is not None:
-                pg.critical('implementme')
-                self._regionChanged = True
-                continue
 
             if vals['single'] is not None:
                 if rMgr.region(rID).isSingle() != vals['single']:
@@ -495,12 +497,15 @@ class MeshModelling(Modelling):
 
         regionIds = self.regionManager().regionIdxs()
         for iId in regionIds:
-            pg.verbose("\tRegion: {4}, Parameter: {0}, ParaDomain: {1}, Single: {2}, Background: {3}"
-                .format(self.regionManager().region(iId).parameterCount(),
+            pg.verbose("\tRegion: {0}, Parameter: {1}, PD: {2}," 
+                       " Single: {3}, Background: {4}, Fixed: {5}"
+                .format(iId, 
+                        self.regionManager().region(iId).parameterCount(),
                         self.regionManager().region(iId).isInParaDomain(),
                         self.regionManager().region(iId).isSingle(),
                         self.regionManager().region(iId).isBackground(),
-                        iId))
+                        self.regionManager().region(iId).fixValue(),
+                        ))
 
         m = self.createRefinedFwdMesh(m)
         self.setMeshPost(m)

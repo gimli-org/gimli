@@ -59,13 +59,22 @@ int solveCGLSCDWWhtrans(const MatrixBase & S, const MatrixBase & C,
           - cdx );// nModel
     Vec r(transMult(S, Vec(b * dWeight * dWeight * td)) / tm - cdx); // nModel
 
-// __MS(min(cdx) << " " << max(cdx))
-// __MS(min(z) << " " << max(z))
-// __MS(min(p) << " " << max(p))
-// __MS(min(r) << " " << max(r))
-// __MS(min(tm) << " " << max(tm))
-// __MS(min(Vec(b * dWeight * dWeight * td)) << " " << max(Vec(b * dWeight * dWeight * td)))
-// __MS(min(transMult(S,Vec(b.size(), 1))) << " " << max(transMult(S,Vec(b.size(), 1))))
+// __MS(min(dWeight) << " " << max(dWeight) << " " << mean(dWeight))
+// __MS(min(b) << " " << max(b) << " " << mean(b))
+// __MS(min(wc) << " " << max(wc) << " " << mean(wc))
+// __MS(min(wm) << " " << max(wm) << " " << mean(wm))
+// __MS(min(tm) << " " << max(tm) << " " << mean(tm))
+// __MS(min(td) << " " << max(td) << " " << mean(td))
+// __MS(min(cdx) << " " << max(cdx) << " " << mean(cdx))
+// __MS(min(z) << " " << max(z) << " " << mean(z))
+// __MS(min(p) << " " << max(p) << " " << mean(p))
+// __MS(min(r) << " " << max(r) << " " << mean(r))
+// __MS(min(Vec(b * dWeight * dWeight * td)) << " " 
+//      << max(Vec(b * dWeight * dWeight * td)) << " " 
+//      << mean(Vec(b * dWeight * dWeight * td)))
+// __MS(min(transMult(S,Vec(b.size(), 1))) << " " 
+//      << max(transMult(S,Vec(b.size(), 1))) << " " 
+//      << mean(transMult(S,Vec(b.size(), 1))))
 // if (z.size() > 100 )exit(1);
 
     double accuracy = tol;
@@ -106,6 +115,11 @@ int solveCGLSCDWWhtrans(const MatrixBase & S, const MatrixBase & C,
         beta = normR2 / normR2old;
         p = r + p * beta;
 
+// __MS("---" << count << "-------" << normR2 << "-------------------------")
+// __MS(min(q) << " " << max(q) << " " << mean(q))
+// __MS(min(wcp) << " " << max(wcp) << " " << mean(wcp))
+// __MS(alpha)
+
 //         if((count < 200)) {
 //             std::cout << count << "  " << normR2 << std::endl;
 //         }
@@ -118,6 +132,7 @@ int solveCGLSCDWWhtrans(const MatrixBase & S, const MatrixBase & C,
     if (verbose) std::cout << "[ " << count << "/" << normR2 << "]\t" << std::endl;
 #endif
 
+    // if (z.size() > 100 )exit(1);
     return 1;
 }
 

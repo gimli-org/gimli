@@ -136,11 +136,11 @@ public:
     }
 
     virtual Vector < ValueType > mult(const Vector < ValueType > & b) const{
-        if (b.size() != this->cols()){
-            throwLengthError(1, WHERE_AM_I + " wrong size of vector b (" +
-            str(b.size()) + ") needed: " + str(this->cols()));
-
-        }
+        // no need to check here .. let the matrices itself check
+        // if (b.size() != this->cols()){
+        //     throwLengthError(1, WHERE_AM_I + " wrong size of vector b (" +
+        //     str(b.size()) + ") needed: " + str(this->cols()));
+        // }
 
         Vector < ValueType > ret(rows_);
 
@@ -159,11 +159,11 @@ public:
     }
 
     virtual Vector < ValueType > transMult(const Vector < ValueType > & b) const {
-        if (b.size() != this->rows()){
-            throwLengthError(1, WHERE_AM_I + " wrong size of vector b (" +
-            str(b.size()) + ") needed: " + str(this->rows()));
-
-        }
+        // no need to check here .. let the matrices itself check
+        // if (b.size() != this->rows()){
+        //     throwLengthError(1, WHERE_AM_I + " wrong size of vector b (" +
+        //     str(b.size()) + ") needed: " + str(this->rows()));
+        // }
 
         Vector < ValueType > ret(cols_);
          for (Index i = 0; i < entries_.size(); i++){

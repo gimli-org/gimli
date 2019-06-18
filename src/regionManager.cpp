@@ -99,8 +99,11 @@ void Region::copy_(const Region & region){
 }
 
 void Region::setBackground(bool background){
+    __MS(marker_ << " set "<< background << " is " << isBackground_)
     if (background != isBackground_) {
-        markBackground(background);
+        isBackground_ = background;
+        __MS(marker_ << " is "<< isBackground_)
+        
         parent_->recountParaMarker_();
         parent_->createParaDomain_();
         bounds_.clear();
@@ -110,8 +113,8 @@ void Region::setBackground(bool background){
 
 void Region::setFixValue(double val){
     fixValue_ = val;
-    markBackground(false);
-    setBackground(true);
+    isBackground_ = false;
+    this->setBackground(true);
     this->constraintWeights_.clear();
 }
 
@@ -222,7 +225,10 @@ void Region::permuteParameterMarker(const IndexArray & p){
 
 //################ Start values
 void Region::setStartModel(const RVector & start){
-    setBackground(false);
+    if (isBackground_){
+        log(Error, "Region Nr:", marker_, " is background and should no get a startmodel.");
+        return;
+    }
     if (start.size() == parameterCount_){
        startModel_ = start;
     } else {
@@ -253,15 +259,22 @@ void Region::fillStartModel(RVector & vec){
 
 //################ Model behaviour
 void Region::setModelControl(double val){
+    if (isBackground_){
+        log(Error, "Region Nr:", marker_, " is background and should no get model control.");
+        return;
+    }
+
     if (val < TOLERANCE) val = 1.0;
     mcDefault_ = val;
-    setBackground(false);
     modelControl_.resize(parameterCount_);
     modelControl_.fill(val);
 }
 
 void Region::setModelControl(const RVector & mc){
-    setBackground(false);
+    if (isBackground_){
+        log(Error, "Region Nr:", marker_, " is background and should no get model control.");
+        return;
+    }
     if (mc.size() == parameterCount_){
        modelControl_ = mc;
     } else {
@@ -270,7 +283,10 @@ void Region::setModelControl(const RVector & mc){
 }
 
 void Region::setModelControl(PosFunctor * mcF){
-    setBackground(false);
+    if (isBackground_){
+        log(Error, "Region Nr:", marker_, " is background and should no get a model control.");
+        return;
+    }
     modelControl_.resize(parameterCount_);
     if (isSingle_){
         THROW_TO_IMPL
@@ -295,6 +311,7 @@ void Region::fillModelControl(RVector & vec){
 Index Region::constraintCount() const {
     if (isBackground_ ) return 0;
     if (isSingle_ && constraintType_ == 0) return 0;
+    if (isSingle_ && constraintType_ == 1) return 1;
 
     if (constraintType_ == 0 || constraintType_ == 2 || constraintType_ == 20) return parameterCount();
     if (constraintType_ == 10) return bounds_.size() + parameterCount();
@@ -305,6 +322,12 @@ void Region::fillConstraints(RSparseMapMatrix & C, Index startConstraintsID){
     if (isBackground_ ) return;
 
     if (isSingle_ && constraintType_ == 0) return;
+
+    if (isSingle_ && constraintType_ == 1) {
+        // __MS(startConstraintsID << " " << startParameter_)
+        C[startConstraintsID][startParameter_] = 1.0;
+        return; 
+    }
 
     double cMixRatio = 1.0; // for mixing 1st or 2nd order with 0th order (constraintTypes 10 and 20)
     if (constraintType_ == 10 || constraintType_ == 20) cMixRatio = 1.0; //**retrieve from properties!!!
@@ -411,8 +434,11 @@ void Region::setConstraintWeights(double val){
 
 void Region::setConstraintWeights(const RVector & cw){
     //std::cout << "Region::setConstraintsWeight(const RVector & sw) " << sw.size() << " " <<  this->constraintCount() << std::endl;
+    if (isBackground_){
+        log(Error, "Region Nr:", marker_, " is background and should no get a cweight.");
+        return;
+    }
     if (cw.size() == this->constraintCount()){
-        setBackground(false);
         zWeight_ = 1.0;
         this->constraintWeights_ = cw;
     } else {

@@ -149,24 +149,6 @@ class BertModelling(ERTModellingBase):
         self.bertFop.setMesh(mesh, ignoreRegionManager=True)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 class ERTModelling(ERTModellingBase):
     """Reference implementation for 2.5D Electrical Resistivity Tomography."""
 
@@ -856,10 +838,10 @@ class ERTManager(MeshMethodManager):
     def coverage(self):
         """Return coverage vector considering the logarithmic transformation.
         """
-        covTrans = pg.coverageDCtrans(self.fop.jacobian(),
+        covTrans = pg.core.coverageDCtrans(self.fop.jacobian(),
                                       1.0 / self.inv.response,
                                       1.0 / self.inv.model)
-        return np.log10(covTrans / self.inv.paraDomain.cellSizes())
+        return np.log10(covTrans / self.fop.paraDomain.cellSizes())
 
     def standardizedCoverage(self, threshhold=0.01):
         """Return standardized coverage vector (0|1) using thresholding.

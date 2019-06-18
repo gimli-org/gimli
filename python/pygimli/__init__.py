@@ -52,9 +52,9 @@ from ._version import get_versions
 from .core import (BVector, CVector, DataContainer, DataContainerERT, dur,
                    Inversion, IVector, Line, Matrix, Mesh, Plane, Pos,
                    RVector3, Vector, abs, cat, center, exp, find, interpolate,
-                   log, log10, logDropTol, math, matrix, mean, min, search, setDebug,
-                   setThreadCount, sort, sum, tic, toc, trans, unique,
-                   versionStr, x, y, z, zero)
+                   log, log10, logDropTol, math, matrix, mean, median, min, 
+                   search, setDebug, setThreadCount, sort, sum, tic, toc, 
+                   trans, unique, versionStr, x, y, z, zero)
 from .core.load import getConfigPath, getExampleFile, load, optImport
 from .core.logger import (_, _d, _g, _r, _y, critical, d, debug, deprecated,
                           error, info, setLogLevel, setVerbose, v, verbose,
@@ -66,7 +66,7 @@ from .testing import test
 from .utils import boxprint, cache, cut, unit
 from .viewer import plt, show, wait
 
-from .mplviewer.utils import prettyFloat as pf
+from .utils import prettify as pf
 
 def _get_branch():
     """Get current git branch."""

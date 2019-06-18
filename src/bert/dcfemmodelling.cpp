@@ -1226,7 +1226,7 @@ void DCMultiElectrodeModelling::mapERTModel(const CVector & model, Complex backg
         RVector re(createMappedModel(real(model), background.real()));
         // RVector im(re*0.0);
         // log(Warning, "imag part forced to zero");
-        RVector im(createMappedModel(imag(model), -9e99));
+        RVector im(createMappedModel(imag(model), -9e99)); 
         setComplexResistivities(*mesh_, toComplex(re, im));
     }
 }

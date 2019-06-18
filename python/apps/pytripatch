@@ -126,7 +126,7 @@ def showTriMesh(meshname, modelname, contour=False, constraintMat=None,
             print(key, val)
 
     mesh.translate(offset)
-    data = pg.RVector()
+    data = pg.Vector()
 
     fig = plt.figure()
 
@@ -155,15 +155,15 @@ def showTriMesh(meshname, modelname, contour=False, constraintMat=None,
             data = mesh.exportData(modelname)
         elif modelname.rfind('.bmat') != -1:
             A = pg.RMatrix(modelname)
-            data = pg.RVector(A[number])  # return copy (A dies!)
+            data = pg.Vector(A[number])  # return copy (A dies!)
         else:
-            data = pg.RVector(modelname)
+            data = pg.Vector(modelname)
 
         print("data min/max:", min(data), max(data))
         cov = None
 
         if coverage:
-            cov = pg.RVector()
+            cov = pg.Vector()
             try:
                 print(list(mesh.exportDataMap().keys()))
                 if coverage in list(mesh.exportDataMap().keys()):
@@ -172,7 +172,7 @@ def showTriMesh(meshname, modelname, contour=False, constraintMat=None,
 #                    if coverage.find('log10') > 0:
 #                        cov = pg.exp10(cov)
                 else:
-                    cov = pg.RVector(coverage)
+                    cov = pg.Vector(coverage)
                 print("coverage min/max:", min(cov), max(cov))
             except Exception as e:
                 print(e)
@@ -295,7 +295,7 @@ def addCoverageImageOverlay(axis, mesh, cov):
                        cov,
                        pg.asvector(X.flat[:]),
                        pg.asvector(Y.flat[:]),
-                       pg.RVector(len(Y.flat[:]),
+                       pg.Vector(len(Y.flat[:]),
                                   0.0))
     c = np.asarray(c)
 
@@ -336,7 +336,7 @@ def showConstrainMat(axes, mesh, constraintMat, cWeight=None):
     cw = None
 
     if cWeight is not None:
-        cw = pg.RVector(cWeight)
+        cw = pg.Vector(cWeight)
 
     drawParameterConstraints(axes, mesh, C, cw)
 
@@ -363,7 +363,7 @@ def showMeshInterpolated(axis, mesh, data, cov=None, cMin=None, cMax=None,
 
     if (data.size() > 0):
         z = pg.interpolate(mesh, data, pg.asvector(X.flat[:]),
-                           pg.asvector(Y.flat[:]), pg.RVector(len(Y.flat), 0.0)
+                           pg.asvector(Y.flat[:]), pg.Vector(len(Y.flat), 0.0)
                            )
         z = np.asarray(z)
 

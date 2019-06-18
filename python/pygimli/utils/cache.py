@@ -76,8 +76,13 @@ class Cache(object):
         self.updateCacheInfo()
 
         if self.info['type'] == 'Mesh':
+            pg.info('Save Mesh binary v2')
             v.saveBinaryV2(self._name)
+        elif self.info['type'] == 'RVector':
+            pg.info('Save RVector binary')
+            v.save(self._name, format=pg.core.Binary)
         else:
+            pg.warn('ascii save of ', v, 'might by dangerous')
             v.save(self._name)
 
         self._value = v
@@ -91,6 +96,11 @@ class Cache(object):
     def restore(self):
         """Read data from json infos"""
         if os.path.exists(self._name + '.json'):
+
+            # Fricking mpl kills locale setting to system default .. this went
+            # horrible wrong for german 'decimal_point': ','
+            pg.checkAndFixLocaleDecimal_point(verbose=False)
+            
             try:
                 with open(self._name + '.json', 'r') as file:
                     self.info = json.load(file)
@@ -103,7 +113,8 @@ class Cache(object):
                                                       removeInvalid=False)
                     print(self._value)
                 elif self.info['type'] == 'RVector':
-                    self._value = pg.Vector(self.info['file'])
+                    self._value = pg.Vector()
+                    self._value.load(self.info['file'], format=pg.core.Binary)
                 elif self.info['type'] == 'Mesh':
                     pg.tic()
                     self._value = pg.Mesh()
@@ -201,6 +212,10 @@ class CacheManager(object):
 def cache(funct):
     """Cache decorator."""
     def wrapper(*args, **kwargs):
+
+        if '--noCache' in sys.argv or '-N' in sys.argv:
+            return funct(*args, **kwargs)
+
         cache = CacheManager().cache(funct, *args, **kwargs)
         if cache.value is not None:
             return cache.value

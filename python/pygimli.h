@@ -586,7 +586,7 @@ namespace pyplusplus{ namespace aliases{
     typedef std::vector< GIMLI::Node * >             stdVectorNodes;
     typedef std::vector< GIMLI::MeshEntity * >       stdVectorMeshEntity;
     typedef std::vector< GIMLI::CubicFunct >         stdVectorCubicFunct;
-    typedef std::vector< GIMLI::RegionMarkerPLC >    stdVectorRegionMarkerPLC;
+    typedef std::vector< GIMLI::RegionMarker >       stdVectorRegionMarker;
 
     typedef std::map< std::string, GIMLI::Vector< double > > stdMapStringRVector;
     typedef std::map< GIMLI::SIndex, GIMLI::Region * >         stdMapRegion;

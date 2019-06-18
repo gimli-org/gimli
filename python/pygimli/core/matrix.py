@@ -7,7 +7,9 @@ import numpy as np
 
 from . import _pygimli_ as pgcore
 from . import (CMatrix, CSparseMapMatrix, CSparseMatrix, ElementMatrix,
-               IVector, MatrixBase, R3Vector, RVector)
+               IVector, MatrixBase, R3Vector, RVector, )
+
+from .logger import warn
 
 # make core matrices (now in pgcore, later pgcore.core) known here for tab-completion
 BlockMatrix = pgcore.RBlockMatrix
@@ -84,6 +86,7 @@ class MultRightMatrix(MultMatrix):
         else:
             self._r = r
 
+
     @property
     def r(self):
         return self._r
@@ -93,11 +96,14 @@ class MultRightMatrix(MultMatrix):
 
     def mult(self, x):
         """Return M*x = A*(r*x)"""
-        # print('mult', self.A.rows(), " x " , self.A.cols(), x, self.r, )
-        if len(x)*2 == len(self.r):
+        if len(x) != len(self.r):
             # assuming A was complex
-            # print('ignore imag')
-            return self.A.mult(pgcore.cat(x, x) * self.r)
+            # warn('need to double x')
+            # print('mult:', self.A.rows(), " x " , self.A.cols(), 
+            #        'x:', len(x), 'r:', len(self.r))
+            # print(self.perm)
+            return self.A.mult(x[self.perm] * self.r)
+            #return self.A.mult(pgcore.cat(x, x) * self.r)
         return self.A.mult(x * self.r)
 
     def transMult(self, x):

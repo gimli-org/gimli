@@ -369,6 +369,8 @@ RSparseMapMatrix & ModellingBase::constraintsRef() {
 RVector ModellingBase::createMappedModel(const RVector & model, double background) const {
     if (mesh_ == 0) throwError(1, "ModellingBase has no mesh for ModellingBase::createMappedModel");
 
+    // __MS("createMappedModel: " << model.size() << " " <<  mesh_->cellCount())
+
     if (model.size() == mesh_->cellCount()) {
         IVector cM(mesh_->cellMarkers());
         
@@ -419,18 +421,30 @@ RVector ModellingBase::createMappedModel(const RVector & model, double backgroun
     if (background != 0.0){
         mesh_->prolongateEmptyCellsValues(cellAtts, background);
     }
-
-    // setting fixed values
-    if (regionManagerInUse_){
-        for (Index i = 0, imax = mesh_->cellCount(); i < imax; i ++){
-            // if (abs(cellAtts[i]) < TOLERANCE){ // this will never work since the prior prolongation
-                if (mesh_->cell(i).marker() <= MARKER_FIXEDVALUE_REGION){
-                    SIndex regionMarker = -(mesh_->cell(i).marker() - MARKER_FIXEDVALUE_REGION);
-                    double val = regionManager_->region(regionMarker)->fixValue();
-//                      __MS("fixing region: " << regionMarker << " to: " << val)
-                    cellAtts[i] = val;
+   
+    bool warned = false;
+    // search for fixed regions
+    for (Index i = 0, imax = mesh_->cellCount(); i < imax; i ++){
+        // if (abs(cellAtts[i]) < TOLERANCE){ // this will never work since the prior prolongation
+        if (mesh_->cell(i).marker() <= MARKER_FIXEDVALUE_REGION){
+                // setting fixed values
+            SIndex regionMarker = -(mesh_->cell(i).marker() - MARKER_FIXEDVALUE_REGION);
+            if (regionManagerInUse_){
+                double val = regionManager_->region(regionMarker)->fixValue();
+                if (warned == false){
+                    log(Warning, "fixing region: ", regionMarker," to: ", val);
+                    warned = true;
                 }
-            // }
+                cellAtts[i] = val;
+            } else {
+                // temporay hack until fixed in modelling.py
+                if (warned == false){
+                    __MS(cellAtts[i])
+                    log(Warning, "** TMP HACk ** fixing region: ", regionMarker, " to: ", 1/0.058);
+                    warned = true;
+                }
+                cellAtts[i] = 1./0.058;
+            }
         }
     }
 

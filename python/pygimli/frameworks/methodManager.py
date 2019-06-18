@@ -583,6 +583,7 @@ class MeshMethodManager(MethodManager):
         if limits is not None:
             self.fop.setRegionProperties('*', limits=limits)
 
+        # pg._y(pg.pf(self.fop._regionProperties))
         
         self.preRun(**kwargs)
         self.fw.run(dataVals, errVals, **kwargs)
@@ -666,23 +667,43 @@ class MeshMethodManager(MethodManager):
         fig.tight_layout()
         return fig
 
+    def coverage(self):
+        """Return coverage vector considering the logarithmic transformation.
+        """
+        covTrans = pg.core.coverageDCtrans(self.fop.jacobian(),
+                                      1.0 / self.inv.response,
+                                      1.0 / self.inv.model)
+        nCells = self.fop.paraDomain.cellCount()
+        return np.log10(covTrans[:nCells] / self.fop.paraDomain.cellSizes())
+
+    def standardizedCoverage(self, threshhold=0.01):
+        """Return standardized coverage vector (0|1) using thresholding.
+        """
+        return 1.0*(abs(self.coverage()) > threshhold)
+
 
 class PetroInversionManager(MeshMethodManager):
     def __init__(self, petro, mgr=None, **kwargs):
-        fop = kwargs.pop('fop', None)
-        if fop is None and mgr is not None:
-            fop = mgr.fw.fop
-            self.dataCheck = mgr.dataCheck
-            self.errorCheck = mgr.errorCheck
-        else:
+        petrofop = kwargs.pop('petrofop', None)
+
+        if petrofop is None:
+            fop = kwargs.pop('fop', None)
+
+            if fop is None and mgr is not None:
+                fop = mgr.fw.fop
+                self.dataCheck = mgr.dataCheck
+                self.errorCheck = mgr.errorCheck
+
+            if fop is not None:
+                if not isinstance(fop, pg.frameworks.PetroModelling):
+                    petrofop = pg.frameworks.PetroModelling(fop, petro)
+        
+        if petrofop is None:
+            print(mgr)
             print(fop)
             pg.critical('implement me')
 
-        if fop is not None:
-            if not isinstance(fop, pg.frameworks.PetroModelling):
-                fop = pg.frameworks.PetroModelling(fop, petro)
-
-        super(PetroInversionManager, self).__init__(fop=fop, **kwargs)
+        super(PetroInversionManager, self).__init__(fop=petrofop, **kwargs)
 
 
 

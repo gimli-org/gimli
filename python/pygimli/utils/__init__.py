@@ -29,7 +29,8 @@ from .units import (unit, cMap)
 
 from .utils import (ProgressBar, boxprint, cumDist, cut, diff, dist,
                     filterIndex, filterLinesByCommentStr, findNearest,
-                    getIndex, grange, logDropTol, niceLogspace, prettyFloat,
+                    getIndex, grange, logDropTol, niceLogspace, 
+                    prettify, prettyFloat,
                     rand, randN, trimDocString, unicodeToAscii, unique,
                     unique_everseen, unique_rows, uniqueAndSum)
 
