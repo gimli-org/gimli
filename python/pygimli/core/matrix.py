@@ -9,6 +9,7 @@ import numpy as np
 # BlockMatrix = pg.BlockMatrix
 # IdentityMatrix = pg.IdentityMatrix
 
+
 class MultMatrix(pg.MatrixBase):
     def __init__(self, A, verbose=False):
         self._A = A
@@ -46,15 +47,16 @@ class MultLeftMatrix(MultMatrix):
         """Multiplication from right-hand-side (dot product A.T * x)"""
         return self._A.transMult(x * self._l)
 
+
 LMultRMatrix = MultLeftMatrix  # alias for backward compatibility
 
 
 class MultRightMatrix(MultMatrix):
     """Some Matrix, multiplied with a right hand side vector r."""
 
-    def __init__(self, A, r=None):
+    def __init__(self, A, r=None, verbose=False):
         super(MultRightMatrix, self).__init__(A, verbose)
-        
+
         if r is None:
             self._r = pg.RVector(self.cols(), 1.0)
         else:
@@ -67,6 +69,7 @@ class MultRightMatrix(MultMatrix):
     def transMult(self, x):
         """Return M.T*x=(A.T*x)*r"""
         return self._A.transMult(x) * self._r
+
 
 RMultRMatrix = MultRightMatrix  # alias for backward compatibility
 
@@ -92,6 +95,7 @@ class MultLeftRightMatrix(MultMatrix):
     def transMult(self, x):
         """Multiplication from right-hand-side (dot product A.T*x)."""
         return self._A.transMult(x * self._l) * self._r
+
 
 LRMultRMatrix = MultLeftRightMatrix  # alias for backward compatibility
 
