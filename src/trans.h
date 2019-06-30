@@ -313,7 +313,7 @@ template <> DLLEXPORT RVector TransLogLU<RVector>::deriv(const RVector & a) cons
 
 
 /*! Cotangens barrier method, e.g. for water content (NMR) */
-// template< class Vec > class TransCotLU : public Trans < Vec > {
+template< class Vec > class TransCotLU : public Trans < Vec > {
 public:
 
     TransCotLU(double lowerbound=0.0, double upperbound=0.0)
@@ -538,54 +538,11 @@ public:
 
     virtual ~TransCumulative() { }
 
-    virtual Vec trans(const Vec & a) const {
-        Vec tmp(a.size());
-        if (indices_.size() > 0){
-            for (Index i = 0; i < transVec_.size(); i ++){
-                tmp.setVal(transVec_[i]->trans(a(indices_[i])),
-                           indices_[i]);
-            }
-        } else {
-            for (Index i = 0; i < transVec_.size(); i ++){
-                tmp.setVal(transVec_[i]->trans(a(slice_[i].first,
-                                                slice_[i].second)),
-                           slice_[i]);
-            }
-        }
-        return tmp;
-    }
+    virtual Vec trans(const Vec & a) const;
 
-    virtual Vec invTrans(const Vec & a) const {
-        Vec tmp(a.size());
-        if (indices_.size() > 0){
-            for (Index i = 0; i < transVec_.size(); i ++){
-                tmp.setVal(transVec_[i]->invTrans(a(indices_[i])),
-                           indices_[i]);
-            }
-        } else {
-            for (Index i = 0; i < transVec_.size(); i ++){
-                tmp.setVal(transVec_[i]->invTrans(a(slice_[i].first, slice_[i].second)),
-                           slice_[i]);
-            }
-        }
-        return tmp;
-    }
+    virtual Vec invTrans(const Vec & a) const;
 
-    virtual Vec deriv(const Vec & a) const {
-        Vec tmp(a.size());
-        if (indices_.size() > 0){
-            for (Index i = 0; i < transVec_.size(); i ++){
-                tmp.setVal(transVec_[i]->deriv(a(indices_[i])),
-                           indices_[i]);
-            }
-        } else {
-            for (Index i = 0; i < transVec_.size(); i ++){
-                tmp.setVal(transVec_[i]->deriv(a(slice_[i].first, slice_[i].second)),
-                           slice_[i]);
-            }
-        }
-        return tmp;
-    }
+    virtual Vec deriv(const Vec & a) const;
 
     Index size() const { return transVec_.size(); }
 
@@ -595,20 +552,11 @@ public:
         indices_.clear();
     }
 
-    void add(Trans< Vec > & trans, Index size) {
-        Index start = 0;
-        if (!slice_.empty()) start = slice_.back().second;
-        this->add(trans, start, start + size);
-    }
+    void add(Trans< Vec > & trans, Index size);
 
-    void add(Trans< Vec > & trans, Index start, Index end) {
-        transVec_.push_back(&trans);
-        slice_.push_back(std::pair< Index, Index >(start, end));
-    }
-    void add(Trans< Vec > & trans, const IVector & indices) {
-        transVec_.push_back(&trans);
-        indices_.push_back(indices);
-    }
+    void add(Trans< Vec > & trans, Index start, Index end);
+
+    void add(Trans< Vec > & trans, const IVector & indices);
 
     /*!Return the containing transformationb object.*/
     Trans < Vec > & at(Index i) { return *transVec_.at(i);}
@@ -622,6 +570,14 @@ protected:
     std::vector < std::pair< Index, Index> > slice_;
     std::vector < IVector > indices_;
 };
+
+template <> DLLEXPORT RVector TransCumulative < RVector >::trans(const RVector & a) const;
+template <> DLLEXPORT RVector TransCumulative < RVector >::invTrans(const RVector & a) const;
+template <> DLLEXPORT RVector TransCumulative < RVector >::deriv(const RVector & a) const;
+
+template <> DLLEXPORT void TransCumulative < RVector >::add(Trans< RVector > & trans, Index size);
+template <> DLLEXPORT void TransCumulative < RVector >::add(Trans< RVector > & trans, Index start, Index end);
+template <> DLLEXPORT void TransCumulative < RVector >::add(Trans< RVector > & trans, const IVector & indices);
 
 typedef Trans < RVector > RTrans;
 typedef TransLinear < RVector > RTransLinear;

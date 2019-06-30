@@ -41,7 +41,7 @@ public:
     ValueType mat_[9];
 
     Matrix3()
-        : valid_(false){}
+        : valid_(false){ clear(); }
 
     Matrix3(const Matrix3 < ValueType > & m ){
         mat_[0] = m.mat_[0]; mat_[1] = m.mat_[1]; mat_[2] = m.mat_[2];
@@ -411,14 +411,14 @@ public:
     }
 
     /*! Return number of rows. */
-    inline Index rows() const { 
-        return mat_.size(); 
+    inline Index rows() const {
+        return mat_.size();
     }
 
     /*! Return number of colums. */
-    inline Index cols() const { 
-        if (mat_.size() > 0) return mat_[0].size(); 
-        return 0; 
+    inline Index cols() const {
+        if (mat_.size() > 0) return mat_[0].size();
+        return 0;
     }
 
     /*! Set a value. Throws out of range exception if index check fails. */
@@ -588,19 +588,19 @@ protected:
     BVector rowFlag_;
 };
 
-template <> DLLEXPORT Vector<double> 
+template <> DLLEXPORT Vector<double>
 Matrix<double>::mult(const Vector < double > & b, Index startI, Index endI) const;
-template <> DLLEXPORT Vector<Complex> 
+template <> DLLEXPORT Vector<Complex>
 Matrix<Complex>::mult(const Vector < Complex > & b, Index startI, Index endI) const;
 
-template <> DLLEXPORT Vector<double> 
+template <> DLLEXPORT Vector<double>
 Matrix<double>::mult(const Vector < double > & b) const;
-template <> DLLEXPORT Vector<Complex> 
+template <> DLLEXPORT Vector<Complex>
 Matrix<Complex>::mult(const Vector < Complex > & b) const;
 
-template <> DLLEXPORT Vector<double> 
+template <> DLLEXPORT Vector<double>
 Matrix<double>::transMult(const Vector < double > & b) const;
-template <> DLLEXPORT Vector<Complex> 
+template <> DLLEXPORT Vector<Complex>
 Matrix<Complex>::transMult(const Vector < Complex > & b) const;
 
 
