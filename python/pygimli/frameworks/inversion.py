@@ -37,9 +37,9 @@ class Inversion(object):
         self._debug = kwargs.pop('debug', False)
 
         # If this class or its derived is a Framework the _inv holds another
-        # Inversion which allows us ........
+        # Inversion which allows us (remove me)........
         # this will be probably removed in the future
-        self.isFrameWork = False # remove me not needed
+        self.isFrameWork = False # check if needed
         self._stopAtChi1 = True
 
         self._preStep = None
@@ -73,6 +73,7 @@ class Inversion(object):
     @property
     def inv(self):
         if self.isFrameWork:
+            pg.critial('in use?')
             return self._inv.inv
         else:
             return self._inv
@@ -289,7 +290,7 @@ class Inversion(object):
         dData = (dT.trans(self.dataVals) - dT.trans(response)) / \
                  dT.error(self.dataVals, self.errorVals)
 
-        return pg.math.dot(dData, dData)
+        return pg.core.dot(dData, dData)
 
     def phiModel(self, model=None):
         """ """
@@ -297,7 +298,7 @@ class Inversion(object):
             model = self.model
 
         rough = self.inv.roughness(model)
-        return pg.math.dot(rough, rough)
+        return pg.core.dot(rough, rough)
 
     def phi(self, model=None, response=None):
         """ """
@@ -319,9 +320,9 @@ class Inversion(object):
 
         Parameters
         ----------
-        dataVals: iterable
+        dataVals : iterable
             Data values
-        errorVals: iterable
+        errorVals : iterable
             Relative error values. dv / v
 
         Other Parameters
@@ -334,14 +335,11 @@ class Inversion(object):
         """
         self.reset()
         if self.isFrameWork:
-            pg.critical('in use?')
+            pg.critial('in use?')
             return self._inv.run(dataVals, errorVals, **kwargs)
 
         if self.fop is None:
             raise Exception("Need a valid forward operator for the inversion run.")
-
-        # called to be sure all necessary parts are initialized (e.g. mesh())
-        self.fop.ensureContent()
 
         maxIter = kwargs.pop('maxIter', self.maxIter)
         minDPhi = kwargs.pop('dPhi', self.minDPhi)
@@ -354,7 +352,7 @@ class Inversion(object):
         progress = kwargs.pop('progress', None)
         showProgress = kwargs.pop('showProgress', False)
 
-        self.inv.setTransModel(self.modelTrans)
+        self.inv.setTransModel(self.fop.modelTrans)
 
         self.dataVals = dataVals
         self.errorVals = errorVals
@@ -374,14 +372,7 @@ class Inversion(object):
         if self.verbose:
             pg.info('Starting inversion.')
             print("fop:", self.inv.fop())
-
-            if isinstance(self.dataTrans, pg.trans.TransCumulative):
-                print("Data transformation (cummulative):")
-                for i in range(self.dataTrans.size()):
-                    print("\t", self.dataTrans.at(i))
-            else:
-                print("Data transformation:", self.dataTrans)
-
+            print("Data transformation:", self.dataTrans)
             if isinstance(self.modelTrans, pg.trans.TransCumulative):
                 print("Model transformation (cummulative):")
                 for i in range(self.modelTrans.size()):
@@ -401,18 +392,12 @@ class Inversion(object):
         self.fop.setStartModel(self.startModel)
         self.inv.setReferenceModel(self.startModel)
 
-
+        print("-" * 80)
         self.inv.start()
         self.maxIter = maxIterTmp
 
-        if self.verbose:
-            print("-" * 80)
-
         if showProgress:
-            if hasattr(showProgress, '__call__'):
-                showProgress(self)
-            else:
-                self.showProgress(showProgress)
+            self.showProgress(showProgress)
 
         lastPhi = self.phi()
         self.chi2History = [self.chi2()]
@@ -428,10 +413,6 @@ class Inversion(object):
                 print("inv.iter", i + 1, "... ", end='')
 
             try:
-                # print("Model transformation:", self.modelTrans)
-                # print("Model transformation:", self.inv.transModel())
-                # print("Model transformation:", self.inv.transModel().at(0))
-                # print("Model transformation:", self.inv.transModel().at(0).trans(np.ones(10)*100))
                 self.inv.oneStep()
             except RuntimeError as e:
                 print(e)
@@ -449,10 +430,7 @@ class Inversion(object):
             self.modelHistory.append(self.model)
 
             if showProgress:
-                if hasattr(showProgress, '__call__'):
-                    showProgress(self)
-                else:
-                    self.showProgress(showProgress)
+                self.showProgress(showProgress)
 
             self.inv.setLambda(self.inv.getLambda() * self.inv.lambdaFactor())
 
@@ -466,7 +444,7 @@ class Inversion(object):
                 self._postStep(i, self.inv)
 
             phi = self.phi()
-            dPhi = (1 - lastPhi / phi) * 100.
+            dPhi = (1-lastPhi / phi) * 100.
 
             if self.verbose:
                 print("chi² = {0} (dPhi = {1}%) lam: {2}".format(
@@ -484,16 +462,6 @@ class Inversion(object):
                                 round(dPhi, 2), minDPhi))
                 break
 
-            if dPhi > 0:
-                if self.verbose:
-                    pg.boxprint("Abort due to diverging behaviour: dPhi = {0} (> 0%)".format(round(dPhi, 2)))
-                break
-
-            if i == maxIter-1:
-                if self.verbose:
-                    pg.boxprint("Abort criteria reached: maximum iteration.")
-                break
-
             lastPhi = phi
 
         if len(kwargs.keys()) > 0:
@@ -506,26 +474,24 @@ class Inversion(object):
         r"""Called if showProgress=True is set for the inversion run.
 
         TODO
-            * think .. its a useful function but breaks a little
-             the FrameWork work only concept.
-            * move it into a vis manager
+            *Discuss .. its a useful function but breaks a little
+                the FrameWork work only concept.
         """
         if self.axs is None:
             axs = None
             if style == 'all' or style == True:
                 fig, axs = pg.plt.subplots(1, 2)
             elif style == 'Model':
-                # fig, axs = pg.plt.subplots(1, 1)
-                pass
+                fig, axs = pg.plt.subplots(1, 1)
             self.axs = axs
-
         ax = self.axs
 
         if style == 'Model':
-            # for other_ax in ax.figure.axes:
-            #     if type(other_ax).mro()[0] == type(ax):
-            #         # only clear Axes not Colorbars
-            #         other_ax.clear()
+            for other_ax in ax.figure.axes:
+                # pg._y(type(other_ax).mro())
+                if type(other_ax).mro()[0] == type(ax):
+                    # only clear Axes not Colorbars
+                    other_ax.clear()
 
             self.fop.drawModel(ax, self.inv.model())
         else:
@@ -589,6 +555,7 @@ class Block1DInversion(MarquardtInversion):
 
     """
     def __init__(self, fop=None, **kwargs):
+        pg.warning("move this to the manager")
         super(Block1DInversion, self).__init__(fop=fop, **kwargs)
 
     def setForwardOperator(self, fop):
@@ -689,7 +656,7 @@ class MeshInversion(Inversion):
 
     """
     def __init__(self, fop=None, **kwargs):
-        TO_BE_REMOVED
+        pg.critical('Obsolete .. to be removed.')
         super(MeshInversion, self).__init__(fop=fop, **kwargs)
         self._zWeight = 1.0
 
@@ -724,15 +691,15 @@ class MeshInversion(Inversion):
 
 
 class PetroInversion(Inversion):
-    def __init__(self, petro, mgr=None, fop=None, **kwargs):
-        TO_BE_REMOVED
-        self.mgr = mgr
-
-        if self.mgr is not None:
-            fop = self.mgr.createForwardOperator(**kwargs)
-
+    def __init__(self, petro, fop=None, **kwargs):
+        """
+        Parameters
+        ----------
+        """
+        pg.critical('Obsolete .. to be removed.')
         if fop is not None:
-            fop = pg.frameworks.PetroModelling(fop, petro)
+            if not isinstance(fop, pg.frameworks.PetroModelling):
+                fop = pg.frameworks.PetroModelling(fop, petro)
 
         super(PetroInversion, self).__init__(fop=fop, **kwargs)
 
@@ -747,13 +714,15 @@ class PetroInversion(Inversion):
         """
         """
         if 'limits' in kwargs:
-            limits = kwargs.pop('limits', [0., 1.])
+            limits = kwargs.pop('limits')
 
             if len(self.fop.regionManager().regionIdxs()) > 1:
                 pg.critical('implement')
             else:
                 self.fop.setRegionProperties('*', limits=limits)
 
+        #ensure the mesh
+        self.fop.mesh()
         return super(PetroInversion, self).run(dataVals, errVals, **kwargs)
 
 
@@ -770,11 +739,11 @@ class LCInversion(Inversion):
         #self.setDeltaChiStop(0.1)
 
     def prepare(self, dataVals, errVals, nLayers=4, **kwargs):
-        dataVec = pg.Vector()
+        dataVec = pg.RVector()
         for d in dataVals:
             dataVec = pg.cat(dataVec, d)
 
-        errVec = pg.Vector()
+        errVec = pg.RVector()
         for e in errVals:
             errVec = pg.cat(errVec, e)
 
