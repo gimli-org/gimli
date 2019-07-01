@@ -462,7 +462,6 @@ def addCoverageAlpha(patches, coverage, dropThreshold=0.4):
         relative minimum coverage
     """
     patches.set_antialiaseds(True)
-
     # generate individual color values here
     patches.update_scalarmappable()
 
@@ -489,7 +488,7 @@ def addCoverageAlpha(patches, coverage, dropThreshold=0.4):
 
         C = (C - mi) / (ma - mi)
         C[np.where(C < 0.)] = 0.0
-        C[np.where(C > 1.)] = 1.0
+        C[np.where(C > 0.95)] = 1.0
 
 #    else:
 #        print('taking the values directly')

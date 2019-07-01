@@ -555,7 +555,7 @@ class Block1DInversion(MarquardtInversion):
 
     """
     def __init__(self, fop=None, **kwargs):
-        pg.warning("move this to the manager")
+        pg.warn("move this to the manager")
         super(Block1DInversion, self).__init__(fop=fop, **kwargs)
 
     def setForwardOperator(self, fop):

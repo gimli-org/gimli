@@ -223,7 +223,6 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
     colobar : matplotlib.colorbar
     """
     renameKwarg('cmap', 'cMap', kwargs)
-
     if ax is None:
         ax = plt.subplots()[1]
 
@@ -380,7 +379,8 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
 
     if coverage is not None:
         if len(data) == mesh.cellCount():
-            addCoverageAlpha(gci, coverage)
+            addCoverageAlpha(gci, coverage, 
+                             dropThreshold=kwargs.pop('dropThreshold', 0.4))
         else:
             raise BaseException('toImplement')
             # addCoverageAlpha(gci, pg.core.cellDataToPointData(mesh, coverage))

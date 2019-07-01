@@ -8,6 +8,24 @@ import pygimli as pg
 import numpy as np
 
 class TestFiniteElementBasics(unittest.TestCase):
+    def test_Poisson(self):
+        """
+        \d² u / d x² + f = 0
+
+        u = sin(x) ## maybe a good test case for harmonic (spectral) base functions TODO
+        f = sin(x)
+
+        u = -cos(x)
+        f = -cos(x)
+
+        ### the following are already tested in Helmholtz
+        u = x 
+        f = 0
+
+        u = x*x
+        f = -2
+        """
+        pass 
 
     def test_Helmholtz(self):
         """
@@ -101,7 +119,7 @@ class TestFiniteElementBasics(unittest.TestCase):
 
             xMin = mesh.xmin()
             xSpan = (mesh.xmax() - xMin)
-            np.testing.assert_allclose(u, (pg.x(mesh)-xMin)/ xSpan)
+            np.testing.assert_allclose(u, (pg.x(mesh)-xMin) / xSpan)
             return u
 
         def _testP2_(mesh, show=False):
@@ -133,10 +151,13 @@ class TestFiniteElementBasics(unittest.TestCase):
             np.testing.assert_allclose(ui, xi**2)
      
         _testP1_(pg.createGrid(x=np.linspace(0, 1, 11)), show=False) #1D
-        _testP1_(pg.createGrid(x=np.linspace(-2, 1, 11), y=np.linspace(0, 1, 11))) #2D reg quad
-        _testP1_(pg.createGrid(x=np.linspace(-0.04, 0.01, 11), y=np.linspace(-0.4, 0, 11))) #2D scaled
-        _testP1_(pg.createGrid(x=np.linspace(-2, 1, 11), y=np.linspace( 0, 1, 11),
-                             z=np.linspace( 0, 1, 11))) #3D
+        _testP1_(pg.createGrid(x=np.linspace(-2, 1, 11), 
+                               y=np.linspace(0, 1, 11))) #2D reg quad
+        _testP1_(pg.createGrid(x=np.linspace(-0.04, 0.01, 11), 
+                               y=np.linspace(-0.4, 0, 11))) #2D scaled
+        _testP1_(pg.createGrid(x=np.linspace(-2, 1, 11), 
+                               y=np.linspace( 0, 1, 11),
+                               z=np.linspace( 0, 1, 11))) #3D
 
         mesh = pg.meshtools.createMesh(pg.meshtools.createWorld(start=[4, -4], end=[6, -6], worldMarker=0), area=0.1)
         mesh.setBoundaryMarkers(np.array([0,1,3,2,4])[mesh.boundaryMarkers()])
