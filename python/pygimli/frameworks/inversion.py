@@ -307,11 +307,11 @@ class Inversion(object):
             return phiD
         else:
             return phiD + self.phiModel(model) * self.inv.getLambda()
-
+    
     def run(self, dataVals, errorVals, **kwargs):
         """Run inversion.
 
-        The inversion will always starts from the starting model taken from
+        The inversion will always start from the starting model taken from
         the forward operator.
         If you want to run the inversion from a specified prior model,
         e.g., from a other run, set this model as starting model to the FOP
@@ -335,7 +335,7 @@ class Inversion(object):
         """
         self.reset()
         if self.isFrameWork:
-            pg.critial('in use?')
+            pg.critical('in use?')
             return self._inv.run(dataVals, errorVals, **kwargs)
 
         if self.fop is None:
@@ -387,7 +387,7 @@ class Inversion(object):
             print("min/max (start model): {0}/{1}".format(pf(min(self.startModel)),
                                                           pf(max(self.startModel))))
 
-        ### To ensure reproducability of the run() call inv.start() will
+        ### To ensure reproduceability of the run() call inv.start() will
         ### reset self.inv.model() to fop.startModel().
         self.fop.setStartModel(self.startModel)
         self.inv.setReferenceModel(self.startModel)

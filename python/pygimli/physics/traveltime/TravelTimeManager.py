@@ -239,9 +239,8 @@ class TravelTimeManager(MeshMethodManager):
             Amount of secondary nodes used for ensure accuracy of the forward
             operator.
         """
-        kwargs.setdefault('secNodes', 2)
-
-        self.fop._refineSecNodes = kwargs.pop('secNodes', 2)
+        mesh = kwargs.pop('mesh', None)
+        self.setMesh(mesh, secnode=kwargs.pop('secNodes', 2))
 
         if 'limits' in kwargs:
             if kwargs['limits'][0] > 1:

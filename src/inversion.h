@@ -73,7 +73,7 @@ template < class Vec > Vec getIRLSWeightsP(const Vec & a, int p, double locut = 
     Inversion(bool verbose, bool dosave
     Inversion(RVector data, FOP f, bool verbose, bool dosave
     Inversion(RVector data, FOP f, transData, transModel, bool verbose, bool dosave */
-class RInversion : public InversionBase< double > {
+class DLLEXPORT RInversion : public InversionBase< double > {
 public:
     typedef RVector Vec;
     typedef RVector ModelVector;

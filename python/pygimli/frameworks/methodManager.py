@@ -526,6 +526,20 @@ class MeshMethodManager(MethodManager):
         else:
             self.fop.paraModel(model)
 
+    def setMesh(self, mesh, ignoreRegionManager=False, **kwargs):
+        """ """
+        if ignoreRegionManager:
+            mesh = self.fop.createRefinedFwdMesh(mesh, **kwargs)
+
+        self.fop.setMesh(mesh, ignoreRegionManager=ignoreRegionManager)
+
+    def setData(self, data):
+        """ """
+        if isinstance(data, pg.DataContainer):
+                self.fop.data = data
+        else:
+            pg.critical("setting data array is not yet implemented.")
+
     def invert(self, data=None, mesh=None, zWeight=1.0, startModel=None,
                **kwargs):
         """Run the full inversion.
@@ -553,13 +567,10 @@ class MeshMethodManager(MethodManager):
             The calculated model is in self.fw.model.
         """
         if data is not None:
-            if isinstance(data, pg.DataContainer):
-                self.fop.data = data
-            else:
-                pg.critical("setting data array is not yet implemented.")
-
+            self.setData(data)
+            
         if mesh is not None:
-            self.fop.setMesh(mesh)
+            self.setMesh(mesh)
 
         dataVals = self._ensureData(self.fop.data)
         errVals = self._ensureError(self.fop.data, dataVals)
@@ -608,9 +619,11 @@ class MeshMethodManager(MethodManager):
 
         return ax, cBar
 
-    def showResult(self, ax=None, **kwargs):
+    def showResult(self, model=None, ax=None, **kwargs):
         """"""
-        self.showModel(self.fw.model, ax=ax, **kwargs)
+        if model is None:
+            model = self.fw.model
+        self.showModel(model, ax=ax, **kwargs)
 
     def showFit(self, axs=None, **kwargs):
         """Show the last inversion data and response."""
@@ -627,7 +640,16 @@ class MeshMethodManager(MethodManager):
                     horizontalalignment='left',
                     verticalalignment='center')
 
-        self.showData(data=self.inv.response,
+        resp = None
+        data = None
+        if 'model' in kwargs:
+            resp = self.fop.response(kwargs['model'])
+            data = self._ensureData(self.fop.data)
+        else:
+            resp = self.inv.response
+            data = self.fw.dataVals
+
+        self.showData(data=resp,
                       orientation=orientation,
                       ax=axs[1], **kwargs)
         axs[1].text(0.0, 1.03, "Response",
@@ -635,8 +657,8 @@ class MeshMethodManager(MethodManager):
                     horizontalalignment='left',
                     verticalalignment='center')
         axs[1].text(1.0, 1.03, "rrms: {0}, $\chi^2$: {1}"
-                     .format(pg.utils.prettyFloat(self.fw.inv.relrms()),
-                             pg.utils.prettyFloat(self.fw.inv.chi2())),
+                     .format(pg.pf(pg.utils.rrms(data, resp)),
+                             pg.pf(self.fw.chi2(response=resp))),
                     transform=axs[1].transAxes,
                     horizontalalignment='right',
                     verticalalignment='center')
