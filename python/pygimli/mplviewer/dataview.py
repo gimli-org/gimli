@@ -167,6 +167,8 @@ def patchValMap(vals, xvec=None, yvec=None, ax=None, cMin=None, cMax=None,
     col = ax.add_collection(pp)
     pp.set_edgecolor(None)
     pp.set_linewidths(0.0)
+    if 'alpha' in kwargs:
+        pp.set_alpha(kwargs['alpha'])
 
     if circular:
         pp.set_edgecolor('black')

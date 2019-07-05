@@ -3,6 +3,7 @@
 
 import time
 from pygimli.core import _pygimli_ as pg
+from pygimli.utils.geostatistics import covarianceMatrix
 import numpy as np
 
 # make core matrices (now in pg, later pg.core) known here for tab-completion
@@ -221,3 +222,29 @@ class Cm05Matrix(pg.MatrixBase):
     def transMult(self, x):
         """Multiplication from right-hand side (dot product)."""
         return self.mult(x)  # matrix is symmetric by definition
+
+
+class geostatisticConstraintsMatrix(pg.MatrixBase):
+    """Geostatistic constraints matrix."""
+    def __init__(self, CM=None, mesh=None, I=None, **kwargs):
+        super().__init__()
+        if isinstance(CM, pg.Mesh):
+            CM = covarianceMatrix(CM, I=I, **kwargs)
+        if CM is None:
+            CM = covarianceMatrix(mesh, I=I, **kwargs)
+
+        self.nModel = CM.shape[0]
+        self.CM05 = Cm05Matrix(CM)
+        self.spur = self.CM05 * pg.RVector(self.nModel, 1.0)
+
+    def mult(self, x):
+        return self.CM05.mult(x) - self.spur * x
+
+    def transMult(self, x):
+        return self.CM05.transMult(x) - self.spur * x
+
+    def cols(self):
+        return self.nModel
+
+    def rows(self):
+        return self.nModel

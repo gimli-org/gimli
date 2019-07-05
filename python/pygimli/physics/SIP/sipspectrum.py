@@ -273,6 +273,7 @@ class SIPSpectrum(object):
         for i in (0, 1):
             ax[i].set_yscale('linear')
             ax[i].legend()
+        return fig, ax
 
     def checkCRKK(self, useEps=False, use0=False, ax=None):
         """Check coupling removal (CR) by Kramers-Kronig (KK) relation"""
