@@ -118,6 +118,7 @@ def load(fname, verbose=False):
         # Matrices
         ".bmat": pg.RMatrix,
         ".mat": pg.RMatrix,
+        ".matrix": pg.SparseMapMatrix,
         # Meshes
         ".poly": readPLC,
         ".bms": pg.Mesh,

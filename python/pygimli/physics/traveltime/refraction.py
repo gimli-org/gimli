@@ -61,7 +61,7 @@ class Refraction(MethodManager):
         if isinstance(data, str):
             self.loadData(data)
         elif isinstance(data, pg.DataContainer):
-            self.setDataContainer(data)
+            self.setDataContainer(pg.DataContainer(data))
             self.basename = kwargs.pop('name', 'new')
 #        if self.dataContainer is not None:
 #            self.createMesh()

@@ -1287,7 +1287,6 @@ def createCylinder(radius, height, nSegments=8, area=0.0, pos=None, marker=1):
 
     _, namePLC = tmp.mkstemp(suffix='.poly')
 
-    print(namePLC)
     syscal = 'polyCreateCube -Z '  \
         + ' -s ' + str(nSegments) \
         + ' -m ' + str(marker) \
