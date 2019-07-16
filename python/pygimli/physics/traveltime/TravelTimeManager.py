@@ -240,7 +240,8 @@ class TravelTimeManager(MeshMethodManager):
             operator.
         """
         mesh = kwargs.pop('mesh', None)
-        self.setMesh(mesh, secnode=kwargs.pop('secNodes', 2))
+        if mesh is not None:
+            self.setMesh(mesh, secNodes=kwargs.pop('secNodes', 2))
 
         if 'limits' in kwargs:
             if kwargs['limits'][0] > 1:
