@@ -62,8 +62,7 @@ def showERTData(data, vals=None, **kwargs):
         else:
             pg.critical('field not in data container: ', vals)
 
-        kwargs['cMap'] = kwargs.pop('cMap', pg.utils.cMap('rhoa'))
-    
+    kwargs['cMap'] = kwargs.pop('cMap', pg.utils.cMap('rhoa'))
     kwargs['logScale'] = kwargs.pop('logScale', min(vals) > 0.0)
 
     ax, cbar = drawERTData(ax, data, vals=vals, **kwargs)

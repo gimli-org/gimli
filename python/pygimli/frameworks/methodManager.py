@@ -371,7 +371,7 @@ class MethodManager(object):
         ----
          DRY: decide showModel or showResult
         """
-        ax = self.showModel(ax=ax, model=self.model,
+        ax = self.showModel(self.model, ax=ax,
                             #label='Model',
                             **kwargs)
         return ax
@@ -601,15 +601,15 @@ class MeshMethodManager(MethodManager):
         self.postRun(**kwargs)
         return self.paraModel(self.fw.model)
 
-
     def showModel(self, model=None, ax=None, **kwargs):
         """"""
         if model is None:
             model = self.fw.model
         if ax is None:
             fig, ax = pg.plt.subplots(ncols=1)
-
-        ax, cBar = self.fop.drawModel(ax, model, **kwargs)
+        
+        cBar = None
+        self.fop.drawModel(ax, model, **kwargs)
 
         diam = kwargs.pop('diam', None)
         pg.mplviewer.drawSensors(ax,
@@ -623,7 +623,7 @@ class MeshMethodManager(MethodManager):
         """"""
         if model is None:
             model = self.fw.model
-        self.showModel(model, ax=ax, **kwargs)
+        self.showModel(model=model, ax=ax, **kwargs)
 
     def showFit(self, axs=None, **kwargs):
         """Show the last inversion data and response."""
