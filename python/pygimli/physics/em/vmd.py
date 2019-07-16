@@ -53,7 +53,7 @@ class VMDModelling(Block1DModelling):
         # resistivity properties
         self.setRegionProperties(1, startModel=np.median(rhoa), trans='log')
         return super(VMDModelling, self).regionManager().createStartModel()
-        
+
     def response_mt(self, par, i=0):
         """Compute response vector for a set of model parameter.
 
@@ -220,19 +220,23 @@ class VMDTimeDomainModelling(VMDModelling):
         else:
             self.rxArea = rxArea
 
-    def createStartModel(self, rhoa, nLayer=4, thickness=None):
-        r"""Create suitable starting model.
+    def createStartModel(self, rhoa, nLayers=None, thickness=None):
+        """Create suitable starting model.
 
-            Create suitable starting model based on median apparent resistivity
-            values and skin depth approximation.
+        Create suitable starting model based on median apparent resistivity
+        values and skin depth approximation.
         """
-        res = np.ones(nLayer) * pg.math.median(rhoa)
+        if nLayers is None:
+            nLayers = self.nLayers
+
+        res = np.ones(nLayers) * pg.math.median(rhoa)
         if thickness is None:
             skinDepth = np.sqrt(max(self.t) * pg.math.median(rhoa)) * 500
-            thk = np.arange(nLayer) / sum(np.arange(nLayer)) * skinDepth / 2.
+            thk = np.arange(nLayers) / sum(np.arange(nLayers)) * skinDepth / 2.
             thk = thk[1:]
         else:
-            thk = np.ones(nLayer-1) * thickness
+            thk = np.ones(nLayers-1) * thickness
+            
         self.setStartModel(pg.cat(thk, res))
         return self.startModel()
 
@@ -303,4 +307,3 @@ class VMDTimeDomainModelling(VMDModelling):
             ePhi[it] = ePhi[it] * dipm * sqrt(2/pi / t[it])
 
         return ePhi, t
-

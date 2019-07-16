@@ -484,7 +484,7 @@ class ParameterInversionManager(MethodManager):
             self.fop.setRegionProperties(k, limits=v)
 
         startModel = kwargs.pop('startModel', {})
-        
+
         if isinstance(startModel, dict):
             for k, v in startModel.items():
                 self.fop.setRegionProperties(k, startModel=v)
@@ -568,7 +568,7 @@ class MeshMethodManager(MethodManager):
         """
         if data is not None:
             self.setData(data)
-            
+
         if mesh is not None:
             self.setMesh(mesh)
 
@@ -595,7 +595,7 @@ class MeshMethodManager(MethodManager):
             self.fop.setRegionProperties('*', limits=limits)
 
         # pg._y(pg.pf(self.fop._regionProperties))
-        
+
         self.preRun(**kwargs)
         self.fw.run(dataVals, errVals, **kwargs)
         self.postRun(**kwargs)
@@ -719,7 +719,7 @@ class PetroInversionManager(MeshMethodManager):
             if fop is not None:
                 if not isinstance(fop, pg.frameworks.PetroModelling):
                     petrofop = pg.frameworks.PetroModelling(fop, petro)
-        
+
         if petrofop is None:
             print(mgr)
             print(fop)
