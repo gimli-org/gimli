@@ -110,7 +110,6 @@ class Inversion(object):
     @property
     def dataTrans(self):
         return self._dataTrans
-
     @dataTrans.setter
     def dataTrans(self, dt):
         self._dataTrans = dt
@@ -238,6 +237,14 @@ class Inversion(object):
         return pC
 
     @property
+    def robustData(self):
+        return self.inv.robustData()
+    @robustData.setter
+    def robustData(self, v):
+        if self.inv is not None:
+            self.inv.setRobustData(v)
+
+    @property
     def maxIter(self):
         return self.inv.maxIter()
     @maxIter.setter
@@ -346,6 +353,7 @@ class Inversion(object):
 
         self.verbose = kwargs.pop('verbose', self.verbose)
         self.debug   = kwargs.pop('debug', self.debug)
+        self.robustData = kwargs.pop('robustData', False)
 
         lam = kwargs.pop('lam', 20)
 
@@ -434,7 +442,7 @@ class Inversion(object):
 
             self.inv.setLambda(self.inv.getLambda() * self.inv.lambdaFactor())
 
-            if self.inv.robustData():
+            if self.robustData:
                 self.inv.robustWeighting()
 
             if self.inv.blockyModel():
