@@ -272,6 +272,80 @@ def refineHex2Tet(mesh, style=1):
                                 c.node(tet[3]).id()], c.marker())
     return out
 
+
+def extrudeMesh(mesh, a, **kwargs):
+    r"""Extrude mesh to a higher dimension.
+
+    Generates a 2D mesh by extruding a 1D mesh along y-coordinate using quads.
+    We assume a 2D mesh here consisting off nodes and edges.
+    The marker of nodes are extruded as edges with the same marker.
+    The marker of the edges are extruded as cells with same marker.
+    Optionally all y-coordinates can be adjusted to become equal at the end
+
+    Generates a three dimensional mesh by extruding a two dimensional mesh along the z-coordinate tranforming triangless into prisms or quads into hexahedrons.
+    3D cell marker are set from 2D cell marker.
+    The boundary marker for the side boundaries are set from edge marker in mesh.
+
+    TODO
+    ----
+        * document and test marker setting from the core
+
+    Parameters
+    ----------
+    mesh: :gimliapi:`GIMLI::Mesh`
+        Input mesh 
+    a: iterable (float)
+        Additional coordinate to extrude into.
+    
+    Addional Parameters
+    -------------------
+    adjustBottom: bool [False]
+        Only for 2D for now. Adjust all nodes that that bottom of the mesh have the same depth.
+
+    Returns
+    -------
+    mesh: :gimliapi:`GIMLI::Mesh`
+        Returning mesh of +1 dimension
+
+    Examples
+    --------
+    >>> # no need to import matplotlib. pygimli's show does
+    >>> import numpy as np
+    >>> import pygimli as pg
+    >>> import pygimli.meshtools as mt
+    >>> topo = [[x, 1.0+np.cos(2*np.pi*1/30*x)] for x in range(31)]
+    >>> m1 = mt.createPolygon(topo)
+    >>> m1.setBoundaryMarkers(range(m1.boundaryCount()))
+
+    >>> m = mt.extrudeMesh(m1, a=-(np.geomspace(1, 5, 8)-1.0))
+    >>> _ = pg.show(m, m.cellMarkers(), showMesh=True)
+    >>> m = mt.extrudeMesh(m1, a=-(np.geomspace(1, 5, 8)-1.0), 
+    ...                    adjustBottom=True)
+    >>> _ = pg.show(m, m.cellMarkers(), showMesh=True)
+    """
+    if mesh.dim() == 1 or (mesh.dim() == 2 and mesh.cellCount() == 0):
+
+        adjustBack = kwargs.pop('adjustBottom', False)
+        m2 = pg.meshtools.createMesh2D(mesh, y=a, **kwargs)
+        if adjustBack:
+            minY = min(pg.y(mesh)) + min(a) 
+            scale = dict()
+            n0s = dict()
+            for n in mesh.nodes():
+                n0s[n.pos()[0]] = n.pos()
+                scale[n.pos()[0]] = (minY-n.pos()[1]) / min(a)
+            for n in m2.nodes():
+                xP = n.pos()[0]
+                yP = n.pos()[1]
+                y0 = n0s[xP][1]
+                n.setPos([xP, (yP-y0)*scale[xP] + y0])
+        return m2
+
+    if mesh.dim() == 2:
+        return pg.meshtools.createMesh3D(mesh, z=a, **kwargs)
+    pg.error('Cannot extrude mesh of dimension:', mesh.dim())
+
+
 def readGmsh(fname, verbose=False):
     r"""Read :term:`Gmsh` ASCII file and return instance of GIMLI::Mesh class.
 

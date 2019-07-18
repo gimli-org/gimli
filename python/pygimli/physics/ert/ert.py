@@ -19,7 +19,7 @@ def simulate(mesh, res, scheme, sr=True, useBert=True,
     """Convenience function to use the ERT modelling operator.
 
     Convenience function to use the ERT modelling operator
-    if you like static functions.
+    if you like static functions. 
 
     See :py:mod:`pygimli.ert.ERTManager.simulate` for description
     of the arguments.
@@ -616,6 +616,10 @@ class ERTManager(MeshMethodManager):
             scheme.set('k', fop.calcGeometricFactor(scheme))
 
         ret = pg.DataContainerERT(scheme)
+        ## just be sure that we don't work with artifacts
+        ret['u'] *= 0.0
+        ret['i'] *= 0.0
+        ret['r'] *= 0.0    
 
         if isArrayData:
             rhoa = np.zeros((len(res), scheme.size()))

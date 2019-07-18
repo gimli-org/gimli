@@ -12,6 +12,7 @@ from ..core import createMesh1D, createMesh1DBlock, createMesh2D, createMesh3D
 from .grid import appendTetrahedronBoundary, appendTriangleBoundary, createGrid
 
 from .mesh import (createMesh, createParaMesh, createParaMesh2DGrid,
+                   extrudeMesh, 
                    merge2Meshes, refineQuad2Tri, refineHex2Tet,
                    mergeMeshes, readGmsh, readHydrus2dMesh,
                    readHydrus3dMesh, readTetgen, readTriangle,

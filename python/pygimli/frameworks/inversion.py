@@ -453,7 +453,7 @@ class Inversion(object):
 
             phi = self.phi()
             dPhi = (1-lastPhi / phi) * 100.
-
+            
             if self.verbose:
                 print("chi² = {0} (dPhi = {1}%) lam: {2}".format(
                             round(chi2, 2), round(dPhi, 2), self.inv.getLambda()))

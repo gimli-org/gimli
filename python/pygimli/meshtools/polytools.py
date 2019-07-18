@@ -515,10 +515,17 @@ def createPolygon(verts, isClosed=False, addNodes=0, interpolate='linear',
 
     if kwargs.pop("leftDirection", False):
         for v in verts[::-1]:
-            poly.createNodeWithCheck(v, warn=True)
+            if isinstance(v, float) or isinstance(v, int):
+                poly.createNodeWithCheck([v, 0], warn=True)
+            else:
+                poly.createNodeWithCheck(v, warn=True)
     else:
         for v in verts:
-            poly.createNodeWithCheck(v, warn=True)
+            if isinstance(v, float) or isinstance(v, int):
+                poly.createNodeWithCheck([v, 0], warn=True)
+            else:
+                poly.createNodeWithCheck(v, warn=True)
+            
 
     _polyCreateDefaultEdges(poly, isClosed=isClosed,
                             boundaryMarker=kwargs.pop('boundaryMarker', 1))
