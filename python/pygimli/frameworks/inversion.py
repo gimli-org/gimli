@@ -520,7 +520,7 @@ class Inversion(object):
                               label='Response')
 
             ax[1].text(0.99, 0.005,
-                    "Iter: {0}, rrms: {1}, $\chi^2$: {2}"
+                    "Iter: {0}, rrms: {1}%, $\chi^2$: {2}"
                         .format(self.inv.iter(),
                                 pf(self.inv.relrms()),
                                 pf(self.inv.chi2())),

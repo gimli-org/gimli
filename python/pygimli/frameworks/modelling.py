@@ -482,7 +482,7 @@ class MeshModelling(Modelling):
     def createRefinedFwdMesh(self, mesh):
         """Refine the current mesh for higher accuracy.
 
-        This is called automatic when accesing self.mesh() so it ensures any
+        This is called automatic when accessing self.mesh() so it ensures any
         effect of changing region properties (background, single).
         """
         pg.info("Creating refined mesh (H2) to solve forward task.")
@@ -576,17 +576,9 @@ class MeshModelling(Modelling):
             ax, cBar = pg.show(mesh=self.paraDomain,
                                data=mod,
                                label=kwargs.pop('label', 'Model parameter'),
-                               logScale=kwargs.pop('logScale', False),
+                               logScale=kwargs.pop('logScale', True),
                                ax=ax,
-                               **kwargs
-                               )
-
-            if diam != None:
-                pg.mplviewer.drawSensors(ax,
-                                    self.data.sensors(),
-                                    color='black',
-                                    diam=diam)
-
+                               **kwargs)
         return ax, cBar
 
 
@@ -606,7 +598,7 @@ class PetroModelling(MeshModelling):
         self._f = fop
         # self._f createStartModel might be called and depends on the regionMgr
         self._f.regionManager = self.regionManager
-        # self.createRefinedFwdMesh depends on te refinement strategy of self._f
+        # self.createRefinedFwdMesh depends on the refinement strategy of self._f
         self.createRefinedFwdMesh = self._f.createRefinedFwdMesh
 
         super(PetroModelling, self).__init__(fop=None, **kwargs)

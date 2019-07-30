@@ -651,7 +651,7 @@ class MeshMethodManager(MethodManager):
                     horizontalalignment='left',
                     verticalalignment='center')
 
-        axs[1].text(1.0, 1.03, "rrms: {0}, $\chi^2$: {1}"
+        axs[1].text(1.0, 1.03, "rrms: {0}%, $\chi^2$: {1}"
                      .format(pg.pf(pg.utils.rrms(data, resp)*100),
                              pg.pf(self.fw.chi2History[-1])),
                     transform=axs[1].transAxes,
