@@ -22,7 +22,7 @@ class CellBrowserCacheSingleton(object):
         if CellBrowserCacheSingleton.__instance is None:
             CellBrowserCacheSingleton.__instance = object.__new__(cls)
         return CellBrowserCacheSingleton.__instance
-
+# 
     def add(self, c):
         self.cbCache_.append(c)
 
@@ -879,8 +879,8 @@ def drawField(ax, mesh, data=None, levels=[], nLevs=5,
     gci = None
 
     if len(levels) == 0:
-        levels = autolevel(data, nLevs, zmin=cMin, zmax=cMax,
-                           logScale=logScale)
+        levels = autolevel(data, nLevs, 
+                           zmin=cMin, zmax=cMax, logScale=logScale)
 
     if len(z) == len(triangles):
         shading = kwargs.pop('shading', 'flat')
@@ -909,11 +909,11 @@ def drawField(ax, mesh, data=None, levels=[], nLevs=5,
                 # add outer climits to fill lower and upper too
                 levs = np.array(levels)
 
-                if min(z) < min(levels):
-                    levs = np.hstack([min(z), levs])
+                # if min(z) < min(levels):
+                #     levs = np.hstack([min(z), levs])
 
-                if max(z) > max(levels):
-                    levs = np.hstack([levs, max(z)])
+                # if max(z) > max(levels):
+                #     levs = np.hstack([levs, max(z)])
 
                 gci = ax.tricontourf(x, y, triangles, z, levels=levs,
                                      **kwargs)

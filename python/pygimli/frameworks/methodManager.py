@@ -611,12 +611,6 @@ class MeshMethodManager(MethodManager):
         cBar = None
         self.fop.drawModel(ax, model, **kwargs)
 
-        diam = kwargs.pop('diam', None)
-        pg.mplviewer.drawSensors(ax,
-                                 self.fop.data.sensors(),
-                                 color='black',
-                                 diam=diam)
-
         return ax, cBar
 
     def showResult(self, model=None, ax=None, **kwargs):
@@ -680,7 +674,7 @@ class MeshMethodManager(MethodManager):
         fig = pg.plt.figure()
         ax = fig.add_subplot(1, 2, 1)
 
-        self.showResult(ax=ax, **kwargs)
+        self.showResult(ax=ax, model=kwargs.pop('model', None), **kwargs)
 
         ax1 = fig.add_subplot(2, 2, 2)
         ax2 = fig.add_subplot(2, 2, 4)

@@ -552,7 +552,13 @@ class MeshModelling(Modelling):
 
     def drawModel(self, ax, model, **kwargs):
         """ """
-        mod = self.paraModel(model)
+        mod = None
+        if (len(model) == self.paraDomain.cellCount() or \
+            len(model) == self.paraDomain.nodeCount()):
+            mod = model
+        else:
+            mod = self.paraModel(model)
+
         if ax is None:
             if self._axs is None:
                 self._axs, _ = pg.show()
@@ -565,12 +571,22 @@ class MeshModelling(Modelling):
             kwargs.pop('cMap', None)
             pg.mplviewer.setMappableData(cBar.mappable, mod, **kwargs)
         else:
+            diam = kwargs.pop('diam', None)
+            
             ax, cBar = pg.show(mesh=self.paraDomain,
                                data=mod,
                                label=kwargs.pop('label', 'Model parameter'),
+                               logScale=kwargs.pop('logScale', False),
                                ax=ax,
-                               logScale=True,
-                               **kwargs)
+                               **kwargs
+                               )
+
+            if diam != None:
+                pg.mplviewer.drawSensors(ax,
+                                    self.data.sensors(),
+                                    color='black',
+                                    diam=diam)
+
         return ax, cBar
 
 

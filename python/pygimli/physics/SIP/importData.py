@@ -242,7 +242,6 @@ def readRadicSIPFuchs(filename, readSecond=False, delLast=True):
     return np.array(fr), np.array(rhoa), np.array(phi), np.array(drhoa), np.array(dphi)
 
 
-
 def toTime(t, d):
     """ convert time format into timestamp
     11:08:02, 21/02/2019
