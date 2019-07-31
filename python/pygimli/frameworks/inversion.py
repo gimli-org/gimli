@@ -401,8 +401,14 @@ class Inversion(object):
         self.inv.setReferenceModel(self.startModel)
 
         print("-" * 80)
+        if self._preStep and callable(self._preStep):
+                self._preStep(0, self)
+
         self.inv.start()
         self.maxIter = maxIterTmp
+
+        if self._postStep and callable(self._postStep):
+            self._postStep(0, self)
 
         if showProgress:
             self.showProgress(showProgress)
@@ -414,7 +420,7 @@ class Inversion(object):
         for i in range(1, maxIter):
 
             if self._preStep and callable(self._preStep):
-                self._preStep(i, self.inv)
+                self._preStep(i, self)
 
             if self.verbose:
                 print("-" * 80)
@@ -449,7 +455,7 @@ class Inversion(object):
                 self.inv.constrainBlocky()
 
             if self._postStep and callable(self._postStep):
-                self._postStep(i, self.inv)
+                self._postStep(i, self)
 
             phi = self.phi()
             dPhi = (1-lastPhi / phi) * 100.
