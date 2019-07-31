@@ -1413,8 +1413,8 @@ void Mesh::importMod(const std::string & filename){
     if (comments.size() > 5 && mat.cols() > 5) addData(comments[5], mat[5]);
 }
 
-void Mesh::importSTL(const std::string & fileName, bool isBinary ){
-    double tolerance = 1e-3;
+void Mesh::importSTL(const std::string & fileName, bool isBinary, double snap){
+    double tolerance = snap;
 
     std::vector< std::vector < RVector3 > > allVerts;
 
@@ -1452,39 +1452,36 @@ void Mesh::importSTL(const std::string & fileName, bool isBinary ){
         }
         file.close();
     } else { // import Binary Format
-        UNTESTED
-
         FILE * file; file = fopen(fileName.c_str(), "r+b");
-
         char header[80];
         Index ret = 0;
         ret = fread(&header, 1, 80, file);
         if (ret == 0) throwError(1, WHERE_AM_I + " Oops");
-
         int nFaces = 0;
         ret = fread(&nFaces, 4, 1, file);
         if (ret == 0) throwError(1, WHERE_AM_I + " Oops");
-
-        std::vector < RVector3 > allVerts;
+        __MS(nFaces)
 
         float rd[48];
         char padding[2];
         for (int i = 0; i < nFaces; i ++){
+            std::vector < RVector3 > face;
             ret = fread(&rd, 4, 12, file);
             if (ret == 0) throwError(1, WHERE_AM_I + " Oops");
 
-            allVerts.push_back(RVector3(rd[3], rd[4],  rd[5]).round(tolerance * 0.01));
-            allVerts.push_back(RVector3(rd[6], rd[7],  rd[8]).round(tolerance * 0.01));
-            allVerts.push_back(RVector3(rd[9], rd[10], rd[11]).round(tolerance * 0.01));
+            face.push_back(RVector3(rd[3], rd[4],  rd[5]));
+            face.push_back(RVector3(rd[6], rd[7],  rd[8]));
+            face.push_back(RVector3(rd[9], rd[10], rd[11]));
+            allVerts.push_back(face);
 
             ret = fread(&padding, 1, 2, file);
             if (ret == 0) throwError(1, WHERE_AM_I + " Oops");
         }
-
         fclose(file);
     } // end import binary STL format
 
     Node *n1, *n2, *n3;
+    __MS(allVerts.size())
     for (Index j = 0; j < allVerts.size(); j ++ ){
         if (allVerts[j].size() % 3 == 0 && allVerts[j].size() > 0){
             for (uint i = 0; i < allVerts[j].size() / 3; i ++){

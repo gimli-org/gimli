@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import pygimli as pg
 
 #TODO Gassmann's equation for fluid substitution
+#TODO Raymer et. al. 1980
 
 def slownessWyllie(phi, sat=1, vm=4000, vw=1484, va=343,
                    mesh=None, meshI=None, fill=None):
