@@ -156,14 +156,6 @@ class Show3D(QMainWindow):
         self.toolbar.le_cmin.setText(self.extrema['_Attribute']['orig']['min'])
         self.toolbar.le_cmax.setText(self.extrema['_Attribute']['orig']['max'])
 
-    # def setupToolBar(self):
-    #     """
-    #     Set up the toolbar and provide actions.
-    #     """
-    #     # init toolbar
-    #     self.toolbar = GToolBar()
-    #     # add to mainwindow
-    #     self.addToolBar(self.toolbar)
 
     def updateParameterView(self, param=None):
         """
