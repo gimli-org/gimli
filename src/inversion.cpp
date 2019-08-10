@@ -64,7 +64,7 @@ void RInversion::checkJacobian(bool force) {
     if ((forward_->jacobian()->rows() == data_.size() &&
         forward_->jacobian()->cols() == model_.size()) && !force) return;
 
-    if (verbose_ && 
+    if (verbose_ &&
             (forward_->jacobian()->rows() != data_.size() ||
                 forward_->jacobian()->cols() != model_.size())
         ){
@@ -102,7 +102,7 @@ double RInversion::getPhiM(const Vec & model) const {
 //        if (haveReferenceModel_) dModel = dModel - tM_->trans(modelRef_);
 //        Vec roughness(Vec(forward_->constraints() * dModel) * constraintWeights_);
     Vec rough(this->roughness(model));
-    
+
     double ret = dot(rough, rough);
     if (isnan(ret) || isinf(ret)){
         DOSAVE std::cerr << "haveReferenceModel_: " << haveReferenceModel_<< std::endl;
@@ -159,9 +159,9 @@ const RVector & RInversion::run(){ ALLOW_PYTHON_THREADS
     if (haveReferenceModel_) {
         //! compute roughness constraint and correct it for inter-region constraints
         Index cc = forward_->regionManager().constraintCount();
-        constraintsH_ = (*forward_->constraints() * 
+        constraintsH_ = (*forward_->constraints() *
                           Vec(tM_->trans(modelRef_) * modelWeight_)
-                        ) * constraintWeights_; 
+                        ) * constraintWeights_;
         Index ircc = forward_->regionManager().interRegionConstraintsCount();
         if (ircc > 0) constraintsH_.setVal(0.0, cc - ircc, (SIndex)cc);
     }
@@ -230,7 +230,7 @@ const RVector & RInversion::run(){ ALLOW_PYTHON_THREADS
         }
         double phi = getPhi();
         if (phi / oldphi > (1.0 - dPhiAbortPercent_ / 100.0) && iter_ > 2) {
-            if (verbose_) std::cout << "Reached data fit criteria (delta phi < " 
+            if (verbose_) std::cout << "Reached data fit criteria (delta phi < "
                                     << dPhiAbortPercent_ << "%). Stop." << std::endl;
             break;
         }
@@ -307,11 +307,11 @@ bool RInversion::oneStep() {
         if (verbose_) std::cout << "solve CGLSCDWWtrans with lambda = " << lambda_ << std::endl;
 
         solveCGLSCDWWhtrans(*forward_->jacobian(), *forward_->constraints(),
-                                dataWeight_, 
-                                deltaDataIter_, 
+                                dataWeight_,
+                                deltaDataIter_,
                                 deltaModelIter_,
                                 constraintWeights_, modelWeight_,
-                                tM_->deriv(model_), 
+                                tM_->deriv(model_),
                                 tD_->deriv(response_),
                                 lambda_, roughness, maxCGLSIter_, CGLStol_,
                                 dosave_);
@@ -325,7 +325,7 @@ bool RInversion::oneStep() {
         save(deltaModelIter_, "dmodel_Nan" PLUS_TMP_VECSUFFIX);
         save(model_, "mmodel_Nan" PLUS_TMP_VECSUFFIX);
         save(modelNew, "newmodel_Nan" PLUS_TMP_VECSUFFIX);
-        log(Error, "Model contains nan values.");    
+        log(Error, "Model contains nan values.");
     }
 
     DOSAVE save(model_, "oldmodel");
@@ -369,12 +369,12 @@ bool RInversion::oneStep() {
     //!** temporary stuff
     if (forward_->mesh()){
 // this forces pygimli/generatecode.py to create a ugly log10 declaration, which overwrites the valid log10 declarion
-        // DOSAVE forward_->mesh()->addExportData("F-op-model(log10)", 
+        // DOSAVE forward_->mesh()->addData("F-op-model(log10)",
         //                                         log10(forward_->mesh()->cellAttributes()));
-        DOSAVE forward_->mesh()->addExportData("F-op-model", 
+        DOSAVE forward_->mesh()->addData("F-op-model",
                                                 forward_->mesh()->cellAttributes());
         DOSAVE forward_->mesh()->exportVTK("fop-model" + str(iter_));
-        DOSAVE forward_->mesh()->clearExportData();
+        DOSAVE forward_->mesh()->clearData();
     }
 
     return true;

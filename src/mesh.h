@@ -140,7 +140,7 @@ public:
     inline double area() const {return area_;}
 
     inline void setPos(const Pos & pos) {copy_(pos);}
-    
+
 protected:
     int marker_;
     double area_;
@@ -154,8 +154,8 @@ public:
     typedef RVector3 HoleMarker;
     typedef std::vector< RVector3 > HoleMarkerList;
 
-    /*! Default constructor, create empty mesh with dimension dim 
-    If this mesh is supposed to be a geometry definition, all 
+    /*! Default constructor, create empty mesh with dimension dim
+    If this mesh is supposed to be a geometry definition, all
     created nodes will be checked for duplicates.*/
     Mesh(Index dim=2, bool isGeometry=false);
 
@@ -182,7 +182,7 @@ public:
     /*! Return true if this mesh have static geometry. [Default=True]*/
     inline bool staticGeometry() const { return staticGeometry_; }
 
-    /*! Mesh is marked as geometry definition or PLC 
+    /*! Mesh is marked as geometry definition or PLC
     so createNode will allways with check. */
     void setGeometry(bool b);
 
@@ -203,11 +203,11 @@ public:
     Node * createNode(const Node & node);
     Node * createNode(const RVector3 & pos, int marker=0);
 
-    /*! Create a secondary node, which is stored in an aditional list for additional use. 
-    If tolerance tol set to a value > 0, then it will be checked if there is already a node 
+    /*! Create a secondary node, which is stored in an aditional list for additional use.
+    If tolerance tol set to a value > 0, then it will be checked if there is already a node
     at this position and return a ptr to the existing node instead of creating a new. */
     Node * createSecondaryNode(const RVector3 & pos, double tol=-1);
-        
+
     /*! Create new Node with duplication checks. Returns the already existing node when its within a tolerance distance to pos.
     If edgeCheck is set, any 2d (p1) boundary edges will be checked for any intersection with pos and splitted if necessary.*/
     Node * createNodeWithCheck(const RVector3 & pos, double tol=1e-6,
@@ -282,17 +282,17 @@ public:
 
     void createHull_(const Mesh & mesh);
 
-    /*! Create 3D mesh with 3D boundary elements from this 2D mesh cells. 
+    /*! Create 3D mesh with 3D boundary elements from this 2D mesh cells.
     Increase mesh dimension. Mesh should contain 2D cells. */
     Mesh createHull() const;
 
-    void createClosedGeometry(const PosVector & vPos, int nSegments, 
+    void createClosedGeometry(const PosVector & vPos, int nSegments,
                               double dxInner);
 
-    void createClosedGeometryParaMesh(const PosVector & vPos, int nSegments, 
+    void createClosedGeometryParaMesh(const PosVector & vPos, int nSegments,
                                       double dxInner);
 
-    void createClosedGeometryParaMesh(const PosVector & vPos, int nSegments, 
+    void createClosedGeometryParaMesh(const PosVector & vPos, int nSegments,
                                       double dxInner, const PosVector & addit);
 
     /*! Create and copy global H2 mesh of this mesh.*/
@@ -306,14 +306,14 @@ public:
 
     /*! Create a partly mesh without cells from mesh, based on a vector of ptrs to boundaries */
     void createMeshByBoundaries(const Mesh & mesh, const std::vector < Boundary * > & bounds);
-    
+
     /*! Create a new mesh that is a part from this mesh, based on cell-ids */
     Mesh createMeshByCellIdx(const IndexArray & idxList);
 
     /*! Create a partly mesh from mesh, based on cell-ids */
     void createMeshByCellIdx(const Mesh & mesh, const IndexArray & idxList);
 
-    /*! Create a partly mesh from mesh, based on meshs attributes. 
+    /*! Create a partly mesh from mesh, based on meshs attributes.
     For a single attribute set to to 0, for unlimited set to to -1 */
     void createMeshByMarker(const Mesh & mesh, int from, int to=-1);
 
@@ -323,7 +323,7 @@ public:
     /*! Syntactic sugar to extract a part of the mesh based on boundaries.*/
     Mesh createSubMesh(const std::vector< Boundary * > & bounds) const;
 
-    /*! Syntactic sugar to extract a part of the mesh based on 
+    /*! Syntactic sugar to extract a part of the mesh based on
     nodes with associated cells and boundaries.*/
     Mesh createSubMesh(const std::vector< Node * > & nodes) const;
 
@@ -400,11 +400,6 @@ public:
      For the left cell neighbor the normal direction should be always the outer normal.*/
     PosVector & boundarySizedNormals() const;
 
-
-    /*! DEPRECATED */
-    void setBoundaryMarker(const IndexArray & ids, int marker){
-        return setBoundaryMarkers(ids, marker);
-    }
     /*! Set the marker to all boundaries in index array. */
     void setBoundaryMarkers(const IndexArray & ids, int marker);
 
@@ -414,14 +409,8 @@ public:
     /*! Return a vector of all boundary marker */
     IVector boundaryMarkers() const;
 
-    /*! DEPRECATED */
-    IVector boundaryMarker() const;
-
     /*! Return a vector of all node marker */
     IVector nodeMarkers() const;
-
-    /*! DEPRECATED Return a vector of all node marker */
-    IVector nodeMarker() const;
 
     /*! Return an index vector of all nodes that match the marker */
     IndexArray findNodesIdxByMarker(int marker) const;
@@ -557,9 +546,9 @@ public:
 
     void importVTU(const std::string & fbody);
 
-    /*! Import Ascii STL as 3D mesh and save triangles as \ref Boundary Faces. 
+    /*! Import Ascii STL as 3D mesh and save triangles as \ref Boundary Faces.
     Node positions can be snaped to a tolerance.*/
-    void importSTL(const std::string & fileName, bool isBinary=false, 
+    void importSTL(const std::string & fileName, bool isBinary=false,
                    double snap=1e-3);
 
     /*! Be carefull with interchanging binary meshs between 32-64bit architecture. Atm we save fixed int for counter and idx.
@@ -599,10 +588,10 @@ public:
                    const std::map< std::string, RVector > & data,
                    bool writeCells=true) const;
 
-    /*! Export mesh and whole exportData map */
+    /*! Export mesh and whole data map */
     void exportVTK(const std::string & fbody, bool writeCells=true) const;
 
-    /*! Export mesh and whole exportData map and vector data in vec*/
+    /*! Export mesh and whole data map and vector data in vec*/
     void exportVTK(const std::string & fbody,
                    const PosVector & vec,
                    bool writeCells=true) const;
@@ -619,7 +608,7 @@ public:
     Visualization Toolkit Unstructured Points Data (http://www.vtk.org)
     Set binary to true writes the data content in binary format.
     The file suffix .vtu will be added or substituted if .vtu or .vtk is found.
-    \ref exportData, cell.marker and cell.attribute will be exported as data. */
+    \ref data, cell.markers and cell.attribute will be exported as data. */
     void exportVTU(const std::string & filename, bool binary = false) const ;
 
     /*! Export the boundary of this mesh in vtu format: Visualization Toolkit Unstructured Points Data (http://www.vtk.org) Set Binary to true writes the datacontent in binary format. The file suffix .vtu will be added or substituted if .vtu or .vtk is found. */
@@ -632,58 +621,40 @@ public:
     void exportAsTetgenPolyFile(const std::string & filename);
     //** end I/O stuff
 
-    /*!DEPRECATED will be removed.
-        Add data to the mesh that will be saved with by using the binary mesh
-     * format v.2. or exported with the appropriate name in VTK format,
-     * if the size of data equals the amount of nodes, cells or boundaries.
-     */
-    void addExportData(const std::string & name, const RVector & data);
-
-    /*! DEPRECATED Return the data with a given name.
-     * If there is no such data an exception is thrown.*/
-    RVector exportData(const std::string & name) const;
-
-    /*! DEPRECATED  Return the full data map read only. */
-    const std::map< std::string, RVector > & exportDataMap() const {
-        return exportDataMap_; }
-
-    /*! DEPRECATED Set the full data map.*/
-    void setExportDataMap(const std::map< std::string, RVector > & eMap) {
-        exportDataMap_ = eMap; }
-
-    /*! Empty the data map.*/
-    void clearExportData();
 
     void addData(const std::string & name, const CVector & data){
-        addExportData(name+"-Re", real(data));
-        addExportData(name+"-Im", imag(data));
+        this->addData(name+"-Re", real(data));
+        this->addData(name+"-Im", imag(data));
     }
 
     /*! Add data to the mesh that will be saved with by using the binary mesh
      * format v.2. or exported with the appropriate name in VTK format,
      * if the size of data equals the amount of nodes, cells or boundaries.
      */
-    void addData(const std::string & name, const RVector & data){ addExportData(name, data); }
+    void addData(const std::string & name, const RVector & data);
 
     /*! Return the data with a given name.
      * If there is no such data an exception is thrown.*/
-    RVector data(const std::string & name) const { return exportData(name); }
+    RVector data(const std::string & name) const;
 
     /*! Return True if date with such a name exists.*/
     bool haveData(const std::string & name) const {
-        return exportDataMap_.count(name) > 0;
+        return dataMap_.count(name) > 0;
     }
 
     /*! Return the full data map read only. */
     const std::map< std::string, RVector > & dataMap() const {
-        return exportDataMap_;
+        return this->dataMap_;
     }
     /*! Replace the datamap by m */
     void setDataMap(const std::map< std::string, RVector > m) {
-        exportDataMap_ = m;
+        this->dataMap_ = m;
     }
     /*! Print data map info.*/
     void dataInfo() const;
+
+    /*! Empty the data map.*/
+    void clearData();
 
     /*! Set the comment for VTK Ascii export headline.*/
     void setCommentString(const std::string & commentString) {commentString_ = commentString;}
@@ -769,8 +740,8 @@ public:
     void addRegionMarker(const RegionMarker & reg);
 
     const RegionMarkerList & regionMarker() const { return regionMarker_; }
-    
-    /*! Return the pointer to region marker with the marker is i or throws 
+
+    /*! Return the pointer to region marker with the marker is i or throws
     an exception of there is no such marker.*/
     RegionMarker * regionMarker(SIndex i);
 
@@ -864,7 +835,7 @@ protected:
 
     bool oldTet10NumberingStyle_;
 
-    std::map< std::string, RVector > exportDataMap_;
+    std::map< std::string, RVector > dataMap_;
     std::string commentString_;
 
     // for PLC creation

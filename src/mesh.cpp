@@ -93,7 +93,7 @@ void Mesh::copy_(const Mesh & mesh){
     for (Index i = 0; i < mesh.nodeCount(); i ++){
         this->createNode(mesh.node(i));
     }
-    
+
     for (Index i = 0; i < mesh.secondaryNodeCount(); i ++){
         this->createSecondaryNode(mesh.secondaryNode(i).pos());
     }
@@ -115,7 +115,7 @@ void Mesh::copy_(const Mesh & mesh){
         this->addHoleMarker(mesh.holeMarker()[i]);
     }
 
-    setExportDataMap(mesh.exportDataMap());
+    setDataMap(mesh.dataMap());
     setCellAttributes(mesh.cellAttributes());
 
     if (mesh.neighboursKnown()){
@@ -132,7 +132,7 @@ void Mesh::setStaticGeometry(bool stat){
     staticGeometry_ = stat;
 }
 
-void Mesh::setGeometry(bool b) { 
+void Mesh::setGeometry(bool b) {
     isGeometry_ = b;
 }
 
@@ -176,7 +176,7 @@ Node * Mesh::createNodeGC_(const RVector3 & pos, int marker){
         Index oldCount = this->nodeCount();
         Node *n = this->createNodeWithCheck(pos);
         n->setMarker(marker);
-        
+
         if ((this->dim() == 3) and (this->nodeCount() > oldCount)){
 
             for (Index i = 0; i < this->boundaryVector_.size(); i ++ ){
@@ -422,7 +422,7 @@ Cell * Mesh::createCell(std::vector < Node * > & nodes, int marker){
 Cell * Mesh::createCell(const Cell & cell){
     std::vector < Node * > nodes(cell.nodeCount());
     for (Index i = 0; i < cell.nodeCount(); i ++) nodes[i] = &node(cell.node(i).id());
-    
+
     Cell *c = createCell(nodes, cell.marker());
     for (Index j = 0; j < cell.secondaryNodes().size(); j ++){
         c->addSecondaryNode(& this->node(cell.secondaryNodes()[j]->id()));
@@ -477,7 +477,7 @@ void Mesh::deleteCells(const std::vector < Cell * > & cells){
 
 Node & Mesh::node(Index i) {
     if (i > nodeCount() - 1){
-        if (i < nodeCount() + secondaryNodeCount()) 
+        if (i < nodeCount() + secondaryNodeCount())
             return this->secondaryNode(i - this->nodeCount());
         std::cerr << WHERE_AM_I << " requested node: " << i << " does not exist." << std::endl;
         exit(EXIT_MESH_NO_NODE);
@@ -486,7 +486,7 @@ Node & Mesh::node(Index i) {
 
 Node & Mesh::node(Index i) const {
     if (i > nodeCount() - 1){
-        if (i < nodeCount() + secondaryNodeCount()) 
+        if (i < nodeCount() + secondaryNodeCount())
             return this->secondaryNode(i - this->nodeCount());
         std::cerr << WHERE_AM_I << " requested node: " << i << " does not exist." << std::endl;
         exit(EXIT_MESH_NO_NODE);
@@ -813,9 +813,9 @@ std::vector < Cell * > Mesh::findCellByAttribute(double from, double to) const {
     return vCell;
 }
 
-Index Mesh::nodeCount(bool withSecNodes) const { 
-    if (withSecNodes) return nodeVector_.size() + secNodeVector_.size(); 
-    return nodeVector_.size(); 
+Index Mesh::nodeCount(bool withSecNodes) const {
+    if (withSecNodes) return nodeVector_.size() + secNodeVector_.size();
+    return nodeVector_.size();
 }
 
 std::vector< Node * > Mesh::nodes(const IndexArray & ids) const{
@@ -901,7 +901,7 @@ PosVector Mesh::positions(bool withSecNodes) const {
 }
 
 PosVector Mesh::positions(const IndexArray & idx) const {
-    PosVector pos(idx.size()); 
+    PosVector pos(idx.size());
     for (Index i = 0; i < idx.size(); i ++) { pos[i] = node(idx[i]).pos(); }
     return pos;
 }
@@ -1864,18 +1864,18 @@ Mesh Mesh::createSubMesh(const std::vector< Node * > & nodes) const {
 }
 
 
-void Mesh::addExportData(const std::string & name, const RVector & data) {
+void Mesh::addData(const std::string & name, const RVector & data) {
   //  std::cout << "add export Data: " << name << " " << min(data) << " "  << max(data) << std::endl;
-    if (exportDataMap_.count(name)){
-        exportDataMap_[name] = data;
+    if (dataMap_.count(name)){
+        dataMap_[name] = data;
     } else {
-        exportDataMap_.insert(std::make_pair(name, data));
+        dataMap_.insert(std::make_pair(name, data));
     }
 }
 
-RVector Mesh::exportData(const std::string & name) const {
-    if (exportDataMap_.count(name)){
-        return exportDataMap_.find(name)->second;
+RVector Mesh::data(const std::string & name) const {
+    if (dataMap_.count(name)){
+        return dataMap_.find(name)->second;
     } else {
         throwError(1, " Warning!! requested export 'data' vector " + name +
         " does not exist.");
@@ -1883,16 +1883,16 @@ RVector Mesh::exportData(const std::string & name) const {
     return RVector(0);
 }
 
-void Mesh::clearExportData(){
-    exportDataMap_.clear();
+void Mesh::clearData(){
+    dataMap_.clear();
 }
 
 void Mesh::dataInfo() const{
-    if (exportDataMap_.empty()){
+    if (dataMap_.empty()){
         std::cout << "No data." << std::endl;
     } else {
         for (std::map < std::string, RVector >::const_iterator
-            it = exportDataMap_.begin(); it != exportDataMap_.end(); it ++){
+            it = dataMap_.begin(); it != dataMap_.end(); it ++){
             std::cout << it->first << ": " << str(it->second.size()) << std::endl;
         }
     }
@@ -1904,21 +1904,11 @@ IVector Mesh::nodeMarkers() const {
     return tmp;
 }
 
-IVector Mesh::nodeMarker() const {
-    DEPR_STR("nodeMarkers")
-    return nodeMarkers();
-}
-
 IVector Mesh::boundaryMarkers() const {
     IVector tmp(boundaryCount());
     std::transform(boundaryVector_.begin(), boundaryVector_.end(), tmp.begin(),
                    std::mem_fun(&Boundary::marker));
     return tmp;
-}
-
-IVector Mesh::boundaryMarker() const {
-    DEPR_STR("boundaryMarkers")
-    return boundaryMarkers();
 }
 
 RVector Mesh::cellAttributes() const{
@@ -1987,7 +1977,7 @@ void Mesh::prolongateEmptyCellsValues(RVector & vals, double background) const {
 
     if (emptyList.size() > 0){
         if (deepDebug()) {
-            std::cout << "Prolongate " << emptyList.size() 
+            std::cout << "Prolongate " << emptyList.size()
                       << " empty cells. (" << this->cellCount() << ")" << std::endl;
         }
 
@@ -2259,7 +2249,7 @@ void Mesh::smooth(bool nodeMoving, bool edgeSliding, uint smoothFunction, uint s
 void Mesh::fillKDTree_() const {
 
     if (!tree_) tree_ = new KDTreeWrapper();
-    
+
     if (tree_->size() != nodeCount(true)){
         if (tree_->size() == 0){
 
@@ -2460,11 +2450,11 @@ RegionMarker * Mesh::regionMarker(SIndex marker){
 
 Index Mesh::hash() const{
     log(Warning, "Mesh.hash() not complete. TODO");
-    return GIMLI::hash(this->positions(true), 
-                       this->cellMarkers(), 
+    return GIMLI::hash(this->positions(true),
+                       this->cellMarkers(),
                        this->boundaryMarkers(),
-                       this->nodeMarkers(), 
-                       this->exportDataMap_);
+                       this->nodeMarkers(),
+                       this->dataMap_);
 }
 
 } // namespace GIMLI
