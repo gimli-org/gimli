@@ -110,6 +110,7 @@ class Show3D(QMainWindow):
             self.toolbar.addExtraCMap(cMap)
 
         self.toolbar.cbbx_cmap.setCurrentText(cMap)
+        self.allowMeshParameters()
         self._allowSignals()
 
         # set slicers to center after they're enabled
@@ -124,14 +125,9 @@ class Show3D(QMainWindow):
         self.toolbar.slice_z.setMaximum(_bounds[5])
         self.toolbar.slice_z.setValue(0.5 * (_bounds[4] + _bounds[5]))
 
-    def addDataToMesh(self, data):
+    def allowMeshParameters(self):
         """
-        Supply data to visualize.
-
-        Parameter
-        ---------
-        data: dict
-            Dictionary of cell values, sorted by key.
+        Make data from the given mesh accessible via GUI.
 
         Note
         ----
@@ -144,7 +140,8 @@ class Show3D(QMainWindow):
         self.toolbar.le_cmin.setEnabled(True)
         self.toolbar.le_cmax.setEnabled(True)
 
-        for k, v in data.items():
+        # FIXME: what about the point arrays?!
+        for k, v in self.mesh.cell_arrays.items():
             self.mesh._add_cell_scalar(v, k)
             self.extrema[k] = {
                 'orig': {'min': str(min(v)), 'max': str(max(v))},
@@ -152,18 +149,11 @@ class Show3D(QMainWindow):
                 }
         # supply the combobox with the names to choose from for display
         self.toolbar.cbbx_params.addItems(self.mesh.scalar_names)
+        # get the current set parameter
+        curr_param = self.toolbar.cbbx_params.currentText()
         # set the first cMin/cMax
-        self.toolbar.le_cmin.setText(self.extrema['_Attribute']['orig']['min'])
-        self.toolbar.le_cmax.setText(self.extrema['_Attribute']['orig']['max'])
-
-    # def setupToolBar(self):
-    #     """
-    #     Set up the toolbar and provide actions.
-    #     """
-    #     # init toolbar
-    #     self.toolbar = GToolBar()
-    #     # add to mainwindow
-    #     self.addToolBar(self.toolbar)
+        self.toolbar.le_cmin.setText(self.extrema[curr_param]['orig']['min'])
+        self.toolbar.le_cmax.setText(self.extrema[curr_param]['orig']['max'])
 
     def updateParameterView(self, param=None):
         """
@@ -317,6 +307,7 @@ class Show3D(QMainWindow):
         self.toolbar.cbbx_params.currentTextChanged.connect(self.updateParameterView)
         self.toolbar.cbbx_cmap.currentTextChanged.connect(self.updateParameterView)
         self.toolbar.btn_reverse.clicked.connect(self.updateParameterView)
+        # self.toolbar.btn_plotlog.clicked.connect(self.updateParameterView)
         self.toolbar.btn_bbox.pressed.connect(self.toggleBbox)
         self.toolbar.btn_screenshot.clicked.connect(self.takeScreenShot)
         self.toolbar.btn_exportVTK.clicked.connect(self.exportMesh)
@@ -353,13 +344,20 @@ class GToolBar(QWidget):
             self.cbbx_cmap.addItem(icon, name)
             self.cbbx_cmap.setIconSize(QSize(40, 15))
 
-        # checkbox to reverse the chosen color scheme
+        # checkable button to reverse the chosen color scheme
         self.btn_reverse = GButton(
-            text="_r",
+            text="Reverse",
             tooltip="Reverse the chosen color map",
             checkable=True,
-            size=[24, 24]
+            # size=[24, 24]
         )
+
+        # # button for logarithmic values
+        # self.btn_plotlog = GButton(
+        #     text="Logarithmic",
+        #     tooltip="Take logarithmic values of the currently displayed parameter",
+        #     checkable=True,
+        # )
 
         # button to make bounding box visible
         self.btn_bbox = GButton(
@@ -409,16 +407,20 @@ class GToolBar(QWidget):
             )
 
         # parameter choosing
-        lyt_h1 = QHBoxLayout()
-        lyt_h1.addWidget(self.cbbx_cmap)
-        lyt_h1.addWidget(self.btn_reverse)
-        lyt_h1.setContentsMargins(2, 2, 2, 2)
         lyt_v1 = QVBoxLayout()
         lyt_v1.addWidget(self.cbbx_params)
-        lyt_v1.addLayout(lyt_h1)
         lyt_v1.setContentsMargins(2, 2, 2, 2)
         grp_param = QGroupBox("Parameter")
         grp_param.setLayout(lyt_v1)
+
+        # colormap
+        lyt_h1 = QVBoxLayout()
+        lyt_h1.addWidget(self.cbbx_cmap)
+        lyt_h1.addWidget(self.btn_reverse)
+        # lyt_h1.addWidget(self.btn_plotlog)
+        lyt_h1.setContentsMargins(2, 2, 2, 2)
+        grp_cmap = QGroupBox("Color Map")
+        grp_cmap.setLayout(lyt_h1)
 
         # limits
         lyt_h3 = QHBoxLayout()
@@ -481,6 +483,7 @@ class GToolBar(QWidget):
         # widget for the toolbar to better organize the widgets
         lt = QVBoxLayout()
         lt.addWidget(grp_param)
+        lt.addWidget(grp_cmap)
         lt.addWidget(grp_limits)
         lt.addWidget(self.grp_slice)
         lt.addStretch(1)
