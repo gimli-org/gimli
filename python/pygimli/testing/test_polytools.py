@@ -173,10 +173,35 @@ class TestCreatePolygon(unittest.TestCase):
         assert polygon.regionMarker()[0].y() == -0.1
         assert polygon.regionMarker()[0].marker() == 7
 
+class Test3DMerge(unittest.TestCase):
+    def test_cube_cube_same(self):
+        c1 = mt.createCube()
+        c2 = mt.createCube()
+        m = mt.mergePLC3D([c1, c2])
+        self.assertEqual(c1.nodeCount(), m.nodeCount())
+        self.assertEqual(c1.boundaryCount(), m.boundaryCount())
+        
+    def test_cube_cube_sameface(self):
+        c1 = mt.createCube()
+        c2 = mt.createCube()
+        c2.translate([c2.xmax()-c1.xmin(), 0.0])
+        
+        m = mt.mergePLC3D([c1, c2])
+
+        print(m)
+
+        self.assertEqual(m.nodeCount(), 2*c1.nodeCount()-4)
+        self.assertEqual(m.boundaryCount(), 2*c1.boundaryCount()-1)
+
+
+
 
 if __name__ == '__main__':
     # pg.setDeepDebug(1)
-    # t = TestCreateRectangle()
+    t = Test3DMerge()
+    t.test_cube_cube_sameface()
+    sys.exit() 
+        # # t = TestCreateRectangle()
     
     # t.test_region_marker_position_translation_scale()
 

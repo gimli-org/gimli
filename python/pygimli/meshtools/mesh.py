@@ -1386,7 +1386,7 @@ def exportSTL(mesh, fileName, ascii=True):
 
     fi = open(fileName, 'w')
     for m in marker:
-        me = mesh.extract(mesh.boundaries(mesh.boundaryMarkers() == m))
+        me = mesh.createSubMesh(mesh.boundaries(mesh.boundaryMarkers() == m))
 
         fi.write('solid ' + str(m) + '\n')
 

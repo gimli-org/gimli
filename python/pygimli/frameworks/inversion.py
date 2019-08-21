@@ -400,7 +400,8 @@ class Inversion(object):
         self.fop.setStartModel(self.startModel)
         self.inv.setReferenceModel(self.startModel)
 
-        print("-" * 80)
+        if self.verbose:
+            print("-" * 80)
         if self._preStep and callable(self._preStep):
                 self._preStep(0, self)
 

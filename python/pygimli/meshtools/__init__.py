@@ -23,7 +23,8 @@ from .mesh import (createMesh, createParaMesh, createParaMesh2DGrid,
 
 from .polytools import createParaDomain2D  # keep for backward compatibility
 from .polytools import (createCircle, createLine, createParaMeshPLC,
-                        createPolygon, createRectangle, createWorld, mergePLC,
+                        createPolygon, createRectangle, createWorld, 
+                        mergePLC, mergePLC3D,
                         createCylinder, createCube,
                         readPLC, exportPLC, writePLC, syscallTetgen)
 from .quality import (quality)

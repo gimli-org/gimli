@@ -1124,21 +1124,6 @@ RVector DCMultiElectrodeModelling::response(const RVector & model,
 
         CVector resp(toComplex(respRe, respIm) * dataContainer_->get("k"));
         return cat(real(resp), imag(resp));
-        
-        RVector am(abs(resp));
-        RVector ph(-angle(resp));
-
-        if (verbose_){
-            std::cout << "Response: min(amp) = " << min(am)
-                               << " max(amp) = " << max(am)
-                               << " min(-phi) = " << min(ph)
-                               << " max(-phi) = " << max(ph)
-                               << std::endl;
-            std::cout << "not yet implemented Reciprocity rms(modelReciprocity) "
-                      << std::endl;
-        }
-
-        return cat(am, ph);
     } // if complex
 
     //** to following can lead to problematic situations https://gitlab.com/resistivity-net/bert/issues/41
@@ -1442,7 +1427,9 @@ void DCMultiElectrodeModelling::createJacobian_(const CVector & model,
                          matrixClusterIds, this->nThreads_, this->verbose_);
 
     if (model.size() == J->cols()){
-        CVector m2(model*model);
+        __MS("check")
+        // CVector m2(model*model); 
+        CVector m2(model*conj(model)); 
         if (model.size() == J->cols()){
             for (Index i = 0; i < J->rows(); i ++) {
                 (*J)[i] /= (m2 / dataContainer_->get("k")[i]);

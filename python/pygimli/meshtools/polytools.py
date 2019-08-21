@@ -606,6 +606,7 @@ def mergePLC(plcs, tol=1e-3):
 
         return plc
 
+    ## handle 2D geometries
     plc = pg.Mesh(dim=2, isGeometry=True)
 
     for p in plcs:
@@ -630,6 +631,38 @@ def mergePLC(plcs, tol=1e-3):
                 plc.addHoleMarker(hm)
 
     return plc
+
+def mergePLC3D(plcs, tol=1e-3):
+    """Experimental replacement for polyMerge. Don't expect to much.
+    """
+    if len(plcs) < 2:
+        pg.criticle("Give at least 2 plcs.")
+        
+    if plcs[0].dim() != 3:
+        pg.warn("2D poly found. redirect to mergePLC")
+        return mergePLC(plcs, tol)
+
+    # first try. merge all into p0 = plcs[0]
+    #  * will only work if all faces of plcs[1:] does not match any face of p0 
+    #  * or all matching plcs[1:] are lie completely within p0
+    
+    p0 = pg.Mesh(plcs[0])
+    
+    for p in plcs[1:]:
+        print('p', p)
+        for b in p.boundaries():
+            print(b)
+            p0.createBoundary(b)
+            
+    if len(p.regionMarker()) > 0:
+        for rm in p.regionMarker():
+            p0.addRegionMarker(rm)
+
+    if len(p.holeMarker()) > 0:
+        for hm in p.holeMarker():
+            p0.addHoleMarker(hm)
+
+    return p0
 
 
 def createParaDomain2D(*args, **kwargs):
@@ -1036,6 +1069,7 @@ def writePLC(*args, **kwargs):
     Backward compatibility.
     Please use :py:mod:`pygimli.meshtools.exportPLC`.
     """
+    pg.deprecated('use exportPLC') #16.08.2019
     return exportPLC(*args, **kwargs)
 
 
