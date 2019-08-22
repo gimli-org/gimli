@@ -177,7 +177,6 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
     label: str
 
     """
-    # print("update cbar:", cMin, cMax, label)
     if gci is not None:
         if min(gci.get_array()) < 1e12:
             norm = mpl.colors.Normalize(vmin=min(gci.get_array()),

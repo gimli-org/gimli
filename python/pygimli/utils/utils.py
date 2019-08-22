@@ -164,7 +164,7 @@ def prettify(value, roundValue=False):
         return json.dumps(value, indent=4)
     elif isinstance(value, float):
         return prettyFloat(value, roundValue)
-    pg.warning("Don't know how to prettify the string representation for ",
+    pg.warn("Don't know how to prettify the string representation for: ",
                value)
     return value
 
