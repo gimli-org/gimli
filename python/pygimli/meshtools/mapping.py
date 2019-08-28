@@ -204,12 +204,12 @@ def fillEmptyToCellArray(mesh, vals, slope=True):
     >>>
     >>> # Visualization
     >>> fig, (ax1, ax2, ax3) = plt.subplots(1,3, figsize=(10,8), sharey=True)
-    >>> pg.show(mesh, data_with_outer, ax=ax1)
-    >>> pg.show(mesh, extrapolated_data, ax=ax2)
-    >>> pg.show(mesh, extrapolated_data_with_slope, ax=ax3)
-    >>> ax1.set_title("Original data")
-    >>> ax2.set_title("Extrapolated with slope=False")
-    >>> ax3.set_title("Extrapolated with slope=True")
+    >>> _ = pg.show(mesh, data_with_outer, ax=ax1)
+    >>> _ = pg.show(mesh, extrapolated_data, ax=ax2)
+    >>> _ = pg.show(mesh, extrapolated_data_with_slope, ax=ax3)
+    >>> _ = ax1.set_title("Original data")
+    >>> _ = ax2.set_title("Extrapolated with slope=False")
+    >>> _ = ax3.set_title("Extrapolated with slope=True")
     >>> fig.show()
     """
     atts = pg.Vector(mesh.cellCount(), 0.0)
@@ -249,11 +249,10 @@ def fillEmptyToCellArray(mesh, vals, slope=True):
 
                             startCell = nextC
 
-    mesh.fillEmptyCells(mesh.findCellByAttribute(0.0), background=-9e99)
-    atts = mesh.cellAttributes()
-    mesh.setCellAttributes(oldAtts)
-    return atts
-
+    vals = mesh.cellAttributes()
+    mesh.prolongateEmptyCellsValues(vals, background=-9e99)
+    mesh.setCellAttributes(vals)
+    return vals
 
 def interpolateAlongCurve(curve, t, **kwargs):
     """Interpolate along curve.

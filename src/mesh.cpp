@@ -93,7 +93,7 @@ void Mesh::copy_(const Mesh & mesh){
     for (Index i = 0; i < mesh.nodeCount(); i ++){
         this->createNode(mesh.node(i));
     }
-    
+
     for (Index i = 0; i < mesh.secondaryNodeCount(); i ++){
         this->createSecondaryNode(mesh.secondaryNode(i).pos());
     }
@@ -132,7 +132,7 @@ void Mesh::setStaticGeometry(bool stat){
     staticGeometry_ = stat;
 }
 
-void Mesh::setGeometry(bool b) { 
+void Mesh::setGeometry(bool b) {
     isGeometry_ = b;
 }
 
@@ -176,7 +176,7 @@ Node * Mesh::createNodeGC_(const RVector3 & pos, int marker){
         Index oldCount = this->nodeCount();
         Node *n = this->createNodeWithCheck(pos);
         n->setMarker(marker);
-        
+
         if ((this->dim() == 3) and (this->nodeCount() > oldCount)){
 
             for (Index i = 0; i < this->boundaryVector_.size(); i ++ ){
@@ -422,7 +422,7 @@ Cell * Mesh::createCell(std::vector < Node * > & nodes, int marker){
 Cell * Mesh::createCell(const Cell & cell){
     std::vector < Node * > nodes(cell.nodeCount());
     for (Index i = 0; i < cell.nodeCount(); i ++) nodes[i] = &node(cell.node(i).id());
-    
+
     Cell *c = createCell(nodes, cell.marker());
     for (Index j = 0; j < cell.secondaryNodes().size(); j ++){
         c->addSecondaryNode(& this->node(cell.secondaryNodes()[j]->id()));
@@ -477,7 +477,7 @@ void Mesh::deleteCells(const std::vector < Cell * > & cells){
 
 Node & Mesh::node(Index i) {
     if (i > nodeCount() - 1){
-        if (i < nodeCount() + secondaryNodeCount()) 
+        if (i < nodeCount() + secondaryNodeCount())
             return this->secondaryNode(i - this->nodeCount());
         std::cerr << WHERE_AM_I << " requested node: " << i << " does not exist." << std::endl;
         exit(EXIT_MESH_NO_NODE);
@@ -486,7 +486,7 @@ Node & Mesh::node(Index i) {
 
 Node & Mesh::node(Index i) const {
     if (i > nodeCount() - 1){
-        if (i < nodeCount() + secondaryNodeCount()) 
+        if (i < nodeCount() + secondaryNodeCount())
             return this->secondaryNode(i - this->nodeCount());
         std::cerr << WHERE_AM_I << " requested node: " << i << " does not exist." << std::endl;
         exit(EXIT_MESH_NO_NODE);
@@ -813,9 +813,9 @@ std::vector < Cell * > Mesh::findCellByAttribute(double from, double to) const {
     return vCell;
 }
 
-Index Mesh::nodeCount(bool withSecNodes) const { 
-    if (withSecNodes) return nodeVector_.size() + secNodeVector_.size(); 
-    return nodeVector_.size(); 
+Index Mesh::nodeCount(bool withSecNodes) const {
+    if (withSecNodes) return nodeVector_.size() + secNodeVector_.size();
+    return nodeVector_.size();
 }
 
 std::vector< Node * > Mesh::nodes(const IndexArray & ids) const{
@@ -901,7 +901,7 @@ PosVector Mesh::positions(bool withSecNodes) const {
 }
 
 PosVector Mesh::positions(const IndexArray & idx) const {
-    PosVector pos(idx.size()); 
+    PosVector pos(idx.size());
     for (Index i = 0; i < idx.size(); i ++) { pos[i] = node(idx[i]).pos(); }
     return pos;
 }
@@ -1987,7 +1987,7 @@ void Mesh::prolongateEmptyCellsValues(RVector & vals, double background) const {
 
     if (emptyList.size() > 0){
         if (deepDebug()) {
-            std::cout << "Prolongate " << emptyList.size() 
+            std::cout << "Prolongate " << emptyList.size()
                       << " empty cells. (" << this->cellCount() << ")" << std::endl;
         }
 
@@ -2042,81 +2042,6 @@ void Mesh::prolongateEmptyCellsValues(RVector & vals, double background) const {
         }
         prolongateEmptyCellsValues(vals, background);
     }
-}
-
-void Mesh::fillEmptyCells(const std::vector< Cell * > & emptyList, double background){
-    if (emptyList.size() == 0) return;
-
-    log(Error, WHERE_AM_I, "who use this"); // maybe obsolete #190607
-    if (background > -9e99){
-        for (size_t i = 0; i < emptyList.size(); i ++) emptyList[i]->setAttribute(background);
-        return;
-    }
-
-    bool smooth = false;
-    bool horizontalWeight = true;
-
-    createNeighbourInfos();
-    if (emptyList.size() > 0){
-        if (debug())std::cout << "Prolongate " << emptyList.size() << " empty cells. (" << this->cellCount() << ")" << std::endl;
-        std::vector< Cell * > nextVector;
-        Cell * cell;
-
-        std::map< Cell*, double > prolongationMap;
-
-        RVector3 XY(1., 1., 0.);
-        if (this->dim() == 2) XY[1] = 0.0;
-
-        for (size_t i = 0; i < emptyList.size(); i ++){
-            cell = emptyList[i];
-
-            double weight = 0.0;
-            double val = 0.0;
-            for (Index j = 0; j < cell->neighbourCellCount(); j ++){
-                Cell * nCell = cell->neighbourCell(j);
-                if (nCell){
-                    if (nCell->attribute() > TOLERANCE){
-                        if (horizontalWeight){
-                            Boundary * b=findCommonBoundary(*nCell, *cell);
-                            if (b){
-                                double zWeight = (b->norm()*XY).abs() + 1e-6;
-                                val += nCell->attribute() * zWeight;
-                                weight += zWeight;
-                            }
-                        } else {
-                            val += nCell->attribute();
-                            weight += 1.0;
-                        }
-                    }
-                }
-            }
-            if (weight < 1e-8) {
-                nextVector.push_back(cell);
-            } else {
-                if (smooth){
-                    cell->setAttribute(val / weight);
-                } else {
-                    prolongationMap[cell] = val / weight;
-                }
-            }
-        }
-
-        if (!smooth){//**apply std::map< uint, val > prolongationMap;
-            for (std::map< Cell *, double >::iterator it= prolongationMap.begin();
-                it != prolongationMap.end(); it ++){
-                    it->first->setAttribute(it->second);
-            }
-        }
-        if (emptyList.size() == nextVector.size()){
-            this->exportVTK("fillEmptyCellsFail");
-            std::cerr << WHERE_AM_I << " WARNING!! cannot fill emptyList: see fillEmptyCellsFail.vtk"<< std::endl;
-            std::cerr << "trying to fix"<< std::endl;
-
-            for (size_t i = 0; i < emptyList.size(); i ++) emptyList[i]->setAttribute(mean(this->cellAttributes()));
-            nextVector.clear();
-        }
-        fillEmptyCells(nextVector, background);
-    } //** if emptyList.size() > 0
 }
 
 Mesh & Mesh::scale(const RVector3 & s){
@@ -2259,7 +2184,7 @@ void Mesh::smooth(bool nodeMoving, bool edgeSliding, uint smoothFunction, uint s
 void Mesh::fillKDTree_() const {
 
     if (!tree_) tree_ = new KDTreeWrapper();
-    
+
     if (tree_->size() != nodeCount(true)){
         if (tree_->size() == 0){
 
@@ -2460,10 +2385,10 @@ RegionMarker * Mesh::regionMarker(SIndex marker){
 
 Index Mesh::hash() const{
     log(Warning, "Mesh.hash() not complete. TODO");
-    return GIMLI::hash(this->positions(true), 
-                       this->cellMarkers(), 
+    return GIMLI::hash(this->positions(true),
+                       this->cellMarkers(),
                        this->boundaryMarkers(),
-                       this->nodeMarkers(), 
+                       this->nodeMarkers(),
                        this->exportDataMap_);
 }
 

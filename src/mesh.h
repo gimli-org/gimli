@@ -140,7 +140,7 @@ public:
     inline double area() const {return area_;}
 
     inline void setPos(const Pos & pos) {copy_(pos);}
-    
+
 protected:
     int marker_;
     double area_;
@@ -154,8 +154,8 @@ public:
     typedef RVector3 HoleMarker;
     typedef std::vector< RVector3 > HoleMarkerList;
 
-    /*! Default constructor, create empty mesh with dimension dim 
-    If this mesh is supposed to be a geometry definition, all 
+    /*! Default constructor, create empty mesh with dimension dim
+    If this mesh is supposed to be a geometry definition, all
     created nodes will be checked for duplicates.*/
     Mesh(Index dim=2, bool isGeometry=false);
 
@@ -182,7 +182,7 @@ public:
     /*! Return true if this mesh have static geometry. [Default=True]*/
     inline bool staticGeometry() const { return staticGeometry_; }
 
-    /*! Mesh is marked as geometry definition or PLC 
+    /*! Mesh is marked as geometry definition or PLC
     so createNode will allways with check. */
     void setGeometry(bool b);
 
@@ -203,11 +203,11 @@ public:
     Node * createNode(const Node & node);
     Node * createNode(const RVector3 & pos, int marker=0);
 
-    /*! Create a secondary node, which is stored in an aditional list for additional use. 
-    If tolerance tol set to a value > 0, then it will be checked if there is already a node 
+    /*! Create a secondary node, which is stored in an aditional list for additional use.
+    If tolerance tol set to a value > 0, then it will be checked if there is already a node
     at this position and return a ptr to the existing node instead of creating a new. */
     Node * createSecondaryNode(const RVector3 & pos, double tol=-1);
-        
+
     /*! Create new Node with duplication checks. Returns the already existing node when its within a tolerance distance to pos.
     If edgeCheck is set, any 2d (p1) boundary edges will be checked for any intersection with pos and splitted if necessary.*/
     Node * createNodeWithCheck(const RVector3 & pos, double tol=1e-6,
@@ -282,17 +282,17 @@ public:
 
     void createHull_(const Mesh & mesh);
 
-    /*! Create 3D mesh with 3D boundary elements from this 2D mesh cells. 
+    /*! Create 3D mesh with 3D boundary elements from this 2D mesh cells.
     Increase mesh dimension. Mesh should contain 2D cells. */
     Mesh createHull() const;
 
-    void createClosedGeometry(const PosVector & vPos, int nSegments, 
+    void createClosedGeometry(const PosVector & vPos, int nSegments,
                               double dxInner);
 
-    void createClosedGeometryParaMesh(const PosVector & vPos, int nSegments, 
+    void createClosedGeometryParaMesh(const PosVector & vPos, int nSegments,
                                       double dxInner);
 
-    void createClosedGeometryParaMesh(const PosVector & vPos, int nSegments, 
+    void createClosedGeometryParaMesh(const PosVector & vPos, int nSegments,
                                       double dxInner, const PosVector & addit);
 
     /*! Create and copy global H2 mesh of this mesh.*/
@@ -306,14 +306,14 @@ public:
 
     /*! Create a partly mesh without cells from mesh, based on a vector of ptrs to boundaries */
     void createMeshByBoundaries(const Mesh & mesh, const std::vector < Boundary * > & bounds);
-    
+
     /*! Create a new mesh that is a part from this mesh, based on cell-ids */
     Mesh createMeshByCellIdx(const IndexArray & idxList);
 
     /*! Create a partly mesh from mesh, based on cell-ids */
     void createMeshByCellIdx(const Mesh & mesh, const IndexArray & idxList);
 
-    /*! Create a partly mesh from mesh, based on meshs attributes. 
+    /*! Create a partly mesh from mesh, based on meshs attributes.
     For a single attribute set to to 0, for unlimited set to to -1 */
     void createMeshByMarker(const Mesh & mesh, int from, int to=-1);
 
@@ -323,7 +323,7 @@ public:
     /*! Syntactic sugar to extract a part of the mesh based on boundaries.*/
     Mesh createSubMesh(const std::vector< Boundary * > & bounds) const;
 
-    /*! Syntactic sugar to extract a part of the mesh based on 
+    /*! Syntactic sugar to extract a part of the mesh based on
     nodes with associated cells and boundaries.*/
     Mesh createSubMesh(const std::vector< Node * > & nodes) const;
 
@@ -467,13 +467,6 @@ public:
     //** end get infos stuff
 
     //** start mesh modification stuff
-    /*! DEPRECATED Prolongate the attribute of each cell in emptyList by the attribute
-     * from neighbouring cells.
-     * The attributes have to be lower than \ref TOLERANCE.
-     * This function is called recursively until all zero-attribute-cells in
-     * emptyList are filled with an attribute greater than Zero. */
-    void fillEmptyCells(const std::vector< Cell * > & emptyList,
-                        double background=-9e99);
 
     /*! Prolongate the empty (lower than \ref TOLERANCE.) cell values in vals
      * from its neighbouring cells.
@@ -557,9 +550,9 @@ public:
 
     void importVTU(const std::string & fbody);
 
-    /*! Import Ascii STL as 3D mesh and save triangles as \ref Boundary Faces. 
+    /*! Import Ascii STL as 3D mesh and save triangles as \ref Boundary Faces.
     Node positions can be snaped to a tolerance.*/
-    void importSTL(const std::string & fileName, bool isBinary=false, 
+    void importSTL(const std::string & fileName, bool isBinary=false,
                    double snap=1e-3);
 
     /*! Be carefull with interchanging binary meshs between 32-64bit architecture. Atm we save fixed int for counter and idx.
@@ -769,8 +762,8 @@ public:
     void addRegionMarker(const RegionMarker & reg);
 
     const RegionMarkerList & regionMarker() const { return regionMarker_; }
-    
-    /*! Return the pointer to region marker with the marker is i or throws 
+
+    /*! Return the pointer to region marker with the marker is i or throws
     an exception of there is no such marker.*/
     RegionMarker * regionMarker(SIndex i);
 
