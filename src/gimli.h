@@ -401,6 +401,7 @@ DLLEXPORT std::map < int, int > loadIntMap(const std::string & filename);
 inline void convert(bool          & var, char * opt) { var = true; }
 inline void convert(int           & var, char * opt) { if (!opt) var ++;    else var = atoi(opt); }
 inline void convert(uint          & var, char * opt) { if (!opt) var ++;    else var = atoi(opt); }
+inline void convert(Index         & var, char * opt) { if (!opt) var ++;    else var = atoi(opt); }
 inline void convert(float         & var, char * opt) { if (!opt) var = 0.0f; else var = (float)atof(opt); }
 inline void convert(double        & var, char * opt) { if (!opt) var = 0.0; else var = atof(opt); }
 inline void convert(std::string   & var, char * opt) { if (!opt) var = "";  else var = opt ; }

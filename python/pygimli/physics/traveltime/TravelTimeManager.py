@@ -17,19 +17,24 @@ from . ratools import shotReceiverDistances
 
 class TravelTimeDijkstraModelling(MeshModelling):
     def __init__(self, **kwargs):
-        self.dijkstra = pg.core.TravelTimeDijkstraModelling()
+        self._core = pg.core.TravelTimeDijkstraModelling()
 
         super(TravelTimeDijkstraModelling, self).__init__(**kwargs)
 
         self._refineSecNodes = 3
-        self.jacobian = self.dijkstra.jacobian
-        self.setThreadCount = self.dijkstra.setThreadCount
+        self.jacobian = self._core.jacobian
+        self.setThreadCount = self._core.setThreadCount
         #self.createJacobian = self.dijkstra.createJacobian
-        self.setJacobian(self.dijkstra.jacobian())
+        self.setJacobian(self._core.jacobian())
+
+    @property
+    def dijkstra(self):
+        """Return the current Dijkstra graph associated to the last mesh and slowness."""
+        return self._core.dijkstra()
 
     def regionManagerRef(self):
         # necessary because core dijkstra use its own RM
-        return self.dijkstra.regionManagerRef()
+        return self._core.regionManagerRef()
 
     def createRefinedFwdMesh(self, mesh):
         """Refine the current mesh for higher accuracy.
@@ -47,14 +52,14 @@ class TravelTimeDijkstraModelling(MeshModelling):
         """
         """
         # pg._r(mesh)
-        self.dijkstra.setMesh(mesh)
+        self._core.setMesh(mesh)
         #self.dijkstra.setMesh(pg.Mesh(mesh))
 
     def setDataPost(self, data):
         """
         """
         # pg._r()
-        self.dijkstra.setData(data)
+        self._core.setData(data)
 
     def createStartModel(self, dataVals):
         """
@@ -70,12 +75,19 @@ class TravelTimeDijkstraModelling(MeshModelling):
     def createJacobian(self, par):
         if not self.mesh():
             pg.critical("no mesh")
-        return self.dijkstra.createJacobian(par)
+        return self._core.createJacobian(par)
 
     def response(self, par):
         if not self.mesh():
             pg.critical("no mesh")
-        return self.dijkstra.response(par)
+        return self._core.response(par)
+
+    def way(self, s, g):
+        """ Return the node indieces for the way from the shot to the receiver 
+        index based on the given data, mesh and last known model.
+        """
+        return self._core.way(s, g)
+
 
     def drawModel(self, ax, model, **kwargs):
         kwargs['label'] = pg.unit('vel')
@@ -141,8 +153,8 @@ class TravelTimeManager(MeshMethodManager):
 
         self.fop.setMesh(mesh, ignoreRegionManager=ignoreRegionManager)
 
-    def simulate(self, slowness, scheme, mesh=None, secNodes=2,
-                 noiseLevel=0.0, noiseAbs=0.0, **kwargs):
+    def simulate(self, slowness=None, scheme=None, mesh=None, secNodes=2,
+                 vel=None, noiseLevel=0.0, noiseAbs=0.0, **kwargs):
         """Simulate Traveltime measurements.
 
         Perform the forward task for a given mesh, a slowness distribution (per
@@ -158,6 +170,9 @@ class TravelTimeManager(MeshMethodManager):
             * a single array of len mesh.cellCount()
             * a matrix of N slowness distributions of len mesh.cellCount()
             * a res map as [[marker0, res0], [marker1, res1], ...]
+        vel : array(mesh.cellCount()) | array(N, mesh.cellCount())
+            Velocity distribution for the given mesh cells. 
+            Will overwrite given slowness.
         scheme: :gimliapi:`GIMLI::DataContainer`
             Data measurement scheme needs 's' for shot and 'g' for geophone
             data token.
@@ -193,12 +208,14 @@ class TravelTimeManager(MeshMethodManager):
         if mesh is not None:
             self.setMesh(mesh, secNodes=secNodes, ignoreRegionManager=True)
 
+        if vel is not None:
+            slowness = 1/vel
+
+        if slowness is None:
+            pg.critical("Need some slowness or velocity distribution for simulation.")
+
         if len(slowness) == self.fop.mesh().cellCount():
-            if max(slowness) > 1.:
-                pg.warn('slowness values larger than 1 ({0}), assuming velocity values .. building reciprocity.'.format(max(slowness)))
-                t = fop.response(1./slowness)
-            else:
-                t = fop.response(slowness)
+            t = fop.response(slowness)
         else:
             print(self.fop.mesh())
             print("slowness: ", slowness)
@@ -289,8 +306,8 @@ class TravelTimeManager(MeshMethodManager):
 
         segs = []
         for s, g in zip(shots, recei):
-            wi = self.fop.dijkstra.way(s, g)
-            points = self.fop.dijkstra.mesh().positions(withSecNodes=True)[wi]
+            wi = self.fop.way(s, g)
+            points = self.fop._core.mesh().positions(withSecNodes=True)[wi]
             segs.append(np.column_stack((pg.x(points), pg.y(points))))
 
         lc = LineCollection(segs, **kwargs)

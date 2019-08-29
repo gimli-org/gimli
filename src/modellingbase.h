@@ -196,8 +196,8 @@ public:
      * Will also set ENV(OPENBLAS_NUM_THREADS) .. if used.  */
     void setThreadCount(Index nThreads);
 
-    /*! Return the maximum number of allowed threads for MT calculation */
-    inline Index threadCount() const { return nThreads_; }
+    /*! Return the maximum number of allowed threads for MT calculation based on local setting. GIMLI_NUM_THREADS will be used first. Give some verbose output. */
+    Index threadCount();
 
     /*! Set number of threads used for brute force Jacobian generation.
      *1 is default. If nThreads is greater than 1 you need to implement
@@ -208,6 +208,7 @@ public:
 
     /*! Return number of threads used for Jacobian generation. */
     inline Index multiThreadJacobian() const { return nThreadsJacobian_; }
+
 
 protected:
 

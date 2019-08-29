@@ -48,7 +48,7 @@ DataContainer.__setitem__ = __DC_setVal
 def __DC_getVal(self, key):
     if self.isSensorIndex(key):
         return np.array(self(key), dtype=int)
-    return self(key)
+    return self(key).array()
 DataContainer.__getitem__ = __DC_getVal
 
 

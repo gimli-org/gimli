@@ -1,37 +1,71 @@
 #!/usr/bin/env python
+import unittest
+
 import numpy as np
 import pygimli as pg
 
-# Dummy data container
-data = pg.DataContainer()
-data.createSensor([0.0, 0.0])
-data.createSensor([1.0, 2.0])
-data.resize(1)
-data.set("s", pg.Vector(1, 1.0))
-data.set("g", pg.Vector(1, 2.0))
-data.registerSensorIndex("s")
-data.registerSensorIndex("g")
+from pygimli.physics import TravelTimeManager
 
-# Without secondary nodes
-mesh = pg.createGrid([0,1,2],[0,1,2])
+class TestTT(unittest.TestCase):
 
-# Slowness
-slo = [1,2,1,4]
+    def setUp(self):
+        # Dummy data container
+        self.data = pg.DataContainer()
+        self.data.createSensor([0.0, 0.0])
+        self.data.createSensor([1.0, 2.0])
+        self.data.resize(1)
+        self.data.set("s", pg.Vector(1, 1.0))
+        self.data.set("g", pg.Vector(1, 2.0))
+        self.data.registerSensorIndex("s")
+        self.data.registerSensorIndex("g")
 
-def test_withoutSecNodes():
-    fop = pg.core.TravelTimeDijkstraModelling(mesh, data)
-    t_normal = fop.response(slo)
-    np.testing.assert_allclose(t_normal, 1 + np.sqrt(2))
+        # Without secondary nodes
+        self.mesh = pg.createGrid([0,1,2],[0,1,2])
 
-def test_withSecNodes():
-    mesh2 = mesh.createMeshWithSecondaryNodes(n=3)
-    fop = pg.core.TravelTimeDijkstraModelling(mesh2, data)
-    t_refined = fop.response(slo)
-    np.testing.assert_allclose(t_refined, np.sqrt(5)) # only works if n_secNodes is odd number
+        # Slowness
+        self.slo = [1,2,1,4]
+        
+        self.mgr = TravelTimeManager()
 
-def test_Jacobian():
-    mesh2 = mesh.createMeshWithSecondaryNodes(n=5)
-    fop = pg.core.TravelTimeDijkstraModelling(mesh2, data)
-    fop.createJacobian(slo)
-    J = fop.jacobian()
-    np.testing.assert_allclose(J * slo, np.sqrt(5))
+    def test_withoutSecNodes(self):
+        fop = self.mgr.fop
+        fop.setData(self.data)
+        fop.setMesh(self.mesh, ignoreRegionManager=True)
+        t = fop.response(self.slo)
+        np.testing.assert_allclose(t, 1 + np.sqrt(2))
+
+        data = self.mgr.simulate(slowness=self.slo, scheme=self.data, 
+                              mesh=self.mesh, secNodes=0)
+        np.testing.assert_allclose(data['t'], 1 + np.sqrt(2))
+        
+
+    def test_withSecNodes(self):
+        fop = self.mgr.fop
+        fop.setData(self.data)
+        fop.setMesh(self.mesh.createMeshWithSecondaryNodes(n=3), 
+                    ignoreRegionManager=True)
+
+        t = fop.response(self.slo)
+        np.testing.assert_allclose(t, np.sqrt(5)) # only works for odd secNodes
+        
+        data = self.mgr.simulate(slowness=self.slo, scheme=self.data, 
+                              mesh=self.mesh, secNodes=3)
+        np.testing.assert_allclose(data['t'], np.sqrt(5)) # only works for odd secNodes
+
+
+    def test_Jacobian(self):
+        fop = self.mgr.fop
+        fop.setData(self.data)
+        fop.setMesh(self.mesh.createMeshWithSecondaryNodes(n=5), 
+                    ignoreRegionManager=True)
+
+        fop.createJacobian(self.slo)
+        J = fop.jacobian()
+        np.testing.assert_allclose(J * self.slo, np.sqrt(5))
+
+if __name__ == '__main__':
+
+    # fop  = TestTT()
+    # fop.test_MT()
+    
+    unittest.main()

@@ -53,13 +53,6 @@ class TestMisc(unittest.TestCase):
 
         #fop._modelTrans = pg.trans.TransLog()
 
-
-
-
-
-
-
-
     def test_DataContainerFilter(self):
         """
         """
@@ -106,7 +99,7 @@ class TestMisc(unittest.TestCase):
         data = pg.DataContainer()
         data['b'] = np.ones(2) * 3.14
         np.testing.assert_array_equal(data['b'], np.ones(2)*3.14)
-        self.assertEqual(type(data['b']), type(pg.Vector()))
+        self.assertEqual(type(data['b']), type(np.array(1.0)))
         
         data.registerSensorIndex('a')
         data['a'] = np.ones(2)
