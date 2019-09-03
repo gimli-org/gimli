@@ -4,7 +4,6 @@
 #include <cppunit/extensions/HelperMacros.h>
 
 #include <gimli.h>
-#include <ipcClient.h>
 #include <memwatch.h>
 
 #include <matrix.h>
@@ -18,7 +17,6 @@ class GIMLIMiscTest : public CppUnit::TestFixture  {
     CPPUNIT_TEST(testBooleanLogic);
     CPPUNIT_TEST(testFunctorTemplates);
     CPPUNIT_TEST(testStringFunctions);
-    //CPPUNIT_TEST(testIPCSHM);
     CPPUNIT_TEST(testMemWatch);
     CPPUNIT_TEST(testHash);
     CPPUNIT_TEST(testPolynomialFunction);
@@ -82,29 +80,6 @@ public:
         
     }
 
-    void testIPCSHM(){
-        
-        // Init shared memory
-        GIMLI::IPCClientSHM ipc;
-
-        // Init shared memory
-        ipc.setSegmentName("unittest");
-        ipc.setInt("testInt", 1);
-        ipc.setBool("testBool", false);
-        ipc.setDouble("testDouble", 3.14);
-        
-        // this can by done by any other process or program on the same machine
-        GIMLI::IPCClientSHM ipc2;
-        ipc2.setSegmentName("unittest");
-        ipc2.info();
-        CPPUNIT_ASSERT(ipc2.getInt("testInt") == 1);
-        CPPUNIT_ASSERT(ipc2.getBool("testBool") == false);
-        CPPUNIT_ASSERT(ipc2.getDouble("testDouble") == 3.14);
-        
-        // free the shared memory
-        ipc.free("unittest");
-    }
-    
     void testMemWatch(){
         std::cout << "MemWatch" << std::endl;
         GIMLI::setDebug(true);

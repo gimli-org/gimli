@@ -554,22 +554,31 @@ private:
 
 class DLLEXPORT PolygonFace : public Boundary {
     /*! */
-    public:
-        PolygonFace(const std::vector < Node * > & nodes);
+public:
+    PolygonFace(const std::vector < Node * > & nodes);
         
-        ~PolygonFace();
+    ~PolygonFace();
 
-        virtual uint dim() const { return 3; }
+    virtual uint dim() const { return 3; }
 
-        virtual uint rtti() const { return MESH_POLYGON_FACE_RTTI; }    
+    virtual uint rtti() const { return MESH_POLYGON_FACE_RTTI; }    
 
-        /*Insert node into the polygon. Node needs to touch the polygon.
-        The node will be inserted in the nodeList or as secondary node if its 
-        not on an edge.*/
-        void insertNode(Node * node, double tol=TOLERANCE);
+    /*Insert node into the polygon. Node needs to touch the polygon.
+    The node will be inserted in the nodeList or as secondary node if its 
+    not on an edge.*/
+    void insertNode(Node * node, double tol=TOLERANCE);
 
-    protected:
-    private:
+    /*Insert node indieces for a subpolygon. All nodes regarding the parent mesh and need to be inside the face.*/
+    void addSubface(const IndexArray & nIDs);
+
+    Index subfaceCount() const {return this->subfaces_.size();}
+
+    const IndexArray & subface(Index i) const;
+
+protected:
+    std::vector < IndexArray > subfaces_;
+private:
+
 };
 
 class DLLEXPORT EdgeCell : public Cell {

@@ -468,6 +468,14 @@ Boundary * Mesh::copyBoundary(const Boundary & bound, double tol, bool check){
     }
 
     Boundary * b = createBoundary(nodes, bound.marker(), check);
+
+    if (b->rtti() == MESH_POLYGON_FACE_RTTI){
+        for (Index i = 0;  i < dynamic_cast< const PolygonFace & >(bound).subfaceCount(); i ++ ){
+            dynamic_cast< PolygonFace* >(b)->addSubface(
+                dynamic_cast< const PolygonFace & >(bound).subface(i));
+        }
+    }
+
     return b;
 }
 

@@ -848,6 +848,13 @@ void PolygonFace::insertNode(Node * n, double tol){
     this->addSecondaryNode(n);
 }
 
+void PolygonFace::addSubface(const IndexArray & nIDs){
+    this->subfaces_.push_back(nIDs);
+}
+const IndexArray & PolygonFace::subface(Index i) const {
+    return this->subfaces_[i];
+}
+
 EdgeCell::EdgeCell(const std::vector < Node * > & nodes) : Cell(nodes){
     shape_ = new EdgeShape();
     fillShape_();

@@ -961,8 +961,8 @@ def readPLC(filename, comment='#'):
             row = content[2 + nVerts + i + segment_offset].split()
             numBounds = int(row[0])
             numHoles = row[1]
-            assert numHoles == '0', \
-                'Can\'t handle 3D Boundaries with holes yet'
+            if numHoles != '0':
+                pg.error("Can't handle 3D faces with holes yet")
             marker = 0
             if haveBoundaryMarker:
                 marker = int(row[2])
@@ -981,7 +981,9 @@ def readPLC(filename, comment='#'):
                     if len(nodeIdx) == 2:
                         if nodeIdx[0] == nodeIdx[1]:
                             face.addSecondaryNode(poly.node(nodeIdx[0]))
-
+                    else:
+                        face.addSubface(nodeIdx)
+                        
                 segment_offset += 1
         nSegments += segment_offset
 
@@ -1205,17 +1207,28 @@ def exportTetgenPoly(poly, filename, float_format='.12e', **kwargs):
     for bound in poly.boundaries():
         # one line per facet
         # <# of polygons> [# of holes] [boundary marker]
-        npolys = 1 + len(bound.secondaryNodes())
+        try:
+            nSubs = bound.subfaceCount()
+        except:
+            nSubs = 0
+
+        npolys = 1 + nSubs + len(bound.secondaryNodes())
         polytxt += '{3}{2}0{2}{0:d}{1}'.format(bound.marker(), linesep,
                                                sep, npolys)
         # inner loop over polygons
         # <# of corners> <corner 1> <corner 2> ... <corner #>
         for l in range(1):
             poly_str = '{:d}'.format(bound.nodeCount())
-            for ind in bound.ids():
-                poly_str += sep + '{:d}'.format(ind)
-
+            poly_str += sep + sep.join(['{:d}'.format(n) for n in bound.ids()])
             polytxt += '{0}{1}'.format(poly_str, linesep)
+
+        # loop over subfaces
+        for l in range(nSubs):
+            sub = bound.subface(l)
+            poly_str = '{:d}'.format(len(sub))
+            poly_str += sep + sep.join(['{:d}'.format(n) for n in sub])
+            polytxt += '{0}{1}'.format(poly_str, linesep)
+
         # inner loop over holes
         # not necessary yet ?! why is there an extra hole section?
         # because this is for 2D holes in facets only
