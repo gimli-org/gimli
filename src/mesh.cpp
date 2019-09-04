@@ -85,7 +85,6 @@ void Mesh::copy_(const Mesh & mesh){
     clear();
     rangesKnown_ = false;
     setStaticGeometry(mesh.staticGeometry());
-    setGeometry(mesh.isGeometry());
     dimension_ = mesh.dim();
     nodeVector_.reserve(mesh.nodeCount());
     secNodeVector_.reserve(mesh.secondaryNodeCount());
@@ -115,6 +114,8 @@ void Mesh::copy_(const Mesh & mesh){
         this->addHoleMarker(mesh.holeMarker()[i]);
     }
 
+    // we don't need expensive tests for copying
+    setGeometry(mesh.isGeometry());
     setExportDataMap(mesh.exportDataMap());
     setCellAttributes(mesh.cellAttributes());
 
@@ -173,21 +174,30 @@ Node * Mesh::createNode_(const RVector3 & pos, int marker){
 
 Node * Mesh::createNodeGC_(const RVector3 & pos, int marker){
     if (this->isGeometry_){
+        // __M
         Index oldCount = this->nodeCount();
         Node *n = this->createNodeWithCheck(pos);
         n->setMarker(marker);
 
         if ((this->dim() == 3) and (this->nodeCount() > oldCount)){
 
-            for (Index i = 0; i < this->boundaryVector_.size(); i ++ ){
-                Boundary *b = this->boundaryVector_[i];
-                if (b->shape().touch(n->pos())){
-                    if (b->rtti() == MESH_POLYGON_FACE_RTTI){
+            for (auto *b: this->boundaryVector_){
+            // for (Index i = 0; i < this->boundaryVector_.size(); i ++ ){
+            //     Boundary *b = this->boundaryVector_[i];
+                // __MS(b->rtti())
+                if (b->rtti() == MESH_POLYGON_FACE_RTTI){
+                    // __MS(pos)
+                    // __MS(b->center())
+                    if (b->shape().touch(n->pos())){
+                        //  __MS(pos)
+                        //  __MS(b->node(0).pos() << " " << b->node(1).pos()  
+                        //       << " "<< b->node(2).pos())
+                        // __MS(*b)
                         dynamic_cast< PolygonFace* >(b)->insertNode(n);
-                    } else {
-                        __MS(*b)
-                        log(Error, "Adding a node in a non Polygon Face is not supported.");
                     }
+                } else {
+                        // __MS(*b)
+                        // log(Error, "Adding a node in a non Polygon Face is not supported.");
                 }
             }
         }
@@ -327,10 +337,24 @@ Boundary * Mesh::createBoundary(const Boundary & bound, bool check){
     std::vector < Node * > nodes(bound.nodeCount());
     for (Index i = 0; i < bound.nodeCount(); i ++) nodes[i] = &node(bound.node(i).id());
 
-    Boundary *b = createBoundary(nodes, bound.marker(), check);
+    Boundary *b = 0;
+
+    if (bound.rtti() == MESH_POLYGON_FACE_RTTI){
+        b = createBoundaryChecked_< PolygonFace >(nodes, bound.marker(), check); 
+
+        for (Index i = 0;  i < dynamic_cast< const PolygonFace & >(bound).subfaceCount(); i ++ ){
+                dynamic_cast< PolygonFace* >(b)->addSubface(
+                    dynamic_cast< const PolygonFace & >(bound).subface(i));
+        }
+    } else {
+        b = createBoundary(nodes, bound.marker(), check);
+    }
+
     for (Index j = 0; j < bound.secondaryNodes().size(); j ++){
         b->addSecondaryNode(& this->node(bound.secondaryNodes()[j]->id()));
     }
+
+
     return b;
 }
 
@@ -461,19 +485,50 @@ Cell * Mesh::copyCell(const Cell & cell, double tol){
 }
 
 Boundary * Mesh::copyBoundary(const Boundary & bound, double tol, bool check){
+
     std::vector < Node * > nodes(bound.nodeCount());
+    bool isFreeFace = false;
+    bool isSubFace = false;
+    
+    std::vector < Node * > subFace;
+    
     for (Index i = 0; i < nodes.size(); i ++) {
-        nodes[i] = createNodeWithCheck(bound.node(i).pos(), tol);
+        nodes[i] = createNode(bound.node(i).pos(), tol);
         nodes[i]->setMarker(bound.node(i).marker());
+        // __MS(nodes[i]->state())
+        switch (nodes[i]->state()){
+            case NodeState::No:
+                // at least one node is not in boundary
+                isFreeFace = true; break;
+            case NodeState::Secondary:
+                subFace.push_back(nodes[i]); break;
+                // __MS(*nodes[i])
+            case NodeState::Connected:
+                subFace.push_back(nodes[i]); break;
+        }    
     }
+    Boundary * b = 0;
 
-    Boundary * b = createBoundary(nodes, bound.marker(), check);
+    if (bound.rtti() == MESH_POLYGON_FACE_RTTI){
 
-    if (b->rtti() == MESH_POLYGON_FACE_RTTI){
-        for (Index i = 0;  i < dynamic_cast< const PolygonFace & >(bound).subfaceCount(); i ++ ){
-            dynamic_cast< PolygonFace* >(b)->addSubface(
-                dynamic_cast< const PolygonFace & >(bound).subface(i));
+        if (isFreeFace){
+            b = createBoundaryChecked_< PolygonFace >(nodes, 
+                                                      bound.marker(), check);
         }
+
+        if (subFace.size() > 2){
+            if (subFace[0]->secondaryParent()){
+                dynamic_cast< PolygonFace & >(*subFace[0]->secondaryParent()).addSubface(ids(subFace));
+            } else {
+                log(Error, "Secondary node have no parent boundary");
+            }
+        }
+
+        if (dynamic_cast< const PolygonFace & >(bound).subfaceCount() > 0){
+            log(Error, "Can't yet copy a boundary with subfaces");
+        }
+    } else {
+        b = createBoundary(nodes, bound.marker(), check);
     }
 
     return b;

@@ -836,6 +836,7 @@ void PolygonFace::insertNode(Node * n, double tol){
                 for (Index j = i + 1; j < this->nodeCount(); j ++){ 
                     nodes.push_back(&this->node(j));
                 }
+                n->setState(Connected);
                 deRegisterNodes_();
                 setNodes_(nodes);
                 registerNodes_();
@@ -846,6 +847,8 @@ void PolygonFace::insertNode(Node * n, double tol){
         } 
     }
     this->addSecondaryNode(n);
+    n->setState(Secondary);
+    n->setSecondaryParent(this);
 }
 
 void PolygonFace::addSubface(const IndexArray & nIDs){

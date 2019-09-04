@@ -222,12 +222,34 @@ class Test3DMerge(unittest.TestCase):
     # XXX: Temporarily deactivated, under construction by @carsten-forty2
     def test_cube_cube_coplanar_touchface(self):
         w = mt.createCube(marker=1)
-        # w.scale([2.0, 2.0, 2.0])
-        # c = mt.createCube(marker=2)
-        # c.translate([1.5, 0.0, 0.0])
+        w.scale([2.0, 2.0, 2.0])
 
-        # w = mt.mergePLC3D([c, w])
-        # pg.show(w)
+        c = mt.createCube(marker=2)
+        c.translate([1.5, 0.0, 0.0])
+        w = mt.mergePLC3D([w, c])
+        self.assertEqual(w.nodeCount(), 8+8)
+        self.assertEqual(w.boundaryCount(), 6+5)
+
+        c = mt.createCube(marker=3)
+        c.translate([-1.5, 0.0, 0.0])
+        w = mt.mergePLC3D([w, c])
+        self.assertEqual(w.nodeCount(), 8+8+8)
+        self.assertEqual(w.boundaryCount(), 6+5+5)
+
+        c = mt.createCube(marker=4)
+        c.translate([0.0, 1.5, 0.0])
+        w = mt.mergePLC3D([w, c])
+        self.assertEqual(w.nodeCount(), 8+8+8+8)
+        self.assertEqual(w.boundaryCount(), 6+5+5+5)
+        
+        c = mt.createCube(marker=5)
+        c.translate([0.0, 0.0, -1.5])
+        w = mt.mergePLC3D([w, c])
+        self.assertEqual(w.nodeCount(), 8+8+8+8+8)
+        self.assertEqual(w.boundaryCount(), 6+5+5+5+5)
+
+
+        #pg.show(w)
         # w.exportPLC('t.poly')
         # pg.show(mt.createMesh(w))
 

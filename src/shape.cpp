@@ -417,30 +417,50 @@ bool Shape::touch(const RVector3 & pos, double tol, bool verbose) const {
     if (!plane.touch(pos, tol)) {
         return false;
     }
-
+    
+    bool allChecked = false;
+    Index rayStart = 0;
     // test ray along the plane
-    RVector3 rayDir(((node(1).pos() + node(2).pos()) / 2.0 - node(0).pos()));
-
-    RVector3 iP;
     bool touch = false;
-    for (Index i = 0; i < nodeCount(); i ++){
-        Line segment(node(i).pos(), node((i+1)%nodeCount()).pos());
-        // __MS(segment)
-        if (segment.intersectRay(pos, rayDir, iP)){
-            // __MS(iP << " " << pos)
-            if (iP.valid()){
-                if (iP.dist(pos) < 1e-6) return true;
+    bool needNewRay = false;
+       
+    // __MS("'###############################'" << pos)
+    while (allChecked == false){
+        RVector3 rayDir(node(rayStart).pos() - 
+                        node((rayStart+1)%nodeCount()).pos());
+        needNewRay = false;
+        // __MS("ray:" << rayStart << " " << rayDir)
 
-                double t = segment.t(iP);
-                
-                // __MS(iP << " " << t)
-                if (t >= 0.0 && t < 1.0){
-                    // if intersection pos between [node, nextNode)
-                    touch = !touch;
-                    // __MS("touch: " << touch)
-                }
-            } 
+        RVector3 iP;
+     
+        for (Index i = 0; i < nodeCount(); i ++){
+            Line segment(node(i).pos(), node((i+1)%nodeCount()).pos());
+            // __MS(segment)
+
+            if (segment.intersectRay(pos, rayDir, iP)){
+                // __MS(iP << " vs.  " << pos << " d:" << iP.dist(pos) 
+                //         << " t:" << segment.t(iP))
+                if (iP.valid()){
+                    if (iP.dist(pos) < 1e-6) return true; // is on segment
+
+                    double t = segment.t(iP);
+                    if (abs(t) < TOLERANCE || abs(t-1.0) < TOLERANCE){
+                        // hits a node .. bad ray for the testting
+                        rayStart +=1;
+                        needNewRay = true;
+                        i = nodeCount();
+                        // __MS("newray")
+                    }
+
+                    if (t > 0.0 && t < 1.0){
+                        // if intersection pos between (node, nextNode)
+                        touch = !touch;
+                        // __MS("touch: " << touch)
+                    } 
+                } 
+            }
         }
+        if (!needNewRay) allChecked = true;
     }
     return touch;
 }
