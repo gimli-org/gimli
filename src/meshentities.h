@@ -176,6 +176,8 @@ public:
 
     void addSecondaryNode(Node * n);
 
+    void delSecondaryNode(Node * n);
+
     const std::vector < Node * > & secondaryNodes() const;
 
     /*! Return primary and secondary nodes */

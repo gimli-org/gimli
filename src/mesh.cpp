@@ -263,7 +263,7 @@ Node * Mesh::createNodeWithCheck(const RVector3 & pos, double tol, bool warn, bo
         Node * refNode = tree_->nearest(pos);
         if (refNode){
             if (pos.distance(refNode->pos()) < tol) {
-                if (warn || debug()) log(LogType::Warning,
+                if (warn) log(LogType::Warning,
                                          "Duplicated node found for: " + str(pos));
                 return refNode;
             }
@@ -518,6 +518,9 @@ Boundary * Mesh::copyBoundary(const Boundary & bound, double tol, bool check){
 
         if (subFace.size() > 2){
             if (subFace[0]->secondaryParent()){
+                for (auto *n: subFace){
+                    dynamic_cast< PolygonFace & >(*subFace[0]->secondaryParent()).delSecondaryNode(n);
+                }
                 dynamic_cast< PolygonFace & >(*subFace[0]->secondaryParent()).addSubface(ids(subFace));
             } else {
                 log(Error, "Secondary node have no parent boundary");

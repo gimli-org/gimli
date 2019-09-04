@@ -244,6 +244,12 @@ void MeshEntity::addSecondaryNode(Node * n) {
     secondaryNodes_.push_back(n);
 };
 
+void MeshEntity::delSecondaryNode(Node * n) {
+    secondaryNodes_.erase(std::remove(secondaryNodes_.begin(), 
+                                      secondaryNodes_.end(), n), 
+                          secondaryNodes_.end());
+};
+
 const std::vector < Node * > & MeshEntity::secondaryNodes() const {
     return secondaryNodes_;
 };
