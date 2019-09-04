@@ -2,6 +2,8 @@
 """
 import unittest
 
+import pygimli as pg
+
 import pygimli.meshtools as mt
 
 class TestCreateRectangle(unittest.TestCase):
@@ -181,29 +183,53 @@ class Test3DMerge(unittest.TestCase):
         self.assertEqual(c1.nodeCount(), m.nodeCount())
         self.assertEqual(c1.boundaryCount(), m.boundaryCount())
 
+    def test_cube_cube_equalface(self):
+        w = mt.createCube(marker=1)
+        c = mt.createCube(marker=2)
+        c.translate([c.xmax()-w.xmin(), 0.0])
+    
+        w = mt.mergePLC3D([w, c])
+        self.assertEqual(w.nodeCount(), 8+4)
+        self.assertEqual(w.boundaryCount(), 6+5)
+        
+        c = mt.createCube(marker=3)
+        c.translate([0.0, w.ymax()-c.ymin(), 0.0])
+        w = mt.mergePLC3D([w, c])
+        self.assertEqual(w.nodeCount(), 8+4+4)
+        self.assertEqual(w.boundaryCount(), 6+5+5)
+        
+        c = mt.createCube(marker=4)
+        c.translate([0.0, 0.0, c.zmax()-w.zmin()])
+        w = mt.mergePLC3D([c, w])
+        self.assertEqual(w.nodeCount(), 8+4+4+4)
+        self.assertEqual(w.boundaryCount(), 6+5+5+5)
+
+        c = mt.createCube(marker=5)
+        c.translate([0.0, w.ymax()-c.ymin(), c.zmax()-w.zmin()])
+        w = mt.mergePLC3D([c, w])
+        self.assertEqual(w.nodeCount(), 8+4+4+4+6)
+        self.assertEqual(w.boundaryCount(), 6+5+5+5+6)
+
+        c = mt.createCube(marker=6)
+        c.translate([0.0, c.ymax()-w.ymin(), c.zmax()-w.zmin()])
+        w = mt.mergePLC3D([w, c])
+        self.assertEqual(w.nodeCount(), 8+4+4+4+6+0)
+        self.assertEqual(w.boundaryCount(), 6+5+5+5+6+3)
+
+        # w.exportPLC('t.poly')
+        # pg.show(mt.createMesh(w))
+        
     # XXX: Temporarily deactivated, under construction by @carsten-forty2
-    # def test_cube_cube_sameface(self):
-    #     c1 = mt.createCube()
-    #     c2 = mt.createCube()
-    #     c2.translate([c2.xmax()-c1.xmin(), 0.0])
-    #
-    #     m = mt.mergePLC3D([c1, c2])
-    #
-    #     print(m)
-    #
-    #     self.assertEqual(m.nodeCount(), 2*c1.nodeCount()-4)
-    #     self.assertEqual(m.boundaryCount(), 2*c1.boundaryCount()-1)
+    def test_cube_cube_coplanar_touchface(self):
+        w = mt.createCube(marker=1)
+        # w.scale([2.0, 2.0, 2.0])
+        # c = mt.createCube(marker=2)
+        # c.translate([1.5, 0.0, 0.0])
 
-
-
+        # w = mt.mergePLC3D([c, w])
+        # pg.show(w)
+        # w.exportPLC('t.poly')
+        # pg.show(mt.createMesh(w))
 
 if __name__ == '__main__':
-    # pg.setDeepDebug(1)
-    t = Test3DMerge()
-    t.test_cube_cube_sameface()
-    sys.exit()
-        # # t = TestCreateRectangle()
-
-    # t.test_region_marker_position_translation_scale()
-
     unittest.main()

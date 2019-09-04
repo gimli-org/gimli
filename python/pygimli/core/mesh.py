@@ -6,7 +6,7 @@ Import and extensions of the core Mesh class.
 from ._pygimli_ import (HexahedronShape, Line, Mesh, MeshEntity, Node,
                         PolygonFace, TetrahedronShape, TriangleFace)
 from .logger import deprecated, error, info, warn
-from ..meshtools import mergePLC
+from ..meshtools import mergePLC, exportPLC
 
 
 def __Mesh_str(self):
@@ -199,3 +199,5 @@ def __createMeshWithSecondaryNodes__(self, n=3, verbose=False):
 
 Mesh.createSecondaryNodes = __createSecondaryNodes__
 Mesh.createMeshWithSecondaryNodes = __createMeshWithSecondaryNodes__
+
+Mesh.exportPLC = exportPLC

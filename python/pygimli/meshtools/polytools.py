@@ -647,12 +647,9 @@ def mergePLC3D(plcs, tol=1e-3):
     #  * or all matching plcs[1:] are lie completely within p0
     
     p0 = pg.Mesh(plcs[0])
-    
     for p in plcs[1:]:
-        print('p', p)
         for b in p.boundaries():
-            print(b)
-            p0.createBoundary(b)
+            p0.copyBoundary(b)
             
     if len(p.regionMarker()) > 0:
         for rm in p.regionMarker():
