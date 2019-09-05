@@ -12,6 +12,7 @@ Todo
 import matplotlib as mpl
 import numpy as np
 from shutil import copyfile
+import signal
 import sys
 
 import pygimli as pg
@@ -24,7 +25,7 @@ from PyQt5.QtGui import (
 from PyQt5.QtWidgets import (
     QMainWindow, QFrame, QVBoxLayout, QToolBar, QComboBox, QPushButton,
     QFileDialog, QLineEdit, QWidget, QHBoxLayout, QSlider, QSplitter,
-    QGroupBox, QLabel, QLineEdit
+    QGroupBox, QLabel, QDoubleSpinBox, QCheckBox, QAction
 )
 pyvista = pg.optImport('pyvista', requiredFor="proper visualization in 3D")
 
@@ -34,7 +35,7 @@ CMAPS = ['viridis',
          'plasma',
          'Greys',
          'Blues',
-         'Greens', 
+         'Greens',
          'Reds',
          'gray',
          'hot',
@@ -49,12 +50,33 @@ CMAPS = ['viridis',
 
 class Show3D(QMainWindow):
 
-    def __init__(self, tmpMesh, parent=None):
+    def __init__(self, tmpMesh, application, parent=None):
         super(Show3D, self).__init__(parent)
         self.tmpMesh = tmpMesh
         # storage for the minima and maxima
         self.extrema = {}
+        # setup the menubar
+        self.setupMenu()
         self.setupWidget()
+
+        self.application = application
+        signal.signal(signal.SIGINT, self._signal_handler)
+        self.acn_close.triggered.connect(self._signal_handler)
+
+    def _signal_handler(self, sig, frame):
+        """
+        Stop the GUI on CTRL-C, but not the script it was called from.
+        from: https://stackoverflow.com/questions/1112343/how-do-i-capture-sigint-in-python
+        """
+        sys.stderr.write('\r')
+        self.application.exit()
+
+    def setupMenu(self):
+        bar = self.menuBar()
+        self.acn_close = QAction("&Quit", self)
+        self.acn_close.setShortcut("Ctrl+C")
+        self.acn_close.setShortcut("Q")
+        bar.addAction(self.acn_close)
 
     def setupWidget(self):
         # create the frame
@@ -62,6 +84,8 @@ class Show3D(QMainWindow):
 
         # add the pyvista interactor object
         self.pyvista_widget = pyvista.QtInteractor(self.frame)
+        # self.legend_text = self._legend()
+        # self.pyvista_widget.add_text(self.legend_text, font_size=10)
 
         vlayout = QVBoxLayout()
         vlayout.setContentsMargins(0, 0, 0, 0)
@@ -85,6 +109,19 @@ class Show3D(QMainWindow):
 
         self.show()
 
+    def _legend(self):
+        return """
+        q - Close the rendering window
+        v - Isometric camera view
+        w - Switch all datasets to a wireframe representation
+        s - Switch all datasets to a surface representation
+        r - Reset the camera to view all datasets
+        shift+click or middle-click - Pan the rendering scene
+        left click - Rotate the rendering scene in 3D
+        ctrl+click - Rotate the rendering scene in 2D (view-plane)
+        mouse-wheel or right-click - Continuously zoom the rendering scene
+        """
+
     def addMesh(self, mesh, cMap):
         """
         Add a mesh to the pyqt frame.
@@ -97,7 +134,8 @@ class Show3D(QMainWindow):
             The MPL colormap that should be used to display parameters.
         """
         self.mesh = mesh
-        self._actor = self.pyvista_widget.add_mesh(self.mesh, cmap=cMap)
+        self._actor = self.pyvista_widget.add_mesh(
+            self.mesh, cmap=cMap, show_edges=True)
         self.pyvista_widget.show_bounds()
         self.pyvista_widget.reset_camera()
 
@@ -137,23 +175,25 @@ class Show3D(QMainWindow):
         # enable only when there is something to show
         self.toolbar.btn_apply.setEnabled(True)
         self.toolbar.btn_reset.setEnabled(True)
-        self.toolbar.le_cmin.setEnabled(True)
-        self.toolbar.le_cmax.setEnabled(True)
+        self.toolbar.spbx_cmin.setEnabled(True)
+        self.toolbar.spbx_cmax.setEnabled(True)
 
         # FIXME: what about the point arrays?!
         for k, v in self.mesh.cell_arrays.items():
             self.mesh._add_cell_scalar(v, k)
             self.extrema[k] = {
-                'orig': {'min': str(min(v)), 'max': str(max(v))},
-                'user': {'min': str(min(v)), 'max': str(max(v))}
-                }
+                'orig': {'min': min(v), 'max': max(v)},
+                'user': {'min': min(v), 'max': max(v)}
+            }
         # supply the combobox with the names to choose from for display
         self.toolbar.cbbx_params.addItems(self.mesh.scalar_names)
         # get the current set parameter
         curr_param = self.toolbar.cbbx_params.currentText()
         # set the first cMin/cMax
-        self.toolbar.le_cmin.setText(self.extrema[curr_param]['orig']['min'])
-        self.toolbar.le_cmax.setText(self.extrema[curr_param]['orig']['max'])
+        self.toolbar.spbx_cmin.setValue(
+            self.extrema[curr_param]['orig']['min'])
+        self.toolbar.spbx_cmax.setValue(
+            self.extrema[curr_param]['orig']['max'])
 
     def updateParameterView(self, param=None):
         """
@@ -171,8 +211,12 @@ class Show3D(QMainWindow):
             # change to the desired parameter distribution
             self.mesh.set_active_scalar(param)
             # update the minima and maxima
-            self.toolbar.le_cmin.setText(self.extrema[param]['user']['min'])
-            self.toolbar.le_cmax.setText(self.extrema[param]['user']['max'])
+            self.toolbar.spbx_cmin.setRange(
+                self.extrema[param]['user']['min'], self.extrema[param]['user']['max'])
+            self.toolbar.spbx_cmax.setRange(
+                self.extrema[param]['user']['min'], self.extrema[param]['user']['max'])
+            self.toolbar.spbx_cmin.setValue(self.extrema[param]['user']['min'])
+            self.toolbar.spbx_cmax.setValue(self.extrema[param]['user']['max'])
 
         cMap = self.toolbar.cbbx_cmap.currentText()
         if self.toolbar.btn_reverse.isChecked():
@@ -191,6 +235,12 @@ class Show3D(QMainWindow):
             # get the actual slices
             mesh = self.mesh.slice_orthogonal(x=x_val, y=y_val, z=z_val)
 
+        if self.toolbar.chbx_threshold.isChecked():
+            # get the user defined limits
+            cmin = self.toolbar.spbx_cmin.value()
+            cmax = self.toolbar.spbx_cmax.value()
+            mesh = self.mesh.threshold(value=[cmin, cmax])
+
         else:
             mesh = self.mesh
 
@@ -201,7 +251,8 @@ class Show3D(QMainWindow):
         # remove the currently displayed mesh
         self.pyvista_widget.remove_actor(self._actor)
         # add the modified one
-        self._actor = self.pyvista_widget.add_mesh(mesh, cmap=cMap)
+        self._actor = self.pyvista_widget.add_mesh(
+            mesh, cmap=cMap, show_edges=True)
 
         # update stuff in the toolbar
         self.updateScalarBar()
@@ -214,8 +265,8 @@ class Show3D(QMainWindow):
         When user set limits are made and finished/accepted the color bar
         needs to change.
         """
-        content_min = self.toolbar.le_cmin.text()
-        content_max = self.toolbar.le_cmax.text()
+        content_min = self.toolbar.spbx_cmin.value()
+        content_max = self.toolbar.spbx_cmax.value()
         if content_min != '' or content_max != '':
             # get the user defined limits
             cmin = float(content_min)
@@ -228,13 +279,13 @@ class Show3D(QMainWindow):
                 self.extrema[param]['user']['min'] = str(cmin)
                 self.extrema[param]['user']['max'] = str(cmax)
 
-                # actually update the range
-                self.pyvista_widget.update_scalar_bar_range([cmin, cmax], name=param)
+                self.pyvista_widget.update_scalar_bar_range(
+                    [cmin, cmax], name=param)
         self.pyvista_widget.update()
 
-    def _checkDecimalPoint(self):
-        self.toolbar.le_cmin.setText(self.toolbar.le_cmin.text().replace(',', '.'))
-        self.toolbar.le_cmax.setText(self.toolbar.le_cmax.text().replace(',', '.'))
+    # def _checkDecimalPoint(self):
+    #     self.toolbar.spbx_cmin.setText(self.toolbar.spbx_cmin.value().replace(',', '.'))
+    #     self.toolbar.spbx_cmax.setText(self.toolbar.spbx_cmax.value().replace(',', '.'))
 
     def toggleBbox(self):
         """
@@ -257,12 +308,12 @@ class Show3D(QMainWindow):
 
         Todo
         ----
-        + might come in handy to open a dialog where one can choose between 
+        + might come in handy to open a dialog where one can choose between
         black/white background and white/black axis grid and so on
         """
         fname = QFileDialog.getSaveFileName(
             self, 'Open File', None, "Image files (*.jpg *.png)"
-            )[0]
+        )[0]
         if fname:
             if not len(fname.split('.')) == 2:
                 fname += '.png'
@@ -274,7 +325,7 @@ class Show3D(QMainWindow):
         """
         f = QFileDialog.getSaveFileName(
             self, 'Export VTK', None, "VTK file (*.vtk)"
-            )[0]
+        )[0]
         if f:
             f = f + '.vtk' if not f.lower().endswith('.vtk') else f
             copyfile(self.tmpMesh, f)
@@ -304,21 +355,24 @@ class Show3D(QMainWindow):
 
     def _allowSignals(self):
         # connect signals
-        self.toolbar.cbbx_params.currentTextChanged.connect(self.updateParameterView)
-        self.toolbar.cbbx_cmap.currentTextChanged.connect(self.updateParameterView)
+        self.toolbar.cbbx_params.currentTextChanged.connect(
+            self.updateParameterView)
+        self.toolbar.cbbx_cmap.currentTextChanged.connect(
+            self.updateParameterView)
         self.toolbar.btn_reverse.clicked.connect(self.updateParameterView)
         # self.toolbar.btn_plotlog.clicked.connect(self.updateParameterView)
         self.toolbar.btn_bbox.pressed.connect(self.toggleBbox)
         self.toolbar.btn_screenshot.clicked.connect(self.takeScreenShot)
         self.toolbar.btn_exportVTK.clicked.connect(self.exportMesh)
-        self.toolbar.btn_apply.clicked.connect(self.updateScalarBar)
+        self.toolbar.chbx_threshold.clicked.connect(self.updateParameterView)
+        self.toolbar.btn_apply.clicked.connect(self.updateParameterView)
         self.toolbar.btn_reset.clicked.connect(self.resetExtrema)
         self.toolbar.grp_slice.clicked.connect(self._enableSlicers)
         self.toolbar.slice_x.sliderReleased.connect(self.updateParameterView)
         self.toolbar.slice_y.sliderReleased.connect(self.updateParameterView)
         self.toolbar.slice_z.sliderReleased.connect(self.updateParameterView)
-        self.toolbar.le_cmin.editingFinished.connect(self.updateScalarBar)
-        self.toolbar.le_cmax.editingFinished.connect(self.updateScalarBar)
+        # self.toolbar.spbx_cmin.valueChanged.connect(self.updateScalarBar)
+        # self.toolbar.spbx_cmax.valueChanged.connect(self.updateScalarBar)
 
 
 class GToolBar(QWidget):
@@ -361,30 +415,32 @@ class GToolBar(QWidget):
 
         # button to make bounding box visible
         self.btn_bbox = GButton(
-            text="Toggle Grid",
+            text="Toggle Axes",
             tooltip="Toggle data axis grid",
             checkable=True
         )
         self.btn_bbox.setChecked(True)
 
         # cMin and cMax
-        self.le_cmin = GLineEdit("The min of the current range")
-        self.le_cmin.setEnabled(False)
-        self.le_cmax = GLineEdit("The max of the current range")
-        self.le_cmax.setEnabled(False)
+        # self.spbx_cmin = GLineEdit("The min of the current range")
+        self.spbx_cmin = GDoubleSpinBox("The min of the current range")
+        self.spbx_cmin.setEnabled(False)
+        # self.spbx_cmax = GLineEdit("The max of the current range")
+        self.spbx_cmax = GDoubleSpinBox("The max of the current range")
+        self.spbx_cmax.setEnabled(False)
 
         # if not hit by key his button accepts changes to the color range
         self.btn_apply = GButton(
             text="Apply",
             tooltip="Apply changes in color range"
-            )
+        )
         self.btn_apply.setEnabled(False)
 
         # resets the color range to its original range
         self.btn_reset = GButton(
             text="Reset",
             tooltip="Reset changes in color range"
-            )
+        )
         self.btn_reset.setEnabled(False)
 
         # slider for slicing
@@ -399,12 +455,12 @@ class GToolBar(QWidget):
         self.btn_screenshot = GButton(
             text="Screenshot",
             tooltip="Save screenshot of the current scene"
-            )
+        )
 
         self.btn_exportVTK = GButton(
             text="Export VTK",
             tooltip="Save displayed mesh as VTK"
-            )
+        )
 
         # parameter choosing
         lyt_v1 = QVBoxLayout()
@@ -424,17 +480,22 @@ class GToolBar(QWidget):
 
         # limits
         lyt_h3 = QHBoxLayout()
-        lyt_h3.addWidget(QLabel('Min'))
-        lyt_h3.addWidget(self.le_cmin)
+        lyt_h3.addWidget(QLabel("Min"))
+        lyt_h3.addWidget(self.spbx_cmin)
         lyt_h4 = QHBoxLayout()
-        lyt_h4.addWidget(QLabel('Max'))
-        lyt_h4.addWidget(self.le_cmax)
+        lyt_h4.addWidget(QLabel("Max"))
+        lyt_h4.addWidget(self.spbx_cmax)
+        lyt_h4a = QHBoxLayout()
+        lyt_h4a.addWidget(QLabel("Threshold"))
+        self.chbx_threshold = QCheckBox()
+        lyt_h4a.addWidget(self.chbx_threshold)
         lyt_h5 = QHBoxLayout()
         lyt_h5.addWidget(self.btn_apply)
         lyt_h5.addWidget(self.btn_reset)
         lyt_v3 = QVBoxLayout()
         lyt_v3.addLayout(lyt_h3)
         lyt_v3.addLayout(lyt_h4)
+        lyt_v3.addLayout(lyt_h4a)
         lyt_v3.addLayout(lyt_h5)
         lyt_v3.setContentsMargins(2, 2, 2, 2)
         grp_limits = QGroupBox("Limits")
@@ -514,7 +575,8 @@ class GToolBar(QWidget):
 
             for t in np.linspace(0., 1., 15):
                 rgba = cMap(t)
-                gradient.setColorAt(t, QColor(rgba[0]*255, rgba[1]*255, rgba[2]*255))
+                gradient.setColorAt(
+                    t, QColor(rgba[0]*255, rgba[1]*255, rgba[2]*255))
 
             brush = QBrush(gradient)
             p.fillRect(QRect(0, 0, w, h), brush)
@@ -604,6 +666,17 @@ class GSlider(_GDoubleSlider):
         super(GSlider, self).__init__(None)
         self.setOrientation(Qt.Horizontal)
         self.setToolTip(tooltip)
+
+
+class GDoubleSpinBox(QDoubleSpinBox):
+
+    def __init__(self, tooltip, parent=None):
+        super(GDoubleSpinBox, self).__init__(parent)
+        self.setToolTip(tooltip)
+        self.setFixedWidth(200)
+        self.setSingleStep(0.01)
+        # self.setRange(*drange)
+        self.setDecimals(4)
 
 
 if __name__ == '__main__':
