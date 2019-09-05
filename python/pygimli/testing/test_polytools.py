@@ -219,7 +219,6 @@ class Test3DMerge(unittest.TestCase):
         # w.exportPLC('t.poly')
         # pg.show(mt.createMesh(w))
 
-    # XXX: Temporarily deactivated, under construction by @carsten-forty2
     def test_cube_cube_coplanar_touchface(self):
         w = mt.createCube(marker=1)
         w.scale([2.0, 2.0, 2.0])
@@ -248,34 +247,27 @@ class Test3DMerge(unittest.TestCase):
         self.assertEqual(w.nodeCount(), 8+8+8+8+8)
         self.assertEqual(w.boundaryCount(), 6+5+5+5+5)
 
-
         #pg.show(w)
         # w.exportPLC('t.poly')
         # pg.show(mt.createMesh(w))
 
-    # def test_smallcube_in_bigcube(self):
-    #     """
-    #     A small cube in a bigger one, creating two subfaces.
-    #     author: @frodo4fingers
-    #     """
-    #     w = mt.createCube(
-    #         size=[0.02, 0.3, 0.20],
-    #         pos=[-0.26, 0, 0.1],
-    #         marker=2
-    #     )
-    #     c = mt.createCube(
-    #         size=[0.02, 0.02, 0.11],
-    #         pos=[-0.26, 0, 0.12/2],
-    #         marker=10
-    #     )
+    def test_smallcube_in_bigcube(self):
+        """
+        A small cube in a bigger one, creating two subfaces.
+        author: @frodo4fingers
+        """
+        w = mt.createCube(marker=1)
+        c = mt.createCube(size=[0.5, 1.0, 1.0], marker=2)
 
-    #     # c = c.rotate(pg.RVector3(0, 0, np.pi))
-    #     # c = c.translate(pg.RVector3(-0.26, 0, 0.12/2))
-    #     w = mt.mergePLC3D([w, c])
-    #     # mt.exportPLC(w, 'w3D_test.w')
-    #     # pg.show(w)
-    #     self.assertEqual(w.nodeCount(), 8+8)
-    #     self.assertEqual(w.boundaryCount(), 6)
+        w = mt.mergePLC3D([w, c])
+        self.assertEqual(w.nodeCount(), 8+8)
+        self.assertEqual(w.boundaryCount(), 8)
+        
+        # print(w)
+        # pg.show(w)
+        # w.exportPLC('w3D_test.w')
+        # pg.show(mt.createMesh(w))
+        
 
 
 if __name__ == '__main__':
