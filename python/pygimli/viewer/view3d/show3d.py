@@ -20,12 +20,13 @@ import pygimli as pg
 from PyQt5.QtCore import Qt, QPointF, QRect, QSize
 from PyQt5.QtGui import (
     QPixmap, QPainter, QColor, QBrush, QIcon, QLinearGradient,
-    QDoubleValidator
+    QDoubleValidator, QFont
 )
 from PyQt5.QtWidgets import (
     QMainWindow, QFrame, QVBoxLayout, QToolBar, QComboBox, QPushButton,
     QFileDialog, QLineEdit, QWidget, QHBoxLayout, QSlider, QSplitter,
-    QGroupBox, QLabel, QDoubleSpinBox, QCheckBox, QAction
+    QGroupBox, QLabel, QDoubleSpinBox, QCheckBox, QAction, QDialog,
+    QStatusBar
 )
 pyvista = pg.optImport('pyvista', requiredFor="proper visualization in 3D")
 
@@ -60,10 +61,13 @@ class Show3D(QMainWindow):
         self.setupWidget()
 
         self.application = application
+
+        # signals
         signal.signal(signal.SIGINT, self._signal_handler)
         self.acn_close.triggered.connect(self._signal_handler)
+        self.acn_hkeys.triggered.connect(self.showHotKeys)
 
-    def _signal_handler(self, sig, frame):
+    def _signal_handler(self, sig, frame=None):
         """
         Stop the GUI on CTRL-C, but not the script it was called from.
         from: https://stackoverflow.com/questions/1112343/how-do-i-capture-sigint-in-python
@@ -73,10 +77,38 @@ class Show3D(QMainWindow):
 
     def setupMenu(self):
         bar = self.menuBar()
+        # quit the thing
         self.acn_close = QAction("&Quit", self)
-        self.acn_close.setShortcut("Ctrl+C")
         self.acn_close.setShortcut("Q")
         bar.addAction(self.acn_close)
+        # about the viewer and help
+        ghelp = bar.addMenu("Help")
+        self.acn_hkeys = QAction("Hot Keys")
+        ghelp.addAction(self.acn_hkeys)
+
+    def showHotKeys(self):
+        d = QDialog()
+        textfield = QLabel(
+        "q - Close pyGIMLi 3D Viewer\n"
+        "v - Isometric camera view\n"
+        "w - Switch all datasets to a wireframe representation\n"
+        "s - Switch all datasets to a surface representation\n"
+        "r - Reset the camera to view all datasets\n"
+        "shift+click or middle-click - Pan the rendering scene\n"
+        "left click - Rotate the rendering scene in 3D\n"
+        "ctrl+click - Rotate the rendering scene in 2D (view-plane)\n"
+        "mouse-wheel or right-click - Continuously zoom the rendering scene\n"
+        )
+        textfield.setFont(QFont('Courier'))
+        lyt = QVBoxLayout()
+        btn_quit = QPushButton('quit')
+        btn_quit.clicked.connect(d.done)
+        lyt.addWidget(textfield)
+        lyt.addWidget(btn_quit)
+        lyt.setContentsMargins(0, 0, 0, 0)
+        d.setLayout(lyt)
+        d.setWindowTitle("Hot Keys")
+        d.exec_()
 
     def setupWidget(self):
         # create the frame
@@ -84,12 +116,12 @@ class Show3D(QMainWindow):
 
         # add the pyvista interactor object
         self.pyvista_widget = pyvista.QtInteractor(self.frame)
-        # self.legend_text = self._legend()
-        # self.pyvista_widget.add_text(self.legend_text, font_size=10)
 
         vlayout = QVBoxLayout()
         vlayout.setContentsMargins(0, 0, 0, 0)
-        # vlayout.addWidget(self.pyvista_widget)
+
+        self.statusbar = QStatusBar()
+        self.setStatusBar(self.statusbar)
 
         self.toolbar = GToolBar()
 
@@ -102,25 +134,11 @@ class Show3D(QMainWindow):
         vlayout.addWidget(splitter)
 
         self.frame.setLayout(vlayout)
-        # self.setupToolBar()
 
         self.setCentralWidget(self.frame)
         self.setWindowTitle("pyGIMLi 3D Viewer")
 
         self.show()
-
-    def _legend(self):
-        return """
-        q - Close the rendering window
-        v - Isometric camera view
-        w - Switch all datasets to a wireframe representation
-        s - Switch all datasets to a surface representation
-        r - Reset the camera to view all datasets
-        shift+click or middle-click - Pan the rendering scene
-        left click - Rotate the rendering scene in 3D
-        ctrl+click - Rotate the rendering scene in 2D (view-plane)
-        mouse-wheel or right-click - Continuously zoom the rendering scene
-        """
 
     def addMesh(self, mesh, cMap):
         """
@@ -133,6 +151,7 @@ class Show3D(QMainWindow):
         cMap: str
             The MPL colormap that should be used to display parameters.
         """
+        self.statusbar.showMessage("{}".format(self.tmpMesh))
         self.mesh = mesh
         self._actor = self.pyvista_widget.add_mesh(
             self.mesh, cmap=cMap, show_edges=True)
@@ -222,6 +241,7 @@ class Show3D(QMainWindow):
         if self.toolbar.btn_reverse.isChecked():
             cMap += '_r'
 
+        mesh = self.mesh
         if self.toolbar.grp_slice.isChecked():
             x_val = self.toolbar.slice_x.value()
             y_val = self.toolbar.slice_y.value()
@@ -240,9 +260,6 @@ class Show3D(QMainWindow):
             cmin = self.toolbar.spbx_cmin.value()
             cmax = self.toolbar.spbx_cmax.value()
             mesh = self.mesh.threshold(value=[cmin, cmax])
-
-        else:
-            mesh = self.mesh
 
         # save the camera position
         # NOTE: this returns [camera position, focal point, and view up]
@@ -282,10 +299,6 @@ class Show3D(QMainWindow):
                 self.pyvista_widget.update_scalar_bar_range(
                     [cmin, cmax], name=param)
         self.pyvista_widget.update()
-
-    # def _checkDecimalPoint(self):
-    #     self.toolbar.spbx_cmin.setText(self.toolbar.spbx_cmin.value().replace(',', '.'))
-    #     self.toolbar.spbx_cmax.setText(self.toolbar.spbx_cmax.value().replace(',', '.'))
 
     def toggleBbox(self):
         """
@@ -365,14 +378,28 @@ class Show3D(QMainWindow):
         self.toolbar.btn_screenshot.clicked.connect(self.takeScreenShot)
         self.toolbar.btn_exportVTK.clicked.connect(self.exportMesh)
         self.toolbar.chbx_threshold.clicked.connect(self.updateParameterView)
+        self.toolbar.chbx_threshold.clicked.connect(self._checkStatusThreshold)
         self.toolbar.btn_apply.clicked.connect(self.updateParameterView)
         self.toolbar.btn_reset.clicked.connect(self.resetExtrema)
         self.toolbar.grp_slice.clicked.connect(self._enableSlicers)
+        self.toolbar.grp_slice.clicked.connect(self._checkStatusSlice)
         self.toolbar.slice_x.sliderReleased.connect(self.updateParameterView)
         self.toolbar.slice_y.sliderReleased.connect(self.updateParameterView)
         self.toolbar.slice_z.sliderReleased.connect(self.updateParameterView)
-        # self.toolbar.spbx_cmin.valueChanged.connect(self.updateScalarBar)
-        # self.toolbar.spbx_cmax.valueChanged.connect(self.updateScalarBar)
+
+    def _checkStatusSlice(self):
+        """
+        Since its either threshold or slice, just disable the other.
+        """
+        if self.toolbar.grp_slice.isChecked():
+            self.toolbar.chbx_threshold.setChecked(False)
+
+    def _checkStatusThreshold(self):
+        """
+        Since its either threshold or slice, just disable the other.
+        """
+        if self.toolbar.chbx_threshold.isChecked():
+            self.toolbar.grp_slice.setChecked(False)
 
 
 class GToolBar(QWidget):
