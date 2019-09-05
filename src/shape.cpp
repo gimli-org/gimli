@@ -629,9 +629,7 @@ PolygonShape::~PolygonShape(){
 }
 
 RVector3 PolygonShape::norm() const{
-    RVector3 n;
-    THROW_TO_IMPL
-    return n;
+    return this->plane().norm();
 }
 
 RVector3 PolygonShape::rst(Index i) const {

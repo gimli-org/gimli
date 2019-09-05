@@ -21,6 +21,7 @@
 #include "node.h"
 #include "shape.h"
 #include "line.h"
+#include "mesh.h"
 
 #include <map>
 #include <algorithm>
@@ -857,11 +858,23 @@ void PolygonFace::insertNode(Node * n, double tol){
     n->setSecondaryParent(this);
 }
 
-void PolygonFace::addSubface(const IndexArray & nIDs){
-    this->subfaces_.push_back(nIDs);
+void PolygonFace::addSubface(const std::vector < Node * > & nodes){
+    this->subfaces_.push_back(nodes);
 }
-const IndexArray & PolygonFace::subface(Index i) const {
+const std::vector < Node * >  & PolygonFace::subface(Index i) const {
     return this->subfaces_[i];
+}
+void PolygonFace::addHoleMarker(const RVector3 & pos){
+    holeMarker_.push_back(pos);
+}
+
+void PolygonFace::delHoleMarker(const RVector3 & pos){
+    holeMarker_.erase(std::remove(holeMarker_.begin(), 
+                                      holeMarker_.end(), pos), 
+                          holeMarker_.end());
+}
+const PolygonFace::HoleMarkerList & PolygonFace::holeMarker() const { 
+    return holeMarker_; 
 }
 
 EdgeCell::EdgeCell(const std::vector < Node * > & nodes) : Cell(nodes){

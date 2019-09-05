@@ -263,11 +263,18 @@ class Test3DMerge(unittest.TestCase):
         self.assertEqual(w.nodeCount(), 8+8)
         self.assertEqual(w.boundaryCount(), 8)
         
+        # will not work until edge intersection is working        
+        # d = mt.createCube(size=[0.8, 1.0, 1.0],
+        #                   pos=[0.1, 0.0, 1.0],
+        #                   marker=3)
+        # w = mt.mergePLC3D([w, d])
+        # self.assertEqual(w.nodeCount(), 8+8)
+        # self.assertEqual(w.boundaryCount(), 8)
+
         # print(w)
         # pg.show(w)
         # w.exportPLC('w3D_test.w')
         # pg.show(mt.createMesh(w))
-        
 
 
 if __name__ == '__main__':

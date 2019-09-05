@@ -652,13 +652,13 @@ def mergePLC3D(plcs, tol=1e-3):
         for b in p.boundaries():
             p0.copyBoundary(b)
 
-    if len(p.regionMarker()) > 0:
-        for rm in p.regionMarker():
-            p0.addRegionMarker(rm)
+        if len(p.regionMarker()) > 0:
+            for rm in p.regionMarker():
+                p0.addRegionMarker(rm)
 
-    if len(p.holeMarker()) > 0:
-        for hm in p.holeMarker():
-            p0.addHoleMarker(hm)
+        if len(p.holeMarker()) > 0:
+            for hm in p.holeMarker():
+                p0.addHoleMarker(hm)
 
     return p0
 
@@ -1419,7 +1419,38 @@ def polyCreateWorld(filename, x=None, depth=None, y=None, marker=0,
     os.system(syscal)
 
 
-def createCube(size=[1.0, 1.0, 1.0], pos=None, boundaryMarker=0, **kwargs):
+def createFacet(mesh, boundaryMarker=None, verbose=True):
+    """Create a coplanar PLC of a 2d mesh or poly
+
+    TODO:
+    * mesh with cell into plc with boundaries
+    * poly account for inner edges
+
+    """
+    if mesh.dimension() != 2:
+        pg.error("need two dimensional mesh or poly")
+
+    if mesh.cellCount() > 0:
+        pg.critical("Implmentme")
+
+    poly = pg.Mesh(dim=3, isGeometry=True)
+    
+    nodes = [poly.createNode(n.pos()).id() for n in mesh.nodes()]
+    
+    if boundaryMarker is None:
+        for rm in mesh.regionMarker():
+            print(rm)
+            print(rm.marker())
+            boundaryMarker = rm.marker()
+            break
+
+    poly.createBoundary(nodes, marker=boundaryMarker)
+    
+    return poly
+
+
+def createCube(size=[1.0, 1.0, 1.0], pos=None, rot=None, 
+               boundaryMarker=0, **kwargs):
     """Create plc of a cube
 
     Out of core wrapper for dcfemlib::polytools.
@@ -1431,10 +1462,10 @@ def createCube(size=[1.0, 1.0, 1.0], pos=None, boundaryMarker=0, **kwargs):
     ----------
     size : [x, y, z]
         x, y, and z-size of the cube. Default = [1.0, 1.0, 1.0] in m
-
     pos : pg.Pos [None]
         The center position, default is at the origin.
-
+    rot : pg.Pos [None]
+        Rotate on the center.
     boundaryMarker : int[0]
         Boundary marker for the resulting faces.
 
@@ -1479,6 +1510,9 @@ def createCube(size=[1.0, 1.0, 1.0], pos=None, boundaryMarker=0, **kwargs):
         b.setMarker(boundaryMarker)
 
     poly.scale(size)
+
+    if rot is not None:
+        poly.rotate(rot)
 
     if pos is not None:
         poly.translate(pos)

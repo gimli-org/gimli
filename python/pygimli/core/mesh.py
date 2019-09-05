@@ -92,6 +92,11 @@ def __MeshSetCellMarker__(self, m):
 Mesh.cellMarker = __MeshGetCellMarker__
 Mesh.setCellMarker = __MeshSetCellMarker__
 
+def __MeshGetRegionMarker__(self):
+    # deprecated(msg='Mesh::cellMarker()', hint='Mesh::cellMarkers()') #20190905
+    return self.regionMarkers()
+
+Mesh.regionMarker = __MeshGetRegionMarker__
 
 def __createSecondaryNodes__(self, n=3, verbose=False):
     """Create `n` equally distributed secondary nodes on boundaries of the mesh.

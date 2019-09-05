@@ -308,21 +308,19 @@ void TriangleWrapper::transformMeshToTriangle_(const Mesh & mesh,
         }
     } else {
         //! Regions;
-        Index nRegions = mesh.regionMarker().size();//domain.regionCount();
+        Index nRegions = mesh.regionMarkers().size();//domain.regionCount();
         trimesh.numberofregions = nRegions;
         trimesh.regionlist = new double[4 * nRegions + 1];
 
         Index count = 0;
-        for (Mesh::RegionMarkerList::const_iterator
-            it = mesh.regionMarker().begin(); it != mesh.regionMarker().end(); it ++){
-
+        for (auto & r : mesh.regionMarkers()){
     //         std::cout << it->pos().x() << " " << it->pos().y() << " "
     //                   << it->marker() << " "
     //                   << it->area() << std::endl;
-            trimesh.regionlist[count * 4] = it->x();
-            trimesh.regionlist[count * 4 + 1] = it->y();
-            trimesh.regionlist[count * 4 + 2] = it->marker();
-            trimesh.regionlist[count * 4 + 3] = it->area();
+            trimesh.regionlist[count * 4] = r.x();
+            trimesh.regionlist[count * 4 + 1] = r.y();
+            trimesh.regionlist[count * 4 + 2] = r.marker();
+            trimesh.regionlist[count * 4 + 3] = r.area();
             count ++;
         }
     }

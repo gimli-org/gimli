@@ -107,8 +107,8 @@ void Mesh::copy_(const Mesh & mesh){
         this->createCell(mesh.cell(i));
     }
 
-    for (Index i = 0; i < mesh.regionMarker().size(); i ++){
-        this->addRegionMarker(mesh.regionMarker()[i]);
+    for (Index i = 0; i < mesh.regionMarkers().size(); i ++){
+        this->addRegionMarker(mesh.regionMarkers()[i]);
     }
     for (Index i = 0; i < mesh.holeMarker().size(); i ++){
         this->addHoleMarker(mesh.holeMarker()[i]);
@@ -312,6 +312,9 @@ Node * Mesh::createNodeWithCheck(const RVector3 & pos, double tol, bool warn, bo
 Boundary * Mesh::createBoundary(const IndexArray & idx, int marker, bool check){
     std::vector < Node * > nodes(idx.size());
     for (Index i = 0; i < idx.size(); i ++ ) nodes[i] = &this->node(idx[i]);
+    if (isGeometry_){
+        return createPolygonFace(nodes, marker, check);    
+    }
     return createBoundary(nodes, marker, check);
 }
 
@@ -342,9 +345,11 @@ Boundary * Mesh::createBoundary(const Boundary & bound, bool check){
     if (bound.rtti() == MESH_POLYGON_FACE_RTTI){
         b = createBoundaryChecked_< PolygonFace >(nodes, bound.marker(), check); 
 
-        for (Index i = 0;  i < dynamic_cast< const PolygonFace & >(bound).subfaceCount(); i ++ ){
+        for (Index i = 0;  
+                i < dynamic_cast< const PolygonFace & >(bound).subfaceCount();
+                i ++ ){
                 dynamic_cast< PolygonFace* >(b)->addSubface(
-                    dynamic_cast< const PolygonFace & >(bound).subface(i));
+                    this->nodes(ids(dynamic_cast< const PolygonFace & >(bound).subface(i))));
         }
     } else {
         b = createBoundary(nodes, bound.marker(), check);
@@ -569,7 +574,7 @@ Boundary * Mesh::copyBoundary(const Boundary & bound, double tol, bool check){
                     for (auto *n: secNodes){
                         parent->delSecondaryNode(n);
                     }
-                    dynamic_cast< PolygonFace * >(parent)->addSubface(ids(subNodes));
+                    dynamic_cast< PolygonFace * >(parent)->addSubface(subNodes);
                 } else {
                     log(Error, "no parent boundary");
                 }
