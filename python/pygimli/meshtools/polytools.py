@@ -525,7 +525,7 @@ def createPolygon(verts, isClosed=False, addNodes=0, interpolate='linear',
                 poly.createNodeWithCheck([v, 0], warn=True)
             else:
                 poly.createNodeWithCheck(v, warn=True)
-            
+
 
     _polyCreateDefaultEdges(poly, isClosed=isClosed,
                             boundaryMarker=kwargs.pop('boundaryMarker', 1))
@@ -636,22 +636,22 @@ def mergePLC3D(plcs, tol=1e-3):
     """Experimental replacement for polyMerge. Don't expect to much.
     """
     if len(plcs) < 2:
-        pg.criticle("Give at least 2 plcs.")
-        
+        pg.critical("Give at least 2 plcs.")
+
     if plcs[0].dim() != 3:
         pg.warn("2D poly found. redirect to mergePLC")
         return mergePLC(plcs, tol)
 
     # first try. merge all into p0 = plcs[0]
-    #  * will only work if all faces of plcs[1:] does not match any face of p0 
+    #  * will only work if all faces of plcs[1:] does not match any face of p0
     #  * or all matching plcs[1:] are lie completely within p0
-    
+
     p0 = pg.Mesh(plcs[0])
-    
+
     for p in plcs[1:]:
         for b in p.boundaries():
             p0.copyBoundary(b)
-            
+
     if len(p.regionMarker()) > 0:
         for rm in p.regionMarker():
             p0.addRegionMarker(rm)
@@ -912,7 +912,7 @@ def readPLC(filename, comment='#'):
     poly = pg.Mesh(dim=dimension, isGeometry=False)
     # isGeometry forces expensive checks .. we assume the plc is valid so we set
     # this flag in the end
-    
+
     # Nodes section
     for i in range(nVerts):
         row = content[1 + i].split('\r\n')[0].split()
@@ -983,7 +983,7 @@ def readPLC(filename, comment='#'):
                             face.addSecondaryNode(poly.node(nodeIdx[0]))
                     else:
                         face.addSubface(nodeIdx)
-                        
+
                 segment_offset += 1
         nSegments += segment_offset
 
