@@ -484,14 +484,29 @@ Cell * Mesh::copyCell(const Cell & cell, double tol){
     return c;
 }
 
+Boundary * findSecParent(const std::vector < Node * > & v){
+    std::set < MeshEntity * > common;
+
+    for (auto *n: v){
+        common.insert(n->secondaryParent());
+    }
+    if (common.size() == 1) {
+        return  dynamic_cast < Boundary * >(*common.begin());
+    }
+    return 0;
+}
 Boundary * Mesh::copyBoundary(const Boundary & bound, double tol, bool check){
 
     std::vector < Node * > nodes(bound.nodeCount());
     bool isFreeFace = false;
     bool isSubFace = false;
     
-    std::vector < Node * > subFace;
+    std::vector < Node * > conNodes;
+    std::vector < Node * > secNodes;
+    std::vector < Node * > subNodes;
     
+    // __M
+
     for (Index i = 0; i < nodes.size(); i ++) {
         nodes[i] = createNode(bound.node(i).pos(), tol);
         nodes[i]->setMarker(bound.node(i).marker());
@@ -501,32 +516,65 @@ Boundary * Mesh::copyBoundary(const Boundary & bound, double tol, bool check){
                 // at least one node is not in boundary
                 isFreeFace = true; break;
             case NodeState::Secondary:
-                subFace.push_back(nodes[i]); break;
+                secNodes.push_back(nodes[i]); break;
                 // __MS(*nodes[i])
             case NodeState::Connected:
-                subFace.push_back(nodes[i]); break;
+                conNodes.push_back(nodes[i]); break;
         }    
     }
     Boundary * b = 0;
-
+    Boundary * parent = 0;
+    
     if (bound.rtti() == MESH_POLYGON_FACE_RTTI){
+
+        Boundary * conParent = findBoundary(conNodes);
+        Boundary * secParent = findSecParent(secNodes);
+        
+        // __MS("sizes:" << conNodes.size() <<" " <<secNodes.size())
+        // __MS("parents: " << conParent <<" " << secParent)
+
+        if (!isFreeFace){
+            conParent = findBoundary(conNodes);
+            
+            if (conNodes.size() && secNodes.size()){
+                if (conParent != secParent){
+                    isFreeFace = true;
+                }
+                subNodes = conNodes;
+                subNodes.insert(subNodes.end(), secNodes.begin(), secNodes.end());
+                parent = secParent;
+            }
+            if (conNodes.size()){
+                if (!conParent){
+                    isFreeFace = true;
+                } 
+                subNodes = conNodes;
+                parent = conParent;
+            }
+            if (secNodes.size()){
+                if(!secParent){
+                    isFreeFace = true;
+                }
+                subNodes = secNodes;
+                parent = secParent;
+            }
+        }
 
         if (isFreeFace){
             b = createBoundaryChecked_< PolygonFace >(nodes, 
                                                       bound.marker(), check);
-        }
-
-        if (subFace.size() > 2){
-            if (subFace[0]->secondaryParent()){
-                for (auto *n: subFace){
-                    dynamic_cast< PolygonFace & >(*subFace[0]->secondaryParent()).delSecondaryNode(n);
+        } else {
+            if (subNodes.size() > 2){
+                if (parent){
+                    for (auto *n: secNodes){
+                        parent->delSecondaryNode(n);
+                    }
+                    dynamic_cast< PolygonFace * >(parent)->addSubface(ids(subNodes));
+                } else {
+                    log(Error, "no parent boundary");
                 }
-                dynamic_cast< PolygonFace & >(*subFace[0]->secondaryParent()).addSubface(ids(subFace));
-            } else {
-                log(Error, "Secondary node have no parent boundary");
             }
         }
-
         if (dynamic_cast< const PolygonFace & >(bound).subfaceCount() > 0){
             log(Error, "Can't yet copy a boundary with subfaces");
         }
