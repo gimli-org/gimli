@@ -236,7 +236,7 @@ class VMDTimeDomainModelling(VMDModelling):
             thk = thk[1:]
         else:
             thk = np.ones(nLayers-1) * thickness
-            
+
         self.setStartModel(pg.cat(thk, res))
         return self.startModel()
 

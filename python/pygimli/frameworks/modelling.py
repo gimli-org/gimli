@@ -4,9 +4,6 @@
 These are basic modelling proxies.
 """
 import numpy as np
-
-from copy import copy
-
 import pygimli as pg
 
 DEFAULT_STYLES = {
@@ -155,8 +152,7 @@ class Modelling(pg.core.ModellingBase):
         pass
 
     def createDefaultStartModel(self, dataVals):
-        """Create the default startmodel as the median of the data values.
-        """
+        """Create the default startmodel as the median of the data values."""
         pg.critical("'don't use me")
         # mv = pg.math.median(dataVals)
         # pg.info("Set default startmodel to median(data values)={0}".format(mv))
@@ -462,7 +458,7 @@ class MeshModelling(Modelling):
     def paraDomain(self):
         """"""
         # We need our own copy here because its possible that we want to use
-        # the mesh after the fop was deleted 
+        # the mesh after the fop was deleted
         self._pd = pg.Mesh(self.regionManager().paraDomain())
         return self._pd
 
@@ -497,9 +493,9 @@ class MeshModelling(Modelling):
 
         regionIds = self.regionManager().regionIdxs()
         for iId in regionIds:
-            pg.verbose("\tRegion: {0}, Parameter: {1}, PD: {2}," 
+            pg.verbose("\tRegion: {0}, Parameter: {1}, PD: {2},"
                        " Single: {3}, Background: {4}, Fixed: {5}"
-                .format(iId, 
+                .format(iId,
                         self.regionManager().region(iId).parameterCount(),
                         self.regionManager().region(iId).isInParaDomain(),
                         self.regionManager().region(iId).isSingle(),
@@ -728,7 +724,7 @@ class LCModelling(Modelling):
         self._nSoundings = nSoundings
 
         self._mesh = pg.meshtools.createMesh2D(range(nCols + 1),
-                                     range(nSoundings + 1))
+                                               range(nSoundings + 1))
         self._mesh.rotate(pg.RVector3(0, 0, -np.pi/2))
 
         cm = np.ones(nCols * nSoundings) * 1
@@ -736,7 +732,7 @@ class LCModelling(Modelling):
         if not self._singleRegion:
             for i in range(nSoundings):
                 for j in range(nPar):
-                    cm[i * self._parPerSounding + (j+1) * nLayers-1 :
+                    cm[i * self._parPerSounding + (j+1) * nLayers-1:
                        i * self._parPerSounding + (j+2) * nLayers-1] += (j+1)
 
         self._mesh.setCellMarkers(cm)
@@ -811,7 +807,6 @@ class LCModelling(Modelling):
     def drawModel(self, ax, model, **kwargs):
         mods = np.asarray(model).reshape(self._nSoundings,
                                          self._parPerSounding)
-        nPar = 1
         pg.mplviewer.showStitchedModels(mods, ax=ax, useMesh=True,
                                         x=self.soundingPos,
                                         **kwargs)
@@ -855,7 +850,7 @@ class ParameterModelling(Modelling):
 
     def drawModel(self, ax, model):
         """"""
-        str = ''
+        label = ''
         for k, p in self._params.items():
-            str += k + "={0} ".format(pg.utils.prettyFloat(model[p]))
-        pg.info("Model: ", str)
+            label += k + "={0} ".format(pg.utils.prettyFloat(model[p]))
+        pg.info("Model: ", label)

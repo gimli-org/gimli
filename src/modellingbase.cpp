@@ -91,6 +91,27 @@ void ModellingBase::setThreadCount(Index nThreads) {
     GIMLI::setThreadCount(nThreads);
 }
 
+Index ModellingBase::threadCount(){
+    bool verbose = this->verbose();
+    
+    this->nThreads_ = getEnvironment("GIMLI_NUM_THREADS", 
+                                     this->nThreads_, verbose);
+    
+    if (verbose){
+        std::cout << "J(" << numberOfCPU() << "/" << this->nThreads_; 
+    #if USE_BOOST_THREAD
+            std::cout << "-boost::mt";
+    #else
+            std::cout << "-std::mt";
+    #endif
+            std::cout << ") " << std::flush;
+    }
+    if (verbose){
+        std::cout << std::endl;
+    }
+    return this->nThreads_;
+}
+
 void ModellingBase::setData(DataContainer & data){
     //if (dataContainer_) {
     dataContainer_ = &data;
@@ -376,7 +397,7 @@ RVector ModellingBase::createMappedModel(const RVector & model, double backgroun
         
         // test if model are cell values instead of model that needs mapping
         if (unique(sort(cM[cM > -1])).size() != model.size()) return model;
-        //if (unique(sort(cM[cM > -1])).size() != model.size()) return model;
+        
     }
 
     RVector cellAtts(mesh_->cellCount());

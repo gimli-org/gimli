@@ -575,6 +575,7 @@ class MeshMethodManager(MethodManager):
         dataVals = self._ensureData(self.fop.data)
         errVals = self._ensureError(self.fop.data, dataVals)
 
+        pg.warn('###################################################')
         if self.fop.mesh() is None:
             pg.critical('Please provide a mesh')
 

@@ -52,13 +52,15 @@ from ._version import get_versions
 from .core import (BVector, CVector, DataContainer, DataContainerERT, dur,
                    Inversion, IVector, Line, Matrix, Mesh, Plane, Pos,
                    RVector3, Vector, abs, cat, center, exp, find, interpolate,
-                   log, log10, logDropTol, math, matrix, mean, median, min, 
+                   log, log10, logDropTol, math, matrix, max, mean, median, min,
                    search, setDebug, setThreadCount, sort, sum, tic, toc, 
                    trans, unique, versionStr, x, y, z, zero)
 from .core.load import getConfigPath, getExampleFile, load, optImport
 from .core.logger import (_, _d, _g, _r, _y, critical, d, debug, deprecated,
-                          error, info, setLogLevel, setVerbose, v, verbose,
+                          error, info, setLogLevel, setVerbose, setDebug, 
+                          v, verbose,
                           warn)
+
 from .meshtools import createGrid, interpolate
 from .solver import solve
 # from .core import *

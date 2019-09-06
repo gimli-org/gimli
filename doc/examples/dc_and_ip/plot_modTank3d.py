@@ -112,7 +112,7 @@ hom.save('homogeneous.ohm', 'a b m n u')
 # marker=2 ensures all cells of the cube being associated with a cell marker 2.
 
 cube = mt.createCube(size=[0.3, 0.2, 0.8], pos=[0.7, 0.2], marker=2)
-plc = mt.mergePLC([plc, cube])
+plc += cube
 
 mesh = mt.createMesh(plc)
 print(mesh)

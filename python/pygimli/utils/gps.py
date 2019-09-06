@@ -31,8 +31,7 @@ def findUTMZone(lon, lat):
 
     if lat > 0:
         return str(zone) + 'N'
-    else:
-        return str(zone) + 'S'
+    return str(zone) + 'S'
 
 
 def getUTMProjection(zone, ellps='WGS84'):
@@ -289,5 +288,3 @@ def readGeoRefTIF(file_name):
             [tify - im.shape[0] * dx, tify]]
 
     return im, bbox, projection
-
-

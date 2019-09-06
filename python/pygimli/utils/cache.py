@@ -20,7 +20,7 @@ def myLongRunningStuff(*args, **kwargs):
     return results
 """
 import sys
-import os 
+import os
 import inspect
 import hashlib
 import json
@@ -31,7 +31,7 @@ import pygimli as pg
 
 def strHash(string):
     return int(hashlib.sha224(string.encode()).hexdigest()[:16], 16)
-    
+
 class Cache(object):
     def __init__(self, hashValue):
         self._value = None
@@ -66,13 +66,13 @@ class Cache(object):
     @value.setter
     def value(self, v):
         self.info['type'] = str(type(v).__name__)
-        
+
         # if len(self.info['type']) != 1:
-        #     pg.error('only single return caches supported for now.')    
-        #     return 
+        #     pg.error('only single return caches supported for now.')
+        #     return
 
         self.info['file'] = self._name
-        
+
         self.updateCacheInfo()
 
         if self.info['type'] == 'Mesh':
@@ -91,7 +91,7 @@ class Cache(object):
     def updateCacheInfo(self):
         with open(self._name + '.json', 'w') as of:
             json.dump(self.info, of, sort_keys=False,
-                      indent=4, separators=(',', ': '))   
+                      indent=4, separators=(',', ': '))
 
     def restore(self):
         """Read data from json infos"""
@@ -100,13 +100,13 @@ class Cache(object):
             # Fricking mpl kills locale setting to system default .. this went
             # horrible wrong for german 'decimal_point': ','
             pg.checkAndFixLocaleDecimal_point(verbose=False)
-            
+
             try:
                 with open(self._name + '.json', 'r') as file:
                     self.info = json.load(file)
-                
+
                 # if len(self.info['type']) != 1:
-                #     pg.error('only single return caches supported for now.')    
+                #     pg.error('only single return caches supported for now.')
 
                 if self.info['type'] == 'DataContainerERT':
                     self._value = pg.DataContainerERT(self.info['file'],
@@ -119,18 +119,18 @@ class Cache(object):
                     pg.tic()
                     self._value = pg.Mesh()
                     self._value.loadBinaryV2(self.info['file'] + '.bms')
-                    pg.debug("Restoring cache took:", pg.dur(), "s")    
-            
+                    pg.debug("Restoring cache took:", pg.dur(), "s")
+
                 if self.value is not None:
                     self.info['restored'] = self.info['restored'] + 1
                     self.updateCacheInfo()
                     pg.info('Cache {3} restored ({1}s x {0}): {2}'.\
-                        format(self.info['restored'], 
+                        format(self.info['restored'],
                                round(self.info['dur'], 1),
                                self._name, self.info['codeinfo']))
                 else:
                     pg.warn('Could not restore cache of type {0}.'.format(self.info['type']))
-    
+
                 pg.debug("Restoring cache took:", pg.dur(), "s")
             except Exception as e:
                 import traceback
@@ -155,9 +155,9 @@ class CacheManager(object):
     @staticmethod
     def instance(cls):
         return cls.__instance__
-        
+
     def cachingPath(self, fName):
-        """Create a path name for the cache"""        
+        """Create a path name for the cache"""
         if not os.path.exists('.cache'):
             os.mkdir('.cache')
         return os.path.join('.cache/', fName)
@@ -186,13 +186,13 @@ class CacheManager(object):
                         argHash = argHash ^ hash(item)
             else:
                 argHash = argHash ^ hash(a)
-        
+
         for k, v in kwargs.items():
             if isinstance(v, str):
                 argHash = argHash ^ strHash(v)
             else:
                 argHash = argHash ^ hash(v)
-                
+
         pg.debug("Hashing took:", pg.dur(), "s")
         return funcHash ^ versionHash ^ codeHash ^ argHash
 
@@ -200,13 +200,13 @@ class CacheManager(object):
         """ Create a unique cache """
         hashVal = self.hash(funct, *args, **kwargs)
 
-        cache = Cache(hashVal)
-        cache.info['codeinfo'] = self.functInfo(funct)
-        cache.info['version'] = pg.versionStr()
-        cache.info['args'] = str(args)
-        cache.info['kwargs'] = str(kwargs)
+        cached = Cache(hashVal)
+        cached.info['codeinfo'] = self.functInfo(funct)
+        cached.info['version'] = pg.versionStr()
+        cached.info['args'] = str(args)
+        cached.info['kwargs'] = str(kwargs)
 
-        return cache
+        return cached
 
 
 def cache(funct):
@@ -220,8 +220,8 @@ def cache(funct):
         if cache.value is not None:
             return cache.value
         else:
-            # pg.tic will not work because there is only one global __swatch__ 
-            sw = pg.core.Stopwatch(True) 
+            # pg.tic will not work because there is only one global __swatch__
+            sw = pg.core.Stopwatch(True)
             rv = funct(*args, **kwargs)
             cache.info['date'] = time.time()
             cache.info['dur'] = sw.duration()

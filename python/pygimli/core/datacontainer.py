@@ -48,11 +48,12 @@ DataContainer.__setitem__ = __DC_setVal
 def __DC_getVal(self, key):
     if self.isSensorIndex(key):
         return np.array(self(key), dtype=int)
-    return self(key)
+    return self(key).array()
 DataContainer.__getitem__ = __DC_getVal
 
 
-def __DataContainerERT_addFourPointData(self, *args, **kwargs):
+def __DataContainerERT_addFourPointData(self, *args, 
+                                        indexAsSensors=False, **kwargs):
     """Add a new data point to the end of the dataContainer.
 
     Add a new 4 point measurement to the end of the dataContainer and increase
@@ -61,9 +62,11 @@ def __DataContainerERT_addFourPointData(self, *args, **kwargs):
     Parameters
     ----------
     *args: [int]
-        At least for index values for A, B, M and N.
-    **args: dict
-        Values for the actual data configuration.
+        At least four index values for A, B, M and N.
+    indexAsSensors: bool [False]
+        The indices A, B, M and N are additionally interpreted as sensor position in [m, 0, 0]. 
+    **kwargs: dict
+        Named values for the data configuration.
 
     Returns
     -------
@@ -86,15 +89,21 @@ def __DataContainerERT_addFourPointData(self, *args, **kwargs):
     """
     try:
         if len(args) == 1:
-            idx =  self.createFourPointData(self.size(),
-                                            args[0][0], args[0][1],
-                                            args[0][2], args[0][3])
+            a, b, m, n = args[0][:]
         else:
-            idx = self.createFourPointData(self.size(),
-                                            args[0], args[1],
-                                            args[2], args[3])
-    except:
-        print("args:", args)
+            [a, b, m, n] = args
+
+        if indexAsSensors:
+            a = self.createSensor([float(a), 0.0, 0.0])
+            b = self.createSensor([float(b), 0.0, 0.0])
+            m = self.createSensor([float(m), 0.0, 0.0])
+            n = self.createSensor([float(n), 0.0, 0.0])
+        idx = self.createFourPointData(self.size(), a, b, m, n)
+
+
+    except Exception as e:
+        print(e)
+        print("args:", args, len(args))
         critical("Can't interpret arguments:", *args)
 
     for k, v in kwargs.items():

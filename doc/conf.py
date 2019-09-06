@@ -190,7 +190,8 @@ import pygimli as pg
 import numpy as np
 import matplotlib.pyplot as plt
 """
-
+plot_rcparams = {'savefig.bbox': 'tight'}
+plot_apply_rcparams = True  # if context option is used
 
 # The suffix of source filenames.
 source_suffix = '.rst'

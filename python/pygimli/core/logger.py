@@ -9,7 +9,6 @@
     pg.critical() # raises exception
 
 """
-
 import sys
 import logging
 import inspect

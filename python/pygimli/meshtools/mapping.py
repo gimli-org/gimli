@@ -175,6 +175,42 @@ def fillEmptyToCellArray(mesh, vals, slope=True):
     -------
     atts : array
         Array of length mesh.cellCount()
+
+    Examples
+    --------
+    >>> import pygimli as pg
+    >>> import numpy as np
+    >>> import matplotlib.pyplot as plt
+    >>>
+    >>> # Create a mesh with 3 layers and an outer region, where values should be extrapolated to
+    >>> layers = pg.meshtools.createWorld([0,-50],[100,0], layers=[-15,-35])
+    >>> inner = pg.meshtools.createMesh(layers, area=3)
+    >>> mesh = pg.meshtools.appendTriangleBoundary(inner, xbound=120, ybound=50,
+    ... area=20, marker=0)
+    >>>
+    >>> # Create data for the inner region only
+    >>> layer_vals = [20,30,50]
+    >>> data = np.array(layer_vals)[inner.cellMarkers() - 1]
+    >>>
+    >>> # The following line would not work since len(data) != mesh.cellCount(), so we need extrapolation
+    >>> # pg.show(mesh, data)
+    >>>
+    >>> # Create data vector, where zeros fill the outer region
+    >>> data_with_outer = np.array([0] + layer_vals)[mesh.cellMarkers()]
+    >>>
+    >>> # Actual extrapolation
+    >>> extrapolated_data = pg.meshtools.fillEmptyToCellArray(mesh, data_with_outer, slope=False)
+    >>> extrapolated_data_with_slope = pg.meshtools.fillEmptyToCellArray(mesh, data_with_outer, slope=True)
+    >>>
+    >>> # Visualization
+    >>> fig, (ax1, ax2, ax3) = plt.subplots(1,3, figsize=(10,8), sharey=True)
+    >>> _ = pg.show(mesh, data_with_outer, ax=ax1)
+    >>> _ = pg.show(mesh, extrapolated_data, ax=ax2)
+    >>> _ = pg.show(mesh, extrapolated_data_with_slope, ax=ax3)
+    >>> _ = ax1.set_title("Original data")
+    >>> _ = ax2.set_title("Extrapolated with slope=False")
+    >>> _ = ax3.set_title("Extrapolated with slope=True")
+    >>> fig.show()
     """
     atts = pg.Vector(mesh.cellCount(), 0.0)
     oldAtts = mesh.cellAttributes()
@@ -195,7 +231,7 @@ def fillEmptyToCellArray(mesh, vals, slope=True):
                     if nc.attribute() == 0.0:
                         # c.setAttribute(99999)
 
-                        b = pg.findCommonBoundary(c, nc)
+                        b = pg.core.findCommonBoundary(c, nc)
                         # search along a slope
                         pos = b.center() - b.norm() * 1000.
                         sf = pg.Vector()
@@ -213,11 +249,10 @@ def fillEmptyToCellArray(mesh, vals, slope=True):
 
                             startCell = nextC
 
-    mesh.fillEmptyCells(mesh.findCellByAttribute(0.0), background=-9e99)
-    atts = mesh.cellAttributes()
-    mesh.setCellAttributes(oldAtts)
-    return atts
-
+    vals = mesh.cellAttributes()
+    mesh.prolongateEmptyCellsValues(vals, background=-9e99)
+    mesh.setCellAttributes(vals)
+    return vals
 
 def interpolateAlongCurve(curve, t, **kwargs):
     """Interpolate along curve.

@@ -456,13 +456,6 @@ public:
     //** end get infos stuff
 
     //** start mesh modification stuff
-    /*! DEPRECATED Prolongate the attribute of each cell in emptyList by the attribute
-     * from neighbouring cells.
-     * The attributes have to be lower than \ref TOLERANCE.
-     * This function is called recursively until all zero-attribute-cells in
-     * emptyList are filled with an attribute greater than Zero. */
-    void fillEmptyCells(const std::vector< Cell * > & emptyList,
-                        double background=-9e99);
 
     /*! Prolongate the empty (lower than \ref TOLERANCE.) cell values in vals
      * from its neighbouring cells.

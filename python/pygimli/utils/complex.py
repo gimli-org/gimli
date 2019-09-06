@@ -64,23 +64,40 @@ def toPolar(z):
     else:
         return toPolar(toComplex(z))
 
-def squeezeComplex(z, polar=False):
+def squeezeComplex(z, polar=False, conj=False):
     """Squeeze complex valued array into [real, imag] or [amp, -phase(rad)]"""
     if isinstance(z, pg.matrix.CSparseMapMatrix) or \
-       isinstance(z, pg.matrix.CSparseMatrix) or isinstance(z, pg.matrix.CMatrix):
-        return toRealMatrix(z)
+       isinstance(z, pg.matrix.CSparseMatrix) or \
+       isinstance(z, pg.matrix.CMatrix):
+        return toRealMatrix(z, conj=conj)
 
     if isComplex(z):
         vals = np.array(z)
+        if conj:
+            vals = np.conj(vals)
+
         if polar is True:
-            vals = pg.cat(toPolar[:])
+            vals = pg.cat(*toPolar(z))
         else:
             vals = pg.cat(vals.real, vals.imag)
         return vals
     return z
 
-def toRealMatrix(C):
-    """Convert complex valued matrix into a real valued Blockmatrix"""
+def toRealMatrix(C, conj=False):
+    """Convert complex valued matrix into a real valued Blockmatrix
+    
+    Parameters
+    ----------
+    C: CMatrix
+        Complex valued matrix
+    conj: bool [False]
+        Fill the matrix as complex conjugated matrix
+
+    Returns
+    -------
+    R : pg.matrix.BlockMatrix()
+
+    """
     R = pg.matrix.BlockMatrix()
     # we store the mats to keep the GC happy after leaving the scope
     Cr = pg.math.real(C)
@@ -91,8 +108,13 @@ def toRealMatrix(C):
 
     R.addMatrixEntry(rId, 0,         0,         scale=1.0)
     R.addMatrixEntry(rId, Cr.rows(), Cr.cols(), scale=1.0)
-    R.addMatrixEntry(iId, 0,         Cr.cols(), scale=-1.0)
-    R.addMatrixEntry(iId, Cr.rows(), 0,         scale=1.0)
+    if conj == True:
+        pg.warn('Squeeze conjugate complex matrix.')
+        R.addMatrixEntry(iId, 0,         Cr.cols(), scale=1.0)
+        R.addMatrixEntry(iId, Cr.rows(), 0,         scale=-1.0)
+    else:
+        R.addMatrixEntry(iId, 0,         Cr.cols(), scale=-1.0)
+        R.addMatrixEntry(iId, Cr.rows(), 0,         scale=1.0)
     return R
 
 def KramersKronig(f, re, im, usezero=False):

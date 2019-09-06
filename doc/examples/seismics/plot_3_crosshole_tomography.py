@@ -152,3 +152,4 @@ ax.plot(sensors[:, 0], sensors[:, 1], "ko")
 ################################################################################
 # White regions indicate the model null space, i.e. cells that are not traversed
 # by any ray.
+pg.wait()

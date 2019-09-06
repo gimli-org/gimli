@@ -13,6 +13,7 @@ from pygimli.frameworks import Modelling, MeshModelling
 from pygimli.frameworks import MeshMethodManager
 from .visualization import showERTData
 
+from pygimli import pf
 
 def simulate(mesh, res, scheme, sr=True, useBert=True,
              verbose=False, **kwargs):
@@ -77,6 +78,18 @@ class ERTModellingBase(MeshModelling):
                 
 
 class BertModelling(ERTModellingBase):
+    """ Forward operator for Electrical Resistivty Tomography
+    
+    Note
+    ----
+    Convention for complex resistiviy inversion: 
+    We want to use logarithm transformation for the imaginary part of model
+    so we need the startmodel to have positive imaginary parts. 
+    The sign is flipped back to physical correct assumption before we call 
+    the response function. 
+    The Jacobian is calculated with negative imaginary parts and will 
+    be a conjugated complex block matrix for further calulations.
+    """
     def __init__(self, sr=True, verbose=False):
         """Constructor, optional with data container and mesh."""
         super(BertModelling, self).__init__()
@@ -99,6 +112,8 @@ class BertModelling(ERTModellingBase):
         self.calculate = self.bertFop.calculate
         self.calcGeometricFactor = self.bertFop.calcGeometricFactor
         self.mapERTModel = self.bertFop.mapERTModel
+        
+        self._conjImag = False # the model imaginaries are flipped to match log trans
 
     def setDefaultBackground(self):
         """
@@ -114,31 +129,71 @@ class BertModelling(ERTModellingBase):
             self.setRegionProperties(bk, background=True)
 
     def createStartModel(self, dataVals):
+        """ Create Starting model for ERT inversion.
+        """
         if self.complex():
             dataC = pg.utils.toComplex(dataVals)
-            nModel = self.regionManager().parameterCount()
-            smRe = np.ones(nModel)* np.median(np.median(dataC.real))
-            smIm = np.ones(nModel)* np.median(np.median(dataC.imag))
-            sm = smRe + 1j * smIm
+            nModel = self.regionManager().parameterCount() // 2 
+            smRe = np.ones(nModel) * np.median(np.median(dataC.real))
+            smIm = np.ones(nModel) * np.median(np.median(dataC.imag))
+
+            if min(smIm) < 0:
+                # we want positive phase model
+                sm = smRe - 1j * smIm
+                pg.info('Model imaginary part has been flipped to positive values.')
+                self._conjImag = True
+            else:
+                sm = smRe + 1j * smIm
+
             return pg.utils.squeezeComplex(sm) # complex impedance
         else:
             return super(BertModelling, self).createStartModel(dataVals)
 
+    def flipImagPart(self, v):
+        z = pg.utils.toComplex(v)
+        pg.warn('pre min/max={0} / {1} im: {2} / {3}'.format(pf(min(z.real)), 
+                                                        pf(max(z.real)),
+                                                        pf(min(z.imag)), 
+                                                        pf(max(z.imag))))
+        
+
+        v = pg.utils.squeezeComplex(pg.utils.toComplex(v), conj=self._conjImag)
+
+        z = pg.utils.toComplex(v)
+        pg.warn('pos min/max={0} / {1} im: {2} / {3}'.format(pf(min(z.real)), 
+                                                        pf(max(z.real)),
+                                                        pf(min(z.imag)), 
+                                                        pf(max(z.imag))))
+        return v
+
     def response(self, mod):
+        """"""
+        if self.complex() and self._conjImag:
+            pg.warn('flip imaginary part for response calc')
+            mod = self.flipImagPart(mod)
+            
         resp = self.bertFop.response(mod)
-        # if self.complex(): ## tmp not needed
-        #     amp, phi = pg.utils.toPolar(resp)
-        #     if min(amp) < 1e-12:
-        #         pg.critical('response wrong', resp)
+        
+        if self.complex() and self._conjImag:
+            pg.warn('backflip imaginary part after response calc')
+            resp = self.flipImagPart(resp)
+
         return resp
 
     def createJacobian(self, mod):
+        """"""
         if self.complex():
+            if self._conjImag:
+                pg.warn('flip imaginary part for jacobian calc')
+                mod = self.flipImagPart(mod)
+
             self.bertFop.createJacobian(mod)
-            self._J = J = pg.utils.squeezeComplex(self.bertFop.jacobian())
+            self._J = pg.utils.squeezeComplex(self.bertFop.jacobian(), 
+                                              conj=self._conjImag
+                                              )
             self.setJacobian(self._J)
             # pg._r("create Jacobian", self, self._J)
-            return
+            return self._J
         return self.bertFop.createJacobian(mod)
 
     def setDataPost(self, data):
@@ -697,15 +752,18 @@ class ERTManager(MeshMethodManager):
                     if noiseLevel > 0.5:
                         noiseLevel /= 100.
 
-                    ipError = ret("phia") * noiseLevel
+                    if 'phiErr' in kwargs:
+                        ipError = np.ones(ret.size()) * kwargs.pop('phiErr') / 1000
+                    else:
+                        ipError = abs(ret["phia"]) * noiseLevel
 
                     if verbose:
                         print("Data IP abs error estimate (min:max) ",
                                min(ipError), ":", max(ipError))
 
-                phia *= (1. + pg.math.randn(ret.size()) * noiseLevel)
-                ret.set('iperr', ipError)
-                ret.set('phia', phia)
+                phia += pg.math.randn(ret.size()) * ipError
+                ret['iperr'] = ipError
+                ret['phia'] = phia
 
         # check what needs to be setup and returned
 
