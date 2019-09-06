@@ -130,7 +130,7 @@ class DLLEXPORT Mesh {
 public:
     typedef std::vector< RegionMarker > RegionMarkerList;
     typedef RVector3 HoleMarker;
-    typedef std::vector< RVector3 > HoleMarkerList;
+    typedef PosVector HoleMarkerList;
 
     /*! Default constructor, create empty mesh with dimension dim
     If this mesh is supposed to be a geometry definition, all
