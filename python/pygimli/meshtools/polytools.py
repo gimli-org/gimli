@@ -656,9 +656,8 @@ def mergePLC3D(plcs, tol=1e-3):
             for rm in p.regionMarker():
                 p0.addRegionMarker(rm)
 
-        if len(p.holeMarker()) > 0:
-            for hm in p.holeMarker():
-                p0.addHoleMarker(hm)
+        for hm in p.holeMarker():
+            p0.addHoleMarker(hm)
 
     return p0
 
@@ -960,9 +959,9 @@ def readPLC(filename, comment='#'):
         for i in range(nSegments):
             row = content[2 + nVerts + i + segment_offset].split()
             numBounds = int(row[0])
-            numHoles = row[1]
-            if numHoles != '0':
-                pg.error("Can't handle 3D faces with holes yet")
+            numHoles = int(row[1])
+            # if numHoles != '0':
+            #     pg.error("Can't handle 3D faces with holes yet")
             marker = 0
             if haveBoundaryMarker:
                 marker = int(row[2])
@@ -985,6 +984,14 @@ def readPLC(filename, comment='#'):
                         face.addSubface(nodeIdx)
 
                 segment_offset += 1
+
+            for k in range(numHoles):
+                r = content[2 + nVerts + i + segment_offset + 1]\
+                    .split()
+                face.addHoleMarker([float(hm) for hm in r[1:]])
+
+                segment_offset += 1
+
         nSegments += segment_offset
 
     # Hole section
@@ -1205,6 +1212,13 @@ def exportTetgenPoly(poly, filename, float_format='.12e', **kwargs):
     polytxt += '{0:d}{2}1{1}'.format(nBoundaries, linesep, sep)
     # loop over facets, each facet can contain an arbitrary number of holes
     # and polygons, in our case, there is always one polygon per facet.
+
+    hole_str = '{:d}'
+    for m in range(3):
+        hole_str += sep + '{:%s}' % float_format
+
+    hole_str += linesep
+
     for bound in poly.boundaries():
         # one line per facet
         # <# of polygons> [# of holes] [boundary marker]
@@ -1212,10 +1226,14 @@ def exportTetgenPoly(poly, filename, float_format='.12e', **kwargs):
             nSubs = bound.subfaceCount()
         except:
             nSubs = 0
+        try:
+            nHoles = len(bound.holeMarkers())
+        except:
+            nHoles = 0
 
         npolys = 1 + nSubs + len(bound.secondaryNodes())
-        polytxt += '{3}{2}0{2}{0:d}{1}'.format(bound.marker(), linesep,
-                                               sep, npolys)
+        polytxt += '{3}{2}{4}{2}{0:d}{1}'.format(bound.marker(), linesep,
+                                               sep, npolys, nHoles)
         # inner loop over polygons
         # <# of corners> <corner 1> <corner 2> ... <corner #>
         for l in range(1):
@@ -1227,10 +1245,14 @@ def exportTetgenPoly(poly, filename, float_format='.12e', **kwargs):
         for l in range(nSubs):
             sub = bound.subface(l)
             poly_str = '{:d}'.format(len(sub))
-            poly_str += sep + sep.join(['{:d}'.format(n) for n in sub])
+            poly_str += sep + sep.join(['{:d}'.format(n.id()) for n in sub])
             polytxt += '{0}{1}'.format(poly_str, linesep)
 
         # inner loop over holes
+        if nHoles > 0:
+            for n, hole in enumerate(bound.holeMarkers()):
+                polytxt += hole_str.format(n, *hole)
+        
         # not necessary yet ?! why is there an extra hole section?
         # because this is for 2D holes in facets only
 
@@ -1260,11 +1282,7 @@ def exportTetgenPoly(poly, filename, float_format='.12e', **kwargs):
     polytxt += '{:d}{}'.format(len(holes), linesep)
     # loop over hole markers
     # <hole #> <x> <y> <z>
-    hole_str = '{:d}'
-    for m in range(3):
-        hole_str += sep + '{:%s}' % float_format
-
-    hole_str += linesep
+    
     for n, hole in enumerate(holes):
         polytxt += hole_str.format(n, *hole)
 
@@ -1346,7 +1364,8 @@ def syscallTetgen(filename, quality=1.2, area=0, preserveBoundary=False,
 
     syscal += ' ' + filebody + '.poly'
 
-    print(syscal)
+    if verbose:
+        print(syscal)
     pg.debug(syscal)
 
     system(syscal)
@@ -1431,7 +1450,7 @@ def createFacet(mesh, boundaryMarker=None, verbose=True):
         pg.error("need two dimensional mesh or poly")
 
     if mesh.cellCount() > 0:
-        pg.critical("Implmentme")
+        pg.critical("Implementme")
 
     poly = pg.Mesh(dim=3, isGeometry=True)
     
@@ -1439,18 +1458,19 @@ def createFacet(mesh, boundaryMarker=None, verbose=True):
     
     if boundaryMarker is None:
         for rm in mesh.regionMarker():
-            print(rm)
-            print(rm.marker())
             boundaryMarker = rm.marker()
-            break
+            continue
+    
+    b = poly.createBoundary(nodes, marker=boundaryMarker or 0)
 
-    poly.createBoundary(nodes, marker=boundaryMarker)
+    for h in mesh.holeMarker():
+        b.addHoleMarker(h)
     
     return poly
 
 
-def createCube(size=[1.0, 1.0, 1.0], pos=None, rot=None, 
-               boundaryMarker=0, **kwargs):
+def createCube(size=[1.0, 1.0, 1.0], 
+               pos=None, rot=None, boundaryMarker=0, **kwargs):
     """Create plc of a cube
 
     Out of core wrapper for dcfemlib::polytools.
@@ -1506,6 +1526,7 @@ def createCube(size=[1.0, 1.0, 1.0], pos=None, rot=None,
     except Exception as e:
         pg.error("can't remove:", namePLC)
 
+
     for b in poly.boundaries():
         b.setMarker(boundaryMarker)
 
@@ -1522,7 +1543,8 @@ def createCube(size=[1.0, 1.0, 1.0], pos=None, rot=None,
     return poly
 
 
-def createCylinder(radius, height, nSegments=8, area=0.0, pos=None, **kwargs):
+def createCylinder(radius, height, nSegments=8,
+                   pos=None, rot=None, boundaryMarker=0, **kwargs):
     """Create plc of a cylinder.
 
     Out of core wrapper for dcfemlib::polytools.
@@ -1541,20 +1563,14 @@ def createCylinder(radius, height, nSegments=8, area=0.0, pos=None, **kwargs):
     nSegments : int [8]
         Number of segments of the cylinder.
 
-    area : float [0.0]
-        Largest size for the resulting tetrahedrons.
-
     pos : pg.Pos [None]
         The center position, default is at the origin.
 
-    marker : int [1]
-        Cell marker the resulting tetrahedrons.
-
     Other Parameters
     ----------------
-    **kwargs
-        Additional kwargs from
-        :py:mod:`pygimli.meshtools.polytools.setPolyRegionMarker`
+    ** kwargs:
+        Marker related arguments:
+        See :py:mod:`pygimli.meshtools.polytools.setPolyRegionMarker`
 
     Returns
     -------
@@ -1569,28 +1585,32 @@ def createCylinder(radius, height, nSegments=8, area=0.0, pos=None, **kwargs):
 
     pg.debug("Create temporary file:", namePLC)
     syscal = 'polyCreateCube -Z '  \
-        + ' -s ' + str(nSegments) \
-        + ' -m ' + str(marker) \
-        + ' -a ' + str(area)
+        + ' -s ' + str(nSegments) 
 
     syscal = syscal + ' ' + namePLC
-
     pg.debug(syscal)
     os.system(syscal)
-
     poly = readPLC(namePLC)
-
-    poly.scale([radius*2, radius*2, height])
-
-    if pos is not None:
-        poly.translate(pos)
 
     try:
         os.remove(namePLC)
     except Exception as e:
         pg.error("can't remove:", namePLC)
 
-    #setPolyRegionMarker(**kwargs)
+    # defaul settings
+    for b in poly.boundaries():
+        b.setMarker(boundaryMarker)
+
+    poly.scale([radius*2, radius*2, height])
+    
+    if rot is not None:
+        poly.rotate(rot)
+
+    if pos is not None:
+        poly.translate(pos)
+
+    setPolyRegionMarker(poly, **kwargs)
+
     return poly
 
 
