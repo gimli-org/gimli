@@ -294,7 +294,6 @@ DEFINE_XVECTOR_STUFF__(RVector) //RVector last since auto rhs conversion will fa
     template RVector round(const RVector & a, double tol);
     template RVector increasingRange(const double & first, const double & last, Index n);
 
-    template Mesh & Mesh::transform(const Matrix < double > & mat);
     template Pos & Pos::transform(const Matrix < double > & mat);
 
     template class SparseMatrix< double >;

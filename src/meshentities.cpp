@@ -867,13 +867,12 @@ const std::vector < Node * >  & PolygonFace::subface(Index i) const {
 void PolygonFace::addHoleMarker(const RVector3 & pos){
     holeMarker_.push_back(pos);
 }
-
 void PolygonFace::delHoleMarker(const RVector3 & pos){
     holeMarker_.erase(std::remove(holeMarker_.begin(), 
-                                      holeMarker_.end(), pos), 
-                          holeMarker_.end());
+                                  holeMarker_.end(), pos), 
+                      holeMarker_.end());
 }
-const PolygonFace::HoleMarkerList & PolygonFace::holeMarker() const { 
+const PolygonFace::HoleMarkerList & PolygonFace::holeMarkers() const { 
     return holeMarker_; 
 }
 

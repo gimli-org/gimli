@@ -337,20 +337,23 @@ Boundary * Mesh::createBoundary(std::vector < Node * > & nodes, int marker, bool
 }
 
 Boundary * Mesh::createBoundary(const Boundary & bound, bool check){
+    // only work for copy meshes where all nodes already copied
     std::vector < Node * > nodes(bound.nodeCount());
     for (Index i = 0; i < bound.nodeCount(); i ++) nodes[i] = &node(bound.node(i).id());
 
     Boundary *b = 0;
 
     if (bound.rtti() == MESH_POLYGON_FACE_RTTI){
+        const PolygonFace & f = dynamic_cast< const PolygonFace & >(bound);
         b = createBoundaryChecked_< PolygonFace >(nodes, bound.marker(), check); 
-
-        for (Index i = 0;  
-                i < dynamic_cast< const PolygonFace & >(bound).subfaceCount();
-                i ++ ){
-                dynamic_cast< PolygonFace* >(b)->addSubface(
-                    this->nodes(ids(dynamic_cast< const PolygonFace & >(bound).subface(i))));
+        for (Index i = 0; i < f.subfaceCount(); i ++ ){
+            dynamic_cast< PolygonFace* >(b)->addSubface(
+                this->nodes(ids(f.subface(i))));
         }
+        for (Index i = 0; i < f.holeMarkers().size(); i ++ ){
+            dynamic_cast< PolygonFace* >(b)->addHoleMarker(f.holeMarkers()[i]);
+        }
+
     } else {
         b = createBoundary(nodes, bound.marker(), check);
     }
@@ -358,8 +361,6 @@ Boundary * Mesh::createBoundary(const Boundary & bound, bool check){
     for (Index j = 0; j < bound.secondaryNodes().size(); j ++){
         b->addSecondaryNode(& this->node(bound.secondaryNodes()[j]->id()));
     }
-
-
     return b;
 }
 
@@ -568,6 +569,7 @@ Boundary * Mesh::copyBoundary(const Boundary & bound, double tol, bool check){
         if (isFreeFace){
             b = createBoundaryChecked_< PolygonFace >(nodes, 
                                                       bound.marker(), check);
+            parent = b;
         } else {
             if (subNodes.size() > 2){
                 if (parent){
@@ -578,12 +580,19 @@ Boundary * Mesh::copyBoundary(const Boundary & bound, double tol, bool check){
                 } else {
                     log(Error, "no parent boundary");
                 }
+                b = parent;
             }
         }
-        if (dynamic_cast< const PolygonFace & >(bound).subfaceCount() > 0){
+        const PolygonFace & f = dynamic_cast< const PolygonFace & >(bound);
+        if (f.subfaceCount() > 0){
             log(Error, "Can't yet copy a boundary with subfaces");
         }
-    } else {
+        
+        for (Index i = 0; i < f.holeMarkers().size(); i ++ ){
+            dynamic_cast< PolygonFace* >(parent)->addHoleMarker(
+                                                    f.holeMarkers()[i]);
+        }
+    } else { // if no Polygonface
         b = createBoundary(nodes, bound.marker(), check);
     }
 
@@ -2162,53 +2171,97 @@ void Mesh::prolongateEmptyCellsValues(RVector & vals, double background) const {
         prolongateEmptyCellsValues(vals, background);
     }
 }
+void Mesh::transform(const RMatrix & mat){
+//         std::for_each(nodeVector_.begin(), nodeVector_.end(),
+//                        bind2nd(std::mem_fun(&Node::pos().transform), mat));
+    for (auto &n: nodeVector_) n->pos().transform(mat);
+    for (auto &n: holeMarker_) n.transform(mat);
+    for (auto &n: regionMarker_) n.transform(mat);
+
+    if (isGeometry_){
+        for (auto &b: boundaryVector_){
+            if (b->rtti() == MESH_POLYGON_FACE_RTTI){
+                for (auto &p: dynamic_cast< PolygonFace * >(b)->holeMarkers()){
+                    p.transform(mat);
+                }
+            }
+        } 
+    }
+
+    rangesKnown_ = false;
+}
 
 Mesh & Mesh::scale(const RVector3 & s){
-    std::for_each(nodeVector_.begin(), nodeVector_.end(),
-                  boost::bind(& Node::scale, _1, boost::ref(s)));
-    std::for_each(holeMarker_.begin(), holeMarker_.end(),
-                  boost::bind(& RVector3::scale, _1, boost::ref(s)));
-    std::for_each(regionMarker_.begin(), regionMarker_.end(),
-                  boost::bind(& RVector3::scale, _1, boost::ref(s)));
+    for (auto &n: nodeVector_) n->pos().scale(s);
+    for (auto &n: holeMarker_) n.scale(s);
+    for (auto &n: regionMarker_) n.scale(s);
 
+    if (isGeometry_){
+        for (auto &b: boundaryVector_){
+            if (b->rtti() == MESH_POLYGON_FACE_RTTI){
+                for (auto &p: dynamic_cast< PolygonFace * >(b)->holeMarkers()){
+                    p.scale(s);
+                }
+            }
+        } 
+    }
     rangesKnown_ = false;
     return *this;
 }
 
 Mesh & Mesh::translate(const RVector3 & t){
-    std::for_each(nodeVector_.begin(), nodeVector_.end(),
-                   boost::bind(& Node::translate, _1, boost::ref(t)));
-    std::for_each(holeMarker_.begin(), holeMarker_.end(),
-                  boost::bind(& RVector3::translate, _1, boost::ref(t)));
-    std::for_each(regionMarker_.begin(), regionMarker_.end(),
-                  boost::bind(& RVector3::translate, _1, boost::ref(t)));
+    for (auto &n: nodeVector_) n->pos().translate(t);
+    for (auto &n: holeMarker_) n.translate(t);
+    for (auto &n: regionMarker_) n.translate(t);
+
+    if (isGeometry_){
+        for (auto &b: boundaryVector_){
+            if (b->rtti() == MESH_POLYGON_FACE_RTTI){
+                for (auto &p: dynamic_cast< PolygonFace * >(b)->holeMarkers()){
+                    p.translate(t);
+                }
+            }
+        } 
+    }
 
     rangesKnown_ = false;
     return *this;
 }
 
 Mesh & Mesh::rotate(const RVector3 & r){
-    std::for_each(nodeVector_.begin(), nodeVector_.end(),
-                   boost::bind(& Node::rotate, _1, boost::ref(r)));
-    std::for_each(holeMarker_.begin(), holeMarker_.end(),
-                  boost::bind(& RVector3::rotate, _1, boost::ref(r)));
-    std::for_each(regionMarker_.begin(), regionMarker_.end(),
-                  boost::bind(& RVector3::rotate, _1, boost::ref(r)));
+    for (auto &n: nodeVector_) n->pos().rotate(r);
+    for (auto &n: holeMarker_) n.rotate(r);
+    for (auto &n: regionMarker_) n.rotate(r);
+
+    if (isGeometry_){
+        for (auto &b: boundaryVector_){
+            if (b->rtti() == MESH_POLYGON_FACE_RTTI){
+                for (auto &p: dynamic_cast< PolygonFace * >(b)->holeMarkers()){
+                    p.rotate(r);
+                }
+            }
+        } 
+    }
 
     rangesKnown_ = false;
     return *this;
 }
 
 void Mesh::swapCoordinates(Index i, Index j){
-    if (i != j){
-        if (i < dimension_ && i < dimension_){
-            for (Index n = 0; n < nodeVector_.size(); n++){
-                double tmp = nodeVector_[n]->at(i);
-                nodeVector_[n]->at(i) = nodeVector_[n]->at(j);
-                nodeVector_[n]->at(j) = tmp;
+    for (auto &n: nodeVector_) n->pos().swap(i,j);
+    for (auto &n: holeMarker_) n.swap(i,j);
+    for (auto &n: regionMarker_) n.swap(i,j);
+
+    if (isGeometry_){
+        for (auto &b: boundaryVector_){
+            if (b->rtti() == MESH_POLYGON_FACE_RTTI){
+                for (auto &p: dynamic_cast< PolygonFace * >(b)->holeMarkers()){
+                    p.swap(i,j);
+                }
             }
-        }
+        } 
     }
+    rangesKnown_ = false;
 }
 
 void Mesh::relax(){
