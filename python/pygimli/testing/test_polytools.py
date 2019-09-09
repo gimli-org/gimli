@@ -274,7 +274,12 @@ class Test3DMerge(unittest.TestCase):
         # print(w)
         # pg.show(w)
         # w.exportPLC('w3D_test.w')
+<<<<<<< Updated upstream
         # pg.show(mt.createMesh(w))
+=======
+        pg.show(mt.createMesh(w))
+        
+>>>>>>> Stashed changes
 
 
 if __name__ == '__main__':
