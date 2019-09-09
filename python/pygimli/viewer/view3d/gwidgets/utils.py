@@ -156,6 +156,13 @@ class GToolBar(QWidget):
 
         # slicer
         lyt_v2 = QVBoxLayout()
+        self.btn_slice_plane = QPushButton("Plane")
+        self.btn_slice_plane.setCheckable(True)
+        self.btn_slice_volume = QPushButton("Volume")
+        self.btn_slice_volume.setCheckable(True)
+        hb = QHBoxLayout()
+        hb.addWidget(self.btn_slice_plane)
+        hb.addWidget(self.btn_slice_volume)
         hx = QHBoxLayout()
         hx.addWidget(QLabel("x:"))
         hx.addWidget(self.slice_x)
@@ -177,13 +184,14 @@ class GToolBar(QWidget):
         self.la_zval.setReadOnly(True)
         self.la_zval.setFixedWidth(100)
         hz.addWidget(self.la_zval)
+        lyt_v2.addLayout(hb)
         lyt_v2.addLayout(hx)
         lyt_v2.addLayout(hy)
         lyt_v2.addLayout(hz)
         lyt_v2.setContentsMargins(2, 2, 2, 2)
         self.grp_slice = QGroupBox("Slicing")
-        self.grp_slice.setCheckable(True)
-        self.grp_slice.setChecked(False)
+        # self.grp_slice.setCheckable(True)
+        # self.grp_slice.setChecked(False)
         self.grp_slice.setLayout(lyt_v2)
 
         # export area

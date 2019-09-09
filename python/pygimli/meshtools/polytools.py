@@ -1250,11 +1250,11 @@ def exportTetgenPoly(poly, filename, float_format='.12e', **kwargs):
             polytxt += '{0}{1}'.format(poly_str, linesep)
 
         # inner loop over holes
-        
+
         if nHoles > 0:
             for n, hole in enumerate(bound.holeMarker()):
                 polytxt += hole_str.format(n, *hole)
-        
+
         # not necessary yet ?! why is there an extra hole section?
         # because this is for 2D holes in facets only
 
@@ -1284,7 +1284,7 @@ def exportTetgenPoly(poly, filename, float_format='.12e', **kwargs):
     polytxt += '{:d}{}'.format(len(holes), linesep)
     # loop over hole markers
     # <hole #> <x> <y> <z>
-    
+
     for n, hole in enumerate(holes):
         polytxt += hole_str.format(n, *hole)
 
@@ -1454,20 +1454,20 @@ def createFacet(mesh, boundaryMarker=None, verbose=True):
         pg.critical("Implmentme")
 
     poly = pg.Mesh(dim=3, isGeometry=True)
-    
+
     nodes = [poly.createNode(n.pos()).id() for n in mesh.nodes()]
-    
+
     if boundaryMarker is None:
         for rm in mesh.regionMarker():
             boundaryMarker = rm.marker()
             break
 
     poly.createBoundary(nodes, marker=boundaryMarker)
-    
+
     return poly
 
 
-def createCube(size=[1.0, 1.0, 1.0], pos=None, rot=None, 
+def createCube(size=[1.0, 1.0, 1.0], pos=None, rot=None,
                boundaryMarker=0, **kwargs):
     """Create plc of a cube
 
