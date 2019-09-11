@@ -275,12 +275,7 @@ class Test3DMerge(unittest.TestCase):
         # print(w)
         # pg.show(w)
         # w.exportPLC('w3D_test.w')
-<<<<<<< Updated upstream
         # pg.show(mt.createMesh(w))
-=======
-        pg.show(mt.createMesh(w))
-        
->>>>>>> Stashed changes
 
     def test_face_in_face(self):
         """Test subface with different marker constructed with hole marker."""
