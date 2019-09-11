@@ -63,6 +63,7 @@ from .dataview import (drawSensorAsMarker,  # dups to meshview??
                        patchMatrix,
                        patchValMap,
                        plotDataContainerAsMatrix,
+                       showDataContainerAsMatrix,
                        plotMatrix,
                        plotVecMatrix,
                        )

@@ -6,13 +6,16 @@ import matplotlib.pyplot as plt
 
 import pygimli as pg
 
+
 def showAmplitudeSpectrum(*args, **kwargs):
     pg.deprecated('drawAmplitudeSpectrum')
     return drawAmplitudeSpectrum(*args, **kwargs)
 
+
 def showPhaseSpectrum(*args, **kwargs):
     pg.deprecated('drawPhaseSpectrum')
     return drawPhaseSpectrum(*args, **kwargs)
+
 
 def drawAmplitudeSpectrum(ax, freq, amp, ylabel=r'$\rho$ ($\Omega$m)',
                           grid=True, marker='+', ylog=True, **kwargs):
@@ -44,6 +47,7 @@ def drawPhaseSpectrum(ax, freq, phi, ylabel=r'$-\phi$ (mrad)',
     ax.grid(grid)
     return gci
 
+
 def showSpectrum(freq, amp, phi, nrows=2, ylog=None, axs=None, **kwargs):
     """Show amplitude and phase spectra in two subplots."""
     if axs is None:
@@ -53,6 +57,7 @@ def showSpectrum(freq, amp, phi, nrows=2, ylog=None, axs=None, **kwargs):
     drawAmplitudeSpectrum(axs[0], freq, amp, ylog=ylog, **kwargs)
     drawPhaseSpectrum(axs[1], freq, phi, ylog=ylog, **kwargs)
     return fig, axs
+
 
 def plotSpectrum(ax, freq, vals, ylabel=r'$-\phi$ (mrad)',
                  grid=True, marker='+', ylog=True, **kwargs):
