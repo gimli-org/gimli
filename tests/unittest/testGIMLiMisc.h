@@ -32,6 +32,8 @@ public:
 // 		CPPUNIT_ASSERT(GIMLI::fileExist("unittest.sh") == true);
         std::cout << "number of CPU: " << GIMLI::numberOfCPU() << std::endl;
         GIMLI::showSizes();
+        CPPUNIT_ASSERT(sizeof(GIMLI::Index) == 8);
+        CPPUNIT_ASSERT(sizeof(GIMLI::SIndex) == 8);
     }
 
     void testBooleanLogic(){
