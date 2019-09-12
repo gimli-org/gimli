@@ -898,6 +898,44 @@ class ERTManager(MeshMethodManager):
 
         return error
 
+    def _ensureRhoa(self, data):
+        """"""
+        # check for valid rhoa here
+        return data('rhoa')
+
+    def _ensureError(self, data):
+        """"""
+        # check for valid err here
+        return data('err')
+
+    def invert(self, data=None, err=None, **kwargs):
+        """Invert measured data.
+        """
+        dataVals = None
+        errVals = None
+        
+        if isinstance(data, pg.DataContainerERT):
+            self.fop.setDataSpace(dataContainer=data)
+
+            dataVals = self._ensureRhoa(data)
+            errVals = self._ensureError(data)
+        else:
+
+            # check if fop has dataContainer
+            dataVals = data
+            errVals = err
+
+        if 'mesh' in kwargs:
+            self.inv.setMesh(kwargs.pop('mesh'))
+
+        startModel = kwargs.pop('startModel', pg.median(dataVals))
+        self.fop.setRegionProperties('*', startModel=startModel)
+
+
+        return super(ERTManager, self).invert(dataVals=dataVals,
+                                              errVals=errVals,
+                                              **kwargs)
+
     def coverage(self):
         """Return coverage vector considering the logarithmic transformation.
         """
