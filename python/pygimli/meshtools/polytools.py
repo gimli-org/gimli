@@ -1471,12 +1471,7 @@ def createFacet(mesh, boundaryMarker=None, verbose=True):
 
 def createCube(size=[1.0, 1.0, 1.0], 
                pos=None, rot=None, boundaryMarker=0, **kwargs):
-    """Create plc of a cube
-
-    Out of core wrapper for dcfemlib::polytools.
-
-    Note, there is a bug in the old polytools which ignores the area settings
-    for marker == 0.
+    """Create cube PLC as geometrie definition.
 
     Parameters
     ----------
@@ -1512,23 +1507,23 @@ def createCube(size=[1.0, 1.0, 1.0],
         The resulting polygon is a :gimliapi:`GIMLI::Mesh`.
 
     """
-    tmp = pg.optImport('tempfile')
-    _, namePLC = tmp.mkstemp(suffix='.poly')
+    poly = pg.Mesh(3, isGeometry=True)
 
-    pg.debug("Create temporary file:", namePLC)
-    syscal = 'polyCreateCube ' + namePLC
+    for y in [-0.5, 0.5]:
+        poly.createNode(-0.5, y, -0.5)
+        poly.createNode( 0.5, y, -0.5)
+        poly.createNode( 0.5, y,  0.5)
+        poly.createNode(-0.5, y,  0.5)
+    
+    faces = [[4, 5, 1, 0],
+             [5, 6, 2, 1],
+             [6, 7, 3, 2],
+             [7, 4, 0, 3],
+             [0, 1, 2, 3],
+             [7, 6, 5, 4],]
 
-    pg.debug(syscal)
-    os.system(syscal)
-    poly = readPLC(namePLC)
-    try:
-        os.remove(namePLC)
-    except Exception as e:
-        pg.error("can't remove:", namePLC)
-
-
-    for b in poly.boundaries():
-        b.setMarker(boundaryMarker)
+    for f in faces:
+        poly.createPolygonFace(poly.nodes(f), marker=boundaryMarker)
 
     poly.scale(size)
 
