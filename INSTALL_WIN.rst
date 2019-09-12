@@ -176,7 +176,7 @@ You can test the pygimli build with:
 
 .. code-block:: bash
 
-    python -c 'import pygimli as pg; print(pg.__version__)'
+    python -c 'import pygimli as pg; print(pg.version())'
 
 
 Using cmake with CodeBlocks
