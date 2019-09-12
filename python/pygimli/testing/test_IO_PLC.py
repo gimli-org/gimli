@@ -120,7 +120,7 @@ class TestPLCIO(unittest.TestCase):
                                    np.sort(cube.positions().array()))
         np.testing.assert_equal(poly.regionMarker()[0].area(), 42.42)
         
-        np.testing.assert_equal(poly.boundaries()[-1].holeMarker()[0], [0.0, 0.0, 1.0])
+        np.testing.assert_equal(poly.boundaries()[-1].holeMarkers()[0], [0.0, 0.0, 1.0])
     
         try:
             os.remove(name3D)

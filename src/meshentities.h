@@ -386,8 +386,8 @@ protected:
 protected:
     /*! Don't call this class directly */
     Boundary(const Boundary & bound){
-        THROW_TO_IMPL
         std::cerr << "Boundary(const Boundary & bound)" << std::endl;
+        THROW_TO_IMPL
     }
 
     /*! Don't call this class directly */
@@ -582,8 +582,8 @@ private:
 class DLLEXPORT PolygonFace : public Boundary {
     /*! */
 public:
-    typedef RVector3 HoleMarker;
-    typedef std::vector< HoleMarker > HoleMarkerList;
+    typedef Pos HoleMarker;
+    typedef std::vector < Pos >  HoleMarkerList;
 
     PolygonFace(const std::vector < Node * > & nodes);
         
@@ -613,7 +613,10 @@ public:
     void delHoleMarker(const RVector3 & pos);
 
     /*!Return read only reference for all defined hole regions. */
-    const HoleMarkerList & holeMarker() const;
+    const HoleMarkerList & holeMarkers() const;
+
+    /*!Return reference to all defined hole markers. */
+    HoleMarkerList & holeMarkers(){ return holeMarker_;}
 
 protected:
     std::vector < std::vector < Node * > > subfaces_;

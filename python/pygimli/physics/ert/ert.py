@@ -96,22 +96,22 @@ class BertModelling(ERTModellingBase):
 
         # don't use DC*fop or its regionmanager directly
         #
-        self.bertFop = None
+        self._core = None
         if sr:
-            self.bertFop = pg.core.DCSRMultiElectrodeModelling(verbose=verbose)
+            self._core = pg.core.DCSRMultiElectrodeModelling(verbose=verbose)
         else:
-            self.bertFop = pg.core.DCMultiElectrodeModelling(verbose=verbose)
+            self._core = pg.core.DCMultiElectrodeModelling(verbose=verbose)
         
-        self.bertFop.initJacobian()
-        self.setJacobian(self.bertFop.jacobian())
+        self._core.initJacobian()
+        self.setJacobian(self._core.jacobian())
 
         ## called from the ERTManager .. needed?
-        self.solution = self.bertFop.solution
-        self.setComplex = self.bertFop.setComplex
-        self.complex = self.bertFop.complex
-        self.calculate = self.bertFop.calculate
-        self.calcGeometricFactor = self.bertFop.calcGeometricFactor
-        self.mapERTModel = self.bertFop.mapERTModel
+        self.solution = self._core.solution
+        self.setComplex = self._core.setComplex
+        self.complex = self._core.complex
+        self.calculate = self._core.calculate
+        self.calcGeometricFactor = self._core.calcGeometricFactor
+        self.mapERTModel = self._core.mapERTModel
         
         self._conjImag = False # the model imaginaries are flipped to match log trans
 
@@ -172,7 +172,7 @@ class BertModelling(ERTModellingBase):
             pg.warn('flip imaginary part for response calc')
             mod = self.flipImagPart(mod)
             
-        resp = self.bertFop.response(mod)
+        resp = self._core.response(mod)
         
         if self.complex() and self._conjImag:
             pg.warn('backflip imaginary part after response calc')
@@ -187,22 +187,22 @@ class BertModelling(ERTModellingBase):
                 pg.warn('flip imaginary part for jacobian calc')
                 mod = self.flipImagPart(mod)
 
-            self.bertFop.createJacobian(mod)
-            self._J = pg.utils.squeezeComplex(self.bertFop.jacobian(), 
+            self._core.createJacobian(mod)
+            self._J = pg.utils.squeezeComplex(self._core.jacobian(), 
                                               conj=self._conjImag
                                               )
             self.setJacobian(self._J)
             # pg._r("create Jacobian", self, self._J)
             return self._J
-        return self.bertFop.createJacobian(mod)
+        return self._core.createJacobian(mod)
 
     def setDataPost(self, data):
         """"""
-        self.bertFop.setData(data)
+        self._core.setData(data)
 
     def setMeshPost(self, mesh):
         """"""
-        self.bertFop.setMesh(mesh, ignoreRegionManager=True)
+        self._core.setMesh(mesh, ignoreRegionManager=True)
 
 
 class ERTModelling(ERTModellingBase):
@@ -695,8 +695,8 @@ class ERTManager(MeshMethodManager):
                     if fop.complex():
                         pg.critical('Implement me')
                     else:
-                        ret.set("u", dMap.data(scheme))
-                        ret.set("i", np.ones(ret.size()))
+                        ret["u"] = dMap.data(scheme)
+                        ret["i"] = np.ones(ret.size())
 
                     if returnFields:
                         return pg.Matrix(fop.solution())
@@ -718,8 +718,8 @@ class ERTManager(MeshMethodManager):
 
 
         if not isArrayData:
-            ret.set('rhoa', rhoa)
-
+            ret['rhoa'] = rhoa
+            
             if phia is not None:
                 ret.set('phia', phia)
         else:

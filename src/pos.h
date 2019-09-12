@@ -281,8 +281,16 @@ public:
         return GIMLI::hash(mat_[0], mat_[1], mat_[2], valid_);
     }
 
-//     double x_, y_, z_;
-
+    /*!Swap coordinates i and j [0..3) */
+    void swap(Index i, Index j){
+        ASSERT_RANGE(i, 0, 3);
+        ASSERT_RANGE(j, 0, 3);
+        if (i != j){
+            double tmp = mat_[i];
+            mat_[i] =  mat_[j];
+            mat_[j] =  tmp;
+        }
+    }
 protected:
 
     inline void copy_(const Pos & pos) {
