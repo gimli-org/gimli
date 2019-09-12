@@ -69,6 +69,7 @@ fi
 # Test pygimli
 export PYTHONPATH=`pwd`/../trunk/python:$PYTHONPATH
 
+make gtest
 OMP_THREAD_LIMIT=1 python -c "import pygimli; pygimli.test(show=False, abort=True, htmlreport=\"build_tests.html\")"
 
 # Build documentation
