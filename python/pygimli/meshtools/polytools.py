@@ -361,7 +361,7 @@ def createCircle(pos=None, radius=1, segments=12, start=0, end=2.*math.pi,
         setPolyRegionMarker(poly, **kwargs)
 
     # need a better way mess with these or wrong kwargs
-    # pg.warnNonEmptyArgs(kwargs)
+    #pg.warnNonEmptyArgs(kwargs)
 
     return poly
 
@@ -1537,8 +1537,57 @@ def createCube(size=[1.0, 1.0, 1.0],
 
     return poly
 
+def extrude(p2, z=-1.0, boundaryMarker=0, **kwargs):
+    """Create 3D body by extruding a closed 2D poly into z direction
 
-def createCylinder(radius, height, nSegments=8,
+    Parameters
+    ----------
+    p2 : :gimliapi:`GIMLI::Mesh`
+        2D geometry
+
+    z : float [-1.0]
+        2D geometry
+
+    Other Parameters
+    ----------------
+    ** kwargs:
+        Marker related arguments:
+        See :py:mod:`pygimli.meshtools.polytools.setPolyRegionMarker`
+
+    Returns
+    -------
+    poly : :gimliapi:`GIMLI::Mesh`
+        The resulting polygon is a :gimliapi:`GIMLI::Mesh`.
+    """
+    if p2.dimension() != 2:
+        pg.error("need two dimensional mesh or poly")
+
+    if p2.cellCount() > 0:
+        pg.critical("Implementme")
+
+
+    poly = pg.Mesh(3, isGeometry=True)
+    top = []
+    for n in p2.nodes():
+        top.append(poly.createNode(n.pos()).id())
+
+    bot = []
+    for n in p2.nodes():
+        bot.append(poly.createNode(n.pos() + [0.0, 0.0, z]).id())
+    N = len(top)
+
+    poly.createPolygonFace(poly.nodes(top), marker=boundaryMarker)
+    poly.createPolygonFace(poly.nodes(bot[::-1]), marker=boundaryMarker)
+
+    for i in range(len(top)):
+        poly.createPolygonFace(poly.nodes([i, N + i, N + (i + 1)%N, (i+1)%N]),
+                               marker=boundaryMarker)
+
+    setPolyRegionMarker(poly, **kwargs)
+
+    return poly
+
+def createCylinder(radius=1, height=1, nSegments=8,
                    pos=None, rot=None, boundaryMarker=0, **kwargs):
     """Create plc of a cylinder.
 
@@ -1573,38 +1622,19 @@ def createCylinder(radius, height, nSegments=8,
         The resulting polygon is a :gimliapi:`GIMLI::Mesh`.
 
     """
-    marker = kwargs.pop('marker', 1)
-    tmp = pg.optImport('tempfile')
-
-    _, namePLC = tmp.mkstemp(suffix='.poly')
-
-    pg.debug("Create temporary file:", namePLC)
-    syscal = 'polyCreateCube -Z '  \
-        + ' -s ' + str(nSegments)
-
-    syscal = syscal + ' ' + namePLC
-    pg.debug(syscal)
-    os.system(syscal)
-    poly = readPLC(namePLC)
-
-    try:
-        os.remove(namePLC)
-    except Exception as e:
-        pg.error("can't remove:", namePLC)
-
-    # defaul settings
-    for b in poly.boundaries():
-        b.setMarker(boundaryMarker)
-
-    poly.scale([radius*2, radius*2, height])
+    circ = createCircle(radius=radius, segments=nSegments)
+    poly = extrude(circ, z=height, boundaryMarker=boundaryMarker)
+    # move it to z=0
+    poly.translate([0.0, 0.0, -height/2])
 
     if rot is not None:
+        c = pg.center(poly.positions())
+        poly.translate(-c)
         poly.rotate(rot)
+        poly.translate(c)
 
     if pos is not None:
         poly.translate(pos)
-
-    setPolyRegionMarker(poly, **kwargs)
 
     return poly
 

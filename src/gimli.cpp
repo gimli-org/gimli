@@ -58,6 +58,11 @@ static Index __GIMLI_THREADCOUNT__ = numberOfCPU();
 // extern static bool __SAVE_PYTHON_GIL__;
 // extern static bool __GIMLI_DEBUG__;
 
+std::string versionStr(){
+    std::string vers(str(PACKAGE_NAME) + "-" + PACKAGE_VERSION);
+    return vers;
+}
+
 void savePythonGIL(bool s){ __SAVE_PYTHON_GIL__ = s; }
 bool pythonGIL(){ return __SAVE_PYTHON_GIL__; }
 

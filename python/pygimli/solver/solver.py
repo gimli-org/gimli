@@ -160,14 +160,14 @@ def generateBoundaryValue(boundary, arg, time=0.0, userData=None):
 
         if time != 0.0 and time is not None:
             kwargs['time'] = time
-        if userData:
+        if userData is not None:
             kwargs['userData'] = userData
         try:
+            # val(boundary, time=0, userData=None)
             val = arg(**kwargs)
         except Exception as e:
             print(arg, "(", kwargs, ")")
-            pg.critical(e)
-            raise Exception("Wrong arguments for callback function.")
+            pg.critical("Wrong arguments for callback function.", e)
 
     elif hasattr(arg, '__len__'):
         if callable(arg[0]):
@@ -1481,7 +1481,7 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
         bc={'Dirichlet': [mesh.node(nodeID), value]}.
     times: array [None]
         Solve as time dependent problem for the given times.
-    
+        
     Other Parameters
     ----------------
     **kwargs
@@ -1494,6 +1494,9 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
             - :math:`theta = 1`, implicit Euler
 
             If unsure choose :math:`\theta = 0.5 + \epsilon`, which is probably stable.
+        dynamic: bool [False]
+            Boundary conditions for time depending problems will be considerd 
+            dynamic for each time step.
         stats: bool
             Give some statistics.
         progress: bool
@@ -1535,7 +1538,7 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
     if bc is None:
         bc={}
     if 'uB' in kwargs:
-        pg.deprecated('bc arg uB', "bc={'Dirichlet': uB}")
+        pg.deprecated('bc arg uB', "bc={'Dirichlet': uB}") #20190912
         bc['Dirichlet'] = kwargs.pop('uB')
     if 'duB' in kwargs:
         pg.deprecated('bc arg duB', "bc={'Neumann': duB}")

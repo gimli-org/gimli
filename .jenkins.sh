@@ -58,6 +58,7 @@ if [[ $core_update -ge 1 ]]; then
      -DBoost_PYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libboost_python-py35.so
   make -j 8 gimli
   make pygimli J=4
+  make gtest
 else
   echo "# No core changes detected. #"
 fi
@@ -69,7 +70,6 @@ fi
 # Test pygimli
 export PYTHONPATH=`pwd`/../trunk/python:$PYTHONPATH
 
-make gtest
 OMP_THREAD_LIMIT=1 python -c "import pygimli; pygimli.test(show=False, abort=True, htmlreport=\"build_tests.html\")"
 
 # Build documentation
