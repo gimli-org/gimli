@@ -66,7 +66,7 @@ def optImport(module, requiredFor="use the full functionality"):
 
 
 def opt_import(*args, **kwargs):
-    pg.deprecated()
+    pg.deprecated() # last vis: 20190903
     return optImport(*args, **kwargs)
 
 
@@ -164,7 +164,7 @@ def load(fname, verbose=False, testAll=True, realName=None):
                 print("Import {0} ({1})".format(fname, ImportFilter[suffix]))
             return ImportFilter[suffix](fname)
         except Exception as e:
-            if verbose:
+            if verbose or pg.core.debug():
                 import sys
                 import traceback
                 traceback.print_exc(file=sys.stdout)

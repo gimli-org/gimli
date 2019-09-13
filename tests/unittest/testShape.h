@@ -175,6 +175,15 @@ public:
 
         GIMLI::QuadrangleFace q5(n6, n7, n3, n2);
         CPPUNIT_ASSERT(q5.shape().touch(GIMLI::RVector3(3.5e-2, 0.0, 0.0)) == false);
+
+        // test old fails
+        GIMLI::Node f0(1.0, 0.5,  0.5); f0.setId(0);
+        GIMLI::Node f1(2.0, 0.5,  0.5); f1.setId(1);
+        GIMLI::Node f2(2.0, 0.5, -0.5); f2.setId(2);
+        GIMLI::Node f3(1.0, 0.5, -0.5); f3.setId(3);
+        GIMLI::QuadrangleFace q6(f0, f1, f2, f3);
+        CPPUNIT_ASSERT(q6.shape().touch(GIMLI::RVector3(-1.0, 0.5, 0.5)) == false);
+
     }
 
     void testInterpolate(){

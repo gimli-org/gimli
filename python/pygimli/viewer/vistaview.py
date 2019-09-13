@@ -103,7 +103,7 @@ def showMesh3DVista(mesh, data=None, **kwargs):
             grid.cell_arrays[k] = np.asarray(v)
         # app = Qt.QApplication()
         app = Qt.QApplication(sys.argv)
-        s3d = Show3D(tmp)
+        s3d = Show3D(tmp, app)
         s3d.addMesh(grid, cMap=cMap)
         app.exec_()
 

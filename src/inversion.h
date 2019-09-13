@@ -32,7 +32,6 @@
 #include "trans.h"
 #include "vector.h"
 
-#include "ipcClient.h"
 
 namespace GIMLI{
 
@@ -761,8 +760,6 @@ public:
     const RVector & deltaDataIter() const { return deltaDataIter_; }
     const RVector & deltaModelIter() const { return deltaModelIter_; }
 
-    IPCClientSHM & ipc() { return ipc_; }
-
     /*! Resets this inversion to the given startmodel. */
     void reset(){
         this->setModel(forward_->startModel());
@@ -826,7 +823,6 @@ protected:
     /*! Hold old models, for debuging */
     std::vector < RVector > modelHist_;
 
-    IPCClientSHM ipc_;
 };
 
 } // namespace GIMLI

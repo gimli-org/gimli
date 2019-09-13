@@ -21,6 +21,7 @@
 #include "node.h"
 #include "shape.h"
 #include "line.h"
+#include "mesh.h"
 
 #include <map>
 #include <algorithm>
@@ -242,6 +243,12 @@ void MeshEntity::setNodes_(const std::vector < Node * > & nodes){
 
 void MeshEntity::addSecondaryNode(Node * n) {
     secondaryNodes_.push_back(n);
+};
+
+void MeshEntity::delSecondaryNode(Node * n) {
+    secondaryNodes_.erase(std::remove(secondaryNodes_.begin(), 
+                                      secondaryNodes_.end(), n), 
+                          secondaryNodes_.end());
 };
 
 const std::vector < Node * > & MeshEntity::secondaryNodes() const {
@@ -836,6 +843,7 @@ void PolygonFace::insertNode(Node * n, double tol){
                 for (Index j = i + 1; j < this->nodeCount(); j ++){ 
                     nodes.push_back(&this->node(j));
                 }
+                n->setState(Connected);
                 deRegisterNodes_();
                 setNodes_(nodes);
                 registerNodes_();
@@ -846,6 +854,27 @@ void PolygonFace::insertNode(Node * n, double tol){
         } 
     }
     this->addSecondaryNode(n);
+    n->setState(Secondary);
+    n->setSecondaryParent(this);
+}
+
+void PolygonFace::addSubface(const std::vector < Node * > & nodes){
+    this->subfaces_.push_back(nodes);
+}
+const std::vector < Node * >  & PolygonFace::subface(Index i) const {
+    return this->subfaces_[i];
+}
+void PolygonFace::addHoleMarker(const RVector3 & pos){
+    holeMarker_.push_back(pos);
+}
+
+void PolygonFace::delHoleMarker(const RVector3 & pos){
+    holeMarker_.erase(std::remove(holeMarker_.begin(), 
+                                      holeMarker_.end(), pos), 
+                          holeMarker_.end());
+}
+const PolygonFace::HoleMarkerList & PolygonFace::holeMarker() const { 
+    return holeMarker_; 
 }
 
 EdgeCell::EdgeCell(const std::vector < Node * > & nodes) : Cell(nodes){

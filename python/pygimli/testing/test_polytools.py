@@ -2,6 +2,8 @@
 """
 import unittest
 
+import pygimli as pg
+
 import pygimli.meshtools as mt
 
 class TestCreateRectangle(unittest.TestCase):
@@ -181,29 +183,117 @@ class Test3DMerge(unittest.TestCase):
         self.assertEqual(c1.nodeCount(), m.nodeCount())
         self.assertEqual(c1.boundaryCount(), m.boundaryCount())
 
-    # XXX: Temporarily deactivated, under construction by @carsten-forty2
-    # def test_cube_cube_sameface(self):
-    #     c1 = mt.createCube()
-    #     c2 = mt.createCube()
-    #     c2.translate([c2.xmax()-c1.xmin(), 0.0])
-    #
-    #     m = mt.mergePLC3D([c1, c2])
-    #
-    #     print(m)
-    #
-    #     self.assertEqual(m.nodeCount(), 2*c1.nodeCount()-4)
-    #     self.assertEqual(m.boundaryCount(), 2*c1.boundaryCount()-1)
+    def test_cube_cube_equalface(self):
+        w = mt.createCube(marker=1)
+        c = mt.createCube(marker=2)
+        c.translate([c.xmax()-w.xmin(), 0.0])
 
+        w = mt.mergePLC3D([w, c])
+        self.assertEqual(w.nodeCount(), 8+4)
+        self.assertEqual(w.boundaryCount(), 6+5)
 
+        c = mt.createCube(marker=3)
+        c.translate([0.0, w.ymax()-c.ymin(), 0.0])
+        w = mt.mergePLC3D([w, c])
+        self.assertEqual(w.nodeCount(), 8+4+4)
+        self.assertEqual(w.boundaryCount(), 6+5+5)
 
+        c = mt.createCube(marker=4)
+        c.translate([0.0, 0.0, c.zmax()-w.zmin()])
+        w = mt.mergePLC3D([c, w])
+        self.assertEqual(w.nodeCount(), 8+4+4+4)
+        self.assertEqual(w.boundaryCount(), 6+5+5+5)
+
+        c = mt.createCube(marker=5)
+        c.translate([0.0, w.ymax()-c.ymin(), c.zmax()-w.zmin()])
+        w = mt.mergePLC3D([c, w])
+        self.assertEqual(w.nodeCount(), 8+4+4+4+6)
+        self.assertEqual(w.boundaryCount(), 6+5+5+5+6)
+
+        c = mt.createCube(marker=6)
+        c.translate([0.0, c.ymax()-w.ymin(), c.zmax()-w.zmin()])
+        w = mt.mergePLC3D([w, c])
+        self.assertEqual(w.nodeCount(), 8+4+4+4+6+0)
+        self.assertEqual(w.boundaryCount(), 6+5+5+5+6+3)
+
+        # w.exportPLC('t.poly')
+        # pg.show(mt.createMesh(w))
+
+    def test_cube_cube_coplanar_touchface(self):
+        w = mt.createCube(marker=1)
+        w.scale([2.0, 2.0, 2.0])
+
+        c = mt.createCube(marker=2)
+        c.translate([1.5, 0.0, 0.0])
+        w = mt.mergePLC3D([w, c])
+        self.assertEqual(w.nodeCount(), 8+8)
+        self.assertEqual(w.boundaryCount(), 6+5)
+
+        c = mt.createCube(marker=3)
+        c.translate([-1.5, 0.0, 0.0])
+        w = mt.mergePLC3D([w, c])
+        self.assertEqual(w.nodeCount(), 8+8+8)
+        self.assertEqual(w.boundaryCount(), 6+5+5)
+
+        c = mt.createCube(marker=4)
+        c.translate([0.0, 1.5, 0.0])
+        w = mt.mergePLC3D([w, c])
+        self.assertEqual(w.nodeCount(), 8+8+8+8)
+        self.assertEqual(w.boundaryCount(), 6+5+5+5)
+
+        c = mt.createCube(marker=5)
+        c.translate([0.0, 0.0, -1.5])
+        w = mt.mergePLC3D([w, c])
+        self.assertEqual(w.nodeCount(), 8+8+8+8+8)
+        self.assertEqual(w.boundaryCount(), 6+5+5+5+5)
+
+        #pg.show(w)
+        # w.exportPLC('t.poly')
+        # pg.show(mt.createMesh(w))
+
+    def test_smallcube_in_bigcube(self):
+        """
+        A small cube in a bigger one, creating two subfaces.
+        author: @frodo4fingers
+        """
+        w = mt.createCube(marker=1)
+        c = mt.createCube(size=[0.5, 1.0, 1.0], marker=2)
+
+        w = mt.mergePLC3D([w, c])
+        self.assertEqual(w.nodeCount(), 8+8)
+        self.assertEqual(w.boundaryCount(), 8)
+
+        # will not work until edge intersection is working
+        # d = mt.createCube(size=[0.8, 1.0, 1.0],
+        #                   pos=[0.1, 0.0, 1.0],
+        #                   marker=3)
+        # w = mt.mergePLC3D([w, d])
+        # self.assertEqual(w.nodeCount(), 8+8)
+        # self.assertEqual(w.boundaryCount(), 8)
+
+        # print(w)
+        # pg.show(w)
+        # w.exportPLC('w3D_test.w')
+        # pg.show(mt.createMesh(w))
+
+    def test_face_in_face(self):
+        w = mt.createCube(marker=1)
+
+        b = w.boundary(2)
+
+        pad = mt.createFacet(mt.createCircle(radius=0.2, marker=2, segments=4))
+        rot = pg.core.getRotation(pad.boundary(0).norm(), b.norm())
+        pad.boundary(0).addHoleMarker([0.0, 0.0, 0.0])
+
+        # TODO  holemarker and secondary nodes need to be transformed
+
+        pad.transform(rot)
+        pad.translate(b.center())
+        pad.exportPLC('pad.poly')
+        w.copyBoundary(pad.boundary(0))
+
+        #pg.show(w)
+        pg.show(mt.createMesh(w))
 
 if __name__ == '__main__':
-    # pg.setDeepDebug(1)
-    t = Test3DMerge()
-    t.test_cube_cube_sameface()
-    sys.exit()
-        # # t = TestCreateRectangle()
-
-    # t.test_region_marker_position_translation_scale()
-
     unittest.main()

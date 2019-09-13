@@ -28,6 +28,8 @@
 
 namespace GIMLI{
 
+enum NodeState{No, Secondary, Connected};
+
 //! 3D Node
 /*!
  * Node is a basic entity of a mesh at a 3D position x/y/z (a vertex),
@@ -109,6 +111,16 @@ public:
     /*!*/
     void smooth(uint function);
 
+    /*!Little helper to identify the state of this node after some merging.*/
+    void setState(NodeState s) { this->_state = s; }
+    
+    /*!Return the state of this node.*/
+    const NodeState state() const { return this->_state; }
+
+    void setSecondaryParent(MeshEntity * e) { this->_secondaryParent = e; }
+    /*!Return the state of this node.*/
+    MeshEntity * secondaryParent() { return this->_secondaryParent; }
+
 protected:
 
     void copy_(const Node & node);
@@ -122,6 +134,8 @@ protected:
     std::set < Boundary * > boundSet_;
     std::set < Cell * >     cellSet_;
 
+    NodeState _state;
+    MeshEntity *_secondaryParent;
 }; // class Node
 
 DLLEXPORT std::ostream & operator << (std::ostream & str, const GIMLI::Node & node);

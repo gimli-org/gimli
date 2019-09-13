@@ -525,7 +525,7 @@ def createPolygon(verts, isClosed=False, addNodes=0, interpolate='linear',
                 poly.createNodeWithCheck([v, 0], warn=True)
             else:
                 poly.createNodeWithCheck(v, warn=True)
-            
+
 
     _polyCreateDefaultEdges(poly, isClosed=isClosed,
                             boundaryMarker=kwargs.pop('boundaryMarker', 1))
@@ -636,31 +636,29 @@ def mergePLC3D(plcs, tol=1e-3):
     """Experimental replacement for polyMerge. Don't expect to much.
     """
     if len(plcs) < 2:
-        pg.criticle("Give at least 2 plcs.")
-        
+        pg.critical("Give at least 2 plcs.")
+
     if plcs[0].dim() != 3:
         pg.warn("2D poly found. redirect to mergePLC")
         return mergePLC(plcs, tol)
 
     # first try. merge all into p0 = plcs[0]
-    #  * will only work if all faces of plcs[1:] does not match any face of p0 
+    #  * will only work if all faces of plcs[1:] does not match any face of p0
     #  * or all matching plcs[1:] are lie completely within p0
-    
-    p0 = pg.Mesh(plcs[0])
-    
-    for p in plcs[1:]:
-        print('p', p)
-        for b in p.boundaries():
-            print(b)
-            p0.createBoundary(b)
-            
-    if len(p.regionMarker()) > 0:
-        for rm in p.regionMarker():
-            p0.addRegionMarker(rm)
 
-    if len(p.holeMarker()) > 0:
-        for hm in p.holeMarker():
-            p0.addHoleMarker(hm)
+    p0 = pg.Mesh(plcs[0])
+
+    for p in plcs[1:]:
+        for b in p.boundaries():
+            p0.copyBoundary(b)
+
+        if len(p.regionMarker()) > 0:
+            for rm in p.regionMarker():
+                p0.addRegionMarker(rm)
+
+        if len(p.holeMarker()) > 0:
+            for hm in p.holeMarker():
+                p0.addHoleMarker(hm)
 
     return p0
 
@@ -911,7 +909,9 @@ def readPLC(filename, comment='#'):
     nPointsAttributes = int(headerLine[2])
     haveNodeMarker = int(headerLine[3])
 
-    poly = pg.Mesh(dim=dimension, isGeometry=True)
+    poly = pg.Mesh(dim=dimension, isGeometry=False)
+    # isGeometry forces expensive checks .. we assume the plc is valid so we set
+    # this flag in the end
 
     # Nodes section
     for i in range(nVerts):
@@ -960,9 +960,9 @@ def readPLC(filename, comment='#'):
         for i in range(nSegments):
             row = content[2 + nVerts + i + segment_offset].split()
             numBounds = int(row[0])
-            numHoles = row[1]
-            assert numHoles == '0', \
-                'Can\'t handle 3D Boundaries with holes yet'
+            numHoles = int(row[1])
+            # if numHoles != '0':
+            #     pg.error("Can't handle 3D faces with holes yet")
             marker = 0
             if haveBoundaryMarker:
                 marker = int(row[2])
@@ -981,8 +981,18 @@ def readPLC(filename, comment='#'):
                     if len(nodeIdx) == 2:
                         if nodeIdx[0] == nodeIdx[1]:
                             face.addSecondaryNode(poly.node(nodeIdx[0]))
+                    else:
+                        face.addSubface(nodeIdx)
 
                 segment_offset += 1
+
+            for k in range(numHoles):
+                r = content[2 + nVerts + i + segment_offset + 1]\
+                    .split()
+                face.addHoleMarker([float(hm) for hm in r[1:]])
+
+                segment_offset += 1
+
         nSegments += segment_offset
 
     # Hole section
@@ -1026,6 +1036,7 @@ def readPLC(filename, comment='#'):
                 raise Exception("Poly file seams corrupt: region section " +
                                 "line (5): " + str(i) + " " + str(len(row)))
 
+    poly.setGeometry(True)
     return poly
 
 
@@ -1202,25 +1213,52 @@ def exportTetgenPoly(poly, filename, float_format='.12e', **kwargs):
     polytxt += '{0:d}{2}1{1}'.format(nBoundaries, linesep, sep)
     # loop over facets, each facet can contain an arbitrary number of holes
     # and polygons, in our case, there is always one polygon per facet.
+
+    hole_str = '{:d}'
+    for m in range(3):
+        hole_str += sep + '{:%s}' % float_format
+
+    hole_str += linesep
+
     for bound in poly.boundaries():
         # one line per facet
         # <# of polygons> [# of holes] [boundary marker]
-        npolys = 1 + len(bound.secondaryNodes())
-        polytxt += '{3}{2}0{2}{0:d}{1}'.format(bound.marker(), linesep,
-                                               sep, npolys)
+        try:
+            nSubs = bound.subfaceCount()
+        except:
+            nSubs = 0
+        try:
+            nHoles = len(bound.holeMarker())
+        except:
+            nHoles = 0
+
+        npolys = 1 + nSubs + len(bound.secondaryNodes())
+        polytxt += '{3}{2}{4}{2}{0:d}{1}'.format(bound.marker(), linesep,
+                                               sep, npolys, nHoles)
         # inner loop over polygons
         # <# of corners> <corner 1> <corner 2> ... <corner #>
         for l in range(1):
             poly_str = '{:d}'.format(bound.nodeCount())
-            for ind in bound.ids():
-                poly_str += sep + '{:d}'.format(ind)
-
+            poly_str += sep + sep.join(['{:d}'.format(n) for n in bound.ids()])
             polytxt += '{0}{1}'.format(poly_str, linesep)
+
+        # loop over subfaces
+        for l in range(nSubs):
+            sub = bound.subface(l)
+            poly_str = '{:d}'.format(len(sub))
+            poly_str += sep + sep.join(['{:d}'.format(n.id()) for n in sub])
+            polytxt += '{0}{1}'.format(poly_str, linesep)
+
         # inner loop over holes
+        
+        if nHoles > 0:
+            for n, hole in enumerate(bound.holeMarker()):
+                polytxt += hole_str.format(n, *hole)
+        
         # not necessary yet ?! why is there an extra hole section?
         # because this is for 2D holes in facets only
 
-        # loop over secondaryNodes add them as single points
+        #loop over secondaryNodes add them as single points
         for l in range(len(bound.secondaryNodes())):
             ind = bound.secondaryNodes()[l].id()
             poly_str = '{:d}'.format(2)
@@ -1246,11 +1284,7 @@ def exportTetgenPoly(poly, filename, float_format='.12e', **kwargs):
     polytxt += '{:d}{}'.format(len(holes), linesep)
     # loop over hole markers
     # <hole #> <x> <y> <z>
-    hole_str = '{:d}'
-    for m in range(3):
-        hole_str += sep + '{:%s}' % float_format
-
-    hole_str += linesep
+    
     for n, hole in enumerate(holes):
         polytxt += hole_str.format(n, *hole)
 
@@ -1405,7 +1439,36 @@ def polyCreateWorld(filename, x=None, depth=None, y=None, marker=0,
     os.system(syscal)
 
 
-def createCube(size=[1.0, 1.0, 1.0], pos=None, boundaryMarker=0, **kwargs):
+def createFacet(mesh, boundaryMarker=None, verbose=True):
+    """Create a coplanar PLC of a 2d mesh or poly
+
+    TODO:
+    * mesh with cell into plc with boundaries
+    * poly account for inner edges
+
+    """
+    if mesh.dimension() != 2:
+        pg.error("need two dimensional mesh or poly")
+
+    if mesh.cellCount() > 0:
+        pg.critical("Implmentme")
+
+    poly = pg.Mesh(dim=3, isGeometry=True)
+    
+    nodes = [poly.createNode(n.pos()).id() for n in mesh.nodes()]
+    
+    if boundaryMarker is None:
+        for rm in mesh.regionMarker():
+            boundaryMarker = rm.marker()
+            break
+
+    poly.createBoundary(nodes, marker=boundaryMarker)
+    
+    return poly
+
+
+def createCube(size=[1.0, 1.0, 1.0], pos=None, rot=None, 
+               boundaryMarker=0, **kwargs):
     """Create plc of a cube
 
     Out of core wrapper for dcfemlib::polytools.
@@ -1417,10 +1480,10 @@ def createCube(size=[1.0, 1.0, 1.0], pos=None, boundaryMarker=0, **kwargs):
     ----------
     size : [x, y, z]
         x, y, and z-size of the cube. Default = [1.0, 1.0, 1.0] in m
-
     pos : pg.Pos [None]
         The center position, default is at the origin.
-
+    rot : pg.Pos [None]
+        Rotate on the center.
     boundaryMarker : int[0]
         Boundary marker for the resulting faces.
 
@@ -1465,6 +1528,9 @@ def createCube(size=[1.0, 1.0, 1.0], pos=None, boundaryMarker=0, **kwargs):
         b.setMarker(boundaryMarker)
 
     poly.scale(size)
+
+    if rot is not None:
+        poly.rotate(rot)
 
     if pos is not None:
         poly.translate(pos)

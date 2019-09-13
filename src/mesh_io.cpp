@@ -1481,7 +1481,7 @@ void Mesh::importSTL(const std::string & fileName, bool isBinary, double snap){
     } // end import binary STL format
 
     Node *n1, *n2, *n3;
-    __MS(allVerts.size())
+    // __MS(allVerts.size())
     for (Index j = 0; j < allVerts.size(); j ++ ){
         if (allVerts[j].size() % 3 == 0 && allVerts[j].size() > 0){
             for (uint i = 0; i < allVerts[j].size() / 3; i ++){

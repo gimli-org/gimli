@@ -55,6 +55,7 @@ Node::Node(const RVector3 & pos, int marker, int id)
 }
 
 Node::Node(const Node & node){
+    init_();
     copy_(node);
 }
 
@@ -81,7 +82,9 @@ void Node::changed_(){
 }
 
 void Node::copy_(const Node & node){
-    //std::cout << "copy node from "  << & node << " into " << this << std::endl;
+
+    // std::cout << "copy node from "  << & node << " into " << this << std::endl;
+    init_();
     pos_    = node.pos();
     marker_ = node.marker();
     setId(node.id());
@@ -89,6 +92,8 @@ void Node::copy_(const Node & node){
 
 void Node::init_(){
     setId(-1);
+    _state = No;
+    _secondaryParent = 0;
 }
 
 void Node::smooth(uint function){

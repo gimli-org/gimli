@@ -71,6 +71,31 @@ std::set< Node * > commonNodes(const ContainerOfMeshEntities & c){
     return commons;
 }
 
+class DLLEXPORT RegionMarker : public RVector3{
+public:
+    RegionMarker(const RVector3 & pos, int marker, double area=0.0, 
+                 bool hole=false)
+    : RVector3(pos), marker_(marker), area_(area), isHole_(hole){}
+
+    ~RegionMarker(){}
+
+    inline void setMarker(SIndex marker) {marker_ = marker;}
+    inline int marker() const {return marker_;}
+
+    inline void setArea(double area) {area_ = area;}
+    inline double area() const {return area_;}
+
+    inline void setPos(const Pos & pos) {copy_(pos);}
+
+    bool isHole() const { return isHole_; }
+    inline void setHole(bool h) { isHole_ = h; }
+
+protected:
+    int marker_;
+    double area_;
+    bool isHole_;
+};
+
 class DLLEXPORT MeshEntity : public BaseEntity {
 public:
 
@@ -175,6 +200,8 @@ public:
     const RMatrix & uxCache() const { return uxCache_; }
 
     void addSecondaryNode(Node * n);
+
+    void delSecondaryNode(Node * n);
 
     const std::vector < Node * > & secondaryNodes() const;
 
@@ -554,22 +581,45 @@ private:
 
 class DLLEXPORT PolygonFace : public Boundary {
     /*! */
-    public:
-        PolygonFace(const std::vector < Node * > & nodes);
+public:
+    typedef RVector3 HoleMarker;
+    typedef std::vector< HoleMarker > HoleMarkerList;
+
+    PolygonFace(const std::vector < Node * > & nodes);
         
-        ~PolygonFace();
+    ~PolygonFace();
 
-        virtual uint dim() const { return 3; }
+    virtual uint dim() const { return 3; }
 
-        virtual uint rtti() const { return MESH_POLYGON_FACE_RTTI; }    
+    virtual uint rtti() const { return MESH_POLYGON_FACE_RTTI; }    
 
-        /*Insert node into the polygon. Node needs to touch the polygon.
-        The node will be inserted in the nodeList or as secondary node if its 
-        not on an edge.*/
-        void insertNode(Node * node, double tol=TOLERANCE);
+    /*! Insert node into the polygon. Node needs to touch the polygon.
+    The node will be inserted in the nodeList or as secondary node if its 
+    not on an edge.*/
+    void insertNode(Node * node, double tol=TOLERANCE);
 
-    protected:
-    private:
+    /*! Insert nodes for a subpolygon. 
+    All nodes regarding the parent mesh and need to be inside the face.*/
+    void addSubface(const std::vector < Node * > & nodes);
+
+    Index subfaceCount() const {return this->subfaces_.size();}
+
+    const std::vector < Node * > & subface(Index i) const;
+
+    /*! Add a hole marker for tetgen or triangle creation if the mesh
+     * is a PLC */
+    void addHoleMarker(const RVector3 & pos);
+
+    void delHoleMarker(const RVector3 & pos);
+
+    /*!Return read only reference for all defined hole regions. */
+    const HoleMarkerList & holeMarker() const;
+
+protected:
+    std::vector < std::vector < Node * > > subfaces_;
+    HoleMarkerList holeMarker_;
+private:
+
 };
 
 class DLLEXPORT EdgeCell : public Cell {

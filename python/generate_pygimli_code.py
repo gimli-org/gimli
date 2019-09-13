@@ -346,7 +346,7 @@ def generate(defined_symbols, extraIncludes):
                 'Tet10NodeSplitZienk',
                 'Hex20NodeSplit',
                 'Prism15NodeSplit',
-                'Pyramid13NodeSplit'
+                'Pyramid13NodeSplit',
                 ]
             )
 
@@ -377,13 +377,27 @@ def generate(defined_symbols, extraIncludes):
             )
 
     exclude(main_ns.classes,
-            name=['ABS_', 'ACOT', 'ATAN', 'COS', 'COT', 'EXP',
+            name=['ABS_', 'ACOT', 'ATAN', 'COS', 'COT', 'EXP', 'EXP10',
                   'ABS_', 'LOG', 'LOG10', 'SIGN', 'SIN', 'SQRT', 'SQR',
                   'TAN', 'TANH',
                   'PLUS', 'MINUS', 'MULT', 'DIVID', 'BINASSIGN', 'cerrPtr',
+                  'ISINF', 'ISINFNAN',
                   'cerrPtrObject', 'coutPtr', 'coutPtrObject', 'deletePtr',
                   'edge_',
                   'distancePair_', 'IPCMessage', 'PythonGILSave',
+                  'XAxis__', 'YAxis__', 'ZAxis__',
+                'Variable',
+                'BVectorIter',
+                'CVectorIter',
+                'RVectorIter',
+                'Electrode',
+                'ElectrodeShape',
+                'ElectrodeShapeDomain',
+                'ElectrodeShapeEntity',
+                'ElectrodeShapeNode',
+                'ElectrodeShapeNodesWithBypass',
+                'FunctionDD',
+                'H2SparseMapMatrix',
                   ]
             )
 
@@ -410,6 +424,10 @@ def generate(defined_symbols, extraIncludes):
           '::GIMLI::__VectorExpr',
           '::GIMLI::Expr',
           '::GIMLI::InversionBase',
+          'GIMLI::XAxis__',
+          '::GIMLI::YAxis__',
+          'GIMLI::ZAxis__',
+          'GIMLI::ElectrodeShape',
           'GIMLI::MatrixElement',
           'GIMLI::__VectorUnaryExprOp',
           'GIMLI::__VectorBinaryExprOp',
@@ -421,6 +439,14 @@ def generate(defined_symbols, extraIncludes):
           'std::vector<unsigned long',
           'std::vector<bool',
           'std::vector<double',
+          'std::set<',
+          'Variable',
+          'Variable<GIMLI::XAxis__',
+          'BVectorIter',
+          'CVectorIter',
+          'IVectorIter',
+          'RVectorIter',
+          'FunctionDD',
           ]
 
     for c in main_ns.free_functions():
@@ -434,7 +460,7 @@ def generate(defined_symbols, extraIncludes):
 
     for c in main_ns.classes():
         for e in ex:
-            if c.decl_string.startswith(e):
+            if c.decl_string.find(e) > -1:
                 try:
                     c.exclude()
                     logger.debug("Exclude: " + c.name)

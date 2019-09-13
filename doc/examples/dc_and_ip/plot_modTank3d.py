@@ -21,7 +21,7 @@ import pygimli.meshtools as mt
 from pygimli.physics.ert import simulate as simulateERT
 
 ###############################################################################
-# In contrast to field measurements experimental tanks have well-defined
+# In contrast to field measurements, experimental tanks have well-defined
 # spatial dimensions and need different boundary conditions (BC).
 #
 # As there is no current flow through the tanks boundary at all, homogeneous

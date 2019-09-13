@@ -125,34 +125,12 @@ inline std::ostream & operator << (std::ostream & str, const BoundingBox & bb){
 
 DLLEXPORT std::ostream & operator << (std::ostream & str, const Mesh & mesh);
 
-
-class DLLEXPORT RegionMarker : public RVector3{
-public:
-    RegionMarker(const RVector3 & pos, int marker, double area=0.0)
-    : RVector3(pos), marker_(marker), area_(area){}
-
-    ~RegionMarker(){}
-
-    inline void setMarker(SIndex marker) {marker_ = marker;}
-    inline int marker() const {return marker_;}
-
-    inline void setArea(double area) {area_ = area;}
-    inline double area() const {return area_;}
-
-    inline void setPos(const Pos & pos) {copy_(pos);}
-
-protected:
-    int marker_;
-    double area_;
-};
-
-
 class DLLEXPORT Mesh {
 
 public:
     typedef std::vector< RegionMarker > RegionMarkerList;
     typedef RVector3 HoleMarker;
-    typedef std::vector< RVector3 > HoleMarkerList;
+    typedef PosVector HoleMarkerList;
 
     /*! Default constructor, create empty mesh with dimension dim
     If this mesh is supposed to be a geometry definition, all
@@ -508,13 +486,7 @@ public:
     //** end mesh modification stuff
 
     /*! apply a 4x4 transformation matrix to the whole mesh*/
-    template < class Matrix > Mesh & transform(const Matrix & mat){
-//         std::for_each(nodeVector_.begin(), nodeVector_.end(),
-//                        bind2nd(std::mem_fun(&Node::pos().transform), mat));
-        for (uint i = 0; i < nodeVector_.size(); i ++) nodeVector_[i]->pos().transform(mat);
-        rangesKnown_ = false;
-        return *this;
-    }
+    Mesh & transform(const RMatrix & mat);
 
     //** start I/O stuff
     int save(const std::string & fileName, IOFormat format = Binary) const;
@@ -732,7 +704,7 @@ public:
     void addRegionMarker(const RVector3 & pos, int marker, double area=0);
     void addRegionMarker(const RegionMarker & reg);
 
-    const RegionMarkerList & regionMarker() const { return regionMarker_; }
+    const RegionMarkerList & regionMarkers() const { return regionMarker_; }
 
     /*! Return the pointer to region marker with the marker is i or throws
     an exception of there is no such marker.*/
