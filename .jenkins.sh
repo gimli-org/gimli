@@ -58,6 +58,7 @@ if [[ $core_update -ge 1 ]]; then
      -DBoost_PYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libboost_python-py35.so
   make -j 8 gimli
   make pygimli J=4
+  make gtest
 else
   echo "# No core changes detected. #"
 fi

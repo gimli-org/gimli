@@ -1,5 +1,6 @@
 """Tests for pygimli.meshtools.polytools
 """
+import numpy as np
 import unittest
 
 import pygimli as pg
@@ -277,23 +278,31 @@ class Test3DMerge(unittest.TestCase):
         # pg.show(mt.createMesh(w))
 
     def test_face_in_face(self):
-        w = mt.createCube(marker=1)
-
+        """Test subface with different marker constructed with hole marker."""
+        w = mt.createCube(marker=1, boundaryMarker=1)
         b = w.boundary(2)
 
-        pad = mt.createFacet(mt.createCircle(radius=0.2, marker=2, segments=4))
-        rot = pg.core.getRotation(pad.boundary(0).norm(), b.norm())
-        pad.boundary(0).addHoleMarker([0.0, 0.0, 0.0])
+        pad = mt.createFacet(mt.createCircle(radius=0.2, segments=12,
+                                             isHole=True))
+        b2 = pad.boundary(0)
 
-        # TODO  holemarker and secondary nodes need to be transformed
-
+        # rotate to match target norm and pos
+        rot = pg.core.getRotation(b2.norm(), b.norm())
         pad.transform(rot)
         pad.translate(b.center())
-        pad.exportPLC('pad.poly')
-        w.copyBoundary(pad.boundary(0))
+        # create a boundary with new marker match the hole
+        w.copyBoundary(b2)
 
-        #pg.show(w)
-        pg.show(mt.createMesh(w))
+        w.createBoundary(w.nodes([w.createNode(n.pos()).id() for n in b2.nodes() ]), marker=2)
+
+        w.exportPLC('pad.poly')
+        mesh = mt.createMesh(w)
+
+        np.testing.assert_array_equal(pg.unique(pg.sort(mesh.boundaryMarkers())), [1, 2])
+
+        # print(mesh)
+        # mesh.exportBoundaryVTU('b.vtu')
+        #pg.show(mesh)
 
 if __name__ == '__main__':
     unittest.main()

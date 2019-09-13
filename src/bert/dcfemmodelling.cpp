@@ -1093,7 +1093,7 @@ RVector DCMultiElectrodeModelling::createDefaultStartModel(){
 RVector DCMultiElectrodeModelling::response(const RVector & model,
                                             double background){
 
-    if (std::fabs(min(dataContainer_->get("k"))) < TOLERANCE){
+    if (min(abs(dataContainer_->get("k"))) < TOLERANCE){
         if (!(this->topography() || buildCompleteElectrodeModel_)){
             dataContainer_->set("k",
                               this->calcGeometricFactor(this->dataContainer()));

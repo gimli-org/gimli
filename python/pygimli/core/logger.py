@@ -53,7 +53,7 @@ def _get_class_from_frame(fr):
             return getattr(instance, '__class__', None)
     return None
 
-def whereAmI(nr=3):
+def whereAmI(nr=2):
     nr = min(len(inspect.stack())-1, nr)
     clsName = _get_class_from_frame(inspect.stack()[nr][0])
     method = inspect.stack()[nr].function

@@ -399,16 +399,15 @@ else()
     endif()
 endif()
 
-
 find_or_build_package(pygccxml pygccxml LOCAL)
 find_or_build_package(pyplusplus pygccxml LOCAL)
 
 if (CASTER_EXECUTABLE)
-    set (CASTER_FOUND TRUE)
+set (CASTER_FOUND TRUE)
 endif()
 
 if (PYTHON_EXECUTABLE)
-    set (PYTHON_FOUND TRUE)
+set (PYTHON_FOUND TRUE)
 endif()
 
 if (Boost_PYTHON_LIBRARY)

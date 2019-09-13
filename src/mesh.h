@@ -486,7 +486,7 @@ public:
     //** end mesh modification stuff
 
     /*! apply a 4x4 transformation matrix to the whole mesh*/
-    Mesh & transform(const RMatrix & mat);
+    void transform(const RMatrix & mat);
 
     //** start I/O stuff
     int save(const std::string & fileName, IOFormat format = Binary) const;

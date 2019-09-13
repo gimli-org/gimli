@@ -361,7 +361,7 @@ def createCircle(pos=None, radius=1, segments=12, start=0, end=2.*math.pi,
         setPolyRegionMarker(poly, **kwargs)
 
     # need a better way mess with these or wrong kwargs
-    # pg.warnNonEmptyArgs(kwargs)
+    #pg.warnNonEmptyArgs(kwargs)
 
     return poly
 
@@ -656,9 +656,8 @@ def mergePLC3D(plcs, tol=1e-3):
             for rm in p.regionMarker():
                 p0.addRegionMarker(rm)
 
-        if len(p.holeMarker()) > 0:
-            for hm in p.holeMarker():
-                p0.addHoleMarker(hm)
+        for hm in p.holeMarker():
+            p0.addHoleMarker(hm)
 
     return p0
 
@@ -1228,7 +1227,7 @@ def exportTetgenPoly(poly, filename, float_format='.12e', **kwargs):
         except:
             nSubs = 0
         try:
-            nHoles = len(bound.holeMarker())
+            nHoles = len(bound.holeMarkers())
         except:
             nHoles = 0
 
@@ -1250,11 +1249,10 @@ def exportTetgenPoly(poly, filename, float_format='.12e', **kwargs):
             polytxt += '{0}{1}'.format(poly_str, linesep)
 
         # inner loop over holes
-        
         if nHoles > 0:
-            for n, hole in enumerate(bound.holeMarker()):
+            for n, hole in enumerate(bound.holeMarkers()):
                 polytxt += hole_str.format(n, *hole)
-        
+
         # not necessary yet ?! why is there an extra hole section?
         # because this is for 2D holes in facets only
 
@@ -1284,7 +1282,7 @@ def exportTetgenPoly(poly, filename, float_format='.12e', **kwargs):
     polytxt += '{:d}{}'.format(len(holes), linesep)
     # loop over hole markers
     # <hole #> <x> <y> <z>
-    
+
     for n, hole in enumerate(holes):
         polytxt += hole_str.format(n, *hole)
 
@@ -1366,7 +1364,8 @@ def syscallTetgen(filename, quality=1.2, area=0, preserveBoundary=False,
 
     syscal += ' ' + filebody + '.poly'
 
-    print(syscal)
+    if verbose:
+        print(syscal)
     pg.debug(syscal)
 
     system(syscal)
@@ -1451,30 +1450,28 @@ def createFacet(mesh, boundaryMarker=None, verbose=True):
         pg.error("need two dimensional mesh or poly")
 
     if mesh.cellCount() > 0:
-        pg.critical("Implmentme")
+        pg.critical("Implementme")
 
     poly = pg.Mesh(dim=3, isGeometry=True)
-    
+
     nodes = [poly.createNode(n.pos()).id() for n in mesh.nodes()]
-    
+
     if boundaryMarker is None:
         for rm in mesh.regionMarker():
             boundaryMarker = rm.marker()
-            break
+            continue
 
-    poly.createBoundary(nodes, marker=boundaryMarker)
-    
+    b = poly.createBoundary(nodes, marker=boundaryMarker or 0)
+
+    for h in mesh.holeMarker():
+        b.addHoleMarker(h)
+
     return poly
 
 
-def createCube(size=[1.0, 1.0, 1.0], pos=None, rot=None, 
-               boundaryMarker=0, **kwargs):
-    """Create plc of a cube
-
-    Out of core wrapper for dcfemlib::polytools.
-
-    Note, there is a bug in the old polytools which ignores the area settings
-    for marker == 0.
+def createCube(size=[1.0, 1.0, 1.0],
+               pos=None, rot=None, boundaryMarker=0, **kwargs):
+    """Create cube PLC as geometrie definition.
 
     Parameters
     ----------
@@ -1510,22 +1507,23 @@ def createCube(size=[1.0, 1.0, 1.0], pos=None, rot=None,
         The resulting polygon is a :gimliapi:`GIMLI::Mesh`.
 
     """
-    tmp = pg.optImport('tempfile')
-    _, namePLC = tmp.mkstemp(suffix='.poly')
+    poly = pg.Mesh(3, isGeometry=True)
 
-    pg.debug("Create temporary file:", namePLC)
-    syscal = 'polyCreateCube ' + namePLC
+    for y in [-0.5, 0.5]:
+        poly.createNode(-0.5, y, -0.5)
+        poly.createNode( 0.5, y, -0.5)
+        poly.createNode( 0.5, y,  0.5)
+        poly.createNode(-0.5, y,  0.5)
 
-    pg.debug(syscal)
-    os.system(syscal)
-    poly = readPLC(namePLC)
-    try:
-        os.remove(namePLC)
-    except Exception as e:
-        pg.error("can't remove:", namePLC)
+    faces = [[4, 5, 1, 0],
+             [5, 6, 2, 1],
+             [6, 7, 3, 2],
+             [7, 4, 0, 3],
+             [0, 1, 2, 3],
+             [7, 6, 5, 4],]
 
-    for b in poly.boundaries():
-        b.setMarker(boundaryMarker)
+    for f in faces:
+        poly.createPolygonFace(poly.nodes(f), marker=boundaryMarker)
 
     poly.scale(size)
 
@@ -1539,8 +1537,58 @@ def createCube(size=[1.0, 1.0, 1.0], pos=None, rot=None,
 
     return poly
 
+def extrude(p2, z=-1.0, boundaryMarker=0, **kwargs):
+    """Create 3D body by extruding a closed 2D poly into z direction
 
-def createCylinder(radius, height, nSegments=8, area=0.0, pos=None, **kwargs):
+    Parameters
+    ----------
+    p2 : :gimliapi:`GIMLI::Mesh`
+        2D geometry
+
+    z : float [-1.0]
+        2D geometry
+
+    Other Parameters
+    ----------------
+    ** kwargs:
+        Marker related arguments:
+        See :py:mod:`pygimli.meshtools.polytools.setPolyRegionMarker`
+
+    Returns
+    -------
+    poly : :gimliapi:`GIMLI::Mesh`
+        The resulting polygon is a :gimliapi:`GIMLI::Mesh`.
+    """
+    if p2.dimension() != 2:
+        pg.error("need two dimensional mesh or poly")
+
+    if p2.cellCount() > 0:
+        pg.critical("Implementme")
+
+
+    poly = pg.Mesh(3, isGeometry=True)
+    top = []
+    for n in p2.nodes():
+        top.append(poly.createNode(n.pos()).id())
+
+    bot = []
+    for n in p2.nodes():
+        bot.append(poly.createNode(n.pos() + [0.0, 0.0, z]).id())
+    N = len(top)
+
+    poly.createPolygonFace(poly.nodes(top), marker=boundaryMarker)
+    poly.createPolygonFace(poly.nodes(bot[::-1]), marker=boundaryMarker)
+
+    for i in range(len(top)):
+        poly.createPolygonFace(poly.nodes([i, N + i, N + (i + 1)%N, (i+1)%N]),
+                               marker=boundaryMarker)
+
+    setPolyRegionMarker(poly, **kwargs)
+
+    return poly
+
+def createCylinder(radius=1, height=1, nSegments=8,
+                   pos=None, rot=None, boundaryMarker=0, **kwargs):
     """Create plc of a cylinder.
 
     Out of core wrapper for dcfemlib::polytools.
@@ -1559,20 +1607,14 @@ def createCylinder(radius, height, nSegments=8, area=0.0, pos=None, **kwargs):
     nSegments : int [8]
         Number of segments of the cylinder.
 
-    area : float [0.0]
-        Largest size for the resulting tetrahedrons.
-
     pos : pg.Pos [None]
         The center position, default is at the origin.
 
-    marker : int [1]
-        Cell marker the resulting tetrahedrons.
-
     Other Parameters
     ----------------
-    **kwargs
-        Additional kwargs from
-        :py:mod:`pygimli.meshtools.polytools.setPolyRegionMarker`
+    ** kwargs:
+        Marker related arguments:
+        See :py:mod:`pygimli.meshtools.polytools.setPolyRegionMarker`
 
     Returns
     -------
@@ -1580,35 +1622,20 @@ def createCylinder(radius, height, nSegments=8, area=0.0, pos=None, **kwargs):
         The resulting polygon is a :gimliapi:`GIMLI::Mesh`.
 
     """
-    marker = kwargs.pop('marker', 1)
-    tmp = pg.optImport('tempfile')
+    circ = createCircle(radius=radius, segments=nSegments)
+    poly = extrude(circ, z=height, boundaryMarker=boundaryMarker)
+    # move it to z=0
+    poly.translate([0.0, 0.0, -height/2])
 
-    _, namePLC = tmp.mkstemp(suffix='.poly')
-
-    pg.debug("Create temporary file:", namePLC)
-    syscal = 'polyCreateCube -Z '  \
-        + ' -s ' + str(nSegments) \
-        + ' -m ' + str(marker) \
-        + ' -a ' + str(area)
-
-    syscal = syscal + ' ' + namePLC
-
-    pg.debug(syscal)
-    os.system(syscal)
-
-    poly = readPLC(namePLC)
-
-    poly.scale([radius*2, radius*2, height])
+    if rot is not None:
+        c = pg.center(poly.positions())
+        poly.translate(-c)
+        poly.rotate(rot)
+        poly.translate(c)
 
     if pos is not None:
         poly.translate(pos)
 
-    try:
-        os.remove(namePLC)
-    except Exception as e:
-        pg.error("can't remove:", namePLC)
-
-    #setPolyRegionMarker(**kwargs)
     return poly
 
 

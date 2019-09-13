@@ -198,6 +198,7 @@ class TestMisc(unittest.TestCase):
         m2.node(0).setPos([1.0, 0.0])
         self.assertTrue(m1.hash() == m2.hash())
 
+        
     # does not work .. need time to implement          
     # def test_DataContainerWrite(self):
     #     data = pg.DataContainer()
@@ -205,21 +206,12 @@ class TestMisc(unittest.TestCase):
     #     fi = open('test2.dat', 'w')
     #     data.write(fi)
     #     fi.close()
+    
+    def test_DataTypes(self):
+        pg.core.showSizes()
+
 
 if __name__ == '__main__':
-    # pg.setDeepDebug(1)
-
-    # t = TestMisc()
-    # t.test_Trans()
-    # # t.test_Hash()
-    # # t.test_HashData()
-    # # t.test_HashMesh()
-    # exit()
-    
-    # t.test_PosConstMember()
-    #t.test_DataContainerSensors()
-    #t.test_Int64Problem()
-
     unittest.main()
 
 

@@ -282,7 +282,9 @@ def extrudeMesh(mesh, a, **kwargs):
     The marker of the edges are extruded as cells with same marker.
     Optionally all y-coordinates can be adjusted to become equal at the end
 
-    Generates a three dimensional mesh by extruding a two dimensional mesh along the z-coordinate tranforming triangless into prisms or quads into hexahedrons.
+    Generates a three dimensional mesh by extruding a two dimensional mesh 
+    along the z-coordinate tranforming triangless into prisms or quads into 
+    hexahedrons.
     3D cell marker are set from 2D cell marker.
     The boundary marker for the side boundaries are set from edge marker in mesh.
 
@@ -323,6 +325,7 @@ def extrudeMesh(mesh, a, **kwargs):
     ...                    adjustBottom=True)
     >>> _ = pg.show(m, m.cellMarkers(), showMesh=True)
     """
+    # case 1d or edge list to 2d grid 
     if mesh.dim() == 1 or (mesh.dim() == 2 and mesh.cellCount() == 0):
 
         adjustBack = kwargs.pop('adjustBottom', False)
