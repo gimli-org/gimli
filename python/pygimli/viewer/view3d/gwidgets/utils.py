@@ -160,6 +160,8 @@ class GToolBar(QWidget):
         self.btn_slice_plane.setCheckable(True)
         self.btn_slice_volume = QPushButton("Volume")
         self.btn_slice_volume.setCheckable(True)
+        # for the time being...
+        self.btn_slice_volume.setEnabled(False)
         hb = QHBoxLayout()
         hb.addWidget(self.btn_slice_plane)
         hb.addWidget(self.btn_slice_volume)
