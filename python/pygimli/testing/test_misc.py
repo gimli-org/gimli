@@ -119,27 +119,28 @@ class TestMisc(unittest.TestCase):
 
     def test_Int64Problem(self):
         data = pg.DataContainerERT()
+        data.createFourPointData(0, 0, 1, 2, 3)
         pos = np.arange(4, dtype=np.int)
-        data.createFourPointData(0, pos[0], pos[1], pos[2], pos[3])
-        pos = np.arange(4, dtype=np.int32)
         data.createFourPointData(1, pos[0], pos[1], pos[2], pos[3])
-        pos = np.arange(4, dtype=np.int64)
+        pos = np.arange(4, dtype=np.int32)
         data.createFourPointData(2, pos[0], pos[1], pos[2], pos[3])
-        pos = np.arange(4, dtype=np.float)
+        pos = np.arange(4, dtype=np.int64)
         data.createFourPointData(3, pos[0], pos[1], pos[2], pos[3])
-        pos = np.arange(4, dtype=np.float32)
+        pos = np.arange(4, dtype=np.float)
         data.createFourPointData(4, pos[0], pos[1], pos[2], pos[3])
-        pos = np.arange(4, dtype=np.float64)
+        pos = np.arange(4, dtype=np.float32)
         data.createFourPointData(5, pos[0], pos[1], pos[2], pos[3])
-        pos = np.arange(4)
+        pos = np.arange(4, dtype=np.float64)
         data.createFourPointData(6, pos[0], pos[1], pos[2], pos[3])
+        pos = np.arange(4)
+        data.createFourPointData(7, pos[0], pos[1], pos[2], pos[3])
         pos = range(4)
         data.addFourPointData(pos[0], pos[1], pos[2], pos[3])
         #print(data('a'), data('b'), data('m'), data('n'))
-        self.assertEqual(sum(data('a')), 8*0)
-        self.assertEqual(sum(data('b')), 8*1)
-        self.assertEqual(sum(data('m')), 8*2)
-        self.assertEqual(sum(data('n')), 8*3)
+        self.assertEqual(sum(data('a')), 9*0)
+        self.assertEqual(sum(data('b')), 9*1)
+        self.assertEqual(sum(data('m')), 9*2)
+        self.assertEqual(sum(data('n')), 9*3)
 
     def test_PosConstMember(self):
         p1 = pg.Pos(1.0, 0.0, 0.0)
@@ -212,6 +213,7 @@ class TestMisc(unittest.TestCase):
 
 
 if __name__ == '__main__':
+    pg.core.setDeepDebug(0)
     unittest.main()
 
 

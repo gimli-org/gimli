@@ -328,20 +328,5 @@ class TestRVectorMethods(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    pg.setDeepDebug(0)
-    # test = TestRVectorMethods()
-    # test.test_CVectorToNumpy()
-    # sys.exit()
-
-    #test.test_IndexArrayToNumpy()
-    #test.test_NumpyToIVector()
-    #test.test_NumpyToScalar()
-    # test.test_NumpyToBVector()
-    # exit()
-    # test.test_BVectorToNumpy()
-    # test.test_NumpyToIVector()
-    # test.test_NumpyToRVector()
-    # exit()
-
-
+    pg.core.setDeepDebug(0)
     unittest.main()
