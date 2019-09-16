@@ -72,7 +72,6 @@ def showMesh3DVista(mesh, data=None, **kwargs):
     _, tmp = tempfile.mkstemp(suffix=".vtk")
     mesh.exportVTK(tmp)
     grid = pyvista.read(tmp)
-    os.remove(tmp)
 
     hold = kwargs.pop("hold", False)
     cMap = kwargs.pop('cMap', 'viridis')
