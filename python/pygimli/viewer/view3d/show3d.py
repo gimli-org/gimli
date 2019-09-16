@@ -1,13 +1,8 @@
 """
-Todo
-----
-
-+ cache settings for next run
-+ log scale
-+ coverage, i.e. with opacity?
-+ slider to look in volume
+BUGS:
++ varying the limits (eg exclude a marker) only has effect on the scalar_bar (color_bar), but not on the display of the vtk
++ there is no good coming back from volumetric slicing atm
 """
-
 
 from shutil import copyfile
 import signal
@@ -94,7 +89,7 @@ class Show3D(QMainWindow):
         self.frame = QFrame()
 
         # add the pyvista interactor object
-        self.pyvista_widget = pyvista.QtInteractor(self.frame)
+        self.pyvista_widget = pyvista.QtInteractor()
 
         vlayout = QVBoxLayout()
         vlayout.setContentsMargins(0, 0, 0, 0)
@@ -133,8 +128,8 @@ class Show3D(QMainWindow):
         self.statusbar.showMessage("{}".format(self.tmpMesh))
         self.mesh = mesh
         self._actor = self.pyvista_widget.add_mesh(
-            self.mesh, cmap=cMap, show_edges=True)
-        self.pyvista_widget.show_bounds()
+            mesh, cmap=cMap, show_edges=True)
+        self.pyvista_widget.show_bounds(all_edges=True, minor_ticks=True)
         self.pyvista_widget.reset_camera()
 
         # set the correctly chosen colormap
@@ -147,6 +142,10 @@ class Show3D(QMainWindow):
 
         self.toolbar.cbbx_cmap.setCurrentText(cMap)
         self.allowMeshParameters()
+        # pg._d(self.mesh.array_names)
+        # pg._d([e for e in dir(self.mesh) if 'bar' in e])
+        # print("-"*60)
+        # pg._d([e for e in dir(self.pyvista_widget) if 'bar' in e])
         self._allowSignals()
 
         # set slicers to center after they're enabled
@@ -167,7 +166,7 @@ class Show3D(QMainWindow):
 
         Note
         ----
-        This apparantly needs to happen when using the gui since on call the
+        This apparently needs to happen when using the gui since on call the
         cell_arrays will be emptied...
         """
         # enable only when there is something to show
@@ -178,13 +177,13 @@ class Show3D(QMainWindow):
 
         # FIXME: what about the point arrays?!
         for k, v in self.mesh.cell_arrays.items():
-            self.mesh._add_cell_scalar(v, k)
+            self.mesh._add_cell_array(v, k)
             self.extrema[k] = {
                 'orig': {'min': min(v), 'max': max(v)},
                 'user': {'min': min(v), 'max': max(v)}
             }
         # supply the combobox with the names to choose from for display
-        self.toolbar.cbbx_params.addItems(self.mesh.scalar_names)
+        self.toolbar.cbbx_params.addItems(self.mesh.array_names)
         # get the current set parameter
         curr_param = self.toolbar.cbbx_params.currentText()
         # set the first cMin/cMax
@@ -205,10 +204,12 @@ class Show3D(QMainWindow):
         ----
         May be overloaded.
         """
+        # remove the currently displayed mesh
+        self.pyvista_widget.remove_actor(self._actor)
         if param is not None and param not in CMAPS and not isinstance(param, int):
             # change to the desired parameter distribution
             self.mesh.set_active_scalar(param)
-            # update the minima and maxima
+            # update the minima and maxima in the limit range
             self.toolbar.spbx_cmin.setRange(
                 self.extrema[param]['user']['min'], self.extrema[param]['user']['max'])
             self.toolbar.spbx_cmax.setRange(
@@ -221,7 +222,7 @@ class Show3D(QMainWindow):
             cMap += '_r'
 
         mesh = self.mesh
-        if self.toolbar.grp_slice.isChecked():
+        if self.toolbar.btn_slice_plane.isChecked() and not self.toolbar.btn_slice_volume.isChecked():
             x_val = self.toolbar.slice_x.value()
             y_val = self.toolbar.slice_y.value()
             z_val = self.toolbar.slice_z.value()
@@ -244,10 +245,14 @@ class Show3D(QMainWindow):
         # NOTE: this returns [camera position, focal point, and view up]
         self.camera_pos = self.pyvista_widget.camera_position[0]
 
-        # remove the currently displayed mesh
-        self.pyvista_widget.remove_actor(self._actor)
         # add the modified one
-        self._actor = self.pyvista_widget.add_mesh(
+        if self.toolbar.btn_slice_volume.isChecked() and not self.toolbar.btn_slice_plane.isChecked():
+            self._actor = self.pyvista_widget.add_mesh_clip_plane(
+                mesh, cmap=cMap, show_edges=True)
+        else:
+            # in case the plane widget was on.. turn it off
+            self.pyvista_widget.disable_plane_widget()
+            self._actor = self.pyvista_widget.add_mesh(
             mesh, cmap=cMap, show_edges=True)
 
         # update stuff in the toolbar
@@ -261,22 +266,18 @@ class Show3D(QMainWindow):
         When user set limits are made and finished/accepted the color bar
         needs to change.
         """
-        content_min = self.toolbar.spbx_cmin.value()
-        content_max = self.toolbar.spbx_cmax.value()
-        if content_min != '' or content_max != '':
-            # get the user defined limits
-            cmin = float(content_min)
-            cmax = float(content_max)
-            if cmax > cmin:
-                # get the active scalar/parameter that is displayed currently
-                param = self.mesh.active_scalar_name
+        cmin = float(self.toolbar.spbx_cmin.value())
+        cmax = float(self.toolbar.spbx_cmax.value())
+        if cmax >= cmin:
+            # get the active scalar/parameter that is displayed currently
+            param = self.mesh.active_scalar_name
 
-                # update the user extrema
-                self.extrema[param]['user']['min'] = str(cmin)
-                self.extrema[param]['user']['max'] = str(cmax)
-
-                self.pyvista_widget.update_scalar_bar_range(
-                    [cmin, cmax], name=param)
+            # update the user extrema
+            self.extrema[param]['user']['min'] = cmin
+            self.extrema[param]['user']['max'] = cmax
+            # NOTE: has no effect on the displayed vtk
+            # pg._d("RESET SCALAR BAR LIMITS")
+            self.pyvista_widget.update_scalar_bar_range([cmin, cmax])
         self.pyvista_widget.update()
 
     def toggleBbox(self):
@@ -284,7 +285,9 @@ class Show3D(QMainWindow):
         Toggle the visibility of the axis grid surrounding the model.
         """
         checked = not self.toolbar.btn_bbox.isChecked()
-        self.pyvista_widget.show_grid(
+        self.pyvista_widget.show_bounds(
+            all_edges=checked,
+            minor_ticks=checked,
             show_xaxis=checked,
             show_yaxis=checked,
             show_zaxis=checked,
@@ -335,7 +338,7 @@ class Show3D(QMainWindow):
         self.updateParameterView(param)
 
     def _enableSlicers(self):
-        if self.toolbar.grp_slice.isChecked():
+        if self.toolbar.btn_slice_plane.isChecked():
             self.toolbar.slice_x.setEnabled(True)
             self.toolbar.slice_y.setEnabled(True)
             self.toolbar.slice_z.setEnabled(True)
@@ -360,25 +363,31 @@ class Show3D(QMainWindow):
         self.toolbar.chbx_threshold.clicked.connect(self._checkStatusThreshold)
         self.toolbar.btn_apply.clicked.connect(self.updateParameterView)
         self.toolbar.btn_reset.clicked.connect(self.resetExtrema)
-        self.toolbar.grp_slice.clicked.connect(self._enableSlicers)
-        self.toolbar.grp_slice.clicked.connect(self._checkStatusSlice)
+        self.toolbar.btn_slice_plane.clicked.connect(self._checkStatusPlaneSlice)
+        self.toolbar.btn_slice_volume.clicked.connect(self._checkStatusVolumeSlice)
         self.toolbar.slice_x.sliderReleased.connect(self.updateParameterView)
         self.toolbar.slice_y.sliderReleased.connect(self.updateParameterView)
         self.toolbar.slice_z.sliderReleased.connect(self.updateParameterView)
 
-    def _checkStatusSlice(self):
-        """
-        Since its either threshold or slice, just disable the other.
-        """
-        if self.toolbar.grp_slice.isChecked():
-            self.toolbar.chbx_threshold.setChecked(False)
+    def _checkStatusPlaneSlice(self):
+        if self.toolbar.btn_slice_plane.isChecked():
+            self.toolbar.btn_slice_volume.setChecked(False)
+        self.toolbar.chbx_threshold.setChecked(False)
+        self._enableSlicers()
+
+    def _checkStatusVolumeSlice(self):
+        if self.toolbar.btn_slice_volume.isChecked():
+            self.toolbar.btn_slice_plane.setChecked(False)
+        self.toolbar.chbx_threshold.setChecked(False)
+        self._enableSlicers()
 
     def _checkStatusThreshold(self):
         """
         Since its either threshold or slice, just disable the other.
         """
         if self.toolbar.chbx_threshold.isChecked():
-            self.toolbar.grp_slice.setChecked(False)
+            self.toolbar.btn_slice_plane.setChecked(False)
+            self.toolbar.btn_slice_volume.setChecked(False)
 
 
 if __name__ == '__main__':

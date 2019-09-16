@@ -137,6 +137,7 @@ function(find_python_module module)
 
     if (${module}_FOUND)
         set( ${module}_FOUND ${${module}_FOUND} CACHE INTERNAL ${module}_FOUND)
+        set( ${module}_LOC ${_${module}_location} CACHE INTERNAL ${module}_LOC)
     endif()
 
 endfunction(find_python_module)
