@@ -35,7 +35,7 @@ class TestManagers(unittest.TestCase):
         ra *= 1. + pg.math.randn(len(ra)) * err
 
         model = vmdMgr.invert(ra, err, nLayers=4, layerLimits=[2, 500],
-                              maxIter=20,
+                              maxIter=50,
                               showProgress=showProgress, verbose=verbose)
 
         np.testing.assert_array_less(vmdMgr.fw.chi2(), 1)
@@ -101,7 +101,7 @@ class TestManagers(unittest.TestCase):
 
         mgr.inv.axs = [axs[0][3], axs[1][3]]
         mgr.invert(ra, err, layerLimits=False,
-                showProgress=showProgress)
+                showProgress=showProgress, maxIter=50)
 
         np.testing.assert_array_less(mgr.inv.inv.chi2(), 1)
 

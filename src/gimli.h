@@ -24,7 +24,7 @@
 #else
     #if defined(HAVE_CONFIG_H)
         #include <config.h>
-        #define PACKAGE_AUTHORS "carsten@resistivity.net, thomas@resistivity.net"
+        #define PACKAGE_AUTHORS "carsten@gimli.org, thomas@gimli.org, florian@gimli.org"
     #endif
 #endif
 
@@ -48,8 +48,8 @@
         #define PACKAGE_NAME "libgimli"
         #define PACKAGE_VERSION "untagt-win"
 
-        #define PACKAGE_BUGREPORT "carsten@resistivity.net"
-        #define PACKAGE_AUTHORS "carsten@resistivity.net, thomas@resistivity.net"
+        #define PACKAGE_BUGREPORT "carsten@gimli.org"
+        #define PACKAGE_AUTHORS "carsten@gimli.org, thomas@gimli.org, florian@gimli.org"
 #endif // PACKAGE_NAME
 
 #ifdef _MSC_VER
@@ -352,11 +352,8 @@ void log(LogType type, Values... vs){
 }
 #endif 
 
-inline std::string versionStr(){
-    std::string vers(str(PACKAGE_NAME) + "-" + PACKAGE_VERSION);
-    return vers;
-}
-
+DLLEXPORT std::string versionStr();
+   
 DLLEXPORT std::string authors();
 
 template < class T, class U > T min(const T & a, const U & b){ return std::min(a, T(b)); }

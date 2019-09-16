@@ -1252,7 +1252,7 @@ def exportTetgenPoly(poly, filename, float_format='.12e', **kwargs):
         if nHoles > 0:
             for n, hole in enumerate(bound.holeMarkers()):
                 polytxt += hole_str.format(n, *hole)
-        
+
         # not necessary yet ?! why is there an extra hole section?
         # because this is for 2D holes in facets only
 
@@ -1282,7 +1282,7 @@ def exportTetgenPoly(poly, filename, float_format='.12e', **kwargs):
     polytxt += '{:d}{}'.format(len(holes), linesep)
     # loop over hole markers
     # <hole #> <x> <y> <z>
-    
+
     for n, hole in enumerate(holes):
         polytxt += hole_str.format(n, *hole)
 
@@ -1456,23 +1456,23 @@ def createFacet(mesh, boundaryMarker=None, verbose=True):
         pg.critical("Implementme")
 
     poly = pg.Mesh(dim=3, isGeometry=True)
-    
+
     nodes = [poly.createNode(n.pos()).id() for n in mesh.nodes()]
-    
+
     if boundaryMarker is None:
         for rm in mesh.regionMarker():
             boundaryMarker = rm.marker()
             continue
-    
+
     b = poly.createBoundary(nodes, marker=boundaryMarker or 0)
 
     for h in mesh.holeMarker():
         b.addHoleMarker(h)
-    
+
     return poly
 
 
-def createCube(size=[1.0, 1.0, 1.0], 
+def createCube(size=[1.0, 1.0, 1.0],
                pos=None, rot=None, boundaryMarker=0, **kwargs):
     """Create cube PLC as geometrie definition.
 
@@ -1517,7 +1517,7 @@ def createCube(size=[1.0, 1.0, 1.0],
         poly.createNode( 0.5, y, -0.5)
         poly.createNode( 0.5, y,  0.5)
         poly.createNode(-0.5, y,  0.5)
-    
+
     faces = [[4, 5, 1, 0],
              [5, 6, 2, 1],
              [6, 7, 3, 2],
@@ -1542,7 +1542,7 @@ def createCube(size=[1.0, 1.0, 1.0],
 
 def extrude(p2, z=-1.0, boundaryMarker=0, **kwargs):
     """Create 3D body by extruding a closed 2D poly into z direction
-    
+
     Parameters
     ----------
     p2 : :gimliapi:`GIMLI::Mesh`
@@ -1556,7 +1556,7 @@ def extrude(p2, z=-1.0, boundaryMarker=0, **kwargs):
     ** kwargs:
         Marker related arguments:
         See :py:mod:`pygimli.meshtools.polytools.setPolyRegionMarker`
-    
+
     Returns
     -------
     poly : :gimliapi:`GIMLI::Mesh`
@@ -1567,7 +1567,7 @@ def extrude(p2, z=-1.0, boundaryMarker=0, **kwargs):
 
     if p2.cellCount() > 0:
         pg.critical("Implementme")
-        
+
 
     poly = pg.Mesh(3, isGeometry=True)
     top = []
@@ -1583,7 +1583,7 @@ def extrude(p2, z=-1.0, boundaryMarker=0, **kwargs):
     poly.createPolygonFace(poly.nodes(bot[::-1]), marker=boundaryMarker)
 
     for i in range(len(top)):
-        poly.createPolygonFace(poly.nodes([i, N + i, N + (i + 1)%N, (i+1)%N]), 
+        poly.createPolygonFace(poly.nodes([i, N + i, N + (i + 1)%N, (i+1)%N]),
                                marker=boundaryMarker)
 
     setPolyRegionMarker(poly, **kwargs)
@@ -1638,7 +1638,7 @@ def createCylinder(radius=1, height=1, nSegments=8,
 
     if pos is not None:
         poly.translate(pos)
-    
+
     return poly
 
 
