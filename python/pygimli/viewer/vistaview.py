@@ -72,6 +72,7 @@ def showMesh3DVista(mesh, data=None, **kwargs):
     _, tmp = tempfile.mkstemp(suffix=".vtk")
     mesh.exportVTK(tmp)
     grid = pyvista.read(tmp)
+    os.remove(tmp)
 
     hold = kwargs.pop("hold", False)
     cMap = kwargs.pop('cMap', 'viridis')
@@ -83,7 +84,7 @@ def showMesh3DVista(mesh, data=None, **kwargs):
         if len(data) == mesh.cellCount():
             grid.cell_arrays[label] = np.asarray(data)
         elif len(data) == mesh.nodeCount():
-            # grid.point_arrays[label] = np.asarray(data)
+            grid.point_arrays[label] = np.asarray(data)
         grid.set_active_scalar(label)
         add_args["opacity"] = 1
     else:
