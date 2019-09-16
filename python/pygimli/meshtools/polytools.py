@@ -622,8 +622,8 @@ def mergePLC(plcs, tol=1e-3):
             plc.createEdge(nodes[e.node(0).id()], nodes[e.node(1).id()],
                             e.marker())
 
-        if len(p.regionMarker()) > 0:
-            for rm in p.regionMarker():
+        if len(p.regionMarkers()) > 0:
+            for rm in p.regionMarkers():
                 plc.addRegionMarker(rm)
 
         if len(p.holeMarker()) > 0:
@@ -652,8 +652,8 @@ def mergePLC3D(plcs, tol=1e-3):
         for b in p.boundaries():
             p0.copyBoundary(b)
 
-        if len(p.regionMarker()) > 0:
-            for rm in p.regionMarker():
+        if len(p.regionMarkers()) > 0:
+            for rm in p.regionMarkers():
                 p0.addRegionMarker(rm)
 
         for hm in p.holeMarker():
@@ -1125,10 +1125,10 @@ def exportTrianglePoly(poly, fname, float_format='.15e'):
         fmt = '{:d}' + ('\t' + pfmt) * 2 + '\n'
         for i, h in enumerate(poly.holeMarker()):
             fid.write(fmt.format(i, h.x(), h.y()))
-        fid.write('{:d}\n'.format(len(poly.regionMarker())))
+        fid.write('{:d}\n'.format(len(poly.regionMarkers())))
 
         fmt = '{:d}' + ('\t' + pfmt) * 3 + '\t{:.15e}\n'
-        for i, r in enumerate(poly.regionMarker()):
+        for i, r in enumerate(poly.regionMarkers()):
             fid.write(fmt.format(i, r.x(), r.y(), r.marker(), r.area()))
 
     return
@@ -1289,7 +1289,7 @@ def exportTetgenPoly(poly, filename, float_format='.12e', **kwargs):
     # part 4/4: region attributes and volume constraints (optional)
     # intro line
     # <# of regions>
-    regions = poly.regionMarker()
+    regions = poly.regionMarkers()
     polytxt += '{:d}{}'.format(len(regions), linesep)
     # loop over region markers
     # <region #> <x> <y> <z> <region number> <region attribute>
@@ -1460,7 +1460,7 @@ def createFacet(mesh, boundaryMarker=None, verbose=True):
     nodes = [poly.createNode(n.pos()).id() for n in mesh.nodes()]
 
     if boundaryMarker is None:
-        for rm in mesh.regionMarker():
+        for rm in mesh.regionMarkers():
             boundaryMarker = rm.marker()
             continue
 
@@ -1626,7 +1626,7 @@ def createCylinder(radius=1, height=1, nSegments=8,
 
     """
     circ = createCircle(radius=radius, segments=nSegments)
-    poly = extrude(circ, z=height, boundaryMarker=boundaryMarker)
+    poly = extrude(circ, z=height, boundaryMarker=boundaryMarker, **kwargs)
     # move it to z=0
     poly.translate([0.0, 0.0, -height/2])
 

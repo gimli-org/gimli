@@ -257,7 +257,7 @@ class MethodManager(object):
 
         return vals
 
-    def errorCheck(self, err, dataVals):
+    def errorCheck(self, err, dataVals=None):
         """Return relative error. Default we assume 'err' are relative vales.
         Overwrite is derived class if needed. """
         if isinstance(err, pg.DataContainer):
@@ -267,7 +267,7 @@ class MethodManager(object):
 
         return err
 
-    def _ensureError(self, err, dataVals):
+    def _ensureError(self, err, dataVals=None):
         """Check error validity"""
         if err is None:
             err = self.fw.errorVals
@@ -573,7 +573,7 @@ class MeshMethodManager(MethodManager):
             self.setMesh(mesh)
 
         dataVals = self._ensureData(self.fop.data)
-        errVals = self._ensureError(self.fop.data, dataVals)
+        errorVals = self._ensureError(self.fop.data, dataVals)
 
         if self.fop.mesh() is None:
             pg.critical('Please provide a mesh')
@@ -597,7 +597,7 @@ class MeshMethodManager(MethodManager):
         # pg._y(pg.pf(self.fop._regionProperties))
 
         self.preRun(**kwargs)
-        self.fw.run(dataVals, errVals, **kwargs)
+        self.fw.run(dataVals, errorVals, **kwargs)
         self.postRun(**kwargs)
         return self.paraModel(self.fw.model)
 
