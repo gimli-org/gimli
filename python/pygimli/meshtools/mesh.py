@@ -575,8 +575,8 @@ def readTriangle(fname, verbose=False):
     # return pg.Mesh(2)
 
 
-def readTetgen(fname, comment='#', verbose=True, default_cell_marker=0,
-               load_faces=True, quadratic=False):
+def readTetgen(fname, comment='#', verbose=False, defaultCellMarker=0,
+               loadFaces=True, quadratic=False):
     """
     Reads and converts a mesh from the basic :term:`Tetgen` output.
 
@@ -598,11 +598,11 @@ def readTetgen(fname, comment='#', verbose=True, default_cell_marker=0,
     verbose: boolean (True)
         Enables console output during the import process.
 
-    default_cell_marker: int (0)
+    defaultCellMarker: int (0)
         :term:`Tetgen` files can contain cell markers, but doesn't have to.
         If no marker are found, the given interger is used.
 
-    load_faces:
+    loadFaces:
         Optional decision weather the faces of the :term:`Tetgen` output are
         loaded or not. Note that without the -f in during the tetgen call,
         the faces in the .face file will only contain the faces of the original
@@ -669,7 +669,7 @@ def readTetgen(fname, comment='#', verbose=True, default_cell_marker=0,
             if cell_markers:
                 cell_marker_n = int(cell_n[-1])
             else:
-                cell_marker_n = default_cell_marker
+                cell_marker_n = defaultCellMarker
             mesh.createCell([int(ind) for ind in cell_n[1:5]],
                             marker=cell_marker_n)
             # in order to import quadratic meshes directly, i ned the sorting
@@ -678,7 +678,7 @@ def readTetgen(fname, comment='#', verbose=True, default_cell_marker=0,
         #                           marker=cell_marker_n)
 
         # Part 3/3: Boundaries and Marker, optional
-    if os.path.exists(fname + '.face') and load_faces:
+    if os.path.exists(fname + '.face') and loadFaces:
         if verbose:
             print('Found .face file. Adding boundaries and boundary marker.')
         with open(fname + '.face', 'r') as face_in:

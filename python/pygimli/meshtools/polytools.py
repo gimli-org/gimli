@@ -1370,8 +1370,10 @@ def syscallTetgen(filename, quality=1.2, area=0, preserveBoundary=False,
 
     system(syscal)
 
+    mesh = None
     if os.path.isfile(filebody + '.1.node'):
-        system('meshconvert -it -BD -o ' + filebody + ' ' + filebody + '.1')
+        # system('meshconvert -it -BD -o ' + filebody + ' ' + filebody + '.1')
+        mesh = pg.meshtools.readTetgen(filebody + '.1')
         try:
             os.remove(filebody + '.1.node')
             os.remove(filebody + '.1.ele')
@@ -1379,7 +1381,8 @@ def syscallTetgen(filename, quality=1.2, area=0, preserveBoundary=False,
         except BaseException as e:
             print(e)
     else:
-        system('meshconvert -it -BD -o ' + filebody + ' ' + filebody + '-1')
+        #system('meshconvert -it -BD -o ' + filebody + ' ' + filebody + '-1')
+        mesh = pg.meshtools.readTetgen(filebody + '-1')
         try:
             os.remove(filebody + '-1.node')
             os.remove(filebody + '-1.ele')
@@ -1387,7 +1390,7 @@ def syscallTetgen(filename, quality=1.2, area=0, preserveBoundary=False,
         except BaseException as e:
             print(e)
 
-    mesh = pg.Mesh(filebody)
+    #mesh = pg.Mesh(filebody)
     return mesh
 
 
