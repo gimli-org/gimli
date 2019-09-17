@@ -383,13 +383,16 @@ class Inversion(object):
             if isinstance(self.dataTrans, pg.trans.TransCumulative):
                 print("Model transformation (cummulative):")
                 for i in range(self.dataTrans.size()):
-                    print("\t", self.dataTrans.at(i))
+                    print("\t", i, self.dataTrans.at(i))
             else:
                 print("Data transformation:", self.dataTrans)
             if isinstance(self.modelTrans, pg.trans.TransCumulative):
                 print("Model transformation (cummulative):")
                 for i in range(self.modelTrans.size()):
-                    print("\t", self.modelTrans.at(i))
+                    if i < 10:
+                        print("\t", i, self.modelTrans.at(i))
+                    else:
+                        print(".", end='')
             else:
                 print("Model transformation:", self.modelTrans)
 
