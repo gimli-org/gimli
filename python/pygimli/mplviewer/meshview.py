@@ -649,7 +649,7 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
 
                 cbar.set_ticks(ticks)
                 areas = {}
-                for reg in mesh.regionMarker():
+                for reg in mesh.regionMarkers():
                     areas[reg.marker()] = reg.area()
                 labels = []
                 for marker in uniquemarkers:

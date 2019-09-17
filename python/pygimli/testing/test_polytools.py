@@ -17,9 +17,9 @@ class TestCreateRectangle(unittest.TestCase):
         )
         # by default the region marker should be located at
         # sPos + (ePos - sPos) * 0.2)
-        assert rect1.regionMarker()[0].x() == 0.4
-        assert rect1.regionMarker()[0].y() == -0.2
-        assert rect1.regionMarker()[0].marker() == 1
+        assert rect1.regionMarkers()[0].x() == 0.4
+        assert rect1.regionMarkers()[0].y() == -0.2
+        assert rect1.regionMarkers()[0].marker() == 1
 
     def test_region_marker_position_translation_scale(self):
         rect1 = mt.createRectangle(
@@ -28,9 +28,9 @@ class TestCreateRectangle(unittest.TestCase):
             isClosed=True,
             marker=20,
         )
-        assert rect1.regionMarker()[0].x() == -0.3
-        assert rect1.regionMarker()[0].y() == 0.3
-        assert rect1.regionMarker()[0].marker() == 20
+        assert rect1.regionMarkers()[0].x() == -0.3
+        assert rect1.regionMarkers()[0].y() == 0.3
+        assert rect1.regionMarkers()[0].marker() == 20
 
     def test_region_marker_position_two_ways_v1(self):
         rect1 = mt.createRectangle(
@@ -47,17 +47,17 @@ class TestCreateRectangle(unittest.TestCase):
             isClosed=True,
             marker=2,
         )
-        assert rect1.regionMarker()[0].x() == -1.2
-        assert rect1.regionMarker()[0].y() == -0.6
+        assert rect1.regionMarkers()[0].x() == -1.2
+        assert rect1.regionMarkers()[0].y() == -0.6
 
-        assert rect1.regionMarker()[0].marker() == 1
-        assert rect2.regionMarker()[0].marker() == 2
+        assert rect1.regionMarkers()[0].marker() == 1
+        assert rect2.regionMarkers()[0].marker() == 2
 
-        assert rect1.regionMarker()[0].x() == rect1.regionMarker()[0].x()
-        assert rect2.regionMarker()[0].x() == rect2.regionMarker()[0].x()
+        assert rect1.regionMarkers()[0].x() == rect1.regionMarkers()[0].x()
+        assert rect2.regionMarkers()[0].x() == rect2.regionMarkers()[0].x()
 
-        assert rect1.regionMarker()[0].y() == rect1.regionMarker()[0].y()
-        assert rect2.regionMarker()[0].y() == rect2.regionMarker()[0].y()
+        assert rect1.regionMarkers()[0].y() == rect1.regionMarkers()[0].y()
+        assert rect2.regionMarkers()[0].y() == rect2.regionMarkers()[0].y()
 
     def test_region_marker_position_two_ways_v2(self):
         rect1 = mt.createRectangle(
@@ -74,17 +74,17 @@ class TestCreateRectangle(unittest.TestCase):
             isClosed=True,
             marker=2,
         )
-        assert rect1.regionMarker()[0].x() == 4 * 0.2
-        assert rect1.regionMarker()[0].y() == -1.5 - 2.5 * 0.2
+        assert rect1.regionMarkers()[0].x() == 4 * 0.2
+        assert rect1.regionMarkers()[0].y() == -1.5 - 2.5 * 0.2
 
-        assert rect1.regionMarker()[0].marker() == 1
-        assert rect2.regionMarker()[0].marker() == 2
+        assert rect1.regionMarkers()[0].marker() == 1
+        assert rect2.regionMarkers()[0].marker() == 2
 
-        assert rect1.regionMarker()[0].x() == rect1.regionMarker()[0].x()
-        assert rect2.regionMarker()[0].x() == rect2.regionMarker()[0].x()
+        assert rect1.regionMarkers()[0].x() == rect1.regionMarkers()[0].x()
+        assert rect2.regionMarkers()[0].x() == rect2.regionMarkers()[0].x()
 
-        assert rect1.regionMarker()[0].y() == rect1.regionMarker()[0].y()
-        assert rect2.regionMarker()[0].y() == rect2.regionMarker()[0].y()
+        assert rect1.regionMarkers()[0].y() == rect1.regionMarkers()[0].y()
+        assert rect2.regionMarkers()[0].y() == rect2.regionMarkers()[0].y()
 
     def test_region_markerposition_start_end(self):
         rect1 = mt.createRectangle(
@@ -94,10 +94,10 @@ class TestCreateRectangle(unittest.TestCase):
             marker=10,
             markerPosition=[0.0, 0.0],
         )
-        assert rect1.regionMarker()[0].x() == 0
-        assert rect1.regionMarker()[0].y() == 0
+        assert rect1.regionMarkers()[0].x() == 0
+        assert rect1.regionMarkers()[0].y() == 0
 
-        assert rect1.regionMarker()[0].marker() == 10
+        assert rect1.regionMarkers()[0].marker() == 10
 
     def test_region_markerposition_pos_size(self):
         # scaled version
@@ -108,9 +108,9 @@ class TestCreateRectangle(unittest.TestCase):
             marker=5,
             markerPosition=[0.0, 0.0],
         )
-        assert rect1.regionMarker()[0].x() == 0
-        assert rect1.regionMarker()[0].y() == 0
-        assert rect1.regionMarker()[0].marker() == 5
+        assert rect1.regionMarkers()[0].x() == 0
+        assert rect1.regionMarkers()[0].y() == 0
+        assert rect1.regionMarkers()[0].marker() == 5
 
 
 class TestCreateCircle(unittest.TestCase):
@@ -120,8 +120,8 @@ class TestCreateCircle(unittest.TestCase):
             radius=1.0,
             marker=1
         )
-        assert abs(circle.regionMarker()[0].dist(circle.node(0).pos()) - 0.001) < 1e-8
-        assert circle.regionMarker()[0].marker() == 1
+        assert abs(circle.regionMarkers()[0].dist(circle.node(0).pos()) - 0.001) < 1e-8
+        assert circle.regionMarkers()[0].marker() == 1
 
     def test_default_create_with_scaling(self):
         circle = mt.createCircle(
@@ -129,8 +129,8 @@ class TestCreateCircle(unittest.TestCase):
             radius=3.0,
             marker=6
         )
-        assert abs(circle.regionMarker()[0].dist(circle.node(0).pos()) - 0.001) < 1e-8
-        assert circle.regionMarker()[0].marker() == 6
+        assert abs(circle.regionMarkers()[0].dist(circle.node(0).pos()) - 0.001) < 1e-8
+        assert circle.regionMarkers()[0].marker() == 6
 
     def test_create_with_custom_markerPosition(self):
         circle = mt.createCircle(
@@ -139,9 +139,9 @@ class TestCreateCircle(unittest.TestCase):
             marker=9,
             markerPosition=[2.0, -1.0],
         )
-        assert circle.regionMarker()[0].x() == 2.0
-        assert circle.regionMarker()[0].y() == -1
-        assert circle.regionMarker()[0].marker() == 9
+        assert circle.regionMarkers()[0].x() == 2.0
+        assert circle.regionMarkers()[0].y() == -1
+        assert circle.regionMarkers()[0].marker() == 9
 
 
 class TestCreatePolygon(unittest.TestCase):
@@ -152,8 +152,8 @@ class TestCreatePolygon(unittest.TestCase):
             marker=1,
         )
 
-        assert abs(polygon.regionMarker()[0].dist(polygon.node(0).pos()) - 0.001) < 1e-8
-        assert polygon.regionMarker()[0].marker() == 1
+        assert abs(polygon.regionMarkers()[0].dist(polygon.node(0).pos()) - 0.001) < 1e-8
+        assert polygon.regionMarkers()[0].marker() == 1
 
     def test_default_create_different_center(self):
         polygon = mt.createPolygon(
@@ -161,8 +161,8 @@ class TestCreatePolygon(unittest.TestCase):
             isClosed=True,
             marker=2,
         )
-        assert abs(polygon.regionMarker()[0].dist(polygon.node(0).pos()) - 0.001) < 1e-8
-        assert polygon.regionMarker()[0].marker() == 2
+        assert abs(polygon.regionMarkers()[0].dist(polygon.node(0).pos()) - 0.001) < 1e-8
+        assert polygon.regionMarkers()[0].marker() == 2
 
     def test_create_with_custom_markerPosition(self):
         polygon = mt.createPolygon(
@@ -172,9 +172,9 @@ class TestCreatePolygon(unittest.TestCase):
             markerPosition=[0.1, -0.1],
         )
 
-        assert polygon.regionMarker()[0].x() == 0.1
-        assert polygon.regionMarker()[0].y() == -0.1
-        assert polygon.regionMarker()[0].marker() == 7
+        assert polygon.regionMarkers()[0].x() == 0.1
+        assert polygon.regionMarkers()[0].y() == -0.1
+        assert polygon.regionMarkers()[0].marker() == 7
 
 class Test3DMerge(unittest.TestCase):
     def test_cube_cube_same(self):

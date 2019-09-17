@@ -582,7 +582,8 @@ def mergePLC(plcs, tol=1e-3):
     >>> pg.wait()
     """
     if plcs[0].dim() == 3:
-
+        return mergePLC3D(plcs, tol)
+        
         tmp = pg.optImport('tempfile')
         names = []
         for p in plcs:

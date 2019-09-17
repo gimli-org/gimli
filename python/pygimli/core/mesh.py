@@ -88,9 +88,12 @@ def __MeshSetCellMarker__(self, m):
     deprecated(msg='Mesh::setCellMarker()', hint='Mesh::setCellMarkers()')
     return self.setCellMarkers(m)
 
+def __MeshHoleMarkers__(self):
+    return self.holeMarker()
 
 Mesh.cellMarker = __MeshGetCellMarker__
 Mesh.setCellMarker = __MeshSetCellMarker__
+Mesh.holeMarkers = __MeshHoleMarkers__
 
 def __createSecondaryNodes__(self, n=3, verbose=False):
     """Create `n` equally distributed secondary nodes on boundaries of the mesh.
