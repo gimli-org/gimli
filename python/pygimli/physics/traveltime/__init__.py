@@ -6,7 +6,7 @@ from .importData import load
 
 from .raplot import drawFirstPicks, drawTravelTimeData, drawVA
 from .ratools import createGradientModel2D, createRAData, shotReceiverDistances
-from .refraction import Refraction, Tomography
+#from .refraction import Refraction, Tomography # will be removed(201909)
 from .refraction1d import RefractionNLayer, RefractionNLayerFix1stLayer
 from .TravelTimeManager import TravelTimeDijkstraModelling, TravelTimeManager
 
@@ -16,11 +16,9 @@ __all__ = [
     'drawFirstPicks',
     'createRAData',
     'createGradientModel2D',
-    'Refraction',
     'RefractionNLayer',
     'RefractionNLayerFix1stLayer',
     'shotReceiverDistances',
-    'Tomography',
     'TravelTimeManager',
     'TravelTimeDijkstraModelling'
 ]

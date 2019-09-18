@@ -15,7 +15,7 @@ from pygimli.mplviewer import drawModel, drawMesh, CellBrowser, createColorBar
 from pygimli.utils.base import interperc, getSavePath
 from pygimli.mplviewer.dataview import showVecMatrix
 
-from pygimli.frameworks import MethodManager, MethodManager0
+from pygimli.frameworks import MethodManager#, MethodManager0
 
 # the explicit import with full name allow for:
 # python ~/src/gimli/gimli/python/pygimli/physics/traveltime/refraction.py

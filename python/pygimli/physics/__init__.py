@@ -13,7 +13,7 @@ from .traveltime import TravelTimeManager
 from .em import FDEM, TDEM
 from .SIP import SIPSpectrum
 from .sNMR import MRS
-from .traveltime import Refraction
+# from .traveltime import Refraction # obsolete 201909
 
 constants = Constants
 
