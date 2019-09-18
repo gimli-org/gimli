@@ -97,7 +97,7 @@ def readTXTSpectrum(filename):
 
 def readFuchs3File(resfile, k=1.0, verbose=False):
     """Read Fuchs III (SIP spectrum) data file.
-    
+
     Parameters
     ----------
     k : float
@@ -338,6 +338,7 @@ def readSIP256file(resfile, verbose=False):
         line = line.replace(' nc ', ' 0 ') # no calibration should 0
         line = line.replace(' c ', ' 1 ') # calibration should 1
         sline = line.split()
+        sline = line.rstrip('\r\n').split()
         if line.find('Reading') == 0:
             rdno = int(sline[1])
             if rdno > 0:
@@ -370,7 +371,9 @@ def readSIP256file(resfile, verbose=False):
                         part1 = sline[c][:-10]
                         part2 = sline[c][-10:]   # [11:]
                     sline = sline[:c] + [part1] + [part2] + sline[c + 1:] 
-            
+                
+                if sline[c].find('c') >= 0:
+                    sline[c] = '1.0'
             #Frequency /Hz       RA/Ohmm    PA/�      ERA/%     EPA/�     Cal?     IA/mA     K.-F./m    Gains  Time/h:m:s    Date/d.m.y
             #20000.00000000        0.4609  -6.72598   0.02234   0.01280    1      20.067        1.00      0     11:08:02     21/02/2019
             dFreq.append(np.array(sline[:8]+ [toTime(sline[9], sline[10])], dtype=float))

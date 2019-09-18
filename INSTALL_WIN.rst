@@ -113,7 +113,7 @@ Manual installation
 Make sure to have an updated msys2 environment. Run at least:
 
 .. code-block:: bash
-
+    pacman -Su
     pacman -Sy
 
 to update your local package databases. See https://sourceforge.net/p/msys2/wiki/MSYS2%20installation/
@@ -128,7 +128,8 @@ To get a complete working toolchain you need some packages installed.
 .. code-block:: bash
 
     pacman -S mingw-w64-x86_64-cmake mingw-w64-x86_64-gcc mingw-w64-x86_64-gcc-fortran
-    pacman -S mingw-w64-x86_64-openblas mingw-w64-x86_64-doxygen
+    pacman -S mingw-w64-x86_64-openblas mingw-w64-x86_64-suitesparse
+    pacman -S mingw-w64-x86_64-doxygen mingw-w64-cppunit
     pacman -S mingw-w64-x86_64-llvm mingw-w64-x86_64-clang
 
 The rest of the installation is like the linux way with some small differences.
@@ -136,28 +137,27 @@ The rest of the installation is like the linux way with some small differences.
 Prepare the directory structure as described above:
 
 The build is performed via cmake. While calling cmake *MSYS* users should tell
-using the MSYS makefile generator:
+using the Unix makefile generator to find the correct gcc versions:
 
 .. code-block:: bash
 
-    cmake ../gimli -G 'Unix Makefiles' -DBLAS_LIBRARIES=/mingw64/lib/libopenblas.a
+    cmake ../gimli -G 'Unix Makefiles'
 
 If cmake complains about missing python stuff, make sure the Python interpreter
-is in your execution path. If openblas is not installed you should of course omit
-the last directive, then built-int lapack/blas are used or they are build from source.
+is in your execution path. 
 
 To build the library, just run
 
 .. code-block:: bash
 
-    make
+    make -j2
 
 You might add the option -jN to use a number of N CPUs in parallel.
 To build pygimli, run
 
 .. code-block:: bash
 
-    make pygimli
+    make pygimli J=2
 
 You might add J=N to use a number of N CPUs in parallel.
 Building pygimli takes some time and you can grab a coffee (or two).
@@ -170,19 +170,13 @@ If it finishes without errors you just need to set the environment:
     export PATH=$PATH:$HOME/src/gimli/build/lib
     export PATH=$PATH:$HOME/src/gimli/build/bin
 
-If you want to use the C++ commandline applications, call
-
-.. code-block:: bash
-
-    make apps
-
 Compiled binaries will be written to `build/bin`.
 
 You can test the pygimli build with:
 
 .. code-block:: bash
 
-    python -c 'import pygimli as pg; print(pg.__version__)'
+    python -c 'import pygimli as pg; print(pg.version())'
 
 
 Using cmake with CodeBlocks

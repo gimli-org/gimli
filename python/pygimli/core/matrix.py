@@ -2,7 +2,8 @@
 """Some matrix specialization."""
 
 import time
-
+from pygimli.core import _pygimli_ as pg
+from pygimli.utils.geostatistics import covarianceMatrix
 import numpy as np
 
 from . import _pygimli_ as pgcore
@@ -18,14 +19,9 @@ IdentityMatrix = pgcore.IdentityMatrix
 BlockMatrix = pgcore.RBlockMatrix
 SparseMapMatrix = pgcore.RSparseMapMatrix
 SparseMatrix = pgcore.RSparseMatrix
-Vector = pgcore.RVector
 Matrix = pgcore.RMatrix
 
 class MultMatrix(pgcore.MatrixBase):
-    def __init__(self, A, verbose=False):
-        self._A = A
-        super(MultMatrix, self).__init__(verbose)  # only in Python 3
-
     @property
     def A(self):
         return self._A
@@ -72,6 +68,7 @@ class MultLeftMatrix(MultMatrix):
         """Multiplication from right-hand-side (dot product A.T * x)"""
         return self.A.transMult(x * self.l)
 
+
 LMultRMatrix = MultLeftMatrix  # alias for backward compatibility
 
 
@@ -111,6 +108,7 @@ class MultRightMatrix(MultMatrix):
         # print('transmult', self.A.rows(), " x " , self.A.cols(), x, self.r, )
         return self.A.transMult(x) * self.r
 
+
 RMultRMatrix = MultRightMatrix  # alias for backward compatibility
 
 
@@ -148,6 +146,7 @@ class MultLeftRightMatrix(MultMatrix):
     def transMult(self, x):
         """Multiplication from right-hand-side (dot product A.T*x)."""
         return self.A.transMult(x * self._l) * self._r
+
 
 LRMultRMatrix = MultLeftRightMatrix  # alias for backward compatibility
 
@@ -310,3 +309,28 @@ class NDMatrix(BlockMatrix):
 
         self.recalcMatrixSize()
         print(self.rows(), self.cols())
+
+class GeostatisticConstraintsMatrix(pg.MatrixBase):
+    """Geostatistic constraints matrix."""
+    def __init__(self, CM=None, mesh=None, I=None, **kwargs):
+        super().__init__()
+        if isinstance(CM, pg.Mesh):
+            CM = covarianceMatrix(CM, I=I, **kwargs)
+        if CM is None:
+            CM = covarianceMatrix(mesh, I=I, **kwargs)
+
+        self.nModel = CM.shape[0]
+        self.CM05 = Cm05Matrix(CM)
+        self.spur = self.CM05 * pg.RVector(self.nModel, 1.0)
+
+    def mult(self, x):
+        return self.CM05.mult(x) - self.spur * x
+
+    def transMult(self, x):
+        return self.CM05.transMult(x) - self.spur * x
+
+    def cols(self):
+        return self.nModel
+
+    def rows(self):
+        return self.nModel

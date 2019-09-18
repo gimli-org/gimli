@@ -1444,7 +1444,6 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
         \frac{\partial u}{\partial \mathbf{n}} & = g~~|~~\Gamma_{\text{Neumann}}\\
         \alpha u + \beta\frac{\partial u}{\partial \mathbf{n}} & = \gamma~~|~~\Gamma_{\text{Robin}}
 
-
     for the scalar solution :math:`u(\mathbf{r}, t)` at each node of a given mesh.
     The Domain :math:`\Omega` and the Boundary :math:`\Gamma` are defined
     through the mesh with appropriate boundary marker.
@@ -1481,7 +1480,7 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
         bc={'Dirichlet': [mesh.node(nodeID), value]}.
     times: array [None]
         Solve as time dependent problem for the given times.
-        
+    
     Other Parameters
     ----------------
     **kwargs

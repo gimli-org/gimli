@@ -150,7 +150,7 @@ def drawValMapPatches(ax, vals, xVec=None, yVec=None, dx=1, dy=None, **kwargs):
 
 
 def patchValMap(vals, xvec=None, yvec=None, ax=None, cMin=None, cMax=None,
-                logScale=None, label=None, dx=1, dy=None, **kwargs):
+                logScale=None, label=None, dx=1, dy=None, cTrim=0, **kwargs):
     """Plot previously generated (generateVecMatrix) y map (category).
 
     Parameters
@@ -165,6 +165,8 @@ def patchValMap(vals, xvec=None, yvec=None, ax=None, cMin=None, cMax=None,
         axis to plot, if not given a new figure is created
     cMin/cMax : float
         minimum/maximum color values
+    cTrim : float [0]
+        use trim value to exclude outer cTrim percent of data from color scale
     logScale : bool
         logarithmic colour scale [min(vals)>0]
     label : string
@@ -175,8 +177,10 @@ def patchValMap(vals, xvec=None, yvec=None, ax=None, cMin=None, cMax=None,
     """
     if cMin is None:
         cMin = np.min(vals)
+        # cMin = np.nanquantile(vals, cTrim/100)
     if cMax is None:
         cMax = np.max(vals)
+        # cMin = np.nanquantile(vals, 1-cTrim/100)
 
     if logScale is None:
         logScale = (cMin > 0.0)
@@ -249,6 +253,8 @@ def patchValMap(vals, xvec=None, yvec=None, ax=None, cMin=None, cMax=None,
     col = ax.add_collection(pp)
     pp.set_edgecolor(None)
     pp.set_linewidths(0.0)
+    if 'alpha' in kwargs:
+        pp.set_alpha(kwargs['alpha'])
 
     if circular:
         pp.set_edgecolor('black')
