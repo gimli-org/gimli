@@ -962,9 +962,9 @@ void RegionManager::fillConstraints(RSparseMapMatrix & C){
         
             std::pair< SIndex, SIndex > ab = it.first;
             double cWeight = it.second;
-            if (verbose_) std::cout << "\t" 
-                                    << ab.first << "< (" << cWeight << ") >" 
-                                    << ab.second << std::endl;
+            // if (verbose_) std::cout << "\t" 
+            //                         << ab.first << "< (" << cWeight << ") >" 
+            //                         << ab.second << std::endl;
             Region * regA = regionMap_.find(ab.first)->second;
             Region * regB = regionMap_.find(ab.second)->second;
 

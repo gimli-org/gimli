@@ -572,8 +572,7 @@ class MeshMethodManager(MethodManager):
         if mesh is not None:
             self.setMesh(mesh)
 
-        refineP2 = kwargs.pop('refineP2', False)
-        self.fop._refineP2 = True
+        self.fop._refineP2 = kwargs.pop('refineP2', False)
 
         dataVals = self._ensureData(self.fop.data)
         errorVals = self._ensureError(self.fop.data, dataVals)

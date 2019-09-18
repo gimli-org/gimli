@@ -483,7 +483,7 @@ class MeshModelling(Modelling):
         This is called automatic when accessing self.mesh() so it ensures any
         effect of changing region properties (background, single).
         """
-        if self._refineP2:
+        if self._refineP2 == True:
             pg.info("Creating refined mesh (P2) to solve forward task.")
             m = mesh.createP2()
         else:
