@@ -65,6 +65,7 @@ from .dataview import (drawSensorAsMarker,  # dups to meshview??
                        showMatrix,
                        drawMatrix,
                        generateMatrix,
+                       showDataContainerAsMatrix,
                        patchMatrix, # deprectated (Naming)
                        patchValMap, # deprectated (Naming)
                        plotDataContainerAsMatrix, # need renaming
