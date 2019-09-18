@@ -163,7 +163,7 @@ class Modelling(pg.core.ModellingBase):
         """Create the default startmodel as the median of the data values.
 
         Overwriting might be a good idea.
-        Its used by inverion to create a valid startmodel if there are
+        Its used by inversion to create a valid startmodel if there are
         no starting values from the regions.
         """
         if dataVals is not None:

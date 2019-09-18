@@ -580,8 +580,9 @@ class MeshMethodManager(MethodManager):
         if self.fop.mesh() is None:
             pg.critical('Please provide a mesh')
 
-        if startModel is None:
-            startModel = self.fop.createStartModel(dataVals)
+        # inversion will call this itsself as default behaviour
+        # if startModel is None:
+        #     startModel = self.fop.createStartModel(dataVals)
 
         # pg._g('invert-dats', dataVals)
         # pg._g('invert-err', errVals)
