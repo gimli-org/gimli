@@ -10,9 +10,9 @@ from . import _pygimli_ as pgcore
 from . import (CMatrix, CSparseMapMatrix, CSparseMatrix, ElementMatrix,
                IVector, MatrixBase, R3Vector, RVector, )
 
-from .logger import warn
+# from .logger import warn
 
-# make core matrices (now in pgcore, later pgcore.core) known here for tab-completion
+# make core matrices (now in pgcor, later pg.core) available here for brevity
 BlockMatrix = pgcore.RBlockMatrix
 IdentityMatrix = pgcore.IdentityMatrix
 
@@ -21,21 +21,25 @@ SparseMapMatrix = pgcore.RSparseMapMatrix
 SparseMatrix = pgcore.RSparseMatrix
 Matrix = pgcore.RMatrix
 
+
 class MultMatrix(pgcore.MatrixBase):
+    """Base Matrix class for all matrix types holding a matrix."""
+
     @property
     def A(self):
         return self._A
+
     @A.setter
     def A(self, A):
         self._A = A
 
     def rows(self):
         """Return number of rows (using underlying matrix)."""
-        return self.A.rows()
+        return self.A.rows()  # this should be _A
 
     def cols(self):
         """Return number of columns (using underlying matrix)."""
-        return self.A.cols()
+        return self.A.cols()  # this should be _A
 
     def save(self, filename):
         """So it can be used in inversion with dosave flag"""
@@ -49,13 +53,14 @@ class MultLeftMatrix(MultMatrix):
         """Constructor saving matrix and vector."""
         if A.rows() != len(left):
             raise Exception("Matrix columns do not fit vector length!")
-        super(MultLeftMatrix, self).__init__(A, verbose)  # only in Python 3
+        super(MultLeftMatrix, self).__init__(A, verbose)
 
         self._l = left
 
     @property
-    def l(self):
+    def l(self):  # better use left and right instead (pylint E743)?
         return self._l
+
     @l.setter
     def r(self, l):
         self._l = l
@@ -83,10 +88,10 @@ class MultRightMatrix(MultMatrix):
         else:
             self._r = r
 
-
     @property
     def r(self):
         return self._r
+
     @r.setter
     def r(self, r):
         self._r = r
@@ -96,11 +101,11 @@ class MultRightMatrix(MultMatrix):
         if len(x) != len(self.r):
             # assuming A was complex
             # warn('need to double x')
-            # print('mult:', self.A.rows(), " x " , self.A.cols(), 
+            # print('mult:', self.A.rows(), " x " , self.A.cols(),
             #        'x:', len(x), 'r:', len(self.r))
             # print(self.perm)
             return self.A.mult(x[self.perm] * self.r)
-            #return self.A.mult(pgcore.cat(x, x) * self.r)
+            # return self.A.mult(pgcore.cat(x, x) * self.r)
         return self.A.mult(x * self.r)
 
     def transMult(self, x):
@@ -129,12 +134,15 @@ class MultLeftRightMatrix(MultMatrix):
     @property
     def l(self):
         return self._l
+
     @l.setter
-    def r(self, l):
+    def l(self, l):
         self._l = l
+
     @property
     def r(self):
         return self._r
+
     @r.setter
     def r(self, r):
         self._r = r
@@ -150,8 +158,9 @@ class MultLeftRightMatrix(MultMatrix):
 
 LRMultRMatrix = MultLeftRightMatrix  # alias for backward compatibility
 
-
 __BlockMatrix_addMatrix__ = pgcore.RBlockMatrix.addMatrix
+
+
 def __BlockMatrix_addMatrix_happy_GC__(self, M):
     """Add an existing matrix to this block matrix and return a unique index.
 
@@ -165,9 +174,8 @@ def __BlockMatrix_addMatrix_happy_GC__(self, M):
     self.__mats__.append(M)
     return __BlockMatrix_addMatrix__(self, M)
 
+
 pgcore.RBlockMatrix.addMatrix = __BlockMatrix_addMatrix_happy_GC__
-
-
 
 
 class Add2Matrix(pgcore.MatrixBase):
@@ -268,7 +276,7 @@ class Cm05Matrix(pgcore.MatrixBase):
         self.ew, self.EV = eigh(A)
         self.mul = np.sqrt(1./self.ew)
         if verbose:
-            pgcore.info('(C) Time for eigenvalue decomposition:{:.1f} s'.format(
+            pgcore.info('(C) Time for eigenvalue decomposition:{:.1f}s'.format(
                 time.time() - t))
 
         self.A = A
@@ -292,6 +300,7 @@ class Cm05Matrix(pgcore.MatrixBase):
         """Multiplication from right-hand side (dot product)."""
         return self.mult(x)  # matrix is symmetric by definition
 
+
 class NDMatrix(BlockMatrix):
     """Diagonal block (block-Jacobi) matrix derived from pg.matrix.BlockMatrix.
 
@@ -310,18 +319,48 @@ class NDMatrix(BlockMatrix):
         self.recalcMatrixSize()
         print(self.rows(), self.cols())
 
+
 class GeostatisticConstraintsMatrix(pg.MatrixBase):
-    """Geostatistic constraints matrix."""
-    def __init__(self, CM=None, mesh=None, I=None, **kwargs):
+    """Geostatistic constraints matrix
+
+    Uses geostatistical operators described by Jordi et al. (2018),
+    however corrects for the remaining non-smooth (damping) part by
+    correcting for the spur of the inverse root matrix.
+
+    Jordi, C., Doetsch, J., Günther, T., Schmelzbach, C. & Robertsson, J.O.A.
+    (2018): Geostatistical regularisation operators for geophysical inverse
+    problems on irregular meshes. Geoph. J. Int. 213, 1374-1386,
+    doi:10.1093/gji/ggy055.
+    """
+    def __init__(self, CM=None, mesh=None, **kwargs):
+        """Initialize by computing the covariance matrix & its inverse root.
+
+        Parameters
+        ----------
+        CM : pg.Matrix or pg.SparseMapMatrix
+            covariance matrix, if not given, use mesh and I
+        mesh : pg.Mesh
+            mesh of which the cell midpoints are used for covariance
+        I : float | iterable of floats
+            axis correlation length (isotropic) or lengths (anisotropic)
+        dip : float [0]
+            angle of main axis corresponding to I[0] (2D) or I[0]&I[1] (3D)
+        strike : float [0]
+            angle of main axis corresponding to I[0] versus I[1] (3D)
+        withRef : bool [False]
+            neglect spur (reference model effect) that is otherwise corrected
+        """
         super().__init__()
         if isinstance(CM, pg.Mesh):
-            CM = covarianceMatrix(CM, I=I, **kwargs)
+            CM = covarianceMatrix(CM, **kwargs)
         if CM is None:
-            CM = covarianceMatrix(mesh, I=I, **kwargs)
+            CM = covarianceMatrix(mesh, **kwargs)
 
         self.nModel = CM.shape[0]
         self.CM05 = Cm05Matrix(CM)
         self.spur = self.CM05 * pg.RVector(self.nModel, 1.0)
+        if kwargs.pop('withRef', False):
+            self.spur *= 0.0
 
     def mult(self, x):
         return self.CM05.mult(x) - self.spur * x
