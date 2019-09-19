@@ -262,7 +262,9 @@ class Modelling(pg.core.ModellingBase):
                 rMgr.region(rID).setStartModel(vals['startModel'])
 
             rMgr.region(rID).setModelTransStr_(vals['trans'])
-            rMgr.region(rID).setConstraintType(vals['cType'])
+            if vals['cType'] is not None:
+                rMgr.region(rID).setConstraintType(vals['cType'])
+                
             rMgr.region(rID).setZWeight(vals['zWeight'])
             rMgr.region(rID).setModelControl(vals['modelControl'])
 

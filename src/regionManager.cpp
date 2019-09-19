@@ -26,7 +26,6 @@
 #include "trans.h"
 #include "vectortemplates.h"
 
-
 namespace GIMLI{
 
 Region::Region(SIndex marker, RegionManager * parent, bool single)
@@ -927,7 +926,7 @@ void RegionManager::fillConstraints(RSparseMapMatrix & C){
     Index nModel  = parameterCount();
     // __MS(nModel)
     Index nConstr = constraintCount();
-    __MS(nConstr)
+    
     this->_cWeights.resize(nConstr, 1.0);
     
     C.clear();
