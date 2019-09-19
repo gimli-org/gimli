@@ -104,15 +104,9 @@ pg.show(geom, ax=ax, fillRegion=False, regionMarker=False)  # lines on top
 ra.showResultAndFit()
 
 ###############################################################################
-# Takeaway message:
-# A default data inversion with checking of the data consists of only few lines
-# (Everthing else can be looked at by introspecting the Refraction manager)
-#
-# .. code-block:: python
-#
-#    from pygimli.physics import Refraction
-#    ra = Refraction(filename)
-#    ra.invert()
-#    ra.showResultAndFit()
+# .. note:: Takeaway message
+
+#     A default data inversion with checking of the data consists of only few lines.
+#     Check out :ref:`ex:koenigsee`.
 
 pg.wait()

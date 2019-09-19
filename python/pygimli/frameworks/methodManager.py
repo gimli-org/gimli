@@ -572,8 +572,7 @@ class MeshMethodManager(MethodManager):
         if mesh is not None:
             self.setMesh(mesh)
 
-        refineP2 = kwargs.pop('refineP2', False)
-        self.fop._refineP2 = True
+        self.fop._refineP2 = kwargs.pop('refineP2', False)
 
         dataVals = self._ensureData(self.fop.data)
         errorVals = self._ensureError(self.fop.data, dataVals)
@@ -581,8 +580,9 @@ class MeshMethodManager(MethodManager):
         if self.fop.mesh() is None:
             pg.critical('Please provide a mesh')
 
-        if startModel is None:
-            startModel = self.fop.createStartModel(dataVals)
+        # inversion will call this itsself as default behaviour
+        # if startModel is None:
+        #     startModel = self.fop.createStartModel(dataVals)
 
         # pg._g('invert-dats', dataVals)
         # pg._g('invert-err', errVals)

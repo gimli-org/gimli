@@ -43,7 +43,7 @@ class Modelling(pg.core.ModellingBase):
     Can be seen as some kind of proxy Forward Operator.
 
     TODO:
-        * Modelling or Modelling?
+        * Modeling or Modelling?
         * Docu:
             - describe members (model transformation, dictionary of region properties)
             -
@@ -163,7 +163,7 @@ class Modelling(pg.core.ModellingBase):
         """Create the default startmodel as the median of the data values.
 
         Overwriting might be a good idea.
-        Its used by inverion to create a valid startmodel if there are
+        Its used by inversion to create a valid startmodel if there are
         no starting values from the regions.
         """
         if dataVals is not None:
@@ -483,7 +483,7 @@ class MeshModelling(Modelling):
         This is called automatic when accessing self.mesh() so it ensures any
         effect of changing region properties (background, single).
         """
-        if self._refineP2:
+        if self._refineP2 == True:
             pg.info("Creating refined mesh (P2) to solve forward task.")
             m = mesh.createP2()
         else:
@@ -574,7 +574,7 @@ class MeshModelling(Modelling):
             pg.mplviewer.setMappableData(cBar.mappable, mod, **kwargs)
         else:
             diam = kwargs.pop('diam', None)
-            
+
             ax, cBar = pg.show(mesh=self.paraDomain,
                                data=mod,
                                label=kwargs.pop('label', 'Model parameter'),
