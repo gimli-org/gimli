@@ -43,7 +43,7 @@ class Modelling(pg.core.ModellingBase):
     Can be seen as some kind of proxy Forward Operator.
 
     TODO:
-        * Modelling or Modelling?
+        * Modeling or Modelling?
         * Docu:
             - describe members (model transformation, dictionary of region properties)
             -
@@ -574,7 +574,7 @@ class MeshModelling(Modelling):
             pg.mplviewer.setMappableData(cBar.mappable, mod, **kwargs)
         else:
             diam = kwargs.pop('diam', None)
-            
+
             ax, cBar = pg.show(mesh=self.paraDomain,
                                data=mod,
                                label=kwargs.pop('label', 'Model parameter'),
