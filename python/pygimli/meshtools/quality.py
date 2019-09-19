@@ -9,10 +9,7 @@ Field, D. A. (2000), Qualitative measures for initial meshes. Int. J. Numer.
 Meth. Engng., 47: 887–906.
 """
 
-import matplotlib.pyplot as plt
 import numpy as np
-
-import pygimli as pg
 
 
 # Helper functions
@@ -134,8 +131,8 @@ def quality(mesh, measure="eta"):
     >>> mesh = pg.meshtools.createMesh([world, c1], quality=21.3)
     >>> # Compute and show quality
     >>> q = quality(mesh, measure="nsr")
-    >>> ax, _ = pg.show(mesh, q, cMap="RdYlGn", showMesh=True, cMin=0.5, cMax=1.0,
-    ...                 label="Normalized shape ratio")
+    >>> ax, _ = pg.show(mesh, q, cMap="RdYlGn", showMesh=True, cMin=0.5,
+    ...                 cMax=1.0, label="Normalized shape ratio")
 
     See also
     --------
