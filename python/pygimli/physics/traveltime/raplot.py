@@ -7,9 +7,10 @@ import numpy as np
 
 import pygimli as pg
 
-from pygimli.mplviewer import createColorBar, updateColorBar
+from pygimli.mplviewer import createColorBar  # , updateColorBar
 
 from .ratools import shotReceiverDistances
+
 
 def drawTravelTimeData(ax, data, t=None):
     """
@@ -98,21 +99,22 @@ def drawFirstPicks(ax, data, tt=None, plotva=False, marker='x-'):
     ax.set_xlabel("x (m)")
     ax.invert_yaxis()
 
+
 def _getOffset(data, full=False):
     """Return vector of offsets (in m) between shot and receiver."""
-    pg.deprecated('use shotReceiverDistances') #190429
+    pg.deprecated('use shotReceiverDistances')  # 190429 ??
     return shotReceiverDistances(data, full)
 
 
 def showVA(data, usePos=True, ax=None, **kwargs):
     """Show apparent velocity as image plot
-    
+
     Parameters
     ----------
     data : pg.DataContainer()
         Datacontainer with 's' and 'g' Sensorindieces and 't' traveltimes.
     """
-    ax, _= pg.show(ax=ax)
+    ax, _ = pg.show(ax=ax)
     gci = drawVA(ax, data=data, usePos=usePos, **kwargs)
 
     cBar = createColorBar(gci, **kwargs)
@@ -122,7 +124,7 @@ def showVA(data, usePos=True, ax=None, **kwargs):
 
 def drawVA(ax, data, vals=None, usePos=True, pseudosection=False, **kwargs):
     """Draw apparent velocities as matrix into ax
-    
+
     Parameters
     ----------
     ax : mpl.Axes
@@ -151,11 +153,11 @@ def drawVA(ax, data, vals=None, usePos=True, pseudosection=False, **kwargs):
 
     if pseudosection:
         midpoint = (gx + sx) / 2
-        gci = pg.mplviewer.dataview.drawVecMatrix(ax, midpoint, offset, va, 
+        gci = pg.mplviewer.dataview.drawVecMatrix(ax, midpoint, offset, va,
                                                   queeze=True,
                                                   label=pg.unit('as'))
     else:
-        gci = pg.mplviewer.dataview.drawVecMatrix(ax, gx, sx, va, 
+        gci = pg.mplviewer.dataview.drawVecMatrix(ax, gx, sx, va,
                                                   squeeze=True,
                                                   label=pg.unit('as'))
 
@@ -164,7 +166,7 @@ def drawVA(ax, data, vals=None, usePos=True, pseudosection=False, **kwargs):
     #     A[int(data('s')[i]), int(data('g')[i])] = va[i]
     # gci = ax.imshow(A, interpolation='nearest')
     # ax.grid(True)
-    
+
     if usePos:
         xt = np.arange(0, data.sensorCount(), 50)
         ax.set_xticks(xt)
@@ -185,4 +187,3 @@ def plotLines(ax, line_filename, step=1):
             ax.plot(x, z, 'k-')
     if step == 1:
         ax.plot(xz[:, 0], xz[:, 1], 'k-')
-

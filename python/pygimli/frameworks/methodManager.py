@@ -12,7 +12,8 @@ import pygimli as pg
 
 from pygimli.utils import prettyFloat as pf
 
-# Discuss .. rename to Framework or InversionFramework since he is only managing
+
+# Discuss .. rename to Framework or InversionFramework since he only manages
 # the union of Inversion/Modelling and RegionManager(later)
 class MethodManager(object):
     """General manager to maintenance a measurement method.
@@ -57,12 +58,11 @@ class MethodManager(object):
         self._verbose = kwargs.pop('verbose', False)
         self._debug = kwargs.pop('debug', False)
 
-        ### The inversion framework
-
+        # The inversion framework
         self._initInversionFramework(verbose=self._verbose,
                                      debug=self._debug)
 
-        ### The forward operator is stored in self._fw
+        # The forward operator is stored in self._fw
         self._initForwardOperator(verbose=self._verbose, **kwargs)
 
         # maybe obsolete
@@ -119,9 +119,9 @@ class MethodManager(object):
         """Initialize or re-initialize the forward operator.
 
         Called once in the constructor to force the manager to create the
-        necessary forward operator member.
-        Can be recalled if you need to changed the mangers own forward operator
-        object. If you want a own instance of a valid FOP call createForwardOperator.
+        necessary forward operator member. Can be recalled if you need to
+        changed the mangers own forward operator object. If you want an own
+        instance of a valid FOP call createForwardOperator.
         """
         if self._fop is not None:
             fop = self._fop
@@ -130,7 +130,7 @@ class MethodManager(object):
 
         if fop is None:
             pg.critical("It seems that createForwardOperator method "
-                            "does not return a valid forward operator.")
+                        "does not return a valid forward operator.")
         if self.fw is not None:
             self.fw.reset()
             self.fw.setForwardOperator(fop)
@@ -262,7 +262,8 @@ class MethodManager(object):
         Overwrite is derived class if needed. """
         if isinstance(err, pg.DataContainer):
             if not err.haveData('err'):
-                pg.error('Datacontainer have no "err" values. Fallback set to 0.01')
+                pg.error('Datacontainer have no "err" values. '
+                         'Fallback set to 0.01')
             return err['err']
 
         return err
@@ -292,7 +293,7 @@ class MethodManager(object):
     def invert(self, data=None, err=None, **kwargs):
         """Invert the data.
 
-        Invert the data values by calling self.inv.run() with mandatory data and
+        Invert the data by calling self.inv.run() with mandatory data and
         error values.
 
         TODO
@@ -320,11 +321,10 @@ class MethodManager(object):
     def showModel(self, model, ax=None, **kwargs):
         """Shows a model.
 
-        Draw model date into a given axes or show the inversion result from
-        the last run.
+        Draw model into a given axes or show inversion result from last run.
         Forwards on default to the self.fop.drawModel function
         of the modelling operator.
-        If there is no given function given, you have to override this method.
+        If there is no function given, you have to override this method.
 
         Parameters
         ----------
@@ -371,8 +371,7 @@ class MethodManager(object):
         ----
          DRY: decide showModel or showResult
         """
-        ax = self.showModel(self.model, ax=ax,
-                            #label='Model',
+        ax = self.showModel(self.model, ax=ax,  # label='Model',
                             **kwargs)
         return ax
 
@@ -387,14 +386,12 @@ class MethodManager(object):
                            ax=ax, **kwargs)
 
         if not kwargs.pop('hideFittingAnnotation', False):
-            ax.text(0.99, 0.005,
-                    "rrms: {0}, $\chi^2$: {1}"
-                        .format(pf(self.fw.inv.relrms()),
-                                pf(self.fw.inv.chi2())),
-                        transform=ax.transAxes,
-                        horizontalalignment='right',
-                        verticalalignment='bottom',
-                        fontsize=8)
+            ax.text(0.99, 0.005, r"rrms: {0}, $\chi^2$: {1}".format(
+                pf(self.fw.inv.relrms()), pf(self.fw.inv.chi2())),
+                    transform=ax.transAxes,
+                    horizontalalignment='right',
+                    verticalalignment='bottom',
+                    fontsize=8)
 
         if not kwargs.pop('hideLegend', False):
             ax.legend()
@@ -434,23 +431,24 @@ class MethodManager(object):
         parser.add_argument("-Q", "--quiet", dest="quiet",
                             action="store_true", default=False,
                             help="Be verbose.")
-        #parser.add_argument("-R", "--robustData", dest="robustData",
-                            #action="store_true", default=False,
-                            #help="Robust data (L1 norm) minimization.")
-        #parser.add_argument("-B", "--blockyModel", dest="blockyModel",
-                            #action="store_true", default=False,
-                            #help="Blocky model (L1 norm) regularization.")
+#        parser.add_argument("-R", "--robustData", dest="robustData",
+#                            action="store_true", default=False,
+#                            help="Robust data (L1 norm) minimization.")
+#        parser.add_argument("-B", "--blockyModel", dest="blockyModel",
+#                            action="store_true", default=False,
+#                            help="Blocky model (L1 norm) regularization.")
         parser.add_argument('-l', "--lambda", dest="lam", type=float,
                             default=100,
                             help="Regularization strength.")
         parser.add_argument('-i', "--maxIter", dest="maxIter", type=int,
                             default=20,
                             help="Maximum iteration count.")
-        #parser.add_argument("--depth", dest="depth", type=float,
-                            #default=None,
-                            #help="Depth of inversion domain. [None=auto].")
+#        parser.add_argument("--depth", dest="depth", type=float,
+#                            default=None,
+#                            help="Depth of inversion domain. [None=auto].")
         parser.add_argument('dataFileName')
         return parser
+
 
 class ParameterInversionManager(MethodManager):
     """Framework to invert unconstraints parameters."""
@@ -458,9 +456,10 @@ class ParameterInversionManager(MethodManager):
         """Constructor."""
         if fop is not None:
             if not isinstance(fop, pg.frameworks.ParameterModelling):
-                pg.critical("We need a fop if type ", pg.frameworks.ParameterModelling)
+                pg.critical("We need a fop if type ",
+                            pg.frameworks.ParameterModelling)
 
-        #fop = pg.frameworks.ParameterModelling(fop, petro)
+#        fop = pg.frameworks.ParameterModelling(fop, petro)
 
         super(ParameterInversionManager, self).__init__(fop, **kwargs)
 
@@ -495,6 +494,7 @@ class ParameterInversionManager(MethodManager):
                                                              err=err,
                                                              **kwargs)
 
+
 class MethodManager1d(MethodManager):
     """Method Manager base class for managers on a 1d discretization."""
     def __init__(self, fop=None, **kwargs):
@@ -510,6 +510,7 @@ class MethodManager1d(MethodManager):
         """ """
         return super(MethodManager1d, self).invert(data=data, err=err,
                                                    **kwargs)
+
 
 class MeshMethodManager(MethodManager):
     def __init__(self, **kwargs):
@@ -536,7 +537,7 @@ class MeshMethodManager(MethodManager):
     def setData(self, data):
         """ """
         if isinstance(data, pg.DataContainer):
-                self.fop.data = data
+            self.fop.data = data
         else:
             pg.critical("setting data array is not yet implemented.")
 
@@ -605,12 +606,12 @@ class MeshMethodManager(MethodManager):
         return self.paraModel(self.fw.model)
 
     def showModel(self, model=None, ax=None, **kwargs):
-        """"""
+        """Plot model into a new figure or a given axis."""
         if model is None:
             model = self.fw.model
         if ax is None:
             fig, ax = pg.plt.subplots(ncols=1)
-        
+
         cBar = None
         self.fop.drawModel(ax, model, **kwargs)
 
@@ -623,11 +624,11 @@ class MeshMethodManager(MethodManager):
         self.showModel(model=model, ax=ax, **kwargs)
 
     def showFit(self, axs=None, **kwargs):
-        """Show the last inversion data and response."""
-        orientation='vertical'
+        """Show data and the inversion result model response."""
+        orientation = 'vertical'
         if axs is None:
             fig, axs = pg.plt.subplots(nrows=1, ncols=2)
-            orientation='horizontal'
+            orientation = 'horizontal'
 
         self.showData(data=self.inv.dataVals,
                       orientation=orientation,
@@ -654,9 +655,9 @@ class MeshMethodManager(MethodManager):
                     horizontalalignment='left',
                     verticalalignment='center')
 
-        axs[1].text(1.0, 1.03, "rrms: {0}%, $\chi^2$: {1}"
-                     .format(pg.pf(pg.utils.rrms(data, resp)*100),
-                             pg.pf(self.fw.chi2History[-1])),
+        axs[1].text(1.0, 1.03, r"rrms: {0}%, $\chi^2$: {1}".format(
+                pg.pf(pg.utils.rrms(data, resp)*100),
+                pg.pf(self.fw.chi2History[-1])),
                     transform=axs[1].transAxes,
                     horizontalalignment='right',
                     verticalalignment='center')
@@ -691,8 +692,8 @@ class MeshMethodManager(MethodManager):
         """Return coverage vector considering the logarithmic transformation.
         """
         covTrans = pg.core.coverageDCtrans(self.fop.jacobian(),
-                                      1.0 / self.inv.response,
-                                      1.0 / self.inv.model)
+                                           1.0 / self.inv.response,
+                                           1.0 / self.inv.model)
         nCells = self.fop.paraDomain.cellCount()
         return np.log10(covTrans[:nCells] / self.fop.paraDomain.cellSizes())
 
