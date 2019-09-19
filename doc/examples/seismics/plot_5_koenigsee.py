@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
+.. _ex:koenigsee:
+
 Field data inversion ("Koenigsee")
 ==================================
 
