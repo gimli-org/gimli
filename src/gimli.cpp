@@ -18,7 +18,6 @@
 
 #include "gimli.h"
 
-
 #include <cerrno>
 #include <cstring>
 #include <fstream>

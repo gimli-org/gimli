@@ -211,7 +211,7 @@ class Modelling(pg.core.ModellingBase):
             self._regionProperties[regionNr] = {'startModel': None,
                                                 'modelControl': 1.0,
                                                 'zWeight': 1.0,
-                                                'cType': 1,
+                                                'cType': None, # use RM defaults
                                                 'limits': [0, 0],
                                                 'trans': 'Log',
                                                 'background': None,

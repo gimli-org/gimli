@@ -51,6 +51,8 @@ fi
 
 if [[ $core_update -ge 1 ]]; then
   echo "# Core changes detected. #"
+  touch CMakeCache.txt
+  
   cmake ../trunk \
      -DPYVERSION=3 \
      -DPYTHON_EXECUTABLE=/usr/bin/python3 \
