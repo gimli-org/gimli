@@ -252,6 +252,13 @@ if (";${BLAS_LIBRARIES};" MATCHES "openblas")
         )
     endif()
     message(STATUS "openblas cblas.h: ${OpenBLAS_INCLUDE_DIR}")
+  
+    if (OpenBLAS_INCLUDE_DIR)
+        set(OPENBLAS_CBLAS_FOUND TRUE)
+    else()
+        set(OPENBLAS_CBLAS_FOUND FALSE)
+    endif()
+
     set(OPENBLAS_FOUND TRUE)
 else()
     set(OPENBLAS_FOUND FALSE)

@@ -28,7 +28,7 @@
 
 //#include <omp.h> need -lgomp of -fopenmp
 
-#if OPENBLAS_FOUND
+#if OPENBLAS_CBLAS_FOUND
     #include <cblas.h>
 #endif
 
@@ -71,10 +71,13 @@ int deepDebug(){ return __GIMLI_DEEP_DEBUG__; }
 void setThreadCount(Index nThreads){
     log(Debug, "Set amount of threads to " + str(nThreads));
     //log(Debug, "omp_get_max_threads: " + str(omp_get_max_threads()));
-#if OPENBLAS_FOUND
+#if OPENBLAS_CBLAS_FOUND
     openblas_set_num_threads(nThreads);
     //omp_set_num_threads
+#else
+    log(Debug, "can't set openblas thread count. ");    
 #endif
+
     __GIMLI_THREADCOUNT__ = nThreads;
 }
 
