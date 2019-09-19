@@ -29,11 +29,7 @@
 //#include <omp.h> need -lgomp of -fopenmp
 
 #if OPENBLAS_FOUND
-    #if CONDA_BUILD
-        #include <cblas.h>
-    #else
-        #include <openblas/cblas.h>
-    #endif
+    #include <cblas.h>
 #endif
 
 #if USE_BOOST_THREAD

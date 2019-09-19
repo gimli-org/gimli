@@ -904,7 +904,12 @@ class ERTManager(MeshMethodManager):
         covTrans = pg.core.coverageDCtrans(self.fop.jacobian(),
                                       1.0 / self.inv.response,
                                       1.0 / self.inv.model)
-        return np.log10(covTrans / self.fop.paraDomain.cellSizes())
+
+        paramSizes = np.zeros(len(self.inv.model))
+        for c in self.fop.paraDomain.cells():
+            paramSizes[c.marker()] += c.size()
+
+        return np.log10(covTrans / paramSizes)
 
     def standardizedCoverage(self, threshhold=0.01):
         """Return standardized coverage vector (0|1) using thresholding.
