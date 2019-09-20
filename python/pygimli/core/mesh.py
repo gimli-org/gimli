@@ -16,14 +16,20 @@ def __Mesh_str(self):
         st += " secNodes: " + str(self.secondaryNodeCount())
 
     return st
+
+
 Mesh.__str__ = __Mesh_str
+
 
 def __addPLCs__(self, other):
     if self.isGeometry() and other.isGeometry():
         return mergePLC([self, other])
     else:
         error("Addition is only supported for PLCs, i.e. meshs without cells.")
+
+
 Mesh.__add__ = __addPLCs__
+
 
 def __MeshEntity_str(self):
     """Give mesh entity infos."""
@@ -38,6 +44,8 @@ def __MeshEntity_str(self):
         for n in self.nodes():
             s += '\t' + str(n.id()) + " " + str(n.pos()) + "\n"
     return s
+
+
 MeshEntity.__str__ = __MeshEntity_str
 
 
@@ -48,6 +56,8 @@ def __Node_str(self):
          ', Marker: ' + str(self.marker())
     s += '\t' + str(self.pos()) + '\n'
     return s
+
+
 Node.__str__ = __Node_str
 
 # For Jupyer Notebook use.. checkme
@@ -59,6 +69,8 @@ Node.__str__ = __Node_str
 def __Mesh_setVal(self, key, val):
     """Index access to the mesh data"""
     self.addData(key, val)
+
+
 Mesh.__setitem__ = __Mesh_setVal
 
 
@@ -68,14 +80,18 @@ def __Mesh_getVal(self, key):
         return self.data(key)
     else:
         error('The mesh does not have the requested data:', key)
+
+
 Mesh.__getitem__ = __Mesh_getVal
 
 
 def __MeshBoundingBox__(self):
     bb = self.boundingBox()
-    mi = [ bb.min()[i] for i in range(self.dim()) ]
-    ma = [ bb.max()[i] for i in range(self.dim()) ]
+    mi = [bb.min()[i] for i in range(self.dim())]
+    ma = [bb.max()[i] for i in range(self.dim())]
     return [mi, ma]
+
+
 Mesh.bb = __MeshBoundingBox__
 
 
@@ -88,15 +104,18 @@ def __MeshSetCellMarker__(self, m):
     deprecated(msg='Mesh::setCellMarker()', hint='Mesh::setCellMarkers()')
     return self.setCellMarkers(m)
 
+
 def __MeshHoleMarkers__(self):
     return self.holeMarker()
+
 
 Mesh.cellMarker = __MeshGetCellMarker__
 Mesh.setCellMarker = __MeshSetCellMarker__
 Mesh.holeMarkers = __MeshHoleMarkers__
 
+
 def __createSecondaryNodes__(self, n=3, verbose=False):
-    """Create `n` equally distributed secondary nodes on boundaries of the mesh.
+    """Create `n` equally distributed secondary nodes on the mesh boundaries.
     This is useful to increase the accuracy of traveltime calculations.
 
     Parameters
@@ -183,7 +202,7 @@ def __createSecondaryNodes__(self, n=3, verbose=False):
                 for e in edges:
                     line = Line(e[0].pos(), e[1].pos())
                     for i in range(n):
-                        sn = self.createSecondaryNode(line.at((i + 1) / (n + 1)),
+                        sn = self.createSecondaryNode(line.at((i+1)/(n+1)),
                                                       tol=1e-6)
                         c.addSecondaryNode(sn)
         else:

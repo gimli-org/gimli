@@ -15,8 +15,8 @@ def streamline(mesh, field, startCoord, dLengthSteps, dataMesh=None,
         and down direction.
     """
     xd, yd, vd = streamlineDir(mesh, field, startCoord, dLengthSteps,
-                           dataMesh=dataMesh, maxSteps=maxSteps, down=True,
-                           verbose=verbose, coords=coords)
+                               dataMesh=dataMesh, maxSteps=maxSteps,
+                               down=True,  verbose=verbose, coords=coords)
 
     c = mesh.findCell(startCoord)
 
@@ -24,8 +24,8 @@ def streamline(mesh, field, startCoord, dLengthSteps, dataMesh=None,
         c.setValid(True)
 
     xu, yu, vu = streamlineDir(mesh, field, startCoord, dLengthSteps,
-                           dataMesh=dataMesh, maxSteps=maxSteps, down=False,
-                           verbose=verbose, coords=coords)
+                               dataMesh=dataMesh, maxSteps=maxSteps,
+                               down=False, verbose=verbose, coords=coords)
 
     return xd + xu[1:], yd + yu[1:], vd + vu[1:]
 
@@ -38,7 +38,6 @@ def streamlineDir(mesh, field, startCoord, dLengthSteps, dataMesh=None,
     xd = []
     yd = []
     vd = []
-    counter = 0
 
     pot = None
     vx = None
@@ -122,7 +121,7 @@ def streamlineDir(mesh, field, startCoord, dLengthSteps, dataMesh=None,
                 if len(vx) == dataMesh.cellCount():
                     d = pg.RVector3(vx[cd.id()], vy[cd.id()])
                 elif len(vx) == dataMesh.nodeCount() and \
-                    len(vy) == dataMesh.nodeCount():
+                        len(vy) == dataMesh.nodeCount():
                     d = pg.RVector3(cd.pot(pos, vx), cd.pot(pos, vy))
                 else:
                     print(dataMesh)
