@@ -153,7 +153,7 @@ def findColorBar(ax):
 
 
 def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
-                   logScale=None, nLevs=5, label=None, **kwargs):
+                   logScale=None, nLevs=5, label=None, levels=None, **kwargs):
     """Update colorbar values.
 
     Update limits and label of a given colorbar.
@@ -176,6 +176,8 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
 
     label: str
 
+    levels: iterable
+
     """
     if gci is not None:
         if min(gci.get_array()) < 1e12:
@@ -187,11 +189,19 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
 
     if cMap is not None:
         if isinstance(cMap, str):
-            cMap = cmapFromName(cMap, ncols=256, bad=[1.0, 1.0, 1.0, 0.0])
-
+            if levels is not None:
+                cMap = cmapFromName(cMap, ncols=len(levels)-1, bad=[1.0, 1.0, 1.0, 0.0])
+            else:
+                cMap = cmapFromName(cMap, ncols=256, bad=[1.0, 1.0, 1.0, 0.0])
+            
         cbar.mappable.set_cmap(cMap)
 
     needLevelUpdate = False
+
+    if levels is not None:
+        cMin = levels[0]
+        cMax = levels[-1]
+        needLevelUpdate = True
 
     if cMin is not None or cMax is not None or nLevs is not None:
         needLevelUpdate = True
@@ -217,7 +227,7 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
         cbar.mappable.set_norm(norm)
 
     if needLevelUpdate:
-        setCbarLevels(cbar, cMin, cMax, nLevs)
+        setCbarLevels(cbar, cMin, cMax, nLevs, levels)
 
     if label is not None:
         cbar.set_label(label)
@@ -280,7 +290,6 @@ def createColorBar(gci, orientation='horizontal', size=0.2, pad=None,
         cbar = cbarTarget.colorbar(gci, cax=cax, orientation=orientation)
         #store the cbar into the axes to reuse it on the next call
         ax.__cBar__ = cbar
-
         updateColorBar(cbar, **kwargs)
 
     return cbar
@@ -343,7 +352,7 @@ def createColorBarOnly(cMin=1, cMax=100, logScale=False, cMap=None, nLevs=5,
     return ax
 
 
-def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5):
+def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5, levels=None):
     """Set colorbar levels given a number of levels and min/max values."""
     if cMin is None:
         cMin = cbar.get_clim()[0]
@@ -360,11 +369,14 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5):
     elif hasattr(cbar, 'norm'):
         norm = cbar.norm
 
-    if isinstance(norm, mpl.colors.LogNorm):
-        cbarLevels = np.logspace(np.log10(cMin), np.log10(cMax), nLevs)
+    if levels is not None:
+        cbarLevels = levels
     else:
-        #if cMax < cMin:
-        cbarLevels = np.linspace(cMin, cMax, nLevs)
+        if isinstance(norm, mpl.colors.LogNorm):
+            cbarLevels = np.logspace(np.log10(cMin), np.log10(cMax), nLevs)
+        else:
+            #if cMax < cMin:
+            cbarLevels = np.linspace(cMin, cMax, nLevs)
 
 
     # FIXME: [10.1, 10.2, 10.3] mapped to [10 10 10]

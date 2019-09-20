@@ -239,7 +239,6 @@ find_package(UMFPACK)
 
 if (";${BLAS_LIBRARIES};" MATCHES "openblas")
     message(STATUS "openblas is used: ${BLAS_LIBRARIES}")
-
     
     FIND_PATH(OpenBLAS_INCLUDE_DIR 
         NAMES cblas.h 
@@ -263,8 +262,6 @@ if (";${BLAS_LIBRARIES};" MATCHES "openblas")
 else()
     set(OPENBLAS_FOUND FALSE)
 endif()
-
-#find_package(openblas)
 
 if (NOT AVOID_CPPUNIT)
     find_package(CppUnit)
