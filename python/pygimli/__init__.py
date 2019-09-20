@@ -24,7 +24,7 @@ from .solver import solve
 from .testing import test
 from .utils import boxprint, cache, cut
 from .utils import prettify as pf
-from .utils import unit
+from .utils import unit, cmap
 from .viewer import plt, show, wait
 
 

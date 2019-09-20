@@ -141,6 +141,9 @@ def drawVA(ax, data, vals=None, usePos=True, pseudosection=False, **kwargs):
     vals : iterable
         Traveltimes, if None data need to contain 't' values.
     """
+    if isinstance(vals, str):
+        vals = data(vals)
+        
     if vals is None:
         vals = data('t')
 
@@ -149,6 +152,10 @@ def drawVA(ax, data, vals=None, usePos=True, pseudosection=False, **kwargs):
     sx = np.asarray([px[s] for s in data.id("s")])
 
     offset = shotReceiverDistances(data, full=True)
+
+    if min(vals) < 1e-10:
+        print(vals)
+        pg.error('zero traveltimes found.')
     va = offset / vals
 
     if pseudosection:

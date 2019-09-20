@@ -71,10 +71,11 @@ class ERTModellingBase(MeshModelling):
 
     def drawModel(self, ax, model, **kwargs):
         """Draw the para domain with option model values"""
-        super(ERTModellingBase, self).drawModel(ax, model, 
-                            label=kwargs.pop('label', pg.utils.unit('res')),
-                            cMap=kwargs.pop('cMap', pg.utils.cMap('res')),
-                            **kwargs)
+        kwargs['label'] = kwargs.pop('label', pg.unit('res'))
+        kwargs['cMap'] = kwargs.pop('cMap', pg.utils.cMap('res'))
+
+        return super(ERTModellingBase, self).drawModel(ax=ax, model=model, 
+                                                       **kwargs)
                 
 
 class BertModelling(ERTModellingBase):

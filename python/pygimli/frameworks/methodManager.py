@@ -333,13 +333,16 @@ class MethodManager(object):
 
         model : iterable
             Model data to be draw.
+        
+        Returns
+        -------
+        ax, cbar
         """
         if ax is None:
             fig, ax = pg.plt.subplots(ncols=1)
 
-        self.fop.drawModel(ax, model, **kwargs)
-        return ax
-
+        return self.fop.drawModel(ax, model, **kwargs)
+        
     def showData(self, data, ax=None, **kwargs):
         """Shows the data.
 
@@ -361,20 +364,31 @@ class MethodManager(object):
         if ax is None:
             fig, ax = pg.plt.subplots(ncols=1)
 
-        self.fop.drawData(ax, data, **kwargs)
-        return ax
-
-    def showResult(self, ax=None, **kwargs):
+        return self.fop.drawData(ax, data, **kwargs)
+        
+    def showResult(self, model=None, ax=None, **kwargs):
         """Show the last inversion result.
 
         TODO
         ----
          DRY: decide showModel or showResult
-        """
-        ax = self.showModel(self.model, ax=ax,  # label='Model',
-                            **kwargs)
-        return ax
 
+        Parameters
+        ----------
+        ax : mpl axes
+            Axes object to draw into. Create a new if its not given.
+
+        model : iterable [None]
+            Model values to be draw. Default is self.model from the last run
+
+        Returns
+        -------
+        ax, cbar
+        """
+        if model is None:
+            model = self.model
+        return self.showModel(model, ax=ax, **kwargs)
+        
     def showFit(self, ax=None, **kwargs):
         """Show the last inversion data and response."""
         ax = self.showData(data=self.inv.dataVals,
@@ -398,16 +412,21 @@ class MethodManager(object):
 
         return ax
 
-    def showResultAndFit(self, axs=None, **kwargs):
+    def showResultAndFit(self, **kwargs):
         """Calls showResults and showFit."""
-        if axs is None:
-            fig, axs = pg.plt.subplots(ncols=2)
 
-        self.showResult(ax=axs[0], **kwargs)
-        self.showFit(ax=axs[1], **kwargs)
+        fig = pg.plt.figure()
+        ax = fig.add_subplot(1, 2, 1)
 
-        axs[0].figure.tight_layout()
-        return axs
+        self.showResult(ax=ax, model=self.model, **kwargs)
+
+        ax1 = fig.add_subplot(2, 2, 2)
+        ax2 = fig.add_subplot(2, 2, 4)
+
+        self.showFit(axs=[ax1, ax2], **kwargs)
+
+        fig.tight_layout()
+        return fig
 
     @staticmethod
     def createArgParser(dataSuffix='dat'):
@@ -605,24 +624,6 @@ class MeshMethodManager(MethodManager):
         self.postRun(**kwargs)
         return self.paraModel(self.fw.model)
 
-    def showModel(self, model=None, ax=None, **kwargs):
-        """Plot model into a new figure or a given axis."""
-        if model is None:
-            model = self.fw.model
-        if ax is None:
-            fig, ax = pg.plt.subplots(ncols=1)
-
-        cBar = None
-        self.fop.drawModel(ax, model, **kwargs)
-
-        return ax, cBar
-
-    def showResult(self, model=None, ax=None, **kwargs):
-        """"""
-        if model is None:
-            model = self.fw.model
-        self.showModel(model=model, ax=ax, **kwargs)
-
     def showFit(self, axs=None, **kwargs):
         """Show data and the inversion result model response."""
         orientation = 'vertical'
@@ -671,22 +672,6 @@ class MeshMethodManager(MethodManager):
         #             verticalalignment='bottom')
 
         return axs
-
-    def showResultAndFit(self, **kwargs):
-        """Calls showResults and showFit."""
-
-        fig = pg.plt.figure()
-        ax = fig.add_subplot(1, 2, 1)
-
-        self.showResult(ax=ax, model=kwargs.pop('model', None), **kwargs)
-
-        ax1 = fig.add_subplot(2, 2, 2)
-        ax2 = fig.add_subplot(2, 2, 4)
-
-        self.showFit(axs=[ax1, ax2], **kwargs)
-
-        fig.tight_layout()
-        return fig
 
     def coverage(self):
         """Return coverage vector considering the logarithmic transformation.

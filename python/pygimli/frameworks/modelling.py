@@ -118,6 +118,15 @@ class Modelling(pg.core.ModellingBase):
     def data(self, d):
         self.setData(d)
 
+    def setData(self, data):
+        """
+        """
+        if isinstance(data, pg.DataContainer):
+            self.setDataContainer(data)
+        else:
+            print(data)
+            pg.critical("nothing known to do? Implement me in derived classes")
+
     @property
     def modelTrans(self):
         self._applyRegionProperties()
@@ -275,15 +284,6 @@ class Modelling(pg.core.ModellingBase):
                 rMgr.region(rID).setUpperBound(vals['limits'][1])
 
         self._regionsNeedUpdate = False
-
-    def setData(self, data):
-        """
-        """
-        if isinstance(data, pg.DataContainer):
-            self.setDataContainer(data)
-        else:
-            print(data)
-            pg.critical("nothing known to do? Implement me in derived classes")
 
     def setDataSpace(self, **kwargs):
         """Set data space, e.g., DataContainer, times, coordinates."""
@@ -463,6 +463,9 @@ class MeshModelling(Modelling):
         """"""
         # We need our own copy here because its possible that we want to use
         # the mesh after the fop was deleted
+        if not self.mesh():
+            pg.critical('paraDomain needs a mesh')
+
         self._pd = pg.Mesh(self.regionManager().paraDomain())
         return self._pd
 
@@ -527,6 +530,9 @@ class MeshModelling(Modelling):
         """
         """
         self._baseMesh = mesh
+        if ignoreRegionManager is False:
+            self._regionManagerInUse = True
+
         if ignoreRegionManager == True or self._regionManagerInUse == False:
             self._regionManagerInUse = False
             if self.fop is not None:
@@ -569,7 +575,8 @@ class MeshModelling(Modelling):
             ax = self._axs
 
         if hasattr(ax, '__cBar__'):
-            #we assume the axes allready holds a valif mappable
+            # we assume the axes already holds a valid mappable and we only
+            # update the model data
             cBar = ax.__cBar__
             kwargs.pop('label', None)
             kwargs.pop('cMap', None)
