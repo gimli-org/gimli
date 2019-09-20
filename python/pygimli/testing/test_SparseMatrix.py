@@ -144,11 +144,5 @@ class TestSparseMatrix(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    test = TestSparseMatrix()
-
-    # test.test_ComplexMatrix()
-    # exit()
-    # test.test_Convert()
-    # test.test_Operators()
 
     unittest.main()
