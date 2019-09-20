@@ -96,8 +96,12 @@ def showMesh3DVista(mesh, data=None, **kwargs):
 
     if use_gui and notebook is False:
         # add saved data from within the pg.mesh itself
-        for k, v in mesh.dataMap():
-            grid.cell_arrays[k] = np.asarray(v)
+        for label, data in mesh.dataMap():
+            # grid.cell_arrays[k] = np.asarray(v)
+            if len(data) == mesh.cellCount():
+                grid.cell_arrays[label] = np.asarray(data)
+            elif len(data) == mesh.nodeCount():
+                grid.point_arrays[label] = np.asarray(data)
         # app = Qt.QApplication()
         app = Qt.QApplication(sys.argv)
         s3d = Show3D(tmp, app)

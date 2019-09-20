@@ -175,12 +175,17 @@ class Show3D(QMainWindow):
         self.toolbar.spbx_cmin.setEnabled(True)
         self.toolbar.spbx_cmax.setEnabled(True)
 
-        # FIXME: what about the point arrays?!
-        for k, v in self.mesh.cell_arrays.items():
-            self.mesh._add_cell_array(v, k)
-            self.extrema[k] = {
-                'orig': {'min': min(v), 'max': max(v)},
-                'user': {'min': min(v), 'max': max(v)}
+        for label, data in self.mesh.cell_arrays.items():
+            # self.mesh._add_cell_array(data, label)
+            self.extrema[label] = {
+                'orig': {'min': min(data), 'max': max(data)},
+                'user': {'min': min(data), 'max': max(data)}
+            }
+        for label, data in self.mesh.point_arrays.items():
+            # self.mesh._add_cell_array(data, label)
+            self.extrema[label] = {
+                'orig': {'min': min(data), 'max': max(data)},
+                'user': {'min': min(data), 'max': max(data)}
             }
         # supply the combobox with the names to choose from for display
         self.toolbar.cbbx_params.addItems(self.mesh.array_names)
