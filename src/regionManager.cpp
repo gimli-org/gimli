@@ -26,7 +26,6 @@
 #include "trans.h"
 #include "vectortemplates.h"
 
-
 namespace GIMLI{
 
 Region::Region(SIndex marker, RegionManager * parent, bool single)
@@ -927,7 +926,7 @@ void RegionManager::fillConstraints(RSparseMapMatrix & C){
     Index nModel  = parameterCount();
     // __MS(nModel)
     Index nConstr = constraintCount();
-    // __MS(nConstr)
+    
     this->_cWeights.resize(nConstr, 1.0);
     
     C.clear();
@@ -957,14 +956,17 @@ void RegionManager::fillConstraints(RSparseMapMatrix & C){
 
     if (interRegionConstraints_.size() > 0){
         if (verbose_) std::cout << "Creating inter region constraints." << std::endl;
-
+        Index i = 0;
         for (auto & it : this->interRegionConstraints_){
         
             std::pair< SIndex, SIndex > ab = it.first;
             double cWeight = it.second;
-            // if (verbose_) std::cout << "\t" 
-            //                         << ab.first << "< (" << cWeight << ") >" 
-            //                         << ab.second << std::endl;
+            if (verbose_) {
+                // std::cout << "\t" << i << ": "
+                //                     << ab.first << "< (" << cWeight << ") >" 
+                //                     << ab.second << std::endl;
+                i ++;
+            }
             Region * regA = regionMap_.find(ab.first)->second;
             Region * regB = regionMap_.find(ab.second)->second;
 

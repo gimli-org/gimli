@@ -51,7 +51,7 @@ if (CONDA_BUILD)
     include_directories(${CONDA_PREFIX})
 endif()
 
-if (OPENBLAS_FOUND)
+if (OpenBLAS_INCLUDE_DIR)
     include_directories(${OpenBLAS_INCLUDE_DIR})
 endif()
 

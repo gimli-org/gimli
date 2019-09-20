@@ -240,14 +240,25 @@ find_package(UMFPACK)
 if (";${BLAS_LIBRARIES};" MATCHES "openblas")
     message(STATUS "openblas is used: ${BLAS_LIBRARIES}")
 
-    SET(Open_BLAS_INCLUDE_SEARCH_PATHS
-        /usr/include/openblas
-        /usr/include
+    
+    FIND_PATH(OpenBLAS_INCLUDE_DIR 
+        NAMES cblas.h 
+        PATHS /usr/include/openblas
+        NO_DEFAULT_PATH
     )
-    FIND_PATH(OpenBLAS_INCLUDE_DIR NAMES 
-        cblas.h PATHS ${Open_BLAS_INCLUDE_SEARCH_PATHS}
-    )
+    if (NOT OpenBLAS_INCLUDE_DIR)
+        FIND_PATH(OpenBLAS_INCLUDE_DIR 
+            NAMES cblas.h 
+        )
+    endif()
     message(STATUS "openblas cblas.h: ${OpenBLAS_INCLUDE_DIR}")
+  
+    if (OpenBLAS_INCLUDE_DIR)
+        set(OPENBLAS_CBLAS_FOUND TRUE)
+    else()
+        set(OPENBLAS_CBLAS_FOUND FALSE)
+    endif()
+
     set(OPENBLAS_FOUND TRUE)
 else()
     set(OPENBLAS_FOUND FALSE)
