@@ -45,6 +45,7 @@ def _cellAngles(cell):
 
     Examples
     --------
+    >>> import pygimli as pg
     >>> mesh = pg.Mesh()
     >>> for pos in (0.,0.), (0.,1.), (1.,0.):
     ...     n = mesh.createNode(pos[0], pos[1], 0.0)
