@@ -3,6 +3,7 @@
 """View ERT data
 """
 
+from math import pi
 import numpy as np
 from numpy import ma
 
@@ -67,8 +68,8 @@ def showERTData(data, vals=None, **kwargs):
     kwargs['logScale'] = kwargs.pop('logScale', min(vals) > 0.0)
 
     ax, cbar = drawERTData(ax, data, vals=vals, **kwargs)
-    
-    #TODO here cbar handling like pg.show
+
+    # TODO here cbar handling like pg.show
 
     if 'xlabel' in kwargs:
         ax.set_xlabel(kwargs['xlabel'])
@@ -79,9 +80,9 @@ def showERTData(data, vals=None, **kwargs):
         # if axTopo is not None:
         print(ax.get_position())
         axTopo = pg.plt.axes([ax.get_position().x0,
-                           ax.get_position().y0,
-                           ax.get_position().x0+0.2,
-                           ax.get_position().y0+0.2])
+                              ax.get_position().y0,
+                              ax.get_position().x0+0.2,
+                              ax.get_position().y0+0.2])
 
         x = pg.x(data)
         x *= (ax.get_xlim()[1] - ax.get_xlim()[0]) / (max(x)-min(x))
@@ -94,7 +95,7 @@ def showERTData(data, vals=None, **kwargs):
     # plt.pause(0.1)
     pg.mplviewer.updateAxes(ax)
     return ax, cbar
-    
+
 
 def drawERTData(ax, data, vals=None, **kwargs):
     """Plot ERT data as pseudosection matrix (position over separation).
@@ -130,7 +131,7 @@ def drawERTData(ax, data, vals=None, **kwargs):
     """
     if vals is None:
         vals = data('rhoa')
-        
+
     valid = data.get("valid").array().astype("bool")
     vals = ma.array(vals, mask=~valid)
 
@@ -142,16 +143,17 @@ def drawERTData(ax, data, vals=None, **kwargs):
     else:
         mid, sep = midconfERT(data, circular=kwargs.get('circular', False))
 
-    var = kwargs.pop('var', 0)
+    # var = kwargs.pop('var', 0)  # not used anymore
     cbar = None
 
     dx = kwargs.pop('dx', np.median(np.diff(np.unique(mid))))*2
-    ax, cbar, ymap = showValMapPatches(vals, xVec=mid, yVec=sep, 
+    ax, cbar, ymap = showValMapPatches(vals, xVec=mid, yVec=sep,
                                        dx=dx, ax=ax, **kwargs)
-        
+
     if kwargs.get('circular', False):
         sM = np.mean(data.sensors(), axis=0)
-        a = np.array([np.arctan2(s[1]-sM[1], s[0]-sM[0]) for s in data.sensors()])
+        a = np.array([np.arctan2(s[1]-sM[1], s[0]-sM[0])
+                      for s in data.sensors()])
         p = list(range(len(a)))
         # p.append(0)
         ax.plot(np.cos(a)[p], np.sin(a)[p], 'o', color='black')
@@ -215,7 +217,9 @@ def midconfERT(data, ind=None, rnum=1, circular=False):
             40000: Schlumberger or Gradient
             50000: dipole-dipole or Wenner-beta
         2) potential dipole length (in electrode spacings)
+            .XX..: dipole length
         3) separation factor (current dipole length or (di)pole separation)
+            ...XX: pole/dipole separation (PP,PD,DD,GR) or separation
     """
 #    xe = np.hstack((pg.x(data.sensorPositions()), np.nan))  # not used anymore
     x0 = data.sensorPosition(0).x()
@@ -258,12 +262,12 @@ def midconfERT(data, ind=None, rnum=1, circular=False):
         p0 = np.arctan2(s0[1], s0[0])
         p1 = np.arctan2(s1[1], s1[0])
         if p1 > p0:
-            #rotate left
-            x=np.cos(np.linspace(0, 2*np.pi, data.sensorCount()+1)+p0)[:-1] * r
-            y=np.sin(np.linspace(0, 2*np.pi, data.sensorCount()+1)+p0)[:-1] * r
+            # rotate left
+            x = np.cos(np.linspace(0, 2*pi, data.sensorCount()+1)+p0)[:-1] * r
+            y = np.sin(np.linspace(0, 2*pi, data.sensorCount()+1)+p0)[:-1] * r
         else:
-            x=np.cos(np.linspace(2*np.pi, 0, data.sensorCount()+1)+p0)[:-1] * r
-            y=np.sin(np.linspace(2*np.pi, 0, data.sensorCount()+1)+p0)[:-1] * r
+            x = np.cos(np.linspace(2*pi, 0, data.sensorCount()+1)+p0)[:-1] * r
+            y = np.sin(np.linspace(2*pi, 0, data.sensorCount()+1)+p0)[:-1] * r
 
         a = np.array([np.arctan2(y[i], x[i]) for i in data['a']])
         b = np.array([np.arctan2(y[i], x[i]) for i in data['b']])
@@ -295,7 +299,7 @@ def midconfERT(data, ind=None, rnum=1, circular=False):
 
     if circular:
         for v in [ab, mn, bm, an]:
-            v[v > np.pi] = 2*np.pi - v[v > np.pi]
+            v[v > pi] = 2*pi - v[v > pi]
 
     # 2-point (default) 00000
     sep = np.abs(a-m)
