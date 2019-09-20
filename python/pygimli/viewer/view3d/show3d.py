@@ -4,6 +4,7 @@ BUGS:
 + there is no good coming back from volumetric slicing atm
 """
 
+import numpy as np
 from shutil import copyfile
 import signal
 import sys
@@ -29,7 +30,7 @@ class Show3D(QMainWindow):
         super(Show3D, self).__init__(parent)
         self.tmpMesh = tmpMesh
         # storage for the minima and maxima
-        self.extrema = {}
+        self.data = {}
         # setup the menubar
         self.setupMenu()
         self.setupWidget()
@@ -177,15 +178,19 @@ class Show3D(QMainWindow):
 
         for label, data in self.mesh.cell_arrays.items():
             # self.mesh._add_cell_array(data, label)
-            self.extrema[label] = {
+            self.data[label] = {
                 'orig': {'min': min(data), 'max': max(data)},
-                'user': {'min': min(data), 'max': max(data)}
+                'user': {'min': min(data), 'max': max(data)},
+                'data_orig': data,
+                'data_user': None
             }
         for label, data in self.mesh.point_arrays.items():
             # self.mesh._add_cell_array(data, label)
-            self.extrema[label] = {
+            self.data[label] = {
                 'orig': {'min': min(data), 'max': max(data)},
-                'user': {'min': min(data), 'max': max(data)}
+                'user': {'min': min(data), 'max': max(data)},
+                'data_orig': data,
+                'data_user': None
             }
         # supply the combobox with the names to choose from for display
         self.toolbar.cbbx_params.addItems(self.mesh.array_names)
@@ -193,9 +198,10 @@ class Show3D(QMainWindow):
         curr_param = self.toolbar.cbbx_params.currentText()
         # set the first cMin/cMax
         self.toolbar.spbx_cmin.setValue(
-            self.extrema[curr_param]['orig']['min'])
+            self.data[curr_param]['orig']['min'])
         self.toolbar.spbx_cmax.setValue(
-            self.extrema[curr_param]['orig']['max'])
+            self.data[curr_param]['orig']['max'])
+        self.updateParameterView(curr_param)
 
     def updateParameterView(self, param=None):
         """
@@ -216,11 +222,11 @@ class Show3D(QMainWindow):
             self.mesh.set_active_scalar(param)
             # update the minima and maxima in the limit range
             self.toolbar.spbx_cmin.setRange(
-                self.extrema[param]['user']['min'], self.extrema[param]['user']['max'])
+                self.data[param]['user']['min'], self.data[param]['user']['max'])
             self.toolbar.spbx_cmax.setRange(
-                self.extrema[param]['user']['min'], self.extrema[param]['user']['max'])
-            self.toolbar.spbx_cmin.setValue(self.extrema[param]['user']['min'])
-            self.toolbar.spbx_cmax.setValue(self.extrema[param]['user']['max'])
+                self.data[param]['user']['min'], self.data[param]['user']['max'])
+            self.toolbar.spbx_cmin.setValue(self.data[param]['user']['min'])
+            self.toolbar.spbx_cmax.setValue(self.data[param]['user']['max'])
 
         cMap = self.toolbar.cbbx_cmap.currentText()
         if self.toolbar.btn_reverse.isChecked():
@@ -278,8 +284,8 @@ class Show3D(QMainWindow):
             param = self.mesh.active_scalar_name
 
             # update the user extrema
-            self.extrema[param]['user']['min'] = cmin
-            self.extrema[param]['user']['max'] = cmax
+            self.data[param]['user']['min'] = cmin
+            self.data[param]['user']['max'] = cmax
             # NOTE: has no effect on the displayed vtk
             # pg._d("RESET SCALAR BAR LIMITS")
             self.pyvista_widget.update_scalar_bar_range([cmin, cmax])
@@ -336,11 +342,62 @@ class Show3D(QMainWindow):
         """
         # get the active scalar/parameter that is displayed currently
         param = self.mesh.active_scalar_name
-        self.extrema[param]['user']['min'] = self.extrema[param]['orig']['min']
-        self.extrema[param]['user']['max'] = self.extrema[param]['orig']['max']
+        self.data[param]['user']['min'] = self.data[param]['orig']['min']
+        self.data[param]['user']['max'] = self.data[param]['orig']['max']
 
         # display correctly
         self.updateParameterView(param)
+
+    def recalcAllParameters(self):
+        """
+        When the logarithmic checkbox is clicked, perform the calculation on
+        all present data sets. Or reverse - depends on the checked status.
+        """
+        keep = ['_Attribute', '_Marker']
+        log = self.toolbar.chbx_plotlog.isChecked()
+        if log:
+            for label, data in self.mesh.cell_arrays.items():
+                if label in keep:
+                    continue
+                if self.data[label]['data_user'] is None:
+                    self.data[label]['data_user'] = self._recalcData(data)
+                    self.data[label]['user']['min'] = np.min(self.data[label]['data_user'])
+                    self.data[label]['user']['max'] = np.max(self.data[label]['data_user'])
+                self.mesh.cell_arrays[label] = self.data[label]['data_user']
+
+            for label, data in self.mesh.point_arrays.items():
+                if label in keep:
+                    continue
+                if self.data[label]['data_user'] is None:
+                    self.data[label]['data_user'] = self._recalcData(data)
+                    self.data[label]['user']['min'] = np.min(self.data[label]['data_user'])
+                    self.data[label]['user']['max'] = np.max(self.data[label]['data_user'])
+                self.mesh.point_arrays[label] = self.data[label]['data_user']
+
+        else:
+            for label, data in self.mesh.cell_arrays.items():
+                if label in keep:
+                    continue
+                self.data[label]['user']['min'] = np.min(self.data[label]['data_orig'])
+                self.data[label]['user']['max'] = np.max(self.data[label]['data_orig'])
+                self.mesh.cell_arrays[label] = self.data[label]['data_orig']
+
+            for label, data in self.mesh.point_arrays.items():
+                if label in keep:
+                    continue
+                self.data[label]['user']['min'] = np.min(self.data[label]['data_orig'])
+                self.data[label]['user']['max'] = np.max(self.data[label]['data_orig'])
+                self.mesh.point_arrays[label] = self.data[label]['data_orig']
+
+    def _recalcData(self, values):
+        signs = np.sign(values)
+        # TODO: get rid of the RunTimeWarning from np.log
+        values = np.log(np.absolute(values))
+        # replace the -inf with 0
+        values = np.where(np.absolute(values)==np.inf, 0, values)
+        # add back the original sign
+        values = values * signs
+        return values
 
     def _enableSlicers(self):
         if self.toolbar.btn_slice_plane.isChecked():
@@ -360,12 +417,12 @@ class Show3D(QMainWindow):
         self.toolbar.cbbx_cmap.currentTextChanged.connect(
             self.updateParameterView)
         self.toolbar.btn_reverse.clicked.connect(self.updateParameterView)
-        # self.toolbar.btn_plotlog.clicked.connect(self.updateParameterView)
         self.toolbar.btn_bbox.pressed.connect(self.toggleBbox)
         self.toolbar.btn_screenshot.clicked.connect(self.takeScreenShot)
         self.toolbar.btn_exportVTK.clicked.connect(self.exportMesh)
         self.toolbar.chbx_threshold.clicked.connect(self.updateParameterView)
         self.toolbar.chbx_threshold.clicked.connect(self._checkStatusThreshold)
+        self.toolbar.chbx_plotlog.clicked.connect(self.recalcAllParameters)
         self.toolbar.btn_apply.clicked.connect(self.updateParameterView)
         self.toolbar.btn_reset.clicked.connect(self.resetExtrema)
         self.toolbar.btn_slice_plane.clicked.connect(self._checkStatusPlaneSlice)
