@@ -24,6 +24,9 @@ Matrix = pgcore.RMatrix
 
 class MultMatrix(pgcore.MatrixBase):
     """Base Matrix class for all matrix types holding a matrix."""
+    def __init__(self, A, verbose=False):
+        self._A = A
+        super(MultMatrix, self).__init__(verbose)
 
     @property
     def A(self):
