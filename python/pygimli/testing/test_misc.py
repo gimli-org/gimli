@@ -99,13 +99,17 @@ class TestMisc(unittest.TestCase):
         data = pg.DataContainer()
         data['b'] = np.ones(2) * 3.14
         np.testing.assert_array_equal(data['b'], np.ones(2)*3.14)
-        self.assertEqual(type(data['b']), type(np.array(1.0)))
+        self.assertEqual(type(data['b']), type(pg.Vector()))
         
+        data['b'][0] = 1.0
+        self.assertEqual(data['b'][0], 1.0)
+
         data.registerSensorIndex('a')
         data['a'] = np.ones(2)
         np.testing.assert_array_equal(data['a'], np.ones(2))
         self.assertEqual(type(data['a']), type(np.array(1)))
         self.assertEqual(data['a'].dtype, 'int')
+        data['a'][0] = 1.0 # will not work for sensorIndex until its changed in the datacontainer as IndexArray
     
         data['a'] = np.ones(2)*1.2
         np.testing.assert_array_equal(data['a'], np.ones(2))
@@ -215,6 +219,3 @@ class TestMisc(unittest.TestCase):
 if __name__ == '__main__':
     pg.core.setDeepDebug(0)
     unittest.main()
-
-
-

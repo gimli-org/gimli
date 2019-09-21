@@ -12,7 +12,7 @@ from pygimli.frameworks import MeshModelling
 from pygimli.frameworks import MeshMethodManager
 
 from . raplot import drawTravelTimeData, drawVA, showVA
-from . ratools import shotReceiverDistances
+from . ratools import shotReceiverDistances, createGradientModel2D
 
 
 class TravelTimeDijkstraModelling(MeshModelling):
@@ -20,7 +20,7 @@ class TravelTimeDijkstraModelling(MeshModelling):
         self._core = pg.core.TravelTimeDijkstraModelling()
 
         super(TravelTimeDijkstraModelling, self).__init__(**kwargs)
-
+        self._useGradient = None # assumed to be [vTop, vBot] if set
         self._refineSecNodes = 3
         self.jacobian = self._core.jacobian
         self.setThreadCount = self._core.setThreadCount
@@ -64,17 +64,29 @@ class TravelTimeDijkstraModelling(MeshModelling):
     def createStartModel(self, dataVals):
         """
         """
-        dists = shotReceiverDistances(self.data, full=True)
-        aSlow = 1. / (dists / dataVals)
+        sm = None
 
-        # pg._r(self.regionManager().parameterCount())
-        sm = pg.Vector(self.regionManager().parameterCount(),
-                       pg.math.median(aSlow))
+        if self._useGradient is not None:
+            [vTop, vBot] = self._useGradient
+            pg.info('Create gradient starting model. {0}: {1}'.format(vTop, vBot))
+            sm = createGradientModel2D(self.data, 
+                                       self.paraDomain,
+                                       vTop, vBot)
+        else:
+            dists = shotReceiverDistances(self.data, full=True)
+            aSlow = 1. / (dists / dataVals)
+
+            # pg._r(self.regionManager().parameterCount())
+            sm = pg.Vector(self.regionManager().parameterCount(),
+                        pg.math.median(aSlow))
+            pg.info('Create constant starting model:', sm[0])
+                
         return sm
 
     def createJacobian(self, par):
         if not self.mesh():
             pg.critical("no mesh")
+
         return self._core.createJacobian(par)
 
     def response(self, par):
@@ -88,18 +100,30 @@ class TravelTimeDijkstraModelling(MeshModelling):
         """
         return self._core.way(s, g)
 
-
     def drawModel(self, ax, model, **kwargs):
-        kwargs['label'] = pg.unit('vel')
-        ax, cBar = super(TravelTimeDijkstraModelling, self).drawModel(ax=ax,
+        kwargs['label'] = kwargs.pop('label', pg.unit('vel'))
+        kwargs['cMap'] = kwargs.pop('cMap', pg.utils.cMap('vel'))
+
+        return super(TravelTimeDijkstraModelling, self).drawModel(ax=ax,
                                                            model=model,
                                                            **kwargs)
-        return ax, cBar
 
-    def drawData(self, ax, data, err=None, **kwargs):
-        kwargs['label'] = pg.unit('va')
-        return showVA(self.data, vals=data, usePos=False,
-                      ax=ax, **kwargs)
+    def drawData(self, ax, data=None, err=None, **kwargs):
+        """
+        Parameters
+        ----------
+        data: pg.DataContainer()
+        """
+        kwargs['label'] = kwargs.pop('label', pg.unit('va'))
+        kwargs['cMap'] = kwargs.pop('cMap', pg.utils.cMap('va'))
+
+        if hasattr(data, '__iter__'):
+            kwargs['vals'] = data
+            data = self.data
+        elif data is None:
+            data = self.data
+
+        return showVA(data, usePos=False, ax=ax, **kwargs)
 
 
 class TravelTimeManager(MeshMethodManager):
@@ -139,7 +163,8 @@ class TravelTimeManager(MeshMethodManager):
         """Return relative error"""
         if isinstance(err, pg.DataContainer):
             if not err.haveData('err'):
-                pg.error('Datacontainer have no "err" values. Fallback set to 0.01')
+                pg.error('Datacontainer have no "err" values. Fallback set to 3%')
+                return np.ones(err.size()) * 0.03
             return err['err'] / dataVals
 
         return err
@@ -241,7 +266,8 @@ class TravelTimeManager(MeshMethodManager):
 
         return ret
 
-    def invert(self, data=None, **kwargs):
+    def invert(self, data=None, useGradient=True, vTop=500, vBottom=5000,
+               secNodes=2, **kwargs):
         """Invert data.
 
         Parameters
@@ -249,16 +275,29 @@ class TravelTimeManager(MeshMethodManager):
         data : pg.DataContainer()
             Data container with at least SensorIndieces 's g' and
             data values 't' (traveltime in ms) and 'err' (absolute error in ms)
-
-        Other Parameters
-        ----------------
+        useGradient: bool [True]
+            Use a gradient like starting model suited for standard flat 
+            earth cases. [Default]
+            For cross tomography geometry you should set this to False for a 
+            non gradient startind model.
+        vTop: float
+            Top velocity for gradient stating model.
+        vBottom: float
+            Bottom velocity for gradient stating model.
         secNodes: int [2]
             Amount of secondary nodes used for ensure accuracy of the forward
             operator.
+
+        Other Parameters
+        ----------------
+        ** kwargs:
+            Inversion related arguments:
+            See :py:mod:`pygimli.frameworks.MeshMethodManager.invert`
         """
         mesh = kwargs.pop('mesh', None)
+
         if mesh is not None:
-            self.setMesh(mesh, secNodes=kwargs.pop('secNodes', 2))
+            self.setMesh(mesh, secNodes=secNodes)
 
         if 'limits' in kwargs:
             if kwargs['limits'][0] > 1:
@@ -268,6 +307,11 @@ class TravelTimeManager(MeshMethodManager):
                 pg.verbose('Switching velocity limits to slowness limits.',
                            kwargs['limits'])
 
+        if useGradient:
+            self.fop._useGradient = [vTop, vBottom]
+        else:
+            self.fop._useGradient = None
+        
         slowness = super(TravelTimeManager, self).invert(data, **kwargs)
         velocity = 1.0 / slowness
         self.fw.model = velocity
@@ -384,7 +428,6 @@ class TravelTimeManager(MeshMethodManager):
         """shows the ray coverage in logscale"""
         if ax is None:
             fig, ax = plt.subplots()
-            self.figs[name] = fig
 
         cov = self.rayCoverage()
         return pg.show(self.fop.paraDomain,

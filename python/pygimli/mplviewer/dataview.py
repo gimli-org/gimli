@@ -150,7 +150,7 @@ def drawValMapPatches(ax, vals, xVec=None, yVec=None, dx=1, dy=None, **kwargs):
 
 
 def patchValMap(vals, xvec=None, yvec=None, ax=None, cMin=None, cMax=None,
-                logScale=None, label=None, dx=1, dy=None, **kwargs):
+                logScale=None, label=None, dx=1, dy=None, cTrim=0, **kwargs):
     """Plot previously generated (generateVecMatrix) y map (category).
 
     Parameters
@@ -165,6 +165,8 @@ def patchValMap(vals, xvec=None, yvec=None, ax=None, cMin=None, cMax=None,
         axis to plot, if not given a new figure is created
     cMin/cMax : float
         minimum/maximum color values
+    cTrim : float [0]
+        use trim value to exclude outer cTrim percent of data from color scale
     logScale : bool
         logarithmic colour scale [min(vals)>0]
     label : string
@@ -175,8 +177,10 @@ def patchValMap(vals, xvec=None, yvec=None, ax=None, cMin=None, cMax=None,
     """
     if cMin is None:
         cMin = np.min(vals)
+        # cMin = np.nanquantile(vals, cTrim/100)
     if cMax is None:
         cMax = np.max(vals)
+        # cMin = np.nanquantile(vals, 1-cTrim/100)
 
     if logScale is None:
         logScale = (cMin > 0.0)
@@ -249,6 +253,8 @@ def patchValMap(vals, xvec=None, yvec=None, ax=None, cMin=None, cMax=None,
     col = ax.add_collection(pp)
     pp.set_edgecolor(None)
     pp.set_linewidths(0.0)
+    if 'alpha' in kwargs:
+        pp.set_alpha(kwargs['alpha'])
 
     if circular:
         pp.set_edgecolor('black')
@@ -461,7 +467,7 @@ def drawMatrix(ax, mat, xmap=None, ymap=None, cMin=None, cMax=None,
 def plotVecMatrix(xvec, yvec, vals, full=False, **kwargs):
     """DEPRECATED for nameing
     """
-    pg.deprecated("use drawVecMatrix or showVecMatrix")
+    pg.deprecated("use showVecMatrix")
     return showVecMatrix(xvec, yvec, vals, full, **kwargs)
 
 
@@ -498,28 +504,77 @@ def showVecMatrix(xvec, yvec, vals, full=False, **kwargs):
     A, xmap, ymap = generateMatrix(xvec, yvec, vals, full=full)
     return showMatrix(A, xmap=xmap, ymap=ymap, **kwargs)
 
+
 def drawVecMatrix(ax, xvec, yvec, vals, full=False, **kwargs):
     A, xmap, ymap = generateMatrix(xvec, yvec, vals, full=full)
     return drawMatrix(ax, A, xmap=xmap, ymap=ymap, **kwargs)
 
 
-def plotDataContainerAsMatrix(data, x=None, y=None, v=None, **kwargs):
-    """Plot data container as matrix.
+def plotDataContainerAsMatrix(*args, **kwargs):
+    "DEPRECATED naming scheme"""
+    pg.deprecated('plotDataContainerAsMatrix', 'showDataContainerAsMatrix')
+    return showDataContainerAsMatrix(*args, **kwargs)
+
+
+def showDataContainerAsMatrix(data, x=None, y=None, v=None, **kwargs):
+    """Plot data container as matrix (cross-plot).
 
     for each x, y and v token strings or vectors should be given
     """
-    if isinstance(x, str):
+    xToken = ''
+    yToken = ''
+    mul = kwargs.pop('mul', 10**int(np.ceil(np.log10(data.sensorCount()))))
+    plus = kwargs.pop('plus', 1)  # add 1 to count
+    verbose = kwargs.pop('verbose', False)
+    if hasattr(x, '__iter__') and isinstance(x[0], str):
+        num = np.zeros(data.size())
+        for token in x:
+            num *= mul
+            num += data(token) + plus
+            xToken += token + ' '    
+        x = num.copy()
+
+#        kwargs.setdefault('xmap', {n: i for i, n in enumerate(np.unique(x))})
+#        xmap = {}
+#        for i, n in enumerate(np.unique(x)):
+#            st = ''
+#            while n > 0:
+#                st = str(n % mul) + '-' + st
+#                n = n // mul
+#            xmap[]
+    elif isinstance(x, str):
         x = data(x)
-    if isinstance(y, str):
+        xToken = x
+
+    if hasattr(y, '__iter__') and isinstance(y[0], str):
+        num = np.zeros(data.size())
+        for token in y:
+            num *= mul
+            num += data(token) + plus
+            yToken += token + ' '
+        y = num.copy()
+#        kwargs.setdefault('ymap', {n: i for i, n in enumerate(np.unique(y))})
+    elif isinstance(y, str):
         y = data(y)
+        yToken = y
+
     if isinstance(v, str):
         v = data(v)
+
+    if verbose:
+        pg.info("x vector length: {:d}".format(len(x)))
+        pg.info("y vector length: {:d}".format(len(y)))
+        pg.info("v vector length: {:d}".format(len(v)))
+
     if x is None or y is None or v is None:
         raise Exception("Vectors or strings must be given")
     if len(x) != len(y) or len(x) != len(v):
         raise Exception("lengths x/y/v not matching: {:d}!={:d}!={:d}".format(
             len(x), len(y), len(v)))
-    return showVecMatrix(x, y, v, **kwargs)
+    ax, cbar = showVecMatrix(x, y, v, **kwargs)
+    ax.set_xlabel(xToken)
+    ax.set_ylabel(yToken)
+    return ax, cbar
 
 
 def drawSensorAsMarker(ax, data):

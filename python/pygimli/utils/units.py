@@ -88,7 +88,7 @@ def quantity(name):
         quantity = quants[name]
     return quantity
 
-def cMap(name):
+def cmap(name):
     """Return default colormap for physical quantity name."""
     q = quantity(name)
     if q is None:

@@ -51,6 +51,9 @@ if (CONDA_BUILD)
     include_directories(${CONDA_PREFIX})
 endif()
 
+if (OpenBLAS_INCLUDE_DIR)
+    include_directories(${OpenBLAS_INCLUDE_DIR})
+endif()
 
 if (USE_BOOST_THREAD)
     if (Boost_THREAD_FOUND)

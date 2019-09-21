@@ -155,7 +155,7 @@ def createRectangle(start=None, end=None, pos=None, size=None, **kwargs):
 
     verts = [sPos, [sPos[0], ePos[1]], ePos, [ePos[0], sPos[1]]]
 
-    #TODO refactor with polyCreatePolygon
+    # TODO refactor with polyCreatePolygon
 
     if kwargs.pop("leftDirection", False):
         for v in verts[::-1]:
@@ -174,7 +174,8 @@ def createRectangle(start=None, end=None, pos=None, size=None, **kwargs):
 
     _polyCreateDefaultEdges(poly, **kwargs)
 
-    kwargs['markerPosition'] = kwargs.pop('markerPosition', sPos + (ePos - sPos) * 0.2)
+    kwargs['markerPosition'] = kwargs.pop('markerPosition',
+                                          sPos + (ePos - sPos) * 0.2)
 
     setPolyRegionMarker(poly, **kwargs)
 
@@ -185,8 +186,8 @@ def createWorld(start, end, marker=1, area=0., layers=None, worldMarker=True):
     """Create simple rectangular world.
 
     Create simple rectangular world with appropriate boundary conditions.
-    Surface boundary is set do pg.core.MARKER_BOUND_HOMOGEN_NEUMANN, i.e, -1 and
-    inner subsurface is set to pg.core.MARKER_BOUND_MIXED, i.e., -2 or
+    Surface boundary is set do pg.core.MARKER_BOUND_HOMOGEN_NEUMANN, i.e, -1
+    and inner subsurface is set to pg.core.MARKER_BOUND_MIXED, i.e., -2 or
     Numbered in ascending order in left direction starting upper left if
     worldMarker is set to false.
 
@@ -327,7 +328,7 @@ def createCircle(pos=None, radius=1, segments=12, start=0, end=2.*math.pi,
     >>> drawMesh(ax, plc, fillRegion=False)
     >>> pg.wait()
     """
-    #TODO refactor with polyCreatePolygon
+    # TODO refactor with polyCreatePolygon
     if pos is None:
         pos = [0.0, 0.0]
 
@@ -361,7 +362,7 @@ def createCircle(pos=None, radius=1, segments=12, start=0, end=2.*math.pi,
         setPolyRegionMarker(poly, **kwargs)
 
     # need a better way mess with these or wrong kwargs
-    #pg.warnNonEmptyArgs(kwargs)
+    # pg.warnNonEmptyArgs(kwargs)
 
     return poly
 
@@ -408,7 +409,7 @@ def createLine(start, end, segments=1, **kwargs):
     >>> ax, _ = pg.show([w, l1, l2,], ax=ax, fillRegion=False)
     >>> pg.wait()
     """
-    #TODO refactor with polyCreatePolygon
+    # TODO refactor with polyCreatePolygon
     poly = pg.Mesh(dim=2, isGeometry=True)
     startPos = pg.RVector3(start)
     endPos = pg.RVector3(end)
@@ -526,7 +527,6 @@ def createPolygon(verts, isClosed=False, addNodes=0, interpolate='linear',
             else:
                 poly.createNodeWithCheck(v, warn=True)
 
-
     _polyCreateDefaultEdges(poly, isClosed=isClosed,
                             boundaryMarker=kwargs.pop('boundaryMarker', 1))
 
@@ -583,7 +583,7 @@ def mergePLC(plcs, tol=1e-3):
     """
     if plcs[0].dim() == 3:
         return mergePLC3D(plcs, tol)
-        
+
         tmp = pg.optImport('tempfile')
         names = []
         for p in plcs:
@@ -607,7 +607,7 @@ def mergePLC(plcs, tol=1e-3):
 
         return plc
 
-    ## handle 2D geometries
+    # handle 2D geometries
     plc = pg.Mesh(dim=2, isGeometry=True)
 
     for p in plcs:
@@ -621,7 +621,7 @@ def mergePLC(plcs, tol=1e-3):
 
         for e in p.boundaries():
             plc.createEdge(nodes[e.node(0).id()], nodes[e.node(1).id()],
-                            e.marker())
+                           e.marker())
 
         if len(p.regionMarkers()) > 0:
             for rm in p.regionMarkers():
@@ -632,6 +632,7 @@ def mergePLC(plcs, tol=1e-3):
                 plc.addHoleMarker(hm)
 
     return plc
+
 
 def mergePLC3D(plcs, tol=1e-3):
     """Experimental replacement for polyMerge. Don't expect to much.
@@ -665,7 +666,7 @@ def mergePLC3D(plcs, tol=1e-3):
 
 def createParaDomain2D(*args, **kwargs):
     """API change here .. use createParaMeshPLC instead."""
-    pg.deprecated("createParaDomain2D: API change: use createParaMeshPLC instead")
+    pg.deprecated("use createParaMeshPLC")
     return createParaMeshPLC(*args, **kwargs)
 
 
@@ -688,7 +689,7 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
 
     TODO:
         * additional topo points
-        * spline interpolations between sensorpoints or addpoints for non closed
+        * spline interpolation between sensorpoints or addpoints for non closed
         * subsurface sensors (partly .. see example)
 
     Parameters
@@ -910,7 +911,7 @@ def readPLC(filename, comment='#'):
     haveNodeMarker = int(headerLine[3])
 
     poly = pg.Mesh(dim=dimension, isGeometry=False)
-    # isGeometry forces expensive checks .. we assume the plc is valid so we set
+    # isGeometry forces expensive checks: we assume the plc is valid so we set
     # this flag in the end
 
     # Nodes section
@@ -976,7 +977,7 @@ def readPLC(filename, comment='#'):
 
                 if k == 0:
                     face = poly.createPolygonFace(poly.nodes(nodeIdx),
-                                           marker=marker, check=True)
+                                                  marker=marker, check=True)
                 else:
                     if len(nodeIdx) == 2:
                         if nodeIdx[0] == nodeIdx[1]:
@@ -1080,7 +1081,7 @@ def writePLC(*args, **kwargs):
     Backward compatibility.
     Please use :py:mod:`pygimli.meshtools.exportPLC`.
     """
-    pg.deprecated('use exportPLC') #16.08.2019
+    pg.deprecated('use exportPLC')  # 16.08.2019
     return exportPLC(*args, **kwargs)
 
 
@@ -1234,7 +1235,7 @@ def exportTetgenPoly(poly, filename, float_format='.12e', **kwargs):
 
         npolys = 1 + nSubs + len(bound.secondaryNodes())
         polytxt += '{3}{2}{4}{2}{0:d}{1}'.format(bound.marker(), linesep,
-                                               sep, npolys, nHoles)
+                                                 sep, npolys, nHoles)
         # inner loop over polygons
         # <# of corners> <corner 1> <corner 2> ... <corner #>
         for l in range(1):
@@ -1257,7 +1258,7 @@ def exportTetgenPoly(poly, filename, float_format='.12e', **kwargs):
         # not necessary yet ?! why is there an extra hole section?
         # because this is for 2D holes in facets only
 
-        #loop over secondaryNodes add them as single points
+        # loop over secondaryNodes add them as single points
         for l in range(len(bound.secondaryNodes())):
             ind = bound.secondaryNodes()[l].id()
             poly_str = '{:d}'.format(2)
@@ -1343,7 +1344,7 @@ def syscallTetgen(filename, quality=1.2, area=0, preserveBoundary=False,
     """
     filebody = filename.replace('.poly', '')
 
-    ##tetgen -pazVAC -q1.2 $MESH
+    # tetgen -pazVAC -q1.2 $MESH
     # test -O2
     syscal = tetgen + ' -pzAC'
 
@@ -1358,7 +1359,7 @@ def syscallTetgen(filename, quality=1.2, area=0, preserveBoundary=False,
         syscal += 'Q'
     else:
         pass
-        #syscal += 'V'
+        # syscal += 'V'
 
     if preserveBoundary:
         syscal += 'Y'
@@ -1382,7 +1383,7 @@ def syscallTetgen(filename, quality=1.2, area=0, preserveBoundary=False,
         except BaseException as e:
             print(e)
     else:
-        #system('meshconvert -it -BD -o ' + filebody + ' ' + filebody + '-1')
+        # system('meshconvert -it -BD -o ' + filebody + ' ' + filebody + '-1')
         mesh = pg.meshtools.readTetgen(filebody + '-1')
         try:
             os.remove(filebody + '-1.node')
@@ -1391,7 +1392,7 @@ def syscallTetgen(filename, quality=1.2, area=0, preserveBoundary=False,
         except BaseException as e:
             print(e)
 
-    #mesh = pg.Mesh(filebody)
+    # mesh = pg.Mesh(filebody)
     return mesh
 
 
@@ -1403,7 +1404,7 @@ def polyCreateWorld(filename, x=None, depth=None, y=None, marker=0,
 
     Out of core wrapper for dcfemlib::polytools::polyCreateWorld
 
-    # TODO need to be converted to the pyhon only tools.
+    # TODO needs to be converted to the Python-only tools.
 
     Parameters
     ----------
@@ -1515,16 +1516,16 @@ def createCube(size=[1.0, 1.0, 1.0],
 
     for y in [-0.5, 0.5]:
         poly.createNode(-0.5, y, -0.5)
-        poly.createNode( 0.5, y, -0.5)
-        poly.createNode( 0.5, y,  0.5)
-        poly.createNode(-0.5, y,  0.5)
+        poly.createNode(+0.5, y, -0.5)
+        poly.createNode(+0.5, y, +0.5)
+        poly.createNode(-0.5, y, +0.5)
 
     faces = [[4, 5, 1, 0],
              [5, 6, 2, 1],
              [6, 7, 3, 2],
              [7, 4, 0, 3],
              [0, 1, 2, 3],
-             [7, 6, 5, 4],]
+             [7, 6, 5, 4], ]
 
     for f in faces:
         poly.createPolygonFace(poly.nodes(f), marker=boundaryMarker)
@@ -1540,6 +1541,7 @@ def createCube(size=[1.0, 1.0, 1.0],
     setPolyRegionMarker(poly, **kwargs)
 
     return poly
+
 
 def extrude(p2, z=-1.0, boundaryMarker=0, **kwargs):
     """Create 3D body by extruding a closed 2D poly into z direction
@@ -1569,7 +1571,6 @@ def extrude(p2, z=-1.0, boundaryMarker=0, **kwargs):
     if p2.cellCount() > 0:
         pg.critical("Implementme")
 
-
     poly = pg.Mesh(3, isGeometry=True)
     top = []
     for n in p2.nodes():
@@ -1584,16 +1585,19 @@ def extrude(p2, z=-1.0, boundaryMarker=0, **kwargs):
     poly.createPolygonFace(poly.nodes(bot[::-1]), marker=boundaryMarker)
 
     for i in range(len(top)):
-        poly.createPolygonFace(poly.nodes([i, N + i, N + (i + 1)%N, (i+1)%N]),
+        poly.createPolygonFace(poly.nodes([i, N + i,
+                                           N + (i + 1) % N,
+                                           (i+1) % N]),
                                marker=boundaryMarker)
 
     setPolyRegionMarker(poly, **kwargs)
 
     return poly
 
+
 def createCylinder(radius=1, height=1, nSegments=8,
                    pos=None, rot=None, boundaryMarker=0, **kwargs):
-    """Create plc of a cylinder.
+    """Create PLC of a cylinder.
 
     Out of core wrapper for dcfemlib::polytools.
 

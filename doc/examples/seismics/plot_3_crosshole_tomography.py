@@ -21,10 +21,9 @@ import numpy as np
 
 import pygimli as pg
 import pygimli.meshtools as mt
-from pygimli.physics.traveltime import TravelTimeManager, Refraction
+from pygimli.physics.traveltime import TravelTimeManager
 
-mpl.rcParams['image.cmap'] = 'inferno_r'
-
+pg.utils.units.quants['vel']['cMap'] = 'inferno_r'
 ################################################################################
 # Next, we build the crosshole acquisition geometry with two shallow boreholes.
 
@@ -56,7 +55,8 @@ for sen in sensors:
 
 mesh_fwd = mt.createMesh(geom, quality=34, area=0.25)
 model = np.array([2000., 2300, 1700])[mesh_fwd.cellMarkers()]
-pg.show(mesh_fwd, model, label="Velocity (m/s)", nLevs=3, logScale=False)
+pg.show(mesh_fwd, model, 
+        label=pg.unit('vel'), cMap=pg.cmap('vel'), nLevs=3, logScale=False)
 
 ################################################################################
 # Create inversion mesh
@@ -110,16 +110,10 @@ data = tt.simulate(mesh=mesh_fwd, scheme=scheme, slowness=1./model,
 ################################################################################
 # For the inversion we create a new instance of the Refraction manager to avoid
 # confusion, since it is working on a different mesh.
-
-# ttinv = Refraction()
-# ttinv.setData(data)  # Set previously simulated data
-# ttinv.setMesh(mesh, secNodes=5)
-# invmodel = ttinv.invert(lam=1100, vtop=2000, vbottom=2000, zWeight=1.0)
-# print("chi^2 = %.2f" % ttinv.inv.getChi2())  # Look at the data fit
-
-ttinv = TravelTimeManager()
-invmodel = ttinv.invert(data, mesh=mesh, secNodes=5, lam=1100, zWeight=1.0,
-                        verbose=True)
+invmodel = tt.invert(data, mesh=mesh, secNodes=4, lam=1100, zWeight=1.0,
+                     useGradient=False, verbose=True)
+print("chi^2 = %.2f" % tt.inv.chi2())  # Look at the data fit
+assert(tt.inv.chi2() < 1.0)
 
 ################################################################################
 # Finally, we visualize the true model and the inversion result next to each
@@ -129,14 +123,14 @@ fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(8, 7), sharex=True, sharey=True)
 ax1.set_title("True model")
 ax2.set_title("Inversion result")
 
-pg.show(mesh_fwd, model, ax=ax1, showMesh=True, label="Velocity (m/s)",
-        logScale=False, nLevs=3)
+pg.show(mesh_fwd, model, ax=ax1, showMesh=True, 
+        label=pg.unit('vel'), cMap=pg.cmap('vel'), nLevs=3, logScale=False)
 
 for ax in (ax1, ax2):
     ax.plot(sensors[:, 0], sensors[:, 1], "wo")
 
-ttinv.showResult(ax=ax2, cMin=np.min(model), cMax=np.max(model))
-ttinv.showRayPaths(ax=ax2, color="0.8", alpha=0.3)
+tt.showResult(ax=ax2, cMin=np.min(model), cMax=np.max(model))
+tt.showRayPaths(ax=ax2, color="0.8", alpha=0.3)
 fig.tight_layout()
 
 ################################################################################
@@ -145,9 +139,10 @@ fig.tight_layout()
 # which can be visualized as follows:
 
 fig, ax = plt.subplots()
-ttinv.showCoverage(ax=ax, cMap="Greens")
-ttinv.showRayPaths(ax=ax, color="k", alpha=0.3)
+tt.showCoverage(ax=ax, cMap="Greens")
+tt.drawRayPaths(ax=ax, color="k", alpha=0.3)
 ax.plot(sensors[:, 0], sensors[:, 1], "ko")
+pg.wait()
 
 ################################################################################
 # White regions indicate the model null space, i.e. cells that are not traversed

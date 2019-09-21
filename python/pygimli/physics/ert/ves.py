@@ -3,12 +3,11 @@
 Vertical electrical sounding (VES) manager class.
 """
 import numpy as np
-import matplotlib.pyplot as plt
 
 import pygimli as pg
-from pygimli.mplviewer import drawModel1D
 
-from pygimli.frameworks import Modelling, Block1DModelling
+# from pygimli.frameworks import Modelling, Block1DModelling
+from pygimli.frameworks import Block1DModelling
 
 from pygimli.frameworks import MethodManager1d
 
@@ -32,7 +31,9 @@ class VESModelling(Block1DModelling):
         B is second power, N is second potential electrode.
     ab2 :
         Half distance between A and B.
-        Only used for output and auto generated.
+    mn2 :
+        Half distance between A and B.
+        Only used for input (feeding am etc.).
     """
     def __init__(self, ab2=None, mn2=None, **kwargs):
         r"""Constructor
@@ -46,7 +47,19 @@ class VESModelling(Block1DModelling):
 
         super(VESModelling, self).__init__(**kwargs)
 
-        self.setDataSpace(ab2=ab2, mn2=mn2)
+        if 'dataContainerERT' in kwargs:
+            data = kwargs['dataContainerERT']
+            if isinstance(data, pg.DataContainerERT):
+                kwargs['am'] = [data.sensorPosition(data('a')[i]).distance(
+                        data('m')[i]) for i in range(data.size())]
+                kwargs['an'] = [data.sensorPosition(data('a')[i]).distance(
+                        data('n')[i]) for i in range(data.size())]
+                kwargs['bm'] = [data.sensorPosition(data('b')[i]).distance(
+                        data('m')[i]) for i in range(data.size())]
+                kwargs['bn'] = [data.sensorPosition(data('b')[i]).distance(
+                        data('n')[i]) for i in range(data.size())]
+
+        self.setDataSpace(ab2=ab2, mn2=mn2, **kwargs)
 
     def createStartModel(self, rhoa):
         r"""
@@ -75,25 +88,27 @@ class VESModelling(Block1DModelling):
         Parameters
         ----------
         """
-        if ab2 is not None and mn2 is not None:
-
+        # Sometimes you don't have AB2/MN2 but provide am etc.
+        self.am = am
+        self.an = an
+        self.bm = bm
+        self.bn = bn
+        if ab2 is not None and mn2 is not None:  # overrides am etc.
             if isinstance(mn2, float):
                 mn2 = np.ones(len(ab2))*mn2
 
             if len(ab2) != len(mn2):
                 print("ab2", ab2)
                 print("mn2", mn2)
-                raise Exception("length of ab2 is unequal length of nm2")
+                raise Exception("length of ab2 is unequal length of mn2")
 
             self.am = ab2 - mn2
             self.an = ab2 + mn2
             self.bm = ab2 + mn2
             self.bn = ab2 - mn2
 
-        elif am is not None \
-            and bm is not None \
-            and an is not None \
-            and bn is not None:
+        elif (am is not None and bm is not None and an is not None
+              and bn is not None):
             self.am = am
             self.bm = bm
             self.an = an
@@ -103,8 +118,8 @@ class VESModelling(Block1DModelling):
             self.ab2 = (self.am + self.bm) / 2
             self.mn2 = abs(self.am - self.an) / 2
 
-            self.k = (2.0 * np.pi) / (1.0/self.am - 1.0/self.an -
-                                    1.0/self.bm + 1.0/self.bn)
+            self.k = (2.0 * np.pi) / (1.0 / self.am - 1.0 / self.an -
+                                      1.0 / self.bm + 1.0 / self.bn)
 
     def response(self, par):
         return self.response_mt(par, 0)
@@ -113,7 +128,8 @@ class VESModelling(Block1DModelling):
 
         if self.am is not None and self.bm is not None:
             nLayers = (len(par)+1) // 2
-            fop = pg.core.DC1dModelling(nLayers, self.am, self.bm, self.an, self.bn)
+            fop = pg.core.DC1dModelling(nLayers,
+                                        self.am, self.bm, self.an, self.bn)
         else:
             pg.critical("No data space defined don't know what to calculate.")
 
@@ -153,14 +169,14 @@ class VESModelling(Block1DModelling):
             Matplotlib plot function, e.g., plot, loglog, semilogx or semilogy
         """
         ab2 = kwargs.pop('ab2', self.ab2)
-        mn2 = kwargs.pop('mn2', self.mn2)
+        # mn2 = kwargs.pop('mn2', self.mn2)
         plot = kwargs.pop('plot', 'loglog')
 
         ra = data
         raE = error
 
-        style = dict(pg.frameworks.modelling.DEFAULT_STYLES.get(label,
-                            pg.frameworks.modelling.DEFAULT_STYLES['Default']))
+        style = dict(pg.frameworks.modelling.DEFAULT_STYLES.get(
+            label, pg.frameworks.modelling.DEFAULT_STYLES['Default']))
         style.update(kwargs)
         a1 = ax
         plot = getattr(a1, plot)
@@ -209,7 +225,7 @@ class VESCModelling(VESModelling):
         startThicks = pg.utils.diff(pg.cat([0.0], startThicks))
 
         # layer thickness properties
-        self.setRegionProperties(0, startModel=startThicks, 
+        self.setRegionProperties(0, startModel=startThicks,
                                  trans='log')
 
         # resistivity properties
@@ -230,7 +246,8 @@ class VESCModelling(VESModelling):
 
         if self.am is not None and self.bm is not None:
             nLayers = (len(par) + 1) // 3
-            fop = pg.core.DC1dModellingC(nLayers, self.am, self.bm, self.an, self.bn)
+            fop = pg.core.DC1dModellingC(nLayers,
+                                         self.am, self.bm, self.an, self.bn)
         else:
             pg.critical("No data basis known.")
 
@@ -246,9 +263,9 @@ class VESCModelling(VESModelling):
                                              **kwargs)
 
         plot = kwargs.pop('plot', 'semilogy')
-        if plot is 'loglog':
+        if plot == 'loglog':
             plot = 'semilogy'
-        elif plot is 'semilogx':
+        elif plot == 'semilogx':
             plot = 'plot'
 
         pg.mplviewer.drawModel1D(ax=a2,
@@ -305,10 +322,10 @@ class VESCModelling(VESModelling):
             self.setDataSpace(ab2=ab2, mn2=mn2)
 
         ra = data[0:len(data)//2]
-        phi = data[len(data)//2::] * 1000. #mRad
+        phi = data[len(data)//2::] * 1000.  # mRad
 
-        phiE = None # abs err
-        raE = None # rel err
+        phiE = None  # abs err
+        raE = None  # rel err
 
         if error is not None:
             if type(error) is float:
@@ -323,10 +340,10 @@ class VESCModelling(VESModelling):
 
         label = kwargs.pop('label', 'Data')
 
-        style = dict(pg.frameworks.modelling.DEFAULT_STYLES.get(label,
-                            pg.frameworks.modelling.DEFAULT_STYLES['Default']))
+        style = dict(pg.frameworks.modelling.DEFAULT_STYLES.get(
+            label, pg.frameworks.modelling.DEFAULT_STYLES['Default']))
         style.update(kwargs)
-        
+
         super(VESCModelling, self).drawData(a1, ra, error=raE,
                                             label=labels[0], **style)
 
@@ -417,22 +434,20 @@ class VESManager(MethodManager1d):
             return VESModelling(**kwargs)
 
     def simulate(self, model, ab2=None, mn2=None, **kwargs):
-        """Simulate measurement data.
-        """
+        """Simulate measurement data."""
         if ab2 is not None and mn2 is not None:
             self._fw.fop.setDataSpace(ab2=ab2, mn2=mn2)
 
         return super(VESManager, self).simulate(model, **kwargs)
 
     def preErrorCheck(self, err, dataVals=None):
-        """Called before the validity check of the error values.
-        """
+        """Called before the validity check of the error values."""
         err = np.atleast_1d(err)
         if self.complex:
             if len(err) == 2:
-                nData = len(datavals) // 2
+                nData = len(dataVals) // 2
                 err = pg.cat(np.ones(nData)*err[0],
-                             np.abs(err[1] / datavals[nData:]))
+                             np.abs(err[1] / dataVals[nData:]))
         else:
             if len(err) == 1:
                 err = np.ones(nData)*err[0]
@@ -453,6 +468,8 @@ class VESManager(MethodManager1d):
 
         Returns
         -------
+        model : pg.Vector
+            inversion result
         """
         if ab2 is not None and mn2 is not None:
             self.fop.setDataSpace(ab2=ab2, mn2=mn2)
@@ -468,29 +485,29 @@ class VESManager(MethodManager1d):
 
             self.inv.dataTrans = self.dataTrans
 
-        if not 'layerLimits' in kwargs:
+        if 'layerLimits' not in kwargs:
             kwargs['layerLimits'] = [min(self.fop.mn2)/5,
                                      max(self.fop.ab2)/2]
 
         if 'paraLimits' in kwargs and self.complex:
             pL = kwargs['paraLimits'][1]
             kwargs['paraLimits'][1] = [pL[0]/1000, pL[1]/1000]
-            
 
-        return super(VESManager, self).invert(data=data, err=err,
-                                              **kwargs)
+        return super(VESManager, self).invert(data=data, err=err, **kwargs)
 
     def loadData(self, fileName, **kwargs):
         """ Load simple data matrix
         """
         mat = np.loadtxt(fileName)
         if len(mat[0]) == 4:
-            self.fop.setDataSpace(ab2=mat[:,0], mn2=mat[:,1])
+            self.fop.setDataSpace(ab2=mat[:, 0], mn2=mat[:, 1])
             return mat.T
         if len(mat[0]) == 6:
             self.complex = True
-            self.fop.setDataSpace(ab2=mat[:,0], mn2=mat[:,1])
-            return mat[:,0], mat[:,1], np.array(pg.cat(mat[:,2], mat[:,4])), np.array(pg.cat(mat[:,3], mat[:,5]))
+            self.fop.setDataSpace(ab2=mat[:, 0], mn2=mat[:, 1])
+            return (mat[:, 0], mat[:, 1],
+                    np.array(pg.cat(mat[:, 2], mat[:, 4])),
+                    np.array(pg.cat(mat[:, 3], mat[:, 5])))
 
     def exportData(self, fileName, data=None, error=None):
         """Export data into simple ascii matrix.
@@ -512,10 +529,12 @@ class VESManager(MethodManager1d):
                             data[:nData], error[:nData],
                             data[nData:], error[nData:]
                             ]).T
-            np.savetxt(fileName, mat, header=r'ab/2\tmn/2\trhoa\terr\tphia\terrphi')
+            np.savetxt(fileName, mat,
+                       header=r'ab/2\tmn/2\trhoa\terr\tphia\terrphi')
         else:
             mat = np.array([ab2, mn2, data, error]).T
             np.savetxt(fileName, mat, header=r'ab/2\tmn/2\trhoa\terr')
+
 
 def VESManagerApp():
     """Call VESManager as console app"""

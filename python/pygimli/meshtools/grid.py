@@ -60,6 +60,7 @@ def createGrid(x=None, y=None, z=None, **kwargs):
 
     return pg.core._pygimli_.createGrid(**kwargs)
 
+
 def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1, quality=34.0,
                            area=0.0, smooth=False, markerBoundary=1,
                            isSubSurface=False, verbose=False):
@@ -211,14 +212,14 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1, quality=34.0,
         # x top boundary sampling points
         xTop = pg.core.increasingRange(dxMin, xbound, xtLen)
         # y boundary sampling points
-        yLeft = pg.core.increasingRange(xTop[len(xTop) - 1] - xTop[len(xTop) - 2],
-                                   abs(mesh.ymin() - ybound), xtLen)
+        yLeft = pg.core.increasingRange(xTop[len(xTop)-1] - xTop[len(xTop)-2],
+                                        abs(mesh.ymin() - ybound), xtLen)
 
         xtLen = max(5, int((mesh.xmax() - mesh.xmin()) / dxMin / 2.))
 
         # x bottom boundary sampling points
-        xBottom = pg.Vector(np.linspace(mesh.xmin() - xbound, mesh.xmax() +
-                                         xbound, 2 * xtLen))
+        xBottom = pg.Vector(np.linspace(mesh.xmin() - xbound,
+                                        mesh.xmax() + xbound, 2 * xtLen))
 
         for i, val in enumerate(pg.core.fliplr(xTop)(0, len(xTop) - 1)):
             poly.createNode([mesh.xmax() + val, mesh.ymax(), 0.0])
@@ -297,8 +298,7 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1, quality=34.0,
 def appendTetrahedronBoundary(mesh, xbound=100, ybound=100, zbound=100,
                               marker=1, quality=2, isSubSurface=False,
                               verbose=False):
-    """
-    Return new mesh surrounded by tetrahedron boundary box.
+    """    Return new mesh surrounded by tetrahedron boundary box.
 
     Creates a tetrahedral box around a given mesh
     suitable for geo-simulation (surface boundary at top).
@@ -357,6 +357,7 @@ def appendTetrahedronBoundary(mesh, xbound=100, ybound=100, zbound=100,
     polyCreateWorld('worldSurface', x=xbound, y=ybound, depth=zbound, marker=1,
                     verbose=verbose)
     os.system('polyMerge -N worldSurface paraBoundary worldSurface')
+    # There syscalls are not working!
     polyAddVIP('worldSurface', mesh.cell(0).center(), isHoleMarker=True,
                verbose=verbose)
     worldBoundary = tetgen('worldSurface', quality=1.12, verbose=verbose)
@@ -405,3 +406,7 @@ def appendTetrahedronBoundary(mesh, xbound=100, ybound=100, zbound=100,
         print(e)
 
     return boundMesh
+
+
+if __name__ == "__main__":
+    pass

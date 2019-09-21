@@ -130,13 +130,13 @@ class Inversion(object):
             sm = self.fop.regionManager().createStartModel()
             if len(sm) > 0 and max(abs(np.atleast_1d(sm))) > 0.0:
                 self._startModel = sm
-                pg.info("Creating startmodel from region infos:", sm)
+                pg.info("Created startmodel from region infos:", sm)
             else:
                 pg.verbose("No region infos for startmodel")
 
         if self._startModel is None:
             sm = self.fop.createStartModel(self.dataVals)
-            pg.info("Creating startmodel from forward operator:", sm)
+            pg.info("Created startmodel from forward operator:", sm)
             self._startModel = sm
         return self._startModel
 
@@ -383,13 +383,16 @@ class Inversion(object):
             if isinstance(self.dataTrans, pg.trans.TransCumulative):
                 print("Model transformation (cummulative):")
                 for i in range(self.dataTrans.size()):
-                    print("\t", self.dataTrans.at(i))
+                    print("\t", i, self.dataTrans.at(i))
             else:
                 print("Data transformation:", self.dataTrans)
             if isinstance(self.modelTrans, pg.trans.TransCumulative):
                 print("Model transformation (cummulative):")
                 for i in range(self.modelTrans.size()):
-                    print("\t", self.modelTrans.at(i))
+                    if i < 10:
+                        print("\t", i, self.modelTrans.at(i))
+                    else:
+                        print(".", end='')
             else:
                 print("Model transformation:", self.modelTrans)
 

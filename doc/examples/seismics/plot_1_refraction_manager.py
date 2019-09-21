@@ -12,7 +12,7 @@ import numpy as np
 
 import pygimli as pg
 import pygimli.meshtools as mt
-from pygimli.physics import Refraction
+from pygimli.physics import TravelTimeManager
 
 ###############################################################################
 # We start by creating a three-layered slope (The model is taken from the BSc
@@ -33,62 +33,57 @@ pg.show(mesh)
 ###############################################################################
 # Next we define geophone positions and a measurement scheme, which consists of
 # shot and receiver indices.
-
 numberGeophones = 48
 sensors = np.linspace(0., 117.5, numberGeophones)
 scheme = pg.physics.traveltime.createRAData(sensors)
 
 # Adapt sensor positions to slope
-pos = np.array(scheme.sensorPositions())
+pos = np.array(scheme.sensors())
 for x in pos[:, 0]:
     i = np.where(pos[:, 0] == x)
     new_y = x * slope + 137
     pos[i, 1] = new_y
 
-scheme.setSensorPositions(pos)
+scheme.setSensors(pos)
 
 ###############################################################################
-# Now we initialize the refraction manager and asssign P-wave velocities to the
+# Now we initialize the TravelTime manager and asssign P-wave velocities to the
 # layers. To this end, we create a map from cell markers 0 through 3 to
-# velocities (in m/s) and generate a velocity vector.  To check whether the
-# it is correct, we plot it # along with the sensor positions
+# velocities (in m/s) and generate a velocity vector. To check whether the 
+# model looks correct, we plot it along with the sensor positions.
 
-ra = Refraction()
+mgr = TravelTimeManager()
 vp = np.array(mesh.cellMarkers())
 vp[vp == 1] = 250
 vp[vp == 2] = 500
 vp[vp == 3] = 1300
 
 ax, _ = pg.show(mesh, vp, colorBar=True, logScale=False, label='v in m/s')
-ax.plot(pos[:, 0], pos[:, 1], 'w+')
+pg.mplviewer.drawSensors(ax, scheme.sensors(), diam=0.5, 
+                         facecolor='white', edgecolor='black')
 
 ###############################################################################
 # We use this model to create noisified synthetic data and look at the
-# traveltime curves showing three different slopes.
-
-data = ra.simulate(mesh, 1.0 / vp, scheme, noiseLevel=0.001, noiseAbs=0.001,
-                   verbose=True)
-# ra.showData(data)  # can be used to show the data.
-
-###############################################################################
-# And invert the synthetic data on an independent mesh without # information on
-# the layered structure we create a new instance of the class using the data.
-# Instead of the data, a file name can be given. This is probably where most
-# users with data start. See refraction class for supported formats.
-
-ra = Refraction(data)
-ra.showData()
-ra.createMesh(depth=30., paraMaxCellSize=5.0, secNodes=1)
-# ra.fop.createJacobian(np.ones(ra.fop.regionManager().parameterCount()))
-# exit()
-vest = ra.invert()  # estimated velocity distribution
+# traveltime data matrix. TODO: show first arrival traveltime curves.
+data = mgr.simulate(slowness=1.0 / vp, scheme=scheme, mesh=mesh, 
+                    noiseLevel=0.001, noiseAbs=0.001,
+                    verbose=True)
+mgr.showData(data)
 
 ###############################################################################
-# The method showResult is used to plot the result. Note that only covered
-# cells are shown by default. For comparison we plot the geometry on top.
+# Now we invert the synthetic data on an independent mesh without information
+# about the layered structure. Note that we need to create a parametric mesh
+# without a boundary region by setting boundary=0.
+mesh = mt.createParaMesh(data.sensors(), boundary=0, paraMaxCellSize=15.0)
+vest = mgr.invert(data, mesh=mesh, secNodes=2, maxIter=10, verbose=1) 
 
-ax, cb = ra.showResult(cMin=min(vp), cMax=max(vp), logScale=False)
-pg.show(geom, ax=ax, fillRegion=False, regionMarker=False)  # lines on top
+###############################################################################
+# The manager also holds the method showResult that is used to plot the result. 
+# Note that only covered cells are shown by default. 
+# For comparison we plot the geometry on top.
+
+ax, _ = mgr.showResult(cMin=min(vp), cMax=max(vp), logScale=False)
+pg.show(geom, ax=ax, fillRegion=False, regionMarker=False) 
 
 ###############################################################################
 # Note that internally the following is called
@@ -99,20 +94,14 @@ pg.show(geom, ax=ax, fillRegion=False, regionMarker=False)  # lines on top
 #
 
 ###############################################################################
-# Another useful tool is to show the model along with its respone on the data_
-
-ra.showResultAndFit()
+# Another useful method is to show the model along with its response 
+# on the data.
+mgr.showResultAndFit(cMin=min(vp), cMax=max(vp))
 
 ###############################################################################
-# Takeaway message:
-# A default data inversion with checking of the data consists of only few lines
-# (Everthing else can be looked at by introspecting the Refraction manager)
-#
-# .. code-block:: python
-#
-#    from pygimli.physics import Refraction
-#    ra = Refraction(filename)
-#    ra.invert()
-#    ra.showResultAndFit()
+# .. note:: Takeaway message
+
+#     A default data inversion with checking of the data consists of only few 
+#     lines. Check out :ref:`ex:koenigsee`.
 
 pg.wait()
