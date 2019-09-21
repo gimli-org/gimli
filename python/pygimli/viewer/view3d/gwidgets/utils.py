@@ -138,11 +138,6 @@ class GToolBar(QWidget):
         lyt_h4a.addWidget(QLabel("Threshold"))
         self.chbx_threshold = QCheckBox()
         lyt_h4a.addWidget(self.chbx_threshold)
-        # checkbox for logarithmic value 
-        lyt_h4b = QHBoxLayout()
-        lyt_h4b.addWidget(QLabel("Logarithmic"))
-        self.chbx_plotlog = QCheckBox()
-        lyt_h4b.addWidget(self.chbx_plotlog)
         lyt_h5 = QHBoxLayout()
         lyt_h5.addWidget(self.btn_apply)
         lyt_h5.addWidget(self.btn_reset)
@@ -151,7 +146,6 @@ class GToolBar(QWidget):
         lyt_v3.addLayout(lyt_h4)
         lyt_v3.addWidget(self.btn_global_limits)
         lyt_v3.addLayout(lyt_h4a)
-        lyt_v3.addLayout(lyt_h4b)
         lyt_v3.addLayout(lyt_h5)
         lyt_v3.setContentsMargins(2, 2, 2, 2)
         grp_limits = QGroupBox("Limits")
@@ -290,8 +284,8 @@ class _GDoubleSlider(QSlider):
         super().setMinimum(0)
         super().setMaximum(self._max_int)
 
-        self._min_value = 0.0
-        self._max_value = 1.0
+        self._min_value = -1e99
+        self._max_value = 1e99
 
     @property
     def _value_range(self):
@@ -338,6 +332,6 @@ class GDoubleSpinBox(QDoubleSpinBox):
         super(GDoubleSpinBox, self).__init__(parent)
         self.setToolTip(tooltip)
         self.setFixedWidth(200)
-        self.setDecimals(4)
-        self.setSingleStep(0.0001)
+        self.setDecimals(6)
+        self.setSingleStep(0.005)
         # self.setRange(*drange)
