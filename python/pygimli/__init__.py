@@ -14,7 +14,6 @@ from .core import (BVector, CVector, DataContainer, DataContainerERT,
                    interpolate, log, log10, logDropTol, math, matrix, max,
                    mean, median, min, search, setDebug, setThreadCount, sort,
                    sum, tic, toc, trans, unique, versionStr, x, y, z, zero)
-from .core.load import getConfigPath, getExampleFile, load, optImport
 from .core.logger import (_, _d, _g, _r, _y, critical, d, debug, deprecated,
                           error, info, setDebug, setLogLevel, setVerbose, v,
                           verbose, warn)
@@ -22,10 +21,11 @@ from .meshtools import createGrid, interpolate
 from .solver import solve
 # from .core import *
 from .testing import test
-from .utils import boxprint, cache, cut
+from .utils import boxprint, cache, cut, unique
 from .utils import prettify as pf
 from .utils import unit, cmap
 from .viewer import plt, show, wait
+from .core.load import getConfigPath, getExampleFile, load, optImport
 
 
 def checkAndFixLocaleDecimal_point(verbose=False):

@@ -151,8 +151,14 @@ class Inversion(object):
             self._startModel = None
         elif isinstance(model, float) or isinstance(model, int):
             self._startModel = np.ones(self.parameterCount) * float(model)
+            pg.info("Startmodel set from given value.", float(model))
         elif hasattr(model, '__iter__'):
-            self._startModel = model
+            if len(model) == self.parameterCount:
+                pg.info("Startmodel set from given array.", model)
+                self._startModel = model
+            else:
+                pg.error("Startmodel size invalid {0} != {0}.".
+                         format(len(model), self.parameterCount))
 
     @property
     def model(self):
