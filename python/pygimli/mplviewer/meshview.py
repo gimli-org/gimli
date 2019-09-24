@@ -360,7 +360,7 @@ def drawModel(ax, mesh, data=None, tri=False, rasterized=False,
     if mesh.nodeCount() == 0:
         pg.error("drawModel: The mesh is empty.", mesh)
 
-    if tri:
+    if tri or 'shading' in kwargs:
         gci = drawField(ax, mesh, data,
                          cMin=cMin, cMax=cMax, logScale=logScale,
                          **kwargs)
@@ -808,10 +808,6 @@ def createTriangles(mesh, data=None):
 
     return x, y, triangles, z, dataIdx
 
-def drawMPLTri(*args, **kwargs):
-    pg.deprecated("use drawField")
-    return drawField(*args, **kwargs)
-
 
 def drawField(ax, mesh, data=None, levels=[], nLevs=5,
               cMin=None, cMax=None, logScale=False, fitView=True,
@@ -849,7 +845,7 @@ def drawField(ax, mesh, data=None, levels=[], nLevs=5,
 
     fillContour: [True]
 
-    withContourLines: [True]
+    contourLines: [True]
     **kwargs
         Additional kwargs forwarded to ax.tripcolor,
         ax.tricontour, ax.tricontourf
@@ -903,7 +899,7 @@ def drawField(ax, mesh, data=None, levels=[], nLevs=5,
         else:
 
             fillContour = kwargs.pop('fillContour', True)
-            contourLines = kwargs.pop('withContourLines', True)
+            contourLines = kwargs.pop('contourLines', True)
 
             if fillContour:
                 # add outer climits to fill lower and upper too
@@ -916,6 +912,7 @@ def drawField(ax, mesh, data=None, levels=[], nLevs=5,
                 #     levs = np.hstack([levs, max(z)])
 
                 gci = ax.tricontourf(x, y, triangles, z, levels=levs,
+                                     antialiaseds=True,
                                      **kwargs)
             if contourLines:
                 ax.tricontour(x, y, triangles, z, levels=levels,
