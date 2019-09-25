@@ -12,7 +12,7 @@ import pygimli as pg
 from pygimli.meshtools import readFenicsHDF5Mesh, readGmsh, readPLC, readSTL
 from pygimli.utils import readGPX
 from pygimli.utils import cache
-
+from pygimli.physics.traveltime import load as loadTT
 
 gimliExampleDataPath='gimli-org/example-data/'
 # Example data repository
@@ -122,9 +122,9 @@ def load(fname, verbose=False, testAll=True, realName=None):
         ".data": pg.DataContainerERT,
         ".ohm": pg.DataContainerERT,  # BERT compatibility
         ".shm": pg.DataContainerERT,  # BERT compatibility
-        ".sgt": pg.physics.traveltime.load,
-        ".gtt": pg.physics.traveltime.load,
-        ".tom": pg.physics.traveltime.load,
+        ".sgt": loadTT,
+        ".gtt": loadTT,
+        ".tom": loadTT,
         ".collect": pg.core.DataMap,
         # Vectors
         #".dat": pg.Vector,
