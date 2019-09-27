@@ -222,7 +222,7 @@ class Modelling(pg.core.ModellingBase):
                                                 'zWeight': 1.0,
                                                 'cType': None, # use RM defaults
                                                 'limits': [0, 0],
-                                                'trans': 'Log',
+                                                'trans': 'Log', # use RM defauts
                                                 'background': None,
                                                 'single': None,
                                                 'fix': None,
@@ -270,7 +270,9 @@ class Modelling(pg.core.ModellingBase):
             if vals['startModel'] is not None:
                 rMgr.region(rID).setStartModel(vals['startModel'])
 
-            rMgr.region(rID).setModelTransStr_(vals['trans'])
+            if vals['trans'] is not None:
+                rMgr.region(rID).setModelTransStr_(vals['trans'])
+
             if vals['cType'] is not None:
                 rMgr.region(rID).setConstraintType(vals['cType'])
                 

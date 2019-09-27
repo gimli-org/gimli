@@ -66,7 +66,7 @@ quants = {
         'name': 'Porosity',
         'unit': None,
         'ger': 'Porosität',
-        'cMap': 'viridis_r',
+        'cMap': 'pink_r',
     },
 }
 

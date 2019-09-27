@@ -114,7 +114,8 @@ class BertModelling(ERTModellingBase):
         self.calcGeometricFactor = self._core.calcGeometricFactor
         self.mapERTModel = self._core.mapERTModel
         
-        self._conjImag = False # the model imaginaries are flipped to match log trans
+        # the model imaginaries are flipped to match log trans
+        self._conjImag = False 
 
     def setDefaultBackground(self):
         """
