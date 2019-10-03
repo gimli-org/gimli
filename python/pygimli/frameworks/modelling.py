@@ -592,6 +592,11 @@ class MeshModelling(Modelling):
                                logScale=kwargs.pop('logScale', True),
                                ax=ax,
                                **kwargs)
+
+            if diam is not None:
+                pg.mplviewer.drawSensors(ax, self.data.sensors(), diam=diam, 
+                                         edgecolor='black', facecolor='white')
+
         return ax, cBar
 
 
