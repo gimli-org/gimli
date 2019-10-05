@@ -3,6 +3,7 @@
 
 import os
 import sys
+import tempfile
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -68,12 +69,8 @@ def showMesh3DVista(mesh, data=None, **kwargs):
     Not having PyQt5 installed results in displaying the first key
     (and values) from the dictionary.
     """
-    # FIXME: maybe
-    # temporary VTK write & read, may be replaced with direct VTK object.
-    tmp = "/tmp/gimli_3d_view_%s.vtk" % os.getpid()
+    _, tmp = tempfile.mkstemp(suffix=".vtk")
     mesh.exportVTK(tmp)
-
-    # open with pyvista
     grid = pyvista.read(tmp)
 
     hold = kwargs.pop("hold", False)

@@ -130,13 +130,13 @@ class Inversion(object):
             sm = self.fop.regionManager().createStartModel()
             if len(sm) > 0 and max(abs(np.atleast_1d(sm))) > 0.0:
                 self._startModel = sm
-                pg.info("Creating startmodel from region infos:", sm)
+                pg.info("Created startmodel from region infos:", sm)
             else:
                 pg.verbose("No region infos for startmodel")
 
         if self._startModel is None:
             sm = self.fop.createStartModel(self.dataVals)
-            pg.info("Creating startmodel from forward operator:", sm)
+            pg.info("Created startmodel from forward operator:", sm)
             self._startModel = sm
         return self._startModel
 
@@ -151,8 +151,14 @@ class Inversion(object):
             self._startModel = None
         elif isinstance(model, float) or isinstance(model, int):
             self._startModel = np.ones(self.parameterCount) * float(model)
+            pg.info("Startmodel set from given value.", float(model))
         elif hasattr(model, '__iter__'):
-            self._startModel = model
+            if len(model) == self.parameterCount:
+                pg.info("Startmodel set from given array.", model)
+                self._startModel = model
+            else:
+                pg.error("Startmodel size invalid {0} != {0}.".
+                         format(len(model), self.parameterCount))
 
     @property
     def model(self):
@@ -383,13 +389,16 @@ class Inversion(object):
             if isinstance(self.dataTrans, pg.trans.TransCumulative):
                 print("Model transformation (cummulative):")
                 for i in range(self.dataTrans.size()):
-                    print("\t", self.dataTrans.at(i))
+                    print("\t", i, self.dataTrans.at(i))
             else:
                 print("Data transformation:", self.dataTrans)
             if isinstance(self.modelTrans, pg.trans.TransCumulative):
                 print("Model transformation (cummulative):")
                 for i in range(self.modelTrans.size()):
-                    print("\t", self.modelTrans.at(i))
+                    if i < 10:
+                        print("\t", i, self.modelTrans.at(i))
+                    else:
+                        print(".", end='')
             else:
                 print("Model transformation:", self.modelTrans)
 
@@ -554,7 +563,7 @@ class MarquardtInversion(Inversion):
         self.inv.setLocalRegularization(True)
         self.inv.setLambdaFactor(0.8)
 
-    def run(self, data, error, **kwargs):
+    def run(self, dataVals, errorVals, **kwargs):
         r"""Parameters
         ----------
         **kwargs:
@@ -564,7 +573,7 @@ class MarquardtInversion(Inversion):
         self.fop.regionManager().setConstraintType(0)
         self.fop.setRegionProperties('*', cType=0)
 
-        self.model = super(MarquardtInversion, self).run(data, error, **kwargs)
+        self.model = super(MarquardtInversion, self).run(dataVals, errorVals, **kwargs)
         return self.model
 
 class Block1DInversion(MarquardtInversion):
@@ -627,7 +636,7 @@ class Block1DInversion(MarquardtInversion):
             else:
                 self.fop.setRegionProperties(i, limits=limits[i-1], trans='log')
 
-    def run(self, dataVals, errVals,
+    def run(self, dataVals, errorVals,
             nLayers=None, fixLayers=None, layerLimits=None, paraLimits=None,
             **kwargs):
         r"""
@@ -662,7 +671,7 @@ class Block1DInversion(MarquardtInversion):
         if paraLimits is not None:
             self.setParaLimits(paraLimits)
 
-        self.model = super(Block1DInversion, self).run(dataVals, errVals, **kwargs)
+        self.model = super(Block1DInversion, self).run(dataVals, errorVals, **kwargs)
         return self.model
 
 
@@ -687,7 +696,7 @@ class MeshInversion(Inversion):
 
         return super(MeshInversion, self).setForwardOperator(fop)
 
-    def run(self, dataVals, errVals, mesh=None, zWeight=None, **kwargs):
+    def run(self, dataVals, errorVals, mesh=None, zWeight=None, **kwargs):
         """
         """
         if mesh is not None:
@@ -705,7 +714,7 @@ class MeshInversion(Inversion):
         # ensure the mesh is generated
         self.fop.mesh()
 
-        self.model = super(MeshInversion, self).run(dataVals, errVals, **kwargs)
+        self.model = super(MeshInversion, self).run(dataVals, errorVals, **kwargs)
 
         return self.model
 
@@ -730,7 +739,7 @@ class PetroInversion(Inversion):
 
         return super(PetroInversion, self).setForwardOperator(fop)
 
-    def run(self, dataVals, errVals, **kwargs):
+    def run(self, dataVals, errorVals, **kwargs):
         """
         """
         if 'limits' in kwargs:
@@ -743,7 +752,7 @@ class PetroInversion(Inversion):
 
         #ensure the mesh
         self.fop.mesh()
-        return super(PetroInversion, self).run(dataVals, errVals, **kwargs)
+        return super(PetroInversion, self).run(dataVals, errorVals, **kwargs)
 
 
 class LCInversion(Inversion):
@@ -758,13 +767,13 @@ class LCInversion(Inversion):
         self.dataTrans = pg.trans.TransLog()
         #self.setDeltaChiStop(0.1)
 
-    def prepare(self, dataVals, errVals, nLayers=4, **kwargs):
+    def prepare(self, dataVals, errorVals, nLayers=4, **kwargs):
         dataVec = pg.RVector()
         for d in dataVals:
             dataVec = pg.cat(dataVec, d)
 
         errVec = pg.RVector()
-        for e in errVals:
+        for e in errorVals:
             errVec = pg.cat(errVec, e)
 
         self.fop.initJacobian(dataVals=dataVals, nLayers=nLayers,
@@ -799,9 +808,9 @@ class LCInversion(Inversion):
 
         return dataVec, errVec
 
-    def run(self, dataVals, errVals, nLayers=4, **kwargs):
+    def run(self, dataVals, errorVals, nLayers=4, **kwargs):
         lam = kwargs.pop('lam', 20)
-        dataVec, errVec = self.prepare(dataVals, errVals, nLayers, **kwargs)
+        dataVec, errVec = self.prepare(dataVals, errorVals, nLayers, **kwargs)
         print('#'*50)
         print(kwargs)
         print('#'*50)

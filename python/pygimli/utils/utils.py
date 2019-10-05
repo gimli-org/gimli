@@ -546,7 +546,7 @@ def unique_everseen(iterable, key=None):
     """
     try:
         from itertools import ifilterfalse
-    except BaseException as _:
+    except Exception as _:
         from itertools import filterfalse
 
     seen = set()
@@ -556,7 +556,7 @@ def unique_everseen(iterable, key=None):
             for element in ifilterfalse(seen.__contains__, iterable):
                 seen_add(element)
                 yield element
-        except BaseException as _:
+        except Exception as _:
             for element in filterfalse(seen.__contains__, iterable):
                 seen_add(element)
                 yield element

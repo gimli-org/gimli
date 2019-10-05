@@ -6,6 +6,27 @@ pyGIMLi - An open-source library for modelling and inversion in geophysics
 import locale
 import sys
 
+### Import everything that should be accessible through main namespace.
+from ._version import get_versions
+from .core import (BVector, CVector, DataContainer, DataContainerERT,
+                   Inversion, IVector, Line, Matrix, Mesh, Plane, Pos,
+                   RVector3, Vector, abs, cat, center, dur, exp, find,
+                   interpolate, log, log10, logDropTol, math, matrix, max,
+                   mean, median, min, search, setDebug, setThreadCount, sort,
+                   sum, tic, toc, trans, unique, versionStr, x, y, z, zero)
+from .core.logger import (_, _d, _g, _r, _y, critical, d, debug, deprecated,
+                          error, info, setDebug, setLogLevel, setVerbose, v,
+                          verbose, warn)
+from .meshtools import createGrid, interpolate
+from .solver import solve
+# from .core import *
+from .testing import test
+from .utils import boxprint, cache, cut, unique
+from .utils import prettify as pf
+from .utils import unit, cmap
+from .viewer import plt, show, wait
+from .core.load import getConfigPath, getExampleFile, load, optImport
+
 
 def checkAndFixLocaleDecimal_point(verbose=False):
     """
@@ -47,28 +68,9 @@ if "conda" in __path__[0]:
         pass
 ################################################################################
 
-### Import everything that should be accessible through main namespace.
-from ._version import get_versions
-from .core import (BVector, CVector, DataContainer, DataContainerERT, dur,
-                   Inversion, IVector, Line, Matrix, Mesh, Plane, Pos,
-                   RVector3, Vector, abs, cat, center, exp, find, interpolate,
-                   log, log10, logDropTol, math, matrix, max, mean, median, min,
-                   search, setDebug, setThreadCount, sort, sum, tic, toc, 
-                   trans, unique, versionStr, x, y, z, zero)
-from .core.load import getConfigPath, getExampleFile, load, optImport
-from .core.logger import (_, _d, _g, _r, _y, critical, d, debug, deprecated,
-                          error, info, setLogLevel, setVerbose, setDebug, 
-                          v, verbose,
-                          warn)
 
-from .meshtools import createGrid, interpolate
-from .solver import solve
-# from .core import *
-from .testing import test
-from .utils import boxprint, cache, cut, unit
-from .viewer import plt, show, wait
 
-from .utils import prettify as pf
+
 
 def _get_branch():
     """Get current git branch."""
@@ -93,6 +95,7 @@ if get_versions()["dirty"]:
     else:
         __version__ += ")"
 del get_versions, _get_branch, _branch
+
 
 def version():
     """Shortcut to show and return current version."""

@@ -25,7 +25,8 @@ from .postinversion import iterateBounds, modCovar
 from .sparseMat2Numpy import (convertCRSIndex2Map, sparseMatrix2Array,
                               sparseMatrix2coo, sparseMatrix2csr)
 
-from .units import (unit, cMap)
+from .units import (unit, cmap)
+from .units import cmap as cMap # for compatibilty (will be removed)
 
 from .utils import (ProgressBar, boxprint, cumDist, cut, diff, dist,
                     filterIndex, filterLinesByCommentStr, findNearest,

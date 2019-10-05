@@ -18,7 +18,6 @@
 
 #include "gimli.h"
 
-
 #include <cerrno>
 #include <cstring>
 #include <fstream>
@@ -28,12 +27,8 @@
 
 //#include <omp.h> need -lgomp of -fopenmp
 
-#if OPENBLAS_FOUND
-    #if CONDA_BUILD
-        #include <cblas.h>
-    #else
-        #include <openblas/cblas.h>
-    #endif
+#if OPENBLAS_CBLAS_FOUND
+    #include <cblas.h>
 #endif
 
 #if USE_BOOST_THREAD
@@ -75,10 +70,13 @@ int deepDebug(){ return __GIMLI_DEEP_DEBUG__; }
 void setThreadCount(Index nThreads){
     log(Debug, "Set amount of threads to " + str(nThreads));
     //log(Debug, "omp_get_max_threads: " + str(omp_get_max_threads()));
-#if OPENBLAS_FOUND
+#if OPENBLAS_CBLAS_FOUND
     openblas_set_num_threads(nThreads);
     //omp_set_num_threads
+#else
+    log(Debug, "can't set openblas thread count. ");    
 #endif
+
     __GIMLI_THREADCOUNT__ = nThreads;
 }
 

@@ -71,10 +71,11 @@ class ERTModellingBase(MeshModelling):
 
     def drawModel(self, ax, model, **kwargs):
         """Draw the para domain with option model values"""
-        super(ERTModellingBase, self).drawModel(ax, model, 
-                            label=kwargs.pop('label', pg.utils.unit('res')),
-                            cMap=kwargs.pop('cMap', pg.utils.cMap('res')),
-                            **kwargs)
+        kwargs['label'] = kwargs.pop('label', pg.unit('res'))
+        kwargs['cMap'] = kwargs.pop('cMap', pg.utils.cMap('res'))
+
+        return super(ERTModellingBase, self).drawModel(ax=ax, model=model, 
+                                                       **kwargs)
                 
 
 class BertModelling(ERTModellingBase):
@@ -113,7 +114,8 @@ class BertModelling(ERTModellingBase):
         self.calcGeometricFactor = self._core.calcGeometricFactor
         self.mapERTModel = self._core.mapERTModel
         
-        self._conjImag = False # the model imaginaries are flipped to match log trans
+        # the model imaginaries are flipped to match log trans
+        self._conjImag = False 
 
     def setDefaultBackground(self):
         """
@@ -898,51 +900,18 @@ class ERTManager(MeshMethodManager):
 
         return error
 
-    def _ensureRhoa(self, data):
-        """"""
-        # check for valid rhoa here
-        return data('rhoa')
-
-    def _ensureError(self, data):
-        """"""
-        # check for valid err here
-        return data('err')
-
-    def invert(self, data=None, err=None, **kwargs):
-        """Invert measured data.
-        """
-        dataVals = None
-        errVals = None
-        
-        if isinstance(data, pg.DataContainerERT):
-            self.fop.setDataSpace(dataContainer=data)
-
-            dataVals = self._ensureRhoa(data)
-            errVals = self._ensureError(data)
-        else:
-
-            # check if fop has dataContainer
-            dataVals = data
-            errVals = err
-
-        if 'mesh' in kwargs:
-            self.inv.setMesh(kwargs.pop('mesh'))
-
-        startModel = kwargs.pop('startModel', pg.median(dataVals))
-        self.fop.setRegionProperties('*', startModel=startModel)
-
-
-        return super(ERTManager, self).invert(dataVals=dataVals,
-                                              errVals=errVals,
-                                              **kwargs)
-
     def coverage(self):
         """Return coverage vector considering the logarithmic transformation.
         """
         covTrans = pg.core.coverageDCtrans(self.fop.jacobian(),
                                       1.0 / self.inv.response,
                                       1.0 / self.inv.model)
-        return np.log10(covTrans / self.fop.paraDomain.cellSizes())
+
+        paramSizes = np.zeros(len(self.inv.model))
+        for c in self.fop.paraDomain.cells():
+            paramSizes[c.marker()] += c.size()
+
+        return np.log10(covTrans / paramSizes)
 
     def standardizedCoverage(self, threshhold=0.01):
         """Return standardized coverage vector (0|1) using thresholding.

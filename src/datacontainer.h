@@ -141,27 +141,27 @@ public:
     inline const PosVector & sensorPositions() const { return sensorPoints_; }
 
     /*! Set the position for the i-th sensor. Resize sensors if necessary.*/
-    void setSensorPosition(uint i, const RVector3 & pos);
+    void setSensorPosition(Index i, const RVector3 & pos);
 
 //         /*! Return a single sensor position. */
-//     inline const RVector3 & sensorPosition(uint i) const {
+//     inline const RVector3 & sensorPosition(Index i) const {
 //         return sensorPoints_[i]; }
 
     /*! Return a single sensor position. Syntactic sugar.*/
     inline const RVector3 & sensorPosition(double i) const {
-        return sensorPoints_[(uint)i]; }
+        return sensorPoints_[(Index)i]; }
 
     /*! Return the complete sensor positions as read-only. */
     inline const R3Vector & sensors() const { return sensorPositions(); }
 
     /*! Return a single sensor position. Syntactic sugar.*/
-    inline const RVector3 & sensor(long i) const {
-        ASSERT_RANGE(SIndex(i), 0, this->sensorCount())
+    inline const RVector3 & sensor(Index i) const {
+        ASSERT_RANGE(i, 0, this->sensorCount())
         return sensorPoints_[i];
     }
     /*! Set sensor positions. Syntactic sugar.*/
-    inline void setSensor(long i, const RVector3 & pos) {
-        this->setSensorPosition((uint)i, pos);
+    inline void setSensor(Index i, const RVector3 & pos) {
+        this->setSensorPosition(i, pos);
     }
 
     /*! Create a valid sensor at a given position and returns the id of the sensor.
@@ -169,10 +169,10 @@ public:
         Atm. brute force search with a snapping distance of tolerance is done.
         \param pos RVector3 of the sensor position
         \param tolerance Double of the snapping tolerance */
-    long createSensor(const RVector3 & pos, double tolerance=1e-3);
+    SIndex createSensor(const RVector3 & pos, double tolerance=1e-3);
 
     /*! Return the number of sensors. */
-    uint sensorCount() const { return sensorPoints_.size(); }
+    Index sensorCount() const { return sensorPoints_.size(); }
 
     /*! Mark the data field entry as sensor index. */
     void registerSensorIndex(const std::string & token);
@@ -199,7 +199,7 @@ public:
     /*! Remove all data that contains the sensor and the sensor itself.
     *\param idx uint idx single index for a sensor regarding sensorPoints_
     */
-    void removeSensorIdx(uint idx);
+    void removeSensorIdx(Index idx);
 
     /*! Remove all data that contains the sensor and the sensor itself. *
      *\param idx IndexArray array of indices regarding sensorPoints_
@@ -301,7 +301,7 @@ public:
 
     /*! Resize the data map and all data fields to size.
      Note, new data from resizeing will be set to invalid. */
-    void resize(uint size);
+    void resize(Index size);
 
     /*! Return string with space-separated list of all available data tokens.
      * If withAnnotation sets the List separated by the Words "SensorIndex:" and "Data:" */

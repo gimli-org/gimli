@@ -49,7 +49,7 @@ ax, cb = pg.show(plc, markers=True)
 # of 0 is assigned.
 
 fig = ax.get_figure()
-for nr, marker in enumerate(plc.regionMarker()):
+for nr, marker in enumerate(plc.regionMarkers()):
     print('Position marker number {}:'.format(nr + 1), marker.x(), marker.y(),
           marker.z())
     ax.scatter(marker.x(), marker.y(), s=(2 - nr) * 30, color='k')
@@ -79,7 +79,7 @@ plc = circle_outer + circle_inner
 ax, cb = pg.show(plc, markers=True)
 
 fig = ax.get_figure()
-for nr, marker in enumerate(plc.regionMarker()):
+for nr, marker in enumerate(plc.regionMarkers()):
     print('Position marker number {}:'.format(nr + 1), marker.x(), marker.y(),
           marker.z())
     ax.scatter(marker.x(), marker.y(), s=(2 - nr) * 30, color='k')
@@ -106,7 +106,7 @@ plc = polygon1 + polygon2
 ax, cb = pg.show(plc, markers=True)
 
 fig = ax.get_figure()
-for nr, marker in enumerate(plc.regionMarker()):
+for nr, marker in enumerate(plc.regionMarkers()):
     print('Position marker number {}:'.format(nr + 1), marker.x(), marker.y(),
           marker.z())
     ax.scatter(marker.x(), marker.y(), s=(4 - nr) * 20, color='k')
@@ -133,7 +133,7 @@ plc = polygon1 + polygon2
 ax, cb = pg.show(plc, markers=True)
 
 fig = ax.get_figure()
-for nr, marker in enumerate(plc.regionMarker()):
+for nr, marker in enumerate(plc.regionMarkers()):
     print('Position marker number {}:'.format(nr + 1), marker.x(), marker.y(),
           marker.z())
     ax.scatter(marker.x(), marker.y(), s=(4 - nr) * 20, color='k')
@@ -161,7 +161,7 @@ plc = rect1 + rect2
 ax, cb = pg.show(plc, markers=True)
 
 fig = ax.get_figure()
-for nr, marker in enumerate(plc.regionMarker()):
+for nr, marker in enumerate(plc.regionMarkers()):
     print('Position marker number {}:'.format(nr + 1), marker.x(), marker.y(),
           marker.z())
     ax.scatter(marker.x(), marker.y(), s=(4 - nr) * 20, color='k')
@@ -191,7 +191,7 @@ plc = rect1 + rect2
 ax, cb = pg.show(plc, markers=True)
 
 fig = ax.get_figure()
-for nr, marker in enumerate(plc.regionMarker()):
+for nr, marker in enumerate(plc.regionMarkers()):
     print('Position marker number {}:'.format(nr + 1), marker.x(), marker.y(),
           marker.z())
     ax.scatter(marker.x(), marker.y(), s=(4 - nr) * 20, color='k')

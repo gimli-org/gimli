@@ -52,7 +52,6 @@ pg.show(mesh_layered, vel_layered, label="Velocity (m/s)")
 # is the minimum of the direct and critically refracted wave, where the latter
 # is governed by Snell's law.
 
-
 def analyticalSolution2Layer(x, zlay=25, v1=1000, v2=3000):
     """Analytical solution for 2 layer case."""
     tdirect = np.abs(x) / v1  # direct wave
@@ -162,7 +161,10 @@ for j, (case, mesh, vel) in enumerate(zip(["layered", "gradient"],
         # Perform traveltime calculations and log time with pg.tic() & pg.toc()
         pg.tic()
         res = mgr.simulate(vel=vel, scheme=data, mesh=mesh, secNodes=n)
-        t_all.append(res['t'])
+        # We need to copy res['t'] here because res['t'] is a reference to 
+        # an array in res, and res will be removed in the next iteration.
+        # Unfortunately, we don't have any reverence counting for core objects yet.
+        t_all.append(res['t'].array())
         durations.append(pg.dur())
         pg.toc("Raytracing with %d secondary nodes:" % n)
 

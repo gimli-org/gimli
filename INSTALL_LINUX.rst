@@ -34,29 +34,58 @@ Install Miniconda (only once):
     ./miniconda.sh -b -p $HOME/miniconda
     export PATH=$HOME/miniconda/bin:$PATH # Note: Add this to your .bashrc for permanent use
 
-Add the gimli and conda-forge channel (only once):
-
-.. code-block:: bash
-    
-    conda config --add channels gimli --add channels conda-forge
-    conda update --all
-
-Install pygimli (and its dependencies) and test if everything works correctly via:
+To avoid conflicts with other packages, we recommend to install pygimli in a
+separate environment. Here we call this environment `mypgenv`, but you can give
+it any name. Note that this environment has to be created only once.
 
 .. code-block:: bash
 
-    conda install pygimli
-    python -c "import pygimli; pygimli.test()"
+    conda create -n mypgenv -c gimli -c conda-forge pygimli python=3.6 -y
 
-Update your pygimli installation if want to have the newest functionality:
+If you want to use pygimli, you have to activate the environment. You can put
+this line in your `~/.bashrc` file so that it is activated automatically if you
+open a terminal.
+
+.. code-block:: bash
+
+    conda activate mypgenv
+
+To test if everything works correctly you can do the following:
+
+.. code-block:: bash
+
+    python -c "import pygimli; pygimli.test(show=False, onlydoctests=True)"
+
+There will be some matplotlib related warnings, which you can ignore, but all
+the tests should pass.
+
+After that you can use pygimli with your text editor of choice and a terminal.
+Depending on your preferences, you can also install third-party software such as
+MATLAB-like integrated development environment (https://www.spyder-ide.org):
+
+.. code-block:: bash
+
+    conda install -c conda-forge spyder
+
+Or alternatively, the web-based IDE JupyterLab (https://jupyterlab.readthedocs.io).
+
+.. code-block:: bash
+
+    conda install -conda-forge jupyterlab
+
+Update your pygimli installation frome time to time, if want to have the newest
+functionality:
 
 .. code-block:: bash
 
     conda update pygimli
 
-The only drawback using conda is that you are bound to the rhythm we update the binary packages.
-Conda also can be seen as a sandbox Linux inside your system and it might be difficult to combine system python packages and conda GIMLi.
-If you like to keep your GIMLi version more recent (including all possible drawbacks of versions that are actively developed) you should compile GIMli using your systems toolchain.
+The only drawback using conda is that you are bound to the rhythm we update the
+binary packages. Conda also can be seen as a sandbox Linux inside your system
+and it might be difficult to combine system python packages and conda pyGIMLi.
+If you like to keep your pyGIMLi version more recent (including all possible
+drawbacks of versions that are actively developed) you should compile pyGIMli
+using your systems toolchain.
 
 Compile your own with the curl installer
 ........................................

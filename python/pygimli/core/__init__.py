@@ -944,6 +944,17 @@ def __ModellingBase__createJacobian_mt__(self, model, resp):
     dModel = _pygimli_.RVector(len(model))
     nProcs = self.multiThreadJacobian()
 
+
+    if sys.platform == 'win32':
+        # strange pickle problem: see  python test_PhysicsManagers.py ves
+        from .logger import warn
+        warn('Multiprocess jacobian currently unavailable')
+        nProcs = 1
+ 
+    if nProcs == 1:
+        self.createJacobian(model, resp)
+        return
+
     shm = []
 
     oldBertThread = self.threadCount()

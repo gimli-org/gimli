@@ -66,7 +66,7 @@ quants = {
         'name': 'Porosity',
         'unit': None,
         'ger': 'Porosität',
-        'cMap': 'viridis_r',
+        'cMap': 'pink_r',
     },
 }
 
@@ -88,7 +88,7 @@ def quantity(name):
         quantity = quants[name]
     return quantity
 
-def cMap(name):
+def cmap(name):
     """Return default colormap for physical quantity name."""
     q = quantity(name)
     if q is None:

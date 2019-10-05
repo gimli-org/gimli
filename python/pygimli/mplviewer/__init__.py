@@ -39,7 +39,6 @@ from .meshview import (CellBrowser,
                        drawMesh,
                        drawMeshBoundaries,
                        drawModel,
-                       drawMPLTri,
                        drawParameterConstraints,
                        drawPLC,
                        drawSelectedMeshBoundaries,
@@ -65,6 +64,7 @@ from .dataview import (drawSensorAsMarker,  # dups to meshview??
                        showMatrix,
                        drawMatrix,
                        generateMatrix,
+                       showDataContainerAsMatrix,
                        patchMatrix, # deprectated (Naming)
                        patchValMap, # deprectated (Naming)
                        plotDataContainerAsMatrix, # need renaming
@@ -92,7 +92,7 @@ __all__ = [
     "patchValMap", "plotDataContainerAsMatrix", "plotMatrix", "plotVecMatrix",
     "CellBrowser", "createMeshPatches",
     "createTriangles", "draw1DColumn", "drawField", "drawMesh",
-    "drawMeshBoundaries", "drawModel", "drawMPLTri", "hold", "wait",
+    "drawMeshBoundaries", "drawModel", "hold", "wait",
     "setOutputStyle", "setPlotStuff", "createAnimation", "saveAnimation",
     "drawParameterConstraints", "drawPLC", "drawSelectedMeshBoundaries",
     "drawSelectedMeshBoundariesShadow", "drawSensors", "drawStreamLines",

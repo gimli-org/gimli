@@ -119,6 +119,7 @@ template <> void TransCumulative < Vec >::add(Trans< Vec > & trans, Index size) 
     this->add(trans, start, start + size);
 }
 template <> void TransCumulative < Vec >::add(Trans< Vec > & trans, Index start, Index end) {
+    // __MS(typeid(&trans).name() << " "<< start <<""<< end)
     transVec_.push_back(&trans);
     slice_.push_back(std::pair< Index, Index >(start, end));
 }

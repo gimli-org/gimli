@@ -9,8 +9,9 @@ import numpy as np
 import pygimli as pg
 
 
+# better rename I to something else (range?) according to E743
 def covarianceMatrixVec(x, y, z=None, I=None, dip=0, strike=0, var=1):
-    """Geostatistical covariance matrix.
+    """Geostatistical covariance matrix for given points.
 
     Parameters
     ----------

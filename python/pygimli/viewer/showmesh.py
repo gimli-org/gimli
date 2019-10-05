@@ -307,8 +307,9 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
                     validData = False
                     gci = drawMesh(ax, mesh)
 
-                if cMap is not None and gci is not None:
-                    gci.set_cmap(cmapFromName(cMap))
+                kwargs['cMap'] = cMap
+                if 'cMap' in kwargs and gci is not None:
+                    gci.set_cmap(cmapFromName(kwargs['cMap']))
                     #gci.cmap.set_under('k')
 
             except BaseException as e:
@@ -354,7 +355,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
 
     if colorBar and validData:
         # , **kwargs) # causes problems!
-        labels = ['cMin', 'cMax', 'nLevs', 'cMap', 'logScale']
+        labels = ['cMin', 'cMax', 'nLevs', 'cMap', 'logScale', 'levels']
         subkwargs = {key: kwargs[key] for key in labels if key in kwargs}
         subkwargs['label'] = label
 

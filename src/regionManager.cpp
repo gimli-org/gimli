@@ -26,7 +26,6 @@
 #include "trans.h"
 #include "vectortemplates.h"
 
-
 namespace GIMLI{
 
 Region::Region(SIndex marker, RegionManager * parent, bool single)
@@ -37,6 +36,7 @@ Region::Region(SIndex marker, RegionManager * parent, bool single)
     if (isSingle_) {
         parameterCount_ = 1;
         constraintType_ = 0;
+        this->setModelControl(1.0);
     }
 }
 
@@ -87,7 +87,7 @@ void Region::init_() {
     _isInParaDomain = true;
 
     transString_    = "Log";
-    tM_ = new Trans < RVector >;
+    tM_ = new TransLogLU < RVector >;
 }
 
 void Region::copy_(const Region & region){
@@ -203,6 +203,7 @@ void Region::countParameter(Index start){
     for (Index i = 0, imax = cells_.size(); i < imax; i ++) cells_[i]->setAttribute(0.0);
 
     endParameter_ = start + parameterCount_;
+    // __MS(this->marker_ << " "<< this->isSingle_)
     modelControl_.resize(parameterCount_, mcDefault_);
     startModel_.resize(parameterCount_, startDefault_);
     paraIDs_ = IndexArray(parameterCount_);
@@ -226,7 +227,7 @@ void Region::permuteParameterMarker(const IndexArray & p){
 //################ Start values
 void Region::setStartModel(const RVector & start){
     if (isBackground_){
-        log(Error, "Region Nr:", marker_, " is background and should not get a startmodel.");
+        log(Warning, "Region Nr:", marker_, " is background and should not get a startmodel.");
         return;
     }
     if (start.size() == parameterCount_){
@@ -260,22 +261,24 @@ void Region::fillStartModel(RVector & vec){
 //################ Model behaviour
 void Region::setModelControl(double val){
     if (isBackground_){
-        log(Error, "Region Nr:", marker_, " is background and should not get model control.");
+        log(Warning, "Region Nr:", marker_, " is background and should not get model control.");
         return;
     }
 
     if (val < TOLERANCE) val = 1.0;
     mcDefault_ = val;
+// __MS(this->marker_ << " "<< this->isSingle_)
     modelControl_.resize(parameterCount_);
     modelControl_.fill(val);
 }
 
 void Region::setModelControl(const RVector & mc){
     if (isBackground_){
-        log(Error, "Region Nr:", marker_, " is background and should not get model control.");
+        log(Warning, "Region Nr:", marker_, " is background and should not get model control.");
         return;
     }
     if (mc.size() == parameterCount_){
+    //    __MS(this->marker_ << " "<< this->isSingle_)
        modelControl_ = mc;
     } else {
         throwLengthError(1, WHERE_AM_I + " " + str(mc.size()) + " != " + str(parameterCount_));
@@ -284,9 +287,10 @@ void Region::setModelControl(const RVector & mc){
 
 void Region::setModelControl(PosFunctor * mcF){
     if (isBackground_){
-        log(Error, "Region Nr:", marker_, " is background and should not get a model control.");
+        log(Warning, "Region Nr:", marker_, " is background and should not get a model control.");
         return;
     }
+    // __MS(this->marker_ << " "<< this->isSingle_)
     modelControl_.resize(parameterCount_);
     if (isSingle_){
         THROW_TO_IMPL
@@ -435,7 +439,7 @@ void Region::setConstraintWeights(double val){
 void Region::setConstraintWeights(const RVector & cw){
     //std::cout << "Region::setConstraintsWeight(const RVector & sw) " << sw.size() << " " <<  this->constraintCount() << std::endl;
     if (isBackground_){
-        log(Error, "Region Nr:", marker_, " is background and should not get a cweight.");
+        log(Warning, "Region Nr:", marker_, " is background and should not get a cweight.");
         return;
     }
     if (cw.size() == this->constraintCount()){
@@ -506,6 +510,11 @@ void Region::fillBoundarySize(RVector & vec, Index boundStart){
 }
 
 void Region::setTransModel(Trans< RVector > & tM){
+
+    if (isBackground_){
+        log(Warning, "Region Nr:", marker_, " is background and should not get a modelTrans."); return;
+    }
+    
     if (tM_ && ownsTrans_) delete tM_;
     tM_ = & tM;
     parent_->setLocalTransFlag(true);
@@ -513,6 +522,9 @@ void Region::setTransModel(Trans< RVector > & tM){
 }
 
 void Region::setModelTransStr_(const std::string & val){
+    if (isBackground_){
+        log(Warning, "Region Nr:", marker_, " is background and should not get a modelTrans."); return;
+    }
     transString_ = val;
     delete tM_; tM_ = NULL;
 
@@ -679,7 +691,7 @@ void RegionManager::setMesh(const Mesh & mesh, bool holdRegionInfos){
         for (Index i = 0; i < regions.size(); i ++){
             for (Index j = 0; j < regions.size(); j ++){
                 if (i != j){
-                    setInterRegionConstraint(i, j, 1.0);
+                    setInterRegionConstraint(regions[i], regions[j], 1.0);
                                 // if (verbose_) std::cout << minRegion[i] << " <-> "
                                 //                         << maxRegion[j] << " weight:"
                                 //                         << toDouble(row[2]) << std::endl;
@@ -922,7 +934,7 @@ void RegionManager::fillConstraints(RSparseMapMatrix & C){
     Index nModel  = parameterCount();
     // __MS(nModel)
     Index nConstr = constraintCount();
-    // __MS(nConstr)
+    
     this->_cWeights.resize(nConstr, 1.0);
     
     C.clear();
@@ -952,15 +964,17 @@ void RegionManager::fillConstraints(RSparseMapMatrix & C){
 
     if (interRegionConstraints_.size() > 0){
         if (verbose_) std::cout << "Creating inter region constraints." << std::endl;
-
+        Index i = 0;
         for (auto & it : this->interRegionConstraints_){
         
             std::pair< SIndex, SIndex > ab = it.first;
             double cWeight = it.second;
-            if (verbose_) std::cout << "\t" 
-                                    << ab.first << "<->" 
-                                    << ab.second << "(" << cWeight << ")"
-                                    << std::endl;
+            if (verbose_) {
+                // std::cout << "\t" << i << ": "
+                //                     << ab.first << "< (" << cWeight << ") >" 
+                //                     << ab.second << std::endl;
+                i ++;
+            }
             Region * regA = regionMap_.find(ab.first)->second;
             Region * regB = regionMap_.find(ab.second)->second;
 
@@ -968,8 +982,10 @@ void RegionManager::fillConstraints(RSparseMapMatrix & C){
             RVector & mcB = *regB->modelControl();
 
             if (mcA.size() == 0 || mcB.size() == 0){
-                throwLengthError(1, WHERE_AM_I + " left | right model control size == 0 " + str(mcA.size())
-                + " "+ str(mcB.size()));
+                throwLengthError(1, WHERE_AM_I 
+                                    + " model control size invald " 
+                                + str(ab.first)  + "(" + str(mcA.size()) + ") "
+                                + str(ab.second) + "(" + str(mcB.size()) + ")");
             }
 
             Index aStartParam = regA->startParameter();
@@ -1236,6 +1252,19 @@ void RegionManager::setInterRegionConstraint(SIndex aIn, SIndex bIn, double cw){
     SIndex a = min(aIn, bIn);
     SIndex b = max(aIn, bIn);
 
+    if (regionMap_.count(a) == 0 || regionMap_.count(b) == 0){
+        std::cerr << WHERE_AM_I << " ignoring inter-region constraints (no region)"
+                << a << " " << regionMap_.count(a) << " " 
+                << b << " " << regionMap_.count(b) << std::endl;
+        return;
+    }
+    if (this->region(a)->isBackground() || this->region(b)->isBackground()){
+            std::cerr << WHERE_AM_I << " ignoring inter-region constraints (is background)"
+                << a << " " << this->region(a)->isBackground() << " "
+                << b << " " << this->region(b)->isBackground() << std::endl;
+        return;
+    }
+
     if (a == b){
         std::cerr << WHERE_AM_I << " ignoring inter-region constraints "
                 << a << " == " << b << std::endl;
@@ -1275,10 +1304,16 @@ TransCumulative < RVector > * RegionManager::transModel(){
 
             if (!x.second->isBackground()){
                 if (isPermuted_){
-//                     __MS(localTrans_.size() << " " << it->second->paraIds())
+                    // __MS(localTrans_.size() << " " << x.second->paraIds())
                     localTrans_.add(*x.second->transModel(),
                                     x.second->paraIds());
                 } else {
+                    // __MS(localTrans_.size() << " " << x.second<< " "
+                    //         << typeid(*x.second->transModel()).name() << " " 
+                    //         << x.second->transModel() << " "
+                    //         << x.second->startParameter() << " " 
+                    //         << x.second->endParameter())
+                    
                     localTrans_.add(*x.second->transModel(),
                                     x.second->startParameter(),
                                     x.second->endParameter());

@@ -14,8 +14,8 @@ from .methodManager import (MethodManager, MethodManager1d,
                             MeshMethodManager, PetroInversionManager)
 
 # will be removed very soon
-from .methodManager import (MethodManager0,
-                            MeshMethodManager0)
+# from .methodManager import (MethodManager0,
+#                             MeshMethodManager0)
 
 from .resolution import computeR
 

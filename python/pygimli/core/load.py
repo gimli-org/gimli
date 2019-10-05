@@ -2,6 +2,8 @@
 """TODO Module docstring."""
 
 import os.path
+import tempfile
+
 from importlib import import_module
 from urllib.request import urlretrieve
 
@@ -10,12 +12,13 @@ import pygimli as pg
 from pygimli.meshtools import readFenicsHDF5Mesh, readGmsh, readPLC, readSTL
 from pygimli.utils import readGPX
 from pygimli.utils import cache
+from pygimli.physics.traveltime import load as loadTT
 
-
+gimliExampleDataPath='gimli-org/example-data/'
 # Example data repository
 exampleDataRepository = ''.join((
     'https://raw.githubusercontent.com/',  # RAW files
-    'gimli-org/example-data/',  # Organization and repository
+    gimliExampleDataPath,  # Organization and repository
     'master/'  # Branch
 ))
 
@@ -113,12 +116,15 @@ def load(fname, verbose=False, testAll=True, realName=None):
     4
     """
     ImportFilter = {
+        #maybe we can inflate the importer list from the submodules itself.
         # Data
         ".dat": pg.DataContainerERT,
         ".data": pg.DataContainerERT,
         ".ohm": pg.DataContainerERT,  # BERT compatibility
         ".shm": pg.DataContainerERT,  # BERT compatibility
-        ".sgt": pg.DataContainer,
+        ".sgt": loadTT,
+        ".gtt": loadTT,
+        ".tom": loadTT,
         ".collect": pg.core.DataMap,
         # Vectors
         #".dat": pg.Vector,
@@ -141,7 +147,7 @@ def load(fname, verbose=False, testAll=True, realName=None):
         ".gpx": readGPX,  # read gpx waypoints
         ".xy": np.loadtxt,  #
     }
-
+    
     if not os.path.exists(fname):
         raise Exception("File or directory named %s does not exist." % (fname))
 
@@ -187,22 +193,41 @@ def load(fname, verbose=False, testAll=True, realName=None):
                         "and could not be imported.".format(suffix))
 
 
-def getExampleFile(path, cacheName=True):
-    """Download and return temporary filename of file in example repository."""
-    # TODO: Cache locally and check hash sums for potential file corruption
-    url = exampleDataRepository + path
-    fileName = path.split('/')[-1]
-    if not os.path.exists(fileName):
-        pg.info("Getting:", fileName)
-        return urlretrieve(url)[0]
-    else:
-        pg.info("File allready exists:", fileName)
-    return fileName
+def getExampleFile(path, load=False, verbose=False):
+    """Download and return a filename to the example repository.
 
-# maybe better move this in getExampleFile
-# @cache
-# def getExampleData(path, type=None):
-#     """Get data from example repository."""
-#     url = getExampleFile(path)
-#     dat = load(url, realName=path)
-#     return dat
+    TODO:
+        checksum or hash test for the content.
+
+    Parameters
+    ----------
+    path: str
+        Path to the remote repo
+    load: bool [False]
+        Try to load the file and return the relating object.
+
+    Returns
+    -------
+    filename: str
+        Filename to the data content
+    data: obj
+        content of the path if load is True
+    """
+    url = exampleDataRepository + path
+
+    fileName = os.path.join(tempfile.gettempdir(), gimliExampleDataPath, path)
+
+    if not os.path.exists(fileName):
+        if verbose:
+            pg.info("Getting:", fileName)
+        os.makedirs(os.path.dirname(fileName), exist_ok=True)
+        tmp = urlretrieve(url, fileName)
+    else:
+        if verbose:
+            pg.info("File allready exists:", fileName)
+
+    if load:
+        print(fileName)
+        d = pg.load(fileName)
+        return pg.load(fileName)
+    return fileName

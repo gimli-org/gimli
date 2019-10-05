@@ -1,4 +1,4 @@
-    /******************************************************************************
+/******************************************************************************
  *   Copyright (C) 2006-2019 by the GIMLi development team                    *
  *   Carsten Rücker carsten@resistivity.net                                   *
  *                                                                            *
@@ -64,7 +64,7 @@ public:
             return operator = (rhs.asValue());  // see above
         } return *this;
     }
-    
+
   /* The constructor initializes the private variables with all
      information that is needed. The container itself is located in
      the sparseMatrix class; here, the reference to it is entered.
@@ -214,13 +214,13 @@ public:
     /*! Return entity rtti value. */
     virtual uint rtti() const { return GIMLI_SPARSE_MAP_MATRIX_RTTI; }
 
-    void copy_(const SparseMatrix< double > & S);
-    void copy_(const SparseMatrix< Complex > & S);
-
     void resize(Index rows, Index cols){
         rows_ = rows;
         cols_ = cols;
     }
+
+    void copy_(const SparseMatrix< double > & S);
+    void copy_(const SparseMatrix< Complex > & S);
 
     inline void insert(const IndexArray & rows, const IndexArray & cols, const RVector & vals) {
         ASSERT_EQUAL(vals.size(), rows.size())
@@ -427,7 +427,7 @@ public:
         return ret;
     }
 
-    /*! Return SparseMapMatrix this.T * a */
+    /*! Return SparseMapMatrix: this.T * a */
     virtual Vector < ValueType > transMult(const Vector < ValueType > & a) const {
         Vector < ValueType > ret(this->cols(), 0.0);
 
@@ -543,7 +543,9 @@ protected:
   ContainerType C_;
   // 0 .. nonsymmetric, -1 symmetric lower part, 1 symmetric upper part
   int stype_;
-}; // class SparseMapMatrix
+};// class SparseMapMatrix
+
+
 
 template < class ValueType, class IndexType >
 void save(const SparseMapMatrix< ValueType, IndexType > & S,
@@ -655,6 +657,7 @@ void scaleMatrix(SparseMapMatrix< double, Index > & S,
 /*! Performs a rank 1 update of a matrix such that A -> A + u * v^T */
 template< class Vec >
 void rank1Update(SparseMapMatrix< double, Index > & S, const Vec & u, const Vec & v) {
+
     if (S.cols() != v.size())
         throwLengthError(EXIT_SPARSE_SIZE, WHERE_AM_I + " " + str(S.cols())
                                 + " != " + str(v.size()));
@@ -792,8 +795,8 @@ public:
 
         if (stype_ == 0){
             // for each row
-            for (Index i = 0; i < ret.size(); i++){
-                // iterate through compressed col
+            for (Index i = 0; i < this->rows(); i++){
+            // iterate through compressed col
                 for (int j = this->vecColPtr()[i]; j < this->vecColPtr()[i + 1]; j ++){
                     ret[i] += a[this->vecRowIdx()[j]] * this->vecVals()[j];
                 }
@@ -834,7 +837,7 @@ public:
         return ret;
     }
 
-    /*! Return SparseMatrix this.T * a */
+    /*! Return this.T * a */
     virtual Vector < ValueType > transMult(const Vector < ValueType > & a) const {
 
         if (a.size() < this->rows()){
@@ -911,11 +914,11 @@ public:
 
     void cleanRow(int row){
         ASSERT_RANGE(row, 0, (int)this->rows())
-         for (int col = colPtr_[row]; col < colPtr_[row + 1]; col ++){
+        for (int col = colPtr_[row]; col < colPtr_[row + 1]; col ++){
             vals_[col] = ValueType(0);
-         }
+        }
     }
-
+                
     void cleanCol(int col){
         ASSERT_RANGE(col, 0, (int)this->cols())
         for (int i = 0; i < (int)this->rowIdx_.size(); i++){
@@ -924,10 +927,9 @@ public:
             }
         }
     }
-
     void copy_(const SparseMapMatrix< double, Index > & S);
     void copy_(const SparseMapMatrix< Complex, Index > & S);
-
+    
     void buildSparsityPattern(const Mesh & mesh){
         Stopwatch swatch(true);
 
@@ -992,6 +994,7 @@ public:
             colPtr_[row] = k;
         }
         valid_ = true;
+
         rows_ = colPtr_.size() - 1;
         cols_ = max(rowIdx_) + 1;
         //** freeing idxMap ist expensive
@@ -1087,7 +1090,7 @@ protected:
     Index cols_;
 };
 
-// /*! Implement specialized type traits in sparsematrix.cpp */
+/*! Implement specialized type traits in sparsematrix.cpp */
 template <> DLLEXPORT void SparseMatrix<double>::copy_(const SparseMapMatrix< double, Index > & S);
 template <> DLLEXPORT void SparseMatrix<Complex>::copy_(const SparseMapMatrix< Complex, Index > & S);
 

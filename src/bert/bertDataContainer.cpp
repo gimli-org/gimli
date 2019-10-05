@@ -82,7 +82,7 @@ void DataContainerERT::initTokenTranslator(){
 
     for (std::map< std::string, std::string >::iterator it = l.begin(); it != l.end(); it ++){
         std::vector< std::string> row(getSubstrings(it->second));
-        for (uint i = 0; i < row.size(); i ++){
+        for (Index i = 0; i < row.size(); i ++){
             tT_.insert(std::pair< std::string, std::string >(row[i], it->first));
         }
     }
@@ -172,7 +172,7 @@ std::set < Index > DataContainerERT::currentPattern(bool reciprocity){
     const RVector & m = dataMap_["m"];
     const RVector & n = dataMap_["n"];
 
-    for (uint i = 0; i < this->size(); i ++){
+    for (Index i = 0; i < this->size(); i ++){
         if (valid[i]){
             pattern.insert(electrodeToCurrentPattern(a[i], b[i]));
 
@@ -184,11 +184,11 @@ std::set < Index > DataContainerERT::currentPattern(bool reciprocity){
     return pattern;
 }
 
-Index DataContainerERT::addFourPointData(long a, long b, long m, long n){
+Index DataContainerERT::addFourPointData(SIndex a, SIndex b, SIndex m, SIndex n){
     return this->createFourPointData(this->size(), a, b, m, n);
 }
 
-Index DataContainerERT::createFourPointData(Index i, long a, long b, long m, long n){
+Index DataContainerERT::createFourPointData(Index i, SIndex a, SIndex b, SIndex m, SIndex n){
     if (this->size() <= i) {
         resize(max(i+1,1));
         // memory reservation is vectors job so this should be ok
@@ -226,22 +226,22 @@ void DataContainerERT::averageDuplicateData(bool verbose){
     DataContainerERT origData(*this);
 
     /*! +1 ensures that -1 (pol) electrodes are considered. */
-    uint N = this->sensorCount() + 1;
-    uint N2 = N * N;
-    uint N3 = N * N * N;
+    Index N = this->sensorCount() + 1;
+    Index N2 = N * N;
+    Index N3 = N * N * N;
 
     std::map< SIndex, IndexArray > allDataIdxMap;
 
     std::map< SIndex, IndexArray >::iterator it;
 
-    for (uint i = 0; i < this->size(); i ++){
-        uint a = dataMap_["a"][i] + 1;
-        uint b = dataMap_["b"][i] + 1;
-        uint m = dataMap_["m"][i] + 1;
-        uint n = dataMap_["n"][i] + 1;
+    for (Index i = 0; i < this->size(); i ++){
+        Index a = dataMap_["a"][i] + 1;
+        Index b = dataMap_["b"][i] + 1;
+        Index m = dataMap_["m"][i] + 1;
+        Index n = dataMap_["n"][i] + 1;
 
 //        SIndex dataIdx = a * N3 + b * N2 + m * N + n;
-        SIndex dataIdx = min(a, b) * N3 + max(a, b) * N2 + min(m, n) * N + max(m, n);
+        Index dataIdx = min(a, b) * N3 + max(a, b) * N2 + min(m, n) * N + max(m, n);
 
         it = allDataIdxMap.find(dataIdx);
         if (it == allDataIdxMap.end()){
@@ -252,7 +252,7 @@ void DataContainerERT::averageDuplicateData(bool verbose){
 
     this->resize(allDataIdxMap.size());
 
-    uint i = 0;
+    Index i = 0;
     for (it = allDataIdxMap.begin(); it != allDataIdxMap.end(); it ++, i++){
 
         SIndex dataIdx = it->first;
