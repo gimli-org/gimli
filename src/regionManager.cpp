@@ -87,7 +87,7 @@ void Region::init_() {
     _isInParaDomain = true;
 
     transString_    = "Log";
-    tM_ = new Trans < RVector >;
+    tM_ = new TransLogLU < RVector >;
 }
 
 void Region::copy_(const Region & region){
@@ -227,7 +227,7 @@ void Region::permuteParameterMarker(const IndexArray & p){
 //################ Start values
 void Region::setStartModel(const RVector & start){
     if (isBackground_){
-        log(Error, "Region Nr:", marker_, " is background and should not get a startmodel.");
+        log(Warning, "Region Nr:", marker_, " is background and should not get a startmodel.");
         return;
     }
     if (start.size() == parameterCount_){
@@ -261,7 +261,7 @@ void Region::fillStartModel(RVector & vec){
 //################ Model behaviour
 void Region::setModelControl(double val){
     if (isBackground_){
-        log(Error, "Region Nr:", marker_, " is background and should not get model control.");
+        log(Warning, "Region Nr:", marker_, " is background and should not get model control.");
         return;
     }
 
@@ -274,7 +274,7 @@ void Region::setModelControl(double val){
 
 void Region::setModelControl(const RVector & mc){
     if (isBackground_){
-        log(Error, "Region Nr:", marker_, " is background and should not get model control.");
+        log(Warning, "Region Nr:", marker_, " is background and should not get model control.");
         return;
     }
     if (mc.size() == parameterCount_){
@@ -287,7 +287,7 @@ void Region::setModelControl(const RVector & mc){
 
 void Region::setModelControl(PosFunctor * mcF){
     if (isBackground_){
-        log(Error, "Region Nr:", marker_, " is background and should not get a model control.");
+        log(Warning, "Region Nr:", marker_, " is background and should not get a model control.");
         return;
     }
     // __MS(this->marker_ << " "<< this->isSingle_)
@@ -439,7 +439,7 @@ void Region::setConstraintWeights(double val){
 void Region::setConstraintWeights(const RVector & cw){
     //std::cout << "Region::setConstraintsWeight(const RVector & sw) " << sw.size() << " " <<  this->constraintCount() << std::endl;
     if (isBackground_){
-        log(Error, "Region Nr:", marker_, " is background and should not get a cweight.");
+        log(Warning, "Region Nr:", marker_, " is background and should not get a cweight.");
         return;
     }
     if (cw.size() == this->constraintCount()){
@@ -510,6 +510,11 @@ void Region::fillBoundarySize(RVector & vec, Index boundStart){
 }
 
 void Region::setTransModel(Trans< RVector > & tM){
+
+    if (isBackground_){
+        log(Warning, "Region Nr:", marker_, " is background and should not get a modelTrans."); return;
+    }
+    
     if (tM_ && ownsTrans_) delete tM_;
     tM_ = & tM;
     parent_->setLocalTransFlag(true);
@@ -517,6 +522,9 @@ void Region::setTransModel(Trans< RVector > & tM){
 }
 
 void Region::setModelTransStr_(const std::string & val){
+    if (isBackground_){
+        log(Warning, "Region Nr:", marker_, " is background and should not get a modelTrans."); return;
+    }
     transString_ = val;
     delete tM_; tM_ = NULL;
 
@@ -1296,10 +1304,16 @@ TransCumulative < RVector > * RegionManager::transModel(){
 
             if (!x.second->isBackground()){
                 if (isPermuted_){
-//                     __MS(localTrans_.size() << " " << it->second->paraIds())
+                    // __MS(localTrans_.size() << " " << x.second->paraIds())
                     localTrans_.add(*x.second->transModel(),
                                     x.second->paraIds());
                 } else {
+                    // __MS(localTrans_.size() << " " << x.second<< " "
+                    //         << typeid(*x.second->transModel()).name() << " " 
+                    //         << x.second->transModel() << " "
+                    //         << x.second->startParameter() << " " 
+                    //         << x.second->endParameter())
+                    
                     localTrans_.add(*x.second->transModel(),
                                     x.second->startParameter(),
                                     x.second->endParameter());

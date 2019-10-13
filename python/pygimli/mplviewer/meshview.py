@@ -912,8 +912,8 @@ def drawField(ax, mesh, data=None, levels=[], nLevs=5,
                 #     levs = np.hstack([levs, max(z)])
 
                 gci = ax.tricontourf(x, y, triangles, z, levels=levs,
-                                     antialiaseds=True,
                                      **kwargs)
+                            
             if contourLines:
                 ax.tricontour(x, y, triangles, z, levels=levels,
                               colors=kwargs.pop('colors', ['0.5']), **kwargs)
