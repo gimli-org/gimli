@@ -91,7 +91,10 @@ def testColorbar():
 
     ax.figure.tight_layout()
 
-
+    pg.show(grid, pg.x(grid.cellCenter()), tri=True, shading='gouraud', 
+            cMap='Spectral_r', logScale=True, cMin=0.01, cMax=10, 
+            colorBar=True)
+            #orientation="horizontal")
 if __name__ == '__main__':
     #testShowVariants()
     testColorbar()
