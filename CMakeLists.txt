@@ -261,6 +261,7 @@ if (";${BLAS_LIBRARIES};" MATCHES "openblas")
     set(OPENBLAS_FOUND TRUE)
 else()
     set(OPENBLAS_FOUND FALSE)
+    set(OPENBLAS_CBLAS_FOUND FALSE)
 endif()
 
 if (NOT AVOID_CPPUNIT)
