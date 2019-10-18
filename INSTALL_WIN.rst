@@ -80,7 +80,7 @@ e.g.:
 
 .. code-block:: bash
 
-    export PATH=/c/ProgramData/Anaconda3
+    export PATH=$PATH:/c/ProgramData/Anaconda3
 
 This is necessary since gimli needs to know valid python installation and
 version. Ideally the following one-liner will suffice to compile pyGIMLi in the
