@@ -129,7 +129,7 @@ To get a complete working toolchain you need some packages installed.
 
     pacman -S mingw-w64-x86_64-cmake mingw-w64-x86_64-gcc mingw-w64-x86_64-gcc-fortran
     pacman -S mingw-w64-x86_64-openblas mingw-w64-x86_64-suitesparse
-    pacman -S mingw-w64-x86_64-doxygen mingw-w64-cppunit
+    pacman -S mingw-w64-x86_64-doxygen mingw-w64-x86_64-cppunit
     pacman -S mingw-w64-x86_64-llvm mingw-w64-x86_64-clang
 
 The rest of the installation is like the linux way with some small differences.
