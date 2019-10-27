@@ -2237,14 +2237,6 @@ Mesh & Mesh::rotate(const RVector3 & r){
     return *this;
 }
 
-Mesh & Mesh::transform(const RMatrix & mat){
-//         std::for_each(nodeVector_.begin(), nodeVector_.end(),
-//                        bind2nd(std::mem_fun(&Node::pos().transform), mat));
-        for (uint i = 0; i < nodeVector_.size(); i ++) nodeVector_[i]->pos().transform(mat);
-        rangesKnown_ = false;
-        return *this;
-}
-
 void Mesh::swapCoordinates(Index i, Index j){
     for (auto &n: nodeVector_) n->pos().swap(i,j);
     for (auto &n: holeMarker_) n.swap(i,j);

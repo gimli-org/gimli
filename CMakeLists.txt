@@ -3,7 +3,7 @@
 cmake_minimum_required(VERSION 2.8.8)
 
 if ( ${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR} )
-    message( FATAL_ERROR "In-source builds not allowed. Please make a new directory (called a build directory) and run CMake from there. You may need to remove CMakeCache.txt." )
+    message(FATAL_ERROR "In-source builds not allowed. Please make a new directory (called a build directory) and run CMake from there. You may need to remove CMakeCache.txt." )
 endif()
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
@@ -37,7 +37,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" ST
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-int-in-bool-context")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-class-memaccess")
     add_definitions(-std=c++11)
-    
+
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -p -O2 -std=c++11 -g -ansi -pedantic -fno-omit-frame-pointer -Wall")
 
     if (WIN32 OR CONDA_BUILD)
@@ -239,19 +239,19 @@ find_package(UMFPACK)
 
 if (";${BLAS_LIBRARIES};" MATCHES "openblas")
     message(STATUS "openblas is used: ${BLAS_LIBRARIES}")
-    
-    FIND_PATH(OpenBLAS_INCLUDE_DIR 
-        NAMES cblas.h 
+
+    FIND_PATH(OpenBLAS_INCLUDE_DIR
+        NAMES cblas.h
         PATHS /usr/include/openblas
         NO_DEFAULT_PATH
     )
     if (NOT OpenBLAS_INCLUDE_DIR)
-        FIND_PATH(OpenBLAS_INCLUDE_DIR 
-            NAMES cblas.h 
+        FIND_PATH(OpenBLAS_INCLUDE_DIR
+            NAMES cblas.h
         )
     endif()
     message(STATUS "openblas cblas.h: ${OpenBLAS_INCLUDE_DIR}")
-  
+
     if (OpenBLAS_INCLUDE_DIR)
         set(OPENBLAS_CBLAS_FOUND TRUE)
     else()
@@ -261,6 +261,7 @@ if (";${BLAS_LIBRARIES};" MATCHES "openblas")
     set(OPENBLAS_FOUND TRUE)
 else()
     set(OPENBLAS_FOUND FALSE)
+    set(OPENBLAS_CBLAS_FOUND FALSE)
 endif()
 
 if (NOT AVOID_CPPUNIT)
@@ -304,16 +305,16 @@ find_python_module(numpy)
 # Manuall check for boost python
 ################################################################################
 function(find_boost_python_manual bp_version)
-    message(STATUS " ... searching for libboost_python${bp_version}") 
+    message(STATUS " ... searching for libboost_python${bp_version}")
     find_package(Boost 1.46 COMPONENTS "python${bp_version}")
     if (${Boost_PYTHON${bp_version}_FOUND})
-        set(Boost_PYTHON_FOUND 
+        set(Boost_PYTHON_FOUND
             ${Boost_PYTHON${bp_version}_FOUND} PARENT_SCOPE)
-        set(Boost_PYTHON_LIBRARY 
+        set(Boost_PYTHON_LIBRARY
             ${Boost_PYTHON${bp_version}_LIBRARY_RELEASE} PARENT_SCOPE)
-        message(STATUS " ... found: ${Boost_PYTHON_LIBRARY}") 
+        message(STATUS " ... found: ${Boost_PYTHON_LIBRARY}")
     else()
-        message(STATUS " ... not found.") 
+        message(STATUS " ... not found.")
     endif()
 endfunction()
 
@@ -327,11 +328,11 @@ else()
         if (NOT Boost_PYTHON_FOUND)
             set(BOOST_FOUND TRUE)
             set(Boost_PYTHON_FOUND TRUE})
-            set(Boost_PYTHON_LIBRARY 
+            set(Boost_PYTHON_LIBRARY
                     ${BOOST_ROOT}/lib/libboost_python${bp_version}.dll)
         endif()
     endif()
-    
+
     # the name for py3 boost-python library lacks probably py3 suffix, which is different for different OS
     set (Boost_PYTHON_FOUND False)
     set (Boost_PYTHON_LIBRARY "None")
@@ -353,11 +354,11 @@ else()
         find_boost_python_manual(${bp_version})
     endif()
     if (NOT Boost_PYTHON_FOUND)
-        # /usr/lib/libboost_python37.so # gentoo >=boost-1.70) 
+        # /usr/lib/libboost_python37.so # gentoo >=boost-1.70)
         set(bp_version "${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}")
         find_boost_python_manual(${bp_version})
     endif()
-        
+
     if (Boost_PYTHON_FOUND)
         message(STATUS "found: ${Boost_PYTHON_FOUND}: ${Boost_PYTHON_LIBRARY}")
     else()
@@ -445,7 +446,7 @@ if (SPHINX_FOUND)
     list(APPEND DOCFILES ${PYFILES})
 
     set(RSTFILES ${DOCFILES} CACHE INTERNAL "RST source file that we need to copy")
-    
+
     set(RSTFILES ${DOCFILES} CACHE INTERNAL "RST source file that we need to copy")
     execute_process(
         COMMAND ${SPHINX_EXECUTABLE} --version
