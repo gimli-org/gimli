@@ -223,6 +223,10 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
     colobar : matplotlib.colorbar
     """
     renameKwarg('cmap', 'cMap', kwargs)
+
+    cMap = kwargs.pop('cMap', None)
+    cBarOrientation = kwargs.pop('orientation', 'horizontal')
+
     if ax is None:
         ax = plt.subplots()[1]
 
@@ -247,7 +251,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
             uniquemarkers, uniqueidx = np.unique(
                 np.array(mesh.cellMarkers()), return_inverse=True)
             label = "Cell markers"
-            kwargs["cMap"] = plt.cm.get_cmap("Set3", len(uniquemarkers))
+            cMap = plt.cm.get_cmap("Set3", len(uniquemarkers))
             kwargs["logScale"] = False
             kwargs["cMin"] = -0.5
             kwargs["cMax"] = len(uniquemarkers) - 0.5
@@ -290,8 +294,6 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
         else:
             validData = True
             try:
-                cMap = kwargs.pop('cMap', None)
-
                 if len(data) == mesh.cellCount():
                     gci = drawModel(ax, mesh, data, **kwargs)
                     if showBoundary is None:
@@ -307,13 +309,12 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
                     validData = False
                     gci = drawMesh(ax, mesh)
 
-                kwargs['cMap'] = cMap
-                if 'cMap' in kwargs and gci is not None:
-                    gci.set_cmap(cmapFromName(kwargs['cMap']))
+                if cMap is not None and gci is not None:
+                    gci.set_cmap(cmapFromName(cMap))
                     #gci.cmap.set_under('k')
 
             except BaseException as e:
-                pg.error("Exception occured: ", e)
+                pg.error("Exception occurred: ", e)
 
     if mesh.cellCount() == 0:
         showMesh = False
@@ -355,14 +356,14 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
 
     if colorBar and validData:
         # , **kwargs) # causes problems!
-        labels = ['cMin', 'cMax', 'nLevs', 'cMap', 'logScale', 'levels']
+        labels = ['cMin', 'cMax', 'nLevs', 'logScale', 'levels']
         subkwargs = {key: kwargs[key] for key in labels if key in kwargs}
         subkwargs['label'] = label
+        subkwargs['cMap'] = cMap
+        subkwargs['orientation'] = cBarOrientation
 
         if bool(colorBar):
             cbar = createColorBar(gci,
-                                  orientation=kwargs.pop('orientation',
-                                                         'horizontal'),
                                   size=kwargs.pop('size', 0.2),
                                   pad=kwargs.pop('pad', None),
                                   **subkwargs
