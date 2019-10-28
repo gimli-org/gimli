@@ -1851,7 +1851,7 @@ RVector Mesh::exportData(const std::string & name) const {
     return RVector(0);
 }
 
-void Mesh::clearExportData(){
+void Mesh::clearData(){
     exportDataMap_.clear();
 }
 

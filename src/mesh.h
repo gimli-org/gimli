@@ -646,7 +646,9 @@ public:
         exportDataMap_ = eMap; }
 
     /*! Empty the data map.*/
-    void clearExportData();
+    void clearData();
+    /*!DEPRECATED backward compatibility for bert */ 
+    void clearExportData(){ return clearData(); }
 
     void addData(const std::string & name, const CVector & data){
         addExportData(name+"-Re", real(data));
