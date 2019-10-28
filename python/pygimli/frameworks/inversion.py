@@ -473,11 +473,11 @@ class Inversion(object):
                 self._postStep(i, self)
 
             phi = self.phi()
-            dPhi = (1-lastPhi / phi) * 100.
+            dPhi = phi/lastPhi
             
             if self.verbose:
                 print("chi² = {0} (dPhi = {1}%) lam: {2}".format(
-                            round(chi2, 2), round(dPhi, 2), self.inv.getLambda()))
+                            round(chi2, 2), round((1-dPhi)*100, 2), self.inv.getLambda()))
 
             if chi2 <= 1 and self.stopAtChi1:
                 print("\n")
@@ -485,10 +485,11 @@ class Inversion(object):
                     pg.boxprint("Abort criterion reached: chi² <= 1 (%.2f)" % chi2)
                 break
 
-            if abs(dPhi) < minDPhi:
+            if (dPhi > (1.0 - minDPhi / 100.0)) and i > 2:
+            # if dPhi < -minDPhi:
                 if self.verbose:
                     pg.boxprint("Abort criteria reached: dPhi = {0} (< {1}%)".format(
-                                round(dPhi, 2), minDPhi))
+                                round((1-dPhi)*100, 2), minDPhi))
                 break
 
             lastPhi = phi

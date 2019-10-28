@@ -183,10 +183,8 @@ public:
 
     void setModelControl(double val);
     void setModelControl(const RVector & vec);
-    void setModelControl(PosFunctor * mcF);
 
-    inline const RVector & modelControl() const { return modelControl_; }
-    inline RVector * modelControl() { return & modelControl_; }
+    inline double modelControl() { return modelControl_; }
 
     void setTransModel(Trans< RVector > & tM);
 
@@ -238,7 +236,7 @@ protected:
     Index constraintType_;
 
     RVector startModel_;
-    RVector modelControl_;
+    double modelControl_;
     RVector constraintWeights_;
 
     double zWeight_;

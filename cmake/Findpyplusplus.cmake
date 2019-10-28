@@ -23,7 +23,9 @@ else()
         message( STATUS "Found pyplusplus path: ${PYPLUSPLUS_PATH}")
         set(PYPLUSPLUS_FOUND TRUE)
     else (PYPLUSPLUS_PATH)
-        message( STATUS "NOT Found pyplusplus: cannot build pygimli.")
+        message( STATUS "NOT Found pyplusplus: we try to get a copy or cannot build pygimli.")
+        find_package(Hg REQUIRED)
+
     endif(PYPLUSPLUS_PATH)
 endif()
 

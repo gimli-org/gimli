@@ -204,7 +204,7 @@ void Region::countParameter(Index start){
 
     endParameter_ = start + parameterCount_;
     // __MS(this->marker_ << " "<< this->isSingle_)
-    modelControl_.resize(parameterCount_, mcDefault_);
+    // modelControl_.resize(parameterCount_, mcDefault_);
     startModel_.resize(parameterCount_, startDefault_);
     paraIDs_ = IndexArray(parameterCount_);
     for (Index i = 0; i < paraIDs_.size(); i ++) paraIDs_[i] = start + i;
@@ -267,46 +267,25 @@ void Region::setModelControl(double val){
 
     if (val < TOLERANCE) val = 1.0;
     mcDefault_ = val;
-// __MS(this->marker_ << " "<< this->isSingle_)
-    modelControl_.resize(parameterCount_);
-    modelControl_.fill(val);
+    modelControl_ = val;
 }
 
 void Region::setModelControl(const RVector & mc){
+    log(Error, "don't use it. modelControl is scalar");
     if (isBackground_){
         log(Warning, "Region Nr:", marker_, " is background and should not get model control.");
         return;
     }
-    if (mc.size() == parameterCount_){
-    //    __MS(this->marker_ << " "<< this->isSingle_)
-       modelControl_ = mc;
-    } else {
-        throwLengthError(1, WHERE_AM_I + " " + str(mc.size()) + " != " + str(parameterCount_));
-    }
-}
-
-void Region::setModelControl(PosFunctor * mcF){
-    if (isBackground_){
-        log(Warning, "Region Nr:", marker_, " is background and should not get a model control.");
-        return;
-    }
-    // __MS(this->marker_ << " "<< this->isSingle_)
-    modelControl_.resize(parameterCount_);
-    if (isSingle_){
-        THROW_TO_IMPL
-    }
-    for (size_t i = 0; i < parameterCount_; i ++) {
-        modelControl_[i] = (*mcF)(cells_[i]->center());
-    }
+    modelControl_ = 1.0;
 }
 
 void Region::fillModelControl(RVector & vec){
     if (isBackground_) return;
     if (isSingle_){
-        vec[startParameter_] = modelControl_[0];
+        vec[startParameter_] = 1.0;
     } else{
         for (Index i = 0, imax = cells_.size(); i < imax; i ++) {
-            vec[cells_[i]->marker()] = modelControl_[i];
+            vec[cells_[i]->marker()] = 1.0;
         }
     }
 }
@@ -474,7 +453,7 @@ void Region::_createConstraintWeights(){
     for (auto & it : this->bounds_){
         Boundary * b = (it);
 
-        double cWeight = 1.0;
+        double cWeight = this->modelControl_;
         if (b->marker() != 0){
             if (this->parent_->interfaceConstraints().count(b->marker())){
                 cWeight = this->parent_->interfaceConstraints().at(b->marker());
@@ -978,15 +957,8 @@ void RegionManager::fillConstraints(RSparseMapMatrix & C){
             Region * regA = regionMap_.find(ab.first)->second;
             Region * regB = regionMap_.find(ab.second)->second;
 
-            RVector & mcA = *regA->modelControl();
-            RVector & mcB = *regB->modelControl();
-
-            if (mcA.size() == 0 || mcB.size() == 0){
-                throwLengthError(1, WHERE_AM_I 
-                                    + " model control size invald " 
-                                + str(ab.first)  + "(" + str(mcA.size()) + ") "
-                                + str(ab.second) + "(" + str(mcB.size()) + ")");
-            }
+            double mcA = regA->modelControl();
+            double mcB = regB->modelControl();
 
             Index aStartParam = regA->startParameter();
             Index bStartParam = regB->startParameter();
@@ -1008,8 +980,8 @@ void RegionManager::fillConstraints(RSparseMapMatrix & C){
                         std::swap(aMarker, bMarker);
                     }
 
-                    C[cID][aMarker] = +1.0 / mcA[Index(aMarker - aStartParam)];
-                    C[cID][bMarker] = -1.0 / mcB[Index(bMarker - bStartParam)];
+                    C[cID][aMarker] = +1.0 / mcA;
+                    C[cID][bMarker] = -1.0 / mcB;
 
                     // setting cWeights
                     if (interfaceConstraints_.count(b.marker())) {
