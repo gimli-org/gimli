@@ -1,5 +1,6 @@
 # Files and filetypes exluded from version control
 # Python standard taken from https://github.com/github/gitignore/blob/master/Python.gitignore
+#
 
 # Documentation
 _build/
