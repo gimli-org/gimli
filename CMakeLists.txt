@@ -29,7 +29,7 @@ endif()
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 
-    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -pipe -ansi -Wall -Wno-long-long -Wno-unused-result")
+    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -s -pipe -ansi -Wall -Wno-long-long -Wno-unused-result")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-unused-variable")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-unused-value")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-unused-local-typedefs")
