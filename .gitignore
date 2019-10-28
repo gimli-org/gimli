@@ -77,3 +77,5 @@ coverage.xml
 *.pot
 
 test.py
+python/pygimli/core/libboost_python37-mt.dll
+python/pygimli/core/libgimli.dll
