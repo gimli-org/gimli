@@ -79,8 +79,9 @@ PATH.
 e.g.:
 
 .. code-block:: bash
-
-    export PATH=/c/ProgramData/Anaconda3
+    
+    export ANACONDA=/c/ProgramData/Anaconda3
+    export PATH=$PATH:$ANACONDA
 
 This is necessary since gimli needs to know valid python installation and
 version. Ideally the following one-liner will suffice to compile pyGIMLi in the
@@ -107,6 +108,7 @@ If something goes wrong, please take a look on the error message.
 
 You can alse try the following instructions for manual installation.
 
+
 Manual installation
 ...................
 
@@ -129,7 +131,7 @@ To get a complete working toolchain you need some packages installed.
 
     pacman -S mingw-w64-x86_64-cmake mingw-w64-x86_64-gcc mingw-w64-x86_64-gcc-fortran
     pacman -S mingw-w64-x86_64-openblas mingw-w64-x86_64-suitesparse
-    pacman -S mingw-w64-x86_64-doxygen mingw-w64-cppunit
+    pacman -S mingw-w64-x86_64-doxygen mingw-w64-x86_64-cppunit
     pacman -S mingw-w64-x86_64-llvm mingw-w64-x86_64-clang
 
 The rest of the installation is like the linux way with some small differences.
@@ -145,6 +147,39 @@ using the Unix makefile generator to find the correct gcc versions:
 
 If cmake complains about missing python stuff, make sure the Python interpreter
 is in your execution path. 
+
+
+Problems with cmake configuration
+=================================
+
+If cmake can't install pygccxml or pyplusplus then you can provide those packages using pip from the anaconda distribution.
+First make sure the needed scripts are in your path.
+
+.. code-block:: bash
+
+    export PATH=$PATH:$ANACONDA/Scripts
+
+Then you can install those both packages in your user space
+
+.. code-block:: bash
+
+   pip install pygccxml --user
+   pip install pyplusplus --user
+
+If cmake complains about misssig numpy, python can't probably import numpy, which you can test:
+
+.. code-block:: bash
+
+    python -c 'import numpy'
+    
+Probably anaconda additional needs another path setting, don't ask me why
+
+.. code-block:: bash
+
+   export PATH=$PATH:$ANACONDA/Library/bin
+   
+Now python should be able to find numpy and cmake will work as supposed and you can continue the build process.
+
 
 To build the library, just run
 
@@ -177,19 +212,3 @@ You can test the pygimli build with:
 .. code-block:: bash
 
     python -c 'import pygimli as pg; print(pg.version())'
-
-
-Using cmake with CodeBlocks
-...........................
-
-Codeblocks is a nice C++ IDE available on http://www.codeblocks.org/downloads/
-
-Tested versions 13.12/16.01, each without integrated mingw but a real MinGW/MSYS.
-
-To generate the codeblocks project files run
-
-.. code-block:: bash
-
-    cmake -G "CodeBlocks - MinGW Makefiles"
-
-and open the libgimli.cbp with codeblocks. Set up your compiler and run Build All.
