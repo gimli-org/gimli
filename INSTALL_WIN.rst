@@ -150,7 +150,7 @@ is in your execution path.
 
 
 Problems with cmake configuration
-=================================
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If cmake can't install pygccxml or pyplusplus then you can provide those packages using pip from the anaconda distribution.
 First make sure the needed scripts are in your path.
