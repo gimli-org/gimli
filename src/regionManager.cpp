@@ -82,6 +82,7 @@ void Region::init_() {
     lowerBound_     = 0.0;
     upperBound_     = 0.0;
     mcDefault_      = 1.0;
+    modelControl_   = 1.0;
     startDefault_   = 0.0;
     ownsTrans_ = true;
     _isInParaDomain = true;
@@ -262,7 +263,7 @@ void Region::fillStartModel(RVector & vec){
 void Region::setModelControl(double val){
     if (isBackground_){
         log(Warning, "Region Nr:", marker_, " is background and should not get model control.");
-        return;
+        val = 1.0;
     }
 
     if (val < TOLERANCE) val = 1.0;
@@ -462,10 +463,10 @@ void Region::_createConstraintWeights(){
             }
         } 
             
+
         double zDir = std::fabs(b->norm()[dim-1]); //! z-component
 
         this->constraintWeights_[cId] = cWeight*(1.0 + zDir * (zWeight_ - 1.0)); //! rather linear for bigger angles
-        
         cId ++;
     }
 }
