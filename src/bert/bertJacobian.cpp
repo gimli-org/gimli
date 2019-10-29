@@ -111,7 +111,7 @@ public:
                     if (m > -1) vm = &(*pots_)[m + nElecs_ * kIdx]; else vm = &dummy;
                     if (n > -1) vn = &(*pots_)[n + nElecs_ * kIdx]; else vn = &dummy;
 
-                    (*S_)[dataIdx][modelIdx] += 
+                    (*S_)[dataIdx][modelIdx] +=
                        S_i.mult((*va), (*vb), (*vm), (*vn)) * (*weights_)[kIdx];
                 }
             }
@@ -119,7 +119,7 @@ public:
     }
 
     virtual void calc1(){
-        // log(Debug, "Thread #" + str(_threadNumber) + ": on CPU " + str(schedGetCPU()) + 
+        // log(Debug, "Thread #" + str(_threadNumber) + ": on CPU " + str(schedGetCPU()) +
         //            " slice " + str(start_) + ":" + str(end_));
         bool haveCurrentPatterns = false;
 
@@ -523,8 +523,8 @@ void exportSensMatrixDC(const std::string & filename, const Mesh & mesh,
     std::map< std::string, RVector > res;
 
     for (std::map < std::string, RVector >::const_iterator
-            it = mesh.exportDataMap().begin();
-            it != mesh.exportDataMap().end(); it ++){
+            it = mesh.dataMap().begin();
+            it != mesh.dataMap().end(); it ++){
         res.insert(std::make_pair(it->first, it->second));
     }
 
@@ -617,7 +617,7 @@ RVector createCoverage(const MatrixBase & S, const Mesh & mesh,
             log(Error, "Coverage fails:" + str(mesh.cellCount()) + " " + str(model.size()));
         }
     }
-    
+
     return covMesh;
 }
 } // namespace GIMLI

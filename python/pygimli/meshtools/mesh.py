@@ -1532,13 +1532,13 @@ def merge2Meshes(m1, m2):
 #    mesh.boundary(2906).node(1).id(), mesh.boundary(2906).node(1).pos()
 #    )
 
-    for key in list(mesh.exportDataMap().keys()):
-        d = mesh.exportDataMap()[key]
+    for key in list(mesh.dataMap().keys()):
+        d = mesh.dataMap()[key]
         d.resize(mesh.cellCount())
-        d.setVal(m1.exportDataMap()[key], 0, m1.cellCount())
-        d.setVal(m2.exportDataMap()[key], m1.cellCount(),
+        d.setVal(m1.dataMap()[key], 0, m1.cellCount())
+        d.setVal(m2.dataMap()[key], m1.cellCount(),
                  m1.cellCount() + m2.cellCount())
-        mesh.addExportData(key, d)
+        mesh.addData(key, d)
 
     mesh.translate(m1.node(0).pos())
     return mesh
