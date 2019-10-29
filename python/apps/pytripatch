@@ -122,7 +122,7 @@ def showTriMesh(meshname, modelname, contour=False, constraintMat=None,
         print(mesh)
         print("mesh data are:")
 
-        for key, val in mesh.exportDataMap():
+        for key, val in mesh.dataMap():
             print(key, val)
 
     mesh.translate(offset)
@@ -151,8 +151,8 @@ def showTriMesh(meshname, modelname, contour=False, constraintMat=None,
             data = np.asarray(mesh.cellMarkers())
         elif modelname.lower() == 'attribute':
             data = np.asarray(mesh.cellAttributes())
-        elif modelname in list(mesh.exportDataMap().keys()):
-            data = mesh.exportData(modelname)
+        elif modelname in list(mesh.dataMap().keys()):
+            data = mesh.data(modelname)
         elif modelname.rfind('.bmat') != -1:
             A = pg.Matrix(modelname)
             data = pg.Vector(A[number])  # return copy (A dies!)
@@ -165,10 +165,10 @@ def showTriMesh(meshname, modelname, contour=False, constraintMat=None,
         if coverage:
             cov = pg.Vector()
             try:
-                print(list(mesh.exportDataMap().keys()))
-                if coverage in list(mesh.exportDataMap().keys()):
+                print(list(mesh.dataMap().keys()))
+                if coverage in list(mesh.dataMap().keys()):
                     print("found coverage in mesh")
-                    cov = mesh.exportData(coverage)
+                    cov = mesh.data(coverage)
 #                    if coverage.find('log10') > 0:
 #                        cov = pg.exp10(cov)
                 else:
@@ -224,8 +224,8 @@ def showDC2DInvResMod(modfile, contour, cMin=None, cMax=None,
     axis = fig.add_subplot(1, 1, 1)
     axis.set_aspect('equal')
 
-    data = mesh.exportData("rho/Ohmm")
-    cov = mesh.exportData("coverage")
+    data = mesh.data("rho/Ohmm")
+    cov = mesh.ata("coverage")
 
     patches = None
     if (contour):
