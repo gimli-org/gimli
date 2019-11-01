@@ -15,6 +15,11 @@ Make sure you have an appropriate Python version (3.5.x or 3.6.x, 64bit) install
 There are two ways, exe installers and wheels. The latter can be easily installed by a
 package manager like the WinPython Control Panel (located in the WinPython main directory).
 
+..  image:: https://img.shields.io/badge/pyGIMLi1.0.12_win64-Python_3.7_Wheel-green.svg
+   :target: https://github.com/gimli-org/gimli/releases/download/v1.0.12/pygimli-1.0.12-cp37-cp37m-win_amd64.whl
+..  image:: https://img.shields.io/badge/pyGIMLi1.0.12_win64-Python_3.6_Wheel-green.svg
+   :target: https://github.com/gimli-org/gimli/releases/download/v1.0.12/pygimli-1.0.12-cp36-cp36m-win_amd64.whl
+
 ..  image:: https://img.shields.io/badge/pyGIMLi1.0.11_win64-Python_3.7_Wheel-green.svg
    :target: https://github.com/gimli-org/gimli/releases/download/v1.0.11/pygimli-1.0.11-cp37-cp37m-win_amd64.whl
 ..  image:: https://img.shields.io/badge/pyGIMLi1.0.11_win64-Python_3.6_Wheel-green.svg
