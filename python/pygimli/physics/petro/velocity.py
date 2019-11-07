@@ -7,8 +7,13 @@ import matplotlib.pyplot as plt
 
 import pygimli as pg
 
-#TODO Gassmann's equation for fluid substitution
-#TODO Raymer et. al. 1980
+# TODO Geertsma (1961) . Kompression vs. porosity
+# TODO Gassmann's equation for fluid substitution
+# TODO Raymer et. al. 1980 for different regions of porosity
+# TODO (Han 1986, Tosaya & Nur 1982, Castagna et al. 1985) with clay content
+# TODO Castagna et al. 1993 for saturated consolidated sediments
+# TODO (Gardner et al. 1974) densities
+
 
 def slownessWyllie(phi, sat=1, vm=4000, vw=1484, va=343,
                    mesh=None, meshI=None, fill=None):

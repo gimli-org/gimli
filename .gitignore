@@ -77,7 +77,10 @@ coverage.xml
 *.mo
 *.pot
 
+# Misc
 test.py
 gimli.code-workspace
-python/pygimli/core/libboost_python37-mt.dll
-python/pygimli/core/libgimli.dll
+python/pygimli/core/*.dll
+.vscode/settings.json
+
+python/pygimli/testing/synth.ves
