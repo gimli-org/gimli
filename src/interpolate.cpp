@@ -134,10 +134,10 @@ RVector interpolate(const Mesh & mesh, const RVector & data,
 
 void interpolate(const Mesh & mesh, const std::string & dataName, Mesh & pos,
                  bool verbose, double fillValue){
-    RMatrix vData; vData.push_back(mesh.exportData(dataName));
+    RMatrix vData; vData.push_back(mesh.data(dataName));
     RMatrix viData;
     interpolate(mesh, vData, pos.positions(), viData, verbose, fillValue);
-    pos.addExportData(dataName, viData[0]);
+    pos.addData(dataName, viData[0]);
 }
 
 void interpolate(const Mesh & mesh, const RVector & data,
@@ -188,8 +188,8 @@ void interpolate(const Mesh & mesh, Mesh & qmesh, bool verbose, double fillValue
     std::vector< std::string > cellDataNames;
     std::vector< std::string > nodeDataNames;
 
-    for (std::map< std::string, RVector >::const_iterator it = mesh.exportDataMap().begin();
-          it != mesh.exportDataMap().end(); it ++){
+    for (std::map< std::string, RVector >::const_iterator it = mesh.dataMap().begin();
+          it != mesh.dataMap().end(); it ++){
 
         if (it->second.size() == mesh.nodeCount()){
             if (verbose) std::cout << " interpolate node data: " << it->first << std::endl;
@@ -209,14 +209,14 @@ void interpolate(const Mesh & mesh, Mesh & qmesh, bool verbose, double fillValue
         RMatrix qCellData;
         interpolate(mesh, cellData, qmesh.cellCenter(), qCellData, verbose, fillValue);
         for (uint i= 0; i < cellData.rows(); i ++){
-            qmesh.addExportData(cellDataNames[i], qCellData[i]);
+            qmesh.addData(cellDataNames[i], qCellData[i]);
         }
     }
     if (nodeData.rows() > 0){
         RMatrix qNodeData;
         interpolate(mesh, nodeData, qmesh.positions(), qNodeData, verbose) ;
         for (uint i= 0; i < nodeData.rows(); i ++){
-            qmesh.addExportData(nodeDataNames[i], qNodeData[i]);
+            qmesh.addData(nodeDataNames[i], qNodeData[i]);
         }
     }
 }

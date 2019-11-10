@@ -263,8 +263,8 @@ class Test3DMerge(unittest.TestCase):
         w = mt.mergePLC3D([w, c])
         self.assertEqual(w.nodeCount(), 8+8)
         self.assertEqual(w.boundaryCount(), 8)
-        
-        # will not work until edge intersection is working        
+
+        # will not work until edge intersection is working
         # d = mt.createCube(size=[0.8, 1.0, 1.0],
         #                   pos=[0.1, 0.0, 1.0],
         #                   marker=3)
@@ -281,7 +281,7 @@ class Test3DMerge(unittest.TestCase):
         """Test subface with different marker constructed with hole marker."""
         w = mt.createCube(marker=1, boundaryMarker=1)
         b = w.boundary(2)
-        
+
         pad = mt.createFacet(mt.createCircle(radius=0.2, segments=12,
                                              isHole=True))
         b2 = pad.boundary(0)
@@ -303,8 +303,6 @@ class Test3DMerge(unittest.TestCase):
         # print(mesh)
         # mesh.exportBoundaryVTU('b.vtu')
         #pg.show(mesh)
-
-
 
 if __name__ == '__main__':
     unittest.main()

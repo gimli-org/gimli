@@ -1092,7 +1092,7 @@ RVector DCMultiElectrodeModelling::createDefaultStartModel(){
 
 RVector DCMultiElectrodeModelling::response(const RVector & model,
                                             double background){
-    
+
     if (min(abs(dataContainer_->get("k"))) < TOLERANCE){
         if (!(this->topography() || buildCompleteElectrodeModel_)){
             dataContainer_->set("k",
@@ -1124,6 +1124,7 @@ RVector DCMultiElectrodeModelling::response(const RVector & model,
 
         CVector resp(toComplex(respRe, respIm) * dataContainer_->get("k"));
         return cat(real(resp), imag(resp));
+
     } // if complex
 
     //** to following can lead to problematic situations https://gitlab.com/resistivity-net/bert/issues/41
@@ -1139,7 +1140,7 @@ RVector DCMultiElectrodeModelling::response(const RVector & model,
 
     if (min(model) < TOLERANCE){
         model.save("modelFail.vector");
-        log(Critical, " response for model with negative or zero resistivity is not defined.:", 
+        log(Critical, " response for model with negative or zero resistivity is not defined.:",
                      min(model), max(model));
     }
 
@@ -1175,9 +1176,9 @@ RVector DCMultiElectrodeModelling::response(const RVector & model,
                         std::cout << i << " " << resp[i] << " " << respRez[i]<< std::endl;
                         std::cout << a << " " << b << " " << m << " " << n << std::endl;
 
-                        mesh_->addExportData("ab-pot", prepExportPotentialData(ab));
-                        mesh_->addExportData("mn-pot", prepExportPotentialData(mn));
-                        //mesh_->addExportData("sens-mn-pot", prepExportSensitivityData(jacobian));
+                        mesh_->addData("ab-pot", prepExportPotentialData(ab));
+                        mesh_->addData("mn-pot", prepExportPotentialData(mn));
+                        //mesh_->addData("sens-mn-pot", prepExportSensitivityData(jacobian));
                         mesh_->exportVTK("negResp");
 
                         break;
@@ -1211,7 +1212,7 @@ void DCMultiElectrodeModelling::mapERTModel(const CVector & model, Complex backg
         RVector re(createMappedModel(real(model), background.real()));
         // RVector im(re*0.0);
         // log(Warning, "imag part forced to zero");
-        RVector im(createMappedModel(imag(model), -9e99)); 
+        RVector im(createMappedModel(imag(model), -9e99));
         setComplexResistivities(*mesh_, toComplex(re, im));
     }
 }
@@ -1331,7 +1332,7 @@ void DCMultiElectrodeModelling::createJacobian_(const RVector & model,
 MEMINFO
 //         save(*u, "pots.bmat");
 
-    createSensitivityCol(*J, *mesh_, this->dataContainer(), u, 
+    createSensitivityCol(*J, *mesh_, this->dataContainer(), u,
                          weights_, kValues_,
                          matrixClusterIds, nThreads_, verbose_);
 
@@ -1428,8 +1429,8 @@ void DCMultiElectrodeModelling::createJacobian_(const CVector & model,
 
     if (model.size() == J->cols()){
         __MS("check")
-        CVector m2(model*model); 
-        //CVector m2(model*conj(model)); 
+        CVector m2(model*model);
+        //CVector m2(model*conj(model));
         if (model.size() == J->cols()){
             for (Index i = 0; i < J->rows(); i ++) {
                 (*J)[i] /= (m2 / dataContainer_->get("k")[i]);
@@ -1452,7 +1453,7 @@ void DCMultiElectrodeModelling::createJacobian(const RVector & model){
     if (complex_){
         CVector cMod(toComplex(model(0, model.size()/2),
                                model(model.size()/2, model.size())));
-        
+
         CMatrix * u = this->prepareJacobianT_(cMod);
 
         if (!JIsCMatrix_){
@@ -1462,7 +1463,7 @@ void DCMultiElectrodeModelling::createJacobian(const RVector & model){
             JIsCMatrix_ = true;
             JIsRMatrix_ = false;
 
-        }   
+        }
         CMatrix * J = dynamic_cast< CMatrix * >(jacobian_);
         this->createJacobian_(cMod, *u, J);
     } else {

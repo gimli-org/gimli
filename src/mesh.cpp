@@ -116,7 +116,7 @@ void Mesh::copy_(const Mesh & mesh){
 
     // we don't need expensive tests for copying
     setGeometry(mesh.isGeometry());
-    setExportDataMap(mesh.exportDataMap());
+    setDataMap(mesh.dataMap());
     setCellAttributes(mesh.cellAttributes());
 
     if (mesh.neighboursKnown()){
@@ -190,7 +190,7 @@ Node * Mesh::createNodeGC_(const RVector3 & pos, int marker){
                     // __MS(b->center())
                     if (b->shape().touch(n->pos())){
                         //  __MS(pos)
-                        //  __MS(b->node(0).pos() << " " << b->node(1).pos()  
+                        //  __MS(b->node(0).pos() << " " << b->node(1).pos()
                         //       << " "<< b->node(2).pos())
                         // __MS(*b)
                         dynamic_cast< PolygonFace* >(b)->insertNode(n);
@@ -313,7 +313,7 @@ Boundary * Mesh::createBoundary(const IndexArray & idx, int marker, bool check){
     std::vector < Node * > nodes(idx.size());
     for (Index i = 0; i < idx.size(); i ++ ) nodes[i] = &this->node(idx[i]);
     if (isGeometry_){
-        return createPolygonFace(nodes, marker, check);    
+        return createPolygonFace(nodes, marker, check);
     }
     return createBoundary(nodes, marker, check);
 }
@@ -345,7 +345,7 @@ Boundary * Mesh::createBoundary(const Boundary & bound, bool check){
 
     if (bound.rtti() == MESH_POLYGON_FACE_RTTI){
         const PolygonFace & f = dynamic_cast< const PolygonFace & >(bound);
-        b = createBoundaryChecked_< PolygonFace >(nodes, bound.marker(), check); 
+        b = createBoundaryChecked_< PolygonFace >(nodes, bound.marker(), check);
         for (Index i = 0; i < f.subfaceCount(); i ++ ){
             dynamic_cast< PolygonFace* >(b)->addSubface(
                 this->nodes(ids(f.subface(i))));
@@ -506,11 +506,11 @@ Boundary * Mesh::copyBoundary(const Boundary & bound, double tol, bool check){
     std::vector < Node * > nodes(bound.nodeCount());
     bool isFreeFace = false;
     bool isSubFace = false;
-    
+
     std::vector < Node * > conNodes;
     std::vector < Node * > secNodes;
     std::vector < Node * > subNodes;
-    
+
     // __M
 
     for (Index i = 0; i < nodes.size(); i ++) {
@@ -526,22 +526,22 @@ Boundary * Mesh::copyBoundary(const Boundary & bound, double tol, bool check){
                 // __MS(*nodes[i])
             case NodeState::Connected:
                 conNodes.push_back(nodes[i]); break;
-        }    
+        }
     }
     Boundary * b = 0;
     Boundary * parent = 0;
-    
+
     if (bound.rtti() == MESH_POLYGON_FACE_RTTI){
 
         Boundary * conParent = findBoundary(conNodes);
         Boundary * secParent = findSecParent(secNodes);
-        
+
         // __MS("sizes:" << conNodes.size() <<" " <<secNodes.size())
         // __MS("parents: " << conParent <<" " << secParent)
 
         if (!isFreeFace){
             conParent = findBoundary(conNodes);
-            
+
             if (conNodes.size() && secNodes.size()){
                 if (conParent != secParent){
                     isFreeFace = true;
@@ -553,7 +553,7 @@ Boundary * Mesh::copyBoundary(const Boundary & bound, double tol, bool check){
             if (conNodes.size()){
                 if (!conParent){
                     isFreeFace = true;
-                } 
+                }
                 subNodes = conNodes;
                 parent = conParent;
             }
@@ -567,7 +567,7 @@ Boundary * Mesh::copyBoundary(const Boundary & bound, double tol, bool check){
         }
 
         if (isFreeFace){
-            b = createBoundaryChecked_< PolygonFace >(nodes, 
+            b = createBoundaryChecked_< PolygonFace >(nodes,
                                                       bound.marker(), check);
             parent = b;
         } else {
@@ -587,7 +587,7 @@ Boundary * Mesh::copyBoundary(const Boundary & bound, double tol, bool check){
         if (f.subfaceCount() > 0){
             log(Error, "Can't yet copy a boundary with subfaces");
         }
-        
+
         for (Index i = 0; i < f.holeMarkers().size(); i ++ ){
             dynamic_cast< PolygonFace* >(parent)->addHoleMarker(
                                                     f.holeMarkers()[i]);
@@ -1992,18 +1992,18 @@ Mesh Mesh::createSubMesh(const std::vector< Node * > & nodes) const {
 }
 
 
-void Mesh::addExportData(const std::string & name, const RVector & data) {
+void Mesh::addData(const std::string & name, const RVector & data) {
   //  std::cout << "add export Data: " << name << " " << min(data) << " "  << max(data) << std::endl;
-    if (exportDataMap_.count(name)){
-        exportDataMap_[name] = data;
+    if (dataMap_.count(name)){
+        dataMap_[name] = data;
     } else {
-        exportDataMap_.insert(std::make_pair(name, data));
+        dataMap_.insert(std::make_pair(name, data));
     }
 }
 
-RVector Mesh::exportData(const std::string & name) const {
-    if (exportDataMap_.count(name)){
-        return exportDataMap_.find(name)->second;
+RVector Mesh::data(const std::string & name) const {
+    if (dataMap_.count(name)){
+        return dataMap_.find(name)->second;
     } else {
         throwError(1, " Warning!! requested export 'data' vector " + name +
         " does not exist.");
@@ -2011,16 +2011,16 @@ RVector Mesh::exportData(const std::string & name) const {
     return RVector(0);
 }
 
-void Mesh::clearExportData(){
-    exportDataMap_.clear();
+void Mesh::clearData(){
+    dataMap_.clear();
 }
 
 void Mesh::dataInfo() const{
-    if (exportDataMap_.empty()){
+    if (dataMap_.empty()){
         std::cout << "No data." << std::endl;
     } else {
         for (std::map < std::string, RVector >::const_iterator
-            it = exportDataMap_.begin(); it != exportDataMap_.end(); it ++){
+            it = dataMap_.begin(); it != dataMap_.end(); it ++){
             std::cout << it->first << ": " << str(it->second.size()) << std::endl;
         }
     }
@@ -2032,21 +2032,11 @@ IVector Mesh::nodeMarkers() const {
     return tmp;
 }
 
-IVector Mesh::nodeMarker() const {
-    DEPR_STR("nodeMarkers")
-    return nodeMarkers();
-}
-
 IVector Mesh::boundaryMarkers() const {
     IVector tmp(boundaryCount());
     std::transform(boundaryVector_.begin(), boundaryVector_.end(), tmp.begin(),
                    std::mem_fun(&Boundary::marker));
     return tmp;
-}
-
-IVector Mesh::boundaryMarker() const {
-    DEPR_STR("boundaryMarkers")
-    return boundaryMarkers();
 }
 
 RVector Mesh::cellAttributes() const{
@@ -2185,7 +2175,7 @@ void Mesh::transform(const RMatrix & mat){
                     p.transform(mat);
                 }
             }
-        } 
+        }
     }
 
     rangesKnown_ = false;
@@ -2203,7 +2193,7 @@ Mesh & Mesh::scale(const RVector3 & s){
                     p.scale(s);
                 }
             }
-        } 
+        }
     }
     rangesKnown_ = false;
     return *this;
@@ -2221,7 +2211,7 @@ Mesh & Mesh::translate(const RVector3 & t){
                     p.translate(t);
                 }
             }
-        } 
+        }
     }
 
     rangesKnown_ = false;
@@ -2240,7 +2230,7 @@ Mesh & Mesh::rotate(const RVector3 & r){
                     p.rotate(r);
                 }
             }
-        } 
+        }
     }
 
     rangesKnown_ = false;
@@ -2259,7 +2249,7 @@ void Mesh::swapCoordinates(Index i, Index j){
                     p.swap(i,j);
                 }
             }
-        } 
+        }
     }
     rangesKnown_ = false;
 }
@@ -2561,7 +2551,7 @@ Index Mesh::hash() const{
                        this->cellMarkers(),
                        this->boundaryMarkers(),
                        this->nodeMarkers(),
-                       this->exportDataMap_);
+                       this->dataMap_);
 }
 
 } // namespace GIMLI

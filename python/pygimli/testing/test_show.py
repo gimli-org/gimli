@@ -88,10 +88,21 @@ def testColorbar():
     ax, cbar = pg.show(grid, data=pg.x(grid.cellCenter())-45, label='log with neg. x',
                        ax=axs[1][2], showMesh=True, cMap='Paired', logScale=True)
     pg.mplviewer.setMappableData(cbar.mappable, pg.x(grid.cellCenter()))
-
     ax.figure.tight_layout()
+    
+    pg.show(grid, pg.x(grid.cellCenter()), tri=True, shading='gouraud', 
+            cMap='Spectral_r', logScale=False, cMin=0.01, cMax=10, 
+            levels=[10, 55, 100], 
+            orientation="vertical",
+            colorBar=True)
+            
 
-
+    pg.show(grid, pg.x(grid.cellCenter()), tri=True, shading='gouraud', 
+            cMap='Spectral_r', logScale=False, cMin=0.01, cMax=10, 
+            levels=[10, 55, 100], 
+            orientation="horizontal",
+            colorBar=True)
+            
 if __name__ == '__main__':
     #testShowVariants()
     testColorbar()

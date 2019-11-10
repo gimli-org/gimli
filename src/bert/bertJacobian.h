@@ -27,7 +27,7 @@ namespace GIMLI{
 
 /* Recommended. Need more mem than createSensitivityRow, but is extremly faster.*/
 // DLLEXPORT void createSensitivityCol(RMatrix & S, const Mesh & mesh,
-//                                      const DataContainer & data,
+//                                      const Container & data,
 // 				     const RMatrix & pots, bool verbose);
 //
 // DLLEXPORT void createSensitivityCol(RMatrix & S, const Mesh & mesh,

@@ -418,7 +418,7 @@ void Mesh::saveBinaryV2(const std::string & fbody) const {
 
     //** write preample
     writeToFile(file, uint8(this->dimension()));
-    //** version 
+    //** version
     writeToFile(file, uint8(2));
 
     //** write nodes
@@ -459,7 +459,7 @@ void Mesh::saveBinaryV2(const std::string & fbody) const {
     for (uint i = 0; i < nCells; i ++) cellMarker[i] = cell(i).marker();
 
     writeToFile(file, nCells);
-    
+
     if (nCells > 0){
         writeToFile(file, cellVerts[0], nCells);
         writeToFile(file, cellIdx[0], nCellIdx);
@@ -502,10 +502,10 @@ void Mesh::saveBinaryV2(const std::string & fbody) const {
         writeToFile(file, leftCells[0], nBound);
         writeToFile(file, rightCells[0], nBound);
     }
-    
-    writeToFile(file, exportDataMap_.size());
-    if (exportDataMap_.size() > 0){
-        for (auto & x: exportDataMap_){
+
+    writeToFile(file, dataMap_.size());
+    if (dataMap_.size() > 0){
+        for (auto & x: dataMap_){
             if (x.first.length() > 0 && x.second.size() > 0){
                 writeToFile(file, x.first.length());
                 writeToFile(file, x.first[0], x.first.length());
@@ -568,7 +568,7 @@ void Mesh::loadBinaryV2(const std::string & fbody) {
     //** read cells
     uint32 nCells; readFromFile(file, nCells);
     uint count = 0;
-    
+
     if (nCells > 0){
         uint8 * cellVerts = new uint8[nCells]; readFromFile(file, cellVerts[0], nCells);
         uint nCellIdx = 0; for (uint i = 0; i < nCells; i ++) nCellIdx += cellVerts[i];
@@ -648,13 +648,13 @@ int Mesh::exportSimple(const std::string & fbody, const RVector & data) const {
 }
 
 void Mesh::exportVTK(const std::string & fbody, bool writeCells) const {
-    return exportVTK(fbody, exportDataMap_, PosVector(0), writeCells);
+    return exportVTK(fbody, dataMap_, PosVector(0), writeCells);
 }
 
 void Mesh::exportVTK(const std::string & fbody,
                      const PosVector & vec,
                      bool writeCells) const {
-    return exportVTK(fbody, exportDataMap_, vec, writeCells);
+    return exportVTK(fbody, dataMap_, vec, writeCells);
 }
 
 void Mesh::exportVTK(const std::string & fbody,
@@ -664,7 +664,7 @@ void Mesh::exportVTK(const std::string & fbody,
 }
 
 void Mesh::exportVTK(const std::string & fbody, const RVector & arr) const {
-    std::map< std::string, RVector > m(exportDataMap_);
+    std::map< std::string, RVector > m(dataMap_);
     m.insert(std::pair< std::string, RVector >("arr", arr));
     return exportVTK(fbody, m, PosVector(0), true);
 }
@@ -801,7 +801,7 @@ void Mesh::exportVTK(const std::string & fbody,
             it = data.begin(); it != data.end(); ){
 
             log(Debug, "writing cell data: " + it->first + " " + str(it->second.size()));
-            
+
             if (it->second.size() == (uint)cellCount()){
                 file << "SCALARS " << strReplaceBlankWithUnderscore(it->first)
                         << " double 1" << std::endl;
@@ -1206,7 +1206,7 @@ void Mesh::exportVTU(const std::string & fbody, bool binary) const {
     file << "<VTKFile type=\"UnstructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">" << std::endl;
     file << "<UnstructuredGrid>" << std::endl;
 
-    std::map< std::string, RVector > data(exportDataMap_);
+    std::map< std::string, RVector > data(dataMap_);
     if (cellCount() > 0){
         RVector tmp(cellCount());
         std::transform(cellVector_.begin(), cellVector_.end(), &tmp[0], std::mem_fun(&Cell::marker));
@@ -1447,7 +1447,7 @@ void Mesh::importSTL(const std::string & fileName, bool isBinary, double snap){
                     row = getNonEmptyRow(file);  //** endloop
                     row = getNonEmptyRow(file);  //** endfacet;
                 } else if (row[0] == "endsolid"){
-                } 
+                }
             }
         }
         file.close();
