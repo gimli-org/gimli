@@ -17,7 +17,7 @@ def createMesh(poly, quality=32, area=0.0, smooth=None, switches=None,
     A PLC needs to contain nodes and boundaries and should be valid
     in the sense that the boundaries are non-intersecting.
 
-    If poly is a list of coordinates, a simple Delaunay mesh of the convex hull
+    If poly is a list of coordinates, a simple Delaunay mesh with a convex hull
     will be created. Quality and area arguments are ignored for this case to
     create a mesh with one node for each coordinate position.
 
