@@ -208,7 +208,7 @@ def parseArgPairToBoundaryArray(pair, mesh):
         :py:mod:`pygimli.solver.solver.generateBoundaryValue`
         and distributed to each boundary.
         Callable functions will be executed at run time.
-        '*' will be interpreted as 
+        '*' will be interpreted as
         'all boundary elements with one neighbour cell'
 
     mesh : :gimliapi:`GIMLI::Mesh`
@@ -743,7 +743,7 @@ def showSparseMatrix(A, full=False):
         Sd = None
         if full:
             Sd = pg.Matrix(S.rows(), S.cols())
-                        
+
         for i in range(S.rows()):
             for j in range(cols[i], cols[i + 1]):
                 if full:
@@ -794,7 +794,7 @@ def linSolve(A, b, solver=None, verbose=False):
             isinstance(A, pg.matrix.BlockMatrix) or \
             isinstance(A, pg.matrix.CSparseMatrix):
             solver = 'pg'
-        
+
     if solver == 'pg':
         S = A
         if isinstance(A, pg.matrix.CSparseMatrix):
@@ -802,30 +802,30 @@ def linSolve(A, b, solver=None, verbose=False):
         elif isinstance(A, pg.matrix.SparseMatrix):
             pass
         elif isinstance(A, pg.matrix.SparseMapMatrix):
-            S = pg.matrix.SparseMatrix(A)    
-        elif isinstance(A, pg.matrix.BlockMatrix):    
+            S = pg.matrix.SparseMatrix(A)
+        elif isinstance(A, pg.matrix.BlockMatrix):
             S = A.sparseMapMatrix()
         else:
             pg.critical("Solver '" + solver + "' does not know how to "
                         "solve linear system with matrixtype:" + A)
-        
+
         ls = pg.core.LinSolver(S, verbose=verbose)
         ls.solve(b, x)
     else:
-    
+
         if isinstance(A, np.ndarray):
             return np.linalg.solve(A, b)
-        
+
         import scipy.sparse
         from scipy.sparse.linalg import spsolve
-        
+
         if isinstance(A, scipy.sparse.csr.csr_matrix) or \
             isinstance(A, scipy.sparse.coo.coo_matrix):
             if verbose:
                 pg.info("linSolve use scipy.sparse")
             return spsolve(A, b)
 
-        return linSolve(pg.utils.sparseMatrix2csr(A), b, 
+        return linSolve(pg.utils.sparseMatrix2csr(A), b,
                         solver='np', verbose=verbose)
 
     return x
@@ -848,14 +848,14 @@ def assembleLoadVector(mesh, f, userData=None):
     ----------
     f: float, array, callable(cell, [rhs], [userData]), [...]
 
-        Your callable need to return a load value for each cell with optional 
+        Your callable need to return a load value for each cell with optional
         userData. `f_cell = f(cell, [userData=None])`
 
         Force Values
         float -> ones(mesh.nodeCount()) * vals,
         for each node [0 .. mesh.nodeCount()]
         for each cell [0 .. mesh.cellCount()]
-    
+
     Returns
     -------
 
@@ -881,7 +881,7 @@ def assembleLoadVector(mesh, f, userData=None):
     rhs = pg.Vector(mesh.nodeCount(), 0)
 
     fArray = None
-    
+
     if hasattr(f, '__call__') and not isinstance(f, pg.Vector):
         fArray = pg.Vector(mesh.cellCount())
         for c in mesh.cells():
@@ -1247,7 +1247,7 @@ def createStiffnessMatrix(mesh, a=None):
     if mesh.cellCount() == 0:
         print(mesh)
         raise Exception("Mesh invalid")
-    
+
     if a is None:
         a = pg.Vector(mesh.cellCount(), 1.0)
 
@@ -1326,7 +1326,7 @@ def _feNorm(u, A):
     Create the Finite Element Norm with a preassembled system matrix.
     """
     return np.sqrt(pg.math.dot(u, A.mult(u)))
-    
+
 
 def L2Norm(u, M=None, mesh=None):
     r"""Create Lebesgue (L2) norm for the finite element space.
@@ -1341,11 +1341,11 @@ def L2Norm(u, M=None, mesh=None):
                                     & \approx h (\sum |f(x)|^2 )^{1/2} \\
         L2(u) = || u ||_{L^2} & = (\int |u|^2 \d x)^{1/2} \\
                               & \approx (\sum M (u)) ^{1/2} \\
-        e_{L2_rel} = \frac{L2(u)}{L2(u)} & = 
+        e_{L2_rel} = \frac{L2(u)}{L2(u)} & =
                                \frac{(\sum M(u))^{1/2}}{(\sum M u)^{1/2}}
 
-    The error for any approximated solution :math:`u_h` correlates to the L2 
-    norm of 'L2Norm(u - u_h, M)'. If you like relative values, you can also 
+    The error for any approximated solution :math:`u_h` correlates to the L2
+    norm of 'L2Norm(u - u_h, M)'. If you like relative values, you can also
     normalize this error with 'L2Norm(u - u_h, M) / L2Norm(u, M)*100'.
 
     Parameters
@@ -1355,7 +1355,7 @@ def L2Norm(u, M=None, mesh=None):
 
     M : Matrix
         Mass element matrix.
-        
+
     mesh : :gimliapi:`GIMLI::Mesh`
         Mesh with the FE space to generate M if necessary.
 
@@ -1368,7 +1368,7 @@ def L2Norm(u, M=None, mesh=None):
     if isinstance(M, pg.Mesh):
         mesh = M
         M = None
-        
+
     if M is None and mesh is not None:
         M = createMassMatrix(mesh)
 
@@ -1389,7 +1389,7 @@ def H1Norm(u, S=None, mesh=None):
 
     S : Matrix
         Stiffness matrix.
-        
+
     mesh : :gimliapi:`GIMLI::Mesh`
         Mesh with the FE space to generate S if necessary.
 
@@ -1405,10 +1405,10 @@ def H1Norm(u, S=None, mesh=None):
 
     if S is None and mesh is not None:
         S = pg.solver.createStiffnessMatrix(mesh)
-        
+
     if S is None:
         raise StandardException("Need S or mesh here to calculate H1Norm")
-        
+
     return _feNorm(u, S)
 
 
@@ -1480,7 +1480,7 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
         bc={'Dirichlet': [mesh.node(nodeID), value]}.
     times: array [None]
         Solve as time dependent problem for the given times.
-    
+
     Other Parameters
     ----------------
     **kwargs
@@ -1494,15 +1494,15 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
 
             If unsure choose :math:`\theta = 0.5 + \epsilon`, which is probably stable.
         dynamic: bool [False]
-            Boundary conditions for time depending problems will be considerd 
+            Boundary conditions for time depending problems will be considerd
             dynamic for each time step.
         stats: bool
             Give some statistics.
         progress: bool
             Give some calculation progress.
         assembleOnly: bool
-            Stops after matrix asssemblation. 
-            Returns the system matrix A and the rhs vector. 
+            Stops after matrix asssemblation.
+            Returns the system matrix A and the rhs vector.
         ws: dict
             The WorkSpace is a dictionary that will get
             some temporary data during the calculation.
@@ -1561,26 +1561,26 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
 
     # check for material parameter
     a = parseArgToArray(a, nDof=mesh.cellCount(), mesh=mesh, userData=userData)
-    
+
     S = createStiffnessMatrix(mesh, a)
     M = None
     A = None
 
     if b is not None:
-        b = parseArgToArray(b, nDof=mesh.cellCount(), 
+        b = parseArgToArray(b, nDof=mesh.cellCount(),
                             mesh=mesh, userData=userData)
         M = createMassMatrix(mesh, b)
         #pg.warn("checkme")
-        A = S - M 
+        A = S - M
         #A = S - createMassMatrix(mesh, b)
     else:
         A = S
 
     if times is None:
         rhs = assembleForceVector(mesh, f, userData=userData)
-        
+
         assembleBC_(bc, mesh, A, rhs, a, time=None, userData=userData)
-        
+
         # create result array
         u = None
         if 'u' in workSpace:
@@ -1652,7 +1652,7 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
         u0 = np.zeros(dof)
         if 'u0' in kwargs:
             u0 = parseArgToArray(kwargs['u0'], dof, mesh, userData)
-        
+
         progress = None
         if 'progress' in kwargs:
             from pygimli.utils import ProgressBar
@@ -1711,7 +1711,7 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
             A = M + S * dt * theta
 
             assembleBC_(bc, mesh, A, br, a, time=times[n], userData=userData)
-            
+
             if 'assembleOnly' in kwargs:
                 return A, br
 
@@ -1738,7 +1738,7 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
 def checkCFL(times, mesh, vMax):
     """Check Courant-Friedrichs-Lewy condition.
 
-    For advection and flow problems. CFL Number should be lower then 1 to 
+    For advection and flow problems. CFL Number should be lower then 1 to
     ensure stability.
 
     Parameters
@@ -1747,22 +1747,22 @@ def checkCFL(times, mesh, vMax):
     if times is not None:
         dt = times[1] - times[0]
         dx = 0.0
-        
+
         if mesh.dimension() == 1:
             dx = min(mesh.cellSizes())
         else:
             dx = min(mesh.boundarySizes())
         c = vMax * dt / dx
-        pg._r(c)
+
         if c > 1:
-            print("Courant-Friedrichs-Lewy Number:", c,
-                  "but sould be lower 1 to ensure movement inside a cell "
-                  "per timestep. ("
-                  "vmax =", vMax,
-                  "dt =", dt,
-                  "dx =", dx,
-                  "dt <", dx/vMax,
-                  " | N > ", int((times[-1]-times[0])/(dx/vMax))+1, ")")
+            pg.warn("Courant-Friedrichs-Lewy Number:", c,
+                    "but sould be lower 1 to ensure movement inside a cell "
+                    "per timestep. ("
+                    "vmax =", vMax,
+                    "dt =", dt,
+                    "dx =", dx,
+                    "dt <", dx/vMax,
+                    " | N > ", int((times[-1]-times[0])/(dx/vMax))+1, ")")
     return c
 
 def crankNicolson(times, theta, S, I, f, u0=None, progress=None, debug=None):
@@ -1791,13 +1791,13 @@ def crankNicolson(times, theta, S, I, f, u0=None, progress=None, debug=None):
     timeMeasure = False
     if progress:
         timeMeasure = True
-    
+
     A = I
     if theta > 0:
         A = I + S * (dt * theta)
-    
+
     solver = pg.core.LinSolver(A, verbose=False)
-    
+
     St = I - S * dt # cache what is possible the theta=0
     for n in range(1, len(times)):
 
@@ -1815,7 +1815,7 @@ def crankNicolson(times, theta, S, I, f, u0=None, progress=None, debug=None):
 #        pg.toc()
 #
 #        pg.tic()
-    
+
         if theta == 0:
             b = St * u[n-1] + dt * rhs[n-1]
         else:
