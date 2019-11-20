@@ -815,7 +815,8 @@ def linSolve(mat, b, solver=None, verbose=False):
         if isinstance(mat, np.ndarray):
             return np.linalg.solve(mat, b)
 
-        import scipy.sparse
+        scipy = pg.optImport('scipy')
+        #import scipy.sparse
         from scipy.sparse.linalg import spsolve
 
         if isinstance(mat, scipy.sparse.csr.csr_matrix) or \
@@ -829,16 +830,17 @@ def linSolve(mat, b, solver=None, verbose=False):
 
     return x
 
-def assembleForceVector(mesh, f, userData=None):
-    """
-    DEPRECATED use assembleLoadVector instead
-    """
-    return assembleLoadVector(mesh, f, userData)
-
 
 def assembleLoadVector(mesh, f, userData=None):
+    r"""Assemble the load vector. See createLoadVector. Maybe we will remove this """
+    return createLoadVector(mesh, f, userData)
+
+def createLoadVector(mesh, f, userData=None):
     """Create right hand side vector based on the given mesh and load
     or force values.
+
+    TODO:
+    Maybe we can define an additional nodal force vector.
 
     Create right hand side vector based on the given mesh and load or force
     values.
@@ -869,7 +871,7 @@ def assembleLoadVector(mesh, f, userData=None):
             rhs = np.zeros((len(f), mesh.nodeCount()))
             for i, fi in enumerate(f):
                 userData['i'] = i
-                rhs[i] = assembleForceVector(mesh, fi, userData)
+                rhs[i] = createLoadVector(mesh, fi, userData)
 
             return rhs
 
@@ -911,7 +913,7 @@ def assembleLoadVector(mesh, f, userData=None):
 #                for i, idx in enumerate(b_l.idx()):
 #                    rhsRef[idx] += b_l.row(0)[i] * fArray[c.id()]
 #            np.testing.assert_allclose(rhs, rhsRef)
-#            print("Remove revtest in assembleForceVector after check")
+#            print("Remove revtest in assembleLoadVector after check")
 
     elif len(fArray) == mesh.nodeCount():
         fA = pg.Vector(fArray)
@@ -927,11 +929,11 @@ def assembleLoadVector(mesh, f, userData=None):
             #     for i, idx in enumerate(b_l.idx()):
             #         rhsRef[idx] += b_l.row(0)[i] * fArray[idx]
             # np.testing.assert_allclose(rhs, rhsRef)
-            # print("Remove revtest in assembleForceVector after check")
+            # print("Remove revtest in assembleLoadVector after check")
 
             # rhs = pg.Vector(fArray)
     else:
-        raise Exception("Forcevector have the wrong size: " +
+        raise Exception("Load vector have the wrong size: " +
                         str(len(fArray)))
 
     return rhs
@@ -1038,14 +1040,14 @@ def assembleDirichletBC(mat, boundaryPairs, rhs=None, time=0.0, userData=None,
     if nodePairs is not None:
         #print("nodePairs", nodePairs)
 
-        if len(nodePairs) == 2 and type(nodePairs[0]) == int:
+        if len(nodePairs) == 2 and isinstance(nodePairs[0], int):
             # assume a single Node [NodeId, val]
             nodePairs = [nodePairs]
 
         for i, [n, val] in enumerate(nodePairs):
             uDirIndex.append(n)
             if hasattr(val, '__call__'):
-                raise("callabe node pairs need to be implement.")
+                raise "callabe node pairs need to be implement."
             uDirichlet.append(val)
 
     _assembleUDirichlet(mat, rhs, uDirIndex, uDirichlet)
@@ -1189,7 +1191,7 @@ def assembleRobinBC(mat, boundaryPairs, rhs=None, time=0.0, userData=None):
                 rhs.add(Sq, -p*q)
 
 
-def assembleBC_(bc, mesh, S, rhs, a, time=None, userData=None):
+def assembleBC_(bc, mesh, mat, rhs, a, time=None, userData=None):
     r"""Shortcut to apply all boundary conditions.
 
     This is a helper function for the solver call.
@@ -1202,22 +1204,19 @@ def assembleBC_(bc, mesh, S, rhs, a, time=None, userData=None):
         assembleNeumannBC(rhs, parseArgToBoundaries(bct.pop('Neumann'), mesh),
                           a=a, time=time, userData=userData)
     if 'Robin' in bct:
-        assembleRobinBC(S, parseArgToBoundaries(bct.pop('Robin'), mesh),
+        assembleRobinBC(mat, parseArgToBoundaries(bct.pop('Robin'), mesh),
                         rhs=rhs, time=time, userData=userData)
     if 'Dirichlet' in bct:
-        assembleDirichletBC(S, parseArgToBoundaries(bct.pop('Dirichlet'), mesh),
+        assembleDirichletBC(mat, parseArgToBoundaries(bct.pop('Dirichlet'), mesh),
                             rhs=rhs, time=time, userData=userData)
     if 'Node' in bct:
-        assembleDirichletBC(S, [], nodePairs=bct.pop('Node'),
+        assembleDirichletBC(mat, [], nodePairs=bct.pop('Node'),
                             rhs=rhs, time=time, userData=userData)
 
     if len(bct.keys()) > 0:
         pg.warn("Unknown boundary condition[s]" + \
                        str(bct.keys()) + " will be ignored")
 
-
-def createLoadVector(mesh, f, userData=None):
-    return assembleLoadVector(mesh, f, userData)
 
 def createStiffnessMatrix(mesh, a=None):
     r"""Create the Stiffness matrix.
@@ -1318,19 +1317,18 @@ def createMassMatrix(mesh, b=None):
     # return B
 
 
-def _feNorm(u, A):
+def _feNorm(u, mat):
     """Create a norm within a Finite Element space.
 
     Create the Finite Element Norm with a preassembled system matrix.
     """
-    return np.sqrt(pg.math.dot(u, A.mult(u)))
+    return np.sqrt(pg.math.dot(u, mat.mult(u)))
 
 
-def L2Norm(u, M=None, mesh=None):
-    r"""Create Lebesgue (L2) norm for the finite element space.
+def normL2(u, mat=None, mesh=None):
+    r"""Create Lebesgue (L2) norm for finite element space.
 
-    Find the L2 Norm for a solution in the finite element space.
-    :math:`u` exact solution
+    Find the L2 Norm for a solution for the finite element space. :math:`u` exact solution
     :math:`{\bf M}` Mass matrix, i.e., Finite element identity matrix.
 
     .. math::
@@ -1351,7 +1349,7 @@ def L2Norm(u, M=None, mesh=None):
     u : iterable
         Node based value to compute the L2 norm for.
 
-    M : Matrix
+    mat : Matrix
         Mass element matrix.
 
     mesh : :gimliapi:`GIMLI::Mesh`
@@ -1363,21 +1361,21 @@ def L2Norm(u, M=None, mesh=None):
         :math:`L2(u)` norm.
 
     """
-    if isinstance(M, pg.Mesh):
-        mesh = M
-        M = None
+    if isinstance(mat, pg.Mesh):
+        mesh = mat
+        mat = None
 
-    if M is None and mesh is not None:
-        M = createMassMatrix(mesh)
+    if mat is None and mesh is not None:
+        mat = createMassMatrix(mesh)
 
-    if M is None:
+    if mat is None:
         # M is Identity matrix
         return np.sqrt(pg.math.dot(u, u))
 
-    return _feNorm(u, M)
+    return _feNorm(u, mat)
 
 
-def H1Norm(u, S=None, mesh=None):
+def normH1(u, mat=None, mesh=None):
     r"""Create (H1) norm for the finite element space.
 
     Parameters
@@ -1385,7 +1383,7 @@ def H1Norm(u, S=None, mesh=None):
     u : iterable
         Node based value to compute the H1 norm for.
 
-    S : Matrix
+    mat : Matrix
         Stiffness matrix.
 
     mesh : :gimliapi:`GIMLI::Mesh`
@@ -1397,17 +1395,17 @@ def H1Norm(u, S=None, mesh=None):
         :math:`H1(u)` norm.
 
     """
-    if isinstance(S, pg.Mesh):
-        mesh = S
-        S = None
+    if isinstance(mat, pg.Mesh):
+        mesh = mat
+        mat = None
 
-    if S is None and mesh is not None:
-        S = pg.solver.createStiffnessMatrix(mesh)
+    if mat is None and mesh is not None:
+        mat = pg.solver.createStiffnessMatrix(mesh)
 
-    if S is None:
-        raise Exception("Need S or mesh here to calculate H1Norm")
+    if mat is None:
+        raise Exception("Need Stiffness matrix or a mesh here to calculate H1-Norm")
 
-    return _feNorm(u, S)
+    return _feNorm(u, mat)
 
 
 def solve(mesh, **kwargs):
@@ -1534,7 +1532,7 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
     >>> plt.show()
     """
     if bc is None:
-        bc={}
+        bc = {}
     if 'uB' in kwargs:
         pg.deprecated('bc arg uB', "bc={'Dirichlet': uB}") #20190912
         bc['Dirichlet'] = kwargs.pop('uB')
@@ -1575,7 +1573,7 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
         A = S
 
     if times is None:
-        rhs = assembleForceVector(mesh, f, userData=userData)
+        rhs = createLoadVector(mesh, f, userData=userData)
 
         assembleBC_(bc, mesh, A, rhs, a, time=None, userData=userData)
 
@@ -1645,7 +1643,7 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
             print("start TL", swatch.duration())
 
         M = createMassMatrix(mesh)
-        F = assembleForceVector(mesh, f)
+        F = assembleLoadVector(mesh, f)
 
         u0 = np.zeros(dof)
         if 'u0' in kwargs:
@@ -1724,10 +1722,9 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
             U[n, :] = np.asarray(u)
 
             if progress:
-                progress.update(n,
-                            ' t_prep: ' + str(round(t_prep, 5)) + 's' + \
-                            ' t_step: ' + str(round(swatch.duration(),5)) + 's')
-
+                progress.update(n, ' t_prep: {0}ms t_step {1}s'.format(
+                    pg.pf(t_prep*1000),
+                    pg.pf(swatch.duration())))
         if debug:
             print("Measure(" + str(len(times)) + "): ",
                   measure, measure / len(times))
@@ -1828,7 +1825,7 @@ def crankNicolson(times, theta, S, I, f, u0=None, progress=None):
             timeAssemble.append(pg.dur())
             pg.tic()
 
-        u[n,:] = solver.solve(b)
+        u[n, :] = solver.solve(b)
 
         if timeMeasure:
             timeSolve.append(pg.dur())
