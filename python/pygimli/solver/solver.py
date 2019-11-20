@@ -1207,7 +1207,8 @@ def assembleBC_(bc, mesh, mat, rhs, a, time=None, userData=None):
         assembleRobinBC(mat, parseArgToBoundaries(bct.pop('Robin'), mesh),
                         rhs=rhs, time=time, userData=userData)
     if 'Dirichlet' in bct:
-        assembleDirichletBC(mat, parseArgToBoundaries(bct.pop('Dirichlet'), mesh),
+        assembleDirichletBC(mat,
+                            parseArgToBoundaries(bct.pop('Dirichlet'), mesh),
                             rhs=rhs, time=time, userData=userData)
     if 'Node' in bct:
         assembleDirichletBC(mat, [], nodePairs=bct.pop('Node'),
