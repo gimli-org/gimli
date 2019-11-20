@@ -222,7 +222,8 @@ public:
     void copy_(const SparseMatrix< double > & S);
     void copy_(const SparseMatrix< Complex > & S);
 
-    inline void insert(const IndexArray & rows, const IndexArray & cols, const RVector & vals) {
+    inline void insert(const IndexArray & rows, const IndexArray & cols,
+                       const RVector & vals) {
         ASSERT_EQUAL(vals.size(), rows.size())
         ASSERT_EQUAL(vals.size(), cols.size())
 
@@ -234,6 +235,29 @@ public:
     virtual void clear() {
         C_.clear();
         cols_ = 0; rows_ = 0; stype_ = 0;
+    }
+
+    void cleanRow(IndexType row){
+        ASSERT_RANGE(row, 0, this->rows())
+
+        for (auto it = begin(); it != end();){
+            if (idx1(it) == row){
+                it = C_.erase(it);
+            } else {
+                ++it;
+            }
+        }
+    }
+
+    void cleanCol(IndexType col){
+        ASSERT_RANGE(col, 0, this->cols())
+        for (auto it = begin(); it != end();){
+            if (idx2(it) == col){
+                it = C_.erase(it);
+            } else {
+                ++it;
+            }
+        }
     }
 
     /*! symmetric type. 0 = nonsymmetric, -1 symmetric lower part, 1 symmetric upper part.*/
@@ -278,9 +302,14 @@ public:
     }
 
     void add(const ElementMatrix < double > & A){
+        return this->add(A, ValueType(1.0));
+    }
+
+    void add(const ElementMatrix < double > & A, ValueType scale){
         for (Index i = 0, imax = A.size(); i < imax; i++){
             for (Index j = 0, jmax = A.size(); j < jmax; j++){
-                (*this)[A.idx(i)][A.idx(j)] += (ValueType)A.getVal(i, j);
+                (*this)[A.idx(i)][A.idx(j)] +=
+                    (ValueType)A.getVal(i, j) * scale;
             }
         }
     }
@@ -387,7 +416,7 @@ public:
                              );
         }
     }
-    
+
 
     /*! Return SparseMapMatrix: this * a  */
     virtual Vector < ValueType > mult(const Vector < ValueType > & a) const {
@@ -544,7 +573,6 @@ protected:
   // 0 .. nonsymmetric, -1 symmetric lower part, 1 symmetric upper part
   int stype_;
 };// class SparseMapMatrix
-
 
 
 template < class ValueType, class IndexType >
@@ -918,7 +946,7 @@ public:
             vals_[col] = ValueType(0);
         }
     }
-                
+
     void cleanCol(int col){
         ASSERT_RANGE(col, 0, (int)this->cols())
         for (int i = 0; i < (int)this->rowIdx_.size(); i++){
@@ -929,7 +957,7 @@ public:
     }
     void copy_(const SparseMapMatrix< double, Index > & S);
     void copy_(const SparseMapMatrix< Complex, Index > & S);
-    
+
     void buildSparsityPattern(const Mesh & mesh){
         Stopwatch swatch(true);
 
@@ -1151,11 +1179,11 @@ inline CSparseMatrix operator + (const CSparseMatrix & A, const RSparseMatrix & 
 }
 
 inline RSparseMatrix real(const CSparseMatrix & A){
-    return RSparseMatrix(A.vecColPtr(), A.vecRowIdx(), 
+    return RSparseMatrix(A.vecColPtr(), A.vecRowIdx(),
                          real(A.vecVals()), A.stype());
 }
 inline RSparseMatrix imag(const CSparseMatrix & A){
-    return RSparseMatrix(A.vecColPtr(), A.vecRowIdx(), 
+    return RSparseMatrix(A.vecColPtr(), A.vecRowIdx(),
                          imag(A.vecVals()), A.stype());
 }
 

@@ -42,7 +42,7 @@ class TestSparseMatrix(unittest.TestCase):
 
         np.testing.assert_equal((CSR*v15).size(), 3)
         np.testing.assert_equal((CSR.transMult(v3)).size(), 15)
-        
+
         np.testing.assert_equal(MAP1.cols(), MAP2.cols())
         np.testing.assert_equal(CSR.cols(), MAP1.cols())
         np.testing.assert_equal(CSR.rows(), MAP1.rows())
@@ -58,7 +58,7 @@ class TestSparseMatrix(unittest.TestCase):
             mm.addVal(check_rows[i], check_cols[i], check_vals[i])
 
         #pg.solver.showSparseMatrix(mm, full=True)
-                
+
         check_csr_rows = [0, 1, 2, 3, 4]
         check_csr_colPtr = [0, 2, 3, 4, 5]
 
@@ -69,7 +69,7 @@ class TestSparseMatrix(unittest.TestCase):
         np.testing.assert_allclose(r1, check_csr_rows)
         np.testing.assert_allclose(c1, check_csr_colPtr)
         np.testing.assert_allclose(v1, check_vals)
-        
+
         sciA1 = pg.utils.sparseMatrix2csr(pg.matrix.SparseMatrix(mm))
         np.testing.assert_equal(sciA1.indices, check_csr_rows)
         np.testing.assert_equal(sciA1.indptr, check_csr_colPtr)
@@ -120,29 +120,43 @@ class TestSparseMatrix(unittest.TestCase):
         grid = pg.createGrid(3, 3)
         # print(grid)
 
-        alpha = pg.math.toComplex(np.ones(grid.cellCount()), 
+        alpha = pg.math.toComplex(np.ones(grid.cellCount()),
                              np.ones(grid.cellCount())*1.0
                              )
-        
+
         A = pg.solver.createStiffnessMatrix(grid, a=alpha)
         pg.solver.solver._assembleUDirichlet(A, None, [0], [0.0])
         #pg.solver.showSparseMatrix(A)
         #pg.solver.assembleDirichletBC(A, [[grid.boundary(0), 0.0]])
-        
+
         b = pg.math.toComplex(np.ones(A.rows()), np.ones(A.rows())*0.0)
         x = pg.solver.linSolve(A, b, verbose=verbose, solver='pg')
         np.testing.assert_allclose(A.mult(x), b, rtol=1e-10)
-        
+
         x2 = pg.solver.linSolve(A, b, verbose=verbose, solver='scipy')
         np.testing.assert_allclose(x2, x, rtol=1e-10)
 
-        x3 = pg.solver.linSolve(pg.utils.squeezeComplex(A), 
-                                pg.utils.squeezeComplex(b), 
+        x3 = pg.solver.linSolve(pg.utils.squeezeComplex(A),
+                                pg.utils.squeezeComplex(b),
                                 verbose=verbose, solver='pg')
 
         np.testing.assert_allclose(pg.utils.toComplex(x3), x, rtol=1e-10)
 
+    def test_Misc(self):
+        D = pg.core.SparseMapMatrix(3, 4)
+        for i in range(D.rows()):
+            for j in range(D.cols()):
+                D.setVal(i, j, 1.0)
+
+        np.testing.assert_allclose(D.col(2), pg.Vector(D.rows(), 1.0))
+        np.testing.assert_allclose(D.row(2), pg.Vector(D.cols(), 1.0))
+
+        D.cleanRow(1)
+        np.testing.assert_allclose(D.col(2), [1.0, 0.0, 1.0])
+
+        D.cleanCol(1)
+        np.testing.assert_allclose(D.row(2), [1.0, 0.0, 1.0, 1.0])
+
 
 if __name__ == '__main__':
-
     unittest.main()

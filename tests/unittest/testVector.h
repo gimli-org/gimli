@@ -477,6 +477,18 @@ public:
         CPPUNIT_ASSERT((C+C).getVal(0, 0) == 4.0);
         CPPUNIT_ASSERT((C*2.0).getVal(0, 0) == 4.0);
         CPPUNIT_ASSERT(((C+C)*2.0).getVal(1, 1) == 8.0);
+
+        GIMLI::RSparseMapMatrix D(3, 4);
+        for (GIMLI::Index i = 0; i < D.rows(); i ++ ){
+            for (GIMLI::Index j = 0; j < D.cols(); j ++ ){
+                D[i][j] = 1.0;
+            }
+        }
+        CPPUNIT_ASSERT(D.col(2) == GIMLI::RVector(D.rows(), 1.0));
+        CPPUNIT_ASSERT(D.row(2) == GIMLI::RVector(D.cols(), 1.0));
+
+        D.cleanRow(1);
+        CPPUNIT_ASSERT(D.col(2) == GIMLI::RVector(std::vector< double >{1., 0., 1.}));
     }
 
     void testIO(){

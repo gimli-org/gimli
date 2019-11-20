@@ -1760,7 +1760,7 @@ def checkCFL(times, mesh, vMax):
                   " | N > ", int((times[-1]-times[0])/(dx/vMax))+1, ")")
     return c
 
-def crankNicolson(times, theta, S, I, f, u0=None, progress=None):
+def crankNicolson(times, theta, matS, matI, f, u0=None, progress=None):
     """
         S = constant over time
         f = constant over time
@@ -1787,13 +1787,13 @@ def crankNicolson(times, theta, S, I, f, u0=None, progress=None):
     if progress:
         timeMeasure = True
 
-    A = I
+    A = matI
     if theta > 0:
-        A = I + S * (dt * theta)
+        A = matI + matS * (dt * theta)
 
     solver = pg.core.LinSolver(A, verbose=False)
 
-    St = I - S * dt # cache what is possible the theta=0
+    St = matI - matS * dt # cache what is possible the theta=0
     for n in range(1, len(times)):
 
         if timeMeasure:
@@ -1814,7 +1814,7 @@ def crankNicolson(times, theta, S, I, f, u0=None, progress=None):
         if theta == 0:
             b = St * u[n-1] + dt * rhs[n-1]
         else:
-            b = I * u[n-1] + S.mult(dt * (theta - 1.) * u[n-1]) + \
+            b = matI * u[n-1] + matS.mult(dt * (theta - 1.) * u[n-1]) + \
                 dt * ((1.0 - theta) * rhs[n-1] + theta * rhs[n])
 
 #        pg.toc()

@@ -145,7 +145,7 @@ public:
     virtual double attribute() const { return -1.0; }
 
     /*! Return IndexArray of all node ids. */
-    IndexArray ids() const ;
+    IndexArray ids() const;
 
     virtual std::vector < PolynomialFunction < double > > createShapeFunctions() const;
 

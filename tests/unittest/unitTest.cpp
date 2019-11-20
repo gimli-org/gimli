@@ -23,6 +23,7 @@
 #include <iostream>
 
 int main( int argc, char **argv){
+    std::cout << "starting unittest" << std::endl;
 #ifdef HAVE_UNITTEST
     CppUnit::TextUi::TestRunner runner;
     CppUnit::TestFactoryRegistry &registry = CppUnit::TestFactoryRegistry::getRegistry();
