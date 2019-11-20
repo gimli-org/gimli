@@ -93,12 +93,12 @@ void ModellingBase::setThreadCount(Index nThreads) {
 
 Index ModellingBase::threadCount(){
     bool verbose = this->verbose();
-    
-    this->nThreads_ = getEnvironment("GIMLI_NUM_THREADS", 
+
+    this->nThreads_ = getEnvironment("GIMLI_NUM_THREADS",
                                      this->nThreads_, verbose);
-    
+
     if (verbose){
-        std::cout << "J(" << numberOfCPU() << "/" << this->nThreads_; 
+        std::cout << "J(" << numberOfCPU() << "/" << this->nThreads_;
     #if USE_BOOST_THREAD
             std::cout << "-boost::mt";
     #else
@@ -239,12 +239,12 @@ public:
     virtual ~JacobianBaseMT(){}
 
     virtual void calc(){
-        log(Debug, "Thread #" + str(_threadNumber) + ": on CPU " + str(schedGetCPU()) + 
+        log(Debug, "Thread #" + str(_threadNumber) + ": on CPU " + str(schedGetCPU()) +
                    " slice " + str(start_) + ":" + str(end_));
 
         RMatrix *J = dynamic_cast< RMatrix * >(J_);
 
-        for (Index i = start_; i < end_; i ++) {                   
+        for (Index i = start_; i < end_; i ++) {
             RVector modelChange(*_model);
             modelChange[i] *= 1.05;
             RVector respChange(fop_->response_mt(modelChange, i));
@@ -394,17 +394,17 @@ RVector ModellingBase::createMappedModel(const RVector & model, double backgroun
 
     if (model.size() == mesh_->cellCount()) {
         IVector cM(mesh_->cellMarkers());
-        
+
         // test if model are cell values instead of model that needs mapping
         if (unique(sort(cM[cM > -1])).size() != model.size()) return model;
-        
+
     }
 
     RVector cellAtts(mesh_->cellCount());
 
     int marker = -1;
     std::vector< Cell * > emptyList;
-    mesh_->createNeighbourInfos();
+    mesh_->createNeighborInfos();
 
     for (Index i = 0, imax = mesh_->cellCount(); i < imax; i ++){
         marker = mesh_->cell(i).marker();
@@ -419,7 +419,7 @@ RVector ModellingBase::createMappedModel(const RVector & model, double backgroun
                        + " >= " + str(model.size()));
             }
             if (abs(model[marker]) < TOLERANCE){
-                // Zero model can be valid 
+                // Zero model can be valid
                 // emptyList.push_back(&mesh_->cell(i));
             }
             cellAtts[i] = model[marker];
@@ -442,7 +442,7 @@ RVector ModellingBase::createMappedModel(const RVector & model, double backgroun
     if (background != 0.0){
         mesh_->prolongateEmptyCellsValues(cellAtts, background);
     }
-   
+
     bool warned = false;
     // search for fixed regions
     for (Index i = 0, imax = mesh_->cellCount(); i < imax; i ++){

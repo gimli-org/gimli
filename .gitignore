@@ -84,3 +84,4 @@ python/pygimli/core/*.dll
 .vscode/settings.json
 
 python/pygimli/testing/synth.ves
+.vscode/launch.json

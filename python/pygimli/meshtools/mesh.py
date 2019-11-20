@@ -196,7 +196,7 @@ def refineQuad2Tri(mesh, style=1):
                 out.createBoundary([b.node(0).id(), b.node(1).id()],
                                    b.marker())
 
-    out.createNeighbourInfos()
+    out.createNeighborInfos()
 
     return out
 
@@ -520,7 +520,7 @@ def readGmsh(fname, verbose=False):
                 mesh.node(int(cell[2] - 1)), mesh.node(int(cell[3] - 1)),
                 marker=int(cell[4]))
 
-    mesh.createNeighbourInfos()
+    mesh.createNeighborInfos()
 
     # Set Neumann on outer edges by default (can be overriden by Gmsh info)
     for b in mesh.boundaries():
@@ -605,7 +605,7 @@ def readTetgen(fname, comment='#', verbose=False, defaultCellMarker=0,
         are loaded or not. Note that without the -f in during the tetgen call,
         the faces in the .face file will only contain the faces of the original
         input poly file and not all faces. If only a part of the faces are
-        imported, a createNeighbourInfos call of the mesh will fail.
+        imported, a createNeighborInfos call of the mesh will fail.
 
     quadratic: boolean (False)
         Returns a P2 (quadratic) refined mesh when True (to be removed, as soon
@@ -754,7 +754,7 @@ def readHydrus2dMesh(fileName='MESHTRIA.TXT'):
                 mesh.node(int(line[3]) - 1), mesh.node(int(line[4]) - 1), 1)
 
     fid.close()
-    mesh.createNeighbourInfos()
+    mesh.createNeighborInfos()
     return mesh
 
 
@@ -808,7 +808,7 @@ def readHydrus3dMesh(fileName='MESHTRIA.TXT'):
         cells.append(c)
 
     f.close()
-    mesh.createNeighbourInfos()
+    mesh.createNeighborInfos()
     return mesh
 
 
@@ -969,7 +969,7 @@ def readGambitNeutral(fileName, verbose=False):
     if verbose:
         print("Gambit neutral file imported: ", mesh)
 
-    mesh.createNeighbourInfos()
+    mesh.createNeighborInfos()
     return mesh
 
 
@@ -1023,7 +1023,7 @@ def convertHDF5Mesh(h5Mesh, group='mesh', indices='cell_indices',
     for i, cell in enumerate(mesh_cells):
         mesh.createCell(pg.core.IndexArray(cell), marker=int(mesh_marker[i]))
 
-    mesh.createNeighbourInfos()
+    mesh.createNeighborInfos()
 
     if verbose:
         print('converted mesh:', mesh)

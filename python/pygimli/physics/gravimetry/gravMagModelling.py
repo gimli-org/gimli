@@ -663,7 +663,7 @@ def solveGravimetry(mesh, dDensity=None, pnts=None, complete=False):
     if pnts is None:
         pnts = [[0.0, 0.0]]
 
-    mesh.createNeighbourInfos()
+    mesh.createNeighborInfos()
 
     Gdg = None
     Gdgz = None

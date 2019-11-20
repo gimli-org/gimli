@@ -138,7 +138,7 @@ public:
     Mesh(Index dim=2, bool isGeometry=false);
 
     /*! Constructor, read mesh from filename */
-    Mesh(const std::string & filename, bool createNeighbourInfos=true);
+    Mesh(const std::string & filename, bool createNeighborInfos=true);
 
     /*! Copy constructor. */
     Mesh(const Mesh & mesh);
@@ -404,7 +404,7 @@ public:
     std::vector < Boundary * > findBoundaryByMarker(int from, int to) const;
 
     /*! Return ptr to the cell that match position pos, counter holds amount of touch tests.
-        Searching is done first by nearest-neighbour-kd-tree search,
+        Searching is done first by nearest-neighbor-kd-tree search,
         followed by slope-search if extensive is set. Return NULL if no cell can be found. */
     Cell * findCell(const RVector3 & pos, size_t & counter, bool extensive) const ;
 
@@ -436,7 +436,7 @@ public:
     //** start mesh modification stuff
 
     /*! Prolongate the empty (lower than \ref TOLERANCE.) cell values in vals
-     * from its neighbouring cells.
+     * from its neighboring cells.
      * This function is called recursively until all zero-attribute-values in
      * vals are filled with an attribute greater than Zero.
      * RVector vals need to be of size \ref cellCount().
@@ -448,17 +448,17 @@ public:
 
     void sortNodes(const IndexArray & perm);
 
-    /*! Return true if createNeighbourInfos is called once */
-    inline bool neighboursKnown() const { return neighboursKnown_; }
+    /*! Return true if createNeighborInfos is called once */
+    inline bool neighborsKnown() const { return neighborsKnown_; }
 
     /*! Remove from each boundary the ptr to the corresponding left and right cell*/
-    void cleanNeighbourInfos();
+    void cleanNeighborInfos();
 
     /*! Search and set to each boundary the corresponding left and right cell.*/
-    void createNeighbourInfos(bool force=false);
+    void createNeighborInfos(bool force=false);
 
     /*! Create and store boundaries and neighboring information for this cell.*/
-    void createNeighbourInfosCell_(Cell *c);
+    void createNeighborInfosCell_(Cell *c);
 
     void relax();
 
@@ -498,10 +498,10 @@ public:
     int saveBinary(const std::string & fileName) const;
 
     /*! Load Mesh from file and try to import fileformat regarding file suffix.
-     * If createNeighbourInfos is set, the mesh is checked for consistency and
+     * If createNeighborInfos is set, the mesh is checked for consistency and
      * missing boundaries will be created. */
     void load(const std::string & fileName,
-              bool createNeighbours=true, IOFormat format=Binary);
+              bool createNeighbors=true, IOFormat format=Binary);
 
     void loadAscii(const std::string & fileName);
 
@@ -657,14 +657,22 @@ public:
     /*! Return a vector of all cell marker */
     IVector cellMarkers() const;
 
+    //** probably deprecated 20191120
+    // double xmin() const { findRange_(); return minRange_[0]; }
+    // double ymin() const { findRange_(); return minRange_[1]; }
+    // double zmin() const { findRange_(); return minRange_[2]; }
+    // double xmax() const { findRange_(); return maxRange_[0]; }
+    // double ymax() const { findRange_(); return maxRange_[1]; }
+    // double zmax() const { findRange_(); return maxRange_[2]; }
 
-    //** probably deprecated
-    double xmin() const { findRange_(); return minRange_[0]; }
-    double ymin() const { findRange_(); return minRange_[1]; }
-    double zmin() const { findRange_(); return minRange_[2]; }
-    double xmax() const { findRange_(); return maxRange_[0]; }
-    double ymax() const { findRange_(); return maxRange_[1]; }
-    double zmax() const { findRange_(); return maxRange_[2]; }
+    // better use your bounding box
+    double xMin() const { findRange_(); return minRange_[0]; }
+    double yMin() const { findRange_(); return minRange_[1]; }
+    double zMin() const { findRange_(); return minRange_[2]; }
+    double xMax() const { findRange_(); return maxRange_[0]; }
+    double yMax() const { findRange_(); return maxRange_[1]; }
+    double zMax() const { findRange_(); return maxRange_[2]; }
+
 
     const BoundingBox boundingBox() const { findRange_(); return BoundingBox(minRange_, maxRange_);}
 
@@ -785,7 +793,7 @@ protected:
     mutable RVector3 maxRange_;
     mutable bool rangesKnown_;
 
-    bool neighboursKnown_;
+    bool neighborsKnown_;
 
     mutable KDTreeWrapper * tree_;
 

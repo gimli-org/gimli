@@ -259,7 +259,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
 
     if data is None:
         showMesh = True
-        mesh.createNeighbourInfos()
+        mesh.createNeighborInfos()
         if showBoundary is None:
             showBoundary = True
     elif isinstance(data, pg.core.stdVectorRVector3):
@@ -381,7 +381,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
 
     if coverage is not None:
         if len(data) == mesh.cellCount():
-            addCoverageAlpha(gci, coverage, 
+            addCoverageAlpha(gci, coverage,
                              dropThreshold=kwargs.pop('dropThreshold', 0.4))
         else:
             raise BaseException('toImplement')

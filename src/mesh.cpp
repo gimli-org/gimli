@@ -42,7 +42,7 @@ std::ostream & operator << (std::ostream & str, const Mesh & mesh){
 Mesh::Mesh(Index dim, bool isGeometry)
     : dimension_(dim),
     rangesKnown_(false),
-    neighboursKnown_(false),
+    neighborsKnown_(false),
     tree_(NULL),
     staticGeometry_(true),
     isGeometry_(isGeometry){
@@ -51,21 +51,21 @@ Mesh::Mesh(Index dim, bool isGeometry)
     cellToBoundaryInterpolationCache_ = 0;
 }
 
-Mesh::Mesh(const std::string & filename, bool createNeighbourInfos)
+Mesh::Mesh(const std::string & filename, bool createNeighborInfos)
     : rangesKnown_(false),
-    neighboursKnown_(false),
+    neighborsKnown_(false),
     tree_(NULL),
     staticGeometry_(true),
     isGeometry_(false){
     dimension_ = 3;
     oldTet10NumberingStyle_ = true;
     cellToBoundaryInterpolationCache_ = 0;
-    load(filename, createNeighbourInfos);
+    load(filename, createNeighborInfos);
 }
 
 Mesh::Mesh(const Mesh & mesh)
     : rangesKnown_(false),
-    neighboursKnown_(false),
+    neighborsKnown_(false),
     tree_(NULL),
     staticGeometry_(true),
     isGeometry_(false){
@@ -119,8 +119,8 @@ void Mesh::copy_(const Mesh & mesh){
     setDataMap(mesh.dataMap());
     setCellAttributes(mesh.cellAttributes());
 
-    if (mesh.neighboursKnown()){
-        this->createNeighbourInfos(true);
+    if (mesh.neighborsKnown()){
+        this->createNeighborInfos(true);
     }
 //     std::cout << "COPY mesh " << mesh.cell(0) << " " << cell(0) << std::endl;
 }
@@ -160,7 +160,7 @@ void Mesh::clear(){
     }
 
     rangesKnown_ = false;
-    neighboursKnown_ = false;
+    neighborsKnown_ = false;
 }
 
 Node * Mesh::createNode_(const RVector3 & pos, int marker){
@@ -715,22 +715,22 @@ Cell * Mesh::findCellBySlopeSearch_(const RVector3 & pos, Cell * start,
                 return cell;
             } else {
 
-                if (!neighboursKnown_){
-                    const_cast<Mesh*>(this)->createNeighbourInfosCell_(cell);
-//                     for (Index j = 0; j < cell->neighbourCellCount(); j++){
-//                          cell->findNeighbourCell(j);
+                if (!neighborsKnown_){
+                    const_cast<Mesh*>(this)->createNeighborInfosCell_(cell);
+//                     for (Index j = 0; j < cell->neighborCellCount(); j++){
+//                          cell->findNeighborCell(j);
 //                     }
                 }
 
-//                 for (Index i = 0; i < cell->neighbourCellCount(); i ++ ){
-//                     if (cell->neighbourCell(i)){
-//                         std::cout << "\t " << i << " " << *cell->neighbourCell(i) << std::endl;
+//                 for (Index i = 0; i < cell->neighborCellCount(); i ++ ){
+//                     if (cell->neighborCell(i)){
+//                         std::cout << "\t " << i << " " << *cell->neighborCell(i) << std::endl;
 //                     } else {
 //                         std::cout << "\t " << i << " " << 0 << std::endl;
 //                     }
 //                 }
 
-                cell = cell->neighbourCell(sf);
+                cell = cell->neighborCell(sf);
 
 //                 std::cout << "sf: " << sf << std::endl;
 //                 std::cout << "neighCell " << cell << std::endl;
@@ -1127,7 +1127,7 @@ void Mesh::createClosedGeometry(const PosVector & vPos, int nSegments, double dx
 
 void Mesh::createClosedGeometryParaMesh(const PosVector & vPos, int nSegments, double dxInner){
     createClosedGeometry(vPos, nSegments, dxInner);
-    createNeighbourInfos();
+    createNeighborInfos();
     for (Index i = 0; i < cellCount(); i ++) cell(i).setMarker(i);
 }
 
@@ -1138,7 +1138,7 @@ void Mesh::createClosedGeometryParaMesh(const PosVector & vPos, int nSegments,
 //   EAMeshWrapper eamesh;
 //   eamesh.createMesh(vPos, nSegments, dxInner, addit);
 //   eamesh.mesh(*this);
-//   createNeighbourInfos();
+//   createNeighborInfos();
 //   for (Index i = 0; i < cellCount(); i ++) cell(i).setMarker(i);
 }
 
@@ -1499,10 +1499,10 @@ void Mesh::createRefined_(const Mesh & mesh, bool p2, bool h2){
 
 }
 
-void Mesh::cleanNeighbourInfos(){
-    //std::cout << "Mesh::cleanNeighbourInfos()"<< std::endl;
+void Mesh::cleanNeighborInfos(){
+    //std::cout << "Mesh::cleanNeighborInfos()"<< std::endl;
     for (Index i = 0; i < cellCount(); i ++){
-        cell(i).cleanNeighbourInfos();
+        cell(i).cleanNeighborInfos();
     }
     for (Index i = 0; i < boundaryCount(); i ++){
         boundary(i).setLeftCell(NULL);
@@ -1510,20 +1510,20 @@ void Mesh::cleanNeighbourInfos(){
     }
 }
 
-void Mesh::createNeighbourInfos(bool force){
+void Mesh::createNeighborInfos(bool force){
 //     double med = 0.;
-//     __MS(neighboursKnown_ << " " <<force)
-    if (!neighboursKnown_ || force){
-        this->cleanNeighbourInfos();
+//     __MS(neighborsKnown_ << " " <<force)
+    if (!neighborsKnown_ || force){
+        this->cleanNeighborInfos();
 
 //         Stopwatch sw(true);
 
         for (Index i = 0; i < cellCount(); i ++){
 //            if (i%10000 ==0) __MS(i);
-            createNeighbourInfosCell_(&cell(i));
+            createNeighborInfosCell_(&cell(i));
 //             med+=sw.duration(true);
         }
-        neighboursKnown_ = true;
+        neighborsKnown_ = true;
     } else {
 //         __M
     }
@@ -1531,12 +1531,12 @@ void Mesh::createNeighbourInfos(bool force){
 //     std::cout << med << " " << med/cellCount() << std::endl;
 }
 
-void Mesh::createNeighbourInfosCell_(Cell *c){
+void Mesh::createNeighborInfosCell_(Cell *c){
 
     for (Index j = 0; j < c->boundaryCount(); j++){
-        if (c->neighbourCell(j)) continue;
+        if (c->neighborCell(j)) continue;
 
-        c->findNeighbourCell(j);
+        c->findNeighborCell(j);
         std::vector < Node * > nodes(c->boundaryNodes(j));
 //         __M
 //         std::cout << *c << std::endl;
@@ -1569,7 +1569,7 @@ void Mesh::createNeighbourInfosCell_(Cell *c){
                 continue;
             }
             bound->setLeftCell(c);
-            if (c->neighbourCell(j) && bound->rightCell() == NULL) bound->setRightCell(c->neighbourCell(j));
+            if (c->neighborCell(j) && bound->rightCell() == NULL) bound->setRightCell(c->neighborCell(j));
 
         } else if (bound->rightCell() == NULL){
             if (bound->leftCell() == c){
@@ -1577,7 +1577,7 @@ void Mesh::createNeighbourInfosCell_(Cell *c){
                 continue;
             } else {
                 bound->setRightCell(c);
-                if (c->neighbourCell(j) && bound->leftCell() == NULL ) bound->setLeftCell(c->neighbourCell(j));
+                if (c->neighborCell(j) && bound->leftCell() == NULL ) bound->setLeftCell(c->neighborCell(j));
             }
         }
 
@@ -1626,7 +1626,7 @@ void Mesh::create1DGrid(const RVector & x){
             nodes[1] = & node(nodeCount() - 1);
             this->createCell(nodes);
         }
-        this->createNeighbourInfos();
+        this->createNeighborInfos();
 
         for (Index i = 0; i < boundaryCount(); i ++){
             if (boundary(i).leftCell() == NULL || boundary(i).rightCell() == NULL){
@@ -1682,7 +1682,7 @@ void Mesh::create2DGrid(const RVector & x, const RVector & y, int markerType,
             }
             if (markerType == 1) marker = 0;
         }
-        this->createNeighbourInfos();
+        this->createNeighborInfos();
 
         for (Index i = 0; i < boundaryCount(); i ++){
             if (boundary(i).leftCell() == NULL || boundary(i).rightCell() == NULL){
@@ -1770,7 +1770,7 @@ void Mesh::create3DGrid(const RVector & x, const RVector & y, const RVector & z,
             if (k > 0 && markerType == 13) marker += (x.size() - 1);
             if (markerType == 2 || markerType == 12) marker = 0;
         } //** z loop (k)
-        this->createNeighbourInfos();
+        this->createNeighborInfos();
 
         for (Index i = 0; i < boundaryCount(); i ++){
             if (boundary(i).leftCell() == NULL || boundary(i).rightCell() == NULL){
@@ -1926,7 +1926,7 @@ void Mesh::createMeshByCells(const Mesh & mesh, const std::vector < Cell * > & c
     }
 
     //! Create all remaining boundaries
-    createNeighbourInfos();
+    createNeighborInfos();
 }
 
 
@@ -2119,8 +2119,8 @@ void Mesh::prolongateEmptyCellsValues(RVector & vals, double background) const {
 
             double weight = 0.0;
             double val = 0.0;
-            for (Index j = 0; j < cell->neighbourCellCount(); j ++){
-                Cell * nCell = cell->neighbourCell(j);
+            for (Index j = 0; j < cell->neighborCellCount(); j ++){
+                Cell * nCell = cell->neighborCell(j);
                 if (nCell){
                     if (abs(vals[nCell->id()]) > TOLERANCE){
                         if (horizontalWeight){
@@ -2279,7 +2279,7 @@ void Mesh::relax(){
   }
 
 void Mesh::smooth(bool nodeMoving, bool edgeSliding, uint smoothFunction, uint smoothIteration){
-    createNeighbourInfos();
+    createNeighborInfos();
 
     for (Index j = 0; j < smoothIteration; j++){
 //         if (edgeSwapping) {
@@ -2406,8 +2406,8 @@ RSparseMapMatrix Mesh::interpolationMatrix(const PosVector & q){
 
 RSparseMapMatrix & Mesh::cellToBoundaryInterpolation() const {
     if (!cellToBoundaryInterpolationCache_){
-        if (!neighboursKnown_){
-            throwError(1, "Please call once createNeighbourInfos() for the given mesh.");
+        if (!neighborsKnown_){
+            throwError(1, "Please call once createNeighborInfos() for the given mesh.");
         }
 
         cellToBoundaryInterpolationCache_ = new RSparseMapMatrix(this->boundaryCount(),
@@ -2456,8 +2456,8 @@ PosVector Mesh::cellDataToBoundaryGradient(const RVector & cellData) const {
 
 PosVector Mesh::cellDataToBoundaryGradient(const RVector & cellData,
                                           const PosVector & cellGrad) const{
-    if (!neighboursKnown_){
-        throwError(1, "Please call once createNeighbourInfos() for the given mesh.");
+    if (!neighborsKnown_){
+        throwError(1, "Please call once createNeighborInfos() for the given mesh.");
     }
     PosVector ret(boundaryCount());
 
@@ -2485,8 +2485,8 @@ PosVector Mesh::cellDataToBoundaryGradient(const RVector & cellData,
 }
 
 PosVector Mesh::boundaryDataToCellGradient(const RVector & v) const{
-    if (!neighboursKnown_){
-        throwError(1, "Please call once createNeighbourInfos() for the given mesh.");
+    if (!neighborsKnown_){
+        throwError(1, "Please call once createNeighborInfos() for the given mesh.");
     }
     PosVector ret(this->cellCount());
 
@@ -2512,8 +2512,8 @@ PosVector Mesh::boundaryDataToCellGradient(const RVector & v) const{
 RVector Mesh::divergence(const PosVector & V) const{
     RVector ret(this->cellCount());
 
-    if (!neighboursKnown_){
-        throwError(1, "Please call once createNeighbourInfos() for the given mesh.");
+    if (!neighborsKnown_){
+        throwError(1, "Please call once createNeighborInfos() for the given mesh.");
     }
 
     ASSERT_EQUAL(V.size(), this->boundaryCount());
