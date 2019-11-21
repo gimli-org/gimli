@@ -545,7 +545,7 @@ def __getValMatrix(self, idx):
         if stop is None:
             stop = len(self)
 
-        return [self.rowR(i) for i in range(start, stop, step)]
+        return [self.rowRef(i) for i in range(start, stop, step)]
 
     elif isinstance(idx, tuple):
         # print(idx, type(idx))
@@ -952,7 +952,7 @@ def __ModellingBase__createJacobian_mt__(self, model, resp):
         from .logger import warn
         warn('Multiprocess jacobian currently unavailable')
         nProcs = 1
- 
+
     if nProcs == 1:
         self.createJacobian(model, resp)
         return

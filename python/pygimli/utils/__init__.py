@@ -3,7 +3,7 @@
 Useful utility functions.
 """
 
-from .base import (rms, rmsWithErr, nanrms, createDateTimeString, 
+from .base import (rms, rmsWithErr, nanrms, createDateTimeString,
                    createfolders, #remove me Nameing convention
                    createFolders, createResultFolder,
                    getSavePath, gmat2numpy, interperc, interpExtrap, inthist,
@@ -13,9 +13,9 @@ from .base import (rms, rmsWithErr, nanrms, createDateTimeString,
 # compatibility for fw_cleaning
 from .base import rmsWithErr as rmswitherr
 
-from .complex import (isComplex, toComplex, toPolar, squeezeComplex, 
+from .complex import (isComplex, toComplex, toPolar, squeezeComplex,
                       toRealMatrix, KramersKronig)
-                     
+
 from .cache import (cache, strHash)
 from .geostatistics import (computeInverseRootMatrix, covarianceMatrix,
                             generateGeostatisticalModel)
@@ -25,12 +25,12 @@ from .postinversion import iterateBounds, modCovar
 from .sparseMat2Numpy import (convertCRSIndex2Map, sparseMatrix2Array,
                               sparseMatrix2coo, sparseMatrix2csr)
 
-from .units import (unit, cmap)
+from .units import (unit, cmap, rc)
 from .units import cmap as cMap # for compatibilty (will be removed)
 
 from .utils import (ProgressBar, boxprint, cumDist, cut, diff, dist,
                     filterIndex, filterLinesByCommentStr, findNearest,
-                    getIndex, grange, logDropTol, niceLogspace, 
+                    getIndex, grange, logDropTol, niceLogspace,
                     prettify, prettyFloat,
                     rand, randN, trimDocString, unicodeToAscii, unique,
                     unique_everseen, unique_rows, uniqueAndSum)

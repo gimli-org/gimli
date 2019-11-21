@@ -298,7 +298,7 @@ class TestRVectorMethods(unittest.TestCase):
     def testComparison(self):
         a = pg.Vector(10, 1)
         b = pg.Vector(10, 2)
-        
+
         np.testing.assert_equal(len(a < 1), 10)
         np.testing.assert_equal(len(a > 2), 10)
 
@@ -306,26 +306,29 @@ class TestRVectorMethods(unittest.TestCase):
         np.testing.assert_equal(len(a > b), 10)
 
     def testRMatrixIndex(self):
-        A = pg.Matrix(4,4)
+        A = pg.Matrix(3,4)
         A[0] = pg.Vector(4,1)
-        
+
         np.testing.assert_equal(sum(A[0]), 4)
-        
+
         A[1,2] = 2.0
         # np.testing.assert_equal(sum(A[1]), 2)
         np.testing.assert_equal(A[1,2], 2)
 
-        ## will not work because A[2] refer to A[2]__getItem__ which only can 
+        np.testing.assert_equal(A[:,2], A.col(2))
+        np.testing.assert_equal(A[2], A.row(2))
+
+        ## will not work because A[2] refer to A[2]__getItem__ which only can
         # return a const reference. use the tuple idx above
         # A[2][2] = 2.0
         # np.testing.assert_equal(sum(A[2]), 2)
-        
+
 if __name__ == '__main__':
     # pg.setDeepDebug(1)
     # t = TestRVectorMethods()
-    
+
     # # t.test_IVectorOP()
     # t.test_Slices()
     # t.testRMatrixIndex()
-    
+
     unittest.main()

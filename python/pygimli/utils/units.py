@@ -29,7 +29,7 @@ quants = {
         'unit': 'mrad',
         'ger': 'neg. Phasenwinkel',
         'cMap': 'viridis',
-    }, 
+    },
     'ipa': {
         'name': 'Apparent phase',
         'unit': 'mrad',
@@ -71,14 +71,14 @@ quants = {
 }
 
 rc = {
-    'lang': 'english',
+    'lang': 'eng',
     'unitStyle': 2,  # quantity (unit)
 }
 
 def quantity(name):
     """ """
     quantity = None
-    
+
     if name.lower() not in quants:
         for k, v in quants.items():
             if v['name'].lower() == name.lower():
@@ -116,18 +116,19 @@ def unit(name, unit='auto'):
         pg.error('Please give abbreviation or full name '
                  'for the quantity name: {0}'.format(name))
     else:
-        if rc['lang'] == 'german':
+        if rc['lang'] == 'german' or rc['lang'] == 'de' or rc['lang'] == 'ger':
             name = q['ger']
         else:
             name = q['name']
 
         if unit == 'auto':
             unit = q['unit']
-    
+
     if unit is None:
         return '{0}'.format(name)
 
-    if rc['unitStyle'] == 1 or rc['lang'] == 'german':
+    if rc['unitStyle'] == 1 or \
+        rc['lang'] == 'german' or rc['lang'] == 'de' or rc['lang'] == 'ger':
         return '{0} in {1}'.format(name, unit)
     else:
         return '{0} ({1})'.format(name, unit)

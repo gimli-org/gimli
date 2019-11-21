@@ -17,7 +17,7 @@ def createMesh(poly, quality=32, area=0.0, smooth=None, switches=None,
     A PLC needs to contain nodes and boundaries and should be valid
     in the sense that the boundaries are non-intersecting.
 
-    If poly is a list of coordinates, a simple Delaunay mesh of the convex hull
+    If poly is a list of coordinates, a simple Delaunay mesh with a convex hull
     will be created. Quality and area arguments are ignored for this case to
     create a mesh with one node for each coordinate position.
 
@@ -348,7 +348,11 @@ def extrudeMesh(mesh, a, **kwargs):
     pg.error('Cannot extrude mesh of dimension:', mesh.dim())
 
 
+<<<<<<< HEAD
 def readGmsh(fName, verbose=False):
+=======
+def readGmsh(fname, verbose=False, precision=None):
+>>>>>>> febfaa64b601726171a5c52c4234d92c20b03911
     r"""Read :term:`Gmsh` ASCII file and return instance of GIMLI::Mesh class.
 
     Parameters
@@ -358,13 +362,25 @@ def readGmsh(fName, verbose=False):
         to the `MSH ASCII file version 2
         <http://gmsh.info/doc/texinfo/gmsh.html#MSH-ASCII-file-format>`_ format
     verbose : boolean, optional
-        Be verbose during import.
+        Be verbose during import. Default: False
+    precision : None|int, optional
+        If not None, then round off node coordinates to the provided number of
+        digits using numpy.round. This is useful in case that nodes are
+        accessed using their coordinates, in which case numerical discrepancies
+        can occur.
 
     Notes
     -----
     Physical groups specified in Gmsh are interpreted as follows:
 
-    - Points with the physical number 99 are interpreted as sensors.
+    - Points with the physical number 99 are interpreted as sensors. Note that
+      physical point groups are ordered with respect to the node tag. For
+      example, "Physical Point (99) = {50, 34};" and "Physical Point (99) = {34,
+      50};" will yield the same mesh. This must be taken into account when
+      defining measurement configurations using electrodes defined in GMSH
+      using marker 99.
+    - ERT only: Points with markers 999 and 1000 are used to mark calibration
+      and reference nodes.
     - Physical Lines and Surfaces define boundaries in 2D and 3D, respectively.
         - Physical Number 1: Homogeneous Neumann condition
         - Physical Number 2: Mixed boundary condition
@@ -407,8 +423,14 @@ def readGmsh(fName, verbose=False):
     Mesh: Nodes: 3 Cells: 1 Boundaries: 3
     >>> os.remove(fName)
     """
+<<<<<<< HEAD
     inNodes, inElements, nCount = 0, 0, 0
     fid = open(fName)
+=======
+    assert precision is None or precision >= 0
+    inNodes, inElements, ncount = 0, 0, 0
+    fid = open(fname)
+>>>>>>> febfaa64b601726171a5c52c4234d92c20b03911
     if verbose:
         print('Reading %s... \n' % fName)
 
@@ -431,8 +453,18 @@ def readGmsh(fName, verbose=False):
                     if verbose:
                         print('  Nodes: %s' % int(line))
                 else:
+<<<<<<< HEAD
                     nodes[nCount, :] = np.array(line.split(), 'float')[1:]
                     nCount += 1
+=======
+                    node_coordinates = np.array(line.split(), 'float')[1:]
+                    if precision is None:
+                        nodes[ncount, :] = node_coordinates
+                    else:
+                        nodes[ncount, :] = np.round(
+                            node_coordinates, precision)
+                    ncount += 1
+>>>>>>> febfaa64b601726171a5c52c4234d92c20b03911
 
             elif inElements == 1:
                 if len(line.split()) == 1:
@@ -441,10 +473,16 @@ def readGmsh(fName, verbose=False):
                     points, lines, triangles, tets = [], [], [], []
 
                 else:
+                    # Element entries follow the following format:
+                    # elm-number elm-type number-of-tags < tag > …
+                    #   node-number-list
+
+                    # strip elm-number here
                     entry = [int(e_) for e_ in line.split()][1:]
 
-                    if entry[0] == 15:
-                        points.append((entry[-2], entry[-3]))
+                    if entry[0] == 15:  # Points
+                        # point node, marker (1st tag)
+                        points.append((entry[-1], entry[2]))
                     elif entry[0] == 1:
                         lines.append((entry[-2], entry[-1], entry[2]))
                     elif entry[0] == 2:
@@ -454,7 +492,12 @@ def readGmsh(fName, verbose=False):
                         tets.append((entry[-4], entry[-3], entry[-2],
                                      entry[-1], entry[2]))
                     elif entry[0] in [3, 6]:
+<<<<<<< HEAD
                         pg.error("Quadrangles and prisms are not supported yet")
+=======
+                        pg.error(
+                            "Quadrangles and prisms are not supported yet")
+>>>>>>> febfaa64b601726171a5c52c4234d92c20b03911
 
     fid.close()
     lines = np.asarray(lines)
