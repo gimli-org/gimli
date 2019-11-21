@@ -74,13 +74,26 @@ public:
 
     #undef DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__
 
-    inline const Index idx(Index i) const { return idx_[i]; }
     inline Index size() const { return mat_.rows(); }
-    inline const ValueType & getVal(Index i, Index j) const { return mat_[i][j]; }
+    inline const ValueType & getVal(Index i, Index j) const {
+        return mat_[i][j]; }
 
-    inline const Vector < ValueType > & row(Index i) const { return mat_[i]; }
+    /*! Set data matrix. */
+    inline void setMat(const Matrix < ValueType > & m) { mat_ = m; }
+    /*! Return data matrix. */
     inline const Matrix < ValueType > & mat() const { return mat_; }
+    /*! Return data for row i. */
+    inline const Vector < ValueType > & row(Index i) const { return mat_[i]; }
+
+    /*!DEPRECATED we will remove this 191120*/
     inline const IndexArray & idx() const { return idx_; }
+
+    /*! Set all node indices.*/
+    inline void setIds(const IndexArray & ids) { idx_ = ids; }
+    /*! Return all node indices.*/
+    inline const IndexArray & ids() const { return idx_; }
+    /*! Return the node index for node i.*/
+    inline const Index idx(Index i) const { return idx_[i]; }
 
     ElementMatrix < ValueType > & u(const MeshEntity & ent);
 

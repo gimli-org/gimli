@@ -23,7 +23,7 @@ from .solver import solve
 from .testing import test
 from .utils import boxprint, cache, cut, unique
 from .utils import prettify as pf
-from .utils import unit, cmap
+from .utils import unit, cmap, rc
 from .viewer import plt, show, wait
 from .core.load import getConfigPath, getExampleFile, load, optImport
 

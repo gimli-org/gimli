@@ -256,7 +256,7 @@ bool addTriangleBoundary(Mesh & mesh, double xBoundary, double yBoundary, int ce
 
     int boundMarker = -5;
 
-    mesh.createNeighbourInfos(true);
+    mesh.createNeighborInfos(true);
     Boundary *b = NULL;
     for (std::vector < Boundary * >::const_iterator it = mesh.boundaries().begin();
         it != mesh.boundaries().end(); it ++){
@@ -356,8 +356,8 @@ bool addTriangleBoundary(Mesh & mesh, double xBoundary, double yBoundary, int ce
     outerBound.push_back(upperLeftSurface);
 
     Node *n1 = poly.createNode(upperLeftSurface->pos() - RVector3(xBoundary, 0.0));
-    Node *n2 = poly.createNode(upperLeftSurface->pos() - RVector3(xBoundary, - mesh.ymin() + yBoundary));
-    Node *n3 = poly.createNode(upperRightSurface->pos() - RVector3(-xBoundary, - mesh.ymin() + yBoundary));
+    Node *n2 = poly.createNode(upperLeftSurface->pos() - RVector3(xBoundary, - mesh.yMin() + yBoundary));
+    Node *n3 = poly.createNode(upperRightSurface->pos() - RVector3(-xBoundary, - mesh.yMin() + yBoundary));
     Node *n4 = poly.createNode(upperRightSurface->pos() - RVector3(-xBoundary, 0.0));
 
     outerBound.push_back(upperLeftSurface);
@@ -420,13 +420,13 @@ bool addTriangleBoundary(Mesh & mesh, double xBoundary, double yBoundary, int ce
     }
 
     //** Fix boundary marker
-    mesh.createNeighbourInfos(true);
+    mesh.createNeighborInfos(true);
     b = NULL;
     for (std::vector < Boundary * >::const_iterator it = mesh.boundaries().begin();
         it != mesh.boundaries().end(); it ++){
         b = (*it);
         if (! b->leftCell() || ! b->rightCell()) {
-            if (b->center().y() == mesh.ymax()){
+            if (b->center().y() == mesh.yMax()){
                 b->setMarker(MARKER_BOUND_HOMOGEN_NEUMANN);
             } else {
                 b->setMarker(MARKER_BOUND_MIXED);

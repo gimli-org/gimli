@@ -1,14 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 r"""
-Gravimetry in 2D - Part II
---------------------------
+Semianalytical Gravimetry and Geomagnetics in 2D
+------------------------------------------------
 
-Simple gravimetric field solution with Integration after :cite:`WonBev1987`.
-
+Simple gravimetric and magnetostatic field caluculation using integration approach after :cite:`WonBev1987`.
 
 """
-
 import numpy as np
 import pygimli as pg
 from pygimli.meshtools import createCircle
@@ -53,30 +51,53 @@ def plot(x, a1, ga, gza, a2, g, gz):
     a2.legend(loc='best')
 
 
-fig = pg.plt.figure(figsize=(8,8))
-ax = [fig.add_subplot(2, 2, i) for i in range(1, 5)]
+fig, ax = pg.plt.subplots(nrows=2, ncols=2, figsize=(8,8))
 
 # Horizontal cylinder
-
-ga = gradUCylinderHoriz(pnts, radius, rho, pos=pos)
-gza = gradGZCylinderHoriz(pnts, radius, rho, pos=pos)
-
 circ = createCircle([0, -depth], radius=radius, marker=2, area=0.1,
                     segments=32)
-g, gz = solveGravimetry(circ, rho, pnts, complete=True)
 
-plot(x, ax[0], ga, gza, ax[1], g, gz)
+pg.show(circ, ax=ax[1][0])
+ax[1][0].set_limits(left=x[0], right=x[-1], bottom=-5, top=1)
+
+
+
+# ga = gradUCylinderHoriz(pnts, radius, rho, pos=pos)
+# gza = gradGZCylinderHoriz(pnts, radius, rho, pos=pos)
+
+# g, gz = solveGravimetry(circ, rho, pnts, complete=True)
+
+# plot(x, ax[0], ga, gza, ax[1], g, gz)
+
+# ga = gradUCylinderHoriz(pnts, radius, rho, pos=pos)
+# gza = gradGZCylinderHoriz(pnts, radius, rho, pos=pos)
+
+# g, gz = solveGravimetry(circ, rho, pnts, complete=True)
+
+# plot(x, ax[0], ga, gza, ax[1], g, gz)
+
+
 
 # Half plate
 
-thickness = 0.1
 
-# mesh = pg.createGrid(x=[-2,2], y=[-2,2], z=[-3,-7])
-mesh = pg.createGrid(x=np.linspace(0, 5000, 2),
-                     y=[-depth-thickness/2.0, -depth+thickness/2.0])
+# fig = pg.plt.figure(figsize=(8,8))
+# ax = [fig.add_subplot(2, 2, i) for i in range(1, 5)]
 
-ga = gradUHalfPlateHoriz(pnts, thickness, rho, pos=[0, -depth])
-gza = gradGZHalfPlateHoriz(pnts, thickness, rho, pos=[0, -depth])
-g, gz = solveGravimetry(mesh, rho, pnts, complete=True)
 
-plot(x, ax[2], ga, gza, ax[3], g, gz)
+# thickness = 0.1
+
+# # mesh = pg.createGrid(x=[-2,2], y=[-2,2], z=[-3,-7])
+# mesh = pg.createGrid(x=np.linspace(0, 5000, 2),
+#                      y=[-depth-thickness/2.0, -depth+thickness/2.0])
+
+# ga = gradUHalfPlateHoriz(pnts, thickness, rho, pos=[0, -depth])
+# gza = gradGZHalfPlateHoriz(pnts, thickness, rho, pos=[0, -depth])
+# g, gz = solveGravimetry(mesh, rho, pnts, complete=True)
+
+# plot(x, ax[2], ga, gza, ax[3], g, gz)
+
+#####################################################################
+# Ensure the figure window will be drawn if you work in the terminal.
+#
+pg.wait()

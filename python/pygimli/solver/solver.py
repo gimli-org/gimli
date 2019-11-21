@@ -28,7 +28,7 @@ def parseArgToArray(arg, nDof, mesh=None, userData=None):
         :gimliapi:`GIMLI::Cell` ,
         :gimliapi:`GIMLI::Node` or
         :gimliapi:`GIMLI::Boundary`
-        depeding on nDof, where nDof is mesh.cellCount(),
+        depending on nDof, where nDof is mesh.cellCount(),
         mesh.nodeCount() or mesh.boundaryCount(),
         respectively.
 
@@ -47,26 +47,24 @@ def parseArgToArray(arg, nDof, mesh=None, userData=None):
     ret : :gimliapi:`GIMLI::RVector`
         Array of desired length filled with the appropriate values.
     """
-    nDofs = nDof
-
     if not hasattr(nDof, '__len__'):
-        nDofs = [nDof]
+        nDof = [nDof]
 
     try:
-        return pg.Vector(nDofs[0], float(arg))
+        return pg.Vector(nDof[0], float(arg))
     except BaseException as _:
         pass
 
     if hasattr(arg, '__len__'):
         if isinstance(arg, np.ndarray):
-            if len(arg) == nDofs[0]:
+            if len(arg) == nDof[0]:
                 return arg
             else:
                 raise Exception('Given array does not have requested (' +
                                 str(nDof) + ') size (' +
                                 str(len(arg)) + ')')
 
-        for n in nDofs:
+        for n in nDof:
             if len(arg) == n:
                 return arg
 
@@ -77,25 +75,25 @@ def parseArgToArray(arg, nDof, mesh=None, userData=None):
             raise Exception("Array 'arg' has the wrong size: " +
                             str(len(arg)) + " != " + str(nDof))
     elif hasattr(arg, '__call__'):
-        ret = pg.Vector(nDofs[0], 0.0)
+        ret = pg.Vector(nDof[0], 0.0)
 
         if not mesh:
             raise Exception("Please provide a mesh for the callable"
                             "argument to parse ")
 
-        if nDofs[0] == mesh.nodeCount():
+        if nDof[0] == mesh.nodeCount():
             for n in mesh.nodes():
                 if userData:
                     ret[n.id()] = arg(node=n, userData=userData)
                 else:
                     ret[n.id()] = arg(node=n)
-        elif nDofs[0] == mesh.cellCount():
+        elif nDof[0] == mesh.cellCount():
             for c in mesh.cells():
                 if userData:
                     ret[c.id()] = arg(cell=c, userData=userData)
                 else:
                     ret[c.id()] = arg(cell=c)
-        elif nDofs[0] == mesh.boundaryCount():
+        elif nDof[0] == mesh.boundaryCount():
             for b in mesh.boundaries():
                 if userData:
                     ret[b.id()] = arg(boundary=b, userData=userData)
@@ -147,10 +145,10 @@ def generateBoundaryValue(boundary, arg, time=0.0, userData=None):
     >>> #    return u
     """
     if hasattr(boundary, '__len__'):
-        vals = np.zeros(len(boundary))
+        values = np.zeros(len(boundary))
         for i, b in enumerate(boundary):
-            vals[i] = generateBoundaryValue(b, arg[i], time, userData)
-        return vals
+            values[i] = generateBoundaryValue(b, arg[i], time, userData)
+        return values
     val = 0.
 
     #print(arg, callable(arg))
@@ -165,7 +163,7 @@ def generateBoundaryValue(boundary, arg, time=0.0, userData=None):
         try:
             # val(boundary, time=0, userData=None)
             val = arg(**kwargs)
-        except Exception as e:
+        except BaseException as e:
             print(arg, "(", kwargs, ")")
             pg.critical("Wrong arguments for callback function.", e)
 
@@ -208,8 +206,8 @@ def parseArgPairToBoundaryArray(pair, mesh):
         :py:mod:`pygimli.solver.solver.generateBoundaryValue`
         and distributed to each boundary.
         Callable functions will be executed at run time.
-        '*' will be interpreted as 
-        'all boundary elements with one neighbour cell'
+        '*' will be interpreted as
+        'all boundary elements with one neighboring cell'
 
     mesh : :gimliapi:`GIMLI::Mesh`
         Used to find boundaries by marker.
@@ -288,7 +286,7 @@ def parseArgToBoundaries(args, mesh):
 
     Examples
     --------
-    >>> # no need to import matplotlib. pygimli's show does
+    >>> # no need to import matplotlib. pygimli show does
     >>> import pygimli as pg
     >>> mesh = pg.meshtools.createWorld([0, 0], [1, -1], worldMarker=0)
     >>> ax, _ = pg.show(mesh, boundaryMarker=True)
@@ -387,7 +385,7 @@ def parseArgToBoundaries(args, mesh):
                 boundaries.append([b, args])
 
     else:
-        raise Exception('cannot interprete boundary token', args)
+        raise Exception('cannot interpret boundary token', args)
 
     return boundaries
 
@@ -409,15 +407,15 @@ def parseMapToCellArray(attributeMap, mesh, default=0.0):
         or dictionary with marker keys
 
     default : float [0.0]
-        Fill all unmapped atts to this default.
+        Fill all unmapped attributes to this default.
 
     Returns
     -------
-    atts : array
+    att : array
         Array of length mesh.cellCount()
     """
 
-    atts = pg.Vector(mesh.cellCount(), default)
+    att = pg.Vector(mesh.cellCount(), default)
 
     if isinstance(attributeMap, dict):
         raise Exception("Please implement me!")
@@ -434,13 +432,13 @@ def parseMapToCellArray(attributeMap, mesh, default=0.0):
                           str(pair[0]) + " within mesh.")
                 else:
                     #print('---------------------')
-                    #print(atts, idx, pair[1], type(pair[1]), float(pair[1]))
+                    #print(att, idx, pair[1], type(pair[1]), float(pair[1]))
                     if isinstance(pair[1], np.complex):
-                        if not isinstance(atts, pg.CVector):
-                            atts = pg.math.toComplex(atts)
-                        atts.setVal(val=pair[1], ids=idx)
+                        if not isinstance(att, pg.CVector):
+                            att = pg.math.toComplex(att)
+                        att.setVal(val=pair[1], ids=idx)
                     else:
-                        atts.setVal(val=float(pair[1]), ids=idx)
+                        att.setVal(val=float(pair[1]), ids=idx)
             else:
                 raise Exception("Please provide a list of [int, value] pairs" +
                                 str(pair))
@@ -448,7 +446,7 @@ def parseMapToCellArray(attributeMap, mesh, default=0.0):
         print("attributeMap: ", attributeMap)
         raise Exception("Cannot interpret attributeMap!")
 
-    return atts
+    return att
 
 
 def grad(mesh, u, r=None):
@@ -578,7 +576,7 @@ def div(mesh, v):
     9 [2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0]
     >>> divCells = pg.solver.div(mesh, v(mesh.cellCenters()))
     >>> # divergence from boundary values are exact where the divergence from
-    >>> # interpolated cell center values are wrong due to boundary interp
+    >>> # interpolated cell center values are wrong due to interpolation to the boundary
     >>> print(sum(divCells))
     12.0
     >>> mesh = pg.createGrid(x=np.linspace(0, 1, 4),
@@ -590,7 +588,7 @@ def div(mesh, v):
     >>> print(sum(divCells))
     54.0
     """
-    mesh.createNeighbourInfos()
+    mesh.createNeighborInfos()
     d = None
     if hasattr(v, '__len__'):
         if len(v) == mesh.boundaryCount():
@@ -611,12 +609,13 @@ def div(mesh, v):
     return d
 
 
-def divergence(mesh, F=None, normMap=None, order=1):
-    """Divergence for callable function F((x,y,z)).
+def divergence(mesh, func=None, normMap=None, order=1):
+    """Divergence for callable function func((x,y,z)).
 
     MOVE THIS to a better place
 
-    Divergence for callable function F((x,y,z)). Return sum div over boundary.
+    Divergence for callable function func((x,y,z)).
+    Return sum div over boundary.
 
     Parameters
     ----------
@@ -624,8 +623,8 @@ def divergence(mesh, F=None, normMap=None, order=1):
     Returns
     -------
     """
-    if F is None:
-        F = lambda r: r
+    if func is None:
+        func = lambda r: r
 
     diverg = 0
     directionCheck = False
@@ -653,38 +652,38 @@ def divergence(mesh, F=None, normMap=None, order=1):
             if b.leftCell() is None and b.rightCell() is None:
                 # print(b.id(), b.leftCell(), b.rightCell())
                 sw = pg.core.Stopwatch(True)
-                mesh.createNeighbourInfos()
-                print("NeighbourInfos()", sw.duration(True))
+                mesh.createNeighborInfos()
+                print("NeighborInfos()", sw.duration(True))
                 # return gauss(grid, F)
 
             # don't calc for inner boundaries
             if b.leftCell() is not None and b.rightCell() is not None:
                 continue
 
-        tmpdiv = 0
+        divS = 0
         shape = b.shape()
 
         if order == 1:
             if bNorms is not None:
-                tmpdiv = shape.norm().dot(bNorms[b.id()]) * shape.domainSize()
+                divS = shape.norm().dot(bNorms[b.id()]) * shape.domainSize()
             else:
-                tmpdiv = shape.norm().dot(
-                    F(shape.center())) * shape.domainSize()
+                divS = shape.norm().dot(
+                    func(shape.center())) * shape.domainSize()
         else:
             weights = pg.IntegrationRules.instance().weights(shape, order)
             abscissa = pg.IntegrationRules.instance().abscissa(shape, order)
 
             for i, p in enumerate(abscissa):
                 rPos = shape.xyz(p)
-                tmpdiv += shape.norm().dot(F(rPos)) * \
+                divS += shape.norm().dot(func(rPos)) * \
                     weights[i] * shape.domainSize()
 
         if directionCheck and b.leftCell() is None:
-            tmpdiv *= -1
+            divS *= -1
             # raise Exception("invalid mesh: left is None .. every
             # boundary need leftCell")
 
-        diverg += tmpdiv
+        diverg += divS
 
     return diverg
 
@@ -721,41 +720,41 @@ def identity(dom, start=0, end=-1, scale=1):
     return A
 
 
-def showSparseMatrix(A, full=False):
+def showSparseMatrix(mat, full=False):
     """Show the content of a sparse matrix.
 
     Parameters
     ----------
-    A : :gimliapi:`GIMLI::SparseMatrix` | :gimliapi:`GIMLI::SparseMapMatrix`
+    mat : :gimliapi:`GIMLI::SparseMatrix` | :gimliapi:`GIMLI::SparseMapMatrix`
         Matrix to be shown.
     full : bool [False]
         Show as dense matrix.
     """
-    S = A
-    if isinstance(S, pg.matrix.SparseMapMatrix):
-        S_ = pg.matrix.SparseMatrix(S)
-        return showSparseMatrix(S_, full)
-    else:
-        rows = S.vecRowIdx()
-        cols = S.vecColPtr()
-        vals = S.vecVals()
 
-        Sd = None
+    if isinstance(mat, pg.matrix.SparseMapMatrix):
+        m_ = pg.matrix.SparseMatrix(mat)
+        return showSparseMatrix(m_, full)
+    else:
+        rows = mat.vecRowIdx()
+        cols = mat.vecColPtr()
+        vals = mat.vecVals()
+
+        matD = None
         if full:
-            Sd = pg.Matrix(S.rows(), S.cols())
-                        
-        for i in range(S.rows()):
+            matD = pg.Matrix(mat.rows(), mat.cols())
+
+        for i in range(mat.rows()):
             for j in range(cols[i], cols[i + 1]):
                 if full:
-                    Sd[i, rows[j]] = vals[j]
+                    matD[i, rows[j]] = vals[j]
                 else:
                     print(i, rows[j], vals[j])
 
         if full:
-            print(np.array(Sd))
+            print(np.array(matD))
 
 
-def linSolve(A, b, solver=None, verbose=False):
+def linSolve(mat, b, solver=None, verbose=False):
     r"""Direct solution after :math:`\textbf{x}` using core LinSolver.
 
     .. math::
@@ -765,7 +764,7 @@ def linSolve(A, b, solver=None, verbose=False):
 
     Parameters
     ----------
-    A : :gimliapi:`GIMLI::RSparseMatrix` | :gimliapi:`GIMLI::RSparseMapMatrix`|
+    mat : :gimliapi:`GIMLI::RSparseMatrix` | :gimliapi:`GIMLI::RSparseMapMatrix` |
         numpy.array
         System matrix. Need to be symmetric, sparse and positive definite.
 
@@ -773,7 +772,7 @@ def linSolve(A, b, solver=None, verbose=False):
         Right hand side of the equation.
 
     solver : str [None]
-        Try to choose a solver, 'pg' for pygimli core cholmod or umpfack.
+        Try to choose a solver, 'pg' for pygimli core cholmod or umfpack.
         'np' for numpy linalg or scipy.sparse.linalg.
         Automatic choosing if solver is None depending on matrixtype.
 
@@ -789,57 +788,59 @@ def linSolve(A, b, solver=None, verbose=False):
     x = pg.Vector(len(b), .0)
 
     if solver is None:
-        if isinstance(A, pg.matrix.SparseMatrix) or \
-           isinstance(A, pg.matrix.SparseMapMatrix) or \
-            isinstance(A, pg.matrix.BlockMatrix) or \
-            isinstance(A, pg.matrix.CSparseMatrix):
+        if isinstance(mat, pg.matrix.SparseMatrix) or \
+           isinstance(mat, pg.matrix.SparseMapMatrix) or \
+            isinstance(mat, pg.matrix.BlockMatrix) or \
+            isinstance(mat, pg.matrix.CSparseMatrix):
             solver = 'pg'
-        
+
     if solver == 'pg':
-        S = A
-        if isinstance(A, pg.matrix.CSparseMatrix):
+        _m = mat
+        if isinstance(mat, pg.matrix.CSparseMatrix):
             x = pg.CVector(len(b), 0)
-        elif isinstance(A, pg.matrix.SparseMatrix):
+        elif isinstance(mat, pg.matrix.SparseMatrix):
             pass
-        elif isinstance(A, pg.matrix.SparseMapMatrix):
-            S = pg.matrix.SparseMatrix(A)    
-        elif isinstance(A, pg.matrix.BlockMatrix):    
-            S = A.sparseMapMatrix()
+        elif isinstance(mat, pg.matrix.SparseMapMatrix):
+            _m = pg.matrix.SparseMatrix(mat)
+        elif isinstance(mat, pg.matrix.BlockMatrix):
+            _m = mat.sparseMapMatrix()
         else:
             pg.critical("Solver '" + solver + "' does not know how to "
-                        "solve linear system with matrixtype:" + A)
-        
-        ls = pg.core.LinSolver(S, verbose=verbose)
+                        "solve linear system with matrixtype:" + mat)
+
+        ls = pg.core.LinSolver(_m, verbose=verbose)
         ls.solve(b, x)
     else:
-    
-        if isinstance(A, np.ndarray):
-            return np.linalg.solve(A, b)
-        
-        import scipy.sparse
+
+        if isinstance(mat, np.ndarray):
+            return np.linalg.solve(mat, b)
+
+        scipy = pg.optImport('scipy')
+        #import scipy.sparse
         from scipy.sparse.linalg import spsolve
-        
-        if isinstance(A, scipy.sparse.csr.csr_matrix) or \
-            isinstance(A, scipy.sparse.coo.coo_matrix):
+
+        if isinstance(mat, scipy.sparse.csr.csr_matrix) or \
+            isinstance(mat, scipy.sparse.coo.coo_matrix):
             if verbose:
                 pg.info("linSolve use scipy.sparse")
-            return spsolve(A, b)
+            return spsolve(mat, b)
 
-        return linSolve(pg.utils.sparseMatrix2csr(A), b, 
+        return linSolve(pg.utils.sparseMatrix2csr(mat), b,
                         solver='np', verbose=verbose)
 
     return x
 
-def assembleForceVector(mesh, f, userData=None):
-    """
-    DEPRECATED use assembleLoadVector instead
-    """
-    return assembleLoadVector(mesh, f, userData)
-
 
 def assembleLoadVector(mesh, f, userData=None):
+    r"""Assemble the load vector. See createLoadVector. Maybe we will remove this """
+    return createLoadVector(mesh, f, userData)
+
+def createLoadVector(mesh, f, userData=None):
     """Create right hand side vector based on the given mesh and load
     or force values.
+
+    TODO:
+    Maybe we can define an additional nodal force vector.
 
     Create right hand side vector based on the given mesh and load or force
     values.
@@ -848,14 +849,14 @@ def assembleLoadVector(mesh, f, userData=None):
     ----------
     f: float, array, callable(cell, [rhs], [userData]), [...]
 
-        Your callable need to return a load value for each cell with optional 
+        Your callable need to return a load value for each cell with optional
         userData. `f_cell = f(cell, [userData=None])`
 
         Force Values
         float -> ones(mesh.nodeCount()) * vals,
         for each node [0 .. mesh.nodeCount()]
         for each cell [0 .. mesh.cellCount()]
-    
+
     Returns
     -------
 
@@ -870,7 +871,7 @@ def assembleLoadVector(mesh, f, userData=None):
             rhs = np.zeros((len(f), mesh.nodeCount()))
             for i, fi in enumerate(f):
                 userData['i'] = i
-                rhs[i] = assembleForceVector(mesh, fi, userData)
+                rhs[i] = createLoadVector(mesh, fi, userData)
 
             return rhs
 
@@ -881,7 +882,7 @@ def assembleLoadVector(mesh, f, userData=None):
     rhs = pg.Vector(mesh.nodeCount(), 0)
 
     fArray = None
-    
+
     if hasattr(f, '__call__') and not isinstance(f, pg.Vector):
         fArray = pg.Vector(mesh.cellCount())
         for c in mesh.cells():
@@ -912,7 +913,7 @@ def assembleLoadVector(mesh, f, userData=None):
 #                for i, idx in enumerate(b_l.idx()):
 #                    rhsRef[idx] += b_l.row(0)[i] * fArray[c.id()]
 #            np.testing.assert_allclose(rhs, rhsRef)
-#            print("Remove revtest in assembleForceVector after check")
+#            print("Remove revtest in assembleLoadVector after check")
 
     elif len(fArray) == mesh.nodeCount():
         fA = pg.Vector(fArray)
@@ -928,35 +929,35 @@ def assembleLoadVector(mesh, f, userData=None):
             #     for i, idx in enumerate(b_l.idx()):
             #         rhsRef[idx] += b_l.row(0)[i] * fArray[idx]
             # np.testing.assert_allclose(rhs, rhsRef)
-            # print("Remove revtest in assembleForceVector after check")
+            # print("Remove revtest in assembleLoadVector after check")
 
             # rhs = pg.Vector(fArray)
     else:
-        raise Exception("Forcevector have the wrong size: " +
+        raise Exception("Load vector have the wrong size: " +
                         str(len(fArray)))
 
     return rhs
 
 
-def _assembleUDirichlet(S, rhs, uDirIndex, uDirchlet):
+def _assembleUDirichlet(mat, rhs, uDirIndex, uDirichlet):
     """This should be moved directly into the core"""
 
     if rhs is not None:
-        udirTmp = pg.Vector(S.rows(), 0.0)
-        udirTmp.setVal(uDirchlet, uDirIndex)
-        rhs -= S * udirTmp
+        uDir = pg.Vector(mat.rows(), 0.0)
+        uDir.setVal(uDirichlet, uDirIndex)
+        rhs -= mat * uDir
 
     for i in uDirIndex:
-        S.cleanRow(i)
-        S.cleanCol(i)
-        S.setVal(i, i, 1.0)
+        mat.cleanRow(i)
+        mat.cleanCol(i)
+        mat.setVal(i, i, 1.0)
 
     if rhs is not None:
-        rhs[uDirIndex] = uDirchlet
-        #rhs.setVal(uDirchlet, uDirIndex)
+        rhs[uDirIndex] = uDirichlet
+        #rhs.setVal(uDirichlet, uDirIndex)
 
 
-def assembleDirichletBC(S, boundaryPairs, rhs=None, time=0.0, userData=None,
+def assembleDirichletBC(mat, boundaryPairs, rhs=None, time=0.0, userData=None,
                         nodePairs=None):
     r"""Apply Dirichlet boundary condition.
 
@@ -970,7 +971,7 @@ def assembleDirichletBC(S, boundaryPairs, rhs=None, time=0.0, userData=None,
 
     Parameters
     ----------
-    S : :gimliapi:`GIMLI::RSparseMatrix`
+    mat : :gimliapi:`GIMLI::RSparseMatrix`
         System matrix of the system equation.
 
     boundaryPair : list()
@@ -1029,27 +1030,27 @@ def assembleDirichletBC(S, boundaryPairs, rhs=None, time=0.0, userData=None,
 
     uniqueNodes = unique(uDirNodes)
 
-    uDirchlet = []
+    uDirichlet = []
     uDirIndex = []
 
     for i, n in enumerate(uniqueNodes):
         uDirIndex.append(n.id())
-        uDirchlet.append(uDirVal[n.id()])
+        uDirichlet.append(uDirVal[n.id()])
 
     if nodePairs is not None:
         #print("nodePairs", nodePairs)
 
-        if len(nodePairs) == 2 and type(nodePairs[0]) == int :
+        if len(nodePairs) == 2 and isinstance(nodePairs[0], int):
             # assume a single Node [NodeId, val]
             nodePairs = [nodePairs]
 
         for i, [n, val] in enumerate(nodePairs):
             uDirIndex.append(n)
             if hasattr(val, '__call__'):
-                raise("callabe node pairs need to be implement.")
-            uDirchlet.append(val)
+                raise "callable node pairs need to be implement."
+            uDirichlet.append(val)
 
-    _assembleUDirichlet(S, rhs, uDirIndex, uDirchlet)
+    _assembleUDirichlet(mat, rhs, uDirIndex, uDirichlet)
 
 
 def assembleNeumannBC(rhs, boundaryPairs, a=None, time=0.0, userData=None):
@@ -1108,19 +1109,18 @@ def assembleNeumannBC(rhs, boundaryPairs, a=None, time=0.0, userData=None):
         if a is not None:
             try:
                 g *= a[boundary.leftCell().id()]
-                pass
-            except:
+            except BaseException as e:
                 print(boundary.leftCell())
                 print(boundary.leftCell().id())
                 print(a)
-                pg.warn('insufficient cell informations')
+                pg.warn('Insufficient cell information.')
 
         if g is not 0.0 and g is not None:
             Se.u(boundary)
             rhs.add(Se, g)
 
 
-def assembleRobinBC(S, boundaryPairs, rhs=None, time=0.0, userData=None):
+def assembleRobinBC(mat, boundaryPairs, rhs=None, time=0.0, userData=None):
     r"""Apply Robin boundary condition.
 
     Apply Robin boundary condition to the system matrix S and rhs vector
@@ -1135,11 +1135,11 @@ def assembleRobinBC(S, boundaryPairs, rhs=None, time=0.0, userData=None):
     TODO
         * b!=1 and g!=0 variable
         * check for b = 0 and move to dirichlet
-        * fixme, testme
+        * fixme, test me
 
     Parameters
     ----------
-    S: :gimliapi:`GIMLI::SparseMatrix`
+    mat: :gimliapi:`GIMLI::SparseMatrix`
         System matrix of the system equation.
     boundaryPair: list()
         List of pairs [:gimliapi:`GIMLI::Boundary`, :math:`\alpha`].
@@ -1182,16 +1182,16 @@ def assembleRobinBC(S, boundaryPairs, rhs=None, time=0.0, userData=None):
         if p != 0.0 and p is not None:
             print(p)
             Sp.u2(boundary)
-            S.add(Sp, p)
+            mat.add(Sp, p)
             #Sp *= p
             #S += Sp
 
-            if q != None:
+            if q is not None:
                 Sq.u(boundary)
                 rhs.add(Sq, -p*q)
 
 
-def assembleBC_(bc, mesh, S, rhs, a, time=None, userData=None):
+def assembleBC_(bc, mesh, mat, rhs, a, time=None, userData=None):
     r"""Shortcut to apply all boundary conditions.
 
     This is a helper function for the solver call.
@@ -1204,22 +1204,20 @@ def assembleBC_(bc, mesh, S, rhs, a, time=None, userData=None):
         assembleNeumannBC(rhs, parseArgToBoundaries(bct.pop('Neumann'), mesh),
                           a=a, time=time, userData=userData)
     if 'Robin' in bct:
-        assembleRobinBC(S, parseArgToBoundaries(bct.pop('Robin'), mesh),
+        assembleRobinBC(mat, parseArgToBoundaries(bct.pop('Robin'), mesh),
                         rhs=rhs, time=time, userData=userData)
     if 'Dirichlet' in bct:
-        assembleDirichletBC(S, parseArgToBoundaries(bct.pop('Dirichlet'), mesh),
+        assembleDirichletBC(mat,
+                            parseArgToBoundaries(bct.pop('Dirichlet'), mesh),
                             rhs=rhs, time=time, userData=userData)
     if 'Node' in bct:
-        assembleDirichletBC(S, [], nodePairs=bct.pop('Node'),
+        assembleDirichletBC(mat, [], nodePairs=bct.pop('Node'),
                             rhs=rhs, time=time, userData=userData)
 
     if len(bct.keys()) > 0:
         pg.warn("Unknown boundary condition[s]" + \
                        str(bct.keys()) + " will be ignored")
 
-
-def createLoadVector(mesh, f, userData=None):
-    return assembleLoadVector(mesh, f, userData)
 
 def createStiffnessMatrix(mesh, a=None):
     r"""Create the Stiffness matrix.
@@ -1247,7 +1245,7 @@ def createStiffnessMatrix(mesh, a=None):
     if mesh.cellCount() == 0:
         print(mesh)
         raise Exception("Mesh invalid")
-    
+
     if a is None:
         a = pg.Vector(mesh.cellCount(), 1.0)
 
@@ -1320,19 +1318,18 @@ def createMassMatrix(mesh, b=None):
     # return B
 
 
-def _feNorm(u, A):
+def _feNorm(u, mat):
     """Create a norm within a Finite Element space.
 
     Create the Finite Element Norm with a preassembled system matrix.
     """
-    return np.sqrt(pg.math.dot(u, A.mult(u)))
-    
+    return np.sqrt(pg.math.dot(u, mat.mult(u)))
 
-def L2Norm(u, M=None, mesh=None):
-    r"""Create Lebesgue (L2) norm for the finite element space.
 
-    Find the L2 Norm for a solution in the finite element space.
-    :math:`u` exact solution
+def normL2(u, mat=None, mesh=None):
+    r"""Create Lebesgue (L2) norm for finite element space.
+
+    Find the L2 Norm for a solution for the finite element space. :math:`u` exact solution
     :math:`{\bf M}` Mass matrix, i.e., Finite element identity matrix.
 
     .. math::
@@ -1341,11 +1338,11 @@ def L2Norm(u, M=None, mesh=None):
                                     & \approx h (\sum |f(x)|^2 )^{1/2} \\
         L2(u) = || u ||_{L^2} & = (\int |u|^2 \d x)^{1/2} \\
                               & \approx (\sum M (u)) ^{1/2} \\
-        e_{L2_rel} = \frac{L2(u)}{L2(u)} & = 
+        e_{L2_rel} = \frac{L2(u)}{L2(u)} & =
                                \frac{(\sum M(u))^{1/2}}{(\sum M u)^{1/2}}
 
-    The error for any approximated solution :math:`u_h` correlates to the L2 
-    norm of 'L2Norm(u - u_h, M)'. If you like relative values, you can also 
+    The error for any approximated solution :math:`u_h` correlates to the L2
+    norm of 'L2Norm(u - u_h, M)'. If you like relative values, you can also
     normalize this error with 'L2Norm(u - u_h, M) / L2Norm(u, M)*100'.
 
     Parameters
@@ -1353,9 +1350,9 @@ def L2Norm(u, M=None, mesh=None):
     u : iterable
         Node based value to compute the L2 norm for.
 
-    M : Matrix
+    mat : Matrix
         Mass element matrix.
-        
+
     mesh : :gimliapi:`GIMLI::Mesh`
         Mesh with the FE space to generate M if necessary.
 
@@ -1365,21 +1362,21 @@ def L2Norm(u, M=None, mesh=None):
         :math:`L2(u)` norm.
 
     """
-    if isinstance(M, pg.Mesh):
-        mesh = M
-        M = None
-        
-    if M is None and mesh is not None:
-        M = createMassMatrix(mesh)
+    if isinstance(mat, pg.Mesh):
+        mesh = mat
+        mat = None
 
-    if M is None:
+    if mat is None and mesh is not None:
+        mat = createMassMatrix(mesh)
+
+    if mat is None:
         # M is Identity matrix
         return np.sqrt(pg.math.dot(u, u))
 
-    return _feNorm(u, M)
+    return _feNorm(u, mat)
 
 
-def H1Norm(u, S=None, mesh=None):
+def normH1(u, mat=None, mesh=None):
     r"""Create (H1) norm for the finite element space.
 
     Parameters
@@ -1387,9 +1384,9 @@ def H1Norm(u, S=None, mesh=None):
     u : iterable
         Node based value to compute the H1 norm for.
 
-    S : Matrix
+    mat : Matrix
         Stiffness matrix.
-        
+
     mesh : :gimliapi:`GIMLI::Mesh`
         Mesh with the FE space to generate S if necessary.
 
@@ -1399,17 +1396,17 @@ def H1Norm(u, S=None, mesh=None):
         :math:`H1(u)` norm.
 
     """
-    if isinstance(S, pg.Mesh):
-        mesh = S
-        S = None
+    if isinstance(mat, pg.Mesh):
+        mesh = mat
+        mat = None
 
-    if S is None and mesh is not None:
-        S = pg.solver.createStiffnessMatrix(mesh)
-        
-    if S is None:
-        raise StandardException("Need S or mesh here to calculate H1Norm")
-        
-    return _feNorm(u, S)
+    if mat is None and mesh is not None:
+        mat = pg.solver.createStiffnessMatrix(mesh)
+
+    if mat is None:
+        raise Exception("Need Stiffness matrix or a mesh here to calculate H1-Norm")
+
+    return _feNorm(u, mat)
 
 
 def solve(mesh, **kwargs):
@@ -1439,7 +1436,8 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
 
     .. math::
 
-        \frac{\partial u}{\partial t} & = \nabla\cdot(a \nabla u) + b u + f(\mathbf{r},t)~~|~~\Omega_{\text{Mesh}}\\
+        \frac{\partial u}{\partial t} & = \nabla\cdot(a \nabla u)
+        + b u + f(\mathbf{r},t)~~|~~\Omega_{\text{Mesh}}\\
         u & = h~~|~~\Gamma_{\text{Dirichlet}}\\
         \frac{\partial u}{\partial \mathbf{n}} & = g~~|~~\Gamma_{\text{Neumann}}\\
         \alpha u + \beta\frac{\partial u}{\partial \mathbf{n}} & = \gamma~~|~~\Gamma_{\text{Robin}}
@@ -1480,7 +1478,7 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
         bc={'Dirichlet': [mesh.node(nodeID), value]}.
     times: array [None]
         Solve as time dependent problem for the given times.
-    
+
     Other Parameters
     ----------------
     **kwargs
@@ -1489,20 +1487,20 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
         theta: float [1]
             - :math:`theta = 0` means explicit Euler, maybe stable for
             :math:`\Delta t \quad\text{near}\quad h`
-            - :math:`theta = 0.5`, Crank-Nicolsen, maybe instable
+            - :math:`theta = 0.5`, Crank-Nicolson, maybe instable
             - :math:`theta = 1`, implicit Euler
 
             If unsure choose :math:`\theta = 0.5 + \epsilon`, which is probably stable.
         dynamic: bool [False]
-            Boundary conditions for time depending problems will be considerd 
+            Boundary conditions for time depending problems will be considered
             dynamic for each time step.
         stats: bool
             Give some statistics.
         progress: bool
             Give some calculation progress.
         assembleOnly: bool
-            Stops after matrix asssemblation. 
-            Returns the system matrix A and the rhs vector. 
+            Stops after matrix asssemblation.
+            Returns the system matrix A and the rhs vector.
         ws: dict
             The WorkSpace is a dictionary that will get
             some temporary data during the calculation.
@@ -1535,7 +1533,7 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
     >>> plt.show()
     """
     if bc is None:
-        bc={}
+        bc = {}
     if 'uB' in kwargs:
         pg.deprecated('bc arg uB', "bc={'Dirichlet': uB}") #20190912
         bc['Dirichlet'] = kwargs.pop('uB')
@@ -1550,38 +1548,36 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
     debug = kwargs.pop('debug', False)
     stats = kwargs.pop('stats', False)
 
-    mesh.createNeighbourInfos()
+    mesh.createNeighborInfos()
     if verbose:
         print("Mesh: ", str(mesh))
 
     dof = mesh.nodeCount()
 
     swatch = pg.core.Stopwatch(True)
-    swatch2 = pg.core.Stopwatch(True)
 
     # check for material parameter
     a = parseArgToArray(a, nDof=mesh.cellCount(), mesh=mesh, userData=userData)
-    
+
     S = createStiffnessMatrix(mesh, a)
     M = None
     A = None
 
     if b is not None:
-        b = parseArgToArray(b, nDof=mesh.cellCount(), 
+        b = parseArgToArray(b, nDof=mesh.cellCount(),
                             mesh=mesh, userData=userData)
         M = createMassMatrix(mesh, b)
-        #pg.warn("checkme")
-        A = S - M 
+        #pg.warn("check me")
+        A = S - M
         #A = S - createMassMatrix(mesh, b)
     else:
         A = S
 
     if times is None:
+<<<<<<< HEAD
+        rhs = createLoadVector(mesh, f, userData=userData)
+=======
         rhs = assembleForceVector(mesh, f, userData=userData)
-        
-        assembleBC_(bc, mesh, A, rhs, a, time=None, userData=userData)
-        
-        # create result array
         u = None
         if 'u' in workSpace:
             u = workSpace['u']
@@ -1647,12 +1643,12 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
             print("start TL", swatch.duration())
 
         M = createMassMatrix(mesh)
-        F = assembleForceVector(mesh, f)
+        F = assembleLoadVector(mesh, f)
 
         u0 = np.zeros(dof)
         if 'u0' in kwargs:
             u0 = parseArgToArray(kwargs['u0'], dof, mesh, userData)
-        
+
         progress = None
         if 'progress' in kwargs:
             from pygimli.utils import ProgressBar
@@ -1711,7 +1707,7 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
             A = M + S * dt * theta
 
             assembleBC_(bc, mesh, A, br, a, time=times[n], userData=userData)
-            
+
             if 'assembleOnly' in kwargs:
                 return A, br
 
@@ -1726,10 +1722,9 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
             U[n, :] = np.asarray(u)
 
             if progress:
-                progress.update(n,
-                            ' t_prep: ' + str(round(t_prep, 5)) + 's' + \
-                            ' t_step: ' + str(round(swatch.duration(),5)) + 's')
-
+                progress.update(n, ' t_prep: {0}ms t_step {1}s'.format(
+                    pg.pf(t_prep*1000),
+                    pg.pf(swatch.duration())))
         if debug:
             print("Measure(" + str(len(times)) + "): ",
                   measure, measure / len(times))
@@ -1738,7 +1733,7 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
 def checkCFL(times, mesh, vMax):
     """Check Courant-Friedrichs-Lewy condition.
 
-    For advection and flow problems. CFL Number should be lower then 1 to 
+    For advection and flow problems. CFL Number should be lower then 1 to
     ensure stability.
 
     Parameters
@@ -1747,25 +1742,36 @@ def checkCFL(times, mesh, vMax):
     if times is not None:
         dt = times[1] - times[0]
         dx = 0.0
-        
+
         if mesh.dimension() == 1:
             dx = min(mesh.cellSizes())
         else:
             dx = min(mesh.boundarySizes())
         c = vMax * dt / dx
-        pg._r(c)
+
         if c > 1:
+<<<<<<< HEAD
             print("Courant-Friedrichs-Lewy Number:", c,
-                  "but sould be lower 1 to ensure movement inside a cell "
+                  "but should be lower 1 to ensure movement inside a cell "
                   "per timestep. ("
-                  "vmax =", vMax,
+                  "vMax =", vMax,
                   "dt =", dt,
                   "dx =", dx,
                   "dt <", dx/vMax,
                   " | N > ", int((times[-1]-times[0])/(dx/vMax))+1, ")")
+=======
+            pg.warn("Courant-Friedrichs-Lewy Number:", c,
+                    "but sould be lower 1 to ensure movement inside a cell "
+                    "per timestep. ("
+                    "vmax =", vMax,
+                    "dt =", dt,
+                    "dx =", dx,
+                    "dt <", dx/vMax,
+                    " | N > ", int((times[-1]-times[0])/(dx/vMax))+1, ")")
+>>>>>>> febfaa64b601726171a5c52c4234d92c20b03911
     return c
 
-def crankNicolson(times, theta, S, I, f, u0=None, progress=None, debug=None):
+def crankNicolson(times, theta, matS, matI, f, u0=None, progress=None):
     """
         S = constant over time
         f = constant over time
@@ -1773,7 +1779,7 @@ def crankNicolson(times, theta, S, I, f, u0=None, progress=None, debug=None):
     if len(times) < 2:
         raise BaseException("We need at least 2 times for "
                             "Crank-Nicolsen time discretization." + str(len(times)))
-    sw = pg.core.Stopwatch(True)
+    # sw = pg.core.Stopwatch(True)
 
     if u0 is None:
         u0 = np.zeros(len(f))
@@ -1791,14 +1797,15 @@ def crankNicolson(times, theta, S, I, f, u0=None, progress=None, debug=None):
     timeMeasure = False
     if progress:
         timeMeasure = True
-    
-    A = I
+
+    A = matI
     if theta > 0:
-        A = I + S * (dt * theta)
-    
+        A = matI + matS * (dt * theta)
+
     solver = pg.core.LinSolver(A, verbose=False)
-    
-    St = I - S * dt # cache what is possible the theta=0
+
+    St = matI - matS * dt # cache what is possible the theta=0
+
     for n in range(1, len(times)):
 
         if timeMeasure:
@@ -1815,11 +1822,11 @@ def crankNicolson(times, theta, S, I, f, u0=None, progress=None, debug=None):
 #        pg.toc()
 #
 #        pg.tic()
-    
+
         if theta == 0:
             b = St * u[n-1] + dt * rhs[n-1]
         else:
-            b = I * u[n-1] + S.mult(dt * (theta - 1.) * u[n-1]) + \
+            b = matI * u[n-1] + matS.mult(dt * (theta - 1.) * u[n-1]) + \
                 dt * ((1.0 - theta) * rhs[n-1] + theta * rhs[n])
 
 #        pg.toc()
@@ -1830,7 +1837,7 @@ def crankNicolson(times, theta, S, I, f, u0=None, progress=None, debug=None):
             timeAssemble.append(pg.dur())
             pg.tic()
 
-        u[n,:] = solver.solve(b)
+        u[n, :] = solver.solve(b)
 
         if timeMeasure:
             timeSolve.append(pg.dur())
@@ -1879,7 +1886,7 @@ class RungeKutta(object):
         self.time = 0
         self.tMax = None
         self.u = None
-        self.resu = None
+        self.resU = None
         self.nSteps = 0
 
     def run(self, u0, dt, tMax=1):
@@ -1898,13 +1905,13 @@ class RungeKutta(object):
         self.time = 0
         self.tMax = tMax
         self.u = deepcopy(u0)
-        self.resu = deepcopy(u0)
+        self.resU = deepcopy(u0)
 
-        if isinstance(self.resu, list):
-            for r in self.resu:
+        if isinstance(self.resU, list):
+            for r in self.resU:
                 r *= 0.0
         else:
-            self.resu *= 0.0
+            self.resU *= 0.0
 
     def step(self):
         """TODO DOCUMENT ME"""
@@ -1929,7 +1936,7 @@ class RungeKutta(object):
             self.u = (self.u + 2*k2 + 2*self.dt*k3)/3
 
         elif self.order == 4:
-            # classical 4 step Runga-Kutta rk4
+            # classical 4 step Runge-Kutta rk4
             k1 = self.solver.explicitRHS(self.u,
                                          self.time)
             k2 = self.solver.explicitRHS(self.u + self.dt/2 * k1,
@@ -1947,15 +1954,15 @@ class RungeKutta(object):
 
                 rhs = self.solver.explicitRHS(self.u, tLocal)
 
-                if isinstance(self.resu, list):
-                    for i in range(len(self.resu)):
-                        self.resu[i] = self.rk4a[jRK] * self.resu[i] + \
+                if isinstance(self.resU, list):
+                    for i in range(len(self.resU)):
+                        self.resU[i] = self.rk4a[jRK] * self.resU[i] + \
                                        self.dt * rhs[i]
 
-                        self.u[i] += self.rk4b[jRK] * self.resu[i]
+                        self.u[i] += self.rk4b[jRK] * self.resU[i]
                 else:
-                    self.resu = self.rk4a[jRK] * self.resu + self.dt * rhs
-                    self.u += self.rk4b[jRK] * self.resu
+                    self.resU = self.rk4a[jRK] * self.resU + self.dt * rhs
+                    self.u += self.rk4b[jRK] * self.resU
 
         self.time += self.dt
         return self.u

@@ -252,7 +252,7 @@ void triangleMesh_(const Mesh & mesh, Mesh & tmpMesh){
             std::cerr << WHERE_AM_I << " nothing known to cell.rtti " << mesh.cell(i).rtti() << std::endl;
         }
     }
-    tmpMesh.createNeighbourInfos(true);
+    tmpMesh.createNeighborInfos(true);
 }
 
 

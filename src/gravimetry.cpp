@@ -16,7 +16,6 @@
  *                                                                            *
  ******************************************************************************/
 
-
 #include "gravimetry.h"
 
 #include "integration.h"
@@ -98,7 +97,7 @@ double lineIntegraldGdz( const RVector3 & p1, const RVector3 & p2 ){
 }
 
 RVector calcGBounds( const std::vector< RVector3 > & pos, const Mesh & mesh, const RVector & model ){
-    /*! Ensure neighbourInfos() */
+    /*! Ensure neighborInfos() */
     RMatrix Jacobian( pos.size(), mesh.cellCount() );
 
     Jacobian *= 0.;
@@ -122,7 +121,7 @@ double f_gz( const RVector3 & x, const RVector3 & p ){
 }
 
 RVector calcGCells( const std::vector< RVector3 > & pos, const Mesh & mesh, const RVector & model, uint nInt ){
-    /*! Ensure neighbourInfos() */
+    /*! Ensure neighborInfos() */
     RMatrix Jacobian( pos.size(), mesh.cellCount() );
 
     Jacobian *= 0.;

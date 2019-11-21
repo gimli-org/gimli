@@ -246,8 +246,8 @@ void MeshEntity::addSecondaryNode(Node * n) {
 };
 
 void MeshEntity::delSecondaryNode(Node * n) {
-    secondaryNodes_.erase(std::remove(secondaryNodes_.begin(), 
-                                      secondaryNodes_.end(), n), 
+    secondaryNodes_.erase(std::remove(secondaryNodes_.begin(),
+                                      secondaryNodes_.end(), n),
                           secondaryNodes_.end());
 };
 
@@ -255,7 +255,7 @@ const std::vector < Node * > & MeshEntity::secondaryNodes() const {
     return secondaryNodes_;
 };
 
-const std::vector < Node * > MeshEntity::allNodes() const { 
+const std::vector < Node * > MeshEntity::allNodes() const {
     std::vector < Node * > ns;
     for (Index i = 0; i < this->nodeVector_.size(); i++ ){
         ns.push_back(this->nodeVector_[i]);
@@ -385,9 +385,9 @@ Node * Cell::oppositeTo(const Boundary & bound){
      return NULL;
 }
 
-void Cell::cleanNeighbourInfos(){
-    for (uint i = 0; i < this->neighbourCellCount(); i ++){
-        neighbourCells_[i] = NULL;
+void Cell::cleanNeighborInfos(){
+    for (uint i = 0; i < this->neighborCellCount(); i ++){
+        neighborCells_[i] = NULL;
     }
 }
 
@@ -470,7 +470,7 @@ Boundary * Cell::boundary(Index i){
     return findBoundary(boundaryNodes(i));
 }
 
-Cell * Cell::neighbourCell(const RVector & sf){
+Cell * Cell::neighborCell(const RVector & sf){
     if (haveInfNaN(sf)){
         __MS("fixme " << sf)
         exit(0);
@@ -489,7 +489,7 @@ Cell * Cell::neighbourCell(const RVector & sf){
 //        __MS(b->leftCell())
 //        __MS(b->rightCell())
 
-        return neighbourCells_[minId];
+        return neighborCells_[minId];
     }
 
     Boundary * b = boundaryTo(sf);
@@ -505,8 +505,8 @@ Cell * Cell::neighbourCell(const RVector & sf){
     return NULL;
 }
 
-void Cell::findNeighbourCell(uint i){
-    if (!neighbourCells_[i]){
+void Cell::findNeighborCell(uint i){
+    if (!neighborCells_[i]){
         std::vector < Node * > n(boundaryNodes(i));
 
         std::set < Cell *> common;
@@ -524,7 +524,7 @@ void Cell::findNeighbourCell(uint i){
         }
 
         common.erase(this);
-        if (common.size() == 1) neighbourCells_[i] = *common.begin(); else neighbourCells_[i] = NULL;
+        if (common.size() == 1) neighborCells_[i] = *common.begin(); else neighborCells_[i] = NULL;
     }
 }
 
@@ -828,19 +828,19 @@ void PolygonFace::insertNode(Node * n, double tol){
             log(Error, "PolygonFace::insertNode. Duplicate node position found. "
                        "Node need to touch the Polygon face or its edge but not the corner nodes.");
         }
-        
-        Line segment(this->node(i).pos(), 
+
+        Line segment(this->node(i).pos(),
                      this->node((i+1)%this->nodeCount()).pos());
-        int pFkt;                     
+        int pFkt;
         if (segment.touch1(n->pos(), pFkt, tol)){
             if (pFkt == 3){
                 // __MS("insert edge")
                 std::vector < Node * > nodes;
-                for (Index j = 0; j < i + 1; j ++){ 
+                for (Index j = 0; j < i + 1; j ++){
                     nodes.push_back(&this->node(j));
                 }
                 nodes.push_back(n);
-                for (Index j = i + 1; j < this->nodeCount(); j ++){ 
+                for (Index j = i + 1; j < this->nodeCount(); j ++){
                     nodes.push_back(&this->node(j));
                 }
                 n->setState(Connected);
@@ -851,7 +851,7 @@ void PolygonFace::insertNode(Node * n, double tol){
                 fillShape_();
                 return;
             }
-        } 
+        }
     }
     this->addSecondaryNode(n);
     n->setState(Secondary);
@@ -868,24 +868,24 @@ void PolygonFace::addHoleMarker(const RVector3 & pos){
     holeMarker_.push_back(pos);
 }
 void PolygonFace::delHoleMarker(const RVector3 & pos){
-    holeMarker_.erase(std::remove(holeMarker_.begin(), 
-                                  holeMarker_.end(), pos), 
+    holeMarker_.erase(std::remove(holeMarker_.begin(),
+                                  holeMarker_.end(), pos),
                       holeMarker_.end());
 }
-const PolygonFace::HoleMarkerList & PolygonFace::holeMarkers() const { 
-    return holeMarker_; 
+const PolygonFace::HoleMarkerList & PolygonFace::holeMarkers() const {
+    return holeMarker_;
 }
 
 EdgeCell::EdgeCell(const std::vector < Node * > & nodes) : Cell(nodes){
     shape_ = new EdgeShape();
     fillShape_();
-    neighbourCells_.resize(this->neighbourCellCount(), NULL);
+    neighborCells_.resize(this->neighborCellCount(), NULL);
 }
 
 EdgeCell::EdgeCell(Node & n1, Node & n2) : Cell() {
     shape_ = new EdgeShape();
     setNodes(n1, n2, false );
-    neighbourCells_.resize(this->neighbourCellCount(), NULL);
+    neighborCells_.resize(this->neighborCellCount(), NULL);
 }
 
 EdgeCell::~EdgeCell(){
@@ -908,13 +908,13 @@ std::vector < Node * > EdgeCell::boundaryNodes(Index i) const {
     return nodes;
 }
 
-// void EdgeCell::findNeighbourCell(uint id){
+// void EdgeCell::findneighborCell(uint id){
 //     //     case: 0 - 1
 //     //     case: 1 - 0
 //
 //     std::set < Cell * > common(nodeVector_[(id + 1)%2]->cellSet());
 //     common.erase(this);
-//     if (common.size() == 1) neighbourCells_[id] = *common.begin(); else neighbourCells_[id] = NULL;
+//     if (common.size() == 1) neighborCells_[id] = *common.begin(); else neighborCells_[id] = NULL;
 // }
 
 std::vector < PolynomialFunction < double > > EdgeCell::createShapeFunctions() const{
@@ -951,13 +951,13 @@ std::vector < PolynomialFunction < double > > Edge3Cell::createShapeFunctions() 
 Triangle::Triangle(const std::vector < Node * > & nodes) : Cell(nodes){
     shape_ = new TriangleShape();
     fillShape_();
-    neighbourCells_.resize(this->neighbourCellCount(), NULL);
+    neighborCells_.resize(this->neighborCellCount(), NULL);
 }
 
 Triangle::Triangle(Node & n1, Node & n2, Node & n3): Cell(){
     shape_ = new TriangleShape();
     setNodes(n1, n2, n3, false);
-    neighbourCells_.resize(this->neighbourCellCount(), NULL);
+    neighborCells_.resize(this->neighborCellCount(), NULL);
 }
 
 Triangle::~Triangle(){
@@ -1007,13 +1007,13 @@ std::vector < PolynomialFunction < double > > Triangle6::createShapeFunctions() 
 Quadrangle::Quadrangle(const std::vector < Node * > & nodes) : Cell(nodes){
     shape_ = new QuadrangleShape();
     fillShape_();
-    neighbourCells_.resize(this->neighbourCellCount(), NULL);
+    neighborCells_.resize(this->neighborCellCount(), NULL);
 }
 
 Quadrangle::Quadrangle(Node & n1, Node & n2, Node & n3, Node & n4): Cell(){
     shape_ = new QuadrangleShape();
     setNodes(n1, n2, n3, n4, false );
-    neighbourCells_.resize(this->neighbourCellCount(), NULL);
+    neighborCells_.resize(this->neighborCellCount(), NULL);
 }
 
 Quadrangle::~Quadrangle(){
@@ -1031,23 +1031,23 @@ void Quadrangle::setNodes(Node & n1, Node & n2, Node & n3, Node & n4, bool chang
   fillShape_();
 }
 
-// void Quadrangle::findNeighbourCell(uint id){
+// void Quadrangle::findneighborCell(uint id){
 //     std::set < Cell * > common;
 //
 //     intersectionSet(common, nodeVector_[(id + 1)%4]->cellSet(), nodeVector_[(id + 2)%4]->cellSet());
 //     common.erase(this);
-//     if (common.size() == 1) neighbourCells_[id] = *common.begin(); else neighbourCells_[id] = NULL;
+//     if (common.size() == 1) neighborCells_[id] = *common.begin(); else neighborCells_[id] = NULL;
 
     //** start check;
 //     if (this->id() ==){
 //
 //         int pIdx = 0;
-//         shape_->touch1(neighbourCells_[id]->center(), true, pIdx);
+//         shape_->touch1(neighborCells_[id]->center(), true, pIdx);
 //         if (pIdx != id){
 //             std::cout << "something goes wrong here idx:" << id << " pIdx = " << pIdx << " "
 //                     <<  id - pIdx<< std::endl;
 //             std::cout << "orign:" << *this << std::endl;
-//             std::cout << "test:" << *neighbourCells_[id] << std::endl;
+//             std::cout << "test:" << *neighborCells_[id] << std::endl;
 //             for (uint i = 0; i <4 ; i ++){
 //                 std::cout << this->node(i)<< std::endl;
 //             }
@@ -1089,13 +1089,13 @@ std::vector < PolynomialFunction < double > > Quadrangle8::createShapeFunctions(
 Tetrahedron::Tetrahedron(const std::vector < Node * > & nodes) : Cell(nodes){
     shape_ = new TetrahedronShape();
     fillShape_();
-    neighbourCells_.resize(this->neighbourCellCount(), NULL);
+    neighborCells_.resize(this->neighborCellCount(), NULL);
 }
 
 Tetrahedron::Tetrahedron(Node & n1, Node & n2, Node & n3, Node & n4) : Cell() {
     shape_ = new TetrahedronShape();
     setNodes(n1, n2, n3, n4, false );
-    neighbourCells_.resize(this->neighbourCellCount(), NULL);
+    neighborCells_.resize(this->neighborCellCount(), NULL);
 }
 
 Tetrahedron::~Tetrahedron(){
@@ -1113,13 +1113,13 @@ void Tetrahedron::setNodes(Node & n1, Node & n2, Node & n3, Node & n4, bool chan
   fillShape_();
 }
 
-// void Tetrahedron::findNeighbourCell(uint i){
+// void Tetrahedron::findneighborCell(uint i){
 //     std::set < Cell * > c1, common;
 //     intersectionSet(c1, nodeVector_[(i + 1)%4]->cellSet(), nodeVector_[(i + 2)%4]->cellSet());
 //     intersectionSet(common, c1, nodeVector_[(i + 3)%4]->cellSet());
 //
 //     common.erase(this);
-//     if (common.size() == 1) neighbourCells_[i] = *common.begin(); else neighbourCells_[i] = NULL;
+//     if (common.size() == 1) neighborCells_[i] = *common.begin(); else neighborCells_[i] = NULL;
 // }
 
 std::vector < PolynomialFunction < double > > Tetrahedron::createShapeFunctions() const{
@@ -1153,7 +1153,7 @@ std::vector < PolynomialFunction < double > > Tetrahedron10::createShapeFunction
 Hexahedron::Hexahedron(const std::vector < Node * > & nodes) : Cell(nodes) {
     shape_ = new HexahedronShape();
     fillShape_();
-    neighbourCells_.resize(this->neighbourCellCount(), NULL);
+    neighborCells_.resize(this->neighborCellCount(), NULL);
 }
 
 Hexahedron::~Hexahedron(){
@@ -1166,7 +1166,7 @@ std::vector < PolynomialFunction < double > > Hexahedron::createShapeFunctions()
     return createPolynomialShapeFunctions(*this, 2, true, true);
 }
 
-// void Hexahedron::findNeighbourCell(uint i){
+// void Hexahedron::findneighborCell(uint i){
 //     std::vector < Node * > n(boundaryNodes(i));
 //
 //     std::set < Cell *> common;
@@ -1180,7 +1180,7 @@ std::vector < PolynomialFunction < double > > Hexahedron::createShapeFunctions()
 //     }
 //
 //     common.erase(this);
-//     if (common.size() == 1) neighbourCells_[i] = *common.begin(); else neighbourCells_[i] = NULL;
+//     if (common.size() == 1) neighborCells_[i] = *common.begin(); else neighborCells_[i] = NULL;
 // }
 
 std::vector < Node * > Hexahedron::boundaryNodes(Index i) const {
@@ -1213,7 +1213,7 @@ std::vector < Node * > Hexahedron20::boundaryNodes(Index i) const {
 TriPrism::TriPrism(const std::vector < Node * > & nodes) : Cell(nodes){
     shape_ = new TriPrismShape();
     fillShape_();
-    neighbourCells_.resize(this->neighbourCellCount(), NULL);
+    neighborCells_.resize(this->neighborCellCount(), NULL);
 }
 
 TriPrism::~TriPrism(){
@@ -1289,7 +1289,7 @@ std::vector < PolynomialFunction < double > > TriPrism15::createShapeFunctions()
 Pyramid::Pyramid(const std::vector < Node * > & nodes): Cell(nodes){
     shape_ = new PyramidShape();
     fillShape_();
-    neighbourCells_.resize(this->neighbourCellCount(), NULL);
+    neighborCells_.resize(this->neighborCellCount(), NULL);
 }
 
 Pyramid::~Pyramid(){

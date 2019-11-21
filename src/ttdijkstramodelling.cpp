@@ -39,12 +39,12 @@
 
 namespace GIMLI {
 
-Dijkstra::Dijkstra() 
+Dijkstra::Dijkstra()
 : _root(std::numeric_limits<Index>::max()){
-    
+
 }
 
-Dijkstra::Dijkstra(const Graph & graph) 
+Dijkstra::Dijkstra(const Graph & graph)
 : graph_(graph), _root(std::numeric_limits<Index>::max()){
     pathMatrix_.resize(graph.size());
 }
@@ -56,8 +56,8 @@ double Dijkstra::distance(Index root, Index node) {
     return distance(node);
 }
 
-double Dijkstra::distance(Index node) { 
-    return distances_[node].time(); 
+double Dijkstra::distance(Index node) {
+    return distances_[node].time();
 }
 
 RVector Dijkstra::distances(Index root) {
@@ -99,7 +99,7 @@ void Dijkstra::setStartNode(Index startNode) {
 
         if (distances_.count(node) == 0) {
             //distances_[node] = distance;
-            
+
             distances_[node] = GraphDistInfo(distance, 0);
 
             if ((Index)pathMatrix_.size() <= node){
@@ -184,7 +184,7 @@ void fillGraph_(Graph & graph, const Node & a, const Node & b, double slowness, 
 
     double newTime = dist * slowness;
     double oldTime = graph[a.id()][b.id()].time();
-    
+
     // if (V_){
     //     __MS("a:" << a.id() << " b:"  << b.id() << " L:" << leftID << " t:" << " " << newTime << " " << oldTime)
     // }
@@ -197,15 +197,15 @@ void fillGraph_(Graph & graph, const Node & a, const Node & b, double slowness, 
         NodeDistMap::iterator ita(graph[a.id()].find(b.id()));
         ita->second.cellIDs().insert(leftID);
         ita->second.setTime(newTime);
-        
+
         NodeDistMap::iterator itb(graph[b.id()].find(a.id()));
         itb->second.cellIDs().insert(leftID);
         itb->second.setTime(newTime);
-        
+
     } else {
         // first time fill
-        graph[a.id()][b.id()] = GraphDistInfo(newTime, dist, leftID);   
-        graph[b.id()][a.id()] = GraphDistInfo(newTime, dist, leftID);    
+        graph[a.id()][b.id()] = GraphDistInfo(newTime, dist, leftID);
+        graph[b.id()][a.id()] = GraphDistInfo(newTime, dist, leftID);
     }
 }
 
@@ -237,7 +237,7 @@ void fillGraph_(Graph & graph, Cell & c, double slowness){
 
 Graph TravelTimeDijkstraModelling::createGraph(const RVector & slownessPerCell) const {
     Graph graph;
-    mesh_->createNeighbourInfos();
+    mesh_->createNeighborInfos();
 
     for (Index i = 0; i < mesh_->cellCount(); i ++) {
         Cell & c = mesh_->cell(i);
@@ -359,7 +359,7 @@ public:
                         const IndexArray      & shotNodes,
                         const IndexArray      & recNodes,
                         bool verbose)
-    : BaseCalcMT(verbose), _dists(&dists), _dijkstra(dijk), 
+    : BaseCalcMT(verbose), _dists(&dists), _dijkstra(dijk),
       _shotNodeIds(&shotNodes), _recNodeIds(&recNodes){
     }
     virtual ~CreateDijkstraDistMT(){}
@@ -367,7 +367,7 @@ public:
     virtual void calc(){
         for (Index shot = start_; shot < end_; shot ++) {
             _dijkstra.setStartNode((*_shotNodeIds)[shot]);
-            
+
             for (Index i = 0; i < _recNodeIds->size(); i ++) {
                 (*_dists)[shot][i] = _dijkstra.distance((*_recNodeIds)[i]);
             }
@@ -394,7 +394,7 @@ RVector TravelTimeDijkstraModelling::response(const RVector & slowness) {
     // J(m)*m ill only work if mesh contains a valid parametrization
     // this->createJacobian(slowPerCell);
     // return jacobian_->mult(slowness);
-    
+
     dijkstra_.setGraph(createGraph(slowPerCell));
 
     Index nShots = shotNodeId_.size();
@@ -402,9 +402,9 @@ RVector TravelTimeDijkstraModelling::response(const RVector & slowness) {
     RMatrix dMap(nShots, nRecei);
 
     Index nThreads = this->threadCount();
-    
-    distributeCalc(CreateDijkstraDistMT(dMap, this->dijkstra_, 
-                                       this->shotNodeId_, 
+
+    distributeCalc(CreateDijkstraDistMT(dMap, this->dijkstra_,
+                                       this->shotNodeId_,
                                        this->receNodeId_, this->verbose()),
                    nShots, nThreads, this->verbose());
 
@@ -464,9 +464,9 @@ public:
                         const IndexArray      & shotNodes,
                         const IndexArray      & recNodes,
                         bool verbose)
-    : BaseCalcMT(verbose), _wayMatrix(&wayM[0]), _dijkstra(dijk), 
+    : BaseCalcMT(verbose), _wayMatrix(&wayM[0]), _dijkstra(dijk),
       _shotNodeIds(&shotNodes), _recNodeIds(&recNodes){
- 
+
     }
 
     virtual ~CreateDijkstraRowMT(){}
@@ -474,7 +474,7 @@ public:
     virtual void calc(){
         for (Index shot = start_; shot < end_; shot ++) {
             _dijkstra.setStartNode((*_shotNodeIds)[shot]);
-            
+
             for (Index i = 0; i < _recNodeIds->size(); i ++) {
                 _wayMatrix[shot][i] = _dijkstra.shortestPathTo((*_recNodeIds)[i]);
             }
@@ -526,7 +526,7 @@ void TravelTimeDijkstraModelling::createJacobian(RSparseMapMatrix & jacobian,
 
     Index nThreads = this->threadCount();
 
-    distributeCalc(CreateDijkstraRowMT(wayMatrix_, dijkstra_, 
+    distributeCalc(CreateDijkstraRowMT(wayMatrix_, dijkstra_,
                                        shotNodeId_, receNodeId_, this->verbose()),
                    nShots, nThreads, this->verbose());
 
@@ -552,9 +552,9 @@ void TravelTimeDijkstraModelling::createJacobian(RSparseMapMatrix & jacobian,
 
             Index aId = wayMatrix_[s][g][i];
             Index bId = wayMatrix_[s][g][i + 1];
-       
+
             const GraphDistInfo & way = dijkstra_.graphInfo(aId, bId);
-            
+
             double edgeLength = way.dist();
             //double edgeLength = mesh_->node(aId).pos().distance(mesh_->node(bId).pos());
             double slo = 0.0;
@@ -564,7 +564,7 @@ void TravelTimeDijkstraModelling::createJacobian(RSparseMapMatrix & jacobian,
             for (const auto &iCD : way.cellIDs()){
                 minSlow = min(minSlow, slowPerCell[iCD]);
             }
-            
+
             for (const auto &iCD : way.cellIDs()){
                 if (std::fabs(slowPerCell[iCD] - minSlow) < 1e-4){
                     Cell *c = & mesh_->cell(iCD);
@@ -574,7 +574,7 @@ void TravelTimeDijkstraModelling::createJacobian(RSparseMapMatrix & jacobian,
 
             for (const auto &c : neighborCells){
                 jacobian[dataIdx][c->marker()] += edgeLength / neighborCells.size();
-            } 
+            }
         }
     }
     if (this->verbose()){

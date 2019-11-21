@@ -16,8 +16,6 @@ def __Mesh_str(self):
         st += " secNodes: " + str(self.secondaryNodeCount())
 
     return st
-
-
 Mesh.__str__ = __Mesh_str
 
 
@@ -26,8 +24,6 @@ def __addPLCs__(self, other):
         return mergePLC([self, other])
     else:
         error("Addition is only supported for PLCs, i.e. meshs without cells.")
-
-
 Mesh.__add__ = __addPLCs__
 
 
@@ -44,8 +40,6 @@ def __MeshEntity_str(self):
         for n in self.nodes():
             s += '\t' + str(n.id()) + " " + str(n.pos()) + "\n"
     return s
-
-
 MeshEntity.__str__ = __MeshEntity_str
 
 
@@ -56,11 +50,9 @@ def __Node_str(self):
          ', Marker: ' + str(self.marker())
     s += '\t' + str(self.pos()) + '\n'
     return s
-
-
 Node.__str__ = __Node_str
 
-# For Jupyer Notebook use.. checkme
+# For Jupyer Notebook use.. check me
 # Node.__repr__ = Node_str
 # Mesh.__repr__ = Mesh_str
 # MeshEntity.__repr__ = MeshEntity_str
@@ -69,8 +61,6 @@ Node.__str__ = __Node_str
 def __Mesh_setVal(self, key, val):
     """Index access to the mesh data"""
     self.addData(key, val)
-
-
 Mesh.__setitem__ = __Mesh_setVal
 
 
@@ -80,8 +70,6 @@ def __Mesh_getVal(self, key):
         return self.data(key)
     else:
         error('The mesh does not have the requested data:', key)
-
-
 Mesh.__getitem__ = __Mesh_getVal
 
 
@@ -90,8 +78,6 @@ def __MeshBoundingBox__(self):
     mi = [bb.min()[i] for i in range(self.dim())]
     ma = [bb.max()[i] for i in range(self.dim())]
     return [mi, ma]
-
-
 Mesh.bb = __MeshBoundingBox__
 
 
@@ -107,7 +93,6 @@ def __MeshSetCellMarker__(self, m):
 
 def __MeshHoleMarkers__(self):
     return self.holeMarker()
-
 
 Mesh.cellMarker = __MeshGetCellMarker__
 Mesh.setCellMarker = __MeshSetCellMarker__
@@ -130,7 +115,7 @@ def __createSecondaryNodes__(self, n=3, verbose=False):
     pg.Mesh
         Copy of the given mesh with secondary nodes.
     """
-    self.createNeighbourInfos()
+    self.createNeighborInfos()
 
     if self.boundary(0).nodeCount() != self.boundary(0).allNodeCount():
         warn("Mesh already contains secondary nodes. Not adding any more.")
@@ -148,10 +133,10 @@ def __createSecondaryNodes__(self, n=3, verbose=False):
             for b in self.boundaries():
                 bs = b.shape()
                 for sx in range(n):
-                    nmax = n
+                    nMax = n
                     if isinstance(b, TriangleFace):
-                        nmax = n - sx
-                    for sy in range(nmax):
+                        nMax = n - sx
+                    for sy in range(nMax):
                         if isinstance(b, TriangleFace):
                             pos = bs.xyz([(sx + 1) / (n + 2),
                                           (sy + 1) / (n + 2)])
@@ -216,9 +201,16 @@ def __createMeshWithSecondaryNodes__(self, n=3, verbose=False):
     m = Mesh(self)
     m.createSecondaryNodes(n, verbose)
     return m
-
-
 Mesh.createSecondaryNodes = __createSecondaryNodes__
 Mesh.createMeshWithSecondaryNodes = __createMeshWithSecondaryNodes__
 
 Mesh.exportPLC = exportPLC
+
+# just to keep backward compatibility 20191120
+Mesh.createNeighbourInfos = Mesh.createNeighborInfos
+Mesh.xmin = Mesh.xMin
+Mesh.ymin = Mesh.yMin
+Mesh.zmin = Mesh.zMin
+Mesh.xmax = Mesh.xMax
+Mesh.ymax = Mesh.yMax
+Mesh.zmax = Mesh.zMax

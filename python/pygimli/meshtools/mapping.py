@@ -215,17 +215,17 @@ def fillEmptyToCellArray(mesh, vals, slope=True):
     # atts = pg.Vector(mesh.cellCount(), 0.0)  # not used
     # oldAtts = mesh.cellAttributes()  # not used
     mesh.setCellAttributes(vals)
-    mesh.createNeighbourInfos()
+    mesh.createNeighborInfos()
     # std::vector< Cell * >
     # empties = []
 
     if slope:
-        # search all cells with empty neighbours
+        # search all cells with empty neighbors
         ids = pg.find(mesh.cellAttributes() != 0.0)
 
         for c in mesh.cells(ids):
-            for i in range(c.neighbourCellCount()):
-                nc = c.neighbourCell(i)
+            for i in range(c.neighborCellCount()):
+                nc = c.neighborCell(i)
 
                 if nc:
                     if nc.attribute() == 0.0:
@@ -240,7 +240,7 @@ def fillEmptyToCellArray(mesh, vals, slope=True):
                         while startCell:
 
                             startCell.shape().isInside(pos, sf, False)
-                            nextC = startCell.neighbourCell(sf)
+                            nextC = startCell.neighborCell(sf)
                             if nextC:
                                 if nextC.attribute() == 0.0:
                                     nextC.setAttribute(c.attribute())
@@ -495,7 +495,7 @@ def interpolate(*args, **kwargs):
     * 2D parametric to points (method=['linear, 'spline', 'harmonic'])
     * 2D/3D point cloud to points/grids
         ('Delauney', 'linear, 'spline', 'harmonic')
-    * Mesh to points based on nearest neighbour values (pg.core)
+    * Mesh to points based on nearest neighbor values (pg.core)
 
     Examples
     --------

@@ -73,7 +73,7 @@ std::set< Node * > commonNodes(const ContainerOfMeshEntities & c){
 
 class DLLEXPORT RegionMarker : public RVector3{
 public:
-    RegionMarker(const RVector3 & pos, int marker, double area=0.0, 
+    RegionMarker(const RVector3 & pos, int marker, double area=0.0,
                  bool hole=false)
     : RVector3(pos), marker_(marker), area_(area), isHole_(hole){}
 
@@ -117,12 +117,12 @@ public:
     /*! To separate between major MeshEntity families e.g. Cell and Boundary. */
     virtual uint parentType() const { return MESH_MESHENTITY_RTTI; }
 
-    inline Node & node(uint i) { 
-        ASSERT_RANGE(i, 0, nodeCount()); return *nodeVector_[i]; 
+    inline Node & node(uint i) {
+        ASSERT_RANGE(i, 0, nodeCount()); return *nodeVector_[i];
     }
 
-    inline Node & node(uint i) const { 
-        ASSERT_RANGE(i, 0, nodeCount()); return *nodeVector_[i]; 
+    inline Node & node(uint i) const {
+        ASSERT_RANGE(i, 0, nodeCount()); return *nodeVector_[i];
     }
 
     inline uint nodeCount() const { return nodeVector_.size(); }
@@ -145,7 +145,7 @@ public:
     virtual double attribute() const { return -1.0; }
 
     /*! Return IndexArray of all node ids. */
-    IndexArray ids() const ;
+    IndexArray ids() const;
 
     virtual std::vector < PolynomialFunction < double > > createShapeFunctions() const;
 
@@ -262,24 +262,24 @@ public:
 
     virtual uint rtti() const { return MESH_CELL_RTTI; }
     virtual uint parentType() const { return MESH_CELL_RTTI; }
-    virtual uint neighbourCellCount() const { return 0; }
-    inline uint boundaryCount() const { return neighbourCellCount(); }
+    virtual uint neighborCellCount() const { return 0; }
+    inline uint boundaryCount() const { return neighborCellCount(); }
 
-    void cleanNeighbourInfos();
+    void cleanNeighborInfos();
 
-    Cell * neighbourCell(const RVector & sf);
+    Cell * neighborCell(const RVector & sf);
 
     /*! Return the direct neighbor cell corresponding to local node i.
      * The cell will be searched and stored by the virtual method
-     * \ref findNeighbourCell.
+     * \ref findNeighborCell.
      * All neighboring relationships have to be initialized ones by calling
      * \ref Mesh::createNeighborInfos().
      * If no cell can be found NULL is returned. */
-    inline Cell * neighbourCell(uint i){ return neighbourCells_[i]; }
+    inline Cell * neighborCell(uint i){ return neighborCells_[i]; }
 
     /*! Find neighbor cell regarding to the i-th Boundary and store them
-     * in neighbourCells_. */
-    virtual void findNeighbourCell(uint i);
+     * in neighborCells_. */
+    virtual void findNeighborCell(uint i);
 
     inline double attribute() const { return attribute_; }
 
@@ -306,12 +306,8 @@ public:
 
 protected:
     void registerNodes_();
-
     void deRegisterNodes_();
-
-    std::vector < Cell * > neighbourCells_;
-
-
+    std::vector < Cell * > neighborCells_;
     double attribute_;
 
 protected:
@@ -586,19 +582,19 @@ public:
     typedef std::vector < Pos >  HoleMarkerList;
 
     PolygonFace(const std::vector < Node * > & nodes);
-        
+
     ~PolygonFace();
 
     virtual uint dim() const { return 3; }
 
-    virtual uint rtti() const { return MESH_POLYGON_FACE_RTTI; }    
+    virtual uint rtti() const { return MESH_POLYGON_FACE_RTTI; }
 
     /*! Insert node into the polygon. Node needs to touch the polygon.
-    The node will be inserted in the nodeList or as secondary node if its 
+    The node will be inserted in the nodeList or as secondary node if its
     not on an edge.*/
     void insertNode(Node * node, double tol=TOLERANCE);
 
-    /*! Insert nodes for a subpolygon. 
+    /*! Insert nodes for a subpolygon.
     All nodes regarding the parent mesh and need to be inside the face.*/
     void addSubface(const std::vector < Node * > & nodes);
 
@@ -637,9 +633,9 @@ public:
 
     virtual uint rtti() const { return MESH_EDGE_CELL_RTTI; }
 
-    virtual uint neighbourCellCount() const { return 2; }
+    virtual uint neighborCellCount() const { return 2; }
 
-//     virtual void findNeighbourCell(uint id);
+//     virtual void findNeighborCell(uint id);
 
     void setNodes(Node & n1, Node & n2, bool changed = true);
 
@@ -694,9 +690,9 @@ public:
 
     virtual uint rtti() const { return MESH_TRIANGLE_RTTI; }
 
-    virtual uint neighbourCellCount() const { return 3; }
+    virtual uint neighborCellCount() const { return 3; }
 
-//     virtual void findNeighbourCell(uint i);
+//     virtual void findNeighborCell(uint i);
 
     void setNodes(Node & n1, Node & n2, Node & n3, bool changed = true);
 
@@ -746,9 +742,9 @@ Node direction:
  /     /
 0-----1
 
-Neighbourship relations:
+Neighborship relations:
 
-Neighbour Nr, on Boundary a->b
+Neighbor Nr, on Boundary a->b
     0           2->3
     1           3->0
     2           0->1
@@ -768,9 +764,9 @@ public:
 
     void setNodes(Node & n1, Node & n2, Node & n3, Node & n4, bool changed = true);
 
-    virtual uint neighbourCellCount() const { return 4; }
+    virtual uint neighborCellCount() const { return 4; }
 
-//     virtual void findNeighbourCell(uint i);
+//     virtual void findNeighborCell(uint i);
 
     virtual std::vector < PolynomialFunction < double > > createShapeFunctions() const;
 
@@ -816,10 +812,10 @@ Node direction:
 |/          \n
 0-----1     \n
 
-Neighbourship relations:
+Neighborship relations:
 Boundary normal shows outside .. so the boundary left neighbor is this cell
 
-Neighbour Nr., on Boundary a-b-c. Boundary to neighbour cell is opposite to NodeNr.
+Neighbor Nr., on Boundary a-b-c. Boundary to neighbor cell is opposite to NodeNr.
     0           1-2-3     le -- view from outer
     1           2-0-3     re -- view from inner
     2           0-1-3     le -- view from outer
@@ -852,9 +848,9 @@ public:
 
     void setNodes(Node & n1, Node & n2, Node & n3, Node & n4, bool changed = true);
 
-    virtual uint neighbourCellCount() const { return 4; }
+    virtual uint neighborCellCount() const { return 4; }
 
-//     virtual void findNeighbourCell(uint i);
+//     virtual void findNeighborCell(uint i);
 
     friend std::ostream & operator << (std::ostream & str, const Tetrahedron & t);
 
@@ -919,10 +915,10 @@ Node direction:
 |/     |/   \n
 0------1    \n
 
-Neighbourship relations:
+Neighborship relations:
 Boundary normal shows outside .. so the boundary left neighbor is this cell
 
-Neighbour Nr, on Boundary a-b-c-d
+Neighbor Nr, on Boundary a-b-c-d
     0           1-2-6-5  // le
     1           2-3-7-6  // re
     2           3-0-4-7  // re
@@ -958,7 +954,7 @@ public:
 
     virtual std::vector < PolynomialFunction < double > > createShapeFunctions() const;
 
-    virtual uint neighbourCellCount() const { return 6; }
+    virtual uint neighborCellCount() const { return 6; }
 
     friend std::ostream & operator << (std::ostream & str, const Hexahedron & t);
 
@@ -1056,7 +1052,7 @@ public:
 
     virtual std::vector < PolynomialFunction < double > > createShapeFunctions() const;
 
-    virtual uint neighbourCellCount() const { return 5; }
+    virtual uint neighborCellCount() const { return 5; }
 
     friend std::ostream & operator << (std::ostream & str, const Hexahedron & t);
 
@@ -1140,7 +1136,7 @@ public:
 
     virtual std::vector < PolynomialFunction < double > > createShapeFunctions() const;
 
-    virtual uint neighbourCellCount() const { return 5; }
+    virtual uint neighborCellCount() const { return 5; }
 
     /*! Experimental */
     virtual std::vector < Node * > boundaryNodes(Index i) const;

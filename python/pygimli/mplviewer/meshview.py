@@ -22,7 +22,7 @@ class CellBrowserCacheSingleton(object):
         if CellBrowserCacheSingleton.__instance is None:
             CellBrowserCacheSingleton.__instance = object.__new__(cls)
         return CellBrowserCacheSingleton.__instance
-# 
+#
     def add(self, c):
         self.cbCache_.append(c)
 
@@ -545,7 +545,7 @@ def drawMeshBoundaries(ax, mesh, hideMesh=False, useColorMap=False,
 
 #    drawAA = True
 #    swatch = pg.core.Stopwatch(True)
-    mesh.createNeighbourInfos()
+    mesh.createNeighborInfos()
 
     if not hideMesh:
         drawSelectedMeshBoundaries(ax,
@@ -875,7 +875,7 @@ def drawField(ax, mesh, data=None, levels=[], nLevs=5,
     gci = None
 
     if len(levels) == 0:
-        levels = autolevel(data, nLevs, 
+        levels = autolevel(data, nLevs,
                            zmin=cMin, zmax=cMax, logScale=logScale)
 
     if len(z) == len(triangles):
@@ -913,7 +913,7 @@ def drawField(ax, mesh, data=None, levels=[], nLevs=5,
 
                 gci = ax.tricontourf(x, y, triangles, z, levels=levs,
                                      **kwargs)
-                            
+
             if contourLines:
                 ax.tricontour(x, y, triangles, z, levels=levels,
                               colors=kwargs.pop('colors', ['0.5']), **kwargs)
@@ -1167,11 +1167,11 @@ def drawStreams(ax, mesh, data, startStream=3, coarseMesh=None, quiver=False,
     if coarseMesh is not None:
         viewMesh = coarseMesh
         dataMesh = mesh
-        dataMesh.createNeighbourInfos()
+        dataMesh.createNeighborInfos()
     else:
         viewMesh = mesh
 
-    viewMesh.createNeighbourInfos()
+    viewMesh.createNeighborInfos()
 
     for c in viewMesh.cells():
         c.setValid(True)
