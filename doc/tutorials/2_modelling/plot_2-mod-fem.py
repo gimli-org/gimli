@@ -190,7 +190,7 @@ pg.show(domain, u, label='Approximated solution $\mathrm{u}$', nLevs=7)
 
 ###############################################################################
 # For analysing the accuracy for the approximation we apply the
-# L2 norm for the finite element space :py:mod:`pygimli.solver.L2Norm` for a
+# L2 norm for the finite element space :py:mod:`pygimli.solver.normL2` for a
 # set of different solutions with decreasing cell size. Instead of using the
 # the single assembling steps again, we apply our Finite Element shortcut function
 # :py:mod:`pygimli.solver.solve`.
@@ -204,7 +204,7 @@ for i in range(5):
     domain = domain.createH2()
     u_h = pg.solve(domain, f=f, bc={'Dirichlet':[[1,2,3,4], 0]})
     u = np.array([uExact(_) for _ in domain.positions()])
-    l2.append(pg.solver.L2Norm(u - u_h, domain))
+    l2.append(pg.solver.normL2(u - u_h, domain))
     h.append(min(domain.boundarySizes()))
     print("NodeCount: {0}, h:{1}m, L2:{2}%".format(domain.nodeCount(),
                                                    h[-1], l2[-1]))

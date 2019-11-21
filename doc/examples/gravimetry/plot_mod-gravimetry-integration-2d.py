@@ -58,7 +58,8 @@ circ = createCircle([0, -depth], radius=radius, marker=2, area=0.1,
                     segments=32)
 
 pg.show(circ, ax=ax[1][0])
-ax[1][0].set_limits(left=x[0], right=x[-1], bottom=-5, top=1)
+ax[1][0].set_xlim(left=x[0], right=x[-1])
+ax[1][0].set_ylim(bottom=-5, top=1)
 
 
 

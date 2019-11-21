@@ -348,11 +348,7 @@ def extrudeMesh(mesh, a, **kwargs):
     pg.error('Cannot extrude mesh of dimension:', mesh.dim())
 
 
-<<<<<<< HEAD
-def readGmsh(fName, verbose=False):
-=======
 def readGmsh(fname, verbose=False, precision=None):
->>>>>>> febfaa64b601726171a5c52c4234d92c20b03911
     r"""Read :term:`Gmsh` ASCII file and return instance of GIMLI::Mesh class.
 
     Parameters
@@ -423,14 +419,9 @@ def readGmsh(fname, verbose=False, precision=None):
     Mesh: Nodes: 3 Cells: 1 Boundaries: 3
     >>> os.remove(fName)
     """
-<<<<<<< HEAD
-    inNodes, inElements, nCount = 0, 0, 0
-    fid = open(fName)
-=======
     assert precision is None or precision >= 0
     inNodes, inElements, ncount = 0, 0, 0
     fid = open(fname)
->>>>>>> febfaa64b601726171a5c52c4234d92c20b03911
     if verbose:
         print('Reading %s... \n' % fName)
 
@@ -453,10 +444,6 @@ def readGmsh(fname, verbose=False, precision=None):
                     if verbose:
                         print('  Nodes: %s' % int(line))
                 else:
-<<<<<<< HEAD
-                    nodes[nCount, :] = np.array(line.split(), 'float')[1:]
-                    nCount += 1
-=======
                     node_coordinates = np.array(line.split(), 'float')[1:]
                     if precision is None:
                         nodes[ncount, :] = node_coordinates
@@ -464,7 +451,6 @@ def readGmsh(fname, verbose=False, precision=None):
                         nodes[ncount, :] = np.round(
                             node_coordinates, precision)
                     ncount += 1
->>>>>>> febfaa64b601726171a5c52c4234d92c20b03911
 
             elif inElements == 1:
                 if len(line.split()) == 1:
@@ -492,12 +478,8 @@ def readGmsh(fname, verbose=False, precision=None):
                         tets.append((entry[-4], entry[-3], entry[-2],
                                      entry[-1], entry[2]))
                     elif entry[0] in [3, 6]:
-<<<<<<< HEAD
-                        pg.error("Quadrangles and prisms are not supported yet")
-=======
                         pg.error(
                             "Quadrangles and prisms are not supported yet")
->>>>>>> febfaa64b601726171a5c52c4234d92c20b03911
 
     fid.close()
     lines = np.asarray(lines)

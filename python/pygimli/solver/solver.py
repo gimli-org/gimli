@@ -1574,10 +1574,9 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
         A = S
 
     if times is None:
-<<<<<<< HEAD
         rhs = createLoadVector(mesh, f, userData=userData)
-=======
-        rhs = assembleForceVector(mesh, f, userData=userData)
+        assembleBC_(bc, mesh, A, rhs, a, time=None, userData=userData) 
+        
         u = None
         if 'u' in workSpace:
             u = workSpace['u']
@@ -1750,16 +1749,6 @@ def checkCFL(times, mesh, vMax):
         c = vMax * dt / dx
 
         if c > 1:
-<<<<<<< HEAD
-            print("Courant-Friedrichs-Lewy Number:", c,
-                  "but should be lower 1 to ensure movement inside a cell "
-                  "per timestep. ("
-                  "vMax =", vMax,
-                  "dt =", dt,
-                  "dx =", dx,
-                  "dt <", dx/vMax,
-                  " | N > ", int((times[-1]-times[0])/(dx/vMax))+1, ")")
-=======
             pg.warn("Courant-Friedrichs-Lewy Number:", c,
                     "but sould be lower 1 to ensure movement inside a cell "
                     "per timestep. ("
@@ -1768,7 +1757,6 @@ def checkCFL(times, mesh, vMax):
                     "dx =", dx,
                     "dt <", dx/vMax,
                     " | N > ", int((times[-1]-times[0])/(dx/vMax))+1, ")")
->>>>>>> febfaa64b601726171a5c52c4234d92c20b03911
     return c
 
 def crankNicolson(times, theta, matS, matI, f, u0=None, progress=None):
