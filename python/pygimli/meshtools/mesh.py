@@ -42,9 +42,9 @@ def createMesh(poly, quality=32, area=0.0, smooth=None, switches=None,
 
     smooth: tuple
         [smoothing algorithm, number of iterations]
-        0, no smoothing
-        1, node center
-        2, weighted node center
+        0: no smoothing
+        1: node center
+        2: weighted node center
 
     switches: str
         Set additional triangle command switches.

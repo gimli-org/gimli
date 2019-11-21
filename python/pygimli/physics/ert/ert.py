@@ -57,6 +57,8 @@ class ERTModellingBase(MeshModelling):
         
     def drawData(self, ax, data=None, **kwargs):
         """Draw data in given axe."""
+        kwargs['label'] = kwargs.pop('label', pg.unit('res'))
+        kwargs['cMap'] = kwargs.pop('cMap', pg.utils.cMap('res'))
 
         if hasattr(data, '__iter__'):
             vals = data
@@ -114,8 +116,7 @@ class BertModelling(ERTModellingBase):
         self.calcGeometricFactor = self._core.calcGeometricFactor
         self.mapERTModel = self._core.mapERTModel
         
-        # the model imaginaries are flipped to match log trans
-        self._conjImag = False 
+        self._conjImag = False # the model imaginaries are flipped to match log trans
 
     def setDefaultBackground(self):
         """
@@ -671,7 +672,7 @@ class ERTManager(MeshMethodManager):
             if verbose:
                 pg.info('Calculate geometric factors.')
             scheme.set('k', fop.calcGeometricFactor(scheme))
-
+            
         ret = pg.DataContainerERT(scheme)
         ## just be sure that we don't work with artifacts
         ret['u'] *= 0.0
