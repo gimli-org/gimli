@@ -348,7 +348,7 @@ def extrudeMesh(mesh, a, **kwargs):
     pg.error('Cannot extrude mesh of dimension:', mesh.dim())
 
 
-def readGmsh(fname, verbose=False, precision=None):
+def readGmsh(fName, verbose=False, precision=None):
     r"""Read :term:`Gmsh` ASCII file and return instance of GIMLI::Mesh class.
 
     Parameters
@@ -421,7 +421,7 @@ def readGmsh(fname, verbose=False, precision=None):
     """
     assert precision is None or precision >= 0
     inNodes, inElements, ncount = 0, 0, 0
-    fid = open(fname)
+    fid = open(fName)
     if verbose:
         print('Reading %s... \n' % fName)
 
