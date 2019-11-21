@@ -222,13 +222,14 @@ public:
     void copy_(const SparseMatrix< double > & S);
     void copy_(const SparseMatrix< Complex > & S);
 
-    inline void insert(const IndexArray & rows, const IndexArray & cols,
-                       const RVector & vals) {
+    /*! Add this values to the matrix. */
+    inline void add(const IndexArray & rows, const IndexArray & cols,
+                    const RVector & vals) {
         ASSERT_EQUAL(vals.size(), rows.size())
         ASSERT_EQUAL(vals.size(), cols.size())
 
         for (Index i = 0; i < vals.size(); i ++){
-            (*this)[rows[i]][cols[i]] = vals[i];
+            (*this)[rows[i]][cols[i]] += vals[i];
         }
     }
 

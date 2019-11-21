@@ -1047,7 +1047,7 @@ def assembleDirichletBC(mat, boundaryPairs, rhs=None, time=0.0, userData=None,
         for i, [n, val] in enumerate(nodePairs):
             uDirIndex.append(n)
             if hasattr(val, '__call__'):
-                raise "callabe node pairs need to be implement."
+                raise "callable node pairs need to be implement."
             uDirichlet.append(val)
 
     _assembleUDirichlet(mat, rhs, uDirIndex, uDirichlet)

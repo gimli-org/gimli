@@ -224,7 +224,7 @@ public:
                     log(Critical, "Matrix type need to be either SparseMatrix or SparseMapMatrix");
                     return ret;
             }
-            ret.insert(rows + entry.rowStart, cols + entry.colStart, vals * entry.scale);
+            ret.add(rows + entry.rowStart, cols + entry.colStart, vals * entry.scale);
         }
         return ret;
     }
