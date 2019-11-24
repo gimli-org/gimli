@@ -27,7 +27,7 @@
 
 namespace GIMLI{
 
-void Mesh::load(const std::string & fbody, bool createNeighbours, IOFormat format){
+void Mesh::load(const std::string & fbody, bool createNeighbors, IOFormat format){
     if (fbody.find(".mod") != std::string::npos){
         importMod(fbody);
     } else if (fbody.find(".vtk") != std::string::npos){
@@ -45,7 +45,7 @@ void Mesh::load(const std::string & fbody, bool createNeighbours, IOFormat forma
     } else {
         loadAscii(fbody);
     }
-    if (createNeighbours) createNeighbourInfos();
+    if (createNeighbors) createNeighborInfos();
 }
 
 void Mesh::loadAscii(const std::string & fbody){
@@ -405,8 +405,8 @@ void Mesh::saveBinaryV2(const std::string & fbody) const {
 //   uint8[nBounds] bound nodeCount
 //   uint32[sum(bound nodeCount)] boundsidx
 //   int32[nBounds] boundaryMarkers [-2e9, .. , 2e9]
-//   int32[nBounds] leftNeighbour idx (-1) if no neighbor present or info unavailable
-//   int32[nBounds] rightNeighbour idx (-1) if no neighbor present or info unavailable
+//   int32[nBounds] leftNeighbor idx (-1) if no neighbor present or info unavailable
+//   int32[nBounds] rightNeighbor idx (-1) if no neighbor present or info unavailable
 
     std::string fileName(fbody.substr(0, fbody.rfind(MESHBINSUFFIX)) + MESHBINSUFFIX);
 

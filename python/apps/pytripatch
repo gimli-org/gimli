@@ -804,14 +804,21 @@ def main(argv):
                 pdf = PdfPages(options.outFileName)
                 for i, a in enumerate(A):
                     print("\rWriting multipage pdf %d/%d" % (i + 1, len(A)))
-                    patches.set_array(np.asarray(a))
+                    if len(a) != mesh.cellCount():
+                        patches.set_array(np.asarray(a)[mesh.cellMarkers()])
+                    else:
+                        patches.set_array(np.asarray(a))
                     # necessary due to non-existing function .ndim
                     fig.savefig(pdf, format='pdf', bbox_inches='tight')
 
                 pdf.infodict()['Title'] = 'BERT Timelapse Inversion result'
                 pdf.infodict()['Author'] = 'BERT@resistivity.net'
                 pdf.close()
-                patches.set_array(np.asarray(A[0]))  # show original
+                if len(a) != mesh.cellCount():
+                    patches.set_array(np.asarray(A[0])[mesh.cellMarkers()])
+                else:
+                    patches.set_array(np.asarray(A[0]))
+
             else:
                 plt.savefig(options.outFileName, bbox_inches='tight')
         elif (fileExtension == '.png'):

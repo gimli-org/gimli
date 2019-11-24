@@ -677,7 +677,7 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
     """Create a PLC mesh for an inversion parameter mesh.
 
     Create a PLC mesh for an inversion parameter mesh with for a given list of
-    sensor positions. Sensor positions are assumed to lie on the surface and
+    sensor positions. Sensor positions are assumed to be on the surface and
     must be sorted and unique.
 
     You can create a parameter mesh without sensors if you just set [xmin,
@@ -814,7 +814,7 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
         n14 = poly.createNode(n4.pos() + [bound, 0.])
         n13 = poly.createNode(n14.pos() - [0., bound + paraDepth])
 
-        poly.createEdge(n1, n11, pg.core.MARKER_BOUND_HOMOGEN_NEUMANN)
+        poly.createEdge(n1,  n11, pg.core.MARKER_BOUND_HOMOGEN_NEUMANN)
         poly.createEdge(n11, n12, pg.core.MARKER_BOUND_MIXED)
         poly.createEdge(n12, n13, pg.core.MARKER_BOUND_MIXED)
         poly.createEdge(n13, n14, pg.core.MARKER_BOUND_MIXED)

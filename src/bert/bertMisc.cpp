@@ -60,7 +60,7 @@ void initKWaveList(const Mesh & mesh, RVector & kValues, RVector & weights,
         std::cerr << WHERE_AM_I << " Warning! No sources found, taking some defaults" << std::endl;
         verbose = true;
         rMin = 1.0;
-        rMax = (mesh.xmax() - mesh.xmin()) / 20.0;
+        rMax = (mesh.xMax() - mesh.xMin()) / 20.0;
     } else {
         for (int i = 0; i < nElecs; i ++){
             for (int j = i + 1; j < nElecs; j ++){
@@ -109,7 +109,7 @@ void initKWaveList(double rMin, double rMax, int nGauLegendre, int nGauLaguerre,
 //     for (int i = 0; i < nGauLegendre; i++){
 //         //** BackSubstitution der Gauss Integration
 //         kValues[i] = (k0 * k[i] * k[i]);
-//         //** BackSubst. GewichtsTERM Gauss Integration
+//         //** BackSubst. WeightTERM Gauss Integration
 //         weights[i] = (2.0 * k0 * k[i] * w[i] / PI);
 //     }
 
@@ -117,7 +117,7 @@ void initKWaveList(double rMin, double rMax, int nGauLegendre, int nGauLaguerre,
 //     for (int i = 0; i < nGauLaguerre; i++){
 //         //** BackSubstitution der Gauss Integration
 //         kValues[nGauLegendre + i] = (k0 * (k[i] + 1));
-//         //** BackSubst. GewichtsTERM Gauss Integration
+//         //** BackSubst. WeightTERM Gauss Integration
 //         weights[nGauLegendre + i] = (k0 * std::exp(k[i]) * w[i] / PI);
 //     }
 //
@@ -322,7 +322,7 @@ double DCParaDepth(const DataContainerERT & data){
 
 void setDefaultBERTBoundaryConditions(Mesh & mesh){
     BoundingBox bbox(mesh.boundingBox());
-    mesh.createNeighbourInfos();
+    mesh.createNeighborInfos();
     for (uint i = 0; i < mesh.boundaryCount(); i ++){
         RVector3 cen(mesh.boundary(i).center());
 
@@ -340,7 +340,7 @@ void setDefaultBERTBoundaryConditions(Mesh & mesh){
 
 void setAllNeumannBoundaryConditions(Mesh & mesh){
     BoundingBox bbox(mesh.boundingBox());
-    mesh.createNeighbourInfos();
+    mesh.createNeighborInfos();
     for (uint i = 0; i < mesh.boundaryCount(); i ++){
         RVector3 cen(mesh.boundary(i).center());
 

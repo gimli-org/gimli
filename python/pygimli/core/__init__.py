@@ -545,7 +545,7 @@ def __getValMatrix(self, idx):
         if stop is None:
             stop = len(self)
 
-        return [self.rowR(i) for i in range(start, stop, step)]
+        return [self.rowRef(i) for i in range(start, stop, step)]
 
     elif isinstance(idx, tuple):
         # print(idx, type(idx))
@@ -861,6 +861,8 @@ def abs(v):
     """
     if isinstance(v, _pygimli_.CVector):
         return _pygimli_.mag(v)
+    elif isinstance(v, list):
+        return _pygimli_.absR3(np.array(v).T)
     elif isinstance(v, _pygimli_.R3Vector):
         return _pygimli_.absR3(v)
     elif isinstance(v, np.ndarray):
@@ -950,7 +952,7 @@ def __ModellingBase__createJacobian_mt__(self, model, resp):
         from .logger import warn
         warn('Multiprocess jacobian currently unavailable')
         nProcs = 1
- 
+
     if nProcs == 1:
         self.createJacobian(model, resp)
         return

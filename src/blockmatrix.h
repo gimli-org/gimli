@@ -106,9 +106,10 @@ public:
     }
 
     /*!Shortcut for addMatrix and addMatrixEntry. */
-    Index addMatrix(MatrixBase * matrix, Index rowStart, Index colStart){
+    Index addMatrix(MatrixBase * matrix, Index rowStart, Index colStart,
+                    ValueType scale=1.0){
         Index matrixID = addMatrix(matrix);
-        addMatrixEntry(matrixID, rowStart, colStart);
+        addMatrixEntry(matrixID, rowStart, colStart, scale);
         return matrixID;
     }
 
@@ -199,7 +200,7 @@ public:
     // }
 
     RSparseMapMatrix sparseMapMatrix() const {
-        
+
         RSparseMapMatrix ret(this->rows(), this->cols());
 
         for (Index i = 0; i < entries_.size(); i++){
@@ -223,7 +224,7 @@ public:
                     log(Critical, "Matrix type need to be either SparseMatrix or SparseMapMatrix");
                     return ret;
             }
-            ret.insert(rows + entry.rowStart, cols + entry.colStart, vals * entry.scale);
+            ret.add(rows + entry.rowStart, cols + entry.colStart, vals * entry.scale);
         }
         return ret;
     }

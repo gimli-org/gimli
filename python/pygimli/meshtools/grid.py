@@ -283,7 +283,7 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1, quality=34.0,
         mesh2.copyCell(cell)
 
     # old neighbor infos need to be cleaned since the new cells are added
-    mesh2.createNeighbourInfos(force=True)
+    mesh2.createNeighborInfos(force=True)
 
     for b in mesh2.boundaries():
         if b.leftCell() is None or b.rightCell() is None:

@@ -5,7 +5,6 @@
 # PYGCCXML_FOUND, If false, do not try to use pygccxml
 # PYPLUSPLUS_FOUND, If false, do not try to use pyplusplus
 
-
 find_python_module(pygccxml)
 
 if (pygccxml_FOUND)
@@ -25,7 +24,12 @@ else()
         message( STATUS "NOT Found pygccxml: we try to get a copy or cannot build pygimli.")
         find_package(Subversion REQUIRED)
     endif(PYGCCXML_PATH)
-
+    
 endif()
-
+    
+if (PYGCCXML_PATH)
+    message(STATUS "Found pygccxml path: ${PYGCCXML_PATH}")
+    STRING(REGEX REPLACE "\\\\" "/" PYGCCXML_PATH ${PYGCCXML_PATH})
+    message(STATUS "Found pygccxml path: ${PYGCCXML_PATH}")
+endif()
 mark_as_advanced(PYGCCXML)

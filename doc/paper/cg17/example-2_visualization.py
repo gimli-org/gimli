@@ -145,7 +145,7 @@ def showModel(outPath):
     pg.wait()
     pg.show(fopMesh, ax=ax, linewidth=0.2)
 
-    paraMesh.createNeighbourInfos()
+    paraMesh.createNeighborInfos()
     bs = []
     for b in paraMesh.boundaries():
         if b.leftCell() and b.rightCell():

@@ -18,6 +18,11 @@ optionParser.add_option("", "--clang", dest="clang", default="")
 
 (options, args) = optionParser.parse_args()
 
+print('##############')
+print(options)
+print(args)
+print('##############')
+
 if options.caster:
     settings.caster_path = options.caster
 

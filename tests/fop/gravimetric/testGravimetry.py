@@ -187,7 +187,7 @@ def test2d():
     yMax = mesh.boundingBox().max()[0]
     x = np.arange(xMin, yMax, 1.)
 
-    mesh.createNeighbourInfos()
+    mesh.createNeighborInfos()
     rho = pg.Vector(len(mesh.cellAttributes()), 1.) * 2000.0
     rho.setVal(0.0, pg.find(mesh.cellAttributes() == 1.0))
 

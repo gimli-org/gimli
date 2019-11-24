@@ -298,7 +298,7 @@ from . fatray import FatrayDijkstraModelling
 #             solution.
 #         """
 #         self.mesh = mesh
-#         self.mesh.createNeighbourInfos()
+#         self.mesh.createNeighborInfos()
 #         self.fop.setMesh(self.mesh)
 #         self.fop.regionManager().setConstraintType(1)
 

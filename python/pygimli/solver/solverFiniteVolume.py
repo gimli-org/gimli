@@ -846,7 +846,7 @@ def __solveStokes(mesh, viscosity, velBoundary=None, preBoundary=None,
     else:
         velocity = np.array(vel0)
 
-    mesh.createNeighbourInfos()
+    mesh.createNeighborInfos()
 
     CtB = mesh.cellToBoundaryInterpolation()
     controlVolumes = CtB * mesh.cellSizes()

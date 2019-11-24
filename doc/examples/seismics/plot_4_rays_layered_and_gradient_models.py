@@ -117,7 +117,7 @@ for j, (case, mesh, vel) in enumerate(zip(["layered", "gradient"],
         boundary.setMarker(0)
 
     xmin, xmax = mesh.xmin(), mesh.xmax()
-    mesh.createNeighbourInfos()
+    mesh.createNeighborInfos()
 
     # In order to use the Dijkstra, we extract the surface positions >0
     mx = pg.x(mesh)
@@ -144,7 +144,7 @@ for j, (case, mesh, vel) in enumerate(zip(["layered", "gradient"],
     pg.show(mesh, vel, ax=ax[0, j], label="Velocity (m/s)", hold=True,
             logScale=False, cMap="summer_r", coverage=0.7)
     drawMesh(ax[0, j], mesh, color="white", lw=0.21)
-    
+
     # We compare the accuracy for 0-5 secondary nodes
     sec_nodes = [0, 1, 5]
     t_all = []
@@ -161,7 +161,7 @@ for j, (case, mesh, vel) in enumerate(zip(["layered", "gradient"],
         # Perform traveltime calculations and log time with pg.tic() & pg.toc()
         pg.tic()
         res = mgr.simulate(vel=vel, scheme=data, mesh=mesh, secNodes=n)
-        # We need to copy res['t'] here because res['t'] is a reference to 
+        # We need to copy res['t'] here because res['t'] is a reference to
         # an array in res, and res will be removed in the next iteration.
         # Unfortunately, we don't have any reverence counting for core objects yet.
         t_all.append(res['t'].array())
@@ -173,7 +173,7 @@ for j, (case, mesh, vel) in enumerate(zip(["layered", "gradient"],
                 lab = "Raypath with %d sec nodes" % n
             else:
                 lab = None
-            
+
             recNode = mgr.fop.mesh().findNearestNode([sensors[p], 0.0])
             sourceNode = mgr.fop.mesh().findNearestNode([0.0, 0.0])
 
@@ -196,7 +196,7 @@ for j, (case, mesh, vel) in enumerate(zip(["layered", "gradient"],
         ax[2, j].plot(px, np.abs(t_all[i] - t_ana) * 1000)
 
     ax[1, j].legend()
-   
+
     # Draw sensor positions for the selected receivers
     for p in recs:
         ax[0, j].plot(sensors[p], 0.0, "kv", ms=10)

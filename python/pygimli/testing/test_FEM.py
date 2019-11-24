@@ -19,13 +19,13 @@ class TestFiniteElementBasics(unittest.TestCase):
         f = -cos(x)
 
         ### the following are already tested in Helmholtz
-        u = x 
+        u = x
         f = 0
 
         u = x*x
         f = -2
         """
-        pass 
+        pass
 
     def test_Helmholtz(self):
         """
@@ -65,7 +65,7 @@ class TestFiniteElementBasics(unittest.TestCase):
         # pg.plt.plot(x, uFEM, '.')
         # pg.plt.plot(pg.sort(x), u(pg.sort(x)))
         # pg.wait()
-    
+
     def test_Neumann(self):
         """
         """
@@ -82,7 +82,7 @@ class TestFiniteElementBasics(unittest.TestCase):
                     pg.show(grid, pg.abs(v))
                     pg.show(grid, v, showMesh=1)
                 pg.wait()
-            
+
             v = pg.solver.grad(mesh, u)
             np.testing.assert_allclose(pg.abs(v), np.ones(mesh.cellCount())*vTest)
             return v
@@ -106,19 +106,19 @@ class TestFiniteElementBasics(unittest.TestCase):
             """ Laplace u = 0 solves u = x for u(r=0)=0 and u(r=1)=1
                 Test for u == exact x for P1 base functions
             """
-            u = pg.solve(mesh, a=1, b=0, f=0, 
+            u = pg.solve(mesh, a=1, b=0, f=0,
                          bc={'Dirichlet': [[1, 0], [2, 1]]})
 
             if show:
-                if mesh.dim()==1:    
+                if mesh.dim()==1:
                     pg.plt.plot(pg.x(mesh), u)
                     pg.wait()
                 elif mesh.dim()==2:
                     pg.show(mesh, u, label='u')
                     pg.wait()
 
-            xMin = mesh.xmin()
-            xSpan = (mesh.xmax() - xMin)
+            xMin = mesh.xMin()
+            xSpan = (mesh.xMax() - xMin)
             np.testing.assert_allclose(u, (pg.x(mesh)-xMin) / xSpan)
             return u
 
@@ -126,8 +126,8 @@ class TestFiniteElementBasics(unittest.TestCase):
             """ Laplace u = 2 solves u = x² for u(r=0)=0 and u(r=1)=1
                 Test for u == exact x² for P2 base functions
             """
-            meshp2 = mesh.createP2()
-            u = pg.solve(meshp2, f=-2, bc={'Dirichlet': [[1, 0], [2, 1]]})
+            meshP2 = mesh.createP2()
+            u = pg.solve(meshP2, f=-2, bc={'Dirichlet': [[1, 0], [2, 1]]})
 
             # find test pos different from node pos
             meshTests = mesh.createH2()
@@ -140,22 +140,22 @@ class TestFiniteElementBasics(unittest.TestCase):
                 c = [b.center() for b in meshTests.boundaries(meshTests.boundaryMarkers()==4)]
 
             c.sort(key=lambda c_: c_.distance(startPos))
-            ui = pg.interpolate(meshp2, u, c)
-            xi = pg.utils.cumDist(c) + startPos.distance(c[0])       
+            ui = pg.interpolate(meshP2, u, c)
+            xi = pg.utils.cumDist(c) + startPos.distance(c[0])
 
             if show:
                 pg.plt.plot(xi, ui)
                 pg.plt.plot(xi, xi**2)
                 pg.wait()
-            
+
             np.testing.assert_allclose(ui, xi**2)
-     
+
         _testP1_(pg.createGrid(x=np.linspace(0, 1, 11)), show=False) #1D
-        _testP1_(pg.createGrid(x=np.linspace(-2, 1, 11), 
+        _testP1_(pg.createGrid(x=np.linspace(-2, 1, 11),
                                y=np.linspace(0, 1, 11))) #2D reg quad
-        _testP1_(pg.createGrid(x=np.linspace(-0.04, 0.01, 11), 
+        _testP1_(pg.createGrid(x=np.linspace(-0.04, 0.01, 11),
                                y=np.linspace(-0.4, 0, 11))) #2D scaled
-        _testP1_(pg.createGrid(x=np.linspace(-2, 1, 11), 
+        _testP1_(pg.createGrid(x=np.linspace(-2, 1, 11),
                                y=np.linspace( 0, 1, 11),
                                z=np.linspace( 0, 1, 11))) #3D
 
@@ -167,7 +167,7 @@ class TestFiniteElementBasics(unittest.TestCase):
         grid.rotate([0, 0, np.pi/4])
         #can't find proper test for this rotated case
         #v = _testP1_(grid, show=False) #2D reg - rotated
-        
+
         # P2 tests
         mesh = pg.meshtools.createMesh(pg.meshtools.createWorld(start=[0, -4], end=[1, -6], worldMarker=0), area=0.1)
         mesh.setBoundaryMarkers(np.array([0,1,3,2,4])[mesh.boundaryMarkers()])
@@ -182,7 +182,7 @@ class TestFiniteElementBasics(unittest.TestCase):
         #TODO 3D Tet
 
 if __name__ == '__main__':
-    
+
     # test = TestFiniteElementBasics()
     # test.test_Neumann()
     # test.test_Dirichlet()
