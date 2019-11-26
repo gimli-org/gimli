@@ -429,7 +429,31 @@ public:
 
     void testMatrix(){
         testMatrix_< double >();
+        testMatrixMult();
 //        testMatrix_< float >();
+    }
+
+    void testMatrixMult(){
+        GIMLI::RMatrix A(2, 3);
+        A[0] = std::vector< double >{3, 2, 1};
+        A[1] = std::vector< double >{1, 0, 2};
+        GIMLI::RMatrix B(3, 2);
+        B[0] = std::vector< double >{1, 2};
+        B[1] = std::vector< double >{0, 1};
+        B[2] = std::vector< double >{4, 0};
+
+        GIMLI::RMatrix C;
+        GIMLI::matMult(A, B, C);
+        
+        CPPUNIT_ASSERT(C.rows() == 2);
+        CPPUNIT_ASSERT(C.cols() == 2);
+        CPPUNIT_ASSERT(C[0] == GIMLI::RVector(std::vector< double >{7., 8.}));
+        CPPUNIT_ASSERT(C[1] == GIMLI::RVector(std::vector< double >{9., 2.}));
+
+        GIMLI::matMult(A, B, C, -1);
+        CPPUNIT_ASSERT(C[0] == GIMLI::RVector(std::vector< double >{0., 0.}));
+        CPPUNIT_ASSERT(C[1] == GIMLI::RVector(std::vector< double >{0., 0.}));
+        
     }
 
     void testBlockMatrix(){
