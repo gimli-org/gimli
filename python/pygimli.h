@@ -155,9 +155,9 @@ namespace GIMLI{
         RVector ret(a);   ret OP##=b; return ret; }                           \
     inline IVector operator OP (const IVector & a, const IVector & b){ \
         IVector ret(a);   ret OP##=b; return ret; }                           \
-    inline IVector operator OP (const IVector & a, int b){ \
+    inline IVector operator OP (const IVector & a, Index b){ \
         IVector ret(a);   ret OP##=b; return ret; }                           \
-    inline IVector operator OP (int a, const IVector & b){ \
+    inline IVector operator OP (Index a, const IVector & b){ \
         IVector ret(b.size()); for (Index i = 0; i < b.size(); i ++) ret[i] = a OP b[i]; return ret; } \
     inline CVector operator OP (const CVector & a, const CVector & b){ \
         CVector c(a);   c OP##=b; return c; }                           \
@@ -315,11 +315,11 @@ DEFINE_XVECTOR_STUFF__(RVector) //RVector last since auto rhs conversion will fa
     template RVector unique(const RVector & a);
     // template IndexArray unique(const IndexArray & a);
     template IVector unique(const IVector & a);
-    
+
     template RVector sort(const RVector & a);
     // template IndexArray sort(const IndexArray & a);
     template IVector sort(const IVector & a);
-    
+
     template RVector pow(const RVector & a, double power);
     template RVector pow(const RVector & a, int power);
     template RVector pow(const RVector & a, const RVector & power);

@@ -204,6 +204,20 @@ def __createMeshWithSecondaryNodes__(self, n=3, verbose=False):
 Mesh.createSecondaryNodes = __createSecondaryNodes__
 Mesh.createMeshWithSecondaryNodes = __createMeshWithSecondaryNodes__
 
+def __deform__(self, eps, mag=1.0):
+    # !!!! delete all Jacobi caches belongs to the MeshEntities !!!!
+
+    warn('move me to the core')
+    import numpy as np
+    e = np.array(eps).T
+    for n in self.nodes():
+        n.pos().translate(e[n.id(),:]*mag)
+    self.scale((1.,1.,1.))
+
+    return self
+
+Mesh.deform = __deform__
+
 Mesh.exportPLC = exportPLC
 
 # just to keep backward compatibility 20191120

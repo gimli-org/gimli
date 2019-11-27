@@ -142,6 +142,21 @@ class TestSparseMatrix(unittest.TestCase):
 
         np.testing.assert_allclose(pg.utils.toComplex(x3), x, rtol=1e-10)
 
+
+    def test_BlockMatrix(self):
+        A = pg.core.SparseMapMatrix(2, 2)
+        A.setVal(0, 0, 1.0)
+
+        B = pg.core.BlockMatrix()
+        B.add(A, 0, 0)
+
+        np.testing.assert_allclose(B.row(0), [1.0, 0.0], rtol=1e-10)
+        B.add(A, 0, 0)
+        np.testing.assert_allclose(B.row(0), [2.0, 0.0], rtol=1e-10)
+
+        C = B.sparseMapMatrix()
+        np.testing.assert_allclose(C.row(0), [2.0, 0.0], rtol=1e-10)
+
     def test_Misc(self):
         D = pg.core.SparseMapMatrix(3, 4)
         for i in range(D.rows()):

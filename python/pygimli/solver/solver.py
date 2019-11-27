@@ -1575,8 +1575,8 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
 
     if times is None:
         rhs = createLoadVector(mesh, f, userData=userData)
-        assembleBC_(bc, mesh, A, rhs, a, time=None, userData=userData) 
-        
+        assembleBC_(bc, mesh, A, rhs, a, time=None, userData=userData)
+
         u = None
         if 'u' in workSpace:
             u = workSpace['u']
@@ -1750,9 +1750,9 @@ def checkCFL(times, mesh, vMax):
 
         if c > 1:
             pg.warn("Courant-Friedrichs-Lewy Number:", c,
-                    "but sould be lower 1 to ensure movement inside a cell "
+                    "but should be lower 1 to ensure movement inside a cell "
                     "per timestep. ("
-                    "vmax =", vMax,
+                    "vMax =", vMax,
                     "dt =", dt,
                     "dx =", dx,
                     "dt <", dx/vMax,

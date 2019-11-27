@@ -2161,7 +2161,7 @@ void Mesh::prolongateEmptyCellsValues(RVector & vals, double background) const {
         prolongateEmptyCellsValues(vals, background);
     }
 }
-void Mesh::transform(const RMatrix & mat){
+Mesh & Mesh::transform(const RMatrix & mat){
 //         std::for_each(nodeVector_.begin(), nodeVector_.end(),
 //                        bind2nd(std::mem_fun(&Node::pos().transform), mat));
     for (auto &n: nodeVector_) n->pos().transform(mat);
@@ -2177,8 +2177,8 @@ void Mesh::transform(const RMatrix & mat){
             }
         }
     }
-
     rangesKnown_ = false;
+    return *this;
 }
 
 Mesh & Mesh::scale(const RVector3 & s){
@@ -2237,6 +2237,13 @@ Mesh & Mesh::rotate(const RVector3 & r){
     return *this;
 }
 
+Mesh & Mesh::deform(const R3Vector & eps, double magnify){
+    ASSERT_SIZE(eps, this->nodeCount())
+    for (auto &n: nodeVector_) n->pos().translate(magnify * eps[n->id()]);
+    rangesKnown_ = false;
+    return *this;
+}
+
 void Mesh::swapCoordinates(Index i, Index j){
     for (auto &n: nodeVector_) n->pos().swap(i,j);
     for (auto &n: holeMarker_) n.swap(i,j);
@@ -2253,6 +2260,7 @@ void Mesh::swapCoordinates(Index i, Index j){
     }
     rangesKnown_ = false;
 }
+
 
 void Mesh::relax(){
    THROW_TO_IMPL
