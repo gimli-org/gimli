@@ -4,7 +4,6 @@ import numpy as np
 import unittest
 
 import pygimli as pg
-
 import pygimli.meshtools as mt
 
 class TestCreateRectangle(unittest.TestCase):
@@ -177,6 +176,21 @@ class TestCreatePolygon(unittest.TestCase):
         assert polygon.regionMarkers()[0].marker() == 7
 
 class Test3DMerge(unittest.TestCase):
+    def test_cubeBasics(self):
+        c1 = mt.createCube()
+        for i, b in enumerate(c1.boundaries()):
+            b.setMarker(i+1)
+
+        # print(c1)
+        m1 = mt.createMesh(c1)
+        # print(m1)
+
+        for b in m1.boundaries():
+            # print(b, b.norm())
+            b1 = c1.boundaries(c1.boundaryMarkers() == b.marker())[0]
+            # print(b1, b1.norm())
+            np.testing.assert_array_equal(b.norm(), b1.norm())
+
     def test_cube_cube_same(self):
         c1 = mt.createCube()
         c2 = mt.createCube()

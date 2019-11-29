@@ -133,7 +133,7 @@ def createRectangle(start=None, end=None, pos=None, size=None, **kwargs):
 
     Examples
     --------
-    >>>  # no need to import matplotlib. pygimli's show does
+    >>> # no need to import matplotlib, pygimli show does.
     >>> import pygimli as pg
     >>> import pygimli.meshtools as mt
     >>> r1 = mt.createRectangle(pos=[1, -1], size=[4.0, 4.0],
@@ -476,7 +476,7 @@ def createPolygon(verts, isClosed=False, addNodes=0, interpolate='linear',
 
     Examples
     --------
-    >>>  # no need to import matplotlib. pygimli's show does
+    >>> # no need to import matplotlib, pygimli show does.
     >>> import pygimli as pg
     >>> import pygimli.meshtools as mt
     >>> p1 = mt.createPolygon([[0.0, 0.0], [1.0, 0.0], [1.0, 1.0]],
@@ -680,26 +680,26 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
     sensor positions. Sensor positions are assumed to be on the surface and
     must be sorted and unique.
 
-    You can create a parameter mesh without sensors if you just set [xmin,
-    xmax] as sensors.
+    You can create a parameter mesh without sensors if you just set [xMin,
+    xMax] as sensors.
 
     The PLC is a :gimliapi:`GIMLI::Mesh` and contain nodes, edges and two
     region markers, one for the parameters domain (marker=2) and a larger
     boundary around the outside (marker=1)
 
     TODO:
-        * additional topo points
+        * additional topographic points
         * spline interpolation between sensorpoints or addpoints for non closed
         * subsurface sensors (partly .. see example)
 
     Parameters
     ----------
-    sensors : [RVector3] | DataContainer with sensorPositions() | [xmin, xmax]
+    sensors : [RVector3] | DataContainer with sensorPositions() | [xMin, xMax]
         Sensor positions. Must be sorted and unique in positive x direction.
         Depth need to be y-coordinate.
 
     paraDX : float [1]
-        Relativ distance for refinement nodes between two sensors (1=none),
+        Relative distance for refinement nodes between two sensors (1=none),
         e.g., 0.5 means 1 additional node between two neighboring sensors
         e.g., 0.33 means 2 additional equidistant nodes between two sensors
 
@@ -737,7 +737,7 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
 
     Examples
     --------
-    >>>  # no need to import matplotlib. pygimli's show does
+    >>> # no need to import matplotlib, pygimli show does.
     >>> import pygimli as pg
     >>> import pygimli.meshtools as plc
     >>> # Create the simplest paramesh PLC with a para box of 10 m without
@@ -773,40 +773,40 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
     eSpacing = kwargs.pop('eSpacing', sensors[0].distance(sensors[1]))
 
     iz = 1
-    xmin, ymin, zmin = sensors[0][0], sensors[0][1], sensors[0][2]
-    xmax, ymax, zmax = xmin, ymin, zmin
+    xMin, yMin, zMin = sensors[0][0], sensors[0][1], sensors[0][2]
+    xMax, yMax, zMax = xMin, yMin, zMin
     for e in sensors:
-        xmin = min(xmin, e[0])
-        xmax = max(xmax, e[0])
-        ymin = min(ymin, e[1])
-        ymax = max(ymax, e[1])
-        zmin = min(zmin, e[2])
-        zmax = max(zmax, e[2])
+        xMin = min(xMin, e[0])
+        xMax = max(xMax, e[0])
+        yMin = min(yMin, e[1])
+        yMax = max(yMax, e[1])
+        zMin = min(zMin, e[2])
+        zMax = max(zMax, e[2])
 
-    if abs(ymin) < 1e-8 and abs(ymax) < 1e-8:
+    if abs(yMin) < 1e-8 and abs(yMax) < 1e-8:
         iz = 2
 
     paraBound = eSpacing * paraBoundary
 
     if paraDepth == 0:
-        paraDepth = 0.4 * (xmax - xmin)
+        paraDepth = 0.4 * (xMax - xMin)
 
     poly = pg.Mesh(dim=2, isGeometry=True)
     # define para domain without surface
-    n1 = poly.createNode([xmin - paraBound, sensors[0][iz]])
+    n1 = poly.createNode([xMin - paraBound, sensors[0][iz]])
     if balanceDepth:
         bD = min(sensors[0][iz] - paraDepth, sensors[0][iz] - paraDepth)
-        n2 = poly.createNode([xmin - paraBound, bD])
-        n3 = poly.createNode([xmax + paraBound, bD])
+        n2 = poly.createNode([xMin - paraBound, bD])
+        n3 = poly.createNode([xMax + paraBound, bD])
     else:
-        n2 = poly.createNode([xmin - paraBound, sensors[0][iz] - paraDepth])
-        n3 = poly.createNode([xmax + paraBound, sensors[-1][iz] - paraDepth])
-    n4 = poly.createNode([xmax + paraBound, sensors[-1][iz]])
+        n2 = poly.createNode([xMin - paraBound, sensors[0][iz] - paraDepth])
+        n3 = poly.createNode([xMax + paraBound, sensors[-1][iz] - paraDepth])
+    n4 = poly.createNode([xMax + paraBound, sensors[-1][iz]])
 
     if boundary < 0:
         boundary = 4
 
-    bound = abs(xmax - xmin) * boundary
+    bound = abs(xMax - xMin) * boundary
     if bound > paraBound:
         # define world without surface
         n11 = poly.createNode(n1.pos() - [bound, 0.])
@@ -1226,11 +1226,11 @@ def exportTetgenPoly(poly, filename, float_format='.12e', **kwargs):
         # <# of polygons> [# of holes] [boundary marker]
         try:
             nSubs = bound.subfaceCount()
-        except:
+        except BaseException:
             nSubs = 0
         try:
             nHoles = len(bound.holeMarkers())
-        except:
+        except BaseException:
             nHoles = 0
 
         npolys = 1 + nSubs + len(bound.secondaryNodes())
@@ -1308,7 +1308,7 @@ def exportTetgenPoly(poly, filename, float_format='.12e', **kwargs):
     # writing file
     with open(filename, 'w') as out:
         out.write(polytxt)
-
+    out.close()
 
 def syscallTetgen(filename, quality=1.2, area=0, preserveBoundary=False,
                   verbose=False, tetgen='tetgen'):
@@ -1514,20 +1514,27 @@ def createCube(size=[1.0, 1.0, 1.0],
     """
     poly = pg.Mesh(3, isGeometry=True)
 
-    for y in [-0.5, 0.5]:
-        poly.createNode(-0.5, y, -0.5)
-        poly.createNode(+0.5, y, -0.5)
-        poly.createNode(+0.5, y, +0.5)
-        poly.createNode(-0.5, y, +0.5)
+    for z in [-0.5, 0.5]:
+        poly.createNode(-0.5, -0.5, z)
+        poly.createNode(+0.5, -0.5, z)
+        poly.createNode(+0.5, +0.5, z)
+        poly.createNode(-0.5, +0.5, z)
 
-    faces = [[4, 5, 1, 0],
-             [5, 6, 2, 1],
-             [6, 7, 3, 2],
-             [7, 4, 0, 3],
-             [0, 1, 2, 3],
-             [7, 6, 5, 4], ]
+    faces = [[1, 2, 6, 5],
+            [2, 3, 7, 6],
+            [3, 0, 4, 7],
+            [0, 1, 5, 4],
+            [4, 5, 6, 7],
+            [0, 3, 2, 1]]
 
-    for f in faces:
+    # faces = [[4, 5, 1, 0],
+    #          [5, 6, 2, 1],
+    #          [6, 7, 3, 2],
+    #          [7, 4, 0, 3],
+    #          [0, 1, 2, 3],
+    #          [7, 6, 5, 4], ]
+
+    for f in faces[::1]:
         poly.createPolygonFace(poly.nodes(f), marker=boundaryMarker)
 
     poly.scale(size)

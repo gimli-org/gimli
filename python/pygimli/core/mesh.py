@@ -34,7 +34,7 @@ def __MeshEntity_str(self):
          ', Marker: ' + str(self.marker()) + \
          ', Size: ' + str(self.size()) + '\n'
 
-    if isinstance(self, PolygonFace):
+    if isinstance(self, PolygonFace) and len(self.nodes()) > 5:
         s += '\t' + str(self.nodeCount()) + " Nodes.\n"
     else:
         for n in self.nodes():
@@ -211,7 +211,7 @@ def __deform__(self, eps, mag=1.0):
     import numpy as np
     e = np.array(eps).T
     for n in self.nodes():
-        n.pos().translate(e[n.id(),:]*mag)
+        n.pos().translate(e[n.id(), :]*mag)
     self.scale((1.,1.,1.))
 
     return self

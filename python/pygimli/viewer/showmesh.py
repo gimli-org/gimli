@@ -78,26 +78,26 @@ def show(obj=None, data=None, **kwargs):
         ax = kwargs.pop('ax', None)
         fitView = kwargs.pop('fitView', True)
 
-        ax, cbar = show(mesh[0], data, hold=1, ax=ax, fitView=fitView, **kwargs)
-        xmin = mesh[0].xmin()
-        xmax = mesh[0].xmax()
-        ymin = mesh[0].ymin()
-        ymax = mesh[0].ymax()
+        ax, cBar = show(mesh[0], data, hold=1, ax=ax, fitView=fitView, **kwargs)
+        xMin = mesh[0].xMin()
+        xMax = mesh[0].xMax()
+        yMin = mesh[0].yMin()
+        yMax = mesh[0].yMax()
 
         for m in mesh[1:]:
-            ax, cbar = show(m, data, ax=ax, hold=1, fitView=False, **kwargs)
-            xmin = min(xmin, m.xmin())
-            xmax = max(xmax, m.xmax())
-            ymin = min(ymin, m.ymin())
-            ymax = max(ymax, m.ymax())
+            ax, cBar = show(m, data, ax=ax, hold=1, fitView=False, **kwargs)
+            xMin = min(xMin, m.xMin())
+            xMax = max(xMax, m.xMax())
+            yMin = min(yMin, m.yMin())
+            yMax = max(yMax, m.yMax())
 
 #        ax.relim()
 #        ax.autoscale_view(tight=True)
         if fitView is not False:
-            ax.set_xlim([xmin, xmax])
-            ax.set_ylim([ymin, ymax])
+            ax.set_xlim([xMin, xMax])
+            ax.set_ylim([yMin, yMax])
         #        print(ax.get_data_interval())
-        return ax, cbar
+        return ax, cBar
 
     if isinstance(mesh, pg.Mesh):
         if mesh.dim() == 2:
@@ -307,7 +307,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
                     print("Data: ", len(data), min(data), max(data), pg.core.haveInfNaN(data))
                     print("Mesh: ", mesh)
                     validData = False
-                    gci = drawMesh(ax, mesh)
+                    drawMesh(ax, mesh)
 
                 if cMap is not None and gci is not None:
                     gci.set_cmap(cmapFromName(cMap))
@@ -334,7 +334,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
             gci.set_edgecolor("0.1")
         else:
             pg.mplviewer.drawSelectedMeshBoundaries(ax, mesh.boundaries(),
-                                                    color="0.1", linewidth=0.3)
+                                            color=kwargs.pop('color', "0.1"), linewidth=0.3)
             #drawMesh(ax, mesh, **kwargs)
 
     if showBoundary == True or showBoundary == 1:
@@ -345,11 +345,11 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
 
     fitView = kwargs.pop('fitView', True)
     if fitView:
-        ax.set_xlim(mesh.xmin(), mesh.xmax())
-        ax.set_ylim(mesh.ymin(), mesh.ymax())
+        ax.set_xlim(mesh.xMin(), mesh.xMax())
+        ax.set_ylim(mesh.yMin(), mesh.yMax())
         ax.set_aspect('equal')
 
-    cbar = None
+    cBar = None
 
     if label is not None and colorBar is None:
         colorBar = True
@@ -363,21 +363,21 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
         subkwargs['orientation'] = cBarOrientation
 
         if bool(colorBar):
-            cbar = createColorBar(gci,
+            cBar = createColorBar(gci,
                                   size=kwargs.pop('size', 0.2),
                                   pad=kwargs.pop('pad', None),
                                   **subkwargs
                                   )
         elif colorBar is not False:
-            cbar = updateColorBar(colorBar, **subkwargs)
+            cBar = updateColorBar(colorBar, **subkwargs)
 
         if markers:
             ticks = np.arange(len(uniquemarkers))
-            cbar.set_ticks(ticks)
+            cBar.set_ticks(ticks)
             labels = []
             for marker in uniquemarkers:
                 labels.append(str((marker)))
-            cbar.set_ticklabels(labels)
+            cBar.set_ticklabels(labels)
 
     if coverage is not None:
         if len(data) == mesh.cellCount():
@@ -390,7 +390,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
     if not hold or block is not False and plt.get_backend().lower() != "agg":
         if data is not None:
             if len(data) == mesh.cellCount():
-                cb = CellBrowser(mesh, data, ax=ax)
+                CellBrowser(mesh, data, ax=ax)
 
         plt.show(block=block)
         try:
@@ -416,9 +416,9 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
                 os.system('epstopdf ' + savefig)
             except BaseException:
                 pass
-        print('..done')
+        print('.. done')
 
-    return ax, cbar
+    return ax, cBar
 
 
 def showBoundaryNorm(mesh, normMap=None, **kwargs):

@@ -102,8 +102,55 @@ class TestFiniteElementBasics(unittest.TestCase):
     def test_Dirichlet(self):
         """
         """
-        def _testP1_(mesh, show=False):
-            """ Laplace u = 0 solves u = x for u(r=0)=0 and u(r=1)=1
+        def _testP2_(mesh, show=False):
+            """ Laplace u = 2
+                with u(x) = xMin/(xMax-xMin) + x/(xMax-xMin) + x²
+                and u(xMin)=0 and u(xMax)=1
+                Test for u_h === u(x) for P2 base functions
+            """
+            meshP2 = mesh.createP2()
+            u = pg.solve(meshP2, f=-2, bc={'Dirichlet': [[1, 2], [2, 2]]},
+                                           #'Node':[5, 0]}
+                                           )
+
+            xMin = mesh.xMin()
+            xSpan = (mesh.xMax() - xMin)
+
+            if show:
+                if mesh.dim()==1:
+                    pg.plt.figure()
+                    x = pg.x(mesh)
+                    ix = np.argsort(x)
+                    pg.plt.plot(x[ix], x[ix]**2 - (xSpan/2)**2 + 2 )
+                elif mesh.dim() > 1:
+                    pg.show(meshP2, u, label='u = x**2')
+
+            np.testing.assert_allclose(u, pg.x(meshP2)**2 - (xSpan/2)**2 +2)
+
+            # # find test pos different from node pos
+            # meshTests = mesh.createH2()
+            # meshTests = meshTests.createH2()
+
+            # c = [c.center() for c in meshTests.cells()]
+            # startPos = meshTests.node(0).pos()
+
+            # if mesh.dim() == 2:
+            #     c = [b.center() for b in meshTests.boundaries(meshTests.boundaryMarkers()==4)]
+
+            # c.sort(key=lambda c_: c_.distance(startPos))
+            # ui = pg.interpolate(meshP2, u, c)
+            # xi = pg.utils.cumDist(c) + startPos.distance(c[0])
+
+            # if show:
+            #     pg.plt.plot(xi, ui)
+            #     pg.plt.plot(xi, xi**2)
+            #     pg.wait()
+
+            # np.testing.assert_allclose(ui, xi**2)
+
+        def _testP1_(mesh, show=False, followP2=True):
+            """ Laplace u = 0
+                with u = x and u(x=min)=0 and u(x=max)=1
                 Test for u == exact x for P1 base functions
             """
             u = pg.solve(mesh, a=1, b=0, f=0,
@@ -111,75 +158,68 @@ class TestFiniteElementBasics(unittest.TestCase):
 
             if show:
                 if mesh.dim()==1:
-                    pg.plt.plot(pg.x(mesh), u)
-                    pg.wait()
-                elif mesh.dim()==2:
+                    pg.plt.figure()
+                    x = pg.x(mesh)
+                    ix = np.argsort(x)
+                    pg.plt.plot(x[ix], u[ix])
+                elif mesh.dim() > 1:
                     pg.show(mesh, u, label='u')
-                    pg.wait()
 
             xMin = mesh.xMin()
             xSpan = (mesh.xMax() - xMin)
             np.testing.assert_allclose(u, (pg.x(mesh)-xMin) / xSpan)
+
+            if followP2:
+                _testP2_(mesh, show)
             return u
 
-        def _testP2_(mesh, show=False):
-            """ Laplace u = 2 solves u = x² for u(r=0)=0 and u(r=1)=1
-                Test for u == exact x² for P2 base functions
-            """
-            meshP2 = mesh.createP2()
-            u = pg.solve(meshP2, f=-2, bc={'Dirichlet': [[1, 0], [2, 1]]})
 
-            # find test pos different from node pos
-            meshTests = mesh.createH2()
-            meshTests = meshTests.createH2()
+        # 1D
+        _testP1_(pg.createGrid(x=np.linspace(-1, 1, 11)), show=False)
+        _testP1_(pg.createGrid(x=np.linspace(-3, 3, 11)), show=False)
 
-            c = [c.center() for c in meshTests.cells()]
-            startPos = meshTests.node(0).pos()
-
-            if mesh.dim() == 2:
-                c = [b.center() for b in meshTests.boundaries(meshTests.boundaryMarkers()==4)]
-
-            c.sort(key=lambda c_: c_.distance(startPos))
-            ui = pg.interpolate(meshP2, u, c)
-            xi = pg.utils.cumDist(c) + startPos.distance(c[0])
-
-            if show:
-                pg.plt.plot(xi, ui)
-                pg.plt.plot(xi, xi**2)
-                pg.wait()
-
-            np.testing.assert_allclose(ui, xi**2)
-
-        _testP1_(pg.createGrid(x=np.linspace(0, 1, 11)), show=False) #1D
-        _testP1_(pg.createGrid(x=np.linspace(-2, 1, 11),
-                               y=np.linspace(0, 1, 11))) #2D reg quad
-        _testP1_(pg.createGrid(x=np.linspace(-0.04, 0.01, 11),
-                               y=np.linspace(-0.4, 0, 11))) #2D scaled
-        _testP1_(pg.createGrid(x=np.linspace(-2, 1, 11),
+        # 2D reg quad
+        _testP1_(pg.createGrid(x=np.linspace(-2, 2, 11),
+                               y=np.linspace(0, 1, 11)), show=False)
+        # 2D reg quad scale
+        _testP1_(pg.createGrid(x=np.linspace(-0.04, 0.04, 11),
+                               y=np.linspace(-0.4, 0, 11)))
+        # 3D reg quad
+        _testP1_(pg.createGrid(x=np.linspace(-2, 2, 11),
                                y=np.linspace( 0, 1, 11),
-                               z=np.linspace( 0, 1, 11))) #3D
+                               z=np.linspace( 0, 1, 11)), followP2=False)
+                               # check why P2 fails here,
 
-        mesh = pg.meshtools.createMesh(pg.meshtools.createWorld(start=[4, -4], end=[6, -6], worldMarker=0), area=0.1)
+        # 2D tri
+        mesh = pg.meshtools.createMesh(pg.meshtools.createWorld(start=[-1, -4],
+                                                                end=[1, -6], worldMarker=0), area=0.1)
         mesh.setBoundaryMarkers(np.array([0,1,3,2,4])[mesh.boundaryMarkers()])
-        _testP1_(mesh, show=False) #2D tri
+        _testP1_(mesh, show=False)
+
+        # 3D prism
+        mesh = pg.meshtools.extrudeMesh(mesh, np.linspace(0, 1, 11))
+        _testP1_(mesh, show=False)
+
+        # 3D tet
+        mesh = pg.meshtools.createMesh(pg.meshtools.createCube(size=[4, 4, 4],
+                                                               boundaryMarker=9,
+                                                               area=100.1))
+
+        for b in mesh.boundaries(mesh.boundaryMarkers() == 9):
+            if b.center()[0] == mesh.xMin():
+                b.setMarker(1)
+            elif b.center()[0] == mesh.xMax():
+                b.setMarker(2)
+
+        _testP1_(mesh, show=False)
+        #pg.wait()
 
         grid = pg.createGrid(x=np.linspace(-2, 2, 11), y=np.linspace(0, 1, 11))
         grid.rotate([0, 0, np.pi/4])
         #can't find proper test for this rotated case
         #v = _testP1_(grid, show=False) #2D reg - rotated
 
-        # P2 tests
-        mesh = pg.meshtools.createMesh(pg.meshtools.createWorld(start=[0, -4], end=[1, -6], worldMarker=0), area=0.1)
-        mesh.setBoundaryMarkers(np.array([0,1,3,2,4])[mesh.boundaryMarkers()])
-        _testP2_(mesh, show=False) #2D tri
-        _testP2_(pg.createGrid(x=np.linspace(0, 1, 11)), show=0) #1D
-        _testP2_(pg.createGrid(x=np.linspace(0, 1, 11), y=np.linspace(0, 1, 11)), show=0) #2D reg quad
-        grid = pg.createGrid(x=np.linspace(0, 1, 11), y=np.linspace(0, 1, 11))
-        grid.rotate([0, 0, np.pi/4])
-        v = _testP2_(grid, show=False) #2D reg - rotated
 
-
-        #TODO 3D Tet
 
 if __name__ == '__main__':
 
