@@ -33,15 +33,16 @@ class CellBrowserCacheSingleton(object):
 # We only want one instance of this global cache so its a singleton class
 __CBCache__ = CellBrowserCacheSingleton()
 
-def _setCMap(pp, cMap):
-    """Set colormap to mpl object pp
-        Ensure kwargs have argument with correct naming conventions.
-    """
-    if cMap is not None:
-        if isinstance(cMap, str):
-            pp.set_cmap(cmapFromName(cMap))
-        else:
-            pp.set_cmap(cMap)
+# is this needed?
+# def _setCMap(pp, cMap):
+#     """Set colormap to mpl object pp
+#         Ensure kwargs have argument with correct naming conventions.
+#     """
+#     if cMap is not None:
+#         if isinstance(cMap, str):
+#             pp.set_cmap(cmapFromName(cMap))
+#         else:
+#             pp.set_cmap(cMap)
 
 
 class CellBrowser(object):
@@ -548,9 +549,10 @@ def drawMeshBoundaries(ax, mesh, hideMesh=False, useColorMap=False,
     mesh.createNeighborInfos()
 
     if not hideMesh:
+        pg.r_(color)
         drawSelectedMeshBoundaries(ax,
                                    mesh.findBoundaryByMarker(0),
-                                   color=(0.0, 0.0, 0.0, 1.0),
+                                   color=color or (0.0, 0.0, 0.0, 1.0),
                                    linewidth=lw or 0.3)
 
     drawSelectedMeshBoundaries(
@@ -809,7 +811,7 @@ def createTriangles(mesh, data=None):
     return x, y, triangles, z, dataIdx
 
 
-def drawField(ax, mesh, data=None, levels=[], nLevs=5,
+def drawField(ax, mesh, data=None, levels=None, nLevs=5,
               cMin=None, cMax=None, logScale=False, fitView=True,
               **kwargs):
     """Draw mesh with scalar field data.
@@ -826,7 +828,7 @@ def drawField(ax, mesh, data=None, levels=[], nLevs=5,
     data: iterable
         Scalar field values. Can be of length mesh.cellCount()
         or mesh.nodeCount().
-    levels : iterable [float]
+    levels : iterable of type float
         Values for contour lines. If empty auto generated from nLevs.
     nLevs : int
         Number of contour levels based on cMin, cMax and logScale.
@@ -874,7 +876,7 @@ def drawField(ax, mesh, data=None, levels=[], nLevs=5,
 
     gci = None
 
-    if len(levels) == 0:
+    if levels is None:
         levels = autolevel(data, nLevs,
                            zmin=cMin, zmax=cMax, logScale=logScale)
 

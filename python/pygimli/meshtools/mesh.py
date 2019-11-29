@@ -180,6 +180,11 @@ def refineQuad2Tri(mesh, style=1):
     for c in mesh.cells():
 
         if style == 1:
+            # out.createCell([c.node(0).id(), c.node(1).id(), c.node(3).id()],
+            #                c.marker())
+            # out.createCell([c.node(1).id(), c.node(2).id(), c.node(3).id()],
+            #                c.marker())
+
             out.createCell([c.node(0).id(), c.node(1).id(), c.node(2).id()],
                            c.marker())
             out.createCell([c.node(0).id(), c.node(2).id(), c.node(3).id()],
@@ -420,7 +425,7 @@ def readGmsh(fName, verbose=False, precision=None):
     >>> os.remove(fName)
     """
     assert precision is None or precision >= 0
-    inNodes, inElements, ncount = 0, 0, 0
+    inNodes, inElements, nCount = 0, 0, 0
     fid = open(fName)
     if verbose:
         print('Reading %s... \n' % fName)
@@ -446,11 +451,11 @@ def readGmsh(fName, verbose=False, precision=None):
                 else:
                     node_coordinates = np.array(line.split(), 'float')[1:]
                     if precision is None:
-                        nodes[ncount, :] = node_coordinates
+                        nodes[nCount, :] = node_coordinates
                     else:
-                        nodes[ncount, :] = np.round(
+                        nodes[nCount, :] = np.round(
                             node_coordinates, precision)
-                    ncount += 1
+                    nCount += 1
 
             elif inElements == 1:
                 if len(line.split()) == 1:
@@ -727,6 +732,7 @@ def readTetgen(fName, comment='#', verbose=False, defaultCellMarker=0,
                 face_marker_n = int(face_n[-1])
             else:
                 face_marker_n = 0
+
             mesh.createBoundary([int(ind) for ind in face_n[1:4]],
                                 marker=face_marker_n)
             # quadratic
@@ -1371,7 +1377,7 @@ def readSTL(fileName, binary=False):
     mesh.importSTL(fileName, isBinary=binary)
     return mesh
 
-def exportSTL(mesh, fileName, ascii=True):
+def exportSTL(mesh, fileName, binary=False):
     """Write :term:`STL` surface mesh and returns a :gimliapi:`GIMLI::Mesh`.
 
     Export a three dimensional boundary :gimliapi:`GIMLI::Mesh` into a
@@ -1392,8 +1398,8 @@ def exportSTL(mesh, fileName, ascii=True):
     fileName : str
         name of the .stl file containing the STL surface mesh
 
-    ascii : bool [True]
-        STL ASCII format
+    binary : bool [False]
+        Write STL binary format. TODO
     """
     marker = pg.unique(pg.sort(mesh.boundaryMarkers()))
 

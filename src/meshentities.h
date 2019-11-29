@@ -817,9 +817,9 @@ Boundary normal shows outside .. so the boundary left neighbor is this cell
 
 Neighbor Nr., on Boundary a-b-c. Boundary to neighbor cell is opposite to NodeNr.
     0           1-2-3     le -- view from outer
-    1           2-0-3     re -- view from inner
+    1           2-0-3     ri -- view from inner
     2           0-1-3     le -- view from outer
-    3           0-2-1     re -- view from inner
+    3           0-2-1     ri -- view from inner
 */
 static const uint8 TetrahedronFacesID[4][3] = {
     {1, 2, 3},
@@ -920,11 +920,11 @@ Boundary normal shows outside .. so the boundary left neighbor is this cell
 
 Neighbor Nr, on Boundary a-b-c-d
     0           1-2-6-5  // le
-    1           2-3-7-6  // re
-    2           3-0-4-7  // re
+    1           2-3-7-6  // ri
+    2           3-0-4-7  // ri
     3           0-1-5-4  // le
     4           4-5-6-7  // le
-    5           0-3-2-1  // re
+    5           0-3-2-1  // ri
 
 T.~Apel and N.~Düvelmeyer, Transformation of Hexaedral Finite Element Meshes into Tetrahedral Meshes According to Quality Criteria,
 Computing Volume 71, Number 4 / November, 2003, DOI 10.1007/s00607-003-0031-5, Pages   293-304

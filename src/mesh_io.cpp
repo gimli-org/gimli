@@ -1437,7 +1437,7 @@ void Mesh::importSTL(const std::string & fileName, bool isBinary, double snap){
                     allVerts.push_back(std::vector < RVector3 >());
 
                 } else if (row[0] == "facet" && row[1] == "normal"){ //** facet normal  0.0  0.0  0.0
-                    row = getNonEmptyRow(file);  //** outer loop
+                    row = getNonEmptyRow(file); //** outer loop
                     row = getNonEmptyRow(file); //** vertex x y z;
                     allVerts.back().push_back(RVector3(toDouble(row[1]), toDouble(row[2]), toDouble(row[3])));
                     row = getNonEmptyRow(file); //** vertex x y z
