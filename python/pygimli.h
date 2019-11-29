@@ -145,6 +145,12 @@ namespace pyplusplus{ namespace aliases{
 // #include "matrixTemplates.h"
 
 namespace GIMLI{
+    // inline IndexArray operator OP (const IndexArray & a, const IndexArray & b){ \
+    //     IndexArray ret(a);   ret OP##=b; return ret; }                           \
+    // inline IndexArray operator OP (const IndexArray & a, Index b){ \
+    //     IndexArray ret(a);   ret OP##=b; return ret; }                           \
+    // inline IndexArray operator OP (Index a, const IndexArray & b){ \
+    //     IndexArray ret(b.size()); for (Index i = 0; i < b.size(); i ++) ret[i] = a OP b[i]; return ret; } \
 
 #define DEFINE_PY_VEC_OPERATOR__(OP)                      \
     inline RVector operator OP (const RVector & a, const RVector & b){ \
@@ -155,9 +161,9 @@ namespace GIMLI{
         RVector ret(a);   ret OP##=b; return ret; }                           \
     inline IVector operator OP (const IVector & a, const IVector & b){ \
         IVector ret(a);   ret OP##=b; return ret; }                           \
-    inline IVector operator OP (const IVector & a, Index b){ \
+    inline IVector operator OP (const IVector & a, int b){ \
         IVector ret(a);   ret OP##=b; return ret; }                           \
-    inline IVector operator OP (Index a, const IVector & b){ \
+    inline IVector operator OP (int a, const IVector & b){ \
         IVector ret(b.size()); for (Index i = 0; i < b.size(); i ++) ret[i] = a OP b[i]; return ret; } \
     inline CVector operator OP (const CVector & a, const CVector & b){ \
         CVector c(a);   c OP##=b; return c; }                           \

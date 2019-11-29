@@ -542,8 +542,6 @@ def readGmsh(fName, verbose=False, precision=None):
             mesh.createNode(node)
 
     for cell in cells:
-        print(cell)
-        print(np.array(cell, dtype=int)[:-1]-1)
         mesh.createCell(mesh.nodes(np.array(cell, dtype=int)[:-1]-1),
                         marker=int(cell[-1]))
         # if dim == 2:
