@@ -294,7 +294,7 @@ Node * Mesh::createNodeWithCheck(const RVector3 & pos, double tol, bool warn, bo
                         // __MS(*n1)
                         // __MS(*n2)
                         // __MS(*newNode)
-                        dynamic_cast< Edge * >(b)->setNodes(*n1, *newNode, true);
+                        dynamic_cast< Edge * >(b)->setNodes(*n1, *newNode);
                         this->createEdge(*newNode, *n2, b->marker());
                         break;
                     }
@@ -1531,6 +1531,17 @@ void Mesh::createNeighborInfos(bool force){
 //     std::cout << med << " " << med/cellCount() << std::endl;
 }
 
+void Mesh::fixBoundaryDirections(){
+    for (Index i = 0; i < this->boundaryCount(); i ++ ){
+        Boundary * b = this->boundaryVector_[i];
+        if (b->leftCell() != NULL && b->rightCell() == NULL){
+            if (!b->normShowsOutside(*b->leftCell())){
+
+            }
+        }
+    }
+}
+
 void Mesh::createNeighborInfosCell_(Cell *c){
 
     for (Index j = 0; j < c->boundaryCount(); j++){
@@ -1806,8 +1817,6 @@ void Mesh::create3DGrid(const RVector & x, const RVector & y, const RVector & z,
                 }
             }
         }
-
-
     } else {
         std::cerr << WHERE_AM_I << "Warning! there are too few positions given: "
             << x.size() << " " << y.size() << " " << z.size() << std::endl;

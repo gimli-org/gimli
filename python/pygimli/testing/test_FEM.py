@@ -67,35 +67,70 @@ class TestFiniteElementBasics(unittest.TestCase):
         # pg.wait()
 
     def test_Neumann(self):
-        """
-        """
         def _test_(mesh, show=False):
+            """
+                \Laplace u = 0
+                du/dn = -0.1 (xMin)
+                du/dn =  0.1 (xMax)
+            """
             vTest = 0.1
             u = pg.solve(mesh, a=1, f=0,
                          bc={'Node': [mesh.findNearestNode([0.0, 0.0]), 0.],
                              'Neumann': [[1, -vTest], [2, vTest]]}, verbose=0)
+            v = pg.solver.grad(mesh, u)
 
             if show:
                 if mesh.dim() == 1:
                     pg.plt.plot(pg.x(mesh), u)
                 elif mesh.dim() == 2:
-                    pg.show(grid, pg.abs(v))
-                    pg.show(grid, v, showMesh=1)
+                    pg.show(mesh, u, label='u')
+                    ax, _ = pg.show(mesh, pg.abs(v), label='abs(grad(u))')
+                    pg.show(mesh, v, showMesh=1, ax=ax)
                 pg.wait()
 
-            v = pg.solver.grad(mesh, u)
-            np.testing.assert_allclose(pg.abs(v), np.ones(mesh.cellCount())*vTest)
+            # print(pg.x(mesh))
+            # print(pg.x(mesh)*vTest)
+            # print(u)
+
+            # print(min(u), max(u))
+            # print(min(pg.x(mesh)*vTest), max(pg.x(mesh)*vTest))
+            # print(min(pg.x(mesh)*vTest-u), max(pg.x(mesh)*vTest-u))
+
+            # for +1.0 .. see https://github.com/numpy/numpy/issues/13801
+            np.testing.assert_allclose(1.0 + u, 1.0 + pg.x(mesh)*vTest)
+
+            np.testing.assert_allclose(pg.abs(v),
+                                       np.ones(mesh.cellCount())*vTest)
             return v
 
-        _test_(pg.createGrid(x=np.linspace(-2, 1, 11)), show=False) #1D
-        _test_(pg.createGrid(x=np.linspace(-2, 2, 41), y=np.linspace(0, 1, 21))) #2D reg
-        _test_(pg.createGrid(x=np.linspace(-0.04, 0.01, 21), y=np.linspace(-0.4, 0, 21))) #2D scaled
-        _test_(pg.createGrid(x=np.linspace(-2, 1, 11), y=np.linspace( 0, 1, 11),
-                             z=np.linspace( 0, 1, 11))) #3D
+        # 1D
+        _test_(pg.createGrid(x=np.linspace(-1, 1, 11)), show=False)
+        # 1D scaled
+        _test_(pg.createGrid(x=np.linspace(-2, 2, 11)))
 
-        grid = pg.createGrid(x=np.linspace(-2, 2, 41), y=np.linspace(0, 1, 21))
-        grid.rotate([0, 0, np.pi/4])
-        v = _test_(grid) #2D reg - rotated
+        # 2D grid
+        _test_(pg.createGrid(x=np.linspace(-2, 2, 21),
+                             y=np.linspace(0, 1, 11)), show=False)
+        # 2D scaled
+        _test_(pg.createGrid(x=np.linspace(-0.04, 0.04, 21),
+                             y=np.linspace(-0.4, 0, 21)))
+
+        # 3D grid
+        _test_(pg.createGrid(x=np.linspace(-2, 2, 11), y=np.linspace(0, 1, 11),
+                             z=np.linspace( 0, 1, 11)))
+
+        # 2D grid rotated -- need better test
+        # grid = pg.createGrid(x=np.linspace(-2, 2, 41), y=np.linspace(-2, 2, 21))
+        # grid.rotate([0, 0, np.pi])
+        # _test_(grid, show=True)
+
+        # 2D tri
+        mesh = pg.meshtools.createMesh(pg.meshtools.createWorld(start=[-1, -4],
+                                                                end=[1, -6], worldMarker=0), area=0.1)
+        mesh.setBoundaryMarkers(np.array([0,1,3,2,4])[mesh.boundaryMarkers()])
+        _test_(mesh, show=False)
+
+
 
         #TODO 2D, Tri, 3D Tet
 
@@ -103,15 +138,13 @@ class TestFiniteElementBasics(unittest.TestCase):
         """
         """
         def _testP2_(mesh, show=False):
-            """ Laplace u = 2
-                with u(x) = xMin/(xMax-xMin) + x/(xMax-xMin) + x²
+            """ Laplace u - 2 = 0
+                with u(x) = x² + x/(xMax-xMin) + xMin/(xMax-xMin)
                 and u(xMin)=0 and u(xMax)=1
                 Test for u_h === u(x) for P2 base functions
             """
             meshP2 = mesh.createP2()
-            u = pg.solve(meshP2, f=-2, bc={'Dirichlet': [[1, 2], [2, 2]]},
-                                           #'Node':[5, 0]}
-                                           )
+            u = pg.solve(meshP2, f=-2, bc={'Dirichlet': [[1, 2], [2, 2]]},)
 
             xMin = mesh.xMin()
             xSpan = (mesh.xMax() - xMin)
@@ -127,26 +160,6 @@ class TestFiniteElementBasics(unittest.TestCase):
 
             np.testing.assert_allclose(u, pg.x(meshP2)**2 - (xSpan/2)**2 +2)
 
-            # # find test pos different from node pos
-            # meshTests = mesh.createH2()
-            # meshTests = meshTests.createH2()
-
-            # c = [c.center() for c in meshTests.cells()]
-            # startPos = meshTests.node(0).pos()
-
-            # if mesh.dim() == 2:
-            #     c = [b.center() for b in meshTests.boundaries(meshTests.boundaryMarkers()==4)]
-
-            # c.sort(key=lambda c_: c_.distance(startPos))
-            # ui = pg.interpolate(meshP2, u, c)
-            # xi = pg.utils.cumDist(c) + startPos.distance(c[0])
-
-            # if show:
-            #     pg.plt.plot(xi, ui)
-            #     pg.plt.plot(xi, xi**2)
-            #     pg.wait()
-
-            # np.testing.assert_allclose(ui, xi**2)
 
         def _testP1_(mesh, show=False, followP2=True):
             """ Laplace u = 0
@@ -187,7 +200,9 @@ class TestFiniteElementBasics(unittest.TestCase):
         # 3D reg quad
         _testP1_(pg.createGrid(x=np.linspace(-2, 2, 11),
                                y=np.linspace( 0, 1, 11),
-                               z=np.linspace( 0, 1, 11)), followP2=False)
+                               z=np.linspace( 0, 1, 11)),
+                               followP2=False
+                               )
                                # check why P2 fails here,
 
         # 2D tri
@@ -206,9 +221,14 @@ class TestFiniteElementBasics(unittest.TestCase):
                                                                area=100.1))
 
         for b in mesh.boundaries(mesh.boundaryMarkers() == 9):
-            if b.center()[0] == mesh.xMin():
+            # if b.center()[0] == mesh.xMin():
+            #     b.setMarker(1)
+            # elif b.center()[0] == mesh.xMax():
+            #     b.setMarker(2)
+
+            if b.norm()[0] == -1:
                 b.setMarker(1)
-            elif b.center()[0] == mesh.xMax():
+            elif b.norm()[0] == +1:
                 b.setMarker(2)
 
         _testP1_(mesh, show=False)

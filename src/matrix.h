@@ -1010,10 +1010,10 @@ bool loadMatrixRow(Matrix < ValueType > & A,
     return true;
 }
 
-/*!Inplace matrix calculation: $C += a * A.T * B * A$. 
-Size of A is (n,m) and B need to be square (n,n), C will resized to (m,m). 
+/*!Inplace matrix calculation: $C += a * A.T * B * A$.
+Size of A is (n,m) and B need to be square (n,n), C will resized to (m,m).
 AtB might be for temporary memory allocation.  */
-void matMultABA(const RMatrix & A, const RMatrix & B, RMatrix & C, RMatrix & AtB, double a=1.0);
+DLLEXPORT void matMultABA(const RMatrix & A, const RMatrix & B, RMatrix & C, RMatrix & AtB, double a=1.0);
 
 /*!Inplace matrix calculation: $C += a * A * B$. A or B are transposed if needed to fit appropriate dimensions. */
 DLLEXPORT void matMult(const RMatrix & A, const RMatrix & B, RMatrix & C, double a=1.0);

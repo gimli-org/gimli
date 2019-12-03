@@ -96,7 +96,8 @@ std::ostream & operator << (std::ostream & str, const Shape & c){
     return str;
 }
 
-Shape::Shape(){
+Shape::Shape(MeshEntity * ent){
+    this->setNodesPtr(ent->nodes());
     domSize_ = 0.0;
     hasDomSize_ = false;
 }
@@ -110,46 +111,50 @@ void Shape::changed(){
     hasDomSize_ = false;
 }
 
-Node & Shape::node(Index i) {
-    if (i > nodeCount() - 1){
-        std::cerr << WHERE_AM_I << " requested shape node: " << i << " does not exist." << std::endl;
-        exit(EXIT_MESH_NO_NODE);
-    }
-    return *nodeVector_[i];
-}
+// Node & Shape::node(Index i) {
+//     if (i > nodeCount() - 1){
+//         std::cerr << WHERE_AM_I << " requested shape node: " << i << " does not exist." << std::endl;
+//         exit(EXIT_MESH_NO_NODE);
+//     }
+//     return *(*nodeVector_)[i];
+// }
 
 const Node & Shape::node(Index i) const {
     if (i > nodeCount() - 1){
         std::cerr << WHERE_AM_I << " requested shape node: " << i << " does not exist." << std::endl;
         exit(EXIT_MESH_NO_NODE);
     }
-    return *nodeVector_[i];
+    return *(*nodeVector_)[i];
 }
 
-void Shape::setNode(Index i, Node & n) {
-    if (i > nodeCount() - 1){
-        std::cerr << WHERE_AM_I << " requested shape node: " << i << " does not exist." << std::endl;
-        exit(EXIT_MESH_NO_NODE);
-    }
-    nodeVector_[i] = &n;
-    this->changed();
-}
+// void Shape::setNode(Index i, Node & n) {
+//     if (i > nodeCount() - 1){
+//         std::cerr << WHERE_AM_I << " requested shape node: " << i << " does not exist." << std::endl;
+//         exit(EXIT_MESH_NO_NODE);
+//     }
+//     nodeVector_[i] = &n;
+//     this->changed();
+// }
 
 bool Shape::enforcePositiveDirection(){
-    if (createJacobian().det() < 0){
-        std::reverse(nodeVector_.begin(), nodeVector_.end());
-        this->changed();
-        return true;
-    }
+    __MS("inuse")
+    // if (createJacobian().det() < 0){
+    //     std::reverse(nodeVector_.begin(), nodeVector_.end());
+    //     this->changed();
+    //     return true;
+    // }
     return false;
 }
 
 RVector3 Shape::center() const {
     RVector3 center(0.0, 0.0, 0.0);
-    for (uint i = 0; i < nodeVector_.size(); i ++) {
-        center += nodeVector_[i]->pos();
+    for (auto &n: *this->nodeVector_){
+        center += n->pos();
     }
-    center /= nodeVector_.size();
+    // for (uint i = 0; i < nodeVector_.size(); i ++) {
+    //     center += this->node(i).pos();
+    // }
+    center /= this->nodeCount();
     return center;
 }
 
@@ -235,9 +240,9 @@ void Shape::createJacobian(RMatrix3 & J) const {
     RVector z(nodeCount());
 
     for (uint i = 0; i < nodeCount(); i ++){
-        x[i] = nodeVector_[i]->pos()[0];
-        y[i] = nodeVector_[i]->pos()[1];
-        z[i] = nodeVector_[i]->pos()[2];
+        x[i] = this->node(i).pos()[0];
+        y[i] = this->node(i).pos()[1];
+        z[i] = this->node(i).pos()[2];
     }
 
     if (ShapeFunctionCache::instance().RMatrixCache(rtti()).size() < 1){
@@ -294,7 +299,7 @@ void Shape::rst2xyz(const RVector3 & rst, RVector3 & xyz) const{
     RVector sf(this->N(rst));
 
     for (Index i = 0; i < nodeCount(); i ++){
-        xyz += nodeVector_[i]->pos() * sf[i];
+        xyz += this->node(i).pos() * sf[i];
     }
 }
 
@@ -352,7 +357,7 @@ void Shape::xyz2rst(const RVector3 & xyz, RVector3 & rst) const{
 //     if (err> 1){
 //         __MS(iter << " " << err << " " << damping << " " << dErr)
 //         for (Index i = 0; i < nodeCount(); i ++){
-//             __MS(nodeVector_[i]->pos());
+//             __MS(this->node(i).pos());
 //         }
 //             __MS(this->createJacobian().det())
 //         std::cout << xyz << " " << rst << std::endl;
@@ -392,7 +397,7 @@ bool Shape::isInside(const RVector3 & xyz, RVector & sf, bool verbose) const {
     if (minsf > 0.0) return true; //** inside
     return false;
 }
-    
+
 Plane Shape::plane() const{
     Index lastID = 2;
 
@@ -417,28 +422,28 @@ bool Shape::touch(const RVector3 & pos, double tol, bool verbose) const {
     if (!plane.touch(pos, tol)) {
         return false;
     }
-    
+
     bool allChecked = false;
     Index rayStart = 0;
     // test ray along the plane
     bool touch = false;
     bool needNewRay = false;
-       
+
     // __MS("'###############################'" << pos)
     while (allChecked == false){
-        RVector3 rayDir(node(rayStart).pos() - 
+        RVector3 rayDir(node(rayStart).pos() -
                         node((rayStart+1)%nodeCount()).pos());
         needNewRay = false;
         // __MS("ray:" << rayStart << " " << rayDir)
 
         RVector3 iP;
-     
+
         for (Index i = 0; i < nodeCount(); i ++){
             Line segment(node(i).pos(), node((i+1)%nodeCount()).pos());
             // __MS(segment)
 
             if (segment.intersectRay(pos, rayDir, iP)){
-                // __MS(iP << " vs.  " << pos << " d:" << iP.dist(pos) 
+                // __MS(iP << " vs.  " << pos << " d:" << iP.dist(pos)
                 //         << " t:" << segment.t(iP))
                 if (iP.valid()){
                     if (iP.dist(pos) < 1e-6) return true; // is on segment
@@ -456,8 +461,8 @@ bool Shape::touch(const RVector3 & pos, double tol, bool verbose) const {
                         // if intersection pos between (node, nextNode)
                         touch = !touch;
                         // __MS("touch: " << touch)
-                    } 
-                } 
+                    }
+                }
             }
         }
         if (!needNewRay) allChecked = true;
@@ -482,16 +487,18 @@ RVector3 NodeShape::norm() const {
 
 RVector3 NodeShape::rst(Index i) const {
     return RVector3(0.0, 0.0, 0.0);
+    log(Error, "no rst coordinate for Node shape");
+    return RVector3(0.0, 0.0, 0.0);
 }
 
 
 //** Start EDGE specific implementation
 double EdgeShape::length() const {
-    return nodeVector_[0]->dist(*nodeVector_[1]);
+    return this->node(0).pos().dist(this->node(1).pos());
 }
 
 RVector3 EdgeShape::norm() const {
-    return nodeVector_[0]->pos().normXY(nodeVector_[1]->pos());
+    return this->node(0).pos().normXY(this->node(1).pos());
 }
 
 RVector3 EdgeShape::rst(Index i) const{
@@ -499,7 +506,8 @@ RVector3 EdgeShape::rst(Index i) const{
         return RVector3(EdgeCoordinates[i][0],
                         EdgeCoordinates[i][1],
                         EdgeCoordinates[i][2]);
-    THROW_TO_IMPL; return RVector3(0.0, 0.0, 0.0);
+    log(Error, "rst coordinate out of bounds", i);
+    return RVector3(0.0, 0.0, 0.0);
 }
 
 bool EdgeShape::touch(const RVector3 & pos, double tol, bool verbose) const{
@@ -512,35 +520,30 @@ bool EdgeShape::intersectRay(const RVector3 & start, const RVector3 & dir,
     return Line(node(0).pos(), node(1).pos()).intersectRay(start, dir, pos);
 }
 
-void TriangleShape::setNodes(Node * n0, Node * n1, Node * n2){
-    setNode(0, *n0); setNode(1, *n1); setNode(2, *n2);
-}
-
 //** Start TRIANGLE specific implementation
+double triSize(const RVector3 & p0, const RVector3 & p1,
+               const RVector3 & p2){
+    return ((p1 - p0).cross(p2 - p0)).abs() * 0.5;
+}
 double TriangleShape::area() const {
-//   RVector3 p1 = nodeVector_[0]->pos();
-//   RVector3 p2 = nodeVector_[1]->pos();
-//   RVector3 p3 = nodeVector_[2]->pos();
-
-    RVector3 a(nodeVector_[1]->pos() - nodeVector_[0]->pos());
-    RVector3 b(nodeVector_[2]->pos() - nodeVector_[0]->pos());
-
-    return ((a).cross(b)).abs() * 0.5;
-
-//   return (nodeVector_[1]->pos() - nodeVector_[0]->pos())
-//     .cross(nodeVector_[2]->pos() - nodeVector_[0]->pos()).abs() * 0.5;
+    return triSize(this->node(0).pos(),
+                   this->node(1).pos(),
+                   this->node(2).pos());
 }
 
 RVector3 TriangleShape::norm() const{
-    RVector3 a(nodeVector_[1]->pos() - nodeVector_[0]->pos());
-    RVector3 b(nodeVector_[2]->pos() - nodeVector_[0]->pos());
+    RVector3 a(this->node(1).pos() - this->node(0).pos());
+    RVector3 b(this->node(2).pos() - this->node(0).pos());
     RVector3 n((a).cross(b));
     return n.norm();
 }
 
 RVector3 TriangleShape::rst(Index i) const{
-    if (i < nodeCount()) return RVector3(TriCoordinates[i][0], TriCoordinates[i][1], TriCoordinates[i][2]);
-    THROW_TO_IMPL; return RVector3(0.0, 0.0, 0.0);
+    if (i < nodeCount()) return RVector3(TriCoordinates[i][0],
+                                         TriCoordinates[i][1],
+                                         TriCoordinates[i][2]);
+    log(Error, "rst coordinate out of bounds", i);
+    return RVector3(0.0, 0.0, 0.0);
 }
 
 void TriangleShape::xyz2rst(const RVector3 & pos, RVector3 & rst ) const {
@@ -556,12 +559,12 @@ void TriangleShape::xyz2rst(const RVector3 & pos, RVector3 & rst ) const {
 //**    [r=-(xp1*y31-x31*yp1)/(x31*y21-x21*y31),s=(xp1*y21-x21*yp1)/(x31*y21-x21*y31)]
 //**     J = x21 * y31 - x31 * y21
 
-    double x21 = nodeVector_[1]->pos()[0] - nodeVector_[0]->pos()[0];
-    double x31 = nodeVector_[2]->pos()[0] - nodeVector_[0]->pos()[0];
-    double y21 = nodeVector_[1]->pos()[1] - nodeVector_[0]->pos()[1];
-    double y31 = nodeVector_[2]->pos()[1] - nodeVector_[0]->pos()[1];
-    double xp1 = pos[0] - nodeVector_[0]->pos()[0];
-    double yp1 = pos[1] - nodeVector_[0]->pos()[1];
+    double x21 = this->node(1).pos()[0] - this->node(0).pos()[0];
+    double x31 = this->node(2).pos()[0] - this->node(0).pos()[0];
+    double y21 = this->node(1).pos()[1] - this->node(0).pos()[1];
+    double y31 = this->node(2).pos()[1] - this->node(0).pos()[1];
+    double xp1 = pos[0] - this->node(0).pos()[0];
+    double yp1 = pos[1] - this->node(0).pos()[1];
 
     //** use here the local J instead of jacobianDeterminant_(), while it use the area-hack
     double J = x21 * y31 - x31 * y21;
@@ -581,36 +584,44 @@ bool TriangleShape::intersectRay(const RVector3 & start, const RVector3 & dir,
 
 
 RVector3 QuadrangleShape::rst(Index i) const{
-    if (i < nodeCount()) return RVector3(QuadCoordinates[i][0], QuadCoordinates[i][1], QuadCoordinates[i][2]);
-    THROW_TO_IMPL; return RVector3(0.0, 0.0, 0.0);
+    if (i < nodeCount()) return RVector3(QuadCoordinates[i][0],
+                                         QuadCoordinates[i][1],
+                                         QuadCoordinates[i][2]);
+    log(Error, "rst coordinate out of bounds", i);
+    return RVector3(0.0, 0.0, 0.0);
 }
 
 double QuadrangleShape::area() const {
-    double sum = 0.0;
-    TriangleShape tri;
-    tri.setNodes(nodeVector_[0], nodeVector_[1], nodeVector_[2]);
-    sum += tri.area();
-    tri.setNodes(nodeVector_[0], nodeVector_[2], nodeVector_[3]);
-    sum += tri.area();
+    RVector3 a(this->node(1).pos() - this->node(0).pos());
+    RVector3 b(this->node(2).pos() - this->node(0).pos());
+    double sum = ((a).cross(b)).abs() * 0.5;
+
+    RVector3 c(this->node(3).pos() - this->node(0).pos());
+    sum += ((b).cross(c)).abs() * 0.5;
+
+    // tri.setNodes(nodeVector_[0], nodeVector_[1], nodeVector_[2]);
+    // tri.setNodes(nodeVector_[0], nodeVector_[2], nodeVector_[3]);
+    // sum += tri.area();
 
     return sum;
 
-    //** Gaußsche Trapezformel fails for surface boundaries
+    //** Gaußsche Trapezformel fails for surface boundaries (along other then xy-orientation)
 
 /*
-  double x13 = nodeVector_[0]->pos()[0]- nodeVector_[2]->pos()[0];
-  double x42 = nodeVector_[3]->pos()[0]- nodeVector_[1]->pos()[0];
+  double x13 = this->node(0).pos()[0]- this->node(2).pos()[0];
+  double x42 = this->node(3).pos()[0]- this->node(1).pos()[0];
 
-  double y13 = nodeVector_[0]->pos()[1]- nodeVector_[2]->pos()[1];
-  double y24 = nodeVector_[1]->pos()[1]- nodeVector_[3]->pos()[1];
+  double y13 = this->node(0).pos()[1]- this->node(2).pos()[1];
+  double y24 = this->node(1).pos()[1]- this->node(3).pos()[1];
   return 0.5 * std::fabs(y13 * x42 + y24 * x13);*/
     //return std::fabs(this->jacobianDeterminant());
 }
 
 RVector3 QuadrangleShape::norm() const {
-    TriangleShape tri;
-    tri.setNodes(nodeVector_[0], nodeVector_[1], nodeVector_[2]);
-    return tri.norm();
+    RVector3 a(this->node(1).pos() - this->node(0).pos());
+    RVector3 b(this->node(2).pos() - this->node(0).pos());
+    RVector3 n((a).cross(b));
+    return n.norm();
 }
 
 bool QuadrangleShape::intersectRay(const RVector3 & start, const RVector3 & dir,
@@ -621,11 +632,12 @@ bool QuadrangleShape::intersectRay(const RVector3 & start, const RVector3 & dir,
     return false;
 }
 
-PolygonShape::PolygonShape(Index nodeCount){ 
-    resizeNodeSize_(nodeCount); 
+PolygonShape::PolygonShape(MeshEntity * ent)
+    : Shape(ent){
+    resizeNodeSize_(ent->nodeCount());
 }
 
-PolygonShape::~PolygonShape(){ 
+PolygonShape::~PolygonShape(){
 }
 
 RVector3 PolygonShape::norm() const{
@@ -633,6 +645,7 @@ RVector3 PolygonShape::norm() const{
 }
 
 RVector3 PolygonShape::rst(Index i) const {
+    log(Error, "no rst coordinate for polygon shape", i);
     return RVector3(0.0, 0.0, 0.0);
 }
 
@@ -642,8 +655,11 @@ bool PolygonShape::isInside(const RVector3 & xyz, bool verbose) const {
 }
 
 RVector3 TetrahedronShape::rst(Index i) const{
-    if (i < nodeCount()) return RVector3(TetCoordinates[i][0], TetCoordinates[i][1], TetCoordinates[i][2]);
-    THROW_TO_IMPL; return RVector3(0.0, 0.0, 0.0);
+    if (i < nodeCount()) return RVector3(TetCoordinates[i][0],
+                                         TetCoordinates[i][1],
+                                         TetCoordinates[i][2]);
+    log(Error, "rst coordinate out of bounds", i);
+    return RVector3(0.0, 0.0, 0.0);
 }
 
 void TetrahedronShape::xyz2rst(const RVector3 & pos, RVector3 & rst ) const {
@@ -664,18 +680,18 @@ void TetrahedronShape::xyz2rst(const RVector3 & pos, RVector3 & rst ) const {
 //     t=(x21*(yp1*z31-y31*zp1)+x31*(y21*zp1-yp1*z21)+xp1*(y31*z21-y21*z31))/
 //             (x21*(y41*z31-y31*z41)+x31*(y21*z41-y41*z21)+x41*(y31*z21-y21*z31))]
 //               Jac = -(x21*(y41*z31-y31*z41)+x31*(y21*z41-y41*z21)+x41*(y31*z21-y21*z31))
-    double x21 = nodeVector_[1]->pos()[0] - nodeVector_[0]->pos()[0];
-    double x31 = nodeVector_[2]->pos()[0] - nodeVector_[0]->pos()[0];
-    double x41 = nodeVector_[3]->pos()[0] - nodeVector_[0]->pos()[0];
-    double y21 = nodeVector_[1]->pos()[1] - nodeVector_[0]->pos()[1];
-    double y31 = nodeVector_[2]->pos()[1] - nodeVector_[0]->pos()[1];
-    double y41 = nodeVector_[3]->pos()[1] - nodeVector_[0]->pos()[1];
-    double z21 = nodeVector_[1]->pos()[2] - nodeVector_[0]->pos()[2];
-    double z31 = nodeVector_[2]->pos()[2] - nodeVector_[0]->pos()[2];
-    double z41 = nodeVector_[3]->pos()[2] - nodeVector_[0]->pos()[2];
-    double xp1 = pos[0] - nodeVector_[0]->pos()[0];
-    double yp1 = pos[1] - nodeVector_[0]->pos()[1];
-    double zp1 = pos[2] - nodeVector_[0]->pos()[2];
+    double x21 = this->node(1).pos()[0] - this->node(0).pos()[0];
+    double x31 = this->node(2).pos()[0] - this->node(0).pos()[0];
+    double x41 = this->node(3).pos()[0] - this->node(0).pos()[0];
+    double y21 = this->node(1).pos()[1] - this->node(0).pos()[1];
+    double y31 = this->node(2).pos()[1] - this->node(0).pos()[1];
+    double y41 = this->node(3).pos()[1] - this->node(0).pos()[1];
+    double z21 = this->node(1).pos()[2] - this->node(0).pos()[2];
+    double z31 = this->node(2).pos()[2] - this->node(0).pos()[2];
+    double z41 = this->node(3).pos()[2] - this->node(0).pos()[2];
+    double xp1 = pos[0] - this->node(0).pos()[0];
+    double yp1 = pos[1] - this->node(0).pos()[1];
+    double zp1 = pos[2] - this->node(0).pos()[2];
 
     double J = x21 * (y31 * z41 - y41 * z31) +
                x31 * (y41 * z21 - y21 * z41) +
@@ -694,75 +710,72 @@ void TetrahedronShape::xyz2rst(const RVector3 & pos, RVector3 & rst ) const {
                     xp1 * (y21 * z31 - y31 * z21)) / J;
 }
 
+double tetVolume(const RVector3 & p0, const RVector3 & p1,
+                 const RVector3 & p2, const RVector3 & p3){
+    return 1.0 / 6.0 * std::fabs((p1 - p0).cross(p2 - p0).dot(p3 - p0));
+}
 double TetrahedronShape::volume() const {
-    RVector3 a(nodeVector_[1]->pos() - nodeVector_[0]->pos());
-    RVector3 b(nodeVector_[2]->pos() - nodeVector_[0]->pos());
-    RVector3 c(nodeVector_[3]->pos() - nodeVector_[0]->pos());
-//     std::cout << a << " " << b << " " << c << " " << a.cross(b) << std::endl;
-//     std::cout << std::fabs((a.cross(b).dot(c))) << std::endl;
-    return 1.0 / 6.0 * std::fabs((a.cross(b).dot(c)));
-    //** pls check whish way is faster, profile, with valgrind and count ticks
-//     return fabs(jacobianDeterminant() / 6.0);
+    return tetVolume(this->node(0).pos(), this->node(1).pos(),
+                     this->node(2).pos(), this->node(3).pos());
 }
-
-void TetrahedronShape::setNodes(Node * n0, Node * n1, Node * n2, Node * n3){
-    setNode(0, *n0); setNode(1, *n1); setNode(2, *n2); setNode(3, *n3);
-}
-
 RVector3 HexahedronShape::rst(Index i) const{
-    if (i < nodeCount()) return RVector3(HexCoordinates[i][0], HexCoordinates[i][1], HexCoordinates[i][2]);
-    THROW_TO_IMPL; return RVector3(0.0, 0.0, 0.0);
+    if (i < nodeCount()) return RVector3(HexCoordinates[i][0],
+                                         HexCoordinates[i][1],
+                                         HexCoordinates[i][2]);
+    log(Error, "rst coordinate out of bounds", i);
+    return RVector3(0.0, 0.0, 0.0);
 }
-
 double HexahedronShape::volume() const {
     double sum = 0.0;
-    TetrahedronShape tet;
     for (uint i = 0; i < 5; i ++){
-        tet.setNodes(nodeVector_[HexahedronSplit5TetID[i][0]], nodeVector_[HexahedronSplit5TetID[i][1]],
-                     nodeVector_[HexahedronSplit5TetID[i][2]], nodeVector_[HexahedronSplit5TetID[i][3]]);
-        sum += tet.volume();
+        sum += tetVolume((*nodeVector_)[HexahedronSplit5TetID[i][0]]->pos(),
+                         (*nodeVector_)[HexahedronSplit5TetID[i][1]]->pos(),
+                         (*nodeVector_)[HexahedronSplit5TetID[i][2]]->pos(),
+                         (*nodeVector_)[HexahedronSplit5TetID[i][3]]->pos());
     }
-
     return sum;
 }
-
 bool HexahedronShape::enforcePositiveDirection(){
-    if (createJacobian().det() < 0){
-//         std::reverse(nodeVector_.begin(), nodeVector_.end());
+    __MS("inuse")
+//     if (createJacobian().det() < 0){
+// //         std::reverse(nodeVector_.begin(), nodeVector_.end());
 
-        //swap up and down side
-        if (createJacobian().det() < 0){
-            std::swap(nodeVector_[0], nodeVector_[4]);
-            std::swap(nodeVector_[1], nodeVector_[5]);
-            std::swap(nodeVector_[2], nodeVector_[6]);
-            std::swap(nodeVector_[3], nodeVector_[7]);
-        }
-        this->changed();
-        return true;
-    }
+//         //swap up and down side
+//         if (createJacobian().det() < 0){
+//             std::swap(nodeVector_[0], nodeVector_[4]);
+//             std::swap(nodeVector_[1], nodeVector_[5]);
+//             std::swap(nodeVector_[2], nodeVector_[6]);
+//             std::swap(nodeVector_[3], nodeVector_[7]);
+//         }
+//         this->changed();
+//         return true;
+//     }
     return false;
 }
 
 RVector3 TriPrismShape::rst(Index i) const{
-    if (i < nodeCount()) return RVector3(PrismCoordinates[i][0], PrismCoordinates[i][1], PrismCoordinates[i][2]);
-    THROW_TO_IMPL;
+    if (i < nodeCount()) return RVector3(PrismCoordinates[i][0],
+                                         PrismCoordinates[i][1],
+                                         PrismCoordinates[i][2]);
+    log(Error, "rst coordinate out of bounds", i);
     return RVector3(0.0, 0.0, 0.0);
 }
 
 double TriPrismShape::volume() const{
     double sum = 0.0;
-    TetrahedronShape tet;
     for (Index i = 0; i < 3; i ++){
-        tet.setNodes(nodeVector_[TriPrimSplit3TetID[i][0]], nodeVector_[TriPrimSplit3TetID[i][1]],
-                      nodeVector_[TriPrimSplit3TetID[i][2]], nodeVector_[TriPrimSplit3TetID[i][3]]);
-        sum += tet.volume();
+        sum += tetVolume((*nodeVector_)[TriPrimSplit3TetID[i][0]]->pos(),
+                         (*nodeVector_)[TriPrimSplit3TetID[i][1]]->pos(),
+                         (*nodeVector_)[TriPrimSplit3TetID[i][2]]->pos(),
+                         (*nodeVector_)[TriPrimSplit3TetID[i][3]]->pos());
+
     }
 
     return sum;
     /*
-    RVector3 a(nodeVector_[1]->pos() - nodeVector_[0]->pos());
-    RVector3 b(nodeVector_[2]->pos() - nodeVector_[0]->pos());
-    double z41 = nodeVector_[3]->pos()[2] - nodeVector_[0]->pos()[2];
+    RVector3 a(this->node(1).pos() - this->node(0).pos());
+    RVector3 b(this->node(2).pos() - this->node(0).pos());
+    double z41 = this->node(3).pos()[2] - this->node(0).pos()[2];
 
     return ((a).cross(b)).abs()  z41;*/
 }
