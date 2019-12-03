@@ -36,6 +36,15 @@
 
 namespace GIMLI{
 
+/*! Return Volume of the Tetrahedron given by 4 RVector3 */
+DLLEXPORT double tetVolume(const RVector3 & p0, const RVector3 & p1,
+                           const RVector3 & p2, const RVector3 & p3);
+
+/*! Return Size of the Triangle given by 3 RVector3 */
+DLLEXPORT double triSize(const RVector3 & p0, const RVector3 & p1,
+                         const RVector3 & p2);
+
+
 DLLEXPORT std::vector < PolynomialFunction < double > >
 createPolynomialShapeFunctions(const std::vector < RVector3 > & pnts,
                                uint dim, uint nCoeff,
@@ -169,7 +178,7 @@ static const double NodeCoordinates[1][3] = {
 class DLLEXPORT Shape {
 public:
     /*! Default constructor. */
-    Shape();
+    Shape(MeshEntity * ent);
 
     /*! Default destructor. */
     virtual ~Shape();
@@ -183,22 +192,24 @@ public:
     virtual std::string name() const { return "Shape"; }
 
     /*! Return the amount of nodes for this shape. */
-    uint nodeCount() const { return nodeVector_.size(); }
-
-    /*! Set the i-th \ref Node. */
-    void setNode(Index i, Node & n);
+    Index nodeCount() const { return this->nodeCount_; }
 
     /*! Return a read only reference to the i-th \ref Node of this shape. */
     const Node & node(Index i) const;
 
-    /*! Return a reference to the i-th \ref Node of this shape. */
-    Node & node(Index i);
+    // /*! Return a reference to the i-th \ref Node of this shape. */
+    // Node & node(Index i);
+
+    /*! Set the ptr to nodes array from, which the MeshEntity holds. */
+    void setNodesPtr(const std::vector< Node * > & n) {
+        this->nodeVector_ = &n;
+    }
 
     /*! Return a read only reference to all nodes. */
-    const std::vector< Node * > & nodes() const { return nodeVector_; }
+    const std::vector< Node * > & nodes() const { return * this->nodeVector_; }
 
     /*! Return a reference to all nodes. */
-    std::vector < Node * > & nodes() { return nodeVector_ ; }
+    // std::vector < Node * > & nodes() { return nodeVector_ ; }
 
     virtual std::vector < PolynomialFunction < double > > createShapeFunctions() const ;
 
@@ -283,20 +294,20 @@ public:
         return invJacobian()[rstI * 3 + xyzJ];}
 
     /*! Return true if the Cartesian coordinates xyz are inside the shape.
-     * On boundary means inside too. 
-     Works only for shapes dedicated as cells because they need to 
+     * On boundary means inside too.
+     Works only for shapes dedicated as cells because they need to
      be aligned to the dimension. See also \ref touch. */
     virtual bool isInside(const RVector3 & xyz, bool verbose=false) const;
 
     /*! Return true if the Cartesian coordinates xyz are inside the shape.
      * On boundary means inside too.
      * sf contains the complete shape function to identify next neighbor.
-     Works only for shapes dedicated as cells because they need to 
+     Works only for shapes dedicated as cells because they need to
      be aligned to the dimension. See also \ref touch.*/
     virtual bool isInside(const RVector3 & xyz, RVector & sf,
                           bool verbose=false) const;
 
-    /*! Check if the position touches the entity. 
+    /*! Check if the position touches the entity.
     Works only for shapes dedicated as boundaries.
     On edge of the boundary means inside too. See also \ref isInside.*/
     virtual bool touch(const RVector3 & pos, double tol=1e-6, bool verbose=false) const;
@@ -320,7 +331,7 @@ public:
     /*! Returns the norm vector if possible otherwise returns non valid Vector3 */
     virtual RVector3 norm() const;
 
-    /*! Returns the a plane for this shape if its possible (2D or 3D plane shapes) 
+    /*! Returns the a plane for this shape if its possible (2D or 3D plane shapes)
     otherwise returns non valid Plane. */
     virtual Plane plane() const;
 
@@ -333,26 +344,30 @@ public:
 
     //     double jacobianDeterminant() const { return det(this->createJacobian()); }
 
-    inline void resizeNodeSize_(uint n) { nodeVector_.resize(n, NULL);  }
+    // inline void resizeNodeSize_(uint n) { nodeVector_.resize(n, NULL);  }
+    inline void resizeNodeSize_(Index n) { this->nodeCount_ = n; }
 
 protected:
 
     /*! Virtual method to calculate the domain size i.e length, area, volume of the shapes */
     virtual double domainSize_() const { return 0.0; }
 
+    Index nodeCount_;
+
     mutable double domSize_;
     mutable bool hasDomSize_;
 
     mutable RMatrix3 invJacobian_;
 
-    std::vector < Node * > nodeVector_;
+    // const std::vector< Node * > & nodes()
+    const std::vector < Node * > * nodeVector_;
 };
 
 DLLEXPORT std::ostream & operator << (std::ostream & str, const Shape & c);
 
 class DLLEXPORT NodeShape : public Shape{
 public:
-    NodeShape(){ resizeNodeSize_(1); }
+    NodeShape(MeshEntity * ent) : Shape(ent) { resizeNodeSize_(1); }
 
     virtual ~NodeShape(){ }
 
@@ -379,7 +394,7 @@ static const double EdgeCoordinates[2][3] = {
 
 class DLLEXPORT EdgeShape : public Shape {
 public:
-    EdgeShape(){ resizeNodeSize_(2); }
+    EdgeShape(MeshEntity * ent) : Shape(ent) { resizeNodeSize_(2); }
 
     virtual ~EdgeShape(){ }
 
@@ -398,7 +413,7 @@ public:
     virtual bool intersectRay(const RVector3 & start, const RVector3 & dir,
                               RVector3 & pos);
 
-    /*! Check if the position touches the entity. 
+    /*! Check if the position touches the entity.
     Works only for shapes dedicated as boundaries.
     On edge of the boundary means inside too. See also \ref isInside.*/
     virtual bool touch(const RVector3 & pos, double tol=1e-6, bool verbose=false) const;
@@ -431,7 +446,7 @@ whereas \f$ x_{ij} \f$ reads \f$ x_i - x_j \f$ for the \f$x\f$-coordinate of \re
 class DLLEXPORT TriangleShape : public Shape {
 public:
 
-    TriangleShape(){ resizeNodeSize_(3); }
+    TriangleShape(MeshEntity * ent) : Shape(ent) { resizeNodeSize_(3); }
 
     virtual ~TriangleShape(){ }
 
@@ -446,8 +461,6 @@ public:
 
     /*! See Shape::xyz2rst. this is a specialized override for speedup. */
     virtual void xyz2rst(const RVector3 & pos, RVector3 & rst) const;
-
-    void setNodes(Node * n0, Node * n1, Node * n2);
 
     double area() const;
 
@@ -488,7 +501,7 @@ static const double QuadCoordinates[4][3] = {
 class DLLEXPORT QuadrangleShape : public Shape {
 public:
 
-    QuadrangleShape(){ resizeNodeSize_(4); }
+    QuadrangleShape(MeshEntity * ent) : Shape(ent) { resizeNodeSize_(4); }
 
     virtual ~QuadrangleShape(){ }
 
@@ -523,10 +536,10 @@ protected:
 
 class DLLEXPORT PolygonShape : public Shape {
 public:
-    PolygonShape(Index nodeCount);
-    
+    PolygonShape(MeshEntity * ent);
+
     virtual ~PolygonShape();
- 
+
     virtual int rtti() const { return MESH_SHAPE_POLYGON_FACE_RTTI; }
 
     virtual int dim() const { return 3; }
@@ -556,7 +569,7 @@ static const double TetCoordinates[4][3] = {
 */
 class DLLEXPORT TetrahedronShape : public Shape {
 public:
-    TetrahedronShape(){ resizeNodeSize_(4); }
+    TetrahedronShape(MeshEntity * ent) : Shape(ent) { resizeNodeSize_(4); }
 
     virtual ~TetrahedronShape(){ }
 
@@ -571,8 +584,6 @@ public:
 
     /*! See Shape::xyz2rst. Specialization for speedup */
     void xyz2rst(const RVector3 & pos, RVector3 & rst) const;
-
-    void setNodes(Node * n0, Node * n1, Node * n2, Node * n3);
 
 //     /*! See Shape::N. */
 //     virtual void N(const RVector3 & L, RVector & n) const;
@@ -631,7 +642,7 @@ Node direction:
 
 class DLLEXPORT HexahedronShape : public Shape {
 public:
-    HexahedronShape(){ resizeNodeSize_(8); }
+    HexahedronShape(MeshEntity * ent) : Shape(ent){ resizeNodeSize_(8); }
 
     virtual ~HexahedronShape(){ }
 
@@ -690,7 +701,7 @@ static const double PrismCoordinates[6][3] = {
 
 class DLLEXPORT TriPrismShape : public Shape {
 public:
-    TriPrismShape(){ resizeNodeSize_(6); }
+    TriPrismShape(MeshEntity * ent) : Shape(ent){ resizeNodeSize_(6); }
 
     virtual ~TriPrismShape(){ }
 
@@ -730,7 +741,7 @@ static const double PyramidCoordinates[5][3] = {
  */
 class DLLEXPORT PyramidShape : public Shape {
 public:
-    PyramidShape(){ resizeNodeSize_(5); }
+    PyramidShape(MeshEntity * ent) : Shape(ent){ resizeNodeSize_(5); }
 
     virtual ~PyramidShape(){ }
 

@@ -746,6 +746,9 @@ def readTetgen(fName, comment='#', verbose=False, defaultCellMarker=0,
     if verbose:
         print(mesh)
 
+    # Tetgen let the boundary outer normal shows inward so we fix this.
+    mesh.fixBoundaryDirections()
+
     return mesh
 
 

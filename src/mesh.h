@@ -181,7 +181,7 @@ public:
     Node * createNode(const Node & node);
     Node * createNode(const RVector3 & pos, int marker=0);
 
-    /*! Create a secondary node, which is stored in an aditional list for additional use.
+    /*! Create a secondary node, which is stored in an additional list for additional use.
     If tolerance tol set to a value > 0, then it will be checked if there is already a node
     at this position and return a ptr to the existing node instead of creating a new. */
     Node * createSecondaryNode(const RVector3 & pos, double tol=-1);
@@ -594,6 +594,8 @@ public:
     void exportAsTetgenPolyFile(const std::string & filename);
     //** end I/O stuff
 
+    /*! All outer boundaries, i.e., all boundaries with only one cell (the left) need to be sorted that the norm vector shows outside the mesh. */
+    void fixBoundaryDirections();
 
     void addData(const std::string & name, const CVector & data){
         this->addData(name+"-Re", real(data));

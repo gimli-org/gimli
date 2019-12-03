@@ -221,9 +221,14 @@ class TestFiniteElementBasics(unittest.TestCase):
                                                                area=100.1))
 
         for b in mesh.boundaries(mesh.boundaryMarkers() == 9):
-            if b.center()[0] == mesh.xMin():
+            # if b.center()[0] == mesh.xMin():
+            #     b.setMarker(1)
+            # elif b.center()[0] == mesh.xMax():
+            #     b.setMarker(2)
+
+            if b.norm()[0] == -1:
                 b.setMarker(1)
-            elif b.center()[0] == mesh.xMax():
+            elif b.norm()[0] == +1:
                 b.setMarker(2)
 
         _testP1_(mesh, show=False)
