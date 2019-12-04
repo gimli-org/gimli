@@ -198,17 +198,25 @@ std::ostream & operator << (std::ostream & str, const TriPrism & t){
 }
 
 MeshEntity::MeshEntity()
-    : BaseEntity(){
+    : BaseEntity(), shape_(0){
 }
 
 MeshEntity::~MeshEntity(){
 }
 
 RVector3 MeshEntity::center() const {
+    if (!shape_){
+        log(Error, "no shape defined");
+        return 0;
+    }
     return shape_->center();
 }
 
 double MeshEntity::size() const {
+    if (!shape_){
+        log(Error, "no shape defined");
+        return 0;
+    }
     return shape_->domainSize();
 }
 
@@ -305,7 +313,8 @@ void MeshEntity::N(const RVector3 & rst, RVector & n) const {
 
 RVector MeshEntity::dNdL(const RVector3 & rst, uint i) const {
 
-    const std::vector< PolynomialFunction < double > > &dNL = ShapeFunctionCache::instance().deriveShapeFunctions(*this, i);
+    const std::vector< PolynomialFunction < double > > &dNL = 
+        ShapeFunctionCache::instance().deriveShapeFunctions(*this, i);
 
     RVector ret(dNL.size());
 

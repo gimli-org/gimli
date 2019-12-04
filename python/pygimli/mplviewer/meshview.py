@@ -549,7 +549,6 @@ def drawMeshBoundaries(ax, mesh, hideMesh=False, useColorMap=False,
     mesh.createNeighborInfos()
 
     if not hideMesh:
-        pg.r_(color)
         drawSelectedMeshBoundaries(ax,
                                    mesh.findBoundaryByMarker(0),
                                    color=color or (0.0, 0.0, 0.0, 1.0),

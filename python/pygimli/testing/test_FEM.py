@@ -130,8 +130,6 @@ class TestFiniteElementBasics(unittest.TestCase):
         mesh.setBoundaryMarkers(np.array([0,1,3,2,4])[mesh.boundaryMarkers()])
         _test_(mesh, show=False)
 
-
-
         #TODO 2D, Tri, 3D Tet
 
     def test_Dirichlet(self):
@@ -221,10 +219,6 @@ class TestFiniteElementBasics(unittest.TestCase):
                                                                area=100.1))
 
         for b in mesh.boundaries(mesh.boundaryMarkers() == 9):
-            # if b.center()[0] == mesh.xMin():
-            #     b.setMarker(1)
-            # elif b.center()[0] == mesh.xMax():
-            #     b.setMarker(2)
 
             if b.norm()[0] == -1:
                 b.setMarker(1)

@@ -117,6 +117,8 @@ private:
 
     /*! probably threading problems .. pls check*/
     template < class Ent > void createShapeFunctions_(const Ent & e) const {
+        std::vector < PolynomialFunction < double > > N = e.createShapeFunctions();
+
         #if USE_BOOST_THREAD
         //#ifdef WIN32_LEAN_AND_MEAN
         //        __MS("pls check missing mutex")
@@ -128,10 +130,11 @@ private:
         //#endif
 
         #else
+        // __MS("lock deactiated " << ShapeFunctionWriteCacheMutex__)
+        
             std::unique_lock < std::mutex > lock(ShapeFunctionWriteCacheMutex__);
         #endif
 
-        std::vector < PolynomialFunction < double > > N = e.createShapeFunctions();
 
         shapeFunctions_[e.rtti()] = N;
         dShapeFunctions_[e.rtti()] = std::vector < std::vector < PolynomialFunction < double > > >();

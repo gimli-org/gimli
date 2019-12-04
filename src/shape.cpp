@@ -99,6 +99,7 @@ std::ostream & operator << (std::ostream & str, const Shape & c){
 Shape::Shape(MeshEntity * ent){
     this->setNodesPtr(ent->nodes());
     domSize_ = 0.0;
+    nodeCount_ = 0;
     hasDomSize_ = false;
 }
 

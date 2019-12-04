@@ -1532,11 +1532,22 @@ void Mesh::createNeighborInfos(bool force){
 }
 
 void Mesh::fixBoundaryDirections(){
+    createNeighborInfos();
     for (Index i = 0; i < this->boundaryCount(); i ++ ){
         Boundary * b = this->boundaryVector_[i];
+        // __MS(b)
         if (b->leftCell() != NULL && b->rightCell() == NULL){
             if (!b->normShowsOutside(*b->leftCell())){
-
+                // 
+                b->swapNorm();
+            }
+        }
+        if (b->leftCell() == NULL && b->rightCell() != NULL){
+            if (!b->normShowsOutside(*b->rightCell())){
+                // __MS(b)
+                b->setLeftCell(b->rightCell());
+                b->setRightCell(NULL);
+                b->swapNorm();
             }
         }
     }
