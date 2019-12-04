@@ -43,6 +43,9 @@ Uninstall can be made also with the Control Panel or by pip uninstall.
 
 Alternatively you can use the MSI installer where you can choose your Python installation
 
+..  image:: https://img.shields.io/badge/pyGIMLi1.0.12_win64-MSI_for_Python_3.7-green.svg
+   :target: https://github.com/gimli-org/gimli/releases/download/v1.0.12/pygimli-1.0.12.win-amd64-py37.msi
+
 ..  image:: https://img.shields.io/badge/pyGIMLi1.0.11_win64-MSI_for_Python_3.7-green.svg
    :target: https://github.com/gimli-org/gimli/releases/download/v1.0.11/pygimli-1.0.11.win-amd64-py37.msi
 ..  image:: https://img.shields.io/badge/pyGIMLi1.0.11_win64-MSI_for_Python_3.6-green.svg
