@@ -17,8 +17,6 @@ package manager like the WinPython Control Panel (located in the WinPython main 
 
 ..  image:: https://img.shields.io/badge/pyGIMLi1.0.12_win64-Python_3.7_Wheel-green.svg
    :target: https://github.com/gimli-org/gimli/releases/download/v1.0.12/pygimli-1.0.12-cp37-cp37m-win_amd64.whl
-..  image:: https://img.shields.io/badge/pyGIMLi1.0.12_win64-Python_3.6_Wheel-green.svg
-   :target: https://github.com/gimli-org/gimli/releases/download/v1.0.12/pygimli-1.0.12-cp36-cp36m-win_amd64.whl
 
 ..  image:: https://img.shields.io/badge/pyGIMLi1.0.11_win64-Python_3.7_Wheel-green.svg
    :target: https://github.com/gimli-org/gimli/releases/download/v1.0.11/pygimli-1.0.11-cp37-cp37m-win_amd64.whl
@@ -38,7 +36,7 @@ If there is no package manager you can install the wheel by calling pip on the c
 
 .. code-block:: bash
 
-    pip install pygimli-1.0.10-cp37-cp37m-win_amd64.whl # if pip is not in path use: python -m pip
+    pip install pygimli-1.0.12-cp37-cp37m-win_amd64.whl # if pip is not in path use: python -m pip
 
 See also `Issue #76 <https://github.com/gimli-org/gimli/issues/76>`_ for screenshots.
 Uninstall can be made also with the Control Panel or by pip uninstall.
