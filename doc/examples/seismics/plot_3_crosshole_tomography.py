@@ -110,10 +110,12 @@ data = tt.simulate(mesh=mesh_fwd, scheme=scheme, slowness=1./model,
 ################################################################################
 # For the inversion we create a new instance of the Refraction manager to avoid
 # confusion, since it is working on a different mesh.
+# Note. Setting setRecalcJacobian(False) to simulate linear inversion here.
+tt.inv.inv.setRecalcJacobian(True)
 invmodel = tt.invert(data, mesh=mesh, secNodes=4, lam=1100, zWeight=1.0,
                      useGradient=False, verbose=True)
 print("chi^2 = %.2f" % tt.inv.chi2())  # Look at the data fit
-assert(tt.inv.chi2() < 1.0)
+#assert(tt.inv.chi2() < 1.0)
 
 ################################################################################
 # Finally, we visualize the true model and the inversion result next to each
@@ -129,10 +131,10 @@ pg.show(mesh_fwd, model, ax=ax1, showMesh=True,
 for ax in (ax1, ax2):
     ax.plot(sensors[:, 0], sensors[:, 1], "wo")
 
-tt.showResult(ax=ax2, cMin=np.min(model), cMax=np.max(model))
-tt.showRayPaths(ax=ax2, color="0.8", alpha=0.3)
+tt.showResult(ax=ax2, cMin=1700, cMax=2300)
+tt.drawRayPaths(ax=ax2, color="0.8", alpha=0.3)
 fig.tight_layout()
-
+fig.savefig('test.pdf')
 ################################################################################
 # Note how the rays are attracted by the high velocity anomaly while
 # circumventing the low velocity region. This is also reflected in the coverage,
@@ -142,7 +144,6 @@ fig, ax = plt.subplots()
 tt.showCoverage(ax=ax, cMap="Greens")
 tt.drawRayPaths(ax=ax, color="k", alpha=0.3)
 ax.plot(sensors[:, 0], sensors[:, 1], "ko")
-pg.wait()
 
 ################################################################################
 # White regions indicate the model null space, i.e. cells that are not traversed

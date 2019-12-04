@@ -177,19 +177,17 @@ class TestCreatePolygon(unittest.TestCase):
 
 class Test3DMerge(unittest.TestCase):
     def test_cubeBasics(self):
-        c1 = mt.createCube()
-        for i, b in enumerate(c1.boundaries()):
+        plc = mt.createCube()
+        for i, b in enumerate(plc.boundaries()):
             b.setMarker(i+1)
 
-        # print(c1)
-        m1 = mt.createMesh(c1)
-        # print(m1)
+        mesh = mt.createMesh(plc)
 
-        for b in m1.boundaries():
-            # print(b, b.norm())
-            b1 = c1.boundaries(c1.boundaryMarkers() == b.marker())[0]
-            # print(b1, b1.norm())
-            np.testing.assert_array_equal(b.norm(), b1.norm())
+        for marker in pg.unique(pg.sort(plc.boundaryMarkers())):
+            b1 = plc.boundaries(plc.boundaryMarkers() == marker)[0]
+            b2 = mesh.boundaries(mesh.boundaryMarkers() == marker)[0]
+            
+            np.testing.assert_array_equal(b1.norm(), b2.norm())
 
     def test_cube_cube_same(self):
         c1 = mt.createCube()

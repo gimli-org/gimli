@@ -337,7 +337,8 @@ class TravelTimeManager(MeshMethodManager):
         lc : matplotlib.LineCollection
         """
         if model is not None:
-            self.fop.createJacobian(1/model)
+            if model != self.model or self.fop.jacobian().size() == 0:
+                self.fop.createJacobian(1/model)
         else:
             model = self.model
 
