@@ -555,7 +555,7 @@ template < class ValueType > void * checkConvertibleNumpyScalar(PyObject * obj){
 
 template < class ValueType > void convertFromNumpyScalar(PyObject* obj, 
                         bp::converter::rvalue_from_python_stage1_data * data){
-    __DC(obj << "\tNumpyScalar -> " + GIMLI::type(ValueType(0)) + " check OK: ")
+    // __DC(obj << "\tNumpyScalar -> " + GIMLI::type(ValueType(0)) + " check OK: ") // FW: Mac problems
     //bp::object py_sequence(bp::handle<>(bp::borrowed(obj)));
 
     typedef bp::converter::rvalue_from_python_storage< ValueType > storage_t;
