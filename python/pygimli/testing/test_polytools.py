@@ -311,16 +311,15 @@ class Test3DMerge(unittest.TestCase):
 
         #print(w.boundaryMarkers())
 
-        # w.exportPLC('pad.poly')
         mesh = mt.createMesh(w)
 
-        #print(mesh.boundaryMarkers()[:7])
-
-        np.testing.assert_array_equal(pg.unique(pg.sort(mesh.boundaryMarkers())), [1, 2])
+        #pg.show(mesh)
+        # w.exportPLC('pad.poly')
+        # mesh.exportBoundaryVTU('b.vtu')
+        np.testing.assert_array_equal(pg.unique(pg.sort(mesh.boundaryMarkers())),
+                                      [0, 1, 2])
 
         # print(mesh)
-        # mesh.exportBoundaryVTU('b.vtu')
-        #pg.show(mesh)
 
 if __name__ == '__main__':
     unittest.main()
