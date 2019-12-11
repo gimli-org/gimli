@@ -524,7 +524,7 @@ private:
 
 
 template < class ValueType > void * checkConvertibleNumpyScalar(PyObject * obj){
-    __DC(obj << "\tNumpyScalar -> " + GIMLI::type(ValueType(0)))
+    // __DC(obj << "\tNumpyScalar -> " + GIMLI::type(ValueType(0))) // FW: Caused problems during Mac build
     if (!obj){
         __DC(obj << "\t abort check .. !Object")
         return NULL;
