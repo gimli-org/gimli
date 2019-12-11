@@ -233,6 +233,8 @@ class TestFiniteElementBasics(unittest.TestCase):
         #can't find proper test for this rotated case
         #v = _testP1_(grid, show=False) #2D reg - rotated
 
+    def testElementMatrix(self):
+        a = pg.core.ElementMatrix()
 
 
 if __name__ == '__main__':

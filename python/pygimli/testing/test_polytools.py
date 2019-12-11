@@ -186,7 +186,7 @@ class Test3DMerge(unittest.TestCase):
         for marker in pg.unique(pg.sort(plc.boundaryMarkers())):
             b1 = plc.boundaries(plc.boundaryMarkers() == marker)[0]
             b2 = mesh.boundaries(mesh.boundaryMarkers() == marker)[0]
-            
+
             np.testing.assert_array_equal(b1.norm(), b2.norm())
 
     def test_cube_cube_same(self):
@@ -302,13 +302,19 @@ class Test3DMerge(unittest.TestCase):
         rot = pg.core.getRotation(b2.norm(), b.norm())
         pad.transform(rot)
         pad.translate(b.center())
+
         # create a boundary with new marker match the hole
         w.copyBoundary(b2)
 
-        w.createBoundary(w.nodes([w.createNode(n.pos()).id() for n in b2.nodes() ]), marker=2)
+        w.createBoundary(w.nodes([w.createNode(n.pos()).id() for n in b2.nodes()]),
+                        marker=2)
+
+        #print(w.boundaryMarkers())
 
         # w.exportPLC('pad.poly')
         mesh = mt.createMesh(w)
+
+        #print(mesh.boundaryMarkers()[:7])
 
         np.testing.assert_array_equal(pg.unique(pg.sort(mesh.boundaryMarkers())), [1, 2])
 

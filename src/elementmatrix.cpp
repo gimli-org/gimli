@@ -62,18 +62,17 @@ ElementMatrix < double >::u(const MeshEntity & ent,
     return *this;
 }
 
-template <> DLLEXPORT ElementMatrix < double > & ElementMatrix < double >::dudi(const MeshEntity & ent,
+template <> DLLEXPORT
+ElementMatrix < double > & ElementMatrix < double >::dudi(
+                                                        const MeshEntity & ent,
                                                         const RVector & w,
                                                         const R3Vector & x,
                                                         Index dim,
                                                         bool verbose){
 
-    uint nVerts = ent.nodeCount();
-    uint nRules = w.size();
-
-    if (size() != nVerts) resize(nVerts);
-    for (Index i = 0; i < nVerts; i ++) idx_[i] = ent.node(i).id();
-    *this *= 0.0;
+    this->fillIds(ent);
+    Index nVerts = ent.nodeCount();
+    Index nRules = w.size();
 
     if (dNdr_.rows() != nVerts){
         dNdr_.resize(nVerts, nRules);
@@ -229,10 +228,9 @@ DLLEXPORT ElementMatrix < double >::ux2uy2(const MeshEntity & ent,
         dNdy_[i].assign(drdy * dNdr_[i] + dsdy * dNds_[i]);
     }
 
-
     for (Index i = 0; i < nVerts; i ++){
-//         dNidx_.assign(drdx * dNdr_[i] + dsdx * dNds_[i]);
-//         dNidy_.assign(drdy * dNdr_[i] + dsdy * dNds_[i]);
+        // dNidx_.assign(drdx * dNdr_[i] + dsdx * dNds_[i]);
+        // dNidy_.assign(drdy * dNdr_[i] + dsdy * dNds_[i]);
 
         for (Index j = i; j < nVerts; j ++){
             mat_[i][j] = A * sum(w * (dNdx_[i] * dNdx_[j] + dNdy_[i] * dNdy_[j]));
@@ -323,14 +321,167 @@ ElementMatrix < double >::ux2uy2uz2(const MeshEntity & ent,
     return *this;
 }
 
+template < > DLLEXPORT
+void ElementMatrix < double >::fillGradientBase(
+                                    const MeshEntity & ent,
+                                    const R3Vector & x,
+                                    Index nC,
+                                    bool voigtNotation){
+
+    if (ent.dim() == 1 || ent.dim() == 3){
+        THROW_TO_IMPL
+    }
+
+    Index nRules = x.size();
+    Index nDof = this->_ids.size();
+
+    if (_B.size() != nRules){
+        _B.resize(nRules);
+        for (Index i = 0; i < nRules; i ++ ){
+            _B[i].resize(nC, nDof);
+        }
+    }
+    _B.clear();
+
+    Index nVerts = ent.nodeCount();
+
+    if (dNdr_.rows() != nVerts){
+        if (ent.dim() > 0) dNdr_.resize(nVerts, nRules);
+        if (ent.dim() > 1) dNds_.resize(nVerts, nRules);
+        if (ent.dim() > 2) dNdt_.resize(nVerts, nRules);
+
+        for (Index i = 0; i < nRules; i ++){
+            if (ent.dim() > 0) dNdr_.setCol(i, ent.dNdL(x[i], 0));
+            if (ent.dim() > 1) dNds_.setCol(i, ent.dNdL(x[i], 1));
+            if (ent.dim() > 2) dNdt_.setCol(i, ent.dNdL(x[i], 2));
+        }
+
+        if (ent.dim() > 0) dNdx_.resize(nVerts, nRules);
+        if (ent.dim() > 1) dNdy_.resize(nVerts, nRules);
+        if (ent.dim() > 2) dNdz_.resize(nVerts, nRules);
+    }
+
+    double drdx = ent.shape().drstdxyz(0, 0);
+    double drdy = ent.shape().drstdxyz(0, 1);
+    double drdz = ent.shape().drstdxyz(0, 2);
+
+    double dsdx = ent.shape().drstdxyz(1, 0);
+    double dsdy = ent.shape().drstdxyz(1, 1);
+    double dsdz = ent.shape().drstdxyz(1, 2);
+
+    double dtdx = ent.shape().drstdxyz(2, 0);
+    double dtdy = ent.shape().drstdxyz(2, 1);
+    double dtdz = ent.shape().drstdxyz(2, 2);
+
+    double a = std::sqrt(2.);
+    if (voigtNotation){
+        a = 1.0;
+    }
+
+    for (Index i = 0; i < nRules; i ++){
+
+        dNdx_[i] = (drdx * dNdr_[i] + dsdx * dNds_[i]);
+        dNdy_[i] = (drdy * dNdr_[i] + dsdy * dNds_[i]);
+
+        if (this->_nDof == 0){
+            // scalar field
+            _B[i][0].setVal(dNdx_[i], 0, nVerts);
+            _B[i][1].setVal(dNdy_[i], 0, nVerts);
+        } else {
+            // vector field
+            _B[i][0].setVal(dNdx_[i], 0, nVerts);
+            _B[i][1].setVal(dNdy_[i], nVerts, 2*nVerts);
+
+            if (nC > ent.dim()){ // elastic material
+                _B[i][2].setVal(dNdy_[i] * a, 0, nVerts);
+                _B[i][2].setVal(dNdx_[i] * a, nVerts, 2*nVerts);
+            }
+        }
+    }
+}
+
+template < > DLLEXPORT
+ElementMatrix < double > & ElementMatrix < double >::gradU2(
+                                    const MeshEntity & ent,
+                                    const Matrix< double > & C,
+                                    const RVector & w,
+                                    const R3Vector & x,
+                                    bool voigtNotation){
+    __M
+    this->fillIds(ent, C.size()); // also cleans
+
+    __M
+    this->fillGradientBase(ent, x,
+                           max(C.size(), ent.dim()),
+                           voigtNotation);
+    __M
+    if (C.size() == 1){
+        for (Index i = 0; i < w.size(); i ++ ){
+            __MS(i)
+            __MS(_B[i].rows() << " " << _B[i].cols())
+            // __MS(C)
+
+            matMult(_B[i], _B[i], mat_, w[i] * ent.size());
+        }
+    } else {
+        RMatrix tmp(1,1); // temp workspace
+        for (Index i = 0; i < w.size(); i ++ ){
+            __MS(i)
+            // __MS(_B[i])
+            // __MS(C)
+            matMultABA(_B[i], C, mat_, tmp, w[i] * ent.size());
+        }
+    }
+
+    // M += w[i] * B.T @ C @ B
+    //mat_ *= ent.size();
+
+    return * this;
+}
+
+template < > DLLEXPORT
+ElementMatrix < double > & ElementMatrix < double >::gradU2(const Cell & cell,
+                                  const Matrix< double > & C,
+                                  bool voigtNotation){
+
+    const RVector * w = 0;
+    const R3Vector * x = 0;
+
+    switch (cell.rtti()) {
+        case MESH_EDGE_CELL_RTTI:
+        case MESH_EDGE3_CELL_RTTI: {
+            w = &IntegrationRules::instance().edgWeights(2);
+            x = &IntegrationRules::instance().edgAbscissa(2);
+        } break;
+        case MESH_TRIANGLE_RTTI: {
+            w = &IntegrationRules::instance().triWeights(1);
+            x = &IntegrationRules::instance().triAbscissa(1);
+        } break;
+        case MESH_TRIANGLE6_RTTI: {
+            w = &IntegrationRules::instance().triWeights(2);
+            x = &IntegrationRules::instance().triAbscissa(2);
+        } break;
+        case MESH_QUADRANGLE_RTTI: {
+            w = &IntegrationRules::instance().quaWeights(2);
+            x = &IntegrationRules::instance().quaAbscissa(2);
+        } break;
+        case MESH_QUADRANGLE8_RTTI: {
+            w = &IntegrationRules::instance().quaWeights(3);
+            x = &IntegrationRules::instance().quaAbscissa(3);
+        } break;
+        default:
+            std::cerr << cell.rtti() << std::endl;
+            THROW_TO_IMPL
+            break;
+    }
+
+    return this->gradU2(cell, C, *w, *x, voigtNotation);
+}
+
+
 template < > DLLEXPORT ElementMatrix < double > &
 ElementMatrix < double >::u(const MeshEntity & ent){
-    uint nVerts = ent.nodeCount();
-    if (size() != nVerts) resize(nVerts);
-
-    for (uint i = 0; i < nVerts; i ++) idx_[i] = ent.node(i).id();
-
-    *this *= 0.0;
+    this->fillIds(ent);
 
     switch(ent.rtti()){
         case MESH_BOUNDARY_NODE_RTTI:
@@ -372,11 +523,9 @@ ElementMatrix < double >::u(const MeshEntity & ent){
     return *this;
 }
 
-template < > DLLEXPORT ElementMatrix < double > & ElementMatrix < double >::u2(const MeshEntity & ent){
-    uint nVerts = ent.nodeCount();
-    if (size() != nVerts) resize(nVerts);
-
-    for (uint i = 0; i < nVerts; i ++) idx_[i] = ent.node(i).id();
+template < > DLLEXPORT
+ElementMatrix < double > & ElementMatrix < double >::u2(const MeshEntity & ent){
+    this->fillIds(ent);
 
     switch(ent.rtti()){
     case MESH_BOUNDARY_NODE_RTTI:
@@ -490,13 +639,10 @@ template < > DLLEXPORT ElementMatrix < double > & ElementMatrix < double >::u2(c
     return *this;
 }
 
-template < > DLLEXPORT ElementMatrix < double > & 
+template < > DLLEXPORT ElementMatrix < double > &
 ElementMatrix < double >::ux2uy2uz2(const Cell & cell, bool useCache){
 
-    uint dim = cell.nodeCount();
-    if (size() != dim) resize(dim);
-
-    for (uint i = 0; i < dim; i ++) idx_[i] = cell.node(i).id();
+    fillIds(cell);
 
     if (cell.uxCache().rows() > 0 && useCache){
         mat_ = cell.uxCache();
@@ -819,12 +965,38 @@ ElementMatrix < double >::ux2uy2uz2(const Cell & cell, bool useCache){
     return *this;
 }
 
+template < class ValueType >
+void ElementMatrix < ValueType >::fillIds(const MeshEntity & ent, Index Crows){
+    if (Crows > ent.dim() && this->_nDof == 0){
+        log(Error, "Assuming vector field approximation but missing dof. Please"
+        " provide degrees of freedom (dof, aka. mesh.nodeCount()) to the"
+        " ElementMatrix constructor. ");
+    }
+    Index dims = 1;
+    if (this->_nDof > 0){
+        dims = ent.dim();
+    }
+
+    Index nNodes = ent.nodeCount();
+    if (size() != nNodes * dims) resize(nNodes * dims);
+
+    for (Index dim = 0; dim < dims; dim++){
+        for (Index i = 0; i < nNodes; i ++) {
+            _ids[i + dim * this->_nDof] = ent.node(i).id() + dim * this->_nDof;
+        }
+    }
+    *this *= 0.0;
+}
+
+template void ElementMatrix < double >::fillIds(const MeshEntity & ent, Index Crows);
+
+
 void ElementMatrixMap::add(Index row, const ElementMatrix < double > & Ai){
     rows_ = max(row + 1, rows_);
     cols_ = max(max(Ai.idx()) + 1, cols_);
 
     mat_.push_back(Ai.mat());
-    idx_.push_back(Ai.idx());
+    _ids.push_back(Ai.idx());
     row_.push_back(row);
 }
 
@@ -835,7 +1007,7 @@ RVector ElementMatrixMap::mult(const RVector & a, const RVector & b,
     for (Index r = 0; r < row_.size(); r ++ ){
         double s = 0.0;
         const RMatrix & mat = mat_[r];
-        const IndexArray & idx = idx_[r];
+        const IndexArray & idx = _ids[r];
         for (register Index i = 0; i < mat.rows(); i ++) {
             double t = 0;
             for (register Index j = 0; j < mat.cols(); j ++) {
@@ -856,7 +1028,7 @@ RVector ElementMatrixMap::mult(const RVector & a, const RVector & b) const{
     for (Index r = 0; r < row_.size(); r ++ ){
         double s = 0.0;
         const RMatrix & mat = mat_[r];
-        const IndexArray & idx = idx_[r];
+        const IndexArray & idx = _ids[r];
         for (register Index i = 0; i < mat.rows(); i ++) {
             double t = 0;
             for (register Index j = 0; j < mat.cols(); j ++) {

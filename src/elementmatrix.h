@@ -27,38 +27,25 @@ namespace GIMLI{
 
 template < class ValueType > class DLLEXPORT ElementMatrix {
 public:
-    ElementMatrix() { }
-
-    ElementMatrix(const ElementMatrix < ValueType > & E) {
-        std::cout << "ElementMatrix(const ElementMatrix < ValueType > & E) " << std::endl;
-        THROW_TO_IMPL
-//     this->resize(E.size());
-//         for (uint i = 0; i < E.size(); i ++) mat_[i] = E.mat(i);
-//         idx_ = E.idx();
-//         initBaseMatricies();
-    }
-
-    ElementMatrix < ValueType > & operator = (const ElementMatrix < ValueType > & E) {
-        std::cout << "ElementMatrix::operator = (" << std::endl;
-        THROW_TO_IMPL
-        if (this != & E){
-//             this->resize(E.size());
-//             for (uint i = 0; i < E.size(); i ++) mat_[i] = E.row(i);
-//             idx_ = E.idx();
-        } return *this;
+    /*! If dof != 0 then scalar field approximation is to be supposed.
+    For vector field solution give a dof, means be the number of nodes of the current mesh. */
+    ElementMatrix(Index dof=0) {
+        this->_nDof = dof;
     }
 
     ~ElementMatrix() {}
 
-    inline const Vector< ValueType > & operator[](Index row) const { return mat_[row]; }
+    inline const Vector< ValueType > & operator[](Index row) const {
+        return mat_[row]; }
 
     void resize(uint newSize) {
-        idx_.resize(newSize);
+        _ids.resize(newSize);
         mat_.resize(newSize, newSize);
     }
 
     ElementMatrix < ValueType > & operator += (const ElementMatrix < ValueType > & E){
-        for (uint i = 0; i < size(); i ++){ mat_[i] += E.row(i); } return *this;
+        for (uint i = 0; i < size(); i ++){ mat_[i] += E.row(i); }
+        return *this;
     }
 
     #define DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__(OP)                   \
@@ -86,20 +73,57 @@ public:
     inline const Vector < ValueType > & row(Index i) const { return mat_[i]; }
 
     /*!DEPRECATED we will remove this 191120*/
-    inline const IndexArray & idx() const { return idx_; }
+    inline const IndexArray & idx() const { return _ids; }
+
+    /*! Fill the node ids.
+    For vector field approximation give field dimension 2 or 3. Please note that you need to give the number of nodes to the ElementMatrix constructior.
+    */
+    void fillIds(const MeshEntity & ent, Index dims=1);
 
     /*! Set all node indices.*/
-    inline void setIds(const IndexArray & ids) { idx_ = ids; }
+    inline void setIds(const IndexArray & ids) { _ids = ids; }
     /*! Return all node indices.*/
-    inline const IndexArray & ids() const { return idx_; }
+    inline const IndexArray & ids() const { return _ids; }
     /*! Return the node index for node i.*/
-    inline const Index idx(Index i) const { return idx_[i]; }
+    inline const Index idx(Index i) const { return _ids[i]; }
 
-    ElementMatrix < ValueType > & u(const MeshEntity & ent);
+    /*! Fill this element matrix with int_boundary C * u */
+    ElementMatrix < ValueType > & u(const MeshEntity & ent
+                                    // const Matrix< ValueType > & C
+                                    );
 
-    ElementMatrix < ValueType > & u2(const MeshEntity & ent);
+    /*! Fill this element matrix with int_domain C * u * u */
+    ElementMatrix < ValueType > & u2(const MeshEntity & ent
+                                    //  const Matrix< ValueType > & C
+                                     );
 
-    ElementMatrix < ValueType > & ux2uy2uz2(const Cell & cell, bool useCache=false);
+
+    /*! Fill Element Gradients Matrix for all integration points. */
+    void fillGradientBase(const MeshEntity & ent,
+                          const R3Vector & x,
+                          Index nC,
+                          bool voigtNotation);
+
+    /*! Fill this element matrix with int_domain C * grad u * grad u. */
+    ElementMatrix < ValueType > & gradU2(
+                                    const MeshEntity & ent,
+                                    const Matrix< ValueType > & C,
+                                    const RVector & w,
+                                    const R3Vector & x,
+                                    bool voigtNotation);
+
+    /*! Fill this element matrix with int_domain C * grad u * grad u.
+    For scalar field approximation define C.size() = (1x1) isotropic or anisotropic C.size() = (cell.dim() x cell.dim()) parameter.
+    For vector field approximation create the ElementMatrix with appropriate dof and C can be of size = (1x1) for isotropic, (cell.dim() x cell.dim())
+    for anisotropic, or (3x3) for 2D elastic and (6x6) 3D elastic parameter.
+    Notation for elastic parameters can be Kelvin notation as default or Voigt's notation if needed.
+     */
+    ElementMatrix < ValueType > & gradU2(const Cell & cell,
+                                         const Matrix< ValueType > & C,
+                                         bool voigtNotation=false);
+
+    ElementMatrix < ValueType > & ux2uy2uz2(const Cell & cell,
+                                            bool useCache=false);
 
     ElementMatrix < ValueType > & u(const MeshEntity & ent,
                                     const RVector & w,
@@ -157,7 +181,7 @@ public:
         ASSERT_EQUAL(size(), ret.size())
         for (Index i = 0; i < size(); i ++) {
             for (Index j = 0; j < size(); j ++) {
-                ret[i] += mat_[i][j] * a[idx_[j]];
+                ret[i] += mat_[i][j] * a[_ids[j]];
             }
         }
     }
@@ -167,9 +191,9 @@ public:
         for (Index i = 0; i < size(); i ++) {
             ValueType t = 0;
             for (Index j = 0; j < size(); j ++) {
-                t += mat_[i][j] * a[idx_[j]];
+                t += mat_[i][j] * a[_ids[j]];
             }
-            ret += t * b[idx_[i]];
+            ret += t * b[_ids[i]];
         }
         return ret;
     }
@@ -183,9 +207,9 @@ public:
         for (Index i = 0; i < size(); i ++) {
             Val t = 0;
             for (Index j = 0; j < size(); j ++) {
-                t += mat_[i][j] * (a[idx_[j]]-b[idx_[j]]);
+                t += mat_[i][j] * (a[_ids[j]]-b[_ids[j]]);
             }
-            ret += t * (m[idx_[i]]-n[idx_[i]]);
+            ret += t * (m[_ids[i]]-n[_ids[i]]);
         }
         return ret;
     }
@@ -203,7 +227,7 @@ public:
 protected:
     //RMatrix mat_;
     Matrix < ValueType > mat_;
-    IndexArray idx_;
+    IndexArray _ids;
 
     RMatrix functx_;
     RMatrix functy_;
@@ -212,13 +236,38 @@ protected:
     std::map< uint, RVector > uCache_;
     std::map< uint, Matrix < ValueType > > u2Cache_;
 
+    std::vector< Matrix < ValueType > > _B;
+
+    Index _nDof;
+
     RMatrix dNdr_;
     RMatrix dNds_;
     RMatrix dNdt_;
 
-    RMatrix dNdx_; // (nVerts, nRules)
-    RMatrix dNdy_; // (nVerts, nRules)
-    RMatrix dNdz_; // (nVerts, nRules)
+    RMatrix dNdx_; // (nRules, nVerts)
+    RMatrix dNdy_; // (nRules, nVerts)
+    RMatrix dNdz_; // (nRules, nVerts)
+
+private:
+    /*! No copy operator. */
+    ElementMatrix(const ElementMatrix < ValueType > & E) {
+        std::cout << "ElementMatrix(const ElementMatrix < ValueType > & E) " << std::endl;
+        THROW_TO_IMPL
+//     this->resize(E.size());
+//         for (uint i = 0; i < E.size(); i ++) mat_[i] = E.mat(i);
+//         _ids = E.idx();
+//         initBaseMatricies();
+    }
+    /*! No assignment operator. */
+    ElementMatrix < ValueType > & operator = (const ElementMatrix < ValueType > & E) {
+        std::cout << "ElementMatrix::operator = (" << std::endl;
+        THROW_TO_IMPL
+        if (this != & E){
+//             this->resize(E.size());
+//             for (uint i = 0; i < E.size(); i ++) mat_[i] = E.row(i);
+//             _ids = E.idx();
+        } return *this;
+    }
 
 };
 
@@ -241,7 +290,7 @@ public:
 
 protected:
     std::vector< RMatrix > mat_;
-    std::vector< IndexArray > idx_;
+    std::vector< IndexArray > _ids;
     std::vector< Index > row_;
 
     Index rows_;
