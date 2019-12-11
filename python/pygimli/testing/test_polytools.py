@@ -186,7 +186,7 @@ class Test3DMerge(unittest.TestCase):
         for marker in pg.unique(pg.sort(plc.boundaryMarkers())):
             b1 = plc.boundaries(plc.boundaryMarkers() == marker)[0]
             b2 = mesh.boundaries(mesh.boundaryMarkers() == marker)[0]
-            
+
             np.testing.assert_array_equal(b1.norm(), b2.norm())
 
     def test_cube_cube_same(self):
@@ -230,7 +230,9 @@ class Test3DMerge(unittest.TestCase):
         self.assertEqual(w.boundaryCount(), 6+5+5+5+6+3)
 
         # w.exportPLC('t.poly')
-        # pg.show(mt.createMesh(w))
+        pg.info(1)
+        pg.show(mt.createMesh(w))
+        pg.info("1 worked")
 
     def test_cube_cube_coplanar_touchface(self):
         w = mt.createCube(marker=1)
@@ -260,9 +262,13 @@ class Test3DMerge(unittest.TestCase):
         self.assertEqual(w.nodeCount(), 8+8+8+8+8)
         self.assertEqual(w.boundaryCount(), 6+5+5+5+5)
 
-        #pg.show(w)
+        pg.info(2)
+        pg.show(w)
+        pg.info("2 worked")
         # w.exportPLC('t.poly')
-        # pg.show(mt.createMesh(w))
+        pg.info(3)
+        pg.show(mt.createMesh(w))
+        pg.info("3 worked")
 
     def test_smallcube_in_bigcube(self):
         """
@@ -285,9 +291,13 @@ class Test3DMerge(unittest.TestCase):
         # self.assertEqual(w.boundaryCount(), 8)
 
         # print(w)
-        # pg.show(w)
+        pg.info(4)
+        pg.show(w)
+        pg.info("4 worked")
         # w.exportPLC('w3D_test.w')
-        # pg.show(mt.createMesh(w))
+        pg.info(5)
+        pg.show(mt.createMesh(w))
+        pg.info("5 worked")
 
     def test_face_in_face(self):
         """Test subface with different marker constructed with hole marker."""
@@ -312,10 +322,14 @@ class Test3DMerge(unittest.TestCase):
         #pg.show(mesh)
         # w.exportPLC('pad.poly')
         # mesh.exportBoundaryVTU('b.vtu')
-        np.testing.assert_array_equal(pg.unique(pg.sort(mesh.boundaryMarkers())), 
+        np.testing.assert_array_equal(pg.unique(pg.sort(mesh.boundaryMarkers())),
                                       [0, 1, 2])
 
         # print(mesh)
+        # mesh.exportBoundaryVTU('b.vtu')
+        pg.info(6)
+        pg.show(mesh)
+        pg.info("6 worked")
 
 if __name__ == '__main__':
     unittest.main()

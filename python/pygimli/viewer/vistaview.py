@@ -70,6 +70,7 @@ def showMesh3DVista(mesh, data=None, **kwargs):
     (and values) from the dictionary.
     """
     _, tmp = tempfile.mkstemp(suffix=".vtk")
+    pg._r("exporting {}: {}".format(tmp, mesh))
     mesh.exportVTK(tmp)
     grid = pyvista.read(tmp)
 
@@ -94,21 +95,20 @@ def showMesh3DVista(mesh, data=None, **kwargs):
     if notebook:
         pyvista.set_plot_theme('document')
 
-    if use_gui and notebook is False:
+    if use_gui and not notebook:
         # add saved data from within the pg.mesh itself
-        for k, v in mesh.dataMap():
-            grid.cell_arrays[k] = np.asarray(v)
-        # app = Qt.QApplication()
+        for label, data in mesh.dataMap():
+            if len(data) == mesh.cellCount():
+                grid.cell_arrays[label] = np.asarray(data)
+            elif len(data) == mesh.nodeCount():
+                grid.point_arrays[label] = np.asarray(data)
+
         app = Qt.QApplication(sys.argv)
         s3d = Show3D(tmp, app)
         s3d.addMesh(grid, cMap=cMap)
-        app.exec_()
-
-    # elif notebook is True:
-    #     tool = pyvista.OrthogonalSlicer(grid)
-    #     # Get the plotter for adding more datasets:
-    #     p = tool.plotter
-    #     p.show()
+        _ = app.exec()
+        app.closeAllWindows()
+        pg._d("closed all windows")
 
     else:
         plotter = pyvista.Plotter(notebook=notebook)
@@ -120,3 +120,5 @@ def showMesh3DVista(mesh, data=None, **kwargs):
         if not hold:
             plotter.show()
         return plotter
+
+    # def _loadDataToGrid(self, label, data):

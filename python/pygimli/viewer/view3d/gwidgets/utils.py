@@ -339,4 +339,4 @@ class GDoubleSpinBox(QDoubleSpinBox):
         self.setFixedWidth(200)
         self.setSingleStep(0.01)
         # self.setRange(*drange)
-        self.setDecimals(4)
+        self.setDecimals(10)

@@ -1514,28 +1514,25 @@ def createCube(size=[1.0, 1.0, 1.0],
     """
     poly = pg.Mesh(3, isGeometry=True)
 
-    for z in [-0.5, 0.5]:
-        poly.createNode(-0.5, -0.5, z)
-        poly.createNode(+0.5, -0.5, z)
-        poly.createNode(+0.5, +0.5, z)
-        poly.createNode(-0.5, +0.5, z)
+    for y in [-0.5, 0.5]:
+        poly.createNode(-0.5, y, -0.5)
+        poly.createNode(+0.5, y, -0.5)
+        poly.createNode(+0.5, y, +0.5)
+        poly.createNode(-0.5, y, +0.5)
 
-    faces = [[1, 2, 6, 5],
-            [2, 3, 7, 6],
-            [3, 0, 4, 7],
-            [0, 1, 5, 4],
-            [4, 5, 6, 7],
-            [0, 3, 2, 1]]
+    faces = [[4, 5, 1, 0],
+             [5, 6, 2, 1],
+             [6, 7, 3, 2],
+             [7, 4, 0, 3],
+             [0, 1, 2, 3],
+             [7, 6, 5, 4], ]
 
-    # faces = [[4, 5, 1, 0],
-    #          [5, 6, 2, 1],
-    #          [6, 7, 3, 2],
-    #          [7, 4, 0, 3],
-    #          [0, 1, 2, 3],
-    #          [7, 6, 5, 4], ]
-
-    for f in faces[::1]:
-        poly.createPolygonFace(poly.nodes(f), marker=boundaryMarker)
+    if isinstance(boundaryMarker, list):
+        for i, f in enumerate(faces):
+            poly.createPolygonFace(poly.nodes(f), marker=boundaryMarker[i])
+    else:
+        for f in faces:
+            poly.createPolygonFace(poly.nodes(f), marker=boundaryMarker)
 
     poly.scale(size)
 

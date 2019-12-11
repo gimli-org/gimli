@@ -154,8 +154,18 @@ class MethodManager(object):
         Modelling
             Instance of any kind of :py:mod:`pygimli.framework.Modelling`.
         """
-        pg.critical("No forward operator defined, either give one or"
-                    "overwrite in derived class")
+        # pg.critical("No forward operator defined, either give one or"
+        #             "overwrite in derived class")
+        useBert = kwargs.pop('useBert', False)
+        verbose = kwargs.pop('verbose', False)
+        if useBert:
+            pg.verbose('Create BertModelling FOP')
+            fop = BertModelling(sr=kwargs.pop('sr', True), verbose=verbose)
+        else:
+            pg.verbose('Create ERTModelling FOP')
+            fop = ERTModelling(**kwargs)
+
+        return fop
 
     def _initInversionFramework(self, **kwargs):
         """Initialize or re-initialize the inversion framework.
@@ -333,7 +343,7 @@ class MethodManager(object):
 
         model : iterable
             Model data to be draw.
-        
+
         Returns
         -------
         ax, cbar
@@ -342,7 +352,7 @@ class MethodManager(object):
             fig, ax = pg.plt.subplots(ncols=1)
 
         return self.fop.drawModel(ax, model, **kwargs)
-        
+
     def showData(self, data, ax=None, **kwargs):
         """Shows the data.
 
@@ -365,7 +375,7 @@ class MethodManager(object):
             fig, ax = pg.plt.subplots(ncols=1)
 
         return self.fop.drawData(ax, data, **kwargs)
-        
+
     def showResult(self, model=None, ax=None, **kwargs):
         """Show the last inversion result.
 
@@ -388,7 +398,7 @@ class MethodManager(object):
         if model is None:
             model = self.model
         return self.showModel(model, ax=ax, **kwargs)
-        
+
     def showFit(self, ax=None, **kwargs):
         """Show the last inversion data and response."""
         ax = self.showData(data=self.inv.dataVals,

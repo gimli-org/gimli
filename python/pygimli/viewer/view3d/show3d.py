@@ -47,7 +47,8 @@ class Show3D(QMainWindow):
         from: https://stackoverflow.com/questions/1112343/how-do-i-capture-sigint-in-python
         """
         sys.stderr.write('\r')
-        self.application.exit()
+        pg._d("CLOSING (*quit* or *ctrl-c*)")
+        self.application.quit()
 
     def setupMenu(self):
         bar = self.menuBar()
@@ -177,7 +178,13 @@ class Show3D(QMainWindow):
 
         # FIXME: what about the point arrays?!
         for k, v in self.mesh.cell_arrays.items():
-            self.mesh._add_cell_array(v, k)
+            # self.mesh._add_cell_array(v, k)
+            # print(k, v)
+            self.extrema[k] = {
+                'orig': {'min': min(v), 'max': max(v)},
+                'user': {'min': min(v), 'max': max(v)}
+            }
+        for k, v in self.mesh.point_arrays.items():
             self.extrema[k] = {
                 'orig': {'min': min(v), 'max': max(v)},
                 'user': {'min': min(v), 'max': max(v)}
@@ -206,9 +213,12 @@ class Show3D(QMainWindow):
         """
         # remove the currently displayed mesh
         self.pyvista_widget.remove_actor(self._actor)
+        mesh = self.mesh
         if param is not None and param not in CMAPS and not isinstance(param, int):
             # change to the desired parameter distribution
             self.mesh.set_active_scalar(param)
+            # if param in self.mesh.point_arrays:
+            #     mesh = self.mesh.contour()
             # update the minima and maxima in the limit range
             self.toolbar.spbx_cmin.setRange(
                 self.extrema[param]['user']['min'], self.extrema[param]['user']['max'])
@@ -221,7 +231,6 @@ class Show3D(QMainWindow):
         if self.toolbar.btn_reverse.isChecked():
             cMap += '_r'
 
-        mesh = self.mesh
         if self.toolbar.btn_slice_plane.isChecked() and not self.toolbar.btn_slice_volume.isChecked():
             x_val = self.toolbar.slice_x.value()
             y_val = self.toolbar.slice_y.value()
