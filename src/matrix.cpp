@@ -112,29 +112,14 @@ void matMultABA(const RMatrix & A, const RMatrix & B, RMatrix & C, RMatrix & AtB
         log(Error, "matMultABA B sizes mismatch.", B.cols(), "!=", B.rows());
         return;
     }
-    if (A.rows() == B.rows()){
-
-        AtB.resize(A.cols(), B.rows());
-
-        for (Index i = 0; i < A.cols(); i ++){
-            for (Index j = 0; j < B.rows(); j ++){
-                double c = 0;
-                for (Index k = 0; k < A.rows(); k ++){
-                    c += A[k][i] * B[k][j];
-                }
-                AtB[i][j] += c;
-            }
-        }
-
-        matMult(AtB, B, C, a);
-
-    } else {
-        log(Error, "matMultABA sizes mismatch.", A.rows(), "!=", B.rows());
-    }
-
+    AtB.resize(A.cols(), B.rows());
+    AtB *= 0.0;
+    matTransMult(A, B, AtB, 1.0);
+    matMult(AtB, B, C, a);
 }
 
 void matMult(const RMatrix & A, const RMatrix & B, RMatrix & C, double a){
+    // C += a * A*B || C += a * A*B.T
     // implement with openblas dgemm too and check performance
     if (A.cols() == B.rows()){
         C.resize(A.rows(), B.cols());
@@ -149,9 +134,30 @@ void matMult(const RMatrix & A, const RMatrix & B, RMatrix & C, double a){
             }
         }
     } else {
-        log(Error, "matMult sizes mismatch. implement fallback", C.cols(), "!=", B.rows());
+        log(Error, "matMult sizes mismatch. implement fallback A*.B.T", A.cols(), "!=", B.rows());
     }
 }
+
+void matTransMult(const RMatrix & A, const RMatrix & B, RMatrix & C, double a){
+    // C += a * A.T*B || C += a * A.T*B.T
+    // implement with openblas dgemm too and check performance
+    if (A.rows() == B.rows()){
+        C.resize(A.cols(), B.cols());
+
+        for (Index i = 0; i < A.cols(); i ++){
+            for (Index j = 0; j < B.cols(); j ++){
+                double c = 0;
+                for (Index k = 0; k < A.rows(); k ++){
+                    c += A[k][i] * B[k][j];
+                }
+                C[i][j] += a * c;
+            }
+        }
+    } else {
+        log(Error, "matMult sizes mismatch. implement fallback A.T*B.T", A.rows(), "!=", B.rows());
+    }
+}
+
 
 
 } // namespace GIMLI{

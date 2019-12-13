@@ -369,7 +369,6 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
                                   **subkwargs
                                   )
         elif colorBar is not False:
-            print('0updateColorBar', subkwargs)
             cBar = updateColorBar(colorBar, **subkwargs)
 
         if markers:

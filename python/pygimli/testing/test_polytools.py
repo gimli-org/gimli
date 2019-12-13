@@ -312,10 +312,14 @@ class Test3DMerge(unittest.TestCase):
         rot = pg.core.getRotation(b2.norm(), b.norm())
         pad.transform(rot)
         pad.translate(b.center())
+
         # create a boundary with new marker match the hole
         w.copyBoundary(b2)
 
-        w.createBoundary(w.nodes([w.createNode(n.pos()).id() for n in b2.nodes() ]), marker=2)
+        w.createBoundary(w.nodes([w.createNode(n.pos()).id() for n in b2.nodes()]),
+                        marker=2)
+
+        #print(w.boundaryMarkers())
 
         mesh = mt.createMesh(w)
 
