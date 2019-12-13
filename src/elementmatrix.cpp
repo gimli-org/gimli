@@ -169,6 +169,7 @@ DLLEXPORT ElementMatrix < double > & ElementMatrix < double >::ux2(const MeshEnt
         for (uint i = 0; i < nRules; i ++){
             dNdr_.setCol(i, ent.dNdL(x[i], 0));
         }
+        dNdx_.resize(nVerts, nRules);
     }
 
     double drdx = ent.shape().drstdxyz(0, 0);
@@ -177,8 +178,11 @@ DLLEXPORT ElementMatrix < double > & ElementMatrix < double >::ux2(const MeshEnt
     double A = ent.shape().domainSize();
 
     for (uint i = 0; i < nVerts; i ++){
+        dNdx_[i].assign(drdx * dNdr_[i]);
+    }
+    for (uint i = 0; i < nVerts; i ++){
         for (uint j = i; j < nVerts; j ++){
-            mat_[i][j] = A * sum(w * (drdx * dNdr_[i] * drdx * dNdr_[j]));
+            mat_[i][j] = A * sum(w * (dNdx_[i] * dNdx_[j]));
             mat_[j][i] = mat_[i][j];
         }
     }
@@ -328,12 +332,9 @@ void ElementMatrix < double >::fillGradientBase(
                                     Index nC,
                                     bool voigtNotation){
 
-    if (ent.dim() == 1 || ent.dim() == 3){
-        THROW_TO_IMPL
-    }
-
     Index nRules = x.size();
     Index nDof = this->_ids.size();
+    Index nVerts = ent.nodeCount();
 
     if (_B.size() != nRules){
         _B.resize(nRules);
@@ -341,24 +342,21 @@ void ElementMatrix < double >::fillGradientBase(
             _B[i].resize(nC, nDof);
         }
     }
-    _B.clear();
-
-    Index nVerts = ent.nodeCount();
-
-    if (dNdr_.rows() != nVerts){
-        if (ent.dim() > 0) dNdr_.resize(nVerts, nRules);
-        if (ent.dim() > 1) dNds_.resize(nVerts, nRules);
-        if (ent.dim() > 2) dNdt_.resize(nVerts, nRules);
+    
+    if (dNdr_.rows() != nRules){
+        if (ent.dim() > 0) dNdr_.resize(nRules, nVerts);
+        if (ent.dim() > 1) dNds_.resize(nRules, nVerts);
+        if (ent.dim() > 2) dNdt_.resize(nRules, nVerts);
 
         for (Index i = 0; i < nRules; i ++){
-            if (ent.dim() > 0) dNdr_.setCol(i, ent.dNdL(x[i], 0));
-            if (ent.dim() > 1) dNds_.setCol(i, ent.dNdL(x[i], 1));
-            if (ent.dim() > 2) dNdt_.setCol(i, ent.dNdL(x[i], 2));
+            if (ent.dim() > 0) dNdr_[i] = ent.dNdL(x[i], 0);
+            if (ent.dim() > 1) dNds_[i] = ent.dNdL(x[i], 1);
+            if (ent.dim() > 2) dNdt_[i] = ent.dNdL(x[i], 2);
         }
 
-        if (ent.dim() > 0) dNdx_.resize(nVerts, nRules);
-        if (ent.dim() > 1) dNdy_.resize(nVerts, nRules);
-        if (ent.dim() > 2) dNdz_.resize(nVerts, nRules);
+        if (ent.dim() > 0) dNdx_.resize(nRules, nVerts);
+        if (ent.dim() > 1) dNdy_.resize(nRules, nVerts);
+        if (ent.dim() > 2) dNdz_.resize(nRules, nVerts);
     }
 
     double drdx = ent.shape().drstdxyz(0, 0);
@@ -373,63 +371,84 @@ void ElementMatrix < double >::fillGradientBase(
     double dtdy = ent.shape().drstdxyz(2, 1);
     double dtdz = ent.shape().drstdxyz(2, 2);
 
+    for (Index i = 0; i < nRules; i ++){
+        if (ent.dim() == 1){
+            dNdx_[i].assign(dNdr_[i] * drdx);
+        } else if (ent.dim() == 2){
+            dNdx_[i].assign(dNdr_[i] * drdx + dNds_[i] * dsdx);
+            dNdy_[i].assign(dNdr_[i] * drdy + dNds_[i] * dsdy);
+        } else if (ent.dim() == 3){
+            dNdx_[i].assign(dNdr_[i] * drdx + dNds_[i] * dsdx + dNdt_[i] * dtdx);
+            dNdy_[i].assign(dNdr_[i] * drdy + dNds_[i] * dsdy + dNdt_[i] * dtdy);
+            dNdz_[i].assign(dNdr_[i] * drdz + dNds_[i] * dsdz + dNdt_[i] * dtdz);
+        }
+    }
+
     double a = std::sqrt(2.);
     if (voigtNotation){
         a = 1.0;
     }
 
     for (Index i = 0; i < nRules; i ++){
-
-        dNdx_[i] = (drdx * dNdr_[i] + dsdx * dNds_[i]);
-        dNdy_[i] = (drdy * dNdr_[i] + dsdy * dNds_[i]);
+        // __MS(i << " " << x[i])
+        //dNdx_[i] = (dNdr_[i] * drdx);
+        //dNdx_.setCol(i, (dNdr_[i] * drdx));
 
         if (this->_nDof == 0){
             // scalar field
-            _B[i][0].setVal(dNdx_[i], 0, nVerts);
-            _B[i][1].setVal(dNdy_[i], 0, nVerts);
+            if (ent.dim() > 0){
+                _B[i][0].setVal(dNdx_[i], 0, nVerts);
+            }
+            if (ent.dim() > 1){
+                _B[i][1].setVal(dNdy_[i], 0, nVerts);
+            }
+            if (ent.dim() > 2){
+                _B[i][2].setVal(dNdz_[i], 0, nVerts);
+            }
         } else {
             // vector field
-            _B[i][0].setVal(dNdx_[i], 0, nVerts);
-            _B[i][1].setVal(dNdy_[i], nVerts, 2*nVerts);
+            if (ent.dim() > 0){
+                _B[i][0].setVal(dNdx_[i], 0 * nVerts, 1 * nVerts);
+            } 
+            if (ent.dim() > 1){
+                _B[i][1].setVal(dNdy_[i], 1 * nVerts, 2 * nVerts);
 
-            if (nC > ent.dim()){ // elastic material
-                _B[i][2].setVal(dNdy_[i] * a, 0, nVerts);
-                _B[i][2].setVal(dNdx_[i] * a, nVerts, 2*nVerts);
+                if (nC > ent.dim()){ // elastic material
+                    _B[i][2].setVal(dNdy_[i] * a, 0 * nVerts, 1 * nVerts);
+                    _B[i][2].setVal(dNdx_[i] * a, 1 * nVerts, 2 * nVerts);
+                }
+            }
+            if (ent.dim() > 2){
+                _B[i][2].setVal(dNdz_[i], 2 * nVerts, 3 * nVerts);
+                if (nC > ent.dim()){ // elastic material
+                THROW_TO_IMPL
+                    // _B[i][3].setVal(dNdy_[i] * a, 0, nVerts);
+                    // _B[i][3].setVal(dNdx_[i] * a, nVerts, 2*nVerts);
+                }
             }
         }
     }
 }
 
 template < > DLLEXPORT
-ElementMatrix < double > & ElementMatrix < double >::gradU2(
-                                    const MeshEntity & ent,
-                                    const Matrix< double > & C,
-                                    const RVector & w,
-                                    const R3Vector & x,
-                                    bool voigtNotation){
-    __M
+ElementMatrix < double > & ElementMatrix < double >::gradU2(const MeshEntity & ent,
+                                                            const Matrix< double > & C,
+                                                            const RVector & w,
+                                                            const R3Vector & x,
+                                                            bool voigtNotation){
     this->fillIds(ent, C.size()); // also cleans
-
-    __M
     this->fillGradientBase(ent, x,
                            max(C.size(), ent.dim()),
                            voigtNotation);
-    __M
     if (C.size() == 1){
         for (Index i = 0; i < w.size(); i ++ ){
-            __MS(i)
-            __MS(_B[i].rows() << " " << _B[i].cols())
-            // __MS(C)
-
-            matMult(_B[i], _B[i], mat_, w[i] * ent.size());
+            // B.T * B
+            matTransMult(_B[i], _B[i], mat_, w[i] * ent.size() * C[0][0]);
         }
     } else {
-        RMatrix tmp(1,1); // temp workspace
         for (Index i = 0; i < w.size(); i ++ ){
-            __MS(i)
-            // __MS(_B[i])
-            // __MS(C)
-            matMultABA(_B[i], C, mat_, tmp, w[i] * ent.size());
+            // B.T * C * B
+            matMultABA(_B[i], C, mat_, _abaTmp, w[i] * ent.size());
         }
     }
 
@@ -441,8 +460,8 @@ ElementMatrix < double > & ElementMatrix < double >::gradU2(
 
 template < > DLLEXPORT
 ElementMatrix < double > & ElementMatrix < double >::gradU2(const Cell & cell,
-                                  const Matrix< double > & C,
-                                  bool voigtNotation){
+                                                            const Matrix< double > & C,
+                                                            bool voigtNotation){
 
     const RVector * w = 0;
     const R3Vector * x = 0;
@@ -469,12 +488,35 @@ ElementMatrix < double > & ElementMatrix < double >::gradU2(const Cell & cell,
             w = &IntegrationRules::instance().quaWeights(3);
             x = &IntegrationRules::instance().quaAbscissa(3);
         } break;
+        case MESH_TETRAHEDRON_RTTI: {
+            w = & IntegrationRules::instance().tetWeights(1);
+            x = & IntegrationRules::instance().tetAbscissa(1);
+        } break;
+        case MESH_TETRAHEDRON10_RTTI: {
+            w = & IntegrationRules::instance().tetWeights(2);
+            x = & IntegrationRules::instance().tetAbscissa(2);
+        } break;
+        case MESH_HEXAHEDRON_RTTI: {
+            w = & IntegrationRules::instance().hexWeights(2);
+            x = & IntegrationRules::instance().hexAbscissa(2);
+        } break;
+        case MESH_HEXAHEDRON20_RTTI: {
+            w = & IntegrationRules::instance().hexWeights(4);
+            x = & IntegrationRules::instance().hexAbscissa(4);
+        } break;
+        case MESH_TRIPRISM_RTTI: {
+            w = & IntegrationRules::instance().priWeights(2);
+            x = & IntegrationRules::instance().priAbscissa(2);
+        } break;
+        case MESH_TRIPRISM15_RTTI: {
+            w = & IntegrationRules::instance().priWeights(4);
+            x = & IntegrationRules::instance().priAbscissa(4);
+        } break;
         default:
             std::cerr << cell.rtti() << std::endl;
             THROW_TO_IMPL
             break;
     }
-
     return this->gradU2(cell, C, *w, *x, voigtNotation);
 }
 

@@ -104,23 +104,34 @@ public:
                           Index nC,
                           bool voigtNotation);
 
-    /*! Fill this element matrix with int_domain C * grad u * grad u. */
-    ElementMatrix < ValueType > & gradU2(
-                                    const MeshEntity & ent,
-                                    const Matrix< ValueType > & C,
-                                    const RVector & w,
-                                    const R3Vector & x,
-                                    bool voigtNotation);
 
     /*! Fill this element matrix with int_domain C * grad u * grad u.
-    For scalar field approximation define C.size() = (1x1) isotropic or anisotropic C.size() = (cell.dim() x cell.dim()) parameter.
-    For vector field approximation create the ElementMatrix with appropriate dof and C can be of size = (1x1) for isotropic, (cell.dim() x cell.dim())
-    for anisotropic, or (3x3) for 2D elastic and (6x6) 3D elastic parameter.
-    Notation for elastic parameters can be Kelvin notation as default or Voigt's notation if needed.
+    For scalar field approximation define C.size() = (1x1) isotropic or anisotropic 
+    C.size() = (cell.dim() x cell.dim()) parameter. For vector field approximation 
+    create the ElementMatrix with appropriate dof and C can be of size = (1x1) 
+    for isotropic, (cell.dim() x cell.dim()) for anisotropic, or (3x3) 
+    for 2D elastic and (6x6) 3D elastic parameter.
+    Notation for elastic parameters can be Kelvin notation as default 
+    or Voigt's notation if needed.
      */
     ElementMatrix < ValueType > & gradU2(const Cell & cell,
                                          const Matrix< ValueType > & C,
                                          bool voigtNotation=false);
+
+    /*! Fill this element matrix with int_domain C * grad u * grad u.*/
+    ElementMatrix < ValueType > & gradU2(const Cell & cell, ValueType c){
+        Matrix < ValueType > C(1, 1);
+        C[0][0] = c;
+        return this->gradU2(cell, C, false);
+    }
+
+    /*! Fill this element matrix with int_domain C * grad u * grad u. */
+    ElementMatrix < ValueType > & gradU2(const MeshEntity & ent,
+                                         const Matrix< ValueType > & C,
+                                         const RVector & w,
+                                         const R3Vector & x,
+                                         bool voigtNotation=false);
+
 
     ElementMatrix < ValueType > & ux2uy2uz2(const Cell & cell,
                                             bool useCache=false);
@@ -247,6 +258,8 @@ protected:
     RMatrix dNdx_; // (nRules, nVerts)
     RMatrix dNdy_; // (nRules, nVerts)
     RMatrix dNdz_; // (nRules, nVerts)
+
+    RMatrix _abaTmp; // temp workspace
 
 private:
     /*! No copy operator. */

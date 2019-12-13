@@ -585,7 +585,6 @@ class MeshModelling(Modelling):
             pg.mplviewer.setMappableData(cBar.mappable, mod, **kwargs)
         else:
             diam = kwargs.pop('diam', None)
-            print('-----------', kwargs)
             ax, cBar = pg.show(mesh=self.paraDomain,
                                data=mod,
                                label=kwargs.pop('label', 'Model parameter'),
