@@ -180,6 +180,11 @@ def refineQuad2Tri(mesh, style=1):
     for c in mesh.cells():
 
         if style == 1:
+            # out.createCell([c.node(0).id(), c.node(1).id(), c.node(3).id()],
+            #                c.marker())
+            # out.createCell([c.node(1).id(), c.node(2).id(), c.node(3).id()],
+            #                c.marker())
+
             out.createCell([c.node(0).id(), c.node(1).id(), c.node(2).id()],
                            c.marker())
             out.createCell([c.node(0).id(), c.node(2).id(), c.node(3).id()],
@@ -420,7 +425,7 @@ def readGmsh(fName, verbose=False, precision=None):
     >>> os.remove(fName)
     """
     assert precision is None or precision >= 0
-    inNodes, inElements, ncount = 0, 0, 0
+    inNodes, inElements, nCount = 0, 0, 0
     fid = open(fName)
     if verbose:
         print('Reading %s... \n' % fName)
@@ -446,17 +451,18 @@ def readGmsh(fName, verbose=False, precision=None):
                 else:
                     node_coordinates = np.array(line.split(), 'float')[1:]
                     if precision is None:
-                        nodes[ncount, :] = node_coordinates
+                        nodes[nCount, :] = node_coordinates
                     else:
-                        nodes[ncount, :] = np.round(
+                        nodes[nCount, :] = np.round(
                             node_coordinates, precision)
-                    ncount += 1
+                    nCount += 1
 
             elif inElements == 1:
                 if len(line.split()) == 1:
                     if verbose:
                         print('  Entries: %s' % int(line))
                     points, lines, triangles, tets = [], [], [], []
+                    quads = []
 
                 else:
                     # Element entries follow the following format:
@@ -471,31 +477,35 @@ def readGmsh(fName, verbose=False, precision=None):
                         points.append((entry[-1], entry[2]))
                     elif entry[0] == 1:
                         lines.append((entry[-2], entry[-1], entry[2]))
-                    elif entry[0] == 2:
+                    elif entry[0] == 2: # Tri
                         triangles.append((entry[-3], entry[-2], entry[-1],
                                           entry[2]))
-                    elif entry[0] == 4:
+                    elif entry[0] == 3: # Quads
+                        quads.append((entry[-4], entry[-3], entry[-2],
+                                      entry[-1], entry[2]))
+                    elif entry[0] == 4: # Tet
                         tets.append((entry[-4], entry[-3], entry[-2],
                                      entry[-1], entry[2]))
-                    elif entry[0] in [3, 6]:
+                    elif entry[0] == 6:
                         pg.error(
                             "Quadrangles and prisms are not supported yet")
 
     fid.close()
     lines = np.asarray(lines)
-    triangles = np.asarray(triangles)
+    # triangles = np.asarray(triangles)
     tets = np.asarray(tets)
 
     if verbose:
         print('    Points: %s' % len(points))
         print('    Lines: %s' % len(lines))
         print('    Triangles: %s' % len(triangles))
+        print('    Quads: %s' % len(quads))
         print('    Tetrahedra: %s \n' % len(tets))
         print('Creating mesh object... \n')
 
     # check dimension
     if len(tets) == 0:
-        dim, bounds, cells = 2, lines, triangles
+        dim, bounds, cells = 2, lines, triangles + quads
         zero_dim = np.abs(nodes.sum(0)).argmin()  # identify zero dimension
     else:
         dim, bounds, cells = 3, triangles, tets
@@ -537,15 +547,17 @@ def readGmsh(fName, verbose=False, precision=None):
             mesh.createNode(node)
 
     for cell in cells:
-        if dim == 2:
-            mesh.createTriangle(
-                mesh.node(int(cell[0] - 1)), mesh.node(int(cell[1] - 1)),
-                mesh.node(int(cell[2] - 1)), marker=int(cell[3]))
-        else:
-            mesh.createTetrahedron(
-                mesh.node(int(cell[0] - 1)), mesh.node(int(cell[1] - 1)),
-                mesh.node(int(cell[2] - 1)), mesh.node(int(cell[3] - 1)),
-                marker=int(cell[4]))
+        mesh.createCell(mesh.nodes(np.array(cell, dtype=int)[:-1]-1),
+                        marker=int(cell[-1]))
+        # if dim == 2:
+        #     mesh.createTriangle(
+        #         mesh.node(int(cell[0] - 1)), mesh.node(int(cell[1] - 1)),
+        #         mesh.node(int(cell[2] - 1)), marker=int(cell[3]))
+        # else:
+        #     mesh.createTetrahedron(
+        #         mesh.node(int(cell[0] - 1)), mesh.node(int(cell[1] - 1)),
+        #         mesh.node(int(cell[2] - 1)), mesh.node(int(cell[3] - 1)),
+        #         marker=int(cell[4]))
 
     mesh.createNeighborInfos()
 
@@ -718,6 +730,7 @@ def readTetgen(fName, comment='#', verbose=False, defaultCellMarker=0,
                 face_marker_n = int(face_n[-1])
             else:
                 face_marker_n = 0
+
             mesh.createBoundary([int(ind) for ind in face_n[1:4]],
                                 marker=face_marker_n)
             # quadratic
@@ -730,6 +743,9 @@ def readTetgen(fName, comment='#', verbose=False, defaultCellMarker=0,
 
     if verbose:
         print(mesh)
+
+    # Tetgen let the boundary outer normal shows inward so we fix this.
+    mesh.fixBoundaryDirections()
 
     return mesh
 
@@ -1340,7 +1356,7 @@ def readEIDORSMesh(fileName, matlabVarname, verbose=False):
     return mesh
 
 
-def readSTL(fileName, ascii=True):
+def readSTL(fileName, binary=False):
     """Read :term:`STL` surface mesh and returns a :gimliapi:`GIMLI::Mesh`.
 
     Read :term:`STL` surface mesh and returns a :gimliapi:`GIMLI::Mesh`
@@ -1355,37 +1371,14 @@ def readSTL(fileName, ascii=True):
     fileName : str
         name of the .stl file containing the STL surface mesh
 
-    ascii : bool [True]
-        STL ASCII format
+    binary : bool [False]
+        STL Binary format
     """
     mesh = pg.Mesh(dim=3)
-    mesh.importSTL(fileName)
+    mesh.importSTL(fileName, isBinary=binary)
     return mesh
 
-    # readPos = lambda s: pg.pos(float(s[0], float(s[1]), float(s[2])))
-
-    # with open(fileName, 'r') as fi:
-    #     content = fi.readlines()
-    # fi.close()
-
-    # marker = -1
-
-    # for i, line in enumerate(content):
-    #     if 'solid' in line:
-    #         marker += 1
-    #     elif 'facet' in line:
-    #         norm = readPos(content[i].split()[2:5])
-    #         v1 = readPos(content[i+2].split()[1:4])
-    #         v2 = readPos(content[i+2].split()[1:4])
-    #         v3 = readPos(content[i+2].split()[1:4])
-
-    #         mesh.createBoundary([v1, v2, v3], marker=marker)
-    #         i += 7
-
-    # return mesh
-
-
-def exportSTL(mesh, fileName, ascii=True):
+def exportSTL(mesh, fileName, binary=False):
     """Write :term:`STL` surface mesh and returns a :gimliapi:`GIMLI::Mesh`.
 
     Export a three dimensional boundary :gimliapi:`GIMLI::Mesh` into a
@@ -1406,8 +1399,8 @@ def exportSTL(mesh, fileName, ascii=True):
     fileName : str
         name of the .stl file containing the STL surface mesh
 
-    ascii : bool [True]
-        STL ASCII format
+    binary : bool [False]
+        Write STL binary format. TODO
     """
     marker = pg.unique(pg.sort(mesh.boundaryMarkers()))
 

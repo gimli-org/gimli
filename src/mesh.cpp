@@ -294,7 +294,7 @@ Node * Mesh::createNodeWithCheck(const RVector3 & pos, double tol, bool warn, bo
                         // __MS(*n1)
                         // __MS(*n2)
                         // __MS(*newNode)
-                        dynamic_cast< Edge * >(b)->setNodes(*n1, *newNode, true);
+                        dynamic_cast< Edge * >(b)->setNodes(*n1, *newNode);
                         this->createEdge(*newNode, *n2, b->marker());
                         break;
                     }
@@ -1531,6 +1531,28 @@ void Mesh::createNeighborInfos(bool force){
 //     std::cout << med << " " << med/cellCount() << std::endl;
 }
 
+void Mesh::fixBoundaryDirections(){
+    createNeighborInfos();
+    for (Index i = 0; i < this->boundaryCount(); i ++ ){
+        Boundary * b = this->boundaryVector_[i];
+        // __MS(b)
+        if (b->leftCell() != NULL && b->rightCell() == NULL){
+            if (!b->normShowsOutside(*b->leftCell())){
+                // 
+                b->swapNorm();
+            }
+        }
+        if (b->leftCell() == NULL && b->rightCell() != NULL){
+            if (!b->normShowsOutside(*b->rightCell())){
+                // __MS(b)
+                b->setLeftCell(b->rightCell());
+                b->setRightCell(NULL);
+                b->swapNorm();
+            }
+        }
+    }
+}
+
 void Mesh::createNeighborInfosCell_(Cell *c){
 
     for (Index j = 0; j < c->boundaryCount(); j++){
@@ -1806,8 +1828,6 @@ void Mesh::create3DGrid(const RVector & x, const RVector & y, const RVector & z,
                 }
             }
         }
-
-
     } else {
         std::cerr << WHERE_AM_I << "Warning! there are too few positions given: "
             << x.size() << " " << y.size() << " " << z.size() << std::endl;
@@ -2161,7 +2181,7 @@ void Mesh::prolongateEmptyCellsValues(RVector & vals, double background) const {
         prolongateEmptyCellsValues(vals, background);
     }
 }
-void Mesh::transform(const RMatrix & mat){
+Mesh & Mesh::transform(const RMatrix & mat){
 //         std::for_each(nodeVector_.begin(), nodeVector_.end(),
 //                        bind2nd(std::mem_fun(&Node::pos().transform), mat));
     for (auto &n: nodeVector_) n->pos().transform(mat);
@@ -2177,8 +2197,8 @@ void Mesh::transform(const RMatrix & mat){
             }
         }
     }
-
     rangesKnown_ = false;
+    return *this;
 }
 
 Mesh & Mesh::scale(const RVector3 & s){
@@ -2237,6 +2257,13 @@ Mesh & Mesh::rotate(const RVector3 & r){
     return *this;
 }
 
+Mesh & Mesh::deform(const R3Vector & eps, double magnify){
+    ASSERT_SIZE(eps, this->nodeCount())
+    for (auto &n: nodeVector_) n->pos().translate(magnify * eps[n->id()]);
+    rangesKnown_ = false;
+    return *this;
+}
+
 void Mesh::swapCoordinates(Index i, Index j){
     for (auto &n: nodeVector_) n->pos().swap(i,j);
     for (auto &n: holeMarker_) n.swap(i,j);
@@ -2253,6 +2280,7 @@ void Mesh::swapCoordinates(Index i, Index j){
     }
     rangesKnown_ = false;
 }
+
 
 void Mesh::relax(){
    THROW_TO_IMPL

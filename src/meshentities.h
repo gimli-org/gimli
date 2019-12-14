@@ -102,9 +102,6 @@ public:
     /*! Default constructor.*/
     MeshEntity();
 
-    /*! Construct the entity from the given nodes.*/
-    MeshEntity(const std::vector < Node * > & nodes);
-
     /*! Default destructor.*/
     virtual ~MeshEntity();
 
@@ -116,6 +113,10 @@ public:
 
     /*! To separate between major MeshEntity families e.g. Cell and Boundary. */
     virtual uint parentType() const { return MESH_MESHENTITY_RTTI; }
+
+    virtual void setNodes(const std::vector < Node * > & nodes);
+
+    const std::vector< Node * > & nodes() const { return nodeVector_; }
 
     inline Node & node(uint i) {
         ASSERT_RANGE(i, 0, nodeCount()); return *nodeVector_[i];
@@ -186,11 +187,6 @@ public:
 
     friend std::ostream & operator << (std::ostream & str, const MeshEntity & c);
 
-    const std::vector< Node * > & nodes() const { return nodeVector_; }
-//   inline std::iterator < std::vector < Node * > > begin() { return nodeVector_.begin(); }
-//
-//   inline std::vector < Node * >::iterator * end() { return nodeVector_.end(); }
-
 //    void setUxCache(const ElementMatrix < double >  & mat) const { uxCache_ = mat; }
 
  //   const ElementMatrix < double > & uxCache() const { return uxCache_; }
@@ -213,9 +209,8 @@ public:
 protected:
     void fillShape_();
 
-    void setNodes_(const std::vector < Node * > & nodes);
-
-    void deRegisterNodes_();
+    virtual void registerNodes_();
+    virtual void deRegisterNodes_();
 
     Shape * shape_;
 
@@ -253,7 +248,7 @@ public:
     Cell(const std::vector < Node * > & nodes);
 
     /*! Default destructor. */
-    ~Cell();
+    virtual ~Cell();
 
     /*! For pygimli bindings to allow simple check*/
     bool operator==(const Cell & cell){
@@ -293,7 +288,7 @@ public:
      * responsible for the shape function. */
     Boundary * boundaryTo(const RVector & sf);
 
-    /*! Return the i'th boundary. Experimental! */
+    /*! Return the i-th boundary. Experimental! */
     Boundary * boundary(Index i);
 
     /*! Experimental */
@@ -305,8 +300,8 @@ public:
     }
 
 protected:
-    void registerNodes_();
-    void deRegisterNodes_();
+    virtual void registerNodes_();
+    virtual void deRegisterNodes_();
     std::vector < Cell * > neighborCells_;
     double attribute_;
 
@@ -330,17 +325,9 @@ protected:
 
 class DLLEXPORT Boundary : public MeshEntity{
 public:
-    Boundary() : MeshEntity(){
-    }
-
-    Boundary(const std::vector < Node * > & nodes)
-        : MeshEntity(nodes), leftCell_(NULL), rightCell_(NULL) {
-        registerNodes_();
-    }
-
-    ~Boundary(){
-        deRegisterNodes_();
-    }
+    Boundary();
+    Boundary(const std::vector < Node * > & nodes);
+    virtual ~Boundary();
 
     virtual uint rtti() const { return MESH_BOUNDARY_RTTI; }
     virtual uint parentType() const { return MESH_BOUNDARY_RTTI; }
@@ -370,6 +357,9 @@ public:
 
     /*! Return true if the normal vector of this boundary shown from the cell away (outside-direction) */
     bool normShowsOutside(const Cell & cell) const;
+
+    /*! Reverse node order to swap normal direction. */
+    void swapNorm();
 
 protected:
     void registerNodes_();
@@ -409,7 +399,7 @@ public:
 
     virtual uint rtti() const { return MESH_BOUNDARY_NODE_RTTI; }
 
-    void setNodes(Node & n1, bool changed=true);
+    void setNodes(Node & n1);
 
     virtual double size() const { return 1.0; }
 
@@ -436,7 +426,7 @@ public:
 
     virtual std::vector < PolynomialFunction < double > > createShapeFunctions() const;
 
-    void setNodes(Node & n1, Node & n2, bool changed=true);
+    void setNodes(Node & n1, Node & n2);
 
     /*! Swap edge between two triangular neighbor cells. Only defined if both neighbors are triangles. */
     int swap();
@@ -488,7 +478,7 @@ public:
 
     virtual uint rtti() const { return MESH_TRIANGLEFACE_RTTI; }
 
-    void setNodes(Node & n1, Node & n2, Node & n3, bool changed=true);
+    void setNodes(Node & n1, Node & n2, Node & n3);
 
     friend std::ostream & operator << (std::ostream & str, const TriangleFace & e);
 
@@ -543,7 +533,7 @@ public:
     /*! this method need refactoring */
     virtual std::vector < PolynomialFunction < double > > createShapeFunctions() const;
 
-    void setNodes(Node & n1, Node & n2, Node & n3, Node & n4, bool changed = true);
+    void setNodes(Node & n1, Node & n2, Node & n3, Node & n4);
 
     friend std::ostream & operator << (std::ostream & str, const TriangleFace & e);
 
@@ -637,7 +627,7 @@ public:
 
 //     virtual void findNeighborCell(uint id);
 
-    void setNodes(Node & n1, Node & n2, bool changed = true);
+    void setNodes(Node & n1, Node & n2);
 
     virtual std::vector < PolynomialFunction < double > > createShapeFunctions() const;
 
@@ -694,7 +684,7 @@ public:
 
 //     virtual void findNeighborCell(uint i);
 
-    void setNodes(Node & n1, Node & n2, Node & n3, bool changed = true);
+    void setNodes(Node & n1, Node & n2, Node & n3);
 
     virtual std::vector < PolynomialFunction < double > > createShapeFunctions() const;
 
@@ -762,7 +752,7 @@ public:
 
     virtual uint rtti() const { return MESH_QUADRANGLE_RTTI; }
 
-    void setNodes(Node & n1, Node & n2, Node & n3, Node & n4, bool changed = true);
+    void setNodes(Node & n1, Node & n2, Node & n3, Node & n4);
 
     virtual uint neighborCellCount() const { return 4; }
 
@@ -817,9 +807,9 @@ Boundary normal shows outside .. so the boundary left neighbor is this cell
 
 Neighbor Nr., on Boundary a-b-c. Boundary to neighbor cell is opposite to NodeNr.
     0           1-2-3     le -- view from outer
-    1           2-0-3     re -- view from inner
+    1           2-0-3     ri -- view from inner
     2           0-1-3     le -- view from outer
-    3           0-2-1     re -- view from inner
+    3           0-2-1     ri -- view from inner
 */
 static const uint8 TetrahedronFacesID[4][3] = {
     {1, 2, 3},
@@ -846,7 +836,7 @@ public:
 
     virtual std::vector < PolynomialFunction < double > > createShapeFunctions() const;
 
-    void setNodes(Node & n1, Node & n2, Node & n3, Node & n4, bool changed = true);
+    void setNodes(Node & n1, Node & n2, Node & n3, Node & n4);
 
     virtual uint neighborCellCount() const { return 4; }
 
@@ -920,13 +910,13 @@ Boundary normal shows outside .. so the boundary left neighbor is this cell
 
 Neighbor Nr, on Boundary a-b-c-d
     0           1-2-6-5  // le
-    1           2-3-7-6  // re
-    2           3-0-4-7  // re
+    1           2-3-7-6  // ri
+    2           3-0-4-7  // ri
     3           0-1-5-4  // le
     4           4-5-6-7  // le
-    5           0-3-2-1  // re
+    5           0-3-2-1  // ri
 
-T.~Apel and N.~Düvelmeyer, Transformation of Hexaedral Finite Element Meshes into Tetrahedral Meshes According to Quality Criteria,
+T.~Apel and N.~Düvelmeyer, Transformation of Hexahedral Finite Element Meshes into Tetrahedral Meshes According to Quality Criteria,
 Computing Volume 71, Number 4 / November, 2003, DOI 10.1007/s00607-003-0031-5, Pages   293-304
 5-Tet-split: type 6(2) 1-4-5-6, 3-7-6-4, 1-4-0-3, 1-2-3-6, 1-6-4-3
 6-Tet-split: type 1    0-1-2-6, 0-2-3-6, 0-1-6-5, 0-4-5-6, 0-3-7-6, 0-4-6-7
@@ -1144,7 +1134,7 @@ public:
 protected:
 };
 
-//*! VTK,Flaherty,Gimli count: 1-2-3-4, 5(1-2), 6(2-3), 7(3-1), 8(1-4), 9(2-4), 10(3-4)* //
+//*! VTK, Flaherty, Gimli count: 1-2-3-4, 5(1-2), 6(2-3), 7(3-1), 8(1-4), 9(2-4), 10(3-4)* //
 static const uint8 Pyramid13NodeSplit[13][2] = {
     {0,0},{1,1},{2,2},{3,3},{4,4},
     {0,1},{1,2},{2,3},{3,0},

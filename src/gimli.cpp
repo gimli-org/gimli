@@ -74,7 +74,7 @@ void setThreadCount(Index nThreads){
     openblas_set_num_threads(nThreads);
     //omp_set_num_threads
 #else
-    log(Debug, "can't set openblas thread count. ");    
+    log(Debug, "can't set openblas thread count. ");
 #endif
 
     __GIMLI_THREADCOUNT__ = nThreads;
@@ -369,10 +369,8 @@ void log(LogType type, const std::string & msg){
         }
     }
 #endif
-
     if (type == Debug && !debug()) return;
     std::cout << logStr_(type) << ": " << msg << std::endl;
-    
 }
 
 } // namespace GIMLI

@@ -762,7 +762,7 @@ def __RVectorArrayCall__(self, dtype=None):
     # probably fixed!!!
     # import numpy as np
     # we need to copy the array until we can handle increasing the reference
-    # counter in self.array() else it leads to strange behaviour
+    # counter in self.array() else it leads to strange behavior
     # test in testRValueConverter.py:testNumpyFromRVec()
     # return np.array(self.array())
     return self.array()
@@ -776,7 +776,7 @@ def __CVectorArrayCall__(self, dtype=None):
     # probably fixed!!! or not!!
     # import numpy as np
     # we need to copy the array until we can handle increasing the reference
-    # counter in self.array() else it leads to strange behaviour
+    # counter in self.array() else it leads to strange behavior
     # test in testRValueConverter.py:testNumpyFromRVec()
     #return np.array(self.array())
     return self.array()

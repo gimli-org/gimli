@@ -262,7 +262,6 @@ typedef Vector < Index > IndexArray;
 
 typedef std::vector < SIndex > SIndexArray;
 
-
 typedef Matrix < double > RMatrix;
 typedef Matrix3< double > RMatrix3;
 typedef Matrix < Complex > CMatrix;
@@ -409,6 +408,8 @@ inline std::string type(const int32         & var) { return "int32"; }
 inline std::string type(const int64         & var) { return "int64"; }
 inline std::string type(const uint32        & var) { return "uint32"; }
 inline std::string type(const uint64        & var) { return "uint64"; }
+// inline std::string type(const Index         & var) { return "Index"; }
+// inline std::string type(const SIndex        & var) { return "SIndex"; }
 inline std::string type(const float         & var) { return "float"; }
 inline std::string type(const double        & var) { return "double"; }
 inline std::string type(const Complex       & var) { return "complex"; }

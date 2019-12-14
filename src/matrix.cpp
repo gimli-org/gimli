@@ -106,5 +106,58 @@ template<> Vector< Complex >
 Matrix< Complex >::transMult(const Vector < Complex > & b) const {
     return _transMult((*this), b);
 }    
-    
+
+void matMultABA(const RMatrix & A, const RMatrix & B, RMatrix & C, RMatrix & AtB, double a){
+    if (B.rows() != B.cols()){
+        log(Error, "matMultABA B sizes mismatch.", B.cols(), "!=", B.rows());
+        return;
+    }
+    AtB.resize(A.cols(), B.rows());
+    AtB *= 0.0;
+    matTransMult(A, B, AtB, 1.0);
+    matMult(AtB, B, C, a);
+}
+
+void matMult(const RMatrix & A, const RMatrix & B, RMatrix & C, double a){
+    // C += a * A*B || C += a * A*B.T
+    // implement with openblas dgemm too and check performance
+    if (A.cols() == B.rows()){
+        C.resize(A.rows(), B.cols());
+
+        for (Index i = 0; i < A.rows(); i ++){
+            for (Index j = 0; j < B.cols(); j ++){
+                double c = 0;
+                for (Index k = 0; k < A.cols(); k ++){
+                    c += A[i][k] * B[k][j];
+                }
+                C[i][j] += a * c;
+            }
+        }
+    } else {
+        log(Error, "matMult sizes mismatch. implement fallback A*.B.T", A.cols(), "!=", B.rows());
+    }
+}
+
+void matTransMult(const RMatrix & A, const RMatrix & B, RMatrix & C, double a){
+    // C += a * A.T*B || C += a * A.T*B.T
+    // implement with openblas dgemm too and check performance
+    if (A.rows() == B.rows()){
+        C.resize(A.cols(), B.cols());
+
+        for (Index i = 0; i < A.cols(); i ++){
+            for (Index j = 0; j < B.cols(); j ++){
+                double c = 0;
+                for (Index k = 0; k < A.rows(); k ++){
+                    c += A[k][i] * B[k][j];
+                }
+                C[i][j] += a * c;
+            }
+        }
+    } else {
+        log(Error, "matMult sizes mismatch. implement fallback A.T*B.T", A.rows(), "!=", B.rows());
+    }
+}
+
+
+
 } // namespace GIMLI{

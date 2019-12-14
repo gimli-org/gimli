@@ -232,8 +232,21 @@ public:
 
     // END Sensor related section
 
+    /*! set additional points. */
+    inline void setAdditionalPoints(const PosVector & a ){ topoPoints_ = a; }
+    
     /*! Return the additional points. */
     inline const PosVector & additionalPoints() const { return topoPoints_; }
+
+    /*! Set additional point i.*/
+    inline void setAdditionalPoint(Index i, const Pos & p) { 
+        ASSERT_SIZE(topoPoints_, i)
+        topoPoints_[i] = p; 
+    }
+    /*! Push back additional point p.*/
+    inline void addAdditionalPoint(const Pos & p) { 
+        topoPoints_.push_back(p); 
+    }
 
     /*! Return true if token data exist and all elements != 0.0.
      Return false if the data contains one zero value. */

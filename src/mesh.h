@@ -181,7 +181,7 @@ public:
     Node * createNode(const Node & node);
     Node * createNode(const RVector3 & pos, int marker=0);
 
-    /*! Create a secondary node, which is stored in an aditional list for additional use.
+    /*! Create a secondary node, which is stored in an additional list for additional use.
     If tolerance tol set to a value > 0, then it will be checked if there is already a node
     at this position and return a ptr to the existing node instead of creating a new. */
     Node * createSecondaryNode(const RVector3 & pos, double tol=-1);
@@ -465,29 +465,37 @@ public:
     /*! Smooth the mesh via moving all free nodes into the average of all neighboring nodes. Repeat this smoothIteration times. There is currently only this smoothFunction. EdgeSwapping is deactivated.*/
     void smooth(bool nodeMoving=true, bool edgeSwapping=true, uint smoothFunction=1, uint smoothIteration=10);
 
-    /*! Scale the mesh with \ref RVector3 s. And return a reference to the mesh (no copy)*/
+    /*! Scale the mesh with \ref RVector3 s.
+    Returns a reference to the mesh (no copy).*/
     Mesh & scale(const RVector3 & s);
 
-    /*! Scale the mesh with s. Shortcut for scale(RVector3(s,s,s)) */
+    /*! Scale the mesh with s. Shortcut for scale(RVector3(s,s,s))
+    Returns a reference to the mesh (no copy).*/
     Mesh & scale(const double & s){
         return scale(RVector3(s, s, s));
     }
 
-    /*! Translate the mesh with \ref RVector3 t. And return a reference to the mesh (no copy)*/
+    /*! Translate the mesh with \ref RVector3 t.
+    Returns a reference to the mesh (no copy).*/
     Mesh & translate(const RVector3 & t);
 
     /*! Rotate mesh the with \ref RVector3 r, r in radian, If you want to rotate in degree, use \ref degToRad(const RVector3 & deg).
-     And return a reference to the mesh (no copy) */
+    Returns a reference to the mesh (no copy).*/
     Mesh & rotate(const RVector3 & r);
-    //** end mesh modification stuff
 
-    /*! Swap coordinate i with j for i and j lower then dimension of the mesh*/
+    /*! apply a 4x4 transformation matrix to the whole mesh.
+    Returns a reference to the mesh (no copy).*/
+    Mesh & transform(const RMatrix & mat);
+
+    /*! Apply deformation epsilon to all nodes. Optional magnify the deformation.
+    Returns a reference to the mesh (no copy).*/
+    Mesh & deform(const R3Vector & eps, double magnify=1.0);
+
+    /*! Swap coordinate i with j for i and j lower then dimension of the mesh.
+    Returns a reference to the mesh (no copy).*/
     void swapCoordinates(Index i, Index j);
+
     //** end mesh modification stuff
-
-    /*! apply a 4x4 transformation matrix to the whole mesh*/
-    void transform(const RMatrix & mat);
-
     //** start I/O stuff
     int save(const std::string & fileName, IOFormat format = Binary) const;
     int saveAscii(const std::string & fileName) const;
@@ -586,6 +594,8 @@ public:
     void exportAsTetgenPolyFile(const std::string & filename);
     //** end I/O stuff
 
+    /*! All outer boundaries, i.e., all boundaries with only one cell (the left) need to be sorted that the norm vector shows outside the mesh. */
+    void fixBoundaryDirections();
 
     void addData(const std::string & name, const CVector & data){
         this->addData(name+"-Re", real(data));

@@ -145,6 +145,13 @@ namespace pyplusplus{ namespace aliases{
 // #include "matrixTemplates.h"
 
 namespace GIMLI{
+    // inline IndexArray operator OP (const IndexArray & a, const IndexArray & b){ 
+    //     IndexArray ret(a);   ret OP##=b; return ret; }                           
+    // inline IndexArray operator OP (const IndexArray & a, Index b){ 
+    //     IndexArray ret(a);   ret OP##=b; return ret; }                           
+    // inline IndexArray operator OP (Index a, const IndexArray & b){ 
+    //     IndexArray ret(b.size()); for (Index i = 0; i < b.size(); i ++) ret[i] = a OP b[i]; return ret; } 
+    //
 
 #define DEFINE_PY_VEC_OPERATOR__(OP)                      \
     inline RVector operator OP (const RVector & a, const RVector & b){ \
@@ -315,11 +322,11 @@ DEFINE_XVECTOR_STUFF__(RVector) //RVector last since auto rhs conversion will fa
     template RVector unique(const RVector & a);
     // template IndexArray unique(const IndexArray & a);
     template IVector unique(const IVector & a);
-    
+
     template RVector sort(const RVector & a);
     // template IndexArray sort(const IndexArray & a);
     template IVector sort(const IVector & a);
-    
+
     template RVector pow(const RVector & a, double power);
     template RVector pow(const RVector & a, int power);
     template RVector pow(const RVector & a, const RVector & power);

@@ -916,20 +916,25 @@ def createLoadVector(mesh, f, userData=None):
 #            print("Remove revtest in assembleLoadVector after check")
 
     elif len(fArray) == mesh.nodeCount():
+        # is nodal body load really necessary, nodal forces on a
+        # boundary might be better considered with Neumann RB
         fA = pg.Vector(fArray)
         b_l = pg.matrix.ElementMatrix()
         for c in mesh.cells():
             b_l.u(c)
                 # rhs.addVal(b_l.row(0) * fArray[b_l.idx()], b_l.idx())
             rhs.add(b_l, fA)
-            # print("test reference solution:")
-            # rhsRef = pg.Vector(mesh.nodeCount(), 0)
-            # for c in mesh.cells():
-            #     b_l.u(c)
-            #     for i, idx in enumerate(b_l.idx()):
-            #         rhsRef[idx] += b_l.row(0)[i] * fArray[idx]
-            # np.testing.assert_allclose(rhs, rhsRef)
-            # print("Remove revtest in assembleLoadVector after check")
+
+        # print("test reference solution:")
+        # rhsRef = pg.Vector(mesh.nodeCount(), 0)
+        # for c in mesh.cells():
+        #     b_l.u(c)
+        #     for i, idx in enumerate(b_l.idx()):
+        #         rhsRef[idx] += b_l.row(0)[i] * fA[idx]
+
+        # np.testing.assert_allclose(rhs, rhsRef)
+        # print("Remove revtest in assembleLoadVector after check",
+        #       sum(rhs), sum(rhsRef))
 
             # rhs = pg.Vector(fArray)
     else:
@@ -1117,7 +1122,11 @@ def assembleNeumannBC(rhs, boundaryPairs, a=None, time=0.0, userData=None):
 
         if g is not 0.0 and g is not None:
             Se.u(boundary)
-            rhs.add(Se, g)
+            if isinstance(rhs, pg.Vector):
+                rhs.add(Se, g)
+            else:
+                for i, j in enumerate(Se.ids()):
+                    rhs[j] += Se.row(0)[i] * g
 
 
 def assembleRobinBC(mat, boundaryPairs, rhs=None, time=0.0, userData=None):
@@ -1575,8 +1584,8 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
 
     if times is None:
         rhs = createLoadVector(mesh, f, userData=userData)
-        assembleBC_(bc, mesh, A, rhs, a, time=None, userData=userData) 
-        
+        assembleBC_(bc, mesh, A, rhs, a, time=None, userData=userData)
+
         u = None
         if 'u' in workSpace:
             u = workSpace['u']
@@ -1750,9 +1759,9 @@ def checkCFL(times, mesh, vMax):
 
         if c > 1:
             pg.warn("Courant-Friedrichs-Lewy Number:", c,
-                    "but sould be lower 1 to ensure movement inside a cell "
+                    "but should be lower 1 to ensure movement inside a cell "
                     "per timestep. ("
-                    "vmax =", vMax,
+                    "vMax =", vMax,
                     "dt =", dt,
                     "dx =", dx,
                     "dt <", dx/vMax,

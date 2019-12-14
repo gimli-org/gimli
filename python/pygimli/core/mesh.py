@@ -34,7 +34,7 @@ def __MeshEntity_str(self):
          ', Marker: ' + str(self.marker()) + \
          ', Size: ' + str(self.size()) + '\n'
 
-    if isinstance(self, PolygonFace):
+    if isinstance(self, PolygonFace) and len(self.nodes()) > 5:
         s += '\t' + str(self.nodeCount()) + " Nodes.\n"
     else:
         for n in self.nodes():
@@ -203,6 +203,20 @@ def __createMeshWithSecondaryNodes__(self, n=3, verbose=False):
     return m
 Mesh.createSecondaryNodes = __createSecondaryNodes__
 Mesh.createMeshWithSecondaryNodes = __createMeshWithSecondaryNodes__
+
+def __deform__(self, eps, mag=1.0):
+    # !!!! delete all Jacobi caches belongs to the MeshEntities !!!!
+
+    warn('move me to the core')
+    import numpy as np
+    e = np.array(eps).T
+    for n in self.nodes():
+        n.pos().translate(e[n.id(), :]*mag)
+    self.scale((1.,1.,1.))
+
+    return self
+
+Mesh.deform = __deform__
 
 Mesh.exportPLC = exportPLC
 
