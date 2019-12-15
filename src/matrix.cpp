@@ -112,7 +112,7 @@ void matMultABA(const RMatrix & A, const RMatrix & B, RMatrix & C, RMatrix & AtB
         log(Error, "matMultABA B sizes mismatch.", B.cols(), "!=", B.rows());
         return;
     }
-    AtB.resize(A.cols(), B.rows());
+    AtB.resize(A.cols(), B.cols());
     AtB *= 0.0;
     matTransMult(A, B, AtB, 1.0);
     matMult(AtB, B, C, a);
@@ -122,6 +122,7 @@ void matMult(const RMatrix & A, const RMatrix & B, RMatrix & C, double a){
     // C += a * A*B || C += a * A*B.T
     // implement with openblas dgemm too and check performance
     if (A.cols() == B.rows()){
+        // __MS("Matmult: "<< A.rows() << " " << A.cols() << " : " << B.rows() << " " << B.cols())
         C.resize(A.rows(), B.cols());
 
         for (Index i = 0; i < A.rows(); i ++){
