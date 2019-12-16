@@ -448,7 +448,17 @@ ElementMatrix < double > & ElementMatrix < double >::gradU2(const MeshEntity & e
     } else {
         for (Index i = 0; i < w.size(); i ++ ){
             // B.T * C * B
+            RMatrix tmp;
+            matTransMult(_B[i], C, tmp);
+            // __MS(tmp)
+
+            RMatrix tmp2;
+            matMult(tmp, _B[i], tmp2, w[i] * ent.size());
+            __MS(tmp2)
+
+            __MS("mmm " << w[i])
             matMultABA(_B[i], C, mat_, _abaTmp, w[i] * ent.size());
+            __MS(mat_)
         }
     }
 
@@ -1014,17 +1024,17 @@ void ElementMatrix < ValueType >::fillIds(const MeshEntity & ent, Index Crows){
         " provide degrees of freedom (dof, aka. mesh.nodeCount()) to the"
         " ElementMatrix constructor. ");
     }
-    Index dims = 1;
+    Index nDims = 1;
     if (this->_nDof > 0){
-        dims = ent.dim();
+        nDims = ent.dim();
     }
 
     Index nNodes = ent.nodeCount();
-    if (size() != nNodes * dims) resize(nNodes * dims);
+    if (size() != nNodes * nDims) resize(nNodes * nDims);
 
-    for (Index dim = 0; dim < dims; dim++){
+    for (Index dim = 0; dim < nDims; dim++){
         for (Index i = 0; i < nNodes; i ++) {
-            _ids[i + dim * this->_nDof] = ent.node(i).id() + dim * this->_nDof;
+            _ids[i + dim * nNodes] = dim * this->_nDof + ent.node(i).id();
         }
     }
     *this *= 0.0;

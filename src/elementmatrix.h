@@ -132,7 +132,6 @@ public:
                                          const R3Vector & x,
                                          bool voigtNotation=false);
 
-
     ElementMatrix < ValueType > & ux2uy2uz2(const Cell & cell,
                                             bool useCache=false);
 
