@@ -25,14 +25,14 @@
 #include "stopwatch.h"
 
 namespace GIMLI{
-    
+
 template < class ValueType > Vector < ValueType >
 _mult(const Matrix< ValueType > & M, const Vector < ValueType > & b) {
     Index cols = M.cols();
     Index rows = M.rows();
 
     Vector < ValueType > ret(rows, 0.0);
-    
+
     //ValueType tmpval = 0;
     if (b.size() == cols){
         for (Index i = 0; i < rows; ++i){
@@ -47,9 +47,9 @@ _mult(const Matrix< ValueType > & M, const Vector < ValueType > & b) {
     return ret;
 }
 
-template<> Vector < double > 
+template<> Vector < double >
 Matrix< double >::mult(const Vector < double > & b) const { return _mult((*this), b); }
-template<> Vector < Complex > 
+template<> Vector < Complex >
 Matrix< Complex >::mult(const Vector < Complex > & b) const { return _mult((*this), b); }
 
 template < class ValueType > Vector < ValueType >
@@ -70,11 +70,11 @@ _mult(const Matrix< ValueType > & M, const Vector < ValueType > & b, Index start
     return ret;
 }
 
-template<> Vector < double > 
+template<> Vector < double >
 Matrix< double >::mult(const Vector < double > & b, Index startI, Index endI) const {
     return _mult((*this), b, startI, endI);
 }
-template<> Vector < Complex > 
+template<> Vector < Complex >
 Matrix< Complex >::mult(const Vector < Complex > & b, Index startI, Index endI) const {
     return _mult((*this), b, startI, endI);
 }
@@ -98,31 +98,36 @@ _transMult(const Matrix< ValueType > & M, const Vector < ValueType > & b) {
     return ret;
 }
 
-template<> Vector< double > 
+template<> Vector< double >
 Matrix< double >::transMult(const Vector < double > & b) const {
     return _transMult((*this), b);
 }
-template<> Vector< Complex > 
+template<> Vector< Complex >
 Matrix< Complex >::transMult(const Vector < Complex > & b) const {
     return _transMult((*this), b);
-}    
+}
 
-void matMultABA(const RMatrix & A, const RMatrix & B, RMatrix & C, RMatrix & AtB, double a){
-    if (B.rows() != B.cols()){
-        log(Error, "matMultABA B sizes mismatch.", B.cols(), "!=", B.rows());
+void matMultABA(const RMatrix & A, const RMatrix & B, RMatrix & C,
+                RMatrix & AtB, double a){
+    // A.T * B * A
+    // __MS("matMultABA: "<< A.rows() << " " << A.cols() << " : " << B.rows() << " " << B.cols())
+
+    if (A.rows() != B.rows()){
+        log(Error, "matMultABA B sizes mismatch.", A.rows(), "!=", B.rows());
         return;
     }
-    AtB.resize(A.cols(), B.cols());
+    AtB.resize(A.cols(), B.rows());
     AtB *= 0.0;
     matTransMult(A, B, AtB, 1.0);
-    matMult(AtB, B, C, a);
+    matMult(AtB, A, C, a);
 }
 
 void matMult(const RMatrix & A, const RMatrix & B, RMatrix & C, double a){
     // C += a * A*B || C += a * A*B.T
     // implement with openblas dgemm too and check performance
-    if (A.cols() == B.rows()){
-        // __MS("Matmult: "<< A.rows() << " " << A.cols() << " : " << B.rows() << " " << B.cols())
+
+    // __MS("matMult: "<< A.rows() << " " << A.cols() << " : " << B.rows() << " " << B.cols())
+    if (A.cols() == B.rows()){ // A * B
         C.resize(A.rows(), B.cols());
 
         for (Index i = 0; i < A.rows(); i ++){
@@ -134,7 +139,7 @@ void matMult(const RMatrix & A, const RMatrix & B, RMatrix & C, double a){
                 C[i][j] += a * c;
             }
         }
-    } else {
+    } else { // A * B.T
         log(Error, "matMult sizes mismatch. implement fallback A*.B.T", A.cols(), "!=", B.rows());
     }
 }
@@ -142,7 +147,8 @@ void matMult(const RMatrix & A, const RMatrix & B, RMatrix & C, double a){
 void matTransMult(const RMatrix & A, const RMatrix & B, RMatrix & C, double a){
     // C += a * A.T*B || C += a * A.T*B.T
     // implement with openblas dgemm too and check performance
-    if (A.rows() == B.rows()){
+    // __MS("matTransMult: "<< A.rows() << " " << A.cols() << " : " << B.rows() << " " << B.cols())
+    if (A.rows() == B.rows()){ // A.T * B
         C.resize(A.cols(), B.cols());
 
         for (Index i = 0; i < A.cols(); i ++){
@@ -154,7 +160,7 @@ void matTransMult(const RMatrix & A, const RMatrix & B, RMatrix & C, double a){
                 C[i][j] += a * c;
             }
         }
-    } else {
+    } else { // A.T * B.T
         log(Error, "matMult sizes mismatch. implement fallback A.T*B.T", A.rows(), "!=", B.rows());
     }
 }

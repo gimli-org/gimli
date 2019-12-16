@@ -105,8 +105,6 @@ ElementMatrix < double > & ElementMatrix < double >::dudi(
 
         mat_[i][i] = sum(w * dNdx_[i]);
     }
-
-
     if (verbose) std::cout << "int dudx " << *this << std::endl;
     return *this;
 }
@@ -325,9 +323,69 @@ ElementMatrix < double >::ux2uy2uz2(const MeshEntity & ent,
     return *this;
 }
 
+template < class ValueType >
+void ElementMatrix < ValueType >::getWeightsAndPoints(const MeshEntity & ent,
+                                                      const RVector * w,
+                                                      const R3Vector * x, int order){
+    switch (ent.rtti()) {
+        case MESH_EDGE_CELL_RTTI:
+        case MESH_EDGE3_CELL_RTTI: {
+            w = &IntegrationRules::instance().edgWeights(2);
+            x = &IntegrationRules::instance().edgAbscissa(2);
+        } break;
+        case MESH_TRIANGLE_RTTI: {
+            w = &IntegrationRules::instance().triWeights(1);
+            x = &IntegrationRules::instance().triAbscissa(1);
+        } break;
+        case MESH_TRIANGLE6_RTTI: {
+            w = &IntegrationRules::instance().triWeights(2);
+            x = &IntegrationRules::instance().triAbscissa(2);
+        } break;
+        case MESH_QUADRANGLE_RTTI: {
+            w = &IntegrationRules::instance().quaWeights(2);
+            x = &IntegrationRules::instance().quaAbscissa(2);
+        } break;
+        case MESH_QUADRANGLE8_RTTI: {
+            w = &IntegrationRules::instance().quaWeights(3);
+            x = &IntegrationRules::instance().quaAbscissa(3);
+        } break;
+        case MESH_TETRAHEDRON_RTTI: {
+            w = & IntegrationRules::instance().tetWeights(1);
+            x = & IntegrationRules::instance().tetAbscissa(1);
+        } break;
+        case MESH_TETRAHEDRON10_RTTI: {
+            w = & IntegrationRules::instance().tetWeights(2);
+            x = & IntegrationRules::instance().tetAbscissa(2);
+        } break;
+        case MESH_HEXAHEDRON_RTTI: {
+            w = & IntegrationRules::instance().hexWeights(2);
+            x = & IntegrationRules::instance().hexAbscissa(2);
+        } break;
+        case MESH_HEXAHEDRON20_RTTI: {
+            w = & IntegrationRules::instance().hexWeights(4);
+            x = & IntegrationRules::instance().hexAbscissa(4);
+        } break;
+        case MESH_TRIPRISM_RTTI: {
+            w = & IntegrationRules::instance().priWeights(2);
+            x = & IntegrationRules::instance().priAbscissa(2);
+        } break;
+        case MESH_TRIPRISM15_RTTI: {
+            w = & IntegrationRules::instance().priWeights(4);
+            x = & IntegrationRules::instance().priAbscissa(4);
+        } break;
+        default:
+            std::cerr << ent.rtti() << std::endl;
+            THROW_TO_IMPL
+            break;
+    }
+}
+template void ElementMatrix < double >::getWeightsAndPoints(
+    const MeshEntity & ent, const RVector * w, const R3Vector * x, int order);
+
 template < > DLLEXPORT
 void ElementMatrix < double >::fillGradientBase(
                                     const MeshEntity & ent,
+                                    const RVector & w,
                                     const R3Vector & x,
                                     Index nC,
                                     bool voigtNotation){
@@ -342,7 +400,7 @@ void ElementMatrix < double >::fillGradientBase(
             _B[i].resize(nC, nDof);
         }
     }
-    
+
     if (dNdr_.rows() != nRules){
         if (ent.dim() > 0) dNdr_.resize(nRules, nVerts);
         if (ent.dim() > 1) dNds_.resize(nRules, nVerts);
@@ -409,7 +467,7 @@ void ElementMatrix < double >::fillGradientBase(
             // vector field
             if (ent.dim() > 0){
                 _B[i][0].setVal(dNdx_[i], 0 * nVerts, 1 * nVerts);
-            } 
+            }
             if (ent.dim() > 1){
                 _B[i][1].setVal(dNdy_[i], 1 * nVerts, 2 * nVerts);
 
@@ -431,13 +489,34 @@ void ElementMatrix < double >::fillGradientBase(
 }
 
 template < > DLLEXPORT
+RVector ElementMatrix < double >::stress(const MeshEntity & ent,
+                                         const RMatrix & C,
+                                         const RVector & u, bool voigtNotation){
+    const RVector * w = 0;
+    const R3Vector * x = 0;
+
+    this->getWeightsAndPoints(ent, w, x, 1);
+    this->fillIds(ent, C.size()); // also cleans
+    this->fillGradientBase(ent, *w, *x,
+                           max(C.size(), ent.dim()),
+                           voigtNotation);
+
+    RVector ret;
+    for (Index i = 0; i < w->size(); i ++ ){
+        // C * B * u
+        ret += C * (_B[i] * u[_ids]) * (*w)[i];
+    }
+    return ret;
+}
+
+template < > DLLEXPORT
 ElementMatrix < double > & ElementMatrix < double >::gradU2(const MeshEntity & ent,
                                                             const Matrix< double > & C,
                                                             const RVector & w,
                                                             const R3Vector & x,
                                                             bool voigtNotation){
     this->fillIds(ent, C.size()); // also cleans
-    this->fillGradientBase(ent, x,
+    this->fillGradientBase(ent, w, x,
                            max(C.size(), ent.dim()),
                            voigtNotation);
     if (C.size() == 1){
@@ -448,18 +527,12 @@ ElementMatrix < double > & ElementMatrix < double >::gradU2(const MeshEntity & e
     } else {
         for (Index i = 0; i < w.size(); i ++ ){
             // B.T * C * B
-            RMatrix tmp;
-            matTransMult(_B[i], C, tmp);
-            // __MS(tmp)
-
-            RMatrix tmp2;
-            matMult(tmp, _B[i], tmp2, w[i] * ent.size());
-            __MS(tmp2)
-
-            __MS("mmm " << w[i])
             matMultABA(_B[i], C, mat_, _abaTmp, w[i] * ent.size());
-            __MS(mat_)
         }
+        // check performance if this works
+        // iterator over weights in fill Gradient
+        // matMultABA(_B, C, mat_, _abaTmp, 1.0);
+        // this *= ent.size();
     }
 
     // M += w[i] * B.T @ C @ B
@@ -476,58 +549,61 @@ ElementMatrix < double > & ElementMatrix < double >::gradU2(const Cell & cell,
     const RVector * w = 0;
     const R3Vector * x = 0;
 
-    switch (cell.rtti()) {
-        case MESH_EDGE_CELL_RTTI:
-        case MESH_EDGE3_CELL_RTTI: {
-            w = &IntegrationRules::instance().edgWeights(2);
-            x = &IntegrationRules::instance().edgAbscissa(2);
-        } break;
-        case MESH_TRIANGLE_RTTI: {
-            w = &IntegrationRules::instance().triWeights(1);
-            x = &IntegrationRules::instance().triAbscissa(1);
-        } break;
-        case MESH_TRIANGLE6_RTTI: {
-            w = &IntegrationRules::instance().triWeights(2);
-            x = &IntegrationRules::instance().triAbscissa(2);
-        } break;
-        case MESH_QUADRANGLE_RTTI: {
-            w = &IntegrationRules::instance().quaWeights(2);
-            x = &IntegrationRules::instance().quaAbscissa(2);
-        } break;
-        case MESH_QUADRANGLE8_RTTI: {
-            w = &IntegrationRules::instance().quaWeights(3);
-            x = &IntegrationRules::instance().quaAbscissa(3);
-        } break;
-        case MESH_TETRAHEDRON_RTTI: {
-            w = & IntegrationRules::instance().tetWeights(1);
-            x = & IntegrationRules::instance().tetAbscissa(1);
-        } break;
-        case MESH_TETRAHEDRON10_RTTI: {
-            w = & IntegrationRules::instance().tetWeights(2);
-            x = & IntegrationRules::instance().tetAbscissa(2);
-        } break;
-        case MESH_HEXAHEDRON_RTTI: {
-            w = & IntegrationRules::instance().hexWeights(2);
-            x = & IntegrationRules::instance().hexAbscissa(2);
-        } break;
-        case MESH_HEXAHEDRON20_RTTI: {
-            w = & IntegrationRules::instance().hexWeights(4);
-            x = & IntegrationRules::instance().hexAbscissa(4);
-        } break;
-        case MESH_TRIPRISM_RTTI: {
-            w = & IntegrationRules::instance().priWeights(2);
-            x = & IntegrationRules::instance().priAbscissa(2);
-        } break;
-        case MESH_TRIPRISM15_RTTI: {
-            w = & IntegrationRules::instance().priWeights(4);
-            x = & IntegrationRules::instance().priAbscissa(4);
-        } break;
-        default:
-            std::cerr << cell.rtti() << std::endl;
-            THROW_TO_IMPL
-            break;
-    }
+    this->getWeightsAndPoints(cell, w, x, 1);
     return this->gradU2(cell, C, *w, *x, voigtNotation);
+
+    // switch (cell.rtti()) {
+    //     case MESH_EDGE_CELL_RTTI:
+    //     case MESH_EDGE3_CELL_RTTI: {
+    //         w = &IntegrationRules::instance().edgWeights(2);
+    //         x = &IntegrationRules::instance().edgAbscissa(2);
+    //     } break;
+    //     case MESH_TRIANGLE_RTTI: {
+    //         w = &IntegrationRules::instance().triWeights(1);
+    //         x = &IntegrationRules::instance().triAbscissa(1);
+    //     } break;
+    //     case MESH_TRIANGLE6_RTTI: {
+    //         w = &IntegrationRules::instance().triWeights(2);
+    //         x = &IntegrationRules::instance().triAbscissa(2);
+    //     } break;
+    //     case MESH_QUADRANGLE_RTTI: {
+    //         w = &IntegrationRules::instance().quaWeights(2);
+    //         x = &IntegrationRules::instance().quaAbscissa(2);
+    //     } break;
+    //     case MESH_QUADRANGLE8_RTTI: {
+    //         w = &IntegrationRules::instance().quaWeights(3);
+    //         x = &IntegrationRules::instance().quaAbscissa(3);
+    //     } break;
+    //     case MESH_TETRAHEDRON_RTTI: {
+    //         w = & IntegrationRules::instance().tetWeights(1);
+    //         x = & IntegrationRules::instance().tetAbscissa(1);
+    //     } break;
+    //     case MESH_TETRAHEDRON10_RTTI: {
+    //         w = & IntegrationRules::instance().tetWeights(2);
+    //         x = & IntegrationRules::instance().tetAbscissa(2);
+    //     } break;
+    //     case MESH_HEXAHEDRON_RTTI: {
+    //         w = & IntegrationRules::instance().hexWeights(2);
+    //         x = & IntegrationRules::instance().hexAbscissa(2);
+    //     } break;
+    //     case MESH_HEXAHEDRON20_RTTI: {
+    //         w = & IntegrationRules::instance().hexWeights(4);
+    //         x = & IntegrationRules::instance().hexAbscissa(4);
+    //     } break;
+    //     case MESH_TRIPRISM_RTTI: {
+    //         w = & IntegrationRules::instance().priWeights(2);
+    //         x = & IntegrationRules::instance().priAbscissa(2);
+    //     } break;
+    //     case MESH_TRIPRISM15_RTTI: {
+    //         w = & IntegrationRules::instance().priWeights(4);
+    //         x = & IntegrationRules::instance().priAbscissa(4);
+    //     } break;
+    //     default:
+    //         std::cerr << cell.rtti() << std::endl;
+    //         THROW_TO_IMPL
+    //         break;
+    // }
+
 }
 
 
