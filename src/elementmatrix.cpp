@@ -325,8 +325,7 @@ ElementMatrix < double >::ux2uy2uz2(const MeshEntity & ent,
 
 template < class ValueType >
 void ElementMatrix < ValueType >::getWeightsAndPoints(const MeshEntity & ent,
-                                                      const RVector * w,
-                                                      const R3Vector * x, int order){
+const RVector * &w, const R3Vector * &x, int order){
     switch (ent.rtti()) {
         case MESH_EDGE_CELL_RTTI:
         case MESH_EDGE3_CELL_RTTI: {
@@ -350,28 +349,28 @@ void ElementMatrix < ValueType >::getWeightsAndPoints(const MeshEntity & ent,
             x = &IntegrationRules::instance().quaAbscissa(3);
         } break;
         case MESH_TETRAHEDRON_RTTI: {
-            w = & IntegrationRules::instance().tetWeights(1);
-            x = & IntegrationRules::instance().tetAbscissa(1);
+            w = &IntegrationRules::instance().tetWeights(1);
+            x = &IntegrationRules::instance().tetAbscissa(1);
         } break;
         case MESH_TETRAHEDRON10_RTTI: {
-            w = & IntegrationRules::instance().tetWeights(2);
-            x = & IntegrationRules::instance().tetAbscissa(2);
+            w = &IntegrationRules::instance().tetWeights(2);
+            x = &IntegrationRules::instance().tetAbscissa(2);
         } break;
         case MESH_HEXAHEDRON_RTTI: {
-            w = & IntegrationRules::instance().hexWeights(2);
-            x = & IntegrationRules::instance().hexAbscissa(2);
+            w = &IntegrationRules::instance().hexWeights(2);
+            x = &IntegrationRules::instance().hexAbscissa(2);
         } break;
         case MESH_HEXAHEDRON20_RTTI: {
-            w = & IntegrationRules::instance().hexWeights(4);
-            x = & IntegrationRules::instance().hexAbscissa(4);
+            w = &IntegrationRules::instance().hexWeights(4);
+            x = &IntegrationRules::instance().hexAbscissa(4);
         } break;
         case MESH_TRIPRISM_RTTI: {
-            w = & IntegrationRules::instance().priWeights(2);
-            x = & IntegrationRules::instance().priAbscissa(2);
+            w = &IntegrationRules::instance().priWeights(2);
+            x = &IntegrationRules::instance().priAbscissa(2);
         } break;
         case MESH_TRIPRISM15_RTTI: {
-            w = & IntegrationRules::instance().priWeights(4);
-            x = & IntegrationRules::instance().priAbscissa(4);
+            w = &IntegrationRules::instance().priWeights(4);
+            x = &IntegrationRules::instance().priAbscissa(4);
         } break;
         default:
             std::cerr << ent.rtti() << std::endl;
@@ -379,8 +378,8 @@ void ElementMatrix < ValueType >::getWeightsAndPoints(const MeshEntity & ent,
             break;
     }
 }
-template void ElementMatrix < double >::getWeightsAndPoints(
-    const MeshEntity & ent, const RVector * w, const R3Vector * x, int order);
+template void ElementMatrix < double >::getWeightsAndPoints(const MeshEntity & ent, const RVector * &w, const R3Vector * &x, int order);
+
 
 template < > DLLEXPORT
 void ElementMatrix < double >::fillGradientBase(
@@ -501,11 +500,16 @@ RVector ElementMatrix < double >::stress(const MeshEntity & ent,
                            max(C.size(), ent.dim()),
                            voigtNotation);
 
-    RVector ret;
+    RVector ret(C.rows(), 0.0);
     for (Index i = 0; i < w->size(); i ++ ){
         // C * B * u
         ret += C * (_B[i] * u[_ids]) * (*w)[i];
     }
+
+    // performance optimization using _grad from fill GradientBase
+    // _grad = sum(_B*w) // sum in GradientBase
+    //ret =  C * (_grad * u[_ids])
+
     return ret;
 }
 
@@ -543,12 +547,11 @@ ElementMatrix < double > & ElementMatrix < double >::gradU2(const MeshEntity & e
 
 template < > DLLEXPORT
 ElementMatrix < double > & ElementMatrix < double >::gradU2(const Cell & cell,
-                                                            const Matrix< double > & C,
-                                                            bool voigtNotation){
+                                                    const Matrix< double > & C,
+                                                    bool voigtNotation){
 
     const RVector * w = 0;
     const R3Vector * x = 0;
-
     this->getWeightsAndPoints(cell, w, x, 1);
     return this->gradU2(cell, C, *w, *x, voigtNotation);
 

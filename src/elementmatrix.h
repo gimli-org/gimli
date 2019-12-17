@@ -98,8 +98,7 @@ public:
                                      );
     /*! Get integration weights and points for the entity. */
     void getWeightsAndPoints(const MeshEntity & ent,
-                             const RVector * w, const R3Vector * x,
-                             int order);
+                const RVector * &w, const R3Vector * &x, int order);
 
 
     /*! Return the stress matrix for this entity.*/

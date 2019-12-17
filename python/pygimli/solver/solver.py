@@ -11,6 +11,32 @@ import pygimli as pg
 from pygimli.utils import unique
 
 
+def toCellData(mesh, arg, userData=None):
+    """Syntactic sugar to parseArgToArray.
+    Returns a array or vector of length mesh.cellCount() based on arg.
+
+    Parameters
+    ----------
+    arg : float | int | iterable | callable
+        argument to be parsed
+
+    mesh : :gimliapi:`GIMLI::Mesh`
+        Used if arg is callable
+
+    userData : class
+        Used if arg is callable
+
+    Returns
+    -------
+    ret : :gimliapi:`GIMLI::RVector` | ndarray(mesh.cellCount(), xx )
+        Array of desired length filled with the appropriate values.
+    """
+    return parseArgToArray(arg,
+                           nDof=mesh.cellCount(),
+                           mesh=mesh,
+                           userData=userData)
+
+
 def parseArgToArray(arg, nDof, mesh=None, userData=None):
     """
     Parse array related arguments to create a valid value array.
@@ -1566,15 +1592,17 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
     swatch = pg.core.Stopwatch(True)
 
     # check for material parameter
-    a = parseArgToArray(a, nDof=mesh.cellCount(), mesh=mesh, userData=userData)
+    #a = parseArgToArray(a, nDof=mesh.cellCount(), mesh=mesh, userData=userData)
+    a = toCellData(mesh, a, userData=userData)
 
     S = createStiffnessMatrix(mesh, a)
     M = None
     A = None
 
     if b is not None:
-        b = parseArgToArray(b, nDof=mesh.cellCount(),
-                            mesh=mesh, userData=userData)
+        # b = parseArgToArray(b, nDof=mesh.cellCount(),
+        #                     mesh=mesh, userData=userData)
+        b = toCellData(mesh, b, userData=userData)
         M = createMassMatrix(mesh, b)
         #pg.warn("check me")
         A = S - M
