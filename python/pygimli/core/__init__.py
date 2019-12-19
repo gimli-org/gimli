@@ -613,21 +613,36 @@ _pygimli_.RVector.__abs__ = _pygimli_.fabs
 _pygimli_.CVector.__abs__ = _pygimli_.mag
 _pygimli_.R3Vector.__abs__ = _pygimli_.absR3
 
+_pygimli_.RVector.ndim = 1
+_pygimli_.RVector.dtype = np.float
+_pygimli_.BVector.ndim = 1
+_pygimli_.BVector.dtype = np.bool
+_pygimli_.CVector.ndim = 1
+_pygimli_.CVector.dtype = np.complex
+_pygimli_.RVector3.ndim = 1
+_pygimli_.IVector.ndim = 1
+_pygimli_.IVector.dtype = np.long
+_pygimli_.IndexArray.ndim = 1
+_pygimli_.IndexArray.dtype = np.uint
+_pygimli_.RMatrix.ndim = 2
+_pygimli_.RMatrix.dtype = np.float
+_pygimli_.CMatrix.ndim = 2
+_pygimli_.CMatrix.dtype = np.complex
+_pygimli_.R3Vector.ndim = 2
+_pygimli_.stdVectorRVector3.ndim = 2
+
 def RMatrix_len(self):
     return self.rows()
 
 _pygimli_.RMatrix.__len__ = RMatrix_len
 _pygimli_.CMatrix.__len__ = RMatrix_len
 
-_pygimli_.RVector.ndim = 1
-_pygimli_.BVector.ndim = 1
-_pygimli_.CVector.ndim = 1
-_pygimli_.RVector3.ndim = 1
-_pygimli_.IVector.ndim = 1
-_pygimli_.IndexArray.ndim = 1
-_pygimli_.RMatrix.ndim = 2
-_pygimli_.R3Vector.ndim = 2
-_pygimli_.stdVectorRVector3.ndim = 2
+@property
+def __MatrixShapePropery__(self):
+    return (self.rows(), self.cols())
+
+_pygimli_.RMatrix.shape = __MatrixShapePropery__
+_pygimli_.CMatrix.shape = __MatrixShapePropery__
 
 ############################
 # __hash__ settings
