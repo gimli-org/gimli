@@ -162,10 +162,11 @@ namespace GIMLI{
         RVector ret(a);   ret OP##=b; return ret; }                           \
     inline IVector operator OP (const IVector & a, const IVector & b){ \
         IVector ret(a);   ret OP##=b; return ret; }                           \
-    inline IVector operator OP (const IVector & a, int b){ \
+    inline IVector operator OP (const IVector & a, SIndex b){ \
         IVector ret(a);   ret OP##=b; return ret; }                           \
-    inline IVector operator OP (int a, const IVector & b){ \
-        IVector ret(b.size()); for (Index i = 0; i < b.size(); i ++) ret[i] = a OP b[i]; return ret; } \
+    inline IVector operator OP (SIndex a, const IVector & b){ \
+        IVector ret(b.size()); \
+        for (Index i = 0; i < b.size(); i ++) ret[i] = a OP b[i]; return ret; } \
     inline CVector operator OP (const CVector & a, const CVector & b){ \
         CVector c(a);   c OP##=b; return c; }                           \
     inline CVector operator OP (const CVector & a, const Complex & b){ \
