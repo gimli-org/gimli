@@ -85,3 +85,4 @@ python/pygimli/core/*.dll
 
 python/pygimli/testing/synth.ves
 .vscode/launch.json
+python/git.exe.stackdump

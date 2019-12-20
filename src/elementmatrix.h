@@ -96,23 +96,33 @@ public:
     ElementMatrix < ValueType > & u2(const MeshEntity & ent
                                     //  const Matrix< ValueType > & C
                                      );
+    /*! Get integration weights and points for the entity. */
+    void getWeightsAndPoints(const MeshEntity & ent,
+                const RVector * &w, const R3Vector * &x, int order);
 
+
+    /*! Return the stress matrix for this entity.*/
+    Vector < ValueType > stress(const MeshEntity & ent,
+                                const Matrix< ValueType > & C,
+                                const RVector & u, bool voigtNotation=false);
+
+    /*! Return gradient base for the last entity, i.e., integrate over gradient u over the cell. */
+    const Matrix < ValueType > & gradientBase() const { return this->_grad;}
 
     /*! Fill Element Gradients Matrix for all integration points. */
     void fillGradientBase(const MeshEntity & ent,
+                          const RVector & w,
                           const R3Vector & x,
                           Index nC,
                           bool voigtNotation);
 
-
     /*! Fill this element matrix with int_domain C * grad u * grad u.
-    For scalar field approximation define C.size() = (1x1) isotropic or anisotropic 
-    C.size() = (cell.dim() x cell.dim()) parameter. For vector field approximation 
-    create the ElementMatrix with appropriate dof and C can be of size = (1x1) 
-    for isotropic, (cell.dim() x cell.dim()) for anisotropic, or (3x3) 
+    For scalar field approximation define C.size() = (1x1) isotropic or anisotropic
+    C.size() = (cell.dim() x cell.dim()) parameter. For vector field approximation
+    create the ElementMatrix with appropriate dof and C can be of size = (1x1)
+    for isotropic, (cell.dim() x cell.dim()) for anisotropic, or (3x3)
     for 2D elastic and (6x6) 3D elastic parameter.
-    Notation for elastic parameters can be Kelvin notation as default 
-    or Voigt's notation if needed.
+    Notation for elastic parameters Kelvin notation as default and can be Voigt's notation if needed.
      */
     ElementMatrix < ValueType > & gradU2(const Cell & cell,
                                          const Matrix< ValueType > & C,
@@ -247,6 +257,7 @@ protected:
     std::map< uint, Matrix < ValueType > > u2Cache_;
 
     std::vector< Matrix < ValueType > > _B;
+    Matrix < ValueType > _grad;
 
     Index _nDof;
 

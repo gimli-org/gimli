@@ -11,6 +11,147 @@ import pygimli as pg
 from pygimli.utils import unique
 
 
+def cellValues(mesh, arg, **kwargs):
+    """Get a value for each cell.
+
+    Returns a array or vector of length mesh.cellCount() based on arg.
+    The preferable arg is a dictionary for the cell marker and the appropriate cell value. The designated value can be calculated using a
+    callable(cell, **kwargs), which is called on demand
+
+    Parameters
+    ----------
+    arg : float | int | complex | ndarray | iterable | callable | dict
+        Argument to be parsed as cell data.
+        If arg is a dictionary, the dict key will be interpreted as cell marker:
+
+        Dictionary is key: value. Value can be float, int, complex or ndarray. The last for anistropy or eleastic tensors.
+
+        Key can be integer for cell marker or str, which will be interpreted as splice or list. See examples.
+
+    mesh : :gimliapi:`GIMLI::Mesh`
+        Used if arg is callable
+
+    userData : class
+        Used if arg is callable
+
+    Returns
+    -------
+    ret : :gimliapi:`GIMLI::RVector` | ndarray(mesh.cellCount(), xx )
+        Array of desired length filled with the appropriate values.
+
+    Examples
+    --------
+    >>> import pygimli as pg
+    >>>
+    >>> mesh = pg.createGrid(x=range(5))
+    >>> mesh.setCellMarkers([1, 1, 2, 2])
+    >>> print(mesh.cellCount())
+    4
+    >>> print(pg.solver.cellValues(mesh, [1, 2, 3, 4]))
+    [1, 2, 3, 4]
+    >>> print(pg.solver.cellValues(mesh, {1:1.0, 2:10}))
+    [1.0, 1.0, 10, 10]
+    >>> print(pg.solver.cellValues(mesh, {':':2.0}))
+    [2.0, 2.0, 2.0, 2.0]
+    >>> print(pg.solver.cellValues(mesh, {'0:2':3.0}))
+    [3.0, 3.0, None, None]
+    >>> print(np.array(pg.solver.cellValues(mesh, {'1:3' : np.diag([1.0, 2.0])})))
+    [[[1. 0.]
+      [0. 2.]]
+    <BLANKLINE>
+     [[1. 0.]
+      [0. 2.]]
+    <BLANKLINE>
+     [[1. 0.]
+      [0. 2.]]
+    <BLANKLINE>
+     [[1. 0.]
+      [0. 2.]]]
+    >>> print(np.array(pg.solver.cellValues(mesh, {':' : pg.core.CMatrix(2, 2)})))
+    [[[0.+0.j 0.+0.j]
+      [0.+0.j 0.+0.j]]
+    <BLANKLINE>
+     [[0.+0.j 0.+0.j]
+      [0.+0.j 0.+0.j]]
+    <BLANKLINE>
+     [[0.+0.j 0.+0.j]
+      [0.+0.j 0.+0.j]]
+    <BLANKLINE>
+     [[0.+0.j 0.+0.j]
+      [0.+0.j 0.+0.j]]]
+    >>> print(pg.solver.cellValues(mesh, {'1,2':1 + 1j*2.0}))
+    [(1+2j), (1+2j), (1+2j), (1+2j)]
+    >>> def cellVal(c, b=1):
+    ...     return c.center()[0]*b
+    >>> t = pg.solver.cellValues(mesh, {':' : cellVal})
+    >>> print([t[c.id()](c) for c in mesh.cells()])
+    [0.5, 1.5, 2.5, 3.5]
+    """
+    if isinstance(arg, dict):
+
+        try:
+            val = list(arg.values())[0]
+        except:
+            pg.error("Can't interpret empty dictionary:", arg)
+            val = 1.0
+
+        ret = [None]*mesh.cellCount()
+
+        for key, val in arg.items():
+            if isinstance(key, str):
+                markers = pg.unique(mesh.cellMarkers())
+                if ',' in key:
+                    mas = [int(k) for k in key.split(',')]
+                else:
+                    sse = key.split(':')
+
+                    start = markers[0]
+                    stop = markers[-1] + 1
+                    step = 1
+
+                    if len(sse) > 0:
+                        try:
+                            start = int(sse[0])
+                        except:
+                            pass
+                    if len(sse) > 1:
+                        try:
+                            stop = int(sse[1])
+                        except:
+                            pass
+                    if len(sse) > 2:
+                        try:
+                            step = int(sse[2])
+                        except:
+                            pass
+
+                    mas = list(range(start, stop, step))
+
+                for m in mas:
+                    for i in pg.find(mesh.cellMarkers() == m):
+                        ret[i] = val
+            else:
+                for i in pg.find(mesh.cellMarkers() == key):
+                    ret[i] = val
+
+        return ret
+
+    # if arg have allready correct size
+    if hasattr(arg, '__len__'):
+        if len(arg) == mesh.cellCount():
+            return arg
+
+    # if ndarray or Matrix but not the right size assume global tensor
+    if isinstance(arg, np.ndarray) \
+        or isinstance(arg, pg.core.RMatrix) or isinstance(arg, pg.core.CMatrix):
+        return [arg]*mesh.cellCount()
+
+
+    return parseArgToArray(arg,
+                           nDof=mesh.cellCount(),
+                           mesh=mesh, **kwargs)
+
+
 def parseArgToArray(arg, nDof, mesh=None, userData=None):
     """
     Parse array related arguments to create a valid value array.
@@ -896,7 +1037,7 @@ def createLoadVector(mesh, f, userData=None):
             fArray = f
 
     if fArray is None:
-        fArray = parseArgToArray(f, mesh.cellCount(), mesh, userData)
+        fArray = cellValues(mesh, f, userData=userData)
 
     if len(fArray) == mesh.cellCount():
         b_l = pg.matrix.ElementMatrix()
@@ -1228,7 +1369,7 @@ def assembleBC_(bc, mesh, mat, rhs, a, time=None, userData=None):
                        str(bct.keys()) + " will be ignored")
 
 
-def createStiffnessMatrix(mesh, a=None):
+def createStiffnessMatrix(mesh, a=None, isVector=False):
     r"""Create the Stiffness matrix.
 
     Calculates the Stiffness matrix :math:`{\bf S}` for the given mesh scaled
@@ -1243,13 +1384,19 @@ def createStiffnessMatrix(mesh, a=None):
         Arbitrary mesh to calculate the stiffness for.
         Type of base and shape functions depends on the cell types.
 
-    a : array, either complex or real, callable
-        Per cell values., e.g., physical parameter. If None given default is 1.
+    a : iterable of type float, int, complex, RMatrix, CMatrix
+        Per cell values., e.g., physical parameter. Length of a need to be mesh.cellCount().
+        If None given default is 1.
+
+    isVector : bool [False]
+        We want to solve for vector valued problems. Resulting SparseMatrix is a SparseMapMatrix and have the dimension
+        (nNodes * nDims, nNodes * nDims) with nNodes = mesh.nodeCount() and
+        nDims = mesh.dimension().
 
     Returns
     -------
-    A : :gimliapi:`GIMLI::RSparseMatrix`
-        Stiffness matrix
+    A : :gimliapi:`GIMLI::[C]SparseMatrix` | [C]SparseMapMatrix
+        Stiffness matrix, with real or complex values.
     """
     if mesh.cellCount() == 0:
         print(mesh)
@@ -1260,25 +1407,43 @@ def createStiffnessMatrix(mesh, a=None):
 
     A = None
 
-    if isinstance(a[0], float) or isinstance(a[0], np.float64):
-        A = pg.matrix.SparseMatrix()
-        A.fillStiffnessMatrix(mesh, a)
-        return A
+    if isVector is False:
+
+        if isinstance(a[0], float) or isinstance(a[0], np.float64):
+            A = pg.matrix.SparseMatrix()
+            A.fillStiffnessMatrix(mesh, a)
+            return A
+
+        dof = 0
+        nDof  = mesh.nodeCount()
     else:
-        A = pg.matrix.CSparseMatrix()
+        dof = mesh.nodeCount()
+        nDof  = mesh.nodeCount() * mesh.dimension()
 
-    # create matrix structure regarding the mesh
-    A.buildSparsityPattern(mesh)
+    if np.array(a[0]).dtype == np.complex:
+        isComplex = True
+        A = pg.matrix.CSparseMapMatrix(nDof, nDof)
+    else:
+        isComplex = False
+        A = pg.matrix.SparseMapMatrix(nDof, nDof)
 
-    # define a local element matrix
-    A_l = pg.matrix.ElementMatrix()
+    al = pg.core.ElementMatrix(dof=dof)
+
+    if len(a) != mesh.cellCount():
+        pg.error('Number of cell values need to match cell count')
+
     for c in mesh.cells():
-        A_l.ux2uy2uz2(c)
-        A.add(A_l, scale=a[c.id()])
+        if isComplex is True:
+            al.gradU2(c, 1.0)
+            #al.ux2uy2uz2(c)
+            A.add(al, scale=a[c.id()])
+        else:
+            al.gradU2(c, a[c.id()])
+            A.add(al)
 
-#        if c.id() == 0:
-#            print(c.id(), A_l)
-    return A
+    if isComplex is True:
+        return pg.matrix.CSparseMatrix(A)
+    return pg.matrix.SparseMatrix(A)
 
 
 def createMassMatrix(mesh, b=None):
@@ -1566,15 +1731,16 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
     swatch = pg.core.Stopwatch(True)
 
     # check for material parameter
-    a = parseArgToArray(a, nDof=mesh.cellCount(), mesh=mesh, userData=userData)
-
+    #a = parseArgToArray(a, nDof=mesh.cellCount(), mesh=mesh, userData=userData)
+    a = cellValues(mesh, a, userData=userData)
     S = createStiffnessMatrix(mesh, a)
     M = None
     A = None
 
     if b is not None:
-        b = parseArgToArray(b, nDof=mesh.cellCount(),
-                            mesh=mesh, userData=userData)
+        # b = parseArgToArray(b, nDof=mesh.cellCount(),
+        #                     mesh=mesh, userData=userData)
+        b = cellValues(mesh, b, userData=userData)
         M = createMassMatrix(mesh, b)
         #pg.warn("check me")
         A = S - M
