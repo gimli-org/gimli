@@ -215,7 +215,7 @@ def parseArgToArray(arg, nDof, mesh=None, userData=None):
     ret : :gimliapi:`GIMLI::RVector`
         Array of desired length filled with the appropriate values.
     """
-    pg.warning('check if obsolete')
+    pg.warn('check if obsolete')
     if not hasattr(nDof, '__len__'):
         nDof = [nDof]
 
@@ -606,7 +606,7 @@ def parseMapToCellArray(attributeMap, mesh, default=0.0):
     att : array
         Array of length mesh.cellCount()
     """
-    pg.warning('check if obsolete')
+    pg.warn('check if obsolete')
     att = pg.Vector(mesh.cellCount(), default)
 
     if isinstance(attributeMap, dict):
@@ -620,7 +620,7 @@ def parseMapToCellArray(attributeMap, mesh, default=0.0):
             if hasattr(pair, '__len__'):
                 idx = pg.find(mesh.cellMarkers() == pair[0])
                 if len(idx) == 0:
-                    print("Warning! parseMapToCellArray: cannot find marker " +
+                    pg.warn("parseMapToCellArray: cannot find marker " +
                           str(pair[0]) + " within mesh.")
                 else:
                     #print('---------------------')
@@ -1315,7 +1315,7 @@ def assembleNeumannBC(rhs, boundaryPairs, a=None, time=0.0, userData=None):
                 print(a)
                 pg.warn('Insufficient cell information.')
 
-        if g is not 0.0 and g is not None:
+        if g != 0.0 and g is not None:
             Se.u(boundary)
             if isinstance(rhs, pg.Vector):
                 rhs.add(Se, g)
@@ -1845,7 +1845,7 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
             stats.assembleTime = assembleTime
 
         if verbose:
-            print(("Asssemblation time: ", assembleTime))
+            print("Assemblation time: ", assembleTime)
 
         workSpace['S'] = S
         workSpace['M'] = M
@@ -1868,10 +1868,10 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
         if verbose:
             if stats:
                 stats.solverTime = solverTime
-            print(("Solving time: ", solverTime))
+            print("Solving time: ", solverTime)
 
         if len(kwargs.keys()) > 0:
-            print("Warning! Unused arguments", **kwargs)
+            pg.warn("Unused arguments", *kwargs)
         return u
 
     else: # times given

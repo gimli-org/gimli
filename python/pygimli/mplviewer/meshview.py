@@ -209,10 +209,10 @@ class CellBrowser(object):
             return
         if event.key not in ('up', 'down', 'escape'):
             return
-        if event.key is 'up':
+        if event.key == 'up':
             if self.cellID is not None:
                 self.cellID += 1
-        elif event.key is 'down':
+        elif event.key == 'down':
             if self.cellID is not None:
                 self.cellID -= 1
         else:

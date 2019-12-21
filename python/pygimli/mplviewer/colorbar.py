@@ -325,7 +325,7 @@ def createColorBarOnly(cMin=1, cMax=100, logScale=False, cMap=None, nLevs=5,
     """
     if ax is None:
         fig = plt.figure()
-        if orientation is 'horizontal':
+        if orientation == 'horizontal':
             ax = fig.add_axes([0.035, 0.6, 0.93, 0.05])
         else:
             ax = fig.add_axes([0.30, 0.02, 0.22, 0.96])

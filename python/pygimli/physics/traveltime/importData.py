@@ -233,7 +233,7 @@ class ReadAHL(object):
         Also determine relevant column numbers for the data.
         """
 
-        if len(self.alldata) is 0:
+        if len(self.alldata) == 0.:
             raise ValueError('Data not read yet!')
 
         shots_col = self.labels['SHOT_PEG']

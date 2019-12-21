@@ -940,7 +940,7 @@ def createERTData(elecs, schemeName='none', **kwargs):
 
         return data
 
-    if schemeName is not "dd":
+    if schemeName != "dd":
         import pybert as pb  # that's bad!!! TODO: remove pybert deps
         return pb.createData(elecs, schemeName, **kwargs)
 
