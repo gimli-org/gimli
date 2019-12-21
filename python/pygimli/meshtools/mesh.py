@@ -537,7 +537,7 @@ def readGmsh(fName, verbose=False, precision=None):
               "Setting Neumann on the outer edges by default.")
 
     if verbose:
-        regions = np.unique(cells[:, dim + 1])
+        regions = np.unique(np.array(cells)[:, dim + 1])
         print('  Regions: %s ' % len(regions) + str(tuple(regions)))
 
     for node in nodes:
@@ -546,9 +546,9 @@ def readGmsh(fName, verbose=False, precision=None):
         else:
             mesh.createNode(node)
 
-    for cell in cells:
-        mesh.createCell(mesh.nodes(np.array(cell, dtype=int)[:-1]-1),
-                        marker=int(cell[-1]))
+    for c in cells:
+        mesh.createCell(mesh.nodes(np.array(c, dtype=int)[:-1]-1),
+                        marker=int(c[-1]))
         # if dim == 2:
         #     mesh.createTriangle(
         #         mesh.node(int(cell[0] - 1)), mesh.node(int(cell[1] - 1)),

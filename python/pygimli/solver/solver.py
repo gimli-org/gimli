@@ -1,14 +1,182 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """TODO DOCUMENT ME"""
-
 from copy import deepcopy
 
 import numpy as np
-
 import pygimli as pg
-
 from pygimli.utils import unique
+
+
+def parseDictKey_(key, markers):
+    """ Parse dictionary key of type str to marker list.
+
+    Utility function to parse a dictionary key string into a valid list of markers containing in a given markers list.
+
+    Parameters
+    ----------
+    key: str
+        Supported are
+        - 'm1': Single marker
+        - 'm1,m2': Comma separated list
+        - ':': Slice wildcard
+        - 'start:stop:step': Slice like syntax
+
+    markers: [int]
+        List of integers, e.g., cell or boundary markers
+
+    Returns
+    -------
+    mas: [int]
+        List of integers described by key
+    """
+    markers = pg.unique(markers)
+    if ',' in key:
+        mas = [int(k) for k in key.split(',')]
+    elif ':' in key:
+        sse = key.split(':')
+
+        start = markers[0]
+        stop = markers[-1] + 1
+        step = 1
+
+        if len(sse) > 0:
+            try:
+                start = int(sse[0])
+            except:
+                pass
+        if len(sse) > 1:
+            try:
+                stop = int(sse[1])
+            except:
+                pass
+        if len(sse) > 2:
+            try:
+                step = int(sse[2])
+            except:
+                pass
+
+        mas = list(range(start, stop, step))
+        return mas
+    else:
+        mas = [int(key)]
+
+    return [m for m in mas if m in markers]
+
+
+def cellValues(mesh, arg, **kwargs):
+    """Get a value for each cell.
+
+    Returns a array or vector of length mesh.cellCount() based on arg.
+    The preferable arg is a dictionary for the cell marker and the appropriate cell value. The designated value can be calculated using a
+    callable(cell, **kwargs), which is called on demand
+
+    Parameters
+    ----------
+    arg : float | int | complex | ndarray | iterable | callable | dict
+        Argument to be parsed as cell data.
+        If arg is a dictionary, the dict key will be interpreted as cell marker:
+
+        Dictionary is key: value. Value can be float, int, complex or ndarray. The last for anistropic or elastic tensors.
+
+        Key can be integer for cell marker or str, which will be interpreted as splice or list. See examples or parseDictKey_.
+
+    mesh : :gimliapi:`GIMLI::Mesh`
+        Used if arg is callable
+
+    userData : class
+        Used if arg is callable
+
+    Returns
+    -------
+    ret : :gimliapi:`GIMLI::RVector` | ndarray(mesh.cellCount(), xx )
+        Array of desired length filled with the appropriate values.
+
+    Examples
+    --------
+    >>> import pygimli as pg
+    >>>
+    >>> mesh = pg.createGrid(x=range(5))
+    >>> mesh.setCellMarkers([1, 1, 2, 2])
+    >>> print(mesh.cellCount())
+    4
+    >>> print(pg.solver.cellValues(mesh, [1, 2, 3, 4]))
+    [1, 2, 3, 4]
+    >>> print(pg.solver.cellValues(mesh, {1:1.0, 2:10}))
+    [1.0, 1.0, 10, 10]
+    >>> print(pg.solver.cellValues(mesh, {':':2.0}))
+    [2.0, 2.0, 2.0, 2.0]
+    >>> print(pg.solver.cellValues(mesh, {'0:2':3.0}))
+    [3.0, 3.0, None, None]
+    >>> print(np.array(pg.solver.cellValues(mesh, {'1:3' : np.diag([1.0, 2.0])})))
+    [[[1. 0.]
+      [0. 2.]]
+    <BLANKLINE>
+     [[1. 0.]
+      [0. 2.]]
+    <BLANKLINE>
+     [[1. 0.]
+      [0. 2.]]
+    <BLANKLINE>
+     [[1. 0.]
+      [0. 2.]]]
+    >>> print(np.array(pg.solver.cellValues(mesh, {':' : pg.core.CMatrix(2, 2)})))
+    [[[0.+0.j 0.+0.j]
+      [0.+0.j 0.+0.j]]
+    <BLANKLINE>
+     [[0.+0.j 0.+0.j]
+      [0.+0.j 0.+0.j]]
+    <BLANKLINE>
+     [[0.+0.j 0.+0.j]
+      [0.+0.j 0.+0.j]]
+    <BLANKLINE>
+     [[0.+0.j 0.+0.j]
+      [0.+0.j 0.+0.j]]]
+    >>> print(pg.solver.cellValues(mesh, {'1,2':1 + 1j*2.0}))
+    [(1+2j), (1+2j), (1+2j), (1+2j)]
+    >>> def cellVal(c, b=1):
+    ...     return c.center()[0]*b
+    >>> t = pg.solver.cellValues(mesh, {':' : cellVal})
+    >>> print([t[c.id()](c) for c in mesh.cells()])
+    [0.5, 1.5, 2.5, 3.5]
+    """
+    if isinstance(arg, dict):
+
+        try:
+            val = list(arg.values())[0]
+        except:
+            pg.error("Can't interpret empty dictionary:", arg)
+            val = 1.0
+
+        ret = [None] * mesh.cellCount()
+
+        for key, val in arg.items():
+            if isinstance(key, str):
+                mas = parseDictKey_(key, mesh.cellMarkers())
+
+                for m in mas:
+                    for i in pg.find(mesh.cellMarkers() == m):
+                        ret[i] = val
+            else:
+                for i in pg.find(mesh.cellMarkers() == key):
+                    ret[i] = val
+
+        return ret
+
+    # if arg have allready correct size
+    if hasattr(arg, '__len__'):
+        if len(arg) == mesh.cellCount():
+            return arg
+
+    # if ndarray or Matrix but not the right size assume global tensor
+    if isinstance(arg, np.ndarray) \
+        or isinstance(arg, pg.core.RMatrix) or isinstance(arg, pg.core.CMatrix):
+        return [arg]*mesh.cellCount()
+
+
+    return parseArgToArray(arg,
+                           nDof=mesh.cellCount(),
+                           mesh=mesh, **kwargs)
 
 
 def parseArgToArray(arg, nDof, mesh=None, userData=None):
@@ -47,6 +215,7 @@ def parseArgToArray(arg, nDof, mesh=None, userData=None):
     ret : :gimliapi:`GIMLI::RVector`
         Array of desired length filled with the appropriate values.
     """
+    pg.warning('check if obsolete')
     if not hasattr(nDof, '__len__'):
         nDof = [nDof]
 
@@ -190,17 +359,16 @@ def parseArgPairToBoundaryArray(pair, mesh):
 
     Parameters
     ----------
-
     pair : tuple
-
         - [marker, arg]
-        - [[marker, ...], arg]
+        - [[marker, ...], arg] (REMOVE ME because of bad design)
         - [boundary, arg]
         - ['*', arg]
-        - [[boundary,...], arg]
+        - [[boundary,...], arg]  (REMOVE ME because of bad design)
         - [node, arg]
         - [marker, callable, *kwargs]
-        - [[marker, ...], callable, *kwargs]
+        - [marker, [callable, *kwargs]]
+        - [[marker, ...], callable, *kwargs]  (REMOVE ME because of bad design)
 
         arg will be parsed by
         :py:mod:`pygimli.solver.solver.generateBoundaryValue`
@@ -220,6 +388,8 @@ def parseArgPairToBoundaryArray(pair, mesh):
     """
     bc = []
     bounds = []
+    if isinstance(pair[1], list):
+        pair = [pair[0]] + pair[1]
 
     #print('*'*30, pair)
     if pair[0] == '*':
@@ -246,9 +416,9 @@ def parseArgPairToBoundaryArray(pair, mesh):
 
     for b in bounds:
         val = None
-        #print('-'*50)
-        #print(b, pair[1], callable(pair[1]))
-        #print('+'*50)
+        # print('-'*50)
+        # print(b, pair[1], callable(pair[1]))
+        # print('+'*50)
         if callable(pair[1]):
             # don't execute the callable here
             # we want to call them at runtime
@@ -257,6 +427,7 @@ def parseArgPairToBoundaryArray(pair, mesh):
             else:
                 val = pair[1]
         else:
+            # this will be executed
             val = generateBoundaryValue(b, pair[1])
         bc.append([b, val])
 
@@ -271,7 +442,8 @@ def parseArgToBoundaries(args, mesh):
 
     Parameters
     ----------
-    args : callable | pair | [pair, ...]
+    args : dict, callable | pair | [pair, ...]
+        Dictionary is prefered (key=value|callable). List pairs will be removed or not correct parsed for vector valued problems.
         If args is just a callable than every boundary will be evaluated
         at runtime with this function as args(boundary).
         Else see :py:mod:`pygimli.solver.solver.parseArgPairToBoundaryArray`
@@ -291,28 +463,28 @@ def parseArgToBoundaries(args, mesh):
     >>> mesh = pg.meshtools.createWorld([0, 0], [1, -1], worldMarker=0)
     >>> ax, _ = pg.show(mesh, boundaryMarker=True)
     >>> # all edges with marker 1 get value 1.0
-    >>> b = pg.solver.parseArgToBoundaries([1, 1.0], mesh)
+    >>> b = pg.solver.parseArgToBoundaries({1: 1.0}, mesh)
     >>> print(len(b))
     1
     >>> # same as above with marker 2 get value 2
-    >>> b = pg.solver.parseArgToBoundaries([[1, 1.0], [2, 2.0]], mesh)
+    >>> b = pg.solver.parseArgToBoundaries({'1': 1.0, 2 : 2.0}, mesh)
     >>> print(len(b))
     2
     >>> # same as above with marker 3 get value 3
-    >>> b = pg.solver.parseArgToBoundaries([[1, 1.], [2, 2.], [3, 3.]], mesh)
+    >>> b = pg.solver.parseArgToBoundaries({1:1., 2:2., 3:3.}, mesh)
     >>> print(len(b))
     3
     >>> # edges with marker 1 and 2 get value 1
-    >>> b = pg.solver.parseArgToBoundaries([[1, 2], 1.0], mesh)
+    >>> b = pg.solver.parseArgToBoundaries({'1,2':1.0}, mesh)
     >>> print(len(b))
     2
-    >>> b = pg.solver.parseArgToBoundaries([[1, 2, 3], 1.0], mesh)
+    >>> b = pg.solver.parseArgToBoundaries({'1, 2, 3': 1.0}, mesh)
     >>> print(len(b))
     3
-    >>> b = pg.solver.parseArgToBoundaries([[[1, 2, 3], 1.0], [4, 4.0]], mesh)
+    >>> b = pg.solver.parseArgToBoundaries({'1:4':1.0, 4:4.0}, mesh)
     >>> print(len(b))
     4
-    >>> b = pg.solver.parseArgToBoundaries([mesh.node(0), 0.0], mesh)
+    >>> b = pg.solver.parseArgToBoundaries({mesh.node(0):0.0}, mesh)
     >>> print(len(b))
     1
     >>> def bCall(boundary):
@@ -320,25 +492,45 @@ def parseArgToBoundaries(args, mesh):
     ...     for i, n in enumerate(boundary.nodes()):
     ...         u.append(i)
     ...     return u
-    >>> b = pg.solver.parseArgToBoundaries([1, bCall], mesh)
+    >>> b = pg.solver.parseArgToBoundaries({1:bCall}, mesh)
     >>> print(len(b),b[0][1](b[0][0]))
     1 [0, 1]
     >>> def bCall(boundary, a1, a2):
     ...     return a1 + a2
-    >>> b = pg.solver.parseArgToBoundaries([1, bCall, {'a1':2, 'a2':3}], mesh)
+    >>> b = pg.solver.parseArgToBoundaries({1: [bCall, {'a1':2, 'a2':3}]}, mesh)
     >>> print(len(b), b[0][1][0](b[0][0], **b[0][1][1]))
     1 5
-    >>> b = pg.solver.parseArgToBoundaries([[1, bCall, {'a1':1, 'a2':2}],
-    ...                                     [2, bCall, {'a1':3, 'a2':4}]], mesh)
+    >>> b = pg.solver.parseArgToBoundaries({1: [bCall, {'a1':1, 'a2':2}],
+    ...                                     2: [bCall, {'a1':3, 'a2':4}]}, mesh)
     >>> print(len(b), b[0][1][0](b[0][0], **b[0][1][1]))
     2 3
-    >>> b = pg.solver.parseArgToBoundaries([[1,2], bCall, {'a1':4, 'a2':5}], mesh)
+    >>> b = pg.solver.parseArgToBoundaries({'1,2': [bCall, {'a1':4, 'a2':5}]}, mesh)
     >>> print(len(b), b[1][1][0](b[1][0], **b[1][1][1]))
     2 9
     >>> pg.wait()
     """
-    boundaries = []
+    boundaries = list()
+
+    if isinstance(args, dict):
+
+        try:
+            val = list(args.values())[0]
+        except:
+            pg.error("Can't interpret empty dictionary:", args)
+
+        for key, val in args.items():
+            if isinstance(key, str):
+                mas = parseDictKey_(key, mesh.boundaryMarkers())
+
+                for m in mas:
+                    boundaries += parseArgPairToBoundaryArray([m, val], mesh)
+            else:
+                boundaries += parseArgPairToBoundaryArray([key, val], mesh)
+
+        return boundaries
+
     if isinstance(args, list):
+        pg.warn('[parseArgToBoundaries(lists)] check if obsolete')
         #print('!'*100)
         #print(args)
         if len(args) == 2:
@@ -414,7 +606,7 @@ def parseMapToCellArray(attributeMap, mesh, default=0.0):
     att : array
         Array of length mesh.cellCount()
     """
-
+    pg.warning('check if obsolete')
     att = pg.Vector(mesh.cellCount(), default)
 
     if isinstance(attributeMap, dict):
@@ -836,8 +1028,8 @@ def assembleLoadVector(mesh, f, userData=None):
     return createLoadVector(mesh, f, userData)
 
 def createLoadVector(mesh, f, userData=None):
-    """Create right hand side vector based on the given mesh and load
-    or force values.
+    """Create right hand side vector based on the given mesh and load values
+    or force vectors.
 
     TODO:
     Maybe we can define an additional nodal force vector.
@@ -849,13 +1041,16 @@ def createLoadVector(mesh, f, userData=None):
     ----------
     f: float, array, callable(cell, [rhs], [userData]), [...]
 
-        Your callable need to return a load value for each cell with optional
+        - Your callable need to return a load value for each cell with optional
         userData. `f_cell = f(cell, [userData=None])`
 
-        Force Values
-        float -> ones(mesh.nodeCount()) * vals,
-        for each node [0 .. mesh.nodeCount()]
-        for each cell [0 .. mesh.cellCount()]
+        Load Values
+        - float -> ones(mesh.nodeCount()) * vals,
+        - for each node [0 .. mesh.nodeCount()]
+        - for each cell [0 .. mesh.cellCount()]
+
+        Force Vectors
+        - [float, float, [float] ] -> ones(mesh.nodeCount()) * vals,
 
     Returns
     -------
@@ -896,7 +1091,7 @@ def createLoadVector(mesh, f, userData=None):
             fArray = f
 
     if fArray is None:
-        fArray = parseArgToArray(f, mesh.cellCount(), mesh, userData)
+        fArray = cellValues(mesh, f, userData=userData)
 
     if len(fArray) == mesh.cellCount():
         b_l = pg.matrix.ElementMatrix()
@@ -1228,7 +1423,7 @@ def assembleBC_(bc, mesh, mat, rhs, a, time=None, userData=None):
                        str(bct.keys()) + " will be ignored")
 
 
-def createStiffnessMatrix(mesh, a=None):
+def createStiffnessMatrix(mesh, a=None, isVector=False):
     r"""Create the Stiffness matrix.
 
     Calculates the Stiffness matrix :math:`{\bf S}` for the given mesh scaled
@@ -1243,13 +1438,19 @@ def createStiffnessMatrix(mesh, a=None):
         Arbitrary mesh to calculate the stiffness for.
         Type of base and shape functions depends on the cell types.
 
-    a : array, either complex or real, callable
-        Per cell values., e.g., physical parameter. If None given default is 1.
+    a : iterable of type float, int, complex, RMatrix, CMatrix
+        Per cell values., e.g., physical parameter. Length of a need to be mesh.cellCount().
+        If None given default is 1.
+
+    isVector : bool [False]
+        We want to solve for vector valued problems. Resulting SparseMatrix is a SparseMapMatrix and have the dimension
+        (nNodes * nDims, nNodes * nDims) with nNodes = mesh.nodeCount() and
+        nDims = mesh.dimension().
 
     Returns
     -------
-    A : :gimliapi:`GIMLI::RSparseMatrix`
-        Stiffness matrix
+    A : :gimliapi:`GIMLI::[C]SparseMatrix` | [C]SparseMapMatrix
+        Stiffness matrix, with real or complex values.
     """
     if mesh.cellCount() == 0:
         print(mesh)
@@ -1260,25 +1461,43 @@ def createStiffnessMatrix(mesh, a=None):
 
     A = None
 
-    if isinstance(a[0], float) or isinstance(a[0], np.float64):
-        A = pg.matrix.SparseMatrix()
-        A.fillStiffnessMatrix(mesh, a)
-        return A
+    if isVector is False:
+
+        if isinstance(a[0], float) or isinstance(a[0], np.float64):
+            A = pg.matrix.SparseMatrix()
+            A.fillStiffnessMatrix(mesh, a)
+            return A
+
+        dof = 0
+        nDof  = mesh.nodeCount()
     else:
-        A = pg.matrix.CSparseMatrix()
+        dof = mesh.nodeCount()
+        nDof  = mesh.nodeCount() * mesh.dimension()
 
-    # create matrix structure regarding the mesh
-    A.buildSparsityPattern(mesh)
+    if np.array(a[0]).dtype == np.complex:
+        isComplex = True
+        A = pg.matrix.CSparseMapMatrix(nDof, nDof)
+    else:
+        isComplex = False
+        A = pg.matrix.SparseMapMatrix(nDof, nDof)
 
-    # define a local element matrix
-    A_l = pg.matrix.ElementMatrix()
+    al = pg.core.ElementMatrix(dof=dof)
+
+    if len(a) != mesh.cellCount():
+        pg.error('Number of cell values need to match cell count')
+
     for c in mesh.cells():
-        A_l.ux2uy2uz2(c)
-        A.add(A_l, scale=a[c.id()])
+        if isComplex is True:
+            al.gradU2(c, 1.0)
+            #al.ux2uy2uz2(c)
+            A.add(al, scale=a[c.id()])
+        else:
+            al.gradU2(c, a[c.id()])
+            A.add(al)
 
-#        if c.id() == 0:
-#            print(c.id(), A_l)
-    return A
+    if isComplex is True:
+        return pg.matrix.CSparseMatrix(A)
+    return pg.matrix.SparseMatrix(A)
 
 
 def createMassMatrix(mesh, b=None):
@@ -1440,8 +1659,7 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
     r"""Solve partial differential equation with Finite Elements.
 
     This is a syntactic sugar convenience function for using the Finite Element
-    functionality of the library core to solve partial differential equation (PDE)
-    that match the following form:
+    functionality of the library core to solve partial differential equation (PDE) that match the following form:
 
     .. math::
 
@@ -1451,28 +1669,36 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
         \frac{\partial u}{\partial \mathbf{n}} & = g~~|~~\Gamma_{\text{Neumann}}\\
         \alpha u + \beta\frac{\partial u}{\partial \mathbf{n}} & = \gamma~~|~~\Gamma_{\text{Robin}}
 
-    for the scalar solution :math:`u(\mathbf{r}, t)` at each node of a given mesh.
+    for the scalar :math:`u(\mathbf{r}, t)` or
+    vectoral :math:`\mathbf(u)(\mathbf{r}, t)` solution at each node of a given mesh.
     The Domain :math:`\Omega` and the Boundary :math:`\Gamma` are defined
     through the mesh with appropriate boundary marker.
+
+    Note, to ensure vector solution either set vector forces or at least on vector component boundary condition.
 
     TODO:
 
         * unsteady ub and dub
         * 'Infinity' Boundary condition (u vanishes at infinity)
         * 'Cauchy' Boundary condition
-        (guaranties u and du on same boundary, will never work here because the problem
-        becomes ill posed and would need some inverse strategy to solve.)
+        (guaranties u and du on same boundary, will never work here because the problem becomes ill posed and would need some inverse strategy to solve.)
+        * Example for
+            * elastic parameter
+            * anisotropic (float/complex)
+            * dynamic boundary conditions
+            * dynamic load vector
+            * nonlinearity
 
     Parameters
     ----------
     mesh: :gimliapi:`GIMLI::Mesh`
         Mesh represents spatial discretization of the calculation domain
     a: value | array | callable(cell, userData)
-        Cell values
+        Cell values of type float or complex can be scalar, anisotropic matrix or elastic tensor.
     b: value | array | callable(cell, userData) [None]
-        Cell values. None means the termin is unused.
+        Cell values. None means the term is unused.
     f: value | array(cells) | array(nodes) | callable(args, kwargs)
-        force values
+        force values, for vector fields use (n x dim) values.
     bc: dict()
         Dictionary of boundary conditions.
         Current supported boundary conditions are by dictionary keys:
@@ -1543,15 +1769,6 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
     """
     if bc is None:
         bc = {}
-    if 'uB' in kwargs:
-        pg.deprecated('bc arg uB', "bc={'Dirichlet': uB}") #20190912
-        bc['Dirichlet'] = kwargs.pop('uB')
-    if 'duB' in kwargs:
-        pg.deprecated('bc arg duB', "bc={'Neumann': duB}")
-        bc['Neumann'] = kwargs.pop('duB')
-    if 'uN' in kwargs:
-        pg.deprecated('bc arg uN', "bc={'Node': duB}")
-        bc['Node'] = kwargs.pop('uN')
 
     workSpace = kwargs.pop('ws', dict())
     debug = kwargs.pop('debug', False)
@@ -1561,20 +1778,37 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
     if verbose:
         print("Mesh: ", str(mesh))
 
+    ## scalar solution default
+    vectorValues = False
     dof = mesh.nodeCount()
+
+    ## check if force vector is a vector
+    rhs = createLoadVector(mesh, f, userData=userData)
+
+    if rhs.ndim == 2:
+        vectorValues = True
+        dof = mesh.nodeCount() * mesh.dimension
+        rhs = rhs.reshape(mesh.dimension, dof)
+
+    ## check if some boundary conditions are vector valued
+
+
+
+
+
+
+
 
     swatch = pg.core.Stopwatch(True)
 
     # check for material parameter
-    a = parseArgToArray(a, nDof=mesh.cellCount(), mesh=mesh, userData=userData)
-
-    S = createStiffnessMatrix(mesh, a)
+    #a = parseArgToArray(a, nDof=mesh.cellCount(), mesh=mesh, userData=userData)
+    a = cellValues(mesh, a, userData=userData)
+    S = createStiffnessMatrix(mesh, a, isVector=vectorValues)
     M = None
-    A = None
 
     if b is not None:
-        b = parseArgToArray(b, nDof=mesh.cellCount(),
-                            mesh=mesh, userData=userData)
+        b = cellValues(mesh, b, userData=userData)
         M = createMassMatrix(mesh, b)
         #pg.warn("check me")
         A = S - M
@@ -1583,7 +1817,6 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
         A = S
 
     if times is None:
-        rhs = createLoadVector(mesh, f, userData=userData)
         assembleBC_(bc, mesh, A, rhs, a, time=None, userData=userData)
 
         u = None
@@ -1613,8 +1846,6 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
 
         if verbose:
             print(("Asssemblation time: ", assembleTime))
-
-        # showSparseMatrix(S)
 
         workSpace['S'] = S
         workSpace['M'] = M
@@ -1651,7 +1882,7 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
             print("start TL", swatch.duration())
 
         M = createMassMatrix(mesh)
-        F = assembleLoadVector(mesh, f)
+        F = createLoadVector(mesh, f)
 
         u0 = np.zeros(dof)
         if 'u0' in kwargs:

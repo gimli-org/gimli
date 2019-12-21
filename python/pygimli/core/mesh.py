@@ -207,10 +207,11 @@ Mesh.createMeshWithSecondaryNodes = __createMeshWithSecondaryNodes__
 def __deform__(self, eps, mag=1.0):
     # !!!! delete all Jacobi caches belongs to the MeshEntities !!!!
 
-    warn('move me to the core')
+    warn('[mesh.deform] move me to the core')
     import numpy as np
     e = np.array(eps).T
     for n in self.nodes():
+        #print(e[n.id(), :])
         n.pos().translate(e[n.id(), :]*mag)
     self.scale((1.,1.,1.))
 
