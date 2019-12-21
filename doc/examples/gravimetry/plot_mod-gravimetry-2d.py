@@ -22,7 +22,7 @@ from pygimli.meshtools import createCircle, createWorld, createMesh, mergePLC
 from pygimli.physics.gravimetry import gradUCylinderHoriz, solveGravimetry
 
 radius = 2.  # [m]
-depth = 5.   # [m]
+depth = 5.  # [m]
 pos = [0., -depth]
 dRho = 100
 
@@ -57,7 +57,7 @@ mesh = createMesh(plc, quality=34)
 mesh = mesh.createP2()
 
 density = pg.solver.parseMapToCellArray([[1, 0.0], [2, dRho]], mesh)
-u = pg.solver.solve(mesh, a=1, f=density, uB=[[-2, 0], [-1, 0]])
+u = pg.solver.solve(mesh, a=1, f=density, bc={'Dirichlet': {-2:0, -1:0}})
 
 ###############################################################################
 # Calculate gradient of gravimetric potential
