@@ -75,7 +75,8 @@ template < class ValueType > void * checkConvertibleSequenz(PyObject * obj){
     bp::object py_sequence(bp::handle<>(bp::borrowed(obj)));
 
     if (len(py_sequence) > 0) {
-        __DC(obj << "\t len: " << len(py_sequence) << " type: " << GIMLI::type(ValueType(0)) << ": " << typeid(ValueType).name())
+        // FW: Causes problems on Mac build.
+        // __DC(obj << "\t len: " << len(py_sequence) << " type: " << GIMLI::type(ValueType(0)) << ": " << typeid(ValueType).name())
         bp::object element = py_sequence[0];
         __DC(obj << "\t seq[0]: " << element << " is of type: " << element.ptr()->ob_type->tp_name)
 
