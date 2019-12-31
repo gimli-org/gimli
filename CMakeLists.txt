@@ -21,6 +21,7 @@ project(libgimli)
 # Check if conda package is created
 if(DEFINED ENV{CONDA_BUILD})
     message(STATUS "Conda package is being created.")
+    set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
     set(CONDA_BUILD TRUE)
     set(Boost_INCLUDE_DIR "${CMAKE_PREFIX_PATH}/include")
 else()
