@@ -4,6 +4,7 @@ BUGS:
 + there is no good coming back from volumetric slicing atm
 """
 
+import numpy as np
 from shutil import copyfile
 import signal
 import sys
@@ -11,7 +12,7 @@ import sys
 import pygimli as pg
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QFont
+from PyQt5.QtGui import QFont, QIcon
 from PyQt5.QtWidgets import (
     QMainWindow, QFrame, QVBoxLayout, QComboBox, QPushButton,
     QFileDialog, QSplitter, QLabel, QAction, QDialog, QStatusBar
@@ -29,7 +30,8 @@ class Show3D(QMainWindow):
         super(Show3D, self).__init__(parent)
         self.tmpMesh = tmpMesh
         # storage for the minima and maxima
-        self.extrema = {}
+        self.data = {}
+        self._ignore = ['_Attribute', '_Marker', 'glob_min', 'glob_max']
         # setup the menubar
         self.setupMenu()
         self.setupWidget()
@@ -112,6 +114,7 @@ class Show3D(QMainWindow):
 
         self.setCentralWidget(self.frame)
         self.setWindowTitle("pyGIMLi 3D Viewer")
+        self.setWindowIcon(QIcon('3dlogo.png'))
 
         self.show()
 
@@ -130,7 +133,7 @@ class Show3D(QMainWindow):
         self.mesh = mesh
         self._actor = self.pyvista_widget.add_mesh(
             mesh, cmap=cMap, show_edges=True)
-        self.pyvista_widget.show_bounds(all_edges=True, minor_ticks=True)
+        _ = self.pyvista_widget.show_bounds(all_edges=True, minor_ticks=True)
         self.pyvista_widget.reset_camera()
 
         # set the correctly chosen colormap
@@ -176,28 +179,46 @@ class Show3D(QMainWindow):
         self.toolbar.spbx_cmin.setEnabled(True)
         self.toolbar.spbx_cmax.setEnabled(True)
 
-        # FIXME: what about the point arrays?!
-        for k, v in self.mesh.cell_arrays.items():
-            # self.mesh._add_cell_array(v, k)
-            # print(k, v)
-            self.extrema[k] = {
-                'orig': {'min': min(v), 'max': max(v)},
-                'user': {'min': min(v), 'max': max(v)}
+        _min = 1e99
+        _max = -1e99
+        for label, data in self.mesh.cell_arrays.items():
+            # self.mesh._add_cell_array(data, label)
+            _mi = min(data)
+            _ma = max(data)
+            _min = _mi if _mi < _min else _mi
+            _max = _ma if _ma > _max else _ma
+            self.data[label] = {
+                'orig': {'min': _mi, 'max': _ma},
+                'user': {'min': _mi, 'max': _ma},
+                'data_orig': data,
+                'data_user': None
             }
-        for k, v in self.mesh.point_arrays.items():
-            self.extrema[k] = {
-                'orig': {'min': min(v), 'max': max(v)},
-                'user': {'min': min(v), 'max': max(v)}
+
+        for label, data in self.mesh.point_arrays.items():
+            # self.mesh._add_cell_array(data, label)
+            _mi = min(data)
+            _ma = max(data)
+            _min = _mi if _mi < _min else _mi
+            _max = _ma if _ma > _max else _ma
+            self.data[label] = {
+                'orig': {'min': _mi, 'max': _ma},
+                'user': {'min': _mi, 'max': _ma},
+                'data_orig': data,
+                'data_user': None
             }
+
+        self.data['glob_min'] = _min
+        self.data['glob_max'] = _max
         # supply the combobox with the names to choose from for display
         self.toolbar.cbbx_params.addItems(self.mesh.array_names)
         # get the current set parameter
         curr_param = self.toolbar.cbbx_params.currentText()
         # set the first cMin/cMax
         self.toolbar.spbx_cmin.setValue(
-            self.extrema[curr_param]['orig']['min'])
+            self.data[curr_param]['orig']['min'])
         self.toolbar.spbx_cmax.setValue(
-            self.extrema[curr_param]['orig']['max'])
+            self.data[curr_param]['orig']['max'])
+        self.updateParameterView(curr_param)
 
     def updateParameterView(self, param=None):
         """
@@ -220,12 +241,15 @@ class Show3D(QMainWindow):
             # if param in self.mesh.point_arrays:
             #     mesh = self.mesh.contour()
             # update the minima and maxima in the limit range
-            self.toolbar.spbx_cmin.setRange(
-                self.extrema[param]['user']['min'], self.extrema[param]['user']['max'])
-            self.toolbar.spbx_cmax.setRange(
-                self.extrema[param]['user']['min'], self.extrema[param]['user']['max'])
-            self.toolbar.spbx_cmin.setValue(self.extrema[param]['user']['min'])
-            self.toolbar.spbx_cmax.setValue(self.extrema[param]['user']['max'])
+            # NOTE: if the global limit button is checked, just don't change
+            # the extrema labels to enable the user to set ones own limits.
+            if not self.toolbar.btn_global_limits.isChecked():
+                _min = self.data[param]['user']['min']
+                _max = self.data[param]['user']['max']
+                self.toolbar.spbx_cmin.setRange(_min, _max)
+                self.toolbar.spbx_cmax.setRange(_min, _max)
+                self.toolbar.spbx_cmin.setValue(_min)
+                self.toolbar.spbx_cmax.setValue(_max)
 
         cMap = self.toolbar.cbbx_cmap.currentText()
         if self.toolbar.btn_reverse.isChecked():
@@ -282,8 +306,9 @@ class Show3D(QMainWindow):
             param = self.mesh.active_scalar_name
 
             # update the user extrema
-            self.extrema[param]['user']['min'] = cmin
-            self.extrema[param]['user']['max'] = cmax
+            if not self.toolbar.btn_global_limits.isChecked():
+                self.data[param]['user']['min'] = cmin
+                self.data[param]['user']['max'] = cmax
             # NOTE: has no effect on the displayed vtk
             # pg._d("RESET SCALAR BAR LIMITS")
             self.pyvista_widget.update_scalar_bar_range([cmin, cmax])
@@ -294,16 +319,20 @@ class Show3D(QMainWindow):
         Toggle the visibility of the axis grid surrounding the model.
         """
         checked = not self.toolbar.btn_bbox.isChecked()
-        self.pyvista_widget.show_bounds(
-            all_edges=checked,
-            minor_ticks=checked,
-            show_xaxis=checked,
-            show_yaxis=checked,
-            show_zaxis=checked,
-            show_xlabels=checked,
-            show_ylabels=checked,
-            show_zlabels=checked
-        )
+        if not checked:
+            self.pyvista_widget.remove_bounds_axes()
+            self.pyvista_widget.remove_bounding_box()
+        else:
+            _ = self.pyvista_widget.show_bounds(
+                all_edges=True,
+                minor_ticks=True,
+                show_xaxis=True,
+                show_yaxis=True,
+                show_zaxis=True,
+                show_xlabels=True,
+                show_ylabels=True,
+                show_zlabels=True
+            )
         self.pyvista_widget.update()
 
     def takeScreenShot(self):
@@ -334,17 +363,46 @@ class Show3D(QMainWindow):
             f = f + '.vtk' if not f.lower().endswith('.vtk') else f
             copyfile(self.tmpMesh, f)
 
-    def resetExtrema(self):
+    def resetExtrema(self, _btn=False, fromGlobal=False):
         """
         Reset user chosen values to the original ones.
+
+        Parameters
+        ----------
+        _btn: bool [False]
+            Catch the default that comes with the button signal.
+
+        fromGlobal: bool [False]
+            Flag for condition.. is set when resetting user/global limits.
         """
         # get the active scalar/parameter that is displayed currently
-        param = self.mesh.active_scalar_name
-        self.extrema[param]['user']['min'] = self.extrema[param]['orig']['min']
-        self.extrema[param]['user']['max'] = self.extrema[param]['orig']['max']
+        if fromGlobal is not False:
+            param = fromGlobal
+        else:
+            param = self.mesh.active_scalar_name
+        self.data[param]['user']['min'] = self.data[param]['orig']['min']
+        self.data[param]['user']['max'] = self.data[param]['orig']['max']
+        if not fromGlobal:
+            # display correctly
+            self.updateParameterView(param)
 
-        # display correctly
-        self.updateParameterView(param)
+    def setGlobalLimits(self):
+        """
+        Manipulate the user limits of the dictionary storing all data.
+        """
+        if self.toolbar.btn_global_limits.isChecked():
+            _min = self.data['glob_min']
+            _max = self.data['glob_max']
+            self.toolbar.spbx_cmin.setRange(_min, _max)
+            self.toolbar.spbx_cmax.setRange(_min, _max)
+            self.toolbar.spbx_cmin.setValue(_min)
+            self.toolbar.spbx_cmax.setValue(_max)
+        else:
+            for label in self.data.keys():
+                if label in self._ignore:
+                    continue
+                self.resetExtrema(label)
+        self.updateParameterView()
 
     def _enableSlicers(self):
         if self.toolbar.btn_slice_plane.isChecked():
@@ -364,8 +422,8 @@ class Show3D(QMainWindow):
         self.toolbar.cbbx_cmap.currentTextChanged.connect(
             self.updateParameterView)
         self.toolbar.btn_reverse.clicked.connect(self.updateParameterView)
-        # self.toolbar.btn_plotlog.clicked.connect(self.updateParameterView)
         self.toolbar.btn_bbox.pressed.connect(self.toggleBbox)
+        self.toolbar.btn_global_limits.clicked.connect(self.setGlobalLimits)
         self.toolbar.btn_screenshot.clicked.connect(self.takeScreenShot)
         self.toolbar.btn_exportVTK.clicked.connect(self.exportMesh)
         self.toolbar.chbx_threshold.clicked.connect(self.updateParameterView)

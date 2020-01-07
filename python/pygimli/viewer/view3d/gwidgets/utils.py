@@ -59,13 +59,6 @@ class GToolBar(QWidget):
             # size=[24, 24]
         )
 
-        # # button for logarithmic values
-        # self.btn_plotlog = GButton(
-        #     text="Logarithmic",
-        #     tooltip="Take logarithmic values of the currently displayed parameter",
-        #     checkable=True,
-        # )
-
         # button to make bounding box visible
         self.btn_bbox = GButton(
             text="Toggle Axes",
@@ -75,10 +68,8 @@ class GToolBar(QWidget):
         self.btn_bbox.setChecked(True)
 
         # cMin and cMax
-        # self.spbx_cmin = GLineEdit("The min of the current range")
         self.spbx_cmin = GDoubleSpinBox("The min of the current range")
         self.spbx_cmin.setEnabled(False)
-        # self.spbx_cmax = GLineEdit("The max of the current range")
         self.spbx_cmax = GDoubleSpinBox("The max of the current range")
         self.spbx_cmax.setEnabled(False)
 
@@ -126,7 +117,6 @@ class GToolBar(QWidget):
         lyt_h1 = QVBoxLayout()
         lyt_h1.addWidget(self.cbbx_cmap)
         lyt_h1.addWidget(self.btn_reverse)
-        # lyt_h1.addWidget(self.btn_plotlog)
         lyt_h1.setContentsMargins(2, 2, 2, 2)
         grp_cmap = QGroupBox("Color Map")
         grp_cmap.setLayout(lyt_h1)
@@ -138,6 +128,12 @@ class GToolBar(QWidget):
         lyt_h4 = QHBoxLayout()
         lyt_h4.addWidget(QLabel("Max"))
         lyt_h4.addWidget(self.spbx_cmax)
+        # button for global limits
+        self.btn_global_limits = GButton(
+            text="Global Limits",
+            tooltip="Check if gobal limits should be tried",
+            checkable=True)
+        # checkbox for thresholding parameter distribution
         lyt_h4a = QHBoxLayout()
         lyt_h4a.addWidget(QLabel("Threshold"))
         self.chbx_threshold = QCheckBox()
@@ -148,6 +144,7 @@ class GToolBar(QWidget):
         lyt_v3 = QVBoxLayout()
         lyt_v3.addLayout(lyt_h3)
         lyt_v3.addLayout(lyt_h4)
+        lyt_v3.addWidget(self.btn_global_limits)
         lyt_v3.addLayout(lyt_h4a)
         lyt_v3.addLayout(lyt_h5)
         lyt_v3.setContentsMargins(2, 2, 2, 2)
@@ -156,10 +153,8 @@ class GToolBar(QWidget):
 
         # slicer
         lyt_v2 = QVBoxLayout()
-        self.btn_slice_plane = QPushButton("Plane")
-        self.btn_slice_plane.setCheckable(True)
-        self.btn_slice_volume = QPushButton("Volume")
-        self.btn_slice_volume.setCheckable(True)
+        self.btn_slice_plane = GButton(text="Plane", checkable=True)
+        self.btn_slice_volume = GButton(text="Volume", checkable=True)
         # for the time being...
         self.btn_slice_volume.setEnabled(False)
         hb = QHBoxLayout()
@@ -289,8 +284,8 @@ class _GDoubleSlider(QSlider):
         super().setMinimum(0)
         super().setMaximum(self._max_int)
 
-        self._min_value = 0.0
-        self._max_value = 1.0
+        self._min_value = -1e99
+        self._max_value = 1e99
 
     @property
     def _value_range(self):
@@ -337,6 +332,7 @@ class GDoubleSpinBox(QDoubleSpinBox):
         super(GDoubleSpinBox, self).__init__(parent)
         self.setToolTip(tooltip)
         self.setFixedWidth(200)
-        self.setSingleStep(0.01)
+        self.setDecimals(6)
+        self.setSingleStep(0.005)
         # self.setRange(*drange)
         self.setDecimals(10)

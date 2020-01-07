@@ -329,7 +329,7 @@ def patchMatrix(mat, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
     else:
         norm = Normalize(vmin=cMin, vmax=cMax)
 
-    if 'ax' is None:
+    if 'ax' == None:
         ax = plt.subplots()[1]
 
     iy, ix = np.nonzero(mat)  # != 0)
