@@ -237,7 +237,7 @@ class Show3D(QMainWindow):
         mesh = self.mesh
         if param is not None and param not in CMAPS and not isinstance(param, int):
             # change to the desired parameter distribution
-            self.mesh.set_active_scalar(param)
+            self.mesh.set_active_scalars(param)
             # if param in self.mesh.point_arrays:
             #     mesh = self.mesh.contour()
             # update the minima and maxima in the limit range
@@ -284,7 +284,7 @@ class Show3D(QMainWindow):
                 mesh, cmap=cMap, show_edges=True)
         else:
             # in case the plane widget was on.. turn it off
-            self.pyvista_widget.disable_plane_widget()
+            # self.pyvista_widget.disable_plane_widget()
             self._actor = self.pyvista_widget.add_mesh(
             mesh, cmap=cMap, show_edges=True)
 
@@ -303,7 +303,7 @@ class Show3D(QMainWindow):
         cmax = float(self.toolbar.spbx_cmax.value())
         if cmax >= cmin:
             # get the active scalar/parameter that is displayed currently
-            param = self.mesh.active_scalar_name
+            param = self.mesh.active_scalars_name
 
             # update the user extrema
             if not self.toolbar.btn_global_limits.isChecked():
@@ -379,7 +379,7 @@ class Show3D(QMainWindow):
         if fromGlobal is not False:
             param = fromGlobal
         else:
-            param = self.mesh.active_scalar_name
+            param = self.mesh.active_scalars_name
         self.data[param]['user']['min'] = self.data[param]['orig']['min']
         self.data[param]['user']['max'] = self.data[param]['orig']['max']
         if not fromGlobal:

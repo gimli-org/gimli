@@ -70,7 +70,7 @@ def showMesh3DVista(mesh, data=None, **kwargs):
     (and values) from the dictionary.
     """
     _, tmp = tempfile.mkstemp(suffix=".vtk")
-    pg._r("exporting {}: {}".format(tmp, mesh))
+    # export given mesh temporarily is the easiest and fastest option ATM
     mesh.exportVTK(tmp)
     grid = pyvista.read(tmp)
 
@@ -109,7 +109,6 @@ def showMesh3DVista(mesh, data=None, **kwargs):
         s3d.addMesh(grid, cMap=cMap)
         _ = app.exec()
         app.closeAllWindows()
-        pg._d("closed all windows")
 
     else:
         plotter = pyvista.Plotter(notebook=notebook)

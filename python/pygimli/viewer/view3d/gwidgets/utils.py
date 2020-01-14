@@ -109,7 +109,7 @@ class GToolBar(QWidget):
         # parameter choosing
         lyt_v1 = QVBoxLayout()
         lyt_v1.addWidget(self.cbbx_params)
-        lyt_v1.setContentsMargins(2, 2, 2, 2)
+        lyt_v1.setContentsMargins(2, 5, 2, 2)
         grp_param = QGroupBox("Parameter")
         grp_param.setLayout(lyt_v1)
 
@@ -117,7 +117,7 @@ class GToolBar(QWidget):
         lyt_h1 = QVBoxLayout()
         lyt_h1.addWidget(self.cbbx_cmap)
         lyt_h1.addWidget(self.btn_reverse)
-        lyt_h1.setContentsMargins(2, 2, 2, 2)
+        lyt_h1.setContentsMargins(2, 5, 2, 2)
         grp_cmap = QGroupBox("Color Map")
         grp_cmap.setLayout(lyt_h1)
 
@@ -147,7 +147,7 @@ class GToolBar(QWidget):
         lyt_v3.addWidget(self.btn_global_limits)
         lyt_v3.addLayout(lyt_h4a)
         lyt_v3.addLayout(lyt_h5)
-        lyt_v3.setContentsMargins(2, 2, 2, 2)
+        lyt_v3.setContentsMargins(2, 5, 2, 2)
         grp_limits = QGroupBox("Limits")
         grp_limits.setLayout(lyt_v3)
 
@@ -185,7 +185,7 @@ class GToolBar(QWidget):
         lyt_v2.addLayout(hx)
         lyt_v2.addLayout(hy)
         lyt_v2.addLayout(hz)
-        lyt_v2.setContentsMargins(2, 2, 2, 2)
+        lyt_v2.setContentsMargins(2, 5, 2, 2)
         self.grp_slice = QGroupBox("Slicing")
         # self.grp_slice.setCheckable(True)
         # self.grp_slice.setChecked(False)
@@ -195,7 +195,7 @@ class GToolBar(QWidget):
         lyt_h2 = QHBoxLayout()
         lyt_h2.addWidget(self.btn_screenshot)
         lyt_h2.addWidget(self.btn_exportVTK)
-        lyt_h2.setContentsMargins(2, 2, 2, 2)
+        lyt_h2.setContentsMargins(2, 5, 2, 2)
         grp_export = QGroupBox("Export")
         grp_export.setLayout(lyt_h2)
 
