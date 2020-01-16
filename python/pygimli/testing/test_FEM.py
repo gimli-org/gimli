@@ -33,7 +33,7 @@ class TestFiniteElementBasics(unittest.TestCase):
             k = 2
             a) P1(exact)
                 u = x
-                f = -2x
+                f = -k x
             b) P2(exact)
                 u = x*x
                 f = -(2 + 2x*x)
@@ -45,21 +45,28 @@ class TestFiniteElementBasics(unittest.TestCase):
         ### test a)
         k = 2.0
         u = lambda _x: _x
-        f = lambda _x: -(k * u(_x))
+        f = lambda _x, _k: -_k * u(_x)
 
         x = pg.x(mesh)
-        dirichletBC = [[1, u(min(x))], [2, u(max(x))]]
-        uFEM = pg.solve(mesh, a=1, b=k, f=f(x), bc={'Dirichlet': dirichletBC})
+        dirichletBC = {1: u(min(x)), 2: u(max(x))}
+        uFEM = pg.solve(mesh, a=1, b=k, f=f(x, k),
+                        bc={'Dirichlet': dirichletBC})
+
+        # pg.plt.plot(x, uFEM, '.')
+        # pg.plt.plot(pg.sort(x), u(pg.sort(x)))
+        # pg.wait()
+
         np.testing.assert_allclose(uFEM, u(x))
 
         ### test b)
         u = lambda _x: _x * _x
-        f = lambda _x: -(2. + k *u(_x))
+        f = lambda _x, _k: -(2. + k * u(_x))
 
         mesh = mesh.createP2()
         x = pg.x(mesh)
-        dirichletBC = [[1, u(min(x))], [2, u(max(x))]]
-        uFEM = pg.solve(mesh, a=1, b=k, f=f(x), bc={'Dirichlet': dirichletBC})
+        dirichletBC = {1: u(min(x)), 2: u(max(x))}
+        uFEM = pg.solve(mesh, a=1, b=k, f=f(x, k),
+                        bc={'Dirichlet': dirichletBC})
         np.testing.assert_allclose(uFEM, u(x), atol=1e-6)
 
         # pg.plt.plot(x, uFEM, '.')
@@ -76,7 +83,7 @@ class TestFiniteElementBasics(unittest.TestCase):
             vTest = 0.1
             u = pg.solve(mesh, a=1, f=0,
                          bc={'Node': [mesh.findNearestNode([0.0, 0.0]), 0.],
-                             'Neumann': [[1, -vTest], [2, vTest]]}, verbose=0)
+                             'Neumann': {1: -vTest, 2: vTest}}, verbose=0)
             v = pg.solver.grad(mesh, u)
 
             if show:
@@ -142,7 +149,7 @@ class TestFiniteElementBasics(unittest.TestCase):
                 Test for u_h === u(x) for P2 base functions
             """
             meshP2 = mesh.createP2()
-            u = pg.solve(meshP2, f=-2, bc={'Dirichlet': [[1, 2], [2, 2]]},)
+            u = pg.solve(meshP2, f=-2, bc={'Dirichlet': {'1,2': 2}},)
 
             xMin = mesh.xMin()
             xSpan = (mesh.xMax() - xMin)
@@ -152,7 +159,7 @@ class TestFiniteElementBasics(unittest.TestCase):
                     pg.plt.figure()
                     x = pg.x(mesh)
                     ix = np.argsort(x)
-                    pg.plt.plot(x[ix], x[ix]**2 - (xSpan/2)**2 + 2 )
+                    pg.plt.plot(x[ix], x[ix]**2 - (xSpan/2)**2 + 2)
                 elif mesh.dim() > 1:
                     pg.show(meshP2, u, label='u = x**2')
 
@@ -165,7 +172,7 @@ class TestFiniteElementBasics(unittest.TestCase):
                 Test for u == exact x for P1 base functions
             """
             u = pg.solve(mesh, a=1, b=0, f=0,
-                         bc={'Dirichlet': [[1, 0], [2, 1]]})
+                         bc={'Dirichlet': {1: 0, 2: 1}})
 
             if show:
                 if mesh.dim()==1:

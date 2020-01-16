@@ -8,6 +8,7 @@ python/pygimli/_version.py export-subst
 *.c text
 *.h text
 *.py text
+*.sh text
 
 # Declare files that will always have CRLF line endings on checkout.
 # *.sln text eol=crlf

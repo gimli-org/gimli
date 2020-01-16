@@ -183,7 +183,7 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
         if min(gci.get_array()) < 1e12:
             norm = mpl.colors.Normalize(vmin=min(gci.get_array()),
                                         vmax=min(gci.get_array()))
-            cbar.set_norm(norm)
+            #cbar.set_norm(norm) # deprecated in MPL 3.3. remove me when checked
             gci.set_norm(norm)
         cbar.on_mappable_changed(gci)
 
@@ -193,7 +193,7 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
                 cMap = cmapFromName(cMap, ncols=len(levels)-1, bad=[1.0, 1.0, 1.0, 0.0])
             else:
                 cMap = cmapFromName(cMap, ncols=256, bad=[1.0, 1.0, 1.0, 0.0])
-            
+
         cbar.mappable.set_cmap(cMap)
 
     needLevelUpdate = False
@@ -210,9 +210,9 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
         needLevelUpdate = True
 
         if cMin is None:
-            cMin = cbar.get_clim()[0]
+            cMin = cbar.mappable.get_clim()[0]
         if cMax is None:
-            cMax = cbar.get_clim()[1]
+            cMax = cbar.mappable.get_clim()[1]
 
         if logScale:
             if cMin < 1e-12:
@@ -223,7 +223,7 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
         else:
             norm = mpl.colors.Normalize(vmin=cMin, vmax=cMax)
 
-        cbar.set_norm(norm)
+        #cbar.set_norm(norm) # deprecated in MPL 3.3. remove me when checked
         cbar.mappable.set_norm(norm)
 
     if needLevelUpdate:
@@ -355,9 +355,15 @@ def createColorBarOnly(cMin=1, cMax=100, logScale=False, cMap=None, nLevs=5,
 def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5, levels=None):
     """Set colorbar levels given a number of levels and min/max values."""
     if cMin is None:
-        cMin = cbar.get_clim()[0]
+        if hasattr(cbar, 'mappable'):
+            cMin = cbar.mappable.get_clim()[0]
+        else:
+            pg.error('no cbar mappable. Cannot find cmin')
     if cMax is None:
-        cMax = cbar.get_clim()[1]
+        if hasattr(cbar, 'mappable'):
+            cMax = cbar.mappable.get_clim()[1]
+        else:
+            pg.error('no cbar mappable. Cannot find cmax')
 
     if cMin == cMax:
         cMin *= 0.999
@@ -394,7 +400,7 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5, levels=None):
 
     if hasattr(cbar, 'mappable'):
         cbar.mappable.set_clim(vmin=cMin, vmax=cMax)
-        cbar.set_clim(cMin, cMax)
+        #cbar.set_clim(cMin, cMax)
 
     cbar.set_ticks(cbarLevels)
     cbar.set_ticklabels(cbarLevelsString)

@@ -86,15 +86,15 @@ public:
 
   Reference operator = (const ValueType & x) {
     // not equal 0?
-    if (x != ValueType(0)) {
-      /* If the element does not yet exist, it is put, together
+    if (x != ValueType(0) || 1) { // we need the element to force some sought  matrix shape
+      /* If the element does not yet exist, it is put,  together
 	 with the indices, into an object of type value_type and
 	 inserted with insert(): */
 
-      if (I == C.end()) {
-        assert(C.size() < C.max_size());
-        I = (C.insert(typename ContainerType::value_type(IndexPair(row, column), x))).first;
-      } else (*I).second = x;
+        if (I == C.end()) {
+            assert(C.size() < C.max_size());
+            I = (C.insert(typename ContainerType::value_type(IndexPair(row, column), x))).first;
+        } else (*I).second = x;
     }
 
     /* insert() returns a pair whose first part is an iterator
@@ -117,7 +117,7 @@ public:
   }
 
   Reference operator += (const ValueType & x) {
-    if (x != ValueType(0)) {
+    if (x != ValueType(0) || 1 ) { // we need the element to force some sought  matrix shape
       if (I == C.end()) {
         assert(C.size() < C.max_size());
         I = (C.insert(typename ContainerType::value_type(IndexPair(row, column), x))).first;
@@ -127,7 +127,7 @@ public:
   }
 
   Reference operator -= (const ValueType & x) {
-    if (x != ValueType(0)) {
+    if (x != ValueType(0) || 1) {
       if (I == C.end()) {
         assert(C.size() < C.max_size());
         I = (C.insert(typename ContainerType::value_type(IndexPair(row, column), -x))).first;
@@ -771,7 +771,7 @@ public:
     #define DEFINE_SPARSEMATRIX_UNARY_MOD_OPERATOR__(OP, FUNCT) \
         void FUNCT(int i, int j, ValueType val){ \
             if ((stype_ < 0 && i > j) || (stype_ > 0 && i < j)) return; \
-            if (abs(val) > TOLERANCE){ \
+            if (abs(val) > TOLERANCE || 1){ \
                 for (int k = colPtr_[i]; k < colPtr_[i + 1]; k ++){ \
                     if (rowIdx_[k] == j) { \
                         vals_[k] OP##= val; return; \
