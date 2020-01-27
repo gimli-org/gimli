@@ -628,7 +628,11 @@ def _bcIsForVectorValues(bc, mesh):
         elif isinstance(_bVal, dict):
             for test in list(_bVal.values()):
                 if callable(test):
-                    test = test(mesh.boundary(0))
+                    try:
+                        test = test(mesh.boundary(0))
+                    except BaseException:
+                        pass
+
 
                 if hasattr(test, '__iter__'):
                     ### {marker, [x, y, z]}
