@@ -761,7 +761,7 @@ def createTriangles(mesh):
     z : numpy array
         z position for given indices
     dataIdx : list of int
-        list of indices into array to plot
+        List of indices for a data array
     """
     x = pg.x(mesh)
     y = pg.y(mesh)
@@ -774,37 +774,17 @@ def createTriangles(mesh):
     else:
         ents = mesh.boundaries(mesh.boundaryMarkers() != 0)
 
-    triCount = 0
-    for e in ents:
-        if e.shape().nodeCount() == 4:
-            triCount += 2
-        else:
-            triCount += 1
+    triangles = []
+    dataIdx = []
 
-    triangles = np.zeros((triCount, 3))
-    dataIdx = list(range(triCount))
-
-    triCount = 0
     for c in ents:
+        triangles.append([c.node(0).id(), c.node(1).id(), c.node(2).id()])
+        dataIdx.append(c.id())
+
         if c.shape().nodeCount() == 4:
-            triangles[triCount, 0] = c.node(0).id()
-            triangles[triCount, 1] = c.node(1).id()
-            triangles[triCount, 2] = c.node(2).id()
-            dataIdx[triCount] = c.id()
-            triCount = triCount + 1
-
-            triangles[triCount, 0] = c.node(0).id()
-            triangles[triCount, 1] = c.node(2).id()
-            triangles[triCount, 2] = c.node(3).id()
-            dataIdx[triCount] = c.id()
-            triCount = triCount + 1
-        else:
-            triangles[triCount, 0] = c.node(0).id()
-            triangles[triCount, 1] = c.node(1).id()
-            triangles[triCount, 2] = c.node(2).id()
-            dataIdx[triCount] = c.id()
-            triCount = triCount + 1
-
+            triangles.append([c.node(0).id(), c.node(2).id(), c.node(3).id()])
+            dataIdx.append(c.id())
+        
     return x, y, triangles, z, dataIdx
 
 
@@ -870,8 +850,12 @@ def drawField(ax, mesh, data=None, levels=None, nLevs=5,
     <matplotlib.tri.tricontour.TriContourSet ...>
     """
     x, y, triangles, _, dataIndex = createTriangles(mesh)
-    z = data[dataIndex]
-
+    
+    if len(data) == mesh.cellCount():
+        z = data[dataIndex]
+    else:
+        z = data
+    
     gci = None
 
     if levels is None:

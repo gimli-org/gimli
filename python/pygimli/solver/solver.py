@@ -1937,8 +1937,8 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
     ...                         marker=1, worldMarker=False)
     >>> c1 = plc.createCircle(pos=[0.0, -5.0], radius=3.0, area=.1, marker=2)
     >>> mesh = pg.meshtools.createMesh([world, c1], quality=34.3)
-    >>> u = pg.solver.solveFiniteElements(mesh, a=[[1, 100], [2, 1]],
-    ...                                   bc={'Dirichlet':[[4, 1.0], [2, 0.0]]})
+    >>> u = pg.solver.solveFiniteElements(mesh, a={1: 100.0, 2: 1.0},
+    ...                                   bc={'Dirichlet':{4: 1.0, 2: 0.0}})
     >>> fig, ax = plt.subplots()
     >>> pc = drawField(ax, mesh, u)
     >>> drawMesh(ax, mesh)
