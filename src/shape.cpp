@@ -107,8 +107,10 @@ Shape::~Shape(){
 }
 
 void Shape::changed(){
-    invJacobian_.clear();
-    invJacobian_.setValid(false);
+    if (invJacobian_.valid()){
+        invJacobian_.clear();
+        invJacobian_.setValid(false);
+    }
     hasDomSize_ = false;
 }
 

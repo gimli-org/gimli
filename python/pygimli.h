@@ -145,15 +145,18 @@ namespace pyplusplus{ namespace aliases{
 // #include "matrixTemplates.h"
 
 namespace GIMLI{
-    // inline IndexArray operator OP (const IndexArray & a, const IndexArray & b){ 
-    //     IndexArray ret(a);   ret OP##=b; return ret; }                           
-    // inline IndexArray operator OP (const IndexArray & a, Index b){ 
-    //     IndexArray ret(a);   ret OP##=b; return ret; }                           
-    // inline IndexArray operator OP (Index a, const IndexArray & b){ 
-    //     IndexArray ret(b.size()); for (Index i = 0; i < b.size(); i ++) ret[i] = a OP b[i]; return ret; } 
-    //
 
-#define DEFINE_PY_VEC_OPERATOR__(OP)                      \
+#define DEFINE_PY_VEC_OPERATOR__(OP) \
+    inline IndexArray operator OP (const IndexArray & a, const IndexArray & b){\
+        IndexArray ret(a);   ret OP##=b; return ret; } \
+    inline IndexArray operator OP (const IndexArray & a, Index b){ \
+        IndexArray ret(a);   ret OP##=b; return ret; } \
+    inline IndexArray operator OP (const IndexArray & a, int b){ \
+        IndexArray ret(a);   ret OP##=(Index)abs(b); return ret; } \
+    inline IndexArray operator OP (Index a, const IndexArray & b){ \
+        IndexArray ret(b.size()); for (Index i = 0; i < b.size(); i ++) ret[i] = a OP b[i]; return ret; } \
+    inline IndexArray operator OP (int a, const IndexArray & b){ \
+        IndexArray ret(b.size()); for (Index i = 0; i < b.size(); i ++) ret[i] = (Index)abs(a) OP b[i]; return ret; } \
     inline RVector operator OP (const RVector & a, const RVector & b){ \
         RVector ret(a);   ret OP##=b; return ret; }                           \
     inline RVector operator OP (const double & a, const RVector & b){ \

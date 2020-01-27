@@ -595,16 +595,19 @@ _pygimli_.CMatrix.__setitem__ = __setVal
 ############################
 # len(RVector), RMatrix
 ############################
-def PGVector_len(self):
+def __Vector_len(self):
     return self.size()
 
+def __Vector3_len(self):
+    return 3
 
-_pygimli_.RVector.__len__ = PGVector_len
-_pygimli_.R3Vector.__len__ = PGVector_len
-_pygimli_.BVector.__len__ = PGVector_len
-_pygimli_.CVector.__len__ = PGVector_len
-_pygimli_.IVector.__len__ = PGVector_len
-_pygimli_.IndexArray.__len__ = PGVector_len
+_pygimli_.RVector.__len__ = __Vector_len
+_pygimli_.RVector3.__len__ = __Vector3_len
+_pygimli_.R3Vector.__len__ = __Vector_len
+_pygimli_.BVector.__len__ = __Vector_len
+_pygimli_.CVector.__len__ = __Vector_len
+_pygimli_.IVector.__len__ = __Vector_len
+_pygimli_.IndexArray.__len__ = __Vector_len
 
 ############################
 # abs(RVector), RMatrix
@@ -620,6 +623,7 @@ _pygimli_.BVector.dtype = np.bool
 _pygimli_.CVector.ndim = 1
 _pygimli_.CVector.dtype = np.complex
 _pygimli_.RVector3.ndim = 1
+_pygimli_.RVector3.dtype = np.float
 _pygimli_.IVector.ndim = 1
 _pygimli_.IVector.dtype = np.long
 _pygimli_.IndexArray.ndim = 1
@@ -631,11 +635,11 @@ _pygimli_.CMatrix.dtype = np.complex
 _pygimli_.R3Vector.ndim = 2
 _pygimli_.stdVectorRVector3.ndim = 2
 
-def RMatrix_len(self):
+def __Matrix_len(self):
     return self.rows()
 
-_pygimli_.RMatrix.__len__ = RMatrix_len
-_pygimli_.CMatrix.__len__ = RMatrix_len
+_pygimli_.RMatrix.__len__ = __Matrix_len
+_pygimli_.CMatrix.__len__ = __Matrix_len
 
 @property
 def __MatrixShapePropery__(self):
@@ -751,7 +755,6 @@ class Vector3Iter():
 
 def __Vector3IterCall__(self):
     return Vector3Iter(self)
-
 
 _pygimli_.RVector3.__iter__ = __Vector3IterCall__
 

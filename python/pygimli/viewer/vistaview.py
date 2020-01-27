@@ -10,12 +10,12 @@ import numpy as np
 
 import pygimli as pg
 
+
 pyvista = pg.optImport('pyvista', requiredFor="proper visualization in 3D")
 if pyvista is None:
-    from mpl_toolkits.mplot3d import Axes3D
-    callback = 'showMesh3DFallback'
+    view3Dcallback = 'showMesh3DFallback'
 else:
-    callback = 'showMesh3DVista'
+    view3Dcallback = 'showMesh3DVista'
 
 PyQt5 = pg.optImport('PyQt5', requiredFor="pyGIMLi 3D viewer")
 
@@ -34,24 +34,37 @@ def showMesh3D(mesh, data, **kwargs):
     """
     Calling the defined function to show the 3D object.
     """
-    return globals()[callback](mesh, data, **kwargs)
+    if pg.rc['view3D'] == 'fallback':
+        return showMesh3DFallback(mesh, data, **kwargs)
+
+    return globals()[view3Dcallback](mesh, data, **kwargs)
 
 
 def showMesh3DFallback(mesh, data, **kwargs):
     """
     Plot the 3D object sketchy.
     """
-    fig = plt.figure()
-    ax = Axes3D(fig)
+    ax = kwargs.pop('ax', None)
 
-    if mesh.nodeCount() < 1e4:
-        x = pg.x(mesh.positions())
-        y = pg.y(mesh.positions())
-        z = pg.z(mesh.positions())
-        ax.scatter(x, y, z, 'ko')
+    from mpl_toolkits.mplot3d import Axes3D
+
+    if ax is None or not isinstance(ax, Axes3D):
+        fig = plt.figure()
+        ax = fig.gca(projection='3d', proj_type='persp')
+        #ax = fig.gca(projection='3d', proj_type='ortho')
+
+    if mesh.boundaryCount() > 0:
+        x, y, tri, z, dataIndex = pg.mplviewer.createTriangles(mesh)
+        ax.plot_trisurf(x, y, tri, z, **kwargs)
+    else:
+        if mesh.nodeCount() < 1e4:
+            x = pg.x(mesh.positions())
+            y = pg.y(mesh.positions())
+            z = pg.z(mesh.positions())
+            ax.scatter(x, y, z, 'ko')
     ax.set_title('Fallback, install pyvista for proper 3D visualization')
 
-    return ax
+    return ax, None
 
 
 def showMesh3DVista(mesh, data=None, **kwargs):

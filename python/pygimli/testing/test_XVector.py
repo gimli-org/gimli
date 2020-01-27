@@ -71,14 +71,20 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(sum(v / 1), 5)
         self.assertEqual(sum(1 + v), 10)
         self.assertEqual(sum(-1 - v), -10)
+        self.assertEqual(sum(1 / v), 5)
+        # no clue why this doesnt work .. we might could hack them if someone need it
+        #self.assertEqual(sum(v * 2), 10)
+
         self.assertEqual(sum(v + v), 10)
         self.assertEqual(sum(v * v), 5)
         self.assertEqual(sum(v - v), 0)
         self.assertEqual(sum(v / v), 5)
         self.assertEqual(sum(2 * v), 10)
-        # no clue why this doesnt work .. we might could hack them if someone need it
-        #self.assertEqual(sum(v * 2), 10)
-        self.assertEqual(sum(1 / v), 5)
+
+    def test_IndexArray(self):
+        v = pg.core.IndexArray([0,1,2,3])
+        self.assertEqual(sum(v), 6)
+        np.testing.assert_array_equal(v + 1, [1, 2, 3, 4])
 
     def test_RVectorOP(self):
         v = pg.Vector(5, 1.0)

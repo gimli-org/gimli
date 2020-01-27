@@ -152,6 +152,8 @@ typedef int64_t int64;
     throwLengthError(1, WHERE_AM_I + " " + str(m.size()) + " != " + str(n.size()));
 #define ASSERT_THIS_SIZE(n) if (n < 0 || n >= this->size()) \
     throwLengthError(1, WHERE_AM_I + " " + str(this->size()) + " <= " + str(n));
+#define ASSERT_VEC_SIZE(vec, n) if (n != vec.size()) \
+    throwLengthError(1, WHERE_AM_I + " " + str(vec.size()) + " != " + str(n));
 #define ASSERT_SIZE(vec, n) if (n < 0 || n >= vec.size()) \
     throwLengthError(1, WHERE_AM_I + " " + str(vec.size()) + " <= " + str(n));
 #define ASSERT_EQUAL(m, n) if (m != n) \
@@ -349,10 +351,10 @@ template<typename... Values>
 void log(LogType type, Values... vs){
     return log(type, str(vs...));
 }
-#endif 
+#endif
 
 DLLEXPORT std::string versionStr();
-   
+
 DLLEXPORT std::string authors();
 
 template < class T, class U > T min(const T & a, const U & b){ return std::min(a, T(b)); }
@@ -568,9 +570,9 @@ private:
 template < typename Classname > class DLLEXPORT Singleton {
 public:
 
-    virtual ~Singleton() { 
+    virtual ~Singleton() {
     #ifndef PYGIMLI_CAST
-        delete pInstance_; pInstance_ = NULL; 
+        delete pInstance_; pInstance_ = NULL;
     #endif
     }
 
@@ -607,19 +609,19 @@ template < typename T > Index hash_(T v){
     __M
     return 0;
 }
-/*! Combine 
+/*! Combine
 https://www.boost.org/doc/libs/1_37_0/doc/html/hash/reference.html#boost.hash_combine */
 template <typename T>
 void hashCombine(Index & seed, const T& val){
     seed ^= hash_(val) + 0x9e3779b9 + (seed<<6) + (seed>>2);
 }
-template <typename T, typename... Types> 
+template <typename T, typename... Types>
 void hashCombine (Index & seed, const T & val, const Types&... args){
     hashCombine(seed, val);
     hashCombine(seed, args...);
 }
-inline void hashCombine (Index & seed){} 
-template <typename... Types> 
+inline void hashCombine (Index & seed){}
+template <typename... Types>
 Index hash(const Types&... args){
     Index seed = 0;
     hashCombine(seed, args...);

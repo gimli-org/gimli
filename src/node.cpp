@@ -18,6 +18,7 @@
 
 #include "node.h"
 
+#include "matrix.h"
 #include "meshentities.h"
 #include "shape.h"
 
@@ -69,15 +70,15 @@ Node & Node::operator = (const Node & node){
 Node::~Node(){
     //std::cout << " delete Node " << pos_ << " " << id_ << " at " << this << std::endl;
 }
-
+void Node::transform(const RMatrix & mat) {
+    this->changed_(); pos_.transform(mat);
+}
 void Node::changed_(){
-    for (std::set < Boundary * >::iterator it = boundSet_.begin();
-         it!= boundSet_.end(); it ++){
-        (*it)->shape().changed();
+    for (auto &b : boundSet_){
+        b->shape().changed();
     }
-    for (std::set < Cell * >::iterator it = cellSet_.begin();
-         it!= cellSet_.end(); it ++){
-        (*it)->shape().changed();
+    for (auto &c : cellSet_){
+        c->shape().changed();
     }
 }
 

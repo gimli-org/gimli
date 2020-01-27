@@ -739,15 +739,16 @@ def createMeshPatches(ax, mesh, rasterized=False, verbose=True):
     return patches
 
 
-def createTriangles(mesh, data=None):
+def createTriangles(mesh):
     """Generate triangle objects for later drawing.
+
+    Creates triangle for each 2D triangle cell or 3D boundary.
+    Quads will be split into two triangles.
 
     Parameters
     ----------
     mesh : :gimliapi:`GIMLI::Mesh`
-        2D mesh
-    data : iterable [None]
-        cell-based values to plot
+        2D mesh or 3D mesh
 
     Returns
     -------
@@ -756,30 +757,35 @@ def createTriangles(mesh, data=None):
     y : numpy array
         x position of nodes
     triangles : numpy array Cx3
-        cell indices for each triangle
+        cell indices for each triangle, quad or boundary face
     z : numpy array
-        data for given indices
+        z position for given indices
     dataIdx : list of int
         list of indices into array to plot
     """
-    x = pg.x(mesh.positions())
+    x = pg.x(mesh)
+    y = pg.y(mesh)
+    z = pg.z(mesh)
     #    x.round(1e-1)
-    y = pg.y(mesh.positions())
     #    y.round(1e-1)
 
-    triCount = 0
+    if mesh.dim() == 2:
+        ents = mesh.cells()
+    else:
+        ents = mesh.boundaries(mesh.boundaryMarkers() != 0)
 
-    for c in mesh.cells():
-        if c.shape().nodeCount() == 4:
-            triCount = triCount + 2
+    triCount = 0
+    for e in ents:
+        if e.shape().nodeCount() == 4:
+            triCount += 2
         else:
-            triCount = triCount + 1
+            triCount += 1
 
     triangles = np.zeros((triCount, 3))
     dataIdx = list(range(triCount))
 
     triCount = 0
-    for c in mesh.cells():
+    for c in ents:
         if c.shape().nodeCount() == 4:
             triangles[triCount, 0] = c.node(0).id()
             triangles[triCount, 1] = c.node(1).id()
@@ -798,14 +804,6 @@ def createTriangles(mesh, data=None):
             triangles[triCount, 2] = c.node(2).id()
             dataIdx[triCount] = c.id()
             triCount = triCount + 1
-
-    z = None
-    if data is not None:
-        if len(data) == mesh.cellCount():
-            # strange behavior if we just use these slice
-            z = np.array(data[dataIdx])
-        else:
-            z = np.array(data)
 
     return x, y, triangles, z, dataIdx
 
@@ -871,7 +869,8 @@ def drawField(ax, mesh, data=None, levels=None, nLevs=5,
     >>> drawField(ax, mesh, data)
     <matplotlib.tri.tricontour.TriContourSet ...>
     """
-    x, y, triangles, z, _ = createTriangles(mesh, data)
+    x, y, triangles, _, dataIndex = createTriangles(mesh)
+    z = data[dataIndex]
 
     gci = None
 

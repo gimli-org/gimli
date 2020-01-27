@@ -20,7 +20,7 @@ def simulate(mesh, res, scheme, sr=True, useBert=True,
     """Convenience function to use the ERT modelling operator.
 
     Convenience function to use the ERT modelling operator
-    if you like static functions. 
+    if you like static functions.
 
     See :py:mod:`pygimli.ert.ERTManager.simulate` for description
     of the arguments.
@@ -46,6 +46,7 @@ def simulate(mesh, res, scheme, sr=True, useBert=True,
         mesh = pg.load(mesh)
 
     if isinstance(scheme, str):
+        import pybert as pb
         scheme = pb.load(scheme)
 
     return ert.simulate(mesh, res, scheme, verbose=verbose, **kwargs)
@@ -54,7 +55,7 @@ def simulate(mesh, res, scheme, sr=True, useBert=True,
 class ERTModellingBase(MeshModelling):
     def __init__(self, **kwargs):
         super(ERTModellingBase, self).__init__(**kwargs)
-        
+
     def drawData(self, ax, data=None, **kwargs):
         """Draw data in given axe."""
         kwargs['label'] = kwargs.pop('label', pg.unit('res'))
@@ -76,21 +77,21 @@ class ERTModellingBase(MeshModelling):
         kwargs['label'] = kwargs.pop('label', pg.unit('res'))
         kwargs['cMap'] = kwargs.pop('cMap', pg.utils.cMap('res'))
 
-        return super(ERTModellingBase, self).drawModel(ax=ax, model=model, 
+        return super(ERTModellingBase, self).drawModel(ax=ax, model=model,
                                                        **kwargs)
-                
+
 
 class BertModelling(ERTModellingBase):
     """ Forward operator for Electrical Resistivty Tomography
-    
+
     Note
     ----
-    Convention for complex resistiviy inversion: 
+    Convention for complex resistiviy inversion:
     We want to use logarithm transformation for the imaginary part of model
-    so we need the startmodel to have positive imaginary parts. 
-    The sign is flipped back to physical correct assumption before we call 
-    the response function. 
-    The Jacobian is calculated with negative imaginary parts and will 
+    so we need the startmodel to have positive imaginary parts.
+    The sign is flipped back to physical correct assumption before we call
+    the response function.
+    The Jacobian is calculated with negative imaginary parts and will
     be a conjugated complex block matrix for further calulations.
     """
     def __init__(self, sr=True, verbose=False):
@@ -104,7 +105,7 @@ class BertModelling(ERTModellingBase):
             self._core = pg.core.DCSRMultiElectrodeModelling(verbose=verbose)
         else:
             self._core = pg.core.DCMultiElectrodeModelling(verbose=verbose)
-        
+
         self._core.initJacobian()
         self.setJacobian(self._core.jacobian())
 
@@ -115,7 +116,7 @@ class BertModelling(ERTModellingBase):
         self.calculate = self._core.calculate
         self.calcGeometricFactor = self._core.calcGeometricFactor
         self.mapERTModel = self._core.mapERTModel
-        
+
         self._conjImag = False # the model imaginaries are flipped to match log trans
 
     def setDefaultBackground(self):
@@ -136,7 +137,7 @@ class BertModelling(ERTModellingBase):
         """
         if self.complex():
             dataC = pg.utils.toComplex(dataVals)
-            nModel = self.regionManager().parameterCount() // 2 
+            nModel = self.regionManager().parameterCount() // 2
             smRe = np.ones(nModel) * np.median(np.median(dataC.real))
             smIm = np.ones(nModel) * np.median(np.median(dataC.imag))
 
@@ -154,18 +155,18 @@ class BertModelling(ERTModellingBase):
 
     def flipImagPart(self, v):
         z = pg.utils.toComplex(v)
-        pg.warn('pre min/max={0} / {1} im: {2} / {3}'.format(pf(min(z.real)), 
+        pg.warn('pre min/max={0} / {1} im: {2} / {3}'.format(pf(min(z.real)),
                                                         pf(max(z.real)),
-                                                        pf(min(z.imag)), 
+                                                        pf(min(z.imag)),
                                                         pf(max(z.imag))))
-        
+
 
         v = pg.utils.squeezeComplex(pg.utils.toComplex(v), conj=self._conjImag)
 
         z = pg.utils.toComplex(v)
-        pg.warn('pos min/max={0} / {1} im: {2} / {3}'.format(pf(min(z.real)), 
+        pg.warn('pos min/max={0} / {1} im: {2} / {3}'.format(pf(min(z.real)),
                                                         pf(max(z.real)),
-                                                        pf(min(z.imag)), 
+                                                        pf(min(z.imag)),
                                                         pf(max(z.imag))))
         return v
 
@@ -174,9 +175,9 @@ class BertModelling(ERTModellingBase):
         if self.complex() and self._conjImag:
             pg.warn('flip imaginary part for response calc')
             mod = self.flipImagPart(mod)
-            
+
         resp = self._core.response(mod)
-        
+
         if self.complex() and self._conjImag:
             pg.warn('backflip imaginary part after response calc')
             resp = self.flipImagPart(resp)
@@ -191,7 +192,7 @@ class BertModelling(ERTModellingBase):
                 mod = self.flipImagPart(mod)
 
             self._core.createJacobian(mod)
-            self._J = pg.utils.squeezeComplex(self._core.jacobian(), 
+            self._J = pg.utils.squeezeComplex(self._core.jacobian(),
                                               conj=self._conjImag
                                               )
             self.setJacobian(self._J)
@@ -672,12 +673,12 @@ class ERTManager(MeshMethodManager):
             if verbose:
                 pg.info('Calculate geometric factors.')
             scheme.set('k', fop.calcGeometricFactor(scheme))
-            
+
         ret = pg.DataContainerERT(scheme)
         ## just be sure that we don't work with artifacts
         ret['u'] *= 0.0
         ret['i'] *= 0.0
-        ret['r'] *= 0.0    
+        ret['r'] *= 0.0
 
         if isArrayData:
             rhoa = np.zeros((len(res), scheme.size()))
@@ -689,7 +690,7 @@ class ERTManager(MeshMethodManager):
                           "min r_a:", min(rhoa[i]), "max r_a:", max(rhoa[i]))
         else:  # res is single resistivity array
             if len(res) == mesh.cellCount():
-                    
+
                 if calcOnly:
                     fop.mapERTModel(res, 0)
 
@@ -707,7 +708,7 @@ class ERTManager(MeshMethodManager):
                 else:
                     if fop.complex():
                         res = pg.utils.squeezeComplex(res)
-                    
+
                     resp = fop.response(res)
 
                     if fop.complex():
@@ -722,7 +723,7 @@ class ERTManager(MeshMethodManager):
 
         if not isArrayData:
             ret['rhoa'] = rhoa
-            
+
             if phia is not None:
                 ret.set('phia', phia)
         else:
@@ -781,13 +782,13 @@ class ERTManager(MeshMethodManager):
     def dataCheck(self, data):
         """Return data from container"""
         if isinstance(data, pg.DataContainer):
-            
+
             if self.fop.complex():
                 if not data.haveData('rhoa'):
                     pg.critical('Datacontainer have no "rhoa" values.')
                 if not data.haveData('ip'):
                     pg.critical('Datacontainer have no "ip" values.')
-                
+
                 #pg.warn('check sign of phases')
                 rhoa = data['rhoa']
                 phia = -data['ip']/1000 # 'ip' is defined for neg mrad.
@@ -809,13 +810,13 @@ class ERTManager(MeshMethodManager):
             if self.fop.complex():
                 rae = None
                 ipe = None
-                
+
                 if err.haveData('err'):
                     rae = err['err']
                 else:
                     pg.error('Datacontainer have no "err" values. Fallback set to 0.01')
                     rae = np.ones(err.size()) * 0.01
-                
+
                 if err.haveData('iperr'):
                     amp, phi = pg.utils.toPolar(dataVals)
                     # assuming ipErr are absolute dPhi in mrad
@@ -823,7 +824,7 @@ class ERTManager(MeshMethodManager):
                 else:
                     pg.error('Datacontainer have no "ipoerr" values. Fallback set to 0.01')
                     ipe = np.ones(err.size()) * 0.01
-                
+
                 # pg._y("err", min(rae), max(rae), rae)
                 # pg._y("iperr", min(ipe), max(ipe), ipe)
                 return pg.cat(rae, ipe)

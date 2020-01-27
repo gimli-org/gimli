@@ -6,6 +6,17 @@ pyGIMLi - An open-source library for modelling and inversion in geophysics
 import locale
 import sys
 
+# We can define some defaults here .. or maybe load user defaults
+rc = {
+    'lang': 'eng',
+    # 'eng', 'german', 'de', 'ger'
+    'unitStyle': 2,
+    # 1: german style: 'value in unit'
+    # 2: default style: 'value (unit)'
+    'view3D': 'auto',
+    # auto: Use pyvista if installed or set it to 'fallback' to force fallback mode
+}
+
 ### Import everything that should be accessible through main namespace.
 from ._version import get_versions
 from .core import (BVector, CVector, DataContainer, DataContainerERT,
@@ -23,10 +34,9 @@ from .solver import solve
 from .testing import test
 from .utils import boxprint, cache, cut, unique
 from .utils import prettify as pf
-from .utils import unit, cmap, rc
+from .utils import unit, cmap
 from .viewer import plt, show, wait
 from .core.load import getConfigPath, getExampleFile, load, optImport
-
 
 def checkAndFixLocaleDecimal_point(verbose=False):
     """

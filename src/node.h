@@ -68,7 +68,7 @@ public:
 
     inline uint rtti() const { return MESH_NODE_RTTI; }
 
-    inline void setPos(const RVector3 & pos) { pos_ = pos; }
+    inline void setPos(const RVector3 & pos) { changed_(); pos_ = pos; }
 
     inline const RVector3 & pos() const { return pos_; }
 
@@ -90,11 +90,18 @@ public:
 
     inline std::set < Cell * > & cellSet() { return cellSet_; }
 
+    void transform(const RMatrix & mat);
+
     inline void scale(const RVector3 & s) { changed_(); pos_.scale(s); }
 
     inline void translate(const RVector3 & t) { changed_(); pos_.translate(t); }
 
+    inline void translate(double x, double y=0.0, double z=0.0) {
+        changed_(); pos_.translate(x, y, z); }
+
     inline void rotate(const RVector3 & r) { changed_(); pos_.rotate(r); }
+
+    inline void swap(Index i, Index j) { changed_(); pos_.swap(i, j); }
 
     inline const double & x() const { return pos_[0]; }
 
@@ -113,7 +120,7 @@ public:
 
     /*!Little helper to identify the state of this node after some merging.*/
     void setState(NodeState s) { this->_state = s; }
-    
+
     /*!Return the state of this node.*/
     const NodeState state() const { return this->_state; }
 

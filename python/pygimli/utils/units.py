@@ -4,6 +4,7 @@
 there abbreviations."""
 
 import pygimli as pg
+rc = pg.rc
 
 quants = {
     'rhoa': {
@@ -70,10 +71,7 @@ quants = {
     },
 }
 
-rc = {
-    'lang': 'eng',
-    'unitStyle': 2,  # quantity (unit)
-}
+rc['quants'] = quants
 
 def quantity(name):
     """ """
@@ -130,5 +128,7 @@ def unit(name, unit='auto'):
     if rc['unitStyle'] == 1 or \
         rc['lang'] == 'german' or rc['lang'] == 'de' or rc['lang'] == 'ger':
         return '{0} in {1}'.format(name, unit)
-    else:
+    elif rc['unitStyle'] == 2:
         return '{0} ({1})'.format(name, unit)
+    elif rc['unitStyle'] == 3:
+        return '{0} [{1}]'.format(name, unit)

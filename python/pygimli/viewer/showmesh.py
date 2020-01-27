@@ -76,7 +76,7 @@ def show(obj=None, data=None, **kwargs):
 
     if isinstance(mesh, list):
         ax = kwargs.pop('ax', None)
-        fitView = kwargs.pop('fitView', True)
+        fitView = kwargs.pop('fitView', ax is None)
 
         ax, cBar = show(mesh[0], data, hold=1, ax=ax, fitView=fitView, **kwargs)
         xMin = mesh[0].xMin()
@@ -204,6 +204,8 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
             Add label to the x axis
         * ylabel: str [None]
             Add label to the y axis
+        fitView: bool
+            Fit the axes limits to the view object. Default is True if ax is None else is set to False.
         All remaining will be forwarded to the draw functions
         and matplotlib methods, respectively.
 
@@ -227,7 +229,9 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
     cMap = kwargs.pop('cMap', None)
     cBarOrientation = kwargs.pop('orientation', 'horizontal')
 
+    fitViewDefault = False
     if ax is None:
+        fitViewDefault = True
         ax = plt.subplots()[1]
 
     # plt.subplots() resets locale setting to system default .. this went
@@ -343,7 +347,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
                                                 color=(0.0, 0.0, 0.0, 1.0),
                                                 linewidth=1.4)
 
-    fitView = kwargs.pop('fitView', True)
+    fitView = kwargs.pop('fitView', fitViewDefault)
     if fitView:
         ax.set_xlim(mesh.xMin(), mesh.xMax())
         ax.set_ylim(mesh.yMin(), mesh.yMax())
