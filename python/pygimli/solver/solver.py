@@ -632,8 +632,6 @@ def _bcIsForVectorValues(bc, mesh):
                         test = test(mesh.boundary(0))
                     except BaseException:
                         pass
-
-
                 if hasattr(test, '__iter__'):
                     ### {marker, [x, y, z]}
                     if len(test) == mesh.dim():

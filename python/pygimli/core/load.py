@@ -14,6 +14,7 @@ from pygimli.utils import readGPX
 from pygimli.utils import cache
 from pygimli.physics.traveltime import load as loadTT
 
+
 gimliExampleDataPath='gimli-org/example-data/'
 # Example data repository
 exampleDataRepository = ''.join((
@@ -147,7 +148,7 @@ def load(fname, verbose=False, testAll=True, realName=None):
         ".gpx": readGPX,  # read gpx waypoints
         ".xy": np.loadtxt,  #
     }
-    
+
     if not os.path.exists(fname):
         raise Exception("File or directory named %s does not exist." % (fname))
 
