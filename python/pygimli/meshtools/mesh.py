@@ -213,8 +213,7 @@ def refineHex2Tet(mesh, style=1):
 
     TODO
     ----
-        * mixed meshes
-        * preserve boundary information
+        * mixed meshes (need to ensure consistent face diagonal for nonstructured hex grids .. if such exists)
 
     Parameters
     ----------
@@ -222,8 +221,8 @@ def refineHex2Tet(mesh, style=1):
         Mesh containing hexrahedron cells, e.g., from a grid.
 
     style: int [1]
-        * 1 bisect each hexahedron int 5 tetrahedrons (numerically favorable)
-        * 2 bisect each hexahedron int 6 tetrahedrons
+        * 1 bisect each hexahedron int 6 tetrahedrons (less numerical quality but no problems due to diagonal face split)
+        * 2 bisect each hexahedron int 5 tetrahedrons (will lead to inconsistent meshes. Neighboring cell will have different face split diagonal. Might be fixable by rotating the split order depending on coordinates for every 2nd split .. if someone really need this.)
 
     Returns
     -------
@@ -236,13 +235,13 @@ def refineHex2Tet(mesh, style=1):
     >>> import pygimli.meshtools as mt
     >>> hex = pg.createGrid(2, 2, 2)
     >>> print(hex)
-    Mesh: Nodes: 8 Cells: 1 Boundaries: 6
+    Mesh: Nodes: 8 Cells: 1 Boundaries: 0
     >>> tet = mt.refineHex2Tet(hex, style=1)
     >>> print(tet)
-    Mesh: Nodes: 8 Cells: 5 Boundaries: 0
+    Mesh: Nodes: 8 Cells: 6 Boundaries: 6
     >>> tet = mt.refineHex2Tet(hex, style=2)
     >>> print(tet)
-    Mesh: Nodes: 8 Cells: 6 Boundaries: 0
+    Mesh: Nodes: 8 Cells: 5 Boundaries: 0
     """
     out = pg.Mesh(3)
 
@@ -264,17 +263,61 @@ def refineHex2Tet(mesh, style=1):
 
     for c in mesh.cells():
         if style == 1:
-            for tet in HexahedronSplit5TetID:
-                out.createCell([c.node(tet[0]).id(),
-                                c.node(tet[1]).id(),
-                                c.node(tet[2]).id(),
-                                c.node(tet[3]).id()], c.marker())
-        elif style == 2:
             for tet in HexahedronSplit6TetID:
                 out.createCell([c.node(tet[0]).id(),
                                 c.node(tet[1]).id(),
                                 c.node(tet[2]).id(),
                                 c.node(tet[3]).id()], c.marker())
+        elif style == 2:
+            ### will lead to wrong face split
+            for tet in HexahedronSplit5TetID:
+                out.createCell([c.node(tet[0]).id(),
+                                c.node(tet[1]).id(),
+                                c.node(tet[2]).id(),
+                                c.node(tet[3]).id()], c.marker())
+
+    def intersects(lst):
+        ise = set([c.id() for c in lst[0]])
+        for i in range(1, len(lst)):
+            ise = ise.intersection([c.id() for c in lst[i]])
+        return ise
+
+    for b in mesh.boundaries():
+        if b.marker() != 0.0:
+            cells = intersects([out.node(b.node(0).id()).cellSet(),
+                               out.node(b.node(1).id()).cellSet(),
+                               out.node(b.node(2).id()).cellSet()])
+
+            if len(cells) > 0:
+                out.createBoundary([b.node(0).id(),
+                                    b.node(1).id(),
+                                    b.node(2).id()], marker=b.marker())
+                out.createBoundary([b.node(0).id(),
+                                    b.node(2).id(),
+                                    b.node(3).id()], marker=b.marker())
+            else:
+                cells = intersects([out.node(b.node(0).id()).cellSet(),
+                                    out.node(b.node(1).id()).cellSet(),
+                                    out.node(b.node(3).id()).cellSet()])
+                if len(cells) > 0:
+                    out.createBoundary([b.node(0).id(),
+                                        b.node(1).id(),
+                                        b.node(3).id()], marker=b.marker())
+                    out.createBoundary([b.node(1).id(),
+                                        b.node(2).id(),
+                                        b.node(3).id()], marker=b.marker())
+                else:
+                    print("test0")
+                    print( [c.id() for c in out.node(b.node(0).id()).cellSet()])
+                    print( [c.id() for c in out.node(b.node(1).id()).cellSet()])
+                    print( [c.id() for c in out.node(b.node(2).id()).cellSet()])
+                    print("test1")
+                    print( [c.id() for c in out.node(b.node(0).id()).cellSet()])
+                    print( [c.id() for c in out.node(b.node(1).id()).cellSet()])
+                    print( [c.id() for c in out.node(b.node(3).id()).cellSet()])
+
+                    pg.critical('Mesh corrupt')
+
     return out
 
 

@@ -45,7 +45,7 @@ def showMesh3DFallback(mesh, data, **kwargs):
     Plot the 3D object sketchy.
     """
     ax = kwargs.pop('ax', None)
-    
+
     # ensure to remove notebook from kwargs
     notebook = kwargs.pop('notebook', inline)
 

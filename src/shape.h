@@ -131,7 +131,7 @@ private:
 
         #else
         // __MS("lock deactiated " << ShapeFunctionWriteCacheMutex__)
-        
+
             std::unique_lock < std::mutex > lock(ShapeFunctionWriteCacheMutex__);
         #endif
 
@@ -347,7 +347,6 @@ public:
 
     //     double jacobianDeterminant() const { return det(this->createJacobian()); }
 
-    // inline void resizeNodeSize_(uint n) { nodeVector_.resize(n, NULL);  }
     inline void resizeNodeSize_(Index n) { this->nodeCount_ = n; }
 
 protected:

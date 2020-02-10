@@ -773,6 +773,10 @@ def createTriangles(mesh):
         ents = mesh.cells()
     else:
         ents = mesh.boundaries(mesh.boundaryMarkers() != 0)
+        if len(ents) == 0:
+            for b in mesh.boundaries():
+                if b.leftCell() is None or b.rightCell() is None:
+                    ents.append(b)
 
     triangles = []
     dataIdx = []
@@ -784,7 +788,7 @@ def createTriangles(mesh):
         if c.shape().nodeCount() == 4:
             triangles.append([c.node(0).id(), c.node(2).id(), c.node(3).id()])
             dataIdx.append(c.id())
-        
+
     return x, y, triangles, z, dataIdx
 
 
@@ -850,12 +854,12 @@ def drawField(ax, mesh, data=None, levels=None, nLevs=5,
     <matplotlib.tri.tricontour.TriContourSet ...>
     """
     x, y, triangles, _, dataIndex = createTriangles(mesh)
-    
+
     if len(data) == mesh.cellCount():
         z = data[dataIndex]
     else:
         z = data
-    
+
     gci = None
 
     if levels is None:

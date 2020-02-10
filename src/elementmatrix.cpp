@@ -54,6 +54,8 @@ ElementMatrix < double >::u(const MeshEntity & ent,
     }
 
     double A = ent.shape().domainSize();
+    // double J = det(ent.shape().createJacobian());
+    // __MS(A << " " << J)
     for (uint i = 0; i < nVerts; i ++){
         mat_[0][i] = A * it->second[i];
     }
@@ -561,59 +563,6 @@ ElementMatrix < double > & ElementMatrix < double >::gradU2(const Cell & cell,
     const R3Vector * x = 0;
     this->getWeightsAndPoints(cell, w, x, 1);
     return this->gradU2(cell, C, *w, *x, voigtNotation);
-
-    // switch (cell.rtti()) {
-    //     case MESH_EDGE_CELL_RTTI:
-    //     case MESH_EDGE3_CELL_RTTI: {
-    //         w = &IntegrationRules::instance().edgWeights(2);
-    //         x = &IntegrationRules::instance().edgAbscissa(2);
-    //     } break;
-    //     case MESH_TRIANGLE_RTTI: {
-    //         w = &IntegrationRules::instance().triWeights(1);
-    //         x = &IntegrationRules::instance().triAbscissa(1);
-    //     } break;
-    //     case MESH_TRIANGLE6_RTTI: {
-    //         w = &IntegrationRules::instance().triWeights(2);
-    //         x = &IntegrationRules::instance().triAbscissa(2);
-    //     } break;
-    //     case MESH_QUADRANGLE_RTTI: {
-    //         w = &IntegrationRules::instance().quaWeights(2);
-    //         x = &IntegrationRules::instance().quaAbscissa(2);
-    //     } break;
-    //     case MESH_QUADRANGLE8_RTTI: {
-    //         w = &IntegrationRules::instance().quaWeights(3);
-    //         x = &IntegrationRules::instance().quaAbscissa(3);
-    //     } break;
-    //     case MESH_TETRAHEDRON_RTTI: {
-    //         w = & IntegrationRules::instance().tetWeights(1);
-    //         x = & IntegrationRules::instance().tetAbscissa(1);
-    //     } break;
-    //     case MESH_TETRAHEDRON10_RTTI: {
-    //         w = & IntegrationRules::instance().tetWeights(2);
-    //         x = & IntegrationRules::instance().tetAbscissa(2);
-    //     } break;
-    //     case MESH_HEXAHEDRON_RTTI: {
-    //         w = & IntegrationRules::instance().hexWeights(2);
-    //         x = & IntegrationRules::instance().hexAbscissa(2);
-    //     } break;
-    //     case MESH_HEXAHEDRON20_RTTI: {
-    //         w = & IntegrationRules::instance().hexWeights(4);
-    //         x = & IntegrationRules::instance().hexAbscissa(4);
-    //     } break;
-    //     case MESH_TRIPRISM_RTTI: {
-    //         w = & IntegrationRules::instance().priWeights(2);
-    //         x = & IntegrationRules::instance().priAbscissa(2);
-    //     } break;
-    //     case MESH_TRIPRISM15_RTTI: {
-    //         w = & IntegrationRules::instance().priWeights(4);
-    //         x = & IntegrationRules::instance().priAbscissa(4);
-    //     } break;
-    //     default:
-    //         std::cerr << cell.rtti() << std::endl;
-    //         THROW_TO_IMPL
-    //         break;
-    // }
-
 }
 
 
@@ -633,12 +582,16 @@ ElementMatrix < double >::u(const MeshEntity & ent){
                      IntegrationRules::instance().edgAbscissa(2), false); //ch
         case MESH_TRIANGLE_RTTI:
         case MESH_TRIANGLEFACE_RTTI:
+            return u(ent, IntegrationRules::instance().triWeights(2),
+                     IntegrationRules::instance().triAbscissa(2), false); //ch
         case MESH_TRIANGLE6_RTTI:
         case MESH_TRIANGLEFACE6_RTTI:
             return u(ent, IntegrationRules::instance().triWeights(2),
                      IntegrationRules::instance().triAbscissa(2), false); //ch
         case MESH_QUADRANGLE_RTTI:
         case MESH_QUADRANGLE8_RTTI:
+            return u(ent, IntegrationRules::instance().quaWeights(2),
+                     IntegrationRules::instance().quaAbscissa(2), false); //ch
         case MESH_QUADRANGLEFACE_RTTI:
         case MESH_QUADRANGLEFACE8_RTTI:
             return u(ent, IntegrationRules::instance().quaWeights(2),

@@ -348,6 +348,7 @@ DEFINE_XVECTOR_STUFF__(RVector) //RVector last since auto rhs conversion will fa
     template RMatrix imag(const CMatrix & a);
 
     template double det(const RMatrix & a);
+    template double det(const RMatrix3 & a);
 
     template double min(const RVector & v);
     template double max(const RVector & v);
@@ -626,8 +627,8 @@ namespace pyplusplus{ namespace aliases{
     typedef std::set< long int >                        stdSetL;
     typedef std::set< std::string >                     stdSetS;
     typedef std::set< GIMLI::Node * >                 stdSetNodes;
-    typedef std::set< GIMLI::Boundary * >             stdSetBoundary;
-    typedef std::set< GIMLI::Cell * >                 stdSetCell;
+    typedef std::set< GIMLI::Boundary * >             stdSetBoundaries;
+    typedef std::set< GIMLI::Cell * >                 stdSetCells;
 
 }} //pyplusplus::aliases
 
