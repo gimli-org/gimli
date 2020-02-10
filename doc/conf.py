@@ -90,8 +90,7 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.imgconverter',
               'sphinx.ext.autosectionlabel',
               'matplotlib.sphinxext.plot_directive',
-              'srclinks',
-              #'doxylink'
+              'srclinks'
               ]
 
 extensions += [dep.replace('-', '.') for dep in deps]

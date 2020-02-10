@@ -86,3 +86,7 @@ python/pygimli/core/*.dll
 python/pygimli/testing/synth.ves
 .vscode/launch.json
 python/git.exe.stackdump
+python/pygimli/core/libgimli.dll.back
+python/pygimli/core/_pygimli_.pyd.back
+doc/examples/dc_and_ip/synth.ves
+python/pygimli/VERSION

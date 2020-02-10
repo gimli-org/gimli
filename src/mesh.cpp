@@ -1538,7 +1538,7 @@ void Mesh::fixBoundaryDirections(){
         // __MS(b)
         if (b->leftCell() != NULL && b->rightCell() == NULL){
             if (!b->normShowsOutside(*b->leftCell())){
-                // 
+                //
                 b->swapNorm();
             }
         }
@@ -2181,10 +2181,14 @@ void Mesh::prolongateEmptyCellsValues(RVector & vals, double background) const {
         prolongateEmptyCellsValues(vals, background);
     }
 }
+void Mesh::geometryChanged(){
+    rangesKnown_ = false;
+    staticGeometry_ = false;
+}
 Mesh & Mesh::transform(const RMatrix & mat){
 //         std::for_each(nodeVector_.begin(), nodeVector_.end(),
 //                        bind2nd(std::mem_fun(&Node::pos().transform), mat));
-    for (auto &n: nodeVector_) n->pos().transform(mat);
+    for (auto &n: nodeVector_) n->transform(mat);
     for (auto &n: holeMarker_) n.transform(mat);
     for (auto &n: regionMarker_) n.transform(mat);
 
@@ -2197,12 +2201,12 @@ Mesh & Mesh::transform(const RMatrix & mat){
             }
         }
     }
-    rangesKnown_ = false;
+    geometryChanged();
     return *this;
 }
 
 Mesh & Mesh::scale(const RVector3 & s){
-    for (auto &n: nodeVector_) n->pos().scale(s);
+    for (auto &n: nodeVector_) n->scale(s);
     for (auto &n: holeMarker_) n.scale(s);
     for (auto &n: regionMarker_) n.scale(s);
 
@@ -2215,12 +2219,12 @@ Mesh & Mesh::scale(const RVector3 & s){
             }
         }
     }
-    rangesKnown_ = false;
+    geometryChanged();
     return *this;
 }
 
 Mesh & Mesh::translate(const RVector3 & t){
-    for (auto &n: nodeVector_) n->pos().translate(t);
+    for (auto &n: nodeVector_) n->translate(t);
     for (auto &n: holeMarker_) n.translate(t);
     for (auto &n: regionMarker_) n.translate(t);
 
@@ -2233,13 +2237,12 @@ Mesh & Mesh::translate(const RVector3 & t){
             }
         }
     }
-
-    rangesKnown_ = false;
+    geometryChanged();
     return *this;
 }
 
 Mesh & Mesh::rotate(const RVector3 & r){
-    for (auto &n: nodeVector_) n->pos().rotate(r);
+    for (auto &n: nodeVector_) n->rotate(r);
     for (auto &n: holeMarker_) n.rotate(r);
     for (auto &n: regionMarker_) n.rotate(r);
 
@@ -2252,20 +2255,40 @@ Mesh & Mesh::rotate(const RVector3 & r){
             }
         }
     }
-
-    rangesKnown_ = false;
+    geometryChanged();
     return *this;
 }
 
 Mesh & Mesh::deform(const R3Vector & eps, double magnify){
-    ASSERT_SIZE(eps, this->nodeCount())
-    for (auto &n: nodeVector_) n->pos().translate(magnify * eps[n->id()]);
-    rangesKnown_ = false;
+    ASSERT_VEC_SIZE(eps, this->nodeCount())
+    for (auto &n: nodeVector_) n->translate(magnify * eps[n->id()]);
+    geometryChanged();
+    return *this;
+}
+
+Mesh & Mesh::deform(const RVector & eps, double magnify){
+    Index dof = this->nodeCount();
+    ASSERT_VEC_SIZE(eps, dof *this->dim())
+
+    if (this->dim() == 1){
+        for (auto &n: nodeVector_) n->translate(magnify * eps[n->id()]);
+    } else if (this->dim() == 2){
+        for (auto &n: nodeVector_){
+            n->translate(magnify * eps[n->id()],
+                         magnify * eps[n->id() + dof]);
+        }
+    } else if (this->dim() == 3){
+        for (auto *n: nodeVector_)
+            n->translate(magnify * eps[n->id()],
+                         magnify * eps[n->id() + dof],
+                         magnify * eps[n->id() + 2 * dof]);
+    }
+    geometryChanged();
     return *this;
 }
 
 void Mesh::swapCoordinates(Index i, Index j){
-    for (auto &n: nodeVector_) n->pos().swap(i,j);
+    for (auto &n: nodeVector_) n->swap(i,j);
     for (auto &n: holeMarker_) n.swap(i,j);
     for (auto &n: regionMarker_) n.swap(i,j);
 
@@ -2278,7 +2301,7 @@ void Mesh::swapCoordinates(Index i, Index j){
             }
         }
     }
-    rangesKnown_ = false;
+    geometryChanged();
 }
 
 

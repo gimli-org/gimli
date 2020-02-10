@@ -194,7 +194,7 @@ public:
 
     /*! Return the angle between (this, (origin), p).*/
     double angle(const Pos & p) const;
-    
+
     /*! Return the angle between (p1, this, p2).*/
     double angle(const RVector3 & p1, const RVector3 & p3) const;
 
@@ -221,7 +221,7 @@ public:
         if (t > TOLERANCE) *this /= t;
         return *this;
     }
-    
+
     /*!DEPRECATED Normalise for backward compatibility.*/
     Pos & normalise(){ return normalize(); }
 
@@ -268,6 +268,10 @@ public:
     inline Pos & scale(const RVector3 & s){ return (*this) *= s;}
 
     inline Pos & translate(const RVector3 & t){ return (*this) += t;}
+
+    inline Pos & translate(double x, double y=0.0, double z=0.0){
+        mat_[0] += x; mat_[1] += y; mat_[2] += z; return *this; }
+
 
     RVector vec() const {
         RVector tmp(3);

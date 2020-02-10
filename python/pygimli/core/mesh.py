@@ -3,7 +3,7 @@
 Import and extensions of the core Mesh class.
 """
 
-from ._pygimli_ import (HexahedronShape, Line, Mesh, MeshEntity, Node,
+from ._pygimli_ import (cat, HexahedronShape, Line, Mesh, MeshEntity, Node,
                         PolygonFace, TetrahedronShape, TriangleFace)
 from .logger import deprecated, error, info, warn
 from ..meshtools import mergePLC, exportPLC
@@ -204,20 +204,30 @@ def __createMeshWithSecondaryNodes__(self, n=3, verbose=False):
 Mesh.createSecondaryNodes = __createSecondaryNodes__
 Mesh.createMeshWithSecondaryNodes = __createMeshWithSecondaryNodes__
 
+
+__Mesh_deform__ = Mesh.deform
 def __deform__(self, eps, mag=1.0):
-    # !!!! delete all Jacobi caches belongs to the MeshEntities !!!!
+    v = None
+    dof = self.nodeCount()
+    if hasattr(eps, 'ndim') and eps.ndim == 1:
+        v = eps
+    elif len(eps) == self.dim():
+        if len(eps[0]) == dof:
+            if self.dim() == 2:
+                v = cat(eps[0], eps[1])
+            elif self.dim() == 3:
+                v = cat(cat(eps[0], eps[1]), eps[2])
+            else:
+                v = eps[0]
+        else:
+            print(self)
+            print(len(eps), len(eps[0]))
+            error('Size of displacement does not match mesh nodes size.')
 
-    warn('[mesh.deform] move me to the core')
-    import numpy as np
-    e = np.array(eps).T
-    for n in self.nodes():
-        #print(e[n.id(), :])
-        n.pos().translate(e[n.id(), :]*mag)
-    self.scale((1.,1.,1.))
-
-    return self
+    return __Mesh_deform__(self, v, mag)
 
 Mesh.deform = __deform__
+
 
 Mesh.exportPLC = exportPLC
 

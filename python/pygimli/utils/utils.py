@@ -31,8 +31,8 @@ class ProgressBar(object):
     Examples
     --------
     >>> from pygimli.utils import ProgressBar
-    >>> pbar = ProgressBar(its=20, width=40, sign='+')
-    >>> pbar.update(5)
+    >>> pBar = ProgressBar(its=20, width=40, sign='+')
+    >>> pBar.update(5)
     \r[+++++++++++       30%                 ] 6 of 20 complete
     """
 
@@ -41,7 +41,7 @@ class ProgressBar(object):
         self.its = int(its)
         self.width = width
         self.sign = sign[0]  # take first character only if sign is longer
-        self.pbar = "[]"
+        self.pBar = "[]"
         self._amount(0)
 
     def __call__(self, it, msg=""):
@@ -52,28 +52,28 @@ class ProgressBar(object):
         message."""
         self._setbar(iteration + 1)
         if len(msg) >= 1:
-            self.pbar += " (" + msg + ")"
-        print("\r" + self.pbar, end="")
+            self.pBar += " (" + msg + ")"
+        print("\r" + self.pBar, end="")
         sys.stdout.flush()
         if iteration == self.its-1:
             print()
 
     def _setbar(self, elapsed_it):
-        """Reset pbar based on current iteration number."""
+        """Reset pBar based on current iteration number."""
         self._amount((elapsed_it / float(self.its)) * 100.0)
-        self.pbar += " %d of %s complete" % (elapsed_it, self.its)
+        self.pBar += " %d of %s complete" % (elapsed_it, self.its)
 
     def _amount(self, new_amount):
-        """Calculate amount by which to update the pbar."""
+        """Calculate amount by which to update the pBar."""
         pct_done = int(round((new_amount / 100.0) * 100.0))
         full_width = self.width - 2
         num_signs = int(round((pct_done / 100.0) * full_width))
-        self.pbar = "[" + self.sign * num_signs + \
+        self.pBar = "[" + self.sign * num_signs + \
             " " * (full_width - num_signs) + "]"
-        pct_place = (len(self.pbar) // 2) - len(str(pct_done))
+        pct_place = (len(self.pBar) // 2) - len(str(pct_done))
         pct_string = " %d%% " % pct_done
-        self.pbar = self.pbar[0:pct_place] + \
-            (pct_string + self.pbar[pct_place + len(pct_string):])
+        self.pBar = self.pBar[0:pct_place] + \
+            (pct_string + self.pBar[pct_place + len(pct_string):])
 
 
 def boxprint(s, width=80, sym="#"):
@@ -137,7 +137,7 @@ def unicodeToAscii(text):
         return text
 
 
-def logDropTol(p, droptol=1e-3):
+def logDropTol(p, dropTol=1e-3):
     """Create logarithmic scaled copy of p.
 
     Examples
@@ -149,7 +149,7 @@ def logDropTol(p, droptol=1e-3):
     """
     tmp = pg.Vector(p)
 
-    tmp = pg.abs(tmp / droptol)
+    tmp = pg.abs(tmp / dropTol)
     tmp.setVal(1.0, pg.find(tmp < 1.0))
 
     tmp = pg.log10(tmp)
@@ -165,21 +165,21 @@ def prettify(value, roundValue=False):
     elif isinstance(value, float):
         return prettyFloat(value, roundValue)
     pg.warn("Don't know how to prettify the string representation for: ",
-               value)
+            value)
     return value
 
 
 def prettyFloat(value, roundValue=False):
     """Return prettified string for a float value.
-    
+
     TODO
     ----
-        add flag for round to 
+        add flag for round to
         add test
     """
     if roundValue and abs(round(value)-value) < 1e-4 and abs(value) < 1e3:
         string = str(int(round(value, 1)))
-    elif abs(value) == 0.0:
+    elif abs(value) < 1e-14:
         string = "0"
     elif abs(value) > 1e4 or abs(value) <= 1e-3:
         string = str("%.1e" % value)
@@ -237,17 +237,17 @@ def niceLogspace(vMin, vMax, nDec=10):
         print("vMin:", vMin, "vMax", vMax)
         raise Exception('vMin > vMax or vMin <= 0.')
 
-    vmin = 10**np.floor(np.log10(vMin))
-    vmax = 10**np.ceil(np.log10(vMax))
+    vMin = 10**np.floor(np.log10(vMin))
+    vMax = 10**np.ceil(np.log10(vMax))
 
-    if vmax == vmin:
-        vmax *= 10
+    if vMax == vMin:
+        vMax *= 10
 
-    n = np.log10(vmax / vmin) * nDec + 1
+    n = np.log10(vMax / vMin) * nDec + 1
 
     q = 10.**(1. / nDec)
 
-    return vmin * q**np.arange(n)
+    return vMin * q**np.arange(n)
 
 
 def grange(start, end, dx=0, n=0, log=False):
@@ -271,7 +271,7 @@ def grange(start, end, dx=0, n=0, log=False):
     n: int
         Amount of steps
     log: bool
-        Logarithmic increasing range of length = n from start to end. 
+        Logarithmic increasing range of length = n from start to end.
         dx will be ignored.
     Examples
     --------
@@ -480,6 +480,7 @@ def rand(n, minVal=0.0, maxVal=1.0):
 
 def getIndex(seq, f):
     """TODO DOCUMENTME."""
+    pg.error('getIndex in use?')
     # DEPRECATED_SLOW
     idx = []
     if isinstance(seq, pg.Vector):
@@ -496,6 +497,7 @@ def getIndex(seq, f):
 
 def filterIndex(seq, idx):
     """TODO DOCUMENTME."""
+    pg.error('filterIndex in use?')
     if isinstance(seq, pg.Vector):
         # return seq(idx)
         ret = pg.Vector(len(idx))
@@ -546,7 +548,7 @@ def unique_everseen(iterable, key=None):
     """
     try:
         from itertools import ifilterfalse
-    except Exception as _:
+    except BaseException as _:
         from itertools import filterfalse
 
     seen = set()
@@ -556,7 +558,7 @@ def unique_everseen(iterable, key=None):
             for element in ifilterfalse(seen.__contains__, iterable):
                 seen_add(element)
                 yield element
-        except Exception as _:
+        except BaseException as _:
             for element in filterfalse(seen.__contains__, iterable):
                 seen_add(element)
                 yield element
@@ -607,7 +609,7 @@ def unique_rows(array):
     # return A[sort_idx[np.nonzero(mask)[0][np.bincount(mask.cumsum()-1)==1]]]
 
 
-def uniqueRows(data, prec=2):
+def uniqueRows(data, precition=2):
     """Equivalent of Matlabs unique(data, 'rows') with tolerance check.
 
     Additionally returns forward and reverse indices
@@ -623,17 +625,17 @@ def uniqueRows(data, prec=2):
     >>> np.all(unA[ib] == A)
     True
     """
-    fak = 100**prec
-    dfix = np.fix(data * fak) / fak + 0.0
-    dtype = np.dtype((np.void, dfix.dtype.itemsize * dfix.shape[1]))
-    b = np.ascontiguousarray(dfix).view(dtype)
+    fak = 100**precition
+    dFix = np.fix(data * fak) / fak + 0.0
+    dtype = np.dtype((np.void, dFix.dtype.itemsize * dFix.shape[1]))
+    b = np.ascontiguousarray(dFix).view(dtype)
     _, ia = np.unique(b, return_index=True)
     _, ib = np.unique(b, return_inverse=True)
-    return np.unique(b).view(dfix.dtype).reshape(-1, dfix.shape[1]), ia, ib
+    return np.unique(b).view(dFix.dtype).reshape(-1, dFix.shape[1]), ia, ib
 
 
 def uniqueAndSum(indices, to_sum, return_index=False, verbose=False):
-    """Summs double values found by indices in a various number of arrays.
+    """Sum double values found by indices in a various number of arrays.
 
     Returns the sorted unique elements of a column_stacked array of indices.
     Another column_stacked array is returned with values at the unique
@@ -644,7 +646,7 @@ def uniqueAndSum(indices, to_sum, return_index=False, verbose=False):
     ar : array_like
         Input array. This will be flattened if it is not already 1-D.
     to_sum : array_like
-        Input array to be summed over axis 0. Other exsisting axes will be
+        Input array to be summed over axis 0. Other existing axes will be
         broadcasted remain untouched.
     return_index : bool, optional
         If True, also return the indices of `ar` (along the specified axis,

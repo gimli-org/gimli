@@ -107,8 +107,10 @@ Shape::~Shape(){
 }
 
 void Shape::changed(){
-    invJacobian_.clear();
-    invJacobian_.setValid(false);
+    if (invJacobian_.valid()){
+        invJacobian_.clear();
+        invJacobian_.setValid(false);
+    }
     hasDomSize_ = false;
 }
 
@@ -149,12 +151,11 @@ bool Shape::enforcePositiveDirection(){
 
 RVector3 Shape::center() const {
     RVector3 center(0.0, 0.0, 0.0);
-    for (auto &n: *this->nodeVector_){
-        center += n->pos();
+    //** count only until node count .. shape shares nodeVector but only use the
+    // outer p1 nodes
+    for (uint i = 0; i < this->nodeCount(); i ++) {
+        center += this->node(i).pos();
     }
-    // for (uint i = 0; i < nodeVector_.size(); i ++) {
-    //     center += this->node(i).pos();
-    // }
     center /= this->nodeCount();
     return center;
 }

@@ -39,33 +39,22 @@ grid = pg.createGrid(x=np.linspace(-1.0, 1.0, 21),
 # that simply returns 4 in this example but can compute anything as a function
 # of the individual boundaries b.
 
-
-###############################################################################
-# Short test: setting single node dirichlet BC
-u = solve(grid, f=1., bc={'Dirichlet': [grid.node(2), 0.]})
-
-ax, _ = pg.show(grid, u, label='Solution $u$',)
-show(grid, ax=ax)
-
 def uDirichlet(boundary):
     """Return a solution value for coordinate p."""
     return 4.0
 
-dirichletBC = [[1, 1.0],                                     # left
-               [grid.findBoundaryByMarker(2), 2.0],          # right
-               [grid.findBoundaryByMarker(3),
-               lambda boundary: 3.0 + boundary.center()[0]], # top
-               [grid.findBoundaryByMarker(4), uDirichlet]]   # bottom
+dirichletBC = {1: 1,                                           # left
+               2: 2.0,                                         # right
+               3: lambda boundary: 3.0 + boundary.center()[0], # top
+               4: uDirichlet}                                  # bottom
 
 ###############################################################################
-# The BC are passed using the bc keyword dictionary. Note that showMesh returns the
-# created figure ax ax while drawMesh plots on it and it can also be used as
-# a class with plotting or decoration methods.
+# The boundary conditions are passed using the bc keyword dictionary.
 u = solve(grid, f=1., bc={'Dirichlet': dirichletBC})
 
-ax = show(grid, data=u, colorBar=True,
-          orientation='vertical', label='Solution $u$',
-          levels=np.linspace(1.0, 4.0, 17), hold=1)[0]
+# Note that showMesh returns the created figure ax and the created colorBar.
+ax, cbar = show(grid, data=u, label='Solution $u$',
+                levels=np.linspace(1.0, 4.0, 17), hold=1)
 
 show(grid, ax=ax)
 
@@ -80,14 +69,12 @@ ax.set_xlim([-1.1, 1.1])  # some boundary for the text
 ax.set_ylim([-1.1, 1.1])
 
 ###############################################################################
-#
 # Alternatively we can define the gradients of the solution on the boundary,
-# i.e., Neumann type BC. This is done with another map (marker, value) and
-# passed by bc Dictionary.
-neumannBC = [[1, -0.5],  # left
-             [grid.findBoundaryByMarker(4), 2.5]]  # bottom
+# i.e., Neumann type BC. This is done with another dictionary {marker: value} and passed by the bc dictionary.
+neumannBC = {1: -0.5,  # left
+             4: 2.5}  # bottom
 
-dirichletBC = [3, 1.0]  # top
+dirichletBC = {3: 1.0}  # top
 
 u = solve(grid, f=0., bc={'Dirichlet': dirichletBC, 'Neumann': neumannBC})
 
@@ -96,8 +83,8 @@ u = solve(grid, f=0., bc={'Dirichlet': dirichletBC, 'Neumann': neumannBC})
 # default (natural) BC that are of homogeneous Neumann type
 # :math:`\frac{\partial u}{\partial n}=0`
 
-ax = show(grid, data=u, filled=True, colorBar=True,
-          orientation='vertical', label='Solution $u$',
+ax = show(grid, data=u, filled=True, orientation='vertical',
+          label='Solution $u$',
           levels=np.linspace(min(u), max(u), 14), hold=True)[0]
 
 # Instead of the grid we now want to add streamlines to show the gradients of
@@ -119,4 +106,14 @@ ax.set_title('$\\nabla\cdot(1\\nabla u)=0$')
 ax.set_xlim([-1.1, 1.1])
 ax.set_ylim([-1.1, 1.1])
 
+###############################################################################
+# Its also possible to force single nodes to fixed values too:
+# Short test: setting the value for the center node to 1.0
+u = solve(grid, f=1., bc={'Node': [grid.findNearestNode([0.0, 0.0]), 1.0]})
+
+ax, _ = pg.show(grid, u, label='Solution $u$',)
+show(grid, ax=ax)
+
 pg.wait()
+
+

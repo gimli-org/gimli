@@ -5,10 +5,11 @@ r"""
 Geoelectrics in 2.5D
 --------------------
 
-Geoelectrical modelling example in 2.5D. CR"""
+Geoelectrical modelling example in 2.5D. CR
 
+"""
 ###############################################################################
-# Let us start with a mathematical formulation ...
+# Let us start with the governing mathematical formulation:
 #
 # .. math::
 #
@@ -16,17 +17,17 @@ Geoelectrical modelling example in 2.5D. CR"""
 #
 # The source term is 3 dimensional but the distribution of the electrical
 # conductivity :math:`\sigma(x,y)` should by 2 dimensional so we need a
-# Fourier-Cosine-Transform from :math:`u(x,y,z) \mapsto u(x,y,k)` with the
-# wave number :math:`k`. :math:`D^(a)(u(x,y,z)) \mapsto i^|a|k^a u(x,y)`
+# Fourier-Cosine-Transform from :math:`u(x,y,z) \mapsto u(x,k,z)` with the
+# wave number :math:`k`. :math:`D^{(a)}(u(x,y,z)) \mapsto i^{|a|}k^a u(x,z)`
 #
 # .. math::
 #     \nabla\cdot( \sigma \nabla u ) - \sigma k^2 u
 #     &=-I\delta(\vec{r}-\vec{r}_{\text{s}}) \in R^2 \\
-#     \frac{\partial }{\partial x} \left(\cdot( \sigma
-#     \frac{\partial u}{\partial x}\right) + \frac{\partial }{\partial y} \left(\cdot(\sigma
-#     \frac{\partial u}{\partial y}\right) - \sigma k^2 u & =
-#     -I\delta(x-x_{\text{s}})\delta(y-y_{\text{s}}) \in R^2 \\
-#     \frac{\partial u}{\partial \vec{n}} & = 0 \quad\mathrm{on}\quad\text{Surface} z=0
+#     \frac{\partial }{\partial x}\left(\cdot \sigma \frac{\partial u}{\partial x}\right) +
+#     \frac{\partial }{\partial z}\left(\cdot\sigma \frac{\partial u}{\partial z}\right) -
+#     \sigma k^2 u & =
+#     -I\delta(x-x_{\text{s}})\delta(z-z_{\text{s}}) \in R^2 \\
+#     \frac{\partial u}{\partial \vec{n}} & = 0 \quad\mathrm{on}\quad\text{Surface}\quad z=0
 #
 
 import numpy as np
@@ -40,13 +41,13 @@ from pygimli.mplviewer import drawStreams
 
 def uAnalytical(p, sourcePos, k):
     """Calculates the analytical solution for the 2.5D geoelectrical problem.
-    
+
     Solves the 2.5D geoelectrical problem for one wave number k.
-    It calculates the normalized (for injection current 1 A and sigma=1 S/m) 
+    It calculates the normalized (for injection current 1 A and sigma=1 S/m)
     potential at position p for a current injection at position sourcePos.
     Injection at the subsurface is recognized via mirror sources along the
     surface at depth=0.
-    
+
     Parameters
     ----------
     p : pg.Pos
@@ -54,7 +55,7 @@ def uAnalytical(p, sourcePos, k):
     sourcePos : pg.Pos
         Current injection position.
     k : float
-        Wave number 
+        Wave number
 
     Returns
     -------
@@ -75,8 +76,8 @@ def mixedBC(boundary, userData):
     """Mixed boundary conditions.
 
     Define the derivative of the analytical solution regarding the outer normal
-    direction :math:`\vec{n}`. So we can define the value for the Neumann type
-    Boundary conditions for the boundaries in the subsurface.
+    direction :math:`\vec{n}`. So we can define the values for Robyn type
+    Boundary conditions for the boundaries on the subsurface.
     """
     ### ignore surface boundaries for wildcard boundary condition
     if boundary.norm()[1] == 1.0:
@@ -85,7 +86,7 @@ def mixedBC(boundary, userData):
     sourcePos = userData['sourcePos']
     k = userData['k']
     r1 = boundary.center() - sourcePos
-    
+
     # Mirror on surface at depth=0
     r2 = boundary.center() - pg.RVector3(1.0, -1.0, 1.0) * sourcePos
     r1A = r1.abs()
@@ -110,7 +111,7 @@ def pointSource(mesh, source):
     Right hand side entries will be shape functions(pos)
     """
     rhs = pg.Vector(mesh.nodeCount())
-    
+
     cell = mesh.findCell(source)
     rhs.setVal(cell.N(cell.shape().rst(source)), cell.ids())
     return rhs
@@ -126,12 +127,12 @@ sourcePosB = [+5.0, -4.0]
 k = 1e-3
 sigma = 1
 u = solve(grid, a=sigma, b=-sigma * k*k, f=pointSource(grid, sourcePosA),
-          bc={'Robin': [[1,2,4], mixedBC]},
+          bc={'Robin': {'1,2,4': mixedBC}},
           userData={'sourcePos': sourcePosA, 'k': k},
           verbose=True)
 
 u -= solve(grid, a=sigma, b=-sigma * k*k, f=pointSource(grid, sourcePosB),
-           bc={'Robin': ['*', mixedBC]},
+           bc={'Robin': {'1,2,4': mixedBC}},
            userData={'sourcePos': sourcePosB, 'k': k},
            verbose=True)
 
@@ -144,7 +145,7 @@ u -= solve(grid, a=sigma, b=-sigma * k*k, f=pointSource(grid, sourcePosB),
 
 # print("error min max", min(err), max(err))
 
-ax = show(grid, data=u, fillContour=True, colorBar=True, cMap="RdBu_r",
+ax = show(grid, data=u, fillContour=True, cMap="RdBu_r",
           orientation='horizontal', label='Solution u', nLevs=11,
           logScale=False, hold=True, showMesh=True)[0]
 

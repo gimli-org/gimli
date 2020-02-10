@@ -28,7 +28,7 @@ class TestManagers(unittest.TestCase):
 
         vmdMgr = pg.frameworks.MethodManager1d(fop)
         synthModel = np.array([25., 5., 100., 150., 1., 10., 4.])
-       
+
         ra = vmdMgr.simulate(synthModel)
 
         err = abs(np.log(t)/2) * 0.01
@@ -38,11 +38,11 @@ class TestManagers(unittest.TestCase):
                               maxIter=50,
                               showProgress=showProgress, verbose=verbose)
 
-        np.testing.assert_array_less(vmdMgr.fw.chi2(), 1)
+        np.testing.assert_array_less(vmdMgr.fw.chi2(), 1.5)
         if showProgress:
             axs = vmdMgr.showResult()
             fop.drawModel(ax=axs[0], model=synthModel, label='Synth')
-        
+
     def test_VES(self, showProgress=False):
         """
         """
@@ -59,7 +59,7 @@ class TestManagers(unittest.TestCase):
         ab2 = np.logspace(np.log10(1.5), np.log10(100.), 25)
 
         mgr = VESManager(verbose=False, debug=False)
-        
+
         if showProgress:
             mgr.verbose = True
         fig, axs = pg.plt.subplots(2, 4, figsize=(12,7))
@@ -118,6 +118,6 @@ if __name__ == '__main__':
 
         pg.info("test done")
         pg.wait()
-    else:       
+    else:
         unittest.main()
 

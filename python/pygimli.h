@@ -145,15 +145,18 @@ namespace pyplusplus{ namespace aliases{
 // #include "matrixTemplates.h"
 
 namespace GIMLI{
-    // inline IndexArray operator OP (const IndexArray & a, const IndexArray & b){ 
-    //     IndexArray ret(a);   ret OP##=b; return ret; }                           
-    // inline IndexArray operator OP (const IndexArray & a, Index b){ 
-    //     IndexArray ret(a);   ret OP##=b; return ret; }                           
-    // inline IndexArray operator OP (Index a, const IndexArray & b){ 
-    //     IndexArray ret(b.size()); for (Index i = 0; i < b.size(); i ++) ret[i] = a OP b[i]; return ret; } 
-    //
 
-#define DEFINE_PY_VEC_OPERATOR__(OP)                      \
+#define DEFINE_PY_VEC_OPERATOR__(OP) \
+    inline IndexArray operator OP (const IndexArray & a, const IndexArray & b){\
+        IndexArray ret(a);   ret OP##=b; return ret; } \
+    inline IndexArray operator OP (const IndexArray & a, Index b){ \
+        IndexArray ret(a);   ret OP##=b; return ret; } \
+    inline IndexArray operator OP (const IndexArray & a, int b){ \
+        IndexArray ret(a);   ret OP##=(Index)abs(b); return ret; } \
+    inline IndexArray operator OP (Index a, const IndexArray & b){ \
+        IndexArray ret(b.size()); for (Index i = 0; i < b.size(); i ++) ret[i] = a OP b[i]; return ret; } \
+    inline IndexArray operator OP (int a, const IndexArray & b){ \
+        IndexArray ret(b.size()); for (Index i = 0; i < b.size(); i ++) ret[i] = (Index)abs(a) OP b[i]; return ret; } \
     inline RVector operator OP (const RVector & a, const RVector & b){ \
         RVector ret(a);   ret OP##=b; return ret; }                           \
     inline RVector operator OP (const double & a, const RVector & b){ \
@@ -345,6 +348,7 @@ DEFINE_XVECTOR_STUFF__(RVector) //RVector last since auto rhs conversion will fa
     template RMatrix imag(const CMatrix & a);
 
     template double det(const RMatrix & a);
+    template double det(const RMatrix3 & a);
 
     template double min(const RVector & v);
     template double max(const RVector & v);
@@ -623,8 +627,8 @@ namespace pyplusplus{ namespace aliases{
     typedef std::set< long int >                        stdSetL;
     typedef std::set< std::string >                     stdSetS;
     typedef std::set< GIMLI::Node * >                 stdSetNodes;
-    typedef std::set< GIMLI::Boundary * >             stdSetBoundary;
-    typedef std::set< GIMLI::Cell * >                 stdSetCell;
+    typedef std::set< GIMLI::Boundary * >             stdSetBoundaries;
+    typedef std::set< GIMLI::Cell * >                 stdSetCells;
 
 }} //pyplusplus::aliases
 

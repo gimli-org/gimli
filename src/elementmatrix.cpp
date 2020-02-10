@@ -54,6 +54,8 @@ ElementMatrix < double >::u(const MeshEntity & ent,
     }
 
     double A = ent.shape().domainSize();
+    // double J = det(ent.shape().createJacobian());
+    // __MS(A << " " << J)
     for (uint i = 0; i < nVerts; i ++){
         mat_[0][i] = A * it->second[i];
     }
@@ -464,23 +466,30 @@ void ElementMatrix < double >::fillGradientBase(
             }
         } else {
             // vector field
-            if (ent.dim() > 0){
+            if (ent.dim() == 1){
                 _B[i][0].setVal(dNdx_[i], 0 * nVerts, 1 * nVerts);
-            }
-            if (ent.dim() > 1){
+            } else if (ent.dim() == 2){
+                _B[i][0].setVal(dNdx_[i], 0 * nVerts, 1 * nVerts);
                 _B[i][1].setVal(dNdy_[i], 1 * nVerts, 2 * nVerts);
 
                 if (nC > ent.dim()){ // elastic material
                     _B[i][2].setVal(dNdy_[i] * a, 0 * nVerts, 1 * nVerts);
                     _B[i][2].setVal(dNdx_[i] * a, 1 * nVerts, 2 * nVerts);
                 }
-            }
-            if (ent.dim() > 2){
+            } else if (ent.dim() == 3){
+                _B[i][0].setVal(dNdx_[i], 0 * nVerts, 1 * nVerts);
+                _B[i][1].setVal(dNdy_[i], 1 * nVerts, 2 * nVerts);
                 _B[i][2].setVal(dNdz_[i], 2 * nVerts, 3 * nVerts);
+
                 if (nC > ent.dim()){ // elastic material
-                THROW_TO_IMPL
-                    // _B[i][3].setVal(dNdy_[i] * a, 0, nVerts);
-                    // _B[i][3].setVal(dNdx_[i] * a, nVerts, 2*nVerts);
+                    _B[i][3].setVal(dNdy_[i] * a, 0 * nVerts, 1 * nVerts);
+                    _B[i][3].setVal(dNdx_[i] * a, 1 * nVerts, 2 * nVerts);
+
+                    _B[i][4].setVal(dNdz_[i] * a, 1 * nVerts, 2 * nVerts);
+                    _B[i][4].setVal(dNdy_[i] * a, 2 * nVerts, 3 * nVerts);
+
+                    _B[i][5].setVal(dNdz_[i] * a, 0 * nVerts, 1 * nVerts);
+                    _B[i][5].setVal(dNdx_[i] * a, 2 * nVerts, 3 * nVerts);
                 }
             }
         }
@@ -554,59 +563,6 @@ ElementMatrix < double > & ElementMatrix < double >::gradU2(const Cell & cell,
     const R3Vector * x = 0;
     this->getWeightsAndPoints(cell, w, x, 1);
     return this->gradU2(cell, C, *w, *x, voigtNotation);
-
-    // switch (cell.rtti()) {
-    //     case MESH_EDGE_CELL_RTTI:
-    //     case MESH_EDGE3_CELL_RTTI: {
-    //         w = &IntegrationRules::instance().edgWeights(2);
-    //         x = &IntegrationRules::instance().edgAbscissa(2);
-    //     } break;
-    //     case MESH_TRIANGLE_RTTI: {
-    //         w = &IntegrationRules::instance().triWeights(1);
-    //         x = &IntegrationRules::instance().triAbscissa(1);
-    //     } break;
-    //     case MESH_TRIANGLE6_RTTI: {
-    //         w = &IntegrationRules::instance().triWeights(2);
-    //         x = &IntegrationRules::instance().triAbscissa(2);
-    //     } break;
-    //     case MESH_QUADRANGLE_RTTI: {
-    //         w = &IntegrationRules::instance().quaWeights(2);
-    //         x = &IntegrationRules::instance().quaAbscissa(2);
-    //     } break;
-    //     case MESH_QUADRANGLE8_RTTI: {
-    //         w = &IntegrationRules::instance().quaWeights(3);
-    //         x = &IntegrationRules::instance().quaAbscissa(3);
-    //     } break;
-    //     case MESH_TETRAHEDRON_RTTI: {
-    //         w = & IntegrationRules::instance().tetWeights(1);
-    //         x = & IntegrationRules::instance().tetAbscissa(1);
-    //     } break;
-    //     case MESH_TETRAHEDRON10_RTTI: {
-    //         w = & IntegrationRules::instance().tetWeights(2);
-    //         x = & IntegrationRules::instance().tetAbscissa(2);
-    //     } break;
-    //     case MESH_HEXAHEDRON_RTTI: {
-    //         w = & IntegrationRules::instance().hexWeights(2);
-    //         x = & IntegrationRules::instance().hexAbscissa(2);
-    //     } break;
-    //     case MESH_HEXAHEDRON20_RTTI: {
-    //         w = & IntegrationRules::instance().hexWeights(4);
-    //         x = & IntegrationRules::instance().hexAbscissa(4);
-    //     } break;
-    //     case MESH_TRIPRISM_RTTI: {
-    //         w = & IntegrationRules::instance().priWeights(2);
-    //         x = & IntegrationRules::instance().priAbscissa(2);
-    //     } break;
-    //     case MESH_TRIPRISM15_RTTI: {
-    //         w = & IntegrationRules::instance().priWeights(4);
-    //         x = & IntegrationRules::instance().priAbscissa(4);
-    //     } break;
-    //     default:
-    //         std::cerr << cell.rtti() << std::endl;
-    //         THROW_TO_IMPL
-    //         break;
-    // }
-
 }
 
 
@@ -626,12 +582,16 @@ ElementMatrix < double >::u(const MeshEntity & ent){
                      IntegrationRules::instance().edgAbscissa(2), false); //ch
         case MESH_TRIANGLE_RTTI:
         case MESH_TRIANGLEFACE_RTTI:
+            return u(ent, IntegrationRules::instance().triWeights(2),
+                     IntegrationRules::instance().triAbscissa(2), false); //ch
         case MESH_TRIANGLE6_RTTI:
         case MESH_TRIANGLEFACE6_RTTI:
             return u(ent, IntegrationRules::instance().triWeights(2),
                      IntegrationRules::instance().triAbscissa(2), false); //ch
         case MESH_QUADRANGLE_RTTI:
         case MESH_QUADRANGLE8_RTTI:
+            return u(ent, IntegrationRules::instance().quaWeights(2),
+                     IntegrationRules::instance().quaAbscissa(2), false); //ch
         case MESH_QUADRANGLEFACE_RTTI:
         case MESH_QUADRANGLEFACE8_RTTI:
             return u(ent, IntegrationRules::instance().quaWeights(2),
@@ -649,7 +609,7 @@ ElementMatrix < double >::u(const MeshEntity & ent){
             return u(ent, IntegrationRules::instance().priWeights(2),
                      IntegrationRules::instance().priAbscissa(2), false);
 
-        default: std::cerr << WHERE_AM_I << " celltype not spezified " << ent.rtti() << std::endl;
+        default: std::cerr << WHERE_AM_I << " celltype not specified " << ent.rtti() << std::endl;
     }
     return *this;
 }
@@ -1057,7 +1017,7 @@ ElementMatrix < double >::ux2uy2uz2(const Cell & cell, bool useCache){
 //         + (2.0*f) * (*Tet10_u_eta_u_zeta);
 //     for (uint i = 0; i < dim; i++){
 //       for (uint j = 0; j < dim; j++){
-//         //** * 6.0 weil a b c d e f / 6
+//         //** * 6.0 because a b c d e f / 6
 //         mat_[i][j] = compound[i][j] * 6.0;
 //       }
 //     }

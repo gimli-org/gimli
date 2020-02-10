@@ -168,7 +168,7 @@ b = pg.solver.createLoadVector(domain, f)
 # To apply the boundary condition we first need to identify all boundary
 # elements. The default grid applies the following boundary marker on the
 # outermost boundaries: 1 (left), 2(right), 3(top), and 4(bottom).
-boundaries = pg.solver.parseArgToBoundaries([[1, 2, 3, 4], 0.0], domain)
+boundaries = pg.solver.parseArgToBoundaries({'1,2,3,4': 0.0}, domain)
 
 ###############################################################################
 # `parseArgToBoundaries` is a helper function to collect a list of
@@ -202,7 +202,7 @@ h = []
 l2 = []
 for i in range(5):
     domain = domain.createH2()
-    u_h = pg.solve(domain, f=f, bc={'Dirichlet':[[1,2,3,4], 0]})
+    u_h = pg.solve(domain, f=f, bc={'Dirichlet':{'1:5': 0}})
     u = np.array([uExact(_) for _ in domain.positions()])
     l2.append(pg.solver.normL2(u - u_h, domain))
     h.append(min(domain.boundarySizes()))

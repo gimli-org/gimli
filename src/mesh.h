@@ -152,7 +152,7 @@ public:
     /*! Clear all data, inclusive all caches.*/
     void clear();
 
-    /*!If the mesh is static in geometry and shape some useful informations are cached.
+    /*!If the mesh is static in geometry and shape some useful information are cached.
      * (cell sizes, boundary sizes, ...)
      For dynamic meshes, i.e., node positions can be moved, you have to set staticGeometry to false to avoid any caching.*/
     void setStaticGeometry(bool stat);
@@ -166,6 +166,9 @@ public:
 
     /*! Return if the mesh is a geometry definition.*/
     bool isGeometry() const { return isGeometry_; }
+
+    /*! Some parts of the geometry changed so the mesh is supposed to be dynamic.*/
+    void geometryChanged();
 
     /*! Set the dimension of the mesh. [Default = 2] */
     void setDimension(uint dim){ dimension_ = dim;}
@@ -192,7 +195,7 @@ public:
                                bool warn=false, bool edgeCheck=false);
 
     Boundary * createBoundary(std::vector < Node * > & nodes, int marker=0, bool check=true);
-    /*! Create a boundary from the given node indieces */
+    /*! Create a boundary from the given node indices */
     Boundary * createBoundary(const IndexArray & nodes, int marker=0, bool check=true);
     Boundary * createBoundary(const Boundary & bound, bool check=true);
     Boundary * createBoundary(const Cell & cell, bool check=true);
@@ -206,7 +209,7 @@ public:
     /*! Create empty cell without a node or a shape. */
     Cell * createCell(int marker=0);
     Cell * createCell(std::vector < Node * > & nodes, int marker=0);
-    /*! Create a cell from the given node indieces */
+    /*! Create a cell from the given node indices */
     Cell * createCell(const IndexArray & nodes, int marker=0);
     Cell * createCell(const Cell & cell);
     Cell * createTriangle(Node & n1, Node & n2, Node & n3, int marker=0);
@@ -491,6 +494,12 @@ public:
     Returns a reference to the mesh (no copy).*/
     Mesh & deform(const R3Vector & eps, double magnify=1.0);
 
+    /*! Apply deformation epsilon (with squeezed array) to all nodes.
+    Optional magnify the deformation.
+    Returns a reference to the mesh (no copy).*/
+
+    Mesh & deform(const RVector & eps, double magnify=1.0);
+
     /*! Swap coordinate i with j for i and j lower then dimension of the mesh.
     Returns a reference to the mesh (no copy).*/
     void swapCoordinates(Index i, Index j);
@@ -520,7 +529,7 @@ public:
     void importVTU(const std::string & fbody);
 
     /*! Import Ascii STL as 3D mesh and save triangles as \ref Boundary Faces.
-    Node positions can be snaped to a tolerance.*/
+    Node positions can be snap to a tolerance.*/
     void importSTL(const std::string & fileName, bool isBinary=false,
                    double snap=1e-3);
 
@@ -646,7 +655,7 @@ public:
     /*! Change all boundary marker that match bMap.first to bMap.second. */
     void mapBoundaryMarker(const std::map < int, int > & aMap);
 
-    /*! Set all cell attributes to the valaues in vector attribute.*/
+    /*! Set all cell attributes to the values in vector attribute.*/
     void setCellAttributes(const RVector & attribute);
 
     /*! Set all cell attributes to the scalar value: attribute */

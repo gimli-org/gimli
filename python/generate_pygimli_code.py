@@ -444,7 +444,10 @@ def generate(defined_symbols, extraIncludes):
           'std::vector<unsigned long',
           'std::vector<bool',
           'std::vector<double',
-          'std::set<',
+          'std::set<std',
+        #   'std::set<Node*', # we need them
+        #   'std::set<Cell*', # we need them
+        #   'std::set<Boundary*', # we need them
           'Variable',
           'Variable<GIMLI::XAxis__',
           'BVectorIter',
