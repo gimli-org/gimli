@@ -235,13 +235,13 @@ def refineHex2Tet(mesh, style=1):
     >>> import pygimli.meshtools as mt
     >>> hex = pg.createGrid(2, 2, 2)
     >>> print(hex)
-    Mesh: Nodes: 8 Cells: 1 Boundaries: 0
+    Mesh: Nodes: 8 Cells: 1 Boundaries: 6
     >>> tet = mt.refineHex2Tet(hex, style=1)
     >>> print(tet)
-    Mesh: Nodes: 8 Cells: 6 Boundaries: 6
+    Mesh: Nodes: 8 Cells: 6 Boundaries: 12
     >>> tet = mt.refineHex2Tet(hex, style=2)
     >>> print(tet)
-    Mesh: Nodes: 8 Cells: 5 Boundaries: 0
+    Mesh: Nodes: 8 Cells: 5 Boundaries: 12
     """
     out = pg.Mesh(3)
 
