@@ -31,20 +31,25 @@ endif()
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 
-    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -pipe -ansi -Wall -Wno-long-long -Wno-unused-result")
+    #set(CMAKE_CXX_FLAGS_RELEASE "-O3 -pipe -ansi -Wall -Wno-long-long -Wno-unused-result")
+    set(CMAKE_CXX_FLAGS_RELEASE "-g -pipe -ansi -Wall -Wno-long-long -Wno-unused-result")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-unused-variable")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-unused-value")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-unused-local-typedefs")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-strict-aliasing")
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-int-in-bool-context")
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-class-memaccess")
+    if (NOT APPLE)
+	    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-int-in-bool-context")
+	    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-class-memaccess")
+    else()
+	   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-undefined-var-template")
+    endif()
     add_definitions(-std=c++11)
     
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -p -O2 -std=c++11 -g -ansi -pedantic -fno-omit-frame-pointer -Wall")
 
     if (WIN32 OR CONDA_BUILD)
-        set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-deprecated-declarations -Wno-class-memaccess")
-        set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-class-memaccess") # new since gcc.8 maybe need to be checked
+        set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-deprecated-declarations")
+        #set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-class-memaccess") # new since gcc.8 maybe need to be checked, not on apple
         set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-parentheses") # from boost since gcc.8 maybe need to be checked
         set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-attributes") # from gcc-8.2 + boost
     endif()
@@ -233,7 +238,8 @@ endif()
 
 set (UMFPACK_FOUND FALSE)
 
-find_or_build_package(Triangle triangle LOCAL)
+#find_or_build_package(Triangle triangle LOCAL)
+find_package(Triangle)
 find_or_build_package(BLAS lapack)
 find_or_build_package(LAPACK lapack)
 find_or_build_package(CHOLMOD suitesparse)
@@ -460,6 +466,9 @@ message(STATUS "************************* Dependencies found *******************
 message(STATUS "**********************************************************************")
 if (CONDA_BUILD)
     message(STATUS "CONDA_BUILD: ${CONDA_BUILD}")
+    if (APPLE)
+	set(PYTHON_LIBRARY "-undefined dynamic_lookup")
+    endif()
 endif()
 message(STATUS "THREADS            :${Threads_FOUND}    ${CMAKE_THREAD_LIBS_INIT}")
 message(STATUS "USE_BOOST_THREAD   :${USE_BOOST_THREAD} ${Boost_THREAD_LIBRARIES}")

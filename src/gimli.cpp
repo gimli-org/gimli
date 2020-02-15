@@ -28,9 +28,7 @@
 
 //#include <omp.h> need -lgomp of -fopenmp
 
-#if OPENBLAS_CBLAS_FOUND
-    #include <cblas.h>
-#endif
+#include <cblas.h>
 
 #if USE_BOOST_THREAD
     #include <boost/thread.hpp>
@@ -47,7 +45,13 @@ static bool __SAVE_PYTHON_GIL__ = false;
 static bool __GIMLI_DEBUG__ = false;
 static int __GIMLI_DEEP_DEBUG__ = 0;
 
-static Index __GIMLI_THREADCOUNT__ = numberOfCPU();
+Index __setTC__(){
+    long tc = numberOfCPU();
+    if (tc == -1) return 1;
+    return (Index)(tc);
+}
+
+static Index __GIMLI_THREADCOUNT__ = __setTC__();
 
 // //** end forward declaration
 // // static here gives every .cpp its own static bool
@@ -66,17 +70,14 @@ int deepDebug(){ return __GIMLI_DEEP_DEBUG__; }
 void setThreadCount(Index nThreads){
     log(Debug, "Set amount of threads to " + str(nThreads));
     //log(Debug, "omp_get_max_threads: " + str(omp_get_max_threads()));
-#if OPENBLAS_CBLAS_FOUND
-    openblas_set_num_threads(nThreads);
     //omp_set_num_threads
-#else
     log(Debug, "can't set openblas thread count. ");    
-#endif
 
     __GIMLI_THREADCOUNT__ = nThreads;
 }
 
 Index threadCount(){
+__M
     return __GIMLI_THREADCOUNT__;
 }
 

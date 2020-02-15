@@ -7,6 +7,26 @@ import pygimli as pg
 
 class TestMeshGenerator(unittest.TestCase):
 
+    def test_meshAccess(self):
+
+        x = [.5, 1, 2, 3, 42]
+        y = [.5, 1, 2, 3]
+        z = [.5, 1, 3]
+
+        mesh = pg.createGrid(x, y, z)
+        print(mesh)
+        print(mesh.node(0))
+        print(mesh.cell(0))
+        print(mesh.boundary(0))
+
+    def test_triangle(self):
+        plc = pg.meshtools.createRectangle()
+        mesh = pg.meshtools.createMesh(plc)
+        print(mesh)
+        self.assertEqual(mesh.nodeCount(), 4)
+        self.assertEqual(mesh.cellCount(), 2)
+        self.assertEqual(mesh.boundaryCount(), 5)
+
     def test_createGrid(self):
         mesh = pg.createGrid(3)
         self.assertEqual(mesh.xmax(), 2.0)
@@ -108,12 +128,4 @@ class TestMeshGenerator(unittest.TestCase):
         
 
 if __name__ == '__main__':
-
-    pg.setDeepDebug(0)
-
-    t = TestMeshGenerator()
-    t.test_MeshStr()
-    # t.test_MeshCreateSecNodes()
-    exit()
-
     unittest.main()

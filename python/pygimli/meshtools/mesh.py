@@ -108,7 +108,7 @@ def createMesh(poly, quality=30, area=0.0, smooth=None, switches=None,
 
         tri.setSwitches(switches)
         mesh = tri.generate()
-
+         
         if smooth is not None:
             mesh.smooth(nodeMoving=kwargs.pop('node_move', True),
                         edgeSwapping=False,

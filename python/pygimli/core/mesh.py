@@ -81,7 +81,10 @@ def __createSecondaryNodes__(self, n=3, verbose=False):
     pg.Mesh
         Copy of the given mesh with secondary nodes.
     """
+    print(self)
     self.createNeighbourInfos()
+    print(self.boundary(0))
+    print(self)
 
     if self.boundary(0).nodeCount() != self.boundary(0).allNodeCount():
         warn("Mesh already contains secondary nodes. Not adding any more.")
@@ -94,9 +97,9 @@ def __createSecondaryNodes__(self, n=3, verbose=False):
                 for i in range(n):
                     sn = self.createSecondaryNode(line.at((i + 1) / (n + 1)))
                     b.addSecondaryNode(sn)
-
         elif self.dim() == 3:
             for b in self.boundaries():
+                print(b)
                 bs = b.shape()
                 for sx in range(n):
                     nmax = n

@@ -30,6 +30,8 @@ message(STATUS "Triangle_INCLUDE_DIR = ${Triangle_INCLUDE_DIR}")
 
 find_library(Triangle_LIBRARIES
             NAMES
+                libtri.a
+	        tri
                 triangle
                 libtriangle
             PATHS

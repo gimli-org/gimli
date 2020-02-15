@@ -836,9 +836,9 @@ RVector ElementMatrixMap::mult(const RVector & a, const RVector & b,
         double s = 0.0;
         const RMatrix & mat = mat_[r];
         const IndexArray & idx = idx_[r];
-        for (register Index i = 0; i < mat.rows(); i ++) {
+        for (Index i = 0; i < mat.rows(); i ++) {
             double t = 0;
-            for (register Index j = 0; j < mat.cols(); j ++) {
+            for (Index j = 0; j < mat.cols(); j ++) {
                 t += mat[i][j] * (a[idx[j]]-b[idx[j]]);
             }
             s += t * (m[idx[i]] - n[idx[i]]);
@@ -857,9 +857,9 @@ RVector ElementMatrixMap::mult(const RVector & a, const RVector & b) const{
         double s = 0.0;
         const RMatrix & mat = mat_[r];
         const IndexArray & idx = idx_[r];
-        for (register Index i = 0; i < mat.rows(); i ++) {
+        for (Index i = 0; i < mat.rows(); i ++) {
             double t = 0;
-            for (register Index j = 0; j < mat.cols(); j ++) {
+            for (Index j = 0; j < mat.cols(); j ++) {
                 t += mat[i][j] * (a[idx[j]]);
             }
             s += t * (b[idx[i]]);

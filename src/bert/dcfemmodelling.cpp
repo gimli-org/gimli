@@ -639,11 +639,6 @@ void DCMultiElectrodeModelling::assembleStiffnessMatrixDCFEMByPass_(SparseMatrix
                     continue;
                 }
 
-                if (a1 < 0 || a2 < 0){
-                    std::cerr << WHERE_AM_I << " bypass dofID unknown " << a1 << " "
-                        << a2 <<  " Ignoring."<< std::endl;
-                    continue;
-                }
                 byPassNodesPair.push_back(std::pair< Index, Index>(a1, a2));
                 resistanceNode.push_back(resis);
             } else if (row.size() == 2){
