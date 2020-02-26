@@ -18,7 +18,7 @@ class TestRVectorMethods(unittest.TestCase):
                 self.assertEqual(t, 1.0)
 
             self.assertEqual(sum(v), 5.0)
-            self.assertFalse(pg.haveInfNaN(v))
+            self.assertFalse(pg.core.haveInfNaN(v))
 
             v[1] = 0
             self.assertEqual(v[1], 0)
@@ -27,7 +27,7 @@ class TestRVectorMethods(unittest.TestCase):
             self.assertEqual(v[1], 1)
             #print(v/v)
 
-        testVector(pg.RVector(5, 1.0))
+        testVector(pg.Vector(5, 1.0))
         testVector(pg.CVector(5, 1.0))
         testVector(pg.BVector(5, True))
         testVector(pg.IVector(5, 1))
@@ -36,7 +36,7 @@ class TestRVectorMethods(unittest.TestCase):
         """
         """
         #
-        vec = pg.RVector(5, 1.0)
+        vec = pg.Vector(5, 1.0)
         self.assertEqual(vec[0], 1.0)
 
         vec[0] += 1.0
@@ -68,16 +68,26 @@ class TestRVectorMethods(unittest.TestCase):
 
         self.assertEqual(sum(v + 1), 10)
         self.assertEqual(sum(v - 2), -5)
-        #self.assertEqual(sum(v * 2), 10)
         self.assertEqual(sum(v / 1), 5)
         self.assertEqual(sum(1 + v), 10)
         self.assertEqual(sum(-1 - v), -10)
-        self.assertEqual(sum(2 * v), 10)
         self.assertEqual(sum(1 / v), 5)
+        # no clue why this doesnt work .. we might could hack them if someone need it
+        #self.assertEqual(sum(v * 2), 10)
 
+        self.assertEqual(sum(v + v), 10)
+        self.assertEqual(sum(v * v), 5)
+        self.assertEqual(sum(v - v), 0)
+        self.assertEqual(sum(v / v), 5)
+        self.assertEqual(sum(2 * v), 10)
+
+    def test_IndexArray(self):
+        v = pg.core.IndexArray([0,1,2,3])
+        self.assertEqual(sum(v), 6)
+        np.testing.assert_array_equal(v + 1, [1, 2, 3, 4])
 
     def test_RVectorOP(self):
-        v = pg.RVector(5, 1.0)
+        v = pg.Vector(5, 1.0)
 
         self.assertEqual(sum(v + 1), 10)
         self.assertEqual(sum(v - 2), -5)
@@ -96,13 +106,11 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(sum(2.0 * v), 10)
         self.assertEqual(sum(1.0 / v), 5)
 
-
         v2 = np.ones(len(v))* 0.01
         # check pg * np
         self.assertEqual(sum(v * v2), 5*0.01)
         # check np * pg
         self.assertEqual(sum(v2 * v), 5*0.01)
-
 
         #v = pg.CVector(5, 1.0)
 
@@ -125,7 +133,7 @@ class TestRVectorMethods(unittest.TestCase):
 
     def test_RVectorIndexRW(self):
 
-        v = pg.RVector(5, 2.0)
+        v = pg.Vector(5, 2.0)
         np.testing.assert_array_equal(v, [2, 2, 2, 2, 2])
 
         v += 1.0
@@ -167,13 +175,13 @@ class TestRVectorMethods(unittest.TestCase):
 
 
     def test_RVectorFuncts(self):
-        v = pg.RVector(5, 2.0)
-        self.assertEqual(sum(pg.pow(v, 2)), 20)
-        self.assertEqual(sum(pg.pow(v, 2.0)), 20)
-        self.assertEqual(sum(pg.pow(v, v)), 20)
+        v = pg.Vector(5, 2.0)
+        self.assertEqual(sum(pg.math.pow(v, 2)), 20)
+        self.assertEqual(sum(pg.math.pow(v, 2.0)), 20)
+        self.assertEqual(sum(pg.math.pow(v, v)), 20)
 
     def test_R3VectorIndex(self):
-        r3 = pg.R3Vector(10)
+        r3 = pg.core.R3Vector(10)
 
         self.assertEqual(r3[0], pg.RVector3(0))
         np.testing.assert_array_equal(r3[0], pg.RVector3(0))
@@ -191,7 +199,7 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(sum(d), 1+2+3)
 
     def test_Slices(self):
-        a = pg.RVector(np.arange(10.))
+        a = pg.Vector(np.arange(10.))
 
         np.testing.assert_array_equal(a[:], np.arange(10.)[:])
         np.testing.assert_array_equal(a[::], np.arange(10.)[::])
@@ -222,7 +230,7 @@ class TestRVectorMethods(unittest.TestCase):
     def test_IndexAccess(self):
         # (double) array/vector
         an = np.arange(10.)
-        ag = pg.RVector(an)
+        ag = pg.Vector(an)
 
         # bn = nd.array(bool)
         bn = (an > 4.)
@@ -253,7 +261,7 @@ class TestRVectorMethods(unittest.TestCase):
 
         # Ig = IndexArray
         Ig = pg.find(bg)
-        self.assertEqual(type(Ig), pg.IndexArray)
+        self.assertEqual(type(Ig), pg.core.IndexArray)
         self.assertEqual(len(Ig), 5)
         self.assertEqual(Ig[0], 5)
 
@@ -292,15 +300,15 @@ class TestRVectorMethods(unittest.TestCase):
         # RVector(IndexArray) ==  RVector(nd.array(int))
 
     def test_IndexAccess(self):
-        I = pg.IndexArray([0,1,1,0])
+        I = pg.core.IndexArray([0,1,1,0])
         np.testing.assert_array_equal(pg.sum(I), 2)
         np.testing.assert_array_equal(sum(I), 2)
         np.testing.assert_array_equal(np.sum(I), 2)
 
     def testComparison(self):
-        a = pg.RVector(10, 1)
-        b = pg.RVector(10, 2)
-        
+        a = pg.Vector(10, 1)
+        b = pg.Vector(10, 2)
+
         np.testing.assert_equal(len(a < 1), 10)
         np.testing.assert_equal(len(a > 2), 10)
 
@@ -308,26 +316,29 @@ class TestRVectorMethods(unittest.TestCase):
         np.testing.assert_equal(len(a > b), 10)
 
     def testRMatrixIndex(self):
-        A = pg.Matrix(4,4)
+        A = pg.Matrix(3,4)
         A[0] = pg.Vector(4,1)
-        
+
         np.testing.assert_equal(sum(A[0]), 4)
-        
+
         A[1,2] = 2.0
         # np.testing.assert_equal(sum(A[1]), 2)
         np.testing.assert_equal(A[1,2], 2)
 
-        ## will not work because A[2] refer to A[2]__getItem__ which only can 
+        np.testing.assert_equal(A[:,2], A.col(2))
+        np.testing.assert_equal(A[2], A.row(2))
+
+        ## will not work because A[2] refer to A[2]__getItem__ which only can
         # return a const reference. use the tuple idx above
         # A[2][2] = 2.0
         # np.testing.assert_equal(sum(A[2]), 2)
-        
+
 if __name__ == '__main__':
     # pg.setDeepDebug(1)
     # t = TestRVectorMethods()
-    
+
     # # t.test_IVectorOP()
     # t.test_Slices()
     # t.testRMatrixIndex()
-    
+
     unittest.main()

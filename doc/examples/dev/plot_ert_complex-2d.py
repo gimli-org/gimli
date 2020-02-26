@@ -13,10 +13,10 @@ class DCMultiElectrodeModellingC(pb.DCMultiElectrodeModelling):
         super().__init__(mesh, data, verbose)
         self.setComplex(True)
 
-        self._J = pg.RBlockMatrix()
+        self._J = pg.matrix.BlockMatrix()
         self.setJacobian(self._J)
 
-        self._C = pg.RBlockMatrix()
+        self._C = pg.matrix.BlockMatrix()
         self.setConstraints(self._C)
         self.matrixHeap = []
         # super().createConstraints = self.createConstraints
@@ -26,8 +26,8 @@ class DCMultiElectrodeModellingC(pb.DCMultiElectrodeModelling):
         """
         res = pb.getComplexData(self.data())
         parCount = self.regionManager().parameterCount()
-        re = pg.RVector(parCount, pg.mean(pg.real(res)))
-        im = pg.RVector(parCount, -pg.mean(pg.imag(res)))
+        re = pg.Vector(parCount, pg.mean(pg.math.real(res)))
+        im = pg.Vector(parCount, -pg.mean(pg.math.imag(res)))
         return pg.cat(re, im)
 
     def createJacobian(self, model):
@@ -36,7 +36,7 @@ class DCMultiElectrodeModellingC(pb.DCMultiElectrodeModelling):
         if self.complex():
             modelRe = model[0:int(len(model)/2)]
             modelIm = model[int(len(model)/2):len(model)]
-            modelC = pg.toComplex(modelRe, modelIm)
+            modelC = pg.math.toComplex(modelRe, modelIm)
             print("Real", min(modelRe), max(modelRe))
             print("Imag", min(modelIm), max(modelIm))
 
@@ -45,8 +45,8 @@ class DCMultiElectrodeModellingC(pb.DCMultiElectrodeModelling):
             if self._J.rows() == 0:
                 #re(data)/re(mod) = im(data)/im(mod)
                 # we need a local copy until we have a gimli internal reference counter FIXTHIS
-                M1 = pg.RMatrix()
-                M2 = pg.RMatrix()
+                M1 = pg.Matrix()
+                M2 = pg.Matrix()
                 self.matrixHeap.append(M1)
                 self.matrixHeap.append(M2)
 
@@ -62,7 +62,7 @@ class DCMultiElectrodeModellingC(pb.DCMultiElectrodeModelling):
                 self._J.clean()
 
 
-            k = pg.RVector(self.data()('k'))
+            k = pg.Vector(self.data()('k'))
             self.data().set('k', k*0.0 + 1.0)
 
             dMapResponse = pb.DataMap()
@@ -74,26 +74,26 @@ class DCMultiElectrodeModellingC(pb.DCMultiElectrodeModelling):
             #RVector am(abs(resp) * dataContainer_->get("k"));
             #RVector ph(-phase(resp));
 
-            print("respRe", pg.median(respRe), min(respRe), max(respRe))
-            print("respIm", pg.median(respIm), min(respIm), max(respIm))
+            print("respRe", pg.math.median(respRe), min(respRe), max(respRe))
+            print("respIm", pg.math.median(respIm), min(respIm), max(respIm))
 
-            JC = pg.CMatrix()
+            JC = pg.matrix.CMatrix()
             self.createJacobian_(modelC, u, JC)
             for i in range(JC.rows()):
                 #JC[i] *= 1.0/(modelC*modelC) * k[i]
                 JC[i] /= (modelC * modelC) / k[i]
 
-            self._J.mat(0).copy(pg.real(JC))
-            self._J.mat(1).copy(pg.imag(JC))
+            self._J.mat(0).copy(pg.math.real(JC))
+            self._J.mat(1).copy(pg.math.imag(JC))
 
-            #self.createJacobian_(modelRe*0.0+1.0, pg.real(u), self._J.mat(1))
-            #self.createJacobian_(modelRe*0.0+1.0, pg.imag(u), self._J.mat(2))
-            #self.createJacobian_(modelRe*0.0+1.0, pg.imag(u), self._J.mat(3))
+            #self.createJacobian_(modelRe*0.0+1.0, pg.math.real(u), self._J.mat(1))
+            #self.createJacobian_(modelRe*0.0+1.0, pg.math.imag(u), self._J.mat(2))
+            #self.createJacobian_(modelRe*0.0+1.0, pg.math.imag(u), self._J.mat(3))
 
 
-            sumsens0 = pg.RVector(self._J.mat(0).rows())
-            sumsens1 = pg.RVector(self._J.mat(0).rows())
-            sumsens2 = pg.RVector(self._J.mat(0).rows())
+            sumsens0 = pg.Vector(self._J.mat(0).rows())
+            sumsens1 = pg.Vector(self._J.mat(0).rows())
+            sumsens2 = pg.Vector(self._J.mat(0).rows())
 
             for i in range(self._J.mat(0).rows()):
                 #self._J.mat(0)[i] *= 1./modelRe / respRe[i]
@@ -112,9 +112,9 @@ class DCMultiElectrodeModellingC(pb.DCMultiElectrodeModelling):
                 sumsens1[i] = sum(self._J.mat(1)[i])
                 sumsens2[i] = abs(sum(JC[i]))
 
-            print(pg.median(sumsens0), min(sumsens0), max(sumsens0))
-            print(pg.median(sumsens1), min(sumsens1), max(sumsens1))
-            print(pg.median(sumsens2), min(sumsens2), max(sumsens2))
+            print(pg.math.median(sumsens0), min(sumsens0), max(sumsens0))
+            print(pg.math.median(sumsens1), min(sumsens1), max(sumsens1))
+            print(pg.math.median(sumsens2), min(sumsens2), max(sumsens2))
 
             self.data().set('k', k)
 
@@ -123,10 +123,10 @@ class DCMultiElectrodeModellingC(pb.DCMultiElectrodeModelling):
             # self.setVerbose(True)
             u = self.prepareJacobian_(model)
 
-            #J = pg.RMatrix()
+            #J = pg.Matrix()
             if self._J.rows() == 0:
                 print('#' * 100)
-                M1 = pg.RMatrix()
+                M1 = pg.Matrix()
                 Jid = self._J.addMatrix(M1)
                 self._J.addMatrixEntry(Jid, 0, 0)
             else:
@@ -139,7 +139,7 @@ class DCMultiElectrodeModellingC(pb.DCMultiElectrodeModelling):
         """
         """
         print ("createConstrains(self, model):")
-        Ctmp = pg.RSparseMapMatrix()
+        Ctmp = pg.matrix.SparseMapMatrix()
         self.matrixHeap.append(Ctmp)
         self.regionManager().fillConstraints(Ctmp)
         CiD = self._C.addMatrix(Ctmp)
@@ -171,20 +171,20 @@ phi = -pg.phase(cData)
 print(pg.norm(mag-data('rhoa')))
 print(pg.norm(phi-data('ip')/1000))
 
-inv = pg.RInversion(pg.cat(mag, phi),
+inv = pg.Inversion(pg.cat(mag, phi),
                     fop,
                     verbose=True, dosave=True)
 
 
-dataTrans = pg.RTransCumulative()
-datRe = pg.RTransLog()
-datIm = pg.RTrans()
+dataTrans = pg.trans.TransCumulative()
+datRe = pg.trans.TransLog()
+datIm = pg.trans.Trans()
 dataTrans.add(datRe, data.size())
 dataTrans.add(datIm, data.size())
 
-modRe = pg.RTransLog()
-modIm = pg.RTransLog()
-modelTrans = pg.RTransCumulative()
+modRe = pg.trans.TransLog()
+modIm = pg.trans.TransLog()
+modelTrans = pg.trans.TransCumulative()
 modelTrans.add(modRe, fop.regionManager().parameterCount())
 modelTrans.add(modIm, fop.regionManager().parameterCount())
 
@@ -194,8 +194,8 @@ inv.setAbsoluteError(pg.cat(data("err")*mag, mag*phi*10.01))
 inv.setLambda(5)
 inv.setMaxIter(5)
 
-#inv.setCWeight(pg.cat(pg.RVector(503, 1.0),
-                      #pg.RVector(503, 100.0)))
+#inv.setCWeight(pg.cat(pg.Vector(503, 1.0),
+                      #pg.Vector(503, 100.0)))
 
 model = inv.run()
 jacRe = fop.jacobian()[0]

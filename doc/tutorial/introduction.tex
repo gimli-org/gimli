@@ -15,7 +15,7 @@ All problems such as optimization of regularization parameters, line search are 
 The GIMLi library is structured into four layers (Fig.~\ref{fig:gimliblock}) that are based on each other:
 
 \begin{description}
-	\item[The basic layer] holds fundamental algebraic methods and mesh containers for model parameterisation 
+	\item[The basic layer] holds fundamental algebraic methods and mesh containers for model parameterization 
 	\item[The modelling\&region layer] administrates the modelling classes that are based on a basis class and the connection to constraints and transform functions
 	\item[The inversion layer] is a template class for minimisation with different methods, inverse solvers, line search, $\lambda$ optimisation and resolution analysis
 	\item[In Inversion frameworks] sophisticated techniques are formulated, e.g. time-lapse strategies, roll-along inversion or different kinds of joint inversion
@@ -110,7 +110,7 @@ A forward operator is defined by a C++ class object derived from a base forward 
 The only necessary function is called \cw{response}, and it returns a forward response vector for a given model vector.
 Once an instance f of class has been defined, the forward response for the model vector model is called by f.response( model ) or, more briefly, f( model ).
 
-Additionally, the forward modelling class is responsible for the calculation of the Jacobian matrix, or the Fréchet derivatives.
+Additionally, the forward modelling class is responsible for the calculation of the Jacobian matrix, or the Frï¿½chet derivatives.
 This matrix can be of different classes, e.g. dense or sparsely populated matrices, all being derived from a base matrix \cw{MatrixBase}.
 In the modelling base class, a brute-force calculation of the Jacobian is implemented, i.e. all parameters are varied individually and multiple forward runs are called.
 
@@ -128,10 +128,10 @@ However the Jacobian or gradient of the transformed inverse problem are never ex
 A transformation $\hat m(m)$ needs three things: the transformation from $m$ to $\hat m$ and back, and the derivative of $\hat m$ with respect to $m$. A number of useful transformation is already available. Others can be easily created or derived by combination of existing ones. See appendix \ref{app:trans} for details.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Parameterisation and the region technique}\label{sec:parameter}
-The discrete model parameters $m_i$ can be freely defined (without spatial association - 0d) or be coefficients for a given model parameterisation (1d, 2d, 3d or 4d) or a mixture of it.
-A spatial parameterisaton is represented by a mesh containing the neighbouring relations.
-Figure~\ref{fig:para} shows different basic parameterisations.
+\subsection{Parameterization and the region technique}\label{sec:parameter}
+The discrete model parameters $m_i$ can be freely defined (without spatial association - 0d) or be coefficients for a given model parameterization (1d, 2d, 3d or 4d) or a mixture of it.
+A spatial parameterizaton is represented by a mesh containing the neighbouring relations.
+Figure~\ref{fig:para} shows different basic parameterizations.
 This can be structured (e.g. a finite difference discretisaton) or unstructured arranged by triangles or tetrahedra.
 There are various functions for mesh generation, export and import, see appendix~\ref{app:meshes}.
 
@@ -139,13 +139,13 @@ There are various functions for mesh generation, export and import, see appendix
 \centering\includegraphics[width=0.45\textwidth]{structured2DMesh.pdf}\\
 \centering\includegraphics[width=0.45\textwidth]{unstructured2DMesh.pdf}\\
 \centering\includegraphics[width=0.45\textwidth]{mixed2DMesh.pdf}
-\caption{Different parameterisations: 0d (independent parameters), 1d mesh, 2d structured mesh (grid), 2d unstructured mesh, 2d mixed mesh, 3d mesh}\label{fig:para}
+\caption{Different parameterizations: 0d (independent parameters), 1d mesh, 2d structured mesh (grid), 2d unstructured mesh, 2d mixed mesh, 3d mesh}\label{fig:para}
 \end{figure}
 
 A combination of different data is easily achieved by the described error weighting and combining two vectors, e.g. amplitude and phase data in MT, in one vector.
 Different parameters, can similarly be treated by different parts of the model vector, so-called regions.
 Regions can be, as the name states, parts of one mesh representing different geological units.
-Regions can also be different parameters on the same mesh (e.g. porosity and saturation) or on different parametrisations, e.g. a 2d/3d resistivity distribution and (0d) values for static shift in MT inversion.
+Regions can also be different parameters on the same mesh (e.g. porosity and saturation) or on different parametrizations, e.g. a 2d/3d resistivity distribution and (0d) values for static shift in MT inversion.
 
 In inversion the regions are by default independent from each other, but can as well be constrained to another.
 For each region the starting model value, but also constraint type, model and constraint control and the used transformation function can be freely defined.
@@ -189,7 +189,7 @@ Independent whether you use pre-compiled or self-build binaries the path to the 
 \subsection{Outline of the document}\label{sec:overview}
 In the following chapters we like to document how to work with the library using different examples.
 A very simple example will illustrate how to set up a forward class and make the first inversion - polynomial curve fitting.
-Then, some basic geophysical examples explain how parameterisations are used and options are set.
+Then, some basic geophysical examples explain how parameterizations are used and options are set.
 Three different joint inversion techniques are explained in the section \ref{sec:joint}.
 The last section deals with the subject time-lapse inversion.
 In the directory code there are the code examples used in the following.

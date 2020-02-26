@@ -10,8 +10,9 @@ import numpy as np
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 import pygimli as pg
-from pygimli.mplviewer import saveFigure, updateAxes, prettyFloat
-
+from .. mplviewer import saveFigure, updateAxes
+from .. utils import prettyFloat
+from .. core.logger import renameKwarg
 
 def autolevel(z, nLevs, logScale=None, zmin=None, zmax=None):
     """Create nLevs bins for the data array z based on matplotlib ticker.
@@ -74,7 +75,7 @@ def cmapFromName(cmapname='jet', ncols=256, bad=None, **kwargs):
     if not bad:
         bad = [1.0, 1.0, 1.0, 0.0]
 
-    pg.renameKwarg('cmap', 'cMap', kwargs)
+    renameKwarg('cmap', 'cMap', kwargs)
 
     if 'cmap' in kwargs:
         cmapname = kwargs.pop('cmap', cmapname)
@@ -134,6 +135,7 @@ def findColorBar(ax):
 
     Find the colorbar that is associated with given axes or return None.
     """
+    pg.critical('Who use this?') #190530
     for i, ai in enumerate(ax.figure.axes):
         print(i, ai)
 
@@ -151,7 +153,7 @@ def findColorBar(ax):
 
 
 def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
-                   logScale=None, nLevs=5, label=None):
+                   logScale=None, nLevs=5, label=None, levels=None, **kwargs):
     """Update colorbar values.
 
     Update limits and label of a given colorbar.
@@ -174,20 +176,32 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
 
     label: str
 
+    levels: iterable
+
     """
-    # print("update cbar:", cMin, cMax, label)
     if gci is not None:
-        pass
-        # check the following first
-        # cbar.on_mappable_changed(gci)
+        if min(gci.get_array()) < 1e12:
+            norm = mpl.colors.Normalize(vmin=min(gci.get_array()),
+                                        vmax=min(gci.get_array()))
+            #cbar.set_norm(norm) # deprecated in MPL 3.3. remove me when checked
+            gci.set_norm(norm)
+        cbar.on_mappable_changed(gci)
 
     if cMap is not None:
         if isinstance(cMap, str):
-            cMap = cmapFromName(cMap, ncols=256, bad=[1.0, 1.0, 1.0, 0.0])
+            if levels is not None:
+                cMap = cmapFromName(cMap, ncols=len(levels)-1, bad=[1.0, 1.0, 1.0, 0.0])
+            else:
+                cMap = cmapFromName(cMap, ncols=256, bad=[1.0, 1.0, 1.0, 0.0])
 
         cbar.mappable.set_cmap(cMap)
 
     needLevelUpdate = False
+
+    if levels is not None:
+        cMin = levels[0]
+        cMax = levels[-1]
+        needLevelUpdate = True
 
     if cMin is not None or cMax is not None or nLevs is not None:
         needLevelUpdate = True
@@ -196,9 +210,9 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
         needLevelUpdate = True
 
         if cMin is None:
-            cMin = cbar.get_clim()[0]
+            cMin = cbar.mappable.get_clim()[0]
         if cMax is None:
-            cMax = cbar.get_clim()[1]
+            cMax = cbar.mappable.get_clim()[1]
 
         if logScale:
             if cMin < 1e-12:
@@ -209,11 +223,11 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
         else:
             norm = mpl.colors.Normalize(vmin=cMin, vmax=cMax)
 
-        cbar.set_norm(norm)
+        #cbar.set_norm(norm) # deprecated in MPL 3.3. remove me when checked
         cbar.mappable.set_norm(norm)
 
     if needLevelUpdate:
-        setCbarLevels(cbar, cMin, cMax, nLevs)
+        setCbarLevels(cbar, cMin, cMax, nLevs, levels)
 
     if label is not None:
         cbar.set_label(label)
@@ -226,19 +240,18 @@ def createColorBar(gci, orientation='horizontal', size=0.2, pad=None,
     """Create a Colorbar.
 
     Shortcut to create a matplotlib colorbar within the ax for a given
-    patchset.
+    patchset. The colorbar is stored in the axes object as __cBar__
+    to avoid duplicates.
 
     Parameters
     ----------
+    gci: matplotlib graphical instance
 
-    gci : matplotlib graphical instance
+    orientation: string
 
-    orientation : string
+    size: float
 
-    size : float
-
-    pad : float
-
+    pad: float
 
     **kwargs :
         Forwarded to updateColorBar
@@ -249,26 +262,35 @@ def createColorBar(gci, orientation='horizontal', size=0.2, pad=None,
     #    if hasattr(patches, 'figure'):
     #       cbarTarget = patches.figure
 
+    ax = None
     if hasattr(gci, 'ax'):
-        divider = make_axes_locatable(gci.ax)
+        ax = gci.ax
     if hasattr(gci, 'axes'):
-        divider = make_axes_locatable(gci.axes)
+        ax = gci.axes
     elif hasattr(gci, 'get_axes'):
-        divider = make_axes_locatable(gci.get_axes())
+        ax = gci.get_axes()
 
-    if divider:
-        if orientation == 'horizontal':
-            if pad is None:
-                pad = 0.5
-            cax = divider.append_axes("bottom", size=size, pad=pad)
-        else:
-            if pad is None:
-                pad = 0.1
-            cax = divider.append_axes("right", size=size, pad=pad)
+    cbar = None
+    if hasattr(ax, '__cBar__'):
+        cbar = ax.__cBar__
+        updateColorBar(cbar, gci, **kwargs)
+    else:
+        divider = make_axes_locatable(ax)
 
-    cbar = cbarTarget.colorbar(gci, cax=cax, orientation=orientation)
+        if divider:
+            if orientation == 'horizontal':
+                if pad is None:
+                    pad = 0.5
+                cax = divider.append_axes("bottom", size=size, pad=pad)
+            else:
+                if pad is None:
+                    pad = 0.1
+                cax = divider.append_axes("right", size=size, pad=pad)
 
-    updateColorBar(cbar, **kwargs)
+        cbar = cbarTarget.colorbar(gci, cax=cax, orientation=orientation)
+        #store the cbar into the axes to reuse it on the next call
+        ax.__cBar__ = cbar
+        updateColorBar(cbar, **kwargs)
 
     return cbar
 
@@ -303,7 +325,7 @@ def createColorBarOnly(cMin=1, cMax=100, logScale=False, cMap=None, nLevs=5,
     """
     if ax is None:
         fig = plt.figure()
-        if orientation is 'horizontal':
+        if orientation == 'horizontal':
             ax = fig.add_axes([0.035, 0.6, 0.93, 0.05])
         else:
             ax = fig.add_axes([0.30, 0.02, 0.22, 0.96])
@@ -330,12 +352,18 @@ def createColorBarOnly(cMin=1, cMax=100, logScale=False, cMap=None, nLevs=5,
     return ax
 
 
-def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5):
+def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5, levels=None):
     """Set colorbar levels given a number of levels and min/max values."""
     if cMin is None:
-        cMin = cbar.get_clim()[0]
+        if hasattr(cbar, 'mappable'):
+            cMin = cbar.mappable.get_clim()[0]
+        else:
+            pg.error('no cbar mappable. Cannot find cmin')
     if cMax is None:
-        cMax = cbar.get_clim()[1]
+        if hasattr(cbar, 'mappable'):
+            cMax = cbar.mappable.get_clim()[1]
+        else:
+            pg.error('no cbar mappable. Cannot find cmax')
 
     if cMin == cMax:
         cMin *= 0.999
@@ -347,10 +375,15 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5):
     elif hasattr(cbar, 'norm'):
         norm = cbar.norm
 
-    if isinstance(norm, mpl.colors.LogNorm):
-        cbarLevels = np.logspace(np.log10(cMin), np.log10(cMax), nLevs)
+    if levels is not None:
+        cbarLevels = levels
     else:
-        cbarLevels = np.linspace(cMin, cMax, nLevs)
+        if isinstance(norm, mpl.colors.LogNorm):
+            cbarLevels = np.logspace(np.log10(cMin), np.log10(cMax), nLevs)
+        else:
+            #if cMax < cMin:
+            cbarLevels = np.linspace(cMin, cMax, nLevs)
+
 
     # FIXME: [10.1, 10.2, 10.3] mapped to [10 10 10]
 
@@ -367,7 +400,7 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5):
 
     if hasattr(cbar, 'mappable'):
         cbar.mappable.set_clim(vmin=cMin, vmax=cMax)
-        cbar.set_clim(cMin, cMax)
+        #cbar.set_clim(cMin, cMax)
 
     cbar.set_ticks(cbarLevels)
     cbar.set_ticklabels(cbarLevelsString)
@@ -379,6 +412,7 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5):
 
 def setMappableValues(mappable, dataIn):
     """Change the data values for a given mapable."""
+    pg.critical('remove me')
     data = dataIn
     if not isinstance(data, np.ma.core.MaskedArray):
         data = np.array(dataIn)
@@ -390,18 +424,13 @@ def setMappableValues(mappable, dataIn):
     mappable.set_array(data)
 
 
-def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=False):
+def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=None,
+                    **kwargs):
     """Change the data values for a given mappable.
-
-    DEPRECATED
     """
     data = dataIn
-
     if not isinstance(data, np.ma.core.MaskedArray):
         data = np.array(dataIn)
-
-    if logScale and data.min() <= 0:
-        data = np.ma.masked_array(data, data <= 0.0)
 
     # set bad value color to white
     if mappable.get_cmap() is not None:
@@ -412,16 +441,28 @@ def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=False):
     if not cMax:
         cMax = data.max()
 
-    if cMin > 0.0 and logScale:
+    oldLog = None
+    if cMin <= 0.0:
+        oldLog = isinstance(mappable.norm, mpl.colors.LogNorm)
+        if oldLog is True or logScale is True:
+            if cMax > 0:
+                cMin = min(data[data > 0.0])
+                data = np.ma.masked_array(data, data <= 0.0)
+            else:
+                # if all data are negative switch to lin scale
+                return setMappableData(mappable, dataIn, cMin, cMax,
+                                       logScale=False)
+    if logScale is True:
         mappable.set_norm(mpl.colors.LogNorm())
-    else:
+    elif logScale is False:
         mappable.set_norm(mpl.colors.Normalize(vmin=cMin, vmax=cMax))
 
-#   print("set mappable data, log: ", logScale, "cmin: ", cMin, "cmax: ", cMax)
+    #pg._g(oldLog, logScale, cMin, cMax, mappable.norm)
     mappable.set_array(data)
-    # mappable.set_level(10)
     mappable.set_clim(cMin, cMax)
 
+    if mappable.colorbar is not None:
+        updateColorBar(mappable.colorbar, cMin=cMin, cMax=cMax)
 
 def addCoverageAlpha(patches, coverage, dropThreshold=0.4):
     """Add alpha values to the colors of a polygon collection.
@@ -438,8 +479,6 @@ def addCoverageAlpha(patches, coverage, dropThreshold=0.4):
         relative minimum coverage
     """
     patches.set_antialiaseds(True)
-    patches.set_linewidth(0.000)
-
     # generate individual color values here
     patches.update_scalarmappable()
 
@@ -466,7 +505,7 @@ def addCoverageAlpha(patches, coverage, dropThreshold=0.4):
 
         C = (C - mi) / (ma - mi)
         C[np.where(C < 0.)] = 0.0
-        C[np.where(C > 1.)] = 1.0
+        C[np.where(C > 0.95)] = 1.0
 
 #    else:
 #        print('taking the values directly')
@@ -475,7 +514,6 @@ def addCoverageAlpha(patches, coverage, dropThreshold=0.4):
     cols[:, 3] = C
 
     patches._facecolors = cols
-    # patches._edgecolor = 'None'
 
     # delete patch data to avoid automatically rewrite of _facecolors
     patches._A = None

@@ -26,7 +26,7 @@ namespace GIMLI{
 
 class SolverWrapper;
 
-enum SolverType{AUTOMATIC,LDL,CHOLMOD,UNKNOWN};
+enum SolverType{AUTOMATIC,LDL,CHOLMOD,UMFPACK,UNKNOWN};
 
 class DLLEXPORT LinSolver{
 public:

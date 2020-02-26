@@ -8,16 +8,16 @@ import pygimli as pg
 from pygimli.mplviewer import drawModel1D
 
 
-class DCEM1dModelling(pg.ModellingBase):
+class DCEM1dModelling(pg.core.ModellingBase):
     """Modelling jointing DC and EM 1Dforward operators."""
 
     def __init__(self, nlay, ab2, mn2, freq, coilspacing, verbose=False):
         """Init number of layers, AB/2, MN/2, frequencies & coil spacing."""
-        pg.ModellingBase.__init__(self, verbose)
+        pg.core.ModellingBase.__init__(self, verbose)
         self.nlay_ = nlay
-        self.fDC_ = pg.DC1dModelling(nlay, ab2, mn2, verbose)
-        self.fEM_ = pg.FDEM1dModelling(nlay, freq, coilspacing, verbose)
-        self.mesh_ = pg.createMesh1DBlock(nlay)
+        self.fDC_ = pg.core.DC1dModelling(nlay, ab2, mn2, verbose)
+        self.fEM_ = pg.core.FDEM1dModelling(nlay, freq, coilspacing, verbose)
+        self.mesh_ = pg.meshtools.createMesh1DBlock(nlay)
         self.setMesh(self.mesh_)
 
     def response(self, model):
@@ -33,7 +33,7 @@ verbose = False
 
 # synthetic model
 nlay = 3
-model = pg.RVector(nlay * 2 - 1)
+model = pg.Vector(nlay * 2 - 1)
 for i in range(nlay - 1):
     model[i] = 15.
 
@@ -48,26 +48,26 @@ res = model(nlay-1, nlay*2-1)
 # EM forward operator and synthetic data
 coilspacing = 50.
 nf = 10
-freq = pg.RVector(nf, 110.)
+freq = pg.Vector(nf, 110.)
 for i in range(nf-1):
     freq[i+1] = freq[i] * 2.
 
-fEM = pg.FDEM1dModelling(nlay, freq, coilspacing)
+fEM = pg.core.FDEM1dModelling(nlay, freq, coilspacing)
 dataEM = fEM(model)
 for i in range(len(dataEM)):
     dataEM[i] += np.random.randn(1)[0] * noiseEM
 
 # model transformations
-transRhoa = pg.RTransLog()
-transThk = pg.RTransLog()
-transRes = pg.RTransLogLU(1., 1000.)
-transEM = pg.RTrans()
+transRhoa = pg.trans.TransLog()
+transThk = pg.trans.TransLog()
+transRes = pg.trans.TransLogLU(1., 1000.)
+transEM = pg.trans.Trans()
 fEM.region(0).setTransModel(transThk)
 fEM.region(1).setTransModel(transRes)
 
 # independent EM inversion
-invEM = pg.RInversion(dataEM, fEM, transEM, verbose)
-modelEM = pg.RVector(nlay * 2 - 1, 50.)
+invEM = pg.Inversion(dataEM, fEM, transEM, verbose)
+modelEM = pg.Vector(nlay * 2 - 1, 50.)
 invEM.setModel(modelEM)
 invEM.setAbsoluteError(noiseEM)
 invEM.setLambda(lamEM)
@@ -76,12 +76,12 @@ modelEM = invEM.run()
 respEM = invEM.response()
 
 # DC forward operator and synthetic data
-ab2 = pg.RVector(20, 3.)
+ab2 = pg.Vector(20, 3.)
 na = len(ab2)
-mn2 = pg.RVector(na, 1.0)
+mn2 = pg.Vector(na, 1.0)
 for i in range(na-1):
     ab2[i+1] = ab2[i] * 1.3
-fDC = pg.DC1dModelling(nlay, ab2, mn2)
+fDC = pg.core.DC1dModelling(nlay, ab2, mn2)
 dataDC = fDC(model)
 for i in range(len(dataDC)):
     dataDC[i] *= 1. + np.random.randn(1)[0] * noiseDC / 100.
@@ -90,8 +90,8 @@ fDC.region(0).setTransModel(transThk)
 fDC.region(1).setTransModel(transRes)
 
 # independent DC inversion
-invDC = pg.RInversion(dataDC, fDC, transRhoa, verbose)
-modelDC = pg.RVector(nlay*2-1, 20.)
+invDC = pg.Inversion(dataDC, fDC, transRhoa, verbose)
+modelDC = pg.Vector(nlay*2-1, 20.)
 invDC.setModel(modelDC)
 invDC.setRelativeError(noiseDC/100.)
 invDC.setLambda(lamDC)
@@ -105,13 +105,13 @@ fDCEM.region(0).setTransModel(transThk)
 fDCEM.region(1).setTransModel(transRes)
 
 # joint inversion
-transData = pg.RTransCumulative()
+transData = pg.trans.TransCumulative()
 transData.add(transRhoa, na)
 transData.add(transEM, nf*2)
-invDCEM = pg.RInversion(pg.cat(dataDC, dataEM), fDCEM, transData, verbose)
-modelDCEM = pg.RVector(nlay * 2 - 1, 20.)
+invDCEM = pg.Inversion(pg.cat(dataDC, dataEM), fDCEM, transData, verbose)
+modelDCEM = pg.Vector(nlay * 2 - 1, 20.)
 invDCEM.setModel(modelDCEM)
-err = pg.cat(dataDC * noiseDC / 100., pg.RVector(len(dataEM), noiseEM))
+err = pg.cat(dataDC * noiseDC / 100., pg.Vector(len(dataEM), noiseEM))
 invDCEM.setAbsoluteError(err)
 invDCEM.setLambda(lamDCEM)
 invDCEM.setMarquardtScheme(0.9)

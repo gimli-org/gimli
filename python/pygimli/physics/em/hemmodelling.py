@@ -25,7 +25,7 @@ def registerDAEROcmap():
     return daero
 
 
-class HEMmodelling(pg.ModellingBase):
+class HEMmodelling(pg.core.ModellingBase):
     """HEM Airborne modelling class based on the BGR RESOLVE system."""
 
     # Constants, should rather use pygiml/physics/constants
@@ -79,8 +79,8 @@ class HEMmodelling(pg.ModellingBase):
 
         self.wem = (2.0 * pi * self.f) ** 2 * self.ep0 * self.mu0
         self.iwm = np.complex(0, 1) * 2.0 * pi * self.f * self.mu0
-        mesh = pg.createMesh1DBlock(nlay)
-        pg.ModellingBase.__init__(self, mesh)
+        mesh = pg.meshtools.createMesh1DBlock(nlay)
+        pg.core.ModellingBase.__init__(self, mesh)
 
     def response(self, par):
         """Compute response vector by pasting in-phase and out-phase data."""
@@ -472,7 +472,7 @@ class HEMRhoModelling(HEMmodelling):
         self.dvec = np.asarray(dvec)
         self.zvec = np.hstack((0, np.cumsum(dvec)))
         HEMmodelling.__init__(self, nlay, height, **kwargs)
-        self.mymesh = pg.createMesh1D(nlay)
+        self.mymesh = pg.meshtools.createMesh1D(nlay)
         self.setMesh(self.mymesh)  # only for inversion
 
     def response(self, res):
@@ -488,9 +488,9 @@ class FDEMResSusModelling(HEMmodelling):
         """Init class (see HEMmodelling)."""
         HEMmodelling.__init__(self, nlay, height, **kwargs)
         self.scaling = 1e2
-        self.mymesh = pg.createMesh1DBlock(nlay, nProperties=2)
+        self.mymesh = pg.meshtools.createMesh1DBlock(nlay, nProperties=2)
         self.setMesh(self.mymesh)  # only for inversion
-        # pg.ModellingBase.__init__(self, self.mymesh)
+        # pg.core.ModellingBase.__init__(self, self.mymesh)
 
     def response(self, par):
         """Response vector as combined in-phase and out-phase data."""
@@ -510,7 +510,7 @@ class HEMRhoSusModelling(HEMmodelling):
         self.dvec = np.asarray(dvec)
         self.zvec = np.hstack((0, np.cumsum(dvec)))
         HEMmodelling.__init__(self, self.nlay, *args, **kwargs)
-        self.mymesh = pg.createMesh1D(self.nlay, nProperties=2)
+        self.mymesh = pg.meshtools.createMesh1D(self.nlay, nProperties=2)
         self.setMesh(self.mymesh)  # only for inversion
 
     def response(self, model):
@@ -521,7 +521,7 @@ class HEMRhoSusModelling(HEMmodelling):
         return pg.cat(ip, op)
 
 
-class FDEMLCIFOP(pg.ModellingBase):
+class FDEMLCIFOP(pg.core.ModellingBase):
     """FDEM 2d-LCI modelling class based on Block matrices."""
 
     def __init__(self, data, nlay=2, verbose=False, f=None, r=None):
@@ -532,11 +532,11 @@ class FDEMLCIFOP(pg.ModellingBase):
         self.nx = len(data.x)
         self.nf = len(data.freq())
         self.np = 2 * nlay - 1
-        self.mesh2d = pg.createMesh2D(self.np, self.nx)
+        self.mesh2d = pg.meshtools.createMesh2D(self.np, self.nx)
         self.mesh2d.rotate(pg.RVector3(0, 0, -np.pi/2))
         self.setMesh(self.mesh2d)
 
-        self.J = pg.RBlockMatrix()
+        self.J = pg.matrix.BlockMatrix()
         self.FOP1d = []
         for i in range(self.nx):
             self.FOP1d.append(HEMmodelling(nlay, data.z[i], f, r))
@@ -548,7 +548,7 @@ class FDEMLCIFOP(pg.ModellingBase):
     def response(self, model):
         """Cut together forward responses of all soundings."""
         modA = np.reshape(model, (self.nx, self.np))
-        resp = pg.RVector(0)
+        resp = pg.Vector(0)
         for i, modi in enumerate(modA):
             resp = pg.cat(resp, self.FOP1d[i].response(modi))
 
@@ -561,7 +561,7 @@ class FDEMLCIFOP(pg.ModellingBase):
             self.FOP1d[i].createJacobian(modi)
 
 
-class FDEM2dFOP(pg.ModellingBase):
+class FDEM2dFOP(pg.core.ModellingBase):
     """FDEM 2d-LCI modelling class based on BlockMatrices."""
 
     def __init__(self, data, nlay=2, verbose=False):
@@ -576,7 +576,7 @@ class FDEM2dFOP(pg.ModellingBase):
         self.mesh2d.create2DGrid(range(npar+1), range(self.nx+1))
         self.setMesh(self.mesh2d)
 
-        self.J = pg.RBlockMatrix()
+        self.J = pg.matrix.BlockMatrix()
         self.FOP1d = []
         for i in range(self.nx):
             self.FOP1d.append(HEMmodelling(nlay, data.z[i]))
@@ -590,7 +590,7 @@ class FDEM2dFOP(pg.ModellingBase):
     def response(self, model):
         """Response as pasted forward responses from all soundings."""
         modA = np.reshape(model, (self.nx, self.nlay*2-1))
-        resp = pg.RVector(0)
+        resp = pg.Vector(0)
         for i, modi in enumerate(modA):
             resp = pg.cat(resp, self.FOP1d[i].response(modi))
 

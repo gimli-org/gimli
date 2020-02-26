@@ -2,10 +2,12 @@
 # -*- coding: utf-8 -*-
 """Spectral induced polarization (SIP) measurements and fittings."""
 
-from .models import (ColeColeRho, ColeColeSigma, ColeColePhi, DoubleColeColePhi,
-                    tauRhoToTauSigma)
+from .importData import (load)
+from .sipspectrum import (SpectrumManager, SpectrumModelling, SIPSpectrum)
 
-from .sipspectrum import SIPSpectrum
+from .models import (ColeColeRho, ColeColeRhoDouble, 
+                    ColeColeSigma, ColeColePhi, DoubleColeColePhi,
+                    tauRhoToTauSigma)
 
 from .plotting import showSpectrum, drawPhaseSpectrum, drawAmplitudeSpectrum
 

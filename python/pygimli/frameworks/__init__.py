@@ -2,9 +2,20 @@
 """Unified and method independent inversion frameworks."""
 
 
-from .inversion import Inversion, MarquardtInversion, Block1DInversion, MeshInversion
+from .modelling import (Modelling, Block1DModelling, MeshModelling,
+                        PetroModelling, LCModelling, ParameterModelling)
 
-from .modelling import Modelling, Block1DModelling
+from .inversion import (Inversion, MarquardtInversion,
+                        Block1DInversion,
+                        LCInversion)
+
+from .methodManager import (MethodManager, MethodManager1d,
+                            ParameterInversionManager,
+                            MeshMethodManager, PetroInversionManager)
+
+# will be removed very soon
+# from .methodManager import (MethodManager0,
+#                             MeshMethodManager0)
 
 from .resolution import computeR
 

@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
+.. _ex:koenigsee:
+
 Field data inversion ("Koenigsee")
-----------------------------------
+==================================
 
 This minimalistic example shows how the Refraction Manager can be used to invert
 a field data set. Here, we consider the Koenigsee data set, which represents
@@ -16,36 +18,41 @@ example data repository
 # We import pyGIMLi and the refraction manager.
 
 import pygimli as pg
-from pygimli.physics import Refraction
+from pygimli.physics import TravelTimeManager
 
 ################################################################################
 # The helper function `pg.getExampleFile` downloads the data set and saves it
 # into a temporary location.
 
-filename = pg.getExampleFile("traveltime/koenigsee.sgt")
+data = pg.getExampleFile("traveltime/koenigsee.sgt", load=True, verbose=True)
 
 ################################################################################
-# We initialize an instance of the refraction manager with the filename.
-
-ra = Refraction(filename)
-print(ra)
+# We initialize the refraction manager.
+mgr = TravelTimeManager()
 
 ################################################################################
 # Let's have a look at the data in the form of traveltime curves and apparent
 # velocity images.
-
-ra.showData()  # show first arrivals as curves (done later with response)
-ra.showVA()  # show data as apparent velocity image
+mgr.showData(data)  # show first arrivals as curves (done later with response)
+#TODO mgr.showVA(data)  # show data as apparent velocity image
 
 ################################################################################
 # Finally, we call the `invert` method and plot the result.The mesh is created
 # based on the sensor positions on-the-fly. Yes, it is really as simple as that.
 
-ra.invert(zWeight=0.2)
-ra.showResult()
+mesh = pg.meshtools.createParaMesh(data.sensors(), 
+                                   boundary=0, paraMaxCellSize=1.0)
+mgr.invert(data, mesh=mesh, secNodes=3, 
+           zWeight=0.2, vTop=500, vBottom=5000, 
+           verbose=1)
+ax, cbar = mgr.showResult()
+mgr.showRayPaths(ax=ax, color="0.8", lw=0.3, alpha=0.3)
+
+mgr.showResultAndFit()
 
 ################################################################################
 # You can play around with the gradient starting model (`vtop` and `vbottom`
 # arguments) and the regularization strength `lam`. You can also customize the
-# mesh by calling `ra.createMesh()` with options of your choice prior to the
-# inversion call.
+# mesh.
+
+pg.wait()

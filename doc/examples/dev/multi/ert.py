@@ -43,9 +43,9 @@ class ERT():
 
     def createInv(self, verbose):
         """ Create resistivity inversion instance. """
-        self.tD = pg.RTransLog()
-        self.tM = pg.RTransLog()
-        inv = pg.RInversion(verbose=verbose, dosave=False)
+        self.tD = pg.trans.TransLog()
+        self.tM = pg.trans.TransLog()
+        inv = pg.Inversion(verbose=verbose, dosave=False)
         inv.setTransData(self.tD)
         inv.setTransModel(self.tM)
         return inv
@@ -69,7 +69,7 @@ class ERT():
                 pg.mplviewer.colorbar.createColorbar(
                         gci, nLevs=5, cMin=cMin,  cMax=cMax,
                         label='Apparent resistivity in $\Omega m$', **kwargs)
-        elif isinstance(data, pg.RVector):
+        elif isinstance(data, pg.Vector):
             # assuming this is a model from the last inversion run
             pg.show(self.fop.regionManager().paraDomain(), data,
                     axes=axes, **kwargs)
@@ -105,8 +105,8 @@ class ERT():
         err = data('err')
         rhoa = data('rhoa')
 
-        startModel = pg.RVector(self.fop.regionManager().parameterCount(),
-                                pg.median(rhoa))
+        startModel = pg.Vector(self.fop.regionManager().parameterCount(),
+                                pg.math.median(rhoa))
 
         self.fop.setData(data)
         self.inv.setForwardOperator(self.fop)
@@ -120,13 +120,13 @@ class ERT():
 
         if values is not None:
 
-            if isinstance(values, pg.RVector):
+            if isinstance(values, pg.Vector):
                 values = [values]
             elif isinstance(values, np.ndarray):
                 if values.ndim == 1:
                     values = [values]
 
-            allModel = pg.RMatrix(len(values), len(model))
+            allModel = pg.Matrix(len(values), len(model))
 
             self.inv.setVerbose(False)
             for i in range(len(values)):
@@ -203,10 +203,10 @@ def resistivityArchie(rBrine, porosity, a=1.0, m=2.0, S=1.0, n=2.0,
     rB = None
 
     if rBrine.ndim == 1:
-        rB = pg.RMatrix(1, len(rBrine))
+        rB = pg.Matrix(1, len(rBrine))
         rB[0] = parseArgToArray(rBrine, mesh.cellCount(), mesh)
     elif rBrine.ndim == 2:
-        rB = pg.RMatrix(len(rBrine), len(rBrine[0]))
+        rB = pg.Matrix(len(rBrine), len(rBrine[0]))
         for i in range(len(rBrine)):
             rB[i] = rBrine[i]
 
@@ -216,11 +216,11 @@ def resistivityArchie(rBrine, porosity, a=1.0, m=2.0, S=1.0, n=2.0,
     S = parseArgToArray(S, mesh.cellCount(), mesh)
     n = parseArgToArray(n, mesh.cellCount(), mesh)
 
-    r = pg.RMatrix(len(rBrine), len(rBrine[0]))
+    r = pg.Matrix(len(rBrine), len(rBrine[0]))
     for i in range(len(r)):
         r[i] = rB[i] * a * porosity**(-m) * S**(-n)
 
-    rI = pg.RMatrix(len(r), meshI.cellCount())
+    rI = pg.Matrix(len(r), meshI.cellCount())
     if meshI:
         pg.interpolate(mesh, r, meshI.cellCenters(), rI)
 
@@ -239,7 +239,7 @@ def calcApparentResistivities(mesh, meshERT, poro, rhoBrine):
                                      markerBoundary=1,
                                      isSubSurface=False, verbose=False)
 
-    swatch = pg.Stopwatch(True)
+    swatch = pg.core.Stopwatch(True)
 
     print("res 1:", swatch.duration(True))
 
@@ -275,8 +275,8 @@ def calcApparentResistivities(mesh, meshERT, poro, rhoBrine):
             tic = time.time()
             rhoa[i] = ert.fop.response(resis[i])
 
-            rand = pg.RVector(len(rhoa[i]))
-            pg.randn(rand)
+            rand = pg.Vector(len(rhoa[i]))
+            pg.math.randn(rand)
 
             rhoa[i] *= (1.0 + rand * ertData('err'))
 
@@ -308,7 +308,7 @@ def calcERT(ertScheme, rhoa):
         ertModels.save(solutionName + '.bmat')
         ertMesh.save(solutionName)
 
-    ertRatioModels = pg.RMatrix(ertModels)
+    ertRatioModels = pg.Matrix(ertModels)
     for i in range(len(ertModels)):
         ertRatioModels[i] /= ertModels[0]
 

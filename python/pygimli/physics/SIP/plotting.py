@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Spectral induced polarisation (SIP) plotting tools"""
+"""Spectral induced polarization (SIP) plotting tools"""
 
 import matplotlib.pyplot as plt
 
@@ -20,18 +20,20 @@ def showPhaseSpectrum(*args, **kwargs):
 def drawAmplitudeSpectrum(ax, freq, amp, ylabel=r'$\rho$ ($\Omega$m)',
                           grid=True, marker='+', ylog=True, **kwargs):
     """Show amplitude spectrum (resistivity as a function of f)."""
-    lab = kwargs.pop('label', 'obs')
-    gci = ax.semilogx(freq, amp, marker=marker, label=lab, **kwargs)
+    if 'label' not in kwargs:
+        kwargs['label'] = 'obs'
+        
+    gci = ax.semilogx(freq, amp, marker=marker, **kwargs)
     if ylog is None:
         ylog = (min(amp) > 0)
     if ylog:
         ax.set_yscale('log')
-    ax.set_ylim(min(amp) * .99, max(amp * 1.01))
+    #ax.set_ylim(min(amp) * .99, max(amp * 1.01))
     ax.set_xlabel('f (Hz)')
     ax.set_ylabel(ylabel)
     ax.grid(grid)
+    ax.legend()
     return gci
-
 
 def drawPhaseSpectrum(ax, freq, phi, ylabel=r'$-\phi$ (mrad)',
                       grid=True, marker='+', ylog=False, **kwargs):
@@ -45,6 +47,7 @@ def drawPhaseSpectrum(ax, freq, phi, ylabel=r'$-\phi$ (mrad)',
     ax.set_xlabel('f (Hz)')
     ax.set_ylabel(ylabel)
     ax.grid(grid)
+    ax.legend()
     return gci
 
 
@@ -73,8 +76,6 @@ def plotSpectrum(ax, freq, vals, ylabel=r'$-\phi$ (mrad)',
     ax.set_xlabel('f (Hz)')
     ax.set_ylabel(ylabel)
     ax.grid(grid)
-
-
 
 
 if __name__ == "__main__":

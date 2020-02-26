@@ -25,7 +25,7 @@ macro(add_python_module PYTHON_MODULE_NAME SOURCE_DIR EXTRA_LIBS OUTDIR)
     target_link_libraries(${PYTHON_TARGET_NAME} ${EXTRA_LIBS})
     target_link_libraries(${PYTHON_TARGET_NAME} ${PYTHON_LIBRARY})
     target_link_libraries(${PYTHON_TARGET_NAME} ${Boost_PYTHON_LIBRARY})
-       
+
     set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES PREFIX "")
 
     if (WIN32)
@@ -137,6 +137,7 @@ function(find_python_module module)
 
     if (${module}_FOUND)
         set( ${module}_FOUND ${${module}_FOUND} CACHE INTERNAL ${module}_FOUND)
+        set( ${module}_LOC ${_${module}_location} CACHE INTERNAL ${module}_LOC)
     endif()
 
 endfunction(find_python_module)
@@ -147,9 +148,7 @@ macro(findBuildTools)
     find_program(PATCH_TOOL NAMES patch  REQUIRED)
     find_program(SED_TOOL NAMES sed REQUIRED)
     find_package(Wget REQUIRED)
-    find_package(Subversion REQUIRED)
     find_package(Git REQUIRED)
-    find_package(Hg REQUIRED)
 endmacro(findBuildTools)
 
 macro(find_or_build_package package get_package)

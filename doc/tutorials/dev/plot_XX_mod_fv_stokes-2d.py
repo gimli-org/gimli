@@ -34,7 +34,7 @@ def modelCavity0(maxArea=0.0025):
     
     preBoundary=[[7, 0.0],]
     
-    a = pg.RVector(mesh.cellCount(), 1.0)
+    a = pg.Vector(mesh.cellCount(), 1.0)
     return mesh, velBoundary, preBoundary, a, 100
 
 def modelCavity1(maxArea=0.0025):
@@ -70,7 +70,7 @@ def modelCavity1(maxArea=0.0025):
 
     preBoundary=[[7,0.0]]
     
-    a = pg.RVector(mesh.cellCount(), 10000.0)
+    a = pg.Vector(mesh.cellCount(), 10000.0)
     return mesh, velBoundary, preBoundary, a, 100
 
 def modelCavity2(area, refine=True):
@@ -117,7 +117,7 @@ def modelCavity2(area, refine=True):
                 ]
     preBoundary=[[4,0.0]]
     
-    a = pg.RVector(mesh.cellCount(), 1.0)
+    a = pg.Vector(mesh.cellCount(), 1.0)
     return mesh, velBoundary, preBoundary, a, 50000
 
 def modelPipe():
@@ -223,8 +223,8 @@ modelBuilder = modelCavity0
 #modelBuilder = modelPlume
 
 
-swatchG = pg.Stopwatch(True)
-swatch = pg.Stopwatch(True)
+swatchG = pg.core.Stopwatch(True)
+swatch = pg.core.Stopwatch(True)
 
 nSteps = 1
 multigridArea = (10.**(np.linspace(np.log10(0.001), np.log10(0.1), nSteps)))[::-1]
@@ -241,7 +241,7 @@ for i in range(0, len(multigridArea)):
     else:
         #mesh1 = mesh.createH2()
         mesh1, velBoundary, preBoundary, a, maxIter = modelBuilder(multigridArea[i])
-        a = pg.RVector(mesh1.cellCount(), 1.0)
+        a = pg.Vector(mesh1.cellCount(), 1.0)
          
         pre = pg.interpolate(mesh, pre, mesh1.cellCenter())
         vx0 = pg.interpolate(mesh, vel[:,0], mesh1.cellCenter())
@@ -268,7 +268,7 @@ print("OverallTime:", swatchG.duration(True))
 fig = plt.figure()
 ax1 = fig.add_subplot(1, 2, 1)
 ax, cbar = pg.show(mesh, 
-                   data=pg.cellDataToPointData(mesh, pre),
+                   data=pg.core.cellDataToPointData(mesh, pre),
                    logScale=False, colorBar=True, axes=ax1)
 cbar.ax.set_xlabel('Pressure in ??')
 meshC, velBoundary, preBoundary, a, maxIter = modelBuilder(0.01)
@@ -277,7 +277,7 @@ pg.show(mesh, axes=ax1)
 
 ax2 = fig.add_subplot(1, 2, 2)
 ax, cbar = pg.show(mesh, 
-                   data=pg.cellDataToPointData(mesh,
+                   data=pg.core.cellDataToPointData(mesh,
                                     np.sqrt(vel[:,0]*vel[:,0] +vel[:,1]*vel[:,1])),
                    logScale=False, colorBar=True, axes=ax2)
 cbar.ax.set_xlabel('Geschwindigkeit in m$/$s')

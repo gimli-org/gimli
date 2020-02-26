@@ -106,9 +106,10 @@ public:
     }
 
     /*!Shortcut for addMatrix and addMatrixEntry. */
-    Index addMatrix(MatrixBase * matrix, Index rowStart, Index colStart){
+    Index addMatrix(MatrixBase * matrix, Index rowStart, Index colStart,
+                    ValueType scale=1.0){
         Index matrixID = addMatrix(matrix);
-        addMatrixEntry(matrixID, rowStart, colStart);
+        addMatrixEntry(matrixID, rowStart, colStart, scale);
         return matrixID;
     }
 
@@ -122,7 +123,7 @@ public:
     void addMatrixEntry(Index matrixID, Index rowStart, Index colStart,
                         ValueType scale){
         if (matrixID > matrices_.size()){
-            throwLengthError(1, WHERE_AM_I + " matrix entry to large: " +
+            throwLengthError(WHERE_AM_I + " matrix entry to large: " +
             str(matrixID) + " " + str(matrices_.size()));
         }
         BlockMatrixEntry entry;
@@ -136,11 +137,11 @@ public:
     }
 
     virtual Vector < ValueType > mult(const Vector < ValueType > & b) const{
-        if (b.size() != this->cols()){
-            throwLengthError(1, WHERE_AM_I + " wrong size of vector b (" +
-            str(b.size()) + ") needed: " + str(this->cols()));
-
-        }
+        // no need to check here .. let the matrices itself check
+        // if (b.size() != this->cols()){
+        //     throwLengthError(WHERE_AM_I + " wrong size of vector b (" +
+        //     str(b.size()) + ") needed: " + str(this->cols()));
+        // }
 
         Vector < ValueType > ret(rows_);
 
@@ -159,11 +160,11 @@ public:
     }
 
     virtual Vector < ValueType > transMult(const Vector < ValueType > & b) const {
-        if (b.size() != this->rows()){
-            throwLengthError(1, WHERE_AM_I + " wrong size of vector b (" +
-            str(b.size()) + ") needed: " + str(this->rows()));
-
-        }
+        // no need to check here .. let the matrices itself check
+        // if (b.size() != this->rows()){
+        //     throwLengthError(WHERE_AM_I + " wrong size of vector b (" +
+        //     str(b.size()) + ") needed: " + str(this->rows()));
+        // }
 
         Vector < ValueType > ret(cols_);
          for (Index i = 0; i < entries_.size(); i++){
@@ -199,7 +200,7 @@ public:
     // }
 
     RSparseMapMatrix sparseMapMatrix() const {
-        
+
         RSparseMapMatrix ret(this->rows(), this->cols());
 
         for (Index i = 0; i < entries_.size(); i++){
@@ -223,7 +224,7 @@ public:
                     log(Critical, "Matrix type need to be either SparseMatrix or SparseMapMatrix");
                     return ret;
             }
-            ret.insert(rows + entry.rowStart, cols + entry.colStart, vals * entry.scale);
+            ret.add(rows + entry.rowStart, cols + entry.colStart, vals * entry.scale);
         }
         return ret;
     }
@@ -344,7 +345,7 @@ public:
         if (Mats_.size() > 0 && Mats_[0].nrows() == Mat.rows()) {
             Mats_.push_back(Mat);
         } else {
-            throwLengthError(1, WHERE_AM_I + " matrix rows do not match " +
+            throwLengthError(WHERE_AM_I + " matrix rows do not match " +
                                  toStr(Mats_[0].nrows()) + " " + toStr(Mat.nrows()));
         }
     }

@@ -128,8 +128,8 @@ def harmfit(y, x=None, error=None, nc=42, resample=None, lam=0.1,
         xToFit = x
         yToFit = y
 
-    fop = pg.HarmonicModelling(nc, xToFit, verbose)
-    inv = pg.RInversion(yToFit, fop, verbose, dosave)
+    fop = pg.core.HarmonicModelling(nc, xToFit, verbose)
+    inv = pg.Inversion(yToFit, fop, verbose, dosave)
 
     if error is not None:
         inv.setAbsoluteError(error)

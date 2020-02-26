@@ -88,7 +88,7 @@ def divergence(mesh, V, span=None):
     div = mesh.divergence(V)
     return div
 
-    swatch = pg.Stopwatch(True)
+    swatch = pg.core.Stopwatch(True)
     ret = np.zeros((mesh.cellCount(), 3))
 
     for b in mesh.boundaries():
@@ -196,7 +196,7 @@ def cellToFaceArithmetic(boundary, AMM):
 
 
 def cellDataToBoundaryDataMatrix(mesh):
-    AMM = pg.RSparseMapMatrix(mesh.boundaryCount(), mesh.cellCount())
+    AMM = pg.matrix.SparseMapMatrix(mesh.boundaryCount(), mesh.cellCount())
 
     for b in mesh.boundaries():
         cellToFaceArithmetic(b, AMM)
@@ -208,7 +208,7 @@ def cellDataToCellGrad2(mesh, v):
     if len(v) != mesh.cellCount():
         raise
 
-    vN = pg.cellDataToPointData(mesh, v)
+    vN = pg.core.cellDataToPointData(mesh, v)
     gC = np.zeros((mesh.cellCount(), 3))
 
     for c in mesh.cells():
@@ -338,7 +338,7 @@ def diffusionConvectionKernel(mesh, a=None, f=None,
         Advection .. forced convection
     """
     if a is None:
-        a = pg.RVector(mesh.boundaryCount(), 1.0)
+        a = pg.Vector(mesh.boundaryCount(), 1.0)
 
     AScheme = None
     if scheme == 'CDS':
@@ -383,7 +383,7 @@ def diffusionConvectionKernel(mesh, a=None, f=None,
 
     S = None
     if sparse:
-        S = pg.RSparseMapMatrix(dof, dof, 0)
+        S = pg.matrix.SparseMapMatrix(dof, dof, 0)
     else:
         S = np.zeros((dof, dof))
 
@@ -393,14 +393,14 @@ def diffusionConvectionKernel(mesh, a=None, f=None,
     uBoundaryID = []
     uBoundaryVals = [None] * mesh.boundaryCount()
     for i, [boundary, val] in enumerate(uBoundaries):
-        if not isinstance(boundary, pg.Boundary):
+        if not isinstance(boundary, pg.core.Boundary):
             raise BaseException("Please give boundary, value list")
         uBoundaryID.append(boundary.id())
         uBoundaryVals[boundary.id()] = val
     duBoundaryID = []
     duBoundaryVals = [None] * mesh.boundaryCount()
     for i, [boundary, val] in enumerate(duBoundaries):
-        if not isinstance(boundary, pg.Boundary):
+        if not isinstance(boundary, pg.core.Boundary):
             raise BaseException("Please give boundary, value list")
         duBoundaryID.append(boundary.id())
         duBoundaryVals[boundary.id()] = val
@@ -507,7 +507,7 @@ def solveFiniteVolume(mesh, a=1.0, f=0.0, fn=0.0, vel=0.0, u0=None,
     """
     """
     # The Workspace is to hold temporary data or preserve matrix rebuild
-    swatch = pg.Stopwatch(True)
+    swatch = pg.core.Stopwatch(True)
     sparse = True
 
     workspace = WorkSpace()
@@ -584,11 +584,11 @@ def solveFiniteVolume(mesh, a=1.0, f=0.0, fn=0.0, vel=0.0, u0=None,
     if not hasattr(times, '__len__'):
 
         if sparse and not hasattr(workspace, 'solver'):
-            Sm = pg.RSparseMatrix(workspace.S)
+            Sm = pg.matrix.SparseMatrix(workspace.S)
             # hold Sm until we have reference counting,
             # loosing Sm here will kill LinSolver later
             workspace.Sm = Sm
-            workspace.solver = pg.LinSolver(Sm, True)
+            workspace.solver = pg.core.LinSolver(Sm, True)
 
         u = None
         if sparse:
@@ -858,7 +858,7 @@ if __name__ == '__main__':
     y = np.linspace(-1.0, 1.0, Ny+1)
     grid = pg.createGrid(x=x, y=y)
 
-    a = pg.RVector(grid.cellCount(), 1.0)
+    a = pg.Vector(grid.cellCount(), 1.0)
 
     b7 = grid.findBoundaryByMarker(1)[0]
     for b in grid.findBoundaryByMarker(1):
@@ -866,7 +866,7 @@ if __name__ == '__main__':
             b7 = b
     b7.setMarker(7)
 
-    swatch = pg.Stopwatch(True)
+    swatch = pg.core.Stopwatch(True)
     velBoundary = [[1, [0.0, 0.0]],
                    [2, [0.0, 0.0]],
                    [3, [1.0, 0.0]],
@@ -890,12 +890,12 @@ if __name__ == '__main__':
     ax2 = fig.add_subplot(1, 3, 2)
     ax3 = fig.add_subplot(1, 3, 3)
 
-    show(grid, data=pg.cellDataToPointData(grid, pres),
+    show(grid, data=pg.core.cellDataToPointData(grid, pres),
          logScale=False, showLater=True, colorBar=True, axes=ax1, cbar='b2r')
-    show(grid, data=pg.logTransDropTol(pg.cellDataToPointData(grid, vel[:, 0]),
+    show(grid, data=pg.logTransDropTol(pg.core.cellDataToPointData(grid, vel[:, 0]),
                                        1e-2),
          logScale=False, showLater=True, colorBar=True, axes=ax2)
-    show(grid, data=pg.logTransDropTol(pg.cellDataToPointData(grid, vel[:, 1]),
+    show(grid, data=pg.logTransDropTol(pg.core.cellDataToPointData(grid, vel[:, 1]),
                                        1e-2),
          logScale=False, showLater=True, colorBar=True, axes=ax3)
 

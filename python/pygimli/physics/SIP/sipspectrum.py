@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Spectral induced polarisation (SIP) spectrum class and modules."""
+"""Spectral induced polarization (SIP) spectrum class and modules."""
 
 import sys
 import codecs
@@ -10,12 +10,217 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import pygimli as pg
-from .importexport import readTXTSpectrum, readFuchs3File, readRadicSIPFuchs
-# from .importexport import readRadicSIPQuad
+from pygimli.utils import isComplex, squeezeComplex, toComplex, KramersKronig
+
+from .importData import readTXTSpectrum, readFuchs3File, readRadicSIPFuchs
+
 from .plotting import drawAmplitudeSpectrum, drawPhaseSpectrum, showSpectrum
 from .models import DebyePhi, DebyeComplex, relaxationTerm
-from .tools import KramersKronig, fitCCEMPhi, fitCCC
+from .tools import fitCCEMPhi, fitCCC
 from .tools import fitCCCC, fitCCPhi, fit2CCPhi
+
+from pygimli.frameworks import MethodManager
+from pygimli.frameworks import ParameterModelling
+
+
+class SpectrumModelling(ParameterModelling):
+    """Modelling framework with an array of freqencies as data space.
+    
+    Attributes
+    ----------
+    params: dict
+    function: callable
+    complex: bool
+
+    """
+    def __init__(self, funct=None, **kwargs):
+        self._complex = False
+        super(SpectrumModelling, self).__init__(funct=funct, **kwargs)
+        self._freqs = None
+
+    @property 
+    def complex(self):
+        return self._complex
+    
+    @complex.setter
+    def complex(self, c):
+        self._complex = c
+    
+    @property 
+    def freqs(self):
+        if self._freqs is None:
+            pg.critical("No frequencies defined.")
+        return self._freqs
+    @freqs.setter
+    def freqs(self, f):
+        self._freqs = f
+
+    def _initFunction(self, funct):
+        """Init any function and interpret possible args and kwargs."""
+        self._function = funct
+        # the first varname is suposed to be f or freqs
+        args = funct.__code__.co_varnames[1:funct.__code__.co_argcount]
+        for varname in args:
+            if varname != 'verbose':
+                self._params[varname] = 0.0
+
+        nPara = len(self._params.keys())
+        
+        for i, [k, p] in enumerate(self._params.items()):
+            self.addParameter(k, id=i, cType=0, 
+                                       single=True, 
+                                       trans='log', 
+                                       startModel=1)
+
+    def response(self, params):
+        #pg._r('response:', params)
+        #self.drawModel(None, params)
+        if np.isnan([*params]).any():
+            print(params)
+            pg.critical('invalid params for response')
+        ret = self._function(self.freqs, *params)
+        if self.complex:
+            return squeezeComplex(ret)
+        return ret
+
+    def drawData(self, ax, data, err=None, **kwargs):
+        """"""
+        if self.complex:
+            Z = toComplex(data)
+            showSpectrum(self.freqs, np.abs(Z), -np.angle(Z)*1000,
+                         axs=ax, **kwargs)
+        else:
+            ax.semilogx(self.freqs, data)
+            ax.legend()
+
+
+class SpectrumManager(MethodManager):
+    """Manager to work with spectra data."""
+    def __init__(self, fop=None, **kwargs):
+        self._funct = fop
+        super(SpectrumManager, self).__init__(**kwargs)
+
+    def setFunct(self, fop, **kwargs):
+        """"""
+        self._funct = fop
+        self.reinitForwardOperator(**kwargs)
+
+    def createForwardOperator(self, **kwargs):
+        """
+        """
+        if isinstance(self._funct, SpectrumModelling):
+            return self._funct
+        
+        fop = SpectrumModelling(self._funct, **kwargs)
+        return fop
+
+    def createInversionFramework(self, **kwargs):
+        """
+        """
+        return pg.frameworks.MarquardtInversion(**kwargs)
+
+    def simulate(self):
+        """ """
+        pass
+
+    def setData(self, freqs=None, amp=None, phi=None, err=None):
+        """ """
+        self.fop.freqs = freqs
+        if phi is not None:
+            self.fw.dataVals = self._ensureData(toComplex(amp, phi))
+        else:
+            self.fw.dataVals = self._ensureData(amp)
+
+        self.fw.errorVals = self._ensureError(err, self.fw.dataVals)
+
+    def _ensureData(self, data):
+        """Check data validity"""
+            
+        if isinstance(data, pg.DataContainer):
+            pg.critical("Implement me")
+        
+        if data is None:
+            data = self.fw.dataVals
+
+        vals = data
+        if isComplex(data):
+            self.fop.complex = True
+            vals = squeezeComplex(data)
+
+        if abs(min(vals)) < 1e-12:
+            print(min(vals), max(vals))
+            pg.critical("There are zero data values.")
+
+        return vals
+
+    def _ensureError(self, err, dataVals=None):
+        """Check data validity"""
+        if isinstance(err, pg.DataContainer):
+            pg.critical("Implement me")
+        
+        if err is None:
+            err = self.fw.errorVals
+
+        vals = err
+        if vals is None:
+            return self._ensureError(0.01, dataVals)
+
+        if isinstance(vals, float):
+            pg.info("Create default error of {0}'%'".format(vals*100))
+            vals = np.ones(len(dataVals)) * vals
+
+        if abs(min(vals)) < 1e-12:
+            print(min(vals), max(vals))
+            pg.critical("There are zero data values.")
+
+        return vals
+
+    def invert(self, data=None, f=None, **kwargs):
+        """"""
+        if f is not None:
+            self.fop.freqs = f
+
+        limits = kwargs.pop('limits', {})
+        
+        for k, v in limits.items():
+            self.fop.setRegionProperties(k, limits=v)
+
+            if not 'startmodel' in kwargs:
+                sm = (v[1] + v[0]) / 2
+                if v[0] > 0:
+                    sm = np.exp(np.log(v[0]) + (np.log(v[1]) - np.log(v[0])) / 2.)
+                
+                self.fop.setRegionProperties(k, startModel=sm)
+ 
+        return super(SpectrumManager, self).invert(data, **kwargs)
+   
+    def showResult(self):
+        """"""
+        ax = None
+        if self.fop.complex:
+            fig, ax = pg.plt.subplots(nrows=2, ncols=1)
+        else:
+            fig, ax = pg.plt.subplots(nrows=1, ncols=1)
+
+        self.fop.drawModel(ax, self.fw.model)
+        self.fop.drawData(ax, self.fw.dataVals, label='data')
+        self.fop.drawData(ax, self.fw.response, label='response')
+
+        return ax
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 class SIPSpectrum(object):
@@ -373,7 +578,7 @@ class SIPSpectrum(object):
         return er
 
     def fitCCPhi(self, ePhi=0.001, lam=1000., mpar=(0, 0, 1),
-                 taupar=(0, 1e-5, 100), cpar=(0.3, 0, 1)):
+                 taupar=(0, 1e-5, 100), cpar=(0.3, 0, 1), verbose=False):
         """fit a Cole-Cole term to phase only
 
         Parameters
@@ -401,7 +606,7 @@ class SIPSpectrum(object):
 
     def fit2CCPhi(self, ePhi=0.001, lam=1000., mpar=(0, 0, 1),
                   taupar1=(0, 1e-5, 1), taupar2=(0, 1e-1, 1000),
-                  cpar=(0.5, 0, 1)):
+                  cpar=(0.5, 0, 1), verbose=False):
         """fit a Cole-Cole term to phase only
 
         Parameters
@@ -432,7 +637,7 @@ class SIPSpectrum(object):
 
     def fitCCEM(self, ePhi=0.001, lam=1000., remove=True,
                 mpar=(0.2, 0, 1), taupar=(1e-2, 1e-5, 100),
-                cpar=(0.25, 0, 1), empar=(1e-7, 1e-9, 1e-5)):
+                cpar=(0.25, 0, 1), empar=(1e-7, 1e-9, 1e-5), verbose=False):
         """Fit a Cole-Cole term with additional EM term to phase
 
         Parameters
@@ -448,7 +653,7 @@ class SIPSpectrum(object):
             for Cole-Cole parameters (m, tau, c) and EM relaxation time (em)
         """
         self.mCC, self.phiCC = fitCCEMPhi(self.f, self.phi, ePhi, lam, mpar,
-                                          taupar, cpar, empar)
+                                          taupar, cpar, empar, verbose=verbose)
         # correct EM term from data
         if remove:
             self.phiOrg = self.phi
@@ -483,7 +688,7 @@ class SIPSpectrum(object):
 
     def fitDebyeModel(self, ePhi=0.001, lam=1e3, lamFactor=0.8,
                       mint=None, maxt=None, nt=None, new=True,
-                      showFit=False, cType=1):
+                      showFit=False, cType=1, verbose=False):
         """Fit a (smooth) continuous Debye model (Debye decomposition).
 
         Parameters
@@ -515,22 +720,22 @@ class SIPSpectrum(object):
         # discretize tau, setup DD and perform DD inversion
         self.tau = np.logspace(log10(mint), log10(maxt), nt)
         phi = self.phi
-        tLin, tLog, tM = pg.RTrans(), pg.RTransLog(), pg.RTransLog()
-        # pg.RTransLogLU(0., 1.)
+        tLin, tLog, tM = pg.trans.Trans(), pg.trans.TransLog(), pg.trans.TransLog()
+        # pg.trans.TransLogLU(0., 1.)
         if new:
             reNorm, imNorm = self.zNorm()
             fDD = DebyeComplex(self.f, self.tau)
             Znorm = pg.cat(reNorm, imNorm)
-            IDD = pg.RInversion(Znorm, fDD, tLog, tM, False)
+            IDD = pg.Inversion(Znorm, fDD, tLog, tM, False)
             IDD.setAbsoluteError(max(Znorm)*0.003+ePhi)
         else:
             fDD = DebyePhi(self.f, self.tau)
-            IDD = pg.RInversion(phi, fDD, tLin, tM, True)
+            IDD = pg.Inversion(phi, fDD, tLin, tM, True)
             IDD.setAbsoluteError(ePhi)  # 1 mrad
 
         fDD.regionManager().setConstraintType(cType)
         IDD.stopAtChi1(False)
-        startModel = pg.RVector(nt, 0.01)
+        startModel = pg.Vector(nt, 0.01)
         IDD.setModel(startModel)
         IDD.setLambda(lam)
         IDD.setLambdaFactor(lamFactor)

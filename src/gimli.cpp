@@ -18,7 +18,6 @@
 
 #include "gimli.h"
 
-
 #include <cerrno>
 #include <cstring>
 #include <fstream>
@@ -58,6 +57,11 @@ static Index __GIMLI_THREADCOUNT__ = __setTC__();
 // extern static bool __SAVE_PYTHON_GIL__;
 // extern static bool __GIMLI_DEBUG__;
 
+std::string versionStr(){
+    std::string vers(str(PACKAGE_NAME) + "-" + PACKAGE_VERSION);
+    return vers;
+}
+
 void savePythonGIL(bool s){ __SAVE_PYTHON_GIL__ = s; }
 bool pythonGIL(){ return __SAVE_PYTHON_GIL__; }
 
@@ -71,7 +75,12 @@ void setThreadCount(Index nThreads){
     log(Debug, "Set amount of threads to " + str(nThreads));
     //log(Debug, "omp_get_max_threads: " + str(omp_get_max_threads()));
     //omp_set_num_threads
-    log(Debug, "can't set openblas thread count. ");    
+#if OPENBLAS_CBLAS_FOUND
+    openblas_set_num_threads(nThreads);
+    //omp_set_num_threads
+#else
+    log(Debug, "can't set openblas thread count. ");
+#endif    
 
     __GIMLI_THREADCOUNT__ = nThreads;
 }
@@ -133,7 +142,7 @@ int openFile(const std::string & fname, std::fstream * file,
     file->open(fname.c_str(), farg);
     if (!*file){
         if (terminate) {
-            throwError(EXIT_OPEN_FILE, WHERE_AM_I + " '" + fname + "': " +strerror(errno) + str(errno));
+            throwError(WHERE_AM_I + " '" + fname + "': " +strerror(errno) + str(errno));
         } else {
 			std::cerr << fname << ": " << strerror(errno) << " " << errno << std::endl;
 		}
@@ -255,7 +264,7 @@ std::map < float, float > loadFloatMap(const std::string & filename){
             aMap[toFloat(row[0])] = toFloat(row[1]);
         } else {
             if (aMap.size() == 0){
-                throwError(1, "no proper format found for map <float, Complex> in " + filename  + " " + str(row.size()) );
+                throwError("no proper format found for map <float, Complex> in " + filename  + " " + str(row.size()) );
             }
         }
     }
@@ -280,7 +289,7 @@ std::map < float, Complex > loadCFloatMap(const std::string & filename){
                                             toDouble(row[2]));
         } else {
             if (aMap.size() == 0){
-                throwError(1, "no proper format found for map <float, Complex> in " + filename  + " " + str(row.size()) );
+                throwError("no proper format found for map <float, Complex> in " + filename  + " " + str(row.size()) );
             }
         }
     }
@@ -309,6 +318,7 @@ std::map < int, int > loadIntMap(const std::string & filename){
 
 std::string logStrShort_(LogType type){
     switch (type){
+        case Verbose: return "Verbose"; break;
         case Info: return "info"; break;
         case Warning: return "warn";  break;
         case Error: return "error";  break;
@@ -320,6 +330,7 @@ std::string logStrShort_(LogType type){
 
 std::string logStr_(LogType type){
     switch (type){
+        case Verbose: return "Verbose"; break;
         case Info: return "Info"; break;
         case Warning: return "Warning";  break;
         case Debug: return "Debug";  break;
@@ -364,10 +375,8 @@ void log(LogType type, const std::string & msg){
         }
     }
 #endif
-
     if (type == Debug && !debug()) return;
     std::cout << logStr_(type) << ": " << msg << std::endl;
-    
 }
 
 } // namespace GIMLI

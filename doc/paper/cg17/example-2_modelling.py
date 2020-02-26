@@ -20,7 +20,7 @@ world = mt.createWorld(start=[-20, 0], end=[20, -16], layers=[-2, -8],
 block = mt.createRectangle(start=[-6, -3.5], end=[6, -6.0],
                            marker=4,  boundaryMarker=10, area=0.1)
 # Merge geometrical entities
-geom = mt.mergePLC([world, block])
+geom = world + block
 # pg.show(geom, boundaryMarker=True, savefig='geometry.pdf')
 
 # Create a mesh from the geometry definition
@@ -47,7 +47,7 @@ ax, _ = pg.show(mesh, data=vel, ax=ax, color='black', linewidth=0.5,
                 dropTol=1e-6)
 
 print('Solve Advection-diffusion equation ...')
-S = pg.RVector(mesh.cellCount(), 0.0)
+S = pg.Vector(mesh.cellCount(), 0.0)
 # Fill injection source vector for a fixed injection position
 sourceCell = mesh.findCell([-19.1, -4.6])
 S[sourceCell.id()] = 1.0 / sourceCell.size()  # g/(l s)
@@ -78,7 +78,7 @@ ertScheme = ert.createERTData(pg.utils.grange(-20, 20, dx=1.0),
 meshERT = mt.createParaMesh(ertScheme, quality=33, paraMaxCellSize=0.2,
                             boundaryMaxCellSize=50, smooth=[1, 2])
 # Select 10 time frame to simulate ERT data
-timesERT = pg.IndexArray(np.floor(np.linspace(0, len(c)-1, 10)))
+timesERT = pg.core.IndexArray(np.floor(np.linspace(0, len(c)-1, 10)))
 # Create conductivity of fluid for salt concentration $c$
 sigmaFluid = c[timesERT] * 0.1 + 0.01
 # Calculate bulk resistivity based on Archie's Law
@@ -92,7 +92,7 @@ for c in meshERT.cells():
         rho0[c.id()] = 150.
     elif c.center()[1] < -2:
         rho0[c.id()] = 500.
-resis = pg.RMatrix(resBulk)
+resis = pg.Matrix(resBulk)
 for i, rbI in enumerate(resBulk):
     resis[i] = 1. / ((1./rbI) + 1./rho0)
 # Initialize ert method manager

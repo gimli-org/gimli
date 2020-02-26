@@ -34,11 +34,11 @@ for i in range(len(nodes)):
     poly.createEdge(nodes[i], nodes[(i+1)%len(nodes)], 1)
 
 mesh = createMesh(poly, quality=34, area=0.001, smooth=[0,10])
-f = pg.RVector(mesh.cellCount(), 10)
-a = pg.RVector(mesh.cellCount(), 0.1)
+f = pg.Vector(mesh.cellCount(), 10)
+a = pg.Vector(mesh.cellCount(), 0.1)
 
 #Start FEM solution
-swatch = pg.Stopwatch(True)
+swatch = pg.core.Stopwatch(True)
 
 uDirichlet = [1, lambda p_: np.sin(np.arctan2(p_.center()[1],
                                               p_.center()[0]))/p_.center().abs()]

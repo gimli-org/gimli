@@ -25,6 +25,8 @@ pacman -S --needed --noconfirm --overwrite \
         mingw-w64-x86_64-gcc \
         mingw-w64-x86_64-gcc-fortran \
         mingw-w64-x86_64-openblas \
+        mingw-w64-x86_64-suitesparse \
+        mingw-w64-cppunit \
         mingw-w64-x86_64-doxygen \
         mingw-w64-x86_64-llvm \
         mingw-w64-x86_64-clang

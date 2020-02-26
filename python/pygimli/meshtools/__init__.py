@@ -8,66 +8,58 @@ Mesh generation and modification.
     (unstructured), both objects are treated the same internally.
 """
 
-from .grid import (createGrid, appendTetrahedronBoundary, appendTriangleBoundary)
-
-from .mesh import (createMesh, createParaMesh, createParaMesh2DGrid,
-                   merge2Meshes, refineQuad2Tri,
-                   mergeMeshes, readGmsh, readHydrus2dMesh,
-                   readHydrus3dMesh, readTetgen, readTriangle, 
-                   convertHDF5Mesh, readHDF5Mesh, readFenicsHDF5Mesh, 
-                   exportHDF5Mesh, exportFenicsHDF5Mesh,
-                   readSTL, exportSTL,
-                   )
-                   
+from ..core import createMesh1D, createMesh1DBlock, createMesh2D, createMesh3D
+from .grid import appendTetrahedronBoundary, appendTriangleBoundary, createGrid
+from .mapping import (cellDataToBoundaryData, cellDataToNodeData,
+                      fillEmptyToCellArray, interpolate, interpolateAlongCurve,
+                      nodeDataToBoundaryData, nodeDataToCellData,
+                      tapeMeasureToCoordinates)
+from .mesh import (convertHDF5Mesh, createMesh, createParaMesh,
+                   createParaMesh2DGrid, exportFenicsHDF5Mesh, exportHDF5Mesh,
+                   exportSTL, extrudeMesh, merge2Meshes, mergeMeshes,
+                   readFenicsHDF5Mesh, readGmsh, readHDF5Mesh,
+                   readHydrus2dMesh, readHydrus3dMesh, readSTL, readTetgen,
+                   readTriangle, refineHex2Tet, refineQuad2Tri)
 from .polytools import createParaDomain2D  # keep for backward compatibility
-from .polytools import (createCircle, createLine, createParaMeshPLC,
-                        createPolygon, createRectangle, createWorld, mergePLC,
-                        createCylinder,
-                        readPLC, exportPLC, writePLC, syscallTetgen)
-from .quality import (quality)
-
-from .mapping import (nodeDataToCellData,
-                      cellDataToNodeData,
-                      nodeDataToBoundaryData,
-                      cellDataToBoundaryData,
-                      fillEmptyToCellArray,
-                      tapeMeasureToCoordinates,
-                      interpolate,
-                      interpolateAlongCurve
-                      )
+from .polytools import (createCircle, createCube, createCylinder, createFacet,
+                        createLine, createParaMeshPLC, createPolygon,
+                        createRectangle, createWorld, exportPLC, mergePLC,
+                        mergePLC3D, readPLC, syscallTetgen, writePLC)
+from .quality import quality
 
 #  This is neither functional nor good practice  #  why?
 #  __all__ = [name for name in dir() if '_' not in name]
 
-__all__ = ['appendTriangleBoundary',
-           'appendTetrahedronBoundary',
-           'createMesh',
-           'readGmsh',
-           'readTriangle',
-           'readTetgen',
-           'readHydrus2dMesh',
-           'readHydrus3dMesh',
-           'readHDF5Mesh',
-           'readFenicsHDF5Mesh',
-           'readSTL',
-           'refineQuad2Tri',
-           'mergeMeshes',
-           'merge2Meshes',
-           'createParaMesh',
-           'createParaMesh2DGrid',
-           'createPolygon',
-           'createRectangle',
-           'createWorld',
-           'createCircle',
-           'createLine',
-           'createParaMeshPLC',
-           'convertHDF5Mesh',
-           'exportHDF5Mesh',
-           'exportFenicsHDF5Mesh',
-           'mergePLC',
-           'readPLC',
-           'writePLC',
-           'exportPLC',
-           'createParaDomain2D',  # keep for backward compatibility
-           'quality'
-           ]
+__all__ = [
+    'appendTriangleBoundary',
+    'appendTetrahedronBoundary',
+    'createMesh',
+    'readGmsh',
+    'readTriangle',
+    'readTetgen',
+    'readHydrus2dMesh',
+    'readHydrus3dMesh',
+    'readHDF5Mesh',
+    'readFenicsHDF5Mesh',
+    'readSTL',
+    'refineQuad2Tri',
+    'mergeMeshes',
+    'merge2Meshes',
+    'createParaMesh',
+    'createParaMesh2DGrid',
+    'createPolygon',
+    'createRectangle',
+    'createWorld',
+    'createCircle',
+    'createLine',
+    'createParaMeshPLC',
+    'convertHDF5Mesh',
+    'exportHDF5Mesh',
+    'exportFenicsHDF5Mesh',
+    'mergePLC',
+    'readPLC',
+    'writePLC',
+    'exportPLC',
+    'createParaDomain2D',  # keep for backward compatibility
+    'quality'
+]

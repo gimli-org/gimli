@@ -12,7 +12,7 @@
 //typedef struct { long double x, y; } __float128;
 #endif
 
-//#define PYTEST
+//#define PYTES
 #ifdef PYTEST
 
  #include <iostream>
@@ -85,7 +85,6 @@ namespace pyplusplus{ namespace aliases{
 #include "interpolate.h"
 #include "integration.h"
 #include "inversion.h"
-#include "ipcClient.h"
 #include "ldlWrapper.h"
 #include "line.h"
 #include "linSolver.h"
@@ -127,7 +126,17 @@ namespace pyplusplus{ namespace aliases{
 
 namespace GIMLI{
 
-#define DEFINE_PY_VEC_OPERATOR__(OP)                      \
+#define DEFINE_PY_VEC_OPERATOR__(OP) \
+    inline IndexArray operator OP (const IndexArray & a, const IndexArray & b){\
+        IndexArray ret(a);   ret OP##=b; return ret; } \
+    inline IndexArray operator OP (const IndexArray & a, Index b){ \
+        IndexArray ret(a);   ret OP##=b; return ret; } \
+    inline IndexArray operator OP (const IndexArray & a, int b){ \
+        IndexArray ret(a);   ret OP##=(Index)abs(b); return ret; } \
+    inline IndexArray operator OP (Index a, const IndexArray & b){ \
+        IndexArray ret(b.size()); for (Index i = 0; i < b.size(); i ++) ret[i] = a OP b[i]; return ret; } \
+    inline IndexArray operator OP (int a, const IndexArray & b){ \
+        IndexArray ret(b.size()); for (Index i = 0; i < b.size(); i ++) ret[i] = (Index)abs(a) OP b[i]; return ret; } \
     inline RVector operator OP (const RVector & a, const RVector & b){ \
         RVector ret(a);   ret OP##=b; return ret; }                           \
     inline RVector operator OP (const double & a, const RVector & b){ \
@@ -136,10 +145,11 @@ namespace GIMLI{
         RVector ret(a);   ret OP##=b; return ret; }                           \
     inline IVector operator OP (const IVector & a, const IVector & b){ \
         IVector ret(a);   ret OP##=b; return ret; }                           \
-    inline IVector operator OP (const IVector & a, int b){ \
+    inline IVector operator OP (const IVector & a, SIndex b){ \
         IVector ret(a);   ret OP##=b; return ret; }                           \
-    inline IVector operator OP (int a, const IVector & b){ \
-        IVector ret(b.size()); for (Index i = 0; i < b.size(); i ++) ret[i] = a OP b[i]; return ret; } \
+    inline IVector operator OP (SIndex a, const IVector & b){ \
+        IVector ret(b.size()); \
+        for (Index i = 0; i < b.size(); i ++) ret[i] = a OP b[i]; return ret; } \
     inline CVector operator OP (const CVector & a, const CVector & b){ \
         CVector c(a);   c OP##=b; return c; }                           \
     inline CVector operator OP (const CVector & a, const Complex & b){ \
@@ -220,8 +230,6 @@ DEFINE_COMPARE_OPERATOR__(>)
     template class Matrix3< double >;
 
     template class BlockMatrix< double >;
-
-    template class Pos< double >;
     template class Quaternion< double >;
 
     template class PolynomialElement< double >;
@@ -246,8 +254,6 @@ DEFINE_COMPARE_OPERATOR__(>)
     template double besselI1< double >(const double & x);
     template double besselK0< double >(const double & x);
     template double besselK1< double >(const double & x);
-
-    template class Inversion< double >;
 
     template class Trans< RVector >;
     template class TransLinear< RVector >;
@@ -279,8 +285,7 @@ DEFINE_XVECTOR_STUFF__(RVector) //RVector last since auto rhs conversion will fa
     template RVector round(const RVector & a, double tol);
     template RVector increasingRange(const double & first, const double & last, Index n);
 
-    template Mesh & Mesh::transform(const Matrix < double > & mat);
-    template Pos< double > & Pos< double >::transform(const Matrix < double > & mat);
+    template Pos & Pos::transform(const Matrix < double > & mat);
 
     template class SparseMatrix< double >;
     template class SparseMatrix< GIMLI::Complex >;
@@ -301,11 +306,11 @@ DEFINE_XVECTOR_STUFF__(RVector) //RVector last since auto rhs conversion will fa
     template RVector unique(const RVector & a);
     // template IndexArray unique(const IndexArray & a);
     template IVector unique(const IVector & a);
-    
+
     template RVector sort(const RVector & a);
     // template IndexArray sort(const IndexArray & a);
     template IVector sort(const IVector & a);
-    
+
     template RVector pow(const RVector & a, double power);
     template RVector pow(const RVector & a, int power);
     template RVector pow(const RVector & a, const RVector & power);
@@ -323,6 +328,7 @@ DEFINE_XVECTOR_STUFF__(RVector) //RVector last since auto rhs conversion will fa
     template RMatrix imag(const CMatrix & a);
 
     template double det(const RMatrix & a);
+    template double det(const RMatrix3 & a);
 
     template double min(const RVector & v);
     template double max(const RVector & v);
@@ -480,7 +486,7 @@ DEFINE_XVECTOR_STUFF__(RVector) //RVector last since auto rhs conversion will fa
 //** define some aliases to avoid insane method names
 namespace pyplusplus{ namespace aliases{
     typedef std::complex< double >                       Complex;
-    typedef GIMLI::Pos< double >                         RVector3;
+    typedef GIMLI::Pos                                   RVector3;
 
     typedef GIMLI::Vector< bool >                        BVector;
     typedef GIMLI::Vector< double >                      RVector;
@@ -507,7 +513,6 @@ namespace pyplusplus{ namespace aliases{
     typedef GIMLI::PolynomialFunction< double >          RPolynomialFunction;
     typedef GIMLI::PolynomialElement< double >           RPolynomialElement;
 
-    typedef GIMLI::Inversion< double >                   RInversion;
 //     typedef GIMLI::RollalongInSpace< double >            RRollalongInSpace;
 
     typedef GIMLI::ElementMatrix< double >                   ElementMatrix;
@@ -571,7 +576,7 @@ namespace pyplusplus{ namespace aliases{
     typedef std::vector< GIMLI::Node * >             stdVectorNodes;
     typedef std::vector< GIMLI::MeshEntity * >       stdVectorMeshEntity;
     typedef std::vector< GIMLI::CubicFunct >         stdVectorCubicFunct;
-    typedef std::vector< GIMLI::RegionMarkerPLC >    stdVectorRegionMarkerPLC;
+    typedef std::vector< GIMLI::RegionMarker >       stdVectorRegionMarker;
 
     typedef std::map< std::string, GIMLI::Vector< double > > stdMapStringRVector;
     typedef std::map< GIMLI::SIndex, GIMLI::Region * >         stdMapRegion;
@@ -587,6 +592,8 @@ namespace pyplusplus{ namespace aliases{
     typedef std::map<std::pair<unsigned long, unsigned long>, double > stdMapL_L_D;
     typedef std::map<std::pair<unsigned long, unsigned long>, std::complex< double > > stdMapL_L_C;
 
+    typedef std::map< GIMLI::Index, GIMLI::GraphDistInfo > NodeDistMap;
+
     #ifdef _WIN64
         typedef std::map<std::pair<unsigned long long, unsigned long long>, double > stdMapLL_LL_D;
         typedef std::map<std::pair<unsigned long long, unsigned long long>, std::complex< double > > stdMapLL_LL_C;
@@ -600,8 +607,8 @@ namespace pyplusplus{ namespace aliases{
     typedef std::set< long int >                        stdSetL;
     typedef std::set< std::string >                     stdSetS;
     typedef std::set< GIMLI::Node * >                 stdSetNodes;
-    typedef std::set< GIMLI::Boundary * >             stdSetBoundary;
-    typedef std::set< GIMLI::Cell * >                 stdSetCell;
+    typedef std::set< GIMLI::Boundary * >             stdSetBoundaries;
+    typedef std::set< GIMLI::Cell * >                 stdSetCells;
 
 }} //pyplusplus::aliases
 

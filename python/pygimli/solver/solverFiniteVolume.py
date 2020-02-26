@@ -153,7 +153,7 @@ def cellToFaceArithmetic(boundary, AMM):
 
 def cellDataToBoundaryDataMatrix(mesh):
     """TODO Documentme."""
-    AMM = pg.RSparseMapMatrix(mesh.boundaryCount(), mesh.cellCount())
+    AMM = pg.matrix.SparseMapMatrix(mesh.boundaryCount(), mesh.cellCount())
 
     for b in mesh.boundaries():
         cellToFaceArithmetic(b, AMM)
@@ -317,26 +317,20 @@ def diffusionConvectionKernel(mesh, a=None, b=0.0,
 
     Parameters
     ----------
-    mesh : :gimliapi:`GIMLI::Mesh`
+    mesh: :gimliapi:`GIMLI::Mesh`
         Mesh represents spatial discretization of the calculation domain
-
-    a   : value | array | callable(cell, userData)
+    a: value | array | callable(cell, userData)
         Diffusion coefficient per cell
-
-    b   : value | array | callable(cell, userData)
+    b: value | array | callable(cell, userData)
         TODO What is b
-
-    fn   : iterable(cell)
+    fn: iterable(cell)
         TODO What is fn
-
-    vel : ndarray (N,dim) | RMatrix(N,dim)
+    vel: ndarray (N,dim) | RMatrix(N,dim)
         velocity field [[v_i,]_j,] with i=[1..3] for the mesh dimension
         and j = [0 .. N-1] per Cell or per Node so N is either
         mesh.cellCount() or mesh.nodeCount()
-
-    scheme : str [CDS]
+    scheme: str [CDS]
         Finite volume scheme
-
         * CDS -- Central Difference Scheme.
             maybe irregular for Peclet no. |F/D| > 2
             Diffusion dominant. Error of order 2
@@ -350,19 +344,16 @@ def diffusionConvectionKernel(mesh, a=None, b=0.0,
             Convection dominant.
         * ES -- Exponential scheme
             Only stationary one-dimensional but exact solution
-
     Returns
     -------
-
-    S : :gimliapi:`GIMLI::SparseMatrix` | numpy.ndarray(nCells, nCells)
+    S: :gimliapi:`GIMLI::SparseMatrix` | numpy.ndarray(nCells, nCells)
         Kernel matrix, depends on vel, a, b, scheme, uB, duB .. if some of this
         has been changed you cannot cache these matrix
-
-    rhsBoundaryScales : ndarray(nCells)
+    rhsBoundaryScales: ndarray(nCells)
         RHS offset vector
     """
     if a is None:
-        a = pg.RVector(mesh.boundaryCount(), 1.0)
+        a = pg.Vector(mesh.boundaryCount(), 1.0)
 
     AScheme = None
     if scheme == 'CDS':
@@ -393,20 +384,20 @@ def diffusionConvectionKernel(mesh, a=None, b=0.0,
 
     S = None
     if sparse:
-        S = pg.RSparseMapMatrix(dof, dof, stype=0) + identity(dof, scale=b)
+        S = pg.matrix.SparseMapMatrix(dof, dof, stype=0) + identity(dof, scale=b)
     else:
         S = np.zeros((dof, dof))
 
     rhsBoundaryScales = np.zeros(dof)
 
-#    swatch = pg.Stopwatch(True)
+#    swatch = pg.core.Stopwatch(True)
 
     # we need this to fast identify uBoundary and value by boundary
     uBoundaryID = []
     uBoundaryVals = [None] * mesh.boundaryCount()
     for [boundary, val] in uB:
 
-        if not isinstance(boundary, pg.Boundary):
+        if not isinstance(boundary, pg.core.Boundary):
             raise BaseException("Please give boundary, value list")
 
         uBoundaryID.append(boundary.id())
@@ -416,7 +407,7 @@ def diffusionConvectionKernel(mesh, a=None, b=0.0,
     duBoundaryVals = [None] * mesh.boundaryCount()
 
     for [boundary, val] in duB:
-        if not isinstance(boundary, pg.Boundary):
+        if not isinstance(boundary, pg.core.Boundary):
             raise BaseException("Please give boundary, value list")
 
         duBoundaryID.append(boundary.id())
@@ -520,7 +511,6 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=None, u0=0.0,
 
     The solution :math:`u(\mathbf{r}, t)` is given for each cell in the mesh.
 
-
     TODO:
 
      * Refactor with solver class and Runga-Kutte solver
@@ -528,36 +518,28 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=None, u0=0.0,
 
     Parameters
     ----------
-    mesh : :gimliapi:`GIMLI::Mesh`
+    mesh: :gimliapi:`GIMLI::Mesh`
         Mesh represents spatial discretization of the calculation domain
-
-    a   : value | array | callable(cell, userData)
+    a: value | array | callable(cell, userData)
         Stiffness weighting per cell values.
-
-    b   : value | array | callable(cell, userData)
+    b: value | array | callable(cell, userData)
         Scale for mass values b
-
-    f   : iterable(cell)
+    f: iterable(cell)
         Load vector
-
-    fn   : iterable(cell)
+    fn: iterable(cell)
         TODO What is fn
-
-    vel : ndarray (N,dim) | RMatrix(N,dim)
+    vel: ndarray (N,dim) | RMatrix(N,dim)
         Velocity field :math:`\mathbf{v}(\mathbf{r}, t=\text{const}) = \{[v_i]_j,\}`
         with :math:`i=[1\ldots 3]` for the mesh dimension
         and :math:`j = [0\ldots N-1]` with N either the amount of cells,
         nodes, or boundaries.
         Velocities per boundary are preferred and will be interpolated
         on demand.
-
-    u0 : value | array | callable(cell, userData)
+    u0: value | array | callable(cell, userData)
         Starting field
-
-    times : iterable
+    times: iterable
         Time steps to calculate for.
-
-    ws : Workspace
+    ws Workspace
         This can be an empty class that will used as an Workspace to store and
         cache data.
 
@@ -568,11 +550,9 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=None, u0=0.0,
         The LinearSolver with the factorized matrix is cached in
         this Workspace as ws.solver
         The rhs vector is only stored in this Workspace as ws.rhs
-
-    scheme : str [CDS]
+    scheme: str [CDS]
         Finite volume scheme:
         :py:mod:`pygimli.solver.diffusionConvectionKernel`
-
     **kwargs:
 
         * uB : Dirichlet boundary conditions
@@ -580,14 +560,13 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=None, u0=0.0,
 
     Returns
     -------
-
-    u : ndarray(nTimes, nCells)
-        solution field for all time steps
+    u: ndarray(nTimes, nCells)
+        Solution field for all time steps.
 
     """
     verbose = kwargs.pop('verbose', False)
     # The Workspace is to hold temporary data or preserve matrix rebuild
-    # swatch = pg.Stopwatch(True)
+    # swatch = pg.core.Stopwatch(True)
     sparse = True
 
     workspace = pg.solver.WorkSpace()
@@ -595,9 +574,9 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=None, u0=0.0,
         workspace = ws
 
     a = pg.solver.parseArgToArray(a, [mesh.cellCount(), mesh.boundaryCount()])
+    b = pg.solver.parseArgToArray(b, mesh.cellCount())
     f = pg.solver.parseArgToArray(f, mesh.cellCount())
     fn = pg.solver.parseArgToArray(fn, mesh.cellCount())
-
 
     boundsDirichlet = None
     boundsNeumann = None
@@ -683,11 +662,11 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=None, u0=0.0,
     if not hasattr(times, '__len__'):
 
         if sparse and not hasattr(workspace, 'solver'):
-            Sm = pg.RSparseMatrix(workspace.S)
+            Sm = pg.matrix.SparseMatrix(workspace.S)
             # hold Sm until we have reference counting,
             # loosing Sm here will kill LinSolver later
             workspace.Sm = Sm
-            workspace.solver = pg.LinSolver(Sm, verbose=verbose)
+            workspace.solver = pg.core.LinSolver(Sm, verbose=verbose)
 
         u = None
         if sparse:
@@ -703,7 +682,6 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=None, u0=0.0,
             I = pg.solver.identity(len(workspace.rhs))
         else:
             I = np.diag(np.ones(len(workspace.rhs)))
-
 
         progress = None
         if verbose:
@@ -868,7 +846,7 @@ def __solveStokes(mesh, viscosity, velBoundary=None, preBoundary=None,
     else:
         velocity = np.array(vel0)
 
-    mesh.createNeighbourInfos()
+    mesh.createNeighborInfos()
 
     CtB = mesh.cellToBoundaryInterpolation()
     controlVolumes = CtB * mesh.cellSizes()
@@ -1002,7 +980,7 @@ def _test_ConvectionAdvection():
     y = np.linspace(-1.0, 1.0, Ny + 1)
     grid = pg.createGrid(x=x, y=y)
 
-    a = pg.RVector(grid.cellCount(), 1.0)
+    a = pg.Vector(grid.cellCount(), 1.0)
 
     b7 = grid.findBoundaryByMarker(1)[0]
     for b in grid.findBoundaryByMarker(1):
@@ -1010,7 +988,7 @@ def _test_ConvectionAdvection():
             b7 = b
     b7.setMarker(7)
 
-    swatch = pg.Stopwatch(True)
+    swatch = pg.core.Stopwatch(True)
     velBoundary = [[1, [0.0, 0.0]],
                    [2, [0.0, 0.0]],
                    [3, [1.0, 0.0]],

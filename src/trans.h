@@ -289,48 +289,13 @@ public:
     virtual ~TransLogLU() { }
 
     /*!WHAT IS THIS?*/
-    Vec rangify(const Vec & a) const {
-        Vec tmp(a);
-        double lb1 = this->lowerBound() * (1.0 + TRANSTOL);
-        if (min(a) < lb1){
-            std::cerr << WHERE_AM_I << " Warning! " << min(a)
-                      << " <=" << this->lowerBound() << " lower bound" << std::endl;
-            for (uint i = 0; i < a.size(); i ++){
-                tmp[i] = max(a[i], lb1);
-            }
-        }
+    Vec rangify(const Vec & a) const;
 
-        double ub1 = upperbound_ * (1.0 - TRANSTOL);
-        if (max(a) > ub1 ){
-            std::cerr << WHERE_AM_I << " Warning! " << max(a) << " > "
-                      << upperbound_ << " upper bound" << std::endl;
-            for (uint i = 0; i < a.size(); i ++){
-                tmp[i] = min(tmp[i], ub1);
-            }
-        }
-        return tmp;
-    }
+    virtual Vec trans(const Vec & a) const;
 
-    virtual Vec trans(const Vec & a) const {
-        if (std::fabs(upperbound_) < TOLERANCE) return TransLog< Vec >::trans(a);
+    virtual Vec invTrans(const Vec & a) const;
 
-        Vec tmp = rangify(a);
-        return (log(tmp - this->lowerBound()) - log(upperbound_ - tmp));
-    }
-
-    virtual Vec invTrans(const Vec & a) const {
-        if (std::fabs(upperbound_) < TOLERANCE) return TransLog< Vec >::invTrans(a);
-
-        //return ((exp(a) * upperbound_ + this->lowerBound()) / (exp(a) + this->lowerBound())); //** keine Ahnung
-        return ((exp(a) * upperbound_ + this->lowerBound()) / (exp(a) + 1.0));
-    }
-
-    virtual Vec deriv(const Vec & a) const {
-        if (std::fabs(upperbound_) < TOLERANCE) return TransLog< Vec >::deriv(a);
-
-        Vec tmp = rangify(a);
-        return (1.0 / (tmp - this->lowerBound()) + 1.0 / (upperbound_ - tmp));
-    }
+    virtual Vec deriv(const Vec & a) const;
 
     inline void setUpperBound(double ub) { upperbound_ = ub; }
 
@@ -339,6 +304,13 @@ public:
 protected:
   double upperbound_;
 };
+
+/*! Implement specialized type traits in trans.cpp. */
+template <> DLLEXPORT RVector TransLogLU<RVector>::rangify(const RVector & a) const;
+template <> DLLEXPORT RVector TransLogLU<RVector>::trans(const RVector & a) const;
+template <> DLLEXPORT RVector TransLogLU<RVector>::invTrans(const RVector & a) const;
+template <> DLLEXPORT RVector TransLogLU<RVector>::deriv(const RVector & a) const;
+
 
 /*! Cotangens barrier method, e.g. for water content (NMR) */
 template< class Vec > class TransCotLU : public Trans < Vec > {
@@ -566,55 +538,46 @@ public:
 
     virtual ~TransCumulative() { }
 
-    virtual Vec trans(const Vec & a) const {
-        Vec tmp(a.size());
-        for (Index i = 0; i < transVec_.size(); i ++){
-            tmp.setVal(transVec_[i]->trans(a(bounds_[i].first,
-                                            bounds_[i].second)),
-                       bounds_[i]);
-        }
-        return tmp;
-    }
+    virtual Vec trans(const Vec & a) const;
 
-    virtual Vec invTrans(const Vec & a) const {
-        Vec tmp(a.size());
-        for (Index i = 0; i < transVec_.size(); i ++){
-            tmp.setVal(transVec_[i]->invTrans(a(bounds_[i].first,
-                                               bounds_[i].second)),
-                       bounds_[i]);
-        }
-        return tmp;
-    }
+    virtual Vec invTrans(const Vec & a) const;
 
-    virtual Vec deriv(const Vec & a) const {
-        Vec tmp(a.size());
-        for (Index i = 0; i < transVec_.size(); i ++){
-            tmp.setVal(transVec_[i]->deriv(a(bounds_[i].first,
-                                           bounds_[i].second)),
-                       bounds_[i]);
-        }
-        return tmp;
-    }
+    virtual Vec deriv(const Vec & a) const;
 
     Index size() const { return transVec_.size(); }
 
-    void clear() { transVec_.clear(); bounds_.clear(); }
-
-    void add(Trans< Vec > & trans, Index size) {
-        Index start = 0;
-        if (!bounds_.empty()) start = bounds_.back().second;
-        this->add(trans, start, start + size);
+    void clear() {
+        transVec_.clear();
+        slice_.clear();
+        indices_.clear();
     }
 
-    void add(Trans< Vec > & trans, Index start, Index end) {
-        transVec_.push_back(&trans);
-        bounds_.push_back(std::pair< Index, Index >(start, end));
-    }
+    void add(Trans< Vec > & trans, Index size);
+
+    void add(Trans< Vec > & trans, Index start, Index end);
+
+    void add(Trans< Vec > & trans, const IVector & indices);
+
+    /*!Return the containing transformationb object.*/
+    Trans < Vec > & at(Index i) { return *transVec_.at(i);}
+
+    const std::pair< Index, Index> & slice(Index i) const { return slice_.at(i);}
+
+    const IVector & indices(Index i) const { return indices_.at(i);}
 
 protected:
     std::vector < Trans< Vec > * > transVec_;
-    std::vector < std::pair< Index, Index> > bounds_;
+    std::vector < std::pair< Index, Index> > slice_;
+    std::vector < IVector > indices_;
 };
+
+template <> DLLEXPORT RVector TransCumulative < RVector >::trans(const RVector & a) const;
+template <> DLLEXPORT RVector TransCumulative < RVector >::invTrans(const RVector & a) const;
+template <> DLLEXPORT RVector TransCumulative < RVector >::deriv(const RVector & a) const;
+
+template <> DLLEXPORT void TransCumulative < RVector >::add(Trans< RVector > & trans, Index size);
+template <> DLLEXPORT void TransCumulative < RVector >::add(Trans< RVector > & trans, Index start, Index end);
+template <> DLLEXPORT void TransCumulative < RVector >::add(Trans< RVector > & trans, const IVector & indices);
 
 typedef Trans < RVector > RTrans;
 typedef TransLinear < RVector > RTransLinear;
@@ -624,6 +587,8 @@ typedef TransLog < RVector > RTransLog;
 typedef TransLogLU < RVector > RTransLogLU;
 typedef TransCotLU < RVector > RTransCotLU;
 typedef TransCumulative< RVector > RTransCumulative;
+
+
 } // namespace GIMLI
 
 

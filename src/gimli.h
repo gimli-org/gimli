@@ -24,7 +24,7 @@
 #else
     #if defined(HAVE_CONFIG_H)
         #include <config.h>
-        #define PACKAGE_AUTHORS "carsten@resistivity.net, thomas@resistivity.net"
+        #define PACKAGE_AUTHORS "carsten@gimli.org, thomas@gimli.org, florian@gimli.org"
     #endif
 #endif
 
@@ -47,15 +47,16 @@
 #ifndef PACKAGE_NAME
         #define PACKAGE_NAME "libgimli"
         #define PACKAGE_VERSION "untagt-win"
-        #define PACKAGE_BUGREPORT "carsten@resistivity.net"
-        #define PACKAGE_AUTHORS "carsten@resistivity.net, thomas@resistivity.net"
+
+        #define PACKAGE_BUGREPORT "carsten@gimli.org"
+        #define PACKAGE_AUTHORS "carsten@gimli.org, thomas@gimli.org, florian@gimli.org"
 #endif // PACKAGE_NAME
 
 #ifdef _MSC_VER
 	#pragma warning(disable: 4251)
 #endif
 
-#include <cassert>
+//#include <cassert>
 #include <iostream>
 #include <limits>
 #include <string>
@@ -67,6 +68,7 @@
 #include <stdint.h>
 #include <complex>
 #include <algorithm>
+#include <functional>
 
 #include "platform.h"
 
@@ -147,20 +149,19 @@ typedef int64_t int64;
 #define NOT_DEFINED "notDefined"
 
 #define ASSERT_EQUAL_SIZE(m, n) if (m.size() != n.size()) \
-    throwLengthError(1, WHERE_AM_I + " " + str(m.size()) + " != " + str(n.size()));
+    throwLengthError(WHERE_AM_I + " " + str(m.size()) + " != " + str(n.size()));
 #define ASSERT_THIS_SIZE(n) if (n < 0 || n >= this->size()) \
-    throwLengthError(1, WHERE_AM_I + " " + str(this->size()) + " <= " + str(n));
+    throwLengthError(WHERE_AM_I + " " + str(this->size()) + " <= " + str(n));
+#define ASSERT_VEC_SIZE(vec, n) if (n != vec.size()) \
+    throwLengthError(WHERE_AM_I + " " + str(vec.size()) + " != " + str(n));
 #define ASSERT_SIZE(vec, n) if (n < 0 || n >= vec.size()) \
-    throwLengthError(1, WHERE_AM_I + " " + str(vec.size()) + " <= " + str(n));
+    throwLengthError(WHERE_AM_I + " " + str(vec.size()) + " <= " + str(n));
 #define ASSERT_EQUAL(m, n) if (m != n) \
-    throwLengthError(1, WHERE_AM_I + " " + str(m) + " != " + str(n));
+    throwLengthError(WHERE_AM_I + " " + str(m) + " != " + str(n));
 #define ASSERT_RANGE(i, start, end) if (i < start || i >= end) \
-    throwRangeError(1, WHERE_AM_I, i, start, end);
+    throwRangeError(WHERE_AM_I, i, start, end);
 #define ASSERT_EMPTY(v) if (v.size()==0) \
-    throwLengthError(1, WHERE_AM_I + " array size is zero.");
-
-enum LogType {Info, Warning, Error, Debug, Critical};
-DLLEXPORT void log(LogType type, const std::string & msg);
+    throwLengthError(WHERE_AM_I + " array size is zero.");
 
 static const int MARKER_BOUND_HOMOGEN_NEUMANN = -1;
 static const int MARKER_BOUND_MIXED = -2;
@@ -233,10 +234,9 @@ class Region;
 class RegionManager;
 class Shape;
 class Stopwatch;
+class Pos;
 
-template < class ValueType > class Pos;
-typedef Pos< int >          IntPos;
-typedef Pos< double >       RVector3;
+typedef Pos RVector3;
 typedef std::complex < double > Complex;
 
 template < class ValueType >        class SparseMatrix;
@@ -256,13 +256,13 @@ template < class ValueType > class Vector;
 
 typedef Vector < double > RVector;
 typedef Vector < Complex > CVector;
-typedef Vector < RVector3 > R3Vector;
+typedef Vector < Pos > PosVector;
+typedef PosVector R3Vector;
 typedef Vector < bool > BVector;
 typedef Vector < SIndex > IVector;
 typedef Vector < Index > IndexArray;
 
 typedef std::vector < SIndex > SIndexArray;
-
 
 typedef Matrix < double > RMatrix;
 typedef Matrix3< double > RMatrix3;
@@ -276,11 +276,6 @@ typedef BlockMatrix < double > RBlockMatrix;
 
 template < class ValueType > class PolynomialFunction;
 typedef PolynomialFunction< double > RPolynomialFunction;
-
-template < class ModelValType > class Inversion;
-
-/*! standard classes for easier use: inversion with full and sparse jacobian */
-typedef GIMLI::Inversion< double > RInversion;
 
 template < class ValueType > class ElementMatrix;
 typedef ElementMatrix < double > RElementMatrix;
@@ -333,20 +328,32 @@ private:
 //     #include <Python.h>
 #endif
 
-//! General template for conversion to ing, should supersede all sprintf etc.
-template< typename T > inline std::string str(const T & value){
-    std::ostringstream streamOut;
-    streamOut << value;
-    return streamOut.str();
+inline std::string str(){ return "";}
+//! General template for conversion to string, should supersede all sprintf etc.
+template< typename T > inline std::string str(const T & v){
+    std::ostringstream os;
+    os << v;
+    return os.str();
 }
+enum LogType {Verbose, Info, Warning, Error, Debug, Critical};
+DLLEXPORT void log(LogType type, const std::string & msg);
 
-//! DEPRECATED do not use
-template< typename T > inline std::string toStr(const T & value){ return str(value);}
-
-inline std::string versionStr(){
-    std::string vers(str(PACKAGE_NAME) + "-" + PACKAGE_VERSION);
-    return vers;
+#ifndef PYGIMLI_CAST // castxml complains on older gcc/clang
+template<typename Value, typename... Values>
+std::string str(Value v, Values... vs){
+    std::ostringstream os;
+    using expander = int[];
+    os << v; // first
+    (void) expander{ 0, (os << " " << vs, void(), 0)... };
+    return os.str();
 }
+template<typename... Values>
+void log(LogType type, Values... vs){
+    return log(type, str(vs...));
+}
+#endif
+
+DLLEXPORT std::string versionStr();
 
 DLLEXPORT std::string authors();
 
@@ -392,6 +399,7 @@ DLLEXPORT std::map < int, int > loadIntMap(const std::string & filename);
 inline void convert(bool          & var, char * opt) { var = true; }
 inline void convert(int           & var, char * opt) { if (!opt) var ++;    else var = atoi(opt); }
 inline void convert(uint          & var, char * opt) { if (!opt) var ++;    else var = atoi(opt); }
+inline void convert(Index         & var, char * opt) { if (!opt) var ++;    else var = atoi(opt); }
 inline void convert(float         & var, char * opt) { if (!opt) var = 0.0f; else var = (float)atof(opt); }
 inline void convert(double        & var, char * opt) { if (!opt) var = 0.0; else var = atof(opt); }
 inline void convert(std::string   & var, char * opt) { if (!opt) var = "";  else var = opt ; }
@@ -402,19 +410,20 @@ inline std::string type(const int32         & var) { return "int32"; }
 inline std::string type(const int64         & var) { return "int64"; }
 inline std::string type(const uint32        & var) { return "uint32"; }
 inline std::string type(const uint64        & var) { return "uint64"; }
+// inline std::string type(const Index         & var) { return "Index"; }
+// inline std::string type(const SIndex        & var) { return "SIndex"; }
 inline std::string type(const float         & var) { return "float"; }
 inline std::string type(const double        & var) { return "double"; }
 inline std::string type(const Complex       & var) { return "complex"; }
 inline std::string type(const std::string   & var) { return "string"; }
 inline std::string type(const std::vector < std::string >  & var) { return "string"; }
 
-inline std::string type(const RVector  & var)  { return "RVector"; }
+inline std::string type(const RVector  & var) { return "RVector"; }
 inline std::string type(const RVector3 & var) { return "RVector3"; }
 inline std::string type(const R3Vector & var) { return "R3Vector"; }
-inline std::string type(const CVector  & var)  { return "CVector"; }
-inline std::string type(const RMatrix  & var)  { return "RMatrix"; }
-inline std::string type(const CMatrix  & var)  { return "CMatrix"; }
-
+inline std::string type(const CVector  & var) { return "CVector"; }
+inline std::string type(const RMatrix  & var) { return "RMatrix"; }
+inline std::string type(const CMatrix  & var) { return "CMatrix"; }
 
 inline int       toInt(const std::string & str){ return std::atoi(str.c_str()); }
 inline float   toFloat(const std::string & str){ return (float)std::atof(str.c_str()); }
@@ -446,22 +455,13 @@ template < typename ValueType > void setEnvironment(const std::string & name,
     switch(ret){
         case EINVAL:
             __MS(name << " " << val)
-            throwError(1, "name is NULL, points to a string of length 0, or contains an '=' character.");
+            throwError("name is NULL, points to a string of length 0, or contains an '=' character.");
         case ENOMEM:
             __MS(name << " " << val)
-            throwError(1, "name is NULL, points to a string of length 0, or contains an '=' character.");
+            throwError("name is NULL, Insufficient memory to add a new variable to the environment.");
     }
-//     EINVAL
-//
-//     ENOMEM Insufficient memory to add a new variable to the environment.
-
     if (verbose) std::cout << "set: export " << name << "=" << val << std::endl;
 }
-
-// //! Deprecated! use str() instead, General template for conversion to string, should supersede all sprintf etc.
-// template< typename T > inline std::string toStr(const T & value){
-//     return str(value);
-// }
 
 inline std::string strReplaceBlankWithUnderscore(const std::string & str) {
     std::string res(str);
@@ -475,9 +475,9 @@ inline std::string lower(const std::string & str){
     return lo;
 }
 
-template < typename T > inline void swapVal(T & a, T & m){
-    T tmp(a); a = m; m = tmp;
-}
+// template < typename T > inline void swapVal(T & a, T & m){
+//     T tmp(a); a = m; m = tmp;
+// }
 
 /*! General template for deleting an object. This is not exception-safe unless you use some kind of smart pointer.\n
 Example: Delete all objects in a container.
@@ -567,16 +567,23 @@ private:
 template < typename Classname > class DLLEXPORT Singleton {
 public:
 
-    virtual ~Singleton() { delete pInstance_; pInstance_ = NULL; }
+    virtual ~Singleton() {
+    #ifndef PYGIMLI_CAST
+        delete pInstance_; pInstance_ = NULL;
+    #endif
+    }
 
     /*! This call create one instance of the class and return a pointer to it. */
     static Classname * pInstance() {
+    #ifndef PYGIMLI_CAST
         return pInstance_ ? pInstance_ : (pInstance_ = new Classname());
+    #endif
+        return 0;
     }
 
     /*! This call create one instance of the class and return a reference to it. */
     static Classname & instance() {
-        return * pInstance();
+        return *pInstance();
     }
 
 protected:
@@ -587,8 +594,40 @@ private:
     /*! Private so that it can not be called */
 
     /*! Copy constructor is private, so don't use it */
+#ifndef PYGIMLI_CAST
     static Classname * pInstance_;
+#endif
 };
+
+template < typename T > Index hash_(T v){
+    #ifndef PYGIMLI_CAST
+        return std::hash<T>()(v);
+    #endif
+    __M
+    return 0;
+}
+/*! Combine
+https://www.boost.org/doc/libs/1_37_0/doc/html/hash/reference.html#boost.hash_combine */
+template <typename T>
+void hashCombine(Index & seed, const T& val){
+    seed ^= hash_(val) + 0x9e3779b9 + (seed<<6) + (seed>>2);
+}
+template <typename T, typename... Types>
+void hashCombine (Index & seed, const T & val, const Types&... args){
+    hashCombine(seed, val);
+    hashCombine(seed, args...);
+}
+inline void hashCombine (Index & seed){}
+template <typename... Types>
+Index hash(const Types&... args){
+    Index seed = 0;
+    hashCombine(seed, args...);
+    return seed;
+}
+template void hashCombine(Index & seed, const Index & hash);
+// template void hashCombine(Index & seed, const PosVector & val);
+// template void hashCombine(Index & seed, const Pos & val);
+// template void hashCombine(Index & seed, const DataContainer & val);
 
 } // namespace GIMLI
 

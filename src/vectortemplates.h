@@ -32,6 +32,14 @@
 
 namespace GIMLI{
 
+template < typename T, class Iter, template < typename, class > class Vec >
+// template < typename T, template < typename, class > class Vec > 
+IndexArray ids(const Vec < T, Iter > & e){
+    IndexArray id(e.size());
+    for (Index i = 0; i < e.size(); i ++ ) id[i] = e[i]->id();
+    return id;
+}
+
 template < class ValueType > bool save(std::vector < ValueType > & a, const std::string & filename, IOFormat format = Ascii){
     return saveVec(a, filename, format);
 }

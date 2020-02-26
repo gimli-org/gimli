@@ -1,5 +1,6 @@
 # Files and filetypes exluded from version control
 # Python standard taken from https://github.com/github/gitignore/blob/master/Python.gitignore
+#
 
 # Documentation
 _build/
@@ -76,6 +77,18 @@ coverage.xml
 *.mo
 *.pot
 
+# Misc
 test.py
 python/pygimli/core/libboost_python37-mt.dll
 python/pygimli/core/libgimli.dll
+gimli.code-workspace
+python/pygimli/core/*.dll
+.vscode/settings.json
+
+python/pygimli/testing/synth.ves
+.vscode/launch.json
+python/git.exe.stackdump
+python/pygimli/core/libgimli.dll.back
+python/pygimli/core/_pygimli_.pyd.back
+doc/examples/dc_and_ip/synth.ves
+python/pygimli/VERSION

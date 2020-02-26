@@ -11,10 +11,9 @@
     #include "testVector.h"
     #include "testGIMLiMisc.h" // not working on Win32 despite USE_IPC
     #include "testDataContainer.h"
-//
     #include "testMesh.h"
-    #include "testShape.h"
     #include "testGeometry.h"
+    #include "testShape.h"
     #include "testFEM.h"
     #include "testExternals.h"
 
@@ -24,6 +23,7 @@
 #include <iostream>
 
 int main( int argc, char **argv){
+    std::cout << "starting unittest" << std::endl;
 #ifdef HAVE_UNITTEST
     CppUnit::TextUi::TestRunner runner;
     CppUnit::TestFactoryRegistry &registry = CppUnit::TestFactoryRegistry::getRegistry();

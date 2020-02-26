@@ -28,6 +28,8 @@
 
 namespace GIMLI{
 
+enum NodeState{No, Secondary, Connected};
+
 //! 3D Node
 /*!
  * Node is a basic entity of a mesh at a 3D position x/y/z (a vertex),
@@ -66,19 +68,19 @@ public:
 
     inline uint rtti() const { return MESH_NODE_RTTI; }
 
-    inline void setPos(const RVector3 & pos) { pos_ = pos; }
+    inline void setPos(const RVector3 & pos) { changed_(); pos_ = pos; }
 
     inline const RVector3 & pos() const { return pos_; }
 
     inline RVector3 & pos() { return pos_; }
 
-    inline void insertBoundary(Boundary & bound){ boundSet_.insert(&bound); }
+    inline void insertBoundary(Boundary * bound){ boundSet_.insert(bound); }
 
-    inline void eraseBoundary(Boundary & bound){ boundSet_.erase(&bound); }
+    inline void eraseBoundary(Boundary * bound){ boundSet_.erase(bound); }
 
-    inline void insertCell(Cell & cell){ cellSet_.insert(&cell); }
+    inline void insertCell(Cell * cell){ cellSet_.insert(cell); }
 
-    inline void eraseCell(Cell & cell){ cellSet_.erase(&cell); }
+    inline void eraseCell(Cell * cell){ cellSet_.erase(cell); }
 
     inline const std::set < Boundary * > & boundSet() const { return boundSet_; }
 
@@ -88,11 +90,18 @@ public:
 
     inline std::set < Cell * > & cellSet() { return cellSet_; }
 
+    void transform(const RMatrix & mat);
+
     inline void scale(const RVector3 & s) { changed_(); pos_.scale(s); }
 
     inline void translate(const RVector3 & t) { changed_(); pos_.translate(t); }
 
+    inline void translate(double x, double y=0.0, double z=0.0) {
+        changed_(); pos_.translate(x, y, z); }
+
     inline void rotate(const RVector3 & r) { changed_(); pos_.rotate(r); }
+
+    inline void swap(Index i, Index j) { changed_(); pos_.swap(i, j); }
 
     inline const double & x() const { return pos_[0]; }
 
@@ -109,6 +118,16 @@ public:
     /*!*/
     void smooth(uint function);
 
+    /*!Little helper to identify the state of this node after some merging.*/
+    void setState(NodeState s) { this->_state = s; }
+
+    /*!Return the state of this node.*/
+    const NodeState state() const { return this->_state; }
+
+    void setSecondaryParent(MeshEntity * e) { this->_secondaryParent = e; }
+    /*!Return the state of this node.*/
+    MeshEntity * secondaryParent() { return this->_secondaryParent; }
+
 protected:
 
     void copy_(const Node & node);
@@ -122,6 +141,8 @@ protected:
     std::set < Boundary * > boundSet_;
     std::set < Cell * >     cellSet_;
 
+    NodeState _state;
+    MeshEntity *_secondaryParent;
 }; // class Node
 
 DLLEXPORT std::ostream & operator << (std::ostream & str, const GIMLI::Node & node);

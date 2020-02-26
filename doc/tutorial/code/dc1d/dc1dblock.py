@@ -9,28 +9,28 @@ nlay = 4
 lam = 200.
 errPerc = 3.
 
-abmnr = pg.RMatrix()
+abmnr = pg.Matrix()
 pg.loadMatrixCol(abmnr, "sond1-100.ves")
 ab2 = abmnr[0]
 mn2 = abmnr[1]
 rhoa = abmnr[2]
 
-transRho = pg.RTransLogLU(1., 1000.)
-transThk = pg.RTransLog()
-transRhoa = pg.RTransLog()
+transRho = pg.trans.TransLogLU(1., 1000.)
+transThk = pg.trans.TransLog()
+transRhoa = pg.trans.TransLog()
 
-f = pg.DC1dModelling(nlay, ab2, mn2)
+f = pg.core.DC1dModelling(nlay, ab2, mn2)
 f.region(0).setTransModel(transThk)
 f.region(1).setTransModel(transRho)
 
 paraDepth = max(ab2) / 3
 f.region(0).setStartValue(max(ab2) / 3. / nlay / 2.)
-f.region(1).setStartValue(pg.median(rhoa))
+f.region(1).setStartValue(pg.math.median(rhoa))
 
 model = f.createStartVector()
 model[nlay] *= 1.5
 
-inv = pg.RInversion(rhoa, f, True)
+inv = pg.Inversion(rhoa, f, True)
 inv.setModel(model)
 inv.setTransData(transRhoa)
 inv.setRelativeError(errPerc / 100.0)

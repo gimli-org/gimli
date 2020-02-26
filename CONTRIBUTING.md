@@ -108,3 +108,33 @@ git push origin adaptive_meshes
 After pushing, you can go to GitHub and you will see a green PR button.
 Describe your changes in more detail. Once reviewed by the core
 developers, your PR will be merged to the main repository.
+
+### 6. Updating your work with changes from upstream
+
+While you work on your forked repository, sometimes changes are commited to the
+main repository (usually called **upstream**).
+You do NOT need to delete your forked repository and refork to apply these
+changes to your own fork.
+Follow the procedure described `here
+<https://help.github.com/en/articles/syncing-a-fork>`__
+
+Required only once, add the main repository as a remote to your local (cloned)
+git repository:
+
+   git remote add upstream https://github.com/gimli-org/gimli.git
+
+Development work is usually based on the *dev* branch, and before creating a
+new feature branch, make sure to update this branch on your forked repository:
+
+.. code:: bash
+
+	git checkout -b dev
+	git merge upstream/dev
+	# the following will push updates to your personal fork
+	git push
+
+Only then create your feature branch
+
+.. code:: bash
+
+   git checkout -b new_feature

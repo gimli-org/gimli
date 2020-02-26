@@ -7,16 +7,9 @@ import numpy as np
 
 import pygimli as pg
 
+from pygimli.mplviewer import createColorBar  # , updateColorBar
 
-def drawFirstPicks(ax, data, tt=None, plotva=False, marker='x-'):
-    """Naming convention. drawFOO(ax, ... )"""
-    return plotFirstPicks(ax=ax, data=data, tt=tt, plotva=plotva,
-                          marker=marker)
-
-
-def drawVA(ax, data, usePos=True):
-    """Naming convention. drawFOO(ax, ... )"""
-    return showVA(ax=ax, data=data, usepos=usePos)
+from .ratools import shotReceiverDistances
 
 
 def drawTravelTimeData(ax, data, t=None):
@@ -70,12 +63,16 @@ def drawTravelTimeData(ax, data, t=None):
     ax.set_ylabel('Traveltime [ms]')
 
 
-# def drawTravelTimeData(...)
-
-
 def plotFirstPicks(ax, data, tt=None, plotva=False, marker='x-'):
+    """Naming convention. drawFOO(ax, ... )"""
+    pg.deprecated("use drawFirstPicks")
+    return drawFirstPicks(ax=ax, data=data, tt=tt, plotva=plotva,
+                          marker=marker)
+
+
+def drawFirstPicks(ax, data, tt=None, plotva=False, marker='x-'):
     """plot first arrivals as lines"""
-    px = pg.x(data.sensorPositions())
+    px = pg.x(data)
     gx = np.array([px[int(g)] for g in data("g")])
     sx = np.array([px[int(s)] for s in data("s")])
     if tt is None:
@@ -103,27 +100,88 @@ def plotFirstPicks(ax, data, tt=None, plotva=False, marker='x-'):
     ax.invert_yaxis()
 
 
-def showVA(ax, data, usepos=True):
-    """show apparent velocity as image plot"""
-    px = pg.x(data.sensorPositions())
-    gx = np.asarray([px[int(g)] for g in data("g")])
-    sx = np.asarray([px[int(s)] for s in data("s")])
-    va = np.absolute(gx - sx) / data('t')
-    A = np.ones((data.sensorCount(), data.sensorCount())) * np.nan
-    for i in range(data.size()):
-        A[int(data('s')[i]), int(data('g')[i])] = va[i]
+def _getOffset(data, full=False):
+    """Return vector of offsets (in m) between shot and receiver."""
+    pg.deprecated('use shotReceiverDistances')  # 190429 ??
+    return shotReceiverDistances(data, full)
 
-    gci = ax.imshow(A, interpolation='nearest')
-    ax.grid(True)
-    xt = np.arange(0, data.sensorCount(), 50)
-    if usepos:
+
+def showVA(data, usePos=True, ax=None, **kwargs):
+    """Show apparent velocity as image plot
+
+    Parameters
+    ----------
+    data : pg.DataContainer()
+        Datacontainer with 's' and 'g' Sensorindieces and 't' traveltimes.
+    """
+    ax, _ = pg.show(ax=ax)
+    gci = drawVA(ax, data=data, usePos=usePos, **kwargs)
+
+    cBar = createColorBar(gci, **kwargs)
+
+    return gci, cBar
+
+
+def drawVA(ax, data, vals=None, usePos=True, pseudosection=False, **kwargs):
+    """Draw apparent velocities as matrix into ax
+
+    Parameters
+    ----------
+    ax : mpl.Axes
+
+    data : pg.DataContainer()
+        Datacontainer with 's' and 'g' Sensorindieces and 't' traveltimes.
+
+    usePos: bool [True]
+        Use sensor positions for axes tick labels
+
+    pseudosection : bool [False]
+        Show in pseudosection style.
+
+    vals : iterable
+        Traveltimes, if None data need to contain 't' values.
+    """
+    if isinstance(vals, str):
+        vals = data(vals)
+        
+    if vals is None:
+        vals = data('t')
+
+    px = pg.x(data)
+    gx = np.asarray([px[g] for g in data.id("g")])
+    sx = np.asarray([px[s] for s in data.id("s")])
+
+    offset = shotReceiverDistances(data, full=True)
+
+    if min(vals) < 1e-10:
+        print(vals)
+        pg.error('zero traveltimes found.')
+    va = offset / vals
+
+    if pseudosection:
+        midpoint = (gx + sx) / 2
+        gci = pg.mplviewer.dataview.drawVecMatrix(ax, midpoint, offset, va,
+                                                  queeze=True,
+                                                  label=pg.unit('as'))
+    else:
+        gci = pg.mplviewer.dataview.drawVecMatrix(ax, gx, sx, va,
+                                                  squeeze=True,
+                                                  label=pg.unit('as'))
+
+    # A = np.ones((data.sensorCount(), data.sensorCount())) * np.nan
+    # for i in range(data.size()):
+    #     A[int(data('s')[i]), int(data('g')[i])] = va[i]
+    # gci = ax.imshow(A, interpolation='nearest')
+    # ax.grid(True)
+
+    if usePos:
+        xt = np.arange(0, data.sensorCount(), 50)
         ax.set_xticks(xt)
         ax.set_xticklabels([str(int(px[xti])) for xti in xt])
         ax.set_yticks(xt)
         ax.set_yticklabels([str(int(px[xti])) for xti in xt])
 
-    plt.colorbar(gci, ax=ax)
-    return va
+    return gci
 
 
 def plotLines(ax, line_filename, step=1):

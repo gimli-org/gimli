@@ -4,7 +4,6 @@
 #include <cppunit/extensions/HelperMacros.h>
 
 #include <gimli.h>
-#include <ipcClient.h>
 #include <memwatch.h>
 
 #include <matrix.h>
@@ -18,8 +17,8 @@ class GIMLIMiscTest : public CppUnit::TestFixture  {
     CPPUNIT_TEST(testBooleanLogic);
     CPPUNIT_TEST(testFunctorTemplates);
     CPPUNIT_TEST(testStringFunctions);
-    //CPPUNIT_TEST(testIPCSHM);
     CPPUNIT_TEST(testMemWatch);
+    CPPUNIT_TEST(testHash);
     CPPUNIT_TEST(testPolynomialFunction);
 //     CPPUNIT_TEST(testRotationByQuaternion);
     
@@ -33,6 +32,8 @@ public:
 // 		CPPUNIT_ASSERT(GIMLI::fileExist("unittest.sh") == true);
         std::cout << "number of CPU: " << GIMLI::numberOfCPU() << std::endl;
         GIMLI::showSizes();
+        CPPUNIT_ASSERT(sizeof(GIMLI::Index) == 8);
+        CPPUNIT_ASSERT(sizeof(GIMLI::SIndex) == 8);
     }
 
     void testBooleanLogic(){
@@ -81,29 +82,6 @@ public:
         
     }
 
-    void testIPCSHM(){
-        
-        // Init shared memory
-        GIMLI::IPCClientSHM ipc;
-
-        // Init shared memory
-        ipc.setSegmentName("unittest");
-        ipc.setInt("testInt", 1);
-        ipc.setBool("testBool", false);
-        ipc.setDouble("testDouble", 3.14);
-        
-        // this can by done by any other process or program on the same machine
-        GIMLI::IPCClientSHM ipc2;
-        ipc2.setSegmentName("unittest");
-        ipc2.info();
-        CPPUNIT_ASSERT(ipc2.getInt("testInt") == 1);
-        CPPUNIT_ASSERT(ipc2.getBool("testBool") == false);
-        CPPUNIT_ASSERT(ipc2.getDouble("testDouble") == 3.14);
-        
-        // free the shared memory
-        ipc.free("unittest");
-    }
-    
     void testMemWatch(){
         std::cout << "MemWatch" << std::endl;
         GIMLI::setDebug(true);
@@ -117,7 +95,27 @@ public:
         mat.clear();
         GIMLI::MemWatch::pInstance()->info(WHERE);
     }
-    
+    void testHash(){
+        
+        GIMLI::Pos p0(0.0, 0.0, 0.0);
+        GIMLI::Pos p1(1.0, 0.0, 0.0);
+
+        CPPUNIT_ASSERT(std::hash<GIMLI::Pos>()(p0) == std::hash<GIMLI::Pos>()(p0));
+        CPPUNIT_ASSERT(std::hash<GIMLI::Pos>()(p0) != std::hash<GIMLI::Pos>()(p1));
+        
+        p1[0] = 0.0;
+        CPPUNIT_ASSERT(std::hash<GIMLI::Pos>()(p0) == std::hash<GIMLI::Pos>()(p1));
+
+        GIMLI::RVector v0(10, 2.0);
+        GIMLI::RVector v1(10, 2.0);
+        CPPUNIT_ASSERT(v0.hash() == v1.hash());
+        v1[1] = 3.0;
+        CPPUNIT_ASSERT(v0.hash() != v1.hash());
+        v1[1] = 2.0;
+        CPPUNIT_ASSERT(v0.hash() == v1.hash());
+
+    }
+
     void testPolynomialFunction(){
         CPPUNIT_ASSERT(GIMLI::PolynomialFunction< double > (GIMLI::RVector(0.0))(GIMLI::RVector3(3.14, 0.0, 0.0)) == 0.0);
         

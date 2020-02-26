@@ -25,7 +25,7 @@
 namespace GIMLI{
 
 //! A line
-/*! A straight line in the geometrically point of view. */
+/*! A straight line segment in the geometrically point of view. */
 
 class DLLEXPORT Line {
 public:
@@ -47,7 +47,7 @@ public:
     /*! Assignment operator*/
     Line & operator = (const Line & line);
 
-    /*! Functor to the line function. ret = p0_ + (p1_ - p0_) * t; */
+    /*! Functor to the line function. ret = _p0 + (_p1 - _p0) * t; */
     inline const RVector3 operator()(double t) const { return this->at(t); }
 
     /*! Equal_to operator */
@@ -57,42 +57,44 @@ public:
     inline bool operator != (const Line & line) const { return !(*this == line); }
 
     /*! Check validility of the straight line. False if [ p0-p1] < tol. */
-    bool checkValidity(double tol = TOLERANCE);
+    bool checkValidity(double tol=TOLERANCE);
 
     /*! Return the validity of this line.*/
     inline bool valid() const { return valid_; }
 
     /*! Compare two lines with a given tolerance. Check if both ref points from line touch this line..
     distance(this, line.p1)< tol && distance(this, line.p2)< tol */
-    bool compare(const Line & line, double tol = TOLERANCE) const;
+    bool compare(const Line & line, double tol=TOLERANCE) const;
 
     /*! Return const reference to ref. point p0 */
-    const RVector3 & p0() const { return p0_; }
+    const RVector3 & p0() const { return _p0; }
 
     /*! Return const reference to ref. point p1 */
-    const RVector3 & p1() const { return p1_; }
+    const RVector3 & p1() const { return _p1; }
 
     /*! Return true if this line segment intersect with a the ray given by
-     start and direction dir. Fill pos with the intersection position.*/
+     start and direction dir. Fill pos with the intersection position.
+     Returns also true if the ray is parallel and the distance between 
+     Line and ray is smaller than the tolerance but pos is not valid.*/
     bool intersectRay(const RVector3 & start, const RVector3 & dir,
-                      RVector3 & pos) const;
+                      RVector3 & pos, double tol=TOLERANCE) const;
 
     /*! Return insection position of this line segment with a the ray given by
      start and direction dir. Pos is invalid for no intersection.*/
-    RVector3 intersect(const RVector3 & start, const RVector3 & dir) const;
+    RVector3 intersect(const RVector3 & start, const RVector3 & dir, double tol=TOLERANCE) const;
 
     /*! Returns the intersection point between line and this line.
         Returns an invalid RVector3 of both do not touch, are equal or parallel.
         Return is invalid if they don't intersect.
     */
-    RVector3 intersect(const Line & line) const;
+    RVector3 intersect(const Line & line, double tol=TOLERANCE) const;
 
     /*! Returns line parameter t that represents the nearest position to the
      *line for the given point p. Feed it to at() and you get the nearest point. */
     double nearest(const RVector3 & p) const;
 
-    /*! Apply the line as function. ret = p0_ + (p1_ - p0_) * t*/
-    inline RVector3 at(double t) const { return p0_ + (p1_ - p0_) * t; }
+    /*! Apply the line as function. ret = _p0 + (_p1 - _p0) * t*/
+    inline RVector3 at(double t) const { return _p0 + (_p1 - _p0) * t; }
 
     /*!  Return the distance between this line and pos,
     http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html;
@@ -100,33 +102,33 @@ public:
     double distance(const RVector3 & pos) const;
 
     /*! Return position at line.
-        solves: pos = p0_ + (p1_ - p0_) * ret.
-        ret = (pos - p0_) / (p1_ - p0_)
+        solves: pos = _p0 + (_p1 - _p0) * ret.
+        ret = (pos - _p0) / (_p1 - _p0)
         Throws an exception if pos is not on Line. */
-    double t(const RVector3 & pos, double tol = TOLERANCE) const ;
+    double t(const RVector3 & pos, double tol=TOLERANCE) const ;
 
     /*! Return true if pos touches the line. pFunIdx gives an identifier which shows the dependency between this Line and the RVector3 pos. Possible return values are: \n
     -1 -- this straight line don't touch the Position pos \n
-    1 -- this straight line touch the Position pos and pos lies before p0_ \n
-    2 -- this straight line touch the Position pos and pos lies at the same position like pos p0_\n
-    3 -- this straight line touch the Position pos and pos lies within the definition positions p0_ and p1_\n
-    4 -- this straight line touch the Position pos and pos lies at the same position like pos p1_\n
-    5 -- this straight line touch the Position pos and pos lies behind p1_\n  */
-    bool touch1(const RVector3 & pos, int & pFunIdx, double tol = TOLERANCE) const ;
+    1 -- this straight line touch the Position pos and pos lies before _p0 \n
+    2 -- this straight line touch the Position pos and pos lies at the same position like pos _p0\n
+    3 -- this straight line touch the Position pos and pos lies within the definition positions _p0 and _p1\n
+    4 -- this straight line touch the Position pos and pos lies at the same position like pos _p1\n
+    5 -- this straight line touch the Position pos and pos lies behind _p1\n  */
+    bool touch1(const RVector3 & pos, int & pFunIdx, double tol=TOLERANCE) const ;
 
     /*! Return true if pos touches the line. */
-    bool touch(const RVector3 & pos, double tol = TOLERANCE) const ;
+    bool touch(const RVector3 & pos, double tol=TOLERANCE) const ;
 
     /*! Return the length if the line.*/
-    double length() const { return p0_.dist(p1_); }
+    double length() const { return _p0.dist(_p1); }
 
 protected:
 
     /*! internal: copy content of line into this line */
     void copy_(const Line & line);
 
-    RVector3 p0_;
-    RVector3 p1_;
+    RVector3 _p0;
+    RVector3 _p1;
     bool valid_;
 };
 

@@ -18,7 +18,7 @@ from .utils import updateAxes as updateAxes_
 
 def drawModel1D(ax, thickness=None, values=None, model=None, depths=None,
                 plot='plot',
-                xlabel=r'Resistivity $[\Omega$m$]$', zlabel='Depth [m]',
+                xlabel=r'Resistivity $(\Omega$m$)$', zlabel='Depth (m)',
                 z0=0,
                 **kwargs):
     """Draw 1d block model into axis ax.
@@ -58,7 +58,7 @@ def drawModel1D(ax, thickness=None, values=None, model=None, depths=None,
         Label for y axis.
 
     z0 : float
-        Starting depth [m]
+        Starting depth in m
 
     **kwargs : dict()
         Forwarded to the plot routine
@@ -107,7 +107,7 @@ def drawModel1D(ax, thickness=None, values=None, model=None, depths=None,
 
     if plot == 'loglog' or plot == 'semilogy':
         if z0 == 0:
-            pz[0] = 1.
+            pz[0] = z1[0] / 2.
         else:
             pz[0] = z0
 
@@ -165,12 +165,12 @@ def draw1DColumn(ax, x, val, thk, width=30, ztopo=0, cmin=1, cmax=1000,
         ax.text(x+textoffset, ztopo, name, ha='center', va='bottom')
 
     updateAxes_(ax)
-
     return col
 
 
 def showmymatrix(mat, x, y, dx=2, dy=1, xlab=None, ylab=None, cbar=None):
     """What is this good for?."""
+    pg.error('who use this?')
     plt.imshow(mat, interpolation='nearest')
     plt.xticks(np.arange(0, len(x), dx), ["%g" % rndig(xi, 2) for xi in x])
     plt.yticks(np.arange(0, len(y), dy), ["%g" % rndig(yi, 2) for yi in y])
@@ -184,7 +184,6 @@ def showmymatrix(mat, x, y, dx=2, dy=1, xlab=None, ylab=None, cbar=None):
     if cbar is not None:
         plt.colorbar(orientation=cbar)
     return
-
 
 def draw1dmodelErr(x, xL, xU=None, thk=None, xcol='g', ycol='r', **kwargs):
     """TODO."""
@@ -273,7 +272,7 @@ def showStitchedModels(models, ax=None, x=None, cMin=None, cMax=None,
     zMaxLimit = 0
 
     for i, imod in enumerate(models):
-        if isinstance(imod, pg.RVector):
+        if isinstance(imod, pg.Vector):
             vals[i, :] = imod(nlay - 1, 2 * nlay - 1)
             thk = np.asarray(imod(0, nlay - 1))
         else:
@@ -477,6 +476,9 @@ def draw1dmodel(x, thk=None, xlab=None, zlab="z in m", islog=True, z0=0):
 def show1dmodel(x, thk=None, xlab=None, zlab="z in m", islog=True, z0=0,
                 **kwargs):
     """Show 1d block model defined by value and thickness vectors."""
+    print("STYLE_WARNING!!!!!!! don't use this call. "
+          "WHO use this anymore??.")
+
     if xlab is None:
         xlab = "$\\rho$ in $\\Omega$m"
 
@@ -511,63 +513,6 @@ def show1dmodel(x, thk=None, xlab=None, zlab="z in m", islog=True, z0=0,
     plt.ylabel(zlab)
     plt.show()
     return
-
-
-def draw1dmodel__Redundant(x, thk=None, xlab=None, zlab="z in m", islog=True,
-                           fs=14, z0=0, **kwargs):
-    """Draw 1d block model defined by value and thickness vectors."""
-#    if xlab is None:
-#        xlab = "$\\rho$ in $\\Omega$m"
-
-    if thk is None:  # gimli blockmodel (thk+x together) given
-        nl = int(np.floor((len(x) - 1) / 2.)) + 1
-        thk = np.asarray(x)[:nl - 1]
-        x = np.asarray(x)[nl - 1:nl * 2 - 1]
-
-    z1 = np.concatenate(([0], np.cumsum(thk))) + z0
-    z = np.concatenate((z1, [z1[-1] * 1.2]))
-    nl = len(x)  # x.size()
-    px = np.zeros((nl * 2, 1))
-    pz = np.zeros((nl * 2, 1))
-    for i in range(nl):
-        px[2 * i] = x[i]
-        px[2 * i + 1] = x[i]
-        pz[2 * i + 1] = z[i + 1]
-        if i < nl - 1:
-            pz[2 * i + 2] = z[i + 1]
-
-#    plt.cla()
-    li = []
-    if islog:
-        li = plt.semilogx(px, pz, **kwargs)
-    else:
-        li = plt.plot(px, pz, **kwargs)
-
-    plt.gca().xaxis.set_label_position('top')
-
-    locs = plt.xticks()[0]
-    if len(locs) < 2:
-        locs = np.hstack((min(x), locs, max(x)))
-    elif len(locs) < 5:
-        locs[0] = max(locs[0], min(x))
-        locs[-1] = min(locs[-1], max(x))
-
-    a = []
-    for l in locs:
-        a.append('%g' % rndig(l))
-
-    plt.xticks(locs, a, fontsize=fs)
-    plt.yticks(fontsize=fs)
-
-    plt.xlim((np.min(x) * 0.9, np.max(x) * 1.1))
-    plt.ylim((max(z1) * 1.15, 0.))
-    if xlab is not None:
-        plt.xlabel(xlab, fontsize=fs)
-    if zlab is not None:
-        plt.ylabel(zlab, fontsize=fs)
-    plt.grid(which='both')
-    # plt.show()
-    return li
 
 
 def showfdemsounding(freq, inphase, quadrat, response=None, npl=2):

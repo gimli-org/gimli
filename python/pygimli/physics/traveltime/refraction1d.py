@@ -3,13 +3,38 @@ import numpy as np
 import pygimli as pg
 
 
-def refractionNlayer(offsets, thk, vel, muteDirect=0):
-    """First arrival of n-layered medium."""
-    s = 1./np.array(vel)
+def simulateNlayerRefraction(offsets, thk, vel, muteDirect=False):
+    """First arrival of layered medium for one shot at the origin.
+
+    TODO
+    ----
+    * Example
+    * Test
+
+    Parameters
+    ----------
+    offset : iterable
+        Offsets distances between shot and geophone
+    thk : iterable
+        Thickness of the layers
+    vel : iterable
+        Velocities for the layers
+    muteDirect : bool [False]
+        Direct first arivals will be muted.
+
+    Returns
+    -------
+    tt : np.array
+        Traveltimes from origin to the offset positions.
+    """
+    s = 1. / np.array(vel)
     tt = offsets * s[0]
+    
     if muteDirect:
         tt[:] = max(tt)
+
     nlay = len(vel)
+
     for i in range(1, nlay):  # i-th refracted
         tn = offsets * s[i]  # slope
         for j in range(i):  # sum over intercepts
@@ -20,7 +45,7 @@ def refractionNlayer(offsets, thk, vel, muteDirect=0):
     return tt
 
 
-class RefractionNLayer(pg.ModellingBase):
+class RefractionNLayer(pg.core.ModellingBase):
     """Forward operator for 1D Refraction seismic with layered model."""
     def __init__(self, offset=0, nlay=3, vbase=1100, verbose=True):
         """Init forward operator. Model are velocity increases.
@@ -38,23 +63,24 @@ class RefractionNLayer(pg.ModellingBase):
         self.nlay = nlay
         self.offset = offset
         self.vbase = vbase
-        mesh = pg.createMesh1DBlock(nlay)
+        mesh = pg.meshtools.createMesh1DBlock(nlay)
         self.setMesh(mesh)
 
     def thkVel(self, model):
         """Return thickness and velocity vectors from model."""
-        return model(0, self.nlay-1), np.cumprod(model(
-                self.nlay-1, self.nlay*2-1)) * self.vbase
+        return model(0, self.nlay-1), \
+               np.cumprod(model(self.nlay-1, 
+                                self.nlay*2-1)) * self.vbase
 
     def response(self, model):
         """Return forward response f(m)."""
         assert len(model) == self.nlay*2-1
-        return refractionNlayer(self.offset, *self.thkVel(model))
+        return simulateNlayerRefraction(self.offset, *self.thkVel(model))
 
 
-class RefractionNLayerFix1stLayer(pg.ModellingBase):
+class RefractionNLayerFix1stLayer(pg.core.ModellingBase):
     """FOP for 1D Refraction seismic with layered model (e.g. water layer)."""
-    def __init__(self, offset=0, nlay=3, v0=1465, d0=200, muteDirect=0,
+    def __init__(self, offset=0, nlay=3, v0=1465, d0=200, muteDirect=False,
                  verbose=True):
         """Init forward operator for velocity increases with fixed 1st layer.
 
@@ -65,16 +91,19 @@ class RefractionNLayerFix1stLayer(pg.ModellingBase):
         nlay : int
             number of layers
         v0 : float
-            first layer velocity (at the same time base velocity)
+            First layer velocity (at the same time base velocity)
         d0 : float
-            depth of first layer
+            Depth of first layer in meter.
+        muteDirect : bool [False]
+            Mute the direct arrivels fron the first layer.
         """
         super().__init__(verbose=verbose)
         self.nlay = nlay
         self.offset = offset
         self.v0 = v0
+        self.d0 = d0
         self.mDirect = muteDirect
-        mesh = pg.createMesh1DBlock(nlay)
+        mesh = pg.meshtools.createMesh1DBlock(nlay)
         self.setMesh(mesh)
 
     def thkVel(self, model):
@@ -87,7 +116,8 @@ class RefractionNLayerFix1stLayer(pg.ModellingBase):
     def response(self, model):
         """Return forward response f(m)."""
         assert len(model) == self.nlay*2-1
-        return refractionNlayer(self.offset, *self.thkVel(model), self.mDirect)
+        return simulateNlayerRefraction(self.offset, *self.thkVel(model), 
+                                        muteDirect=self.mDirect)
 
 
 if __name__ == '__main__':

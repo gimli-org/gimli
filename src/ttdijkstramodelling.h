@@ -70,7 +70,7 @@ typedef std::map< Index, NodeDistMap > Graph;
 /*! Dijkstra's shortest path finding*/
 class DLLEXPORT Dijkstra {
 public:
-    Dijkstra(){}
+    Dijkstra();
 
     Dijkstra(const Graph & graph);
 
@@ -80,8 +80,14 @@ public:
 
     void setStartNode(Index startNode);
 
-    /*!Set a root note for all distance calculations.*/
-    IndexArray shortestPathTo(Index root) const;
+    /*!Get the shortest way from root to node. Inline version.*/
+    void shortestPathTo(Index node, IndexArray & way) const;
+
+    /*!Get the shortest way from root to node.*/
+    IndexArray shortestPathTo(Index node) const;
+
+    /*!Get the shortest way from node index start to end.*/
+    IndexArray shortestPath(Index start, Index end);
 
     /*!Distance from root to node.*/
     double distance(Index root, Index node);
@@ -138,7 +144,7 @@ protected:
     NodeDistMap distances_;
 
     Graph graph_;
-    Index root_;
+    Index _root;
 };
 
 //! Modelling class for travel time problems using the Dijkstra algorithm
@@ -177,8 +183,9 @@ public:
     void createJacobian(RSparseMapMatrix & jacobian, const RVector & slowness);
 
     /*! Returns the mesh node indieces for the way from shot to receiver, 
-    respective the data for the last jacobian calculation. If you want further infos about the way element. 
-    You can ask the dijkstra about the graph infos. */
+    respective the data for the last Jacobian calculation. 
+    If you want further infos about the way element. 
+    You can ask the Dijkstra about the graph infos. */
     const IndexArray & way(Index sht, Index rec) const;
 
     /*! Read only access to the recent dijktra. */
@@ -227,9 +234,9 @@ public:
     size_t nShots(){ return shots_.size(); }
 
 protected:
-    RVector                 shots_;
-    std::map< int, int >    shotMap_;
-    Mesh                    offsetMesh_;
+    RVector                  shots_;
+    std::map< Index, Index > shotMap_;
+    Mesh                     offsetMesh_;
 };
 
 

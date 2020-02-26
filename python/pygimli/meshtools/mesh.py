@@ -8,18 +8,18 @@ import numpy as np
 import pygimli as pg
 
 
-def createMesh(poly, quality=30, area=0.0, smooth=None, switches=None,
+def createMesh(poly, quality=32, area=0.0, smooth=None, switches=None,
                verbose=False, **kwargs):
-    """Create a mesh for a given geometry polygon.
+    """Create a mesh for a given PLC or point list.
 
     The mesh is created by :term:`triangle` or :term:`tetgen` if the
-    gimli support for these mesh generators are installed.
-    The geometry needs to contain nodes and boundaries and should be valid
-    in the sense that the boundaries are non intersecting.
+    pgGIMLi support for these mesh generators is installed.
+    A PLC needs to contain nodes and boundaries and should be valid
+    in the sense that the boundaries are non-intersecting.
 
-    If poly is a list of coordinates a simple Delaunay mesh of the convex hull
-    will be created.
-    TODO: Tetgen support need to be implemented
+    If poly is a list of coordinates, a simple Delaunay mesh with a convex hull
+    will be created. Quality and area arguments are ignored for this case to
+    create a mesh with one node for each coordinate position.
 
     Parameters
     ----------
@@ -29,19 +29,26 @@ def createMesh(poly, quality=30, area=0.0, smooth=None, switches=None,
         * 3D mesh needs a plc and tetgen as system component
         * List of x y pairs [[x0, y0], ... ,[xN, yN]]
         * ndarray [x_i, y_i]
-        * PLC or list of PLC
+        * PLC or list of PLCs
+
     quality: float
         2D triangle quality sets a minimum angle constraint.
         Be careful with values above 34 degrees.
+        3D tetgen quality. Be careful with values below 1.12.
+
     area: float
-        2D maximum triangle size in m*m
+        Maximum element size (global). 2D maximum triangle size in m*²,
+        3D maximum tetrahedral size in m³.
+
     smooth: tuple
         [smoothing algorithm, number of iterations]
-        0, no smoothing
-        1, node center
-        2, weighted node center
+        0: no smoothing
+        1: node center
+        2: weighted node center
+
     switches: str
-        Force triangle to use the gives command switches.
+        Set additional triangle command switches.
+        https://www.cs.cmu.edu/~quake/triangle.switch.html
 
     Returns
     -------
@@ -49,7 +56,6 @@ def createMesh(poly, quality=30, area=0.0, smooth=None, switches=None,
 
     Examples
     --------
-    >>> # no need to import matplotlib. pygimli's show does
     >>> import pygimli as pg
     >>> import pygimli.meshtools as mt
     >>> rect = mt.createRectangle(start=[0, 0], end=[4, 1])
@@ -67,9 +73,9 @@ def createMesh(poly, quality=30, area=0.0, smooth=None, switches=None,
     # poly == [pos, pos, ]
     if isinstance(poly, list) or \
         isinstance(poly, type(zip)) or \
-        type(poly) == pg.stdVectorRVector3 or \
-        isinstance(poly, pg.R3Vector) or \
-        (isinstance(poly, np.ndarray) and poly.ndim == 2):
+        isinstance(poly, pg.core.stdVectorRVector3) or \
+        isinstance(poly, pg.core.R3Vector) or \
+            (isinstance(poly, np.ndarray) and poly.ndim == 2):
         delPLC = pg.Mesh(2)
         for p in poly:
             delPLC.createNode(p[0], p[1], 0.0)
@@ -78,9 +84,7 @@ def createMesh(poly, quality=30, area=0.0, smooth=None, switches=None,
     # poly == Mesh
     if poly.dim() == 2:
         if poly.nodeCount() == 0:
-            raise Exception("No nodes in poly to create a valid mesh")
-
-        tri = pg.TriangleWrapper(poly)
+            pg.critical("No nodes in poly to create a valid mesh")
 
         if switches is None:
             # -D Conforming delaunay
@@ -93,19 +97,19 @@ def createMesh(poly, quality=30, area=0.0, smooth=None, switches=None,
                 # which can not be read by triangle. The following
                 # avoids this even for very small numbers
                 switches += 'a' + '{:.20f}'.format(area)
-            
+
             # switches = switches.replace('.', ',')
             switches += 'q' + str(quality)
 
-            # an EXTRA! -a here else he ignores per region area settings
+            # an EXTRA! -a here else it ignores per region area
             switches += 'a'
-            
+
         if not verbose:
             switches += 'Q'
 
-        if verbose:
-            print(switches)
+        pg.verbose(switches)
 
+        tri = pg.core.TriangleWrapper(poly)
         tri.setSwitches(switches)
         mesh = tri.generate()
          
@@ -117,19 +121,26 @@ def createMesh(poly, quality=30, area=0.0, smooth=None, switches=None,
         return mesh
 
     else:
+        # 3d case
+        if quality == 32:
+            quality = 1.2
 
         tmp = pg.optImport('tempfile')
         _, namePLC = tmp.mkstemp(suffix='.poly')
 
         pg.meshtools.exportPLC(poly, namePLC)
-        mesh = pg.meshtools.syscallTetgen(namePLC, quality, area, verbose=verbose)
+        mesh = pg.meshtools.syscallTetgen(namePLC, quality, area,
+                                          verbose=verbose, **kwargs)
 
         try:
             os.remove(namePLC)
-        except:
+        except BaseException as e:
+            print(e)
             print("can't remove:", namePLC)
 
+
         return mesh
+
 
 def refineQuad2Tri(mesh, style=1):
     """Refine mesh of quadrangles into a mesh of triangle cells.
@@ -143,7 +154,7 @@ def refineQuad2Tri(mesh, style=1):
 
     style: int [1]
         * 1 bisect each quadrangle into 2 triangles
-        * 2 bisect each quadrangle into 4 triangles
+        * 2 cross-sect each quadrangle into 4 triangles
 
     Returns
     -------
@@ -152,7 +163,6 @@ def refineQuad2Tri(mesh, style=1):
 
     Examples
     --------
-    >>> # no need to import matplotlib. pygimli's show does
     >>> import pygimli as pg
     >>> import pygimli.meshtools as mt
     >>> quads = pg.createGrid(range(10), range(10))
@@ -160,7 +170,6 @@ def refineQuad2Tri(mesh, style=1):
     >>> ax, _ = pg.show(mt.refineQuad2Tri(quads, style=1))
     >>> ax, _ = pg.show(mt.refineQuad2Tri(quads, style=2))
     >>> pg.wait()
-
     """
     out = pg.Mesh(2)
     newNode = None
@@ -171,6 +180,11 @@ def refineQuad2Tri(mesh, style=1):
     for c in mesh.cells():
 
         if style == 1:
+            # out.createCell([c.node(0).id(), c.node(1).id(), c.node(3).id()],
+            #                c.marker())
+            # out.createCell([c.node(1).id(), c.node(2).id(), c.node(3).id()],
+            #                c.marker())
+
             out.createCell([c.node(0).id(), c.node(1).id(), c.node(2).id()],
                            c.marker())
             out.createCell([c.node(0).id(), c.node(2).id(), c.node(3).id()],
@@ -189,28 +203,228 @@ def refineQuad2Tri(mesh, style=1):
                 out.createBoundary([b.node(0).id(), b.node(1).id()],
                                    b.marker())
 
-    out.createNeighbourInfos()
+    out.createNeighborInfos()
 
     return out
 
 
-def readGmsh(fname, verbose=False):
+def refineHex2Tet(mesh, style=1):
+    """Refine mesh of hexahedra into a mesh of tetrahedra.
+
+    TODO
+    ----
+        * mixed meshes (need to ensure consistent face diagonal for nonstructured hex grids .. if such exists)
+
+    Parameters
+    ----------
+    mesh : :gimliapi:`GIMLI::Mesh`
+        Mesh containing hexrahedron cells, e.g., from a grid.
+
+    style: int [1]
+        * 1 bisect each hexahedron int 6 tetrahedrons (less numerical quality but no problems due to diagonal face split)
+        * 2 bisect each hexahedron int 5 tetrahedrons (will lead to inconsistent meshes. Neighboring cell will have different face split diagonal. Might be fixable by rotating the split order depending on coordinates for every 2nd split .. if someone really need this.)
+
+    Returns
+    -------
+    ret : :gimliapi:`GIMLI::Mesh`
+        Mesh containing tetrahedrons cells.
+
+    Examples
+    --------
+    >>> import pygimli as pg
+    >>> import pygimli.meshtools as mt
+    >>> hex = pg.createGrid(2, 2, 2)
+    >>> print(hex)
+    Mesh: Nodes: 8 Cells: 1 Boundaries: 6
+    >>> tet = mt.refineHex2Tet(hex, style=1)
+    >>> print(tet)
+    Mesh: Nodes: 8 Cells: 6 Boundaries: 12
+    >>> tet = mt.refineHex2Tet(hex, style=2)
+    >>> print(tet)
+    Mesh: Nodes: 8 Cells: 5 Boundaries: 12
+    """
+    out = pg.Mesh(3)
+
+    for n in mesh.nodes():
+        out.createNode(n.pos())
+
+    HexahedronSplit5TetID = [[1, 4, 5, 6],
+                             [3, 6, 7, 4],
+                             [1, 0, 4, 3],
+                             [1, 2, 3, 6],
+                             [1, 4, 6, 3]]
+
+    HexahedronSplit6TetID = [[0, 1, 2, 6],
+                             [0, 2, 3, 6],
+                             [0, 1, 6, 5],
+                             [0, 4, 5, 6],
+                             [0, 3, 7, 6],
+                             [0, 4, 6, 7]]
+
+    for c in mesh.cells():
+        if style == 1:
+            for tet in HexahedronSplit6TetID:
+                out.createCell([c.node(tet[0]).id(),
+                                c.node(tet[1]).id(),
+                                c.node(tet[2]).id(),
+                                c.node(tet[3]).id()], c.marker())
+        elif style == 2:
+            ### will lead to wrong face split
+            for tet in HexahedronSplit5TetID:
+                out.createCell([c.node(tet[0]).id(),
+                                c.node(tet[1]).id(),
+                                c.node(tet[2]).id(),
+                                c.node(tet[3]).id()], c.marker())
+
+    def intersects(lst):
+        ise = set([c.id() for c in lst[0]])
+        for i in range(1, len(lst)):
+            ise = ise.intersection([c.id() for c in lst[i]])
+        return ise
+
+    for b in mesh.boundaries():
+        if b.marker() != 0.0:
+            cells = intersects([out.node(b.node(0).id()).cellSet(),
+                               out.node(b.node(1).id()).cellSet(),
+                               out.node(b.node(2).id()).cellSet()])
+
+            if len(cells) > 0:
+                out.createBoundary([b.node(0).id(),
+                                    b.node(1).id(),
+                                    b.node(2).id()], marker=b.marker())
+                out.createBoundary([b.node(0).id(),
+                                    b.node(2).id(),
+                                    b.node(3).id()], marker=b.marker())
+            else:
+                cells = intersects([out.node(b.node(0).id()).cellSet(),
+                                    out.node(b.node(1).id()).cellSet(),
+                                    out.node(b.node(3).id()).cellSet()])
+                if len(cells) > 0:
+                    out.createBoundary([b.node(0).id(),
+                                        b.node(1).id(),
+                                        b.node(3).id()], marker=b.marker())
+                    out.createBoundary([b.node(1).id(),
+                                        b.node(2).id(),
+                                        b.node(3).id()], marker=b.marker())
+                else:
+                    print("test0")
+                    print( [c.id() for c in out.node(b.node(0).id()).cellSet()])
+                    print( [c.id() for c in out.node(b.node(1).id()).cellSet()])
+                    print( [c.id() for c in out.node(b.node(2).id()).cellSet()])
+                    print("test1")
+                    print( [c.id() for c in out.node(b.node(0).id()).cellSet()])
+                    print( [c.id() for c in out.node(b.node(1).id()).cellSet()])
+                    print( [c.id() for c in out.node(b.node(3).id()).cellSet()])
+
+                    pg.critical('Mesh corrupt')
+
+    return out
+
+
+def extrudeMesh(mesh, a, **kwargs):
+    r"""Extrude mesh to a higher dimension.
+
+    Generates a 2D mesh by extruding a 1D mesh along y-coordinate using quads.
+    We assume a 2D mesh here consisting of nodes and edges.
+    The marker of nodes are extruded as edges with the same marker.
+    The marker of the edges are extruded as cells with same marker.
+    Optionally all y-coordinates can be adjusted to become equal at the end
+
+    Generates a three-dimensional mesh by extruding a two-dimensional mesh
+    along the z-coordinate transforming triangles into triangular prisms or
+    quads into hexahedrons.
+    3D cell markers are set from 2D cell marker.
+    The boundary marker for the side boundaries are set from edge markers.
+
+    TODO
+    ----
+        * document and test marker setting from the core
+
+    Parameters
+    ----------
+    mesh: :gimliapi:`GIMLI::Mesh`
+        Input mesh
+    a: iterable (float)
+        Additional coordinate to extrude into.
+
+    Additional Parameters
+    -------------------
+    adjustBottom: bool [False]
+        Adjust all nodes that bottom of the mesh has a constant depth (only 2D)
+
+    Returns
+    -------
+    mesh: :gimliapi:`GIMLI::Mesh`
+        Returning mesh of +1 dimension
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pygimli as pg
+    >>> import pygimli.meshtools as mt
+    >>> topo = [[x, 1.0+np.cos(2*np.pi*1/30*x)] for x in range(31)]
+    >>> m1 = mt.createPolygon(topo)
+    >>> m1.setBoundaryMarkers(range(m1.boundaryCount()))
+
+    >>> m = mt.extrudeMesh(m1, a=-(np.geomspace(1, 5, 8)-1.0))
+    >>> _ = pg.show(m, m.cellMarkers(), showMesh=True)
+    >>> m = mt.extrudeMesh(m1, a=-(np.geomspace(1, 5, 8)-1.0),
+    ...                    adjustBottom=True)
+    >>> _ = pg.show(m, m.cellMarkers(), showMesh=True)
+    """
+    # case 1d or edge list to 2d grid
+    if mesh.dim() == 1 or (mesh.dim() == 2 and mesh.cellCount() == 0):
+
+        adjustBack = kwargs.pop('adjustBottom', False)
+        m2 = pg.meshtools.createMesh2D(mesh, y=a, **kwargs)
+        if adjustBack:
+            minY = min(pg.y(mesh)) + min(a)
+            scale = dict()
+            n0s = dict()
+            for n in mesh.nodes():
+                n0s[n.pos()[0]] = n.pos()
+                scale[n.pos()[0]] = (minY-n.pos()[1]) / min(a)
+            for n in m2.nodes():
+                xP = n.pos()[0]
+                yP = n.pos()[1]
+                y0 = n0s[xP][1]
+                n.setPos([xP, (yP-y0)*scale[xP] + y0])
+        return m2
+
+    if mesh.dim() == 2:
+        return pg.meshtools.createMesh3D(mesh, z=a, **kwargs)
+    pg.error('Cannot extrude mesh of dimension:', mesh.dim())
+
+
+def readGmsh(fName, verbose=False, precision=None):
     r"""Read :term:`Gmsh` ASCII file and return instance of GIMLI::Mesh class.
 
     Parameters
     ----------
-    fname : string
+    fName : string
         Filename of the file to read (\\*.msh). The file must conform
         to the `MSH ASCII file version 2
         <http://gmsh.info/doc/texinfo/gmsh.html#MSH-ASCII-file-format>`_ format
     verbose : boolean, optional
-        Be verbose during import.
+        Be verbose during import. Default: False
+    precision : None|int, optional
+        If not None, then round off node coordinates to the provided number of
+        digits using numpy.round. This is useful in case that nodes are
+        accessed using their coordinates, in which case numerical discrepancies
+        can occur.
 
     Notes
     -----
     Physical groups specified in Gmsh are interpreted as follows:
 
-    - Points with the physical number 99 are interpreted as sensors.
+    - Points with the physical number 99 are interpreted as sensors. Note that
+      physical point groups are ordered with respect to the node tag. For
+      example, "Physical Point (99) = {50, 34};" and "Physical Point (99) = {34,
+      50};" will yield the same mesh. This must be taken into account when
+      defining measurement configurations using electrodes defined in GMSH
+      using marker 99.
+    - ERT only: Points with markers 999 and 1000 are used to mark calibration
+      and reference nodes.
     - Physical Lines and Surfaces define boundaries in 2D and 3D, respectively.
         - Physical Number 1: Homogeneous Neumann condition
         - Physical Number 2: Mixed boundary condition
@@ -245,18 +459,19 @@ def readGmsh(fname, verbose=False):
     ... 7 2 2 0 5 1 2 3
     ... $EndElements
     ... '''
-    >>> fname = tempfile.mktemp()
-    >>> with open(fname, "w") as f:
+    >>> fName = tempfile.mktemp()
+    >>> with open(fName, "w") as f:
     ...     f.writelines(gmsh)
-    >>> mesh = readGmsh(fname)
+    >>> mesh = readGmsh(fName)
     >>> print(mesh)
     Mesh: Nodes: 3 Cells: 1 Boundaries: 3
-    >>> os.remove(fname)
+    >>> os.remove(fName)
     """
-    inNodes, inElements, ncount = 0, 0, 0
-    fid = open(fname)
+    assert precision is None or precision >= 0
+    inNodes, inElements, nCount = 0, 0, 0
+    fid = open(fName)
     if verbose:
-        print('Reading %s... \n' % fname)
+        print('Reading %s... \n' % fName)
 
     for line in fid:
 
@@ -277,46 +492,63 @@ def readGmsh(fname, verbose=False):
                     if verbose:
                         print('  Nodes: %s' % int(line))
                 else:
-                    nodes[ncount, :] = np.array(line.split(), 'float')[1:]
-                    ncount += 1
+                    node_coordinates = np.array(line.split(), 'float')[1:]
+                    if precision is None:
+                        nodes[nCount, :] = node_coordinates
+                    else:
+                        nodes[nCount, :] = np.round(
+                            node_coordinates, precision)
+                    nCount += 1
 
             elif inElements == 1:
                 if len(line.split()) == 1:
                     if verbose:
                         print('  Entries: %s' % int(line))
                     points, lines, triangles, tets = [], [], [], []
+                    quads = []
 
                 else:
+                    # Element entries follow the following format:
+                    # elm-number elm-type number-of-tags < tag > …
+                    #   node-number-list
+
+                    # strip elm-number here
                     entry = [int(e_) for e_ in line.split()][1:]
 
-                    if entry[0] == 15:
-                        points.append((entry[-2], entry[-3]))
+                    if entry[0] == 15:  # Points
+                        # point node, marker (1st tag)
+                        points.append((entry[-1], entry[2]))
                     elif entry[0] == 1:
                         lines.append((entry[-2], entry[-1], entry[2]))
-                    elif entry[0] == 2:
+                    elif entry[0] == 2: # Tri
                         triangles.append((entry[-3], entry[-2], entry[-1],
                                           entry[2]))
-                    elif entry[0] == 4:
+                    elif entry[0] == 3: # Quads
+                        quads.append((entry[-4], entry[-3], entry[-2],
+                                      entry[-1], entry[2]))
+                    elif entry[0] == 4: # Tet
                         tets.append((entry[-4], entry[-3], entry[-2],
                                      entry[-1], entry[2]))
-                    elif entry[0] in [3, 6]:
-                        pg.error("Qudrangles and prisms are not supported yet.")
+                    elif entry[0] == 6:
+                        pg.error(
+                            "Quadrangles and prisms are not supported yet")
 
     fid.close()
     lines = np.asarray(lines)
-    triangles = np.asarray(triangles)
+    # triangles = np.asarray(triangles)
     tets = np.asarray(tets)
 
     if verbose:
         print('    Points: %s' % len(points))
         print('    Lines: %s' % len(lines))
         print('    Triangles: %s' % len(triangles))
+        print('    Quads: %s' % len(quads))
         print('    Tetrahedra: %s \n' % len(tets))
         print('Creating mesh object... \n')
 
     # check dimension
     if len(tets) == 0:
-        dim, bounds, cells = 2, lines, triangles
+        dim, bounds, cells = 2, lines, triangles + quads
         zero_dim = np.abs(nodes.sum(0)).argmin()  # identify zero dimension
     else:
         dim, bounds, cells = 3, triangles, tets
@@ -327,9 +559,10 @@ def readGmsh(fname, verbose=False):
     mesh = pg.Mesh(dim)
 
     # replacing boundary markers (gmsh does not allow negative phys. regions)
-    bound_marker = (pg.MARKER_BOUND_HOMOGEN_NEUMANN, pg.MARKER_BOUND_MIXED,
-                    pg.MARKER_BOUND_HOMOGEN_DIRICHLET,
-                    pg.MARKER_BOUND_DIRICHLET)
+    bound_marker = (pg.core.MARKER_BOUND_HOMOGEN_NEUMANN,
+                    pg.core.MARKER_BOUND_MIXED,
+                    pg.core.MARKER_BOUND_HOMOGEN_DIRICHLET,
+                    pg.core.MARKER_BOUND_DIRICHLET)
 
     if bounds.any():
         for i in range(4):
@@ -347,7 +580,7 @@ def readGmsh(fname, verbose=False):
               "Setting Neumann on the outer edges by default.")
 
     if verbose:
-        regions = np.unique(cells[:, dim + 1])
+        regions = np.unique(np.array(cells)[:, dim + 1])
         print('  Regions: %s ' % len(regions) + str(tuple(regions)))
 
     for node in nodes:
@@ -356,23 +589,25 @@ def readGmsh(fname, verbose=False):
         else:
             mesh.createNode(node)
 
-    for cell in cells:
-        if dim == 2:
-            mesh.createTriangle(
-                mesh.node(int(cell[0] - 1)), mesh.node(int(cell[1] - 1)),
-                mesh.node(int(cell[2] - 1)), marker=int(cell[3]))
-        else:
-            mesh.createTetrahedron(
-                mesh.node(int(cell[0] - 1)), mesh.node(int(cell[1] - 1)),
-                mesh.node(int(cell[2] - 1)), mesh.node(int(cell[3] - 1)),
-                marker=int(cell[4]))
+    for c in cells:
+        mesh.createCell(mesh.nodes(np.array(c, dtype=int)[:-1]-1),
+                        marker=int(c[-1]))
+        # if dim == 2:
+        #     mesh.createTriangle(
+        #         mesh.node(int(cell[0] - 1)), mesh.node(int(cell[1] - 1)),
+        #         mesh.node(int(cell[2] - 1)), marker=int(cell[3]))
+        # else:
+        #     mesh.createTetrahedron(
+        #         mesh.node(int(cell[0] - 1)), mesh.node(int(cell[1] - 1)),
+        #         mesh.node(int(cell[2] - 1)), mesh.node(int(cell[3] - 1)),
+        #         marker=int(cell[4]))
 
-    mesh.createNeighbourInfos()
+    mesh.createNeighborInfos()
 
-    # Set Neumann on outer edges by default (can be overriden by Gmsh info)
+    # Set Neumann on outer edges by default (can be overwritten by Gmsh info)
     for b in mesh.boundaries():
         if not b.leftCell() or not b.rightCell():
-            b.setMarker(pg.MARKER_BOUND_HOMOGEN_NEUMANN)
+            b.setMarker(pg.core.MARKER_BOUND_HOMOGEN_NEUMANN)
 
     for bound in bounds:
         if dim == 2:
@@ -399,7 +634,7 @@ def readGmsh(fname, verbose=False):
     return mesh
 
 
-def readTriangle(fname, verbose=False):
+def readTriangle(fName, verbose=False):
     r"""Read :term:`Triangle` :cite:`Shewchuk96b` mesh.
 
     Read :term:`Triangle` :cite:`Shewchuk96b` ASCII mesh files and return an
@@ -408,22 +643,22 @@ def readTriangle(fname, verbose=False):
 
     Parameters
     ----------
-    fname : string
+    fName : string
         Filename of the file to read (\\*.n, \\*.e)
 
     verbose : boolean, optional
         Be verbose during import.
 
     """
-    raise Exception("implement me!" + fname + str(verbose))
-    # os.system('meshconvert -d2 ' + fname)
+    raise Exception("implement me!" + fName + str(verbose))
+    # os.system('meshconvert -d2 ' + fName)
     # return pg.Mesh(2)
 
 
-def readTetgen(fname, comment='#', verbose=True, default_cell_marker=0,
-               load_faces=True, quadratic=False):
+def readTetgen(fName, comment='#', verbose=False, defaultCellMarker=0,
+               loadFaces=True, quadratic=False):
     """
-    Reads and converts a mesh from the basic :term:`Tetgen` output.
+    Read and convert a mesh from the basic :term:`Tetgen` output.
 
     Read :term:`Tetgen` :cite:`Si2004` ASCII files and return instance
     of :gimliapi:`GIMLI::Mesh` class.
@@ -432,31 +667,31 @@ def readTetgen(fname, comment='#', verbose=True, default_cell_marker=0,
     Parameters
     ----------
 
-    fname: str
+    fName: str
         Base name of the tetgen output, without ending. All additional files
-        (.ele and .face respectively) has to be the same basename.
+        (.node, .ele and .face) need to have the same basename.
 
     comment: str ('#')
-        String consisting of all symbols that indicates a comment in the input
+        String consisting of all symbols indicating a comment in the input
         files. Standard for tetgen files is the '#'.
 
     verbose: boolean (True)
         Enables console output during the import process.
 
-    default_cell_marker: int (0)
-        :term:`Tetgen` files can contain cell markers, but doesn't have to.
-        If no marker are found, the given interger is used.
+    defaultCellMarker: int (0)
+        :term:`Tetgen` files can contain cell markers, but do not have to.
+        If no markers are found, the given integer is used.
 
-    load_faces:
-        Optional decision weather the faces of the :term:`Tetgen` output are
-        loaded or not. Note that without the -f in during the tetgen call,
+    loadFaces:
+        Optional decision whether the faces of :term:`Tetgen` output (.face)
+        are loaded or not. Note that without the -f in during the tetgen call,
         the faces in the .face file will only contain the faces of the original
-        input poly file and not all faces. If only part of the faces are
-        imported a createNeighbourInfos call of the mesh will fail.
+        input poly file and not all faces. If only a part of the faces are
+        imported, a createNeighborInfos call of the mesh will fail.
 
     quadratic: boolean (False)
-        Returns a P2 refined mesh when True (to be removed, as soon as direct
-        import of quadratic meshs is possible).
+        Returns a P2 (quadratic) refined mesh when True (to be removed, as soon
+        as direct import of quadratic meshes is possible).
 
     Returns
     -------
@@ -465,7 +700,7 @@ def readTetgen(fname, comment='#', verbose=True, default_cell_marker=0,
     mesh = pg.Mesh(3)
 
     # Part 1/3: Nodes, essential
-    with open(fname + '.node', 'r') as node_in:
+    with open(fName + '.node', 'r') as node_in:
         node_lines = pg.utils.filterLinesByCommentStr(node_in.readlines(),
                                                       comment)
     node_1 = node_lines[0].split()
@@ -473,9 +708,7 @@ def readTetgen(fname, comment='#', verbose=True, default_cell_marker=0,
     assert int(node_1[1]) == 3, 'Wrong dim: {}, should be 3.'.format(node_1[1])
     number_node_attr = int(node_1[2])
     node_markers = int(node_1[3])
-    node_attributes = []
-    for i in range(number_node_attr):
-        node_attributes.append([])
+    node_attributes = [] * number_node_attr
 
     for n in range(node_count):
         node_n = node_lines[n + 1].split()
@@ -494,10 +727,10 @@ def readTetgen(fname, comment='#', verbose=True, default_cell_marker=0,
         mesh.addData('node_data_{}'.format(k + 1), node_attributes[k])
 
     # Part 2/3: Tetrahedrons, optional
-    if os.path.exists(fname + '.ele'):
+    if os.path.exists(fName + '.ele'):
         if verbose:
             print('Found .ele file. Adding cells and cell marker.')
-        with open(fname + '.ele', 'r') as cell_in:
+        with open(fName + '.ele', 'r') as cell_in:
             cell_lines = pg.utils.filterLinesByCommentStr(cell_in.readlines(),
                                                           comment)
         cell_1 = cell_lines[0].split()
@@ -514,19 +747,19 @@ def readTetgen(fname, comment='#', verbose=True, default_cell_marker=0,
             if cell_markers:
                 cell_marker_n = int(cell_n[-1])
             else:
-                cell_marker_n = default_cell_marker
+                cell_marker_n = defaultCellMarker
             mesh.createCell([int(ind) for ind in cell_n[1:5]],
                             marker=cell_marker_n)
             # in order to import quadratic meshes directly, i ned the sorting
             # of the node indices
-        #           mesh.createCell([int(ind) for ind in cell_n[1:nodes_per_cell + 1]],
-        #                           marker=cell_marker_n)
+#           mesh.createCell([int(ind) for ind in cell_n[1:nodes_per_cell + 1]],
+#                           marker=cell_marker_n)
 
         # Part 3/3: Boundaries and Marker, optional
-    if os.path.exists(fname + '.face') and load_faces:
+    if os.path.exists(fName + '.face') and loadFaces:
         if verbose:
             print('Found .face file. Adding boundaries and boundary marker.')
-        with open(fname + '.face', 'r') as face_in:
+        with open(fName + '.face', 'r') as face_in:
             face_lines = pg.utils.filterLinesByCommentStr(face_in.readlines(),
                                                           comment)
 
@@ -540,12 +773,13 @@ def readTetgen(fname, comment='#', verbose=True, default_cell_marker=0,
                 face_marker_n = int(face_n[-1])
             else:
                 face_marker_n = 0
+
             mesh.createBoundary([int(ind) for ind in face_n[1:4]],
                                 marker=face_marker_n)
             # quadratic
-        #            mesh.createBoundary(
-        #                [int(ind) for ind in face_n[1:len(face_n) - face_markers]],
-        #                marker=face_marker_n)
+#            mesh.createBoundary(
+#                [int(ind) for ind in face_n[1:len(face_n) - face_markers]],
+#                marker=face_marker_n)
 
     if quadratic:
         mesh = mesh.createP2()
@@ -553,16 +787,19 @@ def readTetgen(fname, comment='#', verbose=True, default_cell_marker=0,
     if verbose:
         print(mesh)
 
+    # Tetgen let the boundary outer normal shows inward so we fix this.
+    mesh.fixBoundaryDirections()
+
     return mesh
 
 
-def readHydrus2dMesh(fname='MESHTRIA.TXT'):
+def readHydrus2dMesh(fileName='MESHTRIA.TXT'):
     """
     Import mesh from Hydrus2D.
 
     Parameters
     ----------
-    fname : str, optional
+    fName : str, optional
         Filename of Hydrus output file.
 
     See Also
@@ -573,12 +810,15 @@ def readHydrus2dMesh(fname='MESHTRIA.TXT'):
     ----------
     .. http://www.pc-progress.com/en/Default.aspx?h3d-description
     """
-    fid = open(fname)
+    fid = open(fileName)
     line = fid.readline().split()
-    nnodes = int(line[1])
-    ncells = int(line[3])
+    if 'HYDRUS' in line:
+        return readHydrusMeshV3(fileName)
+
+    nNodes = int(line[1])
+    nCells = int(line[3])
     mesh = pg.Mesh()
-    for _ in range(nnodes):
+    for _ in range(nNodes):
         line = fid.readline().split()
         mesh.createNode(
             pg.RVector3(float(line[1]) / 100., float(line[2]) / 100., 0.))
@@ -586,7 +826,7 @@ def readHydrus2dMesh(fname='MESHTRIA.TXT'):
     for _ in range(3):
         line = fid.readline()
 
-    for _ in range(ncells):
+    for _ in range(nCells):
         line = fid.readline().split()
         if len(line) == 4:
             mesh.createTriangle(
@@ -598,7 +838,7 @@ def readHydrus2dMesh(fname='MESHTRIA.TXT'):
                 mesh.node(int(line[3]) - 1), mesh.node(int(line[4]) - 1), 1)
 
     fid.close()
-    mesh.createNeighbourInfos()
+    mesh.createNeighborInfos()
     return mesh
 
 
@@ -607,7 +847,7 @@ def readHydrus3dMesh(fileName='MESHTRIA.TXT'):
 
     Parameters
     ----------
-    fname : str, optional
+    fName : str, optional
         Filename of Hydrus output file.
 
     See Also
@@ -619,18 +859,22 @@ def readHydrus3dMesh(fileName='MESHTRIA.TXT'):
     .. http://www.pc-progress.com/en/Default.aspx?h3d-description
     """
     f = open(fileName, 'r')
-    for i in range(6):
+
+    if 'HYDRUS' in f.readline():
+        return readHydrusMeshV3(fileName)
+
+    for i in range(5):
         line1 = f.readline()
 
-    nnodes = int(line1.split()[0])
-    ncells = int(line1.split()[1])
-    # print(nnodes, ncells)
+    nNodes = int(line1.split()[0])
+    nCells = int(line1.split()[1])
+    # print(nNodes, nCells)
 
     line1 = f.readline()
     nodes = []
     dx = 0.01
     mesh = pg.Mesh()
-    for _ in range(nnodes):
+    for _ in range(nNodes):
         pos = f.readline().split()
         p = pg.RVector3(
             float(pos[1]) * dx, float(pos[2]) * dx, float(pos[3]) * dx * (-1.))
@@ -640,7 +884,7 @@ def readHydrus3dMesh(fileName='MESHTRIA.TXT'):
     line1 = f.readline()
     line1 = f.readline()
     cells = []
-    for _ in range(ncells):
+    for _ in range(nCells):
         pos = f.readline().split()
         i, j, k, l = int(pos[1]), int(pos[2]), int(pos[3]), int(pos[4]),
         c = mesh.createTetrahedron(nodes[i - 1], nodes[j - 1], nodes[k - 1],
@@ -648,7 +892,110 @@ def readHydrus3dMesh(fileName='MESHTRIA.TXT'):
         cells.append(c)
 
     f.close()
-    mesh.createNeighbourInfos()
+    mesh.createNeighborInfos()
+    return mesh
+
+
+def readHydrusMeshV3(fileName):
+    """Import mesh from Hydrus3D. File Version 3.
+
+    TODO:
+    ----
+    * 3D
+
+    Parameters
+    ----------
+    fileName : str
+        Filename of Hydrus output file.
+
+    """
+    with open(fileName) as fid:
+        lines = fid.readlines()
+        mesh = None
+        nNodes = 0
+        nBound = 0
+        nCells = 0
+        for i, line in enumerate(lines):
+            if 'Mesh Dim' in line:
+                dim = int(line.split('\r\n')[0].split(':')[1])
+                if dim != 2:
+                    pg.error('3D mesh not yet implemented.')
+
+                mesh = pg.Mesh(dim=dim)
+
+            if 'DIMENSIONS' in line:
+                nNodes, nEle1, nEle2, nEle3 = lines[i+8].split(
+                    '\r\n')[0].split()
+                if mesh.dim() == 1:
+                    nNodes = int(nNodes)
+                    nCells = int(nEle1)
+                elif mesh.dim() == 2:
+                    nNodes = int(nNodes)
+                    nBound = int(nEle1)
+                    nCells = int(nEle2)
+                else:
+                    nNodes = int(nNodes)
+                    nBound = int(nEle2)
+                    nCells = int(nEle3)
+
+                print(nNodes, nBound, nCells)
+
+            if 'NODAL' in line:
+                for l in lines[i+7:i+7+nNodes]:
+                    vals = l.split('\r\n')[0].split()
+                    if mesh.dim() == 1:
+                        mesh.createNode([float(vals[1]), 0.0])
+                    elif mesh.dim() == 2:
+                        mesh.createNode([float(vals[1]), float(vals[2])])
+                    elif mesh.dim() == 3:
+                        mesh.createNode([float(vals[1]), float(vals[2]),
+                                         float(vals[3])])
+                i = i + 7 + nNodes
+
+            if '1D-ELEMENTS' in line:
+                for l in lines[i + 8:]:
+                    vals = l.split('\r\n')[0].split()
+                    if mesh.dim() == 2:
+                        try:
+                            mesh.createBoundary([int(vals[2])-1,
+                                                 int(vals[3])-1],
+                                                marker=int(vals[1]))
+                        except BaseException as e:
+                            if mesh.boundaryCount() != nBound:
+                                print(e)
+                                pg.error('Something is wrong in the file.'
+                                         '{:d} 1D-Elements are announced but'
+                                         'only {:d} found'.format(
+                                            nBound, mesh.boundaryCount()))
+                                i = i + 8 + mesh.boundaryCount()
+                            break
+                    else:
+                        pg.error('Something wrong with mesh dimension')
+
+            if '2D-ELEMENTS' in line:
+                for l in lines[i + 10:]:
+                    vals = l.split('\r\n')[0].split()
+                    if mesh.dim() == 2:
+                        try:
+                            nn = [int(vals[2])-1, int(vals[3])-1,
+                                  int(vals[4])-1]
+                            # nn = [int(v)-1 for v in vals[2:5]]
+                            if int(vals[5]) > 0:
+                                nn.append(int(vals[5])-1)
+
+                            mesh.createCell(nn, marker=int(vals[1]))
+                        except BaseException as e:
+                            if mesh.cellCount() != nCells:
+                                print(e)
+                                pg.error('Something is wrong in the file. '
+                                    '{0} 2D-Elements announced but only '
+                                    '{1} found'.format(nCells, mesh.cellCount()))
+
+                                i = i + 10 + mesh.cellCount()
+                                break
+                    else:
+                        pg.error('3D mesh not yet implemented.')
+
     return mesh
 
 
@@ -662,7 +1009,7 @@ def readGambitNeutral(fileName, verbose=False):
 
     Parameters
     ----------
-    fname : string
+    fName : string
         Filename of the file to read (\\*.n, \\*.e \\*.f)
 
     verbose : boolean, optional
@@ -679,19 +1026,19 @@ def readGambitNeutral(fileName, verbose=False):
             break
 
         try:
-            nVerts = int(content[i - 1].split()[0])
+            nVertices = int(content[i - 1].split()[0])
             nElements = int(content[i - 1].split()[1])
-        except:
+        except:  # bare except!
             raise Exception("Cannot interpret GAMBIT Neutral header: " +
                             content[0:i])
 
     for i, line in enumerate(content):
         if 'NODAL COORDINATES' in line:
             break
-    for j in range(nVerts):
-        vertx = float(content[i + j + 1].split()[1])
-        verty = float(content[i + j + 1].split()[2])
-        mesh.createNode((vertx, verty))
+    for j in range(nVertices):
+        vx = float(content[i + j + 1].split()[1])
+        vy = float(content[i + j + 1].split()[2])
+        mesh.createNode((vx, vy))
 
     for i, line in enumerate(content):
         if 'ELEMENTS/CELLS' in line:
@@ -706,7 +1053,7 @@ def readGambitNeutral(fileName, verbose=False):
     if verbose:
         print("Gambit neutral file imported: ", mesh)
 
-    mesh.createNeighbourInfos()
+    mesh.createNeighborInfos()
     return mesh
 
 
@@ -714,8 +1061,8 @@ def convertHDF5Mesh(h5Mesh, group='mesh', indices='cell_indices',
                     pos='coordinates', cells='topology', marker='values',
                     marker_default=0, dimension=3, verbose=True,
                     useFenicsIndices=False):
-    """
-    Converts instance of a hdf5 mesh to a :gimliapi:`GIMLI::Mesh`.
+    """Converts instance of a hdf5 mesh to a :gimliapi:`GIMLI::Mesh`.
+
     For full documentation please see :py:mod:`pygimli:meshtools:readHDF5Mesh`.
     """
     # open mesh containing group inside hdf file
@@ -726,14 +1073,14 @@ def convertHDF5Mesh(h5Mesh, group='mesh', indices='cell_indices',
 
     # get cells
     if useFenicsIndices:
-        # case 1/2: using fenics specific indices
+        # case 1/2: using Fenics specific indices
         # TODO why extra indices? cause this is really slow
-        # figure out the nature and purpose of the extra fenics indices
+        # figure out the nature and purpose of the extra Fenics indices
         mesh_indices = inmesh[indices]
         try:
             mesh_cells = inmesh[cells][mesh_indices]
         except IndexError as IE:
-            print('Fenics Indices arren\'t just in arbitrary order in range\
+            print('Fenics Indices aren\'t just in arbitrary order in range\
 (0, cellCount) as expected. Need Fix.')
             raise IE
     else:
@@ -758,9 +1105,9 @@ def convertHDF5Mesh(h5Mesh, group='mesh', indices='cell_indices',
         mesh.createNode(node)
 
     for i, cell in enumerate(mesh_cells):
-        mesh.createCell(pg.IndexArray(cell), marker=int(mesh_marker[i]))
+        mesh.createCell(pg.core.IndexArray(cell), marker=int(mesh_marker[i]))
 
-    mesh.createNeighbourInfos()
+    mesh.createNeighborInfos()
 
     if verbose:
         print('converted mesh:', mesh)
@@ -771,8 +1118,7 @@ def readHDF5Mesh(fileName, group='mesh', indices='cell_indices',
                  pos='coordinates', cells='topology', marker='values',
                  marker_default=0, dimension=3, verbose=True,
                  useFenicsIndices=False):
-    """
-    Function for loading a mesh from HDF5 file format.
+    """Function for loading a mesh from HDF5 file format.
 
     Returns an instance of :gimliapi:`GIMLI::Mesh` class.
     Default values for keywords are suited for :term:`FEniCS` syntax
@@ -781,17 +1127,16 @@ def readHDF5Mesh(fileName, group='mesh', indices='cell_indices',
     Requirements: h5py module
 
     TODO:
-        * Fenics hdf5 meshs doesn't have boundary markers.
+        * Fenics hdf5 meshes do not have boundary markers.
 
     Parameters
     ----------
 
     fileName: string
-        Name of the mesh that has to be transformed into :term:`pyGIMLi`
-        format.
+        Name of the mesh to be transformed into :term:`pyGIMLi` format.
 
     group: string ['domains']
-        hdf group that contains the mesh informations (see other keyword
+        hdf group that contains the mesh information (see other keyword
         arguments). Default is 'domains' for :term:`FEniCS` compatibility.
 
     indices: string ['cell_indices']
@@ -802,7 +1147,7 @@ def readHDF5Mesh(fileName, group='mesh', indices='cell_indices',
 
     cells: string ['topology']
         Key for the part of the hdf file containing the array which defies the
-        cells. Usually of shape (cellCount, 3) for 2D meshs or (cellCount, 4)
+        cells. Usually of shape (cellCount, 3) for 2D meshes or (cellCount, 4)
         for 3D tetrahedra meshes. For each cell the indices of the
         corresponding node indices is given.
 
@@ -816,7 +1161,7 @@ def readHDF5Mesh(fileName, group='mesh', indices='cell_indices',
         has to match the cellCount of the mesh.
 
     dimension: int [3]
-        Dimension of the in/outpu mesh, no own check for dimensions yet.
+        Dimension of the input/output mesh, no own check for dimensions yet.
         Fixed on 3 for now.
 
     Returns
@@ -856,7 +1201,7 @@ def exportHDF5Mesh(mesh, exportname, group='mesh', indices='cell_indices',
                    pos='coordinates', cells='topology', marker='values'):
     """Writes given :gimliapi:`GIMLI::Mesh` in a hdf5 format file.
 
-    3D tetrahedron meshes only! Boundary markers are ignored.
+    3D tetrahedral meshes only! Boundary markers are ignored.
 
     Keywords are explained in :py:mod:`pygimli.meshtools.readHDFS`
     """
@@ -897,7 +1242,7 @@ def exportHDF5Mesh(mesh, exportname, group='mesh', indices='cell_indices',
     return True
 
 
-def exportFenicsHDF5Mesh(mesh, exportname, **kwargs):
+def exportFenicsHDF5Mesh(mesh, exportname):
     """Exports Gimli mesh in HDF5 format suitable for Fenics.
 
     Equivalent to calling the function
@@ -913,7 +1258,6 @@ def exportFenicsHDF5Mesh(mesh, exportname, **kwargs):
 
     exportname: string
         Name under which the mesh is saved.
-
     """
     return exportHDF5Mesh(mesh, exportname, group=['mesh', 'domains'],
                           indices='cell_indices', pos='coordinates',
@@ -930,29 +1274,26 @@ def readEIDORSMesh(fileName, matlabVarname, verbose=False):
     matlabVarname : str
         variable name of .mat file in MATLAB workspace
     """
-    if not pg.optImport("scipy", requiredFor="read EIDORS mesh."):
-        raise ImportError('cannot import sciyp')
+    scipy = pg.optImport("scipy", requiredFor="read EIDORS mesh.")
 
-    import scipy.io as spio
-
-    def todict(matobj):
-        dict = {}
-        for strg in matobj._fieldnames:
-            elem = matobj.__dict__[strg]
-            if isinstance(elem, spio.matlab.mio5_params.mat_struct):
-                dict[strg] = todict(elem)
+    def toDict(matobj):
+        d = {}
+        for name in matobj._fieldnames:
+            elem = matobj.__dict__[name]
+            if isinstance(elem, scipy.io.matlab.mio5_params.mat_struct):
+                d[name] = toDict(elem)
             else:
-                dict[strg] = elem
-        return dict
+                d[name] = elem
+        return d
 
-    def check_keys(dict):
-        for key in dict:
-            if isinstance(dict[key], spio.matlab.mio5_params.mat_struct):
-                dict[key] = todict(dict[key])
-        return dict
+    def check_keys(d):
+        for key in d:
+            if isinstance(d[key], scipy.io.matlab.mio5_params.mat_struct):
+                d[key] = toDict(d[key])
+        return d
 
     def loadmat(fileName):
-        data = spio.loadmat(fileName, struct_as_record=False, squeeze_me=True)
+        data = scipy.io.loadmat(fileName, struct_as_record=False, squeeze_me=True)
         return check_keys(data)
 
     def get_nested(data, *args):
@@ -960,7 +1301,8 @@ def readEIDORSMesh(fileName, matlabVarname, verbose=False):
             element = args[0]
             if element:
                 value = data.get(element)
-                return value if len(args) == 1 else get_nested(value, *args[1:])
+                return value if len(args) == 1 else get_nested(value,
+                                                               *args[1:])
 
     matlab_eidors = loadmat(fileName)
     python_eidors = get_nested(matlab_eidors, matlabVarname)
@@ -982,7 +1324,8 @@ def readEIDORSMesh(fileName, matlabVarname, verbose=False):
 
     if verbose:
         print('Reading %s... ' % fileName)
-        print('found %s  %s-dimensional nodes... ' % (np.size(nodes, 0), dim_nodes))
+        print('found %s  %s-dimensional nodes... ' % (np.size(nodes, 0),
+                                                      dim_nodes))
 
     if dim_elems == 3 and verbose:
         print('found %s triangles... ' % np.size(elems, 0))
@@ -1002,7 +1345,7 @@ def readEIDORSMesh(fileName, matlabVarname, verbose=False):
 
     if boundary_numbers is not None:
         if verbose:
-            print('Found %s Unique Regions with Region Markers' % no_of_regions)
+            print('Found %s unique Regions with Markers' % no_of_regions)
             print('%s' % region_markers)
 
     if boundary_numbers is None:
@@ -1056,7 +1399,7 @@ def readEIDORSMesh(fileName, matlabVarname, verbose=False):
     return mesh
 
 
-def readSTL(fileName, ascii=True):
+def readSTL(fileName, binary=False):
     """Read :term:`STL` surface mesh and returns a :gimliapi:`GIMLI::Mesh`.
 
     Read :term:`STL` surface mesh and returns a :gimliapi:`GIMLI::Mesh`
@@ -1071,37 +1414,14 @@ def readSTL(fileName, ascii=True):
     fileName : str
         name of the .stl file containing the STL surface mesh
 
-    ascii : bool [True]
-        STL Ascii format
-
+    binary : bool [False]
+        STL Binary format
     """
     mesh = pg.Mesh(dim=3)
-    mesh.importSTL(fileName)
+    mesh.importSTL(fileName, isBinary=binary)
     return mesh
 
-    # readPos = lambda s: pg.pos(float(s[0], float(s[1]), float(s[2])))
-
-    # with open(fileName, 'r') as fi:
-    #     content = fi.readlines()
-    # fi.close()
-
-    # marker = -1
-
-    # for i, line in enumerate(content):
-    #     if 'solid' in line:
-    #         marker += 1
-    #     elif 'facet' in line:
-    #         norm = readPos(content[i].split()[2:5])
-    #         v1 = readPos(content[i+2].split()[1:4])
-    #         v2 = readPos(content[i+2].split()[1:4])
-    #         v3 = readPos(content[i+2].split()[1:4])
-
-    #         mesh.createBoundary([v1, v2, v3], marker=marker)
-    #         i += 7
-
-    # return mesh
-
-def exportSTL(mesh, fileName, ascii=True):
+def exportSTL(mesh, fileName, binary=False):
     """Write :term:`STL` surface mesh and returns a :gimliapi:`GIMLI::Mesh`.
 
     Export a three dimensional boundary :gimliapi:`GIMLI::Mesh` into a
@@ -1122,28 +1442,33 @@ def exportSTL(mesh, fileName, ascii=True):
     fileName : str
         name of the .stl file containing the STL surface mesh
 
-    ascii : bool [True]
-        STL Ascii format
-
+    binary : bool [False]
+        Write STL binary format. TODO
     """
     marker = pg.unique(pg.sort(mesh.boundaryMarkers()))
 
-    if not '.stl' in fileName:
+    if '.stl' not in fileName:
         fileName = fileName + '.stl'
 
     fi = open(fileName, 'w')
     for m in marker:
-        me = mesh.extract(mesh.boundaries(mesh.boundaryMarkers() == m))
+        me = mesh.createSubMesh(mesh.boundaries(mesh.boundaryMarkers() == m))
 
         fi.write('solid ' + str(m) + '\n')
 
         for b in me.boundaries():
             n = b.norm()
-            fi.write('facet normal %f %f %f\n' %(n[0], n[1], n[2]))
+            fi.write('facet normal %f %f %f\n' % (n[0], n[1], n[2]))
             fi.write('\touter loop\n')
-            fi.write('\t\tvertex %f %f %f\n' %(b.node(0).pos()[0], b.node(0).pos()[1], b.node(0).pos()[2]))
-            fi.write('\t\tvertex %f %f %f\n' %(b.node(1).pos()[0], b.node(1).pos()[1], b.node(1).pos()[2]))
-            fi.write('\t\tvertex %f %f %f\n' %(b.node(2).pos()[0], b.node(2).pos()[1], b.node(2).pos()[2]))
+            fi.write('\t\tvertex %f %f %f\n' % (b.node(0).pos()[0],
+                                                b.node(0).pos()[1],
+                                                b.node(0).pos()[2]))
+            fi.write('\t\tvertex %f %f %f\n' % (b.node(1).pos()[0],
+                                                b.node(1).pos()[1],
+                                                b.node(1).pos()[2]))
+            fi.write('\t\tvertex %f %f %f\n' % (b.node(2).pos()[0],
+                                                b.node(2).pos()[1],
+                                                b.node(2).pos()[2]))
             fi.write('\tendloop\n')
             fi.write('endfacet\n')
 
@@ -1211,8 +1536,8 @@ def merge2Meshes(m1, m2):
     """Merge two meshes into one new mesh and return the combined mesh.
 
     Merge two meshes into a new mesh and return the combined mesh.
-    Note, there is a duplication check for all nodes which should reuse existing
-    node but NO cells or boundaries.
+    Note that there is a duplicate check for all nodes which should reuse
+    existing node but NO cells or boundaries.
 
     Parameters
     ----------
@@ -1226,52 +1551,46 @@ def merge2Meshes(m1, m2):
     mesh: :gimliapi:`GIMLI::Mesh`
         Resulting mesh.
     """
-    #for c in m1.cells():
-    #if c.size() < 1e-4:
-    #print(c)
-    #exit()
+#    for c in m1.cells():
+#    if c.size() < 1e-4:
+#    print(c)
+#    exit()
 
     mesh = pg.Mesh(m1)
     mesh.translate(-m1.node(0).pos())
     m3 = pg.Mesh(m2)
     m3.translate(-m1.node(0).pos())
 
-    #for n in m3.nodes():
-    #i = mesh.findNearestNode(n.pos())
-    #if mesh.node(i).pos().dist(n.pos()) < 0.5:
-    #print("DUP", 1)
-    #exit()
+#    for n in m3.nodes():
+#    i = mesh.findNearestNode(n.pos())
+#    if mesh.node(i).pos().dist(n.pos()) < 0.5:
+#    print("DUP", 1)
+#    exit()
 
     for c in m3.cells():
-        t = mesh.copyCell(c)
-        #if t.size() < 1e-4:
-    #print(c, t)
-    #exit()
+        mesh.copyCell(c)
 
     for b in m3.boundaries():
-        t = mesh.copyBoundary(b, tol=1e-6, check=False)
-        #if t.size() < 1e-4:
-    #print(b)
-    #exit()
+        mesh.copyBoundary(b, tol=1e-6, check=False)
 
-    #if b.id() > 1362:
-    #exit()
-    #print(mesh.boundary(2905),
-    #mesh.boundary(2905).node(0).id(), mesh.boundary(2905).node(0).pos(),
-    #mesh.boundary(2905).node(1).id(), mesh.boundary(2905).node(1).pos()
-    #)
-    #print(mesh.boundary(2906),
-    #mesh.boundary(2906).node(0).id(), mesh.boundary(2906).node(0).pos(),
-    #mesh.boundary(2906).node(1).id(), mesh.boundary(2906).node(1).pos()
-    #)
+#    if b.id() > 1362:
+#    exit()
+#    print(mesh.boundary(2905),
+#    mesh.boundary(2905).node(0).id(), mesh.boundary(2905).node(0).pos(),
+#    mesh.boundary(2905).node(1).id(), mesh.boundary(2905).node(1).pos()
+#    )
+#    print(mesh.boundary(2906),
+#    mesh.boundary(2906).node(0).id(), mesh.boundary(2906).node(0).pos(),
+#    mesh.boundary(2906).node(1).id(), mesh.boundary(2906).node(1).pos()
+#    )
 
-    for key in list(mesh.exportDataMap().keys()):
-        d = mesh.exportDataMap()[key]
+    for key in list(mesh.dataMap().keys()):
+        d = mesh.dataMap()[key]
         d.resize(mesh.cellCount())
-        d.setVal(m1.exportDataMap()[key], 0, m1.cellCount())
-        d.setVal(m2.exportDataMap()[key], m1.cellCount(),
+        d.setVal(m1.dataMap()[key], 0, m1.cellCount())
+        d.setVal(m2.dataMap()[key], m1.cellCount(),
                  m1.cellCount() + m2.cellCount())
-        mesh.addExportData(key, d)
+        mesh.addData(key, d)
 
     mesh.translate(m1.node(0).pos())
     return mesh
@@ -1285,7 +1604,7 @@ def mergeMeshes(meshList, verbose=False):
     Parameters
     ----------
     meshList : [:gimliapi:`GIMLI::Mesh`, ...] | [str, ...]
-        List of at least two meshes or (filenames to meshes) to be merged.
+        List of at least two meshes (or filenames to meshes) to be merged.
 
     verbose : bool
         Give some output
@@ -1342,7 +1661,7 @@ def createParaMesh(*args, **kwargs):
         Sensor positions. Must be sorted and unique in positive x direction.
         Depth need to be y-coordinate.
     paraDX : float
-        Relativ distance for refinement nodes between two electrodes (1=none),
+        Relative distance for refinement nodes between two electrodes (1=none),
         e.g., 0.5 means 1 additional node between two neighboring electrodes
         e.g., 0.33 means 2 additional equidistant nodes between two electrodes
     paraDepth : float, optional
@@ -1357,31 +1676,30 @@ def createParaMesh(*args, **kwargs):
     boundary : float, optional
         Boundary width to be appended for domain prolongation in absolute
         para domain width.
-        Values lover 0 force the boundary to be 4 times para domain width.
+        Values <=0 force the boundary to be 4 times para domain width.
 
     Returns
     -------
     poly: :gimliapi:`GIMLI::Mesh`
-
     """
     plc = pg.meshtools.createParaMeshPLC(*args, **kwargs)
     kwargs.pop('paraMaxCellSize', 0)
     kwargs.pop('boundaryMaxCellSize', 0)
-    mesh = createMesh(plc, **kwargs)
+    mesh = createMesh(plc, **kwargs, smooth=[2, 10])
     return mesh
 
 
 def createParaMesh2dGrid(*args, **kwargs):
     """API change here .. use createParaMesh2DGrid instead."""
-    print("createParaMesh2dGrid: API change: pls use createParaMesh2DGrid")
+    pg.deprecated("pls use createParaMesh2DGrid")
     return createParaMesh2DGrid(*args, **kwargs)
 
 
 def createParaMesh2DGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
                          boundary=-1, paraBoundary=2, **kwargs):
-    """Create a grid style mesh for an inversion parameter mesh.
+    """Create a grid-style mesh for an inversion parameter mesh.
 
-    Create a grid style mesh for an inversion parameter mesh.
+    Create a grid-style mesh for an inversion parameter mesh.
     Return parameter grid for a given list of sensor positions.
     Uses and forwards arguments to
     :py:mod:`pygimli.meshtools.appendTriangleBoundary`.
@@ -1418,7 +1736,7 @@ def createParaMesh2DGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
     >>> import matplotlib.pyplot as plt
     >>>
     >>> from pygimli.meshtools import createParaMesh2DGrid
-    >>> mesh = createParaMesh2DGrid(sensors=pg.RVector(range(10)),
+    >>> mesh = createParaMesh2DGrid(sensors=pg.Vector(range(10)),
     ...                             boundary=1, paraDX=1,
     ...                             paraDZ=1, paraDepth=5)
     >>> ax, _ = pg.show(mesh, markers=True, showMesh=True)
@@ -1426,7 +1744,7 @@ def createParaMesh2DGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
     mesh = pg.Mesh(2)
 
     # maybe separate x y z and sort
-    if isinstance(sensors, np.ndarray) or isinstance(sensors, pg.RVector):
+    if isinstance(sensors, np.ndarray) or isinstance(sensors, pg.Vector):
         sensors = [pg.RVector3(s, 0) for s in sensors]
 
     if isinstance(sensors, pg.DataContainer):
@@ -1436,8 +1754,8 @@ def createParaMesh2DGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
 
     eSpacing = abs(sensorX[1] - sensorX[0])
 
-    xmin = min(sensorX) - paraBoundary * eSpacing
-    xmax = max(sensorX) + paraBoundary * eSpacing
+    xMin = min(sensorX) - paraBoundary * eSpacing
+    xMax = max(sensorX) + paraBoundary * eSpacing
 
     if paraDX == 0:
         paraDX = 1.
@@ -1451,17 +1769,17 @@ def createParaMesh2DGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
         # dz = eSpacing * paraDZ  # not really making sense
 
     if paraDepth == 0:
-        paraDepth = 0.4 * (xmax - xmin)
+        paraDepth = 0.4 * (xMax - xMin)
 
-    # print(xmin, xmax, dx)
-    x = pg.utils.grange(xmin, xmax, dx=dx)
+    # print(xMin, xMax, dx)
+    x = pg.utils.grange(xMin, xMax, dx=dx)
 
-    y = -pg.increasingRange(dz, paraDepth, nLayers)
+    y = -pg.core.increasingRange(dz, paraDepth, nLayers)
 
     mesh.createGrid(x, y)
     mesh.setCellMarkers([2] * mesh.cellCount())
 
-    paraXLimits = [xmin, xmax]
+    paraXLimits = [xMin, xMax]
     #    paraYLimits = [min(y), max(y)]  # not used
 
     if boundary < 0:
@@ -1471,6 +1789,7 @@ def createParaMesh2DGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
         mesh, xbound=boundary, ybound=boundary, marker=1, **kwargs)
 
     return mesh
+
 
 if __name__ == "__main__":
     pass

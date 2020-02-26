@@ -39,17 +39,25 @@
 
 namespace GIMLI {
 
-Dijkstra::Dijkstra(const Graph & graph) : graph_(graph) {
+Dijkstra::Dijkstra()
+: _root(std::numeric_limits<Index>::max()){
+
+}
+
+Dijkstra::Dijkstra(const Graph & graph)
+: graph_(graph), _root(std::numeric_limits<Index>::max()){
     pathMatrix_.resize(graph.size());
 }
 
 double Dijkstra::distance(Index root, Index node) {
-    this->setStartNode(root);
+    if (this->_root != root){
+        this->setStartNode(root);
+    }
     return distance(node);
 }
 
-double Dijkstra::distance(Index node) { 
-    return distances_[node].time(); 
+double Dijkstra::distance(Index node) {
+    return distances_[node].time();
 }
 
 RVector Dijkstra::distances(Index root) {
@@ -73,7 +81,7 @@ void Dijkstra::setGraph(const Graph & graph) {
 
 void Dijkstra::setStartNode(Index startNode) {
     distances_.clear();
-    root_ = startNode;
+    this->_root = startNode;
     std::priority_queue< DistancePair_,
                          std::vector< DistancePair_ >,
                          ComparePairsClass_< DistancePair_ > > priQueue;
@@ -91,12 +99,12 @@ void Dijkstra::setStartNode(Index startNode) {
 
         if (distances_.count(node) == 0) {
             //distances_[node] = distance;
-            
+
             distances_[node] = GraphDistInfo(distance, 0);
 
             if ((Index)pathMatrix_.size() <= node){
                 std::cout << "startNodeID:" << startNode << " NodeID:" << node << std::endl;
-                throwError(1, WHERE_AM_I + " Warning! Dijkstra graph invalid" );
+                throwError(WHERE_AM_I + " Warning! Dijkstra graph invalid" );
             }
             pathMatrix_[node] = Edge_(dummy.second);
 
@@ -112,25 +120,35 @@ void Dijkstra::setStartNode(Index startNode) {
     }
 }
 
-IndexArray Dijkstra::shortestPathTo(Index node) const {
+void Dijkstra::shortestPathTo(Index node, IndexArray & rway) const{
     IndexArray way;
-
     Index parentNode = -1, endNode = node;
 
-    while (parentNode != root_) {
+    while (parentNode != _root) {
         parentNode = pathMatrix_[endNode].start;
         way.push_back(endNode);
         endNode = pathMatrix_[endNode].start;
     }
+    way.push_back(_root);
 
-    way.push_back(root_);
-
-    IndexArray rway(way.size());
+    // collect reverse way
+    rway.clear();
+    rway.resize(way.size());
     for (Index i = 0; i < way.size(); i ++) rway[i] = way[way.size() - i - 1];
+}
 
+IndexArray Dijkstra::shortestPathTo(Index node) const {
+    IndexArray rway;
+    this->shortestPathTo(node, rway);
     return rway;
 }
 
+IndexArray Dijkstra::shortestPath(Index start, Index end){
+    if (this->_root != start){
+        this->setStartNode(start);
+    }
+    return this->shortestPathTo(end);
+}
 
 //    RVector TravelTimeDijkstraModelling::operator () (const RVector & slowness, double background) {
 //        return response(slowness, background);
@@ -166,7 +184,7 @@ void fillGraph_(Graph & graph, const Node & a, const Node & b, double slowness, 
 
     double newTime = dist * slowness;
     double oldTime = graph[a.id()][b.id()].time();
-    
+
     // if (V_){
     //     __MS("a:" << a.id() << " b:"  << b.id() << " L:" << leftID << " t:" << " " << newTime << " " << oldTime)
     // }
@@ -179,15 +197,15 @@ void fillGraph_(Graph & graph, const Node & a, const Node & b, double slowness, 
         NodeDistMap::iterator ita(graph[a.id()].find(b.id()));
         ita->second.cellIDs().insert(leftID);
         ita->second.setTime(newTime);
-        
+
         NodeDistMap::iterator itb(graph[b.id()].find(a.id()));
         itb->second.cellIDs().insert(leftID);
         itb->second.setTime(newTime);
-        
+
     } else {
         // first time fill
-        graph[a.id()][b.id()] = GraphDistInfo(newTime, dist, leftID);   
-        graph[b.id()][a.id()] = GraphDistInfo(newTime, dist, leftID);    
+        graph[a.id()][b.id()] = GraphDistInfo(newTime, dist, leftID);
+        graph[b.id()][a.id()] = GraphDistInfo(newTime, dist, leftID);
     }
 }
 
@@ -219,7 +237,7 @@ void fillGraph_(Graph & graph, Cell & c, double slowness){
 
 Graph TravelTimeDijkstraModelling::createGraph(const RVector & slownessPerCell) const {
     Graph graph;
-    mesh_->createNeighbourInfos();
+    mesh_->createNeighborInfos();
 
     for (Index i = 0; i < mesh_->cellCount(); i ++) {
         Cell & c = mesh_->cell(i);
@@ -253,7 +271,7 @@ RVector TravelTimeDijkstraModelling::getApparentSlowness() const {
             __MS(WHERE_AM_I + ": shot point equals geophon point. " +
                   "This lead to an invalid apparent slowness. " +
                   str(s) + "==" + str(g))
-            throwError(1, "Aborting" );
+            throwError("Aborting" );
         }
         edgeLength = dataContainer_->sensorPosition(s).distance(dataContainer_->sensorPosition(g));
         apparentSlowness[dataIdx] = dataContainer_->get("t")[dataIdx] / edgeLength;
@@ -300,24 +318,25 @@ void TravelTimeDijkstraModelling::updateMeshDependency_(){
     if (verbose_) std::cout << "... looking for shot and receiver positions." << std::endl;
 
     if (!dataContainer_){
-        throwError(1, "We have no dataContainer defined");
+        throwError("We have no dataContainer defined");
     }
     RVector shots(unique(sort((*dataContainer_)("s"))));
 
     if (shots.size() == 0){
-        throwError(1, "There are no shot positions in the dataContainer.");
+        throwError("There are no shot positions in the dataContainer.");
     }
     shotNodeId_.resize(shots.size()) ;
     shotsInv_.clear();
 
     if (shots[0] < 0){
-        throwError(1, "There are shots index lower then 0.");
+        throwError("There are shots index lower then 0.");
     }
 
     for (Index i = 0; i < shots.size(); i ++){
         shotNodeId_[i] = mesh_->findNearestNode(dataContainer_->sensorPosition((Index)shots[i]));
-        if (mesh_->node(shotNodeId_[i]).cellSet().size() == 0){
-            __MS("no cells found")
+        if (mesh_->node(shotNodeId_[i]).cellSet().size() == 0 &&
+            mesh_->node(shotNodeId_[i]).id() < (int)mesh_->nodeCount()){
+            __MS("no cells found for node "  << shotNodeId_[i])
         }
         shotsInv_[Index(shots[i])] = i;
     }
@@ -333,42 +352,82 @@ void TravelTimeDijkstraModelling::updateMeshDependency_(){
     }
 }
 
+class CreateDijkstraDistMT : public GIMLI::BaseCalcMT{
+public:
+    CreateDijkstraDistMT(RMatrix & dists,
+                        const Dijkstra        & dijk,
+                        const IndexArray      & shotNodes,
+                        const IndexArray      & recNodes,
+                        bool verbose)
+    : BaseCalcMT(verbose), _dists(&dists), _dijkstra(dijk),
+      _shotNodeIds(&shotNodes), _recNodeIds(&recNodes){
+    }
+    virtual ~CreateDijkstraDistMT(){}
+
+    virtual void calc(){
+        for (Index shot = start_; shot < end_; shot ++) {
+            _dijkstra.setStartNode((*_shotNodeIds)[shot]);
+
+            for (Index i = 0; i < _recNodeIds->size(); i ++) {
+                (*_dists)[shot][i] = _dijkstra.distance((*_recNodeIds)[i]);
+            }
+        }
+    }
+
+protected:
+    RMatrix             * _dists;
+    Dijkstra           _dijkstra;
+    const IndexArray  * _shotNodeIds;
+    const IndexArray        * _recNodeIds;
+};
+
+
 RVector TravelTimeDijkstraModelling::response(const RVector & slowness) {
+// TIC__
     if (background_ < TOLERANCE) {
         std::cout << "Background: " << background_ << "->" << 1e16 << std::endl;
         background_ = 1e16;
     }
 
     RVector slowPerCell(this->createMappedModel(slowness, background_));
-    dijkstra_.setGraph(createGraph(slowPerCell));
 
-    // this->mapModel(slowness, background_);
-    // dijkstra_.setGraph(createGraph(mesh_->cellAttributes()));
+    // J(m)*m ill only work if mesh contains a valid parametrization
+    // this->createJacobian(slowPerCell);
+    // return jacobian_->mult(slowness);
+
+    dijkstra_.setGraph(createGraph(slowPerCell));
 
     Index nShots = shotNodeId_.size();
     Index nRecei = receNodeId_.size();
     RMatrix dMap(nShots, nRecei);
 
-    for (Index shot = 0; shot < nShots; shot ++) {
-        dijkstra_.setStartNode(shotNodeId_[shot]);
-        for (Index i = 0; i < nRecei; i ++) {
-            dMap[shot][i] = dijkstra_.distance(receNodeId_[i]);
-        }
-    }
+    Index nThreads = this->threadCount();
 
-    Index nData = dataContainer_->size();
+    distributeCalc(CreateDijkstraDistMT(dMap, this->dijkstra_,
+                                       this->shotNodeId_,
+                                       this->receNodeId_, this->verbose()),
+                   nShots, nThreads, this->verbose());
+
+    // for (Index shot = 0; shot < nShots; shot ++) {
+    //     dijkstra_.setStartNode(shotNodeId_[shot]);
+    //     // __MS(toc__)
+    //     for (Index i = 0; i < nRecei; i ++) {
+    //         dMap[shot][i] = dijkstra_.distance(receNodeId_[i]);
+    //     }
+    //     // exit(0);
+    // }
     Index s = 0, g = 0;
 
+    Index nData = dataContainer_->size();
     RVector resp(nData);
 
     for (Index dataIdx = 0; dataIdx < nData; dataIdx ++) {
-        s = shotsInv_[Index((*dataContainer_)("s")[dataIdx])];
-        g = receiInv_[Index((*dataContainer_)("g")[dataIdx])];
+        s = shotsInv_.at(Index((*dataContainer_)("s")[dataIdx]));
+        g = receiInv_.at(Index((*dataContainer_)("g")[dataIdx]));
 //         if (dataIdx < 10 ) std::cout << s << " " << (*dataContainer_)("s")[dataIdx] << " "
 //                    << g << " " << (*dataContainer_)("g")[dataIdx] << " " << dMap[s][g] << std::endl;
         resp[dataIdx] = dMap[s][g];
     }
-
     return  resp;
 }
 
@@ -380,10 +439,22 @@ void TravelTimeDijkstraModelling::initJacobian(){
     ownJacobian_ = true;
 }
 
-const IndexArray & TravelTimeDijkstraModelling::way(Index sht, Index rec) const{
-    ASSERT_SIZE(wayMatrix_, sht)
-    ASSERT_SIZE(wayMatrix_[sht], rec)
-    return wayMatrix_[sht][rec];
+const IndexArray & TravelTimeDijkstraModelling::way(Index sht, Index rec) const {
+    // __MS(sht)
+    // __MS(rec)
+    // for (auto &x:shotsInv_ ){
+    //     __MS(x.first << " " << x.second)
+    // }
+    // for (auto &x:receiInv_ ){
+    //     __MS(x.first << " " << x.second)
+    // }
+    Index s = shotsInv_.at(sht);
+    Index r = receiInv_.at(rec);
+    // __MS(s)
+    // __MS(r)
+    ASSERT_SIZE(wayMatrix_, s)
+    ASSERT_SIZE(wayMatrix_[s], r)
+    return wayMatrix_[s][r];
 }
 
 class CreateDijkstraRowMT : public GIMLI::BaseCalcMT{
@@ -393,51 +464,50 @@ public:
                         const IndexArray      & shotNodes,
                         const IndexArray      & recNodes,
                         bool verbose)
-    : BaseCalcMT(verbose), _wayMatrix(&wayM[0]), _dijkstra(dijk), 
+    : BaseCalcMT(verbose), _wayMatrix(&wayM[0]), _dijkstra(dijk),
       _shotNodeIds(&shotNodes), _recNodeIds(&recNodes){
- 
+
     }
 
     virtual ~CreateDijkstraRowMT(){}
 
-    virtual void calc(Index tNr=0){
-        Stopwatch swatch(true);
-        log(Debug, "Thread #" + str(tNr) + ": on CPU " + str(schedGetCPU()) + 
-                   " slice " + str(start_) + ":" + str(end_));
-                        
+    virtual void calc(){
         for (Index shot = start_; shot < end_; shot ++) {
             _dijkstra.setStartNode((*_shotNodeIds)[shot]);
-            
+
             for (Index i = 0; i < _recNodeIds->size(); i ++) {
                 _wayMatrix[shot][i] = _dijkstra.shortestPathTo((*_recNodeIds)[i]);
             }
         }
-        //__MS(tNr << " " << start_ << "  "<< end_)
-        log(Debug, "time: #" + str(tNr) + " " + str(swatch.duration()) + "s");
     }
 
 protected:
     std::vector < IndexArray > * _wayMatrix;
-    Dijkstra                _dijkstra;
+    Dijkstra                     _dijkstra;
     const IndexArray        * _shotNodeIds;
     const IndexArray        * _recNodeIds;
 };
 
 
 void TravelTimeDijkstraModelling::createJacobian(const RVector & slowness) {
-    RSparseMapMatrix * jacobian = dynamic_cast < RSparseMapMatrix * > (jacobian_);
-    this->createJacobian(*jacobian, slowness);
+    this->createJacobian(*dynamic_cast < RSparseMapMatrix * > (this->jacobian_),
+                         slowness);
 }
 
 void TravelTimeDijkstraModelling::createJacobian(RSparseMapMatrix & jacobian,
                                                  const RVector & slowness) {
+    if (min(this->mesh_->cellMarkers()) < 0){
+        __M
+        log(Error, "There are cells with marker -1. "
+                "Did you defined a boundary region (not needed).");
+    }
     Stopwatch swatch(true);
     if (background_ < TOLERANCE) {
         std::cout << "Background: " << background_ << " ->" << 1e16 << std::endl;
         background_ = 1e16;
     }
-
     RVector slowPerCell(this->createMappedModel(slowness, background_));
+
     dijkstra_.setGraph(createGraph(slowPerCell));
 
     Index nShots = shotNodeId_.size();
@@ -452,32 +522,15 @@ void TravelTimeDijkstraModelling::createJacobian(RSparseMapMatrix & jacobian,
     //** for each shot: vector<  way(shot->geoph) >;
     wayMatrix_.clear();
     wayMatrix_.resize(nShots);
-    for (auto &w : wayMatrix_) w.resize(nRecei);
+    for (auto & w: wayMatrix_) w.resize(nRecei);
 
-    bool verbose = this->verbose();
-    
-    Index nThreads = getEnvironment("GIMLI_NUM_THREADS", 0, verbose_);
-    if (nThreads > 0) this->setThreadCount(nThreads);
+    Index nThreads = this->threadCount();
 
-    nThreads = this->threadCount();
+    distributeCalc(CreateDijkstraRowMT(wayMatrix_, dijkstra_,
+                                       shotNodeId_, receNodeId_, this->verbose()),
+                   nShots, nThreads, this->verbose());
 
-    if (verbose){
-        std::cout << "J(" << numberOfCPU() << "/" << nThreads; //**check!!!
-    #if USE_BOOST_THREAD
-            std::cout << "-boost::mt";
-    #else
-            std::cout << "-std::mt";
-    #endif
-            std::cout << ") " << swatch.duration(true) << std::flush;
-    }
-    
-    std::cout << std::endl;
-
-    distributeCalc(CreateDijkstraRowMT(wayMatrix_, dijkstra_, 
-                                       shotNodeId_, receNodeId_, verbose),
-                   nShots, nThreads, verbose);
-
-    if (verbose){
+    if (this->verbose()){
         std::cout << "/" << swatch.duration(true);
     }
     // for (Index shot = 0; shot < nShots; shot ++) {
@@ -489,8 +542,8 @@ void TravelTimeDijkstraModelling::createJacobian(RSparseMapMatrix & jacobian,
     // }
 
     for (Index dataIdx = 0; dataIdx < nData; dataIdx ++) {
-        Index s = shotsInv_[Index((*dataContainer_)("s")[dataIdx])];
-        Index g = receiInv_[Index((*dataContainer_)("g")[dataIdx])];
+        Index s = shotsInv_.at(Index((*dataContainer_)("s")[dataIdx]));
+        Index g = receiInv_.at(Index((*dataContainer_)("g")[dataIdx]));
 
         std::set < Cell * > neighborCells;
 
@@ -499,9 +552,9 @@ void TravelTimeDijkstraModelling::createJacobian(RSparseMapMatrix & jacobian,
 
             Index aId = wayMatrix_[s][g][i];
             Index bId = wayMatrix_[s][g][i + 1];
-       
+
             const GraphDistInfo & way = dijkstra_.graphInfo(aId, bId);
-            
+
             double edgeLength = way.dist();
             //double edgeLength = mesh_->node(aId).pos().distance(mesh_->node(bId).pos());
             double slo = 0.0;
@@ -511,7 +564,7 @@ void TravelTimeDijkstraModelling::createJacobian(RSparseMapMatrix & jacobian,
             for (const auto &iCD : way.cellIDs()){
                 minSlow = min(minSlow, slowPerCell[iCD]);
             }
-            
+
             for (const auto &iCD : way.cellIDs()){
                 if (std::fabs(slowPerCell[iCD] - minSlow) < 1e-4){
                     Cell *c = & mesh_->cell(iCD);
@@ -521,10 +574,10 @@ void TravelTimeDijkstraModelling::createJacobian(RSparseMapMatrix & jacobian,
 
             for (const auto &c : neighborCells){
                 jacobian[dataIdx][c->marker()] += edgeLength / neighborCells.size();
-            } 
+            }
         }
     }
-    if (verbose){
+    if (this->verbose()){
         std::cout << "/" << swatch.duration(true) << " ";
     }
 }
@@ -546,7 +599,7 @@ TTModellingWithOffset::TTModellingWithOffset(Mesh & mesh, DataContainer & dataCo
         offsetMesh_.cell(i).setMarker(NEWREGION);
     }
 
-    regionManager().addRegion(NEWREGION, offsetMesh_);
+    regionManager().addRegion(NEWREGION, offsetMesh_, NEWREGION);
 
     this->initJacobian();
 }

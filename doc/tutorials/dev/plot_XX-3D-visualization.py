@@ -8,7 +8,7 @@
 import pygimli as pg
 from pygimli.viewer import show
 
-mesh = pg.createMesh3D(1,1,1)
+mesh = pg.meshtools.createMesh3D(1,1,1)
 
 """
 If interactive is set to True, a Mayavi window pops up which allows for

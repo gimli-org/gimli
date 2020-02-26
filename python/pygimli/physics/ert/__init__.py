@@ -7,5 +7,7 @@
     * Vertical Electric Sounding (VES)
 """
 
-from .ert import ERTManager, ERTModelling, createERTData
+from .ert import ERTManager, ERTModelling, createERTData, simulate
 from .ves import VESModelling, VESCModelling, VESManager
+
+from .visualization import showERTData

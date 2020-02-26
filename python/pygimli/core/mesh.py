@@ -3,9 +3,10 @@
 Import and extensions of the core Mesh class.
 """
 
-from .._logger import deprecated, info, warn
-from ._pygimli_ import (HexahedronShape, Line, Mesh, MeshEntity, Node,
+from ._pygimli_ import (cat, HexahedronShape, Line, Mesh, MeshEntity, Node,
                         PolygonFace, TetrahedronShape, TriangleFace)
+from .logger import deprecated, error, info, warn
+from ..meshtools import mergePLC, exportPLC
 
 
 def __Mesh_str(self):
@@ -15,6 +16,15 @@ def __Mesh_str(self):
         st += " secNodes: " + str(self.secondaryNodeCount())
 
     return st
+Mesh.__str__ = __Mesh_str
+
+
+def __addPLCs__(self, other):
+    if self.isGeometry() and other.isGeometry():
+        return mergePLC([self, other])
+    else:
+        error("Addition is only supported for PLCs, i.e. meshs without cells.")
+Mesh.__add__ = __addPLCs__
 
 
 def __MeshEntity_str(self):
@@ -24,12 +34,13 @@ def __MeshEntity_str(self):
          ', Marker: ' + str(self.marker()) + \
          ', Size: ' + str(self.size()) + '\n'
 
-    if isinstance(self, PolygonFace):
+    if isinstance(self, PolygonFace) and len(self.nodes()) > 5:
         s += '\t' + str(self.nodeCount()) + " Nodes.\n"
     else:
         for n in self.nodes():
             s += '\t' + str(n.id()) + " " + str(n.pos()) + "\n"
     return s
+MeshEntity.__str__ = __MeshEntity_str
 
 
 def __Node_str(self):
@@ -39,16 +50,35 @@ def __Node_str(self):
          ', Marker: ' + str(self.marker())
     s += '\t' + str(self.pos()) + '\n'
     return s
-
-
 Node.__str__ = __Node_str
-Mesh.__str__ = __Mesh_str
-MeshEntity.__str__ = __MeshEntity_str
 
-# For Jupyer Notebook use.. checkme
+# For Jupyer Notebook use.. check me
 # Node.__repr__ = Node_str
 # Mesh.__repr__ = Mesh_str
 # MeshEntity.__repr__ = MeshEntity_str
+
+
+def __Mesh_setVal(self, key, val):
+    """Index access to the mesh data"""
+    self.addData(key, val)
+Mesh.__setitem__ = __Mesh_setVal
+
+
+def __Mesh_getVal(self, key):
+    """Index access to the mesh data"""
+    if self.haveData(key):
+        return self.data(key)
+    else:
+        error('The mesh does not have the requested data:', key)
+Mesh.__getitem__ = __Mesh_getVal
+
+
+def __MeshBoundingBox__(self):
+    bb = self.boundingBox()
+    mi = [bb.min()[i] for i in range(self.dim())]
+    ma = [bb.max()[i] for i in range(self.dim())]
+    return [mi, ma]
+Mesh.bb = __MeshBoundingBox__
 
 
 def __MeshGetCellMarker__(self):
@@ -61,12 +91,16 @@ def __MeshSetCellMarker__(self, m):
     return self.setCellMarkers(m)
 
 
+def __MeshHoleMarkers__(self):
+    return self.holeMarker()
+
 Mesh.cellMarker = __MeshGetCellMarker__
 Mesh.setCellMarker = __MeshSetCellMarker__
+Mesh.holeMarkers = __MeshHoleMarkers__
 
 
 def __createSecondaryNodes__(self, n=3, verbose=False):
-    """Create `n` equally distributed secondary nodes on boundaries of the mesh.
+    """Create `n` equally distributed secondary nodes on the mesh boundaries.
     This is useful to increase the accuracy of traveltime calculations.
 
     Parameters
@@ -81,10 +115,7 @@ def __createSecondaryNodes__(self, n=3, verbose=False):
     pg.Mesh
         Copy of the given mesh with secondary nodes.
     """
-    print(self)
-    self.createNeighbourInfos()
-    print(self.boundary(0))
-    print(self)
+    self.createNeighborInfos()
 
     if self.boundary(0).nodeCount() != self.boundary(0).allNodeCount():
         warn("Mesh already contains secondary nodes. Not adding any more.")
@@ -102,10 +133,10 @@ def __createSecondaryNodes__(self, n=3, verbose=False):
                 print(b)
                 bs = b.shape()
                 for sx in range(n):
-                    nmax = n
+                    nMax = n
                     if isinstance(b, TriangleFace):
-                        nmax = n - sx
-                    for sy in range(nmax):
+                        nMax = n - sx
+                    for sy in range(nMax):
                         if isinstance(b, TriangleFace):
                             pos = bs.xyz([(sx + 1) / (n + 2),
                                           (sy + 1) / (n + 2)])
@@ -156,7 +187,7 @@ def __createSecondaryNodes__(self, n=3, verbose=False):
                 for e in edges:
                     line = Line(e[0].pos(), e[1].pos())
                     for i in range(n):
-                        sn = self.createSecondaryNode(line.at((i + 1) / (n + 1)),
+                        sn = self.createSecondaryNode(line.at((i+1)/(n+1)),
                                                       tol=1e-6)
                         c.addSecondaryNode(sn)
         else:
@@ -170,7 +201,41 @@ def __createMeshWithSecondaryNodes__(self, n=3, verbose=False):
     m = Mesh(self)
     m.createSecondaryNodes(n, verbose)
     return m
-
-
 Mesh.createSecondaryNodes = __createSecondaryNodes__
 Mesh.createMeshWithSecondaryNodes = __createMeshWithSecondaryNodes__
+
+
+__Mesh_deform__ = Mesh.deform
+def __deform__(self, eps, mag=1.0):
+    v = None
+    dof = self.nodeCount()
+    if hasattr(eps, 'ndim') and eps.ndim == 1:
+        v = eps
+    elif len(eps) == self.dim():
+        if len(eps[0]) == dof:
+            if self.dim() == 2:
+                v = cat(eps[0], eps[1])
+            elif self.dim() == 3:
+                v = cat(cat(eps[0], eps[1]), eps[2])
+            else:
+                v = eps[0]
+        else:
+            print(self)
+            print(len(eps), len(eps[0]))
+            error('Size of displacement does not match mesh nodes size.')
+
+    return __Mesh_deform__(self, v, mag)
+
+Mesh.deform = __deform__
+
+
+Mesh.exportPLC = exportPLC
+
+# just to keep backward compatibility 20191120
+Mesh.createNeighbourInfos = Mesh.createNeighborInfos
+Mesh.xmin = Mesh.xMin
+Mesh.ymin = Mesh.yMin
+Mesh.zmin = Mesh.zMin
+Mesh.xmax = Mesh.xMax
+Mesh.ymax = Mesh.yMax
+Mesh.zmax = Mesh.zMax

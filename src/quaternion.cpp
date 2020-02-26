@@ -27,11 +27,11 @@ std::ostream & operator << (std::ostream & str, const RQuaternion & q){
     return str;
 }
 
-RMatrix getRotation(const RVector3 & src, const RVector3 & dest){
+RMatrix getRotation(const Pos & src, const Pos & dest){
 // Based on Stan Melax's article in Game Programming Gems
     RQuaternion q;
-    RVector3 v0(src);
-    RVector3 v1(dest);
+    Pos v0(src);
+    Pos v1(dest);
     if (v0.abs() < TOLERANCE || v1.abs() < TOLERANCE) {
         q = RQuaternion(1.0, 0.0, 0.0, 0.0);
     } else {
@@ -43,7 +43,7 @@ RMatrix getRotation(const RVector3 & src, const RVector3 & dest){
         if (::fabs((d - 1.0)) < TOLERANCE) { //** v1 == v2
             q = RQuaternion(1.0, 0.0, 0.0, 0.0);
         } else if (::fabs((d + 1.0)) < TOLERANCE) { //** v1 == -v2
-            RVector3 a(RVector3(1.0, 0.0, 0.0).cross(v0));
+            Pos a(RVector3(1.0, 0.0, 0.0).cross(v0));
             if (a.length() < TOLERANCE){
                 a = RVector3(0.0, 1.0, 0.0).cross(v0);
             }
@@ -51,7 +51,7 @@ RMatrix getRotation(const RVector3 & src, const RVector3 & dest){
             q.createFromAxisAngle(a, PI);
         } else {
             double s = std::sqrt((1.0 + d) * 2.0);
-            RVector3 c = v0.cross(v1) / s;
+            Pos c = v0.cross(v1) / s;
             q = RQuaternion(s * 0.5, c);
             q.normalise();
         }

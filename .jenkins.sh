@@ -11,6 +11,9 @@ echo `git --git-dir trunk/.git log -1 --pretty="Last change by %cn (%h): %B"`
 ln -sf /usr/bin/python3 python
 export PATH=`pwd`:$PATH
 
+# Make polytools available (needed by mt.createCube for example)
+export PATH="/var/lib/jenkins/workspace/pyBERT/build/bin/":$PATH
+
 # Show system information
 lsb_release -d
 uname -a
@@ -35,7 +38,7 @@ export GIMLI_NUM_THREADS=4
 # just do this if something is wrong with the thirdparty sources
 #rm -rf thirdParty/src
 #rm -rf build # Uncomment for clean build (expensive, but necessary sometimes)
-#rm -f build/build_tests.html # remove old test report
+rm -f build/build_tests.html # remove old test report
 #rm -f build/CMakeCache.txt # clean old cache
 
 mkdir -p build
@@ -48,6 +51,8 @@ fi
 
 if [[ $core_update -ge 1 ]]; then
   echo "# Core changes detected. #"
+  touch CMakeCache.txt
+  
   cmake ../trunk \
      -DPYVERSION=3 \
      -DPYTHON_EXECUTABLE=/usr/bin/python3 \
@@ -55,6 +60,7 @@ if [[ $core_update -ge 1 ]]; then
      -DBoost_PYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libboost_python3-py37.so
   make -j 8 gimli
   make pygimli J=4
+  make gtest
 else
   echo "# No core changes detected. #"
 fi
@@ -69,6 +75,12 @@ export PYTHONPATH=`pwd`/../trunk/python:$PYTHONPATH
 OMP_THREAD_LIMIT=1 python -c "import pygimli; pygimli.test(show=False, abort=True, htmlreport=\"build_tests.html\")"
 
 # Build documentation
+
+# Setup for 3D visualizations
+# ------------------------------------------------
+export DISPLAY=:99.0
+export PYVISTA_OFF_SCREEN=True
+# ------------------------------------------------
 export PUBLISH="True" # for correct PATH settings in sidebar gallery
 export PATH=`pwd`/../trunk/python/apps:$PATH
 chmod +x ../trunk/python/apps/*

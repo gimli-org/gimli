@@ -2,12 +2,12 @@ import numpy as np
 import pygimli as pg
 
 
-class FatrayDijkstraModellingInterpolate(pg.TravelTimeDijkstraModelling):
+class FatrayDijkstraModellingInterpolate(pg.core.TravelTimeDijkstraModelling):
     """Shortest-path (Dijkstra) based travel time with fat ray jacobian."""
     def __init__(self, frequency=100., verbose=False):
         super().__init__(verbose)
         self.frequency = frequency
-        self.iMat = pg.SparseMapMatrix()
+        self.iMat = pg.matrix.SparseMapMatrix()
 
     def createJacobian(self, slowness):
         """Generate Jacobian matrix using fat-ray after Jordi et al. (2016)."""
@@ -24,8 +24,8 @@ class FatrayDijkstraModellingInterpolate(pg.TravelTimeDijkstraModelling):
         numN = self.mesh().nodeCount()
         data = self.data()
         numS = data.sensorCount()
-        Tmat = pg.RMatrix(numS, numN)
-        Dmat = pg.RMatrix(numS, numS)
+        Tmat = pg.Matrix(numS, numN)
+        Dmat = pg.Matrix(numS, numS)
         for i, node in enumerate(self.sensorNodes):
             Di.setStartNode(node)
             Tmat[i] = Di.distances()  # (0, numN)
@@ -46,7 +46,7 @@ class FatrayDijkstraModellingInterpolate(pg.TravelTimeDijkstraModelling):
         self.setJacobian(self.J)
 
 
-class FatrayDijkstraModellingMidpoint(pg.TravelTimeDijkstraModelling):
+class FatrayDijkstraModellingMidpoint(pg.core.TravelTimeDijkstraModelling):
     """Shortest-path (Dijkstra) based travel time with fat ray jacobian."""
     def __init__(self, frequency=100., verbose=False):
         super().__init__(verbose)
@@ -76,8 +76,8 @@ class FatrayDijkstraModellingMidpoint(pg.TravelTimeDijkstraModelling):
         numN = self.mesh().nodeCount()
         data = self.data()
         numS = data.sensorCount()
-        Tmat = pg.RMatrix(numS, numN)
-        Dmat = pg.RMatrix(numS, numS)
+        Tmat = pg.Matrix(numS, numN)
+        Dmat = pg.Matrix(numS, numS)
         print(self.mesh())
         print(self.nnodes, max(self.mids))
         for i, node in enumerate(self.sensorNodes):

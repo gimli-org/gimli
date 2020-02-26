@@ -2,16 +2,24 @@
 """TODO Module docstring."""
 
 import os.path
+import tempfile
+
 from importlib import import_module
 from urllib.request import urlretrieve
 
+import numpy as np
 import pygimli as pg
 from pygimli.meshtools import readFenicsHDF5Mesh, readGmsh, readPLC, readSTL
+from pygimli.utils import readGPX
+from pygimli.utils import cache
+from pygimli.physics.traveltime import load as loadTT
 
+
+gimliExampleDataPath='gimli-org/example-data/'
 # Example data repository
 exampleDataRepository = ''.join((
     'https://raw.githubusercontent.com/',  # RAW files
-    'gimli-org/example-data/',  # Organization and repository
+    gimliExampleDataPath,  # Organization and repository
     'master/'  # Branch
 ))
 
@@ -62,7 +70,7 @@ def optImport(module, requiredFor="use the full functionality"):
 
 
 def opt_import(*args, **kwargs):
-    pg.deprecated()
+    pg.deprecated() # last vis: 20190903
     return optImport(*args, **kwargs)
 
 
@@ -80,14 +88,19 @@ def getConfigPath():
     else:
         return os.path.join(os.environ['HOME'], '.config', 'gimli')
 
-
-def load(fname, verbose=False):
+def load(fname, verbose=False, testAll=True, realName=None):
     """General import function to load data and meshes from file.
 
     Parameters
     ----------
     fname : string
         Filename or folder of files to load.
+    testAll : bool [True]
+        Test all filter when file suffix is unknown or loading fails.
+    realName : str [None]
+        Real file name.
+        When fname is generic (i.e. without suffix) we can test the
+        realName for type info.
     verbose : bool
         Be verbose.
 
@@ -103,22 +116,26 @@ def load(fname, verbose=False):
     >>> mesh.cellCount()
     4
     """
-    import_routines = {
+    ImportFilter = {
+        #maybe we can inflate the importer list from the submodules itself.
         # Data
-        ".data": pg.DataContainer,
-        ".ohm": pg.DataContainer,  # BERT compatibility
-        ".shm": pg.DataContainer,  # BERT compatibility
-        ".sgt": pg.DataContainer,
-        ".collect": pg.DataMap,
+        ".dat": pg.DataContainerERT,
+        ".data": pg.DataContainerERT,
+        ".ohm": pg.DataContainerERT,  # BERT compatibility
+        ".shm": pg.DataContainerERT,  # BERT compatibility
+        ".sgt": loadTT,
+        ".gtt": loadTT,
+        ".tom": loadTT,
+        ".collect": pg.core.DataMap,
         # Vectors
-        ".dat": pg.RVector,
-        ".vector": pg.RVector,
-        ".vec": pg.RVector,
+        #".dat": pg.Vector,
+        ".vector": pg.Vector,
+        ".vec": pg.Vector,
         ".idx": pg.IVector,
         # Matrices
-        ".bmat": pg.RMatrix,
-        ".mat": pg.RMatrix,
-        ".matrix": pg.SparseMapMatrix,
+        ".bmat": pg.Matrix,
+        ".mat": pg.Matrix,
+        ".matrix": pg.matrix.SparseMapMatrix,
         # Meshes
         ".poly": readPLC,
         ".bms": pg.Mesh,
@@ -126,7 +143,10 @@ def load(fname, verbose=False):
         ".mod": pg.Mesh,
         ".vtk": pg.Mesh,
         ".stl": readSTL,
-        ".h5": readFenicsHDF5Mesh  # fenics specs as default
+        ".h5": readFenicsHDF5Mesh,  # fenics specs as default
+        # Misc
+        ".gpx": readGPX,  # read gpx waypoints
+        ".xy": np.loadtxt,  #
     }
 
     if not os.path.exists(fname):
@@ -139,13 +159,19 @@ def load(fname, verbose=False):
             print("Reading %s with %d files..." % (fname, len(files)))
         return [load(f) for f in files]
 
-    suffix = os.path.splitext(fname)[1]
+    suffix = None
+    if realName is not None:
+        suffix = os.path.splitext(realName)[1]
+    else:
+        suffix = os.path.splitext(fname)[1]
 
-    if suffix in import_routines:
+    if suffix in ImportFilter:
         try:
-            return import_routines[suffix](fname)
-        except BaseException as e:
             if verbose:
+                print("Import {0} ({1})".format(fname, ImportFilter[suffix]))
+            return ImportFilter[suffix](fname)
+        except Exception as e:
+            if verbose or pg.core.debug():
                 import sys
                 import traceback
                 traceback.print_exc(file=sys.stdout)
@@ -154,20 +180,55 @@ def load(fname, verbose=False):
                       "Trying auto-detect." % suffix)
     else:
         if verbose:
-            print("File extension %s is unknown. Trying auto-detect." % suffix)
+            print("File extension {0} is unknown. Trying auto-detect.".format(suffix))
 
-    for routine in import_routines.values():
-        try:
-            return routine(fname)
-        except BaseException as _:
-            # print(e)
-            pass
+    if testAll:
+        for routine in ImportFilter.values():
+            try:
+                return routine(fname)
+            except Exception as _:
+                # print(e)
+                pass
 
-    raise BaseException("File type of %s is unknown or file does not exist "
-                        "and could not be imported." % fname)
+    raise Exception("File type of {0} is unknown or file does not exist "
+                        "and could not be imported.".format(suffix))
 
-def getExampleFile(path):
-    """Download and return temporary filename of file in example repository."""
-    # TODO: Cache locally and check hash sums for potential file corruption
+
+def getExampleFile(path, load=False, verbose=False):
+    """Download and return a filename to the example repository.
+
+    TODO:
+        checksum or hash test for the content.
+
+    Parameters
+    ----------
+    path: str
+        Path to the remote repo
+    load: bool [False]
+        Try to load the file and return the relating object.
+
+    Returns
+    -------
+    filename: str
+        Filename to the data content
+    data: obj
+        content of the path if load is True
+    """
     url = exampleDataRepository + path
-    return urlretrieve(url)[0]
+
+    fileName = os.path.join(tempfile.gettempdir(), gimliExampleDataPath, path)
+
+    if not os.path.exists(fileName):
+        if verbose:
+            pg.info("Getting:", fileName)
+        os.makedirs(os.path.dirname(fileName), exist_ok=True)
+        tmp = urlretrieve(url, fileName)
+    else:
+        if verbose:
+            pg.info("File allready exists:", fileName)
+
+    if load:
+        print(fileName)
+        d = pg.load(fileName)
+        return pg.load(fileName)
+    return fileName

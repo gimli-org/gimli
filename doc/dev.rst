@@ -23,7 +23,7 @@ the default development branch called *dev*. Save `this script
 <https://gist.github.com/florian-wagner/0be0b09bbabec6791ed3>` in .git/hooks
 for automatic warnings in case you are about to push to the master branch.
 
-2. Checkout the the dev branch:
+2. Checkout the dev branch:
 
     .. code-block:: bash
 

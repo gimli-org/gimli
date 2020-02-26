@@ -4,8 +4,8 @@
 # are the following suitable for a drawing package?
 from .utils import (hold,
                     wait,
+                    updateFig,
                     updateAxes,
-                    prettyFloat,
                     renameDepthTicks,
                     insertUnitAtNextLastTick,
                     saveFigure,
@@ -16,7 +16,7 @@ from .utils import (hold,
                     setOutputStyle,
                     setPlotStuff,
                     plotLines,
-                    createTwinX, createTwinY)
+                    twin, createTwinX, createTwinY)
 
 from .boreholes import BoreHole, BoreHoles, create_legend
 
@@ -39,7 +39,6 @@ from .meshview import (CellBrowser,
                        drawMesh,
                        drawMeshBoundaries,
                        drawModel,
-                       drawMPLTri,
                        drawParameterConstraints,
                        drawPLC,
                        drawSelectedMeshBoundaries,
@@ -59,13 +58,18 @@ from .overlayimage import (cacheFileName,
 # maybe ploter should named show or draw
 from .dataview import (drawSensorAsMarker,  # dups to meshview??
                        showVecMatrix,
+                       drawVecMatrix,
+                       showValMapPatches,
+                       drawValMapPatches,
+                       showMatrix,
+                       drawMatrix,
                        generateMatrix,
-                       patchMatrix,
-                       patchValMap,
-                       plotDataContainerAsMatrix,
                        showDataContainerAsMatrix,
-                       plotMatrix,
-                       plotVecMatrix,
+                       patchMatrix, # deprectated (Naming)
+                       patchValMap, # deprectated (Naming)
+                       plotDataContainerAsMatrix, # need renaming
+                       plotMatrix, # deprectated (Naming)
+                       plotVecMatrix,# deprectated (Naming)
                        )
 
 # which of these do we actually need?
@@ -73,13 +77,10 @@ from .modelview import (drawModel1D,
                         showmymatrix,  # needed ?
                         draw1DColumn, # needed or redundant ?
                         draw1dmodel,   # needed or redundant ?
-                        draw1dmodel__Redundant,  # needed or redundant ?
                         show1dmodel,  # needed or redundant ?
                         draw1dmodelErr,  # needed or redundant ?
                         draw1dmodelLU,  # needed or redundant ?
                         showStitchedModels,
-                        showStitchedModelsOld,
-                        showStitchedModels_Redundant,
                         showfdemsounding)
 
 __all__ = [
@@ -91,7 +92,7 @@ __all__ = [
     "patchValMap", "plotDataContainerAsMatrix", "plotMatrix", "plotVecMatrix",
     "CellBrowser", "createMeshPatches",
     "createTriangles", "draw1DColumn", "drawField", "drawMesh",
-    "drawMeshBoundaries", "drawModel", "drawMPLTri", "hold", "wait",
+    "drawMeshBoundaries", "drawModel", "hold", "wait",
     "setOutputStyle", "setPlotStuff", "createAnimation", "saveAnimation",
     "drawParameterConstraints", "drawPLC", "drawSelectedMeshBoundaries",
     "drawSelectedMeshBoundariesShadow", "drawSensors", "drawStreamLines",

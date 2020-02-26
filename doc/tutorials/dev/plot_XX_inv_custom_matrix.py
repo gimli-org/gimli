@@ -29,7 +29,7 @@ class MyMatrix(pg.MatrixBase):
         return 0
 
 
-class TestModelling(pg.ModellingBase):
+class TestModelling(pg.core.ModellingBase):
     def __init__(self, verbose):
         super().__init__(verbose)
 
@@ -46,7 +46,7 @@ class TestModelling(pg.ModellingBase):
 fop = TestModelling(verbose=True)
 fop.setStartModel([0, 0])
 
-inv = pg.RInversion(verbose=True, dosave=False)
+inv = pg.Inversion(verbose=True, dosave=False)
 
 #fixme!!!!!!!! .. segfault if one of the following is unset
 inv.setForwardOperator(fop)

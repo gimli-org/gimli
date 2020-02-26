@@ -10,7 +10,6 @@ import numpy as np
 
 import pygimli as pg
 
-
 class ProgressBar(object):
     """Animated text-based progressbar.
 
@@ -32,8 +31,8 @@ class ProgressBar(object):
     Examples
     --------
     >>> from pygimli.utils import ProgressBar
-    >>> pbar = ProgressBar(its=20, width=40, sign='+')
-    >>> pbar.update(5)
+    >>> pBar = ProgressBar(its=20, width=40, sign='+')
+    >>> pBar.update(5)
     \r[+++++++++++       30%                 ] 6 of 20 complete
     """
 
@@ -42,7 +41,7 @@ class ProgressBar(object):
         self.its = int(its)
         self.width = width
         self.sign = sign[0]  # take first character only if sign is longer
-        self.pbar = "[]"
+        self.pBar = "[]"
         self._amount(0)
 
     def __call__(self, it, msg=""):
@@ -53,28 +52,28 @@ class ProgressBar(object):
         message."""
         self._setbar(iteration + 1)
         if len(msg) >= 1:
-            self.pbar += " (" + msg + ")"
-        print("\r" + self.pbar, end="")
+            self.pBar += " (" + msg + ")"
+        print("\r" + self.pBar, end="")
         sys.stdout.flush()
         if iteration == self.its-1:
             print()
 
     def _setbar(self, elapsed_it):
-        """Reset pbar based on current iteration number."""
+        """Reset pBar based on current iteration number."""
         self._amount((elapsed_it / float(self.its)) * 100.0)
-        self.pbar += " %d of %s complete" % (elapsed_it, self.its)
+        self.pBar += " %d of %s complete" % (elapsed_it, self.its)
 
     def _amount(self, new_amount):
-        """Calculate amount by which to update the pbar."""
+        """Calculate amount by which to update the pBar."""
         pct_done = int(round((new_amount / 100.0) * 100.0))
         full_width = self.width - 2
         num_signs = int(round((pct_done / 100.0) * full_width))
-        self.pbar = "[" + self.sign * num_signs + \
+        self.pBar = "[" + self.sign * num_signs + \
             " " * (full_width - num_signs) + "]"
-        pct_place = (len(self.pbar) // 2) - len(str(pct_done))
+        pct_place = (len(self.pBar) // 2) - len(str(pct_done))
         pct_string = " %d%% " % pct_done
-        self.pbar = self.pbar[0:pct_place] + \
-            (pct_string + self.pbar[pct_place + len(pct_string):])
+        self.pBar = self.pBar[0:pct_place] + \
+            (pct_string + self.pBar[pct_place + len(pct_string):])
 
 
 def boxprint(s, width=80, sym="#"):
@@ -138,7 +137,7 @@ def unicodeToAscii(text):
         return text
 
 
-def logDropTol(p, droptol=1e-3):
+def logDropTol(p, dropTol=1e-3):
     """Create logarithmic scaled copy of p.
 
     Examples
@@ -148,14 +147,59 @@ def logDropTol(p, droptol=1e-3):
     >>> print(x.array())
     [-4. -3.  0.  3.  5.]
     """
-    tmp = pg.RVector(p)
+    tmp = pg.Vector(p)
 
-    tmp = pg.abs(tmp / droptol)
+    tmp = pg.abs(tmp / dropTol)
     tmp.setVal(1.0, pg.find(tmp < 1.0))
 
     tmp = pg.log10(tmp)
-    tmp *= pg.sign(p)
+    tmp *= pg.math.sign(p)
     return tmp
+
+
+def prettify(value, roundValue=False):
+    """Return prettified string for value .. if possible."""
+    if isinstance(value, dict):
+        import json
+        return json.dumps(value, indent=4)
+    elif isinstance(value, float):
+        return prettyFloat(value, roundValue)
+    pg.warn("Don't know how to prettify the string representation for: ",
+            value)
+    return value
+
+
+def prettyFloat(value, roundValue=False):
+    """Return prettified string for a float value.
+
+    TODO
+    ----
+        add flag for round to
+        add test
+    """
+    if roundValue and abs(round(value)-value) < 1e-4 and abs(value) < 1e3:
+        string = str(int(round(value, 1)))
+    elif abs(value) < 1e-14:
+        string = "0"
+    elif abs(value) > 1e4 or abs(value) <= 1e-3:
+        string = str("%.1e" % value)
+    elif abs(value) < 1e-2:
+        string = str("%.4f" % round(value, 4))
+    elif abs(value) < 1e-1:
+        string = str("%.3f" % round(value, 3))
+    elif abs(value) < 1e0:
+        string = str("%.2f" % round(value, 2))
+    elif abs(value) < 1e1:
+        string = str("%.1f" % round(value, 1))
+    elif abs(value) < 1e2:
+        string = str("%.1f" % round(value, 1))
+    else:
+        string = str("%.0f" % round(value, 1))
+
+    if string.endswith(".0"):
+        return string.replace(".0", "")
+    else:
+        return string
 
 
 def niceLogspace(vMin, vMax, nDec=10):
@@ -193,17 +237,17 @@ def niceLogspace(vMin, vMax, nDec=10):
         print("vMin:", vMin, "vMax", vMax)
         raise Exception('vMin > vMax or vMin <= 0.')
 
-    vmin = 10**np.floor(np.log10(vMin))
-    vmax = 10**np.ceil(np.log10(vMax))
+    vMin = 10**np.floor(np.log10(vMin))
+    vMax = 10**np.ceil(np.log10(vMax))
 
-    if vmax == vmin:
-        vmax *= 10
+    if vMax == vMin:
+        vMax *= 10
 
-    n = np.log10(vmax / vmin) * nDec + 1
+    n = np.log10(vMax / vMin) * nDec + 1
 
     q = 10.**(1. / nDec)
 
-    return vmin * q**np.arange(n)
+    return vMin * q**np.arange(n)
 
 
 def grange(start, end, dx=0, n=0, log=False):
@@ -227,7 +271,8 @@ def grange(start, end, dx=0, n=0, log=False):
     n: int
         Amount of steps
     log: bool
-
+        Logarithmic increasing range of length = n from start to end.
+        dx will be ignored.
     Examples
     --------
     >>> from pygimli.utils import grange
@@ -247,14 +292,14 @@ def grange(start, end, dx=0, n=0, log=False):
     e = float(end)
     d = float(dx)
 
-    if dx != 0:
+    if dx != 0 and not log:
         if end < start and dx > 0:
             # print("grange: decreasing range but increasing dx, swap dx sign")
             d = -d
         if end > start and dx < 0:
             # print("grange: increasing range but decreasing dx, swap dx sign")
             d = -d
-        ret = pg.RVector(range(int(floor(abs((e - s) / d)) + 1)))
+        ret = pg.Vector(range(int(floor(abs((e - s) / d)) + 1)))
         ret *= d
         ret += s
         return ret
@@ -263,7 +308,7 @@ def grange(start, end, dx=0, n=0, log=False):
         if not log:
             return grange(start, end, dx=(e - s) / (n - 1))
         else:
-            return pg.increasingRange(start, end, n)
+            return pg.core.increasingRange(start, end, n)[1:]
     else:
         raise Exception('Either dx or n have to be given.')
 
@@ -275,7 +320,7 @@ def diff(v):
 
     Parameters
     ----------
-    v : array(N) | pg.R3Vector(N)
+    v : array(N) | pg.core.R3Vector(N)
         Array of double values or positions
 
     Returns
@@ -287,7 +332,7 @@ def diff(v):
     --------
     >>> import pygimli as pg
     >>> from pygimli.utils import diff
-    >>> p = pg.R3Vector(4)
+    >>> p = pg.core.R3Vector(4)
     >>> p[0] = [0.0, 0.0]
     >>> p[1] = [0.0, 1.0]
     >>> print(diff(p)[0])
@@ -296,7 +341,7 @@ def diff(v):
     RVector3: (0.0, -1.0, 0.0)
     >>> print(diff(p)[2])
     RVector3: (0.0, 0.0, 0.0)
-    >>> p = pg.RVector(3)
+    >>> p = pg.Vector(3)
     >>> p[0] = 0.0
     >>> p[1] = 1.0
     >>> p[2] = 2.0
@@ -308,22 +353,22 @@ def diff(v):
     if isinstance(v, np.ndarray):
         if v.ndim == 2:
             if v.shape[1] < 4:
-                # v = pg.R3Vector(v.T)
+                # v = pg.core.R3Vector(v.T)
                 vt = v.copy()
-                v = pg.R3Vector(len(vt))
+                v = pg.core.R3Vector(len(vt))
                 for i, vi in enumerate(vt):
                     v.setVal(pg.RVector3(vi), i)
             else:
-                v = pg.R3Vector(v)
+                v = pg.core.R3Vector(v)
         else:
-            v = pg.RVector(v)
+            v = pg.Vector(v)
     elif isinstance(v, list):
-        v = pg.R3Vector(v)
+        v = pg.core.R3Vector(v)
 
-    if isinstance(v, pg.R3Vector) or isinstance(v, pg.stdVectorRVector3):
-        d = pg.R3Vector(len(v) - 1)
+    if isinstance(v, pg.core.R3Vector) or isinstance(v, pg.core.stdVectorRVector3):
+        d = pg.core.R3Vector(len(v) - 1)
     else:
-        d = pg.RVector(len(v) - 1)
+        d = pg.Vector(len(v) - 1)
 
     for i, _ in enumerate(d):
         d[i] = v[i + 1] - v[i]
@@ -335,7 +380,7 @@ def dist(p, c=None):
 
     Parameters
     ----------
-    p : ndarray(N,2) | ndarray(N,3) | pg.R3Vector
+    p : ndarray(N,2) | ndarray(N,3) | pg.core.R3Vector
 
         Position array
     c : [x,y,z] [None]
@@ -351,13 +396,13 @@ def dist(p, c=None):
     >>> import pygimli as pg
     >>> from pygimli.utils import dist
     >>> import numpy as np
-    >>> p = pg.R3Vector(4)
+    >>> p = pg.core.R3Vector(4)
     >>> p[0] = [0.0, 0.0]
     >>> p[1] = [0.0, 1.0]
     >>> print(dist(p))
     [0. 1. 0. 0.]
-    >>> x = pg.RVector(4, 0)
-    >>> y = pg.RVector(4, 1)
+    >>> x = pg.Vector(4, 0)
+    >>> y = pg.Vector(4, 1)
     >>> print(dist(np.array([x, y]).T))
     [1. 1. 1. 1.]
     """
@@ -384,7 +429,7 @@ def cumDist(p):
 
     Parameters
     ----------
-    p : ndarray(N,2) | ndarray(N,3) | pg.R3Vector
+    p : ndarray(N,2) | ndarray(N,3) | pg.core.R3Vector
         Position array
 
     Returns
@@ -397,7 +442,7 @@ def cumDist(p):
     >>> import pygimli as pg
     >>> from pygimli.utils import cumDist
     >>> import numpy as np
-    >>> p = pg.R3Vector(4)
+    >>> p = pg.core.R3Vector(4)
     >>> p[0] = [0.0, 0.0]
     >>> p[1] = [0.0, 1.0]
     >>> p[2] = [0.0, 1.0]
@@ -409,20 +454,18 @@ def cumDist(p):
     d[1:] = np.cumsum(dist(diff(p)))
     return d
 
-
-def chi2(a, b, err, trans=None):
-    """Return chi square value."""
-    if trans is None:
-        trans = pg.RTrans()
-
-    d = (trans(a) - trans(b)) / trans.error(a, err)
-    return pg.dot(d, d) / len(d)
+def cut(v, n=2):
+    """Cuts the array v into n parts"""
+    N = len(v)
+    Nc = N//n
+    cv = [v[i*Nc:(i+1)*Nc] for i in range(n)]
+    return cv
 
 
 def randN(n, minVal=0.0, maxVal=1.0):
     """Create RVector of length n with normally distributed random numbers."""
-    r = pg.RVector(n)
-    pg.randn(r)
+    r = pg.Vector(n)
+    pg.math.randn(r)
     r *= (maxVal - minVal)
     r += minVal
     return r
@@ -430,16 +473,17 @@ def randN(n, minVal=0.0, maxVal=1.0):
 
 def rand(n, minVal=0.0, maxVal=1.0):
     """Create RVector of length n with normally distributed random numbers."""
-    r = pg.RVector(n)
+    r = pg.Vector(n)
     pg.rand(r, minVal, maxVal)
     return r
 
 
 def getIndex(seq, f):
     """TODO DOCUMENTME."""
+    pg.error('getIndex in use?')
     # DEPRECATED_SLOW
     idx = []
-    if isinstance(seq, pg.RVector):
+    if isinstance(seq, pg.Vector):
         for i, _ in enumerate(seq):
             v = seq[i]
             if f(v):
@@ -453,9 +497,10 @@ def getIndex(seq, f):
 
 def filterIndex(seq, idx):
     """TODO DOCUMENTME."""
-    if isinstance(seq, pg.RVector):
+    pg.error('filterIndex in use?')
+    if isinstance(seq, pg.Vector):
         # return seq(idx)
-        ret = pg.RVector(len(idx))
+        ret = pg.Vector(len(idx))
     else:
         ret = list(range(len(idx)))
 
@@ -469,7 +514,7 @@ def findNearest(x, y, xp, yp, radius=-1):
     """TODO DOCUMENTME."""
     idx = 0
     minDist = 1e9
-    startPointDist = pg.RVector(len(x))
+    startPointDist = pg.Vector(len(x))
     for i, _ in enumerate(x):
         startPointDist[i] = sqrt((x[i] - xp) * (x[i] - xp) + (y[i] - yp) * (y[
             i] - yp))
@@ -564,7 +609,7 @@ def unique_rows(array):
     # return A[sort_idx[np.nonzero(mask)[0][np.bincount(mask.cumsum()-1)==1]]]
 
 
-def uniqueRows(data, prec=2):
+def uniqueRows(data, precition=2):
     """Equivalent of Matlabs unique(data, 'rows') with tolerance check.
 
     Additionally returns forward and reverse indices
@@ -580,17 +625,17 @@ def uniqueRows(data, prec=2):
     >>> np.all(unA[ib] == A)
     True
     """
-    fak = 100**prec
-    dfix = np.fix(data * fak) / fak + 0.0
-    dtype = np.dtype((np.void, dfix.dtype.itemsize * dfix.shape[1]))
-    b = np.ascontiguousarray(dfix).view(dtype)
+    fak = 100**precition
+    dFix = np.fix(data * fak) / fak + 0.0
+    dtype = np.dtype((np.void, dFix.dtype.itemsize * dFix.shape[1]))
+    b = np.ascontiguousarray(dFix).view(dtype)
     _, ia = np.unique(b, return_index=True)
     _, ib = np.unique(b, return_inverse=True)
-    return np.unique(b).view(dfix.dtype).reshape(-1, dfix.shape[1]), ia, ib
+    return np.unique(b).view(dFix.dtype).reshape(-1, dFix.shape[1]), ia, ib
 
 
 def uniqueAndSum(indices, to_sum, return_index=False, verbose=False):
-    """Summs double values found by indices in a various number of arrays.
+    """Sum double values found by indices in a various number of arrays.
 
     Returns the sorted unique elements of a column_stacked array of indices.
     Another column_stacked array is returned with values at the unique
@@ -601,7 +646,7 @@ def uniqueAndSum(indices, to_sum, return_index=False, verbose=False):
     ar : array_like
         Input array. This will be flattened if it is not already 1-D.
     to_sum : array_like
-        Input array to be summed over axis 0. Other exsisting axes will be
+        Input array to be summed over axis 0. Other existing axes will be
         broadcasted remain untouched.
     return_index : bool, optional
         If True, also return the indices of `ar` (along the specified axis,
@@ -619,8 +664,8 @@ def uniqueAndSum(indices, to_sum, return_index=False, verbose=False):
         The indices of the first occurrences of the unique values in the
         original array. Only provided if `return_index` is True.
 
-    Example
-    -------
+    Examples
+    --------
     >>> import numpy as np
     >>> from pygimli.utils import uniqueAndSum
     >>> idx1 = np.array([0, 0, 1, 1, 2, 2])

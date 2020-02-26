@@ -39,7 +39,7 @@ def iterateBounds(inv, dchi2=0.5, maxiter=100, change=1.02):
     maxchi2 = inv.chi2() + dchi2
 
     for im in range(nm):
-        model1 = pg.RVector(model)
+        model1 = pg.Vector(model)
         chi2 = .0
         it = 0
 
@@ -51,7 +51,7 @@ def iterateBounds(inv, dchi2=0.5, maxiter=100, change=1.02):
 
         modelU[im] = model1[im]
 
-        model2 = pg.RVector(model)
+        model2 = pg.Vector(model)
         chi2 = 0.0
         it = 0
 
@@ -85,7 +85,7 @@ def modCovar(inv):
     >>> # import pygimli as pg
     >>> # import matplotlib.pyplot as plt
     >>> # from matplotlib.cm import bwr
-    >>> # INV = pg.RInversion(data, f)
+    >>> # INV = pg.Inversion(data, f)
     >>> # par = INV.run()
     >>> # var, MCM = modCovar(INV)
     >>> # i = plt.imshow(MCM, interpolation='nearest',

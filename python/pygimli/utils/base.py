@@ -11,10 +11,17 @@ from math import sqrt
 
 import pygimli as pg
 
+
 def rms(v, axis=None):
     """Compute the root mean square."""
     ### abs for complex values
     return np.sqrt(np.mean(np.abs(v)**2, axis))
+
+
+def rrms(a, b, axis=None):
+    """Compute the relative (regarding a) root mean square."""
+    ### abs for complex values
+    return rms(np.abs(a-b)/np.abs(a), axis)
 
 
 def nanrms(v, axis=None):
@@ -27,6 +34,19 @@ def rmsWithErr(a, b, err, errtol=1):
     """Compute (abs-)root mean square of values with error above a threshold"""
     fi = pg.find(err < errtol)
     return rms(a[fi] - b[fi])
+
+
+def chi2(a, b, err, trans=None):
+    """Return chi square value."""
+    if trans is None:
+        trans = pg.trans.Trans()
+
+    d = (trans(a) - trans(b)) / trans.error(a, err)
+    return pg.math.dot(d, d) / len(d)
+
+
+# fc_cleaning compatibilty to bert
+rmswitherr = rmsWithErr
 
 
 def rrmsWithErr(a, b, err, errtol=1):
@@ -51,7 +71,7 @@ def numpy2gmat(nmat):
 
     TODO implement correct rval
     """
-    gmat = pg.RMatrix()
+    gmat = pg.Matrix()
     for arr in nmat:
         gmat.push_back(arr)  # pg.asvector(arr))
     return gmat
@@ -119,14 +139,14 @@ def getSavePath(folder=None, subfolder='', now=None):
     if folder is None:
         path = createResultFolder(subfolder, now)
     else:
-        path = createfolders([folder, subfolder])
+        path = createFolders([folder, subfolder])
     return path
 
 
 def createResultFolder(subfolder, now=None):
     """Create a result Folder."""
     result = createDateTimeString(now)
-    return createfolders(['./', result, subfolder])
+    return createFolders(['./', result, subfolder])
 
 
 def createDateTimeString(now=None):
@@ -140,6 +160,10 @@ def createDateTimeString(now=None):
 
 
 def createfolders(foldername_list):
+    pg.deprecated("use createFolders") #190520
+    return createFolders(foldername_list)
+    
+def createFolders(foldername_list):
     """Create the folder structure specified by the list."""
     path = ''
 

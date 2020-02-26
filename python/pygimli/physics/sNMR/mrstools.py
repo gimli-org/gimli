@@ -10,7 +10,7 @@ from pygimli.mplviewer import draw1dmodel
 from pygimli.utils import rndig
 
 
-class MRS1dBlockQTModelling(pg.ModellingBase):
+class MRS1dBlockQTModelling(pg.core.ModellingBase):
     """
     MRS1dBlockQTModelling - pygimli modelling class for block-mono QT inversion
     f=MRS1dBlockQTModelling(lay, kr, ki, zvec, t, verbose = False )
@@ -30,8 +30,8 @@ class MRS1dBlockQTModelling(pg.ModellingBase):
         t : array
             time discretization
         """
-        mesh = pg.createMesh1DBlock(nlay, 2)  # thk, wc, T2*
-        pg.ModellingBase.__init__(self, mesh, verbose)
+        mesh = pg.meshtools.createMesh1DBlock(nlay, 2)  # thk, wc, T2*
+        pg.core.ModellingBase.__init__(self, mesh, verbose)
         self.kr_ = kr
         self.ki_ = ki
         self.zv_ = np.array(zvec)
@@ -85,14 +85,14 @@ def loadmrsproject(mydir):
     if mydir[-1] != '/':
         mydir = mydir + '/'
     # load files from directory
-    zvec = pg.RVector(mydir + 'zkernel.vec')
-    KR = pg.RMatrix(mydir + 'KR.bmat')
-    KI = pg.RMatrix(mydir + 'KI.bmat')
-    A = pg.RMatrix()
+    zvec = pg.Vector(mydir + 'zkernel.vec')
+    KR = pg.Matrix(mydir + 'KR.bmat')
+    KI = pg.Matrix(mydir + 'KI.bmat')
+    A = pg.Matrix()
     pg.loadMatrixCol(A, mydir + 'datacube.dat')
     t = np.array(A[0])
     # data
-    datvec = pg.RVector()
+    datvec = pg.Vector()
     for i in range(1, len(A)):
         datvec = pg.cat(datvec, A[i])
     # print len(A), len(t)
@@ -145,9 +145,9 @@ def qtblockmodelling(mydir, nlay,
     f.region(1).setStartValue(startvec[1])
     f.region(2).setStartValue(startvec[2])
     # Model transformations
-    f.transTH = pg.RTransLogLU(lowerbound[0], upperbound[0])
-    f.transWC = pg.RTransLogLU(lowerbound[1], upperbound[1])
-    f.transT2 = pg.RTransLogLU(lowerbound[2], upperbound[2])
+    f.transTH = pg.trans.TransLogLU(lowerbound[0], upperbound[0])
+    f.transWC = pg.trans.TransLogLU(lowerbound[1], upperbound[1])
+    f.transT2 = pg.trans.TransLogLU(lowerbound[2], upperbound[2])
     f.region(0).setTransModel(f.transTH)
     f.region(1).setTransModel(f.transWC)
     f.region(2).setTransModel(f.transT2)

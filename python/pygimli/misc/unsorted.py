@@ -15,8 +15,8 @@ def streamline(mesh, field, startCoord, dLengthSteps, dataMesh=None,
         and down direction.
     """
     xd, yd, vd = streamlineDir(mesh, field, startCoord, dLengthSteps,
-                           dataMesh=dataMesh, maxSteps=maxSteps, down=True,
-                           verbose=verbose, coords=coords)
+                               dataMesh=dataMesh, maxSteps=maxSteps,
+                               down=True,  verbose=verbose, coords=coords)
 
     c = mesh.findCell(startCoord)
 
@@ -24,8 +24,8 @@ def streamline(mesh, field, startCoord, dLengthSteps, dataMesh=None,
         c.setValid(True)
 
     xu, yu, vu = streamlineDir(mesh, field, startCoord, dLengthSteps,
-                           dataMesh=dataMesh, maxSteps=maxSteps, down=False,
-                           verbose=verbose, coords=coords)
+                               dataMesh=dataMesh, maxSteps=maxSteps,
+                               down=False, verbose=verbose, coords=coords)
 
     return xd + xu[1:], yd + yu[1:], vd + vu[1:]
 
@@ -38,14 +38,13 @@ def streamlineDir(mesh, field, startCoord, dLengthSteps, dataMesh=None,
     xd = []
     yd = []
     vd = []
-    counter = 0
 
     pot = None
     vx = None
     vy = None
     isVectorData = False
 
-    if isinstance(field, pg.R3Vector):
+    if isinstance(field, pg.core.R3Vector):
         field = field.array()
 
     if hasattr(field[0], '__len__'):
@@ -53,8 +52,8 @@ def streamlineDir(mesh, field, startCoord, dLengthSteps, dataMesh=None,
            min(field[:, 1]) == max(field[:, 1]):
             raise BaseException("No data range streamline: min/max == ",
                                 min(field[:, 0]))
-        vx = pg.RVector(field[:, 0])
-        vy = pg.RVector(field[:, 1])
+        vx = pg.Vector(field[:, 0])
+        vy = pg.Vector(field[:, 1])
 
         isVectorData = True
     else:
@@ -64,9 +63,9 @@ def streamlineDir(mesh, field, startCoord, dLengthSteps, dataMesh=None,
 
         if dataMesh is not None:
             if len(field) == dataMesh.nodeCount():
-                pot = pg.RVector(field)
+                pot = pg.Vector(field)
             elif len(field) == dataMesh.cellCount():
-                pot = pg.cellDataToPointData(dataMesh, field)
+                pot = pg.core.cellDataToPointData(dataMesh, field)
             else:
                 raise BaseException(
                     "Data length (%i) for streamline is "
@@ -74,9 +73,9 @@ def streamlineDir(mesh, field, startCoord, dLengthSteps, dataMesh=None,
                     (len(field), dataMesh.nodeCount(), dataMesh.nodeCount()))
         else:
             if len(field) == mesh.nodeCount():
-                pot = pg.RVector(field)
+                pot = pg.Vector(field)
             elif len(field) == mesh.cellCount():
-                pot = pg.cellDataToPointData(mesh, field)
+                pot = pg.core.cellDataToPointData(mesh, field)
             else:
                 raise BaseException(
                     "Data length (%i) for streamline is "
@@ -122,7 +121,7 @@ def streamlineDir(mesh, field, startCoord, dLengthSteps, dataMesh=None,
                 if len(vx) == dataMesh.cellCount():
                     d = pg.RVector3(vx[cd.id()], vy[cd.id()])
                 elif len(vx) == dataMesh.nodeCount() and \
-                    len(vy) == dataMesh.nodeCount():
+                        len(vy) == dataMesh.nodeCount():
                     d = pg.RVector3(cd.pot(pos, vx), cd.pot(pos, vy))
                 else:
                     print(dataMesh)

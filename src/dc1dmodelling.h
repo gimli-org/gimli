@@ -139,6 +139,7 @@ public:
 
     virtual ~DC1dModellingC() { }
 
+    /*! Return [|rhoa|, +phi(rad)] for [thicks, res, phi(rad)]*/
     RVector response(const RVector & model);
 };
 

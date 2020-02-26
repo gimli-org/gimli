@@ -58,16 +58,16 @@ public:
 
     virtual ~CreateSensitivityColMT(){}
 
-    virtual void calc(Index tNr=0){
+    virtual void calc(){
 
         if (calc1_){
-            calc1(tNr);
+            calc1();
         }else {
-            calc2(tNr);
+            calc2();
         }
     }
 
-    virtual void calc2(Index tNr=0){
+    virtual void calc2(){
         ElementMatrix < double > S_i;
         ElementMatrix < double > S1_i;
 
@@ -85,9 +85,6 @@ public:
         const RVector *dm = &(*data_)("m");
         const RVector *dn = &(*data_)("n");
 
-        log(Debug, "Thread #" + str(tNr) + ": on CPU " + str(schedGetCPU()) + 
-                   " slice " + str(start_) + ":" + str(end_));
-        
         for (Index cellID = start_; cellID < end_; cellID ++) {
 
             cell    = (*para_)[cellID];
@@ -114,13 +111,16 @@ public:
                     if (m > -1) vm = &(*pots_)[m + nElecs_ * kIdx]; else vm = &dummy;
                     if (n > -1) vn = &(*pots_)[n + nElecs_ * kIdx]; else vn = &dummy;
 
-                    (*S_)[dataIdx][modelIdx] += S_i.mult((*va), (*vb), (*vm), (*vn)) * (*weights_)[kIdx];
+                    (*S_)[dataIdx][modelIdx] +=
+                       S_i.mult((*va), (*vb), (*vm), (*vn)) * (*weights_)[kIdx];
                 }
             }
         }
     }
 
-    virtual void calc1(Index tNr=0){
+    virtual void calc1(){
+        // log(Debug, "Thread #" + str(_threadNumber) + ": on CPU " + str(schedGetCPU()) +
+        //            " slice " + str(start_) + ":" + str(end_));
         bool haveCurrentPatterns = false;
 
         if (currPatternIdx_->size() * weights_->size() == pots_->rows()) {
@@ -226,7 +226,6 @@ public:
 // 	  if ((*cellMapIndex_)[cellID] - 2 < 0 ||
 // 	       (*cellMapIndex_)[cellID] - 2 > nModel-1){
 // 	    std::cerr << WHERE_AM_I << " index out of bounds: [0 -- " << nModel-1 << "]" << cellMapIndex[cellID] - 2 << std::endl;
-// 	    exit(EXIT_SENS_INDEX);
 // 	  }
 
 //	  (*S_)[dataIdx][(*cellMapIndex_)[cellID] - 2] += sum * (data_->k(dataIdx) * 2.0 * (*weights_)[kIdx]);
@@ -285,12 +284,11 @@ MEMINFO
 //         if (pots[0].size() < mesh.nodeCount()){
 //             std::stringstream str; str << WHERE_AM_I << " potential matrix colsize to small. "
 //                                        << pots[0].size()  << "< " << mesh.nodeCount() << std::endl;
-//             throwLengthError(EXIT_MATRIX_SIZE_INVALID, str.str());
 //         }
     } else {
         std::stringstream str1; str1 << WHERE_AM_I << " potential matrix rowsize to small."
                                    << pots.rows() << " < " << maxRows << std::endl;
-        throwLengthError(EXIT_MATRIX_SIZE_INVALID, str1.str());
+        throwLengthError(str1.str());
     }
 
     Stopwatch swatch(true);
@@ -328,7 +326,7 @@ MEMINFO
         uint modelCluster = std::floor((double)nModel / (maxSizeNeeded / maxMemSize));
 
         if (modelCluster < 1) {
-            throwError(1, WHERE_AM_I + " sorry, size of single sensitivity-row exceeds memory limitations.");
+            throwError(WHERE_AM_I + " sorry, size of single sensitivity-row exceeds memory limitations.");
         }
 
         std::cout << "Size of S cluster: " << mByte((double)nData * modelCluster * sizeof(ValueType)) << " MB" << std::endl;
@@ -375,7 +373,7 @@ MEMINFO
             //S.round(1e-8);
 MEMINFO
 
-            S.save("sensPart_" + toStr(start) + "-" + toStr(end));
+            S.save("sensPart_" + str(start) + "-" + str(end));
 
             matrixClusterIds.push_back(std::pair < Index, Index >(start, end));
 
@@ -482,8 +480,8 @@ RVector prepExportSensitivityData(const Mesh & mesh, const RVector & data, doubl
     // //RVector tmp(data/mesh.cellSizes());
     // if ((uint)data.size() != (uint)mesh.cellCount()){
 
-    //     throwLengthError(-1, WHERE_AM_I + " Datasize missmatch: " + toStr(mesh.cellCount())+
-    //                         " " + toStr(data.size()));
+    //     throwLengthError(WHERE_AM_I + " Datasize missmatch: " + str(mesh.cellCount())+
+    //                         " " + str(data.size()));
     // } else {
     //     //for (uint i = 0; i < tmp.size(); i ++) tmp[i] = tmp[i] / mesh.cell(i).shape().domainSize();
     // }
@@ -523,8 +521,8 @@ void exportSensMatrixDC(const std::string & filename, const Mesh & mesh,
     std::map< std::string, RVector > res;
 
     for (std::map < std::string, RVector >::const_iterator
-            it = mesh.exportDataMap().begin();
-            it != mesh.exportDataMap().end(); it ++){
+            it = mesh.dataMap().begin();
+            it != mesh.dataMap().end(); it ++){
         res.insert(std::make_pair(it->first, it->second));
     }
 
@@ -617,7 +615,7 @@ RVector createCoverage(const MatrixBase & S, const Mesh & mesh,
             log(Error, "Coverage fails:" + str(mesh.cellCount()) + " " + str(model.size()));
         }
     }
-    
+
     return covMesh;
 }
 } // namespace GIMLI

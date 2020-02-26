@@ -41,7 +41,7 @@ public:
     ValueType mat_[9];
 
     Matrix3()
-        : valid_(false){}
+        : valid_(false){ clear(); }
 
     Matrix3(const Matrix3 < ValueType > & m ){
         mat_[0] = m.mat_[0]; mat_[1] = m.mat_[1]; mat_[2] = m.mat_[2];
@@ -118,10 +118,9 @@ std::ostream & operator << (std::ostream & str, const Matrix3 < ValueType > & ve
     return str;
 }
 
-
 template < class ValueType > \
-Pos< ValueType > operator * (const Matrix3 < ValueType > & A, const Pos < ValueType > & b) {
-    return Pos< ValueType > (A[0] * b[0] + A[1] * b[1] + A[2] * b[2],
+Pos operator * (const Matrix3 < ValueType > & A, const Pos & b) {
+    return Pos (A[0] * b[0] + A[1] * b[1] + A[2] * b[2],
                              A[3] * b[0] + A[4] * b[1] + A[5] * b[2],
                              A[6] * b[0] + A[7] * b[1] + A[8] * b[2]);
 }
@@ -266,7 +265,7 @@ public:
 
     /*! Save this matrix into the file filename given. */
     virtual void save(const std::string & filename) const {
-        THROW_TO_IMPL
+        log(Warning, "save for this matrix type is not supported");
     }
 
 protected:
@@ -296,8 +295,8 @@ public:
     /*! Return this * a  */
     virtual RVector mult(const RVector & a) const {
         if (a.size() != nrows_) {
-            throwLengthError(1, WHERE_AM_I + " vector/matrix lengths do not match " +
-                                  toStr(nrows_) + " " + toStr(a.size()));
+            throwLengthError(WHERE_AM_I + " vector/matrix lengths do not match " +
+                                  str(nrows_) + " " + str(a.size()));
         }
         return a * val_;
     }
@@ -305,8 +304,8 @@ public:
     /*! Return this.T * a */
     virtual RVector transMult(const RVector & a) const {
         if (a.size() != nrows_) {
-            throwLengthError(1, WHERE_AM_I + " matrix/vector lengths do not match " +
-                                 toStr(a.size()) + " " + toStr(nrows_));
+            throwLengthError(WHERE_AM_I + " matrix/vector lengths do not match " +
+                                 str(a.size()) + " " + str(nrows_));
         }
         return a * val_;
     }
@@ -412,14 +411,14 @@ public:
     }
 
     /*! Return number of rows. */
-    inline Index rows() const { 
-        return mat_.size(); 
+    inline Index rows() const {
+        return mat_.size();
     }
 
     /*! Return number of colums. */
-    inline Index cols() const { 
-        if (mat_.size() > 0) return mat_[0].size(); 
-        return 0; 
+    inline Index cols() const {
+        if (mat_.size() > 0) return mat_[0].size();
+        return 0;
     }
 
     /*! Set a value. Throws out of range exception if index check fails. */
@@ -449,8 +448,8 @@ public:
     virtual const Vector< ValueType > col(Index i) const {
         //__M
         if (i < 0 || i > this->cols()-1) {
-            throwLengthError(1, WHERE_AM_I + " col bounds out of range " +
-                                toStr(i) + " " + toStr(this->cols())) ;
+            throwLengthError(WHERE_AM_I + " col bounds out of range " +
+                                str(i) + " " + str(this->cols())) ;
         }
         Vector < ValueType > col(this->rows());
         for (Index j = 0, jmax = rows(); j < jmax; j ++) col[j] = mat_[j][i];
@@ -470,12 +469,12 @@ public:
     /*! Set one specific column */
     inline void setCol(Index col, const Vector < ValueType > & v){
         if (col < 0 || col > this->cols()-1) {
-            throwLengthError(1, WHERE_AM_I + " col bounds out of range " +
-                                toStr(col) + " " + toStr(this->cols())) ;
+            throwLengthError(WHERE_AM_I + " col bounds out of range " +
+                                str(col) + " " + str(this->cols())) ;
         }
         if (v.size() > this->rows()) {
-            throwLengthError(1, WHERE_AM_I + " rows bounds out of range " +
-                                toStr(v.size()) + " " + toStr(this->rows())) ;
+            throwLengthError(WHERE_AM_I + " rows bounds out of range " +
+                                str(v.size()) + " " + str(this->rows())) ;
         }
         for (Index i = 0; i < v.size(); i ++) mat_[i][col] = v[i];
     }
@@ -483,12 +482,12 @@ public:
     /*! Add one specific column */
     inline void addCol(Index col, const Vector < ValueType > & v){
         if (col < 0 || col > this->cols()-1) {
-            throwLengthError(1, WHERE_AM_I + " col bounds out of range " +
-                                toStr(col) + " " + toStr(this->cols())) ;
+            throwLengthError(WHERE_AM_I + " col bounds out of range " +
+                                str(col) + " " + str(this->cols())) ;
         }
         if (v.size() > this->rows()) {
-            throwLengthError(1, WHERE_AM_I + " rows bounds out of range " +
-                                toStr(v.size()) + " " + toStr(this->rows())) ;
+            throwLengthError(WHERE_AM_I + " rows bounds out of range " +
+                                str(v.size()) + " " + str(this->rows())) ;
         }
         for (Index i = 0; i < v.size(); i ++) mat_[i][col] += v[i];
     }
@@ -510,7 +509,7 @@ public:
     //             ret[i] = sum(mat_[i] * b);
     //         }
     //     } else {
-    //         throwLengthError(1, WHERE_AM_I + " " + toStr(cols) + " != " + toStr(b.size()));
+    //         throwLengthError(WHERE_AM_I + " " + str(cols) + " != " + str(b.size()));
     //     }
     //     return ret;
     // }
@@ -523,7 +522,7 @@ public:
     //     Index bsize = Index(endI - startI);
 
     //     if (bsize != cols) {
-    //         throwLengthError(1, WHERE_AM_I + " " + toStr(cols) + " < " + toStr(endI) + "-" + toStr(startI));
+    //         throwLengthError(WHERE_AM_I + " " + str(cols) + " < " + str(endI) + "-" + str(startI));
     //     }
     //     Vector < ValueType > ret(rows, 0.0);
     //     for (Index i = 0; i < rows; ++i){
@@ -549,7 +548,7 @@ public:
     //             }
     //         }
     //     } else {
-    //         throwLengthError(1, WHERE_AM_I + " " + toStr(rows) + " != " + toStr(b.size()));
+    //         throwLengthError(WHERE_AM_I + " " + str(rows) + " != " + str(b.size()));
     //     }
     //     return ret;
     // }
@@ -589,19 +588,19 @@ protected:
     BVector rowFlag_;
 };
 
-template <> DLLEXPORT Vector<double> 
+template <> DLLEXPORT Vector<double>
 Matrix<double>::mult(const Vector < double > & b, Index startI, Index endI) const;
-template <> DLLEXPORT Vector<Complex> 
+template <> DLLEXPORT Vector<Complex>
 Matrix<Complex>::mult(const Vector < Complex > & b, Index startI, Index endI) const;
 
-template <> DLLEXPORT Vector<double> 
+template <> DLLEXPORT Vector<double>
 Matrix<double>::mult(const Vector < double > & b) const;
-template <> DLLEXPORT Vector<Complex> 
+template <> DLLEXPORT Vector<Complex>
 Matrix<Complex>::mult(const Vector < Complex > & b) const;
 
-template <> DLLEXPORT Vector<double> 
+template <> DLLEXPORT Vector<double>
 Matrix<double>::transMult(const Vector < double > & b) const;
-template <> DLLEXPORT Vector<Complex> 
+template <> DLLEXPORT Vector<Complex>
 Matrix<Complex>::transMult(const Vector < Complex > & b) const;
 
 
@@ -681,10 +680,10 @@ void scaleMatrix(Matrix < ValueType >& A,
     Index rows = A.rows();
     Index cols = A.cols();
     if (rows != l.size()){
-        throwLengthError(1, WHERE_AM_I + " " + toStr(rows) + " != " + toStr(l.size()));
+        throwLengthError(WHERE_AM_I + " " + str(rows) + " != " + str(l.size()));
     };
     if (cols != r.size()){
-        throwLengthError(1, WHERE_AM_I + " " + toStr(cols) + " != " + toStr(r.size()));
+        throwLengthError(WHERE_AM_I + " " + str(cols) + " != " + str(r.size()));
     }
 
     for (Index i = 0 ; i < rows ; i++) {
@@ -699,11 +698,11 @@ void rank1Update(Matrix < ValueType > & A,
     Index rows = A.rows();
     Index cols = A.cols();
     if (rows != u.size()){
-        throwLengthError(1, WHERE_AM_I + " " + toStr(rows) + " != " + toStr(u.size()));
+        throwLengthError(WHERE_AM_I + " " + str(rows) + " != " + str(u.size()));
     };
 
     if (cols != v.size()){
-        throwLengthError(1, WHERE_AM_I + " " + toStr(cols) + " != " + toStr(v.size()));
+        throwLengthError(WHERE_AM_I + " " + str(cols) + " != " + str(v.size()));
     }
 
     for (Index i = 0 ; i < rows ; i++) {
@@ -807,22 +806,22 @@ bool loadMatrixSingleBin(Matrix < ValueType > & A,
     FILE *file; file = fopen(filename.c_str(), "r+b");
 
     if (!file) {
-        throwError(EXIT_OPEN_FILE, WHERE_AM_I + " " +
+        throwError(WHERE_AM_I + " " +
                    filename + ": " + strerror(errno));
     }
     Index ret;
     uint32 rows = 0;
     ret = fread(&rows, sizeof(uint32), 1, file);
-    if (ret == 0) throwError(1, "fail reading file " + filename);
+    if (ret == 0) throwError("fail reading file " + filename);
     uint32 cols = 0;
     ret = fread(&cols, sizeof(uint32), 1, file);
-    if (ret == 0) throwError(1, "fail reading file " + filename);
+    if (ret == 0) throwError("fail reading file " + filename);
 
     A.resize(rows, cols);
     for (uint32 i = 0; i < rows; i ++){
         for (uint32 j = 0; j < cols; j ++){
             ret = fread((char*)&A[i][j], sizeof(ValueType), 1, file);
-            if (ret == 0) throwError(1, "fail reading file " + filename);
+            if (ret == 0) throwError("fail reading file " + filename);
         }
     }
     fclose(file);
@@ -848,13 +847,13 @@ bool loadMatrixVectorsBin(Matrix < ValueType > & A,
         uint count = 0;
         while (1){ // load as long as posible
             if (kCount > 1){
-                filename = filenameBody + "." + toStr(count) + "_" + toStr(i) + ".pot";
+                filename = filenameBody + "." + str(count) + "_" + str(i) + ".pot";
             } else {
-                filename = filenameBody + "." + toStr(count) + ".pot";
+                filename = filenameBody + "." + str(count) + ".pot";
             }
 
             if (!fileExist(filename)){
-                filename = filenameBody + "." + toStr(count);
+                filename = filenameBody + "." + str(count);
                 if (!fileExist(filename)){
                     if (count == 0) {
 	               std::cerr << " can not found: " << filename << std::endl;
@@ -1011,6 +1010,17 @@ bool loadMatrixRow(Matrix < ValueType > & A,
     return true;
 }
 
+/*!Inplace matrix calculation: $C += a * A.T * B * A$.
+Size of A is (n,m) and B need to be square (n,n), C will resized to (m,m).
+AtB might be for temporary memory allocation.  */
+DLLEXPORT void matMultABA(const RMatrix & A, const RMatrix & B, RMatrix & C, RMatrix & AtB, double a=1.0);
+
+/*!Inplace matrix calculation: $C += a * A * B$. B are transposed if needed to fit appropriate dimensions. */
+DLLEXPORT void matMult(const RMatrix & A, const RMatrix & B, RMatrix & C, double a=1.0);
+
+/*!Inplace matrix calculation: $C += a * A.T * B$. B are transposed if needed to fit appropriate dimensions. */
+DLLEXPORT void matTransMult(const RMatrix & A, const RMatrix & B, RMatrix & C, double a=1.0);
+
 /*! Return determinant for Matrix(2 x 2). */
 template < class T > inline T det(const T & a, const T & b, const T & c, const T & d){
     return a * d - b * c;
@@ -1132,6 +1142,26 @@ inline RVector transMult(const RMatrix & A, const RVector & b){
 inline CVector transMult(const CMatrix & A, const CVector & b){
     return A.transMult(b);
 }
+
+inline RMatrix real(const CMatrix & A){
+    RMatrix R(A.rows(), A.cols());
+    for (Index i = 0; i < A.rows(); i ++) R[i] = real(A[i]);
+    return R;
+}
+inline RMatrix imag(const CMatrix & A){
+    RMatrix R(A.rows(), A.cols());
+    for (Index i = 0; i < A.rows(); i ++) R[i] = imag(A[i]);
+    return R;
+}
+
+template < class T >
+std::ostream & operator << (std::ostream & str, const Matrix < T > & M){
+    for (Index i = 0; i < M.rows(); i ++) {
+        str << M[i] << std::endl;
+    }
+    return str;
+}
+
 } //namespace GIMLI
 
 #endif // _GIMLI_MATRIX__H

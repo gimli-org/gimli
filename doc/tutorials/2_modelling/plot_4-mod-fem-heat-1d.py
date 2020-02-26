@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 r"""
-
 Heat equation in 1D
 -------------------
 
@@ -45,9 +44,9 @@ import pygimli.solver as solver
 # A = solver.createStiffnessMatrix(grid)
 # M = solver.createMassMatrix(grid)
 
-# ut = pg.RVector(dof, 0.0)
-# rhs = pg.RVector(dof, 0.0)
-# b = pg.RVector(dof, 0.0)
+# ut = pg.Vector(dof, 0.0)
+# rhs = pg.Vector(dof, 0.0)
+# b = pg.Vector(dof, 0.0)
 # theta = 0
 
 # boundUdir = solver.parseArgToBoundaries(dirichletBC, grid)
@@ -58,7 +57,7 @@ import pygimli.solver as solver
 
 #     solver.assembleDirichletBC(S, boundUdir, rhs=b)
 
-#     solve = pg.LinSolver(S)
+#     solve = pg.core.LinSolver(S)
 #     solve.solve(b, ut)
 
 #     u[n, :] = ut
@@ -78,7 +77,7 @@ import pygimli.solver as solver
 
 #     solver.assembleDirichletBC(S, boundUdir, rhs=b)
 
-#     solve = pg.LinSolver(S)
+#     solve = pg.core.LinSolver(S)
 #     solve.solve(b, ut)
 
 #     u[n, :] = ut

@@ -82,8 +82,7 @@ def BaZSphere(pnts, R, pos, M):
 
 
 def BaZCylinderHoriz(pnts, R, pos, M):
-    r"""
-    Magnetic anomaly for a horizontal cylinder.
+    r"""Magnetic anomaly for a horizontal cylinder.
 
     Calculate the vertical component of the anomalous magnetic field Bz for a
     buried horizontal cylinder at position pos with radius R for a given
@@ -268,7 +267,7 @@ def gradGZCylinderHoriz(r, a, rho, pos=(0., 0.)):
     t = pos[1]
 
     gz_xz = np.asarray([-2.0 * r[:, 0] * (t - r[:, 1]),
-                        1.0 * (- r[:, 0]**2 + (t - r[:, 1])**2)])
+                       (-r[:, 0]**2 + (t - r[:, 1])**2)])
 
     return (G * deltaACyl(a, rho) / rabs(r - p)**4. * gz_xz).T
 # def gZSphere(...)
@@ -358,7 +357,7 @@ def lineIntegralZ_WonBevis(p1, p2):
     """
     dg = pg.RVector3(0.0, 0.0, 0.0)
     dgz = pg.RVector3(0.0, 0.0, 0.0)
-    pg.lineIntegralZ_WonBevis(p1, p2, dg, dgz)
+    pg.core.lineIntegralZ_WonBevis(p1, p2, dg, dgz)
     return np.asarray((dg[0], dg[1], dg[2])), \
            np.asarray((dgz[0], dgz[1], dgz[2]))
 
@@ -664,7 +663,7 @@ def solveGravimetry(mesh, dDensity=None, pnts=None, complete=False):
     if pnts is None:
         pnts = [[0.0, 0.0]]
 
-    mesh.createNeighbourInfos()
+    mesh.createNeighborInfos()
 
     Gdg = None
     Gdgz = None
@@ -699,7 +698,7 @@ def solveGravimetry(mesh, dDensity=None, pnts=None, complete=False):
                         dgi *= -2.0
                         dgzi *= -2.0
                     else:
-                        dgi = pg.lineIntegralZ_WonBevis(b.node(0).pos(),
+                        dgi = pg.core.lineIntegralZ_WonBevis(b.node(0).pos(),
                                                         b.node(1).pos())
                         dgi *= -2.0 * G
                 else:
@@ -753,20 +752,20 @@ def solveGravimetry(mesh, dDensity=None, pnts=None, complete=False):
     return dg
 
 
-class GravimetryModelling(pg.ModellingBase):
+class GravimetryModelling(pg.core.ModellingBase):
     """Gravimetry modelling operator."""
 
     def __init__(self, verbose=True):
         """Constructor."""
         super(GravimetryModelling, self).__init__(verbose)
-        self._J = pg.RMatrix()
+        self._J = pg.Matrix()
         # unless doing reference counting we need to hold the reference here
         self.sensorPositions = None
         self.setJacobian(self._J)
 
     def createStartmodel(self):
         """Create the default starting model."""
-        return pg.RVector(self.regionManger().parameterCount(), 0.0)
+        return pg.Vector(self.regionManger().parameterCount(), 0.0)
 
     def setSensorPositions(self, pnts):
         """Set measurement locations. [[x,y,z],...]."""

@@ -1,7 +1,7 @@
 /***************************************************************************
  *   Copyright (C) 2006-2007 by the resistivity.net development team       *
- *   Carsten Rücker carsten@resistivity.net                                *
- *   Thomas Günther thomas@resistivity.net                                 *
+ *   Carsten RÃ¼cker carsten@resistivity.net                                *
+ *   Thomas GÃ¼nther thomas@resistivity.net                                 *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *

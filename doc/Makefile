@@ -52,6 +52,8 @@ clean:
 	rm -rf examples/modelling/*.msh*
 	rm -f _templates/gallery.html
 
+doc: html
+
 api:
 	sphinx-autogen -i -t _templates pygimliapi/*.rst
 

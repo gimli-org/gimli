@@ -6,7 +6,37 @@ import numpy as np
 import pygimli as pg
 
 
-def createRAData(sensors, shotdistance=1):
+def shotReceiverDistances(data, full=False):
+    """Return vector of all distances (in m) between shot and receiver.
+    for earch 's' and 'g' in data.
+
+    Parameters
+    ----------
+    data : pg.DataContainerERT
+
+    full : bool [False]
+        Get distances between shot and receiver posisiton when full is True or
+        only form x coordinate if full is False
+
+    Returns
+    -------
+    dists :  array
+        Array of distances
+
+    """
+    if full:
+        pos = data.sensors()
+        s, g = data.id('s'), data.id('g')
+        off = [pos[s[i]].distance(pos[g[i]]) for i in range(data.size())]
+        return np.absolute(off)
+    else:
+        px = pg.x(data)
+        gx = np.array([px[g] for g in data.id("g")])
+        sx = np.array([px[s] for s in data.id("s")])
+        return np.absolute(gx - sx)
+
+
+def createRAData(sensors, shotDistance=1):
     """Create a refraction data container.
 
     Default data container for shot and geophon at every sensor position.
@@ -15,9 +45,11 @@ def createRAData(sensors, shotdistance=1):
 
     Parameters
     ----------
-    sensors : ndarray | R3Vector
+    sensors: ndarray | R3Vector
         Geophon and shot positions (same)
-
+    shotDistances: int [1]
+        Distance between shot indieces.
+        
     Returns
     -------
     data : DataContainer
@@ -29,13 +61,17 @@ def createRAData(sensors, shotdistance=1):
     data.registerSensorIndex('g')
 
     if isinstance(sensors, np.ndarray):
-        for x in sensors:
-            data.createSensor([x, 0.0, 0.0])
+        if len(sensors.shape) == 1:
+            for x in sensors:
+                data.createSensor([x, 0.0, 0.0])
+        else:
+            data.setSensorPositions(sensors)
+
     else:
         data.setSensorPositions(sensors)
 
     S, G = [], []
-    for s in range(0, data.sensorCount(), shotdistance):
+    for s in range(0, data.sensorCount(), shotDistance):
         for g in range(data.sensorCount()):
             if s is not g:
                 S.append(s)
@@ -57,7 +93,6 @@ def createGradientModel2D(data, mesh, vTop, vBot):
     and using the distance to that as the depth value.
     Known as "The Marcus method"
 
-
     Parameters
     ----------
     data : pygimli DataContainer
@@ -75,14 +110,14 @@ def createGradientModel2D(data, mesh, vTop, vBot):
         A numpy array with slowness values that can be used to start
         the inversion.
     """
-    p = np.polyfit(pg.x(data.sensorPositions()), pg.y(data.sensorPositions()),
-                   deg=1)  # slope-intercept form
+    p = np.polyfit(pg.x(data), pg.y(data), deg=1)  # slope-intercept form
     n = np.asarray([-p[0], 1.0])  # normal vector
     nLen = np.sqrt(np.dot(n, n))
 
     x = pg.x(mesh.cellCenters())
     z = pg.y(mesh.cellCenters())
     pos = np.column_stack((x, z))
+
     d = np.array([np.abs(np.dot(pos[i, :], n) - p[1]) / nLen
                   for i in range(pos.shape[0])])
 

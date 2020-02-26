@@ -5,8 +5,9 @@
 import unittest
 
 import pygimli as pg
+from pygimli.core.matrix import RVector, MatrixBase
 
-class Matrix(pg.MatrixBase):
+class Matrix(pg.matrix.MatrixBase):
 
     def __init__(self):
         pg.MatrixBase.__init__(self)
@@ -16,12 +17,12 @@ class Matrix(pg.MatrixBase):
     def cols(self): return 1
 
     def mult(self, b):
-        ret = pg.RVector(self.rows())
+        ret = pg.Vector(self.rows())
         print("TestMatrix::mult")
         return ret
 
     def transMult(self, b):
-        ret = pg.RVector(self.cols())
+        ret = pg.Vector(self.cols())
         print("TestMatrix::transMult")
         return ret
 
@@ -29,16 +30,16 @@ class Matrix(pg.MatrixBase):
         print("TestMatrix::save", name)
 
 
-class Modelling(pg.ModellingBase):
+class Modelling(pg.core.ModellingBase):
 
     def __init__(self):
-        pg.ModellingBase.__init__(self, True)
+        pg.core.ModellingBase.__init__(self, True)
         self.regionManager().setParameterCount(1)
         self.mat = Matrix()
 
     def response(self, model):
         print("TestModelling::response")
-        res = pg.RVector(1, 1.0)
+        res = pg.Vector(1, 1.0)
         return res
 
     def jacobian(self):
@@ -54,10 +55,10 @@ class TestOwnMatrix(unittest.TestCase):
     def test_runFOP(self):
         #F = TestModelling()
 
-        #dat = pg.RVector(1, 1)
-        #err = pg.RVector(1, 0.00001)
+        #dat = pg.Vector(1, 1)
+        #err = pg.Vector(1, 0.00001)
 
-        #inv = pg.RInversion(dat, F, True, True)
+        #inv = pg.Inversion(dat, F, True, True)
         #inv.setError(err)
 
         #inv.run()
@@ -66,4 +67,3 @@ class TestOwnMatrix(unittest.TestCase):
 if __name__ == '__main__':
 
     unittest.main()
-

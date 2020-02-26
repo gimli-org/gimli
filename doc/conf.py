@@ -12,6 +12,7 @@ from os import path
 from os.path import join
 
 
+import numpy as np
 import matplotlib
 # Does not work properly with sphinx gallery. Leaving this out for the moment.
 # from mplstyle import plot_rcparams
@@ -23,7 +24,6 @@ import pkg_resources
 import sphinx
 
 import pygimli
-from pygimli.utils import boxprint
 
 import pkg_resources
 
@@ -37,13 +37,13 @@ from sidebar_gallery import make_gallery
 try:
     # from _build.doc.conf_environment import *
     from conf_environment import *
-    boxprint("Building documentation out-of-source. Good.")
+    pygimli.boxprint("Building documentation out-of-source. Good.")
 except ImportError:
     TRUNK_PATH = '..'
     SPHINXDOC_PATH = '.'
     DOC_BUILD_DIR = ''
     DOXY_BUILD_DIR = ''
-    boxprint("Building documentation in-source. Don't forget to make clean.")
+    pygimli.boxprint("Building documentation in-source. Don't forget to make clean.")
 
 sys.path.append(os.path.abspath(join(SPHINXDOC_PATH, '_sphinx-ext')))
 
@@ -60,6 +60,7 @@ needs_sphinx = '1.3' # and lower 1.6
 # Check for external sphinx extensions
 deps = ['sphinxcontrib-programoutput',
         'sphinxcontrib-bibtex',
+        'sphinxcontrib-doxylink',
         'numpydoc']
 
 # check for p.version too
@@ -98,6 +99,7 @@ extensions += [dep.replace('-', '.') for dep in deps]
 # Sphinx-gallery settings
 try:
     import sphinx_gallery
+    from sphinx_gallery.sorting import FileNameSortKey
     extensions += ["sphinx_gallery.gen_gallery"]
 
     # Setup automatic gallery generation
@@ -121,9 +123,23 @@ try:
         # Your documented modules. You can use a string or a list of strings
         'doc_module': 'pygimli',
 
+        # Sort gallery example by file name instead of number of lines (default)
+        "within_subsection_order": FileNameSortKey,
+
+        'remove_config_comments': True,
+
+        # Only parse filenames starting with plot_
+        'filename_pattern': '/plot_',
+
         'first_notebook_cell': ("# Checkout www.pygimli.org for more examples\n"
                                 "%matplotlib inline")
         }
+
+    pyvista = pygimli.optImport("pyvista", "building the gallery with 3D visualizations")
+    if pyvista:
+        pyvista.OFF_SCREEN = True
+        pyvista.rcParams['window_size'] = np.array([1024, 768]) * 2
+        sphinx_gallery_conf["image_scrapers"] = (pyvista.Scraper(), 'matplotlib')
 
 except ImportError:
     err = """
@@ -173,9 +189,9 @@ plot_pre_code = """
 import pygimli as pg
 import numpy as np
 import matplotlib.pyplot as plt
-mesh = pg.createGrid([1,2],[1,2])
 """
-
+plot_rcparams = {'savefig.bbox': 'tight'}
+plot_apply_rcparams = True  # if context option is used
 
 # The suffix of source filenames.
 source_suffix = '.rst'
@@ -458,7 +474,7 @@ man_pages = [('index', 'GIMLi', 'GIMLi Documentation', ['GIMLi Group'], 1)]
 #  dir menu entry, description, category)
 texinfo_documents = [
     ('index', 'GIMLi', 'GIMLi Documentation', 'GIMLi Group', 'GIMLi',
-     'Geophysical Inversion and Modeling Library', 'Miscellaneous'),
+     'Geophysical Inversion and Modelling Library', 'Miscellaneous'),
 ]
 
 # Documents to append as an appendix to all manuals.

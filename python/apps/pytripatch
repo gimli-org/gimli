@@ -122,11 +122,11 @@ def showTriMesh(meshname, modelname, contour=False, constraintMat=None,
         print(mesh)
         print("mesh data are:")
 
-        for key, val in mesh.exportDataMap():
+        for key, val in mesh.dataMap():
             print(key, val)
 
     mesh.translate(offset)
-    data = pg.RVector()
+    data = pg.Vector()
 
     fig = plt.figure()
 
@@ -151,28 +151,28 @@ def showTriMesh(meshname, modelname, contour=False, constraintMat=None,
             data = np.asarray(mesh.cellMarkers())
         elif modelname.lower() == 'attribute':
             data = np.asarray(mesh.cellAttributes())
-        elif modelname in list(mesh.exportDataMap().keys()):
-            data = mesh.exportData(modelname)
+        elif modelname in list(mesh.dataMap().keys()):
+            data = mesh.data(modelname)
         elif modelname.rfind('.bmat') != -1:
-            A = pg.RMatrix(modelname)
-            data = pg.RVector(A[number])  # return copy (A dies!)
+            A = pg.Matrix(modelname)
+            data = pg.Vector(A[number])  # return copy (A dies!)
         else:
-            data = pg.RVector(modelname)
+            data = pg.Vector(modelname)
 
         print("data min/max:", min(data), max(data))
         cov = None
 
         if coverage:
-            cov = pg.RVector()
+            cov = pg.Vector()
             try:
-                print(list(mesh.exportDataMap().keys()))
-                if coverage in list(mesh.exportDataMap().keys()):
+                print(list(mesh.dataMap().keys()))
+                if coverage in list(mesh.dataMap().keys()):
                     print("found coverage in mesh")
-                    cov = mesh.exportData(coverage)
+                    cov = mesh.data(coverage)
 #                    if coverage.find('log10') > 0:
 #                        cov = pg.exp10(cov)
                 else:
-                    cov = pg.RVector(coverage)
+                    cov = pg.Vector(coverage)
                 print("coverage min/max:", min(cov), max(cov))
             except Exception as e:
                 print(e)
@@ -224,8 +224,8 @@ def showDC2DInvResMod(modfile, contour, cMin=None, cMax=None,
     axis = fig.add_subplot(1, 1, 1)
     axis.set_aspect('equal')
 
-    data = mesh.exportData("rho/Ohmm")
-    cov = mesh.exportData("coverage")
+    data = mesh.data("rho/Ohmm")
+    cov = mesh.ata("coverage")
 
     patches = None
     if (contour):
@@ -295,7 +295,7 @@ def addCoverageImageOverlay(axis, mesh, cov):
                        cov,
                        pg.asvector(X.flat[:]),
                        pg.asvector(Y.flat[:]),
-                       pg.RVector(len(Y.flat[:]),
+                       pg.Vector(len(Y.flat[:]),
                                   0.0))
     c = np.asarray(c)
 
@@ -331,12 +331,12 @@ def addCoverageImageOverlay(axis, mesh, cov):
 def showConstrainMat(axes, mesh, constraintMat, cWeight=None):
     pg.mplviewer.drawMeshBoundaries(axes, mesh)
 
-    C = pg.RMatrix()
+    C = pg.Matrix()
     pg.loadMatrixCol(C, constraintMat)
     cw = None
 
     if cWeight is not None:
-        cw = pg.RVector(cWeight)
+        cw = pg.Vector(cWeight)
 
     drawParameterConstraints(axes, mesh, C, cw)
 
@@ -363,7 +363,7 @@ def showMeshInterpolated(axis, mesh, data, cov=None, cMin=None, cMax=None,
 
     if (data.size() > 0):
         z = pg.interpolate(mesh, data, pg.asvector(X.flat[:]),
-                           pg.asvector(Y.flat[:]), pg.RVector(len(Y.flat), 0.0)
+                           pg.asvector(Y.flat[:]), pg.Vector(len(Y.flat), 0.0)
                            )
         z = np.asarray(z)
 
@@ -407,6 +407,7 @@ def showMeshInterpolated(axis, mesh, data, cov=None, cMin=None, cMax=None,
 def main(argv):
     global __verbose__
 
+    
     # !!!!use argparse!!!
     mplpage = "http://matplotlib.org/examples/color/colormaps_reference.html"
     from optparse import OptionParser
@@ -529,7 +530,12 @@ def main(argv):
 
         if options.datafile is not None:
             if os.path.exists(options.datafile):
-                a = np.loadtxt(options.datafile)
+                a = 0
+                if options.datafile.rfind('.bmat') != -1:
+                    A = pg.Matrix(options.datafile)
+                    a = pg.Vector(A[0])
+                else:
+                    a = np.loadtxt(options.datafile)
                 options.cMin, options.cMax = interperc(a, options.interperc)
             # else:
                 # mesh = pg.Mesh(
@@ -639,6 +645,8 @@ def main(argv):
                     number=options.number,
                     offset=pg.RVector3(options.xoffset, options.zoffset),
                     interfaceThickness=options.interfaceThickness)
+                
+                pg.checkAndFixLocaleDecimal_point(verbose=False)
             elif meshname.rfind('.poly') != -1:
                 axes, _ = pg.show(pg.load(meshname, options.verbose))
             else:
@@ -792,18 +800,25 @@ def main(argv):
                     (options.number == 0)):
                 from matplotlib.backends.backend_pdf import PdfPages
 
-                A = pg.RMatrix(options.datafile)
+                A = pg.Matrix(options.datafile)
                 pdf = PdfPages(options.outFileName)
                 for i, a in enumerate(A):
                     print("\rWriting multipage pdf %d/%d" % (i + 1, len(A)))
-                    patches.set_array(np.asarray(a))
+                    if len(a) != mesh.cellCount():
+                        patches.set_array(np.asarray(a)[mesh.cellMarkers()])
+                    else:
+                        patches.set_array(np.asarray(a))
                     # necessary due to non-existing function .ndim
                     fig.savefig(pdf, format='pdf', bbox_inches='tight')
 
                 pdf.infodict()['Title'] = 'BERT Timelapse Inversion result'
                 pdf.infodict()['Author'] = 'BERT@resistivity.net'
                 pdf.close()
-                patches.set_array(np.asarray(A[0]))  # show original
+                if len(a) != mesh.cellCount():
+                    patches.set_array(np.asarray(A[0])[mesh.cellMarkers()])
+                else:
+                    patches.set_array(np.asarray(A[0]))
+
             else:
                 plt.savefig(options.outFileName, bbox_inches='tight')
         elif (fileExtension == '.png'):

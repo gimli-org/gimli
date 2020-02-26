@@ -1,6 +1,35 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 import struct
 import numpy as np
 import pygimli as pg
+
+
+def load(fileName, verbose=False, **kwargs):
+    """Shortcut to load TravelTime data.
+
+    Import Data and try to assume the file format.
+
+    TODO
+        * add RHL class importer
+
+    Parameters
+    ----------
+    fileName: str
+
+    Returns
+    -------
+    data: pg.DataContainer
+
+    """  
+    if fileName.lower().endswith('.gtt'):
+        data = importGTT(filename)
+    elif fileName.lower().endswith('.tom'):
+        data = readTOMfile(fileName)
+    else:
+        data = pg.DataContainer(fileName, sensorTokens='s g')
+
+    return data
 
 
 def importGTT(filename, return_header=False):
@@ -101,7 +130,6 @@ def readTOMfile(filename, ndig=2, roundto=0):
     data.set('g', iR)
     data.markValid(pg.abs(data('s') - data('g')) > 0)
     return data
-
 
 class ReadAHL(object):
     """Class reading seismic refraction format provided by Uppsala University.
@@ -205,7 +233,7 @@ class ReadAHL(object):
         Also determine relevant column numbers for the data.
         """
 
-        if len(self.alldata) is 0:
+        if len(self.alldata) == 0.:
             raise ValueError('Data not read yet!')
 
         shots_col = self.labels['SHOT_PEG']

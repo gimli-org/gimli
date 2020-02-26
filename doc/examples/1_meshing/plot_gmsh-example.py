@@ -18,7 +18,7 @@ regions using an external mesh generator (`Gmsh <http://www.gmsh.info>`_).
 # Solution:
 #     Create the mesh in Gmsh, a 3D finite element mesh generator with
 #     parametric input and advanced visualization capabilities, and convert it
-#     to GIMLi for subsequent modeling and inversion.
+#     to GIMLi for subsequent modelling and inversion.
 #
 # When the scientific task requires a complex finite-element discretization
 # (i.e. incorporation of structural information, usage of a complete electrode

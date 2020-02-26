@@ -48,13 +48,13 @@ class TestPLCIO(unittest.TestCase):
         # 2D, test triangle mesh for consistincy
         poly = pg.meshtools.readPLC(name2D)
 
-        np.testing.assert_allclose(poly.regionMarker()[0].array(),
+        np.testing.assert_allclose(poly.regionMarkers()[0].array(),
                                    np.array([0., -2.5, 0.]))
-        np.testing.assert_allclose(poly.holeMarker()[0].array(),
+        np.testing.assert_allclose(poly.holeMarkers()[0].array(),
                                    np.array([0., 0., 0.]))
         np.testing.assert_allclose(np.sort(poly.positions().array()),
                                    np.sort(m.positions().array()))
-        np.testing.assert_equal(poly.regionMarker()[0].area(), 42.42)
+        np.testing.assert_equal(poly.regionMarkers()[0].area(), 42.42)
 
         try:
             os.remove(name2D)
@@ -80,7 +80,7 @@ class TestPLCIO(unittest.TestCase):
         maxy = 23
         minz = -3
         maxz = 1e-4
-        cube = pg.Mesh(3)
+        cube = pg.Mesh(3, isGeometry=True)
 
         ob0 = cube.createNode(minx, miny, minz)
         ob1 = cube.createNode(maxx, miny, minz)
@@ -96,24 +96,31 @@ class TestPLCIO(unittest.TestCase):
         cube.createQuadrangleFace(ob0, ob1, ob5, ob4)
         cube.createQuadrangleFace(ob0, ob3, ob7, ob4)
         cube.createQuadrangleFace(ob2, ob3, ob7, ob6)
-        cube.createQuadrangleFace(ob4, ob5, ob6, ob7)
+        b = cube.createBoundary([n.id() for n in [ob4, ob5, ob6, ob7]])
+        b.addHoleMarker([0.0, 0.0, 1.0])
+
         cube.addRegionMarker([0., 0., -2.0], -3, area=-1)
         cube.addRegionMarker([-1.99, 0.001, 1e-6], 1, area=42.42)
         cube.addRegionMarker([-0.99, 1, 1e-7], 1, area=1)
         cube.addRegionMarker([0.99, 11, 1e-8], 1, area=2)
         cube.addRegionMarker([1.99, 22, 1e-9], 1, area=1245535642455)
-        pg.meshtools.exportPLC(cube, name3D)
 
-        # 3D, test tetgen plc for consistincy
+        cube.exportPLC(name3D)
+        # print(len(cube.boundaries()[-1].holeMarker()))
+        # cube.exportPLC('tmp')
+
+        # 3D, test tetgen plc for validity
         poly = pg.meshtools.readPLC(name3D)
 
-        np.testing.assert_allclose(poly.regionMarker()[0].array(),
+        np.testing.assert_allclose(poly.regionMarkers()[0].array(),
                                    np.array([-1.99, 0.001, 1e-6]))
-        np.testing.assert_allclose(poly.holeMarker()[0].array(),
-                                   cube.holeMarker()[0].array())
+        np.testing.assert_allclose(poly.holeMarkers()[0].array(),
+                                   cube.holeMarkers()[0].array())
         np.testing.assert_allclose(np.sort(poly.positions().array()),
                                    np.sort(cube.positions().array()))
-        np.testing.assert_equal(poly.regionMarker()[0].area(), 42.42)
+        np.testing.assert_equal(poly.regionMarkers()[0].area(), 42.42)
+        
+        np.testing.assert_equal(poly.boundaries()[-1].holeMarkers()[0], [0.0, 0.0, 1.0])
     
         try:
             os.remove(name3D)
@@ -166,8 +173,4 @@ endsolid"""
 
             
 if __name__ == '__main__':
-
-    #test = TestPLCIO()
-    #test.test_io_STL()
-    #exit()
     unittest.main()

@@ -48,7 +48,7 @@ public:
     inline bool verbose() const {return verbose_;}
 
     virtual RVector response(const RVector & model) {
-        throwError(1, WHERE_AM_I + " you need to implement a response "
+        throwError(WHERE_AM_I + " you need to implement a response "
         "function.");
         return RVector(0);
     }
@@ -56,7 +56,7 @@ public:
     /*!Read only response function for multi threading purposes.
      * Index i is use thread counter. */
     virtual RVector response_mt(const RVector & model, Index i=0) const {
-        throwError(1, WHERE_AM_I + " if you want to use read only response "
+        throwError(WHERE_AM_I + " if you want to use read only response "
         "function to use in multi threading environment .. you need to "
         " implement me");
         return RVector(0);
@@ -125,14 +125,14 @@ public:
      * Cannot yet be overloaded by pyplusplus (return virtual reference)(Warning 1049). */
     virtual RMatrix & jacobianRef() const {
         if (! jacobian_) {
-            throwError(1, WHERE_AM_I + " Jacobian matrix is not initialized.");
+            throwError(WHERE_AM_I + " Jacobian matrix is not initialized.");
         }
         return *dynamic_cast< RMatrix * >(jacobian_);
     }
 
     virtual RMatrix & jacobianRef() {
         if (! jacobian_) {
-            throwError(1, WHERE_AM_I + " Jacobian matrix is not initialized.");
+            throwError(WHERE_AM_I + " Jacobian matrix is not initialized.");
         }
         return *dynamic_cast< RMatrix * >(jacobian_);
     }
@@ -166,9 +166,9 @@ public:
 
     /*! Read only extrapolation of model values given per cell marker to
      values given per cell. Exterior values will be set to background or
-     prolongated for background != -1.
+     prolongated for background != -9e99.
      */
-    RVector createMappedModel(const RVector & model, double background=-1) const;
+    RVector createMappedModel(const RVector & model, double background=-9e99) const;
 
     void setRegionManager(RegionManager * reg);
 
@@ -196,8 +196,8 @@ public:
      * Will also set ENV(OPENBLAS_NUM_THREADS) .. if used.  */
     void setThreadCount(Index nThreads);
 
-    /*! Return the maximum number of allowed threads for MT calculation */
-    inline Index threadCount() const { return nThreads_; }
+    /*! Return the maximum number of allowed threads for MT calculation based on local setting. GIMLI_NUM_THREADS will be used first. Give some verbose output. */
+    Index threadCount();
 
     /*! Set number of threads used for brute force Jacobian generation.
      *1 is default. If nThreads is greater than 1 you need to implement
@@ -208,6 +208,7 @@ public:
 
     /*! Return number of threads used for Jacobian generation. */
     inline Index multiThreadJacobian() const { return nThreadsJacobian_; }
+
 
 protected:
 

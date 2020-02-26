@@ -1,20 +1,24 @@
 # -*- coding: utf-8 -*-
 """Refraction seismics or first arrival traveltime calculations."""
 
-from .raplot import drawTravelTimeData, drawVA, drawFirstPicks
-from .ratools import createRAData, createGradientModel2D
-from .refraction import Refraction
-from .refraction1d import RefractionNLayer, RefractionNLayerFix1stLayer
-from .tomography import Tomography
-from .FMModelling import fastMarch
 
-__all__ = ['drawTravelTimeData',
-           'drawVA',
-           'drawFirstPicks',
-           'createRAData',
-           'createGradientModel2D',
-           'Tomography',
-           'Refraction',
-           'fastMarch',
-           'RefractionNLayer', 
-           'RefractionNLayerFix1stLayer']
+from .importData import load
+
+from .raplot import drawFirstPicks, drawTravelTimeData, drawVA
+from .ratools import createGradientModel2D, createRAData, shotReceiverDistances
+#from .refraction import Refraction, Tomography # will be removed(201909)
+from .refraction1d import RefractionNLayer, RefractionNLayerFix1stLayer
+from .TravelTimeManager import TravelTimeDijkstraModelling, TravelTimeManager
+
+__all__ = [
+    'drawTravelTimeData',
+    'drawVA',
+    'drawFirstPicks',
+    'createRAData',
+    'createGradientModel2D',
+    'RefractionNLayer',
+    'RefractionNLayerFix1stLayer',
+    'shotReceiverDistances',
+    'TravelTimeManager',
+    'TravelTimeDijkstraModelling'
+]

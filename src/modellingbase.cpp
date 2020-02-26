@@ -87,8 +87,29 @@ void ModellingBase::setVerbose(bool verbose) {
 }
 
 void ModellingBase::setThreadCount(Index nThreads) {
-    nThreads_=max(1, (int)nThreads);
+    nThreads_ = max(1, (int)nThreads);
     GIMLI::setThreadCount(nThreads);
+}
+
+Index ModellingBase::threadCount(){
+    bool verbose = this->verbose();
+
+    this->nThreads_ = getEnvironment("GIMLI_NUM_THREADS",
+                                     this->nThreads_, verbose);
+
+    if (verbose){
+        std::cout << "J(" << numberOfCPU() << "/" << this->nThreads_;
+    #if USE_BOOST_THREAD
+            std::cout << "-boost::mt";
+    #else
+            std::cout << "-std::mt";
+    #endif
+            std::cout << ") " << std::flush;
+    }
+    if (verbose){
+        std::cout << std::endl;
+    }
+    return this->nThreads_;
 }
 
 void ModellingBase::setData(DataContainer & data){
@@ -102,7 +123,7 @@ void ModellingBase::setData(DataContainer & data){
 
 DataContainer & ModellingBase::data() const{
     if (dataContainer_ == 0){
-        throwError(1, WHERE_AM_I + " no data defined");
+        throwError(WHERE_AM_I + " no data defined");
     }
     return * dataContainer_;
 }
@@ -147,7 +168,7 @@ void ModellingBase::createRefinedForwardMesh(bool refine, bool pRefine){
             setMesh_(regionManager_->mesh());
         }
     } else {
-        throwError(1, "Cannot create a refined forward mesh since I have none.");
+        throwError("Cannot create a refined forward mesh since I have none.");
     }
 }
 
@@ -210,31 +231,33 @@ public:
                    const ModellingBase & fop,
                    const RVector & resp,
                    const RVector & model,
-                   Index count,
                    bool verbose)
-    : BaseCalcMT(count, verbose), J_(J), fop_(&fop), resp_(&resp),
-    model_(&model) {
-
+    : BaseCalcMT(verbose), J_(J), fop_(&fop), _resp(&resp),
+      _model(&model) {
     }
 
     virtual ~JacobianBaseMT(){}
 
-    virtual void calc(Index tNr=0){
-        RVector modelChange(*model_);
-        modelChange[tNr] *= 1.05;
-        fop_->response_mt(modelChange, tNr);
-//         RVector respChange();
+    virtual void calc(){
+        log(Debug, "Thread #" + str(_threadNumber) + ": on CPU " + str(schedGetCPU()) +
+                   " slice " + str(start_) + ":" + str(end_));
 
-        //J_->setCol(tNr, (respChange - *resp_)/(modelChange[tNr] - (*model_)[tNr]));
+        RMatrix *J = dynamic_cast< RMatrix * >(J_);
+
+        for (Index i = start_; i < end_; i ++) {
+            RVector modelChange(*_model);
+            modelChange[i] *= 1.05;
+            RVector respChange(fop_->response_mt(modelChange, i));
+            J->setCol(i, (respChange - *_resp) / (modelChange[i] - (*_model)[i]));
+        }
     }
 
 protected:
     MatrixBase              * J_;
     const ModellingBase     * fop_;
-    const RVector           * resp_;
-    const RVector           * model_;
+    const RVector           * _resp;
+    const RVector           * _model;
 };
-
 
 void ModellingBase::createJacobian_mt(const RVector & model,
                                       const RVector & resp){
@@ -250,9 +273,8 @@ void ModellingBase::createJacobian_mt(const RVector & model,
     RMatrix *J = dynamic_cast< RMatrix * >(jacobian_);
     if (J->rows() != resp.size()){ J->resize(resp.size(), model.size()); }
 
-
     ALLOW_PYTHON_THREADS
-    distributeCalc(JacobianBaseMT(jacobian_, *this, resp, model, 0, verbose_),
+    distributeCalc(JacobianBaseMT(jacobian_, *this, resp, model, verbose_),
                    jacobian_->rows(), nThreadsJacobian_, verbose_);
     swatch.stop();
     if (verbose_) std::cout << " ... " << swatch.duration() << " s." << std::endl;
@@ -356,31 +378,33 @@ MatrixBase * ModellingBase::constraints() const {
 }
 
 RSparseMapMatrix & ModellingBase::constraintsRef() const {
-    if (!constraints_) throwError(1, WHERE_AM_I + " constraints matrix is not initialized.");
+    if (!constraints_) throwError(WHERE_AM_I + " constraints matrix is not initialized.");
     return *dynamic_cast < RSparseMapMatrix *>(constraints_);
 }
 
 RSparseMapMatrix & ModellingBase::constraintsRef() {
-    if (!constraints_) throwError(1, WHERE_AM_I + " constraints matrix is not initialized.");
+    if (!constraints_) throwError(WHERE_AM_I + " constraints matrix is not initialized.");
     return *dynamic_cast < RSparseMapMatrix *>(constraints_);
 }
 
 RVector ModellingBase::createMappedModel(const RVector & model, double background) const {
-    if (mesh_ == 0) throwError(1, "ModellingBase has no mesh for ModellingBase::createMappedModel");
+    if (mesh_ == 0) throwError("ModellingBase has no mesh for ModellingBase::createMappedModel");
+
+    // __MS("createMappedModel: " << model.size() << " " <<  mesh_->cellCount())
 
     if (model.size() == mesh_->cellCount()) {
         IVector cM(mesh_->cellMarkers());
-        
+
         // test if model are cell values instead of model that needs mapping
         if (unique(sort(cM[cM > -1])).size() != model.size()) return model;
-        //if (unique(sort(cM[cM > -1])).size() != model.size()) return model;
+
     }
 
     RVector cellAtts(mesh_->cellCount());
 
     int marker = -1;
     std::vector< Cell * > emptyList;
-    mesh_->createNeighbourInfos();
+    mesh_->createNeighborInfos();
 
     for (Index i = 0, imax = mesh_->cellCount(); i < imax; i ++){
         marker = mesh_->cell(i).marker();
@@ -391,11 +415,12 @@ RVector ModellingBase::createMappedModel(const RVector & model, double backgroun
                           << "Wrong mesh here .. see mapModelfail.vtk" << std::endl
                           << *mesh_ << std::endl
                           << "mesh contains " << unique(sort(mesh_->cellMarkers())).size() << " unique markers. " << std::endl;
-                throwLengthError(1, WHERE_AM_I + " marker >= than model.size() " + toStr(marker)
-                       + " >= " + toStr(model.size()));
+                throwLengthError(WHERE_AM_I + " marker >= than model.size() " + str(marker)
+                       + " >= " + str(model.size()));
             }
-            if (model[marker] < TOLERANCE){
-                emptyList.push_back(&mesh_->cell(i));
+            if (abs(model[marker]) < TOLERANCE){
+                // Zero model can be valid
+                // emptyList.push_back(&mesh_->cell(i));
             }
             cellAtts[i] = model[marker];
 
@@ -408,27 +433,39 @@ RVector ModellingBase::createMappedModel(const RVector & model, double backgroun
         }
     }
 
-        // if background == 0.0 .. empty cells are allowed
+    // if background == 0.0 .. empty cells are allowed
     if (emptyList.size() == mesh_->cellCount() && background != 0.0){
-        throwLengthError(1, WHERE_AM_I + " too many empty cells" + toStr(emptyList.size())
-                       + " == " + toStr(mesh_->cellCount()));
+        throwLengthError(WHERE_AM_I + " too many empty cells" + str(emptyList.size())
+                       + " == " + str(mesh_->cellCount()));
     }
 
     if (background != 0.0){
         mesh_->prolongateEmptyCellsValues(cellAtts, background);
     }
 
-    // setting fixed values
-    if (regionManagerInUse_){
-        for (Index i = 0, imax = mesh_->cellCount(); i < imax; i ++){
-            // if (abs(cellAtts[i]) < TOLERANCE){ // this will never work since the prior prolongation
-                if (mesh_->cell(i).marker() <= MARKER_FIXEDVALUE_REGION){
-                    SIndex regionMarker = -(mesh_->cell(i).marker() - MARKER_FIXEDVALUE_REGION);
-                    double val = regionManager_->region(regionMarker)->fixValue();
-//                      __MS("fixing region: " << regionMarker << " to: " << val)
-                    cellAtts[i] = val;
+    bool warned = false;
+    // search for fixed regions
+    for (Index i = 0, imax = mesh_->cellCount(); i < imax; i ++){
+        // if (abs(cellAtts[i]) < TOLERANCE){ // this will never work since the prior prolongation
+        if (mesh_->cell(i).marker() <= MARKER_FIXEDVALUE_REGION){
+                // setting fixed values
+            SIndex regionMarker = -(mesh_->cell(i).marker() - MARKER_FIXEDVALUE_REGION);
+            if (regionManagerInUse_){
+                double val = regionManager_->region(regionMarker)->fixValue();
+                if (warned == false){
+                    log(Warning, "fixing region: ", regionMarker," to: ", val);
+                    warned = true;
                 }
-            // }
+                cellAtts[i] = val;
+            } else {
+                // temporay hack until fixed in modelling.py
+                if (warned == false){
+                    __MS(cellAtts[i])
+                    log(Warning, "** TMP HACk ** fixing region: ", regionMarker, " to: ", 1/0.058);
+                    warned = true;
+                }
+                cellAtts[i] = 1./0.058;
+            }
         }
     }
 
@@ -466,7 +503,7 @@ void ModellingBase::setRegionManager(RegionManager * reg){
 }
 
 const RegionManager & ModellingBase::regionManager() const {
-    if (regionManager_ == 0) throwError(1, "No RegionManager initialized");
+    if (regionManager_ == 0) throwError("No RegionManager initialized");
     return *regionManager_;
 }
 
@@ -497,8 +534,8 @@ LinearModelling::LinearModelling(MatrixBase & A, bool verbose)
 
 RVector LinearModelling::response(const RVector & model) {
     if (jacobian_->cols() != model.size()){
-        throwLengthError(1, WHERE_AM_I + " Jacobian col size != model.size()"
-                                + toStr(jacobian_->cols()) + " != " + toStr(model.size()));
+        throwLengthError(WHERE_AM_I + " Jacobian col size != model.size()"
+                                + str(jacobian_->cols()) + " != " + str(model.size()));
     }
     return *jacobian_ * model;
 }

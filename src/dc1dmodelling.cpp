@@ -56,7 +56,7 @@ bm_(RVector(data.size(), 9e9)), bn_(RVector(data.size(), 9e9)){
     init_();
     setMesh(createMesh1DBlock(nlayers));
     setData(data);
-    std::vector< RVector3 > spos = data.sensorPositions();
+    R3Vector spos(data.sensorPositions());
     for (Index i = 0 ; i < data.size() ; i++){
         int ia = (int) data("a")[i];
         int ib = (int) data("b")[i];
@@ -82,10 +82,10 @@ RVector DC1dModelling::createDefaultStartModel() {
 RVector DC1dModelling::response(const RVector & model) {
 
     if (model.size() < (nlayers_ * 2 - 1)){
-        throwError(1, WHERE_AM_I + " model vector to small: nlayers_ * 2 - 1 = " + toStr(nlayers_ * 2 - 1) + " > " + toStr(model.size()));
+        throwError(WHERE_AM_I + " model vector to small: nlayers_ * 2 - 1 = " + str(nlayers_ * 2 - 1) + " > " + str(model.size()));
     }
     if (model.size() > (nlayers_ * 2 - 1)){
-        throwError(1, WHERE_AM_I + " model vector to large: nlayers_ * 2 - 1 = " + toStr(nlayers_ * 2 - 1) + " < " + toStr(model.size()));
+        throwError(WHERE_AM_I + " model vector to large: nlayers_ * 2 - 1 = " + str(nlayers_ * 2 - 1) + " < " + str(model.size()));
     }
 
     RVector rho(nlayers_);
@@ -425,10 +425,10 @@ DC1dModellingC::DC1dModellingC(size_t nlayers,
 
 RVector DC1dModellingC::response(const RVector & model) {
     if (model.size() < (nlayers_ * 3 - 1)){
-        throwError(1, WHERE_AM_I + " model vector to small: nlayers_ * 3 - 1 = " + toStr(nlayers_ * 3 - 1) + " > " + toStr(model.size()));
+        throwError(WHERE_AM_I + " model vector to small: nlayers_ * 3 - 1 = " + str(nlayers_ * 3 - 1) + " > " + str(model.size()));
     }
     if (model.size() > (nlayers_ * 3 - 1)){
-        throwError(1, WHERE_AM_I + " model vector to large: nlayers_ * 3 - 1 = " + toStr(nlayers_ * 3 - 1) + " < " + toStr(model.size()));
+        throwError(WHERE_AM_I + " model vector to large: nlayers_ * 3 - 1 = " + str(nlayers_ * 3 - 1) + " < " + str(model.size()));
     }
 
     RVector thk(model(0,               nlayers_ -1));
@@ -438,10 +438,11 @@ RVector DC1dModellingC::response(const RVector & model) {
 //     for (size_t i = 0 ; i < nlayers_ -1 ; i++) thk[i] = model[i];
 //     for (size_t i = 0 ; i < nlayers_ ; i++) rhoM[i] = model[nlayers_ + i -1];
 //     for (size_t i = 0 ; i < nlayers_ ; i++) rhoP[i] = - model[2 * nlayers_ + i -1];
-    CVector rhoC = toComplex(RVector(rhoM * cos(rhoP)), RVector(rhoM * sin(rhoP)));
+    CVector rhoC = toComplex(RVector(rhoM * cos(rhoP)), -RVector(rhoM * sin(rhoP)));
 
     CVector rhoaC = rhoaT< CVector >(rhoC, thk);
-    RVector angPlus = abs(angle(rhoaC));
+    RVector angPlus = angle(rhoaC);
+    //RVector angPlus = abs(angle(rhoaC));
 
     return cat(abs(rhoaC), angPlus);
 }

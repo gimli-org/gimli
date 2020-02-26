@@ -3,10 +3,10 @@
 """Special meta forward operator for modelling with petrophysical relations."""
 
 import pygimli as pg
-from pygimli.manager import MethodManager
+from pygimli.frameworks import MethodManager
 
 
-class PetroModelling(pg.ModellingBase):
+class PetroModelling(pg.core.ModellingBase):
     """
     Combine petrophysical relation m(p) with modelling class f(p).
 
@@ -16,6 +16,7 @@ class PetroModelling(pg.ModellingBase):
 
     def __init__(self, fop, trans, mesh=None, verbose=False):
         """Save forward class and transformation, create Jacobian matrix."""
+        pg.warn('do not use')
         super().__init__(verbose=verbose)
         self.fop = fop
         self.trans = trans  # class defining m(p)
@@ -26,7 +27,7 @@ class PetroModelling(pg.ModellingBase):
 
     def setData(self, data):
         """TODO."""
-        pg.ModellingBase.setData(self, data)
+        pg.core.ModellingBase.setData(self, data)
         self.fop.setData(data)
 
     def setMesh(self, mesh):
@@ -59,11 +60,12 @@ class PetroModelling(pg.ModellingBase):
         self.jac.r = self.trans.deriv(model)  # set inner derivative
 
 
-class PetroJointModelling(pg.ModellingBase):
+class PetroJointModelling(pg.core.ModellingBase):
     """Cumulative (joint) forward operator for petrophysical inversions."""
 
     def __init__(self, f=None, p=None, mesh=None, verbose=True):
         """Constructor."""
+        pg.warn('do not use')
         super().__init__(verbose=verbose)
 
         self.fops = None
@@ -97,7 +99,7 @@ class PetroJointModelling(pg.ModellingBase):
 
     def initJacobian(self):
         """TODO."""
-        self.jac = pg.BlockMatrix()
+        self.jac = pg.matrix.BlockMatrix()
         nData = 0
         for fi in self.fops:
             self.jac.addMatrix(fi.jacobian(), nData, 0)
@@ -123,17 +125,18 @@ class JointPetroInversion(MethodManager):
 
     def __init__(self, managers, trans, verbose=False, debug=False, **kwargs):
         """TODO."""
+        pg.warn('do not use')
         MethodManager.__init__(self, verbose=verbose, debug=debug, **kwargs)
 
         self.managers = managers
         self.trans = trans
         self.fops = []
-        self.dataVals = pg.RVector(0)
-        self.dataErrs = pg.RVector(0)
-        self.mod = pg.RVector(0) # resulting model
+        self.dataVals = pg.Vector(0)
+        self.dataErrs = pg.Vector(0)
+        self.mod = pg.Vector(0) # resulting model
         self.data = None
 
-        self.tD = pg.RTransCumulative()
+        self.tD = pg.trans.TransCumulative()
         self.tM = managers[0].tM
 
         for mgr in self.managers:
@@ -152,7 +155,7 @@ class JointPetroInversion(MethodManager):
 
     def createInv(self, fop, verbose=True, doSave=False):
         """TODO."""
-        inv = pg.RInversion(verbose, doSave)
+        inv = pg.Inversion(verbose, doSave)
         inv.setForwardOperator(fop)
 
         return inv
@@ -216,10 +219,10 @@ class JointPetroInversion(MethodManager):
                     print('Upper limit set to', limits[1])
                 self.tM.setUpperBound(limits[1])
 
-            startModel = pg.RVector(nModel, (limits[1]-limits[0])/2.0)
+            startModel = pg.Vector(nModel, (limits[1]-limits[0])/2.0)
         else:
             for i in range(len(self.managers)):
-                startModel += pg.RVector(nModel, pg.median(
+                startModel += pg.Vector(nModel, pg.math.median(
                     self.trans[i].inv(
                         self.managers[i].createApparentData(self.data[i]))))
             startModel /= len(self.managers)

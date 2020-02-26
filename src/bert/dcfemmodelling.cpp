@@ -81,7 +81,7 @@ void setComplexResistivities(Mesh & mesh, const CVector & z){
 
 CVector getComplexResistivities(const Mesh & mesh){
     if (!mesh.haveData("AttributeReal") || !mesh.haveData("AttributeImag")){
-        throwError(1, WHERE_AM_I +
+        throwError(WHERE_AM_I +
                         " complex resistivity values expected but non found");
     }
     RVector re(mesh.data("AttributeReal"));
@@ -92,17 +92,19 @@ CVector getComplexResistivities(const Mesh & mesh){
 void setComplexData(DataContainer & data,
                     const RVector & re,
                     const RVector & im){
+    __MS("setComplexData")
     setComplexData(data, toComplex(re, -im));
 }
 
 void setComplexData(DataContainer & data, const CVector & z){
+    __MS("setComplexData")
     data.set("u", abs(z));
     data.set("ip", -angle(z) * 1000);
 }
 
 CVector getComplexData(const DataContainer & data){
     if (!data.allNonZero("rhoa") || !data.exists("ip")){
-        throwError(1, WHERE_AM_I  + " We need rhoa and ip to get complex data.");
+        throwError(WHERE_AM_I  + " We need rhoa and ip to get complex data.");
     }
     RVector am(data("rhoa"));
     RVector ph(data("ip"));
@@ -170,8 +172,8 @@ void dcfemDomainAssembleStiffnessMatrix(SparseMatrix < ValueType > & S, const Me
     ElementMatrix < double > Se, Stmp;
 
     if (atts.size() != mesh.cellCount()){
-       throwLengthError(1, WHERE_AM_I + " attribute size missmatch" + toStr(atts.size())
-                       + " != " + toStr(mesh.cellCount()));
+       throwLengthError(WHERE_AM_I + " attribute size missmatch" + str(atts.size())
+                       + " != " + str(mesh.cellCount()));
     }
     ValueType rho = 0.0;
     Stopwatch swatch(true);
@@ -229,16 +231,17 @@ void dcfemDomainAssembleStiffnessMatrix(SparseMatrix < ValueType > & S, const Me
 
 void dcfemDomainAssembleStiffnessMatrix(RSparseMatrix & S, const Mesh & mesh,
                                         double k, bool fix){
-    dcfemDomainAssembleStiffnessMatrix(S, mesh, mesh.cellAttributes(), 
+    dcfemDomainAssembleStiffnessMatrix(S, mesh, mesh.cellAttributes(),
                                        k, fix);
 }
 void dcfemDomainAssembleStiffnessMatrix(CSparseMatrix & S, const Mesh & mesh,
                                         double k, bool fix){
-    dcfemDomainAssembleStiffnessMatrix(S, mesh, getComplexResistivities(mesh),
-                                       k, fix);
+    CVector res(getComplexResistivities(mesh));
+    // if (min(imag(res)) < TOLERANCE){
+    //     log(Error, "Check *******************************************");
+    // }
+    dcfemDomainAssembleStiffnessMatrix(S, mesh, res, k, fix);
 }
-
-
 template < class ValueType >
 void dcfemBoundaryAssembleStiffnessMatrix(SparseMatrix < ValueType > & S,
                                           const Mesh & mesh,
@@ -265,14 +268,13 @@ void dcfemBoundaryAssembleStiffnessMatrix(SparseMatrix < ValueType > & S,
                 } else {
                     mesh.exportVTK("FailBC");
                     mesh.save("FailBC");
-                    throwError(1, " no cell found for boundary. can't determine mixed boundary conditions. See FailBC exports." + str(i));
+                    throwError(" no cell found for boundary. can't determine mixed boundary conditions. See FailBC exports." + str(i));
                 }
 
                 if (GIMLI::abs(rho) < TOLERANCE){
                     std::cerr << WHERE_AM_I << " parameter rho == 0.0 found " << rho << std::endl;
                 }
                 Se.u2(mesh.boundary(i));
-
                 S.add(Se, (mixedBoundaryCondition(mesh.boundary(i), source, k) / rho));
                 //Se *= (mixedBoundaryCondition(mesh.boundary(i), source, k) / rho);
                 // S += Se;
@@ -308,13 +310,13 @@ void dcfemBoundaryAssembleStiffnessMatrix(RSparseMatrix & S, const Mesh & mesh,
 void dcfemBoundaryAssembleStiffnessMatrix(CSparseMatrix & S, const Mesh & mesh,
                                           const RVector3 & source,
                                           double k){
-    dcfemBoundaryAssembleStiffnessMatrix(S, mesh, getComplexResistivities(mesh), 
+    dcfemBoundaryAssembleStiffnessMatrix(S, mesh, getComplexResistivities(mesh),
                                          source, k);
 }
 
 void assembleCompleteElectrodeModel_(RSparseMatrix & S,
                                     const std::vector < ElectrodeShape * > & elecs,
-                                    uint oldMatSize, bool lastIsReferenz, 
+                                    uint oldMatSize, bool lastIsReferenz,
                                     const RVector & contactImpedances){
     RSparseMapMatrix mapS(S);
     ElementMatrix < double > Se;
@@ -326,11 +328,11 @@ void assembleCompleteElectrodeModel_(RSparseMatrix & S,
     // RVector vContactImpedance( nElectrodes, 1.0); // Ohm * m^2
 
     // bool hasImp = checkIfMapFileExistAndLoadToVector("contactImpedance.map",  vContactImpedance);
-    
+
     bool hasImp = true;
     RVector vContactResistance(nElectrodes, 1.0); // Ohm
     bool hasRes = checkIfMapFileExistAndLoadToVector("contactResistance.map", vContactResistance);
-    
+
     for (uint elecID = 0; elecID < nElectrodes; elecID ++){
 
         //** some scale value, can used for contact impedance
@@ -389,7 +391,7 @@ void assembleCompleteElectrodeModel_(RSparseMatrix & S,
 
         //** G
         if (lastIsReferenz){
-            throwError(1, "CEM with lastIsReferenz is currently not supported. Please add Reference Electrode");
+            throwError("CEM with lastIsReferenz is currently not supported. Please add Reference Electrode");
             //**!! this leads to nonpositive definite S .. pls check
             if (elecID != nElectrodes- 1){
                 std::cout << " cem: last is reference" << std::endl;
@@ -554,6 +556,7 @@ void DCMultiElectrodeModelling::init_(){
 
     electrodeRef_        = NULL;
     JIsRMatrix_          = true;
+    JIsCMatrix_          = false;
 
     buildCompleteElectrodeModel_    = false;
     dipoleCurrentPattern_           = false;
@@ -569,14 +572,14 @@ void DCMultiElectrodeModelling::init_(){
 
 }
 
-void DCMultiElectrodeModelling::setComplex(bool c) { 
+void DCMultiElectrodeModelling::setComplex(bool c) {
     if (complex_ != c){
 
         if (subSolutions_ && subpotOwner_) {
             delete subSolutions_;
             subSolutions_ = 0;
         }
-        complex_=c; 
+        complex_=c;
     }
 }
 
@@ -790,7 +793,7 @@ void DCMultiElectrodeModelling::setContactImpedances(const RVector & zi){
 void DCMultiElectrodeModelling::searchElectrodes_(){
 
     if (!mesh_){
-        throwError(1, "DCMultiElectrodeModelling::searchElectrodes_() have no mesh defined");
+        throwError("DCMultiElectrodeModelling::searchElectrodes_() have no mesh defined");
     }
     if (electrodes_.size() > 0) return;
 
@@ -908,8 +911,8 @@ void DCMultiElectrodeModelling::searchElectrodes_(){
             //** match the known node-electrodes
             if (!match){
                 for (std::vector< Index >::iterator it = sourceIdx.begin(); it != sourceIdx.end(); it ++){
-//                     std::cout << ePos[i] << " " << mesh_->node(*it).pos() <<
-//                             " " << ePos[i].dist(mesh_->node(*it).pos()) << std::endl;
+                    //  std::cout << ePos[i] << " " << mesh_->node(*it).pos() <<
+                    //                          " " << ePos[i].dist(mesh_->node(*it).pos()) << std::endl;
                     if (ePos[i].dist(mesh_->node(*it).pos()) < 0.01){ //CR 1cm?? really??
                         electrodes_.push_back(new ElectrodeShapeNode(mesh_->node(*it)));
                         electrodes_.back()->setId(i);
@@ -921,7 +924,6 @@ void DCMultiElectrodeModelling::searchElectrodes_(){
                 }
             }
 
-
             //** fill the missing with node independent electrodes
             if (!match){
                 Cell * cell = mesh_->findCell(ePos[i]);
@@ -930,7 +932,12 @@ void DCMultiElectrodeModelling::searchElectrodes_(){
                 } else{
                     electrodes_.push_back(new ElectrodeShape(ePos[i]));
                     std::cerr << WHERE_AM_I << " " << ePos[i] << " mesh " << mesh_->boundingBox() << std::endl;
-                    throwError(1, "There is a requested electrode that does not match the given mesh. ");
+
+                    for (auto &n : sourceIdx){
+                        std::cout << ePos[i] << " " << mesh_->node(n).pos() <<
+                                                " " << ePos[i].dist(mesh_->node(n).pos()) << std::endl;
+                    }
+                    throwError("There is a requested electrode that does not match the given mesh. ");
                 }
 
 //                     std::cout << ePos[i] << std::endl;
@@ -1033,7 +1040,7 @@ void DCMultiElectrodeModelling::searchElectrodes_(){
             }
         }
     } else {
-        //throwError(1, WHERE_AM_I+ " Warning ! Found neighter electrode nodes nor electrode facets, don't know what to do. ");
+        //throwError(WHERE_AM_I+ " Warning ! Found neighter electrode nodes nor electrode facets, don't know what to do. ");
         std::cout << "Warning! Found neighter electrode nodes nor electrode facets, don't know what to do. " << std::endl;
     }
 
@@ -1052,7 +1059,10 @@ void DCMultiElectrodeModelling::searchElectrodes_(){
                 std::cout << "Found neumann domain without reference electrode. " << std::endl
                             << "Choose last electrode as reference. " << std::endl;
             }
-
+            if (electrodes_.size() == 0){
+                log(Warning, "No electrodes defined.");
+                return;
+            }
             electrodeRef_ = electrodes_.back();
             lastIsReferenz_ = true;
         }
@@ -1075,39 +1085,58 @@ RVector DCMultiElectrodeModelling::createDefaultStartModel(){
     return vec;
 }
 
-
 RVector DCMultiElectrodeModelling::response(const RVector & model,
                                             double background){
+
+    if (min(abs(dataContainer_->get("k"))) < TOLERANCE){
+        if (!(this->topography() || buildCompleteElectrodeModel_)){
+            dataContainer_->set("k",
+                              this->calcGeometricFactor(this->dataContainer()));
+            log(Warning, " data contains no K-factors but we find them "
+                         " analytical for the response call");
+
+        } else {
+            throwError(WHERE_AM_I + " data contains no K-factors ");
+        }
+    }
+
+    if (!this->mesh_){
+        log(Critical, "Found no mesh so I can't calcuate a response.");
+    }
     if (complex()){
-//         __MS("Pls check response complex scale -1")
+
+        if (min(abs(model) < TOLERANCE)){
+            model.save("modelFail.vector");
+            log(Critical, " complex response for abs model with negative or zero resistivity is not defined.");
+        }
 
         DataMap dMap(response_(toComplex(model(0, model.size()/2),
-                                         -model(model.size()/2, model.size())),
-                               Complex(background, 0)));
+                                         model(model.size()/2, model.size())),
+                               Complex(background, -9e99)));
 
         RVector respRe(dMap.data(this->dataContainer(), false, false));
         RVector respIm(dMap.data(this->dataContainer(), false, true));
 
         CVector resp(toComplex(respRe, respIm) * dataContainer_->get("k"));
-        RVector am(abs(resp));
-        RVector ph(-angle(resp));
+        return cat(real(resp), imag(resp));
 
-        if (verbose_){
-            std::cout << "Response: min(RE) = " << min(am)
-                               << " max(RE) = " << max(am)
-                               << " min(IM) = " << min(ph)
-                               << " max(IM) = " << max(ph)
-                               << std::endl;
-            std::cout << "not yet implemented Reciprocity rms(modelReciprocity) "
-                      << std::endl;
-        }
+    } // if complex
 
-        return cat(am, ph);
-    }
-    // else no complex here
-// __MS("nächste Zeile wieder rein TMPHACK**************")
-    if (::fabs(max(model) - min(model)) < TOLERANCE){
-        return RVector(dataContainer_->size(), min(model));
+    //** to following can lead to problematic situations https://gitlab.com/resistivity-net/bert/issues/41
+    // but costs one forward calculation so its probably better to
+    // remove it (temporary comment)
+    // if (::fabs(max(model) - min(model)) < TOLERANCE){
+    //     if (!this->topography_ ){
+    //         return RVector(dataContainer_->size(), min(model));
+    //     } else {
+    //         std::cout << "Calcuating numerical response for homogeneous model due to topography";
+    //     }
+    // }
+
+    if (min(model) < TOLERANCE){
+        model.save("modelFail.vector");
+        log(Critical, " response for model with negative or zero resistivity is not defined.:",
+                     min(model), max(model));
     }
 
     DataMap dMap(response_(model, background));
@@ -1115,22 +1144,8 @@ RVector DCMultiElectrodeModelling::response(const RVector & model,
     RVector respRez(dMap.data(this->dataContainer(), true));
 
     if (resp.size() != dataContainer_->size() || respRez.size() != dataContainer_->size()){
-        throwError(1, WHERE_AM_I + " size wrong: " + str(dataContainer_->size())
+        throwError(WHERE_AM_I + " size wrong: " + str(dataContainer_->size())
         + " " + str(resp.size()) + " " + str(respRez.size()));
-    }
-
-    if (std::fabs(min(dataContainer_->get("k"))) < TOLERANCE){
-        if (!(this->topography() || buildCompleteElectrodeModel_)){
-            dataContainer_->set("k",
-                              this->calcGeometricFactor(this->dataContainer()));
-            if (verbose_) {
-                std::cout << " data contains no K-factors but we find them "
-                " analytical for the response call" << std::endl;
-            }
-
-        } else {
-            throwError(1, WHERE_AM_I + " data contains no K-factors ");
-        }
     }
 
     resp    *= dataContainer_->get("k");
@@ -1140,7 +1155,7 @@ RVector DCMultiElectrodeModelling::response(const RVector & model,
 
     if (verbose_){
         if (min(resp) < 0 && 1){
-            std::cout << "Found neg. resp, save and abort." << std::endl;
+            std::cout << "Found neg. resp (saving)." << std::endl;
                 for (uint i = 0; i < resp.size(); i ++){
                     if (resp[i ] < 0) {
                         int a = (*dataContainer_)("a")[i];
@@ -1156,9 +1171,9 @@ RVector DCMultiElectrodeModelling::response(const RVector & model,
                         std::cout << i << " " << resp[i] << " " << respRez[i]<< std::endl;
                         std::cout << a << " " << b << " " << m << " " << n << std::endl;
 
-                        mesh_->addExportData("ab-pot", prepExportPotentialData(ab));
-                        mesh_->addExportData("mn-pot", prepExportPotentialData(mn));
-                        //mesh_->addExportData("sens-mn-pot", prepExportSensitivityData(jacobian));
+                        mesh_->addData("ab-pot", prepExportPotentialData(ab));
+                        mesh_->addData("mn-pot", prepExportPotentialData(mn));
+                        //mesh_->addData("sens-mn-pot", prepExportSensitivityData(jacobian));
                         mesh_->exportVTK("negResp");
 
                         break;
@@ -1171,7 +1186,6 @@ RVector DCMultiElectrodeModelling::response(const RVector & model,
 
                 save(resp, "resp.vec");
                 save(respRez, "respRez.vec");
-                // throwError(1, WHERE_AM_I);
             } // if found neg. Responses
             std::cout << "Response: min = " << min(resp)
                         << " max = " << max(resp) << std::endl;
@@ -1189,12 +1203,10 @@ void DCMultiElectrodeModelling::mapERTModel(const CVector & model, Complex backg
     if (model.size() == this->mesh_->cellCount()){
         setComplexResistivities(*mesh_, model);
     } else {
-        mapModel(real(model), real(background));
-        RVector re(mesh_->cellAttributes());
-
-        mapModel(imag(model), imag(background));
-        RVector im(mesh_->cellAttributes());
-
+        RVector re(createMappedModel(real(model), background.real()));
+        // RVector im(re*0.0);
+        // log(Warning, "imag part forced to zero");
+        RVector im(createMappedModel(imag(model), -9e99));
         setComplexResistivities(*mesh_, toComplex(re, im));
     }
 }
@@ -1219,16 +1231,6 @@ DataMap DCMultiElectrodeModelling::response_(const Vector < ValueType > & model,
 
     if (dataContainer_ != NULL){
 
-        if (min(model) < TOLERANCE) {
-            model.save("modelFail.vector");
-            throwError(EXIT_FEM_NO_RHO, WHERE_AM_I + " response for model with negative or zero resistivity is not defined.");
-        }
-
-        if (GIMLI::abs(max(model)) < TOLERANCE &&
-            GIMLI::abs(min(model)) < TOLERANCE) {
-            throwError(EXIT_FEM_NO_RHO, WHERE_AM_I);
-        }
-
         if (dipoleCurrentPattern_){
             THROW_TO_IMPL
             calculate(this->dataContainer(), false);
@@ -1238,14 +1240,13 @@ DataMap DCMultiElectrodeModelling::response_(const Vector < ValueType > & model,
             calculate(dMap);
         }
     } else {
-        throwError(1, WHERE_AM_I + " no response without data container");
+        throwError(WHERE_AM_I + " no response without data container");
     }
     return dMap;
 }
 
 template < class ValueType >
 Matrix < ValueType > * DCMultiElectrodeModelling::prepareJacobianT_(const Vector< ValueType > & model){
-//TIC__
     this->searchElectrodes_();
     if (dataContainer_){
         if (!subSolutions_){
@@ -1267,7 +1268,7 @@ Matrix < ValueType > * DCMultiElectrodeModelling::prepareJacobianT_(const Vector
             }
 // //            std::cout << WHERE_AM_I << " " << mean(model) << " " << model.size() << std::endl;
 //__MS(toc__)
-            this->mapERTModel(model, ValueType(-1.0)); // very slow
+            this->mapERTModel(model, ValueType(-9e99)); // very slow
 //__MS(toc__)
             bool oldAna = this->analytical();
 
@@ -1275,7 +1276,7 @@ Matrix < ValueType > * DCMultiElectrodeModelling::prepareJacobianT_(const Vector
                                   buildCompleteElectrodeModel_ ||
                                   stdDev(model) > TOLERANCE*1e5));
             if (verbose_) {
-                std::cout << "Calculating subpotentials analytical for createJacobian: " 
+                std::cout << "Calculating subpotentials analytical for createJacobian: "
                           << this->analytical() << " ("
                           << "top: " << this->topography() << "|"
                           << "cem: " << buildCompleteElectrodeModel_ << "|"
@@ -1290,9 +1291,9 @@ Matrix < ValueType > * DCMultiElectrodeModelling::prepareJacobianT_(const Vector
             }
 
             DataContainerERT tmp(this->dataContainer());
-// __MS(toc__)
+
             this->calculate(tmp);
-// __MS(toc__)
+
             /*! We have to scale subSolutions_ for the analytical solution to match the model */
             if (this->analytical()){
                 if (verbose_) std::cout << "Scale subpotentials with " << model[0] << std::endl;
@@ -1305,7 +1306,7 @@ Matrix < ValueType > * DCMultiElectrodeModelling::prepareJacobianT_(const Vector
         } // if u.rows()
         return u;
     } else {
-        throwError(1, WHERE_AM_I + " no data structure given");
+        throwError(WHERE_AM_I + " no data structure given");
     }
     return 0;
 }
@@ -1325,7 +1326,8 @@ void DCMultiElectrodeModelling::createJacobian_(const RVector & model,
 MEMINFO
 //         save(*u, "pots.bmat");
 
-    createSensitivityCol(*J, *mesh_, this->dataContainer(), u, weights_, kValues_,
+    createSensitivityCol(*J, *mesh_, this->dataContainer(), u,
+                         weights_, kValues_,
                          matrixClusterIds, nThreads_, verbose_);
 
 MEMINFO
@@ -1418,27 +1420,58 @@ void DCMultiElectrodeModelling::createJacobian_(const CVector & model,
                          u,
                          this->weights_, this->kValues_,
                          matrixClusterIds, this->nThreads_, this->verbose_);
+
+    if (model.size() == J->cols()){
+        __MS("check")
+        CVector m2(model*model);
+        //CVector m2(model*conj(model));
+        if (model.size() == J->cols()){
+            for (Index i = 0; i < J->rows(); i ++) {
+                (*J)[i] /= (m2 / dataContainer_->get("k")[i]);
+            }
+        }
+    }
+    if (verbose_){
+        CVector sumsens(J->rows());
+        for (Index i = 0, imax = J->rows(); i < imax; i ++){
+            sumsens[i] = sum((*J)[i]);
+        }
+
+        // std::cout << "sens sum: median = " << median(sumsens)
+        //           << " min = " << min(sumsens)
+        //           << " max = " << max(sumsens) << std::endl;
+    }
 }
 
 void DCMultiElectrodeModelling::createJacobian(const RVector & model){
     if (complex_){
+        CVector cMod(toComplex(model(0, model.size()/2),
+                               model(model.size()/2, model.size())));
 
-        CMatrix * u = prepareJacobianT_(toComplex(model(0, model.size()/2),
-                                         model(model.size()/2, model.size())));
+        CMatrix * u = this->prepareJacobianT_(cMod);
 
-        THROW_TO_IMPL
+        if (!JIsCMatrix_){
+            // log(Warning, "delete non complex Jacobian and create a new CMatrix");
+            delete jacobian_;
+            jacobian_ = new CMatrix();
+            JIsCMatrix_ = true;
+            JIsRMatrix_ = false;
 
-
+        }
+        CMatrix * J = dynamic_cast< CMatrix * >(jacobian_);
+        this->createJacobian_(cMod, *u, J);
     } else {
-        RMatrix * u = prepareJacobianT_(model);
+        RMatrix * u = this->prepareJacobianT_(model);
         if (!JIsRMatrix_){
+            log(Warning, "delete non real Jacobian and create a new RMatrix");
             delete jacobian_;
             jacobian_ = new RMatrix();
             JIsRMatrix_ = true;
+            JIsCMatrix_ = false;
         }
 
         RMatrix * J = dynamic_cast< RMatrix * >(jacobian_);
-        createJacobian_(model, *u, J);
+        this->createJacobian_(model, *u, J);
     }
 }
 
@@ -1507,13 +1540,13 @@ RVector DCMultiElectrodeModelling::calcGeometricFactor(const DataContainerERT & 
         if (verbose_) std::cout << " (numerical)" << std::endl;
         RVector atts(mesh_->cellAttributes());
         if (nModel > 0) {
-            this->mapERTModel(RVector(nModel, 1.0), -1.0);
+            this->mapERTModel(RVector(nModel, 1.0), -9e99);
         } else {
             mesh_->setCellAttributes(RVector(mesh_->cellCount(), 1.0));
         }
 
         this->calculate(*primDataMap_);
-        
+
         mesh_->setCellAttributes(atts);
     } else {
         if (verbose_) std::cout << " (recover)" << std::endl;
@@ -1587,6 +1620,7 @@ void DCMultiElectrodeModelling::calculate(DataContainerERT & data, bool reciproc
         DataMap dMap;
         this->calculate(dMap);
         if (complex_) {
+            log(Error, " DCMultiElectrodeModelling::calculate, don't use this.");
             setComplexData(data, dMap.data(data), dMap.data(data, false, true));
         } else {
             data.set("u", dMap.data(data));
@@ -1598,7 +1632,7 @@ void DCMultiElectrodeModelling::calculate(DataMap & dMap){
     //! create current pattern;
 
     if (dipoleCurrentPattern_){
-        throwError(1, WHERE_AM_I + " Unable to calculate(datamap) using dipoleCurrentPattern. Use calculate(DataContainer) instead ");
+        throwError(WHERE_AM_I + " Unable to calculate(datamap) using dipoleCurrentPattern. Use calculate(DataContainer) instead ");
     }
     std::vector < ElectrodeShape * > eA, eB;
 
@@ -1724,8 +1758,8 @@ void DCMultiElectrodeModelling::calculateKAnalyt(const std::vector < ElectrodeSh
 
     uint nCurrentPattern = eA.size();
     if (solutionK.rows() < (kIdx + 1) * nCurrentPattern) {
-        throwLengthError(1, WHERE_AM_I + " workspace size insufficient" + toStr(solutionK.rows())
-            + " " + toStr((kIdx+1)*nCurrentPattern));
+        throwLengthError(WHERE_AM_I + " workspace size insufficient" + str(solutionK.rows())
+            + " " + str((kIdx+1)*nCurrentPattern));
     }
 
     for (uint i = 0; i < nCurrentPattern; i ++) {
@@ -1748,8 +1782,8 @@ void DCMultiElectrodeModelling::calculateK_(const std::vector < ElectrodeShape *
     double k = kValues_[kIdx];
 
     if (solutionK.rows() < (kIdx+1) * nCurrentPattern) {
-        throwLengthError(1, WHERE_AM_I + " workspace size insufficient" + toStr(solutionK.rows())
-            + " " + toStr((kIdx+1) * nCurrentPattern));
+        throwLengthError(WHERE_AM_I + " workspace size insufficient" + str(solutionK.rows())
+            + " " + str((kIdx+1) * nCurrentPattern));
     }
 
     if (analytical_) {
@@ -1805,12 +1839,12 @@ MEMINFO
                 if (verbose_) std::cout << "Loaded: contactImpedance.map." << std::endl;
             }
         }
-                
+
         assembleCompleteElectrodeModel(S_, elecs, oldMatSize, lastIsReferenz_,
                                            vContactImpedance_);
 
         potentialsCEM_.resize(nCurrentPattern, lastValidElectrode);
-        
+
     } // end CEM
 
     this->assembleStiffnessMatrixDCFEMByPass(S_);
@@ -2027,7 +2061,7 @@ MEMINFO
         if (verbose_){
             std::cout << "Using existing primary potentials." << std::endl;
         }
-        
+
         primPot_->rowFlag().fill(1);
     }
 
@@ -2079,17 +2113,17 @@ MEMINFO
                     if (k == 0.0){
                         //!** load 3D potential
                         if (initVerbose) std::cout << std::endl << "Loading primary potential: "
-                                        << primPotFileBody_ + "." + toStr(i) + ".pot" << std::endl;
-                        load((*primPot_)[potID], primPotFileBody_ + "." + toStr(i) + ".pot", Binary);
+                                        << primPotFileBody_ + "." + str(i) + ".pot" << std::endl;
+                        load((*primPot_)[potID], primPotFileBody_ + "." + str(i) + ".pot", Binary);
                     } else {
                         //!** else load 2D potential
                         //!** first try new style "name_Nr.s.pot"
                         if (!load((*primPot_)[potID], primPotFileBody_ + "." +
-                                    toStr(kIdx * nCurrentPattern + i) + ".s.pot", Binary, false)){
+                                    str(kIdx * nCurrentPattern + i) + ".s.pot", Binary, false)){
 
                             if (!load((*primPot_)[potID], primPotFileBody_ + "." +
-                                toStr(i) + "_" + toStr(kIdx) + ".pot", Binary)){
-                                throwError(-1, WHERE_AM_I + " neither new-style potential ("
+                                str(i) + "_" + str(kIdx) + ".pot", Binary)){
+                                throwError(WHERE_AM_I + " neither new-style potential ("
                                     + primPotFileBody_ + ".XX.s.pot nor old-style ("
                                     + primPotFileBody_ + ".XX_k.pot) found");
                             }
@@ -2126,8 +2160,8 @@ void DCSRMultiElectrodeModelling::calculateK(const std::vector < ElectrodeShape 
 
     uint nCurrentPattern = eA.size();
     if (solutionK.rows() < (kIdx + 1) * nCurrentPattern) {
-        throwLengthError(1, WHERE_AM_I + " workspace size insufficient" + toStr(solutionK.rows())
-            + " " + toStr((kIdx + 1)*nCurrentPattern));
+        throwLengthError(WHERE_AM_I + " workspace size insufficient" + str(solutionK.rows())
+            + " " + str((kIdx + 1)*nCurrentPattern));
     }
 
     if (analytical_){
@@ -2156,6 +2190,7 @@ MEMINFO
     dcfemBoundaryAssembleStiffnessMatrix(S1, mesh1_, sourceCenterPos_, k);
     assembleStiffnessMatrixHomogenDirichletBC(S1, calibrationSourceIdx_);
 
+    // if (verbose_) std::cout << "Assembling system matrix (SR) ... " << std::endl;
 //     if (verbose_) std::cout << "Assembling: " << swatch.duration() << std::endl;
     //mesh_->setCellAttributes(tmpRho);
 
@@ -2172,7 +2207,7 @@ MEMINFO
     for (uint i = 0; i < nCurrentPattern; i ++){
 
         if (primPot_->rows() <= (i + kIdx * nCurrentPattern)){
-            throwError(1, WHERE_AM_I + " this should not happen, pls check primpots ");
+            throwError(WHERE_AM_I + " this should not happen, pls check primpots ");
             //** we do not have the primPot;
         } else {
             prim = (*primPot_)[i + kIdx * nCurrentPattern];

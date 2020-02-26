@@ -75,13 +75,13 @@ void interpolate(const Mesh & mesh, const RMatrix & vData,
             } else if (vData[i].size() == mesh.cellCount()){
                 data = cellDataToPointData(mesh, vData[i]);
             } else {
-                throwLengthError(EXIT_VECTOR_SIZE_INVALID,
+                throwLengthError(
                                  WHERE_AM_I +
                                  " data.size not nodeCount and cellCount " +
-                                 toStr(vData.size()) + " x " +
-                                 toStr(vData[i].size()) + " != " +
-                                 toStr(mesh.nodeCount()) + " != " +
-                                 toStr(mesh.cellCount()));
+                                 str(vData.size()) + " x " +
+                                 str(vData[i].size()) + " != " +
+                                 str(mesh.nodeCount()) + " != " +
+                                 str(mesh.cellCount()));
             }
 
             for (uint j = 0; j < pos.size(); j ++) {
@@ -134,10 +134,10 @@ RVector interpolate(const Mesh & mesh, const RVector & data,
 
 void interpolate(const Mesh & mesh, const std::string & dataName, Mesh & pos,
                  bool verbose, double fillValue){
-    RMatrix vData; vData.push_back(mesh.exportData(dataName));
+    RMatrix vData; vData.push_back(mesh.data(dataName));
     RMatrix viData;
     interpolate(mesh, vData, pos.positions(), viData, verbose, fillValue);
-    pos.addExportData(dataName, viData[0]);
+    pos.addData(dataName, viData[0]);
 }
 
 void interpolate(const Mesh & mesh, const RVector & data,
@@ -157,8 +157,8 @@ RVector interpolate(const Mesh & mesh, const RVector & data,
     if (z.size() == 0 && y.size() == 0) return interpolate(mesh, data, x, verbose, fillValue);
 
     if (x.size() != y.size() || x.size() != z.size()) {
-        throwLengthError(EXIT_VECTOR_SIZE_INVALID, " x.size invalid y.size invalid z.size() "
-                + toStr(x.size()) + " != " + toStr(y.size()) + " != " + toStr(z.size()));
+        throwLengthError(" x.size invalid y.size invalid z.size() "
+                + str(x.size()) + " != " + str(y.size()) + " != " + str(z.size()));
     }
 
     std::vector < RVector3 > pos(x.size());
@@ -188,8 +188,8 @@ void interpolate(const Mesh & mesh, Mesh & qmesh, bool verbose, double fillValue
     std::vector< std::string > cellDataNames;
     std::vector< std::string > nodeDataNames;
 
-    for (std::map< std::string, RVector >::const_iterator it = mesh.exportDataMap().begin();
-          it != mesh.exportDataMap().end(); it ++){
+    for (std::map< std::string, RVector >::const_iterator it = mesh.dataMap().begin();
+          it != mesh.dataMap().end(); it ++){
 
         if (it->second.size() == mesh.nodeCount()){
             if (verbose) std::cout << " interpolate node data: " << it->first << std::endl;
@@ -209,14 +209,14 @@ void interpolate(const Mesh & mesh, Mesh & qmesh, bool verbose, double fillValue
         RMatrix qCellData;
         interpolate(mesh, cellData, qmesh.cellCenter(), qCellData, verbose, fillValue);
         for (uint i= 0; i < cellData.rows(); i ++){
-            qmesh.addExportData(cellDataNames[i], qCellData[i]);
+            qmesh.addData(cellDataNames[i], qCellData[i]);
         }
     }
     if (nodeData.rows() > 0){
         RMatrix qNodeData;
         interpolate(mesh, nodeData, qmesh.positions(), qNodeData, verbose) ;
         for (uint i= 0; i < nodeData.rows(); i ++){
-            qmesh.addExportData(nodeDataNames[i], qNodeData[i]);
+            qmesh.addData(nodeDataNames[i], qNodeData[i]);
         }
     }
 }
@@ -252,14 +252,14 @@ void triangleMesh_(const Mesh & mesh, Mesh & tmpMesh){
             std::cerr << WHERE_AM_I << " nothing known to cell.rtti " << mesh.cell(i).rtti() << std::endl;
         }
     }
-    tmpMesh.createNeighbourInfos(true);
+    tmpMesh.createNeighborInfos(true);
 }
 
 
 RVector cellDataToPointData(const Mesh & mesh, const RVector & cellData){
     if (cellData.size() != mesh.cellCount()){
-        throwLengthError(EXIT_VECTOR_SIZE_INVALID, " vector size invalid mesh.cellCount "
-                        + toStr(mesh.cellCount()) + " != " + toStr(cellData.size()));
+        throwLengthError(" vector size invalid mesh.cellCount "
+                        + str(mesh.cellCount()) + " != " + str(cellData.size()));
     }
 
     RVector ret(mesh.nodeCount());

@@ -7,10 +7,13 @@ pygimli.core
 Imports and extensions of the C++ bindings.
 """
 
-import sys
 import os
+import sys
 import traceback
+
 import numpy as np
+
+from ..utils import boxprint
 
 if sys.platform == 'win32':
     os.environ['PATH'] = __path__[0] + ';' + os.environ['PATH']
@@ -29,34 +32,47 @@ except ImportError as e:
 ###  Global convenience functions #####
 #######################################
 
-from .. _logger import *
 
 _pygimli_.load = None
-from .load import load, optImport, opt_import, getConfigPath, getExampleFile
-
-from pygimli.viewer import show, plt, wait
-from pygimli.solver import solve
-from pygimli.meshtools import interpolate, createGrid
-from pygimli.utils import boxprint
-
 
 def showNow():
     pass
 #    showLater(0)  # not working anymore
 
+
 __swatch__ = _pygimli_.Stopwatch()
 
+
 def tic(msg=None):
-    """Start global timer. Print elpased time with `toc()`."""
+    """Start global timer. Print elpased time with `toc()`.
+
+    Parameters
+    ----------
+    msg : string, optional
+        Print message string just before starting the timer.
+    """
     if msg:
         print(msg)
     __swatch__.start()
 
 
 def toc(msg=None, box=False):
-    """Print elapsed time since global timer was started with `tic()`."""
+    """Print elapsed time since global timer was started with `tic()`.
+
+    Parameters
+    ----------
+    msg : string, optional
+        Print message string just after printing the elapsed time. If box is
+        True, then embed msg into its own box
+    box : bool, optional
+        Embed the time in an ascii box
+
+    """
     if msg:
-        print(msg, end=' ')
+        if box:
+            boxprint(msg)
+        else:
+            print(msg, end=' ')
     seconds = dur()
     m, s = divmod(seconds, 60)
     h, m = divmod(m, 60)
@@ -85,7 +101,7 @@ def dur():
 ############################
 
 
-def RVector_str(self, valsOnly=False):
+def __RVector_str(self, valsOnly=False):
     s = str()
 
     if not valsOnly:
@@ -106,19 +122,19 @@ def RVector_str(self, valsOnly=False):
         self[self.size() - 1]) + "]")
 
 
-def RVector3_str(self):
+def __RVector3_str(self):
     return ("RVector3: (" + str(self.x()) + ", " + str(self.y()) + ", " + str(
         self.z()) + ")")
 
 
-def R3Vector_str(self):
+def __R3Vector_str(self):
     if self.size() < 20:
         return self.array().__str__()
 
     return "R3Vector: n=" + str(self.size())
 
 
-def RMatrix_str(self):
+def __RMatrix_str(self):
     s = "RMatrix: " + str(self.rows()) + " x " + str(self.cols())
 
     if self.rows() < 6:
@@ -128,7 +144,7 @@ def RMatrix_str(self):
     return s
 
 
-def CMatrix_str(self):
+def __CMatrix_str(self):
     s = "CMatrix: " + str(self.rows()) + " x " + str(self.cols())
 
     if self.rows() < 6:
@@ -138,16 +154,16 @@ def CMatrix_str(self):
     return s
 
 
-def Line_str(self):
+def __Line_str(self):
     return "Line: " + str(self.p0()) + "  " + str(self.p1())
 
 
-def Data_str(self):
+def __Data_str(self):
     return ("Data: Sensors: " + str(self.sensorCount()) + " data: " + str(
         self.size()))
 
 
-def ElementMatrix_str(self):
+def __ElementMatrix_str(self):
 
     s = ''
     for i in range(self.size()):
@@ -158,20 +174,26 @@ def ElementMatrix_str(self):
         s += '\n'
     return s
 
+def __BoundingBox_str(self):
+    s = ''
+    s += "BoundingBox [{0}, {1}]".format(self.min(), self.max())
+    return s
 
-_pygimli_.RVector.__str__ = RVector_str
-_pygimli_.CVector.__str__ = RVector_str
-_pygimli_.BVector.__str__ = RVector_str
-_pygimli_.IVector.__str__ = RVector_str
-_pygimli_.IndexArray.__str__ = RVector_str
-_pygimli_.RVector3.__str__ = RVector3_str
-_pygimli_.R3Vector.__str__ = R3Vector_str
 
-_pygimli_.RMatrix.__str__ = RMatrix_str
-_pygimli_.CMatrix.__str__ = CMatrix_str
-_pygimli_.Line.__str__ = Line_str
-_pygimli_.DataContainer.__str__ = Data_str
-_pygimli_.ElementMatrix.__str__ = ElementMatrix_str
+_pygimli_.RVector.__str__ = __RVector_str
+_pygimli_.CVector.__str__ = __RVector_str
+_pygimli_.BVector.__str__ = __RVector_str
+_pygimli_.IVector.__str__ = __RVector_str
+_pygimli_.IndexArray.__str__ = __RVector_str
+_pygimli_.RVector3.__str__ = __RVector3_str
+_pygimli_.R3Vector.__str__ = __R3Vector_str
+
+_pygimli_.RMatrix.__str__ = __RMatrix_str
+_pygimli_.CMatrix.__str__ = __CMatrix_str
+_pygimli_.Line.__str__ = __Line_str
+_pygimli_.DataContainer.__str__ = __Data_str
+_pygimli_.ElementMatrix.__str__ = __ElementMatrix_str
+_pygimli_.BoundingBox.__str__ = __BoundingBox_str
 
 ############################
 # compatibility stuff
@@ -388,13 +410,10 @@ def __newBVectorSetVal__(self, *args, **kwargs):
         if isinstance(args[1], _pygimli_.BVector):
             return __origBVectorSetVal__(self, args[0], bv=args[1])
     return __origBVectorSetVal__(self, *args, **kwargs)
-
-
 _pygimli_.BVector.setVal = __newBVectorSetVal__
 
+
 __origCVectorSetVal__ = _pygimli_.CVector.setVal
-
-
 def __newCVectorSetVal__(self, *args, **kwargs):
     if len(args) == 2:
         if isinstance(args[1], int):
@@ -402,13 +421,10 @@ def __newCVectorSetVal__(self, *args, **kwargs):
         if isinstance(args[1], _pygimli_.BVector):
             return __origCVectorSetVal__(self, args[0], bv=args[1])
     return __origCVectorSetVal__(self, *args, **kwargs)
-
-
 _pygimli_.CVector.setVal = __newCVectorSetVal__
 
+
 __origIVectorSetVal__ = _pygimli_.IVector.setVal
-
-
 def __newIVectorSetVal__(self, *args, **kwargs):
     if len(args) == 2:
         if isinstance(args[1], int):
@@ -416,13 +432,10 @@ def __newIVectorSetVal__(self, *args, **kwargs):
         if isinstance(args[1], _pygimli_.BVector):
             return __origIVectorSetVal__(self, args[0], bv=args[1])
     return __origIVectorSetVal__(self, *args, **kwargs)
-
-
 _pygimli_.IVector.setVal = __newIVectorSetVal__
 
+
 __origIndexArraySetVal__ = _pygimli_.IndexArray.setVal
-
-
 def __newIndexArraySetVal__(self, *args, **kwargs):
     if len(args) == 2:
         if isinstance(args[1], int):
@@ -498,19 +511,24 @@ def __setVal(self, idx, val):
             self.setVal(val, int(idx.start), int(idx.stop))
             return
         else:
-            print("not yet implemented")
+            pg.critical("not yet implemented")
     elif isinstance(idx, tuple):
         # print("tuple", idx, type(idx))
         if isinstance(self, _pygimli_.RMatrix):
             self.rowRef(int(idx[0])).setVal(val, int(idx[1]))
             return
         else:
-            pg.error("cant set index with tuple", idx, "for", self)
+            pg.error("Can't set index with tuple", idx, "for", self)
             return
     # if isinstance(idx, _pygimli_.BVector):
     # print("__setVal", self, idx, 'val:', val)
     # self.setVal(val, bv=idx)
     # return
+    if isinstance(val, np.complex):
+        if isinstance(idx, int):
+            return self.setVal(val=val, id=idx)
+        else:
+            return self.setVal(val=val, ids=idx)
     self.setVal(val, idx)
 
 
@@ -527,7 +545,7 @@ def __getValMatrix(self, idx):
         if stop is None:
             stop = len(self)
 
-        return [self.rowR(i) for i in range(start, stop, step)]
+        return [self.rowRef(i) for i in range(start, stop, step)]
 
     elif isinstance(idx, tuple):
         # print(idx, type(idx))
@@ -577,16 +595,19 @@ _pygimli_.CMatrix.__setitem__ = __setVal
 ############################
 # len(RVector), RMatrix
 ############################
-def PGVector_len(self):
+def __Vector_len(self):
     return self.size()
 
+def __Vector3_len(self):
+    return 3
 
-_pygimli_.RVector.__len__ = PGVector_len
-_pygimli_.R3Vector.__len__ = PGVector_len
-_pygimli_.BVector.__len__ = PGVector_len
-_pygimli_.CVector.__len__ = PGVector_len
-_pygimli_.IVector.__len__ = PGVector_len
-_pygimli_.IndexArray.__len__ = PGVector_len
+_pygimli_.RVector.__len__ = __Vector_len
+_pygimli_.RVector3.__len__ = __Vector3_len
+_pygimli_.R3Vector.__len__ = __Vector_len
+_pygimli_.BVector.__len__ = __Vector_len
+_pygimli_.CVector.__len__ = __Vector_len
+_pygimli_.IVector.__len__ = __Vector_len
+_pygimli_.IndexArray.__len__ = __Vector_len
 
 ############################
 # abs(RVector), RMatrix
@@ -595,21 +616,50 @@ _pygimli_.RVector.__abs__ = _pygimli_.fabs
 _pygimli_.CVector.__abs__ = _pygimli_.mag
 _pygimli_.R3Vector.__abs__ = _pygimli_.absR3
 
-def RMatrix_len(self):
-    return self.rows()
-
-_pygimli_.RMatrix.__len__ = RMatrix_len
-_pygimli_.CMatrix.__len__ = RMatrix_len
-
 _pygimli_.RVector.ndim = 1
+_pygimli_.RVector.dtype = np.float
 _pygimli_.BVector.ndim = 1
+_pygimli_.BVector.dtype = np.bool
 _pygimli_.CVector.ndim = 1
+_pygimli_.CVector.dtype = np.complex
 _pygimli_.RVector3.ndim = 1
+_pygimli_.RVector3.dtype = np.float
 _pygimli_.IVector.ndim = 1
+_pygimli_.IVector.dtype = np.long
 _pygimli_.IndexArray.ndim = 1
+_pygimli_.IndexArray.dtype = np.uint
 _pygimli_.RMatrix.ndim = 2
+_pygimli_.RMatrix.dtype = np.float
+_pygimli_.CMatrix.ndim = 2
+_pygimli_.CMatrix.dtype = np.complex
 _pygimli_.R3Vector.ndim = 2
 _pygimli_.stdVectorRVector3.ndim = 2
+
+def __Matrix_len(self):
+    return self.rows()
+
+_pygimli_.RMatrix.__len__ = __Matrix_len
+_pygimli_.CMatrix.__len__ = __Matrix_len
+
+@property
+def __MatrixShapePropery__(self):
+    return (self.rows(), self.cols())
+
+_pygimli_.RMatrix.shape = __MatrixShapePropery__
+_pygimli_.CMatrix.shape = __MatrixShapePropery__
+
+############################
+# __hash__ settings
+############################
+_pygimli_.RVector.__hash__ = _pygimli_.RVector.hash
+_pygimli_.CVector.__hash__ = _pygimli_.CVector.hash
+_pygimli_.IVector.__hash__ = _pygimli_.IVector.hash
+_pygimli_.IndexArray.__hash__ = _pygimli_.IndexArray.hash
+_pygimli_.R3Vector.__hash__ = _pygimli_.R3Vector.hash
+_pygimli_.RVector3.__hash__ = _pygimli_.RVector3.hash
+_pygimli_.DataContainer.__hash__ = _pygimli_.DataContainer.hash
+_pygimli_.DataContainerERT.__hash__ = _pygimli_.DataContainerERT.hash
+_pygimli_.Mesh.__hash__ = _pygimli_.Mesh.hash
 
 
 ############################
@@ -706,7 +756,6 @@ class Vector3Iter():
 def __Vector3IterCall__(self):
     return Vector3Iter(self)
 
-
 _pygimli_.RVector3.__iter__ = __Vector3IterCall__
 
 
@@ -720,9 +769,7 @@ def __RVector3ArrayCall__(self, dtype=None):
     import numpy as np
     return np.array([self.getVal(0), self.getVal(1), self.getVal(2)])
 
-
 # default converter from RVector to numpy array
-
 
 def __RVectorArrayCall__(self, dtype=None):
 
@@ -733,11 +780,24 @@ def __RVectorArrayCall__(self, dtype=None):
     # probably fixed!!!
     # import numpy as np
     # we need to copy the array until we can handle increasing the reference
-    # counter in self.array() else it leads to strange behaviour
+    # counter in self.array() else it leads to strange behavior
     # test in testRValueConverter.py:testNumpyFromRVec()
     # return np.array(self.array())
     return self.array()
 
+def __CVectorArrayCall__(self, dtype=None):
+
+    #if idx and not isinstance(idx, numpy.dtype):
+    #print("self:", self)
+    #print("idx:", idx, type(idx) )
+    #raise Exception("we need to fix this")
+    # probably fixed!!! or not!!
+    # import numpy as np
+    # we need to copy the array until we can handle increasing the reference
+    # counter in self.array() else it leads to strange behavior
+    # test in testRValueConverter.py:testNumpyFromRVec()
+    #return np.array(self.array())
+    return self.array()
 
 # default converter from RVector to numpy array
 
@@ -749,6 +809,8 @@ _pygimli_.BVector.__array__ = __RVectorArrayCall__
 _pygimli_.R3Vector.__array__ = __RVectorArrayCall__
 _pygimli_.RVector3.__array__ = __RVector3ArrayCall__
 
+# see bug description
+_pygimli_.CVector.__array__ = __CVectorArrayCall__
 
 # hackish until stdVectorRVector3 will be removed
 def __stdVectorRVector3ArrayCall(self, dtype=None):
@@ -806,22 +868,19 @@ Inversion = _pygimli_.RInversion
 Pos = _pygimli_.RVector3
 PosVector = _pygimli_.R3Vector
 
-Trans = _pygimli_.RTrans
-TransLinear = _pygimli_.RTransLinear
-TransLin = _pygimli_.RTransLin
-TransPower = _pygimli_.RTransPower
-TransLog = _pygimli_.RTransLog
-TransLogLU = _pygimli_.RTransLogLU
-TransCotLU = _pygimli_.RTransCotLU
-TransCumulative = _pygimli_.RTransCumulative
 
 ############################
 # non automatic exposed functions
 ############################
 
 def abs(v):
+    """Should not necessary
+    TODO expose .core.__abs()
+    """
     if isinstance(v, _pygimli_.CVector):
         return _pygimli_.mag(v)
+    elif isinstance(v, list):
+        return _pygimli_.absR3(np.array(v).T)
     elif isinstance(v, _pygimli_.R3Vector):
         return _pygimli_.absR3(v)
     elif isinstance(v, np.ndarray):
@@ -904,6 +963,17 @@ def __ModellingBase__createJacobian_mt__(self, model, resp):
 
     dModel = _pygimli_.RVector(len(model))
     nProcs = self.multiThreadJacobian()
+
+
+    if sys.platform == 'win32':
+        # strange pickle problem: see  python test_PhysicsManagers.py ves
+        from .logger import warn
+        warn('Multiprocess jacobian currently unavailable')
+        nProcs = 1
+
+    if nProcs == 1:
+        self.createJacobian(model, resp)
+        return
 
     shm = []
 
@@ -1104,7 +1174,8 @@ def search(what):
     np.lookfor(what, module="pygimli", import_modules=False)
 
 # Import from submodules at the end
-from .matrix import (Cm05Matrix, LMultRMatrix, LRMultRMatrix, MultLeftMatrix,
-                     MultLeftRightMatrix, MultRightMatrix, RMultRMatrix)
+# from .matrix import (Cm05Matrix, LMultRMatrix, LRMultRMatrix, MultLeftMatrix,
+#                      MultLeftRightMatrix, MultRightMatrix, RMultRMatrix)
 from .mesh import Mesh, MeshEntity, Node
 from .datacontainer import DataContainer, DataContainerERT
+from .trans import *

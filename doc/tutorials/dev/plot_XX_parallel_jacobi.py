@@ -10,9 +10,9 @@ import numpy as np
 
 import time
 
-class TestModelling(pg.ModellingBase):
+class TestModelling(pg.core.ModellingBase):
     def __init__(self, nPars, verbose):
-        pg.ModellingBase.__init__(self, verbose)
+        pg.core.ModellingBase.__init__(self, verbose)
         self.regionManager().setParameterCount(nPars)
 
     def response(self, par):
@@ -31,7 +31,7 @@ class TestModelling(pg.ModellingBase):
         return par * 2.0
 
 nPars = 4
-m=pg.RVector(nPars, 1)
+m=pg.Vector(nPars, 1)
 
 fop = TestModelling(nPars, verbose=True)
 

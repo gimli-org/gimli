@@ -5,10 +5,10 @@
 Included into the GIMLi library are several electromagnetic 1d forward operators.
 For direct current resistivity there is a semi-analytical solution using infinite sums that are approximated by Ghosh filters. 
 The resulting function calculates the apparent resistivity of any array for a given resistivity and thickness vector.
-There are two main parameterisation types:
+There are two main parameterization types:
 \begin{itemize}
-	\item a fixed parameterisation where only the parameters are varied 
-	\item a variable parameterisation where parameters and geometry is varied
+	\item a fixed parameterization where only the parameters are varied 
+	\item a variable parameterization where parameters and geometry is varied
 \end{itemize}
 
 Although for 1d problems the latter is the typical one (resistivity and thickness), we start with the first since it is more general for 2d/3d problems and actually easier.
@@ -55,12 +55,12 @@ A starting model of constant values (median apparent resistivity) is defined
 
 Finally, the inversion is called and the model is retrieved using \lstinline|model = inv.run();|
 
-A very important parameter is the regularisation parameter $\lambda$ that controls the strength of the smoothness constraints (which are the default constraint for any 1d/2d/3d mesh).
-Whereas $w^c$ and $w^m$ are dimensionless and 1 by default, $\lambda$ has, after eq. (\ref{eq:min}), the reciprocal and squared unit of $m$ and can thus have completely different values for different problems\footnote{The regularisation parameter has therefore to be treated logarithmically.}.
+A very important parameter is the regularization parameter $\lambda$ that controls the strength of the smoothness constraints (which are the default constraint for any 1d/2d/3d mesh).
+Whereas $w^c$ and $w^m$ are dimensionless and 1 by default, $\lambda$ has, after eq. (\ref{eq:min}), the reciprocal and squared unit of $m$ and can thus have completely different values for different problems\footnote{The regularization parameter has therefore to be treated logarithmically.}.
 However, since often the logarithmic transform is used, the default value of $\lambda=20$ is often a first guess.
 Other values are set by
 \begin{lstlisting}
-    inv.setLambda( lambda ); //! set regularisation parameter
+    inv.setLambda( lambda ); //! set regularization parameter
 \end{lstlisting}
 
 In order to optimise $\lambda$, the L-curve \citep{guentherruecker06,guentherdiss} can be applied to find a trade-off between data fit and model roughness by setting \lstinline|inv.setOptimizeLambda(true);|.
@@ -75,7 +75,7 @@ Data format of the file \file{sond1-100.dat} is the unified data format\footnote
 \caption{Smooth 1d resistivity inversion results for a) $\lambda=200\Rightarrow \chi^2=11.1$/rrms=10.1\%, b) $\lambda=20\Rightarrow \chi^2=1.2$/rrms=3.3\%, and c) $\lambda=2\Rightarrow \chi^2=0.6$/rrms=2.4\%, red-synthetic model, blue-estimated model}\label{fig:dc1d-3lambda}
 \end{figure}
 
-Figure~\ref{fig:dc1d-3lambda} shows the inversion result for the three different regularisation parameters 300, 30 and 3.
+Figure~\ref{fig:dc1d-3lambda} shows the inversion result for the three different regularization parameters 300, 30 and 3.
 Whereas the first is over-smoothed, the other are much closer at the reality.
 The rightmost figure over-fits the data ($\chi^2=0.3<1$) but is still acceptable.
 The L-curve method yields a value of $\lambda=2.7$, which is too low.
@@ -110,7 +110,7 @@ We choose the median of the apparent resistivities and a constant thickness deri
     f.region( 1 )->setStartValue( median( rhoa ) );
 \end{lstlisting}
 
-For block inversion a scheme after \cite{marquardt}, i.e. a local damping of the changing without interaction of the model parameters and a decreasing regularisation strength is favourable.
+For block inversion a scheme after \cite{marquardt}, i.e. a local damping of the changing without interaction of the model parameters and a decreasing regularization strength is favourable.
 \begin{lstlisting}[language=C++]
     inv.setMarquardtScheme( 0.9 ); //! local damping with decreasing lambda
 \end{lstlisting}
@@ -121,7 +121,7 @@ The latter could also be achieved by \begin{enumerate}
 	\item defining the lambda decreasing factor by \lstinline|inv.setLambdaDecrease(0.9)|
 \end{enumerate}
 
-%The choice of appropriate regularisation parameters is somewhat more complicated since the result strongly depends on the starting model and the preceding models \citep{guentherdiss}.
+%The choice of appropriate regularization parameters is somewhat more complicated since the result strongly depends on the starting model and the preceding models \citep{guentherdiss}.
 %The latter can be done by \lstinline|inv.setLambdaDecrease( factor );|
 
 With the default regularization strength $\lambda=20$ we obtain a data fit slightly below the error estimate.
@@ -142,7 +142,7 @@ The resolution matrix $\R^M$ defines the projection of the real model onto the e
 	\m^{est} = \R^M \m^{true} + (\I - \R^M) \m^R + \S^\dagger\D\n\quad,
 \end{equation}
 \citep{guentherdiss} where $\S^\dagger\D\n$ represents the generalised inverse applied to the noise.
-Note that $\m^R$ changes to $\m^k$ for local regularisation schemes \citep{friedel03}.
+Note that $\m^R$ changes to $\m^k$ for local regularization schemes \citep{friedel03}.
 
 \citet{guentherdiss} also showed that the model cell resolution (discrete point spread function) can be computed by solving an inverse sub-problem with the corresponding sensitivity distribution instead of the data misfit.
 This is implemented in the inversion class by the function \lstinline|modelCellResolution( iModel )| where \lstinline|iModel| is the number of the model cell.

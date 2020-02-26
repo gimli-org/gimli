@@ -71,14 +71,36 @@ std::set< Node * > commonNodes(const ContainerOfMeshEntities & c){
     return commons;
 }
 
+class DLLEXPORT RegionMarker : public RVector3{
+public:
+    RegionMarker(const RVector3 & pos, int marker, double area=0.0,
+                 bool hole=false)
+    : RVector3(pos), marker_(marker), area_(area), isHole_(hole){}
+
+    ~RegionMarker(){}
+
+    inline void setMarker(SIndex marker) {marker_ = marker;}
+    inline int marker() const {return marker_;}
+
+    inline void setArea(double area) {area_ = area;}
+    inline double area() const {return area_;}
+
+    inline void setPos(const Pos & pos) {copy_(pos);}
+
+    bool isHole() const { return isHole_; }
+    inline void setHole(bool h) { isHole_ = h; }
+
+protected:
+    int marker_;
+    double area_;
+    bool isHole_;
+};
+
 class DLLEXPORT MeshEntity : public BaseEntity {
 public:
 
     /*! Default constructor.*/
     MeshEntity();
-
-    /*! Construct the entity from the given nodes.*/
-    MeshEntity(const std::vector < Node * > & nodes);
 
     /*! Default destructor.*/
     virtual ~MeshEntity();
@@ -92,12 +114,16 @@ public:
     /*! To separate between major MeshEntity families e.g. Cell and Boundary. */
     virtual uint parentType() const { return MESH_MESHENTITY_RTTI; }
 
-    inline Node & node(uint i) { 
-        ASSERT_RANGE(i, 0, nodeCount()); return *nodeVector_[i]; 
+    virtual void setNodes(const std::vector < Node * > & nodes);
+
+    const std::vector< Node * > & nodes() const { return nodeVector_; }
+
+    inline Node & node(uint i) {
+        ASSERT_RANGE(i, 0, nodeCount()); return *nodeVector_[i];
     }
 
-    inline Node & node(uint i) const { 
-        ASSERT_RANGE(i, 0, nodeCount()); return *nodeVector_[i]; 
+    inline Node & node(uint i) const {
+        ASSERT_RANGE(i, 0, nodeCount()); return *nodeVector_[i];
     }
 
     inline uint nodeCount() const { return nodeVector_.size(); }
@@ -120,7 +146,7 @@ public:
     virtual double attribute() const { return -1.0; }
 
     /*! Return IndexArray of all node ids. */
-    IndexArray ids() const ;
+    IndexArray ids() const;
 
     virtual std::vector < PolynomialFunction < double > > createShapeFunctions() const;
 
@@ -161,11 +187,6 @@ public:
 
     friend std::ostream & operator << (std::ostream & str, const MeshEntity & c);
 
-    const std::vector< Node * > & nodes() const { return nodeVector_; }
-//   inline std::iterator < std::vector < Node * > > begin() { return nodeVector_.begin(); }
-//
-//   inline std::vector < Node * >::iterator * end() { return nodeVector_.end(); }
-
 //    void setUxCache(const ElementMatrix < double >  & mat) const { uxCache_ = mat; }
 
  //   const ElementMatrix < double > & uxCache() const { return uxCache_; }
@@ -176,19 +197,20 @@ public:
 
     void addSecondaryNode(Node * n);
 
+    void delSecondaryNode(Node * n);
+
     const std::vector < Node * > & secondaryNodes() const;
 
     /*! Return primary and secondary nodes */
     const std::vector < Node * > allNodes() const;
 
     Index allNodeCount() const;
-    
+
 protected:
     void fillShape_();
 
-    void setNodes_(const std::vector < Node * > & nodes);
-
-    void deRegisterNodes_();
+    virtual void registerNodes_();
+    virtual void deRegisterNodes_();
 
     Shape * shape_;
 
@@ -226,7 +248,7 @@ public:
     Cell(const std::vector < Node * > & nodes);
 
     /*! Default destructor. */
-    ~Cell();
+    virtual ~Cell();
 
     /*! For pygimli bindings to allow simple check*/
     bool operator==(const Cell & cell){
@@ -235,24 +257,24 @@ public:
 
     virtual uint rtti() const { return MESH_CELL_RTTI; }
     virtual uint parentType() const { return MESH_CELL_RTTI; }
-    virtual uint neighbourCellCount() const { return 0; }
-    inline uint boundaryCount() const { return neighbourCellCount(); }
+    virtual uint neighborCellCount() const { return 0; }
+    inline uint boundaryCount() const { return neighborCellCount(); }
 
-    void cleanNeighbourInfos();
+    void cleanNeighborInfos();
 
-    Cell * neighbourCell(const RVector & sf);
+    Cell * neighborCell(const RVector & sf);
 
     /*! Return the direct neighbor cell corresponding to local node i.
      * The cell will be searched and stored by the virtual method
-     * \ref findNeighbourCell.
+     * \ref findNeighborCell.
      * All neighboring relationships have to be initialized ones by calling
      * \ref Mesh::createNeighborInfos().
      * If no cell can be found NULL is returned. */
-    inline Cell * neighbourCell(uint i){ return neighbourCells_[i]; }
+    inline Cell * neighborCell(uint i){ return neighborCells_[i]; }
 
     /*! Find neighbor cell regarding to the i-th Boundary and store them
-     * in neighbourCells_. */
-    virtual void findNeighbourCell(uint i);
+     * in neighborCells_. */
+    virtual void findNeighborCell(uint i);
 
     inline double attribute() const { return attribute_; }
 
@@ -266,7 +288,7 @@ public:
      * responsible for the shape function. */
     Boundary * boundaryTo(const RVector & sf);
 
-    /*! Return the i'th boundary. Experimental! */
+    /*! Return the i-th boundary. Experimental! */
     Boundary * boundary(Index i);
 
     /*! Experimental */
@@ -278,13 +300,9 @@ public:
     }
 
 protected:
-    void registerNodes_();
-
-    void deRegisterNodes_();
-
-    std::vector < Cell * > neighbourCells_;
-
-
+    virtual void registerNodes_();
+    virtual void deRegisterNodes_();
+    std::vector < Cell * > neighborCells_;
     double attribute_;
 
 protected:
@@ -307,17 +325,9 @@ protected:
 
 class DLLEXPORT Boundary : public MeshEntity{
 public:
-    Boundary() : MeshEntity(){
-    }
-
-    Boundary(const std::vector < Node * > & nodes)
-        : MeshEntity(nodes), leftCell_(NULL), rightCell_(NULL) {
-        registerNodes_();
-    }
-
-    ~Boundary(){
-        deRegisterNodes_();
-    }
+    Boundary();
+    Boundary(const std::vector < Node * > & nodes);
+    virtual ~Boundary();
 
     virtual uint rtti() const { return MESH_BOUNDARY_RTTI; }
     virtual uint parentType() const { return MESH_BOUNDARY_RTTI; }
@@ -348,6 +358,9 @@ public:
     /*! Return true if the normal vector of this boundary shown from the cell away (outside-direction) */
     bool normShowsOutside(const Cell & cell) const;
 
+    /*! Reverse node order to swap normal direction. */
+    void swapNorm();
+
 protected:
     void registerNodes_();
 
@@ -359,15 +372,15 @@ protected:
 protected:
     /*! Don't call this class directly */
     Boundary(const Boundary & bound){
-        THROW_TO_IMPL
         std::cerr << "Boundary(const Boundary & bound)" << std::endl;
+        THROW_TO_IMPL
     }
 
     /*! Don't call this class directly */
     Boundary & operator = (const Boundary & boundary){
         if (this != &boundary) {
+            std::cerr << "Assignment for boundaries not yet supported." << std::endl;
             THROW_TO_IMPL
-            std::cerr << "boundary=boundary" << std::endl;
         }
         return *this;
     }
@@ -386,7 +399,7 @@ public:
 
     virtual uint rtti() const { return MESH_BOUNDARY_NODE_RTTI; }
 
-    void setNodes(Node & n1, bool changed=true);
+    void setNodes(Node & n1);
 
     virtual double size() const { return 1.0; }
 
@@ -413,7 +426,7 @@ public:
 
     virtual std::vector < PolynomialFunction < double > > createShapeFunctions() const;
 
-    void setNodes(Node & n1, Node & n2, bool changed=true);
+    void setNodes(Node & n1, Node & n2);
 
     /*! Swap edge between two triangular neighbor cells. Only defined if both neighbors are triangles. */
     int swap();
@@ -465,7 +478,7 @@ public:
 
     virtual uint rtti() const { return MESH_TRIANGLEFACE_RTTI; }
 
-    void setNodes(Node & n1, Node & n2, Node & n3, bool changed=true);
+    void setNodes(Node & n1, Node & n2, Node & n3);
 
     friend std::ostream & operator << (std::ostream & str, const TriangleFace & e);
 
@@ -520,7 +533,7 @@ public:
     /*! this method need refactoring */
     virtual std::vector < PolynomialFunction < double > > createShapeFunctions() const;
 
-    void setNodes(Node & n1, Node & n2, Node & n3, Node & n4, bool changed = true);
+    void setNodes(Node & n1, Node & n2, Node & n3, Node & n4);
 
     friend std::ostream & operator << (std::ostream & str, const TriangleFace & e);
 
@@ -554,17 +567,48 @@ private:
 
 class DLLEXPORT PolygonFace : public Boundary {
     /*! */
-    public:
-        PolygonFace(const std::vector < Node * > & nodes);
-        
-        ~PolygonFace();
+public:
+    typedef Pos HoleMarker;
+    typedef std::vector < Pos >  HoleMarkerList;
 
-        virtual uint dim() const { return 3; }
+    PolygonFace(const std::vector < Node * > & nodes);
 
-        virtual uint rtti() const { return MESH_POLYGON_FACE_RTTI; }    
+    ~PolygonFace();
 
-    protected:
-    private:
+    virtual uint dim() const { return 3; }
+
+    virtual uint rtti() const { return MESH_POLYGON_FACE_RTTI; }
+
+    /*! Insert node into the polygon. Node needs to touch the polygon.
+    The node will be inserted in the nodeList or as secondary node if its
+    not on an edge.*/
+    void insertNode(Node * node, double tol=TOLERANCE);
+
+    /*! Insert nodes for a subpolygon.
+    All nodes regarding the parent mesh and need to be inside the face.*/
+    void addSubface(const std::vector < Node * > & nodes);
+
+    Index subfaceCount() const {return this->subfaces_.size();}
+
+    const std::vector < Node * > & subface(Index i) const;
+
+    /*! Add a hole marker for tetgen or triangle creation if the mesh
+     * is a PLC */
+    void addHoleMarker(const RVector3 & pos);
+
+    void delHoleMarker(const RVector3 & pos);
+
+    /*!Return read only reference for all defined hole regions. */
+    const HoleMarkerList & holeMarkers() const;
+
+    /*!Return reference to all defined hole markers. */
+    HoleMarkerList & holeMarkers(){ return holeMarker_;}
+
+protected:
+    std::vector < std::vector < Node * > > subfaces_;
+    HoleMarkerList holeMarker_;
+private:
+
 };
 
 class DLLEXPORT EdgeCell : public Cell {
@@ -579,11 +623,11 @@ public:
 
     virtual uint rtti() const { return MESH_EDGE_CELL_RTTI; }
 
-    virtual uint neighbourCellCount() const { return 2; }
+    virtual uint neighborCellCount() const { return 2; }
 
-//     virtual void findNeighbourCell(uint id);
+//     virtual void findNeighborCell(uint id);
 
-    void setNodes(Node & n1, Node & n2, bool changed = true);
+    void setNodes(Node & n1, Node & n2);
 
     virtual std::vector < PolynomialFunction < double > > createShapeFunctions() const;
 
@@ -636,11 +680,11 @@ public:
 
     virtual uint rtti() const { return MESH_TRIANGLE_RTTI; }
 
-    virtual uint neighbourCellCount() const { return 3; }
+    virtual uint neighborCellCount() const { return 3; }
 
-//     virtual void findNeighbourCell(uint i);
+//     virtual void findNeighborCell(uint i);
 
-    void setNodes(Node & n1, Node & n2, Node & n3, bool changed = true);
+    void setNodes(Node & n1, Node & n2, Node & n3);
 
     virtual std::vector < PolynomialFunction < double > > createShapeFunctions() const;
 
@@ -688,9 +732,9 @@ Node direction:
  /     /
 0-----1
 
-Neighbourship relations:
+Neighborship relations:
 
-Neighbour Nr, on Boundary a->b
+Neighbor Nr, on Boundary a->b
     0           2->3
     1           3->0
     2           0->1
@@ -708,11 +752,11 @@ public:
 
     virtual uint rtti() const { return MESH_QUADRANGLE_RTTI; }
 
-    void setNodes(Node & n1, Node & n2, Node & n3, Node & n4, bool changed = true);
+    void setNodes(Node & n1, Node & n2, Node & n3, Node & n4);
 
-    virtual uint neighbourCellCount() const { return 4; }
+    virtual uint neighborCellCount() const { return 4; }
 
-//     virtual void findNeighbourCell(uint i);
+//     virtual void findNeighborCell(uint i);
 
     virtual std::vector < PolynomialFunction < double > > createShapeFunctions() const;
 
@@ -758,14 +802,14 @@ Node direction:
 |/          \n
 0-----1     \n
 
-Neighbourship relations:
+Neighborship relations:
 Boundary normal shows outside .. so the boundary left neighbor is this cell
 
-Neighbour Nr., on Boundary a-b-c. Boundary to neighbour cell is opposite to NodeNr.
+Neighbor Nr., on Boundary a-b-c. Boundary to neighbor cell is opposite to NodeNr.
     0           1-2-3     le -- view from outer
-    1           2-0-3     re -- view from inner
+    1           2-0-3     ri -- view from inner
     2           0-1-3     le -- view from outer
-    3           0-2-1     re -- view from inner
+    3           0-2-1     ri -- view from inner
 */
 static const uint8 TetrahedronFacesID[4][3] = {
     {1, 2, 3},
@@ -792,11 +836,11 @@ public:
 
     virtual std::vector < PolynomialFunction < double > > createShapeFunctions() const;
 
-    void setNodes(Node & n1, Node & n2, Node & n3, Node & n4, bool changed = true);
+    void setNodes(Node & n1, Node & n2, Node & n3, Node & n4);
 
-    virtual uint neighbourCellCount() const { return 4; }
+    virtual uint neighborCellCount() const { return 4; }
 
-//     virtual void findNeighbourCell(uint i);
+//     virtual void findNeighborCell(uint i);
 
     friend std::ostream & operator << (std::ostream & str, const Tetrahedron & t);
 
@@ -861,18 +905,18 @@ Node direction:
 |/     |/   \n
 0------1    \n
 
-Neighbourship relations:
+Neighborship relations:
 Boundary normal shows outside .. so the boundary left neighbor is this cell
 
-Neighbour Nr, on Boundary a-b-c-d
+Neighbor Nr, on Boundary a-b-c-d
     0           1-2-6-5  // le
-    1           2-3-7-6  // re
-    2           3-0-4-7  // re
+    1           2-3-7-6  // ri
+    2           3-0-4-7  // ri
     3           0-1-5-4  // le
     4           4-5-6-7  // le
-    5           0-3-2-1  // re
+    5           0-3-2-1  // ri
 
-T.~Apel and N.~Düvelmeyer, Transformation of Hexaedral Finite Element Meshes into Tetrahedral Meshes According to Quality Criteria,
+T.~Apel and N.~Düvelmeyer, Transformation of Hexahedral Finite Element Meshes into Tetrahedral Meshes According to Quality Criteria,
 Computing Volume 71, Number 4 / November, 2003, DOI 10.1007/s00607-003-0031-5, Pages   293-304
 5-Tet-split: type 6(2) 1-4-5-6, 3-7-6-4, 1-4-0-3, 1-2-3-6, 1-6-4-3
 6-Tet-split: type 1    0-1-2-6, 0-2-3-6, 0-1-6-5, 0-4-5-6, 0-3-7-6, 0-4-6-7
@@ -900,7 +944,7 @@ public:
 
     virtual std::vector < PolynomialFunction < double > > createShapeFunctions() const;
 
-    virtual uint neighbourCellCount() const { return 6; }
+    virtual uint neighborCellCount() const { return 6; }
 
     friend std::ostream & operator << (std::ostream & str, const Hexahedron & t);
 
@@ -998,7 +1042,7 @@ public:
 
     virtual std::vector < PolynomialFunction < double > > createShapeFunctions() const;
 
-    virtual uint neighbourCellCount() const { return 5; }
+    virtual uint neighborCellCount() const { return 5; }
 
     friend std::ostream & operator << (std::ostream & str, const Hexahedron & t);
 
@@ -1082,7 +1126,7 @@ public:
 
     virtual std::vector < PolynomialFunction < double > > createShapeFunctions() const;
 
-    virtual uint neighbourCellCount() const { return 5; }
+    virtual uint neighborCellCount() const { return 5; }
 
     /*! Experimental */
     virtual std::vector < Node * > boundaryNodes(Index i) const;
@@ -1090,7 +1134,7 @@ public:
 protected:
 };
 
-//*! VTK,Flaherty,Gimli count: 1-2-3-4, 5(1-2), 6(2-3), 7(3-1), 8(1-4), 9(2-4), 10(3-4)* //
+//*! VTK, Flaherty, Gimli count: 1-2-3-4, 5(1-2), 6(2-3), 7(3-1), 8(1-4), 9(2-4), 10(3-4)* //
 static const uint8 Pyramid13NodeSplit[13][2] = {
     {0,0},{1,1},{2,2},{3,3},{4,4},
     {0,1},{1,2},{2,3},{3,0},

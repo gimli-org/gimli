@@ -9,7 +9,8 @@ BOOST_URL=http://sourceforge.net/projects/boost/files/boost/
 LAPACK_VERSION=3.4.2
 LAPACK_URL=http://www.netlib.org/lapack/
 
-SUITESPARSE_VERSION=4.4.4
+SUITESPARSE_VERSION=5.2.0
+#SUITESPARSE_VERSION=4.4.4
 SUITESPARSE_URL=http://faculty.cse.tamu.edu/davis/SuiteSparse/
 
 TRIANGLE_URL=http://www.netlib.org/voronoi/
@@ -18,15 +19,18 @@ CASTXML_URL=https://github.com/CastXML/CastXML.git
 #CASTXML_REV=d5934bd08651dbda95a65ccadcc5f39637d7bc59 #current functional
 #CASTXML_REV=9d7a46d639ce921b8ddd36ecaa23c567d003294a #last functional
 
-# Check for changes here: https://data.kitware.com/#folder/57b5de948d777f10f2696370
-CASTXML_BIN_LINUX=https://data.kitware.com/api/v1/file/57b5dea08d777f10f2696379/download
+# Check for updates https://data.kitware.com/#search/results?query=castxml&mode=text
+CASTXML_BIN_LINUX=https://data.kitware.com/api/v1/file/5b6c5b4d8d777f06857c323b/download
+#CASTXML_BIN_LINUX=https://data.kitware.com/api/v1/item/57b5de948d777f10f2696371/download # seems broken
+#CASTXML_BIN_LINUX=https://data.kitware.com/api/v1/file/57b5dea08d777f10f2696379/download # old ok
 CASTXML_BIN_MAC=https://data.kitware.com/api/v1/file/57b5de9f8d777f10f2696378/download
 CASTXML_BIN_WIN=https://data.kitware.com/api/v1/file/5b68bfc28d777f06857c1f44/download
 
 PYGCCXML_URL=https://github.com/gccxml/pygccxml
-PYGCCXML_REV=648e8da38fa12004f0c83f6e1532349296425702 # current functional
-#PYGCCXML_REV=6c6e6e038f24cf4accd94a11dabe74e8303e383d # last functional
-#PYGCCXML_RV=v1.7.3
+             
+PYGCCXML_REV=2b1efbb9e37ceb2ae925c7f3ce1570f476db9e1e # current functional
+#PYGCCXML_REV=648e8da38fa12004f0c83f6e1532349296425702 # last functional
+#PYGCCXML_BRANCH=develop
 
 PYPLUSPLUS_URL=https://bitbucket.org/ompl/pyplusplus
 #PYPLUSPLUS_REV=be7b5b3a0859 # tag 1.8 last functional
@@ -170,6 +174,8 @@ getWITH_WGET(){
     _URL_=$1
     _SRC_=$2
     _PAC_=$3
+
+    echo "** get with wget ** " $_URL_ $_SRC_ $_PAC_
     echo "wget -nc -nd $_URL_/$_PAC_"
 
     if [ -n "$CLEAN" ]; then
@@ -180,7 +186,21 @@ getWITH_WGET(){
     if [ ! -d $_SRC_ ]; then
         echo "Copying sources into $_SRC_"
         pushd $SRC_DIR
-            wget -nc -nd $_URL_/$_PAC_
+            if [[ `wget -S --spider $_URL_/$_PAC_  2>&1 | grep 'HTTP/1.1 200 OK'` ]]; then
+                echo $_URL_/$_PAC_ " found. Downloading."
+                wget -nc -nd $_URL_/$_PAC_
+            else
+                echo $_URL_/$_PAC_ " not found. Downloading index.html and copying to " $_PAC_
+                wget -nc -nd $_URL_
+
+                echo "cp download" $_PAC_
+                cp download download.tar.gz
+                cmake -E tar -xzf download.tar.gz
+                mv $_PAC_ download.dir/
+                echo "cp download.dir/$_PAC_ ."
+                mv download.dir/$_PAC_ .
+            fi
+            
             if [ "${_PAC_##*.}" = "zip" ]; then
                 mkdir -p $_SRC_
                 pushd $_SRC_
@@ -191,7 +211,7 @@ getWITH_WGET(){
             fi
         popd
     else
-        echo "Skipping .. sourcetree already exists. Use with CLEAN=1 if you want to force installation."
+        echo "Skipping .. source tree already exists. Use with CLEAN=1 if you want to force installation."
     fi
 
 }
@@ -437,6 +457,9 @@ buildCASTXMLBIN(){
     prepCASTXMLBIN
 
     if [ "$SYSTEM" == "WIN" ]; then
+        if [ -n "$CLEAN" ]; then
+            rm -f $SRC_DIR/castxml-windows.zip
+        fi
         getWITH_WGET $CASTXML_BIN_WIN $CASTXML_SRC castxml-windows.zip
         cp -r $CASTXML_SRC/castxml/* $CASTXML_DIST
         CASTXMLBIN=castxml.exe
@@ -445,6 +468,9 @@ buildCASTXMLBIN(){
         cp -r $CASTXML_SRC/* $CASTXML_DIST
         CASTXMLBIN=castxml
     else
+        if [ -n "$CLEAN" ]; then
+            rm -f $SRC_DIR/castxml-linux.tar.gz
+        fi
         getWITH_WGET $CASTXML_BIN_LINUX $CASTXML_SRC castxml-linux.tar.gz
         cp -r $CASTXML_SRC/* $CASTXML_DIST
         CASTXMLBIN=castxml
@@ -457,7 +483,6 @@ buildCASTXMLBIN(){
         rm $CASTXML_DIST/bin/*
         rm -rf $CASTXML_DIST/share/castxml
     fi
-
 }
 
 prepCASTXML(){

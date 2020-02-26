@@ -18,6 +18,7 @@
 
 #include "node.h"
 
+#include "matrix.h"
 #include "meshentities.h"
 #include "shape.h"
 
@@ -55,6 +56,7 @@ Node::Node(const RVector3 & pos, int marker, int id)
 }
 
 Node::Node(const Node & node){
+    init_();
     copy_(node);
 }
 
@@ -68,20 +70,22 @@ Node & Node::operator = (const Node & node){
 Node::~Node(){
     //std::cout << " delete Node " << pos_ << " " << id_ << " at " << this << std::endl;
 }
-
+void Node::transform(const RMatrix & mat) {
+    this->changed_(); pos_.transform(mat);
+}
 void Node::changed_(){
-    for (std::set < Boundary * >::iterator it = boundSet_.begin();
-         it!= boundSet_.end(); it ++){
-        (*it)->shape().changed();
+    for (auto &b : boundSet_){
+        b->shape().changed();
     }
-    for (std::set < Cell * >::iterator it = cellSet_.begin();
-         it!= cellSet_.end(); it ++){
-        (*it)->shape().changed();
+    for (auto &c : cellSet_){
+        c->shape().changed();
     }
 }
 
 void Node::copy_(const Node & node){
-    //std::cout << "copy node from "  << & node << " into " << this << std::endl;
+
+    // std::cout << "copy node from "  << & node << " into " << this << std::endl;
+    init_();
     pos_    = node.pos();
     marker_ = node.marker();
     setId(node.id());
@@ -89,6 +93,8 @@ void Node::copy_(const Node & node){
 
 void Node::init_(){
     setId(-1);
+    _state = No;
+    _secondaryParent = 0;
 }
 
 void Node::smooth(uint function){

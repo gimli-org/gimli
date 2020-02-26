@@ -23,17 +23,17 @@ fop = pg.physics.ert.ERTModelling(mesh, data)
 fop.regionManager().region(1).setBackground(True)
 fop.createRefinedForwardMesh(refine=True, pRefine=False)
 
-inv = pg.RInversion(data("rhoa"), fop, verbose=True, dosave=True)
+inv = pg.Inversion(data("rhoa"), fop, verbose=True, dosave=True)
 
-datTrans = pg.RTransLog()
-modTrans = pg.RTransLog()
+datTrans = pg.trans.TransLog()
+modTrans = pg.trans.TransLog()
 
 inv.setMaxIter(10)
 inv.setTransData(datTrans)
 inv.setTransModel(modTrans)
 inv.setError(data('err'))
-inv.setModel(pg.RVector(fop.regionManager().parameterCount(),
-                        pg.median(data('rhoa'))))
+inv.setModel(pg.Vector(fop.regionManager().parameterCount(),
+                        pg.math.median(data('rhoa'))))
 inv.setLambda(5)
 
 model = inv.run()
@@ -54,8 +54,8 @@ a, cbar = pg.show(modelMesh, model)
 #a, cbar = pg.show(modelMesh, model, tri=1, interpolate=0, shading='gouraud', axes=ax[2])
 
 #sens = pb.prepExportSensitivityData(modelMesh, S[110])
-#a, cbar = pg.show(modelMesh, sens, axes=ax[3], cmap='b2r')
-                  
+#a, cbar = pg.show(modelMesh, sens, axes=ax[3], cMap='b2r')
+
 #for i in range(4):
     #pg.show(modelMesh, data.sensorPositions(), axes=ax[i])
     #pg.show(modelMesh, axes=ax[i])
@@ -68,7 +68,7 @@ a, cbar = pg.show(modelMesh, model)
 
 #u = potmatrix[0] - potmatrix[1]
 
-#uc = pg.RVector(mesh.cellCount())
+#uc = pg.Vector(mesh.cellCount())
 #for c in mesh.cells():
     #uc[c.id()] = c.pot(c.center(), u)
 

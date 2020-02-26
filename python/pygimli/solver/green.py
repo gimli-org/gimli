@@ -7,13 +7,11 @@ import numpy as np
 
 
 def greenDiffusion1D(x, t=0, a=1, dim=1):
-    r"""
-    Greens function for diffusion operator.
+    r"""Greens function for diffusion operator.
 
     Provides the elementary solution for:
 
     .. math::
-
         g(x,t) = \partial t + a \Delta
 
     To find a solution for:
@@ -42,7 +40,6 @@ def greenDiffusion1D(x, t=0, a=1, dim=1):
     g : array_like
         Discrete Greens'function
 
-
     Examples
     --------
     >>> import numpy as np
@@ -63,4 +60,4 @@ def greenDiffusion1D(x, t=0, a=1, dim=1):
     >>> fig.show()
     """
     return 1. / (4. * np.pi * a * t)**(dim / 2.0) * \
-        np.exp(-(x**2) / (4. * a * t))
+            np.exp(-(x**2) / (4. * a * t))

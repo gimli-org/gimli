@@ -37,11 +37,11 @@ import matplotlib.pyplot as plt
 # computed by brute force (forward calculations with altered parameters).
 
 
-class ExpModelling(pg.ModellingBase):
+class ExpModelling(pg.core.ModellingBase):
     def __init__(self, xvec, verbose=False):
-        pg.ModellingBase.__init__(self, verbose)
+        pg.core.ModellingBase.__init__(self, verbose)
         self.x = xvec
-        self.setMesh(pg.createMesh1D(1, 2))
+        self.setMesh(pg.meshtools.createMesh1D(1, 2))
         # self.regionManager().setParameterCount(2)
 
     def response(self, model):
@@ -79,19 +79,19 @@ data += np.random.randn(*data.shape)*error
 # output the inversion, another one prints more and saves files for debugging.
 
 f = ExpModelling(x)
-inv = pg.RInversion(data, f)
+inv = pg.Inversion(data, f)
 
 ###############################################################################
-# We create a real-valued logarithmid transformation and appy it to the model.
+# We create a real-valued logarithmic transformation and apply it to the model.
 # Similar could be done for the data which are by default treated linearly.
 # We then set the error level that is used for data weighting. It can be a
 # float number or a vector of data length. One can also set a relative error.
-# Finally, we define the inversion style as Marquard scheme (pure local damping
+# Finally, we define the inversion style as Marquardt scheme (pure local damping
 # with decreasing the regularization parameter subsequently) and start with a
 # relatively large regularization strength to avoid overshoot.
 # Finally run yields the coefficient vector and we plot some statistics.
 
-tLog = pg.RTransLog()
+tLog = pg.trans.TransLog()
 inv.setTransModel(tLog)
 inv.setAbsoluteError(error)
 inv.setMarquardtScheme()
@@ -114,7 +114,6 @@ print(coeff)
 
 ###############################################################################
 # We finally create a plotting figure and plot both data and model response.
-
 
 plt.figure()
 plt.plot(x, data, 'rx', x, inv.response(), 'b-')
@@ -142,3 +141,4 @@ inv.echoStatus()
 ###############################################################################
 # The result is pretty much the same as before but for stronger equivalence or
 # smoothness-constrained regularization prior information might help a lot.
+pg.wait()

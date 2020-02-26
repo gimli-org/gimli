@@ -22,7 +22,7 @@ from pygimli.physics.petro import transFwdWyllieS as WyllieTrans
 
 
 def createSynthModel():
-    """Return the modeling mesh, the porosity distribution and the
+    """Return the modelling mesh, the porosity distribution and the
        parametric mesh for inversion.
     """
     # Create the synthetic model
@@ -117,7 +117,7 @@ class JointModelling(Modelling):
         """Initialize with lists of forward operators"""
         Modelling.__init__(self)
         self.fops = fopList
-        self.jac = pg.BlockMatrix()
+        self.jac = pg.matrix.BlockMatrix()
 
     def response(self, model):
         """Concatenate responses for all fops."""
@@ -180,7 +180,7 @@ class JointPetroInversion(MeshInversion):
                      for m, p in zip(mgrs, petros)]
 
         self.tM = mgrs[0].tM
-        self.tD = pg.TransCumulative()
+        self.tD = pg.trans.TransCumulative()
         self.fop = JointModelling(self.fops)
         self.setForwardOperator(self.fop)
 

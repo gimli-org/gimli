@@ -66,7 +66,7 @@ IndexArray find(const BVector & v);
 
 #ifndef PYGIMLI_CAST
 inline void Dump(const void * mem, unsigned int n) {
-    const char * p = reinterpret_cast< const char *>( mem );
+    const char * p = reinterpret_cast< const char *>(mem);
     for (unsigned int i = 0; i < n; i++) {
         std::cout << std::hex << int(p[i]) << " ";
     }
@@ -295,12 +295,12 @@ public:
         return *this;
     }
 
-    inline const ValueType & operator[](const Index i) const { 
+    inline const ValueType & operator[](const Index i) const {
         // ASSERT_THIS_SIZE(i)  // will not work for std::copy, std::sort etc.
-        return data_[i]; 
+        return data_[i];
     }
 
-    inline ValueType & operator[](const Index i) { 
+    inline ValueType & operator[](const Index i) {
         // ASSERT_THIS_SIZE(i)  // will not work for std::copy, std::sort etc.
         return data_[i];
     }
@@ -355,7 +355,7 @@ public:
            if (id >= 0 && id < size_){
                 v[i] = data_[(Index)id];
            } else {
-                throwLengthError(1, WHERE_AM_I + " idx out of range " +
+                throwLengthError(WHERE_AM_I + " idx out of range " +
                                      str(id) + " [" + str(0) + " " + str(size_) + ")");
            }
         }
@@ -464,22 +464,33 @@ public:
         return *this;
     }
 
+    /*! Insert vals from start index. Resize if necessary.*/
+    inline Vector< ValueType > & setVal(const Vector < ValueType > & vals,
+                                        Index start) {
+        Index newS = start + vals.size();
+        if (this->size() < newS) this->resize(newS);
+        this->setVal(vals, start, newS);
+
+        return *this;
+    }
+
+
     /*! Set values from slice. If vals.size() == this.size() copy vals[start, end) -> this[start, end) else
         assume vals is a slice itsself, so copy vals[0, end-start] -> this[start, end)
          if end larger than this size() sets end = size. Throws exception on violating boundaries. */
     inline Vector< ValueType > & setVal(const Vector < ValueType > & vals,
                                         Index start, Index end) {
         if (start > this->size()){
-            throwLengthError(1, WHERE_AM_I + " vals.size() < start " +
-                                toStr(vals.size()) + " " + toStr(start) + " " + toStr(end)) ;
+            throwLengthError(WHERE_AM_I + " vals.size() < start " +
+                                str(vals.size()) + " " + str(start) + " " + str(end)) ;
         }
 
         if (end > this->size()) end = this->size();
         if (start > end) start = end;
 
         if (vals.size() < (end - start)){
-            throwLengthError(1, WHERE_AM_I + " vals.size() < (end-start) " +
-                                toStr(vals.size()) + " " + toStr(start) + " " + toStr(end)) ;
+            throwLengthError( WHERE_AM_I + " vals.size() < (end-start) " +
+                                str(vals.size()) + " " + str(start) + " " + str(end)) ;
         }
 
         if (this->size() == vals.size()){
@@ -508,8 +519,8 @@ public:
         if (start > end) start = end;
 
         if (vals.size() < end - start){
-            throwLengthError(1, WHERE_AM_I + " vals.size() < (end-start) " +
-                                toStr(vals.size()) + " " + toStr(start) + " " + toStr(end)) ;
+            throwLengthError(WHERE_AM_I + " vals.size() < (end-start) " +
+                                str(vals.size()) + " " + str(start) + " " + str(end)) ;
         }
 
         if (this->size() == vals.size()){
@@ -573,7 +584,7 @@ public:
         if ((SIndex)start >= 0 && start < e){
             std::copy(& data_[start], & data_[e], &v[0]);
         } else {
-            throwLengthError(1, WHERE_AM_I + " bounds out of range " +
+            throwLengthError(WHERE_AM_I + " bounds out of range " +
                                 str(start) + " " + str(end) + " " + str(size_));
         }
         return v;
@@ -788,7 +799,7 @@ tolerance);
 
             std::ofstream file; file.open(fname.c_str());
             if (!file) {
-                throwError(1, filename + ": " + strerror(errno));
+                throwError(filename + ": " + strerror(errno));
             }
 
             file.setf(std::ios::scientific, std::ios::floatfield);
@@ -804,7 +815,7 @@ tolerance);
     //     file.close();
             FILE *file; file = fopen(fname.c_str(), "w+b");
             if (!file) {
-                throwError(1, filename + ": " + strerror(errno));
+                throwError(filename + ": " + strerror(errno));
             }
 
             int64 count = (int64)size_;
@@ -842,7 +853,6 @@ tolerance);
 
             std::fstream file; openInFile(filename.c_str(), &file);
             ValueType val; while(file >> val) {
-            // check !!! if (isinfnan(val)) throwLengthError(
                 tmp.push_back(val);
             }
 
@@ -863,7 +873,7 @@ tolerance);
             FILE *file;
             file = fopen(filename.c_str(), "r+b");
             if (!file) {
-                throwError(1, filename +  ": " + strerror(errno));
+                throwError(filename +  ": " + strerror(errno));
             }
             Index ret = 0;
             int64 size; ret = fread(&size, sizeof(int64), 1, file);
@@ -881,6 +891,13 @@ tolerance);
     VectorIterator< ValueType > begin() const { return VectorIterator< ValueType >(data_, size_); }
     VectorIterator< ValueType > end() const { return VectorIterator< ValueType >(data_ + size_, 0); }
 
+    Index hash() const {
+        Index seed = 0;
+        for (Index i = 0; i < this->size_; ++i) {
+            hashCombine(seed, this->data_[i]);
+        }
+        return seed;
+    }
 protected:
 
     void free_(){
@@ -896,7 +913,7 @@ protected:
             //"" check speed for memcpy here
              //std::memcpy(data_, v.data_, sizeof(ValType)*v.size());
              // memcpy is approx 0.3% faster but copy is extensively testet
-             // cleanest solution needs iterator rewriting: 
+             // cleanest solution needs iterator rewriting:
              // std::copy(v.begin(), v.end(), this->begin());
              std::copy(&v[0], &v[v.size()], data_); // only works without bound check in subscription operator
         }
@@ -1292,7 +1309,7 @@ inline BVector operator ~ (const BVector & a){
     return ret;
 }
 
-/*! For use in pygimli*/ 
+/*! For use in pygimli*/
 inline BVector inv(const BVector & a){
     return ~a;
 }
@@ -1441,6 +1458,16 @@ template < class T > T max(const Vector < T > & v){
     return *std::max_element(&v[0], &v[0] + v.size());
 }
 
+template < class T > void capMax(Vector < T > & v, T max){
+    ASSERT_EMPTY(v)
+    for (Index i = 0; i < v.size(); i ++ ) v[i] = min(v[i], max);
+}
+
+template < class T > void capMin(Vector < T > & v, T min){
+    ASSERT_EMPTY(v)
+    for (Index i = 0; i < v.size(); i ++ ) v[i] = max(v[i], min);
+}
+
 template < class ValueType >
     ValueType mean(const Vector < ValueType > & a){
         return sum(a) / ValueType(a.size());
@@ -1520,9 +1547,9 @@ template < class T > Vector< T > sort(const Vector < T > & a){
     return Vector < T > (0);
 }
 
-/*! Returning a copy of the vector and replacing all consecutive occurrences 
-    of a value by a single instance of that value. e.g. [0 1 1 2 1 1] -> [0 1 2 1]. 
-    To remove all double values from the vector use an additionally sorting. 
+/*! Returning a copy of the vector and replacing all consecutive occurrences
+    of a value by a single instance of that value. e.g. [0 1 1 2 1 1] -> [0 1 2 1].
+    To remove all double values from the vector use an additionally sorting.
     e.g. unique(sort(v)) gets you [0 1 2]. */
 template < class T > Vector< T > unique(const Vector < T > & a){
 #ifndef PYGIMLI_CAST
@@ -1599,15 +1626,16 @@ template < class ValueType >
 Vector< ValueType > increasingRange2(const ValueType & a,
                                      const ValueType & last, Index n){
     if (abs(a) < 1e-12){
-        throwError(1, "Can't create increasing range for start value of: " + toStr(a) );
+        throwError("Can't create increasing range for start value of: " +
+        str(a) );
     }
 
     if (sign(a) != sign(last)){
-        throwError(1, "Can't create increasing range from [0 " + toStr(a) + " to " + toStr(last) + "]");
+        throwError("Can't create increasing range from [0 " + str(a) + " to " + str(last) + "]");
     }
 
     if (n < 3){
-        throwError(1, "need at least n > 2" + toStr(a) + " n(" + toStr(n) +") "+ toStr(last));
+        throwError("need at least n > 2" + str(a) + " n(" + str(n) +") "+ str(last));
     }
 
 
@@ -1627,7 +1655,7 @@ template < class ValueType >
 Vector< ValueType > increasingRange(const ValueType & first,
                                     const ValueType & last, Index n){
     if (sign(first) != sign(last)){
-        throwError(1, "cant increase range from [0 " + toStr(first) + " to " + toStr(last) + "]");
+        throwError("cant increase range from [0 " + str(first) + " to " + str(last) + "]");
     }
 
     Placeholder x__;
@@ -1654,7 +1682,8 @@ template < class ValueType >
 Vector < std::complex < ValueType > > toComplex(const Vector < ValueType > & re,
                                                 const Vector < ValueType > & im){
     Vector < std::complex < ValueType > > cv(re.size());
-    for (Index i = 0; i < cv.size(); i ++) cv[i] = std::complex < ValueType >(re[i], im[i]);
+    for (Index i = 0; i < cv.size(); i ++) 
+        cv[i] = std::complex < ValueType >(re[i], im[i]);
     return cv;
 }
 
@@ -1679,6 +1708,7 @@ inline CVector toComplex(double re, const RVector & im){
 * To get the vice versa use abs(cvector) and phase(cvector). */
 inline CVector polarToComplex(const RVector & mag, const RVector & phi,
                               bool mRad=false){
+    log(Warning, "polarToComplex .. Do not use me" );
     ASSERT_EQUAL(mag.size(), phi.size())
     if (mRad){
         return polarToComplex(mag, phi / 1000.0, false);
@@ -1837,12 +1867,46 @@ bool saveVec(const Vector< ValueType > & a, const std::string & filename,
  Load vector from file. See Vector< ValueType >::load.
 */
 template < class ValueType >
-    bool loadVec(Vector < ValueType > & a,
-                 const std::string & filename,
-                 IOFormat format = Ascii){ return a.load(filename, format); }
-
-
+bool loadVec(Vector < ValueType > & a,
+             const std::string & filename,
+             IOFormat format = Ascii){
+    return a.load(filename, format);
+}
 
 } // namespace GIMLI
+
+#ifndef PYGIMLI_CAST
+namespace std {
+    template<> struct hash< std::complex < double > > {
+        GIMLI::Index operator()(const std::complex < double > & p) const noexcept {
+            return GIMLI::hash(p.real(), p.imag());
+        }
+    };
+    template<> struct hash< GIMLI::RVector > {
+        GIMLI::Index operator()(const GIMLI::RVector & p) const noexcept {
+            return p.hash();
+        }
+    };
+    template<> struct hash< GIMLI::IndexArray > {
+        GIMLI::Index operator()(const GIMLI::IndexArray & p) const noexcept {
+            return p.hash();
+        }
+    };
+    template<> struct hash< GIMLI::IVector > {
+        GIMLI::Index operator()(const GIMLI::IVector & p) const noexcept {
+            return p.hash();
+        }
+    };
+    template<> struct hash< std::map< std::string, GIMLI::RVector > > {
+        GIMLI::Index operator()(const std::map< std::string, GIMLI::RVector > & p) const noexcept {
+            GIMLI::Index seed = 0;
+            for (auto & x: p) {
+                hashCombine(seed, x.first, x.second);
+            }
+            return seed;
+        }
+    };
+}
+#endif // PYGIMLI_CAST
 
 #endif

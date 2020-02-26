@@ -22,7 +22,7 @@ def drawShapes(ax, mesh, u):
     tiy = np.linspace(-1.0, 1.0, Ny)
     X, Y = np.meshgrid(tix, tiy)
 
-    uc = pg.RVector(len(X.flat))
+    uc = pg.Vector(len(X.flat))
 
     c = mesh.cell(0)
 
@@ -49,7 +49,7 @@ def drawShapes(ax, mesh, u):
     ptns = []
     grads = []
 
-    swatch = pg.Stopwatch(True)
+    swatch = pg.core.Stopwatch(True)
     for i, x in enumerate(X.flat):
         p = c.shape().xyz(pg.RVector3(X.flat[i], Y.flat[i]))
 
@@ -83,7 +83,7 @@ def show(mesh):
     fig = plt.figure()
 
     for i in range(mesh.nodeCount()):
-        u = pg.RVector(mesh.nodeCount())
+        u = pg.Vector(mesh.nodeCount())
         u[i] = 1.0
         ax = fig.add_subplot(3, 3, i + 1)
         drawShapes(ax, mesh, u)

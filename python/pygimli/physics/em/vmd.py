@@ -7,8 +7,10 @@ from math import sqrt, pi
 import numpy as np
 import pygimli as pg
 
+from pygimli.frameworks import Block1DModelling
 
-class VMDModelling(pg.ModellingBase):
+
+class VMDModelling(Block1DModelling):
     r"""Modelling operator for a Vertical Magnetic Dipole (VMD).
 
     Modelling operator for a Vertical Magnetic Dipole (VMD) to calculate the
@@ -30,7 +32,27 @@ class VMDModelling(pg.ModellingBase):
         **kwargs : dict()
             Forward to ModellingBase
         """
-        pg.ModellingBase.__init__(self, **kwargs)
+        super(VMDModelling, self).__init__(**kwargs)
+
+    def createStartModel(self, rhoa):
+        r"""Create suitable starting model.
+
+            Create suitable starting model based on median apparent resistivity
+            values and skin depth approximation.
+        """
+        if self.nLayers == 0:
+            pg.critical("Model space is not been initialized.")
+
+        skinDepth = np.sqrt(max(self.t) * pg.math.median(rhoa)) * 500
+        thk = np.arange(self.nLayers)/sum(np.arange(self.nLayers)) * skinDepth / 2.
+        startThicks = thk[1:]
+
+        # layer thickness properties
+        self.setRegionProperties(0, startModel=startThicks, trans='log')
+
+        # resistivity properties
+        self.setRegionProperties(1, startModel=np.median(rhoa), trans='log')
+        return super(VMDModelling, self).regionManager().createStartModel()
 
     def response_mt(self, par, i=0):
         """Compute response vector for a set of model parameter.
@@ -40,7 +62,7 @@ class VMDModelling(pg.ModellingBase):
         par : iterabale
             DOCUMENTME
         """
-        raise BaseException("IMPLEMENTME")
+        raise pg.critical("IMPLEMENTME")
 
     def response(self, par):
         return self.response_mt(par)
@@ -185,32 +207,36 @@ class VMDModelling(pg.ModellingBase):
 class VMDTimeDomainModelling(VMDModelling):
     """
     """
-    def __init__(self, t, txarea, rxarea=None, **kwargs):
+    def __init__(self, times, txArea, rxArea=None, **kwargs):
         """
         """
-        VMDModelling.__init__(self, **kwargs)
+        super(VMDTimeDomainModelling, self).__init__(**kwargs)
 
-        self.t = t
-        self.txarea = txarea
+        self.t = times
+        self.txArea = txArea
 
-        if rxarea is None:
-            self.rxarea = txarea
+        if rxArea is None:
+            self.rxArea = txArea
         else:
-            self.rxarea = rxarea
+            self.rxArea = rxArea
 
-    def createStartModel(self, rhoa, nLayer, thickness=None):
-        r"""Create suitable starting model.
+    def createStartModel(self, rhoa, nLayers=None, thickness=None):
+        """Create suitable starting model.
 
-            Create suitable starting model based on median apparent resistivity
-            values and skin depth approximation.
+        Create suitable starting model based on median apparent resistivity
+        values and skin depth approximation.
         """
-        res = np.ones(nLayer) * pg.median(rhoa)
+        if nLayers is None:
+            nLayers = self.nLayers
+
+        res = np.ones(nLayers) * pg.math.median(rhoa)
         if thickness is None:
-            skinDepth = np.sqrt(max(self.t) * pg.median(rhoa)) * 500
-            thk = np.arange(nLayer) / sum(np.arange(nLayer)) * skinDepth / 2.
+            skinDepth = np.sqrt(max(self.t) * pg.math.median(rhoa)) * 500
+            thk = np.arange(nLayers) / sum(np.arange(nLayers)) * skinDepth / 2.
             thk = thk[1:]
         else:
-            thk = np.ones(nLayer-1) * thickness
+            thk = np.ones(nLayers-1) * thickness
+
         self.setStartModel(pg.cat(thk, res))
         return self.startModel()
 
@@ -221,7 +247,6 @@ class VMDTimeDomainModelling(VMDModelling):
         nLay = (len(par)-1)//2
         thk = par[0:nLay]
         res = par[nLay:]
-
         return self.calcRhoa(thk, res)
 
     def response(self, par):
@@ -230,16 +255,16 @@ class VMDTimeDomainModelling(VMDModelling):
 
     def calcRhoa(self, thk, res):
         """Compute apparent resistivity response"""
-        a = sqrt(self.txarea / pi)  # TX coil radius
+        a = sqrt(self.txArea / pi)  # TX coil radius
 
         ePhiTD, tD = self.calcEphiT(tMin=min(self.t), tMax=max(self.t),
                                     rho=res, d=thk, rMin=a, rMax=a, z=0,
-                                    dipm=self.rxarea)
+                                    dipm=self.rxArea)
 
         ePhi = np.exp(np.interp(np.log(self.t),
                                 np.log(tD), np.log(ePhiTD[:, 0])))
 
-        tmp = a**(4./3) * self.rxarea**(2./3) * \
+        tmp = a**(4./3) * self.rxArea**(2./3) * \
             pg.physics.constants.mu0**(5./3) / (20**(2./3) * pi**(1./3))
         rhoa = tmp / (self.t**(5./3) * (ePhi * 2 * pi * a)**(2./3))
 

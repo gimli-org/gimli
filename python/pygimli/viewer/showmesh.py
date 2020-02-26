@@ -6,10 +6,11 @@ import sys
 import time
 import traceback
 
+import numpy as np
 # plt should not be used outside of mplviewer
 import matplotlib.pyplot as plt
 
-import numpy as np
+from .. core.logger import renameKwarg
 
 try:
     import pygimli as pg
@@ -22,36 +23,42 @@ try:
 except ImportError as e:
     print(e)
     traceback.print_exc(file=sys.stdout)
-    raise Exception('''ERROR: cannot import the library 'pygimli'.
-        Ensure that pygimli is in your PYTHONPATH ''')
+    pg.critical("ERROR: cannot import the library 'pygimli'."
+                "Ensure that pygimli is in your PYTHONPATH ")
 
 
-def show(mesh=None, data=None, **kwargs):
+def show(obj=None, data=None, **kwargs):
     """Mesh and model visualization.
 
-    Syntactic sugar to show a mesh with data. Forwards to
+    Syntactic sugar to show a obj with data. Forwards to
+    a known visualization for obj. Typical is
     :py:mod:`pygimli.viewer.showMesh` or
     :py:mod:`pygimli.viewer.mayaview.showMesh3D` to show most of the typical 2D
-    and 3D content. See tutorials and examples for usage hints. An empty show
+    and 3D content.
+    See tutorials and examples for usage hints. An empty show
     call creates an empty ax window.
 
     Parameters
     ----------
-    mesh : :gimliapi:`GIMLI::Mesh` or list of meshes
-        2D or 3D GIMLi mesh
+    obj: :gimliapi:`GIMLI::Mesh` or list of meshes | DataContainer
+        Mesh or data object
+    data: iterable
+        Optionally data to visualize. See appropriate show function.
 
-    **kwargs :
-        * fitView : bool [True]
-            Scale x and y limits to match the view.
+    Other Parameters
+    ----------------
+    **kwargs
+        Additional kwargs forward to appropriate show functions.
 
         * ax : axe [None]
             Matplotlib axes object. Create a new if necessary.
-
-        * Will be forwarded to the appropriate show functions.
+        * fitView : bool [True]
+            Scale x and y limits to match the view.
 
     Returns
     -------
-    Return the results from the showMesh* functions.
+    Return the results from the showMesh* functions. Usually the axe object
+    and a colorbar.
 
     See Also
     --------
@@ -61,30 +68,36 @@ def show(mesh=None, data=None, **kwargs):
         print("Deprecation Warning: Please use keyword `ax` instead of `axes`")
         kwargs['ax'] = kwargs.pop('axes', None)
 
+    if isinstance(obj, pg.DataContainerERT):
+        from pygimli.physics.ert import showERTData
+        return showERTData(obj, vals=kwargs.pop('vals', data), **kwargs)
+
+    mesh = kwargs.pop('mesh', obj)
+
     if isinstance(mesh, list):
         ax = kwargs.pop('ax', None)
-        fitView = kwargs.pop('fitView', True)
+        fitView = kwargs.pop('fitView', ax is None)
 
-        ax, cbar = show(mesh[0], data, hold=1, ax=ax, fitView=fitView, **kwargs)
-        xmin = mesh[0].xmin()
-        xmax = mesh[0].xmax()
-        ymin = mesh[0].ymin()
-        ymax = mesh[0].ymax()
+        ax, cBar = show(mesh[0], data, hold=1, ax=ax, fitView=fitView, **kwargs)
+        xMin = mesh[0].xMin()
+        xMax = mesh[0].xMax()
+        yMin = mesh[0].yMin()
+        yMax = mesh[0].yMax()
 
         for m in mesh[1:]:
-            ax, cbar = show(m, data, ax=ax, hold=1, fitView=False, **kwargs)
-            xmin = min(xmin, m.xmin())
-            xmax = max(xmax, m.xmax())
-            ymin = min(ymin, m.ymin())
-            ymax = max(ymax, m.ymax())
+            ax, cBar = show(m, data, ax=ax, hold=1, fitView=False, **kwargs)
+            xMin = min(xMin, m.xMin())
+            xMax = max(xMax, m.xMax())
+            yMin = min(yMin, m.yMin())
+            yMax = max(yMax, m.yMax())
 
 #        ax.relim()
 #        ax.autoscale_view(tight=True)
         if fitView is not False:
-            ax.set_xlim([xmin, xmax])
-            ax.set_ylim([ymin, ymax])
+            ax.set_xlim([xMin, xMax])
+            ax.set_ylim([yMin, yMax])
         #        print(ax.get_data_interval())
-        return ax, cbar
+        return ax, cBar
 
     if isinstance(mesh, pg.Mesh):
         if mesh.dim() == 2:
@@ -98,7 +111,7 @@ def show(mesh=None, data=None, **kwargs):
             return showMesh(mesh, data, **kwargs)
         elif mesh.dim() == 3:
 
-            from .mayaview import showMesh3D
+            from .vistaview import showMesh3D
 
             return showMesh3D(mesh, data, **kwargs)
         else:
@@ -124,11 +137,9 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
 
     Parameters
     ----------
-
-    mesh : :gimliapi:`GIMLI::Mesh`
+    mesh: :gimliapi:`GIMLI::Mesh`
         2D or 3D GIMLi mesh
-
-    data : iterable [None]
+    data: iterable [None]
         Optionally data to visualize.
 
         . None (draw mesh only)
@@ -149,64 +160,54 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
         . iterable of type [float, float] -- vector field
             forward to :py:mod:`pygimli.mplviewer.drawStreams`
 
-        . pg.R3Vector -- vector field
+        . pg.core.R3Vector -- vector field
             forward to :py:mod:`pygimli.mplviewer.drawStreams`
 
-        . pg.stdVectorRVector3 -- sensor positions
+        . pg.core.stdVectorRVector3 -- sensor positions
             forward to :py:mod:`pygimli.mplviewer.drawSensors`
-
-
-    hold : bool [false]
+    hold: bool [false]
         Set interactive plot mode for matplotlib.
         If this is set to false [default] your script will open
         a window with the figure and draw your content.
         If set to true nothing happens until you either force another show with
         hold=False, you call plt.show() or pg.wait().
         If you want show with stopping your script set block = True.
-
-    block : bool [false]
+    block: bool [false]
         Force show drawing your content and block the script until you
         close the current figure.
-
-    colorBar : bool [None], Colorbar
+    colorBar: bool [None], Colorbar
         Create and show a colorbar. If colorBar is a valid colorbar then only
         its values will be updated.
-
-    label : str
+    label: str
         Set colorbar label. If set colorbar is toggled to True. [None]
-
-    coverage : iterable [None]
+    coverage: iterable [None]
         Weight data by the given coverage array and fadeout the color.
-
-    ax : matplotlib.Axes [None]
+    ax: matplotlib.Axes [None]
         Instead of creating a new and empty ax, just draw into the given one.
         Useful to combine multiple plots into one figure.
-
     savefig: string
         Filename for a direct save to disc.
         The matplotlib pdf-output is a little bit big so we try
         an epstopdf if the .eps suffix is found in savefig
-
-    showMesh : bool [False]
-        Shows the mesh itself aditional.
-
-    showBoundary : bool [None]
+    showMesh: bool [False]
+        Shows the mesh itself additional.
+    showBoundary: bool [None]
         Shows all boundary with marker != 0. A value None means automatic
         True for cell data and False for node data.
-
-    marker : bool [False]
+    marker: bool [False]
         Show mesh and boundary marker.
 
-    **kwargs :
-        * xlabel : str [None]
+    Other Parameters
+    ----------------
+    **kwargs:
+        * xlabel: str [None]
             Add label to the x axis
-
-        * ylabel : str [None]
+        * ylabel: str [None]
             Add label to the y axis
-
-        * all remaining
-            Will be forwarded to the draw functions and matplotlib methods,
-            respectively.
+        fitView: bool
+            Fit the axes limits to the view object. Default is True if ax is None else is set to False.
+        All remaining will be forwarded to the draw functions
+        and matplotlib methods, respectively.
 
     Examples
     --------
@@ -223,20 +224,19 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
 
     colobar : matplotlib.colorbar
     """
-    pg.renameKwarg('cmap', 'cMap', kwargs)
+    renameKwarg('cmap', 'cMap', kwargs)
 
+    cMap = kwargs.pop('cMap', None)
+    cBarOrientation = kwargs.pop('orientation', 'horizontal')
+
+    fitViewDefault = False
     if ax is None:
+        fitViewDefault = True
         ax = plt.subplots()[1]
-
-    # print('1*'*50)
-    # print(locale.localeconv())
 
     # plt.subplots() resets locale setting to system default .. this went
     # horrible wrong for german 'decimal_point': ','
     pg.checkAndFixLocaleDecimal_point(verbose=False)
-
-    # print('2*'*50)
-    # print(locale.localeconv())
 
     if block:
         hold = True
@@ -255,7 +255,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
             uniquemarkers, uniqueidx = np.unique(
                 np.array(mesh.cellMarkers()), return_inverse=True)
             label = "Cell markers"
-            kwargs["cMap"] = plt.cm.get_cmap("Set3", len(uniquemarkers))
+            cMap = plt.cm.get_cmap("Set3", len(uniquemarkers))
             kwargs["logScale"] = False
             kwargs["cMin"] = -0.5
             kwargs["cMax"] = len(uniquemarkers) - 0.5
@@ -263,11 +263,12 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
 
     if data is None:
         showMesh = True
+        mesh.createNeighborInfos()
         if showBoundary is None:
             showBoundary = True
-    elif isinstance(data, pg.stdVectorRVector3):
+    elif isinstance(data, pg.core.stdVectorRVector3):
         drawSensors(ax, data, **kwargs)
-    elif isinstance(data, pg.R3Vector):
+    elif isinstance(data, pg.core.R3Vector):
         drawStreams(ax, mesh, data, **kwargs)
     else:
         ### data=[[marker, val], ....]
@@ -291,14 +292,12 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
             else:
                 pg.warn("No valid stream data:", data.shape, data.ndim)
                 showMesh = True
-        elif min(data) == max(data):  # or pg.haveInfNaN(data):
-            pg.warn("No valid data: ", min(data), max(data), pg.haveInfNaN(data))
-            showMesh = True
+        # elif min(data) == max(data):  # or pg.core.haveInfNaN(data):
+        #     pg.warn("No valid data: ", min(data), max(data), pg.core.haveInfNaN(data))
+        #     showMesh = True
         else:
             validData = True
             try:
-                cMap = kwargs.pop('cMap', None)
-                
                 if len(data) == mesh.cellCount():
                     gci = drawModel(ax, mesh, data, **kwargs)
                     if showBoundary is None:
@@ -307,15 +306,19 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
                 elif len(data) == mesh.nodeCount():
                     gci = drawField(ax, mesh, data, **kwargs)
 
-                if cMap is not None:
+                else:
+                    pg.error("Data size invalid")
+                    print("Data: ", len(data), min(data), max(data), pg.core.haveInfNaN(data))
+                    print("Mesh: ", mesh)
+                    validData = False
+                    drawMesh(ax, mesh)
+
+                if cMap is not None and gci is not None:
                     gci.set_cmap(cmapFromName(cMap))
                     #gci.cmap.set_under('k')
 
             except BaseException as e:
-                print("Exception occured: ", e)
-                print("Data: ", min(data), max(data), pg.haveInfNaN(data))
-                print("Mesh: ", mesh)
-                drawMesh(ax, mesh, **kwargs)
+                pg.error("Exception occurred: ", e)
 
     if mesh.cellCount() == 0:
         showMesh = False
@@ -328,7 +331,6 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
         else:
             pg.mplviewer.drawPLC(ax, mesh, **kwargs)
 
-
     if showMesh:
         if gci is not None and hasattr(gci, 'set_antialiased'):
             gci.set_antialiased(True)
@@ -336,68 +338,68 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
             gci.set_edgecolor("0.1")
         else:
             pg.mplviewer.drawSelectedMeshBoundaries(ax, mesh.boundaries(),
-                                                    color="0.1", linewidth=0.3)
+                                            color=kwargs.pop('color', "0.1"), linewidth=0.3)
             #drawMesh(ax, mesh, **kwargs)
 
-    if showBoundary is True or showBoundary is 1:
+    if showBoundary == True or showBoundary == 1:
         b = mesh.boundaries(mesh.boundaryMarkers() != 0)
         pg.mplviewer.drawSelectedMeshBoundaries(ax, b,
                                                 color=(0.0, 0.0, 0.0, 1.0),
                                                 linewidth=1.4)
 
-    fitView = kwargs.pop('fitView', True)
+    fitView = kwargs.pop('fitView', fitViewDefault)
     if fitView:
-        ax.set_xlim(mesh.xmin(), mesh.xmax())
-        ax.set_ylim(mesh.ymin(), mesh.ymax())
+        ax.set_xlim(mesh.xMin(), mesh.xMax())
+        ax.set_ylim(mesh.yMin(), mesh.yMax())
         ax.set_aspect('equal')
 
-    cbar = None
+    cBar = None
 
     if label is not None and colorBar is None:
         colorBar = True
 
     if colorBar and validData:
         # , **kwargs) # causes problems!
-        labels = ['cMin', 'cMax', 'nLevs', 'cMap', 'logScale']
+        labels = ['cMin', 'cMax', 'nLevs', 'logScale', 'levels']
         subkwargs = {key: kwargs[key] for key in labels if key in kwargs}
         subkwargs['label'] = label
+        subkwargs['cMap'] = cMap
+        subkwargs['orientation'] = cBarOrientation
 
-        if colorBar is True or colorBar is 1:
-            cbar = createColorBar(gci,
-                                  orientation=kwargs.pop('orientation',
-                                                         'horizontal'),
+        if bool(colorBar):
+            cBar = createColorBar(gci,
                                   size=kwargs.pop('size', 0.2),
-                                  pad=kwargs.pop('pad', None)
+                                  pad=kwargs.pop('pad', None),
+                                  **subkwargs
                                   )
-            updateColorBar(cbar, **subkwargs)
         elif colorBar is not False:
-            cbar = updateColorBar(colorBar, **subkwargs)
+            cBar = updateColorBar(colorBar, **subkwargs)
 
         if markers:
             ticks = np.arange(len(uniquemarkers))
-            cbar.set_ticks(ticks)
+            cBar.set_ticks(ticks)
             labels = []
             for marker in uniquemarkers:
                 labels.append(str((marker)))
-            cbar.set_ticklabels(labels)
+            cBar.set_ticklabels(labels)
 
     if coverage is not None:
         if len(data) == mesh.cellCount():
-            addCoverageAlpha(gci, coverage)
+            addCoverageAlpha(gci, coverage,
+                             dropThreshold=kwargs.pop('dropThreshold', 0.4))
         else:
             raise BaseException('toImplement')
-            # addCoverageAlpha(gci, pg.cellDataToPointData(mesh, coverage))
+            # addCoverageAlpha(gci, pg.core.cellDataToPointData(mesh, coverage))
 
-    if not hold or block is not False and plt.get_backend() is not "Agg":
+    if not hold or block is not False and plt.get_backend().lower() != "agg":
         if data is not None:
             if len(data) == mesh.cellCount():
-                cb = CellBrowser(mesh, data, ax=ax)
+                CellBrowser(mesh, data, ax=ax)
 
         plt.show(block=block)
         try:
             plt.pause(0.01)
         except BaseException as _:
-
             pass
 
     if hold:
@@ -418,9 +420,9 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
                 os.system('epstopdf ' + savefig)
             except BaseException:
                 pass
-        print('..done')
+        print('.. done')
 
-    return ax, cbar
+    return ax, cBar
 
 
 def showBoundaryNorm(mesh, normMap=None, **kwargs):

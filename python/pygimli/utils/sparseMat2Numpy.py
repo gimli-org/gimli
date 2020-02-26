@@ -13,7 +13,7 @@ def sparseMatrix2csr(A):
     
     Parameters
     ----------
-    A: pg.SparseMapMatrix | pg.SparseMatrix
+    A: pg.matrix.SparseMapMatrix | pg.matrix.SparseMatrix
         Matrix to convert from.
 
     Returns
@@ -23,16 +23,26 @@ def sparseMatrix2csr(A):
     """
     #optImport(scipy.sparse, requiredFor="toCRS_matrix")
     from scipy.sparse import csr_matrix
-    if isinstance(A, pg.SparseMapMatrix):
-        C = pg.SparseMatrix(A)
+    if isinstance(A, pg.matrix.CSparseMapMatrix):
+        C = pg.matrix.CSparseMatrix(A)
+        return csr_matrix((C.vecVals().array(),
+                           C.vecRowIdx(),
+                           C.vecColPtr()), dtype=complex)
+    if isinstance(A, pg.matrix.SparseMapMatrix):
+        C = pg.matrix.SparseMatrix(A)
         return csr_matrix((C.vecVals().array(),
                            C.vecRowIdx(),
                            C.vecColPtr()))
-    elif isinstance(A, pg.SparseMatrix):
+    elif isinstance(A, pg.matrix.SparseMatrix):
         return csr_matrix((A.vecVals().array(),
                            A.vecRowIdx(),
                            A.vecColPtr()))
-    elif isinstance(A, pg.RBlockMatrix):
+    elif isinstance(A, pg.matrix.CSparseMatrix):
+        csr = csr_matrix((A.vecVals().array(),
+                           A.vecRowIdx(),
+                           A.vecColPtr()), dtype=complex)
+        return csr
+    elif isinstance(A, pg.matrix.BlockMatrix):
         M = A.sparseMapMatrix()
         return sparseMatrix2csr(M)
 
@@ -44,7 +54,7 @@ def sparseMatrix2coo(A, rowOffset=0, colOffset=0):
 
     Parameters
     ----------
-    A: pg.SparseMapMatrix | pg.SparseMatrix
+    A: pg.matrix.SparseMapMatrix | pg.matrix.SparseMatrix
         Matrix to convert from.
 
     Returns
@@ -53,19 +63,21 @@ def sparseMatrix2coo(A, rowOffset=0, colOffset=0):
         Matrix to convert into.
     """
     from scipy.sparse import coo_matrix
-    vals = pg.RVector()
-    rows = pg.IndexArray([0])
-    cols = pg.IndexArray([0])
-    if isinstance(A, pg.SparseMatrix):
-        C = pg.RSparseMapMatrix(A)
+
+    vals = pg.Vector()
+    rows = pg.core.IndexArray([0])
+    cols = pg.core.IndexArray([0])
+    if isinstance(A, pg.matrix.SparseMatrix):
+        C = pg.matrix.SparseMapMatrix(A)
         C.fillArrays(vals=vals, rows=rows, cols=cols)
         rows += rowOffset
         cols += colOffset
         return coo_matrix((vals, (rows, cols)), shape=(A.rows(), A.cols()))
-    elif isinstance(A, pg.SparseMapMatrix):
+    elif isinstance(A, pg.matrix.SparseMapMatrix):
         A.fillArrays(vals, rows, cols)
         rows += rowOffset
         cols += colOffset
+
         return coo_matrix((vals, (rows, cols)), shape=(A.rows(), A.cols()))
 
     return coo_matrix(A)
@@ -75,7 +87,7 @@ def convertCRSIndex2Map(rowIdx, colPtr):
     """Converts CRS indices to uncompressed indices (row, col)."""
     ii = []
     jj = []
-    for i in range(len(colPtr) - 1):
+    for i in range(len(colPtr)-1):
         for j in range(colPtr[i], colPtr[i + 1]):
             ii.append(i)
             jj.append(rowIdx[j])
@@ -92,7 +104,7 @@ def sparseMatrix2Array(matrix, indices=True, getInCRS=True):
     Parameters
     ----------
 
-    matrix: pg.SparseMapMatrix or pg.SparseMatrix
+    matrix: pg.matrix.SparseMapMatrix or pg.matrix.SparseMatrix
         Input matrix to be transformed to numpy arrays.
 
     indices: boolean (True)
@@ -116,11 +128,11 @@ def sparseMatrix2Array(matrix, indices=True, getInCRS=True):
     """
     io_warn = 'Only working for pygimli.SparseMapMatrix or CSR shaped ' +\
               'pygimli.Sparse matrices. Import type is {}'
-    assert isinstance(matrix, pg.SparseMapMatrix) or\
-        isinstance(matrix, pg.SparseMatrix), io_warn.format(type(matrix))
+    assert isinstance(matrix, pg.matrix.SparseMapMatrix) or\
+        isinstance(matrix, pg.matrix.SparseMatrix), io_warn.format(type(matrix))
 
-    if not isinstance(matrix, pg.SparseMatrix):
-        matrix = pg.RSparseMatrix(matrix)
+    if not isinstance(matrix, pg.matrix.SparseMatrix):
+        matrix = pg.matrix.SparseMatrix(matrix)
 
     vals = np.array(matrix.vecVals())
     if indices is True:

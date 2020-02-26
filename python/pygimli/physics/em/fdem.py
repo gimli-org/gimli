@@ -8,25 +8,7 @@ from pygimli.mplviewer import show1dmodel, drawModel1D
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
-
-
-class NDMatrix(pg.RBlockMatrix):
-    """Diagonal block (block-Jacobi) matrix derived from pg.BlockMatrix.
-
-    (to be moved to a better place at a later stage)
-    """
-
-    def __init__(self, num, nrows, ncols):
-        super(NDMatrix, self).__init__()  # call inherited init function
-        self.Ji = []  # list of individual block matrices
-        for i in range(num):
-            self.Ji.append(pg.RMatrix())
-            self.Ji[-1].resize(nrows, ncols)
-            n = self.addMatrix(self.Ji[-1])
-            self.addMatrixEntry(n, nrows * i, ncols * i)
-
-        self.recalcMatrixSize()
-        print(self.rows(), self.cols())
+from pygimli.core.matrix import NDMatrix
 
 
 def cmapDAERO():
@@ -59,29 +41,29 @@ def xfplot(ax, DATA, x, freq, everyx=5, orientation='horizontal', aspect=40):
     return im
 
 
-class FDEM2dFOPold(pg.ModellingBase):
+class FDEM2dFOPold(pg.core.ModellingBase):
     """Old variant of 2D FOP (to be deleted)."""
     def __init__(self, data, nlay=2, verbose=False):
         """ constructor with data and (optionally) number of layers """
-        pg.ModellingBase.__init__(self, verbose)
+        pg.core.ModellingBase.__init__(self, verbose)
         self.nlay = nlay
         self.FOP1d = data.FOP(nlay)
         self.nx = len(data.x)
         self.nf = len(data.freq())
-        self.mesh_ = pg.createMesh1D(self.nx, 2 * nlay - 1)
+        self.mesh_ = pg.meshtools.createMesh1D(self.nx, 2 * nlay - 1)
         self.setMesh(self.mesh_)
 
     def response(self, model):
         """Yields forward model response."""
         modA = np.asarray(model).reshape((self.nlay * 2 - 1, self.nx)).T
-        resp = pg.RVector(0)
+        resp = pg.Vector(0)
         for modi in modA:
             resp = pg.cat(resp, self.FOP1d.response(modi))
 
         return resp
 
 
-class FDEM2dFOP(pg.ModellingBase):
+class FDEM2dFOP(pg.core.ModellingBase):
     """FDEM 2d-LCI modelling class based on BlockMatrices."""
 
     def __init__(self, data, nlay=2, verbose=False):
@@ -94,15 +76,15 @@ class FDEM2dFOP(pg.ModellingBase):
         self.nx = len(data.x)
         self.nf = len(data.freq())
         npar = 2 * nlay - 1
-        self.mesh1d = pg.createMesh1D(self.nx, npar)
-        self.mesh_ = pg.createMesh1D(self.nx, 2 * nlay - 1)
+        self.mesh1d = pg.meshtools.createMesh1D(self.nx, npar)
+        self.mesh_ = pg.meshtools.createMesh1D(self.nx, 2 * nlay - 1)
         self.setMesh(self.mesh_)
 
         # self.J = NDMatrix(self.nx, self.nf*2, npar)
-        self.J = pg.RBlockMatrix()
+        self.J = pg.matrix.BlockMatrix()
         self.FOP1d = []
         for i in range(self.nx):
-            self.FOP1d.append(pg.FDEM1dModelling(
+            self.FOP1d.append(pg.core.FDEM1dModelling(
                 nlay, data.freq(), data.coilSpacing, -data.height))
             n = self.J.addMatrix(self.FOP1d[-1].jacobian())
             self.J.addMatrixEntry(n, self.nf * 2 * i, npar * i)
@@ -113,7 +95,7 @@ class FDEM2dFOP(pg.ModellingBase):
     def response(self, model):
         """Cut together forward responses of all soundings."""
         modA = np.asarray(model).reshape((self.nlay * 2 - 1, self.nx)).T
-        resp = pg.RVector(0)
+        resp = pg.Vector(0)
         for modi in modA:
             resp = pg.cat(resp, self.FOP.response(modi))
 
@@ -126,15 +108,15 @@ class FDEM2dFOP(pg.ModellingBase):
             self.FOP1d[i].createJacobian(modA[i])
 
 
-class HEM1dWithElevation(pg.ModellingBase):
+class HEM1dWithElevation(pg.core.ModellingBase):
     """Airborne FDEM modelling including variable bird height."""
 
     def __init__(self, frequencies, coilspacing, nlay=2, verbose=False):
         """Set up class by frequencies and geometries."""
-        pg.ModellingBase.__init__(self, verbose)
+        pg.core.ModellingBase.__init__(self, verbose)
         self.nlay_ = nlay  # real layers (actually one more!)
-        self.FOP_ = pg.FDEM1dModelling(nlay + 1, frequencies, coilspacing, 0.0)
-        self.mesh_ = pg.createMesh1D(nlay, 2)  # thicknesses and resistivities
+        self.FOP_ = pg.core.FDEM1dModelling(nlay + 1, frequencies, coilspacing, 0.0)
+        self.mesh_ = pg.meshtools.createMesh1D(nlay, 2)  # thicknesses and resistivities
         self.mesh_.cell(0).setMarker(2)
         self.setMesh(self.mesh_)
 
@@ -374,7 +356,7 @@ class FDEM():
         nlay : int
             Number of blocks
         """
-        return pg.FDEM1dModelling(nlay, self.freq(), self.coilSpacing,
+        return pg.core.FDEM1dModelling(nlay, self.freq(), self.coilSpacing,
                                   -self.height)
 
     def FOPsmooth(self, zvec):
@@ -444,7 +426,7 @@ class FDEM():
         noise : float
             Absolute data err in percent
 
-        stmod : float or pg.RVector
+        stmod : float or pg.Vector
             Starting model
 
         lam : float
@@ -459,12 +441,12 @@ class FDEM():
         verbose : bool
             Be verbose
         """
-        self.transThk = pg.RTransLog()
-        self.transRes = pg.RTransLogLU(lBound, uBound)
-        self.transData = pg.RTrans()
+        self.transThk = pg.trans.TransLog()
+        self.transRes = pg.trans.TransLogLU(lBound, uBound)
+        self.transData = pg.trans.Trans()
 
         # EM forward operator
-        if isinstance(nlay, pg.FDEM1dModelling):
+        if isinstance(nlay, pg.core.FDEM1dModelling):
             self.fop = nlay
         else:
             self.fop = self.FOP(nlay)
@@ -475,20 +457,20 @@ class FDEM():
         self.fop.region(1).setTransModel(self.transRes)
 
         if isinstance(noise, float):
-            noiseVec = pg.RVector(len(data), noise)
+            noiseVec = pg.Vector(len(data), noise)
         else:
             noiseVec = pg.asvector(noise)
 
         # independent EM inversion
-        self.inv = pg.RInversion(data, self.fop, self.transData, verbose)
+        self.inv = pg.Inversion(data, self.fop, self.transData, verbose)
         if isinstance(stmod, float):  # real model given
-            model = pg.RVector(nlay * 2 - 1, stmod)
+            model = pg.Vector(nlay * 2 - 1, stmod)
             model[0] = 2.
         else:
             if len(stmod) == nlay * 2 - 1:
                 model = pg.asvector(stmod)
             else:
-                model = pg.RVector(nlay * 2 - 1, 30.)
+                model = pg.Vector(nlay * 2 - 1, 30.)
 
         self.inv.setAbsoluteError(noiseVec)
         self.inv.setLambda(lam)
@@ -677,7 +659,7 @@ class FDEM():
               thkU=100., minErr=1.0):
         """2d LCI inversion class."""
         if isinstance(nlay, int):
-            modVec = pg.RVector(nlay * 2 - 1, 30.)
+            modVec = pg.Vector(nlay * 2 - 1, 30.)
             cType = 0  # no reference model
         else:
             modVec = nlay
@@ -688,9 +670,9 @@ class FDEM():
         self.f2d = self.FOP2d(nlay)
 
         # transformations
-        self.transData = pg.RTrans()
-        self.transThk = pg.RTransLogLU(thkL, thkU)
-        self.transRes = pg.RTransLogLU(resL, resU)
+        self.transData = pg.trans.Trans()
+        self.transThk = pg.trans.TransLogLU(thkL, thkU)
+        self.transRes = pg.trans.TransLogLU(resL, resU)
 
         for i in range(nlay - 1):
             self.f2d.region(i).setTransModel(self.transThk)
@@ -703,7 +685,7 @@ class FDEM():
         self.f2d.region(1).setConstraintType(cType)
 
         # collect data vector
-        datvec = pg.RVector(0)
+        datvec = pg.Vector(0)
 
         for i in range(len(self.x)):
             datvec = pg.cat(datvec, self.datavec(i))
@@ -719,7 +701,7 @@ class FDEM():
 
         # generate starting model by repetition
         model = pg.asvector(np.repeat(modVec, len(self.x)))
-        INV = pg.RInversion(datvec, self.f2d, self.transData)
+        INV = pg.Inversion(datvec, self.f2d, self.transData)
         INV.setAbsoluteError(error)
         INV.setLambda(lam)
         INV.setModel(model)

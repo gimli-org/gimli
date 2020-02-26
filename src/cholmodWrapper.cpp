@@ -43,13 +43,13 @@ namespace GIMLI{
     bool CHOLMODWrapper::valid() { return false; }
 #endif
 
-CHOLMODWrapper::CHOLMODWrapper(RSparseMatrix & S, bool verbose, int stype)
-    : SolverWrapper(S, verbose){
+CHOLMODWrapper::CHOLMODWrapper(RSparseMatrix & S, bool verbose, int stype, bool forceUmfpack)
+    : SolverWrapper(S, verbose), forceUmfpack_(forceUmfpack){
     init_(S, stype);
 }
 
-CHOLMODWrapper::CHOLMODWrapper(CSparseMatrix & S, bool verbose, int stype)
-    : SolverWrapper(S, verbose){
+CHOLMODWrapper::CHOLMODWrapper(CSparseMatrix & S, bool verbose, int stype, bool forceUmfpack)
+    : SolverWrapper(S, verbose), forceUmfpack_(forceUmfpack){
     init_(S, stype);
 }
 
@@ -108,6 +108,9 @@ void CHOLMODWrapper::init_(SparseMatrix < ValueType > & S, int stype){
     if (ret) dummy_ = false;
 
     initializeMatrix_(S);
+#elif USE_UMFPACK
+
+    initializeMatrix_(S);
 #else
     std::cerr << WHERE_AM_I << " cholmod not installed" << std::endl;
 #endif
@@ -123,7 +126,8 @@ int CHOLMODWrapper::initializeMatrix_(CSparseMatrix & S){
                     if (std::imag(S.vecVals()[j]) != 0.0){
                         if (S.vecVals()[j] == S.getVal(S.vecRowIdx()[j], i)){
                             // non-hermetian symmetric
-                            if (verbose_) std::cout << "non-hermetian symmetric matrix found .. switching to umfpack." << std::endl;
+                            // if (verbose_) std::cout << "non-hermetian symmetric " 
+                            // " matrix found .. switching to umfpack." << std::endl;
                             useUmfpack_ = true;
                             i = S.size();
                             break;
@@ -132,6 +136,8 @@ int CHOLMODWrapper::initializeMatrix_(CSparseMatrix & S){
                 }
             }
         }
+    
+        if (forceUmfpack_) useUmfpack_ = true;
 
         if (useUmfpack_){
 #if USE_UMFPACK
@@ -145,7 +151,7 @@ int CHOLMODWrapper::initializeMatrix_(CSparseMatrix & S){
             double *null = (double *) NULL;
             void *Symbolic;
 
-            if (verbose_) std::cout << "Using umfpack .. " << std::endl;
+            // if (verbose_) std::cout << "Using umfpack .. " << std::endl;
 
             umfpack_zi_symbolic (S.nRows(), S.nRows(), Ap_, Ai_, Ax_, Az_, &Symbolic, null, null) ;
             umfpack_zi_numeric (Ap_, Ai_, Ax_, Az_, Symbolic, &Numeric_, null, null) ;
@@ -186,6 +192,7 @@ int CHOLMODWrapper::initializeMatrix_(RSparseMatrix & S){
                 }
             }
         }
+        if (forceUmfpack_) useUmfpack_ = true;
 
         if (useUmfpack_){
 #if USE_UMFPACK
@@ -210,7 +217,7 @@ int CHOLMODWrapper::initializeMatrix_(RSparseMatrix & S){
 
             void *Symbolic;
 
-            if (verbose_) std::cout << "Using umfpack .. " << std::endl;
+            // if (verbose_) std::cout << "Using umfpack .. " << std::endl;
             // beware transposed matrix here
             (void) umfpack_di_symbolic(S.nCols(), S.nRows(), ApR_, AiR_, Ax_, &Symbolic, null, null) ;
             (void) umfpack_di_numeric(ApR_, AiR_, Ax_, Symbolic, &NumericD_, null, null) ;
@@ -228,7 +235,6 @@ int CHOLMODWrapper::initializeMatrix_(RSparseMatrix & S){
     } // if ! dummy
     return 0;
 }
-
 
 template < class ValueType >
 int CHOLMODWrapper::initMatrixChol_(SparseMatrix < ValueType > & S, int xType){
@@ -251,7 +257,7 @@ int CHOLMODWrapper::initMatrixChol_(SparseMatrix < ValueType > & S, int xType){
         ((cholmod_sparse*)A_)->packed = true;
         ((cholmod_sparse*)A_)->sorted = true; // testen, scheint schneller, aber hab ich das immer?
 
-        factorise();
+        factorise_();
 #else
         std::cerr << WHERE_AM_I << " cholmod not installed" << std::endl;
 #endif
@@ -259,21 +265,38 @@ int CHOLMODWrapper::initMatrixChol_(SparseMatrix < ValueType > & S, int xType){
     return 0;
 }
 
-int CHOLMODWrapper::factorise(){
+int CHOLMODWrapper::factorise_(){
     if (!dummy_){
 #if USE_CHOLMOD
          if (useUmfpack_){
-             std::cerr << WHERE_AM_I << " factorize for umfpack called" << std::endl;
+             // allready factorized in matrix init;
+             //std::cerr << WHERE_AM_I << " factorize for umfpack called" << std::endl;
          } else {
             if (verbose_) cholmod_print_sparse((cholmod_sparse *)A_, "A", (cholmod_common*)c_);
+            // cholmod_print_common("common parameter", (cholmod_common*)c_);
 
+            
+            // CHOLMOD_SIMPLICIA == 0
+            // CHOLMOD_AUTO == 1
+            // CHOLMOD_SUPERNODAL == 2
+            // __MS(((cholmod_common *)c_)->supernodal)
+            // ((cholmod_common *)c_)->supernodal=1;
+            
+            // __MS(((cholmod_common *)c_)->nmethods)
+            // ((cholmod_common *)c_)->nmethods=0;
+            // ((cholmod_common *)c_)->current=3;
+
+            
             L_ = cholmod_analyze((cholmod_sparse*)A_,
-                            (cholmod_common*)c_);		    /* analyze */
+                                 (cholmod_common*)c_);		    /* analyze */
+            // __MS(((cholmod_factor *)L_)->is_super)
             cholmod_factorize((cholmod_sparse*)A_,
-                        (cholmod_factor*)L_,
-                        (cholmod_common*)c_);		    /* factorize */
+                              (cholmod_factor*)L_,
+                              (cholmod_common*)c_);		    /* factorize */
 
-        if (verbose_) std::cout << "Cholmod analyze .. preordering: " << ((cholmod_factor *)(L_))->ordering << std::endl;
+        if (verbose_) std::cout << "CHOLMOD analyzed preordering: " 
+                                << ((cholmod_factor *)(L_))->ordering << std::endl;
+
         if (verbose_) cholmod_print_factor((cholmod_factor *)L_, "L", (cholmod_common*)c_);
     }
     return 1;
