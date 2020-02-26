@@ -408,7 +408,8 @@ def parseArgPairToBoundaryArray(pair, mesh):
 
     # bad Design .. need to remove
     elif isinstance(pair[0], list):
-        pg.deprecated('bad design', pair[0], pair[0][0])
+        print(pair[0], pair[0][0])
+        pg.deprecated('bad design')
 
         # [[,,..], ]
         for b in pair[0]:
