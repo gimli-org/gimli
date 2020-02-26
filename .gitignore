@@ -90,5 +90,7 @@ python/pygimli/testing/synth.ves
 python/git.exe.stackdump
 python/pygimli/core/libgimli.dll.back
 python/pygimli/core/_pygimli_.pyd.back
+python/pygimli/core/_pygimli_.so.dSYM/
+python/pygimli/core/libgimli.dylib
 doc/examples/dc_and_ip/synth.ves
 python/pygimli/VERSION
