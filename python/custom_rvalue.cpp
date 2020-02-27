@@ -75,7 +75,8 @@ template < class ValueType > void * checkConvertibleSequenz(PyObject * obj){
     bp::object py_sequence(bp::handle<>(bp::borrowed(obj)));
 
     if (len(py_sequence) > 0) {
-        __DC(obj << "\t len: " << len(py_sequence) << " type: " << GIMLI::type(ValueType(0)) << ": " << typeid(ValueType).name())
+        // FW: Causes problems on Mac build.
+        // __DC(obj << "\t len: " << len(py_sequence) << " type: " << GIMLI::type(ValueType(0)) << ": " << typeid(ValueType).name())
         bp::object element = py_sequence[0];
         __DC(obj << "\t seq[0]: " << element << " is of type: " << element.ptr()->ob_type->tp_name)
 
@@ -526,7 +527,7 @@ private:
 
 
 template < class ValueType > void * checkConvertibleNumpyScalar(PyObject * obj){
-    __DC(obj << "\tNumpyScalar -> " + GIMLI::type(ValueType(0)))
+    // __DC(obj << "\tNumpyScalar -> " + GIMLI::type(ValueType(0))) // FW: Caused problems during Mac build
     if (!obj){
         __DC(obj << "\t abort check .. !Object")
         return NULL;
@@ -557,7 +558,7 @@ template < class ValueType > void * checkConvertibleNumpyScalar(PyObject * obj){
 
 template < class ValueType > void convertFromNumpyScalar(PyObject* obj,
                         bp::converter::rvalue_from_python_stage1_data * data){
-    __DC(obj << "\tNumpyScalar -> " + GIMLI::type(ValueType(0)) + " check OK: ")
+    // __DC(obj << "\tNumpyScalar -> " + GIMLI::type(ValueType(0)) + " check OK: ") // FW: Mac problems
     //bp::object py_sequence(bp::handle<>(bp::borrowed(obj)));
 
     typedef bp::converter::rvalue_from_python_storage< ValueType > storage_t;

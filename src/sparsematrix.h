@@ -39,7 +39,7 @@
 
 namespace GIMLI{
 
-#define SPARSE_NOT_VALID throwError(EXIT_SPARSE_INVALID, WHERE_AM_I + " no data/or sparsity pattern defined.");
+#define SPARSE_NOT_VALID throwError(WHERE_AM_I + " no data/or sparsity pattern defined.");
 
 //! based on: Ulrich Breymann, Addison Wesley Longman 2000 , revised edition ISBN 0-201-67488-2, Designing Components with the C++ STL
 template< class ValueType, class IndexType, class ContainerType > class MatrixElement {
@@ -358,7 +358,7 @@ public:
         MatElement operator [] (IndexType c) {
 //             __MS( stype_ << " " << c << " " << Row )
             if ((c < 0 || c >= maxColumns) || (stype_ < 0 && c < Row) || (stype_ > 0 && c > Row)) {
-                throwLengthError(EXIT_SPARSE_SIZE,
+                throwLengthError(
                                   WHERE_AM_I + " idx = " + str(c) + ", " + str(Row) + " maxcol = "
                                   + str(maxColumns) + " stype: " + str(stype_));
             }
@@ -372,7 +372,7 @@ public:
 
     Aux operator [] (IndexType r) {
         if (r < 0 || r >= rows_){
-            throwLengthError(EXIT_SPARSE_SIZE,
+            throwLengthError(
                               WHERE_AM_I + " idx = " + str(r) + " maxrow = "
                               + str(rows_));
         }
@@ -397,7 +397,7 @@ public:
         if ((i >= 0 && i < rows_) && (j >=0 && j < cols_)) {
             (*this)[i][j] = val;
         } else {
-            throwLengthError(EXIT_SPARSE_SIZE,
+            throwLengthError(
                               WHERE_AM_I +
                               " i = " + str(i) + " max_row = " + str(rows_) +
                               " j = " + str(j) + " max_col = " + str(cols_)
@@ -410,7 +410,7 @@ public:
         if ((i >= 0 && i < rows_) && (j >=0 && j < cols_)) {
             (*this)[i][j] += val;
         } else {
-            throwLengthError(EXIT_SPARSE_SIZE,
+            throwLengthError(
                               WHERE_AM_I +
                               " i = " + str(i) + " max_row = " + str(rows_) +
                               " j = " + str(j) + " max_col = " + str(cols_)
@@ -525,22 +525,22 @@ public:
 
         FILE *file; file = fopen(filename.c_str(), "r+b");
         if (!file) {
-            throwError(EXIT_OPEN_FILE, WHERE_AM_I + " " + filename + ": " + strerror(errno));
+            throwError(WHERE_AM_I + " " + filename + ": " + strerror(errno));
         }
         Index ret = 0;
 
 
         uint32 rows = 0;
         ret = fread(&rows, sizeof(uint32), 1, file);
-        if (ret == 0) throwError(1, "fail reading file " + filename);
+        if (ret == 0) throwError("fail reading file " + filename);
         uint32 cols = 0;
         ret = fread(&cols, sizeof(uint32), 1, file);
-        if (ret == 0) throwError(1, "fail reading file " + filename);
+        if (ret == 0) throwError("fail reading file " + filename);
         ValueType val;
         for (uint i = 0; i < rows; i ++){
             for (uint j = 0; j < cols; j ++){
                 ret = fread(&val, sizeof(ValueType), 1, file);
-                if (ret == 0) throwError(1, "fail reading file " + filename);
+                if (ret == 0) throwError("fail reading file " + filename);
                 if (abs(val) > dropTol) this->setVal(i, j + colOffset, val);
             }
         }
@@ -668,10 +668,10 @@ void scaleMatrix(SparseMapMatrix< double, Index > & S,
                  const Vec & l, const Vec & r) {
 
     if (S.cols() != r.size())
-        throwLengthError(EXIT_SPARSE_SIZE, WHERE_AM_I + " " + str(S.cols())
+        throwLengthError(WHERE_AM_I + " " + str(S.cols())
                                             + " != " + str(r.size()));
     if (S.rows() != l.size())
-        throwLengthError(EXIT_SPARSE_SIZE, WHERE_AM_I + " " + str(S.rows())
+        throwLengthError(WHERE_AM_I + " " + str(S.rows())
                                             + " != " + str(l.size()));
 
     for (SparseMapMatrix< double, Index >::iterator it = S.begin(); it != S.end(); it ++){
@@ -688,10 +688,10 @@ template< class Vec >
 void rank1Update(SparseMapMatrix< double, Index > & S, const Vec & u, const Vec & v) {
 
     if (S.cols() != v.size())
-        throwLengthError(EXIT_SPARSE_SIZE, WHERE_AM_I + " " + str(S.cols())
+        throwLengthError(WHERE_AM_I + " " + str(S.cols())
                                 + " != " + str(v.size()));
     if (S.rows() != u.size())
-        throwLengthError(EXIT_SPARSE_SIZE, WHERE_AM_I + " " + str(S.rows())
+        throwLengthError(WHERE_AM_I + " " + str(S.rows())
                                 + " != " + str(u.size()));
 
     for (SparseMapMatrix< double, Index >::iterator it = S.begin(); it != S.end(); it ++){
@@ -816,7 +816,7 @@ public:
     /*! Return this * a  */
     virtual Vector < ValueType > mult(const Vector < ValueType > & a) const {
         if (a.size() < this->cols()){
-            throwLengthError(1, WHERE_AM_I + " SparseMatrix size(): " + str(this->cols()) + " a.size(): " +
+            throwLengthError(WHERE_AM_I + " SparseMatrix size(): " + str(this->cols()) + " a.size(): " +
                                 str(a.size())) ;
         }
 
@@ -870,7 +870,7 @@ public:
     virtual Vector < ValueType > transMult(const Vector < ValueType > & a) const {
 
         if (a.size() < this->rows()){
-            throwLengthError(1, WHERE_AM_I + " SparseMatrix size(): " + str(this->rows()) + " a.size(): " +
+            throwLengthError(WHERE_AM_I + " SparseMatrix size(): " + str(this->rows()) + " a.size(): " +
                                 str(a.size())) ;
         }
 

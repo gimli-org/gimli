@@ -42,7 +42,7 @@ _mult(const Matrix< ValueType > & M, const Vector < ValueType > & b) {
             // }
         }
     } else {
-        throwLengthError(1, WHERE_AM_I + " " + str(cols) + " != " + str(b.size()));
+        throwLengthError(WHERE_AM_I + " " + str(cols) + " != " + str(b.size()));
     }
     return ret;
 }
@@ -59,7 +59,7 @@ _mult(const Matrix< ValueType > & M, const Vector < ValueType > & b, Index start
     Index bsize = Index(endI - startI);
 
     if (bsize != cols) {
-        throwLengthError(1, WHERE_AM_I + " " + str(cols) + " < " + str(endI) + "-" + str(startI));
+        throwLengthError(WHERE_AM_I + " " + str(cols) + " < " + str(endI) + "-" + str(startI));
     }
     Vector < ValueType > ret(rows, 0.0);
     for (Index i = 0; i < rows; ++i){
@@ -93,7 +93,7 @@ _transMult(const Matrix< ValueType > & M, const Vector < ValueType > & b) {
             }
         }
     } else {
-        throwLengthError(1, WHERE_AM_I + " " + str(rows) + " != " + str(b.size()));
+        throwLengthError(WHERE_AM_I + " " + str(rows) + " != " + str(b.size()));
     }
     return ret;
 }

@@ -234,7 +234,7 @@ void Region::setStartModel(const RVector & start){
     if (start.size() == parameterCount_){
        startModel_ = start;
     } else {
-        throwLengthError(1, WHERE_AM_I + " sizes missmatch for region " +
+        throwLengthError(WHERE_AM_I + " sizes missmatch for region " +
         str(this->marker_) + " " +str(start.size()) + " != " + str(parameterCount_));
     }
 }
@@ -426,7 +426,7 @@ void Region::setConstraintWeights(const RVector & cw){
         zWeight_ = 1.0;
         this->constraintWeights_ = cw;
     } else {
-        throwLengthError(1, WHERE_AM_I + " " + str(cw.size()) + " != " + str(constraintCount()));
+        throwLengthError(WHERE_AM_I + " " + str(cw.size()) + " != " + str(constraintCount()));
     }
 }
 
@@ -515,7 +515,7 @@ void Region::setModelTransStr_(const std::string & val){
     } else if (val == "cot" || val == "Cot" || val == "tan" || val == "Tan"){
         tM_ = new TransCotLU< RVector >(lowerBound_, upperBound_);
     } else  {
-        throwLengthError(1, WHERE_AM_I + " : " + val + ". Available are: lin, log, cot/tan.");
+        throwLengthError(WHERE_AM_I + " : " + val + ". Available are: lin, log, cot/tan.");
     }
     parent_->setLocalTransFlag(true);
 
@@ -548,7 +548,7 @@ void Region::setParameters(double start, double lb, double ub, std::string trans
             setModelTransStr_(transString_);
         }
     } else {
-        throwError(EXIT_FAILURE, WHERE_AM_I + " bounds not matching: " + str(lb) + ">=" + str(ub));
+        throwError(WHERE_AM_I + " bounds not matching: " + str(lb) + ">=" + str(ub));
     }
 }
 
@@ -579,14 +579,14 @@ RegionManager::~RegionManager(){
 
 const Mesh & RegionManager::mesh() const {
     if (mesh_== 0){
-        throwError(1, "RegionManager knows no mesh.");
+        throwError("RegionManager knows no mesh.");
     }
     return *mesh_;
 }
 
 Region * RegionManager::region(SIndex marker){
     if (regionMap_.count(marker) == 0){
-        throwError(EXIT_DEFAULT, WHERE_AM_I + " no region with marker " + str(marker));
+        throwError(WHERE_AM_I + " no region with marker " + str(marker));
     } else {
         return regionMap_[marker];
     }
@@ -866,7 +866,7 @@ Index RegionManager::parameterCount() const {
             return parameterCount_;
 
             // zero should be possible
-            throwLengthError(1, WHERE_AM_I + " neither region defined nor parameterCount set.");
+            throwLengthError(WHERE_AM_I + " neither region defined nor parameterCount set.");
         }
         return parameterCount_;
     }

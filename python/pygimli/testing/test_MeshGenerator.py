@@ -14,7 +14,6 @@ class TestMeshGenerator(unittest.TestCase):
         z = [.5, 1, 3]
 
         mesh = pg.createGrid(x, y, z)
-        print(mesh)
         print(mesh.node(0))
         print(mesh.cell(0))
         print(mesh.boundary(0))
@@ -128,9 +127,7 @@ class TestMeshGenerator(unittest.TestCase):
 
 if __name__ == '__main__':
 
-    # pg.setDeepDebug(1)
-    # t = TestMeshGenerator()
-    # t.test_createGrid()
-    # exit()
+    #t = TestMeshGenerator()
+    #t.test_meshAccess()
 
     unittest.main()

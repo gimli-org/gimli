@@ -64,9 +64,11 @@
  */
 
 #include <cmath>
+
 namespace GIMLI{
-/*!Return the number of available CPUs.*/
-DLLEXPORT int numberOfCPU();
+
+/*!Return the number of available CPUs. 1 if unknown.*/
+DLLEXPORT long numberOfCPU();
 
 /*!Return the number of the currently used CPU from the scheduler.*/
 DLLEXPORT int schedGetCPU();

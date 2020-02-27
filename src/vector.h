@@ -355,7 +355,7 @@ public:
            if (id >= 0 && id < size_){
                 v[i] = data_[(Index)id];
            } else {
-                throwLengthError(1, WHERE_AM_I + " idx out of range " +
+                throwLengthError(WHERE_AM_I + " idx out of range " +
                                      str(id) + " [" + str(0) + " " + str(size_) + ")");
            }
         }
@@ -481,7 +481,7 @@ public:
     inline Vector< ValueType > & setVal(const Vector < ValueType > & vals,
                                         Index start, Index end) {
         if (start > this->size()){
-            throwLengthError(1, WHERE_AM_I + " vals.size() < start " +
+            throwLengthError(WHERE_AM_I + " vals.size() < start " +
                                 str(vals.size()) + " " + str(start) + " " + str(end)) ;
         }
 
@@ -489,7 +489,7 @@ public:
         if (start > end) start = end;
 
         if (vals.size() < (end - start)){
-            throwLengthError(1, WHERE_AM_I + " vals.size() < (end-start) " +
+            throwLengthError( WHERE_AM_I + " vals.size() < (end-start) " +
                                 str(vals.size()) + " " + str(start) + " " + str(end)) ;
         }
 
@@ -519,7 +519,7 @@ public:
         if (start > end) start = end;
 
         if (vals.size() < end - start){
-            throwLengthError(1, WHERE_AM_I + " vals.size() < (end-start) " +
+            throwLengthError(WHERE_AM_I + " vals.size() < (end-start) " +
                                 str(vals.size()) + " " + str(start) + " " + str(end)) ;
         }
 
@@ -584,7 +584,7 @@ public:
         if ((SIndex)start >= 0 && start < e){
             std::copy(& data_[start], & data_[e], &v[0]);
         } else {
-            throwLengthError(1, WHERE_AM_I + " bounds out of range " +
+            throwLengthError(WHERE_AM_I + " bounds out of range " +
                                 str(start) + " " + str(end) + " " + str(size_));
         }
         return v;
@@ -799,7 +799,7 @@ tolerance);
 
             std::ofstream file; file.open(fname.c_str());
             if (!file) {
-                throwError(1, filename + ": " + strerror(errno));
+                throwError(filename + ": " + strerror(errno));
             }
 
             file.setf(std::ios::scientific, std::ios::floatfield);
@@ -815,7 +815,7 @@ tolerance);
     //     file.close();
             FILE *file; file = fopen(fname.c_str(), "w+b");
             if (!file) {
-                throwError(1, filename + ": " + strerror(errno));
+                throwError(filename + ": " + strerror(errno));
             }
 
             int64 count = (int64)size_;
@@ -853,7 +853,6 @@ tolerance);
 
             std::fstream file; openInFile(filename.c_str(), &file);
             ValueType val; while(file >> val) {
-            // check !!! if (isinfnan(val)) throwLengthError(
                 tmp.push_back(val);
             }
 
@@ -874,7 +873,7 @@ tolerance);
             FILE *file;
             file = fopen(filename.c_str(), "r+b");
             if (!file) {
-                throwError(1, filename +  ": " + strerror(errno));
+                throwError(filename +  ": " + strerror(errno));
             }
             Index ret = 0;
             int64 size; ret = fread(&size, sizeof(int64), 1, file);
@@ -1627,16 +1626,16 @@ template < class ValueType >
 Vector< ValueType > increasingRange2(const ValueType & a,
                                      const ValueType & last, Index n){
     if (abs(a) < 1e-12){
-        throwError(1, "Can't create increasing range for start value of: " +
+        throwError("Can't create increasing range for start value of: " +
         str(a) );
     }
 
     if (sign(a) != sign(last)){
-        throwError(1, "Can't create increasing range from [0 " + str(a) + " to " + str(last) + "]");
+        throwError("Can't create increasing range from [0 " + str(a) + " to " + str(last) + "]");
     }
 
     if (n < 3){
-        throwError(1, "need at least n > 2" + str(a) + " n(" + str(n) +") "+ str(last));
+        throwError("need at least n > 2" + str(a) + " n(" + str(n) +") "+ str(last));
     }
 
 
@@ -1656,7 +1655,7 @@ template < class ValueType >
 Vector< ValueType > increasingRange(const ValueType & first,
                                     const ValueType & last, Index n){
     if (sign(first) != sign(last)){
-        throwError(1, "cant increase range from [0 " + str(first) + " to " + str(last) + "]");
+        throwError("cant increase range from [0 " + str(first) + " to " + str(last) + "]");
     }
 
     Placeholder x__;

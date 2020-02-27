@@ -599,16 +599,11 @@ Boundary * Mesh::copyBoundary(const Boundary & bound, double tol, bool check){
     return b;
 }
 
-void Mesh::deleteCells(const std::vector < Cell * > & cells){
-    THROW_TO_IMPL
-}
-
 Node & Mesh::node(Index i) {
     if (i > nodeCount() - 1){
         if (i < nodeCount() + secondaryNodeCount())
             return this->secondaryNode(i - this->nodeCount());
         std::cerr << WHERE_AM_I << " requested node: " << i << " does not exist." << std::endl;
-        exit(EXIT_MESH_NO_NODE);
     } return *nodeVector_[i];
 }
 
@@ -617,35 +612,30 @@ Node & Mesh::node(Index i) const {
         if (i < nodeCount() + secondaryNodeCount())
             return this->secondaryNode(i - this->nodeCount());
         std::cerr << WHERE_AM_I << " requested node: " << i << " does not exist." << std::endl;
-        exit(EXIT_MESH_NO_NODE);
     } return *nodeVector_[i];
 }
 
 Cell & Mesh::cell(Index i) const {
     if (i > cellCount() - 1){
       std::cerr << WHERE_AM_I << " requested cell: " << i << " does not exist." << std::endl;
-      exit(EXIT_MESH_NO_CELL);
     } return *cellVector_[i];
 }
 
 Cell & Mesh::cell(Index i) {
     if (i > cellCount() - 1){
       std::cerr << WHERE_AM_I << " requested cell: " << i << " does not exist." << std::endl;
-      exit(EXIT_MESH_NO_CELL);
     } return *cellVector_[i];
 }
 
 Boundary & Mesh::boundary(Index i) const {
     if (i > boundaryCount() - 1){
       std::cerr << WHERE_AM_I << " requested boundary: " << i << " does not exist." << std::endl;
-      exit(EXIT_MESH_NO_BOUNDARY);
     } return *boundaryVector_[i];
 }
 
 Boundary & Mesh::boundary(Index i) {
     if (i > boundaryCount() - 1){
       std::cerr << WHERE_AM_I << " requested boundary: " << i << " does not exist." << std::endl;
-      exit(EXIT_MESH_NO_BOUNDARY);
     } return *boundaryVector_[i];
 }
 
@@ -784,12 +774,12 @@ Cell * Mesh::findCell(const RVector3 & pos, size_t & count,
 
         if (!refNode){
             std::cout << "pos: " << pos << std::endl;
-            throwError(1, WHERE_AM_I +
+            throwError(WHERE_AM_I +
                        " no nearest node to pos. This is a empty mesh");
         }
         if (refNode->cellSet().empty()){
             std::cout << "Node: " << *refNode << std::endl;
-            throwError(1, WHERE_AM_I +
+            throwError(WHERE_AM_I +
                        " no cells for this node. This is a corrupt mesh");
         }
 //         std::cout << "Node: " << *refNode << std::endl;
@@ -998,7 +988,7 @@ void Mesh::setCellMarkers(const RVector & attribute){
             cellVector_[i]->setMarker(int(attribute[i]));
         }
     } else {
-        throwError(1,"Mesh::setCellMarker: attribute size to small: " +
+        throwError("Mesh::setCellMarker: attribute size to small: " +
             str(attribute.size()) + " < " + str(cellCount()));
     }
 }
@@ -1605,7 +1595,7 @@ void Mesh::createNeighborInfosCell_(Cell *c){
 
 //         if (!bound->leftCell()){
 //             std::cout << *bound << " " << bound->leftCell() << " " << *bound->rightCell() << std::endl;
-//             throwError(1, WHERE + " Ooops, crosscheck -- every boundary need left cell.");
+//             throwError(WHERE + " Ooops, crosscheck -- every boundary need left cell.");
 //         }
 
 //         std::cout << bound->id() << " " << bound->leftCell() << " " << bound->rightCell() << std::endl;
@@ -1624,7 +1614,6 @@ void Mesh::createNeighborInfosCell_(Cell *c){
 //             }
 
 
-            //throwError(1, WHERE + " Ooops, crosscheck --this should not happen.");
         } else {
 //                     std::cout << nBounds << std::endl;
 //                     std::cerr << bound->leftCell() << " " << bound->rightCell() << std::endl;
@@ -2025,7 +2014,7 @@ RVector Mesh::data(const std::string & name) const {
     if (dataMap_.count(name)){
         return dataMap_.find(name)->second;
     } else {
-        throwError(1, " Warning!! requested export 'data' vector " + name +
+        throwError(" Warning!! requested export 'data' vector " + name +
         " does not exist.");
     }
     return RVector(0);
@@ -2075,7 +2064,7 @@ RVector Mesh::cellAttributes() const{
 
 void Mesh::setCellAttributes(const RVector & attr){
     if (attr.size() != (uint)cellCount()){
-        throwError(1, WHERE_AM_I + " std::vector attr.size() != cellCount()" + str(attr.size()) + " " + str(cellCount()));
+        throwError(WHERE_AM_I + " std::vector attr.size() != cellCount()" + str(attr.size()) + " " + str(cellCount()));
     }
     for (Index i = 0; i < cellCount(); i ++) cell(i).setAttribute(attr[i]);
 }
@@ -2406,7 +2395,7 @@ void Mesh::fillKDTree_() const {
 
             tree_->tree()->optimize();
         } else {
-            throwError(1, WHERE_AM_I + str(this) + " kd-tree is only partially filled: this should no happen: nodeCount = " + str(nodeCount())
+            throwError(WHERE_AM_I + str(this) + " kd-tree is only partially filled: this should no happen: nodeCount = " + str(nodeCount())
                                       + " tree-size() " + str(tree_->size()));
         }
     }
@@ -2458,7 +2447,7 @@ RSparseMapMatrix Mesh::interpolationMatrix(const PosVector & q){
 RSparseMapMatrix & Mesh::cellToBoundaryInterpolation() const {
     if (!cellToBoundaryInterpolationCache_){
         if (!neighborsKnown_){
-            throwError(1, "Please call once createNeighborInfos() for the given mesh.");
+            throwError("Please call once createNeighborInfos() for the given mesh.");
         }
 
         cellToBoundaryInterpolationCache_ = new RSparseMapMatrix(this->boundaryCount(),
@@ -2486,7 +2475,7 @@ RSparseMapMatrix & Mesh::cellToBoundaryInterpolation() const {
             } else if (lC){
                 cellToBoundaryInterpolationCache_->addVal(b->id(), lC->id(), 1.0);
             } else {
-                throwError(1, WHERE_AM_I + " this should not happen");
+                throwError(WHERE_AM_I + " this should not happen");
             }
         }
     } else {
@@ -2508,7 +2497,7 @@ PosVector Mesh::cellDataToBoundaryGradient(const RVector & cellData) const {
 PosVector Mesh::cellDataToBoundaryGradient(const RVector & cellData,
                                           const PosVector & cellGrad) const{
     if (!neighborsKnown_){
-        throwError(1, "Please call once createNeighborInfos() for the given mesh.");
+        throwError("Please call once createNeighborInfos() for the given mesh.");
     }
     PosVector ret(boundaryCount());
 
@@ -2537,7 +2526,7 @@ PosVector Mesh::cellDataToBoundaryGradient(const RVector & cellData,
 
 PosVector Mesh::boundaryDataToCellGradient(const RVector & v) const{
     if (!neighborsKnown_){
-        throwError(1, "Please call once createNeighborInfos() for the given mesh.");
+        throwError("Please call once createNeighborInfos() for the given mesh.");
     }
     PosVector ret(this->cellCount());
 
@@ -2564,7 +2553,7 @@ RVector Mesh::divergence(const PosVector & V) const{
     RVector ret(this->cellCount());
 
     if (!neighborsKnown_){
-        throwError(1, "Please call once createNeighborInfos() for the given mesh.");
+        throwError("Please call once createNeighborInfos() for the given mesh.");
     }
 
     ASSERT_EQUAL(V.size(), this->boundaryCount());
@@ -2592,7 +2581,7 @@ RegionMarker * Mesh::regionMarker(SIndex marker){
             return & this->regionMarker_[i];
         }
     }
-    throwError(1, "There is no regionMarker with marker = " + str(marker));
+    throwError("There is no regionMarker with marker = " + str(marker));
     return 0;
 }
 

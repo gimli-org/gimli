@@ -233,7 +233,7 @@ double Line::t(const RVector3 & pos, double tol) const {
     else if (!isnan(t[1]) && !isinf(t[1])) return t[1];
     else if (!isnan(t[2]) && !isinf(t[2])) return t[2];
 
-    throwError(1, WHERE_AM_I + " pos is not at this line ");
+    throwError(WHERE_AM_I + " pos is not at this line ");
 
     return 0.0;
 }

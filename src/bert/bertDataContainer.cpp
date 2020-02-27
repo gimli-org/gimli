@@ -213,7 +213,7 @@ Index DataContainerERT::createFourPointData(Index i, SIndex a, SIndex b, SIndex 
         dataMap_["n"][i] = n;
         dataMap_["valid"][i] = 1;
     } else {
-        throwError(1, WHERE_AM_I + " index out of size, resize data first:" + str(this->size()) + " " + str(i));
+        throwError(WHERE_AM_I + " index out of size, resize data first:" + str(this->size()) + " " + str(i));
     }
     return i;
 }

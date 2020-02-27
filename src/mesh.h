@@ -227,9 +227,6 @@ public:
      * tol=-1 disables this duplication check. */
     Boundary * copyBoundary(const Boundary & bound, double tol=1e-6, bool check=true);
 
-    /*! Delete all given cells from the given mesh. Warning will be really deleted.*/
-    void deleteCells(const std::vector < Cell * > & cells);
-
     void create1DGrid(const RVector & x);
 
     /*! Default boundary marker are -x[1], +x[2], +z[3], -z[4].

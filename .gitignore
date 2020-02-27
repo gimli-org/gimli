@@ -79,6 +79,8 @@ coverage.xml
 
 # Misc
 test.py
+python/pygimli/core/libboost_python37-mt.dll
+python/pygimli/core/libgimli.dll
 gimli.code-workspace
 python/pygimli/core/*.dll
 .vscode/settings.json
@@ -88,5 +90,7 @@ python/pygimli/testing/synth.ves
 python/git.exe.stackdump
 python/pygimli/core/libgimli.dll.back
 python/pygimli/core/_pygimli_.pyd.back
+python/pygimli/core/_pygimli_.so.dSYM/
+python/pygimli/core/libgimli.dylib
 doc/examples/dc_and_ip/synth.ves
 python/pygimli/VERSION

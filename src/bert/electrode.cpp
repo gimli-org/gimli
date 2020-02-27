@@ -137,7 +137,7 @@ void ElectrodeShapeNode::assembleRHS(RVector & rhs, double value, uint matrixSiz
         } else {
             std::stringstream str1; str1 << WHERE_AM_I << " nodeID or rhs.size() invalid"
                                               << node_->id() << ", " << rhs.size() << std::endl;
-            throwLengthError(EXIT_MATRIX_SIZE_INVALID, str1.str());
+            throwLengthError(str1.str());
         }
     } else {
         if (this->id() > -1 && (matrixSize + this->id()) < rhs.size()){
@@ -258,7 +258,7 @@ double ElectrodeShapeEntity::geomMeanCellAttributes() const {
         if (le && ri) return (le->attribute() + ri->attribute()) / 2.0;
         if (le) return le->attribute();
         if (ri) return ri->attribute();
-        throwError(1, WHERE_AM_I + " electrode invalid. ");
+        throwError(WHERE_AM_I + " electrode invalid. ");
     } else if (entity_->parentType() == MESH_CELL_RTTI){
         return dynamic_cast < Cell * > (entity_)->attribute();
     }
@@ -279,10 +279,10 @@ void ElectrodeShapeEntity::assembleRHS(RVector & rhs, double value, uint matrixS
         if (entity_){
             rhs.setVal(entity_->N(entity_->shape().rst(pos_)), entity_->ids());
         } else {
-            throwError(-1, WHERE_AM_I + " no entity given");
+            throwError(WHERE_AM_I + " no entity given");
         }
     } else {
-        throwError(-1, WHERE_AM_I + " electrode is not valid");
+        throwError(WHERE_AM_I + " electrode is not valid");
     }
 }
 
@@ -386,7 +386,7 @@ double ElectrodeShapeDomain::pot(const RVector & sol) const {
 //     return pot / size_;
     //*** temp Hack ********
 
-    throwError(-1, " The potential can not determined directly from ElectrodeShapeDomain use the matrix extension from complete electrode model instead");
+    throwError(" The potential can not determined directly from ElectrodeShapeDomain use the matrix extension from complete electrode model instead");
     return 0.0;
 }
 

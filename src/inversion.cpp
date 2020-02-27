@@ -92,7 +92,7 @@ double RInversion::getPhiD(const Vec & response) const {
         save(tD_->trans(response),       "Nan_PhiD_tD_response");
         save(tD_->error(data_, error_), "Nan_PhiD_tD_error");
 
-        throwError(1, WHERE_AM_I + " getPhiD == " + str(ret));
+        throwError(WHERE_AM_I + " getPhiD == " + str(ret));
     }
     return ret;
 }
@@ -112,7 +112,7 @@ double RInversion::getPhiM(const Vec & model) const {
         DOSAVE save(rough,   "Nan_PhiM_roughness");
         DOSAVE save(constraintWeights_,   "Nan_PhiM_cweight");
 
-        throwError(1, WHERE_AM_I + " getPhiM == " + str(ret));
+        throwError(WHERE_AM_I + " getPhiM == " + str(ret));
     }
     return ret;
 }
@@ -135,7 +135,7 @@ const RVector & RInversion::run(){ ALLOW_PYTHON_THREADS
     if (model_.size() == 0) setModel(forward_->startModel());
 
     if (data_.size() == 0) {
-        throwError(1, WHERE_AM_I + " no data given");
+        throwError(WHERE_AM_I + " no data given");
     }
 
     abort_ = false;

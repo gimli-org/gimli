@@ -226,7 +226,6 @@ public:
 // 	  if ((*cellMapIndex_)[cellID] - 2 < 0 ||
 // 	       (*cellMapIndex_)[cellID] - 2 > nModel-1){
 // 	    std::cerr << WHERE_AM_I << " index out of bounds: [0 -- " << nModel-1 << "]" << cellMapIndex[cellID] - 2 << std::endl;
-// 	    exit(EXIT_SENS_INDEX);
 // 	  }
 
 //	  (*S_)[dataIdx][(*cellMapIndex_)[cellID] - 2] += sum * (data_->k(dataIdx) * 2.0 * (*weights_)[kIdx]);
@@ -285,12 +284,11 @@ MEMINFO
 //         if (pots[0].size() < mesh.nodeCount()){
 //             std::stringstream str; str << WHERE_AM_I << " potential matrix colsize to small. "
 //                                        << pots[0].size()  << "< " << mesh.nodeCount() << std::endl;
-//             throwLengthError(EXIT_MATRIX_SIZE_INVALID, str.str());
 //         }
     } else {
         std::stringstream str1; str1 << WHERE_AM_I << " potential matrix rowsize to small."
                                    << pots.rows() << " < " << maxRows << std::endl;
-        throwLengthError(EXIT_MATRIX_SIZE_INVALID, str1.str());
+        throwLengthError(str1.str());
     }
 
     Stopwatch swatch(true);
@@ -328,7 +326,7 @@ MEMINFO
         uint modelCluster = std::floor((double)nModel / (maxSizeNeeded / maxMemSize));
 
         if (modelCluster < 1) {
-            throwError(1, WHERE_AM_I + " sorry, size of single sensitivity-row exceeds memory limitations.");
+            throwError(WHERE_AM_I + " sorry, size of single sensitivity-row exceeds memory limitations.");
         }
 
         std::cout << "Size of S cluster: " << mByte((double)nData * modelCluster * sizeof(ValueType)) << " MB" << std::endl;
@@ -482,7 +480,7 @@ RVector prepExportSensitivityData(const Mesh & mesh, const RVector & data, doubl
     // //RVector tmp(data/mesh.cellSizes());
     // if ((uint)data.size() != (uint)mesh.cellCount()){
 
-    //     throwLengthError(-1, WHERE_AM_I + " Datasize missmatch: " + str(mesh.cellCount())+
+    //     throwLengthError(WHERE_AM_I + " Datasize missmatch: " + str(mesh.cellCount())+
     //                         " " + str(data.size()));
     // } else {
     //     //for (uint i = 0; i < tmp.size(); i ++) tmp[i] = tmp[i] / mesh.cell(i).shape().domainSize();

@@ -49,14 +49,20 @@ RVector MT1dModelling::rhoaphi(const RVector & rho, const RVector & thk) { // af
 }
 
 RVector MT1dModelling::rhoa(const RVector & model){ //! app. res. for thk/res vector
-    if (model.size() != nlay_ * 2 - 1) return EXIT_VECTOR_SIZE_INVALID;
+    if (model.size() != nlay_ * 2 - 1) {
+	__M
+return 0;
+}
     RVector thk(model, 0, nlay_ - 1), rho(model, nlay_ - 1, 2 * nlay_ - 1);
     return rhoa(rho, thk);
 }
 
     /*! the actual (full) forward operator returning app.res.+phase for thickness+resistivity */
 RVector MT1dModelling::response(const RVector & model) {
-    if (model.size() != nlay_ * 2 - 1) return EXIT_VECTOR_SIZE_INVALID;
+    if (model.size() != nlay_ * 2 - 1) {
+__M
+return 0;
+}
     RVector thk(model, 0, nlay_ - 1), rho(model, nlay_ - 1, 2 * nlay_ - 1);
     return rhoaphi(rho, thk);
 }

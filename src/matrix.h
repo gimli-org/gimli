@@ -295,7 +295,7 @@ public:
     /*! Return this * a  */
     virtual RVector mult(const RVector & a) const {
         if (a.size() != nrows_) {
-            throwLengthError(1, WHERE_AM_I + " vector/matrix lengths do not match " +
+            throwLengthError(WHERE_AM_I + " vector/matrix lengths do not match " +
                                   str(nrows_) + " " + str(a.size()));
         }
         return a * val_;
@@ -304,7 +304,7 @@ public:
     /*! Return this.T * a */
     virtual RVector transMult(const RVector & a) const {
         if (a.size() != nrows_) {
-            throwLengthError(1, WHERE_AM_I + " matrix/vector lengths do not match " +
+            throwLengthError(WHERE_AM_I + " matrix/vector lengths do not match " +
                                  str(a.size()) + " " + str(nrows_));
         }
         return a * val_;
@@ -448,7 +448,7 @@ public:
     virtual const Vector< ValueType > col(Index i) const {
         //__M
         if (i < 0 || i > this->cols()-1) {
-            throwLengthError(1, WHERE_AM_I + " col bounds out of range " +
+            throwLengthError(WHERE_AM_I + " col bounds out of range " +
                                 str(i) + " " + str(this->cols())) ;
         }
         Vector < ValueType > col(this->rows());
@@ -469,11 +469,11 @@ public:
     /*! Set one specific column */
     inline void setCol(Index col, const Vector < ValueType > & v){
         if (col < 0 || col > this->cols()-1) {
-            throwLengthError(1, WHERE_AM_I + " col bounds out of range " +
+            throwLengthError(WHERE_AM_I + " col bounds out of range " +
                                 str(col) + " " + str(this->cols())) ;
         }
         if (v.size() > this->rows()) {
-            throwLengthError(1, WHERE_AM_I + " rows bounds out of range " +
+            throwLengthError(WHERE_AM_I + " rows bounds out of range " +
                                 str(v.size()) + " " + str(this->rows())) ;
         }
         for (Index i = 0; i < v.size(); i ++) mat_[i][col] = v[i];
@@ -482,11 +482,11 @@ public:
     /*! Add one specific column */
     inline void addCol(Index col, const Vector < ValueType > & v){
         if (col < 0 || col > this->cols()-1) {
-            throwLengthError(1, WHERE_AM_I + " col bounds out of range " +
+            throwLengthError(WHERE_AM_I + " col bounds out of range " +
                                 str(col) + " " + str(this->cols())) ;
         }
         if (v.size() > this->rows()) {
-            throwLengthError(1, WHERE_AM_I + " rows bounds out of range " +
+            throwLengthError(WHERE_AM_I + " rows bounds out of range " +
                                 str(v.size()) + " " + str(this->rows())) ;
         }
         for (Index i = 0; i < v.size(); i ++) mat_[i][col] += v[i];
@@ -509,7 +509,7 @@ public:
     //             ret[i] = sum(mat_[i] * b);
     //         }
     //     } else {
-    //         throwLengthError(1, WHERE_AM_I + " " + str(cols) + " != " + str(b.size()));
+    //         throwLengthError(WHERE_AM_I + " " + str(cols) + " != " + str(b.size()));
     //     }
     //     return ret;
     // }
@@ -522,7 +522,7 @@ public:
     //     Index bsize = Index(endI - startI);
 
     //     if (bsize != cols) {
-    //         throwLengthError(1, WHERE_AM_I + " " + str(cols) + " < " + str(endI) + "-" + str(startI));
+    //         throwLengthError(WHERE_AM_I + " " + str(cols) + " < " + str(endI) + "-" + str(startI));
     //     }
     //     Vector < ValueType > ret(rows, 0.0);
     //     for (Index i = 0; i < rows; ++i){
@@ -548,7 +548,7 @@ public:
     //             }
     //         }
     //     } else {
-    //         throwLengthError(1, WHERE_AM_I + " " + str(rows) + " != " + str(b.size()));
+    //         throwLengthError(WHERE_AM_I + " " + str(rows) + " != " + str(b.size()));
     //     }
     //     return ret;
     // }
@@ -680,10 +680,10 @@ void scaleMatrix(Matrix < ValueType >& A,
     Index rows = A.rows();
     Index cols = A.cols();
     if (rows != l.size()){
-        throwLengthError(1, WHERE_AM_I + " " + str(rows) + " != " + str(l.size()));
+        throwLengthError(WHERE_AM_I + " " + str(rows) + " != " + str(l.size()));
     };
     if (cols != r.size()){
-        throwLengthError(1, WHERE_AM_I + " " + str(cols) + " != " + str(r.size()));
+        throwLengthError(WHERE_AM_I + " " + str(cols) + " != " + str(r.size()));
     }
 
     for (Index i = 0 ; i < rows ; i++) {
@@ -698,11 +698,11 @@ void rank1Update(Matrix < ValueType > & A,
     Index rows = A.rows();
     Index cols = A.cols();
     if (rows != u.size()){
-        throwLengthError(1, WHERE_AM_I + " " + str(rows) + " != " + str(u.size()));
+        throwLengthError(WHERE_AM_I + " " + str(rows) + " != " + str(u.size()));
     };
 
     if (cols != v.size()){
-        throwLengthError(1, WHERE_AM_I + " " + str(cols) + " != " + str(v.size()));
+        throwLengthError(WHERE_AM_I + " " + str(cols) + " != " + str(v.size()));
     }
 
     for (Index i = 0 ; i < rows ; i++) {
@@ -806,22 +806,22 @@ bool loadMatrixSingleBin(Matrix < ValueType > & A,
     FILE *file; file = fopen(filename.c_str(), "r+b");
 
     if (!file) {
-        throwError(EXIT_OPEN_FILE, WHERE_AM_I + " " +
+        throwError(WHERE_AM_I + " " +
                    filename + ": " + strerror(errno));
     }
     Index ret;
     uint32 rows = 0;
     ret = fread(&rows, sizeof(uint32), 1, file);
-    if (ret == 0) throwError(1, "fail reading file " + filename);
+    if (ret == 0) throwError("fail reading file " + filename);
     uint32 cols = 0;
     ret = fread(&cols, sizeof(uint32), 1, file);
-    if (ret == 0) throwError(1, "fail reading file " + filename);
+    if (ret == 0) throwError("fail reading file " + filename);
 
     A.resize(rows, cols);
     for (uint32 i = 0; i < rows; i ++){
         for (uint32 j = 0; j < cols; j ++){
             ret = fread((char*)&A[i][j], sizeof(ValueType), 1, file);
-            if (ret == 0) throwError(1, "fail reading file " + filename);
+            if (ret == 0) throwError("fail reading file " + filename);
         }
     }
     fclose(file);

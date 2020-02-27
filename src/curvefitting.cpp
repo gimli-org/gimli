@@ -37,7 +37,7 @@ void HarmonicFunction::setCoefficients(const RVector & coeff){
 
     nHarmonic_ = coeff.size() / 2;
     if (((double)coeff.size() / 2.0 - nHarmonic_) > TOLERANCE){
-        throwError(1, WHERE_AM_I + " coefficients size is uneven" + str(coeff.size()));
+        throwError(WHERE_AM_I + " coefficients size is uneven" + str(coeff.size()));
     }
     coeff_ = coeff;
 }

@@ -75,7 +75,7 @@ void interpolate(const Mesh & mesh, const RMatrix & vData,
             } else if (vData[i].size() == mesh.cellCount()){
                 data = cellDataToPointData(mesh, vData[i]);
             } else {
-                throwLengthError(EXIT_VECTOR_SIZE_INVALID,
+                throwLengthError(
                                  WHERE_AM_I +
                                  " data.size not nodeCount and cellCount " +
                                  str(vData.size()) + " x " +
@@ -157,7 +157,7 @@ RVector interpolate(const Mesh & mesh, const RVector & data,
     if (z.size() == 0 && y.size() == 0) return interpolate(mesh, data, x, verbose, fillValue);
 
     if (x.size() != y.size() || x.size() != z.size()) {
-        throwLengthError(EXIT_VECTOR_SIZE_INVALID, " x.size invalid y.size invalid z.size() "
+        throwLengthError(" x.size invalid y.size invalid z.size() "
                 + str(x.size()) + " != " + str(y.size()) + " != " + str(z.size()));
     }
 
@@ -258,7 +258,7 @@ void triangleMesh_(const Mesh & mesh, Mesh & tmpMesh){
 
 RVector cellDataToPointData(const Mesh & mesh, const RVector & cellData){
     if (cellData.size() != mesh.cellCount()){
-        throwLengthError(EXIT_VECTOR_SIZE_INVALID, " vector size invalid mesh.cellCount "
+        throwLengthError(" vector size invalid mesh.cellCount "
                         + str(mesh.cellCount()) + " != " + str(cellData.size()));
     }
 

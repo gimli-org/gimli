@@ -258,7 +258,7 @@ public:
             DOSAVE save(error_,               "Nan_dataWeight_error");
             DOSAVE save(data_,                 "Nan_dataWeight_data");
 
-            throwError(1, WHERE_AM_I + " dataWeight_ contains inf or nan");
+            throwError(WHERE_AM_I + " dataWeight_ contains inf or nan");
         }
     }
 

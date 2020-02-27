@@ -270,14 +270,14 @@ void Mesh::loadBinary(const std::string & fbody){
 
     FILE *file; file = fopen(fileName.c_str(), "r+b");
     if (!file) {
-        throwError(EXIT_OPEN_FILE, WHERE_AM_I + " " + fileName + ": " + strerror(errno));
+        throwError(WHERE_AM_I + " " + fileName + ": " + strerror(errno));
     }
 
     int dim = 0;
     uint ret = fread(&dim, sizeof(int), 1, file);
 
     if ((dim !=2 && dim !=3) || (ret == 0)){
-        throwError(1, WHERE_AM_I + " cannot determine dimension " + str(dim));
+        throwError(WHERE_AM_I + " cannot determine dimension " + str(dim));
     }
     this->setDimension(dim);
     //** read vertex dummy-infos
@@ -376,7 +376,7 @@ void Mesh::loadBinary(const std::string & fbody){
 template < class ValueType > void writeToFile(FILE * file, const ValueType & v, int count=1){
     if (!fwrite(&v, sizeof(ValueType), count, file)){
         __MS(v << " " << count)
-        throwError(EXIT_OPEN_FILE, WHERE_AM_I + strerror(errno) + " " + str(errno));
+        throwError(WHERE_AM_I + strerror(errno) + " " + str(errno));
     }
 }
 
@@ -384,7 +384,7 @@ template < class ValueType > void readFromFile(FILE * file, ValueType & v, int c
     uint ret = fread(&v, sizeof(ValueType), count, file);
 
     if (ret && ferror(file)){
-        throwError(EXIT_OPEN_FILE, WHERE_AM_I + strerror(errno) + " " + str(errno));
+        throwError(WHERE_AM_I + strerror(errno) + " " + str(errno));
     }
 }
 
@@ -413,7 +413,7 @@ void Mesh::saveBinaryV2(const std::string & fbody) const {
     FILE *file;
     file = fopen(fileName.c_str(), "w+b");
     if (!file) {
-        throwError(EXIT_OPEN_FILE, WHERE_AM_I + " " + fileName + ": " + strerror(errno));
+        throwError(WHERE_AM_I + " " + fileName + ": " + strerror(errno));
     }
 
     //** write preample
@@ -537,12 +537,12 @@ void Mesh::loadBinaryV2(const std::string & fbody) {
     file = fopen(fileName.c_str(), "r+b");
 
     if (!file) {
-        throwError(EXIT_OPEN_FILE, WHERE_AM_I + " " + fileName + ": " + strerror(errno));
+        throwError(WHERE_AM_I + " " + fileName + ": " + strerror(errno));
     }
 
     uint8 dim; readFromFile(file, dim);
     if (dim !=2 && dim !=3){
-        throwError(1, WHERE_AM_I + " cannot determine dimension " + str(dim));
+        throwError(WHERE_AM_I + " cannot determine dimension " + str(dim));
     }
     this->setDimension(dim);
     uint8 version; readFromFile(file, version);
@@ -551,7 +551,7 @@ void Mesh::loadBinaryV2(const std::string & fbody) {
     uint32 nVerts; readFromFile(file, nVerts);
 
     if (nVerts > 1e9){
-        throwError(1, WHERE_AM_I + " probably something wrong: nVerts > 1e9 " + str(nVerts));
+        throwError(WHERE_AM_I + " probably something wrong: nVerts > 1e9 " + str(nVerts));
     }
 
     if (nVerts > 0){
@@ -635,7 +635,7 @@ void Mesh::loadBinaryV2(const std::string & fbody) {
 
 int Mesh::exportSimple(const std::string & fbody, const RVector & data) const {
   //output x y x y x y rhoa file
-  std::fstream file; if (!openOutFile(fbody , & file)){ exit(EXIT_MESH_EXPORT_FAILS); }
+  std::fstream file; if (!openOutFile(fbody , & file)){ throwError("can't open file"); }
 
   for (uint i = 0; i < cellCount(); i ++){
     for (uint j = 0; j < 3; j ++){
@@ -1482,10 +1482,10 @@ void Mesh::importSTL(const std::string & fileName, bool isBinary, double snap){
         char header[80];
         Index ret = 0;
         ret = fread(&header, 1, 80, file);
-        if (ret == 0) throwError(1, WHERE_AM_I + " Oops");
+        if (ret == 0) throwError(WHERE_AM_I + " Oops");
         int nFaces = 0;
         ret = fread(&nFaces, 4, 1, file);
-        if (ret == 0) throwError(1, WHERE_AM_I + " Oops");
+        if (ret == 0) throwError(WHERE_AM_I + " Oops");
         __MS(nFaces)
 
         float rd[48];
@@ -1493,7 +1493,7 @@ void Mesh::importSTL(const std::string & fileName, bool isBinary, double snap){
         for (int i = 0; i < nFaces; i ++){
             std::vector < RVector3 > face;
             ret = fread(&rd, 4, 12, file);
-            if (ret == 0) throwError(1, WHERE_AM_I + " Oops");
+            if (ret == 0) throwError(WHERE_AM_I + " Oops");
 
             face.push_back(RVector3(rd[3], rd[4],  rd[5]));
             face.push_back(RVector3(rd[6], rd[7],  rd[8]));
@@ -1501,7 +1501,7 @@ void Mesh::importSTL(const std::string & fileName, bool isBinary, double snap){
             allVerts.push_back(face);
 
             ret = fread(&padding, 1, 2, file);
-            if (ret == 0) throwError(1, WHERE_AM_I + " Oops");
+            if (ret == 0) throwError(WHERE_AM_I + " Oops");
         }
         fclose(file);
     } // end import binary STL format
@@ -1517,7 +1517,7 @@ void Mesh::importSTL(const std::string & fileName, bool isBinary, double snap){
                 this->createTriangleFace(*n1, *n2, *n3, j);
             }
         } else {
-            throwError(1,  WHERE_AM_I + " there is something wrong in ascii-stl-format "
+            throwError(WHERE_AM_I + " there is something wrong in ascii-stl-format "
                     + str(allVerts.size()) + " " + str(allVerts.size() % 3));
         }
     }

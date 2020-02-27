@@ -104,7 +104,7 @@ public:
             mat_[1] = v[1];
             mat_[2] = v[2];
         } else {
-            throwLengthError(1, WHERE_AM_I + " v.size() < 2 " + str(v.size()));
+            throwLengthError(WHERE_AM_I + " v.size() < 2 " + str(v.size()));
         }
         return *this;
 
@@ -147,7 +147,7 @@ public:
         if (i < 3) {
             mat_[i] = val;
         } else {
-            throwRangeError(1, WHERE_AM_I, i, 0, 3);
+            throwRangeError(WHERE_AM_I, i, 0, 3);
         }
     }
 
@@ -156,7 +156,7 @@ public:
         if (i < 3) {
             return mat_[i];
         } else {
-            throwRangeError(1, WHERE_AM_I, i, 0, 3);
+            throwRangeError(WHERE_AM_I, i, 0, 3);
         }
         return mat_[0];
     }

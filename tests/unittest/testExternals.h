@@ -29,7 +29,7 @@ public:
         tri.setSwitches("-pzeQ");
         GIMLI::Mesh outMesh(2);
         tri.generate( outMesh );
-        std::cout << outMesh << std::endl;
+	//std::cout << outMesh << std::endl;
         CPPUNIT_ASSERT( outMesh.cellCount() == 1 );
         CPPUNIT_ASSERT( outMesh.nodeCount() == 3 );
         CPPUNIT_ASSERT( outMesh.boundaryCount() == 3 );

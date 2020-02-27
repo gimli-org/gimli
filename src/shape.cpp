@@ -117,7 +117,6 @@ void Shape::changed(){
 // Node & Shape::node(Index i) {
 //     if (i > nodeCount() - 1){
 //         std::cerr << WHERE_AM_I << " requested shape node: " << i << " does not exist." << std::endl;
-//         exit(EXIT_MESH_NO_NODE);
 //     }
 //     return *(*nodeVector_)[i];
 // }
@@ -125,7 +124,6 @@ void Shape::changed(){
 const Node & Shape::node(Index i) const {
     if (i > nodeCount() - 1){
         std::cerr << WHERE_AM_I << " requested shape node: " << i << " does not exist." << std::endl;
-        exit(EXIT_MESH_NO_NODE);
     }
     return *(*nodeVector_)[i];
 }
@@ -133,7 +131,6 @@ const Node & Shape::node(Index i) const {
 // void Shape::setNode(Index i, Node & n) {
 //     if (i > nodeCount() - 1){
 //         std::cerr << WHERE_AM_I << " requested shape node: " << i << " does not exist." << std::endl;
-//         exit(EXIT_MESH_NO_NODE);
 //     }
 //     nodeVector_[i] = &n;
 //     this->changed();

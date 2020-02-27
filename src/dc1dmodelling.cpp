@@ -82,10 +82,10 @@ RVector DC1dModelling::createDefaultStartModel() {
 RVector DC1dModelling::response(const RVector & model) {
 
     if (model.size() < (nlayers_ * 2 - 1)){
-        throwError(1, WHERE_AM_I + " model vector to small: nlayers_ * 2 - 1 = " + str(nlayers_ * 2 - 1) + " > " + str(model.size()));
+        throwError(WHERE_AM_I + " model vector to small: nlayers_ * 2 - 1 = " + str(nlayers_ * 2 - 1) + " > " + str(model.size()));
     }
     if (model.size() > (nlayers_ * 2 - 1)){
-        throwError(1, WHERE_AM_I + " model vector to large: nlayers_ * 2 - 1 = " + str(nlayers_ * 2 - 1) + " < " + str(model.size()));
+        throwError(WHERE_AM_I + " model vector to large: nlayers_ * 2 - 1 = " + str(nlayers_ * 2 - 1) + " < " + str(model.size()));
     }
 
     RVector rho(nlayers_);
@@ -425,10 +425,10 @@ DC1dModellingC::DC1dModellingC(size_t nlayers,
 
 RVector DC1dModellingC::response(const RVector & model) {
     if (model.size() < (nlayers_ * 3 - 1)){
-        throwError(1, WHERE_AM_I + " model vector to small: nlayers_ * 3 - 1 = " + str(nlayers_ * 3 - 1) + " > " + str(model.size()));
+        throwError(WHERE_AM_I + " model vector to small: nlayers_ * 3 - 1 = " + str(nlayers_ * 3 - 1) + " > " + str(model.size()));
     }
     if (model.size() > (nlayers_ * 3 - 1)){
-        throwError(1, WHERE_AM_I + " model vector to large: nlayers_ * 3 - 1 = " + str(nlayers_ * 3 - 1) + " < " + str(model.size()));
+        throwError(WHERE_AM_I + " model vector to large: nlayers_ * 3 - 1 = " + str(nlayers_ * 3 - 1) + " < " + str(model.size()));
     }
 
     RVector thk(model(0,               nlayers_ -1));

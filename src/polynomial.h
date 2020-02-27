@@ -220,7 +220,7 @@ public:
                 mat_[ e.k_ ][ e.i_ ][ e.j_ ] = c[ i ];
             }
         } else {
-            throwLengthError(1, WHERE_AM_I + " c size out of range " +
+            throwLengthError(WHERE_AM_I + " c size out of range " +
                                 str(c.size()) + " needed " + str(powInt(mat_.size(), 3)) +
                                                     " or " + str(elementList_.size()));
         }

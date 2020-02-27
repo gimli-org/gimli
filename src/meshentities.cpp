@@ -630,7 +630,7 @@ Edge::~Edge(){
 
 void Edge::setNodes(Node & n1, Node & n2){
     if ((&n1 == &n2)){
-        throwError(EXIT_MESH_NO_ELEMENT, WHERE + " Edge nodes not valid " +
+        throwError(WHERE + " Edge nodes not valid " +
                    str(n1) + " " + str(n2) );
     }
     const std::vector < Node * > nodes{&n1, &n2};
@@ -661,7 +661,7 @@ int Edge::swap(){
                 << right << std::endl;
         if (oL != NULL) std::cout << "oL " << oL->id() << std::endl;
         if (oR != NULL) std::cout << "oR " << oR->id() << std::endl;
-        throwError(0, WHERE );
+        throwError(WHERE);
     }
 
     //** swap only when the resulting triangles have the same sign
@@ -733,7 +733,7 @@ std::vector < PolynomialFunction < double > > TriangleFace::createShapeFunctions
 void TriangleFace::setNodes(Node & n1, Node & n2, Node & n3){
     if ((&n1 == &n2) || (&n1 == &n3) || (&n2 == &n3)){
         std::cerr << WHERE << " TriangleFace nodes not valid " << n1 << " " << n2 << " " <<  n3 << std::endl;
-        throwError(EXIT_MESH_NO_ELEMENT, WHERE);
+        throwError(WHERE);
     }
     const std::vector < Node * > nodes{&n1, &n2, &n3};
     MeshEntity::setNodes(nodes);
@@ -775,7 +775,7 @@ void QuadrangleFace::setNodes(Node & n1, Node & n2, Node & n3, Node & n4){
     if ((&n1 == &n2) || (&n1 == &n3) || (&n2 == &n3)){
         std::cerr << WHERE << " QuadrangleFace nodes not valid " << n1 << " "
                 << n2 << " " <<  n3 << " " << n4<< std::endl;
-        throwError(EXIT_MESH_NO_ELEMENT, WHERE);
+        throwError(WHERE);
     }
     const std::vector < Node * > nodes{&n1, &n2, &n3, &n4};
     MeshEntity::setNodes(nodes);
@@ -954,7 +954,7 @@ Triangle::~Triangle(){
 void Triangle::setNodes(Node & n1, Node & n2, Node & n3){
     if ((&n1 == &n2) || (&n1 == &n3) || (&n2 == &n3)){
         std::cerr << WHERE << " Triangle nodes not valid " << n1 << " " << n2 << " " << n3 << std::endl;
-        throwError(EXIT_MESH_NO_ELEMENT, WHERE);
+        throwError(WHERE);
     }
     const std::vector < Node * > nodes{&n1, &n2, &n3};
     MeshEntity::setNodes(nodes);

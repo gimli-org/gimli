@@ -125,7 +125,7 @@ void TriangleWrapper::generate(Mesh & mesh){
 #if USE_LIBTRIANGLE
 
     if (inMesh_->nodeCount() < 3){
-        throwError(1, WHERE_AM_I + " input mesh must have at least 3 nodes ");
+        throwError(WHERE_AM_I + " input mesh must have at least 3 nodes ");
     }
     if (mesh_output_->pointlist) {
         freeMemory_();

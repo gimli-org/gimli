@@ -56,7 +56,7 @@
 	#pragma warning(disable: 4251)
 #endif
 
-#include <cassert>
+//#include <cassert>
 #include <iostream>
 #include <limits>
 #include <string>
@@ -149,19 +149,19 @@ typedef int64_t int64;
 #define NOT_DEFINED "notDefined"
 
 #define ASSERT_EQUAL_SIZE(m, n) if (m.size() != n.size()) \
-    throwLengthError(1, WHERE_AM_I + " " + str(m.size()) + " != " + str(n.size()));
+    throwLengthError(WHERE_AM_I + " " + str(m.size()) + " != " + str(n.size()));
 #define ASSERT_THIS_SIZE(n) if (n < 0 || n >= this->size()) \
-    throwLengthError(1, WHERE_AM_I + " " + str(this->size()) + " <= " + str(n));
+    throwLengthError(WHERE_AM_I + " " + str(this->size()) + " <= " + str(n));
 #define ASSERT_VEC_SIZE(vec, n) if (n != vec.size()) \
-    throwLengthError(1, WHERE_AM_I + " " + str(vec.size()) + " != " + str(n));
+    throwLengthError(WHERE_AM_I + " " + str(vec.size()) + " != " + str(n));
 #define ASSERT_SIZE(vec, n) if (n < 0 || n >= vec.size()) \
-    throwLengthError(1, WHERE_AM_I + " " + str(vec.size()) + " <= " + str(n));
+    throwLengthError(WHERE_AM_I + " " + str(vec.size()) + " <= " + str(n));
 #define ASSERT_EQUAL(m, n) if (m != n) \
-    throwLengthError(1, WHERE_AM_I + " " + str(m) + " != " + str(n));
+    throwLengthError(WHERE_AM_I + " " + str(m) + " != " + str(n));
 #define ASSERT_RANGE(i, start, end) if (i < start || i >= end) \
-    throwRangeError(1, WHERE_AM_I, i, start, end);
+    throwRangeError(WHERE_AM_I, i, start, end);
 #define ASSERT_EMPTY(v) if (v.size()==0) \
-    throwLengthError(1, WHERE_AM_I + " array size is zero.");
+    throwLengthError(WHERE_AM_I + " array size is zero.");
 
 static const int MARKER_BOUND_HOMOGEN_NEUMANN = -1;
 static const int MARKER_BOUND_MIXED = -2;
@@ -417,9 +417,6 @@ inline std::string type(const double        & var) { return "double"; }
 inline std::string type(const Complex       & var) { return "complex"; }
 inline std::string type(const std::string   & var) { return "string"; }
 inline std::string type(const std::vector < std::string >  & var) { return "string"; }
-#if defined ( __APPLE__ )
-inline std::string type(const long unsigned int & var) { return "long unsigned int"; }
-#endif
 
 inline std::string type(const RVector  & var) { return "RVector"; }
 inline std::string type(const RVector3 & var) { return "RVector3"; }
@@ -458,10 +455,10 @@ template < typename ValueType > void setEnvironment(const std::string & name,
     switch(ret){
         case EINVAL:
             __MS(name << " " << val)
-            throwError(1, "name is NULL, points to a string of length 0, or contains an '=' character.");
+            throwError("name is NULL, points to a string of length 0, or contains an '=' character.");
         case ENOMEM:
             __MS(name << " " << val)
-            throwError(1, "name is NULL, Insufficient memory to add a new variable to the environment.");
+            throwError("name is NULL, Insufficient memory to add a new variable to the environment.");
     }
     if (verbose) std::cout << "set: export " << name << "=" << val << std::endl;
 }

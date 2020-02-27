@@ -9,18 +9,18 @@ add_executable(gimliUnitTest unitTest.cpp ${unitTest_HEADERS})
 
 if (CPPUNIT_FOUND)
     add_definitions(-DHAVE_UNITTEST)
-	include_directories(${CPPUNIT_INCLUDE_DIR})
+    include_directories(${CPPUNIT_INCLUDE_DIR})
     target_link_libraries(gimliUnitTest ${CPPUNIT_LIBRARIES})
 
 
-    if (CHOLMOD_FOUND)
-        target_link_libraries(gimliUnitTest ${CPPUNIT_LIBRARIES})
-    endif (CHOLMOD_FOUND)
+    #if (CHOLMOD_FOUND)
+    #    target_link_libraries(gimliUnitTest ${CPPUNIT_LIBRARIES})
+    #endif (CHOLMOD_FOUND)
 
-    target_link_libraries(gimliUnitTest ${Boost_THREAD_LIBRARY})
+    #target_link_libraries(gimliUnitTest ${Boost_THREAD_LIBRARY})
     target_link_libraries(gimliUnitTest gimli)
     target_link_libraries(gimliUnitTest pthread)
-    target_link_libraries(gimliUnitTest ${CHOLMOD_LIBRARIES})
+    #target_link_libraries(gimliUnitTest ${CHOLMOD_LIBRARIES})
 
     add_dependencies(check gimliUnitTest)
 
@@ -50,4 +50,4 @@ if (CPPUNIT_FOUND)
 
     INSTALL_FILES(${CMAKE_CURRENT_SOURCE_DIR} unittest.sh)
 
-endif (CPPUNIT_FOUND)
+endif()

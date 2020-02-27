@@ -123,7 +123,7 @@ void ModellingBase::setData(DataContainer & data){
 
 DataContainer & ModellingBase::data() const{
     if (dataContainer_ == 0){
-        throwError(1, WHERE_AM_I + " no data defined");
+        throwError(WHERE_AM_I + " no data defined");
     }
     return * dataContainer_;
 }
@@ -168,7 +168,7 @@ void ModellingBase::createRefinedForwardMesh(bool refine, bool pRefine){
             setMesh_(regionManager_->mesh());
         }
     } else {
-        throwError(1, "Cannot create a refined forward mesh since I have none.");
+        throwError("Cannot create a refined forward mesh since I have none.");
     }
 }
 
@@ -378,17 +378,17 @@ MatrixBase * ModellingBase::constraints() const {
 }
 
 RSparseMapMatrix & ModellingBase::constraintsRef() const {
-    if (!constraints_) throwError(1, WHERE_AM_I + " constraints matrix is not initialized.");
+    if (!constraints_) throwError(WHERE_AM_I + " constraints matrix is not initialized.");
     return *dynamic_cast < RSparseMapMatrix *>(constraints_);
 }
 
 RSparseMapMatrix & ModellingBase::constraintsRef() {
-    if (!constraints_) throwError(1, WHERE_AM_I + " constraints matrix is not initialized.");
+    if (!constraints_) throwError(WHERE_AM_I + " constraints matrix is not initialized.");
     return *dynamic_cast < RSparseMapMatrix *>(constraints_);
 }
 
 RVector ModellingBase::createMappedModel(const RVector & model, double background) const {
-    if (mesh_ == 0) throwError(1, "ModellingBase has no mesh for ModellingBase::createMappedModel");
+    if (mesh_ == 0) throwError("ModellingBase has no mesh for ModellingBase::createMappedModel");
 
     // __MS("createMappedModel: " << model.size() << " " <<  mesh_->cellCount())
 
@@ -415,7 +415,7 @@ RVector ModellingBase::createMappedModel(const RVector & model, double backgroun
                           << "Wrong mesh here .. see mapModelfail.vtk" << std::endl
                           << *mesh_ << std::endl
                           << "mesh contains " << unique(sort(mesh_->cellMarkers())).size() << " unique markers. " << std::endl;
-                throwLengthError(1, WHERE_AM_I + " marker >= than model.size() " + str(marker)
+                throwLengthError(WHERE_AM_I + " marker >= than model.size() " + str(marker)
                        + " >= " + str(model.size()));
             }
             if (abs(model[marker]) < TOLERANCE){
@@ -435,7 +435,7 @@ RVector ModellingBase::createMappedModel(const RVector & model, double backgroun
 
     // if background == 0.0 .. empty cells are allowed
     if (emptyList.size() == mesh_->cellCount() && background != 0.0){
-        throwLengthError(1, WHERE_AM_I + " too many empty cells" + str(emptyList.size())
+        throwLengthError(WHERE_AM_I + " too many empty cells" + str(emptyList.size())
                        + " == " + str(mesh_->cellCount()));
     }
 
@@ -503,7 +503,7 @@ void ModellingBase::setRegionManager(RegionManager * reg){
 }
 
 const RegionManager & ModellingBase::regionManager() const {
-    if (regionManager_ == 0) throwError(1, "No RegionManager initialized");
+    if (regionManager_ == 0) throwError("No RegionManager initialized");
     return *regionManager_;
 }
 
@@ -534,7 +534,7 @@ LinearModelling::LinearModelling(MatrixBase & A, bool verbose)
 
 RVector LinearModelling::response(const RVector & model) {
     if (jacobian_->cols() != model.size()){
-        throwLengthError(1, WHERE_AM_I + " Jacobian col size != model.size()"
+        throwLengthError(WHERE_AM_I + " Jacobian col size != model.size()"
                                 + str(jacobian_->cols()) + " != " + str(model.size()));
     }
     return *jacobian_ * model;

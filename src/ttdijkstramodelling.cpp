@@ -104,7 +104,7 @@ void Dijkstra::setStartNode(Index startNode) {
 
             if ((Index)pathMatrix_.size() <= node){
                 std::cout << "startNodeID:" << startNode << " NodeID:" << node << std::endl;
-                throwError(1, WHERE_AM_I + " Warning! Dijkstra graph invalid" );
+                throwError(WHERE_AM_I + " Warning! Dijkstra graph invalid" );
             }
             pathMatrix_[node] = Edge_(dummy.second);
 
@@ -271,7 +271,7 @@ RVector TravelTimeDijkstraModelling::getApparentSlowness() const {
             __MS(WHERE_AM_I + ": shot point equals geophon point. " +
                   "This lead to an invalid apparent slowness. " +
                   str(s) + "==" + str(g))
-            throwError(1, "Aborting" );
+            throwError("Aborting" );
         }
         edgeLength = dataContainer_->sensorPosition(s).distance(dataContainer_->sensorPosition(g));
         apparentSlowness[dataIdx] = dataContainer_->get("t")[dataIdx] / edgeLength;
@@ -318,18 +318,18 @@ void TravelTimeDijkstraModelling::updateMeshDependency_(){
     if (verbose_) std::cout << "... looking for shot and receiver positions." << std::endl;
 
     if (!dataContainer_){
-        throwError(1, "We have no dataContainer defined");
+        throwError("We have no dataContainer defined");
     }
     RVector shots(unique(sort((*dataContainer_)("s"))));
 
     if (shots.size() == 0){
-        throwError(1, "There are no shot positions in the dataContainer.");
+        throwError("There are no shot positions in the dataContainer.");
     }
     shotNodeId_.resize(shots.size()) ;
     shotsInv_.clear();
 
     if (shots[0] < 0){
-        throwError(1, "There are shots index lower then 0.");
+        throwError("There are shots index lower then 0.");
     }
 
     for (Index i = 0; i < shots.size(); i ++){

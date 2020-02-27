@@ -214,13 +214,13 @@ int DataContainer::load(const std::string & fileName,
     std::vector < std::string > row(getNonEmptyRow(file));
 
     if (row.size() != 1){
-        throwError(EXIT_DATACONTAINER_NELECS, WHERE_AM_I + " cannot determine data format. " + str(row.size()));
+        throwError(WHERE_AM_I + " cannot determine data format. " + str(row.size()));
     }
 
     //** read number of electrodes
     int nSensors = toInt(row[0]);
     if (nSensors < 1){
-        throwError(EXIT_DATACONTAINER_NELECS, " cannot determine sensor count " + row[0]);
+        throwError(" cannot determine sensor count " + row[0]);
     }
     RVector x(nSensors, 0.0), y(nSensors, 0.0), z(nSensors, 0.0);
 
@@ -249,7 +249,7 @@ int DataContainer::load(const std::string & fileName,
         row = getNonEmptyRow(file);
 
         if (row.empty()){
-            throwError(EXIT_DATACONTAINER_NELECS,
+            throwError(
                        WHERE_AM_I + "To few sensor data. " +
                        str(nSensors) + " Sensors expected but " +
                        str(i) + " found.");
@@ -267,7 +267,6 @@ int DataContainer::load(const std::string & fileName,
             else if (format[j] == "z/mm" || format[j] == "z/mm") z[i] = toDouble(row[j]) / 1000.0;
             else {
                 std::cerr << WHERE_AM_I << " Warning! format description unknown: format[" << j << "] = " << format[j] << " column ignored." << std::endl;
-                //throwError(EXIT_DATACONTAINER_ELECS_TOKEN, str.str());
             }
         }
     }
@@ -287,7 +286,7 @@ int DataContainer::load(const std::string & fileName,
         }
         std::cerr << std::endl;
 
-        throwError(EXIT_DATACONTAINER_NELECS, WHERE_AM_I + " cannot determine data size. " + str(row.size()));
+        throwError(WHERE_AM_I + " cannot determine data size. " + str(row.size()));
     }
 
     int nData = toInt(row[0]);
@@ -303,7 +302,7 @@ int DataContainer::load(const std::string & fileName,
         if (c == '#') {
             format = getRowSubstrings(file);
             if (format.size() == 0){
-                throwError(EXIT_DATACONTAINER_NO_DATAFORMAT, WHERE_AM_I + "Can not determine data format.");
+                throwError(WHERE_AM_I + "Can not determine data format.");
             }
 //            if (format.size() == 4) schemeOnly = true;
         }
@@ -317,7 +316,7 @@ int DataContainer::load(const std::string & fileName,
         row = getNonEmptyRow(file);
 
         if (row.empty()){
-            throwError(EXIT_DATACONTAINER_DATASIZE,
+            throwError(
                        WHERE_AM_I + " To few data. " + str(nData) +
                        " data expected and " + str(data) + " data found.");
         }
@@ -412,7 +411,7 @@ int DataContainer::load(const std::string & fileName,
                 row = getNonEmptyRow(file);
 
                 if (row.empty()) {
-                    throwError(EXIT_DATACONTAINER_NTOPO, WHERE_AM_I
+                    throwError(WHERE_AM_I
                             + "To few topo data. " + str(nTopoPoints)
                             + " Topopoints expected and " + str(i) + " found.");
                 }
@@ -427,7 +426,7 @@ int DataContainer::load(const std::string & fileName,
                         std::stringstream str;
                         str << " Warning! format description unknown: topo electrode format["
                             << j << "] = " << format[j] << " column ignored." << std::endl;
-                        throwError(EXIT_DATACONTAINER_ELECS_TOKEN, str.str());
+                        throwError(str.str());
                     }
                 }
             }
@@ -556,7 +555,7 @@ int DataContainer::write(std::fstream & file,
                 outInt.push_back(false);
             }
         } else {
-            throwError(1, WHERE_AM_I + " no such data: " + valName);
+            throwError(WHERE_AM_I + " no such data: " + valName);
         }
     }
 
@@ -641,7 +640,7 @@ void DataContainer::add(const std::string & token, const RVector & data,
 //         dataMap_.insert(make_pair(token, data));
 //         this->setDataDescription(token, description);
 //     } else {
-//         throwError(1, WHERE_AM_I + " wrong data size: " + str(this->size()) + " " + str(data.size()));
+//         throwError(WHERE_AM_I + " wrong data size: " + str(this->size()) + " " + str(data.size()));
 //     }
 }
 
@@ -649,7 +648,7 @@ void DataContainer::set(const std::string & token, const RVector & data){
     if (data.size() == this->size()){
         dataMap_[token] = data;
     } else {
-        throwError(1, WHERE_AM_I + " wrong data size: " + str(this->size()) + " " + str(data.size()));
+        throwError(WHERE_AM_I + " wrong data size: " + str(this->size()) + " " + str(data.size()));
     }
 }
 
@@ -658,17 +657,17 @@ const RVector & DataContainer::get(const std::string & token) const {
         return dataMap_.find(token)->second;
     }
 
-    throwError(1, WHERE_AM_I + " unknown token data for get: " + token + " available are: " + tokenList() );
+    throwError(WHERE_AM_I + " unknown token data for get: " + token + " available are: " + tokenList() );
     return *new RVector(0);
 }
 
 const IndexArray DataContainer::id(const std::string & token) const {
     if (!dataMap_.count(token)) {
-        throwError(1, WHERE_AM_I + " unknown token data for get: " + token + " available are: " + tokenList() );
+        throwError(WHERE_AM_I + " unknown token data for get: " + token + " available are: " + tokenList() );
     }
 
     if (!isSensorIndex(token)) {
-        throwError(1, WHERE_AM_I + " token: " + token + " is not an index list: " + tokenList() );
+        throwError(WHERE_AM_I + " token: " + token + " is not an index list: " + tokenList() );
     }
 
     //RVector idx = dataMap_.find(token)->second;
@@ -686,7 +685,7 @@ RVector * DataContainer::ref(const std::string & token){
         return &dataMap_.find(token)->second;
     }
 
-    throwError(1, WHERE_AM_I + " unknown token data for ref: " + token + " available are: " + tokenList() );
+    throwError(WHERE_AM_I + " unknown token data for ref: " + token + " available are: " + tokenList() );
     return NULL;
 }
 
@@ -737,7 +736,7 @@ IndexArray DataContainer::findSensorIndex(const RVector & d) const{
         if (d[i] > -1 && d[i] < sensorCount()) {
             ret[i] = Index(d[i]);
         } else {
-            throwError(1, WHERE_AM_I + " Sensor index value out of range 0--"
+            throwError(WHERE_AM_I + " Sensor index value out of range 0--"
                         + str(sensorCount()) + " " + str(Index(d[i])));
 
         }

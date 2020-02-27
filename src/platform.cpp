@@ -30,8 +30,7 @@
 
 namespace GIMLI{
 
-int numberOfCPU(){
-
+long numberOfCPU(){
     long nprocs = -1;
     long nprocs_max = -1;
 #if defined(WINDOWS) || defined(_WIN32)
@@ -59,6 +58,7 @@ int numberOfCPU(){
 #else
     std::cerr << "Could not determine number of CPUs (!_SC_NPROCESSORS_ONLN)" << std::endl;
     nprocs = 1;
+    return 1;
 #endif
     return nprocs_max;
 }

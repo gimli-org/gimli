@@ -48,7 +48,7 @@ public:
     inline bool verbose() const {return verbose_;}
 
     virtual RVector response(const RVector & model) {
-        throwError(1, WHERE_AM_I + " you need to implement a response "
+        throwError(WHERE_AM_I + " you need to implement a response "
         "function.");
         return RVector(0);
     }
@@ -56,7 +56,7 @@ public:
     /*!Read only response function for multi threading purposes.
      * Index i is use thread counter. */
     virtual RVector response_mt(const RVector & model, Index i=0) const {
-        throwError(1, WHERE_AM_I + " if you want to use read only response "
+        throwError(WHERE_AM_I + " if you want to use read only response "
         "function to use in multi threading environment .. you need to "
         " implement me");
         return RVector(0);
@@ -125,14 +125,14 @@ public:
      * Cannot yet be overloaded by pyplusplus (return virtual reference)(Warning 1049). */
     virtual RMatrix & jacobianRef() const {
         if (! jacobian_) {
-            throwError(1, WHERE_AM_I + " Jacobian matrix is not initialized.");
+            throwError(WHERE_AM_I + " Jacobian matrix is not initialized.");
         }
         return *dynamic_cast< RMatrix * >(jacobian_);
     }
 
     virtual RMatrix & jacobianRef() {
         if (! jacobian_) {
-            throwError(1, WHERE_AM_I + " Jacobian matrix is not initialized.");
+            throwError(WHERE_AM_I + " Jacobian matrix is not initialized.");
         }
         return *dynamic_cast< RMatrix * >(jacobian_);
     }

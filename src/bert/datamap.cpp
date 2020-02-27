@@ -69,7 +69,7 @@ void DataMap::collect(const std::vector < ElectrodeShape * > & electrodes,
     }
 
     if (sol.rows() == 0){
-        throwLengthError(1, WHERE_AM_I + " sol.size() == 0 ");
+        throwLengthError(WHERE_AM_I + " sol.size() == 0 ");
     }
 
     if ((sol.rows()     == elecs_.size() && sol.cols() == elecs_.size()) ||
@@ -165,7 +165,7 @@ RVector DataMap::data(const DataContainerERT & data, bool reciprocity, bool imag
         if (map_.rows() == 2 * nElecs){
             offSet = nElecs;
         } else {
-            throwError(1, WHERE_AM_I + " imaginary values requested but not calculated");
+            throwError(WHERE_AM_I + " imaginary values requested but not calculated");
         }
     }
 
@@ -189,7 +189,7 @@ RVector DataMap::data(const DataContainerERT & data, bool reciprocity, bool imag
                 << nElecs
                 << "; a = " << a+1  << " b = " << b+1 << " m = " << m+1 << " n = " << n+1 << std::endl;
             //dat.save("tmp.data");
-            throwLengthError(EXIT_DATACONTAINER_SIZE, str1.str());
+            throwLengthError(str1.str());
         }
 
         double uAM = 0.0, uAN = 0.0, uBM = 0.0, uBN = 0.0;
@@ -223,7 +223,6 @@ RVector DataMap::data(const DataContainerERT & data, bool reciprocity, bool imag
                     <<  " " << uAM <<  " " << uAN <<  " " << uBM <<  " " << uBN
                     << " U = " << uVec[i] << std::endl;
                 log(Warning, str1.str());
-                //throwLengthError(EXIT_DATACONTAINER_SIZE, str1.str());
             }
         }
     }

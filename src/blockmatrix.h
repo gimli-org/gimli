@@ -123,7 +123,7 @@ public:
     void addMatrixEntry(Index matrixID, Index rowStart, Index colStart,
                         ValueType scale){
         if (matrixID > matrices_.size()){
-            throwLengthError(1, WHERE_AM_I + " matrix entry to large: " +
+            throwLengthError(WHERE_AM_I + " matrix entry to large: " +
             str(matrixID) + " " + str(matrices_.size()));
         }
         BlockMatrixEntry entry;
@@ -139,7 +139,7 @@ public:
     virtual Vector < ValueType > mult(const Vector < ValueType > & b) const{
         // no need to check here .. let the matrices itself check
         // if (b.size() != this->cols()){
-        //     throwLengthError(1, WHERE_AM_I + " wrong size of vector b (" +
+        //     throwLengthError(WHERE_AM_I + " wrong size of vector b (" +
         //     str(b.size()) + ") needed: " + str(this->cols()));
         // }
 
@@ -162,7 +162,7 @@ public:
     virtual Vector < ValueType > transMult(const Vector < ValueType > & b) const {
         // no need to check here .. let the matrices itself check
         // if (b.size() != this->rows()){
-        //     throwLengthError(1, WHERE_AM_I + " wrong size of vector b (" +
+        //     throwLengthError(WHERE_AM_I + " wrong size of vector b (" +
         //     str(b.size()) + ") needed: " + str(this->rows()));
         // }
 
@@ -345,7 +345,7 @@ public:
         if (Mats_.size() > 0 && Mats_[0].nrows() == Mat.rows()) {
             Mats_.push_back(Mat);
         } else {
-            throwLengthError(1, WHERE_AM_I + " matrix rows do not match " +
+            throwLengthError(WHERE_AM_I + " matrix rows do not match " +
                                  toStr(Mats_[0].nrows()) + " " + toStr(Mat.nrows()));
         }
     }
