@@ -1002,7 +1002,11 @@ def drawStreamLine_(ax, mesh, c, data, dataMesh=None, linewidth=1.0,
     Other Parameters
     ----------------
     **kwargs
-        Additional kwargs forwarded to mpl.LineCollection, mpl.Polygon
+        arrowSize: int
+            Size of the arrow's head.
+        arrowColor: str
+            Color of the arrow's head.
+        Additional kwargs are being forwarded to mpl.LineCollection, mpl.Polygon
     """
     x, y, v = streamline(mesh, data, startCoord=c.center(), dLengthSteps=5,
                          dataMesh=dataMesh, maxSteps=10000, verbose=False,
@@ -1010,6 +1014,9 @@ def drawStreamLine_(ax, mesh, c, data, dataMesh=None, linewidth=1.0,
 
     if 'color' not in kwargs:
         kwargs['color'] = 'black'
+
+    arrowSize = kwargs.pop('arrowSize', 12)
+    arrowColor = kwargs.pop('arrowColor', 'black')
 
     lines = None
 
@@ -1040,18 +1047,17 @@ def drawStreamLine_(ax, mesh, c, data, dataMesh=None, linewidth=1.0,
 
             absArrowSize = True
             if absArrowSize:
-                markerSize = kwargs.pop('size', 12)
                 ax.annotate('',
                     xytext=(x[xmid]-dx, y[ymid]-dy),
                     xy=(x[xmid], y[ymid]),
-                    arrowprops=dict(arrowstyle="-|>", color='black'),
-                    size=markerSize, **kwargs,
+                    arrowprops=dict(arrowstyle="-|>", color=arrowColor),
+                    size=arrowSize, **kwargs,
                 )
             else:
                 ax.arrow(x[xmid], y[ymid], dx, dy,
                         shape='full', lw=0,
                         length_includes_head=True,
-                        fc='black',
+                        fc=arrowColor,
                         head_width=.35, **kwargs)
 
             # dx90 = -dy
