@@ -12,7 +12,7 @@ import numpy as np
 
 import pygimli as pg
 import pygimli.meshtools as mt
-from pygimli.physics import Refraction
+from pygimli.physics import TravelTimeManager
 
 ###############################################################################
 # We start by creating a three-layered slope (The model is taken from the BSc

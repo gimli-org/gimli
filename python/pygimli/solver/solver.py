@@ -1259,7 +1259,7 @@ def createStiffnessMatrix(mesh, a=None):
         a = pg.RVector(mesh.cellCount(), 1.0)
 
     A = None
-
+    
     if isinstance(a[0], float) or isinstance(a[0], np.float64):
         A = pg.RSparseMatrix()
         A.fillStiffnessMatrix(mesh, a)
