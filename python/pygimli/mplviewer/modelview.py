@@ -138,8 +138,7 @@ def draw1DColumn(ax, x, val, thk, width=30, ztopo=0, cmin=1, cmax=1000,
     >>> fig, ax = plt.subplots()
     >>> draw1DColumn(ax, 0.5, val, thk, width=0.1, cmin=1, cmax=4, name="VES")
     <matplotlib.collections.PatchCollection object at ...>
-    >>> ax.set_ylim(-np.sum(thk), 0)
-    (-10, 0)
+    >>> _ = ax.set_ylim(-np.sum(thk), 0)
     """
     z = -np.hstack((0., np.cumsum(thk), np.sum(thk) * 1.5)) + ztopo
     recs = []
