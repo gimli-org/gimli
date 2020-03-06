@@ -5,9 +5,10 @@
 from .importData import (load)
 from .sipspectrum import (SpectrumManager, SpectrumModelling, SIPSpectrum)
 
-from .models import (ColeColeRho, ColeColeRhoDouble, 
-                    ColeColeSigma, ColeColePhi, DoubleColeColePhi,
-                    tauRhoToTauSigma)
+from .models import (
+    coleColeRho, coleColeRhoDouble, coleColeSigma, ColeColePhi,
+    DoubleColeColePhi, tauRhoToTauSigma
+)
 
 from .plotting import showSpectrum, drawPhaseSpectrum, drawAmplitudeSpectrum
 

@@ -8,6 +8,11 @@ import pygimli as pg
 
 
 def ColeColeRho(f, rho, m, tau, c, a=1):
+    pg.deprecated("Please use coleColeRho instead of ColeColeRho.")
+    return coleColeRho(f, rho, m, tau, c, a=1)
+
+
+def coleColeRho(f, rho, m, tau, c, a=1):
     r"""Frequency-domain Cole-Cole impedance model after Pelton et al. (1978)
 
     Frequency-domain Cole-Cole impedance model after Pelton et al. (1978)
@@ -71,22 +76,33 @@ def ColeColeRho(f, rho, m, tau, c, a=1):
     z = (1. - m * (1. - relaxationTerm(f, tau, c, a))) * rho
     if np.isnan(z).any():
         print(f, 'rho', rho, 'm', m, 'tau', tau, 'c', c)
-        print(z)
-        exit()
+        pg.critical(z)
     return z
 
+
 def ColeColeRhoDouble(f, rho, m1, t1, c1, m2, t2, c2):
+    pg.deprecated("Please use coleColeRhoDouble instead of ColeColeRhoDouble.")
+    return coleColeRhoDouble(f, rho, m1, t1, c1, m2, t2, c2)
+
+
+def coleColeRhoDouble(f, rho, m1, t1, c1, m2, t2, c2):
     """Frequency-domain Double Cole-Cole impedance model
-    
-    Frequency-domain Double Cole-Cole impedance model returns the sum of 
-    two Cole-Cole Models with a common amplitude. 
+
+    Frequency-domain Double Cole-Cole impedance model returns the sum of
+    two Cole-Cole Models with a common amplitude.
     Z = rho * (Z1(Cole-Cole) + Z2(Cole-Cole))
     """
-    Z1 = ColeColeRho(f, rho=1, m=m1, tau=t1, c=c1, a=1)
-    Z2 = ColeColeRho(f, rho=1, m=m2, tau=t2, c=c2, a=1)
+    Z1 = coleColeRho(f, rho=1, m=m1, tau=t1, c=c1, a=1)
+    Z2 = coleColeRho(f, rho=1, m=m2, tau=t2, c=c2, a=1)
     return rho * (Z1 + Z2)
 
+
 def ColeColeSigma(f, sigma, m, tau, c, a=1):
+    pg.deprecated("Please use coleColeSigma instead of ColeColeSigma.")
+    return coleColeSigma(f, sigma, m, tau, c, a=1)
+
+
+def coleColeSigma(f, sigma, m, tau, c, a=1):
     """Complex-valued conductivity Cole-Cole model"""
     return (1. + m / (1-m) * (1. - relaxationTerm(f, tau, c, a))) * sigma
 
@@ -121,26 +137,51 @@ def relaxationTerm(f, tau, c=1., a=1.):
 
 
 def DebyeRelaxation(f, tau, m):
+    pg.deprecated("Please use debyeRelaxation instead of DebyeRelaxation.")
+    return debyeRelaxation(f, tau, m)
+
+
+def debyeRelaxation(f, tau, m):
     """Complex-valued single Debye relaxation term with chargeability."""
     return 1. - (1. - relaxationTerm(f, tau)) * m
 
 
 def WarbugRelaxation(f, tau, m):
+    pg.deprecated("Please use warbugRelaxation instead of WarbugRelaxation.")
+    return warbugRelaxation(f, tau, m)
+
+
+def warbugRelaxation(f, tau, m):
     """Complex-valued single Debye relaxation term with chargeability."""
     return 1. - (1. - relaxationTerm(f, tau, c=0.5)) * m
 
 
 def ColeColeEpsilon(f, e0, eInf, tau, alpha):
+    pg.deprecated("Please use coleColeEpsilon instead of ColeColeEpsilon.")
+    return coleColeEpsilon(f, e0, eInf, tau, alpha)
+
+
+def coleColeEpsilon(f, e0, eInf, tau, alpha):
     """Original complex-valued permittivity formulation (Cole&Cole, 1941)."""
     return (e0 - eInf) * relaxationTerm(f, tau, c=1./alpha) + eInf
 
 
 def ColeCole(f, R, m, tau, c, a=1):
+    pg.deprecated("Please use coleCole instead of ColeCole.")
+    return coleCole(f, R, m, tau, c, a=1)
+
+
+def coleCole(f, R, m, tau, c, a=1):
     """For backward compatibility."""
     return ColeColeRho(f, R, m, tau, c, a)
 
 
 def ColeDavidson(f, R, m, tau, a=1):
+    pg.deprecated("Please use coleDavidson instead of ColeDavidson.")
+    return coleDavidson(f, R, m, tau, a=1)
+
+
+def coleDavidson(f, R, m, tau, a=1):
     """For backward compatibility."""
     return ColeCole(f, R, m, tau, c=1, a=a)
 
@@ -166,13 +207,13 @@ class ColeColePhi(pg.core.ModellingBase):
 
     def __init__(self, f, verbose=False):
         """Setup class by specifying the frequency."""
-        pg.core.ModellingBase.__init__(self, verbose)
+        super(ColeColePhi, self).__init__(self, verbose)
         self.f_ = f
         self.setMesh(pg.meshtools.createMesh1D(1, 3))
 
     def response(self, par):
         """Phase angle of the model."""
-        spec = ColeCole(self.f_, 1.0, par[0], par[1], par[2])
+        spec = coleCole(self.f_, 1.0, par[0], par[1], par[2])
         return -np.angle(spec)
 
 
@@ -198,74 +239,74 @@ class DoubleColeColePhi(pg.core.ModellingBase):
 
     """
 
-    def __init__(self, f, verbose=False):  # initialize class
+    def __init__(self, f, verbose=False):
         """Setup class by specifying the frequency."""
-        pg.core.ModellingBase.__init__(self, verbose)  # call default constructor
-        self.f_ = f                               # save frequencies
-        self.setMesh(pg.meshtools.createMesh1D(1, 6))       # 4 single parameters
+        super(DoubleColeColePhi, self).__init__(self, verbose)
+        self.f_ = f  # save frequencies
+        self.setMesh(pg.meshtools.createMesh1D(1, 6))  # 4 single parameters
 
     def response(self, par):
         """phase angle of the model"""
-        spec1 = ColeCole(self.f_, 1.0, par[0], par[1], par[2])
-        spec2 = ColeCole(self.f_, 1.0, par[3], par[4], par[5])
+        spec1 = coleCole(self.f_, 1.0, par[0], par[1], par[2])
+        spec2 = coleCole(self.f_, 1.0, par[3], par[4], par[5])
         #return -np.angle(spec1 * spec2)
-        
+
         return -np.angle(spec1) - np.angle(spec2)
 
 
 class ColeColeAbs(pg.core.ModellingBase):
     """Cole-Cole model with EM term after Pelton et al. (1978)"""
 
-    def __init__(self, f, verbose=False):  # initialize class
-        pg.core.ModellingBase.__init__(self, verbose)  # call default constructor
-        self.f_ = f                               # save frequencies
-        self.setMesh(pg.meshtools.createMesh1D(1, 4))       # 3 single parameters
+    def __init__(self, f, verbose=False):
+        super(ColeColeAbs, self).__init__(self, verbose)
+        self.f_ = f  # save frequencies
+        self.setMesh(pg.meshtools.createMesh1D(1, 4))  # 3 single parameters
 
     def response(self, par):
         """phase angle of the model"""
-        spec = ColeCole(self.f_, par[0], par[1], par[2], par[3])
+        spec = coleCole(self.f_, par[0], par[1], par[2], par[3])
         return np.abs(spec)
 
 
 class ColeColeComplex(pg.core.ModellingBase):
     """Cole-Cole model with EM term after Pelton et al. (1978)"""
 
-    def __init__(self, f, verbose=False):  # initialize class
-        pg.core.ModellingBase.__init__(self, verbose)  # call default constructor
-        self.f_ = f                               # save frequencies
-        self.setMesh(pg.meshtools.createMesh1D(1, 4))       # 4 single parameters
+    def __init__(self, f, verbose=False):
+        super(ColeColeComplex, self).__init__(self, verbose)
+        self.f_ = f  # save frequencies
+        self.setMesh(pg.meshtools.createMesh1D(1, 4))  # 4 single parameters
 
     def response(self, par):
         """phase angle of the model"""
-        spec = ColeColeRho(self.f_, *par)
+        spec = coleColeRho(self.f_, *par)
         return pg.cat(np.abs(spec), -np.angle(spec))
 
 
 class ColeColeComplexSigma(pg.core.ModellingBase):
     """Cole-Cole model with EM term after Pelton et al. (1978)"""
 
-    def __init__(self, f, verbose=False):  # initialize class
-        pg.core.ModellingBase.__init__(self, verbose)  # call default constructor
-        self.f_ = f                               # save frequencies
-        self.setMesh(pg.meshtools.createMesh1D(1, 4))       # 4 single parameters
+    def __init__(self, f, verbose=False):
+        super(ColeColeComplexSigma, self).__init__(self, verbose)
+        self.f_ = f  # save frequencies
+        self.setMesh(pg.meshtools.createMesh1D(1, 4))  # 4 single parameters
 
     def response(self, par):
         """phase angle of the model"""
-        spec = ColeColeSigma(self.f_, *par)
+        spec = coleColeSigma(self.f_, *par)
         return pg.cat(np.real(spec), np.imag(spec))
 
 
 class PeltonPhiEM(pg.core.ModellingBase):
     """Cole-Cole model with EM term after Pelton et al. (1978)"""
 
-    def __init__(self, f, verbose=False):  # initialize class
-        pg.core.ModellingBase.__init__(self, verbose)  # call default constructor
-        self.f_ = f                               # save frequencies
-        self.setMesh(pg.meshtools.createMesh1D(1, 4))       # 4 single parameters
+    def __init__(self, f, verbose=False):
+        super(PeltonPhiEM, self).__init__(self, verbose)
+        self.f_ = f  # save frequencies
+        self.setMesh(pg.meshtools.createMesh1D(1, 4))  # 4 single parameters
 
     def response(self, par):
         """phase angle of the model"""
-        spec = ColeCole(self.f_, 1.0, par[0], par[1], par[2]) * \
+        spec = coleCole(self.f_, 1.0, par[0], par[1], par[2]) * \
             relaxationTerm(self.f_, par[3])  # pure EM has c=1
         return -np.angle(spec)
 
@@ -275,7 +316,7 @@ class DebyePhi(pg.core.ModellingBase):
 
     def __init__(self, fvec, tvec, verbose=False):  # save reference in class
         """constructor with frequecy and tau vector"""
-        pg.core.ModellingBase.__init__(self, verbose)
+        super(DebyePhi, self).__init__(self, verbose)
         self.f_ = fvec
         self.nf_ = len(fvec)
         self.t_ = tvec
@@ -301,7 +342,7 @@ class DebyeComplex(pg.core.ModellingBase):
         self.t = tvec
         self.nt = len(tvec)
         mesh = pg.meshtools.createMesh1D(len(tvec))  # standard 1d discretization
-        pg.core.ModellingBase.__init__(self, mesh, verbose)
+        super(DebyeComplex, self).__init__(self, mesh, verbose)
         T, W = np.meshgrid(tvec, fvec * 2. * pi)
         WT = W*T
         self.A = WT**2 / (WT**2 + 1)

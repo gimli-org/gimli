@@ -11,7 +11,7 @@ from .em import VMDTimeDomainModelling
 from .traveltime import TravelTimeManager
 
 from .em import FDEM, TDEM
-from .SIP import SIPSpectrum
+from .SIP import SIPSpectrum, SpectrumManager
 from .sNMR import MRS
 # from .traveltime import Refraction # obsolete 201909
 
