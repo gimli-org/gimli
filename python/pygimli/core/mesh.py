@@ -130,7 +130,6 @@ def __createSecondaryNodes__(self, n=3, verbose=False):
                     b.addSecondaryNode(sn)
         elif self.dim() == 3:
             for b in self.boundaries():
-                print(b)
                 bs = b.shape()
                 for sx in range(n):
                     nMax = n

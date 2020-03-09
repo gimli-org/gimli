@@ -24,7 +24,7 @@ if(DEFINED ENV{CONDA_BUILD})
     if (APPLE)
 	    set(CMAKE_MACOSX_RPATH 1)
 	    set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-    endif()	 
+    endif()
     set(CONDA_BUILD TRUE)
     set(Boost_INCLUDE_DIR "${CMAKE_PREFIX_PATH}/include")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-class-memaccess") # new since gcc.8 maybe need to be checked, not on apple
@@ -34,48 +34,63 @@ endif()
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 
-    #set(CMAKE_CXX_FLAGS_RELEASE "-O3 -pipe -ansi -Wall -Wno-long-long -Wno-unused-result")
-    set(CMAKE_CXX_FLAGS_RELEASE "-g -pipe -ansi -Wall -Wno-long-long -Wno-unused-result")
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-unused-variable")
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-unused-value")
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-unused-local-typedefs")
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-strict-aliasing")
-    if (NOT APPLE)
-	    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-int-in-bool-context")
-	    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-class-memaccess")
-	    #else()
-	    #set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-undefined-var-template")
-    endif()
     add_definitions(-std=c++11)
-
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -p -O2 -std=c++11 -g -ansi -pedantic -fno-omit-frame-pointer -Wall")
-
-    if (WIN32 OR CONDA_BUILD)
-        set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-deprecated-declarations")
-        #set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-class-memaccess") # new since gcc.8 maybe need to be checked, not on apple
-        set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-parentheses") # from boost since gcc.8 maybe need to be checked
-        set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-attributes") # from gcc-8.2 + boost
-    endif()
-
-    if (NOT WIN32 AND ASAN)
-        set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address")
-    endif()
-
     set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Os")
 
+    set(CMAKE_CXX_FLAGS_RELEASE
+        "-O3 -Os -pipe -ansi -Wall -Wno-long-long -Wno-unused-result")
+    set(CMAKE_CXX_FLAGS_RELEASE
+        "${CMAKE_CXX_FLAGS_RELEASE} -Wno-unused-variable")
+    set(CMAKE_CXX_FLAGS_RELEASE
+        "${CMAKE_CXX_FLAGS_RELEASE} -Wno-unused-value")
+    set(CMAKE_CXX_FLAGS_RELEASE
+        "${CMAKE_CXX_FLAGS_RELEASE} -Wno-unused-local-typedefs")
+    set(CMAKE_CXX_FLAGS_RELEASE
+        "${CMAKE_CXX_FLAGS_RELEASE} -Wno-strict-aliasing")
+
+    if (NOT APPLE)
+        set(CMAKE_CXX_FLAGS_RELEASE
+            "${CMAKE_CXX_FLAGS_RELEASE} -Wno-int-in-bool-context")
+        set(CMAKE_CXX_FLAGS_RELEASE
+            "${CMAKE_CXX_FLAGS_RELEASE} -Wno-class-memaccess")
+	else()
+	    #set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-undefined-var-template")
+    endif()
+
+    if (WIN32 OR CONDA_BUILD)
+        set(CMAKE_CXX_FLAGS_RELEASE
+            "${CMAKE_CXX_FLAGS_RELEASE} -Wno-deprecated-declarations")
+
+        # from boost since gcc.8 maybe need to be checked
+        set(CMAKE_CXX_FLAGS_RELEASE
+            "${CMAKE_CXX_FLAGS_RELEASE} -Wno-parentheses")
+        # from gcc-8.2 + boost
+        set(CMAKE_CXX_FLAGS_RELEASE
+            "${CMAKE_CXX_FLAGS_RELEASE} -Wno-attributes")
+    endif()
+
     if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-        set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-overloaded-virtual")
-        set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Qunused-arguments")
+        set(CMAKE_CXX_FLAGS_RELEASE
+            "${CMAKE_CXX_FLAGS_RELEASE} -Wno-overloaded-virtual")
+        set(CMAKE_CXX_FLAGS_RELEASE
+            "${CMAKE_CXX_FLAGS_RELEASE} -Qunused-arguments")
 
         if (APPLE)
+            ## needet?
             # If it's libc++ and you're on <= 10.8, you need to compile with clang++ -stdlib=libc++. If it's libstdc++ and you're on 10.9 or later, you need to compile with clang++ -stdlib=libstdc++.
             # add_compile_options(-stdlib=libstdc++)
             # add_compile_options(-stdlib=libc++)
         endif()
     else() # if gcc
-
     endif()
 
+    ### debug settings
+    set(CMAKE_CXX_FLAGS_DEBUG
+    "${CMAKE_CXX_FLAGS_DEBUG} -p -g -ansi -pedantic -fno-omit-frame-pointer -Wall")
+
+    if (NOT WIN32 AND ASAN)
+        set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address")
+    endif()
 elseif(MSVC)
 	# MSVC complain a lot of possible unsecure std function
 	add_definitions(-D_SCL_SECURE_NO_WARNINGS)
@@ -253,7 +268,10 @@ if (";${BLAS_LIBRARIES};" MATCHES "openblas")
 
     FIND_PATH(OpenBLAS_INCLUDE_DIR
         NAMES cblas.h
-        PATHS /usr/include/openblas
+        PATHS
+            /usr/include/openblas
+            /usr/include/OpenBLAS
+            /mingw64/include/OpenBLAS
         NO_DEFAULT_PATH
     )
     if (NOT OpenBLAS_INCLUDE_DIR)

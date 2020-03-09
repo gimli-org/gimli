@@ -112,7 +112,7 @@ def createMesh(poly, quality=32, area=0.0, smooth=None, switches=None,
         tri = pg.core.TriangleWrapper(poly)
         tri.setSwitches(switches)
         mesh = tri.generate()
-         
+
         if smooth is not None:
             mesh.smooth(nodeMoving=kwargs.pop('node_move', True),
                         edgeSwapping=False,
@@ -938,7 +938,7 @@ def readHydrusMeshV3(fileName):
                     nBound = int(nEle2)
                     nCells = int(nEle3)
 
-                print(nNodes, nBound, nCells)
+                #print(nNodes, nBound, nCells)
 
             if 'NODAL' in line:
                 for l in lines[i+7:i+7+nNodes]:
