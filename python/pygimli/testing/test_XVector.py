@@ -183,8 +183,8 @@ class TestRVectorMethods(unittest.TestCase):
     def test_R3VectorIndex(self):
         r3 = pg.core.R3Vector(10)
 
-        self.assertEqual(r3[0], pg.RVector3(0))
-        np.testing.assert_array_equal(r3[0], pg.RVector3(0))
+        self.assertEqual(r3[0], pg.RVector3(0, 0, 0))
+        np.testing.assert_array_equal(r3[0], pg.RVector3(0, 0, 0))
 
         r3[1] = pg.RVector3(0.0, 1.0, 0.0)
         np.testing.assert_array_equal(r3[1], pg.RVector3(0.0, 1.0, 0.0))
