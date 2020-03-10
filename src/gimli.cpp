@@ -27,7 +27,9 @@
 
 //#include <omp.h> need -lgomp of -fopenmp
 
-#include <cblas.h>
+#if OPENBLAS_CBLAS_FOUND
+    #include <cblas.h>
+#endif
 
 #if USE_BOOST_THREAD
     #include <boost/thread.hpp>
@@ -80,13 +82,12 @@ void setThreadCount(Index nThreads){
     //omp_set_num_threads
 #else
     log(Debug, "can't set openblas thread count. ");
-#endif    
+#endif
 
     __GIMLI_THREADCOUNT__ = nThreads;
 }
 
 Index threadCount(){
-__M
     return __GIMLI_THREADCOUNT__;
 }
 

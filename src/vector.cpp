@@ -23,7 +23,7 @@
 namespace GIMLI{
 
 template<>
-void Vector<double>::add(const ElementMatrix < double >& A){
+void Vector< double >::add(const ElementMatrix < double >& A){
     addVal(A.row(0), A.ids());
     // for (Index i = 0, imax = A.size(); i < imax; i++){
     //     data_[A.idx(i)] += A.row(0)[i];
@@ -31,7 +31,7 @@ void Vector<double>::add(const ElementMatrix < double >& A){
 }
 
 template <>
-void Vector<double>::add(const ElementMatrix < double >& A, const double & a){
+void Vector< double >::add(const ElementMatrix < double >& A, const double & a){
     addVal(A.row(0) * a, A.ids());
     // for (Index i = 0, imax = A.size(); i < imax; i++){
     //     data_[A.idx(i)] += A.row(0)[i] * a;
@@ -39,16 +39,20 @@ void Vector<double>::add(const ElementMatrix < double >& A, const double & a){
 }
 
 template <>
-void Vector<double>::add(const ElementMatrix < double >& A, const RVector & a){
+void Vector< double >::add(const ElementMatrix < double >& A, const RVector & a){
     addVal(A.row(0) * a.get_(A.ids()), A.ids());
     // for (Index i = 0, imax = A.size(); i < imax; i++){
     //     data_[A.idx(i)] += A.row(0)[i] * a[A.idx(i)];
     // }
 }
 
-template<>
-void Vector<RVector3>::clean(){
-     if (size_ > 0) for (Index i = 0; i < size_; i ++) data_[i] =RVector3();
+template <>
+void Vector< RVector3 >::clean(){
+     if (size_ > 0) {
+         for (Index i = 0; i < size_; i ++) {
+             data_[i] = RVector3();
+         }
+     }
 }
 
 } // namespace GIMLI{

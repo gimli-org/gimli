@@ -825,7 +825,7 @@ Cell * Mesh::findCell(const RVector3 & pos, size_t & count,
 std::vector < Cell * > Mesh::findCellsAlongRay(const RVector3 & start,
                                                const RVector3 & dir,
                                                PosVector & pos) const {
-    pos.clean();
+    pos.clear();
     Pos d(dir);
     d.normalize();
     std::vector < Cell * > cells;

@@ -944,6 +944,8 @@ template <> DLLEXPORT void Vector<double>::add(const ElementMatrix < double >& A
 template <> DLLEXPORT void Vector<double>::add(const ElementMatrix < double >& A, const double & a);
 template <> DLLEXPORT void Vector<double>::add(const ElementMatrix < double >& A, const RVector & a);
 
+template <> DLLEXPORT void Vector< RVector3 >::clean();
+
 template< typename ValueType >
 void Vector< ValueType >::add(const ElementMatrix < double >& A){THROW_TO_IMPL}
 template< typename ValueType >
@@ -1682,7 +1684,7 @@ template < class ValueType >
 Vector < std::complex < ValueType > > toComplex(const Vector < ValueType > & re,
                                                 const Vector < ValueType > & im){
     Vector < std::complex < ValueType > > cv(re.size());
-    for (Index i = 0; i < cv.size(); i ++) 
+    for (Index i = 0; i < cv.size(); i ++)
         cv[i] = std::complex < ValueType >(re[i], im[i]);
     return cv;
 }

@@ -37,7 +37,6 @@ sensors[1:,1] = np.linspace(-15, 15, n_sensors - 1)
 
 for pos in sensors:
     plc.createNode(pos)
-
 mesh = mt.createMesh(plc)
 mesh.createSecondaryNodes(1)
 
