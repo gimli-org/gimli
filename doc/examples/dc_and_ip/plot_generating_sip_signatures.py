@@ -11,14 +11,14 @@ spectral induced polarization (SIP) signatures."""
 ###############################################################################
 # Generate a Cole-Cole signature
 
-from pygimli.physics.SIP import ColeColeRho
+from pygimli.physics.SIP import coleColeRho
 import numpy as np
 import pygimli as pg
 import matplotlib as mpl
 
 f = np.logspace(-2, 5, 100)
 
-Z = ColeColeRho(f, rho=10, m=0.1, tau=0.04, c=0.5)
+Z = coleColeRho(f, rho=10, m=0.1, tau=0.04, c=0.5)
 
 fig, axes = pg.plt.subplots(2, 2, figsize=(15 / 2.54, 10 / 2.54), sharex=True)
 
@@ -46,16 +46,16 @@ pg.plt.show()
 ###############################################################################
 # Generate a double Cole-Cole signature
 
-from pygimli.physics.SIP import ColeColeRho
+from pygimli.physics.SIP import coleColeRho
 import numpy as np
 import pygimli as pg
 
 f = np.logspace(-2, 5, 100)
 
 # term1
-Z1 = ColeColeRho(f, rho=1, m=0.1, tau=0.5, c=0.5)
+Z1 = coleColeRho(f, rho=1, m=0.1, tau=0.5, c=0.5)
 # term2
-Z2 = ColeColeRho(f, rho=1, m=0.25, tau=0.0001, c=0.8)
+Z2 = coleColeRho(f, rho=1, m=0.25, tau=0.0001, c=0.8)
 # create sum
 rho0 = 100
 Z = rho0 * (Z1 + Z2)
