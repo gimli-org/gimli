@@ -155,9 +155,7 @@ except ImportError:
     Install sphinx_gallery via:
     sudo pip install sphinx-gallery
     """
-
-    def setup(app):
-        app.warn(err)
+    pygimli.warn(err)
 
 
 intersphinx_mapping = {
@@ -167,7 +165,7 @@ intersphinx_mapping = {
     'matplotlib': ('https://matplotlib.org/', None),
 }
 
-autodoc_default_flags = ["no-members"]
+autodoc_default_options = ["no-members"]
 autoclass_content = "class"
 autosummary_generate = True
 
