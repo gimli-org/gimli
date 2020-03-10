@@ -79,7 +79,7 @@ def harmfitNative(y, x=None, nc=None, xc=None, err=None):
     # w[(~isfinite(w)]=0
 
     # coeff=(spdiags(w,0,length(w),length(w))*A)\(y.*w)
-    coeff, res, rank, s = np.linalg.lstsq(np.diag(w, 0) * A, (y * w)[0, :])
+    coeff, res, rank, s = np.linalg.lstsq(np.diag(w, 0) * A, (y * w)[0, :], rcond=None)
 
     return sum((B * coeff).T), HarmFunctor(A, coeff, xmi, xspan)
 

@@ -19,6 +19,7 @@ import numpy as np
 
 import pygimli as pg
 
+import warnings
 
 def test(target=None, show=False, onlydoctests=False, coverage=False,
          htmlreport=False, abort=False, verbose=True):
@@ -53,6 +54,9 @@ def test(target=None, show=False, onlydoctests=False, coverage=False,
     """
     # Remove figure warnings
     plt.rcParams["figure.max_open_warning"] = 1000
+    warnings.filterwarnings("ignore", category=UserWarning,
+                            message='Matplotlib is currently using agg, which is a'
+                                    ' non-GUI backend, so cannot show the figure.')
 
     printopt = np.get_printoptions()
 
