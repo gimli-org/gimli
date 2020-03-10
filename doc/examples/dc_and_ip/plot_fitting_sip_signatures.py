@@ -14,7 +14,7 @@ induced polarization (SIP) signatures.
 
 ###############################################################################
 # Import pyGIMLi and related stuff for SIP Spectra
-from pygimli.physics.SIP import ColeColeRho
+from pygimli.physics.SIP import coleColeRho
 from pygimli.physics import SIPSpectrum
 import numpy as np
 import pygimli as pg
