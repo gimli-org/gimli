@@ -241,7 +241,7 @@ class DoubleColeColePhi(pg.core.ModellingBase):
 
     def __init__(self, f, verbose=False):
         """Setup class by specifying the frequency."""
-        super(DoubleColeColePhi, self).__init__(self, verbose)
+        super(DoubleColeColePhi, self).__init__(verbose)
         self.f_ = f  # save frequencies
         self.setMesh(pg.meshtools.createMesh1D(1, 6))  # 4 single parameters
 
@@ -258,7 +258,7 @@ class ColeColeAbs(pg.core.ModellingBase):
     """Cole-Cole model with EM term after Pelton et al. (1978)"""
 
     def __init__(self, f, verbose=False):
-        super(ColeColeAbs, self).__init__(self, verbose)
+        super(ColeColeAbs, self).__init__(verbose)
         self.f_ = f  # save frequencies
         self.setMesh(pg.meshtools.createMesh1D(1, 4))  # 3 single parameters
 
@@ -272,7 +272,7 @@ class ColeColeComplex(pg.core.ModellingBase):
     """Cole-Cole model with EM term after Pelton et al. (1978)"""
 
     def __init__(self, f, verbose=False):
-        super(ColeColeComplex, self).__init__(self, verbose)
+        super(ColeColeComplex, self).__init__(verbose)
         self.f_ = f  # save frequencies
         self.setMesh(pg.meshtools.createMesh1D(1, 4))  # 4 single parameters
 
@@ -286,7 +286,7 @@ class ColeColeComplexSigma(pg.core.ModellingBase):
     """Cole-Cole model with EM term after Pelton et al. (1978)"""
 
     def __init__(self, f, verbose=False):
-        super(ColeColeComplexSigma, self).__init__(self, verbose)
+        super(ColeColeComplexSigma, self).__init__(verbose)
         self.f_ = f  # save frequencies
         self.setMesh(pg.meshtools.createMesh1D(1, 4))  # 4 single parameters
 
@@ -300,7 +300,7 @@ class PeltonPhiEM(pg.core.ModellingBase):
     """Cole-Cole model with EM term after Pelton et al. (1978)"""
 
     def __init__(self, f, verbose=False):
-        super(PeltonPhiEM, self).__init__(self, verbose)
+        super(PeltonPhiEM, self).__init__(verbose)
         self.f_ = f  # save frequencies
         self.setMesh(pg.meshtools.createMesh1D(1, 4))  # 4 single parameters
 
@@ -316,7 +316,7 @@ class DebyePhi(pg.core.ModellingBase):
 
     def __init__(self, fvec, tvec, verbose=False):  # save reference in class
         """constructor with frequecy and tau vector"""
-        super(DebyePhi, self).__init__(self, verbose)
+        super(DebyePhi, self).__init__(verbose)
         self.f_ = fvec
         self.nf_ = len(fvec)
         self.t_ = tvec
@@ -342,7 +342,7 @@ class DebyeComplex(pg.core.ModellingBase):
         self.t = tvec
         self.nt = len(tvec)
         mesh = pg.meshtools.createMesh1D(len(tvec))  # standard 1d discretization
-        super(DebyeComplex, self).__init__(self, mesh, verbose)
+        super(DebyeComplex, self).__init__(mesh, verbose)
         T, W = np.meshgrid(tvec, fvec * 2. * pi)
         WT = W*T
         self.A = WT**2 / (WT**2 + 1)

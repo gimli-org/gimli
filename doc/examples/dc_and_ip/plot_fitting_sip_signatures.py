@@ -24,8 +24,8 @@ import pygimli as pg
 # SIPSpectrum object
 # TODO merge with 3
 f = np.logspace(-2, 5, 100)
-Z1 = ColeColeRho(f, rho=1, m=0.1, tau=0.5, c=0.5)
-Z2 = ColeColeRho(f, rho=1, m=0.25, tau=1e-6, c=1.0)
+Z1 = coleColeRho(f, rho=1, m=0.1, tau=0.5, c=0.5)
+Z2 = coleColeRho(f, rho=1, m=0.25, tau=1e-6, c=1.0)
 
 rho0 = 100 # (Ohm m)
 Z = rho0 * (Z1 + Z2)
@@ -39,7 +39,7 @@ sip.showDataKK()  # check Kramers-Kronig relations
 ###############################################################################
 # 2. Fit a Cole-Cole model from synthetic data
 # 
-Z = ColeColeRho(f, rho=100, m=0.1, tau=0.01, c=0.5)
+Z = coleColeRho(f, rho=100, m=0.1, tau=0.01, c=0.5)
 # TODO data need some noise
 
 sip = SIPSpectrum(f=f, amp=np.abs(Z), phi=-np.angle(Z))
@@ -50,8 +50,8 @@ sip.showAll()
 # 3. Fit a double Cole-Cole model
 #
 f = np.logspace(-2, 5, 100)
-Z1 = ColeColeRho(f, rho=1, m=0.1, tau=0.5, c=0.5)
-Z2 = ColeColeRho(f, rho=1, m=0.25, tau=1e-6, c=1.0)
+Z1 = coleColeRho(f, rho=1, m=0.1, tau=0.5, c=0.5)
+Z2 = coleColeRho(f, rho=1, m=0.25, tau=1e-6, c=1.0)
 
 rho0 = 100 #(Ohm m)
 Z = rho0 * (Z1 + Z2)
@@ -64,7 +64,7 @@ sip.showAll()
 ###############################################################################
 # 3. Fit a Cole-Cole model to 
 f = np.logspace(-2, 5, 100)
-Z = ColeColeRho(f, rho=100, m=0.1, tau=0.01, c=0.5)
+Z = coleColeRho(f, rho=100, m=0.1, tau=0.01, c=0.5)
 sip = SIPSpectrum(f=f, amp=np.abs(Z), phi=-np.angle(Z))
 
 sip.showAll()
