@@ -42,7 +42,7 @@ def coleColeRho(f, rho, m, tau, c, a=1):
     >>> # no need to import matplotlib. pygimli's show does
     >>> import numpy as np
     >>> import pygimli as pg
-    >>> from pygimli.physics.SIP import ColeColeRho
+    >>> from pygimli.physics.SIP import coleColeRho
     >>> f = np.logspace(-2, 5, 100)
     >>> m = np.linspace(0.1, 0.9, 5)
     >>> tau = 0.01
