@@ -2,7 +2,7 @@
 
 .. include:: ../CITATION.rst
 
-.. rubric:: Extended abstracts about pyGIMLi
+.. rubric:: Other studies and extended abstracts about pyGIMLi
 
 .. bibliography:: libgimli.bib
     :style: mystyle
