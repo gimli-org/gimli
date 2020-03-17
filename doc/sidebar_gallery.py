@@ -80,18 +80,24 @@ def make_gallery(src_path, out_path):
 
     html_bottom = """\
     </div>
-    <a class="carousel-control left" href="#sidebar_example_gallery" data-slide="prev">&lsaquo;</a>
-    <a class="carousel-control right" href="#sidebar_example_gallery" data-slide="next">&rsaquo;</a>
+      <a class="carousel-control-prev" href="#sidebar_example_gallery" role="button" data-slide="prev">
+      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+      <span class="sr-only">Previous</span>
+      </a>
+      <a class="carousel-control-next" href="#sidebar_example_gallery" role="button" data-slide="next">
+      <span class="carousel-control-next-icon" aria-hidden="true"></span>
+      <span class="sr-only">Next</span>
+      </a>
     </div>"""
 
     html_item = """\
-    <div class="item">
-    <a href="{}">
-    <img src="{}">
-    <div class="carousel-caption" style="position: relative; padding: 8px; font-size: 14px">
-    {}
-    </div>
-    </a>
+    <div class="carousel-item">
+      <a href="{}">
+        <img src="{}">
+        <div class="carousel-caption d-none d-md-block">
+          <h6>{}</h6>
+        </div>
+      </a>
     </div>"""
 
     idx = random.randint(0, len(gallery) - 1)
@@ -104,7 +110,7 @@ def make_gallery(src_path, out_path):
         item = html_item.format(url, img, title)
 
         if ix == idx:
-            item = item.replace("item", "active item")
+            item = item.replace("item", "item active")
 
         items.append(item)
 
