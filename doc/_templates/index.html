@@ -1,83 +1,87 @@
-{% set title = "Home" %} {% extends "layout.html" %} {% block body %}
-  <div class="jumbotron">
-    <div class="row">
-      <div class="col-md-12">
-        <h2>
-          pyGIMLi is an open-source multi-method library for modelling and inversion in geophysics.
-        </h2>
-        <a class="btn btn-primary btn-large" href="about.html">
-          Learn more
-        </a>
-        <a class="btn btn-success btn-large" href="http://try.pygimli.org">
-          <i class="far fa-play-circle"></i> Try it now!</a>
-      </div>
-    </div>
-  </div>
-
-  <div class="row">
-    <h1>Showcase
-    <small><font color="gray">
-      pyGIMLi-based research papers
-    </font></small>
-    </h1>
-    <div id="paper-carousel" class="carousel slide" data-ride="carousel">
-      <div class="carousel-inner">
-        <!-- Carousel items -->
-        {% for paper in showcase %} {% if loop.index == 1 %}
-        <div class="carousel-item active">
-          {% else %}
-          <div class="carousel-item">
-            {% endif %}
-            <a href="{{ paper['link'] }}" target="_blank">
-            <img src="_static/usecases/{{ paper['img'] }}" align="center" width="100%">
-            <div class="carousel-caption d-none d-md-block">
-              <h5>{{ paper["title"] }}</h5>
-              <p>{{ paper["subtitle"] }}</p>
-            </div>
+{%- set title = "Home" %} {%- extends "layout.html" %} {% block body %}
+      <div class="jumbotron">
+        <div class="row">
+          <div class="col-md-12">
+            <h2>
+              pyGIMLi is an open-source multi-method library for modelling and inversion in geophysics.
+            </h2>
+            <a class="btn btn-primary btn-large" href="about.html">
+              Learn more
+            </a>
+            <a class="btn btn-success btn-large" href="http://try.pygimli.org">
+              <i class="far fa-play-circle"></i> Try it now!
             </a>
           </div>
-          {% endfor %}
         </div>
-        <!-- Carousel nav -->
-        <a class="carousel-control-prev" href="#paper-carousel" role="button" data-slide="prev">
-          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-          <span class="sr-only">Previous</span>
-        </a>
-        <a class="carousel-control-next" href="#paper-carousel" role="button" data-slide="next">
-          <span class="carousel-control-next-icon" aria-hidden="true"></span>
-          <span class="sr-only">Next</span>
-        </a>
       </div>
-      <script>
-        ! function($) {
-          $(function() {
-            // carousel demo
-            $('#paper-carousel').carousel({
-              interval: 5000 // 5 sec
-            })
-          })
-        }(window.jQuery)
-      </script>
-    </div>
 
-  <h1>Get pyGIMLi.
-  <small><font color="gray">
-    Available for different platforms.
-    <i class="fab fa-windows"></i>
-    <i class="fab fa-linux"></i>
-    <i class="fab fa-apple"></i>
-  </font></small>
-  </h1> pyGIMLi has been successfully compiled on Windows, various Linux distributions and Mac OS X. See the <a href="installation.html">installation section</a> for more details on how to install or build pyGIMLi.
-  <h1>Get started.
-  <small><font color="gray">
-    Check out the tutorials.
-  </font></small>
-  </h1> To get started, have a look at the
-  <a href="{{pathto("_tutorials_auto/index")}}">pyGIMLi tutorials</a>. Applications and user stories can be found in the
-  <a href="{{pathto("_examples_auto/index")}}">Example section</a>. You can test all tutorials and examples as <a href="http://jupyter.org/">Jupyter
-  Notebooks</a> without installation at <a href="http://try.pygimli.org">try.pygimli.org</a>!
-  <h1>Get involved.</h1> You found a bug or desperately miss a certain functionality? Fill out a
-  <a href="https://github.com/gimli-org/gimli/issues">bug report or a feature
-  request</a>.<br> If you have used pyGIMLi for an interesting application, consider
-  <a href="mailto:mail@pygimli.org">sending us</a> your example. Please <a href="https://www.pygimli.org/citation.html">cite the pyGIMLi paper</a> or derived ones when using it for scientific purposes. {% endblock %}
-</div>
+      <div class="row">
+        <h1>Showcase
+        <small><font color="gray">
+          pyGIMLi-based research papers
+        </font></small>
+        </h1>
+        <div id="paper-carousel" class="carousel slide" data-ride="carousel">
+          <div class="carousel-inner">
+            <!-- Carousel items -->
+            {%- for paper in showcase %} {%- if loop.index == 1 %}
+            <div class="carousel-item active">
+              {%- else %}
+              <div class="carousel-item">
+                {%- endif %}
+                <a href="{{ paper['link'] }}" target="_blank">
+                  <img src="_static/usecases/{{ paper['img'] }}" align="center" width="100%">
+                  <div class="carousel-caption d-none d-md-block">
+                    <h5>{{ paper["title"] }}</h5>
+                    <p>{{ paper["subtitle"] }}</p>
+                  </div>
+                </a>
+              </div>
+              {%- endfor %}
+            </div>
+            <!-- Carousel nav -->
+            <a class="carousel-control-prev" href="#paper-carousel" role="button" data-slide="prev">
+              <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+              <span class="sr-only">Previous</span>
+            </a>
+            <a class="carousel-control-next" href="#paper-carousel" role="button" data-slide="next">
+              <span class="carousel-control-next-icon" aria-hidden="true"></span>
+              <span class="sr-only">Next</span>
+            </a>
+          </div>
+          <script>
+            ! function($) {
+              $(function() {
+                // carousel demo
+                $('#paper-carousel').carousel({
+                  interval: 5000 // 5 sec
+                })
+              })
+            }(window.jQuery)
+          </script>
+        </div>
+
+        <h1>Get pyGIMLi.
+        <small><font color="gray">
+          Available for different platforms.
+          <i class="fab fa-windows"></i>
+          <i class="fab fa-linux"></i>
+          <i class="fab fa-apple"></i>
+        </font></small>
+        </h1>
+        pyGIMLi has been successfully compiled on Windows, various Linux distributions and Mac OS X. See the <a href="installation.html">installation section</a> for more details on how to install or build pyGIMLi.
+        <h1>Get started.
+        <small><font color="gray">
+          Check out the tutorials.
+        </font></small>
+        </h1>
+        To get started, have a look at the
+        <a href="{{pathto("_tutorials_auto/index")}}">pyGIMLi tutorials</a>. Applications and user stories can be found in the
+        <a href="{{pathto("_examples_auto/index")}}">Example section</a>. You can test all tutorials and examples as <a href="http://jupyter.org/">Jupyter
+        Notebooks</a> without installation at <a href="http://try.pygimli.org">try.pygimli.org</a>!
+        <h1>Get involved.</h1>
+        You found a bug or desperately miss a certain functionality? Fill out a
+        <a href="https://github.com/gimli-org/gimli/issues">bug report or a feature
+        request</a>.<br> If you have used pyGIMLi for an interesting application, consider
+        <a href="mailto:mail@pygimli.org">sending us</a> your example. Please <a href="https://www.pygimli.org/citation.html">cite the pyGIMLi paper</a> or derived ones when using it for scientific purposes. {% endblock %}
+  </div>
