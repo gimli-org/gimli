@@ -72,26 +72,25 @@ embedded and docstitle %} {%- set titlesuffix = " &mdash; "|safe + docstitle|e %
   <a href="{{ pathto('', 1) }}" class="logo"><img src="{{ pathto('_static/', 1) }}gimli_logo.svg" alt=""></a>
   <br><br>
   <div class="clearfix"></div>
-  <nav class="navbar navbar-expand-lg navbar-light bg-light">
-
-  <div class="collapse navbar-collapse" id="navbarTogglerDemo03">
-    <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
-      {% include 'navbar.html' %}
-    </ul>
-    <form class="form-inline my-2 my-lg-0" action="search.html" method="get">
-    <input class="form-control mr-sm-2" type="search" name="q" placeholder="Search pyGIMLi docs..." aria-label="Search">
-    <input type="hidden" name="check_keywords" value="yes">
-    <input type="hidden" name="area" value="default">
-    <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
-    </form>
-  </div>
-</nav>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <div class="collapse navbar-collapse" id="navbarTogglerDemo03">
+        <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+          {% include 'navbar.html' %}
+        </ul>
+        <form class="form-inline my-2 my-lg-0" action="search.html" method="get">
+        <input class="form-control mr-sm-2" type="search" name="q" placeholder="Search pyGIMLi docs..." aria-label="Search">
+        <input type="hidden" name="check_keywords" value="yes">
+        <input type="hidden" name="area" value="default">
+        <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+        </form>
+      </div>
+    </nav>
 
   <div class="row">
     <div class="col-8">
       {% block body %}
       {% endblock %}
-      
+
       <ul class="pagination justify-content-end">
       <li class="page-item">
         {% if prev %}
@@ -106,7 +105,7 @@ embedded and docstitle %} {%- set titlesuffix = " &mdash; "|safe + docstitle|e %
         {% endif %}
       </li>
       </ul>
-      
+
     </div>
     <div class="col-4">
       {% include 'sidebar.html' %}
