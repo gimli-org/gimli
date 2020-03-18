@@ -1,13 +1,17 @@
 {%- if display_toc %}
-<h4 class="sidebar-box-heading">Contents</h4>
-<div class="well sidebar-box toc">
-  {{ toc|replace('<ul>', '<ul class="nav nav-list">') }}
+<div class="card bg-light mb-4" style="max-width: 20rem;">
+  <div class="card-header">Contents</div>
+  <div class="card-body">
+  {{ toc|replace('<ul>', '<ul class="nav flex-column">') }}
+</div>
 </div>
 {%- endif %}
+
 {% if pagename != 'index' %}
-<h4 class="sidebar-box-heading">{{ _('Navigation') }}</h4>
-<div class="well sidebar-box">
-  <ul class="nav nav-list">
+<div class="card bg-light mb-4" style="max-width: 20rem;">
+  <div class="card-header">{{ _('Navigation') }}</div>
+  <div class="card-body">
+  <ul class="nav flex-column">
     <li class="nav-header"><i class="fas fa-home"></i> Documentation home</li>
     <li><a href="{{ pathto(master_doc) }}">Documentation Home</a></li>
     {%- if prev %}
@@ -19,6 +23,7 @@
     <li><a href="{{ next.link|e }}" title="{{ _('next chapter') }}">{{ next.title }}</a></li>
     {%- endif %}
   </ul>
+</div>
 </div>
 {% endif %}
 

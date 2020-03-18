@@ -72,45 +72,48 @@ embedded and docstitle %} {%- set titlesuffix = " &mdash; "|safe + docstitle|e %
   <a href="{{ pathto('', 1) }}" class="logo"><img src="{{ pathto('_static/', 1) }}gimli_logo.svg" alt=""></a>
   <br><br>
   <div class="clearfix"></div>
-  <nav class="navbar">
-    <div class="navbar-inner">
-      <ul class="nav">
-        {% include 'navbar.html' %}
-        <form class="form-inline" action="search.html" method="get">
-          <div class="input-group">
-            <div class="input-group-prepend">
-              <span class="input-group-text"><i class="fas fa-search"></i>
-              </span>
-            </div>
-            <input type="text" class="form-control" name="q" placeholder="Search pyGIMLi documentation...">
-            <input type="hidden" name="check_keywords" value="yes">
-            <input type="hidden" name="area" value="default">
-          </div>
-        </form>
-      </ul>
-    </div>
-  </nav>
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+
+  <div class="collapse navbar-collapse" id="navbarTogglerDemo03">
+    <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+      {% include 'navbar.html' %}
+    </ul>
+    <form class="form-inline my-2 my-lg-0" action="search.html" method="get">
+    <input class="form-control mr-sm-2" type="search" name="q" placeholder="Search pyGIMLi docs..." aria-label="Search">
+    <input type="hidden" name="check_keywords" value="yes">
+    <input type="hidden" name="area" value="default">
+    <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+    </form>
+  </div>
+</nav>
 
   <div class="row">
-    <div class="col-md-8">
-      {% block body %}{% endblock %}
-      <ul class="pager">
-        <li class="previous">
-          {% if prev %}
-          <a href="{{ prev.link|e }}"><i class="fas fa-arrow-alt-circle-left"></i> {{ prev.title }}</a> {% endif %}
-        </li>
-        <li class="next">
-          {% if next %}
-          <a href="{{ next.link|e }}">{{ next.title }} <i class="fas fa-arrow-alt-circle-right"></i></a> {% endif %}
-        </li>
+    <div class="col-8">
+      {% block body %}
+      {% endblock %}
+      
+      <ul class="pagination justify-content-end">
+      <li class="page-item">
+        {% if prev %}
+        <a href="{{ prev.link|e }}"><i class="fas fa-arrow-alt-circle-left"></i> {{ prev.title }}</a>
+        {% endif %}
+      </li>
+      <li class="page-item">
+      </li>
+      <li class="page-item">
+        {% if next %}
+        <a href="{{ next.link|e }}">{{ next.title }} <i class="fas fa-arrow-alt-circle-right"></i></a>
+        {% endif %}
+      </li>
       </ul>
+      
     </div>
-    <div class="col-md-4">
+    <div class="col-4">
       {% include 'sidebar.html' %}
     </div>
   </div>
   <div class="card bg-light">
-    <div class="card-body">
+    <div class="card-footer text-muted">
       {% include 'footer.html' %}
     </div>
   </div>
