@@ -203,6 +203,8 @@ input#url.security {
 pre, code, blockquote {
     font-family: "Inconsolata", monospace;
     font-size: 15px;
+    margin-top: 10px;
+    padding: 7px;
 }
 
 dt {
@@ -253,7 +255,7 @@ span.pre {
     box-shadow: none;
     float: left;
     margin: 5px;
-    min-height: 230px;
+    min-height: 200px;
     padding-top: 5px;
     position: relative;
 }
@@ -261,12 +263,52 @@ span.pre {
     border: solid #b4ddfc 1px;
     box-shadow: 0 0 15px rgba(142, 176, 202, 0.5);
 }
+
+.sphx-glr-clear{	
+clear: both;	
+}
+
+.sphx-glr-example-title > :target::before {	
+display: block;	
+content: "";	
+margin-top: -50px;	
+height: 50px;	
+visibility: hidden;	
+}
+
+p.sphx-glr-script-out {	
+  padding-top: 0.7em;	
+}	
+.sphx-glr-script-out .highlight {	
+background-color: transparent;	
+margin-left: 2.5em;	
+margin-top: -2.1em;	
+}
+
+.sphx-glr-script-out.highlight-pytb .highlight pre {	
+color: #000;	
+background-color: #ffe4e4;	
+border: 1px solid #f66;	
+margin-top: 10px;	
+padding: 7px;	
+}
+
+.sphx-glr-single-img {	
+margin: auto;	
+display: block;	
+max-width: 100%;	
+}	
+.sphx-glr-multi-img {	
+max-width: 42%;	
+height: auto;	
+}	
+
 .sphx-glr-thumbcontainer a.internal {
     bottom: 0;
     display: block;
     left: 0;
-    padding: 150px 10px 0;
     position: absolute;
+    padding: 145px 10px 0;
     right: 0;
     top: 0;
 }
@@ -306,12 +348,7 @@ span.pre {
     position: absolute;
     z-index: 99;
 }
-.highlight-pytb pre {
-    background-color: #ffe4e4;
-    border: 1px solid #f66;
-    margin-top: 10px;
-    padding: 7px;
-}
+
 .sphx-glr-script-out {
     color: #888;
     margin: 0;
