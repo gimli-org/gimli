@@ -72,7 +72,7 @@ embedded and docstitle %} {%- set titlesuffix = " &mdash; "|safe + docstitle|e %
   <a href="{{ pathto('', 1) }}" class="logo"><img src="{{ pathto('_static/', 1) }}gimli_logo.svg" alt=""></a>
   <br><br>
   <div class="clearfix"></div>
-  <nav class="navbar navbar-expand-lg navbar-light bg-light" style="margin-bottom: 22px;">
+  <nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top" style="margin-bottom: 22px;">
     <div class="collapse navbar-collapse" id="navbarTogglerDemo03">
       <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
         {% include 'navbar.html' %}
@@ -106,7 +106,9 @@ embedded and docstitle %} {%- set titlesuffix = " &mdash; "|safe + docstitle|e %
       </ul>
     </div>
     <div class="col-3">
+      <div class="sticky-top" id="sidebar">
       {% include 'sidebar.html' %}
+      </div>
     </div>
   </div>
   <div class="card bg-light">

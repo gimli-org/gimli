@@ -749,3 +749,7 @@ strong {
 .nav-list>li>a {
     padding: 4px 13px;
 }
+
+div#sidebar.sticky-top {
+    top: 80px;
+}
