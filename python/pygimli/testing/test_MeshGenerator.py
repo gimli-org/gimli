@@ -14,9 +14,6 @@ class TestMeshGenerator(unittest.TestCase):
         z = [.5, 1, 3]
 
         mesh = pg.createGrid(x, y, z)
-        print(mesh.node(0))
-        print(mesh.cell(0))
-        print(mesh.boundary(0))
 
     def test_triangle(self):
         plc = pg.meshtools.createRectangle()
@@ -118,16 +115,13 @@ class TestMeshGenerator(unittest.TestCase):
         self.assertEqual(mesh.secondaryNodeCount(), mesh.boundaryCount() + \
                                                     (len(x)-1)*len(y)*len(z) + \
                                                     (len(y)-1)*len(z)*len(x) + \
-                                                    (len(z)-1)*len(x)*len(y)) 
-        
+                                                    (len(z)-1)*len(x)*len(y))
+
     def test_MeshStr(self):
         mesh= pg.createGrid(2,2,2)
         print(mesh.node(0))
-        
+
 
 if __name__ == '__main__':
-
-    #t = TestMeshGenerator()
-    #t.test_meshAccess()
 
     unittest.main()

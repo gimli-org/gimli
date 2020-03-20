@@ -17,7 +17,7 @@ if (CPPUNIT_FOUND)
     #    target_link_libraries(gimliUnitTest ${CPPUNIT_LIBRARIES})
     #endif (CHOLMOD_FOUND)
 
-    #target_link_libraries(gimliUnitTest ${Boost_THREAD_LIBRARY})
+    # target_link_libraries(gimliUnitTest ${Boost_THREAD_LIBRARY}) # maybe obsolete 200103
     target_link_libraries(gimliUnitTest gimli)
     target_link_libraries(gimliUnitTest pthread)
     #target_link_libraries(gimliUnitTest ${CHOLMOD_LIBRARIES})
@@ -34,7 +34,7 @@ if (CPPUNIT_FOUND)
 
     add_dependencies(gimliUnitTest gimli)
     add_dependencies(gtest gimliUnitTest)
-    
+
 
     add_test(
         NAME
