@@ -2,7 +2,9 @@
       <div class="card bg-light mb-4" style="max-width: 20rem;">
         <div class="card-header">Contents</div>
         <div class="card-body">
+        <nav id="myScrollspy">
         {{ toc|replace('<ul>', '<ul class="nav flex-column">') }}
+        </nav>
         </div>
       </div>
       {%- endif %}
@@ -102,3 +104,5 @@
           </h6>
         </div>
       </div>
+
+      <br>
