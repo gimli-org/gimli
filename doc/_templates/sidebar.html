@@ -8,7 +8,7 @@
         </div>
       </div>
       {%- endif %}
-      {%- if pagename != 'index' %}
+      <!-- {%- if pagename != 'index' %}
       <div class="card bg-light mb-4" style="max-width: 20rem;">
         <div class="card-header">{{ _('Navigation') }}</div>
         <div class="card-body">
@@ -26,10 +26,10 @@
           </ul>
         </div>
       </div>
-      {%- endif %}
+      {%- endif %} -->
       <div class="card bg-light mb-4" style="max-width: 20rem;">
         <div class="card-header">Tutorial & example gallery</div>
-        <div class="card-body p-1">
+        <div class="card-body p-1" id="sidebar-gallery">
           {% include 'gallery.html' %}
         </div>
       </div>
@@ -83,6 +83,7 @@
         </div>
       </div>
 
+      {%- if pagename == 'index' %}
       <div class="card bg-light mb-4" style="max-width: 20rem;">
         <div class="card-header">Code Status</div>
         <div class="card-body p-3">
@@ -104,5 +105,6 @@
           </h6>
         </div>
       </div>
+      {%- endif %}
 
       <br>
