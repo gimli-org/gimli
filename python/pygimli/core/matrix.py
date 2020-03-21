@@ -101,14 +101,15 @@ class MultRightMatrix(MultMatrix):
 
     def mult(self, x):
         """Return M*x = A*(r*x)"""
-        if len(x) != len(self.r):
-            # assuming A was complex
-            # warn('need to double x')
-            # print('mult:', self.A.rows(), " x " , self.A.cols(),
-            #        'x:', len(x), 'r:', len(self.r))
-            # print(self.perm)
-            return self.A.mult(x[self.perm] * self.r)
-            # return self.A.mult(pgcore.cat(x, x) * self.r)
+        if hasattr(x, '__len__') and hasattr(self.r, '__len__'):
+            if len(x) != len(self.r):
+                # assuming A was complex
+                # warn('need to double x')
+                # print('mult:', self.A.rows(), " x " , self.A.cols(),
+                #        'x:', len(x), 'r:', len(self.r))
+                # print(self.perm)
+                return self.A.mult(x[self.perm] * self.r)
+                # return self.A.mult(pgcore.cat(x, x) * self.r)
         return self.A.mult(x * self.r)
 
     def transMult(self, x):
