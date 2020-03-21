@@ -75,7 +75,7 @@ Avoid installing into strange Windows folders, e.g., c:\ProgramData\mys64 is fin
 After installing MSYS, start the console once so it builds your personal home
 directory where you find a .bashrc file, e.g. in
 
-.. code-block:: bash
+.. code-block::
 
     c:\ProgramData\mys64\home\YOUR_USERNAME
 
@@ -85,7 +85,7 @@ PATH.
 e.g.:
 
 .. code-block:: bash
-    
+
     export ANACONDA=/c/ProgramData/Anaconda3
     export PATH=$PATH:$ANACONDA
 
@@ -152,7 +152,7 @@ using the Unix makefile generator to find the correct gcc versions:
     cmake ../gimli -G 'Unix Makefiles'
 
 If cmake complains about missing python stuff, make sure the Python interpreter
-is in your execution path. 
+is in your execution path.
 
 
 **Problems with cmake configuration**
@@ -176,13 +176,13 @@ If cmake complains about misssig numpy, python can't probably import numpy, whic
 .. code-block:: bash
 
     python -c 'import numpy'
-    
+
 Probably anaconda additional needs another path setting, don't ask me why
 
 .. code-block:: bash
 
    export PATH=$PATH:$ANACONDA/Library/bin
-   
+
 Now python should be able to find numpy and cmake will work as supposed and you can continue the build process.
 
 
