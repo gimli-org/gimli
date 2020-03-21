@@ -206,7 +206,7 @@ input#url.security {
 }
 
 /*format of code cells lastcout directive*/
-pre, code, blockquote {
+pre, code {
   font-family: "Inconsolata", monospace;
   font-size: 15px;
   margin-top: 10px;
@@ -556,6 +556,7 @@ span.copybutton {
 
 blockquote {
   border-left: 0px;
+  padding-left: 1rem;
 }
 
 blockquote p {
@@ -635,7 +636,7 @@ div.admonition.error {
 
 /* module summary table */
 .longtable.docutils {
-  font-size: 12px;
+  font-size: 13px;
   margin-bottom: 30px;
 }
 
@@ -705,6 +706,11 @@ dl.class dt, dl.function dt {
   text-align: left;
   vertical-align: top;
   width: 100px;
+}
+
+dl.field-list p {
+    margin-top: 0;
+    margin-bottom: .2rem;
 }
 
 .docutils.field-list td blockquote p {
