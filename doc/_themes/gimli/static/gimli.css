@@ -956,3 +956,7 @@ div#sidebar-gallery.card-body {
 .jumbotron {
   height: 100%;
 }
+
+.display-4 {
+    font-size: 2rem;
+}
