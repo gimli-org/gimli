@@ -103,10 +103,35 @@ img.align-center {
   top: 55%;
 }
 
+.carousel-caption h5 {
+    color: #fff;
+    font-size: 18px;
+}
+
+.carousel-caption h6 {
+    color: #fff;
+}
+
 .carousel-caption {
-  color: #fff;
-  line-height: 1.5;
-  font-size: 17px;
+    color: #e9ecef;
+    background: #002b36;
+    line-height: 1.5;
+    font-size: 17px;
+    width: 100%;
+    margin-top: -10px;
+    position: relative;
+    padding: 5px;
+    opacity: 90%;
+    bottom: 0px;
+    left: 0px;
+}
+
+.carousel-control-next-icon {
+    background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='black' viewBox='0 0 8 8'%3E%3Cpath d='M2.75 0l-1.5 1.5 2.5 2.5-2.5 2.5 1.5 1.5 4-4-4-4z'/%3E%3C/svg%3E");
+}
+
+.carousel-control-prev-icon {
+    background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='black' viewBox='0 0 8 8'%3E%3Cpath d='M5.25 0l-4 4 4 4 1.5-1.5-2.5-2.5 2.5-2.5-1.5-1.5z'/%3E%3C/svg%3E");
 }
 
 .carousel-inner img {
@@ -923,6 +948,11 @@ table.doc-index.docutils.align-default {
     margin-bottom: .2rem;
 }
 
-div#sidebar-gallery {
+div#sidebar-gallery.card-body {
     background: #fff;
+    padding: 0;
+}
+
+.jumbotron {
+  height: 100%;
 }
