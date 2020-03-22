@@ -321,8 +321,8 @@ class Inversion(object):
         else:
             return phiD + self.phiModel(model) * self.inv.getLambda()
 
-    def relrms():
-        """Relative root-mean-square error."""
+    def relrms(self):
+        """Relative root-mean-square misfit."""
         return self.inv.relrms()
 
     def run(self, dataVals, errorVals, **kwargs):
