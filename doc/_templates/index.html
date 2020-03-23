@@ -1,15 +1,16 @@
 {%- set title = "Home" %} {%- extends "layout.html" %} {% block body %}
-    <div class="row">
-      <div class="col-sm-4">
-<div class="jumbotron">
-    <h2 class="display-4">pyGIMLi 1.1</h2>
-    <p class="lead">An open-source multi-method library for modelling and inversion in geophysics.</p><br>
+        <div class="card text-white bg-light">
+          <div class="card-body">
+            <h3>pyGIMLi is an open-source multi-method library for modelling and inversion in
+              geophysics.</h3>
             <a class="btn btn-primary btn-large" href="about.html">
               Learn more
             </a>
-</div>
-      </div>
-      <div class="col-sm-8">
+            <!-- <a class="btn btn-success btn-large" href="http://try.pygimli.org">
+          <i class="far fa-play-circle"></i> Try it now!
+        </a> -->
+          </div>
+        </div>
         <h1>Showcase
         <small><font color="gray">
           pyGIMLi-based research papers
@@ -20,19 +21,25 @@
             <!-- Carousel items -->
             {%- for paper in showcase %} {%- if loop.index == 1 %}
             <div class="carousel-item active">
-              {%- else %}
-              <div class="carousel-item">
-                {%- endif %}
-                <a href="{{ paper['link'] }}" target="_blank">
-                  <img src="_static/usecases/{{ paper['img'] }}" align="center" width="100%">
-                  <div class="carousel-caption d-none d-md-block">
-                    <h5>{{ paper["title"] }}</h5>
-                    <p>{{ paper["subtitle"] }}</p>
+            {%- else %}
+            <div class="carousel-item">
+              {%- endif %}
+              <a href="{{ paper['link'] }}" target="_blank">
+                <div class="card-block">
+                  <div class="row">
+                    <div class="col-8">
+                      <img src="_static/usecases/{{ paper['img'] }}" align="center" width="100%">
+                    </div>
+                    <div class="col-4">
+                      <h3>{{ paper["title"] }}</h3>
+                      <p>{{ paper["subtitle"] }}</p>
+                      <button class="btn btn-outline-success">Go To Paper</button>
+                    </div>
                   </div>
-                </a>
-              </div>
-              {%- endfor %}
+                </div>
+              </a>
             </div>
+            {%- endfor %}
             <!-- Carousel nav -->
             <a class="carousel-control-prev" href="#paper-carousel" role="button" data-slide="prev">
               <span class="carousel-control-prev-icon" aria-hidden="true"></span>
@@ -53,8 +60,7 @@
               })
             }(window.jQuery)
           </script>
-      </div>
-    </div>
+        </div>
 
         <h1>Get pyGIMLi.
         <small><font color="gray">
