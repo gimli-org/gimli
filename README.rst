@@ -47,7 +47,7 @@ We gratefully acknowledge all contributors to the pyGIMLi open-source project an
 
 * `Florian Wagner <https://orcid.org/0000-0001-7407-9741>`_
 
-  *University of Bonn, Department of Geophysics, Bonn, Germany*
+  *RWTH Aachen University, Institute for Applied Geophysics and Geothermal Energy, Aachen, Germany*
 
   florian@pygimli.org
 
