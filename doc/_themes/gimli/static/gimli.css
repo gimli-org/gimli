@@ -960,3 +960,18 @@ div#sidebar-gallery.card-body {
 .display-4 {
     font-size: 2rem;
 }
+
+.card-footer {
+    font-size: 1.06rem;
+}
+
+.navbar-nav {
+    color: rgba(0, 0, 0, .7);
+}
+
+:target::before {
+  content: "";
+  display: block;
+  height: 54px; /* fixed header height*/
+  margin: -54px 0 0; /* negative fixed header height */
+}
