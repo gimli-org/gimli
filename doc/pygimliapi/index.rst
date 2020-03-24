@@ -32,7 +32,7 @@ pyGIMLi API Reference
   physics
   solver
   testing
-  trans
+  .. trans
   utils
   viewer
 
@@ -42,7 +42,7 @@ pyGIMLi API Reference
     :glob:
 
     _generated/*
-    
+
 .. note::
 
   This documentation is valid for |version|. Check your installed version with
