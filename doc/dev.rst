@@ -305,13 +305,14 @@ Adding an example to the paper carousel
 
 .. code-block:: bash
 
-  mogrify -path converted -format png -resize "750x380^" -gravity North -crop 750x380+0+0 +repage *.png
+  mkdir -p converted
+  mogrify -path converted -format jpg -resize "750x380^" -gravity North -crop 750x380+0+0 +repage -quality 95 *.jpg
 
 2. Add a new dictionary with additional information into *doc/paper_carousel.py*. The format should be like this:
 
 .. code-block:: python
 
-  dict(img="jordi2018.png",
+  dict(img="jordi2018.jpg",
        title="Improved geophysical images through geostatistical regularization",
        subtitle="Jordi et al. (2018), Geophysical Journal International",
        link="https://doi.org/10.1093/gji/ggy055")
