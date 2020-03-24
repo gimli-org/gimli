@@ -100,7 +100,7 @@ def cmapFromName(cmapname='jet', ncols=256, bad=None, **kwargs):
 
 
 def findAndMaskBestClim(dataIn, cMin=None, cMax=None, dropColLimitsPerc=5,
-                        logScale=True):
+                        logScale=False):
     """TODO Documentme."""
     data = np.asarray(dataIn)
 
