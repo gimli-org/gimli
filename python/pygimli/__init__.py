@@ -73,13 +73,13 @@ checkAndFixLocaleDecimal_point(verbose=True)
 ################################################################################
 # Please leave this block here until the following issue is fixed:
 # https://github.com/ContinuumIO/anaconda-issues/issues/1068
-if "conda" in __path__[0]:
-    try:
-        import PyQt5
-        import matplotlib
-        matplotlib.use("qt5agg", warn=False)
-    except ImportError:
-        pass
+#if "conda" in __path__[0]:
+#    try:
+#        import PyQt5
+#        import matplotlib
+#        matplotlib.use("qt5agg", warn=False)
+#    except ImportError:
+#        pass
 ################################################################################
 
 __version__ = "0"
