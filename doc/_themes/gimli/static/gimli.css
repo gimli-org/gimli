@@ -470,7 +470,7 @@ div.sphx-glr-download {
 
 div.sphx-glr-download a {
   background-color: #d9edf7;
-  background-image: linear-gradient(to top, #BCE8F1, #d9edf7);
+  /* background-image: linear-gradient(to top, #BCE8F1, #d9edf7); */
   border-radius: 4px;
   border: 1px solid #bce8f1;
   color: #3a87ad;
