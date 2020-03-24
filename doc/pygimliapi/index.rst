@@ -24,12 +24,15 @@ pyGIMLi API Reference
   .. core
   frameworks
   manager
+  math
+  matrix
   meshtools
   misc
   mplviewer
   physics
   solver
   testing
+  trans
   utils
   viewer
 
