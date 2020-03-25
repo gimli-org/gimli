@@ -11,4 +11,5 @@ from .ert import (ERTManager, ERTModelling, createERTData,
                  simulate, createGeometricFactors)
 from .ves import VESModelling, VESCModelling, VESManager
 
-from .visualization import showERTData
+from .visualization import showERTData 
+show = showERTData
