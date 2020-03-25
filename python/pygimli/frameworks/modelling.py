@@ -275,7 +275,7 @@ class Modelling(pg.core.ModellingBase):
 
             if vals['cType'] is not None:
                 rMgr.region(rID).setConstraintType(vals['cType'])
-                
+
             rMgr.region(rID).setZWeight(vals['zWeight'])
             rMgr.region(rID).setModelControl(vals['modelControl'])
 
@@ -588,12 +588,12 @@ class MeshModelling(Modelling):
             ax, cBar = pg.show(mesh=self.paraDomain,
                                data=mod,
                                label=kwargs.pop('label', 'Model parameter'),
-                               logScale=kwargs.pop('logScale', True),
+                               logScale=kwargs.pop('logScale', False),
                                ax=ax,
                                **kwargs)
 
             if diam is not None:
-                pg.mplviewer.drawSensors(ax, self.data.sensors(), diam=diam, 
+                pg.mplviewer.drawSensors(ax, self.data.sensors(), diam=diam,
                                          edgecolor='black', facecolor='white')
 
         return ax, cBar

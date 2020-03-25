@@ -47,7 +47,6 @@ offset = -10
 t = ax.text(mesh.xmin() + (mesh.xmax()-mesh.xmin())/2, offset, 'BERT',
             horizontalalignment='center', size=40, fontweight='bold')
 pg.show(mesh, pg.x(mesh.cellCenters()), ax=ax, cMap='Spectral_r',
-        logScale=False, showLater=True, showMesh=True)
+        logScale=False, showLater=True, showMesh=True, colorBar=False)
 ax.set_ylim(offset, mesh.ymax())
-
 pg.wait()

@@ -24,12 +24,15 @@ pyGIMLi API Reference
   .. core
   frameworks
   manager
+  math
+  matrix
   meshtools
   misc
   mplviewer
   physics
   solver
   testing
+  .. trans
   utils
   viewer
 
@@ -39,7 +42,7 @@ pyGIMLi API Reference
     :glob:
 
     _generated/*
-    
+
 .. note::
 
   This documentation is valid for |version|. Check your installed version with

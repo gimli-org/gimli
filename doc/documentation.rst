@@ -49,7 +49,7 @@ Documentation
 
         * - :ref:`sec:publications`
 
-            Papers and talks about (or using) pyGIMLi
+            Research papers using pyGIMLi
 
           - :ref:`sec:citation`
 

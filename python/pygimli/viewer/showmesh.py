@@ -297,6 +297,9 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
         #     showMesh = True
         else:
             validData = True
+            if bool(colorBar) is not False:
+                colorBar = True
+                
             try:
                 if len(data) == mesh.cellCount():
                     gci = drawModel(ax, mesh, data, **kwargs)

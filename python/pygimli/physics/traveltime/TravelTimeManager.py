@@ -11,7 +11,7 @@ import pygimli as pg
 from pygimli.frameworks import MeshModelling
 from pygimli.frameworks import MeshMethodManager
 
-from . raplot import drawTravelTimeData, drawVA, showVA
+from . raplot import showVA
 from . ratools import shotReceiverDistances, createGradientModel2D
 
 
@@ -51,14 +51,11 @@ class TravelTimeDijkstraModelling(MeshModelling):
     def setMeshPost(self, mesh):
         """
         """
-        # pg._r(mesh)
         self._core.setMesh(mesh)
-        #self.dijkstra.setMesh(pg.Mesh(mesh))
 
     def setDataPost(self, data):
         """
         """
-        # pg._r()
         self._core.setData(data)
 
     def createStartModel(self, dataVals):
@@ -69,7 +66,7 @@ class TravelTimeDijkstraModelling(MeshModelling):
         if self._useGradient is not None:
             [vTop, vBot] = self._useGradient
             pg.info('Create gradient starting model. {0}: {1}'.format(vTop, vBot))
-            sm = createGradientModel2D(self.data, 
+            sm = createGradientModel2D(self.data,
                                        self.paraDomain,
                                        vTop, vBot)
         else:
@@ -78,9 +75,9 @@ class TravelTimeDijkstraModelling(MeshModelling):
 
             # pg._r(self.regionManager().parameterCount())
             sm = pg.Vector(self.regionManager().parameterCount(),
-                        pg.math.median(aSlow))
+                           pg.math.median(aSlow))
             pg.info('Create constant starting model:', sm[0])
-                
+
         return sm
 
     def createJacobian(self, par):
@@ -95,7 +92,7 @@ class TravelTimeDijkstraModelling(MeshModelling):
         return self._core.response(par)
 
     def way(self, s, g):
-        """ Return the node indieces for the way from the shot to the receiver 
+        """ Return the node indices for the way from the shot to the receiver
         index based on the given data, mesh and last known model.
         """
         return self._core.way(s, g)
@@ -105,8 +102,8 @@ class TravelTimeDijkstraModelling(MeshModelling):
         kwargs['cMap'] = kwargs.pop('cMap', pg.utils.cMap('vel'))
 
         return super(TravelTimeDijkstraModelling, self).drawModel(ax=ax,
-                                                           model=model,
-                                                           **kwargs)
+                                                                  model=model,
+                                                                  **kwargs)
 
     def drawData(self, ax, data=None, err=None, **kwargs):
         """
@@ -139,7 +136,7 @@ class TravelTimeManager(MeshMethodManager):
 
         super(TravelTimeManager, self).__init__(**kwargs)
 
-        self.inv.dataTrans = pg.trans.TransLog()
+        self.inv.dataTrans = pg.trans.Trans()
 
     def createForwardOperator(self, **kwargs):
         """Create default forward operator for Traveltime modelling.
@@ -154,7 +151,7 @@ class TravelTimeManager(MeshMethodManager):
         """Return data from container"""
         if isinstance(data, pg.DataContainer):
             if not data.haveData('t'):
-                pg.critical('Datacontainer have no "t" values.')
+                pg.critical('DataContainer has no "t" values.')
             return data['t']
 
         return data
@@ -163,7 +160,7 @@ class TravelTimeManager(MeshMethodManager):
         """Return relative error"""
         if isinstance(err, pg.DataContainer):
             if not err.haveData('err'):
-                pg.error('Datacontainer have no "err" values. Fallback set to 3%')
+                pg.error('DataContainer has no "err" values. Fallback set to 3%')
                 return np.ones(err.size()) * 0.03
             return err['err'] / dataVals
 
@@ -196,7 +193,7 @@ class TravelTimeManager(MeshMethodManager):
             * a matrix of N slowness distributions of len mesh.cellCount()
             * a res map as [[marker0, res0], [marker1, res1], ...]
         vel : array(mesh.cellCount()) | array(N, mesh.cellCount())
-            Velocity distribution for the given mesh cells. 
+            Velocity distribution for the given mesh cells.
             Will overwrite given slowness.
         scheme: :gimliapi:`GIMLI::DataContainer`
             Data measurement scheme needs 's' for shot and 'g' for geophone
@@ -276,9 +273,9 @@ class TravelTimeManager(MeshMethodManager):
             Data container with at least SensorIndieces 's g' and
             data values 't' (traveltime in ms) and 'err' (absolute error in ms)
         useGradient: bool [True]
-            Use a gradient like starting model suited for standard flat 
+            Use a gradient like starting model suited for standard flat
             earth cases. [Default]
-            For cross tomography geometry you should set this to False for a 
+            For cross tomography geometry you should set this to False for a
             non gradient startind model.
         vTop: float
             Top velocity for gradient stating model.
@@ -311,7 +308,7 @@ class TravelTimeManager(MeshMethodManager):
             self.fop._useGradient = [vTop, vBottom]
         else:
             self.fop._useGradient = None
-        
+
         slowness = super(TravelTimeManager, self).invert(data, **kwargs)
         velocity = 1.0 / slowness
         self.fw.model = velocity

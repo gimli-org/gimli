@@ -1,5 +1,5 @@
 /******************************************************************************
- *   Copyright (C) 2006-2019 by the resistivity.net development team          *
+ *   Copyright (C) 2006-2020 by the resistivity.net development team          *
  *   Carsten Rücker carsten@resistivity.net                                   *
  *                                                                            *
  *   Licensed under the Apache License, Version 2.0 (the "License");          *
@@ -1101,7 +1101,7 @@ RVector DCMultiElectrodeModelling::response(const RVector & model,
     }
 
     if (!this->mesh_){
-        log(Critical, "Found no mesh so I can't calcuate a response.");
+        log(Critical, "Found no mesh, so cannot calculate a response.");
     }
     if (complex()){
 
