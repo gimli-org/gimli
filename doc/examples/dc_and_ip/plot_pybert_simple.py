@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
-"""Simplistic version a complete ERT Modelling->Inversion example."""
+"""
+Simple ERT modeling and inversion
+---------------------------------
+"""
+
 import numpy as np
 import pygimli as pg
-import pygimli.meshtools as mt 
+import pygimli.meshtools as mt
 import pygimli.physics.ert as ert
 
 ###############################################################################
@@ -79,7 +83,7 @@ data.save('simple.dat')
 ert.show(data)
 
 ###############################################################################
-# Initialize the ERTManager for inversion 
+# Initialize the ERTManager for inversion
 mgr = ert.ERTManager()
 
 ###############################################################################
@@ -104,14 +108,14 @@ grid = pg.createGrid(x=np.linspace(start=-12, stop=12, num=33),
                      y=-pg.cat([0], pg.utils.grange(0.5, 8, n=8)),
                      marker=2)
 
-mesh = pg.meshtools.appendTriangleBoundary(grid, marker=1, 
+mesh = pg.meshtools.appendTriangleBoundary(grid, marker=1,
                                            xbound=50, ybound=50)
 
 model = mgr.invert(data, mesh=mesh, lam=20, verbose=True)
 
 ###############################################################################
 # You can access to all data and plot them manually
-# 
+#
 pg.show(mgr.fop.paraDomain, mgr.paraModel(model), label='Model')
 pg.info('Inversion stoped with chi²={0}'.format(mgr.fw.chi2()))
 

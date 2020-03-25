@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 r"""
+Slagdump example
+----------------
+
 Simple example -- slagdump testcase
 - 2d with topo
 - geometric factor generation
@@ -19,15 +22,15 @@ data = pg.getExampleFile('ert/slagdump.ohm', load=True, verbose=True)
 ##############################################################################
 # Initialize the ERTManager
 ert = ERTManager(sr=False, useBert=True, verbose=True, debug=False)
-                      
+
 ##############################################################################
 # We need a mesh for every inversion
-mesh = mt.createParaMesh(data.sensors(), 
+mesh = mt.createParaMesh(data.sensors(),
                          paraDX=0.3, paraMaxCellSize=10, paraDepth=20,
                          quality=33.6)
 
 ##############################################################################
-# The data file does not contain geometric factors so create them for the given 
+# The data file does not contain geometric factors so create them for the given
 # topography and show the topography effect
 kTopo = createGeometricFactors(data, mesh)
 k0 = createGeometricFactors(data)
