@@ -79,7 +79,7 @@ embedded and docstitle %} {%- set titlesuffix = " &mdash; "|safe + docstitle|e %
       </ul>
 
       <div class="form-group has-search">
-        <form class="form-inline my-2 my-lg-0" action="search.html" method="get">
+        <form class="form-inline my-2 my-lg-0" action="{{ pathto('search.html', 1) }}" method="get">
         <span class="fa fa-search form-control-feedback"></span>
         <input type="search" class="form-control" name="q" placeholder="Search pyGIMLi docs..." aria-label="Search" onfocus="this.placeholder = ''" onblur="this.placeholder = 'Search pyGIMLi docs...'">
         <input type="hidden" name="check_keywords" value="yes">
