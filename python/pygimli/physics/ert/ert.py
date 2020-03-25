@@ -113,6 +113,7 @@ class ERTModellingBase(MeshModelling):
         kwargs['cMap'] = kwargs.pop('cMap', pg.utils.cMap('res'))
 
         return super(ERTModellingBase, self).drawModel(ax=ax, model=model,
+                                                       logScale=True,
                                                        **kwargs)
 
 

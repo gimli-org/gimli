@@ -103,6 +103,7 @@ class TravelTimeDijkstraModelling(MeshModelling):
 
         return super(TravelTimeDijkstraModelling, self).drawModel(ax=ax,
                                                                   model=model,
+                                                                  logScale=True,
                                                                   **kwargs)
 
     def drawData(self, ax, data=None, err=None, **kwargs):
