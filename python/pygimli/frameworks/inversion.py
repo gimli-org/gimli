@@ -461,6 +461,10 @@ class Inversion(object):
             if showProgress:
                 self.showProgress(showProgress)
 
+            if self._postStep and callable(self._postStep):
+                self._postStep(i, self)
+
+            ### we need to check  the following before oder after chi2 calc??
             self.inv.setLambda(self.inv.getLambda() * self.inv.lambdaFactor())
 
             if self.robustData:
@@ -468,9 +472,6 @@ class Inversion(object):
 
             if self.inv.blockyModel():
                 self.inv.constrainBlocky()
-
-            if self._postStep and callable(self._postStep):
-                self._postStep(i, self)
 
             phi = self.phi()
             dPhi = phi/lastPhi

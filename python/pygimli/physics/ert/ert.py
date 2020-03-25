@@ -15,6 +15,7 @@ from .visualization import showERTData
 
 from pygimli import pf
 
+   
 def simulate(mesh, res, scheme, sr=True, useBert=True,
              verbose=False, **kwargs):
     """Convenience function to use the ERT modelling operator.
@@ -52,6 +53,41 @@ def simulate(mesh, res, scheme, sr=True, useBert=True,
     return ert.simulate(mesh, res, scheme, verbose=verbose, **kwargs)
 
 
+@pg.cache
+def createGeometricFactors(scheme, mesh=None, verbose=False):
+    """Create geometric factors for a data scheme.
+
+    Create geometric factors for a data scheme with and without topography. 
+    
+    This function caches the result depending on scheme, mesh and pg.version()
+    
+    Parameters
+    ----------
+    scheme : :gimliapi:`GIMLI::DataContainerERT`
+        Datacontainer of the scheme
+    mesh : :gimliapi:`GIMLI::Mesh` | str
+        Mesh for numerical calculation. If not given analytical flath eath
+        factors are guessed. The mesh will be h and p refined. 
+        If the numerical effort is to high or the accuracy to low 
+        you should consider to calculate the factors manual.
+    verbose: bool
+        Give some output.
+    """
+    if mesh is not None:
+        
+        m = mesh.createH2()
+        m = m.createP2()
+        if verbose:
+            pg.info('Calculate numerical geometric factors.')
+        d = simulate(m, res=1.0, scheme=scheme, sr=False, useBert=True,         
+                    calcOnly=True, verbose=True)
+        return 1./d['u']
+
+    else:
+        if verbose:
+            pg.info('Calculate analytical flat earth geometric factors.')
+        return pg.core.geometricFactors(scheme, forceFlatEarth=True)
+
 class ERTModellingBase(MeshModelling):
     def __init__(self, **kwargs):
         super(ERTModellingBase, self).__init__(**kwargs)
@@ -67,9 +103,8 @@ class ERTModellingBase(MeshModelling):
         elif data is None:
             data = self.data
 
-        if vals is None:
-            vals = data['rhoa']
-
+        vals = kwargs.pop('vals', data['rhoa'])
+        
         return showERTData(data, vals=vals, ax=ax, **kwargs)
 
     def drawModel(self, ax, model, **kwargs):
@@ -779,9 +814,16 @@ class ERTManager(MeshMethodManager):
 
         return ret
 
+
     def dataCheck(self, data):
-        """Return data from container"""
+        """Return data from container. 
+        THINKABOUT: Data will be changed, or should the manager keeps an own copy?
+        """
         if isinstance(data, pg.DataContainer):
+
+            if not data.allNonZero('k'):
+                pg.warn("Data file contains no geometric factors (token='k').")
+                data['k'] = createGeometricFactors(data, verbose=True)
 
             if self.fop.complex():
                 if not data.haveData('rhoa'):
@@ -798,7 +840,21 @@ class ERTManager(MeshMethodManager):
 
             else:
                 if not data.haveData('rhoa'):
-                    pg.critical('Datacontainer have no "rhoa" values.')
+
+                    if data.allNonZero('r'):
+                        pg.info("Creating apparent resistivies from "
+                                "impedences rhoa = r * k")
+                        data['rhoa'] = data['r'] * data['k']
+                    elif data.allNonZero('u') and data.allNonZero('i'):
+                        pg.info("Creating apparent resistivies from "
+                                "voltage and currrent rhoa = u/i * k")
+                        data['rhoa'] = data['u']/data['i'] * data['k']
+                    else:
+                        pg.critical("Datacontainer have neither: "
+                                    "apparent resistivies 'rhoa', "
+                                    "or impedances 'r', "
+                                    "or voltage 'u' together with current 'i' values.")
+                        
                 return data['rhoa']
 
         return data
@@ -807,35 +863,34 @@ class ERTManager(MeshMethodManager):
         """Return relative error. Default we assume 'err' are relative vales.
         """
         if isinstance(err, pg.DataContainer):
-            if self.fop.complex():
-                rae = None
-                ipe = None
+            rae = None
 
-                if err.haveData('err'):
-                    rae = err['err']
-                else:
-                    pg.error('Datacontainer have no "err" values. Fallback set to 0.01')
-                    rae = np.ones(err.size()) * 0.01
+            if not err.allNonZero('err'):
+                    pg.warn("Datacontainer have no 'err' values. "
+                             "Fallback of 1mV + 3% using ERTManager.estimateError(...) ")
+                    rae = self.estimateError(err, absoluteError=0.001, 
+                                             relativeError=0.03)
+            else:
+                rae = err['err']
+
+            if self.fop.complex():
+                
+                ipe = None
 
                 if err.haveData('iperr'):
                     amp, phi = pg.utils.toPolar(dataVals)
                     # assuming ipErr are absolute dPhi in mrad
                     ipe = err['iperr'] / abs((phi*1000))
                 else:
-                    pg.error('Datacontainer have no "ipoerr" values. Fallback set to 0.01')
+                    pg.warn("Datacontainer have no 'iperr' values. "
+                             "Fallback set to 0.01")
                     ipe = np.ones(err.size()) * 0.01
 
                 # pg._y("err", min(rae), max(rae), rae)
                 # pg._y("iperr", min(ipe), max(ipe), ipe)
                 return pg.cat(rae, ipe)
 
-            else:
-
-                if not err.haveData('err'):
-                    pg.error('Datacontainer have no "err" values. Fallback set to 0.01')
-                return err['err']
-
-        return err
+        return rae
 
 
     def estimateError(self, data, absoluteError=0.001, relativeError=0.03,
