@@ -391,13 +391,13 @@ class Inversion(object):
             pg.info('Starting inversion.')
             print("fop:", self.inv.fop())
             if isinstance(self.dataTrans, pg.trans.TransCumulative):
-                print("Model transformation (cummulative):")
+                print("Data transformation (cumulative):")
                 for i in range(self.dataTrans.size()):
                     print("\t", i, self.dataTrans.at(i))
             else:
                 print("Data transformation:", self.dataTrans)
             if isinstance(self.modelTrans, pg.trans.TransCumulative):
-                print("Model transformation (cummulative):")
+                print("Model transformation (cumulative):")
                 for i in range(self.modelTrans.size()):
                     if i < 10:
                         print("\t", i, self.modelTrans.at(i))

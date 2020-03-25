@@ -268,7 +268,7 @@ class MethodManager(object):
         return vals
 
     def errorCheck(self, err, dataVals=None):
-        """Return relative error. Default we assume 'err' are relative vales.
+        """Return relative error. Default we assume 'err' are relative values.
         Overwrite is derived class if needed. """
         if isinstance(err, pg.DataContainer):
             if not err.haveData('err'):
@@ -349,7 +349,7 @@ class MethodManager(object):
         ax, cbar
         """
         if ax is None:
-            fig, ax = pg.plt.subplots(ncols=1)
+            fig, ax = pg.plt.subplots()
 
         return self.fop.drawModel(ax, model, **kwargs)
 
@@ -372,7 +372,7 @@ class MethodManager(object):
 
         """
         if ax is None:
-            fig, ax = pg.plt.subplots(ncols=1)
+            fig, ax = pg.plt.subplots()
 
         return self.fop.drawData(ax, data, **kwargs)
 
@@ -480,7 +480,7 @@ class MethodManager(object):
 
 
 class ParameterInversionManager(MethodManager):
-    """Framework to invert unconstraints parameters."""
+    """Framework to invert unconstrained parameters."""
     def __init__(self, funct=None, fop=None, **kwargs):
         """Constructor."""
         if fop is not None:
