@@ -258,7 +258,6 @@ class Modelling(pg.core.ModellingBase):
 
             if vals['background'] is not None:
                 if rMgr.region(rID).isBackground() != vals['background']:
-                    pg._y(vals['background'])
                     rMgr.region(rID).setBackground(vals['background'])
                     self._regionChanged = True
 

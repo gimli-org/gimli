@@ -258,7 +258,7 @@ class ColeColeAbs(pg.core.ModellingBase):
     """Cole-Cole model with EM term after Pelton et al. (1978)"""
 
     def __init__(self, f, verbose=False):
-        super(ColeColeAbs, self).__init__(verbose)
+        super().__init__(verbose)
         self.f_ = f  # save frequencies
         self.setMesh(pg.meshtools.createMesh1D(1, 4))  # 3 single parameters
 
