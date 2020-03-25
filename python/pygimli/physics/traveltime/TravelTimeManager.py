@@ -101,10 +101,9 @@ class TravelTimeDijkstraModelling(MeshModelling):
         kwargs['label'] = kwargs.pop('label', pg.unit('vel'))
         kwargs['cMap'] = kwargs.pop('cMap', pg.utils.cMap('vel'))
 
-        return super(TravelTimeDijkstraModelling, self).drawModel(ax=ax,
-                                                                  model=model,
-                                                                  logScale=True,
-                                                                  **kwargs)
+        return super().drawModel(ax=ax, model=model, 
+                                 logScale=kwargs.pop('logScale', True), 
+                                 **kwargs)
 
     def drawData(self, ax, data=None, err=None, **kwargs):
         """

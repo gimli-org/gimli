@@ -117,7 +117,7 @@ class ERTModellingBase(MeshModelling):
                                                        **kwargs)
 
 
-class BertModelling(ERTModellingBase):
+class ERTModelling(ERTModellingBase):
     """ Forward operator for Electrical Resistivty Tomography
 
     Note
@@ -132,7 +132,7 @@ class BertModelling(ERTModellingBase):
     """
     def __init__(self, sr=True, verbose=False):
         """Constructor, optional with data container and mesh."""
-        super(BertModelling, self).__init__()
+        super(ERTModelling, self).__init__()
 
         # don't use DC*fop or its regionmanager directly
         #
@@ -187,7 +187,7 @@ class BertModelling(ERTModellingBase):
 
             return pg.utils.squeezeComplex(sm) # complex impedance
         else:
-            return super(BertModelling, self).createStartModel(dataVals)
+            return super(ERTModelling, self).createStartModel(dataVals)
 
     def flipImagPart(self, v):
         z = pg.utils.toComplex(v)
@@ -245,7 +245,7 @@ class BertModelling(ERTModellingBase):
         self._core.setMesh(mesh, ignoreRegionManager=True)
 
 
-class ERTModelling(ERTModellingBase):
+class ERTModellingReference(ERTModellingBase):
     """Reference implementation for 2.5D Electrical Resistivity Tomography."""
 
     def __init__(self, **kwargs):
@@ -563,11 +563,11 @@ class ERTManager(MeshMethodManager):
         useBert = kwargs.pop('useBert', False)
         verbose = kwargs.pop('verbose', False)
         if useBert:
-            pg.verbose('Create BertModelling FOP')
-            fop = BertModelling(sr=kwargs.pop('sr', True), verbose=verbose)
-        else:
             pg.verbose('Create ERTModelling FOP')
-            fop = ERTModelling(**kwargs)
+            fop = ERTModelling(sr=kwargs.pop('sr', True), verbose=verbose)
+        else:
+            pg.verbose('Create ERTModellingReference FOP')
+            fop = ERTModellingReference(**kwargs)
 
         return fop
 
