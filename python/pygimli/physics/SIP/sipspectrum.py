@@ -123,22 +123,47 @@ class SpectrumManager(MethodManager):
         """ """
         pass
 
-    def setData(self, freqs=None, amp=None, phi=None, err=None):
-        """ """
+    def setData(self, freqs=None, amp=None, phi=None, eAmp=0.03, ePhi=0.001):
+        """
+        Set data for chosen sip model.
+
+        Parameters
+        ----------
+        freqs: iterable
+            Array-like frequencies.
+        amp: iterable
+            Array-like amplitudes to work with.
+        phi: iterable
+            Array-like phase angles to work with.
+        eAmp: float|iterable
+            Relative error for amplitudes.
+        ePhi: float|iterable
+            Absolute error for phase angles.
+        """
         self.fop.freqs = freqs
         if phi is not None:
             self.fw.dataVals = self._ensureData(toComplex(amp, phi))
+            if isinstance(ePhi, float):
+                ePhi = abs(ePhi/phi)
         else:
             self.fw.dataVals = self._ensureData(amp)
+
+        if isinstance(eAmp, float):
+            eAmp = np.ones(len(freqs)) * eAmp
+
+        if phi is not None:
+            err = np.asarray([*eAmp, *ePhi])
+        else:
+            err = eAmp
 
         self.fw.errorVals = self._ensureError(err, self.fw.dataVals)
 
     def _ensureData(self, data):
         """Check data validity"""
-            
+
         if isinstance(data, pg.DataContainer):
             pg.critical("Implement me")
-        
+
         if data is None:
             data = self.fw.dataVals
 
@@ -157,17 +182,13 @@ class SpectrumManager(MethodManager):
         """Check data validity"""
         if isinstance(err, pg.DataContainer):
             pg.critical("Implement me")
-        
+
         if err is None:
             err = self.fw.errorVals
 
         vals = err
         if vals is None:
             return self._ensureError(0.01, dataVals)
-
-        if isinstance(vals, float):
-            pg.info("Create default error of {0}'%'".format(vals*100))
-            vals = np.ones(len(dataVals)) * vals
 
         if abs(min(vals)) < 1e-12:
             print(min(vals), max(vals))
@@ -181,7 +202,7 @@ class SpectrumManager(MethodManager):
             self.fop.freqs = f
 
         limits = kwargs.pop('limits', {})
-        
+
         for k, v in limits.items():
             self.fop.setRegionProperties(k, limits=v)
 
@@ -189,11 +210,11 @@ class SpectrumManager(MethodManager):
                 sm = (v[1] + v[0]) / 2
                 if v[0] > 0:
                     sm = np.exp(np.log(v[0]) + (np.log(v[1]) - np.log(v[0])) / 2.)
-                
+
                 self.fop.setRegionProperties(k, startModel=sm)
- 
+
         return super(SpectrumManager, self).invert(data, **kwargs)
-   
+
     def showResult(self):
         """"""
         ax = None
@@ -207,20 +228,6 @@ class SpectrumManager(MethodManager):
         self.fop.drawData(ax, self.fw.response, label='response')
 
         return ax
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 class SIPSpectrum(object):
