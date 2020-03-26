@@ -208,7 +208,7 @@ class ColeColePhi(pg.core.ModellingBase):
 
     def response(self, par):
         """Phase angle of the model."""
-        spec = coleCole(self.f_, 1.0, par[0], par[1], par[2])
+        spec = modelColeColeRho(self.f_, 1.0, par[0], par[1], par[2])
         return -np.angle(spec)
 
 
@@ -242,8 +242,8 @@ class DoubleColeColePhi(pg.core.ModellingBase):
 
     def response(self, par):
         """phase angle of the model"""
-        spec1 = coleCole(self.f_, 1.0, par[0], par[1], par[2])
-        spec2 = coleCole(self.f_, 1.0, par[3], par[4], par[5])
+        spec1 = modelColeColeRho(self.f_, 1.0, par[0], par[1], par[2])
+        spec2 = modelColeColeRho(self.f_, 1.0, par[3], par[4], par[5])
         #return -np.angle(spec1 * spec2)
 
         return -np.angle(spec1) - np.angle(spec2)
@@ -259,7 +259,7 @@ class ColeColeAbs(pg.core.ModellingBase):
 
     def response(self, par):
         """phase angle of the model"""
-        spec = coleCole(self.f_, par[0], par[1], par[2], par[3])
+        spec = modelColeColeRho(self.f_, par[0], par[1], par[2], par[3])
         return np.abs(spec)
 
 
@@ -273,7 +273,7 @@ class ColeColeComplex(pg.core.ModellingBase):
 
     def response(self, par):
         """phase angle of the model"""
-        spec = coleColeRho(self.f_, *par)
+        spec = modelColeColeRho(self.f_, *par)
         return pg.cat(np.abs(spec), -np.angle(spec))
 
 
@@ -287,7 +287,7 @@ class ColeColeComplexSigma(pg.core.ModellingBase):
 
     def response(self, par):
         """phase angle of the model"""
-        spec = coleColeSigma(self.f_, *par)
+        spec = modelColeColeSigma(self.f_, *par)
         return pg.cat(np.real(spec), np.imag(spec))
 
 
@@ -301,7 +301,7 @@ class PeltonPhiEM(pg.core.ModellingBase):
 
     def response(self, par):
         """phase angle of the model"""
-        spec = coleCole(self.f_, 1.0, par[0], par[1], par[2]) * \
+        spec = modelColeColeRho(self.f_, 1.0, par[0], par[1], par[2]) * \
             relaxationTerm(self.f_, par[3])  # pure EM has c=1
         return -np.angle(spec)
 
