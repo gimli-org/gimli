@@ -57,7 +57,7 @@ def showMesh3DFallback(mesh, data, **kwargs):
         #ax = fig.gca(projection='3d', proj_type='ortho')
 
     if mesh.boundaryCount() > 0:
-        x, y, tri, z, dataIndex = pg.mplviewer.createTriangles(mesh)
+        x, y, tri, z, dataIndex = pg.viewer.mpl.createTriangles(mesh)
         ax.plot_trisurf(x, y, tri, z, **kwargs)
     else:
         if mesh.nodeCount() < 1e4:

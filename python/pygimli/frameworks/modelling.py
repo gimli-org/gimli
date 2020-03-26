@@ -401,7 +401,7 @@ class Block1DModelling(Modelling):
         # self._applyRegionProperties()
 
     def drawModel(self, ax, model, **kwargs):
-        pg.mplviewer.drawModel1D(ax=ax,
+        pg.viewer.mpl.drawModel1D(ax=ax,
                                  model=model,
                                  plot='loglog',
                                  xlabel=kwargs.pop('xlabel', 'Model parameter'),
@@ -581,7 +581,7 @@ class MeshModelling(Modelling):
             cBar = ax.__cBar__
             kwargs.pop('label', None)
             kwargs.pop('cMap', None)
-            pg.mplviewer.setMappableData(cBar.mappable, mod, **kwargs)
+            pg.viewer.mpl.setMappableData(cBar.mappable, mod, **kwargs)
         else:
             diam = kwargs.pop('diam', None)
             ax, cBar = pg.show(mesh=self.paraDomain,
@@ -592,7 +592,7 @@ class MeshModelling(Modelling):
                                **kwargs)
 
             if diam is not None:
-                pg.mplviewer.drawSensors(ax, self.data.sensors(), diam=diam,
+                pg.viewer.mpl.drawSensors(ax, self.data.sensors(), diam=diam,
                                          edgecolor='black', facecolor='white')
 
         return ax, cBar
@@ -827,7 +827,7 @@ class LCModelling(Modelling):
     def drawModel(self, ax, model, **kwargs):
         mods = np.asarray(model).reshape(self._nSoundings,
                                          self._parPerSounding)
-        pg.mplviewer.showStitchedModels(mods, ax=ax, useMesh=True,
+        pg.viewer.mpl.showStitchedModels(mods, ax=ax, useMesh=True,
                                         x=self.soundingPos,
                                         **kwargs)
 

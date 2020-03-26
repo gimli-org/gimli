@@ -173,13 +173,13 @@ def createAnimation(out, stream=False):
         cMax = max(cMax, pg.max(d))
         
     if stream:
-        pg.mplviewer.saveAnimation(mesh, densMatrix, out + '-stream',
+        pg.viewer.mpl.saveAnimation(mesh, densMatrix, out + '-stream',
                                plc=None, label='',
                                cMin=cMin, cMax=cMax, logScale=False, cmap=None,
                                vData=vels, coarseMesh=meshC, color='white'
                                )
     else:
-        pg.mplviewer.saveAnimation(mesh, densMatrix, out,
+        pg.viewer.mpl.saveAnimation(mesh, densMatrix, out,
                                plc=None, label='',
                                cMin=cMin, cMax=cMax, logScale=False, cmap=None)
 

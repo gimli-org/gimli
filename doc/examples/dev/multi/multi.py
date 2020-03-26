@@ -84,11 +84,11 @@ def saveani(mesh, plc, data, label, out,
                      figsize=(scale*800/dpi, scale*490/dpi), dpi=dpi)  
     ax = fig.add_subplot(1,1,1)
         
-    gci = pg.mplviewer.drawModel(ax, mesh, data=data[0],
+    gci = pg.viewer.mpl.drawModel(ax, mesh, data=data[0],
                                  cMin=cMin, cMax=cMax, cmap=cmap,
                                  logScale=logScale)
     
-    cbar = pg.mplviewer.createColorbar(gci, label=label, pad=0.55)
+    cbar = pg.viewer.mpl.createColorbar(gci, label=label, pad=0.55)
     ax.set_ylabel('Depth [m]')
     ax.set_xlabel('$x$ [m]')
         
@@ -106,7 +106,7 @@ def saveani(mesh, plc, data, label, out,
     
     def animate(i):
         print(out + ": Frame:", i, "/", len(data))
-        pg.mplviewer.setMappableData(gci, pg.abs(data[i]), 
+        pg.viewer.mpl.setMappableData(gci, pg.abs(data[i]), 
                                      cMin=cMin, cMax=cMax,
                                      logScale=logScale)
         #plt.pause(0.001)

@@ -7,7 +7,7 @@ import time
 import traceback
 
 import numpy as np
-# plt should not be used outside of mplviewer
+# plt should not be used outside of viewer.mpl
 import matplotlib.pyplot as plt
 
 from .. core.logger import renameKwarg
@@ -241,9 +241,9 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
     if block:
         hold = True
 
-    lastHoldStatus = pg.mplviewer.utils.holdAxes__
+    lastHoldStatus = pg.viewer.mpl.utils.holdAxes__
     if not lastHoldStatus or hold:
-        pg.mplviewer.hold(val=1)
+        pg.viewer.mpl.hold(val=1)
         hold = True
 
     gci = None
@@ -326,13 +326,13 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
     if mesh.cellCount() == 0:
         showMesh = False
         if mesh.boundaryCount() == 0:
-            pg.mplviewer.drawPLC(ax, mesh, showNodes=True,
+            pg.viewer.mpl.drawPLC(ax, mesh, showNodes=True,
                                  fillRegion=False, showBoundary=False,
                                  **kwargs)
             showBoundary = False
             #ax.plot(pg.x(mesh), pg.y(mesh), '.', color='black')
         else:
-            pg.mplviewer.drawPLC(ax, mesh, **kwargs)
+            pg.viewer.mpl.drawPLC(ax, mesh, **kwargs)
 
     if showMesh:
         if gci is not None and hasattr(gci, 'set_antialiased'):
@@ -340,13 +340,13 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
             gci.set_linewidth(0.3)
             gci.set_edgecolor("0.1")
         else:
-            pg.mplviewer.drawSelectedMeshBoundaries(ax, mesh.boundaries(),
+            pg.viewer.mpl.drawSelectedMeshBoundaries(ax, mesh.boundaries(),
                                             color=kwargs.pop('color', "0.1"), linewidth=0.3)
             #drawMesh(ax, mesh, **kwargs)
 
     if showBoundary == True or showBoundary == 1:
         b = mesh.boundaries(mesh.boundaryMarkers() != 0)
-        pg.mplviewer.drawSelectedMeshBoundaries(ax, b,
+        pg.viewer.mpl.drawSelectedMeshBoundaries(ax, b,
                                                 color=(0.0, 0.0, 0.0, 1.0),
                                                 linewidth=1.4)
 
@@ -406,7 +406,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
             pass
 
     if hold:
-        pg.mplviewer.hold(val=lastHoldStatus)
+        pg.viewer.mpl.hold(val=lastHoldStatus)
 
     if savefig:
         print('saving: ' + savefig + ' ...')

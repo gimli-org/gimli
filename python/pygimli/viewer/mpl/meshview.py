@@ -292,9 +292,9 @@ def drawMesh(ax, mesh, fitView=True, **kwargs):
     >>> plt.show()
     """
     if mesh.cellCount() == 0:
-        pg.mplviewer.drawPLC(ax, mesh, **kwargs)
+        pg.viewer.mpl.drawPLC(ax, mesh, **kwargs)
     else:
-        pg.mplviewer.drawMeshBoundaries(ax, mesh, **kwargs)
+        pg.viewer.mpl.drawMeshBoundaries(ax, mesh, **kwargs)
 
     if fitView is True:
         ax.set_xlim(mesh.xmin(), mesh.xmax())
@@ -366,7 +366,7 @@ def drawModel(ax, mesh, data=None, tri=False, rasterized=False,
                          cMin=cMin, cMax=cMax, logScale=logScale,
                          **kwargs)
     else:
-        gci = pg.mplviewer.createMeshPatches(ax, mesh, rasterized=rasterized,
+        gci = pg.viewer.mpl.createMeshPatches(ax, mesh, rasterized=rasterized,
                                              verbose=verbose)
         ax.add_collection(gci)
 
@@ -381,7 +381,7 @@ def drawModel(ax, mesh, data=None, tri=False, rasterized=False,
         else:
             viewdata = data
 
-        pg.mplviewer.setMappableData(gci, viewdata, cMin=cMin, cMax=cMax,
+        pg.viewer.mpl.setMappableData(gci, viewdata, cMin=cMin, cMax=cMax,
                                      logScale=logScale)
 
     gci.set_antialiased(True)
@@ -438,7 +438,7 @@ def drawSelectedMeshBoundaries(ax, boundaries, color=None, linewidth=1.0,
 
     if color is None:
         viewdata = [b.marker() for b in boundaries]
-        pg.mplviewer.setMappableValues(lineCollection, viewdata, logScale=False)
+        pg.viewer.mpl.setMappableValues(lineCollection, viewdata, logScale=False)
     else:
         lineCollection.set_color(color)
 
@@ -622,7 +622,7 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
     ...                            marker=10,  boundaryMarker=10, area=0.1)
     >>> fig, ax = plt.subplots()
     >>> geom = world + block
-    >>> pg.mplviewer.drawPLC(ax, geom)
+    >>> pg.viewer.mpl.drawPLC(ax, geom)
     """
     #    eCircles = []
     if fillRegion and mesh.boundaryCount() > 2:
@@ -930,7 +930,7 @@ def drawStreamLines(ax, mesh, u, nx=25, ny=25, **kwargs):
     Additionally arguments are piped to streamplot.
 
     This works only for rectangular regions.
-    You should use pg.mplviewer.drawStreams, which is more comfortable and
+    You should use pg.viewer.mpl.drawStreams, which is more comfortable and
     more flexible.
 
     Parameters

@@ -16,7 +16,7 @@ except ImportError:
 import matplotlib.pyplot as plt
 from pygimli.meshtools import createParaMesh2DGrid
 from pygimli.viewer import showMesh
-from pygimli.mplviewer import drawModel, drawSensors
+from pygimli.viewer.mpl import drawModel, drawSensors
 
 
 def main(argv):

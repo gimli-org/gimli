@@ -66,7 +66,7 @@ class ERT():
                     axes, data, values, pseudotype=pseudoscheme)
             gci.set_clim((cMin, cMax))
             if colorBar:
-                pg.mplviewer.colorbar.createColorbar(
+                pg.viewer.mpl.colorbar.createColorbar(
                         gci, nLevs=5, cMin=cMin,  cMax=cMax,
                         label='Apparent resistivity in $\Omega m$', **kwargs)
         elif isinstance(data, pg.Vector):

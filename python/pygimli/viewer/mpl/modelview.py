@@ -72,9 +72,9 @@ def drawModel1D(ax, thickness=None, values=None, model=None, depths=None,
     >>> thk = [1, 4, 4]
     >>> res = np.array([10., 5, 15, 50])
     >>> fig, ax = plt.subplots()
-    >>> pg.mplviewer.drawModel1D(ax, values=res*5, depths=np.cumsum(thk),
+    >>> pg.viewer.mpl.drawModel1D(ax, values=res*5, depths=np.cumsum(thk),
     ...                          plot='semilogx', color='blue')
-    >>> pg.mplviewer.drawModel1D(ax, values=res, thickness=thk, z0=1,
+    >>> pg.viewer.mpl.drawModel1D(ax, values=res, thickness=thk, z0=1,
     ...                          plot='semilogx', color='red')
     >>> pg.wait()
     """
@@ -153,7 +153,7 @@ def draw1DColumn(ax, x, val, thk, width=30, ztopo=0, cmin=1, cmax=1000,
 
     if cmap is not None:
         if isinstance(cmap, str):
-            pp.set_cmap(pg.mplviewer.cmapFromName(cmap))
+            pp.set_cmap(pg.viewer.mpl.cmapFromName(cmap))
         else:
             pp.set_cmap(cmap)
 
@@ -315,7 +315,7 @@ def showStitchedModels(models, ax=None, x=None, cMin=None, cMax=None,
         ax.set_title(title)
 
     if kwargs.pop('colorBar', True):
-        cb = pg.mplviewer.createColorBar(p, cMin=cMin, cMax=cMax, nLevs=5)
+        cb = pg.viewer.mpl.createColorBar(p, cMin=cMin, cMax=cMax, nLevs=5)
 #    cb = plt.colorbar(p, orientation='horizontal',aspect=50,pad=0.1)
         if 'cticks' in kwargs:
             xt = np.unique(np.clip(kwargs['cticks'], cMin, cMax))

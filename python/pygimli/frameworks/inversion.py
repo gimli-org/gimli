@@ -535,7 +535,7 @@ class Inversion(object):
             for _ax in self.axs:
                 _ax.clear()
                 try:
-                    pg.mplviewer.twin(_ax).clear()
+                    pg.viewer.mpl.twin(_ax).clear()
                 except:
                     pass
 

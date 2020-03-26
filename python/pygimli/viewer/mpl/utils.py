@@ -1,5 +1,5 @@
 # CODING=Utf-8
-"""Plotting utilities used througout the mplviewer package."""
+"""Plotting utilities used througout the viewer.mpl package."""
 
 import os
 
@@ -34,7 +34,7 @@ def updateAxes(ax, force=False):
 
 def hold(val=1):
     """TODO WRITEME."""
-    pg.mplviewer.holdAxes__ = val
+    pg.viewer.mpl.holdAxes__ = val
 
 
 def wait(**kwargs):
@@ -223,10 +223,10 @@ def saveAnimation(mesh, data, out, vData=None, plc=None, label='', cMin=None,
                      figsize=(scale * 800 / dpi, scale * 490 / dpi), dpi=dpi)
     ax = fig.add_subplot(1, 1, 1)
 
-    gci = pg.mplviewer.drawModel(ax, mesh, data=data[0], cMin=cMin, cMax=cMax,
+    gci = pg.viewer.mpl.drawModel(ax, mesh, data=data[0], cMin=cMin, cMax=cMax,
                                  cmap=cmap, logScale=logScale)
 
-    pg.mplviewer.createColorbar(gci, label=label, pad=0.55)
+    pg.viewer.mpl.createColorbar(gci, label=label, pad=0.55)
 
     if plc:
         pg.show(plc, ax=ax)
@@ -239,13 +239,13 @@ def saveAnimation(mesh, data, out, vData=None, plc=None, label='', cMin=None,
 
         if vData is not None:
             ax.clear()
-            pg.mplviewer.holdAxes_ = 1
-            pg.mplviewer.drawModel(ax, mesh, data=data[i], cMin=cMin,
+            pg.viewer.mpl.holdAxes_ = 1
+            pg.viewer.mpl.drawModel(ax, mesh, data=data[i], cMin=cMin,
                                    cMax=cMax, cmap=cmap, logScale=logScale)
-            pg.mplviewer.drawStreams(ax, mesh, vData[i], **kwargs)
+            pg.viewer.mpl.drawStreams(ax, mesh, vData[i], **kwargs)
         else:
             print(min(data[i]), max(data[i]))
-            pg.mplviewer.setMappableData(gci, data[i], cMin=cMin, cMax=cMax,
+            pg.viewer.mpl.setMappableData(gci, data[i], cMin=cMin, cMax=cMax,
                                          logScale=logScale)
 
         plt.pause(0.001)

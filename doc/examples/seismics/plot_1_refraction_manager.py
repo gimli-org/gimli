@@ -59,7 +59,7 @@ vp[vp == 2] = 500
 vp[vp == 3] = 1300
 
 ax, _ = pg.show(mesh, vp, colorBar=True, logScale=False, label='v in m/s')
-pg.mplviewer.drawSensors(ax, scheme.sensors(), diam=0.5, 
+pg.viewer.mpl.drawSensors(ax, scheme.sensors(), diam=0.5, 
                          facecolor='white', edgecolor='black')
 
 ###############################################################################

@@ -293,7 +293,7 @@ def createFopWithParaDomain(paraRefine=0, ncpu=6):
         b.setMarker(3-i)
 
 #    ax, _ = pg.show(paraMesh)
-#    pg.mplviewer.drawMeshBoundaries(ax=ax, mesh=paraMesh)
+#    pg.viewer.mpl.drawMeshBoundaries(ax=ax, mesh=paraMesh)
 #    pg.wait()
 
     paraMesh.cell(0).setMarker(0)  # bottom

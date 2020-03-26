@@ -28,7 +28,6 @@ pyGIMLi API Reference
   matrix
   meshtools
   misc
-  mplviewer
   physics
   solver
   testing

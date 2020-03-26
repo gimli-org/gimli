@@ -24,9 +24,9 @@ except ImportError:
         """ERROR: cannot import the library 'pygimli'.
         Ensure that pygimli is in your PYTHONPATH """)
 
-import pygimli.mplviewer
-from pygimli.mplviewer.colorbar import cmapFromName
-from pygimli.mplviewer import drawParameterConstraints, CellBrowser
+import pygimli.viewer.mpl
+from pygimli.viewer.mpl.colorbar import cmapFromName
+from pygimli.viewer.mpl import drawParameterConstraints, CellBrowser
 from pygimli.utils.base import interperc
 
 from pygimli.physics.em.hemmodelling import registerDAEROcmap
@@ -61,7 +61,7 @@ def applyPublishStyle(style):
     wOffset = float(vals[7])
     hOffset = float(vals[8])
 
-    pygimli.mplviewer.setOutputStyle(dim='w',
+    pygimli.viewer.mpl.setOutputStyle(dim='w',
                                      paperMargin=margin,
                                      xScale=widthScale,
                                      yScale=heightScale,
@@ -189,7 +189,7 @@ def showTriMesh(meshname, modelname, contour=False, constraintMat=None,
                                     cMax=cMax, showCbar=showCbar, label=label,
                                     linear=linear, cmapname=cmapname)
     else:
-        pg.mplviewer.drawMeshBoundaries(axis, mesh)
+        pg.viewer.mpl.drawMeshBoundaries(axis, mesh)
         pass
 
 #    ol = pg.Mesh()
@@ -198,18 +198,18 @@ def showTriMesh(meshname, modelname, contour=False, constraintMat=None,
 #    overlaysLines = ol.boundaries()
 #     overlaysLines.append(pg.Edge())
 #
-#     pg.mplviewer.drawSelectedMeshBoundaries(axis, overlaysLines, linewidth=2,
+#     pg.viewer.mpl.drawSelectedMeshBoundaries(axis, overlaysLines, linewidth=2,
 #                                             color = (0.0, 0.0, 0.0, 1.0))
 
     m = mesh.findBoundaryByMarker(1)
     print("boundary > 2 ", len(m))
     if len(m) > 0:
         if interfaceThickness > 0:
-            pg.mplviewer.drawSelectedMeshBoundaries(
+            pg.viewer.mpl.drawSelectedMeshBoundaries(
                     axis, filter(lambda b: b.marker() >= 1, mesh.boundaries()),
                     color=(0, 0.0, 0.0, 1.0), linewidth=interfaceThickness)
     if drawEdges:
-        pg.mplviewer.drawMeshBoundaries(axis, mesh)
+        pg.viewer.mpl.drawMeshBoundaries(axis, mesh)
 
     return axis, patches, mesh, data
 
@@ -244,14 +244,14 @@ def showMeshPatch(axis, mesh, data,
                   showCbar=True, label="", linear=False, nLevs=5,
                   orientation='horizontal', cmapname=None):
 
-    patches = pygimli.mplviewer.drawModel(axis, mesh, data, cMin=cMin,
+    patches = pygimli.viewer.mpl.drawModel(axis, mesh, data, cMin=cMin,
                                           cMax=cMax, logScale=not linear,
                                           label=label, nLevs=nLevs,
                                           orientation=orientation)
 
     if showCbar:
         #print(cMin, cMax)
-        cbar = pg.mplviewer.createColorBar(patches, cMin=cMin, cMax=cMax,
+        cbar = pg.viewer.mpl.createColorBar(patches, cMin=cMin, cMax=cMax,
                                            nLevs=nLevs, label=label,
                                            orientation=orientation)
 
@@ -269,7 +269,7 @@ def showMeshPatch(axis, mesh, data,
 
     if cov is not None:
         if alphaPatch:
-            pg.mplviewer.addCoverageAlpha(patches, cov,
+            pg.viewer.mpl.addCoverageAlpha(patches, cov,
                                           dropThreshold=covThreshold)
         else:
             addCoverageImageOverlay(axis, mesh, cov)
@@ -329,7 +329,7 @@ def addCoverageImageOverlay(axis, mesh, cov):
 
 
 def showConstrainMat(axes, mesh, constraintMat, cWeight=None):
-    pg.mplviewer.drawMeshBoundaries(axes, mesh)
+    pg.viewer.mpl.drawMeshBoundaries(axes, mesh)
 
     C = pg.Matrix()
     pg.loadMatrixCol(C, constraintMat)
@@ -369,16 +369,16 @@ def showMeshInterpolated(axis, mesh, data, cov=None, cMin=None, cMax=None,
 
     print("interpolate t = ", swatch.duration(True))
 
-    Z, cMin, cMax = pg.mplviewer.findAndMaskBestClim(
+    Z, cMin, cMax = pg.viewer.mpl.findAndMaskBestClim(
         z, cMin, cMax, not(linear))
     Z = np.ma.masked_where(z <= 0.0, Z)
     Z = Z.reshape(Ny, Nx)
     # print cMin, cMax
 
     if (linear):
-        levs = pg.mplviewer.createLinLevs(cMin, cMax, nLevels + 1)
+        levs = pg.viewer.mpl.createLinLevs(cMin, cMax, nLevels + 1)
     else:
-        levs = pg.mplviewer.createLogLevs(cMin, cMax, nLevels + 1)
+        levs = pg.viewer.mpl.createLogLevs(cMin, cMax, nLevels + 1)
 
     # print np.min(Z)
     # print(levs)
@@ -400,7 +400,7 @@ def showMeshInterpolated(axis, mesh, data, cov=None, cMin=None, cMax=None,
     if cov:
         addCoverageImageOverlay(axis, mesh, cov)
 
-    pg.mplviewer.createColorBar(cs, cMin=cMin, cMax=cMax, nLevs=5)
+    pg.viewer.mpl.createColorBar(cs, cMin=cMin, cMax=cMax, nLevs=5)
     return cs
 
 
@@ -549,7 +549,7 @@ def main(argv):
         wOffset, hOffset = applyPublishStyle(options.publish)
 
     axes = None
-    pg.mplviewer.hold(1)
+    pg.viewer.mpl.hold(1)
 
     if options.cbarOnly:
         print("cbar only")
@@ -582,7 +582,7 @@ def main(argv):
         cbar = mpl.colorbar.ColorbarBase(axes, norm=norm, cmap=cmap,
                                          orientation=orientation)
 #                                          ,drawedges='True'
-        pg.mplviewer.setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5)
+        pg.viewer.mpl.setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5)
 
 #        cbar.labelpad = -20
 #        cbar.ax.yaxis.set_label_position('left')
@@ -685,7 +685,7 @@ def main(argv):
                 if options.sensorDiameter > 0.0:
                     diam = options.sensorDiameter
 
-                pygimli.mplviewer.drawSensors(axes, elPos,
+                pygimli.viewer.mpl.drawSensors(axes, elPos,
                                               diam=diam, coords=coords)
 
             except Exception as e:

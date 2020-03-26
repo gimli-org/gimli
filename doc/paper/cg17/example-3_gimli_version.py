@@ -71,15 +71,15 @@ def showModel(ax, model, mesh, petro=1, cMin=None, cMax=None, label=None,
     ax.xaxis.set_ticks(ticks)
     ax.yaxis.set_ticks(ticks)
 
-    pg.mplviewer.drawSensors(ax, ertData.sensorPositions(), diam=0.005)
+    pg.viewer.mpl.drawSensors(ax, ertData.sensorPositions(), diam=0.005)
 
     # despine(ax=ax, offset=5, trim=True)
     if showMesh:
-        pg.mplviewer.drawSelectedMeshBoundaries(ax, mesh.boundaries(),
+        pg.viewer.mpl.drawSelectedMeshBoundaries(ax, mesh.boundaries(),
                                                 linewidth=0.3, color="0.2")
 
     if savefig:
-        pg.mplviewer.saveAxes(ax, savefig, adjust=False)
+        pg.viewer.mpl.saveAxes(ax, savefig, adjust=False)
     return ax
 
 # Script starts here

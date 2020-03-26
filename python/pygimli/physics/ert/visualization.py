@@ -92,7 +92,7 @@ def showERTData(data, vals=None, **kwargs):
 
     # ax.set_aspect('equal')
     # plt.pause(0.1)
-    pg.mplviewer.updateAxes(ax)
+    pg.viewer.mpl.updateAxes(ax)
     return ax, cbar
 
 
