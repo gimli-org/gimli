@@ -154,19 +154,9 @@ class MethodManager(object):
         Modelling
             Instance of any kind of :py:mod:`pygimli.framework.Modelling`.
         """
-        # pg.critical("No forward operator defined, either give one or"
-        #             "overwrite in derived class")
-        useBert = kwargs.pop('useBert', False)
-        verbose = kwargs.pop('verbose', False)
-        if useBert:
-            pg.verbose('Create BertModelling FOP')
-            fop = BertModelling(sr=kwargs.pop('sr', True), verbose=verbose)
-        else:
-            pg.verbose('Create ERTModelling FOP')
-            fop = ERTModelling(**kwargs)
-
-        return fop
-
+        pg.critical("No forward operator defined, either give one or"
+                    "overwrite in derived class")
+        
     def _initInversionFramework(self, **kwargs):
         """Initialize or re-initialize the inversion framework.
 
