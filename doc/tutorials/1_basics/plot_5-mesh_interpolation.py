@@ -13,7 +13,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import pygimli as pg
-from pygimli.mplviewer import drawMesh, drawModel
+from pygimli.viewer.mpl import drawMesh, drawModel
 
 ###############################################################################
 # Create coarse and fine mesh with data

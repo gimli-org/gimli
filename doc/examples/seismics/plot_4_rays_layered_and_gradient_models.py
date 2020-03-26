@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pygimli as pg
 import pygimli.meshtools as mt
-from pygimli.mplviewer import drawMesh
+from pygimli.viewer.mpl import drawMesh
 
 from pygimli.physics import TravelTimeManager
 

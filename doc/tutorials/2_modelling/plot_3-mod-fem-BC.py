@@ -19,7 +19,7 @@ import pygimli as pg
 
 from pygimli.solver import solve
 from pygimli.viewer import show
-from pygimli.mplviewer import drawStreams
+from pygimli.viewer.mpl import drawStreams
 
 ###############################################################################
 # We create 21 x 21 node grid to solve on.

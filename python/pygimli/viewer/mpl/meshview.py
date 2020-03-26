@@ -65,8 +65,8 @@ class CellBrowser(object):
     --------
     >>> import matplotlib.pyplot as plt
     >>> import pygimli as pg
-    >>> from pygimli.mplviewer import drawModel
-    >>> from pygimli.mplviewer import CellBrowser
+    >>> from pygimli.viewer.mpl import drawModel
+    >>> from pygimli.viewer.mpl import CellBrowser
     >>>
     >>> mesh = pg.createGrid(range(5), range(5))
     >>> fig, ax = plt.subplots()
@@ -284,7 +284,7 @@ def drawMesh(ax, mesh, fitView=True, **kwargs):
     >>> import numpy as np
     >>> import matplotlib.pyplot as plt
     >>> import pygimli as pg
-    >>> from pygimli.mplviewer import drawMesh
+    >>> from pygimli.viewer.mpl import drawMesh
     >>> n = np.linspace(1, 2, 10)
     >>> mesh = pg.createGrid(x=n, y=n)
     >>> fig, ax = plt.subplots()
@@ -342,7 +342,7 @@ def drawModel(ax, mesh, data=None, tri=False, rasterized=False,
     >>> import numpy as np
     >>> import matplotlib.pyplot as plt
     >>> import pygimli as pg
-    >>> from pygimli.mplviewer import drawModel
+    >>> from pygimli.viewer.mpl import drawModel
     >>> n = np.linspace(0, -2, 11)
     >>> mesh = pg.createGrid(x=n, y=n)
     >>> mx = pg.x(mesh.cellCenter())
@@ -519,7 +519,7 @@ def drawMeshBoundaries(ax, mesh, hideMesh=False, useColorMap=False,
     >>> import numpy as np
     >>> import matplotlib.pyplot as plt
     >>> import pygimli as pg
-    >>> from pygimli.mplviewer import drawMeshBoundaries
+    >>> from pygimli.viewer.mpl import drawMeshBoundaries
     >>> n = np.linspace(0, -2, 11)
     >>> mesh = pg.createGrid(x=n, y=n)
     >>> for bound in mesh.boundaries():
@@ -843,7 +843,7 @@ def drawField(ax, mesh, data=None, levels=None, nLevs=5,
     >>> import numpy as np
     >>> import matplotlib.pyplot as plt
     >>> import pygimli as pg
-    >>> from pygimli.mplviewer import drawField
+    >>> from pygimli.viewer.mpl import drawField
     >>> n = np.linspace(0, -2, 11)
     >>> mesh = pg.createGrid(x=n, y=n)
     >>> nx = pg.x(mesh.positions())
@@ -1112,7 +1112,7 @@ def drawStreams(ax, mesh, data, startStream=3, coarseMesh=None, quiver=False,
     >>> import numpy as np
     >>> import matplotlib.pyplot as plt
     >>> import pygimli as pg
-    >>> from pygimli.mplviewer import drawStreams
+    >>> from pygimli.viewer.mpl import drawStreams
     >>> n = np.linspace(0, 1, 10)
     >>> mesh = pg.createGrid(x=n, y=n)
     >>> nx = pg.x(mesh.positions())
@@ -1233,7 +1233,7 @@ def drawSensors(ax, sensors, diam=None, coords=None, **kwargs):
     >>> import numpy as np
     >>> import matplotlib.pyplot as plt
     >>> import pygimli as pg
-    >>> from pygimli.mplviewer import drawSensors
+    >>> from pygimli.viewer.mpl import drawSensors
     >>> sensors = np.random.rand(5, 2)
     >>> fig, ax = pg.plt.subplots()
     >>> drawSensors(ax, sensors, diam=0.02, coords=[0, 1])

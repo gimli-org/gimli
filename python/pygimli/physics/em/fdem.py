@@ -3,7 +3,7 @@
 """Frequency Domain Electromagnetics (FDEM) functions and class."""
 
 import pygimli as pg
-from pygimli.mplviewer import show1dmodel, drawModel1D
+from pygimli.viewer.mpl import show1dmodel, drawModel1D
 
 import numpy as np
 import matplotlib.pyplot as plt

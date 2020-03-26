@@ -215,7 +215,7 @@ def createWorld(start, end, marker=1, area=0., layers=None, worldMarker=True):
     Examples
     --------
     >>> from pygimli.meshtools import createWorld
-    >>> from pygimli.mplviewer import drawMesh
+    >>> from pygimli.viewer.mpl import drawMesh
     >>> import matplotlib.pyplot as plt
     >>> world = createWorld(start=[-5, 0], end=[5, -5], layers=[-1,-2,-3])
     >>>
@@ -316,7 +316,7 @@ def createCircle(pos=None, radius=1, segments=12, start=0, end=2.*math.pi,
     --------
     >>>  # no need to import matplotlib. pygimli's show does
     >>> import math
-    >>> from pygimli.mplviewer import drawMesh
+    >>> from pygimli.viewer.mpl import drawMesh
     >>> import pygimli.meshtools as mt
     >>> c0 = mt.createCircle(pos=(-5.0, 0.0), radius=2, segments=6)
     >>> c1 = mt.createCircle(pos=(-2.0, 2.0), radius=1, area=0.01, marker=2)
@@ -567,7 +567,7 @@ def mergePLC(plcs, tol=1e-3):
     --------
     >>>  # no need to import matplotlib. pygimli's show does
     >>> import pygimli.meshtools as mt
-    >>> from pygimli.mplviewer import drawMesh
+    >>> from pygimli.viewer.mpl import drawMesh
     >>> world = mt.createWorld(start=[-10, 0], end=[10, -10], marker=1)
     >>> c1 = mt.createCircle([-1, -4], radius=1.5, area=0.1,
     ...                       marker=2, segments=5)

@@ -67,13 +67,13 @@ pg.info('Simulated data', data)
 pg.info('The data contains:', data.dataMap().keys())
 
 pg.info('Simulated rhoa (min/max)', min(data['rhoa']), max(data['rhoa']))
-pg.info('selected data noise %(min/max)', min(data['err'])*100, max(data['err'])*100)
+pg.info('Selected data noise %(min/max)', min(data['err'])*100, max(data['err'])*100)
 
 ###############################################################################
 # Optional: you can filter all values and tokens in the data container.
 # Its possible that there are some negative data values due to noise and
 # huge geometric factors. So we need to remove them
-data.remove(data['rhoa']< 0)
+data.remove(data['rhoa'] < 0)
 pg.info('Filtered rhoa (min/max)', min(data['rhoa']), max(data['rhoa']))
 
 # Optional: you can save the data for further use

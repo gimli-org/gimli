@@ -14,12 +14,12 @@ from .. core.logger import renameKwarg
 
 try:
     import pygimli as pg
-    from pygimli.mplviewer import drawMesh, drawModel, drawField
-    from pygimli.mplviewer import drawSensors
-    from pygimli.mplviewer import createColorBar, updateColorBar
-    from pygimli.mplviewer import drawStreams, addCoverageAlpha
-    from pygimli.mplviewer import CellBrowser
-    from pygimli.mplviewer.colorbar import cmapFromName
+    from .mpl import drawMesh, drawModel, drawField
+    from .mpl import drawSensors
+    from .mpl import createColorBar, updateColorBar
+    from .mpl import drawStreams, addCoverageAlpha
+    from .mpl import CellBrowser
+    from .mpl.colorbar import cmapFromName
 except ImportError as e:
     print(e)
     traceback.print_exc(file=sys.stdout)
@@ -143,28 +143,28 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
         Optionally data to visualize.
 
         . None (draw mesh only)
-            forward to :py:mod:`pygimli.mplviewer.drawMesh`
+            forward to :py:mod:`pygimli.viewer.mpl.drawMesh`
             or if no cells are given:
-            forward to :py:mod:`pygimli.mplviewer.drawPLC`
+            forward to :py:mod:`pygimli.viewer.mpl.drawPLC`
 
         . [[marker, value], ...]
             List of Cellvalues per cell marker
-            forward to :py:mod:`pygimli.mplviewer.drawModel`
+            forward to :py:mod:`pygimli.viewer.mpl.drawModel`
 
         . float per cell -- model, patch
-            forward to :py:mod:`pygimli.mplviewer.drawModel`
+            forward to :py:mod:`pygimli.viewer.mpl.drawModel`
 
         . float per node -- scalar field
-            forward to :py:mod:`pygimli.mplviewer.drawField`
+            forward to :py:mod:`pygimli.viewer.mpl.drawField`
 
         . iterable of type [float, float] -- vector field
-            forward to :py:mod:`pygimli.mplviewer.drawStreams`
+            forward to :py:mod:`pygimli.viewer.mpl.drawStreams`
 
         . pg.core.R3Vector -- vector field
-            forward to :py:mod:`pygimli.mplviewer.drawStreams`
+            forward to :py:mod:`pygimli.viewer.mpl.drawStreams`
 
         . pg.core.stdVectorRVector3 -- sensor positions
-            forward to :py:mod:`pygimli.mplviewer.drawSensors`
+            forward to :py:mod:`pygimli.viewer.mpl.drawSensors`
     hold: bool [false]
         Set interactive plot mode for matplotlib.
         If this is set to false [default] your script will open
@@ -299,7 +299,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
             validData = True
             if bool(colorBar) is not False:
                 colorBar = True
-                
+
             try:
                 if len(data) == mesh.cellCount():
                     gci = drawModel(ax, mesh, data, **kwargs)

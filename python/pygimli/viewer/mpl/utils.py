@@ -2,7 +2,6 @@
 """Plotting utilities used througout the mplviewer package."""
 
 import os
-import time
 
 import numpy as np
 import matplotlib.animation as animation
@@ -31,7 +30,7 @@ def updateFig(fig, force=False, sleep=.05):
 def updateAxes(ax, force=False):
     """For internal use."""
     updateFig(ax.figure, force=force)
-    
+
 
 def hold(val=1):
     """TODO WRITEME."""

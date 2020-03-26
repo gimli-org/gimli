@@ -10,8 +10,8 @@ import matplotlib.colors as colors
 
 import pygimli as pg
 
-from pygimli.mplviewer.colorbar import setMappableData
-# from pygimli.mplviewer.modelview import cmapFromName
+from .colorbar import setMappableData
+# from pygimli.viewer.mpl.modelview import cmapFromName
 from pygimli.utils import rndig
 from .utils import updateAxes as updateAxes_
 
@@ -132,7 +132,7 @@ def draw1DColumn(ax, x, val, thk, width=30, ztopo=0, cmin=1, cmax=1000,
     --------
     >>> import numpy as np
     >>> import matplotlib.pyplot as plt
-    >>> from pygimli.mplviewer import draw1DColumn
+    >>> from pygimli.viewer.mpl import draw1DColumn
     >>> thk = [1, 2, 3, 4]
     >>> val = thk
     >>> fig, ax = plt.subplots()

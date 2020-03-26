@@ -17,7 +17,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import pygimli as pg
-from pygimli.mplviewer import saveAxes
+from pygimli.viewer.mpl import saveAxes
 
 from matplotlib.offsetbox import AnchoredText
 

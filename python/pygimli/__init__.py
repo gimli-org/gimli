@@ -10,6 +10,7 @@ st = time.time()
 import locale
 import sys
 
+
 # We can define some defaults here .. or maybe load user defaults
 rc = {
     'lang': 'eng',

@@ -30,7 +30,7 @@ from matplotlib import animation
 
     
 from pygimli.viewer import show
-from pygimli.mplviewer import drawStreams
+from pygimli.viewer.mpl import drawStreams
 
 import time
 

@@ -7,7 +7,7 @@ import numpy as np
 
 import pygimli as pg
 
-from pygimli.mplviewer import createColorBar  # , updateColorBar
+from pygimli.viewer.mpl import createColorBar  # , updateColorBar
 
 from .ratools import shotReceiverDistances
 
