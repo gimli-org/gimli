@@ -116,4 +116,4 @@ Functions
 Classes
 .......
 
-.. autoclass:: pygimli.mplviewer.CellBrowser
+.. autoclass:: pygimli.viewer.mpl.CellBrowser

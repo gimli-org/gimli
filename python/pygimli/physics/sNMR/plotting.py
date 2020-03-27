@@ -3,7 +3,7 @@
 """Plotting functions for magnetic resonance data."""
 
 import numpy as np
-from pygimli.mplviewer import drawModel1D
+from pygimli.viewer.mpl import drawModel1D
 
 # def drawModel1D(ax, thickness, values, plotfunction='plot',
 #                 xlabel='', *args, **kwargs):

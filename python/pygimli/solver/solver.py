@@ -2000,7 +2000,7 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
     --------
     >>> import pygimli as pg
     >>> from pygimli.meshtools import polytools as plc
-    >>> from pygimli.mplviewer import drawField, drawMesh
+    >>> from pygimli.viewer.mpl import drawField, drawMesh
     >>> import matplotlib.pyplot as plt
     >>> world = plc.createWorld(start=[-10, 0], end=[10, -10],
     ...                         marker=1, worldMarker=False)

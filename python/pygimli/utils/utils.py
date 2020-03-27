@@ -178,7 +178,7 @@ def prettyFloat(value, roundValue=False):
         add test
     """
     if roundValue and abs(round(value)-value) < 1e-4 and abs(value) < 1e3:
-        string = str(int(round(value, 1)))
+        string = str(int(round(value, 2)))
     elif abs(value) < 1e-14:
         string = "0"
     elif abs(value) > 1e4 or abs(value) <= 1e-3:
@@ -190,11 +190,11 @@ def prettyFloat(value, roundValue=False):
     elif abs(value) < 1e0:
         string = str("%.2f" % round(value, 2))
     elif abs(value) < 1e1:
-        string = str("%.1f" % round(value, 1))
+        string = str("%.2f" % round(value, 2))
     elif abs(value) < 1e2:
-        string = str("%.1f" % round(value, 1))
+        string = str("%.2f" % round(value, 2))
     else:
-        string = str("%.0f" % round(value, 1))
+        string = str("%.0f" % round(value, 2))
 
     if string.endswith(".0"):
         return string.replace(".0", "")

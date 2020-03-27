@@ -8,21 +8,21 @@ Installation
 .. raw:: html
 
     Choose your operating system:<br><br>
-    <ul class="nav nav-pills">
-        <li role="presentation" class="active">
-            <a href="#install_win" role="tab" data-toggle="tab">
+    <ul class="nav nav-tabs">
+        <li class="nav-item">
+            <a class="nav-link active" href="#install_win" role="tab" data-toggle="tab">
                 <i class="fab fa-windows"></i> Windows</a>
         </li>
-        <li role="presentation">
-            <a href="#install_lin" role="tab" data-toggle="tab">
+        <li class="nav-item">
+            <a class="nav-link" href="#install_lin" role="tab" data-toggle="tab">
                 <i class="fab fa-linux"></i> Linux</a>
         </li>
-        <li role="presentation">
-            <a href="#install_mac" role="tab" data-toggle="tab">
+        <li class="nav-item">
+            <a class="nav-link" href="#install_mac" role="tab" data-toggle="tab">
                 <i class="fab fa-apple"></i> Mac OS</a>
         </li>
-        <li role="presentation">
-            <a href="#install_pre" role="tab" data-toggle="tab">
+        <li class="nav-item">
+            <a class="nav-link" href="#install_pre" role="tab" data-toggle="tab">
                 <i class="fas fa-info"></i> Prerequisites</a>
         </li>
     </ul>

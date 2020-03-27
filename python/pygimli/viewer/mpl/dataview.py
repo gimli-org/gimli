@@ -75,7 +75,7 @@ def showValMapPatches(vals, xVec=None, yVec=None, dx=1, dy=None, **kwargs):
     
     cbar = None
     if not kwargs.pop('colorBar', False):
-        cbar = pg.mplviewer.createColorBar(gci, **kwargs)
+        cbar = pg.viewer.mpl.createColorBar(gci, **kwargs)
 
     return ax, cbar, ymap
 
@@ -260,7 +260,7 @@ def patchValMap(vals, xvec=None, yvec=None, ax=None, cMin=None, cMax=None,
         pp.set_edgecolor('black')
         pp.set_linewidths(0.1)
 
-    cmap = pg.mplviewer.cmapFromName(**kwargs)
+    cmap = pg.viewer.mpl.cmapFromName(**kwargs)
     if kwargs.pop('markOutside', False):
         cmap.set_bad('grey')
         cmap.set_under('darkgrey')
@@ -281,13 +281,13 @@ def patchValMap(vals, xvec=None, yvec=None, ax=None, cMin=None, cMax=None,
         cbar = True
 
     if cbar is True:  # not for cbar=1, which is really confusing!
-        cbar = pg.mplviewer.createColorBar(col, cMin=cMin, cMax=cMax,
+        cbar = pg.viewer.mpl.createColorBar(col, cMin=cMin, cMax=cMax,
                                            nLevs=5, label=label,
                                            orientation=ori)
 
     elif cbar is not False:
         # .. cbar is an already existing cbar .. so we update its values
-        pg.mplviewer.updateColorBar(cbar, cMin=cMin, cMax=cMax,
+        pg.viewer.mpl.updateColorBar(cbar, cMin=cMin, cMax=cMax,
                                     nLevs=5, label=label)
 
     updateAxes_(ax)
@@ -358,7 +358,7 @@ def patchMatrix(mat, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
     cbar = None
     if kwargs.pop('colorBar', True):
         ori = kwargs.pop('orientation', 'horizontal')
-        cbar = pg.mplviewer.createColorBar(col, cMin=cMin, cMax=cMax, nLevs=5,
+        cbar = pg.viewer.mpl.createColorBar(col, cMin=cMin, cMax=cMax, nLevs=5,
                                            label=label, orientation=ori)
     return ax, cbar
 
@@ -391,7 +391,7 @@ def showMatrix(mat, xmap=None, ymap=None, **kwargs):
         cMin = kwargs.pop('cMin', None)
         cMax = kwargs.pop('cMax', None)
         label = kwargs.pop('label', None)
-        cbar = pg.mplviewer.createColorBar(gci, cMin=cMin, cMax=cMax, nLevs=5,
+        cbar = pg.viewer.mpl.createColorBar(gci, cMin=cMin, cMax=cMax, nLevs=5,
                                            label=label, orientation=ori)
 
     return ax, cbar

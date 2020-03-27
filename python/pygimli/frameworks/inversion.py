@@ -320,7 +320,11 @@ class Inversion(object):
             return phiD
         else:
             return phiD + self.phiModel(model) * self.inv.getLambda()
-    
+
+    def relrms(self):
+        """Relative root-mean-square misfit."""
+        return self.inv.relrms()
+
     def run(self, dataVals, errorVals, **kwargs):
         """Run inversion.
 
@@ -387,13 +391,13 @@ class Inversion(object):
             pg.info('Starting inversion.')
             print("fop:", self.inv.fop())
             if isinstance(self.dataTrans, pg.trans.TransCumulative):
-                print("Model transformation (cummulative):")
+                print("Data transformation (cumulative):")
                 for i in range(self.dataTrans.size()):
                     print("\t", i, self.dataTrans.at(i))
             else:
                 print("Data transformation:", self.dataTrans)
             if isinstance(self.modelTrans, pg.trans.TransCumulative):
-                print("Model transformation (cummulative):")
+                print("Model transformation (cumulative):")
                 for i in range(self.modelTrans.size()):
                     if i < 10:
                         print("\t", i, self.modelTrans.at(i))
@@ -405,7 +409,7 @@ class Inversion(object):
             print("min/max (data): {0}/{1}".format(pf(min(self._dataVals)),
                                                     pf(max(self._dataVals))))
             print("min/max (error): {0}%/{1}%".format(pf(100*min(self._errorVals)),
-                                                       pf(100*max(self._errorVals))))
+                                                      pf(100*max(self._errorVals))))
             print("min/max (start model): {0}/{1}".format(pf(min(self.startModel)),
                                                           pf(max(self.startModel))))
 
@@ -461,6 +465,10 @@ class Inversion(object):
             if showProgress:
                 self.showProgress(showProgress)
 
+            if self._postStep and callable(self._postStep):
+                self._postStep(i, self)
+
+            ### we need to check  the following before oder after chi2 calc??
             self.inv.setLambda(self.inv.getLambda() * self.inv.lambdaFactor())
 
             if self.robustData:
@@ -469,12 +477,9 @@ class Inversion(object):
             if self.inv.blockyModel():
                 self.inv.constrainBlocky()
 
-            if self._postStep and callable(self._postStep):
-                self._postStep(i, self)
-
             phi = self.phi()
             dPhi = phi/lastPhi
-            
+
             if self.verbose:
                 print("chi² = {0} (dPhi = {1}%) lam: {2}".format(
                             round(chi2, 2), round((1-dPhi)*100, 2), self.inv.getLambda()))
@@ -530,7 +535,7 @@ class Inversion(object):
             for _ax in self.axs:
                 _ax.clear()
                 try:
-                    pg.mplviewer.twin(_ax).clear()
+                    pg.viewer.mpl.twin(_ax).clear()
                 except:
                     pass
 

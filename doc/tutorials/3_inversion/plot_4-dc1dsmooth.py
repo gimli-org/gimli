@@ -17,7 +17,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import pygimli as pg
-from pygimli.mplviewer import drawModel1D
+from pygimli.viewer.mpl import drawModel1D
 
 ###############################################################################
 ###############################################################################
@@ -33,7 +33,7 @@ rhoa = rhoa * (pg.math.randn(len(rhoa)) * errPerc / 100. + 1.)
 ###############################################################################
 # The forward operator can be called by f.response(model) or simply f(model)
 thk = np.logspace(-0.5, 0.5, 30)
-f = pg.DC1dRhoModelling(thk, ab2, ab2/3)
+f = pg.core.DC1dRhoModelling(thk, ab2, ab2/3)
 ###############################################################################
 # Create some transformations used for inversion
 transRho = pg.trans.TransLogLU(1, 1000)  # lower and upper bound

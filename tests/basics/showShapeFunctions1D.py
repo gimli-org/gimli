@@ -2,7 +2,7 @@
 from os import system
 import pygimli as g
 
-from pygimli.mplviewer import drawMeshBoundaries
+from pygimli.viewer.mpl import drawMeshBoundaries
 import numpy as np
 import pylab as P
 

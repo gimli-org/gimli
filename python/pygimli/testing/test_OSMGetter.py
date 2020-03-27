@@ -4,7 +4,7 @@
 # write a correct test!
 import unittest
 
-from pygimli.mplviewer import underlayMap
+from pygimli.viewer.mpl import underlayMap
 #from pygimli.io import readGPX, readSimpleLatLon
 
 import matplotlib.pyplot as plt

@@ -8,11 +8,11 @@ import pygimli as pg
 
 
 def ColeColeRho(f, rho, m, tau, c, a=1):
-    pg.deprecated("Please use coleColeRho instead of ColeColeRho.")
-    return coleColeRho(f, rho, m, tau, c, a=1)
+    pg.deprecated("Please use modelColeColeRho instead of ColeColeRho.")
+    return modelColeColeRho(f, rho, m, tau, c, a=1)
 
 
-def coleColeRho(f, rho, m, tau, c, a=1):
+def modelColeColeRho(f, rho, m, tau, c, a=1):
     r"""Frequency-domain Cole-Cole impedance model after Pelton et al. (1978)
 
     Frequency-domain Cole-Cole impedance model after Pelton et al. (1978)
@@ -42,7 +42,7 @@ def coleColeRho(f, rho, m, tau, c, a=1):
     >>> # no need to import matplotlib. pygimli's show does
     >>> import numpy as np
     >>> import pygimli as pg
-    >>> from pygimli.physics.SIP import coleColeRho
+    >>> from pygimli.physics.SIP import modelColeColeRho
     >>> f = np.logspace(-2, 5, 100)
     >>> m = np.linspace(0.1, 0.9, 5)
     >>> tau = 0.01
@@ -81,28 +81,28 @@ def coleColeRho(f, rho, m, tau, c, a=1):
 
 
 def ColeColeRhoDouble(f, rho, m1, t1, c1, m2, t2, c2):
-    pg.deprecated("Please use coleColeRhoDouble instead of ColeColeRhoDouble.")
-    return coleColeRhoDouble(f, rho, m1, t1, c1, m2, t2, c2)
+    pg.deprecated("Please use modelColeColeRhoDouble instead of ColeColeRhoDouble.")
+    return modelColeColeRhoDouble(f, rho, m1, t1, c1, m2, t2, c2)
 
 
-def coleColeRhoDouble(f, rho, m1, t1, c1, m2, t2, c2):
+def modelColeColeRhoDouble(f, rho, m1, t1, c1, m2, t2, c2):
     """Frequency-domain Double Cole-Cole impedance model
 
     Frequency-domain Double Cole-Cole impedance model returns the sum of
     two Cole-Cole Models with a common amplitude.
     Z = rho * (Z1(Cole-Cole) + Z2(Cole-Cole))
     """
-    Z1 = coleColeRho(f, rho=1, m=m1, tau=t1, c=c1, a=1)
-    Z2 = coleColeRho(f, rho=1, m=m2, tau=t2, c=c2, a=1)
+    Z1 = modelColeColeRho(f, rho=1, m=m1, tau=t1, c=c1, a=1)
+    Z2 = modelColeColeRho(f, rho=1, m=m2, tau=t2, c=c2, a=1)
     return rho * (Z1 + Z2)
 
 
 def ColeColeSigma(f, sigma, m, tau, c, a=1):
-    pg.deprecated("Please use coleColeSigma instead of ColeColeSigma.")
-    return coleColeSigma(f, sigma, m, tau, c, a=1)
+    pg.deprecated("Please use modelColeColeSigma instead of ColeColeSigma.")
+    return modelColeColeSigma(f, sigma, m, tau, c, a=1)
 
 
-def coleColeSigma(f, sigma, m, tau, c, a=1):
+def modelColeColeSigma(f, sigma, m, tau, c, a=1):
     """Complex-valued conductivity Cole-Cole model"""
     return (1. + m / (1-m) * (1. - relaxationTerm(f, tau, c, a))) * sigma
 
@@ -118,11 +118,11 @@ def tauRhoToTauSigma(tRho, m, c):
     --------
     >>> import numpy as np
     >>> import pygimli as pg
-    >>> from pygimli.physics.SIP import *
+    >>> from pygimli.physics.SIP import modelColeColeRho, modelColeColeSigma, tauRhoToTauSigma
     >>> tr = 1.
-    >>> Z = ColeColeRho(1e5, rho=10.0, m=0.5, tau=tr, c=0.5)
+    >>> Z = modelColeColeRho(1e5, rho=10.0, m=0.5, tau=tr, c=0.5)
     >>> ts = tauRhoToTauSigma(tr, m=0.5, c=0.5)
-    >>> S = ColeColeSigma(1e5, sigma=0.1, m=0.5, tau=ts, c=0.5)
+    >>> S = modelColeColeSigma(1e5, sigma=0.1, m=0.5, tau=ts, c=0.5)
     >>> abs(1.0/S - Z) < 1e-12
     True
     >>> np.angle(1.0/S / Z) < 1e-12
@@ -137,51 +137,46 @@ def relaxationTerm(f, tau, c=1., a=1.):
 
 
 def DebyeRelaxation(f, tau, m):
-    pg.deprecated("Please use debyeRelaxation instead of DebyeRelaxation.")
-    return debyeRelaxation(f, tau, m)
+    pg.deprecated("Please use relaxationDebye instead of DebyeRelaxation.")
+    return relaxationDebye(f, tau, m)
 
 
-def debyeRelaxation(f, tau, m):
+def relaxationDebye(f, tau, m):
     """Complex-valued single Debye relaxation term with chargeability."""
     return 1. - (1. - relaxationTerm(f, tau)) * m
 
 
 def WarbugRelaxation(f, tau, m):
-    pg.deprecated("Please use warbugRelaxation instead of WarbugRelaxation.")
-    return warbugRelaxation(f, tau, m)
+    pg.deprecated("Please use relaxationWarbug instead of WarbugRelaxation.")
+    return relaxationWarbug(f, tau, m)
 
 
-def warbugRelaxation(f, tau, m):
+def relaxationWarbug(f, tau, m):
     """Complex-valued single Debye relaxation term with chargeability."""
     return 1. - (1. - relaxationTerm(f, tau, c=0.5)) * m
 
 
 def ColeColeEpsilon(f, e0, eInf, tau, alpha):
-    pg.deprecated("Please use coleColeEpsilon instead of ColeColeEpsilon.")
-    return coleColeEpsilon(f, e0, eInf, tau, alpha)
+    pg.deprecated("Please use modelColeColeEpsilon instead of ColeColeEpsilon.")
+    return modelColeColeEpsilon(f, e0, eInf, tau, alpha)
 
 
-def coleColeEpsilon(f, e0, eInf, tau, alpha):
+def modelColeColeEpsilon(f, e0, eInf, tau, alpha):
     """Original complex-valued permittivity formulation (Cole&Cole, 1941)."""
     return (e0 - eInf) * relaxationTerm(f, tau, c=1./alpha) + eInf
 
 
 def ColeCole(f, R, m, tau, c, a=1):
-    pg.deprecated("Please use coleCole instead of ColeCole.")
-    return coleCole(f, R, m, tau, c, a=1)
-
-
-def coleCole(f, R, m, tau, c, a=1):
-    """For backward compatibility."""
-    return ColeColeRho(f, R, m, tau, c, a)
+    pg.deprecated("Please use modelColeColeRho instead of ColeCole.")
+    return modelColeColeRho(f, R, m, tau, c, a=1)
 
 
 def ColeDavidson(f, R, m, tau, a=1):
-    pg.deprecated("Please use coleDavidson instead of ColeDavidson.")
-    return coleDavidson(f, R, m, tau, a=1)
+    pg.deprecated("Please use modelColeDavidson instead of ColeDavidson.")
+    return modelColeDavidson(f, R, m, tau, a=1)
 
 
-def coleDavidson(f, R, m, tau, a=1):
+def modelColeDavidson(f, R, m, tau, a=1):
     """For backward compatibility."""
     return ColeCole(f, R, m, tau, c=1, a=a)
 
@@ -213,7 +208,7 @@ class ColeColePhi(pg.core.ModellingBase):
 
     def response(self, par):
         """Phase angle of the model."""
-        spec = coleCole(self.f_, 1.0, par[0], par[1], par[2])
+        spec = modelColeColeRho(self.f_, 1.0, par[0], par[1], par[2])
         return -np.angle(spec)
 
 
@@ -247,8 +242,8 @@ class DoubleColeColePhi(pg.core.ModellingBase):
 
     def response(self, par):
         """phase angle of the model"""
-        spec1 = coleCole(self.f_, 1.0, par[0], par[1], par[2])
-        spec2 = coleCole(self.f_, 1.0, par[3], par[4], par[5])
+        spec1 = modelColeColeRho(self.f_, 1.0, par[0], par[1], par[2])
+        spec2 = modelColeColeRho(self.f_, 1.0, par[3], par[4], par[5])
         #return -np.angle(spec1 * spec2)
 
         return -np.angle(spec1) - np.angle(spec2)
@@ -258,13 +253,13 @@ class ColeColeAbs(pg.core.ModellingBase):
     """Cole-Cole model with EM term after Pelton et al. (1978)"""
 
     def __init__(self, f, verbose=False):
-        super(ColeColeAbs, self).__init__(verbose)
+        super().__init__(verbose)
         self.f_ = f  # save frequencies
         self.setMesh(pg.meshtools.createMesh1D(1, 4))  # 3 single parameters
 
     def response(self, par):
         """phase angle of the model"""
-        spec = coleCole(self.f_, par[0], par[1], par[2], par[3])
+        spec = modelColeColeRho(self.f_, par[0], par[1], par[2], par[3])
         return np.abs(spec)
 
 
@@ -278,7 +273,7 @@ class ColeColeComplex(pg.core.ModellingBase):
 
     def response(self, par):
         """phase angle of the model"""
-        spec = coleColeRho(self.f_, *par)
+        spec = modelColeColeRho(self.f_, *par)
         return pg.cat(np.abs(spec), -np.angle(spec))
 
 
@@ -292,7 +287,7 @@ class ColeColeComplexSigma(pg.core.ModellingBase):
 
     def response(self, par):
         """phase angle of the model"""
-        spec = coleColeSigma(self.f_, *par)
+        spec = modelColeColeSigma(self.f_, *par)
         return pg.cat(np.real(spec), np.imag(spec))
 
 
@@ -306,7 +301,7 @@ class PeltonPhiEM(pg.core.ModellingBase):
 
     def response(self, par):
         """phase angle of the model"""
-        spec = coleCole(self.f_, 1.0, par[0], par[1], par[2]) * \
+        spec = modelColeColeRho(self.f_, 1.0, par[0], par[1], par[2]) * \
             relaxationTerm(self.f_, par[3])  # pure EM has c=1
         return -np.angle(spec)
 

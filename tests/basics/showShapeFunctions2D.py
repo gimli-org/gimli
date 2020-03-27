@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import pygimli as pg
 
-from pygimli.mplviewer import drawMeshBoundaries
+from pygimli.viewer.mpl import drawMeshBoundaries
 
 import matplotlib.pyplot as plt
 import numpy as np

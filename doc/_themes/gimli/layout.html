@@ -1,6 +1,6 @@
 {%- set reldelim1 = reldelim1 is not defined and ' &raquo;' or reldelim1 %} {%- set reldelim2 = reldelim2 is not defined and ' |' or reldelim2 %} {%- set url_root = pathto('', 1) %} {%- if url_root == '#' %}{% set url_root = '' %}{% endif %} {%- if not
 embedded and docstitle %} {%- set titlesuffix = " &mdash; "|safe + docstitle|e %} {%- else %} {%- set titlesuffix = "" %} {%- endif %} {%- macro script() %}
-<script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
 
 <script type="text/javascript">
     var DOCUMENTATION_OPTIONS = {
@@ -67,49 +67,67 @@ embedded and docstitle %} {%- set titlesuffix = " &mdash; "|safe + docstitle|e %
   <link rel="shortcut icon" href="{{ pathto('_static/', 1) }}favicon.ico"> {%- block extrahead %} {% endblock %}
 </head>
 
-<body class="container">
+<body class="container" data-spy="scroll" data-target=".nav">
   <!--<a href="https://github.com/gimli-org/gimli"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo2.githubusercontent.com/a6677b08c955af8400f44c6298f40e7d19cc5b2d/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677261795f3664366436642e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png"></a>-->
   <a href="{{ pathto('', 1) }}" class="logo"><img src="{{ pathto('_static/', 1) }}gimli_logo.svg" alt=""></a>
   <br><br>
   <div class="clearfix"></div>
-  <div class="navbar">
-    <div class="navbar-inner">
-      <ul class="nav">
+  <nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top" style="margin-bottom: 22px;">
+    <div class="collapse navbar-collapse" id="navbarTogglerDemo03">
+      <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
         {% include 'navbar.html' %}
       </ul>
-      <form class="navbar-form pull-right" action="{{ pathto('search') }}" method="get">
-        <div class="input-prepend">
-          <span class="add-on"><i class="fas fa-search"></i></span>
-          <input type="text" , class="search span3" name="q" placeholder="Search pyGIMLi documentation...">
-          <input type="hidden" name="check_keywords" value="yes">
-          <input type="hidden" name="area" value="default">
-        </div>
+
+      <div class="form-group has-search">
+        <form class="form-inline my-2 my-lg-0" action="{{ pathto('search.html', 1) }}" method="get">
+        <span class="fa fa-search form-control-feedback"></span>
+        <input type="search" class="form-control" name="q" placeholder="Search pyGIMLi docs..." aria-label="Search" onfocus="this.placeholder = ''" onblur="this.placeholder = 'Search pyGIMLi docs...'">
+        <input type="hidden" name="check_keywords" value="yes">
+        <input type="hidden" name="area" value="default">
       </form>
+      </div>
     </div>
-  </div>
-  <div class="row-fluid">
-    <div class="span9">
-      {% block body %}{% endblock %}
-      <ul class="pager">
-        <li class="previous">
-          {% if prev %}
-          <a href="{{ prev.link|e }}"><i class="fas fa-arrow-alt-circle-left"></i> {{ prev.title }}</a> {% endif %}
-        </li>
-        <li class="next">
-          {% if next %}
-          <a href="{{ next.link|e }}">{{ next.title }} <i class="fas fa-arrow-alt-circle-right"></i></a> {% endif %}
-        </li>
+  </nav>
+
+  <div class="row">
+    <div class="col-9">
+      {% block body %}
+      {% endblock %}
+      <nav>
+      <ul class="pagination justify-content-end">
+        <div style="width:50%; float:left">
+          <div>
+          <li class="page-item">
+            {%- if prev %}
+            <a href="{{ prev.link|e }}" class="page-link" ><i class="fas fa-arrow-alt-circle-left"></i> {{ prev.title }}</a>
+            {%- endif %}
+          </li>
+          </div>
+        </div>
+        <div align="right" style="width:50%; float:right">
+          <div>
+          <li class="page-item">
+            {%- if next %}
+            <a href="{{ next.link|e }}" class="page-link" >{{ next.title }} <i class="fas fa-arrow-alt-circle-right"></i></a>
+            {%- endif %}
+          </li>
+          </div>
+        </div>
       </ul>
+      </nav>
     </div>
-    <div class="span3">
+    <div class="col-3">
+      <div class="sticky-top" id="sidebar">
       {% include 'sidebar.html' %}
+      </div>
     </div>
   </div>
-  <div class="well well-small">
-    {% include 'footer.html' %}
+  <div class="card bg-light">
+    <div class="card-footer text-muted">
+      {% include 'footer.html' %}
+    </div>
   </div>
-  </div>
+  <br>
 
 </body>
-
 </html>

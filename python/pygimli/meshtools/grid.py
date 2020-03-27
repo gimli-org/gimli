@@ -97,7 +97,7 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1, quality=34.0,
     --------
     >>> import matplotlib.pyplot as plt
     >>> import pygimli as pg
-    >>> from pygimli.mplviewer import drawMesh, drawModel
+    >>> from pygimli.viewer.mpl import drawMesh, drawModel
     >>> from pygimli.meshtools import appendTriangleBoundary
     >>> inner = pg.createGrid(range(5), range(5), marker=1)
     >>> mesh = appendTriangleBoundary(inner, xbound=3, ybound=6, marker=2)

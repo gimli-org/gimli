@@ -228,7 +228,7 @@ void Region::permuteParameterMarker(const IndexArray & p){
 //################ Start values
 void Region::setStartModel(const RVector & start){
     if (isBackground_){
-        log(Warning, "Region Nr:", marker_, " is background and should not get a startmodel.");
+        log(Warning, "Region Nr:", marker_, " is background and should not get a starting model.");
         return;
     }
     if (start.size() == parameterCount_){
@@ -262,7 +262,7 @@ void Region::fillStartModel(RVector & vec){
 //################ Model behaviour
 void Region::setModelControl(double val){
     if (isBackground_){
-        log(Warning, "Region Nr:", marker_, " is background and should not get model control.");
+        log(Warning, "Region Nr:", marker_, " is background and should not get a model control.");
         val = 1.0;
     }
 
@@ -274,7 +274,7 @@ void Region::setModelControl(double val){
 void Region::setModelControl(const RVector & mc){
     log(Error, "don't use it. modelControl is scalar");
     if (isBackground_){
-        log(Warning, "Region Nr:", marker_, " is background and should not get model control.");
+        log(Warning, "Region Nr:", marker_, " is background and should not get a model control.");
         return;
     }
     modelControl_ = 1.0;
@@ -419,7 +419,7 @@ void Region::setConstraintWeights(double val){
 void Region::setConstraintWeights(const RVector & cw){
     //std::cout << "Region::setConstraintsWeight(const RVector & sw) " << sw.size() << " " <<  this->constraintCount() << std::endl;
     if (isBackground_){
-        log(Warning, "Region Nr:", marker_, " is background and should not get a cweight.");
+        log(Warning, "Region Nr:", marker_, " is background and should not get a constraints weight.");
         return;
     }
     if (cw.size() == this->constraintCount()){
@@ -492,7 +492,7 @@ void Region::fillBoundarySize(RVector & vec, Index boundStart){
 void Region::setTransModel(Trans< RVector > & tM){
 
     if (isBackground_){
-        log(Warning, "Region Nr:", marker_, " is background and should not get a modelTrans."); return;
+        log(Warning, "Region Nr:", marker_, " is background and should not get a model transformiation."); return;
     }
 
     if (tM_ && ownsTrans_) delete tM_;
@@ -503,7 +503,7 @@ void Region::setTransModel(Trans< RVector > & tM){
 
 void Region::setModelTransStr_(const std::string & val){
     if (isBackground_){
-        log(Warning, "Region Nr:", marker_, " is background and should not get a modelTrans."); return;
+        log(Warning, "Region Nr:", marker_, " is background and should not get a model transformation."); return;
     }
     transString_ = val;
     delete tM_; tM_ = NULL;

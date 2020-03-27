@@ -120,7 +120,7 @@ pg.show(grid, vl, logScale=False, showLater=True, colorBar=True, axes=ax3)
 
 vel = np.vstack([np.array((u.T).flat), np.array((v.T).flat)]).T
 
-pg.mplviewer.drawStreams(ax1, grid, vel)
+pg.viewer.mpl.drawStreams(ax1, grid, vel)
 
 #im1 = ax1.contourf(X,Y,p,alpha=0.5)    ###plnttong the pressure field as a contour
 #divider1 = make_axes_locatable(ax1)

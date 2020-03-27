@@ -65,8 +65,8 @@ class CellBrowser(object):
     --------
     >>> import matplotlib.pyplot as plt
     >>> import pygimli as pg
-    >>> from pygimli.mplviewer import drawModel
-    >>> from pygimli.mplviewer import CellBrowser
+    >>> from pygimli.viewer.mpl import drawModel
+    >>> from pygimli.viewer.mpl import CellBrowser
     >>>
     >>> mesh = pg.createGrid(range(5), range(5))
     >>> fig, ax = plt.subplots()
@@ -284,7 +284,7 @@ def drawMesh(ax, mesh, fitView=True, **kwargs):
     >>> import numpy as np
     >>> import matplotlib.pyplot as plt
     >>> import pygimli as pg
-    >>> from pygimli.mplviewer import drawMesh
+    >>> from pygimli.viewer.mpl import drawMesh
     >>> n = np.linspace(1, 2, 10)
     >>> mesh = pg.createGrid(x=n, y=n)
     >>> fig, ax = plt.subplots()
@@ -292,9 +292,9 @@ def drawMesh(ax, mesh, fitView=True, **kwargs):
     >>> plt.show()
     """
     if mesh.cellCount() == 0:
-        pg.mplviewer.drawPLC(ax, mesh, **kwargs)
+        pg.viewer.mpl.drawPLC(ax, mesh, **kwargs)
     else:
-        pg.mplviewer.drawMeshBoundaries(ax, mesh, **kwargs)
+        pg.viewer.mpl.drawMeshBoundaries(ax, mesh, **kwargs)
 
     if fitView is True:
         ax.set_xlim(mesh.xmin(), mesh.xmax())
@@ -342,7 +342,7 @@ def drawModel(ax, mesh, data=None, tri=False, rasterized=False,
     >>> import numpy as np
     >>> import matplotlib.pyplot as plt
     >>> import pygimli as pg
-    >>> from pygimli.mplviewer import drawModel
+    >>> from pygimli.viewer.mpl import drawModel
     >>> n = np.linspace(0, -2, 11)
     >>> mesh = pg.createGrid(x=n, y=n)
     >>> mx = pg.x(mesh.cellCenter())
@@ -366,7 +366,7 @@ def drawModel(ax, mesh, data=None, tri=False, rasterized=False,
                          cMin=cMin, cMax=cMax, logScale=logScale,
                          **kwargs)
     else:
-        gci = pg.mplviewer.createMeshPatches(ax, mesh, rasterized=rasterized,
+        gci = pg.viewer.mpl.createMeshPatches(ax, mesh, rasterized=rasterized,
                                              verbose=verbose)
         ax.add_collection(gci)
 
@@ -381,7 +381,7 @@ def drawModel(ax, mesh, data=None, tri=False, rasterized=False,
         else:
             viewdata = data
 
-        pg.mplviewer.setMappableData(gci, viewdata, cMin=cMin, cMax=cMax,
+        pg.viewer.mpl.setMappableData(gci, viewdata, cMin=cMin, cMax=cMax,
                                      logScale=logScale)
 
     gci.set_antialiased(True)
@@ -438,7 +438,7 @@ def drawSelectedMeshBoundaries(ax, boundaries, color=None, linewidth=1.0,
 
     if color is None:
         viewdata = [b.marker() for b in boundaries]
-        pg.mplviewer.setMappableValues(lineCollection, viewdata, logScale=False)
+        pg.viewer.mpl.setMappableValues(lineCollection, viewdata, logScale=False)
     else:
         lineCollection.set_color(color)
 
@@ -519,7 +519,7 @@ def drawMeshBoundaries(ax, mesh, hideMesh=False, useColorMap=False,
     >>> import numpy as np
     >>> import matplotlib.pyplot as plt
     >>> import pygimli as pg
-    >>> from pygimli.mplviewer import drawMeshBoundaries
+    >>> from pygimli.viewer.mpl import drawMeshBoundaries
     >>> n = np.linspace(0, -2, 11)
     >>> mesh = pg.createGrid(x=n, y=n)
     >>> for bound in mesh.boundaries():
@@ -622,7 +622,7 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
     ...                            marker=10,  boundaryMarker=10, area=0.1)
     >>> fig, ax = plt.subplots()
     >>> geom = world + block
-    >>> pg.mplviewer.drawPLC(ax, geom)
+    >>> pg.viewer.mpl.drawPLC(ax, geom)
     """
     #    eCircles = []
     if fillRegion and mesh.boundaryCount() > 2:
@@ -843,7 +843,7 @@ def drawField(ax, mesh, data=None, levels=None, nLevs=5,
     >>> import numpy as np
     >>> import matplotlib.pyplot as plt
     >>> import pygimli as pg
-    >>> from pygimli.mplviewer import drawField
+    >>> from pygimli.viewer.mpl import drawField
     >>> n = np.linspace(0, -2, 11)
     >>> mesh = pg.createGrid(x=n, y=n)
     >>> nx = pg.x(mesh.positions())
@@ -930,7 +930,7 @@ def drawStreamLines(ax, mesh, u, nx=25, ny=25, **kwargs):
     Additionally arguments are piped to streamplot.
 
     This works only for rectangular regions.
-    You should use pg.mplviewer.drawStreams, which is more comfortable and
+    You should use pg.viewer.mpl.drawStreams, which is more comfortable and
     more flexible.
 
     Parameters
@@ -1112,7 +1112,7 @@ def drawStreams(ax, mesh, data, startStream=3, coarseMesh=None, quiver=False,
     >>> import numpy as np
     >>> import matplotlib.pyplot as plt
     >>> import pygimli as pg
-    >>> from pygimli.mplviewer import drawStreams
+    >>> from pygimli.viewer.mpl import drawStreams
     >>> n = np.linspace(0, 1, 10)
     >>> mesh = pg.createGrid(x=n, y=n)
     >>> nx = pg.x(mesh.positions())
@@ -1233,7 +1233,7 @@ def drawSensors(ax, sensors, diam=None, coords=None, **kwargs):
     >>> import numpy as np
     >>> import matplotlib.pyplot as plt
     >>> import pygimli as pg
-    >>> from pygimli.mplviewer import drawSensors
+    >>> from pygimli.viewer.mpl import drawSensors
     >>> sensors = np.random.rand(5, 2)
     >>> fig, ax = pg.plt.subplots()
     >>> drawSensors(ax, sensors, diam=0.02, coords=[0, 1])

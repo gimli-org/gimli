@@ -10,9 +10,9 @@ import numpy as np
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 import pygimli as pg
-from .. mplviewer import saveFigure, updateAxes
-from .. utils import prettyFloat
-from .. core.logger import renameKwarg
+from . import saveFigure, updateAxes
+from . utils import prettyFloat
+from pygimli.core.logger import renameKwarg
 
 def autolevel(z, nLevs, logScale=None, zmin=None, zmax=None):
     """Create nLevs bins for the data array z based on matplotlib ticker.
@@ -20,7 +20,7 @@ def autolevel(z, nLevs, logScale=None, zmin=None, zmax=None):
     Examples
     --------
     >>> import numpy as np
-    >>> from pygimli.mplviewer import autolevel
+    >>> from pygimli.viewer.mpl import autolevel
     >>> x = np.linspace(1, 10, 100)
     >>> autolevel(x, 3)
     array([ 1.,  4.,  7., 10.])
@@ -100,7 +100,7 @@ def cmapFromName(cmapname='jet', ncols=256, bad=None, **kwargs):
 
 
 def findAndMaskBestClim(dataIn, cMin=None, cMax=None, dropColLimitsPerc=5,
-                        logScale=True):
+                        logScale=False):
     """TODO Documentme."""
     data = np.asarray(dataIn)
 
@@ -315,7 +315,7 @@ def createColorBarOnly(cMin=1, cMax=100, logScale=False, cMap=None, nLevs=5,
     Examples
     --------
     >>> # import pygimli as pg
-    >>> # from pygimli.mplviewer import createColorBarOnly
+    >>> # from pygimli.viewer.mpl import createColorBarOnly
     >>> # createColorBarOnly(cMin=0.2, cMax=5, logScale=False,
     >>> #                   cMap='b2r',
     >>> #                   nLevs=7,

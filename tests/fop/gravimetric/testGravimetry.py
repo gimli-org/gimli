@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import pygimli as pg
-from pygimli.mplviewer import drawModel, drawSelectedMeshBoundaries
+from pygimli.viewer.mpl import drawModel, drawSelectedMeshBoundaries
 
 import matplotlib.pyplot as plt
 import numpy as np

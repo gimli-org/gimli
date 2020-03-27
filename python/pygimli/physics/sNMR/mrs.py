@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import pygimli as pg
 from pygimli.utils import iterateBounds
 from pygimli.utils.base import gmat2numpy
-from pygimli.mplviewer import drawModel1D
+from pygimli.viewer.mpl import drawModel1D
 
 # local functions in package
 from pygimli.physics.sNMR.modelling import MRS1dBlockQTModelling

@@ -17,7 +17,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import pygimli as pg
-from pygimli.mplviewer import saveAxes
+from pygimli.viewer.mpl import saveAxes
 
 from matplotlib.offsetbox import AnchoredText
 
@@ -35,7 +35,7 @@ def add_inner_title(ax, title, loc=2, color="k", **kwargs):
 def savefig(mesh, geom, data=None, label='', out=None, **kwargs):
     """Little shortcut to plot mesh with asociated geometry."""
 
-    pg.mplviewer.hold(1)
+    pg.viewer.mpl.hold(1)
     ax = kwargs.pop('ax', None)
     print(ax)
 
@@ -49,7 +49,7 @@ def savefig(mesh, geom, data=None, label='', out=None, **kwargs):
         ax, _ = pg.show(geom, fillRegion=False, ax=ax, **kwargs)
 
     if kwargs.pop('adjust', True):
-        pg.mplviewer.adjustWorldAxes(ax)
+        pg.viewer.mpl.adjustWorldAxes(ax)
     return ax
 
 
@@ -96,7 +96,7 @@ def showSynthData(synthPath):
                 cMin=0, cMax=2.5,
                 ax=a,
                 adjust=True)
-        pg.mplviewer.drawSensors(a, scheme.sensorPositions(),
+        pg.viewer.mpl.drawSensors(a, scheme.sensorPositions(),
                                  diam=0.15, color='green')
 
         add_inner_title(a, "t = %d days" % days[i], 3, color="w")
@@ -107,8 +107,8 @@ def showSynthData(synthPath):
             a.set_ylabel('')
         a.set_ylim([-16, 0])
 
-    pg.mplviewer.saveFigure(axs[0].figure, "hydrSaturation")
-    pg.mplviewer.createColorBarOnly(cMin=0, cMax=2.5, logScale=False,
+    pg.viewer.mpl.saveFigure(axs[0].figure, "hydrSaturation")
+    pg.viewer.mpl.createColorBarOnly(cMin=0, cMax=2.5, logScale=False,
                                     cMap='Spectral_r',
                                     nLevs=5,
                                     label=r'Concentration $c$ in g$/$l',
@@ -151,10 +151,10 @@ def showModel(outPath):
         if b.leftCell() and b.rightCell():
             if b.leftCell().marker() > 1 or b.rightCell().marker() > 1:
                 bs.append(b)
-    pg.mplviewer.drawSelectedMeshBoundaries(
+    pg.viewer.mpl.drawSelectedMeshBoundaries(
             ax, bs, color=(0.0, 0.0, 0.0, 1.0), linewidth=1.0)
 
-    pg.mplviewer.saveFigure(ax.figure, 'hydrInversionModel')
+    pg.viewer.mpl.saveFigure(ax.figure, 'hydrInversionModel')
 
     print('Done!')
     pg.wait()

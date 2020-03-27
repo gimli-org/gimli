@@ -36,7 +36,7 @@ import pygimli as pg
 from pygimli.solver import solve
 
 from pygimli.viewer import show
-from pygimli.mplviewer import drawStreams
+from pygimli.viewer.mpl import drawStreams
 
 
 def uAnalytical(p, sourcePos, k):

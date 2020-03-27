@@ -224,7 +224,7 @@ def animateGravimetry(mesh, dDens, gravPoints, dz):
     #axGra = fig.fig.add_subplot(1,3,2)
         # ** Density **
 
-    gciDDe = pg.mplviewer.drawModel(axDDe, mesh, data=dDens[1],
+    gciDDe = pg.viewer.mpl.drawModel(axDDe, mesh, data=dDens[1],
                                     cMin=0, cMax=20,
                                     )
     cbar = createColorbar(gciDDe, orientation=orientation,
@@ -239,7 +239,7 @@ def animateGravimetry(mesh, dDens, gravPoints, dz):
         axGra.set_ylim((0, 0.001))
         axGra.grid()
 
-        pg.mplviewer.setMappableData(gciDDe, abs(dDens[i]),
+        pg.viewer.mpl.setMappableData(gciDDe, abs(dDens[i]),
                                      cMin=0, cMax=20,
                                      logScale=False)
     for i in range(len(dz)):

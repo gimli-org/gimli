@@ -136,7 +136,7 @@ class VESModelling(Block1DModelling):
         return fop.response(par)
 
     def drawModel(self, ax, model, **kwargs):
-        pg.mplviewer.drawModel1D(ax=ax,
+        pg.viewer.mpl.drawModel1D(ax=ax,
                                  model=model,
                                  plot=kwargs.pop('plot', 'loglog'),
                                  xlabel=r'Resistivity ($\Omega$m)', **kwargs)
@@ -256,7 +256,7 @@ class VESCModelling(VESModelling):
     def drawModel(self, ax, model, **kwargs):
         """Draw 1D VESC Modell."""
         a1 = ax
-        a2 = pg.mplviewer.createTwinY(ax)
+        a2 = pg.viewer.mpl.createTwinY(ax)
 
         super(VESCModelling, self).drawModel(a1,
                                              model=self.resModel(model),
@@ -268,7 +268,7 @@ class VESCModelling(VESModelling):
         elif plot == 'semilogx':
             plot = 'plot'
 
-        pg.mplviewer.drawModel1D(ax=a2,
+        pg.viewer.mpl.drawModel1D(ax=a2,
                                  model=self.phaseModel(model),
                                  plot=plot,
                                  color='C2',
@@ -316,7 +316,7 @@ class VESCModelling(VESModelling):
                 a2 = ax[1]
         else:
             a1 = ax
-            a2 = pg.mplviewer.createTwinY(ax)
+            a2 = pg.viewer.mpl.createTwinY(ax)
 
         if ab2 is not None and mn2 is not None:
             self.setDataSpace(ab2=ab2, mn2=mn2)

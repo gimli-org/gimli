@@ -7,7 +7,7 @@
 import pygimli as pg
 import pygimli.solver as solver
 from pygimli.viewer import showMesh
-from pygimli.mplviewer import drawMesh, drawModel, drawField
+from pygimli.viewer.mpl import drawMesh, drawModel, drawField
 from pygimli.meshtools import createMesh
 from solverFVM import solveFiniteVolume, createFVPostProzessMesh, diffusionConvectionKernel, WorkSpace
 

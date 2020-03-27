@@ -8,8 +8,7 @@ import numpy as np
 from numpy import ma
 
 import pygimli as pg
-from pygimli.mplviewer.dataview import showValMapPatches
-
+from pygimli.viewer.mpl.dataview import showValMapPatches
 
 def showERTData(data, vals=None, **kwargs):
     """Plot ERT data as pseudosection matrix (position over separation).
@@ -93,7 +92,7 @@ def showERTData(data, vals=None, **kwargs):
 
     # ax.set_aspect('equal')
     # plt.pause(0.1)
-    pg.mplviewer.updateAxes(ax)
+    pg.viewer.mpl.updateAxes(ax)
     return ax, cbar
 
 

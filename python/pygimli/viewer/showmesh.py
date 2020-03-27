@@ -7,19 +7,19 @@ import time
 import traceback
 
 import numpy as np
-# plt should not be used outside of mplviewer
+# plt should not be used outside of viewer.mpl
 import matplotlib.pyplot as plt
 
 from .. core.logger import renameKwarg
 
 try:
     import pygimli as pg
-    from pygimli.mplviewer import drawMesh, drawModel, drawField
-    from pygimli.mplviewer import drawSensors
-    from pygimli.mplviewer import createColorBar, updateColorBar
-    from pygimli.mplviewer import drawStreams, addCoverageAlpha
-    from pygimli.mplviewer import CellBrowser
-    from pygimli.mplviewer.colorbar import cmapFromName
+    from .mpl import drawMesh, drawModel, drawField
+    from .mpl import drawSensors
+    from .mpl import createColorBar, updateColorBar
+    from .mpl import drawStreams, addCoverageAlpha
+    from .mpl import CellBrowser
+    from .mpl.colorbar import cmapFromName
 except ImportError as e:
     print(e)
     traceback.print_exc(file=sys.stdout)
@@ -143,28 +143,28 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
         Optionally data to visualize.
 
         . None (draw mesh only)
-            forward to :py:mod:`pygimli.mplviewer.drawMesh`
+            forward to :py:mod:`pygimli.viewer.mpl.drawMesh`
             or if no cells are given:
-            forward to :py:mod:`pygimli.mplviewer.drawPLC`
+            forward to :py:mod:`pygimli.viewer.mpl.drawPLC`
 
         . [[marker, value], ...]
             List of Cellvalues per cell marker
-            forward to :py:mod:`pygimli.mplviewer.drawModel`
+            forward to :py:mod:`pygimli.viewer.mpl.drawModel`
 
         . float per cell -- model, patch
-            forward to :py:mod:`pygimli.mplviewer.drawModel`
+            forward to :py:mod:`pygimli.viewer.mpl.drawModel`
 
         . float per node -- scalar field
-            forward to :py:mod:`pygimli.mplviewer.drawField`
+            forward to :py:mod:`pygimli.viewer.mpl.drawField`
 
         . iterable of type [float, float] -- vector field
-            forward to :py:mod:`pygimli.mplviewer.drawStreams`
+            forward to :py:mod:`pygimli.viewer.mpl.drawStreams`
 
         . pg.core.R3Vector -- vector field
-            forward to :py:mod:`pygimli.mplviewer.drawStreams`
+            forward to :py:mod:`pygimli.viewer.mpl.drawStreams`
 
         . pg.core.stdVectorRVector3 -- sensor positions
-            forward to :py:mod:`pygimli.mplviewer.drawSensors`
+            forward to :py:mod:`pygimli.viewer.mpl.drawSensors`
     hold: bool [false]
         Set interactive plot mode for matplotlib.
         If this is set to false [default] your script will open
@@ -241,9 +241,9 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
     if block:
         hold = True
 
-    lastHoldStatus = pg.mplviewer.utils.holdAxes__
+    lastHoldStatus = pg.viewer.mpl.utils.holdAxes__
     if not lastHoldStatus or hold:
-        pg.mplviewer.hold(val=1)
+        pg.viewer.mpl.hold(val=1)
         hold = True
 
     gci = None
@@ -297,6 +297,9 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
         #     showMesh = True
         else:
             validData = True
+            if bool(colorBar) is not False:
+                colorBar = True
+
             try:
                 if len(data) == mesh.cellCount():
                     gci = drawModel(ax, mesh, data, **kwargs)
@@ -323,13 +326,13 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
     if mesh.cellCount() == 0:
         showMesh = False
         if mesh.boundaryCount() == 0:
-            pg.mplviewer.drawPLC(ax, mesh, showNodes=True,
+            pg.viewer.mpl.drawPLC(ax, mesh, showNodes=True,
                                  fillRegion=False, showBoundary=False,
                                  **kwargs)
             showBoundary = False
             #ax.plot(pg.x(mesh), pg.y(mesh), '.', color='black')
         else:
-            pg.mplviewer.drawPLC(ax, mesh, **kwargs)
+            pg.viewer.mpl.drawPLC(ax, mesh, **kwargs)
 
     if showMesh:
         if gci is not None and hasattr(gci, 'set_antialiased'):
@@ -337,13 +340,13 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
             gci.set_linewidth(0.3)
             gci.set_edgecolor("0.1")
         else:
-            pg.mplviewer.drawSelectedMeshBoundaries(ax, mesh.boundaries(),
+            pg.viewer.mpl.drawSelectedMeshBoundaries(ax, mesh.boundaries(),
                                             color=kwargs.pop('color', "0.1"), linewidth=0.3)
             #drawMesh(ax, mesh, **kwargs)
 
     if showBoundary == True or showBoundary == 1:
         b = mesh.boundaries(mesh.boundaryMarkers() != 0)
-        pg.mplviewer.drawSelectedMeshBoundaries(ax, b,
+        pg.viewer.mpl.drawSelectedMeshBoundaries(ax, b,
                                                 color=(0.0, 0.0, 0.0, 1.0),
                                                 linewidth=1.4)
 
@@ -403,7 +406,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
             pass
 
     if hold:
-        pg.mplviewer.hold(val=lastHoldStatus)
+        pg.viewer.mpl.hold(val=lastHoldStatus)
 
     if savefig:
         print('saving: ' + savefig + ' ...')

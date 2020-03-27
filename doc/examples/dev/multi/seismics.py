@@ -118,9 +118,9 @@ def calcSeismics(meshIn, vP):
     fig = plt.figure(facecolor='white',
                      figsize=(scale*800/dpi, scale*490/dpi), dpi=dpi)
     ax = fig.add_subplot(1, 1, 1)
-    gci = pg.mplviewer.drawModel(ax, mesh, data=uI[0],
+    gci = pg.viewer.mpl.drawModel(ax, mesh, data=uI[0],
                                  cMin=-1, cMax=1, cmap='bwr')
-    pg.mplviewer.drawMeshBoundaries(ax, meshIn, hideMesh=1)
+    pg.viewer.mpl.drawMeshBoundaries(ax, meshIn, hideMesh=1)
     ax.set_xlim((-20, 20))
     ax.set_ylim((-15, 0))
     ax.set_ylabel('Depth [m]')
@@ -148,7 +148,7 @@ def calcSeismics(meshIn, vP):
         ui = pg.logDropTol(ui, 1e-2)
         cMax = max(pg.abs(ui))
 
-        pg.mplviewer.setMappableData(gci, ui,
+        pg.viewer.mpl.setMappableData(gci, ui,
                                      cMin=-cMax, cMax=cMax,
                                      logScale=False)
         # plt.pause(0.001)

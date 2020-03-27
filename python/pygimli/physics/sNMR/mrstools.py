@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import pygimli as pg
-from pygimli.mplviewer import draw1dmodel
+from pygimli.viewer.mpl import draw1dmodel
 from pygimli.utils import rndig
 
 

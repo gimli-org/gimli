@@ -11,9 +11,9 @@ from matplotlib.collections import LineCollection
 
 import pygimli as pg
 import pygimli.meshtools as mt
-from pygimli.mplviewer import drawModel, drawMesh, CellBrowser, createColorBar
+from pygimli.viewer.mpl import drawModel, drawMesh, CellBrowser, createColorBar
 from pygimli.utils.base import interperc, getSavePath
-from pygimli.mplviewer.dataview import showVecMatrix
+from pygimli.viewer.mpl.dataview import showVecMatrix
 
 from pygimli.frameworks import MethodManager#, MethodManager0
 

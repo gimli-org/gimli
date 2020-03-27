@@ -10,7 +10,7 @@ the example is simplisitic and two-dimensional, the individual members of the
 Mesh class and their methods can be inspected similarly for more complex meshes
 in 2D and 3D. This example is heavily inspired by the `anatomy of a matplotlib
 plot <https://matplotlib.org/examples/showcase/anatomy.html>`_, which we can 
-also highly recommend for visualization with the :py:mod:`pygimli.mplviewer`.
+also highly recommend for visualization with the :py:mod:`pygimli.viewer.mpl`.
 
 We start by importing matplotlib and defining some helper functions for
 plotting.

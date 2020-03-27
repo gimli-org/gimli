@@ -15,19 +15,19 @@ Make sure you have an appropriate Python version (3.5.x or 3.6.x, 64bit) install
 There are two ways, exe installers and wheels. The latter can be easily installed by a
 package manager like the WinPython Control Panel (located in the WinPython main directory).
 
-..  image:: https://img.shields.io/badge/pyGIMLi1.0.12_win64-Python_3.7_Wheel-green.svg
+..  image:: https://img.shields.io/badge/pyGIMLi1.0.12_win64-Python_3.7_Wheel-green.svg?style=flat-square
    :target: https://github.com/gimli-org/gimli/releases/download/v1.0.12/pygimli-1.0.12-cp37-cp37m-win_amd64.whl
 
-..  image:: https://img.shields.io/badge/pyGIMLi1.0.11_win64-Python_3.7_Wheel-green.svg
+..  image:: https://img.shields.io/badge/pyGIMLi1.0.11_win64-Python_3.7_Wheel-green.svg?style=flat-square
    :target: https://github.com/gimli-org/gimli/releases/download/v1.0.11/pygimli-1.0.11-cp37-cp37m-win_amd64.whl
-..  image:: https://img.shields.io/badge/pyGIMLi1.0.11_win64-Python_3.6_Wheel-green.svg
+..  image:: https://img.shields.io/badge/pyGIMLi1.0.11_win64-Python_3.6_Wheel-green.svg?style=flat-square
    :target: https://github.com/gimli-org/gimli/releases/download/v1.0.11/pygimli-1.0.11-cp36-cp36m-win_amd64.whl
 
-..  image:: https://img.shields.io/badge/pyGIMLi1.0.10_win64-Python_3.7_Wheel-green.svg
+..  image:: https://img.shields.io/badge/pyGIMLi1.0.10_win64-Python_3.7_Wheel-green.svg?style=flat-square
    :target: https://github.com/gimli-org/gimli/releases/download/v1.0.10/pygimli-1.0.10-cp37-cp37m-win_amd64.whl
-..  image:: https://img.shields.io/badge/pyGIMLi1.0.10_win64-Python_3.6_Wheel-green.svg
+..  image:: https://img.shields.io/badge/pyGIMLi1.0.10_win64-Python_3.6_Wheel-green.svg?style=flat-square
    :target: https://github.com/gimli-org/gimli/releases/download/v1.0.10/pygimli-1.0.10-cp36-cp36m-win_amd64.whl
-..  image:: https://img.shields.io/badge/pyGIMLi1.0.9_win64-Python_3.6_Wheel-green.svg
+..  image:: https://img.shields.io/badge/pyGIMLi1.0.9_win64-Python_3.6_Wheel-green.svg?style=flat-square
    :target: https://github.com/gimli-org/gimli/releases/download/v1.0.9/pygimli-1.0.9-cp36-cp36m-win_amd64.whl
 
 In the package manager just select the whl file and press Install to install or upgrade.
@@ -43,19 +43,19 @@ Uninstall can be made also with the Control Panel or by pip uninstall.
 
 Alternatively you can use the MSI installer where you can choose your Python installation
 
-..  image:: https://img.shields.io/badge/pyGIMLi1.0.12_win64-MSI_for_Python_3.7-green.svg
+..  image:: https://img.shields.io/badge/pyGIMLi1.0.12_win64-MSI_for_Python_3.7-green.svg?style=flat-square
    :target: https://github.com/gimli-org/gimli/releases/download/v1.0.12/pygimli-1.0.12.win-amd64-py37.msi
 
-..  image:: https://img.shields.io/badge/pyGIMLi1.0.11_win64-MSI_for_Python_3.7-green.svg
+..  image:: https://img.shields.io/badge/pyGIMLi1.0.11_win64-MSI_for_Python_3.7-green.svg?style=flat-square
    :target: https://github.com/gimli-org/gimli/releases/download/v1.0.11/pygimli-1.0.11.win-amd64-py37.msi
-..  image:: https://img.shields.io/badge/pyGIMLi1.0.11_win64-MSI_for_Python_3.6-green.svg
+..  image:: https://img.shields.io/badge/pyGIMLi1.0.11_win64-MSI_for_Python_3.6-green.svg?style=flat-square
    :target: https://github.com/gimli-org/gimli/releases/download/v1.0.11/pygimli-1.0.11.win-amd64-py36.msi
 
-..  image:: https://img.shields.io/badge/pyGIMLi1.0.10_win64-MSI_for_Python_3.7-green.svg
+..  image:: https://img.shields.io/badge/pyGIMLi1.0.10_win64-MSI_for_Python_3.7-green.svg?style=flat-square
    :target: https://github.com/gimli-org/gimli/releases/download/v1.0.10/pygimli-1.0.10.win-amd64-py37.msi
-..  image:: https://img.shields.io/badge/pyGIMLi1.0.10_win64-MSI_for_Python_3.6-green.svg
+..  image:: https://img.shields.io/badge/pyGIMLi1.0.10_win64-MSI_for_Python_3.6-green.svg?style=flat-square
    :target: https://github.com/gimli-org/gimli/releases/download/v1.0.10/pygimli-1.0.10.win-amd64-py36.msi
-..  image:: https://img.shields.io/badge/pyGIMLi1.0.9_win64-MSI_for_Python_3.6-green.svg
+..  image:: https://img.shields.io/badge/pyGIMLi1.0.9_win64-MSI_for_Python_3.6-green.svg?style=flat-square
    :target: https://github.com/gimli-org/gimli/releases/download/v1.0.9/pygimli-1.0.9.win-amd64-py36.msi
 
 As a result you should be able to import pygimli in any script from any location.
@@ -75,7 +75,7 @@ Avoid installing into strange Windows folders, e.g., c:\ProgramData\mys64 is fin
 After installing MSYS, start the console once so it builds your personal home
 directory where you find a .bashrc file, e.g. in
 
-.. code-block:: bash
+.. code-block::
 
     c:\ProgramData\mys64\home\YOUR_USERNAME
 
@@ -85,7 +85,7 @@ PATH.
 e.g.:
 
 .. code-block:: bash
-    
+
     export ANACONDA=/c/ProgramData/Anaconda3
     export PATH=$PATH:$ANACONDA
 
@@ -152,7 +152,7 @@ using the Unix makefile generator to find the correct gcc versions:
     cmake ../gimli -G 'Unix Makefiles'
 
 If cmake complains about missing python stuff, make sure the Python interpreter
-is in your execution path. 
+is in your execution path.
 
 
 **Problems with cmake configuration**
@@ -176,13 +176,13 @@ If cmake complains about misssig numpy, python can't probably import numpy, whic
 .. code-block:: bash
 
     python -c 'import numpy'
-    
+
 Probably anaconda additional needs another path setting, don't ask me why
 
 .. code-block:: bash
 
    export PATH=$PATH:$ANACONDA/Library/bin
-   
+
 Now python should be able to find numpy and cmake will work as supposed and you can continue the build process.
 
 

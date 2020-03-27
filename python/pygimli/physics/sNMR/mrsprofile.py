@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 from matplotlib.cm import Spectral
 
 import pygimli as pg
-from pygimli.mplviewer import showStitchedModels
+from pygimli.viewer.mpl import showStitchedModels
 from . mrs import MRS
 from . modelling import MRS1dBlockQTModelling
 

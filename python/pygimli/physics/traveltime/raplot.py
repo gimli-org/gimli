@@ -7,7 +7,7 @@ import numpy as np
 
 import pygimli as pg
 
-from pygimli.mplviewer import createColorBar  # , updateColorBar
+from pygimli.viewer.mpl import createColorBar  # , updateColorBar
 
 from .ratools import shotReceiverDistances
 
@@ -160,11 +160,11 @@ def drawVA(ax, data, vals=None, usePos=True, pseudosection=False, **kwargs):
 
     if pseudosection:
         midpoint = (gx + sx) / 2
-        gci = pg.mplviewer.dataview.drawVecMatrix(ax, midpoint, offset, va,
+        gci = pg.viewer.mpl.dataview.drawVecMatrix(ax, midpoint, offset, va,
                                                   queeze=True,
                                                   label=pg.unit('as'))
     else:
-        gci = pg.mplviewer.dataview.drawVecMatrix(ax, gx, sx, va,
+        gci = pg.viewer.mpl.dataview.drawVecMatrix(ax, gx, sx, va,
                                                   squeeze=True,
                                                   label=pg.unit('as'))
 

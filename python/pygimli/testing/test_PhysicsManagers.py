@@ -7,14 +7,26 @@ import unittest
 import numpy as np
 
 import pygimli as pg
-from pygimli.physics import VESManager
+from pygimli.physics import VESManager, ERTManager
 from pygimli.physics.em import VMDTimeDomainModelling
 
 
 class TestManagers(unittest.TestCase):
 
     def test_ERT(self, showProgress=False):
-        pass
+        dat = pg.getExampleFile('ert/gallery.dat', load=True, verbose=True)
+
+        mesh = pg.meshtools.createParaMesh(dat.sensors(), quality=33.4, 
+                                 paraDX=0.3, paraMaxCellSize=0.5, paraDepth=8)
+        #with SR
+        ert = ERTManager(sr=True, useBert=True, verbose=False, debug=False)
+        mod = ert.invert(dat, mesh=mesh, maxIter=20, lam=10)
+        np.testing.assert_approx_equal(ert.inv.chi2(), 1.003, significant=3)
+
+        #without SR
+        ert = ERTManager(sr=False, useBert=True, verbose=False, debug=False)
+        mod = ert.invert(dat, mesh=mesh, maxIter=20, lam=10)
+        np.testing.assert_approx_equal(ert.inv.chi2(), 0.994, significant=3)
 
     def test_TT(self, showProgress=False):
         pass
@@ -115,6 +127,8 @@ if __name__ == '__main__':
             test.test_VES(showProgress=True)
         elif sys.argv[1].lower() == 'vmd':
             test.test_VMD(showProgress=True)
+        elif sys.argv[1].lower() == 'ert':
+            test.test_ERT(showProgress=True)
 
         pg.info("test done")
         pg.wait()

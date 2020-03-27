@@ -1101,7 +1101,7 @@ RVector DCMultiElectrodeModelling::response(const RVector & model,
     }
 
     if (!this->mesh_){
-        log(Critical, "Found no mesh so I can't calcuate a response.");
+        log(Critical, "Found no mesh, so cannot calculate a response.");
     }
     if (complex()){
 

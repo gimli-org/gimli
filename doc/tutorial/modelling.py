@@ -52,7 +52,7 @@ import numpy as np
     ##grid.createNeighbourInfos( True )
 
 from pygimli.viewer import showMesh
-from pygimli.mplviewer import *
+from pygimli.viewer.mpl import *
 import pylab as P
 
 grid = g.createGrid( np.linspace( -1, 1, 20 ), np.linspace( -1, 1, 20 ), np.linspace( -1, 1, 20 ) )
