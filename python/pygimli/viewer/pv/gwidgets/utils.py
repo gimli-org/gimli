@@ -59,6 +59,11 @@ class GToolBar(QWidget):
             # size=[24, 24]
         )
 
+        # # combobox for choosing the view
+        # self.cbbx_views = GComboBox("Scroll/Click to select plot")
+        # # checkbox for toggle link_views
+        # self.chbx_views = QCheckBox("link views")
+
         # button to make bounding box visible
         self.btn_bbox = GButton(
             text="Toggle Axes",
@@ -107,52 +112,59 @@ class GToolBar(QWidget):
         )
 
         # parameter choosing
-        lyt_v1 = QVBoxLayout()
-        lyt_v1.addWidget(self.cbbx_params)
-        lyt_v1.setContentsMargins(2, 5, 2, 2)
+        lyt_params = QVBoxLayout()
+        lyt_params.addWidget(self.cbbx_params)
+        lyt_params.setContentsMargins(2, 5, 2, 2)
         grp_param = QGroupBox("Parameter")
-        grp_param.setLayout(lyt_v1)
+        grp_param.setLayout(lyt_params)
+
+        # lyt_views = QVBoxLayout()
+        # lyt_views.setContentsMargins(2, 5, 2, 2)
+        # lyt_views.addWidget(self.cbbx_views)
+        # lyt_views.addWidget(self.chbx_views)
+        # grp_views = QGroupBox("View")
+        # grp_views.setLayout(lyt_views)
 
         # colormap
-        lyt_h1 = QVBoxLayout()
-        lyt_h1.addWidget(self.cbbx_cmap)
-        lyt_h1.addWidget(self.btn_reverse)
-        lyt_h1.setContentsMargins(2, 5, 2, 2)
+        lyt_cmap = QVBoxLayout()
+        lyt_cmap.addWidget(self.cbbx_cmap)
+        lyt_cmap.addWidget(self.btn_reverse)
+        lyt_cmap.setContentsMargins(2, 5, 2, 2)
         grp_cmap = QGroupBox("Color Map")
-        grp_cmap.setLayout(lyt_h1)
+        grp_cmap.setLayout(lyt_cmap)
 
         # limits
-        lyt_h3 = QHBoxLayout()
-        lyt_h3.addWidget(QLabel("Min"))
-        lyt_h3.addWidget(self.spbx_cmin)
-        lyt_h4 = QHBoxLayout()
-        lyt_h4.addWidget(QLabel("Max"))
-        lyt_h4.addWidget(self.spbx_cmax)
+        lyt_min = QHBoxLayout()
+        lyt_min.addWidget(QLabel("Min"))
+        lyt_min.addWidget(self.spbx_cmin)
+        lyt_max = QHBoxLayout()
+        lyt_max.addWidget(QLabel("Max"))
+        lyt_max.addWidget(self.spbx_cmax)
         # button for global limits
         self.btn_global_limits = GButton(
             text="Global Limits",
             tooltip="Check if gobal limits should be tried",
             checkable=True)
         # checkbox for thresholding parameter distribution
-        lyt_h4a = QHBoxLayout()
-        lyt_h4a.addWidget(QLabel("Threshold"))
+        lyt_thresh = QHBoxLayout()
+        lyt_thresh.addWidget(QLabel("Threshold"))
         self.chbx_threshold = QCheckBox()
-        lyt_h4a.addWidget(self.chbx_threshold)
-        lyt_h5 = QHBoxLayout()
-        lyt_h5.addWidget(self.btn_apply)
-        lyt_h5.addWidget(self.btn_reset)
-        lyt_v3 = QVBoxLayout()
-        lyt_v3.addLayout(lyt_h3)
-        lyt_v3.addLayout(lyt_h4)
-        lyt_v3.addWidget(self.btn_global_limits)
-        lyt_v3.addLayout(lyt_h4a)
-        lyt_v3.addLayout(lyt_h5)
-        lyt_v3.setContentsMargins(2, 5, 2, 2)
+        lyt_thresh.addWidget(self.chbx_threshold)
+        lyt_threshbtns = QHBoxLayout()
+        lyt_threshbtns.addWidget(self.btn_apply)
+        lyt_threshbtns.addWidget(self.btn_reset)
+        lyt_threshold = QVBoxLayout()
+        lyt_threshold.addLayout(lyt_min)
+        lyt_threshold.addLayout(lyt_max)
+        lyt_threshold.addWidget(self.btn_global_limits)
+        lyt_threshold.addLayout(lyt_thresh)
+        lyt_threshold.addLayout(lyt_threshbtns)
+        lyt_threshold.setContentsMargins(2, 5, 2, 2)
         grp_limits = QGroupBox("Limits")
-        grp_limits.setLayout(lyt_v3)
+        grp_limits.setLayout(lyt_threshold)
 
         # slicer
-        lyt_v2 = QVBoxLayout()
+        lyt_slicer = QVBoxLayout()
         self.btn_slice_plane = GButton(text="Plane", checkable=True)
         self.btn_slice_volume = GButton(text="Volume", checkable=True)
         # for the time being...
@@ -181,29 +193,30 @@ class GToolBar(QWidget):
         self.la_zval.setReadOnly(True)
         self.la_zval.setFixedWidth(100)
         hz.addWidget(self.la_zval)
-        lyt_v2.addLayout(hb)
-        lyt_v2.addLayout(hx)
-        lyt_v2.addLayout(hy)
-        lyt_v2.addLayout(hz)
-        lyt_v2.setContentsMargins(2, 5, 2, 2)
+        lyt_slicer.addLayout(hb)
+        lyt_slicer.addLayout(hx)
+        lyt_slicer.addLayout(hy)
+        lyt_slicer.addLayout(hz)
+        lyt_slicer.setContentsMargins(2, 5, 2, 2)
         self.grp_slice = QGroupBox("Slicing")
         # self.grp_slice.setCheckable(True)
         # self.grp_slice.setChecked(False)
-        self.grp_slice.setLayout(lyt_v2)
+        self.grp_slice.setLayout(lyt_slicer)
 
         # export area
-        lyt_h2 = QHBoxLayout()
-        lyt_h2.addWidget(self.btn_screenshot)
-        lyt_h2.addWidget(self.btn_exportVTK)
-        lyt_h2.setContentsMargins(2, 5, 2, 2)
+        lyt_export = QHBoxLayout()
+        lyt_export.addWidget(self.btn_screenshot)
+        lyt_export.addWidget(self.btn_exportVTK)
+        lyt_export.setContentsMargins(2, 5, 2, 2)
         grp_export = QGroupBox("Export")
-        grp_export.setLayout(lyt_h2)
+        grp_export.setLayout(lyt_export)
 
         # widget for the toolbar to better organize the widgets
         lt = QVBoxLayout()
         lt.addWidget(grp_param)
-        lt.addWidget(grp_cmap)
+        # lt.addWidget(grp_views)
         lt.addWidget(grp_limits)
+        lt.addWidget(grp_cmap)
         lt.addWidget(self.grp_slice)
         lt.addStretch(1)
         lt.addWidget(self.btn_bbox)
