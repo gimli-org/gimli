@@ -113,7 +113,7 @@ def showMesh3DVista(mesh, data=None, **kwargs):
 
     elif not gui:
         kwargs = {**kwargs, **add_args}
-        plotter = drawModel3D(mesh, data, notebook=notebook, cmap=cmap, **kwargs)
+        plotter = drawModel3D(None, mesh, data, notebook=notebook, cmap=cmap, **kwargs)
         if notebook:
             pyvista.set_plot_theme('document')
         if not hold:

@@ -230,9 +230,7 @@ class Test3DMerge(unittest.TestCase):
         self.assertEqual(w.boundaryCount(), 6+5+5+5+6+3)
 
         # w.exportPLC('t.poly')
-        pg.info(1)
         pg.show(mt.createMesh(w))
-        pg.info("1 worked")
 
     def test_cube_cube_coplanar_touchface(self):
         w = mt.createCube(marker=1)
@@ -262,13 +260,9 @@ class Test3DMerge(unittest.TestCase):
         self.assertEqual(w.nodeCount(), 8+8+8+8+8)
         self.assertEqual(w.boundaryCount(), 6+5+5+5+5)
 
-        pg.info(2)
         pg.show(w)
-        pg.info("2 worked")
         # w.exportPLC('t.poly')
-        pg.info(3)
         pg.show(mt.createMesh(w))
-        pg.info("3 worked")
 
     def test_smallcube_in_bigcube(self):
         """
@@ -291,13 +285,8 @@ class Test3DMerge(unittest.TestCase):
         # self.assertEqual(w.boundaryCount(), 8)
 
         # print(w)
-        pg.info(4)
         pg.show(w)
-        pg.info("4 worked")
-        # w.exportPLC('w3D_test.w')
-        pg.info(5)
         pg.show(mt.createMesh(w))
-        pg.info("5 worked")
 
     def test_face_in_face(self):
         """Test subface with different marker constructed with hole marker."""
@@ -331,9 +320,7 @@ class Test3DMerge(unittest.TestCase):
 
         # print(mesh)
         # mesh.exportBoundaryVTU('b.vtu')
-        pg.info(6)
         pg.show(mesh)
-        pg.info("6 worked")
 
 if __name__ == '__main__':
     unittest.main()
