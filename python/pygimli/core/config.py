@@ -21,7 +21,7 @@ def getConfigPath():
     r"""Return the user space path for configuration files.
 
     - Windows: 'C:\Documents and Settings\username\Appdata\pygimli'
-    - Linu: '~/.config/pygimli' (if not overwritten by $XDG_CONFIG_HOME)
+    - Linux: '~/.config/pygimli' (if not overwritten by $XDG_CONFIG_HOME)
     - Mac: '~/Library/Preferences/pygimli'
 
     See Also

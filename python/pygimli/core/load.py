@@ -80,7 +80,7 @@ def getCachePath():
 
     - Windows: 'C:\Documents and Settings\username\Appdata\pygimli\Cache'
     - Linux: '~/.cache/pygimli' (if not overwritten by $XDG_CONFIG_HOME)
-    - Mac: '~/Library/Preferences/pygimli'
+    - Mac: '~/Library/Caches/pygimli'
 
     See Also
     --------
