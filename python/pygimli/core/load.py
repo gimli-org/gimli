@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
-"""TODO Module docstring."""
+"""Utility functions for downloading, caching, and importing."""
 
+import sys
 import os.path
 import tempfile
 
@@ -77,16 +78,21 @@ def opt_import(*args, **kwargs):
 def getConfigPath():
     r"""Return the user space path for configuration or cache files.
 
-    For Windows: return 'C:\Documents and Settings\username\Appdata\gimli'
-
-    For Linux return /home/username/.config/gimli
+    - Windows: 'C:\Documents and Settings\username\Appdata\pygimli'
+    - Linux: '~/.config/pygimli' (if not overwritten by $XDG_CONFIG_HOME)
+    - Mac: '~/Library/Preferences/pygimli'
 
     """
+    appname = "pygimli"
+    system = sys.platform
 
-    if 'APPDATA' in os.environ:
-        return os.path.join(os.environ['APPDATA'], 'gimli')
+    if system == "win32":
+        path = os.path.join(os.environ['APPDATA'])
+    elif system == "darwin":
+        path = os.path.expanduser('~/Library/Preferences/')
     else:
-        return os.path.join(os.environ['HOME'], '.config', 'gimli')
+        path = os.getenv('XDG_CONFIG_HOME', os.path.expanduser("~/.config"))
+    return os.path.join(path, appname)
 
 def load(fname, verbose=False, testAll=True, realName=None):
     """General import function to load data and meshes from file.
