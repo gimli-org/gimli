@@ -11,28 +11,18 @@ import locale
 import sys
 
 
-# We can define some defaults here .. or maybe load user defaults
-rc = {
-    'lang': 'eng',
-    # 'eng', 'german', 'de', 'ger'
-    'unitStyle': 2,
-    # 1: german style: 'value in unit'
-    # 2: default style: 'value (unit)'
-    'view3D': 'auto',
-    # auto: Use pyvista if installed or set it to 'fallback' to force fallback mode
-}
-
 ### Import everything that should be accessible through main namespace.
 from .core import (BVector, CVector, DataContainer, DataContainerERT,
                    Inversion, IVector, Line, Matrix, Mesh, Plane, Pos,
                    RVector3, Vector, abs, cat, center, dur, exp, find,
                    interpolate, log, log10, logDropTol, math, matrix, max,
-                   mean, median, min, search, setDebug, setThreadCount, sort,
+                   mean, median, min, rc, search, setDebug, setThreadCount, sort,
                    sum, tic, toc, trans, unique, versionStr, x, y, z, zero)
 
 from .core.logger import (_, _d, _g, _r, _y, critical, d, debug, deprecated,
                           error, info, setDebug, setLogLevel, setVerbose, v,
                           verbose, warn)
+
 from .meshtools import createGrid, interpolate
 from .solver import solve
 # from .core import *
@@ -41,7 +31,8 @@ from .utils import boxprint, cache, cut, unique
 from .utils import prettify as pf
 from .utils import unit, cmap
 from .viewer import plt, show, wait
-from .core.load import getConfigPath, getExampleFile, load, optImport
+from .core.load import getCachePath, getExampleFile, load, optImport
+from .core.config import getConfigPath
 
 def checkAndFixLocaleDecimal_point(verbose=False):
     """
@@ -97,7 +88,7 @@ def findVersion(cache=True):
 
     root = os.path.abspath(os.path.join(__file__, "../../../"))
     gitIndexFile = os.path.join(root, '.git/index')
-    versionCacheFile = os.path.join(getConfigPath(), 'VERSION')
+    versionCacheFile = os.path.join(getCachePath(), 'VERSION')
     versionPyFile = os.path.abspath(os.path.join(__file__, "../_version.py"))
 
     loadCache = False

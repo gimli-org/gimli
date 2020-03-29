@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 """Caching manager with function decorator.
 
-Does not have many functions yet but shows the way for more.
-
 Input supports python base types and all pg.core objects with .hash() method.
 Output supports DataContainerERT, ...
 
@@ -107,7 +105,7 @@ class Cache(object):
             pg.checkAndFixLocaleDecimal_point(verbose=False)
 
             try:
-                with open(self._name + '.json', 'r') as file:
+                with open(self._name + '.json') as file:
                     self.info = json.load(file)
 
                 # if len(self.info['type']) != 1:
@@ -165,9 +163,13 @@ class CacheManager(object):
 
     def cachingPath(self, fName):
         """Create a path name for the cache"""
-        if not os.path.exists('.cache'):
-            os.mkdir('.cache')
-        return os.path.join('.cache/', fName)
+        if pg.rc["globalCache"]:
+            path = pg.getCachePath()
+        else:
+            path = ".cache"
+        if not os.path.exists(path):
+            os.mkdir(path)
+        return os.path.join(path, fName)
 
     def functInfo(self, funct):
         """Return unique info string about the called function."""

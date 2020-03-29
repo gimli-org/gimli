@@ -75,24 +75,27 @@ def opt_import(*args, **kwargs):
     return optImport(*args, **kwargs)
 
 
-def getConfigPath():
-    r"""Return the user space path for configuration or cache files.
+def getCachePath():
+    r"""Return the user space path for cache files.
 
-    - Windows: 'C:\Documents and Settings\username\Appdata\pygimli'
-    - Linux: '~/.config/pygimli' (if not overwritten by $XDG_CONFIG_HOME)
+    - Windows: 'C:\Documents and Settings\username\Appdata\pygimli\Cache'
+    - Linux: '~/.cache/pygimli' (if not overwritten by $XDG_CONFIG_HOME)
     - Mac: '~/Library/Preferences/pygimli'
 
+    See Also
+    --------
+    pygimli.getConfigPath
     """
-    appname = "pygimli"
     system = sys.platform
-
+    configpath = pg.core.config.getConfigPath()
     if system == "win32":
-        path = os.path.join(os.environ['APPDATA'])
-    elif system == "darwin":
-        path = os.path.expanduser('~/Library/Preferences/')
+        path = os.path.join(configpath, "Cache")
+    if system == "darwin":
+        path = configpath.replace("Preferences", "Caches")
     else:
-        path = os.getenv('XDG_CONFIG_HOME', os.path.expanduser("~/.config"))
-    return os.path.join(path, appname)
+        path = configpath.replace(".config", ".cache")
+    return path
+
 
 def load(fname, verbose=False, testAll=True, realName=None):
     """General import function to load data and meshes from file.

@@ -4,7 +4,7 @@
 there abbreviations."""
 
 import pygimli as pg
-rc = pg.rc
+from ..core.config import rc
 
 quants = {
     'rhoa': {

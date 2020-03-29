@@ -13,7 +13,6 @@ import traceback
 
 import numpy as np
 
-from ..utils import boxprint
 
 if sys.platform == 'win32':
     os.environ['PATH'] = __path__[0] + ';' + os.environ['PATH']
@@ -32,6 +31,8 @@ except ImportError as e:
 ###  Global convenience functions #####
 #######################################
 
+from .config import rc
+from ..utils import boxprint
 
 _pygimli_.load = None
 
