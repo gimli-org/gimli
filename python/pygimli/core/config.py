@@ -60,6 +60,6 @@ if os.path.isfile(configfile):
     rc = userrc
 else:
     print("Creating default user configuration file at " + configfile)
-    os.makedirs(os.makedirs(os.path.join(configpath, "pygimli")), exist_ok=True)
+    os.makedirs(os.path.join(configpath, "pygimli"), exist_ok=True)
     with open(configfile, "w") as cfg:
         json.dump(rc, cfg, indent=4, sort_keys=True)
