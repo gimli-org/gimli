@@ -9,7 +9,7 @@ import pygimli as pg
 
 def ColeColeRho(f, rho, m, tau, c, a=1):
     pg.deprecated("Please use modelColeColeRho instead of ColeColeRho.")
-    return modelColeColeRho(f, rho, m, tau, c, a=1)
+    return modelColeColeRho(f, rho, m, tau, c, a)
 
 
 def modelColeColeRho(f, rho, m, tau, c, a=1):
@@ -85,21 +85,21 @@ def ColeColeRhoDouble(f, rho, m1, t1, c1, m2, t2, c2):
     return modelColeColeRhoDouble(f, rho, m1, t1, c1, m2, t2, c2)
 
 
-def modelColeColeRhoDouble(f, rho, m1, t1, c1, m2, t2, c2):
+def modelColeColeRhoDouble(f, rho, m1, t1, c1, m2, t2, c2, a=1):
     """Frequency-domain Double Cole-Cole impedance model
 
     Frequency-domain Double Cole-Cole impedance model returns the sum of
     two Cole-Cole Models with a common amplitude.
     Z = rho * (Z1(Cole-Cole) + Z2(Cole-Cole))
     """
-    Z1 = modelColeColeRho(f, rho=1, m=m1, tau=t1, c=c1, a=1)
-    Z2 = modelColeColeRho(f, rho=1, m=m2, tau=t2, c=c2, a=1)
+    Z1 = modelColeColeRho(f, rho=1, m=m1, tau=t1, c=c1, a=a)
+    Z2 = modelColeColeRho(f, rho=1, m=m2, tau=t2, c=c2, a=a)
     return rho * (Z1 + Z2)
 
 
 def ColeColeSigma(f, sigma, m, tau, c, a=1):
     pg.deprecated("Please use modelColeColeSigma instead of ColeColeSigma.")
-    return modelColeColeSigma(f, sigma, m, tau, c, a=1)
+    return modelColeColeSigma(f, sigma, m, tau, c, a)
 
 
 def modelColeColeSigma(f, sigma, m, tau, c, a=1):
@@ -168,12 +168,12 @@ def modelColeColeEpsilon(f, e0, eInf, tau, alpha):
 
 def ColeCole(f, R, m, tau, c, a=1):
     pg.deprecated("Please use modelColeColeRho instead of ColeCole.")
-    return modelColeColeRho(f, R, m, tau, c, a=1)
+    return modelColeColeRho(f, R, m, tau, c, a)
 
 
 def ColeDavidson(f, R, m, tau, a=1):
     pg.deprecated("Please use modelColeDavidson instead of ColeDavidson.")
-    return modelColeDavidson(f, R, m, tau, a=1)
+    return modelColeDavidson(f, R, m, tau, a)
 
 
 def modelColeDavidson(f, R, m, tau, a=1):
