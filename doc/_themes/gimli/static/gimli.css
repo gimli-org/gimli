@@ -795,7 +795,7 @@ p.admonition-title {
 .logo img {
   width: 500px;
   height: 150px;
-  margin-bottom: -20px;
+  margin-bottom: 0px;
   margin-top: 15px;
 }
 
