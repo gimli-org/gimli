@@ -7,10 +7,6 @@ html, body {
   height: 100%;
 }
 
-ul {
-  padding-left: 10px;
-}
-
 .container-fluid {
   padding-left: 30px;
   min-height: 100%;
