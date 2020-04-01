@@ -130,30 +130,8 @@ def findAndMaskBestClim(dataIn, cMin=None, cMax=None, dropColLimitsPerc=5,
     return data, cMin, cMax
 
 
-def findColorBar(ax):
-    """Find the colorbar of an axes.
-
-    Find the colorbar that is associated with given axes or return None.
-    """
-    pg.critical('Who use this?') #190530
-    for i, ai in enumerate(ax.figure.axes):
-        print(i, ai)
-
-    for c in ax.collections:
-        if isinstance(c, mpl.cm.ScalarMappable):
-            if c.colorbar is not None:
-                print("cbar:,", c.colorbar)
-                return c.colorbar
-
-    raise BaseException("Implement me")
-
-    # print(ax.colorbar)
-    # print(ax.images)
-    # return None
-
-
 def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
-                   logScale=None, nLevs=5, label=None, levels=None, **kwargs):
+                   logScale=None, nCols=256, nLevs=5, label=None, levels=None, **kwargs):
     """Update colorbar values.
 
     Update limits and label of a given colorbar.
@@ -171,6 +149,9 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
     cLog: bool
 
     cMap: matplotlib colormap
+
+    nCols: int [256]
+        Number of colors, independent of number of color levels. Usefull for poor mans contour.
 
     nLevs: int
 
@@ -190,9 +171,11 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
     if cMap is not None:
         if isinstance(cMap, str):
             if levels is not None:
-                cMap = cmapFromName(cMap, ncols=len(levels)-1, bad=[1.0, 1.0, 1.0, 0.0])
+                cMap = cmapFromName(cMap, ncols=len(levels)-1,
+                                    bad=[1.0, 1.0, 1.0, 0.0])
             else:
-                cMap = cmapFromName(cMap, ncols=256, bad=[1.0, 1.0, 1.0, 0.0])
+                cMap = cmapFromName(cMap, ncols=nCols,
+                                    bad=[1.0, 1.0, 1.0, 0.0])
 
         cbar.mappable.set_cmap(cMap)
 
@@ -451,7 +434,7 @@ def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=None,
             else:
                 # if all data are negative switch to lin scale
                 return setMappableData(mappable, dataIn, cMin, cMax,
-                                       logScale=False)
+                                       logScale=False, **kwargs)
     if logScale is True:
         mappable.set_norm(mpl.colors.LogNorm())
     elif logScale is False:
@@ -462,7 +445,7 @@ def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=None,
     mappable.set_clim(cMin, cMax)
 
     if mappable.colorbar is not None:
-        updateColorBar(mappable.colorbar, cMin=cMin, cMax=cMax)
+        updateColorBar(mappable.colorbar, cMin=cMin, cMax=cMax, **kwargs)
 
 def addCoverageAlpha(patches, coverage, dropThreshold=0.4):
     """Add alpha values to the colors of a polygon collection.

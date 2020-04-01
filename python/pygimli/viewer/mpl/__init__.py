@@ -22,7 +22,6 @@ from .boreholes import BoreHole, BoreHoles, create_legend
 
 from .colorbar import (createColorBar,
                        createColorBarOnly,
-                       findColorBar,
                        updateColorBar,
                        addCoverageAlpha,
                        autolevel,

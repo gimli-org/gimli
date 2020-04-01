@@ -305,7 +305,7 @@ def drawMesh(ax, mesh, fitView=True, **kwargs):
 
 
 def drawModel(ax, mesh, data=None, tri=False, rasterized=False,
-              logScale=False, cMin=None, cMax=None,
+              cMin=None, cMax=None, logScale=False,
               xlabel=None, ylabel=None, fitView=True, verbose=False,
               **kwargs):
     """Draw a 2d mesh and color the cell by the data.
@@ -363,11 +363,11 @@ def drawModel(ax, mesh, data=None, tri=False, rasterized=False,
 
     if tri or 'shading' in kwargs:
         gci = drawField(ax, mesh, data,
-                         cMin=cMin, cMax=cMax, logScale=logScale,
+                        cMin=cMin, cMax=cMax, logScale=logScale,
                          **kwargs)
     else:
         gci = pg.viewer.mpl.createMeshPatches(ax, mesh, rasterized=rasterized,
-                                             verbose=verbose)
+                                              verbose=verbose)
         ax.add_collection(gci)
 
         if data is None:
@@ -381,8 +381,9 @@ def drawModel(ax, mesh, data=None, tri=False, rasterized=False,
         else:
             viewdata = data
 
-        pg.viewer.mpl.setMappableData(gci, viewdata, cMin=cMin, cMax=cMax,
-                                     logScale=logScale)
+        pg.viewer.mpl.setMappableData(gci, viewdata,
+                                      cMin=cMin, cMax=cMax, logScale=logScale,
+                                      **kwargs)
 
     gci.set_antialiased(True)
     gci.set_linewidths(0.1)

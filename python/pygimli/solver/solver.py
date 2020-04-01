@@ -74,6 +74,9 @@ def cellValues(mesh, arg, **kwargs):
 
     Parameters
     ----------
+    mesh : :gimliapi:`GIMLI::Mesh`
+        Used if arg is callable
+
     arg : float | int | complex | ndarray | iterable | callable | dict
         Argument to be parsed as cell data.
         If arg is a dictionary, the dict key will be interpreted as cell marker:
@@ -84,8 +87,7 @@ def cellValues(mesh, arg, **kwargs):
         Key can be integer for cell marker or str, which will be interpreted as
         splice or list. See examples or parseDictKey_.
 
-    mesh : :gimliapi:`GIMLI::Mesh`
-        Used if arg is callable
+        Iterable of length mesh.nodeCount() will be interpolated to cellCenters.
 
     userData : class
         Used if arg is callable
@@ -111,6 +113,8 @@ def cellValues(mesh, arg, **kwargs):
     [2.0, 2.0, 2.0, 2.0]
     >>> print(pg.solver.cellValues(mesh, {'0:2':3.0}))
     [3.0, 3.0, None, None]
+    >>> print(pg.solver.cellValues(mesh, np.ones(mesh.nodeCount())))
+    [1.0, 1.0, 1.0, 1.0]
     >>> print(np.array(pg.solver.cellValues(mesh, {'1:3' : np.diag([1.0, 2.0])})))
     [[[1. 0.]
       [0. 2.]]
@@ -170,6 +174,8 @@ def cellValues(mesh, arg, **kwargs):
     if hasattr(arg, '__len__'):
         if len(arg) == mesh.cellCount():
             return arg
+        if len(arg) == mesh.nodeCount():
+            return pg.interpolate(mesh, arg, mesh.cellCenters())
 
     # if arg if scalar or global data type, ndarray or Matrix but not the right
     # size assume global tensor
@@ -406,7 +412,7 @@ def parseArgPairToBoundaryArray(pair, mesh):
         bc.append(pair)
         return bc
 
-    # bad Design .. need to remove
+    ####### bad Design .. need to remove
     elif isinstance(pair[0], list):
         print(pair[0], pair[0][0])
         pg.deprecated('bad design')
@@ -424,6 +430,7 @@ def parseArgPairToBoundaryArray(pair, mesh):
         pg.warn('in use? isinstance(pair[0], pg.core.Boundary)')#20200115
         bc.append(pair)
         return bc
+    ####### bad Design .. need to remove
 
     for b in bounds:
         val = None
@@ -540,10 +547,11 @@ def parseArgToBoundaries(args, mesh):
 
     if isinstance(args, dict):
 
-        try:
-            val = list(args.values())[0]
-        except BaseException as _:
-            pg.error("Can't interpret empty dictionary:", args)
+        # try:
+        #     val = list(args.values())[0]
+        # except BaseException as _:
+        #     return boundaries
+        #     pg.error("Can't interpret empty dictionary:", args)
 
         for key, val in args.items():
             if isinstance(key, pg.core.stdVectorNodes) or \
@@ -564,7 +572,6 @@ def parseArgToBoundaries(args, mesh):
     if hasattr(args, '__call__') or \
         isinstance(args, float) or isinstance(args, int):
         return parseArgToBoundaries({'*': args}, mesh)
-
 
     elif isinstance(args, list):
         pg.warn('DEPRECATED by bad design [parseArgToBoundaries(lists)] check'
@@ -2113,7 +2120,6 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
         return u
 
     else: # times given
-
         pg.solver.checkCFL(times, mesh, max(a))
 
         if debug:
@@ -2137,7 +2143,8 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
         if not dynamic:
             S = createStiffnessMatrix(mesh, a)
             assembleBC_(bc, mesh, S, F, time=0.0, userData=userData)
-            return crankNicolson(times, theta, S, M, F, u0=u0, progress=progress)
+            return crankNicolson(times, theta, S, M, F, u0=u0,
+                                 progress=progress)
 
         rhs = np.zeros((len(times), dof))
         # no time dependency for rhs so far ... TODO
@@ -2199,7 +2206,7 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
             U[n, :] = np.asarray(u)
 
             if progress:
-                progress.update(n, ' t_prep: {0}ms t_step {1}s'.format(
+                progress.update(n, 't_prep: {0}ms t_step {1}s'.format(
                     pg.pf(t_prep*1000),
                     pg.pf(swatch.duration())))
         if debug:
@@ -2313,8 +2320,8 @@ def crankNicolson(times, theta, matS, matI, f, u0=None, progress=None):
 
         if progress:
             progress.update(n,
-                            ' t_prep: ' + str(round(timeAssemble[-1], 5)) + 's' + \
-                            ' t_step: ' + str(round(timeSolve[-1], 5)) + 's')
+                            't_prep: ' + pg.pf(timeAssemble[-1]*1000) + 'ms ' + \
+                            't_step: ' + pg.pf(timeSolve[-1]*1000) + 'ms')
 
         #if verbose and (n % verbose == 0):
             ## print(min(u[n]), max(u[n]))

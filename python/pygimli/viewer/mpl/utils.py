@@ -34,7 +34,7 @@ def updateAxes(ax, force=False):
 
 def hold(val=1):
     """TODO WRITEME."""
-    pg.viewer.mpl.holdAxes__ = val
+    globals()[holdAxes__] = val
 
 
 def wait(**kwargs):
