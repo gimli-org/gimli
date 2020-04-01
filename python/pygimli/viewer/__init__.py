@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Viewer interface for 2D visualizations."""
+"""Interface for 2D and 3D visualizations."""
 
 import matplotlib
 

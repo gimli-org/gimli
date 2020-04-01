@@ -112,7 +112,6 @@ def show(obj=None, data=None, **kwargs):
         elif mesh.dim() == 3:
 
             from .vistaview import showMesh3D
-
             return showMesh3D(mesh, data, **kwargs)
         else:
             pg.error("ERROR: Mesh not valid.", mesh)

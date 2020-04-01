@@ -23,7 +23,7 @@ pyGIMLi API Reference
 
   .. core
   frameworks
-  manager
+  .. manager
   math
   matrix
   meshtools

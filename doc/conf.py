@@ -163,6 +163,7 @@ intersphinx_mapping = {
     'numpy': ('https://docs.scipy.org/doc/numpy', None),
     'scipy': ('https://docs.scipy.org/doc/scipy/reference', None),
     'matplotlib': ('https://matplotlib.org/', None),
+    'pyvista': ('https://docs.pyvista.org/', None)
 }
 
 autodoc_default_options = ["no-members"]

@@ -67,17 +67,17 @@ embedded and docstitle %} {%- set titlesuffix = " &mdash; "|safe + docstitle|e %
   <link rel="shortcut icon" href="{{ pathto('_static/', 1) }}favicon.ico"> {%- block extrahead %} {% endblock %}
 </head>
 
-<body class="container" data-spy="scroll" data-target=".nav">
+<body class="container-fluid" data-spy="scroll" data-target=".nav">
   <!--<a href="https://github.com/gimli-org/gimli"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo2.githubusercontent.com/a6677b08c955af8400f44c6298f40e7d19cc5b2d/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677261795f3664366436642e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png"></a>-->
   <a href="{{ pathto('', 1) }}" class="logo"><img src="{{ pathto('_static/', 1) }}gimli_logo.svg" alt=""></a>
-  <br><br>
-  <div class="clearfix"></div>
-  <nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top" style="margin-bottom: 22px;">
-    <div class="collapse navbar-collapse" id="navbarTogglerDemo03">
+<nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top" style="margin-bottom: 22px;">
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo01" aria-controls="navbarTogglerDemo01" aria-expanded="false" aria-label="Toggle navigation">
+  <span class="navbar-toggler-icon"></span> Navigation
+  </button>
+      <div class="collapse navbar-collapse" id="navbarTogglerDemo01">
       <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
         {% include 'navbar.html' %}
       </ul>
-
       <div class="form-group has-search">
         <form class="form-inline my-2 my-lg-0" action="{{ pathto('search.html', 1) }}" method="get">
         <span class="fa fa-search form-control-feedback"></span>
@@ -117,7 +117,7 @@ embedded and docstitle %} {%- set titlesuffix = " &mdash; "|safe + docstitle|e %
       </nav>
     </div>
     <div class="col-3">
-      <div class="sticky-top" id="sidebar">
+      <div class="sticky-top" id="sidebar" style="float:right">
       {% include 'sidebar.html' %}
       </div>
     </div>
