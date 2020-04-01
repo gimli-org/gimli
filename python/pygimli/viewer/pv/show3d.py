@@ -165,11 +165,12 @@ class Show3D(QMainWindow):
             cmap: str
                 The MPL colormap that should be used to display parameters.
         """
-        self.__kwargs = kwargs
-        self.mesh = pgMesh2pvMesh(mesh, data, kwargs.pop('label', ''))
+        self.mesh = pgMesh2pvMesh(mesh, data, kwargs.pop('label', 'data'))
 
         cMap = kwargs.pop('cmap', 'viridis')
-        # opacity = kwargs.pop('opacity', 1)
+        if 'alpha' in kwargs:
+            kwargs['opacity'] = kwargs.pop('alpha', 1)
+        self.__kwargs = kwargs
 
         _, self._actor = drawMesh3D(
             self.plotter, self.mesh, cmap=cMap, returnActor=True,

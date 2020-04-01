@@ -4,7 +4,7 @@ from .utils import pgMesh2pvMesh
 pv = pg.optImport('pyvista', requiredFor="proper visualization in 3D")
 
 
-def drawMesh3D(ax, mesh, notebook=False, cmap='viridis', returnActor=False, **kwargs):
+def drawMesh3D(ax, mesh, notebook=False, **kwargs):
     """
 
     Parameters
@@ -26,6 +26,10 @@ def drawMesh3D(ax, mesh, notebook=False, cmap='viridis', returnActor=False, **kw
     # sort out a few kwargs to not confuse the plotter initialization
     show_edges = kwargs.pop('show_edges', True)
     opacity = kwargs.pop('alpha', 1)
+    cmap = kwargs.pop('cmap', None)
+    color = kwargs.pop('color', 'k')
+    style = kwargs.pop('style', 'wireframe')
+    returnActor = kwargs.pop('returnActor', False)
 
     if ax is None:
         ax = pv.Plotter(notebook=notebook, **kwargs)
@@ -39,6 +43,8 @@ def drawMesh3D(ax, mesh, notebook=False, cmap='viridis', returnActor=False, **kw
     _actor = ax.add_mesh(
         mesh,  # type: pv.UnstructuredGrid
         cmap=cmap,
+        color=color,
+        style=style,
         show_edges=show_edges,
         opacity=opacity,
         )
@@ -52,8 +58,27 @@ def drawMesh3D(ax, mesh, notebook=False, cmap='viridis', returnActor=False, **kw
 def drawModel3D(ax=None, mesh=None, data=None, **kwargs):
     """
     Draw the mesh with given data.
+
+    Parameters
+    ----------
+    ax: pv.Plotter() [None]
+        Pyvista's basic Plotter to add the mesh to.
+    mesh: pg.Mesh
+        The Mesh to plot.
+    data: iterable
+        Data that should be displayed with the mesh.
     """
+    if all(v is None for v in [ax, mesh, data]):
+        pg.critical("At least mesh or data should not be None")
+        return None
+
     mesh = pgMesh2pvMesh(mesh, data, kwargs.pop('label', 'data'))
+    if data is not None:
+        kwargs['style'] = 'surface'
+        kwargs['color'] = None
+
+    if 'cmap' not in kwargs:
+        kwargs['cmap'] = 'viridis'
     return drawMesh3D(ax, mesh, **kwargs)
 
 

@@ -102,7 +102,6 @@ def showMesh3DVista(mesh, data=None, **kwargs):
     notebook = kwargs.pop('notebook', inline)
 
     # add given data from argument
-    add_args = {}
     if gui and not notebook:
         app = Qt.QApplication(sys.argv)
         s3d = Show3D(app)
@@ -112,7 +111,6 @@ def showMesh3DVista(mesh, data=None, **kwargs):
         return s3d.plotter, s3d  # plotter, gui
 
     elif not gui:
-        kwargs = {**kwargs, **add_args}
         plotter = drawModel3D(None, mesh, data, notebook=notebook, cmap=cmap, **kwargs)
         if notebook:
             pyvista.set_plot_theme('document')
