@@ -18,6 +18,12 @@ if pyvista is None:
     view3Dcallback = 'showMesh3DFallback'
 else:
     view3Dcallback = 'showMesh3DVista'
+    vers_users = pyvista.__version__
+    vers_userf = float(pyvista.__version__[::-1].replace('.', '', 1)[::-1])
+    vers_needs = '0.23.2'
+    vers_needf = 0.232
+    if vers_userf < vers_needf:
+        pg.warn("Please consider updating PyVista to at least {}".format(vers_needs))
 
 PyQt5 = pg.optImport('PyQt5', requiredFor="pyGIMLi 3D viewer")
 
