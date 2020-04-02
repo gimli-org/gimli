@@ -68,7 +68,7 @@ def setPolyRegionMarker(poly, marker=1, area=0.0, markerPosition=None,
     isHole : bool [False]
         Marks the geometry as a hole and will be cut in any merge mesh.
 
-    Other Parameters
+    Keyword Arguments
     ----------------
     **kwargs
         Additional kwargs
@@ -107,8 +107,8 @@ def createRectangle(start=None, end=None, pos=None, size=None, **kwargs):
         Factors for x and y by which the rectangle, defined by **start** and
         **width**, are scaled.
 
-    Other Parameters
-    ----------------
+    Keyword Arguments
+    -----------------
     **kwargs
         Additional kwargs
 
@@ -381,12 +381,12 @@ def createLine(start, end, segments=1, **kwargs):
     segments : int
         Discrete amount of segments for the line
 
-    **kwargs:
-
-        boundaryMarker : int [1]
-            Marker for the resulting boundary edges
-        leftDirection : bool [True]
-            Rotational direction
+    Keyword Arguments
+    -----------------
+    boundaryMarker : int [1]
+        Marker for the resulting boundary edges
+    leftDirection : bool [True]
+        Rotational direction
 
     Returns
     -------
@@ -1558,8 +1558,8 @@ def extrude(p2, z=-1.0, boundaryMarker=0, **kwargs):
     z : float [-1.0]
         2D geometry
 
-    Other Parameters
-    ----------------
+    Keyword Arguments
+    -----------------
     ** kwargs:
         Marker related arguments:
         See :py:mod:`pygimli.meshtools.polytools.setPolyRegionMarker`
@@ -1622,7 +1622,7 @@ def createCylinder(radius=1, height=1, nSegments=8,
     pos : pg.Pos [None]
         The center position, default is at the origin.
 
-    Other Parameters
+    Keyword Arguments
     ----------------
     ** kwargs:
         Marker related arguments:

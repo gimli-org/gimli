@@ -342,8 +342,8 @@ class Inversion(object):
         errorVals : iterable
             Relative error values. dv / v
 
-        Other Parameters
-        ----------------
+        Keyword Arguments
+        -----------------
         maxIter : int
             Overwrite class settings for maximal iterations number.
         dPhi : float [1]

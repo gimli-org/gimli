@@ -1967,8 +1967,8 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
     times: array [None]
         Solve as time dependent problem for the given times.
 
-    Other Parameters
-    ----------------
+    Keyword Arguments
+    -----------------
     **kwargs
         u0: value | array | callable(pos, userData)
             Node values

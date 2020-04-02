@@ -271,6 +271,18 @@ code.descname, code.descclassname, code.xref.py.py-mod.docutils.literal, code.xr
   font-weight: bold;
 }
 
+.rst-content dl:not(.docutils) dt {
+    display: table;
+    margin: 6px 0;
+    font-size: 90%;
+    line-height: normal;
+    background: #e7f2fa;
+    color: #2980B9;
+    border-top: solid 3px #6ab0de;
+    padding: 6px;
+    position: relative;
+}
+
 table.longtable.docutils a {
   font-weight: bold;
   font-family: Inconsolata;

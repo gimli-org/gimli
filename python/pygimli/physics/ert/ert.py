@@ -613,7 +613,7 @@ class ERTManager(MeshMethodManager):
         scheme : :bertapi:`Bert::DataContainerERT`
             Data measurement scheme.
 
-        Other Parameters
+        Keyword Arguments
         ----------------
         verbose: bool[False]
             Be verbose. Will override class settings.

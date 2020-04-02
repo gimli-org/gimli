@@ -101,8 +101,8 @@ class TravelTimeDijkstraModelling(MeshModelling):
         kwargs['label'] = kwargs.pop('label', pg.unit('vel'))
         kwargs['cMap'] = kwargs.pop('cMap', pg.utils.cMap('vel'))
 
-        return super().drawModel(ax=ax, model=model, 
-                                 logScale=kwargs.pop('logScale', True), 
+        return super().drawModel(ax=ax, model=model,
+                                 logScale=kwargs.pop('logScale', True),
                                  **kwargs)
 
     def drawData(self, ax, data=None, err=None, **kwargs):
@@ -206,8 +206,8 @@ class TravelTimeManager(MeshMethodManager):
         noiseAbs: float [0.0]
             Add absolute noise to the simulated data in ms.
 
-        Other Parameters
-        ----------------
+        Keyword Arguments
+        -----------------
         returnArray: [False]
             Return only the calculated times.
         verbose: [self.verbose]
@@ -285,8 +285,8 @@ class TravelTimeManager(MeshMethodManager):
             Amount of secondary nodes used for ensure accuracy of the forward
             operator.
 
-        Other Parameters
-        ----------------
+        Keyword Arguments
+        -----------------
         ** kwargs:
             Inversion related arguments:
             See :py:mod:`pygimli.frameworks.MeshMethodManager.invert`

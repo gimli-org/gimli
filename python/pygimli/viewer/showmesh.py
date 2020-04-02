@@ -45,8 +45,8 @@ def show(obj=None, data=None, **kwargs):
     data: iterable
         Optionally data to visualize. See appropriate show function.
 
-    Other Parameters
-    ----------------
+    Keyword Arguments
+    -----------------
     **kwargs
         Additional kwargs forward to appropriate show functions.
 
@@ -196,8 +196,8 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
     marker: bool [False]
         Show mesh and boundary marker.
 
-    Other Parameters
-    ----------------
+    Keyword Arguments
+    -----------------
     **kwargs:
         * xlabel: str [None]
             Add label to the x axis

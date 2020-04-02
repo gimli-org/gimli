@@ -460,7 +460,7 @@ class VESManager(MethodManager1d):
         Parameters
         ----------
 
-        Other Parameters
+        Keyword Arguments
         ----------------
         **kwargs
             Additional kwargs inherited from %(MethodManager1d.invert) and

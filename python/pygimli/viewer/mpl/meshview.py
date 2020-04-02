@@ -271,8 +271,8 @@ def drawMesh(ax, mesh, fitView=True, **kwargs):
     fitView : bool [True]
         Adjust ax limits to mesh bounding box.
 
-    Other Parameters
-    ----------------
+    Keyword Arguments
+    -----------------
     **kwargs
         Additional kwargs forward to drawPLC or drawMeshBoundaries.
 
@@ -328,8 +328,8 @@ def drawModel(ax, mesh, data=None, tri=False, rasterized=False,
     fitView : bool [True]
         Adjust ax limits to mesh bounding box.
 
-    Other Parameters
-    ----------------
+    Keyword Arguments
+    -----------------
     **kwargs
         Additional kwargs forwarded to the draw functions and mpl methods,
         respectively.
@@ -605,8 +605,8 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
     fitView : bool [True]
         Adjust ax limits to mesh bounding box.
 
-    Other Parameters
-    ----------------
+    Keyword Arguments
+    -----------------
     **kwargs
         Additional kwargs forwarded to the draw functions and mpl methods,
         respectively.
@@ -824,8 +824,8 @@ def drawField(ax, mesh, data=None, levels=None, nLevs=5,
     fitView : bool [True]
         Adjust ax limits to mesh bounding box.
 
-    Other Parameters
-    ----------------
+    Keyword Arguments
+    -----------------
     shading: 'flat' | 'gouraud'
 
     fillContour: [True]
@@ -1002,8 +1002,8 @@ def drawStreamLine_(ax, mesh, c, data, dataMesh=None, linewidth=1.0,
     dropTol : float [0.0]
         Don't draw stream lines with velocity lower than drop tolerance.
 
-    Other Parameters
-    ----------------
+    Keyword Arguments
+    -----------------
     **kwargs
         arrowSize: int
             Size of the arrow's head.
@@ -1106,8 +1106,8 @@ def drawStreams(ax, mesh, data, startStream=3, coarseMesh=None, quiver=False,
     quiver : bool [False]
         Draw arrows instead of streamlines.
 
-    Other Parameters
-    ----------------
+    Keyword Arguments
+    -----------------
     **kwargs
         Additional kwargs forwarded to axe.quiver, drawStreamLine_
 
@@ -1227,8 +1227,8 @@ def drawSensors(ax, sensors, diam=None, coords=None, **kwargs):
     coords: (int, int) [0, 1]
         Coordinates to take (usually x and y)
 
-    Other Parameters
-    ----------------
+    Keyword Arguments
+    -----------------
     **kwargs
         Additional kwargs forwarded to mpl.PatchCollection, mpl.Circle
 

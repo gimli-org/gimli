@@ -12,31 +12,25 @@ import random
 import os
 import re
 import sys
-sys.path.insert(0, os.path.abspath('.'))
 from os import path
 from os.path import join
 
+# If extensions (or modules to document with autodoc) are in another directory,
+# add these directories to sys.path here. If the directory is relative to the
+# documentation root, use os.path.abspath to make it absolute, like shown here.
+sys.path.insert(0, os.path.abspath('.'))
 
 import numpy as np
+# for doc rendering on headless machines (jenkins server)
 import matplotlib
-# Does not work properly with sphinx gallery. Leaving this out for the moment.
-# from mplstyle import plot_rcparams
-# matplotlib.rcParams.update(plot_rcparams)
 matplotlib.use("Agg")
-
 import pip
 import pkg_resources
 import sphinx
 
 import pygimli
 
-import pkg_resources
 
-# for doc rendering on headless machines (jenkins server)
-
-# If extensions (or modules to document with autodoc) are in another directory,
-# add these directories to sys.path here. If the directory is relative to the
-# documentation root, use os.path.abspath to make it absolute, like shown here.
 from sidebar_gallery import make_gallery
 
 try:
@@ -59,14 +53,16 @@ sys.path.append(os.path.abspath(join(TRUNK_PATH, 'python/pygimli')))
 
 # -- General configuration ----------------------------------------------------
 
+# MPL configuration in API docs, tutorials and examples
+plot_rcparams = {'savefig.bbox': 'tight'}
+
 # If your documentation needs a minimal Sphinx version, state it here.
-needs_sphinx = '1.3' # and lower 1.6
+needs_sphinx = '1.8' # due to napoleon
 
 # Check for external sphinx extensions
 deps = ['sphinxcontrib-programoutput',
         'sphinxcontrib-bibtex',
-        'sphinxcontrib-doxylink',
-        'numpydoc']
+        'sphinxcontrib-doxylink']
 
 # check for p.version too
 modules = [p.project_name for p in pkg_resources.working_set]
@@ -81,7 +77,6 @@ if req:
           "Or install all dependencies with: pip install -r requirements.txt\n" + \
           "You can install them all in userspace by adding the --user flag."
     print((pkg_resources.working_set))
-    #print(pip.get_installed_distributions())
     raise ImportError(msg)
 
 # Add any Sphinx extension module names here, as strings.
@@ -94,6 +89,7 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.intersphinx',
               'sphinx.ext.imgconverter',
               'sphinx.ext.autosectionlabel',
+              'sphinx.ext.napoleon',
               'matplotlib.sphinxext.plot_directive',
               'srclinks',
               'sphinxcontrib.doxylink'
@@ -101,11 +97,16 @@ extensions = ['sphinx.ext.autodoc',
 
 extensions += [dep.replace('-', '.') for dep in deps]
 
+
 # Sphinx-gallery settings
 try:
     import sphinx_gallery
     from sphinx_gallery.sorting import FileNameSortKey
     extensions += ["sphinx_gallery.gen_gallery"]
+
+    def reset_mpl(gallery_conf, fname):
+        import matplotlib
+        matplotlib.rcParams.update(plot_rcparams)
 
     # Setup automatic gallery generation
     sphinx_gallery_conf = {
@@ -137,7 +138,10 @@ try:
         'filename_pattern': '/plot_',
 
         'first_notebook_cell': ("# Checkout www.pygimli.org for more examples\n"
-                                "%matplotlib inline")
+                                "%matplotlib inline"),
+
+        'reset_modules': (reset_mpl),
+
         }
 
     pyvista = pygimli.optImport("pyvista", "building the gallery with 3D visualizations")
@@ -181,20 +185,10 @@ mathjax_path = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js"
 templates_path = [join(SPHINXDOC_PATH, '_templates'),
                   join(DOC_BUILD_DIR, '_templates')]
 
-numpydoc_class_members_toctree = False
-numpydoc_show_class_members = True
-numpydoc_use_plots = True
-
 # MPL plot directive settings
 plot_formats = [('png', 96), ('pdf', 96)]
 plot_include_source = True
 plot_html_show_source_link = False
-plot_pre_code = """
-import pygimli as pg
-import numpy as np
-import matplotlib.pyplot as plt
-"""
-plot_rcparams = {'savefig.bbox': 'tight'}
 plot_apply_rcparams = True  # if context option is used
 
 # The suffix of source filenames.
@@ -513,4 +507,36 @@ html_context = {"showcase": showcase}
 
 srclink_project = 'https://github.com/gimli-org/gimli'
 srclink_src_path = 'doc/'
-srclink_branch = 'dev'
+srclink_branch = 'fw_cleaning'
+
+# New docstring parsing using Napoleon instead of numpydoc
+# The monkeypatch detects draw or show commands
+from sphinx.ext.napoleon import NumpyDocstring
+
+def monkeypatch(self, section: str, use_admonition: bool):
+    lines = self._strip_empty(self._consume_to_next_section())
+    lines = self._dedent(lines)
+    all_lines = " ".join(lines)
+    if ("show" in all_lines or "draw" in all_lines) and "Example" in section:
+        header = '.. plot::\n\n'
+        lines = self._indent(lines, 3)
+    else:
+        header = '.. rubric:: %s' % section
+    if lines:
+        return [header, ''] + lines + ['']
+    else:
+        return [header, '']
+
+NumpyDocstring._parse_generic_section = monkeypatch
+
+# Napoleon settings
+napoleon_numpy_docstring = True
+napoleon_include_init_with_doc = False
+napoleon_include_private_with_doc = True
+napoleon_include_special_with_doc = True
+napoleon_use_admonition_for_examples = False
+napoleon_use_admonition_for_notes = False
+napoleon_use_admonition_for_references = False
+napoleon_use_ivar = False
+napoleon_use_param = True
+napoleon_use_rtype = True
