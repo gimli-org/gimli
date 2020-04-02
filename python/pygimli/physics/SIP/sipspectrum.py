@@ -190,16 +190,6 @@ class SpectrumManager(MethodManager):
         if vals is None:
             return self._ensureError(0.01, dataVals)
 
-<<<<<<< Updated upstream
-=======
-        if isComplex([err]):
-            vals = squeezeComplex(err)
-
-        if isinstance(vals, float):
-            pg.info("Create default error of {0}'%'".format(vals*100))
-            vals = np.ones(len(dataVals)) * vals
-
->>>>>>> Stashed changes
         if abs(min(vals)) < 1e-12:
             print(min(vals), max(vals))
             pg.critical("There are zero data values.")
