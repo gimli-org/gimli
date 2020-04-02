@@ -225,7 +225,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
     """
     renameKwarg('cmap', 'cMap', kwargs)
 
-    cMap = kwargs.pop('cMap', None)
+    cMap = kwargs.pop('cMap', 'viridis')
     cBarOrientation = kwargs.pop('orientation', 'horizontal')
 
     fitViewDefault = False
@@ -363,7 +363,9 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
     if colorBar and validData:
         # , **kwargs) # causes problems!
         labels = ['cMin', 'cMax', 'nLevs', 'logScale', 'levels']
+
         subkwargs = {key: kwargs[key] for key in labels if key in kwargs}
+        subkwargs['nCols'] = kwargs.pop('nCols', 256)
         subkwargs['label'] = label
         subkwargs['cMap'] = cMap
         subkwargs['orientation'] = cBarOrientation
