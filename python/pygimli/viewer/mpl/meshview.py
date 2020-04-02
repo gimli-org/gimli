@@ -8,7 +8,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import pygimli as pg
-from pygimli.misc import streamline
+
+from pygimli.utils import streamline
 
 from .colorbar import autolevel, createColorBar, updateColorBar
 from .utils import updateAxes as updateAxes_
@@ -991,7 +992,8 @@ def drawStreamLine_(ax, mesh, c, data, dataMesh=None, linewidth=1.0,
         Start point is c.center()
     data : iterable float | [float, float]
         If data is an array (per cell or node) gradients are calculated
-        otherwise the data will be interpreted as vector field.
+        otherwise the data will be interpreted as vector field per nodes or 
+        cell centers.
     dataMesh : :gimliapi:`GIMLI::Mesh` [None]
         Optional mesh for the data. If you want high resolution
         data to plot on coarse draw mesh.
@@ -1093,7 +1095,8 @@ def drawStreams(ax, mesh, data, startStream=3, coarseMesh=None, quiver=False,
         2d mesh
     data : iterable float | [float, float] | pg.core.R3Vector
         If data is an array (per cell or node) gradients are calculated
-        otherwise the data will be interpreted as vector field.
+        otherwise the data will be interpreted as vector field per nodes or 
+        cell centers.
     startStream : int
         variate the start stream drawing, try values from 1 to 3 what every
         you like more.

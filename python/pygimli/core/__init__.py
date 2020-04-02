@@ -31,7 +31,6 @@ except ImportError as e:
 ###  Global convenience functions #####
 #######################################
 
-from .config import rc
 from ..utils import boxprint
 
 _pygimli_.load = None

@@ -35,4 +35,7 @@ from .utils import (ProgressBar, boxprint, cumDist, cut, diff, dist,
                     rand, randN, trimDocString, unicodeToAscii, unique,
                     unique_everseen, unique_rows, uniqueAndSum)
 
+from .streams import streamline, streamlineDir
+
+
 __all__ = [name for name in dir() if '_' not in name]

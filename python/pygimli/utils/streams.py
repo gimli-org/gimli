@@ -1,10 +1,3 @@
-# coding=utf-8
-
-from __future__ import print_function
-
-import os
-import sys
-
 import pygimli as pg
 
 
@@ -48,17 +41,21 @@ def streamlineDir(mesh, field, startCoord, dLengthSteps, dataMesh=None,
         field = field.array()
 
     if hasattr(field[0], '__len__'):
-        if min(field[:, 0]) == max(field[:, 0]) and \
-           min(field[:, 1]) == max(field[:, 1]):
+        if abs(max(field[:, 0])) == 0 and abs(max(field[:, 1]) == 0):
             raise BaseException("No data range streamline: min/max == ",
                                 min(field[:, 0]))
+
         vx = pg.Vector(field[:, 0])
         vy = pg.Vector(field[:, 1])
+
+
+
 
         isVectorData = True
     else:
         if min(field) == max(field):
-            raise BaseException("No data range for streamline: min/max == ",
+            raise BaseException("No scalar data range for any gradients "
+                                " to draw a streamline: min/max == ",
                                 min(field))
 
         if dataMesh is not None:
@@ -128,7 +125,8 @@ def streamlineDir(mesh, field, startCoord, dLengthSteps, dataMesh=None,
                     print(len(vx), len(vy))
                     raise BaseException("data size wrong")
             else:
-                raise Exception
+                print(mesh, len(vx), len(vy))
+                raise Exception("Data length neightor node size or cell size.")
         else:
             if dataMesh:
                 cd = dataMesh.findCell(pos)
@@ -196,41 +194,4 @@ def streamlineDir(mesh, field, startCoord, dLengthSteps, dataMesh=None,
     return xd, yd, vd
 
 
-def boundaryPlaneIntersectionLines(boundaries, plane):
-    """Create Lines from boundaries that intersect a plane."""
-    lines = []
 
-    for b in boundaries:
-        ps = []
-        for i, n in enumerate(b.shape().nodes()):
-            line = pg.Line(n.pos(), b.shape().node(
-                (i + 1) % b.shape().nodeCount()).pos())
-            p = plane.intersect(line, 1e-8, True)
-            if p.valid():
-                ps.append(p)
-
-        if len(ps) == 2:
-            lines.append(list(zip([ps[0].x(), ps[1].x()],
-                                  [ps[0].z(), ps[1].z()])))
-    return lines
-# def intersectionLines
-
-
-def number_of_processors():
-    """Return number of processors on multiple platoforms."""
-    # Windows
-    if os.name == 'nt':
-        return int(os.getenv('NUMBER_OF_PROCESSORS'))
-    # Linux
-    elif sys.platform == 'linux2':
-        retv = 0
-        with open('/proc/cpuinfo', 'rt') as cpuinfo:
-            for line in cpuinfo:
-                if line[:9] == 'processor':
-                    retv += 1
-        return retv
-
-    # Please add similar hacks for MacOSX, Solaris, Irix,
-    # FreeBSD, HPUX, etc.
-    else:
-        raise RuntimeError('unknown platform')

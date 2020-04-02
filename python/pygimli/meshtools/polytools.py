@@ -1651,5 +1651,25 @@ def createCylinder(radius=1, height=1, nSegments=8,
     return poly
 
 
+def boundaryPlaneIntersectionLines(boundaries, plane):
+    """Create Lines from boundaries that intersect a plane."""
+    lines = []
+
+    for b in boundaries:
+        ps = []
+        for i, n in enumerate(b.shape().nodes()):
+            line = pg.Line(n.pos(), b.shape().node(
+                (i + 1) % b.shape().nodeCount()).pos())
+            p = plane.intersect(line, 1e-8, True)
+            if p.valid():
+                ps.append(p)
+
+        if len(ps) == 2:
+            lines.append(list(zip([ps[0].x(), ps[1].x()],
+                                  [ps[0].z(), ps[1].z()])))
+    return lines
+
+
+
 if __name__ == "__main__":
     pass

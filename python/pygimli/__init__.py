@@ -16,7 +16,7 @@ from .core import (BVector, CVector, DataContainer, DataContainerERT,
                    Inversion, IVector, Line, Matrix, Mesh, Plane, Pos,
                    RVector3, Vector, abs, cat, center, dur, exp, find,
                    interpolate, log, log10, logDropTol, math, matrix, max,
-                   mean, median, min, rc, search, setDebug, setThreadCount, sort,
+                   mean, median, min, search, setDebug, setThreadCount, sort,
                    sum, tic, toc, trans, unique, versionStr, x, y, z, zero)
 
 from .core.logger import (_, _d, _g, _r, _y, critical, d, debug, deprecated,
@@ -32,7 +32,7 @@ from .utils import prettify as pf
 from .utils import unit, cmap
 from .viewer import plt, show, wait
 from .core.load import getCachePath, getExampleFile, load, optImport
-from .core.config import getConfigPath
+from .core.config import getConfigPath, rc, getCPUCount
 
 def checkAndFixLocaleDecimal_point(verbose=False):
     """

@@ -16,6 +16,25 @@ rc = {
     'globalCache': True
 }
 
+def getCPUCount():
+    """Return number of processors on multiple platoforms."""
+    # Windows
+    if os.name == 'nt':
+        return int(os.getenv('NUMBER_OF_PROCESSORS'))
+    # Linux
+    elif sys.platform == 'linux2':
+        retv = 0
+        with open('/proc/cpuinfo', 'rt') as cpuinfo:
+            for line in cpuinfo:
+                if line[:9] == 'processor':
+                    retv += 1
+        return retv
+
+    # Please add similar hacks for MacOSX, Solaris, Irix,
+    # FreeBSD, HPUX, etc.
+    else:
+        raise RuntimeError('unknown platform')
+
 
 def getConfigPath():
     r"""Return the user space path for configuration files.
