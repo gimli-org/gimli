@@ -114,7 +114,7 @@ def cellValues(mesh, arg, **kwargs):
     >>> print(pg.solver.cellValues(mesh, {'0:2':3.0}))
     [3.0, 3.0, None, None]
     >>> print(pg.solver.cellValues(mesh, np.ones(mesh.nodeCount())))
-    [1.0, 1.0, 1.0, 1.0]
+    4 [1.0, 1.0, 1.0, 1.0]
     >>> print(np.array(pg.solver.cellValues(mesh, {'1:3' : np.diag([1.0, 2.0])})))
     [[[1. 0.]
       [0. 2.]]

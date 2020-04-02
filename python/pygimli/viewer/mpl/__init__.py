@@ -85,7 +85,7 @@ from .modelview import (drawModel1D,
 __all__ = [
     "BoreHole", "BoreHoles", "create_legend", "addCoverageAlpha", "autolevel",
     "cmapFromName",
-    "createColorBar", "createColorBarOnly", "findColorBar", "updateColorBar",
+    "createColorBar", "createColorBarOnly", "updateColorBar",
     "findAndMaskBestClim", "setCbarLevels", "saveFigure", "saveAxes",
     "setMappableData", "drawSensorAsMarker", "generateMatrix", "patchMatrix",
     "patchValMap", "plotDataContainerAsMatrix", "plotMatrix", "plotVecMatrix",
