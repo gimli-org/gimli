@@ -347,8 +347,8 @@ def extrudeMesh(mesh, a, **kwargs):
     a: iterable (float)
         Additional coordinate to extrude into.
 
-    Additional Parameters
-    -------------------
+    Keyword Arguments
+    -----------------
     adjustBottom: bool [False]
         Adjust all nodes that bottom of the mesh has a constant depth (only 2D)
 
@@ -362,7 +362,7 @@ def extrudeMesh(mesh, a, **kwargs):
     >>> import numpy as np
     >>> import pygimli as pg
     >>> import pygimli.meshtools as mt
-    >>> topo = [[x, 1.0+np.cos(2*np.pi*1/30*x)] for x in range(31)]
+    >>> topo = [[x, 1.0 + np.cos(2 * np.pi * 1/30 * x)] for x in range(31)]
     >>> m1 = mt.createPolygon(topo)
     >>> m1.setBoundaryMarkers(range(m1.boundaryCount()))
 

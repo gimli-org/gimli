@@ -10,6 +10,8 @@ possibility to hand over matplotlib path objects to the TriangleWrapper."""
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+from matplotlib.transforms import IdentityTransform
+
 import pygimli as pg
 
 ###############################################################################
@@ -17,7 +19,7 @@ import pygimli as pg
 # character.
 
 logo_path = mpl.textpath.TextPath((0, 0), r'$\Omega$', size=5)
-patch = mpl.patches.PathPatch(logo_path)
+patch = mpl.patches.PathPatch(logo_path, transform=IdentityTransform())
 
 ###############################################################################
 # The vertices of the path are defined as mesh nodes and connected with edges.

@@ -27,7 +27,6 @@ pyGIMLi API Reference
   math
   matrix
   meshtools
-  misc
   physics
   solver
   testing

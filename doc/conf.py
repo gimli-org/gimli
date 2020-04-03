@@ -83,13 +83,14 @@ if req:
 # They can be extensions coming with Sphinx (named 'sphinx.ext.*')
 # or your custom ones.
 extensions = ['sphinx.ext.autodoc',
+              'sphinx.ext.todo',
               'sphinx.ext.viewcode',
               'sphinx.ext.autosummary',
               'sphinx.ext.mathjax',
               'sphinx.ext.intersphinx',
               'sphinx.ext.imgconverter',
               'sphinx.ext.autosectionlabel',
-              'sphinx.ext.napoleon',
+              # 'sphinx.ext.napoleon',
               'matplotlib.sphinxext.plot_directive',
               'srclinks',
               'sphinxcontrib.doxylink'
@@ -170,7 +171,6 @@ intersphinx_mapping = {
     'pyvista': ('https://docs.pyvista.org/', None)
 }
 
-autodoc_default_options = ["no-members"]
 autoclass_content = "class"
 autosummary_generate = True
 
@@ -511,32 +511,32 @@ srclink_branch = 'fw_cleaning'
 
 # New docstring parsing using Napoleon instead of numpydoc
 # The monkeypatch detects draw or show commands
-from sphinx.ext.napoleon import NumpyDocstring
-
-def monkeypatch(self, section: str, use_admonition: bool):
-    lines = self._strip_empty(self._consume_to_next_section())
-    lines = self._dedent(lines)
-    all_lines = " ".join(lines)
-    if ("show" in all_lines or "draw" in all_lines) and "Example" in section:
-        header = '.. plot::\n\n'
-        lines = self._indent(lines, 3)
-    else:
-        header = '.. rubric:: %s' % section
-    if lines:
-        return [header, ''] + lines + ['']
-    else:
-        return [header, '']
-
-NumpyDocstring._parse_generic_section = monkeypatch
-
-# Napoleon settings
-napoleon_numpy_docstring = True
-napoleon_include_init_with_doc = False
-napoleon_include_private_with_doc = True
-napoleon_include_special_with_doc = True
-napoleon_use_admonition_for_examples = False
-napoleon_use_admonition_for_notes = False
-napoleon_use_admonition_for_references = False
-napoleon_use_ivar = False
-napoleon_use_param = True
-napoleon_use_rtype = True
+# from sphinx.ext.napoleon import NumpyDocstring
+#
+# def monkeypatch(self, section: str, use_admonition: bool):
+#     lines = self._strip_empty(self._consume_to_next_section())
+#     lines = self._dedent(lines)
+#     all_lines = " ".join(lines)
+#     if ("show" in all_lines or "draw" in all_lines) and "Example" in section:
+#         header = '.. plot::\n\n'
+#         lines = self._indent(lines, 3)
+#     else:
+#         header = '.. rubric:: %s' % section
+#     if lines:
+#         return [header, ''] + lines + ['']
+#     else:
+#         return [header, '']
+#
+# NumpyDocstring._parse_generic_section = monkeypatch
+#
+# # Napoleon settings
+# napoleon_numpy_docstring = True
+# napoleon_include_init_with_doc = True
+# napoleon_include_private_with_doc = True
+# napoleon_include_special_with_doc = True
+# napoleon_use_admonition_for_examples = False
+# napoleon_use_admonition_for_notes = False
+# napoleon_use_admonition_for_references = False
+# napoleon_use_ivar = True
+# napoleon_use_param = True
+# napoleon_use_rtype = True
