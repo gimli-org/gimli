@@ -517,7 +517,8 @@ def monkeypatch(self, section: str, use_admonition: bool):
     lines = self._strip_empty(self._consume_to_next_section())
     lines = self._dedent(lines)
     all_lines = " ".join(lines)
-    if ("show" in all_lines or "draw" in all_lines) and "Example" in section:
+    if ("show" in all_lines or "draw" in all_lines) and \
+        "Example" in section and ".. plot::" not in all_lines:
         header = '.. plot::\n\n'
         lines = self._indent(lines, 3)
     else:
