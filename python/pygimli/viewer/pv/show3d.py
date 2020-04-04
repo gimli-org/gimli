@@ -150,8 +150,8 @@ class Show3D(QMainWindow):
         """
         Add a mesh to the pyqt frame.
 
-        Parameter
-        ---------
+        Parameters
+        ----------
         mesh: pg.Mesh
             pyGIMLi created mesh.
         data: iterable
@@ -266,8 +266,8 @@ class Show3D(QMainWindow):
         """
         Change the view to given Parameter values.
 
-        Parameter
-        ---------
+        Parameters
+        ----------
         param: Current text of the just triggered QComboBox
 
         Note

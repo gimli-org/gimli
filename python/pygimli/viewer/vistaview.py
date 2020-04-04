@@ -83,12 +83,12 @@ def showMesh3DVista(mesh, data=None, **kwargs):
     """
     Make use of the actual 3D visualization tool kit
 
-    Parameter
-    ---------
+    Parameters
+    ----------
     data: pg.Vector or np.ndarray
         Dictionary of cell values, sorted by key. The values need to be
         numpy arrays.
-    
+
     Returns
     -------
     plotter: pyvista.Plotter
