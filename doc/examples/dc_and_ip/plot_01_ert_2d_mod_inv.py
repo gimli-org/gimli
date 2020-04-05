@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Simple ERT modeling and inversion
----------------------------------
+2D ERT modeling and inversion
+-----------------------------
 """
 
 import numpy as np

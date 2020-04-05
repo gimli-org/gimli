@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+# sphinx_gallery_thumbnail_number = 3
 r"""
-Slagdump example
-----------------
+ERT field data with topography
+------------------------------
 
-Simple example -- slagdump testcase
-- 2d with topo
+Simple example of data measured over a slagdump demonstrating:
+
+- 2D inversion with topography
 - geometric factor generation
 - topography effect
 """
@@ -30,7 +32,7 @@ mesh = mt.createParaMesh(data.sensors(),
                          quality=33.6)
 
 ##############################################################################
-# The data file does not contain geometric factors so create them for the given
+# The data file does not contain geometric factors, so create them for the given
 # topography and show the topography effect
 kTopo = createGeometricFactors(data, mesh)
 k0 = createGeometricFactors(data)
@@ -50,4 +52,5 @@ mod = ert.invert(data, mesh=mesh, maxIter=20, lam=10)
 ert.showResultAndFit()
 np.testing.assert_approx_equal(ert.inv.chi2(), 1.10883, significant=3)
 
+ert.showModel(mod)
 pg.wait()

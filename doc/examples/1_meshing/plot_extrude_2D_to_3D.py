@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # encoding: utf-8
+# sphinx_gallery_thumbnail_number = 2
 r"""
 Extrude a 2D mesh to 3D
 =======================
