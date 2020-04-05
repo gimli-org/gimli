@@ -83,9 +83,9 @@ def cellDataToNodeData(mesh, data, style='mean'):
             ]).T
         elif mesh.dim() == 3:
             return np.array([
-                pg.core.cellDataToPointData(mesh, data[0]),
-                pg.core.cellDataToPointData(mesh, data[1]),
-                pg.core.cellDataToPointData(mesh, data[2])
+                pg.core.cellDataToPointData(mesh, data[:, 0]),
+                pg.core.cellDataToPointData(mesh, data[:, 1]),
+                pg.core.cellDataToPointData(mesh, data[:, 2])
             ])
     else:
         raise BaseException("Style '" + style + "'not yet implemented."
