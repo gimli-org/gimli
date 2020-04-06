@@ -10,10 +10,10 @@ Simple gravimetric and magnetostatic field caluculation using integration approa
 import numpy as np
 import pygimli as pg
 from pygimli.meshtools import createCircle
-from pygimli.physics.gravimetry import solveGravimetry
-from pygimli.physics.gravimetry import gradUCylinderHoriz, gradGZCylinderHoriz
-from pygimli.physics.gravimetry import gradUHalfPlateHoriz
-from pygimli.physics.gravimetry import gradGZHalfPlateHoriz
+from pygimli.physics.gravimetry import (gradGZCylinderHoriz,
+                                        gradGZHalfPlateHoriz,
+                                        gradUCylinderHoriz,
+                                        gradUHalfPlateHoriz, solveGravimetry)
 
 radius = 2.
 depth = 5.
