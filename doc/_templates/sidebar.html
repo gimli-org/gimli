@@ -1,5 +1,13 @@
+      {%- if pagename == 'index' %}
+      <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <strong>pyGIMLi 1.1 out now!</strong> See what's new <a target="_blank" href="https://github.com/gimli-org/gimli/blob/master/CHANGELOG.md">here</a>.
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      {%- endif %}
       {%- if display_toc %}
-      <div class="card bg-light mb-4" style="max-width: 20rem;">
+      <div class="card bg-light mb-4">
         <div class="card-header">Contents</div>
         <div class="card-body">
         <nav id="myScrollspy">
@@ -8,26 +16,7 @@
         </div>
       </div>
       {%- endif %}
-      <!-- {%- if pagename != 'index' %}
-      <div class="card bg-light mb-4" style="max-width: 20rem;">
-        <div class="card-header">{{ _('Navigation') }}</div>
-        <div class="card-body">
-          <ul class="nav flex-column">
-            <li class="nav-header"><i class="fas fa-home"></i> Documentation home</li>
-            <li><a href="{{ pathto(master_doc) }}">Documentation Home</a></li>
-            {%- if prev %}
-            <li class="nav-header"><i class="fas fa-caret-left"></i> Previous topic</li>
-            <li><a href="{{ prev.link|e }}" title="{{ _('previous chapter') }}">{{ prev.title }}</a></li>
-            {%- endif %}
-            {%- if next %}
-            <li class="nav-header"><i class="fas fa-caret-right"></i> Next topic</li>
-            <li><a href="{{ next.link|e }}" title="{{ _('next chapter') }}">{{ next.title }}</a></li>
-            {%- endif %}
-          </ul>
-        </div>
-      </div>
-      {%- endif %} -->
-      <div class="card bg-light mb-4" style="max-width: 20rem;">
+      <div class="card bg-light mb-4">
         <div class="card-header">Tutorial & example gallery</div>
         <div class="card-body" id="sidebar-gallery">
           {% include 'gallery.html' %}
@@ -44,7 +33,7 @@
         }(window.jQuery)
       </script>
       {%- endif %}
-      <div class="card bg-light mb-4" style="max-width: 20rem;">
+      <div class="card bg-light mb-4">
         <div class="card-header">Quick links</div>
         <div class="card-body">
           <ul class="nav flex-column">
@@ -84,7 +73,7 @@
       </div>
 
       {%- if pagename == 'index' %}
-      <div class="card bg-light mb-4" style="max-width: 20rem;">
+      <div class="card bg-light mb-4">
         <div class="card-header">Code Status</div>
         <div class="card-body">
           <h6 class="card-subtitle mb-2 text-muted">
