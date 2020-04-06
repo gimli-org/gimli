@@ -154,7 +154,6 @@ def cellDataToBoundaryData(mesh, data):
         return CtB * data
 
 
-# simplistics extrapolation
 def fillEmptyToCellArray(mesh, vals, slope=True):
     """
     Prolongate empty cell values to complete cell attributes.
