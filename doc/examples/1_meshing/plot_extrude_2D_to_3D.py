@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # encoding: utf-8
-# sphinx_gallery_thumbnail_number = 2
 r"""
 Extrude a 2D mesh to 3D
 =======================
@@ -9,6 +8,7 @@ This example shows how to extrude a 2D mesh to 3D. This can be helpful for
 closed laboratory geometries for example. If you are looking for more flexible
 ways to create 3D meshes, have a look at TetGen and Gmsh.
 """
+# sphinx_gallery_thumbnail_number = 2
 
 import numpy as np
 
