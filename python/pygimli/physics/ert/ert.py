@@ -208,6 +208,7 @@ class ERTModelling(ERTModellingBase):
 
     def response(self, mod):
         """"""
+        self.mesh()
         if self.complex() and self._conjImag:
             pg.warn('flip imaginary part for response calc')
             mod = self.flipImagPart(mod)
@@ -222,6 +223,7 @@ class ERTModelling(ERTModellingBase):
 
     def createJacobian(self, mod):
         """"""
+        self.mesh()
         if self.complex():
             if self._conjImag:
                 pg.warn('flip imaginary part for jacobian calc')

@@ -52,7 +52,7 @@ mesh = mt.createMesh(world, area=.05, quality=33, marker=1)
 fop = ert.ERTModelling()
 fop.setData(scheme)
 fop.setMesh(mesh)
-fop.mesh()
+
 model = np.ones(mesh.cellCount())
 fop.createJacobian(model)
 

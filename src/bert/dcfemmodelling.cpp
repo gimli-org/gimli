@@ -1430,6 +1430,9 @@ void DCMultiElectrodeModelling::createJacobian_(const CVector & model,
                 (*J)[i] /= (m2 / dataContainer_->get("k")[i]);
             }
         }
+    } else  {
+        __M
+        log(Error, "size mismatch");
     }
     if (verbose_){
         CVector sumsens(J->rows());

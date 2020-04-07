@@ -97,7 +97,7 @@ add_test(
         make pgtest
     )
 
-add_dependencies(pgtest pygimli)
+#add_dependencies(pgtest pygimli)
 
 #ADD_CUSTOM_TARGET(pgrebuild ALL)
 #add_dependencies(pgrebuild pggen _pygimli_)
