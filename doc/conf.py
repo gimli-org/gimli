@@ -118,7 +118,7 @@ try:
             'pygimli': "https://pygimli.org",
             'numpy': 'https://docs.scipy.org/doc/numpy',
             'scipy': 'https://docs.scipy.org/doc/scipy/reference',
-            'matplotlib': 'https://matplotlib.org/',
+            'matplotlib': 'https://matplotlib.org',
         },
 
         # Don't report time of fast scripts (< 10 sec)
@@ -167,12 +167,18 @@ intersphinx_mapping = {
     'python': ('https://docs.python.org/{.major}'.format(sys.version_info), None),
     'numpy': ('https://docs.scipy.org/doc/numpy', None),
     'scipy': ('https://docs.scipy.org/doc/scipy/reference', None),
-    'matplotlib': ('https://matplotlib.org/', None),
-    'pyvista': ('https://docs.pyvista.org/', None)
+    'matplotlib': ('https://matplotlib.org', None),
+    'pyvista': ('https://docs.pyvista.org', None)
 }
 
 autoclass_content = "class"
 autosummary_generate = True
+
+autodoc_default_options = {
+    'imported-members': False,
+    'special-members': '__init__',
+    'undoc-members': True,
+}
 
 # Get mathjax
 # Formulas disappear after scrolling
@@ -533,8 +539,8 @@ NumpyDocstring._parse_generic_section = monkeypatch
 # Napoleon settings
 napoleon_numpy_docstring = True
 napoleon_include_init_with_doc = True
-napoleon_include_private_with_doc = True
-napoleon_include_special_with_doc = True
+napoleon_include_private_with_doc = False
+napoleon_include_special_with_doc = False
 napoleon_use_admonition_for_examples = False
 napoleon_use_admonition_for_notes = False
 napoleon_use_admonition_for_references = False

@@ -141,7 +141,7 @@ def drawSlice(ax, mesh, normal=[1, 0, 0], **kwargs):
     return ax
 
 
-def drawStreamLines(ax=None, mesh=None, data=None, label=None, radius=0.01, **kwargs):
+def drawStreamLines(ax, mesh, data, label=None, radius=0.01, **kwargs):
     """
     Draw streamlines of given data.
 
@@ -160,6 +160,19 @@ def drawStreamLines(ax=None, mesh=None, data=None, label=None, radius=0.01, **kw
         Label for the data set. Will be searched for within the data.
     radius: float [0.01]
         Radius for the streamline tubes.
+
+    Examples
+    --------
+    >>> import pyvista as pv
+    >>> import pygimli as pg
+    >>> from pygimli.viewer.pv import pgMesh2pvMesh, drawMesh, drawStreamLines
+    >>>
+    >>> mesh = pg.createGrid(40,20,20)
+    >>> data = pg.x(mesh.positions()) * pg.y(mesh.positions())
+    >>>
+    >>> ax, _ = pg.show(mesh, notebook=True, hold=True, alpha=0.1)
+    >>> drawStreamLines(ax, mesh, data, radius=.1, source_radius=20, n_points=500)
+    >>> ax.show()
 
     Note
     ----
@@ -181,19 +194,12 @@ def drawStreamLines(ax=None, mesh=None, data=None, label=None, radius=0.01, **kw
             mesh.cell_data_to_point_data()
 
     if label is None:
-        kwargs['vectors'] = list(mesh.point_arrays.keys())[0]
-    else:
-        kwargs['vectors'] = label
+        label = list(mesh.point_arrays.keys())[0]
 
-    streamlines = mesh.streamlines(
-        **kwargs
-    )
+    kwargs['vectors'] = label
 
-    if ax is None:
-        ax = drawMesh(None, mesh)
+    streamlines = mesh.streamlines(**kwargs)
 
-    ax.add_mesh(
-        streamlines.tube(radius=radius)
-    )
+    ax.add_mesh(streamlines.tube(radius=radius))
 
     return ax
