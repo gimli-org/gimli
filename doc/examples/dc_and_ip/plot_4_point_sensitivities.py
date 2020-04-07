@@ -59,7 +59,7 @@ fop.createJacobian(model)
 ###############################################################################
 # Final visualization
 
-def get_abmn(scheme, idx):
+def getABMN(scheme, idx):
     """ Get coordinates of four-point cfg with id `idx` from DataContainerERT
     `scheme`."""
     coords = {}
@@ -70,9 +70,9 @@ def get_abmn(scheme, idx):
     return coords
 
 
-def plot_abmn(ax, scheme, idx):
+def plotABMN(ax, scheme, idx):
     """ Visualize four-point configuration on given axes. """
-    coords = get_abmn(scheme, idx)
+    coords = getABMN(scheme, idx)
     for elec in coords:
         x, y = coords[elec]
         if elec in "ab":
@@ -97,7 +97,7 @@ for i, sens in enumerate(fop.jacobian()):
         transform=ax[i].transAxes, fontsize=12, fontweight="bold")
 
     # Electrode annotations
-    plot_abmn(ax[i], scheme, i)
+    plotABMN(ax[i], scheme, i)
 
     # Log-scaled and normalized sensitvity
     normsens = pg.utils.logDropTol(sens/mesh.cellSizes(), 8e-4)
