@@ -34,8 +34,7 @@ measurements = np.array((
 for i, elec in enumerate("abmn"):
     scheme[elec] = measurements[:,i]
 
-# Set geometric factors to 1
-scheme["k"] = np.ones(scheme.size())
+scheme["k"] = ert.createGeometricFactors(scheme)
 
 ###############################################################################
 # Now we set up a 2D mesh.
@@ -104,9 +103,9 @@ for i, sens in enumerate(fop.jacobian()):
     plot_abmn(ax[i], scheme, i)
 
     # Log-scaled and normalized sensitvity
-    normsens = pg.utils.logDropTol(sens/mesh.cellSizes(), 1e-5)
+    normsens = pg.utils.logDropTol(sens/mesh.cellSizes(), 8e-4)
     normsens /= np.max(normsens)
     pg.show(mesh, normsens, cmap="RdGy_r", ax=ax[i], label="Normalized\nsensitvity",
-            orientation="vertical", cMin=-1, cMax=1, nLevs=3)
+            orientation="vertical", nLevs=3, cMin=-1.5, cMax=1.5)
 
 pg.wait()
