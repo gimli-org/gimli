@@ -29,7 +29,7 @@ fBlock = pg.core.DC1dModelling(len(synres), ab2, ab2/3)
 rhoa = fBlock(synthk+synres)
 # The data are noisified using a
 errPerc = 3.  # relative error of 3 percent
-rhoa = rhoa * (pg.math.randn(len(rhoa)) * errPerc / 100. + 1.)
+rhoa = rhoa * (np.random.randn(len(rhoa)) * errPerc / 100. + 1.)
 ###############################################################################
 # The forward operator can be called by f.response(model) or simply f(model)
 thk = np.logspace(-0.5, 0.5, 30)
@@ -40,7 +40,7 @@ transRho = pg.trans.TransLogLU(1, 1000)  # lower and upper bound
 transRhoa = pg.trans.TransLog()  # log transformation also for data
 ###############################################################################
 # Set up inversion
-inv = pg.Inversion(rhoa, f, transRhoa, transRho, True, True)  # data vector, f, ...
+inv = pg.Inversion(rhoa, f, transRhoa, transRho, False)  # data vector, f, ...
 # The transformations can also be omitted and set individually by
 # inv.setTransData(transRhoa)
 # inv.setTransModel(transRho)
