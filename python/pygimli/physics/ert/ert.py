@@ -15,7 +15,7 @@ from .visualization import showERTData
 
 from pygimli import pf
 
-   
+
 def simulate(mesh, res, scheme, sr=True, useBert=True,
              verbose=False, **kwargs):
     """Convenience function to use the ERT modelling operator.
@@ -57,29 +57,29 @@ def simulate(mesh, res, scheme, sr=True, useBert=True,
 def createGeometricFactors(scheme, mesh=None, verbose=False):
     """Create geometric factors for a data scheme.
 
-    Create geometric factors for a data scheme with and without topography. 
-    
+    Create geometric factors for a data scheme with and without topography.
+
     This function caches the result depending on scheme, mesh and pg.version()
-    
+
     Parameters
     ----------
     scheme : :gimliapi:`GIMLI::DataContainerERT`
         Datacontainer of the scheme
     mesh : :gimliapi:`GIMLI::Mesh` | str
         Mesh for numerical calculation. If not given analytical flath eath
-        factors are guessed. The mesh will be h and p refined. 
-        If the numerical effort is to high or the accuracy to low 
+        factors are guessed. The mesh will be h and p refined.
+        If the numerical effort is to high or the accuracy to low
         you should consider to calculate the factors manual.
     verbose: bool
         Give some output.
     """
     if mesh is not None:
-        
+
         m = mesh.createH2()
         m = m.createP2()
         if verbose:
             pg.info('Calculate numerical geometric factors.')
-        d = simulate(m, res=1.0, scheme=scheme, sr=False, useBert=True,         
+        d = simulate(m, res=1.0, scheme=scheme, sr=False, useBert=True,
                     calcOnly=True, verbose=True)
         return 1./d['u']
 
@@ -104,7 +104,7 @@ class ERTModellingBase(MeshModelling):
             data = self.data
 
         vals = kwargs.pop('vals', data['rhoa'])
-        
+
         return showERTData(data, vals=vals, ax=ax, **kwargs)
 
     def drawModel(self, ax, model, **kwargs):
@@ -610,7 +610,7 @@ class ERTManager(MeshMethodManager):
             . resistivity map as [[regionMarker0, res0],
                                   [regionMarker0, res1], ...]
 
-        scheme : :bertapi:`Bert::DataContainerERT`
+        scheme : :gimliapi:`GIMLI::DataContainerERT`
             Data measurement scheme.
 
         Keyword Arguments
@@ -826,7 +826,7 @@ class ERTManager(MeshMethodManager):
 
 
     def dataCheck(self, data):
-        """Return data from container. 
+        """Return data from container.
         THINKABOUT: Data will be changed, or should the manager keeps an own copy?
         """
         if isinstance(data, pg.DataContainer):
@@ -864,7 +864,7 @@ class ERTManager(MeshMethodManager):
                                     "apparent resistivies 'rhoa', "
                                     "or impedances 'r', "
                                     "or voltage 'u' together with current 'i' values.")
-                        
+
                 return data['rhoa']
 
         return data
@@ -878,13 +878,13 @@ class ERTManager(MeshMethodManager):
             if not err.allNonZero('err'):
                     pg.warn("Datacontainer have no 'err' values. "
                              "Fallback of 1mV + 3% using ERTManager.estimateError(...) ")
-                    rae = self.estimateError(err, absoluteError=0.001, 
+                    rae = self.estimateError(err, absoluteError=0.001,
                                              relativeError=0.03)
             else:
                 rae = err['err']
 
             if self.fop.complex():
-                
+
                 ipe = None
 
                 if err.haveData('iperr'):

@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# sphinx_gallery_thumbnail_number = 3
 r"""
 ERT field data with topography
 ------------------------------
@@ -11,6 +10,7 @@ Simple example of data measured over a slagdump demonstrating:
 - geometric factor generation
 - topography effect
 """
+# sphinx_gallery_thumbnail_number = 3
 import numpy as np
 import pygimli as pg
 
@@ -51,6 +51,9 @@ data['k'] = kTopo
 mod = ert.invert(data, mesh=mesh, maxIter=20, lam=10)
 ert.showResultAndFit()
 np.testing.assert_approx_equal(ert.inv.chi2(), 1.10883, significant=3)
+
+###############################################################################
+# Plot model only
 
 ert.showModel(mod)
 pg.wait()

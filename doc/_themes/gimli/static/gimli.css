@@ -495,6 +495,10 @@ div.sphx-glr-download {
   box-shadow: none;
 }
 
+div.sphx-glr-download code {
+  margin-top: 0px;
+}
+
 div.sphx-glr-download a {
   background-color: #d9edf7;
   /* background-image: linear-gradient(to top, #BCE8F1, #d9edf7); */
@@ -502,8 +506,6 @@ div.sphx-glr-download a {
   border: 1px solid #bce8f1;
   color: #3a87ad;
   display: inline-block;
-  /* Not valid in old browser, hence we keep the line above to override */
-  display: table-caption;
   font-weight: 500;
   padding: 1ex;
   text-align: center;
