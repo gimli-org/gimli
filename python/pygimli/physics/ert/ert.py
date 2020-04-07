@@ -698,7 +698,7 @@ class ERTManager(MeshMethodManager):
                 # the rhomap. better signal here before it results in some error
                 meshMarkers = list(set(mesh.cellMarkers()))
                 mapMarkers = [m[0] for m in res]
-                if any([mark in mapMarkers for mark in meshMarkers]):
+                if any([mark not in mapMarkers for mark in meshMarkers]):
                     left = [m for m in meshMarkers if m not in mapMarkers]
                     pg.critical(
                         "Mesh contains markers without assigned resistivities {}. Please fix given rhomap.".format(left)
