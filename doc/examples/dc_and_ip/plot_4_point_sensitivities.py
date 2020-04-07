@@ -49,13 +49,10 @@ mesh = mt.createMesh(world, area=.05, quality=33, marker=1)
 # As a last step we invoke the ERT manager and calculate the Jacobian for a
 # homogeneous half-space.
 
-# TODO: This should not be necessary
-for cell in mesh.cells():
-    cell.setMarker(cell.id())
-
 fop = ert.ERTModelling()
 fop.setData(scheme)
-fop.setMesh(mesh, ignoreRegionManager=True)
+fop.setMesh(mesh)
+fop.mesh()
 model = np.ones(mesh.cellCount())
 fop.createJacobian(model)
 
