@@ -589,9 +589,9 @@ def readGmsh(fName, verbose=False, precision=None):
         else:
             mesh.createNode(node)
 
-    for c in cells:
-        mesh.createCell(mesh.nodes(np.array(c, dtype=int)[:-1]-1),
-                        marker=int(c[-1]))
+    for cell in cells:
+        mesh.createCell(mesh.nodes(np.array(cell, dtype=int)[:-1]-1),
+                        marker=int(cell[-1]))
         # if dim == 2:
         #     mesh.createTriangle(
         #         mesh.node(int(cell[0] - 1)), mesh.node(int(cell[1] - 1)),

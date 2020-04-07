@@ -34,6 +34,9 @@ measurements = np.array((
 for i, elec in enumerate("abmn"):
     scheme[elec] = measurements[:,i]
 
+# Set geometric factors to 1
+scheme["k"] = np.ones(scheme.size())
+
 ###############################################################################
 # Now we set up a 2D mesh.
 
@@ -47,11 +50,15 @@ mesh = mt.createMesh(world, area=.05, quality=33, marker=1)
 # As a last step we invoke the ERT manager and calculate the Jacobian for a
 # homogeneous half-space.
 
-mgr = ert.ERTManager()
-data = mgr.simulate(mesh, res=1, scheme=scheme)
-mgr.invert(mesh=mesh, data=data)
+# TODO: This should not be necessary
+for cell in mesh.cells():
+    cell.setMarker(cell.id())
+
+fop = ert.ERTModelling()
+fop.setData(scheme)
+fop.setMesh(mesh, ignoreRegionManager=True)
 model = np.ones(mesh.cellCount())
-mgr.fop.createJacobian(model)
+fop.createJacobian(model)
 
 ###############################################################################
 # Final visualization
@@ -86,7 +93,7 @@ def plot_abmn(ax, scheme, idx):
 
 labels = ["Dipole-Dipole", "Wenner", "Schlumberger"]
 fig, ax = plt.subplots(scheme.size(), 1, sharex=True, figsize=(8,8))
-for i, sens in enumerate(mgr.fop.jacobian()):
+for i, sens in enumerate(fop.jacobian()):
     # Label in lower-left corner
     ax[i].text(.01,.15, labels[i],
         horizontalalignment='left',
@@ -97,7 +104,9 @@ for i, sens in enumerate(mgr.fop.jacobian()):
     plot_abmn(ax[i], scheme, i)
 
     # Log-scaled and normalized sensitvity
-    normsens = pg.utils.logDropTol(sens/mesh.cellSizes(), 8e-4)
+    normsens = pg.utils.logDropTol(sens/mesh.cellSizes(), 1e-5)
     normsens /= np.max(normsens)
     pg.show(mesh, normsens, cmap="RdGy_r", ax=ax[i], label="Normalized\nsensitvity",
             orientation="vertical", cMin=-1, cMax=1, nLevs=3)
+
+pg.wait()
