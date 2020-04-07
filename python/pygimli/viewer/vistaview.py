@@ -10,7 +10,7 @@ import numpy as np
 
 import pygimli as pg
 
-from pygimli.viewer.pv import drawModel3D
+from pygimli.viewer.pv import drawModel
 
 
 pyvista = pg.optImport('pyvista', requiredFor="proper visualization in 3D")
@@ -117,7 +117,7 @@ def showMesh3DVista(mesh, data=None, **kwargs):
         return s3d.plotter, s3d  # plotter, gui
 
     elif not gui:
-        plotter = drawModel3D(None, mesh, data, notebook=notebook, cmap=cmap, **kwargs)
+        plotter = drawModel(None, mesh, data, notebook=notebook, cmap=cmap, **kwargs)
         if notebook:
             pyvista.set_plot_theme('document')
         if not hold:

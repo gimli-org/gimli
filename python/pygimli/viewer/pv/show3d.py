@@ -12,7 +12,7 @@ import sys
 import tempfile
 
 import pygimli as pg
-from .drawer import drawMesh3D
+from .drawer import drawMesh
 from .utils import pgMesh2pvMesh
 
 from PyQt5.QtCore import Qt
@@ -172,7 +172,7 @@ class Show3D(QMainWindow):
             kwargs['opacity'] = kwargs.pop('alpha', 1)
         self.__kwargs = kwargs
 
-        _, self._actor = drawMesh3D(
+        _, self._actor = drawMesh(
             self.plotter, self.mesh, cmap=cMap, returnActor=True,
             show_Edges=True, **self.__kwargs)
 

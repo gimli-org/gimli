@@ -4,7 +4,7 @@ from .utils import pgMesh2pvMesh
 pv = pg.optImport('pyvista', requiredFor="proper visualization in 3D")
 
 
-def drawMesh3D(ax, mesh, notebook=False, **kwargs):
+def drawMesh(ax, mesh, notebook=False, **kwargs):
     """
 
     Parameters
@@ -55,7 +55,7 @@ def drawMesh3D(ax, mesh, notebook=False, **kwargs):
         return ax
 
 
-def drawModel3D(ax=None, mesh=None, data=None, **kwargs):
+def drawModel(ax=None, mesh=None, data=None, **kwargs):
     """
     Draw the mesh with given data.
 
@@ -79,10 +79,10 @@ def drawModel3D(ax=None, mesh=None, data=None, **kwargs):
 
     if 'cmap' not in kwargs:
         kwargs['cmap'] = 'viridis'
-    return drawMesh3D(ax, mesh, **kwargs)
+    return drawMesh(ax, mesh, **kwargs)
 
 
-def drawSensors3D(ax, sensors, diam=0.01, color='grey', **kwargs):
+def drawSensors(ax, sensors, diam=0.01, color='grey', **kwargs):
     """
     Draw the sensor positions to given mesh or the the one in given plotter.
 
@@ -137,5 +137,63 @@ def drawSlice(ax, mesh, normal=[1, 0, 0], **kwargs):
         outline = mesh.outline()
         ax.add_mesh(outline, color="k")
         ax.add_mesh(single_slice)
+
+    return ax
+
+
+def drawStreamLines(ax=None, mesh=None, data=None, label=None, radius=0.01, **kwargs):
+    """
+    Draw streamlines of given data.
+
+    PyVista streamline needs a vector field of gradient data per cell.
+
+    Parameters
+    ----------
+    ax: pv.Plotter() [None]
+        The plotter that should be used for visualization.
+    mesh: pv.UnstructuredGrid|pg.Mesh [None]
+        Structure to plot the streamlines in to.
+        If its a pv grid a check is performed if the data set is already contained.
+    data: iterable [None]
+        Values used for streamlining.
+    label: str
+        Label for the data set. Will be searched for within the data.
+    radius: float [0.01]
+        Radius for the streamline tubes.
+
+    Note
+    ----
+    All kwargs will be forwarded to pyvistas streamline filter:
+    https://docs.pyvista.org/core/filters.html?highlight=streamlines#pyvista.DataSetFilters.streamlines
+    """
+
+    if isinstance(mesh, pg.Mesh):
+        # create gradient of cell data
+        grad = pg.solver.grad(mesh, data)
+        # ensure that its point/node data in the mesh
+        if len(grad) == mesh.cellCount():
+            grad = pg.meshtools.cellDataToNodeData(mesh, grad)
+        # add data to the mesh and convert to pyvista grid
+        mesh = pgMesh2pvMesh(mesh, grad.T, label)
+
+    elif isinstance(mesh, pv.UnstructuredGrid):
+        if label not in mesh.point_arrays:  # conversion needed
+            mesh.cell_data_to_point_data()
+
+    if label is None:
+        kwargs['vectors'] = list(mesh.point_arrays.keys())[0]
+    else:
+        kwargs['vectors'] = label
+
+    streamlines = mesh.streamlines(
+        **kwargs
+    )
+
+    if ax is None:
+        ax = drawMesh(None, mesh)
+
+    ax.add_mesh(
+        streamlines.tube(radius=radius)
+    )
 
     return ax
