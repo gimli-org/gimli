@@ -15,10 +15,6 @@ import sys
 from os import path
 from os.path import join
 
-# If extensions (or modules to document with autodoc) are in another directory,
-# add these directories to sys.path here. If the directory is relative to the
-# documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0, os.path.abspath('.'))
 
 import numpy as np
 # for doc rendering on headless machines (jenkins server)
@@ -44,6 +40,7 @@ except ImportError:
     DOXY_BUILD_DIR = ''
     pygimli.boxprint("Building documentation in-source. Don't forget to make clean.")
 
+sys.path.insert(0, os.path.abspath(SPHINXDOC_PATH))
 sys.path.append(os.path.abspath(join(SPHINXDOC_PATH, '_sphinx-ext')))
 
 # The following line is necessary for the Tools section
@@ -175,7 +172,7 @@ autoclass_content = "class"
 autosummary_generate = True
 
 autodoc_default_options = {
-    'imported-members': False,
+    'imported-members': True,
     'special-members': '__init__',
     'undoc-members': True,
 }
