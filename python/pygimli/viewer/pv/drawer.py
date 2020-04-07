@@ -172,7 +172,7 @@ def drawStreamLines(ax, mesh, data, label=None, radius=0.01, **kwargs):
     >>>
     >>> ax, _ = pg.show(mesh, notebook=True, hold=True, alpha=0.1)
     >>> drawStreamLines(ax, mesh, data, radius=.1, source_radius=20, n_points=500)
-    >>> ax.show()
+    >>> _ = ax.show()
 
     Note
     ----
