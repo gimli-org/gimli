@@ -483,6 +483,7 @@ blockquote.sphx-glr-script-out {
 
 div.sphx-glr-footer {
   text-align: center;
+  display: flex;
 }
 
 .sphx-glr-footer.container {
