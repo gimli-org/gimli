@@ -4,6 +4,7 @@ import json
 import os
 import sys
 
+from .logger import info
 
 # pyGIMLi default configuration
 rc = {
@@ -72,13 +73,13 @@ if os.path.isfile(configfile):
     if len(userrc.keys()) != len(rc.keys()):
         for key in rc:
             if key not in userrc:
-                print("Updating user configuration with", key, "=", rc[key])
+                info("Updating user configuration with", key, "=", rc[key])
                 userrc[key] = rc[key]
         with open(configfile, "w") as cfg:
             json.dump(userrc, cfg, indent=4, sort_keys=True)
     rc = userrc
 else:
-    print("Creating default user configuration file at " + configfile)
+    info("Creating default user configuration file at " + configfile)
     os.makedirs(os.path.join(configpath, "pygimli"), exist_ok=True)
     with open(configfile, "w") as cfg:
         json.dump(rc, cfg, indent=4, sort_keys=True)
