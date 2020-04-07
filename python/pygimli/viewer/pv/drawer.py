@@ -165,14 +165,13 @@ def drawStreamLines(ax, mesh, data, label=None, radius=0.01, **kwargs):
     --------
     >>> import pyvista as pv
     >>> import pygimli as pg
-    >>> from pygimli.viewer.pv import pgMesh2pvMesh, drawMesh, drawStreamLines
+    >>> from pygimli.viewer.pv import drawStreamLines
     >>>
     >>> mesh = pg.createGrid(40,20,20)
     >>> data = pg.x(mesh.positions()) * pg.y(mesh.positions())
     >>>
     >>> ax, _ = pg.show(mesh, notebook=True, hold=True, alpha=0.1)
     >>> drawStreamLines(ax, mesh, data, radius=.1, source_radius=20, n_points=500)
-    >>> <pyvista.plotting.plotting.Plotter object at ...>
     >>> ax.show()
 
     Note
@@ -202,5 +201,3 @@ def drawStreamLines(ax, mesh, data, label=None, radius=0.01, **kwargs):
     streamlines = mesh.streamlines(**kwargs)
 
     ax.add_mesh(streamlines.tube(radius=radius))
-
-    return ax
