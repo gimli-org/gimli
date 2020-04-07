@@ -498,7 +498,7 @@ def interpolate(*args, **kwargs):
 
     Examples
     --------
-    >>> # no need to import matplotlib. pygimli's show does
+
     >>> import numpy as np
     >>> import pygimli as pg
     >>> fig, ax = pg.plt.subplots(1, 1, figsize=(10, 5))

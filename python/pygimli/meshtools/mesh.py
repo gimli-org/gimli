@@ -585,9 +585,9 @@ def readGmsh(fName, verbose=False, precision=None):
 
     for node in nodes:
         if dim == 2:
-            mesh.createNode(node[0], node[3 - zero_dim], 0)
+            mesh.createNodeWithCheck(node[0], node[3 - zero_dim], 0)
         else:
-            mesh.createNode(node)
+            mesh.createNodeWithCheck(node)
 
     for c in cells:
         mesh.createCell(mesh.nodes(np.array(c, dtype=int)[:-1]-1),

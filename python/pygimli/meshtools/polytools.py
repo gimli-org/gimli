@@ -565,7 +565,7 @@ def mergePLC(plcs, tol=1e-3):
 
     Examples
     --------
-    >>>  # no need to import matplotlib. pygimli's show does
+    >>> import pygimli as pg
     >>> import pygimli.meshtools as mt
     >>> from pygimli.viewer.mpl import drawMesh
     >>> world = mt.createWorld(start=[-10, 0], end=[10, -10], marker=1)
@@ -635,10 +635,10 @@ def mergePLC(plcs, tol=1e-3):
 
 
 def mergePLC3D(plcs, tol=1e-3):
-    """Experimental replacement for polyMerge. Don't expect to much.
+    """Experimental replacement for polyMerge. Don't expect too much.
     """
     if len(plcs) < 2:
-        pg.critical("Give at least 2 plcs.")
+        pg.critical("Give at least 2 PLCs.")
 
     if plcs[0].dim() != 3:
         pg.warn("2D poly found. redirect to mergePLC")
