@@ -76,8 +76,8 @@ add_custom_target(sphinxapi
         # Copy build scripts for API doc generation
     COMMAND
 	    sphinx-autogen -i ${SPHINX_SRC_DIR}/doc/pygimliapi/index.rst -t ${SPHINX_SRC_DIR}/doc/_templates -o ${SPHINX_SRCBUILD_DIR}/doc/pygimliapi/_generated &&
-      cp ${SPHINX_SRC_DIR}/doc/pygimliapi/viewer_overwrite ${SPHINX_SRCBUILD_DIR}/doc/pygimliapi/_generated/viewer.rst &&
-      cp ${SPHINX_SRC_DIR}/doc/pygimliapi/physics_overwrite ${SPHINX_SRCBUILD_DIR}/doc/pygimliapi/_generated/physics.rst
+      cp -f ${SPHINX_SRC_DIR}/doc/pygimliapi/viewer_overwrite ${SPHINX_SRCBUILD_DIR}/doc/pygimliapi/_generated/viewer.rst &&
+      cp -f ${SPHINX_SRC_DIR}/doc/pygimliapi/physics_overwrite ${SPHINX_SRCBUILD_DIR}/doc/pygimliapi/_generated/physics.rst
 
     COMMENT
         "Building pygimli api doc"

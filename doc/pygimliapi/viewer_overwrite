@@ -10,7 +10,7 @@ pygimli.viewer
 .. rubric:: Module overview
 
 .. autosummary::
-  :toctree: _generated
+  :toctree: .
   :template: module.rst
 
   mpl
