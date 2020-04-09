@@ -56,6 +56,8 @@ doc: html
 
 api:
 	sphinx-autogen -i -t _templates pygimliapi/*.rst
+	cp pygimliapi/viewer_overwrite pygimliapi/_generated/viewer.rst
+	cp pygimliapi/physics_overwrite pygimliapi/_generated/physics.rst
 
 gallery:
 	python3 ./sidebar_gallery.py

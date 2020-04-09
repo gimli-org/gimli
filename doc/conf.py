@@ -14,7 +14,7 @@ import re
 import sys
 from os import path
 from os.path import join
-
+sys.path.insert(0, os.path.abspath("."))
 
 import numpy as np
 # for doc rendering on headless machines (jenkins server)
@@ -40,7 +40,7 @@ except ImportError:
     DOXY_BUILD_DIR = ''
     pygimli.boxprint("Building documentation in-source. Don't forget to make clean.")
 
-sys.path.insert(0, os.path.abspath(SPHINXDOC_PATH))
+sys.path.append(os.path.abspath(SPHINXDOC_PATH))
 sys.path.append(os.path.abspath(join(SPHINXDOC_PATH, '_sphinx-ext')))
 
 # The following line is necessary for the Tools section
@@ -170,6 +170,7 @@ intersphinx_mapping = {
 
 autoclass_content = "class"
 autosummary_generate = True
+autosummary_imported_members = True
 
 autodoc_default_options = {
     'imported-members': True,

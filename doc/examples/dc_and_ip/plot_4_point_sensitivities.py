@@ -22,13 +22,13 @@ scheme = pg.DataContainerERT()
 
 nelecs = 10
 pos = np.zeros((nelecs, 2))
-pos[:,0] = np.linspace(5, 25, nelecs)
+pos[:, 0] = np.linspace(5, 25, nelecs)
 scheme.setSensorPositions(pos)
 
 measurements = np.array((
-    [0,3,6,9], # Dipole-Dipole
-    [0,9,3,6], # Wenner
-    [0,9,4,5] # Schlumberger
+    [0, 3, 6, 9], # Dipole-Dipole
+    [0, 9, 3, 6], # Wenner
+    [0, 9, 4, 5]  # Schlumberger
 ))
 
 for i, elec in enumerate("abmn"):
@@ -91,10 +91,9 @@ labels = ["Dipole-Dipole", "Wenner", "Schlumberger"]
 fig, ax = plt.subplots(scheme.size(), 1, sharex=True, figsize=(8,8))
 for i, sens in enumerate(fop.jacobian()):
     # Label in lower-left corner
-    ax[i].text(.01,.15, labels[i],
-        horizontalalignment='left',
-        verticalalignment='top',
-        transform=ax[i].transAxes, fontsize=12, fontweight="bold")
+    ax[i].text(.01, .15, labels[i], horizontalalignment='left',
+               verticalalignment='top', transform=ax[i].transAxes, fontsize=12,
+               fontweight="bold")
 
     # Electrode annotations
     plotABMN(ax[i], scheme, i)
@@ -102,7 +101,7 @@ for i, sens in enumerate(fop.jacobian()):
     # Log-scaled and normalized sensitvity
     normsens = pg.utils.logDropTol(sens/mesh.cellSizes(), 8e-4)
     normsens /= np.max(normsens)
-    pg.show(mesh, normsens, cmap="RdGy_r", ax=ax[i], label="Normalized\nsensitvity",
-            orientation="vertical", nLevs=3, cMin=-1.5, cMax=1.5)
+    pg.show(mesh, normsens, cmap="RdGy_r", ax=ax[i], orientation="vertical",
+            label="Normalized\nsensitivity", nLevs=3, cMin=-1, cMax=1)
 
 pg.wait()

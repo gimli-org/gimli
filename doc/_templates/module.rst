@@ -33,7 +33,6 @@ Overview
 {% endif %}
 {% endblock %}
 
-
 {% block exceptions %}
 {% if exceptions %}
 
@@ -55,7 +54,7 @@ Functions
 ---------
 
 {% for function in functions %}
-.. rubric:: {{ function }}
+{{ function | underline(".") }}
 
 .. autofunction:: {{ function }}
 
