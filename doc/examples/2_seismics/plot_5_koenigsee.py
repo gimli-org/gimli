@@ -13,6 +13,7 @@ and some high-velocity bedrock. The data file can be found in the `pyGIMLi
 example data repository
 <https://github.com/gimli-org/example-data/blob/master/traveltime/koenigsee.sgt>`_.
 """
+# sphinx_gallery_thumbnail_number = 2
 
 ################################################################################
 # We import pyGIMLi and the refraction manager.
@@ -40,19 +41,21 @@ mgr.showData(data)  # show first arrivals as curves (done later with response)
 # Finally, we call the `invert` method and plot the result.The mesh is created
 # based on the sensor positions on-the-fly. Yes, it is really as simple as that.
 
-mesh = pg.meshtools.createParaMesh(data.sensors(), 
+mesh = pg.meshtools.createParaMesh(data.sensors(),
                                    boundary=0, paraMaxCellSize=1.0)
-mgr.invert(data, mesh=mesh, secNodes=3, 
-           zWeight=0.2, vTop=500, vBottom=5000, 
+mgr.invert(data, mesh=mesh, secNodes=3,
+           zWeight=0.2, vTop=500, vBottom=5000,
            verbose=1)
 ax, cbar = mgr.showResult()
-mgr.showRayPaths(ax=ax, color="0.8", lw=0.3, alpha=0.3)
+mgr.showRayPaths(ax=ax, color="k", lw=0.3, alpha=0.5)
 
+
+################################################################################
+# Show result and fit of measured data and model response.
 mgr.showResultAndFit()
+pg.wait()
 
 ################################################################################
 # You can play around with the gradient starting model (`vtop` and `vbottom`
 # arguments) and the regularization strength `lam`. You can also customize the
 # mesh.
-
-pg.wait()

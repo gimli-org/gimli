@@ -68,7 +68,7 @@ def setPolyRegionMarker(poly, marker=1, area=0.0, markerPosition=None,
     isHole : bool [False]
         Marks the geometry as a hole and will be cut in any merge mesh.
 
-    Other Parameters
+    Keyword Arguments
     ----------------
     **kwargs
         Additional kwargs
@@ -107,8 +107,8 @@ def createRectangle(start=None, end=None, pos=None, size=None, **kwargs):
         Factors for x and y by which the rectangle, defined by **start** and
         **width**, are scaled.
 
-    Other Parameters
-    ----------------
+    Keyword Arguments
+    -----------------
     **kwargs
         Additional kwargs
 
@@ -381,12 +381,12 @@ def createLine(start, end, segments=1, **kwargs):
     segments : int
         Discrete amount of segments for the line
 
-    **kwargs:
-
-        boundaryMarker : int [1]
-            Marker for the resulting boundary edges
-        leftDirection : bool [True]
-            Rotational direction
+    Keyword Arguments
+    -----------------
+    boundaryMarker : int [1]
+        Marker for the resulting boundary edges
+    leftDirection : bool [True]
+        Rotational direction
 
     Returns
     -------
@@ -565,7 +565,7 @@ def mergePLC(plcs, tol=1e-3):
 
     Examples
     --------
-    >>>  # no need to import matplotlib. pygimli's show does
+    >>> import pygimli as pg
     >>> import pygimli.meshtools as mt
     >>> from pygimli.viewer.mpl import drawMesh
     >>> world = mt.createWorld(start=[-10, 0], end=[10, -10], marker=1)
@@ -635,10 +635,10 @@ def mergePLC(plcs, tol=1e-3):
 
 
 def mergePLC3D(plcs, tol=1e-3):
-    """Experimental replacement for polyMerge. Don't expect to much.
+    """Experimental replacement for polyMerge. Don't expect too much.
     """
     if len(plcs) < 2:
-        pg.critical("Give at least 2 plcs.")
+        pg.critical("Give at least 2 PLCs.")
 
     if plcs[0].dim() != 3:
         pg.warn("2D poly found. redirect to mergePLC")
@@ -1558,8 +1558,8 @@ def extrude(p2, z=-1.0, boundaryMarker=0, **kwargs):
     z : float [-1.0]
         2D geometry
 
-    Other Parameters
-    ----------------
+    Keyword Arguments
+    -----------------
     ** kwargs:
         Marker related arguments:
         See :py:mod:`pygimli.meshtools.polytools.setPolyRegionMarker`
@@ -1622,7 +1622,7 @@ def createCylinder(radius=1, height=1, nSegments=8,
     pos : pg.Pos [None]
         The center position, default is at the origin.
 
-    Other Parameters
+    Keyword Arguments
     ----------------
     ** kwargs:
         Marker related arguments:
@@ -1649,6 +1649,26 @@ def createCylinder(radius=1, height=1, nSegments=8,
         poly.translate(pos)
 
     return poly
+
+
+def boundaryPlaneIntersectionLines(boundaries, plane):
+    """Create Lines from boundaries that intersect a plane."""
+    lines = []
+
+    for b in boundaries:
+        ps = []
+        for i, n in enumerate(b.shape().nodes()):
+            line = pg.Line(n.pos(), b.shape().node(
+                (i + 1) % b.shape().nodeCount()).pos())
+            p = plane.intersect(line, 1e-8, True)
+            if p.valid():
+                ps.append(p)
+
+        if len(ps) == 2:
+            lines.append(list(zip([ps[0].x(), ps[1].x()],
+                                  [ps[0].z(), ps[1].z()])))
+    return lines
+
 
 
 if __name__ == "__main__":

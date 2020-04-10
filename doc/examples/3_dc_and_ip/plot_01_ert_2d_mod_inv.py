@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Simple ERT modeling and inversion
----------------------------------
+2D ERT modeling and inversion
+-----------------------------
 """
 
 import numpy as np
@@ -117,7 +117,7 @@ model = mgr.invert(data, mesh=mesh, lam=20, verbose=True)
 # You can access to all data and plot them manually
 #
 pg.show(mgr.fop.paraDomain, mgr.paraModel(model), label='Model')
-pg.info('Inversion stoped with chi²={0}'.format(mgr.fw.chi2()))
+pg.info('Inversion stopped with chi² = {0:.3}'.format(mgr.fw.chi2()))
 
 # Stop the script here and wait until all figure are closed.
 pg.wait()

@@ -19,9 +19,9 @@ def isComplex(vals):
     return False
 
 def toComplex(amp, phi=None):
-    """Convert real values into into complex valued array.
-    
-    If no phases phi are given assuming z = amp[0:N] + i amp[N:2N].
+    """Convert real values into complex (z = a + ib) valued array.
+
+    If no phases phi are given, assuming z = amp[0:N] + i amp[N:2N].
 
     If phi is given in (rad) complex values are generated:
     z = amp*(cos(phi) + i sin(phi))
@@ -39,12 +39,12 @@ def toComplex(amp, phi=None):
     """
     if phi is not None:
         return np.array(amp) * (np.cos(phi) + 1j *np.sin(phi))
-    N = len(amp) // 2 
+    N = len(amp) // 2
     return np.array(amp[0:N]) + 1j * np.array(amp[N:])
     #return np.array(pg.math.toComplex(amp[0:N], amps[N:]))
 
 def toPolar(z):
-    """Convert complex values array into amplitude and phase in radiant
+    """Convert complex (z = a + ib) values array into amplitude and phase in radiant
 
     If z is real valued we assume its squeezed.
 
@@ -52,12 +52,12 @@ def toPolar(z):
     ----------
     z: iterable (floats, complex)
         If z contains of floats and squeezedComplex is assumed [real, imag]
-        
+
     Returns
     -------
     amp, phi: ndarray
         Amplitude amp and phase angle phi in radiant.
-    
+
     """
     if isComplex(z):
         return np.abs(z), np.angle(z)
@@ -65,7 +65,7 @@ def toPolar(z):
         return toPolar(toComplex(z))
 
 def squeezeComplex(z, polar=False, conj=False):
-    """Squeeze complex valued array into [real, imag] or [amp, -phase(rad)]"""
+    """Squeeze complex valued array into [real, imag] or [amp, phase(rad)]"""
     if isinstance(z, pg.matrix.CSparseMapMatrix) or \
        isinstance(z, pg.matrix.CSparseMatrix) or \
        isinstance(z, pg.matrix.CMatrix):
@@ -85,7 +85,7 @@ def squeezeComplex(z, polar=False, conj=False):
 
 def toRealMatrix(C, conj=False):
     """Convert complex valued matrix into a real valued Blockmatrix
-    
+
     Parameters
     ----------
     C: CMatrix
@@ -135,11 +135,11 @@ def KramersKronig(f, re, im, usezero=False):
     for num, w in enumerate(x):
         x2w2 = x**2 - w**2
         x2w2[num] = 1e-12
-        
+
         fun1 = (re - re[num]) / x2w2
         fun1[num] = dRedx[num] / 2 / w
         im2[num] = -2./pi * w * simps(fun1, x)
-        
+
         if usezero:
             fun2 = (im * w / x - im[num]) / x2w2
             re2[num] = 2./pi * w * simps(fun2, x)  + re[0]

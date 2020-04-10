@@ -1323,14 +1323,14 @@ void DCMultiElectrodeModelling::createJacobian_(const RVector & model,
 
     std::vector < std::pair < Index, Index > > matrixClusterIds;
 
-MEMINFO
+// MEMINFO
 //         save(*u, "pots.bmat");
 
     createSensitivityCol(*J, *mesh_, this->dataContainer(), u,
                          weights_, kValues_,
                          matrixClusterIds, nThreads_, verbose_);
 
-MEMINFO
+// MEMINFO
     double sensMatDropTol = getEnvironment("BERT_SENSMATDROPTOL", 0.0, verbose_);
 
     RSparseMapMatrix * Jsparse = 0;
@@ -1346,7 +1346,7 @@ MEMINFO
             }
 
             delete jacobian_;
-MEMINFO
+// MEMINFO
             jacobian_ = new RSparseMapMatrix(nData, nModel);
             Jsparse = dynamic_cast< RSparseMapMatrix  * >(jacobian_);
         } else {
@@ -1355,7 +1355,7 @@ MEMINFO
 
 
         for (uint c = 1; c < matrixClusterIds.size(); c ++){
-MEMINFO
+// MEMINFO
             Index start = matrixClusterIds[c].first;
             Index end = matrixClusterIds[c].second;
 
@@ -1370,10 +1370,10 @@ MEMINFO
                     (*J)[i].setVal(Jcluster[i], start, end);
                 }
             }
-MEMINFO
+// MEMINFO
         } // for each clustering
     } // if clustering
-MEMINFO
+// MEMINFO
 
     if (!Jsparse){
 
@@ -1430,6 +1430,9 @@ void DCMultiElectrodeModelling::createJacobian_(const CVector & model,
                 (*J)[i] /= (m2 / dataContainer_->get("k")[i]);
             }
         }
+    } else  {
+        __M
+        log(Error, "size mismatch");
     }
     if (verbose_){
         CVector sumsens(J->rows());
@@ -1689,7 +1692,7 @@ void DCMultiElectrodeModelling::calculate(const std::vector < ElectrodeShape * >
     } else {
         solutions_.resize(nCurrentPattern, mesh_->nodeCount());
     }
-    MEMINFO
+    // MEMINFO
 
     Stopwatch swatch(true);
 
@@ -1747,7 +1750,7 @@ void DCMultiElectrodeModelling::calculate(const std::vector < ElectrodeShape * >
 
     if (verbose_) std::cout << "Forward: ";
     swatch.stop(verbose_);
-    MEMINFO
+    // MEMINFO
 }
 
 template < class ValueType >
@@ -1795,7 +1798,7 @@ void DCMultiElectrodeModelling::calculateK_(const std::vector < ElectrodeShape *
     SparseMatrix < ValueType > S_;
     S_.buildSparsityPattern(*mesh_);
 
-MEMINFO
+// MEMINFO
 
 //** START  assemble matrix
     if (verbose_) std::cout << "Assembling system matrix ... " ;
@@ -1851,7 +1854,7 @@ MEMINFO
 
     assembleStiffnessMatrixHomogenDirichletBC(S_, calibrationSourceIdx_);
 
-MEMINFO
+// MEMINFO
     //** END assemble matrix
 
     //** START solving
@@ -1863,7 +1866,7 @@ MEMINFO
     if (verbose_) std::cout << "Factorizing (" << solver.solverName() << ") system matrix ... ";
     solver.setMatrix(S_, 1);
 
-MEMINFO
+// MEMINFO
 
     Vector < ValueType > sol(S_.cols());
 
@@ -1927,7 +1930,7 @@ MEMINFO
 //             if (eB[i]) eB[i]->setSingValue(solutionK[i], mesh_->cellAttributes(), -1.0, k);
 //         }
     }
-MEMINFO
+// MEMINFO
     // we dont need reserve the memory
     S_.clean();
 }
@@ -2004,7 +2007,7 @@ void DCSRMultiElectrodeModelling::checkPrimpotentials_(const std::vector < Elect
             std::cout << std::endl << "No primary potential for secondary field. Recovering " + primPotFileBody_ << std::endl;
             loadMatrixSingleBin(*primPot_, primPotFileBody_);
             std::cout << std::endl << " ... done " << std::endl;
-MEMINFO
+// MEMINFO
             //! check for sizes here!!!
         } else {
             //! no binary matrix so calculate if topography present and no alternativ filename given
@@ -2146,7 +2149,7 @@ void DCSRMultiElectrodeModelling::preCalculate(const std::vector < ElectrodeShap
     checkPrimpotentials_(eA, eB);
     mesh1_ = *mesh_;
     mesh1_.setCellAttributes(1.0);
-MEMINFO
+// MEMINFO
 }
 
 void DCSRMultiElectrodeModelling::calculateK(const std::vector < ElectrodeShape * > & eA,
@@ -2168,13 +2171,13 @@ void DCSRMultiElectrodeModelling::calculateK(const std::vector < ElectrodeShape 
         calculateKAnalyt(eA, eB, solutionK, k, kIdx);
         return ;
     }
-MEMINFO
+// MEMINFO
 
     RSparseMatrix S_;
     S_.buildSparsityPattern(*mesh_);
     bool singleVerbose = verbose_;
 
-MEMINFO
+// MEMINFO
 
     dcfemDomainAssembleStiffnessMatrix(       S_, *mesh_, k);
     dcfemBoundaryAssembleStiffnessMatrix(     S_, *mesh_, sourceCenterPos_, k);
@@ -2194,12 +2197,12 @@ MEMINFO
 //     if (verbose_) std::cout << "Assembling: " << swatch.duration() << std::endl;
     //mesh_->setCellAttributes(tmpRho);
 
-MEMINFO
+// MEMINFO
     LinSolver solver(false);
     solver.setMatrix(S_, 1);
 //     if (verbose_) std::cout << "Factorize (" << solver.solverName() << ") matrix ... " << swatch.duration() << std::endl;
 
-MEMINFO
+// MEMINFO
 
     //std::cout << WHERE_AM_I << std::endl;
     RVector rhs(S_.rows()), prim(rhs.size());

@@ -50,10 +50,10 @@ public:
                          bool calc1,
                          bool verbose)
     : BaseCalcMT(verbose), S_(&S), para_(&para), //cellMapIndex_ (&cellMapIndex),
-    data_(&data), pots_(&pots), currPatternIdx_(&currPatternIdx),
-    weights_(&weights), k_(&k), calc1_(calc1){
-        nData_ = data.size();
-        nElecs_ = data.sensorCount();
+        data_(&data), pots_(&pots), currPatternIdx_(&currPatternIdx),
+        weights_(&weights), k_(&k), calc1_(calc1){
+            nData_ = data.size();
+            nElecs_ = data.sensorCount();
     }
 
     virtual ~CreateSensitivityColMT(){}

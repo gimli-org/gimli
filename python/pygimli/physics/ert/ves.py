@@ -372,7 +372,7 @@ class VESManager(MethodManager1d):
 
     Examples
     --------
-    >>> # no need to import matplotlib. pygimli's show does
+    
     >>> import numpy as np
     >>> import pygimli as pg
     >>> from pygimli.physics import VESManager
@@ -460,7 +460,7 @@ class VESManager(MethodManager1d):
         Parameters
         ----------
 
-        Other Parameters
+        Keyword Arguments
         ----------------
         **kwargs
             Additional kwargs inherited from %(MethodManager1d.invert) and

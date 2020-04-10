@@ -10,24 +10,33 @@ import numpy as np
 
 import pygimli as pg
 
+from pygimli.viewer.pv import drawModel
+
 
 pyvista = pg.optImport('pyvista', requiredFor="proper visualization in 3D")
 if pyvista is None:
     view3Dcallback = 'showMesh3DFallback'
 else:
     view3Dcallback = 'showMesh3DVista'
+    vers_users = pyvista.__version__
+    vers_userf = float(pyvista.__version__[::-1].replace('.', '', 1)[::-1])
+    vers_needs = '0.23.2'
+    vers_needf = 0.232
+    if vers_userf < vers_needf:
+        pg.warn("Please consider updating PyVista to at least {}".format(vers_needs))
 
 PyQt5 = pg.optImport('PyQt5', requiredFor="pyGIMLi 3D viewer")
 
 # True for Jupyter notebooks and sphinx-builds
 inline = plt.get_backend().lower() == "agg"
 if PyQt5 is None or inline:
-    use_gui = False
+    gui = False
     inline = True
 else:
-    from .view3d import Show3D
+    from .pv.show3d import Show3D
     from PyQt5 import Qt
-    use_gui = True
+    gui = True
+    inline = False
 
 
 def showMesh3D(mesh, data, **kwargs):
@@ -74,67 +83,46 @@ def showMesh3DVista(mesh, data=None, **kwargs):
     """
     Make use of the actual 3D visualization tool kit
 
-    Parameter
-    ---------
+    Parameters
+    ----------
     data: pg.Vector or np.ndarray
         Dictionary of cell values, sorted by key. The values need to be
         numpy arrays.
+
+    Returns
+    -------
+    plotter: pyvista.Plotter
+        The plotter from pyvista.
+    gui: Show3D [None]
+        The small gui based on pyvista. Note that this is returned as 'None'
+        if gui is passed as 'False'.
 
     Note
     ----
     Not having PyQt5 installed results in displaying the first key
     (and values) from the dictionary.
     """
-    _, tmp = tempfile.mkstemp(suffix=".vtk")
-    # export given mesh temporarily is the easiest and fastest option ATM
-    mesh.exportVTK(tmp)
-    grid = pyvista.read(tmp)
-
-    hold = kwargs.pop("hold", False)
-    cMap = kwargs.pop('cMap', 'viridis')
+    hold = kwargs.pop('hold', False)
+    cmap = kwargs.pop('cmap', 'viridis')
+    gui = kwargs.pop('gui', False)
+    notebook = kwargs.pop('notebook', inline)
 
     # add given data from argument
-    add_args = {}
-    if data is not None:
-        label = kwargs.pop("label", "data")
-        if len(data) == mesh.cellCount():
-            grid.cell_arrays[label] = np.asarray(data)
-        elif len(data) == mesh.nodeCount():
-            grid.point_arrays[label] = np.asarray(data)
-        grid.set_active_scalar(label)
-        add_args["opacity"] = 1
-    else:
-        add_args["opacity"] = 0.1
-        add_args["show_scalar_bar"] = False
-
-    notebook = kwargs.pop('notebook', inline)
-    if notebook:
-        pyvista.set_plot_theme('document')
-
-    if use_gui and not notebook:
-        # add saved data from within the pg.mesh itself
-        for label, data in mesh.dataMap():
-            # grid.cell_arrays[k] = np.asarray(v)
-            if len(data) == mesh.cellCount():
-                grid.cell_arrays[label] = np.asarray(data)
-            elif len(data) == mesh.nodeCount():
-                grid.point_arrays[label] = np.asarray(data)
-        # app = Qt.QApplication()
+    if gui and not notebook:
         app = Qt.QApplication(sys.argv)
-        s3d = Show3D(tmp, app)
-        s3d.addMesh(grid, cMap=cMap)
-        _ = app.exec()
-        app.closeAllWindows()
+        s3d = Show3D(app)
+        s3d.addMesh(mesh, data, cmap=cmap, **kwargs)
+        if not hold:
+            s3d.wait()
+        return s3d.plotter, s3d  # plotter, gui
 
-    else:
-        plotter = pyvista.Plotter(notebook=notebook)
-        plotter.show_bounds()
-        plotter.add_axes()
-        plotter.add_mesh(grid, cmap=cMap, show_edges=True, **add_args)
-        if data is not None:
-            plotter.mesh.set_active_scalar(label)
+    elif not gui:
+        plotter = drawModel(None, mesh, data, notebook=notebook, cmap=cmap, **kwargs)
+        if notebook:
+            pyvista.set_plot_theme('document')
         if not hold:
             plotter.show()
-        return plotter
+        return plotter, None
 
-    # def _loadDataToGrid(self, label, data):
+    else:
+        pg.error("This shouldn't happen...")

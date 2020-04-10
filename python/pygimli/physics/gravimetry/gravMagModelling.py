@@ -300,14 +300,12 @@ def gradUHalfPlateHoriz(pnts, t, rho, pos=(0.0, 0.0)):
     for i, q in enumerate(pnts):
         zz1 = q[1] - pos[1]
         xx1 = q[0] - pos[0]
-#        gz[i] = G * rho * (np.pi - 2. * \
-#         np.arctan((q[0] - pos[0]) / (q[2] - pos[2])))
-#         -z direction
-        gu[i][0] = -G * rho * t * (np.pi + 2.0 * np.arctan2(xx1, zz1)) * -1.
-#        gz[i] = G * rho * np.pi
+        # TODO: Fix first column of gu
+        # gu[i][0] = G * rho * (np.pi - 3. * \
+        # np.arctan((q[0] - pos[0]) / (q[1] - pos[1])))
+        gu[i][1] = -G * rho * t * (np.pi + 2.0 * np.arctan2(xx1, zz1)) * -1.
 
     return gu
-# def gzPlatteHoriz(...)
 
 
 def gradGZHalfPlateHoriz(pnts, t, rho, pos=(0.0, 0.0)):

@@ -156,7 +156,7 @@ class MethodManager(object):
         """
         pg.critical("No forward operator defined, either give one or"
                     "overwrite in derived class")
-        
+
     def _initInversionFramework(self, **kwargs):
         """Initialize or re-initialize the inversion framework.
 
@@ -576,8 +576,8 @@ class MeshMethodManager(MethodManager):
 
             If set to None fop.createDefaultStartModel(dataValues) is called.
 
-        Other Parameters
-        ----------------
+        Keyword Arguments
+        -----------------
         forwarded to Inversion.run
 
         Returns

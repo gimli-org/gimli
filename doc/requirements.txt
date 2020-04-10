@@ -1,9 +1,8 @@
 # Requirements to test and build the documentation
 # Install via pip: sudo pip install -U -r requirements.txt
-sphinx >= 1.6.1
+sphinx >= 1.8
 matplotlib
 numpy>=1.12
-numpydoc>=0.7
 pytest
 pytest-cov
 sphinx-gallery>=0.0.13

@@ -6,10 +6,14 @@ BUGS:
 
 import numpy as np
 from shutil import copyfile
+import os
 import signal
 import sys
+import tempfile
 
 import pygimli as pg
+from .drawer import drawMesh
+from .utils import pgMesh2pvMesh
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QIcon
@@ -21,22 +25,35 @@ from PyQt5.QtWidgets import (
 from .gwidgets import (
     GToolBar, GButton, GLineEdit, GComboBox, GSlider, GDoubleSpinBox, CMAPS
 )
-pyvista = pg.optImport('pyvista', requiredFor="proper visualization in 3D")
+
+pv = pg.optImport('pyvista', requiredFor="proper visualization in 3D")
 
 
 class Show3D(QMainWindow):
 
-    def __init__(self, tmpMesh, application, parent=None):
-        super(Show3D, self).__init__(parent)
-        self.tmpMesh = tmpMesh
+    def __init__(self, application, **kwargs):
+        """
+        pyGIMLi's GUI for pyvista's QtInteractor class. All kwargs are being
+        forwarded to that.
+
+        Parameters
+        ----------
+        TBD
+
+        Note
+        ----
+        Possible kwargs may be taken from
+        https://docs.pyvista.org/plotting/plotting.html#plotter
+        """
+        super(Show3D, self).__init__(None)
+        # self.tmpMesh = tmpMesh
         # storage for the minima and maxima
         self.data = {}
         self._ignore = ['_Attribute', '_Marker', 'glob_min', 'glob_max']
+        self._app = application
         # setup the menubar
         self.setupMenu()
-        self.setupWidget()
-
-        self.application = application
+        self.setupWidget(**kwargs)
 
         # signals
         signal.signal(signal.SIGINT, self._signal_handler)
@@ -49,10 +66,12 @@ class Show3D(QMainWindow):
         from: https://stackoverflow.com/questions/1112343/how-do-i-capture-sigint-in-python
         """
         sys.stderr.write('\r')
-        pg._d("CLOSING (*quit* or *ctrl-c*)")
-        self.application.quit()
+        self._app.quit()
 
     def setupMenu(self):
+        """
+        Create the menubar on top of frame and provide actions.
+        """
         bar = self.menuBar()
         # quit the thing
         self.acn_close = QAction("&Quit", self)
@@ -87,12 +106,11 @@ class Show3D(QMainWindow):
         d.setWindowTitle("Hot Keys")
         d.exec_()
 
-    def setupWidget(self):
+    def setupWidget(self, **kwargs):
         # create the frame
         self.frame = QFrame()
-
-        # add the pyvista interactor object
-        self.pyvista_widget = pyvista.QtInteractor()
+        # add the pv interactor object
+        self.plotter = pv.QtInteractor(**kwargs)
 
         vlayout = QVBoxLayout()
         vlayout.setContentsMargins(0, 0, 0, 0)
@@ -104,7 +122,7 @@ class Show3D(QMainWindow):
 
         splitter = QSplitter(Qt.Horizontal)
         splitter.addWidget(self.toolbar)
-        splitter.addWidget(self.pyvista_widget)
+        splitter.addWidget(self.plotter.interactor)
         splitter.setStretchFactor(0, 2)
         splitter.setStretchFactor(1, 5)
 
@@ -114,27 +132,54 @@ class Show3D(QMainWindow):
 
         self.setCentralWidget(self.frame)
         self.setWindowTitle("pyGIMLi 3D Viewer")
-        self.setWindowIcon(QIcon('3dlogo.png'))
 
+        # set the icon for the window
+        ipath = os.path.dirname(__file__)
+        icon = os.path.join(ipath, 'favicon.ico')
+        self.setWindowIcon(QIcon(icon))
+
+    def wait(self):
+        """
+        overload
+        """
         self.show()
+        self._app.exec()
+        self._app.closeAllWindows()
 
-    def addMesh(self, mesh, cMap):
+    def addMesh(self, mesh, data=None, **kwargs):
         """
         Add a mesh to the pyqt frame.
 
-        Parameter
-        ---------
-        mesh: pyvista.pointset.UnstructuredGrid
-            The grid as it was read by pyvista in vistaview.
-        cMap: str
-            The MPL colormap that should be used to display parameters.
+        Parameters
+        ----------
+        mesh: pg.Mesh
+            pyGIMLi created mesh.
+        data: iterable
+            Data belonging to the mesh.
+
+        Note
+        ----
+        **kwargs
+            label: str
+                A label for the given data.
+            cmap: str
+                The MPL colormap that should be used to display parameters.
         """
-        self.statusbar.showMessage("{}".format(self.tmpMesh))
-        self.mesh = mesh
-        self._actor = self.pyvista_widget.add_mesh(
-            mesh, cmap=cMap, show_edges=True)
-        _ = self.pyvista_widget.show_bounds(all_edges=True, minor_ticks=True)
-        self.pyvista_widget.reset_camera()
+        self.mesh = pgMesh2pvMesh(mesh, data, kwargs.pop('label', 'data'))
+
+        cMap = kwargs.pop('cmap', 'viridis')
+        if 'alpha' in kwargs:
+            kwargs['opacity'] = kwargs.pop('alpha', 1)
+        self.__kwargs = kwargs
+
+        _, self._actor = drawMesh(
+            self.plotter, self.mesh, cmap=cMap, returnActor=True,
+            show_Edges=True, **self.__kwargs)
+
+        # self._actor = self.plotter.add_mesh(
+        #     self.mesh, show_edges=True, cmap=cMap, **self.__kwargs)
+        _ = self.plotter.show_bounds(all_edges=True, minor_ticks=True)
+        self.plotter.reset_camera()
 
         # set the correctly chosen colormap
         if cMap.endswith('_r'):
@@ -146,10 +191,6 @@ class Show3D(QMainWindow):
 
         self.toolbar.cbbx_cmap.setCurrentText(cMap)
         self.allowMeshParameters()
-        # pg._d(self.mesh.array_names)
-        # pg._d([e for e in dir(self.mesh) if 'bar' in e])
-        # print("-"*60)
-        # pg._d([e for e in dir(self.pyvista_widget) if 'bar' in e])
         self._allowSignals()
 
         # set slicers to center after they're enabled
@@ -163,6 +204,9 @@ class Show3D(QMainWindow):
         self.toolbar.slice_z.setMinimum(_bounds[4])
         self.toolbar.slice_z.setMaximum(_bounds[5])
         self.toolbar.slice_z.setValue(0.5 * (_bounds[4] + _bounds[5]))
+
+        # show loaded mesh
+        self.plotter.reset_camera()
 
     def allowMeshParameters(self):
         """
@@ -182,7 +226,6 @@ class Show3D(QMainWindow):
         _min = 1e99
         _max = -1e99
         for label, data in self.mesh.cell_arrays.items():
-            # self.mesh._add_cell_array(data, label)
             _mi = min(data)
             _ma = max(data)
             _min = _mi if _mi < _min else _mi
@@ -195,7 +238,6 @@ class Show3D(QMainWindow):
             }
 
         for label, data in self.mesh.point_arrays.items():
-            # self.mesh._add_cell_array(data, label)
             _mi = min(data)
             _ma = max(data)
             _min = _mi if _mi < _min else _mi
@@ -224,8 +266,8 @@ class Show3D(QMainWindow):
         """
         Change the view to given Parameter values.
 
-        Parameter
-        ---------
+        Parameters
+        ----------
         param: Current text of the just triggered QComboBox
 
         Note
@@ -233,13 +275,11 @@ class Show3D(QMainWindow):
         May be overloaded.
         """
         # remove the currently displayed mesh
-        self.pyvista_widget.remove_actor(self._actor)
+        self.plotter.remove_actor(self._actor)
         mesh = self.mesh
         if param is not None and param not in CMAPS and not isinstance(param, int):
             # change to the desired parameter distribution
             self.mesh.set_active_scalars(param)
-            # if param in self.mesh.point_arrays:
-            #     mesh = self.mesh.contour()
             # update the minima and maxima in the limit range
             # NOTE: if the global limit button is checked, just don't change
             # the extrema labels to enable the user to set ones own limits.
@@ -276,23 +316,23 @@ class Show3D(QMainWindow):
 
         # save the camera position
         # NOTE: this returns [camera position, focal point, and view up]
-        self.camera_pos = self.pyvista_widget.camera_position[0]
+        self.camera_pos = self.plotter.camera_position[0]
 
         # add the modified one
         if self.toolbar.btn_slice_volume.isChecked() and not self.toolbar.btn_slice_plane.isChecked():
-            self._actor = self.pyvista_widget.add_mesh_clip_plane(
-                mesh, cmap=cMap, show_edges=True)
+            self._actor = self.plotter.add_mesh_clip_plane(
+                mesh, cmap=cMap, show_edges=True, **self.__kwargs)
         else:
             # in case the plane widget was on.. turn it off
-            # self.pyvista_widget.disable_plane_widget()
-            self._actor = self.pyvista_widget.add_mesh(
-            mesh, cmap=cMap, show_edges=True)
+            # self.plotter.disable_plane_widget()
+            self._actor = self.plotter.add_mesh(
+            mesh, cmap=cMap, show_edges=True, **self.__kwargs)
 
         # update stuff in the toolbar
         self.updateScalarBar()
 
         # reset the camera position
-        self.pyvista_widget.set_position(self.camera_pos)
+        self.plotter.set_position(self.camera_pos)
 
     def updateScalarBar(self):
         """
@@ -311,8 +351,8 @@ class Show3D(QMainWindow):
                 self.data[param]['user']['max'] = cmax
             # NOTE: has no effect on the displayed vtk
             # pg._d("RESET SCALAR BAR LIMITS")
-            self.pyvista_widget.update_scalar_bar_range([cmin, cmax])
-        self.pyvista_widget.update()
+            self.plotter.update_scalar_bar_range([cmin, cmax])
+        self.plotter.update()
 
     def toggleBbox(self):
         """
@@ -320,10 +360,10 @@ class Show3D(QMainWindow):
         """
         checked = not self.toolbar.btn_bbox.isChecked()
         if not checked:
-            self.pyvista_widget.remove_bounds_axes()
-            self.pyvista_widget.remove_bounding_box()
+            self.plotter.remove_bounds_axes()
+            self.plotter.remove_bounding_box()
         else:
-            _ = self.pyvista_widget.show_bounds(
+            _ = self.plotter.show_bounds(
                 all_edges=True,
                 minor_ticks=True,
                 show_xaxis=True,
@@ -333,7 +373,7 @@ class Show3D(QMainWindow):
                 show_ylabels=True,
                 show_zlabels=True
             )
-        self.pyvista_widget.update()
+        self.plotter.update()
 
     def takeScreenShot(self):
         """
@@ -350,7 +390,7 @@ class Show3D(QMainWindow):
         if fname:
             if not len(fname.split('.')) == 2:
                 fname += '.png'
-            self.pyvista_widget.screenshot(fname)
+            self.plotter.screenshot(fname)
 
     def exportMesh(self):
         """

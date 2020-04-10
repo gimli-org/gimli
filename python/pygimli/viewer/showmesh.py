@@ -45,8 +45,8 @@ def show(obj=None, data=None, **kwargs):
     data: iterable
         Optionally data to visualize. See appropriate show function.
 
-    Other Parameters
-    ----------------
+    Keyword Arguments
+    -----------------
     **kwargs
         Additional kwargs forward to appropriate show functions.
 
@@ -112,7 +112,6 @@ def show(obj=None, data=None, **kwargs):
         elif mesh.dim() == 3:
 
             from .vistaview import showMesh3D
-
             return showMesh3D(mesh, data, **kwargs)
         else:
             pg.error("ERROR: Mesh not valid.", mesh)
@@ -197,8 +196,8 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
     marker: bool [False]
         Show mesh and boundary marker.
 
-    Other Parameters
-    ----------------
+    Keyword Arguments
+    -----------------
     **kwargs:
         * xlabel: str [None]
             Add label to the x axis
@@ -226,7 +225,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
     """
     renameKwarg('cmap', 'cMap', kwargs)
 
-    cMap = kwargs.pop('cMap', None)
+    cMap = kwargs.pop('cMap', 'viridis')
     cBarOrientation = kwargs.pop('orientation', 'horizontal')
 
     fitViewDefault = False
@@ -364,7 +363,9 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
     if colorBar and validData:
         # , **kwargs) # causes problems!
         labels = ['cMin', 'cMax', 'nLevs', 'logScale', 'levels']
+
         subkwargs = {key: kwargs[key] for key in labels if key in kwargs}
+        subkwargs['nCols'] = kwargs.pop('nCols', 256)
         subkwargs['label'] = label
         subkwargs['cMap'] = cMap
         subkwargs['orientation'] = cBarOrientation

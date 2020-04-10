@@ -18,6 +18,7 @@ import numpy as np
 import pygimli as pg
 import pygimli.meshtools as mt
 from pygimli.physics import traveltime
+from pygimli.viewer.pv import drawSensors
 
 pyvista = pg.optImport("pyvista")
 
@@ -26,15 +27,15 @@ pyvista = pg.optImport("pyvista")
 
 depth = 15
 width = 30
-plc = mt.createCube(size=[width, width, depth], pos=[0,0,-depth/2], area=5)
+plc = mt.createCube(size=[width, width, depth], pos=[0, 0, -depth/2], area=5)
 
 print('#'*100)
 n_sensors = 8
-sensors = np.zeros((n_sensors,3))
-sensors[0,0] = 15
-sensors[0,1] = -10
-sensors[1:,0] = -15
-sensors[1:,1] = np.linspace(-15, 15, n_sensors - 1)
+sensors = np.zeros((n_sensors, 3))
+sensors[0, 0] = 15
+sensors[0, 1] = -10
+sensors[1:, 0] = -15
+sensors[1:, 1] = np.linspace(-15, 15, n_sensors - 1)
 
 for pos in sensors:
     plc.createNode(pos)
@@ -81,9 +82,8 @@ for receiver in sensors[1:]:
 # Plot final ray paths.
 
 if pyvista:
-    plotter = pg.show(mesh, hold=True, label=label)
-    points = pyvista.PolyData(sensors)
-    plotter.add_mesh(points, point_size=10, color="k")
+    plotter, _ = pg.show(mesh, hold=True, label=label, alpha=0.1)
+    drawSensors(plotter, sensors, diam=0.5, color='yellow')
 
     for ray in rays:
         for i in range(len(ray) - 1):
@@ -91,4 +91,4 @@ if pyvista:
             stop = tuple(ray[i + 1])
             line = pyvista.Line(start, stop)
             plotter.add_mesh(line, color='green', line_width=2)
-    plotter.plot()
+    plotter.show()

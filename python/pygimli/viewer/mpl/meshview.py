@@ -8,7 +8,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import pygimli as pg
-from pygimli.misc import streamline
+
+from pygimli.utils import streamline
 
 from .colorbar import autolevel, createColorBar, updateColorBar
 from .utils import updateAxes as updateAxes_
@@ -270,8 +271,8 @@ def drawMesh(ax, mesh, fitView=True, **kwargs):
     fitView : bool [True]
         Adjust ax limits to mesh bounding box.
 
-    Other Parameters
-    ----------------
+    Keyword Arguments
+    -----------------
     **kwargs
         Additional kwargs forward to drawPLC or drawMeshBoundaries.
 
@@ -305,7 +306,7 @@ def drawMesh(ax, mesh, fitView=True, **kwargs):
 
 
 def drawModel(ax, mesh, data=None, tri=False, rasterized=False,
-              logScale=False, cMin=None, cMax=None,
+              cMin=None, cMax=None, logScale=False,
               xlabel=None, ylabel=None, fitView=True, verbose=False,
               **kwargs):
     """Draw a 2d mesh and color the cell by the data.
@@ -327,8 +328,8 @@ def drawModel(ax, mesh, data=None, tri=False, rasterized=False,
     fitView : bool [True]
         Adjust ax limits to mesh bounding box.
 
-    Other Parameters
-    ----------------
+    Keyword Arguments
+    -----------------
     **kwargs
         Additional kwargs forwarded to the draw functions and mpl methods,
         respectively.
@@ -363,11 +364,11 @@ def drawModel(ax, mesh, data=None, tri=False, rasterized=False,
 
     if tri or 'shading' in kwargs:
         gci = drawField(ax, mesh, data,
-                         cMin=cMin, cMax=cMax, logScale=logScale,
+                        cMin=cMin, cMax=cMax, logScale=logScale,
                          **kwargs)
     else:
         gci = pg.viewer.mpl.createMeshPatches(ax, mesh, rasterized=rasterized,
-                                             verbose=verbose)
+                                              verbose=verbose)
         ax.add_collection(gci)
 
         if data is None:
@@ -381,8 +382,9 @@ def drawModel(ax, mesh, data=None, tri=False, rasterized=False,
         else:
             viewdata = data
 
-        pg.viewer.mpl.setMappableData(gci, viewdata, cMin=cMin, cMax=cMax,
-                                     logScale=logScale)
+        pg.viewer.mpl.setMappableData(gci, viewdata,
+                                      cMin=cMin, cMax=cMax, logScale=logScale,
+                                      **kwargs)
 
     gci.set_antialiased(True)
     gci.set_linewidths(0.1)
@@ -603,8 +605,8 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
     fitView : bool [True]
         Adjust ax limits to mesh bounding box.
 
-    Other Parameters
-    ----------------
+    Keyword Arguments
+    -----------------
     **kwargs
         Additional kwargs forwarded to the draw functions and mpl methods,
         respectively.
@@ -822,8 +824,8 @@ def drawField(ax, mesh, data=None, levels=None, nLevs=5,
     fitView : bool [True]
         Adjust ax limits to mesh bounding box.
 
-    Other Parameters
-    ----------------
+    Keyword Arguments
+    -----------------
     shading: 'flat' | 'gouraud'
 
     fillContour: [True]
@@ -990,7 +992,8 @@ def drawStreamLine_(ax, mesh, c, data, dataMesh=None, linewidth=1.0,
         Start point is c.center()
     data : iterable float | [float, float]
         If data is an array (per cell or node) gradients are calculated
-        otherwise the data will be interpreted as vector field.
+        otherwise the data will be interpreted as vector field per nodes or 
+        cell centers.
     dataMesh : :gimliapi:`GIMLI::Mesh` [None]
         Optional mesh for the data. If you want high resolution
         data to plot on coarse draw mesh.
@@ -999,8 +1002,8 @@ def drawStreamLine_(ax, mesh, c, data, dataMesh=None, linewidth=1.0,
     dropTol : float [0.0]
         Don't draw stream lines with velocity lower than drop tolerance.
 
-    Other Parameters
-    ----------------
+    Keyword Arguments
+    -----------------
     **kwargs
         arrowSize: int
             Size of the arrow's head.
@@ -1092,7 +1095,8 @@ def drawStreams(ax, mesh, data, startStream=3, coarseMesh=None, quiver=False,
         2d mesh
     data : iterable float | [float, float] | pg.core.R3Vector
         If data is an array (per cell or node) gradients are calculated
-        otherwise the data will be interpreted as vector field.
+        otherwise the data will be interpreted as vector field per nodes or 
+        cell centers.
     startStream : int
         variate the start stream drawing, try values from 1 to 3 what every
         you like more.
@@ -1102,8 +1106,8 @@ def drawStreams(ax, mesh, data, startStream=3, coarseMesh=None, quiver=False,
     quiver : bool [False]
         Draw arrows instead of streamlines.
 
-    Other Parameters
-    ----------------
+    Keyword Arguments
+    -----------------
     **kwargs
         Additional kwargs forwarded to axe.quiver, drawStreamLine_
 
@@ -1223,8 +1227,8 @@ def drawSensors(ax, sensors, diam=None, coords=None, **kwargs):
     coords: (int, int) [0, 1]
         Coordinates to take (usually x and y)
 
-    Other Parameters
-    ----------------
+    Keyword Arguments
+    -----------------
     **kwargs
         Additional kwargs forwarded to mpl.PatchCollection, mpl.Circle
 
