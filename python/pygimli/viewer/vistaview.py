@@ -1,12 +1,9 @@
 # -*- coding: utf-8 -*-
 """Plot 3D mesh."""
 
-import os
 import sys
-import tempfile
 
 import matplotlib.pyplot as plt
-import numpy as np
 
 import pygimli as pg
 
@@ -28,7 +25,9 @@ else:
 PyQt5 = pg.optImport('PyQt5', requiredFor="pyGIMLi 3D viewer")
 
 # True for Jupyter notebooks and sphinx-builds
-inline = plt.get_backend().lower() == "agg"
+_backend = plt.get_backend().lower()
+inline = "inline" in _backend or "agg" in _backend
+
 if PyQt5 is None or inline:
     gui = False
     inline = True
@@ -54,9 +53,6 @@ def showMesh3DFallback(mesh, data, **kwargs):
     Plot the 3D object sketchy.
     """
     ax = kwargs.pop('ax', None)
-
-    # ensure to remove notebook from kwargs
-    notebook = kwargs.pop('notebook', inline)
 
     from mpl_toolkits.mplot3d import Axes3D
 
@@ -117,9 +113,9 @@ def showMesh3DVista(mesh, data=None, **kwargs):
         return s3d.plotter, s3d  # plotter, gui
 
     elif not gui:
-        plotter = drawModel(None, mesh, data, notebook=notebook, cmap=cmap, **kwargs)
         if notebook:
             pyvista.set_plot_theme('document')
+        plotter = drawModel(None, mesh, data, notebook=notebook, cmap=cmap, **kwargs)
         if not hold:
             plotter.show()
         return plotter, None
