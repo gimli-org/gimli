@@ -6,9 +6,7 @@ import sys
 import matplotlib.pyplot as plt
 
 import pygimli as pg
-
 from pygimli.viewer.pv import drawModel
-
 
 pyvista = pg.optImport('pyvista', requiredFor="proper visualization in 3D")
 if pyvista is None:
@@ -20,7 +18,8 @@ else:
     vers_needs = '0.23.2'
     vers_needf = 0.232
     if vers_userf < vers_needf:
-        pg.warn("Please consider updating PyVista to at least {}".format(vers_needs))
+        pg.warn("Please consider updating PyVista to at least {}".format(
+            vers_needs))
 
 PyQt5 = pg.optImport('PyQt5', requiredFor="pyGIMLi 3D viewer")
 
@@ -104,7 +103,7 @@ def showMesh3DVista(mesh, data=None, **kwargs):
     notebook = kwargs.pop('notebook', inline)
 
     # add given data from argument
-    if gui and not notebook:
+    if gui:
         app = Qt.QApplication(sys.argv)
         s3d = Show3D(app)
         s3d.addMesh(mesh, data, cmap=cmap, **kwargs)
@@ -112,13 +111,11 @@ def showMesh3DVista(mesh, data=None, **kwargs):
             s3d.wait()
         return s3d.plotter, s3d  # plotter, gui
 
-    elif not gui:
+    else:
         if notebook:
             pyvista.set_plot_theme('document')
-        plotter = drawModel(None, mesh, data, notebook=notebook, cmap=cmap, **kwargs)
+        plotter = drawModel(None, mesh, data, notebook=notebook, cmap=cmap,
+                            **kwargs)
         if not hold:
             plotter.show()
         return plotter, None
-
-    else:
-        pg.error("This shouldn't happen...")

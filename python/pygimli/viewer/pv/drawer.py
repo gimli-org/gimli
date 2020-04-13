@@ -1,6 +1,9 @@
+import numpy as np
+
 import pygimli as pg
 
 from .utils import pgMesh2pvMesh
+
 pv = pg.optImport('pyvista', requiredFor="proper visualization in 3D")
 
 
@@ -47,7 +50,7 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
         style=style,
         show_edges=show_edges,
         opacity=opacity,
-        )
+    )
 
     if returnActor:
         return ax, _actor
@@ -103,7 +106,7 @@ def drawSensors(ax, sensors, diam=0.01, color='grey', **kwargs):
         The plotter containing the mesh and drawn electrode positions.
     """
     for pos in sensors:
-        s = pv.Sphere(radius=diam/2, center=pos)
+        s = pv.Sphere(radius=diam / 2, center=pos)
         ax.add_mesh(s, color=color, **kwargs)
 
     return ax
@@ -182,11 +185,17 @@ def drawStreamLines(ax, mesh, data, label=None, radius=0.01, **kwargs):
     """
 
     if isinstance(mesh, pg.Mesh):
-        # create gradient of cell data
-        grad = pg.solver.grad(mesh, data)
-        # ensure that its point/node data in the mesh
+
+        # create gradient of cell data if not provided
+        if np.ndim(data) == 1:
+            grad = pg.solver.grad(mesh, data)
+        else:
+            grad = data
+
+        # ensure that it's point/node data in the mesh
         if len(grad) == mesh.cellCount():
             grad = pg.meshtools.cellDataToNodeData(mesh, grad)
+
         # add data to the mesh and convert to pyvista grid
         mesh = pgMesh2pvMesh(mesh, grad.T, label)
 
