@@ -25,7 +25,7 @@ from pygimli.frameworks import ParameterModelling
 
 class SpectrumModelling(ParameterModelling):
     """Modelling framework with an array of freqencies as data space.
-    
+
     Attributes
     ----------
     params: dict
@@ -36,17 +36,19 @@ class SpectrumModelling(ParameterModelling):
     def __init__(self, funct=None, **kwargs):
         self._complex = False
         super(SpectrumModelling, self).__init__(funct=funct, **kwargs)
+
+        self.defaultModelTrans='log'
         self._freqs = None
 
-    @property 
+    @property
     def complex(self):
         return self._complex
-    
+
     @complex.setter
     def complex(self, c):
         self._complex = c
-    
-    @property 
+
+    @property
     def freqs(self):
         if self._freqs is None:
             pg.critical("No frequencies defined.")
@@ -54,31 +56,10 @@ class SpectrumModelling(ParameterModelling):
     @freqs.setter
     def freqs(self, f):
         self._freqs = f
-
-    def _initFunction(self, funct):
-        """Init any function and interpret possible args and kwargs."""
-        self._function = funct
-        # the first varname is suposed to be f or freqs
-        args = funct.__code__.co_varnames[1:funct.__code__.co_argcount]
-        for varname in args:
-            if varname != 'verbose':
-                self._params[varname] = 0.0
-
-        nPara = len(self._params.keys())
-        
-        for i, [k, p] in enumerate(self._params.items()):
-            self.addParameter(k, id=i, cType=0, 
-                                       single=True, 
-                                       trans='log', 
-                                       startModel=1)
+        self.dataSpace = self._freqs
 
     def response(self, params):
-        #pg._r('response:', params)
-        #self.drawModel(None, params)
-        if np.isnan([*params]).any():
-            print(params)
-            pg.critical('invalid params for response')
-        ret = self._function(self.freqs, *params)
+        ret = super().response(params)
         if self.complex:
             return squeezeComplex(ret)
         return ret
@@ -110,7 +91,7 @@ class SpectrumManager(MethodManager):
         """
         if isinstance(self._funct, SpectrumModelling):
             return self._funct
-        
+
         fop = SpectrumModelling(self._funct, **kwargs)
         return fop
 

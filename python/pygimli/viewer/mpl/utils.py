@@ -1,10 +1,11 @@
 # CODING=Utf-8
-"""Plotting utilities used througout the viewer.mpl package."""
+"""Plotting utilities used throughout the viewer.mpl package."""
 
 import os
-
 import numpy as np
-import matplotlib.animation as animation
+# TODO expensive import costs 75% of total time
+# see: python -X importtime -c 'import pygimli'
+# import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 
@@ -224,7 +225,7 @@ def saveAnimation(mesh, data, out, vData=None, plc=None, label='', cMin=None,
     ax = fig.add_subplot(1, 1, 1)
 
     gci = pg.viewer.mpl.drawModel(ax, mesh, data=data[0], cMin=cMin, cMax=cMax,
-                                 cmap=cmap, logScale=logScale)
+                                  cMap=cmap, logScale=logScale)
 
     pg.viewer.mpl.createColorbar(gci, label=label, pad=0.55)
 
@@ -241,7 +242,7 @@ def saveAnimation(mesh, data, out, vData=None, plc=None, label='', cMin=None,
             ax.clear()
             pg.viewer.mpl.holdAxes_ = 1
             pg.viewer.mpl.drawModel(ax, mesh, data=data[i], cMin=cMin,
-                                   cMax=cMax, cmap=cmap, logScale=logScale)
+                                   cMax=cMax, cMap=cmap, logScale=logScale)
             pg.viewer.mpl.drawStreams(ax, mesh, vData[i], **kwargs)
         else:
             print(min(data[i]), max(data[i]))

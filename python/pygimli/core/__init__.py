@@ -635,6 +635,11 @@ _pygimli_.CMatrix.dtype = np.complex
 _pygimli_.R3Vector.ndim = 2
 _pygimli_.stdVectorRVector3.ndim = 2
 
+_pygimli_.RSparseMatrix.ndim = 2
+_pygimli_.CSparseMatrix.ndim = 2
+_pygimli_.RSparseMapMatrix.ndim = 2
+_pygimli_.CSparseMapMatrix.ndim = 2
+
 def __Matrix_len(self):
     return self.rows()
 

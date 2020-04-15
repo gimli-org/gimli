@@ -182,21 +182,26 @@ def createRectangle(start=None, end=None, pos=None, size=None, **kwargs):
     return poly
 
 
-def createWorld(start, end, marker=1, area=0., layers=None, worldMarker=True):
+def createWorld(start, end, marker=1, area=0., layers=None, worldMarker=True,
+                **kwargs):
     """Create simple rectangular world.
 
-    Create simple rectangular world with appropriate boundary conditions.
+    Create simple rectangular [hexagonal] world with appropriate boundary conditions.
     Surface boundary is set do pg.core.MARKER_BOUND_HOMOGEN_NEUMANN, i.e, -1
     and inner subsurface is set to pg.core.MARKER_BOUND_MIXED, i.e., -2 or
     Numbered in ascending order in left direction starting upper left if
     worldMarker is set to false.
 
+    TODO
+    ----
+        * 3D with layers
+
     Parameters
     ----------
-    start: [x, y]
-        Upper/Left Corner
-    end: [x, y]
-        Lower/Right Corner
+    start: [x, y, [z]]
+        Upper/Left/[Front] Corner
+    end: [x, y, [z]]
+        Lower/Right/[Back] Corner
     marker: int
         Marker for the resulting triangle cells after mesh generation.
     area: float | list
@@ -205,7 +210,11 @@ def createWorld(start, end, marker=1, area=0., layers=None, worldMarker=True):
     layers: float [None]
         Add some layers to the world.
     worldMarker: bool [True]
-        Specify kind of preset boundary marker [-1, -2] or [1, 2, 3, 4 ..]
+        Specify kind of preset boundary marker [-1, -2] or ascending order [1, 2, 3, 4 ..]
+
+    Other Parameters
+    ----------------
+    Forwarded to createCube
 
     Returns
     -------
@@ -223,6 +232,38 @@ def createWorld(start, end, marker=1, area=0., layers=None, worldMarker=True):
     >>> drawMesh(ax, world)
     >>> plt.show()
     """
+    if len(start) == 3 and len(end) == 3:
+
+        if layers is not None:
+            pg.critical("3D with layers is not yet implemented.")
+
+        world = createCube(size=pg.Pos(end)-pg.Pos(start),
+                           pos=(pg.Pos(end)-pg.Pos(start))/2.0,
+                           **kwargs)
+
+
+        for i, b in enumerate(world.boundaries()):
+            if worldMarker is True:
+                if b.norm()[2] == 1.0:
+                    b.setMarker(pg.core.MARKER_BOUND_HOMOGEN_NEUMANN)
+                else:
+                    b.setMarker(pg.core.MARKER_BOUND_MIXED)
+            else:
+                if b.norm() == [-1, 0, 0]:
+                    b.setMarker(1)
+                elif b.norm() == [1, 0, 0]:
+                    b.setMarker(2)
+                elif b.norm() == [0, 0, 1]:
+                    b.setMarker(3)
+                elif b.norm() == [0, 0, -1]:
+                    b.setMarker(4)
+                elif b.norm() == [0, -1, 0]:
+                    b.setMarker(5)
+                elif b.norm() == [0, 1, 0]:
+                    b.setMarker(6)
+
+        return world
+
     z = [start[1]]
 
     if layers is not None:

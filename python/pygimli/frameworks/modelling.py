@@ -835,8 +835,10 @@ class LCModelling(Modelling):
 class ParameterModelling(Modelling):
     """Model with symbolic parameter names instead of numbers"""
     def __init__(self, funct=None, **kwargs):
-        self._function = None
+        self.function = None
         self._params = {}
+        self.dataSpace = None ## x, t freqs, or whatever
+        self.defaultModelTrans='lin'
 
         super(ParameterModelling, self).__init__(**kwargs)
 
@@ -847,9 +849,36 @@ class ParameterModelling(Modelling):
     def params(self):
         return self._params
 
-    @property
-    def function(self):
-        return self._function
+    def _initFunction(self, funct):
+        """Init any function and interpret possible args and kwargs."""
+        self.function = funct
+        # the first varname is suposed to be f or freqs
+        self.dataSpaceName = funct.__code__.co_varnames[0]
+        pg.debug('data space:', self.dataSpaceName)
+
+        args = funct.__code__.co_varnames[1:funct.__code__.co_argcount]
+        for varname in args:
+            if varname != 'verbose':
+                pg.debug('add parameter:', varname)
+                self._params[varname] = 0.0
+
+        nPara = len(self._params.keys())
+
+        for i, [k, p] in enumerate(self._params.items()):
+            self.addParameter(k, id=i, cType=0,
+                                       single=True,
+                                       trans=self.defaultModelTrans,
+                                       startModel=1)
+
+    def response(self, params):
+        if np.isnan([*params]).any():
+            print(params)
+            pg.critical('invalid params for response')
+        if self.dataSpace is None:
+            pg.critical('no data space given')
+
+        ret = self.function(self.dataSpace, *params)
+        return ret
 
     def setRegionProperties(self, k, **kwargs):
         """Set Region Properties by parameter name."""

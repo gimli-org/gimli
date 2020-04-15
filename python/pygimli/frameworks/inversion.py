@@ -210,10 +210,12 @@ class Inversion(object):
             pg._y(d)
             pg.critical("Inversion framework needs data values to run")
 
-        if min(abs(self._dataVals)) < 1e-12:
-            print(self._dataVals)
-            pg.warn("Found zero data values. Setting them to a TOLERANCE value of 1e-12")
-            pg.fixZero(self._dataVals, 1e-12)
+        # zero can be a valid data value
+        #
+        # if min(abs(self._dataVals)) < 1e-12:
+        #     print(self._dataVals)
+        #     pg.warn("Found zero data values. Setting them to a TOLERANCE value of 1e-12")
+        #     pg.fixZero(self._dataVals, 1e-12)
 
     @property
     def errorVals(self):

@@ -13,6 +13,59 @@ import pygimli as pg
 from pygimli.utils import prettyFloat as pf
 
 
+def fit(funct, data, err=None, **kwargs):
+    """Generic function fitter.
+
+    Fit data to a given function.
+
+
+    TODO
+    ----
+        * will not work for harmonic function, maybe add harmonic flag to forward it to harmfit
+        * Dictionary support for funct to submit user data..
+
+    Parameters
+    ----------
+    funct: callable
+        Function with the first argmument as data space, e.g., x, t, f, Nr. ..
+        Any following arguments are the parameters to be fit. Except a verbose flag if used.
+    data: iterable (float)
+        Data values
+    err: iterable (float) [None]
+        Data error values in %/100. Default is 1% if None are given.
+
+    Other Parameters
+    ----------------
+    *dataSpace*: iterable
+        Keyword argument of the data space of len(data). The name need to fit the first argument of funct.
+
+    Returns
+    -------
+    model: array
+        Fitted model parameter.
+    response: array
+        Model response.
+
+    Example
+    -------
+    >>> import pygimli as pg
+    >>>
+    >>> func = lambda t, a, b: a*np.exp(b*t)
+    >>> t = np.linspace(1, 2, 20)
+    >>> data = func(t, 1.1, 2.2)
+    >>> model, response = pg.frameworks.fit(func, data, t=t)
+    >>> print(pg.core.round(model, 1e-5))
+    2 [1.1, 2.2]
+    >>> _ = pg.plt.plot(t, data, 'o', label='data')
+    >>> _ = pg.plt.plot(t, response, label='response')
+    >>> _ = pg.plt.legend()
+    >>> pg.wait()
+    """
+    mgr = ParameterInversionManager(funct, **kwargs)
+    model = mgr.invert(data, err, **kwargs)
+    return model, mgr.fw.response
+
+
 # Discuss .. rename to Framework or InversionFramework since he only manages
 # the union of Inversion/Modelling and RegionManager(later)
 class MethodManager(object):
@@ -55,6 +108,9 @@ class MethodManager(object):
         """Constructor."""
         self._fop = fop
         self._fw = fw
+        # we hold our own copy of the data
+        self._data = None
+
         self._verbose = kwargs.pop('verbose', False)
         self._debug = kwargs.pop('debug', False)
 
@@ -107,6 +163,14 @@ class MethodManager(object):
     def model(self):
         return self.fw.model
 
+    @property
+    def data(self):
+        self._data
+    @data.setter
+    def data(self, d):
+        self._data = d
+
+
     def reinitForwardOperator(self, **kwargs):
         """Reinitialize the forward operator.
 
@@ -154,7 +218,7 @@ class MethodManager(object):
         Modelling
             Instance of any kind of :py:mod:`pygimli.framework.Modelling`.
         """
-        pg.critical("No forward operator defined, either give one or"
+        pg.critical("No forward operator defined, either give one or "
                     "overwrite in derived class")
 
     def _initInversionFramework(self, **kwargs):
@@ -275,10 +339,18 @@ class MethodManager(object):
 
         vals = self.errorCheck(err, dataVals)
 
-        if min(vals) <= 0:
-            pg.critical("All error values need to be larger then 0."
-                        " either give and err argument or fill dataContainer "
-                        " with a valid 'err' ", min(vals), max(vals))
+        if vals is None:
+            pg.warn('No data array given, set Fallback set to 1%')
+            vals = np.ones(len(dataVals))* 0.01
+
+        try:
+            if min(vals) <= 0:
+                pg.critical("All error values need to be larger then 0."
+                            " either give and err argument or fill dataContainer "
+                            " with a valid 'err' ", min(vals), max(vals))
+        except Exception as e:
+            pg.critical("can't estimeate data error")
+
 
         return vals
 
@@ -309,7 +381,19 @@ class MethodManager(object):
             If errVals is float we assume this means to be a global relative
             error and force self.estimateError to be called.
         """
+        if data is not None:
+            self.data = data
+        else:
+            data = self.data
+
+        dataSpace = kwargs.pop(self.fop.dataSpaceName, None)
+
+        if dataSpace is not None:
+            self.fop.dataSpace = dataSpace
+
+
         dataVals = self._ensureData(data)
+
         errVals = self._ensureError(err, dataVals)
 
         self.preRun(**kwargs)
@@ -477,8 +561,10 @@ class ParameterInversionManager(MethodManager):
             if not isinstance(fop, pg.frameworks.ParameterModelling):
                 pg.critical("We need a fop if type ",
                             pg.frameworks.ParameterModelling)
-
-#        fop = pg.frameworks.ParameterModelling(fop, petro)
+        elif funct is not None:
+            fop = pg.frameworks.ParameterModelling(funct)
+        else:
+            pg.critical('you should either give a valid fop or a function so I can create the fop for you')
 
         super(ParameterInversionManager, self).__init__(fop, **kwargs)
 

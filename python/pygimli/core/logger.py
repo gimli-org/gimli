@@ -241,7 +241,6 @@ if '--verbose' in sys.argv or '-v' in sys.argv:
 else:
     setVerbose(False)
 
-
 def info(*args):
     logger.info(_msg(*args))
 

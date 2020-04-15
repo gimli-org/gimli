@@ -2,14 +2,8 @@
 """
 pyGIMLi - An open-source library for modelling and inversion in geophysics
 """
-
-import time
-
-st = time.time()
-
 import locale
 import sys
-
 
 ### Import everything that should be accessible through main namespace.
 from .core import (BVector, CVector, DataContainer, DataContainerERT,
@@ -25,12 +19,11 @@ from .core.logger import (_, _d, _g, _r, _y, critical, d, debug, deprecated,
 
 from .meshtools import createGrid, interpolate
 from .solver import solve
-# from .core import *
 from .testing import test
-from .utils import boxprint, cache, cut, unique
+from .utils import boxprint, cache, cut, unique, unit, cmap
 from .utils import prettify as pf
-from .utils import unit, cmap
 from .viewer import plt, show, wait
+
 from .core.load import getCachePath, getExampleFile, load, optImport
 from .core.config import getConfigPath, rc, getCPUCount
 
@@ -84,8 +77,6 @@ def findVersion(cache=True):
     import os
     global __version__
 
-    #setDebug(True)
-
     root = os.path.abspath(os.path.join(__file__, "../../../"))
     gitIndexFile = os.path.join(root, '.git/index')
     versionCacheFile = os.path.join(getCachePath(), 'VERSION')
@@ -110,8 +101,9 @@ def findVersion(cache=True):
     if loadCache is True and cache is True:
         with open(versionCacheFile, 'r') as fi:
             __version__ = fi.read()
-            debug('Loaded version info from cache.', versionCacheFile, __version__)
-            return
+            debug('Loaded version info from cache.',
+                    versionCacheFile, __version__)
+        return __version__
 
     debug('Fetching version info.')
     from ._version import get_versions
@@ -119,8 +111,8 @@ def findVersion(cache=True):
     __version__ = __versions__['version']
 
     def _get_branch():
-        from os.path import join, abspath, exists
         """Get current git branch."""
+        from os.path import join, abspath, exists
         gitpath = abspath(join(__path__[0], "../../.git"))
 
         if exists(gitpath):
@@ -152,8 +144,11 @@ def findVersion(cache=True):
 # call once to get version from cache, setup or _version.py
 findVersion()
 
-def version(cache=False):
+def version(cache=True):
     """Shortcut to show and return current version."""
-    findVersion(cache=False)
-    info('Version: ' + __version__ + " core:" + versionStr())
+    findVersion(cache=cache)
+    if cache is True:
+        info('Version (cached): ' + __version__ + " core:" + versionStr())
+    else:
+        info('Version: ' + __version__ + " core:" + versionStr())
     return __version__
