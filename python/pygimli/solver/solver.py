@@ -1816,7 +1816,7 @@ def intDomain(u, mesh=None):
     """Return integral over nodal solution :math:`u`.
 
     .. math::
-        \int_{\Domain} u
+        \int_{\Omega} u
 
     TODO
     ----
