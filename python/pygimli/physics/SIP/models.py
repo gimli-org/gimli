@@ -39,7 +39,7 @@ def modelColeColeRho(f, rho, m, tau, c, a=1):
 
     Examples
     --------
-    >>> # no need to import matplotlib. pygimli's show does
+    
     >>> import numpy as np
     >>> import pygimli as pg
     >>> from pygimli.physics.SIP import modelColeColeRho

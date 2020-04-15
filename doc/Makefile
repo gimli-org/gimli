@@ -56,6 +56,8 @@ doc: html
 
 api:
 	sphinx-autogen -i -t _templates pygimliapi/*.rst
+	cp -f pygimliapi/viewer_overwrite pygimliapi/_generated/viewer.rst
+	cp -f pygimliapi/physics_overwrite pygimliapi/_generated/physics.rst
 
 gallery:
 	python3 ./sidebar_gallery.py
@@ -66,7 +68,7 @@ html-nogallery: api
 	@echo "Build finished without gallery. The HTML pages are in $(BUILDDIR)/html."
 
 html: api
-	$(SPHINXBUILD) -D abort_on_example_error=1 -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
+	$(SPHINXBUILD) -v -D abort_on_example_error=True -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 

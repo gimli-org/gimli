@@ -36,7 +36,7 @@ def createGrid(x=None, y=None, z=None, **kwargs):
 
     Examples
     --------
-    >>> # no need to import matplotlib. pygimli's show does
+
     >>> import pygimli as pg
     >>> mesh = pg.meshtools.createGrid(x=[0, 1, 1.5, 2],
     ...                                y=[-1, -0.5, -0.25, 0], marker=2)

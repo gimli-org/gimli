@@ -3,7 +3,7 @@ import tempfile
 
 import pygimli as pg
 
-pv = pg.optImport('pyvista', requiredFor="proper visualization in 3D")
+pv = pg.optImport('pyvista', requiredFor="properly visualize 3D data")
 
 
 def pgMesh2pvMesh(mesh, data=None, label=None):

@@ -372,7 +372,7 @@ class VESManager(MethodManager1d):
 
     Examples
     --------
-    >>> # no need to import matplotlib. pygimli's show does
+    
     >>> import numpy as np
     >>> import pygimli as pg
     >>> from pygimli.physics import VESManager

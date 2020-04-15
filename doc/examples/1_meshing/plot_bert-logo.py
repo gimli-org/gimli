@@ -10,6 +10,7 @@ possibility to hand over matplotlib path objects to the TriangleWrapper."""
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+
 import pygimli as pg
 
 ###############################################################################
@@ -49,4 +50,3 @@ t = ax.text(mesh.xmin() + (mesh.xmax()-mesh.xmin())/2, offset, 'BERT',
 pg.show(mesh, pg.x(mesh.cellCenters()), ax=ax, cMap='Spectral_r',
         logScale=False, showLater=True, showMesh=True, colorBar=False)
 ax.set_ylim(offset, mesh.ymax())
-pg.wait()

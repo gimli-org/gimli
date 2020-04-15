@@ -58,6 +58,7 @@ __all__ = [
     'convertHDF5Mesh',
     'exportHDF5Mesh',
     'exportFenicsHDF5Mesh',
+    'extrudeMesh',
     'mergePLC',
     'readPLC',
     'writePLC',

@@ -4,6 +4,7 @@ import json
 import os
 import sys
 
+from .logger import info
 
 # pyGIMLi default configuration
 rc = {
@@ -60,25 +61,25 @@ def getConfigPath():
     return os.path.join(path, appname)
 
 
-configpath = getConfigPath()
-configfile = os.path.join(configpath, "config.json")
+__configpath = getConfigPath()
+__configfile = os.path.join(__configpath, "config.json")
 
-if os.path.isfile(configfile):
-    # print("Loading user configuration file at " + configfile)
-    with open(configfile) as cfg:
+if os.path.isfile(__configfile):
+    # info("Loading user configuration file at " + __configfile)
+    with open(__configfile) as cfg:
         userrc = json.load(cfg)
 
     # Check if user config holds all keys and update if necessary
     if len(userrc.keys()) != len(rc.keys()):
         for key in rc:
             if key not in userrc:
-                print("Updating user configuration with", key, "=", rc[key])
+                info("Updating user configuration with", key, "=", rc[key])
                 userrc[key] = rc[key]
-        with open(configfile, "w") as cfg:
+        with open(__configfile, "w") as cfg:
             json.dump(userrc, cfg, indent=4, sort_keys=True)
     rc = userrc
 else:
-    print("Creating default user configuration file at " + configfile)
-    os.makedirs(os.path.join(configpath, "pygimli"), exist_ok=True)
-    with open(configfile, "w") as cfg:
+    info("Creating default user configuration file at " + __configfile)
+    os.makedirs(os.path.join(__configpath, "pygimli"), exist_ok=True)
+    with open(__configfile, "w") as cfg:
         json.dump(rc, cfg, indent=4, sort_keys=True)

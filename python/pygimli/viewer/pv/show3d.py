@@ -12,7 +12,7 @@ import sys
 import tempfile
 
 import pygimli as pg
-from .drawer import drawMesh3D
+from .drawer import drawMesh
 from .utils import pgMesh2pvMesh
 
 from PyQt5.QtCore import Qt
@@ -26,7 +26,11 @@ from .gwidgets import (
     GToolBar, GButton, GLineEdit, GComboBox, GSlider, GDoubleSpinBox, CMAPS
 )
 
-pv = pg.optImport('pyvista', requiredFor="proper visualization in 3D")
+pv = pg.optImport('pyvista', requiredFor="properly visualize 3D data")
+
+__all__ = ['Show3D', 'showHotKeys', 'wait', 'addMesh', 'allowMeshParameters',
+    'updateParameterView', 'updateScalarBar', 'toggleBbox', 'takeScreenShot',
+    'exportMesh', 'resetExtrema', 'setGlobalLimits']
 
 
 class Show3D(QMainWindow):
@@ -56,11 +60,11 @@ class Show3D(QMainWindow):
         self.setupWidget(**kwargs)
 
         # signals
-        signal.signal(signal.SIGINT, self._signal_handler)
-        self.acn_close.triggered.connect(self._signal_handler)
+        signal.signal(signal.SIGINT, self._signalHandler)
+        self.acn_close.triggered.connect(self._signalHandler)
         self.acn_hkeys.triggered.connect(self.showHotKeys)
 
-    def _signal_handler(self, sig, frame=None):
+    def _signalHandler(self, sig, frame=None):
         """
         Stop the GUI on CTRL-C, but not the script it was called from.
         from: https://stackoverflow.com/questions/1112343/how-do-i-capture-sigint-in-python
@@ -150,8 +154,8 @@ class Show3D(QMainWindow):
         """
         Add a mesh to the pyqt frame.
 
-        Parameter
-        ---------
+        Parameters
+        ----------
         mesh: pg.Mesh
             pyGIMLi created mesh.
         data: iterable
@@ -172,7 +176,7 @@ class Show3D(QMainWindow):
             kwargs['opacity'] = kwargs.pop('alpha', 1)
         self.__kwargs = kwargs
 
-        _, self._actor = drawMesh3D(
+        _, self._actor = drawMesh(
             self.plotter, self.mesh, cmap=cMap, returnActor=True,
             show_Edges=True, **self.__kwargs)
 
@@ -266,8 +270,8 @@ class Show3D(QMainWindow):
         """
         Change the view to given Parameter values.
 
-        Parameter
-        ---------
+        Parameters
+        ----------
         param: Current text of the just triggered QComboBox
 
         Note

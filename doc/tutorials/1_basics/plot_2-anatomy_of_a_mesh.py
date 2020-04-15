@@ -9,7 +9,7 @@ In this tutorial we look a the anatomy of a :gimliapi:`GIMLI::Mesh`. Although
 the example is simplisitic and two-dimensional, the individual members of the
 Mesh class and their methods can be inspected similarly for more complex meshes
 in 2D and 3D. This example is heavily inspired by the `anatomy of a matplotlib
-plot <https://matplotlib.org/examples/showcase/anatomy.html>`_, which we can 
+plot <https://matplotlib.org/examples/showcase/anatomy.html>`_, which we can
 also highly recommend for visualization with the :py:mod:`pygimli.viewer.mpl`.
 
 We start by importing matplotlib and defining some helper functions for
@@ -17,7 +17,6 @@ plotting.
 """
 
 import matplotlib.pyplot as plt
-plt.xkcd()
 
 from matplotlib.patches import Circle
 from matplotlib.patheffects import withStroke

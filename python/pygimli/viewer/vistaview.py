@@ -1,19 +1,16 @@
 # -*- coding: utf-8 -*-
 """Plot 3D mesh."""
 
-import os
 import sys
-import tempfile
 
 import matplotlib.pyplot as plt
-import numpy as np
 
 import pygimli as pg
 
-from pygimli.viewer.pv import drawModel3D
 
+PyQt5 = pg.optImport('PyQt5', requiredFor="use pyGIMLi's 3D viewer")
+pyvista = pg.optImport('pyvista', requiredFor="properly visualize 3D data")
 
-pyvista = pg.optImport('pyvista', requiredFor="proper visualization in 3D")
 if pyvista is None:
     view3Dcallback = 'showMesh3DFallback'
 else:
@@ -23,19 +20,19 @@ else:
     vers_needs = '0.23.2'
     vers_needf = 0.232
     if vers_userf < vers_needf:
-        pg.warn("Please consider updating PyVista to at least {}".format(vers_needs))
-
-PyQt5 = pg.optImport('PyQt5', requiredFor="pyGIMLi 3D viewer")
+        pg.warn("Please consider updating PyVista to at least {}".format(
+            vers_needs))
+    from pygimli.viewer.pv import drawModel
 
 # True for Jupyter notebooks and sphinx-builds
-inline = plt.get_backend().lower() == "agg"
+_backend = plt.get_backend().lower()
+inline = "inline" in _backend or "agg" in _backend
+
 if PyQt5 is None or inline:
-    gui = False
     inline = True
 else:
     from .pv.show3d import Show3D
     from PyQt5 import Qt
-    gui = True
     inline = False
 
 
@@ -54,9 +51,6 @@ def showMesh3DFallback(mesh, data, **kwargs):
     Plot the 3D object sketchy.
     """
     ax = kwargs.pop('ax', None)
-
-    # ensure to remove notebook from kwargs
-    notebook = kwargs.pop('notebook', inline)
 
     from mpl_toolkits.mplot3d import Axes3D
 
@@ -83,12 +77,12 @@ def showMesh3DVista(mesh, data=None, **kwargs):
     """
     Make use of the actual 3D visualization tool kit
 
-    Parameter
-    ---------
+    Parameters
+    ----------
     data: pg.Vector or np.ndarray
         Dictionary of cell values, sorted by key. The values need to be
         numpy arrays.
-    
+
     Returns
     -------
     plotter: pyvista.Plotter
@@ -108,7 +102,7 @@ def showMesh3DVista(mesh, data=None, **kwargs):
     notebook = kwargs.pop('notebook', inline)
 
     # add given data from argument
-    if gui and not notebook:
+    if gui:
         app = Qt.QApplication(sys.argv)
         s3d = Show3D(app)
         s3d.addMesh(mesh, data, cmap=cmap, **kwargs)
@@ -116,13 +110,11 @@ def showMesh3DVista(mesh, data=None, **kwargs):
             s3d.wait()
         return s3d.plotter, s3d  # plotter, gui
 
-    elif not gui:
-        plotter = drawModel3D(None, mesh, data, notebook=notebook, cmap=cmap, **kwargs)
+    else:
         if notebook:
             pyvista.set_plot_theme('document')
+        plotter = drawModel(None, mesh, data, notebook=notebook, cmap=cmap,
+                            **kwargs)
         if not hold:
             plotter.show()
         return plotter, None
-
-    else:
-        pg.error("This shouldn't happen...")

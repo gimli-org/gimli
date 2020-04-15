@@ -18,7 +18,7 @@ import numpy as np
 import pygimli as pg
 import pygimli.meshtools as mt
 from pygimli.physics import traveltime
-from pygimli.viewer.pv import drawSensors3D
+from pygimli.viewer.pv import drawSensors
 
 pyvista = pg.optImport("pyvista")
 
@@ -29,7 +29,6 @@ depth = 15
 width = 30
 plc = mt.createCube(size=[width, width, depth], pos=[0, 0, -depth/2], area=5)
 
-print('#'*100)
 n_sensors = 8
 sensors = np.zeros((n_sensors, 3))
 sensors[0, 0] = 15
@@ -83,7 +82,7 @@ for receiver in sensors[1:]:
 
 if pyvista:
     plotter, _ = pg.show(mesh, hold=True, label=label, alpha=0.1)
-    drawSensors3D(plotter, sensors, diam=0.5, color='yellow')
+    drawSensors(plotter, sensors, diam=0.5, color='yellow')
 
     for ray in rays:
         for i in range(len(ray) - 1):

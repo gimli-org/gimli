@@ -3,6 +3,10 @@
 pyGIMLi API Reference
 =====================
 
+.. toctree::
+   :maxdepth: 1
+   :hidden:
+
 .. only:: latex
 
   .. note::
@@ -23,11 +27,9 @@ pyGIMLi API Reference
 
   .. core
   frameworks
-  .. manager
   math
   matrix
   meshtools
-  misc
   physics
   solver
   testing

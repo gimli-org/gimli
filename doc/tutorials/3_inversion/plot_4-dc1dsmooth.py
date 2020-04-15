@@ -29,7 +29,7 @@ fBlock = pg.core.DC1dModelling(len(synres), ab2, ab2/3)
 rhoa = fBlock(synthk+synres)
 # The data are noisified using a
 errPerc = 3.  # relative error of 3 percent
-rhoa = rhoa * (pg.math.randn(len(rhoa)) * errPerc / 100. + 1.)
+rhoa = rhoa * (np.random.randn(len(rhoa)) * errPerc / 100. + 1.)
 ###############################################################################
 # The forward operator can be called by f.response(model) or simply f(model)
 thk = np.logspace(-0.5, 0.5, 30)

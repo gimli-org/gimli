@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # encoding: utf-8
-# sphinx_gallery_thumbnail_number = 2
 """
 Refraction Manager
 ------------------
@@ -8,6 +7,7 @@ Refraction Manager
 This example shows how to use the Refraction manager to generate the response
 of a three-layered sloping model and to invert the synthetic noisified data."""
 
+# sphinx_gallery_thumbnail_number = 2
 import numpy as np
 
 import pygimli as pg
@@ -49,7 +49,7 @@ scheme.setSensors(pos)
 ###############################################################################
 # Now we initialize the TravelTime manager and asssign P-wave velocities to the
 # layers. To this end, we create a map from cell markers 0 through 3 to
-# velocities (in m/s) and generate a velocity vector. To check whether the 
+# velocities (in m/s) and generate a velocity vector. To check whether the
 # model looks correct, we plot it along with the sensor positions.
 
 mgr = TravelTimeManager()
@@ -59,13 +59,13 @@ vp[vp == 2] = 500
 vp[vp == 3] = 1300
 
 ax, _ = pg.show(mesh, vp, colorBar=True, logScale=False, label='v in m/s')
-pg.viewer.mpl.drawSensors(ax, scheme.sensors(), diam=0.5, 
+pg.viewer.mpl.drawSensors(ax, scheme.sensors(), diam=0.5,
                          facecolor='white', edgecolor='black')
 
 ###############################################################################
 # We use this model to create noisified synthetic data and look at the
 # traveltime data matrix. TODO: show first arrival traveltime curves.
-data = mgr.simulate(slowness=1.0 / vp, scheme=scheme, mesh=mesh, 
+data = mgr.simulate(slowness=1.0 / vp, scheme=scheme, mesh=mesh,
                     noiseLevel=0.001, noiseAbs=0.001,
                     verbose=True)
 mgr.showData(data)
@@ -75,15 +75,15 @@ mgr.showData(data)
 # about the layered structure. Note that we need to create a parametric mesh
 # without a boundary region by setting boundary=0.
 mesh = mt.createParaMesh(data.sensors(), boundary=0, paraMaxCellSize=15.0)
-vest = mgr.invert(data, mesh=mesh, secNodes=2, maxIter=10, verbose=1) 
+vest = mgr.invert(data, mesh=mesh, secNodes=2, maxIter=10, verbose=1)
 
 ###############################################################################
-# The manager also holds the method showResult that is used to plot the result. 
-# Note that only covered cells are shown by default. 
+# The manager also holds the method showResult that is used to plot the result.
+# Note that only covered cells are shown by default.
 # For comparison we plot the geometry on top.
 
 ax, _ = mgr.showResult(cMin=min(vp), cMax=max(vp), logScale=False)
-pg.show(geom, ax=ax, fillRegion=False, regionMarker=False) 
+pg.show(geom, ax=ax, fillRegion=False, regionMarker=False)
 
 ###############################################################################
 # Note that internally the following is called
@@ -94,14 +94,14 @@ pg.show(geom, ax=ax, fillRegion=False, regionMarker=False)
 #
 
 ###############################################################################
-# Another useful method is to show the model along with its response 
+# Another useful method is to show the model along with its response
 # on the data.
 mgr.showResultAndFit(cMin=min(vp), cMax=max(vp))
 
 ###############################################################################
 # .. note:: Takeaway message
 
-#     A default data inversion with checking of the data consists of only few 
+#     A default data inversion with checking of the data consists of only few
 #     lines. Check out :ref:`ex:koenigsee`.
 
 pg.wait()

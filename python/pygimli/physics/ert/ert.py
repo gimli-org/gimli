@@ -208,6 +208,8 @@ class ERTModelling(ERTModellingBase):
 
     def response(self, mod):
         """"""
+        # ensure the mesh is initialized
+        self.mesh()
         if self.complex() and self._conjImag:
             pg.warn('flip imaginary part for response calc')
             mod = self.flipImagPart(mod)
@@ -222,6 +224,8 @@ class ERTModelling(ERTModellingBase):
 
     def createJacobian(self, mod):
         """"""
+        # ensure the mesh is initialized
+        self.mesh()
         if self.complex():
             if self._conjImag:
                 pg.warn('flip imaginary part for jacobian calc')
@@ -611,7 +615,7 @@ class ERTManager(MeshMethodManager):
             . resistivity map as [[regionMarker0, res0],
                                   [regionMarker0, res1], ...]
 
-        scheme : :bertapi:`Bert::DataContainerERT`
+        scheme : :gimliapi:`GIMLI::DataContainerERT`
             Data measurement scheme.
 
         Keyword Arguments
@@ -695,6 +699,15 @@ class ERTManager(MeshMethodManager):
             res = np.ones(mesh.cellCount()) * res
         elif hasattr(res[0], '__iter__'):  # ndim == 2
             if len(res[0]) == 2:  # res seems to be a res map
+                # check if there are markers in the mesh that are not defined in
+                # the rhomap. better signal here before it results in some error
+                meshMarkers = list(set(mesh.cellMarkers()))
+                mapMarkers = [m[0] for m in res]
+                if any([mark not in mapMarkers for mark in meshMarkers]):
+                    left = [m for m in meshMarkers if m not in mapMarkers]
+                    pg.critical(
+                        "Mesh contains markers without assigned resistivities {}. Please fix given rhomap.".format(left)
+                        )
                 res = pg.solver.parseArgToArray(res, mesh.cellCount(), mesh)
             else:  # probably nData x nCells array
                 # better check for array data here

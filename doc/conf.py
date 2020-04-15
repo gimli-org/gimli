@@ -14,11 +14,7 @@ import re
 import sys
 from os import path
 from os.path import join
-
-# If extensions (or modules to document with autodoc) are in another directory,
-# add these directories to sys.path here. If the directory is relative to the
-# documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0, os.path.abspath('.'))
+sys.path.insert(0, os.path.abspath("."))
 
 import numpy as np
 # for doc rendering on headless machines (jenkins server)
@@ -44,6 +40,7 @@ except ImportError:
     DOXY_BUILD_DIR = ''
     pygimli.boxprint("Building documentation in-source. Don't forget to make clean.")
 
+sys.path.append(os.path.abspath(SPHINXDOC_PATH))
 sys.path.append(os.path.abspath(join(SPHINXDOC_PATH, '_sphinx-ext')))
 
 # The following line is necessary for the Tools section
@@ -83,6 +80,7 @@ if req:
 # They can be extensions coming with Sphinx (named 'sphinx.ext.*')
 # or your custom ones.
 extensions = ['sphinx.ext.autodoc',
+              'sphinx.ext.todo',
               'sphinx.ext.viewcode',
               'sphinx.ext.autosummary',
               'sphinx.ext.mathjax',
@@ -117,7 +115,7 @@ try:
             'pygimli': "https://pygimli.org",
             'numpy': 'https://docs.scipy.org/doc/numpy',
             'scipy': 'https://docs.scipy.org/doc/scipy/reference',
-            'matplotlib': 'https://matplotlib.org/',
+            'matplotlib': 'https://matplotlib.org',
         },
 
         # Don't report time of fast scripts (< 10 sec)
@@ -166,13 +164,19 @@ intersphinx_mapping = {
     'python': ('https://docs.python.org/{.major}'.format(sys.version_info), None),
     'numpy': ('https://docs.scipy.org/doc/numpy', None),
     'scipy': ('https://docs.scipy.org/doc/scipy/reference', None),
-    'matplotlib': ('https://matplotlib.org/', None),
-    'pyvista': ('https://docs.pyvista.org/', None)
+    'matplotlib': ('https://matplotlib.org', None),
+    'pyvista': ('https://docs.pyvista.org', None)
 }
 
-autodoc_default_options = ["no-members"]
 autoclass_content = "class"
 autosummary_generate = True
+autosummary_imported_members = True
+
+autodoc_default_options = {
+    'imported-members': True,
+    'special-members': '__init__',
+    'undoc-members': True,
+}
 
 # Get mathjax
 # Formulas disappear after scrolling
@@ -517,7 +521,8 @@ def monkeypatch(self, section: str, use_admonition: bool):
     lines = self._strip_empty(self._consume_to_next_section())
     lines = self._dedent(lines)
     all_lines = " ".join(lines)
-    if ("show" in all_lines or "draw" in all_lines) and "Example" in section:
+    if ("show" in all_lines or "draw" in all_lines) and \
+        "Example" in section and ".. plot::" not in all_lines:
         header = '.. plot::\n\n'
         lines = self._indent(lines, 3)
     else:
@@ -531,12 +536,12 @@ NumpyDocstring._parse_generic_section = monkeypatch
 
 # Napoleon settings
 napoleon_numpy_docstring = True
-napoleon_include_init_with_doc = False
-napoleon_include_private_with_doc = True
-napoleon_include_special_with_doc = True
+napoleon_include_init_with_doc = True
+napoleon_include_private_with_doc = False
+napoleon_include_special_with_doc = False
 napoleon_use_admonition_for_examples = False
 napoleon_use_admonition_for_notes = False
 napoleon_use_admonition_for_references = False
-napoleon_use_ivar = False
+napoleon_use_ivar = True
 napoleon_use_param = True
 napoleon_use_rtype = True

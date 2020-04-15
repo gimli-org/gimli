@@ -316,3 +316,8 @@ Adding an example to the paper carousel
        title="Improved geophysical images through geostatistical regularization",
        subtitle="Jordi et al. (2018), Geophysical Journal International",
        link="https://doi.org/10.1093/gji/ggy055")
+
+ToDo-list
+---------
+
+.. todolist::
