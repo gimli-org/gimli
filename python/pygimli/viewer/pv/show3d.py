@@ -28,6 +28,10 @@ from .gwidgets import (
 
 pv = pg.optImport('pyvista', requiredFor="proper visualization in 3D")
 
+__all__ = ['Show3D', 'showHotKeys', 'wait', 'addMesh', 'allowMeshParameters',
+    'updateParameterView', 'updateScalarBar', 'toggleBbox', 'takeScreenShot',
+    'exportMesh', 'resetExtrema', 'setGlobalLimits']
+
 
 class Show3D(QMainWindow):
 
@@ -56,11 +60,11 @@ class Show3D(QMainWindow):
         self.setupWidget(**kwargs)
 
         # signals
-        signal.signal(signal.SIGINT, self._signal_handler)
-        self.acn_close.triggered.connect(self._signal_handler)
+        signal.signal(signal.SIGINT, self._signalHandler)
+        self.acn_close.triggered.connect(self._signalHandler)
         self.acn_hkeys.triggered.connect(self.showHotKeys)
 
-    def _signal_handler(self, sig, frame=None):
+    def _signalHandler(self, sig, frame=None):
         """
         Stop the GUI on CTRL-C, but not the script it was called from.
         from: https://stackoverflow.com/questions/1112343/how-do-i-capture-sigint-in-python
@@ -142,9 +146,11 @@ class Show3D(QMainWindow):
         """
         overload
         """
+        pg.warn("received closing command 1")
         self.show()
         self._app.exec()
         self._app.closeAllWindows()
+        pg.warn("received closing command 2")
 
     def addMesh(self, mesh, data=None, **kwargs):
         """

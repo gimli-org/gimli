@@ -6,9 +6,11 @@ import sys
 import matplotlib.pyplot as plt
 
 import pygimli as pg
-from pygimli.viewer.pv import drawModel
 
-pyvista = pg.optImport('pyvista', requiredFor="proper visualization in 3D")
+
+PyQt5 = pg.optImport('PyQt5', requiredFor="use pyGIMLi's 3D viewer")
+pyvista = pg.optImport('pyvista', requiredFor="properly visualize 3D data")
+
 if pyvista is None:
     view3Dcallback = 'showMesh3DFallback'
 else:
@@ -20,20 +22,17 @@ else:
     if vers_userf < vers_needf:
         pg.warn("Please consider updating PyVista to at least {}".format(
             vers_needs))
-
-PyQt5 = pg.optImport('PyQt5', requiredFor="pyGIMLi 3D viewer")
+    from pygimli.viewer.pv import drawModel
 
 # True for Jupyter notebooks and sphinx-builds
 _backend = plt.get_backend().lower()
 inline = "inline" in _backend or "agg" in _backend
 
 if PyQt5 is None or inline:
-    gui = False
     inline = True
 else:
     from .pv.show3d import Show3D
     from PyQt5 import Qt
-    gui = True
     inline = False
 
 

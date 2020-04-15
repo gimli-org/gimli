@@ -64,12 +64,17 @@ def drawModel(ax=None, mesh=None, data=None, **kwargs):
 
     Parameters
     ----------
-    ax: pv.Plotter() [None]
+    ax: pyvista.Plotter() [None]
         Pyvista's basic Plotter to add the mesh to.
     mesh: pg.Mesh
         The Mesh to plot.
     data: iterable
         Data that should be displayed with the mesh.
+
+        Returns
+    -------
+    ax: pyvista.Plotter [optional]
+        The plotter
     """
     if all(v is None for v in [ax, mesh, data]):
         pg.critical("At least mesh or data should not be None")
@@ -115,6 +120,20 @@ def drawSensors(ax, sensors, diam=0.01, color='grey', **kwargs):
 def drawSlice(ax, mesh, normal=[1, 0, 0], **kwargs):
     """
 
+    Parameters
+    ----------
+    ax: pyvista.Plotter()
+        The Plotter to draw on.
+    mesh: pg.Mesh
+        The mesh to take the slice out of.
+    normal: list [[1, 0, 0]]
+        Coordinates to orientate the slice.
+
+    Returns
+    -------
+    ax: pyvista.Plotter
+        The plotter containing the mesh and drawn electrode positions.
+
     Note
     ----
     Possible kwargs are:
@@ -152,9 +171,9 @@ def drawStreamLines(ax, mesh, data, label=None, radius=0.01, **kwargs):
 
     Parameters
     ----------
-    ax: pv.Plotter() [None]
+    ax: pyvista.Plotter() [None]
         The plotter that should be used for visualization.
-    mesh: pv.UnstructuredGrid|pg.Mesh [None]
+    mesh: pyvista.UnstructuredGrid|pg.Mesh [None]
         Structure to plot the streamlines in to.
         If its a pv grid a check is performed if the data set is already contained.
     data: iterable [None]

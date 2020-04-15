@@ -1257,7 +1257,7 @@ def drawSensors(ax, sensors, diam=None, coords=None, **kwargs):
 
     for i, e in enumerate(sensors):
         eCircles.append(mpl.patches.Circle((e[coords[0]],
-                                            e[coords[1]]), diam, **kwargs))
+                                            e[coords[1]]), diam/2, **kwargs))
 
     p = mpl.collections.PatchCollection(eCircles, **kwargs)
     p.set_zorder(100)
