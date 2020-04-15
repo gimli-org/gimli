@@ -146,11 +146,9 @@ class Show3D(QMainWindow):
         """
         overload
         """
-        pg.warn("received closing command 1")
         self.show()
         self._app.exec()
         self._app.closeAllWindows()
-        pg.warn("received closing command 2")
 
     def addMesh(self, mesh, data=None, **kwargs):
         """

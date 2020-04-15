@@ -32,7 +32,7 @@ def autolevel(z, nLevs, logScale=None, zmin=None, zmax=None):
         locator = ticker.LogLocator()
     else:
         # print('MaxNLocator(nBins=nLevs + 1)', nLevs)
-        locator = ticker.LinearLocator(numticks=nLevs)
+        locator = ticker.LinearLocator(numticks=nLevs+1)
         # locator = ticker.MaxNLocator(nBins=nLevs + 1)
         # locator = ticker.MaxNLocator(nBins='auto')
 
