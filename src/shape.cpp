@@ -254,7 +254,7 @@ void Shape::createJacobian(RMatrix3 & J) const {
 
     switch (this->dim()){
         case 1:{
-            J.setVal(MdNdrst * x, 0);
+            J.setVal(0, MdNdrst * x);
             RVector J0(J.row(0));
             RVector J1(J.row(1));
 
@@ -269,21 +269,21 @@ void Shape::createJacobian(RMatrix3 & J) const {
                 J1[2] = -J0[1];
             }
 
-            J.setVal(J1 / norml2(J1), 1);
-            J.setVal(crossN(J.row(0), J.row(1)), 2);
+            J.setVal(1, J1 / norml2(J1));
+            J.setVal(2, crossN(J.row(0), J.row(1)));
 // __M
 //             std::cout << J1 << std::endl;
 //             std::cout << J << std::endl;
          } break;
         case 2:
-            J.setVal(MdNdrst * x, 0);
-            J.setVal(MdNdrst * y, 1);
-            J.setVal(crossN(J.row(0), J.row(1)), 2);
+            J.setVal(0, MdNdrst * x);
+            J.setVal(1, MdNdrst * y);
+            J.setVal(2, crossN(J.row(0), J.row(1)));
             break;
         case 3:
-            J.setVal(MdNdrst * x, 0);
-            J.setVal(MdNdrst * y, 1);
-            J.setVal(MdNdrst * z, 2);
+            J.setVal(0, MdNdrst * x);
+            J.setVal(1, MdNdrst * y);
+            J.setVal(2, MdNdrst * z);
             break;
     }
 }

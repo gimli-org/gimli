@@ -529,7 +529,12 @@ def __setVal(self, idx, val):
             return self.setVal(val=val, id=idx)
         else:
             return self.setVal(val=val, ids=idx)
-    self.setVal(val, idx)
+    
+    if isinstance(self, _pygimli_.RMatrix):
+        self.setVal(idx, val)
+    else:
+        self.setVal(val, idx)
+
 
 
 def __getValMatrix(self, idx):

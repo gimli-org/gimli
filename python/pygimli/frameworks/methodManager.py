@@ -18,7 +18,6 @@ def fit(funct, data, err=None, **kwargs):
 
     Fit data to a given function.
 
-
     TODO
     ----
         * will not work for harmonic function, maybe add harmonic flag to forward it to harmfit
@@ -386,12 +385,6 @@ class MethodManager(object):
         else:
             data = self.data
 
-        dataSpace = kwargs.pop(self.fop.dataSpaceName, None)
-
-        if dataSpace is not None:
-            self.fop.dataSpace = dataSpace
-
-
         dataVals = self._ensureData(data)
 
         errVals = self._ensureError(err, dataVals)
@@ -582,6 +575,11 @@ class ParameterInversionManager(MethodManager):
         startModel: {str: startModel}
             Set the start value for parameter by parameter name.
         """
+        dataSpace = kwargs.pop(self.fop.dataSpaceName, None)
+
+        if dataSpace is not None:
+            self.fop.dataSpace = dataSpace
+
         limits = kwargs.pop('limits', {})
 
         for k, v in limits.items():

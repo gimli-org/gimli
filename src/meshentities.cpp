@@ -610,9 +610,9 @@ void NodeBoundary::setNodes(Node & n1){
 }
 
 RVector3 NodeBoundary::norm() const{
-    Cell *c = this->leftCell();
+    const Cell *c = &this->leftCell();
     if (c != 0){
-        return (this->center() - c.center()).norm();
+        return (this->center() - c->center()).norm();
     } else {
         return RVector3(1.0, 0.0, 0.0);
     }
