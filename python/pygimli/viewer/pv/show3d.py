@@ -26,7 +26,7 @@ from .gwidgets import (
     GToolBar, GButton, GLineEdit, GComboBox, GSlider, GDoubleSpinBox, CMAPS
 )
 
-pv = pg.optImport('pyvista', requiredFor="proper visualization in 3D")
+pv = pg.optImport('pyvista', requiredFor="properly visualize 3D data")
 
 __all__ = ['Show3D', 'showHotKeys', 'wait', 'addMesh', 'allowMeshParameters',
     'updateParameterView', 'updateScalarBar', 'toggleBbox', 'takeScreenShot',

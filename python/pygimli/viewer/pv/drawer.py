@@ -4,7 +4,7 @@ import pygimli as pg
 
 from .utils import pgMesh2pvMesh
 
-pv = pg.optImport('pyvista', requiredFor="proper visualization in 3D")
+pv = pg.optImport('pyvista', requiredFor="properly visualize 3D data")
 
 
 def drawMesh(ax, mesh, notebook=False, **kwargs):
