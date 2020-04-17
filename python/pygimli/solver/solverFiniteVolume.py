@@ -865,7 +865,10 @@ def __solveStokes(mesh, viscosity, velBoundary=None, preBoundary=None,
     if pre0 is None:
         pressure = np.zeros(mesh.cellCount())
     else:
-        pressure = np.array(pre0)
+        if len(pre0) == mesh.nodeCount():
+            pressure = pg.meshtools.nodeDataToCellData(mesh, pre0)
+        else:
+            pressure = np.array(pre0)
 
     velocity = None
     if vel0 is None:
@@ -1030,6 +1033,10 @@ def _test_ConvectionAdvection():
     velBoundaryY = {'Dirichlet':{'1,2,4,7': 0.0,
                                 3: 0.0,}}
 
+    # velBoundaryX = {'Dirichlet':{'1,2,7': 0.0,
+    #                             3: 1.0,}}
+    # velBoundaryY = {'Dirichlet':{'3,4,7': 0.0}}
+
     preBoundary = {'Dirichlet': {7: 0.0}}
 
     vel, pres, pCNorm, divVNorm = __solveStokes(grid, a,
@@ -1046,7 +1053,7 @@ def _test_ConvectionAdvection():
 
     np.testing.assert_approx_equal(divVNorm[-1],
                                    referenceSolutionDivV, significant=8)
-    fig = plt.figure()
+    fig = pg.plt.figure()
     ax1 = fig.add_subplot(1, 3, 1)
     ax2 = fig.add_subplot(1, 3, 2)
     ax3 = fig.add_subplot(1, 3, 3)

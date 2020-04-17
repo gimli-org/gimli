@@ -89,20 +89,47 @@ def testColorbar():
                        ax=axs[1][2], showMesh=True, cMap='Paired', logScale=True)
     pg.viewer.mpl.setMappableData(cbar.mappable, pg.x(grid.cellCenter()))
     ax.figure.tight_layout()
-    
-    pg.show(grid, pg.x(grid.cellCenter()), tri=True, shading='gouraud', 
-            cMap='Spectral_r', logScale=False, cMin=0.01, cMax=10, 
-            levels=[10, 55, 100], 
+
+    pg.show(grid, pg.x(grid.cellCenter()), tri=True, shading='gouraud',
+            cMap='Spectral_r', logScale=False, cMin=0.01, cMax=10,
+            levels=[10, 55, 100],
             orientation="vertical",
             colorBar=True)
-            
 
-    pg.show(grid, pg.x(grid.cellCenter()), tri=True, shading='gouraud', 
-            cMap='Spectral_r', logScale=False, cMin=0.01, cMax=10, 
-            levels=[10, 55, 100], 
+
+    pg.show(grid, pg.x(grid.cellCenter()), tri=True, shading='gouraud',
+            cMap='Spectral_r', logScale=False, cMin=0.01, cMax=10,
+            levels=[10, 55, 100],
             orientation="horizontal",
             colorBar=True)
-            
+
+
+def testColRange():
+    n = 5
+    mesh = pg.createGrid(n, n)
+
+    fig, ax = plt.subplots(2,3, figsize=(8,8))
+
+    ax[0][0].set_title("pyGIMLi (CellData)")
+    data = np.arange(mesh.cellCount())
+    pg.show(mesh, data, ax=ax[0][0], label='default (nLevs=5, nCols=256)')
+    pg.show(mesh, data, ax=ax[1][0], nCols=4, nLevs=5, label="nLevs=5 nCols=4, \n(aka. poor man's contour)")
+
+    ax[0][1].set_title("pyGIMLi (CellData) shading='gouraud'")
+    data = np.arange(mesh.cellCount())
+    pg.show(mesh, data, ax=ax[0][1], shading='gouraud', label='default (nLevs=5, nCols=256)')
+    pg.show(mesh, data, ax=ax[1][1], shading='gouraud', nCols=4, nLevs=5, label="nLevs=5 nCols=4, \n(aka. poor man's contour)")
+
+    ax[0][2].set_title("pyGIMLi (NodeData)")
+    data = np.arange(mesh.nodeCount())
+    pg.show(mesh, data, ax=ax[0][2], label='default (nLevs=5, nCols=4)')
+    pg.show(mesh, data, ax=ax[1][2], nCols=12, nLevs=4, label='nLevs=4, nCols=12')
+
+    for a in ax.flatten():
+        a.yaxis.set_visible(False)
+        a.xaxis.set_visible(False)
+
+    fig.tight_layout()
 
 def testCBarLevels():
     """
@@ -116,7 +143,7 @@ def testCBarLevels():
         really the same thing as on axs[0, 0] but with mesh.
 
     ax[0, 1]: show mesh with cell data
-        if nLevs is given i would expect that the colormap then is levelled. 
+        if nLevs is given i would expect that the colormap then is levelled.
         currently that is not the fact. but at least its the full range. labels
         need to be at begin/end of each color section.
 
@@ -159,5 +186,6 @@ def testCBarLevels():
 if __name__ == '__main__':
     # testShowVariants()
     # testColorbar()
-    testCBarLevels()
+    #testCBarLevels()
+    testColRange()
     pg.wait()

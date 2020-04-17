@@ -795,7 +795,7 @@ def createTriangles(mesh):
 
 
 def drawField(ax, mesh, data=None, levels=None, nLevs=5,
-              cMin=None, cMax=None, logScale=False, fitView=True,
+              cMin=None, cMax=None, nCols=None, logScale=False, fitView=True,
               **kwargs):
     """Draw mesh with scalar field data.
 
@@ -895,14 +895,15 @@ def drawField(ax, mesh, data=None, levels=None, nLevs=5,
                 # add outer climits to fill lower and upper too
                 levs = np.array(levels)
 
-                # if min(z) < min(levels):
-                #     levs = np.hstack([min(z), levs])
+                if min(z) < min(levels):
+                    levs = np.hstack([min(z), levs])
 
-                # if max(z) > max(levels):
-                #     levs = np.hstack([levs, max(z)])
+                if max(z) > max(levels):
+                    levs = np.hstack([levs, max(z)])
 
-                gci = ax.tricontourf(x, y, triangles, z, levels=levs,
-                                     **kwargs)
+                gci = ax.tricontourf(x, y, triangles, z,
+                                     levels=nCols or levs, **kwargs
+                                    )
 
             if contourLines:
                 ax.tricontour(x, y, triangles, z, levels=levels,
@@ -912,8 +913,9 @@ def drawField(ax, mesh, data=None, levels=None, nLevs=5,
         raise Exception("Data size does not fit mesh size: ", len(z),
                         mesh.cellCount(), mesh.nodeCount())
 
-    if gci and cMin and cMax:
-        gci.set_clim(cMin, cMax)
+    # we should ne adapt cols here at all -- test remove
+    # if gci and cMin and cMax:
+    #     gci.set_clim(cMin, cMax)
 
     if fitView is True:
         ax.set_xlim(mesh.xmin(), mesh.xmax())
@@ -992,7 +994,7 @@ def drawStreamLine_(ax, mesh, c, data, dataMesh=None, linewidth=1.0,
         Start point is c.center()
     data : iterable float | [float, float]
         If data is an array (per cell or node) gradients are calculated
-        otherwise the data will be interpreted as vector field per nodes or 
+        otherwise the data will be interpreted as vector field per nodes or
         cell centers.
     dataMesh : :gimliapi:`GIMLI::Mesh` [None]
         Optional mesh for the data. If you want high resolution
@@ -1095,7 +1097,7 @@ def drawStreams(ax, mesh, data, startStream=3, coarseMesh=None, quiver=False,
         2d mesh
     data : iterable float | [float, float] | pg.core.R3Vector
         If data is an array (per cell or node) gradients are calculated
-        otherwise the data will be interpreted as vector field per nodes or 
+        otherwise the data will be interpreted as vector field per nodes or
         cell centers.
     startStream : int
         variate the start stream drawing, try values from 1 to 3 what every

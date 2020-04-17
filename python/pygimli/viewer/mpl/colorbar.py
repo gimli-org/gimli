@@ -31,8 +31,7 @@ def autolevel(z, nLevs, logScale=None, zmin=None, zmax=None):
     if logScale and min(z) > 0:
         locator = ticker.LogLocator()
     else:
-        # print('MaxNLocator(nBins=nLevs + 1)', nLevs)
-        locator = ticker.LinearLocator(numticks=nLevs+1)
+        locator = ticker.LinearLocator(numticks=nLevs)
         # locator = ticker.MaxNLocator(nBins=nLevs + 1)
         # locator = ticker.MaxNLocator(nBins='auto')
 
@@ -131,7 +130,8 @@ def findAndMaskBestClim(dataIn, cMin=None, cMax=None, dropColLimitsPerc=5,
 
 
 def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
-                   logScale=None, nCols=256, nLevs=5, label=None, levels=None, **kwargs):
+                   logScale=None, nCols=None, nLevs=5, levels=None,
+                   label=None, **kwargs):
     """Update colorbar values.
 
     Update limits and label of a given colorbar.
@@ -150,32 +150,36 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
 
     cMap: matplotlib colormap
 
-    nCols: int [256]
-        Number of colors, independent of number of color levels. Usefull for poor mans contour.
-
+    nCols: int [None]
+        Number of colors. If not set its number of levels.
     nLevs: int
-
-    label: str
-
+        Number of color levels for the colorbar,
+        can be different from the number of colors.
     levels: iterable
-
+        Levels for the colorbar, overwrite nLevs.
+    label: str
+        Colorbar name.
     """
+    # print('update colorbar: ', cMin, cMax, cMap,
+    #         logScale, ', nCols:', nCols, nLevs, ', label:', label, levels)
+
     if gci is not None:
         if min(gci.get_array()) < 1e12:
             norm = mpl.colors.Normalize(vmin=min(gci.get_array()),
                                         vmax=min(gci.get_array()))
-            #cbar.set_norm(norm) # deprecated in MPL 3.3. remove me when checked
             gci.set_norm(norm)
         cbar.on_mappable_changed(gci)
 
+    if levels is not None:
+        nLevs = len(levels)
+
     if cMap is not None:
         if isinstance(cMap, str):
-            if levels is not None:
-                cMap = cmapFromName(cMap, ncols=len(levels)-1,
-                                    bad=[1.0, 1.0, 1.0, 0.0])
-            else:
-                cMap = cmapFromName(cMap, ncols=nCols,
-                                    bad=[1.0, 1.0, 1.0, 0.0])
+            if nCols is None:
+                nCols = nLevs
+
+            cMap = cmapFromName(cMap, ncols=nCols,
+                                bad=[1.0, 1.0, 1.0, 0.0])
 
         cbar.mappable.set_cmap(cMap)
 
@@ -206,7 +210,6 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
         else:
             norm = mpl.colors.Normalize(vmin=cMin, vmax=cMax)
 
-        #cbar.set_norm(norm) # deprecated in MPL 3.3. remove me when checked
         cbar.mappable.set_norm(norm)
 
     if needLevelUpdate:
@@ -367,7 +370,6 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5, levels=None):
             #if cMax < cMin:
             cbarLevels = np.linspace(cMin, cMax, nLevs)
 
-
     # FIXME: [10.1, 10.2, 10.3] mapped to [10 10 10]
 
     cbarLevelsString = []
@@ -446,6 +448,7 @@ def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=None,
 
     if mappable.colorbar is not None:
         updateColorBar(mappable.colorbar, cMin=cMin, cMax=cMax, **kwargs)
+
 
 def addCoverageAlpha(patches, coverage, dropThreshold=0.4):
     """Add alpha values to the colors of a polygon collection.

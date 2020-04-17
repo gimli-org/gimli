@@ -226,6 +226,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
     renameKwarg('cmap', 'cMap', kwargs)
 
     cMap = kwargs.pop('cMap', 'viridis')
+    nCols = None
     cBarOrientation = kwargs.pop('orientation', 'horizontal')
 
     fitViewDefault = False
@@ -301,13 +302,14 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
 
             try:
                 if len(data) == mesh.cellCount():
+                    kwargs['nCols'] = kwargs.pop('nCols', 256)
+
                     gci = drawModel(ax, mesh, data, **kwargs)
                     if showBoundary is None:
                         showBoundary = True
 
                 elif len(data) == mesh.nodeCount():
                     gci = drawField(ax, mesh, data, **kwargs)
-
                 else:
                     pg.error("Data size invalid")
                     print("Data: ", len(data), min(data), max(data), pg.core.haveInfNaN(data))
@@ -361,11 +363,9 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
         colorBar = True
 
     if colorBar and validData:
-        # , **kwargs) # causes problems!
-        labels = ['cMin', 'cMax', 'nLevs', 'logScale', 'levels']
-
+        labels = ['cMin', 'cMax', 'nCols', 'nLevs', 'logScale', 'levels']
         subkwargs = {key: kwargs[key] for key in labels if key in kwargs}
-        subkwargs['nCols'] = kwargs.pop('nCols', 256)
+
         subkwargs['label'] = label
         subkwargs['cMap'] = cMap
         subkwargs['orientation'] = cBarOrientation
