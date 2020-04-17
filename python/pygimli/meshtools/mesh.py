@@ -396,6 +396,52 @@ def extrudeMesh(mesh, a, **kwargs):
     pg.error('Cannot extrude mesh of dimension:', mesh.dim())
 
 
+def convert(mesh, verbose=False):
+    """ Convert mesh from foreign formats.
+    """
+    if str(type(mesh)) == "<class 'meshio._mesh.Mesh'>":
+        return convertMeshioMesh(mesh, verbose=verbose)
+    else:
+        pg.error("don't no how to convert mesh of type", type(mesh))
+
+
+def convertMeshioMesh(mesh, verbose=False):
+    """ Convert mesh from meshio object.
+
+    See https://pypi.org/project/meshio/1.8.9/
+
+    TODO
+        * test for 3D mesh
+        * test and improve if neeeded
+    """
+    print(verbose)
+    if verbose is True:
+        pg.info("Converting meshio mesh.")
+
+    dim = 3
+    for cellBlock in mesh.cells:
+        if cellBlock.type == 'quad' or cellBlock.type == 'triangle':
+            dim = 2
+
+    ret = pg.Mesh(dim)
+    for p in mesh.points:
+        ret.createNode(p)
+
+    for cellBlock in mesh.cells:
+        for c in cellBlock.data:
+            ret.createCell(c)
+
+    for k, d in mesh.point_data.items():
+        ret[k] = d
+
+    if verbose is True:
+        pg.info(ret)
+        pg.info(ret.dataInfo())
+
+    ret.createNeighborInfos()
+    return ret
+
+
 def readGmsh(fName, verbose=False, precision=None):
     r"""Read :term:`Gmsh` ASCII file and return instance of GIMLI::Mesh class.
 

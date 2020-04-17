@@ -29,7 +29,6 @@ depth = 15
 width = 30
 plc = mt.createCube(size=[width, width, depth], pos=[0, 0, -depth/2], area=5)
 
-print('#'*100)
 n_sensors = 8
 sensors = np.zeros((n_sensors, 3))
 sensors[0, 0] = 15

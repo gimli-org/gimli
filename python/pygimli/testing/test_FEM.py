@@ -73,73 +73,123 @@ class TestFiniteElementBasics(unittest.TestCase):
         # pg.plt.plot(pg.sort(x), u(pg.sort(x)))
         # pg.wait()
 
-    def test_Neumann(self):
-        def _test_(mesh, show=False):
+    def test_Neumann_BC(self):
+        def _test_(mesh, p2=False, show=False):
             """
                 \Laplace u = 0
-                du/dn = -0.1 (xMin)
-                du/dn =  0.1 (xMax)
+                x = [0, -1], y, z
+                int_0^1 u = 0
+
+                du/dn =  1 (xMin) (inflow on -x)
+                du/dn = -1 (xMax) (outflow on +x)
+                du/dn = 0 (rest)
+                u = 0.5 -x          linear solution, i.e., exact with p1
+
+                du/dn = -1 (xMin) (outflow -x)
+                du/dn = -1 (xMax) (outflow +x)
+                du/dn = 0 (rest)
+                u = -1/6 + x -x²    quadratic solution, i.e., exact with p2
             """
-            vTest = 0.1
-            u = pg.solve(mesh, a=1, f=0,
-                         bc={'Node': [mesh.findNearestNode([0.0, 0.0]), 0.],
-                             'Neumann': {1: -vTest, 2: vTest}}, verbose=0)
+            uExact = lambda x, a, b, c: a + b *x + c * x**2
+            bc={'Neumann': {1: 1.0, 2: -1.0}}
+            uE = uExact(pg.x(mesh), 0.5, -1.0, 0.0)
+
+            if p2 is True:
+                mesh = mesh.createP2()
+                bc['Neumann'][1] = -1.0
+                uE = uExact(pg.x(mesh), -1/6, 1.0, -1.0)
+
+            u = pg.solve(mesh, a=1, f=0, bc=bc, verbose=0)
             v = pg.solver.grad(mesh, u)
 
             if show:
                 if mesh.dim() == 1:
-                    pg.plt.plot(pg.x(mesh), u)
+                    idx = np.argsort(pg.x(mesh))
+                    pg.plt.plot(pg.x(mesh)[idx], uE[idx], label='exact')
+                    pg.plt.plot(pg.x(mesh)[idx], u[idx], label='FEM')
+
+                    model, response = pg.frameworks.fit(uExact,
+                                                    u[idx], x=pg.x(mesh)[idx])
+                    print(model)
+                    pg.plt.plot(pg.x(mesh)[idx], response, label='FIT')
+                    pg.plt.grid(True)
+                    pg.plt.legend(True)
                 elif mesh.dim() == 2:
                     pg.show(mesh, u, label='u')
                     ax, _ = pg.show(mesh, pg.abs(v), label='abs(grad(u))')
                     pg.show(mesh, v, showMesh=1, ax=ax)
+
+                pg.info("int Domain:", pg.solver.intDomain(u, mesh))
+                pg.info("int Domain:", pg.solver.intDomain([1.0]*mesh.nodeCount(), mesh), sum(mesh.cellSizes()))
+
                 pg.wait()
+            ## test du/dn of solution and compare with Neumann BC
+            for m, val in bc['Neumann'].items():
+                for b in mesh.boundaries(mesh.boundaryMarkers() == m):
+                    ## for non Tailor Hood Elements, the gradient is only
+                    # known at the cell center so the accuracy for the
+                    # gradient depends on the distance boundary to cell
+                    # center. Accuracy = du/dx(dx) = 1-2x = 2 * dx
+                    c = b.leftCell()
+                    dx = c.center().dist(b.center())
+                    dudn = b.norm(c).dot(v[c.id()])
+                    if p2:
+                        np.testing.assert_allclose(dudn, val, atol=2 * dx)
+                        #print(dudn, val)
+                    else:
+                        np.testing.assert_allclose(dudn, val)
 
-            # print(pg.x(mesh))
-            # print(pg.x(mesh)*vTest)
-            # print(u)
+            np.testing.assert_allclose(pg.solver.intDomain([1.0]*\
+                                                    mesh.nodeCount(), mesh),
+                                       sum(mesh.cellSizes()))
+            np.testing.assert_allclose(pg.solver.intDomain(u, mesh), 0.0,
+                                       atol=1e-8)
+            np.testing.assert_allclose(np.linalg.norm(u-uE), 0.0,
+                                       atol=1e-8)
 
-            # print(min(u), max(u))
-            # print(min(pg.x(mesh)*vTest), max(pg.x(mesh)*vTest))
-            # print(min(pg.x(mesh)*vTest-u), max(pg.x(mesh)*vTest-u))
-
-            # for +1.0 .. see https://github.com/numpy/numpy/issues/13801
-            np.testing.assert_allclose(1.0 + u, 1.0 + pg.x(mesh)*vTest)
-
-            np.testing.assert_allclose(pg.abs(v),
-                                       np.ones(mesh.cellCount())*vTest)
             return v
 
         # 1D
-        _test_(pg.createGrid(x=np.linspace(-1, 1, 11)), show=False)
-        # 1D scaled
-        _test_(pg.createGrid(x=np.linspace(-2, 2, 11)))
+        x = np.linspace(0, 1, 101)
+        _test_(pg.createGrid(x=x), p2=False, show=False)
+        _test_(pg.createGrid(x=x), p2=True, show=False)
 
-        # 2D grid
-        _test_(pg.createGrid(x=np.linspace(-2, 2, 21),
-                             y=np.linspace(0, 1, 11)), show=False)
-        # 2D scaled
-        _test_(pg.createGrid(x=np.linspace(-0.04, 0.04, 21),
-                             y=np.linspace(-0.4, 0, 21)))
-
-        # 3D grid
-        _test_(pg.createGrid(x=np.linspace(-2, 2, 11), y=np.linspace(0, 1, 11),
-                             z=np.linspace( 0, 1, 11)))
-
-        # 2D grid rotated -- need better test
-        # grid = pg.createGrid(x=np.linspace(-2, 2, 41), y=np.linspace(-2, 2, 21))
-        # grid.rotate([0, 0, np.pi])
-        # _test_(grid, show=True)
+        # # 2D grid
+        x = np.linspace(0, 1, 11)
+        _test_(pg.createGrid(x=x, y=x), p2=False, show=False)
+        _test_(pg.createGrid(x=x, y=x), p2=True, show=False)
 
         # 2D tri
-        mesh = pg.meshtools.createMesh(pg.meshtools.createWorld(start=[-1, -4],
-                                                                end=[1, -6], worldMarker=0), area=0.1)
+        mesh = pg.meshtools.createMesh(pg.meshtools.createWorld(
+                                start=[0, 0], end=[1, 1], worldMarker=False),
+                                        area=0.05)
+
         mesh.setBoundaryMarkers(np.array([0,1,3,2,4])[mesh.boundaryMarkers()])
-        _test_(mesh, show=False)
+        _test_(mesh, p2=False, show=False)
+        _test_(mesh, p2=True, show=False)
 
-        #TODO 2D, Tri, 3D Tet
+        # 3D prism
+        mesh = pg.meshtools.extrudeMesh(mesh, np.linspace(0, 1, 11))
+        _test_(mesh, p2=False)
+        _test_(mesh, p2=True)
 
-    def test_Dirichlet(self):
+        # 3D quads
+        x = np.linspace(0, 1, 5)
+        _test_(pg.createGrid(x=x, y=x, z=x), p2=False)
+        #_test_(pg.createGrid(x=x, y=x, z=x), p2=True) ## fails .. need check!
+
+        mesh = pg.meshtools.createMesh(pg.meshtools.createWorld(
+                                       start=[0, 0, 0], end=[1, 1, 1], worldMarker=False),
+                                       area=0.1)
+
+        # 3D tet
+        _test_(mesh, p2=False)
+        _test_(mesh, p2=True)
+
+        # pg.show(mesh)
+        # pg.wait()
+
+    def test_Dirichlet_BC(self):
         """
         """
         def _testP2_(mesh, show=False):
@@ -208,7 +258,7 @@ class TestFiniteElementBasics(unittest.TestCase):
                                z=np.linspace( 0, 1, 11)),
                                followP2=False
                                )
-                               # check why P2 fails here,
+        # check why P2 fails here,
 
         # 2D tri
         mesh = pg.meshtools.createMesh(pg.meshtools.createWorld(start=[-1, -4],
@@ -240,6 +290,77 @@ class TestFiniteElementBasics(unittest.TestCase):
         #can't find proper test for this rotated case
         #v = _testP1_(grid, show=False) #2D reg - rotated
 
+    def test_Robin_BC(self):
+        """
+            Linear function should result in exact solution with linear base
+            u(x) = Ax + B on x = [0, .. ,1]
+
+            Dirichlet BC: u(x) = g
+            ----------------------
+            u(0) = B
+            u(1) = A + B
+
+            Neumann BC: du/dn(x) = f (non unique, needs calibration point)
+            ------------------------------------------------------------
+            du/dn(0) = -A (n = [-1, 0, 0])
+            du/dn(1) =  A (n = [ 1, 0, 0])
+
+            Robin BC v1: du/dn(x) = a(u0-u(x))
+            ----------------------------------
+            du/dn(0) = -A = a (u0 - B)     (a=1, u0=-A/a +B)
+            du/dn(1) =  A = a (u0 - (A+B)) (a=1, u0= A/a +A+B)
+
+            Robin BC v2: b du/dn(x) + a u(x) = g
+            ------------------------------------
+            du/dn(0) = -A + a B = g (a=1, b=1.0, g=-A+a*B)
+            du/dn(1) =  A + a (A+B) = g  (a=1, b=1.0, g= A + a*(A+B))
+        """
+        show=False
+        A = 1
+        B = 3
+        x = np.linspace(0, 1, 11)
+        uExact = lambda x: A*x + B
+        if show:
+            pg.plt.plot(x, uExact(x), label='uExact')
+
+        mesh = pg.createGrid(x=x)
+        u = pg.solve(mesh, bc={'Dirichlet':{1:B, 2:A+B}})
+        np.testing.assert_allclose(u, uExact(x))
+
+        if show:
+            pg.plt.plot(x, u, 'o', label='u Dirichlet')
+
+        n = mesh.findNearestNode([0.2, 0.0])
+        u = pg.solve(mesh, bc={'Node': [n, uExact(mesh.node(n).x())],
+                               'Neumann':{1:-A, 2:A}})
+        np.testing.assert_allclose(u, uExact(x))
+
+        if show:
+            pg.plt.plot(x, u, '.', label='u Neumann')
+
+        a = 0.5
+        u1 = -A/a +B
+        u2 =  A/a +A+B
+
+        u = pg.solve(mesh, bc={'Robin':{1: [a, u1],
+                                        2: [a, u2]},})
+        np.testing.assert_allclose(u, uExact(x))
+        if show:
+            pg.plt.plot(x, u, '-^', label='u Robin-v1')
+
+        al = 0.5
+        ga1 = -A + al * B
+        ga2 =  A + al * (A+B)
+        u = pg.solve(mesh, bc={'Robin':{1: [al, 1.0, ga1],
+                                        2: [al, 1.0, ga2],
+                                        }
+                                })
+        np.testing.assert_allclose(u, uExact(x))
+        if show:
+            pg.plt.plot(x, u, 'v', label='u Robin-v2')
+            pg.plt.legend()
+
+
     def testElementMatrix(self):
         a = pg.core.ElementMatrix()
 
@@ -247,7 +368,8 @@ class TestFiniteElementBasics(unittest.TestCase):
 if __name__ == '__main__':
 
     # test = TestFiniteElementBasics()
-    # test.test_Neumann()
+    # test.test_Neumann_BC()
     # test.test_Dirichlet()
+    # test.test_Robin_BC()
 
     unittest.main()

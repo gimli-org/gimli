@@ -529,7 +529,12 @@ def __setVal(self, idx, val):
             return self.setVal(val=val, id=idx)
         else:
             return self.setVal(val=val, ids=idx)
-    self.setVal(val, idx)
+    
+    if isinstance(self, _pygimli_.RMatrix):
+        self.setVal(idx, val)
+    else:
+        self.setVal(val, idx)
+
 
 
 def __getValMatrix(self, idx):
@@ -634,6 +639,11 @@ _pygimli_.CMatrix.ndim = 2
 _pygimli_.CMatrix.dtype = np.complex
 _pygimli_.R3Vector.ndim = 2
 _pygimli_.stdVectorRVector3.ndim = 2
+
+_pygimli_.RSparseMatrix.ndim = 2
+_pygimli_.CSparseMatrix.ndim = 2
+_pygimli_.RSparseMapMatrix.ndim = 2
+_pygimli_.CSparseMapMatrix.ndim = 2
 
 def __Matrix_len(self):
     return self.rows()

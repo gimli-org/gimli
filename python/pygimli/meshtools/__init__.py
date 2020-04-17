@@ -14,7 +14,9 @@ from .mapping import (cellDataToBoundaryData, cellDataToNodeData,
                       fillEmptyToCellArray, interpolate, interpolateAlongCurve,
                       nodeDataToBoundaryData, nodeDataToCellData,
                       tapeMeasureToCoordinates)
-from .mesh import (convertHDF5Mesh, createMesh, createParaMesh,
+
+from .mesh import (convert, convertMeshioMesh, convertHDF5Mesh, createMesh,
+                   createParaMesh,
                    createParaMesh2DGrid, exportFenicsHDF5Mesh, exportHDF5Mesh,
                    exportSTL, extrudeMesh, merge2Meshes, mergeMeshes,
                    readFenicsHDF5Mesh, readGmsh, readHDF5Mesh,

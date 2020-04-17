@@ -85,7 +85,12 @@ public:
         return ret;
     }
 
-    inline void setVal(RVector v, Index i){
+    // inline void setVal(const RVector & v, Index i){
+    //     __M
+    //     log(Warning, "deprecated");
+    //     mat_[i * 3] = v[0]; mat_[i * 3 + 1] = v[1]; mat_[i * 3 + 2] = v[2];
+    // }
+    inline void setVal(Index i, const RVector & v){
         mat_[i * 3] = v[0]; mat_[i * 3 + 1] = v[1]; mat_[i * 3 + 2] = v[2];
     }
 
@@ -422,14 +427,29 @@ public:
     }
 
     /*! Set a value. Throws out of range exception if index check fails. */
-    inline void setRow(const Vector < ValueType > & val, Index i) {
+    // inline void setRow(const Vector < ValueType > & val, Index i) {
+    //     log(Warning, "deprecated use setRow(i, val)");
+    //     ASSERT_THIS_SIZE(i)
+    //     mat_[i] = val;
+    // }
+    inline void setRow(Index i, const Vector < ValueType > & val) {
         ASSERT_THIS_SIZE(i)
         mat_[i] = val;
     }
 
     /*! Set a value. Throws out of range exception if index check fails. */
-    inline void setVal(const Vector < ValueType > & val, Index i) {
-        return setRow(val, i);
+    // inline void setVal(const Vector < ValueType > & val, Index i) {
+    //     log(Warning, "deprecated, use setVal(i, val)");
+    //     return setRow(i, val);
+    // }
+    inline void setVal(Index i, const Vector < ValueType > & val) {
+        return this->setRow(i, val);
+    }
+    inline void setVal(Index i, Index j, const ValueType & val) {
+        this->rowRef(i).setVal(val, j);
+    }
+    inline void addVal(Index i, Index j, const ValueType & val) {
+        this->rowRef(i).addVal(val, j);
     }
 
     /*! Readonly getter. */

@@ -313,7 +313,7 @@ void MeshEntity::N(const RVector3 & rst, RVector & n) const {
 
 RVector MeshEntity::dNdL(const RVector3 & rst, uint i) const {
 
-    const std::vector< PolynomialFunction < double > > &dNL = 
+    const std::vector< PolynomialFunction < double > > &dNL =
         ShapeFunctionCache::instance().deriveShapeFunctions(*this, i);
 
     RVector ret(dNL.size());
@@ -479,7 +479,6 @@ Boundary * Cell::boundary(Index i){
 Cell * Cell::neighborCell(const RVector & sf){
     if (haveInfNaN(sf)){
         __MS("fixme " << sf)
-        exit(0);
         return NULL;
     }
 
@@ -610,8 +609,13 @@ void NodeBoundary::setNodes(Node & n1){
     MeshEntity::setNodes(nodes);
 }
 
-RVector3 NodeBoundary::norm(const Cell & c) const{
-    return (this->center() - c.center()).norm();
+RVector3 NodeBoundary::norm() const{
+    const Cell *c = &this->leftCell();
+    if (c != 0){
+        return (this->center() - c->center()).norm();
+    } else {
+        return RVector3(1.0, 0.0, 0.0);
+    }
 }
 
 Edge::Edge(const std::vector < Node * > & nodes)

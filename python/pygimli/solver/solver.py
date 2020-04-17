@@ -642,7 +642,10 @@ def _bcIsForVectorValues(bc, mesh):
                 print(e)
         return False
 
-    for _bVal in list(bc.values()):
+    for key, _bVal in bc.items():
+        if key == 'Robin':
+            continue
+
         if verbose:
             print("test vector values for:", _bVal)
 
@@ -658,7 +661,7 @@ def _bcIsForVectorValues(bc, mesh):
 
         elif isinstance(_bVal, dict):
             ### {key, bc}
-            for test in list(_bVal.values()):
+            for key, test in _bVal.items():
                 if testForV3(test):
                     return True
 
@@ -1111,185 +1114,6 @@ def linSolve(mat, b, solver=None, verbose=False):
     return x
 
 
-def assembleLoadVector(mesh, f, userData={}):
-    r"""Assemble the load vector. See createLoadVector.
-    Maybe we will remove this
-    """
-    pg.deprecate('createLoadVector') # 20200115
-    return createLoadVector(mesh, f, userData)
-
-
-def createForceVector(mesh, f, userData={}):
-    """ Create a right hand side vector for vector valued solutions.
-
-    Parameters
-    ----------
-    f: [ convertable ]
-        List of rhs side options. Must be convertable to createLoadVector.
-        See :py:mod:`createLoadVector`
-    rhs: np.array()
-        Squeezed vector of length mesh.nodeCount() * mesh.dimensions()
-
-    """
-    if not isinstance(f, list):
-        pg.error("Create Force Vector need list of attribute f with an entry for each dimension.")
-
-    rhs = np.zeros(mesh.nodeCount() * mesh.dim())
-
-    for i in range(mesh.dim()):
-        rhs[i*mesh.nodeCount():(i+1)*mesh.nodeCount()] = createLoadVector(mesh, f[i], userData)
-
-    # rhs.reshape(mesh.nodeCount() * mesh.dim()) #contiguity not guarantied
-    return rhs
-
-
-def createLoadVector(mesh, f, userData={}):
-    """Create right hand side vector based on the given mesh and load values
-    (scalar solution) or force vectors (vector value solution).
-
-    Create right hand side based on the given mesh and load or force
-    values.
-
-    TODO
-    ----
-    - Callable for vector valued problems
-    - Callable called dynamic on demand
-
-    Parameters
-    ----------
-    f: float, array, callable(cell, [userData]), [f_x, f_y, f_z]
-
-        - float will be assumed as constant for all cells
-        like rhs = rhs(np.ones(mesh.cellCount() * f),
-        - array of length mesh.cellCount() will be processed as load value for
-        each cell: rhs = rhs(f),
-        - array of length mesh.nodeCount() will be assumed to be allready processed correct: rhs = f
-        - callable is evaluated on once for each cell and need to return a load
-        value for each cell and can have  optional a userData dictionary:
-        `f_cell = f(cell, [userData={}])`
-        rhs = rhs(f(c, userData) for c in mesh.cells())
-        - list with length of mesh.dimension() of float or array entries will
-        create a squeezed rhs for vector valued problems
-        rhs = squeeze([rhs(f[0]), rhs(f[1]), rhs(f[2])])
-
-    Returns
-    -------
-    rhs: pg.Vector(mesh.nodeCount())
-        Right hand side load vector for scalar values or squeezed vector values.
-    """
-    ### f is dict('Node':callable, 'Cell': callable)
-    if isinstance(f, dict):
-        if 'Node' in f:
-            fn = []
-            if callable(f['Node']):
-                for n in mesh.nodes():
-                    fn.append(f['Node'](n, **userData))
-            if hasattr(fn[0], '__iter__'):
-                ### result is vector valued
-                return createLoadVector(mesh, [fi for fi in np.array(fn).T],
-                                        userData=userData)
-
-            return createLoadVector(mesh, fn, userData=userData)
-
-        elif 'Cell' in f:
-            pg.error('Implement me!, createLoadVector()')
-
-
-    ### fix for the lazy
-    if isinstance(f, int):
-        f = float(f)
-
-    ### f is list [fx, fy, [fz]] for vector problems
-    if isinstance(f, list):
-        if len(f) == mesh.dim():
-            return createForceVector(mesh, f, userData=userData)
-
-    ### f is list of array [f_0, f_1, ..., f_n] for scalar problems
-    if isinstance(f, list) or hasattr(f, 'ndim'):
-        if isinstance(f, list):
-            rhs = np.zeros((len(f), mesh.nodeCount()))
-            for i, fi in enumerate(f):
-                userData['i'] = i
-                rhs[i] = createLoadVector(mesh, fi, userData)
-            return rhs
-
-        elif f.ndim == 2:
-            ### assume rhs [n, nNodes] array is already a valid
-            if len(f[0]) == mesh.nodeCount():
-                return f
-
-    rhs = pg.Vector(mesh.nodeCount(), 0)
-
-    fArray = None
-
-    if hasattr(f, '__len__'):
-        if len(f) == mesh.cellCount():
-            # scalar values for each cell
-            fArray = f
-        elif len(f) == mesh.nodeCount():
-            # scalar values for each node
-            fArray = f
-        elif len(f) == mesh.nodeCount() * mesh.dim():
-            # vector values for each node
-            # maybe just for special cases with allready processed rhs
-            return f
-
-    elif callable(f) and not isinstance(f, pg.Vector):
-        fArray = pg.Vector(mesh.cellCount())
-        for c in mesh.cells():
-            if userData is not None and userData.keys():
-                fArray[c.id()] = f(c, userData)
-            else:
-                fArray[c.id()] = f(c)
-
-    if fArray is None:
-        fArray = cellValues(mesh, f, userData=userData)
-
-    if len(fArray) == mesh.cellCount():
-        b_l = pg.matrix.ElementMatrix()
-
-        for c in mesh.cells():
-            if fArray[c.id()] != 0.0:
-                b_l.u(c)
-                rhs.add(b_l, fArray[c.id()])
-
-#            print("test reference solution:")
-#            rhsRef = pg.Vector(mesh.nodeCount(), 0)
-#            for c in mesh.cells():
-#                b_l.u(c)
-#                for i, idx in enumerate(b_l.idx()):
-#                    rhsRef[idx] += b_l.row(0)[i] * fArray[c.id()]
-#            np.testing.assert_allclose(rhs, rhsRef)
-#            print("Remove revtest in assembleLoadVector after check")
-
-    elif len(fArray) == mesh.nodeCount():
-        ### nodal values
-        fA = pg.Vector(fArray)
-        b_l = pg.matrix.ElementMatrix()
-        for c in mesh.cells():
-            b_l.u(c)
-                # rhs.addVal(b_l.row(0) * fArray[b_l.idx()], b_l.idx())
-            rhs.add(b_l, fA)
-
-        # print("test reference solution:")
-        # rhsRef = pg.Vector(mesh.nodeCount(), 0)
-        # for c in mesh.cells():
-        #     b_l.u(c)
-        #     for i, idx in enumerate(b_l.idx()):
-        #         rhsRef[idx] += b_l.row(0)[i] * fA[idx]
-
-        # np.testing.assert_allclose(rhs, rhsRef)
-        # print("Remove revtest in assembleLoadVector after check",
-        #       sum(rhs), sum(rhsRef))
-
-            # rhs = pg.Vector(fArray)
-    else:
-        raise Exception("Load vector have the wrong size: " +
-                        str(len(fArray)))
-
-    return rhs
-
-
 def _assembleUDirichlet(mat, rhs, uDirIndex, uDirichlet):
     """This should be moved directly into the core"""
 
@@ -1551,33 +1375,28 @@ def assembleNeumannBC(rhs, boundaryPairs, nDim=1, time=0.0, userData={}):
 def assembleRobinBC(mat, boundaryPairs, rhs=None, time=0.0, userData={}):
     r"""Apply Robin boundary condition.
 
-    Apply Robin boundary condition to the system matrix S and rhs vector
-    (if needed for b != 1 and g != 0).
+    Apply Robin boundary condition to the system matrix and the rhs vector
 
     .. math::
-        \alpha u(\textbf{r}, t) + \beta\frac{\partial u(\textbf{r}, t)}{\partial\textbf{n}}
-        = \gamma
-        \quad\text{for}\quad\textbf{r}\quad\text{on}\quad\delta\Omega=\Gamma_{\text{Robin}}\\
-        \quad\text{currently only with}\quad \beta = 1 \quad\text{and}\quad \gamma = 0
-
-    TODO
-        * b!=1 and g!=0 variable
-        * check for b = 0 and move to dirichlet
-        * fixme, test me
+        \frac{\partial u(\textbf{r}, t)}{\partial\textbf{n}}
+        & = \alpha(u_0-u) \quad\text{or} \\
+        \beta\frac{\partial u(\textbf{r}, t)}{\partial\textbf{n}}
+        + \alpha u
+        & = \gamma \\
+        & \quad\text{for}\quad\textbf{r}\quad\text{on}\quad\delta\Omega=\Gamma_{\text{Robin}}\\
 
     Parameters
     ----------
     mat: :gimliapi:`GIMLI::SparseMatrix`
         System matrix of the system equation.
     boundaryPair: list()
-        List of pairs [:gimliapi:`GIMLI::Boundary`, :math:`\alpha`].
-        The value :math:`\alpha` will assigned to the nodes of the boundaries.
+        List of pairs [:gimliapi:`GIMLI::Boundary`, :math:`a, u_0` | :math:`\alpha, \beta, \gamma`].
+        The values will assigned to the nodes of the boundaries.
         Later assignment overwrites prior.
 
-        :math:`\alpha` needs to be a scalar value (float or int) or
-        a value generator (callable) which will be executed at run time.
-        See :py:mod:`pygimli.solver.solver.parseArgToBoundaries`
-        and :ref:`tut:modelling_bc` for example syntax,
+        Values can be a single value for :math:`\alpha` or :math:`\alpha` :math:`a`, two values will be interpreted as :math:`a, u_0`, and three values will be :math:`\alpha, \beta, \gamma`].
+        Also generator (callable) is possible which will be executed at run time. See :py:mod:`pygimli.solver.solver.parseArgToBoundaries`
+        :ref:`tut:modelling_bc` or testing/test_FEM.py for example syntax.
     time: float
         Will be forwarded to value generator.
     userData: dict
@@ -1587,8 +1406,8 @@ def assembleRobinBC(mat, boundaryPairs, rhs=None, time=0.0, userData={}):
         raise BaseException("Boundary pairs need to be a list of "
                             "[boundary, value]")
 
-    Sp = pg.matrix.ElementMatrix()
-    Sq = pg.matrix.ElementMatrix()
+    S_Dir = pg.matrix.ElementMatrix()
+    S_Neu = pg.matrix.ElementMatrix()
 
     #if isinstance(rhs, np.ndarray):
         #rhs = pg.Vector(rhs)
@@ -1596,27 +1415,39 @@ def assembleRobinBC(mat, boundaryPairs, rhs=None, time=0.0, userData={}):
     for pair in boundaryPairs:
         boundary = pair[0]
         val = pair[1]
-        # BC = a u + b * du/dn = g
-        # solve
-        # either du/dn = g/b for a=0 (Neumann)
-        # or u = g/a for b = 0 (Dirichlet)
-        ### p = gamma / beta
-        p = generateBoundaryValue(boundary, val, time, userData)
-        #### p = gamma / alpha
-        #p = 20.
-        #q = -41.0
-        q = None
+        ## print('val:', val)
+        ## du/dn = a(u0-u) || \beta du/dn + \alpha u = \gamma
+        ## combines to Matrix + au = RHS + au0
 
-        if p != 0.0 and p is not None:
-            #print(p)
-            Sp.u2(boundary)
-            mat.add(Sp, p)
+        u0 = None
+        a = generateBoundaryValue(boundary, val, time, userData)
+
+        if hasattr(a, '__iter__'):
+            if len(a) == 2:
+                u0 = a[1]
+                a = a[0]
+            elif len(a) == 3:
+                alpha, beta, gamma = a[0], a[1], a[2]
+                # a = [alpha, beta, gamma]
+                if alpha != 0:
+                    u0 = gamma/alpha
+                else:
+                    pg.warn('Robin boundary condition parmeter alpha is zero, falling back to Neumann condition.')
+                    u0 = 0.0
+                if beta != 0:
+                    a = alpha/beta
+                else:
+                    pg.warn('Robin boundary condition parmeter beta is zero, please consider using Dirichlet instead.')
+                    a = 0.0
+
+        if a is not None and a != 0.0:
+            S_Dir.u2(boundary)
+            mat.add(S_Dir, scale=a)
             #Sp *= p
             #S += Sp
-
-            if q is not None:
-                Sq.u(boundary)
-                rhs.add(Sq, -p*q)
+        if u0 is not None and u0 != 0.0:
+            S_Neu.u(boundary)
+            rhs.add(S_Neu, a * u0)
 
 
 def assembleBC_(bc, mesh, mat, rhs, time=None, userData={}):
@@ -1625,6 +1456,13 @@ def assembleBC_(bc, mesh, mat, rhs, time=None, userData={}):
     This is a helper function for the solver call.
     Shortcut to apply all boundary conditions will only forward to
     appropriate assemble functions.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+    None
     """
     ## we can't iterate because we want the following fixed order
     bct = dict(bc)
@@ -1662,6 +1500,185 @@ def assembleBC_(bc, mesh, mat, rhs, time=None, userData={}):
     if len(bct.keys()) > 0:
         pg.warn("Unknown boundary condition[s]" + \
                        str(bct.keys()) + " will be ignored")
+
+
+def assembleLoadVector(mesh, f, userData={}):
+    r"""Assemble the load vector. See createLoadVector.
+    Maybe we will remove this
+    """
+    pg.deprecate('createLoadVector') # 20200115
+    return createLoadVector(mesh, f, userData)
+
+
+def createForceVector(mesh, f, userData={}):
+    """ Create a right hand side vector for vector valued solutions.
+
+    Parameters
+    ----------
+    f: [ convertable ]
+        List of rhs side options. Must be convertable to createLoadVector.
+        See :py:mod:`createLoadVector`
+    rhs: np.array()
+        Squeezed vector of length mesh.nodeCount() * mesh.dimensions()
+
+    """
+    if not isinstance(f, list):
+        pg.error("Create Force Vector need list of attribute f with an entry for each dimension.")
+
+    rhs = np.zeros(mesh.nodeCount() * mesh.dim())
+
+    for i in range(mesh.dim()):
+        rhs[i*mesh.nodeCount():(i+1)*mesh.nodeCount()] = \
+            createLoadVector(mesh, f[i], userData)
+
+    # rhs.reshape(mesh.nodeCount() * mesh.dim()) #contiguity not guarantied
+    return rhs
+
+
+def createLoadVector(mesh, f=1.0, userData={}):
+    """Create right hand side vector based on the given mesh and load values
+    (scalar solution) or force vectors (vector value solution).
+
+    Create right hand side based on the given mesh and load or force
+    values.
+
+    TODO
+    ----
+    - Callable for vector valued problems
+    - Callable called dynamic on demand
+
+    Parameters
+    ----------
+    f: float[1.0], array, callable(cell, [userData]), [f_x, f_y, f_z]
+
+        - float will be assumed as constant for all cells
+        like rhs = rhs(np.ones(mesh.cellCount() * f),
+        - array of length mesh.cellCount() will be processed as load value for
+        each cell: rhs = rhs(f),
+        - array of length mesh.nodeCount() will be assumed to be allready processed correct: rhs = f
+        - callable is evaluated on once for each cell and need to return a load
+        value for each cell and can have  optional a userData dictionary:
+        `f_cell = f(cell, [userData={}])`
+        rhs = rhs(f(c, userData) for c in mesh.cells())
+        - list with length of mesh.dimension() of float or array entries will
+        create a squeezed rhs for vector valued problems
+        rhs = squeeze([rhs(f[0]), rhs(f[1]), rhs(f[2])])
+
+    Returns
+    -------
+    rhs: pg.Vector(mesh.nodeCount())
+        Right hand side load vector for scalar values or squeezed vector values.
+    """
+    ### f is dict('Node':callable, 'Cell': callable)
+    if isinstance(f, dict):
+        if 'Node' in f:
+            fn = []
+            if callable(f['Node']):
+                for n in mesh.nodes():
+                    fn.append(f['Node'](n, **userData))
+            if hasattr(fn[0], '__iter__'):
+                ### result is vector valued
+                return createLoadVector(mesh, [fi for fi in np.array(fn).T],
+                                        userData=userData)
+
+            return createLoadVector(mesh, fn, userData=userData)
+
+        elif 'Cell' in f:
+            pg.error('Implement me!, createLoadVector()')
+
+    ### fix for the lazy
+    if isinstance(f, int):
+        f = float(f)
+
+    ### f is list [fx, fy, [fz]] for vector problems
+    if isinstance(f, list):
+        if len(f) == mesh.dim():
+            return createForceVector(mesh, f, userData=userData)
+
+    ### f is list of array [f_0, f_1, ..., f_n] for scalar problems
+    if isinstance(f, list) or hasattr(f, 'ndim'):
+        if isinstance(f, list):
+            rhs = np.zeros((len(f), mesh.nodeCount()))
+            for i, fi in enumerate(f):
+                userData['i'] = i
+                rhs[i] = createLoadVector(mesh, fi, userData)
+            return rhs
+
+        elif f.ndim == 2:
+            ### assume rhs [n, nNodes] array is already a valid
+            if len(f[0]) == mesh.nodeCount():
+                return f
+
+    rhs = pg.Vector(mesh.nodeCount(), 0)
+
+    fArray = None
+
+    if hasattr(f, '__len__'):
+        if len(f) == mesh.cellCount():
+            # scalar values for each cell
+            fArray = f
+        elif len(f) == mesh.nodeCount():
+            # scalar values for each node
+            fArray = f
+        elif len(f) == mesh.nodeCount() * mesh.dim():
+            # vector values for each node
+            # maybe just for special cases with allready processed rhs
+            return f
+
+    elif callable(f) and not isinstance(f, pg.Vector):
+        fArray = pg.Vector(mesh.cellCount())
+        for c in mesh.cells():
+            if userData is not None and userData.keys():
+                fArray[c.id()] = f(c, userData)
+            else:
+                fArray[c.id()] = f(c)
+
+    if fArray is None:
+        fArray = cellValues(mesh, f, userData=userData)
+
+    if len(fArray) == mesh.cellCount():
+        b_l = pg.matrix.ElementMatrix()
+
+        for c in mesh.cells():
+            if fArray[c.id()] != 0.0:
+                b_l.u(c)
+                rhs.add(b_l, fArray[c.id()])
+
+#            print("test reference solution:")
+#            rhsRef = pg.Vector(mesh.nodeCount(), 0)
+#            for c in mesh.cells():
+#                b_l.u(c)
+#                for i, idx in enumerate(b_l.idx()):
+#                    rhsRef[idx] += b_l.row(0)[i] * fArray[c.id()]
+#            np.testing.assert_allclose(rhs, rhsRef)
+#            print("Remove revtest in assembleLoadVector after check")
+
+    elif len(fArray) == mesh.nodeCount():
+        ### nodal values
+        fA = pg.Vector(fArray)
+        b_l = pg.matrix.ElementMatrix()
+        for c in mesh.cells():
+            b_l.u(c)
+                # rhs.addVal(b_l.row(0) * fArray[b_l.idx()], b_l.idx())
+            rhs.add(b_l, fA)
+
+        # print("test reference solution:")
+        # rhsRef = pg.Vector(mesh.nodeCount(), 0)
+        # for c in mesh.cells():
+        #     b_l.u(c)
+        #     for i, idx in enumerate(b_l.idx()):
+        #         rhsRef[idx] += b_l.row(0)[i] * fA[idx]
+
+        # np.testing.assert_allclose(rhs, rhsRef)
+        # print("Remove revtest in assembleLoadVector after check",
+        #       sum(rhs), sum(rhsRef))
+
+            # rhs = pg.Vector(fArray)
+    else:
+        raise Exception("Load vector have the wrong size: " +
+                        str(len(fArray)))
+
+    return rhs
 
 
 def createStiffnessMatrix(mesh, a=None, isVector=False):
@@ -1795,6 +1812,24 @@ def createMassMatrix(mesh, b=None):
     # return B
 
 
+def intDomain(u, mesh=None):
+    """Return integral over nodal solution :math:`u`.
+
+    .. math::
+        \int_{\Omega} u
+
+    TODO
+    ----
+        * refactor
+        * better name?
+        * Documentation
+    """
+    if mesh is not None:
+        r = createLoadVector(mesh)
+        return sum(r*u)
+    pg.critical('Need a mesh to calculate the integral over domain')
+
+
 def _feNorm(u, mat):
     """Create a norm within a Finite Element space.
 
@@ -1917,7 +1952,8 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
         + b u + f(\mathbf{r},t)~~|~~\Omega_{\text{Mesh}}\\
         u & = h~~|~~\Gamma_{\text{Dirichlet}}\\
         \frac{\partial u}{\partial \mathbf{n}} & = g~~|~~\Gamma_{\text{Neumann}}\\
-        \alpha u + \beta\frac{\partial u}{\partial \mathbf{n}} & = \gamma~~|~~\Gamma_{\text{Robin}}
+        \alpha u + \beta\frac{\partial u}{\partial \mathbf{n}} & = \gamma~~|~~\Gamma_{\text{Robin}}\\
+        \frac{\partial u}{\partial \mathbf{n}} & = \alpha(u_0-u)~~|~~\Gamma_{\text{Robin}}
 
     for the scalar :math:`u(\mathbf{r}, t)` or
     vector :math:`\mathbf(u)(\mathbf{r}, t)` solution at each node of a given mesh.
@@ -1989,6 +2025,9 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
         assembleOnly: bool
             Stops after matrix asssemblation.
             Returns the system matrix A and the rhs vector.
+        pureNeumann: bool [auto]
+            If set or detected automatic, we add the additional condition:
+            :math:`\int_domain u dv = 0` which makes elliptic problems well posed again.
         ws: dict
             The WorkSpace is a dictionary that will get
             some temporary data during the calculation.
@@ -2063,7 +2102,16 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
         A = S
 
     if times is None:
+
+        if len(list(bc.items())) == 0 or \
+           (len(list(bc.items())) == 1 and list(bc.keys())[0] == 'Neumann'):
+            pn = True
+        else:
+            pn = False
+        pureNeumann = kwargs.pop('pureNeumann', pn)
+
         assembleBC_(bc, mesh, A, rhs, time=None, userData=userData)
+
         u = None
         if 'u' in workSpace:
             u = workSpace['u']
@@ -2084,6 +2132,18 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
                 if u is None:
                     u = pg.Vector(rhs.size(), 0.0)
 
+        if pureNeumann is True:
+            pg.info('Fixing pure Neumann boundary condition by forcing: '
+                    'intDomain(u, mesh) = 0')
+            r = createLoadVector(mesh)
+
+            A = pg.core.BlockMatrix()
+            A.add(S, 0, 0)
+            A.add(r, 0, mesh.nodeCount())
+            A.add(r, mesh.nodeCount(), 0, transpose=True)
+
+            rhs = pg.cat(rhs, pg.Vector(1,0))
+
         assembleTime = swatch.duration(True)
 
         if stats:
@@ -2092,22 +2152,29 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
         if verbose:
             print("Assembling time: ", assembleTime)
 
-        workSpace['S'] = S
-        workSpace['M'] = M
-        workSpace['A'] = A
+        workSpace['Stiffness matrix'] = S
+        workSpace['Mass matrix'] = M
+        workSpace['System matrix'] = A
         workSpace['rhs'] = rhs
 
         if 'assembleOnly' in kwargs:
             return A, rhs
 
-        solver = pg.core.LinSolver(False)
-        solver.setMatrix(A, 0)
-
-        if singleForce:
-            u = solver.solve(rhs)
+        if pureNeumann:
+            if singleForce:
+                uc = pg.solver.linSolve(A, rhs, 'scipy')
+                u = uc[0:mesh.nodeCount()]
+            else:
+                pg.criticale('Non single force for pure Neumann not yet implemented')
         else:
-            for i, r in enumerate(rhs):
-                u[i] = solver.solve(r)
+            solver = pg.core.LinSolver(False)
+            solver.setMatrix(A, 0)
+
+            if singleForce:
+                u = solver.solve(rhs)
+            else:
+                for i, r in enumerate(rhs):
+                    u[i] = solver.solve(r)
 
         solverTime = swatch.duration(True)
         if verbose:

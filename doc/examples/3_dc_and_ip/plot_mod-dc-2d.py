@@ -76,8 +76,9 @@ def mixedBC(boundary, userData):
     """Mixed boundary conditions.
 
     Define the derivative of the analytical solution regarding the outer normal
-    direction :math:`\vec{n}`. So we can define the values for Robyn type
-    Boundary conditions for the boundaries on the subsurface.
+    direction :math:`\vec{n}`. So we can define the values for Robin type
+    boundary conditions :math:`\frac{\partial u}{\partial \vec{n}} = -au` for the boundaries on the subsurface.
+
     """
     ### ignore surface boundaries for wildcard boundary condition
     if boundary.norm()[1] == 1.0:
@@ -88,7 +89,7 @@ def mixedBC(boundary, userData):
     r1 = boundary.center() - sourcePos
 
     # Mirror on surface at depth=0
-    r2 = boundary.center() - pg.RVector3(1.0, -1.0, 1.0) * sourcePos
+    r2 = boundary.center() - pg.Pos(1.0, -1.0) * sourcePos
     r1A = r1.abs()
     r2A = r2.abs()
 

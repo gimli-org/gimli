@@ -165,21 +165,55 @@ LRMultRMatrix = MultLeftRightMatrix  # alias for backward compatibility
 __BlockMatrix_addMatrix__ = pgcore.RBlockMatrix.addMatrix
 
 
-def __BlockMatrix_addMatrix_happy_GC__(self, M):
+def __BlockMatrix_addMatrix_happy_GC__(self, M, row=None, col=None,
+                                       scale=1.0, transpose=False):
     """Add an existing matrix to this block matrix and return a unique index.
 
-    The Matrix will not be used until the matrix index has been assigned to a
-    row and column number by adding a matrix entry.
+    As long row and col are None, the Matrix will not be used until a matrix entry is has been added.
 
-    Monkeypatched to increases the reference counter of M to keep the gc happy.
+    Monkeypatched version to increase the reference counter of M to keep the
+    garbage collector happy.
+
+    TODO
+    ----
+        * Add numpy matrices or convertable
+        * Transpose is only for 1d arrays. Needed for matrices?
+
+    Parameters
+    ----------
+    M: pg.core Matrix | pg.Vector | 1d iterable
+        Matrix to add to the block.
+    row: long
+        Starting row index.
+    col: long
+        Starting column index.
+    scale: float[1.0]
+        Scale all matrix entries.
+    transpose: bool [False]
+        Transpose the matrix.
     """
+    if M.ndim == 1:
+        if transpose is False:
+            _M = SparseMapMatrix(list(range(len(M))), [0]*len(M), M)
+        else:
+            _M = SparseMapMatrix([0]*len(M), list(range(len(M))), M)
+        M = _M
+
     if not hasattr(self, '__mats__'):
         self.__mats__ = []
     self.__mats__.append(M)
-    return __BlockMatrix_addMatrix__(self, M)
 
+    matrixID = __BlockMatrix_addMatrix__(self, M)
+
+    if row is not None and col is not None:
+        self.addMatrixEntry(matrixID, row, col, scale)
+
+    return matrixID
 
 pgcore.RBlockMatrix.addMatrix = __BlockMatrix_addMatrix_happy_GC__
+pgcore.RBlockMatrix.add = __BlockMatrix_addMatrix_happy_GC__
+# pgcore.CBlockMatrix.addMatrix = __BlockMatrix_addMatrix_happy_GC__
+# pgcore.CBlockMatrix.add = __BlockMatrix_addMatrix_happy_GC__
 
 
 class Add2Matrix(pgcore.MatrixBase):

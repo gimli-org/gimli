@@ -9,7 +9,7 @@ from .inversion import (Inversion, MarquardtInversion,
                         Block1DInversion,
                         LCInversion)
 
-from .methodManager import (MethodManager, MethodManager1d,
+from .methodManager import (fit, MethodManager, MethodManager1d,
                             ParameterInversionManager,
                             MeshMethodManager, PetroInversionManager)
 

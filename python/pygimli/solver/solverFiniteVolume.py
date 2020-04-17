@@ -3,8 +3,6 @@
 """Simple Finite Volume Solver."""
 
 import numpy as np
-import matplotlib.pyplot as plt
-
 import pygimli as pg
 from pygimli.viewer import show
 from pygimli.meshtools import createMesh
@@ -395,13 +393,22 @@ def diffusionConvectionKernel(mesh, a=None, b=0.0,
     # we need this to fast identify uBoundary and value by boundary
     uBoundaryID = []
     uBoundaryVals = [None] * mesh.boundaryCount()
-    for [boundary, val] in uB:
 
-        if not isinstance(boundary, pg.core.Boundary):
+    for [b, val] in uB:
+
+        if isinstance(b, pg.core.Boundary):
+            uBoundaryID.append(b.id())
+            uBoundaryVals[b.id()] = val
+        elif isinstance(b, pg.core.Node):
+            for _b in b.boundSet():
+                if _b.rightCell() is None:
+                    pg.warn('Dirichlet for one node considered for the nearest boundary.', _b.id())
+                    uBoundaryID.append(_b.id())
+                    uBoundaryVals[_b.id()] = val
+                    break
+        else:
             raise BaseException("Please give boundary, value list")
 
-        uBoundaryID.append(boundary.id())
-        uBoundaryVals[boundary.id()] = val
 
     duBoundaryID = []
     duBoundaryVals = [None] * mesh.boundaryCount()
@@ -454,10 +461,10 @@ def diffusionConvectionKernel(mesh, a=None, b=0.0,
 
                 if boundary.id() in uBoundaryID:
                     val = pg.solver.generateBoundaryValue(
-                        boundary,
-                        uBoundaryVals[boundary.id()],
-                        time=time,
-                        userData=userData)
+                            boundary,
+                            uBoundaryVals[boundary.id()],
+                            time=time,
+                            userData=userData)
 
                     if sparse:
                         S.addVal(cID, cID, aB)
@@ -474,8 +481,10 @@ def diffusionConvectionKernel(mesh, a=None, b=0.0,
                         time=time,
                         userData=userData)
 
-                    # amount of flow through the boundary
-                    outflow = val * boundary.size() / cell.size()
+                    # amount of flow through the boundary .. maybe buggy
+                    # fill be replaced by suitable FE solver
+                    outflow = -val * boundary.size() / cell.size()
+
                     if sparse:
                         S.addVal(cID, cID, outflow)
                     else:
@@ -607,10 +616,15 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=None, u0=0.0,
 
     if not hasattr(workspace, 'S'):
 
+        boundsDirichlet = []
         if 'bc' in kwargs:
             bct = dict(kwargs['bc'])
             if 'Dirichlet' in bct:
-                boundsDirichlet = pg.solver.parseArgToBoundaries(bct.pop('Dirichlet'), mesh)
+                boundsDirichlet += pg.solver.parseArgToBoundaries(bct.pop('Dirichlet'), mesh)
+
+            if 'Node' in bct:
+                n = bct.pop('Node')
+                boundsDirichlet.append([mesh.node(n[0]), n[1]])
 
             if 'Neumann' in bct:
                 boundsNeumann = pg.solver.parseArgToBoundaries(bct.pop('Neumann'), mesh)
@@ -932,6 +946,7 @@ def __solveStokes(mesh, viscosity, velBoundary=None, preBoundary=None,
                                                # uB=boundsDirichlet,
                                                ws=wsp)
 
+        # pg.show(mesh, pressureCorrection, label='pC')
         # print(i, pg.solver.generateBoundaryValue(mesh.boundary(58), val),
         # pB[58], boundsDirichlet[-1][1],
         # (CtB*pressureCorrection)[58])
@@ -1037,7 +1052,7 @@ def _test_ConvectionAdvection():
     ax3 = fig.add_subplot(1, 3, 3)
 
     show(grid, data=pg.meshtools.cellDataToNodeData(grid, pres),
-         label='Pressure', cMap='RdBu')
+         label='Pressure', cMap='RdBu', ax=ax1)
     show(grid, data=pg.core.logTransDropTol(
          pg.meshtools.cellDataToNodeData(grid, vel[:, 0]), 1e-2),
          label='$v_x$', ax=ax2)
@@ -1045,8 +1060,7 @@ def _test_ConvectionAdvection():
          pg.meshtools.cellDataToNodeData(grid, vel[:, 1]), 1e-2),
          label='$v_y$', ax=ax3)
 
-    show(grid, data=vel, ax=ax1)
-    show(grid, ax=ax1)
+    show(grid, data=vel, ax=ax1, showMesh=True)
 
     pg.plt.figure()
     pg.plt.semilogy(pCNorm, label='norm')

@@ -405,9 +405,9 @@ public:
 
     friend std::ostream & operator << (std::ostream & str, const NodeBoundary & e);
 
-    /*!Returns the normal vector for this boundary that shows outside along the
-     *tangent of the cell which is 1D and an Edge.*/
-    virtual RVector3 norm(const Cell & cell) const;
+    /*! Returns the normal vector for this boundary that shows outside along the
+     * tangent of the left neighbouring cell which is an Edge. If there are no neighbour infos. [1.0, 0.0, 0.0] is returned. */
+    virtual RVector3 norm() const;
 
 protected:
 };

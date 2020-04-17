@@ -1024,6 +1024,33 @@ void Mesh::importVTK(const std::string & fbody) {
                 if (row[0] == "POINTS") readVTKPoints_(file, row);
                 else if (row[0] == "CELLS") readVTKCells_(file, row);
                 else if (row[0] == "SCALARS") readVTKScalars_(file, row);
+                else if (row[0] == "FIELD") {
+                    if (row.size() == 3){
+                        std::string dataName(row[1]);
+                        Index numArray(toInt(row[2]));
+                        for (Index i = 0; i < numArray; i ++ ){
+                            std::vector < std::string > r(getNonEmptyRow(file));
+
+                            if (r.size() == 4){
+                                std::string arrayName(r[0]);
+                                Index numComponents(toInt(r[1]));
+                                Index numTuples(toInt(r[2]));
+                                std::string dataType(r[3]);
+
+                                for (Index j = 0; j < numComponents; j ++ ){
+                                    //u 1 2601 double
+                                    RVector field(numTuples);
+                                    for (Index k = 0; k < numTuples; k ++) {
+                                        file >> field[k];
+                                    }
+
+                                    addData(dataName + "_" + str(i) + "_" +
+                                            arrayName + "_" + str(j), field);
+                                }
+                            }
+                        }
+                    }
+                }
                 else if (row[0] == "VECTORS") {
                     log(Warning, " .. clean up VTK vector data read");
                     std::string name(row[1]);

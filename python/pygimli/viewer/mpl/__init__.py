@@ -30,7 +30,6 @@ from .colorbar import (createColorBar,
                        setCbarLevels,
                        setMappableValues,
                        setMappableData)
-
 from .meshview import (CellBrowser,
                        createMeshPatches,
                        createTriangles,

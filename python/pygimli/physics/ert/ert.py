@@ -488,6 +488,7 @@ class ERTModellingReference(ERTModellingBase):
         n = boundary.norm()
 
         if r1A > 1e-12 and r2A > 1e-12:
+            ## see mod-dc-2d example for robin like BC and the negative sign
             if (pg.math.besselK0(r1A * k) + pg.math.besselK0(r2A * k)) > 1e-12:
 
                 return 1./rho * k * (r1.dot(n) / r1A * pg.math.besselK1(r1A * k) +
