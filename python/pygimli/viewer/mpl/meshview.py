@@ -895,14 +895,22 @@ def drawField(ax, mesh, data=None, levels=None, nLevs=5,
                 # add outer climits to fill lower and upper too
                 levs = np.array(levels)
 
-                if min(z) < min(levels):
-                    levs = np.hstack([min(z), levs])
+                # if min(z) < min(levels):
+                #     levs = np.hstack([min(z), levs])
 
-                if max(z) > max(levels):
-                    levs = np.hstack([levs, max(z)])
+                # if max(z) > max(levels):
+                #     levs = np.hstack([levs, max(z)])
+
+                if nCols is not None:
+                    if logScale:
+                        pg.error('Implement nCols for logscale in drawfield')
+
+                    levs = np.linspace(min(levels), max(levels), nCols+1)
 
                 gci = ax.tricontourf(x, y, triangles, z,
-                                     levels=nCols or levs, **kwargs
+                                     # antialiased=True, # not allways nice
+                                     levels=levs, **kwargs
+
                                     )
 
             if contourLines:
