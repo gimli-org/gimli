@@ -103,7 +103,61 @@ def testColorbar():
             orientation="horizontal",
             colorBar=True)
             
+
+def testCBarLevels():
+    """
+    Expectations
+    ------------
+    axs[0, 0]: show regions with plc
+        Show needs to deliver the regions with Set3 colormap. Each tick on the
+        colobar should be in the middle of the related color section.
+
+    axs[1, 0]: show regions with mesh
+        really the same thing as on axs[0, 0] but with mesh.
+
+    ax[0, 1]: show mesh with cell data
+        if nLevs is given i would expect that the colormap then is levelled. 
+        currently that is not the fact. but at least its the full range. labels
+        need to be at begin/end of each color section.
+
+    ax[1, 1]: show mesh with node data
+        the colorbar range misses parts of its full range. labels need to be
+        at begin/end of each color section.
+    """
+    # create a geometry
+    world = mt.createWorld(
+        start=[-10, 0], end=[10, -16], layers=[-8], worldMarker=False
+        )
+
+    block = mt.createRectangle(
+        start=[-6, -3.5], end=[6, -6.0], marker=4, boundaryMarker=10, area=0.1
+        )
+
+    circ = mt.createCircle(pos=[0, -11], marker=5, radius=2, boundaryMarker=11)
+
+    poly = mt.mergePLC([world, block, circ])
+    mesh = mt.createMesh(poly, quality=34)
+
+    # create random data
+    rhomap = [[1, 10], [2, 4], [4, 20], [5, 8]]
+    # map data to cell/node count
+    cell_data = pg.solver.parseArgToArray(rhomap, mesh.cellCount(), mesh)
+    node_data = mt.cellDataToNodeData(mesh, cell_data)
+
+    # plot everything
+    fig, axs = pg.plt.subplots(2, 2, figsize=(20, 10))
+
+    pg.show(poly, ax=axs[0, 0])
+
+    pg.show(mesh, ax=axs[1, 0], markers=True)
+
+    pg.show(mesh, cell_data, ax=axs[0, 1], colorBar=True, nLevs=6)
+
+    pg.show(mesh, node_data, ax=axs[1, 1], colorBar=True, nLevs=6)
+
+
 if __name__ == '__main__':
-    #testShowVariants()
-    testColorbar()
+    # testShowVariants()
+    # testColorbar()
+    testCBarLevels()
     pg.wait()
