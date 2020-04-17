@@ -8,9 +8,9 @@ import numpy as np
 
 from . import _pygimli_ as pgcore
 from . import (CMatrix, CSparseMapMatrix, CSparseMatrix, ElementMatrix,
-               IVector, MatrixBase, R3Vector, RVector, )
+               IVector, MatrixBase, R3Vector, RVector)
 
-# from .logger import warn
+from .logger import critical, warn
 
 # make core matrices (now in pgcor, later pg.core) available here for brevity
 BlockMatrix = pgcore.RBlockMatrix
@@ -198,6 +198,18 @@ def __BlockMatrix_addMatrix_happy_GC__(self, M, row=None, col=None,
         else:
             _M = SparseMapMatrix([0]*len(M), list(range(len(M))), M)
         M = _M
+    else:
+        if transpose is True:
+            if isinstance(M, pgcore.RSparseMapMatrix):
+                warn('Move me to core')
+                v = pg.RVector()
+                i = pg.IndexArray([0])
+                j = pg.IndexArray([0])
+                M.fillArrays(v, i, j)
+                M = SparseMapMatrix(j, i, v)
+            else:
+                critical("don't know yet how to add transpose matrix of type",
+                         type(M))
 
     if not hasattr(self, '__mats__'):
         self.__mats__ = []

@@ -529,12 +529,11 @@ def __setVal(self, idx, val):
             return self.setVal(val=val, id=idx)
         else:
             return self.setVal(val=val, ids=idx)
-    
+
     if isinstance(self, _pygimli_.RMatrix):
         self.setVal(idx, val)
     else:
         self.setVal(val, idx)
-
 
 
 def __getValMatrix(self, idx):
@@ -1128,6 +1127,10 @@ def __getCoords(coord, dim, ent):
         return getattr(_pygimli_, coord)(ent.positions())
     if isinstance(ent, _pygimli_.stdVectorNodes):
         return np.array([n.pos()[dim] for n in ent])
+    if isinstance(ent, _pygimli_.Node):
+        return ent.pos()[dim]
+    if isinstance(ent, _pygimli_.RVector3):
+        return ent[dim]
 
     if hasattr(ent, 'ndim') and ent.ndim == 2 and len(ent[0] > dim):
         return ent[:, dim]
