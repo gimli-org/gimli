@@ -97,11 +97,10 @@ pg.show(geom, ax=ax, fillRegion=False, regionMarker=False)
 # Another useful method is to show the model along with its response
 # on the data.
 mgr.showResultAndFit(cMin=min(vp), cMax=max(vp))
+pg.wait()
 
 ###############################################################################
 # .. note:: Takeaway message
 
 #     A default data inversion with checking of the data consists of only few
 #     lines. Check out :ref:`ex:koenigsee`.
-
-pg.wait()
