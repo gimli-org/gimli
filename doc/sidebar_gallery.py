@@ -16,15 +16,9 @@ from os.path import basename, dirname, join
 
 def make_gallery(src_path, out_path):
     """TODO DOCUMENTME."""
-    publish = os.getenv("PUBLISH")
-    if publish:
-        build_dir = "https://www.pygimli.org"
-    else:
-        build_dir = ""
-
     example_dir = join(src_path, "examples")
     tutorial_dir = join(src_path, "tutorials")
-    img_dir = join(build_dir, "_images")
+    img_dir = "{{ pathto('_images', 1) }}"
 
     # Get examples/tutorials
     examples = [fn for fn in glob(join(example_dir, "*/*plot*.py"))
@@ -58,10 +52,10 @@ def make_gallery(src_path, out_path):
     titles = ex_titles + tut_titles
 
     # Adjust paths to output directory for html links
-    examples = [e.replace(example_dir, join(build_dir, "_examples_auto"))
+    examples = [e.replace(example_dir, "{{ pathto('_examples_auto', 1) }}")
                 for e in examples]
 
-    tutorials = [t.replace(tutorial_dir, join(build_dir, "_tutorials_auto"))
+    tutorials = [t.replace(tutorial_dir, "{{ pathto('_tutorials_auto', 1) }}")
                  for t in tutorials]
 
     # Create HTML gallery for sidebar with random start item
