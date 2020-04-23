@@ -144,8 +144,9 @@ fig, ax = plt.subplots()
 tt.showCoverage(ax=ax, cMap="Greens")
 tt.drawRayPaths(ax=ax, color="k", alpha=0.3)
 ax.plot(sensors[:, 0], sensors[:, 1], "ko")
+pg.wait()
 
 ################################################################################
 # White regions indicate the model null space, i.e. cells that are not traversed
 # by any ray.
-pg.wait()
+
