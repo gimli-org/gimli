@@ -41,9 +41,13 @@
                         </a>
                     </div>
                     <div class="col-4">
+                      <div class="h-25 d-inline-block">
                       <br>
                       <h3>{{ paper["title"] }}</h3>
                       <p>{{ paper["subtitle"] }}</p>
+                      </div>
+                      <div class="h-75 d-inline-block">
+                      <br>
                       <a href="{{ paper['link'] }}" target="_blank">
                       <button class="btn btn-outline-success">Go to {{ paper["subtitle"].split(',')[0] }}</button>
                       </a>
@@ -52,6 +56,7 @@
                       <a href="{{ pathto('publist') }}")
                       <button class="btn btn-outline-secondary btn-sm">Go to complete list of pyGIMLi-based publications</button>
                       </a>
+                      </div>
                     </div>
                   </div>
                 </div>
