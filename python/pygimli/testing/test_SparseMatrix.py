@@ -121,8 +121,7 @@ class TestSparseMatrix(unittest.TestCase):
         # print(grid)
 
         alpha = pg.math.toComplex(np.ones(grid.cellCount()),
-                             np.ones(grid.cellCount())*1.0
-                             )
+                                  np.ones(grid.cellCount())*1.0)
 
         A = pg.solver.createStiffnessMatrix(grid, a=alpha)
         pg.solver.solver._assembleUDirichlet(A, None, [0], [0.0])

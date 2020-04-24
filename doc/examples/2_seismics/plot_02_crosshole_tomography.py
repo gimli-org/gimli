@@ -59,16 +59,6 @@ pg.show(mesh_fwd, model,
         label=pg.unit('vel'), cMap=pg.cmap('vel'), nLevs=3, logScale=False)
 
 ################################################################################
-# Create inversion mesh
-refinement = 0.25
-x = np.arange(0, bh_spacing + refinement, sensor_spacing * refinement)
-y = -np.arange(0.0, bh_length + 3, sensor_spacing * refinement)
-mesh = pg.meshtools.createMesh2D(x, y)
-
-ax, _ = pg.show(mesh, hold=True)
-ax.plot(sensors[:, 0], sensors[:, 1], "ro")
-
-################################################################################
 # Next, we create an empty DataContainer and fill it with sensor positions and
 # all possible shot-recevier pairs for the two-borehole scenario using the
 # product function in the itertools module (Python standard library).
@@ -93,10 +83,10 @@ scheme["valid"] = np.ones(len(rays))
 scheme.registerSensorIndex("s")
 scheme.registerSensorIndex("g")
 
-################################################################################
-# The forward simulation is performed with a few lines of code. We initialize an
-# instance of the Refraction manager and call its `simulate` function with the
-# mesh, the scheme and the slowness model (1 / velocity). We also add 0.1%
+###############################################################################
+# The forward simulation is performed with a few lines of code. We initialize
+# an instance of the Refraction manager and call its `simulate` function with
+# the mesh, the scheme and the slowness model (1 / velocity). We also add 0.1%
 # relative and 10 microseconds of absolute noise.
 #
 # Secondary nodes allow for more accurate forward simulations. Check out the
@@ -105,17 +95,26 @@ scheme.registerSensorIndex("g")
 
 tt = TravelTimeManager()
 data = tt.simulate(mesh=mesh_fwd, scheme=scheme, slowness=1./model,
-                   secNodes=5, noiseLevel=0.001, noiseAbs=1e-5)
+                   secNodes=4, noiseLevel=0.001, noiseAbs=1e-5)
 
-################################################################################
-# For the inversion we create a new instance of the Refraction manager to avoid
-# confusion, since it is working on a different mesh.
+###############################################################################
+# Now we create the unstructured inversion mesh
+refinement = 0.25
+x = np.arange(0, bh_spacing + refinement, sensor_spacing * refinement)
+y = -np.arange(0.0, bh_length + 3, sensor_spacing * refinement)
+mesh = pg.meshtools.createMesh2D(x, y)
+
+ax, _ = pg.show(mesh, hold=True)
+ax.plot(sensors[:, 0], sensors[:, 1], "ro")
+
+###############################################################################
 # Note. Setting setRecalcJacobian(False) to simulate linear inversion here.
 tt.inv.inv.setRecalcJacobian(True)
-invmodel = tt.invert(data, mesh=mesh, secNodes=4, lam=1100, zWeight=1.0,
+
+invmodel = tt.invert(data, mesh=mesh, secNodes=3, lam=1100, zWeight=1.0,
                      useGradient=False, verbose=True)
 print("chi^2 = %.2f" % tt.inv.chi2())  # Look at the data fit
-#assert(tt.inv.chi2() < 1.0)
+np.testing.assert_approx_equal(tt.inv.chi2(), 0.996788, significant=5)
 
 ################################################################################
 # Finally, we visualize the true model and the inversion result next to each
@@ -148,4 +147,4 @@ ax.plot(sensors[:, 0], sensors[:, 1], "ko")
 ################################################################################
 # White regions indicate the model null space, i.e. cells that are not traversed
 # by any ray.
-pg.wait()
+

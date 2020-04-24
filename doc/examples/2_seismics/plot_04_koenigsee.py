@@ -41,19 +41,15 @@ mgr.showData(data)  # show first arrivals as curves (done later with response)
 # Finally, we call the `invert` method and plot the result.The mesh is created
 # based on the sensor positions on-the-fly. Yes, it is really as simple as that.
 
-mesh = pg.meshtools.createParaMesh(data.sensors(),
-                                   boundary=0, paraMaxCellSize=1.0)
-mgr.invert(data, mesh=mesh, secNodes=3,
+mgr.invert(data, secNodes=3, paraMaxCellSize=5.0,
            zWeight=0.2, vTop=500, vBottom=5000,
            verbose=1)
 ax, cbar = mgr.showResult()
 mgr.showRayPaths(ax=ax, color="k", lw=0.3, alpha=0.5)
 
-
 ################################################################################
 # Show result and fit of measured data and model response.
 mgr.showResultAndFit()
-pg.wait()
 
 ################################################################################
 # You can play around with the gradient starting model (`vtop` and `vbottom`

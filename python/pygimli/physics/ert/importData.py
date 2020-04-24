@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import pygimli as pg
 
+
 def load(fileName, verbose=False, **kwargs):
     """Shortcut to load ERT data.
 
@@ -17,15 +18,15 @@ def load(fileName, verbose=False, **kwargs):
     data: pg.DataContainer
 
     """  
-    try:
-        data = pg.load(fileName)
-    except:
-        pb = pg.optImport('pybert')
-        data = pb.loadData(fileName)
-
+    
+    data = pg.load(fileName)
+    
     if isinstance(data, pg.DataContainerERT):   
         return data
-    
-    print(data)
-    pg.critical("Can't import ERT data file.", fileName)
+
+    # pb = pg.optImport('pybert')
+    # data = pb.loadData(fileName)
+
+    # print(data)
+    # pg.critical("Can't import ERT data file.", fileName)
 

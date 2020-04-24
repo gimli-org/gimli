@@ -119,9 +119,10 @@ print(grid.boundaryCount())
 # fields, models and streamline views.
 
 pg.viewer.show(grid)
+pg.wait()
 
 ###############################################################################
 # For more control you can also use the appropriate draw methods
 # :py:mod:`pygimli.viewer.mpl.drawMesh`.
 
-pg.wait()
+

@@ -124,7 +124,7 @@ template <> void SparseMapMatrix< double, Index >::
         for (Index j = 0, jmax = A.mat().cols(); j < jmax; j++){
             double v = A.getVal(i, j);
             if (::fabs(v) > tol){
-                (*this)[A.rowIDs()[i]][A.colIDs()[j]] += A.getVal(i, j) * scale;
+                (*this)[A.rowIDs()[i]][A.colIDs()[j]] += v * scale;
             }
         }
     }
@@ -154,15 +154,20 @@ template <> void SparseMapMatrix< double, Index >::
 }
 
 template <> void SparseMapMatrix< Complex, Index >::
-    add(const ElementMatrix < Complex > & A, Complex scale){
+    add(const ElementMatrix < double > & A, Complex scale){
+    for (Index i = 0, imax = A.rows(); i < imax; i++){
+        for (Index j = 0, jmax = A.mat().cols(); j < jmax; j++){
+            double v = A.getVal(i, j);
+            (*this)[A.rowIDs()[i]][A.colIDs()[j]] += v * scale;
+        }
+    }
+}
+template <> void SparseMapMatrix< Complex, Index >::
+    addToCol(Index id, const ElementMatrix < double > & A, Complex scale, bool isDiag){
 THROW_TO_IMPL
 }
 template <> void SparseMapMatrix< Complex, Index >::
-    addToCol(Index id, const ElementMatrix < Complex > & A, Complex scale, bool isDiag){
-THROW_TO_IMPL
-}
-template <> void SparseMapMatrix< Complex, Index >::
-    addToRow(Index id, const ElementMatrix < Complex > & A, Complex scale, bool isDiag){
+    addToRow(Index id, const ElementMatrix < double > & A, Complex scale, bool isDiag){
 THROW_TO_IMPL
 }
 

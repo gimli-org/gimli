@@ -90,7 +90,7 @@ def __DataContainerERT_addFourPointData(self, *args,
     >>> d.addFourPointData([3,2,1,0], rhoa=1.0)
     1
     >>> print(d)
-    Data: Sensors: 4 data: 2
+    Data: Sensors: 4 data: 2, nonzero entries: ['a', 'b', 'm', 'n', 'rhoa', 'valid']
     >>> print(d('rhoa'))
     2 [0.0, 1.0]
     """

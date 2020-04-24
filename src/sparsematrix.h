@@ -286,10 +286,10 @@ public:
     //     return this->add(A, ValueType(1.0));
     // }
 
-    void add(const ElementMatrix < ValueType > & A, ValueType scale=1.0);
-    void addToCol(Index id, const ElementMatrix < ValueType > & A, 
+    void add(const ElementMatrix < double > & A, ValueType scale=1.0);
+    void addToCol(Index id, const ElementMatrix < double > & A, 
                   ValueType scale=1.0, bool isDiag=false);
-    void addToRow(Index id, const ElementMatrix < ValueType > & A, 
+    void addToRow(Index id, const ElementMatrix < double > & A, 
                   ValueType scale=1.0, bool isDiag=false);
 
 #define DEFINE_SPARSEMAPMATRIX_UNARY_MOD_OPERATOR__(OP) \
@@ -1172,11 +1172,11 @@ template <> DLLEXPORT void SparseMapMatrix< double, Index >::
     addToRow(Index id, const ElementMatrix < double > & A, double scale, bool isDiag);
 
 template <> DLLEXPORT void SparseMapMatrix< Complex, Index >::
-    add(const ElementMatrix < Complex > & A, Complex scale);
+    add(const ElementMatrix < double > & A, Complex scale);
 template <> DLLEXPORT void SparseMapMatrix< Complex, Index >::
-    addToCol(Index id, const ElementMatrix < Complex > & A, Complex scale, bool isDiag);
+    addToCol(Index id, const ElementMatrix < double > & A, Complex scale, bool isDiag);
 template <> DLLEXPORT void SparseMapMatrix< Complex, Index >::
-    addToRow(Index id, const ElementMatrix < Complex > & A, Complex scale, bool isDiag);
+    addToRow(Index id, const ElementMatrix < double > & A, Complex scale, bool isDiag);
 
 } // namespace GIMLI
 

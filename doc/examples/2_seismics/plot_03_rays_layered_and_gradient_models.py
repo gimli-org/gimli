@@ -203,7 +203,6 @@ for j, (case, mesh, vel) in enumerate(zip(["layered", "gradient"],
     ax[0, j].plot(0.0, 0.0, "ro", ms=10)
     ax[0, j].set_ylim(mesh.ymin(), 2)
 
-
 ax[0, 0].set_title("Two-layer model")
 ax[0, 1].set_title("Vertical gradient model")
 ax[0, 0].legend()
@@ -212,4 +211,3 @@ ax[1, 0].set_ylabel("Traveltime (ms)")
 ax[2, 0].set_ylabel("Absolute difference to\nanalytical solution (ms)")
 ax[2, 0].set_xlabel("x (m)")
 fig.tight_layout()
-pg.wait()

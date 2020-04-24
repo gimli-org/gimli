@@ -19,43 +19,57 @@
         <div id="paper-carousel" class="carousel slide" data-ride="carousel">
           <div class="carousel-inner">
             <!-- Carousel items -->
-            {%- for paper in showcase %} {%- if loop.index == 1 %}
+            {%- for paper in showcase %}
+            {%- if loop.index == 1 %}
             <div class="carousel-item active">
             {%- else %}
             <div class="carousel-item">
               {%- endif %}
-              <a href="{{ paper['link'] }}" target="_blank">
                 <div class="card-block">
                   <div class="row">
                     <div class="col-8">
+                      <a href="{{ paper['link'] }}" target="_blank">
                       <img src="_static/usecases/{{ paper['img'] }}" align="center" width="100%">
+                      </a>
+                        <a class="carousel-control-prev" href="#paper-carousel" role="button" data-slide="prev">
+                          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                          <span class="sr-only">Previous</span>
+                        </a>
+                        <a class="carousel-control-next" href="#paper-carousel" role="button" data-slide="next">
+                          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                          <span class="sr-only">Next</span>
+                        </a>
                     </div>
                     <div class="col-4">
+                      <div class="h-25 d-inline-block">
+                      <br>
                       <h3>{{ paper["title"] }}</h3>
                       <p>{{ paper["subtitle"] }}</p>
-                      <button class="btn btn-outline-success">Go to paper</button>
+                      </div>
+                      <div class="h-75 d-inline-block">
+                      <br>
+                      <a href="{{ paper['link'] }}" target="_blank">
+                      <button class="btn btn-outline-success">Go to {{ paper["subtitle"].split(',')[0] }}</button>
+                      </a>
+                      <br>
+                      <br>
+                      <a href="{{ pathto('publist') }}")
+                      <button class="btn btn-outline-secondary btn-sm">Go to complete list of pyGIMLi-based publications</button>
+                      </a>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </a>
             </div>
             {%- endfor %}
             <!-- Carousel nav -->
-            <a class="carousel-control-prev" href="#paper-carousel" role="button" data-slide="prev">
-              <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-              <span class="sr-only">Previous</span>
-            </a>
-            <a class="carousel-control-next" href="#paper-carousel" role="button" data-slide="next">
-              <span class="carousel-control-next-icon" aria-hidden="true"></span>
-              <span class="sr-only">Next</span>
-            </a>
           </div>
           <script>
             ! function($) {
               $(function() {
                 // carousel demo
                 $('#paper-carousel').carousel({
-                  interval: 5000 // 5 sec
+                  interval: 4500 // 4.5 sec
                 })
               })
             }(window.jQuery)

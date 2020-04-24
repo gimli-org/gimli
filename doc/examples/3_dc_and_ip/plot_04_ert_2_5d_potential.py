@@ -186,6 +186,6 @@ ax = show(mesh, data=pg.abs(uAna-u), cMap="Reds",
 # print('l2:', pg.pf(pg.solver.normL2(uAna-u)))
 # print('L2:', pg.pf(pg.solver.normL2(uAna-u, mesh)))
 # print('H1:', pg.pf(pg.solver.normH1(uAna-u, mesh)))
-np.testing.assert_approx_equal(pg.pf(pg.solver.normL2(uAna-u, mesh)), 
+np.testing.assert_approx_equal(pg.solver.normL2(uAna-u, mesh), 
                                0.024, significant=3)
 

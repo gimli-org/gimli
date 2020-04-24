@@ -152,6 +152,7 @@ class TravelTimeManager(MeshMethodManager):
             you provide primary potentials with setPrimPot.
         """
         self._useFMM = False
+        self.secNodes = 2 # default secondary nodes for inversion
 
         super(TravelTimeManager, self).__init__(data=data, **kwargs)
 
@@ -170,8 +171,18 @@ class TravelTimeManager(MeshMethodManager):
         self.data = pg.physics.traveltime.load(fileName)
         return self.data
 
-    def createDefaultMesh(self, data=None, **kwargs):
-        implementme
+    def createMesh(self, data=None, **kwargs):
+        """Create default inversion mesh.
+
+        Inversionmesh for Traveltime inversion does not need boundary region.
+        """
+        d = data or self.data
+        
+        if d is None:
+            pg.critical('Please provide a data file for mesh generation')
+
+        return pg.meshtools.createParaMesh(data.sensors(),
+                                           boundary=0, **kwargs)
 
     def checkData(self, data):
         """Return data from container"""
@@ -192,8 +203,11 @@ class TravelTimeManager(MeshMethodManager):
 
         return err
 
-    def setMesh(self, mesh, secNodes=0, ignoreRegionManager=False):
+    def applyMesh(self, mesh, secNodes=0, ignoreRegionManager=False):
         """ """
+        if secNodes == 0:
+            secNodes = self.secNodes
+
         self.fop._refineSecNodes = secNodes
         if secNodes > 0:
             if ignoreRegionManager:
@@ -254,7 +268,7 @@ class TravelTimeManager(MeshMethodManager):
         fop.verbose = verbose
 
         if mesh is not None:
-            self.setMesh(mesh, secNodes=secNodes, ignoreRegionManager=True)
+            self.applyMesh(mesh, secNodes=secNodes, ignoreRegionManager=True)
 
         if vel is not None:
             slowness = 1/vel
@@ -319,8 +333,7 @@ class TravelTimeManager(MeshMethodManager):
         """
         mesh = kwargs.pop('mesh', None)
 
-        if mesh is not None:
-            self.setMesh(mesh, secNodes=secNodes)
+        self.secNodes = secNodes
 
         if 'limits' in kwargs:
             if kwargs['limits'][0] > 1:
@@ -335,7 +348,7 @@ class TravelTimeManager(MeshMethodManager):
         else:
             self.fop._useGradient = None
 
-        slowness = super(TravelTimeManager, self).invert(data, **kwargs)
+        slowness = super().invert(data, mesh, **kwargs)
         velocity = 1.0 / slowness
         self.fw.model = velocity
         return velocity

@@ -74,8 +74,8 @@ mgr.showData(data)
 # Now we invert the synthetic data on an independent mesh without information
 # about the layered structure. Note that we need to create a parametric mesh
 # without a boundary region by setting boundary=0.
-mesh = mt.createParaMesh(data.sensors(), boundary=0, paraMaxCellSize=15.0)
-vest = mgr.invert(data, mesh=mesh, secNodes=2, maxIter=10, verbose=1)
+vest = mgr.invert(data, secNodes=2, paraMaxCellSize=15.0,
+                  maxIter=10, verbose=1)
 
 ###############################################################################
 # The manager also holds the method showResult that is used to plot the result.
@@ -103,5 +103,3 @@ mgr.showResultAndFit(cMin=min(vp), cMax=max(vp))
 
 #     A default data inversion with checking of the data consists of only few
 #     lines. Check out :ref:`ex:koenigsee`.
-
-pg.wait()

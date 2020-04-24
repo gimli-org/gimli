@@ -68,6 +68,7 @@ sip = SIPSpectrum(f=f, amp=np.abs(Z), phi=-np.angle(Z))
 
 sip.showAll()
 sip.fitDebyeModel(new=True, showFit=True)
+pg.wait()
 
 ###############################################################################
 # .. note::
