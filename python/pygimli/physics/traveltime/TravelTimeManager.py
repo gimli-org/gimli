@@ -203,9 +203,9 @@ class TravelTimeManager(MeshMethodManager):
 
         return err
 
-    def applyMesh(self, mesh, secNodes=0, ignoreRegionManager=False):
+    def applyMesh(self, mesh, secNodes=None, ignoreRegionManager=False):
         """ """
-        if secNodes == 0:
+        if secNodes is None:
             secNodes = self.secNodes
 
         self.fop._refineSecNodes = secNodes
@@ -429,7 +429,7 @@ class TravelTimeManager(MeshMethodManager):
         >>> data.set("t", pg.Vector(data.size(), 1.0))
         >>> tt = TravelTimeManager()
         >>> tt.fop.setData(data)
-        >>> tt.setMesh(mesh, secNodes=10)
+        >>> tt.applyMesh(mesh, secNodes=10)
         >>> ax, cb = tt.showRayPaths(showMesh=True, diam=0.1)
         """
         if model is None:

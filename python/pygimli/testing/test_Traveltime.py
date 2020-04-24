@@ -35,7 +35,7 @@ class TestTT(unittest.TestCase):
         np.testing.assert_allclose(t, 1 + np.sqrt(2))
 
         data = self.mgr.simulate(slowness=self.slo, scheme=self.data, 
-                              mesh=self.mesh, secNodes=0)
+                                 mesh=self.mesh, secNodes=0)
         np.testing.assert_allclose(data['t'], 1 + np.sqrt(2))
         
 
