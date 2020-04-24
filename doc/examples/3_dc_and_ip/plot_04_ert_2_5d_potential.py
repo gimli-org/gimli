@@ -150,7 +150,7 @@ u -= pg.solve(mesh, a=sigma, b=-sigma * k*k,
 
 ax = show(mesh, data=u, cMap="RdBu_r", cMin=-1, cMax=1,
           orientation='horizontal', label='Potential $u$', 
-          nCols=16, nLevs=9, logScale=False, showMesh=True)[0]
+          nCols=16, nLevs=9, logScale=False, showMesh=True,hold=True)[0]
 
 ###############################################################################
 # Additional to the image of the potential we want to see the current flow too.

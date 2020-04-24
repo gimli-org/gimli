@@ -26,7 +26,7 @@ print(data)
 ###############################################################################
 # The data file does not contain geometric factors (token field 'k'), 
 # so we create them for the given topography. 
-data['k'] = createGeometricFactors(data, topo=True)
+data['k'] = createGeometricFactors(data, numerical=True)
 
 ###############################################################################
 # We initialize the ERTManager for further steps and eventually inversion.
