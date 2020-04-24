@@ -26,7 +26,8 @@ else:
 
 # True for Jupyter notebooks and sphinx-builds
 _backend = plt.get_backend().lower()
-inline = "inline" in _backend or "agg" in _backend
+# inline = "inline" in _backend or "agg" in _backend
+inline = "inline" in _backend or _backend == "agg"
 
 if PyQt5 is None or inline:
     inline = True

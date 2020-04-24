@@ -892,6 +892,7 @@ def drawField(ax, mesh, data=None, levels=None, nLevs=5,
             contourLines = kwargs.pop('contourLines', True)
 
             if fillContour:
+                print("meshview l.895")
                 # add outer climits to fill lower and upper too
                 levs = np.array(levels)
 
