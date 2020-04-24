@@ -46,7 +46,7 @@ if(WIN32)
     ADD_CUSTOM_TARGET(pgcopydll ALL)
     ADD_CUSTOM_COMMAND(
         COMMAND
-            cp ${CMAKE_BINARY_DIR}/bin/*.dll ${CMAKE_CURRENT_SOURCE_DIR}/pygimli/core
+            cp ${CMAKE_BINARY_DIR}/bin/*.dll ${CMAKE_SOURCE_DIR}/pygimli/core
         TARGET
             pgcopydll
         COMMENT
@@ -54,7 +54,7 @@ if(WIN32)
     )
 endif(WIN32)
 
-add_python_module(pygimli "${CMAKE_CURRENT_BINARY_DIR}/generated/" "gimli" "${CMAKE_CURRENT_SOURCE_DIR}/pygimli/core")
+add_python_module(pygimli "${CMAKE_CURRENT_BINARY_DIR}/generated/" "gimli" "${CMAKE_SOURCE_DIR}/pygimli/core")
 
 add_dependencies(pggen gimli)
 add_dependencies(copy_python pggen)

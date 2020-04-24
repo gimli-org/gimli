@@ -20,11 +20,11 @@ from .core.logger import (_, _d, _g, _r, _y, critical, d, debug, deprecated,
 
 warning = warn # convenience
 
+from .core.test import test
 from .core.config import getConfigPath, rc, getCPUCount
 
 from .meshtools import createGrid, interpolate
 from .solver import solve
-from .testing import test
 from .utils import boxprint, cache, cut, unique, unit, cmap
 from .utils import prettify as pf
 from .viewer import plt, show, wait

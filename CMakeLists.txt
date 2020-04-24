@@ -1,12 +1,12 @@
-# main cmake configuration file
-
 cmake_minimum_required(VERSION 2.8.8)
 
-if ( ${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR} )
-    message(FATAL_ERROR "In-source builds not allowed. Please make a new directory (called a build directory) and run CMake from there. You may need to remove CMakeCache.txt." )
+if (${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
+    message(FATAL_ERROR "In-source builds not allowed. 
+            Please make a new directory (called a build directory) 
+            and run CMake from there. You may need to remove CMakeCache.txt." )
 endif()
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/core/cmake")
 include(GIMLImacros)
 
 add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})
@@ -529,7 +529,7 @@ if (PYTHON_EXECUTABLE
 )
     set (PYGIMLI 1)
     message(STATUS "")
-    message (STATUS "pygimli can be build. run: make pygimli")
+    message(STATUS "pygimli can be build. run: make pygimli")
     message(STATUS "**********************************************************************")
     message(STATUS "")
     message(STATUS "")
@@ -538,7 +538,8 @@ else()
 Check above for python, castxml, pygccxml, pyplusplus, boost_python, numpy")
 endif ()
 
-configure_file("${PROJECT_SOURCE_DIR}/config.cmake.h.in" "${PROJECT_BINARY_DIR}/config.cmake.h" )
+configure_file("${PROJECT_SOURCE_DIR}/core/config.cmake.h.in" 
+               "${PROJECT_BINARY_DIR}/config.cmake.h" )
 add_definitions(-DHAVE_CONFIG_CMAKE_H)
 
 
@@ -607,20 +608,15 @@ else()
     set( GIMLI_LIB_INSTALL_DIR lib )
 endif()
 
-set( GIMLI_VER_INSTALL_SUBDIR "/${CMAKE_PROJECT_NAME}-${GIMLI_VERSION_MAJOR}" )
-set( GIMLI_DATA_INSTALL_DIR "share${GIMLI_VER_INSTALL_SUBDIR}" )
-set( GIMLI_DOC_INSTALL_DIR "share/doc${GIMLI_VER_INSTALL_SUBDIR}" )
-
-set( GIMLI_PKGCONFIG_INSTALL_DIR "${GIMLI_LIB_INSTALL_DIR}/pkgconfig" )
-set( GIMLI_MODULE_INSTALL_DIR "${GIMLI_LIB_INSTALL_DIR}/${CMAKE_PROJECT_NAME}-${GIMLI_VERSION_MAJOR}.${GIMLI_VERSION_MINOR}" )
-set( GIMLI_SAMPLE_INSTALL_DIR "${GIMLI_MODULE_INSTALL_DIR}" ) # TODO: put into /samples subdir!
-set( GIMLI_INCLUDE_INSTALL_DIR "include${GIMLI_VER_INSTALL_SUBDIR}" )
+set(GIMLI_VER_INSTALL_SUBDIR "/${CMAKE_PROJECT_NAME}-${GIMLI_VERSION_MAJOR}" )
+set(GIMLI_MODULE_INSTALL_DIR "${GIMLI_LIB_INSTALL_DIR}/${CMAKE_PROJECT_NAME}-${GIMLI_VERSION_MAJOR}.${GIMLI_VERSION_MINOR}" )
+set(GIMLI_INCLUDE_INSTALL_DIR "include${GIMLI_VER_INSTALL_SUBDIR}" )
 #set( GIMLI_PYTHON_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/python/pygimli)
 
 ################################################################################
 # Add main header locations (for everything we build)
 ################################################################################
-include_directories( ${libgimli_SOURCE_DIR}/src)
+include_directories(${libgimli_SOURCE_DIR}/core/src)
 include_directories("${PROJECT_BINARY_DIR}")
 
 ################################################################################
@@ -631,20 +627,9 @@ if (LIBGIMLI_BUILD_TESTS)
      enable_testing()
 endif(LIBGIMLI_BUILD_TESTS)
 
-add_subdirectory(src)
+add_subdirectory(core/src)
 add_subdirectory(tests EXCLUDE_FROM_ALL)
-add_subdirectory(apps EXCLUDE_FROM_ALL)
 
 if (PYGIMLI)
-#     set( PYGIMLI_SOURCE_DIR ${CMAKE_SOURCE_DIR}/python/pygimli )
-#     set( PYGIMLI_BUILD_DIR ${CMAKE_BINARY_DIR}/package/pygimli )
-#
-#     file(GLOB_RECURSE PYFILES RELATIVE "${PYGIMLI_SOURCE_DIR}" "python/pygimli/*.py")
-#     set(PYGIMLI_FILES ${PYFILES} CACHE INTERNAL "pygimli source files that we need to copy")
-
-    add_subdirectory(python EXCLUDE_FROM_ALL)
+    add_subdirectory(core/python EXCLUDE_FROM_ALL)
 endif (PYGIMLI)
-
-#CR what is this good for?
-# export(TARGETS gimli
-#        FILE "${PROJECT_BINARY_DIR}/Gimli.cmake")
