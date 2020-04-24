@@ -41,10 +41,10 @@ sensors = np.zeros((len(depth) * 2, 2))  # two boreholes
 sensors[len(depth):, 0] = bh_spacing  # x
 sensors[:, 1] = np.hstack([depth] * 2)  # y
 
-################################################################################
+###############################################################################
 # Traveltime calculations work on unstructured meshes and structured grids. We
-# demonstrate this here by simulating the synthetic data on an unstructured mesh
-# and inverting it on a simple structured grid.
+# demonstrate this here by simulating the synthetic data on an unstructured 
+# mesh and inverting it on a simple structured grid.
 
 # Create forward model and mesh
 c0 = mt.createCircle(pos=(7.0, -10.0), radius=3, segments=25, marker=1)
@@ -58,7 +58,7 @@ model = np.array([2000., 2300, 1700])[mesh_fwd.cellMarkers()]
 pg.show(mesh_fwd, model,
         label=pg.unit('vel'), cMap=pg.cmap('vel'), nLevs=3, logScale=False)
 
-################################################################################
+###############################################################################
 # Next, we create an empty DataContainer and fill it with sensor positions and
 # all possible shot-recevier pairs for the two-borehole scenario using the
 # product function in the itertools module (Python standard library).
@@ -111,10 +111,10 @@ ax.plot(sensors[:, 0], sensors[:, 1], "ro")
 # Note. Setting setRecalcJacobian(False) to simulate linear inversion here.
 tt.inv.inv.setRecalcJacobian(True)
 
-invmodel = tt.invert(data, mesh=mesh, secNodes=3, lam=1100, zWeight=1.0,
+invmodel = tt.invert(data, mesh=mesh, secNodes=3, lam=1000, zWeight=1.0,
                      useGradient=False, verbose=True)
 print("chi^2 = %.2f" % tt.inv.chi2())  # Look at the data fit
-np.testing.assert_approx_equal(tt.inv.chi2(), 0.996788, significant=5)
+np.testing.assert_approx_equal(tt.inv.chi2(), 0.999038, significant=5)
 
 ################################################################################
 # Finally, we visualize the true model and the inversion result next to each
