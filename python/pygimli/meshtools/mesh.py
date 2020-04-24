@@ -414,7 +414,6 @@ def convertMeshioMesh(mesh, verbose=False):
         * test for 3D mesh
         * test and improve if neeeded
     """
-    print(verbose)
     if verbose is True:
         pg.info("Converting meshio mesh.")
 
@@ -432,8 +431,17 @@ def convertMeshioMesh(mesh, verbose=False):
             ret.createCell(c)
 
     for k, d in mesh.point_data.items():
-        ret[k] = d
-
+        if d.ndim == 2:
+            if d.shape[1] == 3:
+                for i, di in enumerate(d.T):
+                    coords = ['x', 'y', 'z']
+                    ret[k + '_' + coords[i]] = di
+            else:
+                print(d)
+                pg.error("Don't know ho to convert data")
+        else:
+            ret[k] = d
+            
     if verbose is True:
         pg.info(ret)
         pg.info(ret.dataInfo())

@@ -14,7 +14,7 @@ from . import saveFigure, updateAxes
 from . utils import prettyFloat
 from pygimli.core.logger import renameKwarg
 
-def autolevel(z, nLevs, logScale=None, zmin=None, zmax=None):
+def autolevel(z, nLevs, logScale=None, zMin=None, zMax=None):
     """Create nLevs bins for the data array z based on matplotlib ticker.
 
     Examples
@@ -24,24 +24,36 @@ def autolevel(z, nLevs, logScale=None, zmin=None, zmax=None):
     >>> x = np.linspace(1, 10, 100)
     >>> autolevel(x, 3)
     array([ 1. ,  5.5, 10. ])
+    >>> x = np.linspace(1, 1000, 100)
     >>> autolevel(x, 4, logScale=True)
-    array([  0.1,   1. ,  10. , 100. ])
+    array([   1.,   10.,  100., 1000.])
     """
     locator = None
-    if logScale and min(z) > 0:
+
+    if logScale:
         locator = ticker.LogLocator()
     else:
         locator = ticker.LinearLocator(numticks=nLevs)
         # locator = ticker.MaxNLocator(nBins=nLevs + 1)
         # locator = ticker.MaxNLocator(nBins='auto')
 
-    if zmin is None:
-        zmin = min(z)
+    if zMin is None:
+        zMin = min(z)
+        if logScale is True and zMin < 3e-16:
+            zMin = pg.core.epsilon(abs(z))
 
-    if zmax is None:
-        zmax = max(z)
+    if zMax is None:
+        zMax = max(z)
 
-    return locator.tick_values(zmin, zmax)
+    # print('autolevel: ', z)
+    # print('autolevel:', zMin, zMax, min(z), max(z))
+    if logScale:
+        ## logscale ticker behaves weird
+        levs = np.geomspace(zMin, zMax, nLevs)
+    else:
+        levs = locator.tick_values(zMin, zMax)
+    #print(levs)
+    return levs
 
 
 def cmapFromName(cmapname='jet', ncols=256, bad=None, **kwargs):
@@ -130,7 +142,7 @@ def findAndMaskBestClim(dataIn, cMin=None, cMax=None, dropColLimitsPerc=5,
 
 
 def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
-                   logScale=None, nCols=None, nLevs=5, levels=None,
+                   logScale=None, nCols=256, nLevs=5, levels=None,
                    label=None, **kwargs):
     """Update colorbar values.
 

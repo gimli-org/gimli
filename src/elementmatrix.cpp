@@ -26,6 +26,23 @@
 
 namespace GIMLI{
 
+template < >
+std::ostream & operator << (std::ostream & str, 
+                            const ElementMatrix< double > & e){
+    for (Index i = 0; i < e.colIDs().size(); i ++) str << e.colIDs()[i] << " " ;
+
+    str << std::endl;
+    for (Index i = 0; i < e.size(); i ++){
+        str << e.rowIDs()[i] << "\t: ";
+        for (Index j = 0; j < e.colIDs().size(); j ++){
+            str << e.getVal(i, j) << " ";
+        }
+        str << std::endl;
+    }
+    return str;
+}
+
+
 template < > DLLEXPORT ElementMatrix < double > &
 ElementMatrix < double >::u(const MeshEntity & ent,
                             const RVector & w,
@@ -56,11 +73,64 @@ ElementMatrix < double >::u(const MeshEntity & ent,
     double A = ent.shape().domainSize();
     // double J = det(ent.shape().createJacobian());
     // __MS(A << " " << J)
-    for (uint i = 0; i < nVerts; i ++){
+    for (Index i = 0; i < nVerts; i ++){
+        // __MS(i << " " << A << " " << it->second[i])
         mat_[0][i] = A * it->second[i];
+        if (this->_nDof > 0){
+            if (ent.dim() == 2){
+                mat_[nVerts].setVal(mat_[0][i], nVerts + i);
+            } 
+            if (ent.dim() == 3){
+                mat_[2*nVerts].setVal(mat_[0][i], 2*nVerts + i);
+            }
+        }
     }
 
     if (verbose) std::cout << "int u " << *this << std::endl;
+    return *this;
+}
+
+template < >
+DLLEXPORT ElementMatrix < double > & ElementMatrix < double >::u2(const MeshEntity & ent,
+                                                        const RVector & w,
+                                                        const R3Vector & x,
+                                                        bool verbose){
+
+    uint nVerts = ent.nodeCount();
+    std::map< uint, RMatrix>::const_iterator it = u2Cache_.find(ent.rtti());
+
+    if (it == u2Cache_.end()) {
+        uint nRules = w.size();
+
+        RMatrix u2(nVerts, nVerts);
+        RMatrix N(nVerts, nRules);
+
+        RVector tmp;
+        for (uint i = 0; i < nRules; i ++){
+            tmp = ent.N(x[i]);
+            N.setCol(i, tmp);
+        }
+        for (uint i = 0; i < nVerts; i ++){
+            for (uint j = i; j < nVerts; j ++){
+                u2[i][j] = sum(w * N[j] * N[i]);
+                u2[j][i] = u2[i][j];
+            }
+        }
+        u2Cache_[ent.rtti()] = u2;
+        it = u2Cache_.find(ent.rtti());
+    }
+
+    double A = ent.shape().domainSize();
+//** very slow yet, pimp this with expressions (matrix::operator = (matExpression &))
+//    mat_ = it->second * A;
+    for (uint i = 0; i < nVerts; i ++){
+        for (uint j = 0; j < nVerts; j ++){
+            mat_[i][j] = A * it->second[i][j];
+        }
+    }
+
+    if (verbose) std::cout << "int u2 " << *this << std::endl;
+
     return *this;
 }
 
@@ -111,49 +181,6 @@ ElementMatrix < double > & ElementMatrix < double >::dudi(
     return *this;
 }
 
-template < >
-DLLEXPORT ElementMatrix < double > & ElementMatrix < double >::u2(const MeshEntity & ent,
-                                                        const RVector & w,
-                                                        const R3Vector & x,
-                                                        bool verbose){
-
-    uint nVerts = ent.nodeCount();
-    std::map< uint, RMatrix>::const_iterator it = u2Cache_.find(ent.rtti());
-
-    if (it == u2Cache_.end()) {
-        uint nRules = w.size();
-
-        RMatrix u2(nVerts, nVerts);
-        RMatrix N(nVerts, nRules);
-
-        RVector tmp;
-        for (uint i = 0; i < nRules; i ++){
-            tmp = ent.N(x[i]);
-            N.setCol(i, tmp);
-        }
-        for (uint i = 0; i < nVerts; i ++){
-            for (uint j = i; j < nVerts; j ++){
-                u2[i][j] = sum(w * N[j] * N[i]);
-                u2[j][i] = u2[i][j];
-            }
-        }
-        u2Cache_[ent.rtti()] = u2;
-        it = u2Cache_.find(ent.rtti());
-    }
-
-    double A = ent.shape().domainSize();
-//** very slow yet, pimp this with expressions (matrix::operator = (matExpression &))
-//    mat_ = it->second * A;
-    for (uint i = 0; i < nVerts; i ++){
-        for (uint j = 0; j < nVerts; j ++){
-            mat_[i][j] = A * it->second[i][j];
-        }
-    }
-
-    if (verbose) std::cout << "int u2 " << *this << std::endl;
-
-    return *this;
-}
 
 template < >
 DLLEXPORT ElementMatrix < double > & ElementMatrix < double >::ux2(const MeshEntity & ent,
@@ -380,8 +407,8 @@ const RVector * &w, const R3Vector * &x, int order){
             break;
     }
 }
-template void ElementMatrix < double >::getWeightsAndPoints(const MeshEntity & ent, const RVector * &w, const R3Vector * &x, int order);
-
+template void ElementMatrix < double >::getWeightsAndPoints(const MeshEntity & ent, 
+                                        const RVector * &w, const R3Vector * &x, int order);
 
 template < > DLLEXPORT
 void ElementMatrix < double >::fillGradientBase(
@@ -392,7 +419,7 @@ void ElementMatrix < double >::fillGradientBase(
                                     bool voigtNotation){
 
     Index nRules = x.size();
-    Index nDof = this->_ids.size();
+    Index nDof = this->mat_.cols();
     Index nVerts = ent.nodeCount();
 
     if (_B.size() != nRules){
@@ -497,6 +524,41 @@ void ElementMatrix < double >::fillGradientBase(
 }
 
 template < > DLLEXPORT
+ElementMatrix < double > & ElementMatrix < double >::gradU(const MeshEntity & ent,
+                                                           const RVector & w,
+                                                           const R3Vector & x,
+                                                           Index nC,
+                                                           bool voigtNotation){
+    this->fillIds(ent, nC); // also cleans
+    this->fillGradientBase(ent, w, x, nC, voigtNotation);
+
+    for (Index i = 0; i < w.size(); i ++ ){
+        for (Index j = 0; j < nC; j ++) {
+            // __MS(*this)
+            // __MS(_B[i])
+            // __MS(_B[i][j])
+            mat_[j * ent.nodeCount()] += _B[i][j] * w[i] * ent.size();
+        }
+        // check performance if this works
+        // iterator over weights in fill Gradient
+        // this *= ent.size();
+    }
+    //mat_ *= ent.size();
+
+    return * this;
+}
+
+template < > DLLEXPORT
+ElementMatrix < double > & ElementMatrix < double >::gradU(const Cell & cell, 
+                                 Index nC,
+                                 bool voigtNotation){
+    const RVector * w = 0;
+    const R3Vector * x = 0;
+    this->getWeightsAndPoints(cell, w, x, 1);
+    return this->gradU(cell, *w, *x, nC, voigtNotation);
+}
+
+template < > DLLEXPORT
 RVector ElementMatrix < double >::stress(const MeshEntity & ent,
                                          const RMatrix & C,
                                          const RVector & u, bool voigtNotation){
@@ -553,6 +615,7 @@ ElementMatrix < double > & ElementMatrix < double >::gradU2(const MeshEntity & e
 
     return * this;
 }
+
 
 template < > DLLEXPORT
 ElementMatrix < double > & ElementMatrix < double >::gradU2(const Cell & cell,
@@ -1057,25 +1120,35 @@ ElementMatrix < double >::ux2uy2uz2(const Cell & cell, bool useCache){
 }
 
 template < class ValueType >
-void ElementMatrix < ValueType >::fillIds(const MeshEntity & ent, Index Crows){
-    if (Crows > ent.dim() && this->_nDof == 0){
-        log(Error, "Assuming vector field approximation but missing dof. Please"
-        " provide degrees of freedom (dof, aka. mesh.nodeCount()) to the"
-        " ElementMatrix constructor. ");
-    }
+void ElementMatrix < ValueType >::fillIds(const MeshEntity & ent, Index nC){
     Index nDims = 1;
+    Index nNodes = ent.nodeCount();
+    
     if (this->_nDof > 0){
         nDims = ent.dim();
-    }
+    
+        if (size() != nNodes * nDims) resize(nNodes * nDims);
 
-    Index nNodes = ent.nodeCount();
-    if (size() != nNodes * nDims) resize(nNodes * nDims);
-
-    for (Index dim = 0; dim < nDims; dim++){
-        for (Index i = 0; i < nNodes; i ++) {
-            _ids[i + dim * nNodes] = dim * this->_nDof + ent.node(i).id();
+        for (Index dim = 0; dim < nDims; dim++){
+            for (Index i = 0; i < nNodes; i ++) {
+                _ids[i + dim * nNodes] = dim * this->_nDof + ent.node(i).id();
+            }
+        }
+    } else {
+        nDims = nC;
+        this->resize(nNodes*nC, nNodes);
+        // mat_.resize(nNodes*nC, nNodes);
+        // _ids.resize(nNodes*nC);
+            
+        for (Index dim = 0; dim < nDims; dim++){
+            for (Index i = 0; i < nNodes; i ++) {
+                _ids[dim * nNodes + i] = ent.node(i).id();
+                _idsC[dim * nNodes + i] = ent.node(i).id();
+                _idsR[i] = ent.node(i).id();
+            }
         }
     }
+
     *this *= 0.0;
 }
 
@@ -1083,11 +1156,12 @@ template void ElementMatrix < double >::fillIds(const MeshEntity & ent, Index Cr
 
 
 void ElementMatrixMap::add(Index row, const ElementMatrix < double > & Ai){
+    __M
     rows_ = max(row + 1, rows_);
-    cols_ = max(max(Ai.idx()) + 1, cols_);
+    cols_ = max(max(Ai.ids()) + 1, cols_);
 
     mat_.push_back(Ai.mat());
-    _ids.push_back(Ai.idx());
+    _ids.push_back(Ai.ids());
     row_.push_back(row);
 }
 

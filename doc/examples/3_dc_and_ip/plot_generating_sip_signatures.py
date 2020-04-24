@@ -41,7 +41,6 @@ ax.set_ylabel(r"$\sigma''$ (S$/$m)")
 for ax in axes.flat:
     ax.xaxis.set_major_locator(mpl.ticker.LogLocator(numticks=5))
 fig.tight_layout()
-pg.plt.show()
 
 ###############################################################################
 # Generate a double Cole-Cole signature
@@ -83,4 +82,3 @@ for ax in axes.flat:
     )
 fig.tight_layout()
 
-pg.plt.show()

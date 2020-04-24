@@ -82,7 +82,7 @@ mesh = mt.createMesh(plc)
 
 ###############################################################################
 # First we want to simulate our ERT response for a homogeneous resistivity
-# of 1 :math:`\Omega`m. Usually, simulate will calculate apparent resistvities
+# of 1 :math:`\Omega`m. Usually, simulate will calculate apparent resistivities
 # (rhoa) and put them into the returned DataContainerERT.
 # However, for the calculation of rhoa, geometric factors (k) are expected in
 # the data container.
@@ -152,6 +152,7 @@ np.testing.assert_approx_equal(het('rhoa')[0], 9.95, 2)
 
 # np.testing.assert_approx_equal(het('k')[0], 0.820615269548)
 
+pg.wait()
 
 ###############################################################################
 # For such kind of simulations, the homogeneous part should be high accurate

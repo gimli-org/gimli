@@ -5,17 +5,22 @@ pyGIMLi - An open-source library for modelling and inversion in geophysics
 import locale
 import sys
 
+
 ### Import everything that should be accessible through main namespace.
 from .core import (BVector, CVector, DataContainer, DataContainerERT,
                    Inversion, IVector, Line, Matrix, Mesh, Plane, Pos,
                    RVector3, Vector, abs, cat, center, dur, exp, find,
                    interpolate, log, log10, logDropTol, math, matrix, max,
                    mean, median, min, search, setDebug, setThreadCount, sort,
-                   sum, tic, toc, trans, unique, versionStr, x, y, z, zero)
+                   Stopwatch, sum, tic, toc, trans, unique, versionStr, x, y, z, zero)
 
 from .core.logger import (_, _d, _g, _r, _y, critical, d, debug, deprecated,
                           error, info, setDebug, setLogLevel, setVerbose, v,
                           verbose, warn)
+
+warning = warn # convenience
+
+from .core.config import getConfigPath, rc, getCPUCount
 
 from .meshtools import createGrid, interpolate
 from .solver import solve
@@ -23,9 +28,10 @@ from .testing import test
 from .utils import boxprint, cache, cut, unique, unit, cmap
 from .utils import prettify as pf
 from .viewer import plt, show, wait
+from .frameworks import fit
 
-from .core.load import getCachePath, getExampleFile, load, optImport
-from .core.config import getConfigPath, rc, getCPUCount
+from .core.load import getCachePath, getExampleFile
+from .core.load import load, optImport
 
 def checkAndFixLocaleDecimal_point(verbose=False):
     """
@@ -152,3 +158,4 @@ def version(cache=True):
     else:
         info('Version: ' + __version__ + " core:" + versionStr())
     return __version__
+

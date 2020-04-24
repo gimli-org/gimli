@@ -178,7 +178,9 @@ def prettyFloat(value, roundValue=False):
         add flag for round to
         add test
     """
-    if roundValue and abs(round(value)-value) < 1e-4 and abs(value) < 1e3:
+    ## test-cases:
+    # if change things her, look that they are still good (mod-dc-2d)
+    if roundValue and abs(round(value)-value) < 1e-4 and abs(value) < 1e3 and 0:
         string = str(int(round(value, 2)))
     elif abs(value) < 1e-14:
         string = "0"

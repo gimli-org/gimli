@@ -38,9 +38,12 @@ public:
     inline const Vector< ValueType > & operator[](Index row) const {
         return mat_[row]; }
 
-    void resize(uint newSize) {
-        _ids.resize(newSize);
-        mat_.resize(newSize, newSize);
+    void resize(Index rows, Index cols=0) {
+        if (cols == 0) cols = rows;
+        _idsR.resize(rows);
+        _idsC.resize(cols);
+        _ids.resize(rows);
+        mat_.resize(rows, cols);
     }
 
     ElementMatrix < ValueType > & operator += (const ElementMatrix < ValueType > & E){
@@ -62,8 +65,15 @@ public:
     #undef DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__
 
     inline Index size() const { return mat_.rows(); }
+    inline Index rows() const { return mat_.rows(); }
+    inline Index cols() const { return mat_.cols(); }
+
     inline const ValueType & getVal(Index i, Index j) const {
         return mat_[i][j]; }
+    inline void setVal(Index i, Index j, const ValueType & v) {
+        mat_[i][j] = v; }
+    inline void addVal(Index i, Index j, const ValueType & v) {
+        mat_[i][j] += v; }
 
     /*! Set data matrix. */
     inline void setMat(const Matrix < ValueType > & m) { mat_ = m; }
@@ -71,21 +81,31 @@ public:
     inline const Matrix < ValueType > & mat() const { return mat_; }
     /*! Return data for row i. */
     inline const Vector < ValueType > & row(Index i) const { return mat_[i]; }
-
-    /*!DEPRECATED we will remove this 191120*/
-    inline const IndexArray & idx() const { return _ids; }
-
-    /*! Fill the node ids.
-    For vector field approximation give field dimension 2 or 3. Please note that you need to give the number of nodes to the ElementMatrix constructior.
+    
+    /*! Fill the node ids with a number of coefficents.
+    For vector field approximation give field dimension 2 or 3. 
+    Please note that you need to give the number of nodes to the ElementMatrix constructor.
     */
-    void fillIds(const MeshEntity & ent, Index dims=1);
+    void fillIds(const MeshEntity & ent, Index nC=1);
+
+    /*! Set all node indices for row and columns. Can be unsymmetric.*/
+    inline void setIds(const IndexArray & idsR, const IndexArray & idsC) { 
+        _idsR = idsR; _idsC = idsC; _ids = idsR;
+    }
 
     /*! Set all node indices.*/
-    inline void setIds(const IndexArray & ids) { _ids = ids; }
+    inline void setIds(const IndexArray & ids) { 
+        _idsR = ids; _idsC = ids; _ids = ids; 
+    }
     /*! Return all node indices.*/
     inline const IndexArray & ids() const { return _ids; }
+    /*! Return all row node indices.*/
+    inline const IndexArray & rowIDs() const { return _idsR; }
+    /*! Return all column node indices.*/
+    inline const IndexArray & colIDs() const { return _idsC; }
     /*! Return the node index for node i.*/
-    inline const Index idx(Index i) const { return _ids[i]; }
+    inline const Index idx(Index i) const { 
+        return _ids[i]; }
 
     /*! Fill this element matrix with int_boundary C * u */
     ElementMatrix < ValueType > & u(const MeshEntity & ent
@@ -96,6 +116,7 @@ public:
     ElementMatrix < ValueType > & u2(const MeshEntity & ent
                                     //  const Matrix< ValueType > & C
                                      );
+    
     /*! Get integration weights and points for the entity. */
     void getWeightsAndPoints(const MeshEntity & ent,
                 const RVector * &w, const R3Vector * &x, int order);
@@ -115,6 +136,19 @@ public:
                           const R3Vector & x,
                           Index nC,
                           bool voigtNotation);
+
+    /*! Fill this element matrix with int_domain C * grad u*/
+    ElementMatrix < ValueType > & gradU(const Cell & cell,
+                                        Index nC,
+                                        bool voigtNotation=false);
+
+    /*! Fill this element matrix with int_domain C * grad u * grad u. */
+    ElementMatrix < ValueType > & gradU(const MeshEntity & ent,
+                                        const RVector & w,
+                                        const R3Vector & x,
+                                        Index nC,
+                                        bool voigtNotation=false);
+
 
     /*! Fill this element matrix with int_domain C * grad u * grad u.
     For scalar field approximation define C.size() = (1x1) isotropic or anisotropic
@@ -245,13 +279,10 @@ public:
 
 
 protected:
-    //RMatrix mat_;
     Matrix < ValueType > mat_;
     IndexArray _ids;
-
-    RMatrix functx_;
-    RMatrix functy_;
-    RMatrix functz_;
+    IndexArray _idsC;
+    IndexArray _idsR;
 
     std::map< uint, RVector > uCache_;
     std::map< uint, Matrix < ValueType > > u2Cache_;
@@ -259,7 +290,10 @@ protected:
     std::vector< Matrix < ValueType > > _B;
     Matrix < ValueType > _grad;
 
+    // number of single dof
     Index _nDof;
+    // number of coefficients: 1, 2, 3 for scalar(dim), 1, 3, 6 for vector(dim)
+    // Index _nC;
 
     RMatrix dNdr_;
     RMatrix dNds_;
@@ -291,7 +325,6 @@ private:
 //             _ids = E.idx();
         } return *this;
     }
-
 };
 
 class DLLEXPORT ElementMatrixMap {
@@ -320,19 +353,11 @@ protected:
     Index cols_;
 };
 
-template < class ValueType > std::ostream & operator << (std::ostream & str, const ElementMatrix< ValueType > & e){
-    for (uint i = 0; i < e.idx().size(); i ++) str << e.idx(i) << " " ;
+template < class ValueType > std::ostream & operator << (std::ostream & str, 
+                                                         const ElementMatrix< ValueType > & e);
 
-    str << std::endl;
-    for (uint i = 0; i < e.size(); i ++){
-        str << e.idx(i) << "\t: ";
-        for (uint j = 0; j < e.size(); j ++){
-            str << e.getVal(i , j) << " ";
-        }
-        str << std::endl;
-    }
-    return str;
-}
+template < > DLLEXPORT std::ostream & operator << (std::ostream & str, 
+                                                    const ElementMatrix< double > & e);
 
 
 } // namespace GIMLI{

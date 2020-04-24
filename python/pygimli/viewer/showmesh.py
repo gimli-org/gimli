@@ -303,12 +303,19 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
             try:
                 if len(data) == mesh.cellCount():
                     kwargs['nCols'] = kwargs.pop('nCols', 256)
+                    if label is None:
+                        label = ""
 
                     gci = drawModel(ax, mesh, data, **kwargs)
                     if showBoundary is None:
                         showBoundary = True
 
                 elif len(data) == mesh.nodeCount():
+                    kwargs['nLevs'] = kwargs.pop('nLevs', 5)
+                    kwargs['nCols'] = kwargs.pop('nCols', kwargs['nLevs']-1)
+                    if label is None:
+                        label = ""
+                        
                     gci = drawField(ax, mesh, data, **kwargs)
                 else:
                     pg.error("Data size invalid")

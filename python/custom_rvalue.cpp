@@ -488,23 +488,40 @@ struct Numpy2RMatrix{
         PyArrayObject *arr = (PyArrayObject *)obj;
 
         if (PyArray_TYPE(arr) == 12) {
-            __DC("type=" << PyArray_TYPE(arr) << " " << PyArray_ISONESEGMENT(arr))
+            __DC("\ttype=" << PyArray_TYPE(arr) 
+                << " ISONESEGMENT:" << PyArray_ISONESEGMENT(arr)
+                << " IS_C_CONTIGUOUS:" << PyArray_IS_C_CONTIGUOUS(arr)
+                << " IS_F_CONTIGUOUS:" << PyArray_IS_F_CONTIGUOUS(arr)
+                )
             int nDim = PyArray_NDIM(arr);
             if (nDim != 2){
                 __DC("nDim=" << nDim)
                 GIMLI::throwToImplement("Only numpy.ndarray with ndim == 2 can be converted to GIMLI::RMatrix");
             }
-            int rows = PyArray_DIM(arr, 0);
-            int cols = PyArray_DIM(arr, 1);
-            GIMLI::Matrix < double > *mat = new (memory_chunk) GIMLI::Matrix < double >(rows, cols);
+            GIMLI::Index rows = PyArray_DIM(arr, 0);
+            GIMLI::Index cols = PyArray_DIM(arr, 1);
+            GIMLI::Matrix < double > *mat = new (memory_chunk) 
+                                        GIMLI::Matrix < double >(rows, cols);
             data->convertible = memory_chunk;
+            __DC("rows=" << rows << " cols=" << cols)
 
             if (PyArray_ISONESEGMENT(arr)){
                 double * arrData = (double*)PyArray_DATA(arr);
-                for (GIMLI::Index i = 0; i < mat->rows(); i ++ ){
-                    std::memcpy(&(*mat)[i][0],
-                                arrData + (i * mat->cols()),
-                                mat->cols() * sizeof(double));
+                if (PyArray_IS_C_CONTIGUOUS(arr)){
+                    for (GIMLI::Index i = 0; i < mat->rows(); i ++ ){
+                        std::memcpy(&(*mat)[i][0],
+                                    arrData + (i * mat->cols()),
+                                    mat->cols() * sizeof(double));
+                    }
+                } else {
+                    // assume Fortran like column orientated mem 
+                    // slow elementwise copy needed until someone knows 
+                    // a better way
+                    for (GIMLI::Index i = 0; i < cols; i ++ ){
+                        for (GIMLI::Index j = 0; j < rows; j ++ ){
+                            mat->setVal(j, i, (double)arrData[j + i*rows]);
+                        }
+                    }
                 }
             } else {
                 GIMLI::throwToImplement("numpy.ndarray is not one segment .. not yet implemented.");

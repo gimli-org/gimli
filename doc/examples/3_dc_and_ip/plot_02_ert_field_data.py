@@ -17,43 +17,52 @@ import pygimli as pg
 import pygimli.meshtools as mt
 from pygimli.physics.ert import ERTManager, createGeometricFactors
 
-##############################################################################
+###############################################################################
 # Get some example data with topogrpahy
+#
 data = pg.getExampleFile('ert/slagdump.ohm', load=True, verbose=True)
+print(data)
 
-##############################################################################
-# Initialize the ERTManager
+###############################################################################
+# The data file does not contain geometric factors (token field 'k'), 
+# so we create them for the given topography. 
+data['k'] = createGeometricFactors(data, topo=True)
+
+###############################################################################
+# We initialize the ERTManager for further steps and eventually inversion.
 ert = ERTManager(sr=False, useBert=True, verbose=True, debug=False)
 
-##############################################################################
-# We need a mesh for every inversion
-mesh = mt.createParaMesh(data.sensors(),
-                         paraDX=0.3, paraMaxCellSize=10, paraDepth=20,
-                         quality=33.6)
-
-##############################################################################
-# The data file does not contain geometric factors, so create them for the given
-# topography and show the topography effect
-kTopo = createGeometricFactors(data, mesh)
+###############################################################################
+# It might be interesting to see the topography effect.
 k0 = createGeometricFactors(data)
+ert.showData(data, vals=k0/data['k'], label='Topography effect')
 
-ert.showData(data, vals=k0/kTopo, label='Topography effect')
+###############################################################################
+# The data container have no apparent resistivities (token field 'rhoa')
+# We can let the Manager fix this later for us (as we now have the 'k' field), 
+# or we to it now manual
+ert.checkData(data)
+print(data)
 
-data['k'] = kTopo
-##############################################################################
-# data have no rhoa .. let the manager fix this (will be done automatic)
-# ert.dataCheck(data)
+###############################################################################
+# The data container also have no mandatory data errors (token field 'err') 
+# We can let the manager guess some defaults for us automatic or set them 
+# manual 
+data['err'] = ert.estimateError(data, absoluteError=0.001, relativeError=0.03)
 
-##############################################################################
-# data have no err .. let the manager guess some (will be done automatic)
-# data['err'] = ert.estimateError(data, absoluteError=0.001, relativeError=0.03)
+###############################################################################
+# Now the data have all necessary fields ('rhoa', 'err' and 'k') so we can run
+# the inversion. The inversion mesh will be created with some optional values
+# for the parametric mesh generation.
+#
+mod = ert.invert(data, lam=10, 
+                 paraDX=0.3, paraMaxCellSize=10, paraDepth=20, quality=33.6)
 
-mod = ert.invert(data, mesh=mesh, maxIter=20, lam=10)
+###############################################################################
+# We can view the resulting model in the usual way.
 ert.showResultAndFit()
 np.testing.assert_approx_equal(ert.inv.chi2(), 1.10883, significant=3)
 
 ###############################################################################
-# Plot model only
-
+# Or just plot the model only.
 ert.showModel(mod)
-pg.wait()

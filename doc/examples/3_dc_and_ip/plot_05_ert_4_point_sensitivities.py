@@ -101,7 +101,5 @@ for i, sens in enumerate(fop.jacobian()):
     # Log-scaled and normalized sensitvity
     normsens = pg.utils.logDropTol(sens/mesh.cellSizes(), 8e-4)
     normsens /= np.max(normsens)
-    pg.show(mesh, normsens, cmap="RdGy_r", ax=ax[i], orientation="vertical",
+    pg.show(mesh, normsens, cMap="RdGy_r", ax=ax[i], orientation="vertical",
             label="Normalized\nsensitivity", nLevs=3, cMin=-1, cMax=1)
-
-pg.wait()

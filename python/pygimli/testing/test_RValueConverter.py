@@ -172,6 +172,17 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(sum(A[2]), sum(M[2]))
         self.assertEqual(sum(A[3]), sum(M[3]))
 
+        M = np.zeros((6,2), dtype=float)
+        M[0:3,0] = 1
+        M[3:,1] = 1
+        A = pg.Matrix(M)
+        self.assertEqual(A.col(0), M[:,0])
+        self.assertEqual(A.col(1), M[:,1])
+
+        A = pg.Matrix(M.T)
+        self.assertEqual(A.row(0), M[:,0])
+        self.assertEqual(A.row(1), M[:,1])
+
     def test_NumpyToRVector3(self):
         """Implemented in custom_rvalue.cpp."""
         x = np.array([0.0, 1.0, 0.0])

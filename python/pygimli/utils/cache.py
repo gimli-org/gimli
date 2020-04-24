@@ -83,10 +83,11 @@ class Cache(object):
             v.save(self._name, format=pg.core.Binary)
         elif self.info['type'] == 'ndarray':
             pg.info('Save ndarray')
-            np.save(self._name, v)
+            np.save(self._name, v, allow_pickle=True)
         else:
-            pg.warn('ascii save of type', self.info['type'], 'might by dangerous')
-            v.save(self._name)
+            np.save(self._name, v, allow_pickle=True)
+            # pg.warn('ascii save of type', self.info['type'], 'might by dangerous')
+            # v.save(self._name)
 
         self._value = v
         pg.info('Cache stored:', self._name)
@@ -114,7 +115,7 @@ class Cache(object):
                 if self.info['type'] == 'DataContainerERT':
                     self._value = pg.DataContainerERT(self.info['file'],
                                                       removeInvalid=False)
-                    print(self._value)
+                    # print(self._value)
                 elif self.info['type'] == 'RVector':
                     self._value = pg.Vector()
                     self._value.load(self.info['file'], format=pg.core.Binary)
@@ -124,16 +125,21 @@ class Cache(object):
                     self._value.loadBinaryV2(self.info['file'] + '.bms')
                     pg.debug("Restoring cache took:", pg.dur(), "s")
                 elif self.info['type'] == 'ndarray':
-                    self._value = np.load(self.info['file'] + '.npy')
+                    self._value = np.load(self.info['file'] + '.npy', 
+                                          allow_pickle=True)
+                else:
+                    self._value = np.load(self.info['file'] + '.npy', 
+                                          allow_pickle=True)
 
                 if self.value is not None:
-                    self.info['restored'] = self.info['restored'] + 1
+                    self.info['restored'] = self.info['restored'] + 1           
                     self.updateCacheInfo()
                     pg.info('Cache {3} restored ({1}s x {0}): {2}'.\
                         format(self.info['restored'],
                                round(self.info['dur'], 1),
                                self._name, self.info['codeinfo']))
                 else:
+                    # default try numpy 
                     pg.warn('Could not restore cache of type {0}.'.format(self.info['type']))
 
                 pg.debug("Restoring cache took:", pg.dur(), "s")

@@ -117,6 +117,55 @@ void SparseMapMatrix< double, Index >::copy_(const SparseMatrix< double > & S){
     }
 }
 
+template <> void SparseMapMatrix< double, Index >::
+    add(const ElementMatrix < double > & A, double scale){
+    double tol = 1e-15;
+    for (Index i = 0, imax = A.rows(); i < imax; i++){
+        for (Index j = 0, jmax = A.mat().cols(); j < jmax; j++){
+            double v = A.getVal(i, j);
+            if (::fabs(v) > tol){
+                (*this)[A.rowIDs()[i]][A.colIDs()[j]] += A.getVal(i, j) * scale;
+            }
+        }
+    }
+}
+template <> void SparseMapMatrix< double, Index >::
+    addToCol(Index id, const ElementMatrix < double > & A, double scale, bool isDiag){
+        THROW_TO_IMPL
+    for (Index i = 0, imax = A.size(); i < imax; i++){
+            if (isDiag){
+                (*this)[A.idx(i)][id] += A.getVal(i, i);
+            } else {
+                (*this)[A.idx(i)][id] += A.getVal(0, i);
+            }
+    }
+}
+
+template <> void SparseMapMatrix< double, Index >::
+    addToRow(Index id, const ElementMatrix < double > & A, double scale, bool isDiag){
+    THROW_TO_IMPL
+    for (Index i = 0, imax = A.size(); i < imax; i++){
+            if (isDiag){
+                (*this)[id][A.idx(i)] += A.getVal(i, i);
+            } else {
+                (*this)[id][A.idx(i)] += A.getVal(0, i);
+            }
+        }
+}
+
+template <> void SparseMapMatrix< Complex, Index >::
+    add(const ElementMatrix < Complex > & A, Complex scale){
+THROW_TO_IMPL
+}
+template <> void SparseMapMatrix< Complex, Index >::
+    addToCol(Index id, const ElementMatrix < Complex > & A, Complex scale, bool isDiag){
+THROW_TO_IMPL
+}
+template <> void SparseMapMatrix< Complex, Index >::
+    addToRow(Index id, const ElementMatrix < Complex > & A, Complex scale, bool isDiag){
+THROW_TO_IMPL
+}
+
 
 } // namespace GIMLI{
 

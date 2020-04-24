@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 """Matplotlib drawing functions used by `pygimli.viewer`."""
 
+import pygimli as pg
+import matplotlib
+
 # are the following suitable for a drawing package?
 from .utils import (hold,
                     wait,
@@ -108,6 +111,7 @@ __all__ = [
 #checkAndFixLocaleDecimal_point(verbose=True)
 
 
-def createColorbar(*args, **kwargs):
-    print("createColorbar is DEPRECATED .. please use createColorBar instead.")
-    return createColorBar(*args, **kwargs)
+# Set global hold if mpl inline backend is used (as in Jupyter Notebooks)
+if 'inline' in matplotlib.get_backend():
+    hold(1)
+

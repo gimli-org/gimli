@@ -58,7 +58,6 @@ def fit(funct, data, err=None, **kwargs):
     >>> _ = pg.plt.plot(t, data, 'o', label='data')
     >>> _ = pg.plt.plot(t, response, label='response')
     >>> _ = pg.plt.legend()
-    >>> pg.wait()
     """
     mgr = ParameterInversionManager(funct, **kwargs)
     model = mgr.invert(data, err, **kwargs)
@@ -103,15 +102,19 @@ class MethodManager(object):
         overwriting
         :py:mod:`pygimli.manager.MethodManager.initInversionFramework`
     """
-    def __init__(self, fop=None, fw=None, **kwargs):
+    def __init__(self, fop=None, fw=None, data=None, **kwargs):
         """Constructor."""
         self._fop = fop
         self._fw = fw
         # we hold our own copy of the data
-        self._data = None
-
         self._verbose = kwargs.pop('verbose', False)
         self._debug = kwargs.pop('debug', False)
+
+        if data is not None:
+            if isinstance(data, str):
+                self.load(data)
+            else:
+                self.data = data        
 
         # The inversion framework
         self._initInversionFramework(verbose=self._verbose,
@@ -161,14 +164,6 @@ class MethodManager(object):
     @property
     def model(self):
         return self.fw.model
-
-    @property
-    def data(self):
-        self._data
-    @data.setter
-    def data(self, d):
-        self._data = d
-
 
     def reinitForwardOperator(self, **kwargs):
         """Reinitialize the forward operator.
@@ -253,6 +248,10 @@ class MethodManager(object):
         else:
             return self._fw
 
+    def load(self, fileName):
+        """API, overwrite in derived classes."""
+        pg.critical('API, overwrite in derived classes', fileName)
+
     def estimateError(self, data, errLevel=0.01, absError=None):
         """Estimate data error.
 
@@ -297,7 +296,7 @@ class MethodManager(object):
 
         return ra
 
-    def dataCheck(self, data):
+    def checkData(self, data):
         """Overwrite for special checks to return data values"""
         # if self._dataToken == 'nan':
         #     pg.critical('self._dataToken nan, should be set in class', self)
@@ -309,7 +308,7 @@ class MethodManager(object):
         if data is None:
             data = self.fw.dataVals
 
-        vals = self.dataCheck(data)
+        vals = self.checkData(data)
 
         if vals is None:
             pg.critical("There are no data values.")
@@ -320,7 +319,7 @@ class MethodManager(object):
 
         return vals
 
-    def errorCheck(self, err, dataVals=None):
+    def checkError(self, err, dataVals=None):
         """Return relative error. Default we assume 'err' are relative values.
         Overwrite is derived class if needed. """
         if isinstance(err, pg.DataContainer):
@@ -336,7 +335,7 @@ class MethodManager(object):
         if err is None:
             err = self.fw.errorVals
 
-        vals = self.errorCheck(err, dataVals)
+        vals = self.checkError(err, dataVals)
 
         if vals is None:
             pg.warn('No data array given, set Fallback set to 1%')
@@ -620,6 +619,10 @@ class MeshMethodManager(MethodManager):
         """Constructor."""
         super(MeshMethodManager, self).__init__(**kwargs)
 
+    @property
+    def paraDomain(self):
+        return self.fop.paraDomain
+
     def paraModel(self, model=None):
         """Give the model parameter regarding the parameter mesh."""
         if model is None:
@@ -630,14 +633,20 @@ class MeshMethodManager(MethodManager):
         else:
             self.fop.paraModel(model)
 
-    def setMesh(self, mesh, ignoreRegionManager=False, **kwargs):
+    def createMesh(self, data=None, **kwargs):
+        """API, implement in derived classes."""
+        pg.critical('no default mesh generation defined .. implement in '
+                    'derived class')
+
+
+    def applyMesh(self, mesh, ignoreRegionManager=False, **kwargs):
         """ """
         if ignoreRegionManager:
             mesh = self.fop.createRefinedFwdMesh(mesh, **kwargs)
 
         self.fop.setMesh(mesh, ignoreRegionManager=ignoreRegionManager)
 
-    def setData(self, data):
+    def applyData(self, data):
         """ """
         if isinstance(data, pg.DataContainer):
             self.fop.data = data
@@ -670,11 +679,17 @@ class MeshMethodManager(MethodManager):
             Model mapped for match the paraDomain Cell markers.
             The calculated model is in self.fw.model.
         """
-        if data is not None:
-            self.setData(data)
+        if data is None:
+            data = self.data
+        
+        if data is None:
+            pg.critical('No data given for inversion')
 
-        if mesh is not None:
-            self.setMesh(mesh)
+        if mesh is None:
+            mesh = self.createMesh(data, **kwargs)
+        
+        self.applyData(data)
+        self.applyMesh(mesh)
 
         self.fop._refineP2 = kwargs.pop('refineP2', False)
 
@@ -781,8 +796,8 @@ class PetroInversionManager(MeshMethodManager):
 
             if fop is None and mgr is not None:
                 fop = mgr.fw.fop
-                self.dataCheck = mgr.dataCheck
-                self.errorCheck = mgr.errorCheck
+                self.checkData = mgr.checkData
+                self.checkError = mgr.checkError
 
             if fop is not None:
                 if not isinstance(fop, pg.frameworks.PetroModelling):

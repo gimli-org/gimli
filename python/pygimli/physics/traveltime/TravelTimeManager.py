@@ -130,11 +130,30 @@ class TravelTimeManager(MeshMethodManager):
     e.g., self.inv, self.fop, self.paraDomain, self.mesh, self.data
     """
 
-    def __init__(self, **kwargs):
-        """Init function with optional data load"""
+    def __init__(self, data=None, **kwargs):
+        """Create an instance of the Traveltime manager.
+
+        Parameters
+        ----------
+        data: :gimliapi:`GIMLI::DataContainer` | str
+            You can initialize the Manager with data or give them a dataset 
+            when calling the inversion.
+
+        Other Parameters
+        ----------------
+        * useBert: bool [True]
+            Use Bert forward operator instead of the reference implementation.
+        * sr: bool [True]
+            Calculate with singularity removal technique.
+            Recommended but needs the primary potential.
+            For flat earth cases the primary potential will be calculated
+            analytical. For domains with topography the primary potential
+            will be calculated numerical using a p2 refined mesh or
+            you provide primary potentials with setPrimPot.
+        """
         self._useFMM = False
 
-        super(TravelTimeManager, self).__init__(**kwargs)
+        super(TravelTimeManager, self).__init__(data=data, **kwargs)
 
         self.inv.dataTrans = pg.trans.Trans()
 
@@ -147,7 +166,14 @@ class TravelTimeManager(MeshMethodManager):
         fop = TravelTimeDijkstraModelling(**kwargs)
         return fop
 
-    def dataCheck(self, data):
+    def load(self, fileName):
+        self.data = pg.physics.traveltime.load(fileName)
+        return self.data
+
+    def createDefaultMesh(self, data=None, **kwargs):
+        implementme
+
+    def checkData(self, data):
         """Return data from container"""
         if isinstance(data, pg.DataContainer):
             if not data.haveData('t'):
@@ -156,7 +182,7 @@ class TravelTimeManager(MeshMethodManager):
 
         return data
 
-    def errorCheck(self, err, dataVals):
+    def checkError(self, err, dataVals):
         """Return relative error"""
         if isinstance(err, pg.DataContainer):
             if not err.haveData('err'):

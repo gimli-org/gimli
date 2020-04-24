@@ -169,7 +169,8 @@ def __BlockMatrix_addMatrix_happy_GC__(self, M, row=None, col=None,
                                        scale=1.0, transpose=False):
     """Add an existing matrix to this block matrix and return a unique index.
 
-    As long row and col are None, the Matrix will not be used until a matrix entry is has been added.
+    As long row and col are None, the Matrix will not be used until a matrix 
+    entry is has been added.
 
     Monkeypatched version to increase the reference counter of M to keep the
     garbage collector happy.

@@ -1836,7 +1836,7 @@ def _feNorm(u, mat):
     Create the Finite Element Norm with a preassembled system matrix.
     """
     return np.sqrt(pg.math.dot(u, mat.mult(u)))
-
+    
 
 def normL2(u, mat=None, mesh=None):
     r"""Create Lebesgue (L2) norm for finite element space.
@@ -1882,6 +1882,9 @@ def normL2(u, mat=None, mesh=None):
         mat = createMassMatrix(mesh)
 
     if mat is None:
+        pg.warning("No Stiffness matrix or a mesh here, to calculate L2-Norm. "
+                   "Returning algebraic l2.")
+        
         # M is Identity matrix
         return np.sqrt(pg.math.dot(u, u))
 
@@ -2028,6 +2031,8 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
         pureNeumann: bool [auto]
             If set or detected automatic, we add the additional condition:
             :math:`\int_domain u dv = 0` which makes elliptic problems well posed again.
+        rhs: iterable
+            Pre assembled rhs. Will preferred on any f settings.
         ws: dict
             The WorkSpace is a dictionary that will get
             some temporary data during the calculation.
@@ -2075,7 +2080,7 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
     dof = mesh.nodeCount()
 
     ## check if force vector is a vector
-    rhs = createLoadVector(mesh, f, userData=userData)
+    rhs = kwargs.pop('rhs', createLoadVector(mesh, f, userData=userData))
 
     if len(rhs) > dof or _bcIsForVectorValues(bc, mesh):
         if verbose:

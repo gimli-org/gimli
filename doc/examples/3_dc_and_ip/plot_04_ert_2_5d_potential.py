@@ -16,9 +16,9 @@ Geoelectrical modelling example in 2.5D. CR
 #     \nabla\cdot(\sigma\nabla u)=-I\delta(\vec{r}-\vec{r}_{\text{s}}) \in R^3
 #
 # The source term is 3 dimensional but the distribution of the electrical
-# conductivity :math:`\sigma(x,y)` should by 2 dimensional so we need a
+# conductivity :math:`\sigma(x,y)` should be 2D so we apply a
 # Fourier-Cosine-Transform from :math:`u(x,y,z) \mapsto u(x,k,z)` with the
-# wave number :math:`k`. :math:`D^{(a)}(u(x,y,z)) \mapsto i^{|a|}k^a u(x,z)`
+# wave number :math:`k`. (:math:`D^{(a)}(u(x,y,z)) \mapsto i^{|a|}k^a u(x,z)`)
 #
 # .. math::
 #     \nabla\cdot( \sigma \nabla u ) - \sigma k^2 u
@@ -27,19 +27,21 @@ Geoelectrical modelling example in 2.5D. CR
 #     \frac{\partial }{\partial z}\left(\cdot\sigma \frac{\partial u}{\partial z}\right) -
 #     \sigma k^2 u & =
 #     -I\delta(x-x_{\text{s}})\delta(z-z_{\text{s}}) \in R^2 \\
-#     \frac{\partial u}{\partial \vec{n}} & = 0 \quad\mathrm{on}\quad\text{Surface}\quad z=0
+#     \frac{\partial u}{\partial \vec{n}} & = 0 \quad\mathrm{on}\quad\text{Surface}\quad z=0 \\
+#     \frac{\partial u}{\partial \vec{n}} & = a u \quad\mathrm{on}\quad\text{Subsurface}\quad z<0
 #
 
+import matplotlib
 import numpy as np
 import pygimli as pg
-
-from pygimli.solver import solve
 
 from pygimli.viewer import show
 from pygimli.viewer.mpl import drawStreams
 
-
-def uAnalytical(p, sourcePos, k):
+###############################################################################
+# We know the exact solution:
+#
+def uAnalytical(p, sourcePos, k, sigma=1):
     """Calculates the analytical solution for the 2.5D geoelectrical problem.
 
     Solves the 2.5D geoelectrical problem for one wave number k.
@@ -64,20 +66,24 @@ def uAnalytical(p, sourcePos, k):
     """
     r1A = (p - sourcePos).abs()
     # Mirror on surface at depth=0
-    r2A = (p - pg.RVector3(1.0, -1.0, 1.0) * sourcePos).abs()
+    r2A = (p - pg.Pos([1.0, -1.0])*sourcePos).abs()
 
     if r1A > 1e-12 and r2A > 1e-12:
-        return (pg.math.besselK0(r1A * k) + pg.math.besselK0(r2A * k)) / (2.0 * np.pi)
+        return  1 / (2.0 * np.pi) * 1/sigma * \
+            (pg.math.besselK0(r1A * k) + pg.math.besselK0(r2A * k))
     else:
         return 0.
 
-
+###############################################################################
+# We assume the so called mixed boundary conditions.
+#
 def mixedBC(boundary, userData):
     """Mixed boundary conditions.
 
     Define the derivative of the analytical solution regarding the outer normal
     direction :math:`\vec{n}`. So we can define the values for Robin type
-    boundary conditions :math:`\frac{\partial u}{\partial \vec{n}} = -au` for the boundaries on the subsurface.
+    boundary conditions :math:`\frac{\partial u}{\partial \vec{n}} = -au` 
+    for the boundaries on the subsurface.
 
     """
     ### ignore surface boundaries for wildcard boundary condition
@@ -86,6 +92,7 @@ def mixedBC(boundary, userData):
 
     sourcePos = userData['sourcePos']
     k = userData['k']
+    sigma = userData['s']
     r1 = boundary.center() - sourcePos
 
     # Mirror on surface at depth=0
@@ -95,17 +102,18 @@ def mixedBC(boundary, userData):
 
     n = boundary.norm()
     if r1A > 1e-12 and r2A > 1e-12:
-        return k * ((r1.dot(n)) / r1A * pg.math.besselK1(r1A * k) +
-                    (r2.dot(n)) / r2A * pg.math.besselK1(r2A * k)) / \
+        return sigma * k * ((r1.dot(n)) / r1A * pg.math.besselK1(r1A * k) +
+                            (r2.dot(n)) / r2A * pg.math.besselK1(r2A * k)) / \
             (pg.math.besselK0(r1A * k) + pg.math.besselK0(r2A * k))
+            
     else:
         return 0.
 
-
 ###############################################################################
+# We assemble the right hand side (rhs) for the singular current term ourself 
+# since this cannot be yet done efficiently by pg.solve.
 #
-#
-def pointSource(mesh, source):
+def rhsPointSource(mesh, source):
     """Define function for the current source term.
 
     :math:`\delta(x-pos), \int f(x) \delta(x-pos)=f(pos)=N(pos)`
@@ -117,39 +125,34 @@ def pointSource(mesh, source):
     rhs.setVal(cell.N(cell.shape().rst(source)), cell.ids())
     return rhs
 
-grid = pg.createGrid(x=np.linspace(-10.0, 10.0, 41),
+###############################################################################
+# No lets create a suitabel mesh and solve the equation with pg.solve
+#
+mesh = pg.createGrid(x=np.linspace(-10.0, 10.0, 41),
                      y=np.linspace(-15.0,  0.0, 31))
+mesh = mesh.createP2()
 
-grid = grid.createP2()
+sourcePosA = [-5.25, -3.75]
+sourcePosB = [+5.25, -3.75]
 
-sourcePosA = [-5.0, -4.0]
-sourcePosB = [+5.0, -4.0]
+k = 1e-2
+sigma = 1.0
+bc={'Robin': {'1,2,4': mixedBC}}
+u = pg.solve(mesh, a=sigma, b=-sigma * k*k, 
+             rhs=rhsPointSource(mesh, sourcePosA),
+             bc=bc, userData={'sourcePos': sourcePosA, 'k': k, 's':sigma},
+             verbose=True)
 
-k = 1e-3
-sigma = 1
-u = solve(grid, a=sigma, b=-sigma * k*k, f=pointSource(grid, sourcePosA),
-          bc={'Robin': {'1,2,4': mixedBC}},
-          userData={'sourcePos': sourcePosA, 'k': k},
-          verbose=True)
+u -= pg.solve(mesh, a=sigma, b=-sigma * k*k, 
+              rhs=rhsPointSource(mesh, sourcePosB), 
+              bc=bc, userData={'sourcePos': sourcePosB, 'k': k, 's':sigma},
+              verbose=True)
 
-u -= solve(grid, a=sigma, b=-sigma * k*k, f=pointSource(grid, sourcePosB),
-           bc={'Robin': {'1,2,4': mixedBC}},
-           userData={'sourcePos': sourcePosB, 'k': k},
-           verbose=True)
+ax = show(mesh, data=u, cMap="RdBu_r", cMin=-1, cMax=1,
+          orientation='horizontal', label='Potential $u$', 
+          nCols=16, nLevs=9, logScale=False, showMesh=True)[0]
 
-# uAna = pg.Vector(map(lambda p__: uAnalytical(p__, sourcePosA, k),
-#                       grid.positions()))
-# uAna -= pg.Vector(map(lambda p__: uAnalytical(p__, sourcePosB, k),
-#                        grid.positions()))
-
-# err = (1.0 -u/uAna) * 100.0
-
-# print("error min max", min(err), max(err))
-
-ax = show(grid, data=u, fillContour=True, cMap="RdBu_r",
-          orientation='horizontal', label='Solution u', nLevs=11,
-          logScale=False, hold=True, showMesh=True)[0]
-
+###############################################################################
 # Additional to the image of the potential we want to see the current flow too.
 # The current flows along the gradient of our solution and can be plotted as
 # stream lines. On default the drawStreams method draws one segment of a
@@ -159,6 +162,30 @@ ax = show(grid, data=u, fillContour=True, cMap="RdBu_r",
 
 gridCoarse = pg.createGrid(x=np.linspace(-10.0, 10.0, 20),
                            y=np.linspace(-15.0,   .0, 20))
-drawStreams(ax, grid, u, coarseMesh=gridCoarse, color='Black')
+drawStreams(ax, mesh, u, coarseMesh=gridCoarse, color='Black')
 
-pg.wait()
+###############################################################################
+# We know the exact solution so we can compare the results. 
+# Unfortunately, the point source singularity does not allow a good integration
+# measure for the accuracy of the resulting field so we just look for the 
+# differences.
+#
+uAna = pg.Vector(list(map(lambda p__: uAnalytical(p__, sourcePosA, k, sigma),
+                      mesh.positions())))
+uAna -= pg.Vector(list(map(lambda p__: uAnalytical(p__, sourcePosB, k, sigma),
+                       mesh.positions())))
+
+ax = show(mesh, data=pg.abs(uAna-u), cMap="Reds",
+          orientation='horizontal', label='|$u_{exact}$ -$u$|', 
+          logScale=True, cMin=1e-7, cMax=1e-1,
+          contourLines=False,
+          nCols=12, 
+          nLevs=7, 
+          showMesh=True)[0]
+
+# print('l2:', pg.pf(pg.solver.normL2(uAna-u)))
+# print('L2:', pg.pf(pg.solver.normL2(uAna-u, mesh)))
+# print('H1:', pg.pf(pg.solver.normH1(uAna-u, mesh)))
+np.testing.assert_approx_equal(pg.pf(pg.solver.normL2(uAna-u, mesh)), 
+                               0.024, significant=3)
+

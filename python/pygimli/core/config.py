@@ -14,7 +14,10 @@ rc = {
     # 2: default style: 'value (unit)'
     'view3D': 'auto',
     # auto: Use pyvista if installed or set it to 'fallback' to force fallback mode
-    'globalCache': True
+    'globalCache': True,
+    # call pg.wait() before the terminal script ends if there are pending 
+    # mpl widgets and your backend this supports
+    'waitOnExit': True,
 }
 
 def getCPUCount():

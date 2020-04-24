@@ -866,7 +866,7 @@ def drawField(ax, mesh, data=None, levels=None, nLevs=5,
 
     if levels is None:
         levels = autolevel(data, nLevs,
-                           zmin=cMin, zmax=cMax, logScale=logScale)
+                           zMin=cMin, zMax=cMax, logScale=logScale)
 
     if len(z) == len(triangles):
         shading = kwargs.pop('shading', 'flat')
@@ -903,9 +903,9 @@ def drawField(ax, mesh, data=None, levels=None, nLevs=5,
 
                 if nCols is not None:
                     if logScale:
-                        pg.error('Implement nCols for logscale in drawfield')
-
-                    levs = np.linspace(min(levels), max(levels), nCols+1)
+                        levs = np.geomspace(min(levels), max(levels), nCols+1)
+                    else:
+                        levs = np.linspace(min(levels), max(levels), nCols+1)
 
                 gci = ax.tricontourf(x, y, triangles, z,
                                      # antialiased=True, # not allways nice

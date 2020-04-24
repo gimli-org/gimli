@@ -32,7 +32,7 @@ def simulate(mesh, res, scheme, sr=True, useBert=True,
         Resistivity distribution.
     mesh : :gimliapi:`GIMLI::Mesh` | str
         Modelling domain. Mesh can be a file name here.
-    scheme : :gimliapi:`GIMLI::DataContainerERT` | str
+    scheme: :gimliapi:`GIMLI::DataContainerERT` | str
         Data configuration. Scheme can be a file name here.
     sr : bool [True]
         Use singularity removal technique.
@@ -47,34 +47,53 @@ def simulate(mesh, res, scheme, sr=True, useBert=True,
         mesh = pg.load(mesh)
 
     if isinstance(scheme, str):
-        import pybert as pb
-        scheme = pb.load(scheme)
-
+        scheme = pg.physics.ert.load(scheme)
+        
     return ert.simulate(mesh, res, scheme, verbose=verbose, **kwargs)
 
 
 @pg.cache
-def createGeometricFactors(scheme, mesh=None, verbose=False):
+def createGeometricFactors(scheme, numerical=None, mesh=None, verbose=False):
     """Create geometric factors for a data scheme.
 
     Create geometric factors for a data scheme with and without topography.
+    Calculation will be done analytical (only for half space geometry) 
+    or numerical.    
 
     This function caches the result depending on scheme, mesh and pg.version()
 
     Parameters
     ----------
-    scheme : :gimliapi:`GIMLI::DataContainerERT`
-        Datacontainer of the scheme
-    mesh : :gimliapi:`GIMLI::Mesh` | str
-        Mesh for numerical calculation. If not given analytical flath eath
-        factors are guessed. The mesh will be h and p refined.
-        If the numerical effort is to high or the accuracy to low
+    scheme: :gimliapi:`GIMLI::DataContainerERT`
+        Datacontainer of the scheme.
+    numerical: bool | None [False]
+        If numerical is None, False is assumed, we try to guess topography 
+        and warn if we think we found them.
+        If set to True or False, numerical calculation will used respectively.
+    mesh: :gimliapi:`GIMLI::Mesh` | str
+        Mesh for numerical calculation. If not given, analytical geometric 
+        factors for halfspace earth are guessed or a default mesh will be 
+        created. The mesh will be h and p refined. If given topo is set to
+        True. If the numerical effort is to high or the accuracy to low
         you should consider to calculate the factors manual.
     verbose: bool
         Give some output.
     """
-    if mesh is not None:
+    if numerical is None:
+        numerical = False
+        if (min(pg.z(scheme)) != max(pg.z(scheme))):
+            verbose=True
+            pg.warn('Sensor z-coordinates not equal. Is there topography?')
 
+    if numerical is False and mesh is None:
+        if verbose:
+            pg.info('Calculate analytical flat earth geometric factors.')
+        
+        return pg.core.geometricFactors(scheme, forceFlatEarth=True)
+
+    if mesh is None:
+        mesh = createInversionMesh(scheme)
+        
         m = mesh.createH2()
         m = m.createP2()
         if verbose:
@@ -83,10 +102,29 @@ def createGeometricFactors(scheme, mesh=None, verbose=False):
                     calcOnly=True, verbose=True)
         return 1./d['u']
 
-    else:
-        if verbose:
-            pg.info('Calculate analytical flat earth geometric factors.')
-        return pg.core.geometricFactors(scheme, forceFlatEarth=True)
+
+def createInversionMesh(data, **kwargs):
+    """Create default mesh for ERT inversion
+
+    Parameters
+    ----------
+    data: :gimliapi:`GIMLI::DataContainerERT`
+        Data Container needs at least sensors to define the geometry of the
+        mesh.
+
+    Other Parameters
+    ----------------
+        Forwarded to :py:mod:`pygimli.meshtools.createParaMesh`
+
+    Returns
+    -------
+    mesh: :gimliapi:`GIMLI::Mesh`
+        Inversion mesh with default marker (1 for background, 
+        2 parametric domain)
+    """
+    mesh = pg.meshtools.createParaMesh(data.sensors(), **kwargs)
+    return mesh
+
 
 class ERTModellingBase(MeshModelling):
     def __init__(self, **kwargs):
@@ -527,8 +565,6 @@ class ERTManager(MeshMethodManager):
     Method Manager for Electrical Resistivity Tomography (ERT)
 
     TODO:
-        * 2d
-        * 2dtopo
         * 3d
         * 3dtopo
         * complex on/off
@@ -538,11 +574,17 @@ class ERTManager(MeshMethodManager):
         * ERT specific inversion options:
             * ...
     """
-    def __init__(self, **kwargs):
-        """Constructor.
+    def __init__(self, data=None, **kwargs):
+        """Create ERT Manager instance.
 
         Parameters
         ----------
+        data: :gimliapi:`GIMLI::DataContainerERT` | str
+            You can initialize the Manager with data or give them a dataset 
+            when calling the inversion.
+
+        Other Parameters
+        ----------------
         * useBert: bool [True]
             Use Bert forward operator instead of the reference implementation.
         * sr: bool [True]
@@ -556,7 +598,7 @@ class ERTManager(MeshMethodManager):
         kwargs['useBert'] = kwargs.pop('useBert', True)
         kwargs['sr'] = kwargs.pop('sr', True)
 
-        super(ERTManager, self).__init__(**kwargs)
+        super().__init__(data=data, **kwargs)
         self.inv.dataTrans = pg.trans.TransLogLU()
 
     def setSingularityRemoval(self, sr=True):
@@ -575,6 +617,34 @@ class ERTManager(MeshMethodManager):
             fop = ERTModellingReference(**kwargs)
 
         return fop
+
+    def load(self, fileName):
+        """Load ERT data.
+
+        Forwarded to :py:mod:`pygimli.physics.ert.load`
+        
+        Parameters
+        ----------
+        fileName: str
+            Filename for the data.
+        Returns
+        -------
+        data: :gimliapi:`GIMLI::DataContainerERT`
+        """
+        self.data = pg.physics.ert.load(fileName)
+        return self.data
+
+    def createMesh(self, data=None, **kwargs):
+        """Create default inversion mesh
+
+        Forwarded to :py:mod:`pygimli.physics.ert.createInversionMesh`
+        """
+        d = data or self.data
+        
+        if d is None:
+            pg.critical('Please provide a data file for mesh generation')
+
+        return createInversionMesh(d, **kwargs)
 
     def setPrimPot(self, pot):
         """
@@ -829,8 +899,7 @@ class ERTManager(MeshMethodManager):
 
         return ret
 
-
-    def dataCheck(self, data):
+    def checkData(self, data):
         """Return data from container.
         THINKABOUT: Data will be changed, or should the manager keeps an own copy?
         """
@@ -874,7 +943,8 @@ class ERTManager(MeshMethodManager):
 
         return data
 
-    def errorCheck(self, err, dataVals):
+        
+    def checkErrors(self, err, dataVals):
         """Return relative error. Default we assume 'err' are relative vales.
         """
         if isinstance(err, pg.DataContainer):

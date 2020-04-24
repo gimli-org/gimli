@@ -2,10 +2,14 @@
 """Plotting utilities used throughout the viewer.mpl package."""
 
 import os
+import atexit
+
 import numpy as np
+
 # TODO expensive import costs 75% of total time
 # see: python -X importtime -c 'import pygimli'
 # import matplotlib.animation as animation
+import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 
@@ -37,6 +41,22 @@ def hold(val=1):
     """TODO WRITEME."""
     globals()[holdAxes__] = val
 
+
+def waitOnExit():
+    if pg.rc['waitOnExit'] is True:
+        backend = matplotlib.get_backend()
+        if not 'inline' in backend:
+            if 'Qt' in backend or 'Wx' in backend:
+
+                if len(plt.get_fignums()) > 0:
+                    pg.info('Showing pending widgets on exit. '
+                            'Close all figures or Ctr-C to quit the programm')
+                    pg.wait()
+
+# this can't be changed after import
+if pg.rc['waitOnExit'] is True:
+    atexit.register(waitOnExit)
+                        
 
 def wait(**kwargs):
     """TODO WRITEME."""

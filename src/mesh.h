@@ -465,25 +465,24 @@ public:
     /*! Smooth the mesh via moving all free nodes into the average of all neighboring nodes. Repeat this smoothIteration times. There is currently only this smoothFunction. EdgeSwapping is deactivated.*/
     void smooth(bool nodeMoving=true, bool edgeSwapping=true, uint smoothFunction=1, uint smoothIteration=10);
 
-    /*! Scale the mesh with \ref RVector3 s.
+    /*! Scales the mesh with \ref RVector3 s.
     Returns a reference to the mesh (no copy).*/
     Mesh & scale(const RVector3 & s);
 
-    /*! Scale the mesh with s. Shortcut for scale(RVector3(s,s,s))
+    /*! Scales the mesh with s. Shortcut for scale(RVector3(s,s,s))
     Returns a reference to the mesh (no copy).*/
-    Mesh & scale(const double & s){
-        return scale(RVector3(s, s, s));
-    }
+    Mesh & scale(const double & s){ return scale(RVector3(s, s, s));}
 
-    /*! Translate the mesh with \ref RVector3 t.
+    /*! Translates the mesh with \ref RVector3 t.
     Returns a reference to the mesh (no copy).*/
     Mesh & translate(const RVector3 & t);
 
-    /*! Rotate mesh the with \ref RVector3 r, r in radian, If you want to rotate in degree, use \ref degToRad(const RVector3 & deg).
+    /*! Rotates the mesh the with \ref RVector3 r, r in radian. 
+    If you want to rotate in degree, use \ref degToRad(const RVector3 & deg).
     Returns a reference to the mesh (no copy).*/
     Mesh & rotate(const RVector3 & r);
 
-    /*! apply a 4x4 transformation matrix to the whole mesh.
+    /*! Apply a 4x4 transformation matrix to the whole mesh.
     Returns a reference to the mesh (no copy).*/
     Mesh & transform(const RMatrix & mat);
 
@@ -494,7 +493,6 @@ public:
     /*! Apply deformation epsilon (with squeezed array) to all nodes.
     Optional magnify the deformation.
     Returns a reference to the mesh (no copy).*/
-
     Mesh & deform(const RVector & eps, double magnify=1.0);
 
     /*! Swap coordinate i with j for i and j lower then dimension of the mesh.

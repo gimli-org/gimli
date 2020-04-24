@@ -97,4 +97,3 @@ ves.drawData(ax, rc,
 np.testing.assert_approx_equal(data('rhoa')[0], 30.66351249, significant=5)
 np.testing.assert_approx_equal(-data('phia')[0], 0.00132173865, significant=5)
 
-pg.wait()

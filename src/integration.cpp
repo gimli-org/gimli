@@ -28,7 +28,7 @@ namespace GIMLI{
 template <> DLLEXPORT IntegrationRules * Singleton < IntegrationRules>::pInstance_ = NULL;
 
 IntegrationRules::IntegrationRules(){
-    triUseGaussLegendre_ = true;
+    triUseGaussLegendre_ = false;
     initGau_();
     initTriGL_();
 
@@ -116,13 +116,18 @@ const RVector & IntegrationRules::priWeights(Index order) const {
 const R3Vector & IntegrationRules::abscissa(const Shape & shape, uint order) const {
     switch(shape.rtti()){
         case MESH_SHAPE_EDGE_RTTI: return edgAbscissa(order);
-        case MESH_SHAPE_TRIANGLE_RTTI:
-             if (triUseGaussLegendre_) return triGLAbscissa(order);
-             else return triAbscissa_[order];
+        case MESH_SHAPE_TRIANGLE_RTTI:{
+             if (triUseGaussLegendre_) {
+                 return triGLAbscissa(order);
+             } else {
+                 return triAbscissa(order);
+             }
+        } break;
         case MESH_SHAPE_QUADRANGLE_RTTI: return quaAbscissa(order);
         case MESH_SHAPE_TETRAHEDRON_RTTI: return tetAbscissa(order);
         case MESH_SHAPE_HEXAHEDRON_RTTI: return hexAbscissa(order);
         default:
+            __MS(shape)
             break;
     }
     return gauAbscissa(order);
@@ -131,13 +136,18 @@ const R3Vector & IntegrationRules::abscissa(const Shape & shape, uint order) con
 const RVector & IntegrationRules::weights(const Shape & shape, uint order) const {
     switch(shape.rtti()){
         case MESH_SHAPE_EDGE_RTTI: return edgWeights(order);
-        case MESH_SHAPE_TRIANGLE_RTTI:
-            if (triUseGaussLegendre_) return triGLWeights(order);
-            else return triWeights_[order];
+        case MESH_SHAPE_TRIANGLE_RTTI:{
+            if (triUseGaussLegendre_) {
+                return triGLWeights(order);
+            } else {
+                return triWeights(order);
+            }
+        } break;
         case MESH_SHAPE_QUADRANGLE_RTTI: return quaWeights(order);
         case MESH_SHAPE_TETRAHEDRON_RTTI: return tetWeights(order);
         case MESH_SHAPE_HEXAHEDRON_RTTI: return hexWeights(order);
         default:
+            __MS(shape)
             break;
     }
     return gauWeights(order);
@@ -311,7 +321,8 @@ void IntegrationRules::initTri_(){
     triWeights_.back()[0] = -27.0/48.0;
 
     //** 4.Order, n=6, Error: O(h5)
-    //**    Joseph E. Flaherty -- Finite Element Analysis CSCI-6860 / MATH-6860
+    //** Joseph E. Flaherty -- Finite Element Analysis CSCI-6860 / MATH-6860
+    // not super correct .. need better approximation    
     triAbscissa_.push_back(R3Vector(6));
     double a = 0.816847572980459, b = 0.091576213509771;
     triAbscissa_.back()[0] = RVector3(b, b);

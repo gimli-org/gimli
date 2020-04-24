@@ -13,4 +13,6 @@ from .ert import (ERTManager, ERTModelling, createERTData, #
 from .ves import VESModelling, VESCModelling, VESManager
 
 from .visualization import showERTData 
+from .importData import load
+
 show = showERTData

@@ -158,21 +158,20 @@ def __Line_str(self):
     return "Line: " + str(self.p0()) + "  " + str(self.p1())
 
 
-def __Data_str(self):
-    return ("Data: Sensors: " + str(self.sensorCount()) + " data: " + str(
-        self.size()))
-
-
 def __ElementMatrix_str(self):
+    """Show entries of an ElementMatrix."""
+    s = '\n\t    '
+    # print(self.mat())
+    # print(self.colIDs())
+    # print(self.rowIDs())
+    for i in range(self.mat().cols()):
+        s += str(self.colIDs()[i]) + " "
+    s += '\n'
 
-    s = ''
-    for i in range(self.size()):
-        s += str(self.idx(i)) + "\t: "
-
-        for j in range(self.size()):
-            s += str(self.getVal(i, j)) + " "
-        s += '\n'
+    for i in range(self.mat().rows()):
+        s += str(self.rowIDs()[i]) + "\t: " + str(self.row(i)) + '\n'
     return s
+
 
 def __BoundingBox_str(self):
     s = ''
@@ -191,7 +190,6 @@ _pygimli_.R3Vector.__str__ = __R3Vector_str
 _pygimli_.RMatrix.__str__ = __RMatrix_str
 _pygimli_.CMatrix.__str__ = __CMatrix_str
 _pygimli_.Line.__str__ = __Line_str
-_pygimli_.DataContainer.__str__ = __Data_str
 _pygimli_.ElementMatrix.__str__ = __ElementMatrix_str
 _pygimli_.BoundingBox.__str__ = __BoundingBox_str
 
@@ -893,7 +891,10 @@ def abs(v):
     elif isinstance(v, _pygimli_.R3Vector):
         return _pygimli_.absR3(v)
     elif isinstance(v, np.ndarray):
-        return _pygimli_.absR3(v)
+        if v.shape[0] == 2 or v.shape[0] == 3:
+            return _pygimli_.absR3(v.T)
+        else:
+            return _pygimli_.absR3(v)
     elif isinstance(v, _pygimli_.RMatrix):
         raise BaseException("IMPLEMENTME")
         for i in range(len(v)):
