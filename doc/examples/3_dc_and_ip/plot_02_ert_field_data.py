@@ -14,7 +14,6 @@ Simple example of data measured over a slagdump demonstrating:
 import numpy as np
 import pygimli as pg
 
-import pygimli.meshtools as mt
 from pygimli.physics.ert import ERTManager, createGeometricFactors
 
 ###############################################################################
