@@ -628,7 +628,7 @@ if (LIBGIMLI_BUILD_TESTS)
 endif(LIBGIMLI_BUILD_TESTS)
 
 add_subdirectory(core/src)
-add_subdirectory(tests EXCLUDE_FROM_ALL)
+add_subdirectory(core/tests EXCLUDE_FROM_ALL)
 
 if (PYGIMLI)
     add_subdirectory(core/python EXCLUDE_FROM_ALL)
