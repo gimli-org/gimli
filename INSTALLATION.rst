@@ -31,7 +31,7 @@ To test if everything works correctly you can do the following:
 
 After that you can use pygimli with your text editor of choice and a terminal.
 Depending on your preferences, you can also install third-party software such as
-MATLAB-like integrated development environment (https://www.spyder-ide.org):
+the MATLAB-like integrated development environment (https://www.spyder-ide.org):
 
 .. code-block:: bash
 
@@ -51,7 +51,7 @@ functionality:
     conda update -c gimli -c conda-forge pygimli
 
 The only drawback using conda is that you are bound to the rhythm we update the
-binary packages. Conda also can be seen as a sandbox Linux inside your system
+binary packages. Conda also can be seen as a sandbox inside your system
 and it might be difficult to combine system python packages and conda pyGIMLi.
 If you like to keep your pyGIMLi version more recent (including all possible
 drawbacks of versions that are actively developed) you should compile pyGIMli
