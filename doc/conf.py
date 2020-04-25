@@ -44,9 +44,7 @@ sys.path.append(os.path.abspath(SPHINXDOC_PATH))
 sys.path.append(os.path.abspath(join(SPHINXDOC_PATH, '_sphinx-ext')))
 
 # The following line is necessary for the Tools section
-sys.path.append(os.path.abspath(join(TRUNK_PATH, 'python/apps')))
-sys.path.append(os.path.abspath(join(TRUNK_PATH, 'python')))
-sys.path.append(os.path.abspath(join(TRUNK_PATH, 'python/pygimli')))
+sys.path.append(os.path.abspath(join(TRUNK_PATH, 'pygimli')))
 
 # -- General configuration ----------------------------------------------------
 

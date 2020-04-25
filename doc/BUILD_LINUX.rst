@@ -56,9 +56,6 @@ To test if everything works correctly you can do the following:
 
     python -c "import pygimli; pygimli.test(show=False, onlydoctests=True)"
 
-There will be some matplotlib related warnings, which you can ignore, but all
-the tests should pass.
-
 After that you can use pygimli with your text editor of choice and a terminal.
 Depending on your preferences, you can also install third-party software such as
 MATLAB-like integrated development environment (https://www.spyder-ide.org):

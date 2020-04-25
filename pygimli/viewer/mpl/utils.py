@@ -43,15 +43,14 @@ def hold(val=1):
 
 
 def waitOnExit():
-    if pg.rc['waitOnExit'] is True:
-        backend = matplotlib.get_backend()
-        if not 'inline' in backend:
-            if 'Qt' in backend or 'Wx' in backend:
+    backend = matplotlib.get_backend()
+    if not 'inline' in backend:
+        if 'Qt' in backend or 'Wx' in backend:
 
-                if len(plt.get_fignums()) > 0:
-                    pg.info('Showing pending widgets on exit. '
-                            'Close all figures or Ctr-C to quit the programm')
-                    pg.wait()
+            if len(plt.get_fignums()) > 0:
+                pg.info('Showing pending widgets on exit. '
+                        'Close all figures or Ctr-C to quit the programm')
+                pg.wait()
 
 # this can't be changed after import
 if pg.rc['waitOnExit'] is True:
