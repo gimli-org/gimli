@@ -4,12 +4,10 @@ BUGS:
 + there is no good coming back from volumetric slicing atm
 """
 
-import numpy as np
 from shutil import copyfile
 import os
 import signal
 import sys
-import tempfile
 
 import pygimli as pg
 from .drawer import drawMesh

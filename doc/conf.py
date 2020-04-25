@@ -172,8 +172,8 @@ autosummary_imported_members = True
 
 autodoc_default_options = {
     'imported-members': True,
-    'special-members': '__init__',
-    'undoc-members': True,
+    # 'special-members': '__init__',
+    'undoc-members': False,
 }
 
 # Get mathjax
