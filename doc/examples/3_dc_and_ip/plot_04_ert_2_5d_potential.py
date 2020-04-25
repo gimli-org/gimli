@@ -163,7 +163,6 @@ ax = show(mesh, data=u, cMap="RdBu_r", cMin=-1, cMax=1,
 gridCoarse = pg.createGrid(x=np.linspace(-10.0, 10.0, 20),
                            y=np.linspace(-15.0,   .0, 20))
 drawStreams(ax, mesh, u, coarseMesh=gridCoarse, color='Black')
-
 ###############################################################################
 # We know the exact solution so we can compare the results. 
 # Unfortunately, the point source singularity does not allow a good integration
