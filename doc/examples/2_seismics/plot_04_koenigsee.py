@@ -45,7 +45,7 @@ mgr.invert(data, secNodes=3, paraMaxCellSize=5.0,
            zWeight=0.2, vTop=500, vBottom=5000,
            verbose=1)
 ax, cbar = mgr.showResult()
-mgr.showRayPaths(ax=ax, color="k", lw=0.3, alpha=0.5)
+mgr.showRayPaths(ax=ax, color="w", lw=0.3, alpha=0.5)
 
 ################################################################################
 # Show result and fit of measured data and model response.
