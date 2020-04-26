@@ -150,7 +150,7 @@ u -= pg.solve(mesh, a=sigma, b=-sigma * k*k,
 
 ax = show(mesh, data=u, cMap="RdBu_r", cMin=-1, cMax=1,
           orientation='horizontal', label='Potential $u$', 
-          nCols=16, nLevs=9, logScale=False, showMesh=True)[0]
+          nCols=16, nLevs=9, logScale=False, showMesh=True,hold=True)[0]
 
 ###############################################################################
 # Additional to the image of the potential we want to see the current flow too.
@@ -163,7 +163,6 @@ ax = show(mesh, data=u, cMap="RdBu_r", cMin=-1, cMax=1,
 gridCoarse = pg.createGrid(x=np.linspace(-10.0, 10.0, 20),
                            y=np.linspace(-15.0,   .0, 20))
 drawStreams(ax, mesh, u, coarseMesh=gridCoarse, color='Black')
-
 ###############################################################################
 # We know the exact solution so we can compare the results. 
 # Unfortunately, the point source singularity does not allow a good integration
@@ -187,5 +186,5 @@ ax = show(mesh, data=pg.abs(uAna-u), cMap="Reds",
 # print('L2:', pg.pf(pg.solver.normL2(uAna-u, mesh)))
 # print('H1:', pg.pf(pg.solver.normH1(uAna-u, mesh)))
 np.testing.assert_approx_equal(pg.solver.normL2(uAna-u, mesh), 
-                               0.024, significant=3)
+                               0.02415, significant=3)
 

@@ -18,3 +18,4 @@ python/pygimli/_version.py export-subst
 *.jpg binary
 *.bms binary
 *.pdf binary
+pygimli/_version.py export-subst

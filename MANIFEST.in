@@ -1,2 +1,2 @@
 include versioneer.py
-include python/pygimli/_version.py
+include pygimli/_version.py
