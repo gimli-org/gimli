@@ -1012,3 +1012,11 @@ div#sidebar-gallery.card-body {
   margin: -54px 0 0;
   /* negative fixed header height */
 }
+
+dt:target, span.highlighted {
+    background-color: #fbe54e;
+}
+
+rect.highlighted {
+    fill: #fbe54e;
+}
