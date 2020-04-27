@@ -46,12 +46,10 @@ pg.show(mesh)
 #
 # .. math::
 #
-#    \begin{align}
 #    K^{-1}\mathbf{v} + \nabla p & = 0 \\
 #    \nabla \cdot \mathbf{v} & = 0\\
 #    \text{leading}\,\,\text{to}\,\,
 #    \nabla\cdot(K \nabla p) & = 0 \quad \text{on} \quad\Omega
-#    \end{align}
 #
 # We begin by defining isotropic values of hydraulic conductivity $K$ and
 # mapping these to each mesh cell:
