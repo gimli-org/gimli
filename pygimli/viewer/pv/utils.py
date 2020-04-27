@@ -8,7 +8,7 @@ pv = pg.optImport('pyvista', requiredFor="properly visualize 3D data")
 
 def pgMesh2pvMesh(mesh, data=None, label=None):
     """
-    Since pyGIMLi's mesh format is different from pyvista's needs,
+    pyGIMLi's mesh format is different from pyvista's needs,
     some preparation is necessary.
 
     Parameters

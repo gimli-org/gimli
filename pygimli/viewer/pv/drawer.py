@@ -64,14 +64,14 @@ def drawModel(ax=None, mesh=None, data=None, **kwargs):
 
     Parameters
     ----------
-    ax: pyvista.Plotter() [None]
+    ax: pyvista.Plotter [None]
         Pyvista's basic Plotter to add the mesh to.
     mesh: pg.Mesh
         The Mesh to plot.
     data: iterable
         Data that should be displayed with the mesh.
 
-        Returns
+    Returns
     -------
     ax: pyvista.Plotter [optional]
         The plotter
@@ -122,7 +122,7 @@ def drawSlice(ax, mesh, normal=[1, 0, 0], **kwargs):
 
     Parameters
     ----------
-    ax: pyvista.Plotter()
+    ax: pyvista.Plotter
         The Plotter to draw on.
     mesh: pg.Mesh
         The mesh to take the slice out of.
@@ -171,7 +171,7 @@ def drawStreamLines(ax, mesh, data, label=None, radius=0.01, **kwargs):
 
     Parameters
     ----------
-    ax: pyvista.Plotter() [None]
+    ax: pyvista.Plotter [None]
         The plotter that should be used for visualization.
     mesh: pyvista.UnstructuredGrid|pg.Mesh [None]
         Structure to plot the streamlines in to.

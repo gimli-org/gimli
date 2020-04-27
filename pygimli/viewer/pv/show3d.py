@@ -26,9 +26,7 @@ from .gwidgets import (
 
 pv = pg.optImport('pyvista', requiredFor="properly visualize 3D data")
 
-__all__ = ['Show3D', 'showHotKeys', 'wait', 'addMesh', 'allowMeshParameters',
-    'updateParameterView', 'updateScalarBar', 'toggleBbox', 'takeScreenShot',
-    'exportMesh', 'resetExtrema', 'setGlobalLimits']
+__all__ = ['Show3D']
 
 
 class Show3D(QMainWindow):
@@ -38,14 +36,9 @@ class Show3D(QMainWindow):
         pyGIMLi's GUI for pyvista's QtInteractor class. All kwargs are being
         forwarded to that.
 
-        Parameters
-        ----------
-        TBD
-
         Note
         ----
-        Possible kwargs may be taken from
-        https://docs.pyvista.org/plotting/plotting.html#plotter
+        Everything pyvista.Plotter would accept: https://docs.pyvista.org/plotting/plotting.html#plotter
         """
         super(Show3D, self).__init__(None)
         # self.tmpMesh = tmpMesh
