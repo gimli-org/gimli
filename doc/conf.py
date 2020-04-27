@@ -305,7 +305,7 @@ html_use_smartypants = True
 
 # Additional templates that should be rendered to pages, maps page names to
 # template names.
-html_additional_pages = {'index': 'index.html'}
+html_additional_pages = {'index': 'index.html', 'publist': 'publications.html'}
 
 # If false, no module index is generated.
 html_domain_indices = True
@@ -498,6 +498,10 @@ for dist in pkg_resources.find_distributions(SPHINXDOC_PATH +
 
 # -- Options for doxylink -----------------------------------------------------
 doxylink = {'gimliapi': (join(DOXY_BUILD_DIR, 'gimli.tag'), 'https://www.pygimli.org/gimliapi')}
+
+# Create HTML table
+from bib2html import write_html
+write_html(os.path.join(DOC_BUILD_DIR, "_static"))
 
 # Create small gallery of all tutorials and examples in the sidebar.
 make_gallery(SPHINXDOC_PATH, DOC_BUILD_DIR)

@@ -1,0 +1,38 @@
+{% extends "layout.html" %}
+{% set title = "Publications" %}
+{% block extrahead %}
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.20/css/dataTables.bootstrap4.min.css">
+<script type="text/javascript" language="javascript" src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.20/js/dataTables.bootstrap4.min.js"></script>
+<script type="text/javascript" language="javascript" class="init">
+
+$(document).ready(function() {
+$('#publications').DataTable( {
+	"ajax": {
+		"url": "_static/gimliuses.json",
+		"dataSrc": ""
+	},
+	"columns": [
+		{ "data": "author" },
+		{ "data": "title" },
+		{ "data": "journal" },
+		{ "data": "year" },
+		{ "data": "doi" },
+	]
+} );
+} );
+</script>
+{% endblock %}
+{% block body %}
+<table id="publications" class="display" style="width:100%">
+        <thead>
+            <tr>
+                <th>Authors</th>
+                <th>Title</th>
+                <th>Journal</th>
+                <th>Year</th>
+                <th>DOI</th>
+            </tr>
+        </thead>
+    </table>
+{% endblock %}
