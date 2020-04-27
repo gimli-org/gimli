@@ -8,7 +8,8 @@ embedded and docstitle %} {%- set titlesuffix = " &mdash; "|safe + docstitle|e %
              VERSION:     '{{ release|e }}',
              COLLAPSE_INDEX: false,
              FILE_SUFFIX: '{{ '' if no_search_suffix else file_suffix }}',
-             HAS_SOURCE:  {{ has_source|lower }}
+             HAS_SOURCE:  {{ has_source|lower }},
+             SOURCELINK_SUFFIX: '{{ sourcelink_suffix }}'
     };
 </script>
 
@@ -23,6 +24,13 @@ embedded and docstitle %} {%- set titlesuffix = " &mdash; "|safe + docstitle|e %
 <link rel="stylesheet" href="{{ pathto('_static/', 1) }}font-awesome/css/all.css">
 <link rel="stylesheet" href="{{ pathto('_static/', 1) }}gimli.css">
 <link rel="stylesheet" href="{{ pathto('_static/', 1) }}pygments.css">
+{%- endmacro %}
+
+{%- macro script() %}
+    <script id="documentation_options" data-url_root="{{ pathto('', 1) }}" src="{{ pathto('_static/documentation_options.js', 1) }}"></script>
+    {%- for js in script_files %}
+    {{ js_tag(js) }}
+    {%- endfor %}
 {%- endmacro %}
 
 <!DOCTYPE html>

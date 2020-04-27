@@ -67,6 +67,8 @@ Functions
 .. raw:: html
 
      <div style='clear:both'></div>
+
+
 {%- endfor %}
 {% endif %}
 {% endblock %}
