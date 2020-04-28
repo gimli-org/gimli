@@ -53,8 +53,7 @@ dirichletBC = {1: 1,                                           # left
 u = solve(grid, f=1., bc={'Dirichlet': dirichletBC})
 
 # Note that showMesh returns the created figure ax and the created colorBar.
-ax, cbar = show(grid, data=u, label='Solution $u$',
-                levels=np.linspace(1.0, 4.0, 17), hold=1)
+ax, cbar = show(grid, data=u, label='Solution $u$')
 
 show(grid, ax=ax)
 
