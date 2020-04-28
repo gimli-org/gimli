@@ -1,16 +1,22 @@
 {% extends "layout.html" %}
 {% set title = "Publications" %}
 {% block extrahead %}
-<script type="text/javascript" language="javascript" src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
-<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.20/js/dataTables.bootstrap4.min.js"></script>
-<script type="text/javascript" language="javascript" class="init">
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/jquery.mark.min.js" integrity="sha256-4HLtjeVgH0eIB3aZ9mLYF6E8oU5chNdjU6p6rrXpl9U=" crossorigin="anonymous"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/plug-ins/1.10.20/features/mark.js/datatables.mark.min.js"></script>
+
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs4/jszip-2.5.0/dt-1.10.20/b-1.6.1/b-colvis-1.6.1/b-flash-1.6.1/b-html5-1.6.1/b-print-1.6.1/r-2.2.3/datatables.min.css"/>
+<script type="text/javascript" src="https://cdn.datatables.net/v/bs4/jszip-2.5.0/dt-1.10.20/b-1.6.1/b-colvis-1.6.1/b-flash-1.6.1/b-html5-1.6.1/b-print-1.6.1/r-2.2.3/datatables.min.js"></script>
+
+<script type="text/javascript" language="javascript" class="init">
 var pubdb = {{ publications }};
 
 $(document).ready(function() {
 $('#publications').DataTable( {
   data: pubdb,
+  dom: 'Bfirt',
   autoWidth: true,
+  mark: true,
 	columns: [
 		{ "data": "author" },
 		{ "data": "title" },
@@ -19,7 +25,28 @@ $('#publications').DataTable( {
 		{ "data": "doi" },
 	],
   order: [[ 3, "desc" ]],
-  pageLength: 25,
+  // pageLength: 25,
+  paging: false,
+  responsive: true,
+  buttons: [
+        {
+            extend: 'csv',
+            text: '<i class="fas fa-file-alt"></i> Export CSV',
+            titleAttr: 'CSV'
+        },
+        {
+            extend: 'excel',
+            text: '<i class="far fa-file-excel"></i> Export XLSX',
+            titleAttr: 'EXCEL'
+        },
+        {
+          text: '<i class="fas fa-database"></i> Export BibTeX',
+          action: function ( e, dt, button, config ) {
+            window.location = 'https://raw.githubusercontent.com/gimli-org/gimli/fw_cleaning/doc/gimliuses.bib';
+          }
+        }
+
+      ]
 } );
 } );
 </script>
