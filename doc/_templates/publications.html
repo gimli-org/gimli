@@ -31,16 +31,19 @@ $('#publications').DataTable( {
   buttons: [
         {
             extend: 'csv',
-            text: '<i class="fas fa-file-alt"></i> Export CSV',
-            titleAttr: 'CSV'
+            text: '<i class="fas fa-file-alt"></i> Export to CSV',
+            titleAttr: 'CSV',
+            className: 'btn btn-secondary btn-sm'
         },
         {
             extend: 'excel',
-            text: '<i class="far fa-file-excel"></i> Export XLSX',
-            titleAttr: 'EXCEL'
+            text: '<i class="far fa-file-excel"></i> Export to XLSX',
+            titleAttr: 'EXCEL',
+            className: 'btn btn-secondary btn-sm'
         },
         {
-          text: '<i class="fas fa-database"></i> Export BibTeX',
+          text: '<i class="fas fa-database"></i> Export to BibTeX',
+          className: 'btn btn-secondary btn-sm',
           action: function ( e, dt, button, config ) {
             window.location = 'https://raw.githubusercontent.com/gimli-org/gimli/fw_cleaning/doc/gimliuses.bib';
           }
