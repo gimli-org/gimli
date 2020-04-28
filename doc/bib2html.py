@@ -23,6 +23,7 @@ def parse_bib(fname):
 def write_html():
     db = parse_bib("gimliuses.bib")
     for entry in db:
+        entry["author"] = entry["author"].replace(" and ", ", ")
         if not "journal" in entry:
             entry["journal"] = entry.pop("booktitle")
         if not "doi" in entry:
