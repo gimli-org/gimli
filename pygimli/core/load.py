@@ -90,7 +90,7 @@ def getCachePath():
     configpath = pg.core.config.getConfigPath()
     if system == "win32":
         path = os.path.join(configpath, "Cache")
-    if system == "darwin":
+    elif system == "darwin":
         path = configpath.replace("Preferences", "Caches")
     else:
         path = configpath.replace(".config", ".cache")
