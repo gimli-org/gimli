@@ -1033,14 +1033,22 @@ table.dataTable{clear:both;margin-top:6px !important;margin-bottom:2em !importan
 
 div#publications_info {
     display: inline;
-    padding-top: 0px;
+    float: right;
+    min-width: 100%;
+    padding-bottom: 0.1em;
+    padding-left: 0.2em;
+    color: rgb(128, 128, 128);
+}
+
+.dt-buttons.btn-group.flex-wrap {
     float: right;
 }
 
 div.dataTables_wrapper div.dataTables_filter {
     text-align: right;
+    /* min-width: 50%; */
+    float: left;
     display: inline;
-    padding-left: 1rem;
 }
 
 .mark, mark {
