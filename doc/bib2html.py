@@ -20,7 +20,7 @@ def parse_bib(fname):
     return references
 
 
-def write_html(path):
+def write_html():
     db = parse_bib("gimliuses.bib")
     for entry in db:
         if not "journal" in entry:
@@ -33,5 +33,4 @@ def write_html(path):
                 doi, doi)
         entry["doi"] = string
 
-    with open(os.path.join(path, "gimliuses.json"), "w") as fid:
-        json.dump(db, fid, sort_keys=True)
+    return json.dumps(db, sort_keys=True, indent=4)

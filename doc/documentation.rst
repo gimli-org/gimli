@@ -47,7 +47,7 @@ Documentation
 
             Printable version of this documentation
 
-        * - :ref:`sec:publications`
+        * - `Publications <publist.html>`_
 
             Research papers using pyGIMLi
 

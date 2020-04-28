@@ -1,30 +1,30 @@
 {% extends "layout.html" %}
 {% set title = "Publications" %}
 {% block extrahead %}
-<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.20/css/dataTables.bootstrap4.min.css">
 <script type="text/javascript" language="javascript" src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
 <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.20/js/dataTables.bootstrap4.min.js"></script>
 <script type="text/javascript" language="javascript" class="init">
 
+var pubdb = {{ publications }};
+
 $(document).ready(function() {
 $('#publications').DataTable( {
-	"ajax": {
-		"url": "_static/gimliuses.json",
-		"dataSrc": ""
-	},
-	"columns": [
+  data: pubdb,
+	columns: [
 		{ "data": "author" },
 		{ "data": "title" },
 		{ "data": "journal" },
 		{ "data": "year" },
 		{ "data": "doi" },
-	]
+	],
+  order: [[ 3, "desc" ]],
+  pageLength: 25,
 } );
 } );
 </script>
 {% endblock %}
 {% block body %}
-<table id="publications" class="display" style="width:100%">
+<table id="publications" class="table table-md table-striped table-bordered" style="width:100%">
         <thead>
             <tr>
                 <th>Authors</th>
@@ -35,4 +35,9 @@ $('#publications').DataTable( {
             </tr>
         </thead>
     </table>
+
+    <div class="admonition note">
+    <p class="admonition-title">Note</p>
+    <p>Miss your work in this list? Send the reference to <a class="reference external" href="mailto:mail%40pygimli.org">mail<span>@</span>pygimli<span>.</span>org</a> or <a class="reference external" href="https://github.com/gimli-org/gimli/edit/fw_cleaning/doc/gimliuses.bib">add it directly here</a>.</p>
+    </div>
 {% endblock %}

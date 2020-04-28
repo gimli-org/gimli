@@ -501,7 +501,7 @@ doxylink = {'gimliapi': (join(DOXY_BUILD_DIR, 'gimli.tag'), 'https://www.pygimli
 
 # Create HTML table
 from bib2html import write_html
-write_html(os.path.join(DOC_BUILD_DIR, "_static"))
+publications = write_html()
 
 # Create small gallery of all tutorials and examples in the sidebar.
 make_gallery(SPHINXDOC_PATH, DOC_BUILD_DIR)
@@ -509,7 +509,7 @@ make_gallery(SPHINXDOC_PATH, DOC_BUILD_DIR)
 # Add carousel to start page
 from paper_carousel import showcase
 random.shuffle(showcase) # mix it up
-html_context = {"showcase": showcase}
+html_context = {"showcase": showcase, "publications": publications}
 
 srclink_project = 'https://github.com/gimli-org/gimli'
 srclink_src_path = 'doc/'
