@@ -178,9 +178,9 @@ def testCBarLevels():
 
     pg.show(mesh, ax=axs[1, 0], markers=True)
 
-    pg.show(mesh, cell_data, ax=axs[0, 1], colorBar=True, nLevs=6)
+    pg.show(mesh, cell_data, ax=axs[0, 1], colorBar=True, nLevs=7)
 
-    pg.show(mesh, node_data, ax=axs[1, 1], colorBar=True, nLevs=6)
+    pg.show(mesh, node_data, ax=axs[1, 1], colorBar=True, nLevs=7)
 
 
 if __name__ == '__main__':
