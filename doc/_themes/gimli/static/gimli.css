@@ -1055,3 +1055,7 @@ div.dataTables_wrapper div.dataTables_filter {
     padding: 0;
     background-color: #fbe54e;
 }
+
+table#publications {
+    font-size: 14px;
+}

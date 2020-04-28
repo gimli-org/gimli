@@ -30,8 +30,7 @@ def write_html():
             string = ""
         else:
             doi = entry["doi"]
-            string = "<a target='_blank' href='https://doi.org/%s'>%s</a>" % (
-                doi, doi)
+            string = "<a target='_blank' href='https://doi.org/%s'><i class='ai ai-doi'></i></a>" % doi
         entry["doi"] = string
 
     return json.dumps(db, sort_keys=True, indent=4)
