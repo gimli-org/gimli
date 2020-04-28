@@ -83,7 +83,7 @@ def findVersion(cache=True):
     import os
     global __version__
 
-    setDebug(True)
+    setDebug(False)
     root = os.path.abspath(os.path.join(__file__, "../../"))
     gitPath = os.path.join(root, '.git')
     gitIndexFile = os.path.join(gitPath, 'index')
@@ -127,7 +127,6 @@ def findVersion(cache=True):
             from subprocess import check_output
             out = check_output(["git", "--git-dir", gitPath, "rev-parse",
                                 "--abbrev-ref", "HEAD"]).decode("utf8")
-            # print('#############', out)
 
             branch = out.split("\n")[0]
             if not "HEAD" in branch:
@@ -142,8 +141,6 @@ def findVersion(cache=True):
             from subprocess import check_output
             out = check_output(["git", "--git-dir", gitPath,
                 "describe", "--tag"]).decode("utf8")
-
-            print('#############', out)
 
             tag = out.split("\n")[0].split('-')[0]
             return tag
