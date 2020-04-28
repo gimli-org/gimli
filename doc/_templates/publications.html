@@ -10,6 +10,7 @@ var pubdb = {{ publications }};
 $(document).ready(function() {
 $('#publications').DataTable( {
   data: pubdb,
+  autoWidth: true,
 	columns: [
 		{ "data": "author" },
 		{ "data": "title" },
@@ -24,6 +25,9 @@ $('#publications').DataTable( {
 </script>
 {% endblock %}
 {% block body %}
+<h1>Publications
+  <small><font color="gray">Peer-reviewed pyGIMLi-based research.</font></small>
+</h1>
 <table id="publications" class="table table-md table-striped table-bordered" style="width:100%">
         <thead>
             <tr>
