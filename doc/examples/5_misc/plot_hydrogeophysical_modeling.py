@@ -61,7 +61,7 @@ kMap = [[1, 1e-8], [2, 5e-3], [3, 1e-4], [4, 8e-4]]
 K = pg.solver.parseMapToCellArray(kMap, mesh)
 
 pg.show(mesh, data=K, label='Hydraulic conductivity $K$ in m$/$s', cMin=1e-5,
-        cMax=1e-2, grid=True)
+        cMax=1e-2, logScale=True, grid=True)
 
 ################################################################################
 # The problem further boundary conditions of the hydraulic potential. We use
