@@ -249,7 +249,7 @@ def toTime(t, d):
     tim = [int(_t) for _t in t.split(':')]
     if '/' in d:  # 03/02/1975
         day = [int(_t) for _t in d.split('/')]
-        dt = datetime(year=day[2], month=day[1], day=day[2],
+        dt = datetime(year=day[2], month=day[1], day=day[0],
                       hour=tim[0], minute=tim[1], second=tim[2])
     elif '.' in d:  # 03.02.1975
         day = [int(_t) for _t in d.split('.')]
