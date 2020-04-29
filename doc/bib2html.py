@@ -26,11 +26,13 @@ def write_html():
         entry["author"] = entry["author"].replace(" and ", ", ")
         if not "journal" in entry:
             entry["journal"] = entry.pop("booktitle")
+        entry["journal"] = "<i>%s</i>" % entry["journal"]
         if not "doi" in entry:
             string = ""
         else:
             doi = entry["doi"]
-            string = "<a target='_blank' href='https://doi.org/%s'><i class='ai ai-doi'></i></a>" % doi
+            link = "https://doi.org/%s" % doi
+            string = "<a target='_blank' href=%s data-toggle='tooltip' title='Go to %s'><i class='ai ai-doi ai-2x'></i></a>" % (link, link)
         entry["doi"] = string
 
     return json.dumps(db, sort_keys=True, indent=4)
