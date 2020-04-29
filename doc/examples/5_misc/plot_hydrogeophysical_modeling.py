@@ -51,7 +51,7 @@ pg.show(mesh)
 #    \text{leading}\,\,\text{to}\,\,
 #    \nabla\cdot(K \nabla p) & = 0 \quad \text{on} \quad\Omega
 #
-# We begin by defining isotropic values of hydraulic conductivity $K$ and
+# We begin by defining isotropic values of hydraulic conductivity :math:`K` and
 # mapping these to each mesh cell:
 
 # Map regions to hydraulic conductivity in $m/s$
@@ -65,7 +65,7 @@ pg.show(mesh, data=K, label='Hydraulic conductivity $K$ in m$/$s', cMin=1e-5,
 
 ################################################################################
 # The problem further boundary conditions of the hydraulic potential. We use
-# $p=p_0=0.75$ m on the left and $p=0$ on the right boundary of the modelling
+# :math:`p=p_0=0.75` m on the left and :math:`p=0` on the right boundary of the modelling
 # domain, equaling a hydraulic gradient of 1.75%.
 
 # Dirichlet conditions for hydraulic potential
@@ -75,7 +75,7 @@ pBound = {"Dirichlet": [[[1, 2, 3], 0.75], [[5, 6, 7], 0.0]]}
 # We can now call the finite element solver with the generated mesh, hydraulic
 # conductivity and the boundary condition. The sought hydraulic velocity
 # distribution can then be calculated as the gradient field of
-# $\mathbf{v}=-\nabla p$ and visualized using the generic `pg.show()` function.
+# :math:`\mathbf{v}=-\nabla p` and visualized using the generic `pg.show()` function.
 
 # Solve for hydraulic potential
 p = pg.solver.solveFiniteElements(mesh, a=K, bc=pBound)
@@ -90,8 +90,8 @@ ax, _ = pg.show(mesh, data=vel, ax=ax, color='k', linewidth=0.8, dropTol=1e-5,
 
 ################################################################################
 # In the next step, we use this velocity field to simulate the dynamic movement
-# of a particle (e.g., salt) concentration $c(\mathbf{r}, t)$ in the aquifer by
-# using the advection-diffusion equation:
+# of a particle (e.g., salt) concentration :math:`c(\mathbf{r}, t)` in the aquifer
+# by using the advection-diffusion equation:
 #
 # .. math::
 #
@@ -107,10 +107,10 @@ S[sourceCell.id()] = 1.0 / sourceCell.size()  # g/(l s)
 
 ################################################################################
 # We define a time vector and common velocity-depending dispersion coefficient
-# $D = \alpha |\mathbf{v}|$ with a dispersivity $\alpha = 1\cdot10^{-2}$ m. We
-# solve the advection-diffsuion equation on the equation level with the finite
-# volume solver, which results in a particle concentration $c(\mathbf{r},t)$ (in
-# g$/$l) for each cell center and time step.
+# :math:`D = \alpha |\mathbf{v}|` with a dispersivity :math:`\alpha=1\cdot10^{-2}` m. 
+# We solve the advection-diffsuion equation on the equation level with the finite
+# volume solver, which results in a particle concentration :math:`c(\mathbf{r},t)$ 
+# (in g/l) for each cell center and time step.
 
 # Choose 800 time steps for 6 days in seconds
 t = pg.utils.grange(0, 6 * 24 * 3600, n=800)
@@ -174,7 +174,6 @@ for i, rbI in enumerate(resBulk):
 
 ################################################################################
 # Initialize and call the ERT manager for electrical simulation:
-# Initialize ert method manager
 ERT = ERTManager(verbose=False)
 # Run  simulation for  the apparent resistivities
 rhoa = ERT.simulate(meshERT, resis, ertScheme, verbose=0, returnArray=True)
