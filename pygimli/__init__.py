@@ -83,10 +83,12 @@ def findVersion(cache=True):
     import os
     global __version__
 
-    root = os.path.abspath(os.path.join(__file__, "../../../"))
-    gitIndexFile = os.path.join(root, '.git/index')
+    setDebug(False)
+    root = os.path.abspath(os.path.join(__file__, "../../"))
+    gitPath = os.path.join(root, '.git')
+    gitIndexFile = os.path.join(gitPath, 'index')
     versionCacheFile = os.path.join(getCachePath(), 'VERSION')
-    versionPyFile = os.path.abspath(os.path.join(__file__, "../_version.py"))
+    versionPyFile = os.path.abspath(os.path.join(__file__, "_version.py"))
 
     loadCache = False
 
@@ -116,24 +118,42 @@ def findVersion(cache=True):
     __versions__ = get_versions()
     __version__ = __versions__['version']
 
+    # print('???', __versions__)
     def _get_branch():
         """Get current git branch."""
-        from os.path import join, abspath, exists
-        gitpath = abspath(join(__path__[0], "../../.git"))
+        from os.path import exists
 
-        if exists(gitpath):
+        if exists(gitPath):
             from subprocess import check_output
-            out = check_output(["git", "--git-dir", gitpath, "rev-parse",
+            out = check_output(["git", "--git-dir", gitPath, "rev-parse",
                                 "--abbrev-ref", "HEAD"]).decode("utf8")
+
             branch = out.split("\n")[0]
             if not "HEAD" in branch:
                 return branch
+
+        return None
+
+    def _get_latest_tag():
+        from os.path import exists
+
+        if exists(gitPath):
+            from subprocess import check_output
+            out = check_output(["git", "--git-dir", gitPath,
+                "describe", "--tag"]).decode("utf8")
+
+            tag = out.split("\n")[0].split('-')[0]
+            return tag
         return None
 
     if __versions__["dirty"]:
         __version__ = __version__.replace(".dirty", " (with local changes")
 
         _branch = _get_branch()
+        # print('######', _branch)
+        # print(_branch)
+        # _tag = _get_latest_tag()
+        # print(_tag)
 
         if _branch:
             __version__ += " on %s branch)" % _branch

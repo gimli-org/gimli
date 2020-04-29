@@ -150,19 +150,20 @@ u -= pg.solve(mesh, a=sigma, b=-sigma * k*k,
 
 ax = show(mesh, data=u, cMap="RdBu_r", cMin=-1, cMax=1,
           orientation='horizontal', label='Potential $u$', 
-          nCols=16, nLevs=9, logScale=False, showMesh=True,hold=True)[0]
+          nCols=16, nLevs=9, logScale=False, showMesh=True)[0]
 
-###############################################################################
+#
 # Additional to the image of the potential we want to see the current flow too.
 # The current flows along the gradient of our solution and can be plotted as
 # stream lines. On default the drawStreams method draws one segment of a
 # stream line per cell of the mesh. This can be a little confusing for dense
 # meshes so we can give a second (coarse) mesh as a new cell basis to draw the
 # streams. If the drawStreams get scalar data the gradients will be calculated.
-
 gridCoarse = pg.createGrid(x=np.linspace(-10.0, 10.0, 20),
                            y=np.linspace(-15.0,   .0, 20))
 drawStreams(ax, mesh, u, coarseMesh=gridCoarse, color='Black')
+
+
 ###############################################################################
 # We know the exact solution so we can compare the results. 
 # Unfortunately, the point source singularity does not allow a good integration

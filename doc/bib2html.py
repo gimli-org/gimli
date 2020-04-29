@@ -23,14 +23,14 @@ def parse_bib(fname):
 def write_html():
     db = parse_bib("gimliuses.bib")
     for entry in db:
+        entry["author"] = entry["author"].replace(" and ", ", ")
         if not "journal" in entry:
             entry["journal"] = entry.pop("booktitle")
         if not "doi" in entry:
             string = ""
         else:
             doi = entry["doi"]
-            string = "<a target='_blank' href='https://doi.org/%s'>%s</a>" % (
-                doi, doi)
+            string = "<a target='_blank' href='https://doi.org/%s'><i class='ai ai-doi'></i></a>" % doi
         entry["doi"] = string
 
     return json.dumps(db, sort_keys=True, indent=4)
