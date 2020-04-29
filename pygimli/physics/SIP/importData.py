@@ -29,7 +29,7 @@ def load(fileName, verbose=False, **kwargs):
     with codecs.open(fileName, 'r', encoding='iso-8859-15',
                      errors='replace') as fi:
         firstLine = fi.readline()
-        
+
     f, amp, phi = None, None, None
 
     fnLow = fileName.lower()
@@ -37,20 +37,20 @@ def load(fileName, verbose=False, **kwargs):
     if 'SIP Fuchs III' in firstLine:
         if verbose:
             pg.info("Reading SIP Fuchs III file")
-        f, amp, phi, header = readFuchs3File(fileName, 
+        f, amp, phi, header = readFuchs3File(fileName,
                                              verbose=verbose, **kwargs)
         phi *= -np.pi/180.
         # print(header) # not used?
     elif 'SIP-Quad' in firstLine:
         if verbose:
             pg.info("Reading SIP Quad file")
-        f, amp, phi, header = readFuchs3File(fileName, 
+        f, amp, phi, header = readFuchs3File(fileName,
                                              verbose=verbose, **kwargs)
         phi *= -np.pi/180.
     elif 'SIP-Fuchs' in firstLine:
         if verbose:
             pg.info("Reading SIP Fuchs file")
-        f, amp, phi, drhoa, dphi = readRadicSIPFuchs(fileName, 
+        f, amp, phi, drhoa, dphi = readRadicSIPFuchs(fileName,
                                                      verbose=verbose, **kwargs)
         phi *= -np.pi/180.
     elif fnLow.endswith('.txt') or fnLow.endswith('.csv'):
@@ -247,12 +247,21 @@ def toTime(t, d):
     11:08:02, 21/02/2019
     """
     tim = [int(_t) for _t in t.split(':')]
-    day = [int(_t) for _t in d.split('/')]
-    dt = datetime(day[2], day[1], day[0], 
-                  hour=tim[0], minute=tim[1], second=tim[2])
-   
+    if '/' in d:  # 03/02/1975
+        day = [int(_t) for _t in d.split('/')]
+        dt = datetime(year=day[2], month=day[1], day=day[2],
+                      hour=tim[0], minute=tim[1], second=tim[2])
+    elif '.' in d:  # 03.02.1975
+        day = [int(_t) for _t in d.split('.')]
+        dt = datetime(year=day[2], month=day[1], day=day[0],
+                      hour=tim[0], minute=tim[1], second=tim[2])
+    else:  # 1975-02-03
+        day = [int(_t) for _t in d.split('-')]
+        dt = datetime(year=day[0], month=day[1], day=day[2],
+                      hour=tim[0], minute=tim[1], second=tim[2])
+
     return dt.timestamp()
-    
+
 
 def readSIP256file(resfile, verbose=False):
     """Read SIP256 file (RES format) - mostly used for 2d SIP by pybert.sip.
@@ -282,7 +291,7 @@ def readSIP256file(resfile, verbose=False):
     LINE = []
     dataAct = False
 
-    with codecs.open(resfile, 'r', encoding='iso-8859-15', 
+    with codecs.open(resfile, 'r', encoding='iso-8859-15',
                                    errors='replace') as fi:
         content = fi.readlines()
 
@@ -334,10 +343,10 @@ def readSIP256file(resfile, verbose=False):
 
     DATA, dReading, dFreq, AB, RU, ru = [], [], [], [], [], []
     tMeas = []
-    for line in LINE:
+    for i, line in enumerate(LINE):
         line = line.replace(' nc ', ' 0 ') # no calibration should 0
         line = line.replace(' c ', ' 1 ') # calibration should 1
-        sline = line.split()
+        # sline = line.split()
         sline = line.rstrip('\r\n').split()
         if line.find('Reading') == 0:
             rdno = int(sline[1])
@@ -359,8 +368,41 @@ def readSIP256file(resfile, verbose=False):
         elif line.find('Freq') >= 0:
             pass
         elif len(sline) > 1 and rdno > 0:  # some data present
-            if re.search('[0-9]-', line):  # missing whitespace before -
-                sline = re.sub('[0-9]-', '5 -', line).split()
+            # search for two numbers (with .) without a space inbetween
+            # variant 1: do it for every part
+            for i, ss in enumerate(sline):
+                if re.search('\.20[01][0-9]', ss) is None:  # no date
+                    fd = re.search('\.[0-9-]*\.', ss)
+                    if fd:
+                        if '-' in ss[1:]:
+                            bpos = ss.find('-')
+                        else:
+                            bpos = fd.start() + 4
+
+                        # print(ss[:bpos], ss[bpos:])
+                        sline.insert(i, ss[:bpos])
+                        sline[i+1] = ss[bpos:]
+                        # print(sline)
+            # variant 2: do it on whole line
+            # cdate = re.search('\.20[01][0-9]', line)
+            # if cdate:
+            #     n2000 = cdate.start()
+            # else:
+            #     n2000 = len(line)
+
+            # print(sline)
+            # concnums = re.search('\.[0-9-]*\.', line[:n2000])
+            # while concnums:
+            #     bpos = concnums.span()[0] + 4
+            #     line = line[:bpos] + ' ' + line[bpos:]
+            #     n2000 += 1
+            #     concnums = re.search('\.[0-9-]*\.', line[:n2000])
+            #     sline = line.rstrip('\r\n').split()
+            #     print(sline)
+
+            # if re.search('[0-9]-', line[:85]):  # missing whitespace before -
+            #     sline = re.sub('[0-9]-', '5 -', line).split()
+                # not a good idea for dates
 
             for c in range(6): # this is expensive .. do we really need this?
                 if len(sline[c]) > 15:  # too long line / missing space
@@ -370,14 +412,21 @@ def readSIP256file(resfile, verbose=False):
                     else:
                         part1 = sline[c][:-10]
                         part2 = sline[c][-10:]   # [11:]
-                    sline = sline[:c] + [part1] + [part2] + sline[c + 1:] 
-                
+                    sline = sline[:c] + [part1] + [part2] + sline[c + 1:]
+
                 if sline[c].find('c') >= 0:
                     sline[c] = '1.0'
             #Frequency /Hz       RA/Ohmm    PA/�      ERA/%     EPA/�     Cal?     IA/mA     K.-F./m    Gains  Time/h:m:s    Date/d.m.y
             #20000.00000000        0.4609  -6.72598   0.02234   0.01280    1      20.067        1.00      0     11:08:02     21/02/2019
-            dFreq.append(np.array(sline[:8]+ [toTime(sline[9], sline[10])], dtype=float))
-            
+            try:
+                dFreq.append(
+                    np.array(sline[:8] + [toTime(sline[-2], sline[-1])],
+                             dtype=float))
+            except:
+                # dFreq.append(np.array(sline[:8], dtype=float))
+                print(i, line, sline)
+                raise ImportError()
+
     dReading.append(np.array(dFreq))
     DATA.append(dReading)
     pg.verbose('Reading {0}:{1} RUs'.format(rdno, len(dReading)))
