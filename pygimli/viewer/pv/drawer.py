@@ -35,6 +35,9 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
     returnActor = kwargs.pop('returnActor', False)
 
     if ax is None:
+        # if notebook:
+        #     ax = pv.PlotterITK(**kwargs)
+        # else:
         ax = pv.Plotter(notebook=notebook, **kwargs)
 
     ax.show_bounds(all_edges=True, minor_ticks=True)
@@ -80,10 +83,11 @@ def drawModel(ax=None, mesh=None, data=None, **kwargs):
         pg.critical("At least mesh or data should not be None")
         return None
 
-    mesh = pgMesh2pvMesh(mesh, data, kwargs.pop('label', 'data'))
-    if data is not None:
+    if data is not None or len(mesh.dataMap()) != 0:
         kwargs['style'] = 'surface'
         kwargs['color'] = None
+
+    mesh = pgMesh2pvMesh(mesh, data, kwargs.pop('label', None))
 
     if 'cmap' not in kwargs:
         kwargs['cmap'] = 'viridis'
@@ -144,7 +148,7 @@ def drawSlice(ax, mesh, normal=[1, 0, 0], **kwargs):
 
     They can be found at https://docs.pyvista.org/core/filters.html?highlight=slice_orthogonal#1pyvista.CompositeFilters.slice
     """
-    label = kwargs.pop('label', 'data')
+    label = kwargs.pop('label', None)
     data = kwargs.pop('data', None)
     mesh = pgMesh2pvMesh(mesh, data, label)
 

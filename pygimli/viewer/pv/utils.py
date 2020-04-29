@@ -24,11 +24,11 @@ def pgMesh2pvMesh(mesh, data=None, label=None):
     grid = pv.read(tmp)
 
     # check for parameters inside the pg.Mesh
-    for label, data in mesh.dataMap():
-        if len(data) == mesh.cellCount():
-            grid.cell_arrays[label] = np.asarray(data)
-        elif len(data) == mesh.nodeCount():
-            grid.point_arrays[label] = np.asarray(data)
+    for key, values in mesh.dataMap():
+        if len(values) == mesh.cellCount():
+            grid.cell_arrays[key] = np.asarray(values)
+        elif len(values) == mesh.nodeCount():
+            grid.point_arrays[key] = np.asarray(values)
 
     # check the given data as well
     if data is not None:
@@ -41,6 +41,11 @@ def pgMesh2pvMesh(mesh, data=None, label=None):
             pg.warn("{} vs. {} vs. {}".format(len(data), mesh.cellCount(),
                 mesh.nodeCount()))
 
-    if data is not None:
+    if len(mesh.dataMap()) != 0 and label is None:
+        grid.set_active_scalars(grid.array_names[-1])
+    elif len(mesh.dataMap()) != 0 and label is not None:
         grid.set_active_scalars(label)
+    elif data is not None:
+        grid.set_active_scalars(label)
+
     return grid

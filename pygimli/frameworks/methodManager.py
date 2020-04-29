@@ -110,11 +110,12 @@ class MethodManager(object):
         self._verbose = kwargs.pop('verbose', False)
         self._debug = kwargs.pop('debug', False)
 
+        self.data = None
         if data is not None:
             if isinstance(data, str):
                 self.load(data)
             else:
-                self.data = data        
+                self.data = data
 
         # The inversion framework
         self._initInversionFramework(verbose=self._verbose,
