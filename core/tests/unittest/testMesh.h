@@ -22,11 +22,20 @@ class MeshTest : public CppUnit::TestFixture{
 public:
 
     void testSimple(){
-        Node n0(RVector3(0.0, 0.0, 0.0));
-        Node n1(RVector3(1.0, 0.0, 0.0));
-        Node n2(RVector3(0.0, 1.0, 0.0));
 
-        Triangle *tri = new Triangle (n0, n1, n2);
+        Mesh m;
+
+        Node *n0 = m.createNode(RVector3(0.0, 0.0, 0.0));
+        Node *n1 = m.createNode(RVector3(1.0, 0.0, 0.0));
+        Node *n2 = m.createNode(RVector3(0.0, 1.0, 0.0));
+
+        CPPUNIT_ASSERT(m.nodeIDs() == IndexArray(std::vector< size_t >{0, 1, 2}));
+
+        IndexArray t(std::vector< size_t >{2, 1, 0});
+        m.setNodeIDs(t);
+        CPPUNIT_ASSERT(m.nodeIDs() == t);
+
+        Triangle *tri = new Triangle(*n0, *n1, *n2);
         delete tri;
     }
 

@@ -118,7 +118,6 @@ def findVersion(cache=True):
     __versions__ = get_versions()
     __version__ = __versions__['version']
 
-    # print('???', __versions__)
     def _get_branch():
         """Get current git branch."""
         from os.path import exists
@@ -134,26 +133,25 @@ def findVersion(cache=True):
 
         return None
 
-    def _get_latest_tag():
-        from os.path import exists
+    # def _get_latest_tag():
+    #     from os.path import exists
 
-        if exists(gitPath):
-            from subprocess import check_output
-            out = check_output(["git", "--git-dir", gitPath,
-                "describe", "--tag"]).decode("utf8")
+    #     if exists(gitPath):
+    #         from subprocess import check_output
+    #         out = check_output(["git", "--git-dir", gitPath,
+    #             "describe", "--tag"]).decode("utf8")
 
-            tag = out.split("\n")[0].split('-')[0]
-            return tag
-        return None
+    #         tag = out.split("\n")[0].split('-')[0]
+    #         return tag
+    #     return None
 
     if __versions__["dirty"]:
         __version__ = __version__.replace(".dirty", " (with local changes")
 
         _branch = _get_branch()
         # print('######', _branch)
-        # print(_branch)
         # _tag = _get_latest_tag()
-        # print(_tag)
+        # print('######', _tag)
 
         if _branch:
             __version__ += " on %s branch)" % _branch

@@ -264,15 +264,6 @@ public:
     Increase mesh dimension. Mesh should contain 2D cells. */
     Mesh createHull() const;
 
-    void createClosedGeometry(const PosVector & vPos, int nSegments,
-                              double dxInner);
-
-    void createClosedGeometryParaMesh(const PosVector & vPos, int nSegments,
-                                      double dxInner);
-
-    void createClosedGeometryParaMesh(const PosVector & vPos, int nSegments,
-                                      double dxInner, const PosVector & addit);
-
     /*! Create and copy global H2 mesh of this mesh.*/
     Mesh createH2() const;
 
@@ -342,6 +333,13 @@ public:
     inline Index secondaryNodeCount() const { return secNodeVector_.size(); }
     Node & secondaryNode(Index id) const;
     Node & secondaryNode(Index id);
+
+    /*!Return ids for all nodes. Optionally including for secondary ndoes.*/
+    IndexArray nodeIDs(bool withSecNodes=false) const;
+    /*!Set all node ids.
+    Size of IndexArray indicated if it should be set the secondary nodes too.
+    */
+    void setNodeIDs(IndexArray & ids);
 
     Index cellCount() const { return cellVector_.size(); }
     Cell & cell(Index i) const;
@@ -477,7 +475,7 @@ public:
     Returns a reference to the mesh (no copy).*/
     Mesh & translate(const RVector3 & t);
 
-    /*! Rotates the mesh the with \ref RVector3 r, r in radian. 
+    /*! Rotates the mesh the with \ref RVector3 r, r in radian.
     If you want to rotate in degree, use \ref degToRad(const RVector3 & deg).
     Returns a reference to the mesh (no copy).*/
     Mesh & rotate(const RVector3 & r);
@@ -642,9 +640,6 @@ public:
     const std::string & commentString() const {return commentString_;}
 
     void mapCellAttributes(const std::map < float, float > & aMap);
-
-    void mapAttributeToParameter(const IndexArray & cellMapIndex,
-                                 const RVector & attributeMap, double defaultVal);
 
     //void mapParameterToAttribute(const std::vector< int > & cellMapIndex);
     /*! Change all boundary marker that match bMap.first to bMap.second. */

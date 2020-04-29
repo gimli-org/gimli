@@ -296,11 +296,9 @@ def generateBoundaryValue(boundary, arg, time=0.0, userData={}):
 
     Parameters
     ----------
-    boundary : :gimliapi:`GIMLI::Boundary` or list of ..
+    boundary: :gimliapi:`GIMLI::Boundary` or list of ..
         The related boundary.
-
-    arg : convertible | iterable | callable or list of ..
-
+    arg: convertible | iterable | callable or list of ..
         - convertible into float
         - iterable of minimum length = boundary.id()
         - callable generator function
@@ -310,12 +308,13 @@ def generateBoundaryValue(boundary, arg, time=0.0, userData={}):
         :: arg(boundary=:gimliapi:`GIMLI::Boundary`, time=0.0, userData={})
 
         The callable function arg have to return appropriate values
-        for all nodes of the boundary or one value for all nodes.
+        for all nodes of the boundary or one value for all nodes (scalar field only).
         Value can be scalar or vector field value, e.g., return force values for all nodes at a boundary need to return a ndarray((nodes, dims)) like 'lambda _b: np.array([[force_x, force_y, force_z] for n in _b.nodes()]).T'
 
     Returns
     -------
-    val : float or list of ..
+    val: [float]
+        Value for all nodes of the boundary.
     """
     if hasattr(boundary, '__len__'):
         pg.deprecated('bad design')
@@ -334,6 +333,14 @@ def generateBoundaryValue(boundary, arg, time=0.0, userData={}):
         try:
             # val(boundary, time=0, userData={})
             val = arg(boundary, **kwargs)
+            try:
+                if isinstance(float(val), float):
+                    val = np.ndarray([float(val)] * ent.nodeCount())
+            except BaseException as e:
+                pass
+
+
+
         except BaseException as e:
             print(arg, "(", kwargs, ")")
             pg.critical("Wrong arguments for callback function.", e)
@@ -615,7 +622,7 @@ def parseArgToBoundaries(args, mesh):
     return boundaries
 
 def _bcIsForVectorValues(bc, mesh):
-    """Guess if boundary conditions supposed to be for vector valued problems
+    """Guess if boundary condition is supposed to be for vector valued problems
     """
     verbose=False
 
@@ -632,8 +639,11 @@ def _bcIsForVectorValues(bc, mesh):
                 print("test for v3 test", test)
 
             if hasattr(test, '__iter__'):
-                if len(test) == mesh.dim():
-                    return True
+                ## call(b): [v_i] in R with i==1..nodeCount() -> scalar values
+                ## call(b): [v_i] in R³ with i==1..nodeCount() -> value values
+                if len(test) == mesh.boundary(0).nodeCount():
+                    if len(test[0]) == mesh.dim():
+                        return True
 
                 if test.ndim == 2 and len(test[0]) == mesh.dim():
                     return True
@@ -1134,7 +1144,7 @@ def _assembleUDirichlet(mat, rhs, uDirIndex, uDirichlet):
 
 
 def assembleDirichletBC(mat, boundaryPairs, rhs=None, time=0.0, userData={},
-                        nodePairs=None):
+                        nodePairs=None, dofOffset=0):
     r"""Apply Dirichlet boundary condition.
 
     Apply Dirichlet boundary condition to the system matrix S and rhs vector.
@@ -1149,7 +1159,6 @@ def assembleDirichletBC(mat, boundaryPairs, rhs=None, time=0.0, userData={},
     ----------
     mat: :gimliapi:`GIMLI::RSparseMatrix`
         System matrix of the system equation.
-
     boundaryPair: list()
         List of pairs [:gimliapi:`GIMLI::Boundary`, h].
         The value :math:`h` will assigned to the nodes of the boundaries.
@@ -1159,23 +1168,20 @@ def assembleDirichletBC(mat, boundaryPairs, rhs=None, time=0.0, userData={},
         a value generator function that will be executed at runtime.
         See :py:mod:`pygimli.solver.solver.parseArgToBoundaries`
         and :ref:`tut:modelling_bc` for example syntax,
-
     nodePairs: list() | callable
         List of pairs [nodeID, uD].
         The value uD will assigned to the nodes given there ids.
         This node value settings will overwrite any prior settings due to
         boundaryPair.
-
     rhs: :gimliapi:`GIMLI::RVector`
         Right hand side vector of the system equation will bet set to
         :math:`u_{\text{D}}`
-
     time: float
         Will be forwarded to value generator.
-
     userData: class
         Will be forwarded to value generator.
-
+    dofOffset: int[0]
+        Offset for matrix index.
     """
     if not hasattr(boundaryPairs, '__getitem__'):
         raise BaseException("Boundary pairs need to be a list of "
@@ -1184,15 +1190,15 @@ def assembleDirichletBC(mat, boundaryPairs, rhs=None, time=0.0, userData={},
     #uDirNodes = []   ## []
     uDirVal = dict() ## {nID: val}
 
-    def _genVecUd(n, ud):
+    def _genVecUd(n, ud, dofOffset):
         ret = {}
         if callable(ud):
             pg.error("callable node pairs need to be implemented.")
 
         if isinstance(n, pg.core.Node):
-            idx = n.id()
+            idx = n.id() + dofOffset
         else:
-            idx = n
+            idx = n + dofOffset
 
         if hasattr(ud, '__iter__'):
             # vector valued problem
@@ -1216,10 +1222,15 @@ def assembleDirichletBC(mat, boundaryPairs, rhs=None, time=0.0, userData={},
         if uD is not None:
 
             if isinstance(ent, pg.core.Node):
-                uDirVal.update(_genVecUd(ent, uD))
+                uDirVal.update(_genVecUd(ent, uD, dofOffset))
             else:
-                for n in ent.nodes():
-                    uDirVal.update(_genVecUd(n, uD))
+                if len(uD) == ent.nodeCount():
+                    for i, n in enumerate(ent.nodes()):
+                        uDirVal.update(_genVecUd(n, uD[i], dofOffset))
+                else:
+                    pg.error('Dirichlet values per boundary need to have'
+                             'length of boundary.nodeCount()')
+
 
     if nodePairs is not None:
         #print("nodePairs", nodePairs)
@@ -1229,53 +1240,16 @@ def assembleDirichletBC(mat, boundaryPairs, rhs=None, time=0.0, userData={},
             nodePairs = [nodePairs]
 
         for [n, val] in nodePairs:
-            uDirVal.update(_genVecUd(n, val))
+            uDirVal.update(_genVecUd(n, val, dofOffset))
 
     if not uDirVal.keys():
         return
 
-    # uniqueNodes = unique(uDirNodes)
-
-    # uDirichlet = []
-    # uDirIndex = []
-
-    # def _genVecUd(idx, ud):
-    #     u
-    #     if callable(ud):
-    #         pg.error("callable node pairs need to be implemented.")
-
-    #     if hasattr(ud, '__iter__'):
-    #         # vector valued problem
-    #         if mat.size() % len(ud) != 0:
-    #             print(mat.size(), len(ud))
-    #             pg.error("Matrix size missmatch for vector valued problem")
-    #         else:
-    #             dof = mat.size() // len(ud)
-    #             for d in range(len(ud)):
-    #                 if ud[d] is not None:
-    #                     uDirIndex.append(idx +  d * dof)
-    #                     uDirichlet.append(ud[d])
-    #     else:
-    #         uDirIndex.append(idx)
-    #         uDirichlet.append(ud)
-
-    # for i, n in enumerate(uniqueNodes):
-    #     _genVecUd(n.id(), uDirVal[n.id()])
-
-    # if nodePairs is not None:
-    #     #print("nodePairs", nodePairs)
-
-    #     if len(nodePairs) == 2 and isinstance(nodePairs[0], int):
-    #         # assume a single Node [NodeId, val]
-    #         nodePairs = [nodePairs]
-
-    #     for i, [n, val] in enumerate(nodePairs):
-    #         _genVecUd(n, val)
-
     _assembleUDirichlet(mat, rhs, list(uDirVal.keys()), list(uDirVal.values()))
 
 
-def assembleNeumannBC(rhs, boundaryPairs, nDim=1, time=0.0, userData={}):
+def assembleNeumannBC(rhs, boundaryPairs, nDim=1, time=0.0, userData={},
+                      dofOffset=0):
     r"""Apply Neumann condition to the system matrix S.
 
     Apply Neumann condition to the system matrix S.
@@ -1289,10 +1263,8 @@ def assembleNeumannBC(rhs, boundaryPairs, nDim=1, time=0.0, userData={}):
 
     Parameters
     ----------
-
-    rhs : :py:mod:`Vector`
+    rhs: :py:mod:`Vector`
         Right hand side vector of length node count.
-
     boundaryPair : list()
         List of pairs [ :gimliapi:`GIMLI::Boundary`, g ].
         The value :math:`g` will assigned to the nodes of the boundaries.
@@ -1303,15 +1275,15 @@ def assembleNeumannBC(rhs, boundaryPairs, nDim=1, time=0.0, userData={}):
 
         See :py:mod:`pygimli.solver.solver.parseArgToBoundaries`
         and :ref:`tut:modelling_bc` for example syntax,
-    nDim : int [1]
+    nDim: int [1]
         Number of dimensions for vector valued problems. The rhs array need top
         have the correct size, i.e., number of Nodes * mesh.dimension()
-
-    time : float
+    time: float
         Will be forwarded to value generator.
-
-    userData : class
+    userData: class
         Will be forwarded to value generator.
+    dofOffset: int[0]
+        Offset for matrix index.
     """
     if rhs is None:
         raise BaseException("Neumann Boundary condition needs rhs vector.")
@@ -1372,7 +1344,8 @@ def assembleNeumannBC(rhs, boundaryPairs, nDim=1, time=0.0, userData={}):
                     #     rhs[j + dim*dof] += Se.row(0)[i] * gd
 
 
-def assembleRobinBC(mat, boundaryPairs, rhs=None, time=0.0, userData={}):
+def assembleRobinBC(mat, boundaryPairs, rhs=None, time=0.0, userData={},
+                    dofOffset=0):
     r"""Apply Robin boundary condition.
 
     Apply Robin boundary condition to the system matrix and the rhs vector
@@ -1401,6 +1374,8 @@ def assembleRobinBC(mat, boundaryPairs, rhs=None, time=0.0, userData={}):
         Will be forwarded to value generator.
     userData: dict
         Will be forwarded to value generator.
+    dofOffset: int[0]
+        Offset for matrix index.
     """
     if not hasattr(boundaryPairs, '__getitem__'):
         raise BaseException("Boundary pairs need to be a list of "
@@ -1450,10 +1425,9 @@ def assembleRobinBC(mat, boundaryPairs, rhs=None, time=0.0, userData={}):
             rhs.add(S_Neu, a * u0)
 
 
-def assembleBC_(bc, mesh, mat, rhs, time=None, userData={}):
+def assembleBC(bc, mesh, mat, rhs, time=None, userData={}, dofOffset=0):
     r"""Shortcut to apply all boundary conditions.
 
-    This is a helper function for the solver call.
     Shortcut to apply all boundary conditions will only forward to
     appropriate assemble functions.
 
@@ -1473,14 +1447,17 @@ def assembleBC_(bc, mesh, mat, rhs, time=None, userData={}):
 
     if 'Neumann' in bct:
         assembleNeumannBC(rhs, parseArgToBoundaries(bct.pop('Neumann'), mesh),
-                          nDim=nDim, time=time, userData=userData)
+                          nDim=nDim, time=time, userData=userData,
+                          dofOffset=dofOffset)
     if 'Robin' in bct:
         assembleRobinBC(mat, parseArgToBoundaries(bct.pop('Robin'), mesh),
-                        rhs=rhs, time=time, userData=userData)
+                        rhs=rhs, time=time, userData=userData,
+                        dofOffset=dofOffset)
     if 'Dirichlet' in bct:
         assembleDirichletBC(mat,
                             parseArgToBoundaries(bct.pop('Dirichlet'), mesh),
-                            rhs=rhs, time=time, userData=userData)
+                            rhs=rhs, time=time, userData=userData,
+                            dofOffset=dofOffset)
     if 'Nodes' in bct:
         bc = bct.pop('Nodes')
         nP = []
@@ -1491,11 +1468,11 @@ def assembleBC_(bc, mesh, mat, rhs, time=None, userData={}):
             pg.critical("Nodes boundary need a callable(Node)")
 
         assembleDirichletBC(mat, [], nodePairs=nP,
-                            rhs=rhs, time=time, userData=userData)
+                            rhs=rhs, time=time, userData=userData, dofOffset=dofOffset)
 
     if 'Node' in bct:
         assembleDirichletBC(mat, [], nodePairs=bct.pop('Node'),
-                            rhs=rhs, time=time, userData=userData)
+                            rhs=rhs, time=time, userData=userData, dofOffset=dofOffset)
 
     if len(bct.keys()) > 0:
         pg.warn("Unknown boundary condition[s]" + \
@@ -1836,7 +1813,7 @@ def _feNorm(u, mat):
     Create the Finite Element Norm with a preassembled system matrix.
     """
     return np.sqrt(pg.math.dot(u, mat.mult(u)))
-    
+
 
 def normL2(u, mat=None, mesh=None):
     r"""Create Lebesgue (L2) norm for finite element space.
@@ -1884,7 +1861,7 @@ def normL2(u, mat=None, mesh=None):
     if mat is None:
         pg.warning("No Stiffness matrix or a mesh here, to calculate L2-Norm. "
                    "Returning algebraic l2.")
-        
+
         # M is Identity matrix
         return np.sqrt(pg.math.dot(u, u))
 
@@ -2115,7 +2092,7 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
             pn = False
         pureNeumann = kwargs.pop('pureNeumann', pn)
 
-        assembleBC_(bc, mesh, A, rhs, time=None, userData=userData)
+        assembleBC(bc, mesh, A, rhs, time=None, userData=userData)
 
         u = None
         if 'u' in workSpace:
@@ -2214,7 +2191,7 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
 
         if not dynamic:
             S = createStiffnessMatrix(mesh, a)
-            assembleBC_(bc, mesh, S, F, time=0.0, userData=userData)
+            assembleBC(bc, mesh, S, F, time=0.0, userData=userData)
             return crankNicolson(times, theta, S, M, F, u0=u0,
                                  progress=progress)
 
@@ -2262,7 +2239,7 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
 
             A = M + S * dt * theta
 
-            assembleBC_(bc, mesh, A, br, time=times[n], userData=userData)
+            assembleBC(bc, mesh, A, br, time=times[n], userData=userData)
 
             if 'assembleOnly' in kwargs:
                 return A, br

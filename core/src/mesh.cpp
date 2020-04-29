@@ -803,7 +803,7 @@ Cell * Mesh::findCell(const RVector3 & pos, size_t & count,
 //             __M
 //             std::cout << "More expensive test here" << std::endl;
             cellIDX__.clear();
-            std::for_each(cellVector_.begin(), cellVector_.end(), std::mem_fun(&Cell::untag));
+            std::for_each(cellVector_.begin(), cellVector_.end(), std::mem_fn(&Cell::untag));
             //!** *sigh, no luck with simple kd-tree search, try more expensive full slope search
             count = 0;
             for (Index i = 0; i < this->cellCount(); i ++) {
@@ -996,7 +996,7 @@ void Mesh::setCellMarkers(const RVector & attribute){
 IVector Mesh::cellMarkers() const{
     IVector tmp(cellCount());
     std::transform(cellVector_.begin(), cellVector_.end(), tmp.begin(),
-                    std::mem_fun(&Cell::marker));
+                    std::mem_fn(&Cell::marker));
     return tmp;
 }
 
@@ -1024,17 +1024,29 @@ PosVector Mesh::positions(const IndexArray & idx) const {
     return pos;
 }
 
+IndexArray Mesh::nodeIDs(bool withSecNodes) const{
+    IndexArray ids(this->nodeCount(withSecNodes));
+    std::transform(nodeVector_.begin(), nodeVector_.end(), ids.begin(),
+                   std::mem_fn(&Node::id));
+    return ids;
+}
+void Mesh::setNodeIDs(IndexArray & ids){
+    for (Index i = 0; i < ids.size(); i ++) {
+        nodeVector_[i]->setId(ids[i]);
+    }
+}
+
 PosVector Mesh::cellCenters() const {
     PosVector pos(this->cellCount());
     std::transform(cellVector_.begin(), cellVector_.end(), pos.begin(),
-                   std::mem_fun(&Cell::center));
+                   std::mem_fn(&Cell::center));
     return pos;
 }
 
 PosVector Mesh::boundaryCenters() const {
     PosVector pos(this->boundaryCount());
     std::transform(boundaryVector_.begin(), boundaryVector_.end(), pos.begin(),
-                   std::mem_fun(&Boundary::center));
+                   std::mem_fn(&Boundary::center));
     return pos;
 }
 
@@ -1045,7 +1057,7 @@ RVector & Mesh::cellSizes() const{
 
         std::transform(cellVector_.begin(), cellVector_.end(),
                        cellSizesCache_.begin(),
-                       std::mem_fun(&Cell::size));
+                       std::mem_fn(&Cell::size));
     } else {
         if (!staticGeometry_){
             cellSizesCache_.resize(0);
@@ -1062,7 +1074,7 @@ RVector & Mesh::boundarySizes() const{
 
         std::transform(boundaryVector_.begin(), boundaryVector_.end(),
                        boundarySizesCache_.begin(),
-                       std::mem_fun(&MeshEntity::size));
+                       std::mem_fn(&MeshEntity::size));
     } else {
         if (!staticGeometry_){
             boundarySizesCache_.resize(0);
@@ -1100,36 +1112,13 @@ PosVector & Mesh::boundarySizedNormals() const {
 void Mesh::sortNodes(const IndexArray & perm){
 
     for (Index i = 0; i < nodeVector_.size(); i ++) nodeVector_[i]->setId(perm[i]);
-  //    sort(nodeVector_.begin(), nodeVector_.end(), std::less< int >(mem_fun(&BaseEntity::id)));
+  //    sort(nodeVector_.begin(), nodeVector_.end(), std::less< int >(mem_fn(&BaseEntity::id)));
     sort(nodeVector_.begin(), nodeVector_.end(), lesserId< Node >);
-    recountNodes();
 }
 
 void Mesh::recountNodes(){
+    __MS('is in use?')
     for (Index i = 0; i < nodeVector_.size(); i ++) nodeVector_[i]->setId(i);
-}
-
-void Mesh::createClosedGeometry(const PosVector & vPos, int nSegments, double dxInner){
-    THROW_TO_IMPL
-    //this function should not be part of mesh
-    //EAMeshWrapper eamesh(vPos, nSegments, dxInner, *this);
-}
-
-void Mesh::createClosedGeometryParaMesh(const PosVector & vPos, int nSegments, double dxInner){
-    createClosedGeometry(vPos, nSegments, dxInner);
-    createNeighborInfos();
-    for (Index i = 0; i < cellCount(); i ++) cell(i).setMarker(i);
-}
-
-void Mesh::createClosedGeometryParaMesh(const PosVector & vPos, int nSegments,
-                                         double dxInner, const PosVector & addit){
-    THROW_TO_IMPL
-    //this function should not be part of meshEntities
-//   EAMeshWrapper eamesh;
-//   eamesh.createMesh(vPos, nSegments, dxInner, addit);
-//   eamesh.mesh(*this);
-//   createNeighborInfos();
-//   for (Index i = 0; i < cellCount(); i ++) cell(i).setMarker(i);
 }
 
 Mesh Mesh::createH2() const {
@@ -2037,14 +2026,14 @@ void Mesh::dataInfo() const{
 
 IVector Mesh::nodeMarkers() const {
     IVector tmp(nodeCount());
-    std::transform(nodeVector_.begin(), nodeVector_.end(), tmp.begin(), std::mem_fun(& Node::marker));
+    std::transform(nodeVector_.begin(), nodeVector_.end(), tmp.begin(), std::mem_fn(& Node::marker));
     return tmp;
 }
 
 IVector Mesh::boundaryMarkers() const {
     IVector tmp(boundaryCount());
     std::transform(boundaryVector_.begin(), boundaryVector_.end(), tmp.begin(),
-                   std::mem_fun(&Boundary::marker));
+                   std::mem_fn(&Boundary::marker));
     return tmp;
 }
 
@@ -2052,12 +2041,12 @@ RVector Mesh::cellAttributes() const{
     #ifdef _MSC_VER
 	std::vector < double > tmp(cellCount());
     std::transform(cellVector_.begin(), cellVector_.end(), tmp.begin(),
-                    std::mem_fun(&Cell::attribute));
+                    std::mem_fn(&Cell::attribute));
 	return tmp;
 	#else
 	RVector tmp(cellCount());
     std::transform(cellVector_.begin(), cellVector_.end(), tmp.begin(),
-                    std::mem_fun(&Cell::attribute));
+                    std::mem_fn(&Cell::attribute));
     return tmp;
 	#endif
 }
@@ -2082,11 +2071,6 @@ void Mesh::mapCellAttributes(const std::map < float, float > & aMap){
             if (itm != aMap.end()) cell(i).setAttribute((*itm).second);
         }
     }
-}
-
-void Mesh::mapAttributeToParameter(const IndexArray & cellMapIndex,
-                                    const RVector & attributeMap, double defaultVal){
-    DEPRECATED
 }
 
 void Mesh::mapBoundaryMarker(const std::map < int, int > & aMap){
@@ -2176,7 +2160,7 @@ void Mesh::geometryChanged(){
 }
 Mesh & Mesh::transform(const RMatrix & mat){
 //         std::for_each(nodeVector_.begin(), nodeVector_.end(),
-//                        bind2nd(std::mem_fun(&Node::pos().transform), mat));
+//                        bind2nd(std::mem_fn(&Node::pos().transform), mat));
     for (auto &n: nodeVector_) n->transform(mat);
     for (auto &n: holeMarker_) n.transform(mat);
     for (auto &n: regionMarker_) n.transform(mat);
