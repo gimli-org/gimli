@@ -189,7 +189,6 @@ def drawStreamLines(ax, mesh, data, label=None, radius=0.01, **kwargs):
 
     Examples
     --------
-    >>> import pyvista as pv
     >>> import pygimli as pg
     >>> from pygimli.viewer.pv import drawStreamLines
     >>>
