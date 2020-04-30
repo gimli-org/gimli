@@ -1191,6 +1191,8 @@ def assembleDirichletBC(mat, boundaryPairs, rhs=None, time=0.0, userData={},
             if isinstance(ent, pg.core.Node):
                 uDirVal.update(_genVecUd(ent, uD, dofOffset))
             else:
+                if isinstance(uD, float):
+                    uD = [uD]
                 if len(uD) == ent.nodeCount():
                     for i, n in enumerate(ent.nodes()):
                         uDirVal.update(_genVecUd(n, uD[i], dofOffset))

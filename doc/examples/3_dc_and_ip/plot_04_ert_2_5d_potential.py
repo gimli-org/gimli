@@ -22,6 +22,7 @@ a 2D conductivity distribution and 3D point sources.
 # wave number :math:`k`. (:math:`D^{(a)}(u(x,y,z)) \mapsto i^{|a|}k^a u(x,z)`)
 #
 # .. math::
+#
 #     \nabla\cdot( \sigma \nabla u ) - \sigma k^2 u
 #     &=-I\delta(\vec{r}-\vec{r}_{\text{s}}) \in R^2 \\
 #     \frac{\partial }{\partial x}\left(\cdot \sigma \frac{\partial u}{\partial x}\right) +
@@ -42,6 +43,7 @@ from pygimli.viewer.mpl import drawStreams
 # We know the exact solution by analytical formulas:
 
 # .. math::
+#
 #     u = \frac{1}{2\pi\sigma} \cdot (K_0(\|r-r^+_s\| k)+K_0(\|r-r^-_s\| k))
 
 # with K0 being the Bessel function of first kind, and the normal and mirror
@@ -82,8 +84,9 @@ def uAnalytical(p, sourcePos, k, sigma=1):
 ###############################################################################
 # We assume the so-called mixed boundary conditions (Dey & Morrison, 1979).
 # .. math::
-      \sigma k \frac{{\bf r}\cdot {\bf n}}{{|r|}} \frac{K_1(|r-r_s|k)}{K_0(|r-r_s|k)}
 #
+#    \sigma k \frac{{\bf r}\cdot {\bf n}}{{|r|}} \frac{K_1(|r-r_s|k)}{K_0(|r-r_s|k)}
+
 def mixedBC(boundary, userData):
     """Mixed boundary conditions.
 
@@ -186,7 +189,7 @@ uAna = pg.Vector(list(map(lambda p__: uAnalytical(p__, sourcePosA, k, sigma),
 uAna -= pg.Vector(list(map(lambda p__: uAnalytical(p__, sourcePosB, k, sigma),
                        mesh.positions())))
 
-ax = show(mesh, data=pg.abs(uAna-u), cMap="Reds",
+ax = pg.show(mesh, data=pg.abs(uAna-u), cMap="Reds",
           orientation='horizontal', label='|$u_{exact}$ -$u$|', 
           logScale=True, cMin=1e-7, cMax=1e-1,
           contourLines=False,
