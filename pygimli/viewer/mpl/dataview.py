@@ -72,7 +72,7 @@ def showValMapPatches(vals, xVec=None, yVec=None, dx=1, dy=None, **kwargs):
 
     gci, ymap = drawValMapPatches(ax, vals, xVec=xVec, yVec=yVec, dx=dx, dy=dy,
                             **kwargs)
-    
+
     cbar = None
     if not kwargs.pop('colorBar', False):
         cbar = pg.viewer.mpl.createColorBar(gci, **kwargs)
@@ -139,7 +139,7 @@ def drawValMapPatches(ax, vals, xVec=None, yVec=None, dx=1, dy=None, **kwargs):
     pp.set_edgecolor(None)
     pp.set_linewidths(0.0)
     pp.set_array(vals)
-    
+
     gci = ax.add_collection(pp)
 
     if circular:
@@ -364,11 +364,11 @@ def patchMatrix(mat, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
 
 
 def plotMatrix(mat, *args, **kwargs):
-    """Naming conventions. Use drawMatrix or showMatrix"""
-    pg.deprecated("use drawMatrix or showMatrix")
-    return showMatrix(*args, **kwargs)
+    """Naming conventions. Use drawDataMatrix or showDataMatrix"""
+    pg.deprecated("use drawDataMatrix or showMatrix")
+    return showDataMatrix(*args, **kwargs)
 
-def showMatrix(mat, xmap=None, ymap=None, **kwargs):
+def showDataMatrix(mat, xmap=None, ymap=None, **kwargs):
     """Show value map as matrix.
 
     Returns
@@ -382,7 +382,7 @@ def showMatrix(mat, xmap=None, ymap=None, **kwargs):
 
     # pg._r(ax)
 
-    gci = drawMatrix(ax, mat, **kwargs)
+    gci = drawDataMatrix(ax, mat, **kwargs)
     # pg._y(**kwargs)
 
     cbar = None
@@ -396,7 +396,7 @@ def showMatrix(mat, xmap=None, ymap=None, **kwargs):
 
     return ax, cbar
 
-def drawMatrix(ax, mat, xmap=None, ymap=None, cMin=None, cMax=None,
+def drawDataMatrix(ax, mat, xmap=None, ymap=None, cMin=None, cMax=None,
                logScale=None, label=None, **kwargs):
     """Draw previously generated (generateVecMatrix) matrix.
 
@@ -502,12 +502,12 @@ def showVecMatrix(xvec, yvec, vals, full=False, **kwargs):
         colorbar object
     """
     A, xmap, ymap = generateMatrix(xvec, yvec, vals, full=full)
-    return showMatrix(A, xmap=xmap, ymap=ymap, **kwargs)
+    return showDataMatrix(A, xmap=xmap, ymap=ymap, **kwargs)
 
 
 def drawVecMatrix(ax, xvec, yvec, vals, full=False, **kwargs):
     A, xmap, ymap = generateMatrix(xvec, yvec, vals, full=full)
-    return drawMatrix(ax, A, xmap=xmap, ymap=ymap, **kwargs)
+    return drawDataMatrix(ax, A, xmap=xmap, ymap=ymap, **kwargs)
 
 
 def plotDataContainerAsMatrix(*args, **kwargs):
@@ -531,7 +531,7 @@ def showDataContainerAsMatrix(data, x=None, y=None, v=None, **kwargs):
         for token in x:
             num *= mul
             num += data(token) + plus
-            xToken += token + ' '    
+            xToken += token + ' '
         x = num.copy()
 
 #        kwargs.setdefault('xmap', {n: i for i, n in enumerate(np.unique(x))})

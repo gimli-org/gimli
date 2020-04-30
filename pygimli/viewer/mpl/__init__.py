@@ -55,6 +55,8 @@ from .overlayimage import (cacheFileName,
                            underlayMap,
                            underlayBKGMap)
 
+from .matrixview import (drawMatrix)
+
 # TODO example scripts for the following and refactor is needed
 # maybe ploter should named show or draw
 from .dataview import (drawSensorAsMarker,  # dups to meshview??
@@ -62,8 +64,8 @@ from .dataview import (drawSensorAsMarker,  # dups to meshview??
                        drawVecMatrix,
                        showValMapPatches,
                        drawValMapPatches,
-                       showMatrix,
-                       drawMatrix,
+                       showDataMatrix,
+                       drawDataMatrix,
                        generateMatrix,
                        showDataContainerAsMatrix,
                        patchMatrix, # deprectated (Naming)

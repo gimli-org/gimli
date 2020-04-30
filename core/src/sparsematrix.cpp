@@ -44,7 +44,7 @@ void SparseMatrix< double >::copy_(const SparseMapMatrix< double, Index > & S){
 
     this->colPtr_[0] = 0;
 
-    Index colPtr = 0; 
+    Index colPtr = 0;
     row = 0;
     for (typename std::vector < std::map < Index, double > >::iterator
          it = rowColMap.begin(); it != rowColMap.end(); it++){
@@ -83,7 +83,7 @@ void SparseMatrix< Complex >::copy_(const SparseMapMatrix< Complex, Index > & S)
 
     this->colPtr_[0] = 0;
 
-    Index colPtr = 0; 
+    Index colPtr = 0;
     row = 0;
     for (typename std::vector < std::map < Index, Complex > >::iterator
          it = rowColMap.begin(); it != rowColMap.end(); it++){
@@ -124,7 +124,7 @@ template <> void SparseMapMatrix< double, Index >::
         for (Index j = 0, jmax = A.mat().cols(); j < jmax; j++){
             double v = A.getVal(i, j);
             if (::fabs(v) > tol){
-                (*this)[A.rowIDs()[i]][A.colIDs()[j]] += v * scale;
+                this->addVal(A.rowIDs()[i], A.colIDs()[j], v * scale);
             }
         }
     }

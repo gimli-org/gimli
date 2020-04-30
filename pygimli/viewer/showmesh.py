@@ -15,6 +15,7 @@ from .. core.logger import renameKwarg
 try:
     import pygimli as pg
     from .mpl import drawMesh, drawModel, drawField
+    from .mpl import drawMatrix
     from .mpl import drawSensors
     from .mpl import createColorBar, updateColorBar
     from .mpl import drawStreams, addCoverageAlpha
@@ -40,8 +41,12 @@ def show(obj=None, data=None, **kwargs):
 
     Parameters
     ----------
-    obj: :gimliapi:`GIMLI::Mesh` or list of meshes | DataContainer
-        Mesh or data object
+    obj: obj
+        obj can be so far.
+        * :gimliapi:`GIMLI::Mesh` or list of meshes
+        * DataContainer
+        * pg.core.Sparse[Map]Matrix
+
     data: iterable
         Optionally data to visualize. See appropriate show function.
 
@@ -71,6 +76,10 @@ def show(obj=None, data=None, **kwargs):
     if isinstance(obj, pg.DataContainerERT):
         from pygimli.physics.ert import showERTData
         return showERTData(obj, vals=kwargs.pop('vals', data), **kwargs)
+
+    if isinstance(obj, pg.core.MatrixBase):
+        ax, _ = pg.show()
+        return drawMatrix(ax, obj, **kwargs)
 
     mesh = kwargs.pop('mesh', obj)
 
@@ -315,7 +324,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
                     kwargs['nCols'] = kwargs.pop('nCols', kwargs['nLevs']-1)
                     if label is None:
                         label = ""
-                        
+
                     gci = drawField(ax, mesh, data, **kwargs)
                 else:
                     pg.error("Data size invalid")

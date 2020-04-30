@@ -1117,7 +1117,7 @@ void Mesh::sortNodes(const IndexArray & perm){
 }
 
 void Mesh::recountNodes(){
-    __MS('is in use?')
+    __MS("is in use?")
     for (Index i = 0; i < nodeVector_.size(); i ++) nodeVector_[i]->setId(i);
 }
 

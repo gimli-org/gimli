@@ -281,15 +281,15 @@ public:
 
     inline const_iterator begin() const { return C_.begin(); }
     inline const_iterator end()   const { return C_.end(); }
-        
+
     // void add(const ElementMatrix < double > & A){
     //     return this->add(A, ValueType(1.0));
     // }
 
     void add(const ElementMatrix < double > & A, ValueType scale=1.0);
-    void addToCol(Index id, const ElementMatrix < double > & A, 
+    void addToCol(Index id, const ElementMatrix < double > & A,
                   ValueType scale=1.0, bool isDiag=false);
-    void addToRow(Index id, const ElementMatrix < double > & A, 
+    void addToRow(Index id, const ElementMatrix < double > & A,
                   ValueType scale=1.0, bool isDiag=false);
 
 #define DEFINE_SPARSEMAPMATRIX_UNARY_MOD_OPERATOR__(OP) \
@@ -371,28 +371,33 @@ public:
     inline void setVal(IndexType i, IndexType j, const ValueType & val) {
         if ((stype_ < 0 && i > j) || (stype_ > 0 && i < j)) return;
 
-        if ((i >= 0 && i < rows_) && (j >=0 && j < cols_)) {
-            (*this)[i][j] = val;
-        } else {
-            throwLengthError(
-                              WHERE_AM_I +
-                              " i = " + str(i) + " max_row = " + str(rows_) +
-                              " j = " + str(j) + " max_col = " + str(cols_)
-                             );
-        }
+        if (i >= rows_) rows_ = i+1;
+        if (j >= cols_) cols_ = j+1;
+        (*this)[i][j] = val;
+        // if ((i >= 0 && i < rows_) && (j >=0 && j < cols_)) {
+        // } else {
+        //     throwLengthError(
+        //                       WHERE_AM_I +
+        //                       " i = " + str(i) + " max_row = " + str(rows_) +
+        //                       " j = " + str(j) + " max_col = " + str(cols_)
+        //                      );
+        // }
     }
     inline void addVal(IndexType i, IndexType j, const ValueType & val) {
         if ((stype_ < 0 && i > j) || (stype_ > 0 && i < j)) return;
+        if (i >= rows_) rows_ = i+1;
+        if (j >= cols_) cols_ = j+1;
+        (*this)[i][j] += val;
 
-        if ((i >= 0 && i < rows_) && (j >=0 && j < cols_)) {
-            (*this)[i][j] += val;
-        } else {
-            throwLengthError(
-                              WHERE_AM_I +
-                              " i = " + str(i) + " max_row = " + str(rows_) +
-                              " j = " + str(j) + " max_col = " + str(cols_)
-                             );
-        }
+        // if ((i >= 0 && i < rows_) && (j >=0 && j < cols_)) {
+        //     (*this)[i][j] += val;
+        // } else {
+        //     throwLengthError(
+        //                       WHERE_AM_I +
+        //                       " i = " + str(i) + " max_row = " + str(rows_) +
+        //                       " j = " + str(j) + " max_col = " + str(cols_)
+        //                      );
+        // }
     }
 
 
