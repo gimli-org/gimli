@@ -49,13 +49,13 @@ def waitOnExit():
 
             if len(plt.get_fignums()) > 0:
                 pg.info('Showing pending widgets on exit. '
-                        'Close all figures or Ctr-C to quit the programm')
+                        'Close all figures or Ctrl-C to quit the programm')
                 pg.wait()
 
 # this can't be changed after import
 if pg.rc['waitOnExit'] is True:
     atexit.register(waitOnExit)
-                        
+
 
 def wait(**kwargs):
     """TODO WRITEME."""

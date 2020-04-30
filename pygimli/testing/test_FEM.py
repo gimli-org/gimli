@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# write a correct test!
 import unittest
 
 import pygimli as pg

@@ -331,8 +331,10 @@ def generateBoundaryValue(boundary, arg, time=0.0, userData={},
             # val(boundary, time=0, userData={})
             val = arg(boundary, **kwargs)
             try:
+                ## test if returning value is float
+                ## and convert them into float for all nodes
                 if isinstance(float(val), float):
-                    val = np.ndarray([float(val)] * ent.nodeCount())
+                    val = np.ones(boundary.nodeCount(), dtype=float)*val
             except BaseException as e:
                 pass
 
@@ -1192,12 +1194,13 @@ def assembleDirichletBC(mat, boundaryPairs, rhs=None, time=0.0, userData={},
                 uDirVal.update(_genVecUd(ent, uD, dofOffset))
             else:
                 if isinstance(uD, float):
-                    uD = [uD]
+                    pg.critical(uD)
+                    uD = [uD] * ent.nodeCount()
                 if len(uD) == ent.nodeCount():
                     for i, n in enumerate(ent.nodes()):
                         uDirVal.update(_genVecUd(n, uD[i], dofOffset))
                 else:
-                    pg.error('Dirichlet values per boundary need to have'
+                    pg.error('Dirichlet values per boundary need to have '
                              'length of boundary.nodeCount()')
 
 
