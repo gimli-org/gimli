@@ -44,9 +44,7 @@ sys.path.append(os.path.abspath(SPHINXDOC_PATH))
 sys.path.append(os.path.abspath(join(SPHINXDOC_PATH, '_sphinx-ext')))
 
 # The following line is necessary for the Tools section
-sys.path.append(os.path.abspath(join(TRUNK_PATH, 'python/apps')))
-sys.path.append(os.path.abspath(join(TRUNK_PATH, 'python')))
-sys.path.append(os.path.abspath(join(TRUNK_PATH, 'python/pygimli')))
+sys.path.append(os.path.abspath(join(TRUNK_PATH, 'pygimli')))
 
 # -- General configuration ----------------------------------------------------
 
@@ -174,8 +172,8 @@ autosummary_imported_members = True
 
 autodoc_default_options = {
     'imported-members': True,
-    'special-members': '__init__',
-    'undoc-members': True,
+    # 'special-members': '__init__',
+    'undoc-members': False,
 }
 
 # Get mathjax
@@ -307,7 +305,7 @@ html_use_smartypants = True
 
 # Additional templates that should be rendered to pages, maps page names to
 # template names.
-html_additional_pages = {'index': 'index.html'}
+html_additional_pages = {'index': 'index.html', 'publist': 'publications.html'}
 
 # If false, no module index is generated.
 html_domain_indices = True
@@ -335,7 +333,7 @@ html_show_copyright = True
 # If true, an OpenSearch description file will be output, and all pages will
 # contain a <link> tag referring to it.  The value of this option must be the
 # base URL from which the finished HTML is served.
-# html_use_opensearch = ''
+html_use_opensearch = 'https://pygimli.org'
 
 # This is the file name suffix for HTML files (e.g. ".xhtml").
 # html_file_suffix = None
@@ -501,13 +499,17 @@ for dist in pkg_resources.find_distributions(SPHINXDOC_PATH +
 # -- Options for doxylink -----------------------------------------------------
 doxylink = {'gimliapi': (join(DOXY_BUILD_DIR, 'gimli.tag'), 'https://www.pygimli.org/gimliapi')}
 
+# Create HTML table
+from bib2html import write_html
+publications = write_html()
+
 # Create small gallery of all tutorials and examples in the sidebar.
 make_gallery(SPHINXDOC_PATH, DOC_BUILD_DIR)
 
 # Add carousel to start page
 from paper_carousel import showcase
 random.shuffle(showcase) # mix it up
-html_context = {"showcase": showcase}
+html_context = {"showcase": showcase, "publications": publications}
 
 srclink_project = 'https://github.com/gimli-org/gimli'
 srclink_src_path = 'doc/'

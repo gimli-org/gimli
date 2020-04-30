@@ -67,6 +67,8 @@ Functions
 .. raw:: html
 
      <div style='clear:both'></div>
+
+
 {%- endfor %}
 {% endif %}
 {% endblock %}
@@ -83,7 +85,6 @@ Classes
   :members:
   :undoc-members:
   :special-members: __init__
-  :inherited-members:
 
 {%- endfor %}
 {% endif %}

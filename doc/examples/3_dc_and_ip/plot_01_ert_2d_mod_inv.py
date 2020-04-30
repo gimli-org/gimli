@@ -83,41 +83,49 @@ data.save('simple.dat')
 ert.show(data)
 
 ###############################################################################
-# Initialize the ERTManager for inversion
-mgr = ert.ERTManager()
+# Initialize the ERTManager. You can initialize the manager with a data file 
+# itself or a filename.
+mgr = ert.ERTManager('simple.dat')
 
 ###############################################################################
-# To avoid an inverse crime the inversion needs to be calculated on a different
-# mesh that has no geometric signatures of the simulation mesh.
-mesh = mt.createParaMesh(data.sensors(), paraDX=0.3, maxCellArea=0.2)
-
-###############################################################################
-# run the inversion with the data and the mesh
-mgr.invert(data, mesh=mesh, lam=20, verbose=True)
+# Run the inversion with the preset data. The Inversion mesh will be created 
+# with default settings.
+mgr.invert(lam=20, verbose=True)
 
 ###############################################################################
 # Let the ERTManger show you the model and fitting results of the last
-# successful run.
-# Show data, model response, and model
+# successful run. Shows data, model response, and model.
+#
 mgr.showResultAndFit()
 
 ###############################################################################
-# Optional: set a different mesh to the inversion
-# Lowest cell marker will be the inversion boundary
-grid = pg.createGrid(x=np.linspace(start=-12, stop=12, num=33),
-                     y=-pg.cat([0], pg.utils.grange(0.5, 8, n=8)),
-                     marker=2)
-
-mesh = pg.meshtools.appendTriangleBoundary(grid, marker=1,
+# You can also provide your own mesh (e.g., a structured grid if you like them)
+# 
+inversionDomain = pg.createGrid(x=np.linspace(start=-12, stop=12, num=33),
+                                y=-pg.cat([0], pg.utils.grange(0.5, 8, n=8)),
+                                marker=2)
+###############################################################################
+# The inversion domain for ERT problems needs a boundary which represents the 
+# far regions in the subsurface of the halfspace.
+# Give a cell marker lower than the marker for the inversion region, the lowest 
+# cell marker in the mesh will be the inversion boundary region.
+#
+mesh = pg.meshtools.appendTriangleBoundary(inversionDomain, marker=1,
                                            xbound=50, ybound=50)
 
+###############################################################################
+# The Inversion can be called with data and mesh as argument as well
+#
 model = mgr.invert(data, mesh=mesh, lam=20, verbose=True)
 
 ###############################################################################
-# You can access to all data and plot them manually
+# You can of course access to mesh and model and plot them for your own.
+# Note, that the cells of the parametric domain of your mesh might be in 
+# a different order than the values in the model array. 
+# The manager can help to permutate them into the right order.
 #
-pg.show(mgr.fop.paraDomain, mgr.paraModel(model), label='Model')
-pg.info('Inversion stopped with chi² = {0:.3}'.format(mgr.fw.chi2()))
+modelPD = mgr.paraModel(model)
+pg.show(mgr.paraDomain, modelPD, label='Model', cMap='Spectral_r',
+        logScale=True, cMin=10, cMax=100)
 
-# Stop the script here and wait until all figure are closed.
-pg.wait()
+pg.info('Inversion stopped with chi² = {0:.3}'.format(mgr.fw.chi2()))

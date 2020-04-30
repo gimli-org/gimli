@@ -33,23 +33,7 @@ Authors
 
 We gratefully acknowledge all contributors to the pyGIMLi open-source project and look forward to `your contribution <https://pygimli.org/contrib.html>`_!
 
-* `Carsten Rücker <https://orcid.org/0000-0002-8231-9861>`_
-
-  *Berlin University of Technology, Department of Applied Geophysics, Berlin, Germany*
-
-  carsten@pygimli.org
-
-* `Thomas Günther <https://orcid.org/0000-0001-5409-0273>`_
-
-  *Leibniz Institute for Applied Geophysics, Hannover, Germany*
-
-  thomas@pygimli.org
-
-* `Florian Wagner <https://orcid.org/0000-0001-7407-9741>`_
-
-  *RWTH Aachen University, Institute for Applied Geophysics and Geothermal Energy, Aachen, Germany*
-
-  florian@pygimli.org
+.. include:: ../AUTHORS.rst
 
 .. _sec:about_gimli_inversion:
 

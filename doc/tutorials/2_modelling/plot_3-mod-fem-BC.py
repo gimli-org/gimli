@@ -40,7 +40,7 @@ grid = pg.createGrid(x=np.linspace(-1.0, 1.0, 21),
 # of the individual boundaries b.
 
 def uDirichlet(boundary):
-    """Return a solution value for coordinate p."""
+    """Return a solution value for a given boundary. Scalar values are applied to all nodes of the boundary."""
     return 4.0
 
 dirichletBC = {1: 1,                                           # left
@@ -53,8 +53,7 @@ dirichletBC = {1: 1,                                           # left
 u = solve(grid, f=1., bc={'Dirichlet': dirichletBC})
 
 # Note that showMesh returns the created figure ax and the created colorBar.
-ax, cbar = show(grid, data=u, label='Solution $u$',
-                levels=np.linspace(1.0, 4.0, 17), hold=1)
+ax, cbar = show(grid, data=u, label='Solution $u$')
 
 show(grid, ax=ax)
 
@@ -113,7 +112,5 @@ u = solve(grid, f=1., bc={'Node': [grid.findNearestNode([0.0, 0.0]), 1.0]})
 
 ax, _ = pg.show(grid, u, label='Solution $u$',)
 show(grid, ax=ax)
-
-pg.wait()
 
 

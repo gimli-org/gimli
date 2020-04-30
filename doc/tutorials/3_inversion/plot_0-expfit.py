@@ -137,8 +137,9 @@ inv.setVerbose(True)
 inv.setModel(f.createStartModel())
 print(inv.run())
 inv.echoStatus()
+pg.wait()
 
 ###############################################################################
 # The result is pretty much the same as before but for stronger equivalence or
 # smoothness-constrained regularization prior information might help a lot.
-pg.wait()
+

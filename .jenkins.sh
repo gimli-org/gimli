@@ -24,7 +24,7 @@ python -c "import numpy; print(numpy.__version__)"
 python -c "import matplotlib; print(matplotlib.__version__)"
 
 # Check if core was changed
-core_update=$(git --git-dir=trunk/.git diff --name-only $GIT_PREVIOUS_COMMIT $GIT_COMMIT | grep -c src || true)
+core_update=$(git --git-dir=trunk/.git diff --name-only $GIT_PREVIOUS_COMMIT $GIT_COMMIT | grep -c core/src || true)
 
 # Set this to 1 if you want clean build (also of dependencies)
 export CLEAN=0
@@ -70,7 +70,7 @@ fi
 #############################
 
 # Test pygimli
-export PYTHONPATH=`pwd`/../trunk/python:$PYTHONPATH
+export PYTHONPATH=`pwd`/../trunk:$PYTHONPATH
 
 OMP_THREAD_LIMIT=1 python -c "import pygimli; pygimli.test(show=False, abort=True, htmlreport=\"build_tests.html\")"
 
@@ -81,9 +81,6 @@ OMP_THREAD_LIMIT=1 python -c "import pygimli; pygimli.test(show=False, abort=Tru
 export DISPLAY=:99.0
 export PYVISTA_OFF_SCREEN=True
 # ------------------------------------------------
-export PUBLISH="True" # for correct PATH settings in sidebar gallery
-export PATH=`pwd`/../trunk/python/apps:$PATH
-chmod +x ../trunk/python/apps/*
 
 make clean-gallery
 make doc # = doxygen, sphinxapi, sphinxpdf, sphinxhtml

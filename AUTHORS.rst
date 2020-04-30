@@ -1,0 +1,23 @@
+* `Carsten Rücker <https://orcid.org/0000-0002-8231-9861>`_
+
+  *Berlin University of Technology, Department of Applied Geophysics, Berlin, Germany*
+
+  carsten@pygimli.org
+
+* `Thomas Günther <https://orcid.org/0000-0001-5409-0273>`_
+
+  *Leibniz Institute for Applied Geophysics, Hannover, Germany*
+
+  thomas@pygimli.org
+
+* `Florian Wagner <https://orcid.org/0000-0001-7407-9741>`_
+
+  *RWTH Aachen University, Institute for Applied Geophysics and Geothermal Energy, Aachen, Germany*
+
+  florian@pygimli.org
+
+* Friedrich Dinsel
+
+  *Berlin University of Technology, Department of Applied Geophysics, Berlin, Germany*
+
+  friedrich@pygimli.org

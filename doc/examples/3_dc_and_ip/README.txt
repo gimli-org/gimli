@@ -1,2 +1,2 @@
-DC Resistivity and Induced Polarization
----------------------------------------
+ERT and Induced Polarization
+----------------------------

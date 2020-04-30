@@ -10,7 +10,7 @@ To build pyGIMLi from source, the following tools are required:
 * gcc >= 4.4
 * >=Python-3.5 | >=Python-2.7
 * numpy-dev
-* >=matplotlib-1.3.0
+* >=matplotlib-3.0
 * >=clang++-3.6.0 (3.7.0, 3.8.0)
 * libclang-3.7-dev
 * >=llvm-3.6.0 (3.7.0, 3.8.0)
@@ -34,7 +34,7 @@ These tools can be installed system-wide with your native package manager (i.e.
 apt-get). If not found, the provided build scripts will automatically download
 and compile the necessary components.
 
-* libboost >=1.46 (thread, python) (1.46, 1.48, 1.49, 1.51, 1.52, 1.53, 1.57)
+* libboost >=1.46 (python) (1.46, 1.48, 1.49, 1.51, 1.52, 1.53, 1.57)
 * blas and lapack for suitesparse (system or auto via cmake)
 * SuiteSparse (http://faculty.cse.tamu.edu/davis/suitesparse.html)
 * cppunit

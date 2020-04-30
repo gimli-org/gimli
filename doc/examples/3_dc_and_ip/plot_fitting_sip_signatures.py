@@ -68,6 +68,7 @@ sip = SIPSpectrum(f=f, amp=np.abs(Z), phi=-np.angle(Z))
 
 sip.showAll()
 sip.fitDebyeModel(new=True, showFit=True)
+pg.wait()
 
 ###############################################################################
 # .. note::
@@ -75,4 +76,3 @@ sip.fitDebyeModel(new=True, showFit=True)
 #   This tutorial was kindly contributed by Maximilian Weigand (University of
 #   Bonn). If you also want to contribute an interesting example, check out
 #   our `contribution guidelines https://www.pygimli.org/contrib.html`.
-pg.wait()

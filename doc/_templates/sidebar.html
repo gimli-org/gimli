@@ -1,6 +1,10 @@
       {%- if pagename == 'index' %}
       <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <strong>pyGIMLi 1.1 out now!</strong> See what's new <a target="_blank" href="https://github.com/gimli-org/gimli/blob/master/CHANGELOG.md">here</a>.
+        <strong>pyGIMLi 1.1 out now!</strong> See what's new in the <a
+        target="_blank"
+        href="https://github.com/gimli-org/gimli/blob/master/CHANGELOG.md">Changelog</a>
+        and our <a href="https://doi.org/10.5194/egusphere-egu2020-18751",
+        target="_blank">EGU2020 contribution</a>.
         <button type="button" class="close" data-dismiss="alert" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
@@ -54,7 +58,7 @@
             </li>
             {%- if 'index' not in pagename %}
             {%- if show_srclink_url %}
-            <!-- <li class="divider"></li> -->
+            <div class="border-top my-3"></div>
             <li class="nav-item">
               <a href="{{ show_srclink_url }}" rel="nofollow" target="_blank"><i class="fas fa-code fa-fw"></i> View page source</a>
             </li>
