@@ -207,8 +207,8 @@ def createWorld(start, end, marker=1, area=0., layers=None, worldMarker=True,
     area: float | list
         Maximum cell size for resulting triangles after mesh generation.
         If area is a float set it global, if area is a list set it per layer.
-    layers: float [None]
-        Add some layers to the world.
+    layers: [float] [None]
+        List of depth coordinates for some layers.
     worldMarker: bool [True]
         Specify kind of preset boundary marker [-1, -2] or ascending order [1, 2, 3, 4 ..]
 
@@ -264,20 +264,24 @@ def createWorld(start, end, marker=1, area=0., layers=None, worldMarker=True,
 
         return world
 
-    z = [start[1]]
-
+    z = np.array(start[1], dtype=float)
     if layers is not None:
-        z = z + list(layers)
-
-    z.append(end[1])
-
+        z = np.append(z, np.array(layers, dtype=float))
+    z = np.append(z, end[1])
     # ensure - decreasing order if layers are out of bounding box
-    z = pg.sort(z)[::-1]
+    z = np.sort(z)[::-1]
 
     poly = pg.Mesh(dim=2, isGeometry=True)
 
     if isinstance(area, float) or isinstance(area, int):
-        area = np.ones(len(z)) * float(area)
+        area = np.ones(len(z)-1) * float(area)
+
+    if len(area) < len(z) -1:
+        pg.warn('Missing {} area value, padding with zeros'.format(
+            (len(z) -1) - len(area)))
+        _area = np.zeros(len(z)-1)
+        _area[0:len(area)] = area
+        area = _area
 
     for i, depth in enumerate(z):
         n = poly.createNode([start[0], depth])
