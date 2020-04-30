@@ -32,7 +32,7 @@ plc = mt.createWorld(start=[-200, -100], end=[200, 0],
 ###############################################################################
 # To achieve a necessary numerical accuracy, we need some local mesh refinement
 # in the vicinity of the electrodes. However, since we don't need the
-# electrode (aka sensor) positions into the geometry, we only add forced mesh
+# electrode (aka sensor) positions to be present as nodes in the geometry, we only add forced mesh
 # nodes near the electrode positions, right below the earths surface.
 for s in scheme.sensors():
     plc.createNode(s + [0.0, -0.2])
@@ -44,7 +44,7 @@ pg.show(mesh, data=mesh.cellMarkers(), label='Marker', showMesh=True)
 
 ###############################################################################
 # It is usually a good idea to calculate with a p2-refined mesh.
-# However, you should be careful for larger meshes since the numerical afford
+# However, you should be careful for larger meshes since the numerical efford
 # will be highly increased.
 mesh = mesh.createP2()
 
