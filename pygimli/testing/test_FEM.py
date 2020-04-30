@@ -221,6 +221,7 @@ class TestFiniteElementBasics(unittest.TestCase):
                 with u = x and u(x=min)=0 and u(x=max)=1
                 Test for u == exact x for P1 base functions
             """
+            #print('b', mesh, mesh.cell(0))
             u = pg.solve(mesh, a=1, b=0, f=0,
                          bc={'Dirichlet': {1: 0, 2: 1}})
 
@@ -368,8 +369,8 @@ class TestFiniteElementBasics(unittest.TestCase):
 if __name__ == '__main__':
 
     # test = TestFiniteElementBasics()
+    # test.test_Dirichlet_BC()
     # test.test_Neumann_BC()
-    # test.test_Dirichlet()
     # test.test_Robin_BC()
 
     unittest.main()

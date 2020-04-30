@@ -170,7 +170,7 @@ def cellValues(mesh, arg, **kwargs):
 
         return ret
 
-    # if arg have allready correct size
+    # if arg have already the correct size
     if hasattr(arg, '__len__'):
         if len(arg) == mesh.cellCount():
             return arg
@@ -290,7 +290,8 @@ def parseArgToArray(arg, nDof, mesh=None, userData={}):
     raise Exception("Cannot parse argument type " + str(type(arg)))
 
 
-def generateBoundaryValue(boundary, arg, time=0.0, userData={}):
+def generateBoundaryValue(boundary, arg, time=0.0, userData={},
+                          expectList=False):
     """
     Generate a value for the given Boundary.
 
@@ -298,6 +299,8 @@ def generateBoundaryValue(boundary, arg, time=0.0, userData={}):
     ----------
     boundary: :gimliapi:`GIMLI::Boundary` or list of ..
         The related boundary.
+    expectList: bool[False]
+        Allow list values for robyn BC.
     arg: convertible | iterable | callable or list of ..
         - convertible into float
         - iterable of minimum length = boundary.id()
@@ -316,12 +319,6 @@ def generateBoundaryValue(boundary, arg, time=0.0, userData={}):
     val: [float]
         Value for all nodes of the boundary.
     """
-    if hasattr(boundary, '__len__'):
-        pg.deprecated('bad design')
-        values = np.zeros(len(boundary))
-        for i, b in enumerate(boundary):
-            values[i] = generateBoundaryValue(b, arg[i], time, userData)
-        return values
     val = 0.
 
     if callable(arg):
@@ -339,8 +336,6 @@ def generateBoundaryValue(boundary, arg, time=0.0, userData={}):
             except BaseException as e:
                 pass
 
-
-
         except BaseException as e:
             print(arg, "(", kwargs, ")")
             pg.critical("Wrong arguments for callback function.", e)
@@ -352,29 +347,33 @@ def generateBoundaryValue(boundary, arg, time=0.0, userData={}):
                 kwargs['time'] = time
             val = arg[0](boundary=boundary, **kwargs)
         else:
-            if len(arg) < 4:
-                # we assume vector valued arguments
+            if expectList is True:
+                return arg * boundary.nodeCount()
+            if len(arg) == boundary.nodeCount():
+                # we assume values are already valid
                 return arg
             else:
+                print('arg', arg)
                 pg.warn('necessary?? generateBoundaryValue')
                 val = generateBoundaryValue(boundary, arg[boundary.id()],
                                             userData)
     else:
         try:
-            val = float(arg)
+            val = [float(arg)] * boundary.nodeCount()
         except ValueError:
-            raise arg
+            print(arg, val)
+            pg.error("can't create boundary values.")
     return val
 
 
 def parseArgPairToBoundaryArray(pair, mesh):
     """
-    Parse boundary related pair argument to
-    [ :gimliapi:`GIMLI::Boundary`, value|callable ] list.
+    Parse boundary related pair argument to create a list of
+    [ :gimliapi:`GIMLI::Boundary`, value|callable ].
 
     Parameters
     ----------
-    pair : tuple
+    pair: tuple
         - [marker, arg]
         - [marker, [callable, *kwargs]]
         - [marker, [arg_x, arg_y, arg_z]]
@@ -391,14 +390,12 @@ def parseArgPairToBoundaryArray(pair, mesh):
         and distributed to each boundary.
         Callable functions will be executed at run time.
         '*' will be interpreted as all boundary elements with one neighboring cell
-
-    mesh : :gimliapi:`GIMLI::Mesh`
+    mesh: :gimliapi:`GIMLI::Mesh`
         Used to find boundaries by marker.
 
     Returns
     -------
-
-    bc : list()
+    bc: list()
         [:gimliapi:`GIMLI::Boundary`, value|callable]
     """
     bc = []
@@ -441,20 +438,25 @@ def parseArgPairToBoundaryArray(pair, mesh):
 
     for b in bounds:
         val = None
+        if len(pair) > 2:
+            val = pair[1:]
+        else:
+            val = pair[1]
+        bc.append([b, val])
+
         # print('-'*50)
         # print(b, pair[1], callable(pair[1]))
         # print('+'*50)
-        if callable(pair[1]):
-            # don't execute the callable here
-            # we want to call them at runtime
-            if len(pair) > 2:
-                val = pair[1:]
-            else:
-                val = pair[1]
-        else:
+        # if callable(pair[1]):
+        #     # don't execute the callable here
+        #     # we want to call them at runtime
+        #     if len(pair) > 2:
+        #         val = pair[1:]
+        #     else:
+        #         val = pair[1]
+        # else:
             # this will be executed
-            val = generateBoundaryValue(b, pair[1])
-        bc.append([b, val])
+            #val = generateBoundaryValue(b, pair[1])
 
     #print('#'*30)
     return bc
@@ -579,42 +581,6 @@ def parseArgToBoundaries(args, mesh):
     if hasattr(args, '__call__') or \
         isinstance(args, float) or isinstance(args, int):
         return parseArgToBoundaries({'*': args}, mesh)
-
-    elif isinstance(args, list):
-        pg.warn('DEPRECATED by bad design [parseArgToBoundaries(lists)] check'
-                'if obsolete') # 20200115
-        #print('!'*100)
-        #print(args)
-        if len(args) == 2:
-            # if isinstance(args[0], list):
-                # print('~'*10, '[[,],]')
-                # boundaries += parseArgPairToBoundaryArray(args, mesh)
-            # else:
-            try:
-                    # [[,], [,]]
-                if len(args[0]) == 2 and len(args[1]) == 2:
-                    #print('~'*10, '[[,],[,]]')
-                    boundaries += parseArgPairToBoundaryArray(args[0], mesh)
-                    boundaries += parseArgPairToBoundaryArray(args[1], mesh)
-                elif len(args[0]) == 3 and callable(args[0][1]):
-                    #print('~'*10, '[[marker,callable,*kwrags],[,]]')
-                    boundaries += parseArgPairToBoundaryArray(args[0], mesh)
-                    boundaries += parseArgPairToBoundaryArray(args[1], mesh)
-                else:
-                    #print('~'*10, '??[[,]]')
-                    boundaries += parseArgPairToBoundaryArray(args, mesh)
-            except BaseException as _:
-                # [,]
-                # print('~'*10, '[,]')
-                boundaries += parseArgPairToBoundaryArray(args, mesh)
-        elif len(args) == 3 and callable(args[1]):
-            # print('~'*10, '[[,], callable, kwargs)
-            boundaries += parseArgPairToBoundaryArray(args, mesh)
-        else:
-            # print('~'*10, '[[,], [,], ...]')
-            # [[,], [,], ...]
-            for a in args:
-                boundaries += parseArgPairToBoundaryArray(a, mesh)
 
     else:
         raise Exception('cannot interpret boundary token', args)
@@ -1217,6 +1183,7 @@ def assembleDirichletBC(mat, boundaryPairs, rhs=None, time=0.0, userData={},
     for pair in boundaryPairs:
         ent = pair[0]
         val = pair[1]
+        #print('**', ent, val)
         uD = generateBoundaryValue(ent, val, time, userData)
 
         if uD is not None:
@@ -1395,7 +1362,8 @@ def assembleRobinBC(mat, boundaryPairs, rhs=None, time=0.0, userData={},
         ## combines to Matrix + au = RHS + au0
 
         u0 = None
-        a = generateBoundaryValue(boundary, val, time, userData)
+        a = generateBoundaryValue(boundary, val, time, userData,
+                                  expectList=True)
 
         if hasattr(a, '__iter__'):
             if len(a) == 2:
