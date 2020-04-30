@@ -69,7 +69,9 @@ pg.show(mesh, data=K, label='Hydraulic conductivity $K$ in m$/$s', cMin=1e-5,
 # domain, equaling a hydraulic gradient of 1.75%.
 
 # Dirichlet conditions for hydraulic potential
-pBound = {"Dirichlet": [[[1, 2, 3], 0.75], [[5, 6, 7], 0.0]]}
+left = 0.75
+right = 0.0
+pBound = {"Dirichlet": {1: left, 2: left, 3: left, 5: right, 6: right, 7: right}}
 
 ################################################################################
 # We can now call the finite element solver with the generated mesh, hydraulic
