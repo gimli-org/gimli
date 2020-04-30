@@ -1192,7 +1192,7 @@ def assembleDirichletBC(mat, boundaryPairs, rhs=None, time=0.0, userData={},
                 uDirVal.update(_genVecUd(ent, uD, dofOffset))
             else:
                 if isinstance(uD, float):
-                    uD = list(uD)
+                    uD = [uD]
                 if len(uD) == ent.nodeCount():
                     for i, n in enumerate(ent.nodes()):
                         uDirVal.update(_genVecUd(n, uD[i], dofOffset))
