@@ -346,7 +346,8 @@ def generateBoundaryValue(boundary, arg, time=0.0, userData={},
             if time != 0.0 and time is not None:
                 kwargs['time'] = time
             val = arg[0](boundary=boundary, **kwargs)
-           
+        else:
+            val = arg
     else:
         try:
             val = float(arg)
@@ -357,7 +358,7 @@ def generateBoundaryValue(boundary, arg, time=0.0, userData={},
     # transform val into list of length nodeCount
     if expectList is True:
         if np.array(val).ndim != 2:
-            val = [val]
+            val = np.atleast_1d(val)
 
     if isinstance(val, float):
         val = np.ones(boundary.nodeCount(), dtype=float)*val
@@ -1376,7 +1377,9 @@ def assembleRobinBC(mat, boundaryPairs, rhs=None, time=0.0, userData={},
                 a = a[0]
         except:
             # expecting [[a| a, u0 | a b g]_i] for i in boundary.nodes()
+            print(boundary)
             print(a)
+            print(a.ndim)
             pg.error("Can't interprete robin value.")
 
         if hasattr(a, '__iter__'):

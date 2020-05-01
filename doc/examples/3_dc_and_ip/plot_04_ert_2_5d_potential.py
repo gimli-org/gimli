@@ -118,7 +118,7 @@ def mixedBC(boundary, userData):
         
         return alpha
         
-        # not this is the same like
+        # Note, the above is the same like:
         beta = 1.0
         return [alpha, beta, 0.0]
             
