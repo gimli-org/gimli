@@ -112,12 +112,18 @@ def mixedBC(boundary, userData):
 
     n = boundary.norm()
     if r1A > 1e-12 and r2A > 1e-12:
-        return sigma * k * ((r1.dot(n)) / r1A * pg.math.besselK1(r1A * k) +
+        alpha = sigma * k * ((r1.dot(n)) / r1A * pg.math.besselK1(r1A * k) +
                             (r2.dot(n)) / r2A * pg.math.besselK1(r2A * k)) / \
-            (pg.math.besselK0(r1A * k) + pg.math.besselK0(r2A * k))
+            (pg.math.besselK0(r1A * k) + pg.math.besselK0(r2A * k)) 
+        
+        return alpha
+        
+        # not this is the same like
+        beta = 1.0
+        return [alpha, beta, 0.0]
             
     else:
-        return 0.
+        return 0.0
 
 ###############################################################################
 # We assemble the right-hand side (rhs) for the singular current term by hand 
