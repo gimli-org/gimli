@@ -1,91 +1,10 @@
 .. _sec:install_lin:
 
-Installation on Linux
----------------------
+Building on Linux
+-----------------
 
-Pre-build binary install with conda
-...................................
-
-.. only:: html
-
-  .. image:: https://anaconda.org/gimli/pygimli/badges/installer/conda.svg
-      :target: https://conda.anaconda.org/gimli
-
-  .. image:: https://anaconda.org/gimli/pygimli/badges/downloads.svg
-      :target: https://anaconda.org/gimli/pygimli
-
-.. raw:: html
-
-    <br><br>
-
-On Linux platforms, the most comfortable way to install pygimli is via the conda
-package manager contained in the `Anaconda distribution
-<https://www.continuum.io/downloads#linux>`_. Anaconda is scientific Python
-distribution with more than 100 Python packages included (~400 Mb). You can also
-use the `lightweight alternative Miniconda <https://conda.io/miniconda.html>`_
-(~35 Mb) and only install the packages you like to use.
-
-Install Miniconda (only once):
-
-.. code-block:: bash
-
-    wget http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
-    chmod +x miniconda.sh
-    ./miniconda.sh -b -p $HOME/miniconda
-    export PATH=$HOME/miniconda/bin:$PATH # Note: Add this to your .bashrc for permanent use
-
-To avoid conflicts with other packages, we recommend to install pygimli in a
-separate environment. Here we call this environment `mypgenv`, but you can give
-it any name. Note that this environment has to be created only once.
-
-.. code-block:: bash
-
-    conda create -n mypgenv -c gimli -c conda-forge pygimli python=3.6 -y
-
-If you want to use pygimli, you have to activate the environment. You can put
-this line in your `~/.bashrc` file so that it is activated automatically if you
-open a terminal.
-
-.. code-block:: bash
-
-    conda activate mypgenv
-
-To test if everything works correctly you can do the following:
-
-.. code-block:: bash
-
-    python -c "import pygimli; pygimli.test(show=False, onlydoctests=True)"
-
-After that you can use pygimli with your text editor of choice and a terminal.
-Depending on your preferences, you can also install third-party software such as
-MATLAB-like integrated development environment (https://www.spyder-ide.org):
-
-.. code-block:: bash
-
-    conda install -c conda-forge spyder
-
-Or alternatively, the web-based IDE JupyterLab (https://jupyterlab.readthedocs.io).
-
-.. code-block:: bash
-
-    conda install -conda-forge jupyterlab
-
-Update your pygimli installation frome time to time, if want to have the newest
-functionality:
-
-.. code-block:: bash
-
-    conda update pygimli
-
-The only drawback using conda is that you are bound to the rhythm we update the
-binary packages. Conda also can be seen as a sandbox Linux inside your system
-and it might be difficult to combine system python packages and conda pyGIMLi.
-If you like to keep your pyGIMLi version more recent (including all possible
-drawbacks of versions that are actively developed) you should compile pyGIMli
-using your systems toolchain.
-
-Compile your own with the curl installer
-........................................
+Curl installer
+..............
 
 If you are not using Anaconda, you can build pyGIMLi from source in the current
 directory via:
@@ -158,17 +77,11 @@ Change to the build path
 
     cd build
 
-and configure the build for Python 2.7 with:
+If you want to compile for Python 3.7, alternatively use:
 
 .. code-block:: bash
 
-    cmake ../gimli
-
-If you want to compile for Python 3.5, alternatively use:
-
-.. code-block:: bash
-
-    cmake ../gimli -DPYVERSION=3.5
+    cmake ../gimli -DPYVERSION=3.7
 
 If the output complains about missing dependencies, install these and repeat
 the the last step. To build the library just run `make`.
@@ -200,7 +113,7 @@ example assumes that the **src** directory resides in your home directory):
 
 .. code-block:: bash
 
-    export PYTHONPATH=$PYTHONPATH:$HOME/src/gimli/gimli/python
+    export PYTHONPATH=$PYTHONPATH:$HOME/src/gimli/gimli
     export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/src/gimli/build/lib
     export PATH=$PATH:$HOME/src/gimli/build/bin
 
@@ -347,7 +260,7 @@ desired python version.
 
 .. code-block:: bash
 
-    cmake ../gimli -DPYVERSION=3.3
+    cmake ../gimli -DPYVERSION=3.6
 
 Build the library with debug and profiling flags
 

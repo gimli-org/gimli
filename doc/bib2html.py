@@ -1,5 +1,4 @@
 import json
-import os
 
 from bibtexparser import load
 from bibtexparser.bparser import BibTexParser
