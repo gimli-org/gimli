@@ -19,33 +19,25 @@ Documentation
 
             How to install pyGIMLi on different platforms
 
-          - :ref:`FAQs <sec:faq>`
+          - `PDF Manual <GIMLi_Documentation.pdf>`_
 
-            Frequently asked questions (with anwers!)
+            Printable version of this documentation
 
-        * - `Tutorials <_tutorials_auto/index>`_
+        * - `Tutorials <_tutorials_auto/index.html>`_
 
             How to use pyGIMLi
 
-          - `Examples <_examples_auto/index>`_
+          - `Examples <_examples_auto/index.html>`_
 
             Interesting examples
 
-        * - :doc:`pyGIMLi API <pygimliapi/index>`
+        * - :doc:`pyGIMLi API <pygimliapi/index.html>`
 
             Reference for Python modules
 
           - :gimliapi:`Core API <GIMLI>`
 
             Reference for C++ core
-
-        * - :ref:`sec:tools`
-
-            Handy tools shipped with pyGIMLi
-
-          - `PDF Manual <GIMLi_Documentation.pdf>`_
-
-            Printable version of this documentation
 
         * - `Publications <publist.html>`_
 

@@ -54,6 +54,7 @@ Functions
 ---------
 
 {% for function in functions %}
+
 {{ function | underline(".") }}
 
 .. autofunction:: {{ function }}
@@ -67,7 +68,7 @@ Functions
 .. raw:: html
 
      <div style='clear:both'></div>
-         
+
 
 {%- endfor %}
 {% endif %}
