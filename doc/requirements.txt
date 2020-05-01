@@ -12,3 +12,4 @@ sphinxcontrib-spelling>=2.1
 sphinxcontrib-doxylink==1.6.1
 pillow
 scipy
+bibtexparser
