@@ -168,6 +168,7 @@ intersphinx_mapping = {
 
 autoclass_content = "class"
 autosummary_generate = True
+autosummary_generate_overwrite = False
 autosummary_imported_members = True
 
 autodoc_default_options = {
