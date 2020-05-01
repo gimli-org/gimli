@@ -1,2 +1,2 @@
-ERT and Induced Polarization
-----------------------------
+Electrical resistivity and induced polarization
+-----------------------------------------------
