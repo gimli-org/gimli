@@ -44,10 +44,13 @@ ert.checkData(data)
 print(data)
 
 ###############################################################################
-# The data container also have no mandatory data errors (token field 'err') 
-# We can let the manager guess some defaults for us automatic or set them 
-# manual 
+# The data container does not necessarily contain data errors data errors (token field 'err'),
+# equiring us to enter data errors.
+# We can let the manager guess some defaults for us automaticly or set them 
+# manually
 data['err'] = ert.estimateError(data, absoluteError=0.001, relativeError=0.03)
+# manually:
+# data['err'] = data_errors
 
 ###############################################################################
 # Now the data have all necessary fields ('rhoa', 'err' and 'k') so we can run
