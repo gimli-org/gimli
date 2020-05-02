@@ -1,7 +1,7 @@
 .. _sec:coding_guidelines:
 
-GitHub notes for core developers
-================================
+GitHub notes for pyGIMLi developers
+===================================
 
 Contributing to the code
 ------------------------
@@ -220,22 +220,15 @@ https://github.com/numpy/numpy/blob/master/doc/HOWTO_DOCUMENT.rst.txt#sections
     >>>
     >>>
 
-    Yields
-    ------
-        int : result
-
     See Also
     --------
         average : Weighted average,
         e.g., Link to tutorials :ref:`tut:Modelling_BC` assuming there
         has been set a appropriate label in the tutorial.
 
-    Raises
-    ------
-        LinAlgException
-            If the matrix is not numerically invertable.
-
-
+  Returns
+  -------
+  pg.Vector
   """
 
 .. _sec:coding_guidelines:

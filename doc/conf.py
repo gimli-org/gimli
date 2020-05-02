@@ -170,11 +170,13 @@ autoclass_content = "class"
 autosummary_generate = True
 autosummary_generate_overwrite = False
 autosummary_imported_members = True
+autodoc_mock_imports = ["os", "sys", "numpy", "matplotlib", "pyvista", "pyqt5"]
 
 autodoc_default_options = {
     'imported-members': True,
     # 'special-members': '__init__',
     'undoc-members': False,
+    'show-inheritance': True,
 }
 
 # Get mathjax

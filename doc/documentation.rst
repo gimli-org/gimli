@@ -31,7 +31,7 @@ Documentation
 
             Interesting examples
 
-        * - :doc:`pyGIMLi API <pygimliapi/index.html>`
+        * - :doc:`pyGIMLi API <pygimliapi/index>`
 
             Reference for Python modules
 
@@ -63,7 +63,7 @@ Documentation
     .. list-table::
         :class: doc-index
 
-        * - :ref:`search`
+        * - `Search <search.html>`_
 
             Search this documentation
 
@@ -89,10 +89,9 @@ Documentation
         citation.rst
         design.rst
         installation.rst
-        faq.rst
+        .. faq.rst
         _examples_auto/index.rst
         _tutorials_auto/index.rst
-        tools.rst
         contrib.rst
         pygimliapi/index.rst
         contrib.rst
