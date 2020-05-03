@@ -22,7 +22,7 @@ block = mt.createCircle(pos=[0, -3.], radius=1, marker=4, boundaryMarker=10,
 
 ###############################################################################
 # Merge geometry definition into a Piecewise Linear Complex (PLC)
-geom = mt.mergePLC([world, block])
+geom = world + block
 
 ###############################################################################
 # Optional: show the geometry
@@ -83,12 +83,12 @@ data.save('simple.dat')
 ert.show(data)
 
 ###############################################################################
-# Initialize the ERTManager. You can initialize the manager with a data file 
+# Initialize the ERTManager. You can initialize the manager with a data file
 # itself or a filename.
 mgr = ert.ERTManager('simple.dat')
 
 ###############################################################################
-# Run the inversion with the preset data. The Inversion mesh will be created 
+# Run the inversion with the preset data. The Inversion mesh will be created
 # with default settings.
 mgr.invert(lam=20, verbose=True)
 
@@ -100,14 +100,14 @@ mgr.showResultAndFit()
 
 ###############################################################################
 # You can also provide your own mesh (e.g., a structured grid if you like them)
-# 
+#
 inversionDomain = pg.createGrid(x=np.linspace(start=-12, stop=12, num=33),
                                 y=-pg.cat([0], pg.utils.grange(0.5, 8, n=8)),
                                 marker=2)
 ###############################################################################
-# The inversion domain for ERT problems needs a boundary which represents the 
+# The inversion domain for ERT problems needs a boundary which represents the
 # far regions in the subsurface of the halfspace.
-# Give a cell marker lower than the marker for the inversion region, the lowest 
+# Give a cell marker lower than the marker for the inversion region, the lowest
 # cell marker in the mesh will be the inversion boundary region.
 #
 mesh = pg.meshtools.appendTriangleBoundary(inversionDomain, marker=1,
@@ -120,8 +120,8 @@ model = mgr.invert(data, mesh=mesh, lam=20, verbose=True)
 
 ###############################################################################
 # You can of course access to mesh and model and plot them for your own.
-# Note, that the cells of the parametric domain of your mesh might be in 
-# a different order than the values in the model array. 
+# Note, that the cells of the parametric domain of your mesh might be in
+# a different order than the values in the model array.
 # The manager can help to permutate them into the right order.
 #
 modelPD = mgr.paraModel(model)

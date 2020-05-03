@@ -39,7 +39,7 @@ polarizable_anomaly = mt.createCircle(
     pos=[40, -7], radius=5, marker=2
 )
 
-plc = mt.mergePLC((world, polarizable_anomaly))
+plc = world + polarizable_anomaly
 
 # local refinement of mesh near electrodes
 for s in scheme.sensors():

@@ -9,8 +9,7 @@ https://gitlab.com/resistivity-net/bert
 import numpy as np
 
 import pygimli as pg
-from pygimli.frameworks import Modelling, MeshModelling
-from pygimli.frameworks import MeshMethodManager
+from pygimli.frameworks import MeshModelling, MeshMethodManager
 from .visualization import showERTData
 
 from pygimli import pf
@@ -48,7 +47,7 @@ def simulate(mesh, res, scheme, sr=True, useBert=True,
 
     if isinstance(scheme, str):
         scheme = pg.physics.ert.load(scheme)
-        
+
     return ert.simulate(mesh, res, scheme, verbose=verbose, **kwargs)
 
 
@@ -57,8 +56,8 @@ def createGeometricFactors(scheme, numerical=None, mesh=None, verbose=False):
     """Create geometric factors for a data scheme.
 
     Create geometric factors for a data scheme with and without topography.
-    Calculation will be done analytical (only for half space geometry) 
-    or numerical.    
+    Calculation will be done analytical (only for half space geometry)
+    or numerical.
 
     This function caches the result depending on scheme, mesh and pg.version()
 
@@ -67,12 +66,12 @@ def createGeometricFactors(scheme, numerical=None, mesh=None, verbose=False):
     scheme: :gimliapi:`GIMLI::DataContainerERT`
         Datacontainer of the scheme.
     numerical: bool | None [False]
-        If numerical is None, False is assumed, we try to guess topography 
+        If numerical is None, False is assumed, we try to guess topography
         and warn if we think we found them.
         If set to True or False, numerical calculation will used respectively.
     mesh: :gimliapi:`GIMLI::Mesh` | str
-        Mesh for numerical calculation. If not given, analytical geometric 
-        factors for halfspace earth are guessed or a default mesh will be 
+        Mesh for numerical calculation. If not given, analytical geometric
+        factors for halfspace earth are guessed or a default mesh will be
         created. The mesh will be h and p refined. If given topo is set to
         True. If the numerical effort is to high or the accuracy to low
         you should consider to calculate the factors manual.
@@ -88,12 +87,12 @@ def createGeometricFactors(scheme, numerical=None, mesh=None, verbose=False):
     if numerical is False and mesh is None:
         if verbose:
             pg.info('Calculate analytical flat earth geometric factors.')
-        
+
         return pg.core.geometricFactors(scheme, forceFlatEarth=True)
 
     if mesh is None:
         mesh = createInversionMesh(scheme)
-        
+
         m = mesh.createH2()
         m = m.createP2()
         if verbose:
@@ -119,7 +118,7 @@ def createInversionMesh(data, **kwargs):
     Returns
     -------
     mesh: :gimliapi:`GIMLI::Mesh`
-        Inversion mesh with default marker (1 for background, 
+        Inversion mesh with default marker (1 for background,
         2 parametric domain)
     """
     mesh = pg.meshtools.createParaMesh(data.sensors(), **kwargs)
@@ -580,7 +579,7 @@ class ERTManager(MeshMethodManager):
         Parameters
         ----------
         data: :gimliapi:`GIMLI::DataContainerERT` | str
-            You can initialize the Manager with data or give them a dataset 
+            You can initialize the Manager with data or give them a dataset
             when calling the inversion.
 
         Other Parameters
@@ -622,7 +621,7 @@ class ERTManager(MeshMethodManager):
         """Load ERT data.
 
         Forwarded to :py:mod:`pygimli.physics.ert.load`
-        
+
         Parameters
         ----------
         fileName: str
@@ -640,7 +639,7 @@ class ERTManager(MeshMethodManager):
         Forwarded to :py:mod:`pygimli.physics.ert.createInversionMesh`
         """
         d = data or self.data
-        
+
         if d is None:
             pg.critical('Please provide a data file for mesh generation')
 
@@ -943,7 +942,7 @@ class ERTManager(MeshMethodManager):
 
         return data
 
-        
+
     def checkErrors(self, err, dataVals):
         """Return relative error. Default we assume 'err' are relative vales.
         """
