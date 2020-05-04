@@ -131,7 +131,6 @@ template <> void SparseMapMatrix< double, Index >::
 }
 template <> void SparseMapMatrix< double, Index >::
     addToCol(Index id, const ElementMatrix < double > & A, double scale, bool isDiag){
-        THROW_TO_IMPL
     for (Index i = 0, imax = A.size(); i < imax; i++){
             if (isDiag){
                 (*this)[A.idx(i)][id] += A.getVal(i, i);
@@ -143,7 +142,6 @@ template <> void SparseMapMatrix< double, Index >::
 
 template <> void SparseMapMatrix< double, Index >::
     addToRow(Index id, const ElementMatrix < double > & A, double scale, bool isDiag){
-    THROW_TO_IMPL
     for (Index i = 0, imax = A.size(); i < imax; i++){
             if (isDiag){
                 (*this)[id][A.idx(i)] += A.getVal(i, i);
