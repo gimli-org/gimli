@@ -72,6 +72,11 @@ html: api
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
+spelling: api
+	$(SPHINXBUILD) -v -D abort_on_example_error=True -b spelling $(ALLSPHINXOPTS) $(BUILDDIR)/html
+	@echo
+	@echo "Spellcheck finished."
+
 dirhtml:
 	$(SPHINXBUILD) -b dirhtml $(ALLSPHINXOPTS) $(BUILDDIR)/dirhtml
 	@echo
