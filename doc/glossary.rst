@@ -37,7 +37,7 @@ Glossary
 
     IPython
         An improved :term:`Python` shell that integrates nicely with
-        :term:`Matplotlib`. See http://ipython.scipy.org/.
+        :term:`Matplotlib`. See http://ipython.org/.
 
     Matplotlib
         Matplotlib :term:`Python` package displays publication quality results.
@@ -76,10 +76,13 @@ Glossary
         usually not recommended due to possible name conflicts but provides a
         quick way to get MATLAB-like functionality.
 
+    PyVista
+        3D visualization tool based on VTK: https://www.pyvista.org
+
     SciPy
         Scientific Computing Tools for Python - Open-source library with many
         numerical routines but the term is often used as a synonym for the
-        scientific python community, serveral conferences, and the *SciPy
+        scientific python community, several conferences, and the *SciPy
         Stack*, i.e. a set of core packages. https://scipy.org/about.html
 
     Sphinx
@@ -90,7 +93,7 @@ Glossary
         Unstructured triangulated surface file format native to the "stereolithography"
         CAD software created by 3D Systems. https://en.wikipedia.org/wiki/STL_%28file_format%29
 
-    
+
     SuiteSparse
         SuiteSparse is a single archive that contains packages for solving
         large sparse problems using Sparse Cholesky factorization.

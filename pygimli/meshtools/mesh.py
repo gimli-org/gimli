@@ -458,7 +458,7 @@ def readGmsh(fName, verbose=False, precision=None):
     fName : string
         Filename of the file to read (\\*.msh). The file must conform
         to the `MSH ASCII file version 2
-        <http://gmsh.info/doc/texinfo/gmsh.html#MSH-ASCII-file-format>`_ format
+        <https://gmsh.info/doc/texinfo/gmsh.html#MSH-file-format-version-2-_0028Legacy_0029>`_ format
     verbose : boolean, optional
         Be verbose during import. Default: False
     precision : None|int, optional

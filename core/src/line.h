@@ -74,7 +74,7 @@ public:
 
     /*! Return true if this line segment intersect with a the ray given by
      start and direction dir. Fill pos with the intersection position.
-     Returns also true if the ray is parallel and the distance between 
+     Returns also true if the ray is parallel and the distance between
      Line and ray is smaller than the tolerance but pos is not valid.*/
     bool intersectRay(const RVector3 & start, const RVector3 & dir,
                       RVector3 & pos, double tol=TOLERANCE) const;
@@ -97,7 +97,7 @@ public:
     inline RVector3 at(double t) const { return _p0 + (_p1 - _p0) * t; }
 
     /*!  Return the distance between this line and pos,
-    http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html;
+    https://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html;
         | x2-x1 cross x1-x0 | / | x2 -x1 | */
     double distance(const RVector3 & pos) const;
 

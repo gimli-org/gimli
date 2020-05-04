@@ -66,7 +66,7 @@ Make sure to have an updated msys2 environment. Run at least:
     pacman -Su
     pacman -Sy
 
-to update your local package databases. See https://sourceforge.net/p/msys2/wiki/MSYS2%20installation/
+to update your local package databases. See https://www.msys2.org/
 for further instructions.
 
 To get a complete working toolchain you need some packages installed.

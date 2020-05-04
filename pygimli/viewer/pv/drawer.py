@@ -146,7 +146,7 @@ def drawSlice(ax, mesh, normal=[1, 0, 0], **kwargs):
     generate_triangles: bool, optional
     contour: bool, optional
 
-    They can be found at https://docs.pyvista.org/core/filters.html?highlight=slice_orthogonal#1pyvista.CompositeFilters.slice
+    They can be found at https://docs.pyvista.org/core/filters.html#pyvista.CompositeFilters.slice
     """
     label = kwargs.pop('label', None)
     data = kwargs.pop('data', None)

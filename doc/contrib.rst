@@ -21,7 +21,7 @@ We are constantly looking for interesting usage examples of pyGIMLi. If you have
 used the package and would like to contribute your work to the :ref:`chapt:examples`,
 please send your script to mail@pygimli.org. Make sure that the individual steps
 in your Python script are documented according to the `sphinx-gallery syntax
-<http://sphinx-gallery.readthedocs.io/en/latest/tutorials/plot_notebook.html>`_.
+<https://sphinx-gallery.github.io/stable/tutorials/plot_parse.html#sphx-glr-tutorials-plot-parse-py>`_.
 
 C. Contribute to the code
 -------------------------

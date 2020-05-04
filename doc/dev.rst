@@ -180,7 +180,7 @@ API Documentation and doctests
 ------------------------------
 
 Use the following documentation syntax or see at:
-https://github.com/numpy/numpy/blob/master/doc/HOWTO_DOCUMENT.rst.txt#sections
+https://numpydoc.readthedocs.io/en/latest/format.html#docstring-standard
 
 .. code-block:: python
 

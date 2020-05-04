@@ -533,7 +533,7 @@ def unique_everseen(iterable, key=None):
 
     Return iterator of unique elements ever seen with preserving order.
 
-    From: http://docs.python.org/library/itertools.html#recipes
+    From: https://docs.python.org/3/library/itertools.html#itertools-recipes
 
     Examples
     --------

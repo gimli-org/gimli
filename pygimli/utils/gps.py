@@ -57,9 +57,7 @@ def getUTMProjection(zone, ellps='WGS84'):
     return pyproj.Proj(proj='utm', zone=zone, ellps=ellps)
 
 def getProjection(name, ref=None, **kwargs):
-    """Syntactic sugar to get some default Projections.
-    https://svn.oss.deltares.nl/repos/openearthtools//websites/trunk/python/applications/osm2hydro/dist/win32/osm2hydro/pyproj-1.9.0-py2.7-win32.egg/pyproj/data/epsg
-    """
+    """Syntactic sugar to get some default Projections."""
     pyproj = pg.optImport('pyproj', 'Coordinate transformations.')
 
     if name == 'utm':
