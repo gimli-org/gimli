@@ -144,9 +144,9 @@ pg.info('Inversion stopped with chi² = {0:.3}'.format(mgr.fw.chi2()))
 
 fig, (ax1, ax2, ax3) = plt.subplots(3,1, sharex=True, sharey=True, figsize=(8,7))
 
-pg.show(mesh, rhomap, ax=ax1, hold=True, cmap="Spectral_r", logScale=True, 
+pg.show(mesh, rhomap, ax=ax1, hold=True, cMap="Spectral_r", logScale=True,
         orientation="vertical", cMin=25, cMax=150)
-pg.show(meshPD, inv, ax=ax2, hold=True, cmap="Spectral_r", logScale=True,
+pg.show(meshPD, inv, ax=ax2, hold=True, cMap="Spectral_r", logScale=True,
         orientation="vertical", cMin=25, cMax=150)
 mgr.showResult(ax=ax3, cMin=25, cMax=150, orientation="vertical")
 

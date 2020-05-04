@@ -10,7 +10,7 @@ increasing levels of required coding proficiency.
 A. Submit a bug report
 ----------------------
 
-If you expericence issues with pyGIMLi or miss a certain feature, please `open a
+If you experience issues with pyGIMLi or miss a certain feature, please `open a
 new issue on GitHub <https://github.com/gimli-org/gimli/issues>`_. To do so,
 you need to `create a GitHub account <https://github.com/join>`_.
 
