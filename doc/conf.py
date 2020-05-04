@@ -518,7 +518,7 @@ html_context = {"showcase": showcase, "publications": publications}
 
 srclink_project = 'https://github.com/gimli-org/gimli'
 srclink_src_path = 'doc/'
-srclink_branch = 'fw_cleaning'
+srclink_branch = 'dev'
 
 # New docstring parsing using Napoleon instead of numpydoc
 # The monkeypatch detects draw or show commands

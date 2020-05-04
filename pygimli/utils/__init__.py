@@ -10,7 +10,7 @@ from .base import (rms, rmsWithErr, nanrms, createDateTimeString,
                    nanrms, num2str, numpy2gmat, rrms, rms, rndig, saveResult,
                    chi2)
 
-# compatibility for fw_cleaning
+# compatibility for dev
 from .base import rmsWithErr as rmswitherr
 
 from .complex import (isComplex, toComplex, toPolar, squeezeComplex,
