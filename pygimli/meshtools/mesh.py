@@ -441,7 +441,7 @@ def convertMeshioMesh(mesh, verbose=False):
                 pg.error("Don't know ho to convert data")
         else:
             ret[k] = d
-            
+
     if verbose is True:
         pg.info(ret)
         pg.info(ret.dataInfo())
@@ -606,6 +606,7 @@ def readGmsh(fName, verbose=False, precision=None):
         zero_dim = np.abs(nodes.sum(0)).argmin()  # identify zero dimension
     else:
         dim, bounds, cells = 3, triangles, tets
+    bounds = np.asarray(bounds)
     if verbose:
         print('  Dimension: %s-D' % dim)
 
