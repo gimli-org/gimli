@@ -1,5 +1,4 @@
 import json
-import os
 
 from bibtexparser import load
 from bibtexparser.bparser import BibTexParser
@@ -24,6 +23,7 @@ def write_html():
     db = parse_bib("gimliuses.bib")
     for entry in db:
         entry["author"] = entry["author"].replace(" and ", ", ")
+        entry["author"] = entry["author"].replace("~", " ")
         if not "journal" in entry:
             entry["journal"] = entry.pop("booktitle")
         entry["journal"] = "<i>%s</i>" % entry["journal"]

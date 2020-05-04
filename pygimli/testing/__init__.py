@@ -2,13 +2,13 @@
 """
 Testing utilities
 
-In Python you can call pygimli.test(show=True) to run all docstring
+In Python you can call `pygimli.test()` to run all docstring
 examples.
 
 Writing tests for pygimli
 -------------------------
 
-Please check: https://pytest.org/latest/example/index.html
+Please check: https://docs.pytest.org/en/latest/
 """
 
 import sys

@@ -1,7 +1,7 @@
 .. _sec:install_mac:
 
-Installation on MAC OS
-----------------------
+Building on MAC OS
+------------------
 
 These installation instructions were proposed by Claudio Jordi (ETH Zurich) in a
 `GitHub issue

@@ -97,8 +97,8 @@ def showMesh3DVista(mesh, data=None, **kwargs):
     """
     hold = kwargs.pop('hold', False)
     cmap = kwargs.pop('cmap', 'viridis')
-    gui = kwargs.pop('gui', False)
     notebook = kwargs.pop('notebook', inline)
+    gui = kwargs.pop('gui', not notebook)
 
     # add given data from argument
     if gui:

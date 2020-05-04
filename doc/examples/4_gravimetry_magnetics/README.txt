@@ -1,2 +1,2 @@
-Gravimetry and Magnetics
+Gravimetry and magnetics
 ------------------------

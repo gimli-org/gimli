@@ -6,7 +6,7 @@ Geoelectrics in 2.5D
 --------------------
 
 Aim is to perform geoelectrical (DC resistivity) forward modelling in 2.5 D, i.e.
-a 2D conductivity distribution and 3D point sources. 
+a 2D conductivity distribution and 3D point sources.
 
 """
 ###############################################################################
@@ -92,7 +92,7 @@ def mixedBC(boundary, userData):
 
     Define the derivative of the analytical solution regarding the outer normal
     direction :math:`\vec{n}`. So we can define the values for mixed boundary
-    condition :math:`\frac{\partial u}{\partial \vec{n}} = -au` 
+    condition :math:`\frac{\partial u}{\partial \vec{n}} = -au`
     for the boundaries on the subsurface.
 
     """
@@ -112,15 +112,21 @@ def mixedBC(boundary, userData):
 
     n = boundary.norm()
     if r1A > 1e-12 and r2A > 1e-12:
-        return sigma * k * ((r1.dot(n)) / r1A * pg.math.besselK1(r1A * k) +
+        alpha = sigma * k * ((r1.dot(n)) / r1A * pg.math.besselK1(r1A * k) +
                             (r2.dot(n)) / r2A * pg.math.besselK1(r2A * k)) / \
-            (pg.math.besselK0(r1A * k) + pg.math.besselK0(r2A * k))
+            (pg.math.besselK0(r1A * k) + pg.math.besselK0(r2A * k)) 
+        
+        return alpha
+        
+        # Note, the above is the same like:
+        beta = 1.0
+        return [alpha, beta, 0.0]
             
     else:
-        return 0.
+        return 0.0
 
 ###############################################################################
-# We assemble the right-hand side (rhs) for the singular current term by hand 
+# We assemble the right-hand side (rhs) for the singular current term by hand
 # since this cannot be done efficiently by `pg.solve` yet. We basically search
 # for the cell containing the source and project the point using its shape
 # functions `N`.
@@ -151,20 +157,20 @@ sourcePosB = [+5.25, -3.75]
 k = 1e-2
 sigma = 1.0
 bc={'Robin': {'1,2,4': mixedBC}}
-u = pg.solve(mesh, a=sigma, b=-sigma * k*k, 
+u = pg.solve(mesh, a=sigma, b=-sigma * k*k,
              rhs=rhsPointSource(mesh, sourcePosA),
              bc=bc, userData={'sourcePos': sourcePosA, 'k': k, 's':sigma},
              verbose=True)
 
-u -= pg.solve(mesh, a=sigma, b=-sigma * k*k, 
-              rhs=rhsPointSource(mesh, sourcePosB), 
+u -= pg.solve(mesh, a=sigma, b=-sigma * k*k,
+              rhs=rhsPointSource(mesh, sourcePosB),
               bc=bc, userData={'sourcePos': sourcePosB, 'k': k, 's':sigma},
               verbose=True)
 
-# The solution is shown by calling 
+# The solution is shown by calling
 
 ax = pg.show(mesh, data=u, cMap="RdBu_r", cMin=-1, cMax=1,
-             orientation='horizontal', label='Potential $u$', 
+             orientation='horizontal', label='Potential $u$',
              nCols=16, nLevs=9, showMesh=True)[0]
 
 # Additionally to the image of the potential we want to see the current flow.
@@ -179,9 +185,9 @@ drawStreams(ax, mesh, u, coarseMesh=gridCoarse, color='Black')
 
 
 ###############################################################################
-# We know the exact solution so we can compare it to the numerical results. 
+# We know the exact solution so we can compare it to the numerical results.
 # Unfortunately, the point source singularity does not allow a good integration
-# measure for the accuracy of the resulting field so we just look for the 
+# measure for the accuracy of the resulting field so we just look for the
 # differences.
 #
 uAna = pg.Vector(list(map(lambda p__: uAnalytical(p__, sourcePosA, k, sigma),
@@ -190,15 +196,15 @@ uAna -= pg.Vector(list(map(lambda p__: uAnalytical(p__, sourcePosB, k, sigma),
                        mesh.positions())))
 
 ax = pg.show(mesh, data=pg.abs(uAna-u), cMap="Reds",
-          orientation='horizontal', label='|$u_{exact}$ -$u$|', 
+          orientation='horizontal', label='|$u_{exact}$ -$u$|',
           logScale=True, cMin=1e-7, cMax=1e-1,
           contourLines=False,
-          nCols=12, nLevs=7, 
+          nCols=12, nLevs=7,
           showMesh=True)[0]
 
 # print('l2:', pg.pf(pg.solver.normL2(uAna-u)))
 # print('L2:', pg.pf(pg.solver.normL2(uAna-u, mesh)))
 # print('H1:', pg.pf(pg.solver.normH1(uAna-u, mesh)))
-np.testing.assert_approx_equal(pg.solver.normL2(uAna-u, mesh), 
+np.testing.assert_approx_equal(pg.solver.normL2(uAna-u, mesh),
                                0.02415, significant=3)
 

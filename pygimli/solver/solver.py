@@ -4,6 +4,7 @@
 from copy import deepcopy
 
 import numpy as np
+import numpy.matlib
 import pygimli as pg
 
 
@@ -295,12 +296,16 @@ def generateBoundaryValue(boundary, arg, time=0.0, userData={},
     """
     Generate a value for the given Boundary.
 
+    TODO
+    ----
+        * support for complex vals
+
     Parameters
     ----------
     boundary: :gimliapi:`GIMLI::Boundary` or list of ..
         The related boundary.
     expectList: bool[False]
-        Allow list values for robyn BC.
+        Allow list values for Robin BC.
     arg: convertible | iterable | callable or list of ..
         - convertible into float
         - iterable of minimum length = boundary.id()
@@ -330,13 +335,6 @@ def generateBoundaryValue(boundary, arg, time=0.0, userData={},
         try:
             # val(boundary, time=0, userData={})
             val = arg(boundary, **kwargs)
-            try:
-                ## test if returning value is float
-                ## and convert them into float for all nodes
-                if isinstance(float(val), float):
-                    val = np.ones(boundary.nodeCount(), dtype=float)*val
-            except BaseException as e:
-                pass
 
         except BaseException as e:
             print(arg, "(", kwargs, ")")
@@ -349,22 +347,25 @@ def generateBoundaryValue(boundary, arg, time=0.0, userData={},
                 kwargs['time'] = time
             val = arg[0](boundary=boundary, **kwargs)
         else:
-            if expectList is True:
-                return arg * boundary.nodeCount()
-            if len(arg) == boundary.nodeCount():
-                # we assume values are already valid
-                return arg
-            else:
-                print('arg', arg)
-                pg.warn('necessary?? generateBoundaryValue')
-                val = generateBoundaryValue(boundary, arg[boundary.id()],
-                                            userData)
+            val = arg
     else:
         try:
-            val = [float(arg)] * boundary.nodeCount()
+            val = float(arg)
         except ValueError:
             print(arg, val)
             pg.error("can't create boundary values.")
+
+    # transform val into list of length nodeCount
+    if expectList is True:
+        if np.array(val).ndim != 2:
+            val = np.atleast_1d(val)
+
+    if isinstance(val, float):
+        val = np.ones(boundary.nodeCount(), dtype=float)*val
+
+    if len(val) != boundary.nodeCount():
+        val = np.matlib.repmat(val, boundary.nodeCount(), 1)
+        
     return val
 
 
@@ -1339,7 +1340,8 @@ def assembleRobinBC(mat, boundaryPairs, rhs=None, time=0.0, userData={},
         The values will assigned to the nodes of the boundaries.
         Later assignment overwrites prior.
 
-        Values can be a single value for :math:`\alpha` or :math:`\alpha` :math:`a`, two values will be interpreted as :math:`a, u_0`, and three values will be :math:`\alpha, \beta, \gamma`].
+        Values can be a single value for :math:`\alpha` or :math:`a`, two values will be interpreted as :math:`a, u_0`, 
+        and three values will be :math:`\alpha, \beta, \gamma`.
         Also generator (callable) is possible which will be executed at run time. See :py:mod:`pygimli.solver.solver.parseArgToBoundaries`
         :ref:`tut:modelling_bc` or testing/test_FEM.py for example syntax.
     time: float
@@ -1370,8 +1372,20 @@ def assembleRobinBC(mat, boundaryPairs, rhs=None, time=0.0, userData={},
         a = generateBoundaryValue(boundary, val, time, userData,
                                   expectList=True)
 
+        try:
+            if a.ndim == 2 and len(a) == boundary.nodeCount():
+                a = a[0]
+        except:
+            # expecting [[a| a, u0 | a b g]_i] for i in boundary.nodes()
+            print(boundary)
+            print(a)
+            print(a.ndim)
+            pg.error("Can't interprete robin value.")
+
         if hasattr(a, '__iter__'):
-            if len(a) == 2:
+            if len(a) == 1:
+                a = a[0]
+            elif len(a) == 2:
                 u0 = a[1]
                 a = a[0]
             elif len(a) == 3:
@@ -1796,10 +1810,10 @@ def normL2(u, mat=None, mesh=None):
 
     .. math::
 
-        L2(f(x)) = || f(x) ||_{L^2} & = (\int |f(x)|^2 \d x)^{1/2} \\
+        L2(f(x)) = || f(x) ||_{L^2} & = (\int |f(x)|^2 \mathrm{d}\:x)^{1/2} \\
                                     & \approx h (\sum |f(x)|^2 )^{1/2} \\
-        L2(u) = || u ||_{L^2} & = (\int |u|^2 \d x)^{1/2} \\
-                              & \approx (\sum M (u)) ^{1/2} \\
+        L2(u) = || u ||_{L^2} & = (\int |u|^2 \mathrm{d}\:x)^{1/2} \\
+                              & \approx (\sum M (u))^{1/2} \\
         e_{L2_rel} = \frac{L2(u)}{L2(u)} & =
                                \frac{(\sum M(u))^{1/2}}{(\sum M u)^{1/2}}
 

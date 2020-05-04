@@ -15,21 +15,20 @@ Open a terminal (Linux & Mac) or the Anaconda Prompt (Windows) and type:
 
     conda create -n pg -c gimli -c conda-forge pygimli
 
-If you want to use pygimli, you have to activate the environment. You can put
-this line in your `~/.bashrc` file so that it is activated automatically if you
-open a terminal.
+If you are using Windows or Mac, a new environment named "pg" should be visible
+in the Anaconda Navgiator. If you want to use pygimli from the command line, you
+have to activate the environment. You can put this line in your `~/.bashrc` file
+so that it is activated automatically if you open a terminal.
 
 .. code-block:: bash
 
     conda activate pg
 
-To test if everything works correctly you can do the following:
-
-.. code-block:: bash
-
-    python -c "import pygimli; pygimli.test(show=False, onlydoctests=True)"
-
 After that you can use pygimli with your text editor of choice and a terminal.
+
+Usage with Spyder or JupyterLab
+-------------------------------
+
 Depending on your preferences, you can also install third-party software such as
 the MATLAB-like integrated development environment (https://www.spyder-ide.org):
 
@@ -37,11 +36,23 @@ the MATLAB-like integrated development environment (https://www.spyder-ide.org):
 
     conda install -c conda-forge spyder
 
-Or alternatively, the web-based IDE JupyterLab (https://jupyterlab.readthedocs.io).
+Or alternatively, the web-based IDE JupyterLab (https://jupyterlab.readthedocs.io):
 
 .. code-block:: bash
 
-    conda install -conda-forge jupyterlab
+    conda install -c conda-forge jupyterlab
+
+Testing
+-------
+
+To test if everything works correctly you can do the following:
+
+.. code-block:: bash
+
+    python -c "import pygimli; pygimli.test(show=False, onlydoctests=True)"
+
+Staying up-to-date
+------------------
 
 Update your pygimli installation frome time to time, if want to have the newest
 functionality:
@@ -50,9 +61,9 @@ functionality:
 
     conda update -c gimli -c conda-forge pygimli
 
-The only drawback using conda is that you are bound to the rhythm we update the
-binary packages. Conda also can be seen as a sandbox inside your system
-and it might be difficult to combine system python packages and conda pyGIMLi.
-If you like to keep your pyGIMLi version more recent (including all possible
-drawbacks of versions that are actively developed) you should compile pyGIMli
-using your systems toolchain.
+The only drawback of using conda is that you are bound to the rhythm in which we
+update the binary packages. Conda also can be seen as a sandbox inside your
+system and it might be difficult to combine system Python packages and conda
+pyGIMLi. If you like to keep your pyGIMLi version more recent (including all
+possible drawbacks of versions that are actively developed) you should compile
+pyGIMLi using your systems toolchain.

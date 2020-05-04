@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 
 """
-pygimli.core
-------------
-
 Imports and extensions of the C++ bindings.
 """
 
