@@ -18,7 +18,7 @@ from pygimli.viewer.mpl.dataview import showVecMatrix
 from pygimli.frameworks import MethodManager#, MethodManager0
 
 # the explicit import with full name allow for:
-# python ~/src/gimli/gimli/python/pygimli/physics/traveltime/refraction.py
+# python ~/src/gimli/gimli/pygimli/physics/traveltime/refraction.py
 from pygimli.physics.traveltime.ratools import createGradientModel2D
 from pygimli.physics.traveltime.raplot import drawFirstPicks, plotLines
 

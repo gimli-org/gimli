@@ -3,7 +3,7 @@
 2D ERT modeling and inversion
 -----------------------------
 """
-# sphinx_gallery_thumbnail_number = 2
+# sphinx_gallery_thumbnail_number = 6
 
 import numpy as np
 import pygimli as pg

@@ -106,7 +106,7 @@ installed in build/bin. If you want to build the Python bindings, call:
 You might add J=8 (`make pygimli J=8`) for using 8 jobs in parallel to speed up
 the build (adapt this to the number of real cores of the computer). The library
 _pygimli_.so library will be copied into the source path
-**../gimli/python/pygimli** in the subdirectory core.
+**../gimli/pygimli** in the subdirectory core.
 
 To use the gimli installation you need to set some environment variables (this
 example assumes that the **src** directory resides in your home directory):

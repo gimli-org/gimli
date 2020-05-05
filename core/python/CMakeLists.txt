@@ -50,7 +50,7 @@ if(WIN32)
         TARGET
             pgcopydll
         COMMENT
-            "Updating needed dll. build/bin/*dll -> trunk/python/pygimli/core"
+            "Updating needed dll. build/bin/*dll -> trunk/pygimli/core"
     )
 endif(WIN32)
 
