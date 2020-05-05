@@ -24,7 +24,7 @@ def make_gallery(src_path, out_path):
     examples = [fn for fn in glob(join(example_dir, "*/*plot*.py"))
                 if not join(example_dir, "dev") in fn]
     tutorials = [fn for fn in glob(join(tutorial_dir, "*/*plot*.py"))
-                if not join(tutorial_dir, "dev") in fn]
+                 if not join(tutorial_dir, "dev") in fn]
 
     # Get captions
     def readRSTSecTitles(fname, verbose=False):
