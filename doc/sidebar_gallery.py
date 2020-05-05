@@ -94,7 +94,10 @@ def make_gallery(src_path, out_path):
                 </a>
               </div>"""
 
-    idx = random.randint(0, len(gallery) - 1)
+    if len(gallery) > 0:
+        idx = random.randint(0, len(gallery) - 1)
+    else:
+        idx = 0
     items = []
     for ix, (item, title) in enumerate(zip(gallery, titles)):
         path = dirname(item)
