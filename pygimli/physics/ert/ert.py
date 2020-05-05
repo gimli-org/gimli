@@ -93,13 +93,20 @@ def createGeometricFactors(scheme, numerical=None, mesh=None, verbose=False):
     if mesh is None:
         mesh = createInversionMesh(scheme)
 
-        m = mesh.createH2()
-        m = m.createP2()
-        if verbose:
-            pg.info('Calculate numerical geometric factors.')
-        d = simulate(m, res=1.0, scheme=scheme, sr=False, useBert=True,
-                    calcOnly=True, verbose=True)
-        return 1./d['u']
+    if verbose:
+        pg.info('mesh', mesh)
+    m = mesh.createH2()
+
+    if verbose:
+        pg.info('mesh-h2', m)
+    m = m.createP2()
+
+    if verbose:
+        pg.info('mesh-p2', m)
+        pg.info('Calculate numerical geometric factors.')
+    d = simulate(m, res=1.0, scheme=scheme, sr=False, useBert=True,
+                 calcOnly=True, verbose=True)
+    return 1./d['u']
 
 
 def createInversionMesh(data, **kwargs):
