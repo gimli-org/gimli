@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 2.8.8)
 
 if (${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
-    message(FATAL_ERROR "In-source builds not allowed. 
-            Please make a new directory (called a build directory) 
+    message(FATAL_ERROR "In-source builds not allowed.
+            Please make a new directory (called a build directory)
             and run CMake from there. You may need to remove CMakeCache.txt." )
 endif()
 
@@ -528,7 +528,7 @@ else()
 Check above for python, castxml, pygccxml, pyplusplus, boost_python, numpy")
 endif ()
 
-configure_file("${PROJECT_SOURCE_DIR}/core/config.cmake.h.in" 
+configure_file("${PROJECT_SOURCE_DIR}/core/config.cmake.h.in"
                "${PROJECT_BINARY_DIR}/config.cmake.h" )
 add_definitions(-DHAVE_CONFIG_CMAKE_H)
 
@@ -601,7 +601,7 @@ endif()
 set(GIMLI_VER_INSTALL_SUBDIR "/${CMAKE_PROJECT_NAME}-${GIMLI_VERSION_MAJOR}" )
 set(GIMLI_MODULE_INSTALL_DIR "${GIMLI_LIB_INSTALL_DIR}/${CMAKE_PROJECT_NAME}-${GIMLI_VERSION_MAJOR}.${GIMLI_VERSION_MINOR}" )
 set(GIMLI_INCLUDE_INSTALL_DIR "include${GIMLI_VER_INSTALL_SUBDIR}" )
-#set( GIMLI_PYTHON_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/python/pygimli)
+#set( GIMLI_PYTHON_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/pygimli)
 
 ################################################################################
 # Add main header locations (for everything we build)

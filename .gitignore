@@ -80,18 +80,18 @@ coverage.xml
 
 # Misc
 test.py
-python/pygimli/core/libboost_python37-mt.dll
-python/pygimli/core/libgimli.dll
+pygimli/core/libboost_python37-mt.dll
+pygimli/core/libgimli.dll
 gimli.code-workspace
-python/pygimli/core/*.dll
+pygimli/core/*.dll
 .vscode/settings.json
 
-python/pygimli/testing/synth.ves
+pygimli/testing/synth.ves
 .vscode/launch.json
 python/git.exe.stackdump
-python/pygimli/core/libgimli.dll.back
-python/pygimli/core/_pygimli_.pyd.back
-python/pygimli/core/_pygimli_.so.dSYM/
-python/pygimli/core/libgimli.dylib
+pygimli/core/libgimli.dll.back
+pygimli/core/_pygimli_.pyd.back
+pygimli/core/_pygimli_.so.dSYM/
+pygimli/core/libgimli.dylib
 doc/examples/dc_and_ip/synth.ves
-python/pygimli/VERSION
+pygimli/VERSION

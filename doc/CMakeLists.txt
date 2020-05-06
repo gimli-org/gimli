@@ -57,7 +57,7 @@ foreach(file ${RSTFILES})
     )
 endforeach()
 
-set(PYFILES conf.py; sidebar_gallery.py; paper_carousel.py)
+set(PYFILES conf.py; sidebar_gallery.py; paper_carousel.py; bib2html.py)
 
 foreach(file ${PYFILES})
     add_custom_command(

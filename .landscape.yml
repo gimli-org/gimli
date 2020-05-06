@@ -20,7 +20,7 @@ ignore-paths:
     - mingw
     - rpm
     - thirdParty
-    - python/pygimli/gui
+    - pygimli/gui
 
 pylint:
     disable:
