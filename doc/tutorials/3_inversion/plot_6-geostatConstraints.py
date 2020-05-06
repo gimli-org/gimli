@@ -54,12 +54,14 @@ distorts the x/y plane and a strike angle towards the third direction.
 import pygimli as pg
 import pygimli.meshtools as mt
 
+
 """
 First we build a very simple forward operator, whose response returns the
 values at given positions pos. In the initialization, the indices are stored
 and a mapping matrix is created that projects the model vector to the forward
 response. This matrix is also the Jacobian matrix for the inversion.
 """
+
 
 class PriorFOP(pg.core.ModellingBase):
     """Forward operator for grabbing values."""
@@ -92,8 +94,13 @@ mesh = mt.createMesh(rect, quality=34.5, area=0.1)
 pos = [[2, -2], [8, -2], [5, -5], [2, -8], [8, -8]]
 fop = PriorFOP(mesh, pos)
 # %% define some plotting options and a figure
-kw = dict(colorBar=True, cMin=30, cMax=300, orientation='vertical',
-          cMap='Spectral_r', logScale=True)
+kw = dict(
+    colorBar=True,
+    cMin=30,
+    cMax=300,
+    orientation='vertical',
+    cMap='Spectral_r',
+    logScale=True)
 fig, ax = pg.plt.subplots(nrows=2, ncols=2, sharex=True, sharey=True)
 #
 startModel = pg.Vector(mesh.cellCount(), 30)
@@ -101,7 +108,7 @@ fop.regionManager().setConstraintType(2)
 tLog = pg.core.TransLog()
 vals = [30, 50, 300, 100, 200]
 # vals = [10, 20, 50, 30, 40]
-inv = pg.Inversion(vals, fop, tLog, tLog)
+inv = pg.core.Inversion(vals, fop, tLog, tLog)
 inv.setRelativeError(0.05)  # 5 % error
 inv.setModel(startModel)
 inv.setLambda(200)
@@ -134,6 +141,7 @@ print(('{:.1f} ' * 5).format(*fop(res)), inv.chi2())
 pg.show(mesh, res, ax=ax[1, 1], **kw)
 ax[1, 1].set_title("I=[10/3], dip=25")
 # plot the position of the priors
+for ai in ax.flat:
     for po in pos:
         ai.plot(*po, marker='o', markersize=10, color='k', fillstyle='none')
 

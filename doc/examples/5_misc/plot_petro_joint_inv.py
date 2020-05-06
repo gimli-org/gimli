@@ -10,6 +10,7 @@ be directly coupled, if there is a link to an underlying target parameter.
 In this example, ERT and traveltime data are inverted for water saturation. For
 details see section 3.3 of the pyGIMLi paper (https://cg17.pygimli.org).
 """
+# sphinx_gallery_thumbnail_number = 5
 
 import numpy as np
 import pygimli as pg
@@ -65,7 +66,7 @@ def showModel(ax, model, mesh, petro=1, cMin=None, cMax=None, label=None,
     if cMin is None:
         cMin = 0.3
     if cMax is None:
-        cMax = 1.0
+        cMax = 0.9
 
     if cMap is None:
         cMap = 'viridis'
