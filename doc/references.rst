@@ -4,6 +4,6 @@ References
 ----------
 
 .. bibliography:: references.bib
-_   :nocite:
+    :nocite:
     :style: mystyle
     :all:
