@@ -189,7 +189,7 @@ u = pg.solver.linSolve(A, b)
 pg.show(domain, u, label='Approximated solution $\mathrm{u}$', nLevs=7)
 
 ###############################################################################
-# For analysing the accuracy for the approximation we apply the
+# For analyzing the accuracy for the approximation we apply the
 # L2 norm for the finite element space :py:mod:`pygimli.solver.normL2` for a
 # set of different solutions with decreasing cell size. Instead of using the
 # the single assembling steps again, we apply our Finite Element shortcut function
@@ -214,4 +214,29 @@ ax.loglog(h, l2, 'o-')
 ax.set_ylabel('Approximation error: $L_2$ norm')
 ax.set_xlabel('Cell size $h$ (m)')
 ax.grid()
-pg.wait()
+
+###############################################################################
+# We calculated the examples before for a homogeneous material parameter a=1,
+# but we can apply any heterogeneous values to0. One way is to create a list of # parameter values, one for each cell of the domain. Currently the values for
+# each cell can be of type float, complex, or real valued anisotropy or
+# constitutive matrix. For illustration we show a calculation with an
+# anisotropic material. We simply use the same setting as above and assume a
+# -45 degree dipping angle in the left and 45 degree dipping in the right part # of the domain. Maybe we will find someday a more meaningful example. If you
+# have an idea please don't hesitate to share.
+#
+a = [None]*domain.cellCount()
+for c in domain.cells():
+    if c.center()[0] < np.pi:
+        a[c.id()] = pg.solver.anisotropyMatrix(lon=1.0, trans=10.0,
+                                               theta=-45/180 * np.pi)
+    else:
+        a[c.id()] = pg.solver.anisotropyMatrix(lon=1.0, trans=10.0,
+                                               theta=45/180 * np.pi)
+
+u = pg.solve(domain, a=a, f=f, bc={'Dirichlet':{'*': 0}})
+pg.show(domain, u, label='Solution $\mathrm{u}$ for anisotrop material parameter $a$', nLevs=7)
+
+
+
+
+

@@ -122,18 +122,18 @@ void LinSolver::solve(const RVector & rhs, RVector & solution){
     if (solver_) solver_->solve(rhs, solution);
 }
 
-RVector LinSolver::solve(const RVector & rhs){
-    RVector solution(rhs.size());
-    if (solver_) solver_->solve(rhs, solution);
-    return solution;
-}
-
 void LinSolver::solve(const CVector & rhs, CVector & solution){
     solution.resize(rows_);
     if (rhs.size() != cols_){
         std::cerr << WHERE_AM_I << " rhs size mismatch: " << cols_ << "  " << rhs.size() << std::endl;
     }
     if (solver_) solver_->solve(rhs, solution);
+}
+
+RVector LinSolver::solve(const RVector & rhs){
+    RVector solution(rhs.size());
+    if (solver_) solver_->solve(rhs, solution);
+    return solution;
 }
 
 CVector LinSolver::solve(const CVector & rhs){
@@ -151,7 +151,7 @@ void LinSolver::initialize_(RSparseMatrix & S, int stype){
         case LDL:     solver_ = new LDLWrapper(S, verbose_); break;
         case CHOLMOD: solver_ = new CHOLMODWrapper(S, verbose_, stype); break;
         case UMFPACK: solver_ = new CHOLMODWrapper(S, verbose_, stype, true); break;
-        case UNKNOWN: 
+        case UNKNOWN:
     default:
         std::cerr << WHERE_AM_I << " no valid solver found"  << std::endl;
     }

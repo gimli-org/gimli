@@ -95,12 +95,12 @@ def createGeometricFactors(scheme, numerical=None, mesh=None, verbose=False):
 
     if verbose:
         pg.info('mesh', mesh)
-    m = mesh.createH2()
 
+    m = mesh.createH2()
     if verbose:
         pg.info('mesh-h2', m)
-    m = m.createP2()
 
+    m = m.createP2()
     if verbose:
         pg.info('mesh-p2', m)
         pg.info('Calculate numerical geometric factors.')
