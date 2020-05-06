@@ -20,7 +20,7 @@ def ricker(f, t, t0=0.0):
     ----------
     f : float
         Frequency of the wavelet in Hz
-    
+
     t : array [float]
         Time base definition
 
@@ -163,7 +163,7 @@ def drawSeismogramm(ax, mesh, u, dt, ids=None, pos=None, i=None):
     ax.invert_yaxis()
 
 
-def solvePressureWave(mesh, velocities, times, sourcePos, uSource, verbose):
+def solvePressureWave(mesh, velocities, times, sourcePos, uSource, verbose=False):
     r"""
     Solve pressure wave equation.
 
@@ -252,7 +252,7 @@ def solvePressureWave(mesh, velocities, times, sourcePos, uSource, verbose):
     timeIter3 = np.zeros(len(times))
     timeIter4 = np.zeros(len(times))
 
-    progress = pg.utils.ProgressBar(its=len(times), width=40, sign='+')    
+    progress = pg.utils.ProgressBar(its=len(times), width=40, sign='+')
 
     for n in range(1, len(times)):
         u[n - 1, sourceID] = uSource[n - 1]
