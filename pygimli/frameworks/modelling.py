@@ -43,7 +43,6 @@ class Modelling(pg.core.ModellingBase):
     Can be seen as some kind of proxy Forward Operator.
 
     TODO:
-        * Modeling or Modelling?
         * Docu:
             - describe members (model transformation, dictionary of region properties)
             -

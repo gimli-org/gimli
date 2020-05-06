@@ -3,12 +3,11 @@
 pyGIMLi - An open-source library for modelling and inversion in geophysics
 """
 import locale
-import sys
 
 
 ### Import everything that should be accessible through main namespace.
 from .core import (BVector, CVector, DataContainer, DataContainerERT,
-                   Inversion, IVector, Line, Matrix, Mesh, Plane, Pos,
+                   IVector, Line, Matrix, Mesh, Plane, Pos,
                    RVector3, Vector, abs, cat, center, dur, exp, find,
                    interpolate, log, log10, logDropTol, math, matrix, max,
                    mean, median, min, search, setDebug, setThreadCount, sort,
@@ -27,7 +26,7 @@ from .solver import solve
 from .utils import boxprint, cache, cut, unique, unit, cmap
 from .utils import prettify as pf
 from .viewer import plt, show, wait
-from .frameworks import fit
+from .frameworks import fit, Modelling, Inversion
 from .testing import test
 
 from .core.load import getCachePath, getExampleFile
@@ -176,4 +175,3 @@ def version(cache=True):
     else:
         info('Version: ' + __version__ + " core:" + versionStr())
     return __version__
-

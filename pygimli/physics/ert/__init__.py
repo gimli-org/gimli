@@ -3,7 +3,7 @@
 
     This package contains tools, modelling operators, and managers for:
 
-    * lightweight Electrical Resistivity Tomography (ERT)
+    * Electrical Resistivity Tomography (ERT) / Induced polarization (IP)
     * Vertical Electric Sounding (VES)
 """
 
@@ -12,7 +12,7 @@ from .ert import (ERTManager, ERTModelling, createERTData, #
                  simulate, createGeometricFactors)
 from .ves import VESModelling, VESCModelling, VESManager
 
-from .visualization import showERTData 
+from .visualization import showERTData
 from .importData import load
 
 show = showERTData
