@@ -110,7 +110,7 @@ y += np.random.randn(len(y)) * noise
 fop = FunctionModelling(3, x)
 
 # initialize inversion with data and forward operator and set options
-inv = pg.Inversion(y, fop)
+inv = pg.core.Inversion(y, fop)
 
 # constant absolute error of 0.01 is 1% (not necessary, only for chi^2)
 inv.setAbsoluteError(noise)
@@ -119,7 +119,7 @@ inv.setAbsoluteError(noise)
 inv.setLambda(0)
 
 # actual inversion run yielding coefficient model
-coeff = inv.run(verbose=True)
+coeff = inv.run()
 print(coeff)
 
 ###############################################################################

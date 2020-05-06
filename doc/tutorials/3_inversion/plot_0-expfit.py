@@ -113,7 +113,7 @@ print(coeff)
 # We finally create a plotting figure and plot both data and model response.
 
 plt.figure()
-plt.plot(x, data, 'rx', x, inv.response(), 'b-')
+plt.plot(x, data, 'rx', x, inv.response, 'b-')
 
 ###############################################################################
 # The createMesh1D automatically attributed the markers 0 and 1 to the two
@@ -122,18 +122,18 @@ plt.plot(x, data, 'rx', x, inv.response(), 'b-')
 # or all three at the same time (setParameters). This changes the model
 # transformation which can of course be region-specific.
 
-f.region(0).setLowerBound(0.1)
-f.region(0).setStartModel(3)
-f.region(1).setParameters(0.3, 0.01, 1.0)
+# f.region(0).setLowerBound(0.1)
+# f.region(0).setStartModel(3)
+# f.region(1).setParameters(0.3, 0.01, 1.0)
 
 ###############################################################################
 # If these are set before the inversion is used, they are used automatically.
 # We set the model by hand using the new starting model
 
-inv.setVerbose(True)
-inv.setModel(f.createStartModel())
-print(inv.run())
-inv.echoStatus()
+# inv.setVerbose(True)
+# inv.setModel(f.createStartModel())
+# print(inv.run())
+# inv.echoStatus()
 
 ###############################################################################
 # The result is pretty much the same as before but for stronger equivalence or

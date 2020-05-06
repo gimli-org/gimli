@@ -42,7 +42,7 @@ transRho = pg.trans.TransLogLU(1, 1000)  # lower and upper bound
 transRhoa = pg.trans.TransLog()  # log transformation also for data
 ###############################################################################
 # Set up inversion
-inv = pg.Inversion(rhoa, f, transRhoa, transRho, False)  # data vector, f, ...
+inv = pg.core.Inversion(rhoa, f, transRhoa, transRho, False)  # data vector, f, ...
 # The transformations can also be omitted and set individually by
 # inv.setTransData(transRhoa)
 # inv.setTransModel(transRho)
