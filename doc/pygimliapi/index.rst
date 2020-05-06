@@ -25,7 +25,7 @@ pyGIMLi API Reference
   :toctree: _generated
   :template: module.rst
 
-  core
+  .. core
   frameworks
   math
   matrix
