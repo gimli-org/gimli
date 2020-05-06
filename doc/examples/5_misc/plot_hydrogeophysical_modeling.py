@@ -8,11 +8,9 @@ Coupled hydrogeophysical modeling example. This essentially represents the
 forward modeling step of the example presented in section 3.2 of the `pyGIMLi
 paper <http://www.sciencedirect.com/science/article/pii/S0098300417300584/pdfft?md5=44253eaacd5490e3fb32210671672496&pid=1-s2.0-S0098300417300584-main.pdf>`_.
 """
-# sphinx_gallery_thumbnail_number = 10
+# sphinx_gallery_thumbnail_number = 8
 
-import matplotlib.pyplot as plt
 import numpy as np
-from mpl_toolkits.axes_grid1 import ImageGrid
 
 import pygimli as pg
 import pygimli.meshtools as mt
@@ -109,9 +107,9 @@ S[sourceCell.id()] = 1.0 / sourceCell.size()  # g/(l s)
 
 ################################################################################
 # We define a time vector and common velocity-depending dispersion coefficient
-# :math:`D = \alpha |\mathbf{v}|` with a dispersivity :math:`\alpha=1\cdot10^{-2}` m. 
+# :math:`D = \alpha |\mathbf{v}|` with a dispersivity :math:`\alpha=1\cdot10^{-2}` m.
 # We solve the advection-diffsuion equation on the equation level with the finite
-# volume solver, which results in a particle concentration :math:`c(\mathbf{r},t)$ 
+# volume solver, which results in a particle concentration :math:`c(\mathbf{r},t)$
 # (in g/l) for each cell center and time step.
 
 # Choose 800 time steps for 6 days in seconds
