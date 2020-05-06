@@ -1,6 +1,8 @@
 Installation
 ============
 
+|conda| |downloads| |condaversion| |latest|
+
 On all platforms, we recommend to install pyGIMLi via the conda package manager
 contained in the Anaconda distribution. For details on how to install Anaconda,
 we refer to: https://docs.anaconda.com/anaconda/install/
@@ -16,7 +18,7 @@ Open a terminal (Linux & Mac) or the Anaconda Prompt (Windows) and type:
     conda create -n pg -c gimli -c conda-forge pygimli
 
 If you are using Windows or Mac, a new environment named "pg" should be visible
-in the Anaconda Navgiator. If you want to use pygimli from the command line, you
+in the Anaconda Navigator. If you want to use pygimli from the command line, you
 have to activate the environment. You can put this line in your `~/.bashrc` file
 so that it is activated automatically if you open a terminal.
 
@@ -54,7 +56,7 @@ To test if everything works correctly you can do the following:
 Staying up-to-date
 ------------------
 
-Update your pygimli installation frome time to time, if want to have the newest
+Update your pygimli installation from time to time, if want to have the newest
 functionality:
 
 .. code-block:: bash
@@ -67,3 +69,12 @@ system and it might be difficult to combine system Python packages and conda
 pyGIMLi. If you like to keep your pyGIMLi version more recent (including all
 possible drawbacks of versions that are actively developed) you should compile
 pyGIMLi using your systems toolchain.
+
+.. |conda| image:: https://anaconda.org/gimli/pygimli/badges/installer/conda.svg
+   :target: https://anaconda.org/gimli/pygimli
+.. |downloads| image:: https://anaconda.org/gimli/pygimli/badges/downloads.svg
+   :target: https://anaconda.org/gimli/pygimli
+.. |condaversion| image:: https://anaconda.org/gimli/pygimli/badges/version.svg
+   :target: https://anaconda.org/gimli/pygimli
+.. |latest| image:: https://anaconda.org/gimli/pygimli/badges/latest_release_date.svg
+   :target: https://anaconda.org/gimli/pygimli

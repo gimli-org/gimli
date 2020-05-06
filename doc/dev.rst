@@ -190,7 +190,9 @@ https://numpydoc.readthedocs.io/en/latest/format.html#docstring-standard
 
     Explain a little bit more verbose was foo does. Use references :cite:`Archie1942`
 
-    Use links to pygimli api :py:mod:`pygimli.meshtools.appendTriangleBoundary`.
+    Use links to pygimli api :py:mod:pygimli.manager` for modules
+    :py:func:pygimli.solver.solveFiniteElements for functions
+
 
     Use math.
 

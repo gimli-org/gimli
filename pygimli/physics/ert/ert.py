@@ -15,7 +15,7 @@ from .visualization import showERTData
 from pygimli import pf
 
 
-def simulate(mesh, res, scheme, sr=True, useBert=True,
+def simulate(mesh, scheme, res, sr=True, useBert=True,
              verbose=False, **kwargs):
     """Convenience function to use the ERT modelling operator.
 
@@ -27,15 +27,15 @@ def simulate(mesh, res, scheme, sr=True, useBert=True,
 
     Parameters
     ----------
-    res : see :py:mod:`pygimli.ert.ERTManager.simulate`
-        Resistivity distribution.
-    mesh : :gimliapi:`GIMLI::Mesh` | str
+    mesh: :gimliapi:`GIMLI::Mesh` | str
         Modelling domain. Mesh can be a file name here.
     scheme: :gimliapi:`GIMLI::DataContainerERT` | str
         Data configuration. Scheme can be a file name here.
-    sr : bool [True]
+    res: see :py:mod:`pygimli.ert.ERTManager.simulate`
+        Resistivity distribution.
+    sr: bool [True]
         Use singularity removal technique.
-    useBert : bool [True]
+    useBert: bool [True]
         Use Bert forward operator instead of the reference implementation.
     **kwargs:
         Forwarded to :py:mod:`pygimli.ert.ERTManager.simulate`
@@ -48,7 +48,8 @@ def simulate(mesh, res, scheme, sr=True, useBert=True,
     if isinstance(scheme, str):
         scheme = pg.physics.ert.load(scheme)
 
-    return ert.simulate(mesh, res, scheme, verbose=verbose, **kwargs)
+    return ert.simulate(mesh=mesh, res=res, scheme=scheme,
+                        verbose=verbose, **kwargs)
 
 
 @pg.cache
@@ -95,12 +96,12 @@ def createGeometricFactors(scheme, numerical=None, mesh=None, verbose=False):
 
     if verbose:
         pg.info('mesh', mesh)
-    m = mesh.createH2()
 
+    m = mesh.createH2()
     if verbose:
         pg.info('mesh-h2', m)
-    m = m.createP2()
 
+    m = m.createP2()
     if verbose:
         pg.info('mesh-p2', m)
         pg.info('Calculate numerical geometric factors.')
@@ -601,8 +602,8 @@ class ERTManager(MeshMethodManager):
             will be calculated numerical using a p2 refined mesh or
             you provide primary potentials with setPrimPot.
         """
-        kwargs['useBert'] = kwargs.pop('useBert', True)
-        kwargs['sr'] = kwargs.pop('sr', True)
+        self.useBert = kwargs.pop('useBert', True)
+        self.sr = kwargs.pop('sr', True)
 
         super().__init__(data=data, **kwargs)
         self.inv.dataTrans = pg.trans.TransLogLU()
@@ -613,11 +614,12 @@ class ERTManager(MeshMethodManager):
 
     def createForwardOperator(self, **kwargs):
         """Create and choose forward operator. """
-        useBert = kwargs.pop('useBert', False)
         verbose = kwargs.pop('verbose', False)
-        if useBert:
+        self.useBert = kwargs.pop('useBert', self.useBert)
+        self.sr = kwargs.pop('sr', self.sr)
+        if self.useBert:
             pg.verbose('Create ERTModelling FOP')
-            fop = ERTModelling(sr=kwargs.pop('sr', True), verbose=verbose)
+            fop = ERTModelling(sr=self.sr, verbose=verbose)
         else:
             pg.verbose('Create ERTModellingReference FOP')
             fop = ERTModellingReference(**kwargs)
@@ -655,9 +657,9 @@ class ERTManager(MeshMethodManager):
     def setPrimPot(self, pot):
         """
         """
-        Implementme
+        pg.critical("Not implemented.")
 
-    def simulate(self, mesh, res, scheme, **kwargs):
+    def simulate(self, mesh, scheme, res, **kwargs):
         """Simulate an ERT measurement.
 
         Perform the forward task for a given mesh, a resistivity distribution
@@ -759,7 +761,8 @@ class ERTManager(MeshMethodManager):
         noiseLevel = kwargs.pop('noiseLevel', 0.0)
         noiseAbs = kwargs.pop('noiseAbs', 1e-4)
 
-        fop = self.fop
+        #segfaults with self.fop (test & fix)
+        fop = self.createForwardOperator(useBert=self.useBert, sr=self.sr)
         fop.data = scheme
         fop.setMesh(mesh, ignoreRegionManager=True)
         fop.verbose = verbose

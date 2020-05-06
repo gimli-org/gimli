@@ -18,7 +18,7 @@ def fitCCEMPhi(f, phi,  ePhi=0.001, lam=1000.,
     fCCEM.region(1).setParameters(*taupar)  # tau
     fCCEM.region(2).setParameters(*cpar)   # c
     fCCEM.region(3).setParameters(*empar)   # tau-EM
-    ICC = pg.Inversion(phi, fCCEM, verbose, verbose)  # set up inversion class
+    ICC = pg.core.Inversion(phi, fCCEM, verbose, verbose)  # set up inversion class
     ICC.setAbsoluteError(ePhi)  # 1 mrad
     ICC.setLambda(lam)  # start with large damping and cool later
     ICC.setMarquardtScheme(0.8)  # lower lambda by 20%/it., no stop chi=1
@@ -35,7 +35,7 @@ def fitCCPhi(f, phi,  ePhi=0.001, lam=1000., verbose=True, robust=False,
     fCCEM.region(0).setParameters(*mpar)    # m (start,lower,upper)
     fCCEM.region(1).setParameters(*taupar)  # tau
     fCCEM.region(2).setParameters(*cpar)   # c
-    ICC = pg.Inversion(phi, fCCEM, False)  # set up inversion class
+    ICC = pg.core.Inversion(phi, fCCEM, False)  # set up inversion class
     ICC.setAbsoluteError(ePhi)  # 1 mrad
     ICC.setLambda(lam)  # start with large damping and cool later
     ICC.setMarquardtScheme(0.8)  # lower lambda by 20%/it., no stop chi=1
@@ -59,7 +59,7 @@ def fit2CCPhi(f, phi,  ePhi=0.001, lam=1000., verbose=True, robust=False,
     f2CC.region(3).setParameters(*mpar2)    # m (start,lower,upper)
     f2CC.region(4).setParameters(*taupar2)  # tau
     f2CC.region(5).setParameters(*cpar2)   # c
-    ICC = pg.Inversion(phi, f2CC, False)  # set up inversion class
+    ICC = pg.core.Inversion(phi, f2CC, False)  # set up inversion class
     ICC.setAbsoluteError(ePhi)  # 1 mrad
     ICC.setLambda(lam)  # start with large damping and cool later
     ICC.setMarquardtScheme(0.8)  # lower lambda by 20%/it., no stop chi=1
@@ -83,7 +83,7 @@ def fitCCAbs(f, amp, error=0.01, lam=1000., mstart=None,
     fCC.region(1).setParameters(mstart, 0, 1)    # m (start,lower,upper)
     fCC.region(2).setParameters(*taupar)  # tau
     fCC.region(3).setParameters(*cpar)   # c
-    ICC = pg.Inversion(amp, fCC, tLog, tLog, False)  # set up inversion class
+    ICC = pg.core.Inversion(amp, fCC, tLog, tLog, False)  # set up inversion class
     ICC.setRelativeError(error)  # perr + ePhi/data)
     ICC.setLambda(lam)  # start with large damping and cool later
     ICC.setMarquardtScheme(0.8)  # lower lambda by 20%/it., no stop chi=1
@@ -105,7 +105,7 @@ def fitCCC(f, amp, phi, eRho=0.01, ePhi=0.001, lam=1000., mstart=None,
     fCC.region(2).setParameters(*taupar)  # tau
     fCC.region(3).setParameters(*cpar)   # c
     data = pg.cat(amp, phi)
-    ICC = pg.Inversion(data, fCC, verbose, verbose)  # set up inversion class
+    ICC = pg.core.Inversion(data, fCC, verbose, verbose)  # set up inversion class
     ICC.setTransModel(tLog)
     error = pg.cat(eRho*amp, pg.Vector(len(f), ePhi))
     ICC.setAbsoluteError(error)  # perr + ePhi/data)
@@ -129,7 +129,7 @@ def fitCCCC(f, amp, phi, error=0.01, lam=10., taupar=(1e-2, 1e-5, 100),
     fCC.region(2).setParameters(*taupar)  # tau
     fCC.region(3).setParameters(*cpar)   # c
     data = pg.cat(1./amp * np.cos(phi), 1./amp * np.sin(phi))
-    ICC = pg.Inversion(data, fCC, False)  # set up inversion class
+    ICC = pg.core.Inversion(data, fCC, False)  # set up inversion class
     ICC.setTransModel(tLog)
     ICC.setAbsoluteError(data*error+max(data)*0.0001)  # perr + ePhi/data)
     ICC.setLambda(lam)  # start with large damping and cool later

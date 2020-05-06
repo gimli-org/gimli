@@ -3,6 +3,7 @@
 
 
 from .modelling import (Modelling, Block1DModelling, MeshModelling,
+                        JointModelling,
                         PetroModelling, LCModelling, ParameterModelling)
 
 from .inversion import (Inversion, MarquardtInversion,
@@ -11,7 +12,9 @@ from .inversion import (Inversion, MarquardtInversion,
 
 from .methodManager import (fit, MethodManager, MethodManager1d,
                             ParameterInversionManager,
-                            MeshMethodManager, PetroInversionManager)
+                            MeshMethodManager,
+                            PetroInversionManager,
+                            JointPetroInversionManager)
 
 # will be removed very soon
 # from .methodManager import (MethodManager0,

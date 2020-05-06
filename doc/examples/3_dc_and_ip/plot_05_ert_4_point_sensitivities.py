@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Four-point sensitivties
------------------------
+Four-point sensitivities
+------------------------
 
-In this example, we illustrate how to visualize the sensitivties of four-point
-configurations. You can easily loop over the plotting command to create
-something like this: https://www.youtube.com/watch?v=lt1qV-2d5Ps
+In this example, we illustrate how to visualize the sensitivities of four-point
+arrays. You can easily loop over the plotting command to create something like:
+https://www.youtube.com/watch?v=lt1qV-2d5Ps
 """
 
 import numpy as np
@@ -16,8 +16,7 @@ import pygimli.meshtools as mt
 import pygimli.physics.ert as ert
 
 ###############################################################################
-# We start by creating a ERT data container with 3 single four-point
-# configurations.
+# We start by creating a ERT data container with three four-point arrays.
 scheme = pg.DataContainerERT()
 
 nelecs = 10
@@ -26,9 +25,9 @@ pos[:, 0] = np.linspace(5, 25, nelecs)
 scheme.setSensorPositions(pos)
 
 measurements = np.array((
-    [0, 3, 6, 9], # Dipole-Dipole
-    [0, 9, 3, 6], # Wenner
-    [0, 9, 4, 5]  # Schlumberger
+    [0, 3, 6, 9],  # Dipole-Dipole
+    [0, 9, 3, 6],  # Wenner
+    [0, 9, 4, 5]   # Schlumberger
 ))
 
 for i, elec in enumerate("abmn"):
@@ -98,7 +97,7 @@ for i, sens in enumerate(fop.jacobian()):
     # Electrode annotations
     plotABMN(ax[i], scheme, i)
 
-    # Log-scaled and normalized sensitvity
+    # Log-scaled and normalized sensitivity
     normsens = pg.utils.logDropTol(sens/mesh.cellSizes(), 8e-4)
     normsens /= np.max(normsens)
     pg.show(mesh, normsens, cMap="RdGy_r", ax=ax[i], orientation="vertical",

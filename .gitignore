@@ -9,6 +9,8 @@ _examples_auto/
 _generated/
 # sidebar gallery is created on the fly
 doc/_templates/gallery.html
+doc/_static/usecases/original/
+*.ipynb
 
 # Customizations
 *.log
@@ -20,8 +22,13 @@ doc/_templates/gallery.html
 command.history
 *.bmat
 *.vtk
+*.vtu
 *.bms
 *.vector
+*.vec
+*.xyz
+*.dat
+*.ves
 
 # Gmsh
 *.geo.*
