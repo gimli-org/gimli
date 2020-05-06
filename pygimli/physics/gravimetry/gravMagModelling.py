@@ -212,9 +212,8 @@ def uCylinderHoriz(pnts, rad, rho, pos=(0., 0.)):
 
 
 def gradUCylinderHoriz(r, a, rho, pos=(0., 0.)):
-    r"""2D Gradient of gravimetric potential of horizontal cylinder.
-
-    Calculate .. in mGal at position pos
+    r"""2D Gradient of gravimetric potential of horizontal cylinder (in mGal at
+    position `pos`).
 
     .. math::
         g = -G[m^3/(kg s^2)] * dM[kg/m] * 1/r[1/m] * grad(r)[1/1] =
@@ -247,7 +246,7 @@ def gradUCylinderHoriz(r, a, rho, pos=(0., 0.)):
 def gradGZCylinderHoriz(r, a, rho, pos=(0., 0.)):
     r"""TODO WRITEME.
 
-    .. math:: g = -grad u(r), with r = [x,z], |r| = \sqrt(x^2+z^2)
+    .. math:: g = -grad u(r), with r = [x,z], |r| = \sqrt{x^2+z^2}
 
     Parameters
     ----------
@@ -274,11 +273,9 @@ def gradGZCylinderHoriz(r, a, rho, pos=(0., 0.)):
 
 
 def gradUHalfPlateHoriz(pnts, t, rho, pos=(0.0, 0.0)):
-    r"""TODO WRITEME.
+    r"""Gravitational field od a horizontal half plate.
 
-    Analytical solution
-
-    g = -grad u,
+    .. math:: g = -grad u,
 
     Parameters
     ----------
