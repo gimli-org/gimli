@@ -1,5 +1,32 @@
 # Changelog
 
+## v1.1 (06/05/2020)
+Release presented at EGU2020: https://doi.org/10.5194/egusphere-egu2020-18751
+
+``` bash
+conda install -c gimli -c conda-forge pygimli=1.1 # Win, Linux and Mac!
+```
+
+#### Main changes:
+- Improved and cleaned frameworks: https://www.pygimli.org/pygimliapi/_generated/pygimli.frameworks.html
+- `pygimli.physics.ert.ERTManager` with full BERT functionality
+- Repository restructuring (Python part now at root level)
+- 3D viewer based on PyVista: https://www.pygimli.org/pygimliapi/_generated/pygimli.viewer.pv.html
+- Improved API documentation and website
+
+##### API renaming & namespace clean-up
+- `pg.mplviewer` - > `pg.viewer.mpl`
+- `pg.RVector` -> `pg.Vector`
+- `pg.RMatrix` -> `pg.Matrix`
+- New module `pg.math` (cos, cot, sin, det, exp10, median, randn, rms, etc.)
+- New module `pg.matrix` (Vector, BlockMatrix, etc.)
+
+##### Default changes in viewer
+- `logScale=False`
+- `colorBar=True`
+
+---
+
 ## v1.0.12 (28/10/2019)
 ``` bash
 conda install -c gimli -c conda-forge pygimli=1.0.12 # Win & Linux!

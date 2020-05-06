@@ -20,8 +20,8 @@ from .methodManager import (fit, MethodManager, MethodManager1d,
 # from .methodManager import (MethodManager0,
 #                             MeshMethodManager0)
 
-from .resolution import computeR
+# from .resolution import computeR
 
 from .harmfit import HarmFunctor, harmfit, harmfitNative
 
-__all__ = ['HarmFunctor', 'harmfitNative', 'harmfit', 'computeR']
+__all__ = ['HarmFunctor', 'harmfitNative', 'harmfit']
