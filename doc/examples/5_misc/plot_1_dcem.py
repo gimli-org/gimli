@@ -14,7 +14,6 @@ what happens under the hood in the much simpler script that follows."""
 # The case has been documented by :cite:`Guenther2013NSG`.
 
 import numpy as np
-np.random.seed(1337)
 
 import matplotlib.pyplot as plt
 

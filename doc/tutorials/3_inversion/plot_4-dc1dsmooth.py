@@ -14,6 +14,8 @@ modelling operator is used to generate data, add noise and inversion.
 ###############################################################################
 # We import numpy numerics, mpl plotting, pygimli and the 1D plotting function
 import numpy as np
+np.random.seed(1337)
+
 import matplotlib.pyplot as plt
 
 import pygimli as pg
