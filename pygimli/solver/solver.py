@@ -1722,11 +1722,13 @@ def createStiffnessMatrix(mesh, a=None, isVector=False):
             else:
                 vN = False
 
-            al.gradU2(c, np.array(a[c.id()]), voigtNotation=vN)
+            al.gradU2(c, a[c.id()], voigtNotation=vN)
+            #al.gradU2(c, np.array(a[c.id()]), voigtNotation=vN)
             A.add(al)
 
     if isComplex is True:
         return pg.matrix.CSparseMatrix(A)
+
     return pg.matrix.SparseMatrix(A)
 
 

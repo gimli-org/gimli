@@ -57,7 +57,9 @@ needs_sphinx = '1.8' # due to napoleon
 # Check for external sphinx extensions
 deps = ['sphinxcontrib-programoutput',
         'sphinxcontrib-bibtex',
-        'sphinxcontrib-doxylink']
+        'sphinxcontrib-doxylink',
+	'bibtexparser',
+	]
 
 # check for p.version too
 modules = [p.project_name for p in pkg_resources.working_set]

@@ -1252,7 +1252,12 @@ template < class ValueType >
 bool operator == (const Vector< ValueType > & v1, const Vector< ValueType > & v2){
     if (v1.size() != v2.size()) return false;
     for (Index i = 0; i < v1.size(); i ++){
-        if (!isEqual(v1[i], v2[i])) return false;
+        if (!isEqual(v1[i], v2[i])) {
+            // for (Index j = 0; j < v1.size(); j ++){
+            //     __MS(j<< " " << v1[j] << "  "  << v2[j] <<  " " << v1[j]-v2[j] )
+            // }
+            return false;
+        }
     }
     return true;
 }

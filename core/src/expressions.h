@@ -124,11 +124,15 @@ DEFINE_BINARY_OPERATOR__(DIVID, /)
 
 #undef DEFINE_BINARY_OPERATOR__
 
-inline bool isEqual(const double & a, const double & b) { return (::fabs(a - b) < TOLERANCE); }
 // inline bool isEqual(const Complex & a, const Complex & b) { return (a == b); }
 //inline bool isNonEqual(const double & a, const double & b) { return !isEqual(a, b); }
 //inline bool isNonEqual(const Complex & a, const Complex & b) { return (a != b); }
 template < class T > bool isEqual(const T & a, const T & b) { return a==b; }
+template < > inline bool isEqual(const double & a, const double & b) {
+    return (::fabs(a - b) < TOLERANCE); }
+template < > inline bool isEqual(const Complex & a, const Complex & b) {
+    return (::fabs(a.real() - b.real()) < TOLERANCE && 
+            ::fabs(a.imag() - b.imag()) < TOLERANCE); }
 template < class T > bool isNonEqual(const T & a, const T & b) { return !isEqual(a, b); }
 
 template < class T > bool isLesser(const T & a, const T & b) { return a < b; }
