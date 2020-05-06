@@ -43,7 +43,6 @@ class Modelling(pg.core.ModellingBase):
     Can be seen as some kind of proxy Forward Operator.
 
     TODO:
-        * Modeling or Modelling?
         * Docu:
             - describe members (model transformation, dictionary of region properties)
             -
@@ -110,10 +109,8 @@ class Modelling(pg.core.ModellingBase):
 
     @property
     def data(self):
-        if self._fop is not None:
-            pg.critical('in use?')
-            return self._fop.data
         return self._data
+
     @data.setter
     def data(self, d):
         self.setData(d)
@@ -124,8 +121,24 @@ class Modelling(pg.core.ModellingBase):
         if isinstance(data, pg.DataContainer):
             self.setDataContainer(data)
         else:
-            print(data)
-            pg.critical("nothing known to do? Implement me in derived classes")
+            self._data = data
+
+    def setDataPost(self, data):
+        """Called when the dataContainer has been set sucessfully."""
+        pass
+
+    def setDataContainer(self, data):
+        """
+        """
+        if self.fop is not None:
+            pg.critical('in use?')
+            self.fop.setData(data)
+        else:
+            super(Modelling, self).setData(data)
+            self._data = data
+
+        self.setDataPost(self.data)
+
 
     @property
     def modelTrans(self):
@@ -145,7 +158,6 @@ class Modelling(pg.core.ModellingBase):
     def regionManager(self):
         """
         """
-        # pg._y('regionManager')
         self._regionManagerInUse = True
         ### initialize RM if necessary
         super(Modelling, self).regionManager()
@@ -298,22 +310,6 @@ class Modelling(pg.core.ModellingBase):
             else:
                 print(data)
                 pg.critical("nothing known to do? Implement me in derived classes")
-
-    def setDataPost(self, data):
-        """Called when the dataContainer has been set sucessfully."""
-        pass
-
-    def setDataContainer(self, data):
-        """
-        """
-        if self.fop is not None:
-            pg.critical('in use?')
-            self.fop.setData(data)
-        else:
-            super(Modelling, self).setData(data)
-            self._data = data
-
-        self.setDataPost(self.data)
 
     def estimateError(self, data, **kwargs):
         """Create data error fallback when the data error is not known.
@@ -609,7 +605,7 @@ class PetroModelling(MeshModelling):
     :math:`m` be the geophysical model, e.g., slowness, resistivity, ...
 
     """
-    def __init__(self, fop, trans, **kwargs):
+    def __init__(self, fop, petro, **kwargs):
         """Save forward class and transformation, create Jacobian matrix."""
         self._f = fop
         # self._f createStartModel might be called and depends on the regionMgr
@@ -619,7 +615,7 @@ class PetroModelling(MeshModelling):
 
         super(PetroModelling, self).__init__(fop=None, **kwargs)
         # petroTrans.fwd(): p(m), petroTrans.inv(): m(p)
-        self._petroTrans = trans  # class defining p(m)
+        self._petroTrans = petro  # class defining p(m)
 
         self._jac = pg.matrix.MultRightMatrix(self._f.jacobian())
         self.setJacobian(self._jac)
@@ -661,6 +657,62 @@ class PetroModelling(MeshModelling):
         # print(self._jac.r)
         # pg._r("create Jacobian", self, self._jac)
         self.setJacobian(self._jac) # to be sure .. test if necessary
+
+
+class JointModelling(MeshModelling):
+    """Cumulative (joint) forward operator."""
+    def __init__(self, fopList):
+        """Initialize with lists of forward operators"""
+        super().__init__()
+        self.fops = fopList
+        self.jac = pg.matrix.BlockMatrix()
+
+        #self.modelTrans = self.fops[0].modelTrans
+        self.modelTrans = pg.core.TransLogLU()
+        ### fixme
+        # self.modelTrans = pg.trans.TransCumulative()
+        # for i, f in enumerate(self.fops):
+        #     self.modelTrans.add(f.modelTrans)
+
+    def createStartModel(self, data):
+        """Use inverse transformation to get m(p) for the starting model."""
+        sm = self._f.createStartModel(data)
+        pModel = self._petroTrans.inv(sm)
+        return pModel
+
+    def response(self, model):
+        """Concatenate responses for all fops."""
+        resp = []
+        for f in self.fops:
+            resp.extend(f.response(model))
+        return resp
+
+    def createJacobian(self, model):
+        """Fill the individual Jacobian matrices."""
+        self.initJacobian()
+        for f in self.fops:
+            f.createJacobian(model)
+
+    def setData(self, data):
+        """Distribute list of data to the forward operators
+        """
+        if len(data) != len(self.fops):
+            pg.critical("Please provide data for all forward operators")
+
+        self._data = data
+        nData = 0
+        for i, fi in enumerate(self.fops):
+            fi.setData(data[i])
+            self.jac.addMatrix(fi.jacobian(), nData, 0)
+            nData += data[i].size()  # update total vector length
+        self.setJacobian(self.jac)
+
+    def setMesh(self, mesh, **kwargs):
+        """Set the parameter mesh to all fops
+        """
+        for fi in self.fops:
+            fi.setMesh(mesh)
+        self.setRegionManager(self.fops[0].regionManagerRef())
 
 
 class LCModelling(Modelling):

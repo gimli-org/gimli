@@ -37,7 +37,7 @@ public:
     }
 
     inline ValueType operator () (const Pos & xyz) const {
-        return val_ * powInt(xyz[ 0 ], i_) * powInt(xyz[ 1 ], j_) * powInt(xyz[ 2 ], k_);
+        return val_ * powInt(xyz[0], i_) * powInt(xyz[1], j_) * powInt(xyz[2], k_);
     }
 
     Index i_, j_, k_;
@@ -45,15 +45,18 @@ public:
 };
 
 /*! waste to satisfy python bindings */
-template < class ValueType > bool operator < (const PolynomialElement < ValueType > & a, const PolynomialElement < ValueType > & b){
+template < class ValueType > bool operator < (const PolynomialElement < ValueType > & a, 
+                                              const PolynomialElement < ValueType > & b){
     return ((a.i_ < b.i_) && (a.j_ < b.j_) && (a.k_ < b.k_));
 }
 
-template < class ValueType > bool operator != (const PolynomialElement < ValueType > & a, const PolynomialElement < ValueType > & b){
+template < class ValueType > bool operator != (const PolynomialElement < ValueType > & a, 
+                                               const PolynomialElement < ValueType > & b){
     return !(a == b);
 }
 
-template < class ValueType > bool operator == (const PolynomialElement < ValueType > & a, const PolynomialElement < ValueType > & b){
+template < class ValueType > bool operator == (const PolynomialElement < ValueType > & a, 
+                                               const PolynomialElement < ValueType > & b){
     return ((a.i_ == b.i_) && (a.j_ == b.j_) && (a.k_ == b.k_) && (a.val_ == b.val_));
 }
 
@@ -66,14 +69,17 @@ public:
 
     /*! Create empty polynomial */
     PolynomialFunction(uint size = 0){
-        init_(Vector< ValueType >(size, 0.0), Vector< ValueType >(size, 0.0), Vector< ValueType >(size, 0.0));
+        init_(Vector< ValueType >(size, 0.0), 
+              Vector< ValueType >(size, 0.0), 
+              Vector< ValueType >(size, 0.0));
     }
 
     /*! Create a polynomial \f$ f(x,y,z) \f$ from one dimensional polynomial coefficient array ax:
         \f$ f(x,y,z) = ax[0] + ax[1]x + ax[2]x^2 ... \f$
      */
     PolynomialFunction(const Vector < ValueType > & ax){
-        init_(ax, Vector< ValueType >(0, 0.0), Vector< ValueType >(0, 0.0));
+        init_(ax, Vector< ValueType >(0, 0.0), 
+                  Vector< ValueType >(0, 0.0));
     }
 
     /*! Create a polynomial function \f$ f(x,y,z) \f$ from one dimensional polynomial coefficient array ax and ay:
@@ -88,18 +94,20 @@ public:
         \f$ f(x,y,z) = ax[0] + ax[1]x + ax[2]x^2 + ... + ay[0] + ay[1]y + ay[2]y^2 + ... + az[0] + az[1]z + az[2]z^2 + ... \f$
         If u need a composed polynomial use f(x,y,z)*g(x,y,z)*h(x,y,z).
      */
-    PolynomialFunction(const Vector < ValueType > & ax, const Vector < ValueType > & ay, const Vector < ValueType > & az){
+    PolynomialFunction(const Vector < ValueType > & ax, 
+                       const Vector < ValueType > & ay, 
+                       const Vector < ValueType > & az){
         init_(ax, ay, az);
     }
 
     /*! Return f(x, y, z[k]) polynomial matrix*/
-    RMatrix & operator [] (Index k){ return mat_[ k ]; }
+    RMatrix & operator [] (Index k){ return mat_[k]; }
 
     /*! Return f(x, y, z[k]) polynomial matrix*/
-    const RMatrix & operator [] (Index k) const { return mat_[ k ]; }
+    const RMatrix & operator [] (Index k) const { return mat_[k]; }
 
     /*! Return reference to f(x, y, z[k]) polynomial matrix. For python only*/
-    RMatrix & matR(Index k){ return mat_[ k ]; }
+    RMatrix & matR(Index k){ return mat_[k]; }
 
     /*! Evaluate f(x,y,z) */
     ValueType operator () (const Pos & xyz) const {
@@ -116,7 +124,7 @@ public:
     Vector < ValueType > operator () (const std::vector < Pos > & xyz) const {
         Vector < ValueType > ret(xyz.size(), 0.0);
 
-        for (Index i = 0 ; i < ret.size(); i ++) ret [ i ] = (*this)(xyz[ i ]);
+        for (Index i = 0 ; i < ret.size(); i ++) ret [i] = (*this)(xyz[i]);
 
         return ret;
     }
@@ -135,25 +143,25 @@ public:
 
         if (dim == 0){
             for (Index k = 0; k < mat_.size(); k ++){ // z
-                for (Index j = 0; j < mat_[ k ].rows(); j ++){ // y
-                    for (Index i = 0; i < mat_[ k ][ j ].size() -1; i ++){ // x
-                        ret[ k ][ i ][ j ] = mat_[ k ][ i + 1 ][ j ] * (i + 1.0);
+                for (Index j = 0; j < mat_[k].rows(); j ++){ // y
+                    for (Index i = 0; i < mat_[k][j].size() -1; i ++){ // x
+                        ret[k][i][j] = mat_[k][i + 1][j] * (i + 1.0);
                     }
                 }
             }
         } else if(dim == 1){
             for (Index k = 0; k < mat_.size(); k ++){ // z
-                for (Index j = 0; j < mat_[ k ].rows() - 1; j ++){ // y
-                    for (Index i = 0; i < mat_[ k ][ j ].size(); i ++){ // x
-                        ret[ k ][ i ][ j ] = mat_[ k ][ i ][ j + 1 ] * (j + 1.0);
+                for (Index j = 0; j < mat_[k].rows() - 1; j ++){ // y
+                    for (Index i = 0; i < mat_[k][j].size(); i ++){ // x
+                        ret[k][i][j] = mat_[k][i][j + 1] * (j + 1.0);
                     }
                 }
             }
         } else if (dim == 2){
             for (Index k = 0; k < mat_.size() -1 ; k ++){ // z
-                for (Index j = 0; j < mat_[ k ].rows(); j ++){ // y
-                    for (Index i = 0; i < mat_[ k ][ j ].size(); i ++){ // x
-                        ret[ k ][ i ][ j ] = mat_[ k + 1 ][ i ][ j ] * (k + 1.0);
+                for (Index j = 0; j < mat_[k].rows(); j ++){ // y
+                    for (Index i = 0; i < mat_[k][j].size(); i ++){ // x
+                        ret[k][i][j] = mat_[k + 1][i][j] * (k + 1.0);
                     }
                 }
             }
@@ -167,10 +175,10 @@ public:
         elementList_.clear();
 
         for (Index k = 0; k < mat_.size(); k ++){ // z
-            for (Index j = 0; j < mat_[ k ].rows(); j ++){ // y
-                for (Index i = 0; i < mat_[ k ][ j ].size(); i ++){ // x
-                    if (::fabs(mat_[ k ][ i ][ j ]) > TOLERANCE){
-                        elementList_.push_back(PolynomialElement< ValueType > (i, j, k, mat_[ k ][ i ][ j ]));
+            for (Index j = 0; j < mat_[k].rows(); j ++){ // y
+                for (Index i = 0; i < mat_[k][j].size(); i ++){ // x
+                    if (::fabs(mat_[k][i][j]) > TOLERANCE){
+                        elementList_.push_back(PolynomialElement< ValueType > (i, j, k, mat_[k][i][j]));
                     }
                 }
             }
@@ -181,12 +189,12 @@ public:
 
     void clear() {
         elementList_.clear();
-        for (Index k = 0; k < mat_.size(); k ++){ mat_[ k ] *= 0.0; }
+        for (Index k = 0; k < mat_.size(); k ++){ mat_[k] *= 0.0; }
     }
 
     /*!
      * Fill the parameter coefficients from array. If c.size() == this.size()^3.
-     * mat_[ k ][ i ][ j ] = c[ k*(size() * size())+ j * size() + i ]
+     * mat_[k][i][j] = c[k*(size() * size())+ j * size() + i]
      * and return the \ref PolynomialFunction itself.
      * If c.size() is size of elementList_, assume that only the values from elementList_ will be exchanged.
      * Please note, all values of c will be snapped to tolerance.
@@ -195,29 +203,29 @@ public:
     PolynomialFunction <  ValueType > & fill(const Vector < ValueType > & c){
         if (c.size() == powInt(mat_.size(), 3)) {
             for (Index k = 0; k < mat_.size(); k ++){ // z
-                for (Index j = 0; j < mat_[ k ].rows(); j ++){ // y
-                    for (Index i = 0; i < mat_[ k ][ j ].size(); i ++){ // x
-                        if (::fabs(c[ k*(size() * size())+ j * size() + i ]) > TOLERANCE){
+                for (Index j = 0; j < mat_[k].rows(); j ++){ // y
+                    for (Index i = 0; i < mat_[k][j].size(); i ++){ // x
+                        if (::fabs(c[k*(size() * size())+ j * size() + i]) > TOLERANCE){
 
 //                         std::cout.precision(14);
-//                         std::cout << i << " " << j << " " << k << " " << c[ k*(size() * size())+ j * size() + i ] << std::endl;
+//                         std::cout << i << " " << j << " " << k << " " << c[k*(size() * size())+ j * size() + i] << std::endl;
 
-                            //mat_[ k ][ i ][ j ] = round(c[ k*(size() * size())+ j * size() + i ], 1e-12);
+                            //mat_[k][i][j] = round(c[k*(size() * size())+ j * size() + i], 1e-12);
 
-                            mat_[ k ][ i ][ j ] = c[ k*(size() * size())+ j * size() + i ];
+                            mat_[k][i][j] = c[k*(size() * size())+ j * size() + i];
                         } else {
-                            mat_[ k ][ i ][ j ] = 0.0;
+                            mat_[k][i][j] = 0.0;
                         }
                     }
                 }
             }
         } else if (c.size() == elementList_.size()){
             for (Index k = 0; k < mat_.size(); k ++){ // z
-                mat_[ k ] *= 0.0;
+                mat_[k] *= 0.0;
             }
             for (Index i = 0; i < c.size(); i ++){
-                PolynomialElement< ValueType > e = elementList_[ i ];
-                mat_[ e.k_ ][ e.i_ ][ e.j_ ] = c[ i ];
+                PolynomialElement< ValueType > e = elementList_[i];
+                mat_[e.k_][e.i_][e.j_] = c[i];
             }
         } else {
             throwLengthError(WHERE_AM_I + " c size out of range " +
@@ -233,9 +241,9 @@ public:
         RVector c(powInt(mat_.size(), 3));
 
         for (Index k = 0; k < mat_.size(); k ++){ // z
-            for (Index j = 0; j < mat_[ k ].rows(); j ++){ // y
-                for (Index i = 0; i < mat_[ k ][ j ].size(); i ++){ // x
-                    c[ k*(size() * size())+ j * size() + i ] = mat_[ k ][ i ][ j ];
+            for (Index j = 0; j < mat_[k].rows(); j ++){ // y
+                for (Index i = 0; i < mat_[k][j].size(); i ++){ // x
+                    c[k*(size() * size())+ j * size() + i] = mat_[k][i][j];
                 }
             }
         }
@@ -244,17 +252,19 @@ public:
 
 protected:
 
-    void init_(const Vector < ValueType > & ax, const Vector < ValueType > & ay, const Vector < ValueType > & az){
+    void init_(const Vector < ValueType > & ax, 
+               const Vector < ValueType > & ay, 
+               const Vector < ValueType > & az){
         Index maxDim = max(max(ax.size(), ay.size()), az.size());
 
         for (Index k = 0; k < maxDim; k ++){
             mat_.push_back(RMatrix(maxDim, maxDim));
-            mat_[ k ] *= 0.0;
+            mat_[k] *= 0.0;
         }
 
-        for (Index i = 0; i < ax.size(); i ++) mat_[ 0 ][ i ][ 0 ] = ax[ i ];
-        for (Index j = 0; j < ay.size(); j ++) mat_[ 0 ][ 0 ][ j ] = ay[ j ];
-        for (Index k = 0; k < az.size(); k ++) mat_[ k ][ 0 ][ 0 ] = az[ k ];
+        for (Index i = 0; i < ax.size(); i ++) mat_[0][i][0] = ax[i];
+        for (Index j = 0; j < ay.size(); j ++) mat_[0][0][j] = ay[j];
+        for (Index k = 0; k < az.size(); k ++) mat_[k][0][0] = az[k];
         fillElementList();
     }
 
@@ -284,9 +294,9 @@ operator - (const PolynomialFunction < ValueType > & f){
     PolynomialFunction < ValueType > h(Vector<ValueType>(f.size(), 0.0));
 
     for (Index k = 0; k < f.size(); k ++){ // z
-        for (Index j = 0; j < f[ k ].rows(); j ++){ // y
-            for (Index i = 0; i < f[ k ][ j ].size(); i ++){ // x
-                h[ k ][ i ][ j ] = -f[ k ][ i ][ j ];
+        for (Index j = 0; j < f[k].rows(); j ++){ // y
+            for (Index i = 0; i < f[k][j].size(); i ++){ // x
+                h[k][i][j] = -f[k][i][j];
             }
         }
     }
@@ -300,9 +310,9 @@ operator * (const ValueType & val, const PolynomialFunction < ValueType > & f){
     PolynomialFunction < ValueType > h(RVector(f.size()), 0.0);
 
     for (Index k = 0; k < f.size(); k ++){ // z
-        for (Index j = 0; j < f[ k ].rows(); j ++){ // y
-            for (Index i = 0; i < f[ k ][ j ].size(); i ++){ // x
-                h[ k ][ i ][ j ] = f[ k ][ i ][ j ] * val;
+        for (Index j = 0; j < f[k].rows(); j ++){ // y
+            for (Index i = 0; i < f[k][j].size(); i ++){ // x
+                h[k][i][j] = f[k][i][j] * val;
             }
         }
     }
@@ -316,9 +326,9 @@ operator * (const PolynomialFunction < ValueType > & f, const ValueType & val){
     PolynomialFunction < ValueType > h(RVector(f.size()), 0.0);
 
     for (Index k = 0; k < f.size(); k ++){ // z
-        for (Index j = 0; j < f[ k ].rows(); j ++){ // y
-            for (Index i = 0; i < f[ k ][ j ].size(); i ++){ // x
-                h[ k ][ i ][ j ] = f[ k ][ i ][ j ] * val;
+        for (Index j = 0; j < f[k].rows(); j ++){ // y
+            for (Index i = 0; i < f[k][j].size(); i ++){ // x
+                h[k][i][j] = f[k][i][j] * val;
             }
         }
     }
@@ -331,13 +341,13 @@ operator + (const ValueType & val, const PolynomialFunction < ValueType > & f){
     PolynomialFunction < ValueType > h(RVector(f.size(), 0.0));
 
     for (Index k = 0; k < f.size(); k ++){ // z
-        for (Index j = 0; j < f[ k ].rows(); j ++){ // y
-            for (Index i = 0; i < f[ k ][ j ].size(); i ++){ // x
-                h[ k ][ i ][ j ] = f[ k ][ i ][ j ];
+        for (Index j = 0; j < f[k].rows(); j ++){ // y
+            for (Index i = 0; i < f[k][j].size(); i ++){ // x
+                h[k][i][j] = f[k][i][j];
             }
         }
     }
-    h[ 0 ][ 0 ][ 0 ] += val;
+    h[0][0][0] += val;
     h.fillElementList();
     return h;
 }
@@ -347,13 +357,13 @@ operator + (const PolynomialFunction < ValueType > & f, const ValueType & val){
     PolynomialFunction < ValueType > h(RVector(f.size(), 0.0));
 
     for (Index k = 0; k < f.size(); k ++){ // z
-        for (Index j = 0; j < f[ k ].rows(); j ++){ // y
-            for (Index i = 0; i < f[ k ][ j ].size(); i ++){ // x
-                h[ k ][ i ][ j ] = f[ k ][ i ][ j ];
+        for (Index j = 0; j < f[k].rows(); j ++){ // y
+            for (Index i = 0; i < f[k][j].size(); i ++){ // x
+                h[k][i][j] = f[k][i][j];
             }
         }
     }
-    h[ 0 ][ 0 ][ 0 ] += val;
+    h[0][0][0] += val;
     h.fillElementList();
     return h;
 }
@@ -364,16 +374,16 @@ operator + (const PolynomialFunction < ValueType > & f, const PolynomialFunction
     PolynomialFunction < ValueType > h(RVector(max(f.size(),g.size()), 0.0));
 
     for (Index k = 0; k < f.size(); k ++){ // z
-        for (Index j = 0; j < f[ k ].rows(); j ++){ // y
-            for (Index i = 0; i < f[ k ][ j ].size(); i ++){ // x
-                h[ k ][ i ][ j ] = f[ k ][ i ][ j ];
+        for (Index j = 0; j < f[k].rows(); j ++){ // y
+            for (Index i = 0; i < f[k][j].size(); i ++){ // x
+                h[k][i][j] = f[k][i][j];
             }
         }
     }
     for (Index k = 0; k < g.size(); k ++){ // z
-        for (Index j = 0; j < g[ k ].rows(); j ++){ // y
-            for (Index i = 0; i < g[ k ][ j ].size(); i ++){ // x
-                h[ k ][ i ][ j ] += g[ k ][ i ][ j ];
+        for (Index j = 0; j < g[k].rows(); j ++){ // y
+            for (Index i = 0; i < g[k][j].size(); i ++){ // x
+                h[k][i][j] += g[k][i][j];
             }
         }
     }
@@ -387,16 +397,16 @@ operator - (const PolynomialFunction < ValueType > & f, const PolynomialFunction
     PolynomialFunction < ValueType > h(RVector(max(f.size(),g.size()), 0.0));
 
     for (Index k = 0; k < f.size(); k ++){ // z
-        for (Index j = 0; j < f[ k ].rows(); j ++){ // y
-            for (Index i = 0; i < f[ k ][ j ].size(); i ++){ // x
-                h[ k ][ i ][ j ] = f[ k ][ i ][ j ];
+        for (Index j = 0; j < f[k].rows(); j ++){ // y
+            for (Index i = 0; i < f[k][j].size(); i ++){ // x
+                h[k][i][j] = f[k][i][j];
             }
         }
     }
     for (Index k = 0; k < g.size(); k ++){ // z
-        for (Index j = 0; j < g[ k ].rows(); j ++){ // y
-            for (Index i = 0; i < g[ k ][ j ].size(); i ++){ // x
-                h[ k ][ i ][ j ] -= g[ k ][ i ][ j ];
+        for (Index j = 0; j < g[k].rows(); j ++){ // y
+            for (Index i = 0; i < g[k][j].size(); i ++){ // x
+                h[k][i][j] -= g[k][i][j];
             }
         }
     }
@@ -413,12 +423,12 @@ operator * (const PolynomialFunction < ValueType > & f, const PolynomialFunction
     PolynomialFunction < ValueType > h(RVector(f.size() + g.size(), 0.0));
 
     for (Index k = 0; k < f.size(); k ++){ // z
-        for (Index j = 0; j < f[ k ].rows(); j ++){ // y
-            for (Index i = 0; i < f[ k ][ j ].size(); i ++){ // x
+        for (Index j = 0; j < f[k].rows(); j ++){ // y
+            for (Index i = 0; i < f[k][j].size(); i ++){ // x
                 for (Index gk = 0; gk < g.size(); gk ++){ // z
-                    for (Index gj = 0; gj < g[ gk ].rows(); gj ++){ // y
-                        for (Index gi = 0; gi < g[ gk ][ gj ].size(); gi ++){ // x
-                            h[ k + gk ][ i + gi ][ j + gj ] += f[ k ][ i ][ j ] * g[ gk ][ gi ][ gj ];
+                    for (Index gj = 0; gj < g[gk].rows(); gj ++){ // y
+                        for (Index gi = 0; gi < g[gk][gj].size(); gi ++){ // x
+                            h[k + gk][i + gi][j + gj] += f[k][i][j] * g[gk][gi][gj];
                         }
                     }
                 }
@@ -436,13 +446,13 @@ template < class ValueType > std::ostream & operator << (std::ostream & os, cons
 
     bool first = true;
     for (Index k = 0; k < p.size() ; k ++){ // z
-        for (Index j = 0; j < p[ k ].rows(); j ++){ // y
-            for (Index i = 0; i < p[ k ][ j ].size(); i ++){ // x
+        for (Index j = 0; j < p[k].rows(); j ++){ // y
+            for (Index i = 0; i < p[k][j].size(); i ++){ // x
                 if (i > 0) first = false;
 
                 std::string si = "";
 
-                ValueType v = p[ k ][ i ][ j ];
+                ValueType v = p[k][i][j];
                 if (v == 0.0) continue;
                 if (v > 0.0) si = "+";
 

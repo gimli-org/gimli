@@ -157,6 +157,9 @@ def __Line_str(self):
 
 def __ElementMatrix_str(self):
     """Show entries of an ElementMatrix."""
+    if self.mat().cols() == 0 and self.mat().rows() == 0:
+        return 'Empty ElementMatrix\n'
+
     s = '\n\t    '
     # print(self.mat())
     # print(self.colIDs())

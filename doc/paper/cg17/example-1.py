@@ -3,7 +3,6 @@
 """
 Minimal example of using pygimli to simulate the steady heat equation.
 """
-
 import pygimli as pg
 import pygimli.meshtools as mt
 
@@ -22,15 +21,10 @@ mesh = mt.createMesh(geom, quality=33, area=0.2, smooth=[1, 10])
 pg.show(mesh, savefig='mesh.pdf')
 
 # $\diverg(a\grad T)=0$ with $T(bottom)=1$, $T(top)=0$
-T = pg.solver.solveFiniteElements(mesh, a=[[1, 1.0], [2, 2.0], [3, 3.0],
-                                           [4, 0.1]], uB=[[8, 1.0], [4, 0.0]],
-                                  verbose=True)
+T = pg.solver.solve(mesh,
+                    a=[[1, 1.0], [2, 2.0], [3, 3.0], [4, 0.1]],
+                    bc={'Dirichlet':{8:1.0, 4:0.0}},
+                    verbose=True)
 
 ax, _ = pg.show(mesh, data=T, label='Temperature $T$', cMap="hot_r",
-                showBoundary=True, savefig='T_field.pdf')
-
-#ax, _ = pg.show(mesh, data=T, label='Temperature $T$', cMap="hot_r")
-#pg.show(geom, ax=ax, fillRegion=False, savefig='T_field.pdf')
-
-# just hold figure windows open if run outside from spyder, ipython or similar
-pg.wait()
+                nLevs=11, showBoundary=True, savefig='T_field.pdf')

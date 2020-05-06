@@ -160,8 +160,7 @@ regions using an external mesh generator (`Gmsh <http://www.gmsh.info>`_).
 # many different ways to constrain the element size (in general or locally) and
 # the resulting mesh quality, which will not be discussed here.
 #
-# The final geometry can be downloaded :download:
-# `here <../../_static/gmsh/mesh.geo>`
+# The final geometry can be downloaded `here <https://github.com/gimli-org/example-data/blob/master/gmsh/2d_tutorial.geo>`_
 # and meshed in the GUI or via the command:
 #
 # .. code-block:: bash
@@ -175,7 +174,6 @@ regions using an external mesh generator (`Gmsh <http://www.gmsh.info>`_).
 # saved to the binary format.
 
 import subprocess
-from urllib.request import urlretrieve
 
 import matplotlib.pyplot as plt
 
@@ -183,11 +181,11 @@ import pygimli as pg
 from pygimli.meshtools import readGmsh
 
 
-urlretrieve("https://www.pygimli.org/_downloads/mesh.geo", filename="mesh.geo")
+filename = pg.getExampleFile("gmsh/2d_tutorial.geo")
 
 try:
     subprocess.call(
-        ["gmsh", "-format", "msh2", "-2", "-o", "mesh.msh", "mesh.geo"])
+        ["gmsh", "-format", "msh2", "-2", "-o", "mesh.msh", filename])
     gmsh = True
 except OSError:
     print("Gmsh needs to be installed for this example.")
@@ -201,6 +199,7 @@ if gmsh:
     ax.set_ylim(-50, 0)
 else:
     ax.set_title("Gmsh needs to be installed for this example")
+pg.wait()
 
 ###############################################################################
 # .. figure:: ../../_static/gmsh/mod_inv.png
@@ -219,5 +218,3 @@ else:
 #
 #     Additional Gmsh examples: a) Laboratory sandbox model. b) Finite
 #     discretization of a ring-shaped electrode. c) And more!
-
-pg.wait()

@@ -421,14 +421,12 @@ void ElementMatrix < double >::fillGradientBase(
     Index nRules = x.size();
     Index nDof = this->mat_.cols();
     Index nVerts = ent.nodeCount();
-
     if (_B.size() != nRules){
         _B.resize(nRules);
         for (Index i = 0; i < nRules; i ++ ){
             _B[i].resize(nC, nDof);
         }
     }
-
     if (dNdr_.rows() != nRules){
         if (ent.dim() > 0) dNdr_.resize(nRules, nVerts);
         if (ent.dim() > 1) dNds_.resize(nRules, nVerts);
@@ -444,15 +442,12 @@ void ElementMatrix < double >::fillGradientBase(
         if (ent.dim() > 1) dNdy_.resize(nRules, nVerts);
         if (ent.dim() > 2) dNdz_.resize(nRules, nVerts);
     }
-
     double drdx = ent.shape().drstdxyz(0, 0);
     double drdy = ent.shape().drstdxyz(0, 1);
     double drdz = ent.shape().drstdxyz(0, 2);
-
     double dsdx = ent.shape().drstdxyz(1, 0);
     double dsdy = ent.shape().drstdxyz(1, 1);
     double dsdz = ent.shape().drstdxyz(1, 2);
-
     double dtdx = ent.shape().drstdxyz(2, 0);
     double dtdy = ent.shape().drstdxyz(2, 1);
     double dtdz = ent.shape().drstdxyz(2, 2);
@@ -609,7 +604,6 @@ ElementMatrix < double > & ElementMatrix < double >::gradU2(const MeshEntity & e
         // matMultABA(_B, C, mat_, _abaTmp, 1.0);
         // this *= ent.size();
     }
-
     // M += w[i] * B.T @ C @ B
     //mat_ *= ent.size();
 
@@ -1135,7 +1129,7 @@ void ElementMatrix < ValueType >::fillIds(const MeshEntity & ent, Index nC){
             }
         }
     } else {
-        nDims = nC;
+        nDims = 1; //nC;
         this->resize(nNodes*nC, nNodes);
         // mat_.resize(nNodes*nC, nNodes);
         // _ids.resize(nNodes*nC);
@@ -1156,7 +1150,6 @@ template void ElementMatrix < double >::fillIds(const MeshEntity & ent, Index Cr
 
 
 void ElementMatrixMap::add(Index row, const ElementMatrix < double > & Ai){
-    __M
     rows_ = max(row + 1, rows_);
     cols_ = max(max(Ai.ids()) + 1, cols_);
 

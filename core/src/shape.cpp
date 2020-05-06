@@ -40,7 +40,6 @@ std::vector < PolynomialFunction < double > >
 createPolynomialShapeFunctions(const std::vector < RVector3 > & pnts,
                                uint dim, uint nCoeff, bool pascale,
                                bool serendipity, const RVector & startVector){
-// __M
     bool verbose = false;
 
     if (verbose){
@@ -50,7 +49,6 @@ createPolynomialShapeFunctions(const std::vector < RVector3 > & pnts,
             std::cout << "P" << i << ": " << pnts[i] << std::endl;
         }
     }
-
     PolynomialModelling fop(dim, nCoeff, pnts, startVector);
     fop.setPascalsStyle(pascale);
     fop.setSerendipityStyle(serendipity);
@@ -60,7 +58,6 @@ createPolynomialShapeFunctions(const std::vector < RVector3 > & pnts,
 //         tmp.fill(fop.startModel());
 //         std::cout << "base: " << tmp << std::endl;
 //     }
-
     std::vector < PolynomialFunction < double > > ret;
 
     for (Index i = 0; i < pnts.size(); i ++){
@@ -84,7 +81,6 @@ createPolynomialShapeFunctions(const std::vector < RVector3 > & pnts,
         ret.push_back(fop.polynomialFunction());
 
     }
-
     return ret;
 }
 
@@ -96,6 +92,25 @@ std::ostream & operator << (std::ostream & str, const Shape & c){
     return str;
 }
 
+std::vector< RMatrix3 > & ShapeFunctionCache::RMatrix3Cache() {
+    return _rMatrix3Cache;
+}
+std::vector< RMatrix > & ShapeFunctionCache::RMatrixCache(uint rtti) {
+    return _rMatrixCache[rtti];
+}
+
+RMatrix3 & ShapeFunctionCache::cachedRMatrix3(uint i) { 
+    ASSERT_SIZE(_rMatrix3Cache, i)
+    return _rMatrix3Cache[i];
+}
+RMatrix & ShapeFunctionCache::cachedRMatrix(uint rtti, uint i) { 
+    if (i >= _rMatrixCache[rtti].size()){
+        _rMatrixCache[rtti].resize(i + 1);
+    }
+    ASSERT_SIZE(_rMatrixCache[rtti], i)
+    return _rMatrixCache[rtti][i]; 
+}
+    
 Shape::Shape(MeshEntity * ent){
     this->setNodesPtr(ent->nodes());
     domSize_ = 0.0;
@@ -208,9 +223,12 @@ RMatrix Shape::dNdrst(const RVector3 & rst) const {
 void Shape::dNdrst(const RVector3 & rst, RMatrix & MdNdrst) const {
     MdNdrst *= 0.0;
 
-    const std::vector< PolynomialFunction < double > > &dNx = ShapeFunctionCache::instance().deriveShapeFunctions(*this, 0);
-    const std::vector< PolynomialFunction < double > > &dNy = ShapeFunctionCache::instance().deriveShapeFunctions(*this, 1);
-    const std::vector< PolynomialFunction < double > > &dNz = ShapeFunctionCache::instance().deriveShapeFunctions(*this, 2);
+    const std::vector< PolynomialFunction < double > > &dNx = 
+        ShapeFunctionCache::instance().deriveShapeFunctions(*this, 0);
+    const std::vector< PolynomialFunction < double > > &dNy = 
+        ShapeFunctionCache::instance().deriveShapeFunctions(*this, 1);
+    const std::vector< PolynomialFunction < double > > &dNz =
+         ShapeFunctionCache::instance().deriveShapeFunctions(*this, 2);
 
     for (Index i = 0; i < dNx.size(); i ++) {
          MdNdrst[0][i] = dNx[i](rst);
@@ -303,21 +321,18 @@ void Shape::rst2xyz(const RVector3 & rst, RVector3 & xyz) const{
 }
 
 const RMatrix3 & Shape::invJacobian() const {
-    if (!invJacobian_.valid()){
-       if (ShapeFunctionCache::instance().RMatrix3Cache().size() < 1){
-           ShapeFunctionCache::instance().RMatrix3Cache().push_back(RMatrix3());
-       }
+    // if (!invJacobian_.valid()){
+    //    if (ShapeFunctionCache::instance().RMatrix3Cache().size() < 1){
+    //        ShapeFunctionCache::instance().RMatrix3Cache().push_back(RMatrix3());
+    //    }
 
-       this->createJacobian(ShapeFunctionCache::instance().cachedRMatrix3(0));
-       inv(ShapeFunctionCache::instance().cachedRMatrix3(0), invJacobian_);
-       invJacobian_.setValid(true);
-    }
-//     if (invJacobian_.rows() != 3) {
-//         invJacobian_.resize(3,3);
-// //RMatrix J(3,3);
-//         this->createJacobian(__tmp__J__);
-//         inv(__tmp__J__, invJacobian_ );
-//     }
+    //    this->createJacobian(ShapeFunctionCache::instance().cachedRMatrix3(0));
+    //    inv(ShapeFunctionCache::instance().cachedRMatrix3(0), invJacobian_);
+    //    invJacobian_.setValid(true);
+    // }
+    RMatrix3 J;
+    this->createJacobian(J);
+    inv(J, invJacobian_ );
     return invJacobian_;
 }
 

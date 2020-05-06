@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-    Surface nuclear magnetic resonance (NMR) data inversion
+Surface nuclear magnetic resonance (NMR) data inversion
 """
 
 from . mrs import MRS

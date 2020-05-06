@@ -136,7 +136,7 @@ class TravelTimeManager(MeshMethodManager):
         Parameters
         ----------
         data: :gimliapi:`GIMLI::DataContainer` | str
-            You can initialize the Manager with data or give them a dataset 
+            You can initialize the Manager with data or give them a dataset
             when calling the inversion.
 
         Other Parameters
@@ -177,7 +177,7 @@ class TravelTimeManager(MeshMethodManager):
         Inversionmesh for Traveltime inversion does not need boundary region.
         """
         d = data or self.data
-        
+
         if d is None:
             pg.critical('Please provide a data file for mesh generation')
 
@@ -215,8 +215,8 @@ class TravelTimeManager(MeshMethodManager):
 
         self.fop.setMesh(mesh, ignoreRegionManager=ignoreRegionManager)
 
-    def simulate(self, slowness=None, scheme=None, mesh=None, secNodes=2,
-                 vel=None, noiseLevel=0.0, noiseAbs=0.0, **kwargs):
+    def simulate(self, mesh, scheme, slowness=None, vel=None,
+                 secNodes=2, noiseLevel=0.0, noiseAbs=0.0, **kwargs):
         """Simulate Traveltime measurements.
 
         Perform the forward task for a given mesh, a slowness distribution (per
@@ -226,6 +226,9 @@ class TravelTimeManager(MeshMethodManager):
         ----------
         mesh : :gimliapi:`GIMLI::Mesh`
             Mesh to calculate for or use the last known mesh.
+        scheme: :gimliapi:`GIMLI::DataContainer`
+            Data measurement scheme needs 's' for shot and 'g' for geophone
+            data token.
         slowness : array(mesh.cellCount()) | array(N, mesh.cellCount())
             Slowness distribution for the given mesh cells can be:
 
@@ -235,9 +238,6 @@ class TravelTimeManager(MeshMethodManager):
         vel : array(mesh.cellCount()) | array(N, mesh.cellCount())
             Velocity distribution for the given mesh cells.
             Will overwrite given slowness.
-        scheme: :gimliapi:`GIMLI::DataContainer`
-            Data measurement scheme needs 's' for shot and 'g' for geophone
-            data token.
         secNodes: int [2]
             Number of refinement nodes to increase accuracy of the forward
             calculation.
@@ -300,7 +300,7 @@ class TravelTimeManager(MeshMethodManager):
             t += np.random.randn(ret.size()) * ret('err')
             ret.set('t', t)
 
-        if kwargs.pop('returnArray', False):
+        if kwargs.pop('returnArray', False) is True:
             return t
 
         return ret

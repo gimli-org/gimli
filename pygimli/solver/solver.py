@@ -365,7 +365,7 @@ def generateBoundaryValue(boundary, arg, time=0.0, userData={},
 
     if len(val) != boundary.nodeCount():
         val = np.matlib.repmat(val, boundary.nodeCount(), 1)
-        
+
     return val
 
 
@@ -1340,7 +1340,7 @@ def assembleRobinBC(mat, boundaryPairs, rhs=None, time=0.0, userData={},
         The values will assigned to the nodes of the boundaries.
         Later assignment overwrites prior.
 
-        Values can be a single value for :math:`\alpha` or :math:`a`, two values will be interpreted as :math:`a, u_0`, 
+        Values can be a single value for :math:`\alpha` or :math:`a`, two values will be interpreted as :math:`a, u_0`,
         and three values will be :math:`\alpha, \beta, \gamma`.
         Also generator (callable) is possible which will be executed at run time. See :py:mod:`pygimli.solver.solver.parseArgToBoundaries`
         :ref:`tut:modelling_bc` or testing/test_FEM.py for example syntax.
@@ -1722,11 +1722,13 @@ def createStiffnessMatrix(mesh, a=None, isVector=False):
             else:
                 vN = False
 
-            al.gradU2(c, np.array(a[c.id()]), voigtNotation=vN)
+            al.gradU2(c, a[c.id()], voigtNotation=vN)
+            #al.gradU2(c, np.array(a[c.id()]), voigtNotation=vN)
             A.add(al)
 
     if isComplex is True:
         return pg.matrix.CSparseMatrix(A)
+
     return pg.matrix.SparseMatrix(A)
 
 
@@ -2059,6 +2061,11 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
     # check for material parameter
     #a = parseArgToArray(a, nDof=mesh.cellCount(), mesh=mesh, userData=userData)
     a = cellValues(mesh, a, userData=userData)
+    isComplex = False
+    if pg.utils.isComplex(a):
+        isComplex = True
+        rhs = np.array(rhs, dtype=complex)
+
     S = createStiffnessMatrix(mesh, a, isVector=vectorValues)
     M = None
 
@@ -2140,7 +2147,12 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
             solver.setMatrix(A, 0)
 
             if singleForce:
-                u = solver.solve(rhs)
+                if isComplex is True:
+                    # clean this up
+                    rhs = pg.core.toComplex(rhs.real, rhs.imag)
+                    u = solver.solve(rhs).array()
+                else:
+                    u = solver.solve(rhs)
             else:
                 for i, r in enumerate(rhs):
                     u[i] = solver.solve(r)

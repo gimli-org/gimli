@@ -78,7 +78,8 @@ class DLLEXPORT ShapeFunctionCache : public Singleton< ShapeFunctionCache > {
 public:
     friend class Singleton< ShapeFunctionCache >;
 
-    template < class Ent > const std::vector < PolynomialFunction < double > > & shapeFunctions(const Ent & e) const {
+    template < class Ent > const std::vector < PolynomialFunction < double > > & 
+    shapeFunctions(const Ent & e) const {
 
         std::map < uint8, std::vector < PolynomialFunction < double > > >::const_iterator it = shapeFunctions_.find(e.rtti());
 
@@ -107,12 +108,11 @@ public:
         dShapeFunctions_.clear();
     }
 
-    inline std::vector< RMatrix3 > & RMatrix3Cache() { return rmatrix3Cache_; }
-    inline std::vector< RMatrix > & RMatrixCache(uint rtti) { return rmatrixCache_[rtti]; }
+    std::vector< RMatrix3 > & RMatrix3Cache();
+    std::vector< RMatrix > & RMatrixCache(uint rtti);
 
-    inline RMatrix3 & cachedRMatrix3(uint i) { return rmatrix3Cache_[i]; }
-    inline RMatrix & cachedRMatrix(uint rtti, uint i) { return rmatrixCache_[rtti][i]; }
-
+    RMatrix3 & cachedRMatrix3(uint i);
+    RMatrix & cachedRMatrix(uint rtti, uint i);
 private:
 
     /*! probably threading problems .. pls check*/
@@ -144,9 +144,9 @@ private:
         dShapeFunctions_[e.rtti()].push_back(std::vector < PolynomialFunction < double > >());
 
         for (uint i = 0; i < N.size(); i ++){
-            dShapeFunctions_[e.rtti()][0].push_back (N[i].derive(0));
-            dShapeFunctions_[e.rtti()][1].push_back (N[i].derive(1));
-            dShapeFunctions_[e.rtti()][2].push_back (N[i].derive(2));
+            dShapeFunctions_[e.rtti()][0].push_back(N[i].derive(0));
+            dShapeFunctions_[e.rtti()][1].push_back(N[i].derive(1));
+            dShapeFunctions_[e.rtti()][2].push_back(N[i].derive(2));
         }
     }
 
@@ -167,8 +167,8 @@ protected:
     /*! Cache for shape functions derivatives. */
     mutable std::map < uint8, std::vector< std::vector < PolynomialFunction < double > > > > dShapeFunctions_;
 
-    mutable std::vector< RMatrix3 > rmatrix3Cache_;
-    mutable std::map< uint, std::vector< RMatrix > > rmatrixCache_;
+    mutable std::vector< RMatrix3 > _rMatrix3Cache;
+    mutable std::map< uint, std::vector< RMatrix > > _rMatrixCache;
 
 };
 
@@ -295,7 +295,7 @@ public:
     inline double drstdxyz(uint rstI, uint xyzJ) const {
 //         return invJacobian()[rstI][xyzJ];}
         return invJacobian()[rstI * 3 + xyzJ];}
-
+ 
     /*! Return true if the Cartesian coordinates xyz are inside the shape.
      * On boundary means inside too.
      Works only for shapes dedicated as cells because they need to

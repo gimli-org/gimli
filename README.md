@@ -15,7 +15,7 @@ Readme for Github repository only. (Get's selected before *.rst file)
 [![Github commits (since latest release)](https://img.shields.io/github/commits-since/gimli-org/gimli/latest.svg?style=flat-square)](https://github.com/gimli-org/gimli/tree/dev)
 
 
-pyGIMLi is an open-source library for modelling and inversion and in geophysics. The object-oriented library provides management for structured and unstructured meshes in 2D and 3D, finite-element and finite-volume solvers, various geophysical forward operators, as well as Gauss-Newton based frameworks for constrained, joint and fully-coupled inversions with flexible regularization.
+[pyGIMLi](www.pygimli.org) is an open-source library for modelling and inversion and in geophysics. The object-oriented library provides management for structured and unstructured meshes in 2D and 3D, finite-element and finite-volume solvers, various geophysical forward operators, as well as Gauss-Newton based frameworks for constrained, joint and fully-coupled inversions with flexible regularization.
 
 What is pyGIMLi suited for?
 
@@ -29,38 +29,34 @@ What is pyGIMLi **NOT** suited for?
 
 -   for people that expect a ready-made GUI for interpreting their data
 
-[jupyter notebooks]: http://jupyter-notebook.readthedocs.io/en/latest/notebook.html#notebook-documents
+[jupyter notebooks]: https://jupyter.org
 
-##### Binaries (Windows)
-
-See binaries on <https://www.pygimli.org/installation.html#win>
-
-##### For Anaconda users (currently Linux only)
+##### Installation
 
 [![Anaconda-Server Badge](https://anaconda.org/gimli/pygimli/badges/installer/conda.svg)](https://conda.anaconda.org/gimli)
 [![Anaconda-Server Badge](https://anaconda.org/gimli/pygimli/badges/downloads.svg)](https://anaconda.org/gimli/pygimli)
 [![Anaconda-Server Badge](https://anaconda.org/gimli/pygimli/badges/version.svg)](https://anaconda.org/gimli/pygimli)
 [![Anaconda-Server Badge](https://anaconda.org/gimli/pygimli/badges/latest_release_date.svg)](https://anaconda.org/gimli/pygimli)
 
-```bash
-# Add gimli and conda-forge channels (only once)
-conda config --add channels gimli --add channels conda-forge
+On all platforms, we recommend to install pyGIMLi via the conda package manager
+contained in the Anaconda distribution. For details on how to install Anaconda,
+we refer to: https://docs.anaconda.com/anaconda/install/
 
-# Install pygimli
-conda install pygimli
+To avoid conflicts with other packages, we recommend to install pygimli in a
+separate environment. Here we call this environment pg, but you can give it any
+name. Note that this environment has to be created only once.
 
-# Test pygimli
-python -c "import pygimli; pygimli.test()"
-
-# Update pygimli
-conda update pygimli
+``` bash
+conda create -n pg -c gimli -c conda-forge pygimli
 ```
 
-##### Install via curl
+If you are using Windows or Mac, a new environment named “pg” should be visible in the Anaconda Navigator. If you want to use pygimli from the command line, you have to activate the environment. You can put this line in your ~/.bashrc file so that it is activated automatically if you open a terminal.
 
-```bash
-curl -Ls install.pygimli.org | bash
+``` bash
+conda activate pg
 ```
+
+See https://www.pygimli.org/installation.html for more information.
 
 ##### Import convention
 

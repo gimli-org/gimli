@@ -57,7 +57,9 @@ needs_sphinx = '1.8' # due to napoleon
 # Check for external sphinx extensions
 deps = ['sphinxcontrib-programoutput',
         'sphinxcontrib-bibtex',
-        'sphinxcontrib-doxylink']
+        'sphinxcontrib-doxylink',
+	'bibtexparser',
+	]
 
 # check for p.version too
 modules = [p.project_name for p in pkg_resources.working_set]
@@ -171,7 +173,7 @@ autoclass_content = "class"
 autosummary_generate = True
 autosummary_generate_overwrite = False
 autosummary_imported_members = True
-autodoc_mock_imports = ["os", "os.path" "sys", "numpy", "matplotlib",
+autodoc_mock_imports = ["os", "os.path" "sys", "locale", "numpy", "matplotlib",
                         "matplotlib.pyplot", "pyvista", "pyqt5"]
 
 autodoc_default_options = {
@@ -239,7 +241,7 @@ release = release.replace('_', '\\_')
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 exclude_patterns = ['_build', '_sphinx-ext', '_templates', 'tmp', 'examples',
-                    'tutorials', 'tutorial']
+                    'tutorials' ]
 
 # The reST default role (used for this markup: `text`) to use for all documents
 # default_role = None

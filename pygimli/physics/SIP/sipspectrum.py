@@ -714,11 +714,11 @@ class SIPSpectrum(object):
             reNorm, imNorm = self.zNorm()
             fDD = DebyeComplex(self.f, self.tau)
             Znorm = pg.cat(reNorm, imNorm)
-            IDD = pg.Inversion(Znorm, fDD, tLog, tM, False)
+            IDD = pg.core.Inversion(Znorm, fDD, tLog, tM, False)
             IDD.setAbsoluteError(max(Znorm)*0.003+ePhi)
         else:
             fDD = DebyePhi(self.f, self.tau)
-            IDD = pg.Inversion(phi, fDD, tLin, tM, True)
+            IDD = pg.core.Inversion(phi, fDD, tLin, tM, True)
             IDD.setAbsoluteError(ePhi)  # 1 mrad
 
         fDD.regionManager().setConstraintType(cType)

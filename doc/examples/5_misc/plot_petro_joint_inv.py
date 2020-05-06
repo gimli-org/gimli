@@ -1,19 +1,27 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""
+Petrophysical joint inversion
+-----------------------------
 
-"""Example for Petrophysical-Joint-Inversion."""
+Joint inversion of different geophysical techniques helps to improve both
+resolution and interpretability of the resulting images. Different data sets can
+be directly coupled, if there is a link to an underlying target parameter.
+In this example, ERT and traveltime data are inverted for water saturation. For
+details see section 3.3 of the pyGIMLi paper (https://cg17.pygimli.org).
+"""
 
 import numpy as np
 import pygimli as pg
 
 from pygimli import meshtools as mt
-
-#from pygimli.physics.petro import PetroInversion, JointPetroInversion
-from pygimli.frameworks import PetroInversion#, JointPetroInversion
-
 from pygimli.physics.petro import transFwdArchieS as ArchieTrans
 from pygimli.physics.petro import transFwdWyllieS as WyllieTrans
+from pygimli.frameworks import PetroInversionManager, JointPetroInversionManager
 
+
+################################################################################
+# We start with defining two helper functions.
 
 def createSynthModel():
     """Return the modelling mesh, the porosity distribution and the
@@ -52,20 +60,21 @@ def createSynthModel():
 
 
 def showModel(ax, model, mesh, petro=1, cMin=None, cMax=None, label=None,
-              savefig=None, showMesh=False):
+              cMap=None, savefig=None, showMesh=False):
     """Utility function to show and save models for the CG paper."""
     if cMin is None:
         cMin = 0.3
     if cMax is None:
         cMax = 1.0
 
+    if cMap is None:
+        cMap = 'viridis'
     if petro:
         ax, _ = pg.show(mesh, model, label=label,
-                        cMin=cMin, cMax=cMax, logScale=0, ax=ax,
-                        cMap='viridis', hold=1)
+                        logScale=False, cMin=cMin, cMax=cMax, cMap=cMap, ax=ax)
     else:
         ax, _ = pg.show(mesh, model, label=label,
-                        logScale=1, ax=ax, cMin=cMin, cMax=cMax, hold=1)
+                        logScale=True, cMin=cMin, cMax=cMax, cMap=cMap, ax=ax)
 
     ticks = [-.2, -.1, 0, .1, .2]
     ax.xaxis.set_ticks(ticks)
@@ -76,18 +85,18 @@ def showModel(ax, model, mesh, petro=1, cMin=None, cMax=None, label=None,
     # despine(ax=ax, offset=5, trim=True)
     if showMesh:
         pg.viewer.mpl.drawSelectedMeshBoundaries(ax, mesh.boundaries(),
-                                                linewidth=0.3, color="0.2")
+                                                 linewidth=0.3, color="0.2")
 
     if savefig:
         pg.viewer.mpl.saveAxes(ax, savefig, adjust=False)
     return ax
 
-# Script starts here
-axs = [None]*8
-
+################################################################################
 # Create synthetic model
+# ......................
 mMesh, pMesh, saturation = createSynthModel()
 
+################################################################################
 # Create Petrophysical models
 ertTrans = ArchieTrans(rFluid=20, phi=0.3)
 res = ertTrans(saturation)
@@ -95,74 +104,78 @@ res = ertTrans(saturation)
 ttTrans = WyllieTrans(vm=4000, phi=0.3)
 vel = 1./ttTrans(saturation)
 
-# Simulate synthetic data with appropriate noise
 sensors = mMesh.positions()[mMesh.findNodesIdxByMarker(-99)]
 
-#print("-Simulate ERT" + "-" * 50)
-#ERT = pg.physics.ert.ERTManager(verbose=False)
-#ertScheme = pg.physics.ert.createERTData(sensors, schemeName='dd', closed=1)
-#ertData = ERT.simulate(mMesh, res, ertScheme, noiseLevel=0.01)
-#ERT.showData(ertData);pg.wait()
+################################################################################
+# Forward simulation
+# ..................
+# To create synthetic data sets, we assume 16 equally-spaced sensors on the
+# circumferential boundary of the mesh. For the ERT modelling we build a
+# complete dipole-dipole array. For the ultrasonic tomography we simulate the
+# travel time for every possible sensor pair.
+pg.info("Simulate ERT")
+ERT = pg.physics.ert.ERTManager(verbose=False, sr=False)
+ertScheme = pg.physics.ert.createERTData(sensors, schemeName='dd', closed=1)
+ertData = ERT.simulate(mMesh, scheme=ertScheme, res=res, noiseLevel=0.01)
 
-#print("-Simulate Traveltime" + "-" * 50)
-TT = pg.physics.traveltime.TravelTimeManager(verbose=True)
-#TT = pg.physics.traveltime.refraction.Refraction0()
+pg.info("Simulate Traveltime")
+TT = pg.physics.traveltime.TravelTimeManager(verbose=False)
 ttScheme = pg.physics.traveltime.createRAData(sensors)
-#ttData = TT.simulate(mMesh, vel, ttScheme, noiseLevel=0.01, noiseAbs=4e-6)
-#TT.showData(ttData); pg.wait()
-ttData = TT.loadData('tt.dat')
+ttData = TT.simulate(mMesh, scheme=ttScheme, vel=vel,
+                     noiseLevel=0.01, noiseAbs=4e-6)
 
-#ttData.save("tt.dat", 's g t err'); #exit()
-# Classic inversions
-#print("-ERT" + "-" * 50)
-#resInv = ERT.invert(ertData, mesh=pMesh, zWeight=1, lam=20, verbose=1)
-#ERT.inv.echoStatus()
+################################################################################
+# Conventional inversion
+pg.info("ERT Inversion")
+resInv = ERT.invert(ertData, mesh=pMesh, zWeight=1, lam=20, verbose=False)
+ERT.inv.echoStatus()
 
-
-print("-TT" + "-" * 50)
-#TT.verbose = True
+pg.info("Traveltime Inversion")
 velInv = TT.invert(ttData, mesh=pMesh, lam=100, useGradient=0, zWeight=1.0)
 TT.inv.echoStatus()
-TT.showResult()
-pg.wait()
-#print("-ERT-Petro" + "-" * 50)
-#invERTPetro = PetroInversion(ERT, ertTrans)
-#satERT = invERTPetro.invert(ertData, mesh=pMesh, limits=[0., 1.], lam=10)
-#invERTPetro.inv.echoStatus()
 
-print("-TT-Petro" + "-" * 50)
-invTTPetro = PetroInversion(TT, ttTrans)
-satTT = invTTPetro.invert(ttData, mesh=pMesh, limits=[0., 1.], lam=5)
-invTTPetro.inv.echoStatus()
+################################################################################
+# Petrophysical inversion (individually)
+pg.info("ERT Petrogeophysical Inversion")
+ERTPetro = PetroInversionManager(petro=ertTrans, mgr=ERT)
+satERT = ERTPetro.invert(ertData, mesh=pMesh, limits=[0., 1.], lam=10,
+                         verbose=False)
+ERTPetro.inv.echoStatus()
 
+pg.info("TT Petrogeophysical Inversion")
+TTPetro = PetroInversionManager(petro=ttTrans, mgr=TT)
+satTT = TTPetro.invert(ttData, mesh=pMesh, limits=[0., 1.], lam=5)
+TTPetro.inv.echoStatus()
+
+################################################################################
 # Petrophysical joint inversion
-print("-Joint-Petro" + "-" * 50)
-invJointPetro = JointPetroInversion([ERT, TT], [ertTrans, ttTrans])
-satJoint = invJointPetro.invert([ertData, ttData], mesh=pMesh,
-                                limits=[0., 1.], lam=5)
-invJointPetro.inv.echoStatus()
+pg.info("Petrophysical Joint-Inversion TT-ERT")
+JointPetro = JointPetroInversionManager(petros=[ertTrans, ttTrans],
+                                        mgrs=[ERT, TT])
+satJoint = JointPetro.invert([ertData, ttData], mesh=pMesh,
+                             limits=[0., 1.], lam=5, verbose=False)
+JointPetro.inv.echoStatus()
 
+################################################################################
 # Show results
 ERT.showData(ertData)
-TT.showVA(ttData)
+TT.showData(ttData)
+
+axs = [None]*8
 
 showModel(axs[0], saturation, mMesh, showMesh=1,
           label=r'Saturation (${\tt petro}$)', savefig='petro')
 showModel(axs[1], res, mMesh, petro=0, cMin=250, cMax=2500, showMesh=1,
-          label=r'Resistivity (${\tt res}$) in $\Omega$m',
-          savefig='resistivity')
+          label=pg.unit('res'), cMap=pg.cmap('res'), savefig='resistivity')
 showModel(axs[5], vel, mMesh, petro=0, cMin=1000, cMax=2500, showMesh=1,
-          label=r'Velocity (${\tt vel}$) in m$/$s', savefig='velocity')
+          label=pg.unit('vel'), cMap=pg.cmap('vel'), savefig='velocity')
 showModel(axs[2], resInv, pMesh, 0, cMin=250, cMax=2500,
-          label=r'Resistivity (${\tt resInv}$) in $\Omega$m', savefig='invERT')
+          label=pg.unit('res'), cMap=pg.cmap('res'), savefig='invERT')
 showModel(axs[6], velInv, pMesh, 0, cMin=1000, cMax=2500,
-          label=r'Velocity (${\tt velInv}$) in m$/$s', savefig='invTT')
+          label=pg.unit('vel'), cMap=pg.cmap('vel'), savefig='invTT')
 showModel(axs[3], satERT, pMesh,
           label=r'Saturation (${\tt satERT}$)', savefig='invERTPetro')
 showModel(axs[7], satTT, pMesh,
           label=r'Saturation (${\tt satTT}$)', savefig='invTTPetro')
 showModel(axs[4], satJoint, pMesh,
           label=r'Saturation (${\tt satJoint}$)', savefig='invJointPetro')
-
-# just hold figure windows open if run outside from spyder, ipython or similar
-pg.wait()

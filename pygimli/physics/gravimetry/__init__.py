@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Solve gravimetric and magneto static problems in 2d and 3D analytical"""
+"""Solve gravimetric and magneto static problems in 2D and 3D analytical"""
 
 from . gravMagModelling import BaZCylinderHoriz
 from . gravMagModelling import BZPoly

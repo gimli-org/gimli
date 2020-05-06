@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-This package contains submodules for various petrophysical models
+Various petrophysical models
 """
 
 from .hydro import permeabilityEngelhardtPitter
