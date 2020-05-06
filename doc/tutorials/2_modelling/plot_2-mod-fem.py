@@ -217,11 +217,13 @@ ax.grid()
 
 ###############################################################################
 # We calculated the examples before for a homogeneous material parameter a=1,
-# but we can apply any heterogeneous values to0. One way is to create a list of # parameter values, one for each cell of the domain. Currently the values for
+# but we can apply any heterogeneous values to0. One way is to create a list of
+# parameter values, one for each cell of the domain. Currently the values for
 # each cell can be of type float, complex, or real valued anisotropy or
 # constitutive matrix. For illustration we show a calculation with an
 # anisotropic material. We simply use the same setting as above and assume a
-# -45 degree dipping angle in the left and 45 degree dipping in the right part # of the domain. Maybe we will find someday a more meaningful example. If you
+# -45 degree dipping angle in the left and 45 degree dipping in the right part
+# of the domain. Maybe we will find someday a more meaningful example. If you
 # have an idea please don't hesitate to share.
 #
 a = [None]*domain.cellCount()

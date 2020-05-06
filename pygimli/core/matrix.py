@@ -26,6 +26,7 @@ class MultMatrix(pgcore.MatrixBase):
     """Base Matrix class for all matrix types holding a matrix."""
     def __init__(self, A, verbose=False):
         self._A = A
+        self.ndim = self._A.ndim
         super(MultMatrix, self).__init__(verbose)
 
     @property
@@ -169,7 +170,7 @@ def __BlockMatrix_addMatrix_happy_GC__(self, M, row=None, col=None,
                                        scale=1.0, transpose=False):
     """Add an existing matrix to this block matrix and return a unique index.
 
-    As long row and col are None, the Matrix will not be used until a matrix 
+    As long row and col are None, the Matrix will not be used until a matrix
     entry is has been added.
 
     Monkeypatched version to increase the reference counter of M to keep the
