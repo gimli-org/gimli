@@ -9,7 +9,7 @@ resistivity, motivated by the BAM Berlin.
 
 Geometry: 0.99m x 0.5m x 1.0m
 Data: 48 Electrodes and 588 Measurements defined in modeltank.shm
-and are distributed an both (TWO??) sides of the tank.
+Each 24 electrodes are located at two opposite sides of the tank.
 
 We use the pygimli meshtools to create a PLC of the tank and an inhomogeneity.
 The needed mesh is created by calling tetgen.
