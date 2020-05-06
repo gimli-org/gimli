@@ -37,18 +37,16 @@ import matplotlib.pyplot as plt
 # computed by brute force (forward calculations with altered parameters).
 
 
-class ExpModelling(pg.core.ModellingBase):
+class ExpModelling(pg.Modelling):
     def __init__(self, xvec, verbose=False):
-        pg.core.ModellingBase.__init__(self, verbose)
+        super().__init__()
         self.x = xvec
-        self.setMesh(pg.meshtools.createMesh1D(1, 2))
-        # self.regionManager().setParameterCount(2)
 
     def response(self, model):
         return model[0] * pg.exp(-self.x / model[1])
 
-    def startModel(self):
-        return [1.0, 0.3]
+    def createStartModel(self, dataVals):
+        return pg.Vector([1.0, 3.0])
 
 ###############################################################################
 # The init function saves the x vector and defines the parameterization, i.e.
@@ -68,8 +66,9 @@ data = 10.5 * np.exp(- x / 550e-3)
 ###############################################################################
 # We define an (absolute) error level and add Gaussian noise to the data.
 
-error = 0.1
+error = 0.5
 data += np.random.randn(*data.shape)*error
+relError = error / data
 
 ###############################################################################
 # Next, an instance of the forward operator is created. We could use it for
@@ -79,7 +78,7 @@ data += np.random.randn(*data.shape)*error
 # output the inversion, another one prints more and saves files for debugging.
 
 f = ExpModelling(x)
-inv = pg.Inversion(data, f)
+inv = pg.Inversion(f)
 
 ###############################################################################
 # We create a real-valued logarithmic transformation and apply it to the model.
@@ -92,13 +91,11 @@ inv = pg.Inversion(data, f)
 # Finally run yields the coefficient vector and we plot some statistics.
 
 tLog = pg.trans.TransLog()
-inv.setTransModel(tLog)
-inv.setAbsoluteError(error)
-inv.setMarquardtScheme()
-inv.setLambda(100)
-coeff = inv.run()
-inv.echoStatus()  # result not shown on live docu
-print(inv.absrms(), inv.relrms(), inv.chi2())
+f.modelTrans = tLog
+inv._inv.setMarquardtScheme()
+inv._inv.setLambda(100)
+coeff = inv.run(data, relError, verbose=True)
+print(inv.relrms(), inv.chi2())
 print(coeff)
 
 ###############################################################################
@@ -137,9 +134,7 @@ inv.setVerbose(True)
 inv.setModel(f.createStartModel())
 print(inv.run())
 inv.echoStatus()
-pg.wait()
 
 ###############################################################################
 # The result is pretty much the same as before but for stronger equivalence or
 # smoothness-constrained regularization prior information might help a lot.
-
