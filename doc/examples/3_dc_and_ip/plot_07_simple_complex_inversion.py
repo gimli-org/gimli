@@ -39,11 +39,15 @@ def plot_fwd_model(axes):
     world = mt.createWorld(
         start=[-55, 0], end=[105, -80], worldMarker=True)
 
-    polarizable_anomaly = mt.createCircle(
-        pos=[40, -7], radius=5, marker=2
+    conductive_anomaly = mt.createCircle(
+        pos=[10, -7], radius=5, marker=2
     )
 
-    plc = mt.mergePLC((world, polarizable_anomaly))
+    polarizable_anomaly = mt.createCircle(
+        pos=[40, -7], radius=5, marker=3
+    )
+
+    plc = mt.mergePLC((world, conductive_anomaly, polarizable_anomaly))
 
     # local refinement of mesh near electrodes
     for s in scheme.sensors():
@@ -53,6 +57,7 @@ def plot_fwd_model(axes):
     # additional refinements
     mesh = mesh_coarse.createH2()
 
+    ###########################################################################
     # Prepare the model parameterization
     # We have two markers here: 1: background 2: circle anomaly
     # Parameters must be specified as a complex number, here converted by the
@@ -60,7 +65,8 @@ def plot_fwd_model(axes):
     rhomap = [
         [1, pg.utils.complex.toComplex(100, 0 / 1000)],
         # Magnitude: 50 ohm m, Phase: -50 mrad
-        [2, pg.utils.complex.toComplex(50, -50 / 1000)],
+        [2, pg.utils.complex.toComplex(50, 0 / 1000)],
+        [3, pg.utils.complex.toComplex(100, -50 / 1000)],
     ]
 
     # For visualization, map the rhomap into the actual mesh, resulting in a
@@ -165,8 +171,10 @@ dmag = np.abs(d_rcomplex)
 dpha = np.arctan2(d_rcomplex.imag, d_rcomplex.real) * 1000
 
 fig, axes = plt.subplots(1, 2, figsize=(20 / 2.54, 10 / 2.54))
-ert.showERTData(scheme, vals=dmag, ax=axes[0])
-ert.showERTData(scheme, vals=dpha, ax=axes[1])
+k = np.array(ert.createGeometricFactors(scheme))
+ert.showERTData(
+    scheme, vals=dmag * k, ax=axes[0], label=r'$|\rho_a|~[\Omega$m]')
+ert.showERTData(scheme, vals=dpha, ax=axes[1], label=r'$\phi_a~[mrad]$')
 
 # real part: log-magnitude
 # imaginary part: phase [rad]
@@ -219,7 +227,8 @@ def plot_inv_pars(filename, d, response, Wd, iteration='start'):
         label=r"$(d'' - f'') / \epsilon$"
     )
 
-    fig.suptitle('Error weighted residuals of iteration {}'.format(iteration))
+    fig.suptitle(
+        'Error weighted residuals of iteration {}'.format(iteration), y=1.00)
 
     fig.tight_layout()
 
