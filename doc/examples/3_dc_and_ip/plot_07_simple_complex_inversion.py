@@ -115,8 +115,6 @@ for nr, c in enumerate(mesh.cells()):
 # additional refinements
 # mesh = mesh_coarse.createH2()
 
-pg.show(world, marker=True)
-pg.show(world, markers=True)
 pg.show(mesh)
 ###############################################################################
 # Define start model of the inversion
@@ -163,10 +161,12 @@ data_rre_rim = np.loadtxt(filename)
 N = int(data_rre_rim.size / 2)
 d_rcomplex = data_rre_rim[:N] + 1j * data_rre_rim[N:]
 
+dmag = np.abs(d_rcomplex)
 dpha = np.arctan2(d_rcomplex.imag, d_rcomplex.real) * 1000
 
-fig, ax = plt.subplots()
-ert.showERTData(scheme, vals=dpha, ax=ax)
+fig, axes = plt.subplots(1, 2, figsize=(20 / 2.54, 10 / 2.54))
+ert.showERTData(scheme, vals=dmag, ax=axes[0])
+ert.showERTData(scheme, vals=dpha, ax=axes[1])
 
 # real part: log-magnitude
 # imaginary part: phase [rad]
@@ -199,10 +199,12 @@ Wd = np.diag(1.0 / err_mag_log)
 WdTwd = Wd.conj().dot(Wd)
 
 ###############################################################################
-# naive inversion in log-log
+# Put together one iteration of a  naive inversion in log-log transformation
+# d = log(V)
+# m = log(sigma)
 
 
-def plot_inv_pars(filename, d, response, Wd):
+def plot_inv_pars(filename, d, response, Wd, iteration='start'):
     """Plot error-weighted residuals"""
     fig, axes = plt.subplots(1, 2, figsize=(20 / 2.54, 10 / 2.54))
 
@@ -216,6 +218,8 @@ def plot_inv_pars(filename, d, response, Wd):
         scheme, vals=psi.imag, ax=axes[1],
         label=r"$(d'' - f'') / \epsilon$"
     )
+
+    fig.suptitle('Error weighted residuals of iteration {}'.format(iteration))
 
     fig.tight_layout()
 
@@ -244,47 +248,47 @@ for i in range(1):
 
     m1 = np.array(m_old + 1.0 * model_update).squeeze()
 
-    fig, axes = plt.subplots(2, 3, figsize=(26 / 2.54, 15 / 2.54))
-    plot_fwd_model(axes[0, :])
-    axes[0, 0].set_title('This row: Forward model')
 
-    pg.show(
-        mesh, data=m1.real, ax=axes[1, 0],
-        cMin=np.log(50),
-        cMax=np.log(100),
-        label=r"$log_{10}(|\rho|~[\Omega m])$"
-    )
-    pg.show(
-        mesh, data=np.exp(m1.real), ax=axes[1, 1],
-        cMin=50, cMax=100,
-        label=r"$|\rho|~[\Omega m]$"
-    )
-    pg.show(
-        mesh, data=m1.imag * 1000, ax=axes[1, 2], cMap='jet_r',
-        label=r"$\phi$ [mrad]",
-        cMin=-50, cMax=0,
-    )
+###############################################################################
+# Now plot the residuals for the first iteration
+m_old = m1
+# Response for Starting model
+m_re_im = pg.utils.squeezeComplex(np.exp(m_old))
+response_re_im = np.array(fop.response(m_re_im))
+response = np.log(pg.utils.toComplex(response_re_im))
 
-    axes[1, 0].set_title('This row: Complex inversion')
+plot_inv_pars('stats_it{}.jpg'.format(i + 1), d, response, Wd, iteration=1)
 
-    for ax in axes.flat:
-        ax.set_xlim(-10, 60)
-        ax.set_ylim(-20, 0)
-        for s in scheme.sensors():
-            ax.scatter(s[0], s[1], color='k', s=5)
+###############################################################################
+# And finally, plot the inversion results
 
-    fig.tight_layout()
+fig, axes = plt.subplots(2, 3, figsize=(26 / 2.54, 15 / 2.54))
+plot_fwd_model(axes[0, :])
+axes[0, 0].set_title('This row: Forward model')
 
-    m_old = m1
-    # Response for Starting model
-    m_re_im = pg.utils.squeezeComplex(np.exp(m_old))
-    response_re_im = np.array(fop.response(m_re_im))
-    response = np.log(pg.utils.toComplex(response_re_im))
+pg.show(
+    mesh, data=m1.real, ax=axes[1, 0],
+    cMin=np.log(50),
+    cMax=np.log(100),
+    label=r"$log_{10}(|\rho|~[\Omega m])$"
+)
+pg.show(
+    mesh, data=np.exp(m1.real), ax=axes[1, 1],
+    cMin=50, cMax=100,
+    label=r"$|\rho|~[\Omega m]$"
+)
+pg.show(
+    mesh, data=m1.imag * 1000, ax=axes[1, 2], cMap='jet_r',
+    label=r"$\phi$ [mrad]",
+    cMin=-50, cMax=0,
+)
 
-    plot_inv_pars('stats_it{}.jpg'.format(i + 1), d, response, Wd)
+axes[1, 0].set_title('This row: Complex inversion')
 
-    J_block = fop.createJacobian(m_re_im)
-    J_re = np.array(J_block.matrices()[0])
-    J_im = np.array(J_block.matrices()[1])
-    J = J_re + 1j * J_im
-    J = J / np.exp(response[:, np.newaxis]) * np.exp(m_old)[np.newaxis, :]
+for ax in axes.flat:
+    ax.set_xlim(-10, 60)
+    ax.set_ylim(-20, 0)
+    for s in scheme.sensors():
+        ax.scatter(s[0], s[1], color='k', s=5)
+
+fig.tight_layout()
