@@ -321,18 +321,18 @@ void Shape::rst2xyz(const RVector3 & rst, RVector3 & xyz) const{
 }
 
 const RMatrix3 & Shape::invJacobian() const {
-    // if (!invJacobian_.valid()){
-    //    if (ShapeFunctionCache::instance().RMatrix3Cache().size() < 1){
-    //        ShapeFunctionCache::instance().RMatrix3Cache().push_back(RMatrix3());
-    //    }
+    if (!invJacobian_.valid()){
+       if (ShapeFunctionCache::instance().RMatrix3Cache().size() < 1){
+           ShapeFunctionCache::instance().RMatrix3Cache().push_back(RMatrix3());
+       }
 
-    //    this->createJacobian(ShapeFunctionCache::instance().cachedRMatrix3(0));
-    //    inv(ShapeFunctionCache::instance().cachedRMatrix3(0), invJacobian_);
-    //    invJacobian_.setValid(true);
-    // }
-    RMatrix3 J;
-    this->createJacobian(J);
-    inv(J, invJacobian_ );
+       this->createJacobian(ShapeFunctionCache::instance().cachedRMatrix3(0));
+       inv(ShapeFunctionCache::instance().cachedRMatrix3(0), invJacobian_);
+       invJacobian_.setValid(true);
+    }
+    // RMatrix3 J;
+    // this->createJacobian(J);
+    // inv(J, invJacobian_ );
     return invJacobian_;
 }
 

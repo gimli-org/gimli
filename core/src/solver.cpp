@@ -60,15 +60,18 @@ int solveCGLSCDWWhtrans(const MatrixBase & S, const MatrixBase & C,
     Vec r(transMult(S, Vec(b * dWeight * dWeight * td)) / tm - cdx); // nModel
 
 // __MS(min(dWeight) << " " << max(dWeight) << " " << mean(dWeight))
-// __MS(min(b) << " " << max(b) << " " << mean(b))
-// __MS(min(wc) << " " << max(wc) << " " << mean(wc))
-// __MS(min(wm) << " " << max(wm) << " " << mean(wm))
-// __MS(min(tm) << " " << max(tm) << " " << mean(tm))
-// __MS(min(td) << " " << max(td) << " " << mean(td))
-// __MS(min(cdx) << " " << max(cdx) << " " << mean(cdx))
-// __MS(min(z) << " " << max(z) << " " << mean(z))
-// __MS(min(p) << " " << max(p) << " " << mean(p))
-// __MS(min(r) << " " << max(r) << " " << mean(r))
+// __MS("x " << min(x) << " " << max(x) << " " << mean(x))
+// __MS("b " << min(b) << " " << max(b) << " " << mean(b))
+// __MS("wc " << min(wc) << " " << max(wc) << " " << mean(wc))
+// __MS("wm " << min(wm) << " " << max(wm) << " " << mean(wm))
+// __MS("tm " << min(tm) << " " << max(tm) << " " << mean(tm))
+// __MS("td " << min(td) << " " << max(td) << " " << mean(td))
+// __MS("cdx " << min(cdx) << " " << max(cdx) << " " << mean(cdx))
+// __MS("(x/tm) " << min((x/tm)) << " " << max((x/tm)) << " " << mean((x/tm)))
+// __MS("S*Vec(x/tm) " << min(S*Vec(x/tm)) << " " << max(S*Vec(x/tm)) << " " << mean(S*Vec(x/tm)))
+// __MS("z " << min(z) << " " << max(z) << " " << mean(z))
+// __MS("p " << min(p) << " " << max(p) << " " << mean(p))
+// __MS("r" << min(r) << " " << max(r) << " " << mean(r))
 // __MS(min(Vec(b * dWeight * dWeight * td)) << " " 
 //      << max(Vec(b * dWeight * dWeight * td)) << " " 
 //      << mean(Vec(b * dWeight * dWeight * td)))
@@ -141,7 +144,7 @@ int solveCGLSCDWWtrans(const MatrixBase & S, const MatrixBase & C,
                        const Vec & wc, const Vec & mc, const Vec & tm,
                        const Vec & td, double lambda, const Vec & deltaX,
                        int maxIter, bool verbose){ //ALLOW_PYTHON_THREADS
-
+// __M
   uint nData = b.size();
   uint nModel = x.size();
   uint nConst = C.rows();

@@ -644,6 +644,7 @@ class MeshMethodManager(MethodManager):
         if ignoreRegionManager:
             mesh = self.fop.createRefinedFwdMesh(mesh, **kwargs)
 
+        pg._r(mesh)
         self.fop.setMesh(mesh, ignoreRegionManager=ignoreRegionManager)
 
     def applyData(self, data):
@@ -676,6 +677,7 @@ class MeshMethodManager(MethodManager):
             Model mapped for match the paraDomain Cell markers.
             The calculated model is in self.fw.model.
         """
+        self._fop = self.createForwardOperator(useBert=True, sr=True)
         if data is None:
             data = self.data
 
