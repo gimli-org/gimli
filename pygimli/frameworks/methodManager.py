@@ -677,7 +677,6 @@ class MeshMethodManager(MethodManager):
             Model mapped for match the paraDomain Cell markers.
             The calculated model is in self.fw.model.
         """
-        self._fop = self.createForwardOperator(useBert=True, sr=True)
         if data is None:
             data = self.data
 
