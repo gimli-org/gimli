@@ -234,7 +234,7 @@ def getExampleFile(path, load=False, verbose=False):
         tmp = urlretrieve(url, fileName)
     else:
         if verbose:
-            pg.info("File allready exists:", fileName)
+            pg.info("File already exists:", fileName)
 
     if load:
         print(fileName)
