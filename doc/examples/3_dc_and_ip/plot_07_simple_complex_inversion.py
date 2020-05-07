@@ -18,7 +18,8 @@ doi:10.1111/1365-2478.12013, 2000.
 .. note::
 
     This is a technology demonstration. Don't use this code for research. If
-    you require a complex-valued inversion, please contact us: info@pygimli.org
+    you require a complex-valued inversion, please contact us at
+    info@pygimli.org
 
 """
 # sphinx_gallery_thumbnail_number = 5
