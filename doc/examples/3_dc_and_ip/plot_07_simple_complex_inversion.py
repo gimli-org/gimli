@@ -10,10 +10,16 @@ and no optimization with respect to running time and memory consumptions are
 applied. As such this example is only a technology demonstration and should
 **not** be used for real-world inversion of complex resistivity data!
 
-
 Kemna, A.: Tomographic inversion of complex resistivity – theory and
 application, Ph.D.  thesis, Ruhr-Universität Bochum,
 doi:10.1111/1365-2478.12013, 2000.
+
+
+.. note::
+
+    This is a technology demonstration. Don't use this code for research. If
+    you require a complex-valued inversion, please contact us: info@pygimli.org
+
 """
 # sphinx_gallery_thumbnail_number = 5
 import numpy as np
@@ -33,7 +39,6 @@ import pygimli.physics.ert as ert
 
 def plot_fwd_model(axes):
     """This function plots the forward model used to generate the data
-
     """
     # Mesh generation
     world = mt.createWorld(
@@ -54,14 +59,8 @@ def plot_fwd_model(axes):
         plc.createNode(s + [0.0, -0.2])
 
     mesh_coarse = mt.createMesh(plc, quality=33)
-    # additional refinements
     mesh = mesh_coarse.createH2()
 
-    ###########################################################################
-    # Prepare the model parameterization
-    # We have two markers here: 1: background 2: circle anomaly
-    # Parameters must be specified as a complex number, here converted by the
-    # utility function :func:`pygimli.utils.complex.toComplex`.
     rhomap = [
         [1, pg.utils.complex.toComplex(100, 0 / 1000)],
         # Magnitude: 50 ohm m, Phase: -50 mrad
@@ -69,22 +68,12 @@ def plot_fwd_model(axes):
         [3, pg.utils.complex.toComplex(100, -50 / 1000)],
     ]
 
-    # For visualization, map the rhomap into the actual mesh, resulting in a
-    # rho vector with a complex resistivity associated with each mesh cell.
     rho = pg.solver.parseArgToArray(rhomap, mesh.cellCount(), mesh)
-    pg.show(
-        mesh,
-        data=np.log(np.abs(rho)),
-        ax=axes[0],
-        label=r"$log_{10}(|\rho|~[\Omega m])$"
-    )
+    pg.show(mesh, data=np.log(np.abs(rho)), ax=axes[0],
+            label=r"$log_{10}(|\rho|~[\Omega m])$")
     pg.show(mesh, data=np.abs(rho), ax=axes[1], label=r"$|\rho|~[\Omega m]$")
-    pg.show(
-        mesh, data=np.arctan2(np.imag(rho), np.real(rho)) * 1000,
-        ax=axes[2],
-        label=r"$\phi$ [mrad]",
-        cMap='jet_r'
-    )
+    pg.show(mesh, data=np.arctan2(np.imag(rho), np.real(rho)) * 1000,
+            ax=axes[2], label=r"$\phi$ [mrad]", cMap='jet_r')
     fig.tight_layout()
     fig.show()
 
@@ -92,9 +81,7 @@ def plot_fwd_model(axes):
 ###############################################################################
 # Create a measurement scheme for 51 electrodes, spacing 1
 scheme = ert.createERTData(
-    elecs=np.linspace(start=0, stop=50, num=51),
-    schemeName='dd'
-)
+    elecs=np.linspace(start=0, stop=50, num=51), schemeName='dd')
 # Not strictly required, but we switch potential electrodes to yield positive
 # geometric factors. Note that this was also done for the synthetic data
 # inverted later.
@@ -105,7 +92,7 @@ scheme['n'] = m
 scheme.set('k', [1 for x in range(scheme.size())])
 
 ###############################################################################
-# Mesh generation for hte inversion
+# Mesh generation for the inversion
 world = mt.createWorld(
     start=[-15, 0], end=[65, -30], worldMarker=False, marker=2)
 
@@ -117,10 +104,6 @@ mesh_coarse = mt.createMesh(world, quality=33)
 mesh = mesh_coarse.createH2()
 for nr, c in enumerate(mesh.cells()):
     c.setMarker(nr)
-
-# additional refinements
-# mesh = mesh_coarse.createH2()
-
 pg.show(mesh)
 ###############################################################################
 # Define start model of the inversion
@@ -183,25 +166,19 @@ d_rlog = np.log(d_rcomplex)
 # add some noise
 np.random.seed(42)
 
-noise_magnitude = np.random.normal(
-    loc=0,
-    scale=np.exp(d_rlog.real) * 0.04
-)
+# 4 % relative magnitude noise
+noise_magnitude = np.random.normal(loc=0, scale=np.exp(d_rlog.real) * 0.04)
 
-# absolute phase error
-noise_phase = np.random.normal(
-    loc=0,
-    scale=np.ones(N) * (0.5 / 1000)
-)
+# absolute phase error of 0.5 mrad
+noise_phase = np.random.normal(loc=0, scale=np.ones(N) * (0.5 / 1000))
 
 d_rlog = np.log(np.exp(d_rlog.real) + noise_magnitude) + 1j * (
     d_rlog.imag + noise_phase)
 
-# determine crude error estimations
+# crude error estimations
 rmag_linear = np.exp(d_rlog.real)
 err_mag_linear = rmag_linear * 0.04 + np.min(rmag_linear)
 err_mag_log = np.abs(1 / rmag_linear * err_mag_linear)
-# err_mag_log = np.ones_like(rmag_linear) * 0.02
 
 Wd = np.diag(1.0 / err_mag_log)
 WdTwd = Wd.conj().dot(Wd)
@@ -236,12 +213,13 @@ def plot_inv_pars(filename, d, response, Wd, iteration='start'):
 m_old = np.log(start_model)
 d = np.log(pg.utils.toComplex(data_rre_rim))
 response = np.log(pg.utils.toComplex(f_0))
+# tranform to log-log sensitivities
 J = J0 / np.exp(response[:, np.newaxis]) * np.exp(m_old)[np.newaxis, :]
 lam = 100
 
 plot_inv_pars('stats_it0.jpg', d, response, Wd)
 
-
+# only one iteration is implemented here!
 for i in range(1):
     print('-' * 80)
     print('Iteration {}'.format(i + 1))
@@ -275,22 +253,12 @@ fig, axes = plt.subplots(2, 3, figsize=(26 / 2.54, 15 / 2.54))
 plot_fwd_model(axes[0, :])
 axes[0, 0].set_title('This row: Forward model')
 
-pg.show(
-    mesh, data=m1.real, ax=axes[1, 0],
-    cMin=np.log(50),
-    cMax=np.log(100),
-    label=r"$log_{10}(|\rho|~[\Omega m])$"
-)
-pg.show(
-    mesh, data=np.exp(m1.real), ax=axes[1, 1],
-    cMin=50, cMax=100,
-    label=r"$|\rho|~[\Omega m]$"
-)
-pg.show(
-    mesh, data=m1.imag * 1000, ax=axes[1, 2], cMap='jet_r',
-    label=r"$\phi$ [mrad]",
-    cMin=-50, cMax=0,
-)
+pg.show(mesh, data=m1.real, ax=axes[1, 0], cMin=np.log(50), cMax=np.log(100),
+        label=r"$log_{10}(|\rho|~[\Omega m])$")
+pg.show(mesh, data=np.exp(m1.real), ax=axes[1, 1], cMin=50, cMax=100,
+        label=r"$|\rho|~[\Omega m]$")
+pg.show(mesh, data=m1.imag * 1000, ax=axes[1, 2], cMap='jet_r',
+        label=r"$\phi$ [mrad]", cMin=-50, cMax=0,)
 
 axes[1, 0].set_title('This row: Complex inversion')
 
