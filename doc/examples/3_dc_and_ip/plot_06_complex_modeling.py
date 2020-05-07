@@ -4,15 +4,15 @@ r"""
 Complex-valued electrical modeling
 ----------------------------------
 
-In this example an electrical complex-valued forward modeling is conducted. The
-use of complex resistivities implies an out-of-phase polarization response of
-the subsurface, commonly being measured in the frequency domain as complex
-resistivity (CR), or, if multiple frequencies are measured, as the spectral
-induced polarization (SIP). Please note that the time-domain induced
-polarization (TDIP) is a compound signature of a wide range of frequencies.
+In this example, an electrical complex-valued forward modeling is conducted. 
+The use of complex resistivities implies an out-of-phase polarization response
+of the subsurface, commonly being measured in the frequency domain as complex
+resistivity (CR), or, if multiple frequencies are measured, also referred to as
+spectral induced polarization (SIP). Please note that the time-domain induced
+polarization (TDIP) is a compound signature over a wide range of frequencies.
 
 It is common to parameterize the complex resistivities using magnitude (in
-:math:`\Omega m`) and phase :math:`\phi` (in mrad), although the PyGimli
+:math:`\Omega`m) and phase :math:`\phi` (in mrad), although the pyGIMLi
 forward operator takes real and imaginary parts.
 """
 # sphinx_gallery_thumbnail_number = 5
@@ -24,7 +24,7 @@ import pygimli.meshtools as mt
 import pygimli.physics.ert as ert
 
 ###############################################################################
-# Create a measurement scheme for 51 electrodes, spacing 1
+# Create a measurement scheme for 51 electrodes with a spacing of 1m
 scheme = ert.createERTData(
     elecs=np.linspace(start=0, stop=50, num=51),
     schemeName='dd'
@@ -67,9 +67,9 @@ rhomap = [
 # vector with a complex resistivity associated with each mesh cell.
 rho = pg.solver.parseArgToArray(rhomap, mesh.cellCount(), mesh)
 fig, axes = plt.subplots(2, 2, figsize=(16 / 2.54, 16 / 2.54))
-pg.show(mesh, data=np.real(rho), ax=axes[0, 0], label=r"$\rho'~[\Omega m]$")
-pg.show(mesh, data=np.imag(rho), ax=axes[0, 1], label=r"$\rho''~[\Omega m]$")
-pg.show(mesh, data=np.abs(rho), ax=axes[1, 0], label=r"$|\rho|~[\Omega m]$")
+pg.show(mesh, data=np.real(rho), ax=axes[0, 0], label=r"$\rho'$~[$\Omega$m]")
+pg.show(mesh, data=np.imag(rho), ax=axes[0, 1], label=r"$\rho''$~[$\Omega$m]")
+pg.show(mesh, data=np.abs(rho), ax=axes[1, 0], label=r"$|\rho$|~[$\Omega$m]")
 pg.show(
     mesh, data=np.arctan2(np.imag(rho), np.real(rho)),
     ax=axes[1, 1], label=r"$\phi$ [mrad]"
@@ -92,20 +92,20 @@ data = ert.simulate(
 # Convert magnitude and phase into a complex apparent resistivity
 rho_a_complex = data['rhoa'].array() * np.exp(1j * data['phia'].array())
 
-# Please note the apparent negative phases!
+# Please note the apparent negative (resistivity) phases!
 fig, axes = plt.subplots(2, 2, figsize=(16 / 2.54, 16 / 2.54))
 ert.showERTData(data, vals=data['rhoa'], ax=axes[0, 0])
-# phia is stored in radians
+# phia is stored in radians, but usually plotted in milliradians
 ert.showERTData(
     data, vals=data['phia'] * 1000, label=r'$\phi$ [mrad]', ax=axes[0, 1])
 
 ert.showERTData(
     data, vals=np.real(rho_a_complex), ax=axes[1, 0],
-    label=r"$\rho_a'~[\Omega m]$"
+    label=r"$\rho_a'$~[$\Omega$m]"
 )
 ert.showERTData(
     data, vals=np.imag(rho_a_complex), ax=axes[1, 1],
-    label=r"$\rho_a''~[\Omega m]$"
+    label=r"$\rho_a''$~[$\Omega$m]"
 )
 fig.tight_layout()
 fig.show()
