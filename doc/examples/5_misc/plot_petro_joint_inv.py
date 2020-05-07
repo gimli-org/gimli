@@ -1,6 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Example for Petrophysical-Joint-Inversion."""
+"""
+Petrophysical joint inversion
+-----------------------------
+
+Joint inversion of different geophysical techniques helps to improve both
+resolution and interpretability of the resulting images. Different data sets can
+be directly coupled, if there is a link to an underlying target parameter.
+In this example, ERT and traveltime data are inverted for water saturation. For
+details see section 3.3 of the pyGIMLi paper (https://cg17.pygimli.org).
+"""
+# sphinx_gallery_thumbnail_number = 5
 
 import numpy as np
 import pygimli as pg
@@ -10,6 +20,9 @@ from pygimli.physics.petro import transFwdArchieS as ArchieTrans
 from pygimli.physics.petro import transFwdWyllieS as WyllieTrans
 from pygimli.frameworks import PetroInversionManager, JointPetroInversionManager
 
+
+################################################################################
+# We start with defining two helper functions.
 
 def createSynthModel():
     """Return the modelling mesh, the porosity distribution and the
@@ -48,12 +61,12 @@ def createSynthModel():
 
 
 def showModel(ax, model, mesh, petro=1, cMin=None, cMax=None, label=None,
-              cMap = None, savefig=None, showMesh=False):
+              cMap=None, savefig=None, showMesh=False):
     """Utility function to show and save models for the CG paper."""
     if cMin is None:
         cMin = 0.3
     if cMax is None:
-        cMax = 1.0
+        cMax = 0.9
 
     if cMap is None:
         cMap = 'viridis'
@@ -79,9 +92,12 @@ def showModel(ax, model, mesh, petro=1, cMin=None, cMax=None, label=None,
         pg.viewer.mpl.saveAxes(ax, savefig, adjust=False)
     return ax
 
+################################################################################
 # Create synthetic model
+# ......................
 mMesh, pMesh, saturation = createSynthModel()
 
+################################################################################
 # Create Petrophysical models
 ertTrans = ArchieTrans(rFluid=20, phi=0.3)
 res = ertTrans(saturation)
@@ -91,6 +107,13 @@ vel = 1./ttTrans(saturation)
 
 sensors = mMesh.positions()[mMesh.findNodesIdxByMarker(-99)]
 
+################################################################################
+# Forward simulation
+# ..................
+# To create synthetic data sets, we assume 16 equally-spaced sensors on the
+# circumferential boundary of the mesh. For the ERT modelling we build a
+# complete dipole-dipole array. For the ultrasonic tomography we simulate the
+# travel time for every possible sensor pair.
 pg.info("Simulate ERT")
 ERT = pg.physics.ert.ERTManager(verbose=False, sr=False)
 ertScheme = pg.physics.ert.createERTData(sensors, schemeName='dd', closed=1)
@@ -102,6 +125,8 @@ ttScheme = pg.physics.traveltime.createRAData(sensors)
 ttData = TT.simulate(mMesh, scheme=ttScheme, vel=vel,
                      noiseLevel=0.01, noiseAbs=4e-6)
 
+################################################################################
+# Conventional inversion
 pg.info("ERT Inversion")
 resInv = ERT.invert(ertData, mesh=pMesh, zWeight=1, lam=20, verbose=False)
 ERT.inv.echoStatus()
@@ -110,6 +135,8 @@ pg.info("Traveltime Inversion")
 velInv = TT.invert(ttData, mesh=pMesh, lam=100, useGradient=0, zWeight=1.0)
 TT.inv.echoStatus()
 
+################################################################################
+# Petrophysical inversion (individually)
 pg.info("ERT Petrogeophysical Inversion")
 ERTPetro = PetroInversionManager(petro=ertTrans, mgr=ERT)
 satERT = ERTPetro.invert(ertData, mesh=pMesh, limits=[0., 1.], lam=10,
@@ -121,18 +148,20 @@ TTPetro = PetroInversionManager(petro=ttTrans, mgr=TT)
 satTT = TTPetro.invert(ttData, mesh=pMesh, limits=[0., 1.], lam=5)
 TTPetro.inv.echoStatus()
 
-pg.info("Petrogeophysical Joint-Inversion TT-ERT")
+################################################################################
+# Petrophysical joint inversion
+pg.info("Petrophysical Joint-Inversion TT-ERT")
 JointPetro = JointPetroInversionManager(petros=[ertTrans, ttTrans],
                                         mgrs=[ERT, TT])
 satJoint = JointPetro.invert([ertData, ttData], mesh=pMesh,
                              limits=[0., 1.], lam=5, verbose=False)
 JointPetro.inv.echoStatus()
 
+################################################################################
 # Show results
 ERT.showData(ertData)
 TT.showData(ttData)
 
-# Script starts here
 axs = [None]*8
 
 showModel(axs[0], saturation, mMesh, showMesh=1,

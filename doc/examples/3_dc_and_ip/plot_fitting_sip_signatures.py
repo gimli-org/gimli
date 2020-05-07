@@ -75,4 +75,4 @@ pg.wait()
 #
 #   This tutorial was kindly contributed by Maximilian Weigand (University of
 #   Bonn). If you also want to contribute an interesting example, check out
-#   our `contribution guidelines https://www.pygimli.org/contrib.html`.
+#   our contribution guidelines https://www.pygimli.org/contrib.html.

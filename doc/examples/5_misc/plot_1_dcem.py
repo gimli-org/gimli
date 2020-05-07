@@ -85,7 +85,7 @@ fEM.region(1).setTransModel(transRes)
 ###############################################################################
 # We set up the independent EM inversion and run the model.
 
-invEM = pg.Inversion(dataEM, fEM, transEM, True, True)
+invEM = pg.core.Inversion(dataEM, fEM, transEM, True, True)
 modelEM = pg.Vector(nlay * 2 - 1, 50.)
 invEM.setModel(modelEM)
 invEM.setAbsoluteError(noiseEM)
@@ -111,7 +111,7 @@ fDC.region(0).setTransModel(transThk)
 fDC.region(1).setTransModel(transRes)
 
 # We set up the independent DC inversion and let it run.
-invDC = pg.Inversion(dataDC, fDC, transRhoa, verbose)
+invDC = pg.core.Inversion(dataDC, fDC, transRhoa, verbose)
 modelDC = pg.Vector(nlay*2-1, 20.)
 invDC.setModel(modelDC)
 invDC.setRelativeError(noiseDC/100.)
@@ -133,7 +133,7 @@ fDCEM.region(1).setTransModel(transRes)
 transData = pg.trans.TransCumulative()
 transData.add(transRhoa, na)
 transData.add(transEM, nf*2)
-invDCEM = pg.Inversion(pg.cat(dataDC, dataEM), fDCEM, transData, verbose)
+invDCEM = pg.core.Inversion(pg.cat(dataDC, dataEM), fDCEM, transData, verbose)
 modelDCEM = pg.Vector(nlay * 2 - 1, 20.)
 invDCEM.setModel(modelDCEM)
 err = pg.cat(dataDC * noiseDC / 100., pg.Vector(len(dataEM), noiseEM))

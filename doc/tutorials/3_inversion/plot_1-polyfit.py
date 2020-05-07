@@ -53,9 +53,9 @@ To avoid name clashes with other libraries we suggest to import `pygimli` and
 alias it to an easy name (as usually done for numpy or matplotlib), e.g. by
 """
 
-import pygimli as pg
 import numpy as np
 import matplotlib.pyplot as plt
+import pygimli as pg
 
 ###############################################################################
 # The modelling class is derived from ModellingBase, a constructor is defined
@@ -101,7 +101,7 @@ class FunctionModelling(pg.core.ModellingBase):
 
 x = np.arange(0., 10., 0.5)
 y = 1.1 + 2.1 * x - 0.2 * x**2
-noise = 0.1
+noise = 0.5
 y += np.random.randn(len(y)) * noise
 
 ###############################################################################
@@ -110,7 +110,7 @@ y += np.random.randn(len(y)) * noise
 fop = FunctionModelling(3, x)
 
 # initialize inversion with data and forward operator and set options
-inv = pg.Inversion(y, fop)
+inv = pg.core.Inversion(y, fop)
 
 # constant absolute error of 0.01 is 1% (not necessary, only for chi^2)
 inv.setAbsoluteError(noise)
@@ -120,9 +120,6 @@ inv.setLambda(0)
 
 # actual inversion run yielding coefficient model
 coeff = inv.run()
-
-inv.echoStatus()
-
 print(coeff)
 
 ###############################################################################

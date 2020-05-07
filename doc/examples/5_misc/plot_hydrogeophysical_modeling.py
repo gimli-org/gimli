@@ -176,7 +176,8 @@ for i, rbI in enumerate(resBulk):
 # Initialize and call the ERT manager for electrical simulation:
 ERT = ERTManager(verbose=False)
 # Run  simulation for  the apparent resistivities
-rhoa = ERT.simulate(meshERT, resis, ertScheme, verbose=0, returnArray=True)
+rhoa = ERT.simulate(meshERT, res=resis, scheme=ertScheme, 
+                    returnArray=True, verbose=False)
 
 for i in range(4):
     ERT.showData(ertScheme, vals=rhoa[i]/rhoa[0], cMin=1e-5, cMax=1)

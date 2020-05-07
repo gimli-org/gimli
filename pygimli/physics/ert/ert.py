@@ -657,7 +657,7 @@ class ERTManager(MeshMethodManager):
     def setPrimPot(self, pot):
         """
         """
-        Implementme
+        pg.critical("Not implemented.")
 
     def simulate(self, mesh, scheme, res, **kwargs):
         """Simulate an ERT measurement.

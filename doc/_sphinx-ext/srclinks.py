@@ -151,6 +151,9 @@ class Context(object):
                 path = path.replace("_examples_auto", "examples")
                 path = path.replace("_tutorials_auto", "tutorials")
 
+            if "installation" in path:
+                path = path.replace("doc/installation.rst", "INSTALLATION.rst")
+
             conf = dict(
                 project_url=self.project_url,
                 project=self.project,

@@ -54,7 +54,7 @@ class Inversion(object):
             self._inv = inv
             self.isFrameWork = True
         else:
-            self._inv = pg.Inversion(self._verbose, self._debug)
+            self._inv = pg.core.RInversion(self._verbose, self._debug)
 
         self._dataTrans = pg.trans.TransLin()
         self.axs = None # for showProgress only
@@ -72,11 +72,7 @@ class Inversion(object):
 
     @property
     def inv(self):
-        if self.isFrameWork:
-            pg.critial('in use?')
-            return self._inv.inv
-        else:
-            return self._inv
+        return self._inv
     @property
     def fop(self):
         return self._fop
@@ -305,7 +301,7 @@ class Inversion(object):
         dData = (dT.trans(self.dataVals) - dT.trans(response)) / \
                  dT.error(self.dataVals, self.errorVals)
 
-        return pg.core.dot(dData, dData)
+        return pg.math.dot(dData, dData)
 
     def phiModel(self, model=None):
         """ """
@@ -313,7 +309,7 @@ class Inversion(object):
             model = self.model
 
         rough = self.inv.roughness(model)
-        return pg.core.dot(rough, rough)
+        return pg.math.dot(rough, rough)
 
     def phi(self, model=None, response=None):
         """ """

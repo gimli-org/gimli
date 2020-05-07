@@ -51,7 +51,7 @@ f.region(0).setStartValue(paraDepth / nlay / 2)
 f.region(1).setStartValue(np.median(rhoa))
 ###############################################################################
 # set up inversion
-inv = pg.Inversion(rhoa, f, transRhoa, True)  # data vector, fop, verbose
+inv = pg.core.Inversion(rhoa, f, transRhoa, True)  # data vector, fop, verbose
 # could also be set by inv.setTransData(transRhoa)
 ###############################################################################
 # set error model, regularization strength and Marquardt scheme
