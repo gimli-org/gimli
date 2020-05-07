@@ -283,6 +283,7 @@ class ERTModelling(ERTModellingBase):
             self.setJacobian(self._J)
             # pg._r("create Jacobian", self, self._J)
             return self._J
+
         return self._core.createJacobian(mod)
 
     def setDataPost(self, data):

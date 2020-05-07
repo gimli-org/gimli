@@ -40,6 +40,7 @@ import pygimli.physics.ert as ert
 
 def plot_fwd_model(axes):
     """This function plots the forward model used to generate the data
+
     """
     # Mesh generation
     world = mt.createWorld(
@@ -70,11 +71,19 @@ def plot_fwd_model(axes):
     ]
 
     rho = pg.solver.parseArgToArray(rhomap, mesh.cellCount(), mesh)
-    pg.show(mesh, data=np.log(np.abs(rho)), ax=axes[0],
-            label=r"$log_{10}(|\rho|~[\Omega m])$")
+    pg.show(
+        mesh,
+        data=np.log(np.abs(rho)),
+        ax=axes[0],
+        label=r"$log_{10}(|\rho|~[\Omega m])$"
+    )
     pg.show(mesh, data=np.abs(rho), ax=axes[1], label=r"$|\rho|~[\Omega m]$")
-    pg.show(mesh, data=np.arctan2(np.imag(rho), np.real(rho)) * 1000,
-            ax=axes[2], label=r"$\phi$ [mrad]", cMap='jet_r')
+    pg.show(
+        mesh, data=np.arctan2(np.imag(rho), np.real(rho)) * 1000,
+        ax=axes[2],
+        label=r"$\phi$ [mrad]",
+        cMap='jet_r'
+    )
     fig.tight_layout()
     fig.show()
 
@@ -82,7 +91,9 @@ def plot_fwd_model(axes):
 ###############################################################################
 # Create a measurement scheme for 51 electrodes, spacing 1
 scheme = ert.createERTData(
-    elecs=np.linspace(start=0, stop=50, num=51), schemeName='dd')
+    elecs=np.linspace(start=0, stop=50, num=51),
+    schemeName='dd'
+)
 # Not strictly required, but we switch potential electrodes to yield positive
 # geometric factors. Note that this was also done for the synthetic data
 # inverted later.
@@ -167,11 +178,16 @@ d_rlog = np.log(d_rcomplex)
 # add some noise
 np.random.seed(42)
 
-# 4 % relative magnitude noise
-noise_magnitude = np.random.normal(loc=0, scale=np.exp(d_rlog.real) * 0.04)
+noise_magnitude = np.random.normal(
+    loc=0,
+    scale=np.exp(d_rlog.real) * 0.04
+)
 
-# absolute phase error of 0.5 mrad
-noise_phase = np.random.normal(loc=0, scale=np.ones(N) * (0.5 / 1000))
+# absolute phase error
+noise_phase = np.random.normal(
+    loc=0,
+    scale=np.ones(N) * (0.5 / 1000)
+)
 
 d_rlog = np.log(np.exp(d_rlog.real) + noise_magnitude) + 1j * (
     d_rlog.imag + noise_phase)
@@ -254,12 +270,22 @@ fig, axes = plt.subplots(2, 3, figsize=(26 / 2.54, 15 / 2.54))
 plot_fwd_model(axes[0, :])
 axes[0, 0].set_title('This row: Forward model')
 
-pg.show(mesh, data=m1.real, ax=axes[1, 0], cMin=np.log(50), cMax=np.log(100),
-        label=r"$log_{10}(|\rho|~[\Omega m])$")
-pg.show(mesh, data=np.exp(m1.real), ax=axes[1, 1], cMin=50, cMax=100,
-        label=r"$|\rho|~[\Omega m]$")
-pg.show(mesh, data=m1.imag * 1000, ax=axes[1, 2], cMap='jet_r',
-        label=r"$\phi$ [mrad]", cMin=-50, cMax=0,)
+pg.show(
+    mesh, data=m1.real, ax=axes[1, 0],
+    cMin=np.log(50),
+    cMax=np.log(100),
+    label=r"$log_{10}(|\rho|~[\Omega m])$"
+)
+pg.show(
+    mesh, data=np.exp(m1.real), ax=axes[1, 1],
+    cMin=50, cMax=100,
+    label=r"$|\rho|~[\Omega m]$"
+)
+pg.show(
+    mesh, data=m1.imag * 1000, ax=axes[1, 2], cMap='jet_r',
+    label=r"$\phi$ [mrad]",
+    cMin=-50, cMax=0,
+)
 
 axes[1, 0].set_title('This row: Complex inversion')
 
