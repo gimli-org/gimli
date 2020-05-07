@@ -17,14 +17,14 @@ import pygimli as pg
 from pygimli.physics.ert import ERTManager, createGeometricFactors
 
 ###############################################################################
-# Get some example data with topogrpahy
+# Get some example data with topography
 #
 data = pg.getExampleFile('ert/slagdump.ohm', load=True, verbose=True)
 print(data)
 
 ###############################################################################
 # The data file does not contain geometric factors (token field 'k'), 
-# so we create them for the given topography. 
+# so we create them based on the given topography.
 data['k'] = createGeometricFactors(data, numerical=True)
 
 ###############################################################################
@@ -32,25 +32,25 @@ data['k'] = createGeometricFactors(data, numerical=True)
 ert = ERTManager(sr=False, useBert=True, verbose=True, debug=False)
 
 ###############################################################################
-# It might be interesting to see the topography effect.
+# It might be interesting to see the topography effect, i.e the ratio between
+# the numerically computed geometry factor and the analytical formula
 k0 = createGeometricFactors(data)
 ert.showData(data, vals=k0/data['k'], label='Topography effect')
 
 ###############################################################################
-# The data container have no apparent resistivities (token field 'rhoa')
+# The data container has no apparent resistivities (token field 'rhoa') yet.
 # We can let the Manager fix this later for us (as we now have the 'k' field), 
-# or we to it now manual
+# or we do it manually.
 ert.checkData(data)
 print(data)
 
 ###############################################################################
-# The data container does not necessarily contain data errors data errors (token field 'err'),
-# equiring us to enter data errors.
-# We can let the manager guess some defaults for us automaticly or set them 
-# manually
+# The data container does not necessarily contain data errors data errors 
+# (token field 'err'), requiring us to enter data errors. We can let the 
+# manager guess some defaults for us automaticly or set them manually
 data['err'] = ert.estimateError(data, absoluteError=0.001, relativeError=0.03)
-# manually:
-# data['err'] = data_errors
+# or manually:
+# data['err'] = data_errors  # somehow
 
 ###############################################################################
 # Now the data have all necessary fields ('rhoa', 'err' and 'k') so we can run
