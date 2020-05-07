@@ -97,7 +97,6 @@ ert.show(data)
 # Initialize the ERTManager, e.g. with a data container or a filename.
 #
 mgr = ert.ERTManager('simple.dat')
-
 ###############################################################################
 # Run the inversion with the preset data. The Inversion mesh will be created
 # with default settings.
@@ -108,10 +107,8 @@ inv = mgr.invert(lam=20, verbose=True)
 # fits the data. Shows data, model response, and model.
 #
 mgr.showResultAndFit()
-
 meshPD = pg.Mesh(mgr.paraDomain) # Save copy of para mesh for plotting later
 # %%
-###############################################################################
 # You can also provide your own mesh (e.g., a structured grid if you like them)
 #
 inversionDomain = pg.createGrid(x=np.linspace(start=-18, stop=18, num=33),

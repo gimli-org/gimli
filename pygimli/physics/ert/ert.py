@@ -154,8 +154,8 @@ class ERTModellingBase(MeshModelling):
 
     def drawModel(self, ax, model, **kwargs):
         """Draw the para domain with option model values"""
-        kwargs['label'] = kwargs.pop('label', pg.unit('res'))
-        kwargs['cMap'] = kwargs.pop('cMap', pg.utils.cMap('res'))
+        kwargs.setdefault('label', pg.unit('res'))
+        kwargs.setdefault('cMap', pg.utils.cMap('res'))
 
         return super(ERTModellingBase, self).drawModel(ax=ax, model=model,
                                                        logScale=True,
@@ -283,6 +283,7 @@ class ERTModelling(ERTModellingBase):
             self.setJacobian(self._J)
             # pg._r("create Jacobian", self, self._J)
             return self._J
+
         return self._core.createJacobian(mod)
 
     def setDataPost(self, data):

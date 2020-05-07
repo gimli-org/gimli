@@ -9,6 +9,7 @@ from .constants import Constants
 from .ert import ERTManager, ERTModelling, VESManager
 from .em import VMDTimeDomainModelling
 from .traveltime import TravelTimeManager
+Refraction = TravelTimeManager  # Backward compatibility to pg 1.0
 
 from .em import FDEM, TDEM
 from .SIP import SIPSpectrum, SpectrumManager

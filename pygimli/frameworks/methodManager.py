@@ -420,7 +420,7 @@ class MethodManager(object):
 
         return self.fop.drawModel(ax, model, **kwargs)
 
-    def showData(self, data, ax=None, **kwargs):
+    def showData(self, data=None, ax=None, **kwargs):
         """Shows the data.
 
         Draw data values into a given axes or show the data values from
@@ -644,6 +644,7 @@ class MeshMethodManager(MethodManager):
         if ignoreRegionManager:
             mesh = self.fop.createRefinedFwdMesh(mesh, **kwargs)
 
+        pg._r(mesh)
         self.fop.setMesh(mesh, ignoreRegionManager=ignoreRegionManager)
 
     def applyData(self, data):
