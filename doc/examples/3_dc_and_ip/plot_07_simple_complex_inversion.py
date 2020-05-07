@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 r"""
-Preliminary complex-valued electrical inversion
------------------------------------------------
+Naive complex-valued electrical inversion
+-----------------------------------------
 
 This example presents a quick and dirty proof-of-concept for a complex-valued
 inversion, similar to Kemna, 2000. The normal equations are solved using numpy,
@@ -24,8 +24,9 @@ doi:10.1111/1365-2478.12013, 2000.
 """
 # sphinx_gallery_thumbnail_number = 5
 import numpy as np
-import matplotlib.pyplot as plt
+import matplotlib.pylab as plt
 
+# import matplotlib.pylab as plt
 from pygimli.physics.ert.ert import ERTModelling
 
 import pygimli as pg
@@ -37,16 +38,23 @@ import pygimli.physics.ert as ert
 # reference
 
 
-def plot_fwd_model(axes, **kwargs):
-    """This function plots the forward model used to generate the data."""
+def plot_fwd_model(axes):
+    """This function plots the forward model used to generate the data
+
+    """
     # Mesh generation
-    world = mt.createWorld(start=[-55, 0], end=[105, -80], worldMarker=True)
+    world = mt.createWorld(
+        start=[-55, 0], end=[105, -80], worldMarker=True)
 
-    conductive_anomaly = mt.createCircle(pos=[10, -7], radius=5, marker=2)
+    conductive_anomaly = mt.createCircle(
+        pos=[10, -7], radius=5, marker=2
+    )
 
-    polarizable_anomaly = mt.createCircle(pos=[40, -7], radius=5, marker=3)
+    polarizable_anomaly = mt.createCircle(
+        pos=[40, -7], radius=5, marker=3
+    )
 
-    plc = world + conductive_anomaly + polarizable_anomaly
+    plc = mt.mergePLC((world, conductive_anomaly, polarizable_anomaly))
 
     # local refinement of mesh near electrodes
     for s in scheme.sensors():
@@ -63,19 +71,29 @@ def plot_fwd_model(axes, **kwargs):
     ]
 
     rho = pg.solver.parseArgToArray(rhomap, mesh.cellCount(), mesh)
-    pg.show(mesh, data=np.log(np.abs(rho)), ax=axes[0],
-            label=r"$log_{10}(|\rho|~[\Omega m])$", **kwargs)
-    pg.show(mesh, data=np.abs(rho), ax=axes[1], label=r"$|\rho|~[\Omega m]$", **kwargs)
-    pg.show(mesh, data=np.arctan2(np.imag(rho), np.real(rho)) * 1000,
-            ax=axes[2], label=r"$\phi$ [mrad]", cMap='jet_r', **kwargs)
+    pg.show(
+        mesh,
+        data=np.log(np.abs(rho)),
+        ax=axes[0],
+        label=r"$log_{10}(|\rho|~[\Omega m])$"
+    )
+    pg.show(mesh, data=np.abs(rho), ax=axes[1], label=r"$|\rho|~[\Omega m]$")
+    pg.show(
+        mesh, data=np.arctan2(np.imag(rho), np.real(rho)) * 1000,
+        ax=axes[2],
+        label=r"$\phi$ [mrad]",
+        cMap='jet_r'
+    )
     fig.tight_layout()
     fig.show()
 
 
 ###############################################################################
 # Create a measurement scheme for 51 electrodes, spacing 1
-scheme = ert.createERTData(elecs=np.linspace(start=0, stop=50, num=51),
-                           schemeName='dd' )
+scheme = ert.createERTData(
+    elecs=np.linspace(start=0, stop=50, num=51),
+    schemeName='dd'
+)
 # Not strictly required, but we switch potential electrodes to yield positive
 # geometric factors. Note that this was also done for the synthetic data
 # inverted later.
@@ -107,7 +125,10 @@ start_model = np.ones(mesh.cellCount()) * pg.utils.complex.toComplex(
 
 ###############################################################################
 # Initialize the complex forward operator
-fop = ERTModelling(sr=False, verbose=True)
+fop = ERTModelling(
+    sr=False,
+    verbose=True,
+)
 fop.setComplex(True)
 fop.setData(scheme)
 fop.setMesh(mesh, ignoreRegionManager=True)
@@ -135,8 +156,8 @@ rm.fillConstraints(Wm)
 Wm = pg.utils.sparseMatrix2coo(Wm)
 ###############################################################################
 # read-in data and determine error parameters
-filename = pg.getExampleFile('CR/synthetic_modeling/data_rre_rim.dat',
-                             load=False, verbose=True)
+filename = pg.getExampleFile(
+    'CR/synthetic_modeling/data_rre_rim.dat', load=False, verbose=True)
 data_rre_rim = np.loadtxt(filename)
 N = int(data_rre_rim.size / 2)
 d_rcomplex = data_rre_rim[:N] + 1j * data_rre_rim[N:]
@@ -146,8 +167,8 @@ dpha = np.arctan2(d_rcomplex.imag, d_rcomplex.real) * 1000
 
 fig, axes = plt.subplots(1, 2, figsize=(20 / 2.54, 10 / 2.54))
 k = np.array(ert.createGeometricFactors(scheme))
-ert.showERTData(scheme, vals=dmag * k, ax=axes[0],
-                label=r'$|\rho_a|~[\Omega$m]')
+ert.showERTData(
+    scheme, vals=dmag * k, ax=axes[0], label=r'$|\rho_a|~[\Omega$m]')
 ert.showERTData(scheme, vals=dpha, ax=axes[1], label=r'$\phi_a~[mrad]$')
 
 # real part: log-magnitude
@@ -157,10 +178,16 @@ d_rlog = np.log(d_rcomplex)
 # add some noise
 np.random.seed(42)
 
-noise_magnitude = np.random.normal(loc=0, scale=np.exp(d_rlog.real) * 0.04)
+noise_magnitude = np.random.normal(
+    loc=0,
+    scale=np.exp(d_rlog.real) * 0.04
+)
 
 # absolute phase error
-noise_phase = np.random.normal(loc=0, scale=np.ones(N) * (0.5 / 1000))
+noise_phase = np.random.normal(
+    loc=0,
+    scale=np.ones(N) * (0.5 / 1000)
+)
 
 d_rlog = np.log(np.exp(d_rlog.real) + noise_magnitude) + 1j * (
     d_rlog.imag + noise_phase)
@@ -185,13 +212,17 @@ def plot_inv_pars(filename, d, response, Wd, iteration='start'):
 
     psi = Wd.dot(d - response)
 
-    ert.showERTData(scheme, vals=psi.real, ax=axes[0],
-                    label=r"$(d' - f') / \epsilon$" )
-    ert.showERTData(scheme, vals=psi.imag, ax=axes[1],
-                    label=r"$(d'' - f'') / \epsilon$")
+    ert.showERTData(
+        scheme, vals=psi.real, ax=axes[0],
+        label=r"$(d' - f') / \epsilon$"
+    )
+    ert.showERTData(
+        scheme, vals=psi.imag, ax=axes[1],
+        label=r"$(d'' - f'') / \epsilon$"
+    )
 
-    fig.suptitle('Error weighted residuals of iteration {}'.format(iteration),
-                 y=1.00)
+    fig.suptitle(
+        'Error weighted residuals of iteration {}'.format(iteration), y=1.00)
 
     fig.tight_layout()
 
@@ -235,16 +266,26 @@ plot_inv_pars('stats_it{}.jpg'.format(i + 1), d, response, Wd, iteration=1)
 ###############################################################################
 # And finally, plot the inversion results
 
-fig, axes = plt.subplots(2, 3, figsize=(26 / 2.54, 10 / 2.54),
-                         sharex=True, sharey=True)
-plot_fwd_model(axes[0, :], colorBar=False)
+fig, axes = plt.subplots(2, 3, figsize=(26 / 2.54, 15 / 2.54))
+plot_fwd_model(axes[0, :])
 axes[0, 0].set_title('This row: Forward model')
 
-pg.show(mesh, data=m1.real, ax=axes[1, 0], cMin=np.log(50), cMax=np.log(100),
-        label=r"$log_{10}(|\rho|~[\Omega m])$" )
-pg.show(mesh, data=np.exp(m1.real), ax=axes[1, 1], cMin=50, cMax=100,
-        label=r"$|\rho|~[\Omega m]$" )
-pg.show(mesh, data=m1.imag * 1000, ax=axes[1, 2], cMap='jet_r', label=r"$\phi$ [mrad]", cMin=-50, cMax=0, )
+pg.show(
+    mesh, data=m1.real, ax=axes[1, 0],
+    cMin=np.log(50),
+    cMax=np.log(100),
+    label=r"$log_{10}(|\rho|~[\Omega m])$"
+)
+pg.show(
+    mesh, data=np.exp(m1.real), ax=axes[1, 1],
+    cMin=50, cMax=100,
+    label=r"$|\rho|~[\Omega m]$"
+)
+pg.show(
+    mesh, data=m1.imag * 1000, ax=axes[1, 2], cMap='jet_r',
+    label=r"$\phi$ [mrad]",
+    cMin=-50, cMax=0,
+)
 
 axes[1, 0].set_title('This row: Complex inversion')
 
