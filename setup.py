@@ -14,6 +14,8 @@ import os
 from setuptools import setup, find_packages
 import versioneer
 
+apps = ["apps/" + app for app in os.listdir('apps') if not "template" in app]
+
 try:
     # fails with py3 due to ascii encoding problem.
     with open(os.path.join("README.rst")) as f:
@@ -34,4 +36,6 @@ setup(name="pygimli",
     license="Apache 2.0",
     url="https://www.pygimli.org",
     packages=find_packages(),
-    package_data={'': ['*.so', '*.dll', '*.pyd']})
+    package_data={'': ['*.so', '*.dll', '*.pyd']},
+    scripts=apps
+    )
