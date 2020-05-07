@@ -874,7 +874,7 @@ class ERTManager(MeshMethodManager):
                 print("Data error estimate (min:max) ",
                       min(ret('err')), ":", max(ret('err')))
 
-            rhoa *= 1. + pg.math.randn(ret.size()) * ret('err')
+            rhoa *= 1. + pg.randn(ret.size()) * ret('err')
             ret.set('rhoa', rhoa)
 
             ipError = None
@@ -895,7 +895,7 @@ class ERTManager(MeshMethodManager):
                         print("Data IP abs error estimate (min:max) ",
                                min(ipError), ":", max(ipError))
 
-                phia += pg.math.randn(ret.size()) * ipError
+                phia += pg.randn(ret.size()) * ipError
                 ret['iperr'] = ipError
                 ret['phia'] = phia
 

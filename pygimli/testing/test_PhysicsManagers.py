@@ -10,13 +10,14 @@ import pygimli as pg
 from pygimli.physics import VESManager, ERTManager
 from pygimli.physics.em import VMDTimeDomainModelling
 
+pg.setTestingMode(True)
 
 class TestManagers(unittest.TestCase):
 
     def test_ERT(self, showProgress=False):
         dat = pg.getExampleFile('ert/gallery.dat', load=True, verbose=True)
 
-        mesh = pg.meshtools.createParaMesh(dat.sensors(), quality=33.4, 
+        mesh = pg.meshtools.createParaMesh(dat.sensors(), quality=33.4,
                                  paraDX=0.3, paraMaxCellSize=0.5, paraDepth=8)
         #with SR
         ert = ERTManager(sr=True, useBert=True, verbose=False, debug=False)
@@ -26,7 +27,8 @@ class TestManagers(unittest.TestCase):
         #without SR
         ert = ERTManager(sr=False, useBert=True, verbose=False, debug=False)
         mod = ert.invert(dat, mesh=mesh, maxIter=20, lam=10)
-        np.testing.assert_approx_equal(ert.inv.chi2(), 0.994, significant=3)
+        np.testing.assert_approx_equal(ert.inv.chi2(),  0.9833632902175629,
+                                       significant=3)
 
     def test_TT(self, showProgress=False):
         pass
@@ -44,7 +46,7 @@ class TestManagers(unittest.TestCase):
         ra = vmdMgr.simulate(synthModel)
 
         err = abs(np.log(t)/2) * 0.01
-        ra *= 1. + pg.math.randn(len(ra)) * err
+        ra *= 1. + pg.randn(len(ra)) * err
 
         model = vmdMgr.invert(ra, err, nLayers=4, layerLimits=[2, 500],
                               maxIter=50,
@@ -84,7 +86,9 @@ class TestManagers(unittest.TestCase):
         mgr.invert(ra, err, nLayers=4, lam=100, layerLimits=False,
                    showProgress=showProgress)
         mgr.fop.drawModel(ax=axs[0][0], model=synthModel, label='Synth')
-        np.testing.assert_array_less(mgr.fw.chi2(), 1.0)
+        pg._r(pg.testingMode())
+        np.testing.assert_approx_equal(mgr.inv.inv.chi2(), 1.049145,
+                                       significant=3)
 
         ### Test -- reinit with new parameter count
         mgr.inv.axs = [axs[0][1], axs[1][1]]
@@ -103,7 +107,8 @@ class TestManagers(unittest.TestCase):
                     showProgress=showProgress)
         mgr.fop.drawModel(ax=axs[0][2], model=synthModel, label='Synth')
         # axs[0][2].legend()
-        np.testing.assert_array_less(mgr.inv.inv.chi2(), 1)
+        np.testing.assert_approx_equal(mgr.inv.inv.chi2(), 0.5242201187682258,
+                                       significant=3)
 
         ### Test -- reinit with complex resistivies
         mgr.complex = True
@@ -131,7 +136,6 @@ if __name__ == '__main__':
             test.test_ERT(showProgress=True)
 
         pg.info("test done")
-        pg.wait()
     else:
         unittest.main()
 

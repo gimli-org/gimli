@@ -292,7 +292,7 @@ class MethodManager(object):
         noiseLevel = kwargs.pop('noiseLevel', 0.0)
         if noiseLevel > 0:
             err = self.estimateError(ra, errLevel=noiseLevel)
-            ra *= 1. + pg.math.randn(ra.size()) * err
+            ra *= 1. + pg.randn(ra.size()) * err
             return ra, err
 
         return ra

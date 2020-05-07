@@ -231,16 +231,6 @@ def setDebug(d):
                         #filename='pygimli.log'
                     )
 
-if '--debug' in sys.argv or '-d' in sys.argv:
-    setDebug(True)
-else:
-    setDebug(False)
-
-if '--verbose' in sys.argv or '-v' in sys.argv:
-    setVerbose(True)
-else:
-    setVerbose(False)
-
 def info(*args):
     logger.info(_msg(*args))
 

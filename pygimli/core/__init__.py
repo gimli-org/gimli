@@ -978,7 +978,7 @@ def __ModellingBase__createJacobian_mt__(self, model, resp):
     if sys.platform == 'win32':
         # strange pickle problem: see  python test_PhysicsManagers.py ves
         from .logger import warn
-        warn('Multiprocess jacobian currently unavailable')
+        warn('Multiprocess jacobian currently unavailable for win build')
         nProcs = 1
 
     if nProcs == 1:

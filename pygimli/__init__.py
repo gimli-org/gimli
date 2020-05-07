@@ -2,10 +2,8 @@
 """
 pyGIMLi - An open-source library for modelling and inversion in geophysics
 """
+import sys
 import locale
-
-import numpy as np
-np.random.seed(1337)
 
 ### Import everything that should be accessible through main namespace.
 from .core import (BVector, CVector, DataContainer, DataContainerERT,
@@ -25,11 +23,11 @@ from .core.config import getConfigPath, rc, getCPUCount
 
 from .meshtools import createGrid, interpolate
 from .solver import solve
-from .utils import boxprint, cache, cut, unique, unit, cmap
+from .utils import boxprint, cache, cut, unique, unit, cmap, randn
 from .utils import prettify as pf
 from .viewer import plt, show, wait
 from .frameworks import fit, Modelling, Inversion
-from .testing import test
+from .testing import test, setTestingMode, testingMode
 
 from .core.load import getCachePath, getExampleFile
 from .core.load import load, optImport
@@ -62,6 +60,23 @@ checkAndFixLocaleDecimal_point(verbose=True)
 #except:
    #print('cannot set locale to decimal point')
 
+
+if '--debug' in sys.argv or '-d' in sys.argv:
+    setDebug(True)
+else:
+    setDebug(False)
+
+if '--verbose' in sys.argv or '-v' in sys.argv:
+    setVerbose(True)
+else:
+    setVerbose(False)
+
+if '--test' in sys.argv or '-t' in sys.argv:
+    setTestingMode(True)
+else:
+    setTestingMode(False)
+
+
 ################################################################################
 # Please leave this block here until the following issue is fixed:
 # https://github.com/ContinuumIO/anaconda-issues/issues/1068
@@ -73,7 +88,6 @@ checkAndFixLocaleDecimal_point(verbose=True)
 #    except ImportError:
 #        pass
 ################################################################################
-
 __version__ = "0"
 
 def findVersion(cache=True):

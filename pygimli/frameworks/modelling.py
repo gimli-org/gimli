@@ -316,7 +316,7 @@ class Modelling(pg.core.ModellingBase):
             Should be implemented method depending.
         """
         raise Exception("Needed?? Implement me in derived classes")
-        #data = data * (pg.math.randn(len(data)) * errPerc / 100. + 1.)
+        #data = data * (pg.randn(len(data)) * errPerc / 100. + 1.)
         #return data
 
     def drawModel(self, ax, model, **kwargs):

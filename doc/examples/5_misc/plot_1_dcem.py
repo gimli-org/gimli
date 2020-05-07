@@ -14,8 +14,6 @@ what happens under the hood in the much simpler script that follows."""
 # The case has been documented by :cite:`Guenther2013NSG`.
 
 import numpy as np
-np.random.seed(1337)
-
 import matplotlib.pyplot as plt
 
 import pygimli as pg
@@ -71,7 +69,7 @@ for i in range(nf-1):
 fEM = pg.core.FDEM1dModelling(nlay, freq, coilspacing)
 dataEM = fEM(model)
 for i in range(len(dataEM)):
-    dataEM[i] += np.random.randn(1)[0] * noiseEM
+    dataEM[i] += pg.randn(1)[0] * noiseEM
 
 ###############################################################################
 # We define model transformations: logarithms and log with upper+lower bounds
@@ -106,7 +104,7 @@ for i in range(na-1):
 fDC = pg.core.DC1dModelling(nlay, ab2, mn2)
 dataDC = fDC(model)
 for i in range(len(dataDC)):
-    dataDC[i] *= 1. + np.random.randn(1)[0] * noiseDC / 100.
+    dataDC[i] *= 1. + pg.randn(1)[0] * noiseDC / 100.
 
 fDC.region(0).setTransModel(transThk)
 fDC.region(1).setTransModel(transRes)

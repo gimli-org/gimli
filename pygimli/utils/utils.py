@@ -468,13 +468,22 @@ def cut(v, n=2):
     return cv
 
 
-def randN(n, minVal=0.0, maxVal=1.0):
-    """Create RVector of length n with normally distributed random numbers."""
-    r = pg.Vector(n)
-    pg.math.randn(r)
-    r *= (maxVal - minVal)
-    r += minVal
-    return r
+def randn(n, seed=None):
+    """Return normal distributed random numbers with fixed seed.
+
+    If seed is not set,  randn looks if `:py:func:pygimli.testingMode` to be set to True and sets a constant seed of 1337 to ensure reproducibility for tests and examples.
+
+    Parameters
+    ----------
+    n: long
+        Number of random values
+    seed: long | None
+        Seed for random. Set to None if you don't want any seed.
+    """
+    import numpy as np
+    if seed is None and pg.testingMode() is True:
+        np.random.seed(1337)
+    return np.random.randn(n)
 
 
 def rand(n, minVal=0.0, maxVal=1.0):
