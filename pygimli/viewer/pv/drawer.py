@@ -187,19 +187,6 @@ def drawStreamLines(ax, mesh, data, label=None, radius=0.01, **kwargs):
     radius: float [0.01]
         Radius for the streamline tubes.
 
-    Examples
-    --------
-    >>> import pygimli as pg
-    >>> from pygimli.viewer.pv import drawStreamLines
-    >>>
-    >>> mesh = pg.createGrid(40,20,20)
-    >>> data = pg.x(mesh.positions()) * pg.y(mesh.positions())
-    >>>
-    >>> ax, _ = pg.show(mesh, notebook=True, hold=True, alpha=0.1)
-    >>> drawStreamLines(ax, mesh, data, radius=.1, source_radius=20, n_points=500)
-    >>> ax.show()
-    <PIL.Image.Image image ...>
-
     Note
     ----
     All kwargs will be forwarded to pyvistas streamline filter:
