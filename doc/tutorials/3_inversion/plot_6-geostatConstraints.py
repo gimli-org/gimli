@@ -8,13 +8,6 @@ In this example we illustrate the use of geostatistical constraints on
 irregular meshes as presented by :cite:`jordi2018geostatistical`, compared to
 classical smoothness operators of first or second kind.
 
-In order to focus purely on the role of the constraints, we use a very simple
-mapping forward operator that retrieves the values in the mesh at some given
-positions. The constraints are therefore used as interpolation operators. Note
-that the mapping forward operator can also be used for defining prior knowledge
-if combined with another forward operator in a classical joint inversion
-framework.
-
 The elements of the covariance matrix :math:`\textbf{C}_{\text{M}}` are defined
 by the distances H between the model cells i and j into the three directions
 
@@ -28,40 +21,82 @@ by the distances H between the model cells i and j into the three directions
 It defines the correlation between model cells as a function of correlation
 lenghts (ranges) :math:`I_x`, :math:`I_y`, and :math:`I_z`. Of course, the
 orientation of the coordinate axes is arbitrary and can be chosen by rotation.
-
-According to inverse theory, we use the square root of the covariance matrix as
-single-side regularization matrix C. It is computed by using an eigenvalue
-decomposition based on the numpy linalg procedure
-
-.. math::
-
-    \textbf{C}_\text{M}^{-0.5} = \textbf{Q}\textbf{D}^{-0.5}\textbf{Q}^{T}
-
-In order to avoid a matrix inverse (square root), a special matrix is derived
-that does the decomposition and stores the eigenvectors and eigenvalues values.
-A multiplication is done by multiplying with Q and scaling with the diagonal D.
-This matrix is implemented in the class `CM05matrix` in the matrix module
-:mod:`pygimli.matrix`.
-
-It turns out that this matrix does not return a zero vector for a homogeneous
-model. Therefore, an additional matrix called
-`GeostatisticalConstraintsMatrix` is implemented where this spur is corrected
-for. It is created by a mesh, a list of correlation lengths I, a dip angle that
-distorts the x/y plane and a strike angle towards the third direction.
+Let us illustrate this by a simple mesh:
 """
-# sphinx_gallery_thumbnail_number = 2
 
+# %% create a simple mesh (e.g. a crosshole box geometry)
 import pygimli as pg
 import pygimli.meshtools as mt
+# We create a rectangular domain and mesh it with small triangles
+rect = mt.createRectangle(start=[0, -10], end=[10, 0])
+mesh = mt.createMesh(rect, quality=34.5, area=0.1)
 
+# %%
+# We can compute this covariance matrix by calling
+CM = pg.matrix.covarianceMatrix(mesh, I=5)
+# We search for the cell where the midpoint (5, -5) is located in
+ind = mesh.findCell([5, -5]).id()
+# and plot the according column
+# col = pg.log10(CM.dot(vec))
+pg.show(mesh, CM[:, ind], cMap="magma_r");
 
-"""
-First we build a very simple forward operator, whose response returns the
-values at given positions pos. In the initialization, the indices are stored
-and a mapping matrix is created that projects the model vector to the forward
-response. This matrix is also the Jacobian matrix for the inversion.
-"""
+# %%
+# According to inverse theory, we use the square root of the covariance matrix
+# as single-side regularization matrix C. It is computed by using an eigenvalue
+# decomposition based on the numpy linalg procedure
+#
+# .. math::
+#
+#     \textbf{C}_\text{M}^{-0.5} = \textbf{Q}\textbf{D}^{-0.5}\textbf{Q}^{T}
+#
+# In order to avoid a matrix inverse (square root), a special matrix is derived
+# that does the decomposition and stores the eigenvectors and eigenvalues values.
+# A multiplication is done by multiplying with Q and scaling with the diagonal D.
+# This matrix is implemented in the :mod:`pygimli.matrix` module.
+# the class :py:func:`pg.matrix.Cm05Matrix`
 
+Cm05 = pg.matrix.Cm05Matrix(CM)
+# %%
+# This matrix does not return a zero vector for a constant vector
+out = Cm05 * pg.Vector(mesh.cellCount(), 1.0)
+print(min(out), max(out))
+
+# %%
+# as desired for a roughness operator. Therefore, an additional matrix called
+# :py:func:`pg.matrix.GeostatisticalConstraintsMatrix`
+# was implemented where this spur is corrected for.
+# It is, like the correlation matrix, created by a mesh, a list of correlation
+# lengths I, a dip angle# that distorts the x/y plane and a strike angle
+# towards the third direction.
+#
+C = pg.matrix.GeostatisticConstraintsMatrix(mesh=mesh, I=5)
+
+# %%
+# In order to extract a certain column, we generate a vector with a single 1
+vec = pg.Vector(mesh.cellCount())
+vec[ind] = 1.0
+pg.show(mesh, pg.log10(pg.abs(C*vec)), cMin=-6, cMax=0, cMap="magma_r");
+
+# %%
+# The constraints have a rather small footprint compared to the correlation
+# (note the logarithmic scale) but still to the whole mesh unlike the classical
+# constraint matrices that only include relations to neighboring cells.
+
+# %%
+# Such a matrix can also be defined for different ranges and a dip angle
+Cdip = pg.matrix.GeostatisticConstraintsMatrix(mesh=mesh, I=[10, 3], dip=-25)
+pg.show(mesh, pg.log10(pg.abs(Cdip*vec)), cMin=-6, cMax=0, cMap="magma_r");
+
+# %%
+# In order to illustrate the role of the constraints, we use a very simple
+# mapping forward operator that retrieves the values in the mesh at some given
+# positions. The constraints are therefore used as interpolation operators.
+# Note that the mapping forward operator can also be used for defining prior
+# knowledge if combined with another forward operator in a classical joint
+# inversion framework.
+# In the initialization, the indices are stored and a mapping matrix is created
+# that projects the model vector to the forward response.
+# This matrix is also the Jacobian matrix for the inversion.
 
 class PriorFOP(pg.core.ModellingBase):
     """Forward operator for grabbing values."""
@@ -87,13 +122,12 @@ class PriorFOP(pg.core.ModellingBase):
         pass
 
 
-# %% create a simple mesh (e.g. a crosshole box geometry)
-rect = mt.createRectangle(start=[0, -10], end=[10, 0])
-mesh = mt.createMesh(rect, quality=34.5, area=0.1)
-# choose some positions and create forward operator
+# %%
+# We choose some positions and initialize the forward operator
 pos = [[2, -2], [8, -2], [5, -5], [2, -8], [8, -8]]
 fop = PriorFOP(mesh, pos)
-# %% define some plotting options and a figure
+# For plotting the results, we create a figure and define some plotting options
+fig, ax = pg.plt.subplots(nrows=2, ncols=2, sharex=True, sharey=True)
 kw = dict(
     colorBar=True,
     cMin=30,
@@ -101,10 +135,8 @@ kw = dict(
     orientation='vertical',
     cMap='Spectral_r',
     logScale=True)
-fig, ax = pg.plt.subplots(nrows=2, ncols=2, sharex=True, sharey=True)
-#
+# We want to use a homogenenous starting model
 startModel = pg.Vector(mesh.cellCount(), 30)
-fop.regionManager().setConstraintType(2)
 tLog = pg.core.TransLog()
 vals = [30, 50, 300, 100, 200]
 # vals = [10, 20, 50, 30, 40]
@@ -112,16 +144,17 @@ inv = pg.core.Inversion(vals, fop, tLog, tLog)
 inv.setRelativeError(0.05)  # 5 % error
 inv.setModel(startModel)
 inv.setLambda(200)
+# first we use the second order (curvature) constraint type
+fop.regionManager().setConstraintType(2)
 res = inv.run()
 print(('{:.1f} ' * 5).format(*fop(res)), inv.chi2())
 pg.show(mesh, res, ax=ax[0, 1], **kw)
-#
+# Next, we use first-order constraints
 fop.regionManager().setConstraintType(1)
 res = inv.run()
 print(('{:.1f} ' * 5).format(*fop(res)), inv.chi2())
 pg.show(mesh, res, ax=ax[0, 0], **kw)
-# geostatistic isotropic operator with 5m correlation length
-C = pg.matrix.GeostatisticConstraintsMatrix(mesh=mesh, I=5)
+# Now we set the geostatistic isotropic operator with 5m correlation length
 fop.setConstraints(C)
 inv.setModel(startModel)
 inv.setLambda(30)
@@ -131,9 +164,8 @@ pg.show(mesh, res, ax=ax[1, 0], **kw)
 ax[0, 0].set_title("1st order")
 ax[0, 1].set_title("2nd order")
 ax[1, 0].set_title("I=5")
-# anisotropic operator with three times higher range and axis dipping 25deg
-C = pg.matrix.GeostatisticConstraintsMatrix(mesh=mesh, I=[10, 3], dip=-25)
-fop.setConstraints(C)
+# and finally we use the dipping constraint matrix
+fop.setConstraints(Cdip)
 inv.setLambda(20)
 inv.setModel(startModel)
 res = inv.run()
@@ -144,22 +176,12 @@ ax[1, 1].set_title("I=[10/3], dip=25")
 for ai in ax.flat:
     for po in pos:
         ai.plot(*po, marker='o', markersize=10, color='k', fillstyle='none')
-
-pg.plt.show()
-# %%  We want to have a closer look at the constraint matrix
-vec = pg.Vector(mesh.cellCount())
-vec[fop.ind[2]] = 1.0
-col = pg.log10(pg.abs(C * vec))
-pg.show(mesh, col, cMin=-6, cMax=0, cMap="magma_r")
-# it has a rather small footprint
-# %% On the other hand the correlation/covariance matrix is
-CM = pg.matrix.covarianceMatrix(mesh, I=[10, 2], dip=-25)
-col = pg.log10(CM.dot(vec))
-pg.show(mesh, col, cMap="magma_r")
-# demonstrates the ellipsoidal footprint covering the whole mesh.
 # %%
+# Generating geostatistical media
+# -------------------------------
 # For generating geostatistical media, one can use the function
 # generateGeostatisticalModel. It computes a correlation matrix and multiplies
-# it with a pseudo-random (randn) series.
+# it with a pseudo-random (randn) series. The arguments are the same as for the
+# correlation or constraint matrices.
 model = pg.utils.generateGeostatisticalModel(mesh, I=[20, 4])
 pg.show(mesh, model)
