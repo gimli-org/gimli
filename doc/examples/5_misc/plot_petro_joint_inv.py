@@ -61,7 +61,7 @@ def createSynthModel():
 
 
 def showModel(ax, model, mesh, petro=1, cMin=None, cMax=None, label=None,
-              cMap=None, savefig=None, showMesh=False):
+              cMap=None, showMesh=False):
     """Utility function to show and save models for the CG paper."""
     if cMin is None:
         cMin = 0.3
@@ -87,9 +87,6 @@ def showModel(ax, model, mesh, petro=1, cMin=None, cMax=None, label=None,
     if showMesh:
         pg.viewer.mpl.drawSelectedMeshBoundaries(ax, mesh.boundaries(),
                                                  linewidth=0.3, color="0.2")
-
-    if savefig:
-        pg.viewer.mpl.saveAxes(ax, savefig, adjust=False)
     return ax
 
 ################################################################################
@@ -164,19 +161,19 @@ TT.showData(ttData)
 
 axs = [None]*8
 
-showModel(axs[0], saturation, mMesh, showMesh=1,
-          label=r'Saturation (${\tt petro}$)', savefig='petro')
+showModel(axs[0], saturation, mMesh, showMesh=True,
+          label=r'Saturation (${\tt petro}$)')
 showModel(axs[1], res, mMesh, petro=0, cMin=250, cMax=2500, showMesh=1,
-          label=pg.unit('res'), cMap=pg.cmap('res'), savefig='resistivity')
+          label=pg.unit('res'), cMap=pg.cmap('res'))
 showModel(axs[5], vel, mMesh, petro=0, cMin=1000, cMax=2500, showMesh=1,
-          label=pg.unit('vel'), cMap=pg.cmap('vel'), savefig='velocity')
+          label=pg.unit('vel'), cMap=pg.cmap('vel'))
 showModel(axs[2], resInv, pMesh, 0, cMin=250, cMax=2500,
-          label=pg.unit('res'), cMap=pg.cmap('res'), savefig='invERT')
+          label=pg.unit('res'), cMap=pg.cmap('res'))
 showModel(axs[6], velInv, pMesh, 0, cMin=1000, cMax=2500,
-          label=pg.unit('vel'), cMap=pg.cmap('vel'), savefig='invTT')
+          label=pg.unit('vel'), cMap=pg.cmap('vel'))
 showModel(axs[3], satERT, pMesh,
-          label=r'Saturation (${\tt satERT}$)', savefig='invERTPetro')
+          label=r'Saturation (${\tt satERT}$)')
 showModel(axs[7], satTT, pMesh,
-          label=r'Saturation (${\tt satTT}$)', savefig='invTTPetro')
+          label=r'Saturation (${\tt satTT}$)')
 showModel(axs[4], satJoint, pMesh,
-          label=r'Saturation (${\tt satJoint}$)', savefig='invJointPetro')
+          label=r'Saturation (${\tt satJoint}$)')
