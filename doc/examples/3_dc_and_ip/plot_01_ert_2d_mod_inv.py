@@ -5,12 +5,12 @@
 """
 # sphinx_gallery_thumbnail_number = 6
 
+import matplotlib.pyplot as plt
 import numpy as np
+
 import pygimli as pg
 import pygimli.meshtools as mt
 import pygimli.physics.ert as ert
-import matplotlib.pyplot as plt
-
 
 ###############################################################################
 # Create geometry definition for the modelling domain.
@@ -21,11 +21,11 @@ world = mt.createWorld(start=[-50, 0], end=[50, -50], layers=[-1, -5],
 
 ###############################################################################
 # Create some heterogeneous circular anomaly
-block = mt.createCircle(pos=[-5, -3.], radius=[4,1], marker=4, boundaryMarker=10,
+block = mt.createCircle(pos=[-5, -3.], radius=[4, 1], marker=4, boundaryMarker=10,
                         area=0.1)
 
 ###############################################################################
-poly = mt.createPolygon([(1,-4),(2,-1.5),(4,-2),(5,-2), (8,-3),(5,-3.5),(3,-4.5)],
+poly = mt.createPolygon([(1, -4), (2,-1.5),(4,-2),(5,-2), (8,-3),(5,-3.5),(3,-4.5)],
                         isClosed=True, addNodes=5, marker=5)
 
 ###############################################################################
@@ -101,6 +101,7 @@ mgr = ert.ERTManager('simple.dat')
 # Run the inversion with the preset data. The Inversion mesh will be created
 # with default settings.
 inv = mgr.invert(lam=20, verbose=True)
+# np.testing.assert_approx_equal(mgr.inv.chi2(), 1.049145, significant=3)
 
 ###############################################################################
 # Let the ERTManger show you the model of the last successful run and how it 

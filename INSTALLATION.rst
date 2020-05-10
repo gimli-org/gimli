@@ -7,6 +7,9 @@ On all platforms, we recommend to install pyGIMLi via the conda package manager
 contained in the Anaconda distribution. For details on how to install Anaconda,
 we refer to: https://docs.anaconda.com/anaconda/install/
 
+A **step-by-step guide for Windows users** can be found `here
+<https://www.pygimli.org/_downloads/pygimli_win_install_guide.pdf>`_.
+
 To avoid conflicts with other packages, we recommend to install pygimli in a
 separate environment. Here we call this environment `pg`, but you can give
 it any name. Note that this environment has to be created only once.
@@ -15,7 +18,7 @@ Open a terminal (Linux & Mac) or the Anaconda Prompt (Windows) and type:
 
 .. code-block:: bash
 
-    conda create -n pg -c gimli -c conda-forge pygimli
+    conda create -n pg -c gimli -c conda-forge pygimli=1.1.0
 
 If you are using Windows or Mac, a new environment named "pg" should be visible
 in the Anaconda Navigator. If you want to use pygimli from the command line, you
