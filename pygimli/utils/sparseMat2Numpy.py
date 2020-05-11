@@ -10,7 +10,7 @@ def sparseMatrix2csr(A):
     """Convert SparseMatrix to scipy.csr_matrix.
 
     Compressed Sparse Row matrix, i.e., Compressed Row Storage (CRS)
-    
+
     Parameters
     ----------
     A: pg.matrix.SparseMapMatrix | pg.matrix.SparseMatrix

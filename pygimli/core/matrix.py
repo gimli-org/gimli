@@ -4,6 +4,7 @@
 import time
 from pygimli.core import _pygimli_ as pg
 from pygimli.utils.geostatistics import covarianceMatrix
+from pygimli.utils import sparseMatrix2Array
 import numpy as np
 
 from . import _pygimli_ as pgcore
@@ -16,155 +17,13 @@ from .logger import critical, warn
 BlockMatrix = pgcore.RBlockMatrix
 IdentityMatrix = pgcore.IdentityMatrix
 
-BlockMatrix = pgcore.RBlockMatrix
 SparseMapMatrix = pgcore.RSparseMapMatrix
 SparseMatrix = pgcore.RSparseMatrix
 Matrix = pgcore.RMatrix
 
-
-class MultMatrix(pgcore.MatrixBase):
-    """Base Matrix class for all matrix types holding a matrix."""
-    def __init__(self, A, verbose=False):
-        self._A = A
-        self.ndim = self._A.ndim
-        super(MultMatrix, self).__init__(verbose)
-
-    @property
-    def A(self):
-        return self._A
-
-    @A.setter
-    def A(self, A):
-        self._A = A
-
-    def rows(self):
-        """Return number of rows (using underlying matrix)."""
-        return self.A.rows()  # this should be _A
-
-    def cols(self):
-        """Return number of columns (using underlying matrix)."""
-        return self.A.cols()  # this should be _A
-
-    def save(self, filename):
-        """So it can be used in inversion with dosave flag"""
-        pass
-
-
-class MultLeftMatrix(MultMatrix):
-    """Matrix consisting of actual RMatrix and lef-side vector."""
-
-    def __init__(self, A, left, verbose=False):
-        """Constructor saving matrix and vector."""
-        if A.rows() != len(left):
-            raise Exception("Matrix columns do not fit vector length!")
-        super(MultLeftMatrix, self).__init__(A, verbose)
-
-        self._l = left
-
-    @property
-    def l(self):  # better use left and right instead (pylint E743)?
-        return self._l
-
-    @l.setter
-    def r(self, l):
-        self._l = l
-
-    def mult(self, x):
-        """Multiplication from right-hand-side (dot product A*x)."""
-        return self.A.mult(x) * self.l
-
-    def transMult(self, x):
-        """Multiplication from right-hand-side (dot product A.T * x)"""
-        return self.A.transMult(x * self.l)
-
-
-LMultRMatrix = MultLeftMatrix  # alias for backward compatibility
-
-
-class MultRightMatrix(MultMatrix):
-    """Some Matrix, multiplied with a right hand side vector r."""
-
-    def __init__(self, A, r=None, verbose=False):
-        super(MultRightMatrix, self).__init__(A, verbose)
-
-        if r is None:
-            self._r = pgcore.RVector(self.cols(), 1.0)
-        else:
-            self._r = r
-
-    @property
-    def r(self):
-        return self._r
-
-    @r.setter
-    def r(self, r):
-        self._r = r
-
-    def mult(self, x):
-        """Return M*x = A*(r*x)"""
-        if hasattr(x, '__len__') and hasattr(self.r, '__len__'):
-            if len(x) != len(self.r):
-                # assuming A was complex
-                # warn('need to double x')
-                # print('mult:', self.A.rows(), " x " , self.A.cols(),
-                #        'x:', len(x), 'r:', len(self.r))
-                # print(self.perm)
-                return self.A.mult(x[self.perm] * self.r)
-                # return self.A.mult(pgcore.cat(x, x) * self.r)
-        return self.A.mult(x * self.r)
-
-    def transMult(self, x):
-        """Return M.T*x=(A.T*x)*r"""
-        # print('transmult', self.A.rows(), " x " , self.A.cols(), x, self.r, )
-        return self.A.transMult(x) * self.r
-
-
-RMultRMatrix = MultRightMatrix  # alias for backward compatibility
-
-
-class MultLeftRightMatrix(MultMatrix):
-    """Matrix consisting of actual RMatrix and left-hand-side vector."""
-
-    def __init__(self, A, left, right, verbose=False):
-        """Constructor saving matrix and vector."""
-        if A.cols() != len(right):
-            raise Exception("Matrix columns do not fit right vector length!")
-        if A.rows() != len(left):
-            raise Exception("Matrix rows do not fit left vector length!")
-
-        super(MultLeftRightMatrix, self).__init__(A, verbose)
-        self._r = right
-        self._l = left
-
-    @property
-    def l(self):
-        return self._l
-
-    @l.setter
-    def l(self, l):
-        self._l = l
-
-    @property
-    def r(self):
-        return self._r
-
-    @r.setter
-    def r(self, r):
-        self._r = r
-
-    def mult(self, x):
-        """Multiplication from right-hand-side (dot product A*x)."""
-        return self.A.mult(x * self._r) * self._l
-
-    def transMult(self, x):
-        """Multiplication from right-hand-side (dot product A.T*x)."""
-        return self.A.transMult(x * self._l) * self._r
-
-
-LRMultRMatrix = MultLeftRightMatrix  # alias for backward compatibility
+## Monkeypatching
 
 __BlockMatrix_addMatrix__ = pgcore.RBlockMatrix.addMatrix
-
 
 def __BlockMatrix_addMatrix_happy_GC__(self, M, row=None, col=None,
                                        scale=1.0, transpose=False):
@@ -229,6 +88,163 @@ pgcore.RBlockMatrix.add = __BlockMatrix_addMatrix_happy_GC__
 # pgcore.CBlockMatrix.addMatrix = __BlockMatrix_addMatrix_happy_GC__
 # pgcore.CBlockMatrix.add = __BlockMatrix_addMatrix_happy_GC__
 
+def __SparseMatrixEqual__(self, T):
+    """Compare two SparseMatrices"""
+    print('######')
+    print(self)
+    print(T)
+
+    rowsA, colsA, valsA = sparseMatrix2Array(self, indices=True)
+    rowsB, colsB, valsB = sparseMatrix2Array(T, indices=True)
+
+    return rowsA == rowsB and \
+           colsA == colsB and \
+               np.linalg.norm(valsA-valsB) < 1e-12
+
+pgcore.RSparseMatrix.__eq__ = __SparseMatrixEqual__
+pgcore.RSparseMapMatrix.__eq__ = __SparseMatrixEqual__
+
+
+
+class MultMatrix(pgcore.MatrixBase):
+    """Base Matrix class for all matrix types holding a matrix."""
+    def __init__(self, A, verbose=False):
+        self._A = A
+        self.ndim = self._A.ndim
+        super(MultMatrix, self).__init__(verbose)
+
+    @property
+    def A(self):
+        return self._A
+
+    @A.setter
+    def A(self, A):
+        self._A = A
+
+    def rows(self):
+        """Return number of rows (using underlying matrix)."""
+        return self.A.rows()  # this should be _A
+
+    def cols(self):
+        """Return number of columns (using underlying matrix)."""
+        return self.A.cols()  # this should be _A
+
+    def save(self, filename):
+        """So it can be used in inversion with dosave flag"""
+        pass
+
+
+class MultLeftMatrix(MultMatrix):
+    """Matrix consisting of actual RMatrix and lef-side vector."""
+
+    def __init__(self, A, left, verbose=False):
+        """Constructor saving matrix and vector."""
+        if A.rows() != len(left):
+            raise Exception("Matrix columns do not fit vector length!")
+        super(MultLeftMatrix, self).__init__(A, verbose)
+
+        self._l = left
+
+    @property
+    def l(self):  # better use left and right instead (pylint E743)?
+        return self._l
+
+    @l.setter
+    def r(self, l):
+        self._l = l
+
+    def mult(self, x):
+        """Multiplication from right-hand-side (dot product A*x)."""
+        return self.A.mult(x) * self.l
+
+    def transMult(self, x):
+        """Multiplication from right-hand-side (dot product A.T * x)"""
+        return self.A.transMult(x * self.l)
+
+LMultRMatrix = MultLeftMatrix  # alias for backward compatibility
+
+
+class MultRightMatrix(MultMatrix):
+    """Some Matrix, multiplied with a right hand side vector r."""
+
+    def __init__(self, A, r=None, verbose=False):
+        super(MultRightMatrix, self).__init__(A, verbose)
+
+        if r is None:
+            self._r = pgcore.RVector(self.cols(), 1.0)
+        else:
+            self._r = r
+
+    @property
+    def r(self):
+        return self._r
+
+    @r.setter
+    def r(self, r):
+        self._r = r
+
+    def mult(self, x):
+        """Return M*x = A*(r*x)"""
+        if hasattr(x, '__len__') and hasattr(self.r, '__len__'):
+            if len(x) != len(self.r):
+                # assuming A was complex
+                # warn('need to double x')
+                # print('mult:', self.A.rows(), " x " , self.A.cols(),
+                #        'x:', len(x), 'r:', len(self.r))
+                # print(self.perm)
+                return self.A.mult(x[self.perm] * self.r)
+                # return self.A.mult(pgcore.cat(x, x) * self.r)
+        return self.A.mult(x * self.r)
+
+    def transMult(self, x):
+        """Return M.T*x=(A.T*x)*r"""
+        # print('transmult', self.A.rows(), " x " , self.A.cols(), x, self.r, )
+        return self.A.transMult(x) * self.r
+
+RMultRMatrix = MultRightMatrix  # alias for backward compatibility
+
+
+class MultLeftRightMatrix(MultMatrix):
+    """Matrix consisting of actual RMatrix and left-hand-side vector."""
+
+    def __init__(self, A, left, right, verbose=False):
+        """Constructor saving matrix and vector."""
+        if A.cols() != len(right):
+            raise Exception("Matrix columns do not fit right vector length!")
+        if A.rows() != len(left):
+            raise Exception("Matrix rows do not fit left vector length!")
+
+        super(MultLeftRightMatrix, self).__init__(A, verbose)
+        self._r = right
+        self._l = left
+
+    @property
+    def l(self):
+        return self._l
+
+    @l.setter
+    def l(self, l):
+        self._l = l
+
+    @property
+    def r(self):
+        return self._r
+
+    @r.setter
+    def r(self, r):
+        self._r = r
+
+    def mult(self, x):
+        """Multiplication from right-hand-side (dot product A*x)."""
+        return self.A.mult(x * self._r) * self._l
+
+    def transMult(self, x):
+        """Multiplication from right-hand-side (dot product A.T*x)."""
+        return self.A.transMult(x * self._l) * self._r
+
+LRMultRMatrix = MultLeftRightMatrix  # alias for backward compatibility
+
+
 
 class Add2Matrix(pgcore.MatrixBase):
     """Matrix by adding two matrices."""
@@ -258,7 +274,10 @@ class Add2Matrix(pgcore.MatrixBase):
 
 
 class Mult2Matrix(pgcore.MatrixBase):
-    """Matrix  by multiplying two matrices."""
+    """Matrix by multiplying two matrices.
+        M*x = A * (B*x)
+        M.T*x = (A*x) * B
+    """
 
     def __init__(self, A, B):
         super().__init__()
@@ -267,11 +286,11 @@ class Mult2Matrix(pgcore.MatrixBase):
         assert A.cols() == B.rows()
 
     def mult(self, x):
-        """Return M*x = A*(r*x)"""
+        """Return M*x = A*(B*x)"""
         return self.A.mult(self.B.mult(x))
 
     def transMult(self, x):
-        """Return M.T*x=(A.T*x)*r"""
+        """Return M.T*x=(A.T*x)*B"""
         return self.B.transMult(self.A.transMult(x))
 
     def cols(self):
@@ -291,11 +310,11 @@ class DiagonalMatrix(pgcore.MatrixBase):
         self.d = d
 
     def mult(self, x):
-        """Return M*x = r*x (element-wise)"""
+        """Return M*x = d*x (element-wise)"""
         return x * self.d
 
     def transMult(self, x):
-        """Return M.T*x=(A.T*x)*r"""
+        """Return M.T*x = M*x"""
         return x * self.d
 
     def cols(self):
