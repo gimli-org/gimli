@@ -39,7 +39,6 @@ template<>
 void Vector< double >::add(const ElementMatrix < double > & A){
     return this->add(A, 1.0);
 }
-
 template <>
 void Vector< double >::add(const ElementMatrix < double > & A,
                            const RVector & a){
