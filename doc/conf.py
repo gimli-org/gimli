@@ -33,6 +33,7 @@ try:
     # from _build.doc.conf_environment import *
     from conf_environment import *
     pygimli.boxprint("Building documentation out-of-source. Good.")
+    print("DOXY_BUILD_DIR", DOXY_BUILD_DIR)
 except ImportError:
     TRUNK_PATH = '..'
     SPHINXDOC_PATH = '.'
