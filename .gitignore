@@ -17,6 +17,7 @@ doc/_static/usecases/original/
 *.pdf
 *.bak
 .vscode/
+.pytest_cache
 
 # pyGIMLi
 command.history

@@ -5,11 +5,8 @@ Vertical electrical sounding (VES) manager class.
 import numpy as np
 
 import pygimli as pg
-
 # from pygimli.frameworks import Modelling, Block1DModelling
-from pygimli.frameworks import Block1DModelling
-
-from pygimli.frameworks import MethodManager1d
+from pygimli.frameworks import Block1DModelling, MethodManager1d
 
 
 class VESModelling(Block1DModelling):
@@ -137,9 +134,9 @@ class VESModelling(Block1DModelling):
 
     def drawModel(self, ax, model, **kwargs):
         pg.viewer.mpl.drawModel1D(ax=ax,
-                                 model=model,
-                                 plot=kwargs.pop('plot', 'loglog'),
-                                 xlabel=r'Resistivity ($\Omega$m)', **kwargs)
+                                  model=model,
+                                  plot=kwargs.pop('plot', 'loglog'),
+                                  xlabel=r'Resistivity ($\Omega$m)', **kwargs)
         ax.set_ylabel('Depth in (m)')
 
     def drawData(self, ax, data, error=None, label=None, **kwargs):
@@ -372,7 +369,7 @@ class VESManager(MethodManager1d):
 
     Examples
     --------
-    
+
     >>> import numpy as np
     >>> import pygimli as pg
     >>> from pygimli.physics import VESManager
