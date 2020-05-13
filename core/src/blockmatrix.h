@@ -27,6 +27,9 @@
 
 #include "matrix.h"
 
+#include <boost/tuple/tuple.hpp>
+
+
 namespace GIMLI{
 
 //! Block matrices for easier inversion, see appendix E in GIMLi tutorial
@@ -77,7 +80,7 @@ public:
 	}
 
 	/* Return the entries of the block matrix */
-	std::tuple <
+	boost::tuples::tuple <
            std::vector< int >,
            std::vector< int >,
            std::vector< int >,
@@ -96,7 +99,7 @@ public:
 			scale[i] = entries_[i].scale;
 		}
 
-		return std::make_tuple(
+		return boost::tuples::make_tuple(
 			rowStart,
 			colStart,
 			matrixID,
