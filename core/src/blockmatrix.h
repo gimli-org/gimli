@@ -40,6 +40,70 @@ public:
         ValueType scale;
     };
 
+	/* Return the rowStart entries of entries_ */
+	std::vector< int > entries_rowStart(){
+		std::vector< int> rowStart(entries_.size());
+		for (int i=0; i<=entries_.size(); i++){
+			rowStart[i] = entries_[i].rowStart;
+		}
+		return rowStart;
+	}
+
+	/* Return the colStart entries of entries_ */
+	std::vector< int > entries_colStart(){
+		std::vector< int> colStart(entries_.size());
+		for (int i=0; i<=entries_.size(); i++){
+			colStart[i] = entries_[i].colStart;
+		}
+		return colStart;
+	}
+
+	/* Return the matrixID entries of entries_ */
+	std::vector< int > entries_matrixID(){
+		std::vector< int> matrixID(entries_.size());
+		for (int i=0; i<=entries_.size(); i++){
+			matrixID[i] = entries_[i].matrixID;
+		}
+		return matrixID;
+	}
+
+	/* Return the scale entries of entries_ */
+	std::vector< int > entries_scale(){
+		std::vector< int> scale(entries_.size());
+		for (int i=0; i<=entries_.size(); i++){
+			scale[i] = entries_[i].scale;
+		}
+		return scale;
+	}
+
+	/* Return the entries of the block matrix */
+	std::tuple <
+           std::vector< int >,
+           std::vector< int >,
+           std::vector< int >,
+           std::vector< ValueType >
+	> entries() {
+
+		std::vector< int> rowStart(entries_.size());
+		std::vector< int> colStart(entries_.size());
+		std::vector< int> matrixID(entries_.size());
+		std::vector< ValueType > scale(entries_.size());
+
+		for (int i=0; i<=entries_.size(); i++){
+			rowStart[i] = entries_[i].rowStart;
+			colStart[i] = entries_[i].colStart;
+			matrixID[i] = entries_[i].matrixID;
+			scale[i] = entries_[i].scale;
+		}
+
+		return std::make_tuple(
+			rowStart,
+			colStart,
+			matrixID,
+			scale
+		);
+	}
+
     BlockMatrix(bool verbose=false)
         : MatrixBase(verbose), rows_(0), cols_(0) {
     }
@@ -194,10 +258,6 @@ public:
         std::cerr << WHERE_AM_I << "WARNING " << " don't save blockmatrix."  << std::endl;
 //         THROW_TO_IMPL
     }
-
-    // std::vector< BlockMatrixEntry > entries() const {
-    //     return entries_;
-    // }
 
     RSparseMapMatrix sparseMapMatrix() const {
 
