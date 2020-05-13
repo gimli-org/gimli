@@ -30,6 +30,7 @@ Authors
 -------
 
 .. image:: https://img.shields.io/github/contributors/gimli-org/gimli.svg
+   :target: https://github.com/gimli-org/gimli/graphs/contributors
 
 We gratefully acknowledge all contributors to the pyGIMLi open-source project and look forward to `your contribution <https://pygimli.org/contrib.html>`_!
 
