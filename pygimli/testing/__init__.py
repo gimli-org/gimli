@@ -21,22 +21,22 @@ import pygimli as pg
 
 import warnings
 
-__testingMode__ = False
-
-def setTestingMode(mode):
-    """Set pygimli testing mode.
-
-    Testing mode ensures a constant seed for the random generator if you use
-    pg.randn().
-    """
-    globals()[__testingMode__] = mode
-
-def testingMode():
-    """Determine pygimli testing mode.
-
-    Returns True if pygimli is in testing mode.
-    """
-    return globals()[__testingMode__]
+# __testingMode__ = False
+#
+# def setTestingMode(mode):
+#     """Set pygimli testing mode.
+#
+#     Testing mode ensures a constant seed for the random generator if you use
+#     pg.randn().
+#     """
+#     globals()[__testingMode__] = mode
+#
+# def testingMode():
+#     """Determine pygimli testing mode.
+#
+#     Returns True if pygimli is in testing mode.
+#     """
+#     return globals()[__testingMode__]
 
 def test(target=None, show=False, onlydoctests=False, coverage=False,
          htmlreport=False, abort=False, verbose=True):

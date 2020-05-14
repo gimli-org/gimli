@@ -27,7 +27,7 @@ from .utils import boxprint, cache, cut, unique, unit, cmap, randn
 from .utils import prettify as pf
 from .viewer import plt, show, wait
 from .frameworks import fit, Modelling, Inversion
-from .testing import test, setTestingMode, testingMode
+from .testing import test#, setTestingMode, testingMode
 
 from .core.load import getCachePath, getExampleFile
 from .core.load import load, optImport
@@ -71,10 +71,10 @@ if '--verbose' in sys.argv or '-v' in sys.argv:
 else:
     setVerbose(False)
 
-if '--test' in sys.argv or '-t' in sys.argv:
-    setTestingMode(True)
-else:
-    setTestingMode(False)
+# if '--test' in sys.argv or '-t' in sys.argv:
+#     setTestingMode(True)
+# else:
+#     setTestingMode(False)
 
 
 ################################################################################

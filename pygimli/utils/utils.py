@@ -480,13 +480,13 @@ def randn(n, seed=None):
     seed: long | None
         Seed for random. Set to None if you don't want any seed.
     """
-    if seed is None and pg.testingMode() is True:
-        pg.debug("Set random seed to 1337")
-        seed = 1337
-        
-    if seed is not None:   
+    # if seed is None and pg.testingMode() is True:
+    #     pg.debug("Set random seed to 1337")
+    #     seed = 1337
+
+    if seed is not None:
         np.random.seed(seed)
-        
+
     return np.random.randn(n)
 
 

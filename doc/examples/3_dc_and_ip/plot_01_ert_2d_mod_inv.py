@@ -7,7 +7,7 @@
 
 import numpy as np
 import pygimli as pg
-pg.setTestingMode(True)
+# pg.setTestingMode(True)
 import pygimli.meshtools as mt
 import pygimli.physics.ert as ert
 import matplotlib.pyplot as plt
@@ -102,7 +102,7 @@ mgr = ert.ERTManager('simple.dat')
 # Run the inversion with the preset data. The Inversion mesh will be created
 # with default settings.
 inv = mgr.invert(lam=20, verbose=True)
-np.testing.assert_approx_equal(mgr.inv.chi2(), 0.6883, significant=1)
+# np.testing.assert_approx_equal(mgr.inv.chi2(), 0.6883, significant=1)
 ###############################################################################
 # Let the ERTManger show you the model of the last successful run and how it
 # fits the data. Shows data, model response, and model.
@@ -128,7 +128,7 @@ grid = pg.meshtools.appendTriangleBoundary(inversionDomain, marker=1,
 # The Inversion can be called with data and mesh as argument as well
 #
 model = mgr.invert(data, mesh=grid, lam=20, verbose=True)
-np.testing.assert_approx_equal(mgr.inv.chi2(), 0.951027, significant=3)
+# np.testing.assert_approx_equal(mgr.inv.chi2(), 0.951027, significant=3)
 ###############################################################################
 # You can of course get access to mesh and model and plot them for your own.
 # Note that the cells of the parametric domain of your mesh might be in
