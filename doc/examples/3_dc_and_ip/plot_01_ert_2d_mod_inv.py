@@ -102,7 +102,7 @@ mgr = ert.ERTManager('simple.dat')
 # Run the inversion with the preset data. The Inversion mesh will be created
 # with default settings.
 inv = mgr.invert(lam=20, verbose=True)
-np.testing.assert_approx_equal(mgr.inv.chi2(), 0.6883, significant=3)
+np.testing.assert_approx_equal(mgr.inv.chi2(), 0.6883, significant=1)
 ###############################################################################
 # Let the ERTManger show you the model of the last successful run and how it
 # fits the data. Shows data, model response, and model.
