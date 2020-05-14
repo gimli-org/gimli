@@ -1,40 +1,61 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Some data related viewer."""
+"""Functions to draw various pygimli matrices with matplotlib."""
 
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.collections import PatchCollection
-from matplotlib.colors import LogNorm, Normalize
-from matplotlib.patches import Rectangle, Wedge
 
 import pygimli as pg
 
-from .utils import updateAxes as updateAxes_
 
-
-def drawMatrix(ax, mat, **kwargs):
-    """Draw a view to a matrix into the axe."
-
-    TODO
-    ----
-        * pg.core.BlockMatrix
+def drawSparseMatrix(ax, mat, **kwargs):
+    """Draw a view of a matrix into the axes.
 
     Parameters
     ----------
     ax : mpl axis instance, optional
         Axis instance where the matrix will be plotted.
 
-    mat: obj
-        obj can be so far:
-        * pg.core.*Matrix
-        * scipy.sparce
+    mat: pg.matrix.SparseMatrix or pg.matrix.SparseMapMatrix
 
     Returns
     -------
     ax:
     """
     mat = pg.utils.sparseMatrix2coo(mat)
-    ax.spy(mat)
-    return ax
+    gci = ax.spy(mat)
+    return gci
 
+def drawBlockMatrix(ax, mat, **kwargs):
+    """Draw a view of a matrix into the axes.
+
+    Parameters
+    ----------
+    ax : mpl axis instance, optional
+        Axis instance where the matrix will be plotted.
+
+    mat: pg.Matrix.BlockMatrix
+
+    Returns
+    -------
+    ax:
+    """
+    sp = pg.optImport("scipy.sparse", "visualize Block Matrices")
+    pmatrix = sp.lil_matrix((mat.rows(), mat.cols()))
+    nmats = len(mat.matrices())
+    pg.info(nmats)
+    for mid, col, row, scale in zip(mat.entries_matrixID(),
+                                    mat.entries_colStart(),
+                                    mat.entries_rowStart(),
+                                    mat.entries_scale()):
+        widthy = mat.matrices()[mid].rows()
+        widthx = mat.matrices()[mid].cols()
+        pmatrix[row:row+widthy, col:col+widthx] = mid + 1
+    plotmat = pmatrix.toarray()
+    plotmat[plotmat == 0.0] = np.nan
+    plotmat -= 1
+    gci = ax.matshow(plotmat, vmin=-.5, vmax=nmats-.5)
+    cMap = plt.cm.get_cmap("Set3", nmats)
+    cMap.set_under
+    gci.set_cmap(cMap)
+    return gci

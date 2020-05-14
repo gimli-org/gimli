@@ -15,7 +15,7 @@ from .. core.logger import renameKwarg
 try:
     import pygimli as pg
     from .mpl import drawMesh, drawModel, drawField
-    from .mpl import drawMatrix
+    from .showmatrix import showMatrix
     from .mpl import drawSensors
     from .mpl import createColorBar, updateColorBar
     from .mpl import drawStreams, addCoverageAlpha
@@ -81,8 +81,7 @@ def show(obj=None, data=None, **kwargs):
         return showERTData(obj, vals=kwargs.pop('vals', data), **kwargs)
 
     if isinstance(obj, pg.core.MatrixBase):
-        ax, _ = pg.show()
-        return drawMatrix(ax, obj, **kwargs)
+        return showMatrix(obj, **kwargs)
 
     mesh = kwargs.pop('mesh', obj)
 
