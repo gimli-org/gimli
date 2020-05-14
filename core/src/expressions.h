@@ -164,9 +164,12 @@ inline double conj(const double & a) { return a; }
 inline Complex conj(const Complex & a) { return std::conj(a); }
 
 inline Complex RINT(const Complex & a) { THROW_TO_IMPL; return Complex(0); }
-inline double RINT(const double & a) { return rint(a); }
+inline double RINT(const double & a) { return std::round(a); }
 
-template < class T > T roundTo(const T & a, const T & tol){ return RINT(a / tol) * tol; }
+template < class T > T roundTo(const T & a, const T & tol){ 
+    if (::fabs(a) < tol) return 0.0;
+    return RINT(a / tol) * tol; 
+}
 
 template < class T > T square(const T & a){ return a * a;}
 
