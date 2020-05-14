@@ -480,7 +480,6 @@ def randn(n, seed=None):
     seed: long | None
         Seed for random. Set to None if you don't want any seed.
     """
-    import numpy as np
     if seed is None and pg.testingMode() is True:
         pg.debug("Set random seed to 1337")
         seed = 1337
