@@ -29,6 +29,7 @@ except ImportError as e:
 #######################################
 
 from ..utils import boxprint
+from .matrix import BlockMatrix
 
 _pygimli_.load = None
 
@@ -866,7 +867,6 @@ _pygimli_.RVector.__pow__ = __RVectorPower
 # usefull aliases
 ##################################
 
-BlockMatrix = _pygimli_.RBlockMatrix
 SparseMapMatrix = _pygimli_.RSparseMapMatrix
 SparseMatrix = _pygimli_.RSparseMatrix
 Vector = _pygimli_.RVector

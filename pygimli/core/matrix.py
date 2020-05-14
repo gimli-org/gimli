@@ -2,9 +2,9 @@
 """Some matrix specialization."""
 
 import time
+import numpy as np
 from pygimli.core import _pygimli_ as pg
 from pygimli.utils.geostatistics import covarianceMatrix
-import numpy as np
 
 from . import _pygimli_ as pgcore
 from . import (CMatrix, CSparseMapMatrix, CSparseMatrix, ElementMatrix,
@@ -13,13 +13,20 @@ from . import (CMatrix, CSparseMapMatrix, CSparseMatrix, ElementMatrix,
 from .logger import critical, warn
 
 # make core matrices (now in pgcor, later pg.core) available here for brevity
-BlockMatrix = pgcore.RBlockMatrix
 IdentityMatrix = pgcore.IdentityMatrix
 
-BlockMatrix = pgcore.RBlockMatrix
 SparseMapMatrix = pgcore.RSparseMapMatrix
 SparseMatrix = pgcore.RSparseMatrix
 Matrix = pgcore.RMatrix
+
+
+class BlockMatrix(pgcore.RBlockMatrix):
+    """Block matrix containing arbitrary submatrices somewhat similar to
+    `np.block`."""
+    def __str__(self):
+        string = ("pg.matrix.BlockMatrix of size %d x %d consisting of %d "
+                  "submatrices.")
+        return string % (self.rows(), self.cols(), len(self.matrices()))
 
 
 class MultMatrix(pgcore.MatrixBase):

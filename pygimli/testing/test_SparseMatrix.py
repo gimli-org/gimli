@@ -156,6 +156,9 @@ class TestSparseMatrix(unittest.TestCase):
         C = B.sparseMapMatrix()
         np.testing.assert_allclose(C.row(0), [2.0, 0.0], rtol=1e-10)
 
+        B.add(A, 10, 10)
+        print(B)
+
     def test_Misc(self):
         D = pg.core.SparseMapMatrix(3, 4)
         for i in range(D.rows()):
