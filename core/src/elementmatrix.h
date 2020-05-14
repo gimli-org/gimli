@@ -81,21 +81,27 @@ public:
     inline const Matrix < ValueType > & mat() const { return mat_; }
     /*! Return data for row i. */
     inline const Vector < ValueType > & row(Index i) const { return mat_[i]; }
-    
+    /*! Return data for col i. */
+    inline Vector < ValueType > col(Index i) const {
+        Vector < ValueType > ret(this->rows());
+        for (Index j = 0; j < ret.size(); j ++){ ret[j] = mat_[j][i];}
+        return ret;
+    }
+
     /*! Fill the node ids with a number of coefficents.
-    For vector field approximation give field dimension 2 or 3. 
+    For vector field approximation give field dimension 2 or 3.
     Please note that you need to give the number of nodes to the ElementMatrix constructor.
     */
     void fillIds(const MeshEntity & ent, Index nC=1);
 
     /*! Set all node indices for row and columns. Can be unsymmetric.*/
-    inline void setIds(const IndexArray & idsR, const IndexArray & idsC) { 
+    inline void setIds(const IndexArray & idsR, const IndexArray & idsC) {
         _idsR = idsR; _idsC = idsC; _ids = idsR;
     }
 
     /*! Set all node indices.*/
-    inline void setIds(const IndexArray & ids) { 
-        _idsR = ids; _idsC = ids; _ids = ids; 
+    inline void setIds(const IndexArray & ids) {
+        _idsR = ids; _idsC = ids; _ids = ids;
     }
     /*! Return all node indices.*/
     inline const IndexArray & ids() const { return _ids; }
@@ -104,7 +110,7 @@ public:
     /*! Return all column node indices.*/
     inline const IndexArray & colIDs() const { return _idsC; }
     /*! Return the node index for node i.*/
-    inline const Index idx(Index i) const { 
+    inline const Index idx(Index i) const {
         return _ids[i]; }
 
     /*! Fill this element matrix with int_boundary C * u */
@@ -116,7 +122,7 @@ public:
     ElementMatrix < ValueType > & u2(const MeshEntity & ent
                                     //  const Matrix< ValueType > & C
                                      );
-    
+
     /*! Get integration weights and points for the entity. */
     void getWeightsAndPoints(const MeshEntity & ent,
                 const RVector * &w, const R3Vector * &x, int order);
@@ -142,7 +148,7 @@ public:
                                         Index nC,
                                         bool voigtNotation=false);
 
-    /*! Fill this element matrix with int_domain C * grad u * grad u. */
+    /*! Fill this element matrix with int_domain C * grad u */
     ElementMatrix < ValueType > & gradU(const MeshEntity & ent,
                                         const RVector & w,
                                         const R3Vector & x,
@@ -353,10 +359,10 @@ protected:
     Index cols_;
 };
 
-template < class ValueType > std::ostream & operator << (std::ostream & str, 
+template < class ValueType > std::ostream & operator << (std::ostream & str,
                                                          const ElementMatrix< ValueType > & e);
 
-template < > DLLEXPORT std::ostream & operator << (std::ostream & str, 
+template < > DLLEXPORT std::ostream & operator << (std::ostream & str,
                                                     const ElementMatrix< double > & e);
 
 

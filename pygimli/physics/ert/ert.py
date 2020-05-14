@@ -53,7 +53,8 @@ def simulate(mesh, scheme, res, sr=True, useBert=True,
 
 
 @pg.cache
-def createGeometricFactors(scheme, numerical=None, mesh=None, verbose=False):
+def createGeometricFactors(scheme, numerical=None, mesh=None,
+                           h2=True, p2=True, verbose=False):
     """Create geometric factors for a data scheme.
 
     Create geometric factors for a data scheme with and without topography.
@@ -76,6 +77,10 @@ def createGeometricFactors(scheme, numerical=None, mesh=None, verbose=False):
         created. The mesh will be h and p refined. If given topo is set to
         True. If the numerical effort is to high or the accuracy to low
         you should consider to calculate the factors manual.
+    h2: bool [True]
+        Default refinement to achieve high accuracy calculation
+    p2: bool [True]
+        Default refinement to achieve high accuracy calculation
     verbose: bool
         Give some output.
     """
@@ -97,14 +102,19 @@ def createGeometricFactors(scheme, numerical=None, mesh=None, verbose=False):
     if verbose:
         pg.info('mesh', mesh)
 
-    m = mesh.createH2()
-    if verbose:
-        pg.info('mesh-h2', m)
+    if h2 is True:
+        m = mesh.createH2()
+        if verbose:
+            pg.info('h2 refine', m)
 
-    m = m.createP2()
+    if p2 is True:
+        m = m.createP2()
+        if verbose:
+            pg.info('p2 refine', m)
+
     if verbose:
-        pg.info('mesh-p2', m)
         pg.info('Calculate numerical geometric factors.')
+
     d = simulate(m, res=1.0, scheme=scheme, sr=False, useBert=True,
                  calcOnly=True, verbose=True)
     return 1./d['u']

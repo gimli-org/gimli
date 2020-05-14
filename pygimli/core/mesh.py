@@ -3,7 +3,8 @@
 Import and extensions of the core Mesh class.
 """
 
-from ._pygimli_ import (cat, HexahedronShape, Line, Mesh, MeshEntity, Node,
+from ._pygimli_ import (cat, HexahedronShape, Line,
+                        Mesh, MeshEntity, Node, Boundary,
                         PolygonFace, TetrahedronShape, TriangleFace)
 from .logger import deprecated, error, info, warn
 from ..meshtools import mergePLC, exportPLC
@@ -238,3 +239,9 @@ Mesh.zmin = Mesh.zMin
 Mesh.xmax = Mesh.xMax
 Mesh.ymax = Mesh.yMax
 Mesh.zmax = Mesh.zMax
+
+def __Boundary_outside__(self):
+    """Is the boundary is on the outside of the mesh."""
+    return self.leftCell() is not None and self.rightCell() is None
+
+Boundary.outside = __Boundary_outside__

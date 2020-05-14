@@ -27,7 +27,7 @@
 namespace GIMLI{
 
 template < >
-std::ostream & operator << (std::ostream & str, 
+std::ostream & operator << (std::ostream & str,
                             const ElementMatrix< double > & e){
     for (Index i = 0; i < e.colIDs().size(); i ++) str << e.colIDs()[i] << " " ;
 
@@ -79,7 +79,7 @@ ElementMatrix < double >::u(const MeshEntity & ent,
         if (this->_nDof > 0){
             if (ent.dim() == 2){
                 mat_[nVerts].setVal(mat_[0][i], nVerts + i);
-            } 
+            }
             if (ent.dim() == 3){
                 mat_[2*nVerts].setVal(mat_[0][i], 2*nVerts + i);
             }
@@ -407,7 +407,7 @@ const RVector * &w, const R3Vector * &x, int order){
             break;
     }
 }
-template void ElementMatrix < double >::getWeightsAndPoints(const MeshEntity & ent, 
+template void ElementMatrix < double >::getWeightsAndPoints(const MeshEntity & ent,
                                         const RVector * &w, const R3Vector * &x, int order);
 
 template < > DLLEXPORT
@@ -544,7 +544,7 @@ ElementMatrix < double > & ElementMatrix < double >::gradU(const MeshEntity & en
 }
 
 template < > DLLEXPORT
-ElementMatrix < double > & ElementMatrix < double >::gradU(const Cell & cell, 
+ElementMatrix < double > & ElementMatrix < double >::gradU(const Cell & cell,
                                  Index nC,
                                  bool voigtNotation){
     const RVector * w = 0;
@@ -1117,15 +1117,21 @@ template < class ValueType >
 void ElementMatrix < ValueType >::fillIds(const MeshEntity & ent, Index nC){
     Index nDims = 1;
     Index nNodes = ent.nodeCount();
-    
+
+    // __MS(nC)
     if (this->_nDof > 0){
         nDims = ent.dim();
-    
+        if (nC > ent.dim()){
+            THROW_TO_IMPL
+        }
+
         if (size() != nNodes * nDims) resize(nNodes * nDims);
 
         for (Index dim = 0; dim < nDims; dim++){
             for (Index i = 0; i < nNodes; i ++) {
-                _ids[i + dim * nNodes] = dim * this->_nDof + ent.node(i).id();
+                _ids[dim * nNodes + i]  = dim * this->_nDof + ent.node(i).id();
+                _idsC[dim * nNodes + i] = _ids[i + dim * nNodes];
+                _idsR[dim * nNodes + i] = _ids[i + dim * nNodes];
             }
         }
     } else {
@@ -1133,15 +1139,19 @@ void ElementMatrix < ValueType >::fillIds(const MeshEntity & ent, Index nC){
         this->resize(nNodes*nC, nNodes);
         // mat_.resize(nNodes*nC, nNodes);
         // _ids.resize(nNodes*nC);
-            
+
         for (Index dim = 0; dim < nDims; dim++){
             for (Index i = 0; i < nNodes; i ++) {
                 _ids[dim * nNodes + i] = ent.node(i).id();
-                _idsC[dim * nNodes + i] = ent.node(i).id();
-                _idsR[i] = ent.node(i).id();
+                _idsC[dim * nNodes + i] = _ids[dim * nNodes + i];
+                _idsR[i] = _ids[dim * nNodes + i];
             }
         }
     }
+
+    // __MS(_ids)
+    // __MS(_idsR)
+    // __MS(_idsC)
 
     *this *= 0.0;
 }

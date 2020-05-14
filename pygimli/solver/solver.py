@@ -1994,7 +1994,7 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
         assembleOnly: bool
             Stops after matrix asssemblation.
             Returns the system matrix A and the rhs vector.
-        pureNeumann: bool [auto]
+        fixPureNeumann: bool [auto]
             If set or detected automatic, we add the additional condition:
             :math:`\int_domain u dv = 0` which makes elliptic problems well posed again.
         rhs: iterable
@@ -2084,7 +2084,7 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
             pn = True
         else:
             pn = False
-        pureNeumann = kwargs.pop('pureNeumann', pn)
+        fixPureNeumann = kwargs.pop('fixPureNeumann', pn)
 
         assembleBC(bc, mesh, A, rhs, time=None, userData=userData)
 
@@ -2108,7 +2108,7 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
                 if u is None:
                     u = pg.Vector(rhs.size(), 0.0)
 
-        if pureNeumann is True:
+        if fixPureNeumann is True:
             pg.info('Fixing pure Neumann boundary condition by forcing: '
                     'intDomain(u, mesh) = 0')
             r = createLoadVector(mesh)
@@ -2136,7 +2136,7 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
         if 'assembleOnly' in kwargs:
             return A, rhs
 
-        if pureNeumann:
+        if fixPureNeumann:
             if singleForce:
                 uc = pg.solver.linSolve(A, rhs, 'scipy')
                 u = uc[0:mesh.nodeCount()]

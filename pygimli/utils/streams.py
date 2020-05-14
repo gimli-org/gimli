@@ -3,9 +3,7 @@ import pygimli as pg
 
 def streamline(mesh, field, startCoord, dLengthSteps, dataMesh=None,
                maxSteps=1000, verbose=False, coords=(0, 1)):
-    """
-        Create a streamline from startCoord and following a vector field in up
-        and down direction.
+    """Create a streamline from start coordinate and following a vector field in up and down direction.
     """
     xd, yd, vd = streamlineDir(mesh, field, startCoord, dLengthSteps,
                                dataMesh=dataMesh, maxSteps=maxSteps,
@@ -64,8 +62,8 @@ def streamlineDir(mesh, field, startCoord, dLengthSteps, dataMesh=None,
             elif len(field) == dataMesh.cellCount():
                 pot = pg.core.cellDataToPointData(dataMesh, field)
             else:
-                raise BaseException(
-                    "Data length (%i) for streamline is "
+                print(len(field), dataMesh)
+                raise BaseException("Data length (%i) for streamline is "
                     "neighter nodeCount (%i) nor cellCount (%i)" %
                     (len(field), dataMesh.nodeCount(), dataMesh.nodeCount()))
         else:
@@ -74,8 +72,8 @@ def streamlineDir(mesh, field, startCoord, dLengthSteps, dataMesh=None,
             elif len(field) == mesh.cellCount():
                 pot = pg.core.cellDataToPointData(mesh, field)
             else:
-                raise BaseException(
-                    "Data length (%i) for streamline is "
+                print(len(field), dataMesh)
+                raise BaseException("Data length (%i) for streamline is "
                     "neighter nodeCount (%i) nor cellCount (%i)" %
                     (len(field), mesh.nodeCount(), mesh.nodeCount()))
 
@@ -113,20 +111,18 @@ def streamlineDir(mesh, field, startCoord, dLengthSteps, dataMesh=None,
             elif dataMesh:
                 cd = dataMesh.findCell(pos)
                 if cd is None:
-                    raise BaseException("Cannot find " + str(pos) +
-                                        " dataMesh")
+                    raise BaseException("Cannot find " + str(pos) + " dataMesh")
                 if len(vx) == dataMesh.cellCount():
                     d = pg.RVector3(vx[cd.id()], vy[cd.id()])
                 elif len(vx) == dataMesh.nodeCount() and \
                         len(vy) == dataMesh.nodeCount():
                     d = pg.RVector3(cd.pot(pos, vx), cd.pot(pos, vy))
                 else:
-                    print(dataMesh)
-                    print(len(vx), len(vy))
+                    print(dataMesh, len(vx), len(vy))
                     raise BaseException("data size wrong")
             else:
-                print(mesh, len(vx), len(vy))
-                raise Exception("Data length neightor node size or cell size.")
+                print("mesh:", mesh, len(vx), len(vy))
+                raise Exception("Data length neighter node size or cell size.")
         else:
             if dataMesh:
                 cd = dataMesh.findCell(pos)
@@ -142,8 +138,7 @@ def streamlineDir(mesh, field, startCoord, dLengthSteps, dataMesh=None,
         # always go u down
         dAbs = d.length()
         if dAbs == 0.0:
-            print(d,
-                  "check this in streamlineDir(",)
+            print(d, "check this in streamlineDir(",)
             break
 
         if down:

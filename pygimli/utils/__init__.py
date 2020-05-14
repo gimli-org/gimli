@@ -23,7 +23,8 @@ from .gps import GKtoUTM, findUTMZone, getProjection, getUTMProjection, readGPX
 from .hankel import hankelFC
 from .postinversion import iterateBounds, modCovar
 from .sparseMat2Numpy import (convertCRSIndex2Map, sparseMatrix2Array,
-                              sparseMatrix2coo, sparseMatrix2csr)
+                              sparseMatrix2coo, sparseMatrix2csr, sparseMatrix2Dense,
+                              )
 
 from .units import (unit, cmap)
 from .units import cmap as cMap # for compatibilty (will be removed)

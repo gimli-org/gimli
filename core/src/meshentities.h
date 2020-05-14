@@ -361,6 +361,10 @@ public:
     /*! Reverse node order to swap normal direction. */
     void swapNorm();
 
+    /*!Is the boundary is on the outside of the mesh.*/
+    bool outside() const { return leftCell_ != 0 & righCell_ == 0; }
+
+
 protected:
     void registerNodes_();
 
