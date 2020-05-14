@@ -148,7 +148,7 @@ public:
                                         Index nC,
                                         bool voigtNotation=false);
 
-    /*! Fill this element matrix with int_domain C * grad u * grad u. */
+    /*! Fill this element matrix with int_domain C * grad u */
     ElementMatrix < ValueType > & gradU(const MeshEntity & ent,
                                         const RVector & w,
                                         const R3Vector & x,

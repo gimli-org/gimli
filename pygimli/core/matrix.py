@@ -90,16 +90,23 @@ pgcore.RBlockMatrix.add = __BlockMatrix_addMatrix_happy_GC__
 
 def __SparseMatrixEqual__(self, T):
     """Compare two SparseMatrices"""
-    print('######')
-    print(self)
-    print(T)
+    if self.rows() != T.rows() or self.cols() != T.cols():
+        warn("Compare sizes invalid {0},{1} vs. {2},{3}: ".format(
+            self.rows(), self.cols(), T.rows(), T.cols()))
+        return False
 
     rowsA, colsA, valsA = sparseMatrix2Array(self, indices=True)
     rowsB, colsB, valsB = sparseMatrix2Array(T, indices=True)
 
+    if len(valsA) != len(valsB):
+        warn("Compare value sizes invalid: ", len(valsA), len(valsB))
+        return False
+
+    # print(np.linalg.norm(valsA-valsB))
+
     return rowsA == rowsB and \
            colsA == colsB and \
-               np.linalg.norm(valsA-valsB) < 1e-12
+               np.linalg.norm(valsA-valsB) < 1e-14
 
 pgcore.RSparseMatrix.__eq__ = __SparseMatrixEqual__
 pgcore.RSparseMapMatrix.__eq__ = __SparseMatrixEqual__

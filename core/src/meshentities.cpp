@@ -542,7 +542,7 @@ void Cell::deRegisterNodes_(){
 }
 
 Boundary::Boundary()
-    : MeshEntity(){
+    : MeshEntity(), leftCell_(NULL), rightCell_(NULL) {
 }
 
 Boundary::Boundary(const std::vector < Node * > & nodes)

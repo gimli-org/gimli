@@ -560,11 +560,12 @@ public:
 
     /*! Add Values from an ElementMatrix. For vectors only the first row will
     be taken. Optional scale with scalar. */
-    void add(const ElementMatrix < double > & A, const double & a);
+    void add(const ElementMatrix < double > & A, const double & scale);
 
     /*! Add Values from an ElementMatrix. For vectors only the first row will
     be taken. Optional scale with values from vector. */
-    void add(const ElementMatrix < double > & A, const Vector < double > & a);
+    void add(const ElementMatrix < double > & A,
+             const Vector < double > & scale);
 
     /*! Get value for index i.
      * Throws out of range exception if index check fails. */

@@ -146,6 +146,20 @@ def sparseMatrix2Array(matrix, indices=True, getInCRS=True):
     else:
         return vals
 
+def sparseMatrix2Dense(matrix):
+    """Convert sparse matrix to dense ndarray"""
+
+    rr, cc, vals = sparseMatrix2Array(matrix, indices=True, getInCRS=False)
+    mat = np.zeros((matrix.rows(), matrix.cols()))
+
+    print(rr)
+    print(cc)
+    print(vals)
+
+    for i, r in enumerate(rr):
+        mat[r, cc[i]] = vals[i]
+
+    return mat
 
 if __name__ == '__main__':
     pass

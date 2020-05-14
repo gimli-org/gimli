@@ -73,6 +73,9 @@ def show(obj=None, data=None, **kwargs):
         print("Deprecation Warning: Please use keyword `ax` instead of `axes`")
         kwargs['ax'] = kwargs.pop('axes', None)
 
+    if hasattr(obj, 'mesh'):
+        return pg.show(obj.mesh, obj, **kwargs)
+
     if isinstance(obj, pg.DataContainerERT):
         from pygimli.physics.ert import showERTData
         return showERTData(obj, vals=kwargs.pop('vals', data), **kwargs)

@@ -25,11 +25,11 @@ namespace GIMLI{
 
 template <>
 void Vector< double >::add(const ElementMatrix < double > & A,
-                           const double & a){
+                           const double & scale){
     if (A.cols() == 1){
-        addVal(A.col(0) * a, A.rowIDs());
+        addVal(A.col(0) * scale, A.rowIDs());
     } else {
-        addVal(A.row(0) * a, A.ids());
+        addVal(A.row(0) * scale, A.ids());
     }
     // for (Index i = 0, imax = A.size(); i < imax; i++){
     //     data_[A.idx(i)] += A.row(0)[i] * a;
@@ -41,11 +41,11 @@ void Vector< double >::add(const ElementMatrix < double > & A){
 }
 template <>
 void Vector< double >::add(const ElementMatrix < double > & A,
-                           const RVector & a){
+                           const RVector & scale){
     if (A.cols() == 1){
-        addVal(A.col(0) * a.get_(A.rowIDs()), A.rowIDs());
+        addVal(A.col(0) * scale.get_(A.rowIDs()), A.rowIDs());
     } else {
-        addVal(A.row(0) * a.get_(A.ids()), A.ids());
+        addVal(A.row(0) * scale.get_(A.ids()), A.ids());
     }
 }
 
