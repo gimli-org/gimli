@@ -482,7 +482,12 @@ def randn(n, seed=None):
     """
     import numpy as np
     if seed is None and pg.testingMode() is True:
-        np.random.seed(1337)
+        pg.debug("Set random seed to 1337")
+        seed = 1337
+        
+    if seed is not None:   
+        np.random.seed(seed)
+        
     return np.random.randn(n)
 
 

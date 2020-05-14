@@ -773,7 +773,8 @@ class ERTManager(MeshMethodManager):
         noiseAbs = kwargs.pop('noiseAbs', 1e-4)
 
         #segfaults with self.fop (test & fix)
-        fop = self.createForwardOperator(useBert=self.useBert, sr=self.sr)
+        fop = self.createForwardOperator(
+            useBert=self.useBert, sr=self.sr, verbose=self.verbose)
         fop.data = scheme
         fop.setMesh(mesh, ignoreRegionManager=True)
         fop.verbose = verbose

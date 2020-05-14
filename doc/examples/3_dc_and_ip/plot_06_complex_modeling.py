@@ -4,7 +4,7 @@ r"""
 Complex-valued electrical modeling
 ----------------------------------
 
-In this example, an electrical complex-valued forward modeling is conducted. 
+In this example, an electrical complex-valued forward modeling is conducted.
 The use of complex resistivities implies an out-of-phase polarization response
 of the subsurface, commonly being measured in the frequency domain as complex
 resistivity (CR), or, if multiple frequencies are measured, also referred to as
@@ -48,6 +48,9 @@ for s in scheme.sensors():
 mesh_coarse = mt.createMesh(plc, quality=33)
 # additional refinements
 mesh = mesh_coarse.createH2()
+
+# Create a P2-optimized mesh (quadratic shape functions)
+mesh = mesh.createP2()
 
 pg.show(plc, marker=True)
 pg.show(plc, markers=True)
