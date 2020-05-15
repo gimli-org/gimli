@@ -71,6 +71,7 @@ def test(target=None, show=False, onlydoctests=False, coverage=False,
     """
     # pg.setTestingMode(True)
     # Remove figure warnings
+    np.random.seed(1337)
     plt.rcParams["figure.max_open_warning"] = 1000
     warnings.filterwarnings("ignore", category=UserWarning,
                             message='Matplotlib is currently using agg, which is a'
