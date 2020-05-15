@@ -86,7 +86,7 @@ class TestManagers(unittest.TestCase):
         mgr.invert(ra, err, nLayers=4, lam=100, layerLimits=False,
                    showProgress=showProgress)
         mgr.fop.drawModel(ax=axs[0][0], model=synthModel, label='Synth')
-        pg._r(pg.testingMode())
+        # pg._r(pg.testingMode())
         np.testing.assert_approx_equal(mgr.inv.inv.chi2(), 1.049145,
                                        significant=3)
 
