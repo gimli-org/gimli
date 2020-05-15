@@ -21,12 +21,13 @@ world = mt.createWorld(start=[-50, 0], end=[50, -50], layers=[-1, -5],
 
 ###############################################################################
 # Create some heterogeneous circular anomaly
-block = mt.createCircle(pos=[-5, -3.], radius=[4, 1], marker=4, boundaryMarker=10,
-                        area=0.1)
+block = mt.createCircle(pos=[-5, -3.], radius=[4, 1], marker=4,
+                        boundaryMarker=10, area=0.1)
 
 ###############################################################################
-poly = mt.createPolygon([(1, -4), (2,-1.5),(4,-2),(5,-2), (8,-3),(5,-3.5),(3,-4.5)],
-                        isClosed=True, addNodes=5, marker=5)
+poly = mt.createPolygon([(1,-4), (2,-1.5), (4,-2), (5,-2),
+                         (8,-3), (5,-3.5), (3,-4.5)], isClosed=True,
+                         addNodes=3, interpolate='spline', marker=5)
 
 ###############################################################################
 # Merge geometry definition into a Piecewise Linear Complex (PLC)
@@ -71,8 +72,10 @@ pg.show(mesh, data=rhomap, label=pg.unit('res'), showMesh=True)
 # and return a data container with apparent resistivity values,
 # geometric factors and estimated data errors specified by the noise setting.
 # The noise is also added to the data. Here 1% plus 1µV.
+# Note, we force a specific noise seed as we want reproducable results for
+# testing purposes.
 data = ert.simulate(mesh, scheme=scheme, res=rhomap, noiseLevel=1,
-                    noiseAbs=1e-6)
+                    noiseAbs=1e-6, seed=1337)
 
 pg.info('Simulated data', data)
 pg.info('The data contains:', data.dataMap().keys())
@@ -104,7 +107,7 @@ inv = mgr.invert(lam=20, verbose=True)
 # np.testing.assert_approx_equal(mgr.inv.chi2(), 1.049145, significant=3)
 
 ###############################################################################
-# Let the ERTManger show you the model of the last successful run and how it 
+# Let the ERTManger show you the model of the last successful run and how it
 # fits the data. Shows data, model response, and model.
 #
 mgr.showResultAndFit()

@@ -43,7 +43,7 @@ sensors[:, 1] = np.hstack([depth] * 2)  # y
 
 ###############################################################################
 # Traveltime calculations work on unstructured meshes and structured grids. We
-# demonstrate this here by simulating the synthetic data on an unstructured 
+# demonstrate this here by simulating the synthetic data on an unstructured
 # mesh and inverting it on a simple structured grid.
 
 # Create forward model and mesh
@@ -95,7 +95,7 @@ scheme.registerSensorIndex("g")
 
 tt = TravelTimeManager()
 data = tt.simulate(mesh=mesh_fwd, scheme=scheme, slowness=1./model,
-                   secNodes=4, noiseLevel=0.001, noiseAbs=1e-5)
+                   secNodes=4, noiseLevel=0.001, noiseAbs=1e-5, seed=1337)
 
 ###############################################################################
 # Now we create the unstructured inversion mesh
