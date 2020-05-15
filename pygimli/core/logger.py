@@ -270,6 +270,14 @@ def deprecated(msg='', hint=''):
     logger.warning("Deprecated code usage at:")
     logger.warning(whereAmI() + "\n" + msg + " " + hint)
 
+# def renamed(newFunc, removed=''):
+#     """Rename the current function into newFunc.
+#     Give remove date or version nummer.
+#     """
+#     logger.warning(whereAmI() + ' is renamed into ' + newFunc.__name__ +
+#                    ' and will be removed in: ' + removed)
+#     return newFunc(**inspect.stack()[1].frame.f_locals)
+
 def renameKwarg(old, new, kwargs):
     if old in kwargs:
         logger.warning("Keyword argument name changed from '" + old + \

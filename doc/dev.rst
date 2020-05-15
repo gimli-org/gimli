@@ -180,7 +180,7 @@ API Documentation and doctests
 ------------------------------
 
 Use the following documentation syntax or see at:
-https://numpydoc.readthedocs.io/en/latest/format.html#docstring-standard
+https://www.sphinx-doc.org/en/master/usage/extensions/napoleon.html
 
 .. code-block:: python
 
@@ -201,20 +201,25 @@ https://numpydoc.readthedocs.io/en/latest/format.html#docstring-standard
 
     Explain all parameters.
 
-    Parameters
-    ----------
-
-    arg1: type(arg1) use links to :gimliapi:`GIMLI::Mesh`
+    Args
+    ----
+    arg1: type | use links to :gimliapi:`GIMLI::Mesh`
         Describe arg1.
+    arg2: type
+        Describe arg2.
 
-    arg1: type(arg1)
-        Describe arg1.
-
-    Write examples that might be complete minimal script that will be executed and tested automatically.
+    Keyword Args
+    ------------
+    args: type
+        Description.
 
     Attributes
     ----------
         For members
+
+    Returns
+    -------
+    type:
 
     Examples
     --------
@@ -228,10 +233,10 @@ https://numpydoc.readthedocs.io/en/latest/format.html#docstring-standard
         e.g., Link to tutorials :ref:`tut:Modelling_BC` assuming there
         has been set a appropriate label in the tutorial.
 
-  Returns
-  -------
-  pg.Vector
-  """
+    References
+    ----------
+
+    """
 
 .. _sec:coding_guidelines:
 

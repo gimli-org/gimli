@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """Class for managing first arrival travel time inversions"""
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -10,6 +11,8 @@ from matplotlib.collections import LineCollection
 import pygimli as pg
 from pygimli.frameworks import MeshModelling
 from pygimli.frameworks import MeshMethodManager
+
+from pygimli.utils import getSavePath
 
 from . raplot import showVA
 from . ratools import shotReceiverDistances, createGradientModel2D
@@ -158,6 +161,11 @@ class TravelTimeManager(MeshMethodManager):
 
         self.inv.dataTrans = pg.trans.Trans()
 
+    @property
+    def velocity(self):
+        # we can check here if there was an inversion run
+        return self.fw.model
+
     def createForwardOperator(self, **kwargs):
         """Create default forward operator for Traveltime modelling.
 
@@ -183,6 +191,7 @@ class TravelTimeManager(MeshMethodManager):
 
         return pg.meshtools.createParaMesh(data.sensors(),
                                            boundary=0, **kwargs)
+        return mesh
 
     def checkData(self, data):
         """Return data from container"""
@@ -216,7 +225,7 @@ class TravelTimeManager(MeshMethodManager):
         self.fop.setMesh(mesh, ignoreRegionManager=ignoreRegionManager)
 
     def simulate(self, mesh, scheme, slowness=None, vel=None,
-                 secNodes=2, noiseLevel=0.0, noiseAbs=0.0, **kwargs):
+                 secNodes=2, noiseLevel=0.0, noiseAbs=0.0, seed=None, **kwargs):
         """Simulate Traveltime measurements.
 
         Perform the forward task for a given mesh, a slowness distribution (per
@@ -245,6 +254,8 @@ class TravelTimeManager(MeshMethodManager):
             Add relative noise to the simulated data. noiseLevel*100 in %
         noiseAbs: float [0.0]
             Add absolute noise to the simulated data in ms.
+        seed: int [None]
+            Seed the random generator for the noise.
 
         Keyword Arguments
         -----------------
@@ -295,9 +306,7 @@ class TravelTimeManager(MeshMethodManager):
             pg.verbose("Absolute data error estimates (min:max) {0}:{1}".format(
                         min(ret('err')), max(ret('err'))))
 
-            np.random.seed(0)
-
-            t += np.random.randn(ret.size()) * ret('err')
+            t += pg.randn(ret.size(), seed=seed) * ret('err')
             ret.set('t', t)
 
         if kwargs.pop('returnArray', False) is True:
@@ -472,3 +481,63 @@ class TravelTimeManager(MeshMethodManager):
         return pg.show(self.fop.paraDomain,
                        pg.log10(cov+min(cov[cov > 0])*.5), ax=ax,
                        coverage=self.standardizedCoverage(), **kwargs)
+
+    def saveResult(self, folder=None, size=(16, 10), verbose=False, **kwargs):
+        """Save the results in the specified folder.
+
+        Saved items are:
+            * Resulting inversion model
+            * Velocity vector
+            * Coverage vector
+            * Standardized coverage vector
+            * Mesh (bms and vtk with results)
+
+        Args
+        ----
+        path: str[None]
+            Path to save into. If not set the name is automatic created
+        size: (float, float) (16,10)
+            Figure size.
+
+        Keyword Args
+        ------------
+        Will be forwardet to showResults
+
+        Returns
+        -------
+        str:
+            Name of the result path.
+        """
+        # TODO: How to extract the chi2 etc. from each iteration???
+        subfolder = self.__class__.__name__
+        path = getSavePath(folder, subfolder)
+
+        if verbose:
+            pg.info('Saving refraction data to: {}'.format(path))
+
+        np.savetxt(os.path.join(path, 'velocity.vector'),
+                   self.velocity)
+        np.savetxt(os.path.join(path, 'velocity-cov.vector'),
+                   self.rayCoverage())
+        np.savetxt(os.path.join(path, 'velocity-scov.vector'),
+                   self.standardizedCoverage())
+
+        m = pg.Mesh(self.paraDomain)
+
+        m['Velocity'] = self.paraModel(self.velocity)
+        m['Coverage'] = self.rayCoverage()
+        m['S_Coverage'] = self.standardizedCoverage()
+        m.exportVTK(os.path.join(path, 'velocity'))
+        m.saveBinaryV2(os.path.join(path, 'velocity-pd'))
+        self.fop.mesh().save(os.path.join(path, 'velocity-mesh'))
+
+        np.savetxt(os.path.join(path, 'chi.txt'), self.inv.chi2History)
+
+        fig, ax = plt.subplots()
+        self.showResult(ax=ax, cov=self.standardizedCoverage(), **kwargs)
+        fig.set_size_inches(size)
+        fig.savefig(os.path.join(path, 'velocity.pdf'), bbox_inches='tight')
+        pg.plt.close(fig)
+        return path
+
+

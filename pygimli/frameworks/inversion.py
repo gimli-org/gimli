@@ -497,8 +497,10 @@ class Inversion(object):
 
             lastPhi = phi
 
-        if len(kwargs.keys()) > 0:
-            print("Warning! unused keyword arguments", kwargs)
+        ### will never work as expected until we unpack kwargs .. any idea for
+        # better strategy?
+        # if len(kwargs.keys()) > 0:
+        #     print("Warning! unused keyword arguments", kwargs)
 
         self.model = self.inv.model()
         return self.model

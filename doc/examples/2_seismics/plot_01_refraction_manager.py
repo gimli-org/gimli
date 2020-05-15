@@ -64,19 +64,22 @@ pg.viewer.mpl.drawSensors(ax, scheme.sensors(), diam=0.5,
 
 ###############################################################################
 # We use this model to create noisified synthetic data and look at the
-# traveltime data matrix. TODO: show first arrival traveltime curves.
+# traveltime data matrix. Note, we force a specific noise seed as we want
+# reproducable results for testing purposes.
+# TODO: show first arrival traveltime curves.
 data = mgr.simulate(slowness=1.0 / vp, scheme=scheme, mesh=mesh,
-                    noiseLevel=0.001, noiseAbs=0.001,
+                    noiseLevel=0.001, noiseAbs=0.001, seed=1337,
                     verbose=True)
 mgr.showData(data)
-
 ###############################################################################
-# Now we invert the synthetic data on an independent mesh without information
-# about the layered structure. Note that we need to create a parametric mesh
-# without a boundary region by setting boundary=0.
+# Now we invert the synthetic data. We need a new independent mesh without
+# information about the layered structure. This mesh can be created manual or
+# guessd automatic from the data sensor positions (in this example). We
+# tune the maximum cell size in the parametric domain to 15m²
 vest = mgr.invert(data, secNodes=2, paraMaxCellSize=15.0,
-                  maxIter=10, verbose=1)
+                  maxIter=10, verbose=True)
 
+np.testing.assert_almost_equal(mgr.inv.chi2(), 0.983646, decimal=3)
 ###############################################################################
 # The manager also holds the method showResult that is used to plot the result.
 # Note that only covered cells are shown by default.

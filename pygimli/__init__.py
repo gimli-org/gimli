@@ -4,18 +4,18 @@ pyGIMLi - An open-source library for modelling and inversion in geophysics
 """
 import locale
 
-import numpy as np
-np.random.seed(1337)
+from .core.decorators import (renamed)
 
 ### Import everything that should be accessible through main namespace.
 from .core import (BVector, CVector, DataContainer, DataContainerERT,
                    IVector, Line, Matrix, Mesh, Plane, Pos,
-                   RVector3, Vector, abs, cat, center, dur, exp, find,
+                   RVector3, Vector, abs, cat, center, exp, find,
                    interpolate, log, log10, logDropTol, math, matrix, max,
                    mean, median, min, search, setDebug, setThreadCount, sort,
-                   Stopwatch, sum, tic, toc, trans, unique, versionStr, x, y, z, zero)
+                   Stopwatch, sum, trans, unique, versionStr, x, y, z, zero)
 
 from .core.logger import (_, _d, _g, _r, _y, critical, d, debug, deprecated,
+                          deprecated,
                           error, info, setDebug, setLogLevel, setVerbose, v,
                           verbose, warn)
 
@@ -25,7 +25,7 @@ from .core.config import getConfigPath, rc, getCPUCount
 
 from .meshtools import createGrid, interpolate
 from .solver import solve
-from .utils import boxprint, cache, cut, unique, unit, cmap
+from .utils import boxprint, cache, cut, unique, unit, cmap, randn
 from .utils import prettify as pf
 from .viewer import plt, show, wait
 from .frameworks import fit, Modelling, Inversion
@@ -177,3 +177,59 @@ def version(cache=True):
     else:
         info('Version: ' + __version__ + " core:" + versionStr())
     return __version__
+
+
+__swatch__ = Stopwatch()
+
+def tic(msg=None):
+    """Start global timer. Print elpased time with `toc()`.
+
+    Parameters
+    ----------
+    msg : string, optional
+        Print message string just before starting the timer.
+    """
+    if msg:
+        print(msg)
+    __swatch__.start()
+
+
+def toc(msg=None, box=False):
+    """Print elapsed time since global timer was started with `tic()`.
+
+    Parameters
+    ----------
+    msg : string, optional
+        Print message string just after printing the elapsed time. If box is
+        True, then embed msg into its own box
+    box : bool, optional
+        Embed the time in an ascii box
+
+    """
+    if msg:
+        if box:
+            boxprint(msg)
+        else:
+            print(msg, end=' ')
+    seconds = dur()
+    m, s = divmod(seconds, 60)
+    h, m = divmod(m, 60)
+    if h <= 0 and m <= 0:
+        time = "%.2f" % s
+    elif h <= 0:
+        if m == 1.0:
+            time = "%d minute and %.2f" % (m, s)
+        else:
+            time = "%d minutes and %.2f" % (m, s)
+    elif h == 1.0:
+        time = "%d hour, %d minutes and %.2f" % (h, m, s)
+    else:
+        time = "%d hours, %d minutes and %.2f" % (h, m, s)
+    p = print if not box else boxprint
+    p("Elapsed time is %s seconds." % time)
+
+
+def dur():
+    """Return time in seconds since global timer was started with `tic()`."""
+    return __swatch__.duration()
+

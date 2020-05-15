@@ -643,7 +643,7 @@ class MeshMethodManager(MethodManager):
         """ """
         if ignoreRegionManager:
             mesh = self.fop.createRefinedFwdMesh(mesh, **kwargs)
-        
+
         self.fop.setMesh(mesh, ignoreRegionManager=ignoreRegionManager)
 
     def applyData(self, data):

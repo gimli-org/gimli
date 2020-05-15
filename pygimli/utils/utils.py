@@ -467,9 +467,41 @@ def cut(v, n=2):
     cv = [v[i*Nc:(i+1)*Nc] for i in range(n)]
     return cv
 
+def randn(n, seed=None):
+    """Create n normally distributed random numbers with optional seed.
+
+    Parameters
+    ----------
+    n: long
+        length of random numbers array.
+    seed: int[None]
+        Optional seed for random number generator
+
+    Returns
+    -------
+    r: np.array
+        Random numbers.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from pygimli.utils import randn
+    >>> a = randn(5, seed=1337)
+    >>> b = randn(5)
+    >>> c = randn(5, seed=1337)
+    >>> print(np.array_equal(a, b))
+    False
+    >>> print(np.array_equal(a, c))
+    True
+    """
+    if seed is not None:
+        np.random.seed(seed)
+    return np.random.randn(n)
+
 
 def randN(n, minVal=0.0, maxVal=1.0):
     """Create RVector of length n with normally distributed random numbers."""
+    pg.deprecated('not needed') # 20200515
     r = pg.Vector(n)
     pg.math.randn(r)
     r *= (maxVal - minVal)
@@ -477,11 +509,11 @@ def randN(n, minVal=0.0, maxVal=1.0):
     return r
 
 
-def rand(n, minVal=0.0, maxVal=1.0):
+def rand(n, minVal=0.0, maxVal=1.0, seed=None):
     """Create RVector of length n with normally distributed random numbers."""
-    r = pg.Vector(n)
-    pg.rand(r, minVal, maxVal)
-    return r
+    if seed is not None:
+        np.random.seed(seed)
+    return np.random.rand(n) * (maxVal - minVal) + minVal
 
 
 def getIndex(seq, f):
