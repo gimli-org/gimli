@@ -193,8 +193,7 @@ gmsh.model.mesh.setSize(
 # Electrodes are put at 2 cm depth, such that they can be embeded in the volume of the dike.
 # Embeding the electrodes into the surface elements complicates meshing.
 elec_depth = 0.02               # elec depth [m]
-pos = pd.read_excel("../../_static/cad_tutorial/ERT_pos_and_scheme.xlsx",
-                    sheet_name="elec_pos")
+pos = pd.read_csv("../../_static/cad_tutorial/elec_pos.csv")
 pos["z"] = pos["z"] - elec_depth
 # Add the electrodes to the Gmsh model and put the tags into the Dict
 for i, xyz in pos.iterrows():
@@ -268,6 +267,7 @@ gmsh.model.setPhysicalName(0, pgrp, "Electrodes")
 # So take this code block along (down arrow) as you do the tutorial
 gmsh.model.occ.synchronize()
 gmsh.model.mesh.generate(3)
+gmsh.write("dike_mod.msh")
 gmsh.fltk.run()
 gmsh.finalize()
 
