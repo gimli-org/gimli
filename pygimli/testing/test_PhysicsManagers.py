@@ -11,6 +11,7 @@ from pygimli.physics import VESManager, ERTManager
 from pygimli.physics.em import VMDTimeDomainModelling
 
 # pg.setTestingMode(True)
+np.random.seed(1337)
 
 class TestManagers(unittest.TestCase):
 
