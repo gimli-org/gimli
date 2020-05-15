@@ -4,151 +4,168 @@ r"""
 CAD to mesh tutorial
 ====================
 
-In this example you will learn how to create a geometry in 
+In this tutorial you will learn how to create a geometry in 
 `FreeCAD <https://www.freecadweb.org/>`__ and then export and mesh it using 
 `Gmsh <http://gmsh.info/>`__.
 """
 
 ###############################################################################
-# Gmsh comes with a build-in CAD engine for defining a geometry, as shown
-# in the `flexible mesh generation example <https://www.pygimli.org/_examples_auto/1_meshing/plot_gmsh-example.html#sphx-glr-examples-auto-1-meshing-plot-gmsh-example-py>`__, 
-# but using a parametric CAD program such as FreeCAD is much more intuitive and flexible.
-#
-# PUT SOME FREECAD AND GMSH INSTALLATION INSTRUCTIONS HERE
-#
-# This example is based on an ERT modeling and inversion experiment on a
-# small dike. However, this FreeCAD → Gmsh workflow can easily be
-# translated to other geophysical methods. The geometry and acquisition
-# design come from the IDEA League `master
-# thesis <https://repository.tudelft.nl/islandora/object/uuid%3A9bf85910-4939-4159-968b-ef558a6ecb7c>`__
-# of Joost Gevaert. The target in this example is to find the geometry
-# of a sand channel underneath the dike.
-#
-# FreeCAD: create the geometry
-# ----------------------------
-#
-# Two geometries have to be created. One for modeling and one for
-# inversion. When the same meshes are used for modeling and inversion,
-# the geometry of the sand channel is alreadyincluded in the structure
-# of the mesh. Therefore, the mesh itself would act as prior
-# information to the inversion. The modeling geometry consists of 3
-# regions: (1) the outer region; (2) the inner region (same as
-# inversion region in this example) and (3) the sand channel. The
-# inversion geometry consists of 2 regions: (1) the outer region and
-# (2) the inversion region.
-#
-# The geometries are defined in three steps:
-#
-# 1. Each region of the geometry designed separately in the Part
-#    workbench, or in the Part Design workbench for more complicated
-#    geometries. To get familiar with the part design workbench, this
-#    `FreeCAD-tutorial <https://wiki.freecadweb.org/Basic_Part_Design_Tutorial_017>`__
-#    with some videos is great.
-# 2. Merge all regions into one single ”compsolid”, i.e.composite
-#    solid. Meaning one object that consists of multiple solids that
-#    share the interfaces between the solids.
-# 3. Export the geometry in ``.brep`` format.\ `1 <#fn1>`__
-#
-# (1) The outer and inversion regions of this dike example were created
-# in the Part Design workbench, by making a sketch and then extruding
-# it with the Pad option. See the Inversion-Region in the object tree
-# in the figure below, or the ``outer_region.FCStd`` and
-# ``inversion_region.FCStd`` FreeCAD files, ATTACHED!!!. The sand
-# channel is a simple cube, created in the Part workbench. Dimensions:
-# L = 8.0 m ; W = 15.0 m ; H = 2.0 m. Position: x = 7.5 m ; y = -1.5 m
-# ; z = -2.3 m.
-#
-# (2) The trick then lies in merging these shapes into a single
-# compsolid. This is done in the following steps:
-#
-# 1. Open a new project and merge all objects, i.e. regions (File →
-#    Merge project...) into this project
-# 2. In the Part workbench, select all objects and create Boolean
-#    Fragments (Part → Split → Boolean Fragments)
-# 3. Select the newly created BooleanFragments in the object tree and
-#    change its Mode property to CompSolid, see the figure below.
-# 4. Keep BooleanFragments selected and then apply a Compound Filter to
-#    it (Part → Compound → Compound Filter)
-# 5. Quality check the obtained geometry.
-#    Select the newly created CompoundFilter from the object tree and
-#    click Check Geometry (Part → Check Geometry).
-#    SOLID: in the Shape Content, should match the number of objects
-#    merged when creating the Boolean Fragments, 3 in this example.
-#    COMPSOLID: should be 1. Always, also for other geometries.
-#    COMPOUND: should be 0. Always.
-#    COMPSOLID: 1 and COMPOUND: 0 indicates that the objects were
-#    indeed merged correctly to one single compsolid, see the figure
-#    below.
-#
-# (3) Select the CompounSolid from the object tree and export (File →
-# Export...) as .brep.
-#
-# .. figure:: ../../_static/cad_tutorial/freecad_fig.png
-#     :align: center
-#
-#     FreeCAD important dialogs for making a correct compsolid.
-#
-# 1 It must be ``.brep``. This is the native format of the OpenCascade
-# CAD engine on which both FreeCAD and Gmsh run. ``.step`` (also
-# ``.stp``) is the standardized CAD exchange format, for some reason
-# this format does not export the shape as a compound solid. Gmsh can
-# also read ``.stl`` and ``.iges`` files. ``.stl`` files only contain
-# surface information and cannot easily be reedited. ``.iges`` is an
-# old format for which development stopped after 1996 and geometries
-# are not always imported correctly.
-#
-# Gmsh: mesh the geometry
-# -----------------------
-#
-# Meshing with Gmsh is incredibly versatile, but has a very steep
-# learning curve. Here we use the Python Application Programming
-# Interface (API). To get familiar with the Python API, the Gmsh
-# `tutorials <https://gitlab.onelab.info/gmsh/gmsh/-/tree/master/tutorial>`__
-# (`overview <http://www.cfdyna.com/Home/gmshCatalogue.html>`__) were
-# converted to `Python
-# scripts <https://gitlab.onelab.info/gmsh/gmsh/-/tree/master/tutorial/python>`__
-# and additional
-# `demos <https://gitlab.onelab.info/gmsh/gmsh/-/tree/master/demos/api>`__
-# are also provided. I will mention or provide links to relevant
-# tutorials and demos, have a look at these for extra context.
-#
-# Let's start by importing our geometry into Gmsh:
+   Gmsh provides a build-in CAD engine for defining a geometry, as shown
+   in tutorial BLABLABLA, but using a parametric CAD program such as
+   FreeCAD is much more intuitive and flexible.
 
-import pandas as pd
-import gmsh
-import pygimli as pg
+   Install FreeCAD and Gmsh into your conda environment by running:
+   conda.yaml
 
-# Starting it up (tutorial t1.py)
-gmsh.initialize()
-gmsh.option.setNumber("General.Terminal", 1)
-gmsh.model.add("dike_mod")
-# Load a BREP file (t20.py & demo step_assembly.py)
-# .brep files don't contain info about units, so scaling has to be applied
-gmsh.option.setNumber("Geometry.OCCScaling", 0.001)
-volumes = gmsh.model.occ.importShapes("../../_static/cad_tutorial/dike_mod.brep")
+   This tutorial is based on an ERT modeling and inversion example on a
+   small dike. However, this FreeCAD → Gmsh workflow can easily be
+   translated to other geophysical methods. The geometry and acquisition
+   design come from the IDEA League `master
+   thesis <https://repository.tudelft.nl/islandora/object/uuid%3A9bf85910-4939-4159-968b-ef558a6ecb7c>`__
+   of Joost Gevaert. The target in this example is to find the geometry
+   of a sand channel underneath the dike.
 
-###############################################################################
-# Before diving into local mesh refinement, putting the electrodes in
-# the mesh and assigning region, boundary and electrode markers, the
-# .brep geometry file should be checked. Especially check whether the
-# meshes of two adjacent regions share nodes on their interfaces. Tips
-# for viewing the mesh:
-#
-# 1. Double left clicking opens a menu in where you can set geometry
-#    and mesh visibility.
-# 2. Tools → Visibility opens a window in which you can select parts of
-#    the mesh and geometry. Here you can find the tags of the
-#    elementary entities of the geometry. It is also handy later to QC
-#    whether physical groups were set correctly.
-# 3. Clip the mesh and geometry with Tools → Clipping.
-# 4. The number of elements ect. can be found in the Tools → Statistics
-#    window.
-#
-# Make sure to quickly write down the Gmsh volume tags of the outer
-# region, dike and channel and the surface tags of the free surface and
-# the underground boundary of the box. You will need this in the next
-# step.
+.. container:: cell markdown
 
+   .. rubric:: FreeCAD: create the geometry
+      :name: freecad-create-the-geometry
+
+   Two geometries have to be created. One for modeling and one for
+   inversion. When the same meshes are used for modeling and inversion,
+   the geometry of the sand channel is alreadyincluded in the structure
+   of the mesh. Therefore, the mesh itself would act as prior
+   information to the inversion. The modeling geometry consists of 3
+   regions: (1) the outer region; (2) the inner region (same as
+   inversion region in this example) and (3) the sand channel. The
+   inversion geometry consists of 2 regions: (1) the outer region and
+   (2) the inversion region.
+
+   The geometries are defined in three steps:
+
+   #. Each region of the geometry designed separately in the Part
+      workbench, or in the Part Design workbench for more complicated
+      geometries. To get familiar with the part design workbench, this
+      `FreeCAD-tutorial <https://wiki.freecadweb.org/Basic_Part_Design_Tutorial_017>`__
+      with some videos is great.
+   #. Merge all regions into one single ”compsolid”, i.e.composite
+      solid. Meaning one object that consists of multiple solids that
+      share the interfaces between the solids.
+   #. Export the geometry in ``.brep`` format.\ `1 <#fn1>`__
+
+   (1) The outer and inversion regions of this dike example were created
+   in the Part Design workbench, by making a sketch and then extruding
+   it with the Pad option. See the Inversion-Region in the object tree
+   in the figure below, or the ``outer_region.FCStd`` and
+   ``inversion_region.FCStd`` FreeCAD files, ATTACHED!!!. The sand
+   channel is a simple cube, created in the Part workbench. Dimensions:
+   L = 8.0 m ; W = 15.0 m ; H = 2.0 m. Position: x = 7.5 m ; y = -1.5 m
+   ; z = -2.3 m.
+
+   (2) The trick then lies in merging these shapes into a single
+   compsolid. This is done in the following steps:
+
+   #. Open a new project and merge all objects, i.e. regions (File →
+      Merge project...) into this project
+   #. In the Part workbench, select all objects and create Boolean
+      Fragments (Part → Split → Boolean Fragments)
+   #. Select the newly created BooleanFragments in the object tree and
+      change its Mode property to CompSolid, see the figure below.
+   #. Keep BooleanFragments selected and then apply a Compound Filter to
+      it (Part → Compound → Compound Filter)
+   #. Quality check the obtained geometry.
+      Select the newly created CompoundFilter from the object tree and
+      click Check Geometry (Part → Check Geometry).
+      SOLID: in the Shape Content, should match the number of objects
+      merged when creating the Boolean Fragments, 3 in this example.
+      COMPSOLID: should be 1. Always, also for other geometries.
+      COMPOUND: should be 0. Always.
+      COMPSOLID: 1 and COMPOUND: 0 indicates that the objects were
+      indeed merged correctly to one single compsolid, see the figure
+      below.
+
+   (3) Select the CompounSolid from the object tree and export (File →
+   Export...) as .brep.
+
+   |freecad_fig|
+
+   1 It must be ``.brep``. This is the native format of the OpenCascade
+   CAD engine on which both FreeCAD and Gmsh run. ``.step`` (also
+   ``.stp``) is the standardized CAD exchange format, for some reason
+   this format does not export the shape as a compound solid. Gmsh can
+   also read ``.stl`` and ``.iges`` files. ``.stl`` files only contain
+   surface information and cannot easily be reedited. ``.iges`` is an
+   old format for which development stopped after 1996 and geometries
+   are not always imported correctly.
+
+.. container:: cell markdown
+
+   .. rubric:: Gmsh: mesh the geometry
+      :name: gmsh-mesh-the-geometry
+
+   Meshing with Gmsh is incredibly versatile, but has a very steep
+   learning curve. Here we use the Python Application Programming
+   Interface (API). To get familiar with the Python API, the Gmsh
+   `tutorials <https://gitlab.onelab.info/gmsh/gmsh/-/tree/master/tutorial>`__
+   (`overview <http://www.cfdyna.com/Home/gmshCatalogue.html>`__) were
+   converted to `Python
+   scripts <https://gitlab.onelab.info/gmsh/gmsh/-/tree/master/tutorial/python>`__
+   and additional
+   `demos <https://gitlab.onelab.info/gmsh/gmsh/-/tree/master/demos/api>`__
+   are also provided. I will mention or provide links to relevant
+   tutorials and demos, have a look at these for extra context.
+
+   Let's start by importing our geometry into Gmsh:
+
+.. container:: cell code
+
+   .. code:: python
+
+      import pandas as pd
+      import gmsh
+      import pygimli as pg
+
+      # Starting it up (tutorial t1.py)
+      gmsh.initialize()
+      gmsh.option.setNumber("General.Terminal", 1)
+      gmsh.model.add("dike_mod")
+      # Load a BREP file (t20.py & demo step_assembly.py)
+      # .brep files don't contain info about units, so scaling has to be applied
+      gmsh.option.setNumber("Geometry.OCCScaling", 0.001)
+      volumes = gmsh.model.occ.importShapes("./freecad/dike_mod.brep")
+
+.. container:: cell markdown
+
+   Before diving into local mesh refinement, putting the electrodes in
+   the mesh and assigning region, boundary and electrode markers, the
+   .brep geometry file should be checked. Especially check whether the
+   meshes of two adjacent regions share nodes on their interfaces. Tips
+   for viewing the mesh:
+
+   #. Double left clicking opens a menu in where you can set geometry
+      and mesh visibility.
+   #. Tools → Visibility opens a window in which you can select parts of
+      the mesh and geometry. Here you can find the tags of the
+      elementary entities of the geometry. It is also handy later to QC
+      whether physical groups were set correctly.
+   #. Clip the mesh and geometry with Tools → Clipping.
+   #. The number of elements ect. can be found in the Tools → Statistics
+      window.
+
+   Make sure to quickly write down the Gmsh volume tags of the outer
+   region, dike and channel and the surface tags of the free surface and
+   the underground boundary of the box. You will need this in the next
+   step.
+
+.. container:: cell code
+
+   .. code:: python
+
+      # Generate the mesh and run Gmsh after changing the Gmsh geometry
+      # So take this code block along (down arrow) as you do the tutorial
+      gmsh.model.occ.synchronize()
+      gmsh.model.mesh.generate(3)
+      gmsh.fltk.run()
+      gmsh.finalize()
 
 .. container:: cell markdown
 
@@ -278,13 +295,6 @@ volumes = gmsh.model.occ.importShapes("../../_static/cad_tutorial/dike_mod.brep"
       # Physical Points, "Electrodes / Sensors" in pyGIMLi, pgrp tag 99
       pgrp = gmsh.model.addPhysicalGroup(0, tags["electrodes"], 99)
       gmsh.model.setPhysicalName(0, pgrp, "Electrodes")
-
-      # Generate the mesh and run Gmsh after changing the Gmsh geometry
-      # So take this code block along (down arrow) as you do the tutorial
-      gmsh.model.occ.synchronize()
-      gmsh.model.mesh.generate(3)
-      gmsh.fltk.run()
-      gmsh.finalize()
 
 .. container:: cell markdown
 
