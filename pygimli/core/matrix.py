@@ -116,6 +116,9 @@ pgcore.RSparseMapMatrix.__eq__ = __SparseMatrixEqual__
 class BlockMatrix(pgcore.RBlockMatrix):
     """Block matrix containing arbitrary submatrices somewhat similar to
     `np.block`."""
+    def __init__(self):
+        super(BlockMatrix, self).__init__()
+        self.ndim = 2
     def __str__(self):
         string = ("pg.matrix.BlockMatrix of size %d x %d consisting of %d "
                   "submatrices.")
