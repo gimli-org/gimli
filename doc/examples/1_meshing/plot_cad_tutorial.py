@@ -6,12 +6,29 @@ In this example you will learn how to create a geometry in
 `Gmsh <http://gmsh.info/>`__.
 """
 
+# sphinx_gallery_thumbnail_path = "../../_static/cad_tutorial/gmsh_fig.png"
+
 ###############################################################################
 # Gmsh comes with a build-in CAD engine for defining a geometry, as shown
 # in the `flexible mesh generation example <https://www.pygimli.org/_examples_auto/1_meshing/plot_gmsh-example.html#sphx-glr-examples-auto-1-meshing-plot-gmsh-example-py>`__, 
 # but using a parametric CAD program such as FreeCAD is much more intuitive and flexible.
 #
-# PUT SOME FREECAD AND GMSH INSTALLATION INSTRUCTIONS HERE
+# For this tutorial you will need Gmsh and its Python API (application
+# programming interface). These can be installed by the command below
+# inside your (new) conda environment. Note: gmsh is also available on
+# conda-forge, but there it does not include the Python API.
+#
+# .. code-block:: bash
+#
+#     pip install gmsh
+#
+# If you want to also try out FreeCAD, you can either install it by running
+# the command below, or by installing it from their website. These options
+# will give you the most up to date versions of FreeCAD.
+#
+# .. code-block:: bash
+#
+#     conda install -c conda-forge freecad
 #
 # This example is based on an ERT modeling and inversion experiment on a
 # small dike. However, this FreeCAD → Gmsh workflow can easily be
@@ -27,12 +44,11 @@ In this example you will learn how to create a geometry in
 # Two geometries have to be created. One for modeling and one for
 # inversion. When the same meshes are used for modeling and inversion,
 # the geometry of the sand channel is alreadyincluded in the structure
-# of the mesh. Therefore, the mesh itself would act as prior
-# information to the inversion. The modeling geometry consists of 3
-# regions: (1) the outer region; (2) the inner region (same as
-# inversion region in this example) and (3) the sand channel. The
-# inversion geometry consists of 2 regions: (1) the outer region and
-# (2) the inversion region.
+# of the mesh. Therefore, the mesh itself would act as prior information
+# to the inversion. The modeling geometry consists of three regions: the
+# outer region; the inner region (same as inversion region in this
+# example) and the sand channel. The inversion geometry consists of two
+# regions: the outer region and the inversion region.
 #
 # The geometries are defined in three steps:
 #
@@ -44,13 +60,13 @@ In this example you will learn how to create a geometry in
 # 2. Merge all regions into one single ”compsolid”, i.e.composite
 #    solid. Meaning one object that consists of multiple solids that
 #    share the interfaces between the solids.
-# 3. Export the geometry in ``.brep`` format.\ `1 <#fn1>`__
+# 3. Export the geometry in ``.brep`` *
 #
 # (1) The outer and inversion regions of this dike example were created
 # in the Part Design workbench, by making a sketch and then extruding
 # it with the Pad option. See the Inversion-Region in the object tree
 # in the figure below, or the ``outer_region.FCStd`` and
-# ``inversion_region.FCStd`` FreeCAD files, ATTACHED!!!. The sand
+# ``inversion_region.FCStd`` FreeCAD files, ATTACHED!!! in the .zip file WHERE??. The sand
 # channel is a simple cube, created in the Part workbench. Dimensions:
 # L = 8.0 m ; W = 15.0 m ; H = 2.0 m. Position: x = 7.5 m ; y = -1.5 m
 # ; z = -2.3 m.
@@ -85,7 +101,7 @@ In this example you will learn how to create a geometry in
 #
 #     FreeCAD important dialogs for making a correct compsolid.
 #
-# 1 It must be ``.brep``. This is the native format of the OpenCascade
+# * It must be ``.brep``. This is the native format of the OpenCascade
 # CAD engine on which both FreeCAD and Gmsh run. ``.step`` (also
 # ``.stp``) is the standardized CAD exchange format, for some reason
 # this format does not export the shape as a compound solid. Gmsh can
@@ -112,10 +128,22 @@ In this example you will learn how to create a geometry in
 # Let's start by importing our geometry into Gmsh:
 
 
-import pandas as pd
-import gmsh
+import numpy as np
 import pygimli as pg
 
+
+gmsh = pg.optImport("gmsh", "do this tutorial. Install by running: pip install gmsh")
+# try:
+#     import gmsh
+# except ImportError:
+#     print("The Gmsh Python API needs to be installed for this example.")
+#     print("Install by running: pip install gmsh")
+#     print('Note: the conda package "gmsh" does not include the API (yet)')
+
+
+# Download all nessesary files
+# geom_filename = pg.getExampleFile("cad/dike_mod.brep")
+# elec_pos_filename = pg.getExampleFile("cad/elec_pos.csv")
 # Starting it up (tutorial t1.py)
 gmsh.initialize()
 gmsh.option.setNumber("General.Terminal", 1)
@@ -124,14 +152,24 @@ gmsh.model.add("dike_mod")
 # .brep files don't contain info about units, so scaling has to be applied
 gmsh.option.setNumber("Geometry.OCCScaling", 0.001)
 volumes = gmsh.model.occ.importShapes("../../_static/cad_tutorial/dike_mod.brep")
+# volumes = gmsh.model.occ.importShapes(geom_filename)
 
 
 ###############################################################################
 # Before diving into local mesh refinement, putting the electrodes in
 # the mesh and assigning region, boundary and electrode markers, the
 # .brep geometry file should be checked. Especially check whether the
-# meshes of two adjacent regions share nodes on their interfaces. Tips
-# for viewing the mesh:
+# meshes of two adjacent regions share nodes on their interfaces. The 
+# mesh can be viewed by running the following lines of code:
+#
+# .. code-block:: python
+#
+#     # Run this code after every change in the mesh to see what changed.
+#     gmsh.model.occ.synchronize()
+#     gmsh.model.mesh.generate(3)
+#     gmsh.fltk.run() 
+#
+# Tips for viewing the mesh:
 #
 # 1. Double left clicking opens a menu in where you can set geometry
 #    and mesh visibility.
@@ -190,15 +228,17 @@ gmsh.model.mesh.setSize(
 # defined in the geometry.
 
 
+# positions: np.array([elec#, x, y, z, y "over ground"])
+pos = np.genfromtxt("../../_static/cad_tutorial/elec_pos.csv", delimiter=",", skip_header=1)
+# pos = np.genfromtxt(elec_pos_filename, delimiter=",", skip_header=1)
 # Electrodes are put at 2 cm depth, such that they can be embeded in the volume of the dike.
 # Embeding the electrodes into the surface elements complicates meshing.
 elec_depth = 0.02               # elec depth [m]
-pos = pd.read_csv("../../_static/cad_tutorial/elec_pos.csv")
-pos["z"] = pos["z"] - elec_depth
+pos[:, 3] = pos[:, 3] - elec_depth
 # Add the electrodes to the Gmsh model and put the tags into the Dict
-for i, xyz in pos.iterrows():
-    tag = int(200 + xyz["elec #"])
-    gmsh.model.occ.addPoint(xyz["x"], xyz["y"], xyz["z"], cl_elec, tag)
+for xyz in pos:
+    tag = int(200 + xyz[0])
+    gmsh.model.occ.addPoint(xyz[1], xyz[2], xyz[3], cl_elec, tag)
     tags["electrodes"].append(tag)
 # Embed electrodes in dike volume. (t15.py)
 gmsh.model.occ.synchronize()
@@ -263,12 +303,10 @@ gmsh.model.setPhysicalName(2, pgrp, "Underground Boundary")
 pgrp = gmsh.model.addPhysicalGroup(0, tags["electrodes"], 99)
 gmsh.model.setPhysicalName(0, pgrp, "Electrodes")
 
-# Generate the mesh and run Gmsh after changing the Gmsh geometry
-# So take this code block along (down arrow) as you do the tutorial
+# Generate the mesh and write the mesh file
 gmsh.model.occ.synchronize()
 gmsh.model.mesh.generate(3)
 gmsh.write("dike_mod.msh")
-gmsh.fltk.run()
 gmsh.finalize()
 
 
