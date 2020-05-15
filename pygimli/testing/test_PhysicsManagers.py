@@ -10,7 +10,7 @@ import pygimli as pg
 from pygimli.physics import VESManager, ERTManager
 from pygimli.physics.em import VMDTimeDomainModelling
 
-pg.setTestingMode(True)
+# pg.setTestingMode(True)
 
 class TestManagers(unittest.TestCase):
 
@@ -138,4 +138,3 @@ if __name__ == '__main__':
         pg.info("test done")
     else:
         unittest.main()
-
