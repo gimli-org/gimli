@@ -69,7 +69,7 @@ def test(target=None, show=False, onlydoctests=False, coverage=False,
         Return correct exit code, e.g. abort documentation build when a test
         fails.
     """
-    pg.setTestingMode(True)
+    # pg.setTestingMode(True)
     # Remove figure warnings
     plt.rcParams["figure.max_open_warning"] = 1000
     warnings.filterwarnings("ignore", category=UserWarning,
