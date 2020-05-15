@@ -25,3 +25,15 @@ class renamed:
                        ' and will be removed in: ' + self.removed)
             return self.newFunc(*args, **kwargs)
         return wrapper
+
+
+import functools
+def singleton(cls):
+    """Make a class a Singleton class (only one instance)"""
+    @functools.wraps(cls)
+    def wrapper(*args, **kwargs):
+        if wrapper.instance is None:
+            wrapper.instance = cls(*args, **kwargs)
+        return wrapper.instance
+    wrapper.instance = None
+    return wrapper

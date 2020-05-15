@@ -125,21 +125,21 @@ class Cache(object):
                     self._value.loadBinaryV2(self.info['file'] + '.bms')
                     pg.debug("Restoring cache took:", pg.dur(), "s")
                 elif self.info['type'] == 'ndarray':
-                    self._value = np.load(self.info['file'] + '.npy', 
+                    self._value = np.load(self.info['file'] + '.npy',
                                           allow_pickle=True)
                 else:
-                    self._value = np.load(self.info['file'] + '.npy', 
+                    self._value = np.load(self.info['file'] + '.npy',
                                           allow_pickle=True)
 
                 if self.value is not None:
-                    self.info['restored'] = self.info['restored'] + 1           
+                    self.info['restored'] = self.info['restored'] + 1
                     self.updateCacheInfo()
                     pg.info('Cache {3} restored ({1}s x {0}): {2}'.\
                         format(self.info['restored'],
                                round(self.info['dur'], 1),
                                self._name, self.info['codeinfo']))
                 else:
-                    # default try numpy 
+                    # default try numpy
                     pg.warn('Could not restore cache of type {0}.'.format(self.info['type']))
 
                 pg.debug("Restoring cache took:", pg.dur(), "s")
@@ -149,6 +149,7 @@ class Cache(object):
                 print(self.info)
                 pg.error('Cache restoring failed.')
 
+#@pg.singleton
 class CacheManager(object):
     __instance = None
     __has_init = False
