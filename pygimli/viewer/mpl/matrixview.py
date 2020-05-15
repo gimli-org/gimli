@@ -40,22 +40,17 @@ def drawBlockMatrix(ax, mat, **kwargs):
     -------
     ax:
     """
-    sp = pg.optImport("scipy.sparse", "visualize Block Matrices")
-    pmatrix = sp.lil_matrix((mat.rows(), mat.cols()))
-    nmats = len(mat.matrices())
-    pg.info(nmats)
+    plcs = []
     for mid, col, row, scale in zip(mat.entries_matrixID(),
                                     mat.entries_colStart(),
                                     mat.entries_rowStart(),
                                     mat.entries_scale()):
         widthy = mat.matrices()[mid].rows()
         widthx = mat.matrices()[mid].cols()
-        pmatrix[row:row+widthy, col:col+widthx] = mid + 1
-    plotmat = pmatrix.toarray()
-    plotmat[plotmat == 0.0] = np.nan
-    plotmat -= 1
-    gci = ax.matshow(plotmat, vmin=-.5, vmax=nmats-.5)
-    cMap = plt.cm.get_cmap("Set3", nmats)
-    cMap.set_under
-    gci.set_cmap(cMap)
-    return gci
+        plc = pg.meshtools.createRectangle([col, row],
+                                           [col + widthx, row+row+widthy],
+                                           marker=mid)
+        plcs.append(plc)
+
+    bm = pg.meshtools.mergePLC(plcs)
+    return pg.show(bm, markers=True, ax=ax)
