@@ -631,6 +631,7 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
         tmpMesh = pg.meshtools.createMesh(mesh, quality=20, area=0)
         if tmpMesh.cellCount() == 0:
             pass
+            gci = None
         else:
             markers = np.array(tmpMesh.cellMarkers())
             uniquemarkers, uniqueidx = np.unique(markers, return_inverse=True)
@@ -664,6 +665,8 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
                 cbar.set_ticklabels(labels)
 
     else:
+        gci = None
+        cBar = None
         if kwargs.pop('showBoundary', True):
             drawMeshBoundaries(ax, mesh, **kwargs)
 
@@ -703,6 +706,7 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
         ax.set_aspect('equal')
 
     updateAxes_(ax)
+    return gci, cbar
 
 
 def _createCellPolygon(cell):

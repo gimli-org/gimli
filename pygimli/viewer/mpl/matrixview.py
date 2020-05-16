@@ -41,16 +41,22 @@ def drawBlockMatrix(ax, mat, **kwargs):
     ax:
     """
     plcs = []
-    for mid, col, row, scale in zip(mat.entries_matrixID(),
-                                    mat.entries_colStart(),
-                                    mat.entries_rowStart(),
-                                    mat.entries_scale()):
-        widthy = mat.matrices()[mid].rows()
-        widthx = mat.matrices()[mid].cols()
+    for mid, col, row, scale, mati in zip(mat.entries_matrixID(),
+                                          mat.entries_colStart(),
+                                          mat.entries_rowStart(),
+                                          mat.entries_scale(),
+                                          mat.matrices()):
+        widthy = mati.rows() - 0.1 # to make sure non-matrix regions are not connected in the plot
+        widthx = mati.cols() - 0.1
         plc = pg.meshtools.createRectangle([col, row],
-                                           [col + widthx, row+row+widthy],
+                                           [col + widthx, row + widthy],
                                            marker=mid)
         plcs.append(plc)
 
     bm = pg.meshtools.mergePLC(plcs)
-    return pg.show(bm, markers=True, ax=ax)
+    gci, cBar = pg.viewer.mpl.drawPLC(ax, bm, fitView=False)
+    ax.invert_yaxis()
+    cBar.set_label("Matrix ID")
+    if len(mat.matrices()) > 10:
+        gci.set_cmap("viridis")
+    return gci, cBar

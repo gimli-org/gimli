@@ -26,9 +26,7 @@ def showMatrix(mat, ax=None, **kwargs):
         gci = drawSparseMatrix(ax, mat)
         cBar = None
     elif isinstance(mat, pg.core.BlockMatrix):
-        gci = drawBlockMatrix(ax, mat)
-        cBar = None
-        ax.invert_yaxis()
+        gci, cBar = drawBlockMatrix(ax, mat)
     else:
         pg.error("Matrix type not supported yet.")
     return ax, cBar
