@@ -2113,7 +2113,7 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
                     'intDomain(u, mesh) = 0')
             r = createLoadVector(mesh)
 
-            A = pg.core.BlockMatrix()
+            A = pg.BlockMatrix()
             A.add(S, 0, 0)
             A.add(r, 0, mesh.nodeCount())
             A.add(r, mesh.nodeCount(), 0, transpose=True)

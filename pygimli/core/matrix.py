@@ -16,12 +16,34 @@ from .logger import critical, warn
 # make core matrices (now in pgcor, later pg.core) available here for brevity
 IdentityMatrix = pgcore.IdentityMatrix
 
-SparseMapMatrix = pgcore.RSparseMapMatrix
-SparseMatrix = pgcore.RSparseMatrix
+## Usefull Aliases
 Matrix = pgcore.RMatrix
+SparseMatrix = pgcore.RSparseMatrix
+SparseMapMatrix = pgcore.RSparseMapMatrix
+BlockMatrix = pgcore.RBlockMatrix
 
-## Monkeypatching
+## General Monkeypatch core classes
+__Matrices = [pgcore.MatrixBase,
+              pgcore.RSparseMatrix,
+              pgcore.RSparseMapMatrix,
+              pgcore.CSparseMatrix,
+              pgcore.CSparseMapMatrix,
+              pgcore.RBlockMatrix,
+              pgcore.IdentityMatrix]
 
+def __Matrix_len(self):
+    return self.rows()
+
+@property
+def __MatrixShapePropery__(self):
+    return (self.rows(), self.cols())
+
+for m in __Matrices:
+    m.ndim = 2
+    m.__len__ = __Matrix_len
+    m = __MatrixShapePropery__
+
+## Special Monkeypatch core classes
 __BlockMatrix_addMatrix__ = pgcore.RBlockMatrix.addMatrix
 
 def __BlockMatrix_addMatrix_happy_GC__(self, M, row=None, col=None,
@@ -83,10 +105,18 @@ def __BlockMatrix_addMatrix_happy_GC__(self, M, row=None, col=None,
 
     return matrixID
 
+def __BlockMatrix_str__(self):
+    string = ("pg.matrix.BlockMatrix of size %d x %d consisting of %d "
+               "submatrices.")
+    return string % (self.rows(), self.cols(), len(self.matrices()))
+
 pgcore.RBlockMatrix.addMatrix = __BlockMatrix_addMatrix_happy_GC__
 pgcore.RBlockMatrix.add = __BlockMatrix_addMatrix_happy_GC__
+pgcore.RBlockMatrix.__str__ = __BlockMatrix_str__
+pgcore.RBlockMatrix.ndim = 2
 # pgcore.CBlockMatrix.addMatrix = __BlockMatrix_addMatrix_happy_GC__
 # pgcore.CBlockMatrix.add = __BlockMatrix_addMatrix_happy_GC__
+
 
 def __SparseMatrixEqual__(self, T):
     """Compare two SparseMatrices"""
@@ -110,19 +140,6 @@ def __SparseMatrixEqual__(self, T):
 
 pgcore.RSparseMatrix.__eq__ = __SparseMatrixEqual__
 pgcore.RSparseMapMatrix.__eq__ = __SparseMatrixEqual__
-
-
-
-class BlockMatrix(pgcore.RBlockMatrix):
-    """Block matrix containing arbitrary submatrices somewhat similar to
-    `np.block`."""
-    def __init__(self):
-        super(BlockMatrix, self).__init__()
-        self.ndim = 2
-    def __str__(self):
-        string = ("pg.matrix.BlockMatrix of size %d x %d consisting of %d "
-                  "submatrices.")
-        return string % (self.rows(), self.cols(), len(self.matrices()))
 
 
 class MultMatrix(pgcore.MatrixBase):
@@ -262,7 +279,6 @@ class MultLeftRightMatrix(MultMatrix):
         return self.A.transMult(x * self._l) * self._r
 
 LRMultRMatrix = MultLeftRightMatrix  # alias for backward compatibility
-
 
 
 class Add2Matrix(pgcore.MatrixBase):

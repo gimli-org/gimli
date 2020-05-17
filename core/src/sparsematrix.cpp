@@ -123,9 +123,9 @@ template <> void SparseMapMatrix< double, Index >::
     for (Index i = 0, imax = A.rows(); i < imax; i++){
         for (Index j = 0, jmax = A.mat().cols(); j < jmax; j++){
             double v = A.getVal(i, j);
-            if (::fabs(v) > tol){
-                this->addVal(A.rowIDs()[i], A.colIDs()[j], v * scale);
-            }
+            this->addVal(A.rowIDs()[i], A.colIDs()[j], v * scale);
+            // if (::fabs(v) > tol){
+            // }
         }
     }
 }
@@ -135,9 +135,9 @@ template <> void SparseMapMatrix< double, Index >::
     for (Index i = 0, imax = A.rows(); i < imax; i++){
         for (Index j = 0, jmax = A.mat().cols(); j < jmax; j++){
             double v = A.getVal(i, j);
-            if (::fabs(v) > tol){
-                this->addVal(A.rowIDs()[i], A.colIDs()[j], v * scale[i]);
-            }
+            this->addVal(A.rowIDs()[i], A.colIDs()[j], v * scale[i]);
+            // if (::fabs(v) > tol){
+            // }
         }
     }
 }

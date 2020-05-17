@@ -37,8 +37,11 @@ int solveCGLSCDWWhtrans(const MatrixBase & S, const MatrixBase & C,
     uint nData = b.size();
     uint nModel = x.size();
     uint nConst = C.rows();
-    Vec bR(round(b, 1e-10));
-    Vec dW(round(dWeight, 1e-10));
+    Vec bR(b);
+    Vec dW(dWeight);
+    // bR.round(1e-10);
+    // dW.round(1e-10);
+    
 
 //     __MS(S.rtti())
 //     __MS(C.rtti())
@@ -61,8 +64,8 @@ int solveCGLSCDWWhtrans(const MatrixBase & S, const MatrixBase & C,
           - cdx );// nModel
     Vec r(transMult(S, Vec(bR * dW * dW * td)) / tm - cdx); // nModel
     
-    p = round(p, 1e-8);
-    r = round(r, 1e-8);
+    // p = round(p, 1e-10);
+    // r = round(r, 1e-10);
 // std::cout.precision(14);
 // __MS("tol " << tol)
 // __MS("dw " << min(dW) << " " << max(dW) << " " << mean(dW))
@@ -120,7 +123,7 @@ int solveCGLSCDWWhtrans(const MatrixBase & S, const MatrixBase & C,
         }
         // std::cout << "aQ " << aQ<< std::endl;
         alpha = normR2 / aQ;
-        alpha = std::round(alpha * 1e10) / 1e10;
+        //alpha = std::round(alpha * 1e10) / 1e10;
 
         x += p * alpha;
 
@@ -140,7 +143,7 @@ int solveCGLSCDWWhtrans(const MatrixBase & S, const MatrixBase & C,
         normR2old = normR2;
         normR2 = dot(r, r);
         beta = normR2 / normR2old;
-        beta = std::round(beta * 1e10) / 1e10;
+        //beta = std::round(beta * 1e10) / 1e10;
 
         p = r + p * beta;
 

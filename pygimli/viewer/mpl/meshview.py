@@ -624,9 +624,10 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
     ...                            marker=10,  boundaryMarker=10, area=0.1)
     >>> fig, ax = plt.subplots()
     >>> geom = world + block
-    >>> pg.viewer.mpl.drawPLC(ax, geom)
+    >>> _ = pg.viewer.mpl.drawPLC(ax, geom)
     """
     #    eCircles = []
+    cbar = None
     if fillRegion and mesh.boundaryCount() > 2:
         tmpMesh = pg.meshtools.createMesh(mesh, quality=20, area=0)
         if tmpMesh.cellCount() == 0:
@@ -666,7 +667,6 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
 
     else:
         gci = None
-        cBar = None
         if kwargs.pop('showBoundary', True):
             drawMeshBoundaries(ax, mesh, **kwargs)
 
@@ -706,6 +706,8 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
         ax.set_aspect('equal')
 
     updateAxes_(ax)
+    if cbar is None:
+        return gci
     return gci, cbar
 
 

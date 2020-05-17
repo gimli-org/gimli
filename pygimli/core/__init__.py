@@ -579,24 +579,6 @@ _pygimli_.CMatrix.dtype = np.complex
 _pygimli_.R3Vector.ndim = 2
 _pygimli_.stdVectorRVector3.ndim = 2
 
-_pygimli_.RSparseMatrix.ndim = 2
-_pygimli_.CSparseMatrix.ndim = 2
-_pygimli_.RSparseMapMatrix.ndim = 2
-_pygimli_.CSparseMapMatrix.ndim = 2
-_pygimli_.MatrixBase.ndim = 2
-
-def __Matrix_len(self):
-    return self.rows()
-
-_pygimli_.RMatrix.__len__ = __Matrix_len
-_pygimli_.CMatrix.__len__ = __Matrix_len
-
-@property
-def __MatrixShapePropery__(self):
-    return (self.rows(), self.cols())
-
-_pygimli_.RMatrix.shape = __MatrixShapePropery__
-_pygimli_.CMatrix.shape = __MatrixShapePropery__
 
 ############################
 # __hash__ settings
@@ -798,7 +780,6 @@ def pow(v, p):
         return _pygimli_.pow(v, float(p))
     return _pygimli_.pow(v, p)
 
-
 def __RVectorPower(self, m):
     return pow(self, m)
 
@@ -809,10 +790,7 @@ _pygimli_.RVector.__pow__ = __RVectorPower
 # usefull aliases
 ##################################
 
-SparseMapMatrix = _pygimli_.RSparseMapMatrix
-SparseMatrix = _pygimli_.RSparseMatrix
 Vector = _pygimli_.RVector
-Matrix = _pygimli_.RMatrix
 Inversion = _pygimli_.RInversion
 Pos = _pygimli_.RVector3
 PosVector = _pygimli_.R3Vector
@@ -1135,3 +1113,4 @@ def search(what):
 from .mesh import Mesh, MeshEntity, Node
 from .datacontainer import DataContainer, DataContainerERT
 from .trans import *
+#from .matrix import BlockMatrix

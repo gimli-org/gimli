@@ -34,11 +34,7 @@ from .utils import (ProgressBar, boxprint, cumDist, cut, diff, dist,
                     filterIndex, filterLinesByCommentStr, findNearest,
                     getIndex, grange, logDropTol, niceLogspace,
                     prettify, prettyFloat,
-<<<<<<< HEAD
-                    rand, randn, trimDocString, unicodeToAscii, unique,
-=======
-                    randn, rand, randN, trimDocString, unicodeToAscii, unique,
->>>>>>> release
+                    randn, rand, trimDocString, unicodeToAscii, unique,
                     unique_everseen, unique_rows, uniqueAndSum)
 
 from .streams import streamline, streamlineDir

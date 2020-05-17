@@ -143,10 +143,10 @@ class TestSparseMatrix(unittest.TestCase):
 
 
     def test_BlockMatrix(self):
-        A = pg.core.SparseMapMatrix(2, 2)
+        A = pg.SparseMapMatrix(2, 2)
         A.setVal(0, 0, 1.0)
 
-        B = pg.core.BlockMatrix()
+        B = pg.BlockMatrix()
         B.add(A, 0, 0)
 
         np.testing.assert_allclose(B.row(0), [1.0, 0.0], rtol=1e-10)
@@ -160,7 +160,7 @@ class TestSparseMatrix(unittest.TestCase):
         print(B)
 
     def test_Misc(self):
-        D = pg.core.SparseMapMatrix(3, 4)
+        D = pg.SparseMapMatrix(3, 4)
         for i in range(D.rows()):
             for j in range(D.cols()):
                 D.setVal(i, j, 1.0)
