@@ -28,12 +28,7 @@ class TestManagers(unittest.TestCase):
         #without SR
         ert = ERTManager(sr=False, useBert=True, verbose=False, debug=False)
         mod = ert.invert(dat, mesh=mesh, maxIter=20, lam=10)
-<<<<<<< HEAD
-        #np.testing.assert_approx_equal(ert.inv.chi2(),  0.9833632902175629,
-        #                               significant=3)
-=======
         # np.testing.assert_approx_equal(ert.inv.chi2(), 0.9833, significant=3)
->>>>>>> release
 
     def test_TT(self, showProgress=False):
         pass
@@ -51,11 +46,7 @@ class TestManagers(unittest.TestCase):
         ra = vmdMgr.simulate(synthModel)
 
         err = abs(np.log(t)/2) * 0.01
-<<<<<<< HEAD
-        ra *= 1. + pg.randn(len(ra)) * err
-=======
         ra *= 1. + pg.randn(len(ra), seed=1337) * err
->>>>>>> release
 
         model = vmdMgr.invert(ra, err, nLayers=4, layerLimits=[2, 500],
                               maxIter=50,
@@ -93,16 +84,9 @@ class TestManagers(unittest.TestCase):
 
         mgr.invert(ra, err, nLayers=4, lam=100, layerLimits=False,
                    showProgress=showProgress)
-<<<<<<< HEAD
-        mgr.fop.drawModel(ax=axs[0][0], model=synthModel, label='Synth')
-        # pg._r(pg.testingMode())
-        # np.testing.assert_approx_equal(mgr.inv.inv.chi2(), 1.049145,
-                                       # significant=3)
-=======
         if showProgress is True:
             mgr.fop.drawModel(ax=axs[0][0], model=synthModel, label='Synth')
         np.testing.assert_array_less(mgr.fw.chi2(), 1)
->>>>>>> release
 
         ### Test -- reinit with new parameter count
         if showProgress is True:
