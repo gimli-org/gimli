@@ -95,7 +95,7 @@ scheme.registerSensorIndex("g")
 
 tt = TravelTimeManager()
 data = tt.simulate(mesh=mesh_fwd, scheme=scheme, slowness=1./model,
-                   secNodes=4, noiseLevel=0.001, noiseAbs=1e-5)
+                   secNodes=4, noiseLevel=0.001, noiseAbs=1e-5, seed=1337)
 
 ###############################################################################
 # Now we create the unstructured inversion mesh
@@ -114,7 +114,11 @@ tt.inv.inv.setRecalcJacobian(True)
 invmodel = tt.invert(data, mesh=mesh, secNodes=3, lam=1000, zWeight=1.0,
                      useGradient=False, verbose=True)
 print("chi^2 = %.2f" % tt.inv.chi2())  # Look at the data fit
+<<<<<<< HEAD
 # np.testing.assert_approx_equal(tt.inv.chi2(), 1.063886, significant=5)
+=======
+# np.testing.assert_approx_equal(tt.inv.chi2(), 0.999038, significant=5)
+>>>>>>> release
 
 ################################################################################
 # Finally, we visualize the true model and the inversion result next to each

@@ -413,7 +413,7 @@ class Block1DModelling(Modelling):
         operator.
         """
         nData = len(data)
-        yVals = range(nData)
+        yVals = range(1, nData+1)
         ax.loglog(data, yVals,
                   label=label,
                   **DEFAULT_STYLES.get(label, DEFAULT_STYLES['Default'])

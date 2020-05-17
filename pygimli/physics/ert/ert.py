@@ -691,8 +691,8 @@ class ERTManager(MeshMethodManager):
         ----
         * 2D + Complex + SR
 
-        Parameters
-        ----------
+        Args
+        ----
         mesh : :gimliapi:`GIMLI::Mesh`
             2D or 3D Mesh to calculate for.
 
@@ -707,8 +707,8 @@ class ERTManager(MeshMethodManager):
         scheme : :gimliapi:`GIMLI::DataContainerERT`
             Data measurement scheme.
 
-        Keyword Arguments
-        ----------------
+        Keyword Args
+        ------------
         verbose: bool[False]
             Be verbose. Will override class settings.
         calcOnly: bool [False]
@@ -730,15 +730,15 @@ class ERTManager(MeshMethodManager):
 
         Returns
         -------
-        rhoa : DataContainerERT | array(N, data.size()) | array(N, data.size()),
-            array(N, data.size())
-                Data container with resulting apparent resistivity data and
-                errors (if noiseLevel or noiseAbs is set).
-                Optional returns a Matrix of rhoa values
-                (for returnArray==True forces noiseLevel=0).
-                In case of a complex valued resistivity model, phase values will be
-                returned in the DataContainerERT (see example below), or as an
-                additional returned array.
+        DataContainerERT | array(N, data.size()) | array(N, data.size()) |
+        array(N, data.size()):
+            Data container with resulting apparent resistivity data and
+            errors (if noiseLevel or noiseAbs is set).
+            Optional returns a Matrix of rhoa values
+            (for returnArray==True forces noiseLevel=0).
+            In case of a complex valued resistivity model, phase values will be
+            returned in the DataContainerERT (see example below), or as an
+            additional returned array.
 
         Examples
         --------
@@ -771,6 +771,7 @@ class ERTManager(MeshMethodManager):
         returnArray = kwargs.pop('returnArray', False)
         noiseLevel = kwargs.pop('noiseLevel', 0.0)
         noiseAbs = kwargs.pop('noiseAbs', 1e-4)
+        seed = kwargs.pop('seed', None)
 
         #segfaults with self.fop (test & fix)
         fop = self.createForwardOperator(
@@ -861,7 +862,6 @@ class ERTManager(MeshMethodManager):
                 print("res: ", res)
                 raise BaseException("Simulate called with wrong resistivity array.")
 
-
         if not isArrayData:
             ret['rhoa'] = rhoa
 
@@ -885,7 +885,11 @@ class ERTManager(MeshMethodManager):
                 print("Data error estimate (min:max) ",
                       min(ret('err')), ":", max(ret('err')))
 
+<<<<<<< HEAD
             rhoa *= 1. + pg.randn(ret.size()) * ret('err')
+=======
+            rhoa *= 1. + pg.randn(ret.size(), seed=seed) * ret('err')
+>>>>>>> release
             ret.set('rhoa', rhoa)
 
             ipError = None
@@ -906,7 +910,11 @@ class ERTManager(MeshMethodManager):
                         print("Data IP abs error estimate (min:max) ",
                                min(ipError), ":", max(ipError))
 
+<<<<<<< HEAD
                 phia += pg.randn(ret.size()) * ipError
+=======
+                phia += np.randn(ret.size(), seed=seed) * ipError
+>>>>>>> release
                 ret['iperr'] = ipError
                 ret['phia'] = phia
 

@@ -467,34 +467,43 @@ def cut(v, n=2):
     cv = [v[i*Nc:(i+1)*Nc] for i in range(n)]
     return cv
 
-
 def randn(n, seed=None):
-    """Return normal distributed random numbers with fixed seed.
-
-    If seed is not set,  randn looks if `:py:func:pygimli.testingMode` to be set to True and sets a constant seed of 1337 to ensure reproducibility for tests and examples.
+    """Create n normally distributed random numbers with optional seed.
 
     Parameters
     ----------
     n: long
-        Number of random values
-    seed: long | None
-        Seed for random. Set to None if you don't want any seed.
-    """
-    # if seed is None and pg.testingMode() is True:
-    #     pg.debug("Set random seed to 1337")
-    #     seed = 1337
+        length of random numbers array.
+    seed: int[None]
+        Optional seed for random number generator
 
+    Returns
+    -------
+    r: np.array
+        Random numbers.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from pygimli.utils import randn
+    >>> a = randn(5, seed=1337)
+    >>> b = randn(5)
+    >>> c = randn(5, seed=1337)
+    >>> print(np.array_equal(a, b))
+    False
+    >>> print(np.array_equal(a, c))
+    True
+    """
     if seed is not None:
         np.random.seed(seed)
-
     return np.random.randn(n)
 
 
-def rand(n, minVal=0.0, maxVal=1.0):
+def rand(n, minVal=0.0, maxVal=1.0, seed=None):
     """Create RVector of length n with normally distributed random numbers."""
-    r = pg.Vector(n)
-    pg.rand(r, minVal, maxVal)
-    return r
+    if seed is not None:
+        np.random.seed(seed)
+    return np.random.rand(n) * (maxVal - minVal) + minVal
 
 
 def getIndex(seq, f):

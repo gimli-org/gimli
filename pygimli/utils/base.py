@@ -3,7 +3,8 @@
 
 Some needs to be sorted. Need to fit nameing conventions!
 """
-import os
+import sys
+import os.path
 import time
 
 import numpy as np
@@ -126,27 +127,13 @@ def interpExtrap(x, xp, yp):
 
 def saveResult(fname, data, rrms=None, chi2=None, mode='w'):
     """Save rms/chi2 results into filename."""
+    pg.warn("utils.saveResult .. in use? (debug)")
     with open(fname, mode) as f:
         np.savetxt(f, data)
         if rrms is not None:
             f.write('\nrrms:{}\n'.format(rrms))
         if chi2 is not None:
             f.write('\nchi2:{}\n'.format(chi2))
-
-
-def getSavePath(folder=None, subfolder='', now=None):
-    """TODO."""
-    if folder is None:
-        path = createResultFolder(subfolder, now)
-    else:
-        path = createFolders([folder, subfolder])
-    return path
-
-
-def createResultFolder(subfolder, now=None):
-    """Create a result Folder."""
-    result = createDateTimeString(now)
-    return createFolders(['./', result, subfolder])
 
 
 def createDateTimeString(now=None):
@@ -159,17 +146,31 @@ def createDateTimeString(now=None):
         str(now.tm_min).zfill(2)
 
 
-def createfolders(foldername_list):
-    pg.deprecated("use createFolders") #190520
-    return createFolders(foldername_list)
-    
-def createFolders(foldername_list):
-    """Create the folder structure specified by the list."""
-    path = ''
+def getSavePath(folder=None, subfolder='', now=None):
+    """TODO."""
+    if folder is None:
+        path = createResultPath(subfolder, now=now)
+    else:
+        path = createPaths([folder, subfolder])
+    return path
 
-    for s in foldername_list:
-        if s != '/':
-            path = path + s + '/'
+def createResultPath(subfolder, now=None):
+    """Create a result Folder."""
+    result = createDateTimeString(now)
+    return createPaths(['.', result, subfolder])
+
+def createPath(pathList):
+    """Create the path structure specified by list.
+
+    Parameters
+    ----------
+    pathList: str | list(str)
+        Create Path with option subpaths
+    """
+    if hasattr(pathList, '__iter__'):
+        path = os.path.join('', *pathList)
+    else:
+        path = os.path.join('', pathList)
 
     try:
         os.makedirs(path)
@@ -177,7 +178,18 @@ def createFolders(foldername_list):
         if os.path.exists(path):
             print('Path "{}" already exists.'.format(path))
         else:
-            print('Unable to create path "{}".'.format(path))
-            raise e
-
+            pg.error('Unable to create path "{}".'.format(path))
+        raise e
     return path
+
+@pg.renamed(createResultPath, '1.2') # 20200515
+def createResultFolder(subfolder, now=None):
+    pass
+
+@pg.renamed(createPath, '1.2') # 20200515
+def createfolders(foldername_list):
+    pass
+
+@pg.renamed(createPath, '1.2') # 20200515
+def createFolders(pathList):
+    pass

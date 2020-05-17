@@ -16,6 +16,10 @@ def __Mesh_str(self):
     if (self.secondaryNodeCount() > 0):
         st += " secNodes: " + str(self.secondaryNodeCount())
 
+    if len(list(self.dataMap().keys())) > 0:
+        st += "\nMesh contains data: "
+        for d in self.dataMap().keys():
+            st += d + " "
     return st
 Mesh.__str__ = __Mesh_str
 

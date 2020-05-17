@@ -34,7 +34,7 @@ synthk = [0.5, 3.5, 6.]  # synthetic thickness (nlay-th layer is infinite)
 ###############################################################################
 # the forward operator can be called by f.response(model) or simply f(model)
 rhoa = f(synthk+synres)
-rhoa = rhoa * (pg.math.randn(len(rhoa)) * errPerc / 100. + 1.)
+rhoa = rhoa * (pg.randn(len(rhoa), seed=0) * errPerc / 100. + 1.)
 ###############################################################################
 # create some transformations used for inversion
 transThk = pg.trans.TransLog()  # log-transform ensures thk>0

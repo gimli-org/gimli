@@ -2,15 +2,16 @@
 """
 Useful utility functions.
 """
-
 from .base import (rms, rmsWithErr, nanrms, createDateTimeString,
-                   createfolders, #remove me Nameing convention
-                   createFolders, createResultFolder,
+                   createfolders, # renamed 20200515
+                   createFolders,
+                   createResultFolder, # renamed 20200515
+                   createResultPath,
                    getSavePath, gmat2numpy, interperc, interpExtrap, inthist,
                    nanrms, num2str, numpy2gmat, rrms, rms, rndig, saveResult,
                    chi2)
 
-# compatibility for dev
+# compatibility for dev #can be removed? (20200515)
 from .base import rmsWithErr as rmswitherr
 
 from .complex import (isComplex, toComplex, toPolar, squeezeComplex,
@@ -33,7 +34,11 @@ from .utils import (ProgressBar, boxprint, cumDist, cut, diff, dist,
                     filterIndex, filterLinesByCommentStr, findNearest,
                     getIndex, grange, logDropTol, niceLogspace,
                     prettify, prettyFloat,
+<<<<<<< HEAD
                     rand, randn, trimDocString, unicodeToAscii, unique,
+=======
+                    randn, rand, randN, trimDocString, unicodeToAscii, unique,
+>>>>>>> release
                     unique_everseen, unique_rows, uniqueAndSum)
 
 from .streams import streamline, streamlineDir

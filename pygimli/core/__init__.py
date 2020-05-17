@@ -3,7 +3,6 @@
 """
 Imports and extensions of the C++ bindings.
 """
-
 import os
 import sys
 import traceback
@@ -28,70 +27,12 @@ except ImportError as e:
 ###  Global convenience functions #####
 #######################################
 
-from ..utils import boxprint
-from .matrix import BlockMatrix
-
 _pygimli_.load = None
 
 def showNow():
+
     pass
 #    showLater(0)  # not working anymore
-
-
-__swatch__ = _pygimli_.Stopwatch()
-
-
-def tic(msg=None):
-    """Start global timer. Print elpased time with `toc()`.
-
-    Parameters
-    ----------
-    msg : string, optional
-        Print message string just before starting the timer.
-    """
-    if msg:
-        print(msg)
-    __swatch__.start()
-
-
-def toc(msg=None, box=False):
-    """Print elapsed time since global timer was started with `tic()`.
-
-    Parameters
-    ----------
-    msg : string, optional
-        Print message string just after printing the elapsed time. If box is
-        True, then embed msg into its own box
-    box : bool, optional
-        Embed the time in an ascii box
-
-    """
-    if msg:
-        if box:
-            boxprint(msg)
-        else:
-            print(msg, end=' ')
-    seconds = dur()
-    m, s = divmod(seconds, 60)
-    h, m = divmod(m, 60)
-    if h <= 0 and m <= 0:
-        time = "%.2f" % s
-    elif h <= 0:
-        if m == 1.0:
-            time = "%d minute and %.2f" % (m, s)
-        else:
-            time = "%d minutes and %.2f" % (m, s)
-    elif h == 1.0:
-        time = "%d hour, %d minutes and %.2f" % (h, m, s)
-    else:
-        time = "%d hours, %d minutes and %.2f" % (h, m, s)
-    p = print if not box else boxprint
-    p("Elapsed time is %s seconds." % time)
-
-
-def dur():
-    """Return time in seconds since global timer was started with `tic()`."""
-    return __swatch__.duration()
 
 
 ############################
@@ -642,6 +583,7 @@ _pygimli_.RSparseMatrix.ndim = 2
 _pygimli_.CSparseMatrix.ndim = 2
 _pygimli_.RSparseMapMatrix.ndim = 2
 _pygimli_.CSparseMapMatrix.ndim = 2
+_pygimli_.MatrixBase.ndim = 2
 
 def __Matrix_len(self):
     return self.rows()
@@ -994,7 +936,7 @@ def __ModellingBase__createJacobian_mt__(self, model, resp):
     for pCount in range(int(ceil(float(nModel) / nProcs))):
         procs = []
         #if self.verbose():
-        tic()
+        # tic()
         if self.verbose():
             print("Jacobian MT:(", pCount * nProcs, "--",
                   (pCount + 1) * nProcs, ") /", nModel, '... ')
@@ -1016,8 +958,8 @@ def __ModellingBase__createJacobian_mt__(self, model, resp):
         for i, p in enumerate(procs):
             p.join()
 
-        if self.verbose():
-            print(dur(), 's')
+        # if self.verbose():
+        #     print(dur(), 's')
     self.setThreadCount(oldBertThread)
 
     for i in range(nModel):
