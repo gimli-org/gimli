@@ -30,13 +30,14 @@ Let us illustrate this by a simple mesh:
 # We create a simple mesh using a box geometry
 import pygimli as pg
 import pygimli.meshtools as mt
+
 # We create a rectangular domain and mesh it with small triangles
 rect = mt.createRectangle(start=[0, -10], end=[10, 0])
 mesh = mt.createMesh(rect, quality=34.5, area=0.1)
 
 # %%
 # We compute such a covariance matrix by calling
-CM = pg.matrix.covarianceMatrix(mesh, I=5)  # I taken for both x and y
+CM = pg.core.matrix.covarianceMatrix(mesh, I=5)  # I taken for both x and y
 # We search for the cell where the midpoint (5, -5) is located in
 ind = mesh.findCell([5, -5]).id()
 # and plot the according column using index access (numpy)
@@ -60,7 +61,7 @@ pg.show(mesh, CM[:, ind], cMap="magma_r");
 # In order to avoid a matrix inverse (square root), a special matrix is derived
 # that does the decomposition and stores the eigenvectors and eigenvalues values.
 # A multiplication is done by multiplying with Q and scaling with the diagonal D.
-# This matrix is implemented in the :mod:`pygimli.matrix` module.
+# This matrix is implemented in the :mod:`pygimli.core.matrix` module.
 # the class :py:func:`pg.matrix.Cm05Matrix`
 
 Cm05 = pg.matrix.Cm05Matrix(CM)

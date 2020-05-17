@@ -8,15 +8,16 @@ from pygimli.utils.geostatistics import covarianceMatrix
 from pygimli.utils import sparseMatrix2Array
 
 from . import _pygimli_ as pgcore
-from . import (CMatrix, CSparseMapMatrix, CSparseMatrix, ElementMatrix,
+from . import (CMatrix, CSparseMapMatrix, CSparseMatrix, 
+               RSparseMapMatrix, RSparseMatrix, ElementMatrix,
                IVector, MatrixBase, R3Vector, RVector)
 
 from .logger import critical, warn
 
 # make core matrices (now in pgcor, later pg.core) available here for brevity
+## Usefull Aliases
 IdentityMatrix = pgcore.IdentityMatrix
 
-## Usefull Aliases
 Matrix = pgcore.RMatrix
 SparseMatrix = pgcore.RSparseMatrix
 SparseMapMatrix = pgcore.RSparseMapMatrix
@@ -42,6 +43,9 @@ for m in __Matrices:
     m.ndim = 2
     m.__len__ = __Matrix_len
     m = __MatrixShapePropery__
+
+pgcore.RMatrix.dtype = np.float
+pgcore.CMatrix.dtype = np.complex
 
 ## Special Monkeypatch core classes
 __BlockMatrix_addMatrix__ = pgcore.RBlockMatrix.addMatrix

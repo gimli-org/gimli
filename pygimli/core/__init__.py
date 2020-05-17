@@ -572,10 +572,6 @@ _pygimli_.IVector.ndim = 1
 _pygimli_.IVector.dtype = np.long
 _pygimli_.IndexArray.ndim = 1
 _pygimli_.IndexArray.dtype = np.uint
-_pygimli_.RMatrix.ndim = 2
-_pygimli_.RMatrix.dtype = np.float
-_pygimli_.CMatrix.ndim = 2
-_pygimli_.CMatrix.dtype = np.complex
 _pygimli_.R3Vector.ndim = 2
 _pygimli_.stdVectorRVector3.ndim = 2
 
@@ -1113,4 +1109,12 @@ def search(what):
 from .mesh import Mesh, MeshEntity, Node
 from .datacontainer import DataContainer, DataContainerERT
 from .trans import *
-#from .matrix import BlockMatrix
+
+# from .matrix import BlockMatrix
+# IdentityMatrix = pgcore.IdentityMatrix
+
+# Matrix = pgcore.RMatrix
+# SparseMatrix = pgcore.RSparseMatrix
+# SparseMapMatrix = pgcore.RSparseMapMatrix
+# BlockMatrix = pgcore.RBlockMatrix
+
