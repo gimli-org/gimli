@@ -1140,8 +1140,8 @@ RVector DCMultiElectrodeModelling::response(const RVector & model,
     }
 
     DataMap dMap(response_(model, background));
-    RVector resp(dMap.data(this->dataContainer()));
-    RVector respRez(dMap.data(this->dataContainer(), true));
+    RVector resp(round(dMap.data(this->dataContainer()), 1e-10));
+    RVector respRez(round(dMap.data(this->dataContainer(), true), 1e-10));
 
     if (resp.size() != dataContainer_->size() || respRez.size() != dataContainer_->size()){
         throwError(WHERE_AM_I + " size wrong: " + str(dataContainer_->size())
@@ -1188,7 +1188,7 @@ RVector DCMultiElectrodeModelling::response(const RVector & model,
                 save(respRez, "respRez.vec");
             } // if found neg. Responses
             std::cout << "Response: min = " << min(resp)
-                        << " max = " << max(resp) << std::endl;
+                        << " max = " << max(resp) << " mean = " << mean(resp) << std::endl;
             std::cout << "Reciprocity rms(modelReciprocity) "
                         << rms(modelReciprocity) * 100.0 << "%, "
                         << "max: " << max(modelReciprocity) * 100.0 << "%" << std::endl;

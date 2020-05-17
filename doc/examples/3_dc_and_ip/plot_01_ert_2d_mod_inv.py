@@ -75,6 +75,7 @@ pg.show(mesh, data=rhomap, label=pg.unit('res'), showMesh=True)
 data = ert.simulate(mesh, scheme=scheme, res=rhomap, noiseLevel=1,
                     noiseAbs=1e-6)
 
+pg.warning(np.linalg.norm(data['err']), np.linalg.norm(data['rhoa']))
 pg.info('Simulated data', data)
 pg.info('The data contains:', data.dataMap().keys())
 
