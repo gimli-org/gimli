@@ -114,7 +114,7 @@ class PriorFOP(pg.core.ModellingBase):
         super().__init__(self, verbose)
         self.setMesh(mesh)
         self.ind = [mesh.findCell(po).id() for po in pos]
-        self.J = pg.core.SparseMapMatrix()
+        self.J = pg.SparseMapMatrix()
         self.J.resize(len(self.ind), mesh.cellCount())
         for i, ii in enumerate(self.ind):
             self.J.setVal(i, ii, 1.0)

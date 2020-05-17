@@ -118,9 +118,9 @@ int solveCGLSCDWWhtrans(const MatrixBase & S, const MatrixBase & C,
         // std::cout << "wcp " << min(wcp) << " " << max(wcp) << " " << mean(wcp) << std::endl;
 
         aQ = (dot(q, q) + lambda * dot(wcp, wcp));
-        if (aQ < 1e-10){
-            aQ = 1e-10;
-        }
+        // if (aQ < 1e-10){
+        //     aQ = 1e-10;
+        // }
         // std::cout << "aQ " << aQ<< std::endl;
         alpha = normR2 / aQ;
         //alpha = std::round(alpha * 1e10) / 1e10;
