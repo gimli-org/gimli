@@ -78,8 +78,8 @@ mgr.showData(data)
 # tune the maximum cell size in the parametric domain to 15m²
 vest = mgr.invert(data, secNodes=2, paraMaxCellSize=15.0,
                   maxIter=10, verbose=True)
+np.testing.assert_array_less(mgr.inv.inv.chi2(), 1)
 
-np.testing.assert_almost_equal(mgr.inv.chi2(), 0.983646, decimal=3)
 ###############################################################################
 # The manager also holds the method showResult that is used to plot the result.
 # Note that only covered cells are shown by default.

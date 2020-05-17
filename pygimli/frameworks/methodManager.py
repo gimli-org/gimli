@@ -285,14 +285,14 @@ class MethodManager(object):
         return np.ones(len(data)) * errLevel
 
     def simulate(self, model, **kwargs):
-        """Run a simulation aka the forward task."""
+        # """Run a simulation aka the forward task."""
 
         ra = self.fop.response(par=model)
 
         noiseLevel = kwargs.pop('noiseLevel', 0.0)
         if noiseLevel > 0:
             err = self.estimateError(ra, errLevel=noiseLevel)
-            ra *= 1. + pg.math.randn(ra.size()) * err
+            ra *= 1. + pg.randn(ra.size(), seed=kwargs.pop('seed', None)) * err
             return ra, err
 
         return ra
