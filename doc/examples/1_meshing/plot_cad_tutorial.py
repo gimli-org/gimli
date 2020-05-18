@@ -16,12 +16,11 @@ In this example you will learn how to create a geometry in
 #
 # For this tutorial you will need Gmsh and its Python API (application
 # programming interface). These can be installed by the command below
-# inside your (new) conda environment. Note: gmsh is also available on
-# conda-forge, but there it does not include the Python API.
+# inside your (new) conda environment.
 #
 # .. code-block:: bash
 #
-#     pip install gmsh
+#     pconda install -c conda-forge gmsh python-gmsh
 #
 # If you want to also try out FreeCAD, you can either install it by running
 # the command below, or by installing it from their website. These options
