@@ -65,8 +65,9 @@ In this example you will learn how to create a geometry in
 # (1) The outer and inversion regions of this dike example were created
 # in the Part Design workbench, by making a sketch and then extruding
 # it with the Pad option. See the Inversion-Region in the object tree
-# in the figure below, or the ``outer_region.FCStd`` and
-# ``inversion_region.FCStd`` FreeCAD files, ATTACHED!!! in the .zip file WHERE??. The sand
+# in the figure below. You can also have a look at how these geometries
+# were created by `downloading <http://pygimli.org/_downloads/cad_tutorial.zip>`_
+# the .FCStd FreeCAD files and playing around with them. The sand
 # channel is a simple cube, created in the Part workbench. Dimensions:
 # L = 8.0 m ; W = 15.0 m ; H = 2.0 m. Position: x = 7.5 m ; y = -1.5 m
 # ; z = -2.3 m.
@@ -130,20 +131,11 @@ In this example you will learn how to create a geometry in
 
 import numpy as np
 import pygimli as pg
-
-
 gmsh = pg.optImport("gmsh", "do this tutorial. Install by running: pip install gmsh")
-# try:
-#     import gmsh
-# except ImportError:
-#     print("The Gmsh Python API needs to be installed for this example.")
-#     print("Install by running: pip install gmsh")
-#     print('Note: the conda package "gmsh" does not include the API (yet)')
-
 
 # Download all nessesary files
-# geom_filename = pg.getExampleFile("cad/dike_mod.brep")
-# elec_pos_filename = pg.getExampleFile("cad/elec_pos.csv")
+geom_filename = pg.getExampleFile("cad/dike_mod.brep")
+elec_pos_filename = pg.getExampleFile("cad/elec_pos.csv")
 # Starting it up (tutorial t1.py)
 gmsh.initialize()
 gmsh.option.setNumber("General.Terminal", 1)
@@ -151,8 +143,7 @@ gmsh.model.add("dike_mod")
 # Load a BREP file (t20.py & demo step_assembly.py)
 # .brep files don't contain info about units, so scaling has to be applied
 gmsh.option.setNumber("Geometry.OCCScaling", 0.001)
-volumes = gmsh.model.occ.importShapes("../../_static/cad_tutorial/dike_mod.brep")
-# volumes = gmsh.model.occ.importShapes(geom_filename)
+volumes = gmsh.model.occ.importShapes(geom_filename)
 
 
 ###############################################################################
@@ -229,8 +220,7 @@ gmsh.model.mesh.setSize(
 
 
 # positions: np.array([elec#, x, y, z, y "over ground"])
-pos = np.genfromtxt("../../_static/cad_tutorial/elec_pos.csv", delimiter=",", skip_header=1)
-# pos = np.genfromtxt(elec_pos_filename, delimiter=",", skip_header=1)
+pos = np.genfromtxt(elec_pos_filename, delimiter=",", skip_header=1)
 # Electrodes are put at 2 cm depth, such that they can be embeded in the volume of the dike.
 # Embeding the electrodes into the surface elements complicates meshing.
 elec_depth = 0.02               # elec depth [m]
