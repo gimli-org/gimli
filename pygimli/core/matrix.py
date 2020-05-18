@@ -78,13 +78,12 @@ def __BlockMatrix_addMatrix_happy_GC__(self, M, row=None, col=None,
     transpose: bool [False]
         Transpose the matrix.
     """
-    if hasattr(M, "ndim"): # Not the case for pg.matrix.IdentityMatrix for example
-        if M.ndim == 1:
-            if transpose is False:
-                _M = SparseMapMatrix(list(range(len(M))), [0]*len(M), M)
-            else:
-                _M = SparseMapMatrix([0]*len(M), list(range(len(M))), M)
-            M = _M
+    if M.ndim == 1:
+        if transpose is False:
+            _M = SparseMapMatrix(list(range(len(M))), [0]*len(M), M)
+        else:
+            _M = SparseMapMatrix([0]*len(M), list(range(len(M))), M)
+        M = _M
     else:
         if transpose is True:
             if isinstance(M, pgcore.RSparseMapMatrix):
@@ -96,7 +95,7 @@ def __BlockMatrix_addMatrix_happy_GC__(self, M, row=None, col=None,
                 M = SparseMapMatrix(j, i, v)
             else:
                 critical("don't know yet how to add transpose matrix of type",
-                         type(M))
+                        type(M))
 
     if not hasattr(self, '__mats__'):
         self.__mats__ = []
