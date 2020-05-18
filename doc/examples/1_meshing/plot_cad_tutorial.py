@@ -1,16 +1,17 @@
+#!/usr/bin/env python
+# encoding: utf-8
+# sphinx_gallery_thumbnail_path = '_static/cad_tutorial/gmsh_fig.png'
 r"""
 CAD to mesh tutorial
 ====================
 In this example you will learn how to create a geometry in 
-`FreeCAD <https://www.freecadweb.org/>`__ and then export and mesh it using 
-`Gmsh <http://gmsh.info/>`__.
+`FreeCAD <https://www.freecadweb.org/>`_ and then export and mesh it using 
+`Gmsh <http://gmsh.info/>`_.
 """
-
-# sphinx_gallery_thumbnail_path = "../../_static/cad_tutorial/gmsh_fig.png"
 
 ###############################################################################
 # Gmsh comes with a build-in CAD engine for defining a geometry, as shown
-# in the `flexible mesh generation example <https://www.pygimli.org/_examples_auto/1_meshing/plot_gmsh-example.html#sphx-glr-examples-auto-1-meshing-plot-gmsh-example-py>`__, 
+# in the `flexible mesh generation example <https://www.pygimli.org/_examples_auto/1_meshing/plot_gmsh-example.html#sphx-glr-examples-auto-1-meshing-plot-gmsh-example-py>`_, 
 # but using a parametric CAD program such as FreeCAD is much more intuitive and flexible.
 #
 # For this tutorial you will need Gmsh and its Python API (application
@@ -34,7 +35,7 @@ In this example you will learn how to create a geometry in
 # small dike. However, this FreeCAD → Gmsh workflow can easily be
 # translated to other geophysical methods. The geometry and acquisition
 # design come from the IDEA League `master
-# thesis <https://repository.tudelft.nl/islandora/object/uuid%3A9bf85910-4939-4159-968b-ef558a6ecb7c>`__
+# thesis <https://repository.tudelft.nl/islandora/object/uuid%3A9bf85910-4939-4159-968b-ef558a6ecb7c>`_
 # of Joost Gevaert. The target in this example is to find the geometry
 # of a sand channel underneath the dike.
 #
@@ -55,7 +56,7 @@ In this example you will learn how to create a geometry in
 # 1. Each region of the geometry designed separately in the Part
 #    workbench, or in the Part Design workbench for more complicated
 #    geometries. To get familiar with the part design workbench, this
-#    `FreeCAD-tutorial <https://wiki.freecadweb.org/Basic_Part_Design_Tutorial_017>`__
+#    `FreeCAD-tutorial <https://wiki.freecadweb.org/Basic_Part_Design_Tutorial_017>`_
 #    with some videos is great.
 # 2. Merge all regions into one single ”compsolid”, i.e.composite
 #    solid. Meaning one object that consists of multiple solids that
@@ -117,12 +118,12 @@ In this example you will learn how to create a geometry in
 # Meshing with Gmsh is incredibly versatile, but has a very steep
 # learning curve. Here we use the Python Application Programming
 # Interface (API). To get familiar with the Python API, the Gmsh
-# `tutorials <https://gitlab.onelab.info/gmsh/gmsh/-/tree/master/tutorial>`__
-# (`overview <http://www.cfdyna.com/Home/gmshCatalogue.html>`__) were
+# `tutorials <https://gitlab.onelab.info/gmsh/gmsh/-/tree/master/tutorial>`_
+# (`overview <http://www.cfdyna.com/Home/gmshCatalogue.html>`_) were
 # converted to `Python
-# scripts <https://gitlab.onelab.info/gmsh/gmsh/-/tree/master/tutorial/python>`__
+# scripts <https://gitlab.onelab.info/gmsh/gmsh/-/tree/master/tutorial/python>`_
 # and additional
-# `demos <https://gitlab.onelab.info/gmsh/gmsh/-/tree/master/demos/api>`__
+# `demos <https://gitlab.onelab.info/gmsh/gmsh/-/tree/master/demos/api>`_
 # are also provided. I will mention or provide links to relevant
 # tutorials and demos, have a look at these for extra context.
 #
@@ -239,7 +240,7 @@ gmsh.model.mesh.embed(0, tags["electrodes"], 3, tags["dike"])
 # Reload the Gmsh script and mesh it again to see the result. Further
 # mesh refinement is then possible with so-called background fields.
 # Taking a quick look at Gmsh tutorial
-# `t10.geo <https://gitlab.onelab.info/gmsh/gmsh/-/blob/master/tutorial/python/t10.py>`__
+# `t10.geo <https://gitlab.onelab.info/gmsh/gmsh/-/blob/master/tutorial/python/t10.py>`_
 # is highly recommended. It shows a wide range of possible background
 # fields. In this example a Distance field is defined from the
 # electrodes and then a Threshold field is applied as the background
@@ -323,11 +324,11 @@ gmsh.finalize()
 # -------------------------------
 #
 # -  `Meshing terrain from a .STL file with
-#    Gmsh <https://gitlab.onelab.info/gmsh/gmsh/-/blob/master/demos/api/terrain_stl.py>`__
+#    Gmsh <https://gitlab.onelab.info/gmsh/gmsh/-/blob/master/demos/api/terrain_stl.py>`_
 # -  `Meshing with Gmsh from
-#    QGIS <https://github.com/ccorail/qgis-gmsh/wiki>`__
+#    QGIS <https://github.com/ccorail/qgis-gmsh/wiki>`_
 # -  `FreeCAD GeoMatics
-#    workbench <https://github.com/HakanSeven12/FreeCAD-Geomatics-Workbench>`__
+#    workbench <https://github.com/HakanSeven12/FreeCAD-Geomatics-Workbench>`_
 #    (`replaces GeoData
-#    workbench <https://forum.freecadweb.org/viewtopic.php?f=8&t=37178&hilit=geodata#p316040>`__)
+#    workbench <https://forum.freecadweb.org/viewtopic.php?f=8&t=37178&hilit=geodata#p316040>`_)
 #    allows for GPS, LiDAR and GIS data to be imported to FreeCAD
