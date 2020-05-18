@@ -22,13 +22,9 @@ In this example you will learn how to create a geometry in
 #
 #     conda install -c conda-forge gmsh python-gmsh
 #
-# If you want to also try out FreeCAD, you can either install it by running
-# the command below, or by installing it from their website. These options
-# will give you the most up to date versions of FreeCAD.
-#
-# .. code-block:: bash
-#
-#     conda install -c conda-forge freecad
+# In case you also want to try out FreeCAD, installing it from their 
+# `website <https://www.freecadweb.org/downloads.php>`_ will give you the 
+# most up to date version.
 #
 # This example is based on an ERT modeling and inversion experiment on a
 # small dike. However, this FreeCAD → Gmsh workflow can easily be
