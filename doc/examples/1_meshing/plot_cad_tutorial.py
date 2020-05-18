@@ -20,7 +20,7 @@ In this example you will learn how to create a geometry in
 #
 # .. code-block:: bash
 #
-#     pconda install -c conda-forge gmsh python-gmsh
+#     conda install -c conda-forge gmsh python-gmsh
 #
 # If you want to also try out FreeCAD, you can either install it by running
 # the command below, or by installing it from their website. These options
