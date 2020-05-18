@@ -69,20 +69,40 @@ def show(obj=None, data=None, **kwargs):
     --------
     showMesh
     """
-    if "axes" in kwargs:
+    if "axes" in kwargs: # remove me in 1.2 #20200515
         print("Deprecation Warning: Please use keyword `ax` instead of `axes`")
         kwargs['ax'] = kwargs.pop('axes', None)
 
+    ### Empty call just to create a axes
+    if obj is None:
+        ax = kwargs.pop('ax', None)
+
+        if ax is None:
+            ax = plt.subplots()[1]
+        return ax
+
+    ### try to interprete obj containes a mesh
     if hasattr(obj, 'mesh'):
         return pg.show(obj.mesh, obj, **kwargs)
 
+    ### try to interprete obj as ERT Data
     if isinstance(obj, pg.DataContainerERT):
         from pygimli.physics.ert import showERTData
         return showERTData(obj, vals=kwargs.pop('vals', data), **kwargs)
 
-    if isinstance(obj, pg.core.MatrixBase):
+    ### try to interprete obj as matrices
+    if isinstance(obj, pg.core.MatrixBase) or \
+        (isinstance(obj, np.ndarray) and obj.ndim == 2):
         return showMatrix(obj, **kwargs)
 
+    try:
+        from scipy.sparse import spmatrix
+        if isinstance(obj, spmatrix):
+            return showMatrix(obj, **kwargs)
+    except ImportError:
+        pass
+
+    ### try to interprete obj as mesh or list of meshes
     mesh = kwargs.pop('mesh', obj)
 
     if isinstance(mesh, list):
@@ -127,12 +147,8 @@ def show(obj=None, data=None, **kwargs):
         else:
             pg.error("ERROR: Mesh not valid.", mesh)
 
-    ax = kwargs.pop('ax', None)
-
-    if ax is None:
-        ax = plt.subplots()[1]
-
-    return ax, None
+    pg.error("Can't interprete obj: {0} to show.".format(obj))
+    return None, None
 
 
 def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,

@@ -1104,17 +1104,12 @@ def search(what):
     np.lookfor(what, module="pygimli", import_modules=False)
 
 # Import from submodules at the end
-# from .matrix import (Cm05Matrix, LMultRMatrix, LRMultRMatrix, MultLeftMatrix,
-#                      MultLeftRightMatrix, MultRightMatrix, RMultRMatrix)
 from .mesh import Mesh, MeshEntity, Node
 from .datacontainer import DataContainer, DataContainerERT
 from .trans import *
 
-# from .matrix import BlockMatrix
-# IdentityMatrix = pgcore.IdentityMatrix
-
-# Matrix = pgcore.RMatrix
-# SparseMatrix = pgcore.RSparseMatrix
-# SparseMapMatrix = pgcore.RSparseMapMatrix
-# BlockMatrix = pgcore.RBlockMatrix
+# from .matrix import (Cm05Matrix, LMultRMatrix, LRMultRMatrix, MultLeftMatrix,
+#                      MultLeftRightMatrix, MultRightMatrix, RMultRMatrix)
+from .matrix import (BlockMatrix, SparseMatrix, SparseMapMatrix, IdentityMatrix,
+                     Matrix)
 

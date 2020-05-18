@@ -4,8 +4,6 @@
 import time
 import numpy as np
 from pygimli.core import _pygimli_ as pg
-from pygimli.utils.geostatistics import covarianceMatrix
-from pygimli.utils import sparseMatrix2Array
 
 from . import _pygimli_ as pgcore
 from . import (CMatrix, CSparseMapMatrix, CSparseMatrix,
@@ -78,16 +76,19 @@ def __BlockMatrix_addMatrix_happy_GC__(self, M, row=None, col=None,
     transpose: bool [False]
         Transpose the matrix.
     """
+    from pygimli.utils import sparseMatrix2Array
+
     if M.ndim == 1:
         if transpose is False:
             _M = SparseMapMatrix(list(range(len(M))), [0]*len(M), M)
         else:
+            warn('BlockMatrix add (transpose==True) ... Move me to core')
             _M = SparseMapMatrix([0]*len(M), list(range(len(M))), M)
         M = _M
     else:
         if transpose is True:
             if isinstance(M, pgcore.RSparseMapMatrix):
-                warn('Move me to core')
+                warn('BlockMatrix add (transpose==True) ... Move me to core')
                 v = pg.RVector()
                 i = pg.IndexArray([0])
                 j = pg.IndexArray([0])
@@ -459,6 +460,8 @@ class GeostatisticConstraintsMatrix(pg.MatrixBase):
         withRef : bool [False]
             neglect spur (reference model effect) that is otherwise corrected
         """
+        from pygimli.utils.geostatistics import covarianceMatrix
+
         super().__init__()
         if isinstance(CM, pg.Mesh):
             CM = covarianceMatrix(CM, **kwargs)
