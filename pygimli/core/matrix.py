@@ -8,7 +8,7 @@ from pygimli.utils.geostatistics import covarianceMatrix
 from pygimli.utils import sparseMatrix2Array
 
 from . import _pygimli_ as pgcore
-from . import (CMatrix, CSparseMapMatrix, CSparseMatrix, 
+from . import (CMatrix, CSparseMapMatrix, CSparseMatrix,
                RSparseMapMatrix, RSparseMatrix, ElementMatrix,
                IVector, MatrixBase, R3Vector, RVector)
 
@@ -42,7 +42,7 @@ def __MatrixShapePropery__(self):
 for m in __Matrices:
     m.ndim = 2
     m.__len__ = __Matrix_len
-    m = __MatrixShapePropery__
+    m.shape = __MatrixShapePropery__
 
 pgcore.RMatrix.dtype = np.float
 pgcore.CMatrix.dtype = np.complex
