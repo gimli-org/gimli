@@ -141,8 +141,8 @@ f_0 = np.array(fop.response(start_re_im))
 
 # Compute the Jacobian for the starting model
 J_block = fop.createJacobian(start_re_im)
-J_re = np.array(J_block.matrices()[0])
-J_im = np.array(J_block.matrices()[1])
+J_re = np.array(J_block.mat(0))
+J_im = np.array(J_block.mat(1))
 J0 = J_re + 1j * J_im
 
 ###############################################################################
