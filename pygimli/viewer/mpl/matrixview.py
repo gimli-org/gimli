@@ -63,51 +63,51 @@ def drawBlockMatrix(ax, mat, **kwargs):
 
     Examples
     --------
-    >>> import pygimli as pg
     >>> import numpy as np
-    >>> import matplotlib.pyplot as plt
-    >>> I = pg.core.IdentityMatrix(10)
-    >>> SM = pg.core.SparseMapMatrix()
+    >>> import pygimli as pg
+    >>> I = pg.matrix.IdentityMatrix(10)
+    >>> SM = pg.matrix.SparseMapMatrix()
     >>> for i in range(10):
     ...     SM.setVal(i, 10 - i, 5.0)
     ...     SM.setVal(i,  i, 5.0)
-    >>> B = pg.core.BlockMatrix()
+    >>> B = pg.matrix.BlockMatrix()
     >>> B.add(I, 0, 0)
     0
     >>> B.add(SM, 10, 10)
     1
-    >>> fig, (ax1, ax2) = plt.subplots(1, 2, sharey=True)
+    >>> print(B)
+    pg.matrix.BlockMatrix of size 20 x 21 consisting of 2 submatrices.
+    >>> fig, (ax1, ax2) = pg.plt.subplots(1, 2, sharey=True)
     >>> _ = pg.show(B, ax=ax1)
     >>> _ = pg.show(B, spy=True, ax=ax2)
     """
     if kwargs.pop('spy', False):
         gci = []
-        ids = mat.entries_matrixID()
-        cMap = pg.plt.cm.get_cmap("Set3", len(pg.utils.unique(ids)))
+        ids = pg.unique([e.matrixID for e in mat.entries()])
+        cMap = pg.plt.cm.get_cmap("Set3", len(ids))
 
-        for mid, col, row, scale in zip(mat.entries_matrixID(),
-                                        mat.entries_colStart(),
-                                        mat.entries_rowStart(),
-                                        mat.entries_scale()):
+        for e in mat.entries():
+            mid = e.matrixID
+
             mati = mat.mat(mid)
             if isinstance(mati, pg.core.IdentityMatrix):
                 mati = np.eye(mati.size())
+
             gci.append(drawSparseMatrix(ax, mati,
-                       rowOffset=row, colOffset=col, color=cMap(mid)))
+                                        rowOffset=e.rowStart,
+                                        colOffset=e.colStart,
+                                        color=cMap(mid)))
 
         return gci, None
     else:
-
         plcs = []
-        for mid, col, row, scale in zip(mat.entries_matrixID(),
-                                        mat.entries_colStart(),
-                                        mat.entries_rowStart(),
-                                        mat.entries_scale()):
+        for e in mat.entries():
+            mid = e.matrixID
             widthy = mat.mat(mid).rows() - 0.1 # to make sure non-matrix regions are not connected in the plot
             widthx = mat.mat(mid).cols() - 0.1
-            plc = pg.meshtools.createRectangle([col, row],
-                                               [col + widthx, row + widthy],
-                                               marker=mid)
+            plc = pg.meshtools.createRectangle([e.colStart, e.rowStart],
+                                   [e.colStart + widthx, e.rowStart + widthy],
+                                                marker=mid)
             plcs.append(plc)
 
         bm = pg.meshtools.mergePLC(plcs)
@@ -116,6 +116,6 @@ def drawBlockMatrix(ax, mat, **kwargs):
         ax.xaxis.tick_top()
         cBar.set_label("Matrix ID")
 
-        if len(mat.matrices()) > 10:
+        if len(mat.entries()) > 10:
             gci.set_cmap("viridis")
         return gci, cBar

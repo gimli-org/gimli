@@ -3,7 +3,7 @@
 
 import time
 import numpy as np
-from pygimli.core import _pygimli_ as pg
+#from pygimli.core import _pygimli_ as pg
 
 from . import _pygimli_ as pgcore
 from . import (CMatrix, CSparseMapMatrix, CSparseMatrix,
@@ -65,7 +65,7 @@ def __BlockMatrix_addMatrix_happy_GC__(self, M, row=None, col=None,
 
     Parameters
     ----------
-    M: pg.core Matrix | pg.Vector | 1d iterable
+    M: pg.matrix.Matrix | pg.Vector | 1d iterable
         Matrix to add to the block.
     row: long
         Starting row index.
@@ -89,9 +89,9 @@ def __BlockMatrix_addMatrix_happy_GC__(self, M, row=None, col=None,
         if transpose is True:
             if isinstance(M, pgcore.RSparseMapMatrix):
                 warn('BlockMatrix add (transpose==True) ... Move me to core')
-                v = pg.RVector()
-                i = pg.IndexArray([0])
-                j = pg.IndexArray([0])
+                v = pgcore.RVector()
+                i = pgcore.IndexArray([0])
+                j = pgcore.IndexArray([0])
                 M.fillArrays(v, i, j)
                 M = SparseMapMatrix(j, i, v)
             else:
@@ -112,7 +112,7 @@ def __BlockMatrix_addMatrix_happy_GC__(self, M, row=None, col=None,
 def __BlockMatrix_str__(self):
     string = ("pg.matrix.BlockMatrix of size %d x %d consisting of %d "
                "submatrices.")
-    return string % (self.rows(), self.cols(), len(self.matrices()))
+    return string % (self.rows(), self.cols(), len(self.entries()))
 
 pgcore.RBlockMatrix.addMatrix = __BlockMatrix_addMatrix_happy_GC__
 pgcore.RBlockMatrix.add = __BlockMatrix_addMatrix_happy_GC__
@@ -421,7 +421,7 @@ class NDMatrix(BlockMatrix):
         super(NDMatrix, self).__init__()  # call inherited init function
         self.Ji = []  # list of individual block matrices
         for i in range(num):
-            self.Ji.append(pg.Matrix())
+            self.Ji.append(pgcore.Matrix())
             self.Ji[-1].resize(nrows, ncols)
             n = self.addMatrix(self.Ji[-1])
             self.addMatrixEntry(n, nrows * i, ncols * i)
@@ -430,7 +430,7 @@ class NDMatrix(BlockMatrix):
         print(self.rows(), self.cols())
 
 
-class GeostatisticConstraintsMatrix(pg.MatrixBase):
+class GeostatisticConstraintsMatrix(pgcore.MatrixBase):
     """Geostatistic constraints matrix
 
     Uses geostatistical operators described by Jordi et al. (2018),
@@ -463,14 +463,14 @@ class GeostatisticConstraintsMatrix(pg.MatrixBase):
         from pygimli.utils.geostatistics import covarianceMatrix
 
         super().__init__()
-        if isinstance(CM, pg.Mesh):
+        if isinstance(CM, pgcore.Mesh):
             CM = covarianceMatrix(CM, **kwargs)
         if CM is None:
             CM = covarianceMatrix(mesh, **kwargs)
 
         self.nModel = CM.shape[0]
         self.CM05 = Cm05Matrix(CM)
-        self.spur = self.CM05 * pg.RVector(self.nModel, 1.0)
+        self.spur = self.CM05 * pgcore.RVector(self.nModel, 1.0)
         if kwargs.pop('withRef', False):
             self.spur *= 0.0
 

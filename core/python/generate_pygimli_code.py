@@ -477,8 +477,10 @@ def generate(defined_symbols, extraIncludes):
 
         try:
             for mem in c.variables():
+                print(mem)
                 try:
-                    mem.exclude()
+                    pass
+                    #mem.exclude()
                     # logger.info("Exclude: " + str(mem))
                 except BaseException as _:
                     logger.debug("Fail to exclude: " + str(mem))

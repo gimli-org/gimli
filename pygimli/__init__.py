@@ -11,12 +11,14 @@ from .core.decorators import (renamed, singleton)
 from .core import (BVector, CVector, DataContainer, DataContainerERT,
                    IVector, Line, Mesh, Plane, Pos,
                    RVector3, Vector, abs, cat, center, exp, find,
-                   interpolate, log, log10, logDropTol, math, matrix, max,
+                   interpolate, log, log10, logDropTol, max,
                    mean, median, min, search, setDebug, setThreadCount, sort,
                    Stopwatch, sum, trans, unique, versionStr, x, y, z, zero)
 
-from .core.matrix import (BlockMatrix, Matrix, SparseMapMatrix, SparseMatrix)
+from .core import math # alias all from .core.math.* to pg.math.*
+from .core import matrix # alias all from .core.matrix.* to pg.matrix.*
 
+from .core.matrix import (BlockMatrix, Matrix, SparseMapMatrix, SparseMatrix)
 
 from .core.logger import (_, _d, _g, _r, _y, critical, d, debug, deprecated,
                           deprecated,

@@ -24,7 +24,7 @@ orientation of the coordinate axes is arbitrary and can be chosen by rotation.
 Let us illustrate this by a simple mesh:
 """
 
-# %% 
+# %%
 # Computing covariance and constraint matrices
 # --------------------------------------------
 # We create a simple mesh using a box geometry
@@ -37,11 +37,11 @@ mesh = mt.createMesh(rect, quality=34.5, area=0.1)
 
 # %%
 # We compute such a covariance matrix by calling
-CM = pg.core.matrix.covarianceMatrix(mesh, I=5)  # I taken for both x and y
+CM = pg.utils.covarianceMatrix(mesh, I=5)  # I taken for both x and y
 # We search for the cell where the midpoint (5, -5) is located in
 ind = mesh.findCell([5, -5]).id()
 # and plot the according column using index access (numpy)
-pg.show(mesh, CM[:, ind], cMap="magma_r");
+pg.show(mesh, CM[:, ind], cMap="magma_r")
 
 # %%
 # According to inverse theory, we use the square root of the covariance matrix
@@ -53,7 +53,7 @@ pg.show(mesh, CM[:, ind], cMap="magma_r");
 #     \textbf{C}_\text{M} = \textbf{Q}\textbf{D}\textbf{Q}^{T}
 #
 # based on LAPACK (numpy.linalg). The inverse square root is defined by
-# 
+#
 # .. math::
 #
 #     \textbf{C}_\text{M}^{-0.5} = \textbf{Q}\textbf{D}^{-0.5}\textbf{Q}^{T}

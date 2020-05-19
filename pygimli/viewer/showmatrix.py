@@ -28,6 +28,7 @@ def showMatrix(mat, ax=None, **kwargs):
         mpl.axes, Colorbar
     """
     if ax is None:
+        print(ax)
         ax = pg.show()[0]
 
     try:
@@ -39,15 +40,15 @@ def showMatrix(mat, ax=None, **kwargs):
     except ImportError:
         pass
 
-    if isinstance(mat, pg.core.RSparseMapMatrix) or \
-        isinstance(mat, pg.core.RSparseMatrix):
+    if isinstance(mat, pg.matrix.SparseMapMatrix) or \
+        isinstance(mat, pg.matrix.SparseMatrix):
         gci = drawSparseMatrix(ax, mat, **kwargs)
         cBar = None
-    elif isinstance(mat, pg.core.BlockMatrix):
+    elif isinstance(mat, pg.matrix.BlockMatrix):
         gci, cBar = drawBlockMatrix(ax, mat, **kwargs)
 
         if cBar is None:
-            uniqueIDs = mat.entries_matrixID()
+            uniqueIDs = pg.unique([e.matrixID for e in mat.entries()])
             cMap = pg.plt.cm.get_cmap("Set3", len(uniqueIDs))
             sm = pg.plt.cm.ScalarMappable(cmap=cMap)
 
