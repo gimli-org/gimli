@@ -496,6 +496,9 @@ def randn(n, seed=None):
     """
     if seed is not None:
         np.random.seed(seed)
+
+    if isinstance(n, tuple):
+        return np.random.randn(n[0], n[1])
     return np.random.randn(n)
 
 

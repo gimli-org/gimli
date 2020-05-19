@@ -79,7 +79,7 @@ def show(obj=None, data=None, **kwargs):
 
         if ax is None:
             ax = plt.subplots()[1]
-        return ax
+        return ax, None
 
     ### try to interprete obj containes a mesh
     if hasattr(obj, 'mesh'):
@@ -248,7 +248,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
     -------
     ax : matplotlib.axes
 
-    colobar : matplotlib.colorbar
+    cBar : matplotlib.colorbar
     """
     renameKwarg('cmap', 'cMap', kwargs)
 
@@ -426,7 +426,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
             addCoverageAlpha(gci, coverage,
                              dropThreshold=kwargs.pop('dropThreshold', 0.4))
         else:
-            raise BaseException('toImplement')
+            pg.error('show, coverage wrong length, toImplement')
             # addCoverageAlpha(gci, pg.core.cellDataToPointData(mesh, coverage))
 
     if not hold or block is not False and plt.get_backend().lower() != "agg":

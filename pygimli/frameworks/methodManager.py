@@ -418,7 +418,8 @@ class MethodManager(object):
         if ax is None:
             fig, ax = pg.plt.subplots()
 
-        return self.fop.drawModel(ax, model, **kwargs)
+        ax, cBar = self.fop.drawModel(ax, model, **kwargs)
+        return ax, cBar
 
     def showData(self, data=None, ax=None, **kwargs):
         """Shows the data.
@@ -437,11 +438,15 @@ class MethodManager(object):
         data : iterable | pg.DataContainer
             Data values to be draw.
 
+        Returns
+        -------
+        ax, cbar
+
         """
         if ax is None:
             fig, ax = pg.plt.subplots()
 
-        return self.fop.drawData(ax, data, **kwargs)
+        return self.fop.drawData(ax, data, **kwargs), None
 
     def showResult(self, model=None, ax=None, **kwargs):
         """Show the last inversion result.
@@ -468,11 +473,11 @@ class MethodManager(object):
 
     def showFit(self, ax=None, **kwargs):
         """Show the last inversion data and response."""
-        ax = self.showData(data=self.inv.dataVals,
+        ax, cBar = self.showData(data=self.inv.dataVals,
                            error=self.inv.errorVals,
                            label='Data',
                            ax=ax, **kwargs)
-        ax = self.showData(data=self.inv.response,
+        ax, cBar = self.showData(data=self.inv.response,
                            label='Response',
                            ax=ax, **kwargs)
 
@@ -487,7 +492,7 @@ class MethodManager(object):
         if not kwargs.pop('hideLegend', False):
             ax.legend()
 
-        return ax
+        return ax, cBar
 
     def showResultAndFit(self, **kwargs):
         """Calls showResults and showFit."""

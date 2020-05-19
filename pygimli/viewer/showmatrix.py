@@ -28,7 +28,7 @@ def showMatrix(mat, ax=None, **kwargs):
         mpl.axes, Colorbar
     """
     if ax is None:
-        ax = pg.show()
+        ax = pg.show()[0]
 
     try:
         from scipy.sparse import spmatrix
