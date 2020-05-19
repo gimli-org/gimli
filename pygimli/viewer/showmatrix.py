@@ -40,8 +40,7 @@ def showMatrix(mat, ax=None, **kwargs):
     except ImportError:
         pass
 
-    if isinstance(mat, pg.matrix.SparseMapMatrix) or \
-        isinstance(mat, pg.matrix.SparseMatrix):
+    if isinstance(mat, (pg.core.RSparseMapMatrix, pg.core.RSparseMatrix)):
         gci = drawSparseMatrix(ax, mat, **kwargs)
         cBar = None
     elif isinstance(mat, pg.matrix.BlockMatrix):
