@@ -622,8 +622,16 @@ class MethodManager1d(MethodManager):
 
 class MeshMethodManager(MethodManager):
     def __init__(self, **kwargs):
-        """Constructor."""
+        """Constructor.
+        
+        Attribute
+        ---------
+        mesh: pg.Mesh
+            Copy of the main Mesh. Will be distributet to inversion and the fop.
+            You can overwrite it with invert(mesh=mesh). 
+        """
         super(MeshMethodManager, self).__init__(**kwargs)
+        self.mesh = None
 
     @property
     def paraDomain(self):
@@ -687,7 +695,12 @@ class MeshMethodManager(MethodManager):
             pg.critical('No data given for inversion')
 
         if mesh is None:
+            mesh = self.mesh
+
+        if mesh is None:
             mesh = self.createMesh(data, **kwargs)
+
+        self.mesh = mesh
 
         self.applyData(data)
         self.applyMesh(mesh)
