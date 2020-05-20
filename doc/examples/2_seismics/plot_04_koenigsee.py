@@ -36,7 +36,6 @@ mgr = TravelTimeManager()
 # velocity images.
 mgr.showData(data)  # show first arrivals as curves (done later with response)
 #TODO mgr.showVA(data)  # show data as apparent velocity image
-
 ################################################################################
 # Finally, we call the `invert` method and plot the result.The mesh is created
 # based on the sensor positions on-the-fly. Yes, it is really as simple as that.

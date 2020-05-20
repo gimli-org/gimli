@@ -580,7 +580,7 @@ class MeshModelling(Modelling):
             pg.viewer.mpl.setMappableData(cBar.mappable, mod, **kwargs)
         else:
             diam = kwargs.pop('diam', None)
-            
+
             ax, cBar = pg.show(mesh=self.paraDomain,
                                data=mod,
                                label=kwargs.pop('label', 'Model parameter'),
@@ -591,7 +591,6 @@ class MeshModelling(Modelling):
             if diam is not None:
                 pg.viewer.mpl.drawSensors(ax, self.data.sensors(), diam=diam,
                                          edgecolor='black', facecolor='white')
-
         return ax, cBar
 
 
