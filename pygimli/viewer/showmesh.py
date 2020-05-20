@@ -256,10 +256,15 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
     nCols = None
     cBarOrientation = kwargs.pop('orientation', 'horizontal')
 
-    fitViewDefault = False
     if ax is None:
-        fitViewDefault = True
         ax = plt.subplots()[1]
+
+    # adjust limits only when axis is empty
+    if (ax.lines or ax.collections or ax.patches):
+        fitViewDefault = False
+    else:
+        fitViewDefault = True
+
 
     # plt.subplots() resets locale setting to system default .. this went
     # horrible wrong for german 'decimal_point': ','

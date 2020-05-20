@@ -27,7 +27,8 @@ def fit(funct, data, err=None, **kwargs):
     ----------
     funct: callable
         Function with the first argmument as data space, e.g., x, t, f, Nr. ..
-        Any following arguments are the parameters to be fit. Except a verbose flag if used.
+        Any following arguments are the parameters to be fit.
+        Except if a verbose flag if used.
     data: iterable (float)
         Data values
     err: iterable (float) [None]
@@ -36,7 +37,8 @@ def fit(funct, data, err=None, **kwargs):
     Other Parameters
     ----------------
     *dataSpace*: iterable
-        Keyword argument of the data space of len(data). The name need to fit the first argument of funct.
+        Keyword argument of the data space of len(data).
+        The name need to fit the first argument of funct.
 
     Returns
     -------
@@ -102,6 +104,7 @@ class MethodManager(object):
         overwriting
         :py:mod:`pygimli.manager.MethodManager.initInversionFramework`
     """
+
     def __init__(self, fop=None, fw=None, data=None, **kwargs):
         """Constructor."""
         self._fop = fop
@@ -129,7 +132,7 @@ class MethodManager(object):
         self.errIsAbsolute = False
 
     def __hash__(self):
-        """Create a hash for Method Manager"""
+        """Create a hash for Method Manager."""
         return pg.utils.strHash(str(type(self))) ^ hash(self.fop)
 
     @property
@@ -235,7 +238,6 @@ class MethodManager(object):
 
         Parameters
         ----------
-
         **kwargs
             Any arguments that are necessary for your creation.
 
@@ -272,7 +274,7 @@ class MethodManager(object):
             Error level in percent/100.
 
         absoluteError : float (None)
-            TODO
+            absolute error in the unit of the data
 
         Returns
         -------
@@ -396,7 +398,7 @@ class MethodManager(object):
         return self.fw.model
 
     def showModel(self, model, ax=None, **kwargs):
-        """Shows a model.
+        """Show a model.
 
         Draw model into a given axes or show inversion result from last run.
         Forwards on default to the self.fop.drawModel function
@@ -422,7 +424,7 @@ class MethodManager(object):
         return ax, cBar
 
     def showData(self, data=None, ax=None, **kwargs):
-        """Shows the data.
+        """Show the data.
 
         Draw data values into a given axes or show the data values from
         the last run.
@@ -445,6 +447,9 @@ class MethodManager(object):
         """
         if ax is None:
             fig, ax = pg.plt.subplots()
+
+        if data is None:
+            data = self.data
 
         return self.fop.drawData(ax, data, **kwargs), None
 
@@ -474,12 +479,12 @@ class MethodManager(object):
     def showFit(self, ax=None, **kwargs):
         """Show the last inversion data and response."""
         ax, cBar = self.showData(data=self.inv.dataVals,
-                           error=self.inv.errorVals,
-                           label='Data',
-                           ax=ax, **kwargs)
+                                 error=self.inv.errorVals,
+                                 label='Data',
+                                 ax=ax, **kwargs)
         ax, cBar = self.showData(data=self.inv.response,
-                           label='Response',
-                           ax=ax, **kwargs)
+                                 label='Response',
+                                 ax=ax, **kwargs)
 
         if not kwargs.pop('hideFittingAnnotation', False):
             ax.text(0.99, 0.005, r"rrms: {0}, $\chi^2$: {1}".format(
@@ -496,7 +501,6 @@ class MethodManager(object):
 
     def showResultAndFit(self, **kwargs):
         """Calls showResults and showFit."""
-
         fig = pg.plt.figure()
         ax = fig.add_subplot(1, 2, 1)
 
@@ -622,8 +626,16 @@ class MethodManager1d(MethodManager):
 
 class MeshMethodManager(MethodManager):
     def __init__(self, **kwargs):
-        """Constructor."""
+        """Constructor.
+        
+        Attribute
+        ---------
+        mesh: pg.Mesh
+            Copy of the main Mesh. Will be distributet to inversion and the fop.
+            You can overwrite it with invert(mesh=mesh). 
+        """
         super(MeshMethodManager, self).__init__(**kwargs)
+        self.mesh = None
 
     @property
     def paraDomain(self):
@@ -687,7 +699,12 @@ class MeshMethodManager(MethodManager):
             pg.critical('No data given for inversion')
 
         if mesh is None:
+            mesh = self.mesh
+
+        if mesh is None:
             mesh = self.createMesh(data, **kwargs)
+
+        self.mesh = mesh
 
         self.applyData(data)
         self.applyMesh(mesh)
