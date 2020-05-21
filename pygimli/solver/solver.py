@@ -1274,7 +1274,7 @@ def assembleNeumannBC(rhs, boundaryPairs, nDim=1, time=0.0, userData={},
         g = generateBoundaryValue(boundary, val, time, userData)
 
         # if a is not None:
-        #     pg.warning('Scaling of neumann values necessary? Check!')
+        #     pg.warning('Scaling of Neumann values necessary? Check!')
         #     try:
         #         g *= a[boundary.leftCell().id()]
         #     except BaseException as e:

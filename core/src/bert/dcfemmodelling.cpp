@@ -225,7 +225,7 @@ void dcfemDomainAssembleStiffnessMatrix(SparseMatrix < ValueType > & S, const Me
     }
     if (countforcedHomDirichlet++){
         std::cout << WHERE_AM_I << " WARNING! " << countforcedHomDirichlet
-                << " nodes forced to homogen dirichlet to fix singularity of stiffness matrix" << std::endl;
+                << " nodes forced to homogen Dirichlet to fix singularity of stiffness matrix" << std::endl;
     }
 }
 
@@ -752,7 +752,7 @@ void DCMultiElectrodeModelling::updateMeshDependency_(){
 
     if (neumannDomain_) {
         if (verbose_) {
-            std::cout << "Found neumann domain. Setting topography=1." << std::endl;
+            std::cout << "Found Neumann domain. Setting topography=1." << std::endl;
         }
         topography_ = true;
     }
@@ -1046,7 +1046,7 @@ void DCMultiElectrodeModelling::searchElectrodes_(){
 
     if (neumannDomain_){
         if (calibrationSourceIdx_.size() == 0) {
-            std::cout << "Warning! neumann domain without calibration (potential reference) point. "
+            std::cout << "Warning! Neumann domain without calibration (potential reference) point. "
                         << "This may lead to a non-positive definite matrix. LDL can solve instead of"
                             " CHOLMOD, but better you add VIP with calibration marker "
                         << MARKER_NODE_CALIBRATION << std::endl;
@@ -1056,7 +1056,7 @@ void DCMultiElectrodeModelling::searchElectrodes_(){
 
         if (!electrodeRef_ && !dipoleCurrentPattern_) {
             if (verbose_) {
-                std::cout << "Found neumann domain without reference electrode. " << std::endl
+                std::cout << "Found Neumann domain without reference electrode. " << std::endl
                             << "Choose last electrode as reference. " << std::endl;
             }
             if (electrodes_.size() == 0){
