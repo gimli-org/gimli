@@ -22,6 +22,7 @@ class TestManagers(unittest.TestCase):
                                  paraDX=0.3, paraMaxCellSize=0.5, paraDepth=8)
         #with SR
         ert = ERTManager(sr=True, useBert=True, verbose=False, debug=False)
+        print('############', pg.testingMode())
         mod = ert.invert(dat, mesh=mesh, maxIter=20, lam=10)
         np.testing.assert_approx_equal(ert.inv.chi2(), 1.003, significant=3)
 
