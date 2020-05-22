@@ -123,5 +123,10 @@ class TestMeshGenerator(unittest.TestCase):
 
 
 if __name__ == '__main__':
+    # pg.setDeepDebug(1)
+    # t = TestMeshGenerator()
+    # t.test_meshAccess()
+    # t.test_createGrid()
+    # exit()
 
     unittest.main()
