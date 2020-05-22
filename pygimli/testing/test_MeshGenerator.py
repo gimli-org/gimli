@@ -13,7 +13,31 @@ class TestMeshGenerator(unittest.TestCase):
         y = [.5, 1, 2, 3]
         z = [.5, 1, 3]
 
+<<<<<<< Updated upstream:pygimli/testing/test_MeshGenerator.py
         mesh = pg.createGrid(x, y, z)
+=======
+        #mesh = pg.createGrid(x, y, z)
+        mesh = pg.Mesh(dim=1)
+        n1 = mesh.createNode([0.0,0.0])
+        n2 = mesh.createNode([1.0,0.0])
+        mesh.createCell([n1.id(), n2.id()])
+        print(mesh)
+        #print(mesh.node(0))
+        print('A#############')
+        #try:
+        #    t = pg.core.stdVectorCells()
+        #    print(t)
+        #    mesh.deleteCells(t)
+        #    pass
+        #except:
+        #    print('-----')
+        #    pass
+        #print('B#############')
+        print(mesh.cell(0))
+        #print('C#############')
+        #print(mesh.boundary(0))
+        print('D#############')
+>>>>>>> Stashed changes:python/pygimli/testing/test_MeshGenerator.py
 
     def test_triangle(self):
         plc = pg.meshtools.createRectangle()
@@ -124,6 +148,7 @@ class TestMeshGenerator(unittest.TestCase):
 
 if __name__ == '__main__':
     # pg.setDeepDebug(1)
+    
     # t = TestMeshGenerator()
     # t.test_meshAccess()
     # t.test_createGrid()
