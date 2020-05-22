@@ -141,7 +141,6 @@ try:
                                 "%matplotlib inline"),
 
         'reset_modules': (reset_mpl),
-
         }
 
     pyvista = pygimli.optImport("pyvista", "building the gallery with 3D visualizations")

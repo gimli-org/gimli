@@ -4,14 +4,14 @@
 r"""
 CAD to mesh tutorial
 ====================
-In this example you will learn how to create a geometry in 
-`FreeCAD <https://www.freecadweb.org/>`_ and then export and mesh it using 
+In this example you will learn how to create a geometry in
+`FreeCAD <https://www.freecadweb.org/>`_ and then export and mesh it using
 `Gmsh <http://gmsh.info/>`_.
 """
 
 ###############################################################################
 # Gmsh comes with a build-in CAD engine for defining a geometry, as shown
-# in the `flexible mesh generation example <https://www.pygimli.org/_examples_auto/1_meshing/plot_gmsh-example.html#sphx-glr-examples-auto-1-meshing-plot-gmsh-example-py>`_, 
+# in the `flexible mesh generation example <https://www.pygimli.org/_examples_auto/1_meshing/plot_gmsh-example.html#sphx-glr-examples-auto-1-meshing-plot-gmsh-example-py>`_,
 # but using a parametric CAD program such as FreeCAD is much more intuitive and flexible.
 #
 # For this tutorial you will need Gmsh and its Python API (application
@@ -22,8 +22,8 @@ In this example you will learn how to create a geometry in
 #
 #     conda install -c conda-forge gmsh python-gmsh
 #
-# In case you also want to try out FreeCAD, installing it from their 
-# `website <https://www.freecadweb.org/downloads.php>`_ will give you the 
+# In case you also want to try out FreeCAD, installing it from their
+# `website <https://www.freecadweb.org/downloads.php>`_ will give you the
 # most up to date version.
 #
 # This example is based on an ERT modeling and inversion experiment on a
@@ -132,21 +132,23 @@ gmsh = pg.optImport("gmsh", "do this tutorial. Install by running: pip install g
 # Download all nessesary files
 geom_filename = pg.getExampleFile("cad/dike_mod.brep")
 elec_pos_filename = pg.getExampleFile("cad/elec_pos.csv")
-# Starting it up (tutorial t1.py)
-gmsh.initialize()
-gmsh.option.setNumber("General.Terminal", 1)
-gmsh.model.add("dike_mod")
-# Load a BREP file (t20.py & demo step_assembly.py)
-# .brep files don't contain info about units, so scaling has to be applied
-gmsh.option.setNumber("Geometry.OCCScaling", 0.001)
-volumes = gmsh.model.occ.importShapes(geom_filename)
+
+if gmsh:
+    # Starting it up (tutorial t1.py)
+    gmsh.initialize()
+    gmsh.option.setNumber("General.Terminal", 1)
+    gmsh.model.add("dike_mod")
+    # Load a BREP file (t20.py & demo step_assembly.py)
+    # .brep files don't contain info about units, so scaling has to be applied
+    gmsh.option.setNumber("Geometry.OCCScaling", 0.001)
+    volumes = gmsh.model.occ.importShapes(geom_filename)
 
 
 ###############################################################################
 # Before diving into local mesh refinement, putting the electrodes in
 # the mesh and assigning region, boundary and electrode markers, the
 # .brep geometry file should be checked. Especially check whether the
-# meshes of two adjacent regions share nodes on their interfaces. The 
+# meshes of two adjacent regions share nodes on their interfaces. The
 # mesh can be viewed by running the following lines of code:
 #
 # .. code-block:: python
@@ -154,7 +156,7 @@ volumes = gmsh.model.occ.importShapes(geom_filename)
 #     # Run this code after every change in the mesh to see what changed.
 #     gmsh.model.occ.synchronize()
 #     gmsh.model.mesh.generate(3)
-#     gmsh.fltk.run() 
+#     gmsh.fltk.run()
 #
 # Tips for viewing the mesh:
 #
@@ -188,24 +190,25 @@ cl_outer = 30
 tags = {"outer region": 2,
     "dike": 3,
     "channel": 1,
-    "surface": [7, 11, 12, 13, 21, 23, 24, 
+    "surface": [7, 11, 12, 13, 21, 23, 24,
                 25, 27, 29, 30, 31],
     "boundary": [8, 14, 15, 16, 20],      # "Underground Box Boundary"
     "electrodes": []}
-# Syncronize CAD representation with the Gmsh model (t1.py)
-# Otherwise gmsh.model.get* methods don't work.
-gmsh.model.occ.synchronize()
-# Set mesh sizes for the dike and outer region.
-# The order, in which mesh sizes are set, matters. Big -> Small 
-gmsh.model.mesh.setSize(            # Especially t16.py, also t2; 15; 18; 21
-    gmsh.model.getBoundary(         # get dimTags of boundary elements of
-        (3, tags["outer region"]),  # dimTag: (dim, tag)
-        recursive=True),            # recursive -> dimTags of points
-    cl_outer)
-gmsh.model.mesh.setSize(
-    gmsh.model.getBoundary((3, tags["dike"]),recursive=True),
-    cl_dike)
 
+if gmsh:
+    # Syncronize CAD representation with the Gmsh model (t1.py)
+    # Otherwise gmsh.model.get* methods don't work.
+    gmsh.model.occ.synchronize()
+    # Set mesh sizes for the dike and outer region.
+    # The order, in which mesh sizes are set, matters. Big -> Small
+    gmsh.model.mesh.setSize(            # Especially t16.py, also t2; 15; 18; 21
+        gmsh.model.getBoundary(         # get dimTags of boundary elements of
+            (3, tags["outer region"]),  # dimTag: (dim, tag)
+            recursive=True),            # recursive -> dimTags of points
+        cl_outer)
+    gmsh.model.mesh.setSize(
+        gmsh.model.getBoundary((3, tags["dike"]),recursive=True),
+        cl_dike)
 
 ###############################################################################
 # Now reload the script, mesh the geometry again and have a look how
@@ -215,21 +218,21 @@ gmsh.model.mesh.setSize(
 # defined in the geometry.
 
 
-# positions: np.array([elec#, x, y, z, y "over ground"])
-pos = np.genfromtxt(elec_pos_filename, delimiter=",", skip_header=1)
-# Electrodes are put at 2 cm depth, such that they can be embeded in the volume of the dike.
-# Embeding the electrodes into the surface elements complicates meshing.
-elec_depth = 0.02               # elec depth [m]
-pos[:, 3] = pos[:, 3] - elec_depth
-# Add the electrodes to the Gmsh model and put the tags into the Dict
-for xyz in pos:
-    tag = int(200 + xyz[0])
-    gmsh.model.occ.addPoint(xyz[1], xyz[2], xyz[3], cl_elec, tag)
-    tags["electrodes"].append(tag)
-# Embed electrodes in dike volume. (t15.py)
-gmsh.model.occ.synchronize()
-gmsh.model.mesh.embed(0, tags["electrodes"], 3, tags["dike"])
-
+if gmsh:
+    # positions: np.array([elec#, x, y, z, y "over ground"])
+    pos = np.genfromtxt(elec_pos_filename, delimiter=",", skip_header=1)
+    # Electrodes are put at 2 cm depth, such that they can be embeded in the volume of the dike.
+    # Embeding the electrodes into the surface elements complicates meshing.
+    elec_depth = 0.02               # elec depth [m]
+    pos[:, 3] = pos[:, 3] - elec_depth
+    # Add the electrodes to the Gmsh model and put the tags into the Dict
+    for xyz in pos:
+        tag = int(200 + xyz[0])
+        gmsh.model.occ.addPoint(xyz[1], xyz[2], xyz[3], cl_elec, tag)
+        tags["electrodes"].append(tag)
+    # Embed electrodes in dike volume. (t15.py)
+    gmsh.model.occ.synchronize()
+    gmsh.model.mesh.embed(0, tags["electrodes"], 3, tags["dike"])
 
 ###############################################################################
 # Reload the Gmsh script and mesh it again to see the result. Further
@@ -250,17 +253,19 @@ gmsh.model.mesh.embed(0, tags["electrodes"], 3, tags["dike"])
 #        |                |       |
 #      Point           DistMin DistMax
 # Field 1: Distance to electrodes
-gmsh.model.mesh.field.add("Distance", 1)
-gmsh.model.mesh.field.setNumbers(1, "NodesList", tags["electrodes"])
-# Field 2: Threshold that dictates the mesh size of the background field
-gmsh.model.mesh.field.add("Threshold", 2)
-gmsh.model.mesh.field.setNumber(2, "IField", 1)
-gmsh.model.mesh.field.setNumber(2, "LcMin", cl_elec)
-gmsh.model.mesh.field.setNumber(2, "LcMax", cl_dike)
-gmsh.model.mesh.field.setNumber(2, "DistMin", 0.2)
-gmsh.model.mesh.field.setNumber(2, "DistMax", 1.5)
-gmsh.model.mesh.field.setNumber(2, "StopAtDistMax", 1)
-gmsh.model.mesh.field.setAsBackgroundMesh(2)
+
+if gmsh:
+    gmsh.model.mesh.field.add("Distance", 1)
+    gmsh.model.mesh.field.setNumbers(1, "NodesList", tags["electrodes"])
+    # Field 2: Threshold that dictates the mesh size of the background field
+    gmsh.model.mesh.field.add("Threshold", 2)
+    gmsh.model.mesh.field.setNumber(2, "IField", 1)
+    gmsh.model.mesh.field.setNumber(2, "LcMin", cl_elec)
+    gmsh.model.mesh.field.setNumber(2, "LcMax", cl_dike)
+    gmsh.model.mesh.field.setNumber(2, "DistMin", 0.2)
+    gmsh.model.mesh.field.setNumber(2, "DistMax", 1.5)
+    gmsh.model.mesh.field.setNumber(2, "StopAtDistMax", 1)
+    gmsh.model.mesh.field.setAsBackgroundMesh(2)
 
 
 ###############################################################################
@@ -271,29 +276,29 @@ gmsh.model.mesh.field.setAsBackgroundMesh(2)
 # the same Physical Group tag number conventions for marking the
 # regions, surfaces and points as used in PyGIMLi.
 
+if gmsh:
+    # Physical Volumes, "Regions" in pyGIMLi
+    pgrp = gmsh.model.addPhysicalGroup(3, [tags["outer region"]], 1)  #(dim, tag, pgrp tag)
+    gmsh.model.setPhysicalName(3, pgrp, "Outer Region")     # Physical group name in Gmsh
+    pgrp = gmsh.model.addPhysicalGroup(3, [tags["dike"]], 2)
+    gmsh.model.setPhysicalName(3, pgrp, "Dike")
+    pgrp = gmsh.model.addPhysicalGroup(3, [tags["channel"]], 3)
+    gmsh.model.setPhysicalName(3, pgrp, "Channel")
+    # Physical Surfaces, "Boundaries" in pyGIMLi,
+    # pgrp tag = 1 --> Free Surface | pgrp tag > 1 --> Mixed BC
+    pgrp = gmsh.model.addPhysicalGroup(2, tags["surface"], 1)
+    gmsh.model.setPhysicalName(2, pgrp, "Surface")
+    pgrp = gmsh.model.addPhysicalGroup(2, tags["boundary"], 2)
+    gmsh.model.setPhysicalName(2, pgrp, "Underground Boundary")
+    # Physical Points, "Electrodes / Sensors" in pyGIMLi, pgrp tag 99
+    pgrp = gmsh.model.addPhysicalGroup(0, tags["electrodes"], 99)
+    gmsh.model.setPhysicalName(0, pgrp, "Electrodes")
 
-# Physical Volumes, "Regions" in pyGIMLi
-pgrp = gmsh.model.addPhysicalGroup(3, [tags["outer region"]], 1)  #(dim, tag, pgrp tag)
-gmsh.model.setPhysicalName(3, pgrp, "Outer Region")     # Physical group name in Gmsh
-pgrp = gmsh.model.addPhysicalGroup(3, [tags["dike"]], 2)
-gmsh.model.setPhysicalName(3, pgrp, "Dike")
-pgrp = gmsh.model.addPhysicalGroup(3, [tags["channel"]], 3)
-gmsh.model.setPhysicalName(3, pgrp, "Channel")
-# Physical Surfaces, "Boundaries" in pyGIMLi,
-# pgrp tag = 1 --> Free Surface | pgrp tag > 1 --> Mixed BC
-pgrp = gmsh.model.addPhysicalGroup(2, tags["surface"], 1)
-gmsh.model.setPhysicalName(2, pgrp, "Surface")
-pgrp = gmsh.model.addPhysicalGroup(2, tags["boundary"], 2)
-gmsh.model.setPhysicalName(2, pgrp, "Underground Boundary")
-# Physical Points, "Electrodes / Sensors" in pyGIMLi, pgrp tag 99
-pgrp = gmsh.model.addPhysicalGroup(0, tags["electrodes"], 99)
-gmsh.model.setPhysicalName(0, pgrp, "Electrodes")
-
-# Generate the mesh and write the mesh file
-gmsh.model.occ.synchronize()
-gmsh.model.mesh.generate(3)
-gmsh.write("dike_mod.msh")
-gmsh.finalize()
+    # Generate the mesh and write the mesh file
+    gmsh.model.occ.synchronize()
+    gmsh.model.mesh.generate(3)
+    gmsh.write("dike_mod.msh")
+    gmsh.finalize()
 
 
 ###############################################################################
