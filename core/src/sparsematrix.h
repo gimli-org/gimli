@@ -715,7 +715,21 @@ public:
         : MatrixBase(), valid_(true){
         copy_(S);
     }
-
+    SparseMatrix(const IndexArray & colPtr,
+                 const IndexArray & rowIdx,
+                 const Vector < ValueType > vals, int stype=0)
+        : MatrixBase(){
+        colPtr_ = std::vector < int >(colPtr.size());
+        rowIdx_ = std::vector < int >(rowIdx.size());
+        for (Index i = 0; i < colPtr_.size(); i ++ ) colPtr_[i] = colPtr[i];
+        for (Index i = 0; i < colPtr_.size(); i ++ ) rowIdx_[i] = rowIdx[i];
+        vals_   = vals;
+        stype_  = stype;
+        valid_  = true;
+        cols_ = max(rowIdx_) + 1;
+        rows_ = colPtr_.size() - 1;
+    }
+    
     SparseMatrix(const std::vector < int > & colPtr,
                  const std::vector < int > & rowIdx,
                  const Vector < ValueType > vals, int stype=0)

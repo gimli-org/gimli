@@ -102,6 +102,13 @@ class TestSparseMatrix(unittest.TestCase):
         np.testing.assert_equal(sciA1.row, sciA2.row)
         np.testing.assert_equal(sciA1.col, sciA2.col)
 
+        ### toSparseMatrix
+
+        sciCSR = pg.utils.sparseMatrix2csr(pg.matrix.SparseMatrix(mm))
+        np.testing.assert_equal(pg.utils.toSparseMatrix(sciCSR) == mm, True)
+
+
+
     def test_Access(self):
         #addVal(0, 1, 1.2) kommt nach der konvertierung auch wieder [0], [1], [1.2]
         pass
@@ -124,7 +131,7 @@ class TestSparseMatrix(unittest.TestCase):
                                   np.ones(grid.cellCount())*1.0)
 
         A = pg.solver.createStiffnessMatrix(grid, a=alpha)
-        pg.solver.solver._assembleUDirichlet(A, None, [0], [0.0])
+        pg.solver.solver.applyDirichlet(A, None, [0], [0.0])
         #pg.solver.showSparseMatrix(A)
         #pg.solver.assembleDirichletBC(A, [[grid.boundary(0), 0.0]])
 

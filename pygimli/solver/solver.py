@@ -1058,18 +1058,14 @@ def linSolve(mat, b, solver=None, verbose=False):
 
     if solver == 'pg':
         _m = mat
+        
         if isinstance(mat, pg.matrix.CSparseMatrix):
             x = pg.CVector(len(b), 0)
-        elif isinstance(mat, pg.matrix.SparseMatrix):
+        elif isinstance(mat, pg.matrix.SparseMatrix) or isinstance(mat, pg.matrix.SparseMapMatrix):
             pass
-        elif isinstance(mat, pg.matrix.SparseMapMatrix):
-            _m = pg.matrix.SparseMatrix(mat)
-        elif isinstance(mat, pg.matrix.BlockMatrix):
-            _m = mat.sparseMapMatrix()
         else:
-            pg.critical("Solver '" + solver + "' does not know how to "
-                        "solve linear system with matrixtype:" + mat)
-
+            _m = pg.utils.toSparseMatrix(mat)
+            
         ls = pg.core.LinSolver(_m, verbose=verbose)
         ls.solve(b, x)
     else:
@@ -1093,12 +1089,11 @@ def linSolve(mat, b, solver=None, verbose=False):
     return x
 
 
-def _assembleUDirichlet(mat, rhs, uDirIndex, uDirichlet):
+def applyDirichlet(mat, rhs, uDirIndex, uDirichlet):
     """This should be moved directly into the core"""
 
     if rhs is not None:
         uDir = pg.Vector(mat.rows(), 0.0)
-        #print(uDirichlet, uDirIndex)
         uDir.setVal(uDirichlet, uDirIndex)
         rhs -= mat * uDir
 
@@ -1186,7 +1181,7 @@ def assembleDirichletBC(mat, boundaryPairs, rhs=None, time=0.0, userData={},
     for pair in boundaryPairs:
         ent = pair[0]
         val = pair[1]
-        #print('**', ent, val)
+        # print('**', ent, val)
         uD = generateBoundaryValue(ent, val, time, userData)
 
         if uD is not None:
@@ -1218,7 +1213,7 @@ def assembleDirichletBC(mat, boundaryPairs, rhs=None, time=0.0, userData={},
     if not uDirVal.keys():
         return
 
-    _assembleUDirichlet(mat, rhs, list(uDirVal.keys()), list(uDirVal.values()))
+    applyDirichlet(mat, rhs, list(uDirVal.keys()), list(uDirVal.values()))
 
 
 def assembleNeumannBC(rhs, boundaryPairs, nDim=1, time=0.0, userData={},
@@ -1292,7 +1287,7 @@ def assembleNeumannBC(rhs, boundaryPairs, nDim=1, time=0.0, userData={},
                 else:
                     gd = g[dim]
 
-                idx = Se.ids() + dim*dof
+                idx = Se.ids() + dim*dof + dofOffset
 
                 if isinstance(gd, float) and gd == 0:
                     continue
@@ -1302,9 +1297,7 @@ def assembleNeumannBC(rhs, boundaryPairs, nDim=1, time=0.0, userData={},
                 #print(nDim, g, gd)
                 if isinstance(rhs, pg.Vector):
                     # pg.info(sum(Se.row(0)))
-                    # pg.info(gd)
-                    # pg.info(Se.row(0))
-                    # pg.info(idx)
+                    #pg.info(Se.row(0), gd, idx)
                     rhs.addVal(Se.row(0) * gd, idx)
                     #rhs.setVal(Se.row(0) * gd, idx)
                     # rhs.add(Se, g)

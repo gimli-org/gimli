@@ -238,7 +238,7 @@ def warn(*args):
     logger.warning(_msg(*args))
 
 def error(*args):
-    logger.error(whereAmI() + "\n" + _msg(*args))
+    logger.error(whereAmI(nr=2) + "\n" + _msg(*args))
 
 def debug(*args, withTrace=False):
     """
@@ -253,7 +253,7 @@ def verbose(*args):
     logger.verbose(_msg(*args))
 
 def critical(*args):
-    logger.critical(whereAmI() + "\n" + _msg(*args))
+    logger.critical(whereAmI(nr=2) + "\n" + _msg(*args))
     raise Exception(_msg(*args))
 
 def deprecated(msg='', hint=''):

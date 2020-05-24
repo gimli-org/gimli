@@ -72,54 +72,13 @@ def __R3Vector_str(self):
 
     return "R3Vector: n=" + str(self.size())
 
-
-def __RMatrix_str(self):
-    s = "RMatrix: " + str(self.rows()) + " x " + str(self.cols())
-
-    if self.rows() < 6:
-        s += '\n'
-        for v in range(self.rows()):
-            s += self[v].__str__(True) + '\n'
-    return s
-
-
-def __CMatrix_str(self):
-    s = "CMatrix: " + str(self.rows()) + " x " + str(self.cols())
-
-    if self.rows() < 6:
-        s += '\n'
-        for v in range(self.rows()):
-            s += self[v].__str__(True) + '\n'
-    return s
-
-
 def __Line_str(self):
     return "Line: " + str(self.p0()) + "  " + str(self.p1())
-
-
-def __ElementMatrix_str(self):
-    """Show entries of an ElementMatrix."""
-    if self.mat().cols() == 0 and self.mat().rows() == 0:
-        return 'Empty ElementMatrix\n'
-
-    s = '\n\t    '
-    # print(self.mat())
-    # print(self.colIDs())
-    # print(self.rowIDs())
-    for i in range(self.mat().cols()):
-        s += str(self.colIDs()[i]) + " "
-    s += '\n'
-
-    for i in range(self.mat().rows()):
-        s += str(self.rowIDs()[i]) + "\t: " + str(self.row(i)) + '\n'
-    return s
-
 
 def __BoundingBox_str(self):
     s = ''
     s += "BoundingBox [{0}, {1}]".format(self.min(), self.max())
     return s
-
 
 _pygimli_.RVector.__str__ = __RVector_str
 _pygimli_.CVector.__str__ = __RVector_str
@@ -129,10 +88,7 @@ _pygimli_.IndexArray.__str__ = __RVector_str
 _pygimli_.RVector3.__str__ = __RVector3_str
 _pygimli_.R3Vector.__str__ = __R3Vector_str
 
-_pygimli_.RMatrix.__str__ = __RMatrix_str
-_pygimli_.CMatrix.__str__ = __CMatrix_str
 _pygimli_.Line.__str__ = __Line_str
-_pygimli_.ElementMatrix.__str__ = __ElementMatrix_str
 _pygimli_.BoundingBox.__str__ = __BoundingBox_str
 
 ############################

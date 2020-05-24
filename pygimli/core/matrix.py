@@ -45,6 +45,47 @@ for m in __Matrices:
 pgcore.RMatrix.dtype = np.float
 pgcore.CMatrix.dtype = np.complex
 
+def __RMatrix_str(self):
+    s = "RMatrix: " + str(self.rows()) + " x " + str(self.cols())
+
+    if self.rows() < 6:
+        s += '\n'
+        for v in range(self.rows()):
+            s += self[v].__str__(True) + '\n'
+    return s
+
+
+def __CMatrix_str(self):
+    s = "CMatrix: " + str(self.rows()) + " x " + str(self.cols())
+
+    if self.rows() < 6:
+        s += '\n'
+        for v in range(self.rows()):
+            s += self[v].__str__(True) + '\n'
+    return s
+
+def __ElementMatrix_str(self):
+    """Show entries of an ElementMatrix."""
+    if self.mat().cols() == 0 and self.mat().rows() == 0:
+        return 'Empty ElementMatrix\n'
+
+    s = '\n\t    '
+    # print(self.mat())
+    # print(self.colIDs())
+    # print(self.rowIDs())
+    for i in range(self.mat().cols()):
+        s += str(self.colIDs()[i]) + " "
+    s += '\n'
+
+    for i in range(self.mat().rows()):
+        s += str(self.rowIDs()[i]) + "\t: " + str(pgcore.round(self.row(i), 1e-6)) + '\n'
+    return s
+
+pgcore.RMatrix.__str__ = __RMatrix_str
+pgcore.CMatrix.__str__ = __CMatrix_str
+pgcore.ElementMatrix.__str__ = __ElementMatrix_str
+
+
 ## Special Monkeypatch core classes
 __BlockMatrix_addMatrix__ = pgcore.RBlockMatrix.addMatrix
 
@@ -124,11 +165,13 @@ pgcore.RBlockMatrix.ndim = 2
 
 def __SparseMatrixEqual__(self, T):
     """Compare two SparseMatrices"""
+    from pygimli.utils import sparseMatrix2Array
     if self.rows() != T.rows() or self.cols() != T.cols():
         warn("Compare sizes invalid {0},{1} vs. {2},{3}: ".format(
             self.rows(), self.cols(), T.rows(), T.cols()))
         return False
 
+    
     rowsA, colsA, valsA = sparseMatrix2Array(self, indices=True)
     rowsB, colsB, valsB = sparseMatrix2Array(T, indices=True)
 
