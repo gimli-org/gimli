@@ -151,13 +151,13 @@ def getSavePath(folder=None, subfolder='', now=None):
     if folder is None:
         path = createResultPath(subfolder, now=now)
     else:
-        path = createPaths([folder, subfolder])
+        path = createPath([folder, subfolder])
     return path
 
 def createResultPath(subfolder, now=None):
     """Create a result Folder."""
     result = createDateTimeString(now)
-    return createPaths(['.', result, subfolder])
+    return createPath(['.', result, subfolder])
 
 def createPath(pathList):
     """Create the path structure specified by list.

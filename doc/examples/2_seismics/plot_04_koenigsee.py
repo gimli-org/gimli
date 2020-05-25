@@ -57,6 +57,7 @@ mgr.showRayPaths(ax=ax, color="w", lw=0.3, alpha=0.5)
 ################################################################################
 # Show result and fit of measured data and model response.
 fig = mgr.showResultAndFit()
+mgr.saveResult()
 
 ################################################################################
 # You can play around with the gradient starting model (`vtop` and `vbottom`

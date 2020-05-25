@@ -7,6 +7,7 @@ from .base import (rms, rmsWithErr, nanrms, createDateTimeString,
                    createFolders,
                    createResultFolder, # renamed 20200515
                    createResultPath,
+                   createPath,
                    getSavePath, gmat2numpy, interperc, interpExtrap, inthist,
                    nanrms, num2str, numpy2gmat, rrms, rms, rndig, saveResult,
                    chi2)
