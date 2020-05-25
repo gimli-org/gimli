@@ -451,12 +451,13 @@ def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=None,
                 # if all data are negative switch to lin scale
                 return setMappableData(mappable, dataIn, cMin, cMax,
                                        logScale=False, **kwargs)
+
     if logScale is True:
-        mappable.set_norm(mpl.colors.LogNorm())
+        mappable.set_norm(mpl.colors.LogNorm(vmin=cMin, vmax=cMax))
     elif logScale is False:
         mappable.set_norm(mpl.colors.Normalize(vmin=cMin, vmax=cMax))
 
-    #pg._g(oldLog, logScale, cMin, cMax, mappable.norm)
+    #pg._g(oldLog, logScale, cMin, cMax, mappable.norm, data)
     mappable.set_array(data)
     mappable.set_clim(cMin, cMax)
 

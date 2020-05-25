@@ -627,12 +627,12 @@ class MethodManager1d(MethodManager):
 class MeshMethodManager(MethodManager):
     def __init__(self, **kwargs):
         """Constructor.
-        
+
         Attribute
         ---------
         mesh: pg.Mesh
             Copy of the main Mesh. Will be distributet to inversion and the fop.
-            You can overwrite it with invert(mesh=mesh). 
+            You can overwrite it with invert(mesh=mesh).
         """
         super(MeshMethodManager, self).__init__(**kwargs)
         self.mesh = None

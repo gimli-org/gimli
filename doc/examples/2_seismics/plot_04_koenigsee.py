@@ -51,15 +51,15 @@ ax, cbar = mgr.showData(data)
 mgr.invert(data, secNodes=3, paraMaxCellSize=5.0,
            zWeight=0.2, vTop=500, vBottom=5000,
            verbose=1)
-ax, cbar = mgr.showResult()
-mgr.showRayPaths(ax=ax, color="w", lw=0.3, alpha=0.5)
+
+ax, cbar = mgr.showResult(logScale=True)
+mgr.drawRayPaths(ax=ax, color="w", lw=0.3, alpha=0.5)
 
 ################################################################################
-# Show result and fit of measured data and model response.
+# Show result and fit of measured data and model response. You may want to save your results too.
 fig = mgr.showResultAndFit()
 mgr.saveResult()
-
 ################################################################################
-# You can play around with the gradient starting model (`vtop` and `vbottom`
+# You can play around with the gradient starting model (`vTop` and `vBottom`
 # arguments) and the regularization strength `lam`. You can also customize the
 # mesh.
