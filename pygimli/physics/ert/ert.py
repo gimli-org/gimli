@@ -52,7 +52,7 @@ def simulate(mesh, scheme, res, sr=True, useBert=True,
                         verbose=verbose, **kwargs)
 
 
-#@pg.cache
+@pg.cache
 def createGeometricFactors(scheme, numerical=None, mesh=None,
                            h2=True, p2=True, verbose=False):
     """Create geometric factors for a data scheme.
