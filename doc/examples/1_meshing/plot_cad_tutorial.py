@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # encoding: utf-8
-# sphinx_gallery_thumbnail_path = '_static/cad_tutorial/gmsh_fig.png'
 r"""
 CAD to mesh tutorial
 ====================
@@ -8,6 +7,7 @@ In this example you will learn how to create a geometry in
 `FreeCAD <https://www.freecadweb.org/>`_ and then export and mesh it using
 `Gmsh <http://gmsh.info/>`_.
 """
+# sphinx_gallery_thumbnail_path = '_static/cad_tutorial/gmsh_fig.png'
 
 ###############################################################################
 # Gmsh comes with a build-in CAD engine for defining a geometry, as shown
