@@ -762,7 +762,7 @@ void DCMultiElectrodeModelling::updateMeshDependency_(){
         if (neumannDomain_){
             neumannDomain_ = false;
             if (verbose_) {
-                std::cout << "Found neumann domain. but 2.5D -> neumann: false" << std::endl;
+                std::cout << "Found Neumann domain. but 2.5D -> neumann: false" << std::endl;
             }
         }
     }
@@ -1041,7 +1041,7 @@ void DCMultiElectrodeModelling::searchElectrodes_(){
         }
     } else {
         //throwError(WHERE_AM_I+ " Warning ! Found neighter electrode nodes nor electrode facets, don't know what to do. ");
-        std::cout << "Warning! Found neighter electrode nodes nor electrode facets, don't know what to do. " << std::endl;
+        std::cout << "Warning! Found neigther electrode nodes nor electrode facets, don't know what to do. " << std::endl;
     }
 
     if (neumannDomain_){
@@ -1067,9 +1067,9 @@ void DCMultiElectrodeModelling::searchElectrodes_(){
             lastIsReferenz_ = true;
         }
     } else { // no neumann
-        if (verbose_) std::cout << "Found non-neumann domain" << std::endl;
+        if (verbose_) std::cout << "Found non-Neumann domain" << std::endl;
         if (calibrationSourceIdx_.size()){
-            std::cout << "Non-neumann domain conflicts with given calibration point. Ignoring calibration." << std::endl;
+            std::cout << "Non-Neumann domain conflicts with given calibration point. Ignoring calibration." << std::endl;
             calibrationSourceIdx_.clear();
         }
     }
@@ -1080,7 +1080,7 @@ RVector DCMultiElectrodeModelling::createDefaultStartModel(){
     if (dataContainer_ != NULL){
          vec.fill(median(dataContainer_->get("rhoa")));
     } else {
-        std::cerr << WHERE_AM_I << " No datacontainer given. " << std::endl;
+        std::cerr << WHERE_AM_I << " No data container given. " << std::endl;
     }
     return vec;
 }
@@ -1092,8 +1092,8 @@ RVector DCMultiElectrodeModelling::response(const RVector & model,
         if (!(this->topography() || buildCompleteElectrodeModel_)){
             dataContainer_->set("k",
                               this->calcGeometricFactor(this->dataContainer()));
-            log(Warning, " data contains no K-factors but we find them "
-                         " analytical for the response call");
+            log(Warning, " data contains no K-factors but we calculate them "
+                         " analytically for the response call");
 
         } else {
             throwError(WHERE_AM_I + " data contains no K-factors ");

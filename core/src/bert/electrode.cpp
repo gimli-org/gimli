@@ -143,7 +143,7 @@ void ElectrodeShapeNode::assembleRHS(RVector & rhs, double value, uint matrixSiz
         if (this->id() > -1 && (matrixSize + this->id()) < rhs.size()){
             rhs[matrixSize + this->id()] = value;
         } else {
-            std::cerr << WHERE_AM_I << " dont know what to do " << std::endl;
+            std::cerr << WHERE_AM_I << " don't know what to do " << std::endl;
             std::cerr << "Electrode-id() out of range: " << this->id() << " " << matrixSize << " "
                         << rhs.size() << std::endl;
         }
@@ -353,7 +353,7 @@ void ElectrodeShapeDomain::assembleRHS(RVector & rhs, double value, uint matrixS
         if (this->id() > -1 && (matrixSize + this->id()) < rhs.size()){
             rhs[matrixSize + this->id()] = value;
         } else {
-            std::cerr << WHERE_AM_I << " dont know what to do " << std::endl;
+            std::cerr << WHERE_AM_I << " don't know what to do " << std::endl;
             std::cerr << "Electrode-id() out of range: " << this->id() << " " << matrixSize << " "
                         << rhs.size() << std::endl;
         }
@@ -391,5 +391,3 @@ double ElectrodeShapeDomain::pot(const RVector & sol) const {
 }
 
 } //namespace BERT
-
-

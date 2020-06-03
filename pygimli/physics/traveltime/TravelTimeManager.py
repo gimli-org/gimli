@@ -163,7 +163,7 @@ class TravelTimeManager(MeshMethodManager):
             Calculate with singularity removal technique.
             Recommended but needs the primary potential.
             For flat earth cases the primary potential will be calculated
-            analytical. For domains with topography the primary potential
+            analytically. For domains with topography the primary potential
             will be calculated numerical using a p2 refined mesh or
             you provide primary potentials with setPrimPot.
         """
