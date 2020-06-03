@@ -6,10 +6,13 @@ Please use the BERT package for more advanced forward operator
 https://gitlab.com/resistivity-net/bert
 """
 
+import os.path
 import numpy as np
+import matplotlib.pyplot as plt
 
 import pygimli as pg
 from pygimli.frameworks import MeshModelling, MeshMethodManager
+from pygimli.utils import getSavePath
 from .visualization import showERTData
 
 from pygimli import pf
@@ -1080,6 +1083,50 @@ class ERTManager(MeshMethodManager):
         """Return standardized coverage vector (0|1) using thresholding.
         """
         return 1.0*(abs(self.coverage()) > threshhold)
+
+    def saveResult(self, folder=None, size=(16, 10), **kwargs):
+        """
+        Saves the results in the specified folder.
+
+        Saved items are:
+            Inverted profile
+            Resistivity vector
+            Coverage vector
+            Standardized coverage vector
+            Mesh (bms and vtk with results)
+        """
+
+        subfolder = self.__class__.__name__
+        path = getSavePath(folder, subfolder)
+
+        pg.info('Saving resistivity data to: {}'.format(path))
+
+        np.savetxt(path + '/resistivity.vector',
+                   self.model)
+        np.savetxt(path + '/resistivity-cov.vector',
+                   self.coverage())
+        np.savetxt(path + '/resistivity-scov.vector',
+                   self.standardizedCoverage())
+
+        m = pg.Mesh(self.paraDomain)
+        m['Resistivity'] = self.paraModel(self.model)
+        m['Resistivity (log10)'] = np.log10(m['Resistivity'])
+        m['Coverage'] = self.coverage()
+        m['S_Coverage'] = self.standardizedCoverage()
+        m.exportVTK(os.path.join(path, 'resistivity'))
+        m.saveBinaryV2(os.path.join(path, 'resistivity-pd'))
+        self.fop.mesh().save(os.path.join(path, 'resistivity-mesh'))
+
+        if self.paraDomain.dim() == 2:
+            fig, ax = plt.subplots()
+            fig.set_size_inches(size)
+
+            self.showResult(ax=ax, coverage=self.coverage(), **kwargs)
+            fig.savefig(path + '/resistivity.pdf')
+
+            return path, fig, ax
+        return path
+
 
 
 def createERTData(elecs, schemeName='none', **kwargs):
