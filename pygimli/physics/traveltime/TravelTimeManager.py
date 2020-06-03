@@ -195,7 +195,7 @@ class TravelTimeManager(MeshMethodManager):
     def createMesh(self, data=None, **kwargs):
         """Create default inversion mesh.
 
-        Inversionmesh for Traveltime inversion does not need boundary region.
+        Inversion mesh for traveltime inversion does not need boundary region.
         """
         d = data or self.data
 
