@@ -20,7 +20,7 @@ from pygimli import pf
 
 def simulate(mesh, scheme, res, sr=True, useBert=True,
              verbose=False, **kwargs):
-    """Convenience function to use the ERT modelling operator.
+    """ERT forward calculation.
 
     Convenience function to use the ERT modelling operator
     if you like static functions.
@@ -58,7 +58,7 @@ def simulate(mesh, scheme, res, sr=True, useBert=True,
 @pg.cache
 def createGeometricFactors(scheme, numerical=None, mesh=None,
                            h2=True, p2=True, verbose=False):
-    """Create geometric factors for a data scheme.
+    """Create geometric factors for a given data scheme.
 
     Create geometric factors for a data scheme with and without topography.
     Calculation will be done analytical (only for half space geometry)
@@ -89,8 +89,8 @@ def createGeometricFactors(scheme, numerical=None, mesh=None,
     """
     if numerical is None:
         numerical = False
-        if (min(pg.z(scheme)) != max(pg.z(scheme))):
-            verbose=True
+        if min(pg.z(scheme)) != max(pg.z(scheme)):
+            verbose = True
             pg.warn('Sensor z-coordinates not equal. Is there topography?')
 
     if numerical is False and mesh is None:
@@ -124,7 +124,7 @@ def createGeometricFactors(scheme, numerical=None, mesh=None,
 
 
 def createInversionMesh(data, **kwargs):
-    """Create default mesh for ERT inversion
+    """Create default mesh for ERT inversion.
 
     Parameters
     ----------
@@ -147,6 +147,8 @@ def createInversionMesh(data, **kwargs):
 
 
 class ERTModellingBase(MeshModelling):
+    """Modelling base class for ERT modelling."""
+
     def __init__(self, **kwargs):
         super(ERTModellingBase, self).__init__(**kwargs)
 
@@ -166,7 +168,7 @@ class ERTModellingBase(MeshModelling):
         return showERTData(data, vals=vals, ax=ax, **kwargs)
 
     def drawModel(self, ax, model, **kwargs):
-        """Draw the para domain with option model values"""
+        """Draw the para domain with option model values."""
         kwargs.setdefault('label', pg.unit('res'))
         kwargs.setdefault('cMap', pg.utils.cMap('res'))
 
@@ -176,7 +178,7 @@ class ERTModellingBase(MeshModelling):
 
 
 class ERTModelling(ERTModellingBase):
-    """ Forward operator for Electrical Resistivty Tomography
+    """Forward operator for Electrical Resistivty Tomography.
 
     Note
     ----
@@ -188,8 +190,8 @@ class ERTModelling(ERTModellingBase):
     The Jacobian is calculated with negative imaginary parts and will
     be a conjugated complex block matrix for further calulations.
     """
+
     def __init__(self, sr=True, verbose=False):
-        """Constructor, optional with data container and mesh."""
         super(ERTModelling, self).__init__()
 
         # don't use DC*fop or its regionmanager directly
@@ -203,7 +205,7 @@ class ERTModelling(ERTModellingBase):
         self._core.initJacobian()
         self.setJacobian(self._core.jacobian())
 
-        ## called from the ERTManager .. needed?
+        # called from the ERTManager .. needed?
         self.solution = self._core.solution
         self.setComplex = self._core.setComplex
         self.complex = self._core.complex
@@ -211,11 +213,10 @@ class ERTModelling(ERTModellingBase):
         self.calcGeometricFactor = self._core.calcGeometricFactor
         self.mapERTModel = self._core.mapERTModel
 
-        self._conjImag = False # the model imaginaries are flipped to match log trans
+        self._conjImag = False  # the imaginary parts are flipped for log trans
 
     def setDefaultBackground(self):
-        """
-        """
+        """Set the default background behaviour."""
         if self.complex():
             self.regionManager().addRegion(3, self._baseMesh, 2)
 
@@ -223,12 +224,12 @@ class ERTModelling(ERTModellingBase):
         pg.info("Found {} regions.".format(len(regionIds)))
         if len(regionIds) > 1:
             bk = pg.sort(regionIds)[0]
-            pg.info("Region with smallest marker set to background (marker={0})".format(bk))
+            pg.info("Region with smallest marker ({0}) "
+                    "set to background".format(bk))
             self.setRegionProperties(bk, background=True)
 
     def createStartModel(self, dataVals):
-        """ Create Starting model for ERT inversion.
-        """
+        """Create Starting model for ERT inversion."""
         if self.complex():
             dataC = pg.utils.toComplex(dataVals)
             nModel = self.regionManager().parameterCount() // 2
@@ -238,34 +239,33 @@ class ERTModelling(ERTModellingBase):
             if min(smIm) < 0:
                 # we want positive phase model
                 sm = smRe - 1j * smIm
-                pg.info('Model imaginary part has been flipped to positive values.')
+                pg.info("Model imaginary part being flipped to positive.")
                 self._conjImag = True
             else:
                 sm = smRe + 1j * smIm
 
-            return pg.utils.squeezeComplex(sm) # complex impedance
+            return pg.utils.squeezeComplex(sm)  # complex impedance
         else:
             return super(ERTModelling, self).createStartModel(dataVals)
 
     def flipImagPart(self, v):
+        """Flip imaginary port (convention)."""
         z = pg.utils.toComplex(v)
-        pg.warn('pre min/max={0} / {1} im: {2} / {3}'.format(pf(min(z.real)),
-                                                        pf(max(z.real)),
-                                                        pf(min(z.imag)),
-                                                        pf(max(z.imag))))
+        pg.warn('pre min/max={0} / {1} im: {2} / {3}'.format(
+            pf(min(z.real)), pf(max(z.real)),
+            pf(min(z.imag)), pf(max(z.imag))))
 
-
-        v = pg.utils.squeezeComplex(pg.utils.toComplex(v), conj=self._conjImag)
+        v = pg.utils.squeezeComplex(pg.utils.toComplex(v),
+                                    conj=self._conjImag)
 
         z = pg.utils.toComplex(v)
-        pg.warn('pos min/max={0} / {1} im: {2} / {3}'.format(pf(min(z.real)),
-                                                        pf(max(z.real)),
-                                                        pf(min(z.imag)),
-                                                        pf(max(z.imag))))
+        pg.warn('pos min/max={0} / {1} im: {2} / {3}'.format(
+            pf(min(z.real)), pf(max(z.real)),
+            pf(min(z.imag)), pf(max(z.imag))))
         return v
 
     def response(self, mod):
-        """"""
+        """Forward response (apparent resistivity)."""
         # ensure the mesh is initialized
         self.mesh()
         if self.complex() and self._conjImag:
@@ -281,12 +281,12 @@ class ERTModelling(ERTModellingBase):
         return resp
 
     def createJacobian(self, mod):
-        """"""
+        """Compute Jacobian matrix and store but not return."""
         # ensure the mesh is initialized
         self.mesh()
         if self.complex():
             if self._conjImag:
-                pg.warn('flip imaginary part for jacobian calc')
+                pg.warn("Flipping imaginary part for jacobian calc")
                 mod = self.flipImagPart(mod)
 
             self._core.createJacobian(mod)
@@ -312,7 +312,6 @@ class ERTModellingReference(ERTModellingBase):
     """Reference implementation for 2.5D Electrical Resistivity Tomography."""
 
     def __init__(self, **kwargs):
-        """"Constructor, optional with data container and mesh."""
         super(ERTModelling, self).__init__()
 
         self.subPotentials = None
@@ -326,13 +325,9 @@ class ERTModellingReference(ERTModellingBase):
         self.w = None
 
     def response(self, model):
-        """Solve forward task.
-
-        Create apparent resistivity values for a given resistivity distribution
-        for self.mesh.
-        """
-        ### NOTE TODO can't be MT until mixed boundary condition depends on
-        ### self.resistivity
+        """Solve forward task and return apparent resistivity for self.mesh."""
+        # NOTE TODO can't be MT until mixed boundary condition depends on
+        # self.resistivity
         pg.tic()
         if not self.data.allNonZero('k'):
             pg.error('Need valid geometric factors: "k".')
@@ -370,7 +365,6 @@ class ERTModellingReference(ERTModellingBase):
         self.subPotentials = [pg.Matrix(nEle, nDof) for i in range(len(k))]
 
         for i, ki in enumerate(k):
-            ws = dict()
             uE = pg.solve(mesh, a=1./res, b=-(ki * ki)/res, f=rhs,
                           bc={'Robin': ['*', self.mixedBC]},
                           userData={'sourcePos': elecs, 'k': ki},
@@ -426,7 +420,7 @@ class ERTModellingReference(ERTModellingBase):
                   min(model), max(model))
 
         Jt = pg.Matrix(self.data.size(),
-                        self.regionManager().parameterCount())
+                       self.regionManager().parameterCount())
 
         for kIdx, w in enumerate(self.w):
             k = self.k[kIdx]
@@ -547,12 +541,13 @@ class ERTModellingReference(ERTModellingBase):
         n = boundary.norm()
 
         if r1A > 1e-12 and r2A > 1e-12:
-            ## see mod-dc-2d example for robin like BC and the negative sign
+            # see mod-dc-2d example for robin like BC and the negative sign
             if (pg.math.besselK0(r1A * k) + pg.math.besselK0(r2A * k)) > 1e-12:
 
-                return 1./rho * k * (r1.dot(n) / r1A * pg.math.besselK1(r1A * k) +
-                                     r2.dot(n) / r2A * pg.math.besselK1(r2A * k)) /\
-                                (pg.math.besselK0(r1A * k) + pg.math.besselK0(r2A * k))
+                return k / rho * (r1.dot(n) / r1A * pg.math.besselK1(r1A * k) +
+                                  r2.dot(n) / r2A * pg.math.besselK1(r2A * k))\
+                                / (pg.math.besselK0(r1A * k) +
+                                   pg.math.besselK0(r2A * k))
             else:
                 return 0.
         else:
@@ -572,7 +567,7 @@ class ERTModellingReference(ERTModellingBase):
             f.setVal(cell.N(cell.shape().rst(sourcePos)), cell.ids())
 
     def createRHS(self, mesh, elecs):
-        """TODO WRITEME."""
+        """Create right-hand-side vector."""
         rhs = np.zeros((len(elecs), mesh.nodeCount()))
         for i, e in enumerate(elecs):
             c = mesh.findCell(e)
@@ -595,6 +590,7 @@ class ERTManager(MeshMethodManager):
         * ERT specific inversion options:
             * ...
     """
+
     def __init__(self, data=None, **kwargs):
         """Create ERT Manager instance.
 
@@ -627,7 +623,7 @@ class ERTManager(MeshMethodManager):
         self.reinitForwardOperator(sr=True)
 
     def createForwardOperator(self, **kwargs):
-        """Create and choose forward operator. """
+        """Create and choose forward operator."""
         verbose = kwargs.pop('verbose', False)
         self.useBert = kwargs.pop('useBert', self.useBert)
         self.sr = kwargs.pop('sr', self.sr)
@@ -649,6 +645,7 @@ class ERTManager(MeshMethodManager):
         ----------
         fileName: str
             Filename for the data.
+
         Returns
         -------
         data: :gimliapi:`GIMLI::DataContainerERT`
@@ -657,7 +654,7 @@ class ERTManager(MeshMethodManager):
         return self.data
 
     def createMesh(self, data=None, **kwargs):
-        """Create default inversion mesh
+        """Create default inversion mesh.
 
         Forwarded to :py:mod:`pygimli.physics.ert.createInversionMesh`
         """
@@ -669,26 +666,23 @@ class ERTManager(MeshMethodManager):
         return createInversionMesh(d, **kwargs)
 
     def setPrimPot(self, pot):
-        """
-        """
+        """Set primary potential from external is not supported anymore."""
         pg.critical("Not implemented.")
 
     def simulate(self, mesh, scheme, res, **kwargs):
         """Simulate an ERT measurement.
 
         Perform the forward task for a given mesh, a resistivity distribution
-        (per cell), a measurement
-        scheme and will return data (apparent resistivity) or potential fields.
+        a measuring scheme and return data (apparent resistivity) or potentials.
 
-        This function can also operate on complex resistivity models, thereby
-        computing complex apparent resistivities.
+        For complex resistivity, the apparent resistivities is complex as well.
 
-        The forward operator itself only calculate potential values
-        for the given scheme file.
+        The forward operator itself only calculates potential values for the
+        electrodes in the given data scheme.
         To calculate apparent resistivities, geometric factors (k) are needed.
-        If there are no values k in the DataContainerERT scheme, then we will
-        try to calculate them, either analytic or by using a p2-refined
-        version of the given mesh.
+        If there are no values k in the DataContainerERT scheme, the function
+        tries to calculate them, either analytically or numerically by using a
+        p2-refined version of the given mesh.
 
         TODO
         ----
@@ -699,9 +693,10 @@ class ERTManager(MeshMethodManager):
         mesh : :gimliapi:`GIMLI::Mesh`
             2D or 3D Mesh to calculate for.
 
-        res : float, array(mesh.cellCount()) | array(N, mesh.cellCount()) | list
+        res : float, array(mesh.cellCount()) | array(N, mesh.cellCount()) |
+              list
             Resistivity distribution for the given mesh cells can be:
-            . float for homogeneous resistivity
+            . float for homogeneous resistivity (e.g. 1.0)
             . single array of length mesh.cellCount()
             . matrix of N resistivity distributions of length mesh.cellCount()
             . resistivity map as [[regionMarker0, res0],
@@ -721,7 +716,7 @@ class ERTManager(MeshMethodManager):
             DataContainerERT.
         noiseLevel: float [0.0]
             add normally distributed noise based on
-            scheme('err') or on noiseLevel if scheme did not contain 'err'
+            scheme['err'] or on noiseLevel if error>0 is not contained
         noiseAbs: float [0.0]
             Absolute voltage error in V
         returnArray: bool [False]
@@ -733,15 +728,15 @@ class ERTManager(MeshMethodManager):
 
         Returns
         -------
-        DataContainerERT | array(N, data.size()) | array(N, data.size()) |
-        array(N, data.size()):
+        DataContainerERT | array(data.size()) | array(N, data.size()) |
+        array(N, mesh.nodeCount()):
             Data container with resulting apparent resistivity data and
             errors (if noiseLevel or noiseAbs is set).
             Optional returns a Matrix of rhoa values
             (for returnArray==True forces noiseLevel=0).
-            In case of a complex valued resistivity model, phase values will be
+            In case of a complex valued resistivity model, phase values are
             returned in the DataContainerERT (see example below), or as an
-            additional returned array.
+            additionally returned array.
 
         Examples
         --------
@@ -776,7 +771,7 @@ class ERTManager(MeshMethodManager):
         noiseAbs = kwargs.pop('noiseAbs', 1e-4)
         seed = kwargs.pop('seed', None)
 
-        #segfaults with self.fop (test & fix)
+        # segfaults with self.fop (test & fix)
         fop = self.createForwardOperator(
             useBert=self.useBert, sr=self.sr, verbose=self.verbose)
         fop.data = scheme
@@ -794,15 +789,15 @@ class ERTManager(MeshMethodManager):
             res = np.ones(mesh.cellCount()) * res
         elif hasattr(res[0], '__iter__'):  # ndim == 2
             if len(res[0]) == 2:  # res seems to be a res map
-                # check if there are markers in the mesh that are not defined in
-                # the rhomap. better signal here before it results in some error
+                # check if there are markers in the mesh that are not defined
+                # the rhomap. better signal here before it results in errors
                 meshMarkers = list(set(mesh.cellMarkers()))
                 mapMarkers = [m[0] for m in res]
                 if any([mark not in mapMarkers for mark in meshMarkers]):
                     left = [m for m in meshMarkers if m not in mapMarkers]
-                    pg.critical(
-                        "Mesh contains markers without assigned resistivities {}. Please fix given rhomap.".format(left)
-                        )
+                    pg.critical("Mesh contains markers without assigned "
+                                "resistivities {}. Please fix given "
+                                "rhomap.".format(left))
                 res = pg.solver.parseArgToArray(res, mesh.cellCount(), mesh)
             else:  # probably nData x nCells array
                 # better check for array data here
@@ -820,7 +815,7 @@ class ERTManager(MeshMethodManager):
             scheme.set('k', fop.calcGeometricFactor(scheme))
 
         ret = pg.DataContainerERT(scheme)
-        ## just be sure that we don't work with artifacts
+        # just to be sure that we don't work with artifacts
         ret['u'] *= 0.0
         ret['i'] *= 0.0
         ret['r'] *= 0.0
@@ -863,7 +858,8 @@ class ERTManager(MeshMethodManager):
             else:
                 print(mesh)
                 print("res: ", res)
-                raise BaseException("Simulate called with wrong resistivity array.")
+                raise BaseException(
+                    "Simulate called with wrong resistivity array.")
 
         if not isArrayData:
             ret['rhoa'] = rhoa
@@ -907,7 +903,7 @@ class ERTManager(MeshMethodManager):
 
                     if verbose:
                         print("Data IP abs error estimate (min:max) ",
-                               min(ipError), ":", max(ipError))
+                              min(ipError), ":", max(ipError))
 
                 phia += np.randn(ret.size(), seed=seed) * ipError
                 ret['iperr'] = ipError
@@ -925,7 +921,8 @@ class ERTManager(MeshMethodManager):
 
     def checkData(self, data):
         """Return data from container.
-        THINKABOUT: Data will be changed, or should the manager keeps an own copy?
+
+        THINKABOUT: Data will be changed, or should the manager keep a copy?
         """
         if isinstance(data, pg.DataContainer):
 
@@ -939,9 +936,9 @@ class ERTManager(MeshMethodManager):
                 if not data.haveData('ip'):
                     pg.critical('Datacontainer have no "ip" values.')
 
-                #pg.warn('check sign of phases')
+                # pg.warn('check sign of phases')
                 rhoa = data['rhoa']
-                phia = -data['ip']/1000 # 'ip' is defined for neg mrad.
+                phia = -data['ip']/1000  # 'ip' is defined for neg mrad.
                 # we should think about some 'phia' in rad
 
                 return pg.utils.squeezeComplex(pg.utils.toComplex(rhoa, phia))
@@ -961,24 +958,26 @@ class ERTManager(MeshMethodManager):
                         pg.critical("Datacontainer have neither: "
                                     "apparent resistivies 'rhoa', "
                                     "or impedances 'r', "
-                                    "or voltage 'u' together with current 'i' values.")
+                                    "or voltage 'u' along with current 'i'.")
 
                 return data['rhoa']
 
         return data
 
-
     def checkErrors(self, err, dataVals):
-        """Return relative error. Default we assume 'err' are relative vales.
+        """Return relative error.
+
+        Default we assume 'err' are relative vales.
         """
         if isinstance(err, pg.DataContainer):
             rae = None
 
             if not err.allNonZero('err'):
-                    pg.warn("Datacontainer have no 'err' values. "
-                             "Fallback of 1mV + 3% using ERTManager.estimateError(...) ")
-                    rae = self.estimateError(err, absoluteError=0.001,
-                                             relativeError=0.03)
+                pg.warn("Datacontainer have no 'err' values. "
+                        "Fallback of 1mV + 3% using "
+                        "ERTManager.estimateError(...) ")
+                rae = self.estimateError(err, absoluteError=0.001,
+                                         relativeError=0.03)
             else:
                 rae = err['err']
 
@@ -992,7 +991,7 @@ class ERTManager(MeshMethodManager):
                     ipe = err['iperr'] / abs((phi*1000))
                 else:
                     pg.warn("Datacontainer have no 'iperr' values. "
-                             "Fallback set to 0.01")
+                            "Fallback set to 0.01")
                     ipe = np.ones(err.size()) * 0.01
 
                 # pg._y("err", min(rae), max(rae), rae)
@@ -1001,10 +1000,10 @@ class ERTManager(MeshMethodManager):
 
         return rae
 
-
     def estimateError(self, data, absoluteError=0.001, relativeError=0.03,
                       absoluteUError=None, absoluteCurrent=0.1):
-        """ Estimate error composed of an absolute and a relative part.
+        """Estimate error composed of an absolute and a relative part.
+
         This is a static method and will not alter any member of the Manager
 
         Parameters
@@ -1027,7 +1026,6 @@ class ERTManager(MeshMethodManager):
         -------
         error : Array
         """
-
         if relativeError >= 0.5:
             print("relativeError set to a value > 0.5 .. assuming this "
                   "is a percentage Error level dividing them by 100")
@@ -1067,11 +1065,10 @@ class ERTManager(MeshMethodManager):
         return error
 
     def coverage(self):
-        """Return coverage vector considering the logarithmic transformation.
-        """
+        """Coverage vector considering the logarithmic transformation."""
         covTrans = pg.core.coverageDCtrans(self.fop.jacobian(),
-                                      1.0 / self.inv.response,
-                                      1.0 / self.inv.model)
+                                           1.0 / self.inv.response,
+                                           1.0 / self.inv.model)
 
         paramSizes = np.zeros(len(self.inv.model))
         for c in self.fop.paraDomain.cells():
@@ -1080,13 +1077,11 @@ class ERTManager(MeshMethodManager):
         return np.log10(covTrans / paramSizes)
 
     def standardizedCoverage(self, threshhold=0.01):
-        """Return standardized coverage vector (0|1) using thresholding.
-        """
+        """Return standardized coverage vector (0|1) using thresholding."""
         return 1.0*(abs(self.coverage()) > threshhold)
 
     def saveResult(self, folder=None, size=(16, 10), **kwargs):
-        """
-        Saves the results in the specified folder.
+        """Save all results in the specified folder.
 
         Saved items are:
             Inverted profile
@@ -1095,7 +1090,6 @@ class ERTManager(MeshMethodManager):
             Standardized coverage vector
             Mesh (bms and vtk with results)
         """
-
         subfolder = self.__class__.__name__
         path = getSavePath(folder, subfolder)
 
@@ -1128,16 +1122,14 @@ class ERTManager(MeshMethodManager):
         return path
 
 
-
 def createERTData(elecs, schemeName='none', **kwargs):
-    """ Simple data creator for compatibility (advanced version in BERT).
+    """Create data scheme for compatibility (advanced version in BERT).
 
     Parameters
     ----------
     sounding : bool [False]
         Create a 1D VES Schlumberger configuration.
         elecs need to be an array with elecs[0] = mn/2 and elecs[1:] = ab/2.
-
     """
     if kwargs.pop('sounding', False):
         data = pg.DataContainerERT()
