@@ -174,13 +174,14 @@ void LinSolver::initialize_(CSparseMatrix & S, int stype){
 
 
 std::string LinSolver::solverName() const {
-  switch(solverType_){
-  case LDL:     return "LDL"; break;
-  case CHOLMOD: return "CHOLMOD"; break;
-  case UMFPACK: return "UMFPACK"; break;
-  case UNKNOWN:
-  default: return " no valid solver installed";
-  }
+    return solver_->name();
+//   switch(solverType_){
+//   case LDL:     return "LDL"; break;
+//   case CHOLMOD: return "CHOLMOD"; break;
+//   case UMFPACK: return "UMFPACK"; break;
+//   case UNKNOWN:
+//   default: return " no valid solver installed";
+//   }
 }
 
 } // namespace GIMLI

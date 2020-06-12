@@ -404,10 +404,13 @@ def __setVal(self, idx, val):
     # print("__setVal", self, 'idx', idx, 'val:', val)
     if isinstance(idx, slice):
         if idx.step is None:
-            self.setVal(val, int(idx.start), int(idx.stop))
+            if idx.start is None:
+                self.setVal(val, 0, int(idx.stop))
+            else:
+                self.setVal(val, int(idx.start), int(idx.stop))
             return
         else:
-            pg.critical("not yet implemented")
+            pg.critical("not yet implemented for slice:", slice)
     elif isinstance(idx, tuple):
         # print("tuple", idx, type(idx))
         if isinstance(self, _pygimli_.RMatrix):

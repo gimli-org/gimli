@@ -772,13 +772,13 @@ class ERTManager(MeshMethodManager):
         noiseLevel = kwargs.pop('noiseLevel', 0.0)
         noiseAbs = kwargs.pop('noiseAbs', 1e-4)
         seed = kwargs.pop('seed', None)
+        sr = kwargs.pop('sr', self.sr)
 
         #segfaults with self.fop (test & fix)
-        fop = self.createForwardOperator(
-            useBert=self.useBert, sr=self.sr, verbose=self.verbose)
+        fop = self.createForwardOperator(useBert=self.useBert,
+                                         sr=sr, verbose=verbose)
         fop.data = scheme
         fop.setMesh(mesh, ignoreRegionManager=True)
-        fop.verbose = verbose
 
         rhoa = None
         phia = None
