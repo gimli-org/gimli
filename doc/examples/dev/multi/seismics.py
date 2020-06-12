@@ -110,7 +110,7 @@ def calcSeismics(meshIn, vP):
 #    nodes = [mesh.findNearestNode(p) for p in geophPoints]
 #    fig = plt.figure()
 #    axs = fig.add_subplot(1,1,1)
-#    drawSeismogramm(axs, mesh, u, nodes, dt, i=None)
+#    drawSeismogram(axs, mesh, u, nodes, dt, i=None)
 #    plt.show()
 
     dpi = 92

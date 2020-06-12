@@ -1,5 +1,5 @@
-import numpy as np
 import tempfile
+import numpy as np
 
 import pygimli as pg
 
@@ -39,13 +39,13 @@ def pgMesh2pvMesh(mesh, data=None, label=None):
         else:
             pg.warn("Given data fits neither cell count nor node count:")
             pg.warn("{} vs. {} vs. {}".format(len(data), mesh.cellCount(),
-                mesh.nodeCount()))
+                                              mesh.nodeCount()))
 
     if label is None:
         # last data that was added
         label = grid.array_names[-1]
     elif label not in grid.array_names:
-        pg.warn("given label '{}' was not found.".format(label))
+        pg.warn("Given label '{}' was not found.".format(label))
         label = grid.array_names[-1]
 
     grid.set_active_scalars(label)

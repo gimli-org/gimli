@@ -163,7 +163,7 @@ class TravelTimeManager(MeshMethodManager):
             Calculate with singularity removal technique.
             Recommended but needs the primary potential.
             For flat earth cases the primary potential will be calculated
-            analytical. For domains with topography the primary potential
+            analytically. For domains with topography the primary potential
             will be calculated numerical using a p2 refined mesh or
             you provide primary potentials with setPrimPot.
         """
@@ -195,7 +195,7 @@ class TravelTimeManager(MeshMethodManager):
     def createMesh(self, data=None, **kwargs):
         """Create default inversion mesh.
 
-        Inversionmesh for Traveltime inversion does not need boundary region.
+        Inversion mesh for traveltime inversion does not need boundary region.
         """
         d = data or self.data
 
