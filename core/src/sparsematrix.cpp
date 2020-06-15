@@ -116,7 +116,6 @@ void SparseMapMatrix< double, Index >::copy_(const SparseMatrix< double > & S){
         }
     }
 }
-
 template <> void SparseMapMatrix< double, Index >::
     add(const ElementMatrix < double > & A, double scale){
     double tol = 1e-15;
@@ -142,7 +141,6 @@ template <> void SparseMapMatrix< double, Index >::
         }
     }
 }
-
 template <> void SparseMapMatrix< double, Index >::
     addToCol(Index id, const ElementMatrix < double > & A, double scale, bool isDiag){
     for (Index i = 0, imax = A.size(); i < imax; i++){

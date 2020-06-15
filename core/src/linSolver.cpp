@@ -174,7 +174,7 @@ void LinSolver::initialize_(CSparseMatrix & S, int stype){
 
 std::string LinSolver::solverName() const {
     if (solver_) return solver_->name();
-    __MS('no solver initialized')
+    __MS("no solver initialized")
 
     switch(solverType_){
         case LDL:     return "LDL"; break;

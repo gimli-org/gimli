@@ -460,18 +460,18 @@ def diffusionConvectionKernel(mesh, a=None, b=0.0,
             elif not useHalfBoundaries:
 
                 if boundary.id() in uBoundaryID:
-                    val = pg.solver.generateBoundaryValue(
-                            boundary,
-                            uBoundaryVals[boundary.id()],
-                            time=time,
-                            userData=userData)
+                    val = pg.solver.generateBoundaryValue(boundary,
+                                                uBoundaryVals[boundary.id()],
+                                                time=time,
+                                                userData=userData)
 
                     if sparse:
                         S.addVal(cID, cID, aB)
                     else:
                         S[cID, cID] += aB
 
-                    rhsBoundaryScales[cID] += aB * val
+                    #print(aB, uBoundaryVals[boundary.id()])
+                    rhsBoundaryScales[cID] += aB * np.mean(val)
 
                 if boundary.id() in duBoundaryID:
                     # Neumann boundary condition

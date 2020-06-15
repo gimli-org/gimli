@@ -8,7 +8,8 @@ import pygimli as pg
 
 def toSparseMatrix(A):
     """Convert any matrix type to pg.SparseMatrix and return copy of it.
-    
+
+    No conversion if A is a SparseMatrix already
     Arguments
     ---------
     A: pg or scipy matrix
@@ -20,17 +21,24 @@ def toSparseMatrix(A):
     if isinstance(A, pg.matrix.BlockMatrix):
         return pg.matrix.SparseMatrix(A.sparseMapMatrix())
 
+    if isinstance(A, pg.matrix.CSparseMapMatrix):
+        return pg.matrix.CSparseMatrix(A)
+
+    if isinstance(A, pg.matrix.CSparseMatrix):
+        return A
+
     if isinstance(A, pg.matrix.SparseMatrix):
-        return pg.matrix.SparseMatrix(A)
+        return A
+        #return pg.matrix.SparseMatrix(A)
 
     if isinstance(A, pg.matrix.SparseMapMatrix):
         return pg.matrix.SparseMatrix(A)
-    
+
     from scipy.sparse import csr_matrix
 
     if isinstance(A, csr_matrix):
         return pg.SparseMatrix(A.indptr, A.indices, A.data)
-    
+
     from scipy.sparse import coo_matrix
     if isinstance(A, coo_matrix):
         pg.critical('implement me')
@@ -41,11 +49,11 @@ def toSparseMatrix(A):
 
 def toSparseMapMatrix(A):
     """Convert any matrix type to pg.SparseMatrix and return copy of it.
-    
+
     Arguments
     ---------
     A: pg or scipy matrix
-    
+
     Returns
     -------
         pg.SparseMatrix
@@ -58,13 +66,13 @@ def toSparseMapMatrix(A):
 
     if isinstance(A, pg.matrix.SparseMatrix):
         return pg.matrix.SparseMapMatrix(A)
-    
+
     from scipy.sparse import csr_matrix
     if isinstance(A, csr_matrix):
         pg.critical('implement me')
-        
+
         return pg.matrix.SparseMapMatrix(A)
-    
+
     from scipy.sparse import coo_matrix
     if isinstance(A, coo_matrix):
         pg.critical('implement me')
