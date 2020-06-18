@@ -340,7 +340,7 @@ double ElectrodeShapeDomain::geomMeanCellAttributes() const {
             } else if (ri) {
                 weighted += ri->attribute() * entities_[i]->shape().domainSize() / size_;
             } else {
-                std::cerr << WHERE_AM_I << " WARNING! no cell found " << std::endl;
+                std::cerr << WHERE_AM_I << " WARNING! No cell found " << std::endl;
             }
         }
     }
