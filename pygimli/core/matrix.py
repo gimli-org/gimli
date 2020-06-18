@@ -66,19 +66,27 @@ def __CMatrix_str(self):
 
 def __ElementMatrix_str(self):
     """Show entries of an ElementMatrix."""
+    import pygimli as pg
     if self.mat().cols() == 0 and self.mat().rows() == 0:
         return 'Empty ElementMatrix\n'
 
-    s = '\n\t    '
+    maxRowID = int(np.log10(max(self.rowIDs())))+2
+
+    s = '\n ' + ' ' * maxRowID
     # print(self.mat())
     # print(self.colIDs())
     # print(self.rowIDs())
     for i in range(self.mat().cols()):
-        s += str(self.colIDs()[i]) + " "
+        s += str(self.colIDs()[i]).rjust(9)
     s += '\n'
 
+    s += '  ' + '-'*self.mat().cols()*(9 + maxRowID) + '-\n'
+
     for i in range(self.mat().rows()):
-        s += str(self.rowIDs()[i]) + "\t: " + str(pgcore.round(self.row(i), 1e-6)) + '\n'
+        s += str(self.rowIDs()[i]).rjust(maxRowID) + " :"
+        for v in self.row(i):
+            s += pg.pf(v).rjust(9)
+        s += '\n'
     return s
 
 pgcore.RMatrix.__str__ = __RMatrix_str
@@ -171,7 +179,7 @@ def __SparseMatrixEqual__(self, T):
             self.rows(), self.cols(), T.rows(), T.cols()))
         return False
 
-    
+
     rowsA, colsA, valsA = sparseMatrix2Array(self, indices=True)
     rowsB, colsB, valsB = sparseMatrix2Array(T, indices=True)
 

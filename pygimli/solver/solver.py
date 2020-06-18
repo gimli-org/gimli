@@ -1043,6 +1043,93 @@ def showSparseMatrix(mat, full=False):
         if full:
             print(np.array(matD))
 
+class LinSolver(object):
+    """Proxy class for the direct solution of linear systems of equations."""
+    def __init__(self, mat, solver=None, verbose=False, **kwargs):
+        """Init the solver class with Matrix and starts factorization.
+
+        Args
+        ----
+        solver: str
+            If solver is none decide form Matrix type
+        """
+        self.verbose = verbose
+        self._solver = None
+        self.factorTime = 0.0
+        self.solvingTime = 0.0
+        self.solver = ''
+        self._factorize = 'factorizePG'
+        self._desiredArrayType = np.array
+
+        if solver is None:
+            if isinstance(mat, pg.matrix.MatrixBase):
+                solver = 'PG'
+            elif isinstance(mat, np.ndarray):
+                solver = 'numpy'
+                implementme
+            else:
+                #import scipy.sparse
+                from scipy.sparse import spmatrix
+                if isinstance(mat, spmatrix):
+                    solver = 'SciPy'
+
+        if solver.lower() == 'pg':
+            self.solver = 'PG'
+        elif solver.lower() == 'scipy':
+            self.solver = 'SciPy'
+        else:
+            self.solver = solver
+
+        self._factorize = 'factorize' + self.solver
+
+        if self.verbose:
+            pg.info("Solving with {0}".format(self.solver))
+        self.factorize(mat)
+
+    def factorize(self, mat):
+        swatch = pg.Stopwatch()
+
+        getattr(self, self._factorize)(mat)
+        self.factorTime = swatch.duration(restart=True)
+        if self.verbose:
+            pg.info("Matrix factorization:", self.factorTime)
+
+    def factorizePG(self, mat):
+        """"""
+        _m = pg.utils.toSparseMatrix(mat)
+        self._desiredArrayType = pg.Vector
+        self._solver = pg.core.LinSolver(_m, verbose=self.verbose)
+
+    def factorizeSciPy(self, mat):
+        """"""
+        _m = pg.utils.sparseMatrix2csr(mat)
+        scipy = pg.optImport('scipy', 'Used for sparse linear solver.')
+
+        import scipy.sparse
+        from scipy.sparse.linalg import factorized
+
+        self._desiredArrayType = np.array
+        self._solver = factorized(_m)
+
+    def __call__(self, b):
+        """short cut to self.solve(b)"""
+        return self.solve(b)
+
+    def _convertRHS(self, b):
+        """Convert right hand side vector into the desired format."""
+        if not isinstance(b, type(self._desiredArrayType(0))):
+            return self._desiredArrayType(b)
+        return b
+
+    def solve(self, b):
+        """ """
+        swatch = pg.Stopwatch()
+        x = self._solver(self._convertRHS(b))
+        self.solverTime = swatch.duration(restart=True)
+        if self.verbose:
+            pg.info("Matrix solve:", self.solverTime)
+        return x
+
 
 def linSolve(mat, b, solver=None, verbose=False, **kwargs):
     r"""Direct solution after :math:`\textbf{x}` using core LinSolver.
@@ -1071,10 +1158,10 @@ def linSolve(mat, b, solver=None, verbose=False, **kwargs):
 
     Returns
     -------
-
     x : :gimliapi:`GIMLI::RVector`
         Solution vector
     """
+    ## TODO!! refactor with LinSolver
     swatch = pg.Stopwatch()
     reorder = kwargs.pop('reorder', False)
     perm = None
@@ -1170,15 +1257,16 @@ def linSolve(mat, b, solver=None, verbose=False, **kwargs):
 def applyDirichlet(mat, rhs, uDirIndex, uDirichlet):
     """This should be moved directly into the core"""
 
-    if rhs is not None:
-        uDir = pg.Vector(mat.rows(), 0.0)
-        uDir.setVal(uDirichlet, uDirIndex)
-        rhs -= mat * uDir
+    if mat is not None:
+        if rhs is not None:
+            uDir = pg.Vector(mat.rows(), 0.0)
+            uDir.setVal(uDirichlet, uDirIndex)
+            rhs -= mat * uDir
 
-    for i in uDirIndex:
-        mat.cleanRow(i)
-        mat.cleanCol(i)
-        mat.setVal(i, i, 1.0)
+        for i in uDirIndex:
+            mat.cleanRow(i)
+            mat.cleanCol(i)
+            mat.setVal(i, i, 1.0)
 
     if rhs is not None:
         rhs[uDirIndex] = uDirichlet
@@ -1522,10 +1610,11 @@ def assembleBC(bc, mesh, mat, rhs, time=None, userData={}, dofOffset=0,
     """
     ## we can't iterate because we want the following fixed order
     bct = dict(bc)
-    if mat.rows() == mesh.nodeCount() * mesh.dim():
-        nDim = mesh.dim()
-    else:
-        nDim = 1
+    nDim = 1
+    if mat is not None:
+        if mat.rows() == mesh.nodeCount() * mesh.dim():
+            nDim = mesh.dim()
+
 
     if 'Neumann' in bct:
         assembleNeumannBC(rhs, parseArgToBoundaries(bct.pop('Neumann'), mesh),

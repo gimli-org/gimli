@@ -250,6 +250,7 @@ def findVelocity(mesh, v, b, c, nc=None):
             vel = v[b.id()]
         else:
             # interpolate node based vector-field v[x,y,z] at point b.center()
+            # print(len(vel), vel)
             vel = c.vec(b.center(), v)
 
     return vel
@@ -481,6 +482,8 @@ def diffusionConvectionKernel(mesh, a=None, b=0.0,
                         time=time,
                         userData=userData)
 
+                    val = np.mean(val)
+
                     # amount of flow through the boundary .. maybe buggy
                     # fill be replaced by suitable FE solver
                     outflow = -val * boundary.size() / cell.size()
@@ -602,8 +605,7 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=None, u0=0.0,
         if len(vel) is not mesh.boundaryCount():
             if len(vel) == mesh.cellCount():
                 vel = pg.meshtools.cellDataToNodeData(mesh, vel)
-
-            if len(vel) == mesh.nodeCount():
+            elif len(vel) == mesh.nodeCount():
                 vel = pg.meshtools.nodeDataToBoundaryData(mesh, vel)
             else:
                 print("mesh:", mesh)

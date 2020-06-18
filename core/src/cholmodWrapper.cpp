@@ -322,6 +322,8 @@ int CHOLMODWrapper::factorise_(){
 template < class ValueType >
     int CHOLMODWrapper::solveCHOL_(const Vector < ValueType > & rhs,
                                    Vector < ValueType > & solution){
+    ASSERT_VEC_SIZE(rhs, this->dim_)
+    ASSERT_VEC_SIZE(solution, this->dim_)
     if (!dummy_){
 #if USE_CHOLMOD
         cholmod_dense * b = cholmod_zeros(((cholmod_sparse*)A_)->nrow,
@@ -365,6 +367,8 @@ template < class ValueType >
 }
 
 int CHOLMODWrapper::solve(const RVector & rhs, RVector & solution){
+    ASSERT_VEC_SIZE(rhs, this->dim_)
+    ASSERT_VEC_SIZE(solution, this->dim_)
     if (!dummy_){
 
         if (useUmfpack_){
@@ -403,6 +407,8 @@ int CHOLMODWrapper::solve(const RVector & rhs, RVector & solution){
 }
 
 int CHOLMODWrapper::solve(const CVector & rhs, CVector & solution){
+    ASSERT_VEC_SIZE(rhs, this->dim_)
+    ASSERT_VEC_SIZE(solution, this->dim_)
     if (!dummy_){
 
         if (useUmfpack_){
