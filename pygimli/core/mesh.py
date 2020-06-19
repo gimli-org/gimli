@@ -227,6 +227,8 @@ def __deform__(self, eps, mag=1.0):
             print(self)
             print(len(eps), len(eps[0]))
             error('Size of displacement does not match mesh nodes size.')
+    elif len(eps) == self.nodeCount() and eps.ndim == 2:
+        v = eps.reshape(self.nodeCount() * eps.shape[1], order='F')
 
     return __Mesh_deform__(self, v, mag)
 

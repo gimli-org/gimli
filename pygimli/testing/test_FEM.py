@@ -104,15 +104,16 @@ class TestFiniteElementBasics(unittest.TestCase):
             if show:
                 if mesh.dim() == 1:
                     idx = np.argsort(pg.x(mesh))
-                    pg.plt.plot(pg.x(mesh)[idx], uE[idx], label='exact')
-                    pg.plt.plot(pg.x(mesh)[idx], u[idx], label='FEM')
+                    fig, ax = pg.plt.subplots()
+                    ax.plot(pg.x(mesh)[idx], uE[idx], label='exact')
+                    ax.plot(pg.x(mesh)[idx], u[idx], 'o', label='FEM')
 
                     model, response = pg.frameworks.fit(uExact,
                                                     u[idx], x=pg.x(mesh)[idx])
                     print(model)
-                    pg.plt.plot(pg.x(mesh)[idx], response, label='FIT')
-                    pg.plt.grid(True)
-                    pg.plt.legend(True)
+                    ax.plot(pg.x(mesh)[idx], response, 'x', label='FIT')
+                    ax.grid(True)
+                    ax.legend()
                 elif mesh.dim() == 2:
                     pg.show(mesh, u, label='u')
                     ax, _ = pg.show(mesh, pg.abs(v), label='abs(grad(u))')
@@ -151,7 +152,7 @@ class TestFiniteElementBasics(unittest.TestCase):
         # 1D
         x = np.linspace(0, 1, 101)
         _test_(pg.createGrid(x=x), p2=False, show=False)
-        _test_(pg.createGrid(x=x), p2=True, show=False)
+        _test_(pg.createGrid(x=x), p2=True, show=True)
 
         # # 2D grid
         x = np.linspace(0, 1, 11)

@@ -250,6 +250,7 @@ def findVelocity(mesh, v, b, c, nc=None):
             vel = v[b.id()]
         else:
             # interpolate node based vector-field v[x,y,z] at point b.center()
+            # print(len(vel), vel)
             vel = c.vec(b.center(), v)
 
     return vel
@@ -460,18 +461,18 @@ def diffusionConvectionKernel(mesh, a=None, b=0.0,
             elif not useHalfBoundaries:
 
                 if boundary.id() in uBoundaryID:
-                    val = pg.solver.generateBoundaryValue(
-                            boundary,
-                            uBoundaryVals[boundary.id()],
-                            time=time,
-                            userData=userData)
+                    val = pg.solver.generateBoundaryValue(boundary,
+                                                uBoundaryVals[boundary.id()],
+                                                time=time,
+                                                userData=userData)
 
                     if sparse:
                         S.addVal(cID, cID, aB)
                     else:
                         S[cID, cID] += aB
 
-                    rhsBoundaryScales[cID] += aB * val
+                    #print(aB, uBoundaryVals[boundary.id()])
+                    rhsBoundaryScales[cID] += aB * np.mean(val)
 
                 if boundary.id() in duBoundaryID:
                     # Neumann boundary condition
@@ -480,6 +481,8 @@ def diffusionConvectionKernel(mesh, a=None, b=0.0,
                         duBoundaryVals[boundary.id()],
                         time=time,
                         userData=userData)
+
+                    val = np.mean(val)
 
                     # amount of flow through the boundary .. maybe buggy
                     # fill be replaced by suitable FE solver
@@ -602,8 +605,7 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=None, u0=0.0,
         if len(vel) is not mesh.boundaryCount():
             if len(vel) == mesh.cellCount():
                 vel = pg.meshtools.cellDataToNodeData(mesh, vel)
-
-            if len(vel) == mesh.nodeCount():
+            elif len(vel) == mesh.nodeCount():
                 vel = pg.meshtools.nodeDataToBoundaryData(mesh, vel)
             else:
                 print("mesh:", mesh)

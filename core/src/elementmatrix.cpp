@@ -407,8 +407,10 @@ const RVector * &w, const R3Vector * &x, int order){
             break;
     }
 }
-template void ElementMatrix < double >::getWeightsAndPoints(const MeshEntity & ent,
-                                        const RVector * &w, const R3Vector * &x, int order);
+template void ElementMatrix < double >::getWeightsAndPoints(
+                                        const MeshEntity & ent,
+                                        const RVector * &w,
+                                        const R3Vector * &x, int order);
 
 template < > DLLEXPORT
 void ElementMatrix < double >::fillGradientBase(
@@ -1122,7 +1124,7 @@ void ElementMatrix < ValueType >::fillIds(const MeshEntity & ent, Index nC){
     if (this->_nDof > 0){
         nDims = ent.dim();
         if (nC > ent.dim()){
-            THROW_TO_IMPL
+            //THROW_TO_IMPL
         }
 
         if (size() != nNodes * nDims) resize(nNodes * nDims);

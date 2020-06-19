@@ -342,7 +342,7 @@ class MethodManager(object):
 
         if vals is None:
             pg.warn('No data array given, set Fallback set to 1%')
-            vals = np.ones(len(dataVals))* 0.01
+            vals = np.ones(len(dataVals)) * 0.01
 
         try:
             if min(vals) <= 0:
@@ -350,7 +350,7 @@ class MethodManager(object):
                             " either give and err argument or fill dataContainer "
                             " with a valid 'err' ", min(vals), max(vals))
         except Exception as e:
-            pg.critical("can't estimeate data error")
+            pg.critical("Can't estimate data error")
 
 
         return vals
@@ -880,4 +880,3 @@ class JointPetroInversionManager(MeshMethodManager):
                                           (limits[1]+limits[0])/2.)
 
         return super().invert(data, **kwargs)
-

@@ -44,75 +44,75 @@ IntegrationRules::~IntegrationRules(){
 // std::cout << " delete IntegrationRules" << std::endl;
 }
 
-const R3Vector & IntegrationRules::gauAbscissa(Index order) const { 
+const R3Vector & IntegrationRules::gauAbscissa(Index order) const {
     ASSERT_SIZE(gauAbscissa_, order)
-    return gauAbscissa_[order]; 
+    return gauAbscissa_[order];
 }
 
-const RVector & IntegrationRules::gauWeights(Index order) const { 
+const RVector & IntegrationRules::gauWeights(Index order) const {
     ASSERT_SIZE(gauWeights_, order)
-    return gauWeights_[order]; 
+    return gauWeights_[order];
 }
 
-const R3Vector & IntegrationRules::triGLAbscissa(Index order) const { 
+const R3Vector & IntegrationRules::triGLAbscissa(Index order) const {
     ASSERT_SIZE(triGLAbscissa_, order)
-    return triGLAbscissa_[order]; 
+    return triGLAbscissa_[order];
 }
 
-const RVector & IntegrationRules::triGLWeights(Index order) const { 
+const RVector & IntegrationRules::triGLWeights(Index order) const {
     ASSERT_SIZE(triGLWeights_, order)
-    return triGLWeights_[order]; 
+    return triGLWeights_[order];
 }
 
-const R3Vector & IntegrationRules::edgAbscissa(Index order) const { 
+const R3Vector & IntegrationRules::edgAbscissa(Index order) const {
     ASSERT_SIZE(edgAbscissa_, order)
-    return edgAbscissa_[order]; 
+    return edgAbscissa_[order];
 }
-const RVector & IntegrationRules::edgWeights(Index order) const { 
+const RVector & IntegrationRules::edgWeights(Index order) const {
     ASSERT_SIZE(edgWeights_, order)
-    return edgWeights_[order]; 
+    return edgWeights_[order];
 }
-const R3Vector & IntegrationRules::triAbscissa(Index order) const { 
+const R3Vector & IntegrationRules::triAbscissa(Index order) const {
     ASSERT_SIZE(triAbscissa_, order)
-    return triAbscissa_[order]; 
+    return triAbscissa_[order];
 }
-const RVector & IntegrationRules::triWeights(Index order) const { 
+const RVector & IntegrationRules::triWeights(Index order) const {
     ASSERT_SIZE(triWeights_, order)
-    return triWeights_[order]; 
+    return triWeights_[order];
 }
-const R3Vector & IntegrationRules::tetAbscissa(Index order) const { 
+const R3Vector & IntegrationRules::tetAbscissa(Index order) const {
     ASSERT_SIZE(tetAbscissa_, order)
-    return tetAbscissa_[order]; 
+    return tetAbscissa_[order];
 }
-const RVector & IntegrationRules::tetWeights(Index order) const { 
+const RVector & IntegrationRules::tetWeights(Index order) const {
     ASSERT_SIZE(tetWeights_, order)
-    return tetWeights_[order]; 
+    return tetWeights_[order];
 }
-const R3Vector & IntegrationRules::quaAbscissa(Index order) const { 
+const R3Vector & IntegrationRules::quaAbscissa(Index order) const {
     ASSERT_SIZE(quaAbscissa_, order)
-    return quaAbscissa_[order]; 
+    return quaAbscissa_[order];
 }
-const RVector & IntegrationRules::quaWeights(Index order) const { 
+const RVector & IntegrationRules::quaWeights(Index order) const {
     ASSERT_SIZE(quaWeights_, order)
-    return quaWeights_[order]; 
+    return quaWeights_[order];
 }
-const R3Vector & IntegrationRules::hexAbscissa(Index order) const { 
+const R3Vector & IntegrationRules::hexAbscissa(Index order) const {
     ASSERT_SIZE(hexAbscissa_, order)
-    return hexAbscissa_[order]; 
+    return hexAbscissa_[order];
 }
-const RVector & IntegrationRules::hexWeights(Index order) const { 
+const RVector & IntegrationRules::hexWeights(Index order) const {
     ASSERT_SIZE(hexWeights_, order)
-    return hexWeights_[order]; 
+    return hexWeights_[order];
 }
-const R3Vector & IntegrationRules::priAbscissa(Index order) const { 
+const R3Vector & IntegrationRules::priAbscissa(Index order) const {
     ASSERT_SIZE(priAbscissa_, order)
-    return priAbscissa_[order]; 
+    return priAbscissa_[order];
 }
-const RVector & IntegrationRules::priWeights(Index order) const { 
+const RVector & IntegrationRules::priWeights(Index order) const {
     ASSERT_SIZE(priWeights_, order)
-    return priWeights_[order]; 
+    return priWeights_[order];
 }
-    
+
 const R3Vector & IntegrationRules::abscissa(const Shape & shape, uint order) const {
     switch(shape.rtti()){
         case MESH_SHAPE_EDGE_RTTI: return edgAbscissa(order);
@@ -126,6 +126,7 @@ const R3Vector & IntegrationRules::abscissa(const Shape & shape, uint order) con
         case MESH_SHAPE_QUADRANGLE_RTTI: return quaAbscissa(order);
         case MESH_SHAPE_TETRAHEDRON_RTTI: return tetAbscissa(order);
         case MESH_SHAPE_HEXAHEDRON_RTTI: return hexAbscissa(order);
+        case MESH_SHAPE_TRIPRISM_RTTI: return priAbscissa(order);
         default:
             __MS(shape)
             break;
@@ -146,6 +147,7 @@ const RVector & IntegrationRules::weights(const Shape & shape, uint order) const
         case MESH_SHAPE_QUADRANGLE_RTTI: return quaWeights(order);
         case MESH_SHAPE_TETRAHEDRON_RTTI: return tetWeights(order);
         case MESH_SHAPE_HEXAHEDRON_RTTI: return hexWeights(order);
+        case MESH_SHAPE_TRIPRISM_RTTI: return priWeights(order);
         default:
             __MS(shape)
             break;
@@ -322,7 +324,7 @@ void IntegrationRules::initTri_(){
 
     //** 4.Order, n=6, Error: O(h5)
     //** Joseph E. Flaherty -- Finite Element Analysis CSCI-6860 / MATH-6860
-    // not super correct .. need better approximation    
+    // not super correct .. need better approximation
     triAbscissa_.push_back(R3Vector(6));
     double a = 0.816847572980459, b = 0.091576213509771;
     triAbscissa_.back()[0] = RVector3(b, b);

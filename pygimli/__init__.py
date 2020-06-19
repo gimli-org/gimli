@@ -216,24 +216,25 @@ def tic(msg=None):
     __swatch__.start()
 
 
-def toc(msg=None, box=False):
+def toc(msg=None, box=False, reset=False):
     """Print elapsed time since global timer was started with `tic()`.
 
-    Parameters
-    ----------
-    msg : string, optional
+    Arguments
+    ---------
+    msg: string [None]
         Print message string just after printing the elapsed time. If box is
         True, then embed msg into its own box
-    box : bool, optional
+    box: bool [False]
         Embed the time in an ascii box
-
+    reset: bool [False]
+        Reset the stopwatch.
     """
     if msg:
         if box:
             boxprint(msg)
         else:
             print(msg, end=' ')
-    seconds = dur()
+    seconds = dur(reset)
     m, s = divmod(seconds, 60)
     h, m = divmod(m, 60)
     if h <= 0 and m <= 0:
@@ -251,7 +252,7 @@ def toc(msg=None, box=False):
     p("Elapsed time is %s seconds." % time)
 
 
-def dur():
+def dur(reset=False):
     """Return time in seconds since global timer was started with `tic()`."""
-    return __swatch__.duration()
+    return __swatch__.duration(reset)
 

@@ -138,7 +138,7 @@ def streamlineDir(mesh, field, startCoord, dLengthSteps, dataMesh=None,
         # always go u down
         dAbs = d.length()
         if dAbs == 0.0:
-            print(d, "check this in streamlineDir(",)
+            #print(d, "check this in streamlineDir(",)
             break
 
         if down:

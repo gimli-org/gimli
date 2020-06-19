@@ -202,7 +202,7 @@ def prettyFloat(value, roundValue=False):
 
     if string.endswith(".0"):
         return string.replace(".0", "")
-    elif '.' in string and string.endswith("0"):
+    elif '.' in string and string.endswith(".0"):
         return string[0:len(string)-1]
     else:
         return string

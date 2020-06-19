@@ -469,6 +469,7 @@ class TravelTimeManager(MeshMethodManager):
         ax, cbar = self.showModel(ax=ax, model=model,
                                   showMesh=kwargs.pop('showMesh', None),
                                   diam=kwargs.pop('diam', None))
+
         self.drawRayPaths(ax, model=model, **kwargs)
 
         return ax, cbar

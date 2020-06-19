@@ -43,12 +43,14 @@ namespace GIMLI{
     bool CHOLMODWrapper::valid() { return false; }
 #endif
 
-CHOLMODWrapper::CHOLMODWrapper(RSparseMatrix & S, bool verbose, int stype, bool forceUmfpack)
+CHOLMODWrapper::CHOLMODWrapper(RSparseMatrix & S, bool verbose, int stype,
+                               bool forceUmfpack)
     : SolverWrapper(S, verbose), forceUmfpack_(forceUmfpack){
     init_(S, stype);
 }
 
-CHOLMODWrapper::CHOLMODWrapper(CSparseMatrix & S, bool verbose, int stype, bool forceUmfpack)
+CHOLMODWrapper::CHOLMODWrapper(CSparseMatrix & S, bool verbose, int stype,
+                               bool forceUmfpack)
     : SolverWrapper(S, verbose), forceUmfpack_(forceUmfpack){
     init_(S, stype);
 }
@@ -106,10 +108,8 @@ void CHOLMODWrapper::init_(SparseMatrix < ValueType > & S, int stype){
     c_ = new cholmod_common;
     ret =  cholmod_start((cholmod_common*)c_);
     if (ret) dummy_ = false;
-
     initializeMatrix_(S);
 #elif USE_UMFPACK
-
     initializeMatrix_(S);
 #else
     std::cerr << WHERE_AM_I << " cholmod not installed" << std::endl;
@@ -126,7 +126,7 @@ int CHOLMODWrapper::initializeMatrix_(CSparseMatrix & S){
                     if (std::imag(S.vecVals()[j]) != 0.0){
                         if (S.vecVals()[j] == S.getVal(S.vecRowIdx()[j], i)){
                             // non-hermetian symmetric
-                            // if (verbose_) std::cout << "non-hermetian symmetric " 
+                            // if (verbose_) std::cout << "non-hermetian symmetric "
                             // " matrix found .. switching to umfpack." << std::endl;
                             useUmfpack_ = true;
                             i = S.size();
@@ -136,7 +136,7 @@ int CHOLMODWrapper::initializeMatrix_(CSparseMatrix & S){
                 }
             }
         }
-    
+
         if (forceUmfpack_) useUmfpack_ = true;
 
         if (useUmfpack_){
@@ -156,12 +156,14 @@ int CHOLMODWrapper::initializeMatrix_(CSparseMatrix & S){
             umfpack_zi_symbolic (S.nRows(), S.nRows(), Ap_, Ai_, Ax_, Az_, &Symbolic, null, null) ;
             umfpack_zi_numeric (Ap_, Ai_, Ax_, Az_, Symbolic, &Numeric_, null, null) ;
             umfpack_zi_free_symbolic (&Symbolic);
+            name_ = "Umfpack";
             return 1;
 #else
             std::cerr << WHERE_AM_I << " umfpack not installed" << std::endl;
 #endif
         } else {
 #if USE_CHOLMOD
+            name_ = "Cholmod";
             return initMatrixChol_(S, CHOLMOD_COMPLEX);
 #endif
 			return 0;
@@ -179,9 +181,17 @@ int CHOLMODWrapper::initializeMatrix_(RSparseMatrix & S){
 //                     __MS(i << " " << j << " " << S.vecColPtr()[i] << " " << S.vecColPtr()[i + 1] << " " << S.vecRowIdx()[j])
                     if (S.vecVals()[j] != 0.0){
 //                 __MS(S.vecVals()[j] << " "  << S.getVal(S.vecRowIdx()[j], i))
-                        if (S.vecVals()[j] != S.getVal(S.vecRowIdx()[j], i, false)){
+                        if (::fabs(S.vecVals()[j] - S.getVal(S.vecRowIdx()[j], i, false)) > 1e-12){
                             // non-symmetric
-                            if (verbose_) std::cout << "non-symmetric matrix found .. switching to umfpack." << std::endl;
+                            if (verbose_) {
+                                log(Info,
+                                    "non-symmetric matrix found (", i,
+                                    S.vecRowIdx()[j],
+                                    S.vecVals()[j] , " ",
+                                    S.getVal(S.vecRowIdx()[j], i), "tol:",
+                                    ::fabs(S.vecVals()[j] - S.getVal(S.vecRowIdx()[j], i, false)),
+                                    ").. switching to umfpack." );
+                            }
                             useUmfpack_ = true;
                             i = S.size();
                             break;
@@ -214,7 +224,6 @@ int CHOLMODWrapper::initializeMatrix_(RSparseMatrix & S){
 
             for (uint i = 0; i < S.vecVals().size(); i++) (*AxV_)[i] = Ax_[i];
 
-
             void *Symbolic;
 
             // if (verbose_) std::cout << "Using umfpack .. " << std::endl;
@@ -222,12 +231,15 @@ int CHOLMODWrapper::initializeMatrix_(RSparseMatrix & S){
             (void) umfpack_di_symbolic(S.nCols(), S.nRows(), ApR_, AiR_, Ax_, &Symbolic, null, null) ;
             (void) umfpack_di_numeric(ApR_, AiR_, Ax_, Symbolic, &NumericD_, null, null) ;
             umfpack_di_free_symbolic (&Symbolic);
+            name_ = "Umfpack";
+
             return 1;
 #else
             std::cerr << WHERE_AM_I << " umfpack not installed" << std::endl;
 #endif
         } else {
 #if USE_CHOLMOD
+            name_ = "Cholmod";
             return initMatrixChol_(S, CHOLMOD_REAL);
 #endif
         }
@@ -275,18 +287,18 @@ int CHOLMODWrapper::factorise_(){
             if (verbose_) cholmod_print_sparse((cholmod_sparse *)A_, "A", (cholmod_common*)c_);
             // cholmod_print_common("common parameter", (cholmod_common*)c_);
 
-            
+
             // CHOLMOD_SIMPLICIA == 0
             // CHOLMOD_AUTO == 1
             // CHOLMOD_SUPERNODAL == 2
             // __MS(((cholmod_common *)c_)->supernodal)
             // ((cholmod_common *)c_)->supernodal=1;
-            
+
             // __MS(((cholmod_common *)c_)->nmethods)
             // ((cholmod_common *)c_)->nmethods=0;
             // ((cholmod_common *)c_)->current=3;
 
-            
+
             L_ = cholmod_analyze((cholmod_sparse*)A_,
                                  (cholmod_common*)c_);		    /* analyze */
             // __MS(((cholmod_factor *)L_)->is_super)
@@ -294,7 +306,7 @@ int CHOLMODWrapper::factorise_(){
                               (cholmod_factor*)L_,
                               (cholmod_common*)c_);		    /* factorize */
 
-        if (verbose_) std::cout << "CHOLMOD analyzed preordering: " 
+        if (verbose_) std::cout << "CHOLMOD analyzed preordering: "
                                 << ((cholmod_factor *)(L_))->ordering << std::endl;
 
         if (verbose_) cholmod_print_factor((cholmod_factor *)L_, "L", (cholmod_common*)c_);
@@ -310,6 +322,8 @@ int CHOLMODWrapper::factorise_(){
 template < class ValueType >
     int CHOLMODWrapper::solveCHOL_(const Vector < ValueType > & rhs,
                                    Vector < ValueType > & solution){
+    ASSERT_VEC_SIZE(rhs, this->dim_)
+    ASSERT_VEC_SIZE(solution, this->dim_)
     if (!dummy_){
 #if USE_CHOLMOD
         cholmod_dense * b = cholmod_zeros(((cholmod_sparse*)A_)->nrow,
@@ -353,6 +367,8 @@ template < class ValueType >
 }
 
 int CHOLMODWrapper::solve(const RVector & rhs, RVector & solution){
+    ASSERT_VEC_SIZE(rhs, this->dim_)
+    ASSERT_VEC_SIZE(solution, this->dim_)
     if (!dummy_){
 
         if (useUmfpack_){
@@ -391,6 +407,8 @@ int CHOLMODWrapper::solve(const RVector & rhs, RVector & solution){
 }
 
 int CHOLMODWrapper::solve(const CVector & rhs, CVector & solution){
+    ASSERT_VEC_SIZE(rhs, this->dim_)
+    ASSERT_VEC_SIZE(solution, this->dim_)
     if (!dummy_){
 
         if (useUmfpack_){

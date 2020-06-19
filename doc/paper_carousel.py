@@ -97,4 +97,8 @@ showcase = [
          title="Petrophysical joint inversion for water, ice, and air",
          subtitle="Wagner et al. (2019), Geophysical Journal International",
          link="https://doi.org/10.1093/gji/ggz402"),
+    dict(img="costall2020.jpg",
+         title="Simulating the electrical response of seawater intrusion in Australia",
+         subtitle="Costall et al. (2020), Scientific Reports",
+         link="https://doi.org/10.1038/s41598-020-66516-6"),
 ]
