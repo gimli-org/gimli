@@ -3,12 +3,10 @@
 
 Some needs to be sorted. Need to fit nameing conventions!
 """
-import sys
 import os.path
 import time
 
 import numpy as np
-from math import sqrt
 
 import pygimli as pg
 
@@ -73,7 +71,7 @@ def nanrms(v, axis=None):
 
 
 def rmsWithErr(a, b, err, errtol=1):
-    """Compute (abs-)root mean square of values with error above a threshold"""
+    """Compute (abs-)root-mean-square of values with error above threshold."""
     fi = pg.find(err < errtol)
     return rms(a[fi] - b[fi])
 
@@ -92,7 +90,7 @@ rmswitherr = rmsWithErr
 
 
 def rrmsWithErr(a, b, err, errtol=1):
-    """Compute root mean square of values with error above a threshold"""
+    """Compute root mean square of values with error above a threshold."""
     fi = pg.find(err < errtol)
     return rms((a[fi]-b[fi])/a[fi])
 
@@ -133,8 +131,9 @@ def num2str(a, fmtstr='%g'):
 
 
 def inthist(a, vals, bins=None, islog=False):
-    """Return point of integral (cumulative) histogram, e.g.
-    inthist(a, [25, 50, 75]) provides quartiles and median of an array"""
+    """Return point of integral (cumulative) histogram.
+
+    E.g. inthist(a, [25, 50, 75]) provides quartiles and median of an array"""
     if bins is None:
         bins = int(np.min((np.round(len(a) / 20), 10)))
 
@@ -152,8 +151,10 @@ def inthist(a, vals, bins=None, islog=False):
 
 
 def interperc(a, trimval=3.0, islog=False, bins=None):
-    """Return symmetric interpercentiles for alpha-trim outliers, e.g.
-        interperc(a, 3) returns range of inner 94% (useful for colorscales)."""
+    """Return symmetric interpercentiles for alpha-trim outliers.
+
+    E.g. interperc(a, 3) returns range of inner 94% (3 to 97%)
+    which is particularly useful for colorscales)."""
     return inthist(a, np.array([trimval, 100. - trimval]),
                    bins=bins, islog=islog)
 
@@ -195,10 +196,12 @@ def getSavePath(folder=None, subfolder='', now=None):
         path = createPath([folder, subfolder])
     return path
 
+
 def createResultPath(subfolder, now=None):
     """Create a result Folder."""
     result = createDateTimeString(now)
     return createPath(['.', result, subfolder])
+
 
 def createPath(pathList):
     """Create the path structure specified by list.
@@ -223,14 +226,17 @@ def createPath(pathList):
         raise e
     return path
 
-@pg.renamed(createResultPath, '1.2') # 20200515
+
+@pg.renamed(createResultPath, '1.2')  # 20200515
 def createResultFolder(subfolder, now=None):
     pass
 
-@pg.renamed(createPath, '1.2') # 20200515
+
+@pg.renamed(createPath, '1.2')  # 20200515
 def createfolders(foldername_list):
     pass
 
-@pg.renamed(createPath, '1.2') # 20200515
+
+@pg.renamed(createPath, '1.2')  # 20200515
 def createFolders(pathList):
     pass
