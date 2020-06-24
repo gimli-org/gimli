@@ -13,6 +13,47 @@ from math import sqrt
 import pygimli as pg
 
 
+def isScalar(v):
+    """Check if value is scalar, i.e. int, float or complex
+
+    Examples
+    --------
+    >>> import pygimli as pg
+    >>> print(pg.isScalar(0))
+    True
+    >>> print(pg.isScalar(1.0))
+    True
+    >>> print(pg.isScalar(1+1j))
+    True
+    >>> print(pg.isScalar([0.0, 1.0]))
+    False
+    """
+    return isinstance(v, (int, float, complex, np.complex))
+
+def isArray(v, N=None):
+    """Check if value is an array or a vector, with optional size.
+
+    Examples
+    --------
+    >>> import pygimli as pg
+    >>> print(pg.isArray([0, 1]))
+    True
+    >>> print(pg.isArray(np.array(5)))
+    True
+    >>> print(pg.isArray(pg.Vector(5)))
+    True
+    >>> print(pg.isArray(pg.Vector(5), N=5))
+    True
+    >>> print(pg.isArray(pg.Vector(5), N=2))
+    False
+    >>> print(pg.isArray('foo'))
+    False
+    """
+    if N is None:
+        return hasattr(v, '__iter__') and not isinstance(v, (str))
+    return isArray(v) and len(v) == N
+
+
 def rms(v, axis=None):
     """Compute the root mean square."""
     ### abs for complex values
