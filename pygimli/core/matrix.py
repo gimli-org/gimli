@@ -187,7 +187,10 @@ def __SparseMatrixEqual__(self, T):
         warn("Compare value sizes invalid: ", len(valsA), len(valsB))
         return False
 
-    # print(np.linalg.norm(valsA-valsB))
+    print(np.linalg.norm(np.array(rowsA)-np.array(rowsB)))
+    print(np.linalg.norm(np.array(colsA)-np.array(colsB)))
+    print(np.linalg.norm(valsA-valsB))
+
 
     return rowsA == rowsB and \
            colsA == colsB and \
@@ -195,6 +198,17 @@ def __SparseMatrixEqual__(self, T):
 
 pgcore.RSparseMatrix.__eq__ = __SparseMatrixEqual__
 pgcore.RSparseMapMatrix.__eq__ = __SparseMatrixEqual__
+
+
+def __SparseMatrixCopy__(self):
+    """Create a copy."""
+    return pgcore.RSparseMatrix(self)
+pgcore.RSparseMatrix.copy = __SparseMatrixCopy__
+
+def __SparseMapMatrixCopy__(self):
+    """Create a copy."""
+    return pgcore.RSparseMapMatrix(self)
+pgcore.RSparseMapMatrix.copy = __SparseMapMatrixCopy__
 
 
 class MultMatrix(pgcore.MatrixBase):

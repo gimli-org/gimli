@@ -762,9 +762,10 @@ def abs(v):
     if isinstance(v, _pygimli_.CVector):
         return _pygimli_.mag(v)
     elif isinstance(v, list):
-        if len(v) == 2 or len(v) == 3:
+        try:
             return _pygimli_.RVector3(v).abs()
-        return _pygimli_.absR3(np.array(v).T)
+        except:
+            return _pygimli_.absR3(np.array(v).T)
     elif isinstance(v, _pygimli_.R3Vector):
         return _pygimli_.absR3(v)
     elif isinstance(v, np.ndarray):

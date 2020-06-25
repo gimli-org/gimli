@@ -338,7 +338,7 @@ double MeshEntity::pot(const RVector3 & xyz, const RVector & u) const {
 }
 
 RVector3 MeshEntity::vec(const RVector3 & xyz,
-                         const std::vector < RVector3 > & v) const{
+                         const R3Vector & v) const{
     return RVector3(pot(xyz, x(v)), pot(xyz, y(v)), pot(xyz, z(v)));
 }
 

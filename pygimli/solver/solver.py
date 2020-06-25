@@ -2523,14 +2523,13 @@ def checkCFL(times, mesh, vMax):
     return c
 
 def crankNicolson(times, S, I, f=None,
-                  u0=None, theta=1.0,
+                  u0=None, theta=1.0, dirichlet=None,
                   solver=None, progress=None):
     """Generic Crank Nicolson solver for time dependend problems.
 
     Limitations so far:
-        S = Needs to be constant over time (i.e. no change in model cofficients)
-        f = constant over time
-        bc = constant over time
+        S = Needs to be constant over time (i.e. no change in model coefficients)
+        f = constant over time (would need assembling in every step)
 
     Args
     ----
@@ -2551,10 +2550,12 @@ def crankNicolson(times, S, I, f=None,
         * 1: Forward difference scheme (explicit)
         strong time steps dependency .. will be unstable for to small values
         * 0.5: probably best tradeoff but can also be unstable
-    progress: Progress [None]
-        Provide progress object if you want to see some.
+    dirichlet: dirichlet generator
+        Genertor object to applay dirichlet boundary conditions
     solver: LinSolver [None]
         Provide a pre configured solver if you want some special.
+    progress: Progress [None]
+        Provide progress object if you want to see some.
 
     Returns
     -------
@@ -2584,9 +2585,12 @@ def crankNicolson(times, S, I, f=None,
         u[0, :] = u0
 
     if theta == 0:
-        A = I
+        A = I.copy()
     else:
         A = I + S * (dt * theta)
+
+    if dirichlet is not None:
+        dirichlet.apply(A)
 
     if solver is None:
         solver = pg.core.LinSolver(A, verbose=False)
@@ -2613,17 +2617,18 @@ def crankNicolson(times, S, I, f=None,
 
         if theta == 0:
             if St is None:
-                St = I - S * dt # cache what is possible the theta=0
+                St = I - S * dt # cache what's possible
             b = St * u[n-1] + dt * rhs[n-1]
+
         elif theta == 1:
             b = I * u[n-1] + dt * rhs[n]
         else:
-            b = I * u[n-1] + S.mult(dt * (theta - 1.) * u[n-1]) + \
-                dt * ((1.0 - theta) * rhs[n-1] + theta * rhs[n])
+            if St is None:
+                St = I - S *(dt*(1.-theta)) # cache what's possible
+            b = St * u[n-1] + dt * ((1.0 - theta) * rhs[n-1] + theta * rhs[n])
 
-#        pg.toc()
-#        print(np.linalg.norm(b-b1))
-        #np.testing.assert_allclose(bRef, b)
+        if dirichlet is not None:
+            dirichlet.apply(b)
 
         if timeMeasure:
             timeAssemble.append(pg.dur())
