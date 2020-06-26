@@ -166,7 +166,7 @@ def load(fname, verbose=False, testAll=True, realName=None):
         files = os.listdir(fname)
         if verbose:
             print("Reading %s with %d files..." % (fname, len(files)))
-        return [load(f) for f in files]
+        return [load(os.path.join(fname, f)) for f in files]
 
     suffix = None
     if realName is not None:
