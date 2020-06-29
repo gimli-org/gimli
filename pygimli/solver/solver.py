@@ -1277,8 +1277,8 @@ def applyDirichlet(mat, rhs, uDirIndex, uDirichlet):
         #rhs.setVal(uDirichlet, uDirIndex)
 
 def getDirichletMap(mat, boundaryPairs, time=0.0, userData={},
-                        nodePairs=None,
-                        dofOffset=0, nCoeff=1, dofPerCoeff=None):
+                    nodePairs=None,
+                    dofOffset=0, nCoeff=1, dofPerCoeff=None):
     """Get map of index: dirichlet value
 
     Apply Dirichlet boundary condition to the system matrix S and rhs vector.
@@ -1380,7 +1380,6 @@ def getDirichletMap(mat, boundaryPairs, time=0.0, userData={},
                     pg.error('Dirichlet values per boundary need to have '
                              'length of boundary.nodeCount()')
 
-
     if nodePairs is not None:
         #print("nodePairs", nodePairs)
 
@@ -1405,10 +1404,12 @@ def assembleDirichletBC(mat, boundaryPairs, rhs=None, time=0.0, userData={},
         Right hand side vector of the system equation will bet set to
         :math:`u_{\text{D}}`
     """
-    uDirVal = getDirichletMap(mat, boundaryPairs, time=0.0,
-                              userData={},
-                              nodePairs=None,
-                              dofOffset=0, nCoeff=1, dofPerCoeff=None)
+    uDirVal = getDirichletMap(mat, boundaryPairs, time=time,
+                              userData=userData,
+                              nodePairs=nodePairs,
+                              dofOffset=dofOffset, 
+                              nCoeff=nCoeff, 
+                              dofPerCoeff=dofPerCoeff)
 
     # pg._g(list(uDirVal.keys()), list(uDirVal.values()))
     if not uDirVal.keys():
