@@ -107,7 +107,7 @@ Matrix< Complex >::transMult(const Vector < Complex > & b) const {
     return _transMult((*this), b);
 }
 
-template < class ValueType > Matrix < ValueType > & 
+template < class ValueType > Matrix < ValueType > &
 _transAdd(Matrix < ValueType > * a, const Matrix < ValueType > & b){
     if (a->rows() != b.cols() || a->cols() != b.rows()){
         __MS(a->rows() << " " << b.cols() << " " << a->cols() << " " << b.rows())
@@ -122,11 +122,11 @@ _transAdd(Matrix < ValueType > * a, const Matrix < ValueType > & b){
     }
     return *a;
 }
-template <> Matrix < double > & 
+template <> Matrix < double > &
 Matrix<double>::transAdd(const Matrix < double > & a){
     return _transAdd(this, a);
 }
-template <> Matrix < Complex > & 
+template <> Matrix < Complex > &
 Matrix<Complex>::transAdd(const Matrix < Complex > & a){
     return _transAdd(this, a);
 }

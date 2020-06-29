@@ -542,6 +542,7 @@ public:
     inline Vector< ValueType > & addVal(const Vector < ValueType > & vals,
                                         const IndexArray & idx) {
         ASSERT_EQUAL(idx.size(), vals.size())
+        //ASSERT_THIS_SIZE(max(idx))
         for (Index i = 0; i < idx.size(); i ++) data_[idx[i]] += vals[i];
 
         return *this;

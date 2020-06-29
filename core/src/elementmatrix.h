@@ -79,6 +79,8 @@ public:
     /*! Set data matrix. */
     inline void setMat(const Matrix < ValueType > & m) { mat_ = m; }
     /*! Return data matrix. */
+    inline Matrix < ValueType > * pMat() { return & mat_; }
+    /*! Return data for row i. */
     inline const Matrix < ValueType > & mat() const { return mat_; }
     /*! Return data for row i. */
     inline const Vector < ValueType > & row(Index i) const { return mat_[i]; }
@@ -290,11 +292,11 @@ public:
     ElementMatrix(const ElementMatrix < ValueType > & E);
 
     /*! Fill this ElementMatrix with value (u for scalar, v for vector values) basis.*/
-    ElementMatrix < ValueType > & pot(const MeshEntity & ent, Index integrationOrder, 
+    ElementMatrix < ValueType > & pot(const MeshEntity & ent, Index integrationOrder,
                                       bool sum=false);
 
     /*! Fill this ElementMatrix with gradient of ent.*/
-    ElementMatrix < ValueType > & grad(const MeshEntity & ent, Index integrationOrder, 
+    ElementMatrix < ValueType > & grad(const MeshEntity & ent, Index integrationOrder,
                                        bool elastic=false, bool sum=false);
 
     /*! Return reference to all matrices per quadrature point.*/
@@ -305,9 +307,14 @@ public:
 
     /*! Return const reference to the last quadrature points.*/
     const R3Vector & x() const { return *_x; }
-    
+
     /*! Return const reference to the last quadrature weights.*/
     const RVector & w() const { return *_w; }
+
+    Index order() const { return _order; }
+    Index nCoeff() const { return _nCoeff; }
+    Index dofPerCoeff() const { return _dofPerCoeff; }
+    Index dofOffset() const { return _dofOffset; }
 
 protected:
     Matrix < ValueType > mat_;
@@ -336,7 +343,7 @@ protected:
 
     RMatrix _abaTmp; // temp workspace
 
-    
+
     //** new interface starts here **//
     // const Mesh * _mesh;
     Index _order;
@@ -352,7 +359,7 @@ protected:
 
 private:
     /*! No copy operator. */
-   
+
     /*! No assignment operator. */
     ElementMatrix < ValueType > & operator = (const ElementMatrix < ValueType > & E) {
         std::cout << "ElementMatrix::operator = (" << std::endl;
@@ -371,30 +378,46 @@ public:
 
     virtual ~FEAFunction() { }
 
-    inline double operator() (const Pos & arg, const MeshEntity * ent=0) const { 
+    virtual Pos operator() (const Pos & arg, const MeshEntity * ent=0) const {
         return this->eval(arg, ent); }
 
-    virtual double eval(const Pos & arg, const MeshEntity * ent=0) const {THROW_TO_IMPL}
+    virtual Pos eval(const Pos & arg, const MeshEntity * ent=0) const{
+        THROW_TO_IMPL
+        return arg;
+    }
 
 };
 
-DLLEXPORT const ElementMatrix < double > & dot(const ElementMatrix < double > & A,
-                                               const ElementMatrix < double > & B,
-                                               double b);
-DLLEXPORT const ElementMatrix < double > & dot(const ElementMatrix < double > & A,
-                                               const ElementMatrix < double > & B,
-                                               const RVector & b);
-DLLEXPORT const ElementMatrix < double > & dot(const ElementMatrix < double > & A,
-                                     const ElementMatrix < double > & B,
-                                     const FEAFunction & b);
+// class DLLEXPORT FEAFunction3 : public FEAFunction {
+// public:
+//     FEAFunction3():FEAFunction() { }
 
-DLLEXPORT const ElementMatrix < double > & mult(const ElementMatrix < double > & A,
+//     virtual ~FEAFunction3() { }
+
+//     virtual Pos operator() (const Pos & arg, const MeshEntity * ent=0) const {
+//         return this->eval(arg, ent); }
+
+//     virtual Pos eval(const Pos & arg, const MeshEntity * ent=0) const{
+//         THROW_TO_IMPL
+//         return Pos(0, 0);
+//     }
+// };
+
+DLLEXPORT const ElementMatrix < double > dot(const ElementMatrix < double > & A,
+                    const ElementMatrix < double > & B, double b);
+DLLEXPORT const ElementMatrix < double > dot(const ElementMatrix < double > & A,
+                    const ElementMatrix < double > & B, const RVector & b);
+DLLEXPORT const ElementMatrix < double > dot(const ElementMatrix < double > & A,
+                    const ElementMatrix < double > & B, const FEAFunction & b);
+
+DLLEXPORT const ElementMatrix < double > mult(
+                    const ElementMatrix < double > & A,
                                                 double b);
-DLLEXPORT const ElementMatrix < double > & mult(const ElementMatrix < double > & A,
-                                                const RVector & b);
+DLLEXPORT const ElementMatrix < double > mult(
+                    const ElementMatrix < double > & A, const RVector & b);
 
-DLLEXPORT const ElementMatrix < double > & mult(const ElementMatrix < double > & A,
-                                      const FEAFunction & b);
+DLLEXPORT const ElementMatrix < double > mult(
+                    const ElementMatrix < double > & A, const FEAFunction & b);
 
 
 class DLLEXPORT ElementMatrixMap {
