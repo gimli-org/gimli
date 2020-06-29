@@ -372,6 +372,8 @@ private:
     }
 };
 
+/*!Interface to function q=f(p, ent) with q, p = Pos() in R1, R2, R 3
+and ent assiated mesh entity.*/
 class DLLEXPORT FEAFunction {
 public:
     FEAFunction() { }
@@ -382,26 +384,11 @@ public:
         return this->eval(arg, ent); }
 
     virtual Pos eval(const Pos & arg, const MeshEntity * ent=0) const{
-        THROW_TO_IMPL
+        log(Warning, "FEAFunction.eval should be overloaded.");
         return arg;
     }
 
 };
-
-// class DLLEXPORT FEAFunction3 : public FEAFunction {
-// public:
-//     FEAFunction3():FEAFunction() { }
-
-//     virtual ~FEAFunction3() { }
-
-//     virtual Pos operator() (const Pos & arg, const MeshEntity * ent=0) const {
-//         return this->eval(arg, ent); }
-
-//     virtual Pos eval(const Pos & arg, const MeshEntity * ent=0) const{
-//         THROW_TO_IMPL
-//         return Pos(0, 0);
-//     }
-// };
 
 DLLEXPORT const ElementMatrix < double > dot(const ElementMatrix < double > & A,
                     const ElementMatrix < double > & B, double b);
