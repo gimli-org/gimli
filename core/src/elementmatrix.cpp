@@ -1273,14 +1273,13 @@ ElementMatrix < double > & ElementMatrix < double >::pot(
                            i * nVerts, (i+1) * nVerts);
     }
 
-    if (_matX.size() != nRules){
-        _matX.resize(nRules);
-        for (Index i = 0; i < nRules; i ++ ){
-            // transpose might be better?? check
-            // fill per row is cheaper
-            _matX[i].resize(nCoeff, nVerts*nCoeff);
-        }
+    _matX.resize(nRules);
+    for (Index i = 0; i < nRules; i ++ ){
+        // transpose might be better?? check
+        // fill per row is cheaper
+        _matX[i].resize(nCoeff, nVerts*nCoeff);
     }
+
 
     for (Index i = 0; i < nRules; i ++ ){
         for (Index n = 0; n < nCoeff; n ++ ){
@@ -1451,36 +1450,119 @@ ElementMatrix < double > & ElementMatrix < double >::grad(
 
 
 const ElementMatrix < double > dot(const ElementMatrix < double > & A,
-                                                               const ElementMatrix < double > & B,
-                                                               double b){
+                                   const ElementMatrix < double > & B,
+                                   double b){
+
+    ElementMatrix < double > C;
+
+    C.resize(A.mat().rows(), B.mat().rows());
+    C.setIds(A.rowIDs(), B.rowIDs());
+
+
+    const RVector &w = A.w();
+    Index nRules(w.size());
+
+    (*C.pMat())*=0.0;
+
+    // __MS(C.mat())
+
+    for (Index r = 0; r < nRules; r++){
+
+        // __MS(A.matX()[r])
+        // __MS(B.matX()[r])
+        // __MS(C.mat())
+        const RMatrix & Ai = A.matX()[r];
+        const RMatrix & Bi = B.matX()[r];
+
+        if (Ai.rows() == 1 && Bi.rows() > 1){
+            // divergence or other stuff we need to sum
+            double c = w[r] * A.entity().size() * b;
+            for (Index i = 0; i < Ai.cols(); i++){
+                for (Index j = 0; j < Bi.cols(); j++){
+                    for (Index k = 0; k < Bi.rows(); k++){
+                        (*C.pMat())[i][j] += c * Ai[0][i] * Bi[k][j];
+                    }
+                }
+            }
+        } else if (A.matX()[r].rows() > 1 && B.matX()[r].rows() == 1){
+            // divergence or other stuff we need to sum
+            double c = w[r] * A.entity().size() * b;
+            for (Index i = 0; i < Ai.cols(); i++){
+                for (Index j = 0; j < Bi.cols(); j++){
+                    for (Index k = 0; k < Ai.rows(); k++){
+                        (*C.pMat())[j][i] += c * Bi[0][i] * Ai[k][j];
+                    }
+                }
+            }
+
+        } else {
+            matTransMult(A.matX()[r],
+                         B.matX()[r],
+                         *C.pMat(),
+                         w[r] * A.entity().size() * b);
+        }
+    }
+
+    return C;
+}
+const ElementMatrix < double > dot(const ElementMatrix < double > & A,
+                                   const ElementMatrix < double > & B,
+                                   const RVector & b){
     ElementMatrix < double > ret(A);
     THROW_TO_IMPL
     return ret;
 }
 const ElementMatrix < double > dot(const ElementMatrix < double > & A,
-                                                               const ElementMatrix < double > & B,
-                                                               const RVector & b){
+                                   const ElementMatrix < double > & B,
+                                   const RMatrix & b){
     ElementMatrix < double > ret(A);
     THROW_TO_IMPL
     return ret;
 }
 const ElementMatrix < double > dot(const ElementMatrix < double > & A,
-                                                               const ElementMatrix < double > & B,
-                                                               const FEAFunction & b){
+                                   const ElementMatrix < double > & B,
+                                   const FEAFunction & b){
     ElementMatrix < double > ret(A);
+    //Pos B(b(A.entity().shape().xyz(x[r], &A.entity()));
+    //Pos B(b(A.entity().shape().xyz(x[r]), entity));
     THROW_TO_IMPL
     return ret;
 }
 
 const ElementMatrix < double > mult(const ElementMatrix < double > & A,
-                                                                double b){
-    __M
-    THROW_TO_IMPL
-    ElementMatrix < double > ret(A);
-    return ret;
+                                    double b){
+
+    ElementMatrix < double > C(A);
+
+    const R3Vector &x = A.x();
+    const RVector &w = A.w();
+
+    Index nRules(x.size());
+
+    for (Index r = 0; r < nRules; r++){
+        // use callable on quadrature points .. no interpolation error
+        RMatrix & iC = (*C.pMatX())[r];
+
+        for (Index k = 0; k < iC.rows(); k ++){
+            iC[k] *= b;
+        }
+        // __MS(*iC)
+    }
+
+    RMatrix & mC = *C.pMat();
+    mC *= 0.0;
+    bool sum = true;
+    if (sum == true){
+        for (Index i = 0; i < nRules; i ++){
+            // improve either with matrix expressions of shift w as scale
+            mC.transAdd(C.matX()[i] * (w[i] * C.entity().size()));
+        }
+    }
+
+    return C;
 }
 const ElementMatrix < double > mult(const ElementMatrix < double > & A,
-                                                                const RVector & b){
+                                    const RVector & b){
     __M
     THROW_TO_IMPL
     ElementMatrix < double > ret(A);
@@ -1489,44 +1571,45 @@ const ElementMatrix < double > mult(const ElementMatrix < double > & A,
 
 const ElementMatrix < double > mult(const ElementMatrix < double > & A,
                                     const FEAFunction & b){
-
-    __MS(b(Pos(1.0, 2.0, 3.0)))
-    ElementMatrix < double > ret(A);
+    // ret C = A * b
+    ElementMatrix < double > C(A);
 
     const R3Vector &x = A.x();
     const RVector &w = A.w();
 
     Index nRules(x.size());
 
-    RMatrix & C = *ret.pMat();
-    //C *= 0.0;
-
     for (Index r = 0; r < nRules; r++){
-
         // use callable on quadrature points .. no interpolation error
-        const RMatrix & iA = A.matX()[r];
-        Pos B(b(A.entity().shape().xyz(x[r])));
+        RMatrix & iC = (*C.pMatX())[r];
+        if (b.valueSize() == 1){
 
-       //matTransMult(A.matX()[i], fi, ret.pMat(), w);
-        __MS(w[r])
-        __MS(iA)
-        __MS(B)
-        if (iA.rows() < 4){ // A.T * B
-            // C.resize(A.cols(), 1);
+            double B(b.evalR1(A.entity().shape().xyz(x[r]), &A.entity()));
 
-            // for (Index i = 0; i < Ai.cols(); i ++){
-            //     for (Index j = 0; j < B.size(); j ++){
-            //         double c = 0;
-            //         for (Index k = 0; k < A.rows(); k ++){
-            //             c += A[k][i] * B[k][j];
-            //         }
-            //         C[i][j] += w[r]* c;
-            //     }
-            // }
+            for (Index k = 0; k < iC.rows(); k ++){
+               iC[k] *= B;
+            }
+        } else {
+            Pos B(b.evalR3(A.entity().shape().xyz(x[r]), &A.entity()));
+
+            for (Index k = 0; k < iC.rows(); k ++){
+                iC[k] *= B[k];
+            }
+        }
+        // __MS(*iC)
+    }
+
+    RMatrix & mC = *C.pMat();
+    mC *= 0.0;
+    bool sum = true;
+    if (sum == true){
+        for (Index i = 0; i < nRules; i ++){
+            // improve either with matrix expressions of shift w as scale
+            mC.transAdd(C.matX()[i] * (w[i] * C.entity().size()));
         }
     }
 
-    return ret;
+    return C;
 }
 
 } // namespace GIMLI

@@ -12,7 +12,7 @@ import pygimli as pg
 
 
 def isScalar(v):
-    """Check if value is scalar, i.e. int, float or complex
+    """Check if v is scalar, i.e. int, float or complex
 
     Examples
     --------
@@ -29,7 +29,7 @@ def isScalar(v):
     return isinstance(v, (int, float, complex, np.complex))
 
 def isArray(v, N=None):
-    """Check if value is an array or a vector, with optional size.
+    """Check if v is an array or a vector of scalars, with optional size.
 
     Examples
     --------
@@ -51,6 +51,41 @@ def isArray(v, N=None):
         return hasattr(v, '__iter__') and not isinstance(v, (str))
     return isArray(v) and len(v) == N
 
+def isPos(v):
+    """Check if v is an array of size(3), [x,y,z], or pg.Pos.
+
+    Examples
+    --------
+    >>> import pygimli as pg
+    >>> print(pg.isPos([0.0, 0.0, 1.]))
+    True
+    >>> print(pg.isPos(pg.Pos(0.0, 0.0, 0.0)))
+    True
+    >>> print(pg.isPos(np.ones(3)))
+    True
+    >>> print(pg.isPos(np.ones(4)))
+    False
+    """
+    return isArray(v, 3) or isinstance(v, pg.Pos)
+
+def isR3Array(v, N=None):
+    """Check if v is an array of size(N,3), a R3Vector or a list of pg.Pos.
+
+    Examples
+    --------
+    >>> import pygimli as pg
+    >>> print(pg.isR3Array([[0.0, 0.0, 1.], [1.0, 0.0, 1.]]))
+    True
+    >>> print(pg.isR3Array(np.ones((33, 3)), N=33))
+    True
+    >>> print(pg.isR3Array(pg.meshtools.createGrid(2,2).positions()))
+    True
+    """
+    if N is None:
+        return (isinstance(v,list) and isPos(v[0])) or \
+                hasattr(v, '__iter__') and not isinstance(v, (str)) and \
+            v.ndim == 2 and v.shape[1] == 3
+    return isR3Array(v) and len(v) == N
 
 def rms(v, axis=None):
     """Compute the root mean square."""

@@ -498,19 +498,35 @@ _pygimli_.CMatrix.__setitem__ = __setVal
 ############################
 # len(RVector), RMatrix
 ############################
-def __Vector_len(self):
-    return self.size()
+_vecs = [_pygimli_.RVector,
+         _pygimli_.BVector,
+         _pygimli_.CVector,
+         _pygimli_.IVector,
+         _pygimli_.IndexArray]
 
-def __Vector3_len(self):
-    return 3
+for v in _vecs:
+    v.ndim = 1
+    v.__len__ = lambda self: self.size()
+    v.shape = property(lambda self: (self.size(), None))
 
-_pygimli_.RVector.__len__ = __Vector_len
-_pygimli_.RVector3.__len__ = __Vector3_len
-_pygimli_.R3Vector.__len__ = __Vector_len
-_pygimli_.BVector.__len__ = __Vector_len
-_pygimli_.CVector.__len__ = __Vector_len
-_pygimli_.IVector.__len__ = __Vector_len
-_pygimli_.IndexArray.__len__ = __Vector_len
+_pygimli_.RVector.dtype = np.float
+_pygimli_.BVector.dtype = np.bool
+_pygimli_.CVector.dtype = np.complex
+_pygimli_.IVector.dtype = np.long
+_pygimli_.IndexArray.dtype = np.uint
+
+_pygimli_.RVector3.dtype = np.float
+_pygimli_.RVector3.__len__ = lambda self: 3
+_pygimli_.RVector3.ndim = 1
+_pygimli_.RVector3.shape = (3,)
+
+_pygimli_.R3Vector.dtype = np.float
+_pygimli_.R3Vector.__len__ = lambda self: self.size()
+_pygimli_.R3Vector.ndim = 2
+_pygimli_.R3Vector.shape = property(lambda self: (self.size(), 3))
+
+#remove me
+_pygimli_.stdVectorRVector3.ndim = 2
 
 ############################
 # abs(RVector), RMatrix
@@ -518,22 +534,6 @@ _pygimli_.IndexArray.__len__ = __Vector_len
 _pygimli_.RVector.__abs__ = _pygimli_.fabs
 _pygimli_.CVector.__abs__ = _pygimli_.mag
 _pygimli_.R3Vector.__abs__ = _pygimli_.absR3
-
-_pygimli_.RVector.ndim = 1
-_pygimli_.RVector.dtype = np.float
-_pygimli_.BVector.ndim = 1
-_pygimli_.BVector.dtype = np.bool
-_pygimli_.CVector.ndim = 1
-_pygimli_.CVector.dtype = np.complex
-_pygimli_.RVector3.ndim = 1
-_pygimli_.RVector3.dtype = np.float
-_pygimli_.IVector.ndim = 1
-_pygimli_.IVector.dtype = np.long
-_pygimli_.IndexArray.ndim = 1
-_pygimli_.IndexArray.dtype = np.uint
-_pygimli_.R3Vector.ndim = 2
-_pygimli_.stdVectorRVector3.ndim = 2
-
 
 ############################
 # __hash__ settings

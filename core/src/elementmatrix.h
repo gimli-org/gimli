@@ -302,6 +302,8 @@ public:
     /*! Return reference to all matrices per quadrature point.*/
     const std::vector < Matrix < ValueType > > & matX() const { return _matX; }
 
+    std::vector < Matrix < ValueType > > * pMatX() { return &_matX; }
+
     /*! Return const reference to the last active entity.*/
     const MeshEntity & entity() const { return *_ent; }
 
@@ -376,33 +378,38 @@ private:
 and ent assiated mesh entity.*/
 class DLLEXPORT FEAFunction {
 public:
-    FEAFunction() { }
+    FEAFunction(Index valueSize): _valueSize(valueSize){ }
 
     virtual ~FEAFunction() { }
 
-    virtual Pos operator() (const Pos & arg, const MeshEntity * ent=0) const {
-        return this->eval(arg, ent); }
-
-    virtual Pos eval(const Pos & arg, const MeshEntity * ent=0) const{
+    virtual Pos evalR3(const Pos & arg, const MeshEntity * ent=0) const{
         log(Warning, "FEAFunction.eval should be overloaded.");
-        return arg;
+        return Pos(0.0, 0.0, 0.0);
+    }
+    virtual double evalR1(const Pos & arg, const MeshEntity * ent=0) const{
+        log(Warning, "FEAFunction.eval should be overloaded.");
+        return 0.0;
     }
 
+    Index valueSize() const { return _valueSize; }
+
+protected:
+    Index _valueSize;
 };
 
 DLLEXPORT const ElementMatrix < double > dot(const ElementMatrix < double > & A,
-                    const ElementMatrix < double > & B, double b);
+                    const ElementMatrix < double > & B, double b=1.0);
 DLLEXPORT const ElementMatrix < double > dot(const ElementMatrix < double > & A,
                     const ElementMatrix < double > & B, const RVector & b);
+DLLEXPORT const ElementMatrix < double > dot(const ElementMatrix < double > & A,
+                    const ElementMatrix < double > & B, const RMatrix & b);
 DLLEXPORT const ElementMatrix < double > dot(const ElementMatrix < double > & A,
                     const ElementMatrix < double > & B, const FEAFunction & b);
 
 DLLEXPORT const ElementMatrix < double > mult(
-                    const ElementMatrix < double > & A,
-                                                double b);
+                    const ElementMatrix < double > & A, double b=1.0);
 DLLEXPORT const ElementMatrix < double > mult(
                     const ElementMatrix < double > & A, const RVector & b);
-
 DLLEXPORT const ElementMatrix < double > mult(
                     const ElementMatrix < double > & A, const FEAFunction & b);
 

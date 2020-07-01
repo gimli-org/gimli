@@ -30,17 +30,10 @@ __Matrices = [pgcore.MatrixBase,
               pgcore.RBlockMatrix,
               pgcore.IdentityMatrix]
 
-def __Matrix_len(self):
-    return self.rows()
-
-@property
-def __MatrixShapePropery__(self):
-    return (self.rows(), self.cols())
-
 for m in __Matrices:
     m.ndim = 2
-    m.__len__ = __Matrix_len
-    m.shape = __MatrixShapePropery__
+    m.__len__ = lambda self: self.rows()
+    m.shape = property(lambda self: (self.rows(), self.cols()))
 
 pgcore.RMatrix.dtype = np.float
 pgcore.CMatrix.dtype = np.complex
