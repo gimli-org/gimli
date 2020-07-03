@@ -291,6 +291,8 @@ public:
 
     ElementMatrix(const ElementMatrix < ValueType > & E);
 
+    void copyFrom(const ElementMatrix < ValueType > & E, bool withMat=true);
+
     /*! Fill this ElementMatrix with value (u for scalar, v for vector values) basis.*/
     ElementMatrix < ValueType > & pot(const MeshEntity & ent, Index integrationOrder,
                                       bool sum=false);
@@ -299,19 +301,22 @@ public:
     ElementMatrix < ValueType > & grad(const MeshEntity & ent, Index integrationOrder,
                                        bool elastic=false, bool sum=false);
 
+    /*! Integrate, i.e., sum over quadrature matrices.*/
+    ElementMatrix < ValueType > & integrate();
+
     /*! Return reference to all matrices per quadrature point.*/
     const std::vector < Matrix < ValueType > > & matX() const { return _matX; }
 
     std::vector < Matrix < ValueType > > * pMatX() { return &_matX; }
 
     /*! Return const reference to the last active entity.*/
-    const MeshEntity & entity() const { return *_ent; }
+    const MeshEntity & entity() const { ASSERT_PTR(_ent); return *_ent; }
 
     /*! Return const reference to the last quadrature points.*/
-    const R3Vector & x() const { return *_x; }
+    const R3Vector & x() const { ASSERT_PTR(_x); return *_x; }
 
     /*! Return const reference to the last quadrature weights.*/
-    const RVector & w() const { return *_w; }
+    const RVector & w() const { ASSERT_PTR(_w); return *_w; }
 
     Index order() const { return _order; }
     Index nCoeff() const { return _nCoeff; }
@@ -374,6 +379,11 @@ private:
     }
 };
 
+template < > DLLEXPORT
+void ElementMatrix < double >::copyFrom(const ElementMatrix < double > & E,
+                                        bool withMat);
+
+
 /*!Interface to function q=f(p, ent) with q, p = Pos() in R1, R2, R 3
 and ent assiated mesh entity.*/
 class DLLEXPORT FEAFunction {
@@ -397,6 +407,10 @@ protected:
     Index _valueSize;
 };
 
+DLLEXPORT void dot(const ElementMatrix < double > & A,
+                   const ElementMatrix < double > & B,
+                   ElementMatrix < double > & C, double b);
+
 DLLEXPORT const ElementMatrix < double > dot(const ElementMatrix < double > & A,
                     const ElementMatrix < double > & B, double b=1.0);
 DLLEXPORT const ElementMatrix < double > dot(const ElementMatrix < double > & A,
@@ -405,6 +419,17 @@ DLLEXPORT const ElementMatrix < double > dot(const ElementMatrix < double > & A,
                     const ElementMatrix < double > & B, const RMatrix & b);
 DLLEXPORT const ElementMatrix < double > dot(const ElementMatrix < double > & A,
                     const ElementMatrix < double > & B, const FEAFunction & b);
+
+DLLEXPORT void mult(const ElementMatrix < double > & A,
+                    ElementMatrix < double > & C, double b=1.0);
+DLLEXPORT void mult(const ElementMatrix < double > & A,
+                    ElementMatrix < double > & C, const FEAFunction & b);
+
+DLLEXPORT const ElementMatrix < double > mult(
+                    const ElementMatrix < double > & A, const RVector & b);
+DLLEXPORT const ElementMatrix < double > mult(
+                    const ElementMatrix < double > & A, const FEAFunction & b);
+
 
 DLLEXPORT const ElementMatrix < double > mult(
                     const ElementMatrix < double > & A, double b=1.0);
@@ -444,7 +469,7 @@ template < class ValueType > std::ostream & operator << (std::ostream & str,
                                                          const ElementMatrix< ValueType > & e);
 
 template < > DLLEXPORT std::ostream & operator << (std::ostream & str,
-                                                    const ElementMatrix< double > & e);
+                                            const ElementMatrix< double > & e);
 
 
 } // namespace GIMLI{

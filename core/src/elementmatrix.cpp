@@ -1223,10 +1223,19 @@ ElementMatrix < double >::ElementMatrix(Index nCoeff, Index dofPerCoeff, Index d
         __MS(nCoeff << " " << dofPerCoeff << " "<< dofOffset)
         log(Error, "number of coefficents > 1 but no dofPerCoefficent given");
     }
+    _ent = 0;
+    _w = 0;
+    _x = 0;
 }
 
 template < > DLLEXPORT
 ElementMatrix < double >::ElementMatrix(const ElementMatrix < double > & E){
+    this->copyFrom(E, true);
+}
+
+template < >
+void ElementMatrix < double >::copyFrom(const ElementMatrix < double > & E,
+                                        bool withMat){
 
     this->_order = E.order();
     this->_nCoeff = E.nCoeff();
@@ -1240,8 +1249,23 @@ ElementMatrix < double >::ElementMatrix(const ElementMatrix < double > & E){
 
     this->_idsC = E.colIDs();
     this->_idsR = E.rowIDs();
-    this->mat_ = E.mat();
+    if (withMat == true) this->mat_ = E.mat();
+}
 
+template < > DLLEXPORT
+ElementMatrix < double > & ElementMatrix < double >::integrate(){
+
+    const RVector &w = this->w();
+    Index nRules(w.size());
+
+    this->mat_*=0.;
+
+    for (Index i = 0; i < nRules; i ++){
+        // improve either with matrix expressions of shift w as scale
+        this->mat_.transAdd(_matX[i] * (w[i] * this->_ent->size()));
+    }
+
+    return *this;
 }
 
 template < > DLLEXPORT
@@ -1288,11 +1312,7 @@ ElementMatrix < double > & ElementMatrix < double >::pot(
     }
 
     if (sum){
-        this->mat_*=0.;
-        for (Index i = 0; i < nRules; i ++){
-            // improve either with matrix expressions of shift w as scale
-            this->mat_.transAdd(_matX[i] * (w[i] * ent.size()));
-        }
+        this->integrate();
     }
 
     return *this;
@@ -1438,26 +1458,18 @@ ElementMatrix < double > & ElementMatrix < double >::grad(
         }
     }
     if (sum){
-        this->mat_*=0.;
-        for (Index i = 0; i < nRules; i ++){
-            // improve either with matrix expressions of shift w as scale
-            this->mat_.transAdd(_matX[i] * (w[i] * ent.size()));
-        }
+        this->integrate();
     }
 
     return *this;
 }
 
+void dot(const ElementMatrix < double > & A,
+         const ElementMatrix < double > & B,
+               ElementMatrix < double > & C, double b){
 
-const ElementMatrix < double > dot(const ElementMatrix < double > & A,
-                                   const ElementMatrix < double > & B,
-                                   double b){
-
-    ElementMatrix < double > C;
-
-    C.resize(A.mat().rows(), B.mat().rows());
+    C.resize(A.rowIDs().size(), B.rowIDs().size());
     C.setIds(A.rowIDs(), B.rowIDs());
-
 
     const RVector &w = A.w();
     Index nRules(w.size());
@@ -1471,38 +1483,44 @@ const ElementMatrix < double > dot(const ElementMatrix < double > & A,
         // __MS(A.matX()[r])
         // __MS(B.matX()[r])
         // __MS(C.mat())
+
         const RMatrix & Ai = A.matX()[r];
         const RMatrix & Bi = B.matX()[r];
+        double c = w[r] * A.entity().size() * b;
 
         if (Ai.rows() == 1 && Bi.rows() > 1){
             // divergence or other stuff we need to sum
-            double c = w[r] * A.entity().size() * b;
             for (Index i = 0; i < Ai.cols(); i++){
                 for (Index j = 0; j < Bi.cols(); j++){
                     for (Index k = 0; k < Bi.rows(); k++){
-                        (*C.pMat())[i][j] += c * Ai[0][i] * Bi[k][j];
+                        (*C.pMat())[i][j] += Ai[0][i] * Bi[k][j] * c ;
                     }
                 }
             }
         } else if (A.matX()[r].rows() > 1 && B.matX()[r].rows() == 1){
             // divergence or other stuff we need to sum
-            double c = w[r] * A.entity().size() * b;
+            // __M
+            // __MS(A.matX()[r])
+            // __MS(B.matX()[r])
+
             for (Index i = 0; i < Ai.cols(); i++){
                 for (Index j = 0; j < Bi.cols(); j++){
                     for (Index k = 0; k < Ai.rows(); k++){
-                        (*C.pMat())[j][i] += c * Bi[0][i] * Ai[k][j];
+                        (*C.pMat())[i][j] += Ai[k][i] * Bi[0][j] * c;
                     }
                 }
             }
-
         } else {
-            matTransMult(A.matX()[r],
-                         B.matX()[r],
-                         *C.pMat(),
-                         w[r] * A.entity().size() * b);
+            matTransMult(A.matX()[r], B.matX()[r], *C.pMat(), c);
         }
     }
+}
 
+const ElementMatrix < double > dot(const ElementMatrix < double > & A,
+                                   const ElementMatrix < double > & B,
+                                   double b){
+    ElementMatrix < double > C;
+    dot(A, B, C, b);
     return C;
 }
 const ElementMatrix < double > dot(const ElementMatrix < double > & A,
@@ -1529,11 +1547,10 @@ const ElementMatrix < double > dot(const ElementMatrix < double > & A,
     return ret;
 }
 
-const ElementMatrix < double > mult(const ElementMatrix < double > & A,
-                                    double b){
+void mult(const ElementMatrix < double > & A,
+          ElementMatrix < double > & C, double b){
 
-    ElementMatrix < double > C(A);
-
+    C.copyFrom(A);
     const R3Vector &x = A.x();
     const RVector &w = A.w();
 
@@ -1558,22 +1575,10 @@ const ElementMatrix < double > mult(const ElementMatrix < double > & A,
             mC.transAdd(C.matX()[i] * (w[i] * C.entity().size()));
         }
     }
-
-    return C;
 }
-const ElementMatrix < double > mult(const ElementMatrix < double > & A,
-                                    const RVector & b){
-    __M
-    THROW_TO_IMPL
-    ElementMatrix < double > ret(A);
-    return ret;
-}
-
-const ElementMatrix < double > mult(const ElementMatrix < double > & A,
-                                    const FEAFunction & b){
-    // ret C = A * b
-    ElementMatrix < double > C(A);
-
+void mult(const ElementMatrix < double > & A,
+          ElementMatrix < double > & C, const FEAFunction & b){
+    C.copyFrom(A);
     const R3Vector &x = A.x();
     const RVector &w = A.w();
 
@@ -1581,6 +1586,7 @@ const ElementMatrix < double > mult(const ElementMatrix < double > & A,
 
     for (Index r = 0; r < nRules; r++){
         // use callable on quadrature points .. no interpolation error
+        ASSERT_VEC_SIZE(C.matX(), nRules)
         RMatrix & iC = (*C.pMatX())[r];
         if (b.valueSize() == 1){
 
@@ -1608,7 +1614,28 @@ const ElementMatrix < double > mult(const ElementMatrix < double > & A,
             mC.transAdd(C.matX()[i] * (w[i] * C.entity().size()));
         }
     }
+}
 
+const ElementMatrix < double > mult(const ElementMatrix < double > & A,
+                                    double b){
+
+    ElementMatrix < double > C;
+    mult(A, C, b);
+    return C;
+}
+const ElementMatrix < double > mult(const ElementMatrix < double > & A,
+                                    const RVector & b){
+    __M
+    THROW_TO_IMPL
+    ElementMatrix < double > ret(A);
+    return ret;
+}
+
+const ElementMatrix < double > mult(const ElementMatrix < double > & A,
+                                    const FEAFunction & b){
+    // ret C = A * b
+    ElementMatrix < double > C;
+    mult(A, C, b);
     return C;
 }
 

@@ -162,6 +162,8 @@ typedef int64_t int64;
     throwRangeError(WHERE_AM_I, i, start, end);
 #define ASSERT_EMPTY(v) if (v.size()==0) \
     throwLengthError(WHERE_AM_I + " array size is zero.");
+#define ASSERT_PTR(v) if (v == 0) \
+    throwError(WHERE_AM_I + " object not initialized.");
 
 static const int MARKER_BOUND_HOMOGEN_NEUMANN = -1;
 static const int MARKER_BOUND_MIXED = -2;

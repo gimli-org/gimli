@@ -29,7 +29,7 @@ def isScalar(v):
     return isinstance(v, (int, float, complex, np.complex))
 
 def isArray(v, N=None):
-    """Check if v is an array or a vector of scalars, with optional size.
+    """Check if v is an array or a vector, with optional size.
 
     Examples
     --------
