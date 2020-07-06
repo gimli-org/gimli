@@ -171,14 +171,13 @@ class ERTModellingBase(MeshModelling):
         """Draw the para domain with option model values."""
         kwargs.setdefault('label', pg.unit('res'))
         kwargs.setdefault('cMap', pg.utils.cMap('res'))
+        kwargs.setdefault('logScale', True)
 
-        return super(ERTModellingBase, self).drawModel(ax=ax, model=model,
-                                                       logScale=True,
-                                                       **kwargs)
+        return super().drawModel(ax=ax, model=model, **kwargs)
 
 
 class ERTModelling(ERTModellingBase):
-    """Forward operator for Electrical Resistivty Tomography.
+    """Forward operator for Electrical Resistivity Tomography.
 
     Note
     ----
@@ -580,7 +579,8 @@ class ERTManager(MeshMethodManager):
 
     Method Manager for Electrical Resistivity Tomography (ERT)
 
-    TODO:
+    Todo
+    ----
         * 3d
         * 3dtopo
         * complex on/off
@@ -672,8 +672,8 @@ class ERTManager(MeshMethodManager):
     def simulate(self, mesh, scheme, res, **kwargs):
         """Simulate an ERT measurement.
 
-        Perform the forward task for a given mesh, a resistivity distribution
-        a measuring scheme and return data (apparent resistivity) or potentials.
+        Perform the forward task for a given mesh, resistivity distribution &
+        measuring scheme and return data (apparent resistivity) or potentials.
 
         For complex resistivity, the apparent resistivities is complex as well.
 
