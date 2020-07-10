@@ -1226,6 +1226,7 @@ ElementMatrix < double >::ElementMatrix(Index nCoeff, Index dofPerCoeff, Index d
     _ent = 0;
     _w = 0;
     _x = 0;
+    _div = false;
 }
 
 template < > DLLEXPORT
@@ -1249,6 +1250,7 @@ void ElementMatrix < double >::copyFrom(const ElementMatrix < double > & E,
 
     this->_idsC = E.colIDs();
     this->_idsR = E.rowIDs();
+    this->_div = E.isDiv();
     if (withMat == true) this->mat_ = E.mat();
 }
 
@@ -1315,6 +1317,8 @@ ElementMatrix < double > & ElementMatrix < double >::pot(
         this->integrate();
     }
 
+    // __MS(this->_ent)
+    // __MS(this->entity())
     return *this;
 }
 
@@ -1322,10 +1326,11 @@ template < > DLLEXPORT
 ElementMatrix < double > & ElementMatrix < double >::grad(
                         const MeshEntity & ent,
                         Index integrationOrder,
-                        bool elastic, bool sum){
+                        bool elastic, bool sum, bool div){
 
     this->_order = integrationOrder;
     this->_ent = &ent;
+    this->_div = div;
     //this->getWeightsAndPoints(ent, this->_w, this->_x, this->_order);
 
     this->_w = &IntegrationRules::instance().weights(ent.shape(), this->_order);
@@ -1468,6 +1473,7 @@ void dot(const ElementMatrix < double > & A,
          const ElementMatrix < double > & B,
                ElementMatrix < double > & C, double b){
 
+    C.copyFrom(A);
     C.resize(A.rowIDs().size(), B.rowIDs().size());
     C.setIds(A.rowIDs(), B.rowIDs());
 

@@ -1468,9 +1468,9 @@ void Mesh::createRefined_(const Mesh & mesh, bool p2, bool h2){
         if (it->second.size() == mesh.cellCount()){
             addData(it->first, it->second(this->cellMarkers()));
         } else if (it->second.size() == mesh.nodeCount()){
-            THROW_TO_IMPL
+            log(Warning, "Skip copying node data into refined mesh:", it->first);
         } else if (it->second.size() == mesh.boundaryCount()){
-            THROW_TO_IMPL
+            log(Warning, "Skip copying boundary data into refined mesh:", it->first);
         }
     }
     //! copy original marker into the new mesh

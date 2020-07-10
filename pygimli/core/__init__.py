@@ -786,12 +786,10 @@ def abs(v):
 # this needs a monkey patch for BVector operator == (RVector, int)
 _pygimli_.__EQ_RVector__ = _pygimli_.RVector.__eq__
 
-
 def __EQ_RVector__(self, val):
     if isinstance(val, int):
         val = float(val)
     return _pygimli_.__EQ_RVector__(self, val)
-
 
 _pygimli_.RVector.__eq__ = __EQ_RVector__
 

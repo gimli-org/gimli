@@ -294,12 +294,15 @@ public:
     void copyFrom(const ElementMatrix < ValueType > & E, bool withMat=true);
 
     /*! Fill this ElementMatrix with value (u for scalar, v for vector values) basis.*/
-    ElementMatrix < ValueType > & pot(const MeshEntity & ent, Index integrationOrder,
+    ElementMatrix < ValueType > & pot(const MeshEntity & ent,
+                                      Index integrationOrder,
                                       bool sum=false);
 
     /*! Fill this ElementMatrix with gradient of ent.*/
-    ElementMatrix < ValueType > & grad(const MeshEntity & ent, Index integrationOrder,
-                                       bool elastic=false, bool sum=false);
+    ElementMatrix < ValueType > & grad(const MeshEntity & ent,
+                                       Index integrationOrder,
+                                       bool elastic=false,
+                                       bool sum=false, bool div=false);
 
     /*! Integrate, i.e., sum over quadrature matrices.*/
     ElementMatrix < ValueType > & integrate();
@@ -322,6 +325,10 @@ public:
     Index nCoeff() const { return _nCoeff; }
     Index dofPerCoeff() const { return _dofPerCoeff; }
     Index dofOffset() const { return _dofOffset; }
+
+    void setDiv(bool div){ _div = true;}
+    bool isDiv() const { return _div;}
+
 
 protected:
     Matrix < ValueType > mat_;
@@ -363,6 +370,8 @@ protected:
     const R3Vector * _x;
     // matrices per quadrature point
     std::vector < Matrix < ValueType > > _matX;
+
+    bool _div;
 
 private:
     /*! No copy operator. */
@@ -426,13 +435,7 @@ DLLEXPORT void mult(const ElementMatrix < double > & A,
                     ElementMatrix < double > & C, const FEAFunction & b);
 
 DLLEXPORT const ElementMatrix < double > mult(
-                    const ElementMatrix < double > & A, const RVector & b);
-DLLEXPORT const ElementMatrix < double > mult(
-                    const ElementMatrix < double > & A, const FEAFunction & b);
-
-
-DLLEXPORT const ElementMatrix < double > mult(
-                    const ElementMatrix < double > & A, double b=1.0);
+                    const ElementMatrix < double > & A, double b);
 DLLEXPORT const ElementMatrix < double > mult(
                     const ElementMatrix < double > & A, const RVector & b);
 DLLEXPORT const ElementMatrix < double > mult(
