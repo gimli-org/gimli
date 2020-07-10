@@ -181,9 +181,11 @@ class VESModelling(Block1DModelling):
             label = r'$\varrho_a$'
         plot(ra, ab2, 'x-', label=label, **style)
 
-        if raE is not None:
+        raErr = np.array(ra * raE)
+        
+        if pg.isArray(raErr, len(ra)):
             a1.errorbar(ra, ab2,
-                        xerr=ra * raE, barsabove=True,
+                        xerr=raErr, barsabove=True,
                         **pg.frameworks.modelling.DEFAULT_STYLES.get('Error',
                             pg.frameworks.modelling.DEFAULT_STYLES['Default']),
                         label='_nolegend_')
