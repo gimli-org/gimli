@@ -78,7 +78,7 @@ class DLLEXPORT ShapeFunctionCache : public Singleton< ShapeFunctionCache > {
 public:
     friend class Singleton< ShapeFunctionCache >;
 
-    template < class Ent > const std::vector < PolynomialFunction < double > > & 
+    template < class Ent > const std::vector < PolynomialFunction < double > > &
     shapeFunctions(const Ent & e) const {
 
         std::map < uint8, std::vector < PolynomialFunction < double > > >::const_iterator it = shapeFunctions_.find(e.rtti());
@@ -295,7 +295,7 @@ public:
     inline double drstdxyz(uint rstI, uint xyzJ) const {
 //         return invJacobian()[rstI][xyzJ];}
         return invJacobian()[rstI * 3 + xyzJ];}
- 
+
     /*! Return true if the Cartesian coordinates xyz are inside the shape.
      * On boundary means inside too.
      Works only for shapes dedicated as cells because they need to
@@ -334,8 +334,10 @@ public:
     /*! Returns the norm vector if possible otherwise returns non valid Vector3 */
     virtual RVector3 norm() const;
 
-    /*! Returns the a plane for this shape if its possible (2D or 3D plane shapes)
-    otherwise returns non valid Plane. */
+    /*! Returns maximum distance between 2 nodes.*/
+    double h() const;
+
+    /*! Returns the a plane for this shape if its possible (2D or 3D plane shapes) otherwise returns non valid Plane. */
     virtual Plane plane() const;
 
     /*! Notify this shape that the inverse Jacobian matrix and the domain size are not longer valid and need recalculation. This method is called if a node has bee transformed. */
@@ -349,6 +351,7 @@ public:
 
     inline void resizeNodeSize_(Index n) { this->nodeCount_ = n; }
 
+
 protected:
 
     /*! Virtual method to calculate the domain size i.e length, area, volume of the shapes */
@@ -358,6 +361,7 @@ protected:
 
     mutable double domSize_;
     mutable bool hasDomSize_;
+    mutable double _h;
 
     mutable RMatrix3 invJacobian_;
 

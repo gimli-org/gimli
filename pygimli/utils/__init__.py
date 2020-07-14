@@ -10,7 +10,7 @@ from .base import (rms, rmsWithErr, nanrms, createDateTimeString,
                    createPath,
                    getSavePath, gmat2numpy, interperc, interpExtrap, inthist,
                    nanrms, num2str, numpy2gmat, rrms, rms, rndig, saveResult,
-                   chi2)
+                   chi2, isScalar, isArray, isPos, isR3Array)
 
 # compatibility for dev #can be removed? (20200515)
 from .base import rmsWithErr as rmswitherr
@@ -26,7 +26,7 @@ from .hankel import hankelFC
 from .postinversion import iterateBounds, modCovar
 from .sparseMat2Numpy import (convertCRSIndex2Map, sparseMatrix2Array,
                               sparseMatrix2coo, sparseMatrix2csr, sparseMatrix2Dense,
-                              toSparseMatrix, toSparseMapMatrix,
+                              toSparseMatrix, toSparseMapMatrix, toCSR, toCOO,
                               )
 
 from .units import (unit, cmap)

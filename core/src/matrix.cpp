@@ -107,6 +107,31 @@ Matrix< Complex >::transMult(const Vector < Complex > & b) const {
     return _transMult((*this), b);
 }
 
+template < class ValueType > Matrix < ValueType > &
+_transAdd(Matrix < ValueType > * a, const Matrix < ValueType > & b){
+    if (a->rows() != b.cols() || a->cols() != b.rows()){
+        __MS(a->rows() << " " << b.cols() << " " << a->cols() << " " << b.rows())
+        log(Error, "Matrix trans add with wrong dimensions");
+        return *a;
+    }
+
+    for (Index i = 0; i < a->rows(); i ++ ){
+        for (Index j = 0; j < a->cols(); j ++ ){
+            a->mat_[i][j] += b.mat_[j][i];
+        }
+    }
+    return *a;
+}
+template <> Matrix < double > &
+Matrix<double>::transAdd(const Matrix < double > & a){
+    return _transAdd(this, a);
+}
+template <> Matrix < Complex > &
+Matrix<Complex>::transAdd(const Matrix < Complex > & a){
+    return _transAdd(this, a);
+}
+
+
 void matMultABA(const RMatrix & A, const RMatrix & B, RMatrix & C,
                 RMatrix & AtB, double a){
     // A.T * B * A

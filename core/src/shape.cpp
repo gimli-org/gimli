@@ -99,22 +99,23 @@ std::vector< RMatrix > & ShapeFunctionCache::RMatrixCache(uint rtti) {
     return _rMatrixCache[rtti];
 }
 
-RMatrix3 & ShapeFunctionCache::cachedRMatrix3(uint i) { 
+RMatrix3 & ShapeFunctionCache::cachedRMatrix3(uint i) {
     ASSERT_SIZE(_rMatrix3Cache, i)
     return _rMatrix3Cache[i];
 }
-RMatrix & ShapeFunctionCache::cachedRMatrix(uint rtti, uint i) { 
+RMatrix & ShapeFunctionCache::cachedRMatrix(uint rtti, uint i) {
     if (i >= _rMatrixCache[rtti].size()){
         _rMatrixCache[rtti].resize(i + 1);
     }
     ASSERT_SIZE(_rMatrixCache[rtti], i)
-    return _rMatrixCache[rtti][i]; 
+    return _rMatrixCache[rtti][i];
 }
-    
+
 Shape::Shape(MeshEntity * ent){
     this->setNodesPtr(ent->nodes());
     domSize_ = 0.0;
     nodeCount_ = 0;
+    _h = 0;
     hasDomSize_ = false;
 }
 
@@ -125,16 +126,10 @@ void Shape::changed(){
     if (invJacobian_.valid()){
         invJacobian_.clear();
         invJacobian_.setValid(false);
+        _h = 0.0;
     }
     hasDomSize_ = false;
 }
-
-// Node & Shape::node(Index i) {
-//     if (i > nodeCount() - 1){
-//         std::cerr << WHERE_AM_I << " requested shape node: " << i << " does not exist." << std::endl;
-//     }
-//     return *(*nodeVector_)[i];
-// }
 
 const Node & Shape::node(Index i) const {
     if (i > nodeCount() - 1){
@@ -143,16 +138,8 @@ const Node & Shape::node(Index i) const {
     return *(*nodeVector_)[i];
 }
 
-// void Shape::setNode(Index i, Node & n) {
-//     if (i > nodeCount() - 1){
-//         std::cerr << WHERE_AM_I << " requested shape node: " << i << " does not exist." << std::endl;
-//     }
-//     nodeVector_[i] = &n;
-//     this->changed();
-// }
-
 bool Shape::enforcePositiveDirection(){
-    __MS("inuse")
+    __MS("inuse?")
     // if (createJacobian().det() < 0){
     //     std::reverse(nodeVector_.begin(), nodeVector_.end());
     //     this->changed();
@@ -170,6 +157,17 @@ RVector3 Shape::center() const {
     }
     center /= this->nodeCount();
     return center;
+}
+
+double Shape::h() const {
+    if (_h < TOLERANCE){
+        for (Index i = 0; i < this->nodeCount(); i++){
+            for (Index j = i; j < this->nodeCount(); j ++){
+                _h = max(_h, this->node(i).pos().dist(this->node(j).pos()));
+            }
+        }
+    }
+    return _h;
 }
 
 RVector3 Shape::norm() const {
@@ -223,9 +221,9 @@ RMatrix Shape::dNdrst(const RVector3 & rst) const {
 void Shape::dNdrst(const RVector3 & rst, RMatrix & MdNdrst) const {
     MdNdrst *= 0.0;
 
-    const std::vector< PolynomialFunction < double > > &dNx = 
+    const std::vector< PolynomialFunction < double > > &dNx =
         ShapeFunctionCache::instance().deriveShapeFunctions(*this, 0);
-    const std::vector< PolynomialFunction < double > > &dNy = 
+    const std::vector< PolynomialFunction < double > > &dNy =
         ShapeFunctionCache::instance().deriveShapeFunctions(*this, 1);
     const std::vector< PolynomialFunction < double > > &dNz =
          ShapeFunctionCache::instance().deriveShapeFunctions(*this, 2);

@@ -80,6 +80,11 @@ def toSparseMapMatrix(A):
 
     return toSparseMapMatrix(csr_matrix(A))
 
+def toCSR(A):
+    return sparseMatrix2csr(A)
+
+def toCOO(A):
+    return sparseMatrix2coo(A)
 
 def sparseMatrix2csr(A):
     """Convert SparseMatrix to scipy.csr_matrix.

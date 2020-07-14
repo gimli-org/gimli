@@ -181,12 +181,16 @@ class VESModelling(Block1DModelling):
             label = r'$\varrho_a$'
         plot(ra, ab2, 'x-', label=label, **style)
 
+        
         if raE is not None:
-            a1.errorbar(ra, ab2,
-                        xerr=ra * raE, barsabove=True,
-                        **pg.frameworks.modelling.DEFAULT_STYLES.get('Error',
-                            pg.frameworks.modelling.DEFAULT_STYLES['Default']),
-                        label='_nolegend_')
+            raErr = np.array(ra * raE)
+        
+            if pg.isArray(raErr, len(ra)):
+                a1.errorbar(ra, ab2,
+                            xerr=raErr, barsabove=True,
+                            **pg.frameworks.modelling.DEFAULT_STYLES.get('Error',
+                                pg.frameworks.modelling.DEFAULT_STYLES['Default']),
+                            label='_nolegend_')
 
         a1.set_ylim(max(ab2), min(ab2))
         a1.set_xlabel(r'Apparent resistivity ($\Omega$m)')

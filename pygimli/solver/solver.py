@@ -1045,7 +1045,7 @@ def showSparseMatrix(mat, full=False):
 
 class LinSolver(object):
     """Proxy class for the direct solution of linear systems of equations."""
-    def __init__(self, mat, solver=None, verbose=False, **kwargs):
+    def __init__(self, mat=None, solver=None, verbose=False, **kwargs):
         """Init the solver class with Matrix and starts factorization.
 
         Args
@@ -1053,6 +1053,7 @@ class LinSolver(object):
         solver: str
             If solver is none decide form Matrix type
         """
+        self._m = None ## hold local copy if we need to convert the matrix first
         self.verbose = verbose
         self._solver = None
         self.factorTime = 0.0
@@ -1084,32 +1085,35 @@ class LinSolver(object):
 
         if self.verbose:
             pg.info("Solving with {0}".format(self.solver))
-        self.factorize(mat)
+
+        if mat is not None:
+            self.factorize(mat)
 
     def factorize(self, mat):
         swatch = pg.Stopwatch()
 
         getattr(self, self._factorize)(mat)
         self.factorTime = swatch.duration(restart=True)
+
         if self.verbose:
             pg.info("Matrix factorization:", self.factorTime)
 
     def factorizePG(self, mat):
         """"""
-        _m = pg.utils.toSparseMatrix(mat)
+        self._m = pg.utils.toSparseMatrix(mat)
         self._desiredArrayType = pg.Vector
-        self._solver = pg.core.LinSolver(_m, verbose=self.verbose)
+        self._solver = pg.core.LinSolver(self._m, verbose=self.verbose)
 
     def factorizeSciPy(self, mat):
         """"""
-        _m = pg.utils.sparseMatrix2csr(mat)
+        self._m = pg.utils.sparseMatrix2csr(mat)
         scipy = pg.optImport('scipy', 'Used for sparse linear solver.')
 
         import scipy.sparse
         from scipy.sparse.linalg import factorized
 
         self._desiredArrayType = np.array
-        self._solver = factorized(_m)
+        self._solver = factorized(self._m)
 
     def __call__(self, b):
         """short cut to self.solve(b)"""
@@ -1272,11 +1276,10 @@ def applyDirichlet(mat, rhs, uDirIndex, uDirichlet):
         rhs[uDirIndex] = uDirichlet
         #rhs.setVal(uDirichlet, uDirIndex)
 
-
-def assembleDirichletBC(mat, boundaryPairs, rhs=None, time=0.0, userData={},
-                        nodePairs=None,
-                        dofOffset=0, nCoeff=1, dofPerCoeff=None):
-    r"""Apply Dirichlet boundary condition.
+def getDirichletMap(mat, boundaryPairs, time=0.0, userData={},
+                    nodePairs=None,
+                    dofOffset=0, nCoeff=1, dofPerCoeff=None):
+    """Get map of index: dirichlet value
 
     Apply Dirichlet boundary condition to the system matrix S and rhs vector.
     The right hand side values for h can be given for each boundary
@@ -1304,9 +1307,6 @@ def assembleDirichletBC(mat, boundaryPairs, rhs=None, time=0.0, userData={},
         The value uD will assigned to the nodes given there ids.
         This node value settings will overwrite any prior settings due to
         boundaryPair.
-    rhs: :gimliapi:`GIMLI::RVector`
-        Right hand side vector of the system equation will bet set to
-        :math:`u_{\text{D}}`
     time: float
         Will be forwarded to value generator.
     userData: class
@@ -1380,7 +1380,6 @@ def assembleDirichletBC(mat, boundaryPairs, rhs=None, time=0.0, userData={},
                     pg.error('Dirichlet values per boundary need to have '
                              'length of boundary.nodeCount()')
 
-
     if nodePairs is not None:
         #print("nodePairs", nodePairs)
 
@@ -1392,12 +1391,32 @@ def assembleDirichletBC(mat, boundaryPairs, rhs=None, time=0.0, userData={},
             uDirVal.update(_genVecUd(n, val, dofOffset,
                            nCoeff=nCoeff, dofPerCoeff=dofPerCoeff))
 
+    return uDirVal
+
+def assembleDirichletBC(mat, boundaryPairs, rhs=None, time=0.0, userData={},
+                        nodePairs=None,
+                        dofOffset=0, nCoeff=1, dofPerCoeff=None):
+    r"""Apply Dirichlet boundary condition.
+
+    Args
+    ----
+    rhs: :gimliapi:`GIMLI::RVector`
+        Right hand side vector of the system equation will bet set to
+        :math:`u_{\text{D}}`
+    """
+    uDirVal = getDirichletMap(mat, boundaryPairs, time=time,
+                              userData=userData,
+                              nodePairs=nodePairs,
+                              dofOffset=dofOffset, 
+                              nCoeff=nCoeff, 
+                              dofPerCoeff=dofPerCoeff)
+
     # pg._g(list(uDirVal.keys()), list(uDirVal.values()))
     if not uDirVal.keys():
         return
 
     applyDirichlet(mat, rhs, list(uDirVal.keys()), list(uDirVal.values()))
-
+    return uDirVal
 
 def assembleNeumannBC(rhs, boundaryPairs, nDim=1, time=0.0, userData={},
                       dofOffset=0, nCoeff=1, dofPerCoeff=None):
@@ -1606,15 +1625,17 @@ def assembleBC(bc, mesh, mat, rhs, time=None, userData={}, dofOffset=0,
 
     Returns
     -------
+    map{id: uDirichlet}: Map of index to Dirichlet value.
+
     None
     """
     ## we can't iterate because we want the following fixed order
+    dirichletMap = {}
     bct = dict(bc)
     nDim = 1
     if mat is not None:
         if mat.rows() == mesh.nodeCount() * mesh.dim():
             nDim = mesh.dim()
-
 
     if 'Neumann' in bct:
         assembleNeumannBC(rhs, parseArgToBoundaries(bct.pop('Neumann'), mesh),
@@ -1627,11 +1648,13 @@ def assembleBC(bc, mesh, mat, rhs, time=None, userData={}, dofOffset=0,
                         dofOffset=dofOffset,
                         nCoeff=nCoeff, dofPerCoeff=mesh.nodeCount())
     if 'Dirichlet' in bct:
-        assembleDirichletBC(mat,
+        uD = assembleDirichletBC(mat,
                             parseArgToBoundaries(bct.pop('Dirichlet'), mesh),
                             rhs=rhs, time=time, userData=userData,
                             dofOffset=dofOffset,
                             nCoeff=nCoeff, dofPerCoeff=mesh.nodeCount())
+        dirichletMap.update(uD)
+
     if 'Nodes' in bct:
         ## 'Nodes' : [list(Nodes), callable(Node)] ## for selected Nodes
         ## 'Nodes' : callable(Node) ## for all nodes
@@ -1650,19 +1673,22 @@ def assembleBC(bc, mesh, mat, rhs, time=None, userData={}, dofOffset=0,
         else:
             pg.critical("Nodes boundary need a callable(Node)")
 
-        assembleDirichletBC(mat, [], nodePairs=nP,
+        uD = assembleDirichletBC(mat, [], nodePairs=nP,
                             rhs=rhs, time=time, userData=userData, dofOffset=dofOffset,
                             nCoeff=nCoeff, dofPerCoeff=mesh.nodeCount())
+        dirichletMap.update(uD)
 
     if 'Node' in bct:
-        assembleDirichletBC(mat, [], nodePairs=bct.pop('Node'),
+        uD = assembleDirichletBC(mat, [], nodePairs=bct.pop('Node'),
                             rhs=rhs, time=time, userData=userData, dofOffset=dofOffset,
                             nCoeff=nCoeff, dofPerCoeff=mesh.nodeCount())
+        dirichletMap.update(uD)
 
     if len(bct.keys()) > 0:
         pg.warn("Unknown boundary condition[s]" + \
                        str(bct.keys()) + " will be ignored")
 
+    return dirichletMap
 
 def assembleLoadVector(mesh, f, userData={}):
     r"""Assemble the load vector. See createLoadVector.
@@ -2395,7 +2421,8 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
         if not dynamic:
             S = createStiffnessMatrix(mesh, a)
             assembleBC(bc, mesh, S, F, time=0.0, userData=userData)
-            return crankNicolson(times, theta, S, M, F, u0=u0,
+            return crankNicolson(times, S, M, f=F,
+                                 u0=u0, theta=theta,
                                  progress=progress)
 
         rhs = np.zeros((len(times), dof))
@@ -2496,41 +2523,82 @@ def checkCFL(times, mesh, vMax):
                     " | N > ", int((times[-1]-times[0])/(dx/vMax))+1, ")")
     return c
 
-def crankNicolson(times, theta, matS, matI, f, u0=None, progress=None):
-    """
-        S = constant over time
-        f = constant over time
+def crankNicolson(times, S, I, f=None,
+                  u0=None, theta=1.0, dirichlet=None,
+                  solver=None, progress=None):
+    """Generic Crank Nicolson solver for time dependend problems.
+
+    Limitations so far:
+        S = Needs to be constant over time (i.e. no change in model coefficients)
+        f = constant over time (would need assembling in every step)
+
+    Args
+    ----
+    times: iterable(float)
+        Timeteps to solve for. Give at least 2.
+    S: Matrix
+        Systemmatrix holds your discrete equations and boundary conditions
+    I: Matrix
+        Identity matrix (FD, FV) or Masselementmatrix (FE) to handle solution
+        vector
+    u0: iterable [None]
+        Starting condition. zero if not given
+    f: iterable (float) [None]
+        External forces. Note f might also contain compensation values due to
+        algebraic Dirichlet correction of S
+    theta: float [1.0]
+        * 0: Backward difference scheme (implicit)
+        * 1: Forward difference scheme (explicit)
+        strong time steps dependency .. will be unstable for to small values
+        * 0.5: probably best tradeoff but can also be unstable
+    dirichlet: dirichlet generator
+        Genertor object to applay dirichlet boundary conditions
+    solver: LinSolver [None]
+        Provide a pre configured solver if you want some special.
+    progress: Progress [None]
+        Provide progress object if you want to see some.
+
+    Returns
+    -------
+    np.ndarray:
+        Solution for each time steps
     """
     if len(times) < 2:
         raise BaseException("We need at least 2 times for "
                             "Crank-Nicolsen time discretization." + str(len(times)))
     # sw = pg.core.Stopwatch(True)
-
-    if u0 is None:
-        u0 = np.zeros(len(f))
-
-    u = np.zeros((len(times), len(f)))
-    u[0, :] = u0
-    dt = float(times[1] - times[0])
-
-    rhs = np.zeros((len(times), len(f)))
-    rhs[:] = f
-
     timeAssemble = []
     timeSolve = []
-
     timeMeasure = False
+
     if progress:
         timeMeasure = True
 
-    A = matI
-    if theta > 0:
-        A = matI + matS * (dt * theta)
+    dt = float(times[1] - times[0])
+    dof = S.rows()
 
-    solver = pg.core.LinSolver(A, verbose=False)
+    rhs = np.zeros((len(times), dof))
+    if f is not None:
+        rhs[:] = f
 
-    St = matI - matS * dt # cache what is possible the theta=0
+    u = np.zeros((len(times), dof))
+    if u0 is not None:
+        u[0, :] = u0
 
+    if theta == 0:
+        A = I.copy()
+    else:
+        A = I + S * (dt * theta)
+
+    if dirichlet is not None:
+        dirichlet.apply(A)
+
+    if solver is None:
+        solver = pg.core.LinSolver(A, verbose=False)
+    else:
+        solver.factorize(A)
+
+    St = None
     for n in range(1, len(times)):
 
         if timeMeasure:
@@ -2549,26 +2617,28 @@ def crankNicolson(times, theta, matS, matI, f, u0=None, progress=None):
 #        pg.tic()
 
         if theta == 0:
+            if St is None:
+                St = I - S * dt # cache what's possible
             b = St * u[n-1] + dt * rhs[n-1]
-        else:
-            b = matI * u[n-1] + matS.mult(dt * (theta - 1.) * u[n-1]) + \
-                dt * ((1.0 - theta) * rhs[n-1] + theta * rhs[n])
 
-#        pg.toc()
-#        print(np.linalg.norm(b-b1))
-        #np.testing.assert_allclose(bRef, b)
+        elif theta == 1:
+            b = I * u[n-1] + dt * rhs[n]
+        else:
+            if St is None:
+                St = I - S *(dt*(1.-theta)) # cache what's possible
+            b = St * u[n-1] + dt * ((1.0 - theta) * rhs[n-1] + theta * rhs[n])
+
+        if dirichlet is not None:
+            dirichlet.apply(b)
 
         if timeMeasure:
             timeAssemble.append(pg.dur())
             pg.tic()
 
-        u[n, :] = solver.solve(b)
+        u[n, :] = solver(b)
 
         if timeMeasure:
             timeSolve.append(pg.dur())
-
-        # A = (I + dt * theta * S)
-        # u[n, : ] = linsolve(A, b)
 
         if progress:
             progress.update(n,

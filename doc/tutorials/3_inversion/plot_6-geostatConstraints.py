@@ -41,7 +41,7 @@ CM = pg.utils.covarianceMatrix(mesh, I=5)  # I taken for both x and y
 # We search for the cell where the midpoint (5, -5) is located in
 ind = mesh.findCell([5, -5]).id()
 # and plot the according column using index access (numpy)
-pg.show(mesh, CM[:, ind], cMap="magma_r")
+ax, cb = pg.show(mesh, CM[:, ind], cMap="magma_r")
 
 # %%
 # According to inverse theory, we use the square root of the covariance matrix
@@ -61,8 +61,8 @@ pg.show(mesh, CM[:, ind], cMap="magma_r")
 # In order to avoid a matrix inverse (square root), a special matrix is derived
 # that does the decomposition and stores the eigenvectors and eigenvalues values.
 # A multiplication is done by multiplying with Q and scaling with the diagonal D.
-# This matrix is implemented in the :mod:`pygimli.core.matrix` module.
-# the class :py:func:`pg.matrix.Cm05Matrix`
+# This matrix is implemented in the :mod:`pygimli.core.matrix` module
+# by the class :py:mod:`pg.matrix.Cm05Matrix`
 
 Cm05 = pg.matrix.Cm05Matrix(CM)
 # %%
@@ -72,7 +72,7 @@ print(min(out), max(out))
 
 # %%
 # as desired for a roughness operator. Therefore, an additional matrix called
-# :py:func:`pg.matrix.GeostatisticalConstraintsMatrix`
+# :py:mod:`pg.matrix.GeostatisticalConstraintsMatrix`
 # was implemented where this spur is corrected for.
 # It is, like the correlation matrix, created by a mesh, a list of correlation
 # lengths I, a dip angle# that distorts the x/y plane and a strike angle

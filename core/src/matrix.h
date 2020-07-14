@@ -515,6 +515,15 @@ public:
     /*! Return reference to row flag vector. Maybee you can check if the rows are valid. Size is set automatic to the amount of rows. */
     BVector & rowFlag(){ return rowFlag_; }
 
+    /*! A += a*/
+    inline Matrix < ValueType > & add(const Matrix < ValueType > & a){
+        return (*this)+=a;
+    }
+
+    /*! A += a.T*/
+    Matrix < ValueType > & transAdd(const Matrix < ValueType > & a);
+
+
     /*! Multiplication (A*b) with a vector of the same value type. */
     Vector < ValueType > mult(const Vector < ValueType > & b) const;
     //  {
@@ -622,6 +631,11 @@ template <> DLLEXPORT Vector<double>
 Matrix<double>::transMult(const Vector < double > & b) const;
 template <> DLLEXPORT Vector<Complex>
 Matrix<Complex>::transMult(const Vector < Complex > & b) const;
+
+template <> DLLEXPORT Matrix<double> &
+Matrix<double>::transAdd(const Matrix < double > & a);
+template <> DLLEXPORT Matrix<Complex> &
+Matrix<Complex>::transAdd(const Matrix < Complex > & a);
 
 
 #define DEFINE_BINARY_OPERATOR__(OP, NAME) \

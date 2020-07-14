@@ -30,17 +30,10 @@ __Matrices = [pgcore.MatrixBase,
               pgcore.RBlockMatrix,
               pgcore.IdentityMatrix]
 
-def __Matrix_len(self):
-    return self.rows()
-
-@property
-def __MatrixShapePropery__(self):
-    return (self.rows(), self.cols())
-
 for m in __Matrices:
     m.ndim = 2
-    m.__len__ = __Matrix_len
-    m.shape = __MatrixShapePropery__
+    m.__len__ = lambda self: self.rows()
+    m.shape = property(lambda self: (self.rows(), self.cols()))
 
 pgcore.RMatrix.dtype = np.float
 pgcore.CMatrix.dtype = np.complex
@@ -187,7 +180,10 @@ def __SparseMatrixEqual__(self, T):
         warn("Compare value sizes invalid: ", len(valsA), len(valsB))
         return False
 
+    # print(np.linalg.norm(np.array(rowsA)-np.array(rowsB)))
+    # print(np.linalg.norm(np.array(colsA)-np.array(colsB)))
     # print(np.linalg.norm(valsA-valsB))
+
 
     return rowsA == rowsB and \
            colsA == colsB and \
@@ -195,6 +191,17 @@ def __SparseMatrixEqual__(self, T):
 
 pgcore.RSparseMatrix.__eq__ = __SparseMatrixEqual__
 pgcore.RSparseMapMatrix.__eq__ = __SparseMatrixEqual__
+
+
+def __SparseMatrixCopy__(self):
+    """Create a copy."""
+    return pgcore.RSparseMatrix(self)
+pgcore.RSparseMatrix.copy = __SparseMatrixCopy__
+
+def __SparseMapMatrixCopy__(self):
+    """Create a copy."""
+    return pgcore.RSparseMapMatrix(self)
+pgcore.RSparseMapMatrix.copy = __SparseMapMatrixCopy__
 
 
 class MultMatrix(pgcore.MatrixBase):

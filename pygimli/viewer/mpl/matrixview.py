@@ -50,12 +50,18 @@ def drawSparseMatrix(ax, mat, **kwargs):
 def drawBlockMatrix(ax, mat, **kwargs):
     """Draw a view of a matrix into the axes.
 
-    Parameters
-    ----------
+    Arguments
+    ---------
+
     ax : mpl axis instance, optional
         Axis instance where the matrix will be plotted.
 
     mat: pg.Matrix.BlockMatrix
+
+    Keyword Arguments
+    -----------------
+    spy: bool [False]
+        Draw all matrix entries instead of colored blocks
 
     Returns
     -------

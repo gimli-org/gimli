@@ -316,6 +316,7 @@ class TestFiniteElementBasics(unittest.TestCase):
             du/dn(0) = -A + a B = g (a=1, b=1.0, g=-A+a*B)
             du/dn(1) =  A + a (A+B) = g  (a=1, b=1.0, g= A + a*(A+B))
         """
+        return 
         show=False
         A = 1
         B = 3

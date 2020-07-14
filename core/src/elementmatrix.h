@@ -25,6 +25,7 @@
 
 namespace GIMLI{
 
+
 template < class ValueType > class DLLEXPORT ElementMatrix {
 public:
     /*! If dof != 0 then scalar field approximation is to be supposed.
@@ -78,6 +79,8 @@ public:
     /*! Set data matrix. */
     inline void setMat(const Matrix < ValueType > & m) { mat_ = m; }
     /*! Return data matrix. */
+    inline Matrix < ValueType > * pMat() { return & mat_; }
+    /*! Return data for row i. */
     inline const Matrix < ValueType > & mat() const { return mat_; }
     /*! Return data for row i. */
     inline const Vector < ValueType > & row(Index i) const { return mat_[i]; }
@@ -283,6 +286,49 @@ public:
         return mult_(a, b, m, n);
     }
 
+    //** new interface starts here **//
+    ElementMatrix(Index nCoeff, Index dofPerCoeff, Index dofOffset);
+
+    ElementMatrix(const ElementMatrix < ValueType > & E);
+
+    void copyFrom(const ElementMatrix < ValueType > & E, bool withMat=true);
+
+    /*! Fill this ElementMatrix with value (u for scalar, v for vector values) basis.*/
+    ElementMatrix < ValueType > & pot(const MeshEntity & ent,
+                                      Index integrationOrder,
+                                      bool sum=false);
+
+    /*! Fill this ElementMatrix with gradient of ent.*/
+    ElementMatrix < ValueType > & grad(const MeshEntity & ent,
+                                       Index integrationOrder,
+                                       bool elastic=false,
+                                       bool sum=false, bool div=false);
+
+    /*! Integrate, i.e., sum over quadrature matrices.*/
+    ElementMatrix < ValueType > & integrate();
+
+    /*! Return reference to all matrices per quadrature point.*/
+    const std::vector < Matrix < ValueType > > & matX() const { return _matX; }
+
+    std::vector < Matrix < ValueType > > * pMatX() { return &_matX; }
+
+    /*! Return const reference to the last active entity.*/
+    const MeshEntity & entity() const { ASSERT_PTR(_ent); return *_ent; }
+
+    /*! Return const reference to the last quadrature points.*/
+    const R3Vector & x() const { ASSERT_PTR(_x); return *_x; }
+
+    /*! Return const reference to the last quadrature weights.*/
+    const RVector & w() const { ASSERT_PTR(_w); return *_w; }
+
+    Index order() const { return _order; }
+    Index nCoeff() const { return _nCoeff; }
+    Index dofPerCoeff() const { return _dofPerCoeff; }
+    Index dofOffset() const { return _dofOffset; }
+
+    void setDiv(bool div){ _div = true;}
+    bool isDiv() const { return _div;}
+
 
 protected:
     Matrix < ValueType > mat_;
@@ -311,16 +357,25 @@ protected:
 
     RMatrix _abaTmp; // temp workspace
 
+
+    //** new interface starts here **//
+    // const Mesh * _mesh;
+    Index _order;
+    Index _nCoeff;
+    Index _dofPerCoeff;
+    Index _dofOffset;
+
+    const MeshEntity * _ent;
+    const RVector * _w;
+    const R3Vector * _x;
+    // matrices per quadrature point
+    std::vector < Matrix < ValueType > > _matX;
+
+    bool _div;
+
 private:
     /*! No copy operator. */
-    ElementMatrix(const ElementMatrix < ValueType > & E) {
-        std::cout << "ElementMatrix(const ElementMatrix < ValueType > & E) " << std::endl;
-        THROW_TO_IMPL
-//     this->resize(E.size());
-//         for (uint i = 0; i < E.size(); i ++) mat_[i] = E.mat(i);
-//         _ids = E.idx();
-//         initBaseMatricies();
-    }
+
     /*! No assignment operator. */
     ElementMatrix < ValueType > & operator = (const ElementMatrix < ValueType > & E) {
         std::cout << "ElementMatrix::operator = (" << std::endl;
@@ -332,6 +387,60 @@ private:
         } return *this;
     }
 };
+
+template < > DLLEXPORT
+void ElementMatrix < double >::copyFrom(const ElementMatrix < double > & E,
+                                        bool withMat);
+
+
+/*!Interface to function q=f(p, ent) with q, p = Pos() in R1, R2, R 3
+and ent assiated mesh entity.*/
+class DLLEXPORT FEAFunction {
+public:
+    FEAFunction(Index valueSize): _valueSize(valueSize){ }
+
+    virtual ~FEAFunction() { }
+
+    virtual Pos evalR3(const Pos & arg, const MeshEntity * ent=0) const{
+        log(Warning, "FEAFunction.eval should be overloaded.");
+        return Pos(0.0, 0.0, 0.0);
+    }
+    virtual double evalR1(const Pos & arg, const MeshEntity * ent=0) const{
+        log(Warning, "FEAFunction.eval should be overloaded.");
+        return 0.0;
+    }
+
+    Index valueSize() const { return _valueSize; }
+
+protected:
+    Index _valueSize;
+};
+
+DLLEXPORT void dot(const ElementMatrix < double > & A,
+                   const ElementMatrix < double > & B,
+                   ElementMatrix < double > & C, double b);
+
+DLLEXPORT const ElementMatrix < double > dot(const ElementMatrix < double > & A,
+                    const ElementMatrix < double > & B, double b=1.0);
+DLLEXPORT const ElementMatrix < double > dot(const ElementMatrix < double > & A,
+                    const ElementMatrix < double > & B, const RVector & b);
+DLLEXPORT const ElementMatrix < double > dot(const ElementMatrix < double > & A,
+                    const ElementMatrix < double > & B, const RMatrix & b);
+DLLEXPORT const ElementMatrix < double > dot(const ElementMatrix < double > & A,
+                    const ElementMatrix < double > & B, const FEAFunction & b);
+
+DLLEXPORT void mult(const ElementMatrix < double > & A,
+                    ElementMatrix < double > & C, double b=1.0);
+DLLEXPORT void mult(const ElementMatrix < double > & A,
+                    ElementMatrix < double > & C, const FEAFunction & b);
+
+DLLEXPORT const ElementMatrix < double > mult(
+                    const ElementMatrix < double > & A, double b);
+DLLEXPORT const ElementMatrix < double > mult(
+                    const ElementMatrix < double > & A, const RVector & b);
+DLLEXPORT const ElementMatrix < double > mult(
+                    const ElementMatrix < double > & A, const FEAFunction & b);
+
 
 class DLLEXPORT ElementMatrixMap {
 public:
@@ -363,7 +472,7 @@ template < class ValueType > std::ostream & operator << (std::ostream & str,
                                                          const ElementMatrix< ValueType > & e);
 
 template < > DLLEXPORT std::ostream & operator << (std::ostream & str,
-                                                    const ElementMatrix< double > & e);
+                                            const ElementMatrix< double > & e);
 
 
 } // namespace GIMLI{

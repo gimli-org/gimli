@@ -49,7 +49,7 @@ def _get_class_from_frame(fr):
     args, _, _, value_dict = inspect.getargvalues(fr)
     if len(args) and args[0] == 'self':
         instance = value_dict.get('self', None)
-        if instance:
+        if instance is not None:
             return getattr(instance, '__class__', None)
     return None
 

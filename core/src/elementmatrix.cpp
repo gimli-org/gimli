@@ -354,7 +354,8 @@ ElementMatrix < double >::ux2uy2uz2(const MeshEntity & ent,
 
 template < class ValueType >
 void ElementMatrix < ValueType >::getWeightsAndPoints(const MeshEntity & ent,
-const RVector * &w, const R3Vector * &x, int order){
+                                                      const RVector * &w,
+                                                      const R3Vector * &x, int order){
     switch (ent.rtti()) {
         case MESH_EDGE_CELL_RTTI:
         case MESH_EDGE3_CELL_RTTI: {
@@ -1213,5 +1214,435 @@ RVector ElementMatrixMap::mult(const RVector & a, const RVector & b) const{
     return ret;
 }
 
+//** new interface starts here **//
+template < > DLLEXPORT
+ElementMatrix < double >::ElementMatrix(Index nCoeff, Index dofPerCoeff, Index dofOffset)
+:_nCoeff(nCoeff), _dofPerCoeff(dofPerCoeff), _dofOffset(dofOffset)
+{
+    if (_nCoeff > 1 && _dofPerCoeff == 0){
+        __MS(nCoeff << " " << dofPerCoeff << " "<< dofOffset)
+        log(Error, "number of coefficents > 1 but no dofPerCoefficent given");
+    }
+    _ent = 0;
+    _w = 0;
+    _x = 0;
+    _div = false;
+}
+
+template < > DLLEXPORT
+ElementMatrix < double >::ElementMatrix(const ElementMatrix < double > & E){
+    this->copyFrom(E, true);
+}
+
+template < >
+void ElementMatrix < double >::copyFrom(const ElementMatrix < double > & E,
+                                        bool withMat){
+
+    this->_order = E.order();
+    this->_nCoeff = E.nCoeff();
+    this->_dofPerCoeff = E.dofPerCoeff();
+    this->_dofOffset = E.dofOffset();
+
+    this->_ent = & E.entity();
+    this->_w = & E.w();
+    this->_x = & E.x();
+    this->_matX = E.matX();
+
+    this->_idsC = E.colIDs();
+    this->_idsR = E.rowIDs();
+    this->_div = E.isDiv();
+    if (withMat == true) this->mat_ = E.mat();
+}
+
+template < > DLLEXPORT
+ElementMatrix < double > & ElementMatrix < double >::integrate(){
+
+    const RVector &w = this->w();
+    Index nRules(w.size());
+
+    this->mat_*=0.;
+
+    for (Index i = 0; i < nRules; i ++){
+        // improve either with matrix expressions of shift w as scale
+        this->mat_.transAdd(_matX[i] * (w[i] * this->_ent->size()));
+    }
+
+    return *this;
+}
+
+template < > DLLEXPORT
+ElementMatrix < double > & ElementMatrix < double >::pot(
+                        const MeshEntity & ent, Index integrationOrder,
+                        bool sum){
+    this->_order = integrationOrder;
+    this->_ent = &ent;
+    //this->getWeightsAndPoints(ent, this->_w, this->_x, this->_order);
+
+    this->_w = &IntegrationRules::instance().weights(ent.shape(), this->_order);
+    this->_x = &IntegrationRules::instance().abscissa(ent.shape(), this->_order);
+
+    const R3Vector &x = *this->_x;
+    const RVector &w = *this->_w;
+
+    Index nRules(_x->size());
+    Index nVerts(_ent->nodeCount());
+    Index nCoeff(this->_nCoeff); //components
+    Index nCols(nCoeff);
+
+    this->resize(nVerts*nCoeff, nCols);
+
+    this->_idsR.resize(nVerts*nCoeff, 0);
+    this->_idsC.resize(nCols, 0);
+
+    for (Index i = 0; i < nCoeff; i++){
+        this->_idsR.setVal(ent.ids() + i*_dofPerCoeff + _dofOffset,
+                           i * nVerts, (i+1) * nVerts);
+    }
+
+    _matX.resize(nRules);
+    for (Index i = 0; i < nRules; i ++ ){
+        // transpose might be better?? check
+        // fill per row is cheaper
+        _matX[i].resize(nCoeff, nVerts*nCoeff);
+    }
+
+
+    for (Index i = 0; i < nRules; i ++ ){
+        for (Index n = 0; n < nCoeff; n ++ ){
+            _matX[i][n].setVal(ent.N(x[i]), n*nVerts, (n+1)*nVerts);
+        }
+    }
+
+    if (sum){
+        this->integrate();
+    }
+
+    // __MS(this->_ent)
+    // __MS(this->entity())
+    return *this;
+}
+
+template < > DLLEXPORT
+ElementMatrix < double > & ElementMatrix < double >::grad(
+                        const MeshEntity & ent,
+                        Index integrationOrder,
+                        bool elastic, bool sum, bool div){
+
+    this->_order = integrationOrder;
+    this->_ent = &ent;
+    this->_div = div;
+    //this->getWeightsAndPoints(ent, this->_w, this->_x, this->_order);
+
+    this->_w = &IntegrationRules::instance().weights(ent.shape(), this->_order);
+    this->_x = &IntegrationRules::instance().abscissa(ent.shape(), this->_order);
+
+    const R3Vector &x = *this->_x;
+    const RVector &w = *this->_w;
+
+    Index nRules(_x->size());
+    Index nVerts(_ent->nodeCount());
+    Index nCoeff(this->_nCoeff); //components
+    Index nCols(ent.dim());
+
+    this->resize(nVerts*nCoeff, nCols);
+
+    this->_idsR.resize(nVerts*nCoeff, 0);
+    this->_idsC.resize(nCols, 0);
+
+    for (Index i = 0; i < nCoeff; i++){
+        this->_idsR.setVal(ent.ids() + i*_dofPerCoeff + _dofOffset,
+                           i * nVerts, (i+1) * nVerts);
+    }
+
+    bool voigtNotation = true;
+
+    if (elastic == true){
+        if (ent.dim() == 2){
+            nCols += 1;
+        } else if (ent.dim() == 2){
+            nCols += 3;
+        }
+    }
+
+    // matrices per quadrature point
+    //_matX
+
+    if (_matX.size() != nRules){
+        _matX.resize(nRules);
+        for (Index i = 0; i < nRules; i ++ ){
+            // transpose might be better?? check
+            // fill per row is cheaper
+            _matX[i].resize(nCols, nVerts*nCoeff);
+        }
+    }
+
+    if (dNdr_.rows() != nRules){
+        if (ent.dim() > 0) dNdr_.resize(nRules, nVerts);
+        if (ent.dim() > 1) dNds_.resize(nRules, nVerts);
+        if (ent.dim() > 2) dNdt_.resize(nRules, nVerts);
+
+        for (Index i = 0; i < nRules; i ++){
+            if (ent.dim() > 0) dNdr_[i] = ent.dNdL(x[i], 0);
+            if (ent.dim() > 1) dNds_[i] = ent.dNdL(x[i], 1);
+            if (ent.dim() > 2) dNdt_[i] = ent.dNdL(x[i], 2);
+        }
+
+        if (ent.dim() > 0) dNdx_.resize(nRules, nVerts);
+        if (ent.dim() > 1) dNdy_.resize(nRules, nVerts);
+        if (ent.dim() > 2) dNdz_.resize(nRules, nVerts);
+    }
+    double drdx = ent.shape().drstdxyz(0, 0);
+    double drdy = ent.shape().drstdxyz(0, 1);
+    double drdz = ent.shape().drstdxyz(0, 2);
+    double dsdx = ent.shape().drstdxyz(1, 0);
+    double dsdy = ent.shape().drstdxyz(1, 1);
+    double dsdz = ent.shape().drstdxyz(1, 2);
+    double dtdx = ent.shape().drstdxyz(2, 0);
+    double dtdy = ent.shape().drstdxyz(2, 1);
+    double dtdz = ent.shape().drstdxyz(2, 2);
+
+    for (Index i = 0; i < nRules; i ++){
+        if (ent.dim() == 1){
+            dNdx_[i].assign(dNdr_[i] * drdx);
+        } else if (ent.dim() == 2){
+            dNdx_[i].assign(dNdr_[i] * drdx + dNds_[i] * dsdx);
+            dNdy_[i].assign(dNdr_[i] * drdy + dNds_[i] * dsdy);
+        } else if (ent.dim() == 3){
+            dNdx_[i].assign(dNdr_[i] * drdx + dNds_[i] * dsdx + dNdt_[i] * dtdx);
+            dNdy_[i].assign(dNdr_[i] * drdy + dNds_[i] * dsdy + dNdt_[i] * dtdy);
+            dNdz_[i].assign(dNdr_[i] * drdz + dNds_[i] * dsdz + dNdt_[i] * dtdz);
+        }
+    }
+
+    double a = std::sqrt(2.);
+    if (voigtNotation){
+        a = 1.0;
+    }
+
+    for (Index i = 0; i < nRules; i ++){
+
+        if (nCoeff == 1){
+            //** scalar field
+            if (ent.dim() > 0){
+                _matX[i][0].setVal(dNdx_[i], 0, nVerts);
+            }
+            if (ent.dim() > 1){
+                _matX[i][1].setVal(dNdy_[i], 0, nVerts);
+            }
+            if (ent.dim() > 2){
+                _matX[i][2].setVal(dNdz_[i], 0, nVerts);
+            }
+        } else {
+            //** vector field
+            if (ent.dim() == 1){
+                _matX[i][0].setVal(dNdx_[i], 0 * nVerts, 1 * nVerts);
+            } else if (ent.dim() == 2){
+                _matX[i][0].setVal(dNdx_[i], 0 * nVerts, 1 * nVerts);
+                _matX[i][1].setVal(dNdy_[i], 1 * nVerts, 2 * nVerts);
+
+                if (elastic == true){
+                    _matX[i][2].setVal(dNdy_[i] * a, 0 * nVerts, 1 * nVerts);
+                    _matX[i][2].setVal(dNdx_[i] * a, 1 * nVerts, 2 * nVerts);
+                }
+            } else if (ent.dim() == 3){
+                _matX[i][0].setVal(dNdx_[i], 0 * nVerts, 1 * nVerts);
+                _matX[i][1].setVal(dNdy_[i], 1 * nVerts, 2 * nVerts);
+                _matX[i][2].setVal(dNdz_[i], 2 * nVerts, 3 * nVerts);
+
+                if (elastic == true){
+                    _matX[i][3].setVal(dNdy_[i] * a, 0 * nVerts, 1 * nVerts);
+                    _matX[i][3].setVal(dNdx_[i] * a, 1 * nVerts, 2 * nVerts);
+
+                    _matX[i][4].setVal(dNdz_[i] * a, 1 * nVerts, 2 * nVerts);
+                    _matX[i][4].setVal(dNdy_[i] * a, 2 * nVerts, 3 * nVerts);
+
+                    _matX[i][5].setVal(dNdz_[i] * a, 0 * nVerts, 1 * nVerts);
+                    _matX[i][5].setVal(dNdx_[i] * a, 2 * nVerts, 3 * nVerts);
+                }
+            }
+        }
+    }
+    if (sum){
+        this->integrate();
+    }
+
+    return *this;
+}
+
+void dot(const ElementMatrix < double > & A,
+         const ElementMatrix < double > & B,
+               ElementMatrix < double > & C, double b){
+
+    C.copyFrom(A);
+    C.resize(A.rowIDs().size(), B.rowIDs().size());
+    C.setIds(A.rowIDs(), B.rowIDs());
+
+    const RVector &w = A.w();
+    Index nRules(w.size());
+
+    (*C.pMat())*=0.0;
+
+    // __MS(C.mat())
+
+    for (Index r = 0; r < nRules; r++){
+
+        // __MS(A.matX()[r])
+        // __MS(B.matX()[r])
+        // __MS(C.mat())
+
+        const RMatrix & Ai = A.matX()[r];
+        const RMatrix & Bi = B.matX()[r];
+        double c = w[r] * A.entity().size() * b;
+
+        if (Ai.rows() == 1 && Bi.rows() > 1){
+            // divergence or other stuff we need to sum
+            for (Index i = 0; i < Ai.cols(); i++){
+                for (Index j = 0; j < Bi.cols(); j++){
+                    for (Index k = 0; k < Bi.rows(); k++){
+                        (*C.pMat())[i][j] += Ai[0][i] * Bi[k][j] * c ;
+                    }
+                }
+            }
+        } else if (A.matX()[r].rows() > 1 && B.matX()[r].rows() == 1){
+            // divergence or other stuff we need to sum
+            // __M
+            // __MS(A.matX()[r])
+            // __MS(B.matX()[r])
+
+            for (Index i = 0; i < Ai.cols(); i++){
+                for (Index j = 0; j < Bi.cols(); j++){
+                    for (Index k = 0; k < Ai.rows(); k++){
+                        (*C.pMat())[i][j] += Ai[k][i] * Bi[0][j] * c;
+                    }
+                }
+            }
+        } else {
+            matTransMult(A.matX()[r], B.matX()[r], *C.pMat(), c);
+        }
+    }
+}
+
+const ElementMatrix < double > dot(const ElementMatrix < double > & A,
+                                   const ElementMatrix < double > & B,
+                                   double b){
+    ElementMatrix < double > C;
+    dot(A, B, C, b);
+    return C;
+}
+const ElementMatrix < double > dot(const ElementMatrix < double > & A,
+                                   const ElementMatrix < double > & B,
+                                   const RVector & b){
+    ElementMatrix < double > ret(A);
+    THROW_TO_IMPL
+    return ret;
+}
+const ElementMatrix < double > dot(const ElementMatrix < double > & A,
+                                   const ElementMatrix < double > & B,
+                                   const RMatrix & b){
+    ElementMatrix < double > ret(A);
+    THROW_TO_IMPL
+    return ret;
+}
+const ElementMatrix < double > dot(const ElementMatrix < double > & A,
+                                   const ElementMatrix < double > & B,
+                                   const FEAFunction & b){
+    ElementMatrix < double > ret(A);
+    //Pos B(b(A.entity().shape().xyz(x[r], &A.entity()));
+    //Pos B(b(A.entity().shape().xyz(x[r]), entity));
+    THROW_TO_IMPL
+    return ret;
+}
+
+void mult(const ElementMatrix < double > & A,
+          ElementMatrix < double > & C, double b){
+
+    C.copyFrom(A);
+    const R3Vector &x = A.x();
+    const RVector &w = A.w();
+
+    Index nRules(x.size());
+
+    for (Index r = 0; r < nRules; r++){
+        // use callable on quadrature points .. no interpolation error
+        RMatrix & iC = (*C.pMatX())[r];
+
+        for (Index k = 0; k < iC.rows(); k ++){
+            iC[k] *= b;
+        }
+        // __MS(*iC)
+    }
+
+    RMatrix & mC = *C.pMat();
+    mC *= 0.0;
+    bool sum = true;
+    if (sum == true){
+        for (Index i = 0; i < nRules; i ++){
+            // improve either with matrix expressions of shift w as scale
+            mC.transAdd(C.matX()[i] * (w[i] * C.entity().size()));
+        }
+    }
+}
+void mult(const ElementMatrix < double > & A,
+          ElementMatrix < double > & C, const FEAFunction & b){
+    C.copyFrom(A);
+    const R3Vector &x = A.x();
+    const RVector &w = A.w();
+
+    Index nRules(x.size());
+
+    for (Index r = 0; r < nRules; r++){
+        // use callable on quadrature points .. no interpolation error
+        ASSERT_VEC_SIZE(C.matX(), nRules)
+        RMatrix & iC = (*C.pMatX())[r];
+        if (b.valueSize() == 1){
+
+            double B(b.evalR1(A.entity().shape().xyz(x[r]), &A.entity()));
+
+            for (Index k = 0; k < iC.rows(); k ++){
+               iC[k] *= B;
+            }
+        } else {
+            Pos B(b.evalR3(A.entity().shape().xyz(x[r]), &A.entity()));
+
+            for (Index k = 0; k < iC.rows(); k ++){
+                iC[k] *= B[k];
+            }
+        }
+        // __MS(*iC)
+    }
+
+    RMatrix & mC = *C.pMat();
+    mC *= 0.0;
+    bool sum = true;
+    if (sum == true){
+        for (Index i = 0; i < nRules; i ++){
+            // improve either with matrix expressions of shift w as scale
+            mC.transAdd(C.matX()[i] * (w[i] * C.entity().size()));
+        }
+    }
+}
+
+const ElementMatrix < double > mult(const ElementMatrix < double > & A,
+                                    double b){
+
+    ElementMatrix < double > C;
+    mult(A, C, b);
+    return C;
+}
+const ElementMatrix < double > mult(const ElementMatrix < double > & A,
+                                    const RVector & b){
+    __M
+    THROW_TO_IMPL
+    ElementMatrix < double > ret(A);
+    return ret;
+}
+
+const ElementMatrix < double > mult(const ElementMatrix < double > & A,
+                                    const FEAFunction & b){
+    // ret C = A * b
+    ElementMatrix < double > C;
+    mult(A, C, b);
+    return C;
+}
 
 } // namespace GIMLI
