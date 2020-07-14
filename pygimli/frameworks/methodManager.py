@@ -299,6 +299,15 @@ class MethodManager(object):
 
         return ra
 
+    def setData(self, data):
+        """Set a data and distribute it to the forward operator"""
+        self.data = data
+        self.applyData(data)
+
+    def applyData(self, data):
+        """ """
+        self.fop.data = data
+
     def checkData(self, data):
         """Overwrite for special checks to return data values"""
         # if self._dataToken == 'nan':
@@ -656,15 +665,16 @@ class MeshMethodManager(MethodManager):
         pg.critical('no default mesh generation defined .. implement in '
                     'derived class')
 
+    def setMesh(self, mesh, **kwargs):
+        """Set a mesh and distribute it to the forward operator"""
+        self.mesh = mesh
+        self.applyMesh(mesh, **kwargs)
+
     def applyMesh(self, mesh, ignoreRegionManager=False, **kwargs):
         """ """
         if ignoreRegionManager:
             mesh = self.fop.createRefinedFwdMesh(mesh, **kwargs)
         self.fop.setMesh(mesh, ignoreRegionManager=ignoreRegionManager)
-
-    def applyData(self, data):
-        """ """
-        self.fop.data = data
 
     def invert(self, data=None, mesh=None, zWeight=1.0, startModel=None,
                **kwargs):
@@ -698,17 +708,17 @@ class MeshMethodManager(MethodManager):
         if data is None:
             pg.critical('No data given for inversion')
 
-        if mesh is None:
-            mesh = self.mesh
+        self.applyData(data)
 
-        if mesh is None:
+        ## no mesh given and there is no mesh known .. we create them
+        if mesh is None and self.mesh is None:
             mesh = self.createMesh(data, **kwargs)
 
-        self.mesh = mesh
+        ## a mesh was given or created so we forward it to the fop
+        if mesh is not None:
+            self.setMesh(mesh)
 
-        self.applyData(data)
-        self.applyMesh(mesh)
-
+        ### remove unused keyword argument .. need better kwargfs
         self.fop._refineP2 = kwargs.pop('refineP2', False)
 
         dataVals = self._ensureData(self.fop.data)
