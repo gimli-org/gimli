@@ -22,7 +22,7 @@ def streamline(mesh, field, startCoord, dLengthSteps, dataMesh=None,
 
 
 def streamlineDir(mesh, field, startCoord, dLengthSteps, dataMesh=None,
-                  maxSteps=1000, down=True, verbose=False, coords=(0, 1)):
+                  maxSteps=150, down=True, verbose=False, coords=(0, 1)):
     """
         down = -1, up = 1, both = 0
     """
@@ -45,9 +45,6 @@ def streamlineDir(mesh, field, startCoord, dLengthSteps, dataMesh=None,
 
         vx = pg.Vector(field[:, 0])
         vy = pg.Vector(field[:, 1])
-
-
-
 
         isVectorData = True
     else:
@@ -134,9 +131,12 @@ def streamlineDir(mesh, field, startCoord, dLengthSteps, dataMesh=None,
             else:
                 d = c.grad(pos, pot)
                 u = c.pot(pos, pot)
-        # print "cell:", c.id(), u
+
         # always go u down
         dAbs = d.length()
+        #print("cell:", c.id(), u, d, dAbs)
+
+
         if dAbs == 0.0:
             #print(d, "check this in streamlineDir(",)
             break
@@ -155,12 +155,22 @@ def streamlineDir(mesh, field, startCoord, dLengthSteps, dataMesh=None,
         # Change cell here .. set old cell to be processed
         if c is not None:
 
+
             xd.append(pos[coords[0]])
             yd.append(pos[coords[1]])
             # set the stating value here
             if vd[0] == -1:
                 vd[0] = dAbs
             vd.append(dAbs)
+
+            ## check for degenerating stream
+            if len(xd) > 2:
+                pos0 = pg.Pos(xd[-3], yd[-3])
+                pos1 = pg.Pos(xd[-2], yd[-2])
+                pos2 = pg.Pos(xd[-1], yd[-1])
+                if (pos0.dist(pos2) < pos0.dist(pos1)):
+                    pg.warn('degenerating stream aborted')
+                    break
 
             # If the new cell is different from the current we move into the
             # new cell and make the last to be invalid ..
