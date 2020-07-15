@@ -180,6 +180,8 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
             norm = mpl.colors.Normalize(vmin=min(gci.get_array()),
                                         vmax=min(gci.get_array()))
             gci.set_norm(norm)
+
+        pg._y(gci.get_array())
         cbar.on_mappable_changed(gci)
 
     if levels is not None:
@@ -401,6 +403,7 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5, levels=None):
         # print(i, prettyFloat(i))
 
     if hasattr(cbar, 'mappable'):
+        pg._g(cMin, cMax)
         cbar.mappable.set_clim(vmin=cMin, vmax=cMax)
         #cbar.set_clim(cMin, cMax)
 
