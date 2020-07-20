@@ -1112,12 +1112,9 @@ class ERTManager(MeshMethodManager):
         self.fop.mesh().save(os.path.join(path, 'resistivity-mesh'))
 
         if self.paraDomain.dim() == 2:
-            fig, ax = plt.subplots()
-            fig.set_size_inches(size)
-
+            fig, ax = plt.subplots(figsize=size)
             self.showResult(ax=ax, coverage=self.coverage(), **kwargs)
-            fig.savefig(path + '/resistivity.pdf')
-
+            fig.savefig(path + '/resistivity.pdf', bbox_inches="tight")
             return path, fig, ax
         return path
 
