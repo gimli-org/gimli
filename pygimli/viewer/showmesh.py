@@ -253,6 +253,8 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
     renameKwarg('cmap', 'cMap', kwargs)
 
     cMap = kwargs.pop('cMap', 'viridis')
+    replaceData = kwargs.pop('replaceData', False)
+
     nCols = None
     cBarOrientation = kwargs.pop('orientation', 'horizontal')
 
@@ -338,7 +340,12 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
                     if label is None:
                         label = ""
 
-                    gci = drawModel(ax, mesh, data, **kwargs)
+                    if replaceData and hasattr(mesh, gci):
+                        gci = mesh.gci
+                    else:
+                        gci = drawModel(ax, mesh, data, **kwargs)
+                        mesh.gci = gci
+
                     if showBoundary is None:
                         showBoundary = True
 
@@ -348,7 +355,11 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
                     if label is None:
                         label = ""
 
-                    gci = drawField(ax, mesh, data, **kwargs)
+                    if replaceData and hasattr(mesh, gci):
+                        gci = mesh.gci
+                    else:
+                        gci = drawField(ax, mesh, data, **kwargs)
+                        mesh.gci = gci
                 else:
                     pg.error("Data size invalid")
                     print("Data: ", len(data), min(data), max(data), pg.core.haveInfNaN(data))

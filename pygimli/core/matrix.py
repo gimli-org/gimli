@@ -12,7 +12,7 @@ from . import (CMatrix, CSparseMapMatrix, CSparseMatrix,
 
 from .logger import critical, warn
 
-# make core matrices (now in pgcor, later pg.core) available here for brevity
+# make core matrices (now in pgcore, later pg.core) available here for brevity
 ## Usefull Aliases
 IdentityMatrix = pgcore.IdentityMatrix
 
@@ -37,6 +37,10 @@ for m in __Matrices:
 
 pgcore.RMatrix.dtype = np.float
 pgcore.CMatrix.dtype = np.complex
+pgcore.RSparseMapMatrix.dtype = np.float
+pgcore.CSparseMapMatrix.dtype = np.complex
+pgcore.RSparseMatrix.dtype = np.float
+pgcore.CSparseMatrix.dtype = np.complex
 
 def __RMatrix_str(self):
     s = "RMatrix: " + str(self.rows()) + " x " + str(self.cols())
@@ -180,14 +184,13 @@ def __SparseMatrixEqual__(self, T):
         warn("Compare value sizes invalid: ", len(valsA), len(valsB))
         return False
 
-    # print(np.linalg.norm(np.array(rowsA)-np.array(rowsB)))
-    # print(np.linalg.norm(np.array(colsA)-np.array(colsB)))
-    # print(np.linalg.norm(valsA-valsB))
-
+    print(np.linalg.norm(np.array(rowsA)-np.array(rowsB)))
+    print(np.linalg.norm(np.array(colsA)-np.array(colsB)))
+    print(np.linalg.norm(valsA-valsB)/np.mean(valsA))
 
     return rowsA == rowsB and \
            colsA == colsB and \
-               np.linalg.norm(valsA-valsB) < 1e-14
+               np.linalg.norm(valsA-valsB)/np.mean(valsA) < 1e-12
 
 pgcore.RSparseMatrix.__eq__ = __SparseMatrixEqual__
 pgcore.RSparseMapMatrix.__eq__ = __SparseMatrixEqual__

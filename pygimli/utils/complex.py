@@ -10,12 +10,11 @@ import pygimli as pg
 
 def isComplex(vals):
     """Check numpy or pg.Vector if have complex data type"""
-    z = pg.CVector(2)
-    if len(vals) > 0:
-        if hasattr(vals, '__iter__'):
-            if isinstance(vals[0], np.complex) or \
-               isinstance(vals[0], complex):
-             return True
+    if pg.isScalar(vals):
+        if isinstance(vals, (np.complex, complex)):
+            return True
+    elif pg.isArray(vals):
+        return isComplex(vals[0])
     return False
 
 def toComplex(amp, phi=None):

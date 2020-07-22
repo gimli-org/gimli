@@ -170,23 +170,44 @@ void matMult(const RMatrix & A, const RMatrix & B, RMatrix & C, double a){
 }
 
 void matTransMult(const RMatrix & A, const RMatrix & B, RMatrix & C, double a){
-    // C += a * A.T*B || C += a * A.T*B.T
-    // implement with openblas dgemm too and check performance
+    //** C += a * A.T*B || C += a * A.T*B.T
+    //** C += (a * A.T*B).T if C has the right dimension
+    //** implement with openblas dgemm too and check performance
     // __MS("matTransMult: "<< A.rows() << " " << A.cols() << " : " << B.rows() << " " << B.cols())
+    bool retTrans = false;
     if (A.rows() == B.rows()){ // A.T * B
-        C.resize(A.cols(), B.cols());
 
+        if (C.rows() != A.cols() || C.cols() != B.cols()){
+
+            // __MS(C.rows() << " " << C.cols() << " " << A.cols() << " " << B.cols())
+            //** Target array have wrong dimensions
+            if (C.rows() == B.cols() && C.cols() == A.cols()){
+                //** Target array seems needed to be transposed
+                //** C += (a * A.T*B).T
+                // __MS("ret transmult")
+                retTrans = true;
+            } else {
+                //** resize target array
+                C.resize(A.cols(), B.cols());
+            }
+        }
         for (Index i = 0; i < A.cols(); i ++){
             for (Index j = 0; j < B.cols(); j ++){
                 double c = 0;
                 for (Index k = 0; k < A.rows(); k ++){
                     c += A[k][i] * B[k][j];
                 }
-                C[i][j] += a * c;
+                if (retTrans){
+                    C[j][i] += a * c;
+                } else {
+                    C[i][j] += a * c;
+                }
             }
         }
     } else { // A.T * B.T
-        log(Error, "matMult sizes mismatch. implement fallback A.T*B.T", A.rows(), "!=", B.rows());
+        __MS(A)
+        __MS(B)
+        log(Error, "matTransMult sizes mismatch.", A.rows(), "!=", B.rows());
     }
 }
 

@@ -729,7 +729,7 @@ public:
         cols_ = max(rowIdx_) + 1;
         rows_ = colPtr_.size() - 1;
     }
-    
+
     SparseMatrix(const std::vector < int > & colPtr,
                  const std::vector < int > & rowIdx,
                  const Vector < ValueType > vals, int stype=0)

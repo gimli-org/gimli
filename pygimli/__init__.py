@@ -33,7 +33,7 @@ from .meshtools import createGrid, interpolate
 from .solver import solve
 from .utils import boxprint, cache, cut, unique, unit, cmap, randn
 from .utils import prettify as pf
-from .utils import isScalar, isArray, isPos, isR3Array
+from .utils import isScalar, isArray, isPos, isR3Array, isComplex
 from .viewer import plt, show, wait
 from .frameworks import fit, Modelling, Inversion
 from .testing import test#, setTestingMode, testingMode
@@ -201,23 +201,29 @@ def version(cache=True):
         info('Version: ' + __version__ + " core:" + versionStr())
     return __version__
 
+__swatch__ = dict()
 
-__swatch__ = Stopwatch()
-
-def tic(msg=None):
+def tic(key=0, msg=None):
     """Start global timer. Print elpased time with `toc()`.
+
+    You can start multiple stopwatches with optional identifier.
 
     Parameters
     ----------
+    key: dict key
+        Identifier for your Stopwatch.
     msg : string, optional
         Print message string just before starting the timer.
     """
     if msg:
         print(msg)
-    __swatch__.start()
+    try:
+        __swatch__[key].start()
+    except:
+        __swatch__[key] = Stopwatch(start=True)
 
 
-def toc(msg=None, box=False, reset=False):
+def toc(msg=None, box=False, reset=False, key=0):
     """Print elapsed time since global timer was started with `tic()`.
 
     Arguments
@@ -229,13 +235,16 @@ def toc(msg=None, box=False, reset=False):
         Embed the time in an ascii box
     reset: bool [False]
         Reset the stopwatch.
+    id: identifier
+        Identifier for your Stopwatch.
     """
     if msg:
-        if box:
+        if box is True:
             boxprint(msg)
         else:
             print(msg, end=' ')
-    seconds = dur(reset)
+
+    seconds = dur(reset=reset, key=key)
     m, s = divmod(seconds, 60)
     h, m = divmod(m, 60)
     if h <= 0 and m <= 0:
@@ -250,10 +259,17 @@ def toc(msg=None, box=False, reset=False):
     else:
         time = "%d hours, %d minutes and %.2f" % (h, m, s)
     p = print if not box else boxprint
-    p("Elapsed time is %s seconds." % time)
+
+    if len(__swatch__.keys()) > 1:
+        p("Elapsed time ({0}) is {1} seconds.".format(key, time))
+    else:
+        p("Elapsed time is {0} seconds.".format(time))
 
 
-def dur(reset=False):
+def dur(reset=False, key=0):
     """Return time in seconds since global timer was started with `tic()`."""
-    return __swatch__.duration(reset)
-
+    try:
+        return __swatch__[key].duration(reset)
+    except:
+        warn("No stopwatch for id {0}".format(key))
+        return 0.0

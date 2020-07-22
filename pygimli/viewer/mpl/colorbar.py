@@ -178,11 +178,11 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
     if gci is not None:
         if min(gci.get_array()) < 1e12:
             norm = mpl.colors.Normalize(vmin=min(gci.get_array()),
-                                        vmax=min(gci.get_array()))
+                                        vmax=max(gci.get_array()))
             gci.set_norm(norm)
 
-        pg._y(gci.get_array())
         cbar.on_mappable_changed(gci)
+        #cbar.update_normal(gci)
 
     if levels is not None:
         nLevs = len(levels)
@@ -273,6 +273,12 @@ def createColorBar(gci, orientation='horizontal', size=0.2, pad=None,
             ax = gci.get_axes()
 
     cbar = None
+    if hasattr(ax, '__cBar__'):
+        ax.__cBar__.remove()
+        delattr(ax, '__cBar__')
+        # update colorbar is broken and will not work as supposed so we need
+        # to remove them for now
+
     if hasattr(ax, '__cBar__'):
         cbar = ax.__cBar__
         updateColorBar(cbar, gci, **kwargs)
@@ -371,6 +377,7 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5, levels=None):
             pg.error('no cbar mappable. Cannot find cmax')
 
     if cMin == cMax:
+
         cMin *= 0.999
         cMax *= 1.001
 
@@ -389,6 +396,7 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5, levels=None):
             #if cMax < cMin:
             cbarLevels = np.linspace(cMin, cMax, nLevs)
 
+    #pg._g(cbarLevels)
     # FIXME: [10.1, 10.2, 10.3] mapped to [10 10 10]
 
     cbarLevelsString = []
@@ -400,12 +408,10 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5, levels=None):
 
     for i in cbarLevels:
         cbarLevelsString.append(prettyFloat(i, roundValue))
-        # print(i, prettyFloat(i))
 
     if hasattr(cbar, 'mappable'):
-        pg._g(cMin, cMax)
-        cbar.mappable.set_clim(vmin=cMin, vmax=cMax)
         #cbar.set_clim(cMin, cMax)
+        cbar.mappable.set_clim(vmin=cMin, vmax=cMax)
 
     cbar.set_ticks(cbarLevels)
     cbar.set_ticklabels(cbarLevelsString)

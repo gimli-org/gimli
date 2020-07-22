@@ -26,6 +26,8 @@ namespace GIMLI{
 template <>
 void Vector< double >::add(const ElementMatrix < double > & A,
                            const double & scale){
+    A.integrate();
+
     if (A.cols() == 1){
         addVal(A.col(0) * scale, A.rowIDs());
     } else {
@@ -42,6 +44,9 @@ void Vector< double >::add(const ElementMatrix < double > & A){
 template <>
 void Vector< double >::add(const ElementMatrix < double > & A,
                            const RVector & scale){
+    A.integrate();
+    //!! warning this will lead to incorrect results with non constant scale
+    //!! use new fea style for correct integration
     if (A.cols() == 1){
         addVal(A.col(0) * scale.get_(A.rowIDs()), A.rowIDs());
     } else {

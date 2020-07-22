@@ -11,8 +11,10 @@ import numpy as np
 import pygimli as pg
 
 
-def isScalar(v):
-    """Check if v is scalar, i.e. int, float or complex
+def isScalar(v, val=None):
+    """Check if v is scalar, i.e. int, float or complex.
+
+    Optional compare with val.
 
     Examples
     --------
@@ -21,12 +23,19 @@ def isScalar(v):
     True
     >>> print(pg.isScalar(1.0))
     True
+    >>> print(pg.isScalar(1.0, 0.0))
+    False
+    >>> print(pg.isScalar(1.0, 1.0))
+    True
     >>> print(pg.isScalar(1+1j))
     True
     >>> print(pg.isScalar([0.0, 1.0]))
     False
     """
-    return isinstance(v, (int, float, complex, np.complex))
+    if val is None:
+        return isinstance(v, (int, float, complex, np.complex))
+    # maybe add some tolerance check
+    return isinstance(v, (int, float, complex, np.complex)) and v == val
 
 def isArray(v, N=None):
     """Check if v is an array or a vector, with optional size.

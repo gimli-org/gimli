@@ -30,9 +30,7 @@ template < class ValueType > class DLLEXPORT ElementMatrix {
 public:
     /*! If dof != 0 then scalar field approximation is to be supposed.
     For vector field solution give a dof, means be the number of nodes of the current mesh. */
-    ElementMatrix(Index dof=0) {
-        this->_nDof = dof;
-    }
+    ElementMatrix(Index dof=0);
 
     ~ElementMatrix() {}
 
@@ -305,7 +303,7 @@ public:
                                        bool sum=false, bool div=false);
 
     /*! Integrate, i.e., sum over quadrature matrices.*/
-    ElementMatrix < ValueType > & integrate();
+    const ElementMatrix < ValueType > & integrate() const;
 
     /*! Return reference to all matrices per quadrature point.*/
     const std::vector < Matrix < ValueType > > & matX() const { return _matX; }
@@ -329,9 +327,11 @@ public:
     void setDiv(bool div){ _div = true;}
     bool isDiv() const { return _div;}
 
+    bool isIntegrated() const { return _integrated; }
+    void integrated(bool i) { _integrated = i; }
 
 protected:
-    Matrix < ValueType > mat_;
+    mutable Matrix < ValueType > mat_;
     IndexArray _ids;
     IndexArray _idsC;
     IndexArray _idsR;
@@ -371,7 +371,9 @@ protected:
     // matrices per quadrature point
     std::vector < Matrix < ValueType > > _matX;
 
+    bool _newStyle;
     bool _div;
+    mutable bool _integrated;
 
 private:
     /*! No copy operator. */
@@ -418,29 +420,41 @@ protected:
 
 DLLEXPORT void dot(const ElementMatrix < double > & A,
                    const ElementMatrix < double > & B,
-                   ElementMatrix < double > & C, double b);
+                   double c,
+                   ElementMatrix < double > & C);
+DLLEXPORT void dot(const ElementMatrix < double > & A,
+                   const ElementMatrix < double > & B,
+                   const RMatrix & c,
+                   ElementMatrix < double > & C);
+DLLEXPORT void dot(const ElementMatrix < double > & A,
+                   const ElementMatrix < double > & B,
+                   const FEAFunction & c,
+                   ElementMatrix < double > & C);
 
 DLLEXPORT const ElementMatrix < double > dot(const ElementMatrix < double > & A,
-                    const ElementMatrix < double > & B, double b=1.0);
+                    const ElementMatrix < double > & B, double c=1.0);
 DLLEXPORT const ElementMatrix < double > dot(const ElementMatrix < double > & A,
-                    const ElementMatrix < double > & B, const RVector & b);
+                    const ElementMatrix < double > & B, const RMatrix & c);
 DLLEXPORT const ElementMatrix < double > dot(const ElementMatrix < double > & A,
-                    const ElementMatrix < double > & B, const RMatrix & b);
-DLLEXPORT const ElementMatrix < double > dot(const ElementMatrix < double > & A,
-                    const ElementMatrix < double > & B, const FEAFunction & b);
+                    const ElementMatrix < double > & B, const FEAFunction & c);
 
-DLLEXPORT void mult(const ElementMatrix < double > & A,
-                    ElementMatrix < double > & C, double b=1.0);
-DLLEXPORT void mult(const ElementMatrix < double > & A,
-                    ElementMatrix < double > & C, const FEAFunction & b);
+DLLEXPORT void mult(const ElementMatrix < double > & A, double b,
+                    ElementMatrix < double > & C);
+DLLEXPORT void mult(const ElementMatrix < double > & A, const RMatrix & b,
+                    ElementMatrix < double > & C);
+DLLEXPORT void mult(const ElementMatrix < double > & A, const FEAFunction & b,
+                    ElementMatrix < double > & C);
 
 DLLEXPORT const ElementMatrix < double > mult(
-                    const ElementMatrix < double > & A, double b);
+                    const ElementMatrix < double > & A, double b=1);
 DLLEXPORT const ElementMatrix < double > mult(
-                    const ElementMatrix < double > & A, const RVector & b);
+                    const ElementMatrix < double > & A, const RMatrix & b);
 DLLEXPORT const ElementMatrix < double > mult(
                     const ElementMatrix < double > & A, const FEAFunction & b);
 
+// /*! Implementme */
+// DLLEXPORT RVector forceVector(const Mesh & mesh, const FEAFunction & b,
+//                               Index order);
 
 class DLLEXPORT ElementMatrixMap {
 public:
@@ -473,6 +487,7 @@ template < class ValueType > std::ostream & operator << (std::ostream & str,
 
 template < > DLLEXPORT std::ostream & operator << (std::ostream & str,
                                             const ElementMatrix< double > & e);
+
 
 
 } // namespace GIMLI{
