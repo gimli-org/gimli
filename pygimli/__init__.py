@@ -203,17 +203,17 @@ def version(cache=True):
 
 __swatch__ = dict()
 
-def tic(key=0, msg=None):
+def tic(msg=None, key=0):
     """Start global timer. Print elpased time with `toc()`.
 
     You can start multiple stopwatches with optional identifier.
 
     Parameters
     ----------
-    key: dict key
-        Identifier for your Stopwatch.
     msg : string, optional
         Print message string just before starting the timer.
+    key: dict key
+        Identifier for your Stopwatch.
     """
     if msg:
         print(msg)
@@ -268,8 +268,8 @@ def toc(msg=None, box=False, reset=False, key=0):
 
 def dur(reset=False, key=0):
     """Return time in seconds since global timer was started with `tic()`."""
-    try:
+    if key in __swatch__:
         return __swatch__[key].duration(reset)
-    except:
+    else:
         warn("No stopwatch for id {0}".format(key))
         return 0.0
