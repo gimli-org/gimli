@@ -319,10 +319,10 @@ class TestRVectorMethods(unittest.TestCase):
         np.testing.assert_equal(sum(x - np.float64(1)), 0.0)
 
         # HarmonicModelling(size_t nh, const RVector & tvec);
-        pg.core.HarmonicModelling(np.int32(1), x);
-        pg.core.HarmonicModelling(np.uint32(1), x);
-        pg.core.HarmonicModelling(np.int64(1), x);
-        pg.core.HarmonicModelling(np.uint64(1), x);
+        pg.core.HarmonicModelling(np.int32(1), x)
+        pg.core.HarmonicModelling(np.uint32(1), x)
+        pg.core.HarmonicModelling(np.int64(1), x)
+        pg.core.HarmonicModelling(np.uint64(1), x)
 
         # pg.PolynomialModelling(1, np.int32(1), x3, x);
         # pg.PolynomialModelling(1, np.int64(1), x3, x);

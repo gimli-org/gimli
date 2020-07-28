@@ -19,13 +19,19 @@
 #include "vector.h"
 #include "matrix.h"
 
-// cp ../gimli/python/custom_rvalue.cpp python/generated/custom_rvalue.cpp && make pg
+// cp ../gimli/core/python/custom_rvalue.cpp core/python/generated/custom_rvalue.cpp && make pg
 
+int initNumpy(){
+    // or py_array check will segfault
+    import_array2("Cannot import numpy c-api for rValue converters", NULL);
+    //import_array2("");
+    return 0;
+}
+const static int __numpy_initialized = initNumpy();
 
 namespace bp = boost::python;
 
 // #define __DC(str) ;
-
 #define __DC(str) if (GIMLI::deepDebug() > 0) __MS(str)
 
 // ** TODO check if we need a delete somewhere for all the new stuff
@@ -37,10 +43,16 @@ std::ostream & operator << (std::ostream & os, const bp::object& o){
 namespace r_values_impl{
 
 template < class ValueType > void * checkConvertibleSequenz(PyObject * obj){
-    //     import_array2("Cannot import numpy c-api from pygimli hand_make_wrapper2", NULL);
+    if (!obj){
+        __DC(obj << "\t abort check .. !Object")
+        return NULL;
+    }
+    __DC(obj << "\t check if convertable PyObject("<< obj->ob_type->tp_name<<") -> " + 
+         GIMLI::type(ValueType(0))) // FW: Caused problems during Mac build // still?
+
     // is obj is a sequence
     if(!PySequence_Check(obj)){
-        __DC(obj << "\t abborting no object")
+        __DC(obj << "\t abborting no sequence")
         return NULL;
     }
 
@@ -109,21 +121,6 @@ template < class ValueType > void * checkConvertibleSequenz(PyObject * obj){
                 return obj;
             }
 
-//             boost::numpy::initialize();
-//             std::cout << bp::extract<ValueType>(element)() << std::endl;
-//             std::cout << bp::extract<ValueType>(bp::str(element))() << std::endl;
-//TypeError: No registered converter was able to produce a C++ rvalue of type unsigned long from this Python object of type numpy.int64
-
-
-//             try{
-//                 bp::str str = bp::extract< bp::str >(element);
-// //                 __DC(str);
-//             } catch(...){
-// //               __DC(str);
-//
-//             __DC(obj << "\t cannot convert")
-//             }
-
             __DC(WHERE_AM_I << "element cannot converted ")
         }
 
@@ -131,10 +128,7 @@ template < class ValueType > void * checkConvertibleSequenz(PyObject * obj){
         __DC(obj << " len == 0")
         return NULL;
     }
-    // check if there is a valid converter
-    //         if(convertible_impl(py_sequence, boost::mpl::int_< 0 >(), length_type())){
-    //             return obj;
-    //         } else{
+    
     __DC(obj << " fail")
     return NULL;
 }
@@ -542,34 +536,36 @@ struct Numpy2RMatrix{
 private:
 };
 
-
 template < class ValueType > void * checkConvertibleNumpyScalar(PyObject * obj){
-    // __DC(obj << "\tNumpyScalar -> " + GIMLI::type(ValueType(0))) // FW: Caused problems during Mac build
     if (!obj){
         __DC(obj << "\t abort check .. !Object")
         return NULL;
     }
-    if (PySequence_Check(obj)){
-        __DC(obj << "\t abort check .. is Sequenz : ")
-        return NULL;
-    }
-    if (PyObject_HasAttrString(obj, "dtype")){
-        __DC(obj << "\t Object has dtype .. assuming numpy")
+    __DC(obj << "\t check if convertable PyObject("<< obj->ob_type->tp_name<<") -> " + 
+         GIMLI::type(ValueType(0))) // FW: Caused problems during Mac build
+         
+    __DC("\tType:" << Py_TYPE(obj))
+    __DC("\tPyGenericArrType_Type:" << PyObject_TypeCheck(obj, &PyGenericArrType_Type))
+    __DC("\tPyIntegerArrType_Type:" << PyObject_TypeCheck(obj, &PyIntegerArrType_Type))
+    __DC("\tPySignedIntegerArrType_Type:" << PyObject_TypeCheck(obj, &PySignedIntegerArrType_Type))
+    __DC("\tPyUnsignedIntegerArrType_Type:" << PyObject_TypeCheck(obj, &PyUnsignedIntegerArrType_Type))
+    __DC("\tPyIntArrType_Type:" << PyObject_TypeCheck(obj, &PyIntArrType_Type))
+    __DC("\tPyLongArrType_Type:" << PyObject_TypeCheck(obj, &PyLongArrType_Type))
+    __DC("\tPyUIntArrType_Type:" << PyObject_TypeCheck(obj, &PyUIntArrType_Type))
+    __DC("\tPyULongArrType_Type:" << PyObject_TypeCheck(obj, &PyULongArrType_Type))
+    __DC("\tPyFloatArrType_Type:" << PyObject_TypeCheck(obj, &PyFloatArrType_Type))
+    __DC("\tPyDoubleArrType_Type:" << PyObject_TypeCheck(obj, &PyDoubleArrType_Type))
 
+    if (PyObject_TypeCheck(obj, &PyGenericArrType_Type)){
         if (typeid(ValueType) == typeid(GIMLI::Index)){
-            if ((strcmp(obj->ob_type->tp_name, "numpy.float32") == 0) ||
-                (strcmp(obj->ob_type->tp_name, "numpy.float64") == 0)) {
-                __DC(obj << "\t Object is numpy.float* .. non convert to GIMLI::Index")
+            if (!PyObject_TypeCheck(obj, &PyIntegerArrType_Type)){
+                __DC(obj << "\t abort check .. Object cannot convert to GIMLI::Index")
                 return NULL;
             }
         }
-
         return obj;
-    } else {
-        __DC(obj << "\t Object no dtype")
-        return NULL;
     }
-    __DC(obj << "\t does not found convertible")
+    __DC(obj << "\t no numpy object.")
     return NULL;
 }
 
@@ -586,31 +582,28 @@ template < class ValueType > void convertFromNumpyScalar(PyObject* obj,
     ValueType * val = new (memory_chunk) ValueType[1];
     data->convertible = memory_chunk;
 
-    // expensive test here but the following segfault
-    // __DC(obj << "\tNumpyInt -> long OK: " << PyArray_CheckScalar(arr))
-    // __DC(obj << "\tNumpyInt -> long OK: " << PyArray_IsScalar(arr, Int64))
-    if (strcmp(obj->ob_type->tp_name, "numpy.int64") == 0){
+    if (PyObject_TypeCheck(obj, &PyLongArrType_Type)){
         *val = PyArrayScalar_VAL(obj, Int64);
         __DC(obj << "\tnumpy.int64 = " << *val)
-    } else if (strcmp(obj->ob_type->tp_name, "numpy.uint64") == 0){
+    } else if (PyObject_TypeCheck(obj, &PyULongArrType_Type)){
         *val = PyArrayScalar_VAL(obj, UInt64);
         __DC(obj << "\tnumpy.uint64 = " << *val)
-    } else if (strcmp(obj->ob_type->tp_name, "numpy.int32") == 0){
+    } else if (PyObject_TypeCheck(obj, &PyIntArrType_Type)){
         *val = PyArrayScalar_VAL(obj, Int32);
         __DC(obj << "\tnumpy.int32 = " << *val)
-    } else if (strcmp(obj->ob_type->tp_name, "numpy.uint32") == 0){
+    } else if (PyObject_TypeCheck(obj, &PyUIntArrType_Type)){
         *val = PyArrayScalar_VAL(obj, UInt32);
         __DC(obj << "\tnumpy.uint32 = " << *val)
-    } else if (strcmp(obj->ob_type->tp_name, "numpy.float32") == 0){
+    } else if (PyObject_TypeCheck(obj, &PyFloatArrType_Type)){
         *val = PyArrayScalar_VAL(obj, Float32);
         __DC(obj << "\tnumpy.float32 = " << *val)
-    } else if (strcmp(obj->ob_type->tp_name, "numpy.float64") == 0){
+    } else if (PyObject_TypeCheck(obj, &PyDoubleArrType_Type)){
         *val = PyArrayScalar_VAL(obj, Float64);
         __DC(obj << "\tnumpy.float64 = " << *val)
     } else {
-        __DC(obj << "\tNumpyInt -> undefined dtype")
-        __DC(obj << "\tNumpyInt -> long OK: " << obj->ob_type->tp_name)
-        __DC(obj << "\tNumpyInt -> long OK: " << Py_TYPE(obj))
+        __MS(obj << "\tNumpyInt -> undefined dtype")
+        __MS(obj << "\tNumpyInt -> long OK: " << obj->ob_type->tp_name)
+        __MS(obj << "\tNumpyInt -> long OK: " << Py_TYPE(obj))
     }
 }
 
