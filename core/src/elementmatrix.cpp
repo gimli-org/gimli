@@ -21,6 +21,7 @@
 #include "meshentities.h"
 #include "node.h"
 #include "pos.h"
+#include "sparsematrix.h"
 
 #include "integration.h"
 
@@ -1214,29 +1215,18 @@ RVector ElementMatrixMap::mult(const RVector & a, const RVector & b) const{
     return ret;
 }
 
-//** old interface constructor **//
-template < > DLLEXPORT
-ElementMatrix < double >::ElementMatrix(Index dof) {
-    this->_nDof = dof;
-    _newStyle = false;
-}
+//** old interface constructor
+// template < >
+// ElementMatrix < double >::ElementMatrix(Index dof) {
+//     this->_nDof = dof;
+//     this->_newStyle = false;
+// }
 
-//** new interface starts here **//
+//** new interface starts here
 template < > DLLEXPORT
 ElementMatrix < double >::ElementMatrix(Index nCoeff, Index dofPerCoeff,
-                                        Index dofOffset)
-:_nCoeff(nCoeff), _dofPerCoeff(dofPerCoeff), _dofOffset(dofOffset)
-{
-    if (_nCoeff > 1 && _dofPerCoeff == 0){
-        __MS(nCoeff << " " << dofPerCoeff << " "<< dofOffset)
-        log(Error, "number of coefficents > 1 but no dofPerCoefficent given");
-    }
-    _ent = 0;
-    _w = 0;
-    _x = 0;
-    _div = false;
-    _integrated = false;
-    _newStyle = true;
+                                        Index dofOffset){
+    this->init(nCoeff, dofPerCoeff, dofOffset);
 }
 
 template < > DLLEXPORT
@@ -1244,7 +1234,26 @@ ElementMatrix < double >::ElementMatrix(const ElementMatrix < double > & E){
     this->copyFrom(E, true);
 }
 
-template < >
+template < >  DLLEXPORT
+void ElementMatrix < double >::init(Index nCoeff, Index dofPerCoeff,
+                                    Index dofOffset){
+    if (_nCoeff > 1 && _dofPerCoeff == 0){
+        __MS(nCoeff << " " << dofPerCoeff << " "<< dofOffset)
+        log(Error, "number of coefficents > 1 but no dofPerCoefficent given");
+    }
+    this->_nCoeff = nCoeff;
+    this->_dofPerCoeff = dofPerCoeff;
+    this->_dofOffset = dofOffset;
+    _ent = 0;
+    _w = 0;
+    _x = 0;
+    _div = false;
+    _valid = false;
+    _integrated = false;
+    _newStyle = true;
+}
+
+template < > DLLEXPORT
 void ElementMatrix < double >::copyFrom(const ElementMatrix < double > & E,
                                         bool withMat){
 
@@ -1292,10 +1301,12 @@ const ElementMatrix < double > & ElementMatrix < double >::integrate() const {
 
 template < > DLLEXPORT
 ElementMatrix < double > & ElementMatrix < double >::pot(
-                        const MeshEntity & ent,
-                        Index integrationOrder,
-                        bool sum){
-    this->_order = integrationOrder;
+                        const MeshEntity & ent, Index order, bool sum){
+
+    if (this->valid() && this->order() == order && this->_ent == &ent){
+        return *this;
+    }
+    this->_order = order;
     this->_ent = &ent;
     this->_integrated = false;
     //this->getWeightsAndPoints(ent, this->_w, this->_x, this->_order);
@@ -1311,6 +1322,9 @@ ElementMatrix < double > & ElementMatrix < double >::pot(
     Index nCoeff(this->_nCoeff); //components
     Index nCols(nCoeff);
 
+    if (nCols == 0){
+        log(Critical, "ElementMatrix need to be initialized");
+    }
     this->resize(nVerts*nCoeff, nCols);
 
     this->_idsR.resize(nVerts*nCoeff, 0);
@@ -1340,16 +1354,41 @@ ElementMatrix < double > & ElementMatrix < double >::pot(
     }
     // __MS(this->_ent)
     // __MS(this->entity())
+    this->setValid(true);
+    return *this;
+}
+
+template < > DLLEXPORT
+ElementMatrix < double > & ElementMatrix < double >::pot(
+                        const MeshEntity & ent, Index order, bool sum,
+                        Index nCoeff, Index dof, Index dofOffset){
+
+    if (!this->valid() || this->order() != order || this->_ent != &ent){
+        this->init(nCoeff, dof, dofOffset);
+        this->pot(ent, order, sum);
+    }
+    if (sum == true) this->integrate();
     return *this;
 }
 
 template < > DLLEXPORT
 ElementMatrix < double > & ElementMatrix < double >::grad(
-                        const MeshEntity & ent,
-                        Index integrationOrder,
-                        bool elastic, bool sum, bool div){
+                                    const MeshEntity & ent, Index order,
+                                    bool elastic, bool sum, bool div,
+                                    Index nCoeff, Index dof, Index dofOffset){
+return *this;
 
-    this->_order = integrationOrder;
+}
+
+template < > DLLEXPORT
+ElementMatrix < double > & ElementMatrix < double >::grad(
+                        const MeshEntity & ent, Index order,
+                        bool elastic, bool sum, bool div){
+    if (this->valid() && this->order() == order && this->_ent == & ent){
+        return *this;
+    }
+
+    this->_order = order;
     this->_ent = &ent;
     this->_div = div;
     this->_integrated = false;
@@ -1366,6 +1405,10 @@ ElementMatrix < double > & ElementMatrix < double >::grad(
     Index nVerts(_ent->nodeCount());
     Index nCoeff(this->_nCoeff); //components
     Index nCols(ent.dim() * nCoeff);
+
+    if (nCols == 0){
+        log(Critical, "ElementMatrix need to be initialized");
+    }
 
     this->resize(nVerts*nCoeff, nCols);
 
@@ -1730,5 +1773,137 @@ const ElementMatrix < double > mult(const ElementMatrix < double > & A,
     mult(A, b, C);
     return C;
 }
+
+void evaluateQuadraturePoints(const Mesh & mesh,
+                              Index order,
+                              const FEAFunction & f,
+                              RVector & ret){
+
+    ret.clear();
+    const R3Vector *x;
+    for (auto &cell: mesh.cells()){
+        x = &IntegrationRules::instance().abscissa(cell->shape(), order);
+        for (Index i = 0; i < x->size(); i ++){
+
+            if (f.valueSize() == 1){
+                ret.push_back(f.evalR1(cell->shape().xyz((*x)[i]), cell));
+            } else {
+                log(Critical, "expecting FEAFunction with valueSize==1.",
+                    f.valueSize());
+            }
+        }
+    }
+}
+void evaluateQuadraturePoints(const Mesh & mesh,
+                              Index order,
+                              const FEAFunction & f,
+                              R3Vector & ret){
+    ret.clear();
+    const R3Vector *x;
+    for (auto &cell: mesh.cells()){
+        x = &IntegrationRules::instance().abscissa(cell->shape(), order);
+        for (Index i = 0; i < x->size(); i ++){
+
+            if (f.valueSize() > 1){
+                ret.push_back(f.evalR3(cell->shape().xyz((*x)[i]), cell));
+            } else {
+                log(Critical, "expecting FEAFunction with valueSize==2 or 3",
+                    f.valueSize());
+            }
+        }
+    }
+}
+
+void evaluateQuadraturePoints(const Mesh & mesh,
+                              Index order,
+                              const FEAFunction & f,
+                              std::vector< RMatrix > & ret){
+    THROW_TO_IMPL
+}
+
+void createForceVector(const Mesh & mesh, Index order, RVector & ret,
+                       double a, Index nCoeff, Index dofOffset){
+    return createForceVector(mesh, order, ret, RVector(1,a), nCoeff, dofOffset);
+}
+
+void createForceVector(const Mesh & mesh, Index order, RVector & ret,
+                       const RVector & a, Index nCoeff, Index dofOffset){
+    if (nCoeff > 3){
+        log(Error, "Number of coefficients need to be lower then 4");
+    }
+    Index dof = mesh.nodeCount() * nCoeff;
+    ret.resize(dof);
+
+    for (auto &cell: mesh.cells()){
+        cell->uCache().pot(*cell, order, true,
+                           nCoeff, mesh.nodeCount(), dofOffset);
+
+        if (a.size() == 1){
+            ret.add(cell->uCache(), a[0]);
+        } else if (a.size() == mesh.cellCount()){
+            ret.add(cell->uCache(), a[cell->id()]);
+        }
+    }
+}
+void createForceVector(const Mesh & mesh, Index order, RVector & ret,
+                       const R3Vector & a,
+                       Index nCoeff, Index dofOffset){
+THROW_TO_IMPL
+}
+void createForceVector(const Mesh & mesh, Index order, RVector & ret,
+                       const std::vector< RMatrix > & a,
+                       Index nCoeff, Index dofOffset){
+                           THROW_TO_IMPL
+}
+
+void createStiffnessMatrix(const Mesh & mesh, Index order,
+                                     RSparseMapMatrix & ret, double a,
+                                     Index nCoeff, Index dofOffset){
+THROW_TO_IMPL
+                                     }
+void createStiffnessMatrix(const Mesh & mesh, Index order,
+                                     RSparseMapMatrix & ret, const RVector & a,
+                                     Index nCoeff, Index dofOffset){
+             THROW_TO_IMPL
+                                     }
+void createStiffnessMatrix(const Mesh & mesh, Index order,
+                                     RSparseMapMatrix & ret, const RMatrix & a,
+                                     Index nCoeff, Index dofOffset){
+             THROW_TO_IMPL
+                                     }
+void createStiffnessMatrix(const Mesh & mesh, Index order,
+                           RSparseMapMatrix & ret,
+                           const std::vector< RMatrix > & a,
+                           Index nCoeff, Index dofOffset){
+             THROW_TO_IMPL
+                                     }
+void createMassMatrix(const Mesh & mesh, Index order,
+                      RSparseMapMatrix & ret, double a,
+                      Index nCoeff, Index dofOffset){
+             THROW_TO_IMPL
+                                     }
+void createMassMatrix(const Mesh & mesh, Index order,
+                      RSparseMapMatrix & ret, const RVector & a,
+                      Index nCoeff, Index dofOffset){
+             THROW_TO_IMPL
+                                     }
+void createMassMatrix(const Mesh & mesh, Index order,
+                      RSparseMapMatrix & ret, const RMatrix & a,
+                      Index nCoeff, Index dofOffset){
+             THROW_TO_IMPL
+                                     }
+void createMassMatrix(const Mesh & mesh, Index order,
+                      RSparseMapMatrix & ret,
+                      const std::vector< RMatrix > & a,
+                      Index nCoeff, Index dofOffset){
+             THROW_TO_IMPL
+                                     }
+void createAdvectionMatrix(const Mesh & mesh, Index order,
+                                     RSparseMapMatrix & ret,
+                                     const R3Vector & vel,
+                                     Index dofOffset){
+             THROW_TO_IMPL
+                                     }
+
 
 } // namespace GIMLI

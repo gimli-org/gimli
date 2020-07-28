@@ -778,7 +778,7 @@ def abs(v):
         for i in range(len(v)):
             v[i] = _pygimli_.abs(v[i])
         return v
-    elif hasttr(v, 'vals'):
+    elif hasattr(v, 'vals'):
         return pg.abs(v.vals)
 
     return _pygimli_.fabs(v)

@@ -36,11 +36,11 @@ void Mesh::load(const std::string & fbody, bool createNeighbors, IOFormat format
         importVTU(fbody);
     } else if (format == Binary || fbody.find(MESHBINSUFFIX) != std::string::npos){
         try {
-             return loadBinary(fbody);
+             loadBinaryV2(fbody);
         } catch(std::exception & e){
             //std::cout << "Failed to loadBinary " << e.what() << std::endl;
             //std::cout << "try load bms.v2" << std::endl;
-            loadBinaryV2(fbody);
+            loadBinary(fbody);
         }
     } else {
         loadAscii(fbody);
@@ -53,10 +53,10 @@ void Mesh::loadAscii(const std::string & fbody){
 }
 
 int Mesh::save(const std::string & fbody, IOFormat format) const {
-  if (format == Binary || fbody.find(MESHBINSUFFIX) != std::string::npos) {
-    return saveBinary(fbody);
-  } else return saveAscii(fbody);
-  return 1;
+    if (format == Binary || fbody.find(MESHBINSUFFIX) != std::string::npos) {
+        saveBinaryV2(fbody);
+    } else return saveAscii(fbody);
+    return 1;
 }
 
 int Mesh::saveAscii(const std::string & fbody) const {

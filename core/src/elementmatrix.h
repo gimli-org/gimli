@@ -25,12 +25,19 @@
 
 namespace GIMLI{
 
+class FEAFunction;
 
 template < class ValueType > class DLLEXPORT ElementMatrix {
 public:
     /*! If dof != 0 then scalar field approximation is to be supposed.
     For vector field solution give a dof, means be the number of nodes of the current mesh. */
-    ElementMatrix(Index dof=0);
+    ElementMatrix(Index dof=0){
+        this->_nDof = dof;
+        this->_newStyle = false;
+        this->_nCoeff = 0;
+        this->_dofPerCoeff = 0;
+        this->_dofOffset = 0;
+    }
 
     ~ElementMatrix() {}
 
@@ -291,16 +298,26 @@ public:
 
     void copyFrom(const ElementMatrix < ValueType > & E, bool withMat=true);
 
+    void init(Index nCoeff, Index dofPerCoeff, Index dofOffset);
+
+    /*! Fill this ElementMatrix with value (u for scalar, v for vector values) basis. Cache the matrix in entity*/
+    ElementMatrix < ValueType > & pot(const MeshEntity & ent, Index order,
+                                      bool sum,
+                                      Index nCoeff, Index dof, Index dofOffset);
+
     /*! Fill this ElementMatrix with value (u for scalar, v for vector values) basis.*/
-    ElementMatrix < ValueType > & pot(const MeshEntity & ent,
-                                      Index integrationOrder,
+    ElementMatrix < ValueType > & pot(const MeshEntity & ent, Index order,
                                       bool sum=false);
 
+    /*! Fill this ElementMatrix with value (u for scalar, v for vector values) basis. Cache the matrix in entity*/
+    ElementMatrix < ValueType > & grad(const MeshEntity & ent, Index order,
+                                       bool elastic, bool sum, bool div,
+                                      Index nCoeff, Index dof, Index dofOffset);
+
     /*! Fill this ElementMatrix with gradient of ent.*/
-    ElementMatrix < ValueType > & grad(const MeshEntity & ent,
-                                       Index integrationOrder,
-                                       bool elastic=false,
-                                       bool sum=false, bool div=false);
+    ElementMatrix < ValueType > & grad(const MeshEntity & ent, Index order,
+                                       bool elastic=false, bool sum=false,
+                                       bool div=false);
 
     /*! Integrate, i.e., sum over quadrature matrices.*/
     const ElementMatrix < ValueType > & integrate() const;
@@ -330,6 +347,10 @@ public:
     bool isIntegrated() const { return _integrated; }
     void integrated(bool i) { _integrated = i; }
 
+    bool valid() const { return _valid; }
+    void setValid(bool v) { _valid = v; }
+
+    bool oldStyle() const { return !this->_newStyle; }
 protected:
     mutable Matrix < ValueType > mat_;
     IndexArray _ids;
@@ -357,7 +378,6 @@ protected:
 
     RMatrix _abaTmp; // temp workspace
 
-
     //** new interface starts here **//
     // const Mesh * _mesh;
     Index _order;
@@ -373,6 +393,7 @@ protected:
 
     bool _newStyle;
     bool _div;
+    bool _valid;
     mutable bool _integrated;
 
 private:
@@ -394,29 +415,9 @@ template < > DLLEXPORT
 void ElementMatrix < double >::copyFrom(const ElementMatrix < double > & E,
                                         bool withMat);
 
-
-/*!Interface to function q=f(p, ent) with q, p = Pos() in R1, R2, R 3
-and ent assiated mesh entity.*/
-class DLLEXPORT FEAFunction {
-public:
-    FEAFunction(Index valueSize): _valueSize(valueSize){ }
-
-    virtual ~FEAFunction() { }
-
-    virtual Pos evalR3(const Pos & arg, const MeshEntity * ent=0) const{
-        log(Warning, "FEAFunction.eval should be overloaded.");
-        return Pos(0.0, 0.0, 0.0);
-    }
-    virtual double evalR1(const Pos & arg, const MeshEntity * ent=0) const{
-        log(Warning, "FEAFunction.eval should be overloaded.");
-        return 0.0;
-    }
-
-    Index valueSize() const { return _valueSize; }
-
-protected:
-    Index _valueSize;
-};
+template < > DLLEXPORT
+void ElementMatrix < double >::init(Index nCoeff, Index dofPerCoeff,
+                                    Index dofOffset);
 
 DLLEXPORT void dot(const ElementMatrix < double > & A,
                    const ElementMatrix < double > & B,
@@ -452,9 +453,129 @@ DLLEXPORT const ElementMatrix < double > mult(
 DLLEXPORT const ElementMatrix < double > mult(
                     const ElementMatrix < double > & A, const FEAFunction & b);
 
+
+DLLEXPORT void evaluateQuadraturePoints(const Mesh & mesh, Index order,
+                              const FEAFunction & f, RVector & ret);
+DLLEXPORT void evaluateQuadraturePoints(const Mesh & mesh, Index order,
+                              const FEAFunction & f,R3Vector & ret);
+DLLEXPORT void evaluateQuadraturePoints(const Mesh & mesh,Index order,
+                              const FEAFunction & f, std::vector< RMatrix > & ret);
+
+DLLEXPORT void createForceVector(const Mesh & mesh, Index order, RVector & ret,
+                       double a,
+                       Index nCoeff, Index dofOffset);
+DLLEXPORT void createForceVector(const Mesh & mesh, Index order, RVector & ret,
+                       const RVector & a,
+                       Index nCoeff, Index dofOffset);
+DLLEXPORT void createForceVector(const Mesh & mesh, Index order, RVector & ret,
+                       const R3Vector & a,
+                       Index nCoeff, Index dofOffset);
+DLLEXPORT void createForceVector(const Mesh & mesh, Index order, RVector & ret,
+                       const std::vector< RMatrix > & a,
+                       Index nCoeff, Index dofOffset);
+
+DLLEXPORT void createStiffnessMatrix(const Mesh & mesh, Index order,
+                                     RSparseMapMatrix & ret, double a,
+                                     Index nCoeff, Index dofOffset);
+DLLEXPORT void createStiffnessMatrix(const Mesh & mesh, Index order,
+                                     RSparseMapMatrix & ret, const RVector & a,
+                                     Index nCoeff, Index dofOffset);
+DLLEXPORT void createStiffnessMatrix(const Mesh & mesh, Index order,
+                                     RSparseMapMatrix & ret, const RMatrix & a,
+                                     Index nCoeff, Index dofOffset);
+DLLEXPORT void createStiffnessMatrix(const Mesh & mesh, Index order,
+                                     RSparseMapMatrix & ret,
+                                     const std::vector< RMatrix > & a,
+                                     Index nCoeff, Index dofOffset);
+
+DLLEXPORT void createMassMatrix(const Mesh & mesh, Index order,
+                                RSparseMapMatrix & ret, double a,
+                                Index nCoeff, Index dofOffset);
+DLLEXPORT void createMassMatrix(const Mesh & mesh, Index order,
+                                RSparseMapMatrix & ret, const RVector & a,
+                                Index nCoeff, Index dofOffset);
+DLLEXPORT void createMassMatrix(const Mesh & mesh, Index order,
+                                RSparseMapMatrix & ret, const RMatrix & a,
+                                Index nCoeff, Index dofOffset);
+DLLEXPORT void createMassMatrix(const Mesh & mesh, Index order,
+                                RSparseMapMatrix & ret,
+                                const std::vector< RMatrix > & a,
+                                Index nCoeff, Index dofOffset);
+
+// DLLEXPORT void evaluateQuadraturePoints(const Mesh & mesh,
+//                                         Index order,
+//                                         const FEAFunction & f,
+//                                         RSparseMapMatrix & ret);
+
 // /*! Implementme */
-// DLLEXPORT RVector forceVector(const Mesh & mesh, const FEAFunction & b,
-//                               Index order);
+// DLLEXPORT void createForceVector(const Mesh & mesh,
+//                                  Index order, RVector & ret,
+//                                  const RSparseMapMatrix & c,
+//                                  double a=0.0, const RVector & b=RVector(0),
+//                                  Index nCoeff=1, Index dofOffset=0);
+// DLLEXPORT void createForceVector(const Mesh & mesh,
+//                                  Index order, RVector & ret,
+//                                  double a=0.0, const RVector & b=RVector(0),
+//                                  Index nCoeff=1, Index dofOffset=0);
+
+// /*! Implementme */
+// DLLEXPORT void createStiffnessMatrix(const Mesh & mesh,
+//                                      Index order, RSparseMapMatrix & ret,
+//                                      const RSparseMapMatrix & c,
+//                                      double a=0.0, const RVector & b=RVector(0),
+//                                      Index nCoeff=1, Index dofOffset=0
+//                                     );
+// DLLEXPORT void createStiffnessMatrix(const Mesh & mesh,
+//                                      Index order, RSparseMapMatrix & ret,
+//                                      double a=0.0, const RVector & b=RVector(0),
+//                                      Index nCoeff=1, Index dofOffset=0
+//                                     );
+
+// /*! Implementme */
+// DLLEXPORT void createMassMatrix(const Mesh & mesh,
+//                                 Index order, RSparseMapMatrix & ret,
+//                                 const RSparseMapMatrix & c,
+//                                 double a=0.0, const RVector & b=RVector(0),
+//                                 Index nCoeff=1, Index dofOffset=0);
+// DLLEXPORT void createMassMatrix(const Mesh & mesh,
+//                                 Index order, RSparseMapMatrix & ret,
+//                                 double a=0.0, const RVector & b=RVector(0),
+//                                 Index nCoeff=1, Index dofOffset=0);
+
+// /*! Implementme */
+// DLLEXPORT void createAdvectionMatrix(const Mesh & mesh,
+//                                      Index order, RSparseMapMatrix & ret,
+//                                      const RSparseMapMatrix & c,
+//                                     double a=0.0, const RVector & b=RVector(0),
+//                                     Index nCoeff=1, Index dofOffset=0);
+// DLLEXPORT void createAdvectionMatrix(const Mesh & mesh,
+//                                      Index order, RSparseMapMatrix & ret,
+//                                      double a=0.0, const RVector & b=RVector(0),
+//                                      Index nCoeff=1, Index dofOffset=0);
+
+
+/*!Interface to function q=f(p, ent) with q, p = Pos() in R1, R2, R 3
+and ent assiated mesh entity.*/
+class DLLEXPORT FEAFunction {
+public:
+    FEAFunction(Index valueSize): _valueSize(valueSize){ }
+
+    virtual ~FEAFunction() { }
+
+    virtual Pos evalR3(const Pos & arg, const MeshEntity * ent=0) const{
+        log(Warning, "FEAFunction.eval should be overloaded.");
+        return Pos(0.0, 0.0, 0.0);
+    }
+    virtual double evalR1(const Pos & arg, const MeshEntity * ent=0) const{
+        log(Warning, "FEAFunction.eval should be overloaded.");
+        return 0.0;
+    }
+
+    Index valueSize() const { return _valueSize; }
+
+protected:
+    Index _valueSize;
+};
 
 class DLLEXPORT ElementMatrixMap {
 public:

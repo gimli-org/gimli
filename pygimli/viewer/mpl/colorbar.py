@@ -122,12 +122,12 @@ def findAndMaskBestClim(dataIn, cMin=None, cMax=None, dropColLimitsPerc=5,
 
     xHist = np.histogram(data, bins=100)[1]
 
-    if not cMin:
+    if cMin is None:
         cMin = xHist[dropColLimitsPerc]
         if logScale:
             cMin = pow(10.0, cMin)
 
-    if not cMax:
+    if cMax is None:
         cMax = xHist[100 - dropColLimitsPerc]
         if logScale:
             cMax = pow(10.0, cMax)
@@ -281,6 +281,7 @@ def createColorBar(gci, orientation='horizontal', size=0.2, pad=None,
 
     if hasattr(ax, '__cBar__'):
         cbar = ax.__cBar__
+        pg._y('update', kwargs)
         updateColorBar(cbar, gci, **kwargs)
     else:
         divider = make_axes_locatable(ax)
@@ -396,7 +397,6 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5, levels=None):
             #if cMax < cMin:
             cbarLevels = np.linspace(cMin, cMax, nLevs)
 
-    #pg._g(cbarLevels)
     # FIXME: [10.1, 10.2, 10.3] mapped to [10 10 10]
 
     cbarLevelsString = []
@@ -447,9 +447,9 @@ def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=None,
     if mappable.get_cmap() is not None:
         mappable.get_cmap().set_bad([1.0, 1.0, 1.0, 0.0])
 
-    if not cMin:
+    if cMin is None:
         cMin = data.min()
-    if not cMax:
+    if cMax is None:
         cMax = data.max()
 
     oldLog = None

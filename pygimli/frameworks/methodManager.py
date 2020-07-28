@@ -654,11 +654,7 @@ class MeshMethodManager(MethodManager):
         """Give the model parameter regarding the parameter mesh."""
         if model is None:
             model = self.fw.model
-
-        if len(model) == self.fw.parameterCount:
-            return model
-        else:
-            self.fop.paraModel(model)
+        return self.fop.paraModel(model)
 
     def createMesh(self, data=None, **kwargs):
         """API, implement in derived classes."""
@@ -742,8 +738,6 @@ class MeshMethodManager(MethodManager):
         limits = kwargs.pop('limits', None)
         if limits is not None:
             self.fop.setRegionProperties('*', limits=limits)
-
-        # pg._y(pg.pf(self.fop._regionProperties))
 
         self.preRun(**kwargs)
         self.fw.run(dataVals, errorVals, **kwargs)

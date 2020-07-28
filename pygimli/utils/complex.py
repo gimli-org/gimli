@@ -65,9 +65,9 @@ def toPolar(z):
 
 def squeezeComplex(z, polar=False, conj=False):
     """Squeeze complex valued array into [real, imag] or [amp, phase(rad)]"""
-    if isinstance(z, pg.matrix.CSparseMapMatrix) or \
-       isinstance(z, pg.matrix.CSparseMatrix) or \
-       isinstance(z, pg.matrix.CMatrix):
+    if isinstance(z, (pg.matrix.CSparseMapMatrix,
+                      pg.matrix.CSparseMatrix,
+                      pg.matrix.CMatrix)):
         return toRealMatrix(z, conj=conj)
 
     if isComplex(z):
@@ -98,12 +98,12 @@ def toRealMatrix(C, conj=False):
 
     """
     R = pg.matrix.BlockMatrix()
-    # we store the mats to keep the GC happy after leaving the scope
-    Cr = pg.math.real(C)
-    Ci = pg.math.imag(C)
+    Cr = pg.math.real(A=C)
+    Ci = pg.math.imag(A=C)
 
     rId = R.addMatrix(Cr)
     iId = R.addMatrix(Ci)
+    # we store the mats in R to keep the GC happy after leaving the scope
 
     R.addMatrixEntry(rId, 0,         0,         scale=1.0)
     R.addMatrixEntry(rId, Cr.rows(), Cr.cols(), scale=1.0)

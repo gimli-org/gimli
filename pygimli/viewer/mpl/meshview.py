@@ -751,7 +751,7 @@ def createTriangles(mesh):
     """Generate triangle objects for later drawing.
 
     Creates triangle for each 2D triangle cell or 3D boundary.
-    Quads will be split into two triangles.
+    Quads will be split into two triangles. Result will be cached into mesh._triData.
 
     Parameters
     ----------
@@ -771,6 +771,10 @@ def createTriangles(mesh):
     dataIdx : list of int
         List of indices for a data array
     """
+    if hasattr(mesh, '_triData'):
+        if hash(mesh) == mesh._triData[0]:
+            return mesh._triData[1:]
+
     x = pg.x(mesh)
     y = pg.y(mesh)
     z = pg.z(mesh)
@@ -796,6 +800,8 @@ def createTriangles(mesh):
         if c.shape().nodeCount() == 4:
             triangles.append([c.node(0).id(), c.node(2).id(), c.node(3).id()])
             dataIdx.append(c.id())
+
+    mesh._triData = [hash(mesh), x, y, triangles, z, dataIdx]
 
     return x, y, triangles, z, dataIdx
 
@@ -862,7 +868,6 @@ def drawField(ax, mesh, data=None, levels=None, nLevs=5,
     <matplotlib.tri.tricontour.TriContourSet ...>
     """
     x, y, triangles, _, dataIndex = createTriangles(mesh)
-
     if len(data) == mesh.cellCount():
         z = data[dataIndex]
     else:

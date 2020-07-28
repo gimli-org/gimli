@@ -62,8 +62,10 @@ pg.setThreadCount(2)
 pg.log(pg.core.Info, "core log ")
 pg.log(pg.core.Warning, "core log ")
 pg.log(pg.core.Error, "core log ")
-pg.log(pg.core.Critical, "core log ")
-
+try:
+    pg.log(pg.core.Critical, "core log ")
+except BaseException as e:
+    print("cought core exception:", e)
 #pg.exception("Exception")
 
 def testMethod(**kwargs):

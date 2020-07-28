@@ -2,6 +2,7 @@
 """Generic mesh visualization tools."""
 
 import os
+from pygimli.viewer.mpl.colorbar import setMappableData
 import sys
 import time
 import traceback
@@ -14,11 +15,11 @@ from .. core.logger import renameKwarg
 
 try:
     import pygimli as pg
-    from .mpl import drawMesh, drawModel, drawField
     from .showmatrix import showMatrix
-    from .mpl import drawSensors
+    from .mpl import drawMesh, drawModel, drawField, drawSensors, drawStreams
+    from .mpl import addCoverageAlpha
+    from .mpl import updateAxes
     from .mpl import createColorBar, updateColorBar
-    from .mpl import drawStreams, addCoverageAlpha
     from .mpl import CellBrowser
     from .mpl.colorbar import cmapFromName
 except ImportError as e:
@@ -253,10 +254,8 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
     renameKwarg('cmap', 'cMap', kwargs)
 
     cMap = kwargs.pop('cMap', 'viridis')
-    replaceData = kwargs.pop('replaceData', False)
-
-    nCols = None
     cBarOrientation = kwargs.pop('orientation', 'horizontal')
+    replaceData = kwargs.pop('replaceData', False)
 
     if ax is None:
         ax = plt.subplots()[1]
@@ -335,37 +334,48 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
                 colorBar = True
 
             try:
-                if len(data) == mesh.cellCount():
-                    kwargs['nCols'] = kwargs.pop('nCols', 256)
-                    if label is None:
-                        label = ""
+                if label is None:
+                    label = ""
 
-                    if replaceData and hasattr(mesh, gci):
-                        gci = mesh.gci
-                    else:
-                        gci = drawModel(ax, mesh, data, **kwargs)
-                        mesh.gci = gci
+                if replaceData and hasattr(mesh, 'gci') and ax in mesh.gci:
+                    gci = mesh.gci[ax]
 
-                    if showBoundary is None:
-                        showBoundary = True
-
-                elif len(data) == mesh.nodeCount():
-                    kwargs['nLevs'] = kwargs.pop('nLevs', 5)
-                    kwargs['nCols'] = kwargs.pop('nCols', kwargs['nLevs']-1)
-                    if label is None:
-                        label = ""
-
-                    if replaceData and hasattr(mesh, gci):
-                        gci = mesh.gci
-                    else:
+                    if 'TriContourSet' in str(type(gci)):
+                        ax.clear()
+                        kwargs['nLevs'] = kwargs.pop('nLevs', 5)
+                        kwargs['nCols'] = kwargs.pop('nCols', kwargs['nLevs']-1)
                         gci = drawField(ax, mesh, data, **kwargs)
-                        mesh.gci = gci
+                        updateAxes(ax, force=True)
+                    else:
+                        setMappableData(gci, data,
+                                        cMin=kwargs.get('cMin', None),
+                                        cMax=kwargs.get('cMax', None),)
+                        updateAxes(ax, force=True)
+                        return ax, gci.colorbar
                 else:
-                    pg.error("Data size invalid")
-                    print("Data: ", len(data), min(data), max(data), pg.core.haveInfNaN(data))
-                    print("Mesh: ", mesh)
-                    validData = False
-                    drawMesh(ax, mesh)
+
+                    if len(data) == mesh.cellCount():
+                        kwargs['nCols'] = kwargs.pop('nCols', 256)
+                        gci = drawModel(ax, mesh, data, **kwargs)
+
+                        if showBoundary is None:
+                            showBoundary = True
+
+                    elif len(data) == mesh.nodeCount():
+                        kwargs['nLevs'] = kwargs.pop('nLevs', 5)
+                        kwargs['nCols'] = kwargs.pop('nCols', kwargs['nLevs']-1)
+                        gci = drawField(ax, mesh, data, **kwargs)
+                    else:
+                        pg.error("Data size invalid")
+                        print("Data: ", len(data), min(data), max(data), pg.core.haveInfNaN(data))
+                        print("Mesh: ", mesh)
+                        validData = False
+                        drawMesh(ax, mesh)
+
+                ### Cache mesh and scalarmappble to make replaceData work
+                if not hasattr(mesh, 'gci'):
+                    mesh.gci = {}
+                mesh.gci[ax] = gci
 
                 if cMap is not None and gci is not None:
                     gci.set_cmap(cmapFromName(cMap))
@@ -373,6 +383,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
 
             except BaseException as e:
                 pg.error("Exception occurred: ", e)
+                exit()
 
     if mesh.cellCount() == 0:
         showMesh = False

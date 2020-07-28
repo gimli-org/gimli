@@ -2,7 +2,9 @@
 """
 Import and extensions of the core Mesh class.
 """
+import numpy as np
 
+from math import ceil
 from ._pygimli_ import (cat, HexahedronShape, Line,
                         Mesh, MeshEntity, Node, Boundary,
                         PolygonFace, TetrahedronShape, TriangleFace)
@@ -64,8 +66,26 @@ Node.__str__ = __Node_str
 
 
 def __Mesh_setVal(self, key, val):
-    """Index access to the mesh data"""
-    self.addData(key, val)
+    """Index access to the mesh data.
+
+    Multiple arrays via matrix will be saved too.
+    """
+    print(key, len(val))
+    if isinstance(val, list) or val.ndim == 2:
+
+        maxDigit = ceil(np.log10(len(val)))
+
+        for i, v in enumerate(val):
+            print(i, maxDigit, '{}_{}'.format(key, str(i).zfill(maxDigit)))
+
+            self.addData('{}_{}'.format(key, str(i).zfill(maxDigit)),
+                         np.asarray(v))
+    else:
+        self.addData(key, val)
+
+    #print('keys', self.dataMap.keys())
+
+
 Mesh.__setitem__ = __Mesh_setVal
 
 
