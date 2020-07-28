@@ -122,8 +122,6 @@ def __BlockMatrix_addMatrix_happy_GC__(self, M, row=None, col=None,
     transpose: bool [False]
         Transpose the matrix.
     """
-    from pygimli.utils import sparseMatrix2Array
-
     if M.ndim == 1:
         if transpose is False:
             _M = SparseMapMatrix(list(range(len(M))), [0]*len(M), M)

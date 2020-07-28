@@ -256,6 +256,7 @@ class MethodManager(object):
         pg.critical('API, overwrite in derived classes', fileName)
 
     def estimateError(self, data, errLevel=0.01, absError=None):
+        # TODO check, rel or abs in return.
         """Estimate data error.
 
         Create an error of estimated measurement error.
@@ -263,18 +264,16 @@ class MethodManager(object):
         More sophisticated error estimation should be done
         in specialized derived classes.
 
-        TODO check, rel or abs in return.
-
         Parameters
         ----------
         data : iterable
             Data values for which the errors should be estimated.
 
         errLevel : float (0.01)
-            Error level in percent/100.
+            Error level in percent/100 (i.e., 3% = 0.03).
 
-        absoluteError : float (None)
-            absolute error in the unit of the data
+        absError : float (None)
+            Absolute error in the unit of the data.
 
         Returns
         -------
