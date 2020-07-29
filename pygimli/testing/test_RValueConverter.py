@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import sys
 import unittest
 import numpy as np
 import pygimli as pg
@@ -88,6 +89,10 @@ class TestRVectorMethods(unittest.TestCase):
         """Implemented in custom_rvalue.cpp."""
         x = np.array(range(-10, 10))
         a = pg.IVector(x)
+        # pg.core.setDeepDebug(1)
+        # print(a)
+        # pg.core.setDeepDebug(0)
+        # sys.exit()
         self.assertEqual(a.size(), len(x))
         self.assertEqual(pg.sum(a), sum(x))
 
@@ -111,7 +116,7 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(a.size(), len(x))
         self.assertEqual(pg.sum(a), sum(x))
         self.assertEqual(pg.sum(x), sum(x))
-        
+
     def test_NumpyToBVector(self):
         """Implemented in custom_rvalue.cpp."""
         x = np.array(range(-10, 10), dtype=float)
@@ -210,7 +215,7 @@ class TestRVectorMethods(unittest.TestCase):
         a = np.array(v)
         self.assertEqual(type(a), np.ndarray)
         self.assertEqual(len(a), 10)
-        
+
     def test_CVectorToNumpy(self):
         """Implemented through hand_made_wrapper.py"""
         # check ob wirklich from array genommen wird!

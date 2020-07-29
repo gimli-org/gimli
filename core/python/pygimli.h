@@ -596,6 +596,11 @@ namespace pyplusplus{ namespace aliases{
 
     typedef std::map< GIMLI::Index, GIMLI::GraphDistInfo > NodeDistMap;
 
+    // std::map<long long, double>
+    // std::map<long long, long long>
+    // std::map<unsigned long long, unsigned long long>
+    // std::set<unsigned long long
+
     #ifdef _WIN64
         typedef std::map<std::pair<unsigned long long, unsigned long long>, double > stdMapLL_LL_D;
         typedef std::map<std::pair<unsigned long long, unsigned long long>, std::complex< double > > stdMapLL_LL_C;
