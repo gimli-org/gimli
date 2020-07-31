@@ -131,6 +131,37 @@ template <> void SparseMapMatrix< double, Index >::
     }
 }
 template <> void SparseMapMatrix< double, Index >::
+    add(const ElementMatrix < double > & A, const Pos & scale){
+    A.integrate();
+    THROW_TO_IMPL
+    // double tol = 1e-25;
+    // for (Index i = 0, imax = A.rows(); i < imax; i++){
+    //     for (Index j = 0, jmax = A.mat().cols(); j < jmax; j++){
+    //         double v = A.getVal(i, j) * scale;
+    //             this->addVal(A.rowIDs()[i], A.colIDs()[j], v);
+    //         if (::fabs(v) > tol){
+    //             // __MS(A.rowIDs()[i] << " " << A.colIDs()[j] << " " << v * scale)
+    //         }
+    //     }
+    // }
+}
+template <> void SparseMapMatrix< double, Index >::
+    add(const ElementMatrix < double > & A, const RMatrix & scale){
+    A.integrate();
+    THROW_TO_IMPL
+    // double tol = 1e-25;
+    // for (Index i = 0, imax = A.rows(); i < imax; i++){
+    //     for (Index j = 0, jmax = A.mat().cols(); j < jmax; j++){
+    //         double v = A.getVal(i, j) * scale;
+    //             this->addVal(A.rowIDs()[i], A.colIDs()[j], v);
+    //         if (::fabs(v) > tol){
+    //             // __MS(A.rowIDs()[i] << " " << A.colIDs()[j] << " " << v * scale)
+    //         }
+    //     }
+    // }
+}
+
+template <> void SparseMapMatrix< double, Index >::
     add(const ElementMatrix < double > & A, const Vector < double > & scale){
     A.integrate();
     __MS("inuse?")
@@ -144,6 +175,39 @@ template <> void SparseMapMatrix< double, Index >::
         }
     }
 }
+template <> void SparseMapMatrix< Complex, Index >::
+    add(const ElementMatrix < double > & A, Complex scale){
+    A.integrate();
+
+    for (Index i = 0, imax = A.rows(); i < imax; i++){
+        for (Index j = 0, jmax = A.mat().cols(); j < jmax; j++){
+            double v = A.getVal(i, j);
+            (*this)[A.rowIDs()[i]][A.colIDs()[j]] += v * scale;
+        }
+    }
+}
+template <> void SparseMapMatrix< Complex, Index >::
+    add(const ElementMatrix < double > & A, const Vector < Complex > & scale){
+    A.integrate();
+    __MS("inuse?")
+    for (Index i = 0, imax = A.rows(); i < imax; i++){
+        for (Index j = 0, jmax = A.mat().cols(); j < jmax; j++){
+            double v = A.getVal(i, j);
+            (*this)[A.rowIDs()[i]][A.colIDs()[j]] += v * scale[i];
+        }
+    }
+}
+template <> void SparseMapMatrix< Complex, Index >::
+    add(const ElementMatrix < double > & A, const CMatrix & scale){
+    A.integrate();
+    THROW_TO_IMPL
+}
+template <> void SparseMapMatrix< Complex, Index >::
+    add(const ElementMatrix < double > & A, const Pos & scale){
+    A.integrate();
+    THROW_TO_IMPL
+}
+
 template <> void SparseMapMatrix< double, Index >::
     addToCol(Index id, const ElementMatrix < double > & A, double scale, bool isDiag){
     A.integrate();
@@ -170,28 +234,6 @@ template <> void SparseMapMatrix< double, Index >::
 }
 
 template <> void SparseMapMatrix< Complex, Index >::
-    add(const ElementMatrix < double > & A, Complex scale){
-    A.integrate();
-
-    for (Index i = 0, imax = A.rows(); i < imax; i++){
-        for (Index j = 0, jmax = A.mat().cols(); j < jmax; j++){
-            double v = A.getVal(i, j);
-            (*this)[A.rowIDs()[i]][A.colIDs()[j]] += v * scale;
-        }
-    }
-}
-template <> void SparseMapMatrix< Complex, Index >::
-    add(const ElementMatrix < double > & A, const Vector < Complex > & scale){
-    A.integrate();
-    __MS("inuse?")
-    for (Index i = 0, imax = A.rows(); i < imax; i++){
-        for (Index j = 0, jmax = A.mat().cols(); j < jmax; j++){
-            double v = A.getVal(i, j);
-            (*this)[A.rowIDs()[i]][A.colIDs()[j]] += v * scale[i];
-        }
-    }
-}
-template <> void SparseMapMatrix< Complex, Index >::
     addToCol(Index id, const ElementMatrix < double > & A, Complex scale, bool isDiag){
         A.integrate();
 THROW_TO_IMPL
@@ -202,6 +244,36 @@ template <> void SparseMapMatrix< Complex, Index >::
 THROW_TO_IMPL
 }
 
+template <> void SparseMatrix< double >::add(const ElementMatrix< double > & A,
+                                            double scale){
+    if (!valid_) SPARSE_NOT_VALID;
+    for (Index i = 0, imax = A.size(); i < imax; i++){
+        for (Index j = 0, jmax = A.size(); j < jmax; j++){
+            addVal(A.idx(i), A.idx(j), scale * A.getVal(i, j));
+        }
+    }
+}
+template <> void SparseMatrix< double >::add(const ElementMatrix< double > & A,
+                                            const Pos & scale){
+    THROW_TO_IMPL
+}
+template <> void SparseMatrix< double >::add(const ElementMatrix< double > & A,
+                                            const Matrix < double > & scale){
+    THROW_TO_IMPL
+}
+
+template <> void SparseMatrix< Complex >::
+    add(const ElementMatrix < double > & A, Complex scale){
+    THROW_TO_IMPL
+}
+template <> void SparseMatrix< Complex >::
+    add(const ElementMatrix < double > & A, const Pos & scale){
+    THROW_TO_IMPL
+}
+template <> void SparseMatrix< Complex >::
+    add(const ElementMatrix < double > & A, const CMatrix & scale){
+    THROW_TO_IMPL
+}
 
 } // namespace GIMLI{
 

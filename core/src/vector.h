@@ -558,11 +558,14 @@ public:
     /*! Add Values from an ElementMatrix.*/
     void add(const ElementMatrix < double > & A);
 
-    /*! Add Values from an ElementMatrix. Optional scale with a scalar. */
+    /*! Add Values from an ElementMatrix. Optional scale with constant scalar. */
     void add(const ElementMatrix < double > & A, const double & scale);
 
-    /*! Add Values from an ElementMatrix. Optional scale RVector3. */
-    void add(const ElementMatrix < double > & A, const RVector3 & scale);
+    /*! Add Values from an ElementMatrix. Optional scale constant Pos. */
+    void add(const ElementMatrix < double > & A, const Pos & scale);
+
+    /*! Add Values from an ElementMatrix. Optional scale constant RMatrix. */
+    void add(const ElementMatrix < double > & A, const RMatrix & scale);
 
     /*! DEPRECATED Bad design (Per node values need to be interpolated to quadrature points first.)*/
     void add(const ElementMatrix < double > & A,
@@ -941,33 +944,33 @@ protected:
     Index singleCalcCount_;
 };
 
+template <> DLLEXPORT void Vector< Pos >::clean();
+
 // /*! Implement specialized type traits in vector.cpp */
 template <> DLLEXPORT void Vector<double>::add(
                         const ElementMatrix < double >& A);
 template <> DLLEXPORT void Vector<double>::add(
                         const ElementMatrix < double >& A, const double & a);
 template <> DLLEXPORT void Vector<double>::add(
-                        const ElementMatrix < double >& A, const RVector3 & a);
+                        const ElementMatrix < double >& A, const Pos & a);
+template <> DLLEXPORT void Vector<double>::add(
+                        const ElementMatrix < double >& A, const RMatrix & a);
+
+template< typename ValueType > void Vector< ValueType >::add(
+    const ElementMatrix < double >& A){ THROW_TO_IMPL}
+template< typename ValueType > void Vector< ValueType >::add(
+    const ElementMatrix < double >& A, const double & a){THROW_TO_IMPL}
+template< typename ValueType > void Vector< ValueType >::add(
+    const ElementMatrix < double >& A, const Pos & a){THROW_TO_IMPL}
+template< typename ValueType > void Vector< ValueType >::add(
+    const ElementMatrix < double >& A, const RMatrix & a){THROW_TO_IMPL}
 
 // removeme in V1.2, 20200727
 template <> DLLEXPORT void Vector<double>::add(
-                        const ElementMatrix < double > & A, const RVector & a);
-
-template <> DLLEXPORT void Vector< RVector3 >::clean();
-
-template< typename ValueType >
-void Vector< ValueType >::add(const ElementMatrix < double >& A){
-    THROW_TO_IMPL}
-template< typename ValueType >
-void Vector< ValueType >::add(const ElementMatrix < double >& A,
-    const double & a){THROW_TO_IMPL}
-template< typename ValueType >
-void Vector< ValueType >::add(const ElementMatrix < double >& A,
-    const RVector3 & a){THROW_TO_IMPL}
-template< typename ValueType >
+    const ElementMatrix < double > & A, const RVector & a);
 // removeme in V1.2, 20200727
-void Vector< ValueType >::add(const ElementMatrix < double >& A,
-    const Vector< double> & a){THROW_TO_IMPL}
+template< typename ValueType > void Vector< ValueType >::add(
+    const ElementMatrix < double >& A, const Vector< double> & a){THROW_TO_IMPL}
 
 template< class ValueType, class Iter > class AssignResult{
 public:

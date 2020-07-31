@@ -47,7 +47,7 @@ std::ostream & operator << (std::ostream & str,
 template < > DLLEXPORT ElementMatrix < double > &
 ElementMatrix < double >::u(const MeshEntity & ent,
                             const RVector & w,
-                            const R3Vector & x,
+                            const PosVector & x,
                             bool verbose){
 
     uint nVerts = ent.nodeCount();
@@ -94,7 +94,7 @@ ElementMatrix < double >::u(const MeshEntity & ent,
 template < >
 DLLEXPORT ElementMatrix < double > & ElementMatrix < double >::u2(const MeshEntity & ent,
                                                         const RVector & w,
-                                                        const R3Vector & x,
+                                                        const PosVector & x,
                                                         bool verbose){
 
     uint nVerts = ent.nodeCount();
@@ -139,7 +139,7 @@ template <> DLLEXPORT
 ElementMatrix < double > & ElementMatrix < double >::dudi(
                                                         const MeshEntity & ent,
                                                         const RVector & w,
-                                                        const R3Vector & x,
+                                                        const PosVector & x,
                                                         Index dim,
                                                         bool verbose){
 
@@ -186,7 +186,7 @@ ElementMatrix < double > & ElementMatrix < double >::dudi(
 template < >
 DLLEXPORT ElementMatrix < double > & ElementMatrix < double >::ux2(const MeshEntity & ent,
                                                          const RVector & w,
-                                                         const R3Vector & x,
+                                                         const PosVector & x,
                                                          bool verbose){
 
     uint nVerts = ent.nodeCount();
@@ -221,7 +221,7 @@ DLLEXPORT ElementMatrix < double > & ElementMatrix < double >::ux2(const MeshEnt
 template < > ElementMatrix < double > &
 DLLEXPORT ElementMatrix < double >::ux2uy2(const MeshEntity & ent,
                                  const RVector & w,
-                                 const R3Vector & x,
+                                 const PosVector & x,
                                  bool verbose){
 
 //     __MS(w)
@@ -282,7 +282,7 @@ DLLEXPORT ElementMatrix < double >::ux2uy2(const MeshEntity & ent,
 template < > DLLEXPORT ElementMatrix < double > &
 ElementMatrix < double >::ux2uy2uz2(const MeshEntity & ent,
                                     const RVector & w,
-                                    const R3Vector & x,
+                                    const PosVector & x,
                                     bool verbose){
 
     Index nVerts = ent.nodeCount();
@@ -356,7 +356,7 @@ ElementMatrix < double >::ux2uy2uz2(const MeshEntity & ent,
 template < class ValueType >
 void ElementMatrix < ValueType >::getWeightsAndPoints(const MeshEntity & ent,
                                                       const RVector * &w,
-                                                      const R3Vector * &x, int order){
+                                                      const PosVector * &x, int order){
     switch (ent.rtti()) {
         case MESH_EDGE_CELL_RTTI:
         case MESH_EDGE3_CELL_RTTI: {
@@ -412,13 +412,13 @@ void ElementMatrix < ValueType >::getWeightsAndPoints(const MeshEntity & ent,
 template void ElementMatrix < double >::getWeightsAndPoints(
                                         const MeshEntity & ent,
                                         const RVector * &w,
-                                        const R3Vector * &x, int order);
+                                        const PosVector * &x, int order);
 
 template < > DLLEXPORT
 void ElementMatrix < double >::fillGradientBase(
                                     const MeshEntity & ent,
                                     const RVector & w,
-                                    const R3Vector & x,
+                                    const PosVector & x,
                                     Index nC,
                                     bool voigtNotation){
 
@@ -525,7 +525,7 @@ void ElementMatrix < double >::fillGradientBase(
 template < > DLLEXPORT
 ElementMatrix < double > & ElementMatrix < double >::gradU(const MeshEntity & ent,
                                                            const RVector & w,
-                                                           const R3Vector & x,
+                                                           const PosVector & x,
                                                            Index nC,
                                                            bool voigtNotation){
     this->fillIds(ent, nC); // also cleans
@@ -552,7 +552,7 @@ ElementMatrix < double > & ElementMatrix < double >::gradU(const Cell & cell,
                                  Index nC,
                                  bool voigtNotation){
     const RVector * w = 0;
-    const R3Vector * x = 0;
+    const PosVector * x = 0;
     this->getWeightsAndPoints(cell, w, x, 1);
     return this->gradU(cell, *w, *x, nC, voigtNotation);
 }
@@ -562,7 +562,7 @@ RVector ElementMatrix < double >::stress(const MeshEntity & ent,
                                          const RMatrix & C,
                                          const RVector & u, bool voigtNotation){
     const RVector * w = 0;
-    const R3Vector * x = 0;
+    const PosVector * x = 0;
 
     this->getWeightsAndPoints(ent, w, x, 1);
     this->fillIds(ent, C.size()); // also cleans
@@ -587,7 +587,7 @@ template < > DLLEXPORT
 ElementMatrix < double > & ElementMatrix < double >::gradU2(const MeshEntity & ent,
                                                             const Matrix< double > & C,
                                                             const RVector & w,
-                                                            const R3Vector & x,
+                                                            const PosVector & x,
                                                             bool voigtNotation){
     this->fillIds(ent, C.size()); // also cleans
     this->fillGradientBase(ent, w, x,
@@ -621,7 +621,7 @@ ElementMatrix < double > & ElementMatrix < double >::gradU2(const Cell & cell,
                                                     bool voigtNotation){
 
     const RVector * w = 0;
-    const R3Vector * x = 0;
+    const PosVector * x = 0;
     this->getWeightsAndPoints(cell, w, x, 1);
     return this->gradU2(cell, C, *w, *x, voigtNotation);
 }
@@ -1314,7 +1314,7 @@ ElementMatrix < double > & ElementMatrix < double >::pot(
     this->_w = &IntegrationRules::instance().weights(ent.shape(), this->_order);
     this->_x = &IntegrationRules::instance().abscissa(ent.shape(), this->_order);
 
-    const R3Vector &x = *this->_x;
+    const PosVector &x = *this->_x;
     const RVector &w = *this->_w;
 
     Index nRules(_x->size());
@@ -1363,7 +1363,11 @@ ElementMatrix < double > & ElementMatrix < double >::pot(
                         const MeshEntity & ent, Index order, bool sum,
                         Index nCoeff, Index dof, Index dofOffset){
 
-    if (!this->valid() || this->order() != order || this->_ent != &ent){
+    if (!this->valid() ||
+        this->order() != order ||
+        this->_ent != &ent ||
+        this->_nCoeff != nCoeff){
+
         this->init(nCoeff, dof, dofOffset);
         this->pot(ent, order, sum);
     }
@@ -1376,6 +1380,7 @@ ElementMatrix < double > & ElementMatrix < double >::grad(
                                     const MeshEntity & ent, Index order,
                                     bool elastic, bool sum, bool div,
                                     Index nCoeff, Index dof, Index dofOffset){
+THROW_TO_IMPL
 return *this;
 
 }
@@ -1398,7 +1403,7 @@ ElementMatrix < double > & ElementMatrix < double >::grad(
     this->_w = &IntegrationRules::instance().weights(ent.shape(), this->_order);
     this->_x = &IntegrationRules::instance().abscissa(ent.shape(), this->_order);
 
-    const R3Vector &x = *this->_x;
+    const PosVector &x = *this->_x;
     const RVector &w = *this->_w;
 
     Index nRules(_x->size());
@@ -1601,6 +1606,12 @@ void dot(const ElementMatrix < double > & A,
     }
     C.integrated(true);
 }
+void dot(const ElementMatrix < double > & A,
+         const ElementMatrix < double > & B,
+         const Pos & c,
+         ElementMatrix < double > & C){
+THROW_TO_IMPL
+}
 
 void dot(const ElementMatrix < double > & A,
          const ElementMatrix < double > & B,
@@ -1642,33 +1653,112 @@ THROW_TO_IMPL
     //     }
 }
 
-const ElementMatrix < double > dot(const ElementMatrix < double > & A,
-                                   const ElementMatrix < double > & B,
-                                   double c){
-    ElementMatrix < double > C;
-    dot(A, B, c, C);
-    return C;
+void evaluateQuadraturePoints(const Mesh & mesh, Index order,
+                              const FEAFunction & f,
+                              RVector & ret){
+
+    ret.clear();
+    const PosVector *x;
+    for (auto &cell: mesh.cells()){
+        x = &IntegrationRules::instance().abscissa(cell->shape(), order);
+        for (Index i = 0; i < x->size(); i ++){
+
+            if (f.valueSize() == 1){
+                ret.push_back(f.evalR1(cell->shape().xyz((*x)[i]), cell));
+            } else {
+                log(Critical, "expecting FEAFunction with valueSize==1.",
+                    f.valueSize());
+            }
+        }
+    }
 }
-const ElementMatrix < double > dot(const ElementMatrix < double > & A,
-                                   const ElementMatrix < double > & B,
-                                   const RMatrix & c){
-    ElementMatrix < double > C;
-    dot(A, B, c, C);
-    return C;
+void evaluateQuadraturePoints(const Mesh & mesh, Index order,
+                              const FEAFunction & f,
+                              PosVector & ret){
+    ret.clear();
+    const PosVector *x;
+    for (auto &cell: mesh.cells()){
+        x = &IntegrationRules::instance().abscissa(cell->shape(), order);
+        for (Index i = 0; i < x->size(); i ++){
+
+            if (f.valueSize() > 1){
+                ret.push_back(f.evalR3(cell->shape().xyz((*x)[i]), cell));
+            } else {
+                log(Critical, "expecting FEAFunction with valueSize==2 or 3",
+                    f.valueSize());
+            }
+        }
+    }
 }
-const ElementMatrix < double > dot(const ElementMatrix < double > & A,
-                                   const ElementMatrix < double > & B,
-                                   const FEAFunction & c){
-    ElementMatrix < double > C;
-    dot(A, B, c, C);
-    return C;
+
+void evaluateQuadraturePoints(const Mesh & mesh, Index order,
+                              const FEAFunction & f,
+                              std::vector< RMatrix > & ret){
+    THROW_TO_IMPL
 }
+
+void evaluateQuadraturePoints(const MeshEntity & ent, const PosVector & x,
+                              const FEAFunction & f, RVector & ret){
+    ret.resize(x.size());
+    for (Index i = 0; i < x.size(); i ++){
+        ret[i] = f.evalR1(ent.shape().xyz(x[i]), &ent);
+    }
+}
+
+void evaluateQuadraturePoints(const MeshEntity & ent, const PosVector & x,
+                              const FEAFunction & f, PosVector & ret){
+    ret.resize(x.size());
+    for (Index i = 0; i < x.size(); i ++){
+        ret[i] = f.evalR3(ent.shape().xyz(x[i]), &ent);
+    }
+}
+
+void evaluateQuadraturePoints(const MeshEntity & ent, const PosVector & x,
+                              const FEAFunction & f,
+                              std::vector < RMatrix > & ret){
+    ret.resize(x.size());
+    THROW_TO_IMPL
+    // for (Index i = 0; i < x.size(); i ++){
+    //     ret[i] = f.evalR3(ent.shape().xyz(x[i]), &ent);
+    // }
+}
+
+template < class ReturnType >
+void evaluateQuadraturePoints_(const Mesh & mesh, Index order,
+                               const FEAFunction & f, ReturnType & ret){
+    ret.resize(mesh.cellCount());
+
+    const PosVector *x;
+    for (auto &cell: mesh.cells()){
+        x = &IntegrationRules::instance().abscissa(cell->shape(), order);
+        evaluateQuadraturePoints(*cell, *x, f, ret[cell->id()]);
+    }
+}
+
+void evaluateQuadraturePoints(const Mesh & mesh, Index order,
+                              const FEAFunction & f,
+                              std::vector< RVector > & ret){
+    evaluateQuadraturePoints_(mesh, order, f, ret);
+}
+
+void evaluateQuadraturePoints(const Mesh & mesh, Index order,
+                              const FEAFunction & f,
+                              std::vector< PosVector > & ret){
+    evaluateQuadraturePoints_(mesh, order, f, ret);
+}
+
+void evaluateQuadraturePoints(const Mesh & mesh, Index order,
+                              const FEAFunction & f,
+                              std::vector< std::vector< RMatrix > > & ret){
+    evaluateQuadraturePoints_(mesh, order, f, ret);
+}
+// constant Scalar
 void mult(const ElementMatrix < double > & A, double b,
           ElementMatrix < double > & C){
 
     C.copyFrom(A, false);
 
-    const R3Vector &x = A.x();
+    const PosVector &x = A.x();
     const RVector &w = A.w();
 
     Index nRules(x.size());
@@ -1682,6 +1772,12 @@ void mult(const ElementMatrix < double > & A, double b,
     }
     C.integrate();
 }
+// constant Pos
+void mult(const ElementMatrix < double > & A, const Pos & b,
+          ElementMatrix < double > & C){
+              THROW_TO_IMPL
+}
+// constant Matrix
 void mult(const ElementMatrix < double > & A, const RMatrix &  b,
           ElementMatrix < double > & C){
 
@@ -1695,7 +1791,7 @@ void mult(const ElementMatrix < double > & A, const RMatrix &  b,
         return;
     }
 
-    const R3Vector &x = A.x();
+    const PosVector &x = A.x();
     const RVector &w = A.w();
 
     Index nRules(x.size());
@@ -1711,129 +1807,128 @@ void mult(const ElementMatrix < double > & A, const RMatrix &  b,
     C.integrate(); // check if necessary
 }
 
-void mult(const ElementMatrix < double > & A, const FEAFunction & b,
+// scalar per quadrature
+void mult(const ElementMatrix < double > & A, const RVector & b,
           ElementMatrix < double > & C){
+
     C.copyFrom(A, false);
-    const R3Vector &x = A.x();
-    const RVector &w = A.w();
+    const PosVector &x = A.x();
 
     Index nRules(x.size());
 
+    ASSERT_VEC_SIZE(b, nRules)
+    ASSERT_VEC_SIZE(C.matX(), nRules)
+
     for (Index r = 0; r < nRules; r++){
-        // use callable on quadrature points .. no interpolation error
-        ASSERT_VEC_SIZE(C.matX(), nRules)
         RMatrix & iC = (*C.pMatX())[r];
-        if (b.valueSize() == 1){
-
-            double B(b.evalR1(A.entity().shape().xyz(x[r]), &A.entity()));
-
-            for (Index k = 0; k < iC.rows(); k ++){
-               iC[k] *= B;
-            }
-        } else {
-            Pos B(b.evalR3(A.entity().shape().xyz(x[r]), &A.entity()));
-
-            for (Index k = 0; k < iC.rows(); k ++){
-                iC[k] *= B[k];
-            }
+        for (Index k = 0; k < iC.rows(); k ++){
+            iC[k] *= b[r];
         }
-        // __MS(*iC)
     }
     C.integrate();
-    // RMatrix & mC = *C.pMat();
-    // mC *= 0.0;
-    // bool sum = true;
-    // if (sum == true){
-    //     for (Index i = 0; i < nRules; i ++){
-    //         // improve either with matrix expressions of shift w as scale
-    //         mC.transAdd(C.matX()[i] * (w[i] * C.entity().size()));
-    //     }
-    // }
 }
 
-const ElementMatrix < double > mult(const ElementMatrix < double > & A,
-                                    double b){
+// vector per quadrature
+void mult(const ElementMatrix < double > & A, const PosVector & b,
+          ElementMatrix < double > & C){
 
-    ElementMatrix < double > C;
-    mult(A, b, C);
-    return C;
-}
-const ElementMatrix < double > mult(const ElementMatrix < double > & A,
-                                    const RMatrix & b){
+    C.copyFrom(A, false);
+    const PosVector &x = A.x();
 
-    ElementMatrix < double > C;
-    mult(A, b, C);
-    return C;
-}
+    Index nRules(x.size());
 
-const ElementMatrix < double > mult(const ElementMatrix < double > & A,
-                                    const FEAFunction & b){
-    // ret C = A * b
-    ElementMatrix < double > C;
-    mult(A, b, C);
-    return C;
-}
+    ASSERT_VEC_SIZE(b, nRules)
+    ASSERT_VEC_SIZE(C.matX(), nRules)
 
-void evaluateQuadraturePoints(const Mesh & mesh,
-                              Index order,
-                              const FEAFunction & f,
-                              RVector & ret){
-
-    ret.clear();
-    const R3Vector *x;
-    for (auto &cell: mesh.cells()){
-        x = &IntegrationRules::instance().abscissa(cell->shape(), order);
-        for (Index i = 0; i < x->size(); i ++){
-
-            if (f.valueSize() == 1){
-                ret.push_back(f.evalR1(cell->shape().xyz((*x)[i]), cell));
-            } else {
-                log(Critical, "expecting FEAFunction with valueSize==1.",
-                    f.valueSize());
-            }
+    for (Index r = 0; r < nRules; r++){
+        RMatrix & iC = (*C.pMatX())[r];
+        for (Index k = 0; k < iC.rows(); k ++){
+            // __MS(r << " " << k << " " << b[r][k])
+            iC[k] *= b[r][k];
         }
+        // __MS(iC)
     }
-}
-void evaluateQuadraturePoints(const Mesh & mesh,
-                              Index order,
-                              const FEAFunction & f,
-                              R3Vector & ret){
-    ret.clear();
-    const R3Vector *x;
-    for (auto &cell: mesh.cells()){
-        x = &IntegrationRules::instance().abscissa(cell->shape(), order);
-        for (Index i = 0; i < x->size(); i ++){
-
-            if (f.valueSize() > 1){
-                ret.push_back(f.evalR3(cell->shape().xyz((*x)[i]), cell));
-            } else {
-                log(Critical, "expecting FEAFunction with valueSize==2 or 3",
-                    f.valueSize());
-            }
-        }
-    }
+    C.integrate();
 }
 
-void evaluateQuadraturePoints(const Mesh & mesh,
-                              Index order,
-                              const FEAFunction & f,
-                              std::vector< RMatrix > & ret){
+// matrix per quadrature
+void mult(const ElementMatrix < double > & A, const std::vector < RMatrix > & b,
+          ElementMatrix < double > & C){
     THROW_TO_IMPL
 }
 
-void createForceVector(const Mesh & mesh, Index order, RVector & ret,
-                       double a, Index nCoeff, Index dofOffset){
-    return createForceVector(mesh, order, ret, RVector(1,a), nCoeff, dofOffset);
+void mult(const ElementMatrix < double > & A, const FEAFunction & b,
+          ElementMatrix < double > & C){
+    // refactor with above
+    if (b.valueSize() == 1){
+        RVector e;
+        evaluateQuadraturePoints(A.entity(), A.x(), b, e);
+        mult(A, e, C);
+    } else {
+        PosVector e;
+        evaluateQuadraturePoints(A.entity(), A.x(), b, e);
+        mult(A, e, C);
+    }
+    return;
 }
 
-void createForceVector(const Mesh & mesh, Index order, RVector & ret,
-                       const RVector & a, Index nCoeff, Index dofOffset){
+#define DEFINE_DOT_MULT_WITH_RETURN(A_TYPE) \
+const ElementMatrix < double > dot(const ElementMatrix < double > & A, \
+                                   const ElementMatrix < double > & B, \
+                                   A_TYPE c){ \
+    ElementMatrix < double > C; \
+    dot(A, B, c, C); \
+    return C; \
+} \
+const ElementMatrix < double > mult(const ElementMatrix < double > & A, \
+                                    A_TYPE b){ \
+    ElementMatrix < double > C; \
+    mult(A, b, C); \
+    return C; \
+}
+DEFINE_DOT_MULT_WITH_RETURN(double)
+DEFINE_DOT_MULT_WITH_RETURN(const Pos &)
+DEFINE_DOT_MULT_WITH_RETURN(const RMatrix &)
+DEFINE_DOT_MULT_WITH_RETURN(const FEAFunction &)
+
+#undef DEFINE_DOT_MULT_WITH_RETURN
+
+
+// // void createForceVector(const Mesh & mesh, Index order, RVector & ret,
+// //                        const PosVector & a, Index nCoeff, Index dofOffset){
+// //     if (nCoeff > 3){
+// //         log(Error, "Number of coefficients need to be lower then 4");
+// //     }
+// //     Index dof = mesh.nodeCount() * nCoeff;
+// //     ret.resize(dof);
+// //     Index id = 0;
+// //     for (auto &cell: mesh.cells()){
+// //         cell->uCache().pot(*cell, order, true,
+// //                            nCoeff, mesh.nodeCount(), dofOffset);
+
+// //         if (a.size() == 1){
+// //             ret.add(cell->uCache(), a[0]);
+// //         } else if (a.size() == mesh.cellCount()){
+// //             ret.add(cell->uCache(), a[cell->id()]);
+// //         } else {
+// //             Index nRules = cell->uCache().x().size();
+// //             ElementMatrix < double > u;
+// //             mult(cell->uCache(), a.getVal(id, id + nRules), u);
+// //             id += nRules;
+// //             ret.add(u);
+// //         }
+// //     }
+// // }
+
+template < class Vec >
+void createForceVectorPerCell_(const Mesh & mesh, Index order, RVector & ret,
+                        const Vec & a, Index nCoeff, Index dofOffset){
     if (nCoeff > 3){
-        log(Error, "Number of coefficients need to be lower then 4");
+        log(Critical, "Number of coefficients need to be lower then 4");
     }
     Index dof = mesh.nodeCount() * nCoeff;
     ret.resize(dof);
-
+    Index id = 0;
     for (auto &cell: mesh.cells()){
         cell->uCache().pot(*cell, order, true,
                            nCoeff, mesh.nodeCount(), dofOffset);
@@ -1842,65 +1937,183 @@ void createForceVector(const Mesh & mesh, Index order, RVector & ret,
             ret.add(cell->uCache(), a[0]);
         } else if (a.size() == mesh.cellCount()){
             ret.add(cell->uCache(), a[cell->id()]);
+        } else {
+            log(Critical, "Number of cell coefficients (",a.size(),") does not"
+                "match cell count:",  mesh.cellCount());
         }
     }
 }
-void createForceVector(const Mesh & mesh, Index order, RVector & ret,
-                       const R3Vector & a,
-                       Index nCoeff, Index dofOffset){
-THROW_TO_IMPL
+template < class Vec >
+void createMassMatrixPerCell_(const Mesh & mesh, Index order,
+                              RSparseMapMatrix & ret, const Vec & a,
+                              Index nCoeff, Index dofOffset){
+    if (nCoeff > 3){
+        log(Critical, "Number of coefficients need to be lower then 4");
+    }
+    ElementMatrix < double > uu;
+
+    for (auto &cell: mesh.cells()){
+        cell->uCache().pot(*cell, order, true,
+                           nCoeff, mesh.nodeCount(), dofOffset);
+
+        if (a.size() == 1){
+            dot(cell->uCache(), cell->uCache(), a[0], uu);
+        } else if (a.size() == mesh.cellCount()){
+            dot(cell->uCache(), cell->uCache(), a[cell->id()], uu);
+        } else {
+            log(Critical, "Number of cell coefficients (",a.size(),") does not"
+                "match cell count:",  mesh.cellCount());
+        }
+        ret.add(uu);
+    }
 }
-void createForceVector(const Mesh & mesh, Index order, RVector & ret,
-                       const std::vector< RMatrix > & a,
-                       Index nCoeff, Index dofOffset){
-                           THROW_TO_IMPL
+template < class Vec >
+void createStiffnessMatrixPerCell_(const Mesh & mesh, Index order,
+                                   RSparseMapMatrix & ret, const Vec & a,
+                                   Index nCoeff, Index dofOffset){
+    if (nCoeff > 3){
+        log(Critical, "Number of coefficients need to be lower then 4");
+    }
+    ElementMatrix < double > dudu;
+
+    for (auto &cell: mesh.cells()){
+
+        cell->gradUCache().grad(*cell, order,
+                                 false, false, false,
+                                 nCoeff, mesh.nodeCount(), dofOffset);
+
+        if (a.size() == 1){
+            dot(cell->uCache(), cell->uCache(), a[0], dudu);
+        } else if (a.size() == mesh.cellCount()){
+            dot(cell->uCache(), cell->uCache(), a[cell->id()], dudu);
+        } else {
+            log(Critical, "Number of cell coefficients (",a.size(),") does not"
+                "match cell count:",  mesh.cellCount());
+        }
+        ret.add(dudu);
+    }
 }
 
-void createStiffnessMatrix(const Mesh & mesh, Index order,
-                                     RSparseMapMatrix & ret, double a,
-                                     Index nCoeff, Index dofOffset){
-THROW_TO_IMPL
-                                     }
-void createStiffnessMatrix(const Mesh & mesh, Index order,
-                                     RSparseMapMatrix & ret, const RVector & a,
-                                     Index nCoeff, Index dofOffset){
-             THROW_TO_IMPL
-                                     }
-void createStiffnessMatrix(const Mesh & mesh, Index order,
-                                     RSparseMapMatrix & ret, const RMatrix & a,
-                                     Index nCoeff, Index dofOffset){
-             THROW_TO_IMPL
-                                     }
-void createStiffnessMatrix(const Mesh & mesh, Index order,
-                           RSparseMapMatrix & ret,
-                           const std::vector< RMatrix > & a,
-                           Index nCoeff, Index dofOffset){
-             THROW_TO_IMPL
-                                     }
-void createMassMatrix(const Mesh & mesh, Index order,
-                      RSparseMapMatrix & ret, double a,
-                      Index nCoeff, Index dofOffset){
-             THROW_TO_IMPL
-                                     }
-void createMassMatrix(const Mesh & mesh, Index order,
-                      RSparseMapMatrix & ret, const RVector & a,
-                      Index nCoeff, Index dofOffset){
-             THROW_TO_IMPL
-                                     }
-void createMassMatrix(const Mesh & mesh, Index order,
-                      RSparseMapMatrix & ret, const RMatrix & a,
-                      Index nCoeff, Index dofOffset){
-             THROW_TO_IMPL
-                                     }
-void createMassMatrix(const Mesh & mesh, Index order,
-                      RSparseMapMatrix & ret,
-                      const std::vector< RMatrix > & a,
-                      Index nCoeff, Index dofOffset){
-             THROW_TO_IMPL
-                                     }
+//** IMPL constants
+#define DEFINE_CREATE_SCALAR_IMPL(A_TYPE, V_TYPE) \
+void createForceVector(const Mesh & mesh, Index order, RVector & ret,\
+                       A_TYPE a, Index nCoeff, Index dofOffset){\
+    createForceVectorPerCell_(mesh, order, ret, V_TYPE(1,a),\
+                              nCoeff, dofOffset);\
+}\
+void createMassMatrix(const Mesh & mesh, Index order, \
+                      RSparseMapMatrix & ret, A_TYPE a, \
+                      Index nCoeff, Index dofOffset){\
+    createMassMatrixPerCell_(mesh, order, ret, V_TYPE(1,a),\
+                             nCoeff, dofOffset);\
+}\
+void createStiffnessMatrix (const Mesh & mesh, Index order, \
+                            RSparseMapMatrix & ret, A_TYPE a, \
+                            Index nCoeff, Index dofOffset){\
+    createStiffnessMatrixPerCell_(mesh, order, ret, V_TYPE(1,a),\
+                                  nCoeff, dofOffset);\
+}
+
+DEFINE_CREATE_SCALAR_IMPL(double, RVector)
+DEFINE_CREATE_SCALAR_IMPL(const Pos &, PosVector)
+
+#undef DEFINE_CREATE_SCALAR_IMPL
+
+void createForceVector(const Mesh & mesh, Index order, RVector & ret,
+                       const RMatrix & a, Index nCoeff, Index dofOffset){
+    std::vector < RMatrix > aM(1);
+    aM[0] = a;
+    createForceVectorPerCell_(mesh, order, ret, aM, nCoeff, dofOffset);
+}
+void createMassMatrix(const Mesh & mesh, Index order, RSparseMapMatrix & ret,
+                      const RMatrix & a, Index nCoeff, Index dofOffset){
+    std::vector < RMatrix > aM(1);
+    aM[0] = a;
+    createMassMatrixPerCell_(mesh, order, ret, aM, nCoeff, dofOffset);
+}
+void createStiffnessMatrix (const Mesh & mesh, Index order,
+                            RSparseMapMatrix & ret, const RMatrix & a,
+                            Index nCoeff, Index dofOffset){
+    std::vector < RMatrix > aM(1);
+    aM[0] = a;
+    createStiffnessMatrixPerCell_(mesh, order, ret, aM, nCoeff, dofOffset);
+}
+
+//** IMPL per cell vector
+#define DEFINE_CREATE_PERCELL_IMPL(A_TYPE) \
+void createForceVector(const Mesh & mesh, Index order, RVector & ret, \
+                       A_TYPE a, Index nCoeff, Index dofOffset){ \
+    createForceVectorPerCell_(mesh, order, ret, a, nCoeff, dofOffset); \
+} \
+void createMassMatrix(const Mesh & mesh, Index order, \
+                      RSparseMapMatrix & ret, A_TYPE a, \
+                      Index nCoeff, Index dofOffset){\
+    createMassMatrixPerCell_(mesh, order, ret, a, nCoeff, dofOffset);\
+}\
+void createStiffnessMatrix (const Mesh & mesh, Index order, \
+                            RSparseMapMatrix & ret, A_TYPE a, \
+                            Index nCoeff, Index dofOffset){\
+    createStiffnessMatrixPerCell_(mesh, order, ret, a, nCoeff, dofOffset);\
+}
+
+DEFINE_CREATE_PERCELL_IMPL(const RVector &)
+DEFINE_CREATE_PERCELL_IMPL(const PosVector &)
+DEFINE_CREATE_PERCELL_IMPL(const std::vector< RMatrix > &)
+#undef DEFINE_CREATE_PERCELL_IMPL
+
+//** IMPL fallbacks
+#define DEFINE_CREATE_FORCE_VECTOR_IMPL(A_TYPE) \
+void createForceVector(const Mesh & mesh, Index order, \
+                       RVector & ret, A_TYPE a, \
+                       Index nCoeff, Index dofOffset){ \
+THROW_TO_IMPL \
+} \
+void createMassMatrix(const Mesh & mesh, Index order, \
+                      RSparseMapMatrix & ret, A_TYPE a, \
+                      Index nCoeff, Index dofOffset){ \
+THROW_TO_IMPL \
+                      } \
+void createStiffnessMatrix(const Mesh & mesh, Index order, \
+                           RSparseMapMatrix & ret, A_TYPE a, \
+                           Index nCoeff, Index dofOffset){ \
+THROW_TO_IMPL \
+}
+
+DEFINE_CREATE_FORCE_VECTOR_IMPL(const std::vector< RVector > &)
+DEFINE_CREATE_FORCE_VECTOR_IMPL(const std::vector< PosVector > &)
+DEFINE_CREATE_FORCE_VECTOR_IMPL(const std::vector< std::vector < RMatrix > > &)
+DEFINE_CREATE_FORCE_VECTOR_IMPL(const FEAFunction &)
+
+#undef DEFINE_CREATE_FORCE_VECTOR_IMPL
+
+
+// void createForceVector(const Mesh & mesh, Index order, RVector & ret,
+//                        const RVector & a, Index nCoeff, Index dofOffset){
+//     if (nCoeff > 3){
+//         log(Critical, "Number of coefficients need to be lower then 4");
+//     }
+//     Index dof = mesh.nodeCount() * nCoeff;
+//     ret.resize(dof);
+//     Index id = 0;
+//     for (auto &cell: mesh.cells()){
+//         cell->uCache().pot(*cell, order, true,
+//                            nCoeff, mesh.nodeCount(), dofOffset);
+
+//         if (a.size() == 1){
+//             ret.add(cell->uCache(), a[0]);
+//         } else if (a.size() == mesh.cellCount()){
+//             ret.add(cell->uCache(), a[cell->id()]);
+//         } else {
+//             log(Critical, "Number of cell coefficients (",a.size(),") does not"
+//                 "match cell count:",  mesh.cellCount());
+//         }
+//     }
+// }
+
+
 void createAdvectionMatrix(const Mesh & mesh, Index order,
                                      RSparseMapMatrix & ret,
-                                     const R3Vector & vel,
+                                     const PosVector & vel,
                                      Index dofOffset){
              THROW_TO_IMPL
                                      }

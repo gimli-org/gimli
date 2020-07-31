@@ -61,6 +61,15 @@ void Vector< double >::add(const ElementMatrix < double > & A,
 }
 template <>
 void Vector< double >::add(const ElementMatrix < double > & A,
+                           const RMatrix & scale){
+    if (A.oldStyle()){
+        THROW_TO_IMPL
+    } else {
+        THROW_TO_IMPL
+    }
+}
+template <>
+void Vector< double >::add(const ElementMatrix < double > & A,
                            const RVector & scale){
     A.integrate();
     //!! warning this will lead to incorrect results with non constant scale

@@ -24,7 +24,7 @@ class TestIterBug(unittest.TestCase):
         # das geht weil wir einen eigenen iter definieren der die referenz haellt
         # see: class VectorIter: in pygimli.__init__.py
         i = 0
-        for ai in a(0, 9):
+        for ai in a[0:9]:
             self.assertEqual(ai, a[i])
             i = i + 1
             

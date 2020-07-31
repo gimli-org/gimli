@@ -356,7 +356,7 @@ def __getVal(self, idx):
     if isinstance(idx, _pygimli_.BVector) or isinstance(
             idx, _pygimli_.IVector) or isinstance(idx, _pygimli_.IndexArray):
         # print("BVector, IVector, IndexArray", idx)
-        return self(idx)
+        return self.get_(idx)
     elif isinstance(idx, slice):
 
         s = idx.start
@@ -377,21 +377,21 @@ def __getVal(self, idx):
                 ids = range(s, e, idx.step)
 
             if len(ids):
-                return self(ids)
+                return self.get_(ids)
             else:
-                return self(0)
+                return self.get_(0)
                 #raise Exception("slice invalid")
 
     elif isinstance(idx, list) or hasattr(idx, '__iter__'):
         if isinstance(idx[0], int):
-            return self(idx)
+            return self.get_(idx)
         elif hasattr(idx[0], 'dtype'):
             # print("numpy: ", idx[0].dtype.str, idx[0].dtype ,type(idx[0]))
             if idx[0].dtype == 'bool':
-                return self([i for i, x in enumerate(idx) if x])
+                return self.get_([i for i, x in enumerate(idx) if x])
                 # return self[np.nonzero(idx)[0]]
         # print("default")
-        return self([int(a) for a in idx])
+        return self.get_([int(a) for a in idx])
 
     elif idx == -1:
         idx = len(self) - 1
@@ -508,6 +508,7 @@ for v in _vecs:
     v.ndim = 1
     v.__len__ = lambda self: self.size()
     v.shape = property(lambda self: (self.size(), None))
+    del v.__call__
 
 _pygimli_.RVector.dtype = np.float
 _pygimli_.BVector.dtype = np.bool

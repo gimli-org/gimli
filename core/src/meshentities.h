@@ -371,7 +371,7 @@ public:
     void swapNorm();
 
     /*!Is the boundary is on the outside of the mesh.*/
-    bool outside() const { return leftCell_ != 0 & rightCell_ == 0; }
+    bool outside() const { return (leftCell_ != 0) && (rightCell_ == 0); }
 
 
 protected:
