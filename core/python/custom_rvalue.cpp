@@ -62,7 +62,8 @@ template < class ValueType > void * checkConvertibleSequenz(PyObject * obj){
     }
 
     if (PyObject_TypeCheck(obj, &PyArray_Type)){
-        __DC(obj << "\t numpy.ndarray to " << typeid(ValueType).name() << " " << typeid(bool).name()<< " " << typeid(float).name()<< "... okay")
+        __DC(obj << "\t numpy.ndarray to " << typeid(ValueType).name() << " " 
+        << typeid(GIMLI::Index).name() <<" " << typeid(float).name()<< "... okay")
 
         if (typeid(ValueType) == typeid(GIMLI::Index)){
             PyArrayObject *arr = (PyArrayObject *)obj;
@@ -91,7 +92,8 @@ template < class ValueType > void * checkConvertibleSequenz(PyObject * obj){
         bp::object element = py_sequence[0];
         __DC(obj << "\t seq[0]: " << element << " is of type: " << element.ptr()->ob_type->tp_name)
 
-        if (typeid(ValueType) == typeid(GIMLI::Index)){
+        //** do not convert [long] || [ulong]  > [bool]
+        if (typeid(ValueType) == typeid(GIMLI::Index) || typeid(ValueType) == typeid(GIMLI::SIndex)){
             if (strcmp(element.ptr()->ob_type->tp_name, "bool") == 0) {
                 __DC(obj << "\t abborting: Index requested but sequence of "<< element.ptr()->ob_type->tp_name)
                 return NULL;

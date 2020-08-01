@@ -305,11 +305,11 @@ public:
         return data_[i];
     }
 
-    inline const Vector < ValueType > operator[](const IndexArray & i) const { return (*this)(i); }
+    inline const Vector < ValueType > operator[](const IndexArray & i) const { return this->get_(i); }
 
-    inline Vector < ValueType > operator[](const IndexArray & i) { return (*this)(i); }
+    inline Vector < ValueType > operator[](const IndexArray & i) { return this->get_(i); }
 
-    inline Vector < ValueType > operator[](const BVector & b) { return (*this)(b); }
+    inline Vector < ValueType > operator[](const BVector & b) { return this->get_(b); }
 
      /*!
       * Return a new vector that match the slice [start, end).
@@ -363,8 +363,8 @@ public:
     }
 
     /*! */
-    Vector < ValueType > operator () (const BVector & bv) const {
-        return (*this)(GIMLI::find(bv));
+    Vector < ValueType > get_(const BVector & bv) const {
+        return this->get_(GIMLI::find(bv));
     }
 
 #ifndef PYGIMLI_CAST

@@ -199,6 +199,7 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(sum(d), 1+2+3)
 
     def test_Slices(self):
+        
         a = pg.Vector(np.arange(10.))
 
         np.testing.assert_array_equal(a[:], np.arange(10.)[:])
@@ -214,18 +215,6 @@ class TestRVectorMethods(unittest.TestCase):
 
         np.testing.assert_array_equal(a[0:3:-1], np.arange(10.)[0:3:-1])
         np.testing.assert_array_equal(a[0:3:-2], np.arange(10.)[0:3:-2])
-
-
-    #def test_isupper(self):
-        #self.assertTrue('FOO'.isupper())
-        #self.assertFalse('Foo'.isupper())
-
-    #def test_split(self):
-        #s = 'hello world'
-        #self.assertEqual(s.split(), ['hello', 'world'])
-        ## check that s.split fails when the separator is not a string
-        #with self.assertRaises(TypeError):
-            #s.split(2)
 
     def test_IndexAccess(self):
         # (double) array/vector
@@ -281,11 +270,8 @@ class TestRVectorMethods(unittest.TestCase):
         np.testing.assert_array_equal(an[np.array(bg, dtype='bool')], an[bn])
         np.testing.assert_array_equal(an[np.array(bg)], an[bn])
         np.testing.assert_array_equal(an[bg.array()], an[bn])
-        ## this fails because it is interpreted as an[[0,0,0,1,1,1]] ..
-        #np.testing.assert_equal(an[bg], an[bn])
+        np.testing.assert_array_equal(an[an>5], [6, 7, 8, 9])
 
-
-        # RVector [BVector] == RVector [IndexArray]
         np.testing.assert_array_equal(ag[bg], ag[Ig])
         self.assertEqual(len(ag[bg]), 5)
         self.assertEqual(ag[bg][0], 5)
@@ -299,7 +285,6 @@ class TestRVectorMethods(unittest.TestCase):
         # RVector(BVector) ==  RVector(nd.array(bool))
         # RVector(IndexArray) ==  RVector(nd.array(int))
 
-    def test_IndexAccess(self):
         I = pg.core.IndexArray([0,1,1,0])
         np.testing.assert_array_equal(pg.sum(I), 2)
         np.testing.assert_array_equal(sum(I), 2)
@@ -334,6 +319,7 @@ class TestRVectorMethods(unittest.TestCase):
         # np.testing.assert_equal(sum(A[2]), 2)
 
 if __name__ == '__main__':
+    
     # pg.setDeepDebug(1)
     # t = TestRVectorMethods()
 
