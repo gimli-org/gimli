@@ -1656,7 +1656,7 @@ THROW_TO_IMPL
 void evaluateQuadraturePoints(const Mesh & mesh, Index order,
                               const FEAFunction & f,
                               RVector & ret){
-
+THROW_TO_IMPL
     ret.clear();
     const PosVector *x;
     for (auto &cell: mesh.cells()){
@@ -1666,6 +1666,7 @@ void evaluateQuadraturePoints(const Mesh & mesh, Index order,
             if (f.valueSize() == 1){
                 ret.push_back(f.evalR1(cell->shape().xyz((*x)[i]), cell));
             } else {
+                __M
                 log(Critical, "expecting FEAFunction with valueSize==1.",
                     f.valueSize());
             }
@@ -1675,6 +1676,7 @@ void evaluateQuadraturePoints(const Mesh & mesh, Index order,
 void evaluateQuadraturePoints(const Mesh & mesh, Index order,
                               const FEAFunction & f,
                               PosVector & ret){
+    THROW_TO_IMPL
     ret.clear();
     const PosVector *x;
     for (auto &cell: mesh.cells()){
@@ -1684,6 +1686,7 @@ void evaluateQuadraturePoints(const Mesh & mesh, Index order,
             if (f.valueSize() > 1){
                 ret.push_back(f.evalR3(cell->shape().xyz((*x)[i]), cell));
             } else {
+                __M
                 log(Critical, "expecting FEAFunction with valueSize==2 or 3",
                     f.valueSize());
             }
@@ -1924,6 +1927,7 @@ template < class Vec >
 void createForceVectorPerCell_(const Mesh & mesh, Index order, RVector & ret,
                         const Vec & a, Index nCoeff, Index dofOffset){
     if (nCoeff > 3){
+        __M
         log(Critical, "Number of coefficients need to be lower then 4");
     }
     Index dof = mesh.nodeCount() * nCoeff;
@@ -1938,7 +1942,35 @@ void createForceVectorPerCell_(const Mesh & mesh, Index order, RVector & ret,
         } else if (a.size() == mesh.cellCount()){
             ret.add(cell->uCache(), a[cell->id()]);
         } else {
+            __M
             log(Critical, "Number of cell coefficients (",a.size(),") does not"
+                "match cell count:",  mesh.cellCount());
+        }
+    }
+}
+template < class Vec >
+void createForceVectorMult_(const Mesh & mesh, Index order, RVector & ret,
+                            const Vec & a, Index nCoeff, Index dofOffset){
+    if (nCoeff > 3){
+        log(Critical, "Number of coefficients need to be lower then 4");
+    }
+    Index dof = mesh.nodeCount() * nCoeff;
+    ret.resize(dof);
+    Index id = 0;
+    ElementMatrix < double > ua;
+    for (auto &cell: mesh.cells()){
+        cell->uCache().pot(*cell, order, true,
+                           nCoeff, mesh.nodeCount(), dofOffset);
+
+        if (a.size() == 1 && mesh.cellCount() != 1){
+            createForceVectorPerCell_(mesh, order, ret,
+                                      a[0], nCoeff, dofOffset);
+        } else if (a.size() == mesh.cellCount()){
+            mult(cell->uCache(), a[cell->id()], ua);
+            ret.add(ua);
+        } else {
+            __M
+            log(Critical, "Number of per cell coefficients (",a.size(),") does not"
                 "match cell count:",  mesh.cellCount());
         }
     }
@@ -1961,6 +1993,7 @@ void createMassMatrixPerCell_(const Mesh & mesh, Index order,
         } else if (a.size() == mesh.cellCount()){
             dot(cell->uCache(), cell->uCache(), a[cell->id()], uu);
         } else {
+            __M
             log(Critical, "Number of cell coefficients (",a.size(),") does not"
                 "match cell count:",  mesh.cellCount());
         }
@@ -1968,10 +2001,38 @@ void createMassMatrixPerCell_(const Mesh & mesh, Index order,
     }
 }
 template < class Vec >
+void createMassMatrixMult_(const Mesh & mesh, Index order,
+                              RSparseMapMatrix & ret, const Vec & a,
+                              Index nCoeff, Index dofOffset){
+    if (nCoeff > 3){
+        log(Critical, "Number of coefficients need to be lower then 4");
+    }
+    ElementMatrix < double > ua;
+    ElementMatrix < double > uau;
+
+    for (auto &cell: mesh.cells()){
+        cell->uCache().pot(*cell, order, true,
+                           nCoeff, mesh.nodeCount(), dofOffset);
+
+        if (a.size() == 1 && mesh.cellCount() != 1){
+            createMassMatrixPerCell_(mesh, order, ret, a[0], nCoeff, dofOffset);
+        } else if (a.size() == mesh.cellCount()){
+            mult(cell->uCache(), a[cell->id()], ua);
+            dot(ua, cell->uCache(), 1.0, uau);
+            ret.add(uau);
+        } else {
+            __M
+            log(Critical, "Number of cell coefficients (",a.size(),") does not"
+                "match cell count:",  mesh.cellCount());
+        }
+    }
+}
+template < class Vec >
 void createStiffnessMatrixPerCell_(const Mesh & mesh, Index order,
                                    RSparseMapMatrix & ret, const Vec & a,
                                    Index nCoeff, Index dofOffset){
     if (nCoeff > 3){
+        __M;
         log(Critical, "Number of coefficients need to be lower then 4");
     }
     ElementMatrix < double > dudu;
@@ -1987,10 +2048,41 @@ void createStiffnessMatrixPerCell_(const Mesh & mesh, Index order,
         } else if (a.size() == mesh.cellCount()){
             dot(cell->uCache(), cell->uCache(), a[cell->id()], dudu);
         } else {
+            __M;
             log(Critical, "Number of cell coefficients (",a.size(),") does not"
                 "match cell count:",  mesh.cellCount());
         }
         ret.add(dudu);
+    }
+}
+
+template < class Vec >
+void createStiffnessMatrixMult_(const Mesh & mesh, Index order,
+                                   RSparseMapMatrix & ret, const Vec & a,
+                                   Index nCoeff, Index dofOffset){
+    if (nCoeff > 3){
+        __M;
+        log(Critical, "Number of coefficients need to be lower then 4");
+    }
+    ElementMatrix < double > dua;
+    ElementMatrix < double > duadu;
+
+    for (auto &cell: mesh.cells()){
+        cell->gradUCache().grad(*cell, order,
+                                 false, false, false,
+                                 nCoeff, mesh.nodeCount(), dofOffset);
+        if (a.size() == 1 && mesh.cellCount() != 1){
+            createStiffnessMatrixPerCell_(mesh, order, ret, a[0],
+                                          nCoeff, dofOffset);
+        } else if (a.size() == mesh.cellCount()){
+            mult(cell->uCache(), a[cell->id()], dua);
+            dot(dua, cell->uCache(), 1.0, duadu);
+            ret.add(duadu);
+        } else {
+            __M;
+            log(Critical, "Number of cell coefficients (",a.size(),") does not"
+                "match cell count:",  mesh.cellCount());
+        }
     }
 }
 
@@ -2016,9 +2108,9 @@ void createStiffnessMatrix (const Mesh & mesh, Index order, \
 
 DEFINE_CREATE_SCALAR_IMPL(double, RVector)
 DEFINE_CREATE_SCALAR_IMPL(const Pos &, PosVector)
-
 #undef DEFINE_CREATE_SCALAR_IMPL
 
+//** IMPL constant matrix
 void createForceVector(const Mesh & mesh, Index order, RVector & ret,
                        const RMatrix & a, Index nCoeff, Index dofOffset){
     std::vector < RMatrix > aM(1);
@@ -2039,7 +2131,7 @@ void createStiffnessMatrix (const Mesh & mesh, Index order,
     createStiffnessMatrixPerCell_(mesh, order, ret, aM, nCoeff, dofOffset);
 }
 
-//** IMPL per cell vector
+//** IMPL per cell values
 #define DEFINE_CREATE_PERCELL_IMPL(A_TYPE) \
 void createForceVector(const Mesh & mesh, Index order, RVector & ret, \
                        A_TYPE a, Index nCoeff, Index dofOffset){ \
@@ -2061,6 +2153,30 @@ DEFINE_CREATE_PERCELL_IMPL(const PosVector &)
 DEFINE_CREATE_PERCELL_IMPL(const std::vector< RMatrix > &)
 #undef DEFINE_CREATE_PERCELL_IMPL
 
+
+//** IMPL per cell per quadrature values
+#define DEFINE_CREATE_FORCE_VECTOR_IMPL(A_TYPE) \
+void createForceVector(const Mesh & mesh, Index order, \
+                       RVector & ret, A_TYPE a, \
+                       Index nCoeff, Index dofOffset){ \
+    createForceVectorMult_(mesh, order, ret, a, nCoeff, dofOffset); \
+} \
+void createMassMatrix(const Mesh & mesh, Index order, \
+                      RSparseMapMatrix & ret, A_TYPE a, \
+                      Index nCoeff, Index dofOffset){ \
+    createMassMatrixMult_(mesh, order, ret, a, nCoeff, dofOffset);\
+} \
+void createStiffnessMatrix(const Mesh & mesh, Index order, \
+                           RSparseMapMatrix & ret, A_TYPE a, \
+                           Index nCoeff, Index dofOffset){ \
+    createStiffnessMatrixMult_(mesh, order, ret, a, nCoeff, dofOffset);\
+}
+
+DEFINE_CREATE_FORCE_VECTOR_IMPL(const std::vector< RVector > &)
+DEFINE_CREATE_FORCE_VECTOR_IMPL(const std::vector< PosVector > &)
+DEFINE_CREATE_FORCE_VECTOR_IMPL(const std::vector< std::vector < RMatrix > > &)
+#undef DEFINE_CREATE_FORCE_VECTOR_IMPL
+
 //** IMPL fallbacks
 #define DEFINE_CREATE_FORCE_VECTOR_IMPL(A_TYPE) \
 void createForceVector(const Mesh & mesh, Index order, \
@@ -2078,10 +2194,6 @@ void createStiffnessMatrix(const Mesh & mesh, Index order, \
                            Index nCoeff, Index dofOffset){ \
 THROW_TO_IMPL \
 }
-
-DEFINE_CREATE_FORCE_VECTOR_IMPL(const std::vector< RVector > &)
-DEFINE_CREATE_FORCE_VECTOR_IMPL(const std::vector< PosVector > &)
-DEFINE_CREATE_FORCE_VECTOR_IMPL(const std::vector< std::vector < RMatrix > > &)
 DEFINE_CREATE_FORCE_VECTOR_IMPL(const FEAFunction &)
 
 #undef DEFINE_CREATE_FORCE_VECTOR_IMPL

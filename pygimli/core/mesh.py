@@ -20,8 +20,23 @@ def __Mesh_str(self):
 
     if len(list(self.dataMap().keys())) > 0:
         st += "\nMesh contains data: "
+        uniqueNames = {}
         for d in self.dataMap().keys():
-            st += d + " "
+            if '_' in d:
+                uName = d[0:d.find('_')]
+            else:
+                uName = d
+            if not uName in uniqueNames:
+                uniqueNames[uName] = []
+
+            uniqueNames[uName].append(d)
+
+        for d, v in uniqueNames.items():
+            if len(v) > 0:
+                st += d + "_[0,...,{}] ".format(len(v)-1)
+            else:
+                st += d + " "
+
     return st
 Mesh.__str__ = __Mesh_str
 
@@ -94,7 +109,25 @@ def __Mesh_getVal(self, key):
     if self.haveData(key):
         return self.data(key)
     else:
-        error('The mesh does not have the requested data:', key)
+
+        uniqueNames = {}
+        for d in self.dataMap().keys():
+            if '_' in d:
+                uName = d[0:d.find('_')]
+            else:
+                uName = d
+            if not uName in uniqueNames:
+                uniqueNames[uName] = []
+
+            uniqueNames[uName].append(self.data(d))
+
+        if key in uniqueNames:
+            return np.array(uniqueNames[key])
+
+        error('The mesh does not have the requested data:', key,
+              '. Available:', uniqueNames)
+
+
 Mesh.__getitem__ = __Mesh_getVal
 
 

@@ -163,7 +163,7 @@ def prettify(value, roundValue=False):
     if isinstance(value, dict):
         import json
         return json.dumps(value, indent=4)
-    elif isinstance(value, float):
+    elif pg.isScalar(value):
         return prettyFloat(value, roundValue)
     pg.warn("Don't know how to prettify the string representation for: ",
             value)
@@ -198,7 +198,6 @@ def prettyFloat(value, roundValue=False):
         string = str("%.2f" % round(value, 2))
     else:
         string = str("%.0f" % round(value, 2))
-
 
     if string.endswith(".0"):
         return string.replace(".0", "")
