@@ -43,40 +43,51 @@ namespace r_values_impl{
 
 template < class ValueType > void * checkConvertibleSequenz(PyObject * obj){
     if (!obj){
-        __DC(obj << "\t abort check .. !Object")
+        __DC("\t" << obj << "\t abborting .. !Object")
         return NULL;
     }
-    __DC(obj << "\t check if convertable sequenz PyObject("<< obj->ob_type->tp_name<<") -> " +
-         GIMLI::type(ValueType(0))) // FW: Caused problems during Mac build // still?
+    __DC(obj << "\t check if convertable sequenz PyObject("
+             << obj->ob_type->tp_name<<") -> sequenz of type ("
+             << GIMLI::type(ValueType(0)) << ")" << typeid(ValueType).name())
+         // FW: Caused problems during Mac build // still?
 
     // is obj is a sequence
     if(!PySequence_Check(obj)){
-        __DC(obj << "\t abborting no sequence")
+        __DC("\t" << obj << "\t abborting no sequence")
         return NULL;
     }
 
     // has the obj a len method
     if (!PyObject_HasAttrString(obj, "__len__")){
-        __DC(obj << "\t abborting no len")
+        __DC("\t" << obj << "\t abborting no len")
         return NULL;
     }
 
     if (PyObject_TypeCheck(obj, &PyArray_Type)){
-        __DC(obj << "\t numpy.ndarray to " << typeid(ValueType).name() << " " 
+        __DC(obj << "\t numpy.ndarray to " << typeid(ValueType).name() << " "
         << typeid(GIMLI::Index).name() <<" " << typeid(float).name()<< "... okay")
+        if (typeid(ValueType) == typeid(GIMLI::Pos)){
+            PyArrayObject *arr = (PyArrayObject *)obj;
+            if (PyArray_NDIM(arr) == 1){
+                __DC("\t" << obj << "\t abborting .. numpy array.ndim == 1")
+                return NULL;
+            }
+        }
 
         if (typeid(ValueType) == typeid(GIMLI::Index)){
             PyArrayObject *arr = (PyArrayObject *)obj;
 
             if (PyArray_TYPE(arr) == NPY_BOOL){
-                __DC(obj << "\t Object is nd.array with dtype == bool* .. non convertable to GIMLI::IVector")
+                __DC("\t" << obj << "\t Object is nd.array with dtype == bool*"
+                     "non convertable to GIMLI::IVector")
                 return NULL;
             }
         } else if (typeid(ValueType) == typeid(bool)){
             PyArrayObject *arr = (PyArrayObject *)obj;
 
             if (PyArray_TYPE(arr) != NPY_BOOL){
-                __DC(obj << "\t Object is nd.array with dtype != bool .. non convertable to GIMLI::BVector")
+                __DC("\t" << obj << "\t Object is nd.array with dtype != bool"
+                     ".. non convertable to GIMLI::BVector")
                 return NULL;
             }
         }
@@ -535,7 +546,7 @@ private:
 template < class ValueType > void * checkConvertibleNumpyScalar(PyObject * obj){
     // will be used for every convert of numpy scalars here e.g. for list conversion
     if (!obj){
-        __DC(obj << "\t abort check .. !Object")
+        __DC("\t" << obj << "\t abort check .. !Object")
         return NULL;
     }
     if (GIMLI::deepDebug() > 0){
@@ -558,13 +569,13 @@ template < class ValueType > void * checkConvertibleNumpyScalar(PyObject * obj){
     if (PyObject_TypeCheck(obj, &PyGenericArrType_Type)){
         if (typeid(ValueType) == typeid(GIMLI::Index)){
             if (!PyObject_TypeCheck(obj, &PyIntegerArrType_Type)){
-                __DC(obj << "\t abort check .. Object cannot convert to GIMLI::Index")
+                __DC("\t" << obj << "\t abort check .. Object cannot convert to GIMLI::Index")
                 return NULL;
             }
         }
         return obj;
     }
-    __DC(obj << "\t abort: no numpy scalar.")
+    __DC("\t" << obj << "\t abort: no numpy scalar.")
     return NULL;
 }
 

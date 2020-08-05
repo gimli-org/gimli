@@ -455,6 +455,18 @@ DEFINE_DOT_MULT(const FEAFunction &)
 
 #undef DEFINE_DOT_MULT
 
+DLLEXPORT const ElementMatrix < double > dot(
+                                        const ElementMatrix < double > & A,
+                                        const ElementMatrix < double > & B);
+// return dot(A, B, 1.0);}
+
+DLLEXPORT void dot(const ElementMatrix < double > & A,
+                   const ElementMatrix < double > & B,
+                   ElementMatrix < double > & ret);
+// return dot(A, B, 1.0, ret);
+// }
+
+
 /*! scalar per quadrature point */
 DLLEXPORT void mult(const ElementMatrix < double > & A, const RVector & b,
                     ElementMatrix < double > & C);

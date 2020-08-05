@@ -29,16 +29,9 @@ except ImportError as e:
 
 _pygimli_.load = None
 
-def showNow():
-
-    pass
-#    showLater(0)  # not working anymore
-
-
-############################
+###########################
 # print function for gimli stuff
 ############################
-
 
 def __RVector_str(self, valsOnly=False):
     s = str()
@@ -103,7 +96,6 @@ def nonzero_test(self):
 
 def np_round__(self, r):
     return np.round(self.array(), r)
-
 
 _pygimli_.RVector.__bool__ = nonzero_test
 _pygimli_.R3Vector.__bool__ = nonzero_test
@@ -762,6 +754,8 @@ def abs(v):
     """
     if isinstance(v, _pygimli_.CVector):
         return _pygimli_.mag(v)
+    elif isPos(v):
+        return _pygimli_.RVector3(v).abs()
     elif isinstance(v, list):
         try:
             return _pygimli_.RVector3(v).abs()
@@ -1065,6 +1059,8 @@ def z(instance):
 def search(what):
     """Utility function to search docstrings for string `what`."""
     np.lookfor(what, module="pygimli", import_modules=False)
+
+from .base import isScalar, isArray, isPos, isR3Array, isComplex
 
 # Import from submodules at the end
 from .mesh import Mesh, MeshEntity, Node

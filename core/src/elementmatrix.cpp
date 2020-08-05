@@ -1237,7 +1237,7 @@ ElementMatrix < double >::ElementMatrix(const ElementMatrix < double > & E){
 template < >  DLLEXPORT
 void ElementMatrix < double >::init(Index nCoeff, Index dofPerCoeff,
                                     Index dofOffset){
-    if (_nCoeff > 1 && _dofPerCoeff == 0){
+    if (nCoeff > 1 && dofPerCoeff == 0){
         __MS(nCoeff << " " << dofPerCoeff << " "<< dofOffset)
         log(Error, "number of coefficents > 1 but no dofPerCoefficent given");
     }
@@ -1653,6 +1653,19 @@ THROW_TO_IMPL
     //     }
 }
 
+const ElementMatrix < double > dot(
+                                        const ElementMatrix < double > & A,
+                                        const ElementMatrix < double > & B){
+return dot(A, B, 1.0);
+}
+
+void dot(const ElementMatrix < double > & A,
+                   const ElementMatrix < double > & B,
+                   ElementMatrix < double > & ret){
+return dot(A, B, 1.0, ret);
+}
+
+
 void evaluateQuadraturePoints(const Mesh & mesh, Index order,
                               const FEAFunction & f,
                               RVector & ret){
@@ -1778,7 +1791,21 @@ void mult(const ElementMatrix < double > & A, double b,
 // constant Pos
 void mult(const ElementMatrix < double > & A, const Pos & b,
           ElementMatrix < double > & C){
-              THROW_TO_IMPL
+    C.copyFrom(A, false);
+
+    const PosVector &x = A.x();
+    const RVector &w = A.w();
+
+    Index nRules(x.size());
+
+    for (Index r = 0; r < nRules; r++){
+        RMatrix & iC = (*C.pMatX())[r];
+
+        for (Index k = 0; k < iC.rows(); k ++){
+            iC[k] *= b[k];
+        }
+    }
+    C.integrate();
 }
 // constant Matrix
 void mult(const ElementMatrix < double > & A, const RMatrix &  b,
@@ -1896,32 +1923,6 @@ DEFINE_DOT_MULT_WITH_RETURN(const FEAFunction &)
 
 #undef DEFINE_DOT_MULT_WITH_RETURN
 
-
-// // void createForceVector(const Mesh & mesh, Index order, RVector & ret,
-// //                        const PosVector & a, Index nCoeff, Index dofOffset){
-// //     if (nCoeff > 3){
-// //         log(Error, "Number of coefficients need to be lower then 4");
-// //     }
-// //     Index dof = mesh.nodeCount() * nCoeff;
-// //     ret.resize(dof);
-// //     Index id = 0;
-// //     for (auto &cell: mesh.cells()){
-// //         cell->uCache().pot(*cell, order, true,
-// //                            nCoeff, mesh.nodeCount(), dofOffset);
-
-// //         if (a.size() == 1){
-// //             ret.add(cell->uCache(), a[0]);
-// //         } else if (a.size() == mesh.cellCount()){
-// //             ret.add(cell->uCache(), a[cell->id()]);
-// //         } else {
-// //             Index nRules = cell->uCache().x().size();
-// //             ElementMatrix < double > u;
-// //             mult(cell->uCache(), a.getVal(id, id + nRules), u);
-// //             id += nRules;
-// //             ret.add(u);
-// //         }
-// //     }
-// // }
 
 template < class Vec >
 void createForceVectorPerCell_(const Mesh & mesh, Index order, RVector & ret,
@@ -2197,30 +2198,6 @@ THROW_TO_IMPL \
 DEFINE_CREATE_FORCE_VECTOR_IMPL(const FEAFunction &)
 
 #undef DEFINE_CREATE_FORCE_VECTOR_IMPL
-
-
-// void createForceVector(const Mesh & mesh, Index order, RVector & ret,
-//                        const RVector & a, Index nCoeff, Index dofOffset){
-//     if (nCoeff > 3){
-//         log(Critical, "Number of coefficients need to be lower then 4");
-//     }
-//     Index dof = mesh.nodeCount() * nCoeff;
-//     ret.resize(dof);
-//     Index id = 0;
-//     for (auto &cell: mesh.cells()){
-//         cell->uCache().pot(*cell, order, true,
-//                            nCoeff, mesh.nodeCount(), dofOffset);
-
-//         if (a.size() == 1){
-//             ret.add(cell->uCache(), a[0]);
-//         } else if (a.size() == mesh.cellCount()){
-//             ret.add(cell->uCache(), a[cell->id()]);
-//         } else {
-//             log(Critical, "Number of cell coefficients (",a.size(),") does not"
-//                 "match cell count:",  mesh.cellCount());
-//         }
-//     }
-// }
 
 
 void createAdvectionMatrix(const Mesh & mesh, Index order,

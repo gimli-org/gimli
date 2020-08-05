@@ -199,7 +199,7 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(sum(d), 1+2+3)
 
     def test_Slices(self):
-        
+
         a = pg.Vector(np.arange(10.))
 
         np.testing.assert_array_equal(a[:], np.arange(10.)[:])
@@ -241,7 +241,7 @@ class TestRVectorMethods(unittest.TestCase):
         # In = nd.array(int)
         In = np.nonzero(bn)[0]
         self.assertEqual(type(In), np.ndarray)
-        self.assertEqual(In.dtype, 'int')
+        self.assertEqual(In.dtype, 'int64')
         self.assertEqual(len(In), 5)
         self.assertEqual(In[0], 5)
 
@@ -319,7 +319,7 @@ class TestRVectorMethods(unittest.TestCase):
         # np.testing.assert_equal(sum(A[2]), 2)
 
 if __name__ == '__main__':
-    
+
     # pg.setDeepDebug(1)
     # t = TestRVectorMethods()
 

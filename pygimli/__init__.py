@@ -15,6 +15,8 @@ from .core import (BVector, CVector, DataContainer, DataContainerERT,
                    mean, median, min, search, setDebug, setThreadCount, sort,
                    Stopwatch, sum, trans, unique, versionStr, x, y, z, zero)
 
+from .core import isScalar, isArray, isPos, isR3Array, isComplex
+
 from .core import math # alias all from .core.math.* to pg.math.*
 from .core import matrix # alias all from .core.matrix.* to pg.matrix.*
 
@@ -33,7 +35,6 @@ from .meshtools import createGrid, interpolate
 from .solver import solve
 from .utils import boxprint, cache, cut, unique, unit, cmap, randn
 from .utils import prettify as pf
-from .utils import isScalar, isArray, isPos, isR3Array, isComplex
 from .viewer import plt, show, wait
 from .frameworks import fit, Modelling, Inversion
 from .testing import test#, setTestingMode, testingMode

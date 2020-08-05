@@ -3,19 +3,13 @@
 """Pygimli base functions to handle complex arrays"""
 
 from math import pi
+from pygimli.core.base import isComplex
 
 import numpy as np
 import pygimli as pg
 
 
-def isComplex(vals):
-    """Check numpy or pg.Vector if have complex data type"""
-    if pg.isScalar(vals):
-        if isinstance(vals, (np.complex, complex)):
-            return True
-    elif pg.isArray(vals):
-        return isComplex(vals[0])
-    return False
+isComplex = pg.isComplex
 
 def toComplex(amp, phi=None):
     """Convert real values into complex (z = a + ib) valued array.

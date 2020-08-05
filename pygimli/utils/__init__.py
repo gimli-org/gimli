@@ -10,7 +10,7 @@ from .base import (rms, rmsWithErr, nanrms, createDateTimeString,
                    createPath,
                    getSavePath, gmat2numpy, interperc, interpExtrap, inthist,
                    nanrms, num2str, numpy2gmat, rrms, rms, rndig, saveResult,
-                   chi2, isScalar, isArray, isPos, isR3Array)
+                   chi2)
 
 # compatibility for dev #can be removed? (20200515)
 from .base import rmsWithErr as rmswitherr
