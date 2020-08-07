@@ -547,6 +547,10 @@ void Mesh::loadBinaryV2(const std::string & fbody) {
     this->setDimension(dim);
     uint8 version; readFromFile(file, version);
 
+    if (version !=2){
+        throwError(WHERE_AM_I + " wrong version " + str(version));
+    }
+
     //** read nodes
     uint32 nVerts; readFromFile(file, nVerts);
 

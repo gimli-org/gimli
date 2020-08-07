@@ -1863,8 +1863,8 @@ void DCMultiElectrodeModelling::calculateK_(const std::vector < ElectrodeShape *
     //solver.setSolverType(LDL);
     //    std::cout << "solver: " << solver.solverName() << std::endl;
 
-    if (verbose_) std::cout << "Factorizing (" << solver.solverName() << ") system matrix ... ";
     solver.setMatrix(S_, 1);
+    if (verbose_) std::cout << "Factorizing (" << solver.solverName() << ") system matrix ... ";
 
 // MEMINFO
 
@@ -2200,7 +2200,7 @@ void DCSRMultiElectrodeModelling::calculateK(const std::vector < ElectrodeShape 
 // MEMINFO
     LinSolver solver(false);
     solver.setMatrix(S_, 1);
-//     if (verbose_) std::cout << "Factorize (" << solver.solverName() << ") matrix ... " << swatch.duration() << std::endl;
+    if (verbose_) std::cout << "Factorize (" << solver.solverName() << ") matrix ... " << swatch.duration() << std::endl;
 
 // MEMINFO
 
