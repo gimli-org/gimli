@@ -1060,6 +1060,7 @@ class LinSolver(object):
         self.solvingTime = 0.0
         self.solver = ''
         self._factorize = 'factorizePG'
+        self._factorized = False
         self._desiredArrayType = np.array
 
         if solver is None:
@@ -1089,6 +1090,9 @@ class LinSolver(object):
         if mat is not None:
             self.factorize(mat)
 
+    def isFactorized(self):
+        return self._factorized
+
     def factorize(self, mat):
         swatch = pg.Stopwatch()
 
@@ -1097,6 +1101,7 @@ class LinSolver(object):
 
         if self.verbose:
             pg.info("Matrix factorization:", self.factorTime)
+        self._factorized = True
 
     def factorizePG(self, mat):
         """"""

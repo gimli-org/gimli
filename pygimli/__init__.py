@@ -204,8 +204,9 @@ def version(cache=True):
 
 __swatch__ = dict()
 
+
 def tic(msg=None, key=0):
-    """Start global timer. Print elpased time with `toc()`.
+    """Start global timer. Print elapsed time with `toc()`.
 
     You can start multiple stopwatches with optional identifier.
 

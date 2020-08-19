@@ -183,8 +183,8 @@ def __SparseMatrixEqual__(self, T):
         return False
 
     # print(self, T)
-    # print(np.linalg.norm(np.array(rowsA)-np.array(rowsB)))
-    # print(np.linalg.norm(np.array(colsA)-np.array(colsB)))
+    # print('rows:', np.linalg.norm(np.array(rowsA)-np.array(rowsB)))
+    # print('cols:', np.linalg.norm(np.array(colsA)-np.array(colsB)))
 
     # print(np.linalg.norm(valsA-valsB), np.mean(abs(valsA)), np.mean(abs(valsB)))
     # print(np.linalg.norm(valsA-valsB)/np.mean(abs(valsA)))

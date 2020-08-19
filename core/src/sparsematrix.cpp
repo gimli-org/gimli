@@ -246,10 +246,21 @@ THROW_TO_IMPL
 
 template <> void SparseMatrix< double >::add(const ElementMatrix< double > & A,
                                             double scale){
-    if (!valid_) SPARSE_NOT_VALID;
-    for (Index i = 0, imax = A.size(); i < imax; i++){
-        for (Index j = 0, jmax = A.size(); j < jmax; j++){
-            addVal(A.idx(i), A.idx(j), scale * A.getVal(i, j));
+    if (A.oldStyle()){
+        if (!valid_) SPARSE_NOT_VALID;
+        for (Index i = 0, imax = A.size(); i < imax; i++){
+            for (Index j = 0, jmax = A.size(); j < jmax; j++){
+                addVal(A.idx(i), A.idx(j), scale * A.getVal(i, j));
+            }
+        }
+    } else {
+        A.integrate();
+        for (Index i = 0, imax = A.rows(); i < imax; i++){
+            for (Index j = 0, jmax = A.cols(); j < jmax; j++){
+                // __MS(A.rowIDs()[i] << " " << A.colIDs()[j] << "  "
+                //       << scale << " " << A.getVal(i, j))
+                addVal(A.rowIDs()[i], A.colIDs()[j], scale * A.getVal(i, j));
+            }
         }
     }
 }

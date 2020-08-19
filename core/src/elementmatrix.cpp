@@ -1251,6 +1251,7 @@ void ElementMatrix < double >::init(Index nCoeff, Index dofPerCoeff,
     _valid = false;
     _integrated = false;
     _newStyle = true;
+    _elastic = false;
 }
 
 template < > DLLEXPORT
@@ -1271,6 +1272,7 @@ void ElementMatrix < double >::copyFrom(const ElementMatrix < double > & E,
     this->_idsC = E.colIDs();
     this->_idsR = E.rowIDs();
     this->_div = E.isDiv();
+    this->_elastic = E.elastic();
 
     if (withMat == true) {
         this->_integrated = E.isIntegrated();
@@ -1336,16 +1338,20 @@ ElementMatrix < double > & ElementMatrix < double >::pot(
     }
 
     _matX.resize(nRules);
+
+    RMatrix N(nRules, nVerts);
+
     for (Index i = 0; i < nRules; i ++ ){
         // transpose might be better?? check
         // fill per row is cheaper
         _matX[i].resize(nCoeff, nVerts*nCoeff);
-    }
 
+        N[i] = ent.N(x[i]);
+    }
 
     for (Index i = 0; i < nRules; i ++ ){
         for (Index n = 0; n < nCoeff; n ++ ){
-            _matX[i][n].setVal(ent.N(x[i]), n*nVerts, (n+1)*nVerts);
+            _matX[i][n].setVal(N[i], n*nVerts, (n+1)*nVerts);
         }
     }
 
@@ -1377,19 +1383,12 @@ ElementMatrix < double > & ElementMatrix < double >::pot(
 
 template < > DLLEXPORT
 ElementMatrix < double > & ElementMatrix < double >::grad(
-                                    const MeshEntity & ent, Index order,
-                                    bool elastic, bool sum, bool div,
-                                    Index nCoeff, Index dof, Index dofOffset){
-THROW_TO_IMPL
-return *this;
-
-}
-
-template < > DLLEXPORT
-ElementMatrix < double > & ElementMatrix < double >::grad(
                         const MeshEntity & ent, Index order,
-                        bool elastic, bool sum, bool div){
-    if (this->valid() && this->order() == order && this->_ent == & ent){
+                        bool elastic, bool sum, bool div, bool kelvin){
+    if (this->valid() && \
+        this->order() == order && \
+        this->_ent == & ent && \
+        this->elastic() == elastic){
         return *this;
     }
 
@@ -1397,6 +1396,7 @@ ElementMatrix < double > & ElementMatrix < double >::grad(
     this->_ent = &ent;
     this->_div = div;
     this->_integrated = false;
+    this->_elastic = elastic;
 
     //this->getWeightsAndPoints(ent, this->_w, this->_x, this->_order);
 
@@ -1415,37 +1415,45 @@ ElementMatrix < double > & ElementMatrix < double >::grad(
         log(Critical, "ElementMatrix need to be initialized");
     }
 
-    this->resize(nVerts*nCoeff, nCols);
-
-    this->_idsR.resize(nVerts*nCoeff, 0);
-    this->_idsC.resize(nCols, 0);
-
-    for (Index i = 0; i < nCoeff; i++){
-        this->_idsR.setVal(ent.ids() + i*_dofPerCoeff + _dofOffset,
-                           i * nVerts, (i+1) * nVerts);
-    }
-
-    bool voigtNotation = true;
-
+    double a = 1.0;
     if (elastic == true){
+        //** special case for constitutive matrix
+        nCols = ent.dim();
+        if (kelvin){
+            a = std::sqrt(2.);
+        }
+
         if (ent.dim() == 2){
             nCols += 1;
-        } else if (ent.dim() == 2){
+        } else if (ent.dim() == 3){
             nCols += 3;
         }
     }
 
+    this->resize(nVerts*nCoeff, nCols);
+    this->_idsR.resize(nVerts*nCoeff, 0);
+    this->_idsC.resize(nCols, 0);
+
+    for (Index i = 0; i < nCoeff; i++){
+        this->_idsR.setVal(ent.ids() + i * _dofPerCoeff + _dofOffset,
+                           i * nVerts, (i+1) * nVerts);
+    }
+
+    // __MS(ent.dim() << " " << nCols << " " << elastic)
     // matrices per quadrature point
     //_matX
 
-    if (_matX.size() != nRules){
-        _matX.resize(nRules);
-        for (Index i = 0; i < nRules; i ++ ){
-            // transpose might be better?? check
-            // fill per row is cheaper
-            _matX[i].resize(nCols, nVerts*nCoeff);
-        }
+    _matX.resize(nRules);
+    for (Index i = 0; i < nRules; i ++ ){
+        //** _matX stored transposed
+        // transpose might be better?? check
+        // fill per row is cheaper
+        _matX[i].resize(nCols, nVerts*nCoeff);
+        _matX[i] *= 0.0;
     }
+
+    // __MS(this->rows() << " " << this->cols())
+    // __MS(_matX[0].rows() << " " << _matX[0].cols())
 
     if (dNdr_.rows() != nRules){
         if (ent.dim() > 0) dNdr_.resize(nRules, nVerts);
@@ -1485,11 +1493,6 @@ ElementMatrix < double > & ElementMatrix < double >::grad(
         }
     }
 
-    double a = std::sqrt(2.);
-    if (voigtNotation){
-        a = 1.0;
-    }
-
     for (Index i = 0; i < nRules; i ++){
 
         if (nCoeff == 1){
@@ -1508,17 +1511,39 @@ ElementMatrix < double > & ElementMatrix < double >::grad(
             if (ent.dim() == 1){
                 _matX[i][0].setVal(dNdx_[i], 0 * nVerts, 1 * nVerts);
             } else if (ent.dim() == 2){
-                _matX[i][0].setVal(dNdx_[i], 0 * nVerts, 1 * nVerts); // dNx/dx
-                _matX[i][1].setVal(dNdy_[i], 0 * nVerts, 1 * nVerts); // dNx/dy
-
-                _matX[i][2].setVal(dNdx_[i], 1 * nVerts, 2 * nVerts); // dNy/dx
-                _matX[i][3].setVal(dNdy_[i], 1 * nVerts, 2 * nVerts); // dNy/dy
-
                 if (elastic == true){
-                    _matX[i][4].setVal(dNdy_[i] * a, 0 * nVerts, 1 * nVerts);
-                    _matX[i][4].setVal(dNdx_[i] * a, 1 * nVerts, 2 * nVerts);
+                    // special case for constitutive matrix (2x3)
+            _matX[i][0].setVal(dNdx_[i], 0 * nVerts, 1 * nVerts); //dNx/dx
+            _matX[i][1].setVal(dNdy_[i], 1 * nVerts, 2 * nVerts); //dNy/dy
+            _matX[i][2].setVal(dNdy_[i] * a, 0 * nVerts, 1 * nVerts); //dNy/dx
+            _matX[i][2].setVal(dNdx_[i] * a, 1 * nVerts, 2 * nVerts); //dNx/dy
+                } else{
+                // full matrix still unsure how to add constitutive for it
+                _matX[i][0].setVal(dNdx_[i], 0 * nVerts, 1 * nVerts); //dNx/dx
+                _matX[i][1].setVal(dNdy_[i], 0 * nVerts, 1 * nVerts); //dNx/dy
+
+                _matX[i][2].setVal(dNdx_[i], 1 * nVerts, 2 * nVerts); //dNy/dx
+                _matX[i][3].setVal(dNdy_[i], 1 * nVerts, 2 * nVerts); //dNy/dy
                 }
             } else if (ent.dim() == 3){
+
+
+                if (elastic == true){
+                    // special case for constitutive matrix (3x6)
+            _matX[i][0].setVal(dNdx_[i], 0 * nVerts, 1 * nVerts); //dNx/dx
+            _matX[i][1].setVal(dNdy_[i], 1 * nVerts, 2 * nVerts); //dNy/dy
+            _matX[i][2].setVal(dNdz_[i], 2 * nVerts, 3 * nVerts); //dNz/dz
+
+            _matX[i][3].setVal(dNdy_[i] * a, 0 * nVerts, 1 * nVerts);//dNy/dx
+            _matX[i][3].setVal(dNdx_[i] * a, 1 * nVerts, 2 * nVerts);//dNx/dy
+
+            _matX[i][4].setVal(dNdz_[i] * a, 1 * nVerts, 2 * nVerts);//dNz/dy
+            _matX[i][4].setVal(dNdy_[i] * a, 2 * nVerts, 3 * nVerts);//dNy/dz
+
+            _matX[i][5].setVal(dNdz_[i] * a, 0 * nVerts, 1 * nVerts);//dNz/dx
+            _matX[i][5].setVal(dNdx_[i] * a, 2 * nVerts, 3 * nVerts);//dNx/dz
+                } else {
+                // full matrix still unsure how to add constitutive for it
                 _matX[i][0].setVal(dNdx_[i], 0 * nVerts, 1 * nVerts); //dNx/dx
                 _matX[i][1].setVal(dNdy_[i], 0 * nVerts, 1 * nVerts); //dNx/dy
                 _matX[i][2].setVal(dNdz_[i], 0 * nVerts, 1 * nVerts); //dNx/dz
@@ -1531,16 +1556,8 @@ ElementMatrix < double > & ElementMatrix < double >::grad(
                 _matX[i][7].setVal(dNdy_[i], 2 * nVerts, 3 * nVerts); //dNz/dy
                 _matX[i][8].setVal(dNdz_[i], 2 * nVerts, 3 * nVerts); //dNz/dz
 
-                if (elastic == true){
-                    _matX[i][9].setVal(dNdy_[i] * a, 0 * nVerts, 1 * nVerts);
-                    _matX[i][9].setVal(dNdx_[i] * a, 1 * nVerts, 2 * nVerts);
-
-                    _matX[i][10].setVal(dNdz_[i] * a, 1 * nVerts, 2 * nVerts);
-                    _matX[i][10].setVal(dNdy_[i] * a, 2 * nVerts, 3 * nVerts);
-
-                    _matX[i][11].setVal(dNdz_[i] * a, 0 * nVerts, 1 * nVerts);
-                    _matX[i][11].setVal(dNdx_[i] * a, 2 * nVerts, 3 * nVerts);
                 }
+
             }
         }
     }
@@ -1548,6 +1565,26 @@ ElementMatrix < double > & ElementMatrix < double >::grad(
     if (sum){
         this->integrate();
     }
+    return *this;
+}
+
+template < > DLLEXPORT
+ElementMatrix < double > & ElementMatrix < double >::grad(
+                                    const MeshEntity & ent, Index order,
+                                    bool elastic, bool sum, bool div,
+                                    Index nCoeff, Index dof, Index dofOffset,
+                                    bool kelvin){
+
+    if (!this->valid() ||
+        this->order() != order ||
+        this->elastic() != elastic ||
+        this->_ent != &ent ||
+        this->_nCoeff != nCoeff){
+
+        this->init(nCoeff, dof, dofOffset);
+        this->grad(ent, order, elastic, sum, div, kelvin);
+    }
+    if (sum == true) this->integrate();
     return *this;
 }
 
@@ -1584,22 +1621,50 @@ void dot(const ElementMatrix < double > & A,
 
         if (Ai.rows() == 1 && Bi.rows() > 1){
             // divergence or other stuff we need to sum
-            for (Index i = 0; i < Ai.cols(); i++){
-                for (Index j = 0; j < Bi.cols(); j++){
-                    for (Index k = 0; k < Bi.rows(); k++){
-                        (*C.pMat())[i][j] += Ai[0][i] * Bi[k][j] * c ;
-                    }
+            RMatrix sB(1, Bi.cols());
+            if (B.isDiv()){
+                sB[0] += Bi[0]; // v_x/dx
+                if (B.entity().dim() == 2){
+                    ASSERT_VEC_SIZE(Bi, 2*2)
+                    sB[0] += Bi[3]; // v_y/dy
+                } else if (B.entity().dim() == 3){
+                    ASSERT_VEC_SIZE(Bi, 3*3)
+                    sB[0] += Bi[4]; // v_y/dy
+                    sB[0] += Bi[8]; // v_z/dz
+                }
+            } else {
+                for (Index k = 0; k < Bi.rows(); k++){
+                    sB[0] += Bi[k];
                 }
             }
+            matTransMult(A.matX()[r], sB, *C.pMat(), c);
         } else if (A.matX()[r].rows() > 1 && B.matX()[r].rows() == 1){
-            // divergence or other stuff we need to sum
-            for (Index i = 0; i < Ai.cols(); i++){
-                for (Index j = 0; j < Bi.cols(); j++){
-                    for (Index k = 0; k < Ai.rows(); k++){
-                        (*C.pMat())[i][j] += Ai[k][i] * Bi[0][j] * c;
-                    }
+            RMatrix sA(1, Ai.cols());
+            if (A.isDiv()){
+                sA[0] += Ai[0]; // v_x/dx
+                if (A.entity().dim() == 2){
+                    ASSERT_VEC_SIZE(Ai, 2*2)
+                    sA[0] += Ai[3]; // v_y/dy
+                } else if (A.entity().dim() == 3){
+                    ASSERT_VEC_SIZE(Ai, 3*3)
+                    sA[0] += Ai[4]; // v_y/dy
+                    sA[0] += Ai[8]; // v_z/dz
+                }
+            } else {
+                for (Index k = 0; k < Ai.rows(); k++){
+                    sA[0] += Ai[k];
                 }
             }
+            matTransMult(sA, B.matX()[r], *C.pMat(), c);
+
+            // // divergence or other stuff we need to sum
+            // for (Index i = 0; i < Ai.cols(); i++){
+            //     for (Index j = 0; j < Bi.cols(); j++){
+            //         for (Index k = 0; k < Ai.rows(); k++){
+            //             (*C.pMat())[i][j] += Ai[k][i] * Bi[0][j] * c;
+            //         }
+            //     }
+            // }
         } else {
             matTransMult(A.matX()[r], B.matX()[r], *C.pMat(), c);
         }
@@ -1621,8 +1686,9 @@ void dot(const ElementMatrix < double > & A,
 
     if (c.rows() != A.cols() || c.cols() != B.cols()){
         __MS(c)
-        log(Error, "Parameter matrix need to match Elementmatrix shapes: ",
-            A.cols(), ", ", B.cols());
+        log(Error, "Parameter matrix need to match Elementmatrix shapes: "
+            "A:(", A.rows(), ",", A.cols(), ")",
+            "B:(", B.rows(), ",", B.cols(), ")");
         return;
     }
 
@@ -1636,6 +1702,13 @@ void dot(const ElementMatrix < double > & A,
         const RMatrix & Bi = B.matX()[i];
         // A.T * C * B
         AtC *= 0.0; // needed because matMult allways adds
+
+    // __M
+    // log(Info, "A:(", A.rows(), ",", A.cols(), ")",
+    //           "B:(", B.rows(), ",", B.cols(), ")");
+    // log(Info, "Ai:(", Ai.rows(), ",", Ai.cols(), ")",
+    //           "Bi:(", Bi.rows(), ",", Bi.cols(), ")");
+
         matTransMult(Ai, c, AtC, 1.0);
         matMult(AtC, Bi, *C.pMat(), w[i] * A.entity().size());
     }
@@ -1653,10 +1726,9 @@ THROW_TO_IMPL
     //     }
 }
 
-const ElementMatrix < double > dot(
-                                        const ElementMatrix < double > & A,
-                                        const ElementMatrix < double > & B){
-return dot(A, B, 1.0);
+const ElementMatrix < double > dot(const ElementMatrix < double > & A,
+                                   const ElementMatrix < double > & B){
+    return dot(A, B, 1.0);
 }
 
 void dot(const ElementMatrix < double > & A,
@@ -1923,7 +1995,6 @@ DEFINE_DOT_MULT_WITH_RETURN(const FEAFunction &)
 
 #undef DEFINE_DOT_MULT_WITH_RETURN
 
-
 template < class Vec >
 void createForceVectorPerCell_(const Mesh & mesh, Index order, RVector & ret,
                         const Vec & a, Index nCoeff, Index dofOffset){
@@ -2031,26 +2102,28 @@ void createMassMatrixMult_(const Mesh & mesh, Index order,
 template < class Vec >
 void createStiffnessMatrixPerCell_(const Mesh & mesh, Index order,
                                    RSparseMapMatrix & ret, const Vec & a,
-                                   Index nCoeff, Index dofOffset){
+                                   Index nCoeff, Index dofOffset,
+                                   bool elastic, bool kelvin){
     if (nCoeff > 3){
         __M;
         log(Critical, "Number of coefficients need to be lower then 4");
     }
+
     ElementMatrix < double > dudu;
 
     for (auto &cell: mesh.cells()){
-
+        //#bool elastic, bool sum, bool div,
         cell->gradUCache().grad(*cell, order,
-                                 false, false, false,
-                                 nCoeff, mesh.nodeCount(), dofOffset);
+                                 elastic, false, false,
+                                 nCoeff, mesh.nodeCount(), dofOffset, kelvin);
 
         if (a.size() == 1){
-            dot(cell->uCache(), cell->uCache(), a[0], dudu);
+            dot(cell->gradUCache(), cell->gradUCache(), a[0], dudu);
         } else if (a.size() == mesh.cellCount()){
-            dot(cell->uCache(), cell->uCache(), a[cell->id()], dudu);
+            dot(cell->gradUCache(), cell->gradUCache(), a[cell->id()], dudu);
         } else {
             __M;
-            log(Critical, "Number of cell coefficients (",a.size(),") does not"
+            log(Critical, "Number of cell coefficients (",a.size(),") does not "
                 "match cell count:",  mesh.cellCount());
         }
         ret.add(dudu);
@@ -2060,7 +2133,8 @@ void createStiffnessMatrixPerCell_(const Mesh & mesh, Index order,
 template < class Vec >
 void createStiffnessMatrixMult_(const Mesh & mesh, Index order,
                                    RSparseMapMatrix & ret, const Vec & a,
-                                   Index nCoeff, Index dofOffset){
+                                   Index nCoeff, Index dofOffset,
+                                   bool elastic, bool kelvin){
     if (nCoeff > 3){
         __M;
         log(Critical, "Number of coefficients need to be lower then 4");
@@ -2068,16 +2142,18 @@ void createStiffnessMatrixMult_(const Mesh & mesh, Index order,
     ElementMatrix < double > dua;
     ElementMatrix < double > duadu;
 
+    //#bool elastic, bool sum, bool div,
+
     for (auto &cell: mesh.cells()){
         cell->gradUCache().grad(*cell, order,
-                                 false, false, false,
-                                 nCoeff, mesh.nodeCount(), dofOffset);
+                                 elastic, false, false,
+                                 nCoeff, mesh.nodeCount(), dofOffset, kelvin);
         if (a.size() == 1 && mesh.cellCount() != 1){
             createStiffnessMatrixPerCell_(mesh, order, ret, a[0],
-                                          nCoeff, dofOffset);
+                                          nCoeff, dofOffset, elastic, kelvin);
         } else if (a.size() == mesh.cellCount()){
-            mult(cell->uCache(), a[cell->id()], dua);
-            dot(dua, cell->uCache(), 1.0, duadu);
+            mult(cell->gradUCache(), a[cell->id()], dua);
+            dot(dua, cell->gradUCache(), 1.0, duadu);
             ret.add(duadu);
         } else {
             __M;
@@ -2102,9 +2178,10 @@ void createMassMatrix(const Mesh & mesh, Index order, \
 }\
 void createStiffnessMatrix (const Mesh & mesh, Index order, \
                             RSparseMapMatrix & ret, A_TYPE a, \
-                            Index nCoeff, Index dofOffset){\
+                            Index nCoeff, Index dofOffset, \
+                            bool elastic, bool kelvin){\
     createStiffnessMatrixPerCell_(mesh, order, ret, V_TYPE(1,a),\
-                                  nCoeff, dofOffset);\
+                                  nCoeff, dofOffset, elastic, kelvin);\
 }
 
 DEFINE_CREATE_SCALAR_IMPL(double, RVector)
@@ -2126,10 +2203,12 @@ void createMassMatrix(const Mesh & mesh, Index order, RSparseMapMatrix & ret,
 }
 void createStiffnessMatrix (const Mesh & mesh, Index order,
                             RSparseMapMatrix & ret, const RMatrix & a,
-                            Index nCoeff, Index dofOffset){
+                            Index nCoeff, Index dofOffset,
+                            bool elastic, bool kelvin){
     std::vector < RMatrix > aM(1);
     aM[0] = a;
-    createStiffnessMatrixPerCell_(mesh, order, ret, aM, nCoeff, dofOffset);
+    createStiffnessMatrixPerCell_(mesh, order, ret, aM,
+                                  nCoeff, dofOffset, elastic, kelvin);
 }
 
 //** IMPL per cell values
@@ -2145,8 +2224,10 @@ void createMassMatrix(const Mesh & mesh, Index order, \
 }\
 void createStiffnessMatrix (const Mesh & mesh, Index order, \
                             RSparseMapMatrix & ret, A_TYPE a, \
-                            Index nCoeff, Index dofOffset){\
-    createStiffnessMatrixPerCell_(mesh, order, ret, a, nCoeff, dofOffset);\
+                            Index nCoeff, Index dofOffset, \
+                            bool elastic, bool kelvin){\
+    createStiffnessMatrixPerCell_(mesh, order, ret, a, \
+                                  nCoeff, dofOffset, elastic, kelvin);\
 }
 
 DEFINE_CREATE_PERCELL_IMPL(const RVector &)
@@ -2169,8 +2250,10 @@ void createMassMatrix(const Mesh & mesh, Index order, \
 } \
 void createStiffnessMatrix(const Mesh & mesh, Index order, \
                            RSparseMapMatrix & ret, A_TYPE a, \
-                           Index nCoeff, Index dofOffset){ \
-    createStiffnessMatrixMult_(mesh, order, ret, a, nCoeff, dofOffset);\
+                           Index nCoeff, Index dofOffset, \
+                           bool elastic, bool kelvin){ \
+    createStiffnessMatrixMult_(mesh, order, ret, a, \
+                               nCoeff, dofOffset, elastic, kelvin);\
 }
 
 DEFINE_CREATE_FORCE_VECTOR_IMPL(const std::vector< RVector > &)
@@ -2192,7 +2275,8 @@ THROW_TO_IMPL \
                       } \
 void createStiffnessMatrix(const Mesh & mesh, Index order, \
                            RSparseMapMatrix & ret, A_TYPE a, \
-                           Index nCoeff, Index dofOffset){ \
+                           Index nCoeff, Index dofOffset, \
+                           bool elastic, bool kelvin){ \
 THROW_TO_IMPL \
 }
 DEFINE_CREATE_FORCE_VECTOR_IMPL(const FEAFunction &)
