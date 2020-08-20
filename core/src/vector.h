@@ -758,12 +758,7 @@ DEFINE_UNARY_MOD_OPERATOR__(*, MULT)
 
     /*! Round all values of this array to a given tolerance. */
     Vector< ValueType > & round(const ValueType & tolerance){
-#ifdef USE_BOOST_BIND
-        std::transform(data_, data_ + size_, data_, boost::bind(roundTo< ValueType >, _1, tolerance));
-#else
-        for (Index i = 0; i < size_; i ++) data_[i] = roundTo(data_[i],
-tolerance);
-#endif
+        THROW_TO_IMPL
         return *this;
     }
 
@@ -971,6 +966,17 @@ template <> DLLEXPORT void Vector<double>::add(
 // removeme in V1.2, 20200727
 template< typename ValueType > void Vector< ValueType >::add(
     const ElementMatrix < double >& A, const Vector< double> & a){THROW_TO_IMPL}
+
+
+template < > inline
+Vector< double > & Vector< double >::round(const double & tolerance){
+#ifdef USE_BOOST_BIND
+    std::transform(data_, data_ + size_, data_, boost::bind(roundTo< double >, _1, tolerance));
+#else
+    for (Index i = 0; i < size_; i ++) data_[i] = roundTo(data_[i], tolerance);
+#endif
+    return *this;
+}
 
 template< class ValueType, class Iter > class AssignResult{
 public:
@@ -1449,7 +1455,7 @@ template < class T, class A > T sum(const __VectorExpr< T, A > & a){
 //** Templates argue with python bindings
 inline Complex sum(const CVector & c){
     return std::accumulate(c.begin(), c.end(), Complex(0));
-};
+}
 inline double sum(const RVector & r){
     return std::accumulate(r.begin(), r.end(), double(0));
 }

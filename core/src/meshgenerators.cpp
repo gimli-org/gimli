@@ -179,7 +179,7 @@ Mesh createMesh2D(const Mesh & mesh, const RVector & y,
         mesh2.createBoundary(nodes, marker);
     }
     for (Index iy = y.size()-1; iy > 0; iy --){
-         int i = iy -1;
+        //  int i = iy -1;
          mesh2.createEdge(mesh2.node((iy+1) * mesh.nodeCount()-1),
                           mesh2.node((iy)   * mesh.nodeCount()-1), rightMarker);
     }

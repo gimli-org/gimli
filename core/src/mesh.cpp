@@ -505,7 +505,7 @@ Boundary * Mesh::copyBoundary(const Boundary & bound, double tol, bool check){
 
     std::vector < Node * > nodes(bound.nodeCount());
     bool isFreeFace = false;
-    bool isSubFace = false;
+    // bool isSubFace = false;
 
     std::vector < Node * > conNodes;
     std::vector < Node * > secNodes;

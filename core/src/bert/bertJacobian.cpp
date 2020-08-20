@@ -131,7 +131,7 @@ public:
         ElementMatrix < double > S_i;
         Cell * cell = NULL;
         int modelIdx = 0;
-        Index si, sj;
+        // Index si, sj;
 
         const Vector < ValueType > *va;
         const Vector < ValueType > *vb;

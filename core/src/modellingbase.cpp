@@ -265,7 +265,7 @@ void ModellingBase::createJacobian_mt(const RVector & model,
     if (verbose_) std::cout << "Create Jacobian matrix (brute force, mt) ...";
 
     Stopwatch swatch(true);
-    double fak = 1.05;
+    // double fak = 1.05;
 
     if (!jacobian_){
         this->initJacobian();

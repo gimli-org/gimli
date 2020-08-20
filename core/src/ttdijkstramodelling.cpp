@@ -557,7 +557,7 @@ void TravelTimeDijkstraModelling::createJacobian(RSparseMapMatrix & jacobian,
 
             double edgeLength = way.dist();
             //double edgeLength = mesh_->node(aId).pos().distance(mesh_->node(bId).pos());
-            double slo = 0.0;
+            // double slo = 0.0;
 
             double minSlow = 9e99;
 

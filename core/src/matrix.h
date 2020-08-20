@@ -338,6 +338,10 @@ public:
         : MatrixBase() {
         resize(rows, cols);
     }
+    Matrix(Index rows, Index cols, ValueType *src)
+        : MatrixBase() {
+        fromData(src, rows, cols);
+    }
     /*! Copy constructor */
 
     Matrix(const std::vector < Vector< ValueType > > & mat)
@@ -594,6 +598,18 @@ public:
     }
 	std::vector < Vector< ValueType > > mat_;
 
+    void dumpData(ValueType * target) const{
+        //target.resize(this.rows(), this.cols());
+        for (Index i = 0; i < mat_.size(); i ++) {
+            std::memcpy(&target[i*this->cols()], &mat_[i][0], sizeof(ValueType) * this->cols());
+        }
+    }
+    void fromData(ValueType * src, Index m, Index n){
+        this->resize(m, n);
+        for (Index i = 0; i < m; i ++) {
+            std::memcpy(&mat_[i][0], &src[i*n], sizeof(ValueType) * n);
+        }
+    }
 protected:
 
     void allocate_(Index rows, Index cols){
@@ -1044,16 +1060,16 @@ bool loadMatrixRow(Matrix < ValueType > & A,
     return true;
 }
 
-/*!Inplace matrix calculation: $C += a * A.T * B * A$.
+/*!Inplace matrix calculation: $C = a * A.T * B * A$ + b*C.
 Size of A is (n,m) and B need to be square (n,n), C will resized to (m,m).
 AtB might be for temporary memory allocation.  */
-DLLEXPORT void matMultABA(const RMatrix & A, const RMatrix & B, RMatrix & C, RMatrix & AtB, double a=1.0);
+DLLEXPORT void matMultABA(const RMatrix & A, const RMatrix & B, RMatrix & C, RMatrix & AtB, double a=1.0, double b=1.0);
 
-/*!Inplace matrix calculation: $C += a * A * B$. B are transposed if needed to fit appropriate dimensions. */
-DLLEXPORT void matMult(const RMatrix & A, const RMatrix & B, RMatrix & C, double a=1.0);
+/*!Inplace matrix calculation: $C = a*A*B + b*C$. B are transposed if needed to fit appropriate dimensions. */
+DLLEXPORT void matMult(const RMatrix & A, const RMatrix & B, RMatrix & C, double a=1.0, double b=1.0);
 
-/*!Inplace matrix calculation: $C += a * A.T * B$. B are transposed if needed to fit appropriate dimensions. */
-DLLEXPORT void matTransMult(const RMatrix & A, const RMatrix & B, RMatrix & C, double a=1.0);
+/*!Inplace matrix calculation: $C = a * A.T * B + b*C$. B are transposed if needed to fit appropriate dimensions. */
+DLLEXPORT void matTransMult(const RMatrix & A, const RMatrix & B, RMatrix & C, double a=1.0, double b=1.0);
 
 /*! Return determinant for Matrix(2 x 2). */
 template < class T > inline T det(const T & a, const T & b, const T & c, const T & d){
