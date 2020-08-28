@@ -371,8 +371,9 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
                     #gci.cmap.set_under('k')
 
             except BaseException as e:
-                pg.error("Exception occurred: ", e)
-                exit()
+                print(e)
+                traceback.print_exc(file=sys.stdout)
+
 
     if mesh.cellCount() == 0:
         showMesh = False
