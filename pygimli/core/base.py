@@ -4,7 +4,7 @@ Misc stuff also needed for core imports and monkey patching
 """
 import numpy as np
 
-from ._pygimli_ import (RVector3, R3Vector)
+from ._pygimli_ import (RVector3, R3Vector, RMatrix)
 
 
 def isScalar(v, val=None):
@@ -54,6 +54,7 @@ def isArray(v, N=None):
     """
     if N is None:
         return hasattr(v, '__iter__') and not isinstance(v, (str))
+
     return isArray(v) and len(v) == N
 
 def isComplex(vals):
@@ -102,3 +103,10 @@ def isR3Array(v, N=None):
                 not isinstance(v, (str)) and v.ndim == 2 and isPos(v[0]))
     return isR3Array(v) and len(v) == N
 
+def isMatrix(v, shape=None):
+    """Check is v has ndim=2 or is comparable list"""
+    if shape is None:
+        return isinstance(v, RMatrix) or \
+               hasattr(v, 'ndim') and v.ndim == 2 or \
+                isinstance(v, list) and isArray(v[0])
+    return isMatrix(v) and (hasattr(v, 'shape') and v.shape == shape)

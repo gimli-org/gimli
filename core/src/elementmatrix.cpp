@@ -593,15 +593,19 @@ ElementMatrix < double > & ElementMatrix < double >::gradU2(const MeshEntity & e
     this->fillGradientBase(ent, w, x,
                            max(C.size(), ent.dim()),
                            voigtNotation);
+    double beta = 0.0;
     if (C.size() == 1){
+
         for (Index i = 0; i < w.size(); i ++ ){
             // B.T * B
-            matTransMult(_B[i], _B[i], mat_, w[i] * ent.size() * C[0][0]);
+            if (i > 0) beta = 1.0;
+            matTransMult(_B[i], _B[i], mat_, w[i] * ent.size() * C[0][0], beta);
         }
     } else {
         for (Index i = 0; i < w.size(); i ++ ){
             // B.T * C * B
-            matMultABA(_B[i], C, mat_, _abaTmp, w[i] * ent.size());
+            if (i > 0) beta = 1.0;
+            matMultABA(_B[i], C, mat_, _abaTmp, w[i] * ent.size(), beta);
         }
         // check performance if this works
         // iterator over weights in fill Gradient
@@ -1611,9 +1615,9 @@ void dot(const ElementMatrix < double > & A,
     const RVector &w = A.w();
     Index nRules(w.size());
 
-    (*C.pMat()) *= 0.0;
-
+    double beta = 0.0;
     for (Index r = 0; r < nRules; r++){
+        if (r > 0) beta = 1.0; // C = A*B for r == 0, c += A*B for r > 0
 
         const RMatrix & Ai = A.matX()[r];
         const RMatrix & Bi = B.matX()[r];
@@ -1637,7 +1641,7 @@ void dot(const ElementMatrix < double > & A,
                     sB[0] += Bi[k];
                 }
             }
-            matTransMult(A.matX()[r], sB, *C.pMat(), c);
+            matTransMult(A.matX()[r], sB, *C.pMat(), c, beta);
         } else if (A.matX()[r].rows() > 1 && B.matX()[r].rows() == 1){
             RMatrix sA(1, Ai.cols());
             if (A.isDiv()){
@@ -1655,7 +1659,7 @@ void dot(const ElementMatrix < double > & A,
                     sA[0] += Ai[k];
                 }
             }
-            matTransMult(sA, B.matX()[r], *C.pMat(), c);
+            matTransMult(sA, B.matX()[r], *C.pMat(), c, beta);
 
             // // divergence or other stuff we need to sum
             // for (Index i = 0; i < Ai.cols(); i++){
@@ -1666,7 +1670,11 @@ void dot(const ElementMatrix < double > & A,
             //     }
             // }
         } else {
-            matTransMult(A.matX()[r], B.matX()[r], *C.pMat(), c);
+            // __MS(c << " " << r)
+            // __MS(std::endl << A.matX()[r] << std::endl)
+            // __MS(std::endl << B.matX()[r] << std::endl)
+            matTransMult(A.matX()[r], B.matX()[r], *C.pMat(), c, beta);
+            // __MS(std::endl << *C.pMat() << std::endl)
         }
     }
     C.integrated(true);
@@ -1697,7 +1705,10 @@ void dot(const ElementMatrix < double > & A,
 
     RMatrix AtC;
 
+    double beta = 0.0;
     for (Index i = 0; i < w.size(); i ++ ){
+        if (i > 0) beta = 1.0;
+
         const RMatrix & Ai = A.matX()[i];
         const RMatrix & Bi = B.matX()[i];
         // A.T * C * B
@@ -1709,8 +1720,8 @@ void dot(const ElementMatrix < double > & A,
     // log(Info, "Ai:(", Ai.rows(), ",", Ai.cols(), ")",
     //           "Bi:(", Bi.rows(), ",", Bi.cols(), ")");
 
-        matTransMult(Ai, c, AtC, 1.0);
-        matMult(AtC, Bi, *C.pMat(), w[i] * A.entity().size());
+        matTransMult(Ai, c, AtC, 1.0, 0.0);
+        matMult(AtC, Bi, *C.pMat(), w[i] * A.entity().size(), beta);
     }
     C.integrated(true);
 }
@@ -1898,12 +1909,15 @@ void mult(const ElementMatrix < double > & A, const RMatrix &  b,
 
     Index nRules(x.size());
 
+    double beta = 0.0;
     for (Index i = 0; i < nRules; i++){
+        if (i > 0) beta = 1.0;
+
         RMatrix & Ci = (*C.pMatX())[i];
         const RMatrix & Ai = A.matX()[i];
         // A.T * C
         Ci *= 0.0; // test and optimize me with C creation
-        matTransMult(Ai, b, Ci, 1.0);
+        matTransMult(Ai, b, Ci, 1.0, beta);
     }
 
     C.integrate(); // check if necessary

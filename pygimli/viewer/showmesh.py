@@ -79,7 +79,8 @@ def show(obj=None, data=None, **kwargs):
         ax = kwargs.pop('ax', None)
 
         if ax is None:
-            ax = plt.subplots()[1]
+            pg._g(kwargs)
+            ax = plt.subplots(figsize=kwargs.pop('figsize', None))[1]
         return ax, None
 
     ### try to interprete obj containes a mesh
@@ -108,27 +109,15 @@ def show(obj=None, data=None, **kwargs):
 
     if isinstance(mesh, list):
         ax = kwargs.pop('ax', None)
-        fitView = kwargs.pop('fitView', ax is None)
 
         ax, cBar = show(mesh[0], data, hold=1, ax=ax, fitView=fitView, **kwargs)
-        xMin = mesh[0].xMin()
-        xMax = mesh[0].xMax()
-        yMin = mesh[0].yMin()
-        yMax = mesh[0].yMax()
 
         for m in mesh[1:]:
             ax, cBar = show(m, data, ax=ax, hold=1, fitView=False, **kwargs)
-            xMin = min(xMin, m.xMin())
-            xMax = max(xMax, m.xMax())
-            yMin = min(yMin, m.yMin())
-            yMax = max(yMax, m.yMax())
 
-#        ax.relim()
-#        ax.autoscale_view(tight=True)
         if fitView is not False:
-            ax.set_xlim([xMin, xMax])
-            ax.set_ylim([yMin, yMax])
-        #        print(ax.get_data_interval())
+            ax.autoscale(enable=True, axis='both', tight=True)
+            ax.set_aspect('equal')
         return ax, cBar
 
     if isinstance(mesh, pg.Mesh):
@@ -232,7 +221,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
         * ylabel: str [None]
             Add label to the y axis
         fitView: bool
-            Fit the axes limits to the view object. Default is True if ax is None else is set to False.
+            Fit the axes limits to the all content of the axes. Default is True.
         All remaining will be forwarded to the draw functions
         and matplotlib methods, respectively.
 
@@ -258,13 +247,13 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
     replaceData = kwargs.pop('replaceData', False)
 
     if ax is None:
-        ax = plt.subplots()[1]
+        ax, _ = pg.show(**kwargs)
 
     # adjust limits only when axis is empty
-    if (ax.lines or ax.collections or ax.patches):
-        fitViewDefault = False
-    else:
-        fitViewDefault = True
+    fitViewDefault = True
+    # if (ax.lines or ax.collections or ax.patches):
+    #     fitViewDefault = False
+    # else:
 
 
     # plt.subplots() resets locale setting to system default .. this went
@@ -413,9 +402,9 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
                                                 linewidth=1.4)
 
     fitView = kwargs.pop('fitView', fitViewDefault)
-    if fitView:
-        ax.set_xlim(mesh.xMin(), mesh.xMax())
-        ax.set_ylim(mesh.yMin(), mesh.yMax())
+
+    if fitView is not False:
+        ax.autoscale(enable=True, axis='both', tight=True)
         ax.set_aspect('equal')
 
     cBar = None

@@ -322,7 +322,7 @@ public:
         try{ A.row(-1); CPPUNIT_ASSERT(0); } catch(...){}
         try{ CPPUNIT_ASSERT(0); } catch(...){}
 #else
-	std::cout << "check! cppunit exception check for macos " << std::endl; 
+	std::cout << "check! cppunit exception check for macos " << std::endl;
 #endif
         CPPUNIT_ASSERT(A.rows() == 5);
         CPPUNIT_ASSERT(A.cols() == 5);
@@ -438,26 +438,48 @@ public:
     }
 
     void testMatrixMult(){
-        GIMLI::RMatrix A(2, 3);
-        A[0] = std::vector< double >{3, 2, 1};
-        A[1] = std::vector< double >{1, 0, 2};
-        GIMLI::RMatrix B(3, 2);
-        B[0] = std::vector< double >{1, 2};
-        B[1] = std::vector< double >{0, 1};
-        B[2] = std::vector< double >{4, 0};
 
+        // GIMLI::matMult(A, B, C, -1);
+        // CPPUNIT_ASSERT(C[0] == GIMLI::RVector(std::vector< double >{0., 0.}));
+        // CPPUNIT_ASSERT(C[1] == GIMLI::RVector(std::vector< double >{0., 0.}));
+
+        Index m = 2;
+        Index n = 3;
+        Index k = 4;
+
+        double *_A = new double[m * k];
+        double *_B = new double[k * n];
+        for (Index i = 0; i < m*k; i ++ ){_A[i] = i+1;}
+        for (Index i = 0; i < k*n; i ++ ){_B[i] = i+1;}
+
+        GIMLI::RMatrix A(m, k, _A);
+        GIMLI::RMatrix B(k, n, _B);
         GIMLI::RMatrix C;
-        GIMLI::matMult(A, B, C);
-        
-        CPPUNIT_ASSERT(C.rows() == 2);
-        CPPUNIT_ASSERT(C.cols() == 2);
-        CPPUNIT_ASSERT(C[0] == GIMLI::RVector(std::vector< double >{7., 8.}));
-        CPPUNIT_ASSERT(C[1] == GIMLI::RVector(std::vector< double >{9., 2.}));
+        GIMLI::matMult(A, B, C, 1.0, 0.0);
+        CPPUNIT_ASSERT(C.rows() == m);
+        CPPUNIT_ASSERT(C.cols() == n);
+        CPPUNIT_ASSERT(C[0] ==
+                       GIMLI::RVector(std::vector< double >{70., 80., 90}));
+        CPPUNIT_ASSERT(C[1] ==
+                       GIMLI::RVector(std::vector< double >{158, 184, 210}));
 
-        GIMLI::matMult(A, B, C, -1);
-        CPPUNIT_ASSERT(C[0] == GIMLI::RVector(std::vector< double >{0., 0.}));
-        CPPUNIT_ASSERT(C[1] == GIMLI::RVector(std::vector< double >{0., 0.}));
-        
+        double *_AT = new double[k*m];
+
+        GIMLI::RMatrix AT(k, m, _A);
+        for (Index i = 0; i < k; i ++ ){
+            for (Index j = 0; j < m; j ++ ){
+                AT[i][j] = A[j][i];
+            }
+        }
+
+        GIMLI::RMatrix C2;
+        GIMLI::matTransMult(AT, B, C2, 1.0, 0.0);
+        CPPUNIT_ASSERT(C2.rows() == m);
+        CPPUNIT_ASSERT(C2.cols() == n);
+        CPPUNIT_ASSERT(C2[0] ==
+                       GIMLI::RVector(std::vector< double >{70., 80., 90}));
+        CPPUNIT_ASSERT(C2[1] ==
+                       GIMLI::RVector(std::vector< double >{158, 184, 210}));
     }
 
     void testBlockMatrix(){

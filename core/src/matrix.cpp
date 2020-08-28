@@ -147,7 +147,7 @@ void matMultABA(const RMatrix & A, const RMatrix & B, RMatrix & C,
         return;
     }
     AtB.resize(A.cols(), B.rows());
-    matTransMult(A, B, AtB, 1.0, 0);
+    matTransMult(A, B, AtB, 1.0, 0.0);
     matMult(AtB, A, C, a, b);
 }
 
@@ -156,12 +156,12 @@ void matMult(const RMatrix & A, const RMatrix & B, RMatrix & C, double a, double
     // __MS("matMult: "<< A.rows() << " " << A.cols() << " : " << B.rows() << " " << B.cols())
     Index m = A.rows(); // C.rows()
     Index n = B.cols(); // C.cols()
-    
-    if (A.cols() == B.rows()){ // A * B (k == k)
+    Index k = A.cols(); // B.rows()
+
+    if (k == B.rows()){ // A * B (k == k)
         C.resize(m, n);
 
 #if OPENBLAS_CBLAS_FOUND
-        Index k = A.cols(); // B.rows()
 
         double *A2 = new double[m * k];
         double *B2 = new double[k * n];
@@ -169,9 +169,12 @@ void matMult(const RMatrix & A, const RMatrix & B, RMatrix & C, double a, double
 
         A.dumpData(A2);
         B.dumpData(B2);
-        cblas_dgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, m, n, k, 
-                    a, A2, m, B2, k, b, C2, m);
-        
+        C.dumpData(C2);
+        // lda ## leading dimension for a, means column for CblasRowMajor
+        cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, m, n, k,
+                    a, A2, k, B2, n,
+                    b, C2, n);
+
         C.fromData(C2, m, n);
 
         delete [] A2;
@@ -186,7 +189,7 @@ void matMult(const RMatrix & A, const RMatrix & B, RMatrix & C, double a, double
                 for (Index k = 0; k < A.cols(); k ++){
                     c += A[i][k] * B[k][j];
                 }
-                C[i][j] = b*C[i][j] + a * c;
+                C[i][j] = b * C[i][j] + a * c;
             }
         }
 #endif
@@ -199,33 +202,37 @@ void matTransMult(const RMatrix & A, const RMatrix & B, RMatrix & C, double a, d
     //** C = a * A.T*B + b*C|| C = a * A.T*B.T  + b*C
     //** C = (a * A.T*B).T + b*C if C has the right dimension
     //** implement with openblas dgemm too and check performance
-    // __MS("matTransMult: "<< A.rows() << " " << A.cols() << " : " << B.rows() << " " << B.cols())
+    // __MS("matTransMult: "<< A.rows() << " " << A.cols() << " : "
+    //     << B.rows() << " " << B.cols() << " " << a << " " << b)
     bool retTrans = false;
 
     // A(k, m).T * B(k, n) = C(m, n)
 
     Index k = A.rows(); // B.rows()
     Index m = A.cols(); // C.rows()
-    Index n = B.rows(); // C.cols()
+    Index n = B.cols(); // C.cols()
 
-    if (A.rows() == B.rows()){ // A.T * B
+    if (k == B.rows()){ // A.T * B
 
         if (C.rows() != A.cols() || C.cols() != B.cols()){
 
             // __MS(C.rows() << " " << C.cols() << " " << A.cols() << " " << B.cols())
             //** Target array have wrong dimensions
             if (C.rows() == B.cols() && C.cols() == A.cols()){
+                // C = a * B.T*A + b*C
                 //** Target array seems needed to be transposed
-                //** C += (a * A.T*B).T
-                __MS("ret transmult")
+                //** C = a*(A.T*B).T + b * C
+                // __MS("ret transmult")
+                return matTransMult(B, A, C, a, b);
+
                 retTrans = true;
             } else {
                 //** resize target array
-                C.resize(A.cols(), B.cols());
+                C.resize(m, n);
             }
         }
 
-#if OPENBLAS_CBLAS_FOUND_
+#if OPENBLAS_CBLAS_FOUND
 
         double *A2 = new double[k * m];
         double *B2 = new double[k * n];
@@ -233,17 +240,29 @@ void matTransMult(const RMatrix & A, const RMatrix & B, RMatrix & C, double a, d
 
         A.dumpData(A2);
         B.dumpData(B2);
-        //specifies row-major (C) or column-major (Fortran) data ordering.
-        cblas_dgemm(CblasColMajor, CblasTrans, CblasNoTrans, k, n, m, 
-                    a, A2, k, B2, k, b, C2, m);
-            
+        C.dumpData(C2);
+
+    // std::cout << "A" << std::endl;
+    // for (Index i = 0; i < m*k; i ++ ){std::cout << A2[i] << " ";} std::cout << std::endl;
+    // std::cout << "b" << std::endl;
+    // for (Index i = 0; i < n*k; i ++ ){std::cout << B2[i] << " ";} std::cout << std::endl;
+    // std::cout << "C1" << std::endl;
+    // for (Index i = 0; i < m*n; i ++ ){std::cout << C2[i] << " ";} std::cout << std::endl;
+
+        cblas_dgemm(CblasRowMajor, CblasTrans, CblasNoTrans, m, n, k,
+                    a, A2, m, B2, n, b, C2, n);
+
+    // std::cout << "C2" << std::endl;
+    // for (Index i = 0; i < m*n; i ++ ){std::cout << C2[i] << " ";} std::cout << std::endl;
+
         C.fromData(C2, m, n);
+
+    // std::cout << "C3" << std::endl;
+    // std::cout << C << std::endl;
 
         delete [] A2;
         delete [] B2;
         delete [] C2;
-
-    // cblas_dgemm(CblasColMajor, CblasTrans, CblasNoTrans, n, n, m, 1, A3, m, B3, m, 0, C3, n);
 
 #else
 
@@ -254,9 +273,10 @@ void matTransMult(const RMatrix & A, const RMatrix & B, RMatrix & C, double a, d
                     c += A[k][i] * B[k][j];
                 }
                 if (retTrans){
+                    THROW_TO_IMPL
                     C[j][i] = a * c + C[j][i]*b;
                 } else {
-                    C[i][j] = a * c + C[j][i]*b;
+                    C[i][j] = a * c + C[i][j]*b;
                 }
             }
         }

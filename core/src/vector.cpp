@@ -71,6 +71,9 @@ void Vector< double >::add(const ElementMatrix < double > & A,
 template <>
 void Vector< double >::add(const ElementMatrix < double > & A,
                            const RVector & scale){
+    if (!A.oldStyle()){
+        THROW_TO_IMPL
+    }
     A.integrate();
     //!! warning this will lead to incorrect results with non constant scale
     //!! use new fea style for correct integration

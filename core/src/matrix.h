@@ -1063,13 +1063,13 @@ bool loadMatrixRow(Matrix < ValueType > & A,
 /*!Inplace matrix calculation: $C = a * A.T * B * A$ + b*C.
 Size of A is (n,m) and B need to be square (n,n), C will resized to (m,m).
 AtB might be for temporary memory allocation.  */
-DLLEXPORT void matMultABA(const RMatrix & A, const RMatrix & B, RMatrix & C, RMatrix & AtB, double a=1.0, double b=1.0);
+DLLEXPORT void matMultABA(const RMatrix & A, const RMatrix & B, RMatrix & C, RMatrix & AtB, double a=1.0, double b=0.0);
 
 /*!Inplace matrix calculation: $C = a*A*B + b*C$. B are transposed if needed to fit appropriate dimensions. */
-DLLEXPORT void matMult(const RMatrix & A, const RMatrix & B, RMatrix & C, double a=1.0, double b=1.0);
+DLLEXPORT void matMult(const RMatrix & A, const RMatrix & B, RMatrix & C, double a=1.0, double b=0.0);
 
 /*!Inplace matrix calculation: $C = a * A.T * B + b*C$. B are transposed if needed to fit appropriate dimensions. */
-DLLEXPORT void matTransMult(const RMatrix & A, const RMatrix & B, RMatrix & C, double a=1.0, double b=1.0);
+DLLEXPORT void matTransMult(const RMatrix & A, const RMatrix & B, RMatrix & C, double a=1.0, double b=0.0);
 
 /*! Return determinant for Matrix(2 x 2). */
 template < class T > inline T det(const T & a, const T & b, const T & c, const T & d){

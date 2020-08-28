@@ -298,8 +298,7 @@ def drawMesh(ax, mesh, fitView=True, **kwargs):
         pg.viewer.mpl.drawMeshBoundaries(ax, mesh, **kwargs)
 
     if fitView is True:
-        ax.set_xlim(mesh.xmin(), mesh.xmax())
-        ax.set_ylim(mesh.ymin(), mesh.ymax())
+        ax.autoscale(enable=True, axis='both', tight=True)
         ax.set_aspect('equal')
 
     updateAxes_(ax)
@@ -397,8 +396,7 @@ def drawModel(ax, mesh, data=None, tri=False, rasterized=False,
         ax.set_ylabel(ylabel)
 
     if fitView is True:
-        ax.set_xlim(mesh.xmin(), mesh.xmax())
-        ax.set_ylim(mesh.ymin(), mesh.ymax())
+        ax.autoscale(enable=True, axis='both', tight=True)
         ax.set_aspect('equal')
 
     updateAxes_(ax)
@@ -543,8 +541,8 @@ def drawMeshBoundaries(ax, mesh, hideMesh=False, useColorMap=False,
                         mesh.nodeCount())
 
     if fitView is True:
-        ax.set_xlim(mesh.xmin() - 0.05, mesh.xmax() + 0.05)
-        ax.set_ylim(mesh.ymin() - 0.05, mesh.ymax() + 0.05)
+        ax.autoscale(enable=True, axis='both', tight=True)
+
 
 #    drawAA = True
 #    swatch = pg.core.Stopwatch(True)
@@ -701,8 +699,7 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
                     va="center", ha="center")
 
     if fitView:
-        ax.set_xlim(mesh.xmin(), mesh.xmax())
-        ax.set_ylim(mesh.ymin(), mesh.ymax())
+        ax.autoscale(enable=True, axis='both', tight=True)
         ax.set_aspect('equal')
 
     updateAxes_(ax)
@@ -937,8 +934,7 @@ def drawField(ax, mesh, data=None, levels=None, nLevs=5,
     #     gci.set_clim(cMin, cMax)
 
     if fitView is True:
-        ax.set_xlim(mesh.xmin(), mesh.xmax())
-        ax.set_ylim(mesh.ymin(), mesh.ymax())
+        ax.autoscale(enable=True, axis='both', tight=True)
         ax.set_aspect('equal')
 
     updateAxes_(ax)

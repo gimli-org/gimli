@@ -15,7 +15,7 @@ from .core import (BVector, CVector, DataContainer, DataContainerERT,
                    mean, median, min, search, setDebug, setThreadCount, sort,
                    Stopwatch, sum, trans, unique, versionStr, x, y, z, zero)
 
-from .core import isScalar, isArray, isPos, isR3Array, isComplex
+from .core import isScalar, isArray, isPos, isR3Array, isComplex, isMatrix
 
 from .core import math # alias all from .core.math.* to pg.math.*
 from .core import matrix # alias all from .core.matrix.* to pg.matrix.*
