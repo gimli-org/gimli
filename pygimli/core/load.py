@@ -10,7 +10,8 @@ from urllib.request import urlretrieve
 
 import numpy as np
 import pygimli as pg
-from pygimli.meshtools import readFenicsHDF5Mesh, readGmsh, readPLC, readSTL
+from pygimli.meshtools import (readFenicsHDF5Mesh, readGmsh, readPLC, readSTL,
+                               readMeshIO)
 from pygimli.utils import readGPX
 from pygimli.utils import cache
 from pygimli.physics.traveltime import load as loadTT
@@ -150,7 +151,8 @@ def load(fname, verbose=False, testAll=True, realName=None):
         ".bms": pg.Mesh,
         ".msh": readGmsh,
         ".mod": pg.Mesh,
-        ".vtk": pg.Mesh,
+        ".vtk": [pg.Mesh, readMeshIO],
+        ".vtu": [pg.Mesh, readMeshIO],
         ".stl": readSTL,
         ".h5": readFenicsHDF5Mesh,  # fenics specs as default
         # Misc
@@ -175,18 +177,25 @@ def load(fname, verbose=False, testAll=True, realName=None):
         suffix = os.path.splitext(fname)[1]
 
     if suffix in ImportFilter:
-        try:
-            if verbose:
-                print("Import {0} ({1})".format(fname, ImportFilter[suffix]))
-            return ImportFilter[suffix](fname)
-        except Exception as e:
-            if verbose or pg.core.debug():
-                import sys
-                import traceback
-                traceback.print_exc(file=sys.stdout)
-                print(e)
-                print("File extension %s seems to be not correct. "
-                      "Trying auto-detect." % suffix)
+
+        importTrys = ImportFilter[suffix]
+        if not isinstance(importTrys, list):
+            importTrys = [importTrys]
+
+        for importer in importTrys:
+            try:
+                if verbose:
+                    pg.info("Reading {0} ({1})".format(fname, importer))
+                return importer(fname)
+            except Exception as e:
+                if verbose or pg.core.debug():
+                    import sys
+                    import traceback
+                    traceback.print_exc(file=sys.stdout)
+                    pg.warn(e)
+        if verbose:
+            pg.warn("File extension %s seems to be not correct. "
+                    "Trying auto-detect." % suffix)
     else:
         if verbose:
             print("File extension {0} is unknown. Trying auto-detect.".format(suffix))

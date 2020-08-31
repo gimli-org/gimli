@@ -1105,6 +1105,15 @@ def readGambitNeutral(fileName, verbose=False):
     mesh.createNeighborInfos()
     return mesh
 
+def readMeshIO(fileName, verbose=False):
+    """Generic mesh read using meshio. (https://github.com/nschloe/meshio)
+    """
+    meshio = pg.optImport('meshio')
+    _t = meshio.read(fileName)
+    mesh = pg.meshtools.convert(_t)
+    if verbose is True:
+        print(mesh)
+    return mesh
 
 def convertHDF5Mesh(h5Mesh, group='mesh', indices='cell_indices',
                     pos='coordinates', cells='topology', marker='values',

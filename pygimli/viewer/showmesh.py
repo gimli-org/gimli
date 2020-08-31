@@ -79,7 +79,6 @@ def show(obj=None, data=None, **kwargs):
         ax = kwargs.pop('ax', None)
 
         if ax is None:
-            pg._g(kwargs)
             ax = plt.subplots(figsize=kwargs.pop('figsize', None))[1]
         return ax, None
 
@@ -107,10 +106,13 @@ def show(obj=None, data=None, **kwargs):
     ### try to interprete obj as mesh or list of meshes
     mesh = kwargs.pop('mesh', obj)
 
+    fitView = kwargs.get('fitView', True)
+
     if isinstance(mesh, list):
         ax = kwargs.pop('ax', None)
 
-        ax, cBar = show(mesh[0], data, hold=1, ax=ax, fitView=fitView, **kwargs)
+        ax, cBar = show(mesh[0], data, hold=1, ax=ax,
+                        fitView=fitView, **kwargs)
 
         for m in mesh[1:]:
             ax, cBar = show(m, data, ax=ax, hold=1, fitView=False, **kwargs)
