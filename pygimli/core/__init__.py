@@ -764,6 +764,8 @@ def abs(v):
     elif isinstance(v, _pygimli_.R3Vector):
         return _pygimli_.absR3(v)
     elif isinstance(v, np.ndarray):
+        if v.ndim == 1:
+            return np.abs(v)
         if v.shape[0] == 2 or v.shape[0] == 3:
             return _pygimli_.absR3(v.T)
         else:

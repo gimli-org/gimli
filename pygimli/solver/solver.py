@@ -2323,6 +2323,7 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
             pn = True
         else:
             pn = False
+
         fixPureNeumann = kwargs.pop('fixPureNeumann', pn)
 
         assembleBC(bc, mesh, A, rhs, time=None, userData=userData)

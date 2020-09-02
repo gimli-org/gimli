@@ -154,8 +154,6 @@ def streamlineDir(mesh, field, startCoord, dLengthSteps, dataMesh=None,
 
         # Change cell here .. set old cell to be processed
         if c is not None:
-
-
             xd.append(pos[coords[0]])
             yd.append(pos[coords[1]])
             # set the stating value here
