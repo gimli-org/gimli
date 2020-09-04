@@ -284,6 +284,8 @@ public:
 
     /*!Scale with scale */
     void add(const ElementMatrix < double > & A, ValueType scale=1.0);
+    void add(const ElementMatrix < double > & A, const Pos & scale);
+    void add(const ElementMatrix < double > & A, const Matrix< ValueType> & scale);
     /*!Scale with values from vector scale. Take values from scale[A.ids()]. */
     void add(const ElementMatrix < double > & A,
              const Vector < ValueType > & scale);
@@ -729,7 +731,7 @@ public:
         cols_ = max(rowIdx_) + 1;
         rows_ = colPtr_.size() - 1;
     }
-    
+
     SparseMatrix(const std::vector < int > & colPtr,
                  const std::vector < int > & rowIdx,
                  const Vector < ValueType > vals, int stype=0)
@@ -888,19 +890,15 @@ public:
         return ret;
     }
 
-    SparseMatrix< ValueType > & add(const ElementMatrix< double > & A){
+    void add(const ElementMatrix< double > & A){
         return add(A, ValueType(1.0));
     }
-
-    SparseMatrix< ValueType > & add(const ElementMatrix< double > & A, ValueType scale){
-        if (!valid_) SPARSE_NOT_VALID;
-        for (Index i = 0, imax = A.size(); i < imax; i++){
-            for (Index j = 0, jmax = A.size(); j < jmax; j++){
-                addVal(A.idx(i), A.idx(j), scale * A.getVal(i, j));
-            }
-        }
-        return *this;
-    }
+    void add(const ElementMatrix< double > & A,
+             ValueType scale);
+    void add(const ElementMatrix< double > & A,
+             const Pos & scale);
+    void add(const ElementMatrix< double > & A,
+             const Matrix < ValueType > & scale);
 
     void clean(){ for (Index i = 0, imax = nVals(); i < imax; i++) vals_[i] = (ValueType)(0); }
 
@@ -1168,9 +1166,6 @@ inline RSparseMatrix imag(const CSparseMatrix & A){
 }
 
 /*! SparseMatrix specialized type traits in sparsematrix.cpp */
-template <> DLLEXPORT void SparseMatrix<double>::copy_(const SparseMapMatrix< double, Index > & S);
-template <> DLLEXPORT void SparseMatrix<Complex>::copy_(const SparseMapMatrix< Complex, Index > & S);
-
 template< typename ValueType >
 void SparseMatrix< ValueType >::copy_(const SparseMapMatrix< double, Index > & S){THROW_TO_IMPL}
 template< typename ValueType >
@@ -1184,24 +1179,53 @@ void SparseMapMatrix< ValueType, Index >::copy_(const SparseMatrix< double > & S
 template< typename ValueType, typename Index >
 void SparseMapMatrix< ValueType, Index >::copy_(const SparseMatrix< Complex > & S){THROW_TO_IMPL}
 
+
+
 template <> DLLEXPORT void SparseMapMatrix< double, Index >::
     add(const ElementMatrix < double > & A, double scale);
 template <> DLLEXPORT void SparseMapMatrix< double, Index >::
+    add(const ElementMatrix < double > & A, const Pos & scale);
+template <> DLLEXPORT void SparseMapMatrix< double, Index >::
+    add(const ElementMatrix < double > & A, const RMatrix & scale);
+template <> DLLEXPORT void SparseMapMatrix< double, Index >::
     add(const ElementMatrix < double > & A, const Vector < double > & scale);
+
+template <> DLLEXPORT void SparseMapMatrix< Complex, Index >::
+    add(const ElementMatrix < double > & A, Complex scale);
+template <> DLLEXPORT void SparseMapMatrix< Complex, Index >::
+    add(const ElementMatrix < double > & A, const Pos & scale);
+template <> DLLEXPORT void SparseMapMatrix< Complex, Index >::
+    add(const ElementMatrix < double > & A, const Matrix < Complex > & scale);
+template <> DLLEXPORT void SparseMapMatrix< Complex, Index >::
+    add(const ElementMatrix < double > & A, const Vector < Complex > & scale);
+
 
 template <> DLLEXPORT void SparseMapMatrix< double, Index >::
     addToCol(Index id, const ElementMatrix < double > & A, double scale, bool isDiag);
 template <> DLLEXPORT void SparseMapMatrix< double, Index >::
     addToRow(Index id, const ElementMatrix < double > & A, double scale, bool isDiag);
-
-template <> DLLEXPORT void SparseMapMatrix< Complex, Index >::
-    add(const ElementMatrix < double > & A, Complex scale);
-template <> DLLEXPORT void SparseMapMatrix< Complex, Index >::
-    add(const ElementMatrix < double > & A, const Vector < Complex > & scale);
 template <> DLLEXPORT void SparseMapMatrix< Complex, Index >::
     addToCol(Index id, const ElementMatrix < double > & A, Complex scale, bool isDiag);
 template <> DLLEXPORT void SparseMapMatrix< Complex, Index >::
     addToRow(Index id, const ElementMatrix < double > & A, Complex scale, bool isDiag);
+
+template <> DLLEXPORT void SparseMatrix<double>::copy_(const SparseMapMatrix< double, Index > & S);
+template <> DLLEXPORT void SparseMatrix<Complex>::copy_(const SparseMapMatrix< Complex, Index > & S);
+
+template <> DLLEXPORT void SparseMatrix< double >::
+    add(const ElementMatrix < double > & A, double scale);
+template <> DLLEXPORT void SparseMatrix< double >::
+    add(const ElementMatrix < double > & A, const Pos & scale);
+template <> DLLEXPORT void SparseMatrix< double >::
+    add(const ElementMatrix < double > & A, const RMatrix & scale);
+
+template <> DLLEXPORT void SparseMatrix< Complex >::
+    add(const ElementMatrix < double > & A, Complex scale);
+template <> DLLEXPORT void SparseMatrix< Complex >::
+    add(const ElementMatrix < double > & A, const Pos & scale);
+template <> DLLEXPORT void SparseMatrix< Complex >::
+    add(const ElementMatrix < double > & A, const CMatrix & scale);
+
 
 } // namespace GIMLI
 

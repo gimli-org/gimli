@@ -1060,6 +1060,7 @@ class LinSolver(object):
         self.solvingTime = 0.0
         self.solver = ''
         self._factorize = 'factorizePG'
+        self._factorized = False
         self._desiredArrayType = np.array
 
         if solver is None:
@@ -1089,6 +1090,9 @@ class LinSolver(object):
         if mat is not None:
             self.factorize(mat)
 
+    def isFactorized(self):
+        return self._factorized
+
     def factorize(self, mat):
         swatch = pg.Stopwatch()
 
@@ -1097,6 +1101,7 @@ class LinSolver(object):
 
         if self.verbose:
             pg.info("Matrix factorization:", self.factorTime)
+        self._factorized = True
 
     def factorizePG(self, mat):
         """"""
@@ -1407,8 +1412,8 @@ def assembleDirichletBC(mat, boundaryPairs, rhs=None, time=0.0, userData={},
     uDirVal = getDirichletMap(mat, boundaryPairs, time=time,
                               userData=userData,
                               nodePairs=nodePairs,
-                              dofOffset=dofOffset, 
-                              nCoeff=nCoeff, 
+                              dofOffset=dofOffset,
+                              nCoeff=nCoeff,
                               dofPerCoeff=dofPerCoeff)
 
     # pg._g(list(uDirVal.keys()), list(uDirVal.values()))
@@ -1446,7 +1451,7 @@ def assembleNeumannBC(rhs, boundaryPairs, nDim=1, time=0.0, userData={},
         See :py:mod:`pygimli.solver.solver.parseArgToBoundaries`
         and :ref:`tut:modelling_bc` for example syntax,
     nDim: int [1]
-        Number of dimensions for vector valued problems. The rhs array need top
+        Number of dimensions for vector valued problems. The rhs array need to
         have the correct size, i.e., number of Nodes * mesh.dimension()
     time: float
         Will be forwarded to value generator.
@@ -1695,7 +1700,7 @@ def assembleLoadVector(mesh, f, userData={}):
     Maybe we will remove this
     """
     pg.deprecate('createLoadVector') # 20200115
-    return createLoadVector(mesh, f, userData)
+    return VectorcreateLoadVector(mesh, f, userData)
 
 
 def createForceVector(mesh, f, userData={}):
@@ -1923,7 +1928,7 @@ def createStiffnessMatrix(mesh, a=None, isVector=False):
         nDof = mesh.nodeCount() * mesh.dimension()
 
     #### if vector or scalar(Complex)
-    if np.array(a[0]).dtype == np.complex:
+    if pg.isComplex(a[0]):
         isComplex = True
         A = pg.matrix.CSparseMapMatrix(nDof, nDof)
     else:
@@ -1941,14 +1946,18 @@ def createStiffnessMatrix(mesh, a=None, isVector=False):
             al.ux2uy2uz2(c)
             A.add(al, scale=a[c.id()])
         else:
-            if hasattr(a[c.id()], 'voigtNotation'):
-                vN = a[c.id()].voigtNotation
+            if pg.isScalar(a[c.id()]):
+                al.gradU2(c, a[c.id()])
+                A.add(al)
             else:
-                vN = False
+                if hasattr(a[c.id()], 'voigtNotation'):
+                    vN = a[c.id()].voigtNotation
+                else:
+                    vN = False
 
-            #al.gradU2(c, a[c.id()], voigtNotation=vN)
-            al.gradU2(c, np.array(a[c.id()]), voigtNotation=vN)
-            A.add(al)
+                #al.gradU2(c, a[c.id()], voigtNotation=vN)
+                al.gradU2(c, np.array(a[c.id()]), voigtNotation=vN)
+                A.add(al)
 
     if isComplex is True:
         return pg.matrix.CSparseMatrix(A)
@@ -2314,6 +2323,7 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
             pn = True
         else:
             pn = False
+
         fixPureNeumann = kwargs.pop('fixPureNeumann', pn)
 
         assembleBC(bc, mesh, A, rhs, time=None, userData=userData)
@@ -2502,25 +2512,31 @@ def checkCFL(times, mesh, vMax):
     Parameters
     ----------
     """
-    if times is not None:
+    if pg.isScalar(times):
+        dt = times
+    else:
         dt = times[1] - times[0]
-        dx = 0.0
 
-        if mesh.dimension() == 1:
-            dx = min(mesh.cellSizes())
-        else:
-            dx = min(mesh.boundarySizes())
-        c = vMax * dt / dx
+    h = []
+    for c in mesh.cells():
+        h.append(c.shape().h())
+    dx = min(h)
+    # min(entity.shape().h()
+    # if mesh.dimension() == 1:
+    #     dx = min(mesh.cellSizes())
+    # else:
+    #     dx = min(mesh.boundarySizes())
+    c = vMax * dt / dx
 
-        if c > 1:
-            pg.warn("Courant-Friedrichs-Lewy Number:", c,
-                    "but should be lower 1 to ensure movement inside a cell "
-                    "per timestep. ("
-                    "vMax =", vMax,
-                    "dt =", dt,
-                    "dx =", dx,
-                    "dt <", dx/vMax,
-                    " | N > ", int((times[-1]-times[0])/(dx/vMax))+1, ")")
+    if c > 1:
+        pg.warn("Courant-Friedrichs-Lewy Number:", c,
+                "but should be lower 1 to ensure movement inside a cell "
+                "per timestep. ("
+                "vMax =", vMax,
+                "dt =", dt,
+                "dx =", dx,
+                "dt <", dx/vMax,
+                " | N > ", int(dt/(dx/vMax))+1, ")")
     return c
 
 def crankNicolson(times, S, I, f=None,

@@ -71,7 +71,6 @@
 #include <functional>
 
 #include "platform.h"
-
 #include "exitcodes.h"
 
 //! GIMLi main namespace for the Geophyiscal Inversion and Modelling Library

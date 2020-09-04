@@ -24,6 +24,11 @@
 // #include "vector.h"
 #include "stopwatch.h"
 
+#if OPENBLAS_CBLAS_FOUND
+    #include <cblas.h>
+#endif
+
+
 namespace GIMLI{
 
 template < class ValueType > Vector < ValueType >
@@ -133,8 +138,8 @@ Matrix<Complex>::transAdd(const Matrix < Complex > & a){
 
 
 void matMultABA(const RMatrix & A, const RMatrix & B, RMatrix & C,
-                RMatrix & AtB, double a){
-    // A.T * B * A
+                RMatrix & AtB, double a, double b){
+    // C = a A.T * B * A + b * C
     // __MS("matMultABA: "<< A.rows() << " " << A.cols() << " : " << B.rows() << " " << B.cols())
 
     if (A.rows() != B.rows()){
@@ -142,18 +147,41 @@ void matMultABA(const RMatrix & A, const RMatrix & B, RMatrix & C,
         return;
     }
     AtB.resize(A.cols(), B.rows());
-    AtB *= 0.0;
-    matTransMult(A, B, AtB, 1.0);
-    matMult(AtB, A, C, a);
+    matTransMult(A, B, AtB, 1.0, 0.0);
+    matMult(AtB, A, C, a, b);
 }
 
-void matMult(const RMatrix & A, const RMatrix & B, RMatrix & C, double a){
-    // C += a * A*B || C += a * A*B.T
-    // implement with openblas dgemm too and check performance
-
+void matMult(const RMatrix & A, const RMatrix & B, RMatrix & C, double a, double b){
+    // C = a * A*B + b *C || C += a * A*B.T + b*C
     // __MS("matMult: "<< A.rows() << " " << A.cols() << " : " << B.rows() << " " << B.cols())
-    if (A.cols() == B.rows()){ // A * B
-        C.resize(A.rows(), B.cols());
+    Index m = A.rows(); // C.rows()
+    Index n = B.cols(); // C.cols()
+    Index k = A.cols(); // B.rows()
+
+    if (k == B.rows()){ // A * B (k == k)
+        C.resize(m, n);
+
+#if OPENBLAS_CBLAS_FOUND
+
+        double *A2 = new double[m * k];
+        double *B2 = new double[k * n];
+        double *C2 = new double[m * n];
+
+        A.dumpData(A2);
+        B.dumpData(B2);
+        C.dumpData(C2);
+        // lda ## leading dimension for a, means column for CblasRowMajor
+        cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, m, n, k,
+                    a, A2, k, B2, n,
+                    b, C2, n);
+
+        C.fromData(C2, m, n);
+
+        delete [] A2;
+        delete [] B2;
+        delete [] C2;
+#else
+    // __MS("matMult: "<< A.rows() << " " << A.cols() << " : " << B.rows() << " " << B.cols())
 
         for (Index i = 0; i < A.rows(); i ++){
             for (Index j = 0; j < B.cols(); j ++){
@@ -161,20 +189,82 @@ void matMult(const RMatrix & A, const RMatrix & B, RMatrix & C, double a){
                 for (Index k = 0; k < A.cols(); k ++){
                     c += A[i][k] * B[k][j];
                 }
-                C[i][j] += a * c;
+                C[i][j] = b * C[i][j] + a * c;
             }
         }
+#endif
     } else { // A * B.T
         log(Error, "matMult sizes mismatch. implement fallback A*.B.T", A.cols(), "!=", B.rows());
     }
 }
 
-void matTransMult(const RMatrix & A, const RMatrix & B, RMatrix & C, double a){
-    // C += a * A.T*B || C += a * A.T*B.T
-    // implement with openblas dgemm too and check performance
-    // __MS("matTransMult: "<< A.rows() << " " << A.cols() << " : " << B.rows() << " " << B.cols())
-    if (A.rows() == B.rows()){ // A.T * B
-        C.resize(A.cols(), B.cols());
+void matTransMult(const RMatrix & A, const RMatrix & B, RMatrix & C, double a, double b){
+    //** C = a * A.T*B + b*C|| C = a * A.T*B.T  + b*C
+    //** C = (a * A.T*B).T + b*C if C has the right dimension
+    //** implement with openblas dgemm too and check performance
+    // __MS("matTransMult: "<< A.rows() << " " << A.cols() << " : "
+    //     << B.rows() << " " << B.cols() << " " << a << " " << b)
+    bool retTrans = false;
+
+    // A(k, m).T * B(k, n) = C(m, n)
+
+    Index k = A.rows(); // B.rows()
+    Index m = A.cols(); // C.rows()
+    Index n = B.cols(); // C.cols()
+
+    if (k == B.rows()){ // A.T * B
+
+        if (C.rows() != A.cols() || C.cols() != B.cols()){
+
+            // __MS(C.rows() << " " << C.cols() << " " << A.cols() << " " << B.cols())
+            //** Target array have wrong dimensions
+            if (C.rows() == B.cols() && C.cols() == A.cols()){
+                // C = a * B.T*A + b*C
+                //** Target array seems needed to be transposed
+                //** C = a*(A.T*B).T + b * C
+                // __MS("ret transmult")
+                return matTransMult(B, A, C, a, b);
+
+                retTrans = true;
+            } else {
+                //** resize target array
+                C.resize(m, n);
+            }
+        }
+
+#if OPENBLAS_CBLAS_FOUND
+
+        double *A2 = new double[k * m];
+        double *B2 = new double[k * n];
+        double *C2 = new double[m * n];
+
+        A.dumpData(A2);
+        B.dumpData(B2);
+        C.dumpData(C2);
+
+    // std::cout << "A" << std::endl;
+    // for (Index i = 0; i < m*k; i ++ ){std::cout << A2[i] << " ";} std::cout << std::endl;
+    // std::cout << "b" << std::endl;
+    // for (Index i = 0; i < n*k; i ++ ){std::cout << B2[i] << " ";} std::cout << std::endl;
+    // std::cout << "C1" << std::endl;
+    // for (Index i = 0; i < m*n; i ++ ){std::cout << C2[i] << " ";} std::cout << std::endl;
+
+        cblas_dgemm(CblasRowMajor, CblasTrans, CblasNoTrans, m, n, k,
+                    a, A2, m, B2, n, b, C2, n);
+
+    // std::cout << "C2" << std::endl;
+    // for (Index i = 0; i < m*n; i ++ ){std::cout << C2[i] << " ";} std::cout << std::endl;
+
+        C.fromData(C2, m, n);
+
+    // std::cout << "C3" << std::endl;
+    // std::cout << C << std::endl;
+
+        delete [] A2;
+        delete [] B2;
+        delete [] C2;
+
+#else
 
         for (Index i = 0; i < A.cols(); i ++){
             for (Index j = 0; j < B.cols(); j ++){
@@ -182,11 +272,19 @@ void matTransMult(const RMatrix & A, const RMatrix & B, RMatrix & C, double a){
                 for (Index k = 0; k < A.rows(); k ++){
                     c += A[k][i] * B[k][j];
                 }
-                C[i][j] += a * c;
+                if (retTrans){
+                    THROW_TO_IMPL
+                    C[j][i] = a * c + C[j][i]*b;
+                } else {
+                    C[i][j] = a * c + C[i][j]*b;
+                }
             }
         }
+#endif
     } else { // A.T * B.T
-        log(Error, "matMult sizes mismatch. implement fallback A.T*B.T", A.rows(), "!=", B.rows());
+        __MS(A)
+        __MS(B)
+        log(Error, "matTransMult sizes mismatch.", A.rows(), "!=", B.rows());
     }
 }
 

@@ -305,11 +305,11 @@ public:
         return data_[i];
     }
 
-    inline const Vector < ValueType > operator[](const IndexArray & i) const { return (*this)(i); }
+    inline const Vector < ValueType > operator[](const IndexArray & i) const { return this->get_(i); }
 
-    inline Vector < ValueType > operator[](const IndexArray & i) { return (*this)(i); }
+    inline Vector < ValueType > operator[](const IndexArray & i) { return this->get_(i); }
 
-    inline Vector < ValueType > operator[](const BVector & b) { return (*this)(b); }
+    inline Vector < ValueType > operator[](const BVector & b) { return this->get_(b); }
 
      /*!
       * Return a new vector that match the slice [start, end).
@@ -363,8 +363,8 @@ public:
     }
 
     /*! */
-    Vector < ValueType > operator () (const BVector & bv) const {
-        return (*this)(GIMLI::find(bv));
+    Vector < ValueType > get_(const BVector & bv) const {
+        return this->get_(GIMLI::find(bv));
     }
 
 #ifndef PYGIMLI_CAST
@@ -533,7 +533,7 @@ public:
     }
 
     inline Vector< ValueType > & addVal(const Vector < ValueType > & vals,
-                                        const std::pair< Index, SIndex > & pair) {
+                                    const std::pair< Index, SIndex > & pair) {
         return addVal(vals, pair.first, pair.second);
     }
 
@@ -555,16 +555,19 @@ public:
         return *this;
     }
 
-    /*! Add Values from an ElementMatrix. For vectors only the first row will
-    be taken. */
+    /*! Add Values from an ElementMatrix.*/
     void add(const ElementMatrix < double > & A);
 
-    /*! Add Values from an ElementMatrix. For vectors only the first row will
-    be taken. Optional scale with scalar. */
+    /*! Add Values from an ElementMatrix. Optional scale with constant scalar. */
     void add(const ElementMatrix < double > & A, const double & scale);
 
-    /*! Add Values from an ElementMatrix. For vectors only the first row will
-    be taken. Optional scale with values from vector. */
+    /*! Add Values from an ElementMatrix. Optional scale constant Pos. */
+    void add(const ElementMatrix < double > & A, const Pos & scale);
+
+    /*! Add Values from an ElementMatrix. Optional scale constant RMatrix. */
+    void add(const ElementMatrix < double > & A, const RMatrix & scale);
+
+    /*! DEPRECATED Bad design (Per node values need to be interpolated to quadrature points first.)*/
     void add(const ElementMatrix < double > & A,
              const Vector < double > & scale);
 
@@ -755,12 +758,7 @@ DEFINE_UNARY_MOD_OPERATOR__(*, MULT)
 
     /*! Round all values of this array to a given tolerance. */
     Vector< ValueType > & round(const ValueType & tolerance){
-#ifdef USE_BOOST_BIND
-        std::transform(data_, data_ + size_, data_, boost::bind(roundTo< ValueType >, _1, tolerance));
-#else
-        for (Index i = 0; i < size_; i ++) data_[i] = roundTo(data_[i],
-tolerance);
-#endif
+        THROW_TO_IMPL
         return *this;
     }
 
@@ -941,19 +939,44 @@ protected:
     Index singleCalcCount_;
 };
 
+template <> DLLEXPORT void Vector< Pos >::clean();
+
 // /*! Implement specialized type traits in vector.cpp */
-template <> DLLEXPORT void Vector<double>::add(const ElementMatrix < double >& A);
-template <> DLLEXPORT void Vector<double>::add(const ElementMatrix < double >& A, const double & a);
-template <> DLLEXPORT void Vector<double>::add(const ElementMatrix < double >& A, const RVector & a);
+template <> DLLEXPORT void Vector<double>::add(
+                        const ElementMatrix < double >& A);
+template <> DLLEXPORT void Vector<double>::add(
+                        const ElementMatrix < double >& A, const double & a);
+template <> DLLEXPORT void Vector<double>::add(
+                        const ElementMatrix < double >& A, const Pos & a);
+template <> DLLEXPORT void Vector<double>::add(
+                        const ElementMatrix < double >& A, const RMatrix & a);
 
-template <> DLLEXPORT void Vector< RVector3 >::clean();
+template< typename ValueType > void Vector< ValueType >::add(
+    const ElementMatrix < double >& A){ THROW_TO_IMPL}
+template< typename ValueType > void Vector< ValueType >::add(
+    const ElementMatrix < double >& A, const double & a){THROW_TO_IMPL}
+template< typename ValueType > void Vector< ValueType >::add(
+    const ElementMatrix < double >& A, const Pos & a){THROW_TO_IMPL}
+template< typename ValueType > void Vector< ValueType >::add(
+    const ElementMatrix < double >& A, const RMatrix & a){THROW_TO_IMPL}
 
-template< typename ValueType >
-void Vector< ValueType >::add(const ElementMatrix < double >& A){THROW_TO_IMPL}
-template< typename ValueType >
-void Vector< ValueType >::add(const ElementMatrix < double >& A, const double & a){THROW_TO_IMPL}
-template< typename ValueType >
-void Vector< ValueType >::add(const ElementMatrix < double >& A, const Vector< double> & a){THROW_TO_IMPL}
+// removeme in V1.2, 20200727
+template <> DLLEXPORT void Vector<double>::add(
+    const ElementMatrix < double > & A, const RVector & a);
+// removeme in V1.2, 20200727
+template< typename ValueType > void Vector< ValueType >::add(
+    const ElementMatrix < double >& A, const Vector< double> & a){THROW_TO_IMPL}
+
+
+template < > inline
+Vector< double > & Vector< double >::round(const double & tolerance){
+#ifdef USE_BOOST_BIND
+    std::transform(data_, data_ + size_, data_, boost::bind(roundTo< double >, _1, tolerance));
+#else
+    for (Index i = 0; i < size_; i ++) data_[i] = roundTo(data_[i], tolerance);
+#endif
+    return *this;
+}
 
 template< class ValueType, class Iter > class AssignResult{
 public:
@@ -1432,7 +1455,7 @@ template < class T, class A > T sum(const __VectorExpr< T, A > & a){
 //** Templates argue with python bindings
 inline Complex sum(const CVector & c){
     return std::accumulate(c.begin(), c.end(), Complex(0));
-};
+}
 inline double sum(const RVector & r){
     return std::accumulate(r.begin(), r.end(), double(0));
 }

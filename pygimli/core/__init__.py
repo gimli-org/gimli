@@ -29,16 +29,9 @@ except ImportError as e:
 
 _pygimli_.load = None
 
-def showNow():
-
-    pass
-#    showLater(0)  # not working anymore
-
-
-############################
+###########################
 # print function for gimli stuff
 ############################
-
 
 def __RVector_str(self, valsOnly=False):
     s = str()
@@ -103,7 +96,6 @@ def nonzero_test(self):
 
 def np_round__(self, r):
     return np.round(self.array(), r)
-
 
 _pygimli_.RVector.__bool__ = nonzero_test
 _pygimli_.R3Vector.__bool__ = nonzero_test
@@ -356,7 +348,7 @@ def __getVal(self, idx):
     if isinstance(idx, _pygimli_.BVector) or isinstance(
             idx, _pygimli_.IVector) or isinstance(idx, _pygimli_.IndexArray):
         # print("BVector, IVector, IndexArray", idx)
-        return self(idx)
+        return self.get_(idx)
     elif isinstance(idx, slice):
 
         s = idx.start
@@ -377,21 +369,21 @@ def __getVal(self, idx):
                 ids = range(s, e, idx.step)
 
             if len(ids):
-                return self(ids)
+                return self.get_(ids)
             else:
-                return self(0)
+                return self.get_(0)
                 #raise Exception("slice invalid")
 
     elif isinstance(idx, list) or hasattr(idx, '__iter__'):
         if isinstance(idx[0], int):
-            return self(idx)
+            return self.get_(idx)
         elif hasattr(idx[0], 'dtype'):
             # print("numpy: ", idx[0].dtype.str, idx[0].dtype ,type(idx[0]))
             if idx[0].dtype == 'bool':
-                return self([i for i, x in enumerate(idx) if x])
+                return self.get_([i for i, x in enumerate(idx) if x])
                 # return self[np.nonzero(idx)[0]]
         # print("default")
-        return self([int(a) for a in idx])
+        return self.get_([int(a) for a in idx])
 
     elif idx == -1:
         idx = len(self) - 1
@@ -508,6 +500,7 @@ for v in _vecs:
     v.ndim = 1
     v.__len__ = lambda self: self.size()
     v.shape = property(lambda self: (self.size(), None))
+    del v.__call__
 
 _pygimli_.RVector.dtype = np.float
 _pygimli_.BVector.dtype = np.bool
@@ -761,6 +754,8 @@ def abs(v):
     """
     if isinstance(v, _pygimli_.CVector):
         return _pygimli_.mag(v)
+    elif isPos(v):
+        return _pygimli_.RVector3(v).abs()
     elif isinstance(v, list):
         try:
             return _pygimli_.RVector3(v).abs()
@@ -769,6 +764,8 @@ def abs(v):
     elif isinstance(v, _pygimli_.R3Vector):
         return _pygimli_.absR3(v)
     elif isinstance(v, np.ndarray):
+        if v.ndim == 1:
+            return np.abs(v)
         if v.shape[0] == 2 or v.shape[0] == 3:
             return _pygimli_.absR3(v.T)
         else:
@@ -778,6 +775,8 @@ def abs(v):
         for i in range(len(v)):
             v[i] = _pygimli_.abs(v[i])
         return v
+    elif hasattr(v, 'vals'):
+        return pg.abs(v.vals)
 
     return _pygimli_.fabs(v)
 
@@ -1062,6 +1061,8 @@ def z(instance):
 def search(what):
     """Utility function to search docstrings for string `what`."""
     np.lookfor(what, module="pygimli", import_modules=False)
+
+from .base import isScalar, isArray, isPos, isR3Array, isComplex, isMatrix
 
 # Import from submodules at the end
 from .mesh import Mesh, MeshEntity, Node

@@ -12,7 +12,7 @@ from . import (CMatrix, CSparseMapMatrix, CSparseMatrix,
 
 from .logger import critical, warn
 
-# make core matrices (now in pgcor, later pg.core) available here for brevity
+# make core matrices (now in pgcore, later pg.core) available here for brevity
 ## Usefull Aliases
 IdentityMatrix = pgcore.IdentityMatrix
 
@@ -37,6 +37,10 @@ for m in __Matrices:
 
 pgcore.RMatrix.dtype = np.float
 pgcore.CMatrix.dtype = np.complex
+pgcore.RSparseMapMatrix.dtype = np.float
+pgcore.CSparseMapMatrix.dtype = np.complex
+pgcore.RSparseMatrix.dtype = np.float
+pgcore.CSparseMatrix.dtype = np.complex
 
 def __RMatrix_str(self):
     s = "RMatrix: " + str(self.rows()) + " x " + str(self.cols())
@@ -118,8 +122,6 @@ def __BlockMatrix_addMatrix_happy_GC__(self, M, row=None, col=None,
     transpose: bool [False]
         Transpose the matrix.
     """
-    from pygimli.utils import sparseMatrix2Array
-
     if M.ndim == 1:
         if transpose is False:
             _M = SparseMapMatrix(list(range(len(M))), [0]*len(M), M)
@@ -180,14 +182,16 @@ def __SparseMatrixEqual__(self, T):
         warn("Compare value sizes invalid: ", len(valsA), len(valsB))
         return False
 
-    # print(np.linalg.norm(np.array(rowsA)-np.array(rowsB)))
-    # print(np.linalg.norm(np.array(colsA)-np.array(colsB)))
-    # print(np.linalg.norm(valsA-valsB))
+    # print(self, T)
+    # print('rows:', np.linalg.norm(np.array(rowsA)-np.array(rowsB)))
+    # print('cols:', np.linalg.norm(np.array(colsA)-np.array(colsB)))
 
+    # print(np.linalg.norm(valsA-valsB), np.mean(abs(valsA)), np.mean(abs(valsB)))
+    # print(np.linalg.norm(valsA-valsB)/np.mean(abs(valsA)))
 
     return rowsA == rowsB and \
            colsA == colsB and \
-               np.linalg.norm(valsA-valsB) < 1e-14
+               np.linalg.norm(valsA-valsB)/np.mean(abs(valsA)) < 1e-14
 
 pgcore.RSparseMatrix.__eq__ = __SparseMatrixEqual__
 pgcore.RSparseMapMatrix.__eq__ = __SparseMatrixEqual__

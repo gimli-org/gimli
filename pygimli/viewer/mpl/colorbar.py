@@ -122,12 +122,12 @@ def findAndMaskBestClim(dataIn, cMin=None, cMax=None, dropColLimitsPerc=5,
 
     xHist = np.histogram(data, bins=100)[1]
 
-    if not cMin:
+    if cMin is None:
         cMin = xHist[dropColLimitsPerc]
         if logScale:
             cMin = pow(10.0, cMin)
 
-    if not cMax:
+    if cMax is None:
         cMax = xHist[100 - dropColLimitsPerc]
         if logScale:
             cMax = pow(10.0, cMax)
@@ -178,9 +178,11 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
     if gci is not None:
         if min(gci.get_array()) < 1e12:
             norm = mpl.colors.Normalize(vmin=min(gci.get_array()),
-                                        vmax=min(gci.get_array()))
+                                        vmax=max(gci.get_array()))
             gci.set_norm(norm)
+
         cbar.on_mappable_changed(gci)
+        #cbar.update_normal(gci)
 
     if levels is not None:
         nLevs = len(levels)
@@ -272,7 +274,14 @@ def createColorBar(gci, orientation='horizontal', size=0.2, pad=None,
 
     cbar = None
     if hasattr(ax, '__cBar__'):
+        ax.__cBar__.remove()
+        delattr(ax, '__cBar__')
+        # update colorbar is broken and will not work as supposed so we need
+        # to remove them for now
+
+    if hasattr(ax, '__cBar__'):
         cbar = ax.__cBar__
+        pg._y('update', kwargs)
         updateColorBar(cbar, gci, **kwargs)
     else:
         divider = make_axes_locatable(ax)
@@ -369,6 +378,7 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5, levels=None):
             pg.error('no cbar mappable. Cannot find cmax')
 
     if cMin == cMax:
+
         cMin *= 0.999
         cMax *= 1.001
 
@@ -398,11 +408,10 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5, levels=None):
 
     for i in cbarLevels:
         cbarLevelsString.append(prettyFloat(i, roundValue))
-        # print(i, prettyFloat(i))
 
     if hasattr(cbar, 'mappable'):
-        cbar.mappable.set_clim(vmin=cMin, vmax=cMax)
         #cbar.set_clim(cMin, cMax)
+        cbar.mappable.set_clim(vmin=cMin, vmax=cMax)
 
     cbar.set_ticks(cbarLevels)
     cbar.set_ticklabels(cbarLevelsString)
@@ -438,9 +447,9 @@ def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=None,
     if mappable.get_cmap() is not None:
         mappable.get_cmap().set_bad([1.0, 1.0, 1.0, 0.0])
 
-    if not cMin:
+    if cMin is None:
         cMin = data.min()
-    if not cMax:
+    if cMax is None:
         cMax = data.max()
 
     oldLog = None

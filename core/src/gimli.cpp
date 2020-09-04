@@ -377,6 +377,7 @@ void log(LogType type, const std::string & msg){
     }
 #endif
     if (type == Debug && !debug()) return;
+    if (type == Critical) throwError(logStr_(type) + ": " + msg);
     std::cout << logStr_(type) << ": " << msg << std::endl;
 }
 

@@ -151,10 +151,6 @@ class Modelling(pg.core.ModellingBase):
     def modelTrans(self, tm):
         self._modelTrans = tm
 
-    @property
-    def regionManager(self):
-        return self.regionManager()
-
     def regionManager(self):
         """
         """
@@ -467,7 +463,7 @@ class MeshModelling(Modelling):
         return self._pd
 
     def paraModel(self, model):
-        mod = model(self.paraDomain.cellMarkers())
+        mod = model[self.paraDomain.cellMarkers()]
         return mod
 
     def ensureContent(self):

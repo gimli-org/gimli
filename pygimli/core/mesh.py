@@ -2,24 +2,52 @@
 """
 Import and extensions of the core Mesh class.
 """
+import numpy as np
 
+from math import ceil
 from ._pygimli_ import (cat, HexahedronShape, Line,
-                        Mesh, MeshEntity, Node, Boundary,
+                        Mesh, MeshEntity, Node, Boundary, RVector,
                         PolygonFace, TetrahedronShape, TriangleFace)
 from .logger import deprecated, error, info, warn
 from ..meshtools import mergePLC, exportPLC
+from .base import isScalar, isArray, isPos, isR3Array, isComplex
 
 
 def __Mesh_str(self):
     st = "Mesh: Nodes: " + str(self.nodeCount()) + " Cells: " + str(
         self.cellCount()) + " Boundaries: " + str(self.boundaryCount())
+
     if (self.secondaryNodeCount() > 0):
         st += " secNodes: " + str(self.secondaryNodeCount())
 
     if len(list(self.dataMap().keys())) > 0:
         st += "\nMesh contains data: "
+
+        uniqueNames = {}
         for d in self.dataMap().keys():
-            st += d + " "
+
+            uName = d
+            if '_x' in d:
+                uName = uName[0:d.find('_x')]
+
+            if '_y' in d or '_z' in d:
+                continue
+
+            if '#' in d:
+                uName = uName[0:d.find('#')]
+
+
+            if not uName in uniqueNames:
+                uniqueNames[uName] = []
+
+            uniqueNames[uName].append(d)
+
+        for d, v in uniqueNames.items():
+            if len(v) > 1:
+                st += d + "[0,...,{}) ".format(len(v))
+            else:
+                st += d + " "
+
     return st
 Mesh.__str__ = __Mesh_str
 
@@ -64,8 +92,30 @@ Node.__str__ = __Node_str
 
 
 def __Mesh_setVal(self, key, val):
-    """Index access to the mesh data"""
-    self.addData(key, val)
+    """Index access to the mesh data.
+
+    Multiple arrays via matrix will be saved too.
+    """
+    # print(key, len(val), isR3Array(val))
+
+    if isR3Array(val):
+        return self.addData(key, val)
+
+    if isinstance(val, list) and isinstance(val[0], (RVector, np.ndarray)) or \
+        val.ndim == 2:
+
+        #print(val.ndim)
+        maxDigit = ceil(np.log10(len(val)))
+
+        for i, v in enumerate(val):
+            #print(i, v, maxDigit, '{}#{}'.format(key, str(i).zfill(maxDigit)))
+
+            self.addData('{}#{}'.format(key, str(i).zfill(maxDigit)),
+                         np.asarray(v))
+    else:
+        self.addData(key, val)
+
+    #print('keys', self.dataMap.keys())
 Mesh.__setitem__ = __Mesh_setVal
 
 
@@ -74,7 +124,43 @@ def __Mesh_getVal(self, key):
     if self.haveData(key):
         return self.data(key)
     else:
-        error('The mesh does not have the requested data:', key)
+
+        uniqueNames = {}
+        for d in self.dataMap().keys():
+            if '_y' in d or '_z' in d:
+                continue
+
+            uName = d
+
+            if '_x' in uName:
+                uName = uName[0:uName.find('_x')]
+                d1 = self.data(d)
+                d2 = self.data(d.replace('_x', '_y'))
+                d3 = self.data(d.replace('_x', '_z'))
+                dat = np.array([d1, d2, d3]).T
+            else:
+                dat = self.data(d)
+
+            if '#' in uName:
+                uName = uName[0:uName.find('#')]
+
+            if not uName in uniqueNames:
+                uniqueNames[uName] = []
+
+            uniqueNames[uName].append(dat)
+
+        if key in uniqueNames:
+            if len(uniqueNames[key]) == 1:
+                return uniqueNames[key][0]
+            try:
+                return np.array(uniqueNames[key])
+            except:
+                return uniqueNames[key]
+
+        error('The mesh does not have the requested data:', key,
+              '. Available:', uniqueNames)
+
+
 Mesh.__getitem__ = __Mesh_getVal
 
 
@@ -234,7 +320,6 @@ def __deform__(self, eps, mag=1.0):
 
 Mesh.deform = __deform__
 
-
 Mesh.exportPLC = exportPLC
 
 # just to keep backward compatibility 20191120
@@ -251,3 +336,7 @@ def __Boundary_outside__(self):
     return self.leftCell() is not None and self.rightCell() is None
 
 Boundary.outside = __Boundary_outside__
+
+def __Mesh_h__(self):
+    return np.array([c.shape().h() for c in self.cells()])
+Mesh.h = __Mesh_h__

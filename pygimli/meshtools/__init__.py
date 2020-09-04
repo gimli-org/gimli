@@ -21,7 +21,7 @@ from .mesh import (convert, convertMeshioMesh, convertHDF5Mesh, createMesh,
                    exportSTL, extrudeMesh, merge2Meshes, mergeMeshes,
                    readFenicsHDF5Mesh, readGmsh, readHDF5Mesh,
                    readHydrus2dMesh, readHydrus3dMesh, readSTL, readTetgen,
-                   readTriangle, refineHex2Tet, refineQuad2Tri)
+                   readTriangle, readMeshIO, refineHex2Tet, refineQuad2Tri)
 from .polytools import createParaDomain2D  # keep for backward compatibility
 from .polytools import (createCircle, createCube, createCylinder, createFacet,
                         createLine, createParaMeshPLC, createPolygon,
@@ -44,6 +44,7 @@ __all__ = [
     'readHDF5Mesh',
     'readFenicsHDF5Mesh',
     'readSTL',
+    'readMeshIO',
     'refineQuad2Tri',
     'mergeMeshes',
     'merge2Meshes',

@@ -25,13 +25,18 @@
 
 namespace GIMLI{
 
+class FEAFunction;
 
 template < class ValueType > class DLLEXPORT ElementMatrix {
 public:
     /*! If dof != 0 then scalar field approximation is to be supposed.
     For vector field solution give a dof, means be the number of nodes of the current mesh. */
-    ElementMatrix(Index dof=0) {
+    ElementMatrix(Index dof=0){
         this->_nDof = dof;
+        this->_newStyle = false;
+        this->_nCoeff = 0;
+        this->_dofPerCoeff = 0;
+        this->_dofOffset = 0;
     }
 
     ~ElementMatrix() {}
@@ -54,6 +59,15 @@ public:
 
     #define DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__(OP)                   \
         ElementMatrix < ValueType > & operator OP##= (ValueType val) { \
+            if (this->_newStyle){ \
+                if (this->_integrated){ \
+                    for (Index i = 0; i < size(); i ++) mat_[i] OP##= val; \
+                } \
+                for (auto & m: _matX){ \
+                    m OP##= val; \
+                } \
+                return *this;\
+            } \
             for (Index i = 0; i < size(); i ++) mat_[i] OP##= val; \
             return *this;\
         } \
@@ -128,7 +142,7 @@ public:
 
     /*! Get integration weights and points for the entity. */
     void getWeightsAndPoints(const MeshEntity & ent,
-                const RVector * &w, const R3Vector * &x, int order);
+                const RVector * &w, const PosVector * &x, int order);
 
 
     /*! Return the stress matrix for this entity.*/
@@ -142,7 +156,7 @@ public:
     /*! Fill Element Gradients Matrix for all integration points. */
     void fillGradientBase(const MeshEntity & ent,
                           const RVector & w,
-                          const R3Vector & x,
+                          const PosVector & x,
                           Index nC,
                           bool voigtNotation);
 
@@ -154,7 +168,7 @@ public:
     /*! Fill this element matrix with int_domain C * grad u */
     ElementMatrix < ValueType > & gradU(const MeshEntity & ent,
                                         const RVector & w,
-                                        const R3Vector & x,
+                                        const PosVector & x,
                                         Index nC,
                                         bool voigtNotation=false);
 
@@ -182,7 +196,7 @@ public:
     ElementMatrix < ValueType > & gradU2(const MeshEntity & ent,
                                          const Matrix< ValueType > & C,
                                          const RVector & w,
-                                         const R3Vector & x,
+                                         const PosVector & x,
                                          bool voigtNotation=false);
 
     ElementMatrix < ValueType > & ux2uy2uz2(const Cell & cell,
@@ -190,45 +204,45 @@ public:
 
     ElementMatrix < ValueType > & u(const MeshEntity & ent,
                                     const RVector & w,
-                                    const R3Vector & x,
+                                    const PosVector & x,
                                     bool verbose=false);
     ElementMatrix < ValueType > & u2(const MeshEntity & ent,
                                      const RVector & w,
-                                     const R3Vector & x,
+                                     const PosVector & x,
                                      bool verbose=false);
     ElementMatrix < ValueType > & ux2(const MeshEntity & ent,
                                       const RVector & w,
-                                      const R3Vector & x,
+                                      const PosVector & x,
                                       bool verbose=false);
     ElementMatrix < ValueType > & ux2uy2(const MeshEntity & ent,
                                          const RVector & w,
-                                         const R3Vector & x,
+                                         const PosVector & x,
                                          bool verbose=false);
     ElementMatrix < ValueType > & ux2uy2uz2(const MeshEntity & ent,
                                             const RVector & w,
-                                            const R3Vector & x,
+                                            const PosVector & x,
                                             bool verbose=false);
 
     ElementMatrix < double > & dudi(const MeshEntity & ent,
                                   const RVector & w,
-                                  const R3Vector & x,
+                                  const PosVector & x,
                                   Index i, bool verbose=false);
 
     ElementMatrix < double > & ux(const MeshEntity & ent,
                                   const RVector & w,
-                                  const R3Vector & x,
+                                  const PosVector & x,
                                   bool verbose=false){
         return dudi(ent, w, x, 0, verbose);
     }
     ElementMatrix < double > & uy(const MeshEntity & ent,
                                   const RVector & w,
-                                  const R3Vector & x,
+                                  const PosVector & x,
                                   bool verbose=false){
         return dudi(ent, w, x, 1, verbose);
     }
     ElementMatrix < double > & uz(const MeshEntity & ent,
                                   const RVector & w,
-                                  const R3Vector & x,
+                                  const PosVector & x,
                                   bool verbose=false){
         return dudi(ent, w, x, 2, verbose);
     }
@@ -249,7 +263,8 @@ public:
         }
     }
     /*! Return (S * a) * b */
-    ValueType mult(const Vector < ValueType > & a, const Vector < ValueType > & b){
+    ValueType mult(const Vector < ValueType > & a,
+                   const Vector < ValueType > & b){
         ValueType ret = 0;
         for (Index i = 0; i < size(); i ++) {
             ValueType t = 0;
@@ -293,19 +308,30 @@ public:
 
     void copyFrom(const ElementMatrix < ValueType > & E, bool withMat=true);
 
+    void init(Index nCoeff, Index dofPerCoeff, Index dofOffset);
+
+    /*! Fill this ElementMatrix with value (u for scalar, v for vector values) basis. Cache the matrix in entity*/
+    ElementMatrix < ValueType > & pot(const MeshEntity & ent, Index order,
+                                      bool sum,
+                                      Index nCoeff, Index dof, Index dofOffset);
+
     /*! Fill this ElementMatrix with value (u for scalar, v for vector values) basis.*/
-    ElementMatrix < ValueType > & pot(const MeshEntity & ent,
-                                      Index integrationOrder,
+    ElementMatrix < ValueType > & pot(const MeshEntity & ent, Index order,
                                       bool sum=false);
 
+    /*! Fill this ElementMatrix with value (u for scalar, v for vector values) basis. Cache the matrix in entity*/
+    ElementMatrix < ValueType > & grad(const MeshEntity & ent, Index order,
+                                       bool elastic, bool sum, bool div,
+                                      Index nCoeff, Index dof, Index dofOffset, bool kelvin=false
+                                      );
+
     /*! Fill this ElementMatrix with gradient of ent.*/
-    ElementMatrix < ValueType > & grad(const MeshEntity & ent,
-                                       Index integrationOrder,
-                                       bool elastic=false,
-                                       bool sum=false, bool div=false);
+    ElementMatrix < ValueType > & grad(const MeshEntity & ent, Index order,
+                                       bool elastic=false, bool sum=false,
+                                       bool div=false, bool kelvin=false);
 
     /*! Integrate, i.e., sum over quadrature matrices.*/
-    ElementMatrix < ValueType > & integrate();
+    const ElementMatrix < ValueType > & integrate() const;
 
     /*! Return reference to all matrices per quadrature point.*/
     const std::vector < Matrix < ValueType > > & matX() const { return _matX; }
@@ -316,7 +342,7 @@ public:
     const MeshEntity & entity() const { ASSERT_PTR(_ent); return *_ent; }
 
     /*! Return const reference to the last quadrature points.*/
-    const R3Vector & x() const { ASSERT_PTR(_x); return *_x; }
+    const PosVector & x() const { ASSERT_PTR(_x); return *_x; }
 
     /*! Return const reference to the last quadrature weights.*/
     const RVector & w() const { ASSERT_PTR(_w); return *_w; }
@@ -329,9 +355,17 @@ public:
     void setDiv(bool div){ _div = true;}
     bool isDiv() const { return _div;}
 
+    bool isIntegrated() const { return _integrated; }
+    void integrated(bool i) { _integrated = i; }
 
+    bool valid() const { return _valid; }
+    void setValid(bool v) { _valid = v; }
+
+    bool elastic() const { return _elastic;}
+
+    bool oldStyle() const { return !this->_newStyle; }
 protected:
-    Matrix < ValueType > mat_;
+    mutable Matrix < ValueType > mat_;
     IndexArray _ids;
     IndexArray _idsC;
     IndexArray _idsR;
@@ -357,7 +391,6 @@ protected:
 
     RMatrix _abaTmp; // temp workspace
 
-
     //** new interface starts here **//
     // const Mesh * _mesh;
     Index _order;
@@ -367,11 +400,15 @@ protected:
 
     const MeshEntity * _ent;
     const RVector * _w;
-    const R3Vector * _x;
+    const PosVector * _x;
     // matrices per quadrature point
     std::vector < Matrix < ValueType > > _matX;
 
+    bool _newStyle;
     bool _div;
+    bool _valid;
+    bool _elastic;
+    mutable bool _integrated;
 
 private:
     /*! No copy operator. */
@@ -392,6 +429,126 @@ template < > DLLEXPORT
 void ElementMatrix < double >::copyFrom(const ElementMatrix < double > & E,
                                         bool withMat);
 
+template < > DLLEXPORT
+void ElementMatrix < double >::init(Index nCoeff, Index dofPerCoeff,
+                                    Index dofOffset);
+
+DLLEXPORT void dot(const ElementMatrix < double > & A,
+                   const ElementMatrix < double > & B,
+                   double c, ElementMatrix < double > & ret);
+
+DLLEXPORT void dot(const ElementMatrix < double > & A,
+                   const ElementMatrix < double > & B,
+                   const Pos & c, ElementMatrix < double > & ret);
+
+DLLEXPORT void dot(const ElementMatrix < double > & A,
+                   const ElementMatrix < double > & B,
+                   const RMatrix & c, ElementMatrix < double > & ret);
+
+DLLEXPORT void dot(const ElementMatrix < double > & A,
+                   const ElementMatrix < double > & B,
+                   const FEAFunction & c, ElementMatrix < double > & ret);
+
+// DLLEXPORT void dot(const ElementMatrix < double > & A, 
+//                    const ElementMatrix < double > & B, 
+//                    A_TYPE c, ElementMatrix < double > & C);
+
+#define DEFINE_DOT_MULT(A_TYPE) \
+DLLEXPORT const ElementMatrix < double > dot( \
+                                        const ElementMatrix < double > & A, \
+                                        const ElementMatrix < double > & B, \
+                                        A_TYPE c); \
+DLLEXPORT void mult(const ElementMatrix < double > & A, A_TYPE b, \
+                    ElementMatrix < double > & C); \
+DLLEXPORT const ElementMatrix < double > mult( \
+                    const ElementMatrix < double > & A, A_TYPE b); \
+
+DEFINE_DOT_MULT(double)
+DEFINE_DOT_MULT(const Pos &)
+DEFINE_DOT_MULT(const RMatrix &)
+DEFINE_DOT_MULT(const FEAFunction &)
+
+#undef DEFINE_DOT_MULT
+
+DLLEXPORT const ElementMatrix < double > dot(
+                                        const ElementMatrix < double > & A,
+                                        const ElementMatrix < double > & B);
+// return dot(A, B, 1.0);}
+
+DLLEXPORT void dot(const ElementMatrix < double > & A,
+                   const ElementMatrix < double > & B,
+                   ElementMatrix < double > & ret);
+// return dot(A, B, 1.0, ret);
+// }
+
+
+/*! scalar per quadrature point */
+DLLEXPORT void mult(const ElementMatrix < double > & A, const RVector & b,
+                    ElementMatrix < double > & C);
+/*! vector per quadrature point */
+DLLEXPORT void mult(const ElementMatrix < double > & A, const PosVector & b,
+                    ElementMatrix < double > & C);
+/*! Matrix per quadrature point */
+DLLEXPORT void mult(const ElementMatrix < double > & A,
+                    const std::vector < RMatrix > & b,
+                    ElementMatrix < double > & C);
+
+/*!Evaluate scalars per cell.*/
+DLLEXPORT void evaluateQuadraturePoints(const MeshEntity & ent,
+                                        const PosVector & x,
+                                        const FEAFunction & f, RVector & ret);
+/*!Evaluate vectors per cell.*/
+DLLEXPORT void evaluateQuadraturePoints(const MeshEntity & ent,
+                                        const PosVector & x,
+                                        const FEAFunction & f, PosVector & ret);
+/*!Evaluate matrices per cell.*/
+DLLEXPORT void evaluateQuadraturePoints(const MeshEntity & ent,
+                                        const PosVector & x,
+                                        const FEAFunction & f,
+                                        std::vector < RMatrix > & ret);
+/*!Evaluate scalar for each cell.*/
+DLLEXPORT void evaluateQuadraturePoints(const Mesh & mesh, Index order,
+                                        const FEAFunction & f,
+                                        std::vector< RVector > & ret);
+/*!Evaluate vectors for each cell.*/
+DLLEXPORT void evaluateQuadraturePoints(const Mesh & mesh, Index order,
+                                        const FEAFunction & f,
+                                        std::vector< PosVector > & ret);
+/*!Evaluate matrices for each cell.*/
+DLLEXPORT void evaluateQuadraturePoints(const Mesh & mesh, Index order,
+                                        const FEAFunction & f,
+                              std::vector< std::vector< RMatrix > > & ret);
+
+
+#define DEFINE_CREATE_FORCE_VECTOR(A_TYPE) \
+DLLEXPORT void createForceVector(const Mesh & mesh, Index order, \
+                                 RVector & ret, A_TYPE a, \
+                                 Index nCoeff, Index dofOffset); \
+DLLEXPORT void createMassMatrix(const Mesh & mesh, Index order, \
+                                RSparseMapMatrix & ret, A_TYPE a, \
+                                Index nCoeff, Index dofOffset); \
+DLLEXPORT void createStiffnessMatrix(const Mesh & mesh, Index order, \
+                                     RSparseMapMatrix & ret, A_TYPE a, \
+                                     Index nCoeff, Index dofOffset, \
+                                     bool elastic=false, bool kelvin=false); \
+
+DEFINE_CREATE_FORCE_VECTOR(double)             // const scalar for all cells
+DEFINE_CREATE_FORCE_VECTOR(const Pos &)   // const vector for all cells
+DEFINE_CREATE_FORCE_VECTOR(const RVector &)    // scalar for each cell
+DEFINE_CREATE_FORCE_VECTOR(const PosVector &)   // vector for each cell
+DEFINE_CREATE_FORCE_VECTOR(const RMatrix &)    // const matrix for all cells
+// matrix for each cell
+DEFINE_CREATE_FORCE_VECTOR(const std::vector< RVector > &)
+// vector at each quadrature point for each cell
+DEFINE_CREATE_FORCE_VECTOR(const std::vector< PosVector > &)
+// matrix at each quadrature point for each cell
+DEFINE_CREATE_FORCE_VECTOR(const std::vector < RMatrix > &)
+// scalar at each quadrature point for each cell
+DEFINE_CREATE_FORCE_VECTOR(const std::vector< std::vector < RMatrix > > &)
+// generic function for each point
+DEFINE_CREATE_FORCE_VECTOR(const FEAFunction &)
+
+#undef DEFINE_CREATE_FORCE_VECTOR
 
 /*!Interface to function q=f(p, ent) with q, p = Pos() in R1, R2, R 3
 and ent assiated mesh entity.*/
@@ -415,32 +572,6 @@ public:
 protected:
     Index _valueSize;
 };
-
-DLLEXPORT void dot(const ElementMatrix < double > & A,
-                   const ElementMatrix < double > & B,
-                   ElementMatrix < double > & C, double b);
-
-DLLEXPORT const ElementMatrix < double > dot(const ElementMatrix < double > & A,
-                    const ElementMatrix < double > & B, double b=1.0);
-DLLEXPORT const ElementMatrix < double > dot(const ElementMatrix < double > & A,
-                    const ElementMatrix < double > & B, const RVector & b);
-DLLEXPORT const ElementMatrix < double > dot(const ElementMatrix < double > & A,
-                    const ElementMatrix < double > & B, const RMatrix & b);
-DLLEXPORT const ElementMatrix < double > dot(const ElementMatrix < double > & A,
-                    const ElementMatrix < double > & B, const FEAFunction & b);
-
-DLLEXPORT void mult(const ElementMatrix < double > & A,
-                    ElementMatrix < double > & C, double b=1.0);
-DLLEXPORT void mult(const ElementMatrix < double > & A,
-                    ElementMatrix < double > & C, const FEAFunction & b);
-
-DLLEXPORT const ElementMatrix < double > mult(
-                    const ElementMatrix < double > & A, double b);
-DLLEXPORT const ElementMatrix < double > mult(
-                    const ElementMatrix < double > & A, const RVector & b);
-DLLEXPORT const ElementMatrix < double > mult(
-                    const ElementMatrix < double > & A, const FEAFunction & b);
-
 
 class DLLEXPORT ElementMatrixMap {
 public:
@@ -473,6 +604,7 @@ template < class ValueType > std::ostream & operator << (std::ostream & str,
 
 template < > DLLEXPORT std::ostream & operator << (std::ostream & str,
                                             const ElementMatrix< double > & e);
+
 
 
 } // namespace GIMLI{

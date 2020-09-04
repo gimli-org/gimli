@@ -256,6 +256,7 @@ class MethodManager(object):
         pg.critical('API, overwrite in derived classes', fileName)
 
     def estimateError(self, data, errLevel=0.01, absError=None):
+        # TODO check, rel or abs in return.
         """Estimate data error.
 
         Create an error of estimated measurement error.
@@ -263,18 +264,16 @@ class MethodManager(object):
         More sophisticated error estimation should be done
         in specialized derived classes.
 
-        TODO check, rel or abs in return.
-
         Parameters
         ----------
         data : iterable
             Data values for which the errors should be estimated.
 
         errLevel : float (0.01)
-            Error level in percent/100.
+            Error level in percent/100 (i.e., 3% = 0.03).
 
-        absoluteError : float (None)
-            absolute error in the unit of the data
+        absError : float (None)
+            Absolute error in the unit of the data.
 
         Returns
         -------
@@ -654,11 +653,7 @@ class MeshMethodManager(MethodManager):
         """Give the model parameter regarding the parameter mesh."""
         if model is None:
             model = self.fw.model
-
-        if len(model) == self.fw.parameterCount:
-            return model
-        else:
-            self.fop.paraModel(model)
+        return self.fop.paraModel(model)
 
     def createMesh(self, data=None, **kwargs):
         """API, implement in derived classes."""
@@ -742,8 +737,6 @@ class MeshMethodManager(MethodManager):
         limits = kwargs.pop('limits', None)
         if limits is not None:
             self.fop.setRegionProperties('*', limits=limits)
-
-        # pg._y(pg.pf(self.fop._regionProperties))
 
         self.preRun(**kwargs)
         self.fw.run(dataVals, errorVals, **kwargs)

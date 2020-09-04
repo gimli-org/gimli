@@ -19,12 +19,15 @@ from pygimli.utils import prettyFloat
 holdAxes__ = 0
 
 
-def updateFig(fig, force=False, sleep=.05):
+def updateFig(fig, force=False, sleep=.0001):
     """For internal use."""
     if not holdAxes__:
         try:
             fig.canvas.draw_idle()
             if force:
+                fig.canvas.flush_events()
+                #fig.canvas.draw()
+                #pg.plt.show(block=False)
                 pg.plt.pause(sleep)
                 #time.sleep(sleep)
         except BaseException as e:

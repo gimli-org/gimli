@@ -195,7 +195,14 @@ public:
 
     const RMatrix & uxCache() const { return uxCache_; }
 
-    void addSecondaryNode(Node * n);
+    ElementMatrix < double > & uCache(){ return uCache_; }
+
+    ElementMatrix < double > & gradUCache(){ return gradUCache_; }
+
+    /*! Geometry has been changed. Deletes cache.*/
+    void changed();
+
+void addSecondaryNode(Node * n);
 
     void delSecondaryNode(Node * n);
 
@@ -218,7 +225,9 @@ protected:
     std::vector < Node * > secondaryNodes_;
 
     /*! Cache for derivation matrixes */
-    //mutable ElementMatrix < double > uxCache_; // to expensive maybe, lightweight baseclass here
+    mutable ElementMatrix < double > uCache_;
+    mutable ElementMatrix < double > gradUCache_;
+
     mutable RMatrix uxCache_;
 
 protected:
@@ -362,7 +371,7 @@ public:
     void swapNorm();
 
     /*!Is the boundary is on the outside of the mesh.*/
-    bool outside() const { return leftCell_ != 0 & rightCell_ == 0; }
+    bool outside() const { return (leftCell_ != 0) && (rightCell_ == 0); }
 
 
 protected:

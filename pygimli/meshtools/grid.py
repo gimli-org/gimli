@@ -221,7 +221,7 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1, quality=34.0,
         xBottom = pg.Vector(np.linspace(mesh.xmin() - xbound,
                                         mesh.xmax() + xbound, 2 * xtLen))
 
-        for i, val in enumerate(pg.core.fliplr(xTop)(0, len(xTop) - 1)):
+        for i, val in enumerate(pg.core.fliplr(xTop)[0:len(xTop) - 1]):
             poly.createNode([mesh.xmax() + val, mesh.ymax(), 0.0])
 
         for n in boundaryNodes:
@@ -229,16 +229,16 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1, quality=34.0,
 
         # add top left, bottom left and bottom right node
 
-        for t in xTop(1, len(xTop)):
+        for t in xTop[1:len(xTop)]:
             poly.createNode([mesh.xmin() - t, mesh.ymax(), 0.0])
 
-        for t in yLeft(1, len(yLeft)):
+        for t in yLeft[1:len(yLeft)]:
             poly.createNode([mesh.xmin() - xbound, mesh.ymax() - t, 0.0])
 
-        for t in xBottom(1, len(xBottom) - 1):
+        for t in xBottom[1:len(xBottom) - 1]:
             poly.createNode([t, mesh.ymin() - ybound, 0.0])
 
-        for t in pg.core.fliplr(yLeft)(0, len(yLeft) - 1):
+        for t in pg.core.fliplr(yLeft)[0:len(yLeft) - 1]:
             poly.createNode([mesh.xmax() + xbound, mesh.ymax() - t, 0.0])
 
         # create a closed polygon through all new nodes

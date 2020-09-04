@@ -245,17 +245,16 @@ void MeshEntity::setNodes(const std::vector < Node * > & nodes){
 
 void MeshEntity::addSecondaryNode(Node * n) {
     secondaryNodes_.push_back(n);
-};
+}
 
 void MeshEntity::delSecondaryNode(Node * n) {
     secondaryNodes_.erase(std::remove(secondaryNodes_.begin(),
                                       secondaryNodes_.end(), n),
                           secondaryNodes_.end());
-};
-
+}
 const std::vector < Node * > & MeshEntity::secondaryNodes() const {
     return secondaryNodes_;
-};
+}
 
 const std::vector < Node * > MeshEntity::allNodes() const {
     std::vector < Node * > ns;
@@ -266,7 +265,7 @@ const std::vector < Node * > MeshEntity::allNodes() const {
         ns.push_back(secondaryNodes_[i]);
     }
     return ns;
-};
+}
 
 Index MeshEntity::allNodeCount() const{
     return nodeCount() + secondaryNodes_.size();
@@ -357,6 +356,12 @@ RVector3 MeshEntity::grad(const RVector3 & xyz, const RVector & u) const {
     gr[1] = sum(up * MdNdL.transMult(shape_->invJacobian().col(1)));
     gr[2] = sum(up * MdNdL.transMult(shape_->invJacobian().col(2)));
     return gr;
+}
+
+void MeshEntity::changed(){
+    this->shape_->changed();
+    uCache_.setValid(false);
+    gradUCache_.setValid(false);
 }
 
 //############### Cell ##################
