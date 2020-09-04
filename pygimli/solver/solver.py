@@ -2140,7 +2140,7 @@ def solve(mesh, **kwargs):
 
 
 def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
-                        times=None, userData={},
+                        times=None, c=1.0, userData={},
                         verbose=False, **kwargs):
     r"""Solve partial differential equation with Finite Elements.
 
@@ -2150,7 +2150,7 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
 
     .. math::
 
-        \frac{\partial u}{\partial t} & = \nabla\cdot(a \nabla u)
+        c \frac{\partial u}{\partial t} & = \nabla\cdot(a \nabla u)
         + b u + f(\mathbf{r},t)~~|~~\Omega_{\text{Mesh}}\\
         u & = h~~|~~\Gamma_{\text{Dirichlet}}\\
         \frac{\partial u}{\partial \mathbf{n}} & = g~~|~~\Gamma_{\text{Neumann}}\\
@@ -2188,6 +2188,8 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
         Cell values of type float or complex can be scalar, anisotropic matrix or elastic tensor.
     b: value | array | callable(cell, userData) [None]
         Cell values. None means the term is unused.
+    c: value | array | callable(cell, userData) [None]
+        Scale the unsteady term, only for times is not None.
     f: value | array(cells) | array(nodes) | callable(args, kwargs)
         force values, for vector fields use (n x dim) values.
     bc: dict()
@@ -2413,7 +2415,10 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
         if debug:
             print("start TL", swatch.duration())
 
-        M = createMassMatrix(mesh)
+        if c is not 1.0:
+            c = cellValues(mesh, c, userData=userData)
+
+        M = createMassMatrix(mesh, c)
         F = createLoadVector(mesh, f)
 
         u0 = np.zeros(dof)
@@ -2454,7 +2459,7 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
         for n in range(1, len(times)):
             swatch.reset()
 
-            dt = times[n] - times[n - 1]
+            dt = times[n] - times[n-1]
 
             # previous timestep
             # print "i: ", i, dt, U[i - 1]
@@ -2590,7 +2595,6 @@ def crankNicolson(times, S, I, f=None,
     if progress:
         timeMeasure = True
 
-    dt = float(times[1] - times[0])
     dof = S.rows()
 
     rhs = np.zeros((len(times), dof))
@@ -2603,40 +2607,34 @@ def crankNicolson(times, S, I, f=None,
 
     if theta == 0:
         A = I.copy()
-    else:
-        A = I + S * (dt * theta)
-
-    if dirichlet is not None:
-        dirichlet.apply(A)
 
     if solver is None:
-        solver = pg.core.LinSolver(A, verbose=False)
-    else:
-        solver.factorize(A)
+        solver = pg.solver.LinSolver(solver='scipy')
 
-    St = None
+    dt = 0.0
     for n in range(1, len(times)):
+        newDt = times[n] - times[n-1]
+        if abs(newDt - dt) > 1e-8:
+            ## new dt, so we need to factorize the matrix again
+            dt = newDt
+            #pg.info('dt', dt)
+
+            A = I + S * (dt * theta)
+
+            if dirichlet is not None:
+                dirichlet.apply(A)
+
+            solver.factorize(A)
+
+            St = None
 
         if timeMeasure:
-            pg.tic()
-
-#        pg.tic()
-        #bRef = (I + (dt * (theta - 1.)) * S) * u[n - 1] + \
-           #dt * ((1.0 - theta) * rhs[n - 1] + theta * rhs[n])
-#        pg.toc()
-#
-#        pg.tic()
-        #b = I * u[n - 1] + ((dt * (theta - 1.)) * S) * u[n - 1] + \
-           #dt * ((1.0 - theta) * rhs[n - 1] + theta * rhs[n])
-#        pg.toc()
-#
-#        pg.tic()
+            pg.tic(key='CrankNicolsonLoop')
 
         if theta == 0:
             if St is None:
                 St = I - S * dt # cache what's possible
             b = St * u[n-1] + dt * rhs[n-1]
-
         elif theta == 1:
             b = I * u[n-1] + dt * rhs[n]
         else:
@@ -2648,13 +2646,12 @@ def crankNicolson(times, S, I, f=None,
             dirichlet.apply(b)
 
         if timeMeasure:
-            timeAssemble.append(pg.dur())
-            pg.tic()
+            timeAssemble.append(pg.dur(key='CrankNicolsonLoop', reset=True))
 
         u[n, :] = solver(b)
 
         if timeMeasure:
-            timeSolve.append(pg.dur())
+            timeSolve.append(pg.dur(key='CrankNicolsonLoop'))
 
         if progress:
             progress.update(n,

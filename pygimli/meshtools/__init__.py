@@ -9,7 +9,8 @@ Mesh generation and modification.
 """
 
 from ..core import createMesh1D, createMesh1DBlock, createMesh2D, createMesh3D
-from .grid import appendTetrahedronBoundary, appendTriangleBoundary, createGrid
+from .grid import (createGrid, createGridPieShaped,
+                   appendTetrahedronBoundary, appendTriangleBoundary)
 from .mapping import (cellDataToBoundaryData, cellDataToNodeData,
                       fillEmptyToCellArray, interpolate, interpolateAlongCurve,
                       nodeDataToBoundaryData, nodeDataToCellData,

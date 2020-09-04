@@ -344,7 +344,7 @@ def extrudeMesh(mesh, a, **kwargs):
     Keyword Arguments
     -----------------
     adjustBottom: bool [False]
-        Adjust all nodes that bottom of the mesh has a constant depth (only 2D)
+        Adjust all nodes such that the bottom of the mesh has a constant depth (only 2D)
 
     Returns
     -------
