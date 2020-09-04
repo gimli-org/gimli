@@ -115,6 +115,7 @@ void LinSolver::setMatrix(CSparseMatrix & S, int stype){
 }
 
 void LinSolver::solve(const RVector & rhs, RVector & solution){
+    ASSERT_VEC_SIZE(rhs, cols_)
     solution.resize(rows_);
     if (rhs.size() != cols_){
         std::cerr << WHERE_AM_I << " rhs size mismatch: " << cols_ << "  " << rhs.size() << std::endl;
@@ -123,6 +124,7 @@ void LinSolver::solve(const RVector & rhs, RVector & solution){
 }
 
 void LinSolver::solve(const CVector & rhs, CVector & solution){
+    ASSERT_VEC_SIZE(rhs, cols_)
     solution.resize(rows_);
     if (rhs.size() != cols_){
         std::cerr << WHERE_AM_I << " rhs size mismatch: " << cols_ << "  " << rhs.size() << std::endl;
@@ -131,12 +133,14 @@ void LinSolver::solve(const CVector & rhs, CVector & solution){
 }
 
 RVector LinSolver::solve(const RVector & rhs){
+    ASSERT_VEC_SIZE(rhs, cols_)
     RVector solution(rhs.size());
     if (solver_) solver_->solve(rhs, solution);
     return solution;
 }
 
 CVector LinSolver::solve(const CVector & rhs){
+    ASSERT_VEC_SIZE(rhs, cols_)
     CVector solution(rhs.size());
     if (solver_) solver_->solve(rhs, solution);
     return solution;
@@ -172,15 +176,17 @@ void LinSolver::initialize_(CSparseMatrix & S, int stype){
     }
 }
 
-
 std::string LinSolver::solverName() const {
-  switch(solverType_){
-  case LDL:     return "LDL"; break;
-  case CHOLMOD: return "CHOLMOD"; break;
-  case UMFPACK: return "UMFPACK"; break;
-  case UNKNOWN:
-  default: return " no valid solver installed";
-  }
+    if (solver_) return solver_->name();
+    __MS("no solver initialized")
+
+    switch(solverType_){
+        case LDL:     return "LDL"; break;
+        case CHOLMOD: return "CHOLMOD"; break;
+        case UMFPACK: return "UMFPACK"; break;
+        case UNKNOWN:
+        default: return " no valid solver installed";
+    }
 }
 
 } // namespace GIMLI

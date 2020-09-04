@@ -60,7 +60,7 @@ def showMesh3DFallback(mesh, data, **kwargs):
 
     if mesh.boundaryCount() > 0:
         x, y, tri, z, dataIndex = pg.viewer.mpl.createTriangles(mesh)
-        ax.plot_trisurf(x, y, tri, z, **kwargs)
+        ax.plot_trisurf(x, y, tri, z)
     else:
         if mesh.nodeCount() < 1e4:
             x = pg.x(mesh.positions())

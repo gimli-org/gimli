@@ -26,9 +26,11 @@ namespace GIMLI{
 
 class DLLEXPORT CHOLMODWrapper : public SolverWrapper {
 public:
-    CHOLMODWrapper(RSparseMatrix & S, bool verbose=false, int stype=-2, bool forceUmfpack=false);
+    CHOLMODWrapper(RSparseMatrix & S, bool verbose=false, int stype=-2,
+                   bool forceUmfpack=false);
 
-    CHOLMODWrapper(CSparseMatrix & S, bool verbose=false, int stype=-2, bool forceUmfpack=false);
+    CHOLMODWrapper(CSparseMatrix & S, bool verbose=false, int stype=-2,
+                   bool forceUmfpack=false);
 
     virtual ~CHOLMODWrapper();
 

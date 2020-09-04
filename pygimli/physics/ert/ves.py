@@ -5,11 +5,8 @@ Vertical electrical sounding (VES) manager class.
 import numpy as np
 
 import pygimli as pg
-
 # from pygimli.frameworks import Modelling, Block1DModelling
-from pygimli.frameworks import Block1DModelling
-
-from pygimli.frameworks import MethodManager1d
+from pygimli.frameworks import Block1DModelling, MethodManager1d
 
 
 class VESModelling(Block1DModelling):
@@ -137,9 +134,9 @@ class VESModelling(Block1DModelling):
 
     def drawModel(self, ax, model, **kwargs):
         pg.viewer.mpl.drawModel1D(ax=ax,
-                                 model=model,
-                                 plot=kwargs.pop('plot', 'loglog'),
-                                 xlabel=r'Resistivity ($\Omega$m)', **kwargs)
+                                  model=model,
+                                  plot=kwargs.pop('plot', 'loglog'),
+                                  xlabel=r'Resistivity ($\Omega$m)', **kwargs)
         ax.set_ylabel('Depth in (m)')
 
     def drawData(self, ax, data, error=None, label=None, **kwargs):
@@ -184,12 +181,16 @@ class VESModelling(Block1DModelling):
             label = r'$\varrho_a$'
         plot(ra, ab2, 'x-', label=label, **style)
 
+        
         if raE is not None:
-            a1.errorbar(ra, ab2,
-                        xerr=ra * raE, barsabove=True,
-                        **pg.frameworks.modelling.DEFAULT_STYLES.get('Error',
-                            pg.frameworks.modelling.DEFAULT_STYLES['Default']),
-                        label='_nolegend_')
+            raErr = np.array(ra * raE)
+        
+            if pg.isArray(raErr, len(ra)):
+                a1.errorbar(ra, ab2,
+                            xerr=raErr, barsabove=True,
+                            **pg.frameworks.modelling.DEFAULT_STYLES.get('Error',
+                                pg.frameworks.modelling.DEFAULT_STYLES['Default']),
+                            label='_nolegend_')
 
         a1.set_ylim(max(ab2), min(ab2))
         a1.set_xlabel(r'Apparent resistivity ($\Omega$m)')
@@ -372,7 +373,7 @@ class VESManager(MethodManager1d):
 
     Examples
     --------
-    
+
     >>> import numpy as np
     >>> import pygimli as pg
     >>> from pygimli.physics import VESManager

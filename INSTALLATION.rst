@@ -1,7 +1,7 @@
 Installation
 ============
 
-|conda| |downloads| |condaversion| |latest|
+|conda| |downloads| |platforms| |condaversion| |latest|
 
 On all platforms, we recommend to install pyGIMLi via the conda package manager
 contained in the Anaconda distribution. For details on how to install Anaconda,
@@ -80,4 +80,6 @@ pyGIMLi using your systems toolchain.
 .. |condaversion| image:: https://anaconda.org/gimli/pygimli/badges/version.svg
    :target: https://anaconda.org/gimli/pygimli
 .. |latest| image:: https://anaconda.org/gimli/pygimli/badges/latest_release_date.svg
+   :target: https://anaconda.org/gimli/pygimli
+.. |platforms| image:: https://anaconda.org/gimli/pygimli/badges/platforms.svg
    :target: https://anaconda.org/gimli/pygimli

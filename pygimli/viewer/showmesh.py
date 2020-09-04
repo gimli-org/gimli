@@ -2,6 +2,7 @@
 """Generic mesh visualization tools."""
 
 import os
+from pygimli.viewer.mpl.colorbar import setMappableData
 import sys
 import time
 import traceback
@@ -14,11 +15,11 @@ from .. core.logger import renameKwarg
 
 try:
     import pygimli as pg
-    from .mpl import drawMesh, drawModel, drawField
-    from .mpl import drawMatrix
-    from .mpl import drawSensors
+    from .showmatrix import showMatrix
+    from .mpl import drawMesh, drawModel, drawField, drawSensors, drawStreams
+    from .mpl import addCoverageAlpha
+    from .mpl import updateAxes
     from .mpl import createColorBar, updateColorBar
-    from .mpl import drawStreams, addCoverageAlpha
     from .mpl import CellBrowser
     from .mpl.colorbar import cmapFromName
 except ImportError as e:
@@ -69,43 +70,56 @@ def show(obj=None, data=None, **kwargs):
     --------
     showMesh
     """
-    if "axes" in kwargs:
+    if "axes" in kwargs: # remove me in 1.2 #20200515
         print("Deprecation Warning: Please use keyword `ax` instead of `axes`")
         kwargs['ax'] = kwargs.pop('axes', None)
 
+    ### Empty call just to create a axes
+    if obj is None and not 'mesh' in kwargs.keys():
+        ax = kwargs.pop('ax', None)
+
+        if ax is None:
+            ax = plt.subplots(figsize=kwargs.pop('figsize', None))[1]
+        return ax, None
+
+    ### try to interprete obj containes a mesh
+    if hasattr(obj, 'mesh'):
+        return pg.show(obj.mesh, obj, **kwargs)
+
+    ### try to interprete obj as ERT Data
     if isinstance(obj, pg.DataContainerERT):
         from pygimli.physics.ert import showERTData
         return showERTData(obj, vals=kwargs.pop('vals', data), **kwargs)
 
-    if isinstance(obj, pg.core.MatrixBase):
-        ax, _ = pg.show()
-        return drawMatrix(ax, obj, **kwargs)
+    ### try to interprete obj as matrices
+    if isinstance(obj, pg.core.MatrixBase) or \
+        (isinstance(obj, np.ndarray) and obj.ndim == 2):
+        return showMatrix(obj, **kwargs)
 
+    try:
+        from scipy.sparse import spmatrix
+        if isinstance(obj, spmatrix):
+            return showMatrix(obj, **kwargs)
+    except ImportError:
+        pass
+
+    ### try to interprete obj as mesh or list of meshes
     mesh = kwargs.pop('mesh', obj)
+
+    fitView = kwargs.get('fitView', True)
 
     if isinstance(mesh, list):
         ax = kwargs.pop('ax', None)
-        fitView = kwargs.pop('fitView', ax is None)
 
-        ax, cBar = show(mesh[0], data, hold=1, ax=ax, fitView=fitView, **kwargs)
-        xMin = mesh[0].xMin()
-        xMax = mesh[0].xMax()
-        yMin = mesh[0].yMin()
-        yMax = mesh[0].yMax()
+        ax, cBar = show(mesh[0], data, hold=1, ax=ax,
+                        fitView=fitView, **kwargs)
 
         for m in mesh[1:]:
             ax, cBar = show(m, data, ax=ax, hold=1, fitView=False, **kwargs)
-            xMin = min(xMin, m.xMin())
-            xMax = max(xMax, m.xMax())
-            yMin = min(yMin, m.yMin())
-            yMax = max(yMax, m.yMax())
 
-#        ax.relim()
-#        ax.autoscale_view(tight=True)
         if fitView is not False:
-            ax.set_xlim([xMin, xMax])
-            ax.set_ylim([yMin, yMax])
-        #        print(ax.get_data_interval())
+            ax.autoscale(enable=True, axis='both', tight=True)
+            ax.set_aspect('equal')
         return ax, cBar
 
     if isinstance(mesh, pg.Mesh):
@@ -125,12 +139,8 @@ def show(obj=None, data=None, **kwargs):
         else:
             pg.error("ERROR: Mesh not valid.", mesh)
 
-    ax = kwargs.pop('ax', None)
-
-    if ax is None:
-        ax = plt.subplots()[1]
-
-    return ax, None
+    pg.error("Can't interprete obj: {0} to show.".format(obj))
+    return None, None
 
 
 def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
@@ -213,7 +223,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
         * ylabel: str [None]
             Add label to the y axis
         fitView: bool
-            Fit the axes limits to the view object. Default is True if ax is None else is set to False.
+            Fit the axes limits to the all content of the axes. Default is True.
         All remaining will be forwarded to the draw functions
         and matplotlib methods, respectively.
 
@@ -230,18 +240,23 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
     -------
     ax : matplotlib.axes
 
-    colobar : matplotlib.colorbar
+    cBar : matplotlib.colorbar
     """
     renameKwarg('cmap', 'cMap', kwargs)
 
     cMap = kwargs.pop('cMap', 'viridis')
-    nCols = None
     cBarOrientation = kwargs.pop('orientation', 'horizontal')
+    replaceData = kwargs.pop('replaceData', False)
 
-    fitViewDefault = False
     if ax is None:
-        fitViewDefault = True
-        ax = plt.subplots()[1]
+        ax, _ = pg.show(**kwargs)
+
+    # adjust limits only when axis is empty
+    fitViewDefault = True
+    # if (ax.lines or ax.collections or ax.patches):
+    #     fitViewDefault = False
+    # else:
+
 
     # plt.subplots() resets locale setting to system default .. this went
     # horrible wrong for german 'decimal_point': ','
@@ -310,35 +325,57 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
                 colorBar = True
 
             try:
-                if len(data) == mesh.cellCount():
-                    kwargs['nCols'] = kwargs.pop('nCols', 256)
-                    if label is None:
-                        label = ""
+                if label is None:
+                    label = ""
 
-                    gci = drawModel(ax, mesh, data, **kwargs)
-                    if showBoundary is None:
-                        showBoundary = True
+                if replaceData and hasattr(mesh, 'gci') and ax in mesh.gci:
+                    gci = mesh.gci[ax]
 
-                elif len(data) == mesh.nodeCount():
-                    kwargs['nLevs'] = kwargs.pop('nLevs', 5)
-                    kwargs['nCols'] = kwargs.pop('nCols', kwargs['nLevs']-1)
-                    if label is None:
-                        label = ""
-
-                    gci = drawField(ax, mesh, data, **kwargs)
+                    if 'TriContourSet' in str(type(gci)):
+                        ax.clear()
+                        kwargs['nLevs'] = kwargs.pop('nLevs', 5)
+                        kwargs['nCols'] = kwargs.pop('nCols', kwargs['nLevs']-1)
+                        gci = drawField(ax, mesh, data, **kwargs)
+                        updateAxes(ax, force=True)
+                    else:
+                        setMappableData(gci, data,
+                                        cMin=kwargs.get('cMin', None),
+                                        cMax=kwargs.get('cMax', None),)
+                        updateAxes(ax, force=True)
+                        return ax, gci.colorbar
                 else:
-                    pg.error("Data size invalid")
-                    print("Data: ", len(data), min(data), max(data), pg.core.haveInfNaN(data))
-                    print("Mesh: ", mesh)
-                    validData = False
-                    drawMesh(ax, mesh)
+
+                    if len(data) == mesh.cellCount():
+                        kwargs['nCols'] = kwargs.pop('nCols', 256)
+                        gci = drawModel(ax, mesh, data, **kwargs)
+
+                        if showBoundary is None:
+                            showBoundary = True
+
+                    elif len(data) == mesh.nodeCount():
+                        kwargs['nLevs'] = kwargs.pop('nLevs', 5)
+                        kwargs['nCols'] = kwargs.pop('nCols', kwargs['nLevs']-1)
+                        gci = drawField(ax, mesh, data, **kwargs)
+                    else:
+                        pg.error("Data size invalid")
+                        print("Data: ", len(data), min(data), max(data), pg.core.haveInfNaN(data))
+                        print("Mesh: ", mesh)
+                        validData = False
+                        drawMesh(ax, mesh)
+
+                ### Cache mesh and scalarmappble to make replaceData work
+                if not hasattr(mesh, 'gci'):
+                    mesh.gci = {}
+                mesh.gci[ax] = gci
 
                 if cMap is not None and gci is not None:
                     gci.set_cmap(cmapFromName(cMap))
                     #gci.cmap.set_under('k')
 
             except BaseException as e:
-                pg.error("Exception occurred: ", e)
+                print(e)
+                traceback.print_exc(file=sys.stdout)
+
 
     if mesh.cellCount() == 0:
         showMesh = False
@@ -368,9 +405,9 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
                                                 linewidth=1.4)
 
     fitView = kwargs.pop('fitView', fitViewDefault)
-    if fitView:
-        ax.set_xlim(mesh.xMin(), mesh.xMax())
-        ax.set_ylim(mesh.yMin(), mesh.yMax())
+
+    if fitView is not False:
+        ax.autoscale(enable=True, axis='both', tight=True)
         ax.set_aspect('equal')
 
     cBar = None
@@ -408,7 +445,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
             addCoverageAlpha(gci, coverage,
                              dropThreshold=kwargs.pop('dropThreshold', 0.4))
         else:
-            raise BaseException('toImplement')
+            pg.error('show, coverage wrong length, toImplement')
             # addCoverageAlpha(gci, pg.core.cellDataToPointData(mesh, coverage))
 
     if not hold or block is not False and plt.get_backend().lower() != "agg":

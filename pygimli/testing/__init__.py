@@ -21,6 +21,23 @@ import pygimli as pg
 
 import warnings
 
+# __testingMode__ = False
+#
+# def setTestingMode(mode):
+#     """Set pygimli testing mode.
+#
+#     Testing mode ensures a constant seed for the random generator if you use
+#     pg.randn().
+#     """
+#     globals()[__testingMode__] = mode
+#
+# def testingMode():
+#     """Determine pygimli testing mode.
+#
+#     Returns True if pygimli is in testing mode.
+#     """
+#     return globals()[__testingMode__]
+
 def test(target=None, show=False, onlydoctests=False, coverage=False,
          htmlreport=False, abort=False, verbose=True):
     """Run docstring examples and additional tests.
@@ -52,7 +69,9 @@ def test(target=None, show=False, onlydoctests=False, coverage=False,
         Return correct exit code, e.g. abort documentation build when a test
         fails.
     """
+    # pg.setTestingMode(True)
     # Remove figure warnings
+    np.random.seed(1337)
     plt.rcParams["figure.max_open_warning"] = 1000
     warnings.filterwarnings("ignore", category=UserWarning,
                             message='Matplotlib is currently using agg, which is a'

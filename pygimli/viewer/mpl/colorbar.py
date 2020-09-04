@@ -122,12 +122,12 @@ def findAndMaskBestClim(dataIn, cMin=None, cMax=None, dropColLimitsPerc=5,
 
     xHist = np.histogram(data, bins=100)[1]
 
-    if not cMin:
+    if cMin is None:
         cMin = xHist[dropColLimitsPerc]
         if logScale:
             cMin = pow(10.0, cMin)
 
-    if not cMax:
+    if cMax is None:
         cMax = xHist[100 - dropColLimitsPerc]
         if logScale:
             cMax = pow(10.0, cMax)
@@ -178,9 +178,11 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
     if gci is not None:
         if min(gci.get_array()) < 1e12:
             norm = mpl.colors.Normalize(vmin=min(gci.get_array()),
-                                        vmax=min(gci.get_array()))
+                                        vmax=max(gci.get_array()))
             gci.set_norm(norm)
+
         cbar.on_mappable_changed(gci)
+        #cbar.update_normal(gci)
 
     if levels is not None:
         nLevs = len(levels)
@@ -260,17 +262,26 @@ def createColorBar(gci, orientation='horizontal', size=0.2, pad=None,
     #    if hasattr(patches, 'figure'):
     #       cbarTarget = patches.figure
 
-    ax = None
-    if hasattr(gci, 'ax'):
-        ax = gci.ax
-    if hasattr(gci, 'axes'):
-        ax = gci.axes
-    elif hasattr(gci, 'get_axes'):
-        ax = gci.get_axes()
+    ax = kwargs.pop('ax', None)
+    if ax is None:
+
+        if hasattr(gci, 'ax'):
+            ax = gci.ax
+        elif hasattr(gci, 'axes'):
+            ax = gci.axes
+        elif hasattr(gci, 'get_axes'):
+            ax = gci.get_axes()
 
     cbar = None
     if hasattr(ax, '__cBar__'):
+        ax.__cBar__.remove()
+        delattr(ax, '__cBar__')
+        # update colorbar is broken and will not work as supposed so we need
+        # to remove them for now
+
+    if hasattr(ax, '__cBar__'):
         cbar = ax.__cBar__
+        pg._y('update', kwargs)
         updateColorBar(cbar, gci, **kwargs)
     else:
         divider = make_axes_locatable(ax)
@@ -335,7 +346,8 @@ def createColorBarOnly(cMin=1, cMax=100, logScale=False, cMap=None, nLevs=5,
         norm = plt.Normalize(vmin=cMin, vmax=cMax)
 
     cmap = cmapFromName(cMap)
-
+    kwargs.pop('colorBar', False)  # often False for multiple plots
+    aspect = kwargs.pop('aspect', None)
     cbar = mpl.colorbar.ColorbarBase(ax, norm=norm, cmap=cmap,
                                      orientation=orientation, **kwargs)
 
@@ -344,6 +356,8 @@ def createColorBarOnly(cMin=1, cMax=100, logScale=False, cMap=None, nLevs=5,
     updateColorBar(cbar, cMin=cMin, cMax=cMax, nLevs=nLevs, label=label,
                    **kwargs)
 
+    if aspect is not None:
+        ax.set_aspect(aspect)
     if savefig is not None:
         saveFigure(fig, savefig)
 
@@ -364,6 +378,7 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5, levels=None):
             pg.error('no cbar mappable. Cannot find cmax')
 
     if cMin == cMax:
+
         cMin *= 0.999
         cMax *= 1.001
 
@@ -393,11 +408,10 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5, levels=None):
 
     for i in cbarLevels:
         cbarLevelsString.append(prettyFloat(i, roundValue))
-        # print(i, prettyFloat(i))
 
     if hasattr(cbar, 'mappable'):
-        cbar.mappable.set_clim(vmin=cMin, vmax=cMax)
         #cbar.set_clim(cMin, cMax)
+        cbar.mappable.set_clim(vmin=cMin, vmax=cMax)
 
     cbar.set_ticks(cbarLevels)
     cbar.set_ticklabels(cbarLevelsString)
@@ -433,9 +447,9 @@ def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=None,
     if mappable.get_cmap() is not None:
         mappable.get_cmap().set_bad([1.0, 1.0, 1.0, 0.0])
 
-    if not cMin:
+    if cMin is None:
         cMin = data.min()
-    if not cMax:
+    if cMax is None:
         cMax = data.max()
 
     oldLog = None
@@ -449,12 +463,13 @@ def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=None,
                 # if all data are negative switch to lin scale
                 return setMappableData(mappable, dataIn, cMin, cMax,
                                        logScale=False, **kwargs)
+
     if logScale is True:
-        mappable.set_norm(mpl.colors.LogNorm())
+        mappable.set_norm(mpl.colors.LogNorm(vmin=cMin, vmax=cMax))
     elif logScale is False:
         mappable.set_norm(mpl.colors.Normalize(vmin=cMin, vmax=cMax))
 
-    #pg._g(oldLog, logScale, cMin, cMax, mappable.norm)
+    #pg._g(oldLog, logScale, cMin, cMax, mappable.norm, data)
     mappable.set_array(data)
     mappable.set_clim(cMin, cMax)
 

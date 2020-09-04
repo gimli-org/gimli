@@ -75,10 +75,10 @@ void Node::transform(const RMatrix & mat) {
 }
 void Node::changed_(){
     for (auto &b : boundSet_){
-        b->shape().changed();
+        b->changed();
     }
     for (auto &c : cellSet_){
-        c->shape().changed();
+        c->changed();
     }
 }
 

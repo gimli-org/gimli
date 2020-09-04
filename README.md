@@ -34,6 +34,7 @@ What is pyGIMLi **NOT** suited for?
 ##### Installation
 
 [![Anaconda-Server Badge](https://anaconda.org/gimli/pygimli/badges/installer/conda.svg)](https://conda.anaconda.org/gimli)
+[![Anaconda-Server Badge](https://anaconda.org/gimli/pygimli/badges/platforms.svg)](https://anaconda.org/gimli/pygimli)
 [![Anaconda-Server Badge](https://anaconda.org/gimli/pygimli/badges/downloads.svg)](https://anaconda.org/gimli/pygimli)
 [![Anaconda-Server Badge](https://anaconda.org/gimli/pygimli/badges/version.svg)](https://anaconda.org/gimli/pygimli)
 [![Anaconda-Server Badge](https://anaconda.org/gimli/pygimli/badges/latest_release_date.svg)](https://anaconda.org/gimli/pygimli)

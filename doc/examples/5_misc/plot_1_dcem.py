@@ -71,7 +71,7 @@ for i in range(nf-1):
 fEM = pg.core.FDEM1dModelling(nlay, freq, coilspacing)
 dataEM = fEM(model)
 for i in range(len(dataEM)):
-    dataEM[i] += np.random.randn(1)[0] * noiseEM
+    dataEM[i] += pg.randn(1)[0] * noiseEM
 
 ###############################################################################
 # We define model transformations: logarithms and log with upper+lower bounds
@@ -106,7 +106,7 @@ for i in range(na-1):
 fDC = pg.core.DC1dModelling(nlay, ab2, mn2)
 dataDC = fDC(model)
 for i in range(len(dataDC)):
-    dataDC[i] *= 1. + np.random.randn(1)[0] * noiseDC / 100.
+    dataDC[i] *= 1. + pg.randn(1)[0] * noiseDC / 100.
 
 fDC.region(0).setTransModel(transThk)
 fDC.region(1).setTransModel(transRes)
@@ -156,21 +156,21 @@ print([invEM.chi2(), invDC.chi2(), invDCEM.chi2()])  # chi-square values
 fig = plt.figure(1, figsize=(10, 5))
 ax1 = fig.add_subplot(131)
 drawModel1D(ax1, thk, res, plot='semilogx', color='blue')
-drawModel1D(ax1, modelEM(0, nlay-1), modelEM(nlay-1, nlay*2-1), color='green')
-drawModel1D(ax1, modelDC(0, nlay-1), modelDC(nlay-1, nlay*2-1), color='cyan')
-drawModel1D(ax1, modelDCEM(0, nlay-1), modelDCEM(nlay-1, nlay*2-1),
+drawModel1D(ax1, modelEM[0:nlay-1], modelEM[nlay-1:nlay*2-1], color='green')
+drawModel1D(ax1, modelDC[0:nlay-1], modelDC[nlay-1:nlay*2-1], color='cyan')
+drawModel1D(ax1, modelDCEM[0:nlay-1], modelDCEM[nlay-1:nlay*2-1],
             color='red')
 ax1.legend(('syn', 'EM', 'DC', 'JI'))
 ax1.set_xlim((10., 1000.))
 ax1.set_ylim((40., 0.))
 ax1.grid(which='both')
 ax2 = fig.add_subplot(132)
-ax2.semilogy(dataEM(0, nf), freq, 'bx', label='syn IP')
-ax2.semilogy(dataEM(nf, nf*2), freq, 'bo', label='syn OP')
-ax2.semilogy(respEM(0, nf), freq, 'g--', label='EM')
-ax2.semilogy(respEM(nf, nf*2), freq, 'g--')
-ax2.semilogy(respDCEM(na, na+nf), freq, 'r:', label='DCEM')
-ax2.semilogy(respDCEM(na+nf, na+nf*2), freq, 'r:')
+ax2.semilogy(dataEM[0:nf], freq, 'bx', label='syn IP')
+ax2.semilogy(dataEM[nf:nf*2], freq, 'bo', label='syn OP')
+ax2.semilogy(respEM[0:nf], freq, 'g--', label='EM')
+ax2.semilogy(respEM[nf:nf*2], freq, 'g--')
+ax2.semilogy(respDCEM[na:na+nf], freq, 'r:', label='DCEM')
+ax2.semilogy(respDCEM[na+nf:na+nf*2], freq, 'r:')
 ax2.set_ylim((min(freq), max(freq)))
 ax2.set_xlabel("IP/OP in %")
 ax2.set_ylabel("$f$ in Hz")
@@ -180,7 +180,7 @@ ax2.legend(loc="best")
 ax3 = fig.add_subplot(133)
 ax3.loglog(dataDC, ab2, 'bx-', label='syn')
 ax3.loglog(respDC, ab2, 'c-', label='DC')
-ax3.loglog(respDCEM(0, na), ab2, 'r:', label='DCEM')
+ax3.loglog(respDCEM[0:na], ab2, 'r:', label='DCEM')
 # ax3.axis('tight')
 ax3.set_ylim((max(ab2), min(ab2)))
 ax3.grid(which='both')

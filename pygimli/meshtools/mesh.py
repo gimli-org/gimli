@@ -126,18 +126,12 @@ def createMesh(poly, quality=32, area=0.0, smooth=None, switches=None,
             quality = 1.2
 
         tmp = pg.optImport('tempfile')
-        _, namePLC = tmp.mkstemp(suffix='.poly')
-
+        fd, namePLC = tmp.mkstemp(suffix='.poly')
         pg.meshtools.exportPLC(poly, namePLC)
+        os.close(fd) ## needed for win32 to free the file for closing
+
         mesh = pg.meshtools.syscallTetgen(namePLC, quality, area,
                                           verbose=verbose, **kwargs)
-
-        try:
-            os.remove(namePLC)
-        except BaseException as e:
-            print(e)
-            print("can't remove:", namePLC)
-
 
         return mesh
 
@@ -1111,6 +1105,15 @@ def readGambitNeutral(fileName, verbose=False):
     mesh.createNeighborInfos()
     return mesh
 
+def readMeshIO(fileName, verbose=False):
+    """Generic mesh read using meshio. (https://github.com/nschloe/meshio)
+    """
+    meshio = pg.optImport('meshio')
+    _t = meshio.read(fileName)
+    mesh = pg.meshtools.convert(_t)
+    if verbose is True:
+        print(mesh)
+    return mesh
 
 def convertHDF5Mesh(h5Mesh, group='mesh', indices='cell_indices',
                     pos='coordinates', cells='topology', marker='values',

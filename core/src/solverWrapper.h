@@ -37,8 +37,11 @@ public:
 
     virtual int solve(const CVector & rhs, CVector & solution){ THROW_TO_IMPL return 0;}
 
+    const std::string name() const { return name_; }
+
 protected:
 
+    std::string name_;
     bool dummy_;
     bool verbose_;
     bool isComplex_;

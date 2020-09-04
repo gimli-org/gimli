@@ -3,9 +3,7 @@ import pygimli as pg
 
 def streamline(mesh, field, startCoord, dLengthSteps, dataMesh=None,
                maxSteps=1000, verbose=False, coords=(0, 1)):
-    """
-        Create a streamline from startCoord and following a vector field in up
-        and down direction.
+    """Create a streamline from start coordinate and following a vector field in up and down direction.
     """
     xd, yd, vd = streamlineDir(mesh, field, startCoord, dLengthSteps,
                                dataMesh=dataMesh, maxSteps=maxSteps,
@@ -24,7 +22,7 @@ def streamline(mesh, field, startCoord, dLengthSteps, dataMesh=None,
 
 
 def streamlineDir(mesh, field, startCoord, dLengthSteps, dataMesh=None,
-                  maxSteps=1000, down=True, verbose=False, coords=(0, 1)):
+                  maxSteps=150, down=True, verbose=False, coords=(0, 1)):
     """
         down = -1, up = 1, both = 0
     """
@@ -42,19 +40,16 @@ def streamlineDir(mesh, field, startCoord, dLengthSteps, dataMesh=None,
 
     if hasattr(field[0], '__len__'):
         if abs(max(field[:, 0])) == 0 and abs(max(field[:, 1]) == 0):
-            raise BaseException("No data range streamline: min/max == ",
+            raise Exception("No data range streamline: min/max == ",
                                 min(field[:, 0]))
 
         vx = pg.Vector(field[:, 0])
         vy = pg.Vector(field[:, 1])
 
-
-
-
         isVectorData = True
     else:
         if min(field) == max(field):
-            raise BaseException("No scalar data range for any gradients "
+            raise Exception("No scalar data range for any gradients "
                                 " to draw a streamline: min/max == ",
                                 min(field))
 
@@ -64,8 +59,8 @@ def streamlineDir(mesh, field, startCoord, dLengthSteps, dataMesh=None,
             elif len(field) == dataMesh.cellCount():
                 pot = pg.core.cellDataToPointData(dataMesh, field)
             else:
-                raise BaseException(
-                    "Data length (%i) for streamline is "
+                print(len(field), dataMesh)
+                raise Exception("Data length (%i) for streamline is "
                     "neighter nodeCount (%i) nor cellCount (%i)" %
                     (len(field), dataMesh.nodeCount(), dataMesh.nodeCount()))
         else:
@@ -74,8 +69,8 @@ def streamlineDir(mesh, field, startCoord, dLengthSteps, dataMesh=None,
             elif len(field) == mesh.cellCount():
                 pot = pg.core.cellDataToPointData(mesh, field)
             else:
-                raise BaseException(
-                    "Data length (%i) for streamline is "
+                print(len(field), dataMesh)
+                raise Exception("Data length (%i) for streamline is "
                     "neighter nodeCount (%i) nor cellCount (%i)" %
                     (len(field), mesh.nodeCount(), mesh.nodeCount()))
 
@@ -113,20 +108,18 @@ def streamlineDir(mesh, field, startCoord, dLengthSteps, dataMesh=None,
             elif dataMesh:
                 cd = dataMesh.findCell(pos)
                 if cd is None:
-                    raise BaseException("Cannot find " + str(pos) +
-                                        " dataMesh")
+                    raise Exception("Cannot find " + str(pos) + " dataMesh")
                 if len(vx) == dataMesh.cellCount():
                     d = pg.RVector3(vx[cd.id()], vy[cd.id()])
                 elif len(vx) == dataMesh.nodeCount() and \
                         len(vy) == dataMesh.nodeCount():
                     d = pg.RVector3(cd.pot(pos, vx), cd.pot(pos, vy))
                 else:
-                    print(dataMesh)
-                    print(len(vx), len(vy))
-                    raise BaseException("data size wrong")
+                    print(dataMesh, len(vx), len(vy))
+                    raise Exception("data size wrong")
             else:
-                print(mesh, len(vx), len(vy))
-                raise Exception("Data length neightor node size or cell size.")
+                print("mesh:", mesh, len(vx), len(vy))
+                raise Exception("Data length neighter node size or cell size.")
         else:
             if dataMesh:
                 cd = dataMesh.findCell(pos)
@@ -138,12 +131,14 @@ def streamlineDir(mesh, field, startCoord, dLengthSteps, dataMesh=None,
             else:
                 d = c.grad(pos, pot)
                 u = c.pot(pos, pot)
-        # print "cell:", c.id(), u
+
         # always go u down
         dAbs = d.length()
+        #print("cell:", c.id(), u, d, dAbs)
+
+
         if dAbs == 0.0:
-            print(d,
-                  "check this in streamlineDir(",)
+            #print(d, "check this in streamlineDir(",)
             break
 
         if down:
@@ -159,13 +154,21 @@ def streamlineDir(mesh, field, startCoord, dLengthSteps, dataMesh=None,
 
         # Change cell here .. set old cell to be processed
         if c is not None:
-
             xd.append(pos[coords[0]])
             yd.append(pos[coords[1]])
             # set the stating value here
             if vd[0] == -1:
                 vd[0] = dAbs
             vd.append(dAbs)
+
+            ## check for degenerating stream
+            if len(xd) > 2:
+                pos0 = pg.Pos(xd[-3], yd[-3])
+                pos1 = pg.Pos(xd[-2], yd[-2])
+                pos2 = pg.Pos(xd[-1], yd[-1])
+                if (pos0.dist(pos2) < pos0.dist(pos1)):
+                    pg.warn('degenerating stream aborted')
+                    break
 
             # If the new cell is different from the current we move into the
             # new cell and make the last to be invalid ..

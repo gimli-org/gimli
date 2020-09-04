@@ -2,24 +2,210 @@
 """Some matrix specialization."""
 
 import time
-from pygimli.core import _pygimli_ as pg
-from pygimli.utils.geostatistics import covarianceMatrix
 import numpy as np
+#from pygimli.core import _pygimli_ as pg
 
 from . import _pygimli_ as pgcore
-from . import (CMatrix, CSparseMapMatrix, CSparseMatrix, ElementMatrix,
+from . import (CMatrix, CSparseMapMatrix, CSparseMatrix,
+               RSparseMapMatrix, RSparseMatrix, ElementMatrix,
                IVector, MatrixBase, R3Vector, RVector)
 
 from .logger import critical, warn
 
-# make core matrices (now in pgcor, later pg.core) available here for brevity
-BlockMatrix = pgcore.RBlockMatrix
+# make core matrices (now in pgcore, later pg.core) available here for brevity
+## Usefull Aliases
 IdentityMatrix = pgcore.IdentityMatrix
 
-BlockMatrix = pgcore.RBlockMatrix
-SparseMapMatrix = pgcore.RSparseMapMatrix
-SparseMatrix = pgcore.RSparseMatrix
 Matrix = pgcore.RMatrix
+SparseMatrix = pgcore.RSparseMatrix
+SparseMapMatrix = pgcore.RSparseMapMatrix
+BlockMatrix = pgcore.RBlockMatrix
+
+## General Monkeypatch core classes
+__Matrices = [pgcore.MatrixBase,
+              pgcore.RSparseMatrix,
+              pgcore.RSparseMapMatrix,
+              pgcore.CSparseMatrix,
+              pgcore.CSparseMapMatrix,
+              pgcore.RBlockMatrix,
+              pgcore.IdentityMatrix]
+
+for m in __Matrices:
+    m.ndim = 2
+    m.__len__ = lambda self: self.rows()
+    m.shape = property(lambda self: (self.rows(), self.cols()))
+
+pgcore.RMatrix.dtype = np.float
+pgcore.CMatrix.dtype = np.complex
+pgcore.RSparseMapMatrix.dtype = np.float
+pgcore.CSparseMapMatrix.dtype = np.complex
+pgcore.RSparseMatrix.dtype = np.float
+pgcore.CSparseMatrix.dtype = np.complex
+
+def __RMatrix_str(self):
+    s = "RMatrix: " + str(self.rows()) + " x " + str(self.cols())
+
+    if self.rows() < 6:
+        s += '\n'
+        for v in range(self.rows()):
+            s += self[v].__str__(True) + '\n'
+    return s
+
+
+def __CMatrix_str(self):
+    s = "CMatrix: " + str(self.rows()) + " x " + str(self.cols())
+
+    if self.rows() < 6:
+        s += '\n'
+        for v in range(self.rows()):
+            s += self[v].__str__(True) + '\n'
+    return s
+
+def __ElementMatrix_str(self):
+    """Show entries of an ElementMatrix."""
+    import pygimli as pg
+    if self.mat().cols() == 0 and self.mat().rows() == 0:
+        return 'Empty ElementMatrix\n'
+
+    maxRowID = int(np.log10(max(self.rowIDs())))+2
+
+    s = '\n ' + ' ' * maxRowID
+    # print(self.mat())
+    # print(self.colIDs())
+    # print(self.rowIDs())
+    for i in range(self.mat().cols()):
+        s += str(self.colIDs()[i]).rjust(9)
+    s += '\n'
+
+    s += '  ' + '-'*self.mat().cols()*(9 + maxRowID) + '-\n'
+
+    for i in range(self.mat().rows()):
+        s += str(self.rowIDs()[i]).rjust(maxRowID) + " :"
+        for v in self.row(i):
+            s += pg.pf(v).rjust(9)
+        s += '\n'
+    return s
+
+pgcore.RMatrix.__str__ = __RMatrix_str
+pgcore.CMatrix.__str__ = __CMatrix_str
+pgcore.ElementMatrix.__str__ = __ElementMatrix_str
+
+
+## Special Monkeypatch core classes
+__BlockMatrix_addMatrix__ = pgcore.RBlockMatrix.addMatrix
+
+def __BlockMatrix_addMatrix_happy_GC__(self, M, row=None, col=None,
+                                       scale=1.0, transpose=False):
+    """Add an existing matrix to this block matrix and return a unique index.
+
+    As long row and col are None, the Matrix will not be used until a matrix
+    entry is has been added.
+
+    Monkeypatched version to increase the reference counter of M to keep the
+    garbage collector happy.
+
+    TODO
+    ----
+        * Add numpy matrices or convertable
+        * Transpose is only for 1d arrays. Needed for matrices?
+
+    Parameters
+    ----------
+    M: pg.matrix.Matrix | pg.Vector | 1d iterable
+        Matrix to add to the block.
+    row: long
+        Starting row index.
+    col: long
+        Starting column index.
+    scale: float[1.0]
+        Scale all matrix entries.
+    transpose: bool [False]
+        Transpose the matrix.
+    """
+    if M.ndim == 1:
+        if transpose is False:
+            _M = SparseMapMatrix(list(range(len(M))), [0]*len(M), M)
+        else:
+            warn('BlockMatrix add (transpose==True) ... Move me to core')
+            _M = SparseMapMatrix([0]*len(M), list(range(len(M))), M)
+        M = _M
+    else:
+        if transpose is True:
+            if isinstance(M, pgcore.RSparseMapMatrix):
+                warn('BlockMatrix add (transpose==True) ... Move me to core')
+                v = pgcore.RVector()
+                i = pgcore.IndexArray([0])
+                j = pgcore.IndexArray([0])
+                M.fillArrays(v, i, j)
+                M = SparseMapMatrix(j, i, v)
+            else:
+                critical("don't know yet how to add transpose matrix of type",
+                        type(M))
+
+    if not hasattr(self, '__mats__'):
+        self.__mats__ = []
+    self.__mats__.append(M)
+
+    matrixID = __BlockMatrix_addMatrix__(self, M)
+
+    if row is not None and col is not None:
+        self.addMatrixEntry(matrixID, row, col, scale)
+
+    return matrixID
+
+def __BlockMatrix_str__(self):
+    string = ("pg.matrix.BlockMatrix of size %d x %d consisting of %d "
+               "submatrices.")
+    return string % (self.rows(), self.cols(), len(self.entries()))
+
+pgcore.RBlockMatrix.addMatrix = __BlockMatrix_addMatrix_happy_GC__
+pgcore.RBlockMatrix.add = __BlockMatrix_addMatrix_happy_GC__
+pgcore.RBlockMatrix.__str__ = __BlockMatrix_str__
+pgcore.RBlockMatrix.ndim = 2
+# pgcore.CBlockMatrix.addMatrix = __BlockMatrix_addMatrix_happy_GC__
+# pgcore.CBlockMatrix.add = __BlockMatrix_addMatrix_happy_GC__
+
+
+def __SparseMatrixEqual__(self, T):
+    """Compare two SparseMatrices"""
+    from pygimli.utils import sparseMatrix2Array
+    if self.rows() != T.rows() or self.cols() != T.cols():
+        warn("Compare sizes invalid {0},{1} vs. {2},{3}: ".format(
+            self.rows(), self.cols(), T.rows(), T.cols()))
+        return False
+
+
+    rowsA, colsA, valsA = sparseMatrix2Array(self, indices=True)
+    rowsB, colsB, valsB = sparseMatrix2Array(T, indices=True)
+
+    if len(valsA) != len(valsB):
+        warn("Compare value sizes invalid: ", len(valsA), len(valsB))
+        return False
+
+    # print(self, T)
+    # print('rows:', np.linalg.norm(np.array(rowsA)-np.array(rowsB)))
+    # print('cols:', np.linalg.norm(np.array(colsA)-np.array(colsB)))
+
+    # print(np.linalg.norm(valsA-valsB), np.mean(abs(valsA)), np.mean(abs(valsB)))
+    # print(np.linalg.norm(valsA-valsB)/np.mean(abs(valsA)))
+
+    return rowsA == rowsB and \
+           colsA == colsB and \
+               np.linalg.norm(valsA-valsB)/np.mean(abs(valsA)) < 1e-14
+
+pgcore.RSparseMatrix.__eq__ = __SparseMatrixEqual__
+pgcore.RSparseMapMatrix.__eq__ = __SparseMatrixEqual__
+
+
+def __SparseMatrixCopy__(self):
+    """Create a copy."""
+    return pgcore.RSparseMatrix(self)
+pgcore.RSparseMatrix.copy = __SparseMatrixCopy__
+
+def __SparseMapMatrixCopy__(self):
+    """Create a copy."""
+    return pgcore.RSparseMapMatrix(self)
+pgcore.RSparseMapMatrix.copy = __SparseMapMatrixCopy__
 
 
 class MultMatrix(pgcore.MatrixBase):
@@ -77,7 +263,6 @@ class MultLeftMatrix(MultMatrix):
         """Multiplication from right-hand-side (dot product A.T * x)"""
         return self.A.transMult(x * self.l)
 
-
 LMultRMatrix = MultLeftMatrix  # alias for backward compatibility
 
 
@@ -117,7 +302,6 @@ class MultRightMatrix(MultMatrix):
         """Return M.T*x=(A.T*x)*r"""
         # print('transmult', self.A.rows(), " x " , self.A.cols(), x, self.r, )
         return self.A.transMult(x) * self.r
-
 
 RMultRMatrix = MultRightMatrix  # alias for backward compatibility
 
@@ -160,74 +344,7 @@ class MultLeftRightMatrix(MultMatrix):
         """Multiplication from right-hand-side (dot product A.T*x)."""
         return self.A.transMult(x * self._l) * self._r
 
-
 LRMultRMatrix = MultLeftRightMatrix  # alias for backward compatibility
-
-__BlockMatrix_addMatrix__ = pgcore.RBlockMatrix.addMatrix
-
-
-def __BlockMatrix_addMatrix_happy_GC__(self, M, row=None, col=None,
-                                       scale=1.0, transpose=False):
-    """Add an existing matrix to this block matrix and return a unique index.
-
-    As long row and col are None, the Matrix will not be used until a matrix
-    entry is has been added.
-
-    Monkeypatched version to increase the reference counter of M to keep the
-    garbage collector happy.
-
-    TODO
-    ----
-        * Add numpy matrices or convertable
-        * Transpose is only for 1d arrays. Needed for matrices?
-
-    Parameters
-    ----------
-    M: pg.core Matrix | pg.Vector | 1d iterable
-        Matrix to add to the block.
-    row: long
-        Starting row index.
-    col: long
-        Starting column index.
-    scale: float[1.0]
-        Scale all matrix entries.
-    transpose: bool [False]
-        Transpose the matrix.
-    """
-    if M.ndim == 1:
-        if transpose is False:
-            _M = SparseMapMatrix(list(range(len(M))), [0]*len(M), M)
-        else:
-            _M = SparseMapMatrix([0]*len(M), list(range(len(M))), M)
-        M = _M
-    else:
-        if transpose is True:
-            if isinstance(M, pgcore.RSparseMapMatrix):
-                warn('Move me to core')
-                v = pg.RVector()
-                i = pg.IndexArray([0])
-                j = pg.IndexArray([0])
-                M.fillArrays(v, i, j)
-                M = SparseMapMatrix(j, i, v)
-            else:
-                critical("don't know yet how to add transpose matrix of type",
-                         type(M))
-
-    if not hasattr(self, '__mats__'):
-        self.__mats__ = []
-    self.__mats__.append(M)
-
-    matrixID = __BlockMatrix_addMatrix__(self, M)
-
-    if row is not None and col is not None:
-        self.addMatrixEntry(matrixID, row, col, scale)
-
-    return matrixID
-
-pgcore.RBlockMatrix.addMatrix = __BlockMatrix_addMatrix_happy_GC__
-pgcore.RBlockMatrix.add = __BlockMatrix_addMatrix_happy_GC__
-# pgcore.CBlockMatrix.addMatrix = __BlockMatrix_addMatrix_happy_GC__
-# pgcore.CBlockMatrix.add = __BlockMatrix_addMatrix_happy_GC__
 
 
 class Add2Matrix(pgcore.MatrixBase):
@@ -258,7 +375,10 @@ class Add2Matrix(pgcore.MatrixBase):
 
 
 class Mult2Matrix(pgcore.MatrixBase):
-    """Matrix  by multiplying two matrices."""
+    """Matrix by multiplying two matrices.
+        M*x = A * (B*x)
+        M.T*x = (A*x) * B
+    """
 
     def __init__(self, A, B):
         super().__init__()
@@ -267,11 +387,11 @@ class Mult2Matrix(pgcore.MatrixBase):
         assert A.cols() == B.rows()
 
     def mult(self, x):
-        """Return M*x = A*(r*x)"""
+        """Return M*x = A*(B*x)"""
         return self.A.mult(self.B.mult(x))
 
     def transMult(self, x):
-        """Return M.T*x=(A.T*x)*r"""
+        """Return M.T*x=(A.T*x)*B"""
         return self.B.transMult(self.A.transMult(x))
 
     def cols(self):
@@ -291,11 +411,11 @@ class DiagonalMatrix(pgcore.MatrixBase):
         self.d = d
 
     def mult(self, x):
-        """Return M*x = r*x (element-wise)"""
+        """Return M*x = d*x (element-wise)"""
         return x * self.d
 
     def transMult(self, x):
-        """Return M.T*x=(A.T*x)*r"""
+        """Return M.T*x = M*x"""
         return x * self.d
 
     def cols(self):
@@ -363,7 +483,7 @@ class NDMatrix(BlockMatrix):
         super(NDMatrix, self).__init__()  # call inherited init function
         self.Ji = []  # list of individual block matrices
         for i in range(num):
-            self.Ji.append(pg.Matrix())
+            self.Ji.append(pgcore.Matrix())
             self.Ji[-1].resize(nrows, ncols)
             n = self.addMatrix(self.Ji[-1])
             self.addMatrixEntry(n, nrows * i, ncols * i)
@@ -372,7 +492,7 @@ class NDMatrix(BlockMatrix):
         print(self.rows(), self.cols())
 
 
-class GeostatisticConstraintsMatrix(pg.MatrixBase):
+class GeostatisticConstraintsMatrix(pgcore.MatrixBase):
     """Geostatistic constraints matrix
 
     Uses geostatistical operators described by Jordi et al. (2018),
@@ -402,15 +522,17 @@ class GeostatisticConstraintsMatrix(pg.MatrixBase):
         withRef : bool [False]
             neglect spur (reference model effect) that is otherwise corrected
         """
+        from pygimli.utils.geostatistics import covarianceMatrix
+
         super().__init__()
-        if isinstance(CM, pg.Mesh):
+        if isinstance(CM, pgcore.Mesh):
             CM = covarianceMatrix(CM, **kwargs)
         if CM is None:
             CM = covarianceMatrix(mesh, **kwargs)
 
         self.nModel = CM.shape[0]
         self.CM05 = Cm05Matrix(CM)
-        self.spur = self.CM05 * pg.RVector(self.nModel, 1.0)
+        self.spur = self.CM05 * pgcore.RVector(self.nModel, 1.0)
         if kwargs.pop('withRef', False):
             self.spur *= 0.0
 

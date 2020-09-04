@@ -49,7 +49,7 @@ def _get_class_from_frame(fr):
     args, _, _, value_dict = inspect.getargvalues(fr)
     if len(args) and args[0] == 'self':
         instance = value_dict.get('self', None)
-        if instance:
+        if instance is not None:
             return getattr(instance, '__class__', None)
     return None
 
@@ -231,16 +231,6 @@ def setDebug(d):
                         #filename='pygimli.log'
                     )
 
-if '--debug' in sys.argv or '-d' in sys.argv:
-    setDebug(True)
-else:
-    setDebug(False)
-
-if '--verbose' in sys.argv or '-v' in sys.argv:
-    setVerbose(True)
-else:
-    setVerbose(False)
-
 def info(*args):
     logger.info(_msg(*args))
 
@@ -248,7 +238,7 @@ def warn(*args):
     logger.warning(_msg(*args))
 
 def error(*args):
-    logger.error(whereAmI() + "\n" + _msg(*args))
+    logger.error(whereAmI(nr=2) + "\n" + _msg(*args))
 
 def debug(*args, withTrace=False):
     """
@@ -263,7 +253,7 @@ def verbose(*args):
     logger.verbose(_msg(*args))
 
 def critical(*args):
-    logger.critical(whereAmI() + "\n" + _msg(*args))
+    logger.critical(whereAmI(nr=2) + "\n" + _msg(*args))
     raise Exception(_msg(*args))
 
 def deprecated(msg='', hint=''):

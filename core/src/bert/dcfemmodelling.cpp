@@ -225,7 +225,7 @@ void dcfemDomainAssembleStiffnessMatrix(SparseMatrix < ValueType > & S, const Me
     }
     if (countforcedHomDirichlet++){
         std::cout << WHERE_AM_I << " WARNING! " << countforcedHomDirichlet
-                << " nodes forced to homogen dirichlet to fix singularity of stiffness matrix" << std::endl;
+                << " nodes forced to homogen Dirichlet to fix singularity of stiffness matrix" << std::endl;
     }
 }
 
@@ -752,7 +752,7 @@ void DCMultiElectrodeModelling::updateMeshDependency_(){
 
     if (neumannDomain_) {
         if (verbose_) {
-            std::cout << "Found neumann domain. Setting topography=1." << std::endl;
+            std::cout << "Found Neumann domain. Setting topography=1." << std::endl;
         }
         topography_ = true;
     }
@@ -762,7 +762,7 @@ void DCMultiElectrodeModelling::updateMeshDependency_(){
         if (neumannDomain_){
             neumannDomain_ = false;
             if (verbose_) {
-                std::cout << "Found neumann domain. but 2.5D -> neumann: false" << std::endl;
+                std::cout << "Found Neumann domain. but 2.5D -> neumann: false" << std::endl;
             }
         }
     }
@@ -1041,12 +1041,12 @@ void DCMultiElectrodeModelling::searchElectrodes_(){
         }
     } else {
         //throwError(WHERE_AM_I+ " Warning ! Found neighter electrode nodes nor electrode facets, don't know what to do. ");
-        std::cout << "Warning! Found neighter electrode nodes nor electrode facets, don't know what to do. " << std::endl;
+        std::cout << "Warning! Found neigther electrode nodes nor electrode facets, don't know what to do. " << std::endl;
     }
 
     if (neumannDomain_){
         if (calibrationSourceIdx_.size() == 0) {
-            std::cout << "Warning! neumann domain without calibration (potential reference) point. "
+            std::cout << "Warning! Neumann domain without calibration (potential reference) point. "
                         << "This may lead to a non-positive definite matrix. LDL can solve instead of"
                             " CHOLMOD, but better you add VIP with calibration marker "
                         << MARKER_NODE_CALIBRATION << std::endl;
@@ -1056,7 +1056,7 @@ void DCMultiElectrodeModelling::searchElectrodes_(){
 
         if (!electrodeRef_ && !dipoleCurrentPattern_) {
             if (verbose_) {
-                std::cout << "Found neumann domain without reference electrode. " << std::endl
+                std::cout << "Found Neumann domain without reference electrode. " << std::endl
                             << "Choose last electrode as reference. " << std::endl;
             }
             if (electrodes_.size() == 0){
@@ -1067,9 +1067,9 @@ void DCMultiElectrodeModelling::searchElectrodes_(){
             lastIsReferenz_ = true;
         }
     } else { // no neumann
-        if (verbose_) std::cout << "Found non-neumann domain" << std::endl;
+        if (verbose_) std::cout << "Found non-Neumann domain" << std::endl;
         if (calibrationSourceIdx_.size()){
-            std::cout << "Non-neumann domain conflicts with given calibration point. Ignoring calibration." << std::endl;
+            std::cout << "Non-Neumann domain conflicts with given calibration point. Ignoring calibration." << std::endl;
             calibrationSourceIdx_.clear();
         }
     }
@@ -1080,7 +1080,7 @@ RVector DCMultiElectrodeModelling::createDefaultStartModel(){
     if (dataContainer_ != NULL){
          vec.fill(median(dataContainer_->get("rhoa")));
     } else {
-        std::cerr << WHERE_AM_I << " No datacontainer given. " << std::endl;
+        std::cerr << WHERE_AM_I << " No data container given. " << std::endl;
     }
     return vec;
 }
@@ -1092,8 +1092,8 @@ RVector DCMultiElectrodeModelling::response(const RVector & model,
         if (!(this->topography() || buildCompleteElectrodeModel_)){
             dataContainer_->set("k",
                               this->calcGeometricFactor(this->dataContainer()));
-            log(Warning, " data contains no K-factors but we find them "
-                         " analytical for the response call");
+            log(Warning, " data contains no K-factors but we calculate them "
+                         " analytically for the response call");
 
         } else {
             throwError(WHERE_AM_I + " data contains no K-factors ");
@@ -1140,8 +1140,8 @@ RVector DCMultiElectrodeModelling::response(const RVector & model,
     }
 
     DataMap dMap(response_(model, background));
-    RVector resp(dMap.data(this->dataContainer()));
-    RVector respRez(dMap.data(this->dataContainer(), true));
+    RVector resp(round(dMap.data(this->dataContainer()), 1e-10));
+    RVector respRez(round(dMap.data(this->dataContainer(), true), 1e-10));
 
     if (resp.size() != dataContainer_->size() || respRez.size() != dataContainer_->size()){
         throwError(WHERE_AM_I + " size wrong: " + str(dataContainer_->size())
@@ -1188,7 +1188,7 @@ RVector DCMultiElectrodeModelling::response(const RVector & model,
                 save(respRez, "respRez.vec");
             } // if found neg. Responses
             std::cout << "Response: min = " << min(resp)
-                        << " max = " << max(resp) << std::endl;
+                        << " max = " << max(resp) << " mean = " << mean(resp) << std::endl;
             std::cout << "Reciprocity rms(modelReciprocity) "
                         << rms(modelReciprocity) * 100.0 << "%, "
                         << "max: " << max(modelReciprocity) * 100.0 << "%" << std::endl;
@@ -1248,7 +1248,6 @@ DataMap DCMultiElectrodeModelling::response_(const Vector < ValueType > & model,
 template < class ValueType >
 Matrix < ValueType > * DCMultiElectrodeModelling::prepareJacobianT_(const Vector< ValueType > & model){
     this->searchElectrodes_();
-    this->verbose_ = true;
     if (dataContainer_){
         if (!subSolutions_){
             if (verbose_) {
@@ -1864,8 +1863,8 @@ void DCMultiElectrodeModelling::calculateK_(const std::vector < ElectrodeShape *
     //solver.setSolverType(LDL);
     //    std::cout << "solver: " << solver.solverName() << std::endl;
 
-    if (verbose_) std::cout << "Factorizing (" << solver.solverName() << ") system matrix ... ";
     solver.setMatrix(S_, 1);
+    if (verbose_) std::cout << "Factorizing (" << solver.solverName() << ") system matrix ... ";
 
 // MEMINFO
 
@@ -2201,7 +2200,7 @@ void DCSRMultiElectrodeModelling::calculateK(const std::vector < ElectrodeShape 
 // MEMINFO
     LinSolver solver(false);
     solver.setMatrix(S_, 1);
-//     if (verbose_) std::cout << "Factorize (" << solver.solverName() << ") matrix ... " << swatch.duration() << std::endl;
+    if (verbose_) std::cout << "Factorize (" << solver.solverName() << ") matrix ... " << swatch.duration() << std::endl;
 
 // MEMINFO
 

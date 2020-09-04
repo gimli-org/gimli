@@ -14,9 +14,9 @@ by the distances H between the model cells i and j into the three directions
 .. math::
 
     \textbf{C}_{\text{M},ij}=\sigma^{2}\exp{\left(
-        -3\sqrt{\left(\frac{\textbf{H}_{x,ij}}{I_{x}}\right)^{2}+
-                \left(\frac{\textbf{H}_{y,ij}}{I_{y}}\right)^{2}+
-                \left(\frac{\textbf{H}_{z,ij}}{I_{z}}\right)^{2}}\right)}.
+        -3\sqrt{\left(\frac{\textbf{H}^x_{ij}}{I_{x}}\right)^{2}+
+                \left(\frac{\textbf{H}^y_{ij}}{I_{y}}\right)^{2}+
+                \left(\frac{\textbf{H}^z_{ij}}{I_{z}}\right)^{2}}\right)}.
 
 It defines the correlation between model cells as a function of correlation
 lenghts (ranges) :math:`I_x`, :math:`I_y`, and :math:`I_z`. Of course, the
@@ -24,26 +24,35 @@ orientation of the coordinate axes is arbitrary and can be chosen by rotation.
 Let us illustrate this by a simple mesh:
 """
 
-# %% create a simple mesh (e.g. a crosshole box geometry)
+# %%
+# Computing covariance and constraint matrices
+# --------------------------------------------
+# We create a simple mesh using a box geometry
 import pygimli as pg
 import pygimli.meshtools as mt
+
 # We create a rectangular domain and mesh it with small triangles
 rect = mt.createRectangle(start=[0, -10], end=[10, 0])
 mesh = mt.createMesh(rect, quality=34.5, area=0.1)
 
 # %%
-# We can compute this covariance matrix by calling
-CM = pg.matrix.covarianceMatrix(mesh, I=5)
+# We compute such a covariance matrix by calling
+CM = pg.utils.covarianceMatrix(mesh, I=5)  # I taken for both x and y
 # We search for the cell where the midpoint (5, -5) is located in
 ind = mesh.findCell([5, -5]).id()
-# and plot the according column
-# col = pg.log10(CM.dot(vec))
-pg.show(mesh, CM[:, ind], cMap="magma_r");
+# and plot the according column using index access (numpy)
+ax, cb = pg.show(mesh, CM[:, ind], cMap="magma_r")
 
 # %%
 # According to inverse theory, we use the square root of the covariance matrix
 # as single-side regularization matrix C. It is computed by using an eigenvalue
-# decomposition based on the numpy linalg procedure
+# decomposition
+#
+# .. math::
+#
+#     \textbf{C}_\text{M} = \textbf{Q}\textbf{D}\textbf{Q}^{T}
+#
+# based on LAPACK (numpy.linalg). The inverse square root is defined by
 #
 # .. math::
 #
@@ -52,18 +61,18 @@ pg.show(mesh, CM[:, ind], cMap="magma_r");
 # In order to avoid a matrix inverse (square root), a special matrix is derived
 # that does the decomposition and stores the eigenvectors and eigenvalues values.
 # A multiplication is done by multiplying with Q and scaling with the diagonal D.
-# This matrix is implemented in the :mod:`pygimli.matrix` module.
-# the class :py:func:`pg.matrix.Cm05Matrix`
+# This matrix is implemented in the :mod:`pygimli.core.matrix` module
+# by the class :py:mod:`pg.matrix.Cm05Matrix`
 
 Cm05 = pg.matrix.Cm05Matrix(CM)
 # %%
-# This matrix does not return a zero vector for a constant vector
+# However, this matrix does not return a zero vector for a constant vector
 out = Cm05 * pg.Vector(mesh.cellCount(), 1.0)
 print(min(out), max(out))
 
 # %%
 # as desired for a roughness operator. Therefore, an additional matrix called
-# :py:func:`pg.matrix.GeostatisticalConstraintsMatrix`
+# :py:mod:`pg.matrix.GeostatisticalConstraintsMatrix`
 # was implemented where this spur is corrected for.
 # It is, like the correlation matrix, created by a mesh, a list of correlation
 # lengths I, a dip angle# that distorts the x/y plane and a strike angle
@@ -75,7 +84,7 @@ C = pg.matrix.GeostatisticConstraintsMatrix(mesh=mesh, I=5)
 # In order to extract a certain column, we generate a vector with a single 1
 vec = pg.Vector(mesh.cellCount())
 vec[ind] = 1.0
-pg.show(mesh, pg.log10(pg.abs(C*vec)), cMin=-6, cMax=0, cMap="magma_r");
+ax, cb = pg.show(mesh, pg.log10(pg.abs(C*vec)), cMin=-6, cMax=0, cMap="magma_r")
 
 # %%
 # The constraints have a rather small footprint compared to the correlation
@@ -83,9 +92,9 @@ pg.show(mesh, pg.log10(pg.abs(C*vec)), cMin=-6, cMax=0, cMap="magma_r");
 # constraint matrices that only include relations to neighboring cells.
 
 # %%
-# Such a matrix can also be defined for different ranges and a dip angle
+# Such a matrix can also be defined for different ranges and dip angles, e.g.
 Cdip = pg.matrix.GeostatisticConstraintsMatrix(mesh=mesh, I=[10, 3], dip=-25)
-pg.show(mesh, pg.log10(pg.abs(Cdip*vec)), cMin=-6, cMax=0, cMap="magma_r");
+ax, cb = pg.show(mesh, pg.log10(pg.abs(Cdip*vec)), cMin=-6, cMax=0, cMap="magma_r")
 
 # %%
 # In order to illustrate the role of the constraints, we use a very simple
@@ -106,7 +115,7 @@ class PriorFOP(pg.core.ModellingBase):
         super().__init__(self, verbose)
         self.setMesh(mesh)
         self.ind = [mesh.findCell(po).id() for po in pos]
-        self.J = pg.core.SparseMapMatrix()
+        self.J = pg.SparseMapMatrix()
         self.J.resize(len(self.ind), mesh.cellCount())
         for i, ii in enumerate(self.ind):
             self.J.setVal(i, ii, 1.0)
@@ -123,6 +132,8 @@ class PriorFOP(pg.core.ModellingBase):
 
 
 # %%
+# Inversion with geostatistical constraints
+# -----------------------------------------
 # We choose some positions and initialize the forward operator
 pos = [[2, -2], [8, -2], [5, -5], [2, -8], [8, -8]]
 fop = PriorFOP(mesh, pos)
@@ -139,7 +150,6 @@ kw = dict(
 startModel = pg.Vector(mesh.cellCount(), 30)
 tLog = pg.core.TransLog()
 vals = [30, 50, 300, 100, 200]
-# vals = [10, 20, 50, 30, 40]
 inv = pg.core.Inversion(vals, fop, tLog, tLog)
 inv.setRelativeError(0.05)  # 5 % error
 inv.setModel(startModel)
@@ -176,6 +186,7 @@ ax[1, 1].set_title("I=[10/3], dip=25")
 for ai in ax.flat:
     for po in pos:
         ai.plot(*po, marker='o', markersize=10, color='k', fillstyle='none')
+#
 # %%
 # Generating geostatistical media
 # -------------------------------
@@ -184,4 +195,4 @@ for ai in ax.flat:
 # it with a pseudo-random (randn) series. The arguments are the same as for the
 # correlation or constraint matrices.
 model = pg.utils.generateGeostatisticalModel(mesh, I=[20, 4])
-pg.show(mesh, model)
+ax, cb = pg.show(mesh, model)

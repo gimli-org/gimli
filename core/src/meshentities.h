@@ -178,7 +178,7 @@ public:
     /*! Interpolate a vector field at position p for the vector field v regarding to the shape functions of the entity.
      * \param p Cartesian coordinates (x,y,z) need to be inside, or on the boundary, of the entity.
      * \param v The vector field vector v need to be of size mesh.nodeCount() for the corresponding mesh. */
-    RVector3 vec(const RVector3 & p, const std::vector < RVector3 > & v) const;
+    RVector3 vec(const RVector3 & p, const R3Vector & v) const;
 
     /*! Return gradient at position pos for field u regarding to the shape functions of the entity.
     * The field vector u need to be of size mesh.nodeCount() for the corresponding mesh.
@@ -195,7 +195,14 @@ public:
 
     const RMatrix & uxCache() const { return uxCache_; }
 
-    void addSecondaryNode(Node * n);
+    ElementMatrix < double > & uCache(){ return uCache_; }
+
+    ElementMatrix < double > & gradUCache(){ return gradUCache_; }
+
+    /*! Geometry has been changed. Deletes cache.*/
+    void changed();
+
+void addSecondaryNode(Node * n);
 
     void delSecondaryNode(Node * n);
 
@@ -218,7 +225,9 @@ protected:
     std::vector < Node * > secondaryNodes_;
 
     /*! Cache for derivation matrixes */
-    //mutable ElementMatrix < double > uxCache_; // to expensive maybe, lightweight baseclass here
+    mutable ElementMatrix < double > uCache_;
+    mutable ElementMatrix < double > gradUCache_;
+
     mutable RMatrix uxCache_;
 
 protected:
@@ -360,6 +369,10 @@ public:
 
     /*! Reverse node order to swap normal direction. */
     void swapNorm();
+
+    /*!Is the boundary is on the outside of the mesh.*/
+    bool outside() const { return (leftCell_ != 0) && (rightCell_ == 0); }
+
 
 protected:
     void registerNodes_();

@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import sys
+
 import unittest
 import numpy as np
 import pygimli as pg
@@ -121,7 +123,38 @@ class TestMeshGenerator(unittest.TestCase):
         mesh= pg.createGrid(2,2,2)
         print(mesh.node(0))
 
+    def test_MeshDataAccess(self):
+        mesh = pg.Mesh()
+        a = pg.Vector(10, 1.0)
+        b = [pg.Vector(10, 1.0)]*3
+        c = np.array(b).T
+
+        mesh['a'] = a
+        mesh['b'] = b
+        mesh['v'] = c
+        mesh['vs'] = [c, c, c]
+
+        # pg.core.setDeepDebug(True)
+        # pg.core.setDeepDebug(False)
+
+
+        np.testing.assert_array_equal(mesh['a'], a)
+        np.testing.assert_array_equal(mesh['b'], b)
+        np.testing.assert_array_equal(mesh['v'], c)
+        np.testing.assert_array_equal(mesh['vs'], [c, c, c])
+
+        #mesh['c'] = pg.PosList(10, [1.0, 0., 0.0])
+
+
 
 if __name__ == '__main__':
+    # pg.setDeepDebug(1)
+
+    # t = TestMeshGenerator()
+    # t.test_MeshDataAccess()
+    # sys.exit()
+    # t.test_meshAccess()
+    # t.test_createGrid()
+    # exit()
 
     unittest.main()

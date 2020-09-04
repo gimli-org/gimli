@@ -38,7 +38,8 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR "${CMAKE_CXX_COMPILER_ID}" ST
     set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Os")
 
     # run with -DCMAKE_BUILD_TYPE=Debug
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -p -O2 -std=c++11 -g -ansi -pedantic -fno-omit-frame-pointer -Wall")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -p -g -O2 -std=c++11 -ansi -pedantic -fno-omit-frame-pointer -Wall")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wno-class-memaccess") # new since gcc.8 maybe need to be checked
 
     if (WIN32 OR CONDA_BUILD)
         set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-deprecated-declarations -Wno-class-memaccess")
@@ -248,12 +249,14 @@ set (UMFPACK_FOUND FALSE)
 
 find_or_build_package(Triangle triangle LOCAL)
 #find_package(Triangle)
+set(BLA_VENDOR OpenBLAS)
 find_or_build_package(BLAS lapack)
 find_or_build_package(LAPACK lapack)
 find_or_build_package(CHOLMOD suitesparse)
 find_package(UMFPACK)
 
-if (";${BLAS_LIBRARIES};" MATCHES "openblas")
+#if (";${BLAS_LIBRARIES};" MATCHES "openblas")
+if (BLAS_FOUND)
     message(STATUS "openblas is used: ${BLAS_LIBRARIES}")
 
     FIND_PATH(OpenBLAS_INCLUDE_DIR

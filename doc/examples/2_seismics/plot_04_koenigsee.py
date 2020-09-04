@@ -23,35 +23,43 @@ from pygimli.physics import TravelTimeManager
 
 ################################################################################
 # The helper function `pg.getExampleFile` downloads the data set and saves it
-# into a temporary location.
+# into a temporary location. Printing the data reveals that there are 714 data
+# points using 63 sensors (shots and geophones) with the data columns s (shot),
+# g (geophone), and t (traveltime). By default, there is also a validity flag.
 
 data = pg.getExampleFile("traveltime/koenigsee.sgt", load=True, verbose=True)
+print(data)
+
+################################################################################
+# Let's have a look at the data in the form of traveltime curves.
+
+fig, ax = pg.plt.subplots()
+pg.physics.traveltime.drawFirstPicks(ax, data)
 
 ################################################################################
 # We initialize the refraction manager.
 mgr = TravelTimeManager()
 
-################################################################################
-# Let's have a look at the data in the form of traveltime curves and apparent
-# velocity images.
-mgr.showData(data)  # show first arrivals as curves (done later with response)
-#TODO mgr.showVA(data)  # show data as apparent velocity image
+# Alternatively, one can plot a matrix plot of apparent velocities which is the
+# more general function also making sense for crosshole data.
+ax, cbar = mgr.showData(data)
 
 ################################################################################
 # Finally, we call the `invert` method and plot the result.The mesh is created
-# based on the sensor positions on-the-fly. Yes, it is really as simple as that.
+# based on the sensor positions on-the-fly.
 
 mgr.invert(data, secNodes=3, paraMaxCellSize=5.0,
            zWeight=0.2, vTop=500, vBottom=5000,
            verbose=1)
-ax, cbar = mgr.showResult()
-mgr.showRayPaths(ax=ax, color="w", lw=0.3, alpha=0.5)
+
+ax, cbar = mgr.showResult(logScale=True)
+mgr.drawRayPaths(ax=ax, color="w", lw=0.3, alpha=0.5)
 
 ################################################################################
-# Show result and fit of measured data and model response.
-mgr.showResultAndFit()
-
+# Show result and fit of measured data and model response. You may want to save your results too.
+fig = mgr.showResultAndFit()
+mgr.saveResult()
 ################################################################################
-# You can play around with the gradient starting model (`vtop` and `vbottom`
+# You can play around with the gradient starting model (`vTop` and `vBottom`
 # arguments) and the regularization strength `lam`. You can also customize the
 # mesh.

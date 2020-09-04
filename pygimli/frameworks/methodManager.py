@@ -27,7 +27,8 @@ def fit(funct, data, err=None, **kwargs):
     ----------
     funct: callable
         Function with the first argmument as data space, e.g., x, t, f, Nr. ..
-        Any following arguments are the parameters to be fit. Except a verbose flag if used.
+        Any following arguments are the parameters to be fit.
+        Except if a verbose flag if used.
     data: iterable (float)
         Data values
     err: iterable (float) [None]
@@ -36,7 +37,8 @@ def fit(funct, data, err=None, **kwargs):
     Other Parameters
     ----------------
     *dataSpace*: iterable
-        Keyword argument of the data space of len(data). The name need to fit the first argument of funct.
+        Keyword argument of the data space of len(data).
+        The name need to fit the first argument of funct.
 
     Returns
     -------
@@ -102,6 +104,7 @@ class MethodManager(object):
         overwriting
         :py:mod:`pygimli.manager.MethodManager.initInversionFramework`
     """
+
     def __init__(self, fop=None, fw=None, data=None, **kwargs):
         """Constructor."""
         self._fop = fop
@@ -129,7 +132,7 @@ class MethodManager(object):
         self.errIsAbsolute = False
 
     def __hash__(self):
-        """Create a hash for Method Manager"""
+        """Create a hash for Method Manager."""
         return pg.utils.strHash(str(type(self))) ^ hash(self.fop)
 
     @property
@@ -235,7 +238,6 @@ class MethodManager(object):
 
         Parameters
         ----------
-
         **kwargs
             Any arguments that are necessary for your creation.
 
@@ -254,6 +256,7 @@ class MethodManager(object):
         pg.critical('API, overwrite in derived classes', fileName)
 
     def estimateError(self, data, errLevel=0.01, absError=None):
+        # TODO check, rel or abs in return.
         """Estimate data error.
 
         Create an error of estimated measurement error.
@@ -261,18 +264,16 @@ class MethodManager(object):
         More sophisticated error estimation should be done
         in specialized derived classes.
 
-        TODO check, rel or abs in return.
-
         Parameters
         ----------
         data : iterable
             Data values for which the errors should be estimated.
 
         errLevel : float (0.01)
-            Error level in percent/100.
+            Error level in percent/100 (i.e., 3% = 0.03).
 
-        absoluteError : float (None)
-            TODO
+        absError : float (None)
+            Absolute error in the unit of the data.
 
         Returns
         -------
@@ -296,6 +297,15 @@ class MethodManager(object):
             return ra, err
 
         return ra
+
+    def setData(self, data):
+        """Set a data and distribute it to the forward operator"""
+        self.data = data
+        self.applyData(data)
+
+    def applyData(self, data):
+        """ """
+        self.fop.data = data
 
     def checkData(self, data):
         """Overwrite for special checks to return data values"""
@@ -340,7 +350,7 @@ class MethodManager(object):
 
         if vals is None:
             pg.warn('No data array given, set Fallback set to 1%')
-            vals = np.ones(len(dataVals))* 0.01
+            vals = np.ones(len(dataVals)) * 0.01
 
         try:
             if min(vals) <= 0:
@@ -348,7 +358,7 @@ class MethodManager(object):
                             " either give and err argument or fill dataContainer "
                             " with a valid 'err' ", min(vals), max(vals))
         except Exception as e:
-            pg.critical("can't estimeate data error")
+            pg.critical("Can't estimate data error")
 
 
         return vals
@@ -396,7 +406,7 @@ class MethodManager(object):
         return self.fw.model
 
     def showModel(self, model, ax=None, **kwargs):
-        """Shows a model.
+        """Show a model.
 
         Draw model into a given axes or show inversion result from last run.
         Forwards on default to the self.fop.drawModel function
@@ -418,10 +428,11 @@ class MethodManager(object):
         if ax is None:
             fig, ax = pg.plt.subplots()
 
-        return self.fop.drawModel(ax, model, **kwargs)
+        ax, cBar = self.fop.drawModel(ax, model, **kwargs)
+        return ax, cBar
 
     def showData(self, data=None, ax=None, **kwargs):
-        """Shows the data.
+        """Show the data.
 
         Draw data values into a given axes or show the data values from
         the last run.
@@ -437,11 +448,18 @@ class MethodManager(object):
         data : iterable | pg.DataContainer
             Data values to be draw.
 
+        Returns
+        -------
+        ax, cbar
+
         """
         if ax is None:
             fig, ax = pg.plt.subplots()
 
-        return self.fop.drawData(ax, data, **kwargs)
+        if data is None:
+            data = self.data
+
+        return self.fop.drawData(ax, data, **kwargs), None
 
     def showResult(self, model=None, ax=None, **kwargs):
         """Show the last inversion result.
@@ -468,13 +486,13 @@ class MethodManager(object):
 
     def showFit(self, ax=None, **kwargs):
         """Show the last inversion data and response."""
-        ax = self.showData(data=self.inv.dataVals,
-                           error=self.inv.errorVals,
-                           label='Data',
-                           ax=ax, **kwargs)
-        ax = self.showData(data=self.inv.response,
-                           label='Response',
-                           ax=ax, **kwargs)
+        ax, cBar = self.showData(data=self.inv.dataVals,
+                                 error=self.inv.errorVals,
+                                 label='Data',
+                                 ax=ax, **kwargs)
+        ax, cBar = self.showData(data=self.inv.response,
+                                 label='Response',
+                                 ax=ax, **kwargs)
 
         if not kwargs.pop('hideFittingAnnotation', False):
             ax.text(0.99, 0.005, r"rrms: {0}, $\chi^2$: {1}".format(
@@ -487,11 +505,10 @@ class MethodManager(object):
         if not kwargs.pop('hideLegend', False):
             ax.legend()
 
-        return ax
+        return ax, cBar
 
     def showResultAndFit(self, **kwargs):
         """Calls showResults and showFit."""
-
         fig = pg.plt.figure()
         ax = fig.add_subplot(1, 2, 1)
 
@@ -617,8 +634,16 @@ class MethodManager1d(MethodManager):
 
 class MeshMethodManager(MethodManager):
     def __init__(self, **kwargs):
-        """Constructor."""
+        """Constructor.
+
+        Attribute
+        ---------
+        mesh: pg.Mesh
+            Copy of the main Mesh. Will be distributet to inversion and the fop.
+            You can overwrite it with invert(mesh=mesh).
+        """
         super(MeshMethodManager, self).__init__(**kwargs)
+        self.mesh = None
 
     @property
     def paraDomain(self):
@@ -628,27 +653,23 @@ class MeshMethodManager(MethodManager):
         """Give the model parameter regarding the parameter mesh."""
         if model is None:
             model = self.fw.model
-
-        if len(model) == self.fw.parameterCount:
-            return model
-        else:
-            self.fop.paraModel(model)
+        return self.fop.paraModel(model)
 
     def createMesh(self, data=None, **kwargs):
         """API, implement in derived classes."""
         pg.critical('no default mesh generation defined .. implement in '
                     'derived class')
 
+    def setMesh(self, mesh, **kwargs):
+        """Set a mesh and distribute it to the forward operator"""
+        self.mesh = mesh
+        self.applyMesh(mesh, **kwargs)
+
     def applyMesh(self, mesh, ignoreRegionManager=False, **kwargs):
         """ """
         if ignoreRegionManager:
             mesh = self.fop.createRefinedFwdMesh(mesh, **kwargs)
-
         self.fop.setMesh(mesh, ignoreRegionManager=ignoreRegionManager)
-
-    def applyData(self, data):
-        """ """
-        self.fop.data = data
 
     def invert(self, data=None, mesh=None, zWeight=1.0, startModel=None,
                **kwargs):
@@ -682,12 +703,17 @@ class MeshMethodManager(MethodManager):
         if data is None:
             pg.critical('No data given for inversion')
 
-        if mesh is None:
+        self.applyData(data)
+
+        ## no mesh given and there is no mesh known .. we create them
+        if mesh is None and self.mesh is None:
             mesh = self.createMesh(data, **kwargs)
 
-        self.applyData(data)
-        self.applyMesh(mesh)
+        ## a mesh was given or created so we forward it to the fop
+        if mesh is not None:
+            self.setMesh(mesh)
 
+        ### remove unused keyword argument .. need better kwargfs
         self.fop._refineP2 = kwargs.pop('refineP2', False)
 
         dataVals = self._ensureData(self.fop.data)
@@ -711,8 +737,6 @@ class MeshMethodManager(MethodManager):
         limits = kwargs.pop('limits', None)
         if limits is not None:
             self.fop.setRegionProperties('*', limits=limits)
-
-        # pg._y(pg.pf(self.fop._regionProperties))
 
         self.preRun(**kwargs)
         self.fw.run(dataVals, errorVals, **kwargs)
@@ -859,4 +883,3 @@ class JointPetroInversionManager(MeshMethodManager):
                                           (limits[1]+limits[0])/2.)
 
         return super().invert(data, **kwargs)
-

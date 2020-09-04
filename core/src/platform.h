@@ -76,8 +76,9 @@ DLLEXPORT int schedGetCPU();
 // Microsoft Visual C++ 10 does not provide some C99 functions
 #if defined(_MSC_VER)
 template< typename T > T rint( T x ){ return std::floor(x + 0.5); }
-template< typename T > inline bool isinf(T value){return value >= std::numeric_limits<T>::min() &&
-														 value <= std::numeric_limits<T>::max();}
+template< typename T > inline bool isinf(T value){
+    return value >= std::numeric_limits<T>::min() &&
+	       value <= std::numeric_limits<T>::max();}
 template< typename T > inline bool isnan(T value){return (value) != (value);}
 #elif defined(_WIN32) // mingw
 template< typename T > inline bool isinf(T value){return std::isinf(value);}

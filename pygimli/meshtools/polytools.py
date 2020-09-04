@@ -1353,7 +1353,6 @@ def exportTetgenPoly(poly, filename, float_format='.12e', **kwargs):
     # writing file
     with open(filename, 'w') as out:
         out.write(polytxt)
-    out.close()
 
 def syscallTetgen(filename, quality=1.2, area=0, preserveBoundary=False,
                   verbose=False, tetgen='tetgen'):

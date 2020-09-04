@@ -117,7 +117,7 @@ def drawWiggle(ax, x, t, xoffset=0.0,
                         alpha=alpha, linewidth=0)
 
 
-def drawSeismogramm(ax, mesh, u, dt, ids=None, pos=None, i=None):
+def drawSeismogram(ax, mesh, u, dt, ids=None, pos=None, i=None):
     r"""Extract and show time series from wave field
 
     Parameters

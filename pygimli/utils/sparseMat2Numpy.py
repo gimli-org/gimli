@@ -6,11 +6,91 @@ import numpy as np
 import pygimli as pg
 
 
+def toSparseMatrix(A):
+    """Convert any matrix type to pg.SparseMatrix and return copy of it.
+
+    No conversion if A is a SparseMatrix already
+    Arguments
+    ---------
+    A: pg or scipy matrix
+
+    Returns
+    -------
+        pg.SparseMatrix
+    """
+    if isinstance(A, pg.matrix.BlockMatrix):
+        return pg.matrix.SparseMatrix(A.sparseMapMatrix())
+
+    if isinstance(A, pg.matrix.CSparseMapMatrix):
+        return pg.matrix.CSparseMatrix(A)
+
+    if isinstance(A, pg.matrix.CSparseMatrix):
+        return A
+
+    if isinstance(A, pg.matrix.SparseMatrix):
+        return A
+        #return pg.matrix.SparseMatrix(A)
+
+    if isinstance(A, pg.matrix.SparseMapMatrix):
+        return pg.matrix.SparseMatrix(A)
+
+    from scipy.sparse import csr_matrix
+
+    if isinstance(A, csr_matrix):
+        return pg.SparseMatrix(A.indptr, A.indices, A.data)
+
+    from scipy.sparse import coo_matrix
+    if isinstance(A, coo_matrix):
+        pg.critical('implement me')
+        return pg.matrix.SparseMatrix(A)
+
+    return toSparseMatrix(csr_matrix(A))
+
+
+def toSparseMapMatrix(A):
+    """Convert any matrix type to pg.SparseMatrix and return copy of it.
+
+    Arguments
+    ---------
+    A: pg or scipy matrix
+
+    Returns
+    -------
+        pg.SparseMatrix
+    """
+    if isinstance(A, pg.matrix.SparseMapMatrix):
+        return pg.matrix.SparseMapMatrix(A)
+
+    if isinstance(A, pg.matrix.BlockMatrix):
+        return A.sparseMapMatrix()
+
+    if isinstance(A, pg.matrix.SparseMatrix):
+        return pg.matrix.SparseMapMatrix(A)
+
+    from scipy.sparse import csr_matrix
+    if isinstance(A, csr_matrix):
+        pg.critical('implement me')
+
+        return pg.matrix.SparseMapMatrix(A)
+
+    from scipy.sparse import coo_matrix
+    if isinstance(A, coo_matrix):
+        pg.critical('implement me')
+        return pg.matrix.SparseMapMatrix(A)
+
+    return toSparseMapMatrix(csr_matrix(A))
+
+def toCSR(A):
+    return sparseMatrix2csr(A)
+
+def toCOO(A):
+    return sparseMatrix2coo(A)
+
 def sparseMatrix2csr(A):
     """Convert SparseMatrix to scipy.csr_matrix.
 
     Compressed Sparse Row matrix, i.e., Compressed Row Storage (CRS)
-    
+
     Parameters
     ----------
     A: pg.matrix.SparseMapMatrix | pg.matrix.SparseMatrix
@@ -67,12 +147,14 @@ def sparseMatrix2coo(A, rowOffset=0, colOffset=0):
     vals = pg.Vector()
     rows = pg.core.IndexArray([0])
     cols = pg.core.IndexArray([0])
+
     if isinstance(A, pg.matrix.SparseMatrix):
         C = pg.matrix.SparseMapMatrix(A)
         C.fillArrays(vals=vals, rows=rows, cols=cols)
         rows += rowOffset
         cols += colOffset
         return coo_matrix((vals, (rows, cols)), shape=(A.rows(), A.cols()))
+
     elif isinstance(A, pg.matrix.SparseMapMatrix):
         A.fillArrays(vals, rows, cols)
         rows += rowOffset
@@ -146,6 +228,16 @@ def sparseMatrix2Array(matrix, indices=True, getInCRS=True):
     else:
         return vals
 
+def sparseMatrix2Dense(matrix):
+    """Convert sparse matrix to dense ndarray"""
+
+    rr, cc, vals = sparseMatrix2Array(matrix, indices=True, getInCRS=False)
+    mat = np.zeros((matrix.rows(), matrix.cols()))
+
+    for i, r in enumerate(rr):
+        mat[r, cc[i]] = vals[i]
+
+    return mat
 
 if __name__ == '__main__':
     pass

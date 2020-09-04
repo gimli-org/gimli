@@ -67,7 +67,7 @@ data = 10.5 * np.exp(- x / 550e-3)
 # We define an (absolute) error level and add Gaussian noise to the data.
 
 error = 0.5
-data += np.random.randn(*data.shape)*error
+data += pg.randn(*data.shape)*error
 relError = error / data
 
 ###############################################################################

@@ -8,6 +8,7 @@ import pygimli as pg
 
 from pygimli.utils import prettyFloat as pf
 
+
 class Inversion(object):
     """Basic inversion framework.
 
@@ -320,8 +321,12 @@ class Inversion(object):
             return phiD + self.phiModel(model) * self.inv.getLambda()
 
     def relrms(self):
-        """Relative root-mean-square misfit."""
+        """Relative root-mean-square misfit of the last run."""
         return self.inv.relrms()
+
+    def absrms(self):
+        """Absolute root-mean-square misfit of the last run."""
+        return self.inv.absrms()
 
     def run(self, dataVals, errorVals, **kwargs):
         """Run inversion.

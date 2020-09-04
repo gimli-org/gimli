@@ -15,11 +15,11 @@ We start by importing the necessary packages.
 """
 # sphinx_gallery_thumbnail_number = 3
 
-import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 
 import pygimli as pg
+# pg.setTestingMode(True)
 import pygimli.meshtools as mt
 from pygimli.physics.traveltime import TravelTimeManager
 
@@ -133,7 +133,6 @@ for ax in (ax1, ax2):
 tt.showResult(ax=ax2, logScale=False, nLevs=3)
 tt.drawRayPaths(ax=ax2, color="0.8", alpha=0.3)
 fig.tight_layout()
-fig.savefig('test.pdf')
 ################################################################################
 # Note how the rays are attracted by the high velocity anomaly while
 # circumventing the low velocity region. This is also reflected in the coverage,
@@ -147,4 +146,3 @@ ax.plot(sensors[:, 0], sensors[:, 1], "ko")
 ################################################################################
 # White regions indicate the model null space, i.e. cells that are not traversed
 # by any ray.
-

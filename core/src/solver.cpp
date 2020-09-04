@@ -37,6 +37,11 @@ int solveCGLSCDWWhtrans(const MatrixBase & S, const MatrixBase & C,
     uint nData = b.size();
     uint nModel = x.size();
     uint nConst = C.rows();
+    Vec bR(b);
+    Vec dW(dWeight);
+    // bR.round(1e-10);
+    // dW.round(1e-10);
+    
 
 //     __MS(S.rtti())
 //     __MS(C.rtti())
@@ -44,7 +49,7 @@ int solveCGLSCDWWhtrans(const MatrixBase & S, const MatrixBase & C,
     if (S.rows() != nData)  std::cerr << "J.rows != nData " << S.rows() << " / " << nData << std::endl;
     //if (S.cols() != nModel) std::cerr << "J.cols != nModel " << S.cols() << " / " << nModel << std::endl;
     if (C.cols() != nModel) std::cerr << "C.cols != nModel " << C.cols() << " / " << nModel << std::endl;
-    if (dWeight.size() != nData) std::cerr << "dWeight.size() != nData" << dWeight.size() << " != " << nData << std::endl;
+    if (dW.size() != nData) std::cerr << "dW.size() != nData" << dW.size() << " != " << nData << std::endl;
     if (wc.size() != nConst) std::cerr << "wc.size() != nConst " << wc.size() << " / " << nConst << std::endl;
     if (wm.size() != nModel) std::cerr << "wm.size() != nModel" << wm.size() << " / " << nModel << std::endl;
     if (tm.size() != nModel) std::cerr << "tm.size() != nModel " << tm.size() << " / " << nModel << std::endl;
@@ -53,15 +58,19 @@ int solveCGLSCDWWhtrans(const MatrixBase & S, const MatrixBase & C,
 
 //Ch  Vec cdx(transMult(C, Vec(wc * wc * (C * Vec(wm * deltaX)))) * wm * lambda); // nModel
     Vec cdx(transMult(C, Vec(wc * roughness)) * wm * lambda); // nModel
-    Vec z((b - S * Vec(x / tm) * td) * dWeight); // nData
-    Vec p(transMult(S, Vec(z * dWeight * td)) / tm   
+    Vec z((bR - S * Vec(x / tm) * td) * dW); // nData
+    Vec p(transMult(S, Vec(z * dW * td)) / tm   
           - transMult(C, Vec(wc * wc * (C * Vec(wm * x)))) * wm * lambda
           - cdx );// nModel
-    Vec r(transMult(S, Vec(b * dWeight * dWeight * td)) / tm - cdx); // nModel
-
-// __MS(min(dWeight) << " " << max(dWeight) << " " << mean(dWeight))
+    Vec r(transMult(S, Vec(bR * dW * dW * td)) / tm - cdx); // nModel
+    
+    // p = round(p, 1e-10);
+    // r = round(r, 1e-10);
+// std::cout.precision(14);
+// __MS("tol " << tol)
+// __MS("dw " << min(dW) << " " << max(dW) << " " << mean(dW))
+// __MS("b " << min(bR) << " " << max(bR) << " " << mean(bR))
 // __MS("x " << min(x) << " " << max(x) << " " << mean(x))
-// __MS("b " << min(b) << " " << max(b) << " " << mean(b))
 // __MS("wc " << min(wc) << " " << max(wc) << " " << mean(wc))
 // __MS("wm " << min(wm) << " " << max(wm) << " " << mean(wm))
 // __MS("tm " << min(tm) << " " << max(tm) << " " << mean(tm))
@@ -72,12 +81,12 @@ int solveCGLSCDWWhtrans(const MatrixBase & S, const MatrixBase & C,
 // __MS("z " << min(z) << " " << max(z) << " " << mean(z))
 // __MS("p " << min(p) << " " << max(p) << " " << mean(p))
 // __MS("r" << min(r) << " " << max(r) << " " << mean(r))
-// __MS(min(Vec(b * dWeight * dWeight * td)) << " " 
-//      << max(Vec(b * dWeight * dWeight * td)) << " " 
-//      << mean(Vec(b * dWeight * dWeight * td)))
-// __MS(min(transMult(S,Vec(b.size(), 1))) << " " 
-//      << max(transMult(S,Vec(b.size(), 1))) << " " 
-//      << mean(transMult(S,Vec(b.size(), 1))))
+// __MS(min(Vec(bR * dW * dW * td)) << " " 
+//      << max(Vec(bR * dW * dW * td)) << " " 
+//      << mean(Vec(bR * dW * dW * td)))
+// __MS(min(transMult(S,Vec(bR.size(), 1))) << " " 
+//      << max(transMult(S,Vec(bR.size(), 1))) << " " 
+//      << mean(transMult(S,Vec(bR.size(), 1))))
 // if (z.size() > 100 )exit(1);
 
     double accuracy = tol;
@@ -86,38 +95,66 @@ int solveCGLSCDWWhtrans(const MatrixBase & S, const MatrixBase & C,
 
     double normR2 = dot(r, r), normR2old = 0.0;
     double alpha = 0.0, beta = 0.0;
-
+    double aQ = 0.0;
     int count = 0;
 
-    Vec q(nData);
-    Vec wcp(nConst); // nBounds
+    Vec q(nData, 0.0);
+    Vec wcp(nConst, 0.0); // nBounds
 
 //     std::cout.precision(14);
-//     std::cout << 0 << "  " << accuracy << std::endl;
+    // std::cout << "###############################################" << std::endl;
+    // std::cout << 0 << "  " << accuracy << std::endl;
 
     while (count < maxIter && normR2 > accuracy){
         count ++;
-        q = S * Vec(p / tm) * dWeight * td;
+        q = S * Vec(p / tm) * dW * td;
+        // std::cout << "q " << min(q) << " " << max(q) << " " << mean(q) << std::endl;
+        // q = round(q, 1e-10);
+        // std::cout << "q " << min(q) << " " << max(q) << " " << mean(q) << std::endl;
+        
         wcp = wc * (C * Vec(p * wm));
+        // wcp = round(wcp, 1e-10);
 
-        alpha = normR2 / (dot(q, q) + lambda * dot(wcp, wcp));
+        // std::cout << "wcp " << min(wcp) << " " << max(wcp) << " " << mean(wcp) << std::endl;
+
+        aQ = (dot(q, q) + lambda * dot(wcp, wcp));
+        // if (aQ < 1e-10){
+        //     aQ = 1e-10;
+        // }
+        // std::cout << "aQ " << aQ<< std::endl;
+        alpha = normR2 / aQ;
+        //alpha = std::round(alpha * 1e10) / 1e10;
+
         x += p * alpha;
 
-        if((count % 10) == -1) { // TOM
-            z = b - S * Vec(x / tm) * td; // z exakt durch extra Mult.
-            z *= dWeight;
+        if ((count % 10) == -1) { // TOM
+            z = bR - S * Vec(x / tm) * td; // z exakt durch extra Mult.
+            z *= dW;
         } else {
             z -= q * alpha;
         }
-        r = transMult(S, Vec(z * dWeight * td)) / tm 
+        //z = round(z, 1e-10);
+
+        r = transMult(S, Vec(z * dW * td)) / tm 
             - transMult(C, Vec(wc * wc * (C * Vec(wm * x)))) * wm * lambda 
             - cdx;
+        //r = round(r, 1e-8);
 
         normR2old = normR2;
         normR2 = dot(r, r);
         beta = normR2 / normR2old;
+        //beta = std::round(beta * 1e10) / 1e10;
+
         p = r + p * beta;
 
+        // std::cout << "\n" << count << " +++++"  << " " << normR2<< std::endl;
+        // std::cout << alpha << " " << beta<< " " << alpha << std::endl;
+        // std::cout << "q " << min(q) << " " << max(q) << " " << mean(q) << std::endl;
+        // std::cout << "wcp "  << min(wcp) << " " << max(wcp) << " " << mean(wcp) << std::endl;
+        // std::cout << "x "  << min(x) << " " << max(x) << " " << mean(x) << std::endl;
+        // std::cout << "r "  << min(r) << " " << max(r) << " " << mean(r) << std::endl;
+        // std::cout << "p "  << min(p) << " " << max(p) << " " << mean(p) << std::endl;
+        
 // __MS("---" << count << "-------" << normR2 << "-------------------------")
 // __MS(min(q) << " " << max(q) << " " << mean(q))
 // __MS(min(wcp) << " " << max(wcp) << " " << mean(wcp))

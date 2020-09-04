@@ -600,8 +600,8 @@ public:
     void fixBoundaryDirections();
 
     void addData(const std::string & name, const CVector & data){
-        this->addData(name+"-Re", real(data));
-        this->addData(name+"-Im", imag(data));
+        this->addData(name+"_Re", real(data));
+        this->addData(name+"_Im", imag(data));
     }
 
     /*! Add data to the mesh that will be saved with by using the binary mesh
@@ -609,6 +609,16 @@ public:
      * if the size of data equals the amount of nodes, cells or boundaries.
      */
     void addData(const std::string & name, const RVector & data);
+
+    /*! Add data to the mesh that will be saved with by using the binary mesh
+     * format v.2. or exported with the appropriate name in VTK format,
+     * if the size of data equals the amount of nodes, cells or boundaries.
+     */
+    void addData(const std::string & name, const PosVector & data){
+        this->addData(name+"_x", x(data));
+        this->addData(name+"_y", y(data));
+        this->addData(name+"_z", z(data));
+    }
 
     /*! Return the data with a given name.
      * If there is no such data an exception is thrown.*/

@@ -2,17 +2,25 @@
 """
 pyGIMLi - An open-source library for modelling and inversion in geophysics
 """
+import sys
 import locale
 
 from .core.decorators import (renamed, singleton)
 
 ### Import everything that should be accessible through main namespace.
 from .core import (BVector, CVector, DataContainer, DataContainerERT,
-                   IVector, Line, Matrix, Mesh, Plane, Pos,
+                   IVector, Line, Mesh, Plane, Pos,
                    RVector3, Vector, abs, cat, center, exp, find,
-                   interpolate, log, log10, logDropTol, math, matrix, max,
+                   interpolate, log, log10, logDropTol, max,
                    mean, median, min, search, setDebug, setThreadCount, sort,
                    Stopwatch, sum, trans, unique, versionStr, x, y, z, zero)
+
+from .core import isScalar, isArray, isPos, isR3Array, isComplex, isMatrix
+
+from .core import math # alias all from .core.math.* to pg.math.*
+from .core import matrix # alias all from .core.matrix.* to pg.matrix.*
+
+from .core.matrix import (BlockMatrix, Matrix, SparseMapMatrix, SparseMatrix)
 
 from .core.logger import (_, _d, _g, _r, _y, critical, d, debug, deprecated,
                           deprecated,
@@ -29,7 +37,7 @@ from .utils import boxprint, cache, cut, unique, unit, cmap, randn
 from .utils import prettify as pf
 from .viewer import plt, show, wait
 from .frameworks import fit, Modelling, Inversion
-from .testing import test
+from .testing import test#, setTestingMode, testingMode
 
 from .core.load import getCachePath, getExampleFile
 from .core.load import load, optImport
@@ -62,6 +70,23 @@ checkAndFixLocaleDecimal_point(verbose=True)
 #except:
    #print('cannot set locale to decimal point')
 
+
+if '--debug' in sys.argv or '-d' in sys.argv:
+    setDebug(True)
+else:
+    setDebug(False)
+
+if '--verbose' in sys.argv or '-v' in sys.argv:
+    setVerbose(True)
+else:
+    setVerbose(False)
+
+# if '--test' in sys.argv or '-t' in sys.argv:
+#     setTestingMode(True)
+# else:
+#     setTestingMode(False)
+
+
 ################################################################################
 # Please leave this block here until the following issue is fixed:
 # https://github.com/ContinuumIO/anaconda-issues/issues/1068
@@ -73,7 +98,6 @@ checkAndFixLocaleDecimal_point(verbose=True)
 #    except ImportError:
 #        pass
 ################################################################################
-
 __version__ = "0"
 
 def findVersion(cache=True):
@@ -178,40 +202,51 @@ def version(cache=True):
         info('Version: ' + __version__ + " core:" + versionStr())
     return __version__
 
+__swatch__ = dict()
 
-__swatch__ = Stopwatch()
 
-def tic(msg=None):
-    """Start global timer. Print elpased time with `toc()`.
+def tic(msg=None, key=0):
+    """Start global timer. Print elapsed time with `toc()`.
+
+    You can start multiple stopwatches with optional identifier.
 
     Parameters
     ----------
     msg : string, optional
         Print message string just before starting the timer.
+    key: dict key
+        Identifier for your Stopwatch.
     """
     if msg:
         print(msg)
-    __swatch__.start()
+    try:
+        __swatch__[key].start()
+    except:
+        __swatch__[key] = Stopwatch(start=True)
 
 
-def toc(msg=None, box=False):
+def toc(msg=None, box=False, reset=False, key=0):
     """Print elapsed time since global timer was started with `tic()`.
 
-    Parameters
-    ----------
-    msg : string, optional
+    Arguments
+    ---------
+    msg: string [None]
         Print message string just after printing the elapsed time. If box is
         True, then embed msg into its own box
-    box : bool, optional
+    box: bool [False]
         Embed the time in an ascii box
-
+    reset: bool [False]
+        Reset the stopwatch.
+    id: identifier
+        Identifier for your Stopwatch.
     """
     if msg:
-        if box:
+        if box is True:
             boxprint(msg)
         else:
             print(msg, end=' ')
-    seconds = dur()
+
+    seconds = dur(reset=reset, key=key)
     m, s = divmod(seconds, 60)
     h, m = divmod(m, 60)
     if h <= 0 and m <= 0:
@@ -226,10 +261,17 @@ def toc(msg=None, box=False):
     else:
         time = "%d hours, %d minutes and %.2f" % (h, m, s)
     p = print if not box else boxprint
-    p("Elapsed time is %s seconds." % time)
+
+    if len(__swatch__.keys()) > 1:
+        p("Elapsed time ({0}) is {1} seconds.".format(key, time))
+    else:
+        p("Elapsed time is {0} seconds.".format(time))
 
 
-def dur():
+def dur(reset=False, key=0):
     """Return time in seconds since global timer was started with `tic()`."""
-    return __swatch__.duration()
-
+    if key in __swatch__:
+        return __swatch__[key].duration(reset)
+    else:
+        warn("No stopwatch for id {0}".format(key))
+        return 0.0

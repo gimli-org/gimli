@@ -1,0 +1,9 @@
+# pip install -r requirements.txt --user
+# pip list
+# pip install package== --user # list all possible versions
+# pip install package==version --user
+
+pyplusplus==1.8.3
+pygccxml==1.9.1
+# for py3.8
+# pygccxml==2.0.0 

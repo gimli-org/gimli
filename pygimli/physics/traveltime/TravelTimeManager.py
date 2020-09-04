@@ -19,20 +19,22 @@ from . ratools import shotReceiverDistances, createGradientModel2D
 
 
 class TravelTimeDijkstraModelling(MeshModelling):
+    """Forward modelling class for traveltime using Dijsktras method."""
+
     def __init__(self, **kwargs):
         self._core = pg.core.TravelTimeDijkstraModelling()
 
         super(TravelTimeDijkstraModelling, self).__init__(**kwargs)
-        self._useGradient = None # assumed to be [vTop, vBot] if set
+        self._useGradient = None  # assumed to be [vTop, vBot] if set
         self._refineSecNodes = 3
         self.jacobian = self._core.jacobian
         self.setThreadCount = self._core.setThreadCount
-        #self.createJacobian = self.dijkstra.createJacobian
+        # self.createJacobian = self.dijkstra.createJacobian
         self.setJacobian(self._core.jacobian())
 
     @property
     def dijkstra(self):
-        """Return the current Dijkstra graph associated to the last mesh and slowness."""
+        """Return current Dijkstra graph associated to mesh and model."""
         return self._core.dijkstra()
 
     def regionManagerRef(self):
@@ -67,8 +69,9 @@ class TravelTimeDijkstraModelling(MeshModelling):
         sm = None
 
         if self._useGradient is not None:
-            [vTop, vBot] = self._useGradient
-            pg.info('Create gradient starting model. {0}: {1}'.format(vTop, vBot))
+            [vTop, vBot] = self._useGradient  # something strange here!!!
+            pg.info('Create gradient starting model. {0}: {1}'.format(vTop,
+                                                                      vBot))
             sm = createGradientModel2D(self.data,
                                        self.paraDomain,
                                        vTop, vBot)
@@ -84,38 +87,45 @@ class TravelTimeDijkstraModelling(MeshModelling):
         return sm
 
     def createJacobian(self, par):
+        """Create Jacobian (way matrix)."""
         if not self.mesh():
             pg.critical("no mesh")
 
         return self._core.createJacobian(par)
 
     def response(self, par):
+        """Return forward response (simulated traveltimes)."""
         if not self.mesh():
             pg.critical("no mesh")
         return self._core.response(par)
 
     def way(self, s, g):
-        """ Return the node indices for the way from the shot to the receiver
-        index based on the given data, mesh and last known model.
+        """Return node indices for the way from the shot to the receiver.
+
+        The index is based on the given data, mesh and last known model.
         """
         return self._core.way(s, g)
 
     def drawModel(self, ax, model, **kwargs):
-        kwargs['label'] = kwargs.pop('label', pg.unit('vel'))
-        kwargs['cMap'] = kwargs.pop('cMap', pg.utils.cMap('vel'))
+        """Draw the model."""
+        kwargs.setdefault('label', pg.unit('vel'))
+        kwargs.setdefault('cMap', pg.utils.cMap('vel'))
+        # kwargs['label'] = kwargs.pop('label', pg.unit('vel'))
+        # kwargs['cMap'] = kwargs.pop('cMap', pg.utils.cMap('vel'))
 
         return super().drawModel(ax=ax, model=model,
                                  logScale=kwargs.pop('logScale', True),
                                  **kwargs)
 
-    def drawData(self, ax, data=None, err=None, **kwargs):
-        """
+    def drawData(self, ax, data=None, **kwargs):
+        """Draw the data (as apparent velocity crossplot by default).
+
         Parameters
         ----------
-        data: pg.DataContainer()
+        data: pg.DataContainer
         """
-        kwargs['label'] = kwargs.pop('label', pg.unit('va'))
-        kwargs['cMap'] = kwargs.pop('cMap', pg.utils.cMap('va'))
+        kwargs.setdefault('label', pg.unit('va'))
+        kwargs.setdefault('cMap', pg.utils.cMap('va'))
 
         if hasattr(data, '__iter__'):
             kwargs['vals'] = data
@@ -123,11 +133,14 @@ class TravelTimeDijkstraModelling(MeshModelling):
         elif data is None:
             data = self.data
 
-        return showVA(data, usePos=False, ax=ax, **kwargs)
+        if kwargs.pop('firstPicks', False):
+            return pg.physics.traveltime.drawFirstPicks(ax, data)
+        else:
+            return showVA(data, usePos=False, ax=ax, **kwargs)
 
 
 class TravelTimeManager(MeshMethodManager):
-    """Manager for refraction seismics (traveltime tomography)
+    """Manager for refraction seismics (traveltime tomography).
 
     TODO Document main members and use default MethodManager interface
     e.g., self.inv, self.fop, self.paraDomain, self.mesh, self.data
@@ -150,12 +163,12 @@ class TravelTimeManager(MeshMethodManager):
             Calculate with singularity removal technique.
             Recommended but needs the primary potential.
             For flat earth cases the primary potential will be calculated
-            analytical. For domains with topography the primary potential
+            analytically. For domains with topography the primary potential
             will be calculated numerical using a p2 refined mesh or
             you provide primary potentials with setPrimPot.
         """
         self._useFMM = False
-        self.secNodes = 2 # default secondary nodes for inversion
+        self.secNodes = 2  # default number of secondary nodes for inversion
 
         super(TravelTimeManager, self).__init__(data=data, **kwargs)
 
@@ -182,7 +195,7 @@ class TravelTimeManager(MeshMethodManager):
     def createMesh(self, data=None, **kwargs):
         """Create default inversion mesh.
 
-        Inversionmesh for Traveltime inversion does not need boundary region.
+        Inversion mesh for traveltime inversion does not need boundary region.
         """
         d = data or self.data
 
@@ -191,10 +204,9 @@ class TravelTimeManager(MeshMethodManager):
 
         return pg.meshtools.createParaMesh(data.sensors(),
                                            boundary=0, **kwargs)
-        return mesh
 
     def checkData(self, data):
-        """Return data from container"""
+        """Return data from container."""
         if isinstance(data, pg.DataContainer):
             if not data.haveData('t'):
                 pg.critical('DataContainer has no "t" values.')
@@ -203,17 +215,17 @@ class TravelTimeManager(MeshMethodManager):
         return data
 
     def checkError(self, err, dataVals):
-        """Return relative error"""
+        """Return relative error."""
         if isinstance(err, pg.DataContainer):
             if not err.haveData('err'):
-                pg.error('DataContainer has no "err" values. Fallback set to 3%')
+                pg.error('DataContainer has no "err" values. Fallback to 3%')
                 return np.ones(err.size()) * 0.03
             return err['err'] / dataVals
 
         return err
 
     def applyMesh(self, mesh, secNodes=None, ignoreRegionManager=False):
-        """ """
+        """Apply mesh, i.e. set mesh in the forward operator class."""
         if secNodes is None:
             secNodes = self.secNodes
 
@@ -224,9 +236,9 @@ class TravelTimeManager(MeshMethodManager):
 
         self.fop.setMesh(mesh, ignoreRegionManager=ignoreRegionManager)
 
-    def simulate(self, mesh, scheme, slowness=None, vel=None,
-                 secNodes=2, noiseLevel=0.0, noiseAbs=0.0, seed=None, **kwargs):
-        """Simulate Traveltime measurements.
+    def simulate(self, mesh, scheme, slowness=None, vel=None, seed=None,
+                 secNodes=2, noiseLevel=0.0, noiseAbs=0.0, **kwargs):
+        """Simulate traveltime measurements.
 
         Perform the forward task for a given mesh, a slowness distribution (per
         cell) and return data (traveltime) for a measurement scheme.
@@ -285,7 +297,8 @@ class TravelTimeManager(MeshMethodManager):
             slowness = 1/vel
 
         if slowness is None:
-            pg.critical("Need some slowness or velocity distribution for simulation.")
+            pg.critical("Need some slowness or velocity distribution for"
+                        " simulation.")
 
         if len(slowness) == self.fop.mesh().cellCount():
             t = fop.response(slowness)
@@ -303,8 +316,8 @@ class TravelTimeManager(MeshMethodManager):
                 err = noiseAbs + t * noiseLevel
                 ret.set('err', err)
 
-            pg.verbose("Absolute data error estimates (min:max) {0}:{1}".format(
-                        min(ret('err')), max(ret('err'))))
+            pg.verbose("Absolute error estimates (min:max) {0}:{1}".format(
+                min(ret('err')), max(ret('err'))))
 
             t += pg.randn(ret.size(), seed=seed) * ret('err')
             ret.set('t', t)
@@ -365,8 +378,9 @@ class TravelTimeManager(MeshMethodManager):
         return velocity
 
     def drawRayPaths(self, ax, model=None, **kwargs):
-        """Draw the the ray paths for `model` or last model for
-        which the last Jacobian was calculated.
+        """Draw the the ray paths for model or last model.
+
+        If model is not specifies, the last calculated Jacobian is used.
 
         Parameters
         ----------
@@ -408,8 +422,9 @@ class TravelTimeManager(MeshMethodManager):
         return lc
 
     def showRayPaths(self, model=None, ax=None, **kwargs):
-        """Show the model with ray paths for `model` or last model for
-        which the last Jacobian was calculated.
+        """Show the model with ray paths for given model.
+
+        If not model specified, the last calculated Jacobian is taken.
 
         Parameters
         ----------
@@ -445,7 +460,7 @@ class TravelTimeManager(MeshMethodManager):
         """
         if model is None:
             if self.fop.jacobian().size() == 0:
-                self.fop.mesh() # initialize any meshs .. just to be sure is 1
+                self.fop.mesh()  # initialize any meshs .. just to be sure is 1
                 model = pg.Vector(self.fop.regionManager().parameterCount(),
                                   1.0)
             else:
@@ -454,26 +469,23 @@ class TravelTimeManager(MeshMethodManager):
         ax, cbar = self.showModel(ax=ax, model=model,
                                   showMesh=kwargs.pop('showMesh', None),
                                   diam=kwargs.pop('diam', None))
+
         self.drawRayPaths(ax, model=model, **kwargs)
 
         return ax, cbar
 
     def rayCoverage(self):
-        """ray coverage
-        TODO little more
-        """
+        """Ray coverage, i.e. summed raypath lengths."""
         return self.fop.jacobian().transMult(np.ones(self.fop.data.size()))
 
     def standardizedCoverage(self):
-        """standardized coverage vector (0|1) using neighbor info
-        TODO little more
-        """
+        """Standardized coverage vector (0|1) using neighbor info."""
         coverage = self.rayCoverage()
         C = self.fop.constraintsRef()
         return np.sign(np.absolute(C.transMult(C * coverage)))
 
     def showCoverage(self, ax=None, name='coverage', **kwargs):
-        """shows the ray coverage in logscale"""
+        """Show the ray coverage in log-scale."""
         if ax is None:
             fig, ax = plt.subplots()
 
@@ -483,7 +495,7 @@ class TravelTimeManager(MeshMethodManager):
                        coverage=self.standardizedCoverage(), **kwargs)
 
     def saveResult(self, folder=None, size=(16, 10), verbose=False, **kwargs):
-        """Save the results in the specified folder.
+        """Save the results in a specified (or date-time derived) folder.
 
         Saved items are:
             * Resulting inversion model
@@ -495,20 +507,19 @@ class TravelTimeManager(MeshMethodManager):
         Args
         ----
         path: str[None]
-            Path to save into. If not set the name is automatic created
+            Path to save into. If not set the name is automatically created
         size: (float, float) (16,10)
             Figure size.
 
         Keyword Args
         ------------
-        Will be forwardet to showResults
+        Will be forwarded to showResults
 
         Returns
         -------
         str:
             Name of the result path.
         """
-        # TODO: How to extract the chi2 etc. from each iteration???
         subfolder = self.__class__.__name__
         path = getSavePath(folder, subfolder)
 
@@ -539,5 +550,3 @@ class TravelTimeManager(MeshMethodManager):
         fig.savefig(os.path.join(path, 'velocity.pdf'), bbox_inches='tight')
         pg.plt.close(fig)
         return path
-
-

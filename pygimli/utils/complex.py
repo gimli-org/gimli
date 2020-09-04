@@ -3,20 +3,13 @@
 """Pygimli base functions to handle complex arrays"""
 
 from math import pi
+from pygimli.core.base import isComplex
 
 import numpy as np
 import pygimli as pg
 
 
-def isComplex(vals):
-    """Check numpy or pg.Vector if have complex data type"""
-    z = pg.CVector(2)
-    if len(vals) > 0:
-        if hasattr(vals, '__iter__'):
-            if isinstance(vals[0], np.complex) or \
-               isinstance(vals[0], complex):
-             return True
-    return False
+isComplex = pg.isComplex
 
 def toComplex(amp, phi=None):
     """Convert real values into complex (z = a + ib) valued array.
@@ -66,9 +59,9 @@ def toPolar(z):
 
 def squeezeComplex(z, polar=False, conj=False):
     """Squeeze complex valued array into [real, imag] or [amp, phase(rad)]"""
-    if isinstance(z, pg.matrix.CSparseMapMatrix) or \
-       isinstance(z, pg.matrix.CSparseMatrix) or \
-       isinstance(z, pg.matrix.CMatrix):
+    if isinstance(z, (pg.matrix.CSparseMapMatrix,
+                      pg.matrix.CSparseMatrix,
+                      pg.matrix.CMatrix)):
         return toRealMatrix(z, conj=conj)
 
     if isComplex(z):
@@ -99,12 +92,12 @@ def toRealMatrix(C, conj=False):
 
     """
     R = pg.matrix.BlockMatrix()
-    # we store the mats to keep the GC happy after leaving the scope
-    Cr = pg.math.real(C)
-    Ci = pg.math.imag(C)
+    Cr = pg.math.real(A=C)
+    Ci = pg.math.imag(A=C)
 
     rId = R.addMatrix(Cr)
     iId = R.addMatrix(Ci)
+    # we store the mats in R to keep the GC happy after leaving the scope
 
     R.addMatrixEntry(rId, 0,         0,         scale=1.0)
     R.addMatrixEntry(rId, Cr.rows(), Cr.cols(), scale=1.0)

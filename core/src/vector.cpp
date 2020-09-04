@@ -22,28 +22,66 @@
 
 namespace GIMLI{
 
+
 template<>
-void Vector< double >::add(const ElementMatrix < double >& A){
-    addVal(A.row(0), A.ids());
-    // for (Index i = 0, imax = A.size(); i < imax; i++){
-    //     data_[A.idx(i)] += A.row(0)[i];
-    // }
+void Vector< double >::add(const ElementMatrix < double > & A){
+    return this->add(A, 1.0);
 }
-
 template <>
-void Vector< double >::add(const ElementMatrix < double >& A, const double & a){
-    addVal(A.row(0) * a, A.ids());
-    // for (Index i = 0, imax = A.size(); i < imax; i++){
-    //     data_[A.idx(i)] += A.row(0)[i] * a;
-    // }
+void Vector< double >::add(const ElementMatrix < double > & A,
+                           const double & scale){
+    if (A.oldStyle()){
+        if (A.cols() == 1){
+            addVal(A.col(0) * scale, A.rowIDs());
+        } else {
+            addVal(A.row(0) * scale, A.ids());
+        }
+    } else {
+        A.integrate();
+        for (Index i = 0; i < A.cols(); i++){
+            for (Index j = 0; j < A.rows(); j++){
+                data_[A.rowIDs()[j]] += A.mat()[j][i] * scale;
+            }
+        }
+    }
 }
-
 template <>
-void Vector< double >::add(const ElementMatrix < double >& A, const RVector & a){
-    addVal(A.row(0) * a.get_(A.ids()), A.ids());
-    // for (Index i = 0, imax = A.size(); i < imax; i++){
-    //     data_[A.idx(i)] += A.row(0)[i] * a[A.idx(i)];
-    // }
+void Vector< double >::add(const ElementMatrix < double > & A,
+                           const RVector3 & scale){
+    if (A.oldStyle()){
+        THROW_TO_IMPL
+    } else {
+        A.integrate();
+        for (Index i = 0; i < A.cols(); i++){
+            for (Index j = 0; j < A.rows(); j++){
+                data_[A.rowIDs()[j]] += A.mat()[j][i] * scale[i];
+            }
+        }
+    }
+}
+template <>
+void Vector< double >::add(const ElementMatrix < double > & A,
+                           const RMatrix & scale){
+    if (A.oldStyle()){
+        THROW_TO_IMPL
+    } else {
+        THROW_TO_IMPL
+    }
+}
+template <>
+void Vector< double >::add(const ElementMatrix < double > & A,
+                           const RVector & scale){
+    if (!A.oldStyle()){
+        THROW_TO_IMPL
+    }
+    A.integrate();
+    //!! warning this will lead to incorrect results with non constant scale
+    //!! use new fea style for correct integration
+    if (A.cols() == 1){
+        addVal(A.col(0) * scale.get_(A.rowIDs()), A.rowIDs());
+    } else {
+        addVal(A.row(0) * scale.get_(A.ids()), A.ids());
+    }
 }
 
 template <>

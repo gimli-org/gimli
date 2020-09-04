@@ -9,7 +9,10 @@
 
 from .ert import (ERTManager, ERTModelling, createERTData, #
                  ERTModellingReference,
-                 simulate, createGeometricFactors)
+                 simulate,
+                 createGeometricFactors,
+                 createInversionMesh)
+
 from .ves import VESModelling, VESCModelling, VESManager
 
 from .visualization import showERTData

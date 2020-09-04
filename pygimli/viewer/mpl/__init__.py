@@ -55,7 +55,7 @@ from .overlayimage import (cacheFileName,
                            underlayMap,
                            underlayBKGMap)
 
-from .matrixview import (drawMatrix)
+from .matrixview import (drawBlockMatrix, drawSparseMatrix)
 
 # TODO example scripts for the following and refactor is needed
 # maybe ploter should named show or draw
@@ -116,4 +116,3 @@ __all__ = [
 # Set global hold if mpl inline backend is used (as in Jupyter Notebooks)
 if 'inline' in matplotlib.get_backend():
     hold(1)
-

@@ -22,7 +22,6 @@ else()
         set(PYGCCXML_FOUND TRUE)
     else (PYGCCXML_PATH)
         message( STATUS "NOT Found pygccxml: we try to get a copy or cannot build pygimli.")
-        find_package(Subversion REQUIRED)
     endif(PYGCCXML_PATH)
     
 endif()

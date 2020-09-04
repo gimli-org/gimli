@@ -30,16 +30,18 @@
 namespace GIMLI{
 
 //! Block matrices for easier inversion, see appendix E in GIMLi tutorial
+class BlockMatrixEntry {
+public:
+    Index rowStart;
+    Index colStart;
+    Index matrixID;
+    double scale;
+    bool transpose;
+};
+
 template < class ValueType >
 class DLLEXPORT BlockMatrix : public MatrixBase{
 public:
-    struct BlockMatrixEntry {
-        Index rowStart;
-        Index colStart;
-        Index matrixID;
-        ValueType scale;
-    };
-
     BlockMatrix(bool verbose=false)
         : MatrixBase(verbose), rows_(0), cols_(0) {
     }
@@ -82,14 +84,17 @@ public:
     }
 
     MatrixBase * mat(Index idx) {
+        ASSERT_SIZE(matrices_, idx)
         return matrices_[idx];
     }
 
     MatrixBase & matRef(Index idx) const {
+        ASSERT_SIZE(matrices_, idx)
         return *matrices_[idx];
     }
 
-    std::vector< MatrixBase * > & matrices() { return matrices_; }
+    std::vector< BlockMatrixEntry > entries() const {
+        return entries_; }
 
     /*! Syntaxtic sugar for addMatrix */
     Index add(MatrixBase * matrix, Index rowStart, Index colStart){
@@ -121,7 +126,7 @@ public:
 
     /*!Set a entry to this block matrix with the matrix index matrixID.*/
     void addMatrixEntry(Index matrixID, Index rowStart, Index colStart,
-                        ValueType scale){
+                        ValueType scale, bool transpose=false){
         if (matrixID > matrices_.size()){
             throwLengthError(WHERE_AM_I + " matrix entry to large: " +
             str(matrixID) + " " + str(matrices_.size()));
@@ -131,53 +136,10 @@ public:
         entry.colStart = colStart;
         entry.matrixID = matrixID;
         entry.scale = scale;
+        entry.transpose = transpose;
 
         entries_.push_back(entry);
         recalcMatrixSize();
-    }
-
-    virtual Vector < ValueType > mult(const Vector < ValueType > & b) const{
-        // no need to check here .. let the matrices itself check
-        // if (b.size() != this->cols()){
-        //     throwLengthError(WHERE_AM_I + " wrong size of vector b (" +
-        //     str(b.size()) + ") needed: " + str(this->cols()));
-        // }
-
-        Vector < ValueType > ret(rows_);
-
-        for (Index i = 0; i < entries_.size(); i ++ ){
-            BlockMatrixEntry entry = entries_[i];
-
-            MatrixBase *mat = matrices_[entry.matrixID];
-
-            ret.addVal(mat->mult(b.getVal(entry.colStart,
-                                         entry.colStart + mat->cols())) *
-                       entry.scale,
-                       entry.rowStart, entry.rowStart + mat->rows());
-        }
-
-        return ret;
-    }
-
-    virtual Vector < ValueType > transMult(const Vector < ValueType > & b) const {
-        // no need to check here .. let the matrices itself check
-        // if (b.size() != this->rows()){
-        //     throwLengthError(WHERE_AM_I + " wrong size of vector b (" +
-        //     str(b.size()) + ") needed: " + str(this->rows()));
-        // }
-
-        Vector < ValueType > ret(cols_);
-         for (Index i = 0; i < entries_.size(); i++){
-            BlockMatrixEntry entry = entries_[i];
-
-            MatrixBase *mat = matrices_[entry.matrixID];
-
-            ret.addVal(mat->transMult(b.getVal(entry.rowStart,
-                                               entry.rowStart + mat->rows())) *
-                       entry.scale,
-                       entry.colStart, entry.colStart + mat->cols());
-        }
-        return ret;
     }
 
     void recalcMatrixSize() const {
@@ -190,43 +152,15 @@ public:
         }
     }
 
+    virtual Vector < ValueType > mult(const Vector < ValueType > & b) const;
+
+    virtual Vector < ValueType > transMult(const Vector < ValueType > & b) const;
+
+    RSparseMapMatrix sparseMapMatrix() const;
+
     virtual void save(const std::string & filename) const {
         std::cerr << WHERE_AM_I << "WARNING " << " don't save blockmatrix."  << std::endl;
 //         THROW_TO_IMPL
-    }
-
-    // std::vector< BlockMatrixEntry > entries() const {
-    //     return entries_;
-    // }
-
-    RSparseMapMatrix sparseMapMatrix() const {
-
-        RSparseMapMatrix ret(this->rows(), this->cols());
-
-        for (Index i = 0; i < entries_.size(); i++){
-            BlockMatrixEntry entry(entries_[i]);
-
-            MatrixBase *mat = matrices_[entry.matrixID];
-
-            RVector vals(0);
-            IndexArray rows(0);
-            IndexArray cols(0);
-
-            switch (mat->rtti()){
-                case GIMLI_SPARSE_CRS_MATRIX_RTTI:{
-                    RSparseMapMatrix S(*dynamic_cast< RSparseMatrix * >(mat));
-                    S.fillArrays(vals, rows, cols);
-                }  break;
-                case GIMLI_SPARSE_MAP_MATRIX_RTTI:
-                    dynamic_cast< RSparseMapMatrix * >(mat)->fillArrays(vals, rows, cols);
-                    break;
-                default:
-                    log(Critical, "Matrix type need to be either SparseMatrix or SparseMapMatrix");
-                    return ret;
-            }
-            ret.add(rows + entry.rowStart, cols + entry.colStart, vals * entry.scale);
-        }
-        return ret;
     }
 
 protected:
@@ -240,10 +174,19 @@ private:
     mutable Index cols_;
 };
 
-inline RVector transMult(const RBlockMatrix & A, const RVector & b){
+template <> DLLEXPORT RVector BlockMatrix< double >::
+    mult(const RVector & b) const;
+
+template <> DLLEXPORT RVector BlockMatrix< double >::
+    transMult(const RVector & b) const;
+
+template <> DLLEXPORT RSparseMapMatrix BlockMatrix< double >::
+    sparseMapMatrix() const;
+
+inline RVector transMult(const BlockMatrix < double > & A, const RVector & b){
     return A.transMult(b);
 }
-inline RVector operator * (const RBlockMatrix & A, const RVector & b){
+inline RVector operator * (const BlockMatrix < double >  & A, const RVector & b){
     return A.mult(b);
 }
 
@@ -283,6 +226,7 @@ protected:
     //! create inplace (or better hold references of it?)
     RSparseMapMatrix H1_, H2_;
 }; // class H2SparseMapMatrix
+
 
 inline void rank1Update(H2SparseMapMatrix & A, const RVector & u, const RVector & v) {
     CERR_TO_IMPL
