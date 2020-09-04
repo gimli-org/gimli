@@ -119,7 +119,10 @@ typedef int64_t int64;
 	#endif
 #endif
 
-#define WHERE GIMLI::str(__FILE__) + ": " + GIMLI::str(__LINE__) + "\t"
+#define __FILENAME__ std::max<const char*>(__FILE__,\
+    std::max(strrchr(__FILE__, '\\')+1, strrchr(__FILE__, '/')+1))
+
+#define WHERE GIMLI::str(__FILENAME__) + ":" + GIMLI::str(__LINE__) + "\t"
 #define WHERE_AM_I WHERE + "\t" + GIMLI::str(__ASSERT_FUNCTION) + " "
 #define TO_IMPL WHERE_AM_I + " not yet implemented\n " + GIMLI::versionStr() + "\nPlease send the messages above, the commandline and all necessary data to the author."
 
