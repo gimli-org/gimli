@@ -73,7 +73,7 @@
 #include "platform.h"
 #include "exitcodes.h"
 
-//! GIMLi main namespace for the Geophysical Inversion and Modelling Library
+//! GIMLi main namespace for the Geophyiscal Inversion and Modelling Library
 namespace GIMLI{
 
 #ifndef __USE_MISC
@@ -119,32 +119,10 @@ typedef int64_t int64;
 	#endif
 #endif
 
-inline std::string str(){ return "";}
-//! General template for conversion to string, should supersede all sprintf etc.
-template< typename T > inline std::string str(const T & v){
-    std::ostringstream os;
-    os << v;
-    return os.str();
-}
-enum LogType {Verbose, Info, Warning, Error, Debug, Critical};
-DLLEXPORT void log(LogType type, const std::string & msg);
-
-#ifndef PYGIMLI_CAST // castxml complains on older gcc/clang
-template<typename Value, typename... Values>
-std::string str(Value v, Values... vs){
-    std::ostringstream os;
-    using expander = int[];
-    os << v; // first
-    (void) expander{ 0, (os << " " << vs, void(), 0)... };
-    return os.str();
-}
-
 #ifdef _WIN64
     #define __FILENAME__ std::max<const char*>(__FILE__,\
         std::max(std::strrchr(__FILE__, '\\')+1, std::strrchr(__FILE__, '/')+1))
 #else
-//#define __FILENAME__ (__FILE__, std::max(std::strrchr(__FILE__, '\\')+1, std::strrchr(__FILE__, '/')+1))
-// #define __FILENAME__ std::strrchr(__FILE__, '/')+1
     #define __FILENAME__ __FILE__
 #endif
 
@@ -177,15 +155,15 @@ std::string str(Value v, Values... vs){
 #define NOT_DEFINED "notDefined"
 
 #define ASSERT_EQUAL_SIZE(m, n) if (m.size() != n.size()) \
-    throwLengthError(WHERE_AM_I + " " + GIMLI::str(m.size()) + " != " + GIMLI::str(n.size()));
+    throwLengthError(WHERE_AM_I + " " + str(m.size()) + " != " + str(n.size()));
 #define ASSERT_THIS_SIZE(n) if (n < 0 || n >= this->size()) \
-    throwLengthError(WHERE_AM_I + " " + GIMLI::str(this->size()) + " <= " + GIMLI::str(n));
+    throwLengthError(WHERE_AM_I + " " + str(this->size()) + " <= " + str(n));
 #define ASSERT_VEC_SIZE(vec, n) if (n != vec.size()) \
-    throwLengthError(WHERE_AM_I + " " + GIMLI::str(vec.size()) + " != " + GIMLI::str(n));
+    throwLengthError(WHERE_AM_I + " " + str(vec.size()) + " != " + str(n));
 #define ASSERT_SIZE(vec, n) if (n < 0 || n >= vec.size()) \
-    throwLengthError(WHERE_AM_I + " " + GIMLI::str(vec.size()) + " <= " + GIMLI::str(n));
+    throwLengthError(WHERE_AM_I + " " + str(vec.size()) + " <= " + str(n));
 #define ASSERT_EQUAL(m, n) if (m != n) \
-    throwLengthError(WHERE_AM_I + " " + GIMLI::str(m) + " != " + GIMLI::str(n));
+    throwLengthError(WHERE_AM_I + " " + str(m) + " != " + str(n));
 #define ASSERT_RANGE(i, start, end) if (i < start || i >= end) \
     throwRangeError(WHERE_AM_I, i, start, end);
 #define ASSERT_EMPTY(v) if (v.size()==0) \
@@ -358,9 +336,28 @@ private:
 //     #include <Python.h>
 #endif
 
+inline std::string str(){ return "";}
+//! General template for conversion to string, should supersede all sprintf etc.
+template< typename T > inline std::string str(const T & v){
+    std::ostringstream os;
+    os << v;
+    return os.str();
+}
+enum LogType {Verbose, Info, Warning, Error, Debug, Critical};
+DLLEXPORT void log(LogType type, const std::string & msg);
+
+#ifndef PYGIMLI_CAST // castxml complains on older gcc/clang
+template<typename Value, typename... Values>
+std::string str(Value v, Values... vs){
+    std::ostringstream os;
+    using expander = int[];
+    os << v; // first
+    (void) expander{ 0, (os << " " << vs, void(), 0)... };
+    return os.str();
+}
 template<typename... Values>
 void log(LogType type, Values... vs){
-    return log(type, GIMLI::str(vs...));
+    return log(type, str(vs...));
 }
 #endif
 
@@ -462,7 +459,7 @@ template < typename ValueType > ValueType getEnvironment(const std::string & nam
 template < typename ValueType > void setEnvironment(const std::string & name,
                                                     ValueType val,
                                                     bool verbose=false){
-    int ret = setenv(name.c_str(), GIMLI::str(val).c_str(), 1);
+    int ret = setenv(name.c_str(), str(val).c_str(), 1);
     switch(ret){
         case EINVAL:
             __MS(name << " " << val)
