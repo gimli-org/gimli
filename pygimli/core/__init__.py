@@ -500,7 +500,11 @@ for v in _vecs:
     v.ndim = 1
     v.__len__ = lambda self: self.size()
     v.shape = property(lambda self: (self.size(), None))
-    del v.__call__
+    # if hasattr(v, '__call__') and callable(getattr(v, '__call__')):
+    try:
+        del v.__call__
+    except AttributeError:
+        pass
 
 _pygimli_.RVector.dtype = np.float
 _pygimli_.BVector.dtype = np.bool
