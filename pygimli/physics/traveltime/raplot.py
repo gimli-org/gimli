@@ -70,7 +70,7 @@ def plotFirstPicks(ax, data, tt=None, plotva=False, marker='x-'):
                           marker=marker)
 
 
-def drawFirstPicks(ax, data, tt=None, plotva=False, marker='x-'):
+def drawFirstPicks(ax, data, tt=None, plotva=False, **kwargs):
     """plot first arrivals as lines"""
     px = pg.x(data)
     gx = np.array([px[int(g)] for g in data("g")])
@@ -83,19 +83,22 @@ def drawFirstPicks(ax, data, tt=None, plotva=False, marker='x-'):
     uns = np.unique(sx)
 
     cols = plt.cm.tab10(np.arange(10))
-
+    kwargs.setdefault('marker', 'x')
+    kwargs.setdefault('markersize', 8)
+    kwargs.setdefault('linestyle', '-')
     for i, si in enumerate(uns):
         ti = tt[sx == si]
         gi = gx[sx == si]
         ii = gi.argsort()
-        ax.plot(gi[ii], ti[ii], marker, color=cols[i % 10])
-        ax.plot(si, 0., 's', color=cols[i % 10], markersize=8)
+        ax.plot(gi[ii], ti[ii], color=cols[i % 10], **kwargs)
+        ax.plot(si, 0., 's', color=cols[i % 10])
 
     ax.grid(True)
     if plotva:
         ax.set_ylabel("Apparent velocity (m/s)")
     else:
         ax.set_ylabel("Traveltime (s)")
+
     ax.set_xlabel("x (m)")
     ax.invert_yaxis()
 
@@ -143,7 +146,7 @@ def drawVA(ax, data, vals=None, usePos=True, pseudosection=False, **kwargs):
     """
     if isinstance(vals, str):
         vals = data(vals)
-        
+
     if vals is None:
         vals = data('t')
 
