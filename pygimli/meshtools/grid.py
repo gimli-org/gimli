@@ -20,12 +20,12 @@ def createGrid(x=None, y=None, z=None, **kwargs):
 
     Parameters
     ----------
-    kwargs :
-        x : array
+    kwargs:
+        x: array
             x-coordinates for all Nodes (1D, 2D, 3D)
-        y : array
+        y: array
             y-coordinates for all Nodes (2D, 3D)
-        z : array
+        z: array
             z-coordinates for all Nodes (3D)
         marker : int = 0
             Marker for resulting cells.
@@ -59,6 +59,94 @@ def createGrid(x=None, y=None, z=None, **kwargs):
         kwargs['z'] = z
 
     return pg.core._pygimli_.createGrid(**kwargs)
+
+
+def createGridPieShaped(x, degree=10.0, h=2, marker=0):
+    """Create a 2D pie shaped grid (segment from annulus or cirlce).
+
+    TODO:
+    ----
+    * degree: > 90 .. 360
+
+    Arguments
+    ---------
+    x: array
+        x-coordinates for all Nodes (2D). If you need it 3D, you can apply :py:mod:`pygimli.meshtools.extrudeMesh` on it.
+
+    degree: float [None]
+        Create a pie shaped grid for a value between 0 and 90.
+        Creates an optional inner boundary (marker=2) for a annulus with x[0] > 0. Outer boundary marker is 1. Optional h refinement. Center node is the first for circle segment.
+
+    h: int [2]
+        H-Refinement for degree option.
+
+    marker: int = 0
+        Marker for resulting cells.
+
+    Returns
+    -------
+    mesh: :gimliapi:`GIMLI::Mesh`
+
+    Examples
+    --------
+    >>> import pygimli as pg
+    >>> mesh = pg.meshtools.createGridPieShaped(x=[0, 1, 3], degree=45, h=3)
+    >>> print(mesh)
+    Mesh: Nodes: 117 Cells: 128 Boundaries: 244
+    >>> _ = pg.show(mesh)
+    >>> mesh = pg.meshtools.createGridPieShaped(x=[1, 2, 3], degree=45, h=3)
+    >>> print(mesh)
+    Mesh: Nodes: 153 Cells: 128 Boundaries: 280
+    >>> _ = pg.show(mesh)
+    """
+    mesh = pg.Mesh(dim=2)
+
+    for i in range(0, len(x)):
+        mesh.createNodeWithCheck([x[i], 0.0])
+
+        mesh.createNodeWithCheck([x[i]*np.cos(degree*np.pi/180),
+                                  x[i]*np.sin(degree*np.pi/180)])
+
+    if abs(x[0]) < 1e-6:
+        mesh.createCell([0, 1, 2])
+        for i in range(0, (len(x)-1), 2):
+            c = mesh.createCell([i+1, i+3, i+4, i+2])
+    else:
+        for i in range(0, len(x)*2-2, 2):
+            c = mesh.createCell([i, i+2, i+3, i+1])
+        mesh.createBoundary([0, 1], marker=1)
+
+    mesh.createBoundary([mesh.nodeCount()-2, mesh.nodeCount()-1], marker=2)
+
+    for i in range(h):
+        mesh = mesh.createH2()
+    mesh.createNeighbourInfos()
+
+    for b in mesh.boundaries():
+        if b.outside() and b.marker() == 0:
+            if b.norm()[1] == 0.0:
+                b.setMarker(4) # bottom
+            else:
+                b.setMarker(3)
+
+    meshR = pg.Mesh(mesh)
+
+    ## move all nodes on the inner boundary to rw
+    for b in mesh.boundaries():
+        line = pg.Line(b.node(0).pos(), b.node(1).pos())
+
+        rSoll = line.intersect([0.0, 0.0], [1.0, 0.0])[0]
+        if rSoll > 1e-4:
+            for n in b.nodes():
+                scale = rSoll/n.pos().abs()
+                if scale > 1:
+                    meshR.node(n.id()).setPos(pg.Line([0.0, 0.0], n.pos()).at(scale))
+
+    if marker != 0:
+        for c in meshR.cells():
+            c.setMarker(marker)
+
+    return meshR
 
 
 def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1, quality=34.0,
