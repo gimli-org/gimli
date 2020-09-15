@@ -98,11 +98,11 @@ data = tt.simulate(mesh=mesh_fwd, scheme=scheme, slowness=1./model,
                    secNodes=4, noiseLevel=0.001, noiseAbs=1e-5, seed=1337)
 
 ###############################################################################
-# Now we create the unstructured inversion mesh
+# Now we create a structured grid as inversion mesh
 refinement = 0.25
 x = np.arange(0, bh_spacing + refinement, sensor_spacing * refinement)
 y = -np.arange(0.0, bh_length + 3, sensor_spacing * refinement)
-mesh = pg.meshtools.createMesh2D(x, y)
+mesh = pg.meshtools.createGrid(x, y)
 
 ax, _ = pg.show(mesh, hold=True)
 ax.plot(sensors[:, 0], sensors[:, 1], "ro")
