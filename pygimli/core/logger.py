@@ -76,6 +76,9 @@ def _y(*args):
 def _r(*args):
     _d(*args, c='r')
 
+def _b(*args):
+    _d(*args, c='b')
+
 def _d(*args, c='y'):
     """Simplistic colored debug msg"""
     print(_(whereAmI(), ':', *args, c=c))

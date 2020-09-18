@@ -2215,7 +2215,8 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
         theta: float [1]
             - :math:`theta = 0` means explicit Euler, maybe stable for
             :math:`\Delta t \quad\text{near}\quad h`
-            - :math:`theta = 0.5`, Crank-Nicolson, maybe instable
+            - :math:`theta = 0.5`, Crank-Nicolson scheme, maybe instable
+            - :math:`theta = 2/3`, Galerkin scheme
             - :math:`theta = 1`, implicit Euler
 
             If unsure choose :math:`\theta = 0.5 + \epsilon`, which is probably stable.
@@ -2508,7 +2509,7 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
                   measure, measure / len(times))
         return U
 
-def checkCFL(times, mesh, vMax):
+def checkCFL(times, mesh, vMax, verbose=False):
     """Check Courant-Friedrichs-Lewy condition.
 
     For advection and flow problems. CFL Number should be lower then 1 to
@@ -2522,10 +2523,7 @@ def checkCFL(times, mesh, vMax):
     else:
         dt = times[1] - times[0]
 
-    h = []
-    for c in mesh.cells():
-        h.append(c.shape().h())
-    dx = min(h)
+    dx = min(mesh.h())
     # min(entity.shape().h()
     # if mesh.dimension() == 1:
     #     dx = min(mesh.cellSizes())
@@ -2542,6 +2540,8 @@ def checkCFL(times, mesh, vMax):
                 "dx =", dx,
                 "dt <", dx/vMax,
                 " | N > ", int(dt/(dx/vMax))+1, ")")
+    if verbose:
+        pg.info("Courant-Friedrichs-Lewy Number:", c)
     return c
 
 def crankNicolson(times, S, I, f=None,

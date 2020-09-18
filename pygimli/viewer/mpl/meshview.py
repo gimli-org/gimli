@@ -899,7 +899,7 @@ def drawField(ax, mesh, data=None, levels=None, nLevs=5,
             fillContour = kwargs.pop('fillContour', True)
             contourLines = kwargs.pop('contourLines', True)
 
-            if fillContour:
+            if fillContour is True:
                 # add outer climits to fill lower and upper too
                 levs = np.array(levels)
 
@@ -918,10 +918,9 @@ def drawField(ax, mesh, data=None, levels=None, nLevs=5,
                 gci = ax.tricontourf(x, y, triangles, z,
                                      # antialiased=True, # not allways nice
                                      levels=levs, **kwargs
-
                                     )
 
-            if contourLines:
+            if contourLines is True:
                 ax.tricontour(x, y, triangles, z, levels=levels,
                               colors=kwargs.pop('colors', ['0.5']), **kwargs)
     else:
@@ -1036,7 +1035,7 @@ def drawStreamLine_(ax, mesh, c, data, dataMesh=None, linewidth=1.0,
         kwargs['color'] = 'black'
 
     arrowSize = kwargs.pop('arrowSize', 12)
-    arrowColor = kwargs.pop('arrowColor', 'black')
+    arrowColor = kwargs.pop('arrowColor', kwargs.get('color'))
 
     lines = None
 
@@ -1045,11 +1044,11 @@ def drawStreamLine_(ax, mesh, c, data, dataMesh=None, linewidth=1.0,
 
         segments = np.concatenate([points[:-1], points[1:]], axis=1)
 
-        lwidths = pg.Vector(len(v), linewidth)
+        lwidths = pg.Vector(len(v), kwargs.pop('lw', linewidth))
         lwidths[pg.find(pg.Vector(v) < dropTol)] = 0.0
 
-        lines = mpl.collections.LineCollection(
-            segments, linewidths=lwidths, **kwargs)
+        lines = mpl.collections.LineCollection(segments,
+                                               linewidths=lwidths, **kwargs)
         ax.add_collection(lines)
 
         # probably the limits are wrong without plot call
@@ -1070,7 +1069,7 @@ def drawStreamLine_(ax, mesh, c, data, dataMesh=None, linewidth=1.0,
                 ax.annotate('',
                     xytext=(x[xmid]-dx, y[ymid]-dy),
                     xy=(x[xmid], y[ymid]),
-                    arrowprops=dict(arrowstyle="-|>", color=arrowColor),
+                    arrowprops=dict(arrowstyle="-|>", color=arrowColor, lw=0),
                     size=arrowSize, **kwargs,
                 )
             else:

@@ -157,7 +157,7 @@ def __Mesh_getVal(self, key):
             except:
                 return uniqueNames[key]
 
-        error('The mesh does not have the requested data:', key,
+        critical('The mesh does not have the requested data:', key,
               '. Available:', uniqueNames)
 
 

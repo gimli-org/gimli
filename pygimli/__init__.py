@@ -22,7 +22,7 @@ from .core import matrix # alias all from .core.matrix.* to pg.matrix.*
 
 from .core.matrix import (BlockMatrix, Matrix, SparseMapMatrix, SparseMatrix)
 
-from .core.logger import (_, _d, _g, _r, _y, critical, d, debug, deprecated,
+from .core.logger import (_, _d, _g, _r, _y, _b, critical, d, debug, deprecated,
                           deprecated,
                           error, info, setDebug, setLogLevel, setVerbose, v,
                           verbose, warn)

@@ -136,6 +136,48 @@ def createMesh(poly, quality=32, area=0.0, smooth=None, switches=None,
         return mesh
 
 
+def createMeshFromHull(mesh, fixNodes=[], **kwargs):
+    """Create a new 2D triangular mesh from the boundaries of mesh.
+
+    Parameters
+    ----------
+    mesh: :gimliapi:`GIMLI::Mesh`
+        Input mesh.
+    fixNodes: iterable (int)
+        Nodes (IDs) from the input mesh that should be part of the new mesh.
+
+    Keyword Arguments
+    -----------------
+    **kwargs: dict
+        Forwarded to :py:mod:`pygimli:meshtools:createMesh`.
+
+    Returns
+    -------
+    mesh: :gimliapi:`GIMLI::Mesh`, List of fixed nodes
+        Returning mesh. If fixed nodes are requested, a list of the new IDs are returned in advance.
+    """
+    plc = pg.Mesh(mesh.dim(), isGeometry=True)
+
+    bounds = mesh.boundaries(mesh.boundaryMarkers() != 0)
+    for b in bounds:
+        ns = []
+        for i in range(b.shape().nodeCount()):
+            n = b.shape().node(i)
+            ns.append(plc.createNode(n.pos(), n.marker()).id())
+        plc.createBoundary(ns, b.marker())
+
+    for i, nId in enumerate(fixNodes):
+        n = mesh.node(nId)
+        fN = plc.createNode(n.pos(), n.marker())
+        fixNodes[i] = fN.id()
+
+    mesh = pg.meshtools.createMesh(plc, **kwargs)
+
+    if len(fixNodes) > 0:
+        return mesh, fixNodes
+    else:
+        return mesh
+
 def refineQuad2Tri(mesh, style=1):
     """Refine mesh of quadrangles into a mesh of triangle cells.
 

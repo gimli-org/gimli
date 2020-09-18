@@ -320,9 +320,31 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
         #     pg.warn("No valid data: ", min(data), max(data), pg.core.haveInfNaN(data))
         #     showMesh = True
         else:
-            validData = True
             if bool(colorBar) is not False:
                 colorBar = True
+
+            if len(data) == mesh.cellCount():
+                if showBoundary is None:
+                    showBoundary = True
+
+            def _drawField(ax, mesh, data, **kwargs):
+                validData = True
+                if len(data) == mesh.cellCount():
+                    kwargs['nCols'] = kwargs.pop('nCols', 256)
+                    gci = drawModel(ax, mesh, data, **kwargs)
+
+                elif len(data) == mesh.nodeCount():
+                    kwargs['nLevs'] = kwargs.pop('nLevs', 5)
+                    kwargs['nCols'] = kwargs.pop('nCols', kwargs['nLevs']-1)
+                    gci = drawField(ax, mesh, data, **kwargs)
+                else:
+                    pg.error("Data size invalid")
+                    print("Data: ", len(data), min(data), max(data), pg.core.haveInfNaN(data))
+                    print("Mesh: ", mesh)
+                    validData = False
+                    drawMesh(ax, mesh)
+
+                return gci, validData
 
             try:
                 if label is None:
@@ -330,12 +352,11 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
 
                 if replaceData and hasattr(mesh, 'gci') and ax in mesh.gci:
                     gci = mesh.gci[ax]
+                    print(gci)
 
                     if 'TriContourSet' in str(type(gci)):
                         ax.clear()
-                        kwargs['nLevs'] = kwargs.pop('nLevs', 5)
-                        kwargs['nCols'] = kwargs.pop('nCols', kwargs['nLevs']-1)
-                        gci = drawField(ax, mesh, data, **kwargs)
+                        gci, validData = _drawField(ax, mesh, data, **kwargs)
                         updateAxes(ax, force=True)
                     else:
                         setMappableData(gci, data,
@@ -345,25 +366,9 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
                         return ax, gci.colorbar
                 else:
 
-                    if len(data) == mesh.cellCount():
-                        kwargs['nCols'] = kwargs.pop('nCols', 256)
-                        gci = drawModel(ax, mesh, data, **kwargs)
+                    gci, validData = _drawField(ax, mesh, data, **kwargs)
 
-                        if showBoundary is None:
-                            showBoundary = True
-
-                    elif len(data) == mesh.nodeCount():
-                        kwargs['nLevs'] = kwargs.pop('nLevs', 5)
-                        kwargs['nCols'] = kwargs.pop('nCols', kwargs['nLevs']-1)
-                        gci = drawField(ax, mesh, data, **kwargs)
-                    else:
-                        pg.error("Data size invalid")
-                        print("Data: ", len(data), min(data), max(data), pg.core.haveInfNaN(data))
-                        print("Mesh: ", mesh)
-                        validData = False
-                        drawMesh(ax, mesh)
-
-                ### Cache mesh and scalarmappble to make replaceData work
+                ### Cache mesh and scalarmappable to make replaceData work
                 if not hasattr(mesh, 'gci'):
                     mesh.gci = {}
                 mesh.gci[ax] = gci
@@ -423,7 +428,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
         subkwargs['cMap'] = cMap
         subkwargs['orientation'] = cBarOrientation
 
-        if bool(colorBar):
+        if bool(colorBar) is not False:
             cBar = createColorBar(gci,
                                   size=kwargs.pop('size', 0.2),
                                   pad=kwargs.pop('pad', None),
