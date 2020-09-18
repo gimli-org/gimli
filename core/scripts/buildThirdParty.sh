@@ -29,8 +29,11 @@ CASTXML_BIN_WIN=https://data.kitware.com/api/v1/file/5b68bfc28d777f06857c1f44/do
 PYGCCXML_URL=https://github.com/gccxml/pygccxml
 PYGCCXML_REV=84be3367bf43cb494512f343068cb23704a47460 # for py3.8
 
-PYPLUSPLUS_URL=https://bitbucket.org/ompl/pyplusplus
-PYPLUSPLUS_REV=1e30641 # tag 1.8.3 for py3.8
+# old bitbucked project not working anymore and moved to github
+# PYPLUSPLUS_URL=https://bitbucket.org/ompl/pyplusplus
+# PYPLUSPLUS_REV=1e30641 # tag 1.8.3 for py3.8
+PYPLUSPLUS_URL=https://github.com/ompl/pyplusplus
+PYPLUSPLUS_REV=d4811c8 # tag 1.8.3 for py3.8
 
 CPPUNIT_URL=http://svn.code.sf.net/p/cppunit/code/trunk
 
@@ -555,7 +558,7 @@ buildPYGCCXML(){
     prepPYGCCXML
 
     getWITH_GIT $PYGCCXML_URL $PYGCCXML_SRC $PYGCCXML_REV
-    getWITH_HG $PYPLUSPLUS_URL $PYPLUSPLUS_SRC $PYPLUSPLUS_REV
+    getWITH_GIT $PYPLUSPLUS_URL $PYPLUSPLUS_SRC $PYPLUSPLUS_REV
 
     mkBuildDIR $PYGCCXML_BUILD $PYGCCXML_SRC 1
     pushd $PYGCCXML_BUILD
