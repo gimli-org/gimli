@@ -603,10 +603,6 @@ def drawBoundaryMarkers(ax, mesh, **kwargs):
 
         for p in paths:
 
-            ax.plot(mesh.node(p[0]).pos()[0],
-                    mesh.node(p[0]).pos()[1], 'bo', color='k')
-            ax.plot(mesh.node(p[-1]).pos()[0],
-                    mesh.node(p[-1]).pos()[1], 'bo', color='k')
 
             xs = pg.x(mesh.nodes(p))
             ys = pg.y(mesh.nodes(p))
@@ -626,6 +622,8 @@ def drawBoundaryMarkers(ax, mesh, **kwargs):
                     zorder=20, bbox=bbox_props, fontsize=9,
                     fontdict={'weight':'bold'}
                     )
+            ax.plot(xs[0], ys[0], 'bo', color='k')
+            ax.plot(xs[-1], ys[-1], 'bo', color='k')
 
     # for b in mesh.boundaries():
     #     if b.marker() != 0:
