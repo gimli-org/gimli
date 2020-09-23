@@ -267,7 +267,7 @@ def interpolateAlongCurve(curve, t, **kwargs):
     curve : [[x,z]] | [[x,y,z]] | [:gimliapi:`GIMLI::RVector3`] | :gimliapi:`GIMLI::R3Vector`
         Discrete curve for 2D :math:`x,z` curve=[[x,z]], 3D :math:`x,y,z`
 
-    t : 1D iterable
+    t: 1D iterable
         Query positions along the curve in absolute distance
 
     kwargs :
@@ -636,7 +636,7 @@ def interpolate(*args, **kwargs):
             if 'spline' in method:
                 if pg.optImport("scipy", requiredFor="Spline interpolation."):
                     from scipy import interpolate
-                    tck = interpolate.splrep(x, u, s=0,
+                    tck = interpolate.splrep(x, u, s=0, k=min(3, (len(x)-1)),
                                              per=kwargs.pop('periodic', False))
                     return interpolate.splev(xi, tck, der=0)
                 else:

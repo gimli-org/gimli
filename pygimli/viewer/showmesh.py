@@ -210,8 +210,10 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
     showMesh: bool [False]
         Shows the mesh itself additional.
     showBoundary: bool [None]
-        Shows all boundary with marker != 0. A value None means automatic
+        Deprecated. Shows all boundary with marker != 0. A value None means automatic
         True for cell data and False for node data.
+    showBoundaryMarkers: bool [False]
+        Highlight boundary marker != 0. Replaces showBoundary
     marker: bool [False]
         Show mesh and boundary marker.
 

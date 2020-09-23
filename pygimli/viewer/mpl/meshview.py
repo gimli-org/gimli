@@ -492,6 +492,149 @@ def drawSelectedMeshBoundariesShadow(ax, boundaries, first='x', second='y',
     updateAxes_(ax)
     return collection
 
+def drawBoundaryMarkers(ax, mesh, **kwargs):
+    """Draw boundary markers for mesh.boundaries with marker != 0
+
+    Args
+    ----
+    mesh : :gimliapi:`GIMLI::Mesh`
+        Mesh that have the boundary markers.
+
+    Keyword Arguments
+    ----------------
+    **kwargs
+        Forwarded to plot
+
+    Examples
+    --------
+    >>> import pygimli as pg
+    >>> import pygimli.meshtools as mt
+    >>> c0 = mt.createCircle(pos=(0.0, 0.0), radius=1, segments=4)
+    >>> l0 = mt.createPolygon([[-0.5, 0.0], [.5, 0.0]], boundaryMarker=2)
+    >>> l1 = mt.createPolygon([[-0.25, -0.25], [0.0, -0.5], [0.25, -0.25]],
+    ...                       interpolate='spline', addNodes=4,
+    ...                       boundaryMarker=3)
+    >>> l2 = mt.createPolygon([[-0.25, 0.25], [0.0, 0.5], [0.25, 0.25]],
+    ...                       interpolate='spline', addNodes=4,
+    ...                       isClosed=True, boundaryMarker=3)
+    >>> mesh = mt.createMesh([c0, l0, l1, l2], area=0.01)
+    >>> ax, _ = pg.show(mesh)
+    >>> pg.viewer.mpl.drawBoundaryMarkers(ax, mesh)
+    """
+    def findPaths(bounds):
+        scipy = pg.optImport('scipy')
+
+        S = pg.core.SparseMapMatrix()
+        for b in bounds:
+            # S[b.shape().node(0).id(), b.shape().node(1).id()] = 1
+            # S[b.shape().node(1).id(), b.shape().node(0).id()] = 1
+            S.addVal(b.shape().node(1).id(), b.shape().node(0).id(), 2.0)
+            S.addVal(b.shape().node(0).id(), b.shape().node(1).id(), 1.0)
+
+        S = scipy.sparse.dok_matrix(pg.utils.toCOO(S))
+
+        # print(S.shape)
+        # print(S)
+        paths = []
+
+        def followPath(path, S, rID):
+            # print('start', rID)
+            row = S[rID]
+            while 1:
+                cID = list(row.keys())[0][1]
+                # print('row', rID, 'col', cID)
+                # print('add', cID)
+                path.append(cID)
+                S.pop((rID, cID))
+                S.pop((cID, rID))
+                # print('pop-r', (rID, cID))
+
+                col = S[:, cID]
+
+                if len(col) == 1:
+                    rID = list(col.keys())[0][0]
+                    path.append(rID)
+                    # print('add', rID)
+                    # print('pop-c', (rID, cID))
+                    S.pop((rID, cID))
+                    S.pop((cID, rID))
+                    row = S[rID]
+                    if len(row) != 1:
+                        break
+                else:
+                    break
+
+        ## first look for single starting
+        for i in range(S.shape[0]):
+            rID = i
+            row = S[rID]
+
+            if len(row) == 1:
+                #single starting
+                path = []
+                paths.append(path)
+                # starting node
+                path.append(rID)
+                followPath(path, S, rID)
+
+        ## remaining are closed
+        for i in range(S.shape[0]):
+            rID = i
+            row = S[rID]
+
+            if len(row) == 2:
+                path = []
+                paths.append(path)
+                # starting node
+                path.append(rID)
+                followPath(path, S, rID)
+
+
+        return paths
+
+    ms = pg.unique(pg.sort(mesh.boundaryMarkers()[mesh.boundaryMarkers()!=0]))
+
+    #cMap = plt.cm.get_cmap("Set3", len(ms))
+
+    for i, m in enumerate(ms):
+        bs = mesh.findBoundaryByMarker(m)
+        paths = findPaths(bs)
+        col = 'C' + str(i)
+
+        for p in paths:
+
+            ax.plot(mesh.node(p[0]).pos()[0],
+                    mesh.node(p[0]).pos()[1], 'bo', color='k')
+            ax.plot(mesh.node(p[-1]).pos()[0],
+                    mesh.node(p[-1]).pos()[1], 'bo', color='k')
+
+            xs = pg.x(mesh.nodes(p))
+            ys = pg.y(mesh.nodes(p))
+            path = np.array([xs,ys]).T
+
+
+            ax.plot(xs, ys, lw=kwargs.pop('lw', 2), color=col, **kwargs)
+
+            center = pg.meshtools.interpolateAlongCurve(path,
+                                        [pg.utils.cumDist(path)[-1]/2])[0]
+
+            x = center[0]
+            y = center[1]
+            bbox_props = dict(boxstyle="circle,pad=0.2", fc="w", ec=col)
+            ax.text(x, y, str(m), color=col, va="center",
+                    ha="center",
+                    zorder=20, bbox=bbox_props, fontsize=9,
+                    fontdict={'weight':'bold'}
+                    )
+
+    # for b in mesh.boundaries():
+    #     if b.marker() != 0:
+    #         x = b.center()[0]
+    #         y = b.center()[1]
+    #         bbox_props = dict(boxstyle="circle,pad=0.1", fc="w", ec="k")
+    #         ax.text(x, y, str(b.marker()), color="k", va="center", ha="center",
+    #                 zorder=20, bbox=bbox_props, fontsize=9)
+
 
 def drawMeshBoundaries(ax, mesh, hideMesh=False, useColorMap=False,
                        fitView=True, lw=None, color=None):
@@ -685,12 +828,7 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
     #    ax.add_collection(p)
 
     if boundaryMarker:
-        for b in mesh.boundaries():
-            x = b.center()[0]
-            y = b.center()[1]
-            bbox_props = dict(boxstyle="circle,pad=0.1", fc="w", ec="k")
-            ax.text(x, y, str(b.marker()), color="k", va="center", ha="center",
-                    zorder=20, bbox=bbox_props, fontsize=9)
+        drawBoundaryMarkers(ax, mesh)
 
     if regionMarker:
 
