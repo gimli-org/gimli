@@ -15,7 +15,7 @@ import json
 def fixRST(rst):
     rst = rst.replace('\n', '')
     rst = rst.replace('\r', '\n')
-    rst = rst.replace(r":raw-latex:`\begin{align}", ".. math::\n\n\t")
+    rst = rst.replace(r":raw-latex:`\begin{align}", "\n.. math::\n\n\t")
     rst = rst.replace("\end{align}`", "")
 
     # some spocky encoding problems with '
@@ -38,7 +38,9 @@ def convert_ipynb_to_gallery(file_name):
     header = "#!/usr/bin/env python\n" +\
              "# -*- coding: utf-8 -*-\n"
 
-    nb_dict = json.load(open(file_name))
+    with open(file_name, encoding="utf-8") as fi:
+        nb_dict = json.load(fi)
+
     cells = nb_dict['cells']
 
     first = True

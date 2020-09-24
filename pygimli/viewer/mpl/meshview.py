@@ -596,6 +596,8 @@ def drawBoundaryMarkers(ax, mesh, **kwargs):
 
     #cMap = plt.cm.get_cmap("Set3", len(ms))
 
+    kwargs['lw'] = kwargs.pop('lw', 4)
+
     for i, m in enumerate(ms):
         bs = mesh.findBoundaryByMarker(m)
         paths = findPaths(bs)
@@ -608,8 +610,7 @@ def drawBoundaryMarkers(ax, mesh, **kwargs):
             ys = pg.y(mesh.nodes(p))
             path = np.array([xs,ys]).T
 
-
-            ax.plot(xs, ys, lw=kwargs.pop('lw', 2), color=col, **kwargs)
+            ax.plot(xs, ys, color=col, **kwargs)
 
             center = pg.meshtools.interpolateAlongCurve(path,
                                         [pg.utils.cumDist(path)[-1]/2])[0]
