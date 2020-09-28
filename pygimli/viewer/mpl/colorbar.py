@@ -14,6 +14,7 @@ from . import saveFigure, updateAxes
 from . utils import prettyFloat
 from pygimli.core.logger import renameKwarg
 
+
 def autolevel(z, nLevs, logScale=None, zMin=None, zMax=None):
     """Create nLevs bins for the data array z based on matplotlib ticker.
 
@@ -88,10 +89,7 @@ def cmapFromName(cmapname='jet', ncols=256, bad=None, **kwargs):
 
     renameKwarg('cmap', 'cMap', kwargs)
 
-    if 'cmap' in kwargs:
-        cmapname = kwargs.pop('cmap', cmapname)
-    elif 'cMap' in kwargs:
-        cmapname = kwargs.pop('cMap', cmapname)
+    cmapname = kwargs.pop('cMap', cmapname)
 
     cMap = None
     if cmapname is None:
@@ -180,9 +178,9 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
             norm = mpl.colors.Normalize(vmin=min(gci.get_array()),
                                         vmax=max(gci.get_array()))
             gci.set_norm(norm)
-
         cbar.on_mappable_changed(gci)
         #cbar.update_normal(gci)
+
 
     if levels is not None:
         nLevs = len(levels)
@@ -193,9 +191,15 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
                 nCols = nLevs
 
             cMap = cmapFromName(cMap, ncols=nCols,
-                                bad=[1.0, 1.0, 1.0, 0.0])
+                                bad=[1.0, 1.0, 1.0, 0.0]
+                                )
+            # does not work. why??
+            # cMap.set_under('yellow')
+            # cMap.set_over('cyan')
 
+        #cbar.mappable.get_norm().clip=False
         cbar.mappable.set_cmap(cMap)
+
 
     needLevelUpdate = False
 
@@ -274,10 +278,11 @@ def createColorBar(gci, orientation='horizontal', size=0.2, pad=None,
 
     cbar = None
     if hasattr(ax, '__cBar__'):
-        ax.__cBar__.remove()
-        delattr(ax, '__cBar__')
         # update colorbar is broken and will not work as supposed so we need
         # to remove them for now
+        ax.__cBar__.remove()
+        delattr(ax, '__cBar__')
+        pass
 
     if hasattr(ax, '__cBar__'):
         cbar = ax.__cBar__
@@ -387,6 +392,8 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5, levels=None):
         norm = cbar.mappable.norm
     elif hasattr(cbar, 'norm'):
         norm = cbar.norm
+
+    #norm.clip = True
 
     if levels is not None:
         cbarLevels = levels

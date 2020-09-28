@@ -36,7 +36,6 @@ def createGrid(x=None, y=None, z=None, **kwargs):
 
     Examples
     --------
-
     >>> import pygimli as pg
     >>> mesh = pg.meshtools.createGrid(x=[0, 1, 1.5, 2],
     ...                                y=[-1, -0.5, -0.25, 0], marker=2)
@@ -45,6 +44,9 @@ def createGrid(x=None, y=None, z=None, **kwargs):
     >>> _ = pg.show(mesh)
     >>> pg.wait()
     """
+    if 'degree' in kwargs:
+        return createGridPieShaped(x, **kwargs)
+
     if x is not None:
         if isinstance(x, int):
             x = list(range(x))
@@ -109,7 +111,7 @@ def createGridPieShaped(x, degree=10.0, h=2, marker=0):
 
     if abs(x[0]) < 1e-6:
         mesh.createCell([0, 1, 2])
-        for i in range(0, (len(x)-1), 2):
+        for i in range(0, (len(x)-2)*2-1, 2):
             c = mesh.createCell([i+1, i+3, i+4, i+2])
     else:
         for i in range(0, len(x)*2-2, 2):

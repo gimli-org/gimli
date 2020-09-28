@@ -17,8 +17,7 @@ from .mapping import (cellDataToBoundaryData, cellDataToNodeData,
                       tapeMeasureToCoordinates)
 
 from .mesh import (convert, convertMeshioMesh, convertHDF5Mesh, createMesh,
-                   createParaMesh,
-                   createParaMesh2DGrid, exportFenicsHDF5Mesh, exportHDF5Mesh,
+                   createParaMesh, createParaMesh2DGrid, createMeshFromHull, exportFenicsHDF5Mesh, exportHDF5Mesh,
                    exportSTL, extrudeMesh, merge2Meshes, mergeMeshes,
                    readFenicsHDF5Mesh, readGmsh, readHDF5Mesh,
                    readHydrus2dMesh, readHydrus3dMesh, readSTL, readTetgen,
@@ -37,6 +36,7 @@ __all__ = [
     'appendTriangleBoundary',
     'appendTetrahedronBoundary',
     'createMesh',
+    'createMeshFromHull',
     'readGmsh',
     'readTriangle',
     'readTetgen',

@@ -496,7 +496,7 @@ def createPolygon(verts, isClosed=False, addNodes=0, interpolate='linear',
         Number of additional nodes to be added equidistant between sensors.
 
     interpolate : str ['linear']
-        Interpolation rule for addnodes. 'linear' or 'spline'. TODO 'harmfit'
+        Interpolation rule for addNodes. 'linear' or 'spline'. TODO 'harmfit'
 
     **kwargs:
 

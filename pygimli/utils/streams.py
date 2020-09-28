@@ -167,7 +167,7 @@ def streamlineDir(mesh, field, startCoord, dLengthSteps, dataMesh=None,
                 pos1 = pg.Pos(xd[-2], yd[-2])
                 pos2 = pg.Pos(xd[-1], yd[-1])
                 if (pos0.dist(pos2) < pos0.dist(pos1)):
-                    pg.warn('degenerating stream aborted')
+                    pg.debug('degenerating stream aborted')
                     break
 
             # If the new cell is different from the current we move into the

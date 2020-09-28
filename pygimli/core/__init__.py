@@ -1011,6 +1011,8 @@ def __getCoords(coord, dim, ent):
         return ent.pos()[dim]
     if isinstance(ent, _pygimli_.RVector3):
         return ent[dim]
+    if isinstance(ent, list) and isinstance(ent[0], _pygimli_.Node):
+        return [n.pos()[dim] for n in ent]
 
     if hasattr(ent, 'ndim') and ent.ndim == 2 and len(ent[0] > dim):
         return ent[:, dim]
