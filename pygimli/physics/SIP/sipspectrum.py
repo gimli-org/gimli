@@ -729,8 +729,8 @@ class SIPSpectrum(object):
         IDD.setLambdaFactor(lamFactor)
         self.mDD = IDD.run()
         IDD.echoStatus()
-        print("ARMS=", IDD.absrms(), "RRMS=", IDD.absrms()/max(Znorm)*100)
         if new:
+            print("ARMS=", IDD.absrms(), "RRMS=", IDD.absrms()/max(Znorm)*100)
             resp = np.array(IDD.response())
             respRe = resp[:nf]
             respIm = resp[nf:]

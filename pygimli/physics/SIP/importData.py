@@ -201,7 +201,6 @@ def readRadicSIPFuchs(filename, readSecond=False, delLast=True):
         Measured phase error
     """
     with codecs.open(resfile, 'r', encoding='iso-8859-15', errors='replace') as f:
-    #f = open(filename, 'r')
         line = f.readline()
         fr = []
         rhoa = []
@@ -212,7 +211,7 @@ def readRadicSIPFuchs(filename, readSecond=False, delLast=True):
             line = f.readline()
             if line.rfind('Freq') > -1:
                 break
-
+        return
         if readSecond:
             while True:
                 if f.readline().rfind('Freq') > -1:
@@ -344,6 +343,7 @@ def readSIP256file(resfile, verbose=False):
     DATA, dReading, dFreq, AB, RU, ru = [], [], [], [], [], []
     tMeas = []
     for i, line in enumerate(LINE):
+        # print(i, line)
         line = line.replace(' nc ', ' 0 ') # no calibration should 0
         line = line.replace(' c ', ' 1 ') # calibration should 1
         # sline = line.split()
@@ -375,9 +375,20 @@ def readSIP256file(resfile, verbose=False):
                     fd = re.search('\.[0-9-]*\.', ss)
                     if fd:
                         if '-' in ss[1:]:
-                            bpos = ss.find('-')
+                            bpos = ss[1:].find('-') + 1
                         else:
                             bpos = fd.start() + 4
+
+                        # print(ss[:bpos], ss[bpos:])
+                        sline.insert(i, ss[:bpos])
+                        sline[i+1] = ss[bpos:]
+                        # print(sline)
+                    fd = re.search('NaN[0-9-]*\.', ss)
+                    if fd:
+                        if '-' in ss[1:]:
+                            bpos = ss.find('-')
+                        else:
+                            bpos = fd.start() + 3
 
                         # print(ss[:bpos], ss[bpos:])
                         sline.insert(i, ss[:bpos])
