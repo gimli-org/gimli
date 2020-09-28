@@ -905,7 +905,7 @@ class ERTManager(MeshMethodManager):
                         print("Data IP abs error estimate (min:max) ",
                               min(ipError), ":", max(ipError))
 
-                phia += np.randn(ret.size(), seed=seed) * ipError
+                phia += pg.randn(ret.size(), seed=seed) * ipError
                 ret['iperr'] = ipError
                 ret['phia'] = phia
 
