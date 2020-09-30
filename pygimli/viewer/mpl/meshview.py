@@ -618,11 +618,13 @@ def drawBoundaryMarkers(ax, mesh, **kwargs):
             x = center[0]
             y = center[1]
             bbox_props = dict(boxstyle="circle,pad=0.2", fc="w", ec=col)
-            ax.text(x, y, str(m), color=col, va="center",
-                    ha="center",
+            txt = ax.text(x, y, str(m), color=col, va="center", ha="center",
                     zorder=20, bbox=bbox_props, fontsize=9,
-                    fontdict={'weight':'bold'}
-                    )
+                    fontdict={'weight':'bold'})
+            
+            # cliping avoid visuablity outside axes. Needet if the axes limits does not match mesh size.
+            txt.set_clip_on(True)
+            
             ax.plot(xs[0], ys[0], 'bo', color='k')
             ax.plot(xs[-1], ys[-1], 'bo', color='k')
 
