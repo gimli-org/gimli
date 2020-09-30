@@ -9,8 +9,9 @@ from . _pygimli_ import (RVector3, RVector, IndexArray,
 
 def __DataContainer_str(self):
     return "Data: Sensors: " + str(self.sensorCount()) + " data: " + \
-        str(self.size()) + ", nonzero entries: " +\
-        str([d for d in self.dataMap().keys() if self.haveData(d)])
+        str(self.size()) + ", nonzero entries: " + \
+        str([d for d in self.dataMap().keys() if self.isSensorIndex(d) or 
+             self.haveData(d)])
 DataContainer.__str__ = __DataContainer_str
 
 
