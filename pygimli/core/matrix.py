@@ -86,9 +86,9 @@ def __ElementMatrix_str(self):
         s += '\n'
     return s
 
-pgcore.RMatrix.__str__ = __RMatrix_str
-pgcore.CMatrix.__str__ = __CMatrix_str
-pgcore.ElementMatrix.__str__ = __ElementMatrix_str
+pgcore.RMatrix.__repr__ =__RMatrix_str
+pgcore.CMatrix.__repr__ =__CMatrix_str
+pgcore.ElementMatrix.__repr__ =__ElementMatrix_str
 
 
 ## Special Monkeypatch core classes
@@ -160,7 +160,7 @@ def __BlockMatrix_str__(self):
 
 pgcore.RBlockMatrix.addMatrix = __BlockMatrix_addMatrix_happy_GC__
 pgcore.RBlockMatrix.add = __BlockMatrix_addMatrix_happy_GC__
-pgcore.RBlockMatrix.__str__ = __BlockMatrix_str__
+pgcore.RBlockMatrix.__repr__ =__BlockMatrix_str__
 pgcore.RBlockMatrix.ndim = 2
 # pgcore.CBlockMatrix.addMatrix = __BlockMatrix_addMatrix_happy_GC__
 # pgcore.CBlockMatrix.add = __BlockMatrix_addMatrix_happy_GC__

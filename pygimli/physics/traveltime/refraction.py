@@ -71,7 +71,7 @@ from . fatray import FatrayDijkstraModelling
 # #        self.inv = self.createInv(self.fop,
 # #                                  verbose=self.verbose, doSave=self.doSave)
 
-# #    def __str__(self):  # no need to overwrite with identical content
+# #    def __repr__(self):  # no need to overwrite with identical content
 # #        """string representation of the class"""
 # #        return self.__repr__()
 # #

@@ -49,7 +49,7 @@ def __Mesh_str(self):
                 st += d + " "
 
     return st
-Mesh.__str__ = __Mesh_str
+Mesh.__repr__ =__Mesh_str
 
 
 def __addPLCs__(self, other):
@@ -73,7 +73,7 @@ def __MeshEntity_str(self):
         for n in self.nodes():
             s += '\t' + str(n.id()) + " " + str(n.pos()) + "\n"
     return s
-MeshEntity.__str__ = __MeshEntity_str
+MeshEntity.__repr__ =__MeshEntity_str
 
 
 def __Node_str(self):
@@ -83,7 +83,7 @@ def __Node_str(self):
          ', Marker: ' + str(self.marker())
     s += '\t' + str(self.pos()) + '\n'
     return s
-Node.__str__ = __Node_str
+Node.__repr__ =__Node_str
 
 # For Jupyer Notebook use.. check me
 # Node.__repr__ = Node_str
