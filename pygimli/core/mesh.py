@@ -78,18 +78,11 @@ MeshEntity.__repr__ =__MeshEntity_str
 
 def __Node_str(self):
     """Give node infos."""
-    s = self.__repr__()
-    s += '\tID: ' + str(self.id()) + \
+    s = '\tID: ' + str(self.id()) + \
          ', Marker: ' + str(self.marker())
     s += '\t' + str(self.pos()) + '\n'
     return s
 Node.__repr__ =__Node_str
-
-# For Jupyer Notebook use.. check me
-# Node.__repr__ = Node_str
-# Mesh.__repr__ = Mesh_str
-# MeshEntity.__repr__ = MeshEntity_str
-
 
 def __Mesh_setVal(self, key, val):
     """Index access to the mesh data.
