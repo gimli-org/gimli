@@ -73,16 +73,16 @@ def __BoundingBox_str(self):
     s += "BoundingBox [{0}, {1}]".format(self.min(), self.max())
     return s
 
-_pygimli_.RVector.__str__ = __RVector_str
-_pygimli_.CVector.__str__ = __RVector_str
-_pygimli_.BVector.__str__ = __RVector_str
-_pygimli_.IVector.__str__ = __RVector_str
-_pygimli_.IndexArray.__str__ = __RVector_str
-_pygimli_.RVector3.__str__ = __RVector3_str
-_pygimli_.R3Vector.__str__ = __R3Vector_str
+_pygimli_.RVector.__repr__ =__RVector_str
+_pygimli_.CVector.__repr__ =__RVector_str
+_pygimli_.BVector.__repr__ =__RVector_str
+_pygimli_.IVector.__repr__ =__RVector_str
+_pygimli_.IndexArray.__repr__ =__RVector_str
+_pygimli_.RVector3.__repr__ =__RVector3_str
+_pygimli_.R3Vector.__repr__ =__R3Vector_str
 
-_pygimli_.Line.__str__ = __Line_str
-_pygimli_.BoundingBox.__str__ = __BoundingBox_str
+_pygimli_.Line.__repr__ =__Line_str
+_pygimli_.BoundingBox.__repr__ =__BoundingBox_str
 
 ############################
 # compatibility stuff
