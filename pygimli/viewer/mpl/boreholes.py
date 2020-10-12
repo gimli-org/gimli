@@ -42,7 +42,7 @@ class BoreHole(object):
     def __repr__(self):
         return self.__class__.__name__ + '("{}")'.format(self._fname)
 
-    def __str__(self):
+    def __repr__(self):
         out = 'Borehole id: {}\n Inline position (x, z): {}\n Layers:'.format(
             self.borehole_id, self.inline_pos)
 
@@ -112,7 +112,7 @@ class BoreHoles(object):
     def __repr__(self):
         return self.__class__.__name__ + '({})'.format(self._fnames)
 
-    def __str__(self):
+    def __repr__(self):
         out = '{} borehole files loaded:'.format(len(self._fnames))
 
         for b in self.boreholes:

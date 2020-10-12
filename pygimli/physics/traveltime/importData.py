@@ -156,7 +156,7 @@ class ReadAHL(object):
         self.load()
         self.convert()
 
-    def __str__(self):
+    def __repr__(self):
         s = 'header line: ' + self.header
         s += '\nalldata length: {}\nfirst row: '.format(len(self.alldata))
         s += str(self.alldata[0, :]) + '\nlast row: '

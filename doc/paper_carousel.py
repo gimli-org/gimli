@@ -101,4 +101,8 @@ showcase = [
          title="Simulating the electrical response of seawater intrusion in Australia",
          subtitle="Costall et al. (2020), Scientific Reports",
          link="https://doi.org/10.1038/s41598-020-66516-6"),
+    dict(img="enemark2020.jpg",
+         title="Testing conceptual models in hydrogeology using remote sensing and geophysics",
+         subtitle="Enemark et al. (2020), Water Resources Research",
+         link="https://doi.org/10.1029/2020WR027578"),
 ]

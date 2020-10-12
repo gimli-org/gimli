@@ -262,7 +262,7 @@ class SIPSpectrum(object):
         """String representation of the class."""
         return self.__str__()
 
-    def __str__(self):
+    def __repr__(self):
         """Human readable string representation of the class."""
         out = self.__class__.__name__ + " object"
         if self.f is not None:
