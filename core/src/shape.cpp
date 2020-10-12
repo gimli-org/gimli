@@ -131,11 +131,11 @@ void Shape::changed(){
     hasDomSize_ = false;
 }
 
-const Node & Shape::node(Index i) const {
+Node & Shape::node(Index i) const {
     if (i > nodeCount() - 1){
         std::cerr << WHERE_AM_I << " requested shape node: " << i << " does not exist." << std::endl;
     }
-    return *(*nodeVector_)[i];
+    return *((*nodeVector_)[i]);
 }
 
 bool Shape::enforcePositiveDirection(){

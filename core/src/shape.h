@@ -198,7 +198,7 @@ public:
     Index nodeCount() const { return this->nodeCount_; }
 
     /*! Return a read only reference to the i-th \ref Node of this shape. */
-    const Node & node(Index i) const;
+    Node & node(Index i) const;
 
     // /*! Return a reference to the i-th \ref Node of this shape. */
     // Node & node(Index i);
