@@ -334,7 +334,6 @@ def __Mesh_h__(self):
     return np.array([c.shape().h() for c in self.cells()])
 Mesh.h = __Mesh_h__
 
-
 def __Mesh_findPaths__(self, bounds):
     """Find paths of connected boundaries
 
@@ -414,7 +413,6 @@ def __Mesh_findPaths__(self, bounds):
 
 
     return paths
-
 Mesh.findPaths = __Mesh_findPaths__
 
 
@@ -573,5 +571,4 @@ def __Mesh_cutBoundary__(self, marker, boundaryMarker=None):
         b = mesh.createBoundary([newNodes[i+1].id(), newNodes[i].id()],
                                 marker=boundaryMarker)
         b.setLeftCell(rightCells[i])
-
 Mesh.cutBoundary = __Mesh_cutBoundary__
