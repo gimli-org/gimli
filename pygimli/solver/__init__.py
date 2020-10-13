@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 """General physics independent solver interface."""
 
-from .utils import anisotropyMatrix, constitutiveMatrix
+from .utils import (anisotropyMatrix, constitutiveMatrix,
+                    createAnisotropyMatrix, createConstitutiveMatrix)
 
 from .green import greenDiffusion1D
 

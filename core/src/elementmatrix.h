@@ -449,8 +449,8 @@ DLLEXPORT void dot(const ElementMatrix < double > & A,
                    const ElementMatrix < double > & B,
                    const FEAFunction & c, ElementMatrix < double > & ret);
 
-// DLLEXPORT void dot(const ElementMatrix < double > & A, 
-//                    const ElementMatrix < double > & B, 
+// DLLEXPORT void dot(const ElementMatrix < double > & A,
+//                    const ElementMatrix < double > & B,
 //                    A_TYPE c, ElementMatrix < double > & C);
 
 #define DEFINE_DOT_MULT(A_TYPE) \

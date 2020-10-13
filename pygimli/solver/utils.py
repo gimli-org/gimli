@@ -3,8 +3,10 @@
 """Utility functions for the FE/FV solver."""
 
 import numpy as np
+import pygimli as pg
 
-def anisotropyMatrix(lon, trans, theta):
+
+def createAnisotropyMatrix(lon, trans, theta):
     """Create anisotropy matrix with desired properties.
 
     Anistropy tensor from longitudinal value lon,
@@ -25,6 +27,9 @@ def anisotropyMatrix(lon, trans, theta):
     C[1,1] = lon * np.sin(theta)**2 + trans * np.cos(theta)**2
     return C
 
+@pg.renamed(createAnisotropyMatrix)
+def anisotropyMatrix(*args, **kwrags):
+    return createAnisotropyMatrix(*args, **kwrags)
 
 class ConstitutiveMatrix(np.ndarray):
     def __new__(cls, input_array, voigtNotation=False):
@@ -42,7 +47,7 @@ class ConstitutiveMatrix(np.ndarray):
         self.voigtNotation = getattr(obj, 'voigtNotation', False)
 
 
-def constitutiveMatrix(lam=None, mu=None, E=None, nu=None, dim=2,
+def createConstitutiveMatrix(lam=None, mu=None, E=None, nu=None, dim=2,
                        voigtNotation=False):
     """Create constitutive matrix for 2 or 3D isotropic media.
 
@@ -53,7 +58,6 @@ def constitutiveMatrix(lam=None, mu=None, E=None, nu=None, dim=2,
         * Tests
         * Examples
         * comparision Voigts/Kelvin notation
-
 
     Parameters
     ----------
@@ -130,3 +134,7 @@ def constitutiveMatrix(lam=None, mu=None, E=None, nu=None, dim=2,
     #print('c2', C)
 
     return C
+
+@pg.renamed(createConstitutiveMatrix)
+def constitutiveMatrix(*args, **kwrags):
+    return createConstitutiveMatrix(*args, **kwrags)

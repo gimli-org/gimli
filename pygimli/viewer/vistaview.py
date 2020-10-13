@@ -2,9 +2,7 @@
 """Plot 3D mesh."""
 
 import sys
-
 import matplotlib.pyplot as plt
-
 import pygimli as pg
 
 
@@ -60,7 +58,7 @@ def showMesh3DFallback(mesh, data, **kwargs):
 
     if mesh.boundaryCount() > 0:
         x, y, tri, z, dataIndex = pg.viewer.mpl.createTriangles(mesh)
-        ax.plot_trisurf(x, y, tri, z)
+        ax.plot_trisurf(x, y, tri, z, **kwargs)
     else:
         if mesh.nodeCount() < 1e4:
             x = pg.x(mesh.positions())

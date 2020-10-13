@@ -1235,6 +1235,7 @@ ElementMatrix < double >::ElementMatrix(Index nCoeff, Index dofPerCoeff,
 
 template < > DLLEXPORT
 ElementMatrix < double >::ElementMatrix(const ElementMatrix < double > & E){
+    __M
     this->copyFrom(E, true);
 }
 
@@ -1289,7 +1290,7 @@ void ElementMatrix < double >::copyFrom(const ElementMatrix < double > & E,
 
 template < > DLLEXPORT
 const ElementMatrix < double > & ElementMatrix < double >::integrate() const {
-
+    __MS("Int 1 " << this << " " << this->_ent << " " << _newStyle)
     if (_newStyle && !this->_integrated){
         const RVector &w = this->w();
         Index nRules(w.size());
@@ -1302,6 +1303,7 @@ const ElementMatrix < double > & ElementMatrix < double >::integrate() const {
         }
         this->_integrated = true;
     }
+    __MS("Int 2 " << this << " " << this->_ent << " " << _newStyle)
     return *this;
 }
 
@@ -1389,6 +1391,7 @@ template < > DLLEXPORT
 ElementMatrix < double > & ElementMatrix < double >::grad(
                         const MeshEntity & ent, Index order,
                         bool elastic, bool sum, bool div, bool kelvin){
+    __MS("grad 1 " << this << " " << this->_ent)
     if (this->valid() && \
         this->order() == order && \
         this->_ent == & ent && \
@@ -1401,6 +1404,8 @@ ElementMatrix < double > & ElementMatrix < double >::grad(
     this->_div = div;
     this->_integrated = false;
     this->_elastic = elastic;
+
+    __MS("grad 2 " << this << " " << this->_ent)
 
     //this->getWeightsAndPoints(ent, this->_w, this->_x, this->_order);
 
@@ -1578,6 +1583,7 @@ ElementMatrix < double > & ElementMatrix < double >::grad(
                                     bool elastic, bool sum, bool div,
                                     Index nCoeff, Index dof, Index dofOffset,
                                     bool kelvin){
+    __MS("grad 0 " << this << " " << this->_ent)
 
     if (!this->valid() ||
         this->order() != order ||

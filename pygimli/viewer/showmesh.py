@@ -255,7 +255,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
     replaceData = kwargs.pop('replaceData', False)
 
     if ax is None:
-        ax, _ = pg.show(**kwargs)
+        ax, _ = pg.show(figsize=kwargs.pop('figsize', None), **kwargs)
 
     # adjust limits only when axis is empty
     fitViewDefault = True

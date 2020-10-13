@@ -121,7 +121,7 @@ typedef int64_t int64;
 
 #ifdef _WIN64
     #define __FILENAME__ std::max<const char*>(__FILE__,\
-        std::max(std::strrchr(__FILE__, '\\')+1, std::strrchr(__FILE__, '/')+1))
+        std::max(strrchr(__FILE__, '\\')+1, strrchr(__FILE__, '/')+1))
 #else
     #define __FILENAME__ __FILE__
 #endif

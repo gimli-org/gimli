@@ -521,77 +521,6 @@ def drawBoundaryMarkers(ax, mesh, **kwargs):
     >>> ax, _ = pg.show(mesh)
     >>> pg.viewer.mpl.drawBoundaryMarkers(ax, mesh)
     """
-    def findPaths(bounds):
-        scipy = pg.optImport('scipy')
-
-        S = pg.core.SparseMapMatrix()
-        for b in bounds:
-            # S[b.shape().node(0).id(), b.shape().node(1).id()] = 1
-            # S[b.shape().node(1).id(), b.shape().node(0).id()] = 1
-            S.addVal(b.shape().node(1).id(), b.shape().node(0).id(), 2.0)
-            S.addVal(b.shape().node(0).id(), b.shape().node(1).id(), 1.0)
-
-        S = scipy.sparse.dok_matrix(pg.utils.toCOO(S))
-
-        # print(S.shape)
-        # print(S)
-        paths = []
-
-        def followPath(path, S, rID):
-            # print('start', rID)
-            row = S[rID]
-            while 1:
-                cID = list(row.keys())[0][1]
-                # print('row', rID, 'col', cID)
-                # print('add', cID)
-                path.append(cID)
-                S.pop((rID, cID))
-                S.pop((cID, rID))
-                # print('pop-r', (rID, cID))
-
-                col = S[:, cID]
-
-                if len(col) == 1:
-                    rID = list(col.keys())[0][0]
-                    path.append(rID)
-                    # print('add', rID)
-                    # print('pop-c', (rID, cID))
-                    S.pop((rID, cID))
-                    S.pop((cID, rID))
-                    row = S[rID]
-                    if len(row) != 1:
-                        break
-                else:
-                    break
-
-        ## first look for single starting
-        for i in range(S.shape[0]):
-            rID = i
-            row = S[rID]
-
-            if len(row) == 1:
-                #single starting
-                path = []
-                paths.append(path)
-                # starting node
-                path.append(rID)
-                followPath(path, S, rID)
-
-        ## remaining are closed
-        for i in range(S.shape[0]):
-            rID = i
-            row = S[rID]
-
-            if len(row) == 2:
-                path = []
-                paths.append(path)
-                # starting node
-                path.append(rID)
-                followPath(path, S, rID)
-
-
-        return paths
-
     ms = pg.unique(pg.sort(mesh.boundaryMarkers()[mesh.boundaryMarkers()!=0]))
 
     #cMap = plt.cm.get_cmap("Set3", len(ms))
@@ -600,11 +529,10 @@ def drawBoundaryMarkers(ax, mesh, **kwargs):
 
     for i, m in enumerate(ms):
         bs = mesh.findBoundaryByMarker(m)
-        paths = findPaths(bs)
+        paths = mesh.findPaths(bs)
         col = 'C' + str(i)
 
         for p in paths:
-
 
             xs = pg.x(mesh.nodes(p))
             ys = pg.y(mesh.nodes(p))
@@ -621,10 +549,10 @@ def drawBoundaryMarkers(ax, mesh, **kwargs):
             txt = ax.text(x, y, str(m), color=col, va="center", ha="center",
                     zorder=20, bbox=bbox_props, fontsize=9,
                     fontdict={'weight':'bold'})
-            
+
             # cliping avoid visuablity outside axes. Needet if the axes limits does not match mesh size.
             txt.set_clip_on(True)
-            
+
             ax.plot(xs[0], ys[0], 'bo', color='k')
             ax.plot(xs[-1], ys[-1], 'bo', color='k')
 
@@ -638,7 +566,7 @@ def drawBoundaryMarkers(ax, mesh, **kwargs):
 
 
 def drawMeshBoundaries(ax, mesh, hideMesh=False, useColorMap=False,
-                       fitView=True, lw=None, color=None):
+                       fitView=True, lw=None, color=None, **kwargs):
     """Draw mesh on ax with boundary conditions colorized.
 
     Parameters
