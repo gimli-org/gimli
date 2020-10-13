@@ -121,7 +121,7 @@ public:
     inline Node & node(uint i) {
         ASSERT_RANGE(i, 0, nodeCount()); return *nodeVector_[i];
     }
-
+    
     inline Node & node(uint i) const {
         ASSERT_RANGE(i, 0, nodeCount()); return *nodeVector_[i];
     }
