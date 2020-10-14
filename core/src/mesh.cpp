@@ -1514,19 +1514,17 @@ void Mesh::fixBoundaryDirections(){
     createNeighborInfos();
     for (Index i = 0; i < this->boundaryCount(); i ++ ){
         Boundary * b = this->boundaryVector_[i];
-        // __MS(b)
+        
         if (b->leftCell() != NULL && b->rightCell() == NULL){
             if (!b->normShowsOutside(*b->leftCell())){
-                //
-                b->swapNorm();
+                // should not happen
+                b->swapNorm(false);
             }
         }
         if (b->leftCell() == NULL && b->rightCell() != NULL){
             if (!b->normShowsOutside(*b->rightCell())){
                 // __MS(b)
-                b->setLeftCell(b->rightCell());
-                b->setRightCell(NULL);
-                b->swapNorm();
+                b->swapNorm(true);
             }
         }
     }

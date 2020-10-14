@@ -368,7 +368,7 @@ public:
     bool normShowsOutside(const Cell & cell) const;
 
     /*! Reverse node order to swap normal direction. */
-    void swapNorm();
+    void swapNorm(bool withNeighbours=true);
 
     /*!Is the boundary is on the outside of the mesh.*/
     bool outside() const { return (leftCell_ != 0) && (rightCell_ == 0); }
