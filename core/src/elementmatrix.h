@@ -331,7 +331,7 @@ public:
                                        bool div=false, bool kelvin=false);
 
     /*! Integrate, i.e., sum over quadrature matrices.*/
-    const ElementMatrix < ValueType > & integrate() const;
+    void integrate() const;
 
     /*! Return reference to all matrices per quadrature point.*/
     const std::vector < Matrix < ValueType > > & matX() const { return _matX; }
