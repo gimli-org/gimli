@@ -382,7 +382,7 @@ def showDataMatrix(mat, xmap=None, ymap=None, **kwargs):
 
     # pg._r(ax)
 
-    gci = drawDataMatrix(ax, mat, **kwargs)
+    gci = drawDataMatrix(ax, mat, xmap=xmap, ymap=ymap, **kwargs)
     # pg._y(**kwargs)
 
     cbar = None
@@ -485,7 +485,7 @@ def showVecMatrix(xvec, yvec, vals, full=False, **kwargs):
         otherwise A is squeezed to the individual unique xvec/yvec values
 
     **kwargs: forwarded to plotMatrix
-        *   ax : mpl.axis
+        * ax : mpl.axis
             Axis to plot, if not given a new figure is created
         * cMin/cMax : float
             Minimum/maximum color values
@@ -526,13 +526,18 @@ def showDataContainerAsMatrix(data, x=None, y=None, v=None, **kwargs):
     mul = kwargs.pop('mul', 10**int(np.ceil(np.log10(data.sensorCount()))))
     plus = kwargs.pop('plus', 1)  # add 1 to count
     verbose = kwargs.pop('verbose', False)
-    if hasattr(x, '__iter__') and isinstance(x[0], str):
+    if isinstance(x, str):
+        x = data(x)
+        xToken = x
+    elif hasattr(x, '__iter__') and isinstance(x[0], str):
         num = np.zeros(data.size())
         for token in x:
             num *= mul
             num += data(token) + plus
             xToken += token + ' '
         x = num.copy()
+        
+    print("found " + str(len(np.unique(x))) + " x values")
 
 #        kwargs.setdefault('xmap', {n: i for i, n in enumerate(np.unique(x))})
 #        xmap = {}
@@ -542,21 +547,21 @@ def showDataContainerAsMatrix(data, x=None, y=None, v=None, **kwargs):
 #                st = str(n % mul) + '-' + st
 #                n = n // mul
 #            xmap[]
-    elif isinstance(x, str):
-        x = data(x)
-        xToken = x
 
-    if hasattr(y, '__iter__') and isinstance(y[0], str):
+    if isinstance(y, str):
+        y = data(y)
+        yToken = y
+    elif hasattr(y, '__iter__') and isinstance(y[0], str):
         num = np.zeros(data.size())
         for token in y:
             num *= mul
             num += data(token) + plus
             yToken += token + ' '
         y = num.copy()
+    
+    print("found " + str(len(np.unique(y))) + " y values")
 #        kwargs.setdefault('ymap', {n: i for i, n in enumerate(np.unique(y))})
-    elif isinstance(y, str):
-        y = data(y)
-        yToken = y
+    
 
     if isinstance(v, str):
         v = data(v)
