@@ -122,8 +122,10 @@ def testColRange():
 
     ax[0][2].set_title("pyGIMLi (NodeData)")
     data = np.arange(mesh.nodeCount())
-    pg.show(mesh, data, ax=ax[0][2], label='default (nLevs=5, nCols=4)')
-    pg.show(mesh, data, ax=ax[1][2], nCols=12, nLevs=4, label='nLevs=4, nCols=12')
+    pg.show(mesh, data, ax=ax[0][2],
+            label='default (nLevs=5, nCols=4)')
+    pg.show(mesh, data, ax=ax[1][2], nCols=12, nLevs=4,
+            label='nLevs=4, nCols=12')
 
     for a in ax.flatten():
         a.yaxis.set_visible(False)

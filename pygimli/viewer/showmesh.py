@@ -335,7 +335,8 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
                 if showBoundary is None:
                     showBoundary = True
 
-            def _drawField(ax, mesh, data, **kwargs):
+            def _drawField(ax, mesh, data, kwargs):
+                ### kwargs as reference here to set defaults valid outside too
                 validData = True
                 if len(data) == mesh.cellCount():
                     kwargs['nCols'] = kwargs.pop('nCols', 256)
@@ -344,6 +345,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
                 elif len(data) == mesh.nodeCount():
                     kwargs['nLevs'] = kwargs.pop('nLevs', 5)
                     kwargs['nCols'] = kwargs.pop('nCols', kwargs['nLevs']-1)
+
                     gci = drawField(ax, mesh, data, **kwargs)
                 else:
                     pg.error("Data size invalid")
@@ -360,11 +362,10 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
 
                 if replaceData and hasattr(mesh, 'gci') and ax in mesh.gci:
                     gci = mesh.gci[ax]
-                    print(gci)
 
                     if 'TriContourSet' in str(type(gci)):
                         ax.clear()
-                        gci, validData = _drawField(ax, mesh, data, **kwargs)
+                        gci, validData = _drawField(ax, mesh, data, kwargs)
                         updateAxes(ax, force=True)
                     else:
                         setMappableData(gci, data,
@@ -374,7 +375,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
                         return ax, gci.colorbar
                 else:
 
-                    gci, validData = _drawField(ax, mesh, data, **kwargs)
+                    gci, validData = _drawField(ax, mesh, data, kwargs)
 
                 ### Cache mesh and scalarmappable to make replaceData work
                 if not hasattr(mesh, 'gci'):

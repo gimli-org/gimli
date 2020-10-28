@@ -25,6 +25,7 @@
 
 #include "integration.h"
 
+
 namespace GIMLI{
 
 template < >
@@ -42,7 +43,6 @@ std::ostream & operator << (std::ostream & str,
     }
     return str;
 }
-
 
 template < > DLLEXPORT ElementMatrix < double > &
 ElementMatrix < double >::u(const MeshEntity & ent,
@@ -469,7 +469,7 @@ void ElementMatrix < double >::fillGradientBase(
         }
     }
 
-    double a = std::sqrt(2.);
+    double a = 1./std::sqrt(2.);
     if (voigtNotation){
         a = 1.0;
     }
@@ -1235,7 +1235,6 @@ ElementMatrix < double >::ElementMatrix(Index nCoeff, Index dofPerCoeff,
 
 template < > DLLEXPORT
 ElementMatrix < double >::ElementMatrix(const ElementMatrix < double > & E){
-    __M
     this->copyFrom(E, true);
 }
 
@@ -1423,7 +1422,7 @@ ElementMatrix < double > & ElementMatrix < double >::grad(
         //** special case for constitutive matrix
         nCols = ent.dim();
         if (kelvin){
-            a = std::sqrt(2.);
+            a = 1./std::sqrt(2.);
         }
 
         if (ent.dim() == 2){
@@ -1814,10 +1813,9 @@ void evaluateQuadraturePoints(const MeshEntity & ent, const PosVector & x,
                               const FEAFunction & f,
                               std::vector < RMatrix > & ret){
     ret.resize(x.size());
-    THROW_TO_IMPL
-    // for (Index i = 0; i < x.size(); i ++){
-    //     ret[i] = f.evalR3(ent.shape().xyz(x[i]), &ent);
-    // }
+    for (Index i = 0; i < x.size(); i ++){
+        ret[i] = f.evalRM(ent.shape().xyz(x[i]), &ent);
+    }
 }
 
 template < class ReturnType >

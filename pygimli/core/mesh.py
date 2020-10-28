@@ -36,7 +36,6 @@ def __Mesh_str(self):
             if '#' in d:
                 uName = uName[0:d.find('#')]
 
-
             if not uName in uniqueNames:
                 uniqueNames[uName] = []
 
@@ -44,9 +43,13 @@ def __Mesh_str(self):
 
         for d, v in uniqueNames.items():
             if len(v) > 1:
-                st += d + "[0,...,{}) ".format(len(v))
+                st += d + "[0,...,{})".format(len(v))
             else:
-                st += d + " "
+                st += d
+
+            st += ', '
+
+        st = st.rstrip(', ')
 
     return st
 Mesh.__repr__ =__Mesh_str
