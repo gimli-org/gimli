@@ -1964,6 +1964,7 @@ void mult(const ElementMatrix < double > & A, const RMatrix &  b,
     C.integrate(); // check if necessary
 }
 
+
 // matrix per quadrature
 void mult(const ElementMatrix < double > & A, const std::vector < RMatrix > & b,
           ElementMatrix < double > & C){
