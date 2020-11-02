@@ -590,8 +590,14 @@ bool Boundary::normShowsOutside(const Cell & cell) const {
     return (cc-(bc+n)).abs() > (cc-(bc-n)).abs();
 }
 
-void Boundary::swapNorm(){
+void Boundary::swapNorm(bool withNeighbours){
     std::reverse(nodeVector_.begin(), nodeVector_.end());
+    if (withNeighbours){
+        Cell * left = this->leftCell();
+        this->setLeftCell(this->rightCell());
+        this->setRightCell(left);
+    }
+    this->changed();
 }
 
 NodeBoundary::NodeBoundary(const std::vector < Node * > & nodes)

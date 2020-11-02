@@ -140,7 +140,7 @@ void Mesh::setGeometry(bool b) {
 void Mesh::clear(){
     if (tree_) {
         deletePtr()(tree_);
-        tree_ = NULL;
+        tree_ = nullptr;
     }
 
     for_each(cellVector_.begin(), cellVector_.end(), deletePtr());
@@ -1514,19 +1514,17 @@ void Mesh::fixBoundaryDirections(){
     createNeighborInfos();
     for (Index i = 0; i < this->boundaryCount(); i ++ ){
         Boundary * b = this->boundaryVector_[i];
-        // __MS(b)
+
         if (b->leftCell() != NULL && b->rightCell() == NULL){
             if (!b->normShowsOutside(*b->leftCell())){
-                //
-                b->swapNorm();
+                // should not happen
+                b->swapNorm(false);
             }
         }
         if (b->leftCell() == NULL && b->rightCell() != NULL){
             if (!b->normShowsOutside(*b->rightCell())){
                 // __MS(b)
-                b->setLeftCell(b->rightCell());
-                b->setRightCell(NULL);
-                b->swapNorm();
+                b->swapNorm(true);
             }
         }
     }
@@ -2372,18 +2370,18 @@ void Mesh::fillKDTree_() const {
     if (!tree_) tree_ = new KDTreeWrapper();
 
     if (tree_->size() != nodeCount(true)){
-        if (tree_->size() == 0){
 
+        if (tree_->size() == 0){
             for_each(nodeVector_.begin(), nodeVector_.end(), boost::bind(&KDTreeWrapper::insert, tree_, _1));
             for_each(secNodeVector_.begin(), secNodeVector_.end(), boost::bind(&KDTreeWrapper::insert, tree_, _1));
 
             tree_->tree()->optimize();
         } else {
-            throwError(WHERE_AM_I + str(this) + " kd-tree is only partially filled: this should no happen: nodeCount = " + str(nodeCount())
-                                      + " tree-size() " + str(tree_->size()));
+            deletePtr()(tree_);
+            tree_ = nullptr;
+            this->fillKDTree_();
         }
     }
-
 }
 
 void Mesh::addRegionMarker(const RegionMarker & reg){

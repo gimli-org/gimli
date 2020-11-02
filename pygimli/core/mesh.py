@@ -5,7 +5,7 @@ Import and extensions of the core Mesh class.
 import numpy as np
 
 from math import ceil
-from ._pygimli_ import (cat, HexahedronShape, Line,
+from ._pygimli_ import (cat, HexahedronShape, Line, RSparseMapMatrix,
                         Mesh, MeshEntity, Node, Boundary, RVector,
                         PolygonFace, TetrahedronShape, TriangleFace)
 from .logger import deprecated, error, info, warn
@@ -36,7 +36,6 @@ def __Mesh_str(self):
             if '#' in d:
                 uName = uName[0:d.find('#')]
 
-
             if not uName in uniqueNames:
                 uniqueNames[uName] = []
 
@@ -44,9 +43,13 @@ def __Mesh_str(self):
 
         for d, v in uniqueNames.items():
             if len(v) > 1:
-                st += d + "[0,...,{}) ".format(len(v))
+                st += d + "[0,...,{})".format(len(v))
             else:
-                st += d + " "
+                st += d
+
+            st += ', '
+
+        st = st.rstrip(', ')
 
     return st
 Mesh.__repr__ =__Mesh_str
@@ -73,7 +76,7 @@ def __MeshEntity_str(self):
         for n in self.nodes():
             s += '\t' + str(n.id()) + " " + str(n.pos()) + "\n"
     return s
-MeshEntity.__repr__ =__MeshEntity_str
+MeshEntity.__str__ =__MeshEntity_str
 
 
 def __Node_str(self):
@@ -333,3 +336,242 @@ Boundary.outside = __Boundary_outside__
 def __Mesh_h__(self):
     return np.array([c.shape().h() for c in self.cells()])
 Mesh.h = __Mesh_h__
+
+def __Mesh_findPaths__(self, bounds):
+    """Find paths of connected boundaries
+
+    Returns
+    -------
+    List of list of ids of connected nodes
+    """
+    import pygimli as pg
+
+    scipy = pg.optImport('scipy')
+    scipy.sparse = pg.optImport('scipy.sparse')
+
+    S = pg.core.SparseMapMatrix()
+    for b in bounds:
+        # S[b.shape().node(0).id(), b.shape().node(1).id()] = 1
+        # S[b.shape().node(1).id(), b.shape().node(0).id()] = 1
+        S.addVal(b.shape().node(1).id(), b.shape().node(0).id(), 2.0)
+        S.addVal(b.shape().node(0).id(), b.shape().node(1).id(), 1.0)
+
+    S = scipy.sparse.dok_matrix(pg.utils.toCOO(S))
+
+    # print(S.shape)
+    # print(S)
+    paths = []
+
+    def followPath(path, S, rID):
+        # print('start', rID)
+        row = S[rID]
+        while 1:
+            cID = list(row.keys())[0][1]
+            # print('row', rID, 'col', cID)
+            # print('add', cID)
+            path.append(cID)
+            S.pop((rID, cID))
+            S.pop((cID, rID))
+            # print('pop-r', (rID, cID))
+
+            col = S[:, cID]
+
+            if len(col) == 1:
+                rID = list(col.keys())[0][0]
+                path.append(rID)
+                # print('add', rID)
+                # print('pop-c', (rID, cID))
+                S.pop((rID, cID))
+                S.pop((cID, rID))
+                row = S[rID]
+                if len(row) != 1:
+                    break
+            else:
+                break
+
+    ## first look for single starting
+    for i in range(S.shape[0]):
+        rID = i
+        row = S[rID]
+
+        if len(row) == 1:
+            #single starting
+            path = []
+            paths.append(path)
+            # starting node
+            path.append(rID)
+            followPath(path, S, rID)
+
+    ## remaining are closed
+    for i in range(S.shape[0]):
+        rID = i
+        row = S[rID]
+
+        if len(row) == 2:
+            path = []
+            paths.append(path)
+            # starting node
+            path.append(rID)
+            followPath(path, S, rID)
+
+
+    return paths
+Mesh.findPaths = __Mesh_findPaths__
+
+
+def __Mesh_cutBoundary__(self, marker, boundaryMarker=None):
+    """Cut the mesh along a given inner boundary.
+
+    Cut the mesh along a given boundary and convert this inner boundary to an outer. There will be new nodes to cut the connection between neighbouring cells. The new boundary can have an optional boundaryMarker.
+
+    Restrictions
+    ------------
+        * 2D p1
+        * one connected path at once
+        * starting node need to be on an outer boundary
+        * end node needs to be inside the mesh
+
+    TODO
+    ----
+        * remove restrictions
+
+    Arguments
+    ---------
+    mesh: :gimliapi:`GIMLI::Mesh`
+        2D
+    marker: int
+        Marker for the boundary to be cut.
+    boundaryMarker: None
+        If set to None, boundaryMarker set to marker.
+
+    Example
+    -------
+    >>> import pygimli as pg
+    >>> import pygimli.meshtools as mt
+    >>> plc = mt.createCircle(segments=24)
+    >>> l = mt.createLine(start=[0, -1], end=[0, -0.1], boundaryMarker=2)
+    >>> mesh = mt.createMesh([plc, l], area=0.1)
+    >>> fig, axs= pg.plt.subplots(1, 2)
+    >>> ax ,_ = pg.show(mesh, boundaryMarkers=True, ax=axs[0])
+    >>> oldNodeCount = mesh.nodeCount()
+    >>> print(mesh)
+    Mesh: Nodes: 43 Cells: 60 Boundaries: 102
+    >>> mesh.cutBoundary(marker=2, boundaryMarker=3)
+    >>> print(mesh)
+    Mesh: Nodes: 46 Cells: 60 Boundaries: 105
+    >>> ## just move the new nodes little rightwards to see the cut
+    >>> for n in range(oldNodeCount, mesh.nodeCount()):
+    ...     mesh.node(n).setPos(mesh.node(n).pos() + [0.1, 0.0])
+    >>> ax, _ = pg.show(mesh, data=range(mesh.cellCount()),
+    ...                 boundaryMarkers=True, colorBar=False,
+    ...                 showMesh=True, boundaryProps={'lw':2}, ax=axs[1])
+    >>> for b in mesh.boundaries():
+    ...     if b.marker() != 0:
+    ...         c = b.center()
+    ...         n = b.norm()
+    ...         _ = ax.annotate('', xytext=(c[0], c[1]),
+    ...                    xy=((c+n/30.)[0], (c+n/30.)[1]),
+    ...                    arrowprops=dict(arrowstyle="-|>", lw=1),
+    ...                     )
+    """
+    import pygimli as pg
+    if boundaryMarker is None:
+        boundaryMarker = marker
+
+    mesh = self
+    def replaceNode_(mesh, c, n1, n2, marker, lastC=None):
+        if c is None or n1.id() not in c.ids():
+            return
+        # pg._y('check in cell', c.id(), n1.id(), n2.id())
+
+        toBeReplaced = []
+        for i in range(c.boundaryCount()):
+            b = c.boundary(i)
+            if b is not None and n1.id() in b.ids():
+                # pg._y('\tbound: ', b.id(), ':',
+                #         b.node(0).id(), b.node(1).id(), "ma:", b.marker())
+
+                if b.marker() != marker:
+                    lC = b.leftCell()
+                    rC = b.rightCell()
+                    # rcS = None
+                    # if rC is not None:
+                    #     rcS = rC.id()
+                    # lcS = None
+                    # if lC is not None:
+                    #     lcS = lC.id()
+
+                    # pg._y('\tNeigh: {0} : {1}'.format(lcS, rcS))
+                    # pg._r("add:", b.id())
+                    toBeReplaced.append(b)
+
+                    if lC != c and lC is not None and lC != lastC:
+                        # pg._r("follow up left:", lC.id())
+                        replaceNode_(mesh, lC, n1, n2, marker, c)
+
+                    if rC != c and rC is not None and rC != lastC:
+                        # pg._r("follow up right:", rC.id())
+                        replaceNode_(mesh, rC, n1, n2, marker, c)
+
+        for b in toBeReplaced:
+            nIds = [n2.id() if n == n1.id() else n for n in b.ids()]
+            # pg._r('replace in boundary', b.id(), ':', n1.id(), n2.id())
+            b.setNodes(mesh.nodes(nIds))
+
+        # pg._r('replace in cell:', c.id(), ':', n1.id(), n2.id())
+        nIds = [n2.id() if n == n1.id() else n for n in c.ids()]
+        c.setNodes(mesh.nodes(nIds))
+
+    paths = mesh.findPaths(mesh.findBoundaryByMarker(marker))
+    if len(paths) == 0:
+        pg.error("did not found path for marker: {0}".format(marker))
+
+    newNodes = []
+
+    if len(paths[0]) == 0:
+        pg.error("did not found path for marker: {0}".format(marker))
+
+    ## step 1 . fix direction along the path
+    for i in range(len(paths[0])-1):
+        nA1 = mesh.node(paths[0][i])
+        nB1 = mesh.node(paths[0][i+1])
+        b = pg.core.findBoundary(nA1, nB1)
+
+        if b.node(0) != nA1:
+            b.swapNorm()
+
+        lC = b.leftCell()
+        rC = b.rightCell()
+        if rC is None or lC is None:
+            pg.error('Path is not inside the mesh')
+            return
+
+    ## add new nodes and decouple cells along the path
+    rightCells = []
+    for i in range(len(paths[0])-1):
+
+        nA1 = mesh.node(paths[0][i])
+        nB1 = mesh.node(paths[0][i+1])
+        b = pg.core.findBoundary(nA1, nB1)
+
+        lC = b.leftCell()
+        rC = b.rightCell()
+
+        # pg._y(b.node(0).id(), b.node(1).id(), 'N', nA1.id(), nB1.id(), ':', lC.id(), rC.id())
+
+        ### only if on outer boundary .. need check!!
+        nA2 = mesh.createNode(nA1.pos(), nA1.marker())
+        newNodes.append(nA2)
+
+        # nA2 = newNodes[-1]
+        if rC is not None:
+            b.setRightCell(None)
+            rightCells.append(rC)
+            replaceNode_(mesh, rC, nA1, nA2, marker=b.marker())
+
+    newNodes.append(mesh.node(paths[0][-1]))
+    for i in range(len(newNodes)-1):
+        b = mesh.createBoundary([newNodes[i+1].id(), newNodes[i].id()],
+                                marker=boundaryMarker)
+        b.setLeftCell(rightCells[i])
+Mesh.cutBoundary = __Mesh_cutBoundary__

@@ -125,6 +125,7 @@ class TestFiniteElementBasics(unittest.TestCase):
                 pg.wait()
             ## test du/dn of solution and compare with Neumann BC
             for m, val in bc['Neumann'].items():
+
                 for b in mesh.boundaries(mesh.boundaryMarkers() == m):
                     ## for non Tailor Hood Elements, the gradient is only
                     # known at the cell center so the accuracy for the
@@ -152,7 +153,7 @@ class TestFiniteElementBasics(unittest.TestCase):
         # 1D
         x = np.linspace(0, 1, 101)
         _test_(pg.createGrid(x=x), p2=False, show=False)
-        _test_(pg.createGrid(x=x), p2=True, show=True)
+        _test_(pg.createGrid(x=x), p2=True, show=False)
 
         # # 2D grid
         x = np.linspace(0, 1, 11)
