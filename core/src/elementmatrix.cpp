@@ -2031,6 +2031,45 @@ DEFINE_DOT_MULT_WITH_RETURN(const FEAFunction &)
 
 #undef DEFINE_DOT_MULT_WITH_RETURN
 
+
+void sym(const ElementMatrix < double > & A, ElementMatrix < double > & B){
+    B.copyFrom(A, false);
+ 
+    for (auto &m : *B.pMatX()){
+        if (m.rows() == 4){
+            m[1] = 0.5*m[1] + 0.5*m[2]; m[2] = m[1];
+        } else if (m.rows() == 9) {
+            // _matX[i][0].setVal(dNdx_[i], 0 * nVerts, 1 * nVerts); //dNx/dx
+            // _matX[i][1].setVal(dNdy_[i], 0 * nVerts, 1 * nVerts); //dNx/dy
+            // _matX[i][2].setVal(dNdz_[i], 0 * nVerts, 1 * nVerts); //dNx/dz
+
+            // _matX[i][3].setVal(dNdx_[i], 1 * nVerts, 2 * nVerts); //dNy/dx
+            // _matX[i][4].setVal(dNdy_[i], 1 * nVerts, 2 * nVerts); //dNy/dy
+            // _matX[i][5].setVal(dNdz_[i], 1 * nVerts, 2 * nVerts); //dNy/dz
+
+            // _matX[i][6].setVal(dNdx_[i], 2 * nVerts, 3 * nVerts); //dNz/dx
+            // _matX[i][7].setVal(dNdy_[i], 2 * nVerts, 3 * nVerts); //dNz/dy
+            // _matX[i][8].setVal(dNdz_[i], 2 * nVerts, 3 * nVerts); //dNz/dz
+
+            m[1] = 0.5*m[1] + 0.5*m[3];  m[3] = m[1];
+            m[2] = 0.5*m[2] + 0.5*m[6];  m[6] = m[2];
+            m[5] = 0.5*m[5] + 0.5*m[7];  m[7] = m[5];
+        } else {
+            __MS(A)
+            log(Critical, "Don't not how to symetrize A");
+        }
+        
+    }
+    B.integrated(false);
+}
+ElementMatrix < double > sym(const ElementMatrix < double > & A){
+    ElementMatrix < double > B;
+    sym(A, B);
+    return B;
+}
+
+
+
 template < class Vec >
 void createForceVectorPerCell_(const Mesh & mesh, Index order, RVector & ret,
                         const Vec & a, Index nCoeff, Index dofOffset){

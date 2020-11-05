@@ -519,6 +519,12 @@ DLLEXPORT void evaluateQuadraturePoints(const Mesh & mesh, Index order,
                                         const FEAFunction & f,
                               std::vector< std::vector< RMatrix > > & ret);
 
+/*! Return symmetrized copy of A as 0.5*(A + A.T). Only for gradients without Voigt or Kelvin notation. */
+DLLEXPORT ElementMatrix < double > sym(const ElementMatrix < double > & A);
+
+/*! copy symmetrized A as 0.5*(A + A.T) into B.*/
+DLLEXPORT void sym(const ElementMatrix < double > & A, ElementMatrix < double > & B);
+
 
 #define DEFINE_CREATE_FORCE_VECTOR(A_TYPE) \
 DLLEXPORT void createForceVector(const Mesh & mesh, Index order, \
