@@ -2034,13 +2034,18 @@ def _feNorm(u, mat):
 
     Create the Finite Element Norm with a preassembled system matrix.
     """
+    if u.ndim == 2:
+        u1 = np.array(u).T.reshape(u.shape[0]*u.shape[1])
+        # same like:
+        # u1 = pg.cat(u[:,0], u[:,1])
+        return np.sqrt(pg.math.dot(u1, mat.mult(u1)))
     return np.sqrt(pg.math.dot(u, mat.mult(u)))
 
 
 def normL2(u, mat=None, mesh=None):
     r"""Create Lebesgue (L2) norm for finite element space.
 
-    Find the L2 Norm for a solution for the finite element space. :math:`u` exact solution
+    Find the L2 Norm for a solution in the finite element space. :math:`u` exact solution
     :math:`{\bf M}` Mass matrix, i.e., Finite element identity matrix.
 
     .. math::
@@ -2058,18 +2063,18 @@ def normL2(u, mat=None, mesh=None):
 
     Parameters
     ----------
-    u : iterable
+    u: iterable
         Node based value to compute the L2 norm for.
 
-    mat : Matrix
+    mat: Matrix
         Mass element matrix.
 
-    mesh : :gimliapi:`GIMLI::Mesh`
+    mesh: :gimliapi:`GIMLI::Mesh`
         Mesh with the FE space to generate M if necessary.
 
     Returns
     -------
-    ret : float
+    ret: float
         :math:`L2(u)` norm.
 
     """
@@ -2085,7 +2090,7 @@ def normL2(u, mat=None, mesh=None):
                    "Returning algebraic l2.")
 
         # M is Identity matrix
-        return np.sqrt(pg.math.dot(u, u))
+        return np.sqrt(np.dot(u, u))
 
     return _feNorm(u, mat)
 
