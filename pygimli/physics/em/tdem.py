@@ -442,12 +442,15 @@ class TDEM():
         rhoa, t, err = get_rhoa(snd)
         self.fop.t = t
         model = self.fop.createStartModel(rhoa, nlay, thickness=None)
-        self.INV = pg.Inversion(rhoa, self.fop)
-        self.INV.setMarquardtScheme(0.9)
-        self.INV.setModel(model)
-        self.INV.setLambda(1000)
-        self.INV.setRelativeError(snd.pop('ST_DEV', 0)/snd['VOLTAGE']+0.03)
-        self.model = self.INV.run()
+        self.INV = pg.frameworks.MarquardtInversion(fop=self.fop)
+        # self.INV = pg.Inversion(rhoa, self.fop)
+        # self.INV.setMarquardtScheme(0.9)
+        # self.INV.setModel(model)
+        # self.INV.setLambda(1000)
+        # self.INV.setRelativeError(snd.pop('ST_DEV', 0)/snd['VOLTAGE']+0.03)
+        errorVals = snd.pop('ST_DEV', 0)/snd['VOLTAGE']+0.03
+        self.model = self.INV.run(dataVals=rhoa, errorVals=errorVals,
+                                  startModel=model)
         return self.model
 
     def stackAll(self, tmin=0, tmax=100):
