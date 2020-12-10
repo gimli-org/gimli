@@ -115,6 +115,10 @@ def mixedBC(boundary, userData):
         alpha = sigma * k * ((r1.dot(n)) / r1A * pg.math.besselK1(r1A * k) +
                             (r2.dot(n)) / r2A * pg.math.besselK1(r2A * k)) / \
             (pg.math.besselK0(r1A * k) + pg.math.besselK0(r2A * k)) 
+
+        # alpha = sigma * k * ((r1.dot(n)) / r1A * pg.math.besselK1(r1A * k) +
+        #                     (r2.dot(n)) / r2A * pg.math.besselK1(r2A * k)) / \
+        #     (pg.math.besselK0(r1A * k) + pg.math.besselK0(r2A * k)) 
         
         return alpha
         
@@ -155,7 +159,7 @@ sourcePosA = [-5.25, -3.75]
 sourcePosB = [+5.25, -3.75]
 
 k = 1e-2
-sigma = 1.0
+sigma = 100.0
 bc={'Robin': {'1,2,4': mixedBC}}
 u = pg.solve(mesh, a=sigma, b=-sigma * k*k,
              rhs=rhsPointSource(mesh, sourcePosA),

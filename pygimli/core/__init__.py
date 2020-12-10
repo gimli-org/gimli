@@ -426,6 +426,20 @@ def __setVal(self, idx, val):
     else:
         self.setVal(val, idx)
 
+def __getValR3(self, idx):
+    if isinstance(idx, slice):
+        s = idx.start
+        e = idx.stop
+        if s is None or s < 0:
+            s = 0
+        if e is None or e > 3:
+            e = 3
+
+        if idx.step is not None:
+            print('slice step not supported here', idx)
+        return np.array(self)[s:e]
+
+    return self.getVal(int(idx))
 
 def __getValMatrix(self, idx):
     #    print(idx, type(idx))
@@ -473,12 +487,13 @@ _pygimli_.IVector.__setitem__ = __setVal
 _pygimli_.IVector.__getitem__ = __getVal  # very slow -- inline is better
 
 _pygimli_.R3Vector.__setitem__ = __setVal
-_pygimli_.R3Vector.__getitem__ = __getVal  # very slow -- inline is better
+_pygimli_.R3Vector.__getitem__ = __getVal
 
 _pygimli_.IndexArray.__setitem__ = __setVal
 _pygimli_.IndexArray.__getitem__ = __getVal  # very slow -- inline is better
 
 _pygimli_.RVector3.__setitem__ = __setVal
+_pygimli_.RVector3.__getitem__ = __getValR3 # support slice
 
 _pygimli_.RMatrix.__getitem__ = __getValMatrix  # very slow -- inline is better
 _pygimli_.RMatrix.__setitem__ = __setVal

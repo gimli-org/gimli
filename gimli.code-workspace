@@ -3,5 +3,13 @@
 		{
 			"path": "."
 		}
-	]
+	],
+	"settings": {
+		"cSpell.enabled": false,
+		"spellright.language": [],
+		"spellright.documentTypes": [
+			"markdown",
+			"plaintext"
+		]
+	}
 }
