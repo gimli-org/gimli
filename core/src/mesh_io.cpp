@@ -756,7 +756,7 @@ void Mesh::exportVTK(const std::string & fbody,
         for (Index i = 0; i < cellCount(); i ++) {
             idxCount += cell(i).nodeCount() + 1;
         }
-        log(Debug, "writing cells connections", cellCount());
+        log(Debug, "writing cell connections", cellCount());
 
         file << "CELLS " << cellCount() << " " << idxCount << std::endl;
 
