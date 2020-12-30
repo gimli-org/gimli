@@ -321,7 +321,7 @@ std::string logStrShort_(LogType type){
     switch (type){
         case Verbose: return "Verbose"; break;
         case Info: return "info"; break;
-        case Warning: return "warn";  break;
+        case Warning: return "warning";  break;
         case Error: return "error";  break;
         case Debug: return "debug";  break;
         case Critical: return "critical";  break;
