@@ -20,7 +20,6 @@ import numpy as np
 # for doc rendering on headless machines (jenkins server)
 import matplotlib
 matplotlib.use("Agg")
-import pip
 import pkg_resources
 import sphinx
 
