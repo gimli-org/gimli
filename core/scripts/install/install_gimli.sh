@@ -4,7 +4,7 @@ if [[ $0 == *.sh ]]; then
     SCRIPT_REPO=$(dirname $0)
     GET="cat"
 else
-    SCRIPT_REPO='-Ls https://raw.githubusercontent.com/gimli-org/gimli/dev/scripts/install'
+    SCRIPT_REPO='-Ls https://raw.githubusercontent.com/gimli-org/gimli/dev/core/scripts/install'
     GET="curl"
 fi
 
