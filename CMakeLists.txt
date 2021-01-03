@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION 2.8.8)
-
 if (${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
     message(FATAL_ERROR "In-source builds not allowed.
             Please make a new directory (called a build directory)
@@ -17,6 +15,18 @@ if (NOT CMAKE_BUILD_TYPE)
 endif()
 
 project(libgimli)
+
+include(CheckIncludeFileCXX)
+
+message(STATUS "System: " ${CMAKE_SYSTEM_NAME} "; " ${CMAKE_SYSTEM} "; " ${CMAKE_SYSTEM_VERSION})
+
+message(STATUS "UNIX:   " ${UNIX} " TRUE on all UNIX-like OS's, including Apple OS X and CygWin")
+message(STATUS "WIN32:  " ${WIN32} " TRUE on Windows. Prior to 2.8.4 this included CygWin")
+message(STATUS "APPLE:  " ${APPLE} " TRUE on Apple systems. Note this does not imply the
+system is Mac OS X, only that APPLE is")
+message(STATUS "MINGW:  " ${MINGW} " TRUE when using the MinGW compiler in Windows")
+message(STATUS "MSYS:   " ${MSYS} " TRUE when using the MSYS developer environment in Windows")
+message(STATUS "CYGWIN: " ${CYGWIN} " TRUE on Windows when using the CygWin version of cmake")
 
 # Check if conda package is created
 if(DEFINED ENV{CONDA_BUILD})
@@ -126,7 +136,7 @@ if(NOT THIRDPARTY_DIR)
             set (ADDRESSMODEL "32")
         endif()
     endif()
-
+    
     set(TARGETNAME "-${CMAKE_CXX_COMPILER_ID}-${CMAKE_CXX_COMPILER_VERSION}-${ADDRESSMODEL}")
     set(ENV{TARGETNAME} ${TARGETNAME})
     set(THIRDPARTY_DIR ${PROJECT_SOURCE_DIR}/../thirdParty/)
@@ -138,27 +148,63 @@ if(NOT THIRDPARTY_DIR)
 endif()
 
 if(NOT EXTERNAL_DIR)
-    set(EXTERNAL_DIR ${PROJECT_SOURCE_DIR}/external/)
-    message(STATUS "External set to: ${EXTERNAL_DIR}")
+set(EXTERNAL_DIR ${PROJECT_SOURCE_DIR}/external/)
+message(STATUS "External set to: ${EXTERNAL_DIR}")
 endif()
 
-include(CheckIncludeFileCXX)
 find_package(Threads REQUIRED)
 
-if (PYVERSION)
-    find_package(PythonInterp ${PYVERSION} REQUIRED)
-else()
-    find_package(PythonInterp)
-endif()
+################################################################################
+# Check for python stuff
+################################################################################
+if (NOT OLDPYTHON AND 1)
+    message(STATUS "*** search for python .. new style")
+    set(Python_ADDITIONAL_VERSIONS ${PYTHON_VERSION})
+    find_package (Python COMPONENTS Interpreter NumPy Development)
 
-# if (PYVERSION)
-#     set(Python_ADDITIONAL_VERSIONS ${PYVERSION})
-# endif()
-# find_package(PythonInterp) # find version belongs to the active python command
-#
-# if(WIN32)
-#     find_package(PythonLibs)
-# endif(WIN32)
+    message(STATUS "Python_Interpreter_FOUND: ${Python_Interpreter_FOUND} ${Python_EXECUTABLE} version: ${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}.${Python_VERSION_PATCH}")
+    message(STATUS "Python_INCLUDE_DIRS: ${Python_INCLUDE_DIRS}")
+    message(STATUS "Python_LIBRARIES: ${Python_LIBRARIES} ${Python_LIBRARY_DIRS}")
+    message(STATUS "Python_NumPy: ${Python_NumPy_FOUND}, ${Python_NumPy_INCLUDE_DIRS}, ${Python_NumPy_VERSION}")
+
+    set(PYTHON_FOUND ${Python_FOUND})
+    set(PYTHON_EXECUTABLE ${Python_EXECUTABLE})
+    set(PYTHON_INCLUDE_DIR ${Python_INCLUDE_DIRS})
+    set(PYTHON_LIBRARY_DIR ${Python_LIBRARY_DIRS})
+    set(PYTHON_LIBRARY ${Python_LIBRARIES})
+
+else()
+    message(STATUS "*** search for python .. old style")
+    if (PYVERSION)
+        find_package(PythonInterp ${PYVERSION} REQUIRED)
+    else()
+        find_package(PythonInterp)
+    endif()
+
+    set(Python_ADDITIONAL_VERSIONS ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR})
+    set(PythonLibs_FIND_VERSION ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR})
+
+    if (WIN32)
+        # execute_process(
+        #     COMMAND "${PYTHON_EXECUTABLE}" "-c" 
+        #     "import sys;sys.stdout.write(sys.prefix)"
+        #     OUTPUT_VARIABLE PYTHON_ROOT
+        #     OUTPUT_STRIP_TRAILING_WHITESPACE
+        # )
+        # message(STATUS "PYTHON_ROOT: " ${PYTHON_ROOT} )
+        find_package(PythonLibs)
+        #find_package(PythonLibs PATHS ${PYTHON_ROOT}"\\libs")
+    else()
+        find_package(PythonLibs)
+    endif()
+
+    find_python_module(numpy)
+
+    message(STATUS "Python interpreter found: ${PYTHON_EXECUTABLE} version: ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}")
+    message(STATUS "PYTHON_LIBRARY: ${PYTHON_LIBRARY_DIR} ${PYTHON_LIBRARY}")
+    message(STATUS "PYTHON_INCLUDE_DIR :        ${PYTHON_INCLUDE_DIR} ${PYTHON_INCLUDE}")
+    message(STATUS "numpy_FOUND        :${numpy_FOUND}    PY_NUMPY: ${PY_NUMPY}")
+endif()
 
 function(find_boost_from_distname_file)
     set (BOOST_DIST_NAME_FILE "${EXTERNAL_DIR}/.boost-py${PYTHON_VERSION_MAJOR}.dist")
@@ -186,14 +232,10 @@ function(find_boost_from_distname_file)
 endfunction(find_boost_from_distname_file)
 
 if (NOT USE_BOOST_THREAD)
-    if (NOT WIN32)
-        set (USE_BOOST_THREAD FALSE)
-    else()
-        set (USE_BOOST_THREAD FALSE)
-    endif()
+    set (USE_BOOST_THREAD FALSE)
 endif()
 
-if (YES)
+if (1)
     message(STATUS "Trying to guess boost installation:")
     if (NOT Boost_INCLUDE_DIR)
         message(STATUS "no BOOST_INCLUDE_DIR")
@@ -302,26 +344,6 @@ if (NOT AVOID_READPROC)
 else()
     set(READPROC_FOUND FALSE)
 endif()
-
-################################################################################
-# Check for python stuff
-################################################################################
-if (WIN32)
-    #if (NOT PYTHON_LIBRARY)
-    #   get_filename_component(PYTHONPATH "${PYTHON_EXECUTABLE}" PATH )
-    #    if (${ADDRESSMODEL} EQUAL 32 OR ${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR} GREATER 34) # works at least for WinPython3.5
-    #        set (PYTHON_LIBRARY ${PYTHONPATH}/libs/libpython${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}.a)
-    #    else()
-    #        set (PYTHON_LIBRARY ${PYTHONPATH}/libs/libpython${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}.dll.a)
-    #    endif()
-    # endif()
-else()
-	set(Python_ADDITIONAL_VERSIONS ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR})
-	set(PythonLibs_FIND_VERSION ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR})
-endif()
-
-find_package(PythonLibs)
-find_python_module(numpy)
 
 ################################################################################
 # Manuall check for boost python
@@ -442,11 +464,11 @@ find_or_build_package(pygccxml pygccxml LOCAL)
 find_or_build_package(pyplusplus pygccxml LOCAL)
 
 if (CASTER_EXECUTABLE)
-set (CASTER_FOUND TRUE)
+    set (CASTER_FOUND TRUE)
 endif()
 
 if (PYTHON_EXECUTABLE)
-set (PYTHON_FOUND TRUE)
+    set (PYTHON_FOUND TRUE)
 endif()
 
 if (Boost_PYTHON_LIBRARY)
@@ -457,14 +479,25 @@ find_package(Doxygen)
 
 find_package(Sphinx 1.5)
 
-if (SPHINX_FOUND)
+if (SPHINX_FOUND AND NOT SKIP_SPHINX)
     add_subdirectory(doc EXCLUDE_FROM_ALL)
+    message(STATUS "Search recursive for *.rst from here: " ${CMAKE_SOURCE_DIR})
     file(GLOB_RECURSE DOCFILES RELATIVE "${CMAKE_SOURCE_DIR}" "${CMAKE_SOURCE_DIR}" "*.rst")
+    message(STATUS "DOCFILES: " ${DOCFILES})
+
     file(GLOB_RECURSE PNGFILES RELATIVE "${CMAKE_SOURCE_DIR}" "${CMAKE_SOURCE_DIR}" "*.png")
     list(APPEND DOCFILES ${PNGFILES})
+
+    message(STATUS "PNGFILES: " ${PNGFILES})
+
     file(GLOB_RECURSE BIBFILES RELATIVE "${CMAKE_SOURCE_DIR}" "${CMAKE_SOURCE_DIR}" "*.bib")
     list(APPEND DOCFILES ${BIBFILES})
+
+    message(STATUS "BIBFILES: " ${BIBFILES})
+
     file(GLOB_RECURSE PYFILES RELATIVE "${CMAKE_SOURCE_DIR}" "${CMAKE_SOURCE_DIR}" "doc/paper/*.py")
+    message(STATUS "PYFILES: " ${PYFILES})
+
     list(APPEND DOCFILES ${PYFILES})
 
     set(RSTFILES ${DOCFILES} CACHE INTERNAL "RST source file that we need to copy")
@@ -503,7 +536,7 @@ message(STATUS "PYTHONLIBS_FOUND   :${PYTHONLIBS_FOUND}    PYTHON_LIBRARY: ${PYT
 message(STATUS "PYTHON_INCLUDE_DIR :        ${PYTHON_INCLUDE_DIR} ${PYTHON_INCLUDE}" )
 message(STATUS "Boost_INCLUDE_DIR  :        ${Boost_INCLUDE_DIR}")
 message(STATUS "Boost_PYTHON_FOUND :${Boost_PYTHON_FOUND}    Boost_PYTHON_LIBRARY: ${Boost_PYTHON_LIBRARY}" )
-message(STATUS "numpy_FOUND        :${numpy_FOUND}    PY_NUMPY: ${PY_NUMPY}" )
+message(STATUS "Python_NumPy_FOUND        :${Python_NumPy_FOUND}    PY_NUMPY: ${Python_NumPy}" )
 message(STATUS "CASTER_FOUND       :${CASTER_FOUND}    Caster: ${CASTER_EXECUTABLE}")
 message(STATUS "PYGCCXML_FOUND     :${PYGCCXML_FOUND}    PYGCCXML: ${PYGCCXML_PATH}" )
 message(STATUS "PYPLUSPLUS_FOUND   :${PYPLUSPLUS_FOUND}    PYPLUSPLUS_PATH: ${PYPLUSPLUS_PATH}" )

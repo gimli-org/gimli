@@ -20,16 +20,22 @@ pacman -S --needed --noconfirm \
         diffutils \
         patch
 
+# default cmake does not recognize WIN32 settings
+pacman -r --noconfirm cmake
+
+# essentials
 pacman -S --needed --noconfirm --overwrite \
         mingw-w64-x86_64-cmake \
         mingw-w64-x86_64-gcc \
         mingw-w64-x86_64-gcc-fortran \
         mingw-w64-x86_64-openblas \
         mingw-w64-x86_64-suitesparse \
-        mingw-w64-cppunit \
-        mingw-w64-x86_64-doxygen \
         mingw-w64-x86_64-llvm \
         mingw-w64-x86_64-clang
+
+pacman -S --noconfirm --overwrite \
+        mingw-w64-x86_64-cppunit \
+        mingw-w64-x86_64-doxygen
 
 # we need to replace these hard coded paths from the LLVM cmake config
 sed -i 's/C:\/repo\/mingw-w64-clang\/src\/build-x86_64/C:\/msys64\/mingw64/'  /mingw64/share/llvm/cmake/LLVMConfig.cmake
