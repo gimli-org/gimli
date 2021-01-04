@@ -20,6 +20,9 @@ pacman -S --needed --noconfirm \
         diffutils \
         patch
 
+# ordinary cmake fails for win32 detection in mysys
+pacman -r --noconfirm cmake
+
 pacman -S --needed --noconfirm --overwrite \
         mingw-w64-x86_64-cmake \
         mingw-w64-x86_64-gcc \
@@ -27,9 +30,11 @@ pacman -S --needed --noconfirm --overwrite \
         mingw-w64-x86_64-openblas \
         mingw-w64-x86_64-suitesparse \
         mingw-w64-x86_64-cppunit \
+        mingw-w64-x86_64-clang 
+        
+pacman -S --needed --noconfirm --overwrite \
         mingw-w64-x86_64-doxygen \
-        mingw-w64-x86_64-llvm \
-        mingw-w64-x86_64-clang
+        mingw-w64-x86_64-llvm 
 
 # we need to replace these hard coded paths from the LLVM cmake config
 sed -i 's/C:\/repo\/mingw-w64-clang\/src\/build-x86_64/C:\/msys64\/mingw64/'  /mingw64/share/llvm/cmake/LLVMConfig.cmake
