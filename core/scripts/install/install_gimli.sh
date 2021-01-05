@@ -3,9 +3,11 @@
 if [[ $0 == *.sh ]]; then
     SCRIPT_REPO=$(dirname $0)
     GET="cat"
+    echo "Using local scripts from: $SCRIPT_REPO"
 else
     SCRIPT_REPO='-Ls https://raw.githubusercontent.com/gimli-org/gimli/dev/core/scripts/install'
     GET="curl"
+    echo "Fetching scripts from: $SCRIPT_REPO"
 fi
 
 # Default values
@@ -202,7 +204,7 @@ testGIMLI(){
 }
 
 echo "========================================================================="
-echo "Installing system prerequisites for" $SYSTEM
+echo "Installing system prerequisites for:" $SYSTEM
 echo "-------------------------------------------------------------------------"
 "$GET" $SCRIPT_REPO/install_$SYSTEM'_prereqs.sh' | bash
 

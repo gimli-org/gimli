@@ -1,3 +1,5 @@
+cmake_minimum_required(VERSION 3.19)
+
 if (${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
     message(FATAL_ERROR "In-source builds not allowed.
             Please make a new directory (called a build directory)
@@ -166,12 +168,14 @@ if (NOT OLDPYTHON AND 1)
     message(STATUS "Python_INCLUDE_DIRS: ${Python_INCLUDE_DIRS}")
     message(STATUS "Python_LIBRARIES: ${Python_LIBRARIES} ${Python_LIBRARY_DIRS}")
     message(STATUS "Python_NumPy: ${Python_NumPy_FOUND}, ${Python_NumPy_INCLUDE_DIRS}, ${Python_NumPy_VERSION}")
-
+    
     set(PYTHON_FOUND ${Python_FOUND})
     set(PYTHON_EXECUTABLE ${Python_EXECUTABLE})
     set(PYTHON_INCLUDE_DIR ${Python_INCLUDE_DIRS})
     set(PYTHON_LIBRARY_DIR ${Python_LIBRARY_DIRS})
     set(PYTHON_LIBRARY ${Python_LIBRARIES})
+    set(PYTHON_VERSION_MAJOR ${Python_VERSION_MAJOR})
+    set(PYTHON_VERSION_MINOR ${Python_VERSION_MINOR})
 
 else()
     message(STATUS "*** search for python .. old style")
@@ -208,6 +212,7 @@ endif()
 
 function(find_boost_from_distname_file)
     set (BOOST_DIST_NAME_FILE "${EXTERNAL_DIR}/.boost-py${PYTHON_VERSION_MAJOR}.dist")
+    message(STATUS "locking for ${BOOST_DIST_NAME_FILE}")
 
     if (EXISTS ${BOOST_DIST_NAME_FILE})
         message(STATUS "reading ${BOOST_DIST_NAME_FILE}")
@@ -219,13 +224,12 @@ function(find_boost_from_distname_file)
     endif()
 
     if (EXISTS ${BOOST_ROOT})
-        message(STATUS "BOOST_ROOT from ${EXTERNAL_DIR}/.boost-py${PYTHON_VERSION_MAJOR}.dist: ${BOOST_ROOT}")
+        message(STATUS "BOOST_ROOT from ${EXTERNAL_DIR}/.boost-py${Python_VERSION_MAJOR}.dist: ${BOOST_ROOT}")
 
         set(BOOST_ROOT ${BOOST_ROOT}  CACHE FILEPATH "Boost root distribution")
-
-        set(Boost_INCLUDE_DIR ${BOOST_ROOT}/include)
+        set(Boost_INCLUDE_DIR ${BOOST_ROOT}/include CACHE FILEPATH "Boost inlude path")
         get_filename_component(Boost_INCLUDE_DIR "${Boost_INCLUDE_DIR}" ABSOLUTE)
-        message(STATUS "Boost_INCLUDE_DIR, ${Boost_INCLUDE_DIR}")
+        message(STATUS "found Boost_INCLUDE_DIR: ${Boost_INCLUDE_DIR}")
     else()
         message(STATUS "BOOST_ROOT does not exist: ${BOOST_ROOT}")
     endif()
@@ -238,31 +242,29 @@ endif()
 if (1)
     message(STATUS "Trying to guess boost installation:")
     if (NOT Boost_INCLUDE_DIR)
-        message(STATUS "no BOOST_INCLUDE_DIR")
+        message(STATUS "no Boost_INCLUDE_DIR")
         if (BOOST_ROOT)
             message(STATUS "Found boost root: ${BOOST_ROOT}")
             get_filename_component(BOOST_ROOT "${BOOST_ROOT}" ABSOLUTE)
-
-            set(Boost_INCLUDE_DIR ${BOOST_ROOT}/include)
-            message(STATUS "set BOOST_INCLUDE_DIR: ${BOOST_INCLUDE_DIR}")
+            set(Boost_INCLUDE_DIR ${BOOST_ROOT}/include CACHE FILEPATH "Boost inlude path")
+            message(STATUS "set Boost_INCLUDE_DIR: ${Boost_INCLUDE_DIR}")
         else()
             if (NOT WIN32)
-                find_package(Boost 1.46.0 COMPONENTS system thread)
+                find_package(Boost COMPONENTS python)
             endif()
             # we should think about cmake superbuild with ExternalProject_Add as the replacement for find_or_build_package (next generation)
             if (NOT Boost_INCLUDE_DIR)
                 find_boost_from_distname_file()
+            else()
+                find_or_build_package_check(Boost boost Boost_INCLUDE_DIR False)
+                find_boost_from_distname_file()
             endif()
-            find_or_build_package_check(Boost boost Boost_INCLUDE_DIR False)
-            find_boost_from_distname_file()
 
-            #exit()
         endif(BOOST_ROOT)
-        message(STATUS "BOOST_ROOT, ${BOOST_ROOT}")
     endif(NOT Boost_INCLUDE_DIR)
 
-    message(STATUS "BOOST_ROOT, ${BOOST_ROOT}")
-    message(STATUS "Boost_INCLUDE_DIR, ${Boost_INCLUDE_DIR}")
+    message(STATUS "BOOST_ROOT: ${BOOST_ROOT}")
+    message(STATUS "Boost_INCLUDE_DIR: ${Boost_INCLUDE_DIR}")
 
     if (USE_BOOST_THREAD)
         find_package(Boost 1.46.0 COMPONENTS system thread REQUIRED)
@@ -273,12 +275,12 @@ if (1)
 endif()
 
 if (NOT USE_BOOST_THREAD)
-    set(Boost_THREAD_FOUND OFF)
-    set(BOOST_BIND_FOUND OFF)
-    set(USE_IPC OFF)
+set(Boost_THREAD_FOUND OFF)
+set(BOOST_BIND_FOUND OFF)
+set(USE_IPC OFF)
 else()
-    set(Boost_THREAD_FOUND ON)
-    set(BOOST_BIND_FOUND ON)
+set(Boost_THREAD_FOUND ON)
+set(BOOST_BIND_FOUND ON)
 endif()
 
 # Find packages that CHOLMOD depends on
@@ -297,32 +299,60 @@ find_or_build_package(LAPACK lapack)
 find_or_build_package(CHOLMOD suitesparse)
 find_package(UMFPACK)
 
+################################################################################
+# Manuall check for openblas
+################################################################################
+
 #if (";${BLAS_LIBRARIES};" MATCHES "openblas")
+message(STATUS "Blas found:" ${BLAS_FOUND})
 if (BLAS_FOUND)
     message(STATUS "openblas is used: ${BLAS_LIBRARIES}")
 
-    FIND_PATH(OpenBLAS_INCLUDE_DIR
-        NAMES cblas.h
-        PATHS
-            /usr/include/openblas
-            /usr/include/OpenBLAS
-            /mingw64/include/OpenBLAS
-        NO_DEFAULT_PATH
-    )
-    if (NOT OpenBLAS_INCLUDE_DIR)
+    if (MINGW)
+        get_filename_component(MINGW_ROOT ${BLAS_LIBRARIES} PATH)
+        get_filename_component(MINGW_ROOT ${MINGW_ROOT}/../ ABSOLUTE)
+        message(STATUS "MINGW_ROOT: " ${MINGW_ROOT})
+
         FIND_PATH(OpenBLAS_INCLUDE_DIR
-            NAMES cblas.h
+            NAMES 
+                cblas.h
+            PATHS
+                ${MINGW_ROOT}/include/OpenBLAS/
+        )
+    endif()
+    
+    if (NOT OpenBLAS_INCLUDE_DIR) 
+        message(STATUS "openblas header not found")
+        FIND_PATH(OpenBLAS_INCLUDE_DIR
+            NAMES 
+                cblas.h
+            PATHS
+                /usr/include/openblas/
+                /usr/include/OpenBLAS/
+                /mingw64/include/OpenBLAS/
+            HINTS ${CMAKE_C_IMPLICIT_LINK_DIRECTORIES}
+            NO_DEFAULT_PATH
+        )
+    endif()
+
+    if (NOT OpenBLAS_INCLUDE_DIR) 
+        message(STATUS "no openblas cblas.h in prefered paths .. searching defaults")
+
+        FIND_PATH(OpenBLAS_INCLUDE_DIR 
+            NAMES 
+                cblas.h
         )
     endif()
     message(STATUS "openblas cblas.h: ${OpenBLAS_INCLUDE_DIR}")
-
+    
     if (OpenBLAS_INCLUDE_DIR)
-        set(OPENBLAS_CBLAS_FOUND TRUE)
+    set(OPENBLAS_CBLAS_FOUND TRUE)
     else()
-        set(OPENBLAS_CBLAS_FOUND FALSE)
+    set(OPENBLAS_CBLAS_FOUND FALSE)
     endif()
-
+    
     set(OPENBLAS_FOUND TRUE)
+   
 else()
     set(OPENBLAS_FOUND FALSE)
     set(OPENBLAS_CBLAS_FOUND FALSE)
@@ -336,11 +366,11 @@ if (NOT AVOID_CPPUNIT)
 endif()
 
 if (NOT AVOID_READPROC)
-    if(WIN32)
-        set(READPROC_FOUND FALSE)
-    else(WIN32)
-        find_package(readproc)
-    endif(WIN32)
+if(WIN32)
+    set(READPROC_FOUND FALSE)
+else(WIN32)
+    find_package(readproc)
+endif(WIN32)
 else()
     set(READPROC_FOUND FALSE)
 endif()
@@ -350,68 +380,76 @@ endif()
 ################################################################################
 function(find_boost_python_manual bp_version)
     message(STATUS " ... searching for libboost_python${bp_version}")
-    find_package(Boost 1.46 COMPONENTS "python${bp_version}")
+    find_package(Boost 1.68 COMPONENTS "python${bp_version}")
+
     if (${Boost_PYTHON${bp_version}_FOUND})
-        set(Boost_PYTHON_FOUND
-            ${Boost_PYTHON${bp_version}_FOUND} PARENT_SCOPE)
-        set(Boost_PYTHON_LIBRARY
-            ${Boost_PYTHON${bp_version}_LIBRARY_RELEASE} PARENT_SCOPE)
+        set(Boost_PYTHON_FOUND ${Boost_PYTHON${bp_version}_FOUND} PARENT_SCOPE)
+        set(Boost_PYTHON_LIBRARY ${Boost_PYTHON${bp_version}_LIBRARY_RELEASE} PARENT_SCOPE)
         message(STATUS " ... found: ${Boost_PYTHON_LIBRARY}")
     else()
         message(STATUS " ... not found.")
     endif()
 endfunction()
 
-if (Boost_PYTHON_LIBRARY)
-    #set (Boost_PYTHON_LIBRARY ${Boost_PYTHON_LIBRARY})
-else()
-    message(STATUS "boost-python not found by cmake find ... trying to determine boost-python now again ...")
+if (NOT Boost_PYTHON_LIBRARY)
+    message(STATUS "boost-python not found by cmake ... trying to determine boost-python now manually ...")
     if (WIN32)
-        set(bp_version "${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}-mt")
-        find_package(Boost 1.46.0 COMPONENTS  "python${bp_version}")
+        set(bp_version "python${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}-mt")
+        string(TOUPPER ${bp_version} BP_VERSION)
+
+        find_package(Boost 1.68 COMPONENTS "${bp_version}")
+        set(Boost_PYTHON_FOUND ${Boost_${bp_version}_FOUND} CACHE BOOL "Wether Boost python found or not")
+        set(Boost_PYTHON_LIBRARY ${Boost_${BP_VERSION}_LIBRARY} CACHE FILEPATH "Boost python library")
+
+        
         if (NOT Boost_PYTHON_FOUND)
-            set(BOOST_FOUND TRUE)
-            set(Boost_PYTHON_FOUND TRUE})
-            set(Boost_PYTHON_LIBRARY
-                    ${BOOST_ROOT}/lib/libboost_python${bp_version}.dll)
+            set(Boost_PYTHON_LIBRARY ${BOOST_ROOT}/lib/libboost_python${bp_version}.dll)
+            message(STATUS "looking for:" ${Boost_PYTHON_LIBRARY} "...")
+            if (EXISTS ${Boost_PYTHON_LIBRARY})
+                message(STATUS ".. found.")
+                set(Boost_PYTHON_FOUND TRUE})
+            else()
+            message(STATUS "Sorry but no boost-python found.")
+            endif()
         endif()
-    endif()
+    else()
+        # the name for py3 boost-python library lacks probably py3 suffix, which is different for different OS
+        set (Boost_PYTHON_FOUND False)
+        set (Boost_PYTHON_LIBRARY "None")
+        message(STATUS "***** ${Boost_PYTHON_FOUND}, ${Boost_PYTHON_LIBRARY}")
 
-    # the name for py3 boost-python library lacks probably py3 suffix, which is different for different OS
-    set (Boost_PYTHON_FOUND False)
-    set (Boost_PYTHON_LIBRARY "None")
-    message(STATUS "***** ${Boost_PYTHON_FOUND}, ${Boost_PYTHON_LIBRARY}")
+        if (NOT Boost_PYTHON_FOUND)
+            #/usr/lib/x86_64-linux-gnu/libboost_python-py34.so (debian)
+            set(bp_version "-py${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}")
+            find_boost_python_manual(${bp_version})
+        endif()
+        if (NOT Boost_PYTHON_FOUND)
+            # /usr/lib/libboost_python3.so.1.64.0 (arch style)
+            set(bp_version "${PYTHON_VERSION_MAJOR}")
+            find_boost_python_manual(${bp_version})
+        endif()
+        if (NOT Boost_PYTHON_FOUND)
+            # /usr/lib/libboost_python-3.4.so (gentoo <boost-1.70)
+            set(bp_version "-${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}")
+            find_boost_python_manual(${bp_version})
+        endif()
+        if (NOT Boost_PYTHON_FOUND)
+            # /usr/lib/libboost_python37.so # gentoo >=boost-1.70)
+            set(bp_version "${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}")
+            find_boost_python_manual(${bp_version})
+        endif()
 
-    if (NOT Boost_PYTHON_FOUND)
-        #/usr/lib/x86_64-linux-gnu/libboost_python-py34.so (debian)
-        set(bp_version "-py${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}")
-        find_boost_python_manual(${bp_version})
-    endif()
-    if (NOT Boost_PYTHON_FOUND)
-        # /usr/lib/libboost_python3.so.1.64.0 (arch style)
-        set(bp_version "${PYTHON_VERSION_MAJOR}")
-        find_boost_python_manual(${bp_version})
-    endif()
-    if (NOT Boost_PYTHON_FOUND)
-        # /usr/lib/libboost_python-3.4.so (gentoo <boost-1.70)
-        set(bp_version "-${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}")
-        find_boost_python_manual(${bp_version})
-    endif()
-    if (NOT Boost_PYTHON_FOUND)
-        # /usr/lib/libboost_python37.so # gentoo >=boost-1.70)
-        set(bp_version "${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}")
-        find_boost_python_manual(${bp_version})
     endif()
 
     if (Boost_PYTHON_FOUND)
-        message(STATUS "found: ${Boost_PYTHON_FOUND}: ${Boost_PYTHON_LIBRARY}")
+        message(STATUS "Boost_PYTHON_FOUND:" ${Boost_PYTHON_FOUND})
+        message(STATUS "Boost_PYTHON_LIBRARY:" ${Boost_PYTHON_LIBRARY})
     else()
         message(STATUS "Sorry but no boost-python found. Please search for "
                        "any libboost_python* on your system and "
                        "provide it to the authors so we can try to fix "
                        "this here.")
     endif()
-
 endif()
 
 if (NOT CASTER)
@@ -525,36 +563,36 @@ if (CONDA_BUILD)
     endif()
 endif()
 
-message(STATUS "THREADS            :${Threads_FOUND}    ${CMAKE_THREAD_LIBS_INIT}")
-message(STATUS "USE_BOOST_THREAD   :${USE_BOOST_THREAD} ${Boost_THREAD_LIBRARIES}")
-message(STATUS "USE_OPENBLAS       :${OPENBLAS_FOUND}    OPENBLAS_CBLAS_FOUND :${OPENBLAS_CBLAS_FOUND} OpenBLAS_INCLUDE_DIR :${OpenBLAS_INCLUDE_DIR}")
-message(STATUS "CHOLMOD_LIBRARIES  :${CHOLMOD_LIBRARIES}")
-message(STATUS "UMFPACK_LIBRARIES  :${UMFPACK_LIBRARIES}")
-message(STATUS "TRIANGLE_FOUND     :${TRIANGLE_FOUND}    Triangle_LIBRARIES: ${Triangle_LIBRARIES}")
-message(STATUS "PYTHON_FOUND       :${PYTHON_FOUND}    PYTHON_EXECUTABLE: ${PYTHON_EXECUTABLE}" )
-message(STATUS "PYTHONLIBS_FOUND   :${PYTHONLIBS_FOUND}    PYTHON_LIBRARY: ${PYTHON_LIBRARY}" )
-message(STATUS "PYTHON_INCLUDE_DIR :        ${PYTHON_INCLUDE_DIR} ${PYTHON_INCLUDE}" )
-message(STATUS "Boost_INCLUDE_DIR  :        ${Boost_INCLUDE_DIR}")
-message(STATUS "Boost_PYTHON_FOUND :${Boost_PYTHON_FOUND}    Boost_PYTHON_LIBRARY: ${Boost_PYTHON_LIBRARY}" )
-message(STATUS "Python_NumPy_FOUND        :${Python_NumPy_FOUND}    PY_NUMPY: ${Python_NumPy}" )
-message(STATUS "CASTER_FOUND       :${CASTER_FOUND}    Caster: ${CASTER_EXECUTABLE}")
-message(STATUS "PYGCCXML_FOUND     :${PYGCCXML_FOUND}    PYGCCXML: ${PYGCCXML_PATH}" )
-message(STATUS "PYPLUSPLUS_FOUND   :${PYPLUSPLUS_FOUND}    PYPLUSPLUS_PATH: ${PYPLUSPLUS_PATH}" )
+message(STATUS "THREADS             : ${Threads_FOUND}    ${CMAKE_THREAD_LIBS_INIT}")
+message(STATUS "USE_BOOST_THREAD    : ${USE_BOOST_THREAD} ${Boost_THREAD_LIBRARIES}")
+message(STATUS "USE_OPENBLAS        : ${OPENBLAS_FOUND}    OPENBLAS_CBLAS_FOUND :${OPENBLAS_CBLAS_FOUND} OpenBLAS_INCLUDE_DIR :${OpenBLAS_INCLUDE_DIR}")
+message(STATUS "CHOLMOD_LIBRARIES   : ${CHOLMOD_LIBRARIES}")
+message(STATUS "UMFPACK_LIBRARIES   : ${UMFPACK_LIBRARIES}")
+message(STATUS "TRIANGLE_FOUND      : ${TRIANGLE_FOUND}    Triangle_LIBRARIES: ${Triangle_LIBRARIES}")
+message(STATUS "PYTHON_FOUND        : ${PYTHON_FOUND}    PYTHON_EXECUTABLE: ${PYTHON_EXECUTABLE}" )
+message(STATUS "PYTHON_LIBRARY      : ${PYTHON_LIBRARY}" )
+message(STATUS "PYTHON_INCLUDE_DIR  : ${PYTHON_INCLUDE_DIR} ${PYTHON_INCLUDE}" )
+message(STATUS "Boost_INCLUDE_DIR   : ${Boost_INCLUDE_DIR}")
+message(STATUS "Boost_PYTHON_LIBRARY: ${Boost_PYTHON_LIBRARY}" )
+message(STATUS "Python_NumPy        : ${Python_NumPy_FOUND} ${Python_NumPy_INCLUDE_DIRS} ver: ${Python_NumPy_VERSION}")
+message(STATUS "CASTER_FOUND        : ${CASTER_FOUND}    Caster: ${CASTER_EXECUTABLE}")
+message(STATUS "PYGCCXML_FOUND      : ${PYGCCXML_FOUND}    PYGCCXML: ${PYGCCXML_PATH}" )
+message(STATUS "PYPLUSPLUS_FOUND    : ${PYPLUSPLUS_FOUND}    PYPLUSPLUS_PATH: ${PYPLUSPLUS_PATH}" )
 message(STATUS "")
 message(STATUS "**********************************************************************")
 message(STATUS "*************** Optional Dependencies found **************************")
 message(STATUS "**********************************************************************")
-message(STATUS "CPPUNIT            :${CPPUNIT_FOUND}    ${CPPUNIT_LIBRARIES}")
-message(STATUS "Doxygen            :${DOXYGEN_FOUND}    ")
-message(STATUS "Sphinx             :${SPHINX_FOUND}     ${SPHINX_EXECUTABLE} ${SPHINX_VERSION}")
+message(STATUS "CPPUNIT             : ${CPPUNIT_FOUND}    ${CPPUNIT_LIBRARIES}")
+message(STATUS "Doxygen             : ${DOXYGEN_FOUND}    ")
+message(STATUS "Sphinx              : ${SPHINX_FOUND}     ${SPHINX_EXECUTABLE} ${SPHINX_VERSION}")
 message(STATUS "**********************************************************************")
 
 if (PYTHON_EXECUTABLE
     AND TRIANGLE_FOUND
     AND PYTHON_FOUND
-    AND PYTHONLIBS_FOUND
-    AND Boost_PYTHON_FOUND
-    AND numpy_FOUND
+    AND PYTHON_LIBRARY
+    AND Boost_PYTHON_LIBRARY
+    AND Python_NumPy_FOUND
     AND CASTER_FOUND
     AND PYGCCXML_FOUND
     AND PYPLUSPLUS_FOUND
@@ -601,8 +639,6 @@ cmake_dependent_option( GIMLI_BUILD_SHARED_LIBS_WITH_STATIC_DEPENDENCIES
 "For WIN32 and APPLE where the dependency pack is used, prefer the static dependency libs over the shared/dynamic ones.  NOTE: On Windows you also need to be mindful of which C/C++ runtime setting has been used to compile the various
 components - they must all match or you will get crashes, heap corruption and/or
 other issues." FALSE "WIN32 OR APPLE" FALSE)
-
-# cmake_dependent_option(GIMLI_BUILD_PYTHON_MODULES "Specifies whether to build the Python extension module(s)" "PYTHONINTERP_FOUND;PYTHONLIBS_FOUND;Boost_PYTHON_FOUND")
 
 ################################################################################
 #

@@ -71,7 +71,7 @@ endif(WIN32)
 # for calling the build only
 ADD_CUSTOM_TARGET(pg ALL)
 add_dependencies(pg _pygimli_)
-include_directories(${Python_NumPy})
+include_directories(${Python_NumPy_INCLUDE_DIRS})
 
 if(WIN32)
     include_directories(${PYTHON_INCLUDE_DIR})
