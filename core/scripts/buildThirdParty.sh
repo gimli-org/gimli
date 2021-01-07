@@ -9,9 +9,11 @@ BOOST_URL=http://sourceforge.net/projects/boost/files/boost/
 LAPACK_VERSION=3.4.2
 LAPACK_URL=http://www.netlib.org/lapack/
 
-SUITESPARSE_VERSION=5.2.0
-#SUITESPARSE_VERSION=4.4.4
-SUITESPARSE_URL=http://faculty.cse.tamu.edu/davis/SuiteSparse/
+#SUITESPARSE_VERSION=5.2.0
+#SUITESPARSE_URL=http://faculty.cse.tamu.edu/davis/SuiteSparse/
+
+SUITESPARSE_URL=https://github.com/DrTimothyAldenDavis/SuiteSparse
+SUITESPARSE_REV=v5.8.1
 
 TRIANGLE_URL=http://www.netlib.org/voronoi/
 
@@ -658,7 +660,8 @@ buildSUITESPARSE(){
     prepLAPACK
     prepSUITESPARSE
 
-    getWITH_WGET $SUITESPARSE_URL $SUITESPARSE_SRC $SUITESPARSE_VER.tar.gz
+    getWITH_GIT $SUITESPARSE_URL $SUITESPARSE_SRC $SUITESPARSE_REV
+    #getWITH_WGET $SUITESPARSE_URL $SUITESPARSE_SRC $SUITESPARSE_VER.tar.gz
     [ -d $SRC_DIR/SuiteSparse ] && mv $SRC_DIR/SuiteSparse $SUITESPARSE_SRC
 
     mkBuildDIR $SUITESPARSE_BUILD $SUITESPARSE_SRC 1

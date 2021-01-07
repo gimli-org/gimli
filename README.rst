@@ -61,7 +61,7 @@ interfaces are available to solve custom PDEs on a given mesh. See
 :mod:`pygimli.physics` for a collection of forward operators and
 :mod:`pygimli.solver` for the solver interface.
 
-The modelling capabilities of pyGIMLi inlcude:
+The modelling capabilities of pyGIMLi include:
 
 * 1D, 2D, 3D discretizations
 * linear and quadratic shape functions (automatic shape function generator for possible higher order)
