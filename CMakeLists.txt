@@ -159,69 +159,28 @@ find_package(Threads REQUIRED)
 ################################################################################
 # Check for python stuff
 ################################################################################
-if (NOT PYVERSION)
-    set(PYVERSION 3)
-endif()
 
 if (NOT OLDPYTHON AND 1)
-    message(STATUS "*** search for python .. new style", ${PYVERSION})
-    set(Python_ADDITIONAL_VERSIONS ${PYVERSION})
-    
+    if (NOT PYVERSION)
+        set(PYVERSION 3)
+    endif()
+
+    message(STATUS "Searching for python:", ${PYVERSION})
     find_package(Python ${PYVERSION} EXACT COMPONENTS Interpreter NumPy Development REQUIRED)
 
-    message(STATUS "Python_Interpreter_FOUND: ${Python_Interpreter_FOUND} ${Python_EXECUTABLE} version: ${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}.${Python_VERSION_PATCH}")
-    message(STATUS "Python_INCLUDE_DIRS: ${Python_INCLUDE_DIRS}")
-    message(STATUS "Python_LIBRARIES: ${Python_LIBRARIES} ${Python_LIBRARY_DIRS}")
-    message(STATUS "Python_NumPy: ${Python_NumPy_FOUND}, ${Python_NumPy_INCLUDE_DIRS}, ${Python_NumPy_VERSION}")
-    
-    set(PYTHON_FOUND ${Python_FOUND})
-    set(PYTHON_EXECUTABLE ${Python_EXECUTABLE})
-    set(PYTHON_INCLUDE_DIR ${Python_INCLUDE_DIRS})
-    set(PYTHON_LIBRARY_DIR ${Python_LIBRARY_DIRS})
-    set(PYTHON_LIBRARY ${Python_LIBRARIES})
-    set(PYTHON_VERSION_MAJOR ${Python_VERSION_MAJOR})
-    set(PYTHON_VERSION_MINOR ${Python_VERSION_MINOR})
-
-else()
-    message(STATUS "*** search for python .. old style")
-    if (PYVERSION)
-        find_package(PythonInterp ${PYVERSION} REQUIRED)
-    else()
-        find_package(PythonInterp)
-    endif()
-
-    set(Python_ADDITIONAL_VERSIONS ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR})
-    set(PythonLibs_FIND_VERSION ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR})
-
-    if (WIN32)
-        # execute_process(
-        #     COMMAND "${PYTHON_EXECUTABLE}" "-c" 
-        #     "import sys;sys.stdout.write(sys.prefix)"
-        #     OUTPUT_VARIABLE PYTHON_ROOT
-        #     OUTPUT_STRIP_TRAILING_WHITESPACE
-        # )
-        # message(STATUS "PYTHON_ROOT: " ${PYTHON_ROOT} )
-        find_package(PythonLibs)
-        #find_package(PythonLibs PATHS ${PYTHON_ROOT}"\\libs")
-    else()
-        find_package(PythonLibs)
-    endif()
-
-    find_python_module(numpy)
-
-    message(STATUS "Python interpreter found: ${PYTHON_EXECUTABLE} version: ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}")
-    message(STATUS "PYTHON_LIBRARY: ${PYTHON_LIBRARY_DIR} ${PYTHON_LIBRARY}")
-    message(STATUS "PYTHON_INCLUDE_DIR :        ${PYTHON_INCLUDE_DIR} ${PYTHON_INCLUDE}")
-    message(STATUS "numpy_FOUND        :${numpy_FOUND}    PY_NUMPY: ${PY_NUMPY}")
+    # message(STATUS "Python_Interpreter_FOUND: ${Python_Interpreter_FOUND} ${Python_EXECUTABLE} version: ${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}.${Python_VERSION_PATCH}")
+    # message(STATUS "Python_INCLUDE_DIRS: ${Python_INCLUDE_DIRS}")
+    # message(STATUS "Python_LIBRARIES: ${Python_LIBRARIES} ${Python_LIBRARY_DIRS}")
+    # message(STATUS "Python_NumPy: ${Python_NumPy_FOUND}, ${Python_NumPy_INCLUDE_DIRS}, ${Python_NumPy_VERSION}")
 endif()
 
 function(find_boost_from_distname_file)
-    set (BOOST_DIST_NAME_FILE "${EXTERNAL_DIR}/.boost-py${PYTHON_VERSION_MAJOR}.dist")
+    set (BOOST_DIST_NAME_FILE "${EXTERNAL_DIR}/.boost-py${Python_VERSION_MAJOR}.dist")
     message(STATUS "locking for ${BOOST_DIST_NAME_FILE}")
 
     if (EXISTS ${BOOST_DIST_NAME_FILE})
         message(STATUS "reading ${BOOST_DIST_NAME_FILE}")
-        FILE(READ "${EXTERNAL_DIR}/.boost-py${PYTHON_VERSION_MAJOR}.dist" BOOST_DIST_NAME)
+        FILE(READ "${EXTERNAL_DIR}/.boost-py${Python_VERSION_MAJOR}.dist" BOOST_DIST_NAME)
         STRING(REGEX REPLACE "\n" "" BOOST_DIST_NAME "${BOOST_DIST_NAME}")
         get_filename_component(BOOST_ROOT "${EXTERNAL_DIR}/${BOOST_DIST_NAME}" ABSOLUTE)
     else()
@@ -399,7 +358,7 @@ endfunction()
 if (NOT Boost_PYTHON_LIBRARY)
     message(STATUS "boost-python not found by cmake ... trying to determine boost-python now manually ...")
     if (WIN32)
-        set(bp_version "python${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}-mt")
+        set(bp_version "python${Python_VERSION_MAJOR}${Python_VERSION_MINOR}-mt")
         string(TOUPPER ${bp_version} BP_VERSION)
 
         find_package(Boost 1.68 COMPONENTS "${bp_version}")
@@ -425,22 +384,22 @@ if (NOT Boost_PYTHON_LIBRARY)
 
         if (NOT Boost_PYTHON_FOUND)
             #/usr/lib/x86_64-linux-gnu/libboost_python-py34.so (debian)
-            set(bp_version "-py${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}")
+            set(bp_version "-py${Python_VERSION_MAJOR}${Python_VERSION_MINOR}")
             find_boost_python_manual(${bp_version})
         endif()
         if (NOT Boost_PYTHON_FOUND)
             # /usr/lib/libboost_python3.so.1.64.0 (arch style)
-            set(bp_version "${PYTHON_VERSION_MAJOR}")
+            set(bp_version "${Python_VERSION_MAJOR}")
             find_boost_python_manual(${bp_version})
         endif()
         if (NOT Boost_PYTHON_FOUND)
             # /usr/lib/libboost_python-3.4.so (gentoo <boost-1.70)
-            set(bp_version "-${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}")
+            set(bp_version "-${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}")
             find_boost_python_manual(${bp_version})
         endif()
         if (NOT Boost_PYTHON_FOUND)
             # /usr/lib/libboost_python37.so # gentoo >=boost-1.70)
-            set(bp_version "${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}")
+            set(bp_version "${Python_VERSION_MAJOR}${Python_VERSION_MINOR}")
             find_boost_python_manual(${bp_version})
         endif()
 
@@ -510,16 +469,7 @@ if (CASTER_EXECUTABLE)
     set (CASTER_FOUND TRUE)
 endif()
 
-if (PYTHON_EXECUTABLE)
-    set (PYTHON_FOUND TRUE)
-endif()
-
-if (Boost_PYTHON_LIBRARY)
-    set (Boost_PYTHON_FOUND TRUE)
-endif()
-
 find_package(Doxygen)
-
 find_package(Sphinx 1.5)
 
 if (SPHINX_FOUND AND NOT SKIP_SPHINX)
@@ -558,12 +508,12 @@ message(STATUS "****************************************************************
 if (CONDA_BUILD)
     message(STATUS "CONDA_BUILD: ${CONDA_BUILD}")
     if (APPLE)
-	    set(PYTHON_LIBRARY "-undefined dynamic_lookup")
+	    set(Python_LIBRARIES "-undefined dynamic_lookup")
     else()
-        if(EXISTS ${PYTHON_LIBRARY})
-            message(${PYTHON_LIBRARY} " exits")
+        if(EXISTS ${Python_LIBRARIES})
+            message(${Python_LIBRARIES} " exits")
         else()
-            message(${PYTHON_LIBRARY} "does not exits")
+            message(${Python_LIBRARIES} "does not exits")
         endif()
     endif()
 endif()
@@ -574,9 +524,10 @@ message(STATUS "USE_OPENBLAS        : ${OPENBLAS_FOUND}    OPENBLAS_CBLAS_FOUND 
 message(STATUS "CHOLMOD_LIBRARIES   : ${CHOLMOD_LIBRARIES}")
 message(STATUS "UMFPACK_LIBRARIES   : ${UMFPACK_LIBRARIES}")
 message(STATUS "TRIANGLE_FOUND      : ${TRIANGLE_FOUND}    Triangle_LIBRARIES: ${Triangle_LIBRARIES}")
-message(STATUS "PYTHON_FOUND        : ${PYTHON_FOUND}    PYTHON_EXECUTABLE: ${PYTHON_EXECUTABLE}" )
-message(STATUS "PYTHON_LIBRARY      : ${PYTHON_LIBRARY}" )
-message(STATUS "PYTHON_INCLUDE_DIR  : ${PYTHON_INCLUDE_DIR} ${PYTHON_INCLUDE}" )
+message(STATUS "Python_EXECUTABLE   : ${Python_EXECUTABLE}" )
+message(STATUS "Python_LIBRARY_DIRS : ${Python_LIBRARY_DIRS}")
+message(STATUS "Python_LIBRARIES    : ${Python_LIBRARIES}" )
+message(STATUS "Python_INCLUDE_DIRS : ${Python_INCLUDE_DIRS}")
 message(STATUS "Boost_INCLUDE_DIR   : ${Boost_INCLUDE_DIR}")
 message(STATUS "Boost_PYTHON_LIBRARY: ${Boost_PYTHON_LIBRARY}" )
 message(STATUS "Python_NumPy        : ${Python_NumPy_FOUND} ${Python_NumPy_INCLUDE_DIRS} ver: ${Python_NumPy_VERSION}")
@@ -592,10 +543,9 @@ message(STATUS "Doxygen             : ${DOXYGEN_FOUND}    ")
 message(STATUS "Sphinx              : ${SPHINX_FOUND}     ${SPHINX_EXECUTABLE} ${SPHINX_VERSION}")
 message(STATUS "**********************************************************************")
 
-if (PYTHON_EXECUTABLE
+if (Python_EXECUTABLE
     AND TRIANGLE_FOUND
-    AND PYTHON_FOUND
-    AND PYTHON_LIBRARY
+    AND Python_LIBRARIES
     AND Boost_PYTHON_LIBRARY
     AND Python_NumPy_FOUND
     AND CASTER_FOUND
