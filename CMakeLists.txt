@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.12) 
 
 if (${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
     message(FATAL_ERROR "In-source builds not allowed.
@@ -159,10 +159,15 @@ find_package(Threads REQUIRED)
 ################################################################################
 # Check for python stuff
 ################################################################################
+if (NOT PYVERSION)
+    set(PYVERSION 3)
+endif()
+
 if (NOT OLDPYTHON AND 1)
-    message(STATUS "*** search for python .. new style")
-    set(Python_ADDITIONAL_VERSIONS ${PYTHON_VERSION})
-    find_package (Python COMPONENTS Interpreter NumPy Development)
+    message(STATUS "*** search for python .. new style", ${PYVERSION})
+    set(Python_ADDITIONAL_VERSIONS ${PYVERSION})
+    
+    find_package(Python ${PYVERSION} EXACT COMPONENTS Interpreter NumPy Development REQUIRED)
 
     message(STATUS "Python_Interpreter_FOUND: ${Python_Interpreter_FOUND} ${Python_EXECUTABLE} version: ${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}.${Python_VERSION_PATCH}")
     message(STATUS "Python_INCLUDE_DIRS: ${Python_INCLUDE_DIRS}")
