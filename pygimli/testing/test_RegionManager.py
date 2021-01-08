@@ -112,7 +112,7 @@ class TestRM(unittest.TestCase):
 
         # check distribution of zWeight
         self.assertTrue(np.allclose(w0, w1))
-        # self.assertTrue(np.allclose(w0, w2))
+        #self.assertTrue(np.allclose(w0, w2))
 
 if __name__ == '__main__':
 

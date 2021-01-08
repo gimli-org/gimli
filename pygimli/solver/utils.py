@@ -57,7 +57,8 @@ def createConstitutiveMatrix(lam=None, mu=None, E=None, nu=None, dim=2,
     ----
         * Tests
         * Examples
-        * comparision Voigts/Kelvin notation
+        * compare Voigts/Kelvin Notation
+        * anisotropy
 
     Parameters
     ----------
@@ -85,55 +86,50 @@ def createConstitutiveMatrix(lam=None, mu=None, E=None, nu=None, dim=2,
         a = 2 # Kelvins' notation
 
     if lam is not None and mu is not None:
-        nu = (lam) / (2*(lam + mu))
+        nu = lam / (2*lam + 2*mu)
         E = mu * (3*lam + 2*mu) / (lam + mu)
-
-    if E is not None and nu is not None:
-        if nu == 0.5 or nu >= 1.0:
-            pg.critical('nu should be greater or smaller than 0.5 and < 1')
-        lam = (E * nu) / ((1 + nu) * (1-2*nu))
-        mu  = E / (2*(1 + nu))
+    else:
+        if E is not None and nu is not None:
+            if nu == 0.5 or nu >= 1.0:
+                pg.critical('nu should be greater or smaller than 0.5 and < 1')
+            lam = (E * nu) / ((1 + nu) * (1 - 2*nu))
+            mu  = E / (2*(1 + nu))
+            if dim == 2:
+                lam = 2*mu*lam/(2*mu + lam)
+        else:
+            pg.critical("Can't find mu and lam")
 
     if dim == 2:
+        #2d plane:
         ## for pure 2d plane stress
         C = ConstitutiveMatrix(np.zeros((3, 3)),
                                voigtNotation=voigtNotation)
-        C[0, 0] = 1
-        C[1, 1] = 1
-        C[0, 1] = nu
-        C[1, 0] = nu
-        C[2, 2] = (1-nu)/2 * a
-        C *= E/(1-nu**2)
-        return C
+        C[0][0:2] = lam
+        C[1][0:2] = lam
+        C[0][0] += 2. * mu
+        C[1][1] += 2. * mu
+        C[2][2] = mu * a
 
-    # C = np.zeros((6, 6))
-    # C[0, 0] = 1-nu
-    # C[1, 1] = 1-nu
-    # C[2, 2] = 1-nu
-    # C[0, 1] = nu
-    # C[1, 2] = nu
-    # C[0, 2] = nu
-    # C[1, 0] = nu
-    # C[2, 1] = nu
-    # C[2, 0] = nu
-    # C[3, 3] = (1-2*nu)/2 * a
-    # C[4, 4] = (1-2*nu)/2 * a
-    # C[5, 5] = (1-2*nu)/2 * a
-    # C *= E/((1+nu)*(1-2*nu))
-    # print('c1', C)
+        # C[0, 0] = 1
+        # C[1, 1] = 1
+        # C[0, 1] = nu
+        # C[1, 0] = nu
+        # C[2, 2] = (1-nu)/2 * a
+        # C *= E/(1-nu**2)
 
-    C = ConstitutiveMatrix(np.zeros((6, 6)),
-                            voigtNotation=voigtNotation)
-    C[0][0:3] = lam
-    C[1][0:3] = lam
-    C[2][0:3] = lam
-    C[0][0] += 2. * mu
-    C[1][1] += 2. * mu
-    C[2][2] += 2. * mu
+    elif dim == 3:
+        C = ConstitutiveMatrix(np.zeros((6, 6)),
+                               voigtNotation=voigtNotation)
+        C[0][0:3] = lam
+        C[1][0:3] = lam
+        C[2][0:3] = lam
+        C[0][0] += 2. * mu
+        C[1][1] += 2. * mu
+        C[2][2] += 2. * mu
 
-    C[3][3] = mu * a
-    C[4][4] = mu * a
-    C[5][5] = mu * a
+        C[3][3] = mu * a
+        C[4][4] = mu * a
+        C[5][5] = mu * a
 
     #print('c2', C)
 

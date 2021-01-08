@@ -12,7 +12,7 @@ from .core import (BVector, CVector, DataContainer, DataContainerERT,
                    IVector, Line, Mesh, Plane, Pos,
                    RVector3, Vector, abs, cat, center, exp, find,
                    interpolate, log, log10, logDropTol, max,
-                   mean, median, min, search, setDebug, setThreadCount, sort,
+                   mean, median, min, search, setThreadCount, sort,
                    Stopwatch, sum, trans, unique, versionStr, x, y, z, zero)
 
 from .core import isScalar, isArray, isPos, isR3Array, isComplex, isMatrix
@@ -22,9 +22,11 @@ from .core import matrix # alias all from .core.matrix.* to pg.matrix.*
 
 from .core.matrix import (BlockMatrix, Matrix, SparseMapMatrix, SparseMatrix)
 
-from .core.logger import (_, _d, _g, _r, _y, _b, critical, d, debug, deprecated,
+from .core.logger import (_, _d, _g, _r, _y, _b, critical, d, debug,
                           deprecated,
-                          error, info, setDebug, setLogLevel, setVerbose, v,
+                          error, info,
+                          setDebug,
+                          setLogLevel, setVerbose, v,
                           verbose, warn)
 
 warning = warn # convenience

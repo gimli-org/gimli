@@ -23,9 +23,11 @@ except ImportError as e:
     traceback.print_exc(file=sys.stdout)
     sys.stderr.write("ERROR: cannot import the library '_pygimli_'.\n")
 
+
 #######################################
 ###  Global convenience functions #####
 #######################################
+
 
 _pygimli_.load = None
 
