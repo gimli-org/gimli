@@ -108,6 +108,10 @@ function(find_python_module module)
         endif()
         # A module's location is usually a directory, but for binary modules
         # it's a .so file.
+
+        message(STATUS "testing for python module: ${PYTHON_EXECUTABLE} -c
+        'import re, ${module}; print(re.compile('\\__init__.py.*').sub('',${module}.__file__))")
+
         execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
             "import re, ${module}; print(re.compile('\\__init__.py.*').sub('',${module}.__file__))"
             RESULT_VARIABLE _${module}_status
@@ -124,7 +128,7 @@ function(find_python_module module)
             message(STATUS "Find python module ${module} fails:")
             message(STATUS "Result: ${_${module}_status}")
             message(STATUS "Output: ${_${module}_location}")
-            message(STATUS "Maybe you can provide the location by stetting PY_${module_upper}")
+            message(STATUS "Maybe you can provide the location by setting PY_${module_upper}")
         endif(NOT _${module}_status)
 
         find_package_handle_standard_args(${module}

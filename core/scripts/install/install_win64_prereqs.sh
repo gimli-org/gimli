@@ -1,23 +1,26 @@
 #!/bin/env bash
 
-pacman --noconfirm -Sy
-pacman --noconfirm -Su
+if [ -f /var/lib/pacman/db.lck ]; then
+        echo "old db lock deteced .. removing them"
+        rm -f /var/lib/pacman/db.lck
+fi
+
+#pacman --noconfirm -Syuu
 
 echo "#########################################################################"
 echo "### Maybe you need to restart msys after update of system components! ###"
 echo "#########################################################################"
 
-pacman -S --needed --noconfirm \
-        make \
-        tar \
-        git \
-        unzip \
-        wget \
-        diffutils \
-        patch 
+pacman -S --needed --noconfirm make tar git unzip wget
+
+# for some weird resson you can't install diffutils and pathc in one run
+#pacman -S --needed --noconfirm diffutils
+
+# for some weird resson you can't install diffutils and pathc in one run
+#pacman -S --needed --noconfirm patch
 
 # default cmake does not recognize WIN32 settings
-pacman -r --noconfirm cmake
+#pacman -r --noconfirm cmake
 
 # essentials
 pacman -S --needed --noconfirm \

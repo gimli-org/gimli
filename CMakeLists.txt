@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.12) 
+cmake_minimum_required(VERSION 3.12)
 
 if (${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
     message(FATAL_ERROR "In-source builds not allowed.
@@ -149,9 +149,9 @@ if(NOT THIRDPARTY_DIR)
     message(STATUS "External set to: ${EXTERNAL_DIR}")
 endif()
 
-if(NOT EXTERNAL_DIR)
-set(EXTERNAL_DIR ${PROJECT_SOURCE_DIR}/external/)
-message(STATUS "External set to: ${EXTERNAL_DIR}")
+if (NOT EXTERNAL_DIR)
+    set(EXTERNAL_DIR ${PROJECT_SOURCE_DIR}/external/)
+    message(STATUS "External set to: ${EXTERNAL_DIR}")
 endif()
 
 find_package(Threads REQUIRED)
@@ -164,7 +164,7 @@ if (NOT PYVERSION)
 endif()
 
 if (NOT PYTHON_EXECUTABLE)
-    message(STATUS "Searching for python:" ${PYVERSION})
+    message(STATUS "Searching for python: ${PYVERSION}")
     find_package(Python ${PYVERSION} EXACT COMPONENTS Interpreter NumPy Development REQUIRED)
 
     # message(STATUS "Python_Interpreter_FOUND: ${Python_Interpreter_FOUND} ${Python_EXECUTABLE} version: ${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}.${Python_VERSION_PATCH}")
@@ -178,11 +178,11 @@ else()
     find_package(PythonLibs)
     find_python_module(numpy)
     #set(Python_Libraries ${PYTHON_LIBRARY})
-    
+
     message(STATUS "Python_INCLUDE_DIRS: ${PYTHON_INCLUDE_DIR}")
     message(STATUS "Python_LIBRARIES: ${PYTHON_LIBRARY}")
     message(STATUS "Python_NumPy: ${numpy_FOUND}, ${PY_NUMPY}")
-    
+
     set(Python_VERSION_MAJOR ${PYTHON_VERSION_MAJOR})
     set(Python_VERSION_MINOR ${PYTHON_VERSION_MINOR})
     set(Python_EXECUTABLE ${PYTHON_EXECUTABLE} CACHE FILEPATH "Python interpreter")
@@ -194,6 +194,9 @@ else()
     set (PYTHON_FOUND TRUE CACHE BOOL "Is python available")
 endif()
 
+################################################################################
+# Check for boost stuff
+################################################################################
 function(find_boost_from_distname_file)
     set (BOOST_DIST_NAME_FILE "${EXTERNAL_DIR}/.boost-py${Python_VERSION_MAJOR}.dist")
     message(STATUS "locking for ${BOOST_DIST_NAME_FILE}")
@@ -239,10 +242,11 @@ if (1)
             # we should think about cmake superbuild with ExternalProject_Add as the replacement for find_or_build_package (next generation)
             if (NOT Boost_INCLUDE_DIR)
                 find_boost_from_distname_file()
-            else()
-                find_or_build_package_check(Boost boost Boost_INCLUDE_DIR False)
-                find_boost_from_distname_file()
             endif()
+            if (NOT Boost_INCLUDE_DIR)
+                find_or_build_package_check(Boost boost Boost_INCLUDE_DIR False)
+            endif()
+            find_boost_from_distname_file()
 
         endif(BOOST_ROOT)
     endif(NOT Boost_INCLUDE_DIR)
@@ -300,17 +304,17 @@ if (BLAS_FOUND)
         message(STATUS "MINGW_ROOT: " ${MINGW_ROOT})
 
         FIND_PATH(OpenBLAS_INCLUDE_DIR
-            NAMES 
+            NAMES
                 cblas.h
             PATHS
                 ${MINGW_ROOT}/include/OpenBLAS/
         )
     endif()
-    
-    if (NOT OpenBLAS_INCLUDE_DIR) 
+
+    if (NOT OpenBLAS_INCLUDE_DIR)
         message(STATUS "openblas header not found")
         FIND_PATH(OpenBLAS_INCLUDE_DIR
-            NAMES 
+            NAMES
                 cblas.h
             PATHS
                 /usr/include/openblas/
@@ -321,24 +325,24 @@ if (BLAS_FOUND)
         )
     endif()
 
-    if (NOT OpenBLAS_INCLUDE_DIR) 
+    if (NOT OpenBLAS_INCLUDE_DIR)
         message(STATUS "no openblas cblas.h in prefered paths .. searching defaults")
 
-        FIND_PATH(OpenBLAS_INCLUDE_DIR 
-            NAMES 
+        FIND_PATH(OpenBLAS_INCLUDE_DIR
+            NAMES
                 cblas.h
         )
     endif()
     message(STATUS "openblas cblas.h: ${OpenBLAS_INCLUDE_DIR}")
-    
+
     if (OpenBLAS_INCLUDE_DIR)
     set(OPENBLAS_CBLAS_FOUND TRUE)
     else()
     set(OPENBLAS_CBLAS_FOUND FALSE)
     endif()
-    
+
     set(OPENBLAS_FOUND TRUE)
-   
+
 else()
     set(OPENBLAS_FOUND FALSE)
     set(OPENBLAS_CBLAS_FOUND FALSE)
@@ -382,20 +386,20 @@ if (NOT Boost_PYTHON_LIBRARY)
     if (WIN32)
         set(bp_version "python${Python_VERSION_MAJOR}${Python_VERSION_MINOR}-mt")
         string(TOUPPER ${bp_version} BP_VERSION)
-
+        message(STATUS "... looking for ${bp_version} in BOOST_ROOT=${BOOST_ROOT}")
         find_package(Boost 1.68 COMPONENTS "${bp_version}")
         set(Boost_PYTHON_FOUND ${Boost_${bp_version}_FOUND} CACHE BOOL "boost python found")
         set(Boost_PYTHON_LIBRARY ${Boost_${BP_VERSION}_LIBRARY} CACHE FILEPATH "boost python lib")
 
-        
         if (NOT Boost_PYTHON_FOUND)
-            set(Boost_PYTHON_LIBRARY ${BOOST_ROOT}/lib/libboost_python${bp_version}.dll CACHE FILEPATH "Boost python lib")
-            message(STATUS "looking for:" ${Boost_PYTHON_LIBRARY} "...")
+            set(Boost_PYTHON_LIBRARY ${BOOST_ROOT}/lib/libboost_${bp_version}.dll)
+            message(STATUS "... looking for ${Boost_PYTHON_LIBRARY}")
             if (EXISTS ${Boost_PYTHON_LIBRARY})
-                message(STATUS ".. found.")
-                set(Boost_PYTHON_FOUND TRUE CACHE BOOL "boost python lib found"})
+                message(STATUS "... found.")
+                set(Boost_PYTHON_FOUND TRUE CACHE BOOL "boost python lib found")
+                set(Boost_PYTHON_LIBRARY ${Boost_PYTHON_LIBRARY} CACHE FILEPATH "boost python lib")
             else()
-            message(STATUS "Sorry but no boost-python found.")
+                message(STATUS "Sorry but no boost-python found.")
             endif()
         endif()
     else()
