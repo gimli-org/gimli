@@ -72,11 +72,8 @@ endif(WIN32)
 ADD_CUSTOM_TARGET(pg ALL)
 add_dependencies(pg _pygimli_)
 include_directories(${Python_NumPy_INCLUDE_DIRS})
-
-if(WIN32)
-    include_directories(${Python_INCLUDE_DIRS})
-    include_directories(${Boost_INCLUDE_DIR})
-endif(WIN32)
+include_directories(${Python_INCLUDE_DIRS})
+include_directories(${Boost_INCLUDE_DIR})
 
 if(CONDA_BUILD)
     include_directories(${Boost_INCLUDE_DIR})
