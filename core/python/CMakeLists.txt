@@ -3,8 +3,8 @@ ADD_CUSTOM_COMMAND(
     COMMAND
         ${CMAKE_COMMAND} -E remove ${CMAKE_CURRENT_BINARY_DIR}/_pygimli_.cache
     COMMAND
-        #${CMAKE_COMMAND} -E env "PYTHONPATH=$ENV{PYTHONPATH}${PYGCCXML_PATH}" ${PYTHON_EXECUTABLE} will work on cmake3.1
-        ${PYTHON_EXECUTABLE}
+        #${CMAKE_COMMAND} -E env "PYTHONPATH=$ENV{PYTHONPATH}${PYGCCXML_PATH}" ${Python_EXECUTABLE} will work on cmake3.1
+        ${Python_EXECUTABLE}
         #python
     ARGS
         ${CMAKE_CURRENT_SOURCE_DIR}/generate_pygimli_code.py
@@ -71,12 +71,9 @@ endif(WIN32)
 # for calling the build only
 ADD_CUSTOM_TARGET(pg ALL)
 add_dependencies(pg _pygimli_)
-include_directories(${PY_NUMPY}/core/include/)
-
-if(WIN32)
-    include_directories(${PYTHON_INCLUDE_DIR})
-    include_directories(${Boost_INCLUDE_DIR})
-endif(WIN32)
+include_directories(${Python_NumPy_INCLUDE_DIRS})
+include_directories(${Python_INCLUDE_DIRS})
+include_directories(${Boost_INCLUDE_DIR})
 
 if(CONDA_BUILD)
     include_directories(${Boost_INCLUDE_DIR})
@@ -85,7 +82,7 @@ endif(CONDA_BUILD)
 
 ADD_CUSTOM_TARGET(pgtest)
 ADD_CUSTOM_COMMAND(
-    COMMAND ${PYTHON_EXECUTABLE}
+    COMMAND ${Python_EXECUTABLE}
     ARGS -c 'import pygimli\; pygimli.test(show=False, abort=True) ' 
     TARGET pgtest
    )

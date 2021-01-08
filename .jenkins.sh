@@ -52,12 +52,16 @@ fi
 if [[ $core_update -ge 1 ]]; then
   echo "# Core changes detected. #"
   touch CMakeCache.txt
-  
+
   cmake ../trunk \
-     -DPYVERSION=3 \
      -DPYTHON_EXECUTABLE=/usr/bin/python3 \
-     -DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.7m.so \
      -DBoost_PYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libboost_python3-py37.so
+
+  #cmake ../trunk \
+  #   -DPYVERSION=3 \
+  #   -DPYTHON_EXECUTABLE=/usr/bin/python3 \
+  #   -DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.7m.so \
+  #   -DBoost_PYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libboost_python3-py37.so
   make -j 8 gimli
   make pygimli J=4
   make gtest

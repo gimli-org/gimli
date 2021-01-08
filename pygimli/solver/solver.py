@@ -2421,7 +2421,7 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
         if debug:
             print("start TL", swatch.duration())
 
-        if c is not 1.0:
+        if c != 1.0:
             c = cellValues(mesh, c, userData=userData)
 
         M = createMassMatrix(mesh, c)
