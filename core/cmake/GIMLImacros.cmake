@@ -12,7 +12,7 @@ macro(add_python_module PYTHON_MODULE_NAME SOURCE_DIR EXTRA_LIBS OUTDIR)
                                  PROPERTIES GENERATED TRUE)
 
     include_directories(BEFORE ${SOURCE_DIR})
-    include_directories(${PYTHON_INCLUDE_DIR})
+    include_directories(${Python_INCLUDE_DIRS})
     include_directories(${CMAKE_CURRENT_BINARY_DIR})
     include_directories(${CMAKE_CURRENT_BINARY_DIR}/generated/)
 
@@ -23,7 +23,7 @@ macro(add_python_module PYTHON_MODULE_NAME SOURCE_DIR EXTRA_LIBS OUTDIR)
     add_library(${PYTHON_TARGET_NAME} MODULE ${${PYTHON_MODULE_NAME}_SOURCE_FILES})
 
     target_link_libraries(${PYTHON_TARGET_NAME} ${EXTRA_LIBS})
-    target_link_libraries(${PYTHON_TARGET_NAME} ${PYTHON_LIBRARY})
+    target_link_libraries(${PYTHON_TARGET_NAME} ${Python_LIBRARIES})
     target_link_libraries(${PYTHON_TARGET_NAME} ${Boost_PYTHON_LIBRARY})
 
     set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES PREFIX "")
@@ -109,10 +109,10 @@ function(find_python_module module)
         # A module's location is usually a directory, but for binary modules
         # it's a .so file.
 
-        message(STATUS "testing for python module: ${PYTHON_EXECUTABLE} -c
-        'import re, ${module}; print(re.compile('\\__init__.py.*').sub('',${module}.__file__))")
+        # message(STATUS "testing for python module: ${Python_EXECUTABLE} -c
+        # 'import re, ${module}; print(re.compile("__init__.py.*").sub('',${module}.__file__))")
 
-        execute_process(COMMAND "${PYTHON_EXECUTABLE}" "-c"
+        execute_process(COMMAND "${Python_EXECUTABLE}" "-c"
             "import re, ${module}; print(re.compile('\\__init__.py.*').sub('',${module}.__file__))"
             RESULT_VARIABLE _${module}_status
             OUTPUT_VARIABLE _${module}_location

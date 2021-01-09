@@ -75,11 +75,6 @@ include_directories(${Python_NumPy_INCLUDE_DIRS})
 include_directories(${Python_INCLUDE_DIRS})
 include_directories(${Boost_INCLUDE_DIR})
 
-if(CONDA_BUILD)
-    include_directories(${Boost_INCLUDE_DIR})
-endif(CONDA_BUILD)
-
-
 ADD_CUSTOM_TARGET(pgtest)
 ADD_CUSTOM_COMMAND(
     COMMAND ${Python_EXECUTABLE}

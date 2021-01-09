@@ -46,7 +46,6 @@ from pyplusplus.decl_wrappers.doc_extractor import doc_extractor_i
 
 import hashlib
 
-
 MAIN_NAMESPACE = 'GIMLI'
 
 

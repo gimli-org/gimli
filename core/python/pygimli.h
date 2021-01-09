@@ -12,7 +12,7 @@
 //typedef struct { long double x, y; } __float128;
 #endif
 
-//#define PYTES
+//#define PYTEST
 #ifdef PYTEST
 
  #include <iostream>

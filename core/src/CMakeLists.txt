@@ -40,7 +40,7 @@ endif (UMFPACK_FOUND)
 
 if (PYTHON_FOUND)
     include_directories(${Python_INCLUDE_DIRS})
-    target_link_libraries(${libgimli_TARGET_NAME} ${PYTHON_LIBRARY})
+    target_link_libraries(${libgimli_TARGET_NAME} ${Python_LIBRARIES})
 endif (PYTHON_FOUND)
 
 if (Boost_INCLUDE_DIR)
