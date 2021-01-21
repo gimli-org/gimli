@@ -24,9 +24,14 @@ def load(fileName, verbose=False, **kwargs):
     if isinstance(data, pg.DataContainerERT):   
         return data
 
-    # pb = pg.optImport('pybert')
-    # data = pb.loadData(fileName)
+    if verbose:
+        pg.info("Try to import using pybert .. if available")
 
-    # print(data)
-    # pg.critical("Can't import ERT data file.", fileName)
+    pb = pg.optImport('pybert')
+    data = pb.loadData(fileName)
+
+    if isinstance(data, pg.DataContainerERT):   
+        return data
+
+    pg.critical("Can't import ERT data file.", fileName)
 
