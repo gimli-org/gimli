@@ -138,7 +138,7 @@ if(NOT THIRDPARTY_DIR)
             set (ADDRESSMODEL "32")
         endif()
     endif()
-    
+
     set(TARGETNAME "-${CMAKE_CXX_COMPILER_ID}-${CMAKE_CXX_COMPILER_VERSION}-${ADDRESSMODEL}")
     set(ENV{TARGETNAME} ${TARGETNAME})
     set(THIRDPARTY_DIR ${PROJECT_SOURCE_DIR}/../thirdParty/)
@@ -159,19 +159,38 @@ find_package(Threads REQUIRED)
 ################################################################################
 # Check for python stuff
 ################################################################################
+if (NOT PYVERSION)
+    set(PYVERSION 3)
+endif()
 
-if (NOT OLDPYTHON AND 1)
-    if (NOT PYVERSION)
-        set(PYVERSION 3)
-    endif()
-
-    message(STATUS "Searching for python:", ${PYVERSION})
+if (NOT PYTHON_EXECUTABLE)
+    message(STATUS "Searching for python:" ${PYVERSION})
     find_package(Python ${PYVERSION} EXACT COMPONENTS Interpreter NumPy Development REQUIRED)
 
     # message(STATUS "Python_Interpreter_FOUND: ${Python_Interpreter_FOUND} ${Python_EXECUTABLE} version: ${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}.${Python_VERSION_PATCH}")
     # message(STATUS "Python_INCLUDE_DIRS: ${Python_INCLUDE_DIRS}")
     # message(STATUS "Python_LIBRARIES: ${Python_LIBRARIES} ${Python_LIBRARY_DIRS}")
     # message(STATUS "Python_NumPy: ${Python_NumPy_FOUND}, ${Python_NumPy_INCLUDE_DIRS}, ${Python_NumPy_VERSION}")
+    set (PYTHON_FOUND TRUE CACHE BOOL "Is python available")
+else()
+    message(STATUS "Searching for python (pre cmake 3.10): ${PYVERSION}")
+    find_package(PythonInterp ${PYVERSION} REQUIRED)
+    find_package(PythonLibs)
+    find_python_module(numpy)
+    #set(Python_Libraries ${PYTHON_LIBRARY})
+    
+    message(STATUS "Python_INCLUDE_DIRS: ${PYTHON_INCLUDE_DIR}")
+    message(STATUS "Python_LIBRARIES: ${PYTHON_LIBRARY}")
+    message(STATUS "Python_NumPy: ${numpy_FOUND}, ${PY_NUMPY}")
+    
+    set(Python_VERSION_MAJOR ${PYTHON_VERSION_MAJOR})
+    set(Python_VERSION_MINOR ${PYTHON_VERSION_MINOR})
+    set(Python_EXECUTABLE ${PYTHON_EXECUTABLE} CACHE FILEPATH "Python interpreter")
+    set(Python_LIBRARIES ${PYTHON_LIBRARY} CACHE FILEPATH "python library")
+    set(Python_INCLUDE_DIRS ${PYTHON_INCLUDE_DIR} CACHE FILEPATH "python includes")
+    set(Python_NumPy_FOUND ${numpy_FOUND} CACHE BOOL "is numpy installed")
+    set(Python_NumPy_INCLUDE_DIRS  ${PY_NUMPY}/core/include CACHE FILEPATH "Numpy includes")
+
     set (PYTHON_FOUND TRUE CACHE BOOL "Is python available")
 endif()
 
@@ -350,8 +369,8 @@ function(find_boost_python_manual bp_version)
     find_package(Boost 1.68 COMPONENTS "python${bp_version}")
 
     if (${Boost_PYTHON${bp_version}_FOUND})
-        set(Boost_PYTHON_FOUND ${Boost_PYTHON${bp_version}_FOUND} PARENT_SCOPE)
-        set(Boost_PYTHON_LIBRARY ${Boost_PYTHON${bp_version}_LIBRARY_RELEASE} PARENT_SCOPE)
+        set(Boost_PYTHON_FOUND ${Boost_PYTHON${bp_version}_FOUND} CACHE BOOL "boost python lib found")
+        set(Boost_PYTHON_LIBRARY ${Boost_PYTHON${bp_version}_LIBRARY_RELEASE} CACHE FILEPATH "boost python lib(find_boost_python_manual)")
         message(STATUS " ... found: ${Boost_PYTHON_LIBRARY}")
     else()
         message(STATUS " ... not found.")
@@ -365,24 +384,24 @@ if (NOT Boost_PYTHON_LIBRARY)
         string(TOUPPER ${bp_version} BP_VERSION)
 
         find_package(Boost 1.68 COMPONENTS "${bp_version}")
-        set(Boost_PYTHON_FOUND ${Boost_${bp_version}_FOUND} CACHE BOOL "Wether Boost python found or not")
-        set(Boost_PYTHON_LIBRARY ${Boost_${BP_VERSION}_LIBRARY} CACHE FILEPATH "Boost python library")
+        set(Boost_PYTHON_FOUND ${Boost_${bp_version}_FOUND} CACHE BOOL "boost python found")
+        set(Boost_PYTHON_LIBRARY ${Boost_${BP_VERSION}_LIBRARY} CACHE FILEPATH "boost python lib")
 
         
         if (NOT Boost_PYTHON_FOUND)
-            set(Boost_PYTHON_LIBRARY ${BOOST_ROOT}/lib/libboost_python${bp_version}.dll)
+            set(Boost_PYTHON_LIBRARY ${BOOST_ROOT}/lib/libboost_python${bp_version}.dll CACHE FILEPATH "Boost python lib")
             message(STATUS "looking for:" ${Boost_PYTHON_LIBRARY} "...")
             if (EXISTS ${Boost_PYTHON_LIBRARY})
                 message(STATUS ".. found.")
-                set(Boost_PYTHON_FOUND TRUE})
+                set(Boost_PYTHON_FOUND TRUE CACHE BOOL "boost python lib found")
             else()
             message(STATUS "Sorry but no boost-python found.")
             endif()
         endif()
     else()
         # the name for py3 boost-python library lacks probably py3 suffix, which is different for different OS
-        set (Boost_PYTHON_FOUND False)
-        set (Boost_PYTHON_LIBRARY "None")
+        #set (Boost_PYTHON_FOUND False)
+        #set (Boost_PYTHON_LIBRARY "None")
         message(STATUS "***** ${Boost_PYTHON_FOUND}, ${Boost_PYTHON_LIBRARY}")
 
         if (NOT Boost_PYTHON_FOUND)
@@ -405,6 +424,11 @@ if (NOT Boost_PYTHON_LIBRARY)
             set(bp_version "${Python_VERSION_MAJOR}${Python_VERSION_MINOR}")
             find_boost_python_manual(${bp_version})
         endif()
+        if (NOT Boost_PYTHON_FOUND)
+            # /usr/lib/libboost_python3-py37.so # weird debian)
+            set(bp_version "${Python_VERSION_MAJOR}-py${Python_VERSION_MAJOR}${Python_VERSION_MINOR}")
+            find_boost_python_manual(${bp_version})
+        endif()
 
     endif()
 
@@ -416,6 +440,7 @@ if (NOT Boost_PYTHON_LIBRARY)
                        "any libboost_python* on your system and "
                        "provide it to the authors so we can try to fix "
                        "this here.")
+        exit()
     endif()
 endif()
 
