@@ -188,6 +188,10 @@ for ai in ax.flat:
         ai.plot(*po, marker='o', markersize=10, color='k', fillstyle='none')
 #
 # %%
+# Note that all four regularization operators fit the data equivalently but
+# the images (i.e. how the gaps between the data points are filled) are quite
+# different. This is something we should have in mind using regularization.
+# %%
 # Generating geostatistical media
 # -------------------------------
 # For generating geostatistical media, one can use the function
