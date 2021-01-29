@@ -14,7 +14,7 @@ def parse_bib(fname):
         bp = load(bibfile, parser=parser)
         references = bp.get_entry_list()
 
-    references.sort(key=lambda x: x['year'], reverse=True)
+    references.sort(key=lambda x: x["year"], reverse=True)
 
     return references
 
@@ -32,7 +32,10 @@ def write_html():
         else:
             doi = entry["doi"]
             link = "https://doi.org/%s" % doi
-            string = "<a target='_blank' href=%s data-toggle='tooltip' title='Go to %s'><i class='ai ai-doi ai-2x'></i></a>" % (link, link)
+            string = (
+                "<a target='_blank' href=%s data-toggle='tooltip' title='Go to %s'><i class='ai ai-doi ai-2x'></i></a>"
+                % (link, link)
+            )
         entry["doi"] = string
 
     return json.dumps(db, sort_keys=True, indent=4)

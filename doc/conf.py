@@ -20,7 +20,6 @@ import numpy as np
 # for doc rendering on headless machines (jenkins server)
 import matplotlib
 matplotlib.use("Agg")
-import pip
 import pkg_resources
 import sphinx
 
@@ -211,7 +210,7 @@ master_doc = 'documentation'
 
 # General information about the project.
 project = 'pyGIMLi'
-copyright = '2020 - GIMLi Development Team'
+copyright = '2021 - GIMLi Development Team'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

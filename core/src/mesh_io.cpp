@@ -1,5 +1,5 @@
 /******************************************************************************
- *   Copyright (C) 2006-2020 by the GIMLi development team                    *
+ *   Copyright (C) 2006-2021 by the GIMLi development team                    *
  *   Carsten Rücker carsten@resistivity.net                                   *
  *                                                                            *
  *   Licensed under the Apache License, Version 2.0 (the "License");          *
@@ -756,7 +756,7 @@ void Mesh::exportVTK(const std::string & fbody,
         for (Index i = 0; i < cellCount(); i ++) {
             idxCount += cell(i).nodeCount() + 1;
         }
-        log(Debug, "writing cells connections", cellCount());
+        log(Debug, "writing cell connections", cellCount());
 
         file << "CELLS " << cellCount() << " " << idxCount << std::endl;
 
