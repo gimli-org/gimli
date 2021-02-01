@@ -173,9 +173,12 @@ if (NOT PYTHON_EXECUTABLE)
     # message(STATUS "Python_NumPy: ${Python_NumPy_FOUND}, ${Python_NumPy_INCLUDE_DIRS}, ${Python_NumPy_VERSION}")
     set (PYTHON_FOUND TRUE CACHE BOOL "Is python available")
 else()
+    
     message(STATUS "Searching for python (pre cmake 3.10): ${PYVERSION}")
     find_package(PythonInterp ${PYVERSION} REQUIRED)
     find_package(PythonLibs)
+    
+    set(Python_EXECUTABLE ${PYTHON_EXECUTABLE} CACHE FILEPATH "Python interpreter")
     find_python_module(numpy)
     #set(Python_Libraries ${PYTHON_LIBRARY})
     
@@ -185,7 +188,6 @@ else()
     
     set(Python_VERSION_MAJOR ${PYTHON_VERSION_MAJOR})
     set(Python_VERSION_MINOR ${PYTHON_VERSION_MINOR})
-    set(Python_EXECUTABLE ${PYTHON_EXECUTABLE} CACHE FILEPATH "Python interpreter")
     set(Python_LIBRARIES ${PYTHON_LIBRARY} CACHE FILEPATH "python library")
     set(Python_INCLUDE_DIRS ${PYTHON_INCLUDE_DIR} CACHE FILEPATH "python includes")
     set(Python_NumPy_FOUND ${numpy_FOUND} CACHE BOOL "is numpy installed")
