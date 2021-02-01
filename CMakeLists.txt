@@ -163,7 +163,7 @@ if (NOT PYVERSION)
     set(PYVERSION 3)
 endif()
 
-if (NOT PYTHON_EXECUTABLE)
+if (NOT PYTHON_EXECUTABLE AND NOT ${CMAKE_VERSION} VERSION_LESS "3.14.0")
     message(STATUS "Searching for python:" ${PYVERSION})
     find_package(Python ${PYVERSION} EXACT COMPONENTS Interpreter NumPy Development REQUIRED)
 
@@ -174,7 +174,7 @@ if (NOT PYTHON_EXECUTABLE)
     set (PYTHON_FOUND TRUE CACHE BOOL "Is python available")
 else()
     
-    message(STATUS "Searching for python (pre cmake 3.10): ${PYVERSION}")
+    message(STATUS "Manually searching for python (pre cmake 3.14): ${PYVERSION}")
     find_package(PythonInterp ${PYVERSION} REQUIRED)
     find_package(PythonLibs)
     
