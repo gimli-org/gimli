@@ -61,7 +61,7 @@ ax, cb = pg.show(mesh, CM[:, ind], cMap="magma_r")
 # In order to avoid a matrix inverse (square root), a special matrix is derived
 # that does the decomposition and stores the eigenvectors and eigenvalues values.
 # A multiplication is done by multiplying with Q and scaling with the diagonal D.
-# This matrix is implemented in the :mod:`pygimli.core.matrix` module
+# This matrix is implemented in the :mod:`pygimli.matrix` module
 # by the class :py:mod:`pg.matrix.Cm05Matrix`
 
 Cm05 = pg.matrix.Cm05Matrix(CM)
@@ -187,6 +187,10 @@ for ai in ax.flat:
     for po in pos:
         ai.plot(*po, marker='o', markersize=10, color='k', fillstyle='none')
 #
+# %%
+# Note that all four regularization operators fit the data equivalently but
+# the images (i.e. how the gaps between the data points are filled) are quite
+# different. This is something we should have in mind using regularization.
 # %%
 # Generating geostatistical media
 # -------------------------------
