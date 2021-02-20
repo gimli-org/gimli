@@ -1329,7 +1329,7 @@ def drawSensors(ax, sensors, diam=None, coords=None, **kwargs):
     """
     if coords is None:
         coords = [0, 2]
-        if pg.core.yVari(sensors):
+        if not pg.core.zVari(sensors) and sensors[0][2] == 0.0:
             coords = [0, 1]
 
     eCircles = []

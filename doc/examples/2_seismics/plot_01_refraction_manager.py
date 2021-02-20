@@ -14,6 +14,7 @@ import pygimli as pg
 import pygimli.meshtools as mt
 from pygimli.physics import TravelTimeManager
 
+
 ###############################################################################
 # We start by creating a three-layered slope (The model is taken from the BSc
 # thesis of Constanze Reinken (University of Bonn).
@@ -27,6 +28,13 @@ layer3 = mt.createPolygon([[0.0, 110], [0.0, 126], [117.5, 153], [117.5, 110]],
 slope = (164 - 137) / 117.5
 
 geom = layer1 + layer2 + layer3
+
+# If you want no sloped flat earth geometry .. comment out the next 2 lines
+# geom = mt.createWorld(start=[0.0, 110], end=[117.5, 137], layers=[137-2, 137-11])
+# slope = 0.0
+
+pg.show(geom)
+
 mesh = mt.createMesh(geom, quality=34.3, area=3, smooth=[1, 10])
 pg.show(mesh)
 
@@ -59,7 +67,7 @@ vp[vp == 2] = 500
 vp[vp == 3] = 1300
 
 ax, _ = pg.show(mesh, vp, colorBar=True, logScale=False, label='v in m/s')
-pg.viewer.mpl.drawSensors(ax, scheme.sensors(), diam=0.5,
+pg.viewer.mpl.drawSensors(ax, scheme.sensors(), diam=1.0,
                          facecolor='white', edgecolor='black')
 
 ###############################################################################
