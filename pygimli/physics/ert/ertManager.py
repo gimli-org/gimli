@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 import pygimli as pg
 from pygimli.frameworks import MeshMethodManager
 from .ertModelling import ERTModelling, ERTModellingReference
-from .ert import createInversionMesh, createGeometricFactors
+from .ert import createInversionMesh, createGeometricFactors, estimateError
 from pygimli.utils import getSavePath
 
 
@@ -443,11 +443,8 @@ class ERTManager(MeshMethodManager):
 
         return rae
 
-    def estimateError(self, data, absoluteError=0.001, relativeError=0.03,
-                      absoluteUError=None, absoluteCurrent=0.1):
+    def estimateError(self, data=None, **kwargs):
         """Estimate error composed of an absolute and a relative part.
-
-        This is a static method and will not alter any member of the Manager
 
         Parameters
         ----------
@@ -469,41 +466,11 @@ class ERTManager(MeshMethodManager):
         -------
         error : Array
         """
-        if relativeError >= 0.5:
-            print("relativeError set to a value > 0.5 .. assuming this "
-                  "is a percentage Error level dividing them by 100")
-            relativeError /= 100.0
-
-        if absoluteUError is None:
-            if not data.allNonZero('rhoa'):
-                pg.critical("We need apparent resistivity values "
-                            "(rhoa) in the data to estimate a "
-                            "data error.")
-            error = relativeError + absoluteError / data('rhoa')
-        else:
-            u = None
-            i = absoluteCurrent
-            if data.haveData("i"):
-                i = data('i')
-
-            if data.haveData("u"):
-                u = data('u')
-            else:
-                if data.haveData("r"):
-                    u = data('r') * i
-                elif data.haveData("rhoa"):
-                    if data.haveData("k"):
-                        u = data('rhoa') / data('k') * i
-                    else:
-                        pg.critical("We need (rhoa) and (k) in the"
-                                    "data to estimate data error.")
-
-                else:
-                    pg.critical("We need apparent resistivity values "
-                                "(rhoa) or impedances (r) "
-                                "in the data to estimate data error.")
-
-            error = pg.abs(absoluteUError / u) + relativeError
+        if data is None:  #
+            error = estimateError(self.data, **kwargs)
+            self.data["err"] = error
+        else:  # the old way: better use ert.estimateError directly
+            error = estimateError(data, **kwargs)
 
         return error
 
@@ -561,65 +528,6 @@ class ERTManager(MeshMethodManager):
             return path, fig, ax
         return path
 
-
-def createERTData(elecs, schemeName='none', **kwargs):
-    """Create data scheme for compatibility (advanced version in BERT).
-
-    Parameters
-    ----------
-    sounding : bool [False]
-        Create a 1D VES Schlumberger configuration.
-        elecs need to be an array with elecs[0] = mn/2 and elecs[1:] = ab/2.
-    """
-    if kwargs.pop('sounding', False):
-        data = pg.DataContainerERT()
-        data.setSensors(pg.cat(-elecs[::-1], elecs))
-
-        nElecs = len(elecs)
-        for i in range(nElecs-1):
-            data.createFourPointData(i, i, 2*nElecs-i-1, nElecs-1, nElecs)
-
-        return data
-
-    if schemeName != "dd":
-        import pybert as pb  # that's bad!!! TODO: remove pybert deps
-        return pb.createData(elecs, schemeName, **kwargs)
-
-    isClosed = kwargs.pop('closed', False)
-
-    data = pg.DataContainerERT()
-    data.setSensors(elecs)
-
-    nElecs = len(elecs)
-    a = []
-    b = []
-    m = []
-    n = []
-    eb = 0
-    for i in range(nElecs):
-        for j in range(eb + 2, nElecs):
-            ea = i
-            eb = ea + 1
-            em = j
-            en = em + 1
-
-            if isClosed:
-                en = en % nElecs
-
-            if en < nElecs and en != ea:
-                a.append(ea)
-                b.append(eb)
-                m.append(em)
-                n.append(en)
-
-    data.resize(len(a))
-    data.add('a', a)
-    data.add('b', b)
-    data.add('m', m)
-    data.add('n', n)
-    data.set('valid', np.ones(len(a)))
-
-    return data
 
 
 if __name__ == "__main__":

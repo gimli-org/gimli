@@ -7,12 +7,10 @@
     * Vertical Electric Sounding (VES)
 """
 
-from .ert import (ERTManager, ERTModelling, createERTData, #
-                 ERTModellingReference,
-                 simulate,
-                 createGeometricFactors,
-                 createInversionMesh)
-
+from .ert import (createERTData, simulate, estimateError,
+                  createGeometricFactors, createInversionMesh)
+from .ertManager import ERTManager
+from .ertModelling import ERTModelling, ERTModellingReference
 from .ves import VESModelling, VESCModelling, VESManager
 
 from .visualization import showERTData
