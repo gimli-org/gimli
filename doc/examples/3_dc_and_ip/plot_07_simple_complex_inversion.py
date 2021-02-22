@@ -24,14 +24,12 @@ doi:10.1111/1365-2478.12013, 2000.
 """
 # sphinx_gallery_thumbnail_number = 5
 import numpy as np
-import matplotlib.pylab as plt
-
-# import matplotlib.pylab as plt
-from pygimli.physics.ert.ert import ERTModelling
+import matplotlib.pyplot as plt
+# import matplotlib.pylab as plt  # not good!
 
 import pygimli as pg
 import pygimli.meshtools as mt
-import pygimli.physics.ert as ert
+from pygimli.physics import ert
 
 ###############################################################################
 # For reference we later want to plot the true complex resistivity model as a
@@ -125,7 +123,7 @@ start_model = np.ones(mesh.cellCount()) * pg.utils.complex.toComplex(
 
 ###############################################################################
 # Initialize the complex forward operator
-fop = ERTModelling(
+fop = ert.ERTModelling(
     sr=False,
     verbose=True,
 )
