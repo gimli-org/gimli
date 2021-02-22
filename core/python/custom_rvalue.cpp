@@ -30,7 +30,7 @@ const static int __numpy_initialized = initNumpy();
 
 namespace bp = boost::python;
 
-#if defined ( __APPLE__ ) || ( defined (__SVR4) && defined (__sun) 
+#if defined ( __APPLE__ ) || ( defined (__SVR4) && defined (__sun) )
     #define __DC(str) ;
 #else
     #define __DC(str) if (GIMLI::deepDebug() > 0) __MS(str)
