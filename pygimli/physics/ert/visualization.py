@@ -101,7 +101,7 @@ def drawERTData(ax, data, vals=None, **kwargs):
 
     Parameters
     ----------
-    data : pybert.DataContainerERT
+    data : DataContainerERT
         data container with sensorPositions and a/b/m/n fields
     vals : iterable of data.size() [data('rhoa')]
         vector containing the vals to show
@@ -191,7 +191,7 @@ def midconfERT(data, ind=None, rnum=1, circular=False):
 
     Parameters
     ----------
-    data : pybert.DataContainerERT
+    data : DataContainerERT
         data container with sensorPositions and a/b/m/n fields
 
     ind : []

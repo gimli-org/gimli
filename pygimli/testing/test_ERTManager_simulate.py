@@ -4,15 +4,14 @@
 #    of the K-factor
 
 if False: # deactivated due to pybert dependency
-    import pybert as pb
-# import pygimli as pg
+    import pygimli as pg
     import pygimli.meshtools as mt
     import numpy as np
 
     world = mt.createWorld(
         start=[-50, 0], end=[50, -50], layers=[-1, -5], worldMarker=True)
 
-    scheme = pb.DataContainerERT()
+    scheme = pg.DataContainerERT()
     elec_positions = [
         [-2, 0, 0],
         [-1, 0, 0],
@@ -44,7 +43,7 @@ if False: # deactivated due to pybert dependency
         [3, 59.595 + 8.987j],
     ]
 
-    ert = pb.ERTManager()
+    ert = pg.physics.ERTManager()
     data = ert.simulate(mesh, res=rhomap, scheme=scheme, verbose=True)
     rhoa = data.get('rhoa').array()
     phia = data.get('phia').array()
