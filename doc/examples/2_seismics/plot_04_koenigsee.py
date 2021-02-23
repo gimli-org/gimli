@@ -49,7 +49,7 @@ ax, cbar = mgr.showData(data)
 # based on the sensor positions on-the-fly.
 
 mgr.invert(data, secNodes=3, paraMaxCellSize=5.0,
-           zWeight=0.2, vTop=500, vBottom=5000, maxIter=1,
+           zWeight=0.2, vTop=500, vBottom=5000,
            verbose=1)
 
 ax, cbar = mgr.showResult(logScale=True)
