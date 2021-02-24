@@ -17,3 +17,4 @@ from .visualization import showERTData
 from .importData import load
 
 show = showERTData
+createData = createERTData

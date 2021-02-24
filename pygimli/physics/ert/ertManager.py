@@ -183,13 +183,12 @@ class ERTManager(MeshMethodManager):
 
         Examples
         --------
-        # TODO: Remove pybert dependencies
-        # >>> import pybert as pb
+        # >>> from pygimli.physics import ert
         # >>> import pygimli as pg
         # >>> import pygimli.meshtools as mt
         # >>> world = mt.createWorld(start=[-50, 0], end=[50, -50],
         # ...                        layers=[-1, -5], worldMarker=True)
-        # >>> scheme = pb.createData(
+        # >>> scheme = ert.createData(
         # ...                     elecs=pg.utils.grange(start=-10, end=10, n=21),
         # ...                     schemeName='dd')
         # >>> for pos in scheme.sensorPositions():
@@ -201,7 +200,6 @@ class ERTManager(MeshMethodManager):
         # ...    [2, 50. + 0j],
         # ...    [3, 10.+ 0j],
         # ... ]
-        # >>> ert = pb.ERTManager()
         # >>> data = ert.simulate(mesh, res=rhomap, scheme=scheme, verbose=True)
         # >>> rhoa = data.get('rhoa').array()
         # >>> phia = data.get('phia').array()
@@ -441,7 +439,7 @@ class ERTManager(MeshMethodManager):
                 # pg._y("iperr", min(ipe), max(ipe), ipe)
                 return pg.cat(rae, ipe)
 
-        return rae
+        return rae  # not set if err is no DataContainer (else missing)
 
     def estimateError(self, data=None, **kwargs):
         """Estimate error composed of an absolute and a relative part.
