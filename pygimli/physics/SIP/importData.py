@@ -415,7 +415,7 @@ def readSIP256file(resfile, verbose=False):
             #     sline = re.sub('[0-9]-', '5 -', line).split()
                 # not a good idea for dates
 
-            for c in range(6): # this is expensive .. do we really need this?
+            for c in range(7): # this is expensive .. do we really need this?
                 if len(sline[c]) > 15:  # too long line / missing space
                     if c == 0:
                         part1 = sline[c][:-15]
