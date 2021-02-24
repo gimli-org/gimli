@@ -10,8 +10,263 @@ import numpy as np
 
 import pygimli as pg
 
+from .ertModelling import ERTModelling
 
-def simulate(mesh, scheme, res, sr=True, useBert=True,
+geometricFactors = pg.core.geometricFactors  # to use ert.geometricFactors
+
+
+def simulate(mesh, scheme, res, **kwargs):
+    """Simulate an ERT measurement.
+
+    Perform the forward task for a given mesh, resistivity distribution &
+    measuring scheme and return data (apparent resistivity) or potentials.
+
+    For complex resistivity, the apparent resistivities is complex as well.
+
+    The forward operator itself only calculates potential values for the
+    electrodes in the given data scheme.
+    To calculate apparent resistivities, geometric factors (k) are needed.
+    If there are no values k in the DataContainerERT scheme, the function
+    tries to calculate them, either analytically or numerically by using a
+    p2-refined version of the given mesh.
+
+    TODO
+    ----
+    * 2D + Complex + SR
+
+    Args
+    ----
+    mesh : :gimliapi:`GIMLI::Mesh`
+        2D or 3D Mesh to calculate for.
+
+    res : float, array(mesh.cellCount()) | array(N, mesh.cellCount()) |
+          list
+        Resistivity distribution for the given mesh cells can be:
+        . float for homogeneous resistivity (e.g. 1.0)
+        . single array of length mesh.cellCount()
+        . matrix of N resistivity distributions of length mesh.cellCount()
+        . resistivity map as [[regionMarker0, res0],
+                              [regionMarker0, res1], ...]
+
+    scheme : :gimliapi:`GIMLI::DataContainerERT`
+        Data measurement scheme.
+
+    Keyword Args
+    ------------
+    verbose: bool[False]
+        Be verbose. Will override class settings.
+    calcOnly: bool [False]
+        Use fop.calculate instead of fop.response. Useful if you want
+        to force the calculation of impedances for homogeneous models.
+        No noise handling. Solution is put as token 'u' in the returned
+        DataContainerERT.
+    noiseLevel: float [0.0]
+        add normally distributed noise based on
+        scheme['err'] or on noiseLevel if error>0 is not contained
+    noiseAbs: float [0.0]
+        Absolute voltage error in V
+    returnArray: bool [False]
+        Returns an array of apparent resistivities instead of
+        a DataContainerERT
+    returnFields: bool [False]
+        Returns a matrix of all potential values (per mesh nodes)
+        for each injection electrodes.
+
+    Returns
+    -------
+    DataContainerERT | array(data.size()) | array(N, data.size()) |
+    array(N, mesh.nodeCount()):
+        Data container with resulting apparent resistivity data and
+        errors (if noiseLevel or noiseAbs is set).
+        Optional returns a Matrix of rhoa values
+        (for returnArray==True forces noiseLevel=0).
+        In case of a complex valued resistivity model, phase values are
+        returned in the DataContainerERT (see example below), or as an
+        additionally returned array.
+
+    Examples
+    --------
+    # >>> from pygimli.physics import ert
+    # >>> import pygimli as pg
+    # >>> import pygimli.meshtools as mt
+    # >>> world = mt.createWorld(start=[-50, 0], end=[50, -50],
+    # ...                        layers=[-1, -5], worldMarker=True)
+    # >>> scheme = ert.createData(
+    # ...                     elecs=pg.utils.grange(start=-10, end=10, n=21),
+    # ...                     schemeName='dd')
+    # >>> for pos in scheme.sensorPositions():
+    # ...     _= world.createNode(pos)
+    # ...     _= world.createNode(pos + [0.0, -0.1])
+    # >>> mesh = mt.createMesh(world, quality=34)
+    # >>> rhomap = [
+    # ...    [1, 100. + 0j],
+    # ...    [2, 50. + 0j],
+    # ...    [3, 10.+ 0j],
+    # ... ]
+    # >>> ert = pg.ERTManager()
+    # >>> data = ert.simulate(mesh, res=rhomap, scheme=scheme, verbose=True)
+    # >>> rhoa = data.get('rhoa').array()
+    # >>> phia = data.get('phia').array()
+    """
+    verbose = kwargs.pop('verbose', True)
+    calcOnly = kwargs.pop('calcOnly', False)
+    returnFields = kwargs.pop("returnFields", False)
+    returnArray = kwargs.pop('returnArray', False)
+    noiseLevel = kwargs.pop('noiseLevel', 0.0)
+    noiseAbs = kwargs.pop('noiseAbs', 1e-4)
+    seed = kwargs.pop('seed', None)
+    sr = kwargs.pop('sr', True)  # self.sr)
+
+    #segfaults with self.fop (test & fix)
+    fop = ERTModelling(sr=sr, verbose=verbose)
+    # fop = self.createForwardOperator(useBert=True,  # self.useBert,
+                                     # sr=sr, verbose=verbose)
+    fop.data = scheme
+    fop.setMesh(mesh, ignoreRegionManager=True)
+
+    rhoa = None
+    phia = None
+
+    isArrayData = False
+    # parse the given res into mesh-cell-sized array
+    if isinstance(res, int) or isinstance(res, float):
+        res = np.ones(mesh.cellCount()) * float(res)
+    elif isinstance(res, complex):
+        res = np.ones(mesh.cellCount()) * res
+    elif hasattr(res[0], '__iter__'):  # ndim == 2
+        if len(res[0]) == 2:  # res seems to be a res map
+            # check if there are markers in the mesh that are not defined
+            # the rhomap. better signal here before it results in errors
+            meshMarkers = list(set(mesh.cellMarkers()))
+            mapMarkers = [m[0] for m in res]
+            if any([mark not in mapMarkers for mark in meshMarkers]):
+                left = [m for m in meshMarkers if m not in mapMarkers]
+                pg.critical("Mesh contains markers without assigned "
+                            "resistivities {}. Please fix given "
+                            "rhomap.".format(left))
+            res = pg.solver.parseArgToArray(res, mesh.cellCount(), mesh)
+        else:  # probably nData x nCells array
+            # better check for array data here
+            isArrayData = True
+
+    if isinstance(res[0], np.complex) or isinstance(res, pg.CVector):
+        pg.info("Complex resistivity values found.")
+        fop.setComplex(True)
+    else:
+        fop.setComplex(False)
+
+    if not scheme.allNonZero('k') and not calcOnly:
+        if verbose:
+            pg.info('Calculate geometric factors.')
+        scheme.set('k', fop.calcGeometricFactor(scheme))
+
+    ret = pg.DataContainerERT(scheme)
+    # just to be sure that we don't work with artifacts
+    ret['u'] *= 0.0
+    ret['i'] *= 0.0
+    ret['r'] *= 0.0
+
+    if isArrayData:
+        rhoa = np.zeros((len(res), scheme.size()))
+        for i, r in enumerate(res):
+            rhoa[i] = fop.response(r)
+            if verbose:
+                print(i, "/", len(res), " : ", pg.dur(), "s",
+                      "min r:", min(r), "max r:", max(r),
+                      "min r_a:", min(rhoa[i]), "max r_a:", max(rhoa[i]))
+    else:  # res is single resistivity array
+        if len(res) == mesh.cellCount():
+
+            if calcOnly:
+                fop.mapERTModel(res, 0)
+
+                dMap = pg.core.DataMap()
+                fop.calculate(dMap)
+                if fop.complex():
+                    pg.critical('Implement me')
+                else:
+                    ret["u"] = dMap.data(scheme)
+                    ret["i"] = np.ones(ret.size())
+
+                if returnFields:
+                    return pg.Matrix(fop.solution())
+                return ret
+            else:
+                if fop.complex():
+                    res = pg.utils.squeezeComplex(res)
+
+                resp = fop.response(res)
+
+                if fop.complex():
+                    rhoa, phia = pg.utils.toPolar(resp)
+                else:
+                    rhoa = resp
+        else:
+            print(mesh)
+            print("res: ", res)
+            raise BaseException(
+                "Simulate called with wrong resistivity array.")
+
+    if not isArrayData:
+        ret['rhoa'] = rhoa
+
+        if phia is not None:
+            ret.set('phia', phia)
+    else:
+        ret.set('rhoa', rhoa[0])
+        if phia is not None:
+            ret.set('phia', phia[0])
+
+    if returnFields:
+        return pg.Matrix(fop.solution())
+
+    if noiseLevel > 0:  # if errors in data noiseLevel=1 just triggers
+        if not ret.allNonZero('err'):
+            # 1A  and #100µV
+            ret.set('err', estimateError(ret,
+                                         relativeError=noiseLevel,
+                                         absoluteUError=noiseAbs,
+                                         absoluteCurrent=1))
+            print("Data error estimate (min:max) ",
+                  min(ret('err')), ":", max(ret('err')))
+
+        rhoa *= 1. + pg.randn(ret.size(), seed=seed) * ret('err')
+        ret.set('rhoa', rhoa)
+
+        ipError = None
+        if phia is not None:
+            if scheme.allNonZero('iperr'):
+                ipError = scheme('iperr')
+            else:
+                # np.abs(self.data("phia") +TOLERANCE) * 1e-4absoluteError
+                if noiseLevel > 0.5:
+                    noiseLevel /= 100.
+
+                if 'phiErr' in kwargs:
+                    ipError = np.ones(ret.size()) * kwargs.pop('phiErr') / 1000
+                else:
+                    ipError = abs(ret["phia"]) * noiseLevel
+
+                if verbose:
+                    print("Data IP abs error estimate (min:max) ",
+                          min(ipError), ":", max(ipError))
+
+            phia += pg.randn(ret.size(), seed=seed) * ipError
+            ret['iperr'] = ipError
+            ret['phia'] = phia
+
+    # check what needs to be setup and returned
+
+    if returnArray:
+        if phia is not None:
+            return rhoa, phia
+        else:
+            return rhoa
+
+    return ret
+
+
+def simulateOld(mesh, scheme, res, sr=True, useBert=True,
              verbose=False, **kwargs):
     """ERT forward calculation.
 
@@ -67,17 +322,17 @@ def createGeometricFactors(scheme, numerical=None, mesh=None,
     numerical: bool | None [False]
         If numerical is None, False is assumed, we try to guess topography
         and warn if we think we found them.
-        If set to True or False, numerical calculation will used respectively.
+        If set to True or False, numerical calculation will used or not.
     mesh: :gimliapi:`GIMLI::Mesh` | str
         Mesh for numerical calculation. If not given, analytical geometric
         factors for halfspace earth are guessed or a default mesh will be
-        created. The mesh will be h and p refined. If given topo is set to
+        created (and h/p refined according to h2/p2). If given topo is set to
         True. If the numerical effort is to high or the accuracy to low
-        you should consider to calculate the factors manual.
+        you should consider calculating the factors manually.
     h2: bool [True]
-        Default refinement to achieve high accuracy calculation
+        Default spatial refinement to achieve high accuracy
     p2: bool [True]
-        Default refinement to achieve high accuracy calculation
+        Default polynomial refinement to achieve high accuracy
     verbose: bool
         Give some output.
     """
