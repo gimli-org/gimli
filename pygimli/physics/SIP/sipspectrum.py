@@ -764,7 +764,7 @@ class SIPSpectrum(object):
         """Mean logarithmic relaxation time (50% cumulative log curve)."""
         return exp(np.sum(np.log(self.tau) * self.mDD) / sum(self.mDD))
 
-    def showAll(self, save=False):
+    def showAll(self, save=False, ax=None):
         """Plot spectrum, Cole-Cole fit and Debye distribution"""
         # generate title strings
         if np.any(self.mCC):
@@ -773,14 +773,19 @@ class SIPSpectrum(object):
                 tstr = r'CC: $\rho$={:.1f} m={:.3f} $\tau$={:.1e}s c={:.2f}'
             else:
                 tstr = r'CC: m={:.3f} $\tau$={:.1e}s c={:.2f}'
-                if len(mCC) == 6:  # double cole cole
+                if len(mCC) == 6:  # double Cole-Cole
                     tstr = tstr.replace('CC', 'CC1') + '   ' + \
                         tstr.replace('CC', 'CC2')
                 elif len(mCC) > 3:  # second (EM) tau
                     tstr += r' $\tau_2$={:.1e}s'
             tCC = tstr.format(*mCC)
-        fig, ax = plt.subplots(nrows=2+(self.mDD is not None),
-                               figsize=(12, 12))
+
+        if ax is None:
+            fig, ax = plt.subplots(nrows=2+(self.mDD is not None),
+                                   figsize=(12, 12))
+        else:
+            fig = ax[0].figure
+
         self.fig['all'] = fig
         fig.subplots_adjust(hspace=0.25)
         # amplitude
@@ -793,11 +798,13 @@ class SIPSpectrum(object):
         # phase
         if np.any(self.phiOrg):
             ax[1].semilogx(self.f, self.phiOrg * 1e3, 'c+-', label='org. data')
+
         ax[1].semilogx(self.f, self.phi * 1e3, 'b+-', label='data')
         if np.any(self.phiCC):
             ax[1].semilogx(self.f, self.phiCC * 1e3, 'r-', label='CC model')
         if np.any(self.phiDD):
             ax[1].semilogx(self.f, self.phiDD * 1e3, 'm-', label='DD model')
+
         ax[1].grid(True)
         ax[1].legend(loc='best')
         ax[1].set_xlabel('f (Hz)')
@@ -820,6 +827,7 @@ class SIPSpectrum(object):
             else:
                 savename = self.basename + '.pdf'
             fig.savefig(savename, bbox_inches='tight')
+
         plt.show(block=False)
         return fig, ax
 
