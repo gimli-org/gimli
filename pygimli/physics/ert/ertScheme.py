@@ -56,6 +56,16 @@ def createData(elecs, schemeName='none', **kwargs):
     >>>
     >>> plt.show()
     """
+    if kwargs.pop('sounding', False):
+        data = pg.DataContainerERT()
+        data.setSensors(pg.cat(-elecs[::-1], elecs))
+
+        nElecs = len(elecs)
+        for i in range(nElecs-1):
+            data.createFourPointData(i, i, 2*nElecs-i-1, nElecs-1, nElecs)
+
+        return data
+
     mg = DataSchemeManager()
 
     if schemeName == "none":
