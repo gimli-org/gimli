@@ -7,10 +7,12 @@
     * Vertical Electric Sounding (VES)
 """
 
+import pygimli as pg
 from .ert import (createERTData, simulate, estimateError,
                   createGeometricFactors, createInversionMesh)
 from .ertManager import ERTManager
 from .ertModelling import ERTModelling, ERTModellingReference
+from .ertScheme import createData
 from .ves import VESModelling, VESCModelling, VESManager
 
 from .visualization import showERTData
@@ -18,3 +20,5 @@ from .importData import load
 
 show = showERTData
 createData = createERTData
+geometricFactor = pg.core.geometricFactor
+geometricFactors = geometricFactor
