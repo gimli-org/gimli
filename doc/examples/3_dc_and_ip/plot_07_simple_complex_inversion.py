@@ -25,15 +25,13 @@ doi:10.1111/1365-2478.12013, 2000.
 # sphinx_gallery_thumbnail_number = 5
 import numpy as np
 import matplotlib.pyplot as plt
-# import matplotlib.pylab as plt  # not good!
 
 import pygimli as pg
 import pygimli.meshtools as mt
 from pygimli.physics import ert
 
 ###############################################################################
-# For reference we later want to plot the true complex resistivity model as a
-# reference
+# For reference we later plot the true complex resistivity model as reference
 
 
 def plot_fwd_model(axes):

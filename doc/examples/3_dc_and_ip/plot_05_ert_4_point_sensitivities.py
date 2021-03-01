@@ -13,7 +13,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pygimli as pg
 import pygimli.meshtools as mt
-import pygimli.physics.ert as ert
+from pygimli.physics import ert
 
 ###############################################################################
 # We start by creating a ERT data container with three four-point arrays.

@@ -18,7 +18,7 @@ import numpy as np
 
 import pygimli as pg
 import pygimli.meshtools as mt
-from pygimli.physics.ert import simulate as simulateERT
+from pygimli.physics import ert
 
 ###############################################################################
 # In contrast to field measurements, experimental tanks have well-defined
@@ -102,8 +102,8 @@ mesh = mt.createMesh(plc)
 # 'sr=False' omits the singularity removal technique (default) which not
 # applicable in absence of (analytic) primary potential.
 
-hom = simulateERT(mesh, res=1.0, scheme=shm, sr=False,
-                  calcOnly=True, verbose=True)
+hom = ert.simulate(mesh, res=1.0, scheme=shm, sr=False,
+                   calcOnly=True, verbose=True)
 
 hom.save('homogeneous.ohm', 'a b m n u')
 
@@ -133,8 +133,8 @@ print(mesh)
 # accurate primary potentials which can also only be calculated numerically.
 
 res = [[1, 10.0], [2, 100.0]]  # map markers 1 and 2 to 10 and 100 Ohmm, resp.
-het = simulateERT(mesh, res=res, scheme=shm, sr=False,
-                  calcOnly=True, verbose=True)
+het = ert.simulate(mesh, res=res, scheme=shm, sr=False,
+                   calcOnly=True, verbose=True)
 pg.show(mesh, notebook=True)
 
 ###############################################################################
