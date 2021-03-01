@@ -303,7 +303,6 @@ def interpolateAlongCurve(curve, t, **kwargs):
     >>> _= axs[1,1].plot(p[:,0], p[:,1], '-o', color='green') #doctest: +ELLIPSIS
     >>>
     >>> pg.plt.show()
-    >>> pg.wait()
     """
     xC = np.zeros(len(curve))
     yC = np.zeros(len(curve))
@@ -513,6 +512,8 @@ def interpolate(*args, **kwargs):
     >>> _= ax.plot(xi, pg.interpolate(xi, xu, u, method='harmonic'),
     ...         color='green', label='harmonic')
     >>> _= ax.legend()
+    >>>
+    >>> pg.plt.show()
     """
     fallback = kwargs.pop('fallback', 0.0)
     verbose = kwargs.pop('verbose', False)
