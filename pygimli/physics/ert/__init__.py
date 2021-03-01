@@ -8,7 +8,7 @@
 """
 
 import pygimli as pg
-from .ert import (createERTData, simulate, estimateError,
+from .ert import (simulate, estimateError,
                   createGeometricFactors, createInversionMesh)
 from .ertManager import ERTManager
 from .ertModelling import ERTModelling, ERTModellingReference
@@ -19,6 +19,5 @@ from .visualization import showERTData
 from .importData import load
 
 show = showERTData
-createData = createERTData
 geometricFactor = pg.core.geometricFactor
 geometricFactors = geometricFactor

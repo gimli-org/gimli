@@ -44,17 +44,15 @@ def createData(elecs, schemeName='none', **kwargs):
     Examples
     --------
     >>> import matplotlib.pyplot as plt
+    >>> from pygimli.physics import ert
     >>>
-    >>> schms = ['wa', 'wb', 'pp', 'pd', 'dd', 'slm', 'hw', 'gr']
+    >>> schemes = ['wa', 'wb', 'pp', 'pd', 'dd', 'slm', 'hw', 'gr']
     >>> fig, ax = plt.subplots(3,3)
     >>>
-    >>> for i, schemeName in enumerate(schms):
-    ...     s = pb.createData(elecs=21, schemeName=schemeName)
-    ...     k = pb.geometricFactor(s)
-    ...     mg = pb.data.DataSchemeManager()
-    ...     longname = mg.scheme(schemeName).name
-    ...     pb.showData(s, vals=k, ax=ax[i/3, i%3],
-    ...                 label='k ' + longname + ')-' + schemeName)
+    >>> for i, schemeName in enumerate(schemes):
+    ...     s = ert.createData(elecs=41, schemeName=schemeName)
+    ...     k = ert.geometricFactors(s)
+    ...     _ = ert.show(s, vals=k, ax=ax.flat[i], label='k - ' + schemeName)
     >>>
     >>> plt.show()
     """
@@ -714,7 +712,7 @@ if __name__ == '__main__':
     fig, ax = pg.plt.subplots(3, 3)
     kw = dict(cMin=10, cMax=1000, logScale=True, colorBar=False, cMap="viridis")
     for i, schemeName in enumerate(schemes):
-        shm = createData(elecs=41, schemeName=schemeName)
+        shm = ert.createData(elecs=41, schemeName=schemeName)
         print(schemeName, shm)
         k = ert.geometricFactor(shm)
         mg = DataSchemeManager()
@@ -724,3 +722,16 @@ if __name__ == '__main__':
 
     createColorBarOnly(**kw, ax=ax.flat[-1], aspect=0.1)
     pg.plt.show()
+# %%
+# import matplotlib.pyplot as plt
+# from pygimli.physics import ert
+
+# schemes = ['wa', 'wb', 'pp', 'pd', 'dd', 'slm', 'hw', 'gr']
+# fig, ax = plt.subplots(3,3)
+
+# for i, schemeName in enumerate(schemes):
+#     s = ert.createData(elecs=41, schemeName=schemeName)
+#     k = ert.geometricFactors(s)
+#     ert.show(s, vals=k, ax=ax.flat[i], label='k - ' + schemeName)
+
+# plt.show()

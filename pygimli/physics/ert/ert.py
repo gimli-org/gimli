@@ -11,8 +11,8 @@ import numpy as np
 import pygimli as pg
 
 from .ertModelling import ERTModelling
-
-geometricFactors = pg.core.geometricFactors  # to use ert.geometricFactors
+from .ertScheme import createData
+createERTData = createData  # backward compatibility
 
 
 def simulate(mesh, scheme, res, **kwargs):
@@ -395,7 +395,7 @@ def createInversionMesh(data, **kwargs):
     return mesh
 
 
-def createERTData(elecs, schemeName='none', **kwargs):
+def createERTDataNotUsedAnymore(elecs, schemeName='none', **kwargs):
     """Create data scheme for compatibility (advanced version in BERT).
 
     Parameters
@@ -415,8 +415,7 @@ def createERTData(elecs, schemeName='none', **kwargs):
         return data
 
     if schemeName != "dd":
-        import pybert as pb  # that's bad!!! TODO: remove pybert deps
-        return pb.createData(elecs, schemeName, **kwargs)
+        return createData(elecs, schemeName, **kwargs)
 
     isClosed = kwargs.pop('closed', False)
 
