@@ -512,9 +512,15 @@ Boundary * Mesh::copyBoundary(const Boundary & bound, double tol, bool check){
     std::vector < Node * > subNodes;
 
     // __M
-
     for (Index i = 0; i < nodes.size(); i ++) {
-        nodes[i] = createNode(bound.node(i).pos(), tol);
+        // this switch should not be necessary and need to be checked TODO
+        if (bound.rtti() == MESH_POLYGON_FACE_RTTI){
+            // this works with 3D poly tests but copy bounds into 2d mesh will double bounds
+            nodes[i] = createNode(bound.node(i).pos(), tol);
+        } else {
+            // 3D poly tests fail!! .. need to be checked and fixed  TODO
+            nodes[i] = createNodeWithCheck(bound.node(i).pos(), tol);
+        }
         nodes[i]->setMarker(bound.node(i).marker());
         // __MS(nodes[i]->state())
         switch (nodes[i]->state()){
