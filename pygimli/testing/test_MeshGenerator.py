@@ -145,7 +145,14 @@ class TestMeshGenerator(unittest.TestCase):
 
         #mesh['c'] = pg.PosList(10, [1.0, 0., 0.0])
 
-
+    def test_meshIO(self):
+        # text bms version v3 which stores geometry flag
+        mesh = pg.Mesh(2, isGeometry=True)
+        mesh.save('_tmp')
+        mesh2 = pg.load('_tmp.bms', verbose=True)
+        
+        self.assertEqual(mesh.isGeometry(), mesh2.isGeometry())
+        
 
 if __name__ == '__main__':
     # pg.setDeepDebug(1)

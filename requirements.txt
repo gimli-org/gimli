@@ -3,7 +3,14 @@
 # pip install package== --user # list all possible versions
 # pip install package==version --user
 
-pyplusplus==1.8.3
-pygccxml==1.9.1
+pyplusplus==1.8.4
+
 # for py3.8
-# pygccxml==2.0.0 
+pygccxml==2.0.0 
+sphinx
+sphinxcontrib-bibtex<2.0.0
+sphinxcontrib-programoutput
+sphinxcontrib-doxylink
+sphinx-gallery
+bibtexparser
+pyvista==0.24.2
