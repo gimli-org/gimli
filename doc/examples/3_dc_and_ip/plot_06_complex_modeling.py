@@ -21,11 +21,11 @@ import matplotlib.pylab as plt
 
 import pygimli as pg
 import pygimli.meshtools as mt
-import pygimli.physics.ert as ert
+from pygimli.physics import ert
 
 ###############################################################################
 # Create a measurement scheme for 51 electrodes with a spacing of 1m
-scheme = ert.createERTData(
+scheme = ert.createData(
     elecs=np.linspace(start=0, stop=50, num=51),
     schemeName='dd'
 )

@@ -26,8 +26,13 @@ from .polytools import createParaDomain2D  # keep for backward compatibility
 from .polytools import (createCircle, createCube, createCylinder, createFacet,
                         createLine, createParaMeshPLC, createPolygon,
                         createRectangle, createWorld, exportPLC, mergePLC,
-                        mergePLC3D, readPLC, syscallTetgen, writePLC)
+                        mergePLC3D, readPLC, syscallTetgen, writePLC, extrude)
+# little syntactic sugar
+merge = mergePLC
+
 from .quality import quality
+
+
 
 #  This is neither functional nor good practice  #  why?
 #  __all__ = [name for name in dir() if '_' not in name]

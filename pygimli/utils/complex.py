@@ -117,12 +117,11 @@ def KramersKronig(f, re, im, usezero=False):
     """
     from scipy.integrate import simps
 
-    x = 2. * pi * f
+    x = 2. * pi * f  # omega
     im2 = np.zeros(im.shape)
     re2 = np.zeros(im.shape)
-    re3 = np.zeros(im.shape)
-    drdx = np.diff(re) / np.diff(x)
-    didx = np.diff(im) / np.diff(x)
+    drdx = np.diff(re) / np.diff(x)  # d Re/d omega
+    didx = np.diff(im) / np.diff(x)  # d Im/d omega
     dRedx = np.hstack((drdx[0], (drdx[:-1] + drdx[1:]) / 2, drdx[-1]))
     dImdx = np.hstack((didx[0], (didx[:-1] + didx[1:]) / 2, didx[-1]))
     for num, w in enumerate(x):
@@ -140,8 +139,6 @@ def KramersKronig(f, re, im, usezero=False):
             fun2 = (im * x - im[num] * w) / x2w2
             fun2[num] = (im[num] / w + dImdx[num]) / 2
             re2[num] = 2./pi * simps(fun2, x) + re[-1]
-
-        # re3 = re2
 
     return re2, im2
 

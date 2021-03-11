@@ -373,14 +373,16 @@ class TDEM():
         else:
             fig = ax.get_figure()
 
+        kwargs.setdefault('marker', '.')
+        plotlegend = kwargs.pop('legend', True)
         cols = 'rgbmcyk'
         pl = []
         for i, data in enumerate(self.DATA):
             t = data['TIME']
             u = data['VOLTAGE'] / RxArea(data)
             col = cols[i % len(cols)]
-            pl.append(ax.loglog(t, u, marker='.', label=getname(data),
-                                color=col), **kwargs)
+            pl.append(ax.loglog(t, u, label=getname(data),
+                                color=col, **kwargs))
             if 'ST_DEV' in data:
                 err = data['ST_DEV'] / RxArea(data)
                 ax.errorbar(t, u, yerr=err, color=col)
@@ -393,7 +395,8 @@ class TDEM():
 
         ax.set_xlabel('t [s]')
         ax.set_ylabel('U/I [V/A]')
-        ax.legend(loc='best')
+        if plotlegend:
+            ax.legend(loc='best')
 #        xlim = [10e-6, 2e-3]
         ax.grid(True)
         return fig, ax
@@ -403,12 +406,13 @@ class TDEM():
         if ax is None:
             fig, ax = plt.subplots()
 
+        kwargs.setdefault('marker', '.')
         plotLegend = kwargs.pop('legend', True)
         for i, data in enumerate(self.DATA):
             rhoa, t, err = get_rhoa(data, corrramp=corrramp)
             err[err > .99] = .99
             col = 'C'+str(i % 10)
-            ax.loglog(rhoa, t, marker='.', label=getname(data),  # color=col,
+            ax.loglog(rhoa, t, label=getname(data),  # color=col,
                       color=col, **kwargs)
             if ploterror:
                 ax.errorbar(rhoa, t, xerr=rhoa * err, color=col)
@@ -438,12 +442,15 @@ class TDEM():
         rhoa, t, err = get_rhoa(snd)
         self.fop.t = t
         model = self.fop.createStartModel(rhoa, nlay, thickness=None)
-        self.INV = pg.Inversion(rhoa, self.fop)
-        self.INV.setMarquardtScheme(0.9)
-        self.INV.setModel(model)
-        self.INV.setLambda(1000)
-        self.INV.setRelativeError(snd.pop('ST_DEV', 0)/snd['VOLTAGE']+0.03)
-        self.model = self.INV.run()
+        self.INV = pg.frameworks.MarquardtInversion(fop=self.fop)
+        # self.INV = pg.Inversion(rhoa, self.fop)
+        # self.INV.setMarquardtScheme(0.9)
+        # self.INV.setModel(model)
+        # self.INV.setLambda(1000)
+        # self.INV.setRelativeError(snd.pop('ST_DEV', 0)/snd['VOLTAGE']+0.03)
+        errorVals = snd.pop('ST_DEV', 0)/snd['VOLTAGE']+0.03
+        self.model = self.INV.run(dataVals=rhoa, errorVals=errorVals,
+                                  startModel=model)
         return self.model
 
     def stackAll(self, tmin=0, tmax=100):

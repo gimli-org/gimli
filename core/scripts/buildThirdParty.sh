@@ -299,10 +299,10 @@ needGCC(){
 }
 needPYTHON(){
 
-    if command -v python 2>/dev/null; then
-        PYTHONEXE=python
-    elif command -v python3 2>/dev/null; then
+    if command -v python3 2>/dev/null; then
         PYTHONEXE=python3
+    elif command -v python 2>/dev/null; then
+        PYTHONEXE=python
     else
         echo "cannot find python interpreter"
     fi

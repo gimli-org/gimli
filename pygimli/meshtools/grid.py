@@ -157,7 +157,9 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1, quality=34.0,
     """Add a triangle mesh boundary to a given mesh.
 
     Returns a new mesh that contains a triangulated box around a given mesh
-    suitable for geo-simulation (surface boundary at top).
+    suitable for geo-simulation (surface boundary with marker = -1  at top and marker = -2 in the inner subsurface).
+    The old boundary marker from mesh will be preserved, except for marker == -2 which will be switched to 2 since we assume
+    -2 is the world marker for outer boundaries in the subsurface.
 
     Parameters
     ----------
@@ -367,20 +369,30 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1, quality=34.0,
 
     mesh2.setCellMarkers([marker] * mesh2.cellCount())
 
-    # map copy the cell not the reference, this should not happen
-    # map( lambda cell: mesh2.copyCell( cell ), mesh2.cells() )
-    for cell in mesh.cells():
-        mesh2.copyCell(cell)
-
-    # old neighbor infos need to be cleaned since the new cells are added
+    # map does copies the cell not the reference, this should not happen **TODO check 20210305
+    # map(lambda cell: mesh2.copyCell(cell), mesh2.cells())
+    for c in mesh.cells():
+        mesh2.copyCell(c)
+    
+    # we need to delete the old boundary markers or the new neighbour infos will fail for old outside boundaries
+    mesh2.setBoundaryMarkers(np.zeros(mesh2.boundaryCount()))
     mesh2.createNeighborInfos(force=True)
 
+    for b in mesh.boundaries():
+        if b.marker() != 0:
+            b2 = mesh2.copyBoundary(b)
+            
+            # some automagic .. original mesh contains bmarker == -2 which means mixed condition
+            # this special marker will be switched to 2
+            if b.marker() == -2:
+                b2.setMarker(2)
+                
     for b in mesh2.boundaries():
-        if b.leftCell() is None or b.rightCell() is None:
-            if b.center().y() == mesh2.ymax():
-                b.setMarker(pg.core.MARKER_BOUND_HOMOGEN_NEUMANN)
-            else:
+        if b.outside():
+            if b.norm().x() != 0 or b.norm().y() == -1.0:
                 b.setMarker(pg.core.MARKER_BOUND_MIXED)
+            else:
+                b.setMarker(pg.core.MARKER_BOUND_HOMOGEN_NEUMANN)
 
     return mesh2
 
