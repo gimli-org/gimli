@@ -58,7 +58,8 @@ needs_sphinx = '1.8' # due to napoleon
 deps = ['sphinxcontrib-programoutput',
         'sphinxcontrib-bibtex',
         'sphinxcontrib-doxylink',
-	'bibtexparser',
+        #'sphinx.gallery', # testing does not work
+	    'bibtexparser',
 	]
 
 # check for p.version too

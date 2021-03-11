@@ -393,6 +393,7 @@ void Mesh::saveBinaryV2(const std::string & fbody) const {
 
 //   uint8[1] dimension
 //   uint8[1] file format version
+//   uint8[128]; // from v3 up
 //   uint32[1] nVerts, number of vertices, max 2 ^ 32 (4e9)
 //   double[3 * nVerts]; coordinates, dimension == 3 (x, y, z)
 //   int32[nVerts] vertex markers [-2e9, .. , 2e9]
@@ -419,7 +420,14 @@ void Mesh::saveBinaryV2(const std::string & fbody) const {
     //** write preample
     writeToFile(file, uint8(this->dimension()));
     //** version
-    writeToFile(file, uint8(2));
+
+    int version = 3;
+    writeToFile(file, uint8(version));
+
+    uint8 * dummy = new uint8[128];
+    std::memset(dummy, '\0', 128*sizeof(uint8));
+    dummy[0] = (uint8)this->isGeometry();
+    writeToFile(file, dummy[0], 128);
 
     //** write nodes
     double * coord = new double[3 * this->nodeCount()];
@@ -539,7 +547,6 @@ void Mesh::loadBinaryV2(const std::string & fbody) {
     if (!file) {
         throwError(WHERE_AM_I + " " + fileName + ": " + strerror(errno));
     }
-
     uint8 dim; readFromFile(file, dim);
     if (dim !=2 && dim !=3){
         throwError(WHERE_AM_I + " cannot determine dimension " + str(dim));
@@ -547,7 +554,10 @@ void Mesh::loadBinaryV2(const std::string & fbody) {
     this->setDimension(dim);
     uint8 version; readFromFile(file, version);
 
-    if (version !=2){
+    if (version == 3){
+        uint8 *dummy = new uint8[128]; readFromFile(file, dummy[0], 128);
+        this->setGeometry(bool(dummy[0]));
+    } else if (version != 2){
         throwError(WHERE_AM_I + " wrong version " + str(version));
     }
 
