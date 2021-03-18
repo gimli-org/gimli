@@ -34,10 +34,10 @@ the required packages:
 
 .. code-block:: bash
 
-    sudo apt-get install wget subversion git cmake mercurial \
-        libboost-all-dev libblas-dev liblapack-dev \
+    sudo apt-get install wget subversion git cmake mercurial g++ \
+        libboost-all-dev libblas-dev liblapack-dev libopenblas-dev \
         libedit-dev python3-dev \
-        python3  python3-numpy python3-matplotlib \
+        python3-numpy python3-matplotlib \
         python3-setuptools
 
 Create a directory for your installation, e.g., $HOME/src
