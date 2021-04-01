@@ -1,22 +1,21 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-""""WRITEME"""
-
+"""Plotting functions for traveltime."""
+# general purpose
 import matplotlib.pyplot as plt
 import numpy as np
-
+# pygimli
 import pygimli as pg
-
 from pygimli.viewer.mpl import createColorBar  # , updateColorBar
-
+# local
 from .ratools import shotReceiverDistances
 
 
 def drawTravelTimeData(ax, data, t=None):
-    """
-        Draw first arrival traveltime data into mpl ax a.
-        data of type \ref DataContainer must contain sensorIdx 's' and 'g'
-        and thus being numbered internally [0..n)
+    """Draw first arrival traveltime data into mpl ax a.
+
+    data of type pg.DataContainer must contain sensorIdx 's' and 'g'
+    and thus being numbered internally [0..n)
     """
     x = pg.x(data.sensorPositions())
     # z = pg.z(data.sensorPositions())
@@ -64,14 +63,14 @@ def drawTravelTimeData(ax, data, t=None):
 
 
 def plotFirstPicks(ax, data, tt=None, plotva=False, marker='x-'):
-    """Naming convention. drawFOO(ax, ... )"""
+    """Naming convention. drawFOO(ax, ... )."""
     pg.deprecated("use drawFirstPicks")
     return drawFirstPicks(ax=ax, data=data, tt=tt, plotva=plotva,
                           marker=marker)
 
 
 def drawFirstPicks(ax, data, tt=None, plotva=False, **kwargs):
-    """plot first arrivals as lines"""
+    """Plot first arrivals as lines."""
     px = pg.x(data)
     gx = np.array([px[int(g)] for g in data("g")])
     sx = np.array([px[int(s)] for s in data("s")])
@@ -109,8 +108,9 @@ def _getOffset(data, full=False):
     return shotReceiverDistances(data, full)
 
 
+# better be renamed to showData and optionally show first pick curves
 def showVA(data, usePos=True, ax=None, **kwargs):
-    """Show apparent velocity as image plot
+    """Show apparent velocity as image plot.
 
     Parameters
     ----------
@@ -126,7 +126,7 @@ def showVA(data, usePos=True, ax=None, **kwargs):
 
 
 def drawVA(ax, data, vals=None, usePos=True, pseudosection=False, **kwargs):
-    """Draw apparent velocities as matrix into ax
+    """Draw apparent velocities as matrix into an axis.
 
     Parameters
     ----------
