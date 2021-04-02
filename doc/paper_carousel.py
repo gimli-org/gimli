@@ -1,6 +1,10 @@
 # Paper examples on start page. Images have to be in _static/usecases.
 # Order does not matter, will be shuffled on doc build.
 showcase = [
+    dict(img="skibbe2021.png",
+         title="Structurally coupled MRT and ERT",
+         subtitle="Skibbe et al. (2021), Geophysics",
+         link="https://doi.org/10.1190/geo2020-0593.1"),
     dict(img="enemark2020.jpg",
          title="Testing conceptual models in hydrogeology using remote sensing and geophysics",
          subtitle="Enemark et al. (2020), Water Resources Research",
