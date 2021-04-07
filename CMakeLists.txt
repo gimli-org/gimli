@@ -1,4 +1,6 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.10) 
+#BOOST_MAX_VERISION: 1.65 UBUNTU:18
+
 
 if (${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
     message(FATAL_ERROR "In-source builds not allowed.
@@ -238,9 +240,9 @@ if (1)
             set(Boost_INCLUDE_DIR ${BOOST_ROOT}/include CACHE FILEPATH "Boost inlude path")
             message(STATUS "set Boost_INCLUDE_DIR: ${Boost_INCLUDE_DIR}")
         else()
-            if (NOT WIN32)
-                find_package(Boost COMPONENTS python)
-            endif()
+	    #if (NOT WIN32)
+	    #    find_package(Boost COMPONENTS python36)
+	    #endif()
             # we should think about cmake superbuild with ExternalProject_Add as the replacement for find_or_build_package (next generation)
             if (NOT Boost_INCLUDE_DIR)
                 find_boost_from_distname_file()
@@ -372,7 +374,7 @@ endif()
 ################################################################################
 function(find_boost_python_manual bp_version)
     message(STATUS "----------- searching for libboost_python${bp_version}")
-    find_package(Boost 1.68 COMPONENTS "python${bp_version}")
+    find_package(Boost 1.65 COMPONENTS "python${bp_version}")
 
     if (${Boost_PYTHON${bp_version}_FOUND})
         set(Boost_PYTHON_FOUND ${Boost_PYTHON${bp_version}_FOUND} PARENT_SCOPE)
@@ -386,13 +388,16 @@ function(find_boost_python_manual bp_version)
     endif()
 endfunction()
 
+message(STATUS "*************** ${Boost_PYTHON_LIBRARY}")
+
+
 if (NOT Boost_PYTHON_LIBRARY)
     message(STATUS "boost-python not found by cmake ... trying to determine boost-python now manually ...")
     if (WIN32)
         set(bp_version "python${Python_VERSION_MAJOR}${Python_VERSION_MINOR}-mt")
         string(TOUPPER ${bp_version} BP_VERSION)
         message(STATUS "... looking for ${bp_version} in BOOST_ROOT=${BOOST_ROOT}")
-        find_package(Boost 1.68 COMPONENTS "${bp_version}")
+        find_package(Boost 1.65 COMPONENTS "${bp_version}")
         set(Boost_PYTHON_FOUND ${Boost_${bp_version}_FOUND} CACHE BOOL "boost python found")
         set(Boost_PYTHON_LIBRARY ${Boost_${BP_VERSION}_LIBRARY} CACHE FILEPATH "boost python lib")
 
