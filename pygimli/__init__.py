@@ -108,7 +108,8 @@ def findVersion(cache=True):
     import os
     global __version__
 
-    setDebug(False)
+    
+    #setDebug(False)
     root = os.path.abspath(os.path.join(__file__, "../../"))
     gitPath = os.path.join(root, '.git')
     gitIndexFile = os.path.join(gitPath, 'index')
