@@ -297,7 +297,7 @@ public:
         return mult_(a, b, m, n);
     }
     Complex mult(const CVector & a, const CVector & b,
-                const CVector & m, const CVector & n){
+                 const CVector & m, const CVector & n){
         return mult_(a, b, m, n);
     }
 
@@ -364,6 +364,7 @@ public:
     bool elastic() const { return _elastic;}
 
     bool oldStyle() const { return !this->_newStyle; }
+
 protected:
     mutable Matrix < ValueType > mat_;
     IndexArray _ids;
@@ -578,6 +579,8 @@ public:
     }
 
     Index valueSize() const { return _valueSize; }
+
+    void setValueSize(Index s) { _valueSize = s; }
 
 protected:
     Index _valueSize;
