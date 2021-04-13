@@ -38,7 +38,7 @@ class TravelTimeDijkstraModelling(MeshModelling):
         return self._core.dijkstra()
 
     def regionManagerRef(self):
-        # necessary because core dijkstra use its own RM
+        """Region manager reference (core Dijkstra has an own!)."""
         return self._core.regionManagerRef()
 
     def createRefinedFwdMesh(self, mesh):
@@ -54,18 +54,15 @@ class TravelTimeDijkstraModelling(MeshModelling):
         return m
 
     def setMeshPost(self, mesh):
-        """
-        """
+        """Set mesh after forward operator has been initalized."""
         self._core.setMesh(mesh)
 
     def setDataPost(self, data):
-        """
-        """
+        """Set data after forward operator has been initalized."""
         self._core.setData(data)
 
     def createStartModel(self, dataVals):
-        """
-        """
+        """Create a starting model from data values (gradient or constant)."""
         sm = None
 
         if self._useGradient is not None:
@@ -162,8 +159,9 @@ class TravelTimeManager(MeshMethodManager):
 
     @property
     def velocity(self):
+        """Return velocity vector (the inversion model)."""
         # we can check here if there was an inversion run
-        return self.fw.model
+        return self.fw.model  # shouldn't it be the inverse?
 
     def createForwardOperator(self, **kwargs):
         """Create default forward operator for Traveltime modelling.
@@ -175,6 +173,7 @@ class TravelTimeManager(MeshMethodManager):
         return fop
 
     def load(self, fileName):
+        """Load any supported data file."""
         self.data = pg.physics.traveltime.load(fileName)
         return self.data
 
@@ -188,7 +187,7 @@ class TravelTimeManager(MeshMethodManager):
         if d is None:
             pg.critical('Please provide a data file for mesh generation')
 
-        return pg.meshtools.createParaMesh(data.sensors(),
+        return pg.meshtools.createParaMesh(d.sensors(),
                                            boundary=0, **kwargs)
 
     def checkData(self, data):

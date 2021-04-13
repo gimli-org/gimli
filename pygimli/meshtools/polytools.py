@@ -316,7 +316,7 @@ def createWorld(start, end, marker=1, area=0., layers=None, worldMarker=True,
     return poly
 
 
-def createCircle(pos=None, radius=1, segments=12, start=0, end=2.*math.pi,
+def createCircle(pos=None, radius=1, nSegments=12, start=0, end=2.*math.pi,
                  **kwargs):
     """Create simple circle polygon.
 
@@ -328,8 +328,8 @@ def createCircle(pos=None, radius=1, segments=12, start=0, end=2.*math.pi,
         Center position
     radius : float | [a,b] [1]
         radius or halfaxes of the circle
-    segments : int
-        Discrete amount of segments for the circle
+    nSegments : int [12]
+        Discrete amount of segments for the circle.
     start : double [0]
         Starting angle in radians
     end : double [2*pi]
@@ -337,19 +337,19 @@ def createCircle(pos=None, radius=1, segments=12, start=0, end=2.*math.pi,
 
     **kwargs:
 
-        marker : int [1]
+        marker: int [1]
             Marker for the resulting triangle cells after mesh generation
         markerPosition : floats [x, y] [0.0, 0.0]
             Position of the marker (works for both regions and holes)
-        area : float [0]
+        area: float [0]
             Maximum cell size for resulting triangles after mesh generation
-        isHole : bool [False]
+        isHole: bool [False]
             The polygon will become a hole instead of a triangulation
-        boundaryMarker : int [1]
+        boundaryMarker: int [1]
             Marker for the resulting boundary edges
-        leftDirection : bool [True]
+        leftDirection: bool [True]
             Rotational direction
-        isClosed : bool [True]
+        isClosed: bool [True]
             Add closing edge between last and first node.
 
     Returns
@@ -363,27 +363,30 @@ def createCircle(pos=None, radius=1, segments=12, start=0, end=2.*math.pi,
     >>> import math
     >>> from pygimli.viewer.mpl import drawMesh
     >>> import pygimli.meshtools as mt
-    >>> c0 = mt.createCircle(pos=(-5.0, 0.0), radius=2, segments=6)
+    >>> c0 = mt.createCircle(pos=(-5.0, 0.0), radius=2, nSegments=6)
     >>> c1 = mt.createCircle(pos=(-2.0, 2.0), radius=1, area=0.01, marker=2)
-    >>> c2 = mt.createCircle(pos=(0.0, 0.0), segments=5, start=0, end=math.pi)
-    >>> c3 = mt.createCircle(pos=(5.0, 0.0), segments=3, start=math.pi,
+    >>> c2 = mt.createCircle(pos=(0.0, 0.0), nSegments=5, start=0, end=math.pi)
+    >>> c3 = mt.createCircle(pos=(5.0, 0.0), nSegments=3, start=math.pi,
     ...                      end=1.5*math.pi, isClosed=False)
     >>> plc = mt.mergePLC([c0, c1, c2, c3])
     >>> fig, ax = pg.plt.subplots()
     >>> drawMesh(ax, plc, fillRegion=False)
     >>> pg.wait()
     """
+    pg.renameKwarg('segments', 'nSegments', kwargs, '1.2') # 20210312
+    nSegments = kwargs.pop('nSegments', nSegments)
+
     # TODO refactor with polyCreatePolygon
     if pos is None:
         pos = [0.0, 0.0]
 
     poly = pg.Mesh(dim=2, isGeometry=True)
 
-    dPhi = (end - start) / (segments)
-    nPhi = segments + 1
+    dPhi = (end - start) / (nSegments)
+    nPhi = nSegments + 1
 
     if abs((end % (2. * math.pi) - start)) < 1e-6:
-        nPhi = segments
+        nPhi = nSegments
 
     for i in range(0, nPhi):
         if kwargs.pop('leftDirection', True):
@@ -412,7 +415,7 @@ def createCircle(pos=None, radius=1, segments=12, start=0, end=2.*math.pi,
     return poly
 
 
-def createLine(start, end, segments=1, **kwargs):
+def createLine(start, end, nSegments=1, **kwargs):
     """Create simple line polygon.
 
     Create simple line polygon from start to end.
@@ -423,7 +426,7 @@ def createLine(start, end, segments=1, **kwargs):
         start position
     end : [x, y]
         end position
-    segments : int
+    nSegments : int
         Discrete amount of segments for the line
 
     Keyword Arguments
@@ -445,25 +448,28 @@ def createLine(start, end, segments=1, **kwargs):
     >>> import pygimli.meshtools as mt
     >>>
     >>> w = mt.createWorld(start=[0, 0], end=[3, 3])
-    >>> l1 = mt.createLine(start=[1, 1], end=[1, 2], segments=1,
+    >>> l1 = mt.createLine(start=[1, 1], end=[1, 2], nSegments=1,
     ...                    leftDirection=False)
-    >>> l2 = mt.createLine(start=[1, 1], end=[2, 1], segments=20,
+    >>> l2 = mt.createLine(start=[1, 1], end=[2, 1], nSegments=20,
     ...                    leftDirection=True)
     >>>
     >>> ax, _ = pg.show(mt.createMesh([w, l1, l2,]))
     >>> ax, _ = pg.show([w, l1, l2,], ax=ax, fillRegion=False)
     >>> pg.wait()
     """
+    pg.renameKwarg('segments', 'nSegments', kwargs, '1.2') # 20210312
+    nSegments = kwargs.pop('nSegments', nSegments)
+
     # TODO refactor with polyCreatePolygon
     poly = pg.Mesh(dim=2, isGeometry=True)
     startPos = pg.RVector3(start)
     endPos = pg.RVector3(end)
     a = endPos - startPos
 
-    dt = 1. / segments
+    dt = 1. / nSegments
     left = kwargs.pop('leftDirection', True)
 
-    for i in range(0, segments + 1):
+    for i in range(0, nSegments + 1):
         if left:
             p = startPos + a * (dt * i)
         else:
@@ -615,7 +621,7 @@ def mergePLC(plcs, tol=1e-3):
     >>> from pygimli.viewer.mpl import drawMesh
     >>> world = mt.createWorld(start=[-10, 0], end=[10, -10], marker=1)
     >>> c1 = mt.createCircle([-1, -4], radius=1.5, area=0.1,
-    ...                       marker=2, segments=5)
+    ...                       marker=2, nSegments=5)
     >>> c2 = mt.createCircle([-6, -5], radius=[1.5, 3.5], isHole=1)
     >>> r1 = mt.createRectangle(pos=[3, -5], size=[2, 2], marker=3)
     >>> r2 = mt.createRectangle(start=[4, -4], end=[6, -6],
@@ -680,7 +686,17 @@ def mergePLC(plcs, tol=1e-3):
 
 
 def mergePLC3D(plcs, tol=1e-3):
-    """Experimental replacement for polyMerge. Don't expect too much.
+    """Merge a list of 3D PLC into one
+
+    Experimental replacement for polyMerge. Don't expect too much.
+
+    Works if:
+        * all plcs are free and does not have any contact to each other
+        * contact of two facets if the second facet is completely within the first facet
+    
+    TODO:
+        * everything else
+
     """
     if len(plcs) < 2:
         pg.critical("Give at least 2 PLCs.")
@@ -688,10 +704,6 @@ def mergePLC3D(plcs, tol=1e-3):
     if plcs[0].dim() != 3:
         pg.warn("2D poly found. redirect to mergePLC")
         return mergePLC(plcs, tol)
-
-    # first try. merge all into p0 = plcs[0]
-    #  * will only work if all faces of plcs[1:] does not match any face of p0
-    #  * or all matching plcs[1:] are lie completely within p0
 
     p0 = pg.Mesh(plcs[0])
 
@@ -1678,7 +1690,7 @@ def createCylinder(radius=1, height=1, nSegments=8,
         The resulting polygon is a :gimliapi:`GIMLI::Mesh`.
 
     """
-    circ = createCircle(radius=radius, segments=nSegments)
+    circ = createCircle(radius=radius, nSegments=nSegments)
     poly = extrude(circ, z=height, boundaryMarker=boundaryMarker, **kwargs)
     # move it to z=0
     poly.translate([0.0, 0.0, -height/2])

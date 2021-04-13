@@ -1,18 +1,22 @@
 # -*- coding: utf-8 -*-
+"""Curve-fitting with harmonic functions plus offset and drift."""
 import numpy as np
 
 import pygimli as pg
 
 
 class HarmFunctor(object):
-    """"""
+    """Functor for harmonic functions plus offset and drift."""
+
     def __init__(self, A, coeff, xmin, xSpan):
+        """Initialize."""
         self.A_ = A
         self.coeff_ = coeff
         self.xmin_ = xmin
         self.xSpan_ = xSpan
 
     def __call__(self, x):
+        """Yield function call."""
         nc = len(self.coeff_) / 2
         A = np.ones(nc * 2) * 0.5
         A[1] = 3. * x
@@ -24,14 +28,20 @@ class HarmFunctor(object):
 
 
 def harmfitNative(y, x=None, nc=None, xc=None, err=None):
-    """
-        python based curve-fit by harmonic functions
-        yc = harmfitNativ(x,y[,nc,xc,err])
-        y   .. values of a curve to be fitted
-        x   .. abscissa, if none [0..len(y))
-        nc  .. number of coefficients
-        xc  .. abscissa to fit on (otherwise equal to x)
-        err .. data error
+    """Python-based curve-fit by harmonic functions.
+
+    Parameters
+    ----------
+    y : iterable
+        values of a curve to be fitted
+    x : iterable
+        abscissa, if none [0..len(y))
+    nc : int
+        number of coefficients
+    err : iterable
+        absolute data error
+    xc : iterable
+        abscissa to predict y on (otherwise equal to x)
     """
     y = np.asarray(y)
 
@@ -81,7 +91,8 @@ def harmfitNative(y, x=None, nc=None, xc=None, err=None):
     # coeff=(spdiags(w,0,length(w),length(w))*A)\(y.*w)
     # WA = np.diag(w, 0).dot(A)
     # coeff, res, rank, s = np.linalg.lstsq(WA, y * w, rcond=None)
-    coeff, res, rank, s = np.linalg.lstsq(np.diag(w, 0) * A, (y * w)[0, :], rcond=None)
+    coeff, res, rank, s = np.linalg.lstsq(np.diag(w, 0) * A, (y * w)[0, :],
+                                          rcond=None)
 
     return sum((B * coeff).T), HarmFunctor(A, coeff, xmi, xspan)
 
@@ -89,7 +100,7 @@ def harmfitNative(y, x=None, nc=None, xc=None, err=None):
 def harmfit(y, x=None, error=None, nc=42, resample=None, lam=0.1,
             window=None, verbose=False, dosave=False,
             lineSearch=True, robust=False, maxiter=20):
-    """HARMFIT - GIMLi based curve-fit by harmonic functions
+    """GIMLi-based curve-fit by harmonic functions.
 
     Parameters
     ----------
@@ -131,16 +142,21 @@ def harmfit(y, x=None, error=None, nc=42, resample=None, lam=0.1,
         yToFit = y
 
     fop = pg.core.HarmonicModelling(nc, xToFit, verbose)
-    inv = pg.Inversion(yToFit, fop, verbose, dosave)
+    inv = pg.core.RInversion(yToFit, fop, verbose, dosave)
+    # inv = pg.frameworks.MarquardtInversion(fop, verbose=verbose, debug=dosave)
+    # inv.dataVals = yToFit
 
     if error is not None:
         inv.setAbsoluteError(error)
+        # inv.errorVals = error
     else:
-        inv.setAbsoluteError(0.01)
+        inv.setRelativeError(0.01)
+        # inv.errorVals =0.01
 
-    inv.setMarquardtScheme(0.8)
     if error is not None:
         inv.stopAtChi1(True)
+
+    inv.setMarquardtScheme(0.9)
     inv.setLambda(lam)
     inv.setMaxIter(maxiter)
     inv.setLineSearch(lineSearch)

@@ -13,6 +13,29 @@ from ..meshtools import mergePLC, exportPLC
 from .base import isScalar, isArray, isPos, isR3Array, isComplex
 
 
+def __Mesh_unique_dataKeys(self):
+    """Return unique data keys"""
+    uniqueNames = {}
+    for d in self.dataMap().keys():
+
+        uName = d
+        if '_x' in d:
+            uName = uName[0:d.find('_x')]
+
+        if '_y' in d or '_z' in d:
+            continue
+
+        if '#' in d:
+            uName = uName[0:d.find('#')]
+
+        if not uName in uniqueNames:
+            uniqueNames[uName] = []
+
+        uniqueNames[uName].append(d)
+    return uniqueNames
+
+Mesh.dataKeys = __Mesh_unique_dataKeys
+
 def __Mesh_str(self):
     st = "Mesh: Nodes: " + str(self.nodeCount()) + " Cells: " + str(
         self.cellCount()) + " Boundaries: " + str(self.boundaryCount())
@@ -23,23 +46,7 @@ def __Mesh_str(self):
     if len(list(self.dataMap().keys())) > 0:
         st += "\nMesh contains data: "
 
-        uniqueNames = {}
-        for d in self.dataMap().keys():
-
-            uName = d
-            if '_x' in d:
-                uName = uName[0:d.find('_x')]
-
-            if '_y' in d or '_z' in d:
-                continue
-
-            if '#' in d:
-                uName = uName[0:d.find('#')]
-
-            if not uName in uniqueNames:
-                uniqueNames[uName] = []
-
-            uniqueNames[uName].append(d)
+        uniqueNames = mesh.dataKeys()
 
         for d, v in uniqueNames.items():
             if len(v) > 1:

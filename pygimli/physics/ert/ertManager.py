@@ -213,7 +213,7 @@ class ERTManager(MeshMethodManager):
         seed = kwargs.pop('seed', None)
         sr = kwargs.pop('sr', self.sr)
 
-        #segfaults with self.fop (test & fix)
+        # segfaults with self.fop (test & fix)
         fop = self.createForwardOperator(useBert=self.useBert,
                                          sr=sr, verbose=verbose)
         fop.data = scheme
@@ -338,7 +338,8 @@ class ERTManager(MeshMethodManager):
                         noiseLevel /= 100.
 
                     if 'phiErr' in kwargs:
-                        ipError = np.ones(ret.size()) * kwargs.pop('phiErr') / 1000
+                        ipError = np.ones(ret.size()) * kwargs.pop('phiErr') \
+                            / 1000
                     else:
                         ipError = abs(ret["phia"]) * noiseLevel
 
@@ -525,7 +526,6 @@ class ERTManager(MeshMethodManager):
             fig.savefig(path + '/resistivity.pdf', bbox_inches="tight")
             return path, fig, ax
         return path
-
 
 
 if __name__ == "__main__":
