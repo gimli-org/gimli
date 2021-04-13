@@ -23,7 +23,14 @@ geom = world + block
 pg.show(geom, boundaryMarker=True)
 
 ###############################################################################
-# Create a mesh from based on the geometry definition.
+# Create a mesh from based on the geometry definition. The quality of the mesh 
+# When calling the :func:`pg.meshtools.createMesh` function, a quality parameter
+# can be forwarded to Triangle, which prescribes the minimum angle allowed in
+# the final mesh. For more information of quality of the mesh please read : 
+# Mesh quality inspection [1]
+# [1]: http://www2.geo.uni-bonn.de/~wagner/pygimli/html/_tutorials_auto/1_basics/plot_6-mesh-quality-inspection.html#sphx-glr-tutorials-auto-1-basics-plot-6-mesh-quality-inspection-py
+# Note: Incrementing quality increases computer time, for this region, 33 is
+# sufficient
 mesh = mt.createMesh(geom, quality=33, area=0.2, smooth=[1, 10])
 pg.show(mesh)
 
@@ -31,7 +38,9 @@ pg.show(mesh)
 # Call :py:func:`pygimli.solver.solveFiniteElements` to solve the heat
 # diffusion equation :math:`\nabla\cdot(a\nabla T)=0` with :math:`T(bottom)=1`
 # and :math:`T(top)=0`, where :math:`a` is the thermal diffusivity and :math:`T`
-# is the temperature distribution.
+# is the temperature distribution. We assign Temperature values to the 4 zones
+# using their marker number in a tuple (a) and boundary values with their
+# respective markers in a tuple (bc)
 T = pg.solver.solveFiniteElements(mesh,
                                   a={1: 1.0, 2: 2.0, 3: 3.0, 4:0.1},
                                   bc={'Dirichlet': {8: 1.0, 4: 0.0}}, verbose=True)
