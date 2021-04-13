@@ -46,7 +46,7 @@ def __Mesh_str(self):
     if len(list(self.dataMap().keys())) > 0:
         st += "\nMesh contains data: "
 
-        uniqueNames = mesh.dataKeys()
+        uniqueNames = self.dataKeys()
 
         for d, v in uniqueNames.items():
             if len(v) > 1:
