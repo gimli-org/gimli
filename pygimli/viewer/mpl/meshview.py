@@ -492,13 +492,16 @@ def drawSelectedMeshBoundariesShadow(ax, boundaries, first='x', second='y',
     updateAxes_(ax)
     return collection
 
-def drawBoundaryMarkers(ax, mesh, **kwargs):
+def drawBoundaryMarkers(ax, mesh, clipMarkers=False, **kwargs):
     """Draw boundary markers for mesh.boundaries with marker != 0
 
     Args
     ----
     mesh : :gimliapi:`GIMLI::Mesh`
         Mesh that have the boundary markers.
+
+    clipMarkers: bool [False]
+        Clip boundary marker to the axes limits if needed.
 
     Keyword Arguments
     ----------------
@@ -524,7 +527,6 @@ def drawBoundaryMarkers(ax, mesh, **kwargs):
     ms = pg.unique(pg.sort(mesh.boundaryMarkers()[mesh.boundaryMarkers()!=0]))
 
     #cMap = plt.cm.get_cmap("Set3", len(ms))
-
     kwargs['lw'] = kwargs.pop('lw', 4)
 
     for i, m in enumerate(ms):
@@ -551,10 +553,10 @@ def drawBoundaryMarkers(ax, mesh, **kwargs):
                     fontdict={'weight':'bold'})
 
             # cliping avoid visuablity outside axes. Needet if the axes limits does not match mesh size.
-            txt.set_clip_on(True)
+            txt.set_clip_on(clipMarkers)
 
-            ax.plot(xs[0], ys[0], 'bo', color='k')
-            ax.plot(xs[-1], ys[-1], 'bo', color='k')
+            ax.plot(xs[0], ys[0], 'o', color='k')
+            ax.plot(xs[-1], ys[-1], 'o', color='k')
 
     # for b in mesh.boundaries():
     #     if b.marker() != 0:
@@ -740,6 +742,10 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
         if kwargs.pop('showBoundary', True):
             drawMeshBoundaries(ax, mesh, **kwargs)
 
+
+    if boundaryMarker:
+        drawBoundaryMarkers(ax, mesh, clipMarkers=kwargs.pop('clipMarkers', False))
+
     if showNodes:
         for n in mesh.nodes():
             col = (0.0, 0.0, 0.0, 0.5)
@@ -748,16 +754,13 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
                 col = (0.0, 0.0, 0.0, 1.0)
 
             # ms = kwargs.pop('markersize', 5)
-            ax.plot(n.pos()[0], n.pos()[1], 'bo', color=col, **kwargs)
+            ax.plot(n.pos()[0], n.pos()[1], 'o', color=col, **kwargs)
 
     #        eCircles.append(mpl.patches.Circle((n.pos()[0], n.pos()[1])))
     #        eCircles.append(mpl.patches.Circle((n.pos()[0], n.pos()[1]), 0.1))
     #        cols.append(col)
     #    p = mpl.collections.PatchCollection(eCircles, color=cols)
     #    ax.add_collection(p)
-
-    if boundaryMarker:
-        drawBoundaryMarkers(ax, mesh)
 
     if regionMarker:
 
@@ -768,6 +771,7 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
     if fitView:
         ax.autoscale(enable=True, axis='both', tight=True)
         ax.set_aspect('equal')
+
 
     updateAxes_(ax)
     if cbar is None:
