@@ -29,9 +29,8 @@ import pygimli as pg
 print(pg.__version__)
 
 ###############################################################################
-# This yields:
 #
-# Now we know the name space :gimliapi:`GIMLI` and can create a first mesh.
+# Now that we know the name space :gimliapi:`GIMLI`, we can create a first mesh.
 # A mesh is represented by a collection of nodes, cells and boundaries,
 # i.e., geometrical entities.
 #
@@ -39,28 +38,27 @@ print(pg.__version__)
 #
 #     A regularly spaced mesh consisting of rectangles or hexahedrons is
 #     usually called grid. However, a grid is just a special variant of a mesh
-#     so GIMLi treat it the same. The only difference is how they are created.
+#     so GIMLi treats it the same. The only difference is how they are created.
 #
 # GIMLi provides a collection of tools for mesh import, export and generation.
 # A simple grid generation is built-in but we also provide wrappers for
 # unstructured mesh generations, e.g., :term:`Triangle`, :term:`Tetgen` and
-# :term:`Gmsh`. To create a 2d grid you need to give two arrays/lists for the
-# sampling points in x and y direction, respectively, or just numbers.
+# :term:`Gmsh`. To create a 2d grid you need to give two arrays/lists of sample points
+# in x and y direction, in that order, or just numbers.
 
-grid = pg.createGrid(x=[-1.0, 0.0, 1.0, 4.0], y=(-1.0, 0.0, 1.0, 4.0))
+grid = pg.createGrid(x=[-1.0, 0.0, 1.0, 4.0], y=[-1.0, 0.0, 1.0, 4.0])
 
 
 ###############################################################################
 # The returned object ``grid`` is an instance of :gimliapi:`GIMLI::Mesh` and
 # provides various methods for modification and io-operations. General
-# informations can be simply printed.
+# information about the grid can be printed using the simple print() function.
 #
 print(grid)
 
 ###############################################################################
-# yields:
 #
-# Or you can access them manually:
+# Or you can access them manually using different methods:
 #
 print('Mesh: Nodes:', grid.nodeCount(),
       'Cells:', grid.cellCount(),
@@ -79,8 +77,8 @@ for cell in grid.cells():
 print(type(grid.cell(0)))
 
 ###############################################################################
-# To find the grid generation input arrays ``x`` and ``y``, you can use the
-# build-in :gimliapi:`GIMLI::Vector` (pre-defined with value type double as
+# To generate the input arrays ``x`` and ``y``, you can use the
+# built-in :gimliapi:`GIMLI::Vector` (pre-defined with values that are type double as
 # ``pg.Vector``), standard python lists or :term:`numpy` arrays,
 # which are widely compatible with :term:`GIMLi` vectors.
 
@@ -97,16 +95,14 @@ grid = pg.createGrid(x=np.linspace(-1.0, 1.0, 10),
 print(grid.cellCount())
 
 ###############################################################################
-# rectangles of type :gimliapi:`GIMLI::Quadrangle` being derived from the
-# base type :gimliapi:`GIMLI::Cell`,
+# rectangles of type :gimliapi:`GIMLI::Quadrangle` derived from the
+# base type :gimliapi:`GIMLI::Cell`, edges of type :gimliapi:`GIMLI::Edge`, 
+# which are boundaries of the general type :gimliapi:`GIMLI::Boundary`.
 #
 
 print(grid.boundaryCount())
 
 ###############################################################################
-# edges of type :gimliapi:`GIMLI::Edge`, which are boundaries of the general
-# type :gimliapi:`GIMLI::Boundary`.
-#
 # The mesh can be saved and loaded in our binary mesh format ``.bms``.
 # Or exported into ``.vtk`` format for 2D or 3D visualization using
 # :term:`Paraview`.
@@ -115,7 +111,7 @@ print(grid.boundaryCount())
 # that provides better exports to graphics files (e.g., png, pdf, svg).
 # In :term:`pygimli` we provide some basic post-processing routines using
 # the :term:`matplotlib` visualization framework. The main visualization call
-# is :py:mod:`pygimli.viewer.show` which is sufficient for the most meshs,
+# is :py:mod:`pygimli.viewer.show` which is sufficient for most meshes,
 # fields, models and streamline views.
 
 pg.viewer.show(grid)
