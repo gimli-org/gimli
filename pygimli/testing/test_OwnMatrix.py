@@ -5,6 +5,7 @@
 import unittest
 
 import pygimli as pg
+
 from pygimli.core.matrix import RVector, MatrixBase
 
 class Matrix(pg.matrix.MatrixBase):

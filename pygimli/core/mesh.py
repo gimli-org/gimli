@@ -10,7 +10,9 @@ from .core import (cat, HexahedronShape, Line, RSparseMapMatrix,
                         Mesh, MeshEntity, Node, Boundary, RVector,
                         PolygonFace, TetrahedronShape, TriangleFace)
 from .logger import deprecated, error, info, warn
+
 from ..meshtools import mergePLC, exportPLC
+
 from .base import isScalar, isArray, isPos, isR3Array, isComplex
 
 
