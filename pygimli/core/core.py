@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 import sys
+import os
 
-if sys.platform == 'win32':
-    os.environ['PATH'] = __path__[0] + ';' + os.environ['PATH']
+#if sys.platform == 'win32':
+#    os.environ['PATH'] = os.path.abspath(__file__) + ';' + os.environ['PATH']
 
 #_pygimli_ = None
 pgcore = None
@@ -17,7 +18,7 @@ except ImportError as e:
     print("did not find in-place pg core, try import pgcore")
     # import pgcore as _pygimli_
     import pgcore
-    from pgcore import _pygimli_  # check version compatibility
+    # from pgcore import _pygimli_  # check version compatibility
     from pgcore import *
 except ImportError as e:
     print(e)
