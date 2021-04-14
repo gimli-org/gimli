@@ -117,10 +117,10 @@ def simulate(mesh, scheme, res, **kwargs):
     seed = kwargs.pop('seed', None)
     sr = kwargs.pop('sr', True)  # self.sr)
 
-    #segfaults with self.fop (test & fix)
+    # segfaults with self.fop (test & fix)
     fop = ERTModelling(sr=sr, verbose=verbose)
     # fop = self.createForwardOperator(useBert=True,  # self.useBert,
-                                     # sr=sr, verbose=verbose)
+    #                                   sr=sr, verbose=verbose)
     fop.data = scheme
     fop.setMesh(mesh, ignoreRegionManager=True)
 
@@ -267,7 +267,7 @@ def simulate(mesh, scheme, res, **kwargs):
 
 
 def simulateOld(mesh, scheme, res, sr=True, useBert=True,
-             verbose=False, **kwargs):
+                verbose=False, **kwargs):
     """ERT forward calculation.
 
     Convenience function to use the ERT modelling operator

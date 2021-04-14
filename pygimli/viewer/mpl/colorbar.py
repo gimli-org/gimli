@@ -429,7 +429,7 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5, levels=None):
 
 
 def setMappableValues(mappable, dataIn):
-    """Change the data values for a given mapable."""
+    """Change the data values for a given mappable."""
     pg.critical('remove me')
     data = dataIn
     if not isinstance(data, np.ma.core.MaskedArray):
@@ -444,8 +444,7 @@ def setMappableValues(mappable, dataIn):
 
 def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=None,
                     **kwargs):
-    """Change the data values for a given mappable.
-    """
+    """Change the data values for a given mappable."""
     data = dataIn
     if not isinstance(data, np.ma.core.MaskedArray):
         data = np.array(dataIn)
