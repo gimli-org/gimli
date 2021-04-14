@@ -5,7 +5,7 @@ Misc stuff also needed for core imports and monkey patching
 import numpy as np
 
 #from ._pygimli_ import (RVector3, R3Vector, RMatrix)
-from pgcore import (RVector3, R3Vector, RMatrix)
+from .core import (RVector3, R3Vector, RMatrix)
 
 
 def isScalar(v, val=None):

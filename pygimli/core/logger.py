@@ -14,7 +14,8 @@ import logging
 import inspect
 import traceback
 
-from . import _pygimli_
+from . core import pgcore
+#from . import _pygimli_
 
 __ANSICOLORS__ = {
     'r': '\033[0;31;49m',  #normal, #FG red; #BG black
@@ -220,10 +221,10 @@ def verbose():
 def setDebug(d):
     level = logging.INFO
     if d:
-        _pygimli_.setDebug(True)
+        pgcore.setDebug(True)
         level = logging.DEBUG
     else:
-        _pygimli_.setDebug(False)
+        pgcore.setDebug(False)
         level = logging.INFO
 
     logger.setLevel(level)

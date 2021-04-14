@@ -8,7 +8,7 @@ Mesh generation and modification.
     (unstructured), both objects are treated the same internally.
 """
 
-from ..core import createMesh1D, createMesh1DBlock, createMesh2D, createMesh3D
+# from ..core import createMesh1D, createMesh1DBlock, createMesh2D, createMesh3D
 from .grid import (createGrid, createGridPieShaped,
                    appendTetrahedronBoundary, appendTriangleBoundary)
 from .mapping import (cellDataToBoundaryData, cellDataToNodeData,

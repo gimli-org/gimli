@@ -5,8 +5,8 @@ Extensions to the core DataContainer class[es].
 import numpy as np
 from . logger import deprecated, info, warn, critical, verbose
 #from . _pygimli_ import (RVector3, RVector, IndexArray,
-from pgcore import (RVector3, RVector, IndexArray,
-                        DataContainer, DataContainerERT)
+from .core import (RVector3, RVector, IndexArray,
+                   DataContainer, DataContainerERT)
 
 def __DataContainer_str(self):
     return "Data: Sensors: " + str(self.sensorCount()) + " data: " + \

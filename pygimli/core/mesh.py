@@ -6,7 +6,7 @@ import numpy as np
 
 from math import ceil
 #from ._pygimli_ import (cat, HexahedronShape, Line, RSparseMapMatrix,
-from pgcore import (cat, HexahedronShape, Line, RSparseMapMatrix,
+from .core import (cat, HexahedronShape, Line, RSparseMapMatrix,
                         Mesh, MeshEntity, Node, Boundary, RVector,
                         PolygonFace, TetrahedronShape, TriangleFace)
 from .logger import deprecated, error, info, warn
