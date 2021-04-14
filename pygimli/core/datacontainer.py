@@ -4,7 +4,8 @@ Extensions to the core DataContainer class[es].
 """
 import numpy as np
 from . logger import deprecated, info, warn, critical, verbose
-from . _pygimli_ import (RVector3, RVector, IndexArray,
+#from . _pygimli_ import (RVector3, RVector, IndexArray,
+from pgcore import (RVector3, RVector, IndexArray,
                         DataContainer, DataContainerERT)
 
 def __DataContainer_str(self):
