@@ -7,9 +7,9 @@ import numpy as np
 # from . import _pygimli_ as pgcore
 from .core import pgcore
 
-# from . import (CMatrix, CSparseMapMatrix, CSparseMatrix,
-#                RSparseMapMatrix, RSparseMatrix, ElementMatrix,
-#                IVector, MatrixBase, R3Vector, RVector)
+from .core import (CMatrix, CSparseMapMatrix, CSparseMatrix,
+               RSparseMapMatrix, RSparseMatrix, ElementMatrix,
+               IVector, MatrixBase, R3Vector, RVector)
 
 from .logger import critical, warn
 

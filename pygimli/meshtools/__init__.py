@@ -8,7 +8,8 @@ Mesh generation and modification.
     (unstructured), both objects are treated the same internally.
 """
 
-# from ..core import createMesh1D, createMesh1DBlock, createMesh2D, createMesh3D
+from pygimli.core import createMesh1D, createMesh1DBlock, createMesh2D, createMesh3D
+
 from .grid import (createGrid, createGridPieShaped,
                    appendTetrahedronBoundary, appendTriangleBoundary)
 from .mapping import (cellDataToBoundaryData, cellDataToNodeData,
@@ -22,6 +23,7 @@ from .mesh import (convert, convertMeshioMesh, convertHDF5Mesh, createMesh,
                    readFenicsHDF5Mesh, readGmsh, readHDF5Mesh,
                    readHydrus2dMesh, readHydrus3dMesh, readSTL, readTetgen,
                    readTriangle, readMeshIO, refineHex2Tet, refineQuad2Tri)
+
 from .polytools import createParaDomain2D  # keep for backward compatibility
 from .polytools import (createCircle, createCube, createCylinder, createFacet,
                         createLine, createParaMeshPLC, createPolygon,
