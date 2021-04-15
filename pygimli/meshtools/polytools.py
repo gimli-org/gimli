@@ -1154,7 +1154,7 @@ def exportTrianglePoly(poly, fname, float_format='.15e'):
         mesh PLC holding nodes, edges, holes & regions
 
     fname : string
-        Filename of the file to read (\\*.n, \\*.e)
+        Target filename *.poly
 
     float_format : string
         format string for floats according to str.format()
@@ -1162,6 +1162,9 @@ def exportTrianglePoly(poly, fname, float_format='.15e'):
     verbose : boolean [False]
         Be verbose during import.
     """
+    if fname.rfind('.poly') == -1:
+        fname = fname + '.poly'
+
     if float_format[0] != '{':
         pfmt = '{:' + float_format + '}'
     else:

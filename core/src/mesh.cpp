@@ -1690,17 +1690,17 @@ void Mesh::create2DGrid(const RVector & x, const RVector & y, int markerType,
 
         for (Index i = 0; i < boundaryCount(); i ++){
             if (boundary(i).leftCell() == NULL || boundary(i).rightCell() == NULL){
-                // Left
                 if (worldBoundaryMarker){
-                    if (std::abs(boundary(i).norm()[0] + 1.0) < TOLERANCE)
-                        boundary(i).setMarker(MARKER_BOUND_HOMOGEN_NEUMANN);
+                    // Left
+                    if (std::abs(boundary(i).norm()[0] + 1.0) < TOLERANCE) boundary(i).setMarker(MARKER_BOUND_MIXED);
                     // Right
                     else if (std::abs(boundary(i).norm()[0] - 1.0) < TOLERANCE) boundary(i).setMarker(MARKER_BOUND_MIXED);
                     // Top
-                    else if (std::abs(boundary(i).norm()[1] - 1.0) < TOLERANCE) boundary(i).setMarker(MARKER_BOUND_MIXED);
+                    else if (std::abs(boundary(i).norm()[1] - 1.0) < TOLERANCE) boundary(i).setMarker(MARKER_BOUND_HOMOGEN_NEUMANN);
                     // Bottom
                     else if (std::abs(boundary(i).norm()[1] + 1.0) < TOLERANCE) boundary(i).setMarker(MARKER_BOUND_MIXED);
                 } else {
+                    // Left
                     if (std::abs(boundary(i).norm()[0] + 1.0) < TOLERANCE) boundary(i).setMarker(1);
                     // Right
                     else if (std::abs(boundary(i).norm()[0] - 1.0) < TOLERANCE) boundary(i).setMarker(2);

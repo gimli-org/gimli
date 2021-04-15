@@ -437,7 +437,8 @@ def setMappableValues(mappable, dataIn):
 
     # set bad value color to white
     if mappable.get_cmap() is not None:
-        mappable.get_cmap().set_bad([1.0, 1.0, 1.0, 0.0])
+        mappable.set_cmap(mappable.get_cmap().copy().set_bad([1.0, 1.0, 1.0, 0.0]))
+        # mappable.get_cmap().set_bad([1.0, 1.0, 1.0, 0.0])
 
     mappable.set_array(data)
 
@@ -452,7 +453,8 @@ def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=None,
 
     # set bad value color to white
     if mappable.get_cmap() is not None:
-        mappable.get_cmap().set_bad([1.0, 1.0, 1.0, 0.0])
+        mappable.set_cmap(mappable.get_cmap().copy().set_bad([1.0, 1.0, 1.0, 0.0]))
+        # mappable.get_cmap().set_bad([1.0, 1.0, 1.0, 0.0])
 
     if cMin is None:
         cMin = data.min()
