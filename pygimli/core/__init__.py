@@ -1085,7 +1085,7 @@ from .base import isScalar, isArray, isPos, isR3Array, isComplex, isMatrix
 # Import from submodules at the end
 from .mesh import Mesh, MeshEntity, Node
 from .datacontainer import DataContainer, DataContainerERT
-from .trans import *
+from .trans import *  # why do we need that?
 
 # from .matrix import (Cm05Matrix, LMultRMatrix, LRMultRMatrix, MultLeftMatrix,
 #                      MultLeftRightMatrix, MultRightMatrix, RMultRMatrix)

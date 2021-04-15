@@ -15,7 +15,7 @@ try:
     dir(pgcore)
     from ._pygimli_ import *  # check if . can be omitted
 except ImportError as e:
-    print("did not find in-place pg core, try import pgcore")
+    # print("did not find in-place pg core, try import pgcore")
     # import pgcore as _pygimli_
     import pgcore
     # from pgcore import _pygimli_  # check version compatibility

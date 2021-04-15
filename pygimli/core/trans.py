@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """Some specialization to the trans functions."""
 
-from pygimli.core import _pygimli_ as pg
+from .core import pgcore
 
-__TransCumulative_addForGC__ = pg.RTransCumulative.add
+__TransCumulative_addForGC__ = pgcore.RTransCumulative.add
 
 
 def __TransCumulative_addForGC_MP__(self, T, *args):
@@ -22,14 +22,14 @@ def __TransCumulative_addForGC_MP__(self, T, *args):
     return __TransCumulative_addForGC__(self, T, *args)
 
 
-pg.RTransCumulative.add = __TransCumulative_addForGC_MP__
+pgcore.RTransCumulative.add = __TransCumulative_addForGC_MP__
 
 # Aliases
-Trans = pg.RTrans
-TransLinear = pg.RTransLinear
-TransLin = pg.RTransLin
-TransPower = pg.RTransPower
-TransLog = pg.RTransLog
-TransLogLU = pg.RTransLogLU
-TransCotLU = pg.RTransCotLU
-TransCumulative = pg.RTransCumulative
+Trans = pgcore.RTrans
+TransLinear = pgcore.RTransLinear
+TransLin = pgcore.RTransLin
+TransPower = pgcore.RTransPower
+TransLog = pgcore.RTransLog
+TransLogLU = pgcore.RTransLogLU
+TransCotLU = pgcore.RTransCotLU
+TransCumulative = pgcore.RTransCumulative
