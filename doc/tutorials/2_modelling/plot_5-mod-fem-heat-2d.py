@@ -38,9 +38,10 @@ pg.show(mesh)
 # Call :py:func:`pygimli.solver.solveFiniteElements` to solve the heat
 # diffusion equation :math:`\nabla\cdot(a\nabla T)=0` with :math:`T(bottom)=1`
 # and :math:`T(top)=0`, where :math:`a` is the thermal diffusivity and :math:`T`
-# is the temperature distribution. We assign Temperature values to the four zones
-# using their marker number in a tuple (a) and boundary values with their
-# respective markers in a tuple (bc)
+# is the temperature distribution. We assign thermal diffusivities to the four regions
+# using their marker number in a dictionary (a) and the fixed temperatures at the 
+# boundaries using Dirichlet boundary conditions with the respective markers in 
+# another dictionary (bc) 
 T = pg.solver.solveFiniteElements(mesh,
                                   a={1: 1.0, 2: 2.0, 3: 3.0, 4:0.1},
                                   bc={'Dirichlet': {8: 1.0, 4: 0.0}}, verbose=True)
