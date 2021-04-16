@@ -43,11 +43,13 @@ def createGrid(x=None, y=None, z=None, **kwargs):
     Mesh: Nodes: 16 Cells: 9 Boundaries: 24
     >>> fig, axs = plt.subplots(1, 2)
     >>> _ = pg.show(mesh, markers=True, showMesh=True, ax=axs[0])
-    >>> mesh = pg.meshtools.createGrid(x=[0, 1, 1.5, 2], y=[-1, -0.5, -0.25, 0], 
+    >>> mesh = pg.meshtools.createGrid(x=[0, 1, 1.5, 2], 
+    ...                                y=[-1, -0.5, -0.25, 0], 
     ...                                worldBoundaryMarker=True, marker=2)
     >>> print(mesh)
     Mesh: Nodes: 16 Cells: 9 Boundaries: 24
-    >>> _ = pg.show(mesh, markers=True, showBoundaries=True, showMesh=True, ax=axs[1])
+    >>> _ = pg.show(mesh, markers=True, showBoundaries=True, 
+    ...             showMesh=True, ax=axs[1])
     """
     if 'degree' in kwargs:
         return createGridPieShaped(x, **kwargs)
@@ -156,8 +158,8 @@ def createGridPieShaped(x, degree=10.0, h=2, marker=0):
     return meshR
 
 
-def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1, isSubSurface=False, 
-                           **kwargs):
+def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1,        
+                           isSubSurface=False, **kwargs):
     """Add a triangle mesh boundary to a given mesh.
 
     Returns a new mesh that contains a triangulated box around a given mesh
@@ -197,6 +199,10 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1, isSubSurface=Fa
     addNodes : int[5], iterable
         Add aditional nodes on the outer boundaries.
     
+    See Also
+    --------
+    appendTetrahedronBoundary
+    
     Examples
     --------
     >>> import matplotlib.pyplot as plt
@@ -217,9 +223,6 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1, isSubSurface=Fa
     >>> surf = mt.createPolygon([[0, 0],[5, 3], [10, 1]], boundaryMarker=-1, addNodes=5, interpolate='spline')
     >>> m = mt.appendTriangleBoundary(surf, xbound=4, ybound=4, marker=2, addNodes=5, isSubSurface=True)
     >>> ax, _ = pg.show(m, markers=True, showBoundaries=True, showMesh=True, ax=axs[1][2])
-    See Also
-    --------
-    appendTetrahedronBoundary
     """
     poly = pg.Mesh(isGeometry=True)
 
