@@ -37,14 +37,13 @@ def createGrid(x=None, y=None, z=None, **kwargs):
     Examples
     --------
     >>> import pygimli as pg
-    >>> mesh = pg.meshtools.createGrid(x=[0, 1, 1.5, 2], y=[-1, -0.5, -0.25, 0], 
-    ...                                marker=2)
+    >>> mesh = pg.meshtools.createGrid(x=[0, 1, 1.5, 2], y=[-1, -0.5, -0.25, 0],
+    ...                                 marker=2)
     >>> print(mesh)
     Mesh: Nodes: 16 Cells: 9 Boundaries: 24
-    >>> fig, axs = plt.subplots(1, 2)
+    >>> fig, axs = pg.plt.subplots(1, 2)
     >>> _ = pg.show(mesh, markers=True, showMesh=True, ax=axs[0])
-    >>> mesh = pg.meshtools.createGrid(x=[0, 1, 1.5, 2], 
-    ...                                y=[-1, -0.5, -0.25, 0], 
+    >>> mesh = pg.meshtools.createGrid(x=[0, 1, 1.5, 2], y=[-1, -0.5, -0.25, 0],
     ...                                worldBoundaryMarker=True, marker=2)
     >>> print(mesh)
     Mesh: Nodes: 16 Cells: 9 Boundaries: 24
