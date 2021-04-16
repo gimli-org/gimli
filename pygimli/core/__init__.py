@@ -12,29 +12,6 @@ import numpy as np
 from .core import pgcore
 from .core import *
 
-# if sys.platform == 'win32':
-#     os.environ['PATH'] = __path__[0] + ';' + os.environ['PATH']
-
-# #_pygimli_ = None
-# pgcore = None
-
-# try:
-#     from . import _pygimli_  # if it works: as pgcore, replace all _pygimli_
-#     # from . import _pygimli_ as pgcore  # if it works: as pgcore, replace all _pygimli_
-#     pgcore = _pygimli_
-#     dir(pgcore)
-#     from ._pygimli_ import *  # check if . can be omitted
-# except ImportError as e:
-#     print("did not find in-place pg core, try import pgcore")
-#     # import pgcore as _pygimli_
-#     import pgcore
-#     from pgcore import _pygimli_  # check version compatibility
-#     from pgcore import *
-# except ImportError as e:
-#     print(e)
-#     traceback.print_exc(file=sys.stdout)
-#     sys.stderr.write("ERROR: cannot import the library '_pygimli_'.\n")
-
 # #######################################
 # ###  Global convenience functions #####
 # #######################################
@@ -1010,13 +987,13 @@ def __getCoords(coord, dim, ent):
     """Syntactic sugar to find all x-coordinates of a given entity.
     """
     if isinstance(ent, R3Vector) or isinstance(ent, stdVectorRVector3):
-        return getattr(_pygimli_, coord)(ent)
+        return getattr(pgcore, coord)(ent)
     if isinstance(ent, list) and isinstance(ent[0], RVector3):
-        return getattr(_pygimli_, coord)(ent)
+        return getattr(pgcore, coord)(ent)
     if isinstance(ent, DataContainer):
-        return getattr(_pygimli_, coord)(ent.sensorPositions())
+        return getattr(pgcore, coord)(ent.sensorPositions())
     if isinstance(ent, Mesh):
-        return getattr(_pygimli_, coord)(ent.positions())
+        return getattr(pgcore, coord)(ent.positions())
     if isinstance(ent, pgcore.stdVectorNodes):
         return np.array([n.pos()[dim] for n in ent])
     if isinstance(ent, pgcore.Node):

@@ -5,7 +5,7 @@ Import and extensions of the core Mesh class.
 import numpy as np
 
 from math import ceil
-#from ._pygimli_ import (cat, HexahedronShape, Line, RSparseMapMatrix,
+
 from .core import (cat, HexahedronShape, Line, RSparseMapMatrix,
                         Mesh, MeshEntity, Node, Boundary, RVector,
                         PolygonFace, TetrahedronShape, TriangleFace)

@@ -67,7 +67,7 @@ def createGrid(x=None, y=None, z=None, **kwargs):
             z = list(range(z))
         kwargs['z'] = z
 
-    return pg.core._pygimli_.createGrid(**kwargs)
+    return pg.core.pgcore.createGrid(**kwargs)
 
 
 def createGridPieShaped(x, degree=10.0, h=2, marker=0):

@@ -5,7 +5,6 @@ import os
 #if sys.platform == 'win32':
 #    os.environ['PATH'] = os.path.abspath(__file__) + ';' + os.environ['PATH']
 
-#_pygimli_ = None
 pgcore = None
 
 try:

@@ -15,7 +15,6 @@ import inspect
 import traceback
 
 from . core import pgcore
-#from . import _pygimli_
 
 __ANSICOLORS__ = {
     'r': '\033[0;31;49m',  #normal, #FG red; #BG black
