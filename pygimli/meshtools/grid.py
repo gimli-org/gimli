@@ -158,7 +158,7 @@ def createGridPieShaped(x, degree=10.0, h=2, marker=0):
 
 
 def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1,        
-                           isSubSurface=False, **kwargs):
+                           isSubSurface=True, **kwargs):
     """Add a triangle mesh boundary to a given mesh.
 
     Returns a new mesh that contains a triangulated box around a given mesh
@@ -180,7 +180,7 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1,
         Absolute vertical prolongation distance. 
     marker : int, optional
         Marker of new cells.
-    isSubSurface : boolean, optional
+    isSubSurface : boolean [True]
         Apply boundary conditions suitable for geo-simulation and prolongate
         mesh to the surface if necessary.
     

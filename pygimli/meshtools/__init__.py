@@ -28,7 +28,7 @@ from .polytools import createParaDomain2D  # keep for backward compatibility
 from .polytools import (createCircle, createCube, createCylinder, createFacet,
                         createLine, createParaMeshPLC, createPolygon,
                         createRectangle, createWorld, exportPLC, mergePLC,
-                        mergePLC3D, readPLC, syscallTetgen, writePLC, extrude)
+                        mergePLC3D, readPLC, syscallTetgen, extrude)
 # little syntactic sugar
 merge = mergePLC
 

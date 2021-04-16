@@ -1117,7 +1117,7 @@ def exportPLC(poly, fname, **kwargs):
     --------
     >>> import pygimli as pg
     >>> import tempfile, os
-    >>> fname = tempfile.mktemp() # Create temporary string for filename.
+    >>> fname = tempfile.mktemp() + '.poly' # Create temporary filename.
     >>> world2d = pg.meshtools.createWorld(start=[-10, 0], end=[20, -10])
     >>> pg.meshtools.exportPLC(world2d, fname)
     >>> read2d = pg.meshtools.readPLC(fname)
@@ -1131,15 +1131,6 @@ def exportPLC(poly, fname, **kwargs):
         exportTrianglePoly(poly, fname, **kwargs)
     else:
         exportTetgenPoly(poly, fname, **kwargs)
-
-
-def writePLC(*args, **kwargs):
-    """
-    Backward compatibility.
-    Please use :py:mod:`pygimli.meshtools.exportPLC`.
-    """
-    pg.deprecated('use exportPLC')  # 16.08.2019
-    return exportPLC(*args, **kwargs)
 
 
 def exportTrianglePoly(poly, fname, float_format='.15e'):
