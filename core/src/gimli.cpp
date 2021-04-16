@@ -250,6 +250,19 @@ std::vector < std::string > split(const std::string & str, char delimiter){
     return subStrings;
 }
 
+std::string replace(const std::string & str, char from, char to){
+    std::string ret(str);
+    std::replace(ret.begin(), ret.end(), from, to);
+    return ret;
+}
+
+std::string lower(const std::string & str){
+    std::string lo(str);
+    std::transform(lo.begin(), lo.end(), lo.begin(), tolower);
+    return lo;
+}
+
+
 std::map < float, float > loadFloatMap(const std::string & filename){
     std::map < float, float > aMap;
 

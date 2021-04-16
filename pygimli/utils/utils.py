@@ -162,7 +162,21 @@ def prettify(value, roundValue=False):
     """Return prettified string for value .. if possible."""
     if isinstance(value, dict):
         import json
-        return json.dumps(value, indent=4)
+        # class CustomEncoder(json.JSONEncoder):
+        #     def __init__(self, *args, **kwargs):
+        #         super().__init__(*args, **kwargs)
+
+        #     def _iterencode(self, o):
+        #         try:
+        #             return super()._iterencode(o)
+        #         except:
+        #             return "{0} is not JSON serializable".format(type(o))
+            
+        try:
+            return json.dumps(value, indent=4)
+        except Exception as e:
+            pg.warning('prettify fails:', e)
+            return str(value)
     elif pg.isScalar(value):
         return prettyFloat(value, roundValue)
     pg.warn("Don't know how to prettify the string representation for: ",

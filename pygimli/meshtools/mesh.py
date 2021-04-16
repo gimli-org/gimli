@@ -46,6 +46,8 @@ def createMesh(poly, quality=32, area=0.0, smooth=None, switches=None,
         1: node center
         2: weighted node center
 
+        If smooth is just set to True then [1, 4] is choosen.
+
     switches: str
         Set additional triangle command switches.
         https://www.cs.cmu.edu/~quake/triangle.switch.html
@@ -104,6 +106,9 @@ def createMesh(poly, quality=32, area=0.0, smooth=None, switches=None,
             # an EXTRA! -a here else it ignores per region area
             switches += 'a'
 
+            if 'preserveBoundary' in kwargs:
+                switches += 'Y'
+
         if not verbose:
             switches += 'Q'
 
@@ -114,10 +119,15 @@ def createMesh(poly, quality=32, area=0.0, smooth=None, switches=None,
         mesh = tri.generate()
 
         if smooth is not None:
+            if smooth == True:
+                smooth = [1, 4]
+
             mesh.smooth(nodeMoving=kwargs.pop('node_move', True),
                         edgeSwapping=False,
                         smoothFunction=smooth[0],
                         smoothIteration=smooth[1])
+        
+        mesh.createNeighborInfos()
         return mesh
 
     else:
@@ -1651,38 +1661,16 @@ def merge2Meshes(m1, m2):
     mesh: :gimliapi:`GIMLI::Mesh`
         Resulting mesh.
     """
-#    for c in m1.cells():
-#    if c.size() < 1e-4:
-#    print(c)
-#    exit()
-
     mesh = pg.Mesh(m1)
     mesh.translate(-m1.node(0).pos())
     m3 = pg.Mesh(m2)
     m3.translate(-m1.node(0).pos())
 
-#    for n in m3.nodes():
-#    i = mesh.findNearestNode(n.pos())
-#    if mesh.node(i).pos().dist(n.pos()) < 0.5:
-#    print("DUP", 1)
-#    exit()
-
     for c in m3.cells():
         mesh.copyCell(c)
 
     for b in m3.boundaries():
-        mesh.copyBoundary(b, tol=1e-6, check=False)
-
-#    if b.id() > 1362:
-#    exit()
-#    print(mesh.boundary(2905),
-#    mesh.boundary(2905).node(0).id(), mesh.boundary(2905).node(0).pos(),
-#    mesh.boundary(2905).node(1).id(), mesh.boundary(2905).node(1).pos()
-#    )
-#    print(mesh.boundary(2906),
-#    mesh.boundary(2906).node(0).id(), mesh.boundary(2906).node(0).pos(),
-#    mesh.boundary(2906).node(1).id(), mesh.boundary(2906).node(1).pos()
-#    )
+        mesh.copyBoundary(b, tol=1e-6, check=True)
 
     for key in list(mesh.dataMap().keys()):
         d = mesh.dataMap()[key]
@@ -1693,6 +1681,7 @@ def merge2Meshes(m1, m2):
         mesh.addData(key, d)
 
     mesh.translate(m1.node(0).pos())
+    mesh.createNeighborInfos(force=True)
     return mesh
 
 

@@ -640,7 +640,7 @@ void RegionManager::setMesh(const Mesh & mesh, bool holdRegionInfos){
     bool singleOnly = false;
     if (regions.size() > 50){
         singleOnly = true;
-        log(Info,"More than 50 regions so we assume singles only regions.");
+        log(Info,"More than 50 regions, so we assume single regions only.");
     }
 
     std::map < int, std::vector< Cell * > > markerCellVectorMap;

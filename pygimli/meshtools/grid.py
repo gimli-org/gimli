@@ -37,12 +37,17 @@ def createGrid(x=None, y=None, z=None, **kwargs):
     Examples
     --------
     >>> import pygimli as pg
-    >>> mesh = pg.meshtools.createGrid(x=[0, 1, 1.5, 2],
-    ...                                y=[-1, -0.5, -0.25, 0], marker=2)
+    >>> mesh = pg.meshtools.createGrid(x=[0, 1, 1.5, 2], y=[-1, -0.5, -0.25, 0], 
+    ...                                marker=2)
     >>> print(mesh)
     Mesh: Nodes: 16 Cells: 9 Boundaries: 24
-    >>> _ = pg.show(mesh)
-    >>> pg.wait()
+    >>> fig, axs = plt.subplots(1, 2)
+    >>> _ = pg.show(mesh, markers=True, showMesh=True, ax=axs[0])
+    >>> mesh = pg.meshtools.createGrid(x=[0, 1, 1.5, 2], y=[-1, -0.5, -0.25, 0], 
+    ...                                worldBoundaryMarker=True, marker=2)
+    >>> print(mesh)
+    Mesh: Nodes: 16 Cells: 9 Boundaries: 24
+    >>> _ = pg.show(mesh, markers=True, showBoundaries=True, showMesh=True, ax=axs[1])
     """
     if 'degree' in kwargs:
         return createGridPieShaped(x, **kwargs)
@@ -151,9 +156,8 @@ def createGridPieShaped(x, degree=10.0, h=2, marker=0):
     return meshR
 
 
-def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1, quality=34.0,
-                           area=0.0, smooth=False, markerBoundary=1,
-                           isSubSurface=False, verbose=False):
+def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1, isSubSurface=False, 
+                           **kwargs):
     """Add a triangle mesh boundary to a given mesh.
 
     Returns a new mesh that contains a triangulated box around a given mesh
@@ -161,240 +165,157 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1, quality=34.0,
     The old boundary marker from mesh will be preserved, except for marker == -2 which will be switched to 2 since we assume
     -2 is the world marker for outer boundaries in the subsurface.
 
+    Note, this all will only work stable if the mesh generator (triangle) preserve all input boundaries. 
+    This will lead to bad quality meshes for the boundary region so its a good idea to play with the addNodes keword argument 
+    to manually refine the newly created outer boundaries.
+
     Parameters
     ----------
     mesh : mesh object
         Mesh to which the triangle boundary should be appended.
     xbound : float, optional
-        Horizontal prolongation distance. Minimal mesh 0.5 x extension.
+        Absolute horizontal prolongation distance.
     ybound : float, optional
-        Vertical prolongation distance. Minimal mesh 0.5 y extension.
+        Absolute vertical prolongation distance. 
     marker : int, optional
         Marker of new cells.
-    markerBoundary : int, optional
-        Marker of the inner boundary edges between mesh and new boundary.
+    isSubSurface : boolean, optional
+        Apply boundary conditions suitable for geo-simulation and prolongate
+        mesh to the surface if necessary.
+    
+    Additional Args
+    ---------------
+    ** kargs forwarded to pg.createMesh
+    
     quality : float, optional
         Triangle quality.
     area: float, optional
         Triangle max size within the boundary.
     smooth : boolean, optional
         Apply mesh smoothing.
-    isSubSurface : boolean, optional
-        Apply boundary conditions suitable for geo-simulation and prolongate
-        mesh to the surface if necessary.
-    verbose : boolean, optional
-        Be verbose.
-
+        
+    addNodes : int[5], iterable
+        Add aditional nodes on the outer boundaries.
+    
     Examples
     --------
     >>> import matplotlib.pyplot as plt
     >>> import pygimli as pg
     >>> from pygimli.viewer.mpl import drawMesh, drawModel
-    >>> from pygimli.meshtools import appendTriangleBoundary
+    >>> import pygimli.meshtools as mt
     >>> inner = pg.createGrid(range(5), range(5), marker=1)
-    >>> mesh = appendTriangleBoundary(inner, xbound=3, ybound=6, marker=2)
-
-    >>> fig, (ax1, ax2) = plt.subplots(1,2)
-    >>> p1 = drawMesh(ax1, inner)
-    >>> p2 = drawModel(ax2, mesh, mesh.cellMarkers(), label='marker')
-    >>> p3 = drawMesh(ax2, mesh)
-    >>> txt1 = ax1.set_title("a) Input grid")
-    >>> txt2 = ax2.set_title("b) With triangle boundary")
-
+    >>> fig, axs = plt.subplots(2,3)
+    >>> ax, _ = pg.show(inner, markers=True, showBoundaries=True, showMesh=True, ax=axs[0][0])
+    >>> m = mt.appendTriangleBoundary(inner, xbound=3, ybound=3, marker=2, addNodes=0, isSubSurface=False)
+    >>> ax, _ = pg.show(m, markers=True, showBoundaries=True, showMesh=True, ax=axs[0][1])
+    >>> m = mt.appendTriangleBoundary(inner, xbound=4, ybound=1, marker=2, addNodes=5, isSubSurface=False)
+    >>> ax, _ = pg.show(m, markers=True, showBoundaries=True, showMesh=True, ax=axs[0][2])
+    >>> m = mt.appendTriangleBoundary(inner, xbound=4, ybound=4, marker=2, addNodes=0, isSubSurface=True)
+    >>> ax, _ = pg.show(m, markers=True, showBoundaries=True, showMesh=True, ax=axs[1][0])
+    >>> m = mt.appendTriangleBoundary(inner, xbound=4, ybound=4, marker=2, addNodes=5, isSubSurface=True)
+    >>> ax, _ = pg.show(m, markers=True, showBoundaries=True, showMesh=True, ax=axs[1][1])
+    >>> surf = mt.createPolygon([[0, 0],[5, 3], [10, 1]], boundaryMarker=-1, addNodes=5, interpolate='spline')
+    >>> m = mt.appendTriangleBoundary(surf, xbound=4, ybound=4, marker=2, addNodes=5, isSubSurface=True)
+    >>> ax, _ = pg.show(m, markers=True, showBoundaries=True, showMesh=True, ax=axs[1][2])
     See Also
     --------
     appendTetrahedronBoundary
     """
-    surface = 0.0
+    poly = pg.Mesh(isGeometry=True)
 
-    # find boundaries on left/right/bottom/top side
-    le = [b for b in mesh.boundaries() if b.center().x() == mesh.xmin()]
-    bo = [b for b in mesh.boundaries() if b.center().y() == mesh.ymin()]
-    ri = [b for b in mesh.boundaries() if b.center().x() == mesh.xmax()]
-    top = [b for b in mesh.boundaries() if b.center().y() == mesh.ymax()]
+    if isSubSurface == True:
 
-    # gather all right boundary nodes after sorting in boundaryNodes
-    tmp = []
-    for b in ri:
-        if b.node(0) not in tmp:
-            tmp.append(b.node(0))
-        if b.node(1) not in tmp:
-            tmp.append(b.node(1))
+        bs = mesh.findBoundaryByMarker(pg.core.MARKER_BOUND_HOMOGEN_NEUMANN)
 
-    tmp.sort(key=lambda n: n.pos().y())
-    tmp.reverse()
-    boundaryNodes = tmp
+        if len(bs) == 0:
+            for b in mesh.boundaries():
+                if b.outside() and b.norm()[1] == 1.0:
+                    bs.append(b)
+        
+        paths = mesh.findPaths(bs)
 
-    # gather all bottom boundary nodes and add them to boundaryNodes
-    boNode = []
-    for b in bo:
-        if b.node(0) not in boNode + boundaryNodes:
-            boNode.append(b.node(0))
-        if b.node(1) not in boNode + boundaryNodes:
-            boNode.append(b.node(1))
+        if len(paths) > 0:
+            startPoint = mesh.node(paths[0][0]).pos()
+            endPoint = mesh.node(paths[0][-1]).pos()
 
-    boNode.sort(key=lambda n: n.pos().x())
-    boNode.reverse()
-    boundaryNodes = boundaryNodes + boNode
+            if startPoint[0] > endPoint[0]:
+                startPoint = endPoint
+                endPoint = mesh.node(paths[0][0]).pos()
+        else:
+            pg.critical("Can't identify upper part of the mesh to be moved to the surface.",
+                        "Maybe you can define them with Marker==-1")
 
-    # gather all left boundary nodes and add them to boundaryNodes
-    tmp = []
-    for b in le:
-        if b.node(0) not in tmp + boundaryNodes:
-            tmp.append(b.node(0))
-        if b.node(1) not in tmp + boundaryNodes:
-            tmp.append(b.node(1))
+        boundPoly = [pg.Pos(startPoint)]
+        boundPoly.append(boundPoly[-1] - pg.Pos(xbound, 0))
+        boundPoly.append(boundPoly[-1] - pg.Pos(0, mesh.ymax()- mesh.ymin() + ybound))
+        boundPoly.append(boundPoly[-1] + pg.Pos((endPoint-startPoint)[0] + 2*xbound, 0))
+        boundPoly.append(pg.Pos(endPoint) + pg.Pos(xbound, 0))
+        boundPoly.append(pg.Pos(endPoint))
 
-    tmp.sort(key=lambda n: n.pos().y())
-    boundaryNodes = boundaryNodes + tmp
-
-    if isSubSurface:
-        # gather all top boundary nodes and add them to boundaryNodes
-        topNodes = []
-        for boundary in top:
-            if boundary.node(0) not in topNodes + boundaryNodes:
-                topNodes.append(boundary.node(0))
-            if boundary.node(1) not in topNodes + boundaryNodes:
-                topNodes.append(boundary.node(1))
-        topNodes.sort(key=lambda n: n.pos().x())
-        boundaryNodes = boundaryNodes + topNodes
-
-    poly = pg.Mesh()
-
-    preserveSwitch = ''
-
-    if isSubSurface:
-        # add all boundary nodes
-        for n in boundaryNodes:
-            poly.createNode(n.pos())
-
-        # and connect them by a closed polygon
-        for i in range(0, poly.nodeCount()):
-            poly.createEdge(
-                poly.node(i), poly.node((i + 1) % poly.nodeCount()),
-                markerBoundary)
-
-        # add four corners of the world box
-        xtLen = 12
-        # x bottom boundary sampling points
-        # xBottom = pg.asvector(np.linspace(mesh.xmin() - xbound,
-        #                                   mesh.xmax() + xbound, xtLen))
-
-        n1 = poly.createNode(pg.RVector3(mesh.xmax() + xbound, surface, 0.0))
-        n2 = poly.createNode(pg.RVector3(mesh.xmin() - xbound, surface, 0.0))
-        n3 = poly.createNode(pg.RVector3(mesh.xmin() - xbound, mesh.ymin() -
-                                         ybound, 0.0))
-        n4 = poly.createNode(pg.RVector3(mesh.xmax() + xbound, mesh.ymin() -
-                                         ybound, 0.0))
-
-        # and connect them by a closed polygon
-        poly.createEdge(n1, n2, pg.core.MARKER_BOUND_HOMOGEN_NEUMANN)
-        poly.createEdge(n2, n3, pg.core.MARKER_BOUND_MIXED)
-        poly.createEdge(n3, n4, pg.core.MARKER_BOUND_MIXED)
-        poly.createEdge(n4, n1, pg.core.MARKER_BOUND_MIXED)
+        poly = pg.meshtools.createPolygon(boundPoly, isClosed=False, 
+                                          addNodes=kwargs.pop('addNodes', 5))
+        poly.addRegionMarker(boundPoly[1] + [xbound/10, -ybound/10], marker=marker)
+        
+        if mesh.cellCount() > 0:
+            poly.addHoleMarker(boundPoly[0] + [xbound/10, -ybound/10])
 
     else:  # no isSubSurface
-        xbound = max(xbound, 0.5 * (mesh.xmax() - mesh.xmin()))
-        ybound = max(ybound, 0.5 * (mesh.ymax() - mesh.ymin()))
-        # add top right node and boundary nodes
 
-        dxMin = boNode[0].pos().distance(boNode[1].pos()) * 1.1
-        xtLen = max(5, int(xbound / dxMin / 2.))
+        boundPoly = [
+                        [mesh.xmin() - xbound, mesh.ymin() - ybound],
+                        [mesh.xmin() - xbound, mesh.ymax() + ybound],
+                        [mesh.xmax() + xbound, mesh.ymax() + ybound],
+                        [mesh.xmax() + xbound, mesh.ymin() - ybound],
+                    ]
 
-        # x top boundary sampling points
-        xTop = pg.core.increasingRange(dxMin, xbound, xtLen)
-        # y boundary sampling points
-        yLeft = pg.core.increasingRange(xTop[len(xTop)-1] - xTop[len(xTop)-2],
-                                        abs(mesh.ymin() - ybound), xtLen)
+        poly = pg.meshtools.createPolygon(boundPoly, isClosed=True, marker=marker,
+                                          addNodes=kwargs.pop('addNodes', 5))
 
-        xtLen = max(5, int((mesh.xmax() - mesh.xmin()) / dxMin / 2.))
+    for b in mesh.boundaries():
+        if b.outside() or b.marker() == -1:
+            poly.copyBoundary(b)
 
-        # x bottom boundary sampling points
-        xBottom = pg.Vector(np.linspace(mesh.xmin() - xbound,
-                                        mesh.xmax() + xbound, 2 * xtLen))
+    preserveSwitch = 'Y'
+    # pg.show(poly, boundaryMarkers=True, showNodes=True)
+    # pg.wait()
 
-        for i, val in enumerate(pg.core.fliplr(xTop)[0:len(xTop) - 1]):
-            poly.createNode([mesh.xmax() + val, mesh.ymax(), 0.0])
+    mesh2 = pg.meshtools.createMesh(poly, preserveBoundary=preserveSwitch, **kwargs)
+    
+    # pg.show(mesh2, boundaryMarkers=True, showNodes=True)
 
-        for n in boundaryNodes:
-            poly.createNode(n.pos())
+    ## start extracting all cells with marker from mesh2 and all orginal cells from mesh
+    mesh3 = pg.Mesh(2)
 
-        # add top left, bottom left and bottom right node
-
-        for t in xTop[1:len(xTop)]:
-            poly.createNode([mesh.xmin() - t, mesh.ymax(), 0.0])
-
-        for t in yLeft[1:len(yLeft)]:
-            poly.createNode([mesh.xmin() - xbound, mesh.ymax() - t, 0.0])
-
-        for t in xBottom[1:len(xBottom) - 1]:
-            poly.createNode([t, mesh.ymin() - ybound, 0.0])
-
-        for t in pg.core.fliplr(yLeft)[0:len(yLeft) - 1]:
-            poly.createNode([mesh.xmax() + xbound, mesh.ymax() - t, 0.0])
-
-        # create a closed polygon through all new nodes
-        for i in range(0, poly.nodeCount()):
-            poly.createEdge(
-                poly.node(i), poly.node((i + 1) % poly.nodeCount()),
-                markerBoundary)
-
-        preserveSwitch = 'Y'
-    # poly.exportVTK('out.poly')
-
-    mesh2 = pg.Mesh(2)
-
-    # call triangle mesh generation
-    triswitches = '-pzeAfa' + preserveSwitch + 'q' + str(quality)
-
-    if area > 0:
-        triswitches += 'a' + str(area)
-
-    if not verbose:
-        triswitches += 'Q'
-
-    if isSubSurface:
-        margin = 0.0001
-        poly.addHoleMarker(pg.RVector3(mesh.xmin() + margin, mesh.ymax() -
-                                       margin))
-        tri = pg.core.TriangleWrapper(poly)
-        tri.setSwitches(triswitches)
-        tri.generate(mesh2)
-    else:
-        pg.core.TriangleWrapper(poly, mesh2, triswitches)
-
-    if smooth:
-        mesh2.smooth(nodeMoving=True, edgeSwapping=True, smoothFunction=1,
-                     smoothIteration=2)
-
-    mesh2.setCellMarkers([marker] * mesh2.cellCount())
-
-    # map does copies the cell not the reference, this should not happen **TODO check 20210305
+    for c in mesh2.cells():
+        if c.marker() == marker:
+            mesh3.copyCell(c)
+        
+    ##! map does copies the cell not the reference, this should not happen **TODO check 20210305
     # map(lambda cell: mesh2.copyCell(cell), mesh2.cells())
     for c in mesh.cells():
-        mesh2.copyCell(c)
+        mesh3.copyCell(c)
     
-    # we need to delete the old boundary markers or the new neighbour infos will fail for old outside boundaries
-    mesh2.setBoundaryMarkers(np.zeros(mesh2.boundaryCount()))
-    mesh2.createNeighborInfos(force=True)
+    ## we need to delete the old boundary markers or the new neighbour infos will fail for old outside boundaries
+    mesh3.setBoundaryMarkers(np.zeros(mesh3.boundaryCount()))
+    mesh3.createNeighborInfos(force=True)
 
     for b in mesh.boundaries():
         if b.marker() != 0:
-            b2 = mesh2.copyBoundary(b)
+            b2 = mesh3.copyBoundary(b)
             
             # some automagic .. original mesh contains bmarker == -2 which means mixed condition
             # this special marker will be switched to 2
             if b.marker() == -2:
                 b2.setMarker(2)
                 
-    for b in mesh2.boundaries():
-        if b.outside():
+    for b in mesh3.boundaries():
+        if b.outside() and b.marker() > -1:
             if b.norm().x() != 0 or b.norm().y() == -1.0:
                 b.setMarker(pg.core.MARKER_BOUND_MIXED)
             else:
                 b.setMarker(pg.core.MARKER_BOUND_HOMOGEN_NEUMANN)
 
-    return mesh2
+    return mesh3
 
 
 def appendTetrahedronBoundary(mesh, xbound=100, ybound=100, zbound=100,

@@ -415,7 +415,7 @@ def __setVal(self, idx, val):
     # print("__setVal", self, idx, 'val:', val)
     # self.setVal(val, bv=idx)
     # return
-    if isinstance(val, np.complex):
+    if isinstance(val, complex):
         if isinstance(idx, int):
             return self.setVal(val=val, id=idx)
         else:
@@ -508,7 +508,7 @@ for v in _vecs:
 
 _pygimli_.RVector.dtype = np.float
 _pygimli_.BVector.dtype = np.bool
-_pygimli_.CVector.dtype = np.complex
+_pygimli_.CVector.dtype = complex
 _pygimli_.IVector.dtype = np.long
 _pygimli_.IndexArray.dtype = np.uint
 
