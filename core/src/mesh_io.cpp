@@ -838,7 +838,7 @@ void Mesh::exportVTK(const std::string & fbody,
                 log(Debug, "writing cell data: " + cd.first + " " + str(cd.second.size()));
 
                 if (cd.second.size() == (uint)cellCount()){
-                    file << "SCALARS " << strReplaceBlankWithUnderscore(cd.first)
+                    file << "SCALARS " << replace(cd.first, ' ', '_')
                             << " double 1" << std::endl;
                     file << "LOOKUP_TABLE default" << std::endl;
 
@@ -928,7 +928,7 @@ void Mesh::exportVTK(const std::string & fbody,
 
                     if (bd.second.size() == (uint)boundaryCount()){
 
-                        file << "SCALARS " << strReplaceBlankWithUnderscore(bd.first)
+                        file << "SCALARS " << replace(bd.first, ' ', '_')
                             << " double 1" << std::endl;
                         file << "LOOKUP_TABLE default" << std::endl;
 
@@ -968,7 +968,7 @@ void Mesh::exportVTK(const std::string & fbody,
             if (nd.second.size() == (uint)nodeCount()){
                 log(Debug, "writing point data: " + nd.first + " " + str(nd.second.size()));
 
-                file << "SCALARS " << strReplaceBlankWithUnderscore(nd.first)
+                file << "SCALARS " << replace(nd.first, ' ', '_')
                     << " double 1" << std::endl;
                 file << "LOOKUP_TABLE default" << std::endl;
 

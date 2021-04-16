@@ -471,17 +471,11 @@ template < typename ValueType > void setEnvironment(const std::string & name,
     if (verbose) std::cout << "set: export " << name << "=" << val << std::endl;
 }
 
-inline std::string strReplaceBlankWithUnderscore(const std::string & str) {
-    std::string res(str);
-    for (size_t i = 0; i < res.length(); i ++) if (res[i] == ' ') res[i] = '_';
-    return res;
-}
+/*!Replace from with to inside str and return the result*/
+DLLEXPORT std::string replace(const std::string & str, const char from, const char to);
 
-inline std::string lower(const std::string & str){
-    std::string lo(str);
-    std::transform(lo.begin(), lo.end(), lo.begin(), tolower);
-    return lo;
-}
+/*!convert all chars in str to lower and return the result*/
+DLLEXPORT std::string lower(const std::string & str);
 
 // template < typename T > inline void swapVal(T & a, T & m){
 //     T tmp(a); a = m; m = tmp;

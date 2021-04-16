@@ -656,7 +656,7 @@ def drawMeshBoundaries(ax, mesh, hideMesh=False, useColorMap=False,
     updateAxes_(ax)
 
 
-def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
+def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarkers=False,
             showNodes=False, fitView=True, **kwargs):
     """Draw 2D PLC into given axes.
 
@@ -670,7 +670,7 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
         Fill the regions with default colormap.
     regionMarker: bool [True]
         Show region marker.
-    boundaryMarker: bool [False]
+    boundaryMarkers: bool [False]
         Show boundary marker.
     showNodes: bool [False]
         Draw all nodes as little dots.
@@ -742,8 +742,7 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
         if kwargs.pop('showBoundary', True):
             drawMeshBoundaries(ax, mesh, **kwargs)
 
-
-    if boundaryMarker:
+    if boundaryMarkers:
         drawBoundaryMarkers(ax, mesh, clipMarkers=kwargs.pop('clipMarkers', False))
 
     if showNodes:
@@ -754,7 +753,7 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
                 col = (0.0, 0.0, 0.0, 1.0)
 
             # ms = kwargs.pop('markersize', 5)
-            ax.plot(n.pos()[0], n.pos()[1], 'o', color=col, **kwargs)
+            ax.plot(n.pos()[0], n.pos()[1], 'o', color=col, zorder=10, **kwargs)
 
     #        eCircles.append(mpl.patches.Circle((n.pos()[0], n.pos()[1])))
     #        eCircles.append(mpl.patches.Circle((n.pos()[0], n.pos()[1]), 0.1))
