@@ -270,7 +270,9 @@ def createColorBar(gci, orientation='horizontal', size=0.2, pad=None,
     ax = kwargs.pop('ax', None)
     if ax is None:
 
-        if hasattr(gci, 'axes'):
+        if hasattr(gci, 'ax'):
+            ax = gci.ax
+        elif hasattr(gci, 'axes'):
             ax = gci.axes
         elif hasattr(gci, 'get_axes'):
             ax = gci.get_axes()
