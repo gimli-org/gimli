@@ -492,7 +492,7 @@ def drawSelectedMeshBoundariesShadow(ax, boundaries, first='x', second='y',
     updateAxes_(ax)
     return collection
 
-def drawBoundaryMarkers(ax, mesh, clipMarkers=False, **kwargs):
+def drawBoundaryMarkers(ax, mesh, clipBoundaryMarkers=False, **kwargs):
     """Draw boundary markers for mesh.boundaries with marker != 0
 
     Args
@@ -500,7 +500,7 @@ def drawBoundaryMarkers(ax, mesh, clipMarkers=False, **kwargs):
     mesh : :gimliapi:`GIMLI::Mesh`
         Mesh that have the boundary markers.
 
-    clipMarkers: bool [False]
+    clipBoundaryMarkers: bool [False]
         Clip boundary marker to the axes limits if needed.
 
     Keyword Arguments
@@ -553,7 +553,7 @@ def drawBoundaryMarkers(ax, mesh, clipMarkers=False, **kwargs):
                     fontdict={'weight':'bold'})
 
             # cliping avoid visuablity outside axes. Needet if the axes limits does not match mesh size.
-            txt.set_clip_on(clipMarkers)
+            txt.set_clip_on(clipBoundaryMarkers)
 
             ax.plot(xs[0], ys[0], 'o', color='k')
             ax.plot(xs[-1], ys[-1], 'o', color='k')
@@ -742,8 +742,10 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarkers=False,
         if kwargs.pop('showBoundary', True):
             drawMeshBoundaries(ax, mesh, **kwargs)
 
-    if boundaryMarkers:
-        drawBoundaryMarkers(ax, mesh, clipMarkers=kwargs.pop('clipMarkers', False))
+    ###! called from show already
+    # if boundaryMarkers:
+    #     drawBoundaryMarkers(ax, mesh, 
+    #                         clipBoundaryMarkers=kwargs.pop       ('clipBoundaryMarkers', False))
 
     if showNodes:
         for n in mesh.nodes():

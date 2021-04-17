@@ -75,3 +75,24 @@ License
 pyGIMLi is distributed under the terms of the **Apache 2.0** license. Details on
 the license agreement can be found `here
 <https://www.pygimli.org/license.html>`_.
+
+
+Credits
+-------
+
+We use or link some third party software (beside the usual tool stack: cmake, Gcc, boost, python, numpy, scipy, matplotlib) and are gratefull for all the work made by the authors of these awesome open source tools:
+
+* libkdetree++: Maybe abandoned, mirror: https://github.com/nvmd/libkdtree
+
+* Tetgen: http://wias-berlin.de/software/index.jsp?id=TetGen&lang=1
+
+* Triangle: https://www.cs.cmu.edu/~quake/triangle.html
+
+* pyplusplus: https://pypi.org/project/pyplusplus/
+
+* pyvista: https://docs.pyvista.org/
+
+* suitesparse, umfpack: https://people.engr.tamu.edu/davis/suitesparse.html
+
+
+

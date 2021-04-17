@@ -100,7 +100,8 @@ def cmapFromName(cmapname='jet', ncols=256, bad=None, **kwargs):
         cMap = "RdBu_r"
     else:
         try:
-            cMap = mpl.cm.get_cmap(cmapname, ncols)
+            import copy
+            cMap = copy.copy(mpl.cm.get_cmap(cmapname, ncols))
         except BaseException as e:
             pg.warn("Could not retrieve colormap ", cmapname, e)
 
@@ -359,8 +360,9 @@ def createColorBarOnly(cMin=1, cMax=100, logScale=False, cMap=None, nLevs=5,
     updateColorBar(cbar, cMin=cMin, cMax=cMax, nLevs=nLevs, label=label,
                    **kwargs)
 
-    if aspect is not None:
-        ax.set_aspect(aspect)
+    # if aspect is not None:
+    ax.set_aspect(aspect)
+    
     if savefig is not None:
         saveFigure(fig, savefig)
 
@@ -435,9 +437,12 @@ def setMappableValues(mappable, dataIn):
 
     # set bad value color to white
     if mappable.get_cmap() is not None:
+        
         try:
+            import copy
             ## from mpl 3.3
-            mappable.set_cmap(mappable.get_cmap().copy().set_bad([1.0, 1.0, 1.0, 0.0]))
+            cm_ = copy.copy(mappable.get_cmap()).set_bad([1.0, 1.0, 1.0, 0.0])
+            mappable.set_cmap(cm_)
         except:
             ## old prior mpl 3.3
             mappable.get_cmap().set_bad([1.0, 1.0, 1.0, 0.0])
@@ -455,8 +460,10 @@ def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=None,
     # set bad value color to white
     if mappable.get_cmap() is not None:
         try:
+            import copy
             ## from mpl 3.3
-            mappable.set_cmap(mappable.get_cmap().copy().set_bad([1.0, 1.0, 1.0, 0.0]))
+            cm_ = copy.copy(mappable.get_cmap()).set_bad([1.0, 1.0, 1.0, 0.0])
+            mappable.set_cmap(cm_)
         except:
             ## old prior mpl 3.3
             mappable.get_cmap().set_bad([1.0, 1.0, 1.0, 0.0])
