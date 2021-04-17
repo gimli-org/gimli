@@ -65,7 +65,11 @@ def wait(**kwargs):
     # plt.pause seems to be broken in mpl:2.1
     # ax.canvas.draw_onIdle()
     updateAxes(plt.gca())
-    plt.show(**kwargs)
+    kp = kwargs.pop('untilKeyPressed', False)
+    if kp == True:
+        plt.waitforbuttonpress(**kwargs)
+    else:
+        plt.show(**kwargs)
 
 
 def saveFigure(fig, filename, pdfTrim=False):

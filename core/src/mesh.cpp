@@ -1,5 +1,5 @@
 /******************************************************************************
- *   Copyright (C) 2006-2020 by the GIMLi development team                    *
+ *   Copyright (C) 2006-2021 by the GIMLi development team                    *
  *   Carsten Rücker carsten@resistivity.net                                   *
  *                                                                            *
  *   Licensed under the Apache License, Version 2.0 (the "License");          *
@@ -140,7 +140,7 @@ void Mesh::setGeometry(bool b) {
 void Mesh::clear(){
     if (tree_) {
         deletePtr()(tree_);
-        tree_ = NULL;
+        tree_ = nullptr;
     }
 
     for_each(cellVector_.begin(), cellVector_.end(), deletePtr());
@@ -512,9 +512,15 @@ Boundary * Mesh::copyBoundary(const Boundary & bound, double tol, bool check){
     std::vector < Node * > subNodes;
 
     // __M
-
     for (Index i = 0; i < nodes.size(); i ++) {
-        nodes[i] = createNode(bound.node(i).pos(), tol);
+        // this switch should not be necessary and need to be checked TODO
+        if (bound.rtti() == MESH_POLYGON_FACE_RTTI){
+            // this works with 3D poly tests but copy bounds into 2d mesh will double bounds
+            nodes[i] = createNode(bound.node(i).pos(), tol);
+        } else {
+            // 3D poly tests fail!! .. need to be checked and fixed  TODO
+            nodes[i] = createNodeWithCheck(bound.node(i).pos(), tol);
+        }
         nodes[i]->setMarker(bound.node(i).marker());
         // __MS(nodes[i]->state())
         switch (nodes[i]->state()){
@@ -1514,19 +1520,17 @@ void Mesh::fixBoundaryDirections(){
     createNeighborInfos();
     for (Index i = 0; i < this->boundaryCount(); i ++ ){
         Boundary * b = this->boundaryVector_[i];
-        // __MS(b)
+
         if (b->leftCell() != NULL && b->rightCell() == NULL){
             if (!b->normShowsOutside(*b->leftCell())){
-                //
-                b->swapNorm();
+                // should not happen
+                b->swapNorm(false);
             }
         }
         if (b->leftCell() == NULL && b->rightCell() != NULL){
             if (!b->normShowsOutside(*b->rightCell())){
                 // __MS(b)
-                b->setLeftCell(b->rightCell());
-                b->setRightCell(NULL);
-                b->swapNorm();
+                b->swapNorm(true);
             }
         }
     }
@@ -1686,17 +1690,17 @@ void Mesh::create2DGrid(const RVector & x, const RVector & y, int markerType,
 
         for (Index i = 0; i < boundaryCount(); i ++){
             if (boundary(i).leftCell() == NULL || boundary(i).rightCell() == NULL){
-                // Left
                 if (worldBoundaryMarker){
-                    if (std::abs(boundary(i).norm()[0] + 1.0) < TOLERANCE)
-                        boundary(i).setMarker(MARKER_BOUND_HOMOGEN_NEUMANN);
+                    // Left
+                    if (std::abs(boundary(i).norm()[0] + 1.0) < TOLERANCE) boundary(i).setMarker(MARKER_BOUND_MIXED);
                     // Right
                     else if (std::abs(boundary(i).norm()[0] - 1.0) < TOLERANCE) boundary(i).setMarker(MARKER_BOUND_MIXED);
                     // Top
-                    else if (std::abs(boundary(i).norm()[1] - 1.0) < TOLERANCE) boundary(i).setMarker(MARKER_BOUND_MIXED);
+                    else if (std::abs(boundary(i).norm()[1] - 1.0) < TOLERANCE) boundary(i).setMarker(MARKER_BOUND_HOMOGEN_NEUMANN);
                     // Bottom
                     else if (std::abs(boundary(i).norm()[1] + 1.0) < TOLERANCE) boundary(i).setMarker(MARKER_BOUND_MIXED);
                 } else {
+                    // Left
                     if (std::abs(boundary(i).norm()[0] + 1.0) < TOLERANCE) boundary(i).setMarker(1);
                     // Right
                     else if (std::abs(boundary(i).norm()[0] - 1.0) < TOLERANCE) boundary(i).setMarker(2);
@@ -2372,18 +2376,18 @@ void Mesh::fillKDTree_() const {
     if (!tree_) tree_ = new KDTreeWrapper();
 
     if (tree_->size() != nodeCount(true)){
-        if (tree_->size() == 0){
 
+        if (tree_->size() == 0){
             for_each(nodeVector_.begin(), nodeVector_.end(), boost::bind(&KDTreeWrapper::insert, tree_, _1));
             for_each(secNodeVector_.begin(), secNodeVector_.end(), boost::bind(&KDTreeWrapper::insert, tree_, _1));
 
             tree_->tree()->optimize();
         } else {
-            throwError(WHERE_AM_I + str(this) + " kd-tree is only partially filled: this should no happen: nodeCount = " + str(nodeCount())
-                                      + " tree-size() " + str(tree_->size()));
+            deletePtr()(tree_);
+            tree_ = nullptr;
+            this->fillKDTree_();
         }
     }
-
 }
 
 void Mesh::addRegionMarker(const RegionMarker & reg){

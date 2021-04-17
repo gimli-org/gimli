@@ -22,8 +22,8 @@ from .core import matrix # alias all from .core.matrix.* to pg.matrix.*
 
 from .core.matrix import (BlockMatrix, Matrix, SparseMapMatrix, SparseMatrix)
 
-from .core.logger import (_, _d, _g, _r, _y, critical, d, debug, deprecated,
-                          deprecated,
+from .core.logger import (_, _d, _g, _r, _y, _b, critical, d, debug, 
+                          deprecated, renameKwarg,
                           error, info, setDebug, setLogLevel, setVerbose, v,
                           verbose, warn)
 
@@ -108,7 +108,8 @@ def findVersion(cache=True):
     import os
     global __version__
 
-    setDebug(False)
+    
+    #setDebug(False)
     root = os.path.abspath(os.path.join(__file__, "../../"))
     gitPath = os.path.join(root, '.git')
     gitIndexFile = os.path.join(gitPath, 'index')

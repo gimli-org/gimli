@@ -4,13 +4,6 @@ Glossary
 ========
 
 .. glossary::
-    Dolfin
-        DOLFIN is a C++/Python library that functions as the main user interface
-        of FEniCS. http://fenics.readthedocs.io/projects/dolfin/en/latest/
-
-    FEniCS
-        FEniCS is a open-source computing platform solving partial differential equations.
-        https://fenicsproject.org
 
     GCC
         The GNU Compiler Collection (GCC). Default compiler for most linux

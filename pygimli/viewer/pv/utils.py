@@ -31,15 +31,19 @@ def pgMesh2pvMesh(mesh, data=None, label=None):
             grid.point_arrays[key] = np.asarray(values)
 
     # check the given data as well
-    if data is not None:
-        if len(data) == mesh.cellCount():
-            grid.cell_arrays[label] = np.asarray(data)
-        elif len(data) == mesh.nodeCount():
-            grid.point_arrays[label] = np.asarray(data)
-        else:
-            pg.warn("Given data fits neither cell count nor node count:")
-            pg.warn("{} vs. {} vs. {}".format(len(data), mesh.cellCount(),
-                                              mesh.nodeCount()))
+    try:
+        if data is not None:
+            if len(data) == mesh.cellCount():
+                grid.cell_arrays[label] = np.asarray(data)
+            elif len(data) == mesh.nodeCount():
+                grid.point_arrays[label] = np.asarray(data)
+            else:
+                pg.warn("Given data fits neither cell count nor node count:")
+                pg.warn("{} vs. {} vs. {}".format(len(data), mesh.cellCount(),
+                                                mesh.nodeCount()))
+    except Exception as e:
+        print(e)
+        pg.error("fix pyvista bindings")
 
     if label is None:
         # last data that was added

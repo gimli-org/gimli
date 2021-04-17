@@ -29,17 +29,15 @@ installation.
 Detailed Installation on Debian Stretch
 .......................................
 
-In order to build pygimli (and gimli) for Python 2.7 and Python 3.5, install
+In order to build pygimli (and gimli) Python 3, install
 the required packages:
 
 .. code-block:: bash
 
-    sudo apt-get install wget subversion git cmake mercurial \
-        libboost-all-dev libblas-dev liblapack-dev \
-        python python-setuptools \
-        python-numpy python-matplotlib \
-        libedit-dev clang llvm-dev python3-dev \
-        python3  python3-numpy python3-matplotlib \
+    sudo apt-get install wget subversion git cmake mercurial g++ \
+        libboost-all-dev libblas-dev liblapack-dev libopenblas-dev \
+        libedit-dev python3-dev \
+        python3-numpy python3-matplotlib \
         python3-setuptools
 
 Create a directory for your installation, e.g., $HOME/src
@@ -77,11 +75,11 @@ Change to the build path
 
     cd build
 
-If you want to compile for Python 3.7, alternatively use:
+If you want to compile for Python 3.8, alternatively use:
 
 .. code-block:: bash
 
-    cmake ../gimli -DPYVERSION=3.7
+    cmake ../gimli -DPYVERSION=3.8
 
 If the output complains about missing dependencies, install these and repeat
 the the last step. To build the library just run `make`.

@@ -2,9 +2,7 @@
 """Plot 3D mesh."""
 
 import sys
-
 import matplotlib.pyplot as plt
-
 import pygimli as pg
 
 
@@ -27,6 +25,7 @@ else:
 # True for Jupyter notebooks and sphinx-builds
 _backend = plt.get_backend().lower()
 inline = "inline" in _backend or _backend == "agg"
+
 if PyQt5 is None or inline:
     inline = True
 else:
@@ -60,7 +59,9 @@ def showMesh3DFallback(mesh, data, **kwargs):
 
     if mesh.boundaryCount() > 0:
         x, y, tri, z, dataIndex = pg.viewer.mpl.createTriangles(mesh)
-        ax.plot_trisurf(x, y, tri, z)
+        kwargs.pop('notebook', False)
+        kwargs.pop('hold', False)
+        ax.plot_trisurf(x, y, tri, z, **kwargs)
     else:
         if mesh.nodeCount() < 1e4:
             x = pg.x(mesh.positions())
@@ -112,8 +113,14 @@ def showMesh3DVista(mesh, data=None, **kwargs):
     else:
         if notebook:
             pyvista.set_plot_theme('document')
-        plotter = drawModel(None, mesh, data, notebook=notebook, cmap=cmap,
-                            **kwargs)
+
+        try:
+            plotter = drawModel(None, mesh, data, notebook=notebook, cmap=cmap,
+                                **kwargs)
+        except Exception as e:
+            print(e)
+            pg.error("fix pyvista bindings")
+
         if not hold:
             plotter.show()
         return plotter, None

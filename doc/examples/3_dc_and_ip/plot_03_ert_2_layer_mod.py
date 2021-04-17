@@ -11,15 +11,16 @@ import numpy as np
 
 import pygimli as pg
 import pygimli.meshtools as mt
-from pygimli.physics.ert import simulate as simulateERT
+from pygimli.physics import ert
+# from pygimli.physics.ert import simulate as simulateERT
 from pygimli.physics.ert import VESModelling, VESCModelling
-from pygimli.physics.ert import createERTData
+# from pygimli.physics.ert import createERTData
 
 ###############################################################################
 # First we create a data configuration of a 1D Schlumberger sounding with
 # 20 electrodes and and increasing MN/2 electrode spacing from 1m to 24m.
-scheme = createERTData(pg.utils.grange(start=1, end=24, dx=1, n=10, log=True),
-                                       sounding=True)
+scheme = ert.createData(pg.utils.grange(start=1, end=24, dx=1, n=10, log=True),
+                        sounding=True)
 
 ###############################################################################
 # First we create a geometry that covers the sought geometry.
@@ -52,7 +53,7 @@ mesh = mesh.createP2()
 # Perform the modeling using the static convenience call for ERT.
 # Res is the resistivity mapping regarding the regions of the given geometry.
 # Region with marker 1 is the upper layer, maker 2 is the background
-data = simulateERT(mesh, res=[[1, 100.0], [2, 1.0]],
+data = ert.simulate(mesh, res=[[1, 100.0], [2, 1.0]],
                    scheme=scheme, verbose=False)
 
 ###############################################################################
@@ -78,7 +79,7 @@ ax.legend()
 amps = np.array([100.0, 1.0])
 phases = np.array([1.0, 10.0])
 res = amps - 1j * amps * np.sin(phases/1000.)
-data = simulateERT(mesh, res=[[1, res[0]], [2, res[1]]],
+data = ert.simulate(mesh, res=[[1, res[0]], [2, res[1]]],
                    scheme=scheme, verbose=False)
 
 ves = VESCModelling(ab2=ab2, mn2=mn2)

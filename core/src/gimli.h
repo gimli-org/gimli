@@ -1,5 +1,5 @@
 /******************************************************************************
- *   Copyright (C) 2006-2020 by the GIMLi development team                    *
+ *   Copyright (C) 2006-2021 by the GIMLi development team                    *
  *   Carsten Rücker carsten@resistivity.net                                   *
  *                                                                            *
  *   Licensed under the Apache License, Version 2.0 (the "License");          *
@@ -119,7 +119,14 @@ typedef int64_t int64;
 	#endif
 #endif
 
-#define WHERE GIMLI::str(__FILE__) + ": " + GIMLI::str(__LINE__) + "\t"
+#ifdef _WIN64__
+    #define __FILENAME__ std::max<const char*>(__FILE__,\
+        std::max(strrchr(__FILE__, '\\')+1, strrchr(__FILE__, '/')+1))
+#else
+    #define __FILENAME__ __FILE__
+#endif
+
+#define WHERE GIMLI::str(__FILENAME__) + ":" + GIMLI::str(__LINE__) + "\t"
 #define WHERE_AM_I WHERE + "\t" + GIMLI::str(__ASSERT_FUNCTION) + " "
 #define TO_IMPL WHERE_AM_I + " not yet implemented\n " + GIMLI::versionStr() + "\nPlease send the messages above, the commandline and all necessary data to the author."
 
@@ -464,17 +471,11 @@ template < typename ValueType > void setEnvironment(const std::string & name,
     if (verbose) std::cout << "set: export " << name << "=" << val << std::endl;
 }
 
-inline std::string strReplaceBlankWithUnderscore(const std::string & str) {
-    std::string res(str);
-    for (size_t i = 0; i < res.length(); i ++) if (res[i] == ' ') res[i] = '_';
-    return res;
-}
+/*!Replace from with to inside str and return the result*/
+DLLEXPORT std::string replace(const std::string & str, const char from, const char to);
 
-inline std::string lower(const std::string & str){
-    std::string lo(str);
-    std::transform(lo.begin(), lo.end(), lo.begin(), tolower);
-    return lo;
-}
+/*!convert all chars in str to lower and return the result*/
+DLLEXPORT std::string lower(const std::string & str);
 
 // template < typename T > inline void swapVal(T & a, T & m){
 //     T tmp(a); a = m; m = tmp;

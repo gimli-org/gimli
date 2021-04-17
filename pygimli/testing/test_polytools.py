@@ -6,6 +6,22 @@ import unittest
 import pygimli as pg
 import pygimli.meshtools as mt
 
+
+class TestMisc(unittest.TestCase):
+
+    def test_appendTriangleBoundary(self):
+        geom = mt.createWorld(start=[-10,0], end=[10,-10], layers=[-5,-10])
+        mesh = mt.createMesh(geom, area=1)
+
+        mesh2 = mt.appendTriangleBoundary(mesh, marker=0)
+
+        # test if boundary markers are preserved
+        np.testing.assert_array_equal(pg.unique(pg.sort(mesh2.boundaryMarkers())),
+                                      [-2, -1, 0, 2, 7, 8])
+        # pg.show(mesh, markers=True)
+        # pg.show(mesh2, markers=True)
+        
+
 class TestCreateRectangle(unittest.TestCase):
     def test_region_marker_position_basics(self):
         rect1 = mt.createRectangle(
@@ -287,6 +303,23 @@ class Test3DMerge(unittest.TestCase):
         # print(w)
         pg.show(w)
         pg.show(mt.createMesh(w))
+
+    def test_cyl_on_cyl(self):
+        # merge only works if smaller face merged into larger face on contact plane
+        segs = 12
+        c1 = mt.createCylinder(radius=2, nSegments=segs, boundaryMarker=1)
+        c2 = mt.createCylinder(radius=1, nSegments=segs, boundaryMarker=2)
+        c1.translate([0, 0, 0.5])
+        c2.translate([0, 0, -0.5])
+        
+        w = mt.mergePLC3D([c1, c2])
+        
+        self.assertEqual(w.nodeCount(), segs*2 * 2)
+        self.assertEqual(w.boundaryCount(), segs*2 + 3)
+
+        # w.exportBoundaryVTU('w')
+        # pg.show(w)
+        # pg.show(mt.createMesh(w))
 
     def test_face_in_face(self):
         """Test subface with different marker constructed with hole marker."""

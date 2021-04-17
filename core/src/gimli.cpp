@@ -1,5 +1,5 @@
 /******************************************************************************
- *   Copyright (C) 2006-2020 by the GIMLi development team                    *
+ *   Copyright (C) 2006-2021 by the GIMLi development team                    *
  *   Carsten Rücker carsten@resistivity.net                                   *
  *                                                                            *
  *   Licensed under the Apache License, Version 2.0 (the "License");          *
@@ -250,6 +250,19 @@ std::vector < std::string > split(const std::string & str, char delimiter){
     return subStrings;
 }
 
+std::string replace(const std::string & str, char from, char to){
+    std::string ret(str);
+    std::replace(ret.begin(), ret.end(), from, to);
+    return ret;
+}
+
+std::string lower(const std::string & str){
+    std::string lo(str);
+    std::transform(lo.begin(), lo.end(), lo.begin(), tolower);
+    return lo;
+}
+
+
 std::map < float, float > loadFloatMap(const std::string & filename){
     std::map < float, float > aMap;
 
@@ -321,7 +334,7 @@ std::string logStrShort_(LogType type){
     switch (type){
         case Verbose: return "Verbose"; break;
         case Info: return "info"; break;
-        case Warning: return "warn";  break;
+        case Warning: return "warning";  break;
         case Error: return "error";  break;
         case Debug: return "debug";  break;
         case Critical: return "critical";  break;

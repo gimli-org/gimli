@@ -19,7 +19,8 @@ if (CPPUNIT_FOUND)
 
     # target_link_libraries(gimliUnitTest ${Boost_THREAD_LIBRARY}) # maybe obsolete 200103
     target_link_libraries(gimliUnitTest gimli)
-    target_link_libraries(gimliUnitTest pthread)
+    target_link_libraries(gimliUnitTest ${BLAS_LIBRARIES})
+    #target_link_libraries(gimliUnitTest pthread)
     #target_link_libraries(gimliUnitTest ${CHOLMOD_LIBRARIES})
 
     add_dependencies(check gimliUnitTest)

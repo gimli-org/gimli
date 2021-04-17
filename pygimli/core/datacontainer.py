@@ -4,14 +4,15 @@ Extensions to the core DataContainer class[es].
 """
 import numpy as np
 from . logger import deprecated, info, warn, critical, verbose
-from . _pygimli_ import (RVector3, RVector, IndexArray,
-                        DataContainer, DataContainerERT)
+from .core import (RVector3, RVector, IndexArray,
+                   DataContainer, DataContainerERT)
 
 def __DataContainer_str(self):
     return "Data: Sensors: " + str(self.sensorCount()) + " data: " + \
-        str(self.size()) + ", nonzero entries: " +\
-        str([d for d in self.dataMap().keys() if self.haveData(d)])
-DataContainer.__str__ = __DataContainer_str
+        str(self.size()) + ", nonzero entries: " + \
+        str([d for d in self.dataMap().keys() if self.isSensorIndex(d) or 
+             self.haveData(d)])
+DataContainer.__repr__ =__DataContainer_str
 
 
 def __DataContainer_setSensors(self, sensors):

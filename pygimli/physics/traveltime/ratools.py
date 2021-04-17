@@ -6,16 +6,59 @@ import numpy as np
 import pygimli as pg
 
 
+def createCrossholeData(sensors):
+    """
+    Create crosshole scheme assuming two boreholes with an equal number of sensors.
+
+    Parameters
+    ----------
+    sensors : array (Nx2)
+        Array with position of sensors.
+
+    Returns
+    -------
+    scheme : DataContainer
+        Data container with `sensors` predefined sensor indices 's' and 'g' for shot and receiver numbers.
+    """
+    from itertools import product
+
+    if len(sensors) % 2 > 0:
+        pg.error(
+            "createCrossholeData is only defined for an equal number of sensors in two boreholes."
+        )
+    sensors = np.sort(sensors, axis=0)
+    n = len(sensors) // 2
+    numbers = np.arange(n)
+    rays = list(product(numbers, numbers + n))
+
+    # Empty container
+    scheme = pg.DataContainer()
+
+    # Add sensors
+    for sen in sensors:
+        scheme.createSensor(sen)
+
+    # Add measurements
+    rays = np.array(rays)
+    scheme.resize(len(rays))
+    scheme["s"] = rays[:, 0]
+    scheme["g"] = rays[:, 1]
+    scheme["valid"] = np.ones(len(rays))
+    scheme.registerSensorIndex("s")
+    scheme.registerSensorIndex("g")
+    return scheme
+
+
 def shotReceiverDistances(data, full=False):
     """Return vector of all distances (in m) between shot and receiver.
-    for earch 's' and 'g' in data.
+    for each 's' and 'g' in data.
 
     Parameters
     ----------
     data : pg.DataContainerERT
 
     full : bool [False]
-        Get distances between shot and receiver posisiton when full is True or
+        Get distances between shot and receiver position when full is True or
         only form x coordinate if full is False
 
     Returns
@@ -26,7 +69,7 @@ def shotReceiverDistances(data, full=False):
     """
     if full:
         pos = data.sensors()
-        s, g = data.id('s'), data.id('g')
+        s, g = data.id("s"), data.id("g")
         off = [pos[s[i]].distance(pos[g[i]]) for i in range(data.size())]
         return np.absolute(off)
     else:
@@ -48,17 +91,16 @@ def createRAData(sensors, shotDistance=1):
     sensors: ndarray | R3Vector
         Geophon and shot positions (same)
     shotDistances: int [1]
-        Distance between shot indieces.
+        Distance between shot indices.
         
     Returns
     -------
     data : DataContainer
-        Data container with predefined sensor indieces 's' and 'g' for
-
+        Data container with predefined sensor indices 's' and 'g' for shot and receiver numbers.
     """
     data = pg.DataContainer()
-    data.registerSensorIndex('s')
-    data.registerSensorIndex('g')
+    data.registerSensorIndex("s")
+    data.registerSensorIndex("g")
 
     if isinstance(sensors, np.ndarray):
         if len(sensors.shape) == 1:
@@ -78,9 +120,9 @@ def createRAData(sensors, shotDistance=1):
                 G.append(g)
 
     data.resize(len(S))
-    data.set('s', S)
-    data.set('g', G)
-    data.set('valid', np.abs(np.sign(data('g') - data('s'))))
+    data.set("s", S)
+    data.set("g", G)
+    data.set("valid", np.abs(np.sign(data("g") - data("s"))))
 
     return data
 
@@ -118,7 +160,8 @@ def createGradientModel2D(data, mesh, vTop, vBot):
     z = pg.y(mesh.cellCenters())
     pos = np.column_stack((x, z))
 
-    d = np.array([np.abs(np.dot(pos[i, :], n) - p[1]) / nLen
-                  for i in range(pos.shape[0])])
+    d = np.array(
+        [np.abs(np.dot(pos[i, :], n) - p[1]) / nLen for i in range(pos.shape[0])]
+    )
 
-    return 1. / np.interp(d, [min(d), max(d)], [vTop, vBot])
+    return 1.0 / np.interp(d, [min(d), max(d)], [vTop, vBot])

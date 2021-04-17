@@ -1,5 +1,5 @@
 /******************************************************************************
- *   Copyright (C) 2006-2020 by the GIMLi development team                    *
+ *   Copyright (C) 2006-2021 by the GIMLi development team                    *
  *   Carsten Rücker carsten@resistivity.net                                   *
  *                                                                            *
  *   Licensed under the Apache License, Version 2.0 (the "License");          *
@@ -198,7 +198,7 @@ public:
     Index nodeCount() const { return this->nodeCount_; }
 
     /*! Return a read only reference to the i-th \ref Node of this shape. */
-    const Node & node(Index i) const;
+    Node & node(Index i) const;
 
     // /*! Return a reference to the i-th \ref Node of this shape. */
     // Node & node(Index i);

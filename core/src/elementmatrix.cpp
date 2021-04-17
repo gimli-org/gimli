@@ -1,5 +1,5 @@
 /******************************************************************************
- *   Copyright (C) 2006-2020 by the GIMLi development team                    *
+ *   Copyright (C) 2006-2021 by the GIMLi development team                    *
  *   Carsten Rücker carsten@resistivity.net                                   *
  *                                                                            *
  *   Licensed under the Apache License, Version 2.0 (the "License");          *
@@ -25,6 +25,7 @@
 
 #include "integration.h"
 
+
 namespace GIMLI{
 
 template < >
@@ -42,7 +43,6 @@ std::ostream & operator << (std::ostream & str,
     }
     return str;
 }
-
 
 template < > DLLEXPORT ElementMatrix < double > &
 ElementMatrix < double >::u(const MeshEntity & ent,
@@ -469,7 +469,7 @@ void ElementMatrix < double >::fillGradientBase(
         }
     }
 
-    double a = std::sqrt(2.);
+    double a = 1./std::sqrt(2.);
     if (voigtNotation){
         a = 1.0;
     }
@@ -1288,8 +1288,7 @@ void ElementMatrix < double >::copyFrom(const ElementMatrix < double > & E,
 }
 
 template < > DLLEXPORT
-const ElementMatrix < double > & ElementMatrix < double >::integrate() const {
-
+void ElementMatrix < double >::integrate() const {
     if (_newStyle && !this->_integrated){
         const RVector &w = this->w();
         Index nRules(w.size());
@@ -1302,7 +1301,6 @@ const ElementMatrix < double > & ElementMatrix < double >::integrate() const {
         }
         this->_integrated = true;
     }
-    return *this;
 }
 
 template < > DLLEXPORT
@@ -1424,7 +1422,7 @@ ElementMatrix < double > & ElementMatrix < double >::grad(
         //** special case for constitutive matrix
         nCols = ent.dim();
         if (kelvin){
-            a = std::sqrt(2.);
+            a = 1./std::sqrt(2.);
         }
 
         if (ent.dim() == 2){
@@ -1578,7 +1576,6 @@ ElementMatrix < double > & ElementMatrix < double >::grad(
                                     bool elastic, bool sum, bool div,
                                     Index nCoeff, Index dof, Index dofOffset,
                                     bool kelvin){
-
     if (!this->valid() ||
         this->order() != order ||
         this->elastic() != elastic ||
@@ -1816,10 +1813,9 @@ void evaluateQuadraturePoints(const MeshEntity & ent, const PosVector & x,
                               const FEAFunction & f,
                               std::vector < RMatrix > & ret){
     ret.resize(x.size());
-    THROW_TO_IMPL
-    // for (Index i = 0; i < x.size(); i ++){
-    //     ret[i] = f.evalR3(ent.shape().xyz(x[i]), &ent);
-    // }
+    for (Index i = 0; i < x.size(); i ++){
+        ret[i] = f.evalRM(ent.shape().xyz(x[i]), &ent);
+    }
 }
 
 template < class ReturnType >
@@ -1890,38 +1886,6 @@ void mult(const ElementMatrix < double > & A, const Pos & b,
     }
     C.integrate();
 }
-// constant Matrix
-void mult(const ElementMatrix < double > & A, const RMatrix &  b,
-          ElementMatrix < double > & C){
-
-    C.copyFrom(A, false);
-
-    if (b.rows() != A.matX()[0].rows()){
-        __MS(b)
-        __MS(A.matX()[0])
-        log(Error, "Parameter matrix rows need to match Element sub matrix rows: ",
-            A.matX()[0].rows());
-        return;
-    }
-
-    const PosVector &x = A.x();
-    const RVector &w = A.w();
-
-    Index nRules(x.size());
-
-    double beta = 0.0;
-    for (Index i = 0; i < nRules; i++){
-        if (i > 0) beta = 1.0;
-
-        RMatrix & Ci = (*C.pMatX())[i];
-        const RMatrix & Ai = A.matX()[i];
-        // A.T * C
-        Ci *= 0.0; // test and optimize me with C creation
-        matTransMult(Ai, b, Ci, 1.0, beta);
-    }
-
-    C.integrate(); // check if necessary
-}
 
 // scalar per quadrature
 void mult(const ElementMatrix < double > & A, const RVector & b,
@@ -1967,24 +1931,81 @@ void mult(const ElementMatrix < double > & A, const PosVector & b,
     C.integrate();
 }
 
+// constant Matrix
+void mult(const ElementMatrix < double > & A, const RMatrix &  b,
+          ElementMatrix < double > & C){
+
+    C.copyFrom(A, false);
+
+    if (b.rows() != A.matX()[0].rows()){
+        __MS(b)
+        __MS(A.matX()[0])
+        log(Error, "Parameter matrix rows need to match Element sub matrix rows: ",
+            A.matX()[0].rows());
+        return;
+    }
+
+    const PosVector &x = A.x();
+    const RVector &w = A.w();
+
+    Index nRules(x.size());
+
+    double beta = 0.0;
+    for (Index i = 0; i < nRules; i++){
+        if (i > 0) beta = 1.0;
+
+        RMatrix & Ci = (*C.pMatX())[i];
+        const RMatrix & Ai = A.matX()[i];
+        // A.T * C
+        Ci *= 0.0; // test and optimize me with C creation
+        matTransMult(Ai, b, Ci, 1.0, beta);
+    }
+
+    C.integrate(); // check if necessary
+}
+
 // matrix per quadrature
 void mult(const ElementMatrix < double > & A, const std::vector < RMatrix > & b,
           ElementMatrix < double > & C){
-    THROW_TO_IMPL
+    C.copyFrom(A, false);
+    const PosVector &x = A.x();
+
+    Index nRules(x.size());
+
+    ASSERT_VEC_SIZE(b, nRules)
+    ASSERT_VEC_SIZE(C.matX(), nRules)
+
+    double beta = 0.0;
+    for (Index i = 0; i < nRules; i++){
+        if (i > 0) beta = 1.0;
+
+        RMatrix & Ci = (*C.pMatX())[i];
+        const RMatrix & Ai = A.matX()[i];
+        // A.T * C
+        Ci *= 0.0; // test and optimize me with C creation
+        matTransMult(Ai, b[i], Ci, 1.0, beta);
+    }
+    C.integrate();
 }
 
 void mult(const ElementMatrix < double > & A, const FEAFunction & b,
           ElementMatrix < double > & C){
     // refactor with above
+    // __MS(b.valueSize())
     if (b.valueSize() == 1){
         RVector e;
         evaluateQuadraturePoints(A.entity(), A.x(), b, e);
         mult(A, e, C);
-    } else {
+    } else if (b.valueSize() == 3){
         PosVector e;
         evaluateQuadraturePoints(A.entity(), A.x(), b, e);
         mult(A, e, C);
+    } else {
+        std::vector < RMatrix > e;
+        evaluateQuadraturePoints(A.entity(), A.x(), b, e);
+        mult(A, e, C);
     }
+
     return;
 }
 

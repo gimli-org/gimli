@@ -194,9 +194,9 @@ except OSError:
 fig, ax = plt.subplots()
 if gmsh:
     mesh = readGmsh("mesh.msh", verbose=True)
-    pg.show(mesh, ax=ax, markers=True, hold=True)
-    ax.set_xlim(0, 50)
-    ax.set_ylim(-50, 0)
+    pg.show(mesh, ax=ax, markers=True, clipBoundaryMarkers=True)
+    ax.set_xlim(-3, 53)
+    ax.set_ylim(-53, 3)
 else:
     ax.set_title("Gmsh needs to be installed for this example")
 pg.wait()

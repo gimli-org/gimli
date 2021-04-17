@@ -1,22 +1,21 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-""""WRITEME"""
-
+"""Plotting functions for traveltime."""
+# general purpose
 import matplotlib.pyplot as plt
 import numpy as np
-
+# pygimli
 import pygimli as pg
-
 from pygimli.viewer.mpl import createColorBar  # , updateColorBar
-
+# local
 from .ratools import shotReceiverDistances
 
 
 def drawTravelTimeData(ax, data, t=None):
-    """
-        Draw first arrival traveltime data into mpl ax a.
-        data of type \ref DataContainer must contain sensorIdx 's' and 'g'
-        and thus being numbered internally [0..n)
+    """Draw first arrival traveltime data into mpl ax a.
+
+    data of type pg.DataContainer must contain sensorIdx 's' and 'g'
+    and thus being numbered internally [0..n)
     """
     x = pg.x(data.sensorPositions())
     # z = pg.z(data.sensorPositions())
@@ -64,14 +63,14 @@ def drawTravelTimeData(ax, data, t=None):
 
 
 def plotFirstPicks(ax, data, tt=None, plotva=False, marker='x-'):
-    """Naming convention. drawFOO(ax, ... )"""
+    """Naming convention. drawFOO(ax, ... )."""
     pg.deprecated("use drawFirstPicks")
     return drawFirstPicks(ax=ax, data=data, tt=tt, plotva=plotva,
                           marker=marker)
 
 
-def drawFirstPicks(ax, data, tt=None, plotva=False, marker='x-'):
-    """plot first arrivals as lines"""
+def drawFirstPicks(ax, data, tt=None, plotva=False, **kwargs):
+    """Plot first arrivals as lines."""
     px = pg.x(data)
     gx = np.array([px[int(g)] for g in data("g")])
     sx = np.array([px[int(s)] for s in data("s")])
@@ -83,19 +82,22 @@ def drawFirstPicks(ax, data, tt=None, plotva=False, marker='x-'):
     uns = np.unique(sx)
 
     cols = plt.cm.tab10(np.arange(10))
-
+    kwargs.setdefault('marker', 'x')
+    kwargs.setdefault('markersize', 8)
+    kwargs.setdefault('linestyle', '-')
     for i, si in enumerate(uns):
         ti = tt[sx == si]
         gi = gx[sx == si]
         ii = gi.argsort()
-        ax.plot(gi[ii], ti[ii], marker, color=cols[i % 10])
-        ax.plot(si, 0., 's', color=cols[i % 10], markersize=8)
+        ax.plot(gi[ii], ti[ii], color=cols[i % 10], **kwargs)
+        ax.plot(si, 0., 's', color=cols[i % 10])
 
     ax.grid(True)
     if plotva:
         ax.set_ylabel("Apparent velocity (m/s)")
     else:
         ax.set_ylabel("Traveltime (s)")
+
     ax.set_xlabel("x (m)")
     ax.invert_yaxis()
 
@@ -106,8 +108,9 @@ def _getOffset(data, full=False):
     return shotReceiverDistances(data, full)
 
 
+# better be renamed to showData and optionally show first pick curves
 def showVA(data, usePos=True, ax=None, **kwargs):
-    """Show apparent velocity as image plot
+    """Show apparent velocity as image plot.
 
     Parameters
     ----------
@@ -123,7 +126,7 @@ def showVA(data, usePos=True, ax=None, **kwargs):
 
 
 def drawVA(ax, data, vals=None, usePos=True, pseudosection=False, **kwargs):
-    """Draw apparent velocities as matrix into ax
+    """Draw apparent velocities as matrix into an axis.
 
     Parameters
     ----------
@@ -143,7 +146,7 @@ def drawVA(ax, data, vals=None, usePos=True, pseudosection=False, **kwargs):
     """
     if isinstance(vals, str):
         vals = data(vals)
-        
+
     if vals is None:
         vals = data('t')
 

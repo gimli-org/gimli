@@ -1,5 +1,5 @@
 /******************************************************************************
- *   Copyright (C) 2006-2020 by the GIMLi development team                    *
+ *   Copyright (C) 2006-2021 by the GIMLi development team                    *
  *   Carsten Rücker carsten@resistivity.net                                   *
  *                                                                            *
  *   Licensed under the Apache License, Version 2.0 (the "License");          *
@@ -121,7 +121,7 @@ public:
     inline Node & node(uint i) {
         ASSERT_RANGE(i, 0, nodeCount()); return *nodeVector_[i];
     }
-
+    
     inline Node & node(uint i) const {
         ASSERT_RANGE(i, 0, nodeCount()); return *nodeVector_[i];
     }
@@ -368,7 +368,7 @@ public:
     bool normShowsOutside(const Cell & cell) const;
 
     /*! Reverse node order to swap normal direction. */
-    void swapNorm();
+    void swapNorm(bool withNeighbours=true);
 
     /*!Is the boundary is on the outside of the mesh.*/
     bool outside() const { return (leftCell_ != 0) && (rightCell_ == 0); }

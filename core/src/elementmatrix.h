@@ -1,5 +1,5 @@
 /******************************************************************************
- *   Copyright (C) 2006-2020 by the GIMLi development team                    *
+ *   Copyright (C) 2006-2021 by the GIMLi development team                    *
  *   Carsten Rücker carsten@resistivity.net                                   *
  *                                                                            *
  *   Licensed under the Apache License, Version 2.0 (the "License");          *
@@ -331,7 +331,7 @@ public:
                                        bool div=false, bool kelvin=false);
 
     /*! Integrate, i.e., sum over quadrature matrices.*/
-    const ElementMatrix < ValueType > & integrate() const;
+    void integrate() const;
 
     /*! Return reference to all matrices per quadrature point.*/
     const std::vector < Matrix < ValueType > > & matX() const { return _matX; }
@@ -449,8 +449,8 @@ DLLEXPORT void dot(const ElementMatrix < double > & A,
                    const ElementMatrix < double > & B,
                    const FEAFunction & c, ElementMatrix < double > & ret);
 
-// DLLEXPORT void dot(const ElementMatrix < double > & A, 
-//                    const ElementMatrix < double > & B, 
+// DLLEXPORT void dot(const ElementMatrix < double > & A,
+//                    const ElementMatrix < double > & B,
 //                    A_TYPE c, ElementMatrix < double > & C);
 
 #define DEFINE_DOT_MULT(A_TYPE) \
@@ -558,13 +558,17 @@ public:
 
     virtual ~FEAFunction() { }
 
+    virtual double evalR1(const Pos & arg, const MeshEntity * ent=0) const{
+        log(Warning, "FEAFunction.eval should be overloaded.");
+        return 0.0;
+    }
     virtual Pos evalR3(const Pos & arg, const MeshEntity * ent=0) const{
         log(Warning, "FEAFunction.eval should be overloaded.");
         return Pos(0.0, 0.0, 0.0);
     }
-    virtual double evalR1(const Pos & arg, const MeshEntity * ent=0) const{
+    virtual RMatrix evalRM(const Pos & arg, const MeshEntity * ent=0) const{
         log(Warning, "FEAFunction.eval should be overloaded.");
-        return 0.0;
+        return RMatrix(0, 0);
     }
 
     Index valueSize() const { return _valueSize; }

@@ -1,5 +1,5 @@
 /******************************************************************************
- *   Copyright (C) 2008-2020 by the GIMLi development team                    *
+ *   Copyright (C) 2008-2021 by the GIMLi development team                    *
  *   Carsten Rücker carsten@resistivity.net                                   *
  *                                                                            *
  *   Licensed under the Apache License, Version 2.0 (the "License");          *
@@ -640,7 +640,7 @@ void RegionManager::setMesh(const Mesh & mesh, bool holdRegionInfos){
     bool singleOnly = false;
     if (regions.size() > 50){
         singleOnly = true;
-        log(Info,"More than 50 regions so we assume singles only regions.");
+        log(Info,"More than 50 regions, so we assume single regions only.");
     }
 
     std::map < int, std::vector< Cell * > > markerCellVectorMap;

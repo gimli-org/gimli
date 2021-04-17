@@ -11,7 +11,7 @@ import numpy as np
 import pygimli as pg
 # pg.setTestingMode(True)
 import pygimli.meshtools as mt
-import pygimli.physics.ert as ert
+from pygimli.physics import ert
 
 ###############################################################################
 # Create geometry definition for the modelling domain.
@@ -40,7 +40,7 @@ pg.show(geom)
 
 ###############################################################################
 # Create a Dipole Dipole ('dd') measuring scheme with 21 electrodes.
-scheme = ert.createERTData(elecs=np.linspace(start=-15, stop=15, num=21),
+scheme = ert.createData(elecs=np.linspace(start=-15, stop=15, num=21),
                            schemeName='dd')
 
 ###############################################################################

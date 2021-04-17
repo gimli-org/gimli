@@ -179,6 +179,7 @@ class VESModelling(Block1DModelling):
         plot = getattr(a1, plot)
         if label is None:
             label = r'$\varrho_a$'
+        del style["linestyle"] # to remove mpl warning
         plot(ra, ab2, 'x-', label=label, **style)
 
         

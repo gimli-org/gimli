@@ -3,8 +3,8 @@ ADD_CUSTOM_COMMAND(
     COMMAND
         ${CMAKE_COMMAND} -E remove ${CMAKE_CURRENT_BINARY_DIR}/_pygimli_.cache
     COMMAND
-        #${CMAKE_COMMAND} -E env "PYTHONPATH=$ENV{PYTHONPATH}${PYGCCXML_PATH}" ${PYTHON_EXECUTABLE} will work on cmake3.1
-        ${PYTHON_EXECUTABLE}
+        #${CMAKE_COMMAND} -E env "PYTHONPATH=$ENV{PYTHONPATH}${PYGCCXML_PATH}" ${Python_EXECUTABLE} will work on cmake3.1
+        ${Python_EXECUTABLE}
         #python
     ARGS
         ${CMAKE_CURRENT_SOURCE_DIR}/generate_pygimli_code.py
@@ -71,21 +71,13 @@ endif(WIN32)
 # for calling the build only
 ADD_CUSTOM_TARGET(pg ALL)
 add_dependencies(pg _pygimli_)
-include_directories(${PY_NUMPY}/core/include/)
-
-if(WIN32)
-    include_directories(${PYTHON_INCLUDE_DIR})
-    include_directories(${Boost_INCLUDE_DIR})
-endif(WIN32)
-
-if(CONDA_BUILD)
-    include_directories(${Boost_INCLUDE_DIR})
-endif(CONDA_BUILD)
-
+include_directories(${Python_NumPy_INCLUDE_DIRS})
+include_directories(${Python_INCLUDE_DIRS})
+include_directories(${Boost_INCLUDE_DIR})
 
 ADD_CUSTOM_TARGET(pgtest)
 ADD_CUSTOM_COMMAND(
-    COMMAND ${PYTHON_EXECUTABLE}
+    COMMAND ${Python_EXECUTABLE}
     ARGS -c 'import pygimli\; pygimli.test(show=False, abort=True) ' 
     TARGET pgtest
    )
@@ -126,8 +118,19 @@ foreach(program ${SCRIPTS})
 endforeach(program)
 
 if (WIN32)
-	file(COPY ${Boost_PYTHON_LIBRARY} DESTINATION ${CMAKE_BINARY_DIR}/bin)
-    #file(COPY ${Boost_THREAD_LIBRARIES} DESTINATION ${CMAKE_BINARY_DIR}/bin)
-	#file(COPY ${Boost_SYSTEM_LIBRARIES} DESTINATION ${CMAKE_BINARY_DIR}/bin)
-	install(PROGRAMS ${Boost_PYTHON_LIBRARY} DESTINATION bin)
+    get_filename_component(Boost_PYTHON_ARCHIVE ${Boost_PYTHON_LIBRARY} LAST_EXT)
+    # message("############################## " ${Boost_PYTHON_ARCHIVE})
+
+    if (Boost_PYTHON_ARCHIVE MATCHES ".a")
+        # message("############################## " ${Boost_PYTHON_LIBRARY})
+        string(REGEX REPLACE "[.]a" "" Boost_PYTHON_DLL ${Boost_PYTHON_LIBRARY})
+        # message("############################## " ${Boost_PYTHON_DLL})
+        file(COPY ${Boost_PYTHON_DLL} DESTINATION ${CMAKE_BINARY_DIR}/bin)
+        install(PROGRAMS ${Boost_PYTHON_DLL} DESTINATION bin)
+    else ()
+        file(COPY ${Boost_PYTHON_LIBRARY} DESTINATION ${CMAKE_BINARY_DIR}/bin)
+        #file(COPY ${Boost_THREAD_LIBRARIES} DESTINATION ${CMAKE_BINARY_DIR}/bin)
+        #file(COPY ${Boost_SYSTEM_LIBRARIES} DESTINATION ${CMAKE_BINARY_DIR}/bin)
+        install(PROGRAMS ${Boost_PYTHON_LIBRARY} DESTINATION bin)
+    endif()
 endif()

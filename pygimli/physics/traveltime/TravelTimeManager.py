@@ -38,7 +38,7 @@ class TravelTimeDijkstraModelling(MeshModelling):
         return self._core.dijkstra()
 
     def regionManagerRef(self):
-        # necessary because core dijkstra use its own RM
+        """Region manager reference (core Dijkstra has an own!)."""
         return self._core.regionManagerRef()
 
     def createRefinedFwdMesh(self, mesh):
@@ -54,18 +54,15 @@ class TravelTimeDijkstraModelling(MeshModelling):
         return m
 
     def setMeshPost(self, mesh):
-        """
-        """
+        """Set mesh after forward operator has been initalized."""
         self._core.setMesh(mesh)
 
     def setDataPost(self, data):
-        """
-        """
+        """Set data after forward operator has been initalized."""
         self._core.setData(data)
 
     def createStartModel(self, dataVals):
-        """
-        """
+        """Create a starting model from data values (gradient or constant)."""
         sm = None
 
         if self._useGradient is not None:
@@ -110,8 +107,6 @@ class TravelTimeDijkstraModelling(MeshModelling):
         """Draw the model."""
         kwargs.setdefault('label', pg.unit('vel'))
         kwargs.setdefault('cMap', pg.utils.cMap('vel'))
-        # kwargs['label'] = kwargs.pop('label', pg.unit('vel'))
-        # kwargs['cMap'] = kwargs.pop('cMap', pg.utils.cMap('vel'))
 
         return super().drawModel(ax=ax, model=model,
                                  logScale=kwargs.pop('logScale', True),
@@ -124,9 +119,6 @@ class TravelTimeDijkstraModelling(MeshModelling):
         ----------
         data: pg.DataContainer
         """
-        kwargs.setdefault('label', pg.unit('va'))
-        kwargs.setdefault('cMap', pg.utils.cMap('va'))
-
         if hasattr(data, '__iter__'):
             kwargs['vals'] = data
             data = self.data
@@ -134,8 +126,11 @@ class TravelTimeDijkstraModelling(MeshModelling):
             data = self.data
 
         if kwargs.pop('firstPicks', False):
-            return pg.physics.traveltime.drawFirstPicks(ax, data)
+            pg.physics.traveltime.drawFirstPicks(ax, data, **kwargs)
+            return ax
         else:
+            kwargs.setdefault('label', pg.unit('va'))
+            kwargs.setdefault('cMap', pg.utils.cMap('va'))
             return showVA(data, usePos=False, ax=ax, **kwargs)
 
 
@@ -154,18 +149,6 @@ class TravelTimeManager(MeshMethodManager):
         data: :gimliapi:`GIMLI::DataContainer` | str
             You can initialize the Manager with data or give them a dataset
             when calling the inversion.
-
-        Other Parameters
-        ----------------
-        * useBert: bool [True]
-            Use Bert forward operator instead of the reference implementation.
-        * sr: bool [True]
-            Calculate with singularity removal technique.
-            Recommended but needs the primary potential.
-            For flat earth cases the primary potential will be calculated
-            analytically. For domains with topography the primary potential
-            will be calculated numerical using a p2 refined mesh or
-            you provide primary potentials with setPrimPot.
         """
         self._useFMM = False
         self.secNodes = 2  # default number of secondary nodes for inversion
@@ -176,8 +159,9 @@ class TravelTimeManager(MeshMethodManager):
 
     @property
     def velocity(self):
+        """Return velocity vector (the inversion model)."""
         # we can check here if there was an inversion run
-        return self.fw.model
+        return self.fw.model  # shouldn't it be the inverse?
 
     def createForwardOperator(self, **kwargs):
         """Create default forward operator for Traveltime modelling.
@@ -189,6 +173,7 @@ class TravelTimeManager(MeshMethodManager):
         return fop
 
     def load(self, fileName):
+        """Load any supported data file."""
         self.data = pg.physics.traveltime.load(fileName)
         return self.data
 
@@ -202,7 +187,7 @@ class TravelTimeManager(MeshMethodManager):
         if d is None:
             pg.critical('Please provide a data file for mesh generation')
 
-        return pg.meshtools.createParaMesh(data.sensors(),
+        return pg.meshtools.createParaMesh(d.sensors(),
                                            boundary=0, **kwargs)
 
     def checkData(self, data):

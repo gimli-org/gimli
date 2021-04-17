@@ -1,5 +1,5 @@
 /******************************************************************************
- *   Copyright (C) 2006-2020 by the GIMLi development team                    *
+ *   Copyright (C) 2006-2021 by the GIMLi development team                    *
  *   Carsten Rücker carsten@resistivity.net                                   *
  *                                                                            *
  *   Licensed under the Apache License, Version 2.0 (the "License");          *
@@ -183,11 +183,14 @@ RVector3 RVector3::norm(const Pos & p1, const Pos & p2) const {
 }
 
 RVector3 RVector3::normXY(const Pos & p) const {
-    Pos result((*this + p) / 2.0);
-    result.setZ(1.0);
-    result = result.norm(*this, p);
-    result.setZ(0.0);
-    return result;
+    Pos dir(*this - p);
+    return Pos(-dir[1], dir[0]).normalize();
+
+    // Pos result((*this + p) / 2.0);
+    // result.setZ(1.0);
+    // result = result.norm(*this, p);
+    // result.setZ(0.0);
+    // return result;
 }
 
 double Pos::angle(const Pos & p1, const Pos & p3) const {

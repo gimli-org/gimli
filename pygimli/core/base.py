@@ -4,7 +4,7 @@ Misc stuff also needed for core imports and monkey patching
 """
 import numpy as np
 
-from ._pygimli_ import (RVector3, R3Vector, RMatrix)
+from .core import (RVector3, R3Vector, RMatrix)
 
 
 def isScalar(v, val=None):
@@ -29,9 +29,9 @@ def isScalar(v, val=None):
     False
     """
     if val is None:
-        return isinstance(v, (int, float, complex, np.complex))
+        return isinstance(v, (int, float, complex, np.complex128))
     # maybe add some tolerance check
-    return isinstance(v, (int, float, complex, np.complex)) and v == val
+    return isinstance(v, (int, float, complex, np.complex128)) and v == val
 
 def isArray(v, N=None):
     """Check if v is an array or a vector, with optional size.
@@ -60,7 +60,7 @@ def isArray(v, N=None):
 def isComplex(vals):
     """Check numpy or pg.Vector if have complex data type"""
     if isScalar(vals):
-        if isinstance(vals, (np.complex, complex)):
+        if isinstance(vals, (np.complex128, complex)):
             return True
     elif isArray(vals):
         return isComplex(vals[0])

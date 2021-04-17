@@ -185,7 +185,7 @@ def fillEmptyToCellArray(mesh, vals, slope=True):
     >>> layers = pg.meshtools.createWorld([0,-50],[100,0], layers=[-15,-35])
     >>> inner = pg.meshtools.createMesh(layers, area=3)
     >>> mesh = pg.meshtools.appendTriangleBoundary(inner, xbound=120, ybound=50,
-    ... area=20, marker=0)
+    ...                                            area=20, marker=0)
     >>>
     >>> # Create data for the inner region only
     >>> layer_vals = [20,30,50]
@@ -198,8 +198,10 @@ def fillEmptyToCellArray(mesh, vals, slope=True):
     >>> data_with_outer = np.array([0] + layer_vals)[mesh.cellMarkers()]
     >>>
     >>> # Actual extrapolation
-    >>> extrapolated_data = pg.meshtools.fillEmptyToCellArray(mesh, data_with_outer, slope=False)
-    >>> extrapolated_data_with_slope = pg.meshtools.fillEmptyToCellArray(mesh, data_with_outer, slope=True)
+    >>> extrapolated_data = pg.meshtools.fillEmptyToCellArray(mesh,
+    ...                                  data_with_outer, slope=False)
+    >>> extrapolated_data_with_slope = pg.meshtools.fillEmptyToCellArray(mesh, 
+    ...                                 data_with_outer, slope=True)
     >>>
     >>> # Visualization
     >>> fig, (ax1, ax2, ax3) = plt.subplots(1,3, figsize=(10,8), sharey=True)
@@ -209,7 +211,6 @@ def fillEmptyToCellArray(mesh, vals, slope=True):
     >>> _ = ax1.set_title("Original data")
     >>> _ = ax2.set_title("Extrapolated with slope=False")
     >>> _ = ax3.set_title("Extrapolated with slope=True")
-    >>> fig.show()
     """
     # atts = pg.Vector(mesh.cellCount(), 0.0)  # not used
     # oldAtts = mesh.cellAttributes()  # not used
@@ -267,7 +268,7 @@ def interpolateAlongCurve(curve, t, **kwargs):
     curve : [[x,z]] | [[x,y,z]] | [:gimliapi:`GIMLI::RVector3`] | :gimliapi:`GIMLI::R3Vector`
         Discrete curve for 2D :math:`x,z` curve=[[x,z]], 3D :math:`x,y,z`
 
-    t : 1D iterable
+    t: 1D iterable
         Query positions along the curve in absolute distance
 
     kwargs :
@@ -303,7 +304,6 @@ def interpolateAlongCurve(curve, t, **kwargs):
     >>> _= axs[1,1].plot(p[:,0], p[:,1], '-o', color='green') #doctest: +ELLIPSIS
     >>>
     >>> pg.plt.show()
-    >>> pg.wait()
     """
     xC = np.zeros(len(curve))
     yC = np.zeros(len(curve))
@@ -513,6 +513,8 @@ def interpolate(*args, **kwargs):
     >>> _= ax.plot(xi, pg.interpolate(xi, xu, u, method='harmonic'),
     ...         color='green', label='harmonic')
     >>> _= ax.legend()
+    >>>
+    >>> pg.plt.show()
     """
     fallback = kwargs.pop('fallback', 0.0)
     verbose = kwargs.pop('verbose', False)
@@ -523,7 +525,7 @@ def interpolate(*args, **kwargs):
     elif len(args) > 0:
         if isinstance(args[0], pg.Mesh):
             if len(args) == 2 and isinstance(args[1], pg.Mesh):
-                return pg.core._pygimli_.interpolate(args[0], args[1],
+                return pg.core.pgcore.interpolate(args[0], args[1],
                                                      fillValue=fallback,
                                                      verbose=verbose)
 
@@ -538,7 +540,7 @@ def interpolate(*args, **kwargs):
             if args[1].ndim == 2:  # outData = (inMesh, mat, vR3)
 
                 outMat = pg.Matrix()
-                pg.core._pygimli_.interpolate(args[0], inMat=np.array(args[1]),
+                pg.core.pgcore.interpolate(args[0], inMat=np.array(args[1]),
                                               destPos=args[2], outMat=outMat,
                                               fillValue=fallback,
                                               verbose=verbose)
@@ -547,21 +549,21 @@ def interpolate(*args, **kwargs):
         if len(args) == 4:  # args: (inMesh, inData, outPos, outData)
 
             if args[1].ndim == 1 and args[2].ndim == 1 and args[3].ndim == 1:
-                return pg.core._pygimli_.interpolate(args[0], inVec=args[1],
+                return pg.core.pgcore.interpolate(args[0], inVec=args[1],
                                                      x=args[2], y=args[3],
                                                      fillValue=fallback,
                                                      verbose=verbose)
 
             if isinstance(args[1], pg.Matrix) and \
                isinstance(args[3], pg.Matrix):
-                return pg.core._pygimli_.interpolate(args[0], inMat=args[1],
+                return pg.core.pgcore.interpolate(args[0], inMat=args[1],
                                                      destPos=args[2],
                                                      outMat=args[3],
                                                      fillValue=fallback,
                                                      verbose=verbose)
             if isinstance(args[1], pg.Vector) and \
                isinstance(args[3], pg.Vector):
-                return pg.core._pygimli_.interpolate(args[0], inVec=args[1],
+                return pg.core.pgcore.interpolate(args[0], inVec=args[1],
                                                      destPos=args[2],
                                                      outVec=args[3],
                                                      fillValue=fallback,
@@ -570,13 +572,13 @@ def interpolate(*args, **kwargs):
         if len(args) == 5:
             if args[1].ndim == 1 and args[2].ndim == 1 and \
                args[3].ndim == 1 and args[4].ndim == 1:
-                return pg.core._pygimli_.interpolate(args[0], inVec=args[1],
+                return pg.core.pgcore.interpolate(args[0], inVec=args[1],
                                                      x=args[2], y=args[3],
                                                      z=args[4],
                                                      fillValue=fallback,
                                                      verbose=verbose)
 
-        return pg.core._pygimli_.interpolate(*args, **kwargs,
+        return pg.core.pgcore.interpolate(*args, **kwargs,
                                              fillValue=fallback,
                                              verbose=verbose)
         # end if pg.core:
@@ -636,7 +638,7 @@ def interpolate(*args, **kwargs):
             if 'spline' in method:
                 if pg.optImport("scipy", requiredFor="Spline interpolation."):
                     from scipy import interpolate
-                    tck = interpolate.splrep(x, u, s=0,
+                    tck = interpolate.splrep(x, u, s=0, k=min(3, (len(x)-1)),
                                              per=kwargs.pop('periodic', False))
                     return interpolate.splev(xi, tck, der=0)
                 else:

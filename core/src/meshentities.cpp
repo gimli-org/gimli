@@ -1,5 +1,5 @@
 /******************************************************************************
- *   Copyright (C) 2006-2020 by the GIMLi development team                    *
+ *   Copyright (C) 2006-2021 by the GIMLi development team                    *
  *   Carsten Rücker carsten@resistivity.net                                   *
  *                                                                            *
  *   Licensed under the Apache License, Version 2.0 (the "License");          *
@@ -590,8 +590,14 @@ bool Boundary::normShowsOutside(const Cell & cell) const {
     return (cc-(bc+n)).abs() > (cc-(bc-n)).abs();
 }
 
-void Boundary::swapNorm(){
+void Boundary::swapNorm(bool withNeighbours){
     std::reverse(nodeVector_.begin(), nodeVector_.end());
+    if (withNeighbours){
+        Cell * left = this->leftCell();
+        this->setLeftCell(this->rightCell());
+        this->setRightCell(left);
+    }
+    this->changed();
 }
 
 NodeBoundary::NodeBoundary(const std::vector < Node * > & nodes)

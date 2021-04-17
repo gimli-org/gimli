@@ -492,9 +492,83 @@ def drawSelectedMeshBoundariesShadow(ax, boundaries, first='x', second='y',
     updateAxes_(ax)
     return collection
 
+def drawBoundaryMarkers(ax, mesh, clipBoundaryMarkers=False, **kwargs):
+    """Draw boundary markers for mesh.boundaries with marker != 0
+
+    Args
+    ----
+    mesh : :gimliapi:`GIMLI::Mesh`
+        Mesh that have the boundary markers.
+
+    clipBoundaryMarkers: bool [False]
+        Clip boundary marker to the axes limits if needed.
+
+    Keyword Arguments
+    ----------------
+    **kwargs
+        Forwarded to plot
+
+    Examples
+    --------
+    >>> import pygimli as pg
+    >>> import pygimli.meshtools as mt
+    >>> c0 = mt.createCircle(pos=(0.0, 0.0), radius=1, segments=4)
+    >>> l0 = mt.createPolygon([[-0.5, 0.0], [.5, 0.0]], boundaryMarker=2)
+    >>> l1 = mt.createPolygon([[-0.25, -0.25], [0.0, -0.5], [0.25, -0.25]],
+    ...                       interpolate='spline', addNodes=4,
+    ...                       boundaryMarker=3)
+    >>> l2 = mt.createPolygon([[-0.25, 0.25], [0.0, 0.5], [0.25, 0.25]],
+    ...                       interpolate='spline', addNodes=4,
+    ...                       isClosed=True, boundaryMarker=3)
+    >>> mesh = mt.createMesh([c0, l0, l1, l2], area=0.01)
+    >>> ax, _ = pg.show(mesh)
+    >>> pg.viewer.mpl.drawBoundaryMarkers(ax, mesh)
+    """
+    ms = pg.unique(pg.sort(mesh.boundaryMarkers()[mesh.boundaryMarkers()!=0]))
+
+    #cMap = plt.cm.get_cmap("Set3", len(ms))
+    kwargs['lw'] = kwargs.pop('lw', 4)
+
+    for i, m in enumerate(ms):
+        bs = mesh.findBoundaryByMarker(m)
+        paths = mesh.findPaths(bs)
+        col = 'C' + str(i)
+
+        for p in paths:
+
+            xs = pg.x(mesh.nodes(p))
+            ys = pg.y(mesh.nodes(p))
+            path = np.array([xs,ys]).T
+
+            ax.plot(xs, ys, color=col, **kwargs)
+
+            center = pg.meshtools.interpolateAlongCurve(path,
+                                        [pg.utils.cumDist(path)[-1]/2])[0]
+
+            x = center[0]
+            y = center[1]
+            bbox_props = dict(boxstyle="circle,pad=0.2", fc="w", ec=col)
+            txt = ax.text(x, y, str(m), color=col, va="center", ha="center",
+                    zorder=20, bbox=bbox_props, fontsize=9,
+                    fontdict={'weight':'bold'})
+
+            # cliping avoid visuablity outside axes. Needet if the axes limits does not match mesh size.
+            txt.set_clip_on(clipBoundaryMarkers)
+
+            ax.plot(xs[0], ys[0], 'o', color='k')
+            ax.plot(xs[-1], ys[-1], 'o', color='k')
+
+    # for b in mesh.boundaries():
+    #     if b.marker() != 0:
+    #         x = b.center()[0]
+    #         y = b.center()[1]
+    #         bbox_props = dict(boxstyle="circle,pad=0.1", fc="w", ec="k")
+    #         ax.text(x, y, str(b.marker()), color="k", va="center", ha="center",
+    #                 zorder=20, bbox=bbox_props, fontsize=9)
+
 
 def drawMeshBoundaries(ax, mesh, hideMesh=False, useColorMap=False,
-                       fitView=True, lw=None, color=None):
+                       fitView=True, lw=None, color=None, **kwargs):
     """Draw mesh on ax with boundary conditions colorized.
 
     Parameters
@@ -582,7 +656,7 @@ def drawMeshBoundaries(ax, mesh, hideMesh=False, useColorMap=False,
     updateAxes_(ax)
 
 
-def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
+def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarkers=False,
             showNodes=False, fitView=True, **kwargs):
     """Draw 2D PLC into given axes.
 
@@ -596,7 +670,7 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
         Fill the regions with default colormap.
     regionMarker: bool [True]
         Show region marker.
-    boundaryMarker: bool [False]
+    boundaryMarkers: bool [False]
         Show boundary marker.
     showNodes: bool [False]
         Draw all nodes as little dots.
@@ -668,6 +742,11 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
         if kwargs.pop('showBoundary', True):
             drawMeshBoundaries(ax, mesh, **kwargs)
 
+    ###! called from show already
+    # if boundaryMarkers:
+    #     drawBoundaryMarkers(ax, mesh, 
+    #                         clipBoundaryMarkers=kwargs.pop       ('clipBoundaryMarkers', False))
+
     if showNodes:
         for n in mesh.nodes():
             col = (0.0, 0.0, 0.0, 0.5)
@@ -676,21 +755,13 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
                 col = (0.0, 0.0, 0.0, 1.0)
 
             # ms = kwargs.pop('markersize', 5)
-            ax.plot(n.pos()[0], n.pos()[1], 'bo', color=col, **kwargs)
+            ax.plot(n.pos()[0], n.pos()[1], 'o', color=col, zorder=10, **kwargs)
 
     #        eCircles.append(mpl.patches.Circle((n.pos()[0], n.pos()[1])))
     #        eCircles.append(mpl.patches.Circle((n.pos()[0], n.pos()[1]), 0.1))
     #        cols.append(col)
     #    p = mpl.collections.PatchCollection(eCircles, color=cols)
     #    ax.add_collection(p)
-
-    if boundaryMarker:
-        for b in mesh.boundaries():
-            x = b.center()[0]
-            y = b.center()[1]
-            bbox_props = dict(boxstyle="circle,pad=0.1", fc="w", ec="k")
-            ax.text(x, y, str(b.marker()), color="k", va="center", ha="center",
-                    zorder=20, bbox=bbox_props, fontsize=9)
 
     if regionMarker:
 
@@ -701,6 +772,7 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
     if fitView:
         ax.autoscale(enable=True, axis='both', tight=True)
         ax.set_aspect('equal')
+
 
     updateAxes_(ax)
     if cbar is None:
@@ -899,7 +971,7 @@ def drawField(ax, mesh, data=None, levels=None, nLevs=5,
             fillContour = kwargs.pop('fillContour', True)
             contourLines = kwargs.pop('contourLines', True)
 
-            if fillContour:
+            if fillContour is True:
                 # add outer climits to fill lower and upper too
                 levs = np.array(levels)
 
@@ -918,10 +990,9 @@ def drawField(ax, mesh, data=None, levels=None, nLevs=5,
                 gci = ax.tricontourf(x, y, triangles, z,
                                      # antialiased=True, # not allways nice
                                      levels=levs, **kwargs
-
                                     )
 
-            if contourLines:
+            if contourLines is True:
                 ax.tricontour(x, y, triangles, z, levels=levels,
                               colors=kwargs.pop('colors', ['0.5']), **kwargs)
     else:
@@ -1036,7 +1107,7 @@ def drawStreamLine_(ax, mesh, c, data, dataMesh=None, linewidth=1.0,
         kwargs['color'] = 'black'
 
     arrowSize = kwargs.pop('arrowSize', 12)
-    arrowColor = kwargs.pop('arrowColor', 'black')
+    arrowColor = kwargs.pop('arrowColor', kwargs.get('color'))
 
     lines = None
 
@@ -1045,11 +1116,11 @@ def drawStreamLine_(ax, mesh, c, data, dataMesh=None, linewidth=1.0,
 
         segments = np.concatenate([points[:-1], points[1:]], axis=1)
 
-        lwidths = pg.Vector(len(v), linewidth)
+        lwidths = pg.Vector(len(v), kwargs.pop('lw', linewidth))
         lwidths[pg.find(pg.Vector(v) < dropTol)] = 0.0
 
-        lines = mpl.collections.LineCollection(
-            segments, linewidths=lwidths, **kwargs)
+        lines = mpl.collections.LineCollection(segments,
+                                               linewidths=lwidths, **kwargs)
         ax.add_collection(lines)
 
         # probably the limits are wrong without plot call
@@ -1070,7 +1141,7 @@ def drawStreamLine_(ax, mesh, c, data, dataMesh=None, linewidth=1.0,
                 ax.annotate('',
                     xytext=(x[xmid]-dx, y[ymid]-dy),
                     xy=(x[xmid], y[ymid]),
-                    arrowprops=dict(arrowstyle="-|>", color=arrowColor),
+                    arrowprops=dict(arrowstyle="-|>", color=arrowColor, lw=0),
                     size=arrowSize, **kwargs,
                 )
             else:
@@ -1263,7 +1334,7 @@ def drawSensors(ax, sensors, diam=None, coords=None, **kwargs):
     """
     if coords is None:
         coords = [0, 2]
-        if pg.core.yVari(sensors):
+        if not pg.core.zVari(sensors) and sensors[0][2] == 0.0:
             coords = [0, 1]
 
     eCircles = []

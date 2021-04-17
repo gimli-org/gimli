@@ -14,7 +14,7 @@ import logging
 import inspect
 import traceback
 
-from . import _pygimli_
+from . core import pgcore
 
 __ANSICOLORS__ = {
     'r': '\033[0;31;49m',  #normal, #FG red; #BG black
@@ -75,6 +75,9 @@ def _y(*args):
 
 def _r(*args):
     _d(*args, c='r')
+
+def _b(*args):
+    _d(*args, c='b')
 
 def _d(*args, c='y'):
     """Simplistic colored debug msg"""
@@ -217,10 +220,10 @@ def verbose():
 def setDebug(d):
     level = logging.INFO
     if d:
-        _pygimli_.setDebug(True)
+        pgcore.setDebug(True)
         level = logging.DEBUG
     else:
-        _pygimli_.setDebug(False)
+        pgcore.setDebug(False)
         level = logging.INFO
 
     logger.setLevel(level)
@@ -268,10 +271,10 @@ def deprecated(msg='', hint=''):
 #                    ' and will be removed in: ' + removed)
 #     return newFunc(**inspect.stack()[1].frame.f_locals)
 
-def renameKwarg(old, new, kwargs):
+def renameKwarg(old, new, kwargs, ver=''):
     if old in kwargs:
-        logger.warning("Keyword argument name changed from '" + old + \
-                 "' to '" + new + "'")
+        logger.warning("Keyword argument changed from '" + old + \
+                 "' to '" + new + "' and will be removed in v " + ver)
         kwargs[new] = kwargs.pop(old)
 
 def warnNonEmptyArgs(kwargs):

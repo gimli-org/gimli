@@ -210,10 +210,14 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
     showMesh: bool [False]
         Shows the mesh itself additional.
     showBoundary: bool [None]
-        Shows all boundary with marker != 0. A value None means automatic
-        True for cell data and False for node data.
+        Highlight all boundaries with marker != 0. A value None means automatic. Is set True for cell data and False for node data.
     marker: bool [False]
-        Show mesh and boundary marker.
+        Show cell markers and boundary marker.
+    boundaryMarkers: bool [False]
+        Highlight boundaries with marker !=0 and add Marker annotation.
+        Applies :py:mod:`pygimli.viewer.mpl.drawBoundaryMarkers`.
+        Dictionary "boundaryProps" can be added and will be forwarded to
+        :py:mod:`pygimli.viewer.mpl.drawBoundaryMarkers`.
 
     Keyword Arguments
     -----------------
@@ -224,6 +228,8 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
             Add label to the y axis
         fitView: bool
             Fit the axes limits to the all content of the axes. Default is True.
+        boundaryProps: dict
+            Arguments for plotboundar
         All remaining will be forwarded to the draw functions
         and matplotlib methods, respectively.
 
@@ -249,7 +255,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
     replaceData = kwargs.pop('replaceData', False)
 
     if ax is None:
-        ax, _ = pg.show(**kwargs)
+        ax, _ = pg.show(figsize=kwargs.pop('figsize', None), **kwargs)
 
     # adjust limits only when axis is empty
     fitViewDefault = True
@@ -274,7 +280,8 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
     validData = False
 
     if markers:
-        kwargs["boundaryMarker"] = True
+        kwargs["boundaryMarkers"] = kwargs.get("boundaryMarkers", True)
+
         if mesh.cellCount() > 0:
             uniquemarkers, uniqueidx = np.unique(
                 np.array(mesh.cellMarkers()), return_inverse=True)
@@ -290,6 +297,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
         mesh.createNeighborInfos()
         if showBoundary is None:
             showBoundary = True
+
     elif isinstance(data, pg.core.stdVectorRVector3):
         drawSensors(ax, data, **kwargs)
     elif isinstance(data, pg.core.R3Vector):
@@ -320,9 +328,33 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
         #     pg.warn("No valid data: ", min(data), max(data), pg.core.haveInfNaN(data))
         #     showMesh = True
         else:
-            validData = True
             if bool(colorBar) is not False:
                 colorBar = True
+
+            if len(data) == mesh.cellCount():
+                if showBoundary is None:
+                    showBoundary = True
+
+            def _drawField(ax, mesh, data, kwargs):
+                ### kwargs as reference here to set defaults valid outside too
+                validData = True
+                if len(data) == mesh.cellCount():
+                    kwargs['nCols'] = kwargs.pop('nCols', 256)
+                    gci = drawModel(ax, mesh, data, **kwargs)
+
+                elif len(data) == mesh.nodeCount():
+                    kwargs['nLevs'] = kwargs.pop('nLevs', 5)
+                    kwargs['nCols'] = kwargs.pop('nCols', kwargs['nLevs']-1)
+
+                    gci = drawField(ax, mesh, data, **kwargs)
+                else:
+                    pg.error("Data size invalid")
+                    print("Data: ", len(data), min(data), max(data), pg.core.haveInfNaN(data))
+                    print("Mesh: ", mesh)
+                    validData = False
+                    drawMesh(ax, mesh)
+
+                return gci, validData
 
             try:
                 if label is None:
@@ -333,9 +365,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
 
                     if 'TriContourSet' in str(type(gci)):
                         ax.clear()
-                        kwargs['nLevs'] = kwargs.pop('nLevs', 5)
-                        kwargs['nCols'] = kwargs.pop('nCols', kwargs['nLevs']-1)
-                        gci = drawField(ax, mesh, data, **kwargs)
+                        gci, validData = _drawField(ax, mesh, data, kwargs)
                         updateAxes(ax, force=True)
                     else:
                         setMappableData(gci, data,
@@ -345,25 +375,9 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
                         return ax, gci.colorbar
                 else:
 
-                    if len(data) == mesh.cellCount():
-                        kwargs['nCols'] = kwargs.pop('nCols', 256)
-                        gci = drawModel(ax, mesh, data, **kwargs)
+                    gci, validData = _drawField(ax, mesh, data, kwargs)
 
-                        if showBoundary is None:
-                            showBoundary = True
-
-                    elif len(data) == mesh.nodeCount():
-                        kwargs['nLevs'] = kwargs.pop('nLevs', 5)
-                        kwargs['nCols'] = kwargs.pop('nCols', kwargs['nLevs']-1)
-                        gci = drawField(ax, mesh, data, **kwargs)
-                    else:
-                        pg.error("Data size invalid")
-                        print("Data: ", len(data), min(data), max(data), pg.core.haveInfNaN(data))
-                        print("Mesh: ", mesh)
-                        validData = False
-                        drawMesh(ax, mesh)
-
-                ### Cache mesh and scalarmappble to make replaceData work
+                ### Cache mesh and scalarmappable to make replaceData work
                 if not hasattr(mesh, 'gci'):
                     mesh.gci = {}
                 mesh.gci[ax] = gci
@@ -376,13 +390,13 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
                 print(e)
                 traceback.print_exc(file=sys.stdout)
 
-
     if mesh.cellCount() == 0:
         showMesh = False
         if mesh.boundaryCount() == 0:
             pg.viewer.mpl.drawPLC(ax, mesh, showNodes=True,
-                                 fillRegion=False, showBoundary=False,
-                                 **kwargs)
+                                  fillRegion=False,
+                                  showBoundary=False,
+                                  **kwargs)
             showBoundary = False
             #ax.plot(pg.x(mesh), pg.y(mesh), '.', color='black')
         else:
@@ -398,11 +412,16 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
                                             color=kwargs.pop('color', "0.1"), linewidth=0.3)
             #drawMesh(ax, mesh, **kwargs)
 
-    if showBoundary == True or showBoundary == 1:
+    if bool(showBoundary) == True:
         b = mesh.boundaries(mesh.boundaryMarkers() != 0)
         pg.viewer.mpl.drawSelectedMeshBoundaries(ax, b,
                                                 color=(0.0, 0.0, 0.0, 1.0),
                                                 linewidth=1.4)
+
+    if kwargs.pop("boundaryMarkers", False):
+        pg.viewer.mpl.drawBoundaryMarkers(ax, mesh,
+            clipBoundaryMarkers = kwargs.pop('clipBoundaryMarkers', False),
+                                          **kwargs.pop('boundaryProps', {}))
 
     fitView = kwargs.pop('fitView', fitViewDefault)
 
@@ -423,7 +442,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
         subkwargs['cMap'] = cMap
         subkwargs['orientation'] = cBarOrientation
 
-        if bool(colorBar):
+        if bool(colorBar) is not False:
             cBar = createColorBar(gci,
                                   size=kwargs.pop('size', 0.2),
                                   pad=kwargs.pop('pad', None),

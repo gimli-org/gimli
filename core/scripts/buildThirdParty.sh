@@ -9,9 +9,11 @@ BOOST_URL=http://sourceforge.net/projects/boost/files/boost/
 LAPACK_VERSION=3.4.2
 LAPACK_URL=http://www.netlib.org/lapack/
 
-SUITESPARSE_VERSION=5.2.0
-#SUITESPARSE_VERSION=4.4.4
-SUITESPARSE_URL=http://faculty.cse.tamu.edu/davis/SuiteSparse/
+#SUITESPARSE_VERSION=5.2.0
+#SUITESPARSE_URL=http://faculty.cse.tamu.edu/davis/SuiteSparse/
+
+SUITESPARSE_URL=https://github.com/DrTimothyAldenDavis/SuiteSparse
+SUITESPARSE_REV=v5.8.1
 
 TRIANGLE_URL=http://www.netlib.org/voronoi/
 
@@ -29,8 +31,11 @@ CASTXML_BIN_WIN=https://data.kitware.com/api/v1/file/5b68bfc28d777f06857c1f44/do
 PYGCCXML_URL=https://github.com/gccxml/pygccxml
 PYGCCXML_REV=84be3367bf43cb494512f343068cb23704a47460 # for py3.8
 
-PYPLUSPLUS_URL=https://bitbucket.org/ompl/pyplusplus
-PYPLUSPLUS_REV=1e30641 # tag 1.8.3 for py3.8
+# old bitbucked project not working anymore and moved to github
+# PYPLUSPLUS_URL=https://bitbucket.org/ompl/pyplusplus
+# PYPLUSPLUS_REV=1e30641 # tag 1.8.3 for py3.8
+PYPLUSPLUS_URL=https://github.com/ompl/pyplusplus
+PYPLUSPLUS_REV=d4811c8 # tag 1.8.3 for py3.8
 
 CPPUNIT_URL=http://svn.code.sf.net/p/cppunit/code/trunk
 
@@ -294,10 +299,10 @@ needGCC(){
 }
 needPYTHON(){
 
-    if command -v python 2>/dev/null; then
-        PYTHONEXE=python
-    elif command -v python3 2>/dev/null; then
+    if command -v python3 2>/dev/null; then
         PYTHONEXE=python3
+    elif command -v python 2>/dev/null; then
+        PYTHONEXE=python
     else
         echo "cannot find python interpreter"
     fi
@@ -555,7 +560,7 @@ buildPYGCCXML(){
     prepPYGCCXML
 
     getWITH_GIT $PYGCCXML_URL $PYGCCXML_SRC $PYGCCXML_REV
-    getWITH_HG $PYPLUSPLUS_URL $PYPLUSPLUS_SRC $PYPLUSPLUS_REV
+    getWITH_GIT $PYPLUSPLUS_URL $PYPLUSPLUS_SRC $PYPLUSPLUS_REV
 
     mkBuildDIR $PYGCCXML_BUILD $PYGCCXML_SRC 1
     pushd $PYGCCXML_BUILD
@@ -655,7 +660,8 @@ buildSUITESPARSE(){
     prepLAPACK
     prepSUITESPARSE
 
-    getWITH_WGET $SUITESPARSE_URL $SUITESPARSE_SRC $SUITESPARSE_VER.tar.gz
+    getWITH_GIT $SUITESPARSE_URL $SUITESPARSE_SRC $SUITESPARSE_REV
+    #getWITH_WGET $SUITESPARSE_URL $SUITESPARSE_SRC $SUITESPARSE_VER.tar.gz
     [ -d $SRC_DIR/SuiteSparse ] && mv $SRC_DIR/SuiteSparse $SUITESPARSE_SRC
 
     mkBuildDIR $SUITESPARSE_BUILD $SUITESPARSE_SRC 1

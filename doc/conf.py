@@ -20,7 +20,6 @@ import numpy as np
 # for doc rendering on headless machines (jenkins server)
 import matplotlib
 matplotlib.use("Agg")
-import pip
 import pkg_resources
 import sphinx
 
@@ -59,7 +58,8 @@ needs_sphinx = '1.8' # due to napoleon
 deps = ['sphinxcontrib-programoutput',
         'sphinxcontrib-bibtex',
         'sphinxcontrib-doxylink',
-	'bibtexparser',
+        #'sphinx.gallery', # testing does not work
+	    'bibtexparser',
 	]
 
 # check for p.version too
@@ -211,7 +211,7 @@ master_doc = 'documentation'
 
 # General information about the project.
 project = 'pyGIMLi'
-copyright = '2020 - GIMLi Development Team'
+copyright = '2021 - GIMLi Development Team'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -219,6 +219,8 @@ copyright = '2020 - GIMLi Development Team'
 #
 # The short X.Y version.
 version = pygimli.__version__
+install_version = pygimli.__version__.split("+")[0]
+
 rst_epilog = """
 .. |version| replace:: pyGIMLi {versionnum}
 """.format(versionnum = version)
