@@ -926,7 +926,7 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
 
 
 def readPLC(filename, comment='#'):
-    r"""Generic PLC reader.
+    r"""Read in a piece-wise linear complex object, i.e. pyGIMLi geometry, from .poly file. The latter could be created with `mt.exportPLC`.
 
     Read 2D :term:`Triangle` or 3D :term:`Tetgen` PLC files.
 
@@ -936,13 +936,17 @@ def readPLC(filename, comment='#'):
         Filename *.poly
 
     comment: string ('#')
-        String containing all characters that define a comment line. Identified
-        lines will be ignored during import.
+        String containing all characters that define a comment line.
+        Identified lines will be ignored during import.
 
     Returns
     -------
     poly :
         :gimliapi:`GIMLI::Mesh`
+
+    See also
+    --------
+    exportPLC
     """
     with open(filename, 'r') as fi:
         content = fi.readlines()
@@ -1099,7 +1103,7 @@ def readPLC(filename, comment='#'):
 
 
 def exportPLC(poly, fname, **kwargs):
-    r"""General writer to save piece-wise linear complex (PLC) as poly file.
+    r"""General writer to save a piece-wise linear complex (PLC), i.e. a pyGIMLi geometry, as a poly file.
 
     Choose from poly.dimension() and forward appropriate to
     :gimliapi:`GIMLI::Mesh::exportAsTetgenPolyFile`
@@ -1126,6 +1130,10 @@ def exportPLC(poly, fname, **kwargs):
     >>> world3d = pg.createGrid([0, 1], [0, 1], [-1, 0])
     >>> pg.meshtools.exportPLC(world3d, fname)
     >>> os.remove(fname)
+    
+    See also
+    --------
+    readPLC
     """
     if poly.dimension() == 2:
         exportTrianglePoly(poly, fname, **kwargs)

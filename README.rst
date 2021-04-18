@@ -80,9 +80,9 @@ the license agreement can be found `here
 Credits
 -------
 
-We use or link some third party software (beside the usual tool stack: cmake, Gcc, boost, python, numpy, scipy, matplotlib) and are gratefull for all the work made by the authors of these awesome open source tools:
+We use or link some third-party software (beside the usual tool stack: cmake, gcc, boost, python, numpy, scipy, matplotlib) and are grateful for all the work made by the authors of these awesome open-source tools:
 
-* libkdetree++: Maybe abandoned, mirror: https://github.com/nvmd/libkdtree
+* libkdtree++: Maybe abandoned, mirror: https://github.com/nvmd/libkdtree
 
 * Tetgen: http://wias-berlin.de/software/index.jsp?id=TetGen&lang=1
 

@@ -219,6 +219,8 @@ copyright = '2021 - GIMLi Development Team'
 #
 # The short X.Y version.
 version = pygimli.__version__
+install_version = pygimli.__version__.split("+")[0]
+
 rst_epilog = """
 .. |version| replace:: pyGIMLi {versionnum}
 """.format(versionnum = version)
