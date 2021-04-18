@@ -190,8 +190,14 @@ def testCBarLevels():
 
 def testShowPV():
     m1 = mt.createCube()
-    pg.show(m1)
-    pass
+    # pg.rc['view3D'] = 'fallback'
+    # pg.show(m1)
+
+    pg.rc['view3D'] = 'pyvista'
+    #pg.show(m1, notebook=True)
+
+    pg.show(m1, gui=False)
+    
 
 if __name__ == '__main__':
 

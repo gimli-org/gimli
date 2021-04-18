@@ -20,18 +20,19 @@ else:
     if vers_userf < vers_needf:
         pg.warn("Please consider updating PyVista to at least {}".format(
             vers_needs))
+    pg.debug("Using pyvista: {}".format(vers_users))
     from pygimli.viewer.pv import drawModel
 
 # True for Jupyter notebooks and sphinx-builds
 _backend = plt.get_backend().lower()
-inline = "inline" in _backend or _backend == "agg"
+_inlineBackend_ = "inline" in _backend or _backend == "agg"
 
-if PyQt5 is None or inline:
-    inline = True
+if PyQt5 is None or _inlineBackend_:
+    _inlineBackend_ = True
 else:
     from .pv.show3d import Show3D
     from PyQt5 import Qt
-    inline = False
+    _inlineBackend_ = False
 
 
 def showMesh3D(mesh, data, **kwargs):
@@ -98,8 +99,8 @@ def showMesh3DVista(mesh, data=None, **kwargs):
     """
     hold = kwargs.pop('hold', False)
     cmap = kwargs.pop('cmap', 'viridis')
-    notebook = kwargs.pop('notebook', inline)
-    gui = kwargs.pop('gui', not notebook)
+    notebook = kwargs.pop('notebook', _inlineBackend_)
+    gui = kwargs.pop('gui', False)
 
     # add given data from argument
     if gui:
