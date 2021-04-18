@@ -21,15 +21,11 @@ def createCrossholeData(sensors):
         Data container with `sensors` predefined sensor indices 's' and 'g' for shot and receiver numbers.
     """
     from itertools import product
-
     if len(sensors) % 2 > 0:
-        pg.error(
-            "createCrossholeData is only defined for an equal number of sensors in two boreholes."
-        )
-    sensors = np.sort(sensors, axis=0)
+        pg.error("createCrossholeData is only defined for an equal number of sensors in two boreholes.")
     n = len(sensors) // 2
     numbers = np.arange(n)
-    rays = list(product(numbers, numbers + n))
+    rays = np.array(list(product(numbers, numbers + n)))
 
     # Empty container
     scheme = pg.DataContainer()
@@ -39,7 +35,6 @@ def createCrossholeData(sensors):
         scheme.createSensor(sen)
 
     # Add measurements
-    rays = np.array(rays)
     scheme.resize(len(rays))
     scheme["s"] = rays[:, 0]
     scheme["g"] = rays[:, 1]
