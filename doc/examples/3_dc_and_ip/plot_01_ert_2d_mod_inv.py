@@ -78,7 +78,7 @@ pg.show(mesh, data=rhomap, label=pg.unit('res'), showMesh=True)
 data = ert.simulate(mesh, scheme=scheme, res=rhomap, noiseLevel=1,
                     noiseAbs=1e-6, seed=1337)
 
-pg.warning(np.linalg.norm(data['err']), np.linalg.norm(data['rhoa']))
+pg.info(np.linalg.norm(data['err']), np.linalg.norm(data['rhoa']))
 pg.info('Simulated data', data)
 pg.info('The data contains:', data.dataMap().keys())
 
@@ -106,7 +106,7 @@ mgr = ert.ERTManager('simple.dat')
 # Run the inversion with the preset data. The Inversion mesh will be created
 # with default settings.
 inv = mgr.invert(lam=20, verbose=True)
-# np.testing.assert_approx_equal(mgr.inv.chi2(), 0.6883, significant=1)
+np.testing.assert_approx_equal(mgr.inv.chi2(), 0.7, significant=1) 
 
 ###############################################################################
 # Let the ERTManger show you the model of the last successful run and how it
@@ -116,10 +116,12 @@ mgr.showResultAndFit()
 meshPD = pg.Mesh(mgr.paraDomain) # Save copy of para mesh for plotting later
 # %%
 # You can also provide your own mesh (e.g., a structured grid if you like them)
-#
+# Note, that x and y coordinates needs to be in ascending order to ensure the  # all the cells in the grid have the correct orientation, i.e., all cell needs # to be numbered left wise and the boundary normal directions needs to show 
+# outside.
 inversionDomain = pg.createGrid(x=np.linspace(start=-18, stop=18, num=33),
-                                y=-pg.cat([0], pg.utils.grange(0.5, 8, n=8)),
+                                y=-pg.cat([0], pg.utils.grange(0.5, 8, n=5))[::-1],
                                 marker=2)
+
 ###############################################################################
 # The inversion domain for ERT problems needs a boundary that represents the
 # far regions in the subsurface of the halfspace.
@@ -128,6 +130,7 @@ inversionDomain = pg.createGrid(x=np.linspace(start=-18, stop=18, num=33),
 #
 grid = pg.meshtools.appendTriangleBoundary(inversionDomain, marker=1,
                                            xbound=50, ybound=50)
+
 
 ###############################################################################
 # The Inversion can be called with data and mesh as argument as well
@@ -140,6 +143,8 @@ model = mgr.invert(data, mesh=grid, lam=20, verbose=True)
 # a different order than the values in the model array if regions are used.
 # The manager can help to permutate them into the right order.
 #
+np.testing.assert_approx_equal(mgr.inv.chi2(), 1.4, significant=2)
+
 modelPD = mgr.paraModel(model)  # do the mapping
 pg.show(mgr.paraDomain, modelPD, label='Model', cMap='Spectral_r',
         logScale=True, cMin=25, cMax=150)
