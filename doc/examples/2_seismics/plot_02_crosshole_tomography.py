@@ -46,8 +46,8 @@ sensors[:, 1] = np.hstack([depth] * 2)  # y
 # mesh and inverting it on a simple structured grid.
 
 # Create forward model and mesh
-c0 = mt.createCircle(pos=(7.0, -10.0), radius=3, segments=25, marker=1)
-c1 = mt.createCircle(pos=(12.0, -18.0), radius=4, segments=25, marker=2)
+c0 = mt.createCircle(pos=(7.0, -10.0), radius=3, nSegments=25, marker=1)
+c1 = mt.createCircle(pos=(12.0, -18.0), radius=4, nSegments=25, marker=2)
 geom = world + c0 + c1
 for sen in sensors:
     geom.createNode(sen)
@@ -59,7 +59,7 @@ pg.show(mesh_fwd, model,
 
 ###############################################################################
 # Next, we create an empty DataContainer and fill it with sensor positions and
-# all possible shot-recevier pairs for the two-borehole scenario.
+# all possible shot-receiver pairs for the two-borehole scenario.
 
 scheme = createCrossholeData(sensors) 
 
