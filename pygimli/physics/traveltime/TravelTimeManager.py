@@ -13,8 +13,6 @@ from pygimli.frameworks import MeshMethodManager
 
 from pygimli.utils import getSavePath
 from . modelling import TravelTimeDijkstraModelling
-# from . plotting import showVA
-# from . utils import shotReceiverDistances, createGradientModel2D
 
 
 class TravelTimeManager(MeshMethodManager):

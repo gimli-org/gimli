@@ -4,7 +4,7 @@
 
 from .importData import load
 
-from .raplot import drawFirstPicks, drawTravelTimeData, drawVA, showVA
+from .plotting import drawFirstPicks, drawTravelTimeData, drawVA, showVA
 from .utils import (createGradientModel2D, createRAData, shotReceiverDistances,
                     createCrossholeData)
 #from .refraction import Refraction, Tomography # will be removed(201909)
