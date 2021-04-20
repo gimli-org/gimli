@@ -447,6 +447,8 @@ def convert(mesh, verbose=False):
     """
     if str(type(mesh)) == "<class 'meshio._mesh.Mesh'>":
         return convertMeshioMesh(mesh, verbose=verbose)
+    elif "subsurface" in str(type(mesh)):
+        return fromSubsurface(mesh, verbose=verbose)
     else:
         pg.error("don't no how to convert mesh of type", type(mesh))
 
@@ -494,6 +496,148 @@ def convertMeshioMesh(mesh, verbose=False):
 
     ret.createNeighborInfos()
     return ret
+
+
+def fromSubsurface(obj, verbose=False):
+    """ Convert subsurface object to pygimli mesh.
+
+    See more: https://softwareunderground.github.io/subsurface/
+    
+    Testet objects so far:
+    
+    * TriSurf
+    * UnstructuredData (3D Boundary from TriSurf)
+    * StructuredData (3D cell centered voxel)
+
+    TODO
+    ----
+        * more testing
+        * 2D
+        * other Objects that are not tested before or known to be not working
+
+    Args
+    ----
+    obj: obj
+        Subsurface obj, mesh object 
+
+    verbose: boolean [False]
+        Be verbose during import.
+
+    Returns
+    -------
+    mesh: :gimliapi:`GIMLI::Mesh`
+    """
+    ss = pg.optImport('subsurface', 
+                      'You need subsurface installed to convert into')
+
+    if isinstance(obj, ss.structs.unstructured_elements.TriSurf):
+        return fromSubsurface(obj.mesh)
+    
+    elif isinstance(obj, ss.structs.UnstructuredData):
+        mesh = pg.Mesh(3)
+        for v in obj.vertex:
+            mesh.createNode(v)
+
+        for c in obj.cells:
+            mesh.createBoundary(c)
+        
+        for k, v in obj.attributes_to_dict.items():
+            # print(k, len(v))
+            mesh[k] = np.array(v)
+
+        for k, v in obj.points_attributes_to_dict.items():
+            # print(k, len(v))
+            mesh[k] = np.array(v)
+
+    elif isinstance(obj, ss.structs.StructuredData):
+               
+        def _voxelCenterToNodes(v):
+            dv = pg.utils.diff(v)
+            n = np.append(v[0]-dv[0]/2, v[0]-dv[0]/2.+ np.cumsum(dv)) 
+            n = np.append(n, v[-1]+dv[-1]/2.)
+            return n
+
+        mesh = pg.meshtools.createGrid(x=_voxelCenterToNodes(obj.data.X.values), 
+                             y=_voxelCenterToNodes(obj.data.Y.values), 
+                             z=_voxelCenterToNodes(obj.data.Z.values))
+        
+        for k, v in obj.data.data_vars.items():
+            # print(k, type(v), len(v), v.shape, len(v.values.flatten()))
+            # print(k, type(v), len(v), v.shape, )
+
+            if len(v) > 1:
+                mesh[k] = [np.array(vi.values.flatten(), dtype=float) for vi in v]
+                
+                # for i, vi in enumerate(v):
+                #     mesh['{0}#{1}'.format(k,i)] = 
+                #     nd.array(vi.values.flatten(), dtype=float)
+            else:
+                mesh[k] = v.values.flatten()
+    else:           
+        print(obj)
+        pg.critical('implemenme')
+
+    return mesh
+
+
+def toSubsurface(mesh, verbose=False):
+    """ Create a subsurface object from pygimli mesh.
+    
+    Testet objects so far:
+    
+    Creates Subsurface.TriSurf from 3D triangle boundaries
+    
+    TODO
+    ----
+        * more testing
+        * 2D
+        * other Objects that are not tested before or known to be not working
+
+    Args
+    ----
+    mesh: :gimliapi:`GIMLI::Mesh`
+    
+    verbose: boolean [False]
+        Be verbose during import.
+
+    Returns
+    -------
+    Subsurface object depending on input mesh
+    """
+    ss = pg.optImport('subsurface', 
+                      'You need subsurface installed to convert into')
+    pd = pg.optImport('pandas', 
+                      'You need pandas installed to convert into subsurface')
+
+    if mesh.dim() == 3:
+        
+        if mesh.cellCount() == 0 and mesh.boundaryCount() > 0:
+            ## export 3d boundary tringles as subsurface trisurf
+
+            cells = np.array([c.ids() for c in mesh.boundaries()])
+            att = None
+
+            
+            for k, v in mesh.dataMap():
+                if len(v) == mesh.boundaryCount():
+                    #atts['cell'] = 0
+                    att = pd.DataFrame({k: v})
+                    #atts['cell'] = xr.DataArray({'cell_attr': v})
+
+            ssMesh = ss.UnstructuredData.from_array(mesh.positions(),
+                                                    cells=cells,
+                                                    cells_attr=att)
+
+            obj = ss.TriSurf(ssMesh)
+            return obj
+        else:
+            print(mesh)
+            pg.critical('not yet implemented')
+
+    else:
+        print(mesh)
+        pg.critical('not yet implemented')
+
 
 
 def readGmsh(fName, verbose=False, precision=None):
