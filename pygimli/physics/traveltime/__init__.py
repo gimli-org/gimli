@@ -3,7 +3,7 @@
 
 
 from .importData import load
-
+from .tt import simulate
 from .plotting import drawFirstPicks, drawTravelTimeData, drawVA, showVA
 from .utils import (createGradientModel2D, createRAData, shotReceiverDistances,
                     createCrossholeData)
