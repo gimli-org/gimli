@@ -498,10 +498,12 @@ def convertMeshioMesh(mesh, verbose=False):
     return ret
 
 
-def fromSubsurface(obj, verbose=False):
+def fromSubsurface(obj, order='C', verbose=False):
     """ Convert subsurface object to pygimli mesh.
 
     See more: https://softwareunderground.github.io/subsurface/
+    
+    Order refers to np.flatten(order) strategy for structured cell data arangement, e.g., use 'F' (Fortran style) for gempy meshes. Default is 'C'-Style.
     
     Testet objects so far:
     
@@ -519,6 +521,9 @@ def fromSubsurface(obj, verbose=False):
     ----
     obj: obj
         Subsurface obj, mesh object 
+
+    order: str ['C']
+        Flatten style for structured data attributes. See above.
 
     verbose: boolean [False]
         Be verbose during import.
@@ -564,15 +569,7 @@ def fromSubsurface(obj, verbose=False):
         for k, v in obj.data.data_vars.items():
             # print(k, type(v), len(v), v.shape, len(v.values.flatten()))
             # print(k, type(v), len(v), v.shape, )
-
-            if len(v) > 1:
-                mesh[k] = [np.array(vi.values.flatten(), dtype=float) for vi in v]
-                
-                # for i, vi in enumerate(v):
-                #     mesh['{0}#{1}'.format(k,i)] = 
-                #     nd.array(vi.values.flatten(), dtype=float)
-            else:
-                mesh[k] = v.values.flatten()
+            mesh[k] = [np.array(vi.values.flatten(order=order), dtype=float) for vi in v]
     else:           
         print(obj)
         pg.critical('implemenme')
