@@ -20,10 +20,9 @@ def load(fileName, verbose=False, **kwargs):
     Returns
     -------
     data: pg.DataContainer
-
-    """  
+    """
     if fileName.lower().endswith('.gtt'):
-        data = importGTT(filename)
+        data = importGTT(fileName)
     elif fileName.lower().endswith('.tom'):
         data = readTOMfile(fileName)
     else:
@@ -106,7 +105,7 @@ def importGTT(filename, return_header=False):
 
 
 def readTOMfile(filename, ndig=2, roundto=0):
-    """Read Reflex tomography (*.TOM) file"""
+    """Read Reflex tomography (*.TOM) file."""
     t, xT, zT, xR, zR = np.loadtxt(filename, usecols=(0, 2, 3, 4, 5), unpack=1)
     if roundto > 0:
         pT = (np.round(xT/roundto) - np.round(zT/roundto) * 1j) * roundto
@@ -131,6 +130,7 @@ def readTOMfile(filename, ndig=2, roundto=0):
     data.markValid(pg.abs(data('s') - data('g')) > 0)
     return data
 
+
 class ReadAHL(object):
     """Class reading seismic refraction format provided by Uppsala University.
 
@@ -153,18 +153,21 @@ class ReadAHL(object):
         self.use_xz_only = True
 
     def __call__(self):
+        """Call function."""
         self.load()
         self.convert()
 
-    def __repr__(self):
-        s = 'header line: ' + self.header
-        s += '\nalldata length: {}\nfirst row: '.format(len(self.alldata))
-        s += str(self.alldata[0, :]) + '\nlast row: '
-        s += str(self.alldata[-1, :])
+    # def __repr__(self):
+    #     """Return string representation."""
+    #     s = 'header line: ' + self.header
+    #     s += '\nalldata length: {}\nfirst row: '.format(len(self.alldata))
+    #     s += str(self.alldata[0, :]) + '\nlast row: '
+    #     s += str(self.alldata[-1, :])
 
-        return s
+    #     return s
 
     def __repr__(self):
+        """Return string representation."""
         in_arg = "'" + self.filename + "'" + \
             ', maxsensorid=' + str(self.maxsensorid) + \
             ', delimiter=' + "'" + self.delimiter + "'"
@@ -172,7 +175,6 @@ class ReadAHL(object):
 
     def _extractlabels(self):
         """Extract the labels from the header line."""
-
         labels = self.header.split(self.delimiter)
         n = 0
         for l in labels:
@@ -200,7 +202,7 @@ class ReadAHL(object):
         self._extractlabels()  # split the header line into individual labels
 
     def load(self):
-        """Main method for actually processing/reading the data in file."""
+        """Process/read the data file."""
         # this will determine number of leading rows and extract labels etc...
         self._extractheader()
 
@@ -228,11 +230,10 @@ class ReadAHL(object):
         self.alldata = np.asarray(self.alldata)
 
     def convert(self):
-        """Extract sensors and build a list for BERT/GIMLi indexing.
+        """Extract sensors and build a list for pyGIMLi indexing.
 
         Also determine relevant column numbers for the data.
         """
-
         if len(self.alldata) == 0.:
             raise ValueError('Data not read yet!')
 
@@ -322,6 +323,7 @@ class ReadAHL(object):
             else:
                 raise ValueError('Invalid description of\
                 data to be written: {}'.format(desc))
+
 
 if __name__ == '__main__':
     pass
