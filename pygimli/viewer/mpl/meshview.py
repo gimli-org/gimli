@@ -492,7 +492,7 @@ def drawSelectedMeshBoundariesShadow(ax, boundaries, first='x', second='y',
     updateAxes_(ax)
     return collection
 
-def drawBoundaryMarkers(ax, mesh, clipMarkers=False, **kwargs):
+def drawBoundaryMarkers(ax, mesh, clipBoundaryMarkers=False, **kwargs):
     """Draw boundary markers for mesh.boundaries with marker != 0
 
     Args
@@ -500,7 +500,7 @@ def drawBoundaryMarkers(ax, mesh, clipMarkers=False, **kwargs):
     mesh : :gimliapi:`GIMLI::Mesh`
         Mesh that have the boundary markers.
 
-    clipMarkers: bool [False]
+    clipBoundaryMarkers: bool [False]
         Clip boundary marker to the axes limits if needed.
 
     Keyword Arguments
@@ -553,7 +553,7 @@ def drawBoundaryMarkers(ax, mesh, clipMarkers=False, **kwargs):
                     fontdict={'weight':'bold'})
 
             # cliping avoid visuablity outside axes. Needet if the axes limits does not match mesh size.
-            txt.set_clip_on(clipMarkers)
+            txt.set_clip_on(clipBoundaryMarkers)
 
             ax.plot(xs[0], ys[0], 'o', color='k')
             ax.plot(xs[-1], ys[-1], 'o', color='k')
@@ -656,7 +656,7 @@ def drawMeshBoundaries(ax, mesh, hideMesh=False, useColorMap=False,
     updateAxes_(ax)
 
 
-def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
+def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarkers=False,
             showNodes=False, fitView=True, **kwargs):
     """Draw 2D PLC into given axes.
 
@@ -670,7 +670,7 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
         Fill the regions with default colormap.
     regionMarker: bool [True]
         Show region marker.
-    boundaryMarker: bool [False]
+    boundaryMarkers: bool [False]
         Show boundary marker.
     showNodes: bool [False]
         Draw all nodes as little dots.
@@ -742,9 +742,10 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
         if kwargs.pop('showBoundary', True):
             drawMeshBoundaries(ax, mesh, **kwargs)
 
-
-    if boundaryMarker:
-        drawBoundaryMarkers(ax, mesh, clipMarkers=kwargs.pop('clipMarkers', False))
+    ###! called from show already
+    # if boundaryMarkers:
+    #     drawBoundaryMarkers(ax, mesh, 
+    #                         clipBoundaryMarkers=kwargs.pop       ('clipBoundaryMarkers', False))
 
     if showNodes:
         for n in mesh.nodes():
@@ -754,7 +755,7 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarker=False,
                 col = (0.0, 0.0, 0.0, 1.0)
 
             # ms = kwargs.pop('markersize', 5)
-            ax.plot(n.pos()[0], n.pos()[1], 'o', color=col, **kwargs)
+            ax.plot(n.pos()[0], n.pos()[1], 'o', color=col, zorder=10, **kwargs)
 
     #        eCircles.append(mpl.patches.Circle((n.pos()[0], n.pos()[1])))
     #        eCircles.append(mpl.patches.Circle((n.pos()[0], n.pos()[1]), 0.1))

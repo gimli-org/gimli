@@ -711,7 +711,6 @@ void DCMultiElectrodeModelling::assembleStiffnessMatrixDCFEMByPass_(SparseMatrix
 }
 
 void DCMultiElectrodeModelling::updateMeshDependency_(){
-
     if (subSolutions_) subSolutions_->clear();
 
     for_each(electrodes_.begin(), electrodes_.end(), deletePtr());
@@ -791,7 +790,7 @@ void DCMultiElectrodeModelling::setContactImpedances(const RVector & zi){
 }
 
 void DCMultiElectrodeModelling::searchElectrodes_(){
-
+    // __MS(*(this->mesh_))
     if (!mesh_){
         throwError("DCMultiElectrodeModelling::searchElectrodes_() have no mesh defined");
     }
@@ -1951,7 +1950,10 @@ void DCMultiElectrodeModelling::calculateK(const std::vector < ElectrodeShape * 
 
 void DCSRMultiElectrodeModelling::updateMeshDependency_(){
     DCMultiElectrodeModelling::updateMeshDependency_();
-    if (primMeshOwner_ && primMesh_) delete primMesh_;
+    if (primMeshOwner_ && primMesh_) {
+        delete primMesh_;
+        primMesh_ = 0;
+    }
     if (primPot_) {
         if (verbose_) std::cout<< " updateMeshDependency:: cleaning primpot" << std::endl;
 
@@ -2055,7 +2057,8 @@ void DCSRMultiElectrodeModelling::checkPrimpotentials_(const std::vector < Elect
 //
 //                 primMesh_->exportVTK("prim");
 //                 mesh_->exportVTK("sec");
-
+                delete primMesh_;
+                primMesh_ = 0;
 //                   save(*primPot_, "primPot");
             }
         }

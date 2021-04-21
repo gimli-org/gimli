@@ -19,9 +19,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import pygimli as pg
-# pg.setTestingMode(True)
 import pygimli.meshtools as mt
-from pygimli.physics.traveltime import TravelTimeManager
+from pygimli.physics.traveltime import TravelTimeManager, createCrossholeData
 
 pg.utils.units.quants['vel']['cMap'] = 'inferno_r'
 ################################################################################
@@ -47,8 +46,8 @@ sensors[:, 1] = np.hstack([depth] * 2)  # y
 # mesh and inverting it on a simple structured grid.
 
 # Create forward model and mesh
-c0 = mt.createCircle(pos=(7.0, -10.0), radius=3, segments=25, marker=1)
-c1 = mt.createCircle(pos=(12.0, -18.0), radius=4, segments=25, marker=2)
+c0 = mt.createCircle(pos=(7.0, -10.0), radius=3, nSegments=25, marker=1)
+c1 = mt.createCircle(pos=(12.0, -18.0), radius=4, nSegments=25, marker=2)
 geom = world + c0 + c1
 for sen in sensors:
     geom.createNode(sen)
@@ -60,28 +59,9 @@ pg.show(mesh_fwd, model,
 
 ###############################################################################
 # Next, we create an empty DataContainer and fill it with sensor positions and
-# all possible shot-recevier pairs for the two-borehole scenario using the
-# product function in the itertools module (Python standard library).
+# all possible shot-receiver pairs for the two-borehole scenario.
 
-from itertools import product
-numbers = np.arange(len(depth))
-rays = list(product(numbers, numbers + len(numbers)))
-
-# Empty container
-scheme = pg.DataContainer()
-
-# Add sensors
-for sen in sensors:
-    scheme.createSensor(sen)
-
-# Add measurements
-rays = np.array(rays)
-scheme.resize(len(rays))
-scheme["s"] = rays[:, 0]
-scheme["g"] = rays[:, 1]
-scheme["valid"] = np.ones(len(rays))
-scheme.registerSensorIndex("s")
-scheme.registerSensorIndex("g")
+scheme = createCrossholeData(sensors) 
 
 ###############################################################################
 # The forward simulation is performed with a few lines of code. We initialize
@@ -133,6 +113,7 @@ for ax in (ax1, ax2):
 tt.showResult(ax=ax2, logScale=False, nLevs=3)
 tt.drawRayPaths(ax=ax2, color="0.8", alpha=0.3)
 fig.tight_layout()
+
 ################################################################################
 # Note how the rays are attracted by the high velocity anomaly while
 # circumventing the low velocity region. This is also reflected in the coverage,

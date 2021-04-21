@@ -5,11 +5,14 @@ Import and extensions of the core Mesh class.
 import numpy as np
 
 from math import ceil
-from ._pygimli_ import (cat, HexahedronShape, Line, RSparseMapMatrix,
+
+from .core import (cat, HexahedronShape, Line, RSparseMapMatrix,
                         Mesh, MeshEntity, Node, Boundary, RVector,
                         PolygonFace, TetrahedronShape, TriangleFace)
 from .logger import deprecated, error, info, warn
+
 from ..meshtools import mergePLC, exportPLC
+
 from .base import isScalar, isArray, isPos, isR3Array, isComplex
 
 
@@ -46,7 +49,7 @@ def __Mesh_str(self):
     if len(list(self.dataMap().keys())) > 0:
         st += "\nMesh contains data: "
 
-        uniqueNames = mesh.dataKeys()
+        uniqueNames = self.dataKeys()
 
         for d, v in uniqueNames.items():
             if len(v) > 1:

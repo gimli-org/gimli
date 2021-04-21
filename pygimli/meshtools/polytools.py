@@ -926,7 +926,7 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
 
 
 def readPLC(filename, comment='#'):
-    r"""Generic PLC reader.
+    r"""Read in a piece-wise linear complex object, i.e. pyGIMLi geometry, from .poly file. The latter could be created with `mt.exportPLC`.
 
     Read 2D :term:`Triangle` or 3D :term:`Tetgen` PLC files.
 
@@ -936,13 +936,17 @@ def readPLC(filename, comment='#'):
         Filename *.poly
 
     comment: string ('#')
-        String containing all characters that define a comment line. Identified
-        lines will be ignored during import.
+        String containing all characters that define a comment line.
+        Identified lines will be ignored during import.
 
     Returns
     -------
     poly :
         :gimliapi:`GIMLI::Mesh`
+
+    See also
+    --------
+    exportPLC
     """
     with open(filename, 'r') as fi:
         content = fi.readlines()
@@ -1099,7 +1103,7 @@ def readPLC(filename, comment='#'):
 
 
 def exportPLC(poly, fname, **kwargs):
-    r"""General writer to save piece-wise linear complex (PLC) as poly file.
+    r"""General writer to save a piece-wise linear complex (PLC), i.e. a pyGIMLi geometry, as a poly file.
 
     Choose from poly.dimension() and forward appropriate to
     :gimliapi:`GIMLI::Mesh::exportAsTetgenPolyFile`
@@ -1117,7 +1121,7 @@ def exportPLC(poly, fname, **kwargs):
     --------
     >>> import pygimli as pg
     >>> import tempfile, os
-    >>> fname = tempfile.mktemp() # Create temporary string for filename.
+    >>> fname = tempfile.mktemp() + '.poly' # Create temporary filename.
     >>> world2d = pg.meshtools.createWorld(start=[-10, 0], end=[20, -10])
     >>> pg.meshtools.exportPLC(world2d, fname)
     >>> read2d = pg.meshtools.readPLC(fname)
@@ -1126,20 +1130,15 @@ def exportPLC(poly, fname, **kwargs):
     >>> world3d = pg.createGrid([0, 1], [0, 1], [-1, 0])
     >>> pg.meshtools.exportPLC(world3d, fname)
     >>> os.remove(fname)
+    
+    See also
+    --------
+    readPLC
     """
     if poly.dimension() == 2:
         exportTrianglePoly(poly, fname, **kwargs)
     else:
         exportTetgenPoly(poly, fname, **kwargs)
-
-
-def writePLC(*args, **kwargs):
-    """
-    Backward compatibility.
-    Please use :py:mod:`pygimli.meshtools.exportPLC`.
-    """
-    pg.deprecated('use exportPLC')  # 16.08.2019
-    return exportPLC(*args, **kwargs)
 
 
 def exportTrianglePoly(poly, fname, float_format='.15e'):
@@ -1154,7 +1153,7 @@ def exportTrianglePoly(poly, fname, float_format='.15e'):
         mesh PLC holding nodes, edges, holes & regions
 
     fname : string
-        Filename of the file to read (\\*.n, \\*.e)
+        Target filename *.poly
 
     float_format : string
         format string for floats according to str.format()
@@ -1162,6 +1161,9 @@ def exportTrianglePoly(poly, fname, float_format='.15e'):
     verbose : boolean [False]
         Be verbose during import.
     """
+    if fname.rfind('.poly') == -1:
+        fname = fname + '.poly'
+
     if float_format[0] != '{':
         pfmt = '{:' + float_format + '}'
     else:

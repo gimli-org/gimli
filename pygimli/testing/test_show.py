@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import sys
+
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -24,7 +26,7 @@ def testShowVariants():
     mesh = mt.createMesh(geom)
 
     fig, axs = plt.subplots(3,5)
-
+    
     pg.show(geom, ax=axs[0][0])
     axs[0][0].set_title('plc, (default)')
     pg.show(geom, fillRegion=False, ax=axs[0][1])
@@ -61,6 +63,7 @@ def testShowVariants():
     axs[2][4].set_title('mesh, cells, tri=True, shading=gouraud')
     ##pg.show(mesh, mesh.cellMarker(), label(markers), axs[1][1])
     axs[2][4].figure.tight_layout()
+    fig.tight_layout()
 
 def testColorbar():
 
@@ -185,9 +188,24 @@ def testCBarLevels():
     pg.show(mesh, node_data, ax=axs[1, 1], colorBar=True, nLevs=7)
 
 
+def testShowPV():
+    m1 = mt.createCube()
+    # pg.rc['view3D'] = 'fallback'
+    # pg.show(m1)
+
+    pg.rc['view3D'] = 'pyvista'
+    #pg.show(m1, notebook=True)
+
+    pg.show(m1, gui=False)
+    
+
 if __name__ == '__main__':
-    # testShowVariants()
-    # testColorbar()
-    #testCBarLevels()
-    testColRange()
-    pg.wait()
+
+    if len(sys.argv) > 0:
+        locals()[sys.argv[1]]()
+    else:
+        testShowVariants()
+        testColorbar()
+        testCBarLevels()
+        testColRange()
+    

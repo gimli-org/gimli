@@ -172,6 +172,11 @@ add_custom_target(sphinxpdf ALL
         sphinxlatex
 )
 
+add_custom_target(pdf
+    DEPENDS
+        sphinxpdf
+)
+
 add_custom_target(html
     DEPENDS
         sphinxhtml

@@ -3,10 +3,10 @@
 
 import time
 import numpy as np
-#from pygimli.core import _pygimli_ as pg
 
-from . import _pygimli_ as pgcore
-from . import (CMatrix, CSparseMapMatrix, CSparseMatrix,
+from .core import pgcore
+
+from .core import (CMatrix, CSparseMapMatrix, CSparseMatrix,
                RSparseMapMatrix, RSparseMatrix, ElementMatrix,
                IVector, MatrixBase, R3Vector, RVector)
 

@@ -74,8 +74,10 @@ public:
         std::string t1("a:bb:ccc:ddd");
         GIMLI::split(t1, ':');
         CPPUNIT_ASSERT(GIMLI::split(t1, ':').size() == 4);
-        CPPUNIT_ASSERT(GIMLI::split(t1, ':')[ 0 ] == "a");
-        CPPUNIT_ASSERT(GIMLI::split(t1, ':')[ 3 ] == "ddd");
+        CPPUNIT_ASSERT(GIMLI::split(t1, ':')[0] == "a");
+        CPPUNIT_ASSERT(GIMLI::split(t1, ':')[3] == "ddd");
+
+        CPPUNIT_ASSERT(GIMLI::replace(t1, ':', '_') == "a_bb_ccc_ddd");
     }
 
     void testRotationByQuaternion(){

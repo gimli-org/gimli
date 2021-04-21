@@ -194,7 +194,7 @@ except OSError:
 fig, ax = plt.subplots()
 if gmsh:
     mesh = readGmsh("mesh.msh", verbose=True)
-    pg.show(mesh, ax=ax, markers=True, hold=True)
+    pg.show(mesh, ax=ax, markers=True, clipBoundaryMarkers=True)
     ax.set_xlim(-3, 53)
     ax.set_ylim(-53, 3)
 else:

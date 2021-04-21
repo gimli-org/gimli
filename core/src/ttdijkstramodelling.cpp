@@ -499,7 +499,7 @@ void TravelTimeDijkstraModelling::createJacobian(RSparseMapMatrix & jacobian,
     if (min(this->mesh_->cellMarkers()) < 0){
         __M
         log(Error, "There are cells with marker -1. "
-                "Did you defined a boundary region (not needed).");
+                "Did you define a boundary region? (This is not needed).");
     }
     Stopwatch swatch(true);
     if (background_ < TOLERANCE) {
