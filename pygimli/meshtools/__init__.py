@@ -12,6 +12,7 @@ from pygimli.core import createMesh1D, createMesh1DBlock, createMesh2D, createMe
 
 from .grid import (createGrid, createGridPieShaped,
                    appendBoundary,
+                   appendBoundaryGrid,
                    appendTriangleBoundary,
                    appendTetrahedronBoundary, 
                    )
