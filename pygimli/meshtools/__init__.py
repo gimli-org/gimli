@@ -11,7 +11,10 @@ Mesh generation and modification.
 from pygimli.core import createMesh1D, createMesh1DBlock, createMesh2D, createMesh3D
 
 from .grid import (createGrid, createGridPieShaped,
-                   appendTetrahedronBoundary, appendTriangleBoundary)
+                   appendBoundary,
+                   appendTriangleBoundary,
+                   appendTetrahedronBoundary, 
+                   )
 from .mapping import (cellDataToBoundaryData, cellDataToNodeData,
                       fillEmptyToCellArray, interpolate, interpolateAlongCurve,
                       nodeDataToBoundaryData, nodeDataToCellData,

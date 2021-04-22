@@ -172,8 +172,8 @@ Mesh.__getitem__ = __Mesh_getVal
 
 def __MeshBoundingBox__(self):
     bb = self.boundingBox()
-    mi = [bb.min()[i] for i in range(self.dim())]
-    ma = [bb.max()[i] for i in range(self.dim())]
+    mi = pgcore.Pos([bb.min()[i] for i in range(self.dim())])
+    ma = pgcore.Pos([bb.max()[i] for i in range(self.dim())])
     return [mi, ma]
 Mesh.bb = __MeshBoundingBox__
 

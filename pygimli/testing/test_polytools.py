@@ -353,7 +353,15 @@ class Test3DMerge(unittest.TestCase):
 
         # print(mesh)
         # mesh.exportBoundaryVTU('b.vtu')
+        #pg.show(mesh)
+
+
+    def test_appendTetrahedron(self):
+        grid = mt.createGrid(5,5,5)
+        #pg.show(grid)
+        mesh = mt.appendBoundary(grid, isSubSurface=False)
         pg.show(mesh)
+
 
 if __name__ == '__main__':
     unittest.main()
