@@ -359,8 +359,10 @@ class Test3DMerge(unittest.TestCase):
     def test_appendTetrahedron(self):
         grid = mt.createGrid(5,5,5)
         #pg.show(grid)
-        mesh = mt.appendBoundary(grid, isSubSurface=False)
-        pg.show(mesh)
+        mesh = mt.appendBoundary(grid, xbound=5, ybound=5, zbound=5, 
+                                 isSubSurface=False)
+        ax, _ = pg.show(mesh, mesh.cellMarkers(), hold=True, opacity=0.5)
+        ax.show()
 
 
 if __name__ == '__main__':

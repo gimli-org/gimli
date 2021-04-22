@@ -362,7 +362,7 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1,
 
     return mesh3
 
-def appendTetrahedronBoundary(mesh, xbound=10, ybound=10, zbound=100,          
+def appendTetrahedronBoundary(mesh, xbound=10, ybound=10, zbound=10,          
                               marker=1, isSubSurface=True, **kwargs):
     """ Return new mesh surrounded by a tetrahedron mesh as boundary.
 
@@ -382,17 +382,22 @@ def appendTetrahedronBoundary(mesh, xbound=10, ybound=10, zbound=100,
     ----
         * isSubSurface 
         * pyramid cells as connecting cells
+        * need for preserve Boundary check
+        * preserve Boundary support
+        * addNodes support
 
     Parameters
     ----------
     mesh: :gimliapi:`GIMLI::Mesh`
         3D Mesh to which the tetrahedron boundary should be appended.
-    xbound: float, optional
-        Horizontal prolongation distance in x-direction.
-    ybound: float, optional
-        Horizonal prolongation distance in y-direction.
-    zbound: float, optional
-        Vertical prolongation distance in z-direction
+    xbound: float [10]
+        Horizontal prolongation distance in meter at x-direction. 
+        Need to be >= 0.
+    ybound: float [10]
+        Horizonal prolongation distance in meter at y-direction. 
+        Need to be greater 0.
+    zbound: float [10]
+        Vertical prolongation distance in meter at z-direction. Need to be greater 0.
     marker: int, optional
         Marker of new cells.
     addNodes: float, optional
@@ -415,27 +420,43 @@ def appendTetrahedronBoundary(mesh, xbound=10, ybound=10, zbound=100,
     
     Examples
     --------
-
+    >>> import pygimli as pg
+    >>> import pygimli.meshtools as mt
+    >>> grid = mt.createGrid(5,5,5)
+    ... 
+    >>> mesh = mt.appendBoundary(grid, xbound=5, ybound=5, zbound=5, 
+    ...                          isSubSurface=False)
+    >>> ax, _ = pg.show(mesh, mesh.cellMarkers(), hold=True, opacity=0.5)
+    >>> mat = ax.show();
     """
     if isSubSurface == True:
         raise Exception('Implement me')
-
     
     meshBoundary = pg.Mesh(3, isGeometry=True)
     for b in mesh.boundaries():
         if b.outside() or b.marker() == -1:
             meshBoundary.copyBoundary(b)
+    
+    bb = meshBoundary.bb()
+    meshBoundary.addHoleMarker(bb[0] + (bb[1]-bb[0])/1000.)
 
-    startPos = meshBoundary.bb()[0] - [xbound, ybound, zbound]
-    endPos = meshBoundary.bb()[1] + [xbound, ybound, zbound]
+    if not any([xbound > 0, ybound  > 0, zbound > 0]):
+        pg.critical('all boundaries need to be greater 0.')
 
-    boundaryBox = pg.createCube(startPos, endPos)
+    startPos = bb[0] - [xbound, ybound, zbound]
+    endPos = bb[1] + [xbound, ybound, zbound]
 
+    boundaryBox = pg.meshtools.createCube(start=startPos, end=endPos)
 
-    return boundaryBox + meshBoundary 
-    mesh3 = pg.Mesh()
+    boundMesh = pg.meshtools.createMesh(boundaryBox + meshBoundary)
+    boundMesh.setCellMarkers(np.ones(boundMesh.cellCount()) * marker)
 
-    return mesh3
+    outMesh = pg.Mesh(mesh)
+
+    for c in boundMesh.cells():
+        outMesh.copyCell(c)
+    
+    return outMesh
 
 
 if __name__ == "__main__":

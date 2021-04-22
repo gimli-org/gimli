@@ -763,6 +763,7 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
     paraDepth : float, optional
         Maximum depth for parametric domain, 0 (default) means 0.4 * maximum
         sensor range.
+
     balanceDepth: bool [True]
         Equal depth for the parametric domain.
 
@@ -790,7 +791,7 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
     Returns
     -------
     poly: :gimliapi:`GIMLI::Mesh`
-        piecewise linear complex (PLC) containing nodes and edges
+        Piecewise linear complex (PLC) containing nodes and edges
 
     Examples
     --------
@@ -1532,19 +1533,26 @@ def createFacet(mesh, boundaryMarker=None, verbose=True):
     return poly
 
 
-def createCube(size=[1.0, 1.0, 1.0],
-               pos=None, rot=None, boundaryMarker=0, **kwargs):
+def createCube(size=[1.0, 1.0, 1.0], pos=None, 
+               start=None, end=None,
+               rot=None, boundaryMarker=0, **kwargs):
     """Create cube PLC as geometrie definition.
+
+    Create cube PLC as geometrie definition. You can either give size and center position or start and end position.
 
     Parameters
     ----------
-    size : [x, y, z]
+    size: [x, y, z]
         x, y, and z-size of the cube. Default = [1.0, 1.0, 1.0] in m
-    pos : pg.Pos [None]
+    pos: [x, y, z]
         The center position, default is at the origin.
-    rot : pg.Pos [None]
+    start: [x, y, z]
+        Left Front Bottom corner.
+    end: [x, y, z]
+        Right Back Top corner.
+    rot: pg.Pos [None]
         Rotate on the center.
-    boundaryMarker : int[0]
+    boundaryMarker: int[0]
         Boundary marker for the resulting faces.
 
     ** kwargs:
@@ -1570,6 +1578,10 @@ def createCube(size=[1.0, 1.0, 1.0],
         The resulting polygon is a :gimliapi:`GIMLI::Mesh`.
 
     """
+    if start is not None and end is not None:
+        size = end-start
+        pos = start + size/2
+
     poly = pg.Mesh(3, isGeometry=True)
 
     for y in [-0.5, 0.5]:
