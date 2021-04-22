@@ -1567,7 +1567,7 @@ def createCube(size=[1.0, 1.0, 1.0], pos=None,
     Mesh: Nodes: 8 Cells: 0 Boundaries: 6
     >>> cube = mt.createCube([10, 10, 1])
     >>> print(cube.bb())
-    [[-5.0, -5.0, -0.5], [5.0, 5.0, 0.5]]
+    [RVector3: (-5.0, -5.0, -0.5), RVector3: (5.0, 5.0, 0.5)]
     >>> cube = mt.createCube([10, 10, 1], pos=[-4.0, 0.0, 0.0])
     >>> print(pg.center(cube.positions()))
     RVector3: (-4.0, 0.0, 0.0)
