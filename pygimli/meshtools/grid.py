@@ -519,7 +519,6 @@ def appendTetrahedronBoundary(mesh, xbound=10, ybound=10, zbound=10,
     >>> mesh = mt.appendBoundary(grid, xbound=5, ybound=5, zbound=5, 
     ...                          isSubSurface=False)
     >>> ax, _ = pg.show(mesh, mesh.cellMarkers(), hold=True, opacity=0.5)
-    >>> mat = ax.show();
     """
     if isSubSurface == True:
         pg.critical('Implement me')
