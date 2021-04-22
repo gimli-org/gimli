@@ -566,15 +566,15 @@ public:
     virtual ~FEAFunction() { }
 
     virtual double evalR1(const Pos & arg, const MeshEntity * ent=0) const{
-        log(Warning, "FEAFunction.eval should be overloaded.");
+        log(Warning, "FEAFunction.evalR1 should be overloaded.");
         return 0.0;
     }
     virtual Pos evalR3(const Pos & arg, const MeshEntity * ent=0) const{
-        log(Warning, "FEAFunction.eval should be overloaded.");
+        log(Warning, "FEAFunction.evalR3 should be overloaded.");
         return Pos(0.0, 0.0, 0.0);
     }
     virtual RMatrix evalRM(const Pos & arg, const MeshEntity * ent=0) const{
-        log(Warning, "FEAFunction.eval should be overloaded.");
+        log(Warning, "FEAFunction.evalRM should be overloaded.");
         return RMatrix(0, 0);
     }
 

@@ -928,7 +928,8 @@ void Mesh::exportVTK(const std::string & fbody,
 
                     if (bd.second.size() == (uint)boundaryCount()){
 
-                        file << "SCALARS " << replace(bd.first, ' ', '_')
+                        file << "SCALARS " << replace(
+                                        replace(bd.first, '#', '_'), ' ','_')
                             << " double 1" << std::endl;
                         file << "LOOKUP_TABLE default" << std::endl;
 
@@ -966,9 +967,11 @@ void Mesh::exportVTK(const std::string & fbody,
         for (auto & nd: nData){
 
             if (nd.second.size() == (uint)nodeCount()){
-                log(Debug, "writing point data: " + nd.first + " " + str(nd.second.size()));
+                log(Debug, "writing point data: " + nd.first + " " + 
+                    str(nd.second.size()));
 
-                file << "SCALARS " << replace(nd.first, ' ', '_')
+                file << "SCALARS " << replace(
+                    replace(nd.first, '#', '_'), ' ','_')
                     << " double 1" << std::endl;
                 file << "LOOKUP_TABLE default" << std::endl;
 
