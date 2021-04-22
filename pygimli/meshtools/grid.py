@@ -410,7 +410,6 @@ def appendBoundaryGrid(grid, xbound=None, ybound=None, zbound=None,
     ...                            marker=2, 
     ...                            isSubSurface=False)
     >>> ax, _ = pg.show(g2, g2.cellMarkers(), hold=True, opacity=0.5);
-    >>> mat = ax.show();
     """   
     if isSubSurface == True:
         pg.critical('Implement me')
