@@ -174,7 +174,6 @@ def __SparseMatrixEqual__(self, T):
             self.rows(), self.cols(), T.rows(), T.cols()))
         return False
 
-
     rowsA, colsA, valsA = sparseMatrix2Array(self, indices=True)
     rowsB, colsB, valsB = sparseMatrix2Array(T, indices=True)
 
@@ -188,10 +187,13 @@ def __SparseMatrixEqual__(self, T):
 
     # print(np.linalg.norm(valsA-valsB), np.mean(abs(valsA)), np.mean(abs(valsB)))
     # print(np.linalg.norm(valsA-valsB)/np.mean(abs(valsA)))
-
-    return rowsA == rowsB and \
-           colsA == colsB and \
-               np.linalg.norm(valsA-valsB)/np.mean(abs(valsA)) < 1e-14
+    meanA = np.mean(abs(valsA))
+    if meanA > 1e-10:
+        return rowsA == rowsB and \
+            colsA == colsB and \
+                np.linalg.norm(valsA-valsB)/meanA < 1e-14
+    else:
+        return np.linalg.norm(valsA-valsB) < 1e-12
 
 pgcore.RSparseMatrix.__eq__ = __SparseMatrixEqual__
 pgcore.RSparseMapMatrix.__eq__ = __SparseMatrixEqual__
