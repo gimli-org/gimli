@@ -1994,14 +1994,23 @@ void mult(const ElementMatrix < double > & A, const FEAFunction & b,
     // refactor with above
     // __MS(b.valueSize())
     if (b.valueSize() == 1){
+        if (b.evalOnCellCenter()){
+            return mult(A, b.evalR1(A.entity().center(), &A.entity()), C);    
+        }
         RVector e;
         evaluateQuadraturePoints(A.entity(), A.x(), b, e);
         mult(A, e, C);
     } else if (b.valueSize() == 3){
+        if (b.evalOnCellCenter()){
+            return mult(A, b.evalR3(A.entity().center(), &A.entity()), C);    
+        }
         PosVector e;
         evaluateQuadraturePoints(A.entity(), A.x(), b, e);
         mult(A, e, C);
     } else {
+        if (b.evalOnCellCenter()){
+            return mult(A, b.evalRM(A.entity().center(), &A.entity()), C);    
+        }
         std::vector < RMatrix > e;
         evaluateQuadraturePoints(A.entity(), A.x(), b, e);
         mult(A, e, C);

@@ -578,12 +578,21 @@ public:
         return RMatrix(0, 0);
     }
 
+    /*!Return expected value size for evaluation */
     Index valueSize() const { return _valueSize; }
 
+    /*!Set expected value size for evaluation */
     void setValueSize(Index s) { _valueSize = s; }
+
+    /*!Return if the function is marked for value evaluation on cell centers or quadrature points. */
+    bool evalOnCellCenter() const { return _evalOnCellCenter; }
+
+    /*!Mark the function to evaluate on cell centers instead of quadrature points. */
+    void setEvalOnCellCenter(bool e) { _evalOnCellCenter = e; }
 
 protected:
     Index _valueSize;
+    bool _evalOnCellCenter;
 };
 
 class DLLEXPORT ElementMatrixMap {
