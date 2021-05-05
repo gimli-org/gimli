@@ -83,8 +83,13 @@ def show(obj=None, data=None, **kwargs):
         return ax, None
 
     ### try to interprete obj containes a mesh
-    if hasattr(obj, 'mesh'):
-        return pg.show(obj.mesh, obj, **kwargs)
+    if hasattr(obj, 'mesh') and hasattr(obj, 'values'):
+        return pg.show(obj.mesh, obj.values, 
+                       label=kwargs.pop('label', obj.name),
+                        **kwargs)
+    if hasattr(obj, 'mesh') and hasattr(obj, 'eval'):
+        return pg.show(obj.mesh, obj.eval(), 
+                       **kwargs)
 
     ### try to interprete obj as ERT Data
     if isinstance(obj, pg.DataContainerERT):
