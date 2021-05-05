@@ -184,13 +184,12 @@ def createRectangle(start=None, end=None, pos=None, size=None, **kwargs):
 
 def createWorld(start, end, marker=1, area=0., layers=None, worldMarker=True,
                 **kwargs):
-    """Create simple rectangular world.
+    """Create simple rectangular 2D or 3D world.
 
     Create simple rectangular [hexagonal] world with appropriate boundary conditions.
     Surface boundary is set do pg.core.MARKER_BOUND_HOMOGEN_NEUMANN, i.e, -1
     and inner subsurface is set to pg.core.MARKER_BOUND_MIXED, i.e., -2 or
-    Numbered in ascending order in left direction starting upper left if
-    worldMarker is set to false.
+    Numbered: 1, 2, 3, 4, 5, 6 for left, right, bottom, top, front and back, if worldMarker is set to false and no layers are given. With layers, its numbered in ascending order.
 
     TODO
     ----
@@ -253,9 +252,9 @@ def createWorld(start, end, marker=1, area=0., layers=None, worldMarker=True,
                     b.setMarker(1)
                 elif b.norm() == [1, 0, 0]:
                     b.setMarker(2)
-                elif b.norm() == [0, 0, 1]:
-                    b.setMarker(3)
                 elif b.norm() == [0, 0, -1]:
+                    b.setMarker(3)
+                elif b.norm() == [0, 0, 1]:
                     b.setMarker(4)
                 elif b.norm() == [0, -1, 0]:
                     b.setMarker(5)
@@ -305,6 +304,17 @@ def createWorld(start, end, marker=1, area=0., layers=None, worldMarker=True,
                 b.setMarker(pg.core.MARKER_BOUND_HOMOGEN_NEUMANN)
             else:
                 b.setMarker(pg.core.MARKER_BOUND_MIXED)
+    elif layers is None:
+        for b in poly.boundaries():
+            if b.norm() == [-1, 0]:
+                b.setMarker(1)
+            elif b.norm() == [1, 0]:
+                b.setMarker(2)
+            elif b.norm() == [0, -1]:
+                b.setMarker(3)
+            elif b.norm() == [0, 1]:
+                b.setMarker(4)
+            
 
     if layers is not None:
         for i in range(len(layers)):
