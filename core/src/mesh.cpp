@@ -1704,10 +1704,10 @@ void Mesh::create2DGrid(const RVector & x, const RVector & y, int markerType,
                     if (std::abs(boundary(i).norm()[0] + 1.0) < TOLERANCE) boundary(i).setMarker(1);
                     // Right
                     else if (std::abs(boundary(i).norm()[0] - 1.0) < TOLERANCE) boundary(i).setMarker(2);
-                    // Top
-                    else if (std::abs(boundary(i).norm()[1] - 1.0) < TOLERANCE) boundary(i).setMarker(3);
                     // Bottom
-                    else if (std::abs(boundary(i).norm()[1] + 1.0) < TOLERANCE) boundary(i).setMarker(4);
+                    else if (std::abs(boundary(i).norm()[1] + 1.0) < TOLERANCE) boundary(i).setMarker(3);
+                    // Top
+                    else if (std::abs(boundary(i).norm()[1] - 1.0) < TOLERANCE) boundary(i).setMarker(4);
                 }
             }
         }
@@ -1782,31 +1782,42 @@ void Mesh::create3DGrid(const RVector & x, const RVector & y, const RVector & z,
                 if (worldBoundaryMarker){
                     // Left
                     if (std::abs(boundary(i).norm()[0] + 1.0) < TOLERANCE)
-                        boundary(i).setMarker(MARKER_BOUND_HOMOGEN_NEUMANN);
+                        boundary(i).setMarker(MARKER_BOUND_MIXED);
                     // Right
-                    else if (std::abs(boundary(i).norm()[0] - 1.0) < TOLERANCE) boundary(i).setMarker(MARKER_BOUND_MIXED);
-                    // Top
-                    else if (std::abs(boundary(i).norm()[2] - 1.0) < TOLERANCE) boundary(i).setMarker(MARKER_BOUND_MIXED);
+                    else if (std::abs(boundary(i).norm()[0] - 1.0) < TOLERANCE) 
+                        boundary(i).setMarker(MARKER_BOUND_MIXED);
                     // Bottom
-                    else if (std::abs(boundary(i).norm()[2] + 1.0) < TOLERANCE) boundary(i).setMarker(MARKER_BOUND_MIXED);
+                    else if (std::abs(boundary(i).norm()[2] + 1.0) < TOLERANCE) 
+                        boundary(i).setMarker(MARKER_BOUND_MIXED);
+                    // Top
+                    else if (std::abs(boundary(i).norm()[2] - 1.0) < TOLERANCE) 
+                        boundary(i).setMarker(MARKER_BOUND_HOMOGEN_NEUMANN);
                     // Front
-                    else if (std::abs(boundary(i).norm()[1] - 1.0) < TOLERANCE) boundary(i).setMarker(MARKER_BOUND_MIXED);
+                    else if (std::abs(boundary(i).norm()[1] + 1.0) < TOLERANCE)
+                        boundary(i).setMarker(MARKER_BOUND_MIXED);
                     // Back
-                    else if (std::abs(boundary(i).norm()[1] + 1.0) < TOLERANCE) boundary(i).setMarker(MARKER_BOUND_MIXED);
+                    else if (std::abs(boundary(i).norm()[1] - 1.0) < TOLERANCE)
+                        boundary(i).setMarker(MARKER_BOUND_MIXED);
 
                 } else {
                     // Left
-                    if (std::abs(boundary(i).norm()[0] + 1.0) < TOLERANCE) boundary(i).setMarker(1);
+                    if (std::abs(boundary(i).norm()[0] + 1.0) < TOLERANCE) 
+                        boundary(i).setMarker(1);
                     // Right
-                    else if (std::abs(boundary(i).norm()[0] - 1.0) < TOLERANCE) boundary(i).setMarker(2);
-                    // Top
-                    else if (std::abs(boundary(i).norm()[2] - 1.0) < TOLERANCE) boundary(i).setMarker(3);
+                    else if (std::abs(boundary(i).norm()[0] - 1.0) < TOLERANCE) 
+                        boundary(i).setMarker(2);
                     // Bottom
-                    else if (std::abs(boundary(i).norm()[2] + 1.0) < TOLERANCE) boundary(i).setMarker(4);
+                    else if (std::abs(boundary(i).norm()[2] + 1.0) < TOLERANCE) 
+                        boundary(i).setMarker(3);
+                    // Top
+                    else if (std::abs(boundary(i).norm()[2] - 1.0) < TOLERANCE) 
+                        boundary(i).setMarker(4);
                     // Front
-                    else if (std::abs(boundary(i).norm()[1] - 1.0) < TOLERANCE) boundary(i).setMarker(5);
+                    else if (std::abs(boundary(i).norm()[1] + 1.0) < TOLERANCE) 
+                        boundary(i).setMarker(5);
                     // Back
-                    else if (std::abs(boundary(i).norm()[1] + 1.0) < TOLERANCE) boundary(i).setMarker(6);
+                    else if (std::abs(boundary(i).norm()[1] - 1.0) < TOLERANCE) 
+                        boundary(i).setMarker(6);
                 }
             }
         }
