@@ -271,8 +271,8 @@ def createColorBar(gci, orientation='horizontal', size=0.2, pad=None,
     if ax is None:
 
         try:
-            #if hasattr(gci, 'ax'): # deprecated since MPL 3.3
-            #    ax = gci.ax
+            # if hasattr(gci, 'ax'): # deprecated since MPL 3.3
+            #     ax = gci.ax
             if hasattr(gci, 'axes'):
                 ax = gci.axes
             elif hasattr(gci, 'get_axes'):
