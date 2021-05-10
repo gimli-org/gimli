@@ -213,6 +213,7 @@ class TestFiniteElementBasics(unittest.TestCase):
                 elif mesh.dim() > 1:
                     pg.show(meshP2, u, label='u = x**2')
 
+            print(mesh)
             np.testing.assert_allclose(u, pg.x(meshP2)**2 - (xSpan/2)**2 +2)
 
 

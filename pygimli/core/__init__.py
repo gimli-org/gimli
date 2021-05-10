@@ -755,6 +755,8 @@ def abs(v):
         return pgcore.mag(v)
     elif isPos(v):
         return pgcore.RVector3(v).abs()
+    elif isPosList(v):
+        return pgcore.absR3(v)
     elif isinstance(v, list):
         try:
             return pgcore.RVector3(v).abs()
@@ -774,8 +776,8 @@ def abs(v):
         for i in range(len(v)):
             v[i] = pgcore.abs(v[i])
         return v
-    elif hasattr(v, 'vals'):
-        return pg.abs(v.vals)
+    elif hasattr(v, 'values'):
+        return abs(v.values)
 
     return pgcore.fabs(v)
 
@@ -1063,7 +1065,8 @@ def search(what):
     """Utility function to search docstrings for string `what`."""
     np.lookfor(what, module="pygimli", import_modules=False)
 
-from .base import isScalar, isArray, isPos, isR3Array, isComplex, isMatrix
+from .base import (isScalar, isArray, isPos, 
+                   isR3Array, isPosList, isComplex, isMatrix)
 
 # Import from submodules at the end
 from .mesh import Mesh, MeshEntity, Node

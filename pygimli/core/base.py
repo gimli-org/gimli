@@ -103,6 +103,8 @@ def isR3Array(v, N=None):
                 not isinstance(v, (str)) and v.ndim == 2 and isPos(v[0]))
     return isR3Array(v) and len(v) == N
 
+isPosList = isR3Array
+
 def isMatrix(v, shape=None):
     """Check is v has ndim=2 or is comparable list"""
     if shape is None:
