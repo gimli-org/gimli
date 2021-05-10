@@ -228,7 +228,7 @@ def draw1dmodelLU(x, xL, xU, thk=None, **kwargs):
 
 def showStitchedModels(models, ax=None, x=None, cMin=None, cMax=None,
                        logScale=True, title=None, zMin=0, zMax=0, zLog=False,
-                       cmap='jet', **kwargs):
+                       **kwargs):
     """Show several 1d block models as (stitched) section.
 
     Parameters
@@ -294,14 +294,20 @@ def showStitchedModels(models, ax=None, x=None, cMin=None, cMax=None,
                              dxmed2 * 2, z[j+1]-z[j])
             patches.append(rect)
 
-    p = PatchCollection(patches, cmap=cmap, linewidths=0)
-
+    p = PatchCollection(patches)  # , cmap=cmap, linewidths=0)
     if cMin is not None:
         p.set_clim(cMin, cMax)
 
-#    p.set_array( np.log10( vals.ravel() ) )
     setMappableData(p, vals.ravel(), logScale=logScale)
     ax.add_collection(p)
+
+    if logScale:
+        norm = colors.LogNorm(cMin, cMax)
+        p.set_norm(norm)
+
+    if 'cMap' in kwargs:
+        print(kwargs['cMap'])
+        p.set_cmap(kwargs['cMap'])
 
 #    ax.set_ylim((zMaxLimit, zMin))
     ax.set_ylim((zMinLimit, zMaxLimit))

@@ -536,7 +536,7 @@ def showDataContainerAsMatrix(data, x=None, y=None, v=None, **kwargs):
             num += data(token) + plus
             xToken += token + ' '
         x = num.copy()
-        
+
     print("found " + str(len(np.unique(x))) + " x values")
 
 #        kwargs.setdefault('xmap', {n: i for i, n in enumerate(np.unique(x))})
@@ -558,10 +558,10 @@ def showDataContainerAsMatrix(data, x=None, y=None, v=None, **kwargs):
             num += data(token) + plus
             yToken += token + ' '
         y = num.copy()
-    
+
     print("found " + str(len(np.unique(y))) + " y values")
 #        kwargs.setdefault('ymap', {n: i for i, n in enumerate(np.unique(y))})
-    
+
 
     if isinstance(v, str):
         v = data(v)
@@ -577,8 +577,12 @@ def showDataContainerAsMatrix(data, x=None, y=None, v=None, **kwargs):
         raise Exception("lengths x/y/v not matching: {:d}!={:d}!={:d}".format(
             len(x), len(y), len(v)))
     ax, cbar = showVecMatrix(x, y, v, **kwargs)
-    ax.set_xlabel(xToken)
-    ax.set_ylabel(yToken)
+    try:
+        ax.set_xlabel(xToken)
+        ax.set_ylabel(yToken)
+    except:
+        print("Could not set x/y label: ", xToken, yToken)
+
     return ax, cbar
 
 
