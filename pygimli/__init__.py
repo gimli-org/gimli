@@ -10,7 +10,7 @@ from .core.decorators import (renamed, singleton)
 ### Import everything that should be accessible through main namespace.
 from .core import (BVector, CVector, DataContainer, DataContainerERT,
                    IVector, Line, Mesh, Plane, Pos,
-                   RVector3, Vector, abs, cat, center, exp, find,
+                   RVector3, Vector, PosList, abs, cat, center, exp, find,
                    interpolate, log, log10, logDropTol, max,
                    mean, median, min, search, setDebug, setThreadCount, sort,
                    Stopwatch, sum, trans, unique, versionStr, x, y, z, zero)
