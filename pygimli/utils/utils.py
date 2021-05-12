@@ -339,12 +339,12 @@ def diff(v):
 
     Parameters
     ----------
-    v : array(N) | pg.core.R3Vector(N)
+    v: array(N) | pg.core.R3Vector(N)
         Array of double values or positions
 
     Returns
     -------
-    d : [type(v)](N-1) |
+    d: [type(v)](N-1) |
         derivative array
 
     Examples
@@ -399,15 +399,15 @@ def dist(p, c=None):
 
     Parameters
     ----------
-    p : ndarray(N,2) | ndarray(N,3) | pg.core.R3Vector
+    p: ndarray(N,1|2|3) | pg.core.R3Vector
 
         Position array
-    c : [x,y,z] [None]
+    c: [x,y,z] [None]
         relative origin. default = [0, 0, 0]
 
     Returns
     -------
-    d : ndarray(N)
+    ndarray(N)
         Distance array
 
     Examples
@@ -427,15 +427,18 @@ def dist(p, c=None):
     """
     if c is None:
         c = pg.RVector3(0.0, 0.0, 0.0)
+
     d = np.zeros(len(p))
     pI = None
     for i, _ in enumerate(p):
-        if isinstance(p[i], pg.RVector3):
+        if isinstance(p[i], pg.Pos):
             pI = p[i]
-        elif isinstance(p[i], float):
-            pI = pg.RVector3(p[i], 0)
+        elif pg.isScalar(p[i]):
+            pI = pg.Pos(p[i], 0.0)
+        elif pg.isArray(p[i], 1):
+            pI = pg.Pos(p[i][0], 0.0)
         else:
-            pI = pg.RVector3(p[i])
+            pI = pg.Pos(p[i])
         d[i] = (pI - c).abs()
 
     return d

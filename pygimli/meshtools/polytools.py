@@ -182,15 +182,14 @@ def createRectangle(start=None, end=None, pos=None, size=None, **kwargs):
     return poly
 
 
-def createWorld(start, end, marker=1, area=0., layers=None, worldMarker=True,
+def createWorld(start, end, marker=1, area=0., layers=None, worldMarkers=True,
                 **kwargs):
-    """Create simple rectangular world.
+    """Create simple rectangular 2D or 3D world.
 
     Create simple rectangular [hexagonal] world with appropriate boundary conditions.
     Surface boundary is set do pg.core.MARKER_BOUND_HOMOGEN_NEUMANN, i.e, -1
     and inner subsurface is set to pg.core.MARKER_BOUND_MIXED, i.e., -2 or
-    Numbered in ascending order in left direction starting upper left if
-    worldMarker is set to false.
+    Numbered: 1, 2, 3, 4, 5, 6 for left, right, bottom, top, front and back, if worldMarker is set to false and no layers are given. With layers, its numbered in ascending order.
 
     TODO
     ----
@@ -209,7 +208,7 @@ def createWorld(start, end, marker=1, area=0., layers=None, worldMarker=True,
         If area is a float set it global, if area is a list set it per layer.
     layers: [float] [None]
         List of depth coordinates for some layers.
-    worldMarker: bool [True]
+    worldMarkers: bool [True]
         Specify kind of preset boundary marker [-1, -2] or ascending order [1, 2, 3, 4 ..]
 
     Other Parameters
@@ -232,15 +231,13 @@ def createWorld(start, end, marker=1, area=0., layers=None, worldMarker=True,
     >>> drawMesh(ax, world)
     >>> plt.show()
     """
+    pg.renameKwarg('worldmarker', 'worldmarkers', kwargs)
     if len(start) == 3 and len(end) == 3:
 
         if layers is not None:
             pg.critical("3D with layers is not yet implemented.")
 
-        world = createCube(size=pg.Pos(end)-pg.Pos(start),
-                           pos=(pg.Pos(end)-pg.Pos(start))/2.0,
-                           **kwargs)
-
+        world = createCube(start=start, end=end, **kwargs)
 
         for i, b in enumerate(world.boundaries()):
             if worldMarker is True:
@@ -253,9 +250,9 @@ def createWorld(start, end, marker=1, area=0., layers=None, worldMarker=True,
                     b.setMarker(1)
                 elif b.norm() == [1, 0, 0]:
                     b.setMarker(2)
-                elif b.norm() == [0, 0, 1]:
-                    b.setMarker(3)
                 elif b.norm() == [0, 0, -1]:
+                    b.setMarker(3)
+                elif b.norm() == [0, 0, 1]:
                     b.setMarker(4)
                 elif b.norm() == [0, -1, 0]:
                     b.setMarker(5)
@@ -299,12 +296,23 @@ def createWorld(start, end, marker=1, area=0., layers=None, worldMarker=True,
     _polyCreateDefaultEdges(poly,
                             boundaryMarker=range(1, poly.nodeCount() + 1))
 
-    if worldMarker:
+    if worldMarkers:
         for b in poly.boundaries():
             if b.norm()[1] == 1.0:
                 b.setMarker(pg.core.MARKER_BOUND_HOMOGEN_NEUMANN)
             else:
                 b.setMarker(pg.core.MARKER_BOUND_MIXED)
+    elif layers is None:
+        for b in poly.boundaries():
+            if b.norm() == [-1, 0]:
+                b.setMarker(1)
+            elif b.norm() == [1, 0]:
+                b.setMarker(2)
+            elif b.norm() == [0, -1]:
+                b.setMarker(3)
+            elif b.norm() == [0, 1]:
+                b.setMarker(4)
+            
 
     if layers is not None:
         for i in range(len(layers)):
@@ -1579,8 +1587,8 @@ def createCube(size=[1.0, 1.0, 1.0], pos=None,
 
     """
     if start is not None and end is not None:
-        size = end-start
-        pos = start + size/2
+        size = pg.Pos(end)-pg.Pos(start)
+        pos = pg.Pos(start) + size/2
 
     poly = pg.Mesh(3, isGeometry=True)
 

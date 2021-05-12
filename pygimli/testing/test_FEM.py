@@ -165,7 +165,6 @@ class TestFiniteElementBasics(unittest.TestCase):
                                 start=[0, 0], end=[1, 1], worldMarker=False),
                                         area=0.05)
 
-        mesh.setBoundaryMarkers(np.array([0,1,3,2,4])[mesh.boundaryMarkers()])
         _test_(mesh, p2=False, show=False)
         _test_(mesh, p2=True, show=False)
 
@@ -214,6 +213,7 @@ class TestFiniteElementBasics(unittest.TestCase):
                 elif mesh.dim() > 1:
                     pg.show(meshP2, u, label='u = x**2')
 
+            print(mesh)
             np.testing.assert_allclose(u, pg.x(meshP2)**2 - (xSpan/2)**2 +2)
 
 
@@ -265,7 +265,7 @@ class TestFiniteElementBasics(unittest.TestCase):
         # 2D tri
         mesh = pg.meshtools.createMesh(pg.meshtools.createWorld(start=[-1, -4],
                                                                 end=[1, -6], worldMarker=0), area=0.1)
-        mesh.setBoundaryMarkers(np.array([0,1,3,2,4])[mesh.boundaryMarkers()])
+        # mesh.setBoundaryMarkers(np.array([0,1,3,2,4])[mesh.boundaryMarkers()])
         _testP1_(mesh, show=False)
 
         # 3D prism

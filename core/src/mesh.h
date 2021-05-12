@@ -245,14 +245,15 @@ public:
      * marker: 1,2 for: left, right.*/
     void createGrid(const RVector & x) { create1DGrid(x); }
 
-    /*! Create two dimensional grid. Boundary on the domain border will get the
-     * marker: 1,2,3,4 for: left, right, top, bottom*/
+    /*! Create two dimensional grid. Boundaries on the domain border will 
+    get the markers: 1,2,3,4 for: left, right, bottom, top.*/
     void createGrid(const RVector & x, const RVector & y,
                     int markerType=0, bool worldBoundaryMarker=false) {
         create2DGrid(x, y, markerType, worldBoundaryMarker);
     }
-    /*! Create three dimensional grid. Boundary on the domain border will get the
-     * marker: 1,2,3,4,5,6 for: left, right, top, bottom, front, back*/
+    /*! Create three dimensional grid. 
+    Boundaries on the domain border will get the markers:
+    1,2,3,4,5,6 for: left, right, bottom, top, front, back*/
     void createGrid(const RVector & x, const RVector & y, const RVector & z,
                     int markerType=0, bool worldBoundaryMarker=false){
         create3DGrid(x, y, z, markerType, worldBoundaryMarker);

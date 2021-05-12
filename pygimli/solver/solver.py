@@ -1029,7 +1029,7 @@ def showSparseMatrix(mat, full=False):
         vals = mat.vecVals()
 
         matD = None
-        if full:
+        if full is True:
             matD = pg.Matrix(mat.rows(), mat.cols())
 
         for i in range(mat.rows()):
@@ -1040,7 +1040,7 @@ def showSparseMatrix(mat, full=False):
                     if vals[j] != 0:
                         print(i, rows[j], vals[j])
 
-        if full:
+        if full is True:
             print(np.array(matD))
 
 class LinSolver(object):

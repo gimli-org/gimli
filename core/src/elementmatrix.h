@@ -52,11 +52,8 @@ public:
         mat_.resize(rows, cols);
     }
 
-    ElementMatrix < ValueType > & operator += (const ElementMatrix < ValueType > & E){
-        for (uint i = 0; i < size(); i ++){ mat_[i] += E.row(i); }
-        return *this;
-    }
-
+    ElementMatrix < ValueType > & operator += (const ElementMatrix < ValueType > & E);
+    
     #define DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__(OP)                   \
         ElementMatrix < ValueType > & operator OP##= (ValueType val) { \
             if (this->_newStyle){ \
