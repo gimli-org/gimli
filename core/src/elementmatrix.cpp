@@ -44,7 +44,16 @@ std::ostream & operator << (std::ostream & str,
     return str;
 }
 
-template < > DLLEXPORT ElementMatrix < double > &
+template < > DLLEXPORT ElementMatrix < double > & 
+ElementMatrix < double >::operator += (const ElementMatrix < double > & E){
+    for (uint i = 0; i < size(); i ++){ 
+        mat_[i] += E.row(i); 
+    }
+    return *this;
+}
+
+
+template < > DLLEXPORT ElementMatrix < double > & 
 ElementMatrix < double >::u(const MeshEntity & ent,
                             const RVector & w,
                             const PosVector & x,

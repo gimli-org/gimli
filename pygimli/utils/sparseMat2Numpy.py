@@ -239,6 +239,8 @@ def sparseMatrix2Dense(matrix):
 
     return mat
 
+toDense = sparseMatrix2Dense
+
 if __name__ == '__main__':
     pass
 # The End

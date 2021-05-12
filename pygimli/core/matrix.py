@@ -91,6 +91,37 @@ pgcore.CMatrix.__repr__ =__CMatrix_str
 pgcore.ElementMatrix.__repr__ =__ElementMatrix_str
 
 
+def __SparseMatrix_str(self):
+    """Show entries of an ElementMatrix."""
+    import pygimli as pg
+    
+    S = pg.utils.toSparseMapMatrix(self)
+    if S.cols() == 0 and S.rows() == 0:
+        return 'Empty ElementMatrix\n'
+
+    s = "{0} size = {1} x {2}, nVals = {3}".format(type(self), 
+                                       S.rows(), S.cols(), S.nVals())
+
+    if S.cols() < 20:
+        s += '\n'
+
+        M = pg.utils.toDense(self)
+        for mi in M:
+            for v in mi:
+                if (abs(v)< 1e-12 and abs(v) > 0):
+                    s += ('+'+pg.pf(v)).rjust(9)
+                elif (abs(v)< 1e-12 and abs(v) < 0):
+                    s += ('-'+pg.pf(v)).rjust(9)
+                else:
+                    s += pg.pf(v).rjust(9)
+
+            s += '\n'
+    return s
+
+pgcore.RSparseMatrix.__repr__ =__SparseMatrix_str
+pgcore.RSparseMapMatrix.__repr__ =__SparseMatrix_str
+
+
 ## Special Monkeypatch core classes
 __BlockMatrix_addMatrix__ = pgcore.RBlockMatrix.addMatrix
 

@@ -431,6 +431,9 @@ def __getValR3(self, idx):
     return self.getVal(int(idx))
 
 def __getValMatrix(self, idx):
+    """
+    in use?
+    """
     #    print(idx, type(idx))
     if isinstance(idx, slice):
         step = idx.step
@@ -462,6 +465,9 @@ def __getValMatrix(self, idx):
 
     return self.row(idx)
 
+
+pgcore.RMatrix.__setitem__ = __setVal
+#pgcore.RMatrix.__getitem__ = __getVal  # inuse? very slow -- inline is better
 
 pgcore.RVector.__setitem__ = __setVal
 pgcore.RVector.__getitem__ = __getVal  # very slow -- inline is better

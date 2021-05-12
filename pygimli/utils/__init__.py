@@ -27,6 +27,7 @@ from .postinversion import iterateBounds, modCovar
 from .sparseMat2Numpy import (convertCRSIndex2Map, sparseMatrix2Array,
                               sparseMatrix2coo, sparseMatrix2csr, sparseMatrix2Dense,
                               toSparseMatrix, toSparseMapMatrix, toCSR, toCOO,
+                              toDense,
                               )
 
 from .units import (unit, cmap)
