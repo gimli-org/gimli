@@ -48,7 +48,7 @@ def __RMatrix_str(self):
     if self.rows() < 6:
         s += '\n'
         for v in range(self.rows()):
-            s += self[v].__str__(True) + '\n'
+            s += self[v].__str__() + '\n'
     return s
 
 
@@ -58,7 +58,7 @@ def __CMatrix_str(self):
     if self.rows() < 6:
         s += '\n'
         for v in range(self.rows()):
-            s += self[v].__str__(True) + '\n'
+            s += self[v].__str__() + '\n'
     return s
 
 def __ElementMatrix_str(self):
@@ -94,12 +94,12 @@ pgcore.ElementMatrix.__repr__ =__ElementMatrix_str
 def __SparseMatrix_str(self):
     """Show entries of an ElementMatrix."""
     import pygimli as pg
-    
+
     S = pg.utils.toSparseMapMatrix(self)
     if S.cols() == 0 and S.rows() == 0:
         return 'Empty ElementMatrix\n'
 
-    s = "{0} size = {1} x {2}, nVals = {3}".format(type(self), 
+    s = "{0} size = {1} x {2}, nVals = {3}".format(type(self),
                                        S.rows(), S.cols(), S.nVals())
 
     if S.cols() < 20:
