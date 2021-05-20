@@ -1235,11 +1235,19 @@ RVector ElementMatrixMap::mult(const RVector & a, const RVector & b) const{
 }
 
 //** old interface constructor
-// template < >
-// ElementMatrix < double >::ElementMatrix(Index dof) {
-//     this->_nDof = dof;
-//     this->_newStyle = false;
-// }
+template < > DLLEXPORT
+ElementMatrix < double >::ElementMatrix(Index dof) {
+    this->init(0, 0, 0);
+    this->_nDof = dof;
+    this->_newStyle = false;
+
+    // this->_nCoeff = 0;
+    // this->_dofPerCoeff = 0;
+    // this->_dofOffset = 0;
+    // _ent = 0;
+    // _w = 0;
+    // _x = 0;
+}
 
 //** new interface starts here
 template < > DLLEXPORT
@@ -1284,14 +1292,14 @@ void ElementMatrix < double >::copyFrom(const ElementMatrix < double > & E,
                                         bool withMat){
 
     this->_newStyle = true;
-    this->_order = E.order();
-    this->_nCoeff = E.nCoeff();
+    this->_order = E.order(); //quadrature order
+    this->_nCoeff = E.nCoeff(); //number of cofficients e.g, dim
     this->_dofPerCoeff = E.dofPerCoeff();
     this->_dofOffset = E.dofOffset();
 
-    this->_ent = & E.entity();
-    this->_w = & E.w();
-    this->_x = & E.x();
+    this->_ent = E.entity();
+    this->_w = E.w();
+    this->_x = E.x();
     this->_matX = E.matX();
 
     this->_idsC = E.colIDs();
@@ -1307,11 +1315,20 @@ void ElementMatrix < double >::copyFrom(const ElementMatrix < double > & E,
         this->mat_.resize(E.mat().rows(), E.mat().cols());
     }
 }
+template < > DLLEXPORT
+void ElementMatrix < double >::resize(Index rows, Index cols) {
+    if (cols == 0) cols = rows;
+    
+    _idsR.resize(rows);
+    _idsC.resize(cols);
+    _ids.resize(rows);
+    mat_.resize(rows, cols);
+}
 
 template < > DLLEXPORT
 void ElementMatrix < double >::integrate() const {
     if (_newStyle && !this->_integrated){
-        const RVector &w = this->w();
+        const RVector &w = *this->_w;
         Index nRules(w.size());
 
         this->mat_*=0.;
@@ -1630,7 +1647,7 @@ void dot(const ElementMatrix < double > & A,
 
     _prepDot(A, B, C);
 
-    const RVector &w = A.w();
+    const RVector &w = *A.w();
     Index nRules(w.size());
 
     double beta = 0.0;
@@ -1639,17 +1656,17 @@ void dot(const ElementMatrix < double > & A,
 
         const RMatrix & Ai = A.matX()[r];
         const RMatrix & Bi = B.matX()[r];
-        double c = w[r] * A.entity().size() * b;
+        double c = w[r] * A.entity()->size() * b;
 
         if (Ai.rows() == 1 && Bi.rows() > 1){
             // divergence or other stuff we need to sum
             RMatrix sB(1, Bi.cols());
             if (B.isDiv()){
                 sB[0] += Bi[0]; // v_x/dx
-                if (B.entity().dim() == 2){
+                if (B.entity()->dim() == 2){
                     ASSERT_VEC_SIZE(Bi, 2*2)
                     sB[0] += Bi[3]; // v_y/dy
-                } else if (B.entity().dim() == 3){
+                } else if (B.entity()->dim() == 3){
                     ASSERT_VEC_SIZE(Bi, 3*3)
                     sB[0] += Bi[4]; // v_y/dy
                     sB[0] += Bi[8]; // v_z/dz
@@ -1664,10 +1681,10 @@ void dot(const ElementMatrix < double > & A,
             RMatrix sA(1, Ai.cols());
             if (A.isDiv()){
                 sA[0] += Ai[0]; // v_x/dx
-                if (A.entity().dim() == 2){
+                if (A.entity()->dim() == 2){
                     ASSERT_VEC_SIZE(Ai, 2*2)
                     sA[0] += Ai[3]; // v_y/dy
-                } else if (A.entity().dim() == 3){
+                } else if (A.entity()->dim() == 3){
                     ASSERT_VEC_SIZE(Ai, 3*3)
                     sA[0] += Ai[4]; // v_y/dy
                     sA[0] += Ai[8]; // v_z/dz
@@ -1718,7 +1735,7 @@ void dot(const ElementMatrix < double > & A,
         return;
     }
 
-    const RVector &w = A.w();
+    const RVector &w = *A.w();
     (*C.pMat()) *= 0.0; // needed because matMult allways adds
 
     RMatrix AtC;
@@ -1739,7 +1756,7 @@ void dot(const ElementMatrix < double > & A,
     //           "Bi:(", Bi.rows(), ",", Bi.cols(), ")");
 
         matTransMult(Ai, c, AtC, 1.0, 0.0);
-        matMult(AtC, Bi, *C.pMat(), w[i] * A.entity().size(), beta);
+        matMult(AtC, Bi, *C.pMat(), w[i] * A.entity()->size(), beta);
     }
     C.integrated(true);
 }
@@ -1874,8 +1891,8 @@ void mult(const ElementMatrix < double > & A, double b,
 
     C.copyFrom(A, false);
 
-    const PosVector &x = A.x();
-    const RVector &w = A.w();
+    const PosVector &x = *A.x();
+    const RVector &w = *A.w();
 
     Index nRules(x.size());
 
@@ -1893,8 +1910,8 @@ void mult(const ElementMatrix < double > & A, const Pos & b,
           ElementMatrix < double > & C){
     C.copyFrom(A, false);
 
-    const PosVector &x = A.x();
-    const RVector &w = A.w();
+    const PosVector &x = *A.x();
+    const RVector &w = *A.w();
 
     Index nRules(x.size());
 
@@ -1913,7 +1930,7 @@ void mult(const ElementMatrix < double > & A, const RVector & b,
           ElementMatrix < double > & C){
 
     C.copyFrom(A, false);
-    const PosVector &x = A.x();
+    const PosVector &x = *A.x();
 
     Index nRules(x.size());
 
@@ -1934,7 +1951,7 @@ void mult(const ElementMatrix < double > & A, const PosVector & b,
           ElementMatrix < double > & C){
 
     C.copyFrom(A, false);
-    const PosVector &x = A.x();
+    const PosVector &x = *A.x();
 
     Index nRules(x.size());
 
@@ -1966,8 +1983,8 @@ void mult(const ElementMatrix < double > & A, const RMatrix &  b,
         return;
     }
 
-    const PosVector &x = A.x();
-    const RVector &w = A.w();
+    const PosVector &x = *A.x();
+    const RVector &w = *A.w();
 
     Index nRules(x.size());
 
@@ -1990,7 +2007,7 @@ void mult(const ElementMatrix < double > & A, const RMatrix &  b,
 void mult(const ElementMatrix < double > & A, const std::vector < RMatrix > & b,
           ElementMatrix < double > & C){
     C.copyFrom(A, false);
-    const PosVector &x = A.x();
+    const PosVector &x = *A.x();
 
     Index nRules(x.size());
 
@@ -2016,24 +2033,24 @@ void mult(const ElementMatrix < double > & A, const FEAFunction & b,
     // __MS(b.valueSize())
     if (b.valueSize() == 1){
         if (b.evalOnCellCenter()){
-            return mult(A, b.evalR1(A.entity().center(), &A.entity()), C);    
+            return mult(A, b.evalR1(A.entity()->center(), A.entity()), C);    
         }
         RVector e;
-        evaluateQuadraturePoints(A.entity(), A.x(), b, e);
+        evaluateQuadraturePoints(*A.entity(), *A.x(), b, e);
         mult(A, e, C);
     } else if (b.valueSize() == 3){
         if (b.evalOnCellCenter()){
-            return mult(A, b.evalR3(A.entity().center(), &A.entity()), C);    
+            return mult(A, b.evalR3(A.entity()->center(), A.entity()), C);    
         }
         PosVector e;
-        evaluateQuadraturePoints(A.entity(), A.x(), b, e);
+        evaluateQuadraturePoints(*A.entity(), *A.x(), b, e);
         mult(A, e, C);
     } else {
         if (b.evalOnCellCenter()){
-            return mult(A, b.evalRM(A.entity().center(), &A.entity()), C);    
+            return mult(A, b.evalRM(A.entity()->center(), A.entity()), C);    
         }
         std::vector < RMatrix > e;
-        evaluateQuadraturePoints(A.entity(), A.x(), b, e);
+        evaluateQuadraturePoints(*A.entity(), *A.x(), b, e);
         mult(A, e, C);
     }
 
