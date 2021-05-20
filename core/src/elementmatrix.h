@@ -37,6 +37,9 @@ public:
         this->_nCoeff = 0;
         this->_dofPerCoeff = 0;
         this->_dofOffset = 0;
+        _ent = 0;
+        _w = 0;
+        _x = 0;
     }
 
     ~ElementMatrix() {}
@@ -53,7 +56,7 @@ public:
     }
 
     ElementMatrix < ValueType > & operator += (const ElementMatrix < ValueType > & E);
-    
+
     #define DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__(OP)                   \
         ElementMatrix < ValueType > & operator OP##= (ValueType val) { \
             if (this->_newStyle){ \
@@ -300,8 +303,10 @@ public:
 
     //** new interface starts here **//
     ElementMatrix(Index nCoeff, Index dofPerCoeff, Index dofOffset);
-
+    
     ElementMatrix(const ElementMatrix < ValueType > & E);
+
+    ElementMatrix(const ElementMatrix < ValueType > & E, bool withMat);
 
     void copyFrom(const ElementMatrix < ValueType > & E, bool withMat=true);
 
@@ -335,13 +340,17 @@ public:
 
     std::vector < Matrix < ValueType > > * pMatX() { return &_matX; }
 
+    /*! Set const reference to the current entity.*/
+    void setEntity(const MeshEntity & ent) { _ent = &ent; }
+
+
     /*! Return const reference to the last active entity.*/
     const MeshEntity & entity() const { ASSERT_PTR(_ent); return *_ent; }
 
-    /*! Return const reference to the last quadrature points.*/
+    /*! Return const reference to quadrature points.*/
     const PosVector & x() const { ASSERT_PTR(_x); return *_x; }
 
-    /*! Return const reference to the last quadrature weights.*/
+    /*! Return const reference to quadrature weights.*/
     const RVector & w() const { ASSERT_PTR(_w); return *_w; }
 
     Index order() const { return _order; }

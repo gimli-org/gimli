@@ -43,12 +43,15 @@ pgcore.RSparseMatrix.dtype = np.float
 pgcore.CSparseMatrix.dtype = np.complex
 
 def __RMatrix_str(self):
+    import pygimli as pg
     s = "RMatrix: " + str(self.rows()) + " x " + str(self.cols())
 
     if self.rows() < 6:
         s += '\n'
-        for v in range(self.rows()):
-            s += self[v].__str__() + '\n'
+        for row in self:
+            for v in row:
+                s += pg.pf(v).rjust(8)
+            s+='\n'
     return s
 
 
@@ -89,6 +92,12 @@ def __ElementMatrix_str(self):
 pgcore.RMatrix.__repr__ =__RMatrix_str
 pgcore.CMatrix.__repr__ =__CMatrix_str
 pgcore.ElementMatrix.__repr__ =__ElementMatrix_str
+
+
+def __CopyRMatrixTranspose__(self):
+    return pgcore.RMatrix(np.array(self).T)
+
+pgcore.RMatrix.T = property(__CopyRMatrixTranspose__)
 
 
 def __SparseMatrix_str(self):

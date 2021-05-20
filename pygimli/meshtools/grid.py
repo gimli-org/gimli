@@ -29,16 +29,15 @@ def createGrid(x=None, y=None, z=None, **kwargs):
             z-coordinates for all Nodes (3D)
         marker: int = 0
             Marker for resulting cells.
-        worldBoundaryMarker : bool = False
+        worldMarkers: bool = False
             Boundaries are enumerated with world marker, i.e., Top = -1
             All remaining = -2.
-            Default marker are left=1, right=2, top=3, bottom=4, front=5, back=6
+            Default marker are left=1, right=2, bottom=3, top=4, front=5, back=6
 
     Returns
     -------
     :gimliapi:`GIMLI::Mesh`
         Either 1D, 2D or 3D mesh depending the input.
-
 
     Examples
     --------
@@ -50,12 +49,14 @@ def createGrid(x=None, y=None, z=None, **kwargs):
     >>> fig, axs = pg.plt.subplots(1, 2)
     >>> _ = pg.show(mesh, markers=True, showMesh=True, ax=axs[0])
     >>> mesh = pg.meshtools.createGrid(x=[0, 1, 1.5, 2], y=[-1, -0.5, -0.25, 0],
-    ...                                worldBoundaryMarker=True, marker=2)
+    ...                                worldMarkers=True, marker=2)
     >>> print(mesh)
     Mesh: Nodes: 16 Cells: 9 Boundaries: 24
     >>> _ = pg.show(mesh, markers=True, showBoundaries=True, 
     ...             showMesh=True, ax=axs[1])
     """
+    pg.renameKwarg('worldBoundaryMarker', 'worldMarkers', kwargs, '2.1')
+
     if 'degree' in kwargs:
         return createGridPieShaped(x, **kwargs)
 
@@ -72,6 +73,9 @@ def createGrid(x=None, y=None, z=None, **kwargs):
             z = list(range(z))
         kwargs['z'] = z
 
+    if 'y' in kwargs or 'z' in kwargs:
+        kwargs['worldBoundaryMarker'] = kwargs.pop('worldMarkers', False)
+    
     return pg.core.pgcore.createGrid(**kwargs)
 
 

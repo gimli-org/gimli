@@ -47,9 +47,10 @@ std::ostream & operator << (std::ostream & str,
 template < > DLLEXPORT ElementMatrix < double > & 
 ElementMatrix < double >::operator += (const ElementMatrix < double > & E){
     for (uint i = 0; i < size(); i ++){ 
-        if ((mat_[i].size() == 1) && (E.row(i).size() > 1)){
-            // maybe iadd: scalar + div(vec)
-            mat_[i] += sum(E.row(i)); 
+        if (mat_[i].size() != E.row(i).size()){
+            // maybe iadd: scalar + grad > component wise scalar + grad_i
+            THROW_TO_IMPL
+            //mat_ = mat_ + E.row(i); 
         } else {
             mat_[i] += E.row(i); 
         }
@@ -1250,6 +1251,12 @@ ElementMatrix < double >::ElementMatrix(Index nCoeff, Index dofPerCoeff,
 template < > DLLEXPORT
 ElementMatrix < double >::ElementMatrix(const ElementMatrix < double > & E){
     this->copyFrom(E, true);
+}
+
+template < > DLLEXPORT
+ElementMatrix < double >::ElementMatrix(const ElementMatrix < double > & E,
+                                        bool withMat){
+    this->copyFrom(E, withMat);
 }
 
 template < >  DLLEXPORT

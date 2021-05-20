@@ -272,10 +272,25 @@ def deprecated(msg='', hint=''):
 #     return newFunc(**inspect.stack()[1].frame.f_locals)
 
 def renameKwarg(old, new, kwargs, ver=''):
+    """Keyword argument old is renamed into keyword argument new.
+    Look in kwargs if the old name is used and change the key name.
+    """
     if old in kwargs:
         logger.warning("Keyword argument changed from '" + old + \
                  "' to '" + new + "' and will be removed in v " + ver)
         kwargs[new] = kwargs.pop(old)
+
+def renameArg(old, new, kwargs, default, ver=''):
+    """Argument old is renamed into new.
+    Look in kwargs if the old name is used and return these value or the default.
+    """
+    if old in kwargs:
+        logger.warning(whereAmI(nr=2) + ": argument '{0}' has been renamed to "
+                    "'{1}' and will be removed in v: {2}".format(old, new, ver))
+        kwargs[new] = kwargs.pop(old)
+        return kwargs[new]
+    return default
+
 
 def warnNonEmptyArgs(kwargs):
     if len(kwargs) > 0:
