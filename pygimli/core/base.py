@@ -34,7 +34,7 @@ def isScalar(v, val=None):
     return isinstance(v, (int, float, complex, np.complex128)) and v == val
 
 def isArray(v, N=None):
-    """Check if v is an array or a vector, with optional size.
+    """Check if v is an 1d array or a vector, with optional size.
 
     Examples
     --------
@@ -53,7 +53,8 @@ def isArray(v, N=None):
     False
     """
     if N is None:
-        return hasattr(v, '__iter__') and not isinstance(v, (str))
+        return (hasattr(v, '__iter__') and isScalar(v[0])) and not \
+            isinstance(v, (str))
 
     return isArray(v) and len(v) == N
 

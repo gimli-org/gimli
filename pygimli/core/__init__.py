@@ -747,6 +747,7 @@ Vector = pgcore.RVector
 Inversion = pgcore.RInversion
 Pos = pgcore.RVector3
 PosVector = pgcore.R3Vector
+PosList = PosVector
 
 
 ############################
@@ -754,8 +755,40 @@ PosVector = pgcore.R3Vector
 ############################
 
 def abs(v):
-    """Should not necessary
-    TODO expose .core.__abs()
+    """Create abs in the sense of distance instead of just vanishing the sign.
+
+    Create abs in the sense of distance instead of vanishing the sign. Used
+    to calculate the length of coordinates, or anything that can be interpreted
+    as coordinate.
+    
+    Args
+    ----
+    v: iterable of float, complex, or :gimliapi:`GIMLI::Pos`
+
+    Returns
+    -------
+    length: iterable or scalar
+        Array of lenghts.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pygimli as pg
+    >>> pg.abs([1.0, 1.0, 1.0]) 
+    1.7320508075688772
+    >>> pg.abs(np.array([1.0, 1.0, 1.0])) 
+    1.7320508075688772
+    >>> pg.abs(np.array([1.0, 1.0])) 
+    1.4142135623730951
+    >>> pg.abs([[1.0, 1.0, 1.0], [1.0, 1.0, 1.0]]) 
+    2 [1.7320508075688772, 1.7320508075688772]
+    >>> pg.abs(np.array([[1.0, 1.0, 1.0], [1.0, 1.0, 1.0]]))
+    2 [1.7320508075688772, 1.7320508075688772]
+    >>> # Note, this will be interpreted as 3 2Dim Pos
+    >>> pg.abs(np.array([[1.0, 1.0, 1.0], [1.0, 1.0, 1.0]]).T)
+    3 [1.4142135623730951, 1.4142135623730951, 1.4142135623730951]
+    >>> pg.abs(pg.PosList([[1.0, 1.0, 1.0], [1.0, 1.0, 1.0]]))
+    2 [1.7320508075688772, 1.7320508075688772]
     """
     if isinstance(v, pgcore.CVector):
         return pgcore.mag(v)
@@ -764,6 +797,8 @@ def abs(v):
     elif isPosList(v):
         return pgcore.absR3(v)
     elif isinstance(v, list):
+        ## possible [x,y,[z]] or [pos, ...]
+        print(v)
         try:
             return pgcore.RVector3(v).abs()
         except:
@@ -782,8 +817,10 @@ def abs(v):
         for i in range(len(v)):
             v[i] = pgcore.abs(v[i])
         return v
+    elif hasattr(v, 'vals'):
+        return pg.abs(v.vals)
     elif hasattr(v, 'values'):
-        return abs(v.values)
+        return pg.abs(v.values)
 
     return pgcore.fabs(v)
 
@@ -1071,8 +1108,8 @@ def search(what):
     """Utility function to search docstrings for string `what`."""
     np.lookfor(what, module="pygimli", import_modules=False)
 
-from .base import (isScalar, isArray, isPos, 
-                   isR3Array, isPosList, isComplex, isMatrix)
+from .base import (isScalar, isArray, isPos, isR3Array,
+                   isPosList, isComplex, isMatrix)
 
 # Import from submodules at the end
 from .mesh import Mesh, MeshEntity, Node
