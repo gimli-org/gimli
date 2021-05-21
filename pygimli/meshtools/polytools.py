@@ -189,7 +189,7 @@ def createWorld(start, end, marker=1, area=0., layers=None, worldMarkers=True,
     Create simple rectangular [hexagonal] world with appropriate boundary conditions.
     Surface boundary is set do pg.core.MARKER_BOUND_HOMOGEN_NEUMANN, i.e, -1
     and inner subsurface is set to pg.core.MARKER_BOUND_MIXED, i.e., -2 or
-    Numbered: 1, 2, 3, 4, 5, 6 for left, right, bottom, top, front and back, if worldMarker is set to false and no layers are given. With layers, its numbered in ascending order.
+    Numbered: 1, 2, 3, 4, 5, 6 for left, right, bottom, top, front and back, if worldMarkers is set to false and no layers are given. With layers, its numbered in ascending order.
 
     TODO
     ----
@@ -231,7 +231,9 @@ def createWorld(start, end, marker=1, area=0., layers=None, worldMarkers=True,
     >>> drawMesh(ax, world)
     >>> plt.show()
     """
-    pg.renameKwarg('worldmarker', 'worldmarkers', kwargs)
+    worldMarkers = pg.renameArg('worldMarker', 'worldMarkers', 
+                                 kwargs, worldMarkers, ver=2.1)
+    
     if len(start) == 3 and len(end) == 3:
 
         if layers is not None:
@@ -240,7 +242,7 @@ def createWorld(start, end, marker=1, area=0., layers=None, worldMarkers=True,
         world = createCube(start=start, end=end, **kwargs)
 
         for i, b in enumerate(world.boundaries()):
-            if worldMarker is True:
+            if worldMarkers is True:
                 if b.norm()[2] == 1.0:
                     b.setMarker(pg.core.MARKER_BOUND_HOMOGEN_NEUMANN)
                 else:

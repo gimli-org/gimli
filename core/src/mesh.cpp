@@ -28,9 +28,11 @@
 #include "sparsematrix.h"
 #include "stopwatch.h"
 
-#include <boost/bind.hpp>
+// #include <boost/bind.hpp>
 
 #include <map>
+
+using namespace std::placeholders;
 
 namespace GIMLI{
 
@@ -2383,14 +2385,17 @@ void Mesh::smooth(bool nodeMoving, bool edgeSliding, uint smoothFunction, uint s
 }
 
 void Mesh::fillKDTree_() const {
-
+    
     if (!tree_) tree_ = new KDTreeWrapper();
 
     if (tree_->size() != nodeCount(true)){
 
         if (tree_->size() == 0){
-            for_each(nodeVector_.begin(), nodeVector_.end(), boost::bind(&KDTreeWrapper::insert, tree_, _1));
-            for_each(secNodeVector_.begin(), secNodeVector_.end(), boost::bind(&KDTreeWrapper::insert, tree_, _1));
+            for_each(nodeVector_.begin(), nodeVector_.end(), 
+                std::bind(&KDTreeWrapper::insert, tree_, _1));
+
+            for_each(secNodeVector_.begin(), secNodeVector_.end(), 
+                std::bind(&KDTreeWrapper::insert, tree_, _1));
 
             tree_->tree()->optimize();
         } else {

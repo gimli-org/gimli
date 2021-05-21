@@ -305,6 +305,8 @@ __Mesh_deform__ = Mesh.deform
 def __deform__(self, eps, mag=1.0):
     v = None
     dof = self.nodeCount()
+    if hasattr(eps, 'values'):
+        eps = eps.values
     if hasattr(eps, 'ndim') and eps.ndim == 1:
         v = eps
     elif len(eps) == self.dim():

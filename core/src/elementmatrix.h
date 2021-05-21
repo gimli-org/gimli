@@ -31,29 +31,17 @@ template < class ValueType > class DLLEXPORT ElementMatrix {
 public:
     /*! If dof != 0 then scalar field approximation is to be supposed.
     For vector field solution give a dof, means be the number of nodes of the current mesh. */
-    ElementMatrix(Index dof=0){
-        this->_nDof = dof;
-        this->_newStyle = false;
-        this->_nCoeff = 0;
-        this->_dofPerCoeff = 0;
-        this->_dofOffset = 0;
-    }
+    ElementMatrix(Index dof=0);
 
     ~ElementMatrix() {}
 
     inline const Vector< ValueType > & operator[](Index row) const {
         return mat_[row]; }
 
-    void resize(Index rows, Index cols=0) {
-        if (cols == 0) cols = rows;
-        _idsR.resize(rows);
-        _idsC.resize(cols);
-        _ids.resize(rows);
-        mat_.resize(rows, cols);
-    }
+    void resize(Index rows, Index cols=0);
 
     ElementMatrix < ValueType > & operator += (const ElementMatrix < ValueType > & E);
-    
+
     #define DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__(OP)                   \
         ElementMatrix < ValueType > & operator OP##= (ValueType val) { \
             if (this->_newStyle){ \
@@ -300,8 +288,10 @@ public:
 
     //** new interface starts here **//
     ElementMatrix(Index nCoeff, Index dofPerCoeff, Index dofOffset);
-
+    
     ElementMatrix(const ElementMatrix < ValueType > & E);
+
+    ElementMatrix(const ElementMatrix < ValueType > & E, bool withMat);
 
     void copyFrom(const ElementMatrix < ValueType > & E, bool withMat=true);
 
@@ -335,21 +325,40 @@ public:
 
     std::vector < Matrix < ValueType > > * pMatX() { return &_matX; }
 
+    /*! Set const reference to the current entity.*/
+    void setEntity(const MeshEntity & ent) { _ent = &ent; }
+
+
+    // /*! Return const reference to the last active entity.*/
+    // const MeshEntity & entity() const { ASSERT_PTR(_ent); return *_ent; }
+
     /*! Return const reference to the last active entity.*/
-    const MeshEntity & entity() const { ASSERT_PTR(_ent); return *_ent; }
+    const MeshEntity * entity() const { return _ent; }
 
-    /*! Return const reference to the last quadrature points.*/
-    const PosVector & x() const { ASSERT_PTR(_x); return *_x; }
+    // /*! Return const reference to the last active entity.*/
+    // MeshEntity & rEntity() const { return (*const_cast< MeshEntity *>(_ent)); }
 
-    /*! Return const reference to the last quadrature weights.*/
-    const RVector & w() const { ASSERT_PTR(_w); return *_w; }
+    /*! Return const reference to quadrature points.*/
+    void setX(const PosVector & p) { _x = &p; }
+    
+    /*! Return const reference to quadrature points.*/
+    const PosVector * x() const { return _x; }
+    // /*! Return const reference to quadrature points.*/
+    // const PosVector & x() const { ASSERT_PTR(_x); return *_x; }
+
+    void setW(const RVector & w) { _w = &w; }
+
+    /*! Return const reference to quadrature weights.*/
+    const RVector * w() const { return _w; }
+    // /*! Return const reference to quadrature weights.*/
+    // const RVector & w() const { ASSERT_PTR(_w); return *_w; }
 
     Index order() const { return _order; }
     Index nCoeff() const { return _nCoeff; }
     Index dofPerCoeff() const { return _dofPerCoeff; }
     Index dofOffset() const { return _dofOffset; }
 
-    void setDiv(bool div){ _div = true;}
+    void setDiv(bool div){ _div = div;}
     bool isDiv() const { return _div;}
 
     bool isIntegrated() const { return _integrated; }
@@ -422,6 +431,9 @@ private:
         } return *this;
     }
 };
+
+template < > DLLEXPORT
+ElementMatrix < double >::ElementMatrix(Index dof);
 
 template < > DLLEXPORT
 void ElementMatrix < double >::copyFrom(const ElementMatrix < double > & E,
