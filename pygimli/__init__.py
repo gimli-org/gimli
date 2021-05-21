@@ -137,8 +137,7 @@ def findVersion(cache=True):
             __version__ = fi.read()
             debug('Loaded version info from cache.',
                     versionCacheFile, __version__)
-    
-    return __version__
+        return __version__
 
     debug('Fetching version info.')
     from ._version import get_versions
@@ -190,6 +189,8 @@ def findVersion(cache=True):
     with open(versionCacheFile, 'w') as fi:
         fi.write(__version__)
         debug('Wrote version info to cache:', versionCacheFile, __version__)
+        
+    return __version__
 
 # call once to get version from cache, setup or _version.py
 findVersion()
