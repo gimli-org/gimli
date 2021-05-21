@@ -18,10 +18,10 @@ Open a terminal (Linux & Mac) or the Anaconda Prompt (Windows) and type:
 
 .. code-block:: bash
 
-    conda create -n pg -c gimli -c conda-forge pygimli=1.1.0
+    conda create -n pg -c gimli -c conda-forge pygimli=1.2.1
 
 If you are using Windows or Mac, a new environment named "pg" should be visible
-in the Anaconda Navigator. If you want to use pygimli from the command line, you
+in the Anaconda Navigator. If you want to use pyGIMLi from the command line, you
 have to activate the environment. You can put this line in your `~/.bashrc` file
 so that it is activated automatically if you open a terminal.
 
@@ -29,7 +29,7 @@ so that it is activated automatically if you open a terminal.
 
     conda activate pg
 
-After that you can use pygimli with your text editor of choice and a terminal.
+After that you can use pyGIMLi with your text editor of choice and a terminal.
 
 Usage with Spyder or JupyterLab
 -------------------------------
@@ -59,7 +59,7 @@ To test if everything works correctly you can do the following:
 Staying up-to-date
 ------------------
 
-Update your pygimli installation from time to time, if want to have the newest
+Update your pyGIMLi installation from time to time, if want to have the newest
 functionality:
 
 .. code-block:: bash

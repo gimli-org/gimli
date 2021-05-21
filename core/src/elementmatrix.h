@@ -52,11 +52,8 @@ public:
         mat_.resize(rows, cols);
     }
 
-    ElementMatrix < ValueType > & operator += (const ElementMatrix < ValueType > & E){
-        for (uint i = 0; i < size(); i ++){ mat_[i] += E.row(i); }
-        return *this;
-    }
-
+    ElementMatrix < ValueType > & operator += (const ElementMatrix < ValueType > & E);
+    
     #define DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__(OP)                   \
         ElementMatrix < ValueType > & operator OP##= (ValueType val) { \
             if (this->_newStyle){ \
@@ -297,7 +294,7 @@ public:
         return mult_(a, b, m, n);
     }
     Complex mult(const CVector & a, const CVector & b,
-                const CVector & m, const CVector & n){
+                 const CVector & m, const CVector & n){
         return mult_(a, b, m, n);
     }
 
@@ -364,6 +361,7 @@ public:
     bool elastic() const { return _elastic;}
 
     bool oldStyle() const { return !this->_newStyle; }
+
 protected:
     mutable Matrix < ValueType > mat_;
     IndexArray _ids;
@@ -565,22 +563,33 @@ public:
     virtual ~FEAFunction() { }
 
     virtual double evalR1(const Pos & arg, const MeshEntity * ent=0) const{
-        log(Warning, "FEAFunction.eval should be overloaded.");
+        log(Warning, "FEAFunction.evalR1 should be overloaded.");
         return 0.0;
     }
     virtual Pos evalR3(const Pos & arg, const MeshEntity * ent=0) const{
-        log(Warning, "FEAFunction.eval should be overloaded.");
+        log(Warning, "FEAFunction.evalR3 should be overloaded.");
         return Pos(0.0, 0.0, 0.0);
     }
     virtual RMatrix evalRM(const Pos & arg, const MeshEntity * ent=0) const{
-        log(Warning, "FEAFunction.eval should be overloaded.");
+        log(Warning, "FEAFunction.evalRM should be overloaded.");
         return RMatrix(0, 0);
     }
 
+    /*!Return expected value size for evaluation */
     Index valueSize() const { return _valueSize; }
+
+    /*!Set expected value size for evaluation */
+    void setValueSize(Index s) { _valueSize = s; }
+
+    /*!Return if the function is marked for value evaluation on cell centers or quadrature points. */
+    bool evalOnCellCenter() const { return _evalOnCellCenter; }
+
+    /*!Mark the function to evaluate on cell centers instead of quadrature points. */
+    void setEvalOnCellCenter(bool e) { _evalOnCellCenter = e; }
 
 protected:
     Index _valueSize;
+    bool _evalOnCellCenter;
 };
 
 class DLLEXPORT ElementMatrixMap {

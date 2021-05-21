@@ -3,7 +3,7 @@ Readme for Github repository only. (Get's selected before *.rst file)
 -->
 
 <a href="https://www.pygimli.org">
-  <img src="https://www.pygimli.org/_static/gimli_logo.svg" width="50%">
+  <img src="https://www.pygimli.org/_images/pg_logo.png" width="50%">
 </a>
 
 <!--- Currently disables
@@ -48,7 +48,7 @@ separate environment. Here we call this environment pg, but you can give it any
 name. Note that this environment has to be created only once.
 
 ``` bash
-conda create -n pg -c gimli -c conda-forge pygimli=1.1.0
+conda create -n pg -c gimli -c conda-forge pygimli=1.2.1
 ```
 
 If you are using Windows or Mac, a new environment named “pg” should be visible in the Anaconda Navigator. If you want to use pygimli from the command line, you have to activate the environment. You can put this line in your ~/.bashrc file so that it is activated automatically if you open a terminal.
@@ -100,3 +100,21 @@ pyGIMLi is distributed under the terms of the **Apache 2.0** license. Details on
 the license agreement can be found [here].
 
 [here]: https://www.pygimli.org/license.html
+
+#### Credits
+
+We use or link some third-party software (beside the usual tool stack: cmake, gcc, boost, python, numpy, scipy, matplotlib) and are grateful for all the work made by the authors of these awesome open-source tools:
+
+* libkdtree++: Maybe abandoned, mirror: https://github.com/nvmd/libkdtree
+
+* meshio: https://github.com/nschloe/meshio
+
+* pyplusplus: https://pypi.org/project/pyplusplus/
+
+* pyvista: https://docs.pyvista.org/
+
+* suitesparse, umfpack: https://people.engr.tamu.edu/davis/suitesparse.html
+
+* Tetgen: http://wias-berlin.de/software/index.jsp?id=TetGen&lang=1
+
+* Triangle: https://www.cs.cmu.edu/~quake/triangle.html

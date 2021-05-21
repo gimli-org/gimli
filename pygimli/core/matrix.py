@@ -3,10 +3,10 @@
 
 import time
 import numpy as np
-#from pygimli.core import _pygimli_ as pg
 
-from . import _pygimli_ as pgcore
-from . import (CMatrix, CSparseMapMatrix, CSparseMatrix,
+from .core import pgcore
+
+from .core import (CMatrix, CSparseMapMatrix, CSparseMatrix,
                RSparseMapMatrix, RSparseMatrix, ElementMatrix,
                IVector, MatrixBase, R3Vector, RVector)
 
@@ -89,6 +89,37 @@ def __ElementMatrix_str(self):
 pgcore.RMatrix.__repr__ =__RMatrix_str
 pgcore.CMatrix.__repr__ =__CMatrix_str
 pgcore.ElementMatrix.__repr__ =__ElementMatrix_str
+
+
+def __SparseMatrix_str(self):
+    """Show entries of an ElementMatrix."""
+    import pygimli as pg
+    
+    S = pg.utils.toSparseMapMatrix(self)
+    if S.cols() == 0 and S.rows() == 0:
+        return 'Empty ElementMatrix\n'
+
+    s = "{0} size = {1} x {2}, nVals = {3}".format(type(self), 
+                                       S.rows(), S.cols(), S.nVals())
+
+    if S.cols() < 20:
+        s += '\n'
+
+        M = pg.utils.toDense(self)
+        for mi in M:
+            for v in mi:
+                if (abs(v)< 1e-12 and abs(v) > 0):
+                    s += ('+'+pg.pf(v)).rjust(9)
+                elif (abs(v)< 1e-12 and abs(v) < 0):
+                    s += ('-'+pg.pf(v)).rjust(9)
+                else:
+                    s += pg.pf(v).rjust(9)
+
+            s += '\n'
+    return s
+
+pgcore.RSparseMatrix.__repr__ =__SparseMatrix_str
+pgcore.RSparseMapMatrix.__repr__ =__SparseMatrix_str
 
 
 ## Special Monkeypatch core classes
@@ -174,7 +205,6 @@ def __SparseMatrixEqual__(self, T):
             self.rows(), self.cols(), T.rows(), T.cols()))
         return False
 
-
     rowsA, colsA, valsA = sparseMatrix2Array(self, indices=True)
     rowsB, colsB, valsB = sparseMatrix2Array(T, indices=True)
 
@@ -188,10 +218,13 @@ def __SparseMatrixEqual__(self, T):
 
     # print(np.linalg.norm(valsA-valsB), np.mean(abs(valsA)), np.mean(abs(valsB)))
     # print(np.linalg.norm(valsA-valsB)/np.mean(abs(valsA)))
-
-    return rowsA == rowsB and \
-           colsA == colsB and \
-               np.linalg.norm(valsA-valsB)/np.mean(abs(valsA)) < 1e-14
+    meanA = np.mean(abs(valsA))
+    if meanA > 1e-10:
+        return rowsA == rowsB and \
+            colsA == colsB and \
+                np.linalg.norm(valsA-valsB)/meanA < 1e-14
+    else:
+        return np.linalg.norm(valsA-valsB) < 1e-12
 
 pgcore.RSparseMatrix.__eq__ = __SparseMatrixEqual__
 pgcore.RSparseMapMatrix.__eq__ = __SparseMatrixEqual__

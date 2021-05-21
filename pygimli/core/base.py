@@ -4,7 +4,7 @@ Misc stuff also needed for core imports and monkey patching
 """
 import numpy as np
 
-from ._pygimli_ import (RVector3, R3Vector, RMatrix)
+from .core import (RVector3, R3Vector, RMatrix)
 
 
 def isScalar(v, val=None):
@@ -102,6 +102,8 @@ def isR3Array(v, N=None):
                (not isinstance(v, list) and hasattr(v, '__iter__') and \
                 not isinstance(v, (str)) and v.ndim == 2 and isPos(v[0]))
     return isR3Array(v) and len(v) == N
+
+isPosList = isR3Array
 
 def isMatrix(v, shape=None):
     """Check is v has ndim=2 or is comparable list"""

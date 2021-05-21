@@ -46,6 +46,8 @@ def createMesh(poly, quality=32, area=0.0, smooth=None, switches=None,
         1: node center
         2: weighted node center
 
+        If smooth is just set to True then [1, 4] is choosen.
+
     switches: str
         Set additional triangle command switches.
         https://www.cs.cmu.edu/~quake/triangle.switch.html
@@ -104,6 +106,9 @@ def createMesh(poly, quality=32, area=0.0, smooth=None, switches=None,
             # an EXTRA! -a here else it ignores per region area
             switches += 'a'
 
+            if 'preserveBoundary' in kwargs:
+                switches += 'Y'
+
         if not verbose:
             switches += 'Q'
 
@@ -114,10 +119,15 @@ def createMesh(poly, quality=32, area=0.0, smooth=None, switches=None,
         mesh = tri.generate()
 
         if smooth is not None:
+            if smooth == True:
+                smooth = [1, 4]
+
             mesh.smooth(nodeMoving=kwargs.pop('node_move', True),
                         edgeSwapping=False,
                         smoothFunction=smooth[0],
                         smoothIteration=smooth[1])
+        
+        mesh.createNeighborInfos()
         return mesh
 
     else:
@@ -437,6 +447,8 @@ def convert(mesh, verbose=False):
     """
     if str(type(mesh)) == "<class 'meshio._mesh.Mesh'>":
         return convertMeshioMesh(mesh, verbose=verbose)
+    elif "subsurface" in str(type(mesh)):
+        return fromSubsurface(mesh, verbose=verbose)
     else:
         pg.error("don't no how to convert mesh of type", type(mesh))
 
@@ -484,6 +496,145 @@ def convertMeshioMesh(mesh, verbose=False):
 
     ret.createNeighborInfos()
     return ret
+
+
+def fromSubsurface(obj, order='C', verbose=False):
+    """ Convert subsurface object to pygimli mesh.
+
+    See more: https://softwareunderground.github.io/subsurface/
+    
+    Order refers to np.flatten(order) strategy for structured cell data arangement, e.g., use 'F' (Fortran style) for gempy meshes. Default is 'C'-Style.
+    
+    Testet objects so far:
+    
+    * TriSurf
+    * UnstructuredData (3D Boundary from TriSurf)
+    * StructuredData (3D cell centered voxel)
+
+    TODO
+    ----
+        * more testing
+        * 2D
+        * other Objects that are not tested before or known to be not working
+
+    Args
+    ----
+    obj: obj
+        Subsurface obj, mesh object 
+
+    order: str ['C']
+        Flatten style for structured data attributes. See above.
+
+    verbose: boolean [False]
+        Be verbose during import.
+
+    Returns
+    -------
+    mesh: :gimliapi:`GIMLI::Mesh`
+    """
+    ss = pg.optImport('subsurface', 
+                      'You need subsurface installed to convert into')
+
+    if isinstance(obj, ss.structs.unstructured_elements.TriSurf):
+        return fromSubsurface(obj.mesh)
+    
+    elif isinstance(obj, ss.structs.UnstructuredData):
+        mesh = pg.Mesh(3)
+        for v in obj.vertex:
+            mesh.createNode(v)
+
+        for c in obj.cells:
+            mesh.createBoundary(c)
+        
+        for k, v in obj.attributes_to_dict.items():
+            # print(k, len(v))
+            mesh[k] = np.array(v)
+
+        for k, v in obj.points_attributes_to_dict.items():
+            # print(k, len(v))
+            mesh[k] = np.array(v)
+
+    elif isinstance(obj, ss.structs.StructuredData):
+               
+        def _voxelCenterToNodes(v):
+            dv = pg.utils.diff(v)
+            n = np.append(v[0]-dv[0]/2, v[0]-dv[0]/2.+ np.cumsum(dv)) 
+            n = np.append(n, v[-1]+dv[-1]/2.)
+            return n
+
+        mesh = pg.meshtools.createGrid(x=_voxelCenterToNodes(obj.data.X.values), 
+                             y=_voxelCenterToNodes(obj.data.Y.values), 
+                             z=_voxelCenterToNodes(obj.data.Z.values))
+        
+        for k, v in obj.data.data_vars.items():
+            # print(k, type(v), len(v), v.shape, len(v.values.flatten()))
+            # print(k, type(v), len(v), v.shape, )
+            mesh[k] = [np.array(vi.values.flatten(order=order), dtype=float) for vi in v]
+    else:           
+        print(obj)
+        pg.critical('implemenme')
+
+    return mesh
+
+
+def toSubsurface(mesh, verbose=False):
+    """ Create a subsurface object from pygimli mesh.
+    
+    Testet objects so far:
+    
+    Creates Subsurface.TriSurf from 3D triangle boundaries
+    
+    TODO
+    ----
+        * more testing
+        * 2D
+        * other Objects that are not tested before or known to be not working
+
+    Args
+    ----
+    mesh: :gimliapi:`GIMLI::Mesh`
+    
+    verbose: boolean [False]
+        Be verbose during import.
+
+    Returns
+    -------
+    Subsurface object depending on input mesh
+    """
+    ss = pg.optImport('subsurface', 
+                      'You need subsurface installed to convert into')
+    pd = pg.optImport('pandas', 
+                      'You need pandas installed to convert into subsurface')
+
+    if mesh.dim() == 3:
+        
+        if mesh.cellCount() == 0 and mesh.boundaryCount() > 0:
+            ## export 3d boundary tringles as subsurface trisurf
+
+            cells = np.array([c.ids() for c in mesh.boundaries()])
+            att = None
+
+            
+            for k, v in mesh.dataMap():
+                if len(v) == mesh.boundaryCount():
+                    #atts['cell'] = 0
+                    att = pd.DataFrame({k: v})
+                    #atts['cell'] = xr.DataArray({'cell_attr': v})
+
+            ssMesh = ss.UnstructuredData.from_array(mesh.positions(),
+                                                    cells=cells,
+                                                    cells_attr=att)
+
+            obj = ss.TriSurf(ssMesh)
+            return obj
+        else:
+            print(mesh)
+            pg.critical('not yet implemented')
+
+    else:
+        print(mesh)
+        pg.critical('not yet implemented')
+
 
 
 def readGmsh(fName, verbose=False, precision=None):
@@ -1651,38 +1802,16 @@ def merge2Meshes(m1, m2):
     mesh: :gimliapi:`GIMLI::Mesh`
         Resulting mesh.
     """
-#    for c in m1.cells():
-#    if c.size() < 1e-4:
-#    print(c)
-#    exit()
-
     mesh = pg.Mesh(m1)
     mesh.translate(-m1.node(0).pos())
     m3 = pg.Mesh(m2)
     m3.translate(-m1.node(0).pos())
 
-#    for n in m3.nodes():
-#    i = mesh.findNearestNode(n.pos())
-#    if mesh.node(i).pos().dist(n.pos()) < 0.5:
-#    print("DUP", 1)
-#    exit()
-
     for c in m3.cells():
         mesh.copyCell(c)
 
     for b in m3.boundaries():
-        mesh.copyBoundary(b, tol=1e-6, check=False)
-
-#    if b.id() > 1362:
-#    exit()
-#    print(mesh.boundary(2905),
-#    mesh.boundary(2905).node(0).id(), mesh.boundary(2905).node(0).pos(),
-#    mesh.boundary(2905).node(1).id(), mesh.boundary(2905).node(1).pos()
-#    )
-#    print(mesh.boundary(2906),
-#    mesh.boundary(2906).node(0).id(), mesh.boundary(2906).node(0).pos(),
-#    mesh.boundary(2906).node(1).id(), mesh.boundary(2906).node(1).pos()
-#    )
+        mesh.copyBoundary(b, tol=1e-6, check=True)
 
     for key in list(mesh.dataMap().keys()):
         d = mesh.dataMap()[key]
@@ -1693,6 +1822,7 @@ def merge2Meshes(m1, m2):
         mesh.addData(key, d)
 
     mesh.translate(m1.node(0).pos())
+    mesh.createNeighborInfos(force=True)
     return mesh
 
 

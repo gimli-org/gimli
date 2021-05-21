@@ -83,8 +83,13 @@ def show(obj=None, data=None, **kwargs):
         return ax, None
 
     ### try to interprete obj containes a mesh
-    if hasattr(obj, 'mesh'):
-        return pg.show(obj.mesh, obj, **kwargs)
+    if hasattr(obj, 'mesh') and hasattr(obj, 'values'):
+        return pg.show(obj.mesh, obj.values, 
+                       label=kwargs.pop('label', obj.name),
+                        **kwargs)
+    if hasattr(obj, 'mesh') and hasattr(obj, 'eval'):
+        return pg.show(obj.mesh, obj.eval(), 
+                       **kwargs)
 
     ### try to interprete obj as ERT Data
     if isinstance(obj, pg.DataContainerERT):
@@ -420,6 +425,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
 
     if kwargs.pop("boundaryMarkers", False):
         pg.viewer.mpl.drawBoundaryMarkers(ax, mesh,
+            clipBoundaryMarkers = kwargs.pop('clipBoundaryMarkers', False),
                                           **kwargs.pop('boundaryProps', {}))
 
     fitView = kwargs.pop('fitView', fitViewDefault)

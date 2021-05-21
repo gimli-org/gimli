@@ -153,8 +153,10 @@ template < class ValueType > void * checkConvertibleSequenz(PyObject * obj){
 
 struct PyTuple2RVector3{
 
+    typedef boost::tuples::tuple< double > x_type;
     typedef boost::tuples::tuple< double, double > xy_type;
     typedef boost::tuples::tuple< double, double, double > xyz_type;
+    typedef bp::from_py_sequence< x_type > x_converter_type;
     typedef bp::from_py_sequence< xy_type > xy_converter_type;
     typedef bp::from_py_sequence< xyz_type > xyz_converter_type;
 
@@ -162,8 +164,10 @@ struct PyTuple2RVector3{
 
     static void * convertible(PyObject * obj){
         __DC(obj << "(" << obj->ob_type->tp_name << ") -> RVector3")
-        if (xy_converter_type::convertible(obj) ||
-             xyz_converter_type::convertible(obj)){
+        if (x_converter_type::convertible(obj) ||
+             xy_converter_type::convertible(obj) ||
+              xyz_converter_type::convertible(obj)
+             ){
             return obj;
         } else{
             return NULL;
@@ -181,10 +185,12 @@ struct PyTuple2RVector3{
 
         bp::tuple py_tuple(bp::handle<>(bp::borrowed(obj)));
 
-        if (3 == bp::len(py_tuple)){
+        if (bp::len(py_tuple) == 3){
             boost::tuples::tie(x, y, z) = xyz_converter_type::to_c_tuple(obj);
-        } else if (2 == bp::len(py_tuple)){
+        } else if (bp::len(py_tuple) == 2){
             boost::tuples::tie(x, y) = xy_converter_type::to_c_tuple(obj);
+        } else if (bp::len(py_tuple) == 1){
+            boost::tuples::tie(x) = x_converter_type::to_c_tuple(obj);
         }
 
         //** don't know where this will be deleted but it is necessary

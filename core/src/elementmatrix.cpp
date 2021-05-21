@@ -44,7 +44,21 @@ std::ostream & operator << (std::ostream & str,
     return str;
 }
 
-template < > DLLEXPORT ElementMatrix < double > &
+template < > DLLEXPORT ElementMatrix < double > & 
+ElementMatrix < double >::operator += (const ElementMatrix < double > & E){
+    for (uint i = 0; i < size(); i ++){ 
+        if ((mat_[i].size() == 1) && (E.row(i).size() > 1)){
+            // maybe iadd: scalar + div(vec)
+            mat_[i] += sum(E.row(i)); 
+        } else {
+            mat_[i] += E.row(i); 
+        }
+    }
+    return *this;
+}
+
+
+template < > DLLEXPORT ElementMatrix < double > & 
 ElementMatrix < double >::u(const MeshEntity & ent,
                             const RVector & w,
                             const PosVector & x,
@@ -1994,14 +2008,23 @@ void mult(const ElementMatrix < double > & A, const FEAFunction & b,
     // refactor with above
     // __MS(b.valueSize())
     if (b.valueSize() == 1){
+        if (b.evalOnCellCenter()){
+            return mult(A, b.evalR1(A.entity().center(), &A.entity()), C);    
+        }
         RVector e;
         evaluateQuadraturePoints(A.entity(), A.x(), b, e);
         mult(A, e, C);
     } else if (b.valueSize() == 3){
+        if (b.evalOnCellCenter()){
+            return mult(A, b.evalR3(A.entity().center(), &A.entity()), C);    
+        }
         PosVector e;
         evaluateQuadraturePoints(A.entity(), A.x(), b, e);
         mult(A, e, C);
     } else {
+        if (b.evalOnCellCenter()){
+            return mult(A, b.evalRM(A.entity().center(), &A.entity()), C);    
+        }
         std::vector < RMatrix > e;
         evaluateQuadraturePoints(A.entity(), A.x(), b, e);
         mult(A, e, C);

@@ -396,6 +396,7 @@ if (NOT Boost_PYTHON_LIBRARY)
     if (WIN32)
         set(bp_version "python${Python_VERSION_MAJOR}${Python_VERSION_MINOR}-mt")
         string(TOUPPER ${bp_version} BP_VERSION)
+
         message(STATUS "... looking for ${bp_version} in BOOST_ROOT=${BOOST_ROOT}")
         find_package(Boost 1.65 COMPONENTS "${bp_version}")
         set(Boost_PYTHON_FOUND ${Boost_${bp_version}_FOUND} CACHE BOOL "boost python found")

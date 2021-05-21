@@ -100,7 +100,8 @@ def cmapFromName(cmapname='jet', ncols=256, bad=None, **kwargs):
         cMap = "RdBu_r"
     else:
         try:
-            cMap = mpl.cm.get_cmap(cmapname, ncols)
+            import copy
+            cMap = copy.copy(mpl.cm.get_cmap(cmapname, ncols))
         except BaseException as e:
             pg.warn("Could not retrieve colormap ", cmapname, e)
 
@@ -269,12 +270,15 @@ def createColorBar(gci, orientation='horizontal', size=0.2, pad=None,
     ax = kwargs.pop('ax', None)
     if ax is None:
 
-        if hasattr(gci, 'ax'):
-            ax = gci.ax
-        elif hasattr(gci, 'axes'):
-            ax = gci.axes
-        elif hasattr(gci, 'get_axes'):
-            ax = gci.get_axes()
+        try:
+            # if hasattr(gci, 'ax'): # deprecated since MPL 3.3
+            #     ax = gci.ax
+            if hasattr(gci, 'axes'):
+                ax = gci.axes
+            elif hasattr(gci, 'get_axes'):
+                ax = gci.get_axes()
+        except:
+            pass
 
     cbar = None
     if hasattr(ax, '__cBar__'):
@@ -361,8 +365,9 @@ def createColorBarOnly(cMin=1, cMax=100, logScale=False, cMap=None, nLevs=5,
     updateColorBar(cbar, cMin=cMin, cMax=cMax, nLevs=nLevs, label=label,
                    **kwargs)
 
-    if aspect is not None:
-        ax.set_aspect(aspect)
+    # if aspect is not None:
+    ax.set_aspect(aspect)
+    
     if savefig is not None:
         saveFigure(fig, savefig)
 
@@ -429,7 +434,7 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5, levels=None):
 
 
 def setMappableValues(mappable, dataIn):
-    """Change the data values for a given mapable."""
+    """Change the data values for a given mappable."""
     pg.critical('remove me')
     data = dataIn
     if not isinstance(data, np.ma.core.MaskedArray):
@@ -437,22 +442,36 @@ def setMappableValues(mappable, dataIn):
 
     # set bad value color to white
     if mappable.get_cmap() is not None:
-        mappable.get_cmap().set_bad([1.0, 1.0, 1.0, 0.0])
-
+        
+        try:
+            import copy
+            ## from mpl 3.3
+            cm_ = copy.copy(mappable.get_cmap()).set_bad([1.0, 1.0, 1.0, 0.0])
+            mappable.set_cmap(cm_)
+        except:
+            ## old prior mpl 3.3
+            mappable.get_cmap().set_bad([1.0, 1.0, 1.0, 0.0])
+          
     mappable.set_array(data)
 
 
 def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=None,
                     **kwargs):
-    """Change the data values for a given mappable.
-    """
+    """Change the data values for a given mappable."""
     data = dataIn
     if not isinstance(data, np.ma.core.MaskedArray):
         data = np.array(dataIn)
 
     # set bad value color to white
     if mappable.get_cmap() is not None:
-        mappable.get_cmap().set_bad([1.0, 1.0, 1.0, 0.0])
+        try:
+            import copy
+            ## from mpl 3.3
+            cm_ = copy.copy(mappable.get_cmap()).set_bad([1.0, 1.0, 1.0, 0.0])
+            mappable.set_cmap(cm_)
+        except:
+            ## old prior mpl 3.3
+            mappable.get_cmap().set_bad([1.0, 1.0, 1.0, 0.0])
 
     if cMin is None:
         cMin = data.min()

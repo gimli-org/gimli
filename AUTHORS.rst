@@ -21,3 +21,11 @@
   *Berlin University of Technology, Department of Applied Geophysics, Berlin, Germany*
 
   friedrich@pygimli.org
+
+* `Maximilian Weigand <https://orcid.org/0000-0003-0510-1938>`_
+
+  *University of Bonn, Department of Geophysics, Bonn, Germany*
+
+* `Andrea Balza <https://www.andreabalza.com>`_
+
+  *RWTH Aachen University, Institute for Applied Geophysics and Geothermal Energy, Aachen, Germany*

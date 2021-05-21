@@ -5,13 +5,39 @@ Import and extensions of the core Mesh class.
 import numpy as np
 
 from math import ceil
-from ._pygimli_ import (cat, HexahedronShape, Line, RSparseMapMatrix,
-                        Mesh, MeshEntity, Node, Boundary, RVector,
+
+from .core import (cat, HexahedronShape, Line, RSparseMapMatrix,
+                        Mesh, MeshEntity, Node, Boundary, RVector, RVector3,
                         PolygonFace, TetrahedronShape, TriangleFace)
 from .logger import deprecated, error, info, warn
+
 from ..meshtools import mergePLC, exportPLC
+
 from .base import isScalar, isArray, isPos, isR3Array, isComplex
 
+
+def __Mesh_unique_dataKeys(self):
+    """Return unique data keys"""
+    uniqueNames = {}
+    for d in self.dataMap().keys():
+
+        uName = d
+        if '_x' in d:
+            uName = uName[0:d.find('_x')]
+
+        if '_y' in d or '_z' in d:
+            continue
+
+        if '#' in d:
+            uName = uName[0:d.find('#')]
+
+        if not uName in uniqueNames:
+            uniqueNames[uName] = []
+
+        uniqueNames[uName].append(d)
+    return uniqueNames
+
+Mesh.dataKeys = __Mesh_unique_dataKeys
 
 def __Mesh_str(self):
     st = "Mesh: Nodes: " + str(self.nodeCount()) + " Cells: " + str(
@@ -23,23 +49,7 @@ def __Mesh_str(self):
     if len(list(self.dataMap().keys())) > 0:
         st += "\nMesh contains data: "
 
-        uniqueNames = {}
-        for d in self.dataMap().keys():
-
-            uName = d
-            if '_x' in d:
-                uName = uName[0:d.find('_x')]
-
-            if '_y' in d or '_z' in d:
-                continue
-
-            if '#' in d:
-                uName = uName[0:d.find('#')]
-
-            if not uName in uniqueNames:
-                uniqueNames[uName] = []
-
-            uniqueNames[uName].append(d)
+        uniqueNames = self.dataKeys()
 
         for d, v in uniqueNames.items():
             if len(v) > 1:
@@ -162,8 +172,8 @@ Mesh.__getitem__ = __Mesh_getVal
 
 def __MeshBoundingBox__(self):
     bb = self.boundingBox()
-    mi = [bb.min()[i] for i in range(self.dim())]
-    ma = [bb.max()[i] for i in range(self.dim())]
+    mi = RVector3([bb.min()[i] for i in range(self.dim())])
+    ma = RVector3([bb.max()[i] for i in range(self.dim())])
     return [mi, ma]
 Mesh.bb = __MeshBoundingBox__
 

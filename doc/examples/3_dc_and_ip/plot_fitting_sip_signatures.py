@@ -9,7 +9,6 @@ This example highlights some of the capabilities of pyGimli to analyze spectral
 induced polarization (SIP) signatures.
 
 **Author:** *Maximilian Weigand, University of Bonn* 
-(Modified(DRY) carsten-forty2
 """
 
 ###############################################################################
@@ -19,9 +18,8 @@ import numpy as np
 import pygimli as pg
 
 ###############################################################################
-# 1. Generate synthetic data with a Double-Cole-Cole Model and initialize an 
+# 1. Generate synthetic data with a Double-Cole-Cole Model and initialize a 
 # SIPSpectrum object
-# TODO merge with 3
 f = np.logspace(-2, 5, 100)
 Z1 = modelColeColeRho(f, rho=1, m=0.1, tau=0.5, c=0.5)
 Z2 = modelColeColeRho(f, rho=1, m=0.25, tau=1e-6, c=1.0)

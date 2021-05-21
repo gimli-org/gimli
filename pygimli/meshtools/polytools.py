@@ -182,15 +182,14 @@ def createRectangle(start=None, end=None, pos=None, size=None, **kwargs):
     return poly
 
 
-def createWorld(start, end, marker=1, area=0., layers=None, worldMarker=True,
+def createWorld(start, end, marker=1, area=0., layers=None, worldMarkers=True,
                 **kwargs):
-    """Create simple rectangular world.
+    """Create simple rectangular 2D or 3D world.
 
     Create simple rectangular [hexagonal] world with appropriate boundary conditions.
     Surface boundary is set do pg.core.MARKER_BOUND_HOMOGEN_NEUMANN, i.e, -1
     and inner subsurface is set to pg.core.MARKER_BOUND_MIXED, i.e., -2 or
-    Numbered in ascending order in left direction starting upper left if
-    worldMarker is set to false.
+    Numbered: 1, 2, 3, 4, 5, 6 for left, right, bottom, top, front and back, if worldMarker is set to false and no layers are given. With layers, its numbered in ascending order.
 
     TODO
     ----
@@ -209,7 +208,7 @@ def createWorld(start, end, marker=1, area=0., layers=None, worldMarker=True,
         If area is a float set it global, if area is a list set it per layer.
     layers: [float] [None]
         List of depth coordinates for some layers.
-    worldMarker: bool [True]
+    worldMarkers: bool [True]
         Specify kind of preset boundary marker [-1, -2] or ascending order [1, 2, 3, 4 ..]
 
     Other Parameters
@@ -232,15 +231,13 @@ def createWorld(start, end, marker=1, area=0., layers=None, worldMarker=True,
     >>> drawMesh(ax, world)
     >>> plt.show()
     """
+    pg.renameKwarg('worldmarker', 'worldmarkers', kwargs)
     if len(start) == 3 and len(end) == 3:
 
         if layers is not None:
             pg.critical("3D with layers is not yet implemented.")
 
-        world = createCube(size=pg.Pos(end)-pg.Pos(start),
-                           pos=(pg.Pos(end)-pg.Pos(start))/2.0,
-                           **kwargs)
-
+        world = createCube(start=start, end=end, **kwargs)
 
         for i, b in enumerate(world.boundaries()):
             if worldMarker is True:
@@ -253,9 +250,9 @@ def createWorld(start, end, marker=1, area=0., layers=None, worldMarker=True,
                     b.setMarker(1)
                 elif b.norm() == [1, 0, 0]:
                     b.setMarker(2)
-                elif b.norm() == [0, 0, 1]:
-                    b.setMarker(3)
                 elif b.norm() == [0, 0, -1]:
+                    b.setMarker(3)
+                elif b.norm() == [0, 0, 1]:
                     b.setMarker(4)
                 elif b.norm() == [0, -1, 0]:
                     b.setMarker(5)
@@ -299,12 +296,23 @@ def createWorld(start, end, marker=1, area=0., layers=None, worldMarker=True,
     _polyCreateDefaultEdges(poly,
                             boundaryMarker=range(1, poly.nodeCount() + 1))
 
-    if worldMarker:
+    if worldMarkers:
         for b in poly.boundaries():
             if b.norm()[1] == 1.0:
                 b.setMarker(pg.core.MARKER_BOUND_HOMOGEN_NEUMANN)
             else:
                 b.setMarker(pg.core.MARKER_BOUND_MIXED)
+    elif layers is None:
+        for b in poly.boundaries():
+            if b.norm() == [-1, 0]:
+                b.setMarker(1)
+            elif b.norm() == [1, 0]:
+                b.setMarker(2)
+            elif b.norm() == [0, -1]:
+                b.setMarker(3)
+            elif b.norm() == [0, 1]:
+                b.setMarker(4)
+            
 
     if layers is not None:
         for i in range(len(layers)):
@@ -763,6 +771,7 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
     paraDepth : float, optional
         Maximum depth for parametric domain, 0 (default) means 0.4 * maximum
         sensor range.
+
     balanceDepth: bool [True]
         Equal depth for the parametric domain.
 
@@ -790,7 +799,7 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
     Returns
     -------
     poly: :gimliapi:`GIMLI::Mesh`
-        piecewise linear complex (PLC) containing nodes and edges
+        Piecewise linear complex (PLC) containing nodes and edges
 
     Examples
     --------
@@ -926,7 +935,7 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
 
 
 def readPLC(filename, comment='#'):
-    r"""Generic PLC reader.
+    r"""Read in a piece-wise linear complex object, i.e. pyGIMLi geometry, from .poly file. The latter could be created with `mt.exportPLC`.
 
     Read 2D :term:`Triangle` or 3D :term:`Tetgen` PLC files.
 
@@ -936,13 +945,17 @@ def readPLC(filename, comment='#'):
         Filename *.poly
 
     comment: string ('#')
-        String containing all characters that define a comment line. Identified
-        lines will be ignored during import.
+        String containing all characters that define a comment line.
+        Identified lines will be ignored during import.
 
     Returns
     -------
     poly :
         :gimliapi:`GIMLI::Mesh`
+
+    See also
+    --------
+    exportPLC
     """
     with open(filename, 'r') as fi:
         content = fi.readlines()
@@ -1099,7 +1112,7 @@ def readPLC(filename, comment='#'):
 
 
 def exportPLC(poly, fname, **kwargs):
-    r"""General writer to save piece-wise linear complex (PLC) as poly file.
+    r"""General writer to save a piece-wise linear complex (PLC), i.e. a pyGIMLi geometry, as a poly file.
 
     Choose from poly.dimension() and forward appropriate to
     :gimliapi:`GIMLI::Mesh::exportAsTetgenPolyFile`
@@ -1117,7 +1130,7 @@ def exportPLC(poly, fname, **kwargs):
     --------
     >>> import pygimli as pg
     >>> import tempfile, os
-    >>> fname = tempfile.mktemp() # Create temporary string for filename.
+    >>> fname = tempfile.mktemp() + '.poly' # Create temporary filename.
     >>> world2d = pg.meshtools.createWorld(start=[-10, 0], end=[20, -10])
     >>> pg.meshtools.exportPLC(world2d, fname)
     >>> read2d = pg.meshtools.readPLC(fname)
@@ -1126,20 +1139,15 @@ def exportPLC(poly, fname, **kwargs):
     >>> world3d = pg.createGrid([0, 1], [0, 1], [-1, 0])
     >>> pg.meshtools.exportPLC(world3d, fname)
     >>> os.remove(fname)
+    
+    See also
+    --------
+    readPLC
     """
     if poly.dimension() == 2:
         exportTrianglePoly(poly, fname, **kwargs)
     else:
         exportTetgenPoly(poly, fname, **kwargs)
-
-
-def writePLC(*args, **kwargs):
-    """
-    Backward compatibility.
-    Please use :py:mod:`pygimli.meshtools.exportPLC`.
-    """
-    pg.deprecated('use exportPLC')  # 16.08.2019
-    return exportPLC(*args, **kwargs)
 
 
 def exportTrianglePoly(poly, fname, float_format='.15e'):
@@ -1154,7 +1162,7 @@ def exportTrianglePoly(poly, fname, float_format='.15e'):
         mesh PLC holding nodes, edges, holes & regions
 
     fname : string
-        Filename of the file to read (\\*.n, \\*.e)
+        Target filename *.poly
 
     float_format : string
         format string for floats according to str.format()
@@ -1162,6 +1170,9 @@ def exportTrianglePoly(poly, fname, float_format='.15e'):
     verbose : boolean [False]
         Be verbose during import.
     """
+    if fname.rfind('.poly') == -1:
+        fname = fname + '.poly'
+
     if float_format[0] != '{':
         pfmt = '{:' + float_format + '}'
     else:
@@ -1530,19 +1541,26 @@ def createFacet(mesh, boundaryMarker=None, verbose=True):
     return poly
 
 
-def createCube(size=[1.0, 1.0, 1.0],
-               pos=None, rot=None, boundaryMarker=0, **kwargs):
+def createCube(size=[1.0, 1.0, 1.0], pos=None, 
+               start=None, end=None,
+               rot=None, boundaryMarker=0, **kwargs):
     """Create cube PLC as geometrie definition.
+
+    Create cube PLC as geometrie definition. You can either give size and center position or start and end position.
 
     Parameters
     ----------
-    size : [x, y, z]
+    size: [x, y, z]
         x, y, and z-size of the cube. Default = [1.0, 1.0, 1.0] in m
-    pos : pg.Pos [None]
+    pos: [x, y, z]
         The center position, default is at the origin.
-    rot : pg.Pos [None]
+    start: [x, y, z]
+        Left Front Bottom corner.
+    end: [x, y, z]
+        Right Back Top corner.
+    rot: pg.Pos [None]
         Rotate on the center.
-    boundaryMarker : int[0]
+    boundaryMarker: int[0]
         Boundary marker for the resulting faces.
 
     ** kwargs:
@@ -1557,7 +1575,7 @@ def createCube(size=[1.0, 1.0, 1.0],
     Mesh: Nodes: 8 Cells: 0 Boundaries: 6
     >>> cube = mt.createCube([10, 10, 1])
     >>> print(cube.bb())
-    [[-5.0, -5.0, -0.5], [5.0, 5.0, 0.5]]
+    [RVector3: (-5.0, -5.0, -0.5), RVector3: (5.0, 5.0, 0.5)]
     >>> cube = mt.createCube([10, 10, 1], pos=[-4.0, 0.0, 0.0])
     >>> print(pg.center(cube.positions()))
     RVector3: (-4.0, 0.0, 0.0)
@@ -1568,6 +1586,10 @@ def createCube(size=[1.0, 1.0, 1.0],
         The resulting polygon is a :gimliapi:`GIMLI::Mesh`.
 
     """
+    if start is not None and end is not None:
+        size = pg.Pos(end)-pg.Pos(start)
+        pos = pg.Pos(start) + size/2
+
     poly = pg.Mesh(3, isGeometry=True)
 
     for y in [-0.5, 0.5]:

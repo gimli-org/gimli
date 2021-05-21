@@ -9,27 +9,14 @@ import traceback
 
 import numpy as np
 
+from .core import pgcore
+from .core import *
 
-if sys.platform == 'win32':
-    os.environ['PATH'] = __path__[0] + ';' + os.environ['PATH']
+# #######################################
+# ###  Global convenience functions #####
+# #######################################
 
-_pygimli_ = None
-
-try:
-    from . import _pygimli_
-    from ._pygimli_ import *
-except ImportError as e:
-    print(e)
-    traceback.print_exc(file=sys.stdout)
-    sys.stderr.write("ERROR: cannot import the library '_pygimli_'.\n")
-
-
-#######################################
-###  Global convenience functions #####
-#######################################
-
-
-_pygimli_.load = None
+pgcore.load = None
 
 ###########################
 # print function for gimli stuff
@@ -75,16 +62,16 @@ def __BoundingBox_str(self):
     s += "BoundingBox [{0}, {1}]".format(self.min(), self.max())
     return s
 
-_pygimli_.RVector.__repr__ =__RVector_str
-_pygimli_.CVector.__repr__ =__RVector_str
-_pygimli_.BVector.__repr__ =__RVector_str
-_pygimli_.IVector.__repr__ =__RVector_str
-_pygimli_.IndexArray.__repr__ =__RVector_str
-_pygimli_.RVector3.__repr__ =__RVector3_str
-_pygimli_.R3Vector.__repr__ =__R3Vector_str
+pgcore.RVector.__repr__ =__RVector_str
+pgcore.CVector.__repr__ =__RVector_str
+pgcore.BVector.__repr__ =__RVector_str
+pgcore.IVector.__repr__ =__RVector_str
+pgcore.IndexArray.__repr__ =__RVector_str
+pgcore.RVector3.__repr__ =__RVector3_str
+pgcore.R3Vector.__repr__ =__R3Vector_str
 
-_pygimli_.Line.__repr__ =__Line_str
-_pygimli_.BoundingBox.__repr__ =__BoundingBox_str
+pgcore.Line.__repr__ =__Line_str
+pgcore.BoundingBox.__repr__ =__BoundingBox_str
 
 ############################
 # compatibility stuff
@@ -99,44 +86,44 @@ def nonzero_test(self):
 def np_round__(self, r):
     return np.round(self.array(), r)
 
-_pygimli_.RVector.__bool__ = nonzero_test
-_pygimli_.R3Vector.__bool__ = nonzero_test
-_pygimli_.BVector.__bool__ = nonzero_test
-_pygimli_.CVector.__bool__ = nonzero_test
-_pygimli_.IVector.__bool__ = nonzero_test
-_pygimli_.IndexArray.__bool__ = nonzero_test
+pgcore.RVector.__bool__ = nonzero_test
+pgcore.R3Vector.__bool__ = nonzero_test
+pgcore.BVector.__bool__ = nonzero_test
+pgcore.CVector.__bool__ = nonzero_test
+pgcore.IVector.__bool__ = nonzero_test
+pgcore.IndexArray.__bool__ = nonzero_test
 
-_pygimli_.RVector.__nonzero__ = nonzero_test
-_pygimli_.R3Vector.__nonzero__ = nonzero_test
-_pygimli_.BVector.__nonzero__ = nonzero_test
-_pygimli_.CVector.__nonzero__ = nonzero_test
-_pygimli_.IVector.__nonzero__ = nonzero_test
-_pygimli_.IndexArray.__nonzero__ = nonzero_test
+pgcore.RVector.__nonzero__ = nonzero_test
+pgcore.R3Vector.__nonzero__ = nonzero_test
+pgcore.BVector.__nonzero__ = nonzero_test
+pgcore.CVector.__nonzero__ = nonzero_test
+pgcore.IVector.__nonzero__ = nonzero_test
+pgcore.IndexArray.__nonzero__ = nonzero_test
 
-_pygimli_.RVector.__round__ = np_round__
+pgcore.RVector.__round__ = np_round__
 
 
 def _invertBVector_(self):
-    return _pygimli_.inv(self)
+    return pgcore.inv(self)
 
 
-_pygimli_.BVector.__invert__ = _invertBVector_
-_pygimli_.BVector.__inv__ = _invertBVector_
+pgcore.BVector.__invert__ = _invertBVector_
+pgcore.BVector.__inv__ = _invertBVector_
 
 
 def _lowerThen_(self, v2):
     """Overwrite bvector = v1 < v2 since there is a wrong operator due to the
     boost binding generation
     """
-    return _pygimli_.inv(self >= v2)
+    return pgcore.inv(self >= v2)
 
 
-_pygimli_.RVector.__lt__ = _lowerThen_
-_pygimli_.R3Vector.__lt__ = _lowerThen_
-_pygimli_.BVector.__lt__ = _lowerThen_
-_pygimli_.CVector.__lt__ = _lowerThen_
-_pygimli_.IVector.__lt__ = _lowerThen_
-_pygimli_.IndexArray.__lt__ = _lowerThen_
+pgcore.RVector.__lt__ = _lowerThen_
+pgcore.R3Vector.__lt__ = _lowerThen_
+pgcore.BVector.__lt__ = _lowerThen_
+pgcore.CVector.__lt__ = _lowerThen_
+pgcore.IVector.__lt__ = _lowerThen_
+pgcore.IndexArray.__lt__ = _lowerThen_
 
 ######################
 # special constructors
@@ -145,7 +132,7 @@ _pygimli_.IndexArray.__lt__ = _lowerThen_
 # Overwrite constructor for IndexArray
 # This seams ugly but necessary until we can recognize numpy array in
 # custom_rvalue
-__origIndexArrayInit__ = _pygimli_.IndexArray.__init__
+__origIndexArrayInit__ = pgcore.IndexArray.__init__
 
 
 def __newIndexArrayInit__(self, arr, val=None):
@@ -160,12 +147,12 @@ def __newIndexArrayInit__(self, arr, val=None):
             __origIndexArrayInit__(self, arr)
 
 
-_pygimli_.IndexArray.__init__ = __newIndexArrayInit__
+pgcore.IndexArray.__init__ = __newIndexArrayInit__
 
 # Overwrite constructor for BVector
 # This seams ugly but necessary until we can recognize numpy array in
 # custom_rvalue
-__origBVectorInit__ = _pygimli_.BVector.__init__
+__origBVectorInit__ = pgcore.BVector.__init__
 
 
 def __newBVectorInit__(self, arr, val=None):
@@ -182,14 +169,14 @@ def __newBVectorInit__(self, arr, val=None):
             __origBVectorInit__(self, arr)
 
 
-_pygimli_.BVector.__init__ = __newBVectorInit__
+pgcore.BVector.__init__ = __newBVectorInit__
 
 ######################
 # special overwrites
 ######################
 
 # RVector + int fails .. so we need to tweak this command
-__oldRVectorAdd__ = _pygimli_.RVector.__add__
+__oldRVectorAdd__ = pgcore.RVector.__add__
 
 
 def __newRVectorAdd__(a, b):
@@ -202,9 +189,9 @@ def __newRVectorAdd__(a, b):
     return __oldRVectorAdd__(a, b)
 
 
-_pygimli_.RVector.__add__ = __newRVectorAdd__
+pgcore.RVector.__add__ = __newRVectorAdd__
 
-__oldRVectorSub__ = _pygimli_.RVector.__sub__
+__oldRVectorSub__ = pgcore.RVector.__sub__
 
 
 def __newRVectorSub__(a, b):
@@ -215,9 +202,9 @@ def __newRVectorSub__(a, b):
     return __oldRVectorSub__(a, b)
 
 
-_pygimli_.RVector.__sub__ = __newRVectorSub__
+pgcore.RVector.__sub__ = __newRVectorSub__
 
-__oldRVectorMul__ = _pygimli_.RVector.__mul__
+__oldRVectorMul__ = pgcore.RVector.__mul__
 
 
 def __newRVectorMul__(a, b):
@@ -228,10 +215,10 @@ def __newRVectorMul__(a, b):
     return __oldRVectorMul__(a, b)
 
 
-_pygimli_.RVector.__mul__ = __newRVectorMul__
+pgcore.RVector.__mul__ = __newRVectorMul__
 
 try:
-    __oldRVectorTrueDiv__ = _pygimli_.RVector.__truediv__
+    __oldRVectorTrueDiv__ = pgcore.RVector.__truediv__
 
     def __newRVectorTrueDiv__(a, b):
         if isinstance(b, int):
@@ -240,9 +227,9 @@ try:
             return __oldRVectorTrueDiv__(float(a), b)
         return __oldRVectorTrueDiv__(a, b)
 
-    _pygimli_.RVector.__truediv__ = __newRVectorTrueDiv__
+    pgcore.RVector.__truediv__ = __newRVectorTrueDiv__
 except:
-    __oldRVectorTrueDiv__ = _pygimli_.RVector.__div__
+    __oldRVectorTrueDiv__ = pgcore.RVector.__div__
 
     def __newRVectorTrueDiv__(a, b):
         if isinstance(b, int):
@@ -251,12 +238,12 @@ except:
             return __oldRVectorTrueDiv__(float(a), b)
         return __oldRVectorTrueDiv__(a, b)
 
-    _pygimli_.RVector.__div__ = __newRVectorTrueDiv__
+    pgcore.RVector.__div__ = __newRVectorTrueDiv__
 
 ################################################################################
 # override wrong default conversion from int to IndexArray(int) for setVal     #
 ################################################################################
-__origRVectorSetVal__ = _pygimli_.RVector.setVal
+__origRVectorSetVal__ = pgcore.RVector.setVal
 
 
 def __newRVectorSetVal__(self, *args, **kwargs):
@@ -268,14 +255,14 @@ def __newRVectorSetVal__(self, *args, **kwargs):
                                              i=len(self) + args[1])
             else:
                 return __origRVectorSetVal__(self, args[0], i=args[1])
-        if isinstance(args[1], _pygimli_.BVector):
+        if isinstance(args[1], pgcore.BVector):
             return __origRVectorSetVal__(self, args[0], bv=args[1])
     return __origRVectorSetVal__(self, *args, **kwargs)
 
 
-_pygimli_.RVector.setVal = __newRVectorSetVal__
+pgcore.RVector.setVal = __newRVectorSetVal__
 
-__origR3VectorSetVal__ = _pygimli_.R3Vector.setVal
+__origR3VectorSetVal__ = pgcore.R3Vector.setVal
 
 
 def __newR3VectorSetVal__(self, *args, **kwargs):
@@ -283,59 +270,59 @@ def __newR3VectorSetVal__(self, *args, **kwargs):
     if len(args) == 2:
         if isinstance(args[1], int):
             return __origR3VectorSetVal__(self, args[0], i=args[1])
-        if isinstance(args[1], _pygimli_.BVector):
+        if isinstance(args[1], pgcore.BVector):
             return __origR3VectorSetVal__(self, args[0], bv=args[1])
     return __origR3VectorSetVal__(self, *args, **kwargs)
 
 
-_pygimli_.R3Vector.setVal = __newR3VectorSetVal__
+pgcore.R3Vector.setVal = __newR3VectorSetVal__
 
-__origBVectorSetVal__ = _pygimli_.BVector.setVal
+__origBVectorSetVal__ = pgcore.BVector.setVal
 
 
 def __newBVectorSetVal__(self, *args, **kwargs):
     if len(args) == 2:
         if isinstance(args[1], int):
             return __origBVectorSetVal__(self, args[0], i=args[1])
-        if isinstance(args[1], _pygimli_.BVector):
+        if isinstance(args[1], pgcore.BVector):
             return __origBVectorSetVal__(self, args[0], bv=args[1])
     return __origBVectorSetVal__(self, *args, **kwargs)
-_pygimli_.BVector.setVal = __newBVectorSetVal__
+pgcore.BVector.setVal = __newBVectorSetVal__
 
 
-__origCVectorSetVal__ = _pygimli_.CVector.setVal
+__origCVectorSetVal__ = pgcore.CVector.setVal
 def __newCVectorSetVal__(self, *args, **kwargs):
     if len(args) == 2:
         if isinstance(args[1], int):
             return __origCVectorSetVal__(self, args[0], i=args[1])
-        if isinstance(args[1], _pygimli_.BVector):
+        if isinstance(args[1], pgcore.BVector):
             return __origCVectorSetVal__(self, args[0], bv=args[1])
     return __origCVectorSetVal__(self, *args, **kwargs)
-_pygimli_.CVector.setVal = __newCVectorSetVal__
+pgcore.CVector.setVal = __newCVectorSetVal__
 
 
-__origIVectorSetVal__ = _pygimli_.IVector.setVal
+__origIVectorSetVal__ = pgcore.IVector.setVal
 def __newIVectorSetVal__(self, *args, **kwargs):
     if len(args) == 2:
         if isinstance(args[1], int):
             return __origIVectorSetVal__(self, args[0], i=args[1])
-        if isinstance(args[1], _pygimli_.BVector):
+        if isinstance(args[1], pgcore.BVector):
             return __origIVectorSetVal__(self, args[0], bv=args[1])
     return __origIVectorSetVal__(self, *args, **kwargs)
-_pygimli_.IVector.setVal = __newIVectorSetVal__
+pgcore.IVector.setVal = __newIVectorSetVal__
 
 
-__origIndexArraySetVal__ = _pygimli_.IndexArray.setVal
+__origIndexArraySetVal__ = pgcore.IndexArray.setVal
 def __newIndexArraySetVal__(self, *args, **kwargs):
     if len(args) == 2:
         if isinstance(args[1], int):
             return __origIndexArraySetVal__(self, args[0], i=args[1])
-        if isinstance(args[1], _pygimli_.BVector):
+        if isinstance(args[1], pgcore.BVector):
             return __origIndexArraySetVal__(self, args[0], bv=args[1])
     return __origIndexArraySetVal__(self, *args, **kwargs)
 
 
-_pygimli_.IndexArray.setVal = __newIndexArraySetVal__
+pgcore.IndexArray.setVal = __newIndexArraySetVal__
 
 
 ############################
@@ -347,8 +334,8 @@ def __getVal(self, idx):
 
     # print("getval", type(idx), idx)
     # print(dir(idx))
-    if isinstance(idx, _pygimli_.BVector) or isinstance(
-            idx, _pygimli_.IVector) or isinstance(idx, _pygimli_.IndexArray):
+    if isinstance(idx, pgcore.BVector) or isinstance(
+            idx, pgcore.IVector) or isinstance(idx, pgcore.IndexArray):
         # print("BVector, IVector, IndexArray", idx)
         return self.get_(idx)
     elif isinstance(idx, slice):
@@ -407,13 +394,13 @@ def __setVal(self, idx, val):
             pg.critical("not yet implemented for slice:", slice)
     elif isinstance(idx, tuple):
         # print("tuple", idx, type(idx))
-        if isinstance(self, _pygimli_.RMatrix):
+        if isinstance(self, pgcore.RMatrix):
             self.rowRef(int(idx[0])).setVal(val, int(idx[1]))
             return
         else:
             pg.error("Can't set index with tuple", idx, "for", self)
             return
-    # if isinstance(idx, _pygimli_.BVector):
+    # if isinstance(idx, pgcore.BVector):
     # print("__setVal", self, idx, 'val:', val)
     # self.setVal(val, bv=idx)
     # return
@@ -423,7 +410,7 @@ def __setVal(self, idx, val):
         else:
             return self.setVal(val=val, ids=idx)
 
-    if isinstance(self, _pygimli_.RMatrix):
+    if isinstance(self, pgcore.RMatrix):
         self.setVal(idx, val)
     else:
         self.setVal(val, idx)
@@ -444,6 +431,9 @@ def __getValR3(self, idx):
     return self.getVal(int(idx))
 
 def __getValMatrix(self, idx):
+    """
+    in use?
+    """
     #    print(idx, type(idx))
     if isinstance(idx, slice):
         step = idx.step
@@ -463,7 +453,7 @@ def __getValMatrix(self, idx):
         if isinstance(idx[0], slice):
             if isinstance(idx[1], int):
                 tmp = self.__getitem__(idx[0])
-                ret = _pygimli_.RVector(len(tmp))
+                ret = pgcore.RVector(len(tmp))
                 for i, t in enumerate(tmp):
                     ret[i] = t[idx[1]]
                 return ret
@@ -476,42 +466,36 @@ def __getValMatrix(self, idx):
     return self.row(idx)
 
 
-_pygimli_.RVector.__setitem__ = __setVal
-_pygimli_.RVector.__getitem__ = __getVal  # very slow -- inline is better
+pgcore.RMatrix.__setitem__ = __setVal
+#pgcore.RMatrix.__getitem__ = __getVal  # inuse? very slow -- inline is better
 
-_pygimli_.CVector.__setitem__ = __setVal
-_pygimli_.CVector.__getitem__ = __getVal  # very slow -- inline is better
+pgcore.RVector.__setitem__ = __setVal
+pgcore.RVector.__getitem__ = __getVal  # very slow -- inline is better
 
-_pygimli_.BVector.__setitem__ = __setVal
-_pygimli_.BVector.__getitem__ = __getVal  # very slow -- inline is better
+pgcore.CVector.__setitem__ = __setVal
+pgcore.CVector.__getitem__ = __getVal  # very slow -- inline is better
 
-_pygimli_.IVector.__setitem__ = __setVal
-_pygimli_.IVector.__getitem__ = __getVal  # very slow -- inline is better
+pgcore.BVector.__setitem__ = __setVal
+pgcore.BVector.__getitem__ = __getVal  # very slow -- inline is better
 
-_pygimli_.R3Vector.__setitem__ = __setVal
-_pygimli_.R3Vector.__getitem__ = __getVal
+pgcore.IVector.__setitem__ = __setVal
+pgcore.IVector.__getitem__ = __getVal  # very slow -- inline is better
 
-_pygimli_.IndexArray.__setitem__ = __setVal
-_pygimli_.IndexArray.__getitem__ = __getVal  # very slow -- inline is better
+pgcore.R3Vector.__setitem__ = __setVal
+pgcore.R3Vector.__getitem__ = __getVal  # very slow -- inline is better
 
-_pygimli_.RVector3.__setitem__ = __setVal
-_pygimli_.RVector3.__getitem__ = __getValR3 # support slice
+pgcore.IndexArray.__setitem__ = __setVal
+pgcore.IndexArray.__getitem__ = __getVal  # very slow -- inline is better
 
-_pygimli_.RMatrix.__getitem__ = __getValMatrix  # very slow -- inline is better
-_pygimli_.RMatrix.__setitem__ = __setVal
+pgcore.RVector3.__setitem__ = __setVal
+pgcore.RVector3.__getitem__ = __getValR3 # support slice
 
-_pygimli_.CMatrix.__getitem__ = __getValMatrix  # very slow -- inline is better
-_pygimli_.CMatrix.__setitem__ = __setVal
-
-
-############################
 # len(RVector), RMatrix
-############################
-_vecs = [_pygimli_.RVector,
-         _pygimli_.BVector,
-         _pygimli_.CVector,
-         _pygimli_.IVector,
-         _pygimli_.IndexArray]
+_vecs = [pgcore.RVector,
+         pgcore.BVector,
+         pgcore.CVector,
+         pgcore.IVector,
+         pgcore.IndexArray]
 
 for v in _vecs:
     v.ndim = 1
@@ -523,44 +507,44 @@ for v in _vecs:
     except AttributeError:
         pass
 
-_pygimli_.RVector.dtype = np.float
-_pygimli_.BVector.dtype = np.bool
-_pygimli_.CVector.dtype = complex
-_pygimli_.IVector.dtype = np.long
-_pygimli_.IndexArray.dtype = np.uint
+pgcore.RVector.dtype = np.float
+pgcore.BVector.dtype = np.bool
+pgcore.CVector.dtype = np.complex
+pgcore.IVector.dtype = np.long
+pgcore.IndexArray.dtype = np.uint
 
-_pygimli_.RVector3.dtype = np.float
-_pygimli_.RVector3.__len__ = lambda self: 3
-_pygimli_.RVector3.ndim = 1
-_pygimli_.RVector3.shape = (3,)
+pgcore.RVector3.dtype = np.float
+pgcore.RVector3.__len__ = lambda self: 3
+pgcore.RVector3.ndim = 1
+pgcore.RVector3.shape = (3,)
 
-_pygimli_.R3Vector.dtype = np.float
-_pygimli_.R3Vector.__len__ = lambda self: self.size()
-_pygimli_.R3Vector.ndim = 2
-_pygimli_.R3Vector.shape = property(lambda self: (self.size(), 3))
+pgcore.R3Vector.dtype = np.float
+pgcore.R3Vector.__len__ = lambda self: self.size()
+pgcore.R3Vector.ndim = 2
+pgcore.R3Vector.shape = property(lambda self: (self.size(), 3))
 
 #remove me
-_pygimli_.stdVectorRVector3.ndim = 2
+pgcore.stdVectorRVector3.ndim = 2
 
 ############################
 # abs(RVector), RMatrix
 ############################
-_pygimli_.RVector.__abs__ = _pygimli_.fabs
-_pygimli_.CVector.__abs__ = _pygimli_.mag
-_pygimli_.R3Vector.__abs__ = _pygimli_.absR3
+pgcore.RVector.__abs__ = pgcore.fabs
+pgcore.CVector.__abs__ = pgcore.mag
+pgcore.R3Vector.__abs__ = pgcore.absR3
 
 ############################
 # __hash__ settings
 ############################
-_pygimli_.RVector.__hash__ = _pygimli_.RVector.hash
-_pygimli_.CVector.__hash__ = _pygimli_.CVector.hash
-_pygimli_.IVector.__hash__ = _pygimli_.IVector.hash
-_pygimli_.IndexArray.__hash__ = _pygimli_.IndexArray.hash
-_pygimli_.R3Vector.__hash__ = _pygimli_.R3Vector.hash
-_pygimli_.RVector3.__hash__ = _pygimli_.RVector3.hash
-_pygimli_.DataContainer.__hash__ = _pygimli_.DataContainer.hash
-_pygimli_.DataContainerERT.__hash__ = _pygimli_.DataContainerERT.hash
-_pygimli_.Mesh.__hash__ = _pygimli_.Mesh.hash
+pgcore.RVector.__hash__ = pgcore.RVector.hash
+pgcore.CVector.__hash__ = pgcore.CVector.hash
+pgcore.IVector.__hash__ = pgcore.IVector.hash
+pgcore.IndexArray.__hash__ = pgcore.IndexArray.hash
+pgcore.R3Vector.__hash__ = pgcore.R3Vector.hash
+pgcore.RVector3.__hash__ = pgcore.RVector3.hash
+pgcore.DataContainer.__hash__ = pgcore.DataContainer.hash
+pgcore.DataContainerERT.__hash__ = pgcore.DataContainerERT.hash
+pgcore.Mesh.__hash__ = pgcore.Mesh.hash
 
 
 ############################
@@ -588,15 +572,15 @@ def __VectorIterCall__(self):
     return VectorIter(self)
     # don't use pygimli iterators here until the reference for temporary
     # vectors are collected
-    # return _pygimli_.RVectorIter(self.beginPyIter())
+    # return pgcore.RVectorIter(self.beginPyIter())
 
 
-_pygimli_.RVector.__iter__ = __VectorIterCall__
-_pygimli_.R3Vector.__iter__ = __VectorIterCall__
-_pygimli_.BVector.__iter__ = __VectorIterCall__
-_pygimli_.IVector.__iter__ = __VectorIterCall__
-_pygimli_.IndexArray.__iter__ = __VectorIterCall__
-_pygimli_.CVector.__iter__ = __VectorIterCall__
+pgcore.RVector.__iter__ = __VectorIterCall__
+pgcore.R3Vector.__iter__ = __VectorIterCall__
+pgcore.BVector.__iter__ = __VectorIterCall__
+pgcore.IVector.__iter__ = __VectorIterCall__
+pgcore.IndexArray.__iter__ = __VectorIterCall__
+pgcore.CVector.__iter__ = __VectorIterCall__
 
 
 class DefaultContainerIter:
@@ -625,8 +609,8 @@ def __MatIterCall__(self):
     return DefaultContainerIter(self)
 
 
-_pygimli_.RMatrix.__iter__ = __MatIterCall__
-_pygimli_.CMatrix.__iter__ = __MatIterCall__
+pgcore.RMatrix.__iter__ = __MatIterCall__
+pgcore.CMatrix.__iter__ = __MatIterCall__
 
 
 class Vector3Iter():
@@ -657,7 +641,7 @@ class Vector3Iter():
 def __Vector3IterCall__(self):
     return Vector3Iter(self)
 
-_pygimli_.RVector3.__iter__ = __Vector3IterCall__
+pgcore.RVector3.__iter__ = __Vector3IterCall__
 
 
 # ######### c to python converter ######
@@ -702,29 +686,29 @@ def __CVectorArrayCall__(self, dtype=None):
 
 # default converter from RVector to numpy array
 
-_pygimli_.RVector.__array__ = __RVectorArrayCall__
+pgcore.RVector.__array__ = __RVectorArrayCall__
 # not yet ready handmade_wrappers.py
-_pygimli_.BVector.__array__ = __RVectorArrayCall__
+pgcore.BVector.__array__ = __RVectorArrayCall__
 # not yet ready handmade_wrappers.py
-# _pygimli_.IndexArray.__array__ = __RVectorArrayCall__
-_pygimli_.R3Vector.__array__ = __RVectorArrayCall__
-_pygimli_.RVector3.__array__ = __RVector3ArrayCall__
+# pgcore.IndexArray.__array__ = __RVectorArrayCall__
+pgcore.R3Vector.__array__ = __RVectorArrayCall__
+pgcore.RVector3.__array__ = __RVector3ArrayCall__
 
 # see bug description
-_pygimli_.CVector.__array__ = __CVectorArrayCall__
+pgcore.CVector.__array__ = __CVectorArrayCall__
 
 # hackish until stdVectorRVector3 will be removed
 def __stdVectorRVector3ArrayCall(self, dtype=None):
     #if idx is not None:
     #print(self)
     #print(idx)
-    return _pygimli_.stdVectorRVector3ToR3Vector(self).array()
+    return pgcore.stdVectorRVector3ToR3Vector(self).array()
 
 
-_pygimli_.stdVectorRVector3.__array__ = __stdVectorRVector3ArrayCall
+pgcore.stdVectorRVector3.__array__ = __stdVectorRVector3ArrayCall
 
-# _pygimli_.RVector3.__array__ = _pygimli_.RVector3.array
-# del _pygimli_.RVector.__array__
+# pgcore.RVector3.__array__ = pgcore.RVector3.array
+# del pgcore.RVector.__array__
 
 ##################################
 # custom rvalues for special cases
@@ -733,11 +717,11 @@ _pygimli_.stdVectorRVector3.__array__ = __stdVectorRVector3ArrayCall
 
 def find(v):
     if hasattr(v, 'dtype') and hasattr(v, '__iter__'):
-        # print('new find', v, _pygimli_.BVector(v))
-        return _pygimli_.find(_pygimli_.BVector(v))
+        # print('new find', v, pgcore.BVector(v))
+        return pgcore.find(pgcore.BVector(v))
     else:
         # print('orig find')
-        return _pygimli_.find(v)
+        return pgcore.find(v)
 
 
 def pow(v, p):
@@ -746,23 +730,23 @@ def pow(v, p):
         so we need to fix this
     """
     if isinstance(p, int):
-        return _pygimli_.pow(v, float(p))
-    return _pygimli_.pow(v, p)
+        return pgcore.pow(v, float(p))
+    return pgcore.pow(v, p)
 
 def __RVectorPower(self, m):
     return pow(self, m)
 
 
-_pygimli_.RVector.__pow__ = __RVectorPower
+pgcore.RVector.__pow__ = __RVectorPower
 
 ##################################
 # usefull aliases
 ##################################
 
-Vector = _pygimli_.RVector
-Inversion = _pygimli_.RInversion
-Pos = _pygimli_.RVector3
-PosVector = _pygimli_.R3Vector
+Vector = pgcore.RVector
+Inversion = pgcore.RInversion
+Pos = pgcore.RVector3
+PosVector = pgcore.R3Vector
 
 
 ############################
@@ -773,45 +757,47 @@ def abs(v):
     """Should not necessary
     TODO expose .core.__abs()
     """
-    if isinstance(v, _pygimli_.CVector):
-        return _pygimli_.mag(v)
+    if isinstance(v, pgcore.CVector):
+        return pgcore.mag(v)
     elif isPos(v):
-        return _pygimli_.RVector3(v).abs()
+        return pgcore.RVector3(v).abs()
+    elif isPosList(v):
+        return pgcore.absR3(v)
     elif isinstance(v, list):
         try:
-            return _pygimli_.RVector3(v).abs()
+            return pgcore.RVector3(v).abs()
         except:
-            return _pygimli_.absR3(np.array(v).T)
-    elif isinstance(v, _pygimli_.R3Vector):
-        return _pygimli_.absR3(v)
+            return pgcore.absR3(np.array(v).T)
+    elif isinstance(v, pgcore.R3Vector):
+        return pgcore.absR3(v)
     elif isinstance(v, np.ndarray):
         if v.ndim == 1:
             return np.abs(v)
         if v.shape[0] == 2 or v.shape[0] == 3:
-            return _pygimli_.absR3(v.T)
+            return pgcore.absR3(v.T)
         else:
-            return _pygimli_.absR3(v)
-    elif isinstance(v, _pygimli_.RMatrix):
+            return pgcore.absR3(v)
+    elif isinstance(v, pgcore.RMatrix):
         raise BaseException("IMPLEMENTME")
         for i in range(len(v)):
-            v[i] = _pygimli_.abs(v[i])
+            v[i] = pgcore.abs(v[i])
         return v
-    elif hasattr(v, 'vals'):
-        return pg.abs(v.vals)
+    elif hasattr(v, 'values'):
+        return abs(v.values)
 
-    return _pygimli_.fabs(v)
+    return pgcore.fabs(v)
 
 # default BVector operator == (RVector, int) will be casted to
 # BVector operator == (RVector, RVector(int)) and fails
 # this needs a monkey patch for BVector operator == (RVector, int)
-_pygimli_.__EQ_RVector__ = _pygimli_.RVector.__eq__
+pgcore.__EQ_RVector__ = pgcore.RVector.__eq__
 
 def __EQ_RVector__(self, val):
     if isinstance(val, int):
         val = float(val)
-    return _pygimli_.__EQ_RVector__(self, val)
+    return pgcore.__EQ_RVector__(self, val)
 
-_pygimli_.RVector.__eq__ = __EQ_RVector__
+pgcore.RVector.__eq__ = __EQ_RVector__
 
 
 ############################
@@ -820,13 +806,13 @@ _pygimli_.RVector.__eq__ = __EQ_RVector__
 def toIVector(v):
     print("do not use toIVector(v) use ndarray directly .. "
           "this method will be removed soon")
-    ret = _pygimli_.IVector(len(v), 0)
+    ret = pgcore.IVector(len(v), 0)
     for i, r in enumerate(v):
         ret[i] = int(r)
     return ret
 
 
-#__catOrig__ = _pygimli_.cat
+#__catOrig__ = pgcore.cat
 
 #def __cat__(v1, v2):
 #print("mycat")
@@ -835,14 +821,14 @@ def toIVector(v):
 #else:
 #return __catOrig__(v1, v2)
 
-#_pygimli_.cat = __cat__
+#pgcore.cat = __cat__
 
 
 # DEPRECATED for backward compatibility should be removed
 def asvector(array):
     print("do not use asvector(ndarray) use ndarray directly .. "
           "this method will be removed soon")
-    return _pygimli_.RVector(array)
+    return pgcore.RVector(array)
 
 
 # ##########################
@@ -867,7 +853,7 @@ def __ModellingBase__createJacobian_mt__(self, model, resp):
 
     fak = 1.05
 
-    dModel = _pygimli_.RVector(len(model))
+    dModel = pgcore.RVector(len(model))
     nProcs = self.multiThreadJacobian()
 
 
@@ -897,7 +883,7 @@ def __ModellingBase__createJacobian_mt__(self, model, resp):
 
         for i in range(int(pCount * nProcs), int((pCount + 1) * nProcs)):
             if i < nModel:
-                modelChange = _pygimli_.RVector(model)
+                modelChange = pgcore.RVector(model)
                 modelChange[i] *= fak
                 dModel[i] = modelChange[i] - model[i]
 
@@ -976,21 +962,21 @@ def __ModellingBase__responses_mt__(self, models, respos):
         respos[i] = resp
 
 
-class ModellingBaseMT__(_pygimli_.ModellingBase):
+class ModellingBaseMT__(pgcore.ModellingBase):
 
     def __init__(self, mesh=None, dataContainer=None, verbose=False):
         if mesh and dataContainer:
-            _pygimli_.ModellingBase.__init__(
+            pgcore.ModellingBase.__init__(
                 self, mesh=mesh, dataContainer=dataContainer, verbose=verbose)
-        elif isinstance(mesh, _pygimli_.Mesh):
-            _pygimli_.ModellingBase.__init__(self, mesh=mesh, verbose=verbose)
+        elif isinstance(mesh, pgcore.Mesh):
+            pgcore.ModellingBase.__init__(self, mesh=mesh, verbose=verbose)
         elif dataContainer:
-            _pygimli_.ModellingBase.__init__(self, dataContainer=dataContainer,
+            pgcore.ModellingBase.__init__(self, dataContainer=dataContainer,
                                              verbose=verbose)
         else:
-            _pygimli_.ModellingBase.__init__(self, verbose=verbose)
+            pgcore.ModellingBase.__init__(self, verbose=verbose)
 
-        self._J = _pygimli_.RMatrix()
+        self._J = pgcore.RMatrix()
         self.setJacobian(self._J)
 
 
@@ -1004,7 +990,7 @@ ModellingBase = ModellingBaseMT__
 ###########################
 
 # DEPRECATED
-# _pygimli_.interpolate = _pygimli_.interpolate_GILsave__
+# pgcore.interpolate = pgcore.interpolate_GILsave__
 
 ############################
 # some backward compatibility
@@ -1015,20 +1001,20 @@ def __getCoords(coord, dim, ent):
     """Syntactic sugar to find all x-coordinates of a given entity.
     """
     if isinstance(ent, R3Vector) or isinstance(ent, stdVectorRVector3):
-        return getattr(_pygimli_, coord)(ent)
+        return getattr(pgcore, coord)(ent)
     if isinstance(ent, list) and isinstance(ent[0], RVector3):
-        return getattr(_pygimli_, coord)(ent)
+        return getattr(pgcore, coord)(ent)
     if isinstance(ent, DataContainer):
-        return getattr(_pygimli_, coord)(ent.sensorPositions())
+        return getattr(pgcore, coord)(ent.sensorPositions())
     if isinstance(ent, Mesh):
-        return getattr(_pygimli_, coord)(ent.positions())
-    if isinstance(ent, _pygimli_.stdVectorNodes):
+        return getattr(pgcore, coord)(ent.positions())
+    if isinstance(ent, pgcore.stdVectorNodes):
         return np.array([n.pos()[dim] for n in ent])
-    if isinstance(ent, _pygimli_.Node):
+    if isinstance(ent, pgcore.Node):
         return ent.pos()[dim]
-    if isinstance(ent, _pygimli_.RVector3):
+    if isinstance(ent, pgcore.RVector3):
         return ent[dim]
-    if isinstance(ent, list) and isinstance(ent[0], _pygimli_.Node):
+    if isinstance(ent, list) and isinstance(ent[0], pgcore.Node):
         return [n.pos()[dim] for n in ent]
 
     if hasattr(ent, 'ndim') and ent.ndim == 2 and len(ent[0] > dim):
@@ -1085,12 +1071,13 @@ def search(what):
     """Utility function to search docstrings for string `what`."""
     np.lookfor(what, module="pygimli", import_modules=False)
 
-from .base import isScalar, isArray, isPos, isR3Array, isComplex, isMatrix
+from .base import (isScalar, isArray, isPos, 
+                   isR3Array, isPosList, isComplex, isMatrix)
 
 # Import from submodules at the end
 from .mesh import Mesh, MeshEntity, Node
 from .datacontainer import DataContainer, DataContainerERT
-from .trans import *
+from .trans import *  # why do we need that?
 
 # from .matrix import (Cm05Matrix, LMultRMatrix, LRMultRMatrix, MultLeftMatrix,
 #                      MultLeftRightMatrix, MultRightMatrix, RMultRMatrix)
