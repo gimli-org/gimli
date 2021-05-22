@@ -53,10 +53,8 @@ if [[ $core_update -ge 1 ]]; then
   echo "# Core changes detected. #"
   touch CMakeCache.txt
 
-  cmake ../trunk \
-     -DPYTHON_EXECUTABLE=/usr/bin/python3 \
-     -DBoost_PYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libboost_python3-py37.so
-
+  cmake ../trunk -DPYTHON_EXECUTABLE=/usr/bin/python3
+     
   #cmake ../trunk \
   #   -DPYVERSION=3 \
   #   -DPYTHON_EXECUTABLE=/usr/bin/python3 \
