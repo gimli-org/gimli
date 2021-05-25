@@ -42,6 +42,7 @@ pgcore.CSparseMapMatrix.dtype = np.complex
 pgcore.RSparseMatrix.dtype = np.float
 pgcore.CSparseMatrix.dtype = np.complex
 
+
 def __RMatrix_str(self):
     import pygimli as pg
     s = "RMatrix: " + str(self.rows()) + " x " + str(self.cols())
