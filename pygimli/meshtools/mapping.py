@@ -278,6 +278,11 @@ def interpolateAlongCurve(curve, t, **kwargs):
         periodic : bool [False]
             Curve is periodic.
             Usefull for closed parametric spline interpolation.
+    
+    TODO
+    ----
+        * 'linear'
+    
     Returns
     -------
 
@@ -290,19 +295,22 @@ def interpolateAlongCurve(curve, t, **kwargs):
     >>> import numpy as np
     >>> import pygimli as pg
     >>> import pygimli.meshtools as mt
-    >>> fig, axs = pg.plt.subplots(2,2)
-    >>> topo = np.array([[-2., 0.], [-1., 0.], [0.5, 0.], [3., 2.], [4., 2.], [6., 1.], [10., 1.], [12., 1.]])
-    >>> t = np.arange(15.0)
+    >>> fig, axs = pg.plt.subplots(1,3, figsize=(9,4))
+    >>> topo = np.array([[-2., 0.], [-1., 0.], [0.5, 0.], [3., 8.], [4., 8.], [10., 1.], [13., 1.], [14., 1.]])
+    >>> t = np.arange(26.0)
     >>> p = mt.interpolateAlongCurve(topo, t)
-    >>> _= axs[0,0].plot(topo[:,0], topo[:,1], '-x', mew=2)
-    >>> _= axs[0,1].plot(p[:,0], p[:,1], 'o', color='red') #doctest: +ELLIPSIS
+    >>> _= axs[0].plot(p[:,0], p[:,1], 'o', color='red', label='linear') #doctest: +ELLIPSIS
     >>>
     >>> p = mt.interpolateAlongCurve(topo, t, method='spline')
-    >>> _= axs[1,0].plot(p[:,0], p[:,1], '-o', color='black') #doctest: +ELLIPSIS
+    >>> _= axs[1].plot(p[:,0], p[:,1], 'o', color='black', label='spline') #doctest: +ELLIPSIS
     >>>
-    >>> p = mt.interpolateAlongCurve(topo, t, method='harmonic', nc=3)
-    >>> _= axs[1,1].plot(p[:,0], p[:,1], '-o', color='green') #doctest: +ELLIPSIS
+    >>> p = mt.interpolateAlongCurve(topo, t, method='harmonic', nc=2)
+    >>> _= axs[2].plot(p[:,0], p[:,1], 'o', color='green', label='harmonic') #doctest: +ELLIPSIS
     >>>
+    >>> for a in axs:
+    ...     _= a.plot(topo[:,0], topo[:,1], '-', lw=1, label='curve')
+    ...     _= a.legend()
+    ...     _= a.set_aspect(1)
     >>> pg.plt.show()
     """
     xC = np.zeros(len(curve))
@@ -334,23 +342,20 @@ def interpolateAlongCurve(curve, t, **kwargs):
         ], axis=0)
         tCurve = np.append(tCurve, max(t))
 
-    if isinstance(curve, pg.core.R3Vector) or isinstance(
-            curve, pg.core.stdVectorRVector3):
-        xC = pg.x(curve)
-        yC = pg.y(curve)
-        zC = pg.z(curve)
-    else:
-        curve = np.array(curve)
-
+    if isinstance(curve, np.ndarray):
         if curve.shape[1] == 2:
             xC = curve[:, 0]
-            zC = curve[:, 1]
+            yC = curve[:, 1]
             dim = 2
         else:
             xC = curve[:, 0]
             yC = curve[:, 1]
             zC = curve[:, 2]
-
+    else:
+        xC = pg.x(curve)
+        yC = pg.y(curve)
+        zC = pg.z(curve)
+        
     if len(kwargs.keys()) > 0 and (kwargs.get('method', 'linear') != 'linear'):
 
         # interpolate more curve points to get a smooth line, guarantee to keep
@@ -360,19 +365,19 @@ def interpolateAlongCurve(curve, t, **kwargs):
         ti = np.append(ti, tCurve[-1])
 
         xC = pg.interpolate(ti, tCurve, xC, **kwargs)
-        zC = pg.interpolate(ti, tCurve, zC, **kwargs)
+        yC = pg.interpolate(ti, tCurve, yC, **kwargs)
 
         if dim == 3:
-            yC = pg.interpolate(ti, tCurve, yC, **kwargs)
+            zC = pg.interpolate(ti, tCurve, zC, **kwargs)
         tCurve = ti
 
     xt = interpolate(t, tCurve, xC)
-    zt = interpolate(t, tCurve, zC)
+    yt = interpolate(t, tCurve, yC)
 
     if dim == 2:
-        return np.vstack([xt, zt]).T
+        return np.vstack([xt, yt]).T
 
-    yt = interpolate(t, tCurve, yC)
+    zt = interpolate(t, tCurve, zC)
 
     return np.vstack([xt, yt, zt]).T
 

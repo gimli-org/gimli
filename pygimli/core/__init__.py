@@ -798,7 +798,6 @@ def abs(v):
         return pgcore.absR3(v)
     elif isinstance(v, list):
         ## possible [x,y,[z]] or [pos, ...]
-        print(v)
         try:
             return pgcore.RVector3(v).abs()
         except:
@@ -817,10 +816,11 @@ def abs(v):
         for i in range(len(v)):
             v[i] = pgcore.abs(v[i])
         return v
-    elif hasattr(v, 'vals'):
-        return pg.abs(v.vals)
     elif hasattr(v, 'values'):
-        return pg.abs(v.values)
+        #import pygimli as pg
+        return abs(v.values)
+    elif hasattr(v, 'vals'):
+        return abs(v.vals)
 
     return pgcore.fabs(v)
 

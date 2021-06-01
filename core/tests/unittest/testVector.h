@@ -434,6 +434,7 @@ public:
     void testMatrix(){
         testMatrix_< double >();
         testMatrixMult();
+        testMatrixResizes();
 //        testMatrix_< float >();
     }
 
@@ -480,6 +481,54 @@ public:
                        GIMLI::RVector(std::vector< double >{70., 80., 90}));
         CPPUNIT_ASSERT(C2[1] ==
                        GIMLI::RVector(std::vector< double >{158, 184, 210}));
+    }
+
+    void testMatrixResizes(){
+        GIMLI::RMatrix A(1, 3);
+        A += 1.0; A[0][2] = 3;
+        GIMLI::RMatrix B(2, 3);
+        B += 2.0;
+        GIMLI::RMatrix AB(2, 3);
+        AB += 3.0; AB[0][2] = 5; AB[1][2] = 5;
+        
+        // std::cout << "A\n" << A << std::endl;
+        // std::cout << "B\n" << B << std::endl;
+
+        // std::cout << AB << std::endl;
+
+        // std::cout << "A+B\n" << A+B << std::endl;
+        // std::cout << "B+A\n" << B+A << std::endl;
+
+        CPPUNIT_ASSERT(A+B == AB);
+        CPPUNIT_ASSERT(B+A == AB);
+        
+
+        A = GIMLI::RMatrix(3, 1);
+        A += 1.0; A[2][0] = 3;
+        B = GIMLI::RMatrix(3, 2);
+        B += 2.0;
+        AB = GIMLI::RMatrix(3, 2);
+        AB += 3.0; AB[2][0] = 5; AB[2][1] = 5;
+        
+
+        // std::cout << "A" << A << std::endl;
+        // std::cout << "B" << B << std::endl;
+
+        // std::cout << AB << std::endl;
+
+        // std::cout << "A+B:" << A+B << std::endl;
+        // std::cout << "B+A:" << B+A << std::endl;
+
+        CPPUNIT_ASSERT(A+B == AB);
+        CPPUNIT_ASSERT(B+A == AB);
+
+
+
+
+
+
+
+
     }
 
     void testBlockMatrix(){

@@ -538,7 +538,7 @@ struct Numpy2RMatrix{
                     }
                 }
             } else {
-                GIMLI::throwToImplement("numpy.ndarray is not one segment .. not yet implemented.");
+                GIMLI::throwToImplement("numpy.ndarray is not one segment .. not yet implemented. .. try convert them with: np.ascontiguousarray(..) or drop a note with it seems to be a performance issue.");
             }
 
             return;

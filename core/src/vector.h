@@ -63,6 +63,9 @@ namespace GIMLI{
 template < class ValueType, class A > class __VectorExpr;
 
 IndexArray find(const BVector & v);
+DLLEXPORT IndexArray range(Index start, Index stop, Index step=1);
+DLLEXPORT IndexArray range(Index stop);
+
 
 #ifndef PYGIMLI_CAST
 inline void Dump(const void * mem, unsigned int n) {
@@ -666,6 +669,7 @@ DEFINE_COMPARE_OPERATOR__(>, std::greater)
 
 #define DEFINE_UNARY_MOD_OPERATOR__(OP, FUNCT) \
   inline Vector< ValueType > & operator OP##= (const Vector < ValueType > & v) { \
+        if (v.size() == 1) return *this OP##= v[0];\
         ASSERT_EQUAL_SIZE((*this), v) \
         std::transform(data_, data_ + size_, &v[0], data_, FUNCT()); return *this; } \
   inline Vector< ValueType > & operator OP##= (const ValueType & val) { \

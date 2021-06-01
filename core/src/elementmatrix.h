@@ -126,7 +126,7 @@ public:
                                      );
 
     /*! Get integration weights and points for the entity. */
-    void getWeightsAndPoints(const MeshEntity & ent,
+    void findWeightsAndPoints(const MeshEntity & ent,
                 const RVector * &w, const PosVector * &x, int order);
 
 
@@ -320,6 +320,9 @@ public:
     /*! Integrate, i.e., sum over quadrature matrices.*/
     void integrate() const;
 
+    /*! Set submatrices. matx of (nWeight, shape(mat.T))*/
+    void setMatXI(Index i, const Matrix < ValueType > & mat);
+
     /*! Return reference to all matrices per quadrature point.*/
     const std::vector < Matrix < ValueType > > & matX() const { return _matX; }
 
@@ -339,14 +342,14 @@ public:
     // MeshEntity & rEntity() const { return (*const_cast< MeshEntity *>(_ent)); }
 
     /*! Return const reference to quadrature points.*/
-    void setX(const PosVector & p) { _x = &p; }
+    void setX(const PosVector & p);
     
     /*! Return const reference to quadrature points.*/
     const PosVector * x() const { return _x; }
     // /*! Return const reference to quadrature points.*/
     // const PosVector & x() const { ASSERT_PTR(_x); return *_x; }
 
-    void setW(const RVector & w) { _w = &w; }
+    void setW(const RVector & w);
 
     /*! Return const reference to quadrature weights.*/
     const RVector * w() const { return _w; }
@@ -408,8 +411,10 @@ protected:
     const MeshEntity * _ent;
     const RVector * _w;
     const PosVector * _x;
+    
     // matrices per quadrature point
     std::vector < Matrix < ValueType > > _matX;
+    
 
     bool _newStyle;
     bool _div;
@@ -570,7 +575,8 @@ DEFINE_CREATE_FORCE_VECTOR(const FEAFunction &)
 and ent assiated mesh entity.*/
 class DLLEXPORT FEAFunction {
 public:
-    FEAFunction(Index valueSize): _valueSize(valueSize){ }
+    FEAFunction(Index valueSize)
+        : _valueSize(valueSize), _evalOnCellCenter(false){ }
 
     virtual ~FEAFunction() { }
 

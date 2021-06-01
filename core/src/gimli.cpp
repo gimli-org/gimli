@@ -17,6 +17,7 @@
  ******************************************************************************/
 
 #include "gimli.h"
+#include "vector"
 
 #include <cerrno>
 #include <cstring>

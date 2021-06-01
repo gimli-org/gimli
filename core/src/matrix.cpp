@@ -152,7 +152,7 @@ void matMultABA(const RMatrix & A, const RMatrix & B, RMatrix & C,
 }
 
 void matMult(const RMatrix & A, const RMatrix & B, RMatrix & C, double a, double b){
-    // C = a * A*B + b *C || C += a * A*B.T + b*C
+    // C = a * A*B + b *C || C = a * A*B.T + b*C
     // __MS("matMult: "<< A.rows() << " " << A.cols() << " : " << B.rows() << " " << B.cols())
     Index m = A.rows(); // C.rows()
     Index n = B.cols(); // C.cols()
@@ -189,7 +189,13 @@ void matMult(const RMatrix & A, const RMatrix & B, RMatrix & C, double a, double
                 for (Index k = 0; k < A.cols(); k ++){
                     c += A[i][k] * B[k][j];
                 }
-                C[i][j] = b * C[i][j] + a * c;
+                if (b == 0.0){
+                    C[i][j] = a * c;
+                } else if (b == 1.0){
+                    C[i][j] += a * c;
+                } else {
+                    C[i][j] = b * C[i][j] + a * c;
+                }
             }
         }
 #endif
