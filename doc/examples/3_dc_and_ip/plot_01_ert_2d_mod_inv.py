@@ -9,7 +9,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import pygimli as pg
-# pg.setTestingMode(True)
 import pygimli.meshtools as mt
 from pygimli.physics import ert
 
@@ -103,7 +102,7 @@ mgr = ert.ERTManager('simple.dat')
 # Run the inversion with the preset data. The Inversion mesh will be created
 # with default settings.
 inv = mgr.invert(lam=20, verbose=True)
-np.testing.assert_approx_equal(mgr.inv.chi2(), 0.7, significant=1) 
+np.testing.assert_approx_equal(mgr.inv.chi2(), 0.7, significant=1)
 
 ###############################################################################
 # Let the ERTManger show you the model of the last successful run and how it
@@ -115,7 +114,7 @@ meshPD = pg.Mesh(mgr.paraDomain) # Save copy of para mesh for plotting later
 # You can also provide your own mesh (e.g., a structured grid if you like them)
 # Note, that x and y coordinates needs to be in ascending order to ensure that
 # all the cells in the grid have the correct orientation, i.e., all cells need
-# to be numbered counter-clockwise and the boundary normal directions need to 
+# to be numbered counter-clockwise and the boundary normal directions need to
 # point outside.
 inversionDomain = pg.createGrid(x=np.linspace(start=-18, stop=18, num=33),
                                 y=-pg.cat([0], pg.utils.grange(0.5, 8, n=5))[::-1],
@@ -128,7 +127,7 @@ inversionDomain = pg.createGrid(x=np.linspace(start=-18, stop=18, num=33),
 # cell marker in the mesh will be the inversion boundary region by default.
 grid = pg.meshtools.appendTriangleBoundary(inversionDomain, marker=1,
                                            xbound=50, ybound=50)
-
+pg.show(grid, markers=True)
 
 ###############################################################################
 # The Inversion can be called with data and mesh as argument as well
