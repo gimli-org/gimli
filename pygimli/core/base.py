@@ -41,7 +41,7 @@ def isArray(v, N=None):
     >>> import pygimli as pg
     >>> print(pg.isArray([0, 1]))
     True
-    >>> print(pg.isArray(np.array(5)))
+    >>> print(pg.isArray(np.ndarray(5)))
     True
     >>> print(pg.isArray(pg.Vector(5)))
     True
@@ -53,8 +53,12 @@ def isArray(v, N=None):
     False
     """
     if N is None:
-        return (hasattr(v, '__iter__') and isScalar(v[0])) and not \
-            isinstance(v, (str))
+        
+        if isinstance(v, list):
+            return isScalar(v[0])
+            
+        return (hasattr(v, '__iter__') and \
+            not isinstance(v, (str))) and v.ndim == 1
 
     return isArray(v) and len(v) == N
 
