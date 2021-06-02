@@ -1,15 +1,12 @@
 <!---
-Readme for Github repository only. (Get's selected before *.rst file)
+Readme for Github repository only. (Gets selected before *.rst file)
 -->
 
 <a href="https://www.pygimli.org">
   <img src="https://www.pygimli.org/_images/pg_logo.png" width="50%">
 </a>
 
-<!--- Currently disables
-[![Build Status](http://g4.geo.uni-bonn.de:8080/buildStatus/icon?job=pyGIMLi&style=flat)](http://g4.geo.uni-bonn.de:8080/job/pyGIMLi/)
-[![Code Health](https://landscape.io/github/gimli-org/gimli/master/landscape.svg)](https://landscape.io/github/gimli-org/gimli/master)
--->
+[![Build Status](http://jenkins.pygimli.org/job/pyGIMLi_dev/badge/icon)](http://jenkins.pygimli.org/job/pyGIMLi_dev/)
 [![license](https://img.shields.io/github/license/gimli-org/gimli.svg?style=flat-square)](https://pygimli.org/license.html)
 [![release](https://img.shields.io/github/release/gimli-org/gimli.svg?style=flat-square)](https://github.com/gimli-org/gimli/releases/latest)
 [![Github commits (since latest release)](https://img.shields.io/github/commits-since/gimli-org/gimli/latest.svg?style=flat-square)](https://github.com/gimli-org/gimli/tree/dev)

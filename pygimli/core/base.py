@@ -34,14 +34,19 @@ def isScalar(v, val=None):
     return isinstance(v, (int, float, complex, np.complex128)) and v == val
 
 def isArray(v, N=None):
-    """Check if v is an 1d array or a vector, with optional size.
+    """Check if `v` is a 1D array or a vector, with optional size `N`.
 
     Examples
     --------
     >>> import pygimli as pg
+    >>> import numpy as np
     >>> print(pg.isArray([0, 1]))
     True
+<<<<<<< HEAD
     >>> print(pg.isArray(np.ndarray(5)))
+=======
+    >>> print(pg.isArray(np.ones(5)))
+>>>>>>> 6973cc2254e9168fef876564a836df2eb6cfe79d
     True
     >>> print(pg.isArray(pg.Vector(5)))
     True

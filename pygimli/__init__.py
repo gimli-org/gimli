@@ -171,18 +171,17 @@ def findVersion(cache=True):
     #         return tag
     #     return None
 
+    _branch = _get_branch()
+
     if __versions__["dirty"]:
         __version__ = __version__.replace(".dirty", " (with local changes")
-
-        _branch = _get_branch()
-        # print('######', _branch)
-        # _tag = _get_latest_tag()
-        # print('######', _tag)
 
         if _branch:
             __version__ += " on %s branch)" % _branch
         else:
             __version__ += ")"
+    elif "+" in __version__:
+        __version__ += " (%s)" % _branch
 
     if not os.path.exists(versionCacheFile):
         os.makedirs(os.path.dirname(versionCacheFile), exist_ok=True)
@@ -190,6 +189,8 @@ def findVersion(cache=True):
     with open(versionCacheFile, 'w') as fi:
         fi.write(__version__)
         debug('Wrote version info to cache:', versionCacheFile, __version__)
+        
+    return __version__
 
 # call once to get version from cache, setup or _version.py
 findVersion()
