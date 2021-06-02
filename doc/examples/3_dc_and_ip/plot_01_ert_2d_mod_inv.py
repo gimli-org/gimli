@@ -118,7 +118,7 @@ meshPD = pg.Mesh(mgr.paraDomain) # Save copy of para mesh for plotting later
 # You can also provide your own mesh (e.g., a structured grid if you like them)
 #
 inversionDomain = pg.createGrid(x=np.linspace(start=-18, stop=18, num=33),
-                                y=-pg.cat([0], pg.utils.grange(0.5, 8, n=8)),
+                                y=-pg.cat([0], pg.utils.grange(0.5, 8, n=5))[::-1],
                                 marker=2)
 ###############################################################################
 # The inversion domain for ERT problems needs a boundary that represents the
@@ -129,6 +129,7 @@ inversionDomain = pg.createGrid(x=np.linspace(start=-18, stop=18, num=33),
 grid = pg.meshtools.appendTriangleBoundary(inversionDomain, marker=1,
                                            xbound=50, ybound=50)
 
+pg.show(grid, markers=True)
 ###############################################################################
 # The Inversion can be called with data and mesh as argument as well
 #
