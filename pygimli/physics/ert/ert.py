@@ -305,7 +305,7 @@ def simulateOld(mesh, scheme, res, sr=True, useBert=True,
 
 
 @pg.cache
-def createGeometricFactors(scheme, numerical=None, mesh=None,
+def createGeometricFactors(scheme, numerical=None, mesh=None, dim=3,
                            h2=True, p2=True, verbose=False):
     """Create geometric factors for a given data scheme.
 
@@ -346,7 +346,7 @@ def createGeometricFactors(scheme, numerical=None, mesh=None,
         if verbose:
             pg.info('Calculate analytical flat earth geometric factors.')
 
-        return pg.core.geometricFactors(scheme, forceFlatEarth=True)
+        return pg.core.geometricFactors(scheme, forceFlatEarth=True, dim=dim)
 
     if mesh is None:
         mesh = createInversionMesh(scheme)
