@@ -3,6 +3,7 @@
 import struct
 import numpy as np
 import pygimli as pg
+from .tt import DataContainerTT
 
 
 def load(fileName, verbose=False, **kwargs):
@@ -26,7 +27,8 @@ def load(fileName, verbose=False, **kwargs):
     elif fileName.lower().endswith('.tom'):
         data = readTOMfile(fileName)
     else:
-        data = pg.DataContainer(fileName, sensorTokens='s g')
+        data = DataContainerTT(fileName)
+        # data = pg.DataContainer(fileName, sensorTokens='s g')
 
     return data
 
