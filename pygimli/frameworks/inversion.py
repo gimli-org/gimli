@@ -270,6 +270,7 @@ class Inversion(object):
     @minDPhi.setter
     def minDPhi(self, dPhi):
         return self.setDeltaChiStop(dPhi)
+
     def setDeltaChiStop(self, it):
         self.inv.setDeltaPhiAbortPercent(it)
 
