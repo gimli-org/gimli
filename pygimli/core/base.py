@@ -42,11 +42,7 @@ def isArray(v, N=None):
     >>> import numpy as np
     >>> print(pg.isArray([0, 1]))
     True
-<<<<<<< HEAD
-    >>> print(pg.isArray(np.ndarray(5)))
-=======
     >>> print(pg.isArray(np.ones(5)))
->>>>>>> 6973cc2254e9168fef876564a836df2eb6cfe79d
     True
     >>> print(pg.isArray(pg.Vector(5)))
     True
