@@ -28,7 +28,7 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
     """
     # sort out a few kwargs to not confuse the plotter initialization
     show_edges = kwargs.pop('show_edges', True)
-    opacity = kwargs.pop('alpha', 1)
+    opacity = kwargs.pop('alpha', kwargs.pop('opacity', 1))
     cmap = kwargs.pop('cmap', None)
     color = kwargs.pop('color', 'k')
     style = kwargs.pop('style', 'wireframe')
@@ -46,14 +46,13 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
     if isinstance(mesh, pg.Mesh):
         mesh = pgMesh2pvMesh(mesh)
 
-    _actor = ax.add_mesh(
-        mesh,  # type: pv.UnstructuredGrid
-        cmap=cmap,
-        color=color,
-        style=style,
-        show_edges=show_edges,
-        opacity=opacity,
-    )
+    _actor = ax.add_mesh(mesh,  # type: pv.UnstructuredGrid
+                         cmap=cmap,
+                         color=color,
+                         style=style,
+                         show_edges=show_edges,
+                         opacity=opacity,
+                         )
 
     if returnActor:
         return ax, _actor

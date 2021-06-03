@@ -5,8 +5,10 @@ r"""
 Geoelectrics in 2.5D
 --------------------
 
-Aim is to perform geoelectrical (DC resistivity) forward modelling in 2.5 D, i.e.
-a 2D conductivity distribution and 3D point sources.
+This example shows geoelectrical (DC resistivity) forward modelling in 2.5 D, i.e.
+a 2D conductivity distribution and 3D point sources, to illustrate the modeling level.
+For ready-made ERT forward simulations in practice, please refer to the example on ERT
+modeling and inversion using the ERTManager.
 
 """
 ###############################################################################

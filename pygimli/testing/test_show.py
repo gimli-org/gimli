@@ -5,8 +5,6 @@ import sys
 import numpy as np
 import matplotlib.pyplot as plt
 
-#plt.xkcd()
-
 import pygimli as pg
 import pygimli.meshtools as mt
 
@@ -197,10 +195,15 @@ def testShowPV():
     #pg.show(m1, notebook=True)
 
     pg.show(m1, gui=False)
+
+def testCoverage():
+    grid = pg.createGrid(10,10)
+    cov = pg.y(grid.cellCenters()).array()
+    cov[-9:] = 0 # remove first row
+    data = pg.Vector(grid.cellCount(), 1.0)
+    pg.show(grid, data, coverage=cov)
     
-
 if __name__ == '__main__':
-
     if len(sys.argv) > 0:
         locals()[sys.argv[1]]()
     else:
@@ -208,4 +211,5 @@ if __name__ == '__main__':
         testColorbar()
         testCBarLevels()
         testColRange()
+        testCoverage()
     

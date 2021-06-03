@@ -1,10 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""2.5D non-optimized totalfield forward operator for ERT.
-
-Please use the BERT package for more advanced forward operator
-https://gitlab.com/resistivity-net/bert
-"""
+"""Method Manager for Electrical Resistivity Tomography (ERT)"""
 
 import os.path
 import numpy as np
