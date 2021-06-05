@@ -275,7 +275,7 @@ class TestFiniteElementBasics(unittest.TestCase):
         # 3D tet
         mesh = pg.meshtools.createMesh(pg.meshtools.createCube(size=[4, 4, 4],
                                                                boundaryMarker=9,
-                                                               area=100.1))
+                                                               area=1.1))
 
         for b in mesh.boundaries(mesh.boundaryMarkers() == 9):
 
@@ -287,8 +287,8 @@ class TestFiniteElementBasics(unittest.TestCase):
         _testP1_(mesh, show=False)
         #pg.wait()
 
-        grid = pg.createGrid(x=np.linspace(-2, 2, 11), y=np.linspace(0, 1, 11))
-        grid.rotate([0, 0, np.pi/4])
+        # grid = pg.createGrid(x=np.linspace(-2, 2, 11), y=np.linspace(0, 1, 11))
+        # grid.rotate([0, 0, np.pi/4])
         #can't find proper test for this rotated case
         #v = _testP1_(grid, show=False) #2D reg - rotated
 
