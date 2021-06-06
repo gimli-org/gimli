@@ -2,7 +2,6 @@
 """
 pyGIMLi - An open-source library for modelling and inversion in geophysics
 """
-1/0
 import sys
 import locale
 
