@@ -10,7 +10,7 @@ from .core.decorators import (renamed, singleton)
 ### Import everything that should be accessible through main namespace.
 from .core import (BVector, CVector, DataContainer, DataContainerERT,
                    IVector, Line, Mesh, Plane, Pos,
-                   RVector3, Vector, abs, cat, center, exp, find,
+                   RVector3, Vector, PosList, abs, cat, center, exp, find,
                    interpolate, log, log10, logDropTol, max,
                    mean, median, min, search, setDebug, setThreadCount, sort,
                    Stopwatch, sum, trans, unique, versionStr, x, y, z, zero)
@@ -22,7 +22,7 @@ from .core import matrix # alias all from .core.matrix.* to pg.matrix.*
 
 from .core.matrix import (BlockMatrix, Matrix, SparseMapMatrix, SparseMatrix)
 
-from .core.logger import (_, _d, _g, _r, _y, _b, critical, d, debug, 
+from .core.logger import (_, _d, _g, _r, _y, _b, critical, d, debug,
                           deprecated, renameKwarg,
                           error, info, setDebug, setLogLevel, setVerbose, v,
                           verbose, warn)
@@ -108,7 +108,7 @@ def findVersion(cache=True):
     import os
     global __version__
 
-    
+
     #setDebug(False)
     root = os.path.abspath(os.path.join(__file__, "../../"))
     gitPath = os.path.join(root, '.git')
@@ -171,18 +171,17 @@ def findVersion(cache=True):
     #         return tag
     #     return None
 
+    _branch = _get_branch()
+
     if __versions__["dirty"]:
         __version__ = __version__.replace(".dirty", " (with local changes")
-
-        _branch = _get_branch()
-        # print('######', _branch)
-        # _tag = _get_latest_tag()
-        # print('######', _tag)
 
         if _branch:
             __version__ += " on %s branch)" % _branch
         else:
             __version__ += ")"
+    elif "+" in __version__:
+        __version__ += " (%s)" % _branch
 
     if not os.path.exists(versionCacheFile):
         os.makedirs(os.path.dirname(versionCacheFile), exist_ok=True)
@@ -190,6 +189,8 @@ def findVersion(cache=True):
     with open(versionCacheFile, 'w') as fi:
         fi.write(__version__)
         debug('Wrote version info to cache:', versionCacheFile, __version__)
+
+    return __version__
 
 # call once to get version from cache, setup or _version.py
 findVersion()

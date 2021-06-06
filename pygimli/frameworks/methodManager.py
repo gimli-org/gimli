@@ -349,7 +349,7 @@ class MethodManager(object):
         vals = self.checkError(err, dataVals)
 
         if vals is None:
-            pg.warn('No data array given, set Fallback set to 1%')
+            pg.warn('No data error given, set Fallback set to 1%')
             vals = np.ones(len(dataVals)) * 0.01
 
         try:
@@ -359,7 +359,6 @@ class MethodManager(object):
                             " with a valid 'err' ", min(vals), max(vals))
         except Exception as e:
             pg.critical("Can't estimate data error")
-
 
         return vals
 
@@ -669,6 +668,7 @@ class MeshMethodManager(MethodManager):
         """ """
         if ignoreRegionManager:
             mesh = self.fop.createRefinedFwdMesh(mesh, **kwargs)
+
         self.fop.setMesh(mesh, ignoreRegionManager=ignoreRegionManager)
 
     def invert(self, data=None, mesh=None, zWeight=1.0, startModel=None,

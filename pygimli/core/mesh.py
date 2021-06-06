@@ -7,7 +7,7 @@ import numpy as np
 from math import ceil
 
 from .core import (cat, HexahedronShape, Line, RSparseMapMatrix,
-                        Mesh, MeshEntity, Node, Boundary, RVector,
+                        Mesh, MeshEntity, Node, Boundary, RVector, RVector3,
                         PolygonFace, TetrahedronShape, TriangleFace)
 from .logger import deprecated, error, info, warn
 
@@ -172,8 +172,8 @@ Mesh.__getitem__ = __Mesh_getVal
 
 def __MeshBoundingBox__(self):
     bb = self.boundingBox()
-    mi = [bb.min()[i] for i in range(self.dim())]
-    ma = [bb.max()[i] for i in range(self.dim())]
+    mi = RVector3([bb.min()[i] for i in range(self.dim())])
+    ma = RVector3([bb.max()[i] for i in range(self.dim())])
     return [mi, ma]
 Mesh.bb = __MeshBoundingBox__
 

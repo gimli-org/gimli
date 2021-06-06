@@ -84,9 +84,7 @@ We use or link some third-party software (beside the usual tool stack: cmake, gc
 
 * libkdtree++: Maybe abandoned, mirror: https://github.com/nvmd/libkdtree
 
-* Tetgen: http://wias-berlin.de/software/index.jsp?id=TetGen&lang=1
-
-* Triangle: https://www.cs.cmu.edu/~quake/triangle.html
+* meshio: https://github.com/nschloe/meshio
 
 * pyplusplus: https://pypi.org/project/pyplusplus/
 
@@ -94,5 +92,8 @@ We use or link some third-party software (beside the usual tool stack: cmake, gc
 
 * suitesparse, umfpack: https://people.engr.tamu.edu/davis/suitesparse.html
 
+* Tetgen: http://wias-berlin.de/software/index.jsp?id=TetGen&lang=1
+
+* Triangle: https://www.cs.cmu.edu/~quake/triangle.html
 
 
