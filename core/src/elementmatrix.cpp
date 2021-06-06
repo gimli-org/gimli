@@ -91,7 +91,8 @@ ElementMatrix < double >::operator += (const ElementMatrix < double > & E){
 template < > DLLEXPORT void 
 ElementMatrix < double >::setMatXI(Index i, const Matrix < double > & mat){
     ASSERT_RANGE(i, 0, this->_matX.size())
-    _matX[i] = mat;
+    //this->_integrated = false; ## better here but lead to problems until integration is marked correctly for ref imnpl.
+    this->_matX[i] = mat;
 }
 template < > DLLEXPORT void 
 ElementMatrix < double >::setX(const PosVector & p) { 

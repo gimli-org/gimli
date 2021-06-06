@@ -68,6 +68,7 @@ def __CMatrix_str(self):
 def __ElementMatrix_str(self):
     """Show entries of an ElementMatrix."""
     import pygimli as pg
+    self.integrate()
     if self.mat().cols() == 0 and self.mat().rows() == 0:
         return 'Empty ElementMatrix\n'
 

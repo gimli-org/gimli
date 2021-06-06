@@ -550,14 +550,17 @@ def addCoverageAlpha(patches, coverage, dropThreshold=0.4):
 #        print('taking the values directly')
 
     # add alpha value to the color values
+    pg._g(C)
     cols[:, 3] = C
 
     patches._facecolors = cols
 
     # delete patch data to avoid automatically rewrite of _facecolors
-    patches._A = None
+    #patches._A = None
 
     if hasattr(patches, 'ax'):
         updateAxes(patches.ax)
+    elif hasattr(patches, 'axes'):
+        updateAxes(patches.axes)
     elif hasattr(patches, 'get_axes'):
         updateAxes(patches.get_axes())
