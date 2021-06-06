@@ -10,7 +10,7 @@ Readme for Github repository only. (Gets selected before *.rst file)
 [![license](https://img.shields.io/github/license/gimli-org/gimli.svg?style=flat-square)](https://pygimli.org/license.html)
 [![release](https://img.shields.io/github/release/gimli-org/gimli.svg?style=flat-square)](https://github.com/gimli-org/gimli/releases/latest)
 [![Github commits (since latest release)](https://img.shields.io/github/commits-since/gimli-org/gimli/latest.svg?style=flat-square)](https://github.com/gimli-org/gimli/tree/dev)
-
+[![Slack](https://img.shields.io/badge/Slack-pGIMLi-yellow.svg?logo=slack&style=flat-square)](https://swung.slack.com/archives/C01US4T522X)
 
 [pyGIMLi](www.pygimli.org) is an open-source library for modelling and inversion and in geophysics. The object-oriented library provides management for structured and unstructured meshes in 2D and 3D, finite-element and finite-volume solvers, various geophysical forward operators, as well as Gauss-Newton based frameworks for constrained, joint and fully-coupled inversions with flexible regularization.
 
