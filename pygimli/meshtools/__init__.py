@@ -11,7 +11,11 @@ Mesh generation and modification.
 from pygimli.core import createMesh1D, createMesh1DBlock, createMesh2D, createMesh3D
 
 from .grid import (createGrid, createGridPieShaped,
-                   appendTetrahedronBoundary, appendTriangleBoundary)
+                   appendBoundary,
+                   appendBoundaryGrid,
+                   appendTriangleBoundary,
+                   appendTetrahedronBoundary, 
+                   )
 from .mapping import (cellDataToBoundaryData, cellDataToNodeData,
                       fillEmptyToCellArray, interpolate, interpolateAlongCurve,
                       nodeDataToBoundaryData, nodeDataToCellData,
@@ -22,7 +26,8 @@ from .mesh import (convert, convertMeshioMesh, convertHDF5Mesh, createMesh,
                    exportSTL, extrudeMesh, merge2Meshes, mergeMeshes,
                    readFenicsHDF5Mesh, readGmsh, readHDF5Mesh,
                    readHydrus2dMesh, readHydrus3dMesh, readSTL, readTetgen,
-                   readTriangle, readMeshIO, refineHex2Tet, refineQuad2Tri)
+                   readTriangle, readMeshIO, refineHex2Tet, refineQuad2Tri,
+                   toSubsurface, fromSubsurface)
 
 from .polytools import createParaDomain2D  # keep for backward compatibility
 from .polytools import (createCircle, createCube, createCylinder, createFacet,

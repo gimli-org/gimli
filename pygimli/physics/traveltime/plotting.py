@@ -8,7 +8,7 @@ import numpy as np
 import pygimli as pg
 from pygimli.viewer.mpl import createColorBar  # , updateColorBar
 # local
-from .ratools import shotReceiverDistances
+from .utils import shotReceiverDistances
 
 
 def drawTravelTimeData(ax, data, t=None):

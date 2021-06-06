@@ -270,12 +270,15 @@ def createColorBar(gci, orientation='horizontal', size=0.2, pad=None,
     ax = kwargs.pop('ax', None)
     if ax is None:
 
-        if hasattr(gci, 'ax'):
-            ax = gci.ax
-        elif hasattr(gci, 'axes'):
-            ax = gci.axes
-        elif hasattr(gci, 'get_axes'):
-            ax = gci.get_axes()
+        try:
+            if hasattr(gci, 'ax'): # deprecated since MPL 3.3
+                ax = gci.ax
+            elif hasattr(gci, 'axes'):
+                ax = gci.axes
+            elif hasattr(gci, 'get_axes'):
+                ax = gci.get_axes()
+        except:
+            pass
 
     cbar = None
     if hasattr(ax, '__cBar__'):
@@ -552,7 +555,7 @@ def addCoverageAlpha(patches, coverage, dropThreshold=0.4):
     patches._facecolors = cols
 
     # delete patch data to avoid automatically rewrite of _facecolors
-    patches._A = None
+    # patches._A = None
 
     if hasattr(patches, 'ax'):
         updateAxes(patches.ax)

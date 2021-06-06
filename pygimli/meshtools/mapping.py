@@ -526,8 +526,8 @@ def interpolate(*args, **kwargs):
         if isinstance(args[0], pg.Mesh):
             if len(args) == 2 and isinstance(args[1], pg.Mesh):
                 return pg.core.pgcore.interpolate(args[0], args[1],
-                                                     fillValue=fallback,
-                                                     verbose=verbose)
+                                                  fillValue=fallback,
+                                                  verbose=verbose)
 
             if len(args) == 3 and isinstance(args[1], pg.Mesh):
                 pgcore = False  # (outMesh, inMesh, vals)
@@ -541,9 +541,9 @@ def interpolate(*args, **kwargs):
 
                 outMat = pg.Matrix()
                 pg.core.pgcore.interpolate(args[0], inMat=np.array(args[1]),
-                                              destPos=args[2], outMat=outMat,
-                                              fillValue=fallback,
-                                              verbose=verbose)
+                                           destPos=args[2], outMat=outMat,
+                                           fillValue=fallback,
+                                           verbose=verbose)
                 return np.array(outMat)
 
         if len(args) == 4:  # args: (inMesh, inData, outPos, outData)

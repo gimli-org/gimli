@@ -27,12 +27,18 @@ def createGrid(x=None, y=None, z=None, **kwargs):
             y-coordinates for all Nodes (2D, 3D)
         z: array
             z-coordinates for all Nodes (3D)
-        marker : int = 0
+        marker: int = 0
             Marker for resulting cells.
         worldBoundaryMarker : bool = False
             Boundaries are enumerated with world marker, i.e., Top = -1
             All remaining = -2.
             Default marker are left=1, right=2, top=3, bottom=4, front=5, back=6
+
+    Returns
+    -------
+    :gimliapi:`GIMLI::Mesh`
+        Either 1D, 2D or 3D mesh depending the input.
+
 
     Examples
     --------
@@ -157,8 +163,38 @@ def createGridPieShaped(x, degree=10.0, h=2, marker=0):
     return meshR
 
 
+def appendBoundary(mesh, **kwargs):
+    """ Append Boundary to a given mesh.
+    
+    Syntactic sugar for :py:mod:`pygimli.meshtools.appendTriangleBoundary`
+    and :py:mod:`pygimli.meshtools.appendTetrahedronBoundary`.
+
+    Parameters
+    ----------
+    mesh: :gimliapi:`GIMLI::Mesh`
+        "2d or 3d Mesh to which the boundary will be appended.
+    
+    Additional Args
+    ---------------
+    ** kwargs forwarded to :py:mod:`pygimli.meshtools.appendTriangleBoundary`
+    or :py:mod:`pygimli.meshtools.appendTetrahedronBoundary`.
+
+    Returns
+    -------
+    :gimliapi:`GIMLI::Mesh`
+        A new 2D or 3D mesh containing the original mesh and a boundary arround.
+    """  
+    if mesh.dim() == 2:
+        return appendTriangleBoundary(mesh, **kwargs)
+    elif mesh.dim() == 3:
+        return appendTetrahedronBoundary(mesh, **kwargs)
+
+    pg.critical("Don't know how to append boundary to: ", mesh)
+
+
 def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1,        
-                           isSubSurface=True, **kwargs):
+                           isSubSurface=True,
+                           **kwargs):
     """Add a triangle mesh boundary to a given mesh.
 
     Returns a new mesh that contains a triangulated box around a given mesh
@@ -172,15 +208,15 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1,
 
     Parameters
     ----------
-    mesh : mesh object
+    mesh: :gimliapi:`GIMLI::Mesh`
         Mesh to which the triangle boundary should be appended.
-    xbound : float, optional
+    xbound: float, optional
         Absolute horizontal prolongation distance.
-    ybound : float, optional
+    ybound: float, optional
         Absolute vertical prolongation distance. 
-    marker : int, optional
+    marker: int, optional
         Marker of new cells.
-    isSubSurface : boolean [True]
+    isSubSurface: boolean [True]
         Apply boundary conditions suitable for geo-simulation and prolongate
         mesh to the surface if necessary.
     
@@ -198,10 +234,16 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1,
     addNodes : int[5], iterable
         Add aditional nodes on the outer boundaries.
     
+    Returns
+    -------
+    :gimliapi:`GIMLI::Mesh`
+        A new 2D mesh containing the original mesh and a boundary arround.
+
     See Also
     --------
-    appendTetrahedronBoundary
-    
+    :py:mod:`pygimli.meshtools.appendBoundary`
+    :py:mod:`pygimli.meshtools.appendTetrahedronBoundary`
+        
     Examples
     --------
     >>> import matplotlib.pyplot as plt
@@ -270,7 +312,8 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1,
                         [mesh.xmax() + xbound, mesh.ymin() - ybound],
                     ]
 
-        poly = pg.meshtools.createPolygon(boundPoly, isClosed=True, marker=marker,
+        poly = pg.meshtools.createPolygon(boundPoly, isClosed=True, 
+                                          marker=marker,
                                           addNodes=kwargs.pop('addNodes', 5))
 
     for b in mesh.boundaries():
@@ -320,27 +363,135 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1,
     return mesh3
 
 
-def appendTetrahedronBoundary(mesh, xbound=100, ybound=100, zbound=100,
-                              marker=1, quality=2, isSubSurface=False,
-                              verbose=False):
-    """    Return new mesh surrounded by tetrahedron boundary box.
+def appendBoundaryGrid(grid, xbound=None, ybound=None, zbound=None,          
+                       marker=1, isSubSurface=True, **kwargs):
+    """ Return a copy of grid surrounded by boundary grid.  
 
-    Creates a tetrahedral box around a given mesh
-    suitable for geo-simulation (surface boundary at top).
+    Note, that the input grid need to be a structured 2d or 3d grid with only quad or hex cells.
+    
+    TODO
+    ----
+        * preserve inner boundaries
+        * add subsurface setting
 
+    Args
+    ----
+    grid: :gimliapi:`GIMLI::Mesh`
+        2D or 3D Mesh that must contain structured quads or hex cells
+    xbound: iterable of type float [None]
+        Needed for 2D or 3D grid prolongation and will be added on the left side in opposit order and on the right side in normal order.
+    ybound: iterable of type float [None]
+        Needed for 2D or 3D grid prolongation and will be added (2D bottom, 3D fron) in opposit order and (2D top, 3D back) in normal order.
+    zbound: iterable of type float [None]
+        Needed for 3D grid prolongation and will be added the bottom side in opposit order on the top side in normal order.
+    marker: int [1]
+        Cellmarker for the cells in the boundary region
+    isSubSurface : boolean, optional
+        Apply boundary conditions suitable for geo-simulaion and prolongate
+        mesh to the surface if necessary, e.i., no boundary on top of the grid.
+    Examples
+    --------
+    >>> import pygimli as pg
+    >>> import pygimli.meshtools as mt
+    >>> grid = mt.createGrid(5,5)
+    ... 
+    >>> g1 = mt.appendBoundaryGrid(grid,
+    ...                            xbound=[1, 3, 6], 
+    ...                            ybound=[1, 3, 6], 
+    ...                            marker=2, 
+    ...                            isSubSurface=False)
+    >>> ax,_ = pg.show(g1, markers=True, showMesh=True)
+    >>> grid = mt.createGrid(5,5,5)
+    ... 
+    >>> g2 = mt.appendBoundaryGrid(grid,
+    ...                            xbound=[1, 3, 6], 
+    ...                            ybound=[1, 3, 6], 
+    ...                            zbound=[1, 3, 6], 
+    ...                            marker=2, 
+    ...                            isSubSurface=False)
+    >>> ax, _ = pg.show(g2, g2.cellMarkers(), hold=True, opacity=0.5);
+    """   
+    if isSubSurface == True:
+        pg.critical('Implement me')
+
+    def _concat(v, vBound):
+        if (not pg.isArray(vBound)):
+            pg.critical("please give bound array")
+
+        v = np.append(-np.array(vBound)[::-1] + v[0], v)
+        v = np.append(v, v[-1] + np.array(vBound))
+        return v
+
+    x = None 
+    y = None 
+    z = None
+
+    if grid.dim() > 1:
+        if grid.dim() == 2:
+            if any([c.nodeCount() != 4 for c in grid.cells()]):
+                pg.critical("Grid have other cells than quads. Can't refine it with a grid")
+
+        x = pg.utils.unique(pg.x(grid))
+        y = pg.utils.unique(pg.y(grid))
+        x = _concat(x, xbound)
+        y = _concat(y, ybound)
+    
+        if grid.dim() == 3:
+            if any([c.nodeCount() != 8 for c in grid.cells()]):
+                pg.critical("Grid have other cells than hex's. Can't refine it with a grid")
+        
+            z = pg.utils.unique(pg.z(grid))
+            z = _concat(z, zbound)
+    
+    mesh = pg.meshtools.createGrid(x=x, y=y, z=z, marker=marker)
+
+    mesh.setCellMarkers(pg.interpolate(grid, 
+                                       grid.cellMarkers(), 
+                                       mesh.cellCenters(),
+                                       fallback=marker))
+    return mesh
+
+
+def appendTetrahedronBoundary(mesh, xbound=10, ybound=10, zbound=10,          
+                              marker=1, isSubSurface=True, **kwargs):
+    """ Return a copy of mesh surrounded by a tetrahedron mesh as boundary.
+
+    Returns a new mesh that contains a tetrahedron mesh box around a given mesh
+    suitable for geo-simulation (surface boundary with marker = -1  at top and marker = -2 in the inner subsurface).
+    The old boundary marker from mesh will be preserved, except for marker == -2 which will be switched to 2 since we assume
+    -2 is the world marker for outer boundaries in the subsurface.
+    
+    Note 
+    ----
+    These method will only work stable if the mesh generator (Tetgen) preserve all input boundaries. 
+    This will lead to bad quality meshes for the boundary region so its a good idea to play with the addNodes keword argument to manually refine the newly created outer boundaries.
+
+    Also, note. If the input mesh consists of hexahedrons a small inconsistency will arise because a quad boundary element will be split by 2 triangle boundaries from the boundary tetrahedrons. The effect of this hanging edges are unclear, also createNeighbourInfos may fail. We need to implement/test pyramid cells to handle this.
+        
+    TODO
+    ----
+        * set correct boundary conditions
+        * isSubSurface 
+        * pyramid cells as connecting cells
+        * need for preserve Boundary check
+        * preserve Boundary support
+        * addNodes support
+        
     Parameters
     ----------
-    mesh : mesh object
-        Mesh to which the tetrahedron boundary should be appended.
-    xbound : float, optional
-        Horizontal prolongation distance in x-direction.
-    ybound : float, optional
-        Horizonal prolongation distance in y-direction.
-    zbound : float, optional
-        Vertical prolongation distance.
-    marker : int, optional
+    mesh: :gimliapi:`GIMLI::Mesh`
+        3D Mesh to which the tetrahedron boundary should be appended.
+    xbound: float [10]
+        Horizontal prolongation distance in meter at x-direction. 
+        Need to be >= 0.
+    ybound: float [10]
+        Horizonal prolongation distance in meter at y-direction. 
+        Need to be greater 0.
+    zbound: float [10]
+        Vertical prolongation distance in meter at z-direction. Need to be greater 0.
+    marker: int, optional
         Marker of new cells.
-    quality : float, optional
+    addNodes: float, optional
         Triangle quality.
     isSubSurface : boolean, optional
         Apply boundary conditions suitable for geo-simulaion and prolongate
@@ -348,89 +499,54 @@ def appendTetrahedronBoundary(mesh, xbound=100, ybound=100, zbound=100,
     verbose : boolean, optional
         Be verbose.
 
+    Returns
+    -------
+    :gimliapi:`GIMLI::Mesh`
+        A new 3D mesh containing the original mesh and a boundary arround.    
+
     See Also
     --------
-    appendTriangleBoundary
-
-    Notes
-    -----
-    Boundaries of mesh need marker 1.
+    :py:mod:`pygimli.meshtools.appendBoundary`, 
+    :py:mod:`pygimli.meshtools.appendTriangleBoundary`
+    
+    Examples
+    --------
+    >>> import pygimli as pg
+    >>> import pygimli.meshtools as mt
+    >>> grid = mt.createGrid(5,5,5)
+    ... 
+    >>> mesh = mt.appendBoundary(grid, xbound=5, ybound=5, zbound=5, 
+    ...                          isSubSurface=False)
+    >>> ax, _ = pg.show(mesh, mesh.cellMarkers(), hold=True, opacity=0.5)
     """
-    DeprecationWarning()
-    # create boundary for mesh from boundary marker == 1
+    if isSubSurface == True:
+        pg.critical('Implement me')
+    
+    meshBoundary = pg.Mesh(3, isGeometry=True)
+    for b in mesh.boundaries():
+        if b.outside() or b.marker() == -1:
+            meshBoundary.copyBoundary(b)
+    
+    bb = meshBoundary.bb()
+    meshBoundary.addHoleMarker(bb[0] + (bb[1]-bb[0])/1000.)
 
-    if isSubSurface:
-        raise Exception('Implement me')
+    if not any([xbound > 0, ybound  > 0, zbound > 0]):
+        pg.critical('all boundaries need to be greater 0.')
 
-    meshBoundary = pg.Mesh()
-    meshBoundary.createH2()
+    startPos = bb[0] - [xbound, ybound, zbound]
+    endPos = bb[1] + [xbound, ybound, zbound]
 
-    bounds = []
-    for b in meshBoundary.boundaries():
-        if b.marker() == 1:
-            bounds.append(b)
+    boundaryBox = pg.meshtools.createCube(start=startPos, end=endPos)
 
-    meshBoundaryPoly = pg.Mesh()
-    meshBoundaryPoly.createMeshByBoundaries(
-        meshBoundary, meshBoundary.findBoundaryByMarker(1))
+    boundMesh = pg.meshtools.createMesh(boundaryBox + meshBoundary)
+    boundMesh.setCellMarkers(np.ones(boundMesh.cellCount()) * marker)
 
-    meshBoundaryPoly.exportAsTetgenPolyFile("paraBoundary.poly")
-    # system( 'polyConvert -V paraBoundary' )
+    outMesh = pg.Mesh(mesh)
 
-    # create worldSurface.poly including boundary mesh for a nice surface mesh
-    # it will be later the tetgen input with preserve boundary
-    polyCreateWorld('worldSurface', x=xbound, y=ybound, depth=zbound, marker=1,
-                    verbose=verbose)
-    os.system('polyMerge -N worldSurface paraBoundary worldSurface')
-    # There syscalls are not working!
-    polyAddVIP('worldSurface', mesh.cell(0).center(), isHoleMarker=True,
-               verbose=verbose)
-    worldBoundary = tetgen('worldSurface', quality=1.12, verbose=verbose)
-    # worldBoundary.exportBoundaryVTU('worldSurface')
-
-    worldPoly = pg.Mesh()
-    worldPoly.createMeshByBoundaries(worldBoundary,
-                                     worldBoundary.findBoundaryByMarker(-2, 0))
-    worldPoly.exportAsTetgenPolyFile("worldSurface.poly")
-
-    os.system('polyMerge -N worldSurface paraBoundary boundaryWorld')
-
-    # mesh should have to be a hole
-    polyAddVIP('boundaryWorld', mesh.cell(0).center(), isHoleMarker=True,
-               verbose=verbose)
-    # system( 'polyConvert -o world-poly -V boundaryWorld' )
-
-    boundMesh = tetgen('boundaryWorld', quality=quality, preserveBoundary=True,
-                       verbose=verbose)
-    # boundMesh.exportVTK( 'boundaryWorld' )
-
-    # merge mesh and worldBoundary
     for c in boundMesh.cells():
-        c.setMarker(marker)
-
-    if verbose:
-        print("merge grid and boundary")
-
-    swatch = pg.core.Stopwatch(True)
-    for c in meshBoundary.cells():
-        nodes = pg.stdVectorNodes()
-        for n in c.nodes():
-            nodes.append(boundMesh.createNodeWithCheck(n.pos()))
-
-        boundMesh.createCell(nodes, c.marker())
-    if verbose:
-        print(" done.", swatch.duration(True))
-
-    try:
-        os.remove('boundaryWorld.bms')
-        os.remove('worldSurface.bms')
-        os.remove('boundaryWorld.poly')
-        os.remove('paraBoundary.poly')
-        os.remove('worldSurface.poly')
-    except BaseException as e:
-        print(e)
-
-    return boundMesh
+        outMesh.copyCell(c)
+    
+    return outMesh
 
 
 if __name__ == "__main__":

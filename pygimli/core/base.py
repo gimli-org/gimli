@@ -34,14 +34,15 @@ def isScalar(v, val=None):
     return isinstance(v, (int, float, complex, np.complex128)) and v == val
 
 def isArray(v, N=None):
-    """Check if v is an array or a vector, with optional size.
+    """Check if `v` is a 1D array or a vector, with optional size `N`.
 
     Examples
     --------
     >>> import pygimli as pg
+    >>> import numpy as np
     >>> print(pg.isArray([0, 1]))
     True
-    >>> print(pg.isArray(np.array(5)))
+    >>> print(pg.isArray(np.ones(5)))
     True
     >>> print(pg.isArray(pg.Vector(5)))
     True
@@ -53,7 +54,12 @@ def isArray(v, N=None):
     False
     """
     if N is None:
-        return hasattr(v, '__iter__') and not isinstance(v, (str))
+        
+        if isinstance(v, list):
+            return isScalar(v[0])
+            
+        return (hasattr(v, '__iter__') and \
+            not isinstance(v, (str))) and v.ndim == 1
 
     return isArray(v) and len(v) == N
 
@@ -102,6 +108,8 @@ def isR3Array(v, N=None):
                (not isinstance(v, list) and hasattr(v, '__iter__') and \
                 not isinstance(v, (str)) and v.ndim == 2 and isPos(v[0]))
     return isR3Array(v) and len(v) == N
+
+isPosList = isR3Array
 
 def isMatrix(v, shape=None):
     """Check is v has ndim=2 or is comparable list"""
