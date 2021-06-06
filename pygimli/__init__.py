@@ -2,6 +2,7 @@
 """
 pyGIMLi - An open-source library for modelling and inversion in geophysics
 """
+1/0
 import sys
 import locale
 
@@ -22,7 +23,7 @@ from .core import matrix # alias all from .core.matrix.* to pg.matrix.*
 
 from .core.matrix import (BlockMatrix, Matrix, SparseMapMatrix, SparseMatrix)
 
-from .core.logger import (_, _d, _g, _r, _y, _b, critical, d, debug, 
+from .core.logger import (_, _d, _g, _r, _y, _b, critical, d, debug,
                           deprecated, renameKwarg,
                           error, info, setDebug, setLogLevel, setVerbose, v,
                           verbose, warn)
@@ -108,7 +109,7 @@ def findVersion(cache=True):
     import os
     global __version__
 
-    
+
     #setDebug(False)
     root = os.path.abspath(os.path.join(__file__, "../../"))
     gitPath = os.path.join(root, '.git')
@@ -189,7 +190,7 @@ def findVersion(cache=True):
     with open(versionCacheFile, 'w') as fi:
         fi.write(__version__)
         debug('Wrote version info to cache:', versionCacheFile, __version__)
-        
+
     return __version__
 
 # call once to get version from cache, setup or _version.py
