@@ -78,16 +78,14 @@ BibTeX code:
 
 ```sourceCode
 @article{Ruecker2017,
-  title = "{pyGIMLi}: An open-source library for modelling and inversion in geophysics",
-  journal = "Computers and Geosciences",
-  volume = "109",
-  number = "",
-  pages = "106--123",
-  year = "2017",
-  issn = "0098-3004",
-  doi = "10.1016/j.cageo.2017.07.011",
-  url = "http://www.sciencedirect.com/science/article/pii/S0098300417300584",
-  author = "Carsten R\"ucker and Thomas G\"unther and Florian M. Wagner"
+  title = {{pyGIMLi}: An open-source library for modelling and inversion in geophysics},
+  journal = {Computers and Geosciences},
+  volume = {109},
+  pages = {106--123},
+  year = {2017},
+  doi = {10.1016/j.cageo.2017.07.011},
+  url = {https://www.sciencedirect.com/science/article/pii/S0098300417300584},
+  author = {R\"ucker, C. and G\"unther, T. and Wagner, F. M.}
 }
 ```
 
