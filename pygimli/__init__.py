@@ -108,7 +108,7 @@ def findVersion(cache=True):
     import os
     global __version__
 
-    
+
     #setDebug(False)
     root = os.path.abspath(os.path.join(__file__, "../../"))
     gitPath = os.path.join(root, '.git')
@@ -189,7 +189,7 @@ def findVersion(cache=True):
     with open(versionCacheFile, 'w') as fi:
         fi.write(__version__)
         debug('Wrote version info to cache:', versionCacheFile, __version__)
-        
+
     return __version__
 
 # call once to get version from cache, setup or _version.py
