@@ -256,6 +256,8 @@ pre, code {
   font-size: 15px;
   margin-top: 10px;
   padding: 7px;
+  border: 1px solid #c9c9c9;
+  box-shadow: 1px 1px 1px #d8d8d8;
 }
 
 dt {
@@ -853,7 +855,6 @@ img.wrap-fig {
 
 table.docutils.field-list {
   font-size: 14px;
-  line-height: 6px;
 }
 
 span.sig-paren {
