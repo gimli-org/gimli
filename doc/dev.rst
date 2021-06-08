@@ -44,6 +44,7 @@ for automatic warnings in case you are about to push to the master branch.
        git commit -a -m "Added important new feature."
 
 6. Pull the latest developments from GitHub using automatic rebase:
+
   For more info see: http://kernowsoul.com/blog/2012/06/20/4-ways-to-avoid-merge-commits-in-git/
 
     .. code-block:: bash
@@ -332,6 +333,54 @@ Adding an example to the paper carousel
        title="Improved geophysical images through geostatistical regularization",
        subtitle="Jordi et al. (2018), Geophysical Journal International",
        link="https://doi.org/10.1093/gji/ggy055")
+
+
+Contributing to the Documentation
+---------------------------------
+.. note::
+
+    sphinx is a required to add and build the documentation. To learn more about sphinx, 
+    visit the following source: https://www.sphinx-doc.org/en/master/index.html
+
+PyGIMLi's documentation is built on sphinx. If you would like to contribute to the documentation of functions that you have been using and/or 
+have added. Please follow these steps: 
+
+1. Clone the latest pygimli and checkout the dev branch as in "Contributing to Code" step 1 and 2 and navigate to the *doc* directory.
+
+2. If you do not have local pgcore, create an environment called *pgdev* that installs pgcore and activate it:
+
+.. code-block:: bash
+
+    conda create -n pgdev -c gimli -c conda-forge pgcore
+    conda activate pgdev
+    
+3. In order to also install PyGIMLi requirements on the new "pydev" environment, execute the following line of code in the *doc* directory:
+
+.. code-block:: bash
+
+    while read requirement; do conda install --yes $requirement; done < requirements.txt
+
+4. Please verify if you have the following sphinx components installed (these can be installed via conda-forge):
+
+    * sphinxcontrib-programoutput 
+    * sphinxcontrib-bibtex < 2.0.0 
+    * sphinxcontrib-doxylink 
+    * bibtexparse
+    * sphinx-gallery
+
+5. Make changes to documentation following the guidelines of API documentation. 
+
+6. Build the final documentation 
+
+.. code-block:: bash
+
+    make html
+
+7. The process should build all of the documentation so it may take some time to complete. When it finishes, the last line should state:
+
+.. code-block:: bash
+
+    Build finished. The HTML pages are in _build/html.
 
 ToDo-list
 ---------
