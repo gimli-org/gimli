@@ -345,9 +345,9 @@ Contributing to the Documentation
 PyGIMLi's documentation is built on sphinx. If you would like to contribute to the documentation of functions that you have been using and/or 
 have added. Please follow these steps: 
 
-1. Clone the latest pygimli and checkout the dev branch as in "Contributing to Code" step 1 and 2 and navigate to the *doc* directory.
+1. Clone the latest pygimli and checkout the dev branch as shown in "Contributing to Code" and navigate to the *doc* directory.
 
-2. If you do not have local pgcore, create an environment called *pgdev* that installs pgcore and activate it:
+2. If you do not have pgcore installed, create an environment called *pgdev* that installs pgcore and activate it:
 
 .. code-block:: bash
 
@@ -381,6 +381,9 @@ have added. Please follow these steps:
 .. code-block:: bash
 
     Build finished. The HTML pages are in _build/html.
+
+8. Open a Pull request in the dev branch of pygimli to merge your changes.  
+
 
 ToDo-list
 ---------
