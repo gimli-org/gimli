@@ -133,6 +133,11 @@ pgcore.RSparseMatrix.__repr__ =__SparseMatrix_str
 pgcore.RSparseMapMatrix.__repr__ =__SparseMatrix_str
 
 
+def __stdVectorRSparseMapMatrix_Mult__(self, b):
+    return pgcore.mult(self, b)
+pgcore.stdVectorRSparseMapMatrix.__mul__ = __stdVectorRSparseMapMatrix_Mult__
+
+
 ## Special Monkeypatch core classes
 __BlockMatrix_addMatrix__ = pgcore.RBlockMatrix.addMatrix
 

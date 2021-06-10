@@ -404,11 +404,11 @@ public:
     }
 
 
-    /*! Return SparseMapMatrix: this * a  */
-    virtual Vector < ValueType > mult(const Vector < ValueType > & a) const {
-        Vector < ValueType > ret(this->rows(), 0.0);
-
-        ASSERT_EQUAL(this->cols(), a.size())
+    /*! SparseMapMatrix: this * a , inplace add to ret */
+    virtual void mult(const Vector < ValueType > & a, 
+                      Vector < ValueType > & ret) const {
+        if (this->rows() != ret.size()) ret.resize(this->rows());
+        ASSERT_GREATER_EQUAL(a.size(), this->cols())
 
         if (stype_ == 0){
             for (const_iterator it = this->begin(); it != this->end(); it ++){
@@ -439,15 +439,19 @@ public:
             }
 
         }
+
+    }
+    /*! Return SparseMapMatrix: this * a. */
+    virtual Vector < ValueType > mult(const Vector < ValueType > & a) const {
+        Vector < ValueType > ret(this->rows(), 0.0);
+        mult(a, ret);
         return ret;
     }
 
-    /*! Return SparseMapMatrix: this.T * a */
-    virtual Vector < ValueType > transMult(const Vector < ValueType > & a) const {
-        Vector < ValueType > ret(this->cols(), 0.0);
-
-        ASSERT_EQUAL(this->rows(), a.size())
-
+    virtual void transMult(const Vector < ValueType > & a, 
+                           Vector < ValueType > ret) const {
+        if (this->cols() != ret.size()) ret.resize(this->cols());
+        ASSERT_GREATER_EQUAL(a.size(), this->rows())
         if (stype_ == 0){
             for (const_iterator it = this->begin(); it != this->end(); it ++){
                 ret[it->first.second] += a[it->first.first] * it->second;
@@ -457,6 +461,12 @@ public:
         } else if (stype_ ==  1){
             THROW_TO_IMPL
         }
+    }
+        
+    /*! Return SparseMapMatrix: this.T * a */
+    virtual Vector < ValueType > transMult(const Vector < ValueType > & a) const {
+        Vector < ValueType > ret(this->cols(), 0.0);
+        transMult(a, ret);
         return ret;
     }
 
@@ -596,6 +606,14 @@ inline CVector transMult(const CSparseMapMatrix & A, const CVector & b){
 inline CVector transMult(const CSparseMapMatrix & A, const RVector & b){
     return A.transMult(toComplex(b));
 }
+
+DLLEXPORT void mult(
+        const std::vector < RSparseMapMatrix > & A,
+        const RVector & b, std::vector< RVector > & ret);
+
+DLLEXPORT std::vector< RVector > mult(
+        const std::vector < RSparseMapMatrix > & A,
+        const RVector & b);
 
 inline RSparseMapMatrix real(const CSparseMapMatrix & A){
     RSparseMapMatrix R(A.rows(), A.cols());

@@ -2442,8 +2442,23 @@ void Mesh::interpolationMatrix(const PosVector & q, RSparseMapMatrix & I){
     }
 }
 
+void Mesh::interpolationMatrix(const std::vector < PosVector > & q,         
+                               std::vector < RSparseMapMatrix > & I){
+    for (auto & qi: q){
+        I.push_back(RSparseMapMatrix());
+        interpolationMatrix(qi, I.back());
+    }
+}
+    
 RSparseMapMatrix Mesh::interpolationMatrix(const PosVector & q){
     RSparseMapMatrix I;
+    interpolationMatrix(q, I);
+    return I;
+}
+
+std::vector < RSparseMapMatrix > Mesh::interpolationMatrix(
+                                        const std::vector < PosVector > & q){
+    std::vector < RSparseMapMatrix > I;
     interpolationMatrix(q, I);
     return I;
 }

@@ -1901,8 +1901,8 @@ void DCMultiElectrodeModelling::calculateK_(const std::vector < ElectrodeShape *
 //          save(sol, "sol.vec");
 
 //         __MS(complex_)
-//         __MS(min(sol)<< " " << max(sol))
-//         __MS(i<< " " << k)
+//         __MS(min(sol), max(sol))
+//         __MS(i, k)
         if (norml2(S_ * sol - rhs) / norml2(rhs) > 1e-6){
 //                 S_.save("S.matrix");
 //                 save(rhs[i], "rhs.vec");

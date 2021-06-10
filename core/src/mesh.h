@@ -701,9 +701,16 @@ public:
      * To perform the interpolation just calculate the matrix vector product.
      * uInterpolated = I.mult(uPerNode) or uInterpolated = I * uPerNode */
     RSparseMapMatrix interpolationMatrix(const PosVector & q);
+    std::vector < RSparseMapMatrix > interpolationMatrix(
+                                        const std::vector< PosVector > & q);
 
     /*! Inplace version of \ref interpolationMatrix(const PosVector & q) */
     void interpolationMatrix(const PosVector & q, RSparseMapMatrix & I);
+
+    /*! Inplace version of \ref interpolationMatrix(const PosVector & q) */
+    void interpolationMatrix(const std::vector < PosVector > & q,   
+                             std::vector < RSparseMapMatrix > & I);
+    
 
     /*! Return the reference to the matrix for cell value to boundary value interpolation matrix. */
     RSparseMapMatrix & cellToBoundaryInterpolation() const;

@@ -115,7 +115,7 @@ Matrix< Complex >::transMult(const Vector < Complex > & b) const {
 template < class ValueType > Matrix < ValueType > &
 _transAdd(Matrix < ValueType > * a, const Matrix < ValueType > & b){
     if (a->rows() != b.cols() || a->cols() != b.rows()){
-        __MS(a->rows() << " " << b.cols() << " " << a->cols() << " " << b.rows())
+        __MS(a->rows(), b.cols(), a->cols(), b.rows())
         log(Error, "Matrix trans add with wrong dimensions");
         return *a;
     }
@@ -140,7 +140,7 @@ Matrix<Complex>::transAdd(const Matrix < Complex > & a){
 void matMultABA(const RMatrix & A, const RMatrix & B, RMatrix & C,
                 RMatrix & AtB, double a, double b){
     // C = a A.T * B * A + b * C
-    // __MS("matMultABA: "<< A.rows() << " " << A.cols() << " : " << B.rows() << " " << B.cols())
+    // __MS("matMultABA: ", A.rows(), A.cols(), B.rows(), B.cols())
 
     if (A.rows() != B.rows()){
         log(Error, "matMultABA B sizes mismatch.", A.rows(), "!=", B.rows());
@@ -153,7 +153,7 @@ void matMultABA(const RMatrix & A, const RMatrix & B, RMatrix & C,
 
 void matMult(const RMatrix & A, const RMatrix & B, RMatrix & C, double a, double b){
     // C = a * A*B + b *C || C = a * A*B.T + b*C
-    // __MS("matMult: "<< A.rows() << " " << A.cols() << " : " << B.rows() << " " << B.cols())
+    // __MS("matMult: ", A.rows(), A.cols(), B.rows(), B.cols())
     Index m = A.rows(); // C.rows()
     Index n = B.cols(); // C.cols()
     Index k = A.cols(); // B.rows()
@@ -181,7 +181,7 @@ void matMult(const RMatrix & A, const RMatrix & B, RMatrix & C, double a, double
         delete [] B2;
         delete [] C2;
 #else
-    // __MS("matMult: "<< A.rows() << " " << A.cols() << " : " << B.rows() << " " << B.cols())
+    // __MS("matMult: " A.rows(), A.cols(), B.rows(), B.cols())
 
         for (Index i = 0; i < A.rows(); i ++){
             for (Index j = 0; j < B.cols(); j ++){
@@ -205,11 +205,13 @@ void matMult(const RMatrix & A, const RMatrix & B, RMatrix & C, double a, double
 }
 
 void matTransMult(const RMatrix & A, const RMatrix & B, RMatrix & C, double a, double b){
+    // Mxk * kxN == MxN
+    // (kxM).T * kxN == MxN
+    // A (k,M), B(k,N) == C(M,N)
     //** C = a * A.T*B + b*C|| C = a * A.T*B.T  + b*C
-    //** C = (a * A.T*B).T + b*C if C has the right dimension
-    //** implement with openblas dgemm too and check performance
-    // __MS("matTransMult: "<< A.rows() << " " << A.cols() << " : "
-    //     << B.rows() << " " << B.cols() << " " << a << " " << b)
+    //** **MEH C = (a * A.T*B).T + b*C if C has the right dimension **  MEH
+    // c-transpose check only for b != 0.0, else c is resized
+    
     bool retTrans = false;
 
     // A(k, m).T * B(k, n) = C(m, n)
@@ -219,10 +221,12 @@ void matTransMult(const RMatrix & A, const RMatrix & B, RMatrix & C, double a, d
     Index n = B.cols(); // C.cols()
 
     if (k == B.rows()){ // A.T * B
+            
+        if (b == 0.0) C.resize(m, n);
 
         if (C.rows() != A.cols() || C.cols() != B.cols()){
 
-            // __MS(C.rows() << " " << C.cols() << " " << A.cols() << " " << B.cols())
+            //__MS(C.rows(), C.cols(), A.cols(), B.cols())
             //** Target array have wrong dimensions
             if (C.rows() == B.cols() && C.cols() == A.cols()){
                 // C = a * B.T*A + b*C
@@ -287,10 +291,11 @@ void matTransMult(const RMatrix & A, const RMatrix & B, RMatrix & C, double a, d
             }
         }
 #endif
-    } else { // A.T * B.T
-        __MS(A)
-        __MS(B)
-        log(Error, "matTransMult sizes mismatch.", A.rows(), "!=", B.rows());
+    } else { // if not A.T * B
+        __MS(A.rows(), A.cols(), '\n', A)
+        __MS(B.rows(), B.cols(), '\n', B)
+        __MS(C.rows(), C.cols())
+        throwLengthError("matTransMult sizes mismatch.");
     }
 }
 

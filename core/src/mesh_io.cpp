@@ -375,7 +375,7 @@ void Mesh::loadBinary(const std::string & fbody){
 
 template < class ValueType > void writeToFile(FILE * file, const ValueType & v, int count=1){
     if (!fwrite(&v, sizeof(ValueType), count, file)){
-        __MS(v << " " << count)
+        __MS(v, count)
         throwError(WHERE_AM_I + strerror(errno) + " " + str(errno));
     }
 }

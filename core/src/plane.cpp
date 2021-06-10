@@ -57,7 +57,7 @@ Plane::Plane(const RVector3 & p0, const RVector3 & p1, const RVector3 & p2)
         __MS(p1)
         __MS(p2)
         __MS(norm_)
-        __MS(std::fabs(norm_.abs() - 1.0)<< " "<< TOLERANCE)
+        __MS(std::fabs(norm_.abs() - 1.0), TOLERANCE)
     }
 
     RMatrix A(3, 3);

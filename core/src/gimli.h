@@ -126,16 +126,62 @@ typedef int64_t int64;
     #define __FILENAME__ __FILE__
 #endif
 
+
+#ifndef PYGIMLI_CAST // castxml complains on older gcc/clang
+inline std::string str(){ return "";}
+#endif
+//! General template for conversion to string, should supersede all sprintf etc.
+template< typename T > inline std::string str(const T & v){
+    std::ostringstream os;
+    os << v;
+    return os.str();
+}
+enum LogType {Verbose, Info, Warning, Error, Debug, Critical};
+DLLEXPORT void log(LogType type, const std::string & msg);
+
+
+template<typename Value, typename... Values>
+std::string str(Value v, Values... vs){
+    std::ostringstream os;
+    using expander = int[];
+    os << v; // first
+    (void) expander{ 0, (os << " " << vs, void(), 0)... };
+    return os.str();
+}
+template<typename... Values>
+void log(LogType type, Values... vs){
+    return log(type, str(vs...));
+}
+
+// simple python like std out
+template<class Head>
+void print(std::ostream& s, Head&& head) {
+    s << std::forward<Head>(head) << std::endl;
+}
+
+template<class Head, class... Tail>
+void print(std::ostream& s, Head&& head, Tail&&... tail) {
+    s << std::forward<Head>(head) << " ";
+    print(s, std::forward<Tail>(tail)...);
+}
+
+template<class... Args>
+void print(Args&&... args) {
+    print(std::cout, std::forward<Args>(args)...);
+}
+
+
 #define WHERE GIMLI::str(__FILENAME__) + ":" + GIMLI::str(__LINE__) + "\t"
 #define WHERE_AM_I WHERE + "\t" + GIMLI::str(__ASSERT_FUNCTION) + " "
 #define TO_IMPL WHERE_AM_I + " not yet implemented\n " + GIMLI::versionStr() + "\nPlease send the messages above, the commandline and all necessary data to the author."
 
 #define __M std::cout << "*** " << WHERE << std::endl;
-#define __MS(str) std::cout << "*** " <<str << " " << WHERE << std::endl;
-#define __D if (debug()) std::cout << "Debug: " << WHERE << std::endl;
-#define __DS(str) if (debug()) std::cout << "Debug: " << str << " " << WHERE << std::endl;
+//#define __MS(str) std::cout << "*** " << str << " " << WHERE << std::endl;
+#define __MS(...) GIMLI::print("+++", WHERE, "\n", __VA_ARGS__, "\n---");
+#define __D if (GIMLI::debug()) std::cout << "Debug: " << WHERE << std::endl;
+#define __DS(str) if (GIMLI::debug()) std::cout << "Debug: " << str << " " << WHERE << std::endl;
 
-#define THROW_TO_IMPL throwToImplement(TO_IMPL);
+#define THROW_TO_IMPL GIMLI::throwToImplement(TO_IMPL);
 #define CERR_TO_IMPL std::cerr << TO_IMPL << std::endl;
 #define DEPRECATED std::cerr << WHERE_AM_I << " is deprecated " << std::endl;
 #define DEPR_STR(s) std::cerr << WHERE_AM_I << " is deprecated. Use: " << s " instead."<< std::endl;
@@ -156,6 +202,8 @@ typedef int64_t int64;
 
 #define ASSERT_EQUAL_SIZE(m, n) if (m.size() != n.size()) \
     throwLengthError(WHERE_AM_I + " " + str(m.size()) + " != " + str(n.size()));
+#define ASSERT_GREATER_EQUAL(m, n) if (m < n) \
+    throwLengthError(WHERE_AM_I + " " + str(m) + " is not greater-equal " + str(n));
 #define ASSERT_THIS_SIZE(n) if (n < 0 || n >= this->size()) \
     throwLengthError(WHERE_AM_I + " " + str(this->size()) + " <= " + str(n));
 #define ASSERT_VEC_SIZE(vec, n) if (n != vec.size()) \
@@ -336,31 +384,6 @@ private:
 //     #include <Python.h>
 #endif
 
-inline std::string str(){ return "";}
-//! General template for conversion to string, should supersede all sprintf etc.
-template< typename T > inline std::string str(const T & v){
-    std::ostringstream os;
-    os << v;
-    return os.str();
-}
-enum LogType {Verbose, Info, Warning, Error, Debug, Critical};
-DLLEXPORT void log(LogType type, const std::string & msg);
-
-#ifndef PYGIMLI_CAST // castxml complains on older gcc/clang
-template<typename Value, typename... Values>
-std::string str(Value v, Values... vs){
-    std::ostringstream os;
-    using expander = int[];
-    os << v; // first
-    (void) expander{ 0, (os << " " << vs, void(), 0)... };
-    return os.str();
-}
-template<typename... Values>
-void log(LogType type, Values... vs){
-    return log(type, str(vs...));
-}
-#endif
-
 DLLEXPORT std::string versionStr();
 
 DLLEXPORT std::string authors();
@@ -462,10 +485,10 @@ template < typename ValueType > void setEnvironment(const std::string & name,
     int ret = setenv(name.c_str(), str(val).c_str(), 1);
     switch(ret){
         case EINVAL:
-            __MS(name << " " << val)
+            __MS(name, val)
             throwError("name is NULL, points to a string of length 0, or contains an '=' character.");
         case ENOMEM:
-            __MS(name << " " << val)
+            __MS(name, val)
             throwError("name is NULL, Insufficient memory to add a new variable to the environment.");
     }
     if (verbose) std::cout << "set: export " << name << "=" << val << std::endl;
@@ -630,6 +653,7 @@ template void hashCombine(Index & seed, const Index & hash);
 // template void hashCombine(Index & seed, const PosVector & val);
 // template void hashCombine(Index & seed, const Pos & val);
 // template void hashCombine(Index & seed, const DataContainer & val);
+
 
 } // namespace GIMLI
 

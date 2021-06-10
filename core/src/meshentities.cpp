@@ -483,7 +483,7 @@ Boundary * Cell::boundary(Index i){
 
 Cell * Cell::neighborCell(const RVector & sf){
     if (haveInfNaN(sf)){
-        __MS("fixme " << sf)
+        __MS("fixme ", sf)
         return NULL;
     }
 

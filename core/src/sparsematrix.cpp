@@ -291,6 +291,23 @@ template <> void SparseMatrix< Complex >::
     THROW_TO_IMPL
 }
 
+void mult(const std::vector < RSparseMapMatrix > & A,
+          const RVector & b, std::vector< RVector > & ret){
+    // implement with ompl
+    if (ret.size() != A.size()) ret.resize(A.size());
+    for (Index i = 0; i < A.size(); i ++ ){
+        A[i].mult(b, ret[i]);
+    }
+}
+
+std::vector< RVector > mult(const std::vector < RSparseMapMatrix > & A,
+                            const RVector & b){
+    std::vector< RVector > ret;
+    mult(A, b, ret);
+    return ret;
+}
+
+
 } // namespace GIMLI{
 
 

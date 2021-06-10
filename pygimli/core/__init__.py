@@ -1049,7 +1049,7 @@ def __getCoords(coord, dim, ent):
         return np.array([n.pos()[dim] for n in ent])
     if isinstance(ent, pgcore.Node):
         return ent.pos()[dim]
-    if isinstance(ent, pgcore.RVector3):
+    if isPos(ent):
         return ent[dim]
     if isinstance(ent, list) and isinstance(ent[0], pgcore.Node):
         return [n.pos()[dim] for n in ent]

@@ -97,6 +97,8 @@ ElementMatrix < double >::setMatXI(Index i, const Matrix < double > & mat){
 template < > DLLEXPORT void 
 ElementMatrix < double >::setX(const PosVector & p) { 
     _x = &p;
+
+    // __MS('x', _matX.size(),_x->size())
     if (_matX.size() != _x->size()){
         _matX.resize(_x->size());
     }
@@ -105,6 +107,7 @@ ElementMatrix < double >::setX(const PosVector & p) {
 template < > DLLEXPORT void 
 ElementMatrix < double >::setW(const RVector & w) {
     _w = &w;
+    // __MS('w', _matX.size(),_w->size())
     if (_matX.size() != _w->size()){
         _matX.resize(_w->size());
     }
@@ -139,9 +142,9 @@ ElementMatrix < double >::u(const MeshEntity & ent,
 
     double A = ent.shape().domainSize();
     // double J = det(ent.shape().createJacobian());
-    // __MS(A << " " << J)
+    // __MS(A, J)
     for (Index i = 0; i < nVerts; i ++){
-        // __MS(i << " " << A << " " << it->second[i])
+        // __MS(i, A, it->second[i])
         mat_[0][i] = A * it->second[i];
         if (this->_nDof > 0){
             if (ent.dim() == 2){
@@ -541,7 +544,7 @@ void ElementMatrix < double >::fillGradientBase(
     }
 
     for (Index i = 0; i < nRules; i ++){
-        // __MS(i << " " << x[i])
+        // __MS(i, x[i])
         //dNdx_[i] = (dNdr_[i] * drdx);
         //dNdx_.setCol(i, (dNdr_[i] * drdx));
 
@@ -1232,8 +1235,91 @@ void ElementMatrix < ValueType >::fillIds(const MeshEntity & ent, Index nC){
 
 template void ElementMatrix < double >::fillIds(const MeshEntity & ent, Index Crows);
 
+void ElementMatrixMap::push_back(const ElementMatrix < double > & Ai){
+    mats_.push_back(Ai);
+    rows_ = this->mats_.size();
+}
+
+void ElementMatrixMap::integrate(const std::vector< RVector > & f, 
+                                 RVector & R) const{
+    ASSERT_EQUAL_SIZE(this->mats_, f)
+    for (auto &m : this->mats_){
+        const RVector &w(*m.w());
+        const RVector &b(f[m.entity()->id()]);
+
+        Index nRules(w.size());
+        
+        // __MS(w)
+        // __MS(b)
+        ASSERT_VEC_SIZE(b, nRules)
+        ASSERT_VEC_SIZE(m.matX(), nRules)
+
+        RVector rt(m.rows(), 0.0);
+        
+        for (Index r = 0; r < nRules; r++){
+            rt += m.matX()[r][0] * b[r] * w[r];
+        }
+        rt *= m.entity()->size();
+        R.addVal(rt, m.rowIDs());
+    }
+}
+void ElementMatrixMap::integrate(const std::vector< PosVector > & f, 
+                                 RVector & R) const{
+    THROW_TO_IMPL
+}
+void ElementMatrixMap::integrate(const ElementMatrixMap & R, 
+                                 const std::vector< RVector > & f, RSparseMapMatrix & A) const{
+    THROW_TO_IMPL
+}
+void ElementMatrixMap::integrate(const ElementMatrixMap & R, 
+                                 const std::vector< PosVector > & f, RSparseMapMatrix & A) const{
+    THROW_TO_IMPL
+}
+
+#define DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL(A_TYPE) \
+RVector ElementMatrixMap::integrate(A_TYPE f) const { \
+    Index maxR = 0; \
+    for (auto &m : this->mats_){ \
+        maxR = max(maxR, max(m.rowIDs()));\
+    } \
+    RVector R(maxR+1); \
+    integrate(f, R); \
+    return R; \
+}\
+
+DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL(const std::vector< RVector > &)
+DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL(const std::vector< PosVector > &)
+#undef DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL
+
+#define DEFINE_INTEGRATE_ELEMENTMAP_A_IMPL(A_TYPE) \
+RSparseMapMatrix ElementMatrixMap::integrate(const ElementMatrixMap & R, \
+                                             A_TYPE f) const { \
+    RSparseMapMatrix A(0,0);\
+    integrate(R, f, A);\
+    return A;\
+}\
+
+DEFINE_INTEGRATE_ELEMENTMAP_A_IMPL(const std::vector< RVector > &)
+DEFINE_INTEGRATE_ELEMENTMAP_A_IMPL(const std::vector< PosVector > &)
+#undef DEFINE_INTEGRATE_ELEMENTMAP_A_IMPL
+
+void ElementMatrixMap::quadraturePoints(std::vector < PosVector > & p) const {
+    for (auto &m: this->mats_){
+        const PosVector &x(*m.x());
+        p.push_back(PosVector(x.size()));
+        for (Index i = 0; i < x.size(); i ++){
+            p.back()[i] = m.entity()->shape().xyz(x[i]);
+        }
+    }
+}
+std::vector < PosVector > ElementMatrixMap::quadraturePoints() const {
+    std::vector < PosVector > p;
+    this->quadraturePoints(p);
+    return p;
+}
 
 void ElementMatrixMap::add(Index row, const ElementMatrix < double > & Ai){
+    
     rows_ = max(row + 1, rows_);
     cols_ = max(max(Ai.ids()) + 1, cols_);
 
@@ -1322,7 +1408,7 @@ template < >  DLLEXPORT
 void ElementMatrix < double >::init(Index nCoeff, Index dofPerCoeff,
                                     Index dofOffset){
     if (nCoeff > 1 && dofPerCoeff == 0){
-        __MS(nCoeff << " " << dofPerCoeff << " "<< dofOffset)
+        __MS(nCoeff, dofPerCoeff, dofOffset)
         log(Error, "number of coefficents > 1 but no dofPerCoefficent given");
     }
     this->_newStyle = true;
@@ -1534,7 +1620,7 @@ ElementMatrix < double > & ElementMatrix < double >::grad(
                            i * nVerts, (i+1) * nVerts);
     }
 
-    // __MS(ent.dim() << " " << nCols << " " << elastic)
+    // __MS(ent.dim(), nCols, elastic)
     // matrices per quadrature point
     //_matX
 
@@ -1547,8 +1633,8 @@ ElementMatrix < double > & ElementMatrix < double >::grad(
         _matX[i] *= 0.0;
     }
 
-    // __MS(this->rows() << " " << this->cols())
-    // __MS(_matX[0].rows() << " " << _matX[0].cols())
+    // __MS(this->rows(), this->cols())
+    // __MS(_matX[0].rows(), _matX[0].cols())
 
     if (dNdr_.rows() != nRules){
         if (ent.dim() > 0) dNdr_.resize(nRules, nVerts);
@@ -1685,6 +1771,7 @@ ElementMatrix < double > & ElementMatrix < double >::grad(
 void _prepDot(const ElementMatrix < double > & A,
               const ElementMatrix < double > & B,
               ElementMatrix < double > & C){
+
     C.copyFrom(A, false);
     C.resize(A.rowIDs().size(), B.rowIDs().size());
     C.setIds(A.rowIDs(), B.rowIDs());
@@ -1700,12 +1787,18 @@ void dot(const ElementMatrix < double > & A,
          double b,
          ElementMatrix < double > & C){
 
+    bool verbose=false;
     _prepDot(A, B, C);
 
     const RVector &w = *A.w();
     Index nRules(w.size());
 
     double beta = 0.0;
+    if (verbose){
+        __MS("A: ", A.rows(), A.cols())
+        __MS("B: ", B.rows(), B.cols())
+        __MS("C: ", C.rows(), C.cols())
+    }
 
     //** C = sum( A_i * B_i * b * w_i * dA)
     for (Index r = 0; r < nRules; r++){
@@ -1717,18 +1810,15 @@ void dot(const ElementMatrix < double > & A,
         
         double wS = w[r] * A.entity()->size();
 
-        // __MS("rule#: " << r << "b: " << b << " wS: " << wS  
-        //     << " w:" << w[r]  << " S:" << A.entity()->size())
-        // __MS(std::endl  << "Ai:\n " << Ai.rows() << " " 
-        //                << Ai.cols() << "\n "
-        //                << Ai << std::endl)
-        // __MS(std::endl  << "Bi:\n " << Bi.rows() << " " 
-        //                << Bi.cols() << "\n "
-        //                << Bi << std::endl)
+        if (verbose){
+            __MS("Ci:\n ", Ci.rows(), Ci.cols())
+            __MS("rule#: ", r, "b: " , b, "wS: ", wS, "w:", w[r],
+                    "S:", A.entity()->size())
+            __MS("Ai:\n ", Ai.rows(), Ai.cols(), "\n ", Ai)
+            __MS("Bi:\n ", Bi.rows(), Bi.cols(), "\n ", Bi)
+        }
 
-        // if (Ai.rows() == 1 && Bi.rows() > 1){
-            // divergence or other stuff we need to sum
-        if (A.isDiv() || Ai.rows() > Bi.rows()){
+        if (A.isDiv() || (Ai.rows() > 1 && Bi.rows()==1)){
             //
             // !! compare the following with the working
             //
@@ -1745,7 +1835,9 @@ void dot(const ElementMatrix < double > & A,
             //matTransMult(sA, B.matX()[r], *C.pMat(), c, beta);
             IndexArray ids;
             if (A.isDiv()){
-                if (A.entity()->dim() == 2){
+                if (A.entity()->dim() == 1){
+                    ids = IndexArray(std::vector < Index >({0}));
+                } else if (A.entity()->dim() == 2){
                     ids = IndexArray(std::vector < Index >({0,3}));
                 } else if  (A.entity()->dim() == 3){
                     ids = IndexArray(std::vector < Index >({0,4,8}));
@@ -1755,14 +1847,25 @@ void dot(const ElementMatrix < double > & A,
             }
             
             // __MS(ids)
-            double bi = 0;
+            // RMatrix Aii(Ai[0]);
+            // for (Index i = 1; i < ids.size(); i ++){
+            //     Aii += Ai[ids[i]];
+            // }                
+            // double bi = 0;
+            RMatrix Aii(1, Ai[0].size());
             for (auto i: ids){
-                if (i > 0) bi = 1.0;
-                RMatrix Aii(1, Ai[i].size());
-                Aii[0] = Ai[i];
-                matTransMult(Aii, Bi, Ci, b, bi);
-            }
-        } else if (B.isDiv() || Bi.rows() > Ai.rows()){
+                Aii[0] += Ai[i];
+            }                
+                // __MS(Aii.rows(), Aii.cols());
+                // __MS(Ai.rows(), Ai.cols());
+                // __MS(Bi.rows(), Bi.cols());
+                                
+            matTransMult(Aii, Bi, Ci, b, 0.0);
+
+                // __MS(Ci.rows(), Ci.cols());
+                // THROW_TO_IMPL
+
+        } else if (B.isDiv() || (Bi.rows() > 1 && Ai.rows() == 1)){
             // RMatrix sB(1, Bi.cols());
             // sB[0] += Bi[0]; // v_x/dx
             // if (B.entity()->dim() == 2){
@@ -1776,7 +1879,9 @@ void dot(const ElementMatrix < double > & A,
 
             IndexArray ids;
             if (B.isDiv()){
-                if (B.entity()->dim() == 2){
+                if (B.entity()->dim() == 1){
+                    ids = IndexArray(std::vector < Index >({0}));
+                } else if (B.entity()->dim() == 2){
                     ids = IndexArray(std::vector < Index >({0,3}));
                 } else if (B.entity()->dim() == 3){
                     ids = IndexArray(std::vector < Index >({0,4,8}));
@@ -1786,26 +1891,35 @@ void dot(const ElementMatrix < double > & A,
             }
             
             // __MS(ids)
-            double bi = 0;
+            RMatrix Bii(1, Bi[0].size());
             for (auto i: ids){
-                // __MS(i)
-                if (i > 0) bi = 1.0;
-                RMatrix Bii(1, Bi[i].size());
-                Bii[0] = Bi[i];
-                matTransMult(Ai, Bii, Ci, b, bi);
-            }
+                Bii[0] += Bi[i];
+            }                
+            matTransMult(Ai, Bii, Ci, b, 0.0);
+
+            // double bi = 0;
+            // for (auto i: ids){
+            //     // __MS(i)
+            //     if (i > 0) bi = 1.0;
+            //     RMatrix Bii(1, Bi[i].size());
+            //     Bii[0] = Bi[i];
+            //     matTransMult(Ai, Bii, Ci, b, bi);
+            // }
 
             // matTransMult(Ai, sB, Ci, c, 0.0);
             //matTransMult(A.matX()[r], sB, *C.pMat(), c, beta);
 
         } else {
+            if (verbose){
+                __MS("no div transMult")
+            }
             matTransMult(Ai, Bi, Ci, b, 0.0);
             //matMult(Ai, Bi, Ci, b, 0.0);
-            //matTransMult(Ai, Bi, *C.pMat(), c, beta);
+            
         }
-        // __MS(std::endl << "Ci:\n " << Ci.rows() << " " 
-        //                << Ci.cols() << "\n "
-        //                << Ci << std::endl)
+        if (verbose){
+            __MS("Ci:\n ", Ci.rows(), " ", Ci.cols(), "\n ", Ci)
+        }
         
         // integration of pretransposed submatrices .. needs check! and sync with integrate
         if (beta == 1.0){
@@ -1813,13 +1927,9 @@ void dot(const ElementMatrix < double > & A,
         } else {
             *C.pMat() = Ci * wS;
         }
-        // __MS(std::endl << "C:\n " << C.rows() << " " 
-        //                << C.cols() << "\n "
-        //                << C.mat() << std::endl)
     }
-    // __MS(std::endl << "C:\n " << C.rows() << " " 
-    //                    << C.cols() << "\n "
-    //                    << C.mat() << std::endl)
+    // __MS("C:\n ", C.rows(), " ", C.cols(), "\n ", C)
+    
 
     //# do we need submatrices after dot? yes e.g. for: (u*v+u*v)*u
     C.integrated(true);
@@ -1833,7 +1943,8 @@ THROW_TO_IMPL
 
 void dot(const ElementMatrix < double > & A,
          const ElementMatrix < double > & B,
-         const RMatrix & c, ElementMatrix < double > & C){
+         const RMatrix & c, 
+         ElementMatrix < double > & C){
 
     _prepDot(A, B, C);
 
@@ -1853,22 +1964,25 @@ void dot(const ElementMatrix < double > & A,
     double beta = 0.0;
     
     //** mat = sum A_i.T * C_i * B_i
+    // log(Info, "A:(", A.rows(), ",", A.cols(), ")",
+    //           "B:(", B.rows(), ",", B.cols(), ")");
 
     for (Index i = 0; i < w.size(); i ++ ){
         if (i > 0) beta = 1.0;
 
         const RMatrix & Ai = A.matX()[i];
         const RMatrix & Bi = B.matX()[i];
+        RMatrix & Ci = (*C.pMatX())[i];
+        double wS = w[i] * A.entity()->size();
+
         AtC *= 0.0; // needed because matMult allways adds
 
-    // __M
-    // log(Info, "A:(", A.rows(), ",", A.cols(), ")",
-    //           "B:(", B.rows(), ",", B.cols(), ")");
-    // log(Info, "Ai:(", Ai.rows(), ",", Ai.cols(), ")",
-    //           "Bi:(", Bi.rows(), ",", Bi.cols(), ")");
-
+        // __MS ("Ai:(", Ai.rows(), ",", Ai.cols(), ")",
+        //       "Bi:(", Bi.rows(), ",", Bi.cols(), ")");
         matTransMult(Ai, c, AtC, 1.0, 0.0);
-        matMult(AtC, Bi, *C.pMat(), w[i] * A.entity()->size(), beta);
+        matMult(AtC, Bi, Ci, 1.0, 0.0);
+
+        *C.pMat() += Ci * wS;
     }
     C.integrated(true);
 }
@@ -1890,8 +2004,8 @@ const ElementMatrix < double > dot(const ElementMatrix < double > & A,
 }
 
 void dot(const ElementMatrix < double > & A,
-                   const ElementMatrix < double > & B,
-                   ElementMatrix < double > & ret){
+         const ElementMatrix < double > & B,
+               ElementMatrix < double > & ret){
     return dot(A, B, 1.0, ret);
 }
 
@@ -2021,15 +2135,20 @@ void mult(const ElementMatrix < double > & A, double b,
 void mult(const ElementMatrix < double > & A, const Pos & b,
           ElementMatrix < double > & C){
     C.copyFrom(A, false);
+    
+    //** result is no bilinear form, so keep it a rowMatrix check!!
 
     const PosVector &x = *A.x();
     const RVector &w = *A.w();
 
     Index nRules(x.size());
+    // __MS(A.rows(), A.cols())
+    // __MS(C.rows(), C.cols())
 
     for (Index r = 0; r < nRules; r++){
         RMatrix & iC = (*C.pMatX())[r];
 
+        // __MS(iC.rows(), iC.cols())
         for (Index k = 0; k < iC.rows(); k ++){
             iC[k] *= b[k];
         }
@@ -2042,9 +2161,9 @@ void mult(const ElementMatrix < double > & A, const RVector & b,
           ElementMatrix < double > & C){
 
     C.copyFrom(A, false);
-    const PosVector &x = *A.x();
+    //const PosVector &x = *A.x();
 
-    Index nRules(x.size());
+    Index nRules(C.w()->size());
 
     ASSERT_VEC_SIZE(b, nRules)
     ASSERT_VEC_SIZE(C.matX(), nRules)
@@ -2061,7 +2180,8 @@ void mult(const ElementMatrix < double > & A, const RVector & b,
 // vector per quadrature
 void mult(const ElementMatrix < double > & A, const PosVector & b,
           ElementMatrix < double > & C){
-
+    // result is no bilinear form, so keep it a rowMatrix check!!
+    
     C.copyFrom(A, false);
     const PosVector &x = *A.x();
 
@@ -2085,6 +2205,8 @@ void mult(const ElementMatrix < double > & A, const PosVector & b,
 void mult(const ElementMatrix < double > & A, const RMatrix &  b,
           ElementMatrix < double > & C){
 
+    // result is no bilinear form, so keep it a rowMatrix
+
     C.copyFrom(A, false);
 
     if (b.rows() != A.matX()[0].rows()){
@@ -2100,6 +2222,10 @@ void mult(const ElementMatrix < double > & A, const RMatrix &  b,
 
     Index nRules(x.size());
 
+    // __MS(A.rows(), A.cols())
+    // __MS(b.rows(), b.cols())
+    // __MS(C.rows(), C.cols())
+
     double beta = 0.0;
     for (Index i = 0; i < nRules; i++){
         if (i > 0) beta = 1.0;
@@ -2108,7 +2234,9 @@ void mult(const ElementMatrix < double > & A, const RMatrix &  b,
         const RMatrix & Ai = A.matX()[i];
         // A.T * C
         Ci *= 0.0; // test and optimize me with C creation
-        matTransMult(Ai, b, Ci, 1.0, beta);
+        //matTransMult(Ai, b, Ci, 1.0, beta);
+        // result is no bilinear form, so keep it a rowMatrix
+        matMult(b, Ai, Ci, 1.0, beta);
     }
 
     C.integrate(); // check if necessary
@@ -2226,8 +2354,6 @@ ElementMatrix < double > sym(const ElementMatrix < double > & A){
     sym(A, B);
     return B;
 }
-
-
 
 template < class Vec >
 void createForceVectorPerCell_(const Mesh & mesh, Index order, RVector & ret,
@@ -2524,6 +2650,22 @@ void createAdvectionMatrix(const Mesh & mesh, Index order,
                                      Index dofOffset){
              THROW_TO_IMPL
                                      }
+
+
+void createUMap(const Mesh & mesh, Index order, ElementMatrixMap & ret, 
+                Index nCoeff, Index dofOffset){
+    for (auto &cell: mesh.cells()){
+        ret.push_back(cell->uCache().pot(*cell, order, true,
+                                         nCoeff, mesh.nodeCount(), dofOffset));
+    }
+}
+
+ElementMatrixMap createUMap(const Mesh & mesh, Index order,
+                            Index nCoeff, Index dofOffset){
+    ElementMatrixMap ret;
+    createUMap(mesh, order, ret, nCoeff, dofOffset);
+    return ret;
+}
 
 
 } // namespace GIMLI

@@ -26,6 +26,7 @@
 namespace GIMLI{
 
 class FEAFunction;
+class ElementMatrixMap;
 
 template < class ValueType > class DLLEXPORT ElementMatrix {
 public:
@@ -613,6 +614,36 @@ protected:
 class DLLEXPORT ElementMatrixMap {
 public:
 
+    void push_back(const ElementMatrix < double > & Ai);
+
+    
+    /*! R = \int_mesh this * f \dmesh with 
+    f = (nCells, nQuadsPerCell) and R = RVector(dof) 
+    */
+    void integrate(const std::vector< RVector > & f, RVector & R) const;
+    void integrate(const std::vector< PosVector > & f, RVector & R) const;
+    
+    RVector integrate(const std::vector< RVector > & f) const;
+    RVector integrate(const std::vector< PosVector > & f) const;
+
+    void quadraturePoints(std::vector < PosVector > & p) const;
+    std::vector < PosVector > quadraturePoints() const;
+
+    /*! Integrate into bilinear form, A = \int_mesh this * f * R \dmesh with 
+    f = (nCells, nQuadsPerCell) and A = RSparseMapMatrix(dof, dof)
+    */
+    void integrate(const ElementMatrixMap & R, 
+                   const std::vector< RVector > & f,
+                   RSparseMapMatrix & A) const;
+    void integrate(const ElementMatrixMap & R, 
+                   const std::vector< PosVector > & f,
+                   RSparseMapMatrix & A) const;
+
+    RSparseMapMatrix integrate(const ElementMatrixMap & R, 
+                               const std::vector< RVector > & f) const;
+    RSparseMapMatrix integrate(const ElementMatrixMap & R, 
+                               const std::vector< PosVector > & f) const;
+
     void add(Index row, const ElementMatrix < double > & Ai);
 
     //TODO .. check if its the same like mult(a-b, m-n))
@@ -628,6 +659,8 @@ public:
 
 
 protected:
+    std::vector< ElementMatrix < double > > mats_;
+
     std::vector< RMatrix > mat_;
     std::vector< IndexArray > _ids;
     std::vector< Index > row_;
@@ -635,6 +668,14 @@ protected:
     Index rows_;
     Index cols_;
 };
+
+
+DLLEXPORT void createUMap(const Mesh & mesh, Index order,
+                       ElementMatrixMap & ret, 
+                       Index nCoeff=1, Index dofOffset=0);
+
+DLLEXPORT ElementMatrixMap createUMap(const Mesh & mesh, Index order,
+                                      Index nCoeff=1, Index dofOffset=0);
 
 template < class ValueType > std::ostream & operator << (std::ostream & str,
                                                          const ElementMatrix< ValueType > & e);

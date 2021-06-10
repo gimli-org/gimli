@@ -564,6 +564,7 @@ namespace pyplusplus{ namespace aliases{
     typedef std::vector< GIMLI::R3Vector >              stdVectorR3Vector;
     typedef std::vector< GIMLI::RMatrix3 >              stdVectorMatrix3;
     typedef std::vector< GIMLI::BlockMatrixEntry >   stdVectorBlockMatrixEntry;
+    typedef std::vector< GIMLI::RSparseMapMatrix >   stdVectorRSparseMapMatrix;
 
     typedef std::vector< GIMLI::PolynomialElement<double> > stdVectorPolynomialElementR;
     typedef std::vector< GIMLI::PolynomialFunction< double > > stdVectorPolynomialFunctionR;
