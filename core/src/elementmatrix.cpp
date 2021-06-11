@@ -1303,19 +1303,20 @@ DEFINE_INTEGRATE_ELEMENTMAP_A_IMPL(const std::vector< RVector > &)
 DEFINE_INTEGRATE_ELEMENTMAP_A_IMPL(const std::vector< PosVector > &)
 #undef DEFINE_INTEGRATE_ELEMENTMAP_A_IMPL
 
-void ElementMatrixMap::quadraturePoints(std::vector < PosVector > & p) const {
-    for (auto &m: this->mats_){
-        const PosVector &x(*m.x());
-        p.push_back(PosVector(x.size()));
-        for (Index i = 0; i < x.size(); i ++){
-            p.back()[i] = m.entity()->shape().xyz(x[i]);
+const std::vector < PosVector > & ElementMatrixMap::quadraturePoints() const {
+    
+    if (this->quadrPnts_.size() != this->mats_.size()){
+        this->quadrPnts_.clear();
+
+        for (auto &m: this->mats_){
+            const PosVector &x(*m.x());
+            this->quadrPnts_.push_back(PosVector(x.size()));
+            for (Index i = 0; i < x.size(); i ++){
+                this->quadrPnts_.back()[i] = m.entity()->shape().xyz(x[i]);
+            }
         }
     }
-}
-std::vector < PosVector > ElementMatrixMap::quadraturePoints() const {
-    std::vector < PosVector > p;
-    this->quadraturePoints(p);
-    return p;
+    return this->quadrPnts_;
 }
 
 void ElementMatrixMap::add(Index row, const ElementMatrix < double > & Ai){

@@ -626,8 +626,7 @@ public:
     RVector integrate(const std::vector< RVector > & f) const;
     RVector integrate(const std::vector< PosVector > & f) const;
 
-    void quadraturePoints(std::vector < PosVector > & p) const;
-    std::vector < PosVector > quadraturePoints() const;
+    const std::vector < PosVector > & quadraturePoints() const;
 
     /*! Integrate into bilinear form, A = \int_mesh this * f * R \dmesh with 
     f = (nCells, nQuadsPerCell) and A = RSparseMapMatrix(dof, dof)
@@ -660,6 +659,7 @@ public:
 
 protected:
     std::vector< ElementMatrix < double > > mats_;
+    mutable std::vector < PosVector > quadrPnts_; // cache Q for mats_
 
     std::vector< RMatrix > mat_;
     std::vector< IndexArray > _ids;
