@@ -9,7 +9,7 @@ Contributing to the code
 .. note::
 
     These steps are only relevant, if you have write privileges to the main
-    GitHub repository. A more general contribution guide will follow soon.
+    GitHub repository. The general contribution guidlines can be found in _sec:contributing:.
 
 1. Clone the GIMLi repository:
 
@@ -20,7 +20,7 @@ Contributing to the code
 You should be on the master branch by default. Check by calling *git status*.
 GIMLi encourages developers to keep the *master branch* clean. So please use
 the default development branch called *dev*. Save `this script
-<https://gist.github.com/florian-wagner/0be0b09bbabec6791ed3>` in .git/hooks
+<https://gist.github.com/florian-wagner/0be0b09bbabec6791ed3>`_ in .git/hooks
 for automatic warnings in case you are about to push to the master branch.
 
 2. Checkout the dev branch:
@@ -132,143 +132,6 @@ To produce a new version, type:
 
 .. _sec:coding_guidelines:
 
-Coding rules
-------------
-
-* General we try to use Pep 8 https://www.python.org/dev/peps/pep-0008/?
-
-* All names should be literally and in CamelShape style.
-
-* Classes starts with Upper Case Letter.
-
-* Members and Methods always starts with Lower Case Letter.
-
-* All class member (self.member) need to be initialized in the Constructor.
-
-* (ugly²) Do not use multi initialize in one line, e.g., a, b, c = 0, 0, 0
-
-* check for data types with 'if isinstance(var, type):' instead 'if type(var) == type:'
-
-Behaviour by name for global functions:
-.......................................
-
-.. code-block:: python
-
-    createFOO(...)
-        """Always needs to return an instance of FOO.""
-
-.. code-block:: python
-
-    showFOO(Bar, ...)
-        """Always open a window or optionally use a given Axes to show us Bar as Foo."""
-        return ax, cbar
-
-.. code-block:: python
-
-    drawFOO(ax, Bar...)
-        """Always need an Axes ax and draws Bar as Foo""
-        return graphics_object
-
-.. code-block:: python
-
-    readFOO(fileName, *args):
-        """Read object from disc."""
-        return obj
-
-.. code-block:: python
-
-    importFOO(fileName, obj, *args):
-        """Import object from disc into an existing object."""
-        return obj
-
-.. code-block:: python
-
-    exportFOO(obj, fileName):
-        """Export object to disc in foreign (FOOs) format."""
-        return true
-
-.. code-block:: python
-
-    convertFOO(fooObj):
-        """Convert Foo obj into gimli Obj"""
-        return gimliObj
-
-API Documentation and doctests
-------------------------------
-
-Use the following documentation syntax or see at:
-https://www.sphinx-doc.org/en/master/usage/extensions/napoleon.html
-
-.. code-block:: python
-
-  def foo(arg1, arg2):
-
-  """Short description, i.e., one line to explain what foo does.
-
-    Explain a little bit more verbose was foo does. Use references :cite:`Archie1942`
-
-    Use links to pygimli api :py:mod:pygimli.manager` for modules
-    :py:func:pygimli.solver.solveFiniteElements for functions
-
-
-    Use math.
-
-    .. math :
-        a + \simga * \rho
-
-    Explain all parameters.
-
-    Args
-    ----
-    arg1: type | use links to :gimliapi:`GIMLI::Mesh`
-        Describe arg1.
-    arg2: type
-        Describe arg2.
-
-    Keyword Args
-    ------------
-    args: type
-        Description.
-
-    Attributes
-    ----------
-        For members
-
-    Returns
-    -------
-    type:
-
-    Examples
-    --------
-    >>> import foo
-    >>>
-    >>>
-
-    See Also
-    --------
-        average : Weighted average,
-        e.g., Link to tutorials :ref:`tut:Modelling_BC` assuming there
-        has been set a appropriate label in the tutorial.
-
-    References
-    ----------
-
-    """
-
-.. _sec:coding_guidelines:
-
-Coding Guidelines
------------------
-
-Use pylint or prospector to improve code quality.
-
-
-We use: (You can find exceptions in .landscape.yml)
-
-* pep8
-* pep257
-* pylint
-* pyflakes
 
 .. _sec:testing:
 
@@ -315,6 +178,7 @@ More information on pygimli's native testing function:
 
 .. autofunction:: pygimli.test
 
+
 Adding an example to the paper carousel
 .......................................
 
@@ -333,59 +197,3 @@ Adding an example to the paper carousel
        title="Improved geophysical images through geostatistical regularization",
        subtitle="Jordi et al. (2018), Geophysical Journal International",
        link="https://doi.org/10.1093/gji/ggy055")
-
-
-Contributing to the Documentation
----------------------------------
-.. note::
-
-    sphinx is a required to add and build the documentation. To learn more about sphinx, 
-    visit the following source: https://www.sphinx-doc.org/en/master/index.html
-
-PyGIMLi's documentation is built on sphinx. If you would like to contribute to the documentation of functions that you have been using and/or 
-have added. Please follow these steps: 
-
-1. Clone the latest pygimli and checkout the dev branch as shown in "Contributing to Code" and navigate to the *doc* directory.
-
-2. If you do not have pgcore installed, create an environment called *pgdev* that installs pgcore and activate it:
-
-.. code-block:: bash
-
-    conda create -n pgdev -c gimli -c conda-forge pgcore
-    conda activate pgdev
-    
-3. In order to also install PyGIMLi requirements on the new "pydev" environment, execute the following line of code in the *doc* directory:
-
-.. code-block:: bash
-
-    while read requirement; do conda install --yes $requirement; done < requirements.txt
-
-4. Please verify if you have the following sphinx components installed (these can be installed via conda-forge):
-
-    * sphinxcontrib-programoutput 
-    * sphinxcontrib-bibtex < 2.0.0 
-    * sphinxcontrib-doxylink 
-    * bibtexparse
-    * sphinx-gallery
-
-5. Make changes to documentation following the guidelines of API documentation. 
-
-6. Build the final documentation 
-
-.. code-block:: bash
-
-    make html
-
-7. The process should build all of the documentation so it may take some time to complete. When it finishes, the last line should state:
-
-.. code-block:: bash
-
-    Build finished. The HTML pages are in _build/html.
-
-8. Open a Pull request in the dev branch of pygimli to merge your changes.  
-
-
-ToDo-list
----------
-
-.. todolist::
