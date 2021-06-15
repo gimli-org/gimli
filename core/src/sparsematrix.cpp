@@ -244,6 +244,36 @@ template <> void SparseMapMatrix< Complex, Index >::
 THROW_TO_IMPL
 }
 
+template <> void SparseMapMatrix< double, Index >::
+    mult(const Vector < double > & a, 
+          Vector < Pos > & ret) const {
+    if (this->rows() != ret.size()) ret.resize(this->rows(), Pos(0.0, 0.0));
+
+    Index nCoeff(a.size() / this->cols()); 
+    Index dof(this->cols());
+    ASSERT_GREATER_EQUAL(a.size(), nCoeff*dof)
+
+    if (stype_ == 0){
+        for (const_iterator it = this->begin(); it != this->end(); it ++){
+            for (Index i = 0; i < nCoeff; i ++){
+                ret[it->first.first][i] += 
+                                a[it->first.second + i * dof] * it->second;
+            }
+        }
+    } else if (stype_ == -1){
+        THROW_TO_IMPL
+    } else if (stype_ ==  1){
+        THROW_TO_IMPL
+    }
+}
+
+template <> void SparseMapMatrix< Complex, Index >::
+    mult(const Vector < double > & a, 
+          Vector < Pos > & ret) const {
+    THROW_TO_IMPL
+}
+
+
 template <> void SparseMatrix< double >::add(const ElementMatrix< double > & A,
                                             double scale){
     if (A.oldStyle()){
@@ -291,11 +321,23 @@ template <> void SparseMatrix< Complex >::
     THROW_TO_IMPL
 }
 
+
 void mult(const std::vector < RSparseMapMatrix > & A,
           const RVector & b, std::vector< RVector > & ret){
-    // implement with ompl
+    //!! implement with ompl
     if (ret.size() != A.size()) ret.resize(A.size());
     for (Index i = 0; i < A.size(); i ++ ){
+        ret[i] *= 0.0;
+        A[i].mult(b, ret[i]);
+    }
+}
+
+void mult(const std::vector < RSparseMapMatrix > & A,
+          const RVector & b, std::vector< PosVector > & ret){
+    //!! implement with ompl, refactor with funct above
+    if (ret.size() != A.size()) ret.resize(A.size());
+    for (Index i = 0; i < A.size(); i ++ ){
+        ret[i] *= Pos(0.0, 0.0);
         A[i].mult(b, ret[i]);
     }
 }
@@ -306,7 +348,6 @@ std::vector< RVector > mult(const std::vector < RSparseMapMatrix > & A,
     mult(A, b, ret);
     return ret;
 }
-
 
 } // namespace GIMLI{
 

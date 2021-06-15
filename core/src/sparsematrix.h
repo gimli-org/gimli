@@ -403,6 +403,10 @@ public:
         // }
     }
 
+    /*! ret = [this * ax, this * ay, this * az. with ret = r3 and a is sqeezed pos vector. a = [ax, ay, az] 
+    */
+    virtual void mult(const Vector < double > & a, 
+                      Vector < Pos > & ret) const;
 
     /*! SparseMapMatrix: this * a , inplace add to ret */
     virtual void mult(const Vector < ValueType > & a, 
@@ -437,9 +441,7 @@ public:
                     ret[J] += a[I] * it->second;
                 }
             }
-
         }
-
     }
     /*! Return SparseMapMatrix: this * a. */
     virtual Vector < ValueType > mult(const Vector < ValueType > & a) const {
@@ -607,9 +609,15 @@ inline CVector transMult(const CSparseMapMatrix & A, const RVector & b){
     return A.transMult(toComplex(b));
 }
 
+/*! RVector[i] = A[i]*ret[i] */
 DLLEXPORT void mult(
         const std::vector < RSparseMapMatrix > & A,
         const RVector & b, std::vector< RVector > & ret);
+
+/*! PosVector[i] = [A[i]*ret[i][0..dof], A[i]*ret[i][dof..2*dof], ..*/
+DLLEXPORT void mult(
+        const std::vector < RSparseMapMatrix > & A,
+        const RVector & b, std::vector< PosVector > & ret);
 
 DLLEXPORT std::vector< RVector > mult(
         const std::vector < RSparseMapMatrix > & A,

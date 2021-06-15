@@ -631,11 +631,13 @@ public:
     /*! Integrate into bilinear form, A = \int_mesh this * f * R \dmesh with 
     f = (nCells, nQuadsPerCell) and A = RSparseMapMatrix(dof, dof)
     */
-    void integrate(const ElementMatrixMap & R, 
-                   const std::vector< RVector > & f,
+    // void integrate(const ElementMatrixMap & R, const double f,
+    //                RSparseMapMatrix & A) const;
+    // void integrate(const ElementMatrixMap & R, const RVector > & f,
+    //                RSparseMapMatrix & A) const;
+    void integrate(const ElementMatrixMap & R, const std::vector< RVector > & f,
                    RSparseMapMatrix & A) const;
-    void integrate(const ElementMatrixMap & R, 
-                   const std::vector< PosVector > & f,
+    void integrate(const ElementMatrixMap & R,const std::vector< PosVector > &f,
                    RSparseMapMatrix & A) const;
 
     RSparseMapMatrix integrate(const ElementMatrixMap & R, 

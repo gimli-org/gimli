@@ -1037,6 +1037,8 @@ ModellingBase = ModellingBaseMT__
 def __getCoords(coord, dim, ent):
     """Syntactic sugar to find all x-coordinates of a given entity.
     """
+    # if isinstance(ent, stdVectorR3Vector):
+    #     return getattr(pgcore, coord)(ent)
     if isinstance(ent, R3Vector) or isinstance(ent, stdVectorRVector3):
         return getattr(pgcore, coord)(ent)
     if isinstance(ent, list) and isinstance(ent[0], RVector3):

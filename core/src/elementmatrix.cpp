@@ -1240,6 +1240,8 @@ void ElementMatrixMap::push_back(const ElementMatrix < double > & Ai){
     rows_ = this->mats_.size();
 }
 
+//** linear forms R*f
+//** R*f  Scalar space f=RVector at quadrature points per cell 
 void ElementMatrixMap::integrate(const std::vector< RVector > & f, 
                                  RVector & R) const{
     ASSERT_EQUAL_SIZE(this->mats_, f)
@@ -1263,17 +1265,38 @@ void ElementMatrixMap::integrate(const std::vector< RVector > & f,
         R.addVal(rt, m.rowIDs());
     }
 }
+
+//** R*f Vector space f=PosVector at quadrature points per cell 
 void ElementMatrixMap::integrate(const std::vector< PosVector > & f, 
                                  RVector & R) const{
-    THROW_TO_IMPL
-}
-void ElementMatrixMap::integrate(const ElementMatrixMap & R, 
-                                 const std::vector< RVector > & f, RSparseMapMatrix & A) const{
-    THROW_TO_IMPL
-}
-void ElementMatrixMap::integrate(const ElementMatrixMap & R, 
-                                 const std::vector< PosVector > & f, RSparseMapMatrix & A) const{
-    THROW_TO_IMPL
+    ASSERT_EQUAL_SIZE(this->mats_, f)
+    for (auto &m : this->mats_){
+
+        const RVector &w(*m.w());
+        const PosVector &b(f[m.entity()->id()]);
+
+        Index nRules(w.size());
+        
+        // __MS(w)
+        // __MS(b)
+        ASSERT_VEC_SIZE(b, nRules)
+        ASSERT_VEC_SIZE(m.matX(), nRules)
+
+        RVector rt(m.rows(), 0.0);
+        
+        for (Index r = 0; r < nRules; r++){
+            const RMatrix &mr(m.matX()[r]);
+
+            for (Index k = 0; k < mr.rows(); k ++){
+                // __MS(r << " " << k << " " << b[r][k])
+                rt += mr[k] * b[r][k]* w[r];
+            }
+            //rt *= w[r];
+        }
+        
+        rt *= m.entity()->size();
+        R.addVal(rt, m.rowIDs());
+    }
 }
 
 #define DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL(A_TYPE) \
@@ -1290,6 +1313,16 @@ RVector ElementMatrixMap::integrate(A_TYPE f) const { \
 DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL(const std::vector< RVector > &)
 DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL(const std::vector< PosVector > &)
 #undef DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL
+
+// bilinear forms R*f*R
+void ElementMatrixMap::integrate(const ElementMatrixMap & R, 
+                                 const std::vector< RVector > & f, RSparseMapMatrix & A) const{
+    THROW_TO_IMPL
+}
+void ElementMatrixMap::integrate(const ElementMatrixMap & R, 
+                                 const std::vector< PosVector > & f, RSparseMapMatrix & A) const{
+    THROW_TO_IMPL
+}
 
 #define DEFINE_INTEGRATE_ELEMENTMAP_A_IMPL(A_TYPE) \
 RSparseMapMatrix ElementMatrixMap::integrate(const ElementMatrixMap & R, \
@@ -2015,41 +2048,41 @@ void evaluateQuadraturePoints(const Mesh & mesh, Index order,
                               const FEAFunction & f,
                               RVector & ret){
 THROW_TO_IMPL
-    ret.clear();
-    const PosVector *x;
-    for (auto &cell: mesh.cells()){
-        x = &IntegrationRules::instance().abscissa(cell->shape(), order);
-        for (Index i = 0; i < x->size(); i ++){
+    // ret.clear();
+    // const PosVector *x;
+    // for (auto &cell: mesh.cells()){
+    //     x = &IntegrationRules::instance().abscissa(cell->shape(), order);
+    //     for (Index i = 0; i < x->size(); i ++){
 
-            if (f.valueSize() == 1){
-                ret.push_back(f.evalR1(cell->shape().xyz((*x)[i]), cell));
-            } else {
-                __M
-                log(Critical, "expecting FEAFunction with valueSize==1.",
-                    f.valueSize());
-            }
-        }
-    }
+    //         if (f.valueSize() == 1){
+    //             ret.push_back(f.evalR1(cell->shape().xyz((*x)[i]), cell));
+    //         } else {
+    //             __M
+    //             log(Critical, "expecting FEAFunction with valueSize==1.",
+    //                 f.valueSize());
+    //         }
+    //     }
+    // }
 }
 void evaluateQuadraturePoints(const Mesh & mesh, Index order,
                               const FEAFunction & f,
                               PosVector & ret){
     THROW_TO_IMPL
-    ret.clear();
-    const PosVector *x;
-    for (auto &cell: mesh.cells()){
-        x = &IntegrationRules::instance().abscissa(cell->shape(), order);
-        for (Index i = 0; i < x->size(); i ++){
+    // ret.clear();
+    // const PosVector *x;
+    // for (auto &cell: mesh.cells()){
+    //     x = &IntegrationRules::instance().abscissa(cell->shape(), order);
+    //     for (Index i = 0; i < x->size(); i ++){
 
-            if (f.valueSize() > 1){
-                ret.push_back(f.evalR3(cell->shape().xyz((*x)[i]), cell));
-            } else {
-                __M
-                log(Critical, "expecting FEAFunction with valueSize==2 or 3",
-                    f.valueSize());
-            }
-        }
-    }
+    //         if (f.valueSize() > 1){
+    //             ret.push_back(f.evalR3(cell->shape().xyz((*x)[i]), cell));
+    //         } else {
+    //             __M
+    //             log(Critical, "expecting FEAFunction with valueSize==2 or 3",
+    //                 f.valueSize());
+    //         }
+    //     }
+    // }
 }
 
 void evaluateQuadraturePoints(const Mesh & mesh, Index order,

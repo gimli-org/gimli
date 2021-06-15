@@ -670,8 +670,8 @@ DEFINE_COMPARE_OPERATOR__(>, std::greater)
 #define DEFINE_UNARY_MOD_OPERATOR__(OP, FUNCT) \
   inline Vector< ValueType > & operator OP##= (const Vector < ValueType > & v) { \
         if (v.size() == 1) return *this OP##= v[0];\
-        ASSERT_EQUAL_SIZE((*this), v) \
-        std::transform(data_, data_ + size_, &v[0], data_, FUNCT()); return *this; } \
+        ASSERT_SIZE_GREATER_EQUAL((*this), v) \
+        std::transform(data_, data_ + v.size(), &v[0], data_, FUNCT()); return *this; } \
   inline Vector< ValueType > & operator OP##= (const ValueType & val) { \
         for (Index i = 0; i < size_; i ++) data_[i] OP##= val; return *this; } \
 

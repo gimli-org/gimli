@@ -204,6 +204,7 @@ void print(Args&&... args) {
     throwLengthError(WHERE_AM_I + " " + str(m.size()) + " != " + str(n.size()));
 #define ASSERT_GREATER_EQUAL(m, n) if (m < n) \
     throwLengthError(WHERE_AM_I + " " + str(m) + " is not greater-equal " + str(n));
+#define ASSERT_SIZE_GREATER_EQUAL(m, n) ASSERT_GREATER_EQUAL(m.size(),n.size())
 #define ASSERT_THIS_SIZE(n) if (n < 0 || n >= this->size()) \
     throwLengthError(WHERE_AM_I + " " + str(this->size()) + " <= " + str(n));
 #define ASSERT_VEC_SIZE(vec, n) if (n != vec.size()) \

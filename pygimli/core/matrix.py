@@ -11,6 +11,7 @@ from .core import (CMatrix, CSparseMapMatrix, CSparseMatrix,
                IVector, MatrixBase, R3Vector, RVector)
 
 from .logger import critical, warn
+from .base import isArray
 
 # make core matrices (now in pgcore, later pg.core) available here for brevity
 ## Usefull Aliases
@@ -134,7 +135,31 @@ pgcore.RSparseMapMatrix.__repr__ =__SparseMatrix_str
 
 
 def __stdVectorRSparseMapMatrix_Mult__(self, b):
-    return pgcore.mult(self, b)
+    ret = None
+    if isinstance(b, list):
+        # ret = np.array([pgcore.mult(self, bi) for bi in b]).T
+        # print(ret)
+
+        br = b[0]
+        for i in range(1, len(b)):
+            br = pgcore.cat(br, b[i])
+
+        ret = pgcore.stdVectorR3Vector()
+        pgcore.mult(self, br, ret)
+    
+    elif isinstance(b, np.ndarray) and b.ndim == 2:
+        ret = pgcore.stdVectorR3Vector()
+        pgcore.mult(self, b.flatten('F'), ret)
+    
+    elif isArray(b):
+        ret = pgcore.stdVectorRVector()
+        pgcore.mult(self, b, ret)
+    
+    else:
+        print(b)
+        pg.critical("Don't know how to convert b")
+    
+    return ret
 pgcore.stdVectorRSparseMapMatrix.__mul__ = __stdVectorRSparseMapMatrix_Mult__
 
 
