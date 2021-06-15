@@ -1,4 +1,4 @@
-name: pydev
+name: pgdev
 channels:
   - conda-forge
   - defaults
