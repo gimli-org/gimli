@@ -1,0 +1,24 @@
+name: pgdev
+channels:
+  - conda-forge
+  - defaults
+  - gimli
+dependencies:
+  - pygimli=1.2
+  - pgcore
+  - ipython
+  - matplotlib
+  - jupyter
+  - sphinx >= 1.8.5
+  - pytest
+  - numpy
+  - pytest-cov
+  - sphinx-gallery
+  - sphinxcontrib-bibtex<2.0.0
+  - sphinxcontrib-programoutput
+  - sphinxcontrib-spelling
+  - sphinxcontrib-doxylink
+  - pillow
+  - scipy
+  - bibtexparser
+  - pygccxml==2.0.0

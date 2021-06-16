@@ -6,11 +6,11 @@ Readme for Github repository only. (Gets selected before *.rst file)
   <img src="https://www.pygimli.org/_images/pg_logo.png" width="50%">
 </a>
 
-[![Build Status](http://jenkins.pygimli.org/job/pyGIMLi_dev/badge/icon)](http://jenkins.pygimli.org/job/pyGIMLi_dev/)
+[![Build Status](http://jenkins.pygimli.org/job/pyGIMLi_dev/badge/icon?style=flat-square)](http://jenkins.pygimli.org/job/pyGIMLi_dev/)
 [![license](https://img.shields.io/github/license/gimli-org/gimli.svg?style=flat-square)](https://pygimli.org/license.html)
 [![release](https://img.shields.io/github/release/gimli-org/gimli.svg?style=flat-square)](https://github.com/gimli-org/gimli/releases/latest)
 [![Github commits (since latest release)](https://img.shields.io/github/commits-since/gimli-org/gimli/latest.svg?style=flat-square)](https://github.com/gimli-org/gimli/tree/dev)
-
+[![Slack](https://img.shields.io/badge/Slack-pGIMLi-yellow.svg?logo=slack&style=flat-square)](https://swung.slack.com/archives/C01US4T522X)
 
 [pyGIMLi](www.pygimli.org) is an open-source library for modelling and inversion and in geophysics. The object-oriented library provides management for structured and unstructured meshes in 2D and 3D, finite-element and finite-volume solvers, various geophysical forward operators, as well as Gauss-Newton based frameworks for constrained, joint and fully-coupled inversions with flexible regularization.
 
@@ -78,16 +78,14 @@ BibTeX code:
 
 ```sourceCode
 @article{Ruecker2017,
-  title = "{pyGIMLi}: An open-source library for modelling and inversion in geophysics",
-  journal = "Computers and Geosciences",
-  volume = "109",
-  number = "",
-  pages = "106--123",
-  year = "2017",
-  issn = "0098-3004",
-  doi = "10.1016/j.cageo.2017.07.011",
-  url = "http://www.sciencedirect.com/science/article/pii/S0098300417300584",
-  author = "Carsten R\"ucker and Thomas G\"unther and Florian M. Wagner"
+  title = {{pyGIMLi}: An open-source library for modelling and inversion in geophysics},
+  journal = {Computers and Geosciences},
+  volume = {109},
+  pages = {106--123},
+  year = {2017},
+  doi = {10.1016/j.cageo.2017.07.011},
+  url = {https://www.sciencedirect.com/science/article/pii/S0098300417300584},
+  author = {R\"ucker, C. and G\"unther, T. and Wagner, F. M.}
 }
 ```
 
