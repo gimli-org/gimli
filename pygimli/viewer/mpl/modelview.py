@@ -257,7 +257,7 @@ def showStitchedModels(models, ax=None, x=None, cMin=None, cMax=None,
     if x is None:
         x = np.arange(len(models))
 
-    topo = kwargs.pop('topo', x*0)
+    topo = kwargs.pop('topo', np.zeros_like(x))
     nlay = int(np.floor((len(models[0]) + 1) / 2.))
 
     fig = None
@@ -272,8 +272,8 @@ def showStitchedModels(models, ax=None, x=None, cMin=None, cMax=None,
 
     for i, imod in enumerate(models):
         if isinstance(imod, pg.Vector):
-            vals[i, :] = imod(nlay - 1, 2 * nlay - 1)
-            thk = np.asarray(imod(0, nlay - 1))
+            vals[i, :] = imod[nlay - 1:2 * nlay - 1]
+            thk = np.asarray(imod[:nlay - 1])
         else:
             vals[i, :] = imod[nlay - 1:2 * nlay - 1]
             thk = imod[:nlay - 1]
