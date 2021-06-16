@@ -87,7 +87,7 @@ def createRAData(sensors, shotDistance=1):
         Geophon and shot positions (same)
     shotDistances: int [1]
         Distance between shot indices.
-        
+
     Returns
     -------
     data : DataContainer
@@ -147,7 +147,11 @@ def createGradientModel2D(data, mesh, vTop, vBot):
         A numpy array with slowness values that can be used to start
         the inversion.
     """
-    p = np.polyfit(pg.x(data), pg.y(data), deg=1)  # slope-intercept form
+    yVals = pg.y(data)
+    if abs(min(yVals)) < 1e-8 and abs(max(yVals)) < 1e-8:
+        yVals = pg.z(data)
+
+    p = np.polyfit(pg.x(data), yVals, deg=1)  # slope-intercept form
     n = np.asarray([-p[0], 1.0])  # normal vector
     nLen = np.sqrt(np.dot(n, n))
 
