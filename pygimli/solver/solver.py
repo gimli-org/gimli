@@ -2568,7 +2568,7 @@ def crankNicolson(times, S, I, f=None,
         Identity matrix (FD, FV) or Masselementmatrix (FE) to handle solution
         vector
     u0: iterable [None]
-        Starting condition. zero if not given
+        Starting condition. zero or None if not given
     f: iterable (float) [None]
         External forces. Note f might also contain compensation values due to
         algebraic Dirichlet correction of S
@@ -2607,7 +2607,8 @@ def crankNicolson(times, S, I, f=None,
         rhs[:] = f
 
     u = np.zeros((len(times), dof))
-    if u0 is not None:
+    
+    if u0 is not None and not pg.isScalar(u0, 0):
         u[0, :] = u0
 
     if theta == 0:
