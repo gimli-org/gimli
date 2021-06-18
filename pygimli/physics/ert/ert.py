@@ -484,7 +484,7 @@ def estimateError(data, absoluteError=0.001, relativeError=0.03,
             pg.critical("We need apparent resistivity values "
                         "(rhoa) in the data to estimate a "
                         "data error.")
-        error = relativeError + absoluteError / data('rhoa')
+        error = relativeError + pg.abs(absoluteError / data('rhoa'))
     else:
         u = None
         i = absoluteCurrent
