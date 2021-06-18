@@ -244,9 +244,9 @@ template <> void SparseMapMatrix< Complex, Index >::
 THROW_TO_IMPL
 }
 
+
 template <> void SparseMapMatrix< double, Index >::
-    mult(const Vector < double > & a, 
-          Vector < Pos > & ret) const {
+    mult(const Vector < double > & a, Vector < Pos > & ret) const {
     if (this->rows() != ret.size()) ret.resize(this->rows(), Pos(0.0, 0.0));
 
     Index nCoeff(a.size() / this->cols()); 
@@ -266,11 +266,9 @@ template <> void SparseMapMatrix< double, Index >::
         THROW_TO_IMPL
     }
 }
-
 template <> void SparseMapMatrix< Complex, Index >::
-    mult(const Vector < double > & a, 
-          Vector < Pos > & ret) const {
-    THROW_TO_IMPL
+    mult(const Vector < Complex > & a, Vector < Pos > & ret) const {
+THROW_TO_IMPL
 }
 
 

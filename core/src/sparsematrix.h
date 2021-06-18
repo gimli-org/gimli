@@ -405,7 +405,7 @@ public:
 
     /*! ret = [this * ax, this * ay, this * az. with ret = r3 and a is sqeezed pos vector. a = [ax, ay, az] 
     */
-    virtual void mult(const Vector < double > & a, 
+    virtual void mult(const Vector < ValueType > & a, 
                       Vector < Pos > & ret) const;
 
     /*! SparseMapMatrix: this * a , inplace add to ret */
@@ -1206,6 +1206,10 @@ template< typename ValueType, typename Index >
 void SparseMapMatrix< ValueType, Index >::copy_(const SparseMatrix< Complex > & S){THROW_TO_IMPL}
 
 
+template <> DLLEXPORT void SparseMapMatrix< double, Index >::
+    mult(const Vector < double > & a, Vector < Pos > & ret) const;
+template <> DLLEXPORT void SparseMapMatrix< Complex, Index >::
+    mult(const Vector < Complex > & a, Vector < Pos > & ret) const;
 
 template <> DLLEXPORT void SparseMapMatrix< double, Index >::
     add(const ElementMatrix < double > & A, double scale);
