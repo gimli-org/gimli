@@ -4,21 +4,19 @@ channels:
   - defaults
   - gimli
 dependencies:
-  - pygimli=1.2
-  - pgcore
-  - ipython
+  - pgcore >= 1.2.0
   - matplotlib
   - jupyter
   - sphinx >= 1.8.5
   - pytest
   - numpy
   - pytest-cov
+  - pytest-html
   - sphinx-gallery
   - sphinxcontrib-bibtex<2.0.0
   - sphinxcontrib-programoutput
   - sphinxcontrib-spelling
   - sphinxcontrib-doxylink
-  - pillow
   - scipy
   - bibtexparser
-  - pygccxml==2.0.0
+  - pyvista =0.24
