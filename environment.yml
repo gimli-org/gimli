@@ -13,7 +13,7 @@ dependencies:
   - pytest-cov
   - pytest-html
   - sphinx-gallery
-  - sphinxcontrib-bibtex<2.0.0
+  - sphinxcontrib-bibtex
   - sphinxcontrib-programoutput
   - sphinxcontrib-spelling
   - sphinxcontrib-doxylink

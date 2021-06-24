@@ -556,3 +556,7 @@ napoleon_use_admonition_for_references = False
 napoleon_use_ivar = True
 napoleon_use_param = True
 napoleon_use_rtype = True
+
+# Bibtex settings
+bibtex_bibfiles = ["gimliuses.bib", "libgimli.bib", "references.bib"]
+bibtex_reference_style = "author_year"

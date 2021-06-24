@@ -9,8 +9,7 @@ pyplusplus==1.8.4
 # for py3.8
 pygccxml==2.0.0 
 sphinx==1.8.5
-#sphinxcontrib-bibtex>2
-sphinxcontrib-bibtex<2.0.0
+sphinxcontrib-bibtex
 sphinxcontrib-programoutput
 sphinxcontrib-doxylink
 sphinx-gallery
