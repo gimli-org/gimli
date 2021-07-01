@@ -545,11 +545,22 @@ def interpolate(*args, **kwargs):
             if args[1].ndim == 2:  # outData = (inMesh, mat, vR3)
 
                 outMat = pg.Matrix()
-                pg.core.pgcore.interpolate(args[0], inMat=np.array(args[1]),
-                                           destPos=args[2], outMat=outMat,
-                                           fillValue=fallback,
-                                           verbose=verbose)
-                return np.array(outMat)
+                if pg.isPos(args[2]):
+                    # outData = (inMesh, mat, R3)
+                    pg.core.pgcore.interpolate(args[0], inMat=np.array(args[1]),
+                                            destPos=[args[2]], outMat=outMat,
+                                            fillValue=fallback,
+                                            verbose=verbose)
+                    return np.array(outMat)
+                else:
+                    # outData = (inMesh, mat, vR3)
+
+                    outMat = pg.Matrix()
+                    pg.core.pgcore.interpolate(args[0], inMat=np.array(args[1]),
+                                            destPos=args[2], outMat=outMat,
+                                            fillValue=fallback,
+                                            verbose=verbose)
+                    return np.array(outMat)
 
         if len(args) == 4:  # args: (inMesh, inData, outPos, outData)
 

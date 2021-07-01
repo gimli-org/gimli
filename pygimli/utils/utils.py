@@ -222,6 +222,93 @@ def prettyFloat(value, roundValue=False):
     else:
         return string
 
+def prettyTime(t):
+    """Return prettified time in seconds as string.
+        No months, no leap year.
+
+    TODO
+    ----
+        * weeks (needed)
+        * > 1000 years
+
+    Args
+    ----
+    t: float
+        Time in seconds, should be > 0
+
+    Examples
+    --------
+    >>> from pygimli.utils import prettyTime
+    >>> print(prettyTime(1))
+    1 s
+    >>> print(prettyTime(3600*24))
+    1 day
+    >>> print(prettyTime(2*3600*24))
+    2 days
+    >>> print(prettyTime(365*3600*24))
+    1 year
+    >>> print(prettyTime(3600))
+    1 hour
+    >>> print(prettyTime(2*3600))
+    2 hours
+    >>> print(prettyTime(3660))
+    1h1m
+    >>> print(prettyTime(1e-3))
+    1 ms
+    >>> print(prettyTime(1e-6))
+    1 µs
+    >>> print(prettyTime(1e-9))
+    1 ns
+    """
+    if abs(t) > 1:
+        seconds = int(t)
+        years, seconds = divmod(seconds, 365*86400)
+        days, seconds = divmod(seconds, 86400)
+        hours, seconds = divmod(seconds, 3600)
+        minutes, seconds = divmod(seconds, 60)
+        if years > 0:
+            if days >=1:
+                return '%dy%dd' % (years, days)
+            else:
+                if years > 1:
+                    return '%d years' % (years,)
+                else:
+                    return '%d year' % (years,)
+        elif days > 0:
+            if hours >=1:
+                return '%dd%dh' % (days, hours)
+            else:
+                if days > 1:
+                    return '%d days' % (days,)
+                else:
+                    return '%d day' % (days,)
+        elif hours > 0:
+            if minutes >=1:
+                return '%dh%dm' % (hours, minutes)
+            else:
+                if hours > 1:
+                    return '%d hours' % (hours)
+                else:
+                    return '%d hour' % (hours)
+        elif minutes > 0:
+            if seconds >=1:
+                return '%dm%ds' % (minutes, seconds)
+            else:
+                if minutes > 1:
+                    return '%d minutes' % (minutes)
+                else:
+                    return '%d minute' % (minutes)
+        else:
+            return '%d s' % (seconds,)
+    else:
+        if abs(t) >= 1e-3 and abs(t) <= 0.1:
+            return prettyFloat(t*1e3) + " ms"
+        elif abs(t) >= 1e-6 and abs(t) <= 1e-3:
+            return prettyFloat(t*1e6) + " µs"
+        elif abs(t) >= 1e-9 and abs(t) <= 1e-6:
+            return prettyFloat(t*1e9) + " ns"
+        return prettyFloat(t) + " s"
+
 
 def niceLogspace(vMin, vMax, nDec=10):
     """Create nice logarithmic space from the next decade lower to vMin to

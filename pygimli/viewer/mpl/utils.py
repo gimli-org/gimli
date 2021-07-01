@@ -12,9 +12,9 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
-
+    
 import pygimli as pg
-from pygimli.utils import prettyFloat
+from pygimli.utils import prettyFloat, prettyTime
 
 holdAxes__ = 0
 
@@ -126,6 +126,17 @@ def renameDepthTicks(ax):
 
     ax.yaxis.set_major_formatter(major_formatter)
     updateAxes(ax)
+
+
+def setPrettyTimeTicks(ax):
+    """Set x axis ticks with pretty time."""
+    @ticker.FuncFormatter
+    def major_formatter(x, pos):
+        return pg.utils.prettyTime(x) % x
+
+    ax.xaxis.set_major_formatter(major_formatter)
+    pg.viewer.mpl.updateAxes(ax)
+
 
 
 def setOutputStyle(dim='w', paperMargin=5, xScale=1.0, yScale=1.0, fontsize=9,

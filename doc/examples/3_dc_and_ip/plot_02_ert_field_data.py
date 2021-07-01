@@ -19,7 +19,6 @@ from pygimli.physics.ert import ERTManager, createGeometricFactors
 # Get some example data with topography
 #
 data = pg.getExampleFile('ert/slagdump.ohm', load=True, verbose=True)
-print(data)
 
 ###############################################################################
 # The data file does not contain geometric factors (token field 'k'),

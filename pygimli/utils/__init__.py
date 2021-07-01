@@ -36,7 +36,7 @@ from .units import cmap as cMap # for compatibilty (will be removed)
 from .utils import (ProgressBar, boxprint, cumDist, cut, diff, dist,
                     filterIndex, filterLinesByCommentStr, findNearest,
                     getIndex, grange, logDropTol, niceLogspace,
-                    prettify, prettyFloat,
+                    prettify, prettyFloat, prettyTime,
                     randn, rand, trimDocString, unicodeToAscii, unique,
                     unique_everseen, unique_rows, uniqueAndSum)
 

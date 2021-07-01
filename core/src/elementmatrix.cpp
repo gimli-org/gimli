@@ -1300,7 +1300,23 @@ void ElementMatrixMap::integrate(const std::vector< PosVector > & f,
 }
 
 #define DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL(A_TYPE) \
-RVector ElementMatrixMap::integrate(A_TYPE f) const { \
+void ElementMatrixMap::integrate(const A_TYPE & f, RVector & R) const { \
+    THROW_TO_IMPL \
+}\
+
+DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL(double)
+DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL(Pos)
+DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL(RMatrix)
+DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL(RVector)
+DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL(PosVector)
+DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL(std::vector< RMatrix >)
+//DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL(std::vector< RVector >) // done
+//DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL(std::vector< PosVector >) // done
+DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL(std::vector< std::vector< RMatrix > >)
+#undef DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL
+
+#define DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(A_TYPE) \
+RVector ElementMatrixMap::integrate(const A_TYPE & f) const { \
     Index maxR = 0; \
     for (auto &m : this->mats_){ \
         maxR = max(maxR, max(m.rowIDs()));\
@@ -1310,31 +1326,41 @@ RVector ElementMatrixMap::integrate(A_TYPE f) const { \
     return R; \
 }\
 
-DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL(const std::vector< RVector > &)
-DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL(const std::vector< PosVector > &)
-#undef DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL
+DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(double)
+DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(Pos)
+DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(RMatrix)
+DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(RVector)
+DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(PosVector)
+DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(std::vector< RMatrix >)
+DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(std::vector< RVector >)
+DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(std::vector< PosVector >)
+DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(std::vector< std::vector< RMatrix > >)
+#undef DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET
 
 // bilinear forms R*f*R
-void ElementMatrixMap::integrate(const ElementMatrixMap & R, 
-                                 const std::vector< RVector > & f, RSparseMapMatrix & A) const{
-    THROW_TO_IMPL
-}
-void ElementMatrixMap::integrate(const ElementMatrixMap & R, 
-                                 const std::vector< PosVector > & f, RSparseMapMatrix & A) const{
-    THROW_TO_IMPL
-}
-
 #define DEFINE_INTEGRATE_ELEMENTMAP_A_IMPL(A_TYPE) \
+void ElementMatrixMap::integrate(const ElementMatrixMap & R, const A_TYPE & f, \
+                                 RSparseMapMatrix & A) const {\
+    THROW_TO_IMPL \
+} \
 RSparseMapMatrix ElementMatrixMap::integrate(const ElementMatrixMap & R, \
-                                             A_TYPE f) const { \
+                                             const A_TYPE & f) const { \
     RSparseMapMatrix A(0,0);\
     integrate(R, f, A);\
     return A;\
 }\
 
-DEFINE_INTEGRATE_ELEMENTMAP_A_IMPL(const std::vector< RVector > &)
-DEFINE_INTEGRATE_ELEMENTMAP_A_IMPL(const std::vector< PosVector > &)
+DEFINE_INTEGRATE_ELEMENTMAP_A_IMPL(double)
+DEFINE_INTEGRATE_ELEMENTMAP_A_IMPL(Pos)
+DEFINE_INTEGRATE_ELEMENTMAP_A_IMPL(RMatrix)
+DEFINE_INTEGRATE_ELEMENTMAP_A_IMPL(RVector)
+DEFINE_INTEGRATE_ELEMENTMAP_A_IMPL(PosVector)
+DEFINE_INTEGRATE_ELEMENTMAP_A_IMPL(std::vector< RMatrix >)
+DEFINE_INTEGRATE_ELEMENTMAP_A_IMPL(std::vector< RVector >)
+DEFINE_INTEGRATE_ELEMENTMAP_A_IMPL(std::vector< PosVector >)
+DEFINE_INTEGRATE_ELEMENTMAP_A_IMPL(std::vector< std::vector< RMatrix > >)
 #undef DEFINE_INTEGRATE_ELEMENTMAP_A_IMPL
+
 
 const std::vector < PosVector > & ElementMatrixMap::quadraturePoints() const {
     

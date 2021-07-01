@@ -2561,9 +2561,9 @@ def crankNicolson(times, S, I, f=None,
     Args
     ----
     times: iterable(float)
-        Timeteps to solve for. Give at least 2.
+        Timeteps to solve for. Give at least 2. Calculates len(times)-1 time steps. If times is not equidistant the matrix factorization is done for every time step.
     S: Matrix
-        Systemmatrix holds your discrete equations and boundary conditions
+        System matrix holds your discrete equations and boundary conditions
     I: Matrix
         Identity matrix (FD, FV) or Masselementmatrix (FE) to handle solution
         vector
@@ -2587,7 +2587,7 @@ def crankNicolson(times, S, I, f=None,
     Returns
     -------
     np.ndarray:
-        Solution for each time steps
+        Solution for each time steps. First result step is input u0.
     """
     if len(times) < 2:
         raise BaseException("We need at least 2 times for "
@@ -2614,12 +2614,15 @@ def crankNicolson(times, S, I, f=None,
     if theta == 0:
         A = I.copy()
 
+    if type(solver) is str:
+        solver = pg.solver.LinSolver(solver=solver)
     if solver is None:
         solver = pg.solver.LinSolver(solver='scipy')
 
     dt = 0.0
     for n in range(1, len(times)):
         newDt = times[n] - times[n-1]
+
         if abs(newDt - dt) > 1e-8:
             ## new dt, so we need to factorize the matrix again
             dt = newDt

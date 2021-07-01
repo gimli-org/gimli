@@ -616,35 +616,37 @@ public:
 
     void push_back(const ElementMatrix < double > & Ai);
 
-    
-    /*! R = \int_mesh this * f \dmesh with 
-    f = (nCells, nQuadsPerCell) and R = RVector(dof) 
-    */
-    void integrate(const std::vector< RVector > & f, RVector & R) const;
-    void integrate(const std::vector< PosVector > & f, RVector & R) const;
-    
-    RVector integrate(const std::vector< RVector > & f) const;
-    RVector integrate(const std::vector< PosVector > & f) const;
+    #define DEFINE_INTEGRATOR(A_TYPE) \
+        /*! R = \int_mesh this * f \d mesh and R = RVector(dof) and \
+            f = A_TYPE \
+        */ \
+        void integrate(const A_TYPE & f, RVector & R) const; \
+        /*! Integrate into bilinear form R = \int_mesh this * f * R \d mesh an\
+        R = RSparseMapMatrix(dof, dof) and \
+            f = A_TYPE \
+        */ \
+        void integrate(const ElementMatrixMap & R, const A_TYPE & f, \
+                       RSparseMapMatrix & A) const; \
+        RVector integrate(const A_TYPE & f) const; \
+        RSparseMapMatrix integrate(const ElementMatrixMap & R, \
+                                   const A_TYPE & f) const; \
+        
+    DEFINE_INTEGRATOR(double)   // const scalar for all cells
+    DEFINE_INTEGRATOR(Pos)      // const vector for all cells
+    DEFINE_INTEGRATOR(RMatrix)  // const Matrix for all cells
+    DEFINE_INTEGRATOR(RVector)      // const scalar for each cells
+    DEFINE_INTEGRATOR(PosVector)    // const vector for each cells
+    DEFINE_INTEGRATOR(std::vector< RMatrix >)// const matrix for each cells
+    DEFINE_INTEGRATOR(std::vector< RVector >)// scalar for quadr. on each cells
+    DEFINE_INTEGRATOR(std::vector< PosVector >)// vector for quadr. on each cells
+    DEFINE_INTEGRATOR(std::vector< std::vector< RMatrix > >)// mat for quadr. on each cells
 
+    #undef DEFINE_INTEGRATOR
+        
+    
     const std::vector < PosVector > & quadraturePoints() const;
 
-    /*! Integrate into bilinear form, A = \int_mesh this * f * R \dmesh with 
-    f = (nCells, nQuadsPerCell) and A = RSparseMapMatrix(dof, dof)
-    */
-    // void integrate(const ElementMatrixMap & R, const double f,
-    //                RSparseMapMatrix & A) const;
-    // void integrate(const ElementMatrixMap & R, const RVector > & f,
-    //                RSparseMapMatrix & A) const;
-    void integrate(const ElementMatrixMap & R, const std::vector< RVector > & f,
-                   RSparseMapMatrix & A) const;
-    void integrate(const ElementMatrixMap & R,const std::vector< PosVector > &f,
-                   RSparseMapMatrix & A) const;
-
-    RSparseMapMatrix integrate(const ElementMatrixMap & R, 
-                               const std::vector< RVector > & f) const;
-    RSparseMapMatrix integrate(const ElementMatrixMap & R, 
-                               const std::vector< PosVector > & f) const;
-
+    
     void add(Index row, const ElementMatrix < double > & Ai);
 
     //TODO .. check if its the same like mult(a-b, m-n))

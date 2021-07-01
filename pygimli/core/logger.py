@@ -45,7 +45,7 @@ def _(*args, c=None):
     except:
         return '\033[' + c + 'm' + _msg(*args) + __ANSICOLORS__['NC']
 
-def _get_class_from_frame(fr):
+def _clsNameFromFrame(fr):
     args, _, _, value_dict = inspect.getargvalues(fr)
     if len(args) and args[0] == 'self':
         instance = value_dict.get('self', None)
@@ -55,7 +55,7 @@ def _get_class_from_frame(fr):
 
 def whereAmI(nr=3):
     nr = min(len(inspect.stack())-1, nr)
-    clsName = _get_class_from_frame(inspect.stack()[nr][0])
+    clsName = _clsNameFromFrame(inspect.stack()[nr][0])
     method = inspect.stack()[nr].function
     fileN = inspect.stack()[nr].filename.split('/')[-1]
     line = inspect.stack()[nr].lineno

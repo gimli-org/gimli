@@ -18,6 +18,7 @@ from .utils import (hold,
                     saveAnimation,
                     setOutputStyle,
                     setPlotStuff,
+                    setPrettyTimeTicks,
                     plotLines,
                     twin, createTwinX, createTwinY)
 

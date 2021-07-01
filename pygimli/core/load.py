@@ -17,13 +17,8 @@ from pygimli.utils import cache
 from pygimli.physics.traveltime import load as loadTT
 
 
-gimliExampleDataPath='gimli-org/example-data/'
-# Example data repository
-exampleDataRepository = ''.join((
-    'https://raw.githubusercontent.com/',  # RAW files
-    gimliExampleDataPath,  # Organization and repository
-    'master/'  # Branch
-))
+__gimliExampleDataRepo__ = 'gimli-org/example-data/'
+__gimliExampleDataBase__ = 'example-data'
 
 
 def optImport(module, requiredFor="use the full functionality"):
@@ -212,41 +207,65 @@ def load(fname, verbose=False, testAll=True, realName=None):
                         "and could not be imported.".format(suffix))
 
 
-def getExampleFile(path, load=False, verbose=False):
-    """Download and return a filename to the example repository.
+def getExampleFile(path, load=False, verbose=False, **kwargs):
+    """Download and return a file name to the local example repository.
+
+    Content will not be downloaded if already exists.
 
     TODO:
-        checksum or hash test for the content.
+        * checksum or hash test for the content.
+        * provide release or github version for specific repo
 
-    Parameters
-    ----------
+    Args
+    ----
     path: str
         Path to the remote repo
     load: bool [False]
         Try to load the file and return the relating object.
 
+    Keyword Args
+    ------------
+    githubRepo: str
+        Third party github data repository.
+    branch: str ['master']
+        branchname
+
     Returns
     -------
     filename: str
-        Filename to the data content
+        Local file name to the data content.
     data: obj
-        content of the path if load is True
+        Content of the file if 'load' is set True.
     """
-    url = exampleDataRepository + path
+    repo = kwargs.pop('githubRepo', __gimliExampleDataRepo__)
+    branch = kwargs.pop('branch', 'master')
 
-    fileName = os.path.join(tempfile.gettempdir(), gimliExampleDataPath, path)
+    url = '/'.join(('https://raw.githubusercontent.com/',  # RAW files
+                   repo, branch, path))
+
+    pg.info(f'Looking for {path} in {repo}')
+
+    fileName = os.path.join(getCachePath(), 
+                            __gimliExampleDataBase__, 
+                            repo, branch, path)
 
     if not os.path.exists(fileName):
         if verbose:
             pg.info("Getting:", fileName)
         os.makedirs(os.path.dirname(fileName), exist_ok=True)
-        tmp = urlretrieve(url, fileName)
+        try:
+            tmp = urlretrieve(url, fileName)
+        except BaseException as e:
+            print(url)
+            print(fileName)
+            pg.critical(e)
+
     else:
         if verbose:
             pg.info("File already exists:", fileName)
 
     if load:
-        print(fileName)
-        d = pg.load(fileName)
+        pg.info('loading:', fileName)
         return pg.load(fileName)
+        
     return fileName
