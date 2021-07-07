@@ -2,14 +2,14 @@
 # Install via pip: sudo pip install -U -r requirements.txt
 sphinx >= 1.8
 matplotlib
-numpy>=1.12
+numpy
 pytest
 pytest-cov
-sphinx-gallery>=0.0.13
-sphinxcontrib-bibtex>=0.3.4
-sphinxcontrib-programoutput>=0.8
-sphinxcontrib-spelling>=2.1
-sphinxcontrib-doxylink==1.6.1
+sphinx-gallery
+sphinxcontrib-bibtex
+sphinxcontrib-programoutput
+sphinxcontrib-spelling
+sphinxcontrib-doxylink
 pillow
 scipy
 bibtexparser

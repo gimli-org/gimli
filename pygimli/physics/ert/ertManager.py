@@ -348,7 +348,6 @@ class ERTManager(MeshMethodManager):
                 ret['phia'] = phia
 
         # check what needs to be setup and returned
-
         if returnArray:
             if phia is not None:
                 return rhoa, phia
@@ -357,13 +356,13 @@ class ERTManager(MeshMethodManager):
 
         return ret
 
-    def checkData(self, data):
+    def checkData(self, data=None):
         """Return data from container.
 
         THINKABOUT: Data will be changed, or should the manager keep a copy?
         """
+        data = data or pg.DataContainerERT(self.data)
         if isinstance(data, pg.DataContainer):
-
             if not data.allNonZero('k'):
                 pg.warn("Data file contains no geometric factors (token='k').")
                 data['k'] = createGeometricFactors(data, verbose=True)
@@ -383,7 +382,6 @@ class ERTManager(MeshMethodManager):
 
             else:
                 if not data.haveData('rhoa'):
-
                     if data.allNonZero('r'):
                         pg.info("Creating apparent resistivies from "
                                 "impedences rhoa = r * k")
@@ -432,8 +430,6 @@ class ERTManager(MeshMethodManager):
                             "Fallback set to 0.01")
                     ipe = np.ones(err.size()) * 0.01
 
-                # pg._y("err", min(rae), max(rae), rae)
-                # pg._y("iperr", min(ipe), max(ipe), ipe)
                 return pg.cat(rae, ipe)
 
         return rae  # not set if err is no DataContainer (else missing)

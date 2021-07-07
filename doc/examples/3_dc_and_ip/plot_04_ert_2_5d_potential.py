@@ -158,7 +158,7 @@ sourcePosB = [+5.25, -3.75]
 
 k = 1e-2
 sigma = 1.0
-bc={'Robin': {'1,2,4': mixedBC}}
+bc={'Robin': {'1,2,3': mixedBC}}
 u = pg.solve(mesh, a=sigma, b=-sigma * k*k,
              rhs=rhsPointSource(mesh, sourcePosA),
              bc=bc, userData={'sourcePos': sourcePosA, 'k': k, 's':sigma},
@@ -204,9 +204,9 @@ ax = pg.show(mesh, data=pg.abs(uAna-u), cMap="Reds",
           nCols=12, nLevs=7,
           showMesh=True)[0]
 
-# print('l2:', pg.pf(pg.solver.normL2(uAna-u)))
-# print('L2:', pg.pf(pg.solver.normL2(uAna-u, mesh)))
-# print('H1:', pg.pf(pg.solver.normH1(uAna-u, mesh)))
-# np.testing.assert_approx_equal(pg.solver.normL2(uAna-u, mesh),
-#                                0.02415, significant=3)
+#print('l2:', pg.pf(pg.solver.normL2(uAna-u)))
+print('L2:', pg.pf(pg.solver.normL2(uAna-u, mesh)))
+print('H1:', pg.pf(pg.solver.normH1(uAna-u, mesh)))
+np.testing.assert_approx_equal(pg.solver.normL2(uAna-u, mesh),
+                               0.02415, significant=3)
 

@@ -228,9 +228,9 @@ class SIPSpectrum(object):
         self.basename = basename
         self.fig = {}
         self.k = k
-        self.f = None  # mandarory frequencies.
-        self.amp = None  # mandarory amplitides
-        self.phi = None  # mandarory phases
+        self.f = None  # mandatory frequencies
+        self.amp = None  # mandatory amplitudes
+        self.phi = None  # mandatory phases
 
         self.epsilon0 = 8.854e-12
 
@@ -846,16 +846,15 @@ def test_SIPSPectrum():
 
 def run_SIPSPectrum(myfile):
     sip = SIPSpectrum(myfile)
-    #    sip.showData(znorm=True)
+    # sip.showData(znorm=True)
     if True:  # Pelton
         sip.fitCCEM()
     else:
         sip.removeEpsilonEffect()
         sip.fitColeCole(useCond=False)
 
-    # %%
     sip.fitDebyeModel()  # , showFit=True)
-    # %% create titles and plot data, fit and model
+    # create titles and plot data, fit and model
     sip.showAll(save=True)
 
 if __name__ == "__main__":

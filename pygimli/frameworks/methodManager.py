@@ -481,6 +481,7 @@ class MethodManager(object):
         """
         if model is None:
             model = self.model
+
         return self.showModel(model, ax=ax, **kwargs)
 
     def showFit(self, ax=None, **kwargs):
@@ -638,7 +639,7 @@ class MeshMethodManager(MethodManager):
         Attribute
         ---------
         mesh: pg.Mesh
-            Copy of the main Mesh. Will be distributet to inversion and the fop.
+            Copy of the main mesh to be distributed to inversion and the fop.
             You can overwrite it with invert(mesh=mesh).
         """
         super(MeshMethodManager, self).__init__(**kwargs)
@@ -808,7 +809,9 @@ class MeshMethodManager(MethodManager):
 
 
 class PetroInversionManager(MeshMethodManager):
+    """Class for petrophysical inversion (s. Rücker et al. 2017)."""
     def __init__(self, petro, mgr=None, **kwargs):
+        """Initialize instance with manager and petrophysical relation."""
         petrofop = kwargs.pop('petrofop', None)
 
         if petrofop is None:
@@ -833,7 +836,9 @@ class PetroInversionManager(MeshMethodManager):
         super().__init__(fop=petrofop, **kwargs)
 
 
+# Really necessary? Should a combination of petro and joint do the same
 class JointPetroInversionManager(MeshMethodManager):
+    """Joint inversion targeting at the same parameter through petrophysics."""
     def __init__(self, petros, mgrs):
         """Initialize with lists of managers and transformations"""
         self.mgrs = mgrs

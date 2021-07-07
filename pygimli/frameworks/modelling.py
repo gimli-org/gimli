@@ -80,6 +80,7 @@ class Modelling(pg.core.ModellingBase):
         super(Modelling, self).__init__(**kwargs)
 
         self._regionProperties = {}
+        self._interRegionCouplings = []
         self._regionsNeedUpdate = False
         self._regionChanged = True
         self._regionManagerInUse = False
@@ -246,9 +247,26 @@ class Modelling(pg.core.ModellingBase):
         if len(kwargs) > 0:
             pg.warn('Unhandled region properties:', kwargs)
 
+    def setInterRegionCoupling(self, region1, region2, weight):
+        """Set the weighting for constraints across regions."""
+        if region1 == "*":
+            region1 = self.regionManager().regionIdxs()
+        else:
+            region1 = [region1]
+
+        if region2 == "*":
+            region2 = self.regionManager().regionIdxs()
+        else:
+            region2 = [region2]
+
+        for reg1 in region1:
+            for reg2 in region2:
+                self._interRegionCouplings.append([reg1, reg2, weight])
+
+        self._regionsNeedUpdate = True
+
     def _applyRegionProperties(self):
-        """
-        """
+        """Apply the region properties from dictionary into the region man."""
         if not self._regionsNeedUpdate:
             return
 
@@ -291,6 +309,9 @@ class Modelling(pg.core.ModellingBase):
 
             if vals['limits'][1] > 0:
                 rMgr.region(rID).setUpperBound(vals['limits'][1])
+
+        for r1, r2, w in self._interRegionCouplings:
+            rMgr.setInterRegionConstraint(r1, r2, w)
 
         self._regionsNeedUpdate = False
 
@@ -464,6 +485,7 @@ class MeshModelling(Modelling):
 
     def paraModel(self, model):
         mod = model[self.paraDomain.cellMarkers()]
+        mod.isParaModel = True
         return mod
 
     def ensureContent(self):
@@ -556,8 +578,10 @@ class MeshModelling(Modelling):
     def drawModel(self, ax, model, **kwargs):
         """ """
         mod = None
-        if (len(model) == self.paraDomain.cellCount() or \
-            len(model) == self.paraDomain.nodeCount()):
+        # TODO needs to be checked if mapping is always ok (region example)
+            # (len(model) == self.paraDomain.cellCount() or \
+        if  (hasattr(model, "isParaModel") and model.isParaModel) or \
+            (len(model) == self.paraDomain.nodeCount()):
             mod = model
         else:
             mod = self.paraModel(model)

@@ -7,6 +7,7 @@ import numpy as np
 import pygimli as pg
 from pygimli.frameworks import MeshModelling
 from .utils import createGradientModel2D, shotReceiverDistances
+from .plotting import drawVA
 
 
 class TravelTimeDijkstraModelling(MeshModelling):
@@ -122,9 +123,7 @@ class TravelTimeDijkstraModelling(MeshModelling):
         else:
             kwargs.setdefault('label', pg.unit('va'))
             kwargs.setdefault('cMap', pg.utils.cMap('va'))
-            # drawData(data, usePos=False, ax=ax, **kwargs)
-            # return showVA(data, usePos=False, ax=ax, **kwargs)
-            # a draw functions redirecting to a show function?
+            return drawVA(ax, data, usePos=False, **kwargs)
 
 
 class FatrayDijkstraModellingInterpolate(TravelTimeDijkstraModelling):
