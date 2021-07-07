@@ -4,7 +4,7 @@ channels:
   - defaults
   - gimli
 dependencies:
-  - pgcore >= 1.2.0
+  - pgcore >= 1.2.2
   - matplotlib
   - jupyter
   - sphinx >= 1.8.5
