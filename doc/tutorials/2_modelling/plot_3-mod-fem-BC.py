@@ -33,9 +33,9 @@ grid = pg.createGrid(x=np.linspace(-1.0, 1.0, 21),
 # There are different ways of specifying BCs. They can be maps from markers to
 # values, explicit functions or implicit (lambda) functions.
 #
-# The boundary 1 (top) and 2 (left) are directly mapped to the values 1 and 2.
-# On side 3 (bottom) a lambda function 3+x is used (p is the boundary position
-# and p[0] its x coordinate. On side 4 (right) a function uDirichlet is used
+# The boundary 1 (left) and 2 (right) are directly mapped to the values 1 and 2.
+# On side 3 (top) a lambda function 3+x is used (p is the boundary position
+# and p[0] its x coordinate. On side 4 (bottom) a function uDirichlet is used
 # that simply returns 4 in this example but can compute anything as a function
 # of the individual boundaries b.
 
@@ -78,7 +78,7 @@ dirichletBC = {3: 1.0}  # top
 u = solve(grid, f=0., bc={'Dirichlet': dirichletBC, 'Neumann': neumannBC})
 
 ###############################################################################
-# Note that on boundary 4 (right) no BC is explicitly applied leading to
+# Note that on boundary 2 (right) has no BC explicitly applied leading to
 # default (natural) BC that are of homogeneous Neumann type
 # :math:`\frac{\partial u}{\partial n}=0`
 
