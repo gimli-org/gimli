@@ -366,6 +366,24 @@ def refineHex2Tet(mesh, style=1):
 
     return out
 
+def createMeshFromSurface(mesh, norm=None):
+    """Create 2D mesh from 3D surface boundaries."""
+    
+    ret = pg.Mesh(mesh.dim()-1)
+    
+    for n in mesh.nodes():
+        ret.createNode(n.pos())
+    
+    for b in mesh.boundaries():
+        ret.createCell(b.ids()) 
+    
+    if norm is not None:
+        ret.transform(pg.core.getRotation(mesh.boundary(0).norm(), norm))
+
+    # [ret.createNode(n.pos()) for n in mesh.nodes()]
+    # [ret.createCell(b.ids()) for b in mesh.boundaries()]
+    
+    return ret
 
 def extrudeMesh(mesh, a, **kwargs):
     r"""Extrude mesh to a higher dimension.
@@ -396,7 +414,7 @@ def extrudeMesh(mesh, a, **kwargs):
     Keyword Arguments
     -----------------
     adjustBottom: bool [False]
-        Adjust all nodes such that the bottom of the mesh has a constant depth (only 2D)
+        Adjust all nodes such that the bottom of the mesh has a constant depth (only from 1D to 2D)
 
     Returns
     -------
@@ -1783,7 +1801,7 @@ def rot2DGridToWorld(mesh, start, end):
     mesh.translate(start)
 
 
-def merge2Meshes(m1, m2):
+def merge2Meshes(m1, m2, check=True):
     """Merge two meshes into one new mesh and return the combined mesh.
 
     Merge two meshes into a new mesh and return the combined mesh.
@@ -1797,6 +1815,9 @@ def merge2Meshes(m1, m2):
     m2: :gimliapi:`GIMLI::Mesh`
         Second mesh.
 
+    check: bool [True]
+        Check for duplicated nodes and mesh entities.
+        
     Returns
     -------
     mesh: :gimliapi:`GIMLI::Mesh`
@@ -1811,7 +1832,7 @@ def merge2Meshes(m1, m2):
         mesh.copyCell(c)
 
     for b in m3.boundaries():
-        mesh.copyBoundary(b, tol=1e-6, check=True)
+        mesh.copyBoundary(b, tol=1e-6, check=check)
 
     for key in list(mesh.dataMap().keys()):
         d = mesh.dataMap()[key]
@@ -1826,7 +1847,7 @@ def merge2Meshes(m1, m2):
     return mesh
 
 
-def mergeMeshes(meshList, verbose=False):
+def mergeMeshes(meshList, check=True, verbose=False):
     """Merge several meshes into one new mesh and return the new mesh.
 
     Merge several meshes into one new mesh and return the new mesh.
@@ -1836,6 +1857,9 @@ def mergeMeshes(meshList, verbose=False):
     meshList : [:gimliapi:`GIMLI::Mesh`, ...] | [str, ...]
         List of at least two meshes (or filenames to meshes) to be merged.
 
+    check: bool [True]
+        Check for duplicated nodes and mesh entities.
+        
     verbose : bool
         Give some output
 
@@ -1873,7 +1897,7 @@ def mergeMeshes(meshList, verbose=False):
         print(mesh)
 
     for m in range(1, len(meshList)):
-        mesh = merge2Meshes(mesh, meshList[m])
+        mesh = merge2Meshes(mesh, meshList[m], check=check)
         if verbose:
             print(mesh)
 

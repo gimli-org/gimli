@@ -187,9 +187,22 @@ Line Plane::intersect(const Plane & plane, double tol){
     return Line(lineP0, lineP1);
 }
 
-bool Plane::compare(const Plane & plane, double tol){
-    if (norm_.distance(plane.norm()) < tol &&
-         std::fabs(d_ - plane.d()) < tol) return true;
+bool Plane::compare(const Plane & plane, double tol, bool bothDirs){
+    if (bothDirs == true){
+        // __MS(std::fabs(std::fabs(d_) - std::fabs(plane.d())))
+        // __MS(norm_.distance(plane.norm()))
+        // __MS(std::fabs(norm_.distance(plane.norm()) - 2.0))
+
+        if (std::fabs(std::fabs(d_) - std::fabs(plane.d())) > tol) return false;
+        
+        if (norm_.distance(plane.norm()) < tol || 
+             std::fabs(norm_.distance(plane.norm()) - 2.0) < tol) return true;
+
+    } else {
+        if (std::fabs(d_ - plane.d()) > tol) return false;
+        if (norm_.distance(plane.norm()) < tol) return true;
+    } 
+
     return false;
 }
 

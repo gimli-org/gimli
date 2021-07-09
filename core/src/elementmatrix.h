@@ -36,6 +36,17 @@ public:
 
     ~ElementMatrix() {}
 
+    /*! Assignment operator.*/
+    ElementMatrix < ValueType > & operator = (const ElementMatrix < ValueType > & E) {
+        std::cout << "ElementMatrix::operator = (" << std::endl;
+        THROW_TO_IMPL
+        if (this != & E){
+//             this->resize(E.size());
+//             for (uint i = 0; i < E.size(); i ++) mat_[i] = E.row(i);
+//             _ids = E.idx();
+        } return *this;
+    }
+    
     inline const Vector< ValueType > & operator[](Index row) const {
         return mat_[row]; }
 
@@ -423,19 +434,10 @@ protected:
     bool _elastic;
     mutable bool _integrated;
 
+    
 private:
     /*! No copy operator. */
 
-    /*! No assignment operator. */
-    ElementMatrix < ValueType > & operator = (const ElementMatrix < ValueType > & E) {
-        std::cout << "ElementMatrix::operator = (" << std::endl;
-        THROW_TO_IMPL
-        if (this != & E){
-//             this->resize(E.size());
-//             for (uint i = 0; i < E.size(); i ++) mat_[i] = E.row(i);
-//             _ids = E.idx();
-        } return *this;
-    }
 };
 
 template < > DLLEXPORT
@@ -643,7 +645,8 @@ public:
 
     #undef DEFINE_INTEGRATOR
         
-    
+    const std::vector< ElementMatrix < double > > & mats() const;
+
     const std::vector < PosVector > & quadraturePoints() const;
 
     

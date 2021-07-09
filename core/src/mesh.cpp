@@ -24,6 +24,7 @@
 #include "node.h"
 #include "line.h"
 #include "shape.h"
+#include "plane.h"
 
 #include "sparsematrix.h"
 #include "stopwatch.h"
@@ -180,6 +181,10 @@ Node * Mesh::createNodeGC_(const RVector3 & pos, int marker){
         Index oldCount = this->nodeCount();
         Node *n = this->createNodeWithCheck(pos);
         n->setMarker(marker);
+        
+        if ((this->nodeCount() == oldCount)){
+            if (n->state() == No) n->setState(Original);
+        }
 
         if ((this->dim() == 3) and (this->nodeCount() > oldCount)){
 
@@ -504,14 +509,16 @@ Boundary * findSecParent(const std::vector < Node * > & v){
     return 0;
 }
 Boundary * Mesh::copyBoundary(const Boundary & bound, double tol, bool check){
+    bool debug = false;
+    if (debug)
+    __MS("copyBoundary", bound.ids())
 
     std::vector < Node * > nodes(bound.nodeCount());
-    bool isFreeFace = false;
-    // bool isSubFace = false;
-
+    bool isFreeFace = false; //** the new face is no subface
+    
+    std::vector < Node * > oldNodes;
     std::vector < Node * > conNodes;
     std::vector < Node * > secNodes;
-    std::vector < Node * > subNodes;
 
     // __M
     for (Index i = 0; i < nodes.size(); i ++) {
@@ -521,93 +528,165 @@ Boundary * Mesh::copyBoundary(const Boundary & bound, double tol, bool check){
             nodes[i] = createNode(bound.node(i).pos(), tol);
         } else {
             // 3D poly tests fail!! .. need to be checked and fixed  TODO
-            nodes[i] = createNodeWithCheck(bound.node(i).pos(), tol);
+            if (check== true){
+                nodes[i] = createNodeWithCheck(bound.node(i).pos(), tol);
+            } else {
+                nodes[i] = createNode(bound.node(i).pos());
+            }
         }
         nodes[i]->setMarker(bound.node(i).marker());
         // __MS(nodes[i]->state())
         switch (nodes[i]->state()){
             case NodeState::No:
-                // at least one node is not in boundary
+                // at least one node is not inside boundary
                 isFreeFace = true; break;
             case NodeState::Secondary:
                 secNodes.push_back(nodes[i]); break;
                 // __MS(*nodes[i])
             case NodeState::Connected:
                 conNodes.push_back(nodes[i]); break;
+            case NodeState::Original:
+                oldNodes.push_back(nodes[i]); 
+                break;
+
         }
     }
-    Boundary * b = 0;
     Boundary * parent = 0;
+    Boundary * ret = 0;
 
-    if (bound.rtti() == MESH_POLYGON_FACE_RTTI){
+    std::vector < Node * > subNodes; // nodes for the new subface
+    if (bound.rtti() == MESH_POLYGON_FACE_RTTI && check == true){
 
-        Boundary * conParent = findBoundary(conNodes);
+        if (debug)
+        __MS("connectedNodes:", conNodes, 
+             "secondaryNodes:", secNodes,
+             "origNodes:", oldNodes)
+        if (debug)
+        __MS("new face nodes:", nodes, "is subface", not isFreeFace)
+
         Boundary * secParent = findSecParent(secNodes);
 
-        // __MS("sizes:" << conNodes.size() <<" " <<secNodes.size())
-        // __MS("parents: " << conParent <<" " << secParent)
-
+        //** identify if face is freeface
         if (!isFreeFace){
-            conParent = findBoundary(conNodes);
-
+            
+            std::set < Boundary * > conParentCand = findBoundaries(conNodes);
+            Boundary * conParent = 0;
+            if (conParentCand.size() > 0 ){
+                for (auto *b: conParentCand){
+                    if (b->shape().plane().compare(bound.shape().plane(), 
+                                                   TOLERANCE, true)){
+                        conParent = b;
+                        break;
+                    }
+                }            
+            }
             if (conNodes.size() && secNodes.size()){
-                if (conParent != secParent){
+
+                if (!conParent || conParent != secParent){
                     isFreeFace = true;
                 }
-                subNodes = conNodes;
-                subNodes.insert(subNodes.end(), secNodes.begin(), secNodes.end());
+                if (conParent){
+                    if (debug) __MS("conParent", conParent->ids())
+                } else {
+                    if (debug)__MS("no parent for connected nodes")
+                }
+                if (secParent){
+                    if (debug)__MS("secParent", secParent->ids())
+                } else {
+                    if (debug)__MS("no parent for secondary nodes")
+                }
+
+                // subNodes = conNodes;
+                // subNodes.insert(subNodes.end(), secNodes.begin(), secNodes.end());
+                subNodes = nodes;
+                if (debug)__MS("subNodes", subNodes)
                 parent = secParent;
-            }
-            if (conNodes.size()){
+            } else if (conNodes.size()){
                 if (!conParent){
                     isFreeFace = true;
+                    if (debug)__MS("no conParent")
+                } else {
+                    if (debug)__MS("conParent", conParent->ids())
+
+                    if (oldNodes.size()){
+                        //original nodes may not be part of connected Parent
+                        for (auto *n: oldNodes){
+                            if (!conParent->shape().touch(n->pos())) {
+                                if (debug)__MS("node not on connected parent", n->id())
+                                isFreeFace = true; 
+                            }
+                        }
+                    }
                 }
-                subNodes = conNodes;
+                subNodes = nodes;
                 parent = conParent;
-            }
-            if (secNodes.size()){
+            } else if (secNodes.size()){
                 if(!secParent){
+                    isFreeFace = true;
+                    if (debug)__MS("no secondary parent")
+                } else if (!secParent->shape().plane().compare(
+                                                bound.shape().plane(), TOLERANCE, true)){
+
+                    if (debug)__MS("secParent", secParent->ids())
+                    print(secParent->shape().plane());
+                    print(bound.shape().plane());
                     isFreeFace = true;
                 }
                 subNodes = secNodes;
                 parent = secParent;
+            } else if (oldNodes.size()){
+                isFreeFace = true;
             }
         }
-
+        
+        //** create new face
+        if (debug)__MS("is subface", not isFreeFace, subNodes.size(), nodes.size())
+        
         if (isFreeFace){
-            b = createBoundaryChecked_< PolygonFace >(nodes,
-                                                      bound.marker(), check);
-            parent = b;
+            ret = createBoundaryChecked_< PolygonFace >(nodes,
+                                                        bound.marker(), check);
+            if (debug)__MS("added freeFace: ", ret->ids())
+            parent = ret;
         } else {
             if (subNodes.size() > 2){
                 if (parent){
                     for (auto *n: secNodes){
                         parent->delSecondaryNode(n);
+                        n->setState(No);
                     }
-                    dynamic_cast< PolygonFace * >(parent)->addSubface(subNodes);
+                    auto *p = dynamic_cast< PolygonFace * >(parent);
+                    if (debug)__MS("addSubface: ", p->subfaceCount())
+                    p->addSubface(subNodes);
+                    if (debug)__MS("subfacecount: ", p->subfaceCount())
+
+                    if (debug)for (auto i: range(p->subfaceCount())){
+                        __MS("added subface:", p->subface(i))
+                    }
                 } else {
                     log(Error, "no parent boundary");
                 }
-                b = parent;
+                ret = parent;
+            } else {
+                log(Error, "new subface but only two nodes");
             }
         }
         const PolygonFace & f = dynamic_cast< const PolygonFace & >(bound);
         if (f.subfaceCount() > 0){
             log(Error, "Can't yet copy a boundary with subfaces");
         }
-
         for (Index i = 0; i < f.holeMarkers().size(); i ++ ){
             dynamic_cast< PolygonFace* >(parent)->addHoleMarker(
                                                     f.holeMarkers()[i]);
         }
     } else { // if no Polygonface
-        b = createBoundary(nodes, bound.marker(), check);
+        ret = createBoundary(nodes, bound.marker(), check);
     }
 
-    return b;
+    return ret;
 }
 
 Node & Mesh::node(Index i) {
+    ASSERT_RANGE(i, 0, nodeCount() + secondaryNodeCount())
     if (i > nodeCount() - 1){
         if (i < nodeCount() + secondaryNodeCount())
             return this->secondaryNode(i - this->nodeCount());
@@ -616,6 +695,7 @@ Node & Mesh::node(Index i) {
 }
 
 Node & Mesh::node(Index i) const {
+    ASSERT_RANGE(i, 0, nodeCount() + secondaryNodeCount())
     if (i > nodeCount() - 1){
         if (i < nodeCount() + secondaryNodeCount())
             return this->secondaryNode(i - this->nodeCount());
@@ -624,27 +704,23 @@ Node & Mesh::node(Index i) const {
 }
 
 Cell & Mesh::cell(Index i) const {
-    if (i > cellCount() - 1){
-      std::cerr << WHERE_AM_I << " requested cell: " << i << " does not exist." << std::endl;
-    } return *cellVector_[i];
+    ASSERT_RANGE(i, 0, cellCount())
+    return *cellVector_[i];
 }
 
 Cell & Mesh::cell(Index i) {
-    if (i > cellCount() - 1){
-      std::cerr << WHERE_AM_I << " requested cell: " << i << " does not exist." << std::endl;
-    } return *cellVector_[i];
+    ASSERT_RANGE(i, 0, cellCount())
+    return *cellVector_[i];
 }
 
 Boundary & Mesh::boundary(Index i) const {
-    if (i > boundaryCount() - 1){
-      std::cerr << WHERE_AM_I << " requested boundary: " << i << " does not exist." << std::endl;
-    } return *boundaryVector_[i];
+    ASSERT_RANGE(i, 0, boundaryCount())
+    return *boundaryVector_[i];
 }
 
 Boundary & Mesh::boundary(Index i) {
-    if (i > boundaryCount() - 1){
-      std::cerr << WHERE_AM_I << " requested boundary: " << i << " does not exist." << std::endl;
-    } return *boundaryVector_[i];
+    ASSERT_RANGE(i, 0, boundaryCount())
+    return *boundaryVector_[i];
 }
 
 void Mesh::findRange_() const{

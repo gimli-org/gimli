@@ -9,9 +9,10 @@ import pygimli as pg
 def toSparseMatrix(A):
     """Convert any matrix type to pg.SparseMatrix and return copy of it.
 
-    No conversion if A is a SparseMatrix already
-    Arguments
-    ---------
+    No conversion if A is a SparseMatrix already.
+
+    Args
+    ----
     A: pg or scipy matrix
 
     Returns
@@ -69,14 +70,20 @@ def toSparseMapMatrix(A):
 
     from scipy.sparse import csr_matrix
     if isinstance(A, csr_matrix):
-        pg.critical('implement me')
+        pg.warn('bad efficency csr->mapMatrix')
 
-        return pg.matrix.SparseMapMatrix(A)
+        return pg.matrix.SparseMapMatrix(
+            pg.SparseMatrix(A.indptr, A.indices, A.data))
+
+    from scipy.sparse import csc_matrix
+    if isinstance(A, csc_matrix):
+        pg.warn('bad efficency csc->mapMatrix')
+        return toSparseMapMatrix(csr_matrix(A))
 
     from scipy.sparse import coo_matrix
     if isinstance(A, coo_matrix):
-        pg.critical('implement me')
-        return pg.matrix.SparseMapMatrix(A)
+        pg.warn('bad efficency coo->mapMatrix')
+        return toSparseMapMatrix(csr_matrix(A))
 
     return toSparseMapMatrix(csr_matrix(A))
 

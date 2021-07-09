@@ -47,6 +47,41 @@ class ConstitutiveMatrix(np.ndarray):
         self.voigtNotation = getattr(obj, 'voigtNotation', False)
 
 
+def toLamMu(E=None, G=None, nu=None, dim=2):
+    """ Convert elastic parameters to Lame' constants lam and mu
+    
+    Args
+    ----
+    E: float [None]
+        Young's Modulus
+    nu: float [None]
+        Poisson's ratio
+
+    Returns
+    -------
+    lam, mu
+        lam = 1. Lame' constant and 2. Lame' constant = G
+    
+    """
+    if E is not None and G is not None:
+        if G < 1/3 * E or G > 1/2 * E:
+            pg.error(f'G need to be between {E*1/3:e} and {E*0.5:e}')
+        
+        lam = G*(E-2*G) /(3*G-E)
+        mu = G
+    elif E is not None and nu is not None:
+        if nu == 0.5 or nu >= 1.0:
+            pg.critical('nu should be greater or smaller than 0.5 and < 1')
+        
+        lam = (E * nu) / ((1 + nu) * (1 - 2*nu))
+        mu  = E / (2*(1 + nu))
+        
+        if dim == 2:
+            lam = 2*mu*lam/(2*mu + lam)
+
+    return lam, mu
+
+
 def createConstitutiveMatrix(lam=None, mu=None, E=None, nu=None, dim=2,
                              voigtNotation=False):
     """Create constitutive matrix for 2 or 3D isotropic media.
@@ -90,12 +125,7 @@ def createConstitutiveMatrix(lam=None, mu=None, E=None, nu=None, dim=2,
         E = mu * (3*lam + 2*mu) / (lam + mu)
     else:
         if E is not None and nu is not None:
-            if nu == 0.5 or nu >= 1.0:
-                pg.critical('nu should be greater or smaller than 0.5 and < 1')
-            lam = (E * nu) / ((1 + nu) * (1 - 2*nu))
-            mu  = E / (2*(1 + nu))
-            if dim == 2:
-                lam = 2*mu*lam/(2*mu + lam)
+            lam, mu = toLamMu(E=E, nu=nu, dim=dim)
         else:
             pg.critical("Can't find mu and lam")
 

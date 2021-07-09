@@ -1056,8 +1056,19 @@ def __getCoords(coord, dim, ent):
     if isinstance(ent, list) and isinstance(ent[0], pgcore.Node):
         return [n.pos()[dim] for n in ent]
 
-    if hasattr(ent, 'ndim') and ent.ndim == 2 and len(ent[0] > dim):
-        return ent[:, dim]
+        # (n.x)
+
+    if hasattr(ent, 'ndim') and ent.ndim == 2:
+        if hasattr(ent, 'flags') and ent.flags['F_CONTIGUOUS'] == True or \
+            (ent.shape[0] >= dim and ent.shape[0] <= 3) or \
+            ent.shape[1] > dim:
+            ## (N x [x, y, z]).T || ([x, y, z] x N)
+            return ent[dim]
+
+        elif ent.shape[0] > dim or \
+            (ent.shape[1] >= dim and ent.shape[1] <= 3):
+            ## assuming (Nx[x, y, z])
+            return ent[:, dim]
 
     # use logger here
     raise Exception(

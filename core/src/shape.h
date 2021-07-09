@@ -337,7 +337,7 @@ public:
     /*! Returns maximum distance between 2 nodes.*/
     double h() const;
 
-    /*! Returns the a plane for this shape if its possible (2D or 3D plane shapes) otherwise returns non valid Plane. */
+    /*! Returns the plane for this shape if its possible (2D or 3D plane shapes) otherwise returns non valid Plane. */
     virtual Plane plane() const;
 
     /*! Notify this shape that the inverse Jacobian matrix and the domain size are not longer valid and need recalculation. This method is called if a node has bee transformed. */

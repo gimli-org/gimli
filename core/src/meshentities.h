@@ -37,11 +37,17 @@ template < class Typname > bool lesserId(const Typname * a, const Typname * b){
     return (a->id() < b->id());
 }
 
-DLLEXPORT Boundary * findBoundary(const Node & n1);
-DLLEXPORT Boundary * findBoundary(const Node & n1, const Node & n2);
+/*! Find the boundary that have these nodes in common. Only one allowed.*/DLLEXPORT Boundary * findBoundary(const Node & n1);
+/*! Find the boundary that have these nodes in common. Only one allowed.*/DLLEXPORT Boundary * findBoundary(const Node & n1, const Node & n2);
+/*! Find the boundary that have these nodes in common. Only one allowed.*/
 DLLEXPORT Boundary * findBoundary(const Node & n1, const Node & n2, const Node & n3);
 
+/*! Find the boundary that have these nodes in common. Only one allowed.*/
 DLLEXPORT Boundary * findBoundary(const std::vector < Node * > & n);
+
+/*! Find all boundaries that have these nodes in common. */
+DLLEXPORT std::set < Boundary * >  
+findBoundaries(const std::vector < Node * > & n);
 
 /*! */
 DLLEXPORT Boundary * findCommonBoundary(const Cell & c1, const Cell & c2);
@@ -372,7 +378,6 @@ public:
 
     /*!Is the boundary is on the outside of the mesh.*/
     bool outside() const { return (leftCell_ != 0) && (rightCell_ == 0); }
-
 
 protected:
     void registerNodes_();

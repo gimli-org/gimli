@@ -1632,10 +1632,10 @@ def extrude(p2, z=-1.0, boundaryMarker=0, **kwargs):
 
     Parameters
     ----------
-    p2 : :gimliapi:`GIMLI::Mesh`
+    p2: :gimliapi:`GIMLI::Mesh`
         2D geometry
 
-    z : float [-1.0]
+    z: float [-1.0]
         2D geometry
 
     Keyword Arguments
@@ -1653,7 +1653,8 @@ def extrude(p2, z=-1.0, boundaryMarker=0, **kwargs):
         pg.error("need two dimensional mesh or poly")
 
     if p2.cellCount() > 0:
-        pg.critical("Implementme")
+        return pg.meshtools.extrudeMesh(p2, **kwargs)
+        #pg.critical("Implementme")
 
     poly = pg.Mesh(3, isGeometry=True)
     top = []

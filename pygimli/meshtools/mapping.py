@@ -540,14 +540,24 @@ def interpolate(*args, **kwargs):
                 pgcore = True
 
     if pgcore:
-        if len(args) == 3:  # args: outData = (inMesh, inData, outPos)
+        if isinstance(args[0], pg.Mesh):
+            # mesh the data based on (inMesh)
+            mesh = args[0]
+        else:
+            print(*args)
+            print(kwargs)
+            pg.critical('checkme')
+        
 
-            if args[1].ndim == 2:  # outData = (inMesh, mat, vR3)
+        if len(args) == 3:  # args: outMat = (inMesh, inData, destPos)
+
+            if args[1].ndim == 2:  # outMat = (mesh, Mat, VR3)
 
                 outMat = pg.Matrix()
+
                 if pg.isPos(args[2]):
                     # outData = (inMesh, mat, R3)
-                    pg.core.pgcore.interpolate(args[0], inMat=np.array(args[1]),
+                    pg.core.pgcore.interpolate(mesh, inMat=np.array(args[1]),
                                             destPos=[args[2]], outMat=outMat,
                                             fillValue=fallback,
                                             verbose=verbose)
@@ -555,48 +565,65 @@ def interpolate(*args, **kwargs):
                 else:
                     # outData = (inMesh, mat, vR3)
 
-                    outMat = pg.Matrix()
-                    pg.core.pgcore.interpolate(args[0], inMat=np.array(args[1]),
+                    pg.core.pgcore.interpolate(mesh, inMat=np.array(args[1]),
                                             destPos=args[2], outMat=outMat,
                                             fillValue=fallback,
                                             verbose=verbose)
                     return np.array(outMat)
 
+            else:  # outMat = (mesh, Vec, vR3|R3)
+                out = pg.Vector()
+                
+                if pg.isPos(args[2]): # outScalar = (mesh, Vec, R3)
+                    pg.core.pgcore.interpolate(mesh, inVec=args[1],
+                                                destPos=[args[2]], 
+                                                outVec=out,
+                                                fillValue=fallback,
+                                                verbose=verbose)
+                    return out[0]
+                if pg.isPosList(args[2]): # outScalar = (mesh, Vec, VR3)
+                    pg.core.pgcore.interpolate(mesh, inVec=args[1],
+                                                destPos=args[2], 
+                                                outVec=out,
+                                                fillValue=fallback,
+                                                verbose=verbose)
+                    return out
+
         if len(args) == 4:  # args: (inMesh, inData, outPos, outData)
 
             if args[1].ndim == 1 and args[2].ndim == 1 and args[3].ndim == 1:
-                return pg.core.pgcore.interpolate(args[0], inVec=args[1],
+                return pg.core.pgcore.interpolate(mesh, inVec=args[1],
                                                      x=args[2], y=args[3],
                                                      fillValue=fallback,
                                                      verbose=verbose)
 
             if isinstance(args[1], pg.Matrix) and \
                isinstance(args[3], pg.Matrix):
-                return pg.core.pgcore.interpolate(args[0], inMat=args[1],
+                return pg.core.pgcore.interpolate(mesh, inMat=args[1],
                                                      destPos=args[2],
                                                      outMat=args[3],
                                                      fillValue=fallback,
                                                      verbose=verbose)
             if isinstance(args[1], pg.Vector) and \
                isinstance(args[3], pg.Vector):
-                return pg.core.pgcore.interpolate(args[0], inVec=args[1],
+                return pg.core.pgcore.interpolate(mesh, inVec=args[1],
                                                      destPos=args[2],
                                                      outVec=args[3],
                                                      fillValue=fallback,
                                                      verbose=verbose)
 
-        if len(args) == 5:
+        if len(args) == 5: # (mesh, Vec, x=Vec, y=Vec, z=Vec)
             if args[1].ndim == 1 and args[2].ndim == 1 and \
                args[3].ndim == 1 and args[4].ndim == 1:
-                return pg.core.pgcore.interpolate(args[0], inVec=args[1],
+                return pg.core.pgcore.interpolate(mesh, inVec=args[1],
                                                      x=args[2], y=args[3],
                                                      z=args[4],
                                                      fillValue=fallback,
                                                      verbose=verbose)
 
         return pg.core.pgcore.interpolate(*args, **kwargs,
-                                             fillValue=fallback,
-                                             verbose=verbose)
+                                          fillValue=fallback,
+                                          verbose=verbose)
         # end if pg.core:
 
     if len(args) == 3:

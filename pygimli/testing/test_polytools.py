@@ -246,7 +246,9 @@ class Test3DMerge(unittest.TestCase):
         self.assertEqual(w.boundaryCount(), 6+5+5+5+6+3)
 
         # w.exportPLC('t.poly')
-        pg.show(mt.createMesh(w))
+        
+        m = mt.createMesh(w)
+        pg.show(m, m.cellMarkers())
 
     def test_cube_cube_coplanar_touchface(self):
         w = mt.createCube(marker=1)
@@ -278,7 +280,8 @@ class Test3DMerge(unittest.TestCase):
 
         pg.show(w)
         # w.exportPLC('t.poly')
-        pg.show(mt.createMesh(w))
+        m = mt.createMesh(w)
+        pg.show(m, m.cellMarkers())
 
     def test_smallcube_in_bigcube(self):
         """
@@ -301,14 +304,18 @@ class Test3DMerge(unittest.TestCase):
         # self.assertEqual(w.boundaryCount(), 8)
 
         # print(w)
-        pg.show(w)
-        pg.show(mt.createMesh(w))
+        #pg.show(w)
+        m = mt.createMesh(w)
+        pg.show(m, m.cellMarkers())
+        
 
     def test_cyl_on_cyl(self):
         # merge only works if smaller face merged into larger face on contact plane
         segs = 12
-        c1 = mt.createCylinder(radius=2, nSegments=segs, boundaryMarker=1)
-        c2 = mt.createCylinder(radius=1, nSegments=segs, boundaryMarker=2)
+        c1 = mt.createCylinder(radius=2, marker=1, 
+                               nSegments=segs, boundaryMarker=1)
+        c2 = mt.createCylinder(radius=1, marker=2, 
+                               nSegments=segs, boundaryMarker=2)
         c1.translate([0, 0, 0.5])
         c2.translate([0, 0, -0.5])
         
@@ -318,7 +325,9 @@ class Test3DMerge(unittest.TestCase):
         self.assertEqual(w.boundaryCount(), segs*2 + 3)
 
         # w.exportBoundaryVTU('w')
-        # pg.show(w)
+        #pg.show(w)
+        m = mt.createMesh(w)
+        pg.show(m, m.cellMarkers())
         # pg.show(mt.createMesh(w))
 
     def test_face_in_face(self):
@@ -343,17 +352,79 @@ class Test3DMerge(unittest.TestCase):
 
         #print(w.boundaryMarkers())
 
-        mesh = mt.createMesh(w)
+        m = mt.createMesh(w)
 
         #pg.show(mesh)
         # w.exportPLC('pad.poly')
         # mesh.exportBoundaryVTU('b.vtu')
-        np.testing.assert_array_equal(pg.unique(pg.sort(mesh.boundaryMarkers())),
+        np.testing.assert_array_equal(pg.unique(pg.sort(m.boundaryMarkers())),
                                       [0, 1, 2])
 
+        #pg.show(m, m.cellMarkers())
         # print(mesh)
         # mesh.exportBoundaryVTU('b.vtu')
         #pg.show(mesh)
+
+    def test_cube_cube_halfside(self):
+        D=1
+        H=1
+        W=3
+        c1 = mt.createCube([D, D, H/2], pos=[0.0, 0.0, H/4]) 
+        c1L = pg.Mesh(c1)
+        c1L.addRegionMarker([0.0, 0.0, 0.0], marker=2)
+        # c1R = pg.Mesh(c1L)
+        # c1R.translate([0.0, W-D, 0.0])
+
+        c2 = mt.createCube([D, W-2*D, H], pos=[0, -(W)/2+D/2-0.00, 0], marker=2) 
+        #plc = mt.merge([c2, c1L, c1R])
+        plc = mt.merge([c2, c1L])
+        plc.exportPLC('cubecut')
+        pg.show(plc)
+
+        self.assertEqual(plc.nodeCount(), 14)
+        self.assertEqual(plc.boundaryCount(), 11)
+
+        m = mt.createMesh(plc)
+        #m = mt.createMesh(plc, tetgen='tetgen-1.4.3')
+        pg.show(m, m.cellMarkers())
+
+
+    def test_cube_cut_cube(self):
+        """Test cube cur from cube on two neighbour faces."""
+        c1 = mt.createCube(marker=1)
+        c2 = mt.createCube(marker=2)
+        c2.scale([0.5, 0.5, 0.5])
+        c2.translate([0.25, -0.25, 0.25])
+            
+        plc = mt.mergePLC3D([c1, c2])
+        
+        self.assertEqual(plc.nodeCount(), 15)
+        self.assertEqual(plc.boundaryCount(), 9)
+        
+        c3 = mt.createCube(isHole=True, marker=3)
+        c3.scale([0.3, 0.3, 0.3])
+        c3.translate([0.35, 0.35, 0.35])
+        plc = mt.mergePLC3D([plc, c3])
+                
+        c4 = mt.createCube(isHole=False, marker=4)
+        c4.scale([0.2, 0.2, 1.0])
+        c4.translate([-0.4, 0.0, 0.0])
+        plc = mt.mergePLC3D([plc, c4])
+        
+        c5 = mt.createCube(isHole=False, marker=5)
+        c5.scale([0.8, 0.2, 0.2])
+        c5.translate([0.1, 0.0, -0.4])
+        plc = mt.mergePLC3D([c1, c4, c5])
+
+        plc.exportPLC('cubecut')
+        pg.show(plc)
+        
+        #m = mt.createMesh(plc, tetgen='tetgen-1.4.3')
+        m = mt.createMesh(plc)
+
+        pg.show(m, m.cellMarkers())
+        
+        m.exportVTK('cubecut')
 
 
     def test_appendTetrahedron(self):

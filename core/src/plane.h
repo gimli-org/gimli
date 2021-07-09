@@ -54,27 +54,30 @@ public:
     Plane & operator = (const Plane & plane);
 
     /*! Equal_to operator */
-    inline bool operator == (const Plane & plane){ return this->compare(plane); }
+    inline bool operator == (const Plane & plane){ 
+        return this->compare(plane);
+    }
 
     /*! Not_equal_to operator */
     inline bool operator != (const Plane & plane){ return !(*this== plane); }
 
     /*! Compare two planes with a given tolerance. Check if both norms and distances are equal.
-    | norm - p.norm | < tol && | d_ - p.d | < tol */
-    bool compare(const Plane & p, double tol = TOLERANCE);
-
+    | norm - p.norm | < tol && | d_ - p.d | < tol. 
+    If bothDirection is True  | norm - p.norm | can be 2.0 to allow for coplanar check with different orientations.*/
+    bool compare(const Plane & p, double tol=TOLERANCE, bool bothDirs=false);
+    
     /*! Returns true if the plane is valid and pos touch this plane.
         Touch when plane.distance(pos) < tol. */
-    bool touch (const RVector3 & pos, double tol = TOLERANCE);
+    bool touch(const RVector3 & pos, double tol=TOLERANCE);
 
     /*! Returns the \ref Line of intersection between 2 planes.
         Are booth planes parallel or identically the returned line is invalid. */
-    Line intersect(const Plane & plane, double tol = TOLERANCE);
+    Line intersect(const Plane & plane, double tol=TOLERANCE);
 
     /*! Returns the point of intersection between this plane and the \ref Line line. Return an
         invalid RVector3 if line and this plane are parallel. Optional inside check.
         Set inside returns invalid RVector3 if intersection point is not inside (including nodes) the line */
-    RVector3 intersect(const Line & line, double tol = TOLERANCE, bool inside = false);
+    RVector3 intersect(const Line & line, double tol=TOLERANCE, bool inside=false);
 
     /*! Return a const reference to the unit vector of this plane.
         | norm | = 1.0 */
@@ -90,7 +93,7 @@ public:
     inline double d() const { return d_; }
 
     /*! Check if the plane spans norm vector has a length of 1.0 that means it spans a valid R3 space. */
-    bool checkValidity(double tol = TOLERANCE);
+    bool checkValidity(double tol=TOLERANCE);
 
     /*! Return the validity of this plane. This plane is not valid if its initialized by default constructor.*/
     inline bool valid() const { return valid_; }
