@@ -181,6 +181,22 @@ class TestSparseMatrix(unittest.TestCase):
         D.cleanCol(1)
         np.testing.assert_allclose(D.row(2), [1.0, 0.0, 1.0, 1.0])
 
+    def test_ReduceEntries(self):
+        from scipy.sparse import csc_matrix, csr_matrix
+        A = np.ones((5,5))
+        print(A)
+        csr = csr_matrix(A)
+        #csc = csc_matrix(A)
+        print(csr)
+        print(csr.indptr, csr.indices, csr.data)
+        # print(csc)
+        # print(csc.indptr, csc.indices, csc.data)
+        print(pg.utils.toSparseMatrix(csr))
+
+
+        A = pg.utils.toSparseMapMatrix(A)
+        print(A)
+
 
 if __name__ == '__main__':
     unittest.main()

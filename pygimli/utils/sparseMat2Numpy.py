@@ -90,6 +90,10 @@ def toSparseMapMatrix(A):
 def toCSR(A):
     return sparseMatrix2csr(A)
 
+def toCSC(A):
+    pg.warn('bad efficency toCSC')
+    return sparseMatrix2csr(A).tocsc()
+
 def toCOO(A):
     return sparseMatrix2coo(A)
 
@@ -247,6 +251,49 @@ def sparseMatrix2Dense(matrix):
     return mat
 
 toDense = sparseMatrix2Dense
+
+
+def reduceEntries(A, idx):
+    """Remove all values of A in row[idx] and col[idx] and add 1 to diag """
+    
+    pg.tic()
+    if 0:
+        for i, ix in enumerate(idx):
+            A.cleanRow(ix)
+            A.cleanCol(ix)
+            A.setVal(ix, ix, 1.0)
+        pg.toc('all', reset=True)
+    else:
+        print(A)
+        print(len(idx))
+        csc = pg.utils.toCSC(A)
+        pg.toc('to csc', reset=True)
+
+        csc[idx] *= 0
+        # for i, idx in enumerate(uInd):
+            #obj.cleanRow(idx)
+        pg.toc('clean cols', reset=True)
+    
+        csr = csc.tocsr()
+        pg.toc('to csr', reset=True)
+        csr[idx] *= 0
+
+        # for i, idx in enumerate(uInd):
+            #obj.cleanCol(idx)
+        pg.toc('clean rows', reset=True)
+        
+        A.copy_(toSparseMatrix(csr))
+
+        print(A)
+        pg.toc('to map', reset=True)
+
+        for i, ix in enumerate(idx):
+            A.setVal(ix, ix, 1.0)
+        pg.toc('diag', reset=True)
+        print(A)
+        # pg._y(i, sw.duration(True))
+
+
 
 if __name__ == '__main__':
     pass
