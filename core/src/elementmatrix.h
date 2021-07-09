@@ -46,7 +46,7 @@ public:
 //             _ids = E.idx();
         } return *this;
     }
-    
+
     inline const Vector< ValueType > & operator[](Index row) const {
         return mat_[row]; }
 
@@ -300,7 +300,7 @@ public:
 
     //** new interface starts here **//
     ElementMatrix(Index nCoeff, Index dofPerCoeff, Index dofOffset);
-    
+
     ElementMatrix(const ElementMatrix < ValueType > & E);
 
     ElementMatrix(const ElementMatrix < ValueType > & E, bool withMat);
@@ -355,7 +355,7 @@ public:
 
     /*! Return const reference to quadrature points.*/
     void setX(const PosVector & p);
-    
+
     /*! Return const reference to quadrature points.*/
     const PosVector * x() const { return _x; }
     // /*! Return const reference to quadrature points.*/
@@ -423,10 +423,10 @@ protected:
     const MeshEntity * _ent;
     const RVector * _w;
     const PosVector * _x;
-    
+
     // matrices per quadrature point
     std::vector < Matrix < ValueType > > _matX;
-    
+
 
     bool _newStyle;
     bool _div;
@@ -434,7 +434,7 @@ protected:
     bool _elastic;
     mutable bool _integrated;
 
-    
+
 private:
     /*! No copy operator. */
 
@@ -471,6 +471,18 @@ DLLEXPORT void dot(const ElementMatrix < double > & A,
 //                    const ElementMatrix < double > & B,
 //                    A_TYPE c, ElementMatrix < double > & C);
 
+// declare this before mult(.., pos, C) to avoid ambiguities
+/*! scalar per quadrature point */
+DLLEXPORT void mult(const ElementMatrix < double > & A, const RVector & b,
+                    ElementMatrix < double > & C);
+/*! vector per quadrature point */
+DLLEXPORT void mult(const ElementMatrix < double > & A, const PosVector & b,
+                    ElementMatrix < double > & C);
+/*! Matrix per quadrature point */
+DLLEXPORT void mult(const ElementMatrix < double > & A,
+                    const std::vector < RMatrix > & b,
+                    ElementMatrix < double > & C);
+
 #define DEFINE_DOT_MULT(A_TYPE) \
 DLLEXPORT const ElementMatrix < double > dot( \
                                         const ElementMatrix < double > & A, \
@@ -498,18 +510,6 @@ DLLEXPORT void dot(const ElementMatrix < double > & A,
                    ElementMatrix < double > & ret);
 // return dot(A, B, 1.0, ret);
 // }
-
-
-/*! scalar per quadrature point */
-DLLEXPORT void mult(const ElementMatrix < double > & A, const RVector & b,
-                    ElementMatrix < double > & C);
-/*! vector per quadrature point */
-DLLEXPORT void mult(const ElementMatrix < double > & A, const PosVector & b,
-                    ElementMatrix < double > & C);
-/*! Matrix per quadrature point */
-DLLEXPORT void mult(const ElementMatrix < double > & A,
-                    const std::vector < RMatrix > & b,
-                    ElementMatrix < double > & C);
 
 /*!Evaluate scalars per cell.*/
 DLLEXPORT void evaluateQuadraturePoints(const MeshEntity & ent,
@@ -632,7 +632,7 @@ public:
         RVector integrate(const A_TYPE & f) const; \
         RSparseMapMatrix integrate(const ElementMatrixMap & R, \
                                    const A_TYPE & f) const; \
-        
+
     DEFINE_INTEGRATOR(double)   // const scalar for all cells
     DEFINE_INTEGRATOR(Pos)      // const vector for all cells
     DEFINE_INTEGRATOR(RMatrix)  // const Matrix for all cells
@@ -644,12 +644,12 @@ public:
     DEFINE_INTEGRATOR(std::vector< std::vector< RMatrix > >)// mat for quadr. on each cells
 
     #undef DEFINE_INTEGRATOR
-        
+
     const std::vector< ElementMatrix < double > > & mats() const;
 
     const std::vector < PosVector > & quadraturePoints() const;
 
-    
+
     void add(Index row, const ElementMatrix < double > & Ai);
 
     //TODO .. check if its the same like mult(a-b, m-n))
@@ -678,7 +678,7 @@ protected:
 
 
 DLLEXPORT void createUMap(const Mesh & mesh, Index order,
-                       ElementMatrixMap & ret, 
+                       ElementMatrixMap & ret,
                        Index nCoeff=1, Index dofOffset=0);
 
 DLLEXPORT ElementMatrixMap createUMap(const Mesh & mesh, Index order,
