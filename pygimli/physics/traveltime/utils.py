@@ -130,20 +130,24 @@ def createGradientModel2D(data, mesh, vTop, vBot):
     and using the distance to that as the depth value.
     Known as "The Marcus method"
 
+    TODO
+    ----
+        * Cite "The Marcus method"
+
     Parameters
     ----------
-    data : pygimli DataContainer
+    data: pygimli DataContainer
         The topography list is in here.
-    mesh : pygimli.Mesh
+    mesh: pygimli.Mesh
         The parametric mesh used for the inversion
-    vTop : float
+    vTop: float
         The velocity at the surface of the mesh
-    vBot : float
+    vBot: float
         The velocity at the bottom of the mesh
 
     Returns
     -------
-    model : pygimli Vector, length M
+    model: pygimli Vector, length M
         A numpy array with slowness values that can be used to start
         the inversion.
     """
