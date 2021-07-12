@@ -167,15 +167,19 @@ class TestSparseMatrix(unittest.TestCase):
         print(B)
 
     def test_Misc(self):
-        D = pg.SparseMapMatrix(3, 4)
-        for i in range(D.rows()):
-            for j in range(D.cols()):
-                D.setVal(i, j, 1.0)
+        D = pg.utils.toSparseMapMatrix(np.ones((3,4)))
+
+        print(D)
+        print(D.rows())
+        print(D.col(2))
+        print(D.row(2))
+
 
         np.testing.assert_allclose(D.col(2), pg.Vector(D.rows(), 1.0))
         np.testing.assert_allclose(D.row(2), pg.Vector(D.cols(), 1.0))
 
         D.cleanRow(1)
+        print(D)
         np.testing.assert_allclose(D.col(2), [1.0, 0.0, 1.0])
 
         D.cleanCol(1)
@@ -184,19 +188,18 @@ class TestSparseMatrix(unittest.TestCase):
     def test_ReduceEntries(self):
         from scipy.sparse import csc_matrix, csr_matrix
         A = np.ones((5,5))
-        print(A)
-        csr = csr_matrix(A)
-        #csc = csc_matrix(A)
-        print(csr)
-        print(csr.indptr, csr.indices, csr.data)
-        # print(csc)
-        # print(csc.indptr, csc.indices, csc.data)
-        print(pg.utils.toSparseMatrix(csr))
 
+        A1 = pg.utils.toSparseMapMatrix(A)
+        A2 = pg.utils.toSparseMapMatrix(A)
+        idx = [1,2]
+        pg.utils.reduceEntries(A1, idx)
 
-        A = pg.utils.toSparseMapMatrix(A)
-        print(A)
+        for i, ix in enumerate(idx):
+            A2.cleanRow(ix)
+            A2.cleanCol(ix)
+            A2.setVal(ix, ix, 1.0)
 
+        np.testing.assert_equal(A1==A2, True)
 
 if __name__ == '__main__':
     unittest.main()
