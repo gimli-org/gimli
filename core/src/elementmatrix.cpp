@@ -618,7 +618,7 @@ ElementMatrix < double > & ElementMatrix < double >::gradU(const MeshEntity & en
             // __MS(_B[i])
             // __MS(_B[i][j])
 #if USE_EIGEN3
-__MS('EIGENNEEDFIX')
+__MS("EIGENNEEDFIX")
 #else
 
             mat_(j * ent.nodeCount()) += _B[i][j] * w[i] * ent.size();
@@ -1414,7 +1414,8 @@ ElementMatrix < double > & ElementMatrix < double >::pot(
 
     for (Index i = 0; i < nRules; i ++ ){
         for (Index n = 0; n < nCoeff; n ++ ){
-            _matX[i][n].setVal(N[i], n*nVerts, (n+1)*nVerts);
+            //_matX[i][n].setVal(N[i], n*nVerts, (n+1)*nVerts);
+    SET_MAT_ROW_SLICE(_matX[i], n, N[i], 1, n*nVerts, (n+1)*nVerts);
             //_matX[i](n, seq(n*nVerts, (n+1)*nVerts)) = &N[i];
         }
     }
@@ -1900,7 +1901,7 @@ void dot(const ElementMatrix < double > & A,
         //       "Bi:(", Bi.rows(), ",", Bi.cols(), ")");
 
     #if USE_EIGEN3
-    __MS('eigen!')
+    __MS("eigen!")
     #else
         matTransMult(Ai, c, AtC, 1.0, 0.0);
     #endif
@@ -2177,7 +2178,7 @@ void mult(const ElementMatrix < double > & A, const RMatrix &  b,
         //matTransMult(Ai, b, Ci, 1.0, beta);
         // result is no bilinear form, so keep it a rowMatrix
 #if USE_EIGEN3
-        __MS('EIGENNEEDFIX')
+        __MS("EIGENNEEDFIX")
 #else
         matMult(b, Ai, Ci, 1.0, beta);
 #endif
@@ -2207,7 +2208,7 @@ void mult(const ElementMatrix < double > & A, const std::vector < RMatrix > & b,
         // A.T * C
         Ci *= 0.0; // test and optimize me with C creation
 #if USE_EIGEN3
-        __MS('EIGENNEEDFIX')
+        __MS("EIGENNEEDFIX")
 #else
         matTransMult(Ai, b[i], Ci, 1.0, beta);
 #endif
