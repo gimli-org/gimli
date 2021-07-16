@@ -47,16 +47,16 @@ namespace GIMLI{
     //typedef Matrix < double > SmallMatrix;
     //typedef Matrix < double > SmallMatrix;
 
-#define SET_MAT_ROW_SLICE(A, row, RVec, start, end) \
+#define SET_MAT_ROW_SLICE(A, row, RVec, b, start, end) \
     A(row, Eigen::seq(start, end)) = \
-    Eigen::Map <const Eigen::VectorXd>(&RVec[0], RVec.size());
+    Eigen::Map <const Eigen::VectorXd>(&RVec[0], RVec.size()) * b;
 
 
 #else
     typedef Matrix < double > SmallMatrix;
 
-#define SET_MAT_ROW_SLICE(A, row, RVec, start, end) \
-                           A(row).setVal(RVec, start, end);
+#define SET_MAT_ROW_SLICE(A, row, RVec, b, start, end) \
+                           A(row).setVal(RVec * b, start, end);
     
 
 #endif

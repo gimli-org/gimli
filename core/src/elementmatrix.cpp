@@ -1562,18 +1562,18 @@ ElementMatrix < double > & ElementMatrix < double >::grad(
         if (nCoeff == 1){
             //** scalar field
             if (ent.dim() > 0){
-SET_MAT_ROW_SLICE(_matX[i],0,dNdx_[i], 0, nVerts);
+SET_MAT_ROW_SLICE(_matX[i],0,dNdx_[i], 1, 0, nVerts);
             }
             if (ent.dim() > 1){
-SET_MAT_ROW_SLICE(_matX[i],1,dNdy_[i], 0, nVerts);
+SET_MAT_ROW_SLICE(_matX[i],1,dNdy_[i], 1, 0, nVerts);
             }
             if (ent.dim() > 2){
-SET_MAT_ROW_SLICE(_matX[i],2,dNdz_[i], 0, nVerts);
+SET_MAT_ROW_SLICE(_matX[i],2,dNdz_[i], 1, 0, nVerts);
             }
         } else {
             //** vector field
             if (ent.dim() == 1){
-SET_MAT_ROW_SLICE(_matX[i,0,dNdx_[i], 0 * nVerts, 1 * nVerts);
+SET_MAT_ROW_SLICE(_matX[i],0,dNdx_[i], 1, 0 * nVerts, 1 * nVerts);
             } else if (ent.dim() == 2){
                 if (elastic == true){
                     // special case for constitutive matrix (2x3)
@@ -1581,20 +1581,20 @@ SET_MAT_ROW_SLICE(_matX[i,0,dNdx_[i], 0 * nVerts, 1 * nVerts);
         // _matX[i](1).setVal(dNdy_[i], 1 * nVerts, 2 * nVerts); //dNy/dy
         // _matX[i](2).setVal(dNdy_[i] * a, 0 * nVerts, 1 * nVerts); //dNy/dx
         // _matX[i](2).setVal(dNdx_[i] * a, 1 * nVerts, 2 * nVerts); //dNx/dy
-SET_MAT_ROW_SLICE(_matX[i],0,dNdx_[i], 0 * nVerts, 1 * nVerts); //dNx/dx
-SET_MAT_ROW_SLICE(_matX[i],1,dNdy_[i], 1 * nVerts, 2 * nVerts); //dNy/dy
-SET_MAT_ROW_SLICE(_matX[i],2,dNdy_[i] * a, 0 * nVerts, 1 * nVerts); //dNy/dx
-SET_MAT_ROW_SLICE(_matX[i],2,dNdx_[i] * a, 1 * nVerts, 2 * nVerts); //dNx/dy
+SET_MAT_ROW_SLICE(_matX[i],0,dNdx_[i], 1, 0 * nVerts, 1 * nVerts); //dNx/dx
+SET_MAT_ROW_SLICE(_matX[i],1,dNdy_[i], 1, 1 * nVerts, 2 * nVerts); //dNy/dy
+SET_MAT_ROW_SLICE(_matX[i],2,dNdy_[i], a, 0 * nVerts, 1 * nVerts); //dNy/dx
+SET_MAT_ROW_SLICE(_matX[i],2,dNdx_[i], a, 1 * nVerts, 2 * nVerts); //dNx/dy
                 } else{
                 // full matrix still unsure how to add constitutive for it
             // _matX[i](0).setVal(dNdx_[i], 0 * nVerts, 1 * nVerts); //dNx/dx
             // _matX[i](1).setVal(dNdy_[i], 0 * nVerts, 1 * nVerts); //dNx/dy
             // _matX[i](2).setVal(dNdx_[i], 1 * nVerts, 2 * nVerts); //dNy/dx
             // _matX[i](3).setVal(dNdy_[i], 1 * nVerts, 2 * nVerts); //dNy/dy
-SET_MAT_ROW_SLICE(_matX[i],0,dNdx_[i], 0 * nVerts, 1 * nVerts); //dNx/dx
-SET_MAT_ROW_SLICE(_matX[i],1,dNdy_[i], 0 * nVerts, 1 * nVerts); //dNx/dy
-SET_MAT_ROW_SLICE(_matX[i],2,dNdx_[i], 1 * nVerts, 2 * nVerts); //dNy/dx
-SET_MAT_ROW_SLICE(_matX[i],3,dNdy_[i], 1 * nVerts, 2 * nVerts); //dNy/dy
+SET_MAT_ROW_SLICE(_matX[i],0,dNdx_[i], 1, 0 * nVerts, 1 * nVerts); //dNx/dx
+SET_MAT_ROW_SLICE(_matX[i],1,dNdy_[i], 1, 0 * nVerts, 1 * nVerts); //dNx/dy
+SET_MAT_ROW_SLICE(_matX[i],2,dNdx_[i], 1, 1 * nVerts, 2 * nVerts); //dNy/dx
+SET_MAT_ROW_SLICE(_matX[i],3,dNdy_[i], 1, 1 * nVerts, 2 * nVerts); //dNy/dy
                 }
             } else if (ent.dim() == 3){
 
@@ -1610,15 +1610,15 @@ SET_MAT_ROW_SLICE(_matX[i],3,dNdy_[i], 1 * nVerts, 2 * nVerts); //dNy/dy
 // _matX[i](4).setVal(dNdy_[i] * a, 2 * nVerts, 3 * nVerts);//dNy/dz
 // _matX[i](5).setVal(dNdz_[i] * a, 0 * nVerts, 1 * nVerts);//dNz/dx
 // _matX[i](5).setVal(dNdx_[i] * a, 2 * nVerts, 3 * nVerts);//dNx/dz
-SET_MAT_ROW_SLICE(_matX[i],0,dNdx_[i], 0 * nVerts, 1 * nVerts); //dNx/dx
-SET_MAT_ROW_SLICE(_matX[i],1,dNdy_[i], 1 * nVerts, 2 * nVerts); //dNy/dy
-SET_MAT_ROW_SLICE(_matX[i],2,dNdz_[i], 2 * nVerts, 3 * nVerts); //dNz/dz
-SET_MAT_ROW_SLICE(_matX[i],3,dNdy_[i] * a, 0 * nVerts, 1 * nVerts);//dNy/dx
-SET_MAT_ROW_SLICE(_matX[i],3,dNdx_[i] * a, 1 * nVerts, 2 * nVerts);//dNx/dy
-SET_MAT_ROW_SLICE(_matX[i],4,dNdz_[i] * a, 1 * nVerts, 2 * nVerts);//dNz/dy
-SET_MAT_ROW_SLICE(_matX[i],4,dNdy_[i] * a, 2 * nVerts, 3 * nVerts);//dNy/dz
-SET_MAT_ROW_SLICE(_matX[i],5,dNdz_[i] * a, 0 * nVerts, 1 * nVerts);//dNz/dx
-SET_MAT_ROW_SLICE(_matX[i],5,dNdx_[i] * a, 2 * nVerts, 3 * nVerts);//dNx/dz
+SET_MAT_ROW_SLICE(_matX[i],0,dNdx_[i], 1, 0 * nVerts, 1 * nVerts); //dNx/dx
+SET_MAT_ROW_SLICE(_matX[i],1,dNdy_[i], 1, 1 * nVerts, 2 * nVerts); //dNy/dy
+SET_MAT_ROW_SLICE(_matX[i],2,dNdz_[i], 1, 2 * nVerts, 3 * nVerts); //dNz/dz
+SET_MAT_ROW_SLICE(_matX[i],3,dNdy_[i], a, 0 * nVerts, 1 * nVerts);//dNy/dx
+SET_MAT_ROW_SLICE(_matX[i],3,dNdx_[i], a, 1 * nVerts, 2 * nVerts);//dNx/dy
+SET_MAT_ROW_SLICE(_matX[i],4,dNdz_[i], a, 1 * nVerts, 2 * nVerts);//dNz/dy
+SET_MAT_ROW_SLICE(_matX[i],4,dNdy_[i], a, 2 * nVerts, 3 * nVerts);//dNy/dz
+SET_MAT_ROW_SLICE(_matX[i],5,dNdz_[i], a, 0 * nVerts, 1 * nVerts);//dNz/dx
+SET_MAT_ROW_SLICE(_matX[i],5,dNdx_[i], a, 2 * nVerts, 3 * nVerts);//dNx/dz
                 } else {
                 // full matrix still unsure how to add constitutive for it
             // _matX[i](0).setVal(dNdx_[i], 0 * nVerts, 1 * nVerts); //dNx/dx
@@ -1633,15 +1633,15 @@ SET_MAT_ROW_SLICE(_matX[i],5,dNdx_[i] * a, 2 * nVerts, 3 * nVerts);//dNx/dz
             // _matX[i](7).setVal(dNdy_[i], 2 * nVerts, 3 * nVerts); //dNz/dy
             // _matX[i](8).setVal(dNdz_[i], 2 * nVerts, 3 * nVerts); //dNz/dz
                 
-SET_MAT_ROW_SLICE(_matX[i],0, dNdx_[i], 0 * nVerts, 1 * nVerts); //dNx/dx
-SET_MAT_ROW_SLICE(_matX[i],1, dNdy_[i], 0 * nVerts, 1 * nVerts); //dNx/dy
-SET_MAT_ROW_SLICE(_matX[i],2, dNdz_[i], 0 * nVerts, 1 * nVerts); //dNx/dz
-SET_MAT,ROW_SLICE(_matX[i],3, dNdx_[i], 1 * nVerts, 2 * nVerts); //dNy/dx
-SET_MAT_ROW_SLICE(_matX[i],4, dNdy_[i], 1 * nVerts, 2 * nVerts); //dNy/dy
-SET_MAT_ROW_SLICE(_matX[i],5, dNdz_[i], 1 * nVerts, 2 * nVerts); //dNy/dz
-SET_MAT,ROW_SLICE(_matX[i],6, dNdx_[i], 2 * nVerts, 3 * nVerts); //dNz/dx
-SET_MAT_ROW_SLICE(_matX[i],7, dNdy_[i], 2 * nVerts, 3 * nVerts); //dNz/dy
-SET_MAT_ROW_SLICE(_matX[i],8, dNdy_[i], 2 * nVerts, 3 * nVerts); //dNz/dz
+SET_MAT_ROW_SLICE(_matX[i],0, dNdx_[i], 1, 0 * nVerts, 1 * nVerts); //dNx/dx
+SET_MAT_ROW_SLICE(_matX[i],1, dNdy_[i], 1, 0 * nVerts, 1 * nVerts); //dNx/dy
+SET_MAT_ROW_SLICE(_matX[i],2, dNdz_[i], 1, 0 * nVerts, 1 * nVerts); //dNx/dz
+SET_MAT_ROW_SLICE(_matX[i],3, dNdx_[i], 1, 1 * nVerts, 2 * nVerts); //dNy/dx
+SET_MAT_ROW_SLICE(_matX[i],4, dNdy_[i], 1, 1 * nVerts, 2 * nVerts); //dNy/dy
+SET_MAT_ROW_SLICE(_matX[i],5, dNdz_[i], 1, 1 * nVerts, 2 * nVerts); //dNy/dz
+SET_MAT_ROW_SLICE(_matX[i],6, dNdx_[i], 1, 2 * nVerts, 3 * nVerts); //dNz/dx
+SET_MAT_ROW_SLICE(_matX[i],7, dNdy_[i], 1, 2 * nVerts, 3 * nVerts); //dNz/dy
+SET_MAT_ROW_SLICE(_matX[i],8, dNdy_[i], 1, 2 * nVerts, 3 * nVerts); //dNz/dz
                 }
 
             }
