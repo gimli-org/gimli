@@ -292,7 +292,20 @@ find_or_build_package(BLAS lapack)
 find_or_build_package(LAPACK lapack)
 find_or_build_package(CHOLMOD suitesparse)
 find_package(UMFPACK)
-find_package(Eigen3)
+find_package(Eigen3 3.4)
+
+if (NOT USE_EIGEN3)
+    set (USE_EIGEN3 FALSE)
+else()
+    set (USE_EIGEN3 FALSE)
+    if (EIGEN3_FOUND)
+        if (${EIGEN3_VERSION_MINOR} EQUAL 4)
+            set (USE_EIGEN3 TRUE)
+        else()
+        message(STAUS "need at least version eigen-3.4")
+        endif()
+    endif()
+endif (NOT USE_EIGEN3)
 
 ################################################################################
 # Manuall check for openblas
@@ -578,9 +591,6 @@ if (CONDA_BUILD)
     endif()
 endif()
 
-set (USE_EIGEN3 FALSE)
-
-
 message(STATUS "THREADS             : ${THREADS} ${CMAKE_THREAD_LIBS_INIT} ${Boost_THREAD_LIBRARIES}")
 message(STATUS "USE_OPENBLAS        : ${OPENBLAS_FOUND} OPENBLAS_CBLAS_FOUND :${OPENBLAS_CBLAS_FOUND} OpenBLAS_INCLUDE_DIR :${OpenBLAS_INCLUDE_DIR}")
 message(STATUS "CHOLMOD_LIBRARIES   : ${CHOLMOD_LIBRARIES}")
@@ -604,7 +614,7 @@ message(STATUS "****************************************************************
 message(STATUS "CPPUNIT             : ${CPPUNIT_FOUND} ${CPPUNIT_LIBRARIES}")
 message(STATUS "Doxygen             : ${DOXYGEN_FOUND}")
 message(STATUS "Sphinx              : ${SPHINX_FOUND} ${SPHINX_EXECUTABLE} ${SPHINX_VERSION}")
-message(STATUS "Eigen3              : ${EIGEN3_FOUND} ${EIGEN3_INCLUDE_DIRS} USE_EIGEN3: ${USE_EIGEN3}")
+message(STATUS "Eigen3              : ${EIGEN3_FOUND} v:${EIGEN3_VERSION_STRING} ${EIGEN3_INCLUDE_DIRS} USE_EIGEN3: ${USE_EIGEN3}")
 message(STATUS "**********************************************************************")
 
 if (Python_EXECUTABLE

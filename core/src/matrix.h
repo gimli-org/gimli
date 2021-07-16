@@ -46,8 +46,19 @@ namespace GIMLI{
     typedef Eigen::Matrix < double, Eigen::Dynamic, Eigen::Dynamic > SmallMatrix;
     //typedef Matrix < double > SmallMatrix;
     //typedef Matrix < double > SmallMatrix;
+
+#define SET_MAT_ROW_SLICE(A, row, RVec, start, end) \
+    A(row, Eigen::seq(start, end)) = \
+    Eigen::Map <const Eigen::VectorXd>(&RVec[0], RVec.size());
+
+
 #else
     typedef Matrix < double > SmallMatrix;
+
+#define SET_MAT_ROW_SLICE(A, row, RVec, start, end) \
+                           A(row).setVal(RVec, start, end);
+    
+
 #endif
 
 template < class ValueType > class DLLEXPORT Matrix3 {

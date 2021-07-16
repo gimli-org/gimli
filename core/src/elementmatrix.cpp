@@ -942,16 +942,16 @@ ElementMatrix < double >::ux2uy2uz2(const Cell & cell, bool useCache){
         double b = - ((x3 - x1) * (x2 - x1) + (y3 - y1) * (y2 - y1)) / J;
         double c =   ((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)) / J;
 
-        mat_[0][0] = a *  0.5 + b        + c *  0.5 ;
-        mat_[1][0] = a * -0.5 + b * -0.5            ;
-        mat_[2][0] =            b * -0.5 + c * -0.5 ;
-        mat_[1][1] = a *  0.5                       ;
-        mat_[2][1] =            b *  0.5            ;
-        mat_[2][2] =                       c *  0.5 ;
+        mat_(0,0) = a *  0.5 + b        + c *  0.5 ;
+        mat_(1,0) = a * -0.5 + b * -0.5            ;
+        mat_(2,0) =            b * -0.5 + c * -0.5 ;
+        mat_(1,1) = a *  0.5                       ;
+        mat_(2,1) =            b *  0.5            ;
+        mat_(2,2) =                       c *  0.5 ;
 
-        mat_[0][1] = mat_[1][0];
-        mat_[0][2] = mat_[2][0];
-        mat_[1][2] = mat_[2][1];
+        mat_(0,1) = mat_(1,0);
+        mat_(0,2) = mat_(2,0);
+        mat_(1,2) = mat_(2,1);
 
         //std::cout << "2" << *this << std::endl;*/
         //ux2uy2(cell, IntegrationRules::instance().triWeights(1), IntegrationRules::instance().triAbscissa(1), false);
@@ -1415,6 +1415,7 @@ ElementMatrix < double > & ElementMatrix < double >::pot(
     for (Index i = 0; i < nRules; i ++ ){
         for (Index n = 0; n < nCoeff; n ++ ){
             _matX[i][n].setVal(N[i], n*nVerts, (n+1)*nVerts);
+            //_matX[i](n, seq(n*nVerts, (n+1)*nVerts)) = &N[i];
         }
     }
 
@@ -1603,8 +1604,8 @@ ElementMatrix < double > & ElementMatrix < double >::grad(
             _matX[i](4).setVal(dNdz_[i] * a, 1 * nVerts, 2 * nVerts);//dNz/dy
             _matX[i](4).setVal(dNdy_[i] * a, 2 * nVerts, 3 * nVerts);//dNy/dz
 
-            _matX[i][5].setVal(dNdz_[i] * a, 0 * nVerts, 1 * nVerts);//dNz/dx
-            _matX[i][5].setVal(dNdx_[i] * a, 2 * nVerts, 3 * nVerts);//dNx/dz
+            _matX[i](5).setVal(dNdz_[i] * a, 0 * nVerts, 1 * nVerts);//dNz/dx
+            _matX[i](5).setVal(dNdx_[i] * a, 2 * nVerts, 3 * nVerts);//dNx/dz
                 } else {
                 // full matrix still unsure how to add constitutive for it
                 _matX[i](0).setVal(dNdx_[i], 0 * nVerts, 1 * nVerts); //dNx/dx
@@ -1613,11 +1614,19 @@ ElementMatrix < double > & ElementMatrix < double >::grad(
 
                 _matX[i](3).setVal(dNdx_[i], 1 * nVerts, 2 * nVerts); //dNy/dx
                 _matX[i](4).setVal(dNdy_[i], 1 * nVerts, 2 * nVerts); //dNy/dy
-                _matX[i][5].setVal(dNdz_[i], 1 * nVerts, 2 * nVerts); //dNy/dz
+                _matX[i](5).setVal(dNdz_[i], 1 * nVerts, 2 * nVerts); //dNy/dz
 
-                _matX[i][6].setVal(dNdx_[i], 2 * nVerts, 3 * nVerts); //dNz/dx
-                _matX[i][7].setVal(dNdy_[i], 2 * nVerts, 3 * nVerts); //dNz/dy
-                _matX[i][8].setVal(dNdz_[i], 2 * nVerts, 3 * nVerts); //dNz/dz
+                _matX[i](6).setVal(dNdx_[i], 2 * nVerts, 3 * nVerts); //dNz/dx
+                _matX[i](7).setVal(dNdy_[i], 2 * nVerts, 3 * nVerts); //dNz/dy
+                //_matX[i](8).setVal(dNdz_[i], 2 * nVerts, 3 * nVerts); //dNz/dz
+                SET_MAT_ROW_SLICE(_matX[i], 8, dNdy_[i], 2 * nVerts, 3 * nVerts)
+                // setMatRowSlice(_matX[i], 8, dNdy_[i], 2 * nVerts, 3 * nVerts);
+
+                // _matX[i](8, Eigen::seq(2 * nVerts, 3 * nVerts)) = 
+                //     Eigen::Map <const Eigen::VectorXd>(&dNdz_[i][0], 
+                //                                        dNdz_[i].size());
+                               
+
 
                 }
 
@@ -1734,10 +1743,10 @@ void dot(const ElementMatrix < double > & A,
             //     Aii += Ai[ids[i]];
             // }
             // double bi = 0;
-            SmallMatrix Aii(1, Ai[0].size());
+            SmallMatrix Aii(1, Ai.cols());
 
             for (auto i: ids){
-                Aii[0] += Ai[i];
+                Aii(0) += Ai(i);
             }
                 // __MS(Aii.rows(), Aii.cols());
                 // __MS(Ai.rows(), Ai.cols());
@@ -1774,9 +1783,9 @@ void dot(const ElementMatrix < double > & A,
             }
 
             // __MS(ids)
-            SmallMatrix Bii(1, Bi[0].size());
+            SmallMatrix Bii(1, Bi.cols());
             for (auto i: ids){
-                Bii[0] += Bi[i];
+                Bii(0) += Bi(i);
             }
             matTransMult(Ai, Bii, Ci, b, 0.0);
 
@@ -1875,7 +1884,12 @@ void dot(const ElementMatrix < double > & A,
 
         // __MS ("Ai:(", Ai.rows(), ",", Ai.cols(), ")",
         //       "Bi:(", Bi.rows(), ",", Bi.cols(), ")");
+
+    #if USE_EIGEN3
+    __MS('eigen!')
+    #else
         matTransMult(Ai, c, AtC, 1.0, 0.0);
+    #endif
         matMult(AtC, Bi, Ci, 1.0, 0.0);
 
         *C.pMat() += Ci * wS;
@@ -2039,7 +2053,7 @@ void mult(const ElementMatrix < double > & A, double b,
         SmallMatrix & iC = (*C.pMatX())[r];
 
         for (Index k = 0; k < iC.rows(); k ++){
-            iC[k] *= b;
+            iC(k) *= b;
         }
     }
     C.integrate();

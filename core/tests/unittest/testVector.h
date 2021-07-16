@@ -438,6 +438,15 @@ public:
 //        testMatrix_< float >();
     }
 
+    void testSmallMatrix(){
+        GIMLI::SmallMatrix A(3,3);
+
+        A(0,seq(0,3)) = 1.0;
+
+        CPPUNIT_ASSERT(A(0) == std::vector< double >{1.0, 1.0, 1.0});
+
+    }
+
     void testMatrixMult(){
 
         // m = 2
