@@ -440,9 +440,16 @@ public:
 
     void testMatrixMult(){
 
-        // GIMLI::matMult(A, B, C, -1);
-        // CPPUNIT_ASSERT(C[0] == GIMLI::RVector(std::vector< double >{0., 0.}));
-        // CPPUNIT_ASSERT(C[1] == GIMLI::RVector(std::vector< double >{0., 0.}));
+        // m = 2
+        // n = 3
+        // k = 4
+
+        // A = (np.array(range(m*k))+1).reshape((m, k))
+        // B = (np.array(range(n*k))+1).reshape((k, n))
+
+        // print(A)
+        // print(B)
+        // print(A@B)
 
         Index m = 2;
         Index n = 3;
@@ -453,6 +460,7 @@ public:
         for (Index i = 0; i < m*k; i ++ ){_A[i] = i+1;}
         for (Index i = 0; i < k*n; i ++ ){_B[i] = i+1;}
 
+        //** Test A*B 
         GIMLI::RMatrix A(m, k, _A);
         GIMLI::RMatrix B(k, n, _B);
         GIMLI::RMatrix C;
@@ -464,6 +472,23 @@ public:
         CPPUNIT_ASSERT(C[1] ==
                        GIMLI::RVector(std::vector< double >{158, 184, 210}));
 
+        //** Test A*B with should be transposed to fit dimensions
+        GIMLI::RMatrix BT(n, k);
+        for (Index i = 0; i < n; i ++ ){
+            for (Index j = 0; j < k; j ++ ){
+                BT[i][j] = B[j][i];
+            }
+        }
+        GIMLI::matMult(A, BT, C, 1.0, 0.0);
+        CPPUNIT_ASSERT(C.rows() == m);
+        CPPUNIT_ASSERT(C.cols() == n);
+        CPPUNIT_ASSERT(C[0] ==
+                       GIMLI::RVector(std::vector< double >{70., 80., 90}));
+        CPPUNIT_ASSERT(C[1] ==
+                       GIMLI::RVector(std::vector< double >{158, 184, 210}));
+
+
+        //** Test AT*B
         double *_AT = new double[k*m];
 
         GIMLI::RMatrix AT(k, m, _A);
@@ -475,6 +500,16 @@ public:
 
         GIMLI::RMatrix C2;
         GIMLI::matTransMult(AT, B, C2, 1.0, 0.0);
+        CPPUNIT_ASSERT(C2.rows() == m);
+        CPPUNIT_ASSERT(C2.cols() == n);
+        CPPUNIT_ASSERT(C2[0] ==
+                       GIMLI::RVector(std::vector< double >{70., 80., 90}));
+        CPPUNIT_ASSERT(C2[1] ==
+                       GIMLI::RVector(std::vector< double >{158, 184, 210}));
+        
+        //** Test AT*B where should be transposed to fit dimensions
+
+        GIMLI::matTransMult(AT, BT, C2, 1.0, 0.0);
         CPPUNIT_ASSERT(C2.rows() == m);
         CPPUNIT_ASSERT(C2.cols() == n);
         CPPUNIT_ASSERT(C2[0] ==
@@ -521,13 +556,6 @@ public:
 
         CPPUNIT_ASSERT(A+B == AB);
         CPPUNIT_ASSERT(B+A == AB);
-
-
-
-
-
-
-
 
     }
 

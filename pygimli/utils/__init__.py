@@ -12,6 +12,8 @@ from .base import (rms, rmsWithErr, nanrms, createDateTimeString,
                    nanrms, num2str, numpy2gmat, rrms, rms, rndig, saveResult,
                    chi2)
 
+mkdir = createPath
+
 # compatibility for dev #can be removed? (20200515)
 from .base import rmsWithErr as rmswitherr
 

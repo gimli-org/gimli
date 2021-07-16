@@ -16,8 +16,7 @@
  *                                                                            *
  ******************************************************************************/
 
-#ifndef _GIMLI_ELEMENTMATRIX__H
-#define _GIMLI_ELEMENTMATRIX__H
+#pragma once
 
 #include "gimli.h"
 #include "vector.h"
@@ -50,6 +49,9 @@ public:
     inline const Vector< ValueType > & operator[](Index row) const {
         return mat_[row]; }
 
+    inline const ValueType & operator()(Index i, Index j) const { 
+        return mat_(i,j); 
+    }
     void resize(Index rows, Index cols=0);
 
     ElementMatrix < ValueType > & operator += (const ElementMatrix < ValueType > & E);
@@ -58,14 +60,14 @@ public:
         ElementMatrix < ValueType > & operator OP##= (ValueType val) { \
             if (this->_newStyle){ \
                 if (this->_integrated){ \
-                    for (Index i = 0; i < size(); i ++) mat_[i] OP##= val; \
+                    mat_ OP##= val; \
                 } \
                 for (auto & m: _matX){ \
                     m OP##= val; \
                 } \
                 return *this;\
             } \
-            for (Index i = 0; i < size(); i ++) mat_[i] OP##= val; \
+            mat_ OP##= val; \
             return *this;\
         } \
 
@@ -80,25 +82,33 @@ public:
     inline Index rows() const { return mat_.rows(); }
     inline Index cols() const { return mat_.cols(); }
 
+
     inline const ValueType & getVal(Index i, Index j) const {
-        return mat_[i][j]; }
-    inline void setVal(Index i, Index j, const ValueType & v) {
-        mat_[i][j] = v; }
-    inline void addVal(Index i, Index j, const ValueType & v) {
-        mat_[i][j] += v; }
+        return mat_(i,j); 
+    }
+    inline void setVal(Index i, Index j, const ValueType & v) {mat_(i,j) = v; }
+    inline void addVal(Index i, Index j, const ValueType & v) {mat_(i,j) += v; }
 
     /*! Set data matrix. */
     inline void setMat(const Matrix < ValueType > & m) { mat_ = m; }
     /*! Return data matrix. */
-    inline Matrix < ValueType > * pMat() { return & mat_; }
+    inline SmallMatrix * pMat() { return & mat_; }
     /*! Return data for row i. */
-    inline const Matrix < ValueType > & mat() const { return mat_; }
+    inline const SmallMatrix & mat() const { return mat_; }
     /*! Return data for row i. */
-    inline const Vector < ValueType > & row(Index i) const { return mat_[i]; }
+    inline const Vector < ValueType > & row(Index i) const { 
+    #if USE_EIGEN3
+    __MS("Efficiency warning")
+    #endif 
+        return mat_[i];
+    }
     /*! Return data for col i. */
     inline Vector < ValueType > col(Index i) const {
+    #if USE_EIGEN3
+    __MS("Efficiency warning")
+    #endif 
         Vector < ValueType > ret(this->rows());
-        for (Index j = 0; j < ret.size(); j ++){ ret[j] = mat_[j][i];}
+        for (Index j = 0; j < ret.size(); j ++){ ret[j] = mat_(j,i);}
         return ret;
     }
 
@@ -252,21 +262,27 @@ public:
 
     /*! Return S * a */
     void mult(const Vector < ValueType > & a, Vector < ValueType > & ret){
+    #if USE_EIGEN3
+    __MS("Efficiency warning")
+    #endif 
         ASSERT_EQUAL(size(), ret.size())
         for (Index i = 0; i < size(); i ++) {
             for (Index j = 0; j < size(); j ++) {
-                ret[i] += mat_[i][j] * a[_ids[j]];
+                ret[i] += mat_(i,j) * a[_ids[j]];
             }
         }
     }
     /*! Return (S * a) * b */
     ValueType mult(const Vector < ValueType > & a,
                    const Vector < ValueType > & b){
+    #if USE_EIGEN3
+    __MS("Efficiency warning")
+    #endif 
         ValueType ret = 0;
         for (Index i = 0; i < size(); i ++) {
             ValueType t = 0;
             for (Index j = 0; j < size(); j ++) {
-                t += mat_[i][j] * a[_ids[j]];
+                t += mat_(i,j) * a[_ids[j]];
             }
             ret += t * b[_ids[i]];
         }
@@ -278,11 +294,14 @@ public:
                                      const Vector < Val > & b,
                                      const Vector < Val > & m,
                                      const Vector < Val > & n){
+    #if USE_EIGEN3
+    __MS("Efficiency warning")
+    #endif 
         Val ret = 0;
         for (Index i = 0; i < size(); i ++) {
             Val t = 0;
             for (Index j = 0; j < size(); j ++) {
-                t += mat_[i][j] * (a[_ids[j]]-b[_ids[j]]);
+                t += mat_(i,j) * (a[_ids[j]]-b[_ids[j]]);
             }
             ret += t * (m[_ids[i]]-n[_ids[i]]);
         }
@@ -297,8 +316,13 @@ public:
                  const CVector & m, const CVector & n){
         return mult_(a, b, m, n);
     }
-
+    //***********************************************************************//
+    //***********************************************************************//
+    //***********************************************************************//
     //** new interface starts here **//
+    //***********************************************************************//
+    //***********************************************************************//
+    //***********************************************************************//
     ElementMatrix(Index nCoeff, Index dofPerCoeff, Index dofOffset);
 
     ElementMatrix(const ElementMatrix < ValueType > & E);
@@ -336,9 +360,9 @@ public:
     void setMatXI(Index i, const Matrix < ValueType > & mat);
 
     /*! Return reference to all matrices per quadrature point.*/
-    const std::vector < Matrix < ValueType > > & matX() const { return _matX; }
+    const std::vector < SmallMatrix > & matX() const { return _matX; }
 
-    std::vector < Matrix < ValueType > > * pMatX() { return &_matX; }
+    std::vector < SmallMatrix > * pMatX() { return &_matX; }
 
     /*! Set const reference to the current entity.*/
     void setEntity(const MeshEntity & ent) { _ent = &ent; }
@@ -387,7 +411,7 @@ public:
     bool oldStyle() const { return !this->_newStyle; }
 
 protected:
-    mutable Matrix < ValueType > mat_;
+    mutable SmallMatrix mat_;
     IndexArray _ids;
     IndexArray _idsC;
     IndexArray _idsR;
@@ -425,15 +449,13 @@ protected:
     const PosVector * _x;
 
     // matrices per quadrature point
-    std::vector < Matrix < ValueType > > _matX;
-
+    std::vector < SmallMatrix > _matX;
 
     bool _newStyle;
     bool _div;
     bool _valid;
     bool _elastic;
     mutable bool _integrated;
-
 
 private:
     /*! No copy operator. */
@@ -466,6 +488,10 @@ DLLEXPORT void dot(const ElementMatrix < double > & A,
 DLLEXPORT void dot(const ElementMatrix < double > & A,
                    const ElementMatrix < double > & B,
                    const FEAFunction & c, ElementMatrix < double > & ret);
+
+DLLEXPORT void dot(const ElementMatrix < double > & A,
+                   const ElementMatrix < double > & B,
+                   double f, SparseMatrixBase & ret, double scale);
 
 // DLLEXPORT void dot(const ElementMatrix < double > & A,
 //                    const ElementMatrix < double > & B,
@@ -613,85 +639,10 @@ protected:
     bool _evalOnCellCenter;
 };
 
-class DLLEXPORT ElementMatrixMap {
-public:
-
-    void push_back(const ElementMatrix < double > & Ai);
-
-    #define DEFINE_INTEGRATOR(A_TYPE) \
-        /*! R = \int_mesh this * f \d mesh and R = RVector(dof) and \
-            f = A_TYPE \
-        */ \
-        void integrate(const A_TYPE & f, RVector & R) const; \
-        /*! Integrate into bilinear form R = \int_mesh this * f * R \d mesh an\
-        R = RSparseMapMatrix(dof, dof) and \
-            f = A_TYPE \
-        */ \
-        void integrate(const ElementMatrixMap & R, const A_TYPE & f, \
-                       RSparseMapMatrix & A) const; \
-        RVector integrate(const A_TYPE & f) const; \
-        RSparseMapMatrix integrate(const ElementMatrixMap & R, \
-                                   const A_TYPE & f) const; \
-
-    DEFINE_INTEGRATOR(double)   // const scalar for all cells
-    DEFINE_INTEGRATOR(Pos)      // const vector for all cells
-    DEFINE_INTEGRATOR(RMatrix)  // const Matrix for all cells
-    DEFINE_INTEGRATOR(RVector)      // const scalar for each cells
-    DEFINE_INTEGRATOR(PosVector)    // const vector for each cells
-    DEFINE_INTEGRATOR(std::vector< RMatrix >)// const matrix for each cells
-    DEFINE_INTEGRATOR(std::vector< RVector >)// scalar for quadr. on each cells
-    DEFINE_INTEGRATOR(std::vector< PosVector >)// vector for quadr. on each cells
-    DEFINE_INTEGRATOR(std::vector< std::vector< RMatrix > >)// mat for quadr. on each cells
-
-    #undef DEFINE_INTEGRATOR
-
-    const std::vector< ElementMatrix < double > > & mats() const;
-
-    const std::vector < PosVector > & quadraturePoints() const;
-
-
-    void add(Index row, const ElementMatrix < double > & Ai);
-
-    //TODO .. check if its the same like mult(a-b, m-n))
-    RVector mult(const RVector & a, const RVector & b,
-                 const RVector & m, const RVector & n) const;
-
-    /*! Return (S_i * a) * b for all i*/
-    RVector mult(const RVector & a, const RVector & b) const;
-
-    Index rows() const { return rows_; }
-
-    Index cols() const { return cols_; }
-
-
-protected:
-    std::vector< ElementMatrix < double > > mats_;
-    mutable std::vector < PosVector > quadrPnts_; // cache Q for mats_
-
-    std::vector< RMatrix > mat_;
-    std::vector< IndexArray > _ids;
-    std::vector< Index > row_;
-
-    Index rows_;
-    Index cols_;
-};
-
-
-DLLEXPORT void createUMap(const Mesh & mesh, Index order,
-                       ElementMatrixMap & ret,
-                       Index nCoeff=1, Index dofOffset=0);
-
-DLLEXPORT ElementMatrixMap createUMap(const Mesh & mesh, Index order,
-                                      Index nCoeff=1, Index dofOffset=0);
-
 template < class ValueType > std::ostream & operator << (std::ostream & str,
                                                          const ElementMatrix< ValueType > & e);
 
 template < > DLLEXPORT std::ostream & operator << (std::ostream & str,
                                             const ElementMatrix< double > & e);
 
-
-
 } // namespace GIMLI{
-
-#endif // _GIMLI_ELEMENTMATRIX__H

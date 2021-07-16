@@ -466,6 +466,8 @@ def generate(defined_symbols, extraIncludes):
                     logger.debug("Fail to exclude: " + str(c))
 
     for c in main_ns.classes():
+        print('class:', c.name)
+
         for e in ex:
             if c.decl_string.find(e) > -1:
                 try:
@@ -476,7 +478,7 @@ def generate(defined_symbols, extraIncludes):
 
         try:
             for mem in c.variables():
-                print(mem)
+                print('\t variables for:', c, mem)
                 try:
                     pass
                     #mem.exclude()
@@ -512,6 +514,15 @@ def generate(defined_symbols, extraIncludes):
             # print(c, "has no member functions")
             pass
 
+        ##########
+        ### exclude all callable
+        ##########
+        for mem in c.operators():
+            if "operator()" in mem.name:
+                print("Exclude: " + str(mem))
+                logger.debug("Exclude: " + str(mem))
+                mem.exclude()
+
         # print('#'*100)
         # print(c, c.name)
         if c.name.startswith('Vector<unsigned long>'):
@@ -522,7 +533,29 @@ def generate(defined_symbols, extraIncludes):
                     logger.debug("Exclude: " + str(mem))
                     mem.exclude()
 
+
+        if c.name.startswith("Matrix<double>"):
+            
+            for mem in c.constructors():
+                print("\t constructors:", mem)
+            for mem in c.operators():
+                # print("\t operator:", mem)
+                # print("\t\t\t:", mem.name)
+                # print("\t\t\t:", mem.decl_string)
+
+                if "operator()" in mem.name:
+                    print("Exclude: " + str(mem))
+                    logger.debug("Exclude: " + str(mem))
+                    mem.exclude()
+                    
+            for mem in c.member_functions():
+                print("\t member:", mem)
                 # print("mem", mem)
+
+            #sys.exit()
+
+    #         sys.exit()
+    # sys.exit()
 
     try:
         mb.calldefs(access_type_matcher_t('protected')).exclude()

@@ -292,6 +292,7 @@ find_or_build_package(BLAS lapack)
 find_or_build_package(LAPACK lapack)
 find_or_build_package(CHOLMOD suitesparse)
 find_package(UMFPACK)
+find_package(Eigen3)
 
 ################################################################################
 # Manuall check for openblas
@@ -376,22 +377,31 @@ function(find_boost_python_manual bp_version)
     message(STATUS "----------- searching for libboost_python${bp_version}")
     find_package(Boost 1.65 COMPONENTS "python${bp_version}")
 
+    message(STATUS "++++++++++++++")
+    message(STATUS "${Boost_PYTHON${bp_version}_FOUND}")
+    message(STATUS "${Boost_PYTHON_LIBRARY}")
+    message(STATUS "${Boost_PYTHON_LIBRARIES}")
+    message(STATUS "${Boost_PYTHON${bp_version}_LIBRARY_RELEASE}")
+    message(STATUS "${Boost_PYTHON${bp_version}_LIBRARY}")
+    message(STATUS "${Boost_PYTHON${bp_version}_LIBRARIES}")
+    message(STATUS "${Boost_LIBRARIES}")
+    message(STATUS "++++++++++++++")
+
     if (${Boost_PYTHON${bp_version}_FOUND})
         set(Boost_PYTHON_FOUND ${Boost_PYTHON${bp_version}_FOUND} PARENT_SCOPE)
-        set(Boost_PYTHON_LIBRARY ${Boost_PYTHON${bp_version}_LIBRARY_RELEASE} PARENT_SCOPE)
+        # set(Boost_PYTHON_LIBRARY ${Boost_PYTHON${bp_version}_LIBRARY_RELEASE} PARENT_SCOPE)
         # set(Boost_PYTHON_FOUND ${Boost_PYTHON${bp_version}_FOUND} CACHE BOOL "boost python lib found")
-        # set(Boost_PYTHON_LIBRARY ${Boost_PYTHON${bp_version}_LIBRARY_RELEASE} CACHE FILEPATH "boost python lib(find_boost_python_manual)")
-
+        # works (gentoo, openblas, 1.76, py3.8, )
+        set(Boost_PYTHON_LIBRARY ${Boost_PYTHON${bp_version}_LIBRARY} CACHE FILEPATH "boost python lib(find_boost_python_manual)")
+        
         message(STATUS "----------- found: ${Boost_PYTHON_LIBRARY}")
     else()
         message(STATUS "----------- not found.")
     endif()
 endfunction()
 
-message(STATUS "*************** ${Boost_PYTHON_LIBRARY}")
+if (NOT Boost_PYTHON_LIBRARY OR 1)
 
-
-if (NOT Boost_PYTHON_LIBRARY)
     message(STATUS "boost-python not found by cmake ... trying to determine boost-python now manually ...")
     if (WIN32)
         set(bp_version "python${Python_VERSION_MAJOR}${Python_VERSION_MINOR}-mt")
@@ -421,27 +431,37 @@ if (NOT Boost_PYTHON_LIBRARY)
             # /usr/lib/libboost_python37.so # gentoo >=boost-1.70)
             set(bp_version "${Python_VERSION_MAJOR}${Python_VERSION_MINOR}")
             find_boost_python_manual(${bp_version})
+            find_package(Boost 1.65 COMPONENTS "python${bp_version}")
         endif()
+
         if (NOT Boost_PYTHON_FOUND)
             #/usr/lib/x86_64-linux-gnu/libboost_python-py34.so (debian)
             set(bp_version "-py${Python_VERSION_MAJOR}${Python_VERSION_MINOR}")
             find_boost_python_manual(${bp_version})
+            find_package(Boost 1.65 COMPONENTS "python${bp_version}")
         endif()
+
         if (NOT Boost_PYTHON_FOUND)
             # /usr/lib/libboost_python3-py37.so # weird debian)
             set(bp_version "${Python_VERSION_MAJOR}-py${Python_VERSION_MAJOR}${Python_VERSION_MINOR}")
             find_boost_python_manual(${bp_version})
+            find_package(Boost 1.65 COMPONENTS "python${bp_version}")
         endif()
+
         if (NOT Boost_PYTHON_FOUND)
             # /usr/lib/libboost_python3.so.1.64.0 (arch style)
             set(bp_version "${Python_VERSION_MAJOR}")
             find_boost_python_manual(${bp_version})
+            find_package(Boost 1.65 COMPONENTS "python${bp_version}")
         endif()
+
         if (NOT Boost_PYTHON_FOUND)
             # /usr/lib/libboost_python-3.4.so (gentoo <boost-1.70)
             set(bp_version "-${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}")
             find_boost_python_manual(${bp_version})
+            find_package(Boost 1.65 COMPONENTS "python${bp_version}")
         endif()
+        
     endif()
 
     if (Boost_PYTHON_FOUND)
@@ -452,9 +472,9 @@ if (NOT Boost_PYTHON_LIBRARY)
                        "any libboost_python* on your system and "
                        "provide it to the authors so we can try to fix "
                        "this here.")
-        exit()
     endif()
 endif()
+
 
 if (NOT CASTER)
     set(CASTER "castxml")
@@ -558,6 +578,9 @@ if (CONDA_BUILD)
     endif()
 endif()
 
+set (USE_EIGEN3 FALSE)
+
+
 message(STATUS "THREADS             : ${THREADS} ${CMAKE_THREAD_LIBS_INIT} ${Boost_THREAD_LIBRARIES}")
 message(STATUS "USE_OPENBLAS        : ${OPENBLAS_FOUND} OPENBLAS_CBLAS_FOUND :${OPENBLAS_CBLAS_FOUND} OpenBLAS_INCLUDE_DIR :${OpenBLAS_INCLUDE_DIR}")
 message(STATUS "CHOLMOD_LIBRARIES   : ${CHOLMOD_LIBRARIES}")
@@ -568,6 +591,7 @@ message(STATUS "Python_LIBRARY_DIRS : ${Python_LIBRARY_DIRS}")
 message(STATUS "Python_LIBRARIES    : ${Python_LIBRARIES}" )
 message(STATUS "Python_INCLUDE_DIRS : ${Python_INCLUDE_DIRS}")
 message(STATUS "Boost_INCLUDE_DIR   : ${Boost_INCLUDE_DIR}")
+message(STATUS "Boost_LIBRARIES:      ${Boost_LIBRARIES}" )
 message(STATUS "Boost_PYTHON_LIBRARY: ${Boost_PYTHON_LIBRARY}" )
 message(STATUS "Python_NumPy        : ${Python_NumPy_FOUND} ${Python_NumPy_INCLUDE_DIRS} ver: ${Python_NumPy_VERSION}")
 message(STATUS "CASTER_FOUND        : ${CASTER_FOUND} Caster: ${CASTER_EXECUTABLE}")
@@ -580,6 +604,7 @@ message(STATUS "****************************************************************
 message(STATUS "CPPUNIT             : ${CPPUNIT_FOUND} ${CPPUNIT_LIBRARIES}")
 message(STATUS "Doxygen             : ${DOXYGEN_FOUND}")
 message(STATUS "Sphinx              : ${SPHINX_FOUND} ${SPHINX_EXECUTABLE} ${SPHINX_VERSION}")
+message(STATUS "Eigen3              : ${EIGEN3_FOUND} ${EIGEN3_INCLUDE_DIRS} USE_EIGEN3: ${USE_EIGEN3}")
 message(STATUS "**********************************************************************")
 
 if (Python_EXECUTABLE

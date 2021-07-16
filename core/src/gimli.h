@@ -16,8 +16,7 @@
  *                                                                            *
  ******************************************************************************/
 
-#ifndef _GIMLI_GIMLI__H
-#define _GIMLI_GIMLI__H
+#pragma once
 
 #ifdef HAVE_CONFIG_CMAKE_H
     #include <config.cmake.h>
@@ -178,7 +177,7 @@ void print(Args&&... args) {
 #define __M std::cout << "*** " << WHERE << std::endl;
 //#define __MS(str) std::cout << "*** " << str << " " << WHERE << std::endl;
 #define __MS(...) GIMLI::print("+++", WHERE, "\n", __VA_ARGS__, "\n---");
-#define __D if (GIMLI::debug()) std::cout << "Debug: " << WHERE << std::endl;
+#define __DBG if (GIMLI::debug()) std::cout << "Debug: " << WHERE << std::endl;
 #define __DS(str) if (GIMLI::debug()) std::cout << "Debug: " << str << " " << WHERE << std::endl;
 
 #define THROW_TO_IMPL GIMLI::throwToImplement(TO_IMPL);
@@ -269,8 +268,9 @@ static const uint8 MESH_SHAPE_PYRAMID_RTTI     = 234;
 
 static const uint8 GIMLI_MATRIXBASE_RTTI        = 0;
 static const uint8 GIMLI_MATRIX_RTTI            = 1;
-static const uint8 GIMLI_SPARSE_MAP_MATRIX_RTTI = 2;
-static const uint8 GIMLI_SPARSE_CRS_MATRIX_RTTI = 3;
+static const uint8 GIMLI_SPARSEMATRIXBASE_RTTI  = 10;
+static const uint8 GIMLI_SPARSE_MAP_MATRIX_RTTI = 11;
+static const uint8 GIMLI_SPARSE_CRS_MATRIX_RTTI = 12;
 static const uint8 GIMLI_BLOCKMATRIX_RTTI       = 4;
 
 /*! Flag load/save Ascii or binary */
@@ -657,5 +657,3 @@ template void hashCombine(Index & seed, const Index & hash);
 
 
 } // namespace GIMLI
-
-#endif // _GIMLI_GIMLI__H

@@ -38,6 +38,10 @@ if (UMFPACK_FOUND)
     target_link_libraries(${libgimli_TARGET_NAME} ${UMFPACK_LIBRARIES})
 endif (UMFPACK_FOUND)
 
+if (EIGEN3_FOUND)
+    include_directories(${EIGEN3_INCLUDE_DIRS})
+endif (EIGEN3_FOUND)
+
 if (PYTHON_FOUND)
     include_directories(${Python_INCLUDE_DIRS})
     target_link_libraries(${libgimli_TARGET_NAME} ${Python_LIBRARIES})

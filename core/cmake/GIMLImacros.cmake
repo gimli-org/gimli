@@ -24,6 +24,7 @@ macro(add_python_module PYTHON_MODULE_NAME SOURCE_DIR EXTRA_LIBS OUTDIR)
 
     target_link_libraries(${PYTHON_TARGET_NAME} ${EXTRA_LIBS})
     target_link_libraries(${PYTHON_TARGET_NAME} ${Python_LIBRARIES})
+    target_link_libraries(${PYTHON_TARGET_NAME} ${Boost_LIBRARIES})
     target_link_libraries(${PYTHON_TARGET_NAME} ${Boost_PYTHON_LIBRARY})
 
     set_target_properties(${PYTHON_TARGET_NAME} PROPERTIES PREFIX "")

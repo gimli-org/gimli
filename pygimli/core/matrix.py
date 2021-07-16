@@ -56,7 +56,6 @@ def __RMatrix_str(self):
             s+='\n'
     return s
 
-
 def __CMatrix_str(self):
     s = "CMatrix: " + str(self.rows()) + " x " + str(self.cols())
 
@@ -241,6 +240,7 @@ pgcore.RBlockMatrix.ndim = 2
 def __SparseMatrixEqual__(self, T):
     """Compare two SparseMatrices"""
     from pygimli.utils import sparseMatrix2Array
+
     if self.rows() != T.rows() or self.cols() != T.cols():
         warn("Compare sizes invalid {0},{1} vs. {2},{3}: ".format(
             self.rows(), self.cols(), T.rows(), T.cols()))
@@ -253,19 +253,22 @@ def __SparseMatrixEqual__(self, T):
         warn("Compare value sizes invalid: ", len(valsA), len(valsB))
         return False
 
-    # print(self, T)
-    # print('rows:', np.linalg.norm(np.array(rowsA)-np.array(rowsB)))
-    # print('cols:', np.linalg.norm(np.array(colsA)-np.array(colsB)))
-
-    # print(np.linalg.norm(valsA-valsB), np.mean(abs(valsA)), np.mean(abs(valsB)))
-    # print(np.linalg.norm(valsA-valsB)/np.mean(abs(valsA)))
     meanA = np.mean(abs(valsA))
+    nAB = np.linalg.norm(valsA-valsB)
+
+    if pgcore.deepDebug() == -1:
+        print(self, T)
+        print('diff rows:', np.linalg.norm(np.array(rowsA)-np.array(rowsB)))
+        print('diff cols:', np.linalg.norm(np.array(colsA)-np.array(colsB)))
+
+        print(f'|A-B|={nAB}', f'mean(A)={meanA} mean(B)={np.mean(abs(valsB))}')
+            
+        print(f'nAB/meanA = {nAB/meanA}')
+
     if meanA > 1e-10:
-        return rowsA == rowsB and \
-            colsA == colsB and \
-                np.linalg.norm(valsA-valsB)/meanA < 1e-14
+        return rowsA == rowsB and colsA == colsB and nAB/meanA < 1e-13
     else:
-        return np.linalg.norm(valsA-valsB) < 1e-12
+        return nAB < 1e-12
 
 pgcore.RSparseMatrix.__eq__ = __SparseMatrixEqual__
 pgcore.RSparseMapMatrix.__eq__ = __SparseMatrixEqual__

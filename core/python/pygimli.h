@@ -79,6 +79,7 @@ namespace pyplusplus{ namespace aliases{
 #include "gravimetry.h"
 #include "dc1dmodelling.h"
 #include "elementmatrix.h"
+#include "elementmapmatrix.h"
 #include "em1dmodelling.h"
 #include "exitcodes.h"
 #include "expressions.h"
@@ -106,6 +107,7 @@ namespace pyplusplus{ namespace aliases{
 #include "solver.h"
 #include "solverWrapper.h"
 #include "sparsematrix.h"
+#include "sparsemapmatrix.h"
 #include "spline.h"
 #include "stopwatch.h"
 #include "trans.h"
@@ -301,8 +303,7 @@ DEFINE_XVECTOR_STUFF__(RVector) //RVector last since auto rhs conversion will fa
     template CSparseMatrix operator * (const CSparseMatrix & A, const GIMLI::Complex & b);
 
     template class ElementMatrix< double >;
-    template std::ostream & operator << (std::ostream & str, const ElementMatrix< double > & p);
-
+    
     template RVector unique(const RVector & a);
     // template IndexArray unique(const IndexArray & a);
     template IVector unique(const IVector & a);

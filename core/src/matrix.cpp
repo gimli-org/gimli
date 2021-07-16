@@ -114,9 +114,10 @@ Matrix< Complex >::transMult(const Vector < Complex > & b) const {
 
 template < class ValueType > Matrix < ValueType > &
 _transAdd(Matrix < ValueType > * a, const Matrix < ValueType > & b){
+    // a+=b.T
     if (a->rows() != b.cols() || a->cols() != b.rows()){
-        __MS(a->rows(), b.cols(), a->cols(), b.rows())
-        log(Error, "Matrix trans add with wrong dimensions");
+        __MS(a->rows(), a->cols(), ":",  b.rows(), b.cols())
+        log(Error, "Matrix _transAdd with wrong dimensions");
         return *a;
     }
 
@@ -137,8 +138,8 @@ Matrix<Complex>::transAdd(const Matrix < Complex > & a){
 }
 
 
-void matMultABA(const RMatrix & A, const RMatrix & B, RMatrix & C,
-                RMatrix & AtB, double a, double b){
+void matMultABA(const SmallMatrix & A, const SmallMatrix & B, 
+                SmallMatrix & C, SmallMatrix & AtB, double a, double b){
     // C = a A.T * B * A + b * C
     // __MS("matMultABA: ", A.rows(), A.cols(), B.rows(), B.cols())
 
@@ -151,64 +152,99 @@ void matMultABA(const RMatrix & A, const RMatrix & B, RMatrix & C,
     matMult(AtB, A, C, a, b);
 }
 
-void matMult(const RMatrix & A, const RMatrix & B, RMatrix & C, double a, double b){
-    // C = a * A*B + b *C || C = a * A*B.T + b*C
+void matMult(const SmallMatrix & A, const SmallMatrix & B, 
+             SmallMatrix & C, double a, double b){
+    // C = a * A*B + b*C || C = a * A*B.T + b*C
+    
     // __MS("matMult: ", A.rows(), A.cols(), B.rows(), B.cols())
+
     Index m = A.rows(); // C.rows()
+    Index k = A.cols(); 
+    
+    // B.rows()
     Index n = B.cols(); // C.cols()
-    Index k = A.cols(); // B.rows()
+    bool bIsTrans = false;    
+    Index bRows = n;
 
     if (k == B.rows()){ // A * B (k == k)
-        C.resize(m, n);
+    
+    } else if (k == B.cols()){ // A * B.T (k == k)
+        bIsTrans = true;
+        n = B.rows();
+        bRows = k;
+    } else {
+        log(Error, "matMult sizes mismatch. implement fallback A*.B.T", 
+            A.cols(), "!=", B.rows());
+    }
+    C.resize(m, n);
 
 #if OPENBLAS_CBLAS_FOUND
 
-        double *A2 = new double[m * k];
-        double *B2 = new double[k * n];
-        double *C2 = new double[m * n];
+    CBLAS_TRANSPOSE aTrans = CblasNoTrans;
+    CBLAS_TRANSPOSE bTrans = CblasNoTrans;
 
-        A.dumpData(A2);
-        B.dumpData(B2);
-        C.dumpData(C2);
-        // lda ## leading dimension for a, means column for CblasRowMajor
-        cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, m, n, k,
-                    a, A2, k, B2, n,
-                    b, C2, n);
+    if (bIsTrans) bTrans = CblasTrans;
+    
 
-        C.fromData(C2, m, n);
+    double *A2 = new double[m * k];
+    double *B2 = new double[k * n];
+    double *C2 = new double[m * n];
 
-        delete [] A2;
-        delete [] B2;
-        delete [] C2;
+    A.dumpData(A2);
+    B.dumpData(B2);
+    C.dumpData(C2);
+
+    // cblas_dgemm(CblasRowMajor, CblasTrans, CblasNoTrans, m, n, k,
+    //             a, A2, m, B2, n, b, C2, n);
+                
+    // lda ## leading dimension for a, means column for CblasRowMajor
+    cblas_dgemm(CblasRowMajor, aTrans, bTrans, 
+                m, n, k,
+                a, A2, k, B2, bRows,
+                b, C2, n);
+
+    C.fromData(C2, m, n);
+
+    delete [] A2;
+    delete [] B2;
+    delete [] C2;
 #else
-    // __MS("matMult: " A.rows(), A.cols(), B.rows(), B.cols())
+    
+    // __MS("\t: ", C.rows(), C.cols(), bIsTrans)
 
-        for (Index i = 0; i < A.rows(); i ++){
-            for (Index j = 0; j < B.cols(); j ++){
-                double c = 0;
-                for (Index k = 0; k < A.cols(); k ++){
+    for (Index i = 0; i < A.rows(); i ++){
+
+        for (Index j = 0; j < n; j ++){
+            double c = 0;
+            for (Index k = 0; k < A.cols(); k ++){
+                if (bIsTrans){
+                    c += A[i][k] * B[j][k];
+                } else {
                     c += A[i][k] * B[k][j];
                 }
-                if (b == 0.0){
-                    C[i][j] = a * c;
-                } else if (b == 1.0){
-                    C[i][j] += a * c;
-                } else {
-                    C[i][j] = b * C[i][j] + a * c;
-                }
+            }
+            if (b == 0.0){
+                C[i][j] = a * c;
+            } else if (b == 1.0){
+                C[i][j] += a * c;
+            } else {
+                C[i][j] = b * C[i][j] + a * c;
             }
         }
-#endif
-    } else { // A * B.T
-        log(Error, "matMult sizes mismatch. implement fallback A*.B.T", A.cols(), "!=", B.rows());
     }
+#endif
+    
 }
 
-void matTransMult(const RMatrix & A, const RMatrix & B, RMatrix & C, double a, double b){
+void matTransMult(const SmallMatrix & A, const SmallMatrix & B, 
+                  SmallMatrix & C, double a, double b){
+    // __MS("matTransMult: ", A.rows(), A.cols(), B.rows(), B.cols())
+    
     // Mxk * kxN == MxN
     // (kxM).T * kxN == MxN
     // A (k,M), B(k,N) == C(M,N)
-    //** C = a * A.T*B + b*C|| C = a * A.T*B.T  + b*C
+    //** C = a * A.T*B + b*C || C = a * A.T*B.T + b*C
+
     //** **MEH C = (a * A.T*B).T + b*C if C has the right dimension **  MEH
     // c-transpose check only for b != 0.0, else c is resized
     
@@ -220,12 +256,15 @@ void matTransMult(const RMatrix & A, const RMatrix & B, RMatrix & C, double a, d
     Index m = A.cols(); // C.rows()
     Index n = B.cols(); // C.cols()
 
+    bool bIsTrans = false;    
+    Index bRows = n;
+
     if (k == B.rows()){ // A.T * B
             
         if (b == 0.0) C.resize(m, n);
 
         if (C.rows() != A.cols() || C.cols() != B.cols()){
-
+            __MS("isinuse?")
             //__MS(C.rows(), C.cols(), A.cols(), B.cols())
             //** Target array have wrong dimensions
             if (C.rows() == B.cols() && C.cols() == A.cols()){
@@ -241,16 +280,32 @@ void matTransMult(const RMatrix & A, const RMatrix & B, RMatrix & C, double a, d
                 C.resize(m, n);
             }
         }
+    } else if(k == B.cols()){
+        bIsTrans = true;
+        n = B.rows();
+        bRows = k;
+
+    } else {
+        // if not A.T * B or A.T * B.T
+        __MS(A.rows(), A.cols(), '\n', A)
+        __MS(B.rows(), B.cols(), '\n', B)
+        __MS(C.rows(), C.cols())
+        throwLengthError("matTransMult sizes mismatch.");
+    }
 
 #if OPENBLAS_CBLAS_FOUND
+    CBLAS_TRANSPOSE aTrans = CblasTrans;
+    CBLAS_TRANSPOSE bTrans = CblasNoTrans;
 
-        double *A2 = new double[k * m];
-        double *B2 = new double[k * n];
-        double *C2 = new double[m * n];
+    if (bIsTrans) bTrans = CblasTrans;
+        
+    double *A2 = new double[k * m];
+    double *B2 = new double[k * n];
+    double *C2 = new double[m * n];
 
-        A.dumpData(A2);
-        B.dumpData(B2);
-        C.dumpData(C2);
+    A.dumpData(A2);
+    B.dumpData(B2);
+    C.dumpData(C2);
 
     // std::cout << "A" << std::endl;
     // for (Index i = 0; i < m*k; i ++ ){std::cout << A2[i] << " ";} std::cout << std::endl;
@@ -259,44 +314,53 @@ void matTransMult(const RMatrix & A, const RMatrix & B, RMatrix & C, double a, d
     // std::cout << "C1" << std::endl;
     // for (Index i = 0; i < m*n; i ++ ){std::cout << C2[i] << " ";} std::cout << std::endl;
 
-        cblas_dgemm(CblasRowMajor, CblasTrans, CblasNoTrans, m, n, k,
-                    a, A2, m, B2, n, b, C2, n);
+    cblas_dgemm(CblasRowMajor, aTrans, bTrans, m, n, k,
+                a, A2, m, B2, bRows, 
+                b, C2, n);
 
     // std::cout << "C2" << std::endl;
     // for (Index i = 0; i < m*n; i ++ ){std::cout << C2[i] << " ";} std::cout << std::endl;
 
-        C.fromData(C2, m, n);
+    C.fromData(C2, m, n);
 
     // std::cout << "C3" << std::endl;
     // std::cout << C << std::endl;
 
-        delete [] A2;
-        delete [] B2;
-        delete [] C2;
+    delete [] A2;
+    delete [] B2;
+    delete [] C2;
 
 #else
 
-        for (Index i = 0; i < A.cols(); i ++){
-            for (Index j = 0; j < B.cols(); j ++){
-                double c = 0;
-                for (Index k = 0; k < A.rows(); k ++){
+    for (Index i = 0; i < A.cols(); i ++){
+        for (Index j = 0; j < n; j ++){
+            double c = 0;
+
+            for (Index k = 0; k < A.rows(); k ++){
+
+                if (bIsTrans){
+                    c += A[k][i] * B[j][k];
+                } else {
                     c += A[k][i] * B[k][j];
                 }
-                if (retTrans){
-                    THROW_TO_IMPL
-                    C[j][i] = a * c + C[j][i]*b;
+            }
+            if (retTrans){
+                THROW_TO_IMPL
+                // C[j][i] = a * c + C[j][i]*b;
+            } else {
+
+                if (b == 0.0){
+                    C[i][j] = a * c;
+                } else if (b == 1.0){
+                    C[i][j] += a * c;
                 } else {
-                    C[i][j] = a * c + C[i][j]*b;
+                    C[i][j] = b * C[i][j] + a * c;
                 }
             }
         }
-#endif
-    } else { // if not A.T * B
-        __MS(A.rows(), A.cols(), '\n', A)
-        __MS(B.rows(), B.cols(), '\n', B)
-        __MS(C.rows(), C.cols())
-        throwLengthError("matTransMult sizes mismatch.");
     }
+#endif
+    
 }
 
 

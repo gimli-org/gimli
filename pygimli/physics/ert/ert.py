@@ -145,7 +145,7 @@ def simulate(mesh, scheme, res, **kwargs):
             # better check for array data here
             isArrayData = True
 
-    if isinstance(res[0], np.complex) or isinstance(res, pg.CVector):
+    if isinstance(res[0], complex) or isinstance(res, pg.CVector):
         pg.info("Complex resistivity values found.")
         fop.setComplex(True)
     else:

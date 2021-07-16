@@ -48,6 +48,7 @@ void Vector< double >::add(const ElementMatrix < double > & A,
 template <>
 void Vector< double >::add(const ElementMatrix < double > & A,
                            const RVector3 & scale){
+    __MS("inuse?")
     if (A.oldStyle()){
         THROW_TO_IMPL
     } else {
@@ -71,7 +72,9 @@ void Vector< double >::add(const ElementMatrix < double > & A,
 template <>
 void Vector< double >::add(const ElementMatrix < double > & A,
                            const RVector & scale){
+    
     if (!A.oldStyle()){
+        __MS("inuse?")
         THROW_TO_IMPL
     }
     A.integrate();

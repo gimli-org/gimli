@@ -686,7 +686,7 @@ def solveFiniteVolume(mesh, a=1.0, b=0.0, f=0.0, fn=0.0, vel=None, u0=0.0,
     if not hasattr(times, '__len__'):
 
         if sparse and not hasattr(workspace, 'solver'):
-            Sm = pg.matrix.SparseMatrix(workspace.S)
+            Sm = pg.utils.toSparseMatrix(workspace.S)
             # hold Sm until we have reference counting,
             # loosing Sm here will kill LinSolver later
             workspace.Sm = Sm

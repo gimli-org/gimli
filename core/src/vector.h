@@ -29,8 +29,7 @@
 //   note =         "Reprinted in C++ Gems, ed. Stanley Lippman"
 // }
 
-#ifndef GIMLI_VECTOR__H
-#define GIMLI_VECTOR__H
+#pragma once
 
 #define EXPRVEC_USE_TEMPORARY_EXPRESSION
 
@@ -119,7 +118,7 @@ public:
     inline const ValueType & operator [] (const Index i) const { //__MS(this) __MS(val_) __MS(*val_) Dump(val_, sizeof(ValueType));
         return val_[i]; }
 
-    inline ValueType & operator [] (const Index i) { //__MS(this) __MS(val_) __MS(*val_) Dump(val_, sizeof(ValueType));
+    inline ValueType & operator [] (const Index i) {
         return val_[i]; }
 
     inline VectorIterator< ValueType > & operator ++ () { // prefix ++A
@@ -314,6 +313,15 @@ public:
 
     inline Vector < ValueType > operator[](const BVector & b) { return this->get_(b); }
 
+#ifndef PYGIMLI_CAST
+    inline const ValueType & operator () (const Index i) const {
+        // ASSERT_THIS_SIZE(i)
+        return data_[i]; }
+
+    inline ValueType & operator () (const Index i) {
+        // ASSERT_THIS_SIZE(i)
+        return data_[i]; }
+#endif
      /*!
       * Return a new vector that match the slice [start, end).
       *  end == -1 or larger size() sets end = size.
@@ -534,10 +542,33 @@ public:
 
         return *this;
     }
+    /*! Like setVal(vals, start, end) instead copy use -= */
+    inline Vector< ValueType > & subVal(const Vector < ValueType > & vals,
+                                        Index start, Index end) {
+        if (end > this->size()) end = this->size();
+        if (start > end) start = end;
+
+        if (vals.size() < end - start){
+            throwLengthError(WHERE_AM_I + " vals.size() < (end-start) " +
+                                str(vals.size()) + " " + str(start) + " " + str(end)) ;
+        }
+
+        if (this->size() == vals.size()){
+            for (Index i = start; i < end; i ++) data_[i] -= vals[i];
+        } else {
+            for (Index i = start; i < end; i ++) data_[i] -= vals[i - start];
+        }
+
+        return *this;
+    }
 
     inline Vector< ValueType > & addVal(const Vector < ValueType > & vals,
                                     const std::pair< Index, SIndex > & pair) {
         return addVal(vals, pair.first, pair.second);
+    }
+    inline Vector< ValueType > & subVal(const Vector < ValueType > & vals,
+                                    const std::pair< Index, SIndex > & pair) {
+        return subVal(vals, pair.first, pair.second);
     }
 
     /*! Add values from vals at IndexArray idx.
@@ -547,14 +578,30 @@ public:
         ASSERT_EQUAL(idx.size(), vals.size())
         //ASSERT_THIS_SIZE(max(idx))
         for (Index i = 0; i < idx.size(); i ++) data_[idx[i]] += vals[i];
-
         return *this;
     }
+    /*! sub values from vals at IndexArray idx.
+     * Throws length exception if sizes of vals and idx mismatch. */
+    inline Vector< ValueType > & subVal(const Vector < ValueType > & vals,
+                                        const IndexArray & idx) {
+        ASSERT_EQUAL(idx.size(), vals.size())
+        //ASSERT_THIS_SIZE(max(idx))
+        for (Index i = 0; i < idx.size(); i ++) data_[idx[i]] -= vals[i];
+        return *this;
+    }
+
     /*! Add val to index idx.
      */
     inline Vector< ValueType > & addVal(const ValueType & val, Index i) {
         ASSERT_RANGE(i, 0, this->size())
         data_[i] += val;
+        return *this;
+    }
+    /*! Subtract val to index idx.
+     */
+    inline Vector< ValueType > & subVal(const ValueType & val, Index i) {
+        ASSERT_RANGE(i, 0, this->size())
+        data_[i] -= val;
         return *this;
     }
 
@@ -1945,4 +1992,3 @@ namespace std {
 }
 #endif // PYGIMLI_CAST
 
-#endif

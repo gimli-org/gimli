@@ -145,13 +145,22 @@ ElementMatrix < double >::u(const MeshEntity & ent,
     // __MS(A, J)
     for (Index i = 0; i < nVerts; i ++){
         // __MS(i, A, it->second[i])
-        mat_[0][i] = A * it->second[i];
+        mat_(0,i) = A * it->second[i];
         if (this->_nDof > 0){
             if (ent.dim() == 2){
-                mat_[nVerts].setVal(mat_[0][i], nVerts + i);
+                #if USE_EIGEN3
+                    __MS("EIGENCHECK")
+                    //mat_(nVerts) = setVal(mat_[0][i], nVerts + i);
+                #else
+                    mat_[nVerts].setVal(mat_[0][i], nVerts + i);
+                #endif
             }
             if (ent.dim() == 3){
-                mat_[2*nVerts].setVal(mat_[0][i], 2*nVerts + i);
+                #if USE_EIGEN3
+                    __MS("EIGENCHECK")
+                #else
+                    mat_[2*nVerts].setVal(mat_[0][i], 2*nVerts + i);
+                #endif
             }
         }
     }
@@ -193,9 +202,12 @@ DLLEXPORT ElementMatrix < double > & ElementMatrix < double >::u2(const MeshEnti
     double A = ent.shape().domainSize();
 //** very slow yet, pimp this with expressions (matrix::operator = (matExpression &))
 //    mat_ = it->second * A;
-    for (uint i = 0; i < nVerts; i ++){
-        for (uint j = 0; j < nVerts; j ++){
-            mat_[i][j] = A * it->second[i][j];
+    // mat_ = it->second * A;
+
+    for (Index i = 0; i < nVerts; i ++){
+        for (Index j = 0; j < nVerts; j ++){
+            
+            mat_(i, j) = A * it->second(i,j);
         }
     }
 
@@ -245,7 +257,7 @@ ElementMatrix < double > & ElementMatrix < double >::dudi(
             case 3: dNdx_[i].assign(drdi * dNdr_[i] + dsdi * dNds_[i] + dtdi * dNdt_[i]); break;
         }
 
-        mat_[i][i] = sum(w * dNdx_[i]);
+        mat_(i,i) = sum(w * dNdx_[i]);
     }
     if (verbose) std::cout << "int dudx " << *this << std::endl;
     return *this;
@@ -279,8 +291,8 @@ DLLEXPORT ElementMatrix < double > & ElementMatrix < double >::ux2(const MeshEnt
     }
     for (uint i = 0; i < nVerts; i ++){
         for (uint j = i; j < nVerts; j ++){
-            mat_[i][j] = A * sum(w * (dNdx_[i] * dNdx_[j]));
-            mat_[j][i] = mat_[i][j];
+            mat_(i,j) = A * sum(w * (dNdx_[i] * dNdx_[j]));
+            mat_(j,i) = mat_(i,j);
         }
     }
     if (verbose) std::cout << "int ux2uy2 " << *this << std::endl;
@@ -334,13 +346,13 @@ DLLEXPORT ElementMatrix < double >::ux2uy2(const MeshEntity & ent,
         // dNidy_.assign(drdy * dNdr_[i] + dsdy * dNds_[i]);
 
         for (Index j = i; j < nVerts; j ++){
-            mat_[i][j] = A * sum(w * (dNdx_[i] * dNdx_[j] + dNdy_[i] * dNdy_[j]));
+            mat_(i,j) = A * sum(w * (dNdx_[i] * dNdx_[j] + dNdy_[i] * dNdy_[j]));
 
-//             mat_[i][j] = A * sum(w * (dNidx_ * (drdx * dNdr_[j] + dsdx * dNds_[j]) +
+//             mat_(i,j) = A * sum(w * (dNidx_ * (drdx * dNdr_[j] + dsdx * dNds_[j]) +
 //                                       dNidy_ * (drdy * dNdr_[j] + dsdy * dNds_[j])));
-//             mat_[i][j] = A * sum(w * ((drdx * dNdr_[i] + dsdx * dNds_[i]) * (drdx * dNdr_[j] + dsdx * dNds_[j]) +
+//             mat_(i,j) = A * sum(w * ((drdx * dNdr_[i] + dsdx * dNds_[i]) * (drdx * dNdr_[j] + dsdx * dNds_[j]) +
 //                                       (drdy * dNdr_[i] + dsdy * dNds_[i]) * (drdy * dNdr_[j] + dsdy * dNds_[j])));
-            mat_[j][i] = mat_[i][j];
+            mat_(j,i) = mat_(i,j);
         }
     }
 
@@ -406,16 +418,16 @@ ElementMatrix < double >::ux2uy2uz2(const MeshEntity & ent,
 
     for (Index i = 0; i < nVerts; i ++){
         for (Index j = i; j < nVerts; j ++){
-            mat_[i][j] = A * sum(w * (dNdx_[i] * dNdx_[j] + dNdy_[i] * dNdy_[j] + dNdz_[i] * dNdz_[j]));
+            mat_(i,j) = A * sum(w * (dNdx_[i] * dNdx_[j] + dNdy_[i] * dNdy_[j] + dNdz_[i] * dNdz_[j]));
 
-//             mat_[i][j] = A * sum(w * ((drdx * dNdr_[i] + dsdx * dNds_[i] + dtdx * dNdt_[i]) *
+//             mat_(i,j) = A * sum(w * ((drdx * dNdr_[i] + dsdx * dNds_[i] + dtdx * dNdt_[i]) *
 //                                       (drdx * dNdr_[j] + dsdx * dNds_[j] + dtdx * dNdt_[j]) +
 //                                       (drdy * dNdr_[i] + dsdy * dNds_[i] + dtdy * dNdt_[i]) *
 //                                       (drdy * dNdr_[j] + dsdy * dNds_[j] + dtdy * dNdt_[j]) +
 //                                       (drdz * dNdr_[i] + dsdz * dNds_[i] + dtdz * dNdt_[i]) *
 //                                       (drdz * dNdr_[j] + dsdz * dNds_[j] + dtdz * dNdt_[j])));
 
-            mat_[j][i] = mat_[i][j];
+            mat_(j,i) = mat_(i,j);
         }
     }
     if (verbose) std::cout << "int ux2uy2uz2 " << *this << std::endl;
@@ -605,7 +617,13 @@ ElementMatrix < double > & ElementMatrix < double >::gradU(const MeshEntity & en
             // __MS(*this)
             // __MS(_B[i])
             // __MS(_B[i][j])
-            mat_[j * ent.nodeCount()] += _B[i][j] * w[i] * ent.size();
+#if USE_EIGEN3
+__MS('EIGENNEEDFIX')
+#else
+
+            mat_(j * ent.nodeCount()) += _B[i][j] * w[i] * ent.size();
+#endif
+
         }
         // check performance if this works
         // iterator over weights in fill Gradient
@@ -706,7 +724,7 @@ ElementMatrix < double >::u(const MeshEntity & ent){
 
     switch(ent.rtti()){
         case MESH_BOUNDARY_NODE_RTTI:
-            mat_[0][0] = 1.0;
+            mat_(0,0) = 1.0;
         break;
         case MESH_EDGE_CELL_RTTI:
         case MESH_EDGE_RTTI:
@@ -754,7 +772,7 @@ ElementMatrix < double > & ElementMatrix < double >::u2(const MeshEntity & ent){
 
     switch(ent.rtti()){
     case MESH_BOUNDARY_NODE_RTTI:
-        mat_[0][0] = 1.0;
+        mat_(0,0) = 1.0;
     break;
     case MESH_EDGE_CELL_RTTI:
     case MESH_EDGE_RTTI:
@@ -838,7 +856,7 @@ ElementMatrix < double > & ElementMatrix < double >::u2(const MeshEntity & ent){
 //         }
 //         for (uint i = 0; i < nVerts; i++){
 //             for (uint j = 0; j < nVerts; j++){
-//                 mat_[i][j] = J * (*Tri6_u2)[i][j];//compound[i][j];
+//                 mat_(i,j) = J * (*Tri6_u2)[i][j];//compound[i][j];
 //             }
 //         }
 //         std::cout << "2 " << *this << std::endl;
@@ -991,7 +1009,7 @@ ElementMatrix < double >::ux2uy2uz2(const Cell & cell, bool useCache){
 //
 //         for (int i = 1, imax = 6; i < imax; i ++){
 //              for (int j = 0, jmax = i; j < jmax; j ++){
-//                 mat_[i][j]=mat_[j][i];
+//                 mat_(i,j)=mat_(j,i);
 //              }
 //         }
 
@@ -1008,7 +1026,7 @@ ElementMatrix < double >::ux2uy2uz2(const Cell & cell, bool useCache){
 //         double c = ((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)) / J / 6.0;
 //         for (int i = 0, imax = 6; i < imax; i ++){
 //             for (int j = 0, jmax = 6; j < jmax; j ++){
-//                 mat_[i][j] = Triangle6_S1[i][j] * a +
+//                 mat_(i,j) = Triangle6_S1[i][j] * a +
 //                                  Triangle6_S2[i][j] * b +
 //                                  Triangle6_S3[i][j] * c;
 //             }
@@ -1099,7 +1117,7 @@ ElementMatrix < double >::ux2uy2uz2(const Cell & cell, bool useCache){
 //
 //     for (uint i = 0; i < dim; i++){
 //       for (uint j = 0; j < dim; j++){
-//  mat_[i][j] = u_xi2[i][j] + u_eta2[i][j] +  u_zeta2[i][j] +
+//  mat_(i,j) = u_xi2[i][j] + u_eta2[i][j] +  u_zeta2[i][j] +
 //    u_xi__u_eta[i][j] + u_xi__u_zeta[i][j] + u_eta__u_zeta[i][j];
 //       }
 //     }
@@ -1152,7 +1170,7 @@ ElementMatrix < double >::ux2uy2uz2(const Cell & cell, bool useCache){
 //     for (uint i = 0; i < dim; i++){
 //       for (uint j = 0; j < dim; j++){
 //         //** * 6.0 because a b c d e f / 6
-//         mat_[i][j] = compound[i][j] * 6.0;
+//         mat_(i,j) = compound[i][j] * 6.0;
 //       }
 //     }
 // //    std::cout << " 2 " << *this << std::endl;
@@ -1234,264 +1252,6 @@ void ElementMatrix < ValueType >::fillIds(const MeshEntity & ent, Index nC){
 }
 
 template void ElementMatrix < double >::fillIds(const MeshEntity & ent, Index Crows);
-
-void ElementMatrixMap::push_back(const ElementMatrix < double > & Ai){
-    mats_.push_back(Ai);
-    rows_ = this->mats_.size();
-}
-
-//** linear forms R*f
-//** R*f  Scalar space f=double const
-void ElementMatrixMap::integrate(const double & f, RVector & R) const{
-    for (auto &m : this->mats_){
-        const RVector &w(*m.w());
-
-        Index nRules(w.size());
-
-        ASSERT_VEC_SIZE(m.matX(), nRules)
-
-        RVector rt(m.rows(), 0.0);
-
-        for (Index r = 0; r < nRules; r++){
-            // __MS(m.matX()[r], b[r])
-            rt += m.matX()[r][0] * w[r];
-        }
-        rt *= m.entity()->size() * f;
-        R.addVal(rt, m.rowIDs());
-    }
-}
-
-//** linear forms R*f
-//** R*f  Scalar space f=RVector (const scalar per cell)
-void ElementMatrixMap::integrate(const RVector & f, RVector & R) const{
-    ASSERT_EQUAL_SIZE(this->mats_, f)
-
-    for (auto &m : this->mats_){
-        const RVector &w(*m.w());
-
-        Index nRules(w.size());
-
-        ASSERT_VEC_SIZE(m.matX(), nRules)
-
-        RVector rt(m.rows(), 0.0);
-
-        for (Index r = 0; r < nRules; r++){
-            // __MS(m.matX()[r], b[r])
-            rt += m.matX()[r][0] * w[r];
-        }
-        rt *= m.entity()->size() * f[m.entity()->id()];
-        R.addVal(rt, m.rowIDs());
-    }
-}
-
-//** R*f  Scalar space f=RVector at quadrature points per cell
-void ElementMatrixMap::integrate(const std::vector< RVector > & f,
-                                 RVector & R) const{
-    ASSERT_EQUAL_SIZE(this->mats_, f)
-    for (auto &m : this->mats_){
-        const RVector &w(*m.w());
-        const RVector &b(f[m.entity()->id()]);
-
-        Index nRules(w.size());
-
-        // __MS(w)
-        // __MS(b)
-        ASSERT_VEC_SIZE(b, nRules)
-        ASSERT_VEC_SIZE(m.matX(), nRules)
-
-        RVector rt(m.rows(), 0.0);
-
-        for (Index r = 0; r < nRules; r++){
-            // __MS(m.matX()[r], b[r])
-            rt += m.matX()[r][0] * b[r] * w[r];
-        }
-        rt *= m.entity()->size();
-        R.addVal(rt, m.rowIDs());
-    }
-}
-
-//** R*f Vector space f=PosVector at quadrature points per cell
-void ElementMatrixMap::integrate(const std::vector< PosVector > & f,
-                                 RVector & R) const{
-    ASSERT_EQUAL_SIZE(this->mats_, f)
-    for (auto &m : this->mats_){
-
-        const RVector &w(*m.w());
-        const PosVector &b(f[m.entity()->id()]);
-
-        Index nRules(w.size());
-
-        // __MS(w)
-        // __MS(b)
-        ASSERT_VEC_SIZE(b, nRules)
-        ASSERT_VEC_SIZE(m.matX(), nRules)
-
-        RVector rt(m.rows(), 0.0);
-
-        for (Index r = 0; r < nRules; r++){
-            const RMatrix &mr(m.matX()[r]);
-
-            for (Index k = 0; k < mr.rows(); k ++){
-                // __MS(r << " " << k << " " << b[r][k])
-                rt += mr[k] * b[r][k]* w[r];
-            }
-            //rt *= w[r];
-        }
-
-        rt *= m.entity()->size();
-        R.addVal(rt, m.rowIDs());
-    }
-}
-
-#define DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL(A_TYPE) \
-void ElementMatrixMap::integrate(const A_TYPE & f, RVector & R) const { \
-    THROW_TO_IMPL \
-}\
-
-//DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL(double)
-DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL(Pos)
-DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL(RMatrix)
-//DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL(RVector)
-DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL(PosVector)
-DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL(std::vector< RMatrix >)
-//DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL(std::vector< RVector >) // done
-//DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL(std::vector< PosVector >) // done
-DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL(std::vector< std::vector< RMatrix > >)
-#undef DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL
-
-#define DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(A_TYPE) \
-RVector ElementMatrixMap::integrate(const A_TYPE & f) const { \
-    Index maxR = 0; \
-    for (auto &m : this->mats_){ \
-        maxR = max(maxR, max(m.rowIDs()));\
-    } \
-    RVector R(maxR+1); \
-    integrate(f, R); \
-    return R; \
-}\
-RSparseMapMatrix ElementMatrixMap::integrate(const ElementMatrixMap & R, \
-                                             const A_TYPE & f) const { \
-    RSparseMapMatrix A(0,0);\
-    integrate(R, f, A);\
-    return A;\
-}\
-
-DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(double)
-DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(Pos)
-DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(RMatrix)
-DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(RVector)
-DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(PosVector)
-DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(std::vector< RMatrix >)
-DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(std::vector< RVector >)
-DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(std::vector< PosVector >)
-DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(std::vector< std::vector< RMatrix > >)
-#undef DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET
-
-
-void ElementMatrixMap::integrate(const ElementMatrixMap & R,
-                                 const double & f,
-                                 RSparseMapMatrix & A) const {
-    ASSERT_EQUAL_SIZE(this->mats_, R.mats())
-
-    Index i = 0;
-    ElementMatrix < double > dAB;
-    for (auto &m : this->mats_){
-        dot(m, R.mats()[i], f, dAB);
-        A.add(dAB);
-        i++;
-    }
-}
-
-// bilinear forms R*f*R
-#define DEFINE_INTEGRATE_ELEMENTMAP_A_IMPL(A_TYPE) \
-void ElementMatrixMap::integrate(const ElementMatrixMap & R, const A_TYPE & f, \
-                                 RSparseMapMatrix & A) const {\
-    THROW_TO_IMPL \
-} \
-
-//DEFINE_INTEGRATE_ELEMENTMAP_A_IMPL(double)
-DEFINE_INTEGRATE_ELEMENTMAP_A_IMPL(Pos)
-DEFINE_INTEGRATE_ELEMENTMAP_A_IMPL(RMatrix)
-DEFINE_INTEGRATE_ELEMENTMAP_A_IMPL(RVector)
-DEFINE_INTEGRATE_ELEMENTMAP_A_IMPL(PosVector)
-DEFINE_INTEGRATE_ELEMENTMAP_A_IMPL(std::vector< RMatrix >)
-DEFINE_INTEGRATE_ELEMENTMAP_A_IMPL(std::vector< RVector >)
-DEFINE_INTEGRATE_ELEMENTMAP_A_IMPL(std::vector< PosVector >)
-DEFINE_INTEGRATE_ELEMENTMAP_A_IMPL(std::vector< std::vector< RMatrix > >)
-#undef DEFINE_INTEGRATE_ELEMENTMAP_A_IMPL
-
-const std::vector< ElementMatrix < double > > & ElementMatrixMap::mats() const{
-    return mats_;
-}
-
-const std::vector < PosVector > & ElementMatrixMap::quadraturePoints() const {
-
-    if (this->quadrPnts_.size() != this->mats_.size()){
-        this->quadrPnts_.clear();
-
-        for (auto &m: this->mats_){
-            const PosVector &x(*m.x());
-            this->quadrPnts_.push_back(PosVector(x.size()));
-            for (Index i = 0; i < x.size(); i ++){
-                this->quadrPnts_.back()[i] = m.entity()->shape().xyz(x[i]);
-            }
-        }
-    }
-    return this->quadrPnts_;
-}
-
-void ElementMatrixMap::add(Index row, const ElementMatrix < double > & Ai){
-
-    rows_ = max(row + 1, rows_);
-    cols_ = max(max(Ai.ids()) + 1, cols_);
-
-    mat_.push_back(Ai.mat());
-    _ids.push_back(Ai.ids());
-    row_.push_back(row);
-}
-
-RVector ElementMatrixMap::mult(const RVector & a, const RVector & b,
-                               const RVector & m, const RVector & n) const{
-    RVector ret(rows_);
-
-    for (Index r = 0; r < row_.size(); r ++ ){
-        double s = 0.0;
-        const RMatrix & mat = mat_[r];
-        const IndexArray & idx = _ids[r];
-        for (Index i = 0; i < mat.rows(); i ++) {
-            double t = 0;
-            for (Index j = 0; j < mat.cols(); j ++) {
-                t += mat[i][j] * (a[idx[j]]-b[idx[j]]);
-            }
-            s += t * (m[idx[i]] - n[idx[i]]);
-        }
-
-        ret[row_[r]] += s;
-    }
-
-    return ret;
-}
-
-RVector ElementMatrixMap::mult(const RVector & a, const RVector & b) const{
-    RVector ret(rows_);
-
-    for (Index r = 0; r < row_.size(); r ++ ){
-        double s = 0.0;
-        const RMatrix & mat = mat_[r];
-        const IndexArray & idx = _ids[r];
-        for (Index i = 0; i < mat.rows(); i ++) {
-            double t = 0;
-            for (Index j = 0; j < mat.cols(); j ++) {
-                t += mat[i][j] * (a[idx[j]]);
-            }
-            s += t * (b[idx[i]]);
-        }
-
-        ret[row_[r]] += s;
-    }
-
-    return ret;
-}
 
 //** old interface constructor
 template < > DLLEXPORT
@@ -1801,58 +1561,58 @@ ElementMatrix < double > & ElementMatrix < double >::grad(
         if (nCoeff == 1){
             //** scalar field
             if (ent.dim() > 0){
-                _matX[i][0].setVal(dNdx_[i], 0, nVerts);
+                _matX[i](0).setVal(dNdx_[i], 0, nVerts);
             }
             if (ent.dim() > 1){
-                _matX[i][1].setVal(dNdy_[i], 0, nVerts);
+                _matX[i](1).setVal(dNdy_[i], 0, nVerts);
             }
             if (ent.dim() > 2){
-                _matX[i][2].setVal(dNdz_[i], 0, nVerts);
+                _matX[i](2).setVal(dNdz_[i], 0, nVerts);
             }
         } else {
             //** vector field
             if (ent.dim() == 1){
-                _matX[i][0].setVal(dNdx_[i], 0 * nVerts, 1 * nVerts);
+                _matX[i](0).setVal(dNdx_[i], 0 * nVerts, 1 * nVerts);
             } else if (ent.dim() == 2){
                 if (elastic == true){
                     // special case for constitutive matrix (2x3)
-            _matX[i][0].setVal(dNdx_[i], 0 * nVerts, 1 * nVerts); //dNx/dx
-            _matX[i][1].setVal(dNdy_[i], 1 * nVerts, 2 * nVerts); //dNy/dy
-            _matX[i][2].setVal(dNdy_[i] * a, 0 * nVerts, 1 * nVerts); //dNy/dx
-            _matX[i][2].setVal(dNdx_[i] * a, 1 * nVerts, 2 * nVerts); //dNx/dy
+            _matX[i](0).setVal(dNdx_[i], 0 * nVerts, 1 * nVerts); //dNx/dx
+            _matX[i](1).setVal(dNdy_[i], 1 * nVerts, 2 * nVerts); //dNy/dy
+            _matX[i](2).setVal(dNdy_[i] * a, 0 * nVerts, 1 * nVerts); //dNy/dx
+            _matX[i](2).setVal(dNdx_[i] * a, 1 * nVerts, 2 * nVerts); //dNx/dy
                 } else{
                 // full matrix still unsure how to add constitutive for it
-                _matX[i][0].setVal(dNdx_[i], 0 * nVerts, 1 * nVerts); //dNx/dx
-                _matX[i][1].setVal(dNdy_[i], 0 * nVerts, 1 * nVerts); //dNx/dy
+                _matX[i](0).setVal(dNdx_[i], 0 * nVerts, 1 * nVerts); //dNx/dx
+                _matX[i](1).setVal(dNdy_[i], 0 * nVerts, 1 * nVerts); //dNx/dy
 
-                _matX[i][2].setVal(dNdx_[i], 1 * nVerts, 2 * nVerts); //dNy/dx
-                _matX[i][3].setVal(dNdy_[i], 1 * nVerts, 2 * nVerts); //dNy/dy
+                _matX[i](2).setVal(dNdx_[i], 1 * nVerts, 2 * nVerts); //dNy/dx
+                _matX[i](3).setVal(dNdy_[i], 1 * nVerts, 2 * nVerts); //dNy/dy
                 }
             } else if (ent.dim() == 3){
 
 
                 if (elastic == true){
                     // special case for constitutive matrix (3x6)
-            _matX[i][0].setVal(dNdx_[i], 0 * nVerts, 1 * nVerts); //dNx/dx
-            _matX[i][1].setVal(dNdy_[i], 1 * nVerts, 2 * nVerts); //dNy/dy
-            _matX[i][2].setVal(dNdz_[i], 2 * nVerts, 3 * nVerts); //dNz/dz
+            _matX[i](0).setVal(dNdx_[i], 0 * nVerts, 1 * nVerts); //dNx/dx
+            _matX[i](1).setVal(dNdy_[i], 1 * nVerts, 2 * nVerts); //dNy/dy
+            _matX[i](2).setVal(dNdz_[i], 2 * nVerts, 3 * nVerts); //dNz/dz
 
-            _matX[i][3].setVal(dNdy_[i] * a, 0 * nVerts, 1 * nVerts);//dNy/dx
-            _matX[i][3].setVal(dNdx_[i] * a, 1 * nVerts, 2 * nVerts);//dNx/dy
+            _matX[i](3).setVal(dNdy_[i] * a, 0 * nVerts, 1 * nVerts);//dNy/dx
+            _matX[i](3).setVal(dNdx_[i] * a, 1 * nVerts, 2 * nVerts);//dNx/dy
 
-            _matX[i][4].setVal(dNdz_[i] * a, 1 * nVerts, 2 * nVerts);//dNz/dy
-            _matX[i][4].setVal(dNdy_[i] * a, 2 * nVerts, 3 * nVerts);//dNy/dz
+            _matX[i](4).setVal(dNdz_[i] * a, 1 * nVerts, 2 * nVerts);//dNz/dy
+            _matX[i](4).setVal(dNdy_[i] * a, 2 * nVerts, 3 * nVerts);//dNy/dz
 
             _matX[i][5].setVal(dNdz_[i] * a, 0 * nVerts, 1 * nVerts);//dNz/dx
             _matX[i][5].setVal(dNdx_[i] * a, 2 * nVerts, 3 * nVerts);//dNx/dz
                 } else {
                 // full matrix still unsure how to add constitutive for it
-                _matX[i][0].setVal(dNdx_[i], 0 * nVerts, 1 * nVerts); //dNx/dx
-                _matX[i][1].setVal(dNdy_[i], 0 * nVerts, 1 * nVerts); //dNx/dy
-                _matX[i][2].setVal(dNdz_[i], 0 * nVerts, 1 * nVerts); //dNx/dz
+                _matX[i](0).setVal(dNdx_[i], 0 * nVerts, 1 * nVerts); //dNx/dx
+                _matX[i](1).setVal(dNdy_[i], 0 * nVerts, 1 * nVerts); //dNx/dy
+                _matX[i](2).setVal(dNdz_[i], 0 * nVerts, 1 * nVerts); //dNx/dz
 
-                _matX[i][3].setVal(dNdx_[i], 1 * nVerts, 2 * nVerts); //dNy/dx
-                _matX[i][4].setVal(dNdy_[i], 1 * nVerts, 2 * nVerts); //dNy/dy
+                _matX[i](3).setVal(dNdx_[i], 1 * nVerts, 2 * nVerts); //dNy/dx
+                _matX[i](4).setVal(dNdy_[i], 1 * nVerts, 2 * nVerts); //dNy/dy
                 _matX[i][5].setVal(dNdz_[i], 1 * nVerts, 2 * nVerts); //dNy/dz
 
                 _matX[i][6].setVal(dNdx_[i], 2 * nVerts, 3 * nVerts); //dNz/dx
@@ -1921,14 +1681,14 @@ void dot(const ElementMatrix < double > & A,
         __MS("B: ", B.rows(), B.cols())
         __MS("C: ", C.rows(), C.cols())
     }
-
+    
     //** C = sum( A_i * B_i * b * w_i * dA)
     for (Index r = 0; r < nRules; r++){
         if (r > 0) beta = 1.0;
 
-        const RMatrix & Ai = A.matX()[r];
-        const RMatrix & Bi = B.matX()[r];
-        RMatrix & Ci = (*C.pMatX())[r];
+        const SmallMatrix & Ai = A.matX()[r];
+        const SmallMatrix & Bi = B.matX()[r];
+        SmallMatrix & Ci = (*C.pMatX())[r];
 
         double wS = w[r] * A.entity()->size();
 
@@ -1974,7 +1734,8 @@ void dot(const ElementMatrix < double > & A,
             //     Aii += Ai[ids[i]];
             // }
             // double bi = 0;
-            RMatrix Aii(1, Ai[0].size());
+            SmallMatrix Aii(1, Ai[0].size());
+
             for (auto i: ids){
                 Aii[0] += Ai[i];
             }
@@ -2013,7 +1774,7 @@ void dot(const ElementMatrix < double > & A,
             }
 
             // __MS(ids)
-            RMatrix Bii(1, Bi[0].size());
+            SmallMatrix Bii(1, Bi[0].size());
             for (auto i: ids){
                 Bii[0] += Bi[i];
             }
@@ -2055,6 +1816,19 @@ void dot(const ElementMatrix < double > & A,
 
     //# do we need submatrices after dot? yes e.g. for: (u*v+u*v)*u
     C.integrated(true);
+
+    // __MS(C);
+    // C*=0;
+
+    // __MS(A.isIntegrated(),'\n', A);
+    // __MS(A.isIntegrated(),'\n', A);
+    // __MS(b);
+
+    // matMult(A.mat(), B.mat(), *C.pMat(), b, 0.0);
+    // __MS(C);
+    // exit(1);
+
+
 }
 void dot(const ElementMatrix < double > & A,
          const ElementMatrix < double > & B,
@@ -2081,7 +1855,7 @@ void dot(const ElementMatrix < double > & A,
     const RVector &w = *A.w();
     (*C.pMat()) *= 0.0; // needed because matMult allways adds
 
-    RMatrix AtC;
+    SmallMatrix AtC;
 
     double beta = 0.0;
 
@@ -2092,9 +1866,9 @@ void dot(const ElementMatrix < double > & A,
     for (Index i = 0; i < w.size(); i ++ ){
         if (i > 0) beta = 1.0;
 
-        const RMatrix & Ai = A.matX()[i];
-        const RMatrix & Bi = B.matX()[i];
-        RMatrix & Ci = (*C.pMatX())[i];
+        const SmallMatrix & Ai = A.matX()[i];
+        const SmallMatrix & Bi = B.matX()[i];
+        SmallMatrix & Ci = (*C.pMatX())[i];
         double wS = w[i] * A.entity()->size();
 
         AtC *= 0.0; // needed because matMult allways adds
@@ -2130,6 +1904,23 @@ void dot(const ElementMatrix < double > & A,
                ElementMatrix < double > & ret){
     return dot(A, B, 1.0, ret);
 }
+
+void dot(const ElementMatrix < double > & A,
+         const ElementMatrix < double > & B,
+         double f, SparseMatrixBase & ret, double scale){
+
+    const RVector &w = *A.w();
+    
+    ElementMatrix < double > dAB;
+
+    //** ret = ret + scale * (A.T * B * f)
+    for (Index i = 0; i < w.size(); i ++ ){
+
+    }
+
+
+}
+
 
 
 void evaluateQuadraturePoints(const Mesh & mesh, Index order,
@@ -2245,7 +2036,7 @@ void mult(const ElementMatrix < double > & A, double b,
     Index nRules(x.size());
 
     for (Index r = 0; r < nRules; r++){
-        RMatrix & iC = (*C.pMatX())[r];
+        SmallMatrix & iC = (*C.pMatX())[r];
 
         for (Index k = 0; k < iC.rows(); k ++){
             iC[k] *= b;
@@ -2268,7 +2059,7 @@ void mult(const ElementMatrix < double > & A, const Pos & b,
     // __MS(C.rows(), C.cols())
 
     for (Index r = 0; r < nRules; r++){
-        RMatrix & iC = (*C.pMatX())[r];
+        SmallMatrix & iC = (*C.pMatX())[r];
 
         // __MS(iC.rows(), iC.cols())
         for (Index k = 0; k < iC.rows(); k ++){
@@ -2290,7 +2081,7 @@ void mult(const ElementMatrix < double > & A, const RVector & b,
     ASSERT_VEC_SIZE(C.matX(), nRules)
 
     for (Index r = 0; r < nRules; r++){
-        RMatrix & iC = (*C.pMatX())[r];
+        SmallMatrix & iC = (*C.pMatX())[r];
         for (Index k = 0; k < iC.rows(); k ++){
             iC[k] *= b[r];
         }
@@ -2312,7 +2103,7 @@ void mult(const ElementMatrix < double > & A, const PosVector & b,
     ASSERT_VEC_SIZE(C.matX(), nRules)
 
     for (Index r = 0; r < nRules; r++){
-        RMatrix & iC = (*C.pMatX())[r];
+        SmallMatrix & iC = (*C.pMatX())[r];
         for (Index k = 0; k < iC.rows(); k ++){
             // __MS(r << " " << k << " " << b[r][k])
             iC[k] *= b[r][k];
@@ -2351,13 +2142,17 @@ void mult(const ElementMatrix < double > & A, const RMatrix &  b,
     for (Index i = 0; i < nRules; i++){
         if (i > 0) beta = 1.0;
 
-        RMatrix & Ci = (*C.pMatX())[i];
-        const RMatrix & Ai = A.matX()[i];
+        SmallMatrix & Ci = (*C.pMatX())[i];
+        const SmallMatrix & Ai = A.matX()[i];
         // A.T * C
         Ci *= 0.0; // test and optimize me with C creation
         //matTransMult(Ai, b, Ci, 1.0, beta);
         // result is no bilinear form, so keep it a rowMatrix
+#if USE_EIGEN3
+        __MS('EIGENNEEDFIX')
+#else
         matMult(b, Ai, Ci, 1.0, beta);
+#endif
     }
 
     C.integrate(); // check if necessary
@@ -2379,11 +2174,15 @@ void mult(const ElementMatrix < double > & A, const std::vector < RMatrix > & b,
     for (Index i = 0; i < nRules; i++){
         if (i > 0) beta = 1.0;
 
-        RMatrix & Ci = (*C.pMatX())[i];
-        const RMatrix & Ai = A.matX()[i];
+        SmallMatrix & Ci = (*C.pMatX())[i];
+        const SmallMatrix & Ai = A.matX()[i];
         // A.T * C
         Ci *= 0.0; // test and optimize me with C creation
+#if USE_EIGEN3
+        __MS('EIGENNEEDFIX')
+#else
         matTransMult(Ai, b[i], Ci, 1.0, beta);
+#endif
     }
     C.integrate();
 }
@@ -2447,12 +2246,12 @@ void sym(const ElementMatrix < double > & A, ElementMatrix < double > & B){
         if (m.rows() == 4){
             m[1] = 0.5*m[1] + 0.5*m[2]; m[2] = m[1];
         } else if (m.rows() == 9) {
-            // _matX[i][0].setVal(dNdx_[i], 0 * nVerts, 1 * nVerts); //dNx/dx
-            // _matX[i][1].setVal(dNdy_[i], 0 * nVerts, 1 * nVerts); //dNx/dy
-            // _matX[i][2].setVal(dNdz_[i], 0 * nVerts, 1 * nVerts); //dNx/dz
+            // _matX[i](0).setVal(dNdx_[i], 0 * nVerts, 1 * nVerts); //dNx/dx
+            // _matX[i](1).setVal(dNdy_[i], 0 * nVerts, 1 * nVerts); //dNx/dy
+            // _matX[i](2).setVal(dNdz_[i], 0 * nVerts, 1 * nVerts); //dNx/dz
 
-            // _matX[i][3].setVal(dNdx_[i], 1 * nVerts, 2 * nVerts); //dNy/dx
-            // _matX[i][4].setVal(dNdy_[i], 1 * nVerts, 2 * nVerts); //dNy/dy
+            // _matX[i](3).setVal(dNdx_[i], 1 * nVerts, 2 * nVerts); //dNy/dx
+            // _matX[i](4).setVal(dNdy_[i], 1 * nVerts, 2 * nVerts); //dNy/dy
             // _matX[i][5].setVal(dNdz_[i], 1 * nVerts, 2 * nVerts); //dNy/dz
 
             // _matX[i][6].setVal(dNdx_[i], 2 * nVerts, 3 * nVerts); //dNz/dx
@@ -2771,22 +2570,5 @@ void createAdvectionMatrix(const Mesh & mesh, Index order,
                                      Index dofOffset){
              THROW_TO_IMPL
                                      }
-
-
-void createUMap(const Mesh & mesh, Index order, ElementMatrixMap & ret,
-                Index nCoeff, Index dofOffset){
-    for (auto &cell: mesh.cells()){
-        ret.push_back(cell->uCache().pot(*cell, order, true,
-                                         nCoeff, mesh.nodeCount(), dofOffset));
-    }
-}
-
-ElementMatrixMap createUMap(const Mesh & mesh, Index order,
-                            Index nCoeff, Index dofOffset){
-    ElementMatrixMap ret;
-    createUMap(mesh, order, ret, nCoeff, dofOffset);
-    return ret;
-}
-
 
 } // namespace GIMLI

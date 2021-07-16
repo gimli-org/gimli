@@ -20,10 +20,10 @@ class TestSparseMatrix(unittest.TestCase):
         A = pg.matrix.SparseMapMatrix(colIds, rowIds, vals)
 
         # Construct SparseMap -> CRS (compressed row storage)
-        S = pg.matrix.SparseMatrix(A)
+        S = pg.utils.toSparseMatrix(A)
 
         # Construct CRS -> SparseMap
-        A2 = pg.matrix.SparseMapMatrix(S)
+        A2 = pg.utils.toSparseMapMatrix(S)
 
         # all should by identity matrix
         np.testing.assert_equal(A2.getVal(1, 1), 1.0)
@@ -31,8 +31,8 @@ class TestSparseMatrix(unittest.TestCase):
         np.testing.assert_equal(sum(A2 * np.ones(A2.cols())), A2.rows())
 
         MAP1 = pg.matrix.SparseMapMatrix(r=3, c=15)
-        CSR = pg.matrix.SparseMatrix(MAP1)
-        MAP2 = pg.matrix.SparseMapMatrix(CSR)
+        CSR = pg.utils.toSparseMatrix(MAP1)
+        MAP2 = pg.utils.toSparseMapMatrix(CSR)
 
         v3 = pg.Vector(3)
         v15 = pg.Vector(15)
@@ -70,7 +70,7 @@ class TestSparseMatrix(unittest.TestCase):
         np.testing.assert_allclose(c1, check_csr_colPtr)
         np.testing.assert_allclose(v1, check_vals)
 
-        sciA1 = pg.utils.sparseMatrix2csr(pg.matrix.SparseMatrix(mm))
+        sciA1 = pg.utils.sparseMatrix2csr(pg.utils.toSparseMatrix(mm))
         np.testing.assert_equal(sciA1.indices, check_csr_rows)
         np.testing.assert_equal(sciA1.indptr, check_csr_colPtr)
 
@@ -78,7 +78,7 @@ class TestSparseMatrix(unittest.TestCase):
         np.testing.assert_equal(sciA1.indices, check_csr_rows)
         np.testing.assert_equal(sciA1.indptr, check_csr_colPtr)
 
-        r2, c2, v2 = pg.utils.sparseMatrix2Array(pg.matrix.SparseMatrix(mm),
+        r2, c2, v2 = pg.utils.sparseMatrix2Array(pg.utils.toSparseMatrix(mm),
                                                  getInCRS=False)
         np.testing.assert_allclose(r2, check_rows)
         np.testing.assert_allclose(c2, check_cols)
@@ -88,14 +88,14 @@ class TestSparseMatrix(unittest.TestCase):
         A2 = pg.matrix.SparseMapMatrix(colIds, rowIds, vals)
         A1 += A2
 
-        sciA1 = pg.utils.sparseMatrix2csr(pg.matrix.SparseMatrix(mm))
+        sciA1 = pg.utils.sparseMatrix2csr(pg.utils.toSparseMatrix(mm))
         sciA2 = pg.utils.sparseMatrix2csr(mm)
         np.testing.assert_equal(len(sciA1.data), mm.size())
         np.testing.assert_equal(sciA1.data, sciA2.data)
         np.testing.assert_equal(sciA1.indices, sciA2.indices)
         np.testing.assert_equal(sciA1.indptr, sciA2.indptr)
 
-        sciA1 = pg.utils.sparseMatrix2coo(pg.matrix.SparseMatrix(mm))
+        sciA1 = pg.utils.sparseMatrix2coo(pg.utils.toSparseMatrix(mm))
         sciA2 = pg.utils.sparseMatrix2coo(mm)
         np.testing.assert_equal(len(sciA1.data), mm.size())
         np.testing.assert_equal(sciA1.data, sciA2.data)
@@ -104,7 +104,7 @@ class TestSparseMatrix(unittest.TestCase):
 
         ### toSparseMatrix
 
-        sciCSR = pg.utils.sparseMatrix2csr(pg.matrix.SparseMatrix(mm))
+        sciCSR = pg.utils.sparseMatrix2csr(pg.utils.toSparseMatrix(mm))
         np.testing.assert_equal(pg.utils.toSparseMatrix(sciCSR) == mm, True)
 
 
@@ -118,7 +118,7 @@ class TestSparseMatrix(unittest.TestCase):
         rowIds = range(10)
         vals = np.ones(10)
         A = pg.matrix.SparseMapMatrix(colIds, rowIds, vals)
-        S = pg.matrix.SparseMatrix(A)
+        S = pg.utils.toSparseMatrix(A)
 
         S2 = S + S * 0.1 * 0.3
 
@@ -142,6 +142,8 @@ class TestSparseMatrix(unittest.TestCase):
         x2 = pg.solver.linSolve(A, b, verbose=verbose, solver='scipy')
         np.testing.assert_allclose(x2, x, rtol=1e-10)
 
+        AR = pg.core.SparseMatrix(A.vecColPtr(), A.vecRowIdx(),
+                     pg.core.real(A.vecVals()), A.stype())
         x3 = pg.solver.linSolve(pg.utils.squeezeComplex(A),
                                 pg.utils.squeezeComplex(b),
                                 verbose=verbose, solver='pg')
@@ -169,17 +171,10 @@ class TestSparseMatrix(unittest.TestCase):
     def test_Misc(self):
         D = pg.utils.toSparseMapMatrix(np.ones((3,4)))
 
-        print(D)
-        print(D.rows())
-        print(D.col(2))
-        print(D.row(2))
-
-
         np.testing.assert_allclose(D.col(2), pg.Vector(D.rows(), 1.0))
         np.testing.assert_allclose(D.row(2), pg.Vector(D.cols(), 1.0))
 
         D.cleanRow(1)
-        print(D)
         np.testing.assert_allclose(D.col(2), [1.0, 0.0, 1.0])
 
         D.cleanCol(1)

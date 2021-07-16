@@ -20,20 +20,25 @@ def toSparseMatrix(A):
         pg.SparseMatrix
     """
     if isinstance(A, pg.matrix.BlockMatrix):
-        return pg.matrix.SparseMatrix(A.sparseMapMatrix())
+        S = pg.matrix.SparseMatrix()
+        S.copy_(A.sparseMapMatrix())
+        return S
 
     if isinstance(A, pg.matrix.CSparseMapMatrix):
-        return pg.matrix.CSparseMatrix(A)
+        S = pg.matrix.CSparseMatrix()
+        S.copy_(A)
+        return S
 
     if isinstance(A, pg.matrix.CSparseMatrix):
         return A
 
     if isinstance(A, pg.matrix.SparseMatrix):
         return A
-        #return pg.matrix.SparseMatrix(A)
-
+        
     if isinstance(A, pg.matrix.SparseMapMatrix):
-        return pg.matrix.SparseMatrix(A)
+        S = pg.matrix.SparseMatrix()
+        S.copy_(A)
+        return S
 
     from scipy.sparse import csr_matrix
 
@@ -51,6 +56,10 @@ def toSparseMatrix(A):
 def toSparseMapMatrix(A):
     """Convert any matrix type to pg.SparseMatrix and return copy of it.
 
+    TODO
+    ----
+        * Always copy?  why?
+
     Arguments
     ---------
     A: pg or scipy matrix
@@ -66,14 +75,20 @@ def toSparseMapMatrix(A):
         return A.sparseMapMatrix()
 
     if isinstance(A, pg.matrix.SparseMatrix):
-        return pg.matrix.SparseMapMatrix(A)
+        S = pg.matrix.SparseMapMatrix()
+        S.copy_(A)
+        return S
+
+    if isinstance(A, pg.matrix.CSparseMatrix):
+        S = pg.matrix.CSparseMapMatrix()
+        S.copy_(A)
+        return A
 
     from scipy.sparse import csr_matrix
     if isinstance(A, csr_matrix):
         pg.warn('bad efficency csr->mapMatrix')
 
-        return pg.matrix.SparseMapMatrix(
-            pg.SparseMatrix(A.indptr, A.indices, A.data))
+        return toSparseMapMatrix(pg.SparseMatrix(A.indptr, A.indices, A.data))
 
     from scipy.sparse import csc_matrix
     if isinstance(A, csc_matrix):
@@ -115,12 +130,12 @@ def sparseMatrix2csr(A):
     #optImport(scipy.sparse, requiredFor="toCRS_matrix")
     from scipy.sparse import csr_matrix
     if isinstance(A, pg.matrix.CSparseMapMatrix):
-        C = pg.matrix.CSparseMatrix(A)
+        C = pg.utils.toSparseMatrix(A)
         return csr_matrix((C.vecVals().array(),
                            C.vecRowIdx(),
                            C.vecColPtr()), dtype=complex)
     if isinstance(A, pg.matrix.SparseMapMatrix):
-        C = pg.matrix.SparseMatrix(A)
+        C = pg.utils.toSparseMatrix(A)
         return csr_matrix((C.vecVals().array(),
                            C.vecRowIdx(),
                            C.vecColPtr()))
@@ -160,7 +175,7 @@ def sparseMatrix2coo(A, rowOffset=0, colOffset=0):
     cols = pg.core.IndexArray([0])
 
     if isinstance(A, pg.matrix.SparseMatrix):
-        C = pg.matrix.SparseMapMatrix(A)
+        C = toSparseMapMatrix(A)
         C.fillArrays(vals=vals, rows=rows, cols=cols)
         rows += rowOffset
         cols += colOffset
@@ -225,7 +240,7 @@ def sparseMatrix2Array(matrix, indices=True, getInCRS=True):
         isinstance(matrix, pg.matrix.SparseMatrix), io_warn.format(type(matrix))
 
     if not isinstance(matrix, pg.matrix.SparseMatrix):
-        matrix = pg.matrix.SparseMatrix(matrix)
+        matrix = toSparseMatrix(matrix)
 
     vals = np.array(matrix.vecVals())
     if indices is True:
@@ -258,7 +273,7 @@ def reduceEntries(A, idx):
     debug = False
     if debug:
         pg.tic()
-    if 1:
+    if 0:
         for i, ix in enumerate(idx):
             A.cleanRow(ix)
             A.cleanCol(ix)

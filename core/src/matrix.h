@@ -16,8 +16,12 @@
  *                                                                            *
  ******************************************************************************/
 
-#ifndef _GIMLI_MATRIX__H
-#define _GIMLI_MATRIX__H
+#pragma once
+
+#if USE_EIGEN3
+    #include <Eigen/Dense>
+#endif
+
 
 #include "gimli.h"
 #include "pos.h"
@@ -34,7 +38,17 @@
     #endif // USE_BOOST_THREAD
 #endif // USE_THREADS
 
+
+
 namespace GIMLI{
+
+#if USE_EIGEN3
+    typedef Eigen::Matrix < double, Eigen::Dynamic, Eigen::Dynamic > SmallMatrix;
+    //typedef Matrix < double > SmallMatrix;
+    //typedef Matrix < double > SmallMatrix;
+#else
+    typedef Matrix < double > SmallMatrix;
+#endif
 
 template < class ValueType > class DLLEXPORT Matrix3 {
 public:
@@ -51,6 +65,11 @@ public:
 
     inline ValueType & operator [](Index i){ return mat_[i];}
     inline const ValueType & operator [](Index i) const { return mat_[i];}
+    
+    inline const ValueType & operator ()(Index i, Index j) const { 
+        THROW_TO_IMPL
+        return mat_[0];
+        }
 
     #define DEFINE_UNARY_MOD_OPERATOR__(OP, NAME) \
     inline Matrix3 < ValueType > & operator OP##= (const ValueType & val) { \
@@ -277,6 +296,24 @@ protected:
     bool verbose_;
 };
 
+class DLLEXPORT SparseMatrixBase : public MatrixBase {
+public:
+    SparseMatrixBase(bool verbose=false) 
+        : MatrixBase(verbose) {}
+
+    /*! Default destructor. */
+    virtual ~SparseMatrixBase(){}
+
+    /*! Return entity rtti value. */
+    virtual uint rtti() const { return GIMLI_SPARSEMATRIXBASE_RTTI; }
+
+    virtual void add(const ElementMatrix < double > & A, double scale=1.0){
+        THROW_TO_IMPL
+    }
+
+protected:
+};
+
 //! Identity matrix: derived from matrixBase
 class DLLEXPORT IdentityMatrix : public MatrixBase {
 public:
@@ -433,6 +470,22 @@ public:
     const Vector< ValueType > & operator [] (Index i) const {
         return row(i);
     }
+
+    /*! Read only access to matrix element i,j. */
+    inline const ValueType & operator ()(Index i, Index j) const { 
+        return mat_[i][j];}
+
+    /*! Write access to matrix element i,j. */
+    inline ValueType & operator ()(Index i, Index j) { 
+        return mat_[i][j];}
+    
+    /*! Read only access to matrix row i. */
+    inline const Vector< ValueType > & operator ()(Index i) const { 
+        return mat_[i];}
+
+    /*! Write access to matrix row i */
+    inline Vector< ValueType > & operator ()(Index i) { 
+        return mat_[i];}
 
     /*! Implicite type converter. */
     template < class T > operator Matrix< T >(){
@@ -1098,13 +1151,20 @@ bool loadMatrixRow(Matrix < ValueType > & A,
 /*!Inplace matrix calculation: $C = a * A.T * B * A$ + b*C.
 Size of A is (n,m) and B need to be square (n,n), C will resized to (m,m).
 AtB might be for temporary memory allocation.  */
-DLLEXPORT void matMultABA(const RMatrix & A, const RMatrix & B, RMatrix & C, RMatrix & AtB, double a=1.0, double b=0.0);
+DLLEXPORT void matMultABA(const SmallMatrix & A, 
+                          const SmallMatrix & B, 
+                          SmallMatrix & C, 
+                          SmallMatrix & AtB, double a=1.0, double b=0.0);
 
 /*!Inplace matrix calculation: $C = a*A*B + b*C$. B are transposed if needed to fit appropriate dimensions. */
-DLLEXPORT void matMult(const RMatrix & A, const RMatrix & B, RMatrix & C, double a=1.0, double b=0.0);
+DLLEXPORT void matMult(const SmallMatrix & A, 
+                       const SmallMatrix & B, 
+                       SmallMatrix & C, double a=1.0, double b=0.0);
 
 /*!Inplace matrix calculation: $C = a * A.T * B + b*C$. B are transposed if needed to fit appropriate dimensions. */
-DLLEXPORT void matTransMult(const RMatrix & A, const RMatrix & B, RMatrix & C, double a=1.0, double b=0.0);
+DLLEXPORT void matTransMult(const SmallMatrix & A, 
+                            const SmallMatrix & B, 
+                            SmallMatrix & C, double a=1.0, double b=0.0);
 
 /*! Return determinant for Matrix(2 x 2). */
 template < class T > inline T det(const T & a, const T & b, const T & c, const T & d){
@@ -1248,6 +1308,4 @@ std::ostream & operator << (std::ostream & str, const Matrix < T > & M){
 }
 
 } //namespace GIMLI
-
-#endif // _GIMLI_MATRIX__H
 
