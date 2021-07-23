@@ -193,18 +193,6 @@ public:
 
     friend std::ostream & operator << (std::ostream & str, const MeshEntity & c);
 
-//    void setUxCache(const ElementMatrix < double >  & mat) const { uxCache_ = mat; }
-
- //   const ElementMatrix < double > & uxCache() const { return uxCache_; }
-
-    void setUxCache(const RMatrix & mat) const { uxCache_ = mat; }
-
-    const RMatrix & uxCache() const { return uxCache_; }
-
-    ElementMatrix < double > & uCache(){ return uCache_; }
-
-    ElementMatrix < double > & gradUCache(){ return gradUCache_; }
-
     /*! Geometry has been changed. Deletes cache.*/
     void changed();
 
@@ -229,12 +217,6 @@ protected:
 
     std::vector < Node * > nodeVector_;
     std::vector < Node * > secondaryNodes_;
-
-    /*! Cache for derivation matrixes */
-    mutable ElementMatrix < double > uCache_;
-    mutable ElementMatrix < double > gradUCache_;
-
-    mutable RMatrix uxCache_;
 
 protected:
     /*! do not copy a mesh entity at all */

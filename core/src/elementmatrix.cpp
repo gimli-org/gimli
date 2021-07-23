@@ -44,6 +44,53 @@ std::ostream & operator << (std::ostream & str,
     return str;
 }
 
+#if USE_EIGEN3
+#define DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__(OP) \
+template < > ElementMatrix < double > & \
+ElementMatrix < double >::operator OP##= (double val) { \
+    if (this->_newStyle){ \
+        if (this->_integrated){ \
+            mat_.array() OP##= val; \
+        } \
+        for (auto & m: _matX){ \
+            m.array() OP##= val; \
+        } \
+        return *this;\
+    } \
+    mat_.array() OP##= val; \
+    return *this; \
+} \
+
+DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__(+)
+DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__(-)
+DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__(/)
+DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__(*)
+#else
+
+#define DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__(OP) \
+template < > ElementMatrix < double > & \
+ElementMatrix < double >::operator OP##= (double val) { \
+    if (this->_newStyle){ \
+        if (this->_integrated){ \
+            mat_ OP##= val; \
+        } \
+        for (auto & m: _matX){ \
+            m OP##= val; \
+        } \
+        return *this;\
+    } \
+    mat_ OP##= val; \
+    return *this;\
+} \
+
+DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__(+)
+DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__(-)
+DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__(/)
+DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__(*)
+
+#undef DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__
+#endif
+
 template < > DLLEXPORT ElementMatrix < double > &
 ElementMatrix < double >::operator += (const ElementMatrix < double > & E){
     ASSERT_EQUAL_SIZE(this->_matX, E.matX())
@@ -64,36 +111,70 @@ ElementMatrix < double >::operator += (const ElementMatrix < double > & E){
         }
         // we could cross check if manual integration works too
     }
-
-
-    // } else {
-    //     for (uint i = 0; i < size(); i ++){
-    //         if (mat_[i].size() != E.row(i).size()){
-
-    //             // retA._mat = retA._mat + retB._mat
-    //             // retA.resize(retA.rows(), retB.cols())
-    //             // retA.setMat(np.tensordot(retA._mat, retA._w, axes=(0,0)).T)
-    //             // self.resize(self.rows(), E.cols())
-
-
-    //             // maybe iadd: scalar + grad > component wise scalar + grad_i
-    //             THROW_TO_IMPL
-    //             //mat_ = mat_ + E.row(i);
-    //         } else {
-    //             mat_[i] += E.row(i);
-    //         }
-    //     }
-
-    // }
     return *this;
 }
+template < > const Vector< double > & 
+ElementMatrix < double >::operator[](Index row) const {
+    __MS("inuse?")
+    return mat_(row);
+}
 
-template < > DLLEXPORT void
-ElementMatrix < double >::setMatXI(Index i, const Matrix < double > & mat){
+template < > Vector< double >
+ElementMatrix < double >::row_RM(Index i) const { 
+    #if USE_EIGEN3
+        Vector< double > ret(this->cols());
+        for (Index j = 0; j < ret.size(); j ++){
+            ret[j] = mat_(i,j);
+        }
+        return ret;
+        //__MS("eigen3")
+    #else
+        return this->mat_(i);
+    #endif
+}
+template < > Vector< double > 
+ElementMatrix < double >::col(Index i) const {
+    Vector< double > ret(this->rows());
+    for (Index j = 0; j < ret.size(); j ++){
+        ret[j] = mat_(j,i);
+    }
+    return ret;
+}
+
+template < > void
+ElementMatrix < double >::setMatXI(Index i, const SmallMatrix & m){
     ASSERT_RANGE(i, 0, this->_matX.size())
     //this->_integrated = false; ## better here but lead to problems until integration is marked correctly for ref imnpl.
-    this->_matX[i] = mat;
+    this->_matX[i] = m;
 }
+template < > void
+ElementMatrix < double >::setMatXI_RM(Index i, const RMatrix & m){
+#if USE_EIGEN3
+    toEigenMatrix(m, this->_matX[i]);
+#else
+    return this->setMatXI(i, m);
+#endif
+}
+template < > void
+ElementMatrix < double >::setMat_RM(const RMatrix & m){
+#if USE_EIGEN3
+    toEigenMatrix(m, this->mat_);
+#else
+    return this->setMat(m);
+#endif
+}
+template < > RMatrix 
+ElementMatrix < double >::mat_RM() const {
+#if USE_EIGEN3
+    RMatrix r;
+    toRMatrix(this->mat(), r);
+    return r;
+#else
+    return this->mat();
+#endif
+}
+
+
 template < > DLLEXPORT void
 ElementMatrix < double >::setX(const PosVector & p) {
     _x = &p;
@@ -676,6 +757,7 @@ ElementMatrix < double > & ElementMatrix < double >::gradU2(const MeshEntity & e
                                                             const RVector & w,
                                                             const PosVector & x,
                                                             bool voigtNotation){
+                                                            __MS("inuse?")
     this->fillIds(ent, C.size()); // also cleans
     this->fillGradientBase(ent, w, x,
                            max(C.size(), ent.dim()),
@@ -686,13 +768,21 @@ ElementMatrix < double > & ElementMatrix < double >::gradU2(const MeshEntity & e
         for (Index i = 0; i < w.size(); i ++ ){
             // B.T * B
             if (i > 0) beta = 1.0;
+            #ifdef USE_EIGEN3
+                __MS("eigen3")
+            #else
             matTransMult(_B[i], _B[i], mat_, w[i] * ent.size() * C[0][0], beta);
+            #endif
         }
     } else {
         for (Index i = 0; i < w.size(); i ++ ){
             // B.T * C * B
             if (i > 0) beta = 1.0;
+            #ifdef USE_EIGEN3
+                __MS("eigen3")
+            #else
             matMultABA(_B[i], C, mat_, _abaTmp, w[i] * ent.size(), beta);
+            #endif
         }
         // check performance if this works
         // iterator over weights in fill Gradient
@@ -710,6 +800,7 @@ template < > DLLEXPORT
 ElementMatrix < double > & ElementMatrix < double >::gradU2(const Cell & cell,
                                                     const Matrix< double > & C,
                                                     bool voigtNotation){
+__MS("inuse?")
 
     const RVector * w = 0;
     const PosVector * x = 0;
@@ -886,11 +977,6 @@ template < > DLLEXPORT ElementMatrix < double > &
 ElementMatrix < double >::ux2uy2uz2(const Cell & cell, bool useCache){
 
     fillIds(cell);
-
-    if (cell.uxCache().rows() > 0 && useCache){
-        mat_ = cell.uxCache();
-        return *this;
-    }
 
 //     double J = cell.jacobianDeterminant();
 //     if (J <= 0) std::cerr << WHERE_AM_I << " JacobianDeterminant < 0 (" << J << ") " << cell << std::endl;
@@ -1203,8 +1289,6 @@ ElementMatrix < double >::ux2uy2uz2(const Cell & cell, bool useCache){
         break;
     }
 
-    if (useCache) cell.setUxCache(mat_);
-
     return *this;
 }
 
@@ -1357,8 +1441,8 @@ void ElementMatrix < double >::integrate() const {
         this->mat_*=0.;
 
         for (Index i = 0; i < nRules; i ++){
-            // improve either with matrix expressions of shift w as scale
-            this->mat_.transAdd(_matX[i] * (w[i] * this->_ent->size()));
+            // improve either with matrix expressions or shift w as scale
+            MAT_TRANS_ADD(this->mat_, (_matX[i] * (w[i] * this->_ent->size())))
         }
         this->_integrated = true;
     }
@@ -1642,7 +1726,7 @@ SET_MAT_ROW_SLICE(_matX[i],4, dNdy_[i], 1, 1 * nVerts, 2 * nVerts); //dNy/dy
 SET_MAT_ROW_SLICE(_matX[i],5, dNdz_[i], 1, 1 * nVerts, 2 * nVerts); //dNy/dz
 SET_MAT_ROW_SLICE(_matX[i],6, dNdx_[i], 1, 2 * nVerts, 3 * nVerts); //dNz/dx
 SET_MAT_ROW_SLICE(_matX[i],7, dNdy_[i], 1, 2 * nVerts, 3 * nVerts); //dNz/dy
-SET_MAT_ROW_SLICE(_matX[i],8, dNdy_[i], 1, 2 * nVerts, 3 * nVerts); //dNz/dz
+SET_MAT_ROW_SLICE(_matX[i],8, dNdz_[i], 1, 2 * nVerts, 3 * nVerts); //dNz/dz
                 }
 
             }
@@ -2053,10 +2137,56 @@ void evaluateQuadraturePoints(const Mesh & mesh, Index order,
                               std::vector< std::vector< RMatrix > > & ret){
     evaluateQuadraturePoints_(mesh, order, f, ret);
 }
+
 // constant Scalar
-void mult(const ElementMatrix < double > & A, double b,
+void mult(const ElementMatrix < double > & A, double f,
           ElementMatrix < double > & C){
 
+    C.copyFrom(A, false);
+    const RVector &w = *A.w();
+    Index nRules(w.size());
+
+    for (Index r = 0; r < nRules; r++){
+        SmallMatrix & iC = (*C.pMatX())[r];
+
+        for (Index k = 0; k < iC.rows(); k ++){
+            iC(k) *= f;
+           
+        }
+        // __MS("r", r, rt)
+    }
+    C.integrate();
+}
+
+//** Integrate const scalar
+template < >
+void ElementMatrix < double >::integrate(const double & f, RVector & rt) const { 
+
+    const RVector &w = *this->_w;
+    Index nRules(w.size());
+
+    ASSERT_VEC_SIZE(this->matX(), nRules)
+
+    rt.resize(this->rows());
+                
+    for (Index r = 0; r < nRules; r++){
+        const SmallMatrix &mr(this->_matX[r]);
+
+        for (Index k = 0; k < mr.rows(); k ++){
+
+            if (r == 0 && k == 0){
+                rt = mr(k) * w[r];
+            } else {
+                rt += mr(k) * w[r];
+            }
+        }
+    }
+    rt *= this->_ent->size() * f;
+}
+
+// constant Pos
+void mult(const ElementMatrix < double > & A, const Pos & f,
+          ElementMatrix < double > & C){
     C.copyFrom(A, false);
 
     const PosVector &x = *A.x();
@@ -2068,34 +2198,34 @@ void mult(const ElementMatrix < double > & A, double b,
         SmallMatrix & iC = (*C.pMatX())[r];
 
         for (Index k = 0; k < iC.rows(); k ++){
-            iC(k) *= b;
+            iC(k) *= f[k];
         }
     }
     C.integrate();
 }
-// constant Pos
-void mult(const ElementMatrix < double > & A, const Pos & b,
-          ElementMatrix < double > & C){
-    C.copyFrom(A, false);
+//** Integrate vector per quadrature
+template < >
+void ElementMatrix < double >::integrate(const Pos & f, RVector & rt) const { 
 
-    //** result is no bilinear form, so keep it a rowMatrix check!!
+    const RVector &w = *this->_w;
+    Index nRules(w.size());
 
-    const PosVector &x = *A.x();
-    const RVector &w = *A.w();
-
-    Index nRules(x.size());
-    // __MS(A.rows(), A.cols())
-    // __MS(C.rows(), C.cols())
-
+    ASSERT_VEC_SIZE(this->matX(), nRules)
+    rt.resize(this->rows());
+                
     for (Index r = 0; r < nRules; r++){
-        SmallMatrix & iC = (*C.pMatX())[r];
+        const SmallMatrix &mr(this->_matX[r]);
+            
+        for (Index k = 0; k < mr.rows(); k ++){
 
-        // __MS(iC.rows(), iC.cols())
-        for (Index k = 0; k < iC.rows(); k ++){
-            iC[k] *= b[k];
+            if (r == 0 && k == 0){
+                rt = mr(k) * w[r] * f[k];
+            } else {
+                rt += mr(k) * w[r] * f[k];
+            }
         }
     }
-    C.integrate();
+    rt *= this->_ent->size();
 }
 
 // scalar per quadrature
@@ -2110,16 +2240,45 @@ void mult(const ElementMatrix < double > & A, const RVector & b,
     ASSERT_VEC_SIZE(C.matX(), nRules)
 
     for (Index r = 0; r < nRules; r++){
-        SmallMatrix & iC = (*C.pMatX())[r];
-        for (Index k = 0; k < iC.rows(); k ++){
-            iC[k] *= b[r];
+        SmallMatrix & mr = (*C.pMatX())[r];
+        // print("iC:", mr);
+        for (Index k = 0; k < mr.rows(); k ++){
+            // print('r', r, 'k', k, mr(k), b[r]);
+            MAT_ROW_IMUL(mr, k, b[r])
         }
     }
     C.integrate();
 }
+//** Integrate scalar per quadrature
+template < >
+void ElementMatrix < double >::integrate(const RVector & f, RVector & rt) const { 
+
+    const RVector &w = *this->_w;
+    Index nRules(w.size());
+
+    ASSERT_VEC_SIZE(this->matX(), nRules)
+
+    rt.resize(this->rows());
+                
+    for (Index r = 0; r < nRules; r++){
+        const SmallMatrix &mr(this->_matX[r]);
+            
+        for (Index k = 0; k < mr.rows(); k ++){
+
+            if (r == 0 && k == 0){
+                RVEC_ASSIGN_MAT_ROW_MUL(rt, mr, k, w[r]*f[r])
+                // rt = mr(k) * w[r] * f[r];
+            } else {
+                RVEC_IADD_MAT_ROW_MUL(rt, mr, k, w[r]*f[r])
+                // rt += mr(k) * w[r] * f[r];
+            }
+        }
+    }
+    rt *= this->_ent->size();
+}
 
 // vector per quadrature
-void mult(const ElementMatrix < double > & A, const PosVector & b,
+void mult(const ElementMatrix < double > & A, const PosVector & f,
           ElementMatrix < double > & C){
     // result is no bilinear form, so keep it a rowMatrix check!!
 
@@ -2128,18 +2287,43 @@ void mult(const ElementMatrix < double > & A, const PosVector & b,
 
     Index nRules(x.size());
 
-    ASSERT_VEC_SIZE(b, nRules)
+    ASSERT_VEC_SIZE(f, nRules)
     ASSERT_VEC_SIZE(C.matX(), nRules)
 
     for (Index r = 0; r < nRules; r++){
         SmallMatrix & iC = (*C.pMatX())[r];
         for (Index k = 0; k < iC.rows(); k ++){
             // __MS(r << " " << k << " " << b[r][k])
-            iC[k] *= b[r][k];
+            iC(k) *= f[r][k];
         }
         // __MS(iC)
     }
     C.integrate();
+}
+//** Integrate vector per quadrature
+template < >
+void ElementMatrix < double >::integrate(const PosVector & f, RVector & rt) const { 
+
+    const RVector &w = *this->_w;
+    Index nRules(w.size());
+
+    ASSERT_VEC_SIZE(this->matX(), nRules)
+    ASSERT_VEC_SIZE(f, nRules)
+    rt.resize(this->rows());
+                
+    for (Index r = 0; r < nRules; r++){
+        const SmallMatrix &mr(this->_matX[r]);
+            
+        for (Index k = 0; k < mr.rows(); k ++){
+
+            if (r == 0 && k == 0){
+                rt = mr(k) * w[r] * f[r][k];
+            } else {
+                rt += mr(k) * w[r] * f[r][k];
+            }
+        }
+    }
+    rt *= this->_ent->size();
 }
 
 // constant Matrix
@@ -2246,6 +2430,38 @@ void mult(const ElementMatrix < double > & A, const FEAFunction & b,
     return;
 }
 
+#define DEFINE_INTEGRATOR(A_TYPE) \
+template < > \
+void ElementMatrix < double >::integrate(const A_TYPE & f, RVector & r) const { \
+    THROW_TO_IMPL \
+}\
+
+// DEFINE_INTEGRATOR(double)   // const scalar
+// DEFINE_INTEGRATOR(Pos)      // const vector
+DEFINE_INTEGRATOR(RMatrix)  // const Matrix
+// DEFINE_INTEGRATOR(RVector)  // scalar for each quadr
+// DEFINE_INTEGRATOR(PosVector)  // vector for each quadr
+DEFINE_INTEGRATOR(std::vector< RMatrix >)// matrix for each quadrs
+
+#undef DEFINE_INTEGRATOR
+
+#define DEFINE_INTEGRATOR(A_TYPE) \
+template < > \
+void ElementMatrix < double >::integrate(const ElementMatrix < double > & R, \
+                       const A_TYPE & f, SparseMatrixBase & A) const { \
+    THROW_TO_IMPL \
+} \
+
+DEFINE_INTEGRATOR(double)   // const scalar
+DEFINE_INTEGRATOR(Pos)      // const vector
+DEFINE_INTEGRATOR(RMatrix)  // const Matrix
+DEFINE_INTEGRATOR(RVector)  // scalar for each quadr
+DEFINE_INTEGRATOR(PosVector)  // vector for each quadr
+DEFINE_INTEGRATOR(std::vector< RMatrix >)// matrix for each quadrs
+
+#undef DEFINE_INTEGRATOR
+
+
 #define DEFINE_DOT_MULT_WITH_RETURN(A_TYPE) \
 const ElementMatrix < double > dot(const ElementMatrix < double > & A, \
                                    const ElementMatrix < double > & B, \
@@ -2273,7 +2489,7 @@ void sym(const ElementMatrix < double > & A, ElementMatrix < double > & B){
 
     for (auto &m : *B.pMatX()){
         if (m.rows() == 4){
-            m[1] = 0.5*m[1] + 0.5*m[2]; m[2] = m[1];
+            m(1) = 0.5*m(1) + 0.5*m(2); m(2) = m(1);
         } else if (m.rows() == 9) {
             // _matX[i](0).setVal(dNdx_[i], 0 * nVerts, 1 * nVerts); //dNx/dx
             // _matX[i](1).setVal(dNdy_[i], 0 * nVerts, 1 * nVerts); //dNx/dy
@@ -2287,9 +2503,9 @@ void sym(const ElementMatrix < double > & A, ElementMatrix < double > & B){
             // _matX[i][7].setVal(dNdy_[i], 2 * nVerts, 3 * nVerts); //dNz/dy
             // _matX[i][8].setVal(dNdz_[i], 2 * nVerts, 3 * nVerts); //dNz/dz
 
-            m[1] = 0.5*m[1] + 0.5*m[3];  m[3] = m[1];
-            m[2] = 0.5*m[2] + 0.5*m[6];  m[6] = m[2];
-            m[5] = 0.5*m[5] + 0.5*m[7];  m[7] = m[5];
+            m(1) = 0.5*m(1) + 0.5*m(3);  m(3) = m(1);
+            m(2) = 0.5*m(2) + 0.5*m(6);  m(6) = m(2);
+            m(5) = 0.5*m(5) + 0.5*m(7);  m(7) = m(5);
         } else {
             __MS(A)
             log(Critical, "Don't not how to symetrize A");
@@ -2314,14 +2530,14 @@ void createForceVectorPerCell_(const Mesh & mesh, Index order, RVector & ret,
     Index dof = mesh.nodeCount() * nCoeff;
     ret.resize(dof);
     Index id = 0;
+    ElementMatrix < double > u;
     for (auto &cell: mesh.cells()){
-        cell->uCache().pot(*cell, order, true,
-                           nCoeff, mesh.nodeCount(), dofOffset);
+        u.pot(*cell, order, true, nCoeff, mesh.nodeCount(), dofOffset);
 
         if (a.size() == 1){
-            ret.add(cell->uCache(), a[0]);
+            ret.add(u, a[0]);
         } else if (a.size() == mesh.cellCount()){
-            ret.add(cell->uCache(), a[cell->id()]);
+            ret.add(u, a[cell->id()]);
         } else {
             __M
             log(Critical, "Number of cell coefficients (",a.size(),") does not"
@@ -2338,16 +2554,17 @@ void createForceVectorMult_(const Mesh & mesh, Index order, RVector & ret,
     Index dof = mesh.nodeCount() * nCoeff;
     ret.resize(dof);
     Index id = 0;
+    ElementMatrix < double > u;
     ElementMatrix < double > ua;
+
     for (auto &cell: mesh.cells()){
-        cell->uCache().pot(*cell, order, true,
-                           nCoeff, mesh.nodeCount(), dofOffset);
+        u.pot(*cell, order, true, nCoeff, mesh.nodeCount(), dofOffset);
 
         if (a.size() == 1 && mesh.cellCount() != 1){
             createForceVectorPerCell_(mesh, order, ret,
                                       a[0], nCoeff, dofOffset);
         } else if (a.size() == mesh.cellCount()){
-            mult(cell->uCache(), a[cell->id()], ua);
+            mult(u, a[cell->id()], ua);
             ret.add(ua);
         } else {
             __M
@@ -2363,16 +2580,16 @@ void createMassMatrixPerCell_(const Mesh & mesh, Index order,
     if (nCoeff > 3){
         log(Critical, "Number of coefficients need to be lower then 4");
     }
+    ElementMatrix < double > u;
     ElementMatrix < double > uu;
 
     for (auto &cell: mesh.cells()){
-        cell->uCache().pot(*cell, order, true,
-                           nCoeff, mesh.nodeCount(), dofOffset);
+        u.pot(*cell, order, true, nCoeff, mesh.nodeCount(), dofOffset);
 
         if (a.size() == 1){
-            dot(cell->uCache(), cell->uCache(), a[0], uu);
+            dot(u, u, a[0], uu);
         } else if (a.size() == mesh.cellCount()){
-            dot(cell->uCache(), cell->uCache(), a[cell->id()], uu);
+            dot(u, u, a[cell->id()], uu);
         } else {
             __M
             log(Critical, "Number of cell coefficients (",a.size(),") does not"
@@ -2388,18 +2605,18 @@ void createMassMatrixMult_(const Mesh & mesh, Index order,
     if (nCoeff > 3){
         log(Critical, "Number of coefficients need to be lower then 4");
     }
+    ElementMatrix < double > u;
     ElementMatrix < double > ua;
     ElementMatrix < double > uau;
 
     for (auto &cell: mesh.cells()){
-        cell->uCache().pot(*cell, order, true,
-                           nCoeff, mesh.nodeCount(), dofOffset);
+        u.pot(*cell, order, true, nCoeff, mesh.nodeCount(), dofOffset);
 
         if (a.size() == 1 && mesh.cellCount() != 1){
             createMassMatrixPerCell_(mesh, order, ret, a[0], nCoeff, dofOffset);
         } else if (a.size() == mesh.cellCount()){
-            mult(cell->uCache(), a[cell->id()], ua);
-            dot(ua, cell->uCache(), 1.0, uau);
+            mult(u, a[cell->id()], ua);
+            dot(ua, u, 1.0, uau);
             ret.add(uau);
         } else {
             __M
@@ -2418,18 +2635,19 @@ void createStiffnessMatrixPerCell_(const Mesh & mesh, Index order,
         log(Critical, "Number of coefficients need to be lower then 4");
     }
 
+    ElementMatrix < double > du;
     ElementMatrix < double > dudu;
 
     for (auto &cell: mesh.cells()){
         //#bool elastic, bool sum, bool div,
-        cell->gradUCache().grad(*cell, order,
-                                 elastic, false, false,
-                                 nCoeff, mesh.nodeCount(), dofOffset, kelvin);
+        du.grad(*cell, order,
+                elastic, false, false,
+                nCoeff, mesh.nodeCount(), dofOffset, kelvin);
 
         if (a.size() == 1){
-            dot(cell->gradUCache(), cell->gradUCache(), a[0], dudu);
+            dot(du, du, a[0], dudu);
         } else if (a.size() == mesh.cellCount()){
-            dot(cell->gradUCache(), cell->gradUCache(), a[cell->id()], dudu);
+            dot(du, du, a[cell->id()], dudu);
         } else {
             __M;
             log(Critical, "Number of cell coefficients (",a.size(),") does not "
@@ -2448,21 +2666,22 @@ void createStiffnessMatrixMult_(const Mesh & mesh, Index order,
         __M;
         log(Critical, "Number of coefficients need to be lower then 4");
     }
+    ElementMatrix < double > du;
     ElementMatrix < double > dua;
     ElementMatrix < double > duadu;
 
     //#bool elastic, bool sum, bool div,
 
     for (auto &cell: mesh.cells()){
-        cell->gradUCache().grad(*cell, order,
-                                 elastic, false, false,
-                                 nCoeff, mesh.nodeCount(), dofOffset, kelvin);
+        du.grad(*cell, order,
+                elastic, false, false,
+                nCoeff, mesh.nodeCount(), dofOffset, kelvin);
         if (a.size() == 1 && mesh.cellCount() != 1){
             createStiffnessMatrixPerCell_(mesh, order, ret, a[0],
                                           nCoeff, dofOffset, elastic, kelvin);
         } else if (a.size() == mesh.cellCount()){
-            mult(cell->gradUCache(), a[cell->id()], dua);
-            dot(dua, cell->gradUCache(), 1.0, duadu);
+            mult(du, a[cell->id()], dua);
+            dot(dua, du, 1.0, duadu);
             ret.add(duadu);
         } else {
             __M;

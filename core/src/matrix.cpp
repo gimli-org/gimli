@@ -31,6 +31,32 @@
 
 namespace GIMLI{
 
+
+void toEigenMatrix(const RMatrix & m, SmallMatrix & r){
+    r.resize(m.rows(), m.cols());
+
+    for (Index i=0; i < r.rows(); i ++){
+#if USE_EIGEN3
+        r(i, Eigen::all) = Eigen::Map <const Eigen::VectorXd>(&m[i][0], r.cols());
+#else
+    for (Index j=0; j < r.cols(); j ++){
+        r(i,j) = m(i,j);
+    }
+#endif
+    }
+}
+void toRMatrix(const SmallMatrix & m, RMatrix & r){
+    r.resize(m.rows(), m.cols());
+
+    // optimize if in use
+    for (Index i=0; i < r.rows(); i ++){
+        for (Index j=0; j < r.cols(); j ++){
+            r(i,j) = m(i,j);
+        }
+    }
+}
+
+
 template < class ValueType > Vector < ValueType >
 _mult(const Matrix< ValueType > & M, const Vector < ValueType > & b) {
     Index cols = M.cols();
@@ -140,6 +166,15 @@ Matrix<Complex>::transAdd(const Matrix < Complex > & a){
 
 void matMultABA(const SmallMatrix & A, const SmallMatrix & B, 
                 SmallMatrix & C, SmallMatrix & AtB, double a, double b){
+
+#if USE_EIGEN3
+    THROW_TO_IMPL
+#else
+    return matMultABA_RM(A, B, C, AtB, a, b);
+#endif
+}
+void matMultABA_RM(const RMatrix & A, const RMatrix & B, 
+                   RMatrix & C, RMatrix & AtB, double a, double b){
     // C = a A.T * B * A + b * C
     // __MS("matMultABA: ", A.rows(), A.cols(), B.rows(), B.cols())
 
@@ -148,12 +183,49 @@ void matMultABA(const SmallMatrix & A, const SmallMatrix & B,
         return;
     }
     AtB.resize(A.cols(), B.rows());
-    matTransMult(A, B, AtB, 1.0, 0.0);
-    matMult(AtB, A, C, a, b);
+    matTransMult_RM(A, B, AtB, 1.0, 0.0);
+    matMult_RM(AtB, A, C, a, b);
 }
-
 void matMult(const SmallMatrix & A, const SmallMatrix & B, 
              SmallMatrix & C, double a, double b){
+#if USE_EIGEN3
+    if (A.cols() == B.rows()){
+        
+        if (C.rows() != A.rows() || C.cols() != B.cols()){
+            C.resize(A.rows(), B.cols());
+        }
+        if (b == 0.0){
+            C = a*(A*B);
+        } else if (b == 1.0){
+            C += a*(A*B);
+        } else if (b == -1.0){
+            C += a*(A*B);
+        } else {
+            C = b*C + a*(A*B);
+        }
+    } else if (A.cols() == B.cols()){
+        if (C.rows() != A.rows() || C.cols() != B.rows()){
+            C.resize(A.rows(), B.rows());
+        }
+        if (b == 0.0){
+            C = a*(A*B.transpose());
+        } else if (b == 1.0){
+            C += a*(A*B.transpose());
+        } else if (b == -1.0){
+            C += a*(A*B.transpose());
+        } else {
+            C = b*C + a*(A*B.transpose());
+        }
+    } else {
+        log(Error, "matMult sizes mismatch. ", A.cols(), "!=", B.rows());
+    }
+
+#else
+    return matMult_RM(A, B, C, a, b);
+#endif
+}
+void matMult_RM(const RMatrix & A, const RMatrix & B, 
+                RMatrix & C, double a, double b){
     // C = a * A*B + b*C || C = a * A*B.T + b*C
     
     // __MS("matMult: ", A.rows(), A.cols(), B.rows(), B.cols())
@@ -173,7 +245,7 @@ void matMult(const SmallMatrix & A, const SmallMatrix & B,
         n = B.rows();
         bRows = k;
     } else {
-        log(Error, "matMult sizes mismatch. implement fallback A*.B.T", 
+        log(Error, "matMult sizes mismatch. ", 
             A.cols(), "!=", B.rows());
     }
     C.resize(m, n);
@@ -227,17 +299,57 @@ void matMult(const SmallMatrix & A, const SmallMatrix & B,
                 C[i][j] = a * c;
             } else if (b == 1.0){
                 C[i][j] += a * c;
+            } else if (b == -1.0){
+                C[i][j] -= a * c;
             } else {
                 C[i][j] = b * C[i][j] + a * c;
             }
         }
     }
 #endif
-    
 }
 
 void matTransMult(const SmallMatrix & A, const SmallMatrix & B, 
                   SmallMatrix & C, double a, double b){
+#if USE_EIGEN3
+    if (A.rows() == B.rows()){
+        
+        if (C.rows() != A.cols() || C.cols() != B.cols()){
+            C.resize(A.cols(), B.cols());
+        }
+        if (b == 0.0){
+            C = a*(A.transpose()*B);
+        } else if (b == 1.0){
+            C += a*(A.transpose()*B);
+        } else if (b == -1.0){
+            C += a*(A.transpose()*B);
+        } else {
+            C = b*C + a*(A.transpose()*B);
+        }
+    } else if (A.rows() == B.cols()){
+        if (C.rows() != A.cols() || C.cols() != B.rows()){
+            C.resize(A.cols(), B.rows());
+        }
+        if (b == 0.0){
+            C = a*(A.transpose()*B.transpose());
+        } else if (b == 1.0){
+            C += a*(A.transpose()*B.transpose());
+        } else if (b == -1.0){
+            C += a*(A.transpose()*B.transpose());
+        } else {
+            C = b*C + a*(A.transpose()*B.transpose());
+        }
+    } else {
+        log(Error, "matTransMult sizes mismatch. ", A.rows(), "!=", B.rows());
+    }
+
+#else
+    matTransMult_RM(A, B, C, a, b);
+#endif
+}
+void matTransMult_RM(const RMatrix & A, const RMatrix & B, 
+                     RMatrix & C, double a, double b){
+
     // __MS("matTransMult: ", A.rows(), A.cols(), B.rows(), B.cols())
     
     // Mxk * kxN == MxN
@@ -272,7 +384,7 @@ void matTransMult(const SmallMatrix & A, const SmallMatrix & B,
                 //** Target array seems needed to be transposed
                 //** C = a*(A.T*B).T + b * C
                 // __MS("ret transmult")
-                return matTransMult(B, A, C, a, b);
+                return matTransMult_RM(B, A, C, a, b);
 
                 retTrans = true;
             } else {

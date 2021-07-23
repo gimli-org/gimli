@@ -46,8 +46,7 @@ public:
         } return *this;
     }
 
-    inline const Vector< ValueType > & operator[](Index row) const {
-        return mat_[row]; }
+    const Vector< ValueType > & operator[](Index row) const;
 
     inline const ValueType & operator()(Index i, Index j) const { 
         return mat_(i,j); 
@@ -56,20 +55,8 @@ public:
 
     ElementMatrix < ValueType > & operator += (const ElementMatrix < ValueType > & E);
 
-    #define DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__(OP)                   \
-        ElementMatrix < ValueType > & operator OP##= (ValueType val) { \
-            if (this->_newStyle){ \
-                if (this->_integrated){ \
-                    mat_ OP##= val; \
-                } \
-                for (auto & m: _matX){ \
-                    m OP##= val; \
-                } \
-                return *this;\
-            } \
-            mat_ OP##= val; \
-            return *this;\
-        } \
+    #define DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__(OP) \
+        ElementMatrix < ValueType > & operator OP##= (ValueType val);
 
         DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__(+)
         DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__(-)
@@ -90,27 +77,20 @@ public:
     inline void addVal(Index i, Index j, const ValueType & v) {mat_(i,j) += v; }
 
     /*! Set data matrix. */
-    inline void setMat(const Matrix < ValueType > & m) { mat_ = m; }
+    inline void setMat(const SmallMatrix & m) { mat_ = m; }
     /*! Return data matrix. */
     inline SmallMatrix * pMat() { return & mat_; }
     /*! Return data for row i. */
     inline const SmallMatrix & mat() const { return mat_; }
     /*! Return data for row i. */
-    inline const Vector < ValueType > & row(Index i) const { 
-    #if USE_EIGEN3
-    __MS("Efficiency warning")
-    #endif 
-        return mat_[i];
+
+    inline const Vector< ValueType > & row(Index i) const { 
+        return (*this)[i];
     }
+    Vector< ValueType > row_RM(Index i) const;
+
     /*! Return data for col i. */
-    inline Vector < ValueType > col(Index i) const {
-    #if USE_EIGEN3
-    __MS("Efficiency warning")
-    #endif 
-        Vector < ValueType > ret(this->rows());
-        for (Index j = 0; j < ret.size(); j ++){ ret[j] = mat_(j,i);}
-        return ret;
-    }
+    Vector< ValueType > col(Index i) const;
 
     /*! Fill the node ids with a number of coefficents.
     For vector field approximation give field dimension 2 or 3.
@@ -357,7 +337,17 @@ public:
     void integrate() const;
 
     /*! Set submatrices. matx of (nWeight, shape(mat.T))*/
-    void setMatXI(Index i, const Matrix < ValueType > & mat);
+    void setMatXI(Index i, const SmallMatrix & mat);
+
+    /*! PG temp hack .. Convert RMatrix into EigenMatrix for pg. */
+    void setMatXI_RM(Index i, const RMatrix & mat);
+
+    /*! Set data matrix. */
+    void setMat_RM(const RMatrix & m);
+        
+    /*! Return copy of mat */
+    RMatrix mat_RM() const;
+
 
     /*! Return reference to all matrices per quadrature point.*/
     const std::vector < SmallMatrix > & matX() const { return _matX; }
@@ -409,6 +399,24 @@ public:
     bool elastic() const { return _elastic;}
 
     bool oldStyle() const { return !this->_newStyle; }
+
+    #define DEFINE_INTEGRATOR(A_TYPE) \
+        /*! Integrate linear form: r = \int_entity this * f \d entity \
+        with r = RVector(dof) and f = A_TYPE */ \
+        void integrate(const A_TYPE & f, RVector & r) const; \
+        /*! Integrate bilinear form A = \int_mesh this * f * R \d entity \
+        with A = SparseMatrix(dof, dof) and f = A_TYPE */ \
+        void integrate(const ElementMatrix < double > & R, \
+                       const A_TYPE & f, SparseMatrixBase & A) const; \
+        
+    DEFINE_INTEGRATOR(double)   // const scalar
+    DEFINE_INTEGRATOR(RMatrix)  // const Matrix
+    DEFINE_INTEGRATOR(RVector)  // scalar for each quadr
+    DEFINE_INTEGRATOR(Pos)      // const vector //!calling order!
+    DEFINE_INTEGRATOR(PosVector)  // vector for each quadr
+    DEFINE_INTEGRATOR(std::vector< RMatrix >) // matrix for each quadrs
+    
+    #undef DEFINE_INTEGRATOR
 
 protected:
     mutable SmallMatrix mat_;
@@ -472,6 +480,36 @@ void ElementMatrix < double >::copyFrom(const ElementMatrix < double > & E,
 template < > DLLEXPORT
 void ElementMatrix < double >::init(Index nCoeff, Index dofPerCoeff,
                                     Index dofOffset);
+
+
+#define DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__(OP) \
+template < > DLLEXPORT ElementMatrix < double > & \
+ElementMatrix < double >::operator OP##= (double val); \
+
+DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__(+)
+DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__(-)
+DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__(/)
+DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__(*)
+
+#undef DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__
+
+
+#define DEFINE_INTEGRATOR(A_TYPE) \
+template < > DLLEXPORT \
+void ElementMatrix < double >::integrate(const A_TYPE & f, RVector & r) const; \
+template < > DLLEXPORT \
+void ElementMatrix < double >::integrate(const ElementMatrix < double > & R, \
+                       const A_TYPE & f, SparseMatrixBase & A) const; \
+
+DEFINE_INTEGRATOR(double)   // const scalar
+DEFINE_INTEGRATOR(RMatrix)  // const Matrix
+DEFINE_INTEGRATOR(RVector)  // scalar for each quadr
+DEFINE_INTEGRATOR(Pos)      // const vector // declared after RVector so it will be tested first in py runtime !calling order!
+DEFINE_INTEGRATOR(PosVector)  // vector for each quadr
+DEFINE_INTEGRATOR(std::vector< RMatrix >) // matrix for each quadrs
+
+#undef DEFINE_INTEGRATOR
+
 
 DLLEXPORT void dot(const ElementMatrix < double > & A,
                    const ElementMatrix < double > & B,

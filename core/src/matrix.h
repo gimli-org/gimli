@@ -39,26 +39,41 @@
 #endif // USE_THREADS
 
 
-
 namespace GIMLI{
 
 #if USE_EIGEN3
-    typedef Eigen::Matrix < double, Eigen::Dynamic, Eigen::Dynamic > SmallMatrix;
+
+// Matrix<int, Dynamic, Dynamic, RowMajor> RowMatrixXi;
+    typedef Eigen::Matrix < double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor > SmallMatrix;
     //typedef Matrix < double > SmallMatrix;
     //typedef Matrix < double > SmallMatrix;
+
+    void toEigenMatrix(const Matrix < double > & m, SmallMatrix & r);
+    void toRMatrix(const SmallMatrix & m, Matrix < double > & r);
 
 #define SET_MAT_ROW_SLICE(A, row, RVec, b, start, end) \
-    A(row, Eigen::seq(start, end)) = \
-    Eigen::Map <const Eigen::VectorXd>(&RVec[0], RVec.size()) * b;
-
+    A(row, Eigen::seq(start, end-1)) = \
+                Eigen::Map <const Eigen::VectorXd>(&RVec[0], RVec.size()) * b;
+#define ADD_MAT_ROW_SLICE(A, row, RVec, b, start, end) \
+    A(row, Eigen::seq(start, end-1)) += \
+                Eigen::Map <const Eigen::VectorXd>(&RVec[0], RVec.size()) * b;
+#define MAT_TRANS_ADD(A, B) A += B.transpose();
+#define MAT_ROW_IMUL(A, r, b) A(r, Eigen::all) *= b;
+#define RVEC_ASSIGN_MAT_ROW_MUL(c, A, k, b) c = A(k) * b;
+#define RVEC_IADD_MAT_ROW_MUL(c, A, k, b) c += A(k) * b;
 
 #else
     typedef Matrix < double > SmallMatrix;
 
 #define SET_MAT_ROW_SLICE(A, row, RVec, b, start, end) \
                            A(row).setVal(RVec * b, start, end);
-    
-
+#define ADD_MAT_ROW_SLICE(A, row, RVec, b, start, end) \
+                           A(row).addVal(RVec * b, start, end);
+#define MAT_TRANS_ADD(A, B) A.transAdd(B);
+#define MAT_ROW_IMUL(A, r, b) A(r) *= b;
+#define RVEC_ASSIGN_MAT_ROW_MUL(c, A, k, b) c = A(k) * b;
+#define RVEC_IADD_MAT_ROW_MUL(c, A, k, b) c += A(k) * b;
+            
 #endif
 
 template < class ValueType > class DLLEXPORT Matrix3 {
@@ -1166,16 +1181,28 @@ DLLEXPORT void matMultABA(const SmallMatrix & A,
                           const SmallMatrix & B, 
                           SmallMatrix & C, 
                           SmallMatrix & AtB, double a=1.0, double b=0.0);
+DLLEXPORT void matMultABA_RM(const RMatrix & A, 
+                          const RMatrix & B, 
+                          RMatrix & C, 
+                          RMatrix & AtB, double a=1.0, double b=0.0);
 
 /*!Inplace matrix calculation: $C = a*A*B + b*C$. B are transposed if needed to fit appropriate dimensions. */
 DLLEXPORT void matMult(const SmallMatrix & A, 
                        const SmallMatrix & B, 
                        SmallMatrix & C, double a=1.0, double b=0.0);
+DLLEXPORT void matMult_RM(const RMatrix & A, 
+                       const RMatrix & B, 
+                       RMatrix & C, double a=1.0, double b=0.0);
 
 /*!Inplace matrix calculation: $C = a * A.T * B + b*C$. B are transposed if needed to fit appropriate dimensions. */
 DLLEXPORT void matTransMult(const SmallMatrix & A, 
                             const SmallMatrix & B, 
                             SmallMatrix & C, double a=1.0, double b=0.0);
+
+DLLEXPORT void matTransMult_RM(const RMatrix & A, 
+                            const RMatrix & B, 
+                            RMatrix & C, double a=1.0, double b=0.0);
+
 
 /*! Return determinant for Matrix(2 x 2). */
 template < class T > inline T det(const T & a, const T & b, const T & c, const T & d){

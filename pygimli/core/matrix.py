@@ -69,7 +69,7 @@ def __ElementMatrix_str(self):
     """Show entries of an ElementMatrix."""
     import pygimli as pg
     self.integrate()
-    if self.mat().cols() == 0 and self.mat().rows() == 0:
+    if self.mat_RM().cols() == 0 and self.mat_RM().rows() == 0:
         return 'Empty ElementMatrix\n'
 
     maxRowID = int(np.log10(max(self.rowIDs())))+2
@@ -78,15 +78,15 @@ def __ElementMatrix_str(self):
     # print(self.mat())
     # print(self.colIDs())
     # print(self.rowIDs())
-    for i in range(self.mat().cols()):
+    for i in range(self.mat_RM().cols()):
         s += str(self.colIDs()[i]).rjust(9)
     s += '\n'
 
-    s += '  ' + '-'*self.mat().cols()*(9 + maxRowID) + '-\n'
+    s += '  ' + '-'*self.mat_RM().cols()*(9 + maxRowID) + '-\n'
 
-    for i in range(self.mat().rows()):
+    for i in range(self.mat_RM().rows()):
         s += str(self.rowIDs()[i]).rjust(maxRowID) + " :"
-        for v in self.row(i):
+        for v in self.row_RM(i)*self.multR:
             s += pg.pf(v).rjust(9)
         s += '\n'
     return s
@@ -266,7 +266,7 @@ def __SparseMatrixEqual__(self, T):
         print(f'nAB/meanA = {nAB/meanA}')
 
     if meanA > 1e-10:
-        return rowsA == rowsB and colsA == colsB and nAB/meanA < 1e-13
+        return rowsA == rowsB and colsA == colsB and nAB/meanA < 1e-12
     else:
         return nAB < 1e-12
 

@@ -30,6 +30,7 @@ void Vector< double >::add(const ElementMatrix < double > & A){
 template <>
 void Vector< double >::add(const ElementMatrix < double > & A,
                            const double & scale){
+    //__MS(A.oldStyle(), scale, A)
     if (A.oldStyle()){
         if (A.cols() == 1){
             addVal(A.col(0) * scale, A.rowIDs());
@@ -37,10 +38,12 @@ void Vector< double >::add(const ElementMatrix < double > & A,
             addVal(A.row(0) * scale, A.ids());
         }
     } else {
+        // switch to A.mat() transpose
+        //__MS("inuse?")
         A.integrate();
         for (Index i = 0; i < A.cols(); i++){
             for (Index j = 0; j < A.rows(); j++){
-                data_[A.rowIDs()[j]] += A.mat()[j][i] * scale;
+                data_[A.rowIDs()[j]] += A.mat()(j,i) * scale;
             }
         }
     }
@@ -48,14 +51,15 @@ void Vector< double >::add(const ElementMatrix < double > & A,
 template <>
 void Vector< double >::add(const ElementMatrix < double > & A,
                            const RVector3 & scale){
-    __MS("inuse?")
+    // __MS("inuse?")
     if (A.oldStyle()){
         THROW_TO_IMPL
     } else {
+        // switch to A.mat() transpose
         A.integrate();
         for (Index i = 0; i < A.cols(); i++){
             for (Index j = 0; j < A.rows(); j++){
-                data_[A.rowIDs()[j]] += A.mat()[j][i] * scale[i];
+                data_[A.rowIDs()[j]] += A.mat()(j,i) * scale[i];
             }
         }
     }

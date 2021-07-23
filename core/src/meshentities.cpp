@@ -365,8 +365,6 @@ RVector3 MeshEntity::grad(const RVector3 & xyz, const RVector & u) const {
 
 void MeshEntity::changed(){
     this->shape_->changed();
-    uCache_.setValid(false);
-    gradUCache_.setValid(false);
 }
 
 //############### Cell ##################

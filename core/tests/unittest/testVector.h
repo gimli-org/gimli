@@ -498,8 +498,6 @@ public:
 
 
         //** Test AT*B
-        double *_AT = new double[k*m];
-
         GIMLI::RMatrix AT(k, m, _A);
         for (Index i = 0; i < k; i ++ ){
             for (Index j = 0; j < m; j ++ ){

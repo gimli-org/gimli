@@ -16,6 +16,10 @@ macro(add_python_module PYTHON_MODULE_NAME SOURCE_DIR EXTRA_LIBS OUTDIR)
     include_directories(${CMAKE_CURRENT_BINARY_DIR})
     include_directories(${CMAKE_CURRENT_BINARY_DIR}/generated/)
 
+    if (EIGEN3_FOUND)
+        include_directories(${EIGEN3_INCLUDE_DIRS})
+    endif (EIGEN3_FOUND)
+
     add_definitions(-DPYGIMLI)
     add_definitions(-DBOOST_PYTHON_NO_PY_SIGNATURES)
 	add_definitions(-DBOOST_PYTHON_USE_GCC_SYMBOL_VISIBILITY)

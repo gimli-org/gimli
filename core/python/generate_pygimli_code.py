@@ -466,7 +466,7 @@ def generate(defined_symbols, extraIncludes):
                     logger.debug("Fail to exclude: " + str(c))
 
     for c in main_ns.classes():
-        print('class:', c.name)
+        #print('class:', c.name)
 
         for e in ex:
             if c.decl_string.find(e) > -1:
@@ -478,7 +478,7 @@ def generate(defined_symbols, extraIncludes):
 
         try:
             for mem in c.variables():
-                print('\t variables for:', c, mem)
+                #print('\t variables for:', c, mem)
                 try:
                     pass
                     #mem.exclude()
@@ -519,7 +519,7 @@ def generate(defined_symbols, extraIncludes):
         ##########
         for mem in c.operators():
             if "operator()" in mem.name:
-                print("Exclude: " + str(mem))
+                #print("Exclude: " + str(mem))
                 logger.debug("Exclude: " + str(mem))
                 mem.exclude()
 
@@ -537,19 +537,21 @@ def generate(defined_symbols, extraIncludes):
         if c.name.startswith("Matrix<double>"):
             
             for mem in c.constructors():
-                print("\t constructors:", mem)
+                pass
+                #print("\t constructors:", mem)
             for mem in c.operators():
                 # print("\t operator:", mem)
                 # print("\t\t\t:", mem.name)
                 # print("\t\t\t:", mem.decl_string)
 
                 if "operator()" in mem.name:
-                    print("Exclude: " + str(mem))
+                    #print("Exclude: " + str(mem))
                     logger.debug("Exclude: " + str(mem))
                     mem.exclude()
                     
             for mem in c.member_functions():
-                print("\t member:", mem)
+                pass
+                #print("\t member:", mem)
                 # print("mem", mem)
 
             #sys.exit()
