@@ -232,7 +232,7 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1,
         Apply mesh smoothing.
         
     addNodes : int[5], iterable
-        Add aditional nodes on the outer boundaries.
+        Add aditional nodes on the outer boundaries. Or for each boundary if given 5 values (isSubsurface=True) or 4 for isSubsurface=False
     
     Returns
     -------
@@ -289,19 +289,42 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1,
             pg.critical("Can't identify upper part of the mesh to be moved to the surface.",
                         "Maybe you can define them with Marker==-1")
 
+        addNodes = kwargs.pop('addNodes', 5)
+
         boundPoly = [pg.Pos(startPoint)]
-        boundPoly.append(boundPoly[-1] - pg.Pos(xbound, 0))
-        boundPoly.append(boundPoly[-1] - pg.Pos(0, mesh.ymax()- mesh.ymin() + ybound))
-        boundPoly.append(boundPoly[-1] + pg.Pos((endPoint-startPoint)[0] + 2*xbound, 0))
-        boundPoly.append(pg.Pos(endPoint) + pg.Pos(xbound, 0))
+
+        if isinstance(addNodes, (float, int)) and addNodes > 0:
+            addNodes = np.full(5, addNodes)
+            
+        if hasattr(addNodes, '__len__') and len(addNodes) == 5:
+            boundPoly.extend([boundPoly[-1] - pg.Pos(x, 0)
+                for x in pg.utils.grange(1, xbound, n=addNodes[0]+1, log=True)])
+            boundPoly.extend([boundPoly[-1] - pg.Pos(0, y) 
+                for y in np.linspace(0, mesh.ymax()- mesh.ymin() + ybound,
+                                    addNodes[1]+1)[1:]])
+            boundPoly.extend([boundPoly[-1] + pg.Pos(x, 0) 
+                for x in np.linspace(0, (endPoint-startPoint)[0] + 2*xbound, 
+                                    addNodes[2]+1)[1:]])
+            boundPoly.extend([boundPoly[-1] + pg.Pos(0, y) 
+                for y in np.linspace(0, endPoint[1]-boundPoly[-1][1],
+                                    addNodes[3]+1)[1:]])
+            boundPoly.extend([boundPoly[-1] - pg.Pos(xbound-x, 0)
+                for x in pg.utils.grange(1, xbound, n=addNodes[4]+1, 
+                                        log=True)[::-1][1:]])
+        else:
+            boundPoly.append(boundPoly[-1] - pg.Pos(xbound, 0))
+            boundPoly.append(boundPoly[-1] - pg.Pos(0, mesh.ymax()- mesh.ymin() + ybound))
+            boundPoly.append(boundPoly[-1] + pg.Pos((endPoint-startPoint)[0] + 2*xbound, 0))
+            boundPoly.append(pg.Pos(endPoint) + pg.Pos(xbound, 0))
+        
         boundPoly.append(pg.Pos(endPoint))
 
-        poly = pg.meshtools.createPolygon(boundPoly, isClosed=False, 
-                                          addNodes=kwargs.pop('addNodes', 5))
-        poly.addRegionMarker(boundPoly[1] + [xbound/10, -ybound/10], marker=marker)
+        poly = pg.meshtools.createPolygon(boundPoly, isClosed=False)
+        poly.addRegionMarker(boundPoly[1] + [xbound/10, -ybound/10], 
+                             marker=marker)
         
         if mesh.cellCount() > 0:
-            poly.addHoleMarker(boundPoly[0] + [xbound/10, -ybound/10])
+            poly.addHoleMarker(boundPoly[0] + [0.1, -0.1])
 
     else:  # no isSubSurface
 
