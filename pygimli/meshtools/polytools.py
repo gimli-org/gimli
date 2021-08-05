@@ -508,9 +508,9 @@ def createPolygon(verts, isClosed=False, addNodes=0, interpolate='linear',
     isClosed : bool [True]
         Add closing edge between last and first node.
 
-    addNodes : int [1]
-        Number of additional nodes to be added equidistant between sensors.
-
+    addNodes : int [1], iterable
+        Constant or (for each) Number of additional nodes to be added equidistant between sensors.
+        
     interpolate : str ['linear']
         Interpolation rule for addNodes. 'linear' or 'spline'. TODO 'harmfit'
 
@@ -554,18 +554,26 @@ def createPolygon(verts, isClosed=False, addNodes=0, interpolate='linear',
     """
     poly = pg.Mesh(dim=2, isGeometry=True)
 
-    if addNodes > 0:
+    if hasattr(addNodes, '__iter__') or addNodes > 0:
         if isClosed:
             verts = np.array(verts)
             verts = np.vstack([verts, verts[0]])
 
         tV = pg.utils.cumDist(verts)
+
+        if isinstance(addNodes, int) and addNodes > 0:
+            addNodes = np.full(len(tV)-1, addNodes)
+        
+        if len(addNodes) != len(tV)-1:
+            print(addNodes)
+            pg.error('Ammount of addNodes does not match needed length:', len(tV)-1)
+
         tI = []
 
         for i, t in enumerate(tV[0:len(tV)-1]):
             tI.append(t)
-            for j in range(addNodes):
-                dt = (tV[i+1]-tV[i]) / (addNodes+1)
+            for j in range(addNodes[i]):
+                dt = (tV[i+1]-tV[i]) / (addNodes[i]+1)
                 tI.append(tV[i] + dt*(j+1))
 
         if not isClosed:
@@ -595,6 +603,26 @@ def createPolygon(verts, isClosed=False, addNodes=0, interpolate='linear',
         setPolyRegionMarker(poly, **kwargs)
 
     return poly
+
+def merge(*args, **kwargs):
+    """Little syntactic sugar to merge.
+
+    All args are forwarded to mergeMeshes if isGeometry is not set. Else it sees the mesh as PLC to merge.
+
+    Args
+    ----
+    List of meshes or comma separated list of meshes that will be forwarded to mergeMeshes or meshPLC.
+
+    """
+    if len(args) == 1 and isinstance(args[0], list):
+        return merge(*args[0], **kwargs)
+
+    for arg in args:
+        if hasattr(arg, 'isGeometry'):
+            if arg.isGeometry() == True:
+                return mergePLC([*args], **kwargs)
+
+    return pg.meshtools.mergeMeshes([*args], **kwargs)
 
 
 def mergePLC(plcs, tol=1e-3):

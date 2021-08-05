@@ -786,7 +786,7 @@ def abs(v):
         return pgcore.absR3(v)
     elif isinstance(v, list):
         ## possible [x,y,[z]] or [pos, ...]
-        print(v)
+        
         try:
             return pgcore.RVector3(v).abs()
         except:
@@ -1029,6 +1029,8 @@ def __getCoords(coord, dim, ent):
         return getattr(pgcore, coord)(ent)
     if isinstance(ent, list) and isinstance(ent[0], RVector3):
         return getattr(pgcore, coord)(ent)
+    if isinstance(ent, list) and isPos(ent[0]):
+        return getattr(pgcore, coord)(ent)
     if isinstance(ent, DataContainer):
         return getattr(pgcore, coord)(ent.sensorPositions())
     if isinstance(ent, Mesh):
@@ -1060,6 +1062,15 @@ def x(instance):
     ----------
     instance : DataContainer, Mesh, R3Vector, np.array, list(RVector3)
         Return the associated coordinate positions for the given class instance.
+    
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pygimli as pg
+    >>> pg.x([[1.0, 1.0, 1.0]])
+    1 [1.0]
+    >>> pg.x([[0, 0], [1, 0]])
+    2 [0.0, 1.0]
     """
     return __getCoords('x', 0, instance)
 

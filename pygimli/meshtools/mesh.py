@@ -1967,7 +1967,7 @@ def createParaMesh2DGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
     >>>
     >>> from pygimli.meshtools import createParaMesh2DGrid
     >>> mesh = createParaMesh2DGrid(sensors=pg.Vector(range(10)),
-    ...                             boundary=1, paraDX=1,
+    ...                             boundary=5, paraDX=1,
     ...                             paraDZ=1, paraDepth=5)
     >>> ax, _ = pg.show(mesh, markers=True, showMesh=True)
     """
@@ -2004,9 +2004,9 @@ def createParaMesh2DGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
     # print(xMin, xMax, dx)
     x = pg.utils.grange(xMin, xMax, dx=dx)
 
-    y = -pg.core.increasingRange(dz, paraDepth, nLayers)
+    y = -pg.utils.grange(dz, paraDepth, n=nLayers, log=True)
 
-    mesh.createGrid(x, y)
+    mesh.createGrid(x, y[::-1])
     mesh.setCellMarkers([2] * mesh.cellCount())
 
     paraXLimits = [xMin, xMax]
@@ -2015,8 +2015,8 @@ def createParaMesh2DGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
     if boundary < 0:
         boundary = abs((paraXLimits[1] - paraXLimits[0]) * 4.0)
 
-    mesh = pg.meshtools.appendTriangleBoundary(
-        mesh, xbound=boundary, ybound=boundary, marker=1, **kwargs)
+    mesh = pg.meshtools.appendTriangleBoundary(mesh, 
+        xbound=boundary, ybound=boundary, marker=1, addNodes=5, **kwargs)
 
     return mesh
 

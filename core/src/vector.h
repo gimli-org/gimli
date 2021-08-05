@@ -1662,6 +1662,11 @@ Vector< ValueType > increasingRange2(const ValueType & a,
         str(a) );
     }
 
+    if (a == last){
+        throwError("start and end need to be different: " +
+        str(a) + " "  + str(last));
+    }
+
     if (sign(a) != sign(last)){
         throwError("Can't create increasing range from [0 " + str(a) + " to " + str(last) + "]");
     }
