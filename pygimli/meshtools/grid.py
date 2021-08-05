@@ -318,13 +318,16 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1,
             boundPoly.append(pg.Pos(endPoint) + pg.Pos(xbound, 0))
         
         boundPoly.append(pg.Pos(endPoint))
-
+        
         poly = pg.meshtools.createPolygon(boundPoly, isClosed=False)
-        poly.addRegionMarker(boundPoly[1] + [xbound/10, -ybound/10], 
+
+        poly.addRegionMarker(pg.Pos([poly.xmin(), poly.ymin()]) +
+                             [xbound/100, ybound/100], 
                              marker=marker)
         
         if mesh.cellCount() > 0:
-            poly.addHoleMarker(boundPoly[0] + [0.1, -0.1])
+            poly.addHoleMarker(pg.Pos([mesh.xmin(), mesh.ymin()]) +
+                               [0.001, 0.001])
 
     else:  # no isSubSurface
 
@@ -344,7 +347,7 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1,
             poly.copyBoundary(b)
 
     preserveSwitch = 'Y'
-    # pg.show(poly, boundaryMarkers=True, showNodes=True)
+    #pg.show(poly, boundaryMarkers=True, showNodes=True)
     # pg.wait()
 
     mesh2 = pg.meshtools.createMesh(poly, preserveBoundary=preserveSwitch, **kwargs)
