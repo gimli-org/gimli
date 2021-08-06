@@ -140,7 +140,6 @@ class Modelling(pg.core.ModellingBase):
 
         self.setDataPost(self.data)
 
-
     @property
     def modelTrans(self):
         self._applyRegionProperties()
@@ -267,7 +266,7 @@ class Modelling(pg.core.ModellingBase):
 
     def _applyRegionProperties(self):
         """Apply the region properties from dictionary into the region man."""
-        if not self._regionsNeedUpdate:
+        if self._regionsNeedUpdate is False:
             return
 
         ### call super class her because self.regionManager() calls always
@@ -536,7 +535,9 @@ class MeshModelling(Modelling):
 
     def mesh(self):
         """"""
-        if self._regionManagerInUse and self._regionChanged:
+        self._applyRegionProperties()
+        
+        if self._regionManagerInUse and self._regionChanged is True:
             self.createFwdMesh_()
 
         return super(Modelling, self).mesh()
