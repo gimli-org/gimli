@@ -246,7 +246,7 @@ class Modelling(pg.core.ModellingBase):
         if len(kwargs) > 0:
             pg.warn('Unhandled region properties:', kwargs)
 
-    def setInterRegionCoupling(self, region1, region2, weight):
+    def setInterRegionCoupling(self, region1, region2, weight=1.0):
         """Set the weighting for constraints across regions."""
         if region1 == "*":
             region1 = self.regionManager().regionIdxs()

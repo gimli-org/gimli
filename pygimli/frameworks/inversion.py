@@ -34,8 +34,8 @@ class Inversion(object):
         after maxIter or convergence reached (self.inv.deltaPhiAbortPercent())
     """
     def __init__(self, fop=None, inv=None, **kwargs):
-        self._verbose = kwargs.pop('verbose', False)
         self._debug = kwargs.pop('debug', False)
+        self._verbose = kwargs.pop('verbose', False)
 
         # If this class or its derived is a Framework the _inv holds another
         # Inversion which allows us (remove me)........
@@ -63,6 +63,7 @@ class Inversion(object):
 
         if fop is not None:
             self.setForwardOperator(fop)
+
 
     def reset(self):
         """"""
@@ -271,6 +272,13 @@ class Inversion(object):
     def minDPhi(self, dPhi):
         return self.setDeltaChiStop(dPhi)
 
+    @property
+    def lam(self):
+        return self.inv.getLambda()
+    @lam.setter
+    def lam(self, l):
+        self.inv.setLambda(l)
+
     def setDeltaChiStop(self, it):
         self.inv.setDeltaPhiAbortPercent(it)
 
@@ -369,7 +377,8 @@ class Inversion(object):
         self.debug   = kwargs.pop('debug', self.debug)
         self.robustData = kwargs.pop('robustData', False)
 
-        lam = kwargs.pop('lam', 20)
+        pg._g('verbose:', self.verbose, self.fop.verbose(), self.inv.verbose())
+        self.lam = kwargs.pop('lam', 20)
 
         progress = kwargs.pop('progress', None)
         showProgress = kwargs.pop('showProgress', False)
@@ -385,8 +394,7 @@ class Inversion(object):
 
         self.inv.setData(self._dataVals)
         self.inv.setRelativeError(self._errorVals)
-        self.inv.setLambda(lam)
-
+        
         # temporary set max iter to one for the initial run call
         maxIterTmp = self.maxIter
         self.maxIter = 1
@@ -473,7 +481,7 @@ class Inversion(object):
                 self._postStep(i, self)
 
             ### we need to check  the following before oder after chi2 calc??
-            self.inv.setLambda(self.inv.getLambda() * self.inv.lambdaFactor())
+            self.lam = self.lam * self.inv.lambdaFactor()
 
             if self.robustData:
                 self.inv.robustWeighting()
@@ -486,7 +494,7 @@ class Inversion(object):
 
             if self.verbose:
                 print("chi² = {0} (dPhi = {1}%) lam: {2}".format(
-                            round(chi2, 2), round((1-dPhi)*100, 2), self.inv.getLambda()))
+                            round(chi2, 2), round((1-dPhi)*100, 2), self.lam))
 
             if chi2 <= 1 and self.stopAtChi1:
                 print("\n")
