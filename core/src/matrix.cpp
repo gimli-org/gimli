@@ -37,7 +37,8 @@ void toEigenMatrix(const RMatrix & m, SmallMatrix & r){
 
     for (Index i=0; i < r.rows(); i ++){
 #if USE_EIGEN3
-        r(i, Eigen::all) = Eigen::Map <const Eigen::VectorXd>(&m[i][0], r.cols());
+        r(i, Eigen::all) = Eigen::Map <const Eigen::VectorXd>(&m[i][0],
+                                                              r.cols());
 #else
     for (Index j=0; j < r.cols(); j ++){
         r(i,j) = m(i,j);
@@ -52,6 +53,29 @@ void toRMatrix(const SmallMatrix & m, RMatrix & r){
     for (Index i=0; i < r.rows(); i ++){
         for (Index j=0; j < r.cols(); j ++){
             r(i,j) = m(i,j);
+        }
+    }
+}
+
+void toRVector(const Eigen::VectorXd & m, RVector & r, double b){
+    r.resize(m.size());
+
+    // optimize if in use
+    if (b == 0.0){
+        for (Index i=0; i < m.size(); i ++){
+            r[i] = m(i);
+        }
+    } else if (b == 1.0){
+        for (Index i=0; i < m.size(); i ++){
+            r[i] += m(i);
+        }
+    } else if (b == -1.0){
+        for (Index i=0; i < m.size(); i ++){
+            r[i] -= m(i);
+        }
+    } else if (b == -1.0){
+        for (Index i=0; i < m.size(); i ++){
+            r[i] = m(i) + r[i] * b;
         }
     }
 }

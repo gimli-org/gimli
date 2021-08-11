@@ -1511,13 +1511,13 @@ def assembleNeumannBC(rhs, boundaryPairs, nDim=1, time=0.0, userData={},
                     # print(Se)
                     # pg.info(sum(Se.row(0)))
                     # pg.info(Se.row(0), gd, idx)
-                    rhs.addVal(Se.row(0) * gd, idx)
+                    rhs.addVal(Se.row_RM(0) * gd, idx)
                     #rhs.setVal(Se.row(0) * gd, idx)
                     # rhs.add(Se, g)
                 else:
                     # check
                     #pg.error('check')
-                    rhs[idx] += Se.row(0) * gd
+                    rhs[idx] += Se.row_RM(0) * gd
 
                     # for i, j in enumerate(Se.ids()):
                     #     rhs[j + dim*dof] += Se.row(0)[i] * gd
@@ -1700,7 +1700,7 @@ def assembleLoadVector(mesh, f, userData={}):
     Maybe we will remove this
     """
     pg.deprecate('createLoadVector') # 20200115
-    return VectorcreateLoadVector(mesh, f, userData)
+    return createLoadVector(mesh, f, userData)
 
 
 def createForceVector(mesh, f, userData={}):

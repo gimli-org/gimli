@@ -52,7 +52,12 @@ template <> void SparseMapMatrix< double, Index >::
     for (Index i = 0, imax = A.rows(); i < imax; i++){
         for (Index j = 0, jmax = A.mat().cols(); j < jmax; j++){
             double v = A.getVal(i, j) * scale;
-                this->addVal(A.rowIDs()[i], A.colIDs()[j], v);
+            // if (isnan(v)){
+            //     THROW_TO_IMPL
+            // }
+            // __MS(A.rowIDs()[i], A.colIDs()[j], v)
+            this->addVal(A.rowIDs()[i], A.colIDs()[j], v);
+
             if (::fabs(v) > tol){
                 // __MS(A.rowIDs()[i] << " " << A.colIDs()[j] << " " << v * scale)
             }

@@ -5,4 +5,4 @@ LIB=-L ../../../../build/lib/ -lgimli
 all: test
 
 test: test.cpp
-	g++ test.cpp $(INC) -o test $(LIB)
+	g++ test.cpp $(INC) -o test $(LIB) 

@@ -22,6 +22,41 @@
 
 namespace GIMLI{
 
+#if USE_EIGEN3
+template <> Vector< double > & 
+Vector< double >::operator = (const Eigen::VectorXd & v) {
+    this->resize(v.size());
+    for (Index i=0; i < v.size(); i++){
+        this->data_[i] = v(i);
+    }
+    return *this;
+}
+template <> Vector< double > & 
+Vector< double >::operator += (const Eigen::VectorXd & v) {
+    this->resize(v.size());
+    for (Index i=0; i < v.size(); i++){
+        this->data_[i] += v(i);
+    }
+    return *this;
+}
+template <> Vector< double > & 
+Vector< double >::addVal(const Eigen::VectorXd & v, const IVector & ids){
+    ASSERT_EQUAL_SIZE(v, ids)
+    for (Index i=0; i < v.size(); i++){
+        this->data_[ids[i]] += v(i);
+    }
+    return *this;
+}
+template <> Vector< double > & 
+Vector< double >::setVal(const Eigen::VectorXd & v, const IVector & ids){
+    ASSERT_EQUAL_SIZE(v, ids)
+    for (Index i=0; i < v.size(); i++){
+        this->data_[ids[i]] = v(i);
+    }
+    return *this;
+}
+
+#endif    
 
 template<>
 void Vector< double >::add(const ElementMatrix < double > & A){
@@ -35,7 +70,7 @@ void Vector< double >::add(const ElementMatrix < double > & A,
         if (A.cols() == 1){
             addVal(A.col(0) * scale, A.rowIDs());
         } else {
-            addVal(A.row(0) * scale, A.ids());
+            addVal(A.mat().row(0) * scale, A.ids());
         }
     } else {
         // switch to A.mat() transpose

@@ -50,6 +50,7 @@ namespace GIMLI{
 
     void toEigenMatrix(const Matrix < double > & m, SmallMatrix & r);
     void toRMatrix(const SmallMatrix & m, Matrix < double > & r);
+    void toRVector(const Eigen::VectorXd & m, RVector & r, double b=0.0);
 
 #define SET_MAT_ROW_SLICE(A, row, RVec, b, start, end) \
     A(row, Eigen::seq(start, end-1)) = \
@@ -59,8 +60,8 @@ namespace GIMLI{
                 Eigen::Map <const Eigen::VectorXd>(&RVec[0], RVec.size()) * b;
 #define MAT_TRANS_ADD(A, B) A += B.transpose();
 #define MAT_ROW_IMUL(A, r, b) A(r, Eigen::all) *= b;
-#define RVEC_ASSIGN_MAT_ROW_MUL(c, A, k, b) c = A(k) * b;
-#define RVEC_IADD_MAT_ROW_MUL(c, A, k, b) c += A(k) * b;
+// #define RVEC_ASSIGN_MAT_ROW_MUL(c, A, k, b) toRVector(A.row(k) * b, c);
+// #define RVEC_IADD_MAT_ROW_MUL(c, A, k, b) toRVector(A.row(k) * b, c, 1.0);
 
 #else
     typedef Matrix < double > SmallMatrix;
@@ -71,8 +72,8 @@ namespace GIMLI{
                            A(row).addVal(RVec * b, start, end);
 #define MAT_TRANS_ADD(A, B) A.transAdd(B);
 #define MAT_ROW_IMUL(A, r, b) A(r) *= b;
-#define RVEC_ASSIGN_MAT_ROW_MUL(c, A, k, b) c = A(k) * b;
-#define RVEC_IADD_MAT_ROW_MUL(c, A, k, b) c += A(k) * b;
+// #define RVEC_ASSIGN_MAT_ROW_MUL(c, A, k, b) c = A(k) * b;
+// #define RVEC_IADD_MAT_ROW_MUL(c, A, k, b) c += A(k) * b;
             
 #endif
 

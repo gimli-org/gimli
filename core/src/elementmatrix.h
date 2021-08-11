@@ -333,6 +333,14 @@ public:
                                        bool elastic=false, bool sum=false,
                                        bool div=false, bool kelvin=false);
 
+    /*! Add B to this ElementMatrix depending on requested dimension.
+        Usual needed for expression (A+B)*u(dim==1) or (A+B)*v(dim!=1)
+        for dim == 1 (A + B) ## A or B is grad and need to be summed (div)
+        for dim == 0 (A + B) ## A or B is grad and need add per dimension
+    */
+    ElementMatrix < ValueType > & add(const ElementMatrix< double > & B, 
+                                      Index dim=0, double b=1.0);
+
     /*! Integrate, i.e., sum over quadrature matrices.*/
     void integrate() const;
 
@@ -481,7 +489,6 @@ template < > DLLEXPORT
 void ElementMatrix < double >::init(Index nCoeff, Index dofPerCoeff,
                                     Index dofOffset);
 
-
 #define DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__(OP) \
 template < > DLLEXPORT ElementMatrix < double > & \
 ElementMatrix < double >::operator OP##= (double val); \
@@ -492,6 +499,10 @@ DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__(/)
 DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__(*)
 
 #undef DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__
+
+template < > DLLEXPORT ElementMatrix < double > &
+ElementMatrix < double >::add(const ElementMatrix < double > & B, 
+                              Index dim, double b);
 
 
 #define DEFINE_INTEGRATOR(A_TYPE) \
