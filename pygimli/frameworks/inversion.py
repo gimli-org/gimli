@@ -377,7 +377,7 @@ class Inversion(object):
         self.debug   = kwargs.pop('debug', self.debug)
         self.robustData = kwargs.pop('robustData', False)
 
-        pg._g('verbose:', self.verbose, self.fop.verbose(), self.inv.verbose())
+        # pg._g('verbose:', self.verbose, self.fop.verbose(), self.inv.verbose())
         self.lam = kwargs.pop('lam', 20)
 
         progress = kwargs.pop('progress', None)
