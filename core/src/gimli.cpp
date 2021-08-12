@@ -64,7 +64,7 @@ std::string versionStr(){
 
     std::string vers(str(PACKAGE_NAME) + "-" + PACKAGE_VERSION);
 #if USE_EIGEN3
-    vers += " (Eigen3)"
+    vers += " (Eigen3)";
 #endif
     return vers;
 }

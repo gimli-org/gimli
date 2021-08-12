@@ -773,7 +773,7 @@ ElementMatrix < double > & ElementMatrix < double >::gradU2(const MeshEntity & e
         for (Index i = 0; i < w.size(); i ++ ){
             // B.T * B
             if (i > 0) beta = 1.0;
-            #ifdef USE_EIGEN3
+            #if USE_EIGEN3
                 __MS("eigen3")
             #else
             matTransMult(_B[i], _B[i], mat_, w[i] * ent.size() * C[0][0], beta);
@@ -783,7 +783,7 @@ ElementMatrix < double > & ElementMatrix < double >::gradU2(const MeshEntity & e
         for (Index i = 0; i < w.size(); i ++ ){
             // B.T * C * B
             if (i > 0) beta = 1.0;
-            #ifdef USE_EIGEN3
+            #if USE_EIGEN3
                 __MS("eigen3")
             #else
             matMultABA(_B[i], C, mat_, _abaTmp, w[i] * ent.size(), beta);
