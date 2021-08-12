@@ -169,6 +169,7 @@ ElementMatrix < double >::setMat_RM(const RMatrix & m){
 }
 template < > RMatrix 
 ElementMatrix < double >::mat_RM() const {
+    // __MS(this->mat().rows(), this->mat().cols() )
 #if USE_EIGEN3
     RMatrix r;
     toRMatrix(this->mat(), r);
@@ -1451,17 +1452,24 @@ ElementMatrix < double >::add(const ElementMatrix < double > & B,
         for (Index r=0; r < this->_matX.size(); r++){
             auto & Ar = this->_matX[r];
             const auto & Br = B.matX()[r];
-#if USE_EIGEN3
             // print("A:", Ar);
-            // print("As:", Ar.colwise().sum());
             // print("B:", Br);
+#if USE_EIGEN3
+            // print("As:", Ar.colwise().sum());
             // print("Bs:", Br.colwise().sum());
 
             Ar = Ar.colwise().sum().eval() + Br.colwise().sum();
-            // print("A2:", Ar);
 #else
-            THROW_TO_IMPL
+            for (Index i=0; i < Br.size(); i ++){
+                Ar[0] += Br[i];
+            }
+            for (Index i=1; i < Ar.size(); i ++){
+                Ar[0] += Ar[i];
+            }
+            Ar.resize(1, Ar.cols());
+            
 #endif
+            // print("A2:", Ar);
         }
     } else {
         this->resize(this->rows(), max(this->cols(), B.cols()));
@@ -1485,7 +1493,6 @@ ElementMatrix < double >::add(const ElementMatrix < double > & B,
                 }
             } else {
                 THROW_TO_IMPL
-
             }
 #else
             Ar += Br;
@@ -1908,8 +1915,8 @@ void dot(const ElementMatrix < double > & A,
             //     Aii += Ai[ids[i]];
             // }
             // double bi = 0;
-            //SmallMatrix Aii(1, Ai.cols());
-            SmallMatrix Aii(Ai.row(0));
+            SmallMatrix Aii(1, Ai.cols());
+            Aii.row(0) = Ai.row(0);
 
             for (Index i = 1; i < ids.size(); i ++){
                 Aii.row(0) += Ai.row(ids[i]);
@@ -1948,7 +1955,10 @@ void dot(const ElementMatrix < double > & A,
             }
 
             // __MS(ids)
-            SmallMatrix Bii(Bi.row(0));
+            // SmallMatrix Bii(Bi.row(0));
+            SmallMatrix Bii(1, Bi.cols());
+            Bii.row(0) = Bi.row(0);
+
             for (Index i = 1; i < ids.size(); i ++){
                 Bii.row(0) += Bi.row(ids[i]);
             }

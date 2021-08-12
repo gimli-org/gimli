@@ -439,11 +439,10 @@ public:
     }
 
     void testSmallMatrix(){
-        GIMLI::SmallMatrix A(3,3);
+        //GIMLI::SmallMatrix A(3,3);
 
-        A(0,seq(0,3)) = 1.0;
-
-        CPPUNIT_ASSERT(A(0) == std::vector< double >{1.0, 1.0, 1.0});
+        //A(0,seq(0,3)) = 1.0;
+        // CPPUNIT_ASSERT(A(0) == std::vector< double >{1.0, 1.0, 1.0});
 
     }
 
@@ -623,6 +622,19 @@ public:
 
         D.cleanRow(1);
         CPPUNIT_ASSERT(D.col(2) == GIMLI::RVector(std::vector< double >{1., 0., 1.}));
+
+        RSparseMapMatrix E(3,3);
+        for (Index i = 0; i < E.rows(); i ++ ){
+            for (Index j = 0; j < E.cols(); j ++ ){
+                A[i][j] = i*E.rows()+j;
+            }
+        }
+
+        E.reduce({0,1}, true);
+        CPPUNIT_ASSERT(E.values() == GIMLI::RVector{0, 4, 8});
+        CPPUNIT_ASSERT(E.rowIDs() == GIMLI::IVector{0, 1, 2});
+        CPPUNIT_ASSERT(E.colIDs() == GIMLI::IVector{0, 1, 2});
+    
     }
 
     void testIO(){

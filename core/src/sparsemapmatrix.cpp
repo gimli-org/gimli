@@ -22,9 +22,8 @@
 
 namespace GIMLI{
 
-
-template<>
-void SparseMapMatrix< double, Index >::copy_(const SparseMatrix< double > & S){
+template <> void 
+SparseMapMatrix< double, Index >::copy_(const SparseMatrix< double > & S){
     clear();
     cols_ = S.cols();
     rows_ = S.rows();
@@ -288,6 +287,41 @@ template <> void SparseMapMatrix< Complex, Index >::
     THROW_TO_IMPL
 }
 
+template <> void SparseMapMatrix< double, Index >::
+    reduce(const IVector & ids, bool keepDiag) {
+    
+    for (auto it = begin(); it != end();){
+
+        auto r1 = std::find(&ids[0], &ids[ids.size()], it->first.first);
+        if (r1 != &ids[ids.size()]){
+            
+            if (it->first.first != it->first.second){
+                it = C_.erase(it);
+                continue;
+            } else {
+                if (!keepDiag){
+                    it = C_.erase(it);
+                    continue;
+                }else {
+                    ++it;
+                    continue;
+                }
+            }
+        }
+        auto r2 = std::find(&ids[0], &ids[ids.size()], it->first.second);
+        if (r2 != &ids[ids.size()]){
+            it = C_.erase(it);
+            continue;
+        }
+        ++it;
+    }
+}
+template <> void SparseMapMatrix< Complex, Index >::
+    reduce(const IVector & ids, bool keepDiag) {
+    THROW_TO_IMPL
+}
+
+
 void mult(const std::vector < RSparseMapMatrix > & A,
           const RVector & b, std::vector< RVector > & ret){
     //!! implement with ompl .. refactor with above
@@ -314,5 +348,8 @@ std::vector< RVector > mult(const std::vector < RSparseMapMatrix > & A,
     mult(A, b, ret);
     return ret;
 }
+
+
+
 
 } // namespace GIMLI{

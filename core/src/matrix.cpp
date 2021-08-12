@@ -57,6 +57,7 @@ void toRMatrix(const SmallMatrix & m, RMatrix & r){
     }
 }
 
+#if USE_EIGEN3
 void toRVector(const Eigen::VectorXd & m, RVector & r, double b){
     r.resize(m.size());
 
@@ -79,7 +80,7 @@ void toRVector(const Eigen::VectorXd & m, RVector & r, double b){
         }
     }
 }
-
+#endif
 
 template < class ValueType > Vector < ValueType >
 _mult(const Matrix< ValueType > & M, const Vector < ValueType > & b) {

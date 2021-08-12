@@ -77,6 +77,9 @@ public:
                  const Vector < ValueType > vals, int stype=0)
         : SparseMatrixBase(){
         colPtr_ = std::vector < int >(colPtr.size());
+        // __MS(colPtr)
+        // __MS(rowIdx)
+        // __MS(vals)
         rowIdx_ = std::vector < int >(rowIdx.size());
         for (Index i = 0; i < colPtr_.size(); i ++ ) colPtr_[i] = colPtr[i];
         for (Index i = 0; i < rowIdx_.size(); i ++ ) rowIdx_[i] = rowIdx[i];

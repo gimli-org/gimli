@@ -44,6 +44,7 @@
 #include <vector>
 #include <set>
 #include <algorithm>
+#include <initializer_list>
 #include <numeric>
 #include <cmath>
 #include <cstring>
@@ -65,7 +66,9 @@ namespace GIMLI{
 
 template < class ValueType, class A > class __VectorExpr;
 
+// forwarding inline 
 IndexArray find(const BVector & v);
+
 DLLEXPORT IndexArray range(Index start, Index stop, Index step=1);
 DLLEXPORT IndexArray range(Index stop);
 
@@ -217,6 +220,12 @@ public:
         resize(n);
         fill(val);
     }
+    Vector(std::initializer_list< ValueType > l):
+        size_(0), data_(0), capacity_(0){
+        resize(l.size());
+        std::copy(l.begin(), l.end(), data_);
+    }
+    
     /*!
      * Construct vector from file. Shortcut for Vector::load
      */

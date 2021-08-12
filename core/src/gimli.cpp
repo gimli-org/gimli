@@ -61,7 +61,11 @@ static Index __GIMLI_THREADCOUNT__ = __setTC__();
 // extern static bool __GIMLI_DEBUG__;
 
 std::string versionStr(){
+
     std::string vers(str(PACKAGE_NAME) + "-" + PACKAGE_VERSION);
+#if USE_EIGEN3
+    vers += " (Eigen3)"
+#endif
     return vers;
 }
 
