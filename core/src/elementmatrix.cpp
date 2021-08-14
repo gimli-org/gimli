@@ -1515,8 +1515,11 @@ void ElementMatrix < double >::integrate() const {
 
         for (Index i = 0; i < nRules; i ++){
             // improve either with matrix expressions or shift w as scale
+            // __MS(_matX[i] * (w[i] * this->_ent->size()))
             MAT_TRANS_ADD(this->mat_, (_matX[i] * (w[i] * this->_ent->size())))
+            // __MS(this->mat_)
         }
+        // __MS(this->mat_)
         this->_integrated = true;
     }
 }
@@ -2014,16 +2017,7 @@ void dot(const ElementMatrix < double > & A,
     // matMult(A.mat(), B.mat(), *C.pMat(), b, 0.0);
     // __MS(C);
     // exit(1);
-
-
 }
-void dot(const ElementMatrix < double > & A,
-         const ElementMatrix < double > & B,
-         const Pos & c,
-         ElementMatrix < double > & C){
-THROW_TO_IMPL
-}
-
 void dot(const ElementMatrix < double > & A,
          const ElementMatrix < double > & B,
          const RMatrix & c,
@@ -2081,42 +2075,379 @@ void dot(const ElementMatrix < double > & A,
 
 void dot(const ElementMatrix < double > & A,
          const ElementMatrix < double > & B,
-         const FEAFunction & c, ElementMatrix < double > & C){
-    _prepDot(A, B, C);
+         const Pos & c,
+         ElementMatrix < double > & C){
 THROW_TO_IMPL
-    //  for (Index i = 0; i < w.size(); i ++ ){
-    //         // B.T * C * B
-    //         matMultABA(_B[i], C, mat_, _abaTmp, w[i] * ent.size());
-    //     }
+}
+void dot(const ElementMatrix < double > & A,
+         const ElementMatrix < double > & B,
+         const RVector & c,
+         ElementMatrix < double > & C){
+THROW_TO_IMPL
+}
+void dot(const ElementMatrix < double > & A,
+         const ElementMatrix < double > & B,
+         const PosVector & c,
+         ElementMatrix < double > & C){
+THROW_TO_IMPL
+}
+void dot(const ElementMatrix < double > & A,
+         const ElementMatrix < double > & B,
+         const std::vector < RMatrix > & c,
+         ElementMatrix < double > & C){
+THROW_TO_IMPL
+}
+void dot(const ElementMatrix < double > & A,
+         const ElementMatrix < double > & B,
+         const FEAFunction & c,
+         ElementMatrix < double > & C){
+THROW_TO_IMPL
 }
 
 const ElementMatrix < double > dot(const ElementMatrix < double > & A,
                                    const ElementMatrix < double > & B){
     return dot(A, B, 1.0);
 }
-
 void dot(const ElementMatrix < double > & A,
          const ElementMatrix < double > & B,
                ElementMatrix < double > & ret){
     return dot(A, B, 1.0, ret);
 }
 
-void dot(const ElementMatrix < double > & A,
-         const ElementMatrix < double > & B,
-         double f, SparseMatrixBase & ret, double scale){
-THROW_TO_IMPL
-    const RVector &w = *A.w();
-    
-    ElementMatrix < double > dAB;
-
-    //** ret = ret + scale * (A.T * B * f)
-    for (Index i = 0; i < w.size(); i ++ ){
-
-    }
-
-
+#define DEFINE_DOT_MULT_WITH_RETURN(A_TYPE) \
+ElementMatrix < double > dot(const ElementMatrix < double > & A, \
+                             const ElementMatrix < double > & B, \
+                             A_TYPE c){ \
+    ElementMatrix < double > C; \
+    dot(A, B, c, C); \
+    return C; \
+} \
+ElementMatrix < double > mult(const ElementMatrix < double > & A, \
+                                    A_TYPE b){ \
+    ElementMatrix < double > C; \
+    mult(A, b, C); \
+    return C; \
 }
 
+DEFINE_DOT_MULT_WITH_RETURN(double)
+DEFINE_DOT_MULT_WITH_RETURN(const RVector &)
+DEFINE_DOT_MULT_WITH_RETURN(const Pos &)
+DEFINE_DOT_MULT_WITH_RETURN(const PosVector &)
+DEFINE_DOT_MULT_WITH_RETURN(const RMatrix &)
+DEFINE_DOT_MULT_WITH_RETURN(const std::vector < RMatrix > &)
+DEFINE_DOT_MULT_WITH_RETURN(const FEAFunction &)
+
+#undef DEFINE_DOT_MULT_WITH_RETURN
+
+// this *= const. Scalar
+void mult(const ElementMatrix < double > & A, double f,
+          ElementMatrix < double > & C){
+
+    C.copyFrom(A, false);
+    const RVector &w = *A.w();
+    Index nRules(w.size());
+
+    for (Index r = 0; r < nRules; r++){
+        SmallMatrix & iC = (*C.pMatX())[r];
+
+        for (Index k = 0; k < iC.rows(); k ++){
+            iC.row(k) *= f;
+           
+        }
+        // __MS("r", r, rt)
+    }
+    C.integrate();
+}
+// this *= constant Pos
+void mult(const ElementMatrix < double > & A, const Pos & f,
+          ElementMatrix < double > & C){
+    C.copyFrom(A, false);
+
+    const PosVector &x = *A.x();
+    const RVector &w = *A.w();
+
+    Index nRules(x.size());
+
+    for (Index r = 0; r < nRules; r++){
+        SmallMatrix & iC = (*C.pMatX())[r];
+
+        for (Index k = 0; k < iC.rows(); k ++){
+            iC.row(k) *= f[k];
+        }
+    }
+    C.integrate();
+}
+// this *= scalar per quadrature
+void mult(const ElementMatrix < double > & A, const RVector & b,
+          ElementMatrix < double > & C){
+    C.copyFrom(A, false);
+    //const PosVector &x = *A.x();
+
+    Index nRules(C.w()->size());
+
+    ASSERT_VEC_SIZE(b, nRules)
+    ASSERT_VEC_SIZE(C.matX(), nRules)
+
+    for (Index r = 0; r < nRules; r++){
+        SmallMatrix & mr = (*C.pMatX())[r];
+        // print("iC:", mr);
+        for (Index k = 0; k < mr.rows(); k ++){
+            // print('r', r, 'k', k, mr(k), b[r]);
+            MAT_ROW_IMUL(mr, k, b[r])
+        }
+    }
+    C.integrate();
+}
+// vector per quadrature
+void mult(const ElementMatrix < double > & A, const PosVector & f,
+          ElementMatrix < double > & C){
+    // result is no bilinear form, so keep it a rowMatrix check!!
+
+    C.copyFrom(A, false);
+    const PosVector &x = *A.x();
+
+    Index nRules(x.size());
+
+    ASSERT_VEC_SIZE(f, nRules)
+    ASSERT_VEC_SIZE(C.matX(), nRules)
+
+    for (Index r = 0; r < nRules; r++){
+        SmallMatrix & iC = (*C.pMatX())[r];
+        for (Index k = 0; k < iC.rows(); k ++){
+            // __MS(r << " " << k << " " << b[r][k])
+            iC.row(k) *= f[r][k];
+        }
+        // __MS(iC)
+    }
+    C.integrate();
+}
+// constant Matrix
+void mult(const ElementMatrix < double > & A, const RMatrix &  b,
+          ElementMatrix < double > & C){
+
+    // result is no bilinear form, so keep it a rowMatrix
+
+    C.copyFrom(A, false);
+
+    if (b.rows() != A.matX()[0].rows()){
+        __MS(b)
+        __MS(A.matX()[0])
+        log(Error, "Parameter matrix rows need to match Element sub matrix rows: ",
+            A.matX()[0].rows());
+        return;
+    }
+
+    const PosVector &x = *A.x();
+    const RVector &w = *A.w();
+
+    Index nRules(x.size());
+
+    // __MS(A.rows(), A.cols())
+    // __MS(b.rows(), b.cols())
+    // __MS(C.rows(), C.cols())
+#if USE_EIGEN3
+    SmallMatrix be;
+    toEigenMatrix(b, be);
+#endif
+
+    double beta = 0.0;
+    for (Index i = 0; i < nRules; i++){
+        if (i > 0) beta = 1.0;
+
+        SmallMatrix & Ci = (*C.pMatX())[i];
+        const SmallMatrix & Ai = A.matX()[i];
+        // A.T * C
+        Ci *= 0.0; // test and optimize me with C creation
+        //matTransMult(Ai, b, Ci, 1.0, beta);
+        // result is no bilinear form, so keep it a rowMatrix
+#if USE_EIGEN3
+        matMult(be, Ai, Ci, 1.0, beta);
+#else
+        matMult(b, Ai, Ci, 1.0, beta);
+#endif
+    }
+
+    C.integrate(); // check if necessary
+}
+
+// matrix per quadrature
+void mult(const ElementMatrix < double > & A, const std::vector < RMatrix > & b,
+          ElementMatrix < double > & C){
+    C.copyFrom(A, false);
+    const PosVector &x = *A.x();
+
+    Index nRules(x.size());
+
+    ASSERT_VEC_SIZE(b, nRules)
+    ASSERT_VEC_SIZE(C.matX(), nRules)
+
+    double beta = 0.0;
+    for (Index i = 0; i < nRules; i++){
+        if (i > 0) beta = 1.0;
+
+        SmallMatrix & Ci = (*C.pMatX())[i];
+        const SmallMatrix & Ai = A.matX()[i];
+        // A.T * C
+        Ci *= 0.0; // test and optimize me with C creation
+#if USE_EIGEN3
+        __MS("EIGENNEEDFIX")
+#else
+        matTransMult(Ai, b[i], Ci, 1.0, beta);
+#endif
+    }
+    C.integrate();
+}
+
+void mult(const ElementMatrix < double > & A, const FEAFunction & b,
+          ElementMatrix < double > & C){
+    // refactor with above
+    // __MS(b.valueSize())
+    if (b.valueSize() == 1){
+        if (b.evalOnCellCenter()){
+            return mult(A, b.evalR1(A.entity()->center(), A.entity()), C);
+        }
+        RVector e;
+        evaluateQuadraturePoints(*A.entity(), *A.x(), b, e);
+        mult(A, e, C);
+    } else if (b.valueSize() == 3){
+        if (b.evalOnCellCenter()){
+            return mult(A, b.evalR3(A.entity()->center(), A.entity()), C);
+        }
+        PosVector e;
+        evaluateQuadraturePoints(*A.entity(), *A.x(), b, e);
+        mult(A, e, C);
+    } else {
+        if (b.evalOnCellCenter()){
+            return mult(A, b.evalRM(A.entity()->center(), A.entity()), C);
+        }
+        std::vector < RMatrix > e;
+        evaluateQuadraturePoints(*A.entity(), *A.x(), b, e);
+        mult(A, e, C);
+    }
+
+    return;
+}
+
+#define INTEGRATE_LINFORM(_F)\
+    const RVector &w = *this->_w; \
+    Index nRules(w.size()); \
+    ASSERT_VEC_SIZE(this->matX(), nRules) \
+    RVector rt(this->rows()); \
+    for (Index r = 0; r < nRules; r++){ \
+        const SmallMatrix &mr(this->_matX[r]); \
+        for (Index k = 0; k < mr.rows(); k ++){\
+            if (r == 0 && k == 0){ \
+                rt = mr.row(k) * w[r] _F; \
+            } else { \
+                rt += mr.row(k) * w[r] _F; \
+            }\
+        }\
+    }
+
+//** R = mult * const. scalar (R final form)
+template < >
+void ElementMatrix < double >::integrate(double f, 
+                                         RVector & R, double scale) const { 
+    INTEGRATE_LINFORM()
+    rt *= this->_ent->size() * f * scale;
+    R.addVal(rt, this->rowIDs());
+}
+//** R = mult * const. vector (R final form)
+template < >
+void ElementMatrix < double >::integrate(const Pos & f, 
+                                         RVector & R, double scale) const { 
+    INTEGRATE_LINFORM(*f[k])
+    rt *= this->_ent->size() * scale;
+    R.addVal(rt, this->rowIDs());
+}
+//** R = mult * scalar per quadr. (R final form)
+template < >
+void ElementMatrix < double >::integrate(const RVector & f, 
+                                         RVector & R, double scale) const { 
+    ASSERT_VEC_SIZE(f, this->_w->size())
+    INTEGRATE_LINFORM(*f[r])
+    rt *= this->_ent->size() * scale;
+    R.addVal(rt, this->rowIDs());
+}
+//** R = mult * vector per quadr. (R final form)
+template < >
+void ElementMatrix < double >::integrate(const PosVector & f, 
+                                         RVector & R, double scale) const { 
+    ASSERT_VEC_SIZE(f, this->_w->size())
+    INTEGRATE_LINFORM(*f[r][k])
+    rt *= this->_ent->size() * scale;
+    R.addVal(rt, this->rowIDs());
+}
+
+#define DEFINE_INTEGRATOR(A_TYPE) \
+template < > \
+void ElementMatrix < double >::integrate(A_TYPE f, \
+                                         RVector & R, double scale) const { \
+    THROW_TO_IMPL \
+}\
+
+// DEFINE_INTEGRATOR(double)   // const scalar
+// DEFINE_INTEGRATOR(Pos)      // const vector
+// DEFINE_INTEGRATOR(RVector)  // scalar for each quadr
+// DEFINE_INTEGRATOR(PosVector)  // vector for each quadr
+DEFINE_INTEGRATOR(const RMatrix & )  // const Matrix
+DEFINE_INTEGRATOR(const std::vector< RMatrix > &)// matrix for each quadrs
+DEFINE_INTEGRATOR(const FEAFunction &)
+#undef DEFINE_INTEGRATOR
+
+#define DEFINE_INTEGRATOR(A_TYPE) \
+template < > \
+void ElementMatrix < double >::integrate(const ElementMatrix < double > & B, \
+                                A_TYPE f, SparseMatrixBase & A, double scale) \
+                       const { \
+    ElementMatrix < double > dAB; \
+    dot(*this, B, f, dAB); \
+    A.add(dAB, scale); \
+} 
+
+DEFINE_INTEGRATOR(double)   // const scalar
+DEFINE_INTEGRATOR(const RMatrix &)  // const Matrix
+#undef DEFINE_INTEGRATOR
+
+#define DEFINE_INTEGRATOR(A_TYPE) \
+template < > \
+void ElementMatrix < double >::integrate(const ElementMatrix < double > & B, \
+                                A_TYPE f, SparseMatrixBase & A, double scale) \
+                       const { \
+    ElementMatrix < double > dAB; \
+    ElementMatrix < double > mf; \
+    GIMLI::mult(*this, f, mf); \
+    dot(mf, B, 1, dAB); \
+    A.add(dAB, scale); \
+}
+
+DEFINE_INTEGRATOR(const RVector &)  // scalar for each quadr
+DEFINE_INTEGRATOR(const std::vector< RMatrix > &)// matrix for each quadrs
+#undef DEFINE_INTEGRATOR
+
+
+// v * R3 * v : don't know if realy needed
+template < >
+void ElementMatrix < double >::integrate(const ElementMatrix < double > & B, 
+                                         const Pos & f, 
+                                         SparseMatrixBase & A, double scale) 
+                                         const { 
+THROW_TO_IMPL
+}
+// v * R3(x) * v : don't know if realy needed
+template < >
+void ElementMatrix < double >::integrate(const ElementMatrix < double > & B, 
+                                         const PosVector & f, 
+                                         SparseMatrixBase & A, double scale) 
+                                         const { 
+THROW_TO_IMPL
+}
+template < >
+void ElementMatrix < double >::integrate(const ElementMatrix < double > & B, 
+                                         const FEAFunction & f, 
+                                         SparseMatrixBase & A, double scale) const { 
+THROW_TO_IMPL
+}
 
 
 void evaluateQuadraturePoints(const Mesh & mesh, Index order,
@@ -2220,356 +2551,6 @@ void evaluateQuadraturePoints(const Mesh & mesh, Index order,
                               std::vector< std::vector< RMatrix > > & ret){
     evaluateQuadraturePoints_(mesh, order, f, ret);
 }
-
-// constant Scalar
-void mult(const ElementMatrix < double > & A, double f,
-          ElementMatrix < double > & C){
-
-    C.copyFrom(A, false);
-    const RVector &w = *A.w();
-    Index nRules(w.size());
-
-    for (Index r = 0; r < nRules; r++){
-        SmallMatrix & iC = (*C.pMatX())[r];
-
-        for (Index k = 0; k < iC.rows(); k ++){
-            iC.row(k) *= f;
-           
-        }
-        // __MS("r", r, rt)
-    }
-    C.integrate();
-}
-
-//** Integrate const scalar
-template < >
-void ElementMatrix < double >::integrate(const double & f, RVector & rt) const { 
-
-    const RVector &w = *this->_w;
-    Index nRules(w.size());
-
-    ASSERT_VEC_SIZE(this->matX(), nRules)
-
-    rt.resize(this->rows());
-                
-    for (Index r = 0; r < nRules; r++){
-        const SmallMatrix &mr(this->_matX[r]);
-
-        for (Index k = 0; k < mr.rows(); k ++){
-            // __MS(r, " ", k)
-            if (r == 0 && k == 0){
-                rt = mr.row(k) * w[r];
-            } else {
-                rt += mr.row(k) * w[r];
-            }
-            // __MS(rt)
- 
-        }
-    }
-    rt *= this->_ent->size() * f;
-}
-
-// constant Pos
-void mult(const ElementMatrix < double > & A, const Pos & f,
-          ElementMatrix < double > & C){
-    C.copyFrom(A, false);
-
-    const PosVector &x = *A.x();
-    const RVector &w = *A.w();
-
-    Index nRules(x.size());
-
-    for (Index r = 0; r < nRules; r++){
-        SmallMatrix & iC = (*C.pMatX())[r];
-
-        for (Index k = 0; k < iC.rows(); k ++){
-            iC.row(k) *= f[k];
-        }
-    }
-    C.integrate();
-}
-//** Integrate vector per quadrature
-template < >
-void ElementMatrix < double >::integrate(const Pos & f, RVector & rt) const { 
-
-    const RVector &w = *this->_w;
-    Index nRules(w.size());
-
-    ASSERT_VEC_SIZE(this->matX(), nRules)
-    rt.resize(this->rows());
-                
-    for (Index r = 0; r < nRules; r++){
-        const SmallMatrix &mr(this->_matX[r]);
-            
-        for (Index k = 0; k < mr.rows(); k ++){
-
-            if (r == 0 && k == 0){
-                rt = mr.row(k) * w[r] * f[k];
-            } else {
-                rt += mr.row(k) * w[r] * f[k];
-            }
-        }
-    }
-    rt *= this->_ent->size();
-}
-
-// scalar per quadrature
-void mult(const ElementMatrix < double > & A, const RVector & b,
-          ElementMatrix < double > & C){
-    C.copyFrom(A, false);
-    //const PosVector &x = *A.x();
-
-    Index nRules(C.w()->size());
-
-    ASSERT_VEC_SIZE(b, nRules)
-    ASSERT_VEC_SIZE(C.matX(), nRules)
-
-    for (Index r = 0; r < nRules; r++){
-        SmallMatrix & mr = (*C.pMatX())[r];
-        // print("iC:", mr);
-        for (Index k = 0; k < mr.rows(); k ++){
-            // print('r', r, 'k', k, mr(k), b[r]);
-            MAT_ROW_IMUL(mr, k, b[r])
-        }
-    }
-    C.integrate();
-}
-//** Integrate scalar per quadrature
-template < >
-void ElementMatrix < double >::integrate(const RVector & f, RVector & rt) const { 
-
-    const RVector &w = *this->_w;
-    Index nRules(w.size());
-
-    ASSERT_VEC_SIZE(this->matX(), nRules)
-
-    rt.resize(this->rows());
-                
-    for (Index r = 0; r < nRules; r++){
-        const SmallMatrix &mr(this->_matX[r]);
-            
-        for (Index k = 0; k < mr.rows(); k ++){
-
-            if (r == 0 && k == 0){
-                rt = mr.row(k) * w[r] * f[r];
-            } else {
-                rt += mr.row(k) * w[r] * f[r];
-            }
-        }
-    }
-    rt *= this->_ent->size();
-}
-
-// vector per quadrature
-void mult(const ElementMatrix < double > & A, const PosVector & f,
-          ElementMatrix < double > & C){
-    // result is no bilinear form, so keep it a rowMatrix check!!
-
-    C.copyFrom(A, false);
-    const PosVector &x = *A.x();
-
-    Index nRules(x.size());
-
-    ASSERT_VEC_SIZE(f, nRules)
-    ASSERT_VEC_SIZE(C.matX(), nRules)
-
-    for (Index r = 0; r < nRules; r++){
-        SmallMatrix & iC = (*C.pMatX())[r];
-        for (Index k = 0; k < iC.rows(); k ++){
-            // __MS(r << " " << k << " " << b[r][k])
-            iC.row(k) *= f[r][k];
-        }
-        // __MS(iC)
-    }
-    C.integrate();
-}
-//** Integrate vector per quadrature
-template < >
-void ElementMatrix < double >::integrate(const PosVector & f, RVector & rt) const { 
-
-    const RVector &w = *this->_w;
-    Index nRules(w.size());
-
-    ASSERT_VEC_SIZE(this->matX(), nRules)
-    ASSERT_VEC_SIZE(f, nRules)
-    rt.resize(this->rows());
-                
-    for (Index r = 0; r < nRules; r++){
-        const SmallMatrix &mr(this->_matX[r]);
-            
-        for (Index k = 0; k < mr.rows(); k ++){
-
-            if (r == 0 && k == 0){
-                rt = mr.row(k) * w[r] * f[r][k];
-            } else {
-                rt += mr.row(k) * w[r] * f[r][k];
-            }
-        }
-    }
-    rt *= this->_ent->size();
-}
-
-// constant Matrix
-void mult(const ElementMatrix < double > & A, const RMatrix &  b,
-          ElementMatrix < double > & C){
-
-    // result is no bilinear form, so keep it a rowMatrix
-
-    C.copyFrom(A, false);
-
-    if (b.rows() != A.matX()[0].rows()){
-        __MS(b)
-        __MS(A.matX()[0])
-        log(Error, "Parameter matrix rows need to match Element sub matrix rows: ",
-            A.matX()[0].rows());
-        return;
-    }
-
-    const PosVector &x = *A.x();
-    const RVector &w = *A.w();
-
-    Index nRules(x.size());
-
-    // __MS(A.rows(), A.cols())
-    // __MS(b.rows(), b.cols())
-    // __MS(C.rows(), C.cols())
-#if USE_EIGEN3
-    SmallMatrix be;
-    toEigenMatrix(b, be);
-#endif
-
-    double beta = 0.0;
-    for (Index i = 0; i < nRules; i++){
-        if (i > 0) beta = 1.0;
-
-        SmallMatrix & Ci = (*C.pMatX())[i];
-        const SmallMatrix & Ai = A.matX()[i];
-        // A.T * C
-        Ci *= 0.0; // test and optimize me with C creation
-        //matTransMult(Ai, b, Ci, 1.0, beta);
-        // result is no bilinear form, so keep it a rowMatrix
-#if USE_EIGEN3
-        matMult(be, Ai, Ci, 1.0, beta);
-#else
-        matMult(b, Ai, Ci, 1.0, beta);
-#endif
-    }
-
-    C.integrate(); // check if necessary
-}
-
-
-// matrix per quadrature
-void mult(const ElementMatrix < double > & A, const std::vector < RMatrix > & b,
-          ElementMatrix < double > & C){
-    C.copyFrom(A, false);
-    const PosVector &x = *A.x();
-
-    Index nRules(x.size());
-
-    ASSERT_VEC_SIZE(b, nRules)
-    ASSERT_VEC_SIZE(C.matX(), nRules)
-
-    double beta = 0.0;
-    for (Index i = 0; i < nRules; i++){
-        if (i > 0) beta = 1.0;
-
-        SmallMatrix & Ci = (*C.pMatX())[i];
-        const SmallMatrix & Ai = A.matX()[i];
-        // A.T * C
-        Ci *= 0.0; // test and optimize me with C creation
-#if USE_EIGEN3
-        __MS("EIGENNEEDFIX")
-#else
-        matTransMult(Ai, b[i], Ci, 1.0, beta);
-#endif
-    }
-    C.integrate();
-}
-
-void mult(const ElementMatrix < double > & A, const FEAFunction & b,
-          ElementMatrix < double > & C){
-    // refactor with above
-    // __MS(b.valueSize())
-    if (b.valueSize() == 1){
-        if (b.evalOnCellCenter()){
-            return mult(A, b.evalR1(A.entity()->center(), A.entity()), C);
-        }
-        RVector e;
-        evaluateQuadraturePoints(*A.entity(), *A.x(), b, e);
-        mult(A, e, C);
-    } else if (b.valueSize() == 3){
-        if (b.evalOnCellCenter()){
-            return mult(A, b.evalR3(A.entity()->center(), A.entity()), C);
-        }
-        PosVector e;
-        evaluateQuadraturePoints(*A.entity(), *A.x(), b, e);
-        mult(A, e, C);
-    } else {
-        if (b.evalOnCellCenter()){
-            return mult(A, b.evalRM(A.entity()->center(), A.entity()), C);
-        }
-        std::vector < RMatrix > e;
-        evaluateQuadraturePoints(*A.entity(), *A.x(), b, e);
-        mult(A, e, C);
-    }
-
-    return;
-}
-
-#define DEFINE_INTEGRATOR(A_TYPE) \
-template < > \
-void ElementMatrix < double >::integrate(const A_TYPE & f, RVector & r) const { \
-    THROW_TO_IMPL \
-}\
-
-// DEFINE_INTEGRATOR(double)   // const scalar
-// DEFINE_INTEGRATOR(Pos)      // const vector
-DEFINE_INTEGRATOR(RMatrix)  // const Matrix
-// DEFINE_INTEGRATOR(RVector)  // scalar for each quadr
-// DEFINE_INTEGRATOR(PosVector)  // vector for each quadr
-DEFINE_INTEGRATOR(std::vector< RMatrix >)// matrix for each quadrs
-
-#undef DEFINE_INTEGRATOR
-
-#define DEFINE_INTEGRATOR(A_TYPE) \
-template < > \
-void ElementMatrix < double >::integrate(const ElementMatrix < double > & R, \
-                       const A_TYPE & f, SparseMatrixBase & A) const { \
-    THROW_TO_IMPL \
-} \
-
-DEFINE_INTEGRATOR(double)   // const scalar
-DEFINE_INTEGRATOR(Pos)      // const vector
-DEFINE_INTEGRATOR(RMatrix)  // const Matrix
-DEFINE_INTEGRATOR(RVector)  // scalar for each quadr
-DEFINE_INTEGRATOR(PosVector)  // vector for each quadr
-DEFINE_INTEGRATOR(std::vector< RMatrix >)// matrix for each quadrs
-
-#undef DEFINE_INTEGRATOR
-
-
-#define DEFINE_DOT_MULT_WITH_RETURN(A_TYPE) \
-const ElementMatrix < double > dot(const ElementMatrix < double > & A, \
-                                   const ElementMatrix < double > & B, \
-                                   A_TYPE c){ \
-    ElementMatrix < double > C; \
-    dot(A, B, c, C); \
-    return C; \
-} \
-const ElementMatrix < double > mult(const ElementMatrix < double > & A, \
-                                    A_TYPE b){ \
-    ElementMatrix < double > C; \
-    mult(A, b, C); \
-    return C; \
-}
-DEFINE_DOT_MULT_WITH_RETURN(double)
-DEFINE_DOT_MULT_WITH_RETURN(const Pos &)
-DEFINE_DOT_MULT_WITH_RETURN(const RMatrix &)
-DEFINE_DOT_MULT_WITH_RETURN(const FEAFunction &)
-
-#undef DEFINE_DOT_MULT_WITH_RETURN
-
 
 void sym(const ElementMatrix < double > & A, ElementMatrix < double > & B){
     B.copyFrom(A, false);

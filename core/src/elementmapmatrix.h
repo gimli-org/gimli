@@ -65,7 +65,6 @@ public:
 
     const std::vector < PosVector > & quadraturePoints() const;
 
-
     void add(Index row, const ElementMatrix < double > & Ai);
 
     //TODO .. check if its the same like mult(a-b, m-n))
@@ -75,10 +74,11 @@ public:
     /*! Return (S_i * a) * b for all i*/
     RVector mult(const RVector & a, const RVector & b) const;
 
+    Index size() const { return mats_.size();}
+
     Index rows() const { return rows_; }
 
     Index cols() const { return cols_; }
-
 
 protected:
     std::vector< ElementMatrix < double > > mats_;

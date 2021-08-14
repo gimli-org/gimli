@@ -410,19 +410,20 @@ public:
 
     #define DEFINE_INTEGRATOR(A_TYPE) \
         /*! Integrate linear form: r = \int_entity this * f \d entity \
-        with r = RVector(dof) and f = A_TYPE */ \
-        void integrate(const A_TYPE & f, RVector & r) const; \
+        with r = RVector(final form) and f = A_TYPE */ \
+        void integrate(A_TYPE f, RVector & r, double scale) const; \
         /*! Integrate bilinear form A = \int_mesh this * f * R \d entity \
-        with A = SparseMatrix(dof, dof) and f = A_TYPE */ \
+        with A = SparseMatrix(final form, final form) and f = A_TYPE */ \
         void integrate(const ElementMatrix < double > & R, \
-                       const A_TYPE & f, SparseMatrixBase & A) const; \
+                       A_TYPE f, SparseMatrixBase & A, double scale) const; \
         
     DEFINE_INTEGRATOR(double)   // const scalar
-    DEFINE_INTEGRATOR(RMatrix)  // const Matrix
-    DEFINE_INTEGRATOR(RVector)  // scalar for each quadr
-    DEFINE_INTEGRATOR(Pos)      // const vector //!calling order!
-    DEFINE_INTEGRATOR(PosVector)  // vector for each quadr
-    DEFINE_INTEGRATOR(std::vector< RMatrix >) // matrix for each quadrs
+    DEFINE_INTEGRATOR(const RMatrix &)  // const Matrix
+    DEFINE_INTEGRATOR(const RVector &)  // scalar for each quadr
+    DEFINE_INTEGRATOR(const Pos &)      // const vector //!calling order!
+    DEFINE_INTEGRATOR(const PosVector &)  // vector for each quadr
+    DEFINE_INTEGRATOR(const std::vector< RMatrix > &) // matrix for each quadrs
+    DEFINE_INTEGRATOR(const FEAFunction &) // matrix for each quadrs
     
     #undef DEFINE_INTEGRATOR
 
@@ -475,7 +476,6 @@ protected:
 
 private:
     /*! No copy operator. */
-
 };
 
 template < > DLLEXPORT
@@ -505,86 +505,55 @@ ElementMatrix < double >::add(const ElementMatrix < double > & B,
                               Index dim, double b);
 
 
-#define DEFINE_INTEGRATOR(A_TYPE) \
-template < > DLLEXPORT \
-void ElementMatrix < double >::integrate(const A_TYPE & f, RVector & r) const; \
-template < > DLLEXPORT \
-void ElementMatrix < double >::integrate(const ElementMatrix < double > & R, \
-                       const A_TYPE & f, SparseMatrixBase & A) const; \
-
-DEFINE_INTEGRATOR(double)   // const scalar
-DEFINE_INTEGRATOR(RMatrix)  // const Matrix
-DEFINE_INTEGRATOR(RVector)  // scalar for each quadr
-DEFINE_INTEGRATOR(Pos)      // const vector // declared after RVector so it will be tested first in py runtime !calling order!
-DEFINE_INTEGRATOR(PosVector)  // vector for each quadr
-DEFINE_INTEGRATOR(std::vector< RMatrix >) // matrix for each quadrs
-
-#undef DEFINE_INTEGRATOR
-
-
-DLLEXPORT void dot(const ElementMatrix < double > & A,
-                   const ElementMatrix < double > & B,
-                   double c, ElementMatrix < double > & ret);
-
-DLLEXPORT void dot(const ElementMatrix < double > & A,
-                   const ElementMatrix < double > & B,
-                   const Pos & c, ElementMatrix < double > & ret);
-
-DLLEXPORT void dot(const ElementMatrix < double > & A,
-                   const ElementMatrix < double > & B,
-                   const RMatrix & c, ElementMatrix < double > & ret);
-
-DLLEXPORT void dot(const ElementMatrix < double > & A,
-                   const ElementMatrix < double > & B,
-                   const FEAFunction & c, ElementMatrix < double > & ret);
-
-DLLEXPORT void dot(const ElementMatrix < double > & A,
-                   const ElementMatrix < double > & B,
-                   double f, SparseMatrixBase & ret, double scale);
-
-// DLLEXPORT void dot(const ElementMatrix < double > & A,
-//                    const ElementMatrix < double > & B,
-//                    A_TYPE c, ElementMatrix < double > & C);
-
-// declare this before mult(.., pos, C) to avoid ambiguities
-/*! scalar per quadrature point */
-DLLEXPORT void mult(const ElementMatrix < double > & A, const RVector & b,
-                    ElementMatrix < double > & C);
-/*! vector per quadrature point */
-DLLEXPORT void mult(const ElementMatrix < double > & A, const PosVector & b,
-                    ElementMatrix < double > & C);
-/*! Matrix per quadrature point */
-DLLEXPORT void mult(const ElementMatrix < double > & A,
-                    const std::vector < RMatrix > & b,
-                    ElementMatrix < double > & C);
-
-#define DEFINE_DOT_MULT(A_TYPE) \
-DLLEXPORT const ElementMatrix < double > dot( \
-                                        const ElementMatrix < double > & A, \
-                                        const ElementMatrix < double > & B, \
-                                        A_TYPE c); \
-DLLEXPORT void mult(const ElementMatrix < double > & A, A_TYPE b, \
-                    ElementMatrix < double > & C); \
-DLLEXPORT const ElementMatrix < double > mult( \
-                    const ElementMatrix < double > & A, A_TYPE b); \
-
-DEFINE_DOT_MULT(double)
-DEFINE_DOT_MULT(const Pos &)
-DEFINE_DOT_MULT(const RMatrix &)
-DEFINE_DOT_MULT(const FEAFunction &)
-
-#undef DEFINE_DOT_MULT
-
-DLLEXPORT const ElementMatrix < double > dot(
-                                        const ElementMatrix < double > & A,
-                                        const ElementMatrix < double > & B);
-// return dot(A, B, 1.0);}
-
 DLLEXPORT void dot(const ElementMatrix < double > & A,
                    const ElementMatrix < double > & B,
                    ElementMatrix < double > & ret);
-// return dot(A, B, 1.0, ret);
-// }
+
+DLLEXPORT const ElementMatrix < double > dot(const ElementMatrix < double > & A,
+                                            const ElementMatrix < double > & B);
+
+
+// // declare this before mult(.., pos, C) to avoid ambiguities
+// /*! scalar per quadrature point */
+// DLLEXPORT void mult(const ElementMatrix < double > & A, const RVector & b,
+//                     ElementMatrix < double > & C);
+// /*! vector per quadrature point */
+// DLLEXPORT void mult(const ElementMatrix < double > & A, const PosVector & b,
+//                     ElementMatrix < double > & C);
+// /*! Matrix per quadrature point */
+// DLLEXPORT void mult(const ElementMatrix < double > & A,
+//                     const std::vector < RMatrix > & b,
+//                     ElementMatrix < double > & C);
+
+
+#define DEFINE_DOT_MULT(A_TYPE) \
+DLLEXPORT void dot(const ElementMatrix < double > & A, \
+                   const ElementMatrix < double > & B, \
+                   A_TYPE c, ElementMatrix < double > & ret); \
+DLLEXPORT void mult(const ElementMatrix < double > & A, \
+                    A_TYPE b, ElementMatrix < double > & C); \
+DLLEXPORT ElementMatrix < double > dot(const ElementMatrix < double > & A, \
+                                       const ElementMatrix < double > & B, \
+                                       A_TYPE c); \
+DLLEXPORT ElementMatrix < double > mult(const ElementMatrix < double > & A, \
+                                        A_TYPE b); \
+template < > DLLEXPORT \
+void ElementMatrix < double >::integrate(A_TYPE f, \
+                                         RVector & R, double scale) const; \
+template < > DLLEXPORT \
+void ElementMatrix < double >::integrate(const ElementMatrix < double > & R, \
+                                         A_TYPE f, \
+                                    SparseMatrixBase & A, double scale) const; \
+
+DEFINE_DOT_MULT(double)
+DEFINE_DOT_MULT(const Pos &)
+DEFINE_DOT_MULT(const RVector &)
+DEFINE_DOT_MULT(const PosVector &)
+DEFINE_DOT_MULT(const RMatrix &)
+DEFINE_DOT_MULT(const std::vector < RMatrix > &)
+DEFINE_DOT_MULT(const FEAFunction &)
+
+#undef DEFINE_DOT_MULT
 
 /*!Evaluate scalars per cell.*/
 DLLEXPORT void evaluateQuadraturePoints(const MeshEntity & ent,
