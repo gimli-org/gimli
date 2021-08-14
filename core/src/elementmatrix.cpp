@@ -2426,22 +2426,6 @@ DEFINE_INTEGRATOR(const std::vector< RMatrix > &)// matrix for each quadrs
 #undef DEFINE_INTEGRATOR
 
 
-// v * R3 * v : don't know if realy needed
-template < >
-void ElementMatrix < double >::integrate(const ElementMatrix < double > & B, 
-                                         const Pos & f, 
-                                         SparseMatrixBase & A, double scale) 
-                                         const { 
-THROW_TO_IMPL
-}
-// v * R3(x) * v : don't know if realy needed
-template < >
-void ElementMatrix < double >::integrate(const ElementMatrix < double > & B, 
-                                         const PosVector & f, 
-                                         SparseMatrixBase & A, double scale) 
-                                         const { 
-THROW_TO_IMPL
-}
 template < >
 void ElementMatrix < double >::integrate(const ElementMatrix < double > & B, 
                                          const FEAFunction & f, 

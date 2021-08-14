@@ -412,10 +412,6 @@ public:
         /*! Integrate linear form: r = \int_entity this * f \d entity \
         with r = RVector(final form) and f = A_TYPE */ \
         void integrate(A_TYPE f, RVector & r, double scale) const; \
-        /*! Integrate bilinear form A = \int_mesh this * f * R \d entity \
-        with A = SparseMatrix(final form, final form) and f = A_TYPE */ \
-        void integrate(const ElementMatrix < double > & R, \
-                       A_TYPE f, SparseMatrixBase & A, double scale) const; \
         
     DEFINE_INTEGRATOR(double)   // const scalar
     DEFINE_INTEGRATOR(const RMatrix &)  // const Matrix
@@ -426,6 +422,21 @@ public:
     DEFINE_INTEGRATOR(const FEAFunction &) // matrix for each quadrs
     
     #undef DEFINE_INTEGRATOR
+
+    #define DEFINE_INTEGRATOR(A_TYPE) \
+        /*! Integrate bilinear form A = \int_mesh this * f * R \d entity \
+        with A = SparseMatrix(final form, final form) and f = A_TYPE */ \
+        void integrate(const ElementMatrix < double > & R, \
+                       A_TYPE f, SparseMatrixBase & A, double scale) const; \
+        
+    DEFINE_INTEGRATOR(double)   // const scalar
+    DEFINE_INTEGRATOR(const RMatrix &)  // const Matrix
+    DEFINE_INTEGRATOR(const RVector &)  // scalar for each quadr
+    DEFINE_INTEGRATOR(const std::vector< RMatrix > &) // matrix for each quadrs
+    DEFINE_INTEGRATOR(const FEAFunction &) // matrix for each quadrs
+    
+    #undef DEFINE_INTEGRATOR
+
 
 protected:
     mutable SmallMatrix mat_;
@@ -540,10 +551,6 @@ DLLEXPORT ElementMatrix < double > mult(const ElementMatrix < double > & A, \
 template < > DLLEXPORT \
 void ElementMatrix < double >::integrate(A_TYPE f, \
                                          RVector & R, double scale) const; \
-template < > DLLEXPORT \
-void ElementMatrix < double >::integrate(const ElementMatrix < double > & R, \
-                                         A_TYPE f, \
-                                    SparseMatrixBase & A, double scale) const; \
 
 DEFINE_DOT_MULT(double)
 DEFINE_DOT_MULT(const Pos &)
@@ -552,8 +559,36 @@ DEFINE_DOT_MULT(const PosVector &)
 DEFINE_DOT_MULT(const RMatrix &)
 DEFINE_DOT_MULT(const std::vector < RMatrix > &)
 DEFINE_DOT_MULT(const FEAFunction &)
-
 #undef DEFINE_DOT_MULT
+
+
+#define DEFINE_INTEGRATE(A_TYPE) \
+template < > DLLEXPORT \
+void ElementMatrix < double >::integrate(const ElementMatrix < double > & R, \
+                                         A_TYPE f, \
+                                    SparseMatrixBase & A, double scale) const; \
+
+DEFINE_INTEGRATE(double)
+DEFINE_INTEGRATE(const RMatrix &)
+DEFINE_INTEGRATE(const RVector &)
+DEFINE_INTEGRATE(const std::vector < RMatrix > &)
+DEFINE_INTEGRATE(const FEAFunction &)
+
+#undef DEFINE_INTEGRATE
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /*!Evaluate scalars per cell.*/
 DLLEXPORT void evaluateQuadraturePoints(const MeshEntity & ent,

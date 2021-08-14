@@ -41,11 +41,7 @@ public:
         R = RSparseMapMatrix(dof, dof) and \
             f = A_TYPE \
         */ \
-        void integrate(const ElementMatrixMap & R, const A_TYPE & f, \
-                       SparseMatrixBase & A, bool neg=false) const; \
         RVector integrate(const A_TYPE & f, bool neg=false) const; \
-        RSparseMapMatrix integrate(const ElementMatrixMap & R, \
-                                   const A_TYPE & f, bool neg=false) const; \
 
     DEFINE_INTEGRATOR(double)   // const scalar for all cells
     DEFINE_INTEGRATOR(RMatrix)  // const Matrix for all cells
@@ -58,6 +54,26 @@ public:
     DEFINE_INTEGRATOR(std::vector< std::vector< RMatrix > >)// mat for quadr. on each cells
 
     #undef DEFINE_INTEGRATOR
+
+    #define DEFINE_INTEGRATOR(A_TYPE) \
+        /*! Integrate into bilinear form R = \int_mesh this * f * R \d mesh an\
+        R = RSparseMapMatrix(dof, dof) and \
+            f = A_TYPE \
+        */ \
+        void integrate(const ElementMatrixMap & R, const A_TYPE & f, \
+                       SparseMatrixBase & A, bool neg=false) const; \
+        RSparseMapMatrix integrate(const ElementMatrixMap & R, \
+                                   const A_TYPE & f, bool neg=false) const; \
+
+    DEFINE_INTEGRATOR(double)   // const scalar for all cells
+    DEFINE_INTEGRATOR(RMatrix)  // const Matrix for all cells
+    DEFINE_INTEGRATOR(RVector)      // const scalar for each cells
+    DEFINE_INTEGRATOR(std::vector< RMatrix >)// const matrix for each cells
+    DEFINE_INTEGRATOR(std::vector< RVector >)// scalar for quadr. on each cells
+    DEFINE_INTEGRATOR(std::vector< std::vector< RMatrix > >)// mat for quadr. on each cells
+
+    #undef DEFINE_INTEGRATOR
+
 
     const std::vector< ElementMatrix < double > > & mats() const;
     

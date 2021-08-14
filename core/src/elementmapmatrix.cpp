@@ -97,35 +97,50 @@ void integrateBLPerCellT_(const ElementMatrixMap & A,
 
 }
 
-#define DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL(A_TYPE) \
+#define DEFINE_INTEGRATE_ELEMENTMAP_L_IMPL(A_TYPE) \
 void ElementMatrixMap::integrate(const A_TYPE & f, \
                                  RVector & R, bool neg) const {\
     integrateLConstT_(this, f, R, neg); \
-}\
+}
+DEFINE_INTEGRATE_ELEMENTMAP_L_IMPL(double)
+DEFINE_INTEGRATE_ELEMENTMAP_L_IMPL(Pos)
+DEFINE_INTEGRATE_ELEMENTMAP_L_IMPL(RMatrix)
+#undef DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL
+
+
+#define DEFINE_INTEGRATE_ELEMENTMAP_L_PERCELL_IMPL(A_TYPE) \
+void ElementMatrixMap::integrate(const A_TYPE & f, RVector & R, bool neg) const { integrateLPerCellT_(this, f, R, neg); \
+}
+DEFINE_INTEGRATE_ELEMENTMAP_L_PERCELL_IMPL(RVector)
+DEFINE_INTEGRATE_ELEMENTMAP_L_PERCELL_IMPL(PosVector)
+DEFINE_INTEGRATE_ELEMENTMAP_L_PERCELL_IMPL(std::vector< RMatrix >)
+DEFINE_INTEGRATE_ELEMENTMAP_L_PERCELL_IMPL(std::vector< RVector >)
+DEFINE_INTEGRATE_ELEMENTMAP_L_PERCELL_IMPL(std::vector< PosVector >)
+DEFINE_INTEGRATE_ELEMENTMAP_L_PERCELL_IMPL(std::vector< std::vector< RMatrix > >)
+#undef DEFINE_INTEGRATE_ELEMENTMAP_L_PERCELL_IMPL
+
+
+#define DEFINE_INTEGRATE_ELEMENTMAP_BL_IMPL(A_TYPE) \
 void ElementMatrixMap::integrate(const ElementMatrixMap & R, const A_TYPE & f, \
                                  SparseMatrixBase & A, bool neg) const {\
     integrateBLConstT_(*this, R, f, A, neg); \
-}\
-
-DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL(double)
-DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL(Pos)
-DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL(RMatrix)
+}
+DEFINE_INTEGRATE_ELEMENTMAP_BL_IMPL(double)
+DEFINE_INTEGRATE_ELEMENTMAP_BL_IMPL(RMatrix)
 #undef DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL
 
-#define DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL(A_TYPE) \
-void ElementMatrixMap::integrate(const A_TYPE & f, RVector & R, bool neg) const { integrateLPerCellT_(this, f, R, neg); }\
+
+#define DEFINE_INTEGRATE_ELEMENTMAP_BL_PERCELL_IMPL(A_TYPE) \
 void ElementMatrixMap::integrate(const ElementMatrixMap & R, const A_TYPE & f, \
                                  SparseMatrixBase & A, bool neg) const {\
     integrateBLPerCellT_(*this, R, f, A, neg); \
-}\
+}
+DEFINE_INTEGRATE_ELEMENTMAP_BL_PERCELL_IMPL(RVector)
+DEFINE_INTEGRATE_ELEMENTMAP_BL_PERCELL_IMPL(std::vector< RMatrix >)
+DEFINE_INTEGRATE_ELEMENTMAP_BL_PERCELL_IMPL(std::vector< RVector >) 
+DEFINE_INTEGRATE_ELEMENTMAP_BL_PERCELL_IMPL(std::vector< std::vector< RMatrix > >)
+#undef DEFINE_INTEGRATE_ELEMENTMAP_BL_PERCELL_IMPL
 
-DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL(RVector)
-DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL(PosVector)
-DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL(std::vector< RMatrix >)
-DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL(std::vector< RVector >) 
-DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL(std::vector< PosVector >)
-DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL(std::vector< std::vector< RMatrix > >)
-#undef DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL
 
 #define DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(A_TYPE) \
 RVector ElementMatrixMap::integrate(const A_TYPE & f, bool neg) const { \
@@ -136,14 +151,7 @@ RVector ElementMatrixMap::integrate(const A_TYPE & f, bool neg) const { \
     RVector R(maxR+1); \
     integrate(f, R, neg); \
     return R; \
-}\
-RSparseMapMatrix ElementMatrixMap::integrate(const ElementMatrixMap & R, \
-                                             const A_TYPE & f, bool neg) const { \
-    RSparseMapMatrix A(0,0);\
-    integrate(R, f, A, neg);\
-    return A;\
-}\
-
+}
 DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(double)
 DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(Pos)
 DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(RMatrix)
@@ -152,6 +160,21 @@ DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(PosVector)
 DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(std::vector< RMatrix >)
 DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(std::vector< RVector >)
 DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(std::vector< PosVector >)
+DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(std::vector< std::vector< RMatrix > >)
+#undef DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET
+
+#define DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(A_TYPE) \
+RSparseMapMatrix ElementMatrixMap::integrate(const ElementMatrixMap & R, \
+                                             const A_TYPE & f, bool neg) const{\
+    RSparseMapMatrix A(0,0); \
+    integrate(R, f, A, neg); \
+    return A; \
+}
+DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(double)
+DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(RMatrix)
+DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(RVector)
+DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(std::vector< RMatrix >)
+DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(std::vector< RVector >)
 DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(std::vector< std::vector< RMatrix > >)
 #undef DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET
 
