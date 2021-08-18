@@ -21,8 +21,41 @@
 
 namespace GIMLI{
 
-template<>
-void SparseMatrix< double >::copy_(const SparseMapMatrix< double, Index > & S){
+
+// template <> void 
+// SparseMatrix(const IndexArray & colPtr,
+//              const IndexArray & rowIdx,
+//              const Vector < double > vals, int stype=0)
+//         : SparseMatrixBase(){
+//         colPtr_ = std::vector < int >(colPtr.size());
+//         rowIdx_ = std::vector < int >(rowIdx.size());
+//         for (Index i = 0; i < colPtr_.size(); i ++ ) colPtr_[i] = colPtr[i];
+//         for (Index i = 0; i < rowIdx_.size(); i ++ ) rowIdx_[i] = rowIdx[i];
+//         vals_   = vals;
+//         stype_  = stype;
+//         valid_  = true;
+//         cols_ = max(rowIdx_) + 1;
+//         rows_ = colPtr_.size() - 1;
+//     }
+
+// template <> void 
+// SparseMatrix(const std::vector < int > & colPtr,
+//              const std::vector < int > & rowIdx,
+//              const Vector < double > vals, int stype=0)
+//         : SparseMatrixBase(){
+//           colPtr_ = colPtr;
+//           rowIdx_ = rowIdx;
+//           vals_   = vals;
+//           stype_  = stype;
+//           valid_  = true;
+//           cols_ = max(rowIdx_) + 1;
+//           rows_ = colPtr_.size() - 1;
+//     }
+
+
+
+template <> void 
+SparseMatrix< double >::copy_(const SparseMapMatrix< double, Index > & S){
     this->clear();
     Index col = 0, row = 0;
     double val;

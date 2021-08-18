@@ -1,6 +1,6 @@
 #include <iostream>
-#include <Eigen/Dense>
 
+#include <Eigen/Dense>
 #define USE_EIGEN3 1
 
 #include "gimli.h"
@@ -8,14 +8,10 @@
 
 using namespace GIMLI;
 
-void toEigen(const RMatrix & A_, Eigen::MatrixXd & A){
-    A.resize(A_.rows(), A_.cols());
-    for (Index i=0; i < A.rows(); i ++){
-
-        A(i, Eigen::all) = Eigen::Map <const Eigen::VectorXd>(&A_[i][0], A.cols());
-    }    
+void toRVector_(const Eigen::VectorXd & v, RVector & r){
+    print("pp:", v);
 }
-
+    
 void testMatMult(){
     Index m = 2;
     Index n = 3;
@@ -85,7 +81,9 @@ void testSetVal(){
     
     SmallMatrix A;
     toEigenMatrix(A_, A);
-    A.array()+=1.0;
+
+
+    A.array() += 1.0;
     
     SET_MAT_ROW_SLICE(A, 0, A0, 1.0, 0, 2);
     // print(Eigen::seqN(0, 2));
@@ -98,14 +96,44 @@ void testSetVal(){
     
     // A(0, Eigen::seq(0, 1)) += Eigen::Map <const Eigen::VectorXd>(&A0[0], A0.size());
     print(A);
-    
-    
-
 }
     
+void testRVectorAssign(){
+    // #define RVEC_ASSIGN_MAT_ROW_MUL(c, A, k, b) c = A(k) * b;
+    // #define RVEC_IADD_MAT_ROW_MUL(c, A, k, b) c += A(k) * b;
+    RMatrix A_(3, 3);
+    A_ += 1.0;
+
+    RVector c;
+    SmallMatrix A;
+    toEigenMatrix(A_, A);
+    //toEigenMatrix(A_, A);
+    // toEigen(A_, A);
+    
+
+
+    double k = 1.0;
+    double b = 2.0;
+    
+    // RVEC_ASSIGN_MAT_ROW_MUL(c, A, k, b)
+    // RVEC_IADD_MAT_ROW_MUL(c, A, k, b)
+    
+    //print(A.row(0)*b);
+    //toRVector_(A.row(0)*b, c);
+    c = A.row(k)*b;
+    c += A.row(k)*b;
+        
+
+    print(c);
+    //c = A_(k) * b;
+
+    c = A_(k) * b;
+    print(c);
+}
 
 int main(int argc, char ** argv){
     // testMatMult();
-    testSetVal();
+    // testSetVal();
+    testRVectorAssign();
     return 0;
 }

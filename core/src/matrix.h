@@ -50,6 +50,7 @@ namespace GIMLI{
 
     void toEigenMatrix(const Matrix < double > & m, SmallMatrix & r);
     void toRMatrix(const SmallMatrix & m, Matrix < double > & r);
+    void toRVector(const Eigen::VectorXd & m, RVector & r, double b=0.0);
 
 #define SET_MAT_ROW_SLICE(A, row, RVec, b, start, end) \
     A(row, Eigen::seq(start, end-1)) = \
@@ -59,8 +60,8 @@ namespace GIMLI{
                 Eigen::Map <const Eigen::VectorXd>(&RVec[0], RVec.size()) * b;
 #define MAT_TRANS_ADD(A, B) A += B.transpose();
 #define MAT_ROW_IMUL(A, r, b) A(r, Eigen::all) *= b;
-#define RVEC_ASSIGN_MAT_ROW_MUL(c, A, k, b) c = A(k) * b;
-#define RVEC_IADD_MAT_ROW_MUL(c, A, k, b) c += A(k) * b;
+// #define RVEC_ASSIGN_MAT_ROW_MUL(c, A, k, b) toRVector(A.row(k) * b, c);
+// #define RVEC_IADD_MAT_ROW_MUL(c, A, k, b) toRVector(A.row(k) * b, c, 1.0);
 
 #else
     typedef Matrix < double > SmallMatrix;
@@ -71,8 +72,8 @@ namespace GIMLI{
                            A(row).addVal(RVec * b, start, end);
 #define MAT_TRANS_ADD(A, B) A.transAdd(B);
 #define MAT_ROW_IMUL(A, r, b) A(r) *= b;
-#define RVEC_ASSIGN_MAT_ROW_MUL(c, A, k, b) c = A(k) * b;
-#define RVEC_IADD_MAT_ROW_MUL(c, A, k, b) c += A(k) * b;
+// #define RVEC_ASSIGN_MAT_ROW_MUL(c, A, k, b) c = A(k) * b;
+// #define RVEC_IADD_MAT_ROW_MUL(c, A, k, b) c += A(k) * b;
             
 #endif
 
@@ -392,7 +393,7 @@ public:
         : MatrixBase() {
         resize(0, 0);
     }
-     Matrix(Index rows)
+    Matrix(Index rows)
         : MatrixBase() {
         resize(rows, 0);
     }
@@ -405,6 +406,11 @@ public:
         : MatrixBase() {
         fromData(src, rows, cols);
     }
+    // Matrix(const Vector< ValueType > & r)
+    //     : MatrixBase() {
+    //     resize(1, r.size());
+    //     mat_[0] = r;
+    // }
     /*! Copy constructor */
 
     Matrix(const std::vector < Vector< ValueType > > & mat)
@@ -530,6 +536,10 @@ public:
     inline void clean() {
         for (Index i = 0; i < mat_.size(); i ++) mat_[i].clear();
     }
+    /*! Fill Vector with 0.0. Don't change size.*/
+    inline void setZero() {
+        this->operator*=(ValueType(0.0));
+    }
 
     /*! Return number of rows. */
     inline Index rows() const {
@@ -568,12 +578,16 @@ public:
         this->rowRef(i).addVal(val, j);
     }
 
+    /*! Return reference to row. Used for pygimli. */
+    inline Vector < ValueType > & row(Index i) {
+        ASSERT_THIS_SIZE(i)
+        return mat_[i];
+    }
     /*! Readonly getter. */
     inline const Vector < ValueType > & row(Index i) const {
         ASSERT_THIS_SIZE(i)
         return mat_[i];
     }
-
     /*! Return reference to row. Used for pygimli. */
     inline Vector < ValueType > & rowRef(Index i) {
         ASSERT_THIS_SIZE(i)

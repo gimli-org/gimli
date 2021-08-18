@@ -34,6 +34,7 @@
 #include <set>
 #include <vector>
 #include <algorithm>
+#include <iterator>
 #include <cassert>
 #include <iostream>
 #include <cmath>
@@ -262,6 +263,7 @@ public:
             }
         }
     }
+    void reduce(const IVector & ids, bool keepDiag=true);
 
     /*! symmetric type. 0 = nonsymmetric, -1 symmetric lower part, 1 symmetric upper part.*/
     inline int stype() const {return stype_;}
@@ -521,6 +523,32 @@ public:
             cols[i] = idx2(it);
             vals[i] = val(it);
         }
+    }
+
+    Vector< ValueType > values() const {
+        Vector< ValueType > ret(C_.size());
+        Index i = 0;
+        for (const_iterator it = this->begin(); it != this->end(); it ++, i ++){
+            ret[i] = val(it);
+        }
+        return ret;
+    }
+    IVector rowIDs() const {
+        IVector ret(C_.size());
+        Index i = 0;
+        for (const_iterator it = this->begin(); it != this->end(); it ++, i ++){
+            ret[i] = idx1(it);
+        }
+        return ret;
+    }
+    IVector colIDs() const {
+        IVector ret(C_.size());
+        Index i = 0;
+        for (const_iterator it = this->begin(); it != this->end(); it ++, i ++){
+            ret[i] = idx2(it);
+        }
+        return ret;
+        
     }
 
 protected:

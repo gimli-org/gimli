@@ -10,7 +10,7 @@ from .core import (CMatrix, CSparseMapMatrix, CSparseMatrix,
                RSparseMapMatrix, RSparseMatrix, ElementMatrix,
                IVector, MatrixBase, R3Vector, RVector)
 
-from .logger import critical, warn
+from .logger import critical, warn, error
 from .base import isArray
 
 # make core matrices (now in pgcore, later pg.core) available here for brevity
@@ -255,6 +255,10 @@ def __SparseMatrixEqual__(self, T):
 
     meanA = np.mean(abs(valsA))
     nAB = np.linalg.norm(valsA-valsB)
+    if np.isnan(nAB):
+        print(valsA)
+        print(valsB)
+        error('norm(A-B) is nan')
 
     if pgcore.deepDebug() == -1:
         print(self, T)

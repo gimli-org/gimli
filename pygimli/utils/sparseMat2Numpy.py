@@ -43,7 +43,16 @@ def toSparseMatrix(A):
     from scipy.sparse import csr_matrix
 
     if isinstance(A, csr_matrix):
-        return pg.SparseMatrix(A.indptr, A.indices, A.data)
+        #pg.core.setDeepDebug(1)
+        if len(A.data) == 0:
+            print(A.indptr, A.indices, A.data)
+            pg.error('Empty matrix conversion')
+            return pg.SparseMatrix(A.rows(), A.cols())
+
+        A = pg.SparseMatrix(A.indptr, A.indices, A.data)
+        #pg.core.setDeepDebug(0)
+        print(A)
+        return A
 
     from scipy.sparse import coo_matrix
     if isinstance(A, coo_matrix):
@@ -129,6 +138,7 @@ def sparseMatrix2csr(A):
     """
     #optImport(scipy.sparse, requiredFor="toCRS_matrix")
     from scipy.sparse import csr_matrix
+
     if isinstance(A, pg.matrix.CSparseMapMatrix):
         C = pg.utils.toSparseMatrix(A)
         return csr_matrix((C.vecVals().array(),
@@ -273,43 +283,52 @@ def reduceEntries(A, idx):
     debug = False
     if debug:
         pg.tic()
-    if 0:
+
+    if 1:
+        A.reduce(idx, True)
         for i, ix in enumerate(idx):
-            A.cleanRow(ix)
-            A.cleanCol(ix)
+            # A.cleanRow(ix)
+            # A.cleanCol(ix)
             A.setVal(ix, ix, 1.0)
         pg.toc('all', reset=True)
     else:
         if debug:
             print(A)
-            print(len(idx))
+            # print(idx)
+            # print(len(idx))
         csc = pg.utils.toCSC(A)
+        
         if debug:
             pg.toc('to csc', reset=True)
 
         csc[:,idx] *= 0
+        
         if debug:
             pg.toc('clean cols', reset=True)
 
         csr = csc.tocsr()
+        
         if debug:
             pg.toc('to csr', reset=True)
+
         csr[idx] *= 0
 
         if debug:
             pg.toc('clean rows', reset=True)
 
         csr.eliminate_zeros()
+        
         if debug:
             pg.toc('eliminate_zeros', reset=True)
 
         A.copy_(toSparseMatrix(csr))
-
+        
         if debug:
             pg.toc('to map', reset=True)
 
         for i, ix in enumerate(idx):
             A.setVal(ix, ix, 1.0)
+
         if debug:
             pg.toc('diag', reset=True)
 

@@ -44,12 +44,17 @@
 #include <vector>
 #include <set>
 #include <algorithm>
+#include <initializer_list>
 #include <numeric>
 #include <cmath>
 #include <cstring>
 #include <fstream>
 #include <cerrno>
 #include <iterator>
+
+#if USE_EIGEN3
+    #include <Eigen/Dense>
+#endif
 
 #ifdef USE_BOOST_BIND
     #include <boost/bind.hpp>
@@ -61,7 +66,9 @@ namespace GIMLI{
 
 template < class ValueType, class A > class __VectorExpr;
 
+// forwarding inline 
 IndexArray find(const BVector & v);
+
 DLLEXPORT IndexArray range(Index start, Index stop, Index step=1);
 DLLEXPORT IndexArray range(Index stop);
 
@@ -213,7 +220,12 @@ public:
         resize(n);
         fill(val);
     }
-
+    Vector(std::initializer_list< ValueType > l):
+        size_(0), data_(0), capacity_(0){
+        resize(l.size());
+        std::copy(l.begin(), l.end(), data_);
+    }
+    
     /*!
      * Construct vector from file. Shortcut for Vector::load
      */
@@ -221,7 +233,6 @@ public:
         : size_(0), data_(0), capacity_(0){
         this->load(filename, format);
     }
-
     /*!
      * Copy constructor. Create new vector as a deep copy of v.
      */
@@ -230,7 +241,6 @@ public:
         resize(v.size());
         copy_(v);
     }
-
     /*!
      * Copy constructor. Create new vector as a deep copy of the slice v[start, end)
      */
@@ -239,7 +249,6 @@ public:
         resize(end - start);
         std::copy(&v[start], &v[end], data_);
     }
-
     /*!
      * Copy constructor. Create new vector from expression
      */
@@ -280,6 +289,14 @@ public:
         return *this;
     }
 
+#if USE_EIGEN3
+    Vector< ValueType > & operator = (const Eigen::VectorXd & v);
+    Vector< ValueType > & operator += (const Eigen::VectorXd & v);
+    Vector< ValueType > & setVal(const Eigen::VectorXd & v, const IVector & ids);
+    Vector< ValueType > & addVal(const Eigen::VectorXd & v, const IVector & ids);
+
+#endif    
+
     /*! Assignment operator. Creates a new vector as from expression. */
     template < class A > Vector< ValueType > & operator = (const __VectorExpr< ValueType, A > & v) {
         assign_(v);
@@ -309,9 +326,11 @@ public:
 
     inline const Vector < ValueType > operator[](const IndexArray & i) const { return this->get_(i); }
 
-    inline Vector < ValueType > operator[](const IndexArray & i) { return this->get_(i); }
+    inline Vector < ValueType > operator[](const IndexArray & i) {
+        return this->get_(i); }
 
-    inline Vector < ValueType > operator[](const BVector & b) { return this->get_(b); }
+    inline Vector < ValueType > operator[](const BVector & b) {
+        return this->get_(b); }
 
 #ifndef PYGIMLI_CAST
     inline const ValueType & operator () (const Index i) const {

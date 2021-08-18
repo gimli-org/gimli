@@ -54,8 +54,8 @@ def isArray(v, N=None):
     False
     """
     if N is None:
-        
-        if isinstance(v, list):
+
+        if isinstance(v, (tuple,list)):
             return isScalar(v[0])
             
         return (hasattr(v, '__iter__') and \
