@@ -410,4 +410,49 @@ ElementMatrixMap createdUMap(const Mesh & mesh, Index order,
     return ret;
 }
 
+void createIdentityMap(const Mesh & mesh, Index order, 
+                       ElementMatrixMap & ret,
+                       Index nCoeff, Index dofOffset){
+
+    ret.resize(mesh.cellCount());
+    for (auto &cell: mesh.cells()){
+        ret.pMat(cell->id())->identity(*cell, order,
+                                       nCoeff, mesh.nodeCount(), dofOffset);
+    }
+}
+
+ElementMatrixMap createIdentityMap(const Mesh & mesh, Index order,
+                                   Index nCoeff, Index dofOffset){
+    ElementMatrixMap ret;
+    createIdentityMap(mesh, order, ret, nCoeff, dofOffset);
+    return ret;
+}
+
+void sym(const ElementMatrixMap & A, ElementMatrixMap & ret){
+/*! Return symmetrized copy of A as 0.5*(A + A.T). 
+ATM. Only for gradients without Voigt or Kelvin notation. 
+*/
+    ret.resize(A.size());
+    Index i = 0;
+    for (auto &m: A.mats()){
+        sym(m, *ret.pMat(i));
+        i++;
+    }
+}
+ElementMatrixMap sym(const ElementMatrixMap & A){
+    ElementMatrixMap ret;
+    sym(A, ret);
+    return ret;
+}
+
+void tr(const ElementMatrixMap & A, RVector & ret){
+    THROW_TO_IMPL
+}
+RVector tr(const ElementMatrixMap & A){
+    RVector ret;
+    tr(A, ret);
+    return ret;
+}
+
+
 } // namespace GIMLI

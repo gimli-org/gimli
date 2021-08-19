@@ -109,22 +109,40 @@ protected:
 };
 
 
-DLLEXPORT void createUMap(const Mesh & mesh, Index order,
-                          ElementMatrixMap & ret,
-                          Index nCoeff=1, Index dofOffset=0);
+DLLEXPORT void
+createUMap(const Mesh & mesh, Index order,
+           ElementMatrixMap & ret,
+           Index nCoeff=1, Index dofOffset=0);
 
-DLLEXPORT ElementMatrixMap createUMap(const Mesh & mesh, Index order,
-                                      Index nCoeff=1, Index dofOffset=0);
+DLLEXPORT ElementMatrixMap 
+createUMap(const Mesh & mesh, Index order,
+           Index nCoeff=1, Index dofOffset=0);
 
+DLLEXPORT void 
+createdUMap(const Mesh & mesh, Index order,
+            ElementMatrixMap & ret,
+            bool elastic, bool div, bool kelvin,
+            Index nCoeff=1, Index dofOffset=0);
 
-DLLEXPORT void createdUMap(const Mesh & mesh, Index order,
-                           ElementMatrixMap & ret,
-                           bool elastic, bool div, bool kelvin,
-                           Index nCoeff=1, Index dofOffset=0);
+DLLEXPORT ElementMatrixMap
+createdUMap(const Mesh & mesh, Index order,
+            bool elastic, bool div, bool kelvin,
+            Index nCoeff=1, Index dofOffset=0);
 
-DLLEXPORT ElementMatrixMap createdUMap(const Mesh & mesh, Index order,
-                                       bool elastic, bool div, bool kelvin,
-                                       Index nCoeff=1, Index dofOffset=0);
+DLLEXPORT void 
+createIdentityMap(const Mesh & mesh, Index order, 
+                  ElementMatrixMap & ret,
+                  Index nCoeff=1, Index dofOffset=0);
+
+DLLEXPORT ElementMatrixMap 
+createIdentityMap(const Mesh & mesh, Index order,
+                  Index nCoeff, Index dofOffset);
+
+DLLEXPORT ElementMatrixMap sym(const ElementMatrixMap & A);
+DLLEXPORT void sym(const ElementMatrixMap & A, ElementMatrixMap & ret);
+
+DLLEXPORT RVector tr(const ElementMatrixMap & A);
+DLLEXPORT void tr(const ElementMatrixMap & A, RVector & ret);
 
 
 } // namespace GIMLI{

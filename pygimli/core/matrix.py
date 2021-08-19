@@ -86,8 +86,12 @@ def __ElementMatrix_str(self):
 
     for i in range(self.mat_RM().rows()):
         s += str(self.rowIDs()[i]).rjust(maxRowID) + " :"
-        for v in self.row_RM(i)*self.multR:
-            s += pg.pf(v).rjust(9)
+        if isinstance(self.multR, (int, float)):
+            for v in self.row_RM(i)*self.multR:
+                s += pg.pf(v).rjust(9)
+        else:
+            for v in self.row_RM(i):
+                s += pg.pf(v).rjust(9)
         s += '\n'
     return s
 

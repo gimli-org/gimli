@@ -287,8 +287,8 @@ template <> void SparseMapMatrix< Complex, Index >::
     THROW_TO_IMPL
 }
 
-template <> void SparseMapMatrix< double, Index >::
-    reduce(const IVector & ids, bool keepDiag) {
+template <> DLLEXPORT void SparseMapMatrix< double, Index >
+::reduce(const IVector & ids, bool keepDiag) {
     
     for (auto it = begin(); it != end();){
 
@@ -316,7 +316,7 @@ template <> void SparseMapMatrix< double, Index >::
         ++it;
     }
 }
-template <> void SparseMapMatrix< Complex, Index >::
+template <> DLLEXPORT void SparseMapMatrix< Complex, Index >::
     reduce(const IVector & ids, bool keepDiag) {
     THROW_TO_IMPL
 }

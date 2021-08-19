@@ -44,13 +44,13 @@ std::ostream & operator << (std::ostream & os, const bp::object& o){
 }
 namespace r_values_impl{
 
-template < class ValueType > void * checkConvertibleSequenz(PyObject * obj){
+template < class ValueType, class SeqType > void * checkConvertibleSequenz(PyObject * obj){
     if (!obj){
         __DC("\t", obj, "\t abborting .. !Object")
         return NULL;
     }
     __DC(obj, "(", obj->ob_type->tp_name, ") -> sequenz of type ("
-            , GIMLI::type(ValueType(0)), ")", typeid(ValueType).name())
+            , GIMLI::type(ValueType(0)), ") into", typeid(SeqType).name())
          // FW: Caused problems during Mac build // still?
 
     // is obj is a sequence
@@ -68,8 +68,14 @@ template < class ValueType > void * checkConvertibleSequenz(PyObject * obj){
     if (PyObject_TypeCheck(obj, &PyArray_Type)){
         PyArrayObject *arr = (PyArrayObject *)obj;
 
-        __DC(obj, "\t numpy.ndarray to ", typeid(ValueType).name(), " "
-       , typeid(GIMLI::Index).name(), " ", typeid(float).name(), "... okay", " ndim: ", PyArray_NDIM(arr))
+        __DC(obj, "\t numpy.ndarray to: ", 
+                std::string(typeid(SeqType).name()), 
+                std::string(typeid(GIMLI::RVector).name()),
+                // typeid(GIMLI::RMatrix),
+                // typeid(GIMLI::Pos),
+                // typeid(GIMLI::Index),
+                // typeid(float), 
+                " ndim: ", PyArray_NDIM(arr))
 
         if (typeid(ValueType) == typeid(GIMLI::Pos)){
             if (PyArray_NDIM(arr) == 1){
@@ -79,7 +85,19 @@ template < class ValueType > void * checkConvertibleSequenz(PyObject * obj){
         }
         if (typeid(ValueType) == typeid(GIMLI::RMatrix)){
             if (PyArray_NDIM(arr) != 2){
-                __DC("\t", obj, "\t ndarray.ndim != 2 and is non convertable to std::vector(GIMLI::RMatrix)")
+                __DC("\t", obj, "\t ndarray.ndim != 2 and is non convertable to GIMLI::RMatrix")
+                return NULL;
+            }
+        } 
+        if (typeid(ValueType) == typeid(double) && typeid(SeqType) == typeid(GIMLI::RMatrix)) {
+            if (PyArray_NDIM(arr) != 2){
+                __DC("\t", obj, "\t ndarray.ndim != 2 and is non convertable to std::vector< RVector > ")
+                return NULL;
+            }
+        }
+        if (typeid(ValueType) == typeid(double) && typeid(SeqType) == typeid(GIMLI::RVector)) {
+            if (PyArray_NDIM(arr) != 1){
+                __DC("\t", obj, "\t ndarray.ndim != 1 and is non convertable to 1D type ")
                 return NULL;
             }
         }
@@ -204,8 +222,8 @@ struct PySequence2RVector{
 
     /*! Check if the object is convertible */
     static void * convertible(PyObject * obj){
-        __DC(obj, "(", obj->ob_type->tp_name, ") -> RVector")
-        return checkConvertibleSequenz< double >(obj);
+        __DC(obj, "check convertible (", obj->ob_type->tp_name, ") -> RVector")
+        return checkConvertibleSequenz< double, GIMLI::RVector >(obj);
     }
 
     /*! Convert List[] or ndarray into RVector */
@@ -262,8 +280,8 @@ struct PySequence2CVector{
 
     /*! Check if the object is convertible */
     static void * convertible(PyObject * obj){
-        __DC(obj, "(", obj->ob_type->tp_name, ") -> CVector")
-        return checkConvertibleSequenz<GIMLI::Complex>(obj);
+        __DC(obj, "check convertible (", obj->ob_type->tp_name, ") -> CVector")
+        return checkConvertibleSequenz<GIMLI::Complex, GIMLI::CVector>(obj);
     }
 
     /*! Convert List[] or ndarray into RVector */
@@ -346,8 +364,8 @@ struct PySequence2IndexArray{
 
     /*! Check if the object is convertible */
     static void * convertible(PyObject * obj){
-        __DC(obj, "(", obj->ob_type->tp_name, ") -> IndexArray")
-        return checkConvertibleSequenz<GIMLI::Index>(obj);
+        __DC(obj, "check convertible (", obj->ob_type->tp_name, ") -> IndexArray")
+        return checkConvertibleSequenz<GIMLI::Index, GIMLI::IndexArray>(obj);
     }
 
     /*! Convert obj into IndexArray */
@@ -374,8 +392,8 @@ struct PySequence2IVector{
 
     /*! Check if the object is convertible */
     static void * convertible(PyObject * obj){
-        __DC(obj, "(", obj->ob_type->tp_name, ") -> IVector")
-        return checkConvertibleSequenz<GIMLI::SIndex>(obj);
+        __DC(obj, "check convertible (", obj->ob_type->tp_name, ") -> IVector")
+        return checkConvertibleSequenz<GIMLI::SIndex, GIMLI::IVector>(obj);
     }
 
     /*! Convert obj into IndexArray */
@@ -401,8 +419,8 @@ private:
 
 struct PySequence2BVector{
     static void * convertible(PyObject * obj){
-        __DC(obj , "(", obj->ob_type->tp_name, ") -> BVector")
-        return checkConvertibleSequenz< bool >(obj);
+        __DC(obj , "check convertible (", obj->ob_type->tp_name, ") -> BVector")
+        return checkConvertibleSequenz< bool, GIMLI::BVector >(obj);
     }
     static void construct(PyObject* obj, bp::converter::rvalue_from_python_stage1_data * data){
         __DC(obj, "\t constructing BVector")
@@ -429,8 +447,8 @@ struct PySequence2StdVectorRVector3{
 
     /*! Check if the object is convertible */
     static void * convertible(PyObject * obj){
-         __DC(obj, "(", obj->ob_type->tp_name, ") -> StdVectorRVector3")
-        return checkConvertibleSequenz< GIMLI::Pos >(obj);
+         __DC(obj, "check convertible (", obj->ob_type->tp_name, ") -> StdVectorRVector3")
+        return checkConvertibleSequenz< GIMLI::Pos, std::vector< GIMLI::RVector3 > >(obj);
     }
 
     /*! Convert obj into RVector */
@@ -457,8 +475,8 @@ struct PySequence2R3Vector{
 
     /*! Check if the object is convertible */
     static void * convertible(PyObject * obj){
-        __DC(obj, "(", obj->ob_type->tp_name, ") -> R3Vector")
-        return checkConvertibleSequenz< GIMLI::Pos >(obj);
+        __DC(obj, "check convertible (", obj->ob_type->tp_name, ") -> R3Vector (aka PosVector)")
+        return checkConvertibleSequenz< GIMLI::Pos, GIMLI::PosVector >(obj);
     }
 
     /*! Convert obj into RVector */
@@ -485,8 +503,8 @@ struct Numpy2RMatrix{
 
     /*! Check if the object is convertible */
     static void * convertible(PyObject * obj){
-        __DC(obj, "(", obj->ob_type->tp_name, ") -> RMatrix")
-        return checkConvertibleSequenz< GIMLI::Matrix< double > >(obj);
+        __DC(obj, "check convertible (", obj->ob_type->tp_name, ") -> RMatrix")
+        return checkConvertibleSequenz< double, GIMLI::Matrix< double > >(obj);
     }
 
     /*! Convert obj into RVector */
@@ -662,7 +680,7 @@ private:
 //template <typename T, NPY_TYPES NumPyScalarType>
 struct Numpy2ULong{
     static void * convertible(PyObject * obj){
-        __DC(obj, "(", obj->ob_type->tp_name, ") -> Index(Numpy2ULong)")
+        __DC(obj, "check convertible (", obj->ob_type->tp_name, ") -> Index(Numpy2ULong)")
         return checkConvertibleNumpyScalar< GIMLI::Index >(obj);
     }
     static void construct(PyObject* obj, bp::converter::rvalue_from_python_stage1_data * data){
@@ -674,7 +692,7 @@ private:
 //template <typename T, NPY_TYPES NumPyScalarType>
 struct Numpy2Int{
     static void * convertible(PyObject * obj){
-        __DC(obj, "(", obj->ob_type->tp_name, ") -> int(Numpy2Int)")
+        __DC(obj, "check convertible (", obj->ob_type->tp_name, ") -> int(Numpy2Int)")
         return checkConvertibleNumpyScalar< GIMLI::int32 >(obj);
     }
     static void construct(PyObject* obj, bp::converter::rvalue_from_python_stage1_data * data){
@@ -686,7 +704,7 @@ private:
 //template <typename T, NPY_TYPES NumPyScalarType>
 struct Numpy2UInt{
     static void * convertible(PyObject * obj){
-        __DC(obj, "(", obj->ob_type->tp_name, ") -> uint(Numpy2UInt)")
+        __DC(obj, "check convertible (", obj->ob_type->tp_name, ") -> uint(Numpy2UInt)")
         return checkConvertibleNumpyScalar< GIMLI::uint32 >(obj);
     }
     static void construct(PyObject* obj, bp::converter::rvalue_from_python_stage1_data * data){
@@ -698,7 +716,7 @@ private:
 //template <typename T, NPY_TYPES NumPyScalarType>
 struct Numpy2Double{
     static void * convertible(PyObject * obj){
-        __DC(obj, "(", obj->ob_type->tp_name, ") -> double(Numpy2Double)")
+        __DC(obj, "check convertible (", obj->ob_type->tp_name, ") -> double(Numpy2Double)")
         return checkConvertibleNumpyScalar< double >(obj);
     }
     static void construct(PyObject* obj, bp::converter::rvalue_from_python_stage1_data * data){

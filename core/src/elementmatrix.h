@@ -69,7 +69,6 @@ public:
     inline Index rows() const { return mat_.rows(); }
     inline Index cols() const { return mat_.cols(); }
 
-
     inline const ValueType & getVal(Index i, Index j) const {
         return mat_(i,j); 
     }
@@ -333,6 +332,10 @@ public:
                                        bool elastic=false, bool sum=false,
                                        bool div=false, bool kelvin=false);
 
+    ElementMatrix < ValueType > & identity(const MeshEntity & ent, Index order, 
+                                           Index nCoeff, Index dofPerCoeff, Index dofOffset);
+
+
     /*! Add B to this ElementMatrix depending on requested dimension.
         Usual needed for expression (A+B)*u(dim==1) or (A+B)*v(dim!=1)
         for dim == 1 (A + B) ## A or B is grad and need to be summed (div)
@@ -493,6 +496,15 @@ template < > DLLEXPORT
 ElementMatrix < double >::ElementMatrix(Index dof);
 
 template < > DLLEXPORT
+ElementMatrix < double >::ElementMatrix(const ElementMatrix < double > &);
+
+template < > DLLEXPORT 
+void ElementMatrix < double >::fillIds(const MeshEntity & ent, Index nC);
+template < > DLLEXPORT
+void ElementMatrix < double >::resize(Index rows, Index cols);
+
+
+template < > DLLEXPORT
 void ElementMatrix < double >::copyFrom(const ElementMatrix < double > & E,
                                         bool withMat);
 
@@ -510,6 +522,11 @@ DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__(/)
 DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__(*)
 
 #undef DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__
+
+
+template < > DLLEXPORT ElementMatrix < double > & 
+ElementMatrix < double >::operator += (const ElementMatrix < double > & E);
+
 
 template < > DLLEXPORT ElementMatrix < double > &
 ElementMatrix < double >::add(const ElementMatrix < double > & B, 
@@ -553,8 +570,8 @@ void ElementMatrix < double >::integrate(A_TYPE f, \
                                          RVector & R, double scale) const; \
 
 DEFINE_DOT_MULT(double)
-DEFINE_DOT_MULT(const Pos &)
 DEFINE_DOT_MULT(const RVector &)
+DEFINE_DOT_MULT(const Pos &) // check Pos before RVector
 DEFINE_DOT_MULT(const PosVector &)
 DEFINE_DOT_MULT(const RMatrix &)
 DEFINE_DOT_MULT(const std::vector < RMatrix > &)
@@ -575,20 +592,6 @@ DEFINE_INTEGRATE(const std::vector < RMatrix > &)
 DEFINE_INTEGRATE(const FEAFunction &)
 
 #undef DEFINE_INTEGRATE
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 /*!Evaluate scalars per cell.*/
 DLLEXPORT void evaluateQuadraturePoints(const MeshEntity & ent,
@@ -614,7 +617,7 @@ DLLEXPORT void evaluateQuadraturePoints(const Mesh & mesh, Index order,
 /*!Evaluate matrices for each cell.*/
 DLLEXPORT void evaluateQuadraturePoints(const Mesh & mesh, Index order,
                                         const FEAFunction & f,
-                              std::vector< std::vector< RMatrix > > & ret);
+                                        std::vector< std::vector< RMatrix > > & ret);
 
 /*! Return symmetrized copy of A as 0.5*(A + A.T). Only for gradients without Voigt or Kelvin notation. */
 DLLEXPORT ElementMatrix < double > sym(const ElementMatrix < double > & A);

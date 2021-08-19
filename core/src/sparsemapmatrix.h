@@ -683,7 +683,6 @@ void SparseMapMatrix< ValueType, Index >::
 template <> DLLEXPORT void SparseMapMatrix< double, Index >::
     copy_(const SparseMatrix< double > & S);
 
-
 template <> DLLEXPORT void SparseMapMatrix< double, Index >::
     mult(const Vector < double > & a, Vector < double > & ret) const;
 template <> DLLEXPORT void SparseMapMatrix< double, Index >::
@@ -729,6 +728,10 @@ template <> DLLEXPORT void SparseMapMatrix< Complex, Index >::
 template <> DLLEXPORT void SparseMapMatrix< Complex, Index >::
     addToRow(Index id, const ElementMatrix < double > & A, Complex scale, bool isDiag);
 
+template <> DLLEXPORT void SparseMapMatrix< double, Index >
+    ::reduce(const IVector & ids, bool keepDiag);
+template <> DLLEXPORT void SparseMapMatrix< Complex, Index >
+    ::reduce(const IVector & ids, bool keepDiag);
 
 /*!Conveniance functions.*/
 
