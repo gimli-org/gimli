@@ -129,7 +129,6 @@ grid = pg.meshtools.appendTriangleBoundary(inversionDomain, marker=1,
                                            xbound=50, ybound=50)
 pg.show(grid, markers=True)
 
-pg.show(grid, markers=True)
 ###############################################################################
 # The Inversion can be called with data and mesh as argument as well
 model = mgr.invert(data, mesh=grid, lam=20, verbose=True)
