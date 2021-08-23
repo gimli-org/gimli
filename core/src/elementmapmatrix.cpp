@@ -70,24 +70,37 @@ void integrateBLConstT_(const ElementMatrixMap & A,
 
     if (A.size() == 1 && A.mats()[0].order() == 0){
         //const * B
-        Index row = A.mats()[0].dofOffset()
+        Index row = A.mats()[0].dofOffset();
         for (auto &m : B.mats()){
-            if (!m.integrated()){
-                log(Error, "B need to be integrated")
+            if (!m.isIntegrated()){
+                log(Error, "B need to be integrated");
             }
             if (!m.nCoeff() > 0){
                 THROW_TO_IMPL
             }
-
             for (Index i = 0; i < m.rows(); i ++){
-                R.setVal(row, m.idsR()[i], m.getVal(i,0));
+                //__MS(row, m.rowIDs(), m.getVal(i,0))
+                R.addVal(row, m.rowIDs()[i], m.getVal(i,0));
             }
         }
+        return;
     }
     if (B.size() == 1 && B.mats()[0].order() == 0){
         //A * const
+        Index col = B.mats()[0].dofOffset();
         for (auto &m : A.mats()){
+            if (!m.isIntegrated()){
+                log(Error, "B need to be integrated");
+            }
+            if (!m.nCoeff() > 0){
+                THROW_TO_IMPL
+            }
+            for (Index i = 0; i < m.rows(); i ++){
+                // __MS(col, m.rowIDs(), m.getVal(i,0))
+                R.addVal(m.rowIDs()[i], col, m.getVal(i,0));
+            }
         }
+        return;
     }
 
     ASSERT_EQUAL_SIZE(A.mats(), B.mats())

@@ -113,16 +113,16 @@ ElementMatrix < double >::operator += (const ElementMatrix < double > & E){
     }
     return *this;
 }
-template < > DLLEXPORT const Vector< double > & 
+template < > DLLEXPORT const Vector< double > &
 ElementMatrix < double >::operator[](Index row) const {
     __MS("inuse?")
-    
+
     return mat_(row);
     // return mat_.row(row);
 }
 
 template < > DLLEXPORT Vector< double >
-ElementMatrix < double >::row_RM(Index i) const { 
+ElementMatrix < double >::row_RM(Index i) const {
     #if USE_EIGEN3
         Vector< double > ret(this->cols());
         for (Index j = 0; j < ret.size(); j ++){
@@ -134,7 +134,7 @@ ElementMatrix < double >::row_RM(Index i) const {
         return this->mat_.row(i);
     #endif
 }
-template < > DLLEXPORT Vector< double > 
+template < > DLLEXPORT Vector< double >
 ElementMatrix < double >::col(Index i) const {
     Vector< double > ret(this->rows());
     for (Index j = 0; j < ret.size(); j ++){
@@ -167,7 +167,7 @@ ElementMatrix < double >::setMat_RM(const RMatrix & m){
     return this->setMat(m);
 #endif
 }
-template < > DLLEXPORT RMatrix 
+template < > DLLEXPORT RMatrix
 ElementMatrix < double >::mat_RM() const {
     // __MS(this->mat().rows(), this->mat().cols() )
 #if USE_EIGEN3
@@ -255,7 +255,7 @@ ElementMatrix < double >::u(const MeshEntity & ent,
     return *this;
 }
 
-template < > DLLEXPORT 
+template < > DLLEXPORT
 ElementMatrix < double > & ElementMatrix < double >::u2(const MeshEntity & ent,
                                                         const RVector & w,
                                                         const PosVector & x,
@@ -292,7 +292,7 @@ ElementMatrix < double > & ElementMatrix < double >::u2(const MeshEntity & ent,
 
     for (Index i = 0; i < nVerts; i ++){
         for (Index j = 0; j < nVerts; j ++){
-            
+
             mat_(i, j) = A * it->second(i,j);
         }
     }
@@ -350,7 +350,7 @@ ElementMatrix < double > & ElementMatrix < double >::dudi(
 }
 
 
-template < > DLLEXPORT 
+template < > DLLEXPORT
 ElementMatrix < double > & ElementMatrix < double >::ux2(const MeshEntity & ent,
                                                          const RVector & w,
                                                          const PosVector & x,
@@ -520,10 +520,10 @@ ElementMatrix < double >::ux2uy2uz2(const MeshEntity & ent,
     return *this;
 }
 
-template < > DLLEXPORT void 
+template < > DLLEXPORT void
 ElementMatrix < double >::findWeightsAndPoints(const MeshEntity & ent,
                                                const RVector * &w,
-                                               const PosVector * &x, 
+                                               const PosVector * &x,
                                                int order){
     switch (ent.rtti()) {
         case MESH_EDGE_CELL_RTTI:
@@ -578,7 +578,7 @@ ElementMatrix < double >::findWeightsAndPoints(const MeshEntity & ent,
     }
 }
 
-template < > DLLEXPORT 
+template < > DLLEXPORT
 void ElementMatrix < double >::fillGradientBase(
                                     const MeshEntity & ent,
                                     const RVector & w,
@@ -686,7 +686,7 @@ void ElementMatrix < double >::fillGradientBase(
     }
 }
 
-template < > DLLEXPORT 
+template < > DLLEXPORT
 ElementMatrix < double > & ElementMatrix < double >::gradU(const MeshEntity & ent,
                                                            const RVector & w,
                                                            const PosVector & x,
@@ -717,7 +717,7 @@ __MS("EIGENNEEDFIX")
     return * this;
 }
 
-template < > DLLEXPORT 
+template < > DLLEXPORT
 ElementMatrix < double > & ElementMatrix < double >::gradU(const Cell & cell,
                                  Index nC,
                                  bool voigtNotation){
@@ -727,7 +727,7 @@ ElementMatrix < double > & ElementMatrix < double >::gradU(const Cell & cell,
     return this->gradU(cell, *w, *x, nC, voigtNotation);
 }
 
-template < > DLLEXPORT 
+template < > DLLEXPORT
 RVector ElementMatrix < double >::stress(const MeshEntity & ent,
                                          const RMatrix & C,
                                          const RVector & u, bool voigtNotation){
@@ -753,7 +753,7 @@ RVector ElementMatrix < double >::stress(const MeshEntity & ent,
     return ret;
 }
 
-template < > DLLEXPORT 
+template < > DLLEXPORT
 ElementMatrix < double > & ElementMatrix < double >::gradU2(const MeshEntity & ent,
                                                             const Matrix< double > & C,
                                                             const RVector & w,
@@ -798,7 +798,7 @@ ElementMatrix < double > & ElementMatrix < double >::gradU2(const MeshEntity & e
 }
 
 
-template < > DLLEXPORT 
+template < > DLLEXPORT
 ElementMatrix < double > & ElementMatrix < double >::gradU2(const Cell & cell,
                                                     const Matrix< double > & C,
                                                     bool voigtNotation){
@@ -859,7 +859,7 @@ ElementMatrix < double >::u(const MeshEntity & ent){
     return *this;
 }
 
-template < > DLLEXPORT 
+template < > DLLEXPORT
 ElementMatrix < double > & ElementMatrix < double >::u2(const MeshEntity & ent){
     this->fillIds(ent);
 
@@ -1294,7 +1294,7 @@ ElementMatrix < double >::ux2uy2uz2(const Cell & cell, bool useCache){
     return *this;
 }
 
-template < >  
+template < >
 void ElementMatrix < double >::fillIds(const MeshEntity & ent, Index nC){
     Index nDims = 1;
     Index nNodes = ent.nodeCount();
@@ -1338,7 +1338,7 @@ void ElementMatrix < double >::fillIds(const MeshEntity & ent, Index nC){
 }
 
 //** old interface constructor
-template < > DLLEXPORT 
+template < > DLLEXPORT
 ElementMatrix < double >::ElementMatrix(Index dof) {
     this->init(0, 0, 0);
     this->_nDof = dof;
@@ -1423,7 +1423,7 @@ void ElementMatrix < double >::copyFrom(const ElementMatrix < double > & E,
         this->mat_.resize(E.mat().rows(), E.mat().cols());
     }
 }
-template < > 
+template < >
 void ElementMatrix < double >::resize(Index rows, Index cols) {
     if (cols == 0) cols = rows;
 
@@ -1445,10 +1445,10 @@ void ElementMatrix < double >::resize(Index rows, Index cols) {
 }
 
 template < > DLLEXPORT ElementMatrix < double > &
-ElementMatrix < double >::add(const ElementMatrix < double > & B, 
+ElementMatrix < double >::add(const ElementMatrix < double > & B,
                               Index dim, double b) {
     this->_integrated = false;
-    
+
     if (this->rows() == B.rows() && this->cols() == B.cols()){
         return (*this) += B;
     }
@@ -1474,7 +1474,7 @@ ElementMatrix < double >::add(const ElementMatrix < double > & B,
                 Ar[0] += Ar[i];
             }
             Ar.resize(1, Ar.cols());
-            
+
 #endif
             // print("A2:", Ar);
         }
@@ -1485,10 +1485,10 @@ ElementMatrix < double >::add(const ElementMatrix < double > & B,
             auto & Ar = this->_matX[r];
             const auto & Br = B.matX()[r];
 #if USE_EIGEN3
-            
+
             if (Ar.rows() == 1 && Ar.cols() == Br.cols()){
                 auto Ar0 = Ar.row(0).eval();
-           
+
                 Ar.resize(Br.rows(), Ar.cols());
 
                 for (Index i = 0; i < Br.rows(); i ++){
@@ -1507,7 +1507,7 @@ ElementMatrix < double >::add(const ElementMatrix < double > & B,
             // print("A2:", Ar);
         }
 
-    } 
+    }
     return *this;
 }
 
@@ -1596,7 +1596,7 @@ ElementMatrix < double > & ElementMatrix < double >::pot(
     return *this;
 }
 
-template < > DLLEXPORT 
+template < > DLLEXPORT
 ElementMatrix < double > & ElementMatrix < double >::pot(
                         const MeshEntity & ent, Index order, bool sum,
                         Index nCoeff, Index dofPerCoeff, Index dofOffset){
@@ -1613,7 +1613,7 @@ ElementMatrix < double > & ElementMatrix < double >::pot(
     return *this;
 }
 
-template < > DLLEXPORT 
+template < > DLLEXPORT
 ElementMatrix < double > & ElementMatrix < double >::grad(
                         const MeshEntity & ent, Index order,
                         bool elastic, bool sum, bool div, bool kelvin){
@@ -1800,7 +1800,7 @@ SET_MAT_ROW_SLICE(_matX[i],5,dNdx_[i], a, 2 * nVerts, 3 * nVerts);//dNx/dz
             // _matX[i](6).setVal(dNdx_[i], 2 * nVerts, 3 * nVerts); //dNz/dx
             // _matX[i](7).setVal(dNdy_[i], 2 * nVerts, 3 * nVerts); //dNz/dy
             // _matX[i](8).setVal(dNdz_[i], 2 * nVerts, 3 * nVerts); //dNz/dz
-                
+
 SET_MAT_ROW_SLICE(_matX[i],0, dNdx_[i], 1, 0 * nVerts, 1 * nVerts); //dNx/dx
 SET_MAT_ROW_SLICE(_matX[i],1, dNdy_[i], 1, 0 * nVerts, 1 * nVerts); //dNx/dy
 SET_MAT_ROW_SLICE(_matX[i],2, dNdz_[i], 1, 0 * nVerts, 1 * nVerts); //dNx/dz
@@ -1821,7 +1821,7 @@ SET_MAT_ROW_SLICE(_matX[i],8, dNdz_[i], 1, 2 * nVerts, 3 * nVerts); //dNz/dz
     return *this;
 }
 
-template < > DLLEXPORT 
+template < > DLLEXPORT
 ElementMatrix < double > & ElementMatrix < double >::grad(
                                     const MeshEntity & ent, Index order,
                                     bool elastic, bool sum, bool div,
@@ -1840,11 +1840,11 @@ ElementMatrix < double > & ElementMatrix < double >::grad(
     return *this;
 }
 
-template < > DLLEXPORT ElementMatrix < double > & 
-ElementMatrix < double >::identity(const MeshEntity & ent, Index order, 
+template < > DLLEXPORT ElementMatrix < double > &
+ElementMatrix < double >::identity(const MeshEntity & ent, Index order,
                                    Index nCoeff, Index dofPerCoeff, Index dofOffset){
 
-    
+
     this->init(nCoeff, dofPerCoeff, dofOffset);
     this->_ent = & ent;
     this->_order = order;
@@ -1856,7 +1856,7 @@ ElementMatrix < double >::identity(const MeshEntity & ent, Index order,
     Index nVerts = ent.nodeCount();
     Index nRules(w.size());
     Index nCols = ent.dim() * this->_nCoeff;
-    
+
     this->resize(nVerts*nCoeff, nCols);
     _matX.resize(nRules);
 
@@ -1868,10 +1868,10 @@ ElementMatrix < double >::identity(const MeshEntity & ent, Index order,
         _matX[i].setZero();
         if (this->_nCoeff == ent.dim()){
             if (ent.dim() == 2){
-                _matX[i].row(0).fill(1.0); // du_x/dx 
+                _matX[i].row(0).fill(1.0); // du_x/dx
                 _matX[i].row(3).fill(1.0); // du_y/dy
             } else if (ent.dim() == 3){
-                _matX[i].row(0).fill(1.0); // du_x/dx 
+                _matX[i].row(0).fill(1.0); // du_x/dx
                 _matX[i].row(4).fill(1.0); // du_y/dy
                 _matX[i].row(8).fill(1.0); // du_z/dz
             } else {
@@ -1920,7 +1920,7 @@ void dot(const ElementMatrix < double > & A,
         __MS("B: ", B.rows(), B.cols())
         __MS("C: ", C.rows(), C.cols())
     }
-    
+
     //** C = sum( A_i * B_i * b * w_i * dA)
     for (Index r = 0; r < nRules; r++){
         if (r > 0) beta = 1.0;
@@ -1979,9 +1979,9 @@ void dot(const ElementMatrix < double > & A,
             for (Index i = 1; i < ids.size(); i ++){
                 Aii.row(0) += Ai.row(ids[i]);
             }
-                
+
             if (verbose) __MS("Aii", Aii)
-                        
+
             matTransMult(Aii, Bi, Ci, b, 0.0);
 
             // __MS(Ci.rows(), Ci.cols());
@@ -2207,7 +2207,7 @@ void mult(const ElementMatrix < double > & A, double f,
 
         for (Index k = 0; k < iC.rows(); k ++){
             iC.row(k) *= f;
-           
+
         }
         // __MS("r", r, rt)
     }
@@ -2401,24 +2401,24 @@ void mult(const ElementMatrix < double > & A, const FEAFunction & b,
 
 //** R = mult * const. scalar (R final form)
 template < >
-void ElementMatrix < double >::integrate(double f, 
-                                         RVector & R, double scale) const { 
+void ElementMatrix < double >::integrate(double f,
+                                         RVector & R, double scale) const {
     INTEGRATE_LINFORM()
     rt *= this->_ent->size() * f * scale;
     R.addVal(rt, this->rowIDs());
 }
 //** R = mult * const. vector (R final form)
 template < >
-void ElementMatrix < double >::integrate(const Pos & f, 
-                                         RVector & R, double scale) const { 
+void ElementMatrix < double >::integrate(const Pos & f,
+                                         RVector & R, double scale) const {
     INTEGRATE_LINFORM(*f[k])
     rt *= this->_ent->size() * scale;
     R.addVal(rt, this->rowIDs());
 }
 //** R = mult * scalar per quadr. (R final form)
 template < >
-void ElementMatrix < double >::integrate(const RVector & f, 
-                                         RVector & R, double scale) const { 
+void ElementMatrix < double >::integrate(const RVector & f,
+                                         RVector & R, double scale) const {
     ASSERT_VEC_SIZE(f, this->_w->size())
     INTEGRATE_LINFORM(*f[r])
     rt *= this->_ent->size() * scale;
@@ -2426,8 +2426,8 @@ void ElementMatrix < double >::integrate(const RVector & f,
 }
 //** R = mult * vector per quadr. (R final form)
 template < >
-void ElementMatrix < double >::integrate(const PosVector & f, 
-                                         RVector & R, double scale) const { 
+void ElementMatrix < double >::integrate(const PosVector & f,
+                                         RVector & R, double scale) const {
     ASSERT_VEC_SIZE(f, this->_w->size())
     INTEGRATE_LINFORM(*f[r][k])
     rt *= this->_ent->size() * scale;
@@ -2458,7 +2458,7 @@ void ElementMatrix < double >::integrate(const ElementMatrix < double > & B, \
     ElementMatrix < double > dAB; \
     dot(*this, B, f, dAB); \
     A.add(dAB, scale); \
-} 
+}
 
 DEFINE_INTEGRATOR(double)   // const scalar
 DEFINE_INTEGRATOR(const RMatrix &)  // const Matrix
@@ -2482,9 +2482,9 @@ DEFINE_INTEGRATOR(const std::vector< RMatrix > &)// matrix for each quadrs
 
 
 template < >
-void ElementMatrix < double >::integrate(const ElementMatrix < double > & B, 
-                                         const FEAFunction & f, 
-                                         SparseMatrixBase & A, double scale) const { 
+void ElementMatrix < double >::integrate(const ElementMatrix < double > & B,
+                                         const FEAFunction & f,
+                                         SparseMatrixBase & A, double scale) const {
 THROW_TO_IMPL
 }
 
@@ -2597,7 +2597,7 @@ void sym(const ElementMatrix < double > & A, ElementMatrix < double > & B){
     for (auto &m : *B.pMatX()){
         if (m.rows() == 4){
             // __MS(m)
-            m.row(1) = 0.5*m.row(1) + 0.5*m.row(2); 
+            m.row(1) = 0.5*m.row(1) + 0.5*m.row(2);
             m.row(2) = m.row(1);
             // __MS(m)
         } else if (m.rows() == 9) {
@@ -2613,11 +2613,11 @@ void sym(const ElementMatrix < double > & A, ElementMatrix < double > & B){
             // _matX[i][7].setVal(dNdy_[i], 2 * nVerts, 3 * nVerts); //dNz/dy
             // _matX[i][8].setVal(dNdz_[i], 2 * nVerts, 3 * nVerts); //dNz/dz
 
-            m.row(1) = 0.5*m.row(1) + 0.5*m.row(3);  
+            m.row(1) = 0.5*m.row(1) + 0.5*m.row(3);
             m.row(3) = m.row(1);
-            m.row(2) = 0.5*m.row(2) + 0.5*m.row(6);  
+            m.row(2) = 0.5*m.row(2) + 0.5*m.row(6);
             m.row(6) = m.row(2);
-            m.row(5) = 0.5*m.row(5) + 0.5*m.row(7);  
+            m.row(5) = 0.5*m.row(5) + 0.5*m.row(7);
             m.row(7) = m.row(5);
         } else {
             __MS(A)

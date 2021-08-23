@@ -42,7 +42,7 @@
 namespace GIMLI{
 
 //! based on: Ulrich Breymann, Addison Wesley Longman 2000 , revised edition ISBN 0-201-67488-2, Designing Components with the C++ STL
-template< class ValueType, class IndexType, class ContainerType > 
+template< class ValueType, class IndexType, class ContainerType >
 class MatrixElement {
 public:
   typedef std::pair< IndexType, IndexType > IndexPair;
@@ -380,6 +380,7 @@ public:
 
         if (i >= rows_) rows_ = i+1;
         if (j >= cols_) cols_ = j+1;
+        //__MS(i,j,val)
         (*this)[i][j] = val;
         // if ((i >= 0 && i < rows_) && (j >=0 && j < cols_)) {
         // } else {
@@ -408,18 +409,18 @@ public:
     }
 
     /*! SparseMapMatrix: this * a , inplace add to ret */
-    virtual void mult(const Vector < ValueType > & a, 
-                      Vector < ValueType > & ret) const; 
+    virtual void mult(const Vector < ValueType > & a,
+                      Vector < ValueType > & ret) const;
     /*! ret = [this * ax, this * ay, this * az. with ret = r3 and a is sqeezed pos vector. a = [ax, ay, az] */
-    virtual void mult(const Vector < ValueType > & a, 
-                      Vector < Pos > & ret) const;                 
+    virtual void mult(const Vector < ValueType > & a,
+                      Vector < Pos > & ret) const;
     /*! SparseMapMatrix: this.T * a , inplace add to ret */
-    virtual void transMult(const Vector < ValueType > & a, 
+    virtual void transMult(const Vector < ValueType > & a,
                            Vector < ValueType > & ret) const;
     /*! ret = [this.T * ax, this.T * ay, this.T * az. with ret = r3 and a is sqeezed pos vector. a = [ax, ay, az] */
-    virtual void transMult(const Vector < ValueType > & a, 
+    virtual void transMult(const Vector < ValueType > & a,
                            Vector < Pos > & ret) const;
-        
+
     /*! Return SparseMapMatrix: this * a. */
     virtual Vector < ValueType > mult(const Vector < ValueType > & a) const {
         Vector < ValueType > ret(this->rows(), 0.0);
@@ -548,7 +549,7 @@ public:
             ret[i] = idx2(it);
         }
         return ret;
-        
+
     }
 
 protected:
@@ -635,13 +636,13 @@ inline CVector operator * (const CSparseMapMatrix & A, const CVector & b){
 inline CVector operator * (const CSparseMapMatrix & A, const RVector & b){
     return A.mult(toComplex(b));
 }
-inline RSparseMapMatrix operator + (const RSparseMapMatrix & A, 
+inline RSparseMapMatrix operator + (const RSparseMapMatrix & A,
                                     const RSparseMapMatrix & B){
     RSparseMapMatrix tmp(A);
     return tmp += B;
 }
 
-inline RSparseMapMatrix operator - (const RSparseMapMatrix & A, 
+inline RSparseMapMatrix operator - (const RSparseMapMatrix & A,
                                     const RSparseMapMatrix & B){
     RSparseMapMatrix tmp(A);
     return tmp -= B;
@@ -746,16 +747,16 @@ inline CVector transMult(const CSparseMapMatrix & A, const RVector & b){
 }
 
 /*! RVector[i] = A[i]*ret[i] */
-DLLEXPORT void 
+DLLEXPORT void
     mult(const std::vector < RSparseMapMatrix > & A,
          const RVector & b, std::vector< RVector > & ret);
 
 /*! PosVector[i] = [A[i]*ret[i][0..dof], A[i]*ret[i][dof..2*dof], ..*/
-DLLEXPORT void 
+DLLEXPORT void
     mult(const std::vector < RSparseMapMatrix > & A,
          const RVector & b, std::vector< PosVector > & ret);
 
-DLLEXPORT std::vector< RVector > 
+DLLEXPORT std::vector< RVector >
     mult(const std::vector < RSparseMapMatrix > & A,
          const RVector & b);
 

@@ -22,7 +22,7 @@
 
 namespace GIMLI{
 
-template <> void 
+template <> void
 SparseMapMatrix< double, Index >::copy_(const SparseMatrix< double > & S){
     clear();
     cols_ = S.cols();
@@ -167,20 +167,20 @@ template <> void SparseMapMatrix< double, Index >::
 }
 
 template <> void SparseMapMatrix< Complex, Index >::
-    addToCol(Index id, const ElementMatrix < double > & A, 
+    addToCol(Index id, const ElementMatrix < double > & A,
              Complex scale, bool isDiag){
         A.integrate();
 THROW_TO_IMPL
 }
 template <> void SparseMapMatrix< Complex, Index >::
-    addToRow(Index id, const ElementMatrix < double > & A, 
+    addToRow(Index id, const ElementMatrix < double > & A,
              Complex scale, bool isDiag){
         A.integrate();
 THROW_TO_IMPL
 }
 
 template <class ValueType> void
-mult_(const SparseMapMatrix< ValueType, Index > * A, 
+mult_(const SparseMapMatrix< ValueType, Index > * A,
       const Vector < ValueType > & a, Vector < ValueType > & ret) {
 
     if (A->rows() != ret.size()) ret.resize(A->rows());
@@ -228,14 +228,14 @@ template <> void SparseMapMatrix< double, Index >::
     mult(const Vector < double > & a, Vector < Pos > & ret) const {
     if (this->rows() != ret.size()) ret.resize(this->rows(), Pos(0.0, 0.0));
 
-    Index nCoeff(a.size() / this->cols()); 
+    Index nCoeff(a.size() / this->cols());
     Index dof(this->cols());
     ASSERT_GREATER_EQUAL(a.size(), nCoeff*dof)
 
     if (stype_ == 0){
         for (const_iterator it = this->begin(); it != this->end(); it ++){
             for (Index i = 0; i < nCoeff; i ++){
-                ret[it->first.first][i] += 
+                ret[it->first.first][i] +=
                                 a[it->first.second + i * dof] * it->second;
             }
         }
@@ -252,8 +252,8 @@ THROW_TO_IMPL
 
 
 template < class ValueType >
-void transMult_(const SparseMapMatrix< ValueType, Index > * A, 
-                const Vector < ValueType > & a, 
+void transMult_(const SparseMapMatrix< ValueType, Index > * A,
+                const Vector < ValueType > & a,
                 Vector < ValueType > & ret) {
     if (A->cols() != ret.size()) ret.resize(A->cols());
 
@@ -289,12 +289,12 @@ template <> void SparseMapMatrix< Complex, Index >::
 
 template <> DLLEXPORT void SparseMapMatrix< double, Index >
 ::reduce(const IVector & ids, bool keepDiag) {
-    
+
     for (auto it = begin(); it != end();){
 
         auto r1 = std::find(&ids[0], &ids[ids.size()], it->first.first);
         if (r1 != &ids[ids.size()]){
-            
+
             if (it->first.first != it->first.second){
                 it = C_.erase(it);
                 continue;

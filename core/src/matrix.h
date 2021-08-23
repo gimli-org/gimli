@@ -74,7 +74,7 @@ namespace GIMLI{
 #define MAT_ROW_IMUL(A, r, b) A(r) *= b;
 // #define RVEC_ASSIGN_MAT_ROW_MUL(c, A, k, b) c = A(k) * b;
 // #define RVEC_IADD_MAT_ROW_MUL(c, A, k, b) c += A(k) * b;
-            
+
 #endif
 
 template < class ValueType > class DLLEXPORT Matrix3 {
@@ -92,8 +92,8 @@ public:
 
     inline ValueType & operator [](Index i){ return mat_[i];}
     inline const ValueType & operator [](Index i) const { return mat_[i];}
-    
-    inline const ValueType & operator ()(Index i, Index j) const { 
+
+    inline const ValueType & operator ()(Index i, Index j) const {
         THROW_TO_IMPL
         return mat_[0];
         }
@@ -325,7 +325,7 @@ protected:
 
 class DLLEXPORT SparseMatrixBase : public MatrixBase {
 public:
-    SparseMatrixBase(bool verbose=false) 
+    SparseMatrixBase(bool verbose=false)
         : MatrixBase(verbose) {}
 
     /*! Default destructor. */
@@ -335,6 +335,12 @@ public:
     virtual uint rtti() const { return GIMLI_SPARSEMATRIXBASE_RTTI; }
 
     virtual void add(const ElementMatrix < double > & A, double scale=1.0){
+        THROW_TO_IMPL
+    }
+    virtual void setVal(Index row, Index Col, const double & val){
+        THROW_TO_IMPL
+    }
+    virtual void addVal(Index row, Index Col, const double & val){
         THROW_TO_IMPL
     }
 
@@ -504,19 +510,19 @@ public:
     }
 
     /*! Read only access to matrix element i,j. */
-    inline const ValueType & operator ()(Index i, Index j) const { 
+    inline const ValueType & operator ()(Index i, Index j) const {
         return mat_[i][j];}
 
     /*! Write access to matrix element i,j. */
-    inline ValueType & operator ()(Index i, Index j) { 
+    inline ValueType & operator ()(Index i, Index j) {
         return mat_[i][j];}
-    
+
     /*! Read only access to matrix row i. */
-    inline const Vector< ValueType > & operator ()(Index i) const { 
+    inline const Vector< ValueType > & operator ()(Index i) const {
         return mat_[i];}
 
     /*! Write access to matrix row i */
-    inline Vector< ValueType > & operator ()(Index i) { 
+    inline Vector< ValueType > & operator ()(Index i) {
         return mat_[i];}
 
     /*! Implicite type converter. */
@@ -1191,30 +1197,30 @@ bool loadMatrixRow(Matrix < ValueType > & A,
 /*!Inplace matrix calculation: $C = a * A.T * B * A$ + b*C.
 Size of A is (n,m) and B need to be square (n,n), C will resized to (m,m).
 AtB might be for temporary memory allocation.  */
-DLLEXPORT void matMultABA(const SmallMatrix & A, 
-                          const SmallMatrix & B, 
-                          SmallMatrix & C, 
+DLLEXPORT void matMultABA(const SmallMatrix & A,
+                          const SmallMatrix & B,
+                          SmallMatrix & C,
                           SmallMatrix & AtB, double a=1.0, double b=0.0);
-DLLEXPORT void matMultABA_RM(const RMatrix & A, 
-                          const RMatrix & B, 
-                          RMatrix & C, 
+DLLEXPORT void matMultABA_RM(const RMatrix & A,
+                          const RMatrix & B,
+                          RMatrix & C,
                           RMatrix & AtB, double a=1.0, double b=0.0);
 
 /*!Inplace matrix calculation: $C = a*A*B + b*C$. B are transposed if needed to fit appropriate dimensions. */
-DLLEXPORT void matMult(const SmallMatrix & A, 
-                       const SmallMatrix & B, 
+DLLEXPORT void matMult(const SmallMatrix & A,
+                       const SmallMatrix & B,
                        SmallMatrix & C, double a=1.0, double b=0.0);
-DLLEXPORT void matMult_RM(const RMatrix & A, 
-                       const RMatrix & B, 
+DLLEXPORT void matMult_RM(const RMatrix & A,
+                       const RMatrix & B,
                        RMatrix & C, double a=1.0, double b=0.0);
 
 /*!Inplace matrix calculation: $C = a * A.T * B + b*C$. B are transposed if needed to fit appropriate dimensions. */
-DLLEXPORT void matTransMult(const SmallMatrix & A, 
-                            const SmallMatrix & B, 
+DLLEXPORT void matTransMult(const SmallMatrix & A,
+                            const SmallMatrix & B,
                             SmallMatrix & C, double a=1.0, double b=0.0);
 
-DLLEXPORT void matTransMult_RM(const RMatrix & A, 
-                            const RMatrix & B, 
+DLLEXPORT void matTransMult_RM(const RMatrix & A,
+                            const RMatrix & B,
                             RMatrix & C, double a=1.0, double b=0.0);
 
 
