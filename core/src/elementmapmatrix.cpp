@@ -38,7 +38,7 @@ void ElementMatrixMap::push_back(const ElementMatrix < double > & Ai){
 }
 
 template < class ValueType >
-void integrateLConstT_(const ElementMatrixMap * self, 
+void integrateLConstT_(const ElementMatrixMap * self,
                      const ValueType & f, RVector & R, bool neg){
     for (auto &m : self->mats()){
         if (neg) {
@@ -50,10 +50,10 @@ void integrateLConstT_(const ElementMatrixMap * self,
 }
 
 template < class ValueType >
-void integrateLPerCellT_(const ElementMatrixMap * self, 
+void integrateLPerCellT_(const ElementMatrixMap * self,
                         const ValueType & f, RVector & R, bool neg){
     ASSERT_EQUAL_SIZE(self->mats(), f)
-    
+
     for (auto &m : self->mats()){
         if (neg) {
             m.integrate(f[m.entity()->id()], R, -1);
@@ -64,9 +64,32 @@ void integrateLPerCellT_(const ElementMatrixMap * self,
 }
 
 template < class ValueType >
-void integrateBLConstT_(const ElementMatrixMap & A, 
+void integrateBLConstT_(const ElementMatrixMap & A,
                         const ElementMatrixMap & B,
                         const ValueType & f, SparseMatrixBase & R, bool neg){
+
+    if (A.size() == 1 && A.mats()[0].order() == 0){
+        //const * B
+        Index row = A.mats()[0].dofOffset()
+        for (auto &m : B.mats()){
+            if (!m.integrated()){
+                log(Error, "B need to be integrated")
+            }
+            if (!m.nCoeff() > 0){
+                THROW_TO_IMPL
+            }
+
+            for (Index i = 0; i < m.rows(); i ++){
+                R.setVal(row, m.idsR()[i], m.getVal(i,0));
+            }
+        }
+    }
+    if (B.size() == 1 && B.mats()[0].order() == 0){
+        //A * const
+        for (auto &m : A.mats()){
+        }
+    }
+
     ASSERT_EQUAL_SIZE(A.mats(), B.mats())
     Index i = 0;
     for (auto &m : A.mats()){
@@ -80,7 +103,7 @@ void integrateBLConstT_(const ElementMatrixMap & A,
 }
 
 template < class ValueType >
-void integrateBLPerCellT_(const ElementMatrixMap & A, 
+void integrateBLPerCellT_(const ElementMatrixMap & A,
                           const ElementMatrixMap & B,
                           const ValueType & f, SparseMatrixBase & R, bool neg){
     ASSERT_EQUAL_SIZE(A.mats(), B.mats())
@@ -137,7 +160,7 @@ void ElementMatrixMap::integrate(const ElementMatrixMap & R, const A_TYPE & f, \
 }
 DEFINE_INTEGRATE_ELEMENTMAP_BL_PERCELL_IMPL(RVector)
 DEFINE_INTEGRATE_ELEMENTMAP_BL_PERCELL_IMPL(std::vector< RMatrix >)
-DEFINE_INTEGRATE_ELEMENTMAP_BL_PERCELL_IMPL(std::vector< RVector >) 
+DEFINE_INTEGRATE_ELEMENTMAP_BL_PERCELL_IMPL(std::vector< RVector >)
 DEFINE_INTEGRATE_ELEMENTMAP_BL_PERCELL_IMPL(std::vector< std::vector< RMatrix > >)
 #undef DEFINE_INTEGRATE_ELEMENTMAP_BL_PERCELL_IMPL
 
@@ -223,8 +246,8 @@ DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(std::vector< std::vector< RMatrix > >)
 // void ElementMatrixMap::integrate(const ElementMatrixMap & R,
 //                                  const RVector & f,
 //                                  SparseMatrixBase & A, bool neg) const {
-    
-    
+
+
 //     ASSERT_EQUAL_SIZE(this->mats_, f)
 //     ASSERT_EQUAL_SIZE(this->mats_, R.mats())
 
@@ -232,10 +255,10 @@ DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(std::vector< std::vector< RMatrix > >)
 //     double scale = 1.0;
 //     if (neg) scale = -1;
 //     ElementMatrix < double > dAB;
-    
+
 //     for (auto &m : this->mats_){
 //         dot(m, R.mats()[i], f[m.entity()->id()], dAB);
-        
+
 //         A.add(dAB, scale);
 //         i++;
 //     }
@@ -249,7 +272,7 @@ DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(std::vector< std::vector< RMatrix > >)
 
 //     ElementMatrix < double > dAB;
 //     ElementMatrix < double > mf;
-    
+
 //     Index i = 0;
 //     double scale = 1.0;
 //     if (neg) scale = -1;
@@ -263,7 +286,7 @@ DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(std::vector< std::vector< RMatrix > >)
 //         //           ElementMatrix < double > & C){
 
 //         dot(mf, R.mats()[i], 1.0, dAB);
-        
+
 //         A.add(dAB, scale);
 //         i++;
 //     }
@@ -365,6 +388,18 @@ RVector ElementMatrixMap::mult(const RVector & a, const RVector & b) const{
 void createUMap(const Mesh & mesh, Index order, ElementMatrixMap & ret,
                 Index nCoeff, Index dofOffset){
     // don't use cache here // check!
+    if (mesh.nodeCount() == 0){
+        // empty mesh. this map is for constant space and only contain 1 entry
+        ret.resize(1);
+        ret.pMat(0)->init(nCoeff, 0, dofOffset);
+        ret.pMat(0)->resize(1, 1);
+        ret.pMat(0)->pMat()->setVal(0, 0, 1.);
+        if (nCoeff > 1) throwToImplement;
+
+        ret.pMat(0)->setIds({dofOffset}, {0});
+        return;
+    }
+
     ret.resize(mesh.cellCount());
 
     for (auto &cell: mesh.cells()){
@@ -385,7 +420,7 @@ void createdUMap(const Mesh & mesh, Index order,
                  bool elastic, bool div, bool kelvin,
                  Index nCoeff, Index dofOffset){
         // don't use cache here // check!
-    
+
     ret.resize(mesh.cellCount());
 
     for (auto &cell: mesh.cells()){
@@ -404,13 +439,13 @@ ElementMatrixMap createdUMap(const Mesh & mesh, Index order,
                              bool elastic, bool div, bool kelvin,
                              Index nCoeff, Index dofOffset){
     ElementMatrixMap ret;
-    createdUMap(mesh, order, ret, 
-               elastic, div, kelvin, 
+    createdUMap(mesh, order, ret,
+               elastic, div, kelvin,
                nCoeff, dofOffset);
     return ret;
 }
 
-void createIdentityMap(const Mesh & mesh, Index order, 
+void createIdentityMap(const Mesh & mesh, Index order,
                        ElementMatrixMap & ret,
                        Index nCoeff, Index dofOffset){
 
@@ -429,8 +464,8 @@ ElementMatrixMap createIdentityMap(const Mesh & mesh, Index order,
 }
 
 void sym(const ElementMatrixMap & A, ElementMatrixMap & ret){
-/*! Return symmetrized copy of A as 0.5*(A + A.T). 
-ATM. Only for gradients without Voigt or Kelvin notation. 
+/*! Return symmetrized copy of A as 0.5*(A + A.T).
+ATM. Only for gradients without Voigt or Kelvin notation.
 */
     ret.resize(A.size());
     Index i = 0;
