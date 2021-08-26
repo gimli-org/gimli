@@ -16,7 +16,8 @@
  *                                                                            *
  ******************************************************************************/
 
-#include "elementmapmatrix.h"
+#include "elementmatrix.h"
+#include "elementmatrixmap.h"
 #include "shape.h"
 #include "meshentities.h"
 #include "node.h"
@@ -137,16 +138,53 @@ void integrateBLPerCellT_(const ElementMatrixMap & A,
 void ElementMatrixMap::integrate(const A_TYPE & f, \
                                  RVector & R, bool neg) const {\
     integrateLConstT_(this, f, R, neg); \
-}
+} \
+void ElementMatrixMap::mult(const A_TYPE & f, ElementMatrixMap & ret) const { \
+    ret.resize(this->size());\
+    Index i = 0; \
+    for (auto const &m : this->mats_){ \
+        GIMLI::mult(m, f, *ret.pMat(i)); \
+        i++; \
+    } \
+} \
+
 DEFINE_INTEGRATE_ELEMENTMAP_L_IMPL(double)
 DEFINE_INTEGRATE_ELEMENTMAP_L_IMPL(Pos)
 DEFINE_INTEGRATE_ELEMENTMAP_L_IMPL(RMatrix)
 #undef DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL
 
+void ElementMatrixMap::add(const ElementMatrixMap & B, 
+                           ElementMatrixMap & ret, Index dim, double b) const {
+    // __M
+    ASSERT_EQUAL_SIZE(this->mats(), B.mats())
+
+    ret.resize(this->size());
+    Index i = 0;
+    for (auto const &m: this->mats_){ 
+        ret.pMat(i)->copyFrom(m);
+        ret.pMat(i)->add(B.mats()[i], dim, b);
+        i++;
+    }
+
+    // __MS(this->mats()[0])
+    // __MS(B.mats()[0])
+    // __MS(*ret.pMat(0))
+}
+    
 
 #define DEFINE_INTEGRATE_ELEMENTMAP_L_PERCELL_IMPL(A_TYPE) \
-void ElementMatrixMap::integrate(const A_TYPE & f, RVector & R, bool neg) const { integrateLPerCellT_(this, f, R, neg); \
-}
+void ElementMatrixMap::integrate(const A_TYPE & f, RVector & R , bool neg) const { \
+    integrateLPerCellT_(this, f, R, neg); \
+} \
+void ElementMatrixMap::mult(const A_TYPE & f, ElementMatrixMap & ret) const { \
+    ret.resize(this->size()); \
+    Index i = 0; \
+    for (auto const &m : this->mats_){ \
+        GIMLI::mult(m, f[m.entity()->id()], *ret.pMat(i)); \
+        i++; \
+    } \
+} \
+
 DEFINE_INTEGRATE_ELEMENTMAP_L_PERCELL_IMPL(RVector)
 DEFINE_INTEGRATE_ELEMENTMAP_L_PERCELL_IMPL(PosVector)
 DEFINE_INTEGRATE_ELEMENTMAP_L_PERCELL_IMPL(std::vector< RMatrix >)
@@ -187,7 +225,8 @@ RVector ElementMatrixMap::integrate(const A_TYPE & f, bool neg) const { \
     RVector R(maxR+1); \
     integrate(f, R, neg); \
     return R; \
-}
+} \
+
 DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(double)
 DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(Pos)
 DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(RMatrix)
@@ -396,7 +435,6 @@ RVector ElementMatrixMap::mult(const RVector & a, const RVector & b) const{
 
     return ret;
 }
-
 
 void createUMap(const Mesh & mesh, Index order, ElementMatrixMap & ret,
                 Index nCoeff, Index dofOffset){

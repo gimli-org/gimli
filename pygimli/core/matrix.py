@@ -74,7 +74,10 @@ def __ElementMatrix_str(self):
 
     maxRowID = int(np.log10(max(self.rowIDs())))+2
 
-    s = '\n ' + ' ' * maxRowID
+    if self.multR is not None and (pg.isScalar(self.multR) and self.multR != 1.0) or pg.isPos(self.multR):
+        s = '\n ' + f' multR = {self.multR} (applied)' + '\n ' + ' ' * maxRowID
+    else:
+        s = '\n ' + ' ' * maxRowID
     # print(self.mat())
     # print(self.colIDs())
     # print(self.rowIDs())
@@ -89,6 +92,14 @@ def __ElementMatrix_str(self):
         if isinstance(self.multR, (int, float)):
             for v in self.row_RM(i)*self.multR:
                 s += pg.pf(v).rjust(9)
+        elif pg.isPos(self.multR):
+            if self.mat_RM().cols() == len(self.multR):
+                for v in self.row_RM(i)*self.multR:
+                    s += pg.pf(v).rjust(9)
+            else:
+                print(self.row_RM)
+                print(self.multR)
+                pg.critical('invalid element multR.')
         else:
             for v in self.row_RM(i):
                 s += pg.pf(v).rjust(9)

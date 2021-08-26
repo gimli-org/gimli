@@ -42,11 +42,13 @@ public:
             f = A_TYPE \
         */ \
         RVector integrate(const A_TYPE & f, bool neg=false) const; \
+        /*! R = this * f */ \
+        void mult(const A_TYPE & f, ElementMatrixMap & ret) const; 
 
     DEFINE_INTEGRATOR(double)   // const scalar for all cells
     DEFINE_INTEGRATOR(RMatrix)  // const Matrix for all cells
     DEFINE_INTEGRATOR(RVector)      // const scalar for each cells
-    DEFINE_INTEGRATOR(Pos)      // const vector for all cells //!calling order!
+    // DEFINE_INTEGRATOR(Pos)      // const vector for all cells //!calling order!
     DEFINE_INTEGRATOR(PosVector)    // const vector for each cells
     DEFINE_INTEGRATOR(std::vector< RMatrix >)// const matrix for each cells
     DEFINE_INTEGRATOR(std::vector< RVector >)// scalar for quadr. on each cells
@@ -74,13 +76,15 @@ public:
 
     #undef DEFINE_INTEGRATOR
 
-
     const std::vector< ElementMatrix < double > > & mats() const;
     
     ElementMatrix < double > * pMat(Index i){ return & mats_[i]; }
 
     const std::vector < PosVector > & quadraturePoints() const;
 
+    /*!Calculate copy of this + B, depending on requested dim. */
+    void add(const ElementMatrixMap & B, ElementMatrixMap & ret, Index dim=1, double b=1.0) const;
+    
     void add(Index row, const ElementMatrix < double > & Ai);
 
     //TODO .. check if its the same like mult(a-b, m-n))

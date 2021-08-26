@@ -79,7 +79,7 @@ namespace pyplusplus{ namespace aliases{
 #include "gravimetry.h"
 #include "dc1dmodelling.h"
 #include "elementmatrix.h"
-#include "elementmapmatrix.h"
+#include "elementmatrixmap.h"
 #include "em1dmodelling.h"
 #include "exitcodes.h"
 #include "expressions.h"
