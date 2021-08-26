@@ -48,7 +48,7 @@ public:
     DEFINE_INTEGRATOR(double)   // const scalar for all cells
     DEFINE_INTEGRATOR(RMatrix)  // const Matrix for all cells
     DEFINE_INTEGRATOR(RVector)      // const scalar for each cells
-    // DEFINE_INTEGRATOR(Pos)      // const vector for all cells //!calling order!
+    DEFINE_INTEGRATOR(Pos)      // const vector for all cells //!calling order!
     DEFINE_INTEGRATOR(PosVector)    // const vector for each cells
     DEFINE_INTEGRATOR(std::vector< RMatrix >)// const matrix for each cells
     DEFINE_INTEGRATOR(std::vector< RVector >)// scalar for quadr. on each cells
