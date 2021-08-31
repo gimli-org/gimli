@@ -269,10 +269,10 @@ public:
         rows_ = 0;
     }
 
-    void setVal(int i, int j, ValueType val){
+    void setVal(Index i, Index j, ValueType val){
         if (abs(val) > TOLERANCE || 1){
             for (int k = colPtr_[i]; k < colPtr_[i + 1]; k ++){
-                if (rowIdx_[k] == j) {
+                if (rowIdx_[k] == (int)j) {
                     vals_[k] = val; return;
                 }
             }
@@ -283,9 +283,9 @@ public:
     /*!Get matrix value at i,j. If i and j is not part of the matrix
      * sparsity pattern return 0 and print a warning.
      * This warning can be disabled by setting warn to false.*/
-    ValueType getVal(int i, int j, bool warn=true) const {
+    ValueType getVal(Index i, Index j, bool warn=true) const {
         for (int k = colPtr_[i]; k < colPtr_[i + 1]; k ++){
-            if (rowIdx_[k] == j) {
+            if (rowIdx_[k] == (int)j) {
                 return vals_[k];
             }
         }
