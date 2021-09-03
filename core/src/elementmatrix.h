@@ -440,7 +440,6 @@ public:
     
     #undef DEFINE_INTEGRATOR
 
-
 protected:
     mutable SmallMatrix mat_;
     IndexArray _ids;
@@ -648,7 +647,7 @@ DEFINE_CREATE_FORCE_VECTOR(const std::vector< RVector > &)
 // vector at each quadrature point for each cell
 DEFINE_CREATE_FORCE_VECTOR(const std::vector< PosVector > &)
 // matrix at each quadrature point for each cell
-DEFINE_CREATE_FORCE_VECTOR(const std::vector < RMatrix > &)
+DEFINE_CREATE_FORCE_VECTOR(const std::vector< RMatrix > &)
 // scalar at each quadrature point for each cell
 DEFINE_CREATE_FORCE_VECTOR(const std::vector< std::vector < RMatrix > > &)
 // generic function for each point

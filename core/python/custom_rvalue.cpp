@@ -65,6 +65,20 @@ template < class ValueType, class SeqType > void * checkConvertibleSequenz(PyObj
         return NULL;
     }
 
+    if (typeid(SeqType) == typeid(GIMLI::RMatrix)){
+        if (strcmp(obj->ob_type->tp_name, "RVector") == 0){
+            __DC("\t", obj, "\t abborting .. RVector will not be converted into RMatrix")
+            return NULL;
+        }
+    }
+
+    if (typeid(SeqType) == typeid(GIMLI::RMatrix)){
+        if (strcmp(obj->ob_type->tp_name, "list") == 0){
+            __DC("\t", obj, "\t abborting .. list will not be converted into RMatrix")
+            return NULL;
+        }
+    }
+
     if (PyObject_TypeCheck(obj, &PyArray_Type)){
         PyArrayObject *arr = (PyArrayObject *)obj;
 

@@ -44,6 +44,8 @@ def show(obj=None, data=None, **kwargs):
     ----------
     obj: obj
         obj can be so far.
+        * None (for empty axes)
+        * int, int (for apropriate subplots)
         * :gimliapi:`GIMLI::Mesh` or list of meshes
         * DataContainer
         * pg.core.Sparse[Map]Matrix
@@ -82,6 +84,18 @@ def show(obj=None, data=None, **kwargs):
             ax = plt.subplots(figsize=kwargs.pop('figsize', None))[1]
         return ax, None
 
+    if isinstance(obj, int):
+        nrows = obj
+        ncols = 1
+        if isinstance(data, int):
+            ncols = data
+
+        fig, ax = plt.subplots(nrows=nrows, ncols=ncols, 
+                          figsize=kwargs.pop('figsize', None))
+        
+        print(ax)
+        return ax, None
+        
     ### try to interprete obj containes a mesh
     if hasattr(obj, 'mesh') and hasattr(obj, 'values'):
         return pg.show(obj.mesh, obj.values, 

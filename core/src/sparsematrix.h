@@ -269,30 +269,12 @@ public:
         rows_ = 0;
     }
 
-    void setVal(int i, int j, ValueType val){
-        if (abs(val) > TOLERANCE || 1){
-            for (int k = colPtr_[i]; k < colPtr_[i + 1]; k ++){
-                if (rowIdx_[k] == j) {
-                    vals_[k] = val; return;
-                }
-            }
-            std::cerr << WHERE_AM_I << " pos " << i << " " << j << " is not part of the sparsity pattern " << std::endl;
-        }
-    }
+    virtual void setVal(Index i, Index j, const ValueType & val);
 
     /*!Get matrix value at i,j. If i and j is not part of the matrix
      * sparsity pattern return 0 and print a warning.
      * This warning can be disabled by setting warn to false.*/
-    ValueType getVal(int i, int j, bool warn=true) const {
-        for (int k = colPtr_[i]; k < colPtr_[i + 1]; k ++){
-            if (rowIdx_[k] == j) {
-                return vals_[k];
-            }
-        }
-        if (warn) std::cerr << WHERE_AM_I << " pos " << i << " "
-                    << j << " is not part of the sparsity pattern " << std::endl;
-        return ValueType(0);
-    }
+    virtual ValueType getVal(Index i, Index j, bool warn=true) const;
 
     void cleanRow(int row){
         ASSERT_RANGE(row, 0, (int)this->rows())
@@ -472,6 +454,41 @@ protected:
     Index cols_;
 };
 
+
+/*! SparseMatrix specialized type traits in sparsematrix.cpp */
+template< typename ValueType >
+void SparseMatrix< ValueType >::copy_(const SparseMapMatrix< double, Index > & S){THROW_TO_IMPL}
+template< typename ValueType >
+void SparseMatrix< ValueType >::copy_(const SparseMapMatrix< Complex, Index > & S){THROW_TO_IMPL}
+
+template <> DLLEXPORT void SparseMatrix<double>::setVal(Index i, Index j, const double & val);
+template <> DLLEXPORT void SparseMatrix<Complex>::setVal(Index i, Index j, const Complex & val);
+
+template <> DLLEXPORT double SparseMatrix<double>::getVal(Index i, Index j, bool warn) const;
+template <> DLLEXPORT Complex SparseMatrix<Complex>::getVal(Index i, Index j, bool warn) const;
+
+template <> DLLEXPORT void SparseMatrix<double>::copy_(const SparseMapMatrix< double, Index > & S);
+template <> DLLEXPORT void SparseMatrix<Complex>::copy_(const SparseMapMatrix< Complex, Index > & S);
+
+template <> DLLEXPORT void SparseMatrix< double >::
+    add(const ElementMatrix < double > & A, double scale);
+template <> DLLEXPORT void SparseMatrix< double >::
+    add(const ElementMatrix < double > & A, const Pos & scale);
+template <> DLLEXPORT void SparseMatrix< double >::
+    add(const ElementMatrix < double > & A, const RMatrix & scale);
+
+template <> DLLEXPORT void SparseMatrix< Complex >::
+    add(const ElementMatrix < double > & A, Complex scale);
+template <> DLLEXPORT void SparseMatrix< Complex >::
+    add(const ElementMatrix < double > & A, const Pos & scale);
+template <> DLLEXPORT void SparseMatrix< Complex >::
+    add(const ElementMatrix < double > & A, const CMatrix & scale);
+
+inline CSparseMatrix operator + (const CSparseMatrix & A, const RSparseMatrix & B){
+    CSparseMatrix ret(A);
+    ret.vecVals() += toComplex(B.vecVals());
+    return ret;
+}
 template < class ValueType >
 SparseMatrix< ValueType > operator + (const SparseMatrix< ValueType > & A,
                                       const SparseMatrix< ValueType > & B){
@@ -508,12 +525,6 @@ inline CVector operator * (const CSparseMatrix & A, const RVector & b){return A.
 inline CVector transMult(const CSparseMatrix & A, const CVector & b){return A.transMult(b);}
 inline CVector transMult(const CSparseMatrix & A, const RVector & b){return A.transMult(toComplex(b));}
 
-inline CSparseMatrix operator + (const CSparseMatrix & A, const RSparseMatrix & B){
-    CSparseMatrix ret(A);
-    ret.vecVals() += toComplex(B.vecVals());
-    return ret;
-}
-
 inline RSparseMatrix real(const CSparseMatrix & A){
     return RSparseMatrix(A.vecColPtr(), A.vecRowIdx(),
                          real(A.vecVals()), A.stype());
@@ -523,31 +534,5 @@ inline RSparseMatrix imag(const CSparseMatrix & A){
                          imag(A.vecVals()), A.stype());
 }
 
-/*! SparseMatrix specialized type traits in sparsematrix.cpp */
-template< typename ValueType >
-void SparseMatrix< ValueType >::copy_(const SparseMapMatrix< double, Index > & S){THROW_TO_IMPL}
-template< typename ValueType >
-void SparseMatrix< ValueType >::copy_(const SparseMapMatrix< Complex, Index > & S){THROW_TO_IMPL}
-
-
-template <> DLLEXPORT void SparseMatrix<double>::copy_(const SparseMapMatrix< double, Index > & S);
-template <> DLLEXPORT void SparseMatrix<Complex>::copy_(const SparseMapMatrix< Complex, Index > & S);
-
-template <> DLLEXPORT void SparseMatrix< double >::
-    add(const ElementMatrix < double > & A, double scale);
-template <> DLLEXPORT void SparseMatrix< double >::
-    add(const ElementMatrix < double > & A, const Pos & scale);
-template <> DLLEXPORT void SparseMatrix< double >::
-    add(const ElementMatrix < double > & A, const RMatrix & scale);
-
-template <> DLLEXPORT void SparseMatrix< Complex >::
-    add(const ElementMatrix < double > & A, Complex scale);
-template <> DLLEXPORT void SparseMatrix< Complex >::
-    add(const ElementMatrix < double > & A, const Pos & scale);
-template <> DLLEXPORT void SparseMatrix< Complex >::
-    add(const ElementMatrix < double > & A, const CMatrix & scale);
-
-
 } // namespace GIMLI
-
 #endif //GIMLI_SPARSEMATRIX__H

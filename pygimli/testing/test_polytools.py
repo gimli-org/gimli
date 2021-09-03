@@ -427,6 +427,17 @@ class Test3DMerge(unittest.TestCase):
         m.exportVTK('cubecut')
 
 
+    def test_face_inCube(self):
+        plc = mt.createCube()
+        
+        face = mt.createSurface(mt.createGrid(x=np.linspace(-0.5, 0.5, 2), y=np.linspace(-0.5, 0.5, 2)))
+        
+        m = mt.mergePLC3D([plc, face])
+        mt.exportPLC(m, 'tmp.poly')
+        mesh = mt.createMesh(m)
+        pg.show(mesh)
+
+
     def test_appendTetrahedron(self):
         grid = mt.createGrid(5,5,5)
         #pg.show(grid)

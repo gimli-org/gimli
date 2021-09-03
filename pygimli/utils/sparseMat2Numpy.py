@@ -287,10 +287,7 @@ def reduceEntries(A, idx):
     if 1:
         A.reduce(idx, True)
         for i, ix in enumerate(idx):
-            # A.cleanRow(ix)
-            # A.cleanCol(ix)
             A.setVal(ix, ix, 1.0)
-        pg.toc('all', reset=True)
     else:
         if debug:
             print(A)
