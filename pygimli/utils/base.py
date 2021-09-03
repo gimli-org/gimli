@@ -166,9 +166,9 @@ def createPath(pathList):
     Parameters
     ----------
     pathList: str | list(str)
-        Create Path with option subpaths
+        Create Path with optional subpaths
     """
-    if hasattr(pathList, '__iter__'):
+    if isinstance(pathList, (list, tuple)):
         path = os.path.join('', *pathList)
     else:
         path = os.path.join('', pathList)
@@ -181,6 +181,8 @@ def createPath(pathList):
         pg.error('Unable to create path "{}".'.format(path))
         pg.critical(e)
     return path
+
+mkdir = createPath
 
 
 @pg.renamed(createResultPath, '1.2')  # 20200515

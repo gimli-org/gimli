@@ -179,6 +179,61 @@ template <> void SparseMatrix< Complex >::
     THROW_TO_IMPL
 }
 
+
+template <> void SparseMatrix< double >
+::setVal(Index i, Index j, const double & val){
+    if (abs(val) > TOLERANCE || 1){
+        for (int k = colPtr_[i]; k < colPtr_[i + 1]; k ++){
+            if (rowIdx_[k] == (int)j) {
+                vals_[k] = val; return;
+            }
+        }
+        __M
+        log(Error, " setVal: " ,i,  " ", j, " is not part of the sparsity pattern ");
+    }
+}
+
+template <> void SparseMatrix< Complex >
+::setVal(Index i, Index j, const Complex & val){
+    if (abs(val) > TOLERANCE || 1){
+        for (int k = colPtr_[i]; k < colPtr_[i + 1]; k ++){
+            if (rowIdx_[k] == (int)j) {
+                vals_[k] = val; return;
+            }
+        }
+        __M
+        log(Error, " setVal: " ,i,  " ", j, " is not part of the sparsity pattern ");
+    }
+}
+
+template <> double SparseMatrix< double >
+::getVal(Index i, Index j, bool warn) const{
+    for (int k = colPtr_[i]; k < colPtr_[i + 1]; k ++){
+        if (rowIdx_[k] == (int)j) {
+            return vals_[k];
+        }
+    }
+    if (warn == true){
+        __M
+        log(Error, " getVal: " , i, " ", j, " is not part of the sparsity pattern ");
+    }
+    return 0.0;
+}
+
+template <> Complex SparseMatrix< Complex >
+::getVal(Index i, Index j, bool warn) const {
+    for (int k = colPtr_[i]; k < colPtr_[i + 1]; k ++){
+        if (rowIdx_[k] == (int)j) {
+            return vals_[k];
+        }
+    }
+    if (warn == true){
+        __M
+        log(Error, " getVal: " , i, " ", j, " is not part of the sparsity pattern ");
+    }
+    return Complex(0);
+}
+
 } // namespace GIMLI{
 
 

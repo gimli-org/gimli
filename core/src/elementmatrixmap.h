@@ -27,9 +27,9 @@ namespace GIMLI{
 
 class DLLEXPORT ElementMatrixMap {
 public:
-    
+
     void push_back(const ElementMatrix < double > & Ai);
-    
+
     void resize(Index size);
 
     #define DEFINE_INTEGRATOR(A_TYPE) \
@@ -43,7 +43,7 @@ public:
         */ \
         RVector integrate(const A_TYPE & f, bool neg=false) const; \
         /*! R = this * f */ \
-        void mult(const A_TYPE & f, ElementMatrixMap & ret) const; 
+        void mult(const A_TYPE & f, ElementMatrixMap & ret) const;
 
     DEFINE_INTEGRATOR(double)   // const scalar for all cells
     DEFINE_INTEGRATOR(RMatrix)  // const Matrix for all cells
@@ -77,14 +77,15 @@ public:
     #undef DEFINE_INTEGRATOR
 
     const std::vector< ElementMatrix < double > > & mats() const;
-    
+
     ElementMatrix < double > * pMat(Index i){ return & mats_[i]; }
 
     const std::vector < PosVector > & quadraturePoints() const;
+    PosVector entityCenters() const;
 
     /*!Calculate copy of this + B, depending on requested dim. */
     void add(const ElementMatrixMap & B, ElementMatrixMap & ret, Index dim=1, double b=1.0) const;
-    
+
     void add(Index row, const ElementMatrix < double > & Ai);
 
     //TODO .. check if its the same like mult(a-b, m-n))
@@ -118,11 +119,11 @@ createUMap(const Mesh & mesh, Index order,
            ElementMatrixMap & ret,
            Index nCoeff=1, Index dofOffset=0);
 
-DLLEXPORT ElementMatrixMap 
+DLLEXPORT ElementMatrixMap
 createUMap(const Mesh & mesh, Index order,
            Index nCoeff=1, Index dofOffset=0);
 
-DLLEXPORT void 
+DLLEXPORT void
 createdUMap(const Mesh & mesh, Index order,
             ElementMatrixMap & ret,
             bool elastic, bool div, bool kelvin,
@@ -133,12 +134,12 @@ createdUMap(const Mesh & mesh, Index order,
             bool elastic, bool div, bool kelvin,
             Index nCoeff=1, Index dofOffset=0);
 
-DLLEXPORT void 
-createIdentityMap(const Mesh & mesh, Index order, 
+DLLEXPORT void
+createIdentityMap(const Mesh & mesh, Index order,
                   ElementMatrixMap & ret,
                   Index nCoeff=1, Index dofOffset=0);
 
-DLLEXPORT ElementMatrixMap 
+DLLEXPORT ElementMatrixMap
 createIdentityMap(const Mesh & mesh, Index order,
                   Index nCoeff, Index dofOffset);
 

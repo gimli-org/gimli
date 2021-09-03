@@ -1094,10 +1094,10 @@ class LinSolver(object):
         return self._factorized
 
     def factorize(self, mat):
-        swatch = pg.Stopwatch()
-
+        """Factorize matrix mat."""
+        pg.tic(key='LinSolver.factorize')
         getattr(self, self._factorize)(mat)
-        self.factorTime = swatch.duration(restart=True)
+        self.factorTime = pg.dur(key='LinSolver.factorize', reset=True)
 
         if self.verbose:
             pg.info("Matrix factorization:", self.factorTime)
@@ -1119,7 +1119,7 @@ class LinSolver(object):
 
         self._desiredArrayType = np.array
         self._solver = factorized(self._m)
-
+        
     def __call__(self, b):
         """short cut to self.solve(b)"""
         return self.solve(b)
@@ -1132,9 +1132,9 @@ class LinSolver(object):
 
     def solve(self, b):
         """ """
-        swatch = pg.Stopwatch()
+        pg.tic(key='LinSolver.solve')
         x = self._solver(self._convertRHS(b))
-        self.solverTime = swatch.duration(restart=True)
+        self.solverTime = pg.dur(key='LinSolver.solve', reset=True)
         if self.verbose:
             pg.info("Matrix solve:", self.solverTime)
         return x

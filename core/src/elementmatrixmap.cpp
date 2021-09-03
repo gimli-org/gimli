@@ -153,14 +153,14 @@ DEFINE_INTEGRATE_ELEMENTMAP_L_IMPL(Pos)
 DEFINE_INTEGRATE_ELEMENTMAP_L_IMPL(RMatrix)
 #undef DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL
 
-void ElementMatrixMap::add(const ElementMatrixMap & B, 
+void ElementMatrixMap::add(const ElementMatrixMap & B,
                            ElementMatrixMap & ret, Index dim, double b) const {
     // __M
     ASSERT_EQUAL_SIZE(this->mats(), B.mats())
 
     ret.resize(this->size());
     Index i = 0;
-    for (auto const &m: this->mats_){ 
+    for (auto const &m: this->mats_){
         ret.pMat(i)->copyFrom(m);
         ret.pMat(i)->add(B.mats()[i], dim, b);
         i++;
@@ -170,7 +170,7 @@ void ElementMatrixMap::add(const ElementMatrixMap & B,
     // __MS(B.mats()[0])
     // __MS(*ret.pMat(0))
 }
-    
+
 
 #define DEFINE_INTEGRATE_ELEMENTMAP_L_PERCELL_IMPL(A_TYPE) \
 void ElementMatrixMap::integrate(const A_TYPE & f, RVector & R , bool neg) const { \
@@ -380,6 +380,14 @@ const std::vector < PosVector > & ElementMatrixMap::quadraturePoints() const {
         }
     }
     return this->quadrPnts_;
+}
+
+PosVector ElementMatrixMap::entityCenters() const{
+    PosVector ret;
+    for (auto &m: this->mats_){
+        ret.push_back(m.entity()->shape().center());
+    }
+    return ret;
 }
 
 void ElementMatrixMap::add(Index row, const ElementMatrix < double > & Ai){
