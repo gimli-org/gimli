@@ -59,8 +59,8 @@ ax, cb = pg.show(mesh, CM[:, ind], cMap="magma_r")
 #     \textbf{C}_\text{M}^{-0.5} = \textbf{Q}\textbf{D}^{-0.5}\textbf{Q}^{T}
 #
 # In order to avoid a matrix inverse (square root), a special matrix is derived
-# that does the decomposition and stores the eigenvectors and eigenvalues values.
-# A multiplication is done by multiplying with Q and scaling with the diagonal D.
+# doing the decomposition and storing the eigenvectors and eigenvalues values.
+# A multiplication is done by multiplying with Q and scaling with the diagonal.
 # This matrix is implemented in the :mod:`pygimli.matrix` module
 # by the class :py:mod:`pg.matrix.Cm05Matrix`
 
@@ -68,7 +68,7 @@ Cm05 = pg.matrix.Cm05Matrix(CM)
 # %%
 # However, this matrix does not return a zero vector for a constant vector
 out = Cm05 * pg.Vector(mesh.cellCount(), 1.0)
-print(min(out), max(out))
+print("min/max value ", min(out), max(out))
 
 # %%
 # as desired for a roughness operator. Therefore, an additional matrix called
@@ -84,7 +84,8 @@ C = pg.matrix.GeostatisticConstraintsMatrix(mesh=mesh, I=5)
 # In order to extract a certain column, we generate a vector with a single 1
 vec = pg.Vector(mesh.cellCount())
 vec[ind] = 1.0
-ax, cb = pg.show(mesh, pg.log10(pg.abs(C*vec)), cMin=-6, cMax=0, cMap="magma_r")
+ax, cb = pg.show(mesh, pg.log10(pg.abs(C*vec)),
+                 cMin=-6, cMax=0, cMap="magma_r")
 
 # %%
 # The constraints have a rather small footprint compared to the correlation
@@ -93,8 +94,9 @@ ax, cb = pg.show(mesh, pg.log10(pg.abs(C*vec)), cMin=-6, cMax=0, cMap="magma_r")
 
 # %%
 # Such a matrix can also be defined for different ranges and dip angles, e.g.
-Cdip = pg.matrix.GeostatisticConstraintsMatrix(mesh=mesh, I=[10, 3], dip=-25)
-ax, cb = pg.show(mesh, pg.log10(pg.abs(Cdip*vec)), cMin=-6, cMax=0, cMap="magma_r")
+Cdip = pg.matrix.GeostatisticConstraintsMatrix(mesh=mesh, I=[10, 2], dip=-25)
+ax, cb = pg.show(mesh, pg.log10(pg.abs(Cdip*vec)),
+                 cMin=-6, cMax=0, cMap="magma_r")
 
 # %%
 # In order to illustrate the role of the constraints, we use a very simple
@@ -107,12 +109,13 @@ ax, cb = pg.show(mesh, pg.log10(pg.abs(Cdip*vec)), cMin=-6, cMax=0, cMap="magma_
 # that projects the model vector to the forward response.
 # This matrix is also the Jacobian matrix for the inversion.
 
-class PriorFOP(pg.core.ModellingBase):
+
+class PriorFOP(pg.Modelling):
     """Forward operator for grabbing values."""
 
     def __init__(self, mesh, pos, verbose=False):
         """Init with mesh and some positions that are converted into ids."""
-        super().__init__(self, verbose)
+        super().__init__(verbose=verbose)
         self.setMesh(mesh)
         self.ind = [mesh.findCell(po).id() for po in pos]
         self.J = pg.SparseMapMatrix()
@@ -148,40 +151,38 @@ kw = dict(
     logScale=True)
 # We want to use a homogenenous starting model
 startModel = pg.Vector(mesh.cellCount(), 30)
-tLog = pg.core.TransLog()
+tLog = pg.trans.TransLog()
 vals = [30, 50, 300, 100, 200]
-inv = pg.core.Inversion(vals, fop, tLog, tLog)
-inv.setRelativeError(0.05)  # 5 % error
-inv.setModel(startModel)
-inv.setLambda(200)
-# first we use the second order (curvature) constraint type
-fop.regionManager().setConstraintType(2)
-res = inv.run()
-print(('{:.1f} ' * 5).format(*fop(res)), inv.chi2())
-pg.show(mesh, res, ax=ax[0, 1], **kw)
-# Next, we use first-order constraints
-fop.regionManager().setConstraintType(1)
-res = inv.run()
+# We assume a 5% relative accuracy of the values
+error = pg.Vector(len(vals), 0.05)
+# inv = pg.core.Inversion(vals, fop, tLog, tLog)
+inv = pg.Inversion(fop=fop, verbose=True)
+inv.transData = tLog
+inv.transModel = tLog
+inv.lam = 25
+inv.startModel = startModel
+# Initially, we use the first-order constraints (default)
+res = inv.run(vals, error)
 print(('{:.1f} ' * 5).format(*fop(res)), inv.chi2())
 pg.show(mesh, res, ax=ax[0, 0], **kw)
+ax[0, 0].set_title("1st order")
+# Next, we use the second order (curvature) constraint type
+res = inv.run(vals, error, cType=2)
+print(('{:.1f} ' * 5).format(*fop(res)), inv.chi2())
+pg.show(mesh, res, ax=ax[0, 1], **kw)
+ax[0, 1].set_title("2nd order")
 # Now we set the geostatistic isotropic operator with 5m correlation length
 fop.setConstraints(C)
-inv.setModel(startModel)
-inv.setLambda(30)
-res = inv.run()
+res = inv.run(vals, error)
 print(('{:.1f} ' * 5).format(*fop(res)), inv.chi2())
 pg.show(mesh, res, ax=ax[1, 0], **kw)
-ax[0, 0].set_title("1st order")
-ax[0, 1].set_title("2nd order")
 ax[1, 0].set_title("I=5")
 # and finally we use the dipping constraint matrix
 fop.setConstraints(Cdip)
-inv.setLambda(20)
-inv.setModel(startModel)
-res = inv.run()
+res = inv.run(vals, error)
 print(('{:.1f} ' * 5).format(*fop(res)), inv.chi2())
 pg.show(mesh, res, ax=ax[1, 1], **kw)
-ax[1, 1].set_title("I=[10/3], dip=25")
+ax[1, 1].set_title("I=[10/2], dip=25")
 # plot the position of the priors
 for ai in ax.flat:
     for po in pos:
