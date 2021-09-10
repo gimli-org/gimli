@@ -154,7 +154,7 @@ class Inversion(object):
                 pg.info("Startmodel set from given array.", model)
                 self._startModel = model
             else:
-                pg.error("Startmodel size invalid {0} != {0}.".
+                pg.error("Startmodel size invalid {0} != {1}.".
                          format(len(model), self.parameterCount))
 
     @property
@@ -457,7 +457,7 @@ class Inversion(object):
                          'Aborting and going back to last model')
 
             if np.isnan(self.model).any():
-                print(model)
+                print(self.model)
                 pg.critical('invalid model')
 
             resp = self.inv.response()
