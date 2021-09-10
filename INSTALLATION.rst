@@ -67,11 +67,30 @@ functionality:
     conda update -c gimli -c conda-forge pygimli
 
 The only drawback of using conda is that you are bound to the rhythm in which we
-update the binary packages. Conda also can be seen as a sandbox inside your
-system and it might be difficult to combine system Python packages and conda
-pyGIMLi. If you like to keep your pyGIMLi version more recent (including all
-possible drawbacks of versions that are actively developed) you should compile
-pyGIMLi using your systems toolchain.
+update the conda packages. In order to work with the latest Python codes you
+should create an environment with the latest pyGIMLi C++ core only,
+
+.. code-block:: bash
+
+    conda create -n pgcore -c gimli -c conda-forge pgcore
+    
+retrieve the source code by git and set the PYTHONPATH variable
+
+.. code-block:: bash
+
+    git clone https://github.com/gimli-org/gimli
+    export PYTHONPATH=$PYTHONPATH:$PWD/gimli
+    
+Move the latter command to your .bashrc to make it persistent.
+Later you can just update the code by
+
+.. code-block:: bash
+
+    git pull
+    
+Only if you need recent changes to the C++ core, you have to compile
+pyGIMLi using your systems toolchain as described in 
+https://www.pygimli.org/compilation.html#sec-build
 
 .. |conda| image:: https://anaconda.org/gimli/pygimli/badges/installer/conda.svg
    :target: https://anaconda.org/gimli/pygimli

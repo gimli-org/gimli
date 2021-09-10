@@ -396,7 +396,14 @@ class ERTManager(MeshMethodManager):
                                     "or impedances 'r', "
                                     "or voltage 'u' along with current 'i'.")
 
+                if any(data['rhoa'] < 0) and \
+                    isinstance(self.inv.dataTrans, pg.core.TransLog):
+                    print(pg.find(data['rhoa']<0))
+                    print(data['rhoa'][data['rhoa']<0])
+                    pg.critical("Found negative apparent resistivities. These can't be processed with logarithmic data transformation. You should consider to filter them out using data.remove(data['rhoa'] < 0).")
+
                 return data['rhoa']
+
 
         return data
 

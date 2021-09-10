@@ -347,7 +347,7 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1,
             poly.copyBoundary(b)
 
     preserveSwitch = 'Y'
-    #pg.show(poly, boundaryMarkers=True, showNodes=True)
+    # pg.show(poly, boundaryMarkers=True, showNodes=True)
     # pg.wait()
 
     mesh2 = pg.meshtools.createMesh(poly, preserveBoundary=preserveSwitch, **kwargs)

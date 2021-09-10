@@ -52,6 +52,11 @@ def createMesh(poly, quality=32, area=0.0, smooth=None, switches=None,
         Set additional triangle command switches.
         https://www.cs.cmu.edu/~quake/triangle.switch.html
 
+    Additional Args
+    ---------------
+    preserveBoundary: bool
+        Preserver boundary nodes, i.e., there will be no more nodes on boundaries.
+
     Returns
     -------
     mesh: :gimliapi:`GIMLI::Mesh`
@@ -71,7 +76,7 @@ def createMesh(poly, quality=32, area=0.0, smooth=None, switches=None,
         if isinstance(poly[0], pg.Mesh):
             return createMesh(
                 pg.meshtools.mergePLC(poly), quality, area, smooth, switches,
-                verbose)
+                verbose, **kwargs)
     # poly == [pos, pos, ]
     if isinstance(poly, list) or \
         isinstance(poly, type(zip)) or \
@@ -81,7 +86,7 @@ def createMesh(poly, quality=32, area=0.0, smooth=None, switches=None,
         delPLC = pg.Mesh(2)
         for p in poly:
             delPLC.createNode(p[0], p[1], 0.0)
-        return createMesh(delPLC, switches='-zeY')
+        return createMesh(delPLC, switches='-zeY', **kwargs)
 
     # poly == Mesh
     if poly.dim() == 2:

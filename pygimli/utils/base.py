@@ -175,11 +175,10 @@ def createPath(pathList):
 
     try:
         os.makedirs(path)
+    except FileExistsError:
+        print(f'Path {path} already exists. Skipping')
     except OSError as e:
-        if os.path.exists(path):
-            print('Path "{}" already exists.'.format(path))
-        else:
-            pg.error('Unable to create path "{}".'.format(path))
+        pg.error(f'Unable to create path "{path}".')
         raise e
     return path
 
