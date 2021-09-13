@@ -28,6 +28,7 @@ Let us illustrate this by a simple mesh:
 # Computing covariance and constraint matrices
 # --------------------------------------------
 # We create a simple mesh using a box geometry
+import matplotlib.pyplot as plt
 import pygimli as pg
 import pygimli.meshtools as mt
 
@@ -113,9 +114,9 @@ ax, cb = pg.show(mesh, pg.log10(pg.abs(Cdip*vec)),
 class PriorFOP(pg.Modelling):
     """Forward operator for grabbing values."""
 
-    def __init__(self, mesh, pos, verbose=False):
+    def __init__(self, mesh, pos, **kwargs):
         """Init with mesh and some positions that are converted into ids."""
-        super().__init__(verbose=verbose)
+        super().__init__(**kwargs)
         self.setMesh(mesh)
         self.ind = [mesh.findCell(po).id() for po in pos]
         self.J = pg.SparseMapMatrix()
@@ -141,7 +142,7 @@ class PriorFOP(pg.Modelling):
 pos = [[2, -2], [8, -2], [5, -5], [2, -8], [8, -8]]
 fop = PriorFOP(mesh, pos)
 # For plotting the results, we create a figure and define some plotting options
-fig, ax = pg.plt.subplots(nrows=2, ncols=2, sharex=True, sharey=True)
+fig, ax = plt.subplots(nrows=2, ncols=2, sharex=True, sharey=True)
 kw = dict(
     colorBar=True,
     cMin=30,
@@ -150,21 +151,21 @@ kw = dict(
     cMap='Spectral_r',
     logScale=True)
 # We want to use a homogenenous starting model
-startModel = pg.Vector(mesh.cellCount(), 30)
 tLog = pg.trans.TransLog()
 vals = [30, 50, 300, 100, 200]
 # We assume a 5% relative accuracy of the values
 error = pg.Vector(len(vals), 0.05)
-# inv = pg.core.Inversion(vals, fop, tLog, tLog)
-inv = pg.Inversion(fop=fop, verbose=True)
+# set up data and model transformation log-scaled
+inv = pg.Inversion(fop=fop)
 inv.transData = tLog
 inv.transModel = tLog
-inv.lam = 25
+inv.lam = 40
+startModel = pg.Vector(mesh.cellCount(), 30)
 inv.startModel = startModel
 # Initially, we use the first-order constraints (default)
 res = inv.run(vals, error)
 print(('{:.1f} ' * 5).format(*fop(res)), inv.chi2())
-pg.show(mesh, res, ax=ax[0, 0], **kw)
+#pg.show(mesh, res, ax=ax[0, 0], **kw)
 ax[0, 0].set_title("1st order")
 # Next, we use the second order (curvature) constraint type
 res = inv.run(vals, error, cType=2)
