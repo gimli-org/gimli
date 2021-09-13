@@ -165,7 +165,7 @@ inv.startModel = startModel
 # Initially, we use the first-order constraints (default)
 res = inv.run(vals, error)
 print(('{:.1f} ' * 5).format(*fop(res)), inv.chi2())
-pg.show(mesh, res, ax=ax[0, 0], **kw)
+#pg.show(mesh, res, ax=ax[0, 0], **kw)
 ax[0, 0].set_title("1st order")
 # Next, we use the second order (curvature) constraint type
 res = inv.run(vals, error, cType=2)

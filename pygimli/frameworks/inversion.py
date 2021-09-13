@@ -382,6 +382,8 @@ class Inversion(object):
         dPhi : float [1]
             Overwrite class settings for delta data phi aborting criteria.
             Default is 1%
+        cType: int[1]
+            Set global contraints type for all regions.
         """
         self.reset()
         if self.isFrameWork:
@@ -406,6 +408,9 @@ class Inversion(object):
         showProgress = kwargs.pop('showProgress', False)
 
         self.inv.setTransModel(self.fop.modelTrans)
+
+        if 'cType' in kwargs:
+            self.fop.setRegionProperties('*', cType=kwargs.pop('cType'))
 
         self.dataVals = dataVals
         self.errorVals = errorVals
