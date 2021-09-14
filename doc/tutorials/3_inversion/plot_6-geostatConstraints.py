@@ -95,7 +95,7 @@ ax, cb = pg.show(mesh, pg.log10(pg.abs(C*vec)),
 
 # %%
 # Such a matrix can also be defined for different ranges and dip angles, e.g.
-Cdip = pg.matrix.GeostatisticConstraintsMatrix(mesh=mesh, I=[10, 2], dip=-25)
+Cdip = pg.matrix.GeostatisticConstraintsMatrix(mesh=mesh, I=[9, 2], dip=-25)
 ax, cb = pg.show(mesh, pg.log10(pg.abs(Cdip*vec)),
                  cMin=-6, cMax=0, cMap="magma_r")
 
@@ -163,25 +163,25 @@ inv.lam = 40
 startModel = pg.Vector(mesh.cellCount(), 30)
 inv.startModel = startModel
 # Initially, we use the first-order constraints (default)
-res = inv.run(vals, error)
-print(('{:.1f} ' * 5).format(*fop(res)), inv.chi2())
-#pg.show(mesh, res, ax=ax[0, 0], **kw)
+res = inv.run(vals, error, cType=1, lam=35)
+print(('Ctype=1: ' + '{:.1f} ' * 6).format((*fop(res)), inv.chi2()))
+pg.show(mesh, res, ax=ax[0, 0], **kw)
 ax[0, 0].set_title("1st order")
 # Next, we use the second order (curvature) constraint type
-res = inv.run(vals, error, cType=2)
-print(('{:.1f} ' * 5).format(*fop(res)), inv.chi2())
+res = inv.run(vals, error, cType=2, lam=1000)
+print(('Ctype=2: ' + '{:.1f} ' * 6).format((*fop(res)), inv.chi2()))
 pg.show(mesh, res, ax=ax[0, 1], **kw)
 ax[0, 1].set_title("2nd order")
 # Now we set the geostatistic isotropic operator with 5m correlation length
 fop.setConstraints(C)
-res = inv.run(vals, error)
-print(('{:.1f} ' * 5).format(*fop(res)), inv.chi2())
+res = inv.run(vals, error, lam=25)
+print(('Cg-5/5m: ' + '{:.1f} ' * 6).format((*fop(res)), inv.chi2()))
 pg.show(mesh, res, ax=ax[1, 0], **kw)
 ax[1, 0].set_title("I=5")
 # and finally we use the dipping constraint matrix
 fop.setConstraints(Cdip)
-res = inv.run(vals, error)
-print(('{:.1f} ' * 5).format(*fop(res)), inv.chi2())
+res = inv.run(vals, error, lam=35)
+print(('Cg-9/2m: ' + '{:.1f} ' * 6).format((*fop(res)), inv.chi2()))
 pg.show(mesh, res, ax=ax[1, 1], **kw)
 ax[1, 1].set_title("I=[10/2], dip=25")
 # plot the position of the priors
