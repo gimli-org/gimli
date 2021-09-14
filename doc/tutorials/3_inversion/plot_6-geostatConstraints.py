@@ -76,17 +76,22 @@ print("min/max value ", min(out), max(out))
 # :py:mod:`pg.matrix.GeostatisticalConstraintsMatrix`
 # was implemented where this spur is corrected for.
 # It is, like the correlation matrix, created by a mesh, a list of correlation
-# lengths I, a dip angle# that distorts the x/y plane and a strike angle
+# lengths I, a dip angle that distorts the x/y plane and a strike angle
 # towards the third direction.
 #
 C = pg.matrix.GeostatisticConstraintsMatrix(mesh=mesh, I=5)
 
 # %%
-# In order to extract a certain column, we generate a vector with a single 1
+# In order to extract a column, we generate a vector with a single 1, multiply
 vec = pg.Vector(mesh.cellCount())
 vec[ind] = 1.0
-ax, cb = pg.show(mesh, pg.log10(pg.abs(C*vec)),
-                 cMin=-6, cMax=0, cMap="magma_r")
+cor = C * vec
+
+# and plot it using log or linear scale (choose one)
+kwLog = dict(cMin=1e-3, cMax=1, cMap="magma_r", logScale=True)
+ax, cb = pg.show(mesh, pg.abs(cor), **kwLog)
+kwLin = dict(cMin=-0.5, cMax=0.5, cMap="bwr")
+ax, cb = pg.show(mesh, cor, **kwLin)
 
 # %%
 # The constraints have a rather small footprint compared to the correlation
@@ -96,8 +101,8 @@ ax, cb = pg.show(mesh, pg.log10(pg.abs(C*vec)),
 # %%
 # Such a matrix can also be defined for different ranges and dip angles, e.g.
 Cdip = pg.matrix.GeostatisticConstraintsMatrix(mesh=mesh, I=[9, 2], dip=-25)
-ax, cb = pg.show(mesh, pg.log10(pg.abs(Cdip*vec)),
-                 cMin=-6, cMax=0, cMap="magma_r")
+ax, cb = pg.show(mesh, pg.abs(Cdip * vec), **kwLog)
+ax, cb = pg.show(mesh, Cdip * vec, **kwLin)
 
 # %%
 # In order to illustrate the role of the constraints, we use a very simple
