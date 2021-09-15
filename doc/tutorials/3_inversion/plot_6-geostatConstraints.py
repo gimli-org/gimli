@@ -87,22 +87,26 @@ vec = pg.Vector(mesh.cellCount())
 vec[ind] = 1.0
 cor = C * vec
 
-# and plot it using log or linear scale (choose one)
+# %%
+# and plot it using a linear or logarithmic scale
+kwLin = dict(cMin=-1, cMax=1, cMap="bwr")
+ax, cb = pg.show(mesh, cor, **kwLin)
 kwLog = dict(cMin=1e-3, cMax=1, cMap="magma_r", logScale=True)
 ax, cb = pg.show(mesh, pg.abs(cor), **kwLog)
-kwLin = dict(cMin=-0.5, cMax=0.5, cMap="bwr")
-ax, cb = pg.show(mesh, cor, **kwLin)
 
 # %%
 # The constraints have a rather small footprint compared to the correlation
-# (note the logarithmic scale) but still to the whole mesh unlike the classical
-# constraint matrices that only include relations to neighboring cells.
+# if one considers values below a certain threshold as insignificant.
 
 # %%
 # Such a matrix can also be defined for different ranges and dip angles, e.g.
 Cdip = pg.matrix.GeostatisticConstraintsMatrix(mesh=mesh, I=[9, 2], dip=-25)
-ax, cb = pg.show(mesh, pg.abs(Cdip * vec), **kwLog)
 ax, cb = pg.show(mesh, Cdip * vec, **kwLin)
+ax, cb = pg.show(mesh, pg.abs(Cdip * vec), **kwLog)
+
+# %%
+# Even in the linear scale, but more in the log scale one can see the
+# regularization footprint in the shape of an ellipsis. 
 
 # %%
 # In order to illustrate the role of the constraints, we use a very simple
