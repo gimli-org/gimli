@@ -214,8 +214,8 @@ void print(Args&&... args) {
     throwLengthError(WHERE_AM_I + " " + str(m) + " != " + str(n));
 #define ASSERT_RANGE(i, start, end) if (i < start || i >= end) \
     throwRangeError(WHERE_AM_I, i, start, end);
-#define ASSERT_EMPTY(v) if (v.size()==0) \
-    throwLengthError(WHERE_AM_I + " array size is zero.");
+#define ASSERT_NON_EMPTY(v) if (v.size()==0) \
+    throwLengthError(WHERE_AM_I + " empty array.");
 #define ASSERT_PTR(v) if (v == 0) \
     throwError(WHERE_AM_I + " object not initialized.");
 

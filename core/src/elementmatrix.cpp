@@ -2400,25 +2400,27 @@ void mult(const ElementMatrix < double > & A, const FEAFunction & b,
     }
 
 //** R = mult * const. scalar (R final form)
-template < >
-void ElementMatrix < double >::integrate(double f,
-                                         RVector & R, double scale) const {
-    INTEGRATE_LINFORM()
-    rt *= this->_ent->size() * f * scale;
-    R.addVal(rt, this->rowIDs());
+template < > void 
+ElementMatrix < double >::integrate(double f,
+                                    RVector & R, double scale) const {
+    this->integrate();
+    R.add(*this, f*scale);    
+    // INTEGRATE_LINFORM()
+    // rt *= this->_ent->size() * f * scale;
+    // R.addVal(rt, this->rowIDs());
 }
 //** R = mult * const. vector (R final form)
-template < >
-void ElementMatrix < double >::integrate(const Pos & f,
-                                         RVector & R, double scale) const {
+template < > void 
+ElementMatrix < double >::integrate(const Pos & f,
+                                    RVector & R, double scale) const {
     INTEGRATE_LINFORM(*f[k])
     rt *= this->_ent->size() * scale;
     R.addVal(rt, this->rowIDs());
 }
 //** R = mult * scalar per quadr. (R final form)
-template < >
-void ElementMatrix < double >::integrate(const RVector & f,
-                                         RVector & R, double scale) const {
+template < > void 
+ElementMatrix < double >::integrate(const RVector & f,
+                                    RVector & R, double scale) const {
     ASSERT_VEC_SIZE(f, this->_w->size())
     INTEGRATE_LINFORM(*f[r])
     rt *= this->_ent->size() * scale;
@@ -2930,6 +2932,6 @@ void createAdvectionMatrix(const Mesh & mesh, Index order,
                                      const PosVector & vel,
                                      Index dofOffset){
              THROW_TO_IMPL
-                                     }
+}
 
 } // namespace GIMLI

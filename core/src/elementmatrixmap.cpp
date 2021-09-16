@@ -41,6 +41,7 @@ void ElementMatrixMap::push_back(const ElementMatrix < double > & Ai){
 template < class ValueType >
 void integrateLConstT_(const ElementMatrixMap * self,
                      const ValueType & f, RVector & R, bool neg){
+    ASSERT_NON_EMPTY(R)
     for (auto &m : self->mats()){
         if (neg) {
             m.integrate(f, R, -1);
@@ -53,6 +54,7 @@ void integrateLConstT_(const ElementMatrixMap * self,
 template < class ValueType >
 void integrateLPerCellT_(const ElementMatrixMap * self,
                         const ValueType & f, RVector & R, bool neg){
+    ASSERT_NON_EMPTY(R)
     ASSERT_EQUAL_SIZE(self->mats(), f)
 
     for (auto &m : self->mats()){
@@ -254,113 +256,52 @@ DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(std::vector< std::vector< RMatrix > >)
 #undef DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET
 
 
-// // M * scalar * M
-// void ElementMatrixMap::integrate(const ElementMatrixMap & R,
-//                                  const double & f,
-//                                  SparseMatrixBase & A, bool neg) const {
-//     ASSERT_EQUAL_SIZE(this->mats_, R.mats())
+void ElementMatrixMap::mult(const ElementMatrixMap & B, ElementMatrixMap & ret) const {
+    THROW_TO_IMPL
+}
 
-//     Index i = 0;
-//     ElementMatrix < double > dAB;
-//     double scale = 1.0;
-//     if (neg) scale = -1.0;
+template < class ValueType, class RetType >
+void assembleConstT_(const ElementMatrixMap * self, const ValueType & f, RetType & R, bool neg){
+    ASSERT_NON_EMPTY(R)
+    for (auto &m : self->mats()){
+        R.add(m, f, neg);
+    }
+}
+template < class ValueType, class RetType >
+void assemblePerCellT_(const ElementMatrixMap * self, const ValueType & f, RetType & R, bool neg){
+    ASSERT_NON_EMPTY(R)
+    ASSERT_EQUAL_SIZE(self->mats(), f)
 
-//     for (auto &m : this->mats_){
-//         //dot(m, R.mats()[i], f, A, scale);
-//         dot(m, R.mats()[i], f, dAB);
-//         A.add(dAB, scale);
-//         i++;
-//     }
-// }
-// // M * Vector * M
-// void ElementMatrixMap::integrate(const ElementMatrixMap & R,
-//                                  const Pos & f,
-//                                  SparseMatrixBase & A, bool neg) const {
-//     ASSERT_EQUAL_SIZE(this->mats_, R.mats())
+    for (auto &m : self->mats()){
+        R.add(m, f[m.entity()->id()], neg);
+    }
+}
 
-//     Index i = 0;
-//     ElementMatrix < double > dAB;
-//     ElementMatrix < double > mf;
-//     double scale = 1.0;
-//     if (neg) scale = -1.0;
+#define DEFINE_ASSEMBLER_L(A_TYPE) \
+void ElementMatrixMap::assemble(const A_TYPE & f, RVector & R, bool neg) const { \
+    assembleConstT_(this, f, R, neg); \
+} \
+void ElementMatrixMap::assemble(const A_TYPE & f, SparseMatrixBase & R, bool neg) const { \
+    assembleConstT_(this, f, R, neg); \
+} \
 
-//     for (auto &m : this->mats_){
-//         // refactor without mult
-//         GIMLI::mult(m, f, mf);
+DEFINE_ASSEMBLER_L(double)   // const scalar for all cells
+DEFINE_ASSEMBLER_L(RMatrix)  // const Matrix for all cells
+DEFINE_ASSEMBLER_L(RVector3)  // const Pos for all cells
+#undef DEFINE_ASSEMBLER_L
 
-//         //dot(m, R.mats()[i], f, A, scale);
-//         dot(mf, R.mats()[i], 1, dAB);
-//         A.add(dAB, scale);
-//         i++;
-//     }
-// }
-// // M * scalar(cell) * M
-// void ElementMatrixMap::integrate(const ElementMatrixMap & R,
-//                                  const RVector & f,
-//                                  SparseMatrixBase & A, bool neg) const {
+#define DEFINE_ASSEMBLER_B(A_TYPE) \
+void ElementMatrixMap::assemble(const A_TYPE & f, RVector & R, bool neg) const { \
+    assemblePerCellT_(this, f, R, neg); \
+} \
+void ElementMatrixMap::assemble(const A_TYPE & f, SparseMatrixBase & R, bool neg) const { \
+    assemblePerCellT_(this, f, R, neg); \
+} \
 
-
-//     ASSERT_EQUAL_SIZE(this->mats_, f)
-//     ASSERT_EQUAL_SIZE(this->mats_, R.mats())
-
-//     Index i = 0;
-//     double scale = 1.0;
-//     if (neg) scale = -1;
-//     ElementMatrix < double > dAB;
-
-//     for (auto &m : this->mats_){
-//         dot(m, R.mats()[i], f[m.entity()->id()], dAB);
-
-//         A.add(dAB, scale);
-//         i++;
-//     }
-// }
-// // M * RVector(quadr)(cell) * M
-// void ElementMatrixMap::integrate(const ElementMatrixMap & R,
-//                                  const std::vector< RVector > & f,
-//                                  SparseMatrixBase & A, bool neg) const {
-//     ASSERT_EQUAL_SIZE(this->mats_, f)
-//     ASSERT_EQUAL_SIZE(this->mats_, R.mats())
-
-//     ElementMatrix < double > dAB;
-//     ElementMatrix < double > mf;
-
-//     Index i = 0;
-//     double scale = 1.0;
-//     if (neg) scale = -1;
-
-//     for (auto &m : this->mats_){
-//         const RVector &fi(f[m.entity()->id()]);
-//         // refactor without mult
-//         GIMLI::mult(m, fi, mf);
-
-//         // void mult(const ElementMatrix < double > & A, const RVector & b,
-//         //           ElementMatrix < double > & C){
-
-//         dot(mf, R.mats()[i], 1.0, dAB);
-
-//         A.add(dAB, scale);
-//         i++;
-//     }
-// }
-
-// // bilinear forms R*f*R
-// #define DEFINE_INTEGRATE_ELEMENTMAP_A_IMPL(A_TYPE) \
-// void ElementMatrixMap::integrate(const ElementMatrixMap & R, const A_TYPE & f, \
-//                                  SparseMatrixBase & A, bool neg) const {\
-//     THROW_TO_IMPL \
-// } \
-
-// //DEFINE_INTEGRATE_ELEMENTMAP_A_IMPL(double)
-// //DEFINE_INTEGRATE_ELEMENTMAP_A_IMPL(Pos)
-// DEFINE_INTEGRATE_ELEMENTMAP_A_IMPL(RMatrix)
-// // DEFINE_INTEGRATE_ELEMENTMAP_A_IMPL(RVector)
-// DEFINE_INTEGRATE_ELEMENTMAP_A_IMPL(PosVector)
-// DEFINE_INTEGRATE_ELEMENTMAP_A_IMPL(std::vector< RMatrix >)
-// //DEFINE_INTEGRATE_ELEMENTMAP_A_IMPL(std::vector< RVector >)
-// DEFINE_INTEGRATE_ELEMENTMAP_A_IMPL(std::vector< PosVector >)
-// DEFINE_INTEGRATE_ELEMENTMAP_A_IMPL(std::vector< std::vector< RMatrix > >)
-// #undef DEFINE_INTEGRATE_ELEMENTMAP_A_IMPL
+DEFINE_ASSEMBLER_B(RVector)  // const scalar for each cell
+DEFINE_ASSEMBLER_B(std::vector< RMatrix >)// const matrix for each cell
+DEFINE_ASSEMBLER_B(std::vector< RVector3 >)  // const Pos for each cell
+#undef DEFINE_ASSEMBLER_B
 
 const std::vector< ElementMatrix < double > > & ElementMatrixMap::mats() const{
     return mats_;

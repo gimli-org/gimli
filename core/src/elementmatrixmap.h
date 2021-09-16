@@ -76,6 +76,23 @@ public:
 
     #undef DEFINE_INTEGRATOR
 
+    /*! Create generic bilinear form */
+    void mult(const ElementMatrixMap & B, ElementMatrixMap & ret) const;
+
+    #define DEFINE_ASSEMBLER(A_TYPE) \
+        /*! Assemble linear form with non continuous properties. */ \
+        void assemble(const A_TYPE & f, RVector & R, bool neg=false) const; \
+        /*! Assemble bilinear form with non continuous properties. */ \
+        void assemble(const A_TYPE & f, SparseMatrixBase & A, bool neg=false) const; \
+
+    DEFINE_ASSEMBLER(double)   // const scalar for all cells
+    DEFINE_ASSEMBLER(RMatrix)  // const Matrix for all cells
+    DEFINE_ASSEMBLER(RVector3)  // const Pos for all cells
+    DEFINE_ASSEMBLER(RVector)  // const scalar for each cell
+    DEFINE_ASSEMBLER(std::vector< RMatrix >)// const matrix for each cell
+    DEFINE_ASSEMBLER(std::vector< RVector3 >)  // const Pos for each cell
+    #undef DEFINE_ASSEMBLER
+
     const std::vector< ElementMatrix < double > > & mats() const;
 
     ElementMatrix < double > * pMat(Index i){ return & mats_[i]; }

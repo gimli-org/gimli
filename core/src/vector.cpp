@@ -59,12 +59,12 @@ Vector< double >::setVal(const Eigen::VectorXd & v, const IVector & ids){
 #endif    
 
 template<>
-void Vector< double >::add(const ElementMatrix < double > & A){
-    return this->add(A, 1.0);
+void Vector< double >::add(const ElementMatrix < double > & A, bool neg){
+    return this->add(A, 1.0, neg);
 }
 template <>
 void Vector< double >::add(const ElementMatrix < double > & A,
-                           const double & scale){
+                           const double & scale, bool neg){
     //__MS(A.oldStyle(), scale, A)
     if (A.oldStyle()){
         if (A.cols() == 1){
@@ -85,7 +85,7 @@ void Vector< double >::add(const ElementMatrix < double > & A,
 }
 template <>
 void Vector< double >::add(const ElementMatrix < double > & A,
-                           const RVector3 & scale){
+                           const RVector3 & scale, bool neg){
     // __MS("inuse?")
     if (A.oldStyle()){
         THROW_TO_IMPL
@@ -101,7 +101,7 @@ void Vector< double >::add(const ElementMatrix < double > & A,
 }
 template <>
 void Vector< double >::add(const ElementMatrix < double > & A,
-                           const RMatrix & scale){
+                           const RMatrix & scale, bool neg){
     if (A.oldStyle()){
         THROW_TO_IMPL
     } else {

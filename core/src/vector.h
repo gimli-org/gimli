@@ -625,16 +625,16 @@ public:
     }
 
     /*! Add Values from an ElementMatrix.*/
-    void add(const ElementMatrix < double > & A);
+    void add(const ElementMatrix < double > & A, bool neg=false);
 
     /*! Add Values from an ElementMatrix. Optional scale with constant scalar. */
-    void add(const ElementMatrix < double > & A, const double & scale);
+    void add(const ElementMatrix < double > & A, const double & scale, bool neg=false);
 
     /*! Add Values from an ElementMatrix. Optional scale constant Pos. */
-    void add(const ElementMatrix < double > & A, const Pos & scale);
+    void add(const ElementMatrix < double > & A, const Pos & scale, bool neg=false);
 
     /*! Add Values from an ElementMatrix. Optional scale constant RMatrix. */
-    void add(const ElementMatrix < double > & A, const RMatrix & scale);
+    void add(const ElementMatrix < double > & A, const RMatrix & scale, bool neg=false);
 
     /*! DEPRECATED Bad design (Per node values need to be interpolated to quadrature points first.)*/
     void add(const ElementMatrix < double > & A,
@@ -1012,23 +1012,23 @@ protected:
 template <> DLLEXPORT void Vector< Pos >::clean();
 
 // /*! Implement specialized type traits in vector.cpp */
-template <> DLLEXPORT void Vector<double>::add(
-                        const ElementMatrix < double >& A);
-template <> DLLEXPORT void Vector<double>::add(
-                        const ElementMatrix < double >& A, const double & a);
-template <> DLLEXPORT void Vector<double>::add(
-                        const ElementMatrix < double >& A, const Pos & a);
-template <> DLLEXPORT void Vector<double>::add(
-                        const ElementMatrix < double >& A, const RMatrix & a);
+template <> DLLEXPORT void 
+Vector<double>::add(const ElementMatrix < double >& A, bool neg);
+template <> DLLEXPORT void 
+Vector<double>::add(const ElementMatrix < double >& A, const double & a, bool neg);
+template <> DLLEXPORT void 
+Vector<double>::add(const ElementMatrix < double >& A, const Pos & a, bool neg);
+template <> DLLEXPORT void 
+Vector<double>::add(const ElementMatrix < double >& A, const RMatrix & a, bool neg);
 
-template< typename ValueType > void Vector< ValueType >::add(
-    const ElementMatrix < double >& A){ THROW_TO_IMPL}
-template< typename ValueType > void Vector< ValueType >::add(
-    const ElementMatrix < double >& A, const double & a){THROW_TO_IMPL}
-template< typename ValueType > void Vector< ValueType >::add(
-    const ElementMatrix < double >& A, const Pos & a){THROW_TO_IMPL}
-template< typename ValueType > void Vector< ValueType >::add(
-    const ElementMatrix < double >& A, const RMatrix & a){THROW_TO_IMPL}
+template< typename ValueType > void 
+Vector< ValueType >::add(const ElementMatrix < double >& A,  bool neg){ THROW_TO_IMPL}
+template< typename ValueType > void 
+Vector< ValueType >::add(const ElementMatrix < double >& A, const double & a, bool neg){THROW_TO_IMPL}
+template< typename ValueType > void 
+Vector< ValueType >::add(const ElementMatrix < double >& A, const Pos & a, bool neg){THROW_TO_IMPL}
+template< typename ValueType > void 
+Vector< ValueType >::add(const ElementMatrix < double >& A, const RMatrix & a, bool neg){THROW_TO_IMPL}
 
 // removeme in V1.2, 20200727
 template <> DLLEXPORT void Vector<double>::add(
@@ -1538,35 +1538,35 @@ template < class T, class A > T min(const __VectorExpr< T, A > & a){ return min(
 template < class T, class A > T max(const __VectorExpr< T, A > & a){ return max(Vector< T >(a)); }
 
 inline Complex max(const CVector & v){
-    ASSERT_EMPTY(v)
+    ASSERT_NON_EMPTY(v)
     Complex ret=v[0];
     for (Index i = 1; i < v.size(); i ++ ) if (v[i] > ret) ret = v[i];
     return ret;
 }
 
 inline Complex min(const CVector & v){
-    ASSERT_EMPTY(v)
+    ASSERT_NON_EMPTY(v)
     Complex ret=v[0];
     for (Index i = 1; i < v.size(); i ++ ) if (v[i] < ret) ret = v[i];
     return ret;
 }
 
 template < class T > T min(const Vector < T > & v){
-    ASSERT_EMPTY(v)
+    ASSERT_NON_EMPTY(v)
     return *std::min_element(&v[0], &v[0] + v.size());
 }
 template < class T > T max(const Vector < T > & v){
-    ASSERT_EMPTY(v)
+    ASSERT_NON_EMPTY(v)
     return *std::max_element(&v[0], &v[0] + v.size());
 }
 
 template < class T > void capMax(Vector < T > & v, T max){
-    ASSERT_EMPTY(v)
+    ASSERT_NON_EMPTY(v)
     for (Index i = 0; i < v.size(); i ++ ) v[i] = min(v[i], max);
 }
 
 template < class T > void capMin(Vector < T > & v, T min){
-    ASSERT_EMPTY(v)
+    ASSERT_NON_EMPTY(v)
     for (Index i = 0; i < v.size(); i ++ ) v[i] = max(v[i], min);
 }
 

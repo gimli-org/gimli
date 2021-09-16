@@ -132,8 +132,8 @@ void SparseMatrix< Complex >::copy_(const SparseMapMatrix< Complex, Index > & S)
     valid_ = true;
 }
 
-template <> void SparseMatrix< double >::add(const ElementMatrix< double > & A,
-                                            double scale){
+template <> void 
+SparseMatrix< double >::add(const ElementMatrix< double > & A, double scale, bool neg){
     if (A.oldStyle()){
         if (!valid_) SPARSE_NOT_VALID;
         for (Index i = 0, imax = A.size(); i < imax; i++){
@@ -152,17 +152,17 @@ template <> void SparseMatrix< double >::add(const ElementMatrix< double > & A,
         }
     }
 }
-template <> void SparseMatrix< double >::add(const ElementMatrix< double > & A,
-                                            const Pos & scale){
+template <> void 
+SparseMatrix< double >::add(const ElementMatrix< double > & A, const Pos & scale, bool neg){
     THROW_TO_IMPL
 }
-template <> void SparseMatrix< double >::add(const ElementMatrix< double > & A,
-                                            const Matrix < double > & scale){
+template <> void 
+SparseMatrix< double >::add(const ElementMatrix< double > & A, const Matrix < double > & scale, bool neg){
     THROW_TO_IMPL
 }
 
-template <> void SparseMatrix< Complex >::
-    add(const ElementMatrix < double > & A, Complex scale){
+template <> void 
+SparseMatrix< Complex >::add(const ElementMatrix < double > & A, Complex scale, bool neg){
     if (!valid_) SPARSE_NOT_VALID;
     for (Index i = 0, imax = A.size(); i < imax; i++){
         for (Index j = 0, jmax = A.size(); j < jmax; j++){
@@ -170,12 +170,12 @@ template <> void SparseMatrix< Complex >::
         }
     }
 }
-template <> void SparseMatrix< Complex >::
-    add(const ElementMatrix < double > & A, const Pos & scale){
+template <> void 
+SparseMatrix< Complex >::add(const ElementMatrix < double > & A, const Pos & scale, bool neg){
     THROW_TO_IMPL
 }
-template <> void SparseMatrix< Complex >::
-    add(const ElementMatrix < double > & A, const CMatrix & scale){
+template <> void 
+SparseMatrix< Complex >::add(const ElementMatrix < double > & A, const CMatrix & scale, bool neg){
     THROW_TO_IMPL
 }
 

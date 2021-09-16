@@ -334,9 +334,19 @@ public:
     /*! Return entity rtti value. */
     virtual uint rtti() const { return GIMLI_SPARSEMATRIXBASE_RTTI; }
 
-    virtual void add(const ElementMatrix < double > & A, double scale=1.0){
-        THROW_TO_IMPL
-    }
+    #define DEFINE_ADDS(A_TYPE) \
+    virtual void add(const ElementMatrix < double > & A, const A_TYPE &, bool neg=false){ \
+        THROW_TO_IMPL \
+    } \
+                
+    DEFINE_ADDS(double) 
+    DEFINE_ADDS(RVector3)
+    DEFINE_ADDS(RMatrix) 
+    #undef DEFINE_ADDS
+
+    // virtual void add(const ElementMatrix < double > & A, double scale=1.0, bool neg=false){
+    //     THROW_TO_IMPL
+    // }
     virtual void setVal(Index row, Index Col, const double & val){
         THROW_TO_IMPL
     }
