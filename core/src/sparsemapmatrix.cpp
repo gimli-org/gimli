@@ -46,7 +46,7 @@ void SparseMapMatrix< Complex, Index >::copy_(const SparseMatrix< Complex > & S)
 
 template <> void 
 SparseMapMatrix< double, Index >::add(const ElementMatrix < double > & A, 
-                                      double scale, bool neg){
+                                      const double & scale, bool neg){
     A.integrate();
     double tol = 1e-25;
     for (Index i = 0, imax = A.rows(); i < imax; i++){
@@ -114,7 +114,7 @@ SparseMapMatrix< double, Index >::add(const ElementMatrix < double > & A,
 }
 template <> void 
 SparseMapMatrix< Complex, Index >::add(const ElementMatrix < double > & A, 
-                                       Complex scale, bool neg){
+                                       const Complex & scale, bool neg){
     A.integrate();
     __MS("inuse?")
     for (Index i = 0, imax = A.rows(); i < imax; i++){

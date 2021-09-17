@@ -133,7 +133,7 @@ void SparseMatrix< Complex >::copy_(const SparseMapMatrix< Complex, Index > & S)
 }
 
 template <> void 
-SparseMatrix< double >::add(const ElementMatrix< double > & A, double scale, bool neg){
+SparseMatrix< double >::add(const ElementMatrix< double > & A, const double & scale, bool neg){
     if (A.oldStyle()){
         if (!valid_) SPARSE_NOT_VALID;
         for (Index i = 0, imax = A.size(); i < imax; i++){
@@ -162,7 +162,7 @@ SparseMatrix< double >::add(const ElementMatrix< double > & A, const Matrix < do
 }
 
 template <> void 
-SparseMatrix< Complex >::add(const ElementMatrix < double > & A, Complex scale, bool neg){
+SparseMatrix< Complex >::add(const ElementMatrix < double > & A, const Complex & scale, bool neg){
     if (!valid_) SPARSE_NOT_VALID;
     for (Index i = 0, imax = A.size(); i < imax; i++){
         for (Index j = 0, jmax = A.size(); j < jmax; j++){
