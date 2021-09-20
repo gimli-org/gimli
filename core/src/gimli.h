@@ -511,8 +511,14 @@ vector < ptr * > vP;
 // ... // something that fills vP with the new operator.
 for_each(vP.begin(), vP.end(), deletePtr());
 */
+struct DLLEXPORT newPtr{
+    template < typename T > void operator()(T * p) { 
+        if (p != nullptr) deletePtr(p);
+        p = new T(); 
+    }
+};
 struct DLLEXPORT deletePtr{
-    template < typename T > void operator()(T * p) { delete p; }
+    template < typename T > void operator()(T * p) { delete p; p = nullptr;}
 };
 struct DLLEXPORT cerrPtr{
   template < typename T > void operator() (const T * p) const { std::cerr << p << " " << std::endl; }

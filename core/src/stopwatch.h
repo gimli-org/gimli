@@ -20,7 +20,9 @@
 #define _GIMLI_STOPWATCH__H
 
 #include "gimli.h"
+
 #include <sys/timeb.h>
+#include <chrono>
 
 #if defined(__i386__)
 static __inline__ size_t rdtsc__(void){
@@ -70,7 +72,7 @@ public:
     /*! Restart the stopwatch.*/
     void restart();
 
-    /*! Reset the stopwatch, same like \ref restart.*/
+    /*! Reset the stopwatch, and delete stored values.*/
     void reset();
 
     /*! Returns the current duration in seconds. Optional you can restart the stopwatch.*/
@@ -79,12 +81,22 @@ public:
     /*! Returns the cpu cycles. Optional you can restart the stopwatch.*/
     size_t cycles(bool restart=false);
 
-    const CycleCounter & cycleCounter() const { return cCounter_; }
+    const CycleCounter & cycleCounter() const { return _cCounter; }
+
+    /*!Save current duration value into store.*/
+    void store();
+
+    /*!Get stored duration values.*/
+    const RVector & stored() const { return *this->_store;}
+
 
 protected:
-    timeb starttime, stoptime;
-    enum watchstate {undefined,halted,running} state_;
-    CycleCounter cCounter_;
+    enum watchstate {undefined,halted,running} _state;
+
+    std::chrono::time_point<std::chrono::steady_clock> _start, _stop;
+    RVector *_store;
+    
+    CycleCounter _cCounter;
 };
 
 #define TIC__ std::cout.precision(12); GIMLI::Stopwatch __swatch__(true);

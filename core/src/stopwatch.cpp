@@ -17,29 +17,34 @@
  ******************************************************************************/
 
 #include "stopwatch.h"
+#include "vector.h"
 
 #include <iostream>
 
 namespace GIMLI{
 
-Stopwatch::Stopwatch( bool start ) {
-    state_ = undefined;
-    if ( start ) this->start();
+Stopwatch::Stopwatch(bool start) : _store(nullptr) {
+    //newPtr(_store);
+    _state = undefined;
+    if (start) this->start();
+    this->_store = new RVector();
 }
 
 Stopwatch::~Stopwatch() {
+    // deletePtr(this->_store);
+    delete this->_store;
 }
 
 void Stopwatch::start(){
-    ftime( & starttime );
-    state_ = running;
-    cCounter_.tic();
+    this->_start = std::chrono::steady_clock::now();
+    _state = running;
+    _cCounter.tic();
 }
 
-void Stopwatch::stop( bool verbose ){
-    ftime( & stoptime );
-    state_ = halted;
-    if ( verbose ) std::cout << "time: " << duration() << "s" << std::endl;
+void Stopwatch::stop(bool verbose){
+    this->_stop = std::chrono::steady_clock::now();
+    _state = halted;
+    if (verbose) std::cout << "time: " << duration() << "s" << std::endl;
 }
 
 void Stopwatch::restart(){
@@ -49,21 +54,43 @@ void Stopwatch::restart(){
 
 void Stopwatch::reset(){
     restart();
+    this->_store->clear();
 }
 
-double Stopwatch::duration( bool res ){
-    if ( state_ == undefined ) std::cerr << "Stopwatch not started!" << std::endl;
-    if ( state_ == running ) ftime( &stoptime );
-    double t = ( stoptime.time - starttime.time ) + double( stoptime.millitm - starttime.millitm ) / 1000.0;
-    if ( res ) restart();
-    return t;
+double Stopwatch::duration(bool res){
+    std::chrono::time_point<std::chrono::steady_clock> now;
+    
+    if (_state == undefined) {
+        log(Error, "Stopwatch not started!");
+    }
+        
+    if (_state == running) {
+        //ftime(&stoptime);
+        // double t = (stoptime.time - starttime.time) + 
+        //     double(stoptime.millitm - starttime.millitm) / 1000.0;
+            
+        now = std::chrono::steady_clock::now();
+    } else {
+        now = this->_stop;
+    }
+    
+    std::chrono::duration< double > t = now - this->_start;
+
+    if (res) restart();
+    return t.count();
 }
 
-size_t Stopwatch::cycles( bool res ){
-    if ( state_ == undefined ) std::cerr << "Stopwatch not started!" << std::endl;
+void Stopwatch::store(){
+    this->_store->push_back(this->duration());
+}
+
+size_t Stopwatch::cycles(bool res){
+    if (_state == undefined) {
+        log(Error, "Stopwatch not started!");
+    }
     size_t t = 0;
-    if ( state_ == running ) t = cCounter_.toc();
-    if ( res ) restart();
+    if (_state == running) t = _cCounter.toc();
+    if (res) restart();
     return t;
 }
 

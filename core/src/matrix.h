@@ -222,9 +222,7 @@ public:
         THROW_TO_IMPL
     }
     /*! Fill Vector with 0.0. Don't change size. For compatibility with eigen interface.*/
-    inline void setZero() {
-        this.clean();
-    }
+    inline void setZero() { this->clean(); }
     /*! Clear the data, set size to zero and frees memory. */
     virtual void clear() {
         THROW_TO_IMPL
@@ -502,9 +500,6 @@ public:
 
     #undef DEFINE_UNARY_MOD_OPERATOR__
 
-
-
-
 //     Index col = cols();
 //         for (Index i = 0; i < mat_.size(); i ++) {
 //             ValueType * Aj = &mat_[i][0];
@@ -548,13 +543,14 @@ public:
     /*! Resize the matrix to rows x cols. */
     virtual void resize(Index rows, Index cols){ allocate_(rows, cols); }
 
+    /*! Fill Vector with 0.0. Don't change size.*/
+    inline void clean() {
+        for (Index i = 0; i < mat_.size(); i ++) mat_[i].clean();
+    }
+
     /*! Clear the matrix and free memory. */
     inline void clear() { mat_.clear(); }
 
-    /*! Fill Vector with 0.0. Don't change size.*/
-    inline void clean() {
-        for (Index i = 0; i < mat_.size(); i ++) mat_[i].clear();
-    }
     /*! Return number of rows. */
     inline Index rows() const {
         return mat_.size();

@@ -77,7 +77,7 @@ public:
     #undef DEFINE_INTEGRATOR
 
     /*! Create generic bilinear form */
-    void mult(const ElementMatrixMap & B, ElementMatrixMap & ret) const;
+    void dot(const ElementMatrixMap & B, ElementMatrixMap & ret) const;
 
     #define DEFINE_ASSEMBLER(A_TYPE) \
         /*! Assemble linear form with non continuous properties. */ \

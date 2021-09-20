@@ -255,9 +255,8 @@ DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(std::vector< RVector >)
 DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(std::vector< std::vector< RMatrix > >)
 #undef DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET
 
-void ElementMatrixMap::mult(const ElementMatrixMap & B,
+void ElementMatrixMap::dot(const ElementMatrixMap & B,
                             ElementMatrixMap & ret) const {
-    __MS("rename into dot")
     ASSERT_EQUAL_SIZE((*this), B)
     ret.resize(B.size());
     Index i = 0;
