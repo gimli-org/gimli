@@ -255,14 +255,22 @@ DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(std::vector< RVector >)
 DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(std::vector< std::vector< RMatrix > >)
 #undef DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET
 
-
-void ElementMatrixMap::mult(const ElementMatrixMap & B, ElementMatrixMap & ret) const {
-    THROW_TO_IMPL
+void ElementMatrixMap::mult(const ElementMatrixMap & B,
+                            ElementMatrixMap & ret) const {
+    __MS("rename into dot")
+    ASSERT_EQUAL_SIZE((*this), B)
+    ret.resize(B.size());
+    Index i = 0;
+    for (auto &m : this->mats()){
+        GIMLI::dot(m, B.mats()[i], *ret.pMat(i));
+        i++;
+    }
 }
 
 template < class ValueType, class RetType >
 void assembleConstT_(const ElementMatrixMap * self, const ValueType & f, RetType & R, bool neg){
     ASSERT_NON_EMPTY(R)
+    R.clean();
     for (auto &m : self->mats()){
         R.add(m, f, neg);
     }
@@ -271,7 +279,7 @@ template < class ValueType, class RetType >
 void assemblePerCellT_(const ElementMatrixMap * self, const ValueType & f, RetType & R, bool neg){
     ASSERT_NON_EMPTY(R)
     ASSERT_EQUAL_SIZE(self->mats(), f)
-
+    R.clean();
     for (auto &m : self->mats()){
         R.add(m, f[m.entity()->id()], neg);
     }

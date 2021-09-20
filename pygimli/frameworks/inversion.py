@@ -359,7 +359,7 @@ class Inversion(object):
             return self._inv.run(dataVals, errorVals, **kwargs)
 
         if self.fop is None:
-            raise Exception("Need a valid forward operator for the inversion run.")
+            pg.critical("Need a valid forward operator for the inversion run.")
 
         maxIter = kwargs.pop('maxIter', self.maxIter)
         minDPhi = kwargs.pop('dPhi', self.minDPhi)
@@ -374,6 +374,9 @@ class Inversion(object):
         showProgress = kwargs.pop('showProgress', False)
 
         self.inv.setTransModel(self.fop.modelTrans)
+
+        if 'cType' in kwargs:
+            self.fop.setRegionProperties('*', cType=kwargs.pop('cType'))
 
         self.dataVals = dataVals
         self.errorVals = errorVals

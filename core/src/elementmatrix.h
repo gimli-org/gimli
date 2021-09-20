@@ -48,8 +48,8 @@ public:
 
     const Vector< ValueType > & operator[](Index row) const;
 
-    inline const ValueType & operator()(Index i, Index j) const { 
-        return mat_(i,j); 
+    inline const ValueType & operator()(Index i, Index j) const {
+        return mat_(i,j);
     }
     void resize(Index rows, Index cols=0);
 
@@ -70,7 +70,7 @@ public:
     inline Index cols() const { return mat_.cols(); }
 
     inline const ValueType & getVal(Index i, Index j) const {
-        return mat_(i,j); 
+        return mat_(i,j);
     }
     inline void setVal(Index i, Index j, const ValueType & v) {mat_(i,j) = v; }
     inline void addVal(Index i, Index j, const ValueType & v) {mat_(i,j) += v; }
@@ -83,7 +83,7 @@ public:
     inline const SmallMatrix & mat() const { return mat_; }
     /*! Return data for row i. */
 
-    inline const Vector< ValueType > & row(Index i) const { 
+    inline const Vector< ValueType > & row(Index i) const {
         return (*this)[i];
     }
     Vector< ValueType > row_RM(Index i) const;
@@ -243,7 +243,7 @@ public:
     void mult(const Vector < ValueType > & a, Vector < ValueType > & ret){
     #if USE_EIGEN3
     __MS("Efficiency warning")
-    #endif 
+    #endif
         ASSERT_EQUAL(size(), ret.size())
         for (Index i = 0; i < size(); i ++) {
             for (Index j = 0; j < size(); j ++) {
@@ -256,7 +256,7 @@ public:
                    const Vector < ValueType > & b){
     #if USE_EIGEN3
     __MS("Efficiency warning")
-    #endif 
+    #endif
         ValueType ret = 0;
         for (Index i = 0; i < size(); i ++) {
             ValueType t = 0;
@@ -275,7 +275,7 @@ public:
                                      const Vector < Val > & n){
     #if USE_EIGEN3
     __MS("Efficiency warning")
-    #endif 
+    #endif
         Val ret = 0;
         for (Index i = 0; i < size(); i ++) {
             Val t = 0;
@@ -332,7 +332,7 @@ public:
                                        bool elastic=false, bool sum=false,
                                        bool div=false, bool kelvin=false);
 
-    ElementMatrix < ValueType > & identity(const MeshEntity & ent, Index order, 
+    ElementMatrix < ValueType > & identity(const MeshEntity & ent, Index order,
                                            Index nCoeff, Index dofPerCoeff, Index dofOffset);
 
 
@@ -341,7 +341,7 @@ public:
         for dim == 1 (A + B) ## A or B is grad and need to be summed (div)
         for dim == 0 (A + B) ## A or B is grad and need add per dimension
     */
-    ElementMatrix < ValueType > & add(const ElementMatrix< double > & B, 
+    ElementMatrix < ValueType > & add(const ElementMatrix< double > & B,
                                       Index dim=0, double b=1.0);
 
     /*! Integrate, i.e., sum over quadrature matrices.*/
@@ -355,7 +355,7 @@ public:
 
     /*! Set data matrix. */
     void setMat_RM(const RMatrix & m);
-        
+
     /*! Return copy of mat */
     RMatrix mat_RM() const;
 
@@ -415,7 +415,7 @@ public:
         /*! Integrate linear form: r = \int_entity this * f \d entity \
         with r = RVector(final form) and f = A_TYPE */ \
         void integrate(A_TYPE f, RVector & r, double scale) const; \
-        
+
     DEFINE_INTEGRATOR(double)   // const scalar
     DEFINE_INTEGRATOR(const RMatrix &)  // const Matrix
     DEFINE_INTEGRATOR(const RVector &)  // scalar for each quadr
@@ -423,7 +423,7 @@ public:
     DEFINE_INTEGRATOR(const PosVector &)  // vector for each quadr
     DEFINE_INTEGRATOR(const std::vector< RMatrix > &) // matrix for each quadrs
     DEFINE_INTEGRATOR(const FEAFunction &) // matrix for each quadrs
-    
+
     #undef DEFINE_INTEGRATOR
 
     #define DEFINE_INTEGRATOR(A_TYPE) \
@@ -431,13 +431,13 @@ public:
         with A = SparseMatrix(final form, final form) and f = A_TYPE */ \
         void integrate(const ElementMatrix < double > & R, \
                        A_TYPE f, SparseMatrixBase & A, double scale) const; \
-        
+
     DEFINE_INTEGRATOR(double)   // const scalar
     DEFINE_INTEGRATOR(const RMatrix &)  // const Matrix
     DEFINE_INTEGRATOR(const RVector &)  // scalar for each quadr
     DEFINE_INTEGRATOR(const std::vector< RMatrix > &) // matrix for each quadrs
     DEFINE_INTEGRATOR(const FEAFunction &) // matrix for each quadrs
-    
+
     #undef DEFINE_INTEGRATOR
 
 protected:
@@ -497,7 +497,7 @@ ElementMatrix < double >::ElementMatrix(Index dof);
 template < > DLLEXPORT
 ElementMatrix < double >::ElementMatrix(const ElementMatrix < double > &);
 
-template < > DLLEXPORT 
+template < > DLLEXPORT
 void ElementMatrix < double >::fillIds(const MeshEntity & ent, Index nC);
 template < > DLLEXPORT
 void ElementMatrix < double >::resize(Index rows, Index cols);
@@ -523,14 +523,13 @@ DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__(*)
 #undef DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__
 
 
-template < > DLLEXPORT ElementMatrix < double > & 
+template < > DLLEXPORT ElementMatrix < double > &
 ElementMatrix < double >::operator += (const ElementMatrix < double > & E);
 
 
 template < > DLLEXPORT ElementMatrix < double > &
-ElementMatrix < double >::add(const ElementMatrix < double > & B, 
+ElementMatrix < double >::add(const ElementMatrix < double > & B,
                               Index dim, double b);
-
 
 DLLEXPORT void dot(const ElementMatrix < double > & A,
                    const ElementMatrix < double > & B,
@@ -538,7 +537,6 @@ DLLEXPORT void dot(const ElementMatrix < double > & A,
 
 DLLEXPORT const ElementMatrix < double > dot(const ElementMatrix < double > & A,
                                             const ElementMatrix < double > & B);
-
 
 // // declare this before mult(.., pos, C) to avoid ambiguities
 // /*! scalar per quadrature point */

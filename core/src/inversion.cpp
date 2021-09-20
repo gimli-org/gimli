@@ -25,7 +25,6 @@ void RInversion::checkConstraints() {
     if (forward_->constraints()->cols() == 0 ||
         forward_->constraints()->rows() == 0){
         if (verbose_) std::cout << "Building constraints matrix" << std::endl;
-        //forward_->regionManager().fillConstraints(forward_->constraints());
         forward_->createConstraints();
     } else {
         if (verbose_) std::cout << " found valid constraints matrix. omit rebuild" << std::endl;

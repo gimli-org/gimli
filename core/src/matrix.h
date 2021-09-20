@@ -221,7 +221,10 @@ public:
     virtual void clean() {
         THROW_TO_IMPL
     }
-
+    /*! Fill Vector with 0.0. Don't change size. For compatibility with eigen interface.*/
+    inline void setZero() {
+        this.clean();
+    }
     /*! Clear the data, set size to zero and frees memory. */
     virtual void clear() {
         THROW_TO_IMPL
@@ -338,10 +341,10 @@ public:
     virtual void add(const ElementMatrix < double > & A, const A_TYPE &, bool neg=false){ \
         THROW_TO_IMPL \
     } \
-                
-    DEFINE_ADDS(double) 
+
+    DEFINE_ADDS(double)
     DEFINE_ADDS(RVector3)
-    DEFINE_ADDS(RMatrix) 
+    DEFINE_ADDS(RMatrix)
     #undef DEFINE_ADDS
 
     // virtual void add(const ElementMatrix < double > & A, double scale=1.0, bool neg=false){
@@ -552,11 +555,6 @@ public:
     inline void clean() {
         for (Index i = 0; i < mat_.size(); i ++) mat_[i].clear();
     }
-    /*! Fill Vector with 0.0. Don't change size.*/
-    inline void setZero() {
-        this->operator*=(ValueType(0.0));
-    }
-
     /*! Return number of rows. */
     inline Index rows() const {
         return mat_.size();

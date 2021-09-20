@@ -303,6 +303,7 @@ Index Region::constraintCount() const {
 }
 
 void Region::fillConstraints(RSparseMapMatrix & C, Index startConstraintsID){
+
     if (isBackground_ ) return;
 
     if (isSingle_ && constraintType_ == 0) return;

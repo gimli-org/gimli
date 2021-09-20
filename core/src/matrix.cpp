@@ -189,7 +189,7 @@ Matrix<Complex>::transAdd(const Matrix < Complex > & a){
 }
 
 
-void matMultABA(const SmallMatrix & A, const SmallMatrix & B, 
+void matMultABA(const SmallMatrix & A, const SmallMatrix & B,
                 SmallMatrix & C, SmallMatrix & AtB, double a, double b){
 
 #if USE_EIGEN3
@@ -198,7 +198,7 @@ void matMultABA(const SmallMatrix & A, const SmallMatrix & B,
     return matMultABA_RM(A, B, C, AtB, a, b);
 #endif
 }
-void matMultABA_RM(const RMatrix & A, const RMatrix & B, 
+void matMultABA_RM(const RMatrix & A, const RMatrix & B,
                    RMatrix & C, RMatrix & AtB, double a, double b){
     // C = a A.T * B * A + b * C
     // __MS("matMultABA: ", A.rows(), A.cols(), B.rows(), B.cols())
@@ -211,11 +211,11 @@ void matMultABA_RM(const RMatrix & A, const RMatrix & B,
     matTransMult_RM(A, B, AtB, 1.0, 0.0);
     matMult_RM(AtB, A, C, a, b);
 }
-void matMult(const SmallMatrix & A, const SmallMatrix & B, 
+void matMult(const SmallMatrix & A, const SmallMatrix & B,
              SmallMatrix & C, double a, double b){
 #if USE_EIGEN3
     if (A.cols() == B.rows()){
-        
+
         if (C.rows() != A.rows() || C.cols() != B.cols()){
             C.resize(A.rows(), B.cols());
         }
@@ -249,28 +249,28 @@ void matMult(const SmallMatrix & A, const SmallMatrix & B,
     return matMult_RM(A, B, C, a, b);
 #endif
 }
-void matMult_RM(const RMatrix & A, const RMatrix & B, 
+void matMult_RM(const RMatrix & A, const RMatrix & B,
                 RMatrix & C, double a, double b){
     // C = a * A*B + b*C || C = a * A*B.T + b*C
-    
+
     // __MS("matMult: ", A.rows(), A.cols(), B.rows(), B.cols())
 
     Index m = A.rows(); // C.rows()
-    Index k = A.cols(); 
-    
+    Index k = A.cols();
+
     // B.rows()
     Index n = B.cols(); // C.cols()
-    bool bIsTrans = false;    
+    bool bIsTrans = false;
     Index bRows = n;
 
     if (k == B.rows()){ // A * B (k == k)
-    
+
     } else if (k == B.cols()){ // A * B.T (k == k)
         bIsTrans = true;
         n = B.rows();
         bRows = k;
     } else {
-        log(Error, "matMult sizes mismatch. ", 
+        log(Error, "matMult sizes mismatch. ",
             A.cols(), "!=", B.rows());
     }
     C.resize(m, n);
@@ -281,7 +281,7 @@ void matMult_RM(const RMatrix & A, const RMatrix & B,
     CBLAS_TRANSPOSE bTrans = CblasNoTrans;
 
     if (bIsTrans) bTrans = CblasTrans;
-    
+
 
     double *A2 = new double[m * k];
     double *B2 = new double[k * n];
@@ -293,9 +293,9 @@ void matMult_RM(const RMatrix & A, const RMatrix & B,
 
     // cblas_dgemm(CblasRowMajor, CblasTrans, CblasNoTrans, m, n, k,
     //             a, A2, m, B2, n, b, C2, n);
-                
+
     // lda ## leading dimension for a, means column for CblasRowMajor
-    cblas_dgemm(CblasRowMajor, aTrans, bTrans, 
+    cblas_dgemm(CblasRowMajor, aTrans, bTrans,
                 m, n, k,
                 a, A2, k, B2, bRows,
                 b, C2, n);
@@ -306,7 +306,7 @@ void matMult_RM(const RMatrix & A, const RMatrix & B,
     delete [] B2;
     delete [] C2;
 #else
-    
+
     // __MS("\t: ", C.rows(), C.cols(), bIsTrans)
 
     for (Index i = 0; i < A.rows(); i ++){
@@ -334,11 +334,11 @@ void matMult_RM(const RMatrix & A, const RMatrix & B,
 #endif
 }
 
-void matTransMult(const SmallMatrix & A, const SmallMatrix & B, 
+void matTransMult(const SmallMatrix & A, const SmallMatrix & B,
                   SmallMatrix & C, double a, double b){
 #if USE_EIGEN3
     if (A.rows() == B.rows()){
-        
+
         if (C.rows() != A.cols() || C.cols() != B.cols()){
             C.resize(A.cols(), B.cols());
         }
@@ -372,11 +372,11 @@ void matTransMult(const SmallMatrix & A, const SmallMatrix & B,
     matTransMult_RM(A, B, C, a, b);
 #endif
 }
-void matTransMult_RM(const RMatrix & A, const RMatrix & B, 
+void matTransMult_RM(const RMatrix & A, const RMatrix & B,
                      RMatrix & C, double a, double b){
 
     // __MS("matTransMult: ", A.rows(), A.cols(), B.rows(), B.cols())
-    
+
     // Mxk * kxN == MxN
     // (kxM).T * kxN == MxN
     // A (k,M), B(k,N) == C(M,N)
@@ -384,7 +384,7 @@ void matTransMult_RM(const RMatrix & A, const RMatrix & B,
 
     //** **MEH C = (a * A.T*B).T + b*C if C has the right dimension **  MEH
     // c-transpose check only for b != 0.0, else c is resized
-    
+
     bool retTrans = false;
 
     // A(k, m).T * B(k, n) = C(m, n)
@@ -393,11 +393,11 @@ void matTransMult_RM(const RMatrix & A, const RMatrix & B,
     Index m = A.cols(); // C.rows()
     Index n = B.cols(); // C.cols()
 
-    bool bIsTrans = false;    
+    bool bIsTrans = false;
     Index bRows = n;
 
     if (k == B.rows()){ // A.T * B
-            
+
         if (b == 0.0) C.resize(m, n);
 
         if (C.rows() != A.cols() || C.cols() != B.cols()){
@@ -435,7 +435,7 @@ void matTransMult_RM(const RMatrix & A, const RMatrix & B,
     CBLAS_TRANSPOSE bTrans = CblasNoTrans;
 
     if (bIsTrans) bTrans = CblasTrans;
-        
+
     double *A2 = new double[k * m];
     double *B2 = new double[k * n];
     double *C2 = new double[m * n];
@@ -452,7 +452,7 @@ void matTransMult_RM(const RMatrix & A, const RMatrix & B,
     // for (Index i = 0; i < m*n; i ++ ){std::cout << C2[i] << " ";} std::cout << std::endl;
 
     cblas_dgemm(CblasRowMajor, aTrans, bTrans, m, n, k,
-                a, A2, m, B2, bRows, 
+                a, A2, m, B2, bRows,
                 b, C2, n);
 
     // std::cout << "C2" << std::endl;
@@ -497,7 +497,7 @@ void matTransMult_RM(const RMatrix & A, const RMatrix & B,
         }
     }
 #endif
-    
+
 }
 
 
