@@ -44,6 +44,7 @@ class ProgressBar(object):
         self.sign = sign[0]  # take first character only if sign is longer
         self.pBar = "[]"
         self._amount(0)
+        self._swatch = pg.core.Stopwatch()
 
     def __call__(self, it, msg=""):
         self.update(it, msg)
@@ -171,7 +172,7 @@ def prettify(value, roundValue=False):
         #             return super()._iterencode(o)
         #         except:
         #             return "{0} is not JSON serializable".format(type(o))
-            
+
         try:
             return json.dumps(value, indent=4)
         except Exception as e:
