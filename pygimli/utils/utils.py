@@ -49,9 +49,23 @@ class ProgressBar(object):
     def __call__(self, it, msg=""):
         self.update(it, msg)
 
+    @property
+    def t(self):
+        """Return complete time passed for the whole process."""
+        return self._swatch.duration()
+    
+    @property
+    def tIter(self):
+        """Return time passed since last iteration."""
+        return self._swatch.stored().last()-self._swatch.stored().last(1)
+        
     def update(self, iteration, msg=""):
         """Update ProgressBar by iteration number starting at 0 with optional
         message."""
+        if iteration == 0:
+            self._swatch.start()
+        self._swatch.store()
+            
         self._setbar(iteration + 1)
         if len(msg) >= 1:
             self.pBar += " (" + msg + ")"

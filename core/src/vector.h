@@ -647,6 +647,12 @@ public:
         return data_[i];
     }
 
+    /*! Get ith. value from the back or return 0.0*/
+    inline ValueType last(Index i=0) const {
+        if (this->size() <= i) return 0.0;
+        return data_[this->size()-(i+1)];
+    }
+
     Vector < ValueType > getVal(Index start, SIndex end) const {
         Index e = (Index) end;
         if (end == -1 || end > (SIndex)size_) e = size_;
