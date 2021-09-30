@@ -10,6 +10,7 @@
 		"spellright.documentTypes": [
 			"markdown",
 			"plaintext"
-		]
+		],
+		"python.pythonPath": "C:\\Users\\Carsten\\anaconda3\\python.exe"
 	}
 }

@@ -72,7 +72,7 @@ void integrateBLConstT_(const ElementMatrixMap & A,
                         const ValueType & f, SparseMatrixBase & R, bool neg){
 
     if (A.size() == 1 && A.mats()[0].order() == 0){
-        //const * B
+        //const_space * B
         Index row = A.mats()[0].dofOffset();
         for (auto &m : B.mats()){
             if (!m.isIntegrated()){
@@ -89,7 +89,7 @@ void integrateBLConstT_(const ElementMatrixMap & A,
         return;
     }
     if (B.size() == 1 && B.mats()[0].order() == 0){
-        //A * const
+        //A * const_space
         Index col = B.mats()[0].dofOffset();
         for (auto &m : A.mats()){
             if (!m.isIntegrated()){
@@ -202,6 +202,7 @@ void ElementMatrixMap::integrate(const ElementMatrixMap & R, const A_TYPE & f, \
     integrateBLConstT_(*this, R, f, A, neg); \
 }
 DEFINE_INTEGRATE_ELEMENTMAP_BL_IMPL(double)
+DEFINE_INTEGRATE_ELEMENTMAP_BL_IMPL(Pos)
 DEFINE_INTEGRATE_ELEMENTMAP_BL_IMPL(RMatrix)
 #undef DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL
 
@@ -212,8 +213,10 @@ void ElementMatrixMap::integrate(const ElementMatrixMap & R, const A_TYPE & f, \
     integrateBLPerCellT_(*this, R, f, A, neg); \
 }
 DEFINE_INTEGRATE_ELEMENTMAP_BL_PERCELL_IMPL(RVector)
+DEFINE_INTEGRATE_ELEMENTMAP_BL_PERCELL_IMPL(PosVector)
 DEFINE_INTEGRATE_ELEMENTMAP_BL_PERCELL_IMPL(std::vector< RMatrix >)
 DEFINE_INTEGRATE_ELEMENTMAP_BL_PERCELL_IMPL(std::vector< RVector >)
+DEFINE_INTEGRATE_ELEMENTMAP_BL_PERCELL_IMPL(std::vector< PosVector >)
 DEFINE_INTEGRATE_ELEMENTMAP_BL_PERCELL_IMPL(std::vector< std::vector< RMatrix > >)
 #undef DEFINE_INTEGRATE_ELEMENTMAP_BL_PERCELL_IMPL
 
@@ -248,15 +251,67 @@ RSparseMapMatrix ElementMatrixMap::integrate(const ElementMatrixMap & R, \
     return A; \
 }
 DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(double)
+DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(Pos)
 DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(RMatrix)
 DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(RVector)
+DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(PosVector)
 DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(std::vector< RMatrix >)
 DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(std::vector< RVector >)
+DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(std::vector< PosVector >)
 DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(std::vector< std::vector< RMatrix > >)
 #undef DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET
 
 void ElementMatrixMap::dot(const ElementMatrixMap & B,
                             ElementMatrixMap & ret) const {
+    if (this->size() == 1 && this->mats()[0].order() == 0){
+        ret.resize(B.size());
+        //const_space * B
+        Index row = this->mats()[0].dofOffset();
+        Index i = 0;
+        for (auto &m : B.mats()){
+            if (!m.isIntegrated()){
+                log(Error, "B need to be integrated");
+            }
+            if (!m.nCoeff() > 0){
+                THROW_TO_IMPL
+            }
+
+            ret.pMat(i)->copyFrom(m, false);
+            ret.pMat(i)->resize(m.cols(), m.rows());
+            ret.pMat(i)->setIds(range(row, row+1), m.rowIDs());
+            //!!need ret.pMat(i)->setMat(m.mat().T);
+            for (Index j=0; j < m.rows(); j++){
+                for (Index k=0; k < m.cols(); k++){
+                    ret.pMat(i)->setVal(k, j, m(j, k));
+                }
+            }
+            ret.pMat(i)->integrated(true);
+            i++;
+        }
+        return;
+    }
+    if (B.size() == 1 && B.mats()[0].order() == 0){
+        ret.resize(this->size());
+        //A * const_space
+        Index col = B.mats()[0].dofOffset();
+        Index i = 0;
+        for (auto &m : this->mats()){
+            if (!m.isIntegrated()){
+                log(Error, "A need to be integrated");
+            }
+            if (!m.nCoeff() > 0){
+                THROW_TO_IMPL
+            }   
+
+            ret.pMat(i)->copyFrom(m, false);
+            ret.pMat(i)->setIds(m.rowIDs(), range(col, col+1));
+            ret.pMat(i)->setMat(m.mat());
+            ret.pMat(i)->integrated(true);
+            i++;
+        }
+        return;
+    }
+   
     ASSERT_EQUAL_SIZE((*this), B)
     ret.resize(B.size());
     Index i = 0;
@@ -269,7 +324,7 @@ void ElementMatrixMap::dot(const ElementMatrixMap & B,
 template < class ValueType, class RetType >
 void assembleConstT_(const ElementMatrixMap * self, const ValueType & f, RetType & R, bool neg){
     ASSERT_NON_EMPTY(R)
-    R.clean();
+    // R.clean(); dont clean
     for (auto &m : self->mats()){
         R.add(m, f, neg);
     }
@@ -278,7 +333,7 @@ template < class ValueType, class RetType >
 void assemblePerCellT_(const ElementMatrixMap * self, const ValueType & f, RetType & R, bool neg){
     ASSERT_NON_EMPTY(R)
     ASSERT_EQUAL_SIZE(self->mats(), f)
-    R.clean();
+    // R.clean(); dont clean
     for (auto &m : self->mats()){
         R.add(m, f[m.entity()->id()], neg);
     }

@@ -2081,10 +2081,11 @@ void dot(const ElementMatrix < double > & A,
     _prepDot(A, B, C);
 
     if (c.rows() != A.cols() || c.cols() != B.cols()){
-        __MS(c)
-        log(Error, "Parameter matrix need to match Elementmatrix shapes: "
+        __MS(c.rows(), c.cols())
+        log(Critical, "Parameter matrix need to match Elementmatrix shapes: "
             "A:(", A.rows(), ",", A.cols(), ")",
             "B:(", B.rows(), ",", B.cols(), ")");
+        
         return;
     }
 
@@ -2481,6 +2482,22 @@ void ElementMatrix < double >::integrate(const ElementMatrix < double > & B, \
 DEFINE_INTEGRATOR(const RVector &)  // scalar for each quadr
 DEFINE_INTEGRATOR(const std::vector< RMatrix > &)// matrix for each quadrs
 #undef DEFINE_INTEGRATOR
+
+template < >
+void ElementMatrix < double >::integrate(const ElementMatrix < double > & B, \
+                       const Pos & v, SparseMatrixBase & A, double scale) const {
+    ElementMatrix < double > dAB; 
+    ElementMatrix < double > vm; 
+    GIMLI::mult(B, v, vm); 
+    dot(*this, vm, 1, dAB); 
+    A.add(dAB, scale); 
+}
+
+template < >
+void ElementMatrix < double >::integrate(const ElementMatrix < double > & R, \
+                       const PosVector & p, SparseMatrixBase & A, double scale) const {
+THROW_TO_IMPL
+}
 
 
 template < >

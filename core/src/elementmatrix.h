@@ -440,6 +440,17 @@ public:
 
     #undef DEFINE_INTEGRATOR
 
+    #define DEFINE_INTEGRATOR(A_TYPE) \
+        /*! Integrate bilinear form A = \int_mesh this * f * R \d entity \
+        with A = SparseMatrix(final form, final form) and f = A_TYPE */ \
+        void integrate(const ElementMatrix < double > & R, \
+                       A_TYPE v, SparseMatrixBase & A, double scale) const; \
+
+    DEFINE_INTEGRATOR(const Pos &)   // const Pos for u * (pos * v)
+    DEFINE_INTEGRATOR(const PosVector &) // vector for each quadrs
+
+    #undef DEFINE_INTEGRATOR
+
 protected:
     mutable SmallMatrix mat_;
     IndexArray _ids;
@@ -580,13 +591,24 @@ DEFINE_DOT_MULT(const FEAFunction &)
 template < > DLLEXPORT \
 void ElementMatrix < double >::integrate(const ElementMatrix < double > & R, \
                                          A_TYPE f, \
-                                    SparseMatrixBase & A, double scale) const; \
+                                         SparseMatrixBase & A, double scale) const; \
 
 DEFINE_INTEGRATE(double)
 DEFINE_INTEGRATE(const RMatrix &)
 DEFINE_INTEGRATE(const RVector &)
 DEFINE_INTEGRATE(const std::vector < RMatrix > &)
 DEFINE_INTEGRATE(const FEAFunction &)
+
+#undef DEFINE_INTEGRATE
+
+#define DEFINE_INTEGRATE(A_TYPE) \
+template < > DLLEXPORT \
+void ElementMatrix < double >::integrate(const ElementMatrix < double > & R, \
+                                         A_TYPE v, \
+                                         SparseMatrixBase & A, double scale) const; \
+
+DEFINE_INTEGRATE(const Pos &)
+DEFINE_INTEGRATE(const PosVector &)
 
 #undef DEFINE_INTEGRATE
 

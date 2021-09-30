@@ -49,9 +49,12 @@ SparseMapMatrix< double, Index >::add(const ElementMatrix < double > & A,
                                       const double & scale, bool neg){
     A.integrate();
     double tol = 1e-25;
+    double b = scale;
+    if (neg == true) b *= -1.0;
+
     for (Index i = 0, imax = A.rows(); i < imax; i++){
         for (Index j = 0, jmax = A.mat().cols(); j < jmax; j++){
-            double v = A.getVal(i, j) * scale;
+            double v = A.getVal(i, j) * b;
             // if (isnan(v)){
             //     THROW_TO_IMPL
             // }
@@ -102,6 +105,7 @@ SparseMapMatrix< double, Index >::add(const ElementMatrix < double > & A,
                                       const Vector < double > & scale, bool neg){
     A.integrate();
     __MS("inuse?")
+    //neg unused
     double tol = 1e-25;
     for (Index i = 0, imax = A.rows(); i < imax; i++){
         for (Index j = 0, jmax = A.mat().cols(); j < jmax; j++){
@@ -117,6 +121,7 @@ SparseMapMatrix< Complex, Index >::add(const ElementMatrix < double > & A,
                                        const Complex & scale, bool neg){
     A.integrate();
     __MS("inuse?")
+    //neg unused
     for (Index i = 0, imax = A.rows(); i < imax; i++){
         for (Index j = 0, jmax = A.mat().cols(); j < jmax; j++){
             double v = A.getVal(i, j);
@@ -129,6 +134,7 @@ SparseMapMatrix< Complex, Index >::add(const ElementMatrix < double > & A,
                                        const Vector < Complex > & scale, bool neg){
     A.integrate();
     __MS("inuse?")
+    //neg unused
     for (Index i = 0, imax = A.rows(); i < imax; i++){
         for (Index j = 0, jmax = A.mat().cols(); j < jmax; j++){
             double v = A.getVal(i, j);

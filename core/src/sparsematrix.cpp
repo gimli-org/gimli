@@ -134,11 +134,14 @@ void SparseMatrix< Complex >::copy_(const SparseMapMatrix< Complex, Index > & S)
 
 template <> void 
 SparseMatrix< double >::add(const ElementMatrix< double > & A, const double & scale, bool neg){
+    double b = scale;
+    if (neg == true) b *= -1.0;
+
     if (A.oldStyle()){
         if (!valid_) SPARSE_NOT_VALID;
         for (Index i = 0, imax = A.size(); i < imax; i++){
             for (Index j = 0, jmax = A.size(); j < jmax; j++){
-                addVal(A.idx(i), A.idx(j), scale * A.getVal(i, j));
+                addVal(A.idx(i), A.idx(j), b * A.getVal(i, j));
             }
         }
     } else {
@@ -147,7 +150,7 @@ SparseMatrix< double >::add(const ElementMatrix< double > & A, const double & sc
             for (Index j = 0, jmax = A.cols(); j < jmax; j++){
                 // __MS(A.rowIDs()[i] << " " << A.colIDs()[j] << "  "
                 //       << scale << " " << A.getVal(i, j))
-                addVal(A.rowIDs()[i], A.colIDs()[j], scale * A.getVal(i, j));
+                addVal(A.rowIDs()[i], A.colIDs()[j], b * A.getVal(i, j));
             }
         }
     }
@@ -164,9 +167,14 @@ SparseMatrix< double >::add(const ElementMatrix< double > & A, const Matrix < do
 template <> void 
 SparseMatrix< Complex >::add(const ElementMatrix < double > & A, const Complex & scale, bool neg){
     if (!valid_) SPARSE_NOT_VALID;
+    
     for (Index i = 0, imax = A.size(); i < imax; i++){
         for (Index j = 0, jmax = A.size(); j < jmax; j++){
-            addVal(A.idx(i), A.idx(j), scale * A.getVal(i, j));
+            if (neg == true) {
+                subVal(A.idx(i), A.idx(j), scale * A.getVal(i, j));
+            } else {
+                addVal(A.idx(i), A.idx(j), scale * A.getVal(i, j));
+            }
         }
     }
 }

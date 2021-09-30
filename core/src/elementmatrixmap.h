@@ -72,8 +72,25 @@ public:
     DEFINE_INTEGRATOR(RVector)      // const scalar for each cells
     DEFINE_INTEGRATOR(std::vector< RMatrix >)// const matrix for each cells
     DEFINE_INTEGRATOR(std::vector< RVector >)// scalar for quadr. on each cells
+    DEFINE_INTEGRATOR(std::vector< PosVector >)// vector for quadr. on each cells
     DEFINE_INTEGRATOR(std::vector< std::vector< RMatrix > >)// mat for quadr. on each cells
 
+    #undef DEFINE_INTEGRATOR
+
+    // To avoid ambiguity between Pos|RVector and PosVector|Matrix we define a slightly different 
+    // interface with differnt keyword names and python have to be decide what is called
+    #define DEFINE_INTEGRATOR(A_TYPE) \
+        /*! Integrate into bilinear form R = \int_mesh this * f * R \d mesh an\
+        R = RSparseMapMatrix(dof, dof) and \
+            f = A_TYPE \
+        */ \
+        void integrate(const ElementMatrixMap & R, const A_TYPE & v, \
+                       SparseMatrixBase & A, bool neg=false) const; \
+        RSparseMapMatrix integrate(const ElementMatrixMap & R, \
+                                   const A_TYPE & v, bool neg=false) const; \
+
+    DEFINE_INTEGRATOR(Pos)      // const scalar for each cells (u * (pos*v))
+    DEFINE_INTEGRATOR(PosVector) // const Pos (u * (pos*v)) for each cells
     #undef DEFINE_INTEGRATOR
 
     /*! Create generic bilinear form */
@@ -87,12 +104,22 @@ public:
 
     DEFINE_ASSEMBLER(double)   // const scalar for all cells
     DEFINE_ASSEMBLER(RMatrix)  // const Matrix for all cells
-    DEFINE_ASSEMBLER(RVector3)  // const Pos for all cells
     DEFINE_ASSEMBLER(RVector)  // const scalar for each cell
     DEFINE_ASSEMBLER(std::vector< RMatrix >)// const matrix for each cell
-    DEFINE_ASSEMBLER(std::vector< RVector3 >)  // const Pos for each cell
     #undef DEFINE_ASSEMBLER
 
+    #define DEFINE_ASSEMBLER(A_TYPE) \
+        /*! Assemble linear form with non continuous properties. */ \
+        void assemble(const A_TYPE & v, RVector & R, bool neg=false) const; \
+        /*! Assemble bilinear form with non continuous properties. */ \
+        void assemble(const A_TYPE & v, SparseMatrixBase & A, bool neg=false) const; \
+
+    DEFINE_ASSEMBLER(Pos)  // const Pos for all cells
+    DEFINE_ASSEMBLER(std::vector< Pos >)  // const Pos for each cell
+    
+    #undef DEFINE_ASSEMBLER
+
+    
     const std::vector< ElementMatrix < double > > & mats() const;
 
     ElementMatrix < double > * pMat(Index i){ return & mats_[i]; }
