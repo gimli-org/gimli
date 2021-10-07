@@ -492,6 +492,7 @@ def drawSelectedMeshBoundariesShadow(ax, boundaries, first='x', second='y',
     updateAxes_(ax)
     return collection
 
+
 def drawBoundaryMarkers(ax, mesh, clipBoundaryMarkers=False, **kwargs):
     """Draw boundary markers for mesh.boundaries with marker != 0
 
@@ -525,7 +526,9 @@ def drawBoundaryMarkers(ax, mesh, clipBoundaryMarkers=False, **kwargs):
     >>> pg.viewer.mpl.drawBoundaryMarkers(ax, mesh)
     """
     ms = pg.unique(pg.sort(mesh.boundaryMarkers()[mesh.boundaryMarkers()!=0]))
-
+    
+    bc = kwargs.pop('bc', None)
+    
     #cMap = plt.cm.get_cmap("Set3", len(ms))
     kwargs['lw'] = kwargs.pop('lw', 4)
 
@@ -557,6 +560,28 @@ def drawBoundaryMarkers(ax, mesh, clipBoundaryMarkers=False, **kwargs):
 
             ax.plot(xs[0], ys[0], 'o', color='k')
             ax.plot(xs[-1], ys[-1], 'o', color='k')
+
+    if bc is not None:
+        pg._r(bc)
+
+        # pos = ax.get_position()
+        # print(pos)
+        # print(pos.height)
+        # bca = ax.figure.add_axes([0.8, 0.75, 0.1, pos.height])
+        bcstr = 'BC\n'
+        bcstr += '1: $p=1$\n'
+        bcstr += '2: $p=0$\n' 
+        bcstr += '3: $v=$no-flow\n'
+        bcstr += '4: $v=$no-flow\n'
+
+        ax.text(1.02, 0.0, bcstr, 
+                 #transform=ax.figure.transFigure,
+                #  bbox=dict(boxstyle="square",
+                #    ec=(1., 0.5, 0.5),
+                #    fc=(1., 0.8, 0.8),
+                #    )
+                 )
+
 
     # for b in mesh.boundaries():
     #     if b.marker() != 0:
@@ -742,11 +767,6 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True, boundaryMarkers=False,
         if kwargs.pop('showBoundary', True):
             drawMeshBoundaries(ax, mesh, **kwargs)
 
-    ###! called from show already
-    # if boundaryMarkers:
-    #     drawBoundaryMarkers(ax, mesh, 
-    #                         clipBoundaryMarkers=kwargs.pop       ('clipBoundaryMarkers', False))
-
     if showNodes:
         for n in mesh.nodes():
             col = (0.0, 0.0, 0.0, 0.5)
@@ -795,6 +815,7 @@ def _createCellPolygon(cell):
 
     pg.warn("Unknown shape to patch: ", cell)
 
+
 def createMeshPatches(ax, mesh, rasterized=False, verbose=True):
     """Utility function to create 2d mesh patches within a given ax."""
     if not mesh:
@@ -807,6 +828,7 @@ def createMeshPatches(ax, mesh, rasterized=False, verbose=True):
 
     pg.tic()
     polys = [_createCellPolygon(c) for c in mesh.cells()]
+    
     patches = mpl.collections.PolyCollection(polys, picker=True,
                                              rasterized=rasterized)
 
@@ -871,7 +893,6 @@ def createTriangles(mesh):
             dataIdx.append(c.id())
 
     mesh._triData = [hash(mesh), x, y, triangles, z, dataIdx]
-
     return x, y, triangles, z, dataIdx
 
 
@@ -948,7 +969,7 @@ def drawField(ax, mesh, data=None, levels=None, nLevs=5,
         levels = autolevel(data, nLevs,
                            zMin=cMin, zMax=cMax, logScale=logScale)
 
-    if len(z) == len(triangles):
+    if len(z) == len(triangles) and len(data) != mesh.nodeCount():
         shading = kwargs.pop('shading', 'flat')
 
         # bounds = np.linspace(levels[0], levels[-1], nLevs)

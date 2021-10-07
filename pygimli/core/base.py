@@ -102,19 +102,25 @@ def isR3Array(v, N=None):
     >>> print(pg.isR3Array(pg.meshtools.createGrid(2,2).positions()))
     True
     """
-    if N is None:
-        return isinstance(v, R3Vector) or \
-               (    isinstance(v, list) and isPos(v[0])) or \
-               (not isinstance(v, list) and hasattr(v, '__iter__') and \
-                not isinstance(v, (str)) and v.ndim == 2 and isPos(v[0]))
-    return isR3Array(v) and len(v) == N
+    try:
+        if N is None:
+            return isinstance(v, R3Vector) or \
+                (    isinstance(v, list) and isPos(v[0])) or \
+                (not isinstance(v, list) and hasattr(v, '__iter__') and \
+                    not isinstance(v, (str)) and v.ndim == 2 and isPos(v[0]))
+        return isR3Array(v) and len(v) == N
+    except:
+        return False
 
 isPosList = isR3Array
 
 def isMatrix(v, shape=None):
     """Check is v has ndim=2 or is comparable list"""
-    if shape is None:
-        return isinstance(v, RMatrix) or \
-               hasattr(v, 'ndim') and v.ndim == 2 or \
-                isinstance(v, list) and isArray(v[0])
-    return isMatrix(v) and (hasattr(v, 'shape') and v.shape == shape)
+    try:
+        if shape is None:
+            return isinstance(v, RMatrix) or \
+                hasattr(v, 'ndim') and v.ndim == 2 or \
+                    isinstance(v, list) and isArray(v[0])
+        return isMatrix(v) and (hasattr(v, 'shape') and v.shape == shape)
+    except:
+        return False

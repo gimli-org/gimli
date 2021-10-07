@@ -439,8 +439,9 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
 
     if kwargs.pop("boundaryMarkers", False):
         pg.viewer.mpl.drawBoundaryMarkers(ax, mesh,
-            clipBoundaryMarkers = kwargs.pop('clipBoundaryMarkers', False),
-                                          **kwargs.pop('boundaryProps', {}))
+                    clipBoundaryMarkers=kwargs.pop('clipBoundaryMarkers', False),
+                    bc=kwargs.pop('bc', None),
+                    **kwargs.pop('boundaryProps', {}) )
 
     fitView = kwargs.pop('fitView', fitViewDefault)
 

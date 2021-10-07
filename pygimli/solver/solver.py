@@ -19,7 +19,7 @@ def parseMarkersDictKey(key, markers):
 
     Parameters
     ----------
-    key: str | int
+    key: str | int | [int]
         Supported are
         - int: single markers
         - '*': all markers
@@ -27,6 +27,7 @@ def parseMarkersDictKey(key, markers):
         - 'm1,m2': Comma separated list
         - ':': Slice wildcard
         - 'start:stop:step': Slice like syntax
+        - list of integers (not a dict key but nice for convenience)
 
     markers: [int]
         List of integers, e.g., cell or boundary markers
@@ -71,8 +72,10 @@ def parseMarkersDictKey(key, markers):
             mas = list(range(start, stop, step))
         else:
             mas = [int(key)]
-    else:
+    elif isinstance(key, (int, float)):
         mas = [int(key)]
+    else:
+        mas = key
 
     return [m for m in mas if m in markers]
 
