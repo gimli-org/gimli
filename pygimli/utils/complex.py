@@ -52,6 +52,10 @@ def toPolar(z):
         Amplitude amp and phase angle phi in radiant.
 
     """
+    if pg.isPos(z):
+        return toPolar(z[0] + 1j *z[1])
+    if pg.isPosList(z):
+        return toPolar(pg.x(z).array() + 1j *pg.y(z).array())
     if isComplex(z):
         return np.abs(z), np.angle(z)
     else:
