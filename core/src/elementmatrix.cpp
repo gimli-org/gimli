@@ -1888,6 +1888,31 @@ ElementMatrix < double >::identity(const MeshEntity & ent, Index order,
     return *this;
 }
 
+template < > DLLEXPORT RVector
+ElementMatrix < double >::trace() const {
+    THROW_TO_IMPL
+    return 0;
+}
+
+template < > DLLEXPORT RMatrix
+ElementMatrix < double >::traceX() const {
+    RMatrix ret(_matX.size());
+    Index i = 0;
+    for (auto & m: _matX){
+        if (m.size() == 4){
+            // 2D vecspace no elastic
+            ret[i] = m[0] + m[3];
+        } else if (m.size() == 9){
+            ret[i] = m[0] + m[4] + m[8];
+        } else {
+            __MS(m)
+            THROW_TO_IMPL
+        }
+        i++;
+    } 
+    return ret;
+}
+
 
 void _prepDot(const ElementMatrix < double > & A,
               const ElementMatrix < double > & B,
@@ -1898,6 +1923,7 @@ void _prepDot(const ElementMatrix < double > & A,
     C.setIds(A.rowIDs(), B.rowIDs());
 
     if (A.order() != B.order()){
+        __M
         log(Critical, "_prepDot. Elementmatrices need the same integration order",
             A.order(), ", ", B.order());
     }
@@ -2285,45 +2311,56 @@ void mult(const ElementMatrix < double > & A, const RMatrix &  b,
 
     C.copyFrom(A, false);
 
-    if (b.rows() != A.matX()[0].rows()){
-        __MS(b)
-        __MS(A.matX()[0])
-        log(Error, "Parameter matrix rows need to match Element sub matrix rows: ",
-            A.matX()[0].rows());
-        return;
-    }
-
     const PosVector &x = *A.x();
     const RVector &w = *A.w();
 
     Index nRules(x.size());
 
+    if (b.rows() == A.matX().size() && b[0].size() == A.matX()[0].cols()){
+        //** RVector per quadrature 
+
+        for (Index i = 0; i < nRules; i++){
+            SmallMatrix & Ci = (*C.pMatX())[i];
+            const SmallMatrix & Ai = A.matX()[i];
+            Ci = Ai;
+            Ci *= b(i);
+        }
+        C.integrate();
+    } else {
+        if (b.rows() != A.matX()[0].rows()){
+            __MS(b)
+            __MS(A.matX()[0])
+            log(Error, "Parameter matrix rows need to match Element sub matrix rows: ",
+                A.matX()[0].rows());
+            return;
+        }
+
     // __MS(A.rows(), A.cols())
     // __MS(b.rows(), b.cols())
     // __MS(C.rows(), C.cols())
 #if USE_EIGEN3
-    SmallMatrix be;
-    toEigenMatrix(b, be);
+        SmallMatrix be;
+        toEigenMatrix(b, be);
 #endif
 
-    double beta = 0.0;
-    for (Index i = 0; i < nRules; i++){
-        if (i > 0) beta = 1.0;
+        double beta = 0.0;
+        for (Index i = 0; i < nRules; i++){
+            if (i > 0) beta = 1.0;
 
-        SmallMatrix & Ci = (*C.pMatX())[i];
-        const SmallMatrix & Ai = A.matX()[i];
-        // A.T * C
-        Ci *= 0.0; // test and optimize me with C creation
-        //matTransMult(Ai, b, Ci, 1.0, beta);
-        // result is no bilinear form, so keep it a rowMatrix
+            SmallMatrix & Ci = (*C.pMatX())[i];
+            const SmallMatrix & Ai = A.matX()[i];
+            // A.T * C
+            Ci *= 0.0; // test and optimize me with C creation
+            //matTransMult(Ai, b, Ci, 1.0, beta);
+            // result is no bilinear form, so keep it a rowMatrix
 #if USE_EIGEN3
-        matMult(be, Ai, Ci, 1.0, beta);
+            matMult(be, Ai, Ci, 1.0, beta);
 #else
-        matMult(b, Ai, Ci, 1.0, beta);
+            matMult(b, Ai, Ci, 1.0, beta);
 #endif
+        }
+        C.integrate(); // check if necessary
     }
-
-    C.integrate(); // check if necessary
 }
 
 // matrix per quadrature

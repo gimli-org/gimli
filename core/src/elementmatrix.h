@@ -336,6 +336,7 @@ public:
                                            Index nCoeff, Index dofPerCoeff, Index dofOffset);
 
 
+
     /*! Add B to this ElementMatrix depending on requested dimension.
         Usual needed for expression (A+B)*u(dim==1) or (A+B)*v(dim!=1)
         for dim == 1 (A + B) ## A or B is grad and need to be summed (div)
@@ -359,6 +360,11 @@ public:
     /*! Return copy of mat */
     RMatrix mat_RM() const;
 
+    /*! Return traces of mat */
+    RVector trace() const;
+
+    /*! Return traces of matX */
+    RMatrix traceX() const;
 
     /*! Return reference to all matrices per quadrature point.*/
     const std::vector < SmallMatrix > & matX() const { return _matX; }
@@ -393,6 +399,7 @@ public:
     // /*! Return const reference to quadrature weights.*/
     // const RVector & w() const { ASSERT_PTR(_w); return *_w; }
 
+    void setOrder(Index order) { _order = order; }
     Index order() const { return _order; }
     Index nCoeff() const { return _nCoeff; }
     Index dofPerCoeff() const { return _dofPerCoeff; }

@@ -492,6 +492,8 @@ public:
     }\
     inline Matrix < ValueType > & operator OP##= (const ValueType & val) { \
       for (Index i = 0; i < mat_.size(); i ++) mat_[i] OP##= val; return*this;}\
+    inline Matrix < ValueType > & operator OP##= (const Vector < ValueType > & val) { \
+      for (Index i = 0; i < mat_.size(); i ++) mat_[i] OP##= val; return*this;}\
 
     DEFINE_UNARY_MOD_OPERATOR__(+, PLUS)
     DEFINE_UNARY_MOD_OPERATOR__(-, MINUS)
