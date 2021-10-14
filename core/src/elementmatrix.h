@@ -51,7 +51,7 @@ public:
     inline const ValueType & operator()(Index i, Index j) const {
         return mat_(i,j);
     }
-    void resize(Index rows, Index cols=0);
+    void resize(Index rows, Index cols=0, bool setIds=true);
 
     ElementMatrix < ValueType > & operator += (const ElementMatrix < ValueType > & E);
 
@@ -518,7 +518,7 @@ ElementMatrix < double >::ElementMatrix(const ElementMatrix < double > &);
 template < > DLLEXPORT
 void ElementMatrix < double >::fillIds(const MeshEntity & ent, Index nC);
 template < > DLLEXPORT
-void ElementMatrix < double >::resize(Index rows, Index cols);
+void ElementMatrix < double >::resize(Index rows, Index cols, bool setIds);
 
 
 template < > DLLEXPORT

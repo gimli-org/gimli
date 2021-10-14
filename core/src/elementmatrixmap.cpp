@@ -71,18 +71,20 @@ void integrateBLConstT_(const ElementMatrixMap & A,
                         const ElementMatrixMap & B,
                         const ValueType & f, SparseMatrixBase & R, bool neg){
 
+    // __MS(A.size())
     if (A.size() == 1 && A.mats()[0].order() == 0){
         //const_space * B
         Index row = A.mats()[0].dofOffset();
+        // __MS(row, A.mats()[0].nCoeff())
         for (auto &m : B.mats()){
             if (!m.isIntegrated()){
                 log(Error, "B need to be integrated");
             }
-            if (!m.nCoeff() > 0){
+            if (m.nCoeff() == 0){
                 THROW_TO_IMPL
             }
             for (Index i = 0; i < m.rows(); i ++){
-                //__MS(row, m.rowIDs(), m.getVal(i,0))
+                // __MS(row, m.rowIDs(), m.getVal(i,0), m.cols())
                 R.addVal(row, m.rowIDs()[i], m.getVal(i,0));
             }
         }
@@ -262,24 +264,29 @@ DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(std::vector< std::vector< RMatrix > >)
 #undef DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET
 
 void ElementMatrixMap::dot(const ElementMatrixMap & B,
-                            ElementMatrixMap & ret) const {
+                           ElementMatrixMap & ret) const {
+    
     if (this->size() == 1 && this->mats()[0].order() == 0){
         ret.resize(B.size());
         //const_space * B
         Index row = this->mats()[0].dofOffset();
         Index i = 0;
+        Index nCoeff = this->mats()[0].nCoeff();
+
         for (auto &m : B.mats()){
             if (!m.isIntegrated()){
                 log(Error, "B need to be integrated");
             }
-            if (!m.nCoeff() > 0){
+            if (m.nCoeff() == 0){
                 THROW_TO_IMPL
             }
 
             ret.pMat(i)->copyFrom(m, false);
-            ret.pMat(i)->resize(m.cols(), m.rows());
-            ret.pMat(i)->setIds(range(row, row+1), m.rowIDs());
-            //!!need ret.pMat(i)->setMat(m.mat().T);
+            ret.pMat(i)->resize(m.cols(), m.rows(), false);
+            ret.pMat(i)->setIds(range(row, row + nCoeff), m.rowIDs());
+
+            //!!Replace with: need ret.pMat(i)->setMat(m.mat().T);
+
             for (Index j=0; j < m.rows(); j++){
                 for (Index k=0; k < m.cols(); k++){
                     ret.pMat(i)->setVal(k, j, m(j, k));
@@ -295,6 +302,8 @@ void ElementMatrixMap::dot(const ElementMatrixMap & B,
         //A * const_space
         Index col = B.mats()[0].dofOffset();
         Index i = 0;
+        Index nCoeff = B.mats()[0].nCoeff();
+
         for (auto &m : this->mats()){
             if (!m.isIntegrated()){
                 log(Error, "A need to be integrated");
@@ -304,7 +313,7 @@ void ElementMatrixMap::dot(const ElementMatrixMap & B,
             }   
 
             ret.pMat(i)->copyFrom(m, false);
-            ret.pMat(i)->setIds(m.rowIDs(), range(col, col+1));
+            ret.pMat(i)->setIds(m.rowIDs(), range(col, col+nCoeff));
             ret.pMat(i)->setMat(m.mat());
             ret.pMat(i)->integrated(true);
             i++;
@@ -453,12 +462,10 @@ void createUMap(const Mesh & mesh, Index order, ElementMatrixMap & ret,
     if (mesh.nodeCount() == 0){
         // empty mesh. this map is for constant space and only contain 1 entry
         ret.resize(1);
-        ret.pMat(0)->init(nCoeff, 0, dofOffset);
-        ret.pMat(0)->resize(1, 1);
+        ret.pMat(0)->init(nCoeff, 1, dofOffset);
+        ret.pMat(0)->resize(1, 1, false);
         ret.pMat(0)->pMat()->setVal(0, 0, 1.);
-        if (nCoeff > 1) throwToImplement;
-
-        ret.pMat(0)->setIds({dofOffset}, {0});
+        ret.pMat(0)->setIds(range(dofOffset, dofOffset+nCoeff), {0});
         return;
     }
 

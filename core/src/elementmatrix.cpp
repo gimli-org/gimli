@@ -1424,7 +1424,7 @@ void ElementMatrix < double >::copyFrom(const ElementMatrix < double > & E,
     }
 }
 template < >
-void ElementMatrix < double >::resize(Index rows, Index cols) {
+void ElementMatrix < double >::resize(Index rows, Index cols, bool setIds) {
     if (cols == 0) cols = rows;
 
     _idsR.resize(rows, 0);
@@ -1432,7 +1432,7 @@ void ElementMatrix < double >::resize(Index rows, Index cols) {
     _ids.resize(rows);
     mat_.resize(rows, cols);
 
-    if (this->_ent){
+    if (this->_ent && setIds){
         Index nVerts = this->_ent->nodeCount();
         for (Index i = 0; i < this->_nCoeff; i++){
             this->_idsR.setVal(this->_ent->ids() + i * this->_dofPerCoeff + this->_dofOffset,

@@ -19,14 +19,17 @@ class Constants(object):
     GmGal = G / 1e-5  # mGal
 
     Darcy = 9.86923e-13  # [m^2]
+
     # unit (median) acceleration on earth
     g = 9.80665  # [m/s^2] ex. 9.798
-    # also a g function of latitude (and altitude)?
+    # also a function of latitude (and altitude)?
 
     # gyromagnetic ratio of protons in water
     gammaP = 2.67515255e8  # T/s
+    
     # Larmor frequency of water
     fLarmor = gammaP / 2 / pi  # in Hz
     fLarmorMhZ = fLarmor * 1e-6
+    
     # nepers to dB multiplication factor
     nepers2dB = 8.686

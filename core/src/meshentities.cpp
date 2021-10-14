@@ -487,7 +487,7 @@ Boundary * Cell::boundary(Index i){
 Cell * Cell::neighborCell(const RVector & sf){
     if (haveInfNaN(sf)){
         __MS("fixme ", sf)
-        return NULL;
+        log(Critical, "fixme ", sf);
     }
 
     //** hack for edge, triangle and tetrahedron. pls refactor

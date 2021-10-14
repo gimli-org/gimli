@@ -148,6 +148,7 @@ def load(fname, verbose=False, testAll=True, realName=None):
         ".mod": pg.Mesh,
         ".vtk": [pg.Mesh, readMeshIO],
         ".vtu": [pg.Mesh, readMeshIO],
+        ".xml": readMeshIO,
         ".stl": readSTL,
         ".h5": readFenicsHDF5Mesh,  # fenics specs as default
         # Misc
