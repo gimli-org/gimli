@@ -55,7 +55,7 @@ def createMesh(poly, quality=32, area=0.0, smooth=None, switches=None,
     Additional Args
     ---------------
     preserveBoundary: bool
-        Preserver boundary nodes, i.e., there will be no more nodes on boundaries.
+        Preserver boundary nodes, no more nodes on boundaries.
 
     Returns
     -------
@@ -124,14 +124,14 @@ def createMesh(poly, quality=32, area=0.0, smooth=None, switches=None,
         mesh = tri.generate()
 
         if smooth is not None:
-            if smooth == True:
+            if smooth is True:
                 smooth = [1, 4]
 
             mesh.smooth(nodeMoving=kwargs.pop('node_move', True),
                         edgeSwapping=False,
                         smoothFunction=smooth[0],
                         smoothIteration=smooth[1])
-        
+
         mesh.createNeighborInfos()
         return mesh
 
@@ -143,7 +143,7 @@ def createMesh(poly, quality=32, area=0.0, smooth=None, switches=None,
         tmp = pg.optImport('tempfile')
         fd, namePLC = tmp.mkstemp(suffix='.poly')
         pg.meshtools.exportPLC(poly, namePLC)
-        os.close(fd) ## needed for win32 to free the file for closing
+        os.close(fd)  # needed for win32 to free the file for closing
 
         mesh = pg.meshtools.syscallTetgen(namePLC, quality, area,
                                           verbose=verbose, **kwargs)
@@ -169,7 +169,8 @@ def createMeshFromHull(mesh, fixNodes=[], **kwargs):
     Returns
     -------
     mesh: :gimliapi:`GIMLI::Mesh`, List of fixed nodes
-        Returning mesh. If fixed nodes are requested, a list of the new IDs are returned in advance.
+        Returning mesh. If fixed nodes are requested,
+        a list of the new IDs are returned in advance.
     """
     plc = pg.Mesh(mesh.dim(), isGeometry=True)
 
@@ -192,6 +193,7 @@ def createMeshFromHull(mesh, fixNodes=[], **kwargs):
         return mesh, fixNodes
     else:
         return mesh
+
 
 def refineQuad2Tri(mesh, style=1):
     """Refine mesh of quadrangles into a mesh of triangle cells.
@@ -264,7 +266,8 @@ def refineHex2Tet(mesh, style=1):
 
     TODO
     ----
-        * mixed meshes (need to ensure consistent face diagonal for nonstructured hex grids .. if such exists)
+        * mixed meshes (needed to ensure consistent face diagonal for
+                        nonstructured hex grids .. if such exists)
 
     Parameters
     ----------
@@ -272,8 +275,12 @@ def refineHex2Tet(mesh, style=1):
         Mesh containing hexrahedron cells, e.g., from a grid.
 
     style: int [1]
-        * 1 bisect each hexahedron int 6 tetrahedrons (less numerical quality but no problems due to diagonal face split)
-        * 2 bisect each hexahedron int 5 tetrahedrons (will lead to inconsistent meshes. Neighboring cell will have different face split diagonal. Might be fixable by rotating the split order depending on coordinates for every 2nd split .. if someone really need this.)
+        * 1 bisect each hexahedron int 6 tetrahedrons
+          (less numerical quality but no problems due to diagonal face split)
+        * 2 bisect each hexahedron int 5 tetrahedrons
+          (leads to inconsistent meshes. Neighboring cell have different face
+           split diagonal. Might be fixable by rotating the split order
+           depending on coordinates for every 2nd split)
 
     Returns
     -------
@@ -320,7 +327,7 @@ def refineHex2Tet(mesh, style=1):
                                 c.node(tet[2]).id(),
                                 c.node(tet[3]).id()], c.marker())
         elif style == 2:
-            ### will lead to wrong face split
+            # will lead to wrong face split
             for tet in HexahedronSplit5TetID:
                 out.createCell([c.node(tet[0]).id(),
                                 c.node(tet[1]).id(),
@@ -359,13 +366,13 @@ def refineHex2Tet(mesh, style=1):
                                         b.node(3).id()], marker=b.marker())
                 else:
                     print("test0")
-                    print( [c.id() for c in out.node(b.node(0).id()).cellSet()])
-                    print( [c.id() for c in out.node(b.node(1).id()).cellSet()])
-                    print( [c.id() for c in out.node(b.node(2).id()).cellSet()])
+                    print([c.id() for c in out.node(b.node(0).id()).cellSet()])
+                    print([c.id() for c in out.node(b.node(1).id()).cellSet()])
+                    print([c.id() for c in out.node(b.node(2).id()).cellSet()])
                     print("test1")
-                    print( [c.id() for c in out.node(b.node(0).id()).cellSet()])
-                    print( [c.id() for c in out.node(b.node(1).id()).cellSet()])
-                    print( [c.id() for c in out.node(b.node(3).id()).cellSet()])
+                    print([c.id() for c in out.node(b.node(0).id()).cellSet()])
+                    print([c.id() for c in out.node(b.node(1).id()).cellSet()])
+                    print([c.id() for c in out.node(b.node(3).id()).cellSet()])
 
                     pg.critical('Mesh corrupt')
 
@@ -401,7 +408,8 @@ def extrudeMesh(mesh, a, **kwargs):
     Keyword Arguments
     -----------------
     adjustBottom: bool [False]
-        Adjust all nodes such that the bottom of the mesh has a constant depth (only 2D)
+        Adjust all nodes such that the bottom of the mesh has a constant depth
+        (only 2D)
 
     Returns
     -------
@@ -507,11 +515,13 @@ def fromSubsurface(obj, order='C', verbose=False):
     """ Convert subsurface object to pygimli mesh.
 
     See more: https://softwareunderground.github.io/subsurface/
-    
-    Order refers to np.flatten(order) strategy for structured cell data arangement, e.g., use 'F' (Fortran style) for gempy meshes. Default is 'C'-Style.
-    
+
+    Order refers to np.flatten(order) strategy for structured cell data
+    arrangement, e.g., use 'F' (Fortran style) for gempy meshes.
+    Default is 'C'-Style.
+
     Testet objects so far:
-    
+
     * TriSurf
     * UnstructuredData (3D Boundary from TriSurf)
     * StructuredData (3D cell centered voxel)
@@ -525,7 +535,7 @@ def fromSubsurface(obj, order='C', verbose=False):
     Args
     ----
     obj: obj
-        Subsurface obj, mesh object 
+        Subsurface obj, mesh object
 
     order: str ['C']
         Flatten style for structured data attributes. See above.
@@ -537,12 +547,12 @@ def fromSubsurface(obj, order='C', verbose=False):
     -------
     mesh: :gimliapi:`GIMLI::Mesh`
     """
-    ss = pg.optImport('subsurface', 
+    ss = pg.optImport('subsurface',
                       'You need subsurface installed to convert into')
 
     if isinstance(obj, ss.structs.unstructured_elements.TriSurf):
         return fromSubsurface(obj.mesh)
-    
+
     elif isinstance(obj, ss.structs.UnstructuredData):
         mesh = pg.Mesh(3)
         for v in obj.vertex:
@@ -550,7 +560,7 @@ def fromSubsurface(obj, order='C', verbose=False):
 
         for c in obj.cells:
             mesh.createBoundary(c)
-        
+
         for k, v in obj.attributes_to_dict.items():
             # print(k, len(v))
             mesh[k] = np.array(v)
@@ -560,22 +570,24 @@ def fromSubsurface(obj, order='C', verbose=False):
             mesh[k] = np.array(v)
 
     elif isinstance(obj, ss.structs.StructuredData):
-               
+
         def _voxelCenterToNodes(v):
             dv = pg.utils.diff(v)
-            n = np.append(v[0]-dv[0]/2, v[0]-dv[0]/2.+ np.cumsum(dv)) 
+            n = np.append(v[0]-dv[0]/2, v[0]-dv[0]/2. + np.cumsum(dv))
             n = np.append(n, v[-1]+dv[-1]/2.)
             return n
 
-        mesh = pg.meshtools.createGrid(x=_voxelCenterToNodes(obj.data.X.values), 
-                             y=_voxelCenterToNodes(obj.data.Y.values), 
-                             z=_voxelCenterToNodes(obj.data.Z.values))
-        
+        mesh = pg.meshtools.createGrid(
+            x=_voxelCenterToNodes(obj.data.X.values),
+            y=_voxelCenterToNodes(obj.data.Y.values),
+            z=_voxelCenterToNodes(obj.data.Z.values))
+
         for k, v in obj.data.data_vars.items():
             # print(k, type(v), len(v), v.shape, len(v.values.flatten()))
             # print(k, type(v), len(v), v.shape, )
-            mesh[k] = [np.array(vi.values.flatten(order=order), dtype=float) for vi in v]
-    else:           
+            mesh[k] = [np.array(vi.values.flatten(order=order), dtype=float)
+                       for vi in v]
+    else:
         print(obj)
         pg.critical('implemenme')
 
@@ -584,11 +596,11 @@ def fromSubsurface(obj, order='C', verbose=False):
 
 def toSubsurface(mesh, verbose=False):
     """ Create a subsurface object from pygimli mesh.
-    
+
     Testet objects so far:
-    
+
     Creates Subsurface.TriSurf from 3D triangle boundaries
-    
+
     TODO
     ----
         * more testing
@@ -598,7 +610,7 @@ def toSubsurface(mesh, verbose=False):
     Args
     ----
     mesh: :gimliapi:`GIMLI::Mesh`
-    
+
     verbose: boolean [False]
         Be verbose during import.
 
@@ -606,25 +618,24 @@ def toSubsurface(mesh, verbose=False):
     -------
     Subsurface object depending on input mesh
     """
-    ss = pg.optImport('subsurface', 
+    ss = pg.optImport('subsurface',
                       'You need subsurface installed to convert into')
-    pd = pg.optImport('pandas', 
+    pd = pg.optImport('pandas',
                       'You need pandas installed to convert into subsurface')
 
     if mesh.dim() == 3:
-        
+
         if mesh.cellCount() == 0 and mesh.boundaryCount() > 0:
-            ## export 3d boundary tringles as subsurface trisurf
+            # export 3d boundary tringles as subsurface trisurf
 
             cells = np.array([c.ids() for c in mesh.boundaries()])
             att = None
 
-            
             for k, v in mesh.dataMap():
                 if len(v) == mesh.boundaryCount():
-                    #atts['cell'] = 0
+                    # atts['cell'] = 0
                     att = pd.DataFrame({k: v})
-                    #atts['cell'] = xr.DataArray({'cell_attr': v})
+                    # atts['cell'] = xr.DataArray({'cell_attr': v})
 
             ssMesh = ss.UnstructuredData.from_array(mesh.positions(),
                                                     cells=cells,
@@ -639,7 +650,6 @@ def toSubsurface(mesh, verbose=False):
     else:
         print(mesh)
         pg.critical('not yet implemented')
-
 
 
 def readGmsh(fName, verbose=False, precision=None):
@@ -664,9 +674,9 @@ def readGmsh(fName, verbose=False, precision=None):
     Physical groups specified in Gmsh are interpreted as follows:
 
     - Points with the physical number 99 are interpreted as sensors. Note that
-      physical point groups are ordered with respect to the node tag. For
-      example, "Physical Point (99) = {50, 34};" and "Physical Point (99) = {34,
-      50};" will yield the same mesh. This must be taken into account when
+      physical point groups are ordered with respect to the node tag. E.g.
+      "Physical Point (99) = {50, 34};" and "Physical Point (99) = {34, 50};"
+      will yield the same mesh. This must be taken into account when
       defining measurement configurations using electrodes defined in GMSH
       using marker 99.
     - ERT only: Points with markers 999 and 1000 are used to mark calibration
@@ -766,13 +776,13 @@ def readGmsh(fName, verbose=False, precision=None):
                         points.append((entry[-1], entry[2]))
                     elif entry[0] == 1:
                         lines.append((entry[-2], entry[-1], entry[2]))
-                    elif entry[0] == 2: # Tri
+                    elif entry[0] == 2:  # Tri
                         triangles.append((entry[-3], entry[-2], entry[-1],
                                           entry[2]))
-                    elif entry[0] == 3: # Quads
+                    elif entry[0] == 3:  # Quads
                         quads.append((entry[-4], entry[-3], entry[-2],
                                       entry[-1], entry[2]))
-                    elif entry[0] == 4: # Tet
+                    elif entry[0] == 4:  # Tet
                         tets.append((entry[-4], entry[-3], entry[-2],
                                      entry[-1], entry[2]))
                     elif entry[0] == 6:
@@ -1133,7 +1143,7 @@ def readHydrus3dMesh(fileName='MESHTRIA.TXT'):
     cells = []
     for _ in range(nCells):
         pos = f.readline().split()
-        i, j, k, l = int(pos[1]), int(pos[2]), int(pos[3]), int(pos[4]),
+        i, j, k, l = int(pos[1]), int(pos[2]), int(pos[3]), int(pos[4])
         c = mesh.createTetrahedron(nodes[i - 1], nodes[j - 1], nodes[k - 1],
                                    nodes[l - 1])
         cells.append(c)
@@ -1185,7 +1195,7 @@ def readHydrusMeshV3(fileName):
                     nBound = int(nEle2)
                     nCells = int(nEle3)
 
-                #print(nNodes, nBound, nCells)
+                # print(nNodes, nBound, nCells)
 
             if 'NODAL' in line:
                 for l in lines[i+7:i+7+nNodes]:
@@ -1235,8 +1245,9 @@ def readHydrusMeshV3(fileName):
                             if mesh.cellCount() != nCells:
                                 print(e)
                                 pg.error('Something is wrong in the file. '
-                                    '{0} 2D-Elements announced but only '
-                                    '{1} found'.format(nCells, mesh.cellCount()))
+                                         '{0} 2D-Elements announced but only '
+                                         '{1} found'.format(nCells,
+                                                            mesh.cellCount()))
 
                                 i = i + 10 + mesh.cellCount()
                                 break
@@ -1303,6 +1314,7 @@ def readGambitNeutral(fileName, verbose=False):
     mesh.createNeighborInfos()
     return mesh
 
+
 def readMeshIO(fileName, verbose=False):
     """Generic mesh read using meshio. (https://github.com/nschloe/meshio)
     """
@@ -1312,6 +1324,7 @@ def readMeshIO(fileName, verbose=False):
     if verbose is True:
         print(mesh)
     return mesh
+
 
 def convertHDF5Mesh(h5Mesh, group='mesh', indices='cell_indices',
                     pos='coordinates', cells='topology', marker='values',
@@ -1367,6 +1380,7 @@ def convertHDF5Mesh(h5Mesh, group='mesh', indices='cell_indices',
 
     if verbose:
         print('converted mesh:', mesh)
+
     return mesh
 
 
@@ -1442,14 +1456,19 @@ def readHDF5Mesh(fileName, group='mesh', indices='cell_indices',
     return mesh
 
 
-def readFenicsHDF5Mesh(fileName, group='mesh', verbose=True):
+def readFenicsHDF5Mesh(fileName, verbose=True, **kwargs):
     """ Reads :term:`FEniCS` mesh from file format .h5 and returns a
     :gimliapi:`GIMLI::Mesh`.
     """
-    mesh = readHDF5Mesh(fileName, group=group, indices='cell_indices',
-                        pos='coordinates', cells='topology', marker='values',
-                        marker_default=0, dimension=3, verbose=verbose,
-                        useFenicsIndices=False)
+    kwargs.setdefault('group', 'mesh')
+    kwargs.setdefault('indices', 'cell_indices')
+    kwargs.setdefault('pos', 'coordinates')
+    kwargs.setdefault('cells', 'topology')
+    kwargs.setdefault('marker', 'values')
+    kwargs.setdefault('marker_default', 0)
+    mesh = readHDF5Mesh(fileName, dimension=3, verbose=verbose,
+                        useFenicsIndices=False, **kwargs)
+
     return mesh
 
 
@@ -1549,7 +1568,8 @@ def readEIDORSMesh(fileName, matlabVarname, verbose=False):
         return d
 
     def loadmat(fileName):
-        data = scipy.io.loadmat(fileName, struct_as_record=False, squeeze_me=True)
+        data = scipy.io.loadmat(fileName, struct_as_record=False,
+                                squeeze_me=True)
         return check_keys(data)
 
     def get_nested(data, *args):
@@ -1676,6 +1696,7 @@ def readSTL(fileName, binary=False):
     mesh = pg.Mesh(dim=3)
     mesh.importSTL(fileName, isBinary=binary)
     return mesh
+
 
 def exportSTL(mesh, fileName, binary=False):
     """Write :term:`STL` surface mesh and returns a :gimliapi:`GIMLI::Mesh`.
@@ -1868,7 +1889,7 @@ def mergeMeshes(meshList, verbose=False):
             mL.append(m)
 
         meshList = mL
-        #meshList = [pg.Mesh(2); m.load(m) ]
+        # meshList = [pg.Mesh(2); m.load(m) ]
 
     if verbose:
         print("Merging meshes ... ")
@@ -2020,8 +2041,8 @@ def createParaMesh2DGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
     if boundary < 0:
         boundary = abs((paraXLimits[1] - paraXLimits[0]) * 4.0)
 
-    mesh = pg.meshtools.appendTriangleBoundary(mesh, 
-        xbound=boundary, ybound=boundary, marker=1, addNodes=5, **kwargs)
+    mesh = pg.meshtools.appendTriangleBoundary(
+        mesh, xbound=boundary, ybound=boundary, marker=1, addNodes=5, **kwargs)
 
     return mesh
 
