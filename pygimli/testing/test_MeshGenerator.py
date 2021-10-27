@@ -145,14 +145,64 @@ class TestMeshGenerator(unittest.TestCase):
 
         #mesh['c'] = pg.PosList(10, [1.0, 0., 0.0])
 
-    def test_meshIO(self):
+    def test_meshBMS(self):
         # text bms version v3 which stores geometry flag
         mesh = pg.Mesh(2, isGeometry=True)
-        mesh.save('_tmp')
-        mesh2 = pg.load('_tmp.bms', verbose=True)
+        
+        import tempfile as tmp
+        _, fn = tmp.mkstemp()
+        
+        mesh.save(fn)
+        mesh2 = pg.load(fn+'.bms', verbose=True)
         
         self.assertEqual(mesh.isGeometry(), mesh2.isGeometry())
         
+    def test_VTK_DataRead(self):
+        grid = pg.createGrid(np.arange(4), np.arange(3), np.arange(2))
+        cM = np.arange(grid.cellCount())
+        grid.setCellMarkers(cM)
+
+        import tempfile as tmp
+        _, fn = tmp.mkstemp(suffix='.vtk')
+
+        grid.exportVTK(fn)
+        mesh = pg.load(fn)
+        np.testing.assert_array_equal(mesh.cellMarkers(), cM)
+        np.testing.assert_array_equal(mesh['Marker'], cM)
+
+        mesh = pg.meshtools.readMeshIO(fn)
+        np.testing.assert_array_equal(mesh['Marker'], cM)
+
+        fn = pg.getExampleFile('meshes/test_tetgen_dataCol.vtk')
+        mesh = pg.load(fn)
+        np.testing.assert_array_equal(mesh.cellMarkers(), cM)
+        np.testing.assert_array_equal(mesh['Marker'], cM)
+
+        mesh = pg.meshtools.readMeshIO(fn)
+        np.testing.assert_array_equal(mesh['Marker'], cM)
+
+        # pg._g('pg import vtk')
+        # print(mesh)
+        # print(mesh["Marker"])
+        # print(mesh.cellMarkers())
+
+        # pg._g('pg import tetgen vtk')
+        # mesh = pg.load("grid1.vtk")
+        # print(mesh)
+        # print(mesh["Marker"])
+        # print(mesh.cellMarkers())
+
+        # pg._g('meshio import vtk')
+        # print(mesh)
+        # print(mesh["Marker"])
+        # #print(mesh.cellMarkers())
+
+        # pg._g('meshio import tetgen vtk')
+        # mesh = pg.meshtools.readMeshIO("grid1.vtk")
+        # print(mesh)
+        # print(mesh["Marker"])
+
+
 
 if __name__ == '__main__':
     # pg.setDeepDebug(1)

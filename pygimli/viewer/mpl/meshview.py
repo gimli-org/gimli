@@ -497,7 +497,7 @@ def drawBoundaryMarkers(ax, mesh, clipBoundaryMarkers=False, **kwargs):
 
     Args
     ----
-    mesh : :gimliapi:`GIMLI::Mesh`
+    mesh: :gimliapi:`GIMLI::Mesh`
         Mesh that have the boundary markers.
 
     clipBoundaryMarkers: bool [False]

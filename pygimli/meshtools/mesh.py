@@ -483,6 +483,10 @@ def convertMeshioMesh(mesh, verbose=False):
         for c in cellBlock.data:
             ret.createCell(c)
 
+    for k, d in mesh.cell_data.items():
+        #pg._g(d[0])
+        ret[k] = d[0].T
+            
     for k, d in mesh.point_data.items():
         if d.ndim == 2:
             if d.shape[1] == 3:
