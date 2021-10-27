@@ -74,15 +74,23 @@ should create an environment with the latest pyGIMLi C++ core only,
 
     conda create -n pgcore -c gimli -c conda-forge pgcore
     
-retrieve the source code by git and set the PYTHONPATH variable
+retrieve the source code by git
 
 .. code-block:: bash
 
     git clone https://github.com/gimli-org/gimli
-    export PYTHONPATH=$PYTHONPATH:$PWD/gimli
-    
-Move the latter command to your .bashrc to make it persistent.
-Later you can just update the code by
+    cd gimli
+
+and install pygimli as a development package
+
+.. code-block:: bash
+
+    conda develop .
+
+Alternatively you could set the PYTHONPATH variable but you would have to care
+for dependencies by yourself.
+
+Later you can just update the pygimli code by
 
 .. code-block:: bash
 

@@ -7,13 +7,13 @@ import numpy as np
 from .core import pgcore
 
 from .core import (CMatrix, CSparseMapMatrix, CSparseMatrix,
-               RSparseMapMatrix, RSparseMatrix, ElementMatrix,
-               IVector, MatrixBase, R3Vector, RVector)
+                   RSparseMapMatrix, RSparseMatrix, ElementMatrix,
+                   IVector, MatrixBase, R3Vector, RVector)
 
 from .logger import critical, warn
 
 # make core matrices (now in pgcore, later pg.core) available here for brevity
-## Usefull Aliases
+# useful aliases
 IdentityMatrix = pgcore.IdentityMatrix
 
 Matrix = pgcore.RMatrix
@@ -21,7 +21,7 @@ SparseMatrix = pgcore.RSparseMatrix
 SparseMapMatrix = pgcore.RSparseMapMatrix
 BlockMatrix = pgcore.RBlockMatrix
 
-## General Monkeypatch core classes
+# General Monkeypatch core classes
 __Matrices = [pgcore.MatrixBase,
               pgcore.RSparseMatrix,
               pgcore.RSparseMapMatrix,
@@ -42,6 +42,7 @@ pgcore.CSparseMapMatrix.dtype = np.complex
 pgcore.RSparseMatrix.dtype = np.float
 pgcore.CSparseMatrix.dtype = np.complex
 
+
 def __RMatrix_str(self):
     s = "RMatrix: " + str(self.rows()) + " x " + str(self.cols())
 
@@ -60,6 +61,7 @@ def __CMatrix_str(self):
         for v in range(self.rows()):
             s += self[v].__str__(True) + '\n'
     return s
+
 
 def __ElementMatrix_str(self):
     """Show entries of an ElementMatrix."""
@@ -86,13 +88,15 @@ def __ElementMatrix_str(self):
         s += '\n'
     return s
 
-pgcore.RMatrix.__repr__ =__RMatrix_str
-pgcore.CMatrix.__repr__ =__CMatrix_str
-pgcore.ElementMatrix.__repr__ =__ElementMatrix_str
+
+pgcore.RMatrix.__repr__ = __RMatrix_str
+pgcore.CMatrix.__repr__ = __CMatrix_str
+pgcore.ElementMatrix.__repr__ = __ElementMatrix_str
 
 
-## Special Monkeypatch core classes
+# Special Monkeypatch core classes
 __BlockMatrix_addMatrix__ = pgcore.RBlockMatrix.addMatrix
+
 
 def __BlockMatrix_addMatrix_happy_GC__(self, M, row=None, col=None,
                                        scale=1.0, transpose=False):
@@ -140,7 +144,7 @@ def __BlockMatrix_addMatrix_happy_GC__(self, M, row=None, col=None,
                 M = SparseMapMatrix(j, i, v)
             else:
                 critical("don't know yet how to add transpose matrix of type",
-                        type(M))
+                         type(M))
 
     if not hasattr(self, '__mats__'):
         self.__mats__ = []
@@ -153,14 +157,16 @@ def __BlockMatrix_addMatrix_happy_GC__(self, M, row=None, col=None,
 
     return matrixID
 
+
 def __BlockMatrix_str__(self):
     string = ("pg.matrix.BlockMatrix of size %d x %d consisting of %d "
-               "submatrices.")
+              "submatrices.")
     return string % (self.rows(), self.cols(), len(self.entries()))
+
 
 pgcore.RBlockMatrix.addMatrix = __BlockMatrix_addMatrix_happy_GC__
 pgcore.RBlockMatrix.add = __BlockMatrix_addMatrix_happy_GC__
-pgcore.RBlockMatrix.__repr__ =__BlockMatrix_str__
+pgcore.RBlockMatrix.__repr__ = __BlockMatrix_str__
 pgcore.RBlockMatrix.ndim = 2
 # pgcore.CBlockMatrix.addMatrix = __BlockMatrix_addMatrix_happy_GC__
 # pgcore.CBlockMatrix.add = __BlockMatrix_addMatrix_happy_GC__
@@ -174,7 +180,6 @@ def __SparseMatrixEqual__(self, T):
             self.rows(), self.cols(), T.rows(), T.cols()))
         return False
 
-
     rowsA, colsA, valsA = sparseMatrix2Array(self, indices=True)
     rowsB, colsB, valsB = sparseMatrix2Array(T, indices=True)
 
@@ -186,12 +191,14 @@ def __SparseMatrixEqual__(self, T):
     # print('rows:', np.linalg.norm(np.array(rowsA)-np.array(rowsB)))
     # print('cols:', np.linalg.norm(np.array(colsA)-np.array(colsB)))
 
-    # print(np.linalg.norm(valsA-valsB), np.mean(abs(valsA)), np.mean(abs(valsB)))
+    # print(np.linalg.norm(valsA-valsB), np.mean(abs(valsA)),
+    #     np.mean(abs(valsB)))
     # print(np.linalg.norm(valsA-valsB)/np.mean(abs(valsA)))
 
     return rowsA == rowsB and \
-           colsA == colsB and \
-               np.linalg.norm(valsA-valsB)/np.mean(abs(valsA)) < 1e-14
+        colsA == colsB and \
+        np.linalg.norm(valsA-valsB)/np.mean(abs(valsA)) < 1e-14
+
 
 pgcore.RSparseMatrix.__eq__ = __SparseMatrixEqual__
 pgcore.RSparseMapMatrix.__eq__ = __SparseMatrixEqual__
@@ -200,16 +207,22 @@ pgcore.RSparseMapMatrix.__eq__ = __SparseMatrixEqual__
 def __SparseMatrixCopy__(self):
     """Create a copy."""
     return pgcore.RSparseMatrix(self)
+
+
 pgcore.RSparseMatrix.copy = __SparseMatrixCopy__
+
 
 def __SparseMapMatrixCopy__(self):
     """Create a copy."""
     return pgcore.RSparseMapMatrix(self)
+
+
 pgcore.RSparseMapMatrix.copy = __SparseMapMatrixCopy__
 
 
 class MultMatrix(pgcore.MatrixBase):
     """Base Matrix class for all matrix types holding a matrix."""
+
     def __init__(self, A, verbose=False):
         self._A = A
         self.ndim = self._A.ndim
@@ -263,6 +276,7 @@ class MultLeftMatrix(MultMatrix):
         """Multiplication from right-hand-side (dot product A.T * x)"""
         return self.A.transMult(x * self.l)
 
+
 LMultRMatrix = MultLeftMatrix  # alias for backward compatibility
 
 
@@ -302,6 +316,7 @@ class MultRightMatrix(MultMatrix):
         """Return M.T*x=(A.T*x)*r"""
         # print('transmult', self.A.rows(), " x " , self.A.cols(), x, self.r, )
         return self.A.transMult(x) * self.r
+
 
 RMultRMatrix = MultRightMatrix  # alias for backward compatibility
 
@@ -343,6 +358,7 @@ class MultLeftRightMatrix(MultMatrix):
     def transMult(self, x):
         """Multiplication from right-hand-side (dot product A.T*x)."""
         return self.A.transMult(x * self._l) * self._r
+
 
 LRMultRMatrix = MultLeftRightMatrix  # alias for backward compatibility
 
@@ -504,6 +520,7 @@ class GeostatisticConstraintsMatrix(pgcore.MatrixBase):
     problems on irregular meshes. Geoph. J. Int. 213, 1374-1386,
     doi:10.1093/gji/ggy055.
     """
+
     def __init__(self, CM=None, mesh=None, **kwargs):
         """Initialize by computing the covariance matrix & its inverse root.
 
@@ -527,6 +544,7 @@ class GeostatisticConstraintsMatrix(pgcore.MatrixBase):
         super().__init__()
         if isinstance(CM, pgcore.Mesh):
             CM = covarianceMatrix(CM, **kwargs)
+
         if CM is None:
             CM = covarianceMatrix(mesh, **kwargs)
 

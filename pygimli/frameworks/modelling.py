@@ -94,6 +94,9 @@ class Modelling(pg.core.ModellingBase):
         else:
             return pg.utils.strHash(str(type(self)))
 
+    def __call__(self, *args, **kwargs):
+        return self.response(*args, **kwargs)
+
     @property
     def fop(self):
         """"""
@@ -298,7 +301,9 @@ class Modelling(pg.core.ModellingBase):
                 rMgr.region(rID).setModelTransStr_(vals['trans'])
 
             if vals['cType'] is not None:
-                rMgr.region(rID).setConstraintType(vals['cType'])
+                if rMgr.region(rID).constraintType() != vals['cType']:
+                    self.clearConstraints()
+                    rMgr.region(rID).setConstraintType(vals['cType'])
 
             rMgr.region(rID).setZWeight(vals['zWeight'])
             rMgr.region(rID).setModelControl(vals['modelControl'])
@@ -536,7 +541,7 @@ class MeshModelling(Modelling):
     def mesh(self):
         """"""
         self._applyRegionProperties()
-        
+
         if self._regionManagerInUse and self._regionChanged is True:
             self.createFwdMesh_()
 

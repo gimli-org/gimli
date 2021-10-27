@@ -18,11 +18,11 @@ from .ves import VESModelling, VESCModelling, VESManager
 from .visualization import showERTData
 from .importData import load
 
-# createERTData = createData  # backward compatibility
-@pg.renamed(createData, '1.2')  # 20210302
+@pg.renamed(createData, '1.3')  # 20210302
 def createERTData(*args, **kwargs):
     pass
 
+showData = showERTData
 show = showERTData  # better create a function that can also handle mgr
 geometricFactor = pg.core.geometricFactor
 geometricFactors = geometricFactor

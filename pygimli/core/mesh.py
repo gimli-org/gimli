@@ -9,7 +9,7 @@ from math import ceil
 from .core import (cat, HexahedronShape, Line, RSparseMapMatrix,
                         Mesh, MeshEntity, Node, Boundary, RVector, RVector3,
                         PolygonFace, TetrahedronShape, TriangleFace)
-from .logger import deprecated, error, info, warn
+from .logger import deprecated, error, info, warn, critical
 
 from ..meshtools import mergePLC, exportPLC
 
@@ -164,7 +164,7 @@ def __Mesh_getVal(self, key):
                 return uniqueNames[key]
 
         critical('The mesh does not have the requested data:', key,
-              '. Available:', uniqueNames)
+                    '. Available:', uniqueNames)
 
 
 Mesh.__getitem__ = __Mesh_getVal

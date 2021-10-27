@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """pyGIMLi - Inversion Frameworks.
 
-These are basic inversion frameworks that usually needs a forward operator to run.
+Basic inversion frameworks that usually needs a forward operator to run.
 """
 import numpy as np
 import pygimli as pg
@@ -33,6 +33,7 @@ class Inversion(object):
         Stop iteration when chi² is one. If set to false the iteration stops
         after maxIter or convergence reached (self.inv.deltaPhiAbortPercent())
     """
+
     def __init__(self, fop=None, inv=None, **kwargs):
         self._debug = kwargs.pop('debug', False)
         self._verbose = kwargs.pop('verbose', False)
@@ -40,7 +41,7 @@ class Inversion(object):
         # If this class or its derived is a Framework the _inv holds another
         # Inversion which allows us (remove me)........
         # this will be probably removed in the future
-        self.isFrameWork = False # check if needed
+        self.isFrameWork = False  # check if needed
         self._stopAtChi1 = True
 
         self._preStep = None
@@ -58,12 +59,11 @@ class Inversion(object):
             self._inv = pg.core.RInversion(self._verbose, self._debug)
 
         self._dataTrans = pg.trans.TransLin()
-        self.axs = None # for showProgress only
+        self.axs = None  # for showProgress only
         self.maxIter = kwargs.pop('maxIter', 20)
 
         if fop is not None:
             self.setForwardOperator(fop)
-
 
     def reset(self):
         """"""
@@ -75,9 +75,11 @@ class Inversion(object):
     @property
     def inv(self):
         return self._inv
+
     @property
     def fop(self):
         return self._fop
+
     @fop.setter
     def fop(self, f):
         self.setForwardOperator(f)
@@ -91,6 +93,7 @@ class Inversion(object):
     @property
     def verbose(self):
         return self._verbose
+
     @verbose.setter
     def verbose(self, v):
         self._verbose = v
@@ -100,6 +103,7 @@ class Inversion(object):
     @property
     def debug(self):
         return self._debug
+
     @debug.setter
     def debug(self, v):
         self._debug = v
@@ -108,6 +112,7 @@ class Inversion(object):
     @property
     def dataTrans(self):
         return self._dataTrans
+
     @dataTrans.setter
     def dataTrans(self, dt):
         self._dataTrans = dt
@@ -116,6 +121,10 @@ class Inversion(object):
     @property
     def modelTrans(self):
         return self.fop.modelTrans
+
+    @modelTrans.setter
+    def modelTrans(self, mt):
+        self.fop.modelTrans = self._modelTrans
 
     @property
     def startModel(self):
@@ -155,7 +164,7 @@ class Inversion(object):
                 pg.info("Startmodel set from given array.", model)
                 self._startModel = model
             else:
-                pg.error("Startmodel size invalid {0} != {0}.".
+                pg.error("Startmodel size invalid {0} != {1}.".
                          format(len(model), self.parameterCount))
 
     @property
@@ -163,11 +172,12 @@ class Inversion(object):
         """The last active model."""
         if self._model is None:
             if hasattr(self.inv, 'model'):
-                ### inv is RInversion()
+                # inv is RInversion()
                 if len(self.inv.model()) > 0:
                     return self.inv.model()
                 else:
-                    raise pg.critical("There was no inversion run so there is no last model")
+                    raise pg.critical(
+                        "There was no inversion run so there is no last model")
             else:
                 return self.inv.model
         return self._model
@@ -181,13 +191,15 @@ class Inversion(object):
         if len(self.inv.response()) > 0:
             return self.inv.response()
         else:
-            raise Exception("There was no inversion run so there is no response yet")
+            raise Exception(
+                "There was no inversion run so there is no response yet")
 
     # backward compatibility
     @property
     def dataErrs(self):
         pg.warn('do not use')
         return self._errorVals
+
     @dataErrs.setter
     def dataErrs(self, v):
         pg.warn('do not use')
@@ -196,6 +208,7 @@ class Inversion(object):
     @property
     def dataVals(self):
         return self._dataVals
+
     @dataVals.setter
     def dataVals(self, d):
         """Set mandatory data values.
@@ -212,12 +225,14 @@ class Inversion(object):
         #
         # if min(abs(self._dataVals)) < 1e-12:
         #     print(self._dataVals)
-        #     pg.warn("Found zero data values. Setting them to a TOLERANCE value of 1e-12")
+        #     pg.warn("Found zero data values. \
+        #             Setting them to a TOLERANCE value of 1e-12")
         #     pg.fixZero(self._dataVals, 1e-12)
 
     @property
     def errorVals(self):
         return self._errorVals
+
     @errorVals.setter
     def errorVals(self, d):
         """Set mandatory error values.
@@ -232,7 +247,8 @@ class Inversion(object):
 
         if min(abs(self._errorVals)) < 1e-12:
             print(self._errorVals)
-            pg.warn("Found zero error values. Setting them to a Fallback value of 1")
+            pg.warn(
+                "Found zero error values. Setting them to fallback value of 1")
             pg.fixZero(self._errorVals, 1)
 
     @property
@@ -245,6 +261,7 @@ class Inversion(object):
     @property
     def robustData(self):
         return self.inv.robustData()
+
     @robustData.setter
     def robustData(self, v):
         if self.inv is not None:
@@ -253,6 +270,7 @@ class Inversion(object):
     @property
     def maxIter(self):
         return self.inv.maxIter()
+
     @maxIter.setter
     def maxIter(self, v):
         if self.inv is not None:
@@ -261,6 +279,7 @@ class Inversion(object):
     @property
     def stopAtChi1(self):
         return self._stopAtChi1
+
     @stopAtChi1.setter
     def stopAtChi1(self, b):
         self._stopAtChi1 = b
@@ -268,6 +287,7 @@ class Inversion(object):
     @property
     def minDPhi(self):
         return self.inv.deltaPhiAbortPercent()
+
     @minDPhi.setter
     def minDPhi(self, dPhi):
         return self.setDeltaChiStop(dPhi)
@@ -275,9 +295,10 @@ class Inversion(object):
     @property
     def lam(self):
         return self.inv.getLambda()
+
     @lam.setter
-    def lam(self, l):
-        self.inv.setLambda(l)
+    def lam(self, lam):
+        self.inv.setLambda(lam)
 
     def setDeltaChiStop(self, it):
         self.inv.setDeltaPhiAbortPercent(it)
@@ -292,9 +313,9 @@ class Inversion(object):
         self._preStep = p
 
     def setData(self, data):
-        QUESTION_ISNEEDED
+        # QUESTION_ISNEEDED
         if isinstance(data, pg.DataContainer):
-            raise Exception("should not been here .. its Managers job")
+            raise Exception("should not be here .. its Managers job")
             self.fop.setData(data)
         else:
             self.dataVals = data
@@ -309,7 +330,7 @@ class Inversion(object):
 
         dT = self.dataTrans
         dData = (dT.trans(self.dataVals) - dT.trans(response)) / \
-                 dT.error(self.dataVals, self.errorVals)
+            dT.error(self.dataVals, self.errorVals)
 
         return pg.math.dot(dData, dData)
 
@@ -361,6 +382,8 @@ class Inversion(object):
         dPhi : float [1]
             Overwrite class settings for delta data phi aborting criteria.
             Default is 1%
+        cType: int[1]
+            Set global contraints type for all regions.
         """
         self.reset()
         if self.isFrameWork:
@@ -368,22 +391,26 @@ class Inversion(object):
             return self._inv.run(dataVals, errorVals, **kwargs)
 
         if self.fop is None:
-            raise Exception("Need a valid forward operator for the inversion run.")
+            raise Exception("Need valid forward operator for inversion run.")
 
         maxIter = kwargs.pop('maxIter', self.maxIter)
         minDPhi = kwargs.pop('dPhi', self.minDPhi)
 
         self.verbose = kwargs.pop('verbose', self.verbose)
-        self.debug   = kwargs.pop('debug', self.debug)
+        self.debug = kwargs.pop('debug', self.debug)
         self.robustData = kwargs.pop('robustData', False)
 
-        # pg._g('verbose:', self.verbose, self.fop.verbose(), self.inv.verbose())
+        # pg._g('verbose:',
+        #       self.verbose, self.fop.verbose(), self.inv.verbose())
         self.lam = kwargs.pop('lam', 20)
 
-        progress = kwargs.pop('progress', None)
+        # progress = kwargs.pop('progress', None)  # NOT USED
         showProgress = kwargs.pop('showProgress', False)
 
         self.inv.setTransModel(self.fop.modelTrans)
+
+        if 'cType' in kwargs:
+            self.fop.setRegionProperties('*', cType=kwargs.pop('cType'))
 
         self.dataVals = dataVals
         self.errorVals = errorVals
@@ -394,7 +421,9 @@ class Inversion(object):
 
         self.inv.setData(self._dataVals)
         self.inv.setRelativeError(self._errorVals)
-        
+        if 'cType' in kwargs:
+            self.fop.setRegionProperties('*', cType=kwargs['cType'])
+
         # temporary set max iter to one for the initial run call
         maxIterTmp = self.maxIter
         self.maxIter = 1
@@ -419,21 +448,21 @@ class Inversion(object):
                 print("Model transformation:", self.modelTrans)
 
             print("min/max (data): {0}/{1}".format(pf(min(self._dataVals)),
-                                                    pf(max(self._dataVals))))
-            print("min/max (error): {0}%/{1}%".format(pf(100*min(self._errorVals)),
-                                                      pf(100*max(self._errorVals))))
-            print("min/max (start model): {0}/{1}".format(pf(min(self.startModel)),
-                                                          pf(max(self.startModel))))
+                                                   pf(max(self._dataVals))))
+            print("min/max (error): {0}%/{1}%".format(
+                pf(100*min(self._errorVals)), pf(100*max(self._errorVals))))
+            print("min/max (start model): {0}/{1}".format(
+                pf(min(self.startModel)), pf(max(self.startModel))))
 
-        ### To ensure reproduceability of the run() call inv.start() will
-        ### reset self.inv.model() to fop.startModel().
+        # To ensure reproduceability of the run() call, inv.start() will
+        # reset self.inv.model() to fop.startModel().
         self.fop.setStartModel(self.startModel)
         self.inv.setReferenceModel(self.startModel)
 
         if self.verbose:
             print("-" * 80)
         if self._preStep and callable(self._preStep):
-                self._preStep(0, self)
+            self._preStep(0, self)
 
         self.inv.start()
         self.maxIter = maxIterTmp
@@ -465,10 +494,10 @@ class Inversion(object):
                          'Aborting and going back to last model')
 
             if np.isnan(self.model).any():
-                print(model)
+                print(self.model)
                 pg.critical('invalid model')
 
-            resp = self.inv.response()
+            # resp = self.inv.response()  # NOT USED
             chi2 = self.inv.chi2()
 
             self.chi2History.append(chi2)
@@ -480,7 +509,7 @@ class Inversion(object):
             if self._postStep and callable(self._postStep):
                 self._postStep(i, self)
 
-            ### we need to check  the following before oder after chi2 calc??
+            # Do we need to check the following before oder after chi2 calc??
             self.lam = self.lam * self.inv.lambdaFactor()
 
             if self.robustData:
@@ -499,19 +528,21 @@ class Inversion(object):
             if chi2 <= 1 and self.stopAtChi1:
                 print("\n")
                 if self.verbose:
-                    pg.boxprint("Abort criterion reached: chi² <= 1 (%.2f)" % chi2)
+                    pg.boxprint(
+                        "Abort criterion reached: chi² <= 1 (%.2f)" % chi2)
                 break
 
-            if (dPhi > (1.0 - minDPhi / 100.0)) and i > 2:
             # if dPhi < -minDPhi:
+            if (dPhi > (1.0 - minDPhi / 100.0)) and i > 2:
                 if self.verbose:
-                    pg.boxprint("Abort criteria reached: dPhi = {0} (< {1}%)".format(
-                                round((1-dPhi)*100, 2), minDPhi))
+                    pg.boxprint(
+                        "Abort criteria reached: dPhi = {0} (< {1}%)".format(
+                            round((1-dPhi)*100, 2), minDPhi))
                 break
 
             lastPhi = phi
 
-        ### will never work as expected until we unpack kwargs .. any idea for
+        # will never work as expected until we unpack kwargs .. any idea for
         # better strategy?
         # if len(kwargs.keys()) > 0:
         #     print("Warning! unused keyword arguments", kwargs)
@@ -528,7 +559,7 @@ class Inversion(object):
         """
         if self.axs is None:
             axs = None
-            if style == 'all' or style == True:
+            if style == 'all' or style is True:
                 fig, axs = pg.plt.subplots(1, 2)
             elif style == 'Model':
                 fig, axs = pg.plt.subplots(1, 1)
@@ -550,7 +581,7 @@ class Inversion(object):
                 _ax.clear()
                 try:
                     pg.viewer.mpl.twin(_ax).clear()
-                except:
+                except Exception:
                     pass
 
             self.fop.drawModel(ax[0], self.inv.model(),
@@ -560,23 +591,22 @@ class Inversion(object):
             self.fop.drawData(ax[1], self.inv.response(),
                               label='Response')
 
-            ax[1].text(0.99, 0.005,
-                    "Iter: {0}, rrms: {1}%, $\chi^2$: {2}"
-                        .format(self.inv.iter(),
-                                pf(self.inv.relrms()),
-                                pf(self.inv.chi2())),
-                        transform=ax[1].transAxes,
-                        horizontalalignment='right',
-                        verticalalignment='bottom',
-                        fontsize=8)
+            ax[1].text(
+                0.99, 0.005, r"Iter: {0}, rrms: {1}%, $\chi^2$: {2}".format(
+                    self.inv.iter(), pf(self.inv.relrms()),
+                    pf(self.inv.chi2())),
+                transform=ax[1].transAxes,
+                horizontalalignment='right',
+                verticalalignment='bottom',
+                fontsize=8)
 
             ax[1].figure.tight_layout()
         pg.plt.pause(0.05)
 
 
 class MarquardtInversion(Inversion):
-    """Marquardt scheme (local damping with decreasing regularization strength
-    """
+    """Marquardt scheme (local damping with decreasing regularization."""
+
     def __init__(self, fop=None, **kwargs):
         super(MarquardtInversion, self).__init__(fop, **kwargs)
         self.stopAtChi1 = False
@@ -593,8 +623,10 @@ class MarquardtInversion(Inversion):
         self.fop.regionManager().setConstraintType(0)
         self.fop.setRegionProperties('*', cType=0)
 
-        self.model = super(MarquardtInversion, self).run(dataVals, errorVals, **kwargs)
+        self.model = super(MarquardtInversion, self).run(dataVals,
+                                                         errorVals, **kwargs)
         return self.model
+
 
 class Block1DInversion(MarquardtInversion):
     """
@@ -603,8 +635,9 @@ class Block1DInversion(MarquardtInversion):
     nLayers : int
 
     """
+
     def __init__(self, fop=None, **kwargs):
-        #pg.warn("move this to the manager")
+        # pg.warn("move this to the manager")
         super(Block1DInversion, self).__init__(fop=fop, **kwargs)
 
     def setForwardOperator(self, fop):
@@ -654,7 +687,8 @@ class Block1DInversion(MarquardtInversion):
             if self.fop.nPara == 1:
                 self.fop.setRegionProperties(i, limits=limits, trans='log')
             else:
-                self.fop.setRegionProperties(i, limits=limits[i-1], trans='log')
+                self.fop.setRegionProperties(i, limits=limits[i-1],
+                                             trans='log')
 
     def run(self, dataVals, errorVals,
             nLayers=None, fixLayers=None, layerLimits=None, paraLimits=None,
@@ -691,7 +725,8 @@ class Block1DInversion(MarquardtInversion):
         if paraLimits is not None:
             self.setParaLimits(paraLimits)
 
-        self.model = super(Block1DInversion, self).run(dataVals, errorVals, **kwargs)
+        self.model = super(Block1DInversion, self).run(dataVals,
+                                                       errorVals, **kwargs)
         return self.model
 
 
@@ -704,6 +739,7 @@ class MeshInversion(Inversion):
     zWeight
 
     """
+
     def __init__(self, fop=None, **kwargs):
         pg.critical('Obsolete .. to be removed.')
         super(MeshInversion, self).__init__(fop=fop, **kwargs)
@@ -717,8 +753,7 @@ class MeshInversion(Inversion):
         return super(MeshInversion, self).setForwardOperator(fop)
 
     def run(self, dataVals, errorVals, mesh=None, zWeight=None, **kwargs):
-        """
-        """
+        """Run inversion with given data and error values"""
         if mesh is not None:
             self.fop.setMesh(mesh)
 
@@ -729,12 +764,13 @@ class MeshInversion(Inversion):
         # maybe move this to the fop
 
         pg.debug('run with: ', self.fop.regionProperties())
-        #### more mesh related inversion attributes to set?
+        # more mesh-related inversion attributes to set?
 
         # ensure the mesh is generated
-        self.fop.mesh()
+        self.fop.mesh()  # not a nice way to ensure something
 
-        self.model = super(MeshInversion, self).run(dataVals, errorVals, **kwargs)
+        self.model = super(MeshInversion, self).run(dataVals,
+                                                    errorVals, **kwargs)
 
         return self.model
 
@@ -770,14 +806,14 @@ class PetroInversion(Inversion):
             else:
                 self.fop.setRegionProperties('*', limits=limits)
 
-        #ensure the mesh
+        # ensure the mesh is there
         self.fop.mesh()
         return super(PetroInversion, self).run(dataVals, errorVals, **kwargs)
 
 
 class LCInversion(Inversion):
-    """2D Laterally constrained inversion LCI framework.
-    """
+    """Quasi-2D Laterally constrained inversion (LCI) framework."""
+
     def __init__(self, fop=None, **kwargs):
 
         if fop is not None:
@@ -785,7 +821,7 @@ class LCInversion(Inversion):
 
         super(LCInversion, self).__init__(f, **kwargs)
         self.dataTrans = pg.trans.TransLog()
-        #self.setDeltaChiStop(0.1)
+        # self.setDeltaChiStop(0.1)
 
     def prepare(self, dataVals, errorVals, nLayers=4, **kwargs):
         dataVec = pg.RVector()
@@ -799,7 +835,7 @@ class LCInversion(Inversion):
         self.fop.initJacobian(dataVals=dataVals, nLayers=nLayers,
                               nPar=kwargs.pop('nPar', None))
 
-        ### self.fop.initJacobian resets prior set startmodels
+        # self.fop.initJacobian resets prior set startmodels
         if self._startModel is not None:
             self.fop.setStartModel(self._startModel)
 
@@ -807,11 +843,11 @@ class LCInversion(Inversion):
 
         if kwargs.pop('disableLCI', False):
             self.inv.setMarquardtScheme(0.7)
-            #self.inv.setLocalRegularization(True)
+            # self.inv.setLocalRegularization(True)
             for r in self.fop.regionManager().regionIdxs():
                 self.fop.setRegionProperties(r, cType=0)
         else:
-            #self.inv.stopAtChi1(False)
+            # self.inv.stopAtChi1(False)
             cType = kwargs.pop('cType', None)
             if cType is None:
                 cType = [1] * rC
