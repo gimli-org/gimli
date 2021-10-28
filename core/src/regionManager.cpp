@@ -788,6 +788,7 @@ void RegionManager::findInterRegionInterfaces(){
                         std::pair< SIndex, SIndex >,                       std::list < Boundary * > > (std::pair< SIndex, SIndex>(minMarker, maxMarker),
                                         std::list< Boundary* >()));
                 }
+
                 interRegionInterfaceMap_[std::pair< SIndex, SIndex > (minMarker, maxMarker)].push_back(&b);
             }
         }
@@ -945,6 +946,7 @@ void RegionManager::fillConstraints(RSparseMapMatrix & C){
         // __MS(cID)
     }
     
+    __MS(interRegionConstraints_.size())
     if (interRegionConstraints_.size() > 0){
         if (verbose_) std::cout << "Creating inter region constraints." << std::endl;
 
@@ -965,8 +967,8 @@ void RegionManager::fillConstraints(RSparseMapMatrix & C){
             Region * regB = regionMap_.find(ab.second)->second;
 
             if (regA->isBackground() || regB->isBackground()){
-                __MS(ab.first << " " << ab.second << " " << cWeight)
-                log(Warning, "no inter region constraints for background regions.");
+                // __MS(ab.first << " " << ab.second << " " << cWeight)
+                // log(Warning, "no inter region constraints for background regions.");
                 continue;
             }
 

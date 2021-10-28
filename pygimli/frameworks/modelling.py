@@ -325,6 +325,7 @@ class Modelling(pg.core.ModellingBase):
             if vals['limits'][1] > 0:
                 rMgr.region(rID).setUpperBound(vals['limits'][1])
 
+
         for r1, r2, w in self._interRegionCouplings:
             rMgr.setInterRegionConstraint(r1, r2, w)
 
@@ -554,6 +555,7 @@ class MeshModelling(Modelling):
         self.setMeshPost(m)
         self._regionChanged = False
         super(Modelling, self).setMesh(m, ignoreRegionManager=True)
+        
 
     def mesh(self):
         """"""
@@ -561,7 +563,7 @@ class MeshModelling(Modelling):
 
         if self._regionManagerInUse and self._regionChanged is True:
             self.createFwdMesh_()
-
+            
         return super(Modelling, self).mesh()
 
     def setMesh(self, mesh, ignoreRegionManager=False):
