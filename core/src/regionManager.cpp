@@ -303,6 +303,8 @@ Index Region::constraintCount() const {
 }
 
 void Region::fillConstraints(RSparseMapMatrix & C, Index startConstraintsID){
+    // __MS(isBackground_ << " " << isSingle_ << " " << constraintType_ <<  " " <<
+    //      startConstraintsID << " " << startParameter_)
     if (isBackground_ ) return;
 
     if (isSingle_ && constraintType_ == 0) return;
@@ -941,22 +943,31 @@ void RegionManager::fillConstraints(RSparseMapMatrix & C){
         cID += x.second->constraintCount();
         // __MS(cID)
     }
-
+    
     if (interRegionConstraints_.size() > 0){
         if (verbose_) std::cout << "Creating inter region constraints." << std::endl;
-        Index i = 0;
+
+        // Index i = 0;
         for (auto & it : this->interRegionConstraints_){
 
             std::pair< SIndex, SIndex > ab = it.first;
+            
             double cWeight = it.second;
-            if (verbose_) {
+            
+            // if (verbose_) {
                 // std::cout << "\t" << i << ": "
                 //                     << ab.first << "< (" << cWeight << ") >"
                 //                     << ab.second << std::endl;
-                i ++;
-            }
+                // i ++;
+            // }
             Region * regA = regionMap_.find(ab.first)->second;
             Region * regB = regionMap_.find(ab.second)->second;
+
+            if (regA->isBackground() || regB->isBackground()){
+                __MS(ab.first << " " << ab.second << " " << cWeight)
+                log(Warning, "no inter region constraints for background regions.");
+                continue;
+            }
 
             double mcA = regA->modelControl();
             double mcB = regB->modelControl();
