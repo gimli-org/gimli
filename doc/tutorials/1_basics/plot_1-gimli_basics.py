@@ -37,7 +37,7 @@ print(pg.__version__)
 # .. note::
 #
 #     A regularly spaced mesh consisting of rectangles or hexahedrons is
-#     usually called grid. However, a grid is just a special variant of a mesh
+#     usually called a grid. However, a grid is just a special variant of a mesh
 #     so GIMLi treats it the same. The only difference is how they are created.
 #
 # GIMLi provides a collection of tools for mesh import, export and generation.
