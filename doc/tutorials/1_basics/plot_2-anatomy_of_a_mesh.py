@@ -5,7 +5,7 @@
 The anatomy of a pyGIMLi mesh
 =============================
 
-In this tutorial we look a the anatomy of a :gimliapi:`GIMLI::Mesh`. Although
+In this tutorial we look at the anatomy of a :gimliapi:`GIMLI::Mesh`. Although
 the example is simplisitic and two-dimensional, the individual members of the
 Mesh class and their methods can be inspected similarly for more complex meshes
 in 2D and 3D. This example is heavily inspired by the `anatomy of a matplotlib
@@ -31,7 +31,7 @@ def circle(x, y, text=None, radius=0.15, c="blue"):
             ha='center', va='top', weight='bold', color=c)
 
 ################################################################################
-# We now import pygimli and create simple grid/mesh with 3x3 cells.
+# We now import pygimli and create a simple grid/mesh with 3x3 cells.
 
 import pygimli as pg
 m = pg.createGrid(4,4)
