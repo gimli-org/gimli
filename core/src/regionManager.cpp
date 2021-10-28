@@ -666,7 +666,7 @@ void RegionManager::setMesh(const Mesh & mesh, bool holdRegionInfos){
     //** looking for and create region interfaces
 
     //** looking for and create inter-region interfaces
-    this->findInterRegionInterfaces_();
+    this->findInterRegionInterfaces();
 
     if (singleOnly){
         log(Info, "Applying *:* interregion constraints.");
@@ -761,11 +761,12 @@ void RegionManager::recountParaMarker_(){
     }
 }
 
-void RegionManager::findInterRegionInterfaces_(){
+void RegionManager::findInterRegionInterfaces(){
     // find all boundaries per inter region boundary
     // and store them < <left, right>, [ptr Boundary]>
 
     interRegionInterfaceMap_.clear();
+    interRegionConstraints_.clear();
 
     //** having fun with stl
     std::map< std::pair< SIndex, SIndex >, std::list < Boundary * > > ::iterator iRMapIter;

@@ -1360,12 +1360,13 @@ def _createParameterContraintsLines(mesh, cMat, cWeights=None):
     C = None
 
     if isinstance(cMat, pg.matrix.SparseMapMatrix):
-
+        ## TODO super hackish .. clean me up!!
+        
         tmp = pg.optImport('tempfile')
         _, tmpFile = tmp.mkstemp(suffix='.matrix')
         C = pg.Matrix()
         cMat.save(tmpFile)
-        pg.loadMatrixCol(C, tmpFile)
+        pg.core.loadMatrixCol(C, tmpFile)
 
         try:
             import os
@@ -1375,7 +1376,9 @@ def _createParameterContraintsLines(mesh, cMat, cWeights=None):
             print("can't remove:", tmpFile)
 
     else:
+        pg.critical('implementme')
         C = cMat
+
 
     cellList = dict()
     for c in mesh.cells():
@@ -1393,15 +1396,17 @@ def _createParameterContraintsLines(mesh, cMat, cWeights=None):
         paraCenter[pID] = p
 
     nConstraints = cMat.rows()
+    
+    if cWeights is None:
+        cWeights = np.ones(nConstraints)
 
     start = []
     end = []
     #    swatch = pg.core.Stopwatch(True)  # not used
     i = -1
     while i < C[0].size():
-        cID = C[0][i]
-
-
+        cID = int(C[0][i])
+        
         a = C[1][i]
         b = None
 

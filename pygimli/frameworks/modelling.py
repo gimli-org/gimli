@@ -219,11 +219,19 @@ class Modelling(pg.core.ModellingBase):
 
         Parameters
         ----------
+        regionNr: int, [int], '*'
+            Region number, list of, or wildcard for all.
+
         """
         if regionNr == '*':
             for regionNr in self.regionManager().regionIdxs():
                 self.setRegionProperties(regionNr, **kwargs)
             return
+        elif isinstance(regionNr, (list, tuple)):
+            for r in regionNr:
+                self.setRegionProperties(r, **kwargs)
+            return
+            
 
         pg.verbose('Set property for region: {0}: {1}'.format(regionNr,
                                                               kwargs))
@@ -263,7 +271,10 @@ class Modelling(pg.core.ModellingBase):
 
         for reg1 in region1:
             for reg2 in region2:
-                self._interRegionCouplings.append([reg1, reg2, weight])
+                if reg1 != reg2 and \
+                    (self._regionProperties[reg1]['background'] == False and \
+                        self._regionProperties[reg2]['background'] == False): 
+                    self._interRegionCouplings.append([reg1, reg2, weight])
 
         self._regionsNeedUpdate = True
 
@@ -486,6 +497,12 @@ class MeshModelling(Modelling):
 
         self._pd = pg.Mesh(self.regionManager().paraDomain())
         return self._pd
+
+    def createConstraints(self):
+        """"""
+        self.mesh()
+        super().createConstraints()
+        return self.constraints()
 
     def paraModel(self, model):
         mod = model[self.paraDomain.cellMarkers()]
