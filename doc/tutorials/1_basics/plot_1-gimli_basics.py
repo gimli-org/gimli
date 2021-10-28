@@ -108,7 +108,7 @@ print(grid.boundaryCount())
 # :term:`Paraview`.
 #
 # However, we recommend visualizing 2-dimensional content using python scripts
-# that provides better exports to graphics files (e.g., png, pdf, svg).
+# that provide better exports to graphics files (e.g., png, pdf, svg).
 # In :term:`pygimli` we provide some basic post-processing routines using
 # the :term:`matplotlib` visualization framework. The main visualization call
 # is :py:mod:`pygimli.viewer.show` which is sufficient for most meshes,
