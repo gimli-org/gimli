@@ -523,7 +523,7 @@ class Inversion(object):
 
             if self.verbose:
                 print("chi² = {0} (dPhi = {1}%) lam: {2}".format(
-                            round(chi2, 2), round((1-dPhi)*100, 2), self.lam))
+                    round(chi2, 2), round((1-dPhi)*100, 2), self.lam))
 
             if chi2 <= 1 and self.stopAtChi1:
                 print("\n")
@@ -665,8 +665,8 @@ class Block1DInversion(MarquardtInversion):
             if hasattr(fixLayers, '__iter__'):
                 if len(fixLayers) != self.fop.nLayers:
                     print("fixLayers:", fixLayers)
-                    pg.error("fixlayers needs to have a length of nLayers-1="
-                             + str(self.fop.nLayers-1))
+                    pg.error("fixlayers needs to have a length of nLayers-1=" +
+                             str(self.fop.nLayers-1))
                 self.fop.setRegionProperties(0, startModel=fixLayers)
 
     def setLayerLimits(self, limits):
