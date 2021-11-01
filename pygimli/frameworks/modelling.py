@@ -562,14 +562,14 @@ class MeshModelling(Modelling):
         super(Modelling, self).setMesh(m, ignoreRegionManager=True)
 
     # This is bad: a redefinition of the property getter
-    # def mesh(self):
-    #     """Return mesh."""
-    #     self._applyRegionProperties()
+    def mesh(self):
+        """Return mesh."""
+        self._applyRegionProperties()
 
-    #     if self._regionManagerInUse and self._regionChanged is True:
-    #         self.createFwdMesh_()
+        if self._regionManagerInUse and self._regionChanged is True:
+            self.createFwdMesh_()
 
-    #     return super(Modelling, self).mesh()
+        return super(Modelling, self).mesh()
 
     def setMesh(self, mesh, ignoreRegionManager=False):
         """Set mesh and specify whether region manager can be ignored."""
