@@ -237,7 +237,7 @@ def createWorld(start, end, marker=1, area=0., layers=None, worldMarker=True,
             pg.critical("3D with layers is not yet implemented.")
 
         world = createCube(size=pg.Pos(end)-pg.Pos(start),
-                           pos=(pg.Pos(end)-pg.Pos(start))/2.0,
+                           pos=(pg.Pos(end)+pg.Pos(start))/2.0,
                            **kwargs)
 
 
@@ -314,7 +314,7 @@ def createWorld(start, end, marker=1, area=0., layers=None, worldMarker=True,
                 b.setMarker(3)
             elif b.norm() == [0, 1]:
                 b.setMarker(4)
-            
+
 
     if layers is not None:
         for i in range(len(layers)):
@@ -510,7 +510,7 @@ def createPolygon(verts, isClosed=False, addNodes=0, interpolate='linear',
 
     addNodes : int [1], iterable
         Constant or (for each) Number of additional nodes to be added equidistant between sensors.
-        
+
     interpolate : str ['linear']
         Interpolation rule for addNodes. 'linear' or 'spline'. TODO 'harmfit'
 
@@ -563,7 +563,7 @@ def createPolygon(verts, isClosed=False, addNodes=0, interpolate='linear',
 
         if isinstance(addNodes, int) and addNodes > 0:
             addNodes = np.full(len(tV)-1, addNodes)
-        
+
         if len(addNodes) != len(tV)-1:
             print(addNodes)
             pg.error('Ammount of addNodes does not match needed length:', len(tV)-1)
@@ -731,7 +731,7 @@ def mergePLC3D(plcs, tol=1e-3):
     Works if:
         * all plcs are free and does not have any contact to each other
         * contact of two facets if the second facet is completely within the first facet
-    
+
     TODO:
         * everything else
 
@@ -1169,7 +1169,7 @@ def exportPLC(poly, fname, **kwargs):
     >>> world3d = pg.createGrid([0, 1], [0, 1], [-1, 0])
     >>> pg.meshtools.exportPLC(world3d, fname)
     >>> os.remove(fname)
-    
+
     See also
     --------
     readPLC
@@ -1571,7 +1571,7 @@ def createFacet(mesh, boundaryMarker=None, verbose=True):
     return poly
 
 
-def createCube(size=[1.0, 1.0, 1.0], pos=None, 
+def createCube(size=[1.0, 1.0, 1.0], pos=None,
                start=None, end=None,
                rot=None, boundaryMarker=0, **kwargs):
     """Create cube PLC as geometrie definition.
