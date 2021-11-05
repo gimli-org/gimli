@@ -409,9 +409,6 @@ class Inversion(object):
 
         self.inv.setTransModel(self.fop.modelTrans)
 
-        if 'cType' in kwargs:
-            self.fop.setRegionProperties('*', cType=kwargs.pop('cType'))
-
         self.dataVals = dataVals
         self.errorVals = errorVals
 
