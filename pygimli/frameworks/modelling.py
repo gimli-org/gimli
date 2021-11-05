@@ -561,7 +561,8 @@ class MeshModelling(Modelling):
         self._regionChanged = False
         super(Modelling, self).setMesh(m, ignoreRegionManager=True)
 
-    # This is bad: a redefinition of the property getter
+    # This might be confusing for users: self.mesh vs. self.mesh()
+    # pyflakes complains about redefinition
     def mesh(self):
         """Return mesh."""
         self._applyRegionProperties()

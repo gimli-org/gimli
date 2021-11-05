@@ -20,7 +20,6 @@ def fit(funct, data, err=None, **kwargs):
 
     TODO
     ----
-        * will not work for harmonic function, maybe add harmonic flag to forward it to harmfit
         * Dictionary support for funct to submit user data..
 
     Parameters
@@ -65,6 +64,9 @@ def fit(funct, data, err=None, **kwargs):
     model = mgr.invert(data, err, **kwargs)
     return model, mgr.fw.response
 
+
+# TG: harmonicFit does not really belong here as it is no curve fit
+# We should rather use a class Decomposition
 
 # Discuss .. rename to Framework or InversionFramework since he only manages
 # the union of Inversion/Modelling and RegionManager(later)
