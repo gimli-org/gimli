@@ -2,6 +2,7 @@
 """Some specialization to the trans functions."""
 
 from .core import pgcore
+import numpy as np
 
 __TransCumulative_addForGC__ = pgcore.RTransCumulative.add
 
@@ -33,3 +34,24 @@ TransLog = pgcore.RTransLog
 TransLogLU = pgcore.RTransLogLU
 TransCotLU = pgcore.RTransCotLU
 TransCumulative = pgcore.RTransCumulative
+
+
+class TransSymLog(pgcore.RTrans):
+    """Transformation using a bilogarithmic scaling."""
+
+    def __init__(self, tol=1e-12):
+        """Forward transformation."""
+        super().__init__()
+        self.tol = tol
+
+    def trans(self, x):
+        """Forward transformation."""
+        return pgcore.log(1 + np.abs(x) / self.tol) * np.sign(x)
+
+    def invTrans(self, y):
+        """Inverse transformation."""
+        return (pgcore.exp(np.abs(y)) - 1.) * self.tol * np.sign(y)
+
+    def deriv(self, x):
+        """Derivative of the transformation."""
+        return 1. / (np.abs(x) / self.tol + 1) / self.tol

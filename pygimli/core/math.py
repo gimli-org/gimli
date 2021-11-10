@@ -27,4 +27,4 @@ def symlog(x, tol=None, linearSpread=0):
     if tol is None:
         tol = np.min(np.abs(x))
 
-    return np.sign(x) * (np.log10(1 + np.abs(x/tol)+linearSpread/2))
+    return np.sign(x) * (np.log10(1 + np.abs(x/tol))+linearSpread/2)
