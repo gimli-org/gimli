@@ -6,6 +6,7 @@
 import numpy as np
 import pygimli as pg
 from pygimli.frameworks import MeshModelling
+from pygimli.viewer.mpl import createColorBar  # , updateColorBar
 from .utils import createGradientModel2D, shotReceiverDistances
 from .plotting import drawVA
 
@@ -123,7 +124,10 @@ class TravelTimeDijkstraModelling(MeshModelling):
         else:
             kwargs.setdefault('label', pg.unit('va'))
             kwargs.setdefault('cMap', pg.utils.cMap('va'))
-            return drawVA(ax, data, usePos=False, **kwargs)
+            gci = drawVA(ax, data, usePos=False, **kwargs)
+            cBar = createColorBar(gci, **kwargs)
+
+            return gci, cBar
 
 
 class FatrayDijkstraModellingInterpolate(TravelTimeDijkstraModelling):

@@ -2,13 +2,14 @@
 # -*- coding: utf-8 -*-
 """Frequency Domain Electromagnetics (FDEM) functions and class."""
 
-import pygimli as pg
-from pygimli.viewer.mpl import show1dmodel, drawModel1D
-
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
-from pygimli.core.matrix import NDMatrix
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+
+import pygimli as pg
+from pygimli.viewer.mpl import show1dmodel, drawModel1D
+# from pygimli.matrix import NDMatrix
 
 
 def cmapDAERO():
@@ -26,23 +27,31 @@ def cmapDAERO():
     return LinearSegmentedColormap.from_list('D-AERO', RGB)
 
 
-def xfplot(ax, DATA, x, freq, everyx=5, orientation='horizontal', aspect=40):
+def xfplot(ax, DATA, x, freq, everyx=5, orientation='horizontal', aspect=30,
+           label=None, cMap="Spectral_r"):
     """Plots a matrix according to x and frequencies."""
     nt = list(range(0, len(x), everyx))
-    im = ax.imshow(DATA.T, interpolation='nearest')
-    ax.set_ylim(plt.ylim()[::-1])
+    im = ax.matshow(DATA.T, interpolation='nearest', cmap=cMap)
+    ax.set_ylim(ax.get_ylim()[::-1])
     ax.set_xticks(nt)
     ax.set_xticklabels(["%g" % xi for xi in x[nt]])
     ax.set_yticks(list(range(0, len(freq) + 1, 2)))
     ax.set_yticklabels(["%g" % freq[i] for i in range(0, len(freq), 2)])
     ax.set_xlabel('x [m]')
     ax.set_ylabel('f [Hz]')
-    plt.colorbar(im, ax=ax, orientation=orientation, aspect=aspect)
+    ax.xaxis.set_label_position('top')
+    divider = make_axes_locatable(ax)
+    cax = divider.append_axes('bottom', size='5%', pad=0.3)
+    plt.colorbar(im, ax=ax, cax=cax, orientation=orientation, aspect=aspect)
+    if label is not None:
+        cax.set_title(label)
+    # plt.colorbar(im, ax=ax, orientation=orientation, aspect=aspect)
     return im
 
 
 class FDEM2dFOPold(pg.core.ModellingBase):
     """Old variant of 2D FOP (to be deleted)."""
+
     def __init__(self, data, nlay=2, verbose=False):
         """ constructor with data and (optionally) number of layers """
         pg.core.ModellingBase.__init__(self, verbose)
@@ -115,8 +124,9 @@ class HEM1dWithElevation(pg.core.ModellingBase):
         """Set up class by frequencies and geometries."""
         pg.core.ModellingBase.__init__(self, verbose)
         self.nlay_ = nlay  # real layers (actually one more!)
-        self.FOP_ = pg.core.FDEM1dModelling(nlay + 1, frequencies, coilspacing, 0.0)
-        self.mesh_ = pg.meshtools.createMesh1D(nlay, 2)  # thicknesses and resistivities
+        self.FOP_ = pg.core.FDEM1dModelling(nlay + 1, frequencies,
+                                            coilspacing, self.height)
+        self.mesh_ = pg.meshtools.createMesh1D(nlay, 2)  # thicknesses & res
         self.mesh_.cell(0).setMarker(2)
         self.setMesh(self.mesh_)
 
@@ -172,7 +182,7 @@ class FDEM():
         self.OP = outphase
         self.ERR = None
 
-        self.height = 1.0
+        self.height = 1.0  # standard height for MaxMin/Promys devices
         self.fop = None  # better apply MethodManger base interface
         self.transData, self.transRes, self.transThk = None, None, None
 
@@ -251,7 +261,7 @@ class FDEM():
                                                                          '')
                     try:
                         result = [float(co) for co in line.split()]
-                    except:
+                    except ValueError:
                         result = line.split()
                     if len(result) == 1:
                         result = result[0]
@@ -357,7 +367,7 @@ class FDEM():
             Number of blocks
         """
         return pg.core.FDEM1dModelling(nlay, self.freq(), self.coilSpacing,
-                                  -self.height)
+                                       -self.height)
 
     def FOPsmooth(self, zvec):
         """Forward modelling operator using fixed layers (smooth inversion)
@@ -386,12 +396,13 @@ class FDEM():
         else:
             n = np.argmin(np.absolute(self.x - xpos))
 
+        ip = self.IP[n, self.activeFreq]
+        op = self.OP[n, self.activeFreq]
+        err = None
         if self.ERR is not None:
-            return (self.IP[n, self.activeFreq], self.OP[n, self.activeFreq],
-                    self.ERR[n, self.activeFreq])
-        else:
-            return (self.IP[n, self.activeFreq], self.OP[n, self.activeFreq],
-                    None)
+            err = self.ERR[n, self.activeFreq]
+
+        return ip, op, err
 
     def error(self, xpos=0):
         """Return error as vector."""
@@ -410,8 +421,8 @@ class FDEM():
         return np.tile(np.maximum(err * 0.7071, minvalue), 2)
 #        return pg.asvector(np.tile(np.maximum(err * 0.7071, minvalue), 2))
 
-    def invBlock(self, xpos=0, nlay=2, noise=1.0,
-                 stmod=30., lam=100., lBound=0., uBound=0., verbose=False):
+    def invBlock(self, xpos=0, nlay=2, noise=1.0, show=True,
+                 stmod=30., lam=1000., lBound=0., uBound=0., verbose=False):
         """Create and return Gimli inversion instance for block inversion.
 
         Parameters
@@ -462,13 +473,13 @@ class FDEM():
             noiseVec = pg.asvector(noise)
 
         # independent EM inversion
-        self.inv = pg.Inversion(data, self.fop, self.transData, verbose)
+        self.inv = pg.core.Inversion(data, self.fop, self.transData, verbose)
         if isinstance(stmod, float):  # real model given
             model = pg.Vector(nlay * 2 - 1, stmod)
             model[0] = 2.
         else:
             if len(stmod) == nlay * 2 - 1:
-                model = pg.asvector(stmod)
+                model = stmod
             else:
                 model = pg.Vector(nlay * 2 - 1, 30.)
 
@@ -477,8 +488,11 @@ class FDEM():
         self.inv.setMarquardtScheme(0.8)
         self.inv.setDeltaPhiAbortPercent(0.5)
         self.inv.setModel(model)
-        self.inv.setReferenceModel(model)
-        return self.inv
+        # self.inv.setReferenceModel(model)
+        self.model1d = self.inv.run()
+        if show:
+            self.plotData(response=self.inv.response())
+        return self.model1d
 
     def plotData(self, xpos=0, response=None, error=None, ax=None,
                  marker='bo-', rmarker='rx-', clf=True, addlabel='', nv=2):
@@ -604,7 +618,7 @@ class FDEM():
         return fig, ax
 
     def plotAllData(self, orientation='horizontal', aspect=1000,
-                    outname=None, show=False, figsize=(11, 6), everyx=1):
+                    outname=None, show=False, figsize=(11, 8), everyx=None):
         """Plot data along a profile as image plots for IP and OP."""
         if self.x is None:
             raise Exception("No measurement position array x given")
@@ -616,16 +630,18 @@ class FDEM():
             nr = 3
 
         if everyx is None:
-            everyx = len(self.x) / 50
+            everyx = len(self.x) // 10
 
         _, ax = plt.subplots(ncols=1, nrows=nr, figsize=figsize)
         xfplot(ax[0], self.IP[:, self.activeFreq], self.x, freq,
-               orientation=orientation, aspect=aspect, everyx=everyx)
-        ax[0].set_title('inphase percent')
+               orientation=orientation, aspect=aspect, everyx=everyx,
+               label='inphase percent')
+        # ax[0].set_title('inphase percent')
 
         xfplot(ax[1], self.OP[:, self.activeFreq], self.x, freq,
-               orientation=orientation, aspect=aspect, everyx=everyx)
-        ax[1].set_title('outphase percent')
+               orientation=orientation, aspect=aspect, everyx=everyx,
+               label='outphase percent')
+        # ax[1].set_title('outphase percent')
 
         if self.ERR is not None:
             xfplot(ax[2], self.ERR[:, self.activeFreq], self.x, freq,
@@ -638,7 +654,7 @@ class FDEM():
         if show:
             plt.show()
 
-        return
+        return ax
 
     def plotModelAndData(self, model, xpos, response,
                          modelL=None, modelU=None):
@@ -700,14 +716,15 @@ class FDEM():
                 error.extend(err)
 
         # generate starting model by repetition
-        model = pg.asvector(np.repeat(modVec, len(self.x)))
-        INV = pg.Inversion(datvec, self.f2d, self.transData)
+        model = np.repeat(modVec, len(self.x))
+        INV = pg.core.Inversion(datvec, self.f2d, self.transData)
         INV.setAbsoluteError(error)
         INV.setLambda(lam)
         INV.setModel(model)
         INV.setReferenceModel(model)
 
         return INV
+
 
 if __name__ == "__main__":
     import argparse  # better get an argparser from method manager

@@ -8,7 +8,7 @@ import pygimli as pg
 
 def createCrossholeData(sensors):
     """
-    Create crosshole scheme assuming two boreholes with an equal number of sensors.
+    Create crosshole scheme assuming two boreholes with equal sensor numbers.
 
     Parameters
     ----------
@@ -18,11 +18,13 @@ def createCrossholeData(sensors):
     Returns
     -------
     scheme : DataContainer
-        Data container with `sensors` predefined sensor indices 's' and 'g' for shot and receiver numbers.
+        Data container with `sensors` predefined sensor indices 's' and 'g'
+        for shot and receiver numbers.
     """
     from itertools import product
     if len(sensors) % 2 > 0:
-        pg.error("createCrossholeData is only defined for an equal number of sensors in two boreholes.")
+        pg.error("createCrossholeData is only defined for an equal number of"
+                 " sensors in two boreholes.")
     n = len(sensors) // 2
     numbers = np.arange(n)
     rays = np.array(list(product(numbers, numbers + n)))
@@ -91,7 +93,8 @@ def createRAData(sensors, shotDistance=1):
     Returns
     -------
     data : DataContainer
-        Data container with predefined sensor indices 's' and 'g' for shot and receiver numbers.
+        Data container with predefined sensor indices 's' and 'g'
+        for shot and receiver numbers.
     """
     data = pg.DataContainer()
     data.registerSensorIndex("s")
@@ -163,8 +166,7 @@ def createGradientModel2D(data, mesh, vTop, vBot):
     z = pg.y(mesh.cellCenters())
     pos = np.column_stack((x, z))
 
-    d = np.array(
-        [np.abs(np.dot(pos[i, :], n) - p[1]) / nLen for i in range(pos.shape[0])]
-    )
+    d = np.array([np.abs(np.dot(pos[i, :], n) - p[1]) / nLen for i
+                  in range(pos.shape[0])])
 
     return 1.0 / np.interp(d, [min(d), max(d)], [vTop, vBot])

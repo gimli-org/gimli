@@ -303,6 +303,8 @@ Index Region::constraintCount() const {
 }
 
 void Region::fillConstraints(RSparseMapMatrix & C, Index startConstraintsID){
+    // __MS(isBackground_ << " " << isSingle_ << " " << constraintType_ <<  " " <<
+    //      startConstraintsID << " " << startParameter_)
     if (isBackground_ ) return;
 
     if (isSingle_ && constraintType_ == 0) return;
@@ -664,7 +666,7 @@ void RegionManager::setMesh(const Mesh & mesh, bool holdRegionInfos){
     //** looking for and create region interfaces
 
     //** looking for and create inter-region interfaces
-    this->findInterRegionInterfaces_();
+    this->findInterRegionInterfaces();
 
     if (singleOnly){
         log(Info, "Applying *:* interregion constraints.");
@@ -759,11 +761,12 @@ void RegionManager::recountParaMarker_(){
     }
 }
 
-void RegionManager::findInterRegionInterfaces_(){
+void RegionManager::findInterRegionInterfaces(){
     // find all boundaries per inter region boundary
     // and store them < <left, right>, [ptr Boundary]>
 
     interRegionInterfaceMap_.clear();
+    interRegionConstraints_.clear();
 
     //** having fun with stl
     std::map< std::pair< SIndex, SIndex >, std::list < Boundary * > > ::iterator iRMapIter;
@@ -785,6 +788,7 @@ void RegionManager::findInterRegionInterfaces_(){
                         std::pair< SIndex, SIndex >,                       std::list < Boundary * > > (std::pair< SIndex, SIndex>(minMarker, maxMarker),
                                         std::list< Boundary* >()));
                 }
+
                 interRegionInterfaceMap_[std::pair< SIndex, SIndex > (minMarker, maxMarker)].push_back(&b);
             }
         }
@@ -941,22 +945,32 @@ void RegionManager::fillConstraints(RSparseMapMatrix & C){
         cID += x.second->constraintCount();
         // __MS(cID)
     }
-
+    
+    __MS(interRegionConstraints_.size())
     if (interRegionConstraints_.size() > 0){
         if (verbose_) std::cout << "Creating inter region constraints." << std::endl;
-        Index i = 0;
+
+        // Index i = 0;
         for (auto & it : this->interRegionConstraints_){
 
             std::pair< SIndex, SIndex > ab = it.first;
+            
             double cWeight = it.second;
-            if (verbose_) {
+            
+            // if (verbose_) {
                 // std::cout << "\t" << i << ": "
                 //                     << ab.first << "< (" << cWeight << ") >"
                 //                     << ab.second << std::endl;
-                i ++;
-            }
+                // i ++;
+            // }
             Region * regA = regionMap_.find(ab.first)->second;
             Region * regB = regionMap_.find(ab.second)->second;
+
+            if (regA->isBackground() || regB->isBackground()){
+                // __MS(ab.first << " " << ab.second << " " << cWeight)
+                // log(Warning, "no inter region constraints for background regions.");
+                continue;
+            }
 
             double mcA = regA->modelControl();
             double mcB = regB->modelControl();
