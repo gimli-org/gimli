@@ -34,6 +34,111 @@ from pygimli.physics import ert
 # For reference we later plot the true complex resistivity model as reference
 
 
+def get_scheme():
+    scheme = ert.createERTData(
+        elecs=np.linspace(start=0, stop=50, num=51),
+        schemeName='dd'
+    )
+    # Not strictly required, but we switch potential electrodes to yield
+    # positive geometric factors. Note that this was also done for the
+    # synthetic data inverted later.
+    m = scheme['m']
+    n = scheme['n']
+    scheme['m'] = n
+    scheme['n'] = m
+    scheme.set('k', [1 for x in range(scheme.size())])
+    return scheme
+
+
+def get_fwd_mesh():
+    """Generate the forward mesh (with embedded anomalies)"""
+    scheme = get_scheme()
+
+    # Mesh generation
+    world = mt.createWorld(
+        start=[-55, 0], end=[105, -80], worldMarker=True)
+
+    conductive_anomaly = mt.createCircle(
+        pos=[10, -7], radius=5, marker=2
+    )
+
+    polarizable_anomaly = mt.createCircle(
+        pos=[40, -7], radius=5, marker=3
+    )
+
+    plc = mt.mergePLC((world, conductive_anomaly, polarizable_anomaly))
+
+    # local refinement of mesh near electrodes
+    for s in scheme.sensors():
+        plc.createNode(s + [0.0, -0.2])
+
+    mesh_coarse = mt.createMesh(plc, quality=33)
+    mesh = mesh_coarse.createH2()
+    return mesh
+
+
+def generate_forward_data():
+    """Generate synthetic forward data that we then invert"""
+    scheme = get_scheme()
+
+    mesh = get_fwd_mesh()
+
+    rhomap = [
+        [1, pg.utils.complex.toComplex(100, 0 / 1000)],
+        # Magnitude: 50 ohm m, Phase: -50 mrad
+        [2, pg.utils.complex.toComplex(50, 0 / 1000)],
+        [3, pg.utils.complex.toComplex(100, -50 / 1000)],
+    ]
+
+    rho = pg.solver.parseArgToArray(rhomap, mesh.cellCount(), mesh)
+    fig, axes = plt.subplots(2, 1, figsize=(16 / 2.54, 16 / 2.54))
+    pg.show(
+        mesh,
+        data=np.log(np.abs(rho)),
+        ax=axes[0],
+        label=r"$log_{10}(|\rho|~[\Omega m])$"
+    )
+    pg.show(mesh, data=np.abs(rho), ax=axes[1], label=r"$|\rho|~[\Omega m]$")
+    pg.show(
+        mesh, data=np.arctan2(np.imag(rho), np.real(rho)) * 1000,
+        ax=axes[1],
+        label=r"$\phi$ [mrad]",
+        cMap='jet_r'
+    )
+    data = ert.simulate(
+        mesh,
+        res=rhomap,
+        scheme=scheme,
+        # noiseAbs=0.0,
+        # noiseLevel=0.0,
+    )
+
+    r_complex = data['rhoa'].array() * np.exp(1j * data['phia'].array())
+
+    # Please note the apparent negative (resistivity) phases!
+    fig, axes = plt.subplots(2, 2, figsize=(16 / 2.54, 16 / 2.54))
+    ert.showERTData(data, vals=data['rhoa'], ax=axes[0, 0])
+
+    # phia is stored in radians, but usually plotted in milliradians
+    ert.showERTData(
+        data, vals=data['phia'] * 1000, label=r'$\phi$ [mrad]', ax=axes[0, 1])
+
+    ert.showERTData(
+        data, vals=np.real(r_complex), ax=axes[1, 0],
+        label=r"$Z'$~[$\Omega$m"
+    )
+    ert.showERTData(
+        data, vals=np.imag(r_complex), ax=axes[1, 1],
+        label=r"$Z''$~[$\Omega$]"
+    )
+    fig.tight_layout()
+    fig.show()
+    return r_complex
+
+
+data_rcomplex = generate_forward_data()
+
+
 def plot_fwd_model(axes):
     """This function plots the forward model used to generate the data
 
@@ -152,14 +257,15 @@ rm.fillConstraints(Wm)
 Wm = pg.utils.sparseMatrix2coo(Wm)
 ###############################################################################
 # read-in data and determine error parameters
-filename = pg.getExampleFile(
-    'CR/synthetic_modeling/data_rre_rim.dat', load=False, verbose=True)
-data_rre_rim = np.loadtxt(filename)
-N = int(data_rre_rim.size / 2)
-d_rcomplex = data_rre_rim[:N] + 1j * data_rre_rim[N:]
+# filename = pg.getExampleFile(
+#     'CR/synthetic_modeling/data_rre_rim.dat', load=False, verbose=True)
+# data_rre_rim = np.loadtxt(filename)
+# N = int(data_rre_rim.size / 2)
+# d_rcomplex = data_rre_rim[:N] + 1j * data_rre_rim[N:]
 
-dmag = np.abs(d_rcomplex)
-dpha = np.arctan2(d_rcomplex.imag, d_rcomplex.real) * 1000
+N = data_rcomplex.shape[0]
+dmag = np.abs(data_rcomplex)
+dpha = np.arctan2(data_rcomplex.imag, data_rcomplex.real) * 1000
 
 fig, axes = plt.subplots(1, 2, figsize=(20 / 2.54, 10 / 2.54))
 k = np.array(ert.createGeometricFactors(scheme))
@@ -169,7 +275,7 @@ ert.showERTData(scheme, vals=dpha, ax=axes[1], label=r'$\phi_a~[mrad]$')
 
 # real part: log-magnitude
 # imaginary part: phase [rad]
-d_rlog = np.log(d_rcomplex)
+d_rlog = np.log(data_rcomplex)
 
 # add some noise
 np.random.seed(42)
@@ -201,30 +307,39 @@ WdTwd = Wd.conj().dot(Wd)
 # d = log(V)
 # m = log(sigma)
 
-
+# %%
 def plot_inv_pars(filename, d, response, Wd, iteration='start'):
     """Plot error-weighted residuals"""
-    fig, axes = plt.subplots(1, 2, figsize=(20 / 2.54, 10 / 2.54))
+    if 0:
+        fig, axes = plt.subplots(1, 1, figsize=(20 / 2.54, 10 / 2.54))
 
-    psi = Wd.dot(d - response)
+        psi = np.abs(Wd.dot(d - response))
 
-    ert.showERTData(
-        scheme, vals=psi.real, ax=axes[0],
-        label=r"$(d' - f') / \epsilon$"
-    )
-    ert.showERTData(
-        scheme, vals=psi.imag, ax=axes[1],
-        label=r"$(d'' - f'') / \epsilon$"
-    )
+        ert.showERTData(
+            scheme, vals=psi, ax=axes,
+            label=r"$(d' - f') / \epsilon$"
+        )
+    else:
+        fig, axes = plt.subplots(1, 2, figsize=(20 / 2.54, 10 / 2.54))
+        psi = Wd.dot(d - response)
+        ert.showERTData(
+            scheme, vals=psi.real, ax=axes[0],
+            label=r"$(d' - f') / \epsilon$"
+        )
+        ert.showERTData(
+            scheme, vals=psi.imag, ax=axes[1],
+            label=r"$(d'' - f'') / \epsilon$"
+        )
 
-    fig.suptitle(
-        'Error weighted residuals of iteration {}'.format(iteration), y=1.00)
+        fig.suptitle(
+            'Error weighted residuals of iteration {}'.format(iteration), y=1.00)
 
     fig.tight_layout()
-
+# %%
 
 m_old = np.log(start_model)
-d = np.log(pg.utils.toComplex(data_rre_rim))
+# d = np.log(pg.utils.toComplex(data_rre_rim))
+d = np.log(data_rcomplex)
 response = np.log(pg.utils.toComplex(f_0))
 # tranform to log-log sensitivities
 J = J0 / np.exp(response[:, np.newaxis]) * np.exp(m_old)[np.newaxis, :]
@@ -238,10 +353,14 @@ for i in range(1):
     print('Iteration {}'.format(i + 1))
 
     term1 = J.conj().T.dot(WdTwd).dot(J) + lam * Wm.T.dot(Wm)
-    term1_inverse = np.linalg.inv(term1)
+    # term1_inverse = np.linalg.inv(term1)
     term2 = J.conj().T.dot(WdTwd).dot(d - response) - lam * Wm.T.dot(Wm).dot(
         m_old)
-    model_update = term1_inverse.dot(term2)
+    # model_update = term1_inverse.dot(term2)
+    model_update = np.linalg.solve(
+        term1,
+        term2
+    )
 
     print('Model Update')
     print(model_update)
@@ -252,6 +371,7 @@ for i in range(1):
 ###############################################################################
 # Now plot the residuals for the first iteration
 m_old = m1
+
 # Response for Starting model
 m_re_im = pg.utils.squeezeComplex(np.exp(m_old))
 response_re_im = np.array(fop.response(m_re_im))
