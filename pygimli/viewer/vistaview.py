@@ -11,6 +11,7 @@ pyvista = pg.optImport('pyvista', requiredFor="properly visualize 3D data")
 
 if pyvista is None:
     view3Dcallback = 'showMesh3DFallback'
+    pg.rc['view3D'] = 'fallback'
 else:
     view3Dcallback = 'showMesh3DVista'
     vers_users = pyvista.__version__
@@ -22,6 +23,7 @@ else:
             vers_needs))
     pg.debug("Using pyvista: {}".format(vers_users))
     from pygimli.viewer.pv import drawModel
+
 
 # True for Jupyter notebooks and sphinx-builds
 _backend = plt.get_backend().lower()
@@ -39,7 +41,10 @@ def showMesh3D(mesh, data, **kwargs):
     """
     Calling the defined function to show the 3D object.
     """
-    if pg.rc['view3D'] == 'fallback':
+    if pg.rc['view3D'] == 'fallback' or pg.rc['view3D'] == None:
+
+        kwargs.pop('gui', None)
+        kwargs['alpha'] = kwargs.pop('opacity', None)
         return showMesh3DFallback(mesh, data, **kwargs)
 
     return globals()[view3Dcallback](mesh, data, **kwargs)
@@ -55,8 +60,10 @@ def showMesh3DFallback(mesh, data, **kwargs):
 
     if ax is None or not isinstance(ax, Axes3D):
         fig = plt.figure()
-        ax = fig.gca(projection='3d', proj_type='persp')
-        #ax = fig.gca(projection='3d', proj_type='ortho')
+        ax = fig.add_subplot(111, projection='3d', 
+                             proj_type='persp'
+                             #proj_type='ortho'
+                             )
 
     if mesh.boundaryCount() > 0:
         x, y, tri, z, dataIndex = pg.viewer.mpl.createTriangles(mesh)
