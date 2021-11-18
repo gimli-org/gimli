@@ -258,7 +258,7 @@ public:
     /*! Return true if token data exist and at least one value is != 0.0.
      Return false if the data contains ONLY zero values. */
     inline bool haveData(const std::string & token) const {
-        if (exists(token) && token != "valid") 
+        if (exists(token) && dataMap_.find(token)->second.size() > 0) 
             return !zero(dataMap_.find(token)->second);
         return false;
     }
