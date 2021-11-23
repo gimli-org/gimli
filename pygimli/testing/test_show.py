@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import pygimli as pg
 import pygimli.meshtools as mt
 
+
 def testShowVariants():
     # Create geometry definition for the modelling domain
     world = mt.createWorld(start=[-10, 0], end=[10, -16],
@@ -194,7 +195,8 @@ def testShowPV():
     pg.rc['view3D'] = 'pyvista'
     #pg.show(m1, notebook=True)
 
-    pg.show(m1, gui=False)
+    pg.show(m1)
+
 
 def testCoverage():
     grid = pg.createGrid(10,10)
@@ -202,9 +204,10 @@ def testCoverage():
     cov[-9:] = 0 # remove first row
     data = pg.Vector(grid.cellCount(), 1.0)
     pg.show(grid, data, coverage=cov)
-    
+
+
 if __name__ == '__main__':
-    if len(sys.argv) > 0:
+    if len(sys.argv) > 1:
         locals()[sys.argv[1]]()
     else:
         testShowVariants()

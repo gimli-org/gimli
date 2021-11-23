@@ -13,6 +13,7 @@ def __DataContainer_str(self):
         str([d for d in self.dataMap().keys() if self.isSensorIndex(d) or 
              self.haveData(d)])
 DataContainer.__repr__ =__DataContainer_str
+DataContainer.__str__ =__DataContainer_str
 
 
 def __DataContainer_setSensors(self, sensors):

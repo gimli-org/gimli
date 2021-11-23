@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 # encoding: utf-8
 """
-Refraction Manager
-------------------
+2D Refraction modeling and inversion
+------------------------------------
 
-This example shows how to use the Refraction manager to generate the response
+This example shows how to use the TravelTime manager to generate the response
 of a three-layered sloping model and to invert the synthetic noisified data."""
 
 # sphinx_gallery_thumbnail_number = 2
@@ -13,11 +13,12 @@ import numpy as np
 import pygimli as pg
 import pygimli.meshtools as mt
 from pygimli.physics import TravelTimeManager
+# sphinx_gallery_thumbnail_number = 2
 
 
 ###############################################################################
 # We start by creating a three-layered slope (The model is taken from the BSc
-# thesis of Constanze Reinken (University of Bonn).
+# thesis of Constanze Reinken conducted at the University of Bonn).
 layer1 = mt.createPolygon([[0.0, 137], [117.5, 164], [117.5, 162], [0.0, 135]],
                           isClosed=True, marker=1, area=1)
 layer2 = mt.createPolygon([[0.0, 126], [0.0, 135], [117.5, 162], [117.5, 153]],
