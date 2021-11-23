@@ -273,6 +273,7 @@ class SIPSpectrum(object):
         if sort:
             self.sortData()
 
+        self.ampOrg = None
         self.phiOrg = None
         self.phiCC = None  # better make a struct of m, amp, phi (tau)
         self.ampCC = None
