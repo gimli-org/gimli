@@ -85,9 +85,10 @@ def uAnalytical(p, sourcePos, k, sigma=1):
 
 ###############################################################################
 # We assume the so-called mixed boundary conditions (Dey & Morrison, 1979).
+
 # .. math::
 #
-#    \sigma k \frac{{\bf r}\cdot {\bf n}}{{|r|}} \frac{K_1(|r-r_s|k)}{K_0(|r-r_s|k)}
+#     \sigma k \frac{{\bf r}\cdot {\bf n}}{{|r|}} \frac{K_1(|r-r_s|k)}{K_0(|r-r_s|k)}
 
 def mixedBC(boundary, userData):
     """Mixed boundary conditions.
