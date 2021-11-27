@@ -20,11 +20,7 @@
           <div class="carousel-inner">
             <!-- Carousel items -->
             {%- for paper in showcase %}
-            {%- if loop.index == 1 %}
-            <div class="carousel-item active">
-            {%- else %}
             <div class="carousel-item">
-              {%- endif %}
                 <div class="card-block">
                   <div class="row">
                     <div class="col-8">
@@ -53,7 +49,7 @@
                       </a>
                       <br>
                       <br>
-                      <a href="{{ pathto('publist') }}")
+                      <a href="{{ pathto('publist') }}">
                       <button class="btn btn-outline-secondary btn-sm">Complete list of pyGIMLi-based publications</button>
                       </a>
                       </div>
@@ -68,6 +64,9 @@
             ! function($) {
               $(function() {
                 // carousel demo
+                const items = document.querySelectorAll('#paper-carousel .carousel-item');
+                const randomItemNumber = Math.floor(Math.random() * items.length); //random number in range of items
+                items[randomItemNumber].classList.add('active');
                 $('#paper-carousel').carousel({
                   interval: 4500 // 4.5 sec
                 })
