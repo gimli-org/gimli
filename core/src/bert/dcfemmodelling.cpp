@@ -881,6 +881,14 @@ void DCMultiElectrodeModelling::searchElectrodes_(){
 
                 if (ePos[i].distance((*it)->pos()) < std::sqrt((*it)->domainSize()) * 2.0 ||
                     (uint)(*it)->id() == i) {
+					bool test_distance;
+					test_distance = (ePos[i].distance((*it)->pos()) < std::sqrt((*it)->domainSize()) * 2.0);
+					std::cout << "Assigning CEM electrode " << (*it)->id()
+						<< " to electrode " << i
+						<< " cause: "
+						<< " distance to CEM center: " << test_distance
+						 << " id match: " << ((uint)(*it)->id() == i)
+					   	<< std::endl;
                     electrodes_.push_back((*it));
                     electrodes_.back()->setId(i);
                     electrodes_.back()->setPos(ePos[i]);
