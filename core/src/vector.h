@@ -1855,8 +1855,13 @@ Vector < std::complex< ValueType > > conj(const Vector < std::complex< ValueType
     return v;
 }
 
+/* These function return the real and imaginary parts, correspondingly, of the
+ * provided vector. In case a real-values vector is returned, either the vector
+ * itself (real) or a 0-vector are returned */
 inline RVector TmpToRealHACK(const RVector & v){ return v; }
 inline RVector TmpToRealHACK(const CVector & v){ __M return real(v); }
+inline RVector TmpToImagHACK(const RVector & v){ return v * 0; }
+inline RVector TmpToImagHACK(const CVector & v){ __M return imag(v); }
 
 #define DEFINE_SCALAR_COMPLEX_BINARY_OPERATOR(OP) \
 template <class T, class U > \
