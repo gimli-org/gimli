@@ -1176,8 +1176,8 @@ template <> DLLEXPORT void SparseMapMatrix< double, Index >::copy_(const SparseM
 
 template< typename ValueType, typename Index >
 void SparseMapMatrix< ValueType, Index >::copy_(const SparseMatrix< double > & S){THROW_TO_IMPL}
-template< typename ValueType, typename Index >
-void SparseMapMatrix< ValueType, Index >::copy_(const SparseMatrix< Complex > & S){THROW_TO_IMPL}
+/* template< typename ValueType, typename Index > */
+/* void SparseMapMatrix< ValueType, Index >::copy_(const SparseMatrix< Complex > & S){THROW_TO_IMPL} */
 
 
 

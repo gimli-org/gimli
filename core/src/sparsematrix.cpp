@@ -116,6 +116,25 @@ void SparseMapMatrix< double, Index >::copy_(const SparseMatrix< double > & S){
         }
     }
 }
+
+template<>
+void SparseMapMatrix< Complex, Index >::copy_(const SparseMatrix< Complex > & S){
+    clear();
+    cols_ = S.cols();
+    rows_ = S.rows();
+    stype_ = S.stype();
+
+    // std::vector < int > colPtr(S.vecColPtr());
+    // std::vector < int > rowIdx(S.vecRowIdx());
+    // Vector < ValueType > vals(S.vecVals());
+
+    for (Index i = 0; i < S.rows(); i++){
+        for (int j = S.vecColPtr()[i]; j < S.vecColPtr()[i + 1]; j ++){
+            (*this)[i][S.vecRowIdx()[j]] = S.vecVals()[j];
+        }
+    }
+}
+
 template <> void SparseMapMatrix< double, Index >::
     add(const ElementMatrix < double > & A, double scale){
     A.integrate();
@@ -236,12 +255,27 @@ template <> void SparseMapMatrix< double, Index >::
 template <> void SparseMapMatrix< Complex, Index >::
     addToCol(Index id, const ElementMatrix < double > & A, Complex scale, bool isDiag){
         A.integrate();
-THROW_TO_IMPL
+    for (Index i = 0, imax = A.size(); i < imax; i++){
+		if (isDiag){
+			(*this)[A.idx(i)][id] += A.getVal(i, i);
+		} else {
+			(*this)[A.idx(i)][id] += A.getVal(0, i);
+		}
+    }
+	// THROW_TO_IMPL
 }
+
 template <> void SparseMapMatrix< Complex, Index >::
     addToRow(Index id, const ElementMatrix < double > & A, Complex scale, bool isDiag){
         A.integrate();
-THROW_TO_IMPL
+    for (Index i = 0, imax = A.size(); i < imax; i++){
+        if (isDiag){
+        	(*this)[id][A.idx(i)] += A.getVal(i, i);
+        } else {
+        	(*this)[id][A.idx(i)] += A.getVal(0, i);
+        }
+    }
+	//THROW_TO_IMPL
 }
 
 template <> void SparseMatrix< double >::add(const ElementMatrix< double > & A,
