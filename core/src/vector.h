@@ -1371,12 +1371,14 @@ bool operator == (const Vector< ValueType > & v1, const __VectorExpr< ValueType,
 /*! Return true if all values lower than TOLERANCE. */
 template < class ValueType >
 bool zero(const Vector< ValueType > & v){
-    return (max(abs(v)) < TOLERANCE);
+    if (v.size() > 0) return (max(abs(v)) < TOLERANCE);
+    return false;
 }
 
 /*! Return true if at least one value is greater than TOLERANCE. */
 template < class ValueType >
 bool nonZero(const Vector< ValueType > & v){
+    if (v.size() == 0) return false;
     return !zero(v);
 }
 

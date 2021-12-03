@@ -228,11 +228,17 @@ def prettyFloat(value, roundValue=False):
     else:
         string = str("%.0f" % round(value, 2))
 
+    # pg._y(string)
+    # print(string.endswith("0") and string[-2] == '.')
     if string.endswith(".0"):
+        # pg._r(string.replace(".0", ""))
         return string.replace(".0", "")
     elif string.endswith(".00"):
         return string.replace(".00", "")
-    elif '.' in string and string.endswith(".0"):
+    elif '.' in string and not 'e' in string and string.endswith("00"):
+        return string[0:len(string)-2]
+    elif '.' in string and not 'e' in string and string.endswith("0"):
+        # pg._r(string[0:len(string)-1])
         return string[0:len(string)-1]
     else:
         return string

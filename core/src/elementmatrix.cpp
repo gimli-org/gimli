@@ -2267,6 +2267,25 @@ void mult(const ElementMatrix < double > & A, const RVector & b,
 
     Index nRules(C.w()->size());
 
+    // __MS(A.rows(), A.cols(), b.size())
+    if (b.size() == A.cols()){
+        
+        //** const scalar scale of matrix components
+        
+        for (Index r = 0; r < nRules; r++){
+            SmallMatrix & iC = (*C.pMatX())[r];
+            // print("iC:", iC);
+            for (Index k = 0; k < iC.rows(); k ++){
+                // print('r', r, 'k', k, mr(k), b[r]);
+                iC.row(k) *= b[k];
+            }
+        }    
+        C.integrate();
+        return;
+    }
+
+    //** scalar per quadrature
+
     ASSERT_VEC_SIZE(b, nRules)
     ASSERT_VEC_SIZE(C.matX(), nRules)
 
@@ -2307,6 +2326,13 @@ void mult(const ElementMatrix < double > & A, const PosVector & f,
 void mult(const ElementMatrix < double > & A, const RMatrix &  b,
           ElementMatrix < double > & C){
 
+    if (b.rows()*b.cols() == A.cols()){
+        //** const scalar scale of each matrix components
+        THROW_TO_IMPL
+        //return mult(A, b.flatten(), C);
+    }
+
+
     // result is no bilinear form, so keep it a rowMatrix
 
     C.copyFrom(A, false);
@@ -2315,6 +2341,7 @@ void mult(const ElementMatrix < double > & A, const RMatrix &  b,
     const RVector &w = *A.w();
 
     Index nRules(x.size());
+
 
     if (b.rows() == A.matX().size() && b[0].size() == A.matX()[0].cols()){
         //** RVector per quadrature 

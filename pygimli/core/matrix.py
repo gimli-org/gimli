@@ -69,15 +69,25 @@ def __ElementMatrix_str(self):
     """Show entries of an ElementMatrix."""
     import pygimli as pg
     self.integrate()
+
     if self.mat_RM().cols() == 0 and self.mat_RM().rows() == 0:
         return 'Empty ElementMatrix\n'
 
     maxRowID = int(np.log10(max(self.rowIDs())))+2
 
-    if self.multR is not None and (pg.isScalar(self.multR) and self.multR != 1.0) or pg.isPos(self.multR):
-        s = '\n ' + f' multR = {self.multR} (applied)' + '\n ' + ' ' * maxRowID
+    if self.multR is not None:
+        if (pg.isScalar(self.multR) and self.multR != 1.0) or \
+            pg.isPos(self.multR) or \
+            pg.isArray(self.multR) or\
+            pg.isMatrix(self.multR):
+            s = '\n ' + f' multR = {self.multR} (applied)' + '\n ' + ' ' * maxRowID
+        elif pg.isScalar(self.multR, 1.0):
+            s = '\n ' + ' ' * maxRowID    
+        else:
+            s = '\n ' + f' multR = {self.multR} (unknown how to apply)' + '\n ' + ' ' * maxRowID
     else:
         s = '\n ' + ' ' * maxRowID
+
     # print(self.mat())
     # print(self.colIDs())
     # print(self.rowIDs())
@@ -85,7 +95,7 @@ def __ElementMatrix_str(self):
         s += str(self.colIDs()[i]).rjust(9)
     s += '\n'
 
-    s += '  ' + '-'*self.mat_RM().cols()*(9 + maxRowID) + '-\n'
+    s += '  ' + '-' * self.mat_RM().cols()*(9 + maxRowID) + '-\n'
 
     for i in range(self.mat_RM().rows()):
         s += str(self.rowIDs()[i]).rjust(maxRowID) + " :"
@@ -100,6 +110,23 @@ def __ElementMatrix_str(self):
                 print(self.row_RM)
                 print(self.multR)
                 pg.critical('invalid element multR.')
+        elif pg.isArray(self.multR, self.mat_RM().cols()):
+            for v in self.row_RM(i)*self.multR:
+                s += pg.pf(v).rjust(9)
+
+        elif pg.isMatrix(self.multR):
+            if pg.isArray(self.multR.flatten(), self.mat_RM().cols()):
+                for v in self.row_RM(i)*self.multR.flatten():
+                    s += pg.pf(v).rjust(9)
+            else:
+                print(self.row_RM)
+                print(self.multR)
+                pg.critical('invalid matrix element multR.')
+
+        elif self.multR is not None:
+            print(self.mat_RM())
+            print(self.multR)
+            pg.critical('invalid element multR.')
         else:
             for v in self.row_RM(i):
                 s += pg.pf(v).rjust(9)

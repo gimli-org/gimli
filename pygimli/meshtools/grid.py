@@ -20,19 +20,28 @@ def createGrid(x=None, y=None, z=None, **kwargs):
 
     Parameters
     ----------
-    kwargs:
-        x: array
-            x-coordinates for all Nodes (1D, 2D, 3D)
-        y: array
-            y-coordinates for all Nodes (2D, 3D)
-        z: array
-            z-coordinates for all Nodes (3D)
-        marker: int = 0
-            Marker for resulting cells.
-        worldMarkers: bool = False
-            Boundaries are enumerated with world marker, i.e., Top = -1
-            All remaining = -2.
-            Default marker are left=1, right=2, bottom=3, top=4, front=5, back=6
+    x: iterable of float 
+        x-coordinates for all Nodes (1D, 2D, 3D)
+    y: iterable of float 
+        y-coordinates for all Nodes (2D, 3D)
+    z: iterable of float 
+        z-coordinates for all Nodes (3D)
+
+    Keyword Args
+    ------------
+    marker: int = 0
+        Marker for resulting cells.
+
+    worldMarkers: bool = False
+        Boundaries are enumerated with world marker, i.e., Top = -1
+        All remaining = -2.
+        Default marker are left=1, right=2, bottom=3, top=4, front=5, back=6
+    
+    degree: float 
+        Foward word x to :py:mod:`pygimli.meshtools.createGridPieShaped`
+    
+    phi: iterable of float 
+        Foward with x to :py:mod:`pygimli.meshtools.createGridPieShaped`
 
     Returns
     -------
@@ -60,6 +69,10 @@ def createGrid(x=None, y=None, z=None, **kwargs):
     if 'degree' in kwargs:
         return createGridPieShaped(x, **kwargs)
 
+    if 'phi' in kwargs:
+        return createGridPieShaped(x, **kwargs)
+        
+
     if x is not None:
         if isinstance(x, int):
             x = list(range(x))
@@ -79,27 +92,30 @@ def createGrid(x=None, y=None, z=None, **kwargs):
     return pg.core.pgcore.createGrid(**kwargs)
 
 
-def createGridPieShaped(x, degree=10.0, h=2, marker=0):
-    """Create a 2D pie shaped grid (segment from annulus or cirlce).
+def createGridPieShaped(r, degree=10.0, h=2, marker=0, phi=None):
+    """Create a 2D pie shaped grid in polar coordinates (segment from annulus or cirlce).
 
     TODO:
     ----
-    * degree: > 90 .. 360
+    * degree: > 90 .. 360 (use with phi)
 
     Arguments
     ---------
-    x: array
-        x-coordinates for all Nodes (2D). If you need it 3D, you can apply :py:mod:`pygimli.meshtools.extrudeMesh` on it.
+    r: iterable of float 
+        r-coordinates for all Nodes (2D). If you need it 3D, you can apply :py:mod:`pygimli.meshtools.extrudeMesh` on it.
 
     degree: float [None]
         Create a pie shaped grid for a value between 0 and 90.
-        Creates an optional inner boundary (marker=2) for a annulus with x[0] > 0. Outer boundary marker is 1. Optional h refinement. Center node is the first for circle segment.
+        Creates an optional inner boundary (marker=2) for a annulus with r[0] > 0. Outer boundary marker is 1. Optional h refinement. Center node is the first for circle segment.
 
     h: int [2]
         H-Refinement for degree option.
 
     marker: int = 0
         Marker for resulting cells.
+
+    phi: iterable of float
+        phi coordinates in radiant for all Nodes (2D) per x
 
     Returns
     -------
@@ -108,61 +124,100 @@ def createGridPieShaped(x, degree=10.0, h=2, marker=0):
     Examples
     --------
     >>> import pygimli as pg
-    >>> mesh = pg.meshtools.createGridPieShaped(x=[0, 1, 3], degree=45, h=3)
+    >>> mesh = pg.meshtools.createGridPieShaped(r=[0, 1, 3], degree=45, h=3)
     >>> print(mesh)
     Mesh: Nodes: 117 Cells: 128 Boundaries: 244
     >>> _ = pg.show(mesh)
-    >>> mesh = pg.meshtools.createGridPieShaped(x=[1, 2, 3], degree=45, h=3)
+    >>> mesh = pg.meshtools.createGridPieShaped(r=[1, 2, 3], degree=45, h=3)
     >>> print(mesh)
     Mesh: Nodes: 153 Cells: 128 Boundaries: 280
     >>> _ = pg.show(mesh)
     """
     mesh = pg.Mesh(dim=2)
 
-    for i in range(0, len(x)):
-        mesh.createNodeWithCheck([x[i], 0.0])
+    if phi is None:
+        x = r
 
-        mesh.createNodeWithCheck([x[i]*np.cos(degree*np.pi/180),
-                                  x[i]*np.sin(degree*np.pi/180)])
+        for i in range(0, len(x)):
+            mesh.createNodeWithCheck([x[i], 0.0])
 
-    if abs(x[0]) < 1e-6:
-        mesh.createCell([0, 1, 2])
-        for i in range(0, (len(x)-2)*2-1, 2):
-            c = mesh.createCell([i+1, i+3, i+4, i+2])
+            mesh.createNodeWithCheck([x[i]*np.cos(degree*np.pi/180),
+                                    x[i]*np.sin(degree*np.pi/180)])
+
+        if abs(x[0]) < 1e-6:
+            mesh.createCell([0, 1, 2])
+            for i in range(0, (len(x)-2)*2-1, 2):
+                c = mesh.createCell([i+1, i+3, i+4, i+2])
+        else:
+            for i in range(0, len(x)*2-2, 2):
+                c = mesh.createCell([i, i+2, i+3, i+1])
+            mesh.createBoundary([0, 1], marker=1)
+
+        mesh.createBoundary([mesh.nodeCount()-2, mesh.nodeCount()-1], marker=2)
+
+        for i in range(h):
+            mesh = mesh.createH2()
+        mesh.createNeighbourInfos()
+
+        for b in mesh.boundaries():
+            if b.outside() and b.marker() == 0:
+                if b.norm()[1] == 0.0:
+                    b.setMarker(4) # bottom
+                else:
+                    b.setMarker(3)
+
+        meshR = pg.Mesh(mesh)
+
+        ## move all nodes on the inner boundary to rw
+        for b in mesh.boundaries():
+            line = pg.Line(b.node(0).pos(), b.node(1).pos())
+
+            rSoll = line.intersect([0.0, 0.0], [1.0, 0.0])[0]
+            if rSoll > 1e-4:
+                for n in b.nodes():
+                    scale = rSoll/n.pos().abs()
+                    if scale > 1:
+                        meshR.node(n.id()).setPos(pg.Line([0.0, 0.0], n.pos()).at(scale))
+
     else:
-        for i in range(0, len(x)*2-2, 2):
-            c = mesh.createCell([i, i+2, i+3, i+1])
-        mesh.createBoundary([0, 1], marker=1)
+        n0 = mesh.createNodeWithCheck([0.0, 0.0])
 
-    mesh.createBoundary([mesh.nodeCount()-2, mesh.nodeCount()-1], marker=2)
+        ni = []
 
-    for i in range(h):
-        mesh = mesh.createH2()
-    mesh.createNeighbourInfos()
+        for i, ri in enumerate(r):
+            if ri > 0:
+                nj = []
 
-    for b in mesh.boundaries():
-        if b.outside() and b.marker() == 0:
-            if b.norm()[1] == 0.0:
-                b.setMarker(4) # bottom
-            else:
-                b.setMarker(3)
+                for phii in phi:
+                    xi = ri*np.cos(phii)
+                    yi = ri*np.sin(phii)
+                    nj.append(mesh.createNodeWithCheck([xi, yi]))
 
-    meshR = pg.Mesh(mesh)
+                ni.append(nj)
+                if len(ni) == 1:
+                    for j, n in enumerate(nj[0:-1]):
 
-    ## move all nodes on the inner boundary to rw
-    for b in mesh.boundaries():
-        line = pg.Line(b.node(0).pos(), b.node(1).pos())
+                        mesh.createCell([0, n.id(), nj[(j+1)%(len(nj))].id()])
+                else:
+                    nj = ni[-1]
+                    for j, n in enumerate(nj[0:-1]):
+                        mesh.createCell([n.id(), 
+                                         nj[(j+1)%(len(nj))].id(),
+                                         ni[-2][(j+1)%(len(nj))].id(),
+                                         ni[-2][j].id()])
 
-        rSoll = line.intersect([0.0, 0.0], [1.0, 0.0])[0]
-        if rSoll > 1e-4:
-            for n in b.nodes():
-                scale = rSoll/n.pos().abs()
-                if scale > 1:
-                    meshR.node(n.id()).setPos(pg.Line([0.0, 0.0], n.pos()).at(scale))
+
+        mesh.createNeighbourInfos()
+
+        for b in mesh.boundaries():
+            if b.outside() and b.marker() == 0:
+                b.setMarker(1)
+
+        meshR = pg.Mesh(mesh)
+
 
     if marker != 0:
-        for c in meshR.cells():
-            c.setMarker(marker)
+        meshR.setCellMarkers(np.full(meshR.cellCount(), marker))
 
     return meshR
 
