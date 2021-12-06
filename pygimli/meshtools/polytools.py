@@ -174,6 +174,9 @@ def createRectangle(start=None, end=None, pos=None, size=None, **kwargs):
 
     _polyCreateDefaultEdges(poly, **kwargs)
 
+    sPos = poly.bb()[0]
+    ePos = poly.bb()[1]
+
     kwargs['markerPosition'] = kwargs.pop('markerPosition',
                                           sPos + (ePos - sPos) * 0.2)
 
