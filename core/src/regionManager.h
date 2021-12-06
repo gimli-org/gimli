@@ -389,11 +389,12 @@ public:
         return this->interfaceConstraints_; 
     }
 
+    void findInterRegionInterfaces();
+    
 protected:
     void copy_(const RegionManager & rm);
 
     /*! Fill \ref interRegionInterfaceMap_ */
-    void findInterRegionInterfaces_();
 
     /*!
      * Internal method to create a region. The method is called from \ref setMesh()

@@ -20,7 +20,6 @@ def fit(funct, data, err=None, **kwargs):
 
     TODO
     ----
-        * will not work for harmonic function, maybe add harmonic flag to forward it to harmfit
         * Dictionary support for funct to submit user data..
 
     Parameters
@@ -65,6 +64,9 @@ def fit(funct, data, err=None, **kwargs):
     model = mgr.invert(data, err, **kwargs)
     return model, mgr.fw.response
 
+
+# TG: harmonicFit does not really belong here as it is no curve fit
+# We should rather use a class Decomposition
 
 # Discuss .. rename to Framework or InversionFramework since he only manages
 # the union of Inversion/Modelling and RegionManager(later)
@@ -354,10 +356,10 @@ class MethodManager(object):
 
         try:
             if min(vals) <= 0:
-                pg.critical("All error values need to be larger then 0."
-                            " either give and err argument or fill dataContainer "
+                pg.critical("All error values need to be larger then 0. Either"
+                            " give and err argument or fill dataContainer "
                             " with a valid 'err' ", min(vals), max(vals))
-        except Exception as e:
+        except ValueError:
             pg.critical("Can't estimate data error")
 
         return vals
@@ -481,6 +483,7 @@ class MethodManager(object):
         """
         if model is None:
             model = self.model
+
         return self.showModel(model, ax=ax, **kwargs)
 
     def showFit(self, ax=None, **kwargs):
@@ -494,8 +497,9 @@ class MethodManager(object):
                                  ax=ax, **kwargs)
 
         if not kwargs.pop('hideFittingAnnotation', False):
-            ax.text(0.99, 0.005, r"rrms: {0}, $\chi^2$: {1}".format(
-                pf(self.fw.inv.relrms()), pf(self.fw.inv.chi2())),
+            fittext = r"rrms: {0}, $\chi^2$: {1}".format(
+                pf(self.fw.inv.relrms()), pf(self.fw.inv.chi2()))
+            ax.text(0.99, 0.005, fittext,
                     transform=ax.transAxes,
                     horizontalalignment='right',
                     verticalalignment='bottom',
@@ -564,6 +568,7 @@ class MethodManager(object):
 
 class ParameterInversionManager(MethodManager):
     """Framework to invert unconstrained parameters."""
+
     def __init__(self, funct=None, fop=None, **kwargs):
         """Constructor."""
         if fop is not None:
@@ -573,7 +578,8 @@ class ParameterInversionManager(MethodManager):
         elif funct is not None:
             fop = pg.frameworks.ParameterModelling(funct)
         else:
-            pg.critical('you should either give a valid fop or a function so I can create the fop for you')
+            pg.critical("you should either give a valid fop or a function so "
+                        "I can create the fop for you")
 
         super(ParameterInversionManager, self).__init__(fop, **kwargs)
 
@@ -616,6 +622,7 @@ class ParameterInversionManager(MethodManager):
 
 class MethodManager1d(MethodManager):
     """Method Manager base class for managers on a 1d discretization."""
+
     def __init__(self, fop=None, **kwargs):
         """Constructor."""
         super(MethodManager1d, self).__init__(fop, **kwargs)
@@ -638,7 +645,7 @@ class MeshMethodManager(MethodManager):
         Attribute
         ---------
         mesh: pg.Mesh
-            Copy of the main Mesh. Will be distributet to inversion and the fop.
+            Copy of the main mesh to be distributed to inversion and the fop.
             You can overwrite it with invert(mesh=mesh).
         """
         super(MeshMethodManager, self).__init__(**kwargs)
@@ -705,15 +712,15 @@ class MeshMethodManager(MethodManager):
 
         self.applyData(data)
 
-        ## no mesh given and there is no mesh known .. we create them
+        # no mesh given and there is no mesh known .. we create them
         if mesh is None and self.mesh is None:
             mesh = self.createMesh(data, **kwargs)
 
-        ## a mesh was given or created so we forward it to the fop
+        # a mesh was given or created so we forward it to the fop
         if mesh is not None:
             self.setMesh(mesh)
 
-        ### remove unused keyword argument .. need better kwargfs
+        # remove unused keyword argument .. need better kwargfs
         self.fop._refineP2 = kwargs.pop('refineP2', False)
 
         dataVals = self._ensureData(self.fop.data)
@@ -775,9 +782,10 @@ class MeshMethodManager(MethodManager):
                     horizontalalignment='left',
                     verticalalignment='center')
 
-        axs[1].text(1.0, 1.03, r"rrms: {0}%, $\chi^2$: {1}".format(
-                pg.pf(pg.utils.rrms(data, resp)*100),
-                pg.pf(self.fw.chi2History[-1])),
+        fittext = r"rrms: {0}%, $\chi^2$: {1}".format(
+            pg.pf(pg.utils.rrms(data, resp)*100),
+            pg.pf(self.fw.chi2History[-1]))
+        axs[1].text(1.0, 1.03, fittext,
                     transform=axs[1].transAxes,
                     horizontalalignment='right',
                     verticalalignment='center')
@@ -808,7 +816,10 @@ class MeshMethodManager(MethodManager):
 
 
 class PetroInversionManager(MeshMethodManager):
+    """Class for petrophysical inversion (s. Rücker et al. 2017)."""
+
     def __init__(self, petro, mgr=None, **kwargs):
+        """Initialize instance with manager and petrophysical relation."""
         petrofop = kwargs.pop('petrofop', None)
 
         if petrofop is None:
@@ -816,7 +827,7 @@ class PetroInversionManager(MeshMethodManager):
 
             if fop is None and mgr is not None:
                 # Check! why I can't use mgr.fop
-                #fop = mgr.fop
+                # fop = mgr.fop
                 fop = mgr.createForwardOperator()
                 self.checkData = mgr.checkData
                 self.checkError = mgr.checkError
@@ -833,7 +844,10 @@ class PetroInversionManager(MeshMethodManager):
         super().__init__(fop=petrofop, **kwargs)
 
 
+# Really necessary? Should a combination of petro and joint do the same
 class JointPetroInversionManager(MeshMethodManager):
+    """Joint inversion targeting at the same parameter through petrophysics."""
+
     def __init__(self, petros, mgrs):
         """Initialize with lists of managers and transformations"""
         self.mgrs = mgrs
@@ -843,7 +857,7 @@ class JointPetroInversionManager(MeshMethodManager):
 
         super().__init__(fop=pg.frameworks.JointModelling(self.fops))
 
-        ## just hold a local copy
+        # just hold a local copy
         self.dataTrans = pg.trans.TransCumulative()
 
     def checkError(self, err, data=None):

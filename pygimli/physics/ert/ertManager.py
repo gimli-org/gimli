@@ -185,18 +185,18 @@ class ERTManager(MeshMethodManager):
         # >>> world = mt.createWorld(start=[-50, 0], end=[50, -50],
         # ...                        layers=[-1, -5], worldMarker=True)
         # >>> scheme = ert.createData(
-        # ...                     elecs=pg.utils.grange(start=-10, end=10, n=21),
-        # ...                     schemeName='dd')
+        # ...     elecs=pg.utils.grange(start=-10, end=10, n=21),
+        # ...     schemeName='dd')
         # >>> for pos in scheme.sensorPositions():
         # ...     _= world.createNode(pos)
         # ...     _= world.createNode(pos + [0.0, -0.1])
         # >>> mesh = mt.createMesh(world, quality=34)
         # >>> rhomap = [
-        # ...    [1, 100. + 0j],
-        # ...    [2, 50. + 0j],
-        # ...    [3, 10.+ 0j],
+        # ...     [1, 100. + 0j],
+        # ...     [2, 50. + 0j],
+        # ...     [3, 10.+ 0j],
         # ... ]
-        # >>> data = ert.simulate(mesh, res=rhomap, scheme=scheme, verbose=True)
+        # >>> data = ert.simulate(mesh, res=rhomap, scheme=scheme, verbose=1)
         # >>> rhoa = data.get('rhoa').array()
         # >>> phia = data.get('phia').array()
         """
@@ -348,7 +348,6 @@ class ERTManager(MeshMethodManager):
                 ret['phia'] = phia
 
         # check what needs to be setup and returned
-
         if returnArray:
             if phia is not None:
                 return rhoa, phia
@@ -357,13 +356,13 @@ class ERTManager(MeshMethodManager):
 
         return ret
 
-    def checkData(self, data):
+    def checkData(self, data=None):
         """Return data from container.
 
         THINKABOUT: Data will be changed, or should the manager keep a copy?
         """
+        data = data or pg.DataContainerERT(self.data)
         if isinstance(data, pg.DataContainer):
-
             if not data.allNonZero('k'):
                 pg.warn("Data file contains no geometric factors (token='k').")
                 data['k'] = createGeometricFactors(data, verbose=True)
@@ -383,7 +382,6 @@ class ERTManager(MeshMethodManager):
 
             else:
                 if not data.haveData('rhoa'):
-
                     if data.allNonZero('r'):
                         pg.info("Creating apparent resistivies from "
                                 "impedences rhoa = r * k")
@@ -397,6 +395,16 @@ class ERTManager(MeshMethodManager):
                                     "apparent resistivies 'rhoa', "
                                     "or impedances 'r', "
                                     "or voltage 'u' along with current 'i'.")
+
+                if any(data['rhoa'] < 0) and \
+                        isinstance(self.inv.dataTrans, pg.core.TransLog):
+                    print(pg.find(data['rhoa'] < 0))
+                    print(data['rhoa'][data['rhoa'] < 0])
+                    pg.critical("Found negative apparent resistivities. "
+                                "These can't be processed with logarithmic "
+                                "data transformation. You should consider to "
+                                "filter them out using "
+                                "data.remove(data['rhoa'] < 0).")
 
                 return data['rhoa']
 
@@ -432,8 +440,6 @@ class ERTManager(MeshMethodManager):
                             "Fallback set to 0.01")
                     ipe = np.ones(err.size()) * 0.01
 
-                # pg._y("err", min(rae), max(rae), rae)
-                # pg._y("iperr", min(ipe), max(ipe), ipe)
                 return pg.cat(rae, ipe)
 
         return rae  # not set if err is no DataContainer (else missing)

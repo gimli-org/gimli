@@ -277,6 +277,8 @@ def createColorBar(gci, orientation='horizontal', size=0.2, pad=None,
                 ax = gci.axes
             elif hasattr(gci, 'get_axes'):
                 ax = gci.get_axes()
+            elif hasattr(gci, 'ax'): # deprecated since MPL 3.3
+                ax = gci.ax
         except:
             pass
 
@@ -357,17 +359,20 @@ def createColorBarOnly(cMin=1, cMax=100, logScale=False, cMap=None, nLevs=5,
     cmap = cmapFromName(cMap)
     kwargs.pop('colorBar', False)  # often False for multiple plots
     aspect = kwargs.pop('aspect', None)
+    levels = kwargs.pop('levels', None)
     cbar = mpl.colorbar.ColorbarBase(ax, norm=norm, cmap=cmap,
                                      orientation=orientation, **kwargs)
 
     #        cbar.labelpad = -20
     #        cbar.ax.yaxis.set_label_position('left')
+    if levels is not None:
+        kwargs['levels'] = levels
     updateColorBar(cbar, cMin=cMin, cMax=cMax, nLevs=nLevs, label=label,
                    **kwargs)
 
-    # if aspect is not None:
-    ax.set_aspect(aspect)
-    
+    if aspect is not None:
+        ax.set_aspect(aspect)
+
     if savefig is not None:
         saveFigure(fig, savefig)
 
@@ -442,7 +447,7 @@ def setMappableValues(mappable, dataIn):
 
     # set bad value color to white
     if mappable.get_cmap() is not None:
-        
+
         try:
             import copy
             ## from mpl 3.3
@@ -451,7 +456,7 @@ def setMappableValues(mappable, dataIn):
         except:
             ## old prior mpl 3.3
             mappable.get_cmap().set_bad([1.0, 1.0, 1.0, 0.0])
-          
+
     mappable.set_array(data)
 
 

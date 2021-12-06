@@ -760,7 +760,7 @@ def abs(v):
     Create abs in the sense of distance instead of vanishing the sign. Used
     to calculate the length of coordinates, or anything that can be interpreted
     as coordinate.
-    
+
     Args
     ----
     v: iterable of float, complex, or :gimliapi:`GIMLI::Pos`
@@ -774,13 +774,13 @@ def abs(v):
     --------
     >>> import numpy as np
     >>> import pygimli as pg
-    >>> pg.abs([1.0, 1.0, 1.0]) 
+    >>> pg.abs([1.0, 1.0, 1.0])
     1.7320508075688772
-    >>> pg.abs(np.array([1.0, 1.0, 1.0])) 
+    >>> pg.abs(np.array([1.0, 1.0, 1.0]))
     1.7320508075688772
-    >>> pg.abs(np.array([1.0, 1.0])) 
+    >>> pg.abs(np.array([1.0, 1.0]))
     1.4142135623730951
-    >>> pg.abs([[1.0, 1.0, 1.0], [1.0, 1.0, 1.0]]) 
+    >>> pg.abs([[1.0, 1.0, 1.0], [1.0, 1.0, 1.0]])
     2 [1.7320508075688772, 1.7320508075688772]
     >>> pg.abs(np.array([[1.0, 1.0, 1.0], [1.0, 1.0, 1.0]]))
     2 [1.7320508075688772, 1.7320508075688772]
@@ -1043,6 +1043,8 @@ def __getCoords(coord, dim, ent):
         return getattr(pgcore, coord)(ent)
     if isinstance(ent, list) and isinstance(ent[0], RVector3):
         return getattr(pgcore, coord)(ent)
+    if isinstance(ent, list) and isPos(ent[0]):
+        return getattr(pgcore, coord)(ent)
     if isinstance(ent, DataContainer):
         return getattr(pgcore, coord)(ent.sensorPositions())
     if isinstance(ent, Mesh):
@@ -1085,6 +1087,15 @@ def x(instance):
     ----------
     instance : DataContainer, Mesh, R3Vector, np.array, list(RVector3)
         Return the associated coordinate positions for the given class instance.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pygimli as pg
+    >>> pg.x([[1.0, 1.0, 1.0]])
+    1 [1.0]
+    >>> pg.x([[0, 0], [1, 0]])
+    2 [0.0, 1.0]
     """
     return __getCoords('x', 0, instance)
 

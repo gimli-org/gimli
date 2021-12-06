@@ -53,6 +53,6 @@ pyGIMLi API Reference
     import pygimli as pg
     print(pg.__version__)
 
-  and consider updating via the conda package manager. If you have compiled
-  pyGIMLi from the source, the current documentation of the *dev* branch before
+  and consider updating (e.g., via the conda package manager). If you have a
+  newer version, the current documentation of the *dev* branch before
   the next release is available at: https://dev.pygimli.org.

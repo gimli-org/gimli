@@ -386,6 +386,8 @@ MEMINFO
 
         S.clear();
     } else {
+
+        // __MS(nData << " "<< S.rows() << " "<<  nModel << " "<<  S.cols())
         if (S.rows() != nData || S.cols() != nModel) S.resize(nData, nModel);
         S *= ValueType(0);
 MEMINFO

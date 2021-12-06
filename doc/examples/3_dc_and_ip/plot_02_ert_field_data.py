@@ -27,7 +27,7 @@ data['k'] = createGeometricFactors(data, numerical=True)
 
 ###############################################################################
 # We initialize the ERTManager for further steps and eventually inversion.
-ert = ERTManager(sr=False, useBert=True, verbose=True, debug=False)
+ert = ERTManager(sr=False, useBert=True, verbose=False, debug=False)
 
 ###############################################################################
 # It might be interesting to see the topography effect, i.e the ratio between
@@ -55,7 +55,7 @@ data['err'] = ert.estimateError(data, absoluteError=0.001, relativeError=0.03)
 # the inversion. The inversion mesh will be created with some optional values
 # for the parametric mesh generation.
 #
-mod = ert.invert(data, lam=10,
+mod = ert.invert(data, lam=10, verbose=True,
                  paraDX=0.3, paraMaxCellSize=10, paraDepth=20, quality=33.6)
 
 ###############################################################################

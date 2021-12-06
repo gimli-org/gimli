@@ -226,9 +226,9 @@ def draw1dmodelLU(x, xL, xU, thk=None, **kwargs):
     # return li
 
 
-def showStitchedModels(models, ax=None, x=None, cMin=None, cMax=None,
+def showStitchedModels(models, ax=None, x=None, cMin=None, cMax=None, thk=None,
                        logScale=True, title=None, zMin=0, zMax=0, zLog=False,
-                       cmap='jet', **kwargs):
+                       **kwargs):
     """Show several 1d block models as (stitched) section.
 
     Parameters
@@ -249,6 +249,8 @@ def showStitchedModels(models, ax=None, x=None, cMin=None, cMax=None,
         use logarithmic z (y axis) instead of linear
     topo : iterable
         vector of elevation for shifting
+    thk : iterable
+        vector of layer thicknesses for all models
     Returns
     -------
     ax : matplotlib axes [None - create new]
@@ -257,33 +259,40 @@ def showStitchedModels(models, ax=None, x=None, cMin=None, cMax=None,
     if x is None:
         x = np.arange(len(models))
 
-    topo = kwargs.pop('topo', x*0)
-    nlay = int(np.floor((len(models[0]) + 1) / 2.))
+    topo = kwargs.pop('topo', np.zeros_like(x))
 
     fig = None
     if ax is None:
         fig, ax = plt.subplots()
 
     dxmed2 = np.median(np.diff(x)) / 2.
-    vals = np.zeros((len(models), nlay))
     patches = []
     zMinLimit = 9e99
     zMaxLimit = 0
 
+    if thk is not None:
+        nlay = len(models[0])
+    else:
+        nlay = int(np.floor((len(models[0]) + 1) / 2.))
+
+    vals = np.zeros((len(models), nlay))
     for i, imod in enumerate(models):
-        if isinstance(imod, pg.Vector):
-            vals[i, :] = imod(nlay - 1, 2 * nlay - 1)
-            thk = np.asarray(imod(0, nlay - 1))
-        else:
-            vals[i, :] = imod[nlay - 1:2 * nlay - 1]
-            thk = imod[:nlay - 1]
+        if thk is not None:  # take only resistivity from model
+            vals[i, :] = imod
+            thki = thk
+        else:  # extract thickness from model vector
+            if isinstance(imod, pg.Vector):
+                vals[i, :] = imod[nlay - 1:2 * nlay - 1]
+                thki = np.asarray(imod[:nlay - 1])
+            else:
+                vals[i, :] = imod[nlay - 1:2 * nlay - 1]
+                thki = imod[:nlay - 1]
 
         if zMax > 0:
-            z = np.hstack((0., np.cumsum(thk)))
-            z = np.hstack((z, zMax))
+            z = np.hstack((0., np.cumsum(thki), zMax))
         else:
-            thk = np.hstack((thk, thk[-1]*3))
-            z = np.hstack((0., np.cumsum(thk)))
+            thki = np.hstack((thki, thki[-1]*3))
+            z = np.hstack((0., np.cumsum(thki)))
 
         z = topo[i] - z
         zMinLimit = min(zMinLimit, z[-1])
@@ -294,14 +303,19 @@ def showStitchedModels(models, ax=None, x=None, cMin=None, cMax=None,
                              dxmed2 * 2, z[j+1]-z[j])
             patches.append(rect)
 
-    p = PatchCollection(patches, cmap=cmap, linewidths=0)
-
+    p = PatchCollection(patches)  # , cmap=cmap, linewidths=0)
     if cMin is not None:
         p.set_clim(cMin, cMax)
 
-#    p.set_array( np.log10( vals.ravel() ) )
     setMappableData(p, vals.ravel(), logScale=logScale)
     ax.add_collection(p)
+
+    if logScale:
+        norm = colors.LogNorm(cMin, cMax)
+        p.set_norm(norm)
+
+    if 'cMap' in kwargs:
+        p.set_cmap(kwargs['cMap'])
 
 #    ax.set_ylim((zMaxLimit, zMin))
     ax.set_ylim((zMinLimit, zMaxLimit))

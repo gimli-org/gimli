@@ -180,7 +180,7 @@ def findVersion(cache=True):
             __version__ += " on %s branch)" % _branch
         else:
             __version__ += ")"
-    elif "+" in __version__:
+    elif _branch and "+" in __version__:
         __version__ += " (%s)" % _branch
 
     if not os.path.exists(versionCacheFile):

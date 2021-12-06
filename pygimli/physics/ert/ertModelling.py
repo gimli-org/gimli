@@ -84,6 +84,10 @@ class ERTModelling(ERTModellingBase):
 
         self._conjImag = False  # the imaginary parts are flipped for log trans
 
+    def setVerbose(self, v):
+        super().setVerbose(v)
+        self._core.setVerbose(v)
+
     def setDefaultBackground(self):
         """Set the default background behaviour."""
         if self.complex():

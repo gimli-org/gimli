@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10) 
+cmake_minimum_required(VERSION 3.10)
 #BOOST_MAX_VERISION: 1.65 UBUNTU:18
 
 
@@ -175,11 +175,11 @@ if (NOT PYTHON_EXECUTABLE AND NOT ${CMAKE_VERSION} VERSION_LESS "3.14.0")
     # message(STATUS "Python_NumPy: ${Python_NumPy_FOUND}, ${Python_NumPy_INCLUDE_DIRS}, ${Python_NumPy_VERSION}")
     set (PYTHON_FOUND TRUE CACHE BOOL "Is python available")
 else()
-    
+
     message(STATUS "Manually searching for python (pre cmake 3.14): ${PYVERSION}")
     find_package(PythonInterp ${PYVERSION} REQUIRED)
     find_package(PythonLibs)
-    
+
     set(Python_EXECUTABLE ${PYTHON_EXECUTABLE} CACHE FILEPATH "Python interpreter")
     find_python_module(numpy)
     #set(Python_Libraries ${PYTHON_LIBRARY})
@@ -406,7 +406,7 @@ function(find_boost_python_manual bp_version)
         # set(Boost_PYTHON_FOUND ${Boost_PYTHON${bp_version}_FOUND} CACHE BOOL "boost python lib found")
         # works (gentoo, openblas, 1.76, py3.8, )
         set(Boost_PYTHON_LIBRARY ${Boost_PYTHON${bp_version}_LIBRARY} CACHE FILEPATH "boost python lib(find_boost_python_manual)")
-        
+
         message(STATUS "----------- found: ${Boost_PYTHON_LIBRARY}")
     else()
         message(STATUS "----------- not found.")
@@ -474,7 +474,7 @@ if (NOT Boost_PYTHON_LIBRARY OR 1)
             find_boost_python_manual(${bp_version})
             find_package(Boost 1.65 COMPONENTS "python${bp_version}")
         endif()
-        
+
     endif()
 
     if (Boost_PYTHON_FOUND)

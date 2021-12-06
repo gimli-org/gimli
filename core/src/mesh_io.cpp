@@ -1160,6 +1160,7 @@ void Mesh::importVTK(const std::string & fbody) {
 //     __MS(dimension_)
     //this->showInfos();
     file.close();
+
 }
 
 void Mesh::readVTKPoints_(std::fstream & file,
@@ -1244,12 +1245,41 @@ void Mesh::readVTKPolygons_(std::fstream & file, const std::vector < std::string
 
 void Mesh::readVTKScalars_(std::fstream & file, const std::vector < std::string > & row){
     std::string name(row[1]);
+    // __MS(str(row[0]) + " " + str(row[1]))
     std::vector < std::string > r(getRowSubstrings(file));
+    // __MS(r)
     if (r.size()){
         if (r[0] == "LOOKUP_TABLE"){
             r = getRowSubstrings(file);
         }
     }
+    // __MS(r)
+    // __MS(r.size())
+    // __MS((cellCount() > 1 || boundaryCount() > 1 || nodeCount() > 1))
+
+    std::vector < std::string > ri;
+    
+    if (r.size() == 1 && (cellCount() > 1 || boundaryCount() > 1 || nodeCount() > 1)){
+        // __M
+        bool go=true;
+        while (go){
+            ri = getNonEmptyRow(file);
+            if (ri.size() == 0){
+                go=false;
+            } else if (ri.size() > 1){
+                file.unget();
+                go=false;
+            } else{
+                r.push_back(ri[0]);
+            }
+        }
+        // std::vector < std::string > r(getRowSubstrings(file));
+        // THROW_TO_IMPL
+    }
+
+    // __MS(r)
+    // __MS(r.size())
+
     RVector data(r.size());
 //     std::cout.precision(14);
 //     std::cout << *r.begin() << std::endl;
@@ -1259,7 +1289,12 @@ void Mesh::readVTKScalars_(std::fstream & file, const std::vector < std::string 
 
     //std::copy(r.begin(), r.end(), data.begin(), bind< double >(toDouble);
     for (uint i = 0; i < data.size(); i ++) data[i] = toDouble(r[i]);
+    
     addData(name, data);
+    if (name == "Marker"){
+        if (data.size() == this->cellCount()) this->setCellMarkers(data);
+        if (data.size() == this->boundaryCount()) this->setBoundaryMarkers(data);
+    }
 }
 
 

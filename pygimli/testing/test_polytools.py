@@ -444,7 +444,12 @@ class Test3DMerge(unittest.TestCase):
         mesh = mt.appendBoundary(grid, xbound=5, ybound=5, zbound=5, 
                                  isSubSurface=False)
         ax, _ = pg.show(mesh, mesh.cellMarkers(), hold=True, opacity=0.5)
-        ax.show()
+        
+        try:
+            # fallback mpl axes have no show
+            ax.show()
+        except:
+            pass
 
 
 if __name__ == '__main__':

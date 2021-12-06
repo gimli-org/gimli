@@ -43,11 +43,11 @@ from pygimli.viewer.mpl import drawStreams
 
 ###############################################################################
 # We know the exact solution by analytical formulas:
-
+#
 # .. math::
 #
 #     u = \frac{1}{2\pi\sigma} \cdot (K_0(\|r-r^+_s\| k)+K_0(\|r-r^-_s\| k))
-
+#
 # with K0 being the Bessel function of first kind, and the normal and mirror
 # sources r+ and r-. We define a function for it
 def uAnalytical(p, sourcePos, k, sigma=1):
@@ -85,10 +85,11 @@ def uAnalytical(p, sourcePos, k, sigma=1):
 
 ###############################################################################
 # We assume the so-called mixed boundary conditions (Dey & Morrison, 1979).
+#
 # .. math::
 #
-#    \sigma k \frac{{\bf r}\cdot {\bf n}}{{|r|}} \frac{K_1(|r-r_s|k)}{K_0(|r-r_s|k)}
-
+#     \sigma k \frac{{\bf r}\cdot {\bf n}}{{|r|}} \frac{K_1(|r-r_s|k)}{K_0(|r-r_s|k)}
+#
 def mixedBC(boundary, userData):
     """Mixed boundary conditions.
 
@@ -116,18 +117,18 @@ def mixedBC(boundary, userData):
     if r1A > 1e-12 and r2A > 1e-12:
         alpha = sigma * k * ((r1.dot(n)) / r1A * pg.math.besselK1(r1A * k) +
                             (r2.dot(n)) / r2A * pg.math.besselK1(r2A * k)) / \
-            (pg.math.besselK0(r1A * k) + pg.math.besselK0(r2A * k)) 
+            (pg.math.besselK0(r1A * k) + pg.math.besselK0(r2A * k))
 
         # alpha = sigma * k * ((r1.dot(n)) / r1A * pg.math.besselK1(r1A * k) +
         #                     (r2.dot(n)) / r2A * pg.math.besselK1(r2A * k)) / \
-        #     (pg.math.besselK0(r1A * k) + pg.math.besselK0(r2A * k)) 
-        
+        #     (pg.math.besselK0(r1A * k) + pg.math.besselK0(r2A * k))
+
         return alpha
-        
+
         # Note, the above is the same like:
         beta = 1.0
         return [alpha, beta, 0.0]
-            
+
     else:
         return 0.0
 
@@ -161,8 +162,8 @@ sourcePosA = [-5.25, -3.75]
 sourcePosB = [+5.25, -3.75]
 
 k = 1e-2
-sigma = 100.0
-bc={'Robin': {'1,2,4': mixedBC}}
+sigma = 1.0
+bc={'Robin': {'1,2,3': mixedBC}}
 u = pg.solve(mesh, a=sigma, b=-sigma * k*k,
              rhs=rhsPointSource(mesh, sourcePosA),
              bc=bc, userData={'sourcePos': sourcePosA, 'k': k, 's':sigma},
@@ -208,9 +209,9 @@ ax = pg.show(mesh, data=pg.abs(uAna-u), cMap="Reds",
           nCols=12, nLevs=7,
           showMesh=True)[0]
 
-# print('l2:', pg.pf(pg.solver.normL2(uAna-u)))
-# print('L2:', pg.pf(pg.solver.normL2(uAna-u, mesh)))
-# print('H1:', pg.pf(pg.solver.normH1(uAna-u, mesh)))
-# np.testing.assert_approx_equal(pg.solver.normL2(uAna-u, mesh),
-#                                0.02415, significant=3)
+#print('l2:', pg.pf(pg.solver.normL2(uAna-u)))
+print('L2:', pg.pf(pg.solver.normL2(uAna-u, mesh)))
+print('H1:', pg.pf(pg.solver.normH1(uAna-u, mesh)))
+np.testing.assert_approx_equal(pg.solver.normL2(uAna-u, mesh),
+                               0.02415, significant=3)
 

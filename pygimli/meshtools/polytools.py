@@ -174,6 +174,9 @@ def createRectangle(start=None, end=None, pos=None, size=None, **kwargs):
 
     _polyCreateDefaultEdges(poly, **kwargs)
 
+    sPos = poly.bb()[0]
+    ePos = poly.bb()[1]
+
     kwargs['markerPosition'] = kwargs.pop('markerPosition',
                                           sPos + (ePos - sPos) * 0.2)
 
@@ -231,15 +234,17 @@ def createWorld(start, end, marker=1, area=0., layers=None, worldMarkers=True,
     >>> drawMesh(ax, world)
     >>> plt.show()
     """
-    worldMarkers = pg.renameArg('worldMarker', 'worldMarkers', 
+    worldMarkers = pg.renameArg('worldMarker', 'worldMarkers',
                                  kwargs, worldMarkers, ver=2.1)
-    
+
     if len(start) == 3 and len(end) == 3:
 
         if layers is not None:
             pg.critical("3D with layers is not yet implemented.")
 
-        world = createCube(start=start, end=end, **kwargs)
+        world = createCube(size=pg.Pos(end)-pg.Pos(start),
+                           pos=(pg.Pos(end)+pg.Pos(start))/2.0,
+                           **kwargs)
 
         for i, b in enumerate(world.boundaries()):
             if worldMarkers is True:
@@ -275,9 +280,9 @@ def createWorld(start, end, marker=1, area=0., layers=None, worldMarkers=True,
     if isinstance(area, float) or isinstance(area, int):
         area = np.ones(len(z)-1) * float(area)
 
-    if len(area) < len(z) -1:
+    if len(area) < len(z) - 1:
         pg.warn('Missing {} area value, padding with zeros'.format(
-            (len(z) -1) - len(area)))
+            (len(z) - 1) - len(area)))
         _area = np.zeros(len(z)-1)
         _area[0:len(area)] = area
         area = _area
@@ -314,7 +319,6 @@ def createWorld(start, end, marker=1, area=0., layers=None, worldMarkers=True,
                 b.setMarker(3)
             elif b.norm() == [0, 1]:
                 b.setMarker(4)
-            
 
     if layers is not None:
         for i in range(len(layers)):
@@ -467,7 +471,7 @@ def createLine(start, end, nSegments=1, **kwargs):
     >>> ax, _ = pg.show([w, l1, l2,], ax=ax, fillRegion=False)
     >>> pg.wait()
     """
-    pg.renameKwarg('segments', 'nSegments', kwargs, '1.2') # 20210312
+    pg.renameKwarg('segments', 'nSegments', kwargs, '1.2')  # 20210312
     nSegments = kwargs.pop('nSegments', nSegments)
 
     # TODO refactor with polyCreatePolygon
@@ -508,8 +512,9 @@ def createPolygon(verts, isClosed=False, addNodes=0, interpolate='linear',
     isClosed : bool [True]
         Add closing edge between last and first node.
 
-    addNodes : int [1]
-        Number of additional nodes to be added equidistant between sensors.
+    addNodes : int [1], iterable
+        Constant or (for each) Number of additional nodes to be added,
+        equidistant between sensors.
 
     interpolate : str ['linear']
         Interpolation rule for addNodes. 'linear' or 'spline'. TODO 'harmfit'
@@ -554,18 +559,27 @@ def createPolygon(verts, isClosed=False, addNodes=0, interpolate='linear',
     """
     poly = pg.Mesh(dim=2, isGeometry=True)
 
-    if addNodes > 0:
+    if hasattr(addNodes, '__iter__') or addNodes > 0:
         if isClosed:
             verts = np.array(verts)
             verts = np.vstack([verts, verts[0]])
 
         tV = pg.utils.cumDist(verts)
+
+        if isinstance(addNodes, int) and addNodes > 0:
+            addNodes = np.full(len(tV)-1, addNodes)
+
+        if len(addNodes) != len(tV)-1:
+            print(addNodes)
+            pg.error('Amount of addNodes does not match needed length:',
+                     len(tV)-1)
+
         tI = []
 
         for i, t in enumerate(tV[0:len(tV)-1]):
             tI.append(t)
-            for j in range(addNodes):
-                dt = (tV[i+1]-tV[i]) / (addNodes+1)
+            for j in range(addNodes[i]):
+                dt = (tV[i+1]-tV[i]) / (addNodes[i]+1)
                 tI.append(tV[i] + dt*(j+1))
 
         if not isClosed:
@@ -595,6 +609,28 @@ def createPolygon(verts, isClosed=False, addNodes=0, interpolate='linear',
         setPolyRegionMarker(poly, **kwargs)
 
     return poly
+
+
+def merge(*args, **kwargs):
+    """Little syntactic sugar to merge.
+
+    All args are forwarded to mergeMeshes if isGeometry is not set.
+    Otherwise it considers the mesh as PLC to merge.
+
+    Args
+    ----
+    List of meshes or comma separated list of meshes that will be forwarded to
+    mergeMeshes or meshPLC.
+    """
+    if len(args) == 1 and isinstance(args[0], list):
+        return merge(*args[0], **kwargs)
+
+    for arg in args:
+        if hasattr(arg, 'isGeometry'):
+            if arg.isGeometry():
+                return mergePLC([*args], **kwargs)
+
+    return pg.meshtools.mergeMeshes([*args], **kwargs)
 
 
 def mergePLC(plcs, tol=1e-3):
@@ -663,7 +699,7 @@ def mergePLC(plcs, tol=1e-3):
             try:
                 pg.debug('Remove:', n)
                 os.remove(n)
-            except:
+            except Exception:
                 print("can't remove:", n)
 
         return plc
@@ -702,8 +738,8 @@ def mergePLC3D(plcs, tol=1e-3):
 
     Works if:
         * all plcs are free and does not have any contact to each other
-        * contact of two facets if the second facet is completely within the first facet
-    
+        * contact of two facets if the second is completely within the first
+
     TODO:
         * everything else
 
@@ -882,7 +918,7 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
         n14 = poly.createNode(n4.pos() + [bound, 0.])
         n13 = poly.createNode(n14.pos() - [0., bound + paraDepth])
 
-        poly.createEdge(n1,  n11, pg.core.MARKER_BOUND_HOMOGEN_NEUMANN)
+        poly.createEdge(n1, n11, pg.core.MARKER_BOUND_HOMOGEN_NEUMANN)
         poly.createEdge(n11, n12, pg.core.MARKER_BOUND_MIXED)
         poly.createEdge(n12, n13, pg.core.MARKER_BOUND_MIXED)
         poly.createEdge(n13, n14, pg.core.MARKER_BOUND_MIXED)
@@ -937,7 +973,9 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
 
 
 def readPLC(filename, comment='#'):
-    r"""Read in a piece-wise linear complex object, i.e. pyGIMLi geometry, from .poly file. The latter could be created with `mt.exportPLC`.
+    r"""Read in a piece-wise linear complex object (PLC) from .poly file.
+
+    A PLC is a pyGIMLi geometry, e.g., created using `mt.exportPLC`.
 
     Read 2D :term:`Triangle` or 3D :term:`Tetgen` PLC files.
 
@@ -1114,11 +1152,11 @@ def readPLC(filename, comment='#'):
 
 
 def exportPLC(poly, fname, **kwargs):
-    r"""General writer to save a piece-wise linear complex (PLC), i.e. a pyGIMLi geometry, as a poly file.
+    r"""Export a piece-wise linear complex (PLC) to a .poly file (2D or 3D).
 
-    Choose from poly.dimension() and forward appropriate to
+    Chooses from poly.dimension() and forwards accordingly to
     :gimliapi:`GIMLI::Mesh::exportAsTetgenPolyFile`
-    and :py:mod:`pygimli.meshtools.writeTrianglePoly`
+    or :py:mod:`pygimli.meshtools.writeTrianglePoly`
 
     Parameters
     ----------
@@ -1141,7 +1179,7 @@ def exportPLC(poly, fname, **kwargs):
     >>> world3d = pg.createGrid([0, 1], [0, 1], [-1, 0])
     >>> pg.meshtools.exportPLC(world3d, fname)
     >>> os.remove(fname)
-    
+
     See also
     --------
     readPLC
@@ -1379,13 +1417,12 @@ def exportTetgenPoly(poly, filename, float_format='.12e', **kwargs):
     with open(filename, 'w') as out:
         out.write(polytxt)
 
+
 def syscallTetgen(filename, quality=1.2, area=0, preserveBoundary=False,
                   verbose=False, tetgen='tetgen'):
-    """Create a mesh with :term:`Tetgen` from file.
+    """Create a mesh from a PLC by system-calling :term:`Tetgen`.
 
     Create a :term:`Tetgen` :cite:`Si2004` mesh from a PLC.
-
-    Forwards to system call tetgen, which must be known to your system.
 
     Parameters
     ----------
@@ -1514,7 +1551,7 @@ def polyCreateWorld(filename, x=None, depth=None, y=None, marker=0,
 
 def createSurface(mesh, boundaryMarker=None, verbose=True):
     """Convert a 2D mesh into a 3D surface mesh.
-    
+
     Parameters
     ----------
     mesh: :gimliapi:`GIMLI::Mesh`
@@ -1531,10 +1568,10 @@ def createSurface(mesh, boundaryMarker=None, verbose=True):
         pg.error("Need two dimensional mesh")
     if mesh.cellCount() == 0:
         pg.error("Need a two dimensional mesh with cells")
-    
+
     surface = pg.Mesh(dim=3, isGeometry=True)
 
-    nodes = [surface.createNode(n.pos()).id() for n in mesh.nodes()]    
+    nodes = [surface.createNode(n.pos()).id() for n in mesh.nodes()]
 
     for c in mesh.cells():
         surface.createBoundary(c.ids(), marker=c.marker())
@@ -1573,12 +1610,13 @@ def createFacet(mesh, boundaryMarker=None, verbose=True):
     return poly
 
 
-def createCube(size=[1.0, 1.0, 1.0], pos=None, 
+def createCube(size=[1.0, 1.0, 1.0], pos=None,
                start=None, end=None,
                rot=None, boundaryMarker=0, **kwargs):
     """Create cube PLC as geometrie definition.
 
-    Create cube PLC as geometrie definition. You can either give size and center position or start and end position.
+    Create cube PLC as geometrie definition.
+    You can either give size and center position or start and end position.
 
     Parameters
     ----------
@@ -1779,7 +1817,6 @@ def boundaryPlaneIntersectionLines(boundaries, plane):
             lines.append(list(zip([ps[0].x(), ps[1].x()],
                                   [ps[0].z(), ps[1].z()])))
     return lines
-
 
 
 if __name__ == "__main__":
