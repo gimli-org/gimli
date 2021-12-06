@@ -391,11 +391,7 @@ class Inversion(object):
             return self._inv.run(dataVals, errorVals, **kwargs)
 
         if self.fop is None:
-<<<<<<< HEAD
             pg.critical("Need a valid forward operator for the inversion run.")
-=======
-            raise Exception("Need valid forward operator for inversion run.")
->>>>>>> dev
 
         maxIter = kwargs.pop('maxIter', self.maxIter)
         minDPhi = kwargs.pop('dPhi', self.minDPhi)
