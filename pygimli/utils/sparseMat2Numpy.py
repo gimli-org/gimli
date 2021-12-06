@@ -34,7 +34,7 @@ def toSparseMatrix(A):
 
     if isinstance(A, pg.matrix.SparseMatrix):
         return A
-        
+
     if isinstance(A, pg.matrix.SparseMapMatrix):
         S = pg.matrix.SparseMatrix()
         S.copy_(A)
@@ -294,17 +294,17 @@ def reduceEntries(A, idx):
             # print(idx)
             # print(len(idx))
         csc = pg.utils.toCSC(A)
-        
+
         if debug:
             pg.toc('to csc', reset=True)
 
         csc[:,idx] *= 0
-        
+
         if debug:
             pg.toc('clean cols', reset=True)
 
         csr = csc.tocsr()
-        
+
         if debug:
             pg.toc('to csr', reset=True)
 
@@ -314,12 +314,12 @@ def reduceEntries(A, idx):
             pg.toc('clean rows', reset=True)
 
         csr.eliminate_zeros()
-        
+
         if debug:
             pg.toc('eliminate_zeros', reset=True)
 
         A.copy_(toSparseMatrix(csr))
-        
+
         if debug:
             pg.toc('to map', reset=True)
 
