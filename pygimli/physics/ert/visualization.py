@@ -66,7 +66,14 @@ def showERTData(data, vals=None, **kwargs):
     kwargs['label'] = kwargs.pop('label', pg.utils.unit('rhoa'))
     kwargs['logScale'] = kwargs.pop('logScale', min(vals) > 0.0)
 
-    ax, cbar = drawERTData(ax, data, vals=vals, **kwargs)
+    try:
+        ax, cbar = drawERTData(ax, data, vals=vals, **kwargs)
+    except:
+        pg.warning('Something gone wrong while drawing data. Try fallback with equidistant electrodes.')
+        d = pg.DataContainerERT(data)
+        sc = data.sensorCount()
+        d.setSensors(list(zip(range(sc), np.zeros(sc))))
+        ax, cbar = drawERTData(ax, d, vals=vals, **kwargs)
 
     # TODO here cbar handling like pg.show
 

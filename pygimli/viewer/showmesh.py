@@ -70,30 +70,30 @@ def show(obj=None, data=None, **kwargs):
     --------
     showMesh
     """
-    if "axes" in kwargs: # remove me in 1.2 #20200515
+    if "axes" in kwargs:  # remove me in 1.2 #20200515
         print("Deprecation Warning: Please use keyword `ax` instead of `axes`")
         kwargs['ax'] = kwargs.pop('axes', None)
 
-    ### Empty call just to create a axes
-    if obj is None and not 'mesh' in kwargs.keys():
+    # Empty call just to create a axes
+    if obj is None and 'mesh' not in kwargs:
         ax = kwargs.pop('ax', None)
 
         if ax is None:
             ax = plt.subplots(figsize=kwargs.pop('figsize', None))[1]
         return ax, None
 
-    ### try to interprete obj containes a mesh
+    # try to interprete obj containes a mesh
     if hasattr(obj, 'mesh'):
         return pg.show(obj.mesh, obj, **kwargs)
 
-    ### try to interprete obj as ERT Data
+    # try to interprete obj as ERT Data
     if isinstance(obj, pg.DataContainerERT):
         from pygimli.physics.ert import showERTData
         return showERTData(obj, vals=kwargs.pop('vals', data), **kwargs)
 
-    ### try to interprete obj as matrices
+    # try to interprete obj as matrices
     if isinstance(obj, pg.core.MatrixBase) or \
-        (isinstance(obj, np.ndarray) and obj.ndim == 2):
+       (isinstance(obj, np.ndarray) and obj.ndim == 2):
         return showMatrix(obj, **kwargs)
 
     try:
@@ -103,7 +103,7 @@ def show(obj=None, data=None, **kwargs):
     except ImportError:
         pass
 
-    ### try to interprete obj as mesh or list of meshes
+    # try to interprete obj as mesh or list of meshes
     mesh = kwargs.pop('mesh', obj)
 
     fitView = kwargs.get('fitView', True)
@@ -210,7 +210,8 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
     showMesh: bool [False]
         Shows the mesh itself additional.
     showBoundary: bool [None]
-        Highlight all boundaries with marker != 0. A value None means automatic. Is set True for cell data and False for node data.
+        Highlight all boundaries with marker != 0. None means automatic.
+        True for cell data and False for node data.
     marker: bool [False]
         Show cell markers and boundary marker.
     boundaryMarkers: bool [False]
@@ -227,7 +228,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
         * ylabel: str [None]
             Add label to the y axis
         fitView: bool
-            Fit the axes limits to the all content of the axes. Default is True.
+            Fit the axes limits to the all content of the axes. Default True.
         boundaryProps: dict
             Arguments for plotboundar
         All remaining will be forwarded to the draw functions
@@ -262,7 +263,6 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
     # if (ax.lines or ax.collections or ax.patches):
     #     fitViewDefault = False
     # else:
-
 
     # plt.subplots() resets locale setting to system default .. this went
     # horrible wrong for german 'decimal_point': ','
@@ -303,14 +303,13 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
     elif isinstance(data, pg.core.R3Vector):
         drawStreams(ax, mesh, data, **kwargs)
     else:
-        ### data=[[marker, val], ....]
+        # check for map like data=[[marker, val], ....]
         if isinstance(data, list) and \
-            isinstance(data[0], list) and isinstance(data[0][0], int):
+                isinstance(data[0], list) and isinstance(data[0][0], int):
             data = pg.solver.parseMapToCellArray(data, mesh)
 
         if hasattr(data[0], '__len__') and not \
-            isinstance(data, np.ma.core.MaskedArray):
-
+                isinstance(data, np.ma.core.MaskedArray):
             if len(data) == 2:  # [u,v] x N
                 data = np.array(data).T
 
@@ -325,7 +324,8 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
                 pg.warn("No valid stream data:", data.shape, data.ndim)
                 showMesh = True
         # elif min(data) == max(data):  # or pg.core.haveInfNaN(data):
-        #     pg.warn("No valid data: ", min(data), max(data), pg.core.haveInfNaN(data))
+        #     pg.warn("No valid data: ", min(data), max(data),
+        #             pg.core.haveInfNaN(data))
         #     showMesh = True
         else:
             if bool(colorBar) is not False:
@@ -336,7 +336,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
                     showBoundary = True
 
             def _drawField(ax, mesh, data, kwargs):
-                ### kwargs as reference here to set defaults valid outside too
+                # kwargs as reference here to set defaults valid outside too
                 validData = True
                 if len(data) == mesh.cellCount():
                     kwargs['nCols'] = kwargs.pop('nCols', 256)
@@ -349,7 +349,8 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
                     gci = drawField(ax, mesh, data, **kwargs)
                 else:
                     pg.error("Data size invalid")
-                    print("Data: ", len(data), min(data), max(data), pg.core.haveInfNaN(data))
+                    print("Data: ", len(data), min(data), max(data),
+                          pg.core.haveInfNaN(data))
                     print("Mesh: ", mesh)
                     validData = False
                     drawMesh(ax, mesh)
@@ -377,14 +378,14 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
 
                     gci, validData = _drawField(ax, mesh, data, kwargs)
 
-                ### Cache mesh and scalarmappable to make replaceData work
+                # Cache mesh and scalarmappable to make replaceData work
                 if not hasattr(mesh, 'gci'):
                     mesh.gci = {}
                 mesh.gci[ax] = gci
 
                 if cMap is not None and gci is not None:
                     gci.set_cmap(cmapFromName(cMap))
-                    #gci.cmap.set_under('k')
+                    # gci.cmap.set_under('k')
 
             except BaseException as e:
                 print(e)
@@ -398,7 +399,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
                                   showBoundary=False,
                                   **kwargs)
             showBoundary = False
-            #ax.plot(pg.x(mesh), pg.y(mesh), '.', color='black')
+            # ax.plot(pg.x(mesh), pg.y(mesh), '.', color='black')
         else:
             pg.viewer.mpl.drawPLC(ax, mesh, **kwargs)
 
@@ -408,20 +409,22 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
             gci.set_linewidth(0.3)
             gci.set_edgecolor("0.1")
         else:
-            pg.viewer.mpl.drawSelectedMeshBoundaries(ax, mesh.boundaries(),
-                                            color=kwargs.pop('color', "0.1"), linewidth=0.3)
-            #drawMesh(ax, mesh, **kwargs)
+            pg.viewer.mpl.drawSelectedMeshBoundaries(
+                ax, mesh.boundaries(),
+                color=kwargs.pop('color', "0.1"), linewidth=0.3)
+            # drawMesh(ax, mesh, **kwargs)
 
-    if bool(showBoundary) == True:
+    if bool(showBoundary) is True:
         b = mesh.boundaries(mesh.boundaryMarkers() != 0)
         pg.viewer.mpl.drawSelectedMeshBoundaries(ax, b,
-                                                color=(0.0, 0.0, 0.0, 1.0),
-                                                linewidth=1.4)
+                                                 color=(0.0, 0.0, 0.0, 1.0),
+                                                 linewidth=1.4)
 
     if kwargs.pop("boundaryMarkers", False):
-        pg.viewer.mpl.drawBoundaryMarkers(ax, mesh,
-            clipBoundaryMarkers = kwargs.pop('clipBoundaryMarkers', False),
-                                          **kwargs.pop('boundaryProps', {}))
+        pg.viewer.mpl.drawBoundaryMarkers(
+            ax, mesh,
+            clipBoundaryMarkers=kwargs.pop('clipBoundaryMarkers', False),
+            **kwargs.pop('boundaryProps', {}))
 
     fitView = kwargs.pop('fitView', fitViewDefault)
 
@@ -465,7 +468,8 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
                              dropThreshold=kwargs.pop('dropThreshold', 0.4))
         else:
             pg.error('show, coverage wrong length, toImplement')
-            # addCoverageAlpha(gci, pg.core.cellDataToPointData(mesh, coverage))
+            # addCoverageAlpha(gci, pg.core.cellDataToPointData(mesh,
+            #                                                   coverage))
 
     if not hold or block is not False and plt.get_backend().lower() != "agg":
         if data is not None:
@@ -475,7 +479,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
         plt.show(block=block)
         try:
             plt.pause(0.01)
-        except BaseException as _:
+        except BaseException:
             pass
 
     if hold:

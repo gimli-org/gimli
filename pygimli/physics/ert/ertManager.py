@@ -185,18 +185,18 @@ class ERTManager(MeshMethodManager):
         # >>> world = mt.createWorld(start=[-50, 0], end=[50, -50],
         # ...                        layers=[-1, -5], worldMarker=True)
         # >>> scheme = ert.createData(
-        # ...                     elecs=pg.utils.grange(start=-10, end=10, n=21),
-        # ...                     schemeName='dd')
+        # ...     elecs=pg.utils.grange(start=-10, end=10, n=21),
+        # ...     schemeName='dd')
         # >>> for pos in scheme.sensorPositions():
         # ...     _= world.createNode(pos)
         # ...     _= world.createNode(pos + [0.0, -0.1])
         # >>> mesh = mt.createMesh(world, quality=34)
         # >>> rhomap = [
-        # ...    [1, 100. + 0j],
-        # ...    [2, 50. + 0j],
-        # ...    [3, 10.+ 0j],
+        # ...     [1, 100. + 0j],
+        # ...     [2, 50. + 0j],
+        # ...     [3, 10.+ 0j],
         # ... ]
-        # >>> data = ert.simulate(mesh, res=rhomap, scheme=scheme, verbose=True)
+        # >>> data = ert.simulate(mesh, res=rhomap, scheme=scheme, verbose=1)
         # >>> rhoa = data.get('rhoa').array()
         # >>> phia = data.get('phia').array()
         """
@@ -395,6 +395,16 @@ class ERTManager(MeshMethodManager):
                                     "apparent resistivies 'rhoa', "
                                     "or impedances 'r', "
                                     "or voltage 'u' along with current 'i'.")
+
+                if any(data['rhoa'] < 0) and \
+                        isinstance(self.inv.dataTrans, pg.core.TransLog):
+                    print(pg.find(data['rhoa'] < 0))
+                    print(data['rhoa'][data['rhoa'] < 0])
+                    pg.critical("Found negative apparent resistivities. "
+                                "These can't be processed with logarithmic "
+                                "data transformation. You should consider to "
+                                "filter them out using "
+                                "data.remove(data['rhoa'] < 0).")
 
                 return data['rhoa']
 

@@ -34,7 +34,7 @@ def drawTravelTimeData(ax, data, t=None):
 
     ax.set_xlim([min(x), max(x)])
     ax.set_ylim([max(tShow), -0.002])
-    ax.figure.show()
+    ax.figure.show()  # a draw function should never trigger a figure show
 
     for shot in shots:
         gIdx = pg.find(data('s') == shot)
@@ -164,12 +164,12 @@ def drawVA(ax, data, vals=None, usePos=True, pseudosection=False, **kwargs):
     if pseudosection:
         midpoint = (gx + sx) / 2
         gci = pg.viewer.mpl.dataview.drawVecMatrix(ax, midpoint, offset, va,
-                                                  queeze=True,
-                                                  label=pg.unit('as'))
+                                                   queeze=True,
+                                                   label=pg.unit('as'))
     else:
         gci = pg.viewer.mpl.dataview.drawVecMatrix(ax, gx, sx, va,
-                                                  squeeze=True,
-                                                  label=pg.unit('as'))
+                                                   squeeze=True,
+                                                   label=pg.unit('as'))
 
     # A = np.ones((data.sensorCount(), data.sensorCount())) * np.nan
     # for i in range(data.size()):

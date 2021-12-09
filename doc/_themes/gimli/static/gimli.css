@@ -35,9 +35,9 @@ html, body {
 body {
   /* font-family: "Open Sans", sans-serif; */
   font-family: "Fira Sans", sans-serif;
-  font-size: 15px;
+  font-size: 16px;
   /* font-weight: 400; */
-  line-height: 21px;
+  /* line-height: 21px; */
 }
 
 a {

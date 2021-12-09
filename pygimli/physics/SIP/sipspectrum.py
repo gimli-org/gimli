@@ -33,11 +33,12 @@ class SpectrumModelling(ParameterModelling):
     complex: bool
 
     """
+
     def __init__(self, funct=None, **kwargs):
         self._complex = False
         super(SpectrumModelling, self).__init__(funct=funct, **kwargs)
 
-        self.defaultModelTrans='log'
+        self.defaultModelTrans = 'log'
         self._freqs = None
 
     @property
@@ -53,12 +54,26 @@ class SpectrumModelling(ParameterModelling):
         if self._freqs is None:
             pg.critical("No frequencies defined.")
         return self._freqs
+
     @freqs.setter
     def freqs(self, f):
         self._freqs = f
         self.dataSpace = self._freqs
 
     def response(self, params):
+        """Model response.
+
+        Parameters
+        ----------
+        params : iterable
+            model
+
+        Returns
+        -------
+        array_like
+            model response vector
+
+        """
         ret = super().response(params)
         if self.complex:
             return squeezeComplex(ret)
@@ -77,18 +92,28 @@ class SpectrumModelling(ParameterModelling):
 
 class SpectrumManager(MethodManager):
     """Manager to work with spectra data."""
+
     def __init__(self, fop=None, **kwargs):
+        """Set up spectrum manager
+
+        Parameters
+        ----------
+        fop : pg.Modelling operator, optional
+            Forward operator. The default is None.
+        **kwargs : TYPE
+            passed to SpectrumManager.
+
+        """
         self._funct = fop
         super(SpectrumManager, self).__init__(**kwargs)
 
     def setFunct(self, fop, **kwargs):
-        """"""
+        """Set forward modelling function"""
         self._funct = fop
         self.reinitForwardOperator(**kwargs)
 
     def createForwardOperator(self, **kwargs):
-        """
-        """
+        """Create a Forward operator."""
         if isinstance(self._funct, SpectrumModelling):
             return self._funct
 
@@ -96,8 +121,7 @@ class SpectrumManager(MethodManager):
         return fop
 
     def createInversionFramework(self, **kwargs):
-        """
-        """
+        """Create inversion framework."""
         return pg.frameworks.MarquardtInversion(**kwargs)
 
     def simulate(self):
@@ -105,8 +129,7 @@ class SpectrumManager(MethodManager):
         pass
 
     def setData(self, freqs=None, amp=None, phi=None, eAmp=0.03, ePhi=0.001):
-        """
-        Set data for chosen sip model.
+        """Set data for chosen sip model.
 
         Parameters
         ----------
@@ -187,10 +210,11 @@ class SpectrumManager(MethodManager):
         for k, v in limits.items():
             self.fop.setRegionProperties(k, limits=v)
 
-            if not 'startmodel' in kwargs:
+            if 'startmodel' not in kwargs:
                 sm = (v[1] + v[0]) / 2
                 if v[0] > 0:
-                    sm = np.exp(np.log(v[0]) + (np.log(v[1]) - np.log(v[0])) / 2.)
+                    sm = np.exp(np.log(v[0]) +
+                                (np.log(v[1]) - np.log(v[0])) / 2.)
 
                 self.fop.setRegionProperties(k, startModel=sm)
 
@@ -249,6 +273,7 @@ class SIPSpectrum(object):
         if sort:
             self.sortData()
 
+        self.ampOrg = None
         self.phiOrg = None
         self.phiCC = None  # better make a struct of m, amp, phi (tau)
         self.ampCC = None
@@ -257,10 +282,6 @@ class SIPSpectrum(object):
         self.ampDD = None
         self.mDD = None
         self.tau = None
-
-    def __repr__(self):
-        """String representation of the class."""
-        return self.__str__()
 
     def __repr__(self):
         """Human readable string representation of the class."""
@@ -289,21 +310,21 @@ class SIPSpectrum(object):
             if verbose:
                 pg.info("Reading SIP Fuchs III file")
             self.f, self.amp, self.phi, header = readFuchs3File(
-                    filename, verbose=verbose, **kwargs)
+                filename, verbose=verbose, **kwargs)
             self.phi *= -np.pi/180.
             # print(header) # not used?
         elif 'SIP-Quad' in firstLine:
             if verbose:
                 pg.info("Reading SIP Quad file")
             self.f, self.amp, self.phi, header = readFuchs3File(
-                    filename, verbose=verbose, quad=True, **kwargs)
+                filename, verbose=verbose, quad=True, **kwargs)
             self.phi *= -np.pi/180.
         elif 'SIP-Fuchs' in firstLine:
             if verbose:
                 pg.info("Reading SIP Fuchs file")
             self.f, self.amp, self.phi, drhoa, dphi = readRadicSIPFuchs(
-                    filename, verbose=verbose, quad='SIP-Quad' in firstLine,
-                    **kwargs)
+                filename, verbose=verbose, quad='SIP-Quad' in firstLine,
+                **kwargs)
             self.phi *= -np.pi/180.
         elif fnLow.endswith('.txt') or fnLow.endswith('.csv'):
             self.f, self.amp, self.phi = readTXTSpectrum(filename)
@@ -708,8 +729,8 @@ class SIPSpectrum(object):
         # discretize tau, setup DD and perform DD inversion
         self.tau = np.logspace(log10(mint), log10(maxt), nt)
         phi = self.phi
-        tLin, tLog, tM = pg.trans.Trans(), pg.trans.TransLog(), pg.trans.TransLog()
-        # pg.trans.TransLogLU(0., 1.)
+        tLin, tLog = pg.trans.Trans(), pg.trans.TransLog()
+        tM = pg.trans.TransLog()  # pg.trans.TransLogLU(0., 1.)
         if new:
             reNorm, imNorm = self.zNorm()
             fDD = DebyeComplex(self.f, self.tau)
@@ -796,6 +817,9 @@ class SIPSpectrum(object):
             ax[0].semilogx(self.f, self.ampCC, 'r-', label='CC model')
         ax[0].legend(loc='best')
         # phase
+        if np.any(self.ampOrg):
+            ax[0].semilogx(self.f, self.ampOrg, 'c+-', label='org. data')
+            ax[0].legend(loc='best')
         if np.any(self.phiOrg):
             ax[1].semilogx(self.f, self.phiOrg * 1e3, 'c+-', label='org. data')
 
@@ -844,6 +868,7 @@ class SIPSpectrum(object):
 def test_SIPSPectrum():
     run_SIPSPectrum('sipexample.txt')
 
+
 def run_SIPSPectrum(myfile):
     sip = SIPSpectrum(myfile)
     # sip.showData(znorm=True)
@@ -856,6 +881,7 @@ def run_SIPSPectrum(myfile):
     sip.fitDebyeModel()  # , showFit=True)
     # create titles and plot data, fit and model
     sip.showAll(save=True)
+
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:

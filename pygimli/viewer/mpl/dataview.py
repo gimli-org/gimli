@@ -66,18 +66,20 @@ def generateMatrix(xvec, yvec, vals, **kwargs):
 
     return A, xmap, ymap
 
+
 def showValMapPatches(vals, xVec=None, yVec=None, dx=1, dy=None, **kwargs):
     """ """
     ax, _ = pg.show(ax=kwargs.pop('ax', None))
 
     gci, ymap = drawValMapPatches(ax, vals, xVec=xVec, yVec=yVec, dx=dx, dy=dy,
-                            **kwargs)
+                                  **kwargs)
 
     cbar = None
     if not kwargs.pop('colorBar', False):
         cbar = pg.viewer.mpl.createColorBar(gci, **kwargs)
 
     return ax, cbar, ymap
+
 
 def drawValMapPatches(ax, vals, xVec=None, yVec=None, dx=1, dy=None, **kwargs):
     """ """
@@ -282,13 +284,13 @@ def patchValMap(vals, xvec=None, yvec=None, ax=None, cMin=None, cMax=None,
 
     if cbar is True:  # not for cbar=1, which is really confusing!
         cbar = pg.viewer.mpl.createColorBar(col, cMin=cMin, cMax=cMax,
-                                           nLevs=5, label=label,
-                                           orientation=ori)
+                                            nLevs=5, label=label,
+                                            orientation=ori)
 
     elif cbar is not False:
         # .. cbar is an already existing cbar .. so we update its values
         pg.viewer.mpl.updateColorBar(cbar, cMin=cMin, cMax=cMax,
-                                    nLevs=5, label=label)
+                                     nLevs=5, label=label)
 
     updateAxes_(ax)
     return ax, cbar, ymap
@@ -329,7 +331,7 @@ def patchMatrix(mat, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
     else:
         norm = Normalize(vmin=cMin, vmax=cMax)
 
-    if 'ax' == None:
+    if ax is None:
         ax = plt.subplots()[1]
 
     iy, ix = np.nonzero(mat)  # != 0)
@@ -355,18 +357,19 @@ def patchMatrix(mat, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
     ax.set_ylim(len(ymap) + 0.5, -0.5)
 
     updateAxes_(ax)
-    cbar = None
+    cb = None
     if kwargs.pop('colorBar', True):
         ori = kwargs.pop('orientation', 'horizontal')
-        cbar = pg.viewer.mpl.createColorBar(col, cMin=cMin, cMax=cMax, nLevs=5,
-                                           label=label, orientation=ori)
-    return ax, cbar
+        cb = pg.viewer.mpl.createColorBar(col, cMin=cMin, cMax=cMax, nLevs=5,
+                                          label=label, orientation=ori)
+    return ax, cb
 
 
 def plotMatrix(mat, *args, **kwargs):
     """Naming conventions. Use drawDataMatrix or showDataMatrix"""
     pg.deprecated("use drawDataMatrix or showMatrix")
     return showDataMatrix(*args, **kwargs)
+
 
 def showDataMatrix(mat, xmap=None, ymap=None, **kwargs):
     """Show value map as matrix.
@@ -379,25 +382,21 @@ def showDataMatrix(mat, xmap=None, ymap=None, **kwargs):
         colorbar object
     """
     ax, _ = pg.show(ax=kwargs.pop('ax', None))
-
-    # pg._r(ax)
-
     gci = drawDataMatrix(ax, mat, xmap=xmap, ymap=ymap, **kwargs)
-    # pg._y(**kwargs)
-
-    cbar = None
+    cb = None
     if kwargs.pop('colorBar', True):
         ori = kwargs.pop('orientation', 'horizontal')
         cMin = kwargs.pop('cMin', None)
         cMax = kwargs.pop('cMax', None)
         label = kwargs.pop('label', None)
-        cbar = pg.viewer.mpl.createColorBar(gci, cMin=cMin, cMax=cMax, nLevs=5,
-                                           label=label, orientation=ori)
+        cb = pg.viewer.mpl.createColorBar(gci, cMin=cMin, cMax=cMax, nLevs=5,
+                                          label=label, orientation=ori)
 
-    return ax, cbar
+    return ax, cb
+
 
 def drawDataMatrix(ax, mat, xmap=None, ymap=None, cMin=None, cMax=None,
-               logScale=None, label=None, **kwargs):
+                   logScale=None, label=None, **kwargs):
     """Draw previously generated (generateVecMatrix) matrix.
 
     Parameters
@@ -439,12 +438,12 @@ def drawDataMatrix(ax, mat, xmap=None, ymap=None, cMin=None, cMax=None,
 
     gci = ax.imshow(mat_, norm=norm, interpolation='nearest')
     if 'cmap' in kwargs:
-        pg.deprecated('use cMap') #190422
+        pg.deprecated('use cMap')  # 190422
         gci.set_cmap(kwargs.pop('cmap'))
     if 'cMap' in kwargs:
         gci.set_cmap(kwargs.pop('cMap'))
-    ax.set_aspect(kwargs.pop('aspect', 1))
 
+    ax.set_aspect(kwargs.pop('aspect', 1))
     ax.grid(True)
     xt = np.unique(ax.get_xticks().clip(0, len(xmap) - 1))
     yt = np.unique(ax.get_xticks().clip(0, len(ymap) - 1))
@@ -562,7 +561,6 @@ def showDataContainerAsMatrix(data, x=None, y=None, v=None, **kwargs):
     print("found " + str(len(np.unique(y))) + " y values")
 #        kwargs.setdefault('ymap', {n: i for i, n in enumerate(np.unique(y))})
 
-
     if isinstance(v, str):
         v = data(v)
 
@@ -580,7 +578,7 @@ def showDataContainerAsMatrix(data, x=None, y=None, v=None, **kwargs):
     try:
         ax.set_xlabel(xToken)
         ax.set_ylabel(yToken)
-    except:
+    except Exception:
         print("Could not set x/y label: ", xToken, yToken)
 
     return ax, cbar

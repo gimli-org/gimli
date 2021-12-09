@@ -43,11 +43,11 @@ from pygimli.viewer.mpl import drawStreams
 
 ###############################################################################
 # We know the exact solution by analytical formulas:
-
+#
 # .. math::
 #
 #     u = \frac{1}{2\pi\sigma} \cdot (K_0(\|r-r^+_s\| k)+K_0(\|r-r^-_s\| k))
-
+#
 # with K0 being the Bessel function of first kind, and the normal and mirror
 # sources r+ and r-. We define a function for it
 def uAnalytical(p, sourcePos, k, sigma=1):
@@ -85,10 +85,11 @@ def uAnalytical(p, sourcePos, k, sigma=1):
 
 ###############################################################################
 # We assume the so-called mixed boundary conditions (Dey & Morrison, 1979).
+#
 # .. math::
 #
-#    \sigma k \frac{{\bf r}\cdot {\bf n}}{{|r|}} \frac{K_1(|r-r_s|k)}{K_0(|r-r_s|k)}
-
+#     \sigma k \frac{{\bf r}\cdot {\bf n}}{{|r|}} \frac{K_1(|r-r_s|k)}{K_0(|r-r_s|k)}
+#
 def mixedBC(boundary, userData):
     """Mixed boundary conditions.
 
