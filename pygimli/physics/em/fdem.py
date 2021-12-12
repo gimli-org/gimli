@@ -189,8 +189,11 @@ class FDEM():
         if filename:
             # check if filename extension is TXT or CSV
             fl = filename.lower()
-            if fl.rfind('.txt') > 0 or fl.rfind('.csv') > 0:
-                self.importEmsysAsciiData(filename)
+            if fl.endswith('.txt') or fl.endswith('.csv'):
+                try:
+                    self.importMaxMinData(filename)
+                except Exception:
+                    self.importEmsysAsciiData(filename)
             else:
                 self.importMaxminData(filename)
         if np.any(self.frequencies):
@@ -314,7 +317,7 @@ class FDEM():
         self.isActiveFreq = self.frequencies > 0.0
         self.activeFreq = np.nonzero(self.isActiveFreq)[0]
 
-    def importMaxminData(self, filename, verbose=False):
+    def importIPXData(self, filename, verbose=False):
         """Import MaxMin IPX format with pos, data, frequencies & geometry."""
         delim = None
         fid = open(filename)
@@ -347,6 +350,46 @@ class FDEM():
             self.x = y
         else:
             self.x = x
+
+    def importMaxMinData(self, filename, verbose=False):
+        """Import MaxMin ASCII export (*.txt) data."""
+        with open(filename) as fid:
+            lines = fid.readlines()
+
+        self.coilSpacing = 99.9
+        f, re, im, err, cond = [], [], [], [], []
+        x, RE, IM, ERR, COND = [], [], [], [], []
+        for i, line in enumerate(lines):
+            stline = line.split()
+            if line.startswith("Coil Sep"):
+                self.coilSpacing = float(stline[-1])
+            if len(stline) > 3 and stline[3].find("Stn") >= 0:
+                x.append(float(stline[4]))
+                if len(re) > 0:
+                    RE.append(np.array(re))
+                    IM.append(np.array(im))
+                    ERR.append(np.array(err))
+                    COND.append(np.array(cond))
+                    f, re, im, err, cond = [], [], [], [], []
+
+            if len(stline) > 0 and stline[0] == "MAX1":  # data
+                f.append(float(stline[1]))
+                re.append(float(stline[3]))
+                im.append(float(stline[5]))
+                err.append(float(stline[7]))
+                cond.append(float(stline[9]))
+
+        if len(re) > 0:
+            RE.append(np.array(re))
+            IM.append(np.array(im))
+            ERR.append(np.array(err))
+            COND.append(np.array(cond))
+
+        self.x = np.array(x)
+        self.frequencies = np.array(f)
+        self.IP = np.array(RE)
+        self.OP = np.array(IM)
+        self.ERR = np.array(ERR)
 
     def deactivate(self, fr):
         """Deactivate a single frequency."""
@@ -454,7 +497,8 @@ class FDEM():
         """
         self.transThk = pg.trans.TransLog()
         self.transRes = pg.trans.TransLogLU(lBound, uBound)
-        self.transData = pg.trans.Trans()
+        # self.transData = pg.trans.Trans()
+        self.transData = pg.trans.TransSymLog(tol=0.1)
 
         # EM forward operator
         if isinstance(nlay, pg.core.FDEM1dModelling):
@@ -473,7 +517,7 @@ class FDEM():
             noiseVec = pg.asvector(noise)
 
         # independent EM inversion
-        self.inv = pg.core.Inversion(data, self.fop, self.transData, verbose)
+        self.inv = pg.Inversion(data, self.fop, self.transData, verbose)
         if isinstance(stmod, float):  # real model given
             model = pg.Vector(nlay * 2 - 1, stmod)
             model[0] = 2.
