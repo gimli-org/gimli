@@ -83,7 +83,7 @@ def __ElementMatrix_str(self):
             pg.isMatrix(self.multR):
             s = '\n ' + f' multR = {self.multR} (applied)' + '\n ' + ' ' * maxRowID
         elif pg.isScalar(self.multR, 1.0):
-            s = '\n ' + ' ' * maxRowID    
+            s = '\n ' + ' ' * maxRowID
         else:
             s = '\n ' + f' multR = {self.multR} (unknown how to apply)' + '\n ' + ' ' * maxRowID
     else:
@@ -140,7 +140,6 @@ pgcore.CMatrix.__repr__ = __CMatrix_str
 pgcore.ElementMatrix.__repr__ = __ElementMatrix_str
 
 
-<<<<<<< HEAD
 def __CopyRMatrixTranspose__(self):
     return pgcore.RMatrix(np.array(self).T)
 
@@ -190,27 +189,24 @@ def __stdVectorRSparseMapMatrix_Mult__(self, b):
 
         ret = pgcore.stdVectorR3Vector()
         pgcore.mult(self, br, ret)
-    
+
     elif isinstance(b, np.ndarray) and b.ndim == 2:
         ret = pgcore.stdVectorR3Vector()
         pgcore.mult(self, b.flatten('F'), ret)
-    
+
     elif isArray(b):
         ret = pgcore.stdVectorRVector()
         pgcore.mult(self, b, ret)
-    
+
     else:
         print(b)
         pg.critical("Don't know how to convert b")
-    
+
     return ret
 pgcore.stdVectorRSparseMapMatrix.__mul__ = __stdVectorRSparseMapMatrix_Mult__
 
 
 ## Special Monkeypatch core classes
-=======
-# Special Monkeypatch core classes
->>>>>>> dev
 __BlockMatrix_addMatrix__ = pgcore.RBlockMatrix.addMatrix
 
 
@@ -316,25 +312,14 @@ def __SparseMatrixEqual__(self, T):
         print('diff rows:', np.linalg.norm(np.array(rowsA)-np.array(rowsB)))
         print('diff cols:', np.linalg.norm(np.array(colsA)-np.array(colsB)))
 
-<<<<<<< HEAD
         print(f'|A-B|={nAB}', f'mean(A)={meanA} mean(B)={np.mean(abs(valsB))}')
-            
+
         print(f'nAB/meanA = {nAB/meanA}')
 
     if meanA > 1e-10:
         return rowsA == rowsB and colsA == colsB and nAB/meanA < 1e-12
     else:
         return nAB < 1e-12
-=======
-    # print(np.linalg.norm(valsA-valsB), np.mean(abs(valsA)),
-    #     np.mean(abs(valsB)))
-    # print(np.linalg.norm(valsA-valsB)/np.mean(abs(valsA)))
-
-    return rowsA == rowsB and \
-        colsA == colsB and \
-        np.linalg.norm(valsA-valsB)/np.mean(abs(valsA)) < 1e-14
-
->>>>>>> dev
 
 pgcore.RSparseMatrix.__eq__ = __SparseMatrixEqual__
 pgcore.RSparseMapMatrix.__eq__ = __SparseMatrixEqual__

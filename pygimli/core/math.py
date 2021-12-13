@@ -6,8 +6,6 @@ from .core import (angle, besselI0, besselI1, besselK0, besselK1, cos,
                    cot, det, dot, exp, exp10, imag, log, log10, max, median,
                    min, pow, rand, randn, real, rms, round, rrms, sign,
                    sin, sqrt, sum, toComplex, unique)
-<<<<<<< HEAD
-=======
 
 
 def symlog(x, tol=1e-12, linearSpread=0):
@@ -71,4 +69,3 @@ def symlogInv(y, tol=1e-12, linearSpread=0):
     pygimli.math.symlog
     """
     return (10**(np.abs(y)-linearSpread/2) - 1.) * tol * np.sign(y)
->>>>>>> dev

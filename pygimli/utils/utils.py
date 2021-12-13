@@ -53,19 +53,19 @@ class ProgressBar(object):
     def t(self):
         """Return complete time passed for the whole process."""
         return self._swatch.duration()
-    
+
     @property
     def tIter(self):
         """Return time passed since last iteration."""
         return self._swatch.stored().last()-self._swatch.stored().last(1)
-        
+
     def update(self, iteration, msg=""):
         """Update ProgressBar by iteration number starting at 0 with optional
         message."""
         if iteration == 0:
             self._swatch.start()
         self._swatch.store()
-            
+
         self._setbar(iteration + 1)
         if len(msg) >= 1:
             self.pBar += " (" + msg + ")"
@@ -235,14 +235,10 @@ def prettyFloat(value, roundValue=False):
         return string.replace(".0", "")
     elif string.endswith(".00"):
         return string.replace(".00", "")
-<<<<<<< HEAD
     elif '.' in string and not 'e' in string and string.endswith("00"):
         return string[0:len(string)-2]
     elif '.' in string and not 'e' in string and string.endswith("0"):
         # pg._r(string[0:len(string)-1])
-=======
-    elif '.' in string and string.endswith(".0"):
->>>>>>> dev
         return string[0:len(string)-1]
     else:
         return string

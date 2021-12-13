@@ -302,27 +302,32 @@ Mesh.createMeshWithSecondaryNodes = __createMeshWithSecondaryNodes__
 
 
 __Mesh_deform__ = Mesh.deform
-def __deform__(self, eps, mag=1.0):
+def __deform__(self, u, mag=1.0):
     v = None
     dof = self.nodeCount()
-    if hasattr(eps, 'values'):
-        eps = eps.values
-    if hasattr(eps, 'ndim') and eps.ndim == 1:
-        v = eps
-    elif len(eps) == self.dim():
-        if len(eps[0]) == dof:
+    if hasattr(u, 'values'):
+        if len(u.values) != self.nodeCount():
+            if hasattr(u, 'eval'):
+                u = u.eval(self.positions())
+        else:
+            u = u.values
+
+    if hasattr(u, 'ndim') and u.ndim == 1:
+        v = u
+    elif len(u) == self.dim():
+        if len(u[0]) == dof:
             if self.dim() == 2:
-                v = cat(eps[0], eps[1])
+                v = cat(u[0], u[1])
             elif self.dim() == 3:
-                v = cat(cat(eps[0], eps[1]), eps[2])
+                v = cat(cat(u[0], u[1]), u[2])
             else:
-                v = eps[0]
+                v = u[0]
         else:
             print(self)
-            print(len(eps), len(eps[0]))
+            print(len(u), len(u[0]))
             error('Size of displacement does not match mesh nodes size.')
-    elif len(eps) == self.nodeCount() and eps.ndim == 2:
-        v = eps.reshape(self.nodeCount() * eps.shape[1], order='F')
+    elif len(u) == self.nodeCount() and u.ndim == 2:
+        v = u.reshape(self.nodeCount() * u.shape[1], order='F')
 
     return __Mesh_deform__(self, v, mag)
 
