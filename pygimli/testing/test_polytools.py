@@ -20,7 +20,7 @@ class TestMisc(unittest.TestCase):
                                       [-2, -1, 0, 2, 7, 8])
         # pg.show(mesh, markers=True)
         # pg.show(mesh2, markers=True)
-        
+
 
 class TestCreateRectangle(unittest.TestCase):
     def test_region_marker_position_basics(self):
@@ -31,9 +31,9 @@ class TestCreateRectangle(unittest.TestCase):
             marker=1,
         )
         # by default the region marker should be located at
-        # sPos + (ePos - sPos) * 0.2)
+        # minPos + (maxPos - minPos) * 0.2)
         assert rect1.regionMarkers()[0].x() == 0.4
-        assert rect1.regionMarkers()[0].y() == -0.2
+        assert rect1.regionMarkers()[0].y() == -0.8
         assert rect1.regionMarkers()[0].marker() == 1
 
     def test_region_marker_position_translation_scale(self):
@@ -43,8 +43,10 @@ class TestCreateRectangle(unittest.TestCase):
             isClosed=True,
             marker=20,
         )
-        assert rect1.regionMarkers()[0].x() == -0.3
-        assert rect1.regionMarkers()[0].y() == 0.3
+        # by default the region marker should be located at
+        # minPos + (maxPos - minPos) * 0.2)
+        assert rect1.regionMarkers()[0].x() == 0.4
+        assert rect1.regionMarkers()[0].y() == 0.8
         assert rect1.regionMarkers()[0].marker() == 20
 
     def test_region_marker_position_two_ways_v1(self):
@@ -62,17 +64,13 @@ class TestCreateRectangle(unittest.TestCase):
             isClosed=True,
             marker=2,
         )
-        assert rect1.regionMarkers()[0].x() == -1.2
-        assert rect1.regionMarkers()[0].y() == -0.6
+        assert rect1.regionMarkers()[0].x() == -2 + 0.2*4
+        assert rect1.regionMarkers()[0].y() == -1 + 0.2*2
 
         assert rect1.regionMarkers()[0].marker() == 1
         assert rect2.regionMarkers()[0].marker() == 2
 
-        assert rect1.regionMarkers()[0].x() == rect1.regionMarkers()[0].x()
-        assert rect2.regionMarkers()[0].x() == rect2.regionMarkers()[0].x()
-
-        assert rect1.regionMarkers()[0].y() == rect1.regionMarkers()[0].y()
-        assert rect2.regionMarkers()[0].y() == rect2.regionMarkers()[0].y()
+        assert rect1.regionMarkers()[0] == rect2.regionMarkers()[0]
 
     def test_region_marker_position_two_ways_v2(self):
         rect1 = mt.createRectangle(
@@ -89,17 +87,13 @@ class TestCreateRectangle(unittest.TestCase):
             isClosed=True,
             marker=2,
         )
-        assert rect1.regionMarkers()[0].x() == 4 * 0.2
-        assert rect1.regionMarkers()[0].y() == -1.5 - 2.5 * 0.2
+        assert rect1.regionMarkers()[0].x() == 0 + 4 * 0.2
+        assert rect1.regionMarkers()[0].y() == -4.0 + 2.5 * 0.2
 
         assert rect1.regionMarkers()[0].marker() == 1
         assert rect2.regionMarkers()[0].marker() == 2
 
-        assert rect1.regionMarkers()[0].x() == rect1.regionMarkers()[0].x()
-        assert rect2.regionMarkers()[0].x() == rect2.regionMarkers()[0].x()
-
-        assert rect1.regionMarkers()[0].y() == rect1.regionMarkers()[0].y()
-        assert rect2.regionMarkers()[0].y() == rect2.regionMarkers()[0].y()
+        assert rect1.regionMarkers()[0] == rect2.regionMarkers()[0]
 
     def test_region_markerposition_start_end(self):
         rect1 = mt.createRectangle(
@@ -311,9 +305,9 @@ class Test3DMerge(unittest.TestCase):
         c2 = mt.createCylinder(radius=1, nSegments=segs, boundaryMarker=2)
         c1.translate([0, 0, 0.5])
         c2.translate([0, 0, -0.5])
-        
+
         w = mt.mergePLC3D([c1, c2])
-        
+
         self.assertEqual(w.nodeCount(), segs*2 * 2)
         self.assertEqual(w.boundaryCount(), segs*2 + 3)
 
@@ -359,10 +353,10 @@ class Test3DMerge(unittest.TestCase):
     def test_appendTetrahedron(self):
         grid = mt.createGrid(5,5,5)
         #pg.show(grid)
-        mesh = mt.appendBoundary(grid, xbound=5, ybound=5, zbound=5, 
+        mesh = mt.appendBoundary(grid, xbound=5, ybound=5, zbound=5,
                                  isSubSurface=False)
         ax, _ = pg.show(mesh, mesh.cellMarkers(), hold=True, opacity=0.5)
-        
+
         try:
             # fallback mpl axes have no show
             ax.show()
