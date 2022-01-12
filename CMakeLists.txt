@@ -172,10 +172,11 @@ if (NOT PYTHON_EXECUTABLE AND NOT ${CMAKE_VERSION} VERSION_LESS "3.15.0")
     set (Python_FIND_STRATEGY LOCATION) # from cmake 3.15
     find_package(Python ${PYVERSION} EXACT COMPONENTS Interpreter NumPy Development REQUIRED)
 
-    # message(STATUS "Python_Interpreter_FOUND: ${Python_Interpreter_FOUND} ${Python_EXECUTABLE} version: ${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}.${Python_VERSION_PATCH}")
-    # message(STATUS "Python_INCLUDE_DIRS: ${Python_INCLUDE_DIRS}")
-    # message(STATUS "Python_LIBRARIES: ${Python_LIBRARIES} ${Python_LIBRARY_DIRS}")
-    # message(STATUS "Python_NumPy: ${Python_NumPy_FOUND}, ${Python_NumPy_INCLUDE_DIRS}, ${Python_NumPy_VERSION}")
+    message(STATUS "Python_Interpreter_ID: ${Python_Interpreter_ID}")
+    message(STATUS "Python_Interpreter_FOUND: ${Python_Interpreter_FOUND} ${Python_EXECUTABLE} version: ${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}.${Python_VERSION_PATCH}")
+    message(STATUS "Python_INCLUDE_DIRS: ${Python_INCLUDE_DIRS}")
+    message(STATUS "Python_LIBRARIES: ${Python_LIBRARIES} ${Python_LIBRARY_DIRS}")
+    message(STATUS "Python_NumPy: ${Python_NumPy_FOUND}, ${Python_NumPy_INCLUDE_DIRS}, ${Python_NumPy_VERSION}")
     set (PYTHON_FOUND TRUE CACHE BOOL "Is python available")
 else()
     
