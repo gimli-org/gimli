@@ -171,16 +171,16 @@ endmacro()
 
 macro(find_or_build_package_check package get_package checkVar forceLocal)
 
-    message(STATUS "checking ${package} ...")
+    message(STATUS "** Find or build ${package} at: ${checkVar}")
     find_package(${package})
-    message(STATUS "${package_FOUND}")
+    message(STATUS "Found: ${${package}_FOUND}")
 
     string(TOUPPER ${package} upper_package)
     string(TOLOWER ${package} lower_package)
 
     set (FORCE_LOCAL_REBUILD 0)
 
-    message(STATUS "${package} is forced to local build: ${forceLocal}")
+    message(STATUS "Local build ${package} forced: ${forceLocal}")
 
     if ($ENV{CLEAN})
         if(${forceLocal} OR ${package}_LOCAL)
@@ -215,11 +215,11 @@ macro(find_or_build_package_check package get_package checkVar forceLocal)
 
         message(STATUS "checking again for ${package} ...")
 		find_package(${package})
-        message(STATUS "${package_FOUND}")
+        message(STATUS "Found: ${${package}_FOUND}")
 
         set(${package}_LOCAL 1 CACHE INTERNAL "this package was build local")
     else()
-        message(STATUS "${package} found" )
+        message(STATUS "** Find or build ${package} done.")
     endif()
 
 endmacro()
