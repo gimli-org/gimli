@@ -14,7 +14,8 @@ class Inversion(object):
 
     Changes to prior Versions (remove me)
 
-        * holds the starting model itself, fop only provide a creator for SM
+        * holds the starting model itself, forward operator only provides a
+        method to create the starting model
         fop.createStartModel(dataValues)
 
     Attributes
@@ -30,7 +31,7 @@ class Inversion(object):
     maxIter : int [20]
         Maximal interation number.
     stopAtChi1 : bool [True]
-        Stop iteration when chi² is one. If set to false the iteration stops
+        Stop iteration when chi² is one. If set to False the iteration stops
         after maxIter or convergence reached (self.inv.deltaPhiAbortPercent())
     """
 
@@ -65,10 +66,18 @@ class Inversion(object):
         if fop is not None:
             self.setForwardOperator(fop)
 
+        if "startModel" in kwargs:
+            self.startModel = kwargs["startModel"]
+        else:
+            self._startModel = None
+
     def reset(self):
-        """"""
+        """Reset function currently called at the beginning of every inversion
+        run."""
+        # FW: Note that this is called at the beginning of run. I therefore
+        # removed the startingModel here to allow explicitly set starting models
+        # by the user.
         self._model = None
-        self._startModel = None
         self._dataVals = None
         self._errorVals = None
 
@@ -131,7 +140,7 @@ class Inversion(object):
         """ Gives the current default starting model.
 
         Returns the current default starting model or
-        call fop.createStartmodel() if non is defined.
+        calls `fop.createStartmodel()` if none is defined.
         """
         if self._startModel is None:
             sm = self.fop.regionManager().createStartModel()
@@ -546,8 +555,6 @@ class Inversion(object):
         #     print("Warning! unused keyword arguments", kwargs)
 
         self.model = self.inv.model()
-        if showProgress and not pg.viewer.isInteractive():
-            self.axs.get_figure() # Necessary to show figure in Jupyter Notebooks at the end
         return self.model
 
     def showProgress(self, style='all'):
