@@ -7,8 +7,28 @@ from math import pi
 import numpy as np
 from numpy import ma
 
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
+
 import pygimli as pg
 from pygimli.viewer.mpl.dataview import showValMapPatches
+from .visualization import load
+
+
+def generateDataPDF(data, filename="data.pdf"):
+    """Generate a multi-page pdf showing all data properties."""
+    if isinstance(data, str):
+        filename = data.replace('.txt', '-data.pdf')
+        data = load(data)
+
+    with PdfPages(filename) as pdf:
+        fig, ax = plt.subplots()
+        for tok in data.tokenList().split():
+            if data.haveData(tok):
+                pg.show(data, tok, ax=ax, label=tok)
+                fig.savefig(pdf, format='pdf')
+                ax.cla()
+
 
 def showERTData(data, vals=None, **kwargs):
     """Plot ERT data as pseudosection matrix (position over separation).
@@ -69,7 +89,8 @@ def showERTData(data, vals=None, **kwargs):
     try:
         ax, cbar = drawERTData(ax, data, vals=vals, **kwargs)
     except:
-        pg.warning('Something gone wrong while drawing data. Try fallback with equidistant electrodes.')
+        pg.warning('Something gone wrong while drawing data. '
+                   'Try fallback with equidistant electrodes.')
         d = pg.DataContainerERT(data)
         sc = data.sensorCount()
         d.setSensors(list(zip(range(sc), np.zeros(sc))))
@@ -174,6 +195,7 @@ def drawERTData(ax, data, vals=None, **kwargs):
 
     else:
         ytl = generateConfStr(np.sort([int(k) for k in ymap]))
+        # if only DD1/WE1 in WB/SL data rename to WB/SL
         if 'DD1' in ytl and 'WB2' in ytl and 'DD2'not in ytl:
             ytl[ytl.index('DD1')] = 'WB1'
         if 'WA1' in ytl and 'SL2' in ytl and 'WA2'not in ytl:

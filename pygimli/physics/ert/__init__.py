@@ -15,7 +15,7 @@ from .ertModelling import ERTModelling, ERTModellingReference
 from .ertScheme import createData
 from .ves import VESModelling, VESCModelling, VESManager
 
-from .visualization import showERTData
+from .visualization import showERTData, drawERTData, generateDataPDF
 from .importData import load
 
 @pg.renamed(createData, '1.3')  # 20210302
