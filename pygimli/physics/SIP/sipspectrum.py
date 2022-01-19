@@ -583,7 +583,7 @@ class SIPSpectrum(object):
         self.phiOrg = self.phi
         self.phi = np.arctan(sigI/sigR)
         self.ampOrg = self.amp
-        self.amp = 1. / np.sqrt(sigR**2 + sigR**2)
+        self.amp = 1. / np.sqrt(sigR**2 + sigI**2)
         return er
 
     def fitCCPhi(self, ePhi=0.001, lam=1000., mpar=(0, 0, 1),
