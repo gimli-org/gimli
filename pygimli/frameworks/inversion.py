@@ -14,7 +14,8 @@ class Inversion(object):
 
     Changes to prior Versions (remove me)
 
-        * holds the starting model itself, fop only provide a creator for SM
+        * holds the starting model itself, forward operator only provides a
+        method to create the starting model
         fop.createStartModel(dataValues)
 
     Attributes
@@ -30,7 +31,7 @@ class Inversion(object):
     maxIter : int [20]
         Maximal interation number.
     stopAtChi1 : bool [True]
-        Stop iteration when chi² is one. If set to false the iteration stops
+        Stop iteration when chi² is one. If set to False the iteration stops
         after maxIter or convergence reached (self.inv.deltaPhiAbortPercent())
     """
 
@@ -65,10 +66,18 @@ class Inversion(object):
         if fop is not None:
             self.setForwardOperator(fop)
 
+        if "startModel" in kwargs:
+            self.startModel = kwargs["startModel"]
+        else:
+            self._startModel = None
+
     def reset(self):
-        """"""
+        """Reset function currently called at the beginning of every inversion
+        run."""
+        # FW: Note that this is called at the beginning of run. I therefore
+        # removed the startingModel here to allow explicitly set starting models
+        # by the user.
         self._model = None
-        self._startModel = None
         self._dataVals = None
         self._errorVals = None
 
@@ -131,7 +140,7 @@ class Inversion(object):
         """ Gives the current default starting model.
 
         Returns the current default starting model or
-        call fop.createStartmodel() if non is defined.
+        calls `fop.createStartmodel()` if none is defined.
         """
         if self._startModel is None:
             sm = self.fop.regionManager().createStartModel()
@@ -383,7 +392,9 @@ class Inversion(object):
             Overwrite class settings for delta data phi aborting criteria.
             Default is 1%
         cType: int[1]
-            Set global contraints type for all regions.
+            Set global contraint type for all regions.
+        startModel: array
+            Set starting model for the inversion run.
         """
         self.reset()
         if self.isFrameWork:
@@ -404,7 +415,6 @@ class Inversion(object):
         #       self.verbose, self.fop.verbose(), self.inv.verbose())
         self.lam = kwargs.pop('lam', 20)
 
-        # progress = kwargs.pop('progress', None)  # NOT USED
         showProgress = kwargs.pop('showProgress', False)
 
         self.inv.setTransModel(self.fop.modelTrans)
@@ -548,17 +558,20 @@ class Inversion(object):
         return self.model
 
     def showProgress(self, style='all'):
-        r"""Called if showProgress=True is set for the inversion run.
-
-        TODO
-            *Discuss .. its a useful function but breaks a little
-                the FrameWork work only concept.
+        r"""Showing the inversion progress after every iteration. Can show
+        models if `drawModel` method exists. The default fallback is plotting
+        the :math:`\chi^2` fit as a function of iterations. Called if
+        `showProgress=True` is set for the inversion run.
         """
+
+        if self.fop.drawModel is None:
+            style = 'convergence' 
+
         if self.axs is None:
             axs = None
             if style == 'all' or style is True:
                 fig, axs = pg.plt.subplots(1, 2)
-            elif style == 'Model':
+            else:
                 fig, axs = pg.plt.subplots(1, 1)
             self.axs = axs
         ax = self.axs
@@ -571,7 +584,7 @@ class Inversion(object):
                     other_ax.clear()
 
             self.fop.drawModel(ax, self.inv.model())
-        else:
+        elif style == 'all':
             # for other_ax in ax[0].figure.axes:
             #     other_ax.clear()
             for _ax in self.axs:
@@ -598,11 +611,20 @@ class Inversion(object):
                 fontsize=8)
 
             ax[1].figure.tight_layout()
+
+        elif style == 'convergence':
+            ax.semilogy(self.inv.iter(), self.inv.chi2(), "ro")
+            if self.inv.iter() == 1:
+                ax.set_xlabel("Iteration")
+                ax.set_ylabel("$\chi^2$")
+                ax.autoscale(tight=True)
+                ax.axhline(y=1, ls="--")
+
         pg.plt.pause(0.05)
 
 
 class MarquardtInversion(Inversion):
-    """Marquardt scheme (local damping with decreasing regularization."""
+    """Marquardt scheme, i.e. local damping with decreasing strength."""
 
     def __init__(self, fop=None, **kwargs):
         super(MarquardtInversion, self).__init__(fop, **kwargs)
