@@ -124,14 +124,14 @@ class Inversion(object):
 
     @modelTrans.setter
     def modelTrans(self, mt):
-        self.fop.modelTrans = self._modelTrans
+        self.fop.modelTrans = mt  # self._modelTrans # ????
 
     @property
     def startModel(self):
         """ Gives the current default starting model.
 
         Returns the current default starting model or
-        call fop.createStartmodel() if non is defined.
+        call fop.createStartmodel() if none is defined.
         """
         if self._startModel is None:
             sm = self.fop.regionManager().createStartModel()
@@ -158,7 +158,7 @@ class Inversion(object):
             self._startModel = None
         elif isinstance(model, float) or isinstance(model, int):
             self._startModel = np.ones(self.parameterCount) * float(model)
-            pg.info("Startmodel set from given value.", float(model))
+            # pg.info("Startmodel set from given value.", float(model))
         elif hasattr(model, '__iter__'):
             if len(model) == self.parameterCount:
                 pg.info("Startmodel set from given array.", model)
@@ -454,7 +454,9 @@ class Inversion(object):
         # To ensure reproduceability of the run() call, inv.start() will
         # reset self.inv.model() to fop.startModel().
         self.fop.setStartModel(self.startModel)
-        self.inv.setReferenceModel(self.startModel)
+        if kwargs.pop("isReference", False):
+            self.inv.setReferenceModel(self.startModel)
+            pg.info("Setting starting model as reference!")
 
         if self.verbose:
             print("-" * 80)
@@ -530,7 +532,7 @@ class Inversion(object):
                 break
 
             # if dPhi < -minDPhi:
-            if (dPhi > (1.0 - minDPhi / 100.0)) and i > 2:
+            if (dPhi > (1.0 - minDPhi / 100.0)) and i > 2:  # should be minIter
                 if self.verbose:
                     pg.boxprint(
                         "Abort criteria reached: dPhi = {0} (< {1}%)".format(
@@ -609,6 +611,7 @@ class MarquardtInversion(Inversion):
         self.stopAtChi1 = False
         self.inv.setLocalRegularization(True)
         self.inv.setLambdaFactor(0.8)
+        self.inv.setDeltaPhiAbortPercent(0.5)
 
     def run(self, dataVals, errorVals, **kwargs):
         r"""Parameters

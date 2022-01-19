@@ -487,9 +487,9 @@ class ERTManager(MeshMethodManager):
 
         return np.log10(covTrans / paramSizes)
 
-    def standardizedCoverage(self, threshhold=0.01):
+    def standardizedCoverage(self, threshold=0.01):
         """Return standardized coverage vector (0|1) using thresholding."""
-        return 1.0*(abs(self.coverage()) > threshhold)
+        return 1.0*(abs(self.coverage()) > threshold)
 
     def saveResult(self, folder=None, size=(16, 10), **kwargs):
         """Save all results in the specified folder.
