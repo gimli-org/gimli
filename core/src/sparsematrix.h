@@ -1173,13 +1173,12 @@ void SparseMatrix< ValueType >::copy_(const SparseMapMatrix< Complex, Index > & 
 
 /*! SparseMapMatrix specialized type traits in sparsematrix.cpp */
 template <> DLLEXPORT void SparseMapMatrix< double, Index >::copy_(const SparseMatrix<double> & S);
+template <> DLLEXPORT void SparseMapMatrix< Complex, Index >::copy_(const SparseMatrix<Complex> & S);
 
 template< typename ValueType, typename Index >
 void SparseMapMatrix< ValueType, Index >::copy_(const SparseMatrix< double > & S){THROW_TO_IMPL}
-/* template< typename ValueType, typename Index > */
-/* void SparseMapMatrix< ValueType, Index >::copy_(const SparseMatrix< Complex > & S){THROW_TO_IMPL} */
-
-
+template< typename ValueType, typename Index >
+void SparseMapMatrix< ValueType, Index >::copy_(const SparseMatrix< Complex > & S){THROW_TO_IMPL}
 
 template <> DLLEXPORT void SparseMapMatrix< double, Index >::
     add(const ElementMatrix < double > & A, double scale);
