@@ -68,21 +68,45 @@ def generateMatrix(xvec, yvec, vals, **kwargs):
 
 
 def showValMapPatches(vals, xVec=None, yVec=None, dx=1, dy=None, **kwargs):
-    """ """
+    """Show values as patches over x and y vector.
+
+    Parameters
+    ----------
+    vals : iterable
+        values to plot
+    xVec/yVec : iterable
+        x/y axis values
+    dx/dy : float
+        patch width
+    circular : bool
+        assume circular (cyclic) positions
+    """
     ax, _ = pg.show(ax=kwargs.pop('ax', None))
 
     gci, ymap = drawValMapPatches(ax, vals, xVec=xVec, yVec=yVec, dx=dx, dy=dy,
                                   **kwargs)
 
     cbar = None
-    if not kwargs.pop('colorBar', False):
+    if kwargs.pop('colorBar', True):
         cbar = pg.viewer.mpl.createColorBar(gci, **kwargs)
 
     return ax, cbar, ymap
 
 
 def drawValMapPatches(ax, vals, xVec=None, yVec=None, dx=1, dy=None, **kwargs):
-    """ """
+    """Show values as patches over x and y vector.
+
+    Parameters
+    ----------
+    vals : iterable
+        values to plot
+    xVec/yVec : iterable
+        x/y axis values
+    dx/dy : float
+        patch width
+    circular : bool
+        assume circular (cyclic) positions
+    """
     recs = []
 
     circular = kwargs.pop('circular', False)
