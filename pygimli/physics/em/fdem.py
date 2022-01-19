@@ -9,6 +9,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 import pygimli as pg
 from pygimli.viewer.mpl import show1dmodel, drawModel1D
+from .hemmodelling import HEMmodelling
 # from pygimli.matrix import NDMatrix
 
 
@@ -177,6 +178,7 @@ class FDEM():
         self.x = x
         self.frequencies = freqs
         self.coilSpacing = coilSpacing
+        self.scaling = "ppm"
 
         self.IP = inphase
         self.OP = outphase
@@ -401,7 +403,7 @@ class FDEM():
         """Return active (i.e., non-deactivated) frequencies."""
         return self.frequencies[self.activeFreq]
 
-    def FOP(self, nlay=2):  # createFOP deciding upon block or smooth
+    def FOP(self, nlay=2, useHEM=1):  # createFOP deciding upon block or smooth
         """Forward modelling operator using a block discretization.
 
         Parameters
@@ -409,8 +411,12 @@ class FDEM():
         nlay : int
             Number of blocks
         """
-        return pg.core.FDEM1dModelling(nlay, self.freq(), self.coilSpacing,
-                                       -self.height)
+        if useHEM:
+            return HEMmodelling(nlay, self.height, f=self.freq(),
+                                r=self.coilSpacing, scaling=self.scaling)
+        else:
+            return pg.core.FDEM1dModelling(nlay, self.freq(), self.coilSpacing,
+                                           -self.height)
 
     def FOPsmooth(self, zvec):
         """Forward modelling operator using fixed layers (smooth inversion)
@@ -464,8 +470,8 @@ class FDEM():
         return np.tile(np.maximum(err * 0.7071, minvalue), 2)
 #        return pg.asvector(np.tile(np.maximum(err * 0.7071, minvalue), 2))
 
-    def invBlock(self, xpos=0, nlay=2, noise=1.0, show=True,
-                 stmod=30., lam=1000., lBound=0., uBound=0., verbose=False):
+    def invBlock(self, xpos=0, nlay=2, noise=1.0, show=True, stmod=30.,
+                 lam=1000., lBound=0., uBound=0., verbose=False, **kwargs):
         """Create and return Gimli inversion instance for block inversion.
 
         Parameters
@@ -495,29 +501,31 @@ class FDEM():
         verbose : bool
             Be verbose
         """
-        self.transThk = pg.trans.TransLog()
-        self.transRes = pg.trans.TransLogLU(lBound, uBound)
+        # self.transThk = pg.trans.TransLog()
+        # self.transRes = pg.trans.TransLogLU(lBound, uBound)
         # self.transData = pg.trans.Trans()
         self.transData = pg.trans.TransSymLog(tol=0.1)
+        self.transLog = pg.trans.TransLog()
 
+        useHEM = kwargs.pop("useHEM", False)
         # EM forward operator
         if isinstance(nlay, pg.core.FDEM1dModelling):
             self.fop = nlay
         else:
-            self.fop = self.FOP(nlay)
+            self.fop = self.FOP(nlay, useHEM=useHEM)
 
-        data = self.datavec(xpos)
+        dataVec = self.datavec(xpos)
 
-        self.fop.region(0).setTransModel(self.transThk)
-        self.fop.region(1).setTransModel(self.transRes)
+        # self.fop.region(0).setTransModel(self.transThk)
+        # self.fop.region(1).setTransModel(self.transRes)
 
         if isinstance(noise, float):
-            noiseVec = pg.Vector(len(data), noise)
+            errorVec = pg.Vector(len(dataVec), noise)
         else:
-            noiseVec = pg.asvector(noise)
+            errorVec = pg.asvector(noise)
 
         # independent EM inversion
-        self.inv = pg.Inversion(data, self.fop, self.transData, verbose)
+
         if isinstance(stmod, float):  # real model given
             model = pg.Vector(nlay * 2 - 1, stmod)
             model[0] = 2.
@@ -527,15 +535,31 @@ class FDEM():
             else:
                 model = pg.Vector(nlay * 2 - 1, 30.)
 
-        self.inv.setAbsoluteError(noiseVec)
-        self.inv.setLambda(lam)
-        self.inv.setMarquardtScheme(0.8)
-        self.inv.setDeltaPhiAbortPercent(0.5)
-        self.inv.setModel(model)
-        # self.inv.setReferenceModel(model)
-        self.model1d = self.inv.run()
+            print("Model", model)
+        if 1:
+            from pygimli.frameworks import MarquardtInversion
+            self.inv = MarquardtInversion(fop=self.fop, verbose=verbose,
+                                          debug=True)
+            self.inv.dataTrans = self.transData
+            self.inv.modelTrans = self.transLog
+            # self.dataTrans = self.transData
+            self.model1d = self.inv.run(dataVec, np.abs(errorVec/dataVec),
+                                        lam=lam, startModel=model, **kwargs)
+            response = self.inv.response
+        else:
+            self.inv = pg.core.RInversion(data, self.fop, self.transData,
+                                          verbose)
+            self.inv.setAbsoluteError(errorVec)
+            self.inv.setLambda(lam)
+            self.inv.setMarquardtScheme(0.8)
+            self.inv.setDeltaPhiAbortPercent(0.5)
+            self.inv.setModel(model)
+            self.model1d = self.inv.run()
+            response = self.inv.response()
+
         if show:
-            self.plotData(response=self.inv.response())
+            self.plotData(xpos=xpos, response=response)
+
         return self.model1d
 
     def plotData(self, xpos=0, response=None, error=None, ax=None,
