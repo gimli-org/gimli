@@ -2048,7 +2048,6 @@ void DCMultiElectrodeModelling::calculateK_(const std::vector < ElectrodeShape *
 
         if (buildCompleteElectrodeModel_){
             //__MS(sol(oldMatSize, sol.size()- passiveCEM_.size()));
-			std::cout << "SOL" << sol(1, 10) << std::endl;
 			if (complex_){
             	potentialsCEM_[i] = TmpToRealHACK((sol(oldMatSize, sol.size() - passiveCEM_.size())));
             	potentialsCEM_[i + nCurrentPattern] = TmpToImagHACK((sol(oldMatSize, sol.size() - passiveCEM_.size())));
