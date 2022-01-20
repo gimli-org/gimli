@@ -22,12 +22,10 @@ else:
         pg.warn("Please consider updating PyVista to at least {}".format(
             vers_needs))
     pg.debug("Using pyvista: {}".format(vers_users))
-    from pygimli.viewer.pv import drawModel
-
+    from pg.viewer.pv import drawModel
 
 # True for Jupyter notebooks and sphinx-builds
-_backend = plt.get_backend().lower()
-_inlineBackend_ = "inline" in _backend or _backend == "agg"
+_inlineBackend_ = not pg.viewer.isInteractive()
 
 if PyQt5 is None or _inlineBackend_:
     _inlineBackend_ = True

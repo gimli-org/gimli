@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.10) 
+#recommanded: cmake_minimum_required(VERSION 3.15)
 #BOOST_MAX_VERISION: 1.65 UBUNTU:18
 
 
@@ -130,7 +131,7 @@ set(PACKAGE_AUTHORS  \"carsten@pygimli.org thomas@pygimli.org florian@pygimli.or
 # Check for libs and other packages we might use.
 ################################################################################
 
-if(NOT THIRDPARTY_DIR)
+if (NOT THIRDPARTY_DIR)
     if (NOT ADDRESSMODEL)
         if("${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
             message(STATUS "Target is 64 bits")
@@ -151,7 +152,7 @@ if(NOT THIRDPARTY_DIR)
     message(STATUS "External set to: ${EXTERNAL_DIR}")
 endif()
 
-if(NOT EXTERNAL_DIR)
+if (NOT EXTERNAL_DIR)
 set(EXTERNAL_DIR ${PROJECT_SOURCE_DIR}/external/)
 message(STATUS "External set to: ${EXTERNAL_DIR}")
 endif()
@@ -159,20 +160,23 @@ endif()
 find_package(Threads REQUIRED)
 
 ################################################################################
-# Check for python stuff
+#   python
 ################################################################################
+message(STATUS "********** PYTHON ***********")
 if (NOT PYVERSION)
     set(PYVERSION 3)
 endif()
 
-if (NOT PYTHON_EXECUTABLE AND NOT ${CMAKE_VERSION} VERSION_LESS "3.14.0")
+if (NOT PYTHON_EXECUTABLE AND NOT ${CMAKE_VERSION} VERSION_LESS "3.15.0")
     message(STATUS "Searching for python:" ${PYVERSION})
+    set (Python_FIND_STRATEGY LOCATION) # from cmake 3.15
     find_package(Python ${PYVERSION} EXACT COMPONENTS Interpreter NumPy Development REQUIRED)
 
-    # message(STATUS "Python_Interpreter_FOUND: ${Python_Interpreter_FOUND} ${Python_EXECUTABLE} version: ${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}.${Python_VERSION_PATCH}")
-    # message(STATUS "Python_INCLUDE_DIRS: ${Python_INCLUDE_DIRS}")
-    # message(STATUS "Python_LIBRARIES: ${Python_LIBRARIES} ${Python_LIBRARY_DIRS}")
-    # message(STATUS "Python_NumPy: ${Python_NumPy_FOUND}, ${Python_NumPy_INCLUDE_DIRS}, ${Python_NumPy_VERSION}")
+    message(STATUS "Python_Interpreter_ID: ${Python_Interpreter_ID}")
+    message(STATUS "Python_Interpreter_FOUND: ${Python_Interpreter_FOUND} ${Python_EXECUTABLE} version: ${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}.${Python_VERSION_PATCH}")
+    message(STATUS "Python_INCLUDE_DIRS: ${Python_INCLUDE_DIRS}")
+    message(STATUS "Python_LIBRARIES: ${Python_LIBRARIES} ${Python_LIBRARY_DIRS}")
+    message(STATUS "Python_NumPy: ${Python_NumPy_FOUND}, ${Python_NumPy_INCLUDE_DIRS}, ${Python_NumPy_VERSION}")
     set (PYTHON_FOUND TRUE CACHE BOOL "Is python available")
 else()
     
@@ -198,12 +202,17 @@ else()
     set (PYTHON_FOUND TRUE CACHE BOOL "Is python available")
 endif()
 
+################################################################################
+#   boost
+################################################################################
+message(STATUS "********** BOOST ***********")
+
 function(find_boost_from_distname_file)
     set (BOOST_DIST_NAME_FILE "${EXTERNAL_DIR}/.boost-py${Python_VERSION_MAJOR}.dist")
     message(STATUS "locking for ${BOOST_DIST_NAME_FILE}")
 
     if (EXISTS ${BOOST_DIST_NAME_FILE})
-        message(STATUS "reading ${BOOST_DIST_NAME_FILE}")
+        message(STATUS "Found: ${BOOST_DIST_NAME_FILE}")
         FILE(READ "${EXTERNAL_DIR}/.boost-py${Python_VERSION_MAJOR}.dist" BOOST_DIST_NAME)
         STRING(REGEX REPLACE "\n" "" BOOST_DIST_NAME "${BOOST_DIST_NAME}")
         get_filename_component(BOOST_ROOT "${EXTERNAL_DIR}/${BOOST_DIST_NAME}" ABSOLUTE)
@@ -223,44 +232,43 @@ function(find_boost_from_distname_file)
     endif()
 endfunction(find_boost_from_distname_file)
 
+message(STATUS "Trying to guess boost installation:")
+
+if (NOT Boost_INCLUDE_DIR)
+    message(STATUS "no Boost_INCLUDE_DIR")
+    
+    if (BOOST_ROOT)
+        message(STATUS "Found boost root: ${BOOST_ROOT}")
+        get_filename_component(BOOST_ROOT "${BOOST_ROOT}" ABSOLUTE)
+        set(Boost_INCLUDE_DIR ${BOOST_ROOT}/include CACHE FILEPATH "Boost inlude path")
+        message(STATUS "set Boost_INCLUDE_DIR: ${Boost_INCLUDE_DIR}")
+    else()
+        message(STATUS "no boost root .. building local")
+        if (NOT Boost_INCLUDE_DIR)
+            find_boost_from_distname_file()
+            find_or_build_package(Boost boost)
+            find_boost_from_distname_file()
+        else()
+            find_boost_from_distname_file()
+            find_or_build_package_check(Boost boost Boost_INCLUDE_DIR False)
+            find_boost_from_distname_file()
+        endif()
+    endif(BOOST_ROOT)
+endif(NOT Boost_INCLUDE_DIR)
+
+message(STATUS "BOOST_ROOT: ${BOOST_ROOT}")
+message(STATUS "Boost_INCLUDE_DIR: ${Boost_INCLUDE_DIR}")
+
 if (NOT USE_BOOST_THREAD)
     set (USE_BOOST_THREAD FALSE)
 endif()
 
-if (1)
-    message(STATUS "Trying to guess boost installation:")
-    if (NOT Boost_INCLUDE_DIR)
-        message(STATUS "no Boost_INCLUDE_DIR")
-        if (BOOST_ROOT)
-            message(STATUS "Found boost root: ${BOOST_ROOT}")
-            get_filename_component(BOOST_ROOT "${BOOST_ROOT}" ABSOLUTE)
-            set(Boost_INCLUDE_DIR ${BOOST_ROOT}/include CACHE FILEPATH "Boost inlude path")
-            message(STATUS "set Boost_INCLUDE_DIR: ${Boost_INCLUDE_DIR}")
-        else()
-	    #if (NOT WIN32)
-	    #    find_package(Boost COMPONENTS python36)
-	    #endif()
-            # we should think about cmake superbuild with ExternalProject_Add as the replacement for find_or_build_package (next generation)
-            if (NOT Boost_INCLUDE_DIR)
-                find_boost_from_distname_file()
-            else()
-                find_or_build_package_check(Boost boost Boost_INCLUDE_DIR False)
-                find_boost_from_distname_file()
-            endif()
-
-        endif(BOOST_ROOT)
-    endif(NOT Boost_INCLUDE_DIR)
-
-    message(STATUS "BOOST_ROOT: ${BOOST_ROOT}")
-    message(STATUS "Boost_INCLUDE_DIR: ${Boost_INCLUDE_DIR}")
-
-    if (USE_BOOST_THREAD)
-        find_package(Boost 1.46.0 COMPONENTS system thread REQUIRED)
-        link_directories(${BOOST_LIBRARYDIR})
-    endif()
-
-    mark_as_advanced(Boost_INCLUDE_DIR BOOST_ROOT)
+if (USE_BOOST_THREAD)
+    find_package(Boost 1.46.0 COMPONENTS system thread REQUIRED)
+    link_directories(${BOOST_LIBRARYDIR})
 endif()
+
+mark_as_advanced(Boost_INCLUDE_DIR BOOST_ROOT)
 
 if (NOT USE_BOOST_THREAD)
     set(Boost_THREAD_FOUND OFF)
@@ -273,6 +281,96 @@ else()
     set(THREADS "boost")
 endif()
 
+################################################################################
+# Manuall check for boost python
+################################################################################
+message(STATUS "********** BOOST_PYTHON ***********")
+function(find_boost_python_manual bp_version)
+    message(STATUS "----------- searching for libboost_python${bp_version}")
+    find_package(Boost 1.65 COMPONENTS "python${bp_version}")
+
+    if (${Boost_PYTHON${bp_version}_FOUND})
+        set(Boost_PYTHON_FOUND ${Boost_PYTHON${bp_version}_FOUND} PARENT_SCOPE)
+        set(Boost_PYTHON_LIBRARY ${Boost_PYTHON${bp_version}_LIBRARY} PARENT_SCOPE)
+        # set(Boost_PYTHON_FOUND ${Boost_PYTHON${bp_version}_FOUND} CACHE BOOL "boost python lib found")
+        # set(Boost_PYTHON_LIBRARY ${Boost_PYTHON${bp_version}_LIBRARY_RELEASE} CACHE FILEPATH "boost python lib(find_boost_python_manual)")
+
+        message(STATUS "----------- found: ${Boost_PYTHON_LIBRARY}")
+    else()
+        message(STATUS "----------- not found.")
+    endif()
+endfunction()
+
+if (NOT Boost_PYTHON_LIBRARY)
+    message(STATUS "boost-python not found by cmake ... trying to determine boost-python now manually ...")
+    if (WIN32)
+        set(bp_version "python${Python_VERSION_MAJOR}${Python_VERSION_MINOR}-mt")
+        string(TOUPPER ${bp_version} BP_VERSION)
+
+        message(STATUS "... looking for ${bp_version} in BOOST_ROOT=${BOOST_ROOT}")
+        find_package(Boost 1.65 COMPONENTS "${bp_version}")
+        set(Boost_PYTHON_FOUND ${Boost_${bp_version}_FOUND} CACHE BOOL "boost python found")
+        set(Boost_PYTHON_LIBRARY ${Boost_${BP_VERSION}_LIBRARY} CACHE FILEPATH "boost python lib")
+
+        if (NOT Boost_PYTHON_FOUND)
+            set(Boost_PYTHON_LIBRARY ${BOOST_ROOT}/lib/libboost_${bp_version}.dll)
+            message(STATUS "... looking for ${Boost_PYTHON_LIBRARY}")
+            if (EXISTS ${Boost_PYTHON_LIBRARY})
+                message(STATUS "... found.")
+                set(Boost_PYTHON_FOUND TRUE CACHE BOOL "boost python lib found")
+                set(Boost_PYTHON_LIBRARY ${Boost_PYTHON_LIBRARY} CACHE FILEPATH "boost python lib")
+            else()
+                message(STATUS "Sorry but no boost-python found.")
+            endif()
+        endif()
+    else()
+        # the name for py3 boost-python library lacks probably py3 suffix, which is different for different OS
+        #set (Boost_PYTHON_FOUND False)
+        #set (Boost_PYTHON_LIBRARY "None")
+        if (NOT Boost_PYTHON_FOUND)
+            # /usr/lib/libboost_python37.so # gentoo >=boost-1.70)
+            set(bp_version "${Python_VERSION_MAJOR}${Python_VERSION_MINOR}")
+            find_boost_python_manual(${bp_version})
+        endif()
+        if (NOT Boost_PYTHON_FOUND)
+            #/usr/lib/x86_64-linux-gnu/libboost_python-py34.so (debian)
+            set(bp_version "-py${Python_VERSION_MAJOR}${Python_VERSION_MINOR}")
+            find_boost_python_manual(${bp_version})
+        endif()
+        if (NOT Boost_PYTHON_FOUND)
+            # /usr/lib/libboost_python3-py37.so # weird debian)
+            set(bp_version "${Python_VERSION_MAJOR}-py${Python_VERSION_MAJOR}${Python_VERSION_MINOR}")
+            find_boost_python_manual(${bp_version})
+        endif()
+        if (NOT Boost_PYTHON_FOUND)
+            # /usr/lib/libboost_python3.so.1.64.0 (arch style)
+            set(bp_version "${Python_VERSION_MAJOR}")
+            find_boost_python_manual(${bp_version})
+        endif()
+        if (NOT Boost_PYTHON_FOUND)
+            # /usr/lib/libboost_python-3.4.so (gentoo <boost-1.70)
+            set(bp_version "-${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}")
+            find_boost_python_manual(${bp_version})
+        endif()
+    endif()
+
+    if (Boost_PYTHON_FOUND)
+        message(STATUS "Boost_PYTHON_FOUND:" ${Boost_PYTHON_FOUND})
+        message(STATUS "Boost_PYTHON_LIBRARY:" ${Boost_PYTHON_LIBRARY})
+    else()
+        message(STATUS "Sorry but no boost-python found. Please search for "
+                       "any libboost_python* on your system and "
+                       "provide it to the authors so we can try to fix "
+                       "this here.")
+        exit()
+    endif()
+endif()
+
+
+################################################################################
+#   misc third party stuff
+################################################################################
+message(STATUS "********** Misc ***********")
 # Find packages that CHOLMOD depends on
 set(CMAKE_LIBRARY_PATH ${EXTERNAL_DIR}/lib $ENV{EXTERNAL_DIR}/lib ${CMAKE_LIBRARY_PATH})
 
@@ -363,93 +461,6 @@ else(WIN32)
 endif(WIN32)
 else()
     set(READPROC_FOUND FALSE)
-endif()
-
-################################################################################
-# Manuall check for boost python
-################################################################################
-function(find_boost_python_manual bp_version)
-    message(STATUS "----------- searching for libboost_python${bp_version}")
-    find_package(Boost 1.65 COMPONENTS "python${bp_version}")
-
-    if (${Boost_PYTHON${bp_version}_FOUND})
-        set(Boost_PYTHON_FOUND ${Boost_PYTHON${bp_version}_FOUND} PARENT_SCOPE)
-        set(Boost_PYTHON_LIBRARY ${Boost_PYTHON${bp_version}_LIBRARY} PARENT_SCOPE)
-        # set(Boost_PYTHON_FOUND ${Boost_PYTHON${bp_version}_FOUND} CACHE BOOL "boost python lib found")
-        # set(Boost_PYTHON_LIBRARY ${Boost_PYTHON${bp_version}_LIBRARY_RELEASE} CACHE FILEPATH "boost python lib(find_boost_python_manual)")
-
-        message(STATUS "----------- found: ${Boost_PYTHON_LIBRARY}")
-    else()
-        message(STATUS "----------- not found.")
-    endif()
-endfunction()
-
-message(STATUS "*************** ${Boost_PYTHON_LIBRARY}")
-
-
-if (NOT Boost_PYTHON_LIBRARY)
-    message(STATUS "boost-python not found by cmake ... trying to determine boost-python now manually ...")
-    if (WIN32)
-        set(bp_version "python${Python_VERSION_MAJOR}${Python_VERSION_MINOR}-mt")
-        string(TOUPPER ${bp_version} BP_VERSION)
-
-        message(STATUS "... looking for ${bp_version} in BOOST_ROOT=${BOOST_ROOT}")
-        find_package(Boost 1.65 COMPONENTS "${bp_version}")
-        set(Boost_PYTHON_FOUND ${Boost_${bp_version}_FOUND} CACHE BOOL "boost python found")
-        set(Boost_PYTHON_LIBRARY ${Boost_${BP_VERSION}_LIBRARY} CACHE FILEPATH "boost python lib")
-
-        if (NOT Boost_PYTHON_FOUND)
-            set(Boost_PYTHON_LIBRARY ${BOOST_ROOT}/lib/libboost_${bp_version}.dll)
-            message(STATUS "... looking for ${Boost_PYTHON_LIBRARY}")
-            if (EXISTS ${Boost_PYTHON_LIBRARY})
-                message(STATUS "... found.")
-                set(Boost_PYTHON_FOUND TRUE CACHE BOOL "boost python lib found")
-                set(Boost_PYTHON_LIBRARY ${Boost_PYTHON_LIBRARY} CACHE FILEPATH "boost python lib")
-            else()
-                message(STATUS "Sorry but no boost-python found.")
-            endif()
-        endif()
-    else()
-        # the name for py3 boost-python library lacks probably py3 suffix, which is different for different OS
-        #set (Boost_PYTHON_FOUND False)
-        #set (Boost_PYTHON_LIBRARY "None")
-        if (NOT Boost_PYTHON_FOUND)
-            # /usr/lib/libboost_python37.so # gentoo >=boost-1.70)
-            set(bp_version "${Python_VERSION_MAJOR}${Python_VERSION_MINOR}")
-            find_boost_python_manual(${bp_version})
-        endif()
-        if (NOT Boost_PYTHON_FOUND)
-            #/usr/lib/x86_64-linux-gnu/libboost_python-py34.so (debian)
-            set(bp_version "-py${Python_VERSION_MAJOR}${Python_VERSION_MINOR}")
-            find_boost_python_manual(${bp_version})
-        endif()
-        if (NOT Boost_PYTHON_FOUND)
-            # /usr/lib/libboost_python3-py37.so # weird debian)
-            set(bp_version "${Python_VERSION_MAJOR}-py${Python_VERSION_MAJOR}${Python_VERSION_MINOR}")
-            find_boost_python_manual(${bp_version})
-        endif()
-        if (NOT Boost_PYTHON_FOUND)
-            # /usr/lib/libboost_python3.so.1.64.0 (arch style)
-            set(bp_version "${Python_VERSION_MAJOR}")
-            find_boost_python_manual(${bp_version})
-        endif()
-        if (NOT Boost_PYTHON_FOUND)
-            # /usr/lib/libboost_python-3.4.so (gentoo <boost-1.70)
-            set(bp_version "-${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}")
-            find_boost_python_manual(${bp_version})
-        endif()
-    endif()
-
-    if (Boost_PYTHON_FOUND)
-        message(STATUS "Boost_PYTHON_FOUND:" ${Boost_PYTHON_FOUND})
-        message(STATUS "Boost_PYTHON_LIBRARY:" ${Boost_PYTHON_LIBRARY})
-    else()
-        message(STATUS "Sorry but no boost-python found. Please search for "
-                       "any libboost_python* on your system and "
-                       "provide it to the authors so we can try to fix "
-                       "this here.")
-        exit()
-    endif()
 endif()
 
 if (NOT CASTER)

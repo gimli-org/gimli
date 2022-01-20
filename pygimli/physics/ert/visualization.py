@@ -12,14 +12,13 @@ from matplotlib.backends.backend_pdf import PdfPages
 
 import pygimli as pg
 from pygimli.viewer.mpl.dataview import showValMapPatches
-from .visualization import load
 
 
 def generateDataPDF(data, filename="data.pdf"):
     """Generate a multi-page pdf showing all data properties."""
     if isinstance(data, str):
         filename = data.replace('.txt', '-data.pdf')
-        data = load(data)
+        data = pg.load(data)
 
     with PdfPages(filename) as pdf:
         fig, ax = plt.subplots()
