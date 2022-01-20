@@ -148,13 +148,21 @@ def simulate(mesh, scheme, res, **kwargs):
     if isinstance(res[0], np.complex) or isinstance(res, pg.CVector):
         pg.info("Complex resistivity values found.")
         fop.setComplex(True)
+        is_complex = True
     else:
         fop.setComplex(False)
+        is_complex = False
 
     if not scheme.allNonZero('k') and not calcOnly:
         if verbose:
             pg.info('Calculate geometric factors.')
+        if is_complex:
+            # temporary set to real-valued modeling for computation of
+            # geometric factors
+            fop.setComplex(False)
         scheme.set('k', fop.calcGeometricFactor(scheme))
+        if is_complex:
+            fop.setComplex(True)
 
     ret = pg.DataContainerERT(scheme)
     # just to be sure that we don't work with artifacts
