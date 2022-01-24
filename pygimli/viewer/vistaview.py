@@ -22,7 +22,7 @@ else:
         pg.warn("Please consider updating PyVista to at least {}".format(
             vers_needs))
     pg.debug("Using pyvista: {}".format(vers_users))
-    from pg.viewer.pv import drawModel
+    from pygimli.viewer.pv import drawModel
 
 # True for Jupyter notebooks and sphinx-builds
 _inlineBackend_ = not pg.viewer.isInteractive()
