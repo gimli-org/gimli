@@ -74,26 +74,27 @@ def show(obj=None, data=None, **kwargs):
         print("Deprecation Warning: Please use keyword `ax` instead of `axes`")
         kwargs['ax'] = kwargs.pop('axes', None)
 
-    # Empty call just to create a axes
-    if obj is None and 'mesh' not in kwargs:
+    # Empty call just to create an axes
+    # if obj is None and 'mesh' not in kwargs:
+    if obj is None and not 'mesh' in kwargs.keys():
         ax = kwargs.pop('ax', None)
 
         if ax is None:
             ax = plt.subplots(figsize=kwargs.pop('figsize', None))[1]
         return ax, None
 
-    # try to interprete obj containes a mesh
+    # try to check if obj containes a mesh
     if hasattr(obj, 'mesh'):
         return pg.show(obj.mesh, obj, **kwargs)
 
-    # try to interprete obj as ERT Data
+    # try to interpret obj as ERT Data
     if isinstance(obj, pg.DataContainerERT):
         from pygimli.physics.ert import showERTData
         return showERTData(obj, vals=kwargs.pop('vals', data), **kwargs)
 
-    # try to interprete obj as matrices
-    if isinstance(obj, pg.core.MatrixBase) or \
-       (isinstance(obj, np.ndarray) and obj.ndim == 2):
+    # try to interpret obj as matrices
+    if isinstance(obj, pg.core.MatrixBase) or (isinstance(obj, np.ndarray) and
+                                               obj.ndim == 2):
         return showMatrix(obj, **kwargs)
 
     try:
