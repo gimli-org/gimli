@@ -39,7 +39,7 @@ def modelColeColeRho(f, rho, m, tau, c, a=1):
 
     Examples
     --------
-    
+
     >>> import numpy as np
     >>> import pygimli as pg
     >>> from pygimli.physics.SIP import modelColeColeRho
@@ -81,12 +81,12 @@ def modelColeColeRho(f, rho, m, tau, c, a=1):
 
 
 def ColeColeRhoDouble(f, rho, m1, t1, c1, m2, t2, c2):
-    pg.deprecated("Please use modelColeColeRhoDouble instead of ColeColeRhoDouble.")
+    pg.deprecated("Use modelColeColeRhoDouble instead of ColeColeRhoDouble.")
     return modelColeColeRhoDouble(f, rho, m1, t1, c1, m2, t2, c2)
 
 
-def modelColeColeRhoDouble(f, rho, m1, t1, c1, m2, t2, c2, a=1):
-    """Frequency-domain Double Cole-Cole impedance model
+def modelColeColeRhoDouble(f, rho, m1, t1, c1, m2, t2, c2, a=1, mult=False):
+    """Frequency-domain double Cole-Cole resistivity (impedance) model.
 
     Frequency-domain Double Cole-Cole impedance model returns the sum of
     two Cole-Cole Models with a common amplitude.
@@ -94,7 +94,10 @@ def modelColeColeRhoDouble(f, rho, m1, t1, c1, m2, t2, c2, a=1):
     """
     Z1 = modelColeColeRho(f, rho=1, m=m1, tau=t1, c=c1, a=a)
     Z2 = modelColeColeRho(f, rho=1, m=m2, tau=t2, c=c2, a=a)
-    return rho * (Z1 + Z2)
+    if mult:
+        return rho * Z1 * Z2
+    else:
+        return rho * (Z1 + Z2 - 1)
 
 
 def ColeColeSigma(f, sigma, m, tau, c, a=1):
@@ -103,12 +106,30 @@ def ColeColeSigma(f, sigma, m, tau, c, a=1):
 
 
 def modelColeColeSigma(f, sigma, m, tau, c, a=1):
-    """Complex-valued conductivity Cole-Cole model"""
+    """Complex-valued conductivity (admittance) Cole-Cole model."""
     return (1. + m / (1-m) * (1. - relaxationTerm(f, tau, c, a))) * sigma
 
 
+def modelColeColeSigmaTauRho(f, sigma, m, tau, c, a=1):
+    """Complex-valued conductivity (admittance) Cole-Cole model."""
+    return (1. + m / (1-m) * (1. - relaxationTerm(f, tau, c, a)*(1-m))) * sigma
+
+
+def modelColeColeSigmaDouble(f, sigma, m1, t1, c1, m2, t2, c2, a=1,
+                             tauRho=True):
+    """Complex-valued double added conductivity (admittance) model."""
+    if tauRho:
+        R1 = 1. - relaxationTerm(f, tau=t1, c=c1, a=a, p=1-m1)
+        R2 = 1. - relaxationTerm(f, tau=t2, c=c2, a=a, p=1-m2)
+        return sigma * (1. + m1 / (1 - m1) * R1 + m2 / (1 - m2) * R2)
+    else:
+        A1 = modelColeColeSigma(f, sigma=1, m=m1, tau=t1, c=c1, a=a)
+        A2 = modelColeColeSigma(f, sigma=1, m=m2, tau=t2, c=c2, a=a)
+        return (A1 + A2 - 1.) * sigma
+
+
 def tauRhoToTauSigma(tRho, m, c):
-    r"""Convert :math:`\tau_{\rho}` to :math:`\tau_{\sigma}` for Cole-Cole-Model.
+    r"""Convert :math:`\tau_{\rho}` to :math:`\tau_{\sigma}` Cole-Cole model.
 
     .. math::
 
@@ -118,7 +139,8 @@ def tauRhoToTauSigma(tRho, m, c):
     --------
     >>> import numpy as np
     >>> import pygimli as pg
-    >>> from pygimli.physics.SIP import modelColeColeRho, modelColeColeSigma, tauRhoToTauSigma
+    >>> from pygimli.physics.SIP import modelColeColeRho, modelColeColeSigma
+    >>> from pygimli.physics.SIP import tauRhoToTauSigma
     >>> tr = 1.
     >>> Z = modelColeColeRho(1e5, rho=10.0, m=0.5, tau=tr, c=0.5)
     >>> ts = tauRhoToTauSigma(tr, m=0.5, c=0.5)
@@ -131,9 +153,23 @@ def tauRhoToTauSigma(tRho, m, c):
     return tRho * (1-m) ** (1/c)
 
 
-def relaxationTerm(f, tau, c=1., a=1.):
-    """Auxiliary function for Debye type relaxation term."""
-    return 1. / ((f * 2. * pi * tau * 1j)**c + 1.)**a
+def relaxationTerm(f, tau, c=1., a=1., p=1.):
+    r"""Auxiliary function for Debye type relaxation term of the basic type
+
+    .. math::
+
+        A(f,\tau,c)  = \frac{1}{1+(\jmath 2\pi f \tau)^c}
+
+    or the more generalized term
+
+    .. math::
+
+        A(f,\tau,c,a,p)  = \frac{1}{(1+(\jmath 2\pi f \tau)^c p)^a}
+
+    With c=1 and a one yields the Cole-Davidson model.
+    With p=(1-m) one can account for the difference of sigma and rho tau.
+    """
+    return 1. / ((f * 2. * pi * tau * 1j)**c * p + 1.)**a
 
 
 def DebyeRelaxation(f, tau, m):
@@ -157,7 +193,7 @@ def relaxationWarbug(f, tau, m):
 
 
 def ColeColeEpsilon(f, e0, eInf, tau, alpha):
-    pg.deprecated("Please use modelColeColeEpsilon instead of ColeColeEpsilon.")
+    pg.deprecated("Use modelColeColeEpsilon instead of ColeColeEpsilon.")
     return modelColeColeEpsilon(f, e0, eInf, tau, alpha)
 
 
@@ -244,7 +280,6 @@ class DoubleColeColePhi(pg.core.ModellingBase):
         """phase angle of the model"""
         spec1 = modelColeColeRho(self.f_, 1.0, par[0], par[1], par[2])
         spec2 = modelColeColeRho(self.f_, 1.0, par[3], par[4], par[5])
-        #return -np.angle(spec1 * spec2)
 
         return -np.angle(spec1) - np.angle(spec2)
 
@@ -315,7 +350,7 @@ class DebyePhi(pg.core.ModellingBase):
         self.f_ = fvec
         self.nf_ = len(fvec)
         self.t_ = tvec
-        self.mesh = pg.meshtools.createMesh1D(len(tvec))  # standard 1d discretization
+        self.mesh = pg.meshtools.createMesh1D(len(tvec))  # standard 1d mesh
         self.setMesh(self.mesh)
 
     def response(self, par):
@@ -336,7 +371,7 @@ class DebyeComplex(pg.core.ModellingBase):
         self.nf = len(fvec)
         self.t = tvec
         self.nt = len(tvec)
-        mesh = pg.meshtools.createMesh1D(len(tvec))  # standard 1d discretization
+        mesh = pg.meshtools.createMesh1D(len(tvec))  # standard 1d mesh
         super(DebyeComplex, self).__init__(mesh, verbose)
         T, W = np.meshgrid(tvec, fvec * 2. * pi)
         WT = W*T

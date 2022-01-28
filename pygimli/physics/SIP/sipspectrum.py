@@ -453,7 +453,8 @@ class SIPSpectrum(object):
                                    axs=ax, **kwargs)
             self.fig['data'] = fig
 
-        plt.show(block=False)
+        ax[0].set_title(kwargs.pop("title", self.basename))
+        # plt.show(block=False)
         return fig, ax
 
     def getKK(self, use0=False):
@@ -480,13 +481,14 @@ class SIPSpectrum(object):
     def showDataKK(self, use0=False):
         """Show data as real/imag subplots along with Kramers-Kronig curves"""
         fig, ax = self.showData(reim=True)
-        self.fig['dataKK'] = fig
         reKK, imKK = self.getKK(use0)
-        ax[0].plot(self.f, reKK, label='KK')
-        ax[1].plot(self.f, imKK, label='KK')
-        for i in (0, 1):
-            ax[i].set_yscale('linear')
-            ax[i].legend()
+        ax[0].semilogx(self.f, reKK, label='KK')
+        ax[1].semilogx(self.f, imKK, label='KK')
+        for a in ax:
+            a.set_yscale('linear')
+            a.legend()
+
+        self.fig['dataKK'] = fig
         return fig, ax
 
     def checkCRKK(self, useEps=False, use0=False, ax=None):
@@ -494,14 +496,16 @@ class SIPSpectrum(object):
         if ax is None:
             fig, ax = plt.subplots()
             self.fig['dataCRKK'] = fig
-        ax.semilogx(self.f, self.phi*1000, label='org')
-        ax.semilogx(self.f, self.getPhiKK(use0)*1000, label='orgKK')
+
+        ax.semilogx(self.f, self.phi*1000, "+-", label='org')
+        ax.semilogx(self.f, self.getPhiKK(use0)*1000, "x-", label='orgKK')
         if useEps:
             self.removeEpsilonEffect()
         else:
             self.fitCCEM()
-        ax.semilogx(self.f, self.phi*1000, label='corr')
-        ax.semilogx(self.f, self.getPhiKK(use0)*1000, label='corrKK')
+
+        ax.semilogx(self.f, self.phi*1000, "+--", label='corr')
+        ax.semilogx(self.f, self.getPhiKK(use0)*1000, "+--", label='corrKK')
         ax.grid(True)
         ax.legend(loc='best')
 
@@ -624,10 +628,9 @@ class SIPSpectrum(object):
             absolute error of phase angle
         lam : float
             regularization parameter
-        mpar, taupar, cpar : list[3]
+        mpar1/2, taupar1/2, cpar1/2 : list[3]
             inversion parameters (starting value, lower bound, upper bound)
-            for Cole-Cole parameters (m, tau, c) and EM relaxation time (em)
-
+            for the two Cole-Cole parameters (m, tau, c)
         """
         if taupar1[0] == 0:
             taupar1 = (np.sqrt(taupar1[1]*taupar1[2]), taupar1[1], taupar1[2])
@@ -694,6 +697,24 @@ class SIPSpectrum(object):
         else:
             self.mCC, self.ampCC, self.phiCC = fitCCC(self.f, self.amp,
                                                       self.phi, **kwargs)
+
+    def fitDoubleColeCole(self, ePhi=0.001, lam=1000., mpar=(0, 0, 1),
+                  taupar1=(0, 1e-5, 1), taupar2=(0, 1e-1, 1000),
+                  cpar=(0.5, 0, 1), verbose=False):
+        """Fit  Cole-Cole term to phase only
+
+        Parameters
+        ----------
+        ePhi : float
+            absolute error of phase angle
+        lam : float
+            regularization parameter
+        mpar1/2, taupar1/2, cpar1/2 : list[3]
+            inversion parameters (starting value, lower bound, upper bound)
+            for Cole-Cole parameters (m, tau, c)
+
+        """
+        pass
 
     def fitDebyeModel(self, ePhi=0.001, lam=1e3, lamFactor=0.8,
                       mint=None, maxt=None, nt=None, new=True,
