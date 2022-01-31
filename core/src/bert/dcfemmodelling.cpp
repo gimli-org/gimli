@@ -1749,8 +1749,6 @@ void DCMultiElectrodeModelling::calculate(DataContainerERT & data, bool reciproc
 
 void DCMultiElectrodeModelling::calculate(DataMap & dMap){
     //! create current pattern;
-	std::cout << "Calculating using a dMap" << std::endl;
-
     if (dipoleCurrentPattern_){
         throwError(WHERE_AM_I + " Unable to calculate(datamap) using dipoleCurrentPattern. Use calculate(DataContainer) instead ");
     }
@@ -1793,7 +1791,6 @@ class CalculateMT{
 void DCMultiElectrodeModelling::calculate(const std::vector < ElectrodeShape * > & eA,
                                           const std::vector < ElectrodeShape * > & eB){
 
-	std::cout << "calculate (a, b) - complex:" << complex_ << std::endl;
     if (!subSolutions_) {
         subpotOwner_ = true;
         if (complex_){
@@ -1899,7 +1896,6 @@ template < class ValueType >
 void DCMultiElectrodeModelling::calculateK_(const std::vector < ElectrodeShape * > & eA,
                                             const std::vector < ElectrodeShape * > & eB,
                                             Matrix < ValueType > & solutionK, int kIdx){
-	std::cout << "calculateK_" << std::endl;
     bool debug = false;
     Stopwatch swatch(true);
 
