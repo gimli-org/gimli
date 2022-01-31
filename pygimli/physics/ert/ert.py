@@ -362,6 +362,9 @@ def createGeometricFactors(scheme, numerical=None, mesh=None, dim=3,
         m = mesh.createH2()
         if verbose:
             pg.info('h2 refine', m)
+    else:
+        # just use the mesh provided by the user or created previously
+        m = mesh
 
     if p2 is True:
         m = m.createP2()
