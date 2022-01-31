@@ -59,18 +59,18 @@ def modelColeColeRho(f, rho, m, tau, c, a=1):
     ...     _= ax3.loglog(f, Z.real, color='g')
     ...     _= ax4.semilogx(f, Z.imag, color='r')
     ...     _= ax4.plot([fImMin, fImMin], [-0.2, 0.], color='r')
-    >>> _= ax4.text(fImMin, -0.1, r"$f($min($Z''$))=$\frac{1}{2*\pi\tau}$", color='r')
-    >>> _= ax4.text(0.1, -0.17, r"$f($min[$Z''$])=$\frac{1}{2\pi\tau}$", color='r')
-    >>> _= ax1.set_ylabel('Amplitude $|Z(f)|$', color='black')
-    >>> _= ax1.set_xlabel('Frequency $f$ [Hz]')
-    >>> _= ax1.set_ylim(1e-2, 1)
-    >>> _= ax2.set_ylabel(r'- Phase $\varphi$ [mrad]', color='b')
-    >>> _= ax2.set_ylim(1, 1e3)
-    >>> _= ax3.set_ylabel('re $Z(f)$', color='g')
-    >>> _= ax4.set_ylabel('im $Z(f)$', color='r')
-    >>> _= ax3.set_xlabel('Frequency $f$ [Hz]')
-    >>> _= ax3.set_ylim(1e-2, 1)
-    >>> _= ax4.set_ylim(-0.2, 0)
+    >>> _ = ax4.text(fImMin, -0.1, r"$f($min($Z''$))=$\frac{1}{2*\pi\tau}$", color='r')
+    >>> _ = ax4.text(0.1, -0.17, r"$f($min[$Z''$])=$\frac{1}{2\pi\tau}$", color='r')
+    >>> _ = ax1.set_ylabel('Amplitude $|Z(f)|$', color='black')
+    >>> _ = ax1.set_xlabel('Frequency $f$ [Hz]')
+    >>> _ = ax1.set_ylim(1e-2, 1)
+    >>> _ = ax2.set_ylabel(r'- Phase $\varphi$ [mrad]', color='b')
+    >>> _ = ax2.set_ylim(1, 1e3)
+    >>> _ = ax3.set_ylabel('re $Z(f)$', color='g')
+    >>> _ = ax4.set_ylabel('im $Z(f)$', color='r')
+    >>> _ = ax3.set_xlabel('Frequency $f$ [Hz]')
+    >>> _ = ax3.set_ylim(1e-2, 1)
+    >>> _ = ax4.set_ylim(-0.2, 0)
     >>> pg.plt.show()
     """
     z = (1. - m * (1. - relaxationTerm(f, tau, c, a))) * rho
@@ -231,7 +231,7 @@ class ColeColePhi(pg.core.ModellingBase):
 
     * :math:`\textbf{d} =\{\varphi_i(f_i)\}`
 
-        Modelling eesponse for all given frequencies as negative phase angles
+        Modelling response for all given frequencies as negative phase angles
         :math:`\varphi(f) = -tan^{-1}\frac{\text{Im}\,Z(f)}{\text{Re}\,Z(f)}`
         and :math:`Z(f, \rho_0=1, m, \tau, c) =` Cole-Cole impedance.
     """
@@ -248,10 +248,57 @@ class ColeColePhi(pg.core.ModellingBase):
         return -np.angle(spec)
 
 
-class DoubleColeColePhi(pg.core.ModellingBase):
-    r"""Double Cole-Cole model with EM term after Pelton et al. (1978)
+class DoubleColeCole(pg.Modelling):
+    r"""Complex double Cole-Cole model with EM term after Pelton et al. (1978)
 
     Modelling operator for the Frequency Domain
+    :py:mod:`Cole-Cole <pygimli.physics.SIP.ColeColeRho>` impedance model
+    using :py:mod:`pygimli.physics.SIP.ColeColeRho` after Pelton et al. (1978)
+    :cite:`PeltonWarHal1978`
+
+    * :math:`\textbf{m} =\{ m_1, \tau_1, c_1, m_2, \tau_2, c_2\}`
+
+        Modelling parameter for the Cole-Cole model with :math:`\rho_0 = 1`
+
+    * :math:`\textbf{d} =\{\varphi_i(f_i)\}`
+
+        Modelling Response for all given frequencies as negative phase angles
+        :math:`\varphi(f) = \varphi_1(Z_1(f))+\varphi_2(Z_2(f)) =
+        -tan^{-1}\frac{\text{Im}\,(Z_1Z_2)}{\text{Re}\,(Z_1Z_2)}`
+        and :math:`Z_1(f, \rho_0=1, m_1, \tau_1, c_1)` and
+        :math:`Z_2(f, \rho_0=1, m_2, \tau_2, c_2)` ColeCole impedances.
+
+    """
+
+    def __init__(self, f, rho=True, tauRho=True, mult=False, aphi=True,
+                 verbose=False):
+        """Setup class by specifying the frequency."""
+        super().__init__(verbose=verbose)
+        self.f_ = f  # save frequencies
+        self.setMesh(pg.meshtools.createMesh1D(1, 7))  # 4 single parameters
+        self.rho = rho
+        self.tauRho = tauRho
+        self.mult = mult
+        self.aphi = aphi
+
+    def response(self, par):
+        """phase angle of the model"""
+        if self.rho:
+            out = modelColeColeRhoDouble(self.f_, *par, a=1, mult=self.mult)
+        else:
+            out = modelColeColeSigmaDouble(self.f_, *par, a=1,
+                                           tauRho=self.tauRho)
+
+        if self.aphi:
+            return np.hstack((np.abs(out), np.abs(np.angle(out))))
+        else:
+            return np.hstack((out.real, np.abs(out.imag)))
+
+
+class DoubleColeColePhi(pg.core.ModellingBase):
+    r"""Double Cole-Cole model after Pelton et al. (1978)
+
+    Modelling operator for the Frequency Domain - phase only
     :py:mod:`Cole-Cole <pygimli.physics.SIP.ColeColeRho>` impedance model
     using :py:mod:`pygimli.physics.SIP.ColeColeRho` after Pelton et al. (1978)
     :cite:`PeltonWarHal1978`

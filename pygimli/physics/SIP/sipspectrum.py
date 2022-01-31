@@ -15,7 +15,7 @@ from pygimli.utils import isComplex, squeezeComplex, toComplex, KramersKronig
 from .importData import readTXTSpectrum, readFuchs3File, readRadicSIPFuchs
 
 from .plotting import drawAmplitudeSpectrum, drawPhaseSpectrum, showSpectrum
-from .models import DebyePhi, DebyeComplex, relaxationTerm
+from .models import DebyePhi, DebyeComplex, relaxationTerm, DoubleColeCole
 from .tools import fitCCEMPhi, fitCCC
 from .tools import fitCCCC, fitCCPhi, fit2CCPhi
 
@@ -698,10 +698,12 @@ class SIPSpectrum(object):
             self.mCC, self.ampCC, self.phiCC = fitCCC(self.f, self.amp,
                                                       self.phi, **kwargs)
 
-    def fitDoubleColeCole(self, ePhi=0.001, lam=1000., mpar=(0, 0, 1),
-                  taupar1=(0, 1e-5, 1), taupar2=(0, 1e-1, 1000),
-                  cpar=(0.5, 0, 1), verbose=False):
-        """Fit  Cole-Cole term to phase only
+    def fitDoubleColeCole(self, ePhi=0.001, eAmp=0.01, lam=1000., robust=False,
+                          verbose=True, useRho=True, useMult=False, aphi=True,
+                          mpar1=(0.2, 0, 1), mpar2=(0.2, 0, 1), tauRho=True,
+                          taupar1=(1e-2, 1e-5, 100), taupar2=(1e-4, 1e-5, 100),
+                          cpar1=(0.5, 0, 1), cpar2=(0.5, 0, 1)):
+        """Fit double Cole-Cole term to complex resistivity or phase.
 
         Parameters
         ----------
@@ -714,7 +716,45 @@ class SIPSpectrum(object):
             for Cole-Cole parameters (m, tau, c)
 
         """
-        pass
+        f2CC = DoubleColeCole(self.f, rho=useRho, aphi=aphi, tauRho=False)
+        if useRho:
+            rhoStart = min(self.amp)
+            f2CC.region(0).setParameters(rhoStart, 0., rhoStart*10)
+        else:
+            sigStart = 1./max(self.amp)
+            f2CC.region(0).setParameters(sigStart, 0., sigStart*10)
+
+        f2CC.region(1).setParameters(*mpar1)    # m (start,lower,upper)
+        f2CC.region(2).setParameters(*taupar1)  # tau
+        f2CC.region(3).setParameters(*cpar1)   # c
+        f2CC.region(4).setParameters(*mpar2)    # m (start,lower,upper)
+        f2CC.region(5).setParameters(*taupar2)  # tau
+        f2CC.region(6).setParameters(*cpar2)   # c
+        if aphi:
+            amp = self.amp if useRho else 1./self.amp
+            data = np.hstack((amp, self.phi))
+            error = np.hstack((np.ones_like(amp)*eAmp,
+                               ePhi / np.abs(self.phi)))
+        else:
+            re, im = self.realimag(not useRho)
+            data = np.hstack((re, im))
+            error = np.ones(len(self.f)*2) * eAmp
+
+        ICC = pg.core.Inversion(data, f2CC, False)  # set up inversion class
+        ICC.setRelativeError(error)  # 1 mrad
+        ICC.setLambda(lam)  # start with large damping and cool later
+        ICC.setMarquardtScheme(0.8)  # lower lambda by 20%/it., no stop chi=1
+        ICC.setRobustData(robust)
+        ICC.setDeltaPhiAbortPercent(1)
+    #    ICC.setMaxIter(0)
+        self.mCC = ICC.run()  # run inversion
+        if verbose:
+            ICC.echoStatus()
+
+        one, two = np.split(ICC.response(), 2)
+        if aphi:
+            self.ampCC = one
+            self.phiCC = two
 
     def fitDebyeModel(self, ePhi=0.001, lam=1e3, lamFactor=0.8,
                       mint=None, maxt=None, nt=None, new=True,
@@ -808,18 +848,19 @@ class SIPSpectrum(object):
 
     def showAll(self, save=False, ax=None):
         """Plot spectrum, Cole-Cole fit and Debye distribution"""
-        # generate title strings
-        if np.any(self.mCC):
+        if np.any(self.mCC):  # generate title strings
             mCC = self.mCC
-            if mCC[0] > 1:
-                tstr = r'CC: $\rho$={:.1f} m={:.3f} $\tau$={:.1e}s c={:.2f}'
+            rstr = r'$\rho$={:.4f} '
+            cstr = r'CC: m={:.3f} $\tau$={:.1e}s c={:.2f} '
+            if len(mCC) == 7:  # double Cole-Cole
+                tstr = rstr + cstr + cstr
+            elif len(mCC) == 6:  # double Cole-Cole only Phi
+                tstr = cstr + cstr
+            elif len(mCC) == 4:
+                tstr = rstr + cstr
             else:
-                tstr = r'CC: m={:.3f} $\tau$={:.1e}s c={:.2f}'
-                if len(mCC) == 6:  # double Cole-Cole
-                    tstr = tstr.replace('CC', 'CC1') + '   ' + \
-                        tstr.replace('CC', 'CC2')
-                elif len(mCC) > 3:  # second (EM) tau
-                    tstr += r' $\tau_2$={:.1e}s'
+                tstr = cstr
+
             tCC = tstr.format(*mCC)
 
         if ax is None:
@@ -831,7 +872,8 @@ class SIPSpectrum(object):
         self.fig['all'] = fig
         fig.subplots_adjust(hspace=0.25)
         # amplitude
-        drawAmplitudeSpectrum(ax[0], self.f, self.amp, label='data', ylog=0)
+        drawAmplitudeSpectrum(ax[0], self.f, self.amp,
+                              label='data', ylog=0)
         if np.any(self.ampDD):
             ax[0].plot(self.f, self.ampDD, 'm-', label='DD response')
         if np.any(self.ampCC):
@@ -839,10 +881,10 @@ class SIPSpectrum(object):
         ax[0].legend(loc='best')
         # phase
         if np.any(self.ampOrg):
-            ax[0].semilogx(self.f, self.ampOrg, 'c+-', label='org. data')
+            ax[0].semilogx(self.f, self.ampOrg, 'cx-', label='org. data')
             ax[0].legend(loc='best')
         if np.any(self.phiOrg):
-            ax[1].semilogx(self.f, self.phiOrg * 1e3, 'c+-', label='org. data')
+            ax[1].semilogx(self.f, self.phiOrg * 1e3, 'cx-', label='org. data')
 
         ax[1].semilogx(self.f, self.phi * 1e3, 'b+-', label='data')
         if np.any(self.phiCC):
@@ -866,11 +908,13 @@ class SIPSpectrum(object):
             ax[2].set_xlabel(r'$\tau$ (ms)')
             ax[2].set_ylabel('m (mV/V)')
             ax[2].set_title(tDD, loc='left')
+
         if save:
             if isinstance(save, str):
                 savename = save
             else:
                 savename = self.basename + '.pdf'
+
             fig.savefig(savename, bbox_inches='tight')
 
         plt.show(block=False)
