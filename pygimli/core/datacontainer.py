@@ -47,6 +47,14 @@ def __DataContainer_setSensors(self, sensors):
 DataContainer.setSensors = __DataContainer_setSensors
 
 def __DC_setVal(self, key, val):
+    if isinstance(key, (tuple, list)):
+        assert len(key) == len(val), \
+            "The number of key must match the number of items in the " + \
+            "outer item list"
+        for subkey, item in zip(key, val):
+            self[subkey] = item
+        return
+
     if len(val) >  self.size():
         verbose("DataContainer resized to:", len(val))
         self.resize(len(val))
@@ -54,6 +62,8 @@ def __DC_setVal(self, key, val):
 DataContainer.__setitem__ = __DC_setVal
 
 def __DC_getVal(self, key):
+    if isinstance(key, (tuple, list)):
+        return np.vstack([self[subkey] for subkey in key]).T
     if self.isSensorIndex(key):
         return np.array(self(key), dtype=int)
     #return self(key).array() // d['a'][2] = 0.0, would be impossible

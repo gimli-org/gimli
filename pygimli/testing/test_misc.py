@@ -110,11 +110,58 @@ class TestMisc(unittest.TestCase):
         self.assertEqual(type(data['a']), type(np.array(1)))
         self.assertEqual(data['a'].dtype, 'int')
         data['a'][0] = 1.0 # will not work for sensorIndex until its changed in the datacontainer as IndexArray
-    
+
         data['a'] = np.ones(2)*1.2
         np.testing.assert_array_equal(data['a'], np.ones(2))
         self.assertEqual(type(data['a']), type(np.array(1)))
         self.assertEqual(data['a'].dtype, 'int')
+
+    def test_DataContainerMultiGetter(self):
+        # test getting multiple columns at once
+        data = pg.DataContainer()
+        data['a'] = [1, 2, 3]
+        data['b'] = [4, 5, 6]
+
+        result = data[['a', 'b']]
+        result_expected = np.array(
+            (
+                (1, 4),
+                (2, 5),
+                (3, 6),
+            )
+        )
+        self.assertTrue((result == result_expected).all())
+
+    def test_DataContainerMultiSetter(self):
+        # test setting multiple columns at the same time
+
+        # 1. from empty container
+        data = pg.DataContainer()
+        data[['a', 'b']] = [[1, 2, 3], [4, 5, 6]]
+        result = data[['a', 'b']]
+        result_expected = np.array(
+            (
+                (1, 4),
+                (2, 5),
+                (3, 6),
+            )
+        )
+        self.assertTrue((result == result_expected).all())
+
+        # 2. from pre-set container
+        data = pg.DataContainer()
+        data['x'] = [7, 8, ]
+        data[['a', 'b']] = [[1, 2, 3], [4, 5, 6]]
+        result = data[['a', 'b']]
+        result_expected = np.array(
+            (
+                (1, 4),
+                (2, 5),
+                (3, 6),
+            )
+        )
+        self.assertTrue((result == result_expected).all())
+
 
     def test_Operators(self):
         t = pg.Vector(10, 1.0)
