@@ -10,7 +10,7 @@ from .core import (RVector3, RVector, IndexArray,
 def __DataContainer_str(self):
     return "Data: Sensors: " + str(self.sensorCount()) + " data: " + \
         str(self.size()) + ", nonzero entries: " + \
-        str([d for d in self.dataMap().keys() if self.isSensorIndex(d) or 
+        str([d for d in self.dataMap().keys() if self.isSensorIndex(d) or
              self.haveData(d)])
 DataContainer.__repr__ =__DataContainer_str
 DataContainer.__str__ =__DataContainer_str
@@ -71,7 +71,7 @@ def __DC_getVal(self, key):
 DataContainer.__getitem__ = __DC_getVal
 
 
-def __DataContainerERT_addFourPointData(self, *args, 
+def __DataContainerERT_addFourPointData(self, *args,
                                         indexAsSensors=False, **kwargs):
     """Add a new data point to the end of the dataContainer.
 
@@ -83,7 +83,7 @@ def __DataContainerERT_addFourPointData(self, *args,
     *args: [int]
         At least four index values for A, B, M and N.
     indexAsSensors: bool [False]
-        The indices A, B, M and N are additionally interpreted as sensor position in [m, 0, 0]. 
+        The indices A, B, M and N are additionally interpreted as sensor position in [m, 0, 0].
     **kwargs: dict
         Named values for the data configuration.
 
