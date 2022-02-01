@@ -7,6 +7,7 @@ import numpy as np
 import pygimli as pg
 # from pygimli.frameworks import Modelling, Block1DModelling
 from pygimli.frameworks import Block1DModelling, MethodManager1d
+from pygimli.frameworks.modelling import DEFAULT_STYLES
 
 
 class VESModelling(Block1DModelling):
@@ -32,6 +33,7 @@ class VESModelling(Block1DModelling):
         Half distance between A and B.
         Only used for input (feeding am etc.).
     """
+
     def __init__(self, ab2=None, mn2=None, **kwargs):
         r"""Constructor
         """
@@ -48,13 +50,13 @@ class VESModelling(Block1DModelling):
             data = kwargs['dataContainerERT']
             if isinstance(data, pg.DataContainerERT):
                 kwargs['am'] = [data.sensorPosition(data('a')[i]).distance(
-                        data('m')[i]) for i in range(data.size())]
+                    data('m')[i]) for i in range(data.size())]
                 kwargs['an'] = [data.sensorPosition(data('a')[i]).distance(
-                        data('n')[i]) for i in range(data.size())]
+                    data('n')[i]) for i in range(data.size())]
                 kwargs['bm'] = [data.sensorPosition(data('b')[i]).distance(
-                        data('m')[i]) for i in range(data.size())]
+                    data('m')[i]) for i in range(data.size())]
                 kwargs['bn'] = [data.sensorPosition(data('b')[i]).distance(
-                        data('n')[i]) for i in range(data.size())]
+                    data('n')[i]) for i in range(data.size())]
 
         self.setDataSpace(ab2=ab2, mn2=mn2, **kwargs)
 
@@ -104,8 +106,8 @@ class VESModelling(Block1DModelling):
             self.bm = ab2 + mn2
             self.bn = ab2 - mn2
 
-        elif (am is not None and bm is not None and an is not None
-              and bn is not None):
+        elif (am is not None and bm is not None and an is not None and
+              bn is not None):
             self.am = am
             self.bm = bm
             self.an = an
@@ -179,18 +181,18 @@ class VESModelling(Block1DModelling):
         plot = getattr(a1, plot)
         if label is None:
             label = r'$\varrho_a$'
-        del style["linestyle"] # to remove mpl warning
+
+        del style["linestyle"]  # to remove mpl warning
         plot(ra, ab2, 'x-', label=label, **style)
 
-        
         if raE is not None:
             raErr = np.array(ra * raE)
-        
+
             if pg.isArray(raErr, len(ra)):
                 a1.errorbar(ra, ab2,
                             xerr=raErr, barsabove=True,
-                            **pg.frameworks.modelling.DEFAULT_STYLES.get('Error',
-                                pg.frameworks.modelling.DEFAULT_STYLES['Default']),
+                            **DEFAULT_STYLES.get('Error',
+                                                 DEFAULT_STYLES['Default']),
                             label='_nolegend_')
 
         a1.set_ylim(max(ab2), min(ab2))
@@ -206,6 +208,7 @@ class VESCModelling(VESModelling):
     Vertical Electrical Sounding (VES) forward operator for complex
     resistivity values. see: :py:mod:`pygimli.physics.ert.VESModelling`
     """
+
     def __init__(self, **kwargs):
         super(VESCModelling, self).__init__(nPara=2, **kwargs)
         self.phiAxe = None
@@ -271,11 +274,11 @@ class VESCModelling(VESModelling):
             plot = 'plot'
 
         pg.viewer.mpl.drawModel1D(ax=a2,
-                                 model=self.phaseModel(model),
-                                 plot=plot,
-                                 color='C2',
-                                 xlabel='Phase (mrad)',
-                                 **kwargs)
+                                  model=self.phaseModel(model),
+                                  plot=plot,
+                                  color='C2',
+                                  xlabel='Phase (mrad)',
+                                  **kwargs)
 
         a2.set_xlabel('neg. phase (mRad)', color='C2')
 
@@ -356,8 +359,8 @@ class VESCModelling(VESModelling):
         if phiE is not None:
             a2.errorbar(phi, self.ab2,
                         xerr=phiE,
-                        **pg.frameworks.modelling.DEFAULT_STYLES.get('Error',
-                              pg.frameworks.modelling.DEFAULT_STYLES['Default']),
+                        **DEFAULT_STYLES.get('Error',
+                                             DEFAULT_STYLES['Default']),
                         barsabove=True,
                         label='_nolegend_'
                         )
@@ -392,6 +395,7 @@ class VESManager(MethodManager1d):
     >>> # ax = ves.showResult(ax=ax)
     >>> pg.wait()
     """
+
     def __init__(self, **kwargs):
         """Constructor
 
