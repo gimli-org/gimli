@@ -2014,9 +2014,6 @@ void DCMultiElectrodeModelling::calculateK_(const std::vector < ElectrodeShape *
 			use_cimp = false;
 		}
 
-		std::cout << "DEBUG  vContactImpedance_: " << vContactImpedance_ << std::endl;
-		std::cout << "DEBUG  vContactResistance_: " << vContactResistance_ << std::endl;
-		std::cout << "DEBUG use_cimp: " << use_cimp << std::endl;
         assembleCompleteElectrodeModel(S_, elecs, oldMatSize, lastIsReferenz_,
                                            vContactImpedance_,
 										   vContactResistance_,
