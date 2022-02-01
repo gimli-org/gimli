@@ -429,13 +429,13 @@ void assembleCompleteElectrodeModel_(CSparseMatrix & S,
     mapS.setRows(oldMatSize + nElectrodes);
     mapS.setCols(oldMatSize + nElectrodes);
 
-    // RVector vContactImpedance( nElectrodes, 1.0); // Ohm * m^2
-
-    // bool hasImp = checkIfMapFileExistAndLoadToVector("contactImpedance.map",  vContactImpedance);
-
     bool hasImp = true;
-    RVector vContactResistance(nElectrodes, 1.0); // Ohm
-    bool hasRes = checkIfMapFileExistAndLoadToVector("contactResistance.map", vContactResistance);
+	bool hasRes = false;
+	if (!use_cimp)
+	{
+		hasImp = false;
+		hasRes = true;
+	}
 
     for (uint elecID = 0; elecID < nElectrodes; elecID ++){
 
@@ -447,25 +447,22 @@ void assembleCompleteElectrodeModel_(CSparseMatrix & S,
         // __MS(elecs[elecID])
         elecs[elecID]->setMID(mat_ID);
 
-        double contactResistance = vContactResistance[elecID];
+        double contactResistance = contactResistances[elecID];
         double contactImpedance  = contactImpedances[elecID];
 
         std::vector < MeshEntity * > electrodeEnts(elecs[elecID]->entities());
-        if (hasImp || hasRes){
-            if (sumArea < TOLERANCE){ //** point electrode
-                contactImpedance = 1.0;
-                sumArea = 1.0;
-            } else {
-                if (hasRes) contactImpedance = contactResistance * sumArea;
-                else if (hasImp) contactResistance = contactImpedance / sumArea;
-            }
-            if (sumArea != 1.0){
-                std::cout << "Electrode " << elecs[elecID]->id()
-                    << " Contact- resistance: "<< contactResistance << " Ohm"
-                    << " - impedance: " << contactImpedance  << " Ohm m^2"
-                    << " - area: " << sumArea << " m^2" << std::endl;
-            }
-        }
+		if (sumArea < TOLERANCE){ //** point electrode
+			contactImpedance = 1.0;
+			contactResistance = 1.0;
+			sumArea = 1.0;
+		} else {
+			if (hasRes) contactImpedance = contactResistance * sumArea;
+			else if (hasImp) contactResistance = contactImpedance / sumArea;
+		}
+		std::cout << "Electrode " << elecs[elecID]->id()
+			<< " Contact- resistance: "<< contactResistance << " Ohm"
+			<< " - impedance: " << contactImpedance  << " Ohm m^2"
+			<< " - area: " << sumArea << " m^2" << std::endl;
 
         //std::cout << "electrode facet contact impedance: " << contactImpedance << std::endl;
         for (uint j = 0; j < electrodeEnts.size(); j ++){
