@@ -46,7 +46,7 @@ DLLEXPORT double mixedBoundaryCondition(const Boundary & boundary,
                                         double k=0.0);
 
 DLLEXPORT void assembleCompleteElectrodeModel(RSparseMatrix & S,
-                                              const std::vector < ElectrodeShape * > & elecs,                                               
+                                              const std::vector < ElectrodeShape * > & elecs,
                                               uint oldMatSize, bool lastIsReferenz,
                                               const RVector & contactImpedances);
 
@@ -247,6 +247,7 @@ public:
     }
 
     void setContactImpedances(const RVector & zi);
+    void setContactResistances(const RVector & ri);
 
     virtual RVector calcGeometricFactor(const DataContainerERT & data,
                                         Index nModel=0);
@@ -330,8 +331,12 @@ protected:
     bool dipoleCurrentPattern_;
     std::map < Index, Index > currentPatternIdxMap_;
 
+	/* CEM variables */
     RMatrix potentialsCEM_;
+	// store contact impedances for the CEM electrodes
     RVector vContactImpedance_;
+	// store contact resistances for the CEM electrodes
+    RVector vContactResistance_;
 
     DataMap * primDataMap_;
 };
