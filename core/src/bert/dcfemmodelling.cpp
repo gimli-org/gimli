@@ -1232,20 +1232,14 @@ RVector DCMultiElectrodeModelling::response(const RVector & model,
             log(Critical, " complex response for abs model with negative or zero resistivity is not defined.");
         }
 
-		std::cout << "a" << std::endl;
         DataMap dMap(response_(toComplex(model(0, model.size()/2),
                                          model(model.size()/2, model.size())),
                                Complex(background, -9e99)));
-		std::cout << "b " << dMap.isComplex() << " " << dMap.map().rows() << std::endl;
-
         RVector respRe(dMap.data(this->dataContainer(), false, false));
-		std::cout << "c" << std::endl;
 		// this fails
         RVector respIm(dMap.data(this->dataContainer(), false, true));
-		std::cout << "d" << std::endl;
 
         CVector resp(toComplex(respRe, respIm) * dataContainer_->get("k"));
-		std::cout << "e" << std::endl;
         return cat(real(resp), imag(resp));
 
     } // if complex
