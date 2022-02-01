@@ -67,6 +67,14 @@ def simulate(mesh, scheme, res, **kwargs):
     returnFields: bool [False]
         Returns a matrix of all potential values (per mesh nodes)
         for each injection electrodes.
+    contactImpedances : array|None [None]
+        Can be used to specify area impedances [Ohm m^2] for CEM electrodes.
+        Must be of length equal to the number of CEM electrodes. Is ignored if
+        contactResistances are also set.
+    contactResistances : array|None [None]
+        Can be used to specify contact resistances [Ohm] for CEM electrodes.
+        Must be of length equal to the number of CEM electrodes.
+        Supersedes `contactImpedances`.
 
     Returns
     -------
@@ -112,6 +120,8 @@ def simulate(mesh, scheme, res, **kwargs):
     noiseAbs = kwargs.pop('noiseAbs', 1e-4)
     seed = kwargs.pop('seed', None)
     sr = kwargs.pop('sr', True)  # self.sr)
+    contactImpedances = kwargs.pop('contactImpedances', None)
+    contactResistances = kwargs.pop('contactResistances', None)
 
     # segfaults with self.fop (test & fix)
     fop = ERTModelling(sr=sr, verbose=verbose)
@@ -119,6 +129,11 @@ def simulate(mesh, scheme, res, **kwargs):
     #                                   sr=sr, verbose=verbose)
     fop.data = scheme
     fop.setMesh(mesh, ignoreRegionManager=True)
+
+    if contactImpedances is not None:
+        fop._core.setContactImpedances(contactImpedances)
+    if contactResistances is not None:
+        fop._core.setContactResistances(contactResistances)
 
     rhoa = None
     phia = None
