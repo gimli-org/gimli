@@ -328,10 +328,6 @@ void assembleCompleteElectrodeModel_(RSparseMatrix & S,
     mapS.setRows(oldMatSize + nElectrodes);
     mapS.setCols(oldMatSize + nElectrodes);
 
-    // RVector vContactImpedance( nElectrodes, 1.0); // Ohm * m^2
-
-    // bool hasImp = checkIfMapFileExistAndLoadToVector("contactImpedance.map",  vContactImpedance);
-
     bool hasImp = true;
 	bool hasRes = false;
 	if (!use_cimp)
@@ -339,10 +335,6 @@ void assembleCompleteElectrodeModel_(RSparseMatrix & S,
 		hasImp = false;
 		hasRes = true;
 	}
-
-    /* RVector vContactResistance(nElectrodes, 1.0); // Ohm */
-    /* bool hasRes = checkIfMapFileExistAndLoadToVector("contactResistance.map", vContactResistance); */
-	/* bool hasRes = (contactResistances.size() > 0); */
 
     for (uint elecID = 0; elecID < nElectrodes; elecID ++){
 
