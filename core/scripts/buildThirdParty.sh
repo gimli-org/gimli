@@ -395,6 +395,8 @@ prepBOOST(){
     BOOST_ROOT_WIN=${BOOST_ROOT_WIN/\/e\//E:\/}
 }
 buildBOOST(){
+    echo "*** building boost ... "
+    return
     checkTOOLSET
     prepBOOST
 
