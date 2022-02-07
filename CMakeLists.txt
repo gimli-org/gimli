@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.10)
 #recommanded: cmake_minimum_required(VERSION 3.15)
 #BOOST_MAX_VERISION: 1.65 UBUNTU:18
 
-
 if (${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
     message(FATAL_ERROR "In-source builds not allowed.
             Please make a new directory (called a build directory)
