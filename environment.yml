@@ -10,6 +10,7 @@ dependencies:
   - sphinx >= 1.8.5
   - pytest
   - numpy
+  - scipy
   - pytest-cov
   - pytest-html
   - sphinx-gallery
@@ -20,3 +21,4 @@ dependencies:
   - scipy
   - bibtexparser
   - pyvista =0.24
+  - meshio

@@ -127,17 +127,4 @@ class TestManagers(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    if len(sys.argv) > 1:
-
-        test = TestManagers()
-
-        if sys.argv[1].lower() == 'ves':
-            test.test_VES(showProgress=True)
-        elif sys.argv[1].lower() == 'vmd':
-            test.test_VMD(showProgress=True)
-        elif sys.argv[1].lower() == 'ert':
-            test.test_ERT(showProgress=True)
-
-        pg.info("test done")
-    else:
-        unittest.main()
+    unittest.main()

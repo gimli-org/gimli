@@ -24,8 +24,11 @@ class Inversion(object):
         Give verbose output
     debug : bool
         Give debug output
-    startModel : array
-        Holds the current starting model
+    startModel : float|array|None
+        Holds the current starting model. The starting model can be set via init argument 
+        or as propery. If not set explicit, it will be estimated from the forward operator assoiated methods.
+        This property will be recalulated for every run call if not set explicit with self.startModel = float|array, or None to reforce autogeneration.
+        Note, the run call accept a temporary startModel for the current calucaltion.
     model : array
         Holds the last active model
     maxIter : int [20]
@@ -51,6 +54,11 @@ class Inversion(object):
         self._inv = None
         self._fop = None
 
+        ### cache: keep startmodel if set explicit or calculated from FOP, will be recalulated for every run if not set explicit 
+        self._startModel = None
+        ### flag to keep startModel if set manual by init or self.startModel until self.startModel = None
+        self._keepStartModel = False 
+        
         self.reset()
 
         if inv is not None:
@@ -68,19 +76,19 @@ class Inversion(object):
 
         if "startModel" in kwargs:
             self.startModel = kwargs["startModel"]
-        else:
-            self._startModel = None
-
+        
     def reset(self):
         """Reset function currently called at the beginning of every inversion
         run."""
         # FW: Note that this is called at the beginning of run. I therefore
         # removed the startingModel here to allow explicitly set starting models
         # by the user.
+        if self._keepStartModel == False:
+            self._startModel = None
         self._model = None
         self._dataVals = None
         self._errorVals = None
-
+        
     @property
     def inv(self):
         return self._inv
@@ -163,18 +171,34 @@ class Inversion(object):
             Model used as starting model.
             Float value is used as constant model.
         """
+        sm = self.convertStartModel(model)
+        if sm is None:
+            self._keepStartModel = False
+        else:
+            self._keepStartModel = True
+        self._startModel = sm
+        
+    def convertStartModel(self, model):
+        """Convert scalar or array into startmodel with valid range or self.parameterCount, if possible.
+
+        Attributes
+        ----------
+        model: float|int|array|None
+
+        """
         if model is None:
-            self._startModel = None
+            return None
         elif isinstance(model, float) or isinstance(model, int):
-            self._startModel = np.ones(self.parameterCount) * float(model)
             # pg.info("Startmodel set from given value.", float(model))
+            return np.ones(self.parameterCount) * float(model)
         elif hasattr(model, '__iter__'):
             if len(model) == self.parameterCount:
                 pg.info("Startmodel set from given array.", model)
-                self._startModel = model
+                return model
             else:
                 pg.error("Startmodel size invalid {0} != {1}.".
                          format(len(model), self.parameterCount))
+        return None
 
     @property
     def model(self):
@@ -394,7 +418,7 @@ class Inversion(object):
         cType: int[1]
             Set global contraint type for all regions.
         startModel: array
-            Set starting model for the inversion run.
+            Temporary starting model for the current inversion run.
         """
         self.reset()
         if self.isFrameWork:
@@ -422,10 +446,6 @@ class Inversion(object):
         self.dataVals = dataVals
         self.errorVals = errorVals
 
-        sm = kwargs.pop('startModel', None)
-        if sm is not None:
-            self.startModel = sm
-
         self.inv.setData(self._dataVals)
         self.inv.setRelativeError(self._errorVals)
         if 'cType' in kwargs:
@@ -435,6 +455,11 @@ class Inversion(object):
         maxIterTmp = self.maxIter
         self.maxIter = 1
 
+        startModel = self.convertStartModel(kwargs.pop('startModel', None))
+        #### we cannot add the following into kwargs.pop, since someone may call with explicit startModel=None
+        if startModel is None:
+            startModel = self.startModel
+        
         if self.verbose:
             pg.info('Starting inversion.')
             print("fop:", self.inv.fop())
@@ -459,13 +484,13 @@ class Inversion(object):
             print("min/max (error): {0}%/{1}%".format(
                 pf(100*min(self._errorVals)), pf(100*max(self._errorVals))))
             print("min/max (start model): {0}/{1}".format(
-                pf(min(self.startModel)), pf(max(self.startModel))))
+                pf(min(startModel)), pf(max(startModel))))
 
         # To ensure reproduceability of the run() call, inv.start() will
         # reset self.inv.model() to fop.startModel().
-        self.fop.setStartModel(self.startModel)
+        self.fop.setStartModel(startModel)
         if kwargs.pop("isReference", False):
-            self.inv.setReferenceModel(self.startModel)
+            self.inv.setReferenceModel(startModel)
             pg.info("Setting starting model as reference!")
 
         if self.verbose:
@@ -484,7 +509,7 @@ class Inversion(object):
 
         lastPhi = self.phi()
         self.chi2History = [self.chi2()]
-        self.modelHistory = [self.startModel]
+        self.modelHistory = [startModel]
 
         for i in range(1, maxIter):
 
