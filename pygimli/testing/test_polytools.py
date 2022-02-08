@@ -355,7 +355,7 @@ class Test3DMerge(unittest.TestCase):
         
         m = mt.mergePLC3D([plc, face])
         mt.exportPLC(m, 'tmp.poly')
-        mesh = mt.createMesh(m)
+        mesh = mt.createMesh(m, verbose=True)
         pg.show(mesh)
 
 

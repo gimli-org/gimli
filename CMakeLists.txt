@@ -303,21 +303,30 @@ endfunction()
 
 if (NOT Boost_PYTHON_LIBRARY)
     message(STATUS "boost-python not found by cmake ... trying to determine boost-python now manually ...")
+    
     if (WIN32)
         set(bp_version "python${Python_VERSION_MAJOR}${Python_VERSION_MINOR}-mt")
         string(TOUPPER ${bp_version} BP_VERSION)
 
-        message(STATUS "... looking for ${bp_version} in BOOST_ROOT=${BOOST_ROOT}")
+        message(STATUS "... (win32) looking for ${bp_version} in BOOST_ROOT=${BOOST_ROOT}")
         find_package(Boost 1.65 COMPONENTS "${bp_version}")
+
+        ## local var evaluated before cache, and cache setting does not overwrite local.
+        ## so we need to set booth here for repeated cmake calls 
         set(Boost_PYTHON_FOUND ${Boost_${bp_version}_FOUND} CACHE BOOL "boost python found")
+        set(Boost_PYTHON_FOUND TRUE)
         set(Boost_PYTHON_LIBRARY ${Boost_${BP_VERSION}_LIBRARY} CACHE FILEPATH "boost python lib")
+        set(Boost_PYTHON_LIBRARY ${Boost_${BP_VERSION}_LIBRARY})
 
         if (NOT Boost_PYTHON_FOUND)
             set(Boost_PYTHON_LIBRARY ${BOOST_ROOT}/lib/libboost_${bp_version}.dll)
-            message(STATUS "... looking for ${Boost_PYTHON_LIBRARY}")
+            message(STATUS "... (win32) looking for ${Boost_PYTHON_LIBRARY}")
+            
             if (EXISTS ${Boost_PYTHON_LIBRARY})
                 message(STATUS "... found.")
-                set(Boost_PYTHON_FOUND TRUE CACHE BOOL "boost python lib found")
+                set(Boost_PYTHON_FOUND TRUE CACHE BOOL "boost python found")
+                set(Boost_PYTHON_FOUND TRUE)
+               
                 set(Boost_PYTHON_LIBRARY ${Boost_PYTHON_LIBRARY} CACHE FILEPATH "boost python lib")
             else()
                 message(STATUS "Sorry but no boost-python found.")
@@ -395,7 +404,6 @@ find_library(Triangle_LIBRARIES
 
 message(STATUS "Triangle_LIBRARIES = ${Triangle_LIBRARIES}")
             
-exit()
 find_or_build_package(Triangle triangle LOCAL)
 #find_package(Triangle)
 
