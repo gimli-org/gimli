@@ -396,7 +396,7 @@ prepBOOST(){
 }
 buildBOOST(){
     echo "*** building boost ... "
-    return
+    
     checkTOOLSET
     prepBOOST
 

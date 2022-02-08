@@ -22,18 +22,20 @@ project(libgimli)
 
 include(CheckIncludeFileCXX)
 
-message(STATUS "System: " ${CMAKE_SYSTEM_NAME} "; " ${CMAKE_SYSTEM} "; " ${CMAKE_SYSTEM_VERSION})
+message(STATUS "System: ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM} ${CMAKE_SYSTEM_VERSION}")
+message(STATUS "Compiler: ${CMAKE_CXX_COMPILER_ID}")
 
-message(STATUS "UNIX:   " ${UNIX} " TRUE on all UNIX-like OS's, including Apple OS X and CygWin")
-message(STATUS "WIN32:  " ${WIN32} " TRUE on Windows. Prior to 2.8.4 this included CygWin")
-message(STATUS "APPLE:  " ${APPLE} " TRUE on Apple systems. Note this does not imply the
-system is Mac OS X, only that APPLE is")
-message(STATUS "MINGW:  " ${MINGW} " TRUE when using the MinGW compiler in Windows")
-message(STATUS "MSYS:   " ${MSYS} " TRUE when using the MSYS developer environment in Windows")
-message(STATUS "CYGWIN: " ${CYGWIN} " TRUE on Windows when using the CygWin version of cmake")
+message(STATUS "UNIX:   " ${UNIX} " on all UNIX-like OS's, including Apple OS X and CygWin")
+message(STATUS "WIN32:  " ${WIN32} " on Windows. Prior to 2.8.4 this included CygWin")
+message(STATUS "APPLE:  " ${APPLE} " on Apple systems. does not imply the
+system is Mac OS X.")
+message(STATUS "MINGW:  " ${MINGW} " using the MinGW compiler in Windows")
+message(STATUS "MSYS:   " ${MSYS} "  using the MSYS developer environment in Windows")
+message(STATUS "CYGWIN: " ${CYGWIN} " using the CygWin version of cmake")
+message(STATUS "MSVC:   " ${MSVC} " ")
 
 # Check if conda package is created
-if(DEFINED ENV{CONDA_BUILD})
+if (DEFINED ENV{CONDA_BUILD})
     message(STATUS "Conda package is being created.")
     if (APPLE)
 	    set(CMAKE_MACOSX_RPATH 1)
@@ -129,10 +131,9 @@ set(PACKAGE_AUTHORS  \"carsten@pygimli.org thomas@pygimli.org florian@pygimli.or
 ################################################################################
 # Check for libs and other packages we might use.
 ################################################################################
-
 if (NOT THIRDPARTY_DIR)
     if (NOT ADDRESSMODEL)
-        if("${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
+        if ("${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
             message(STATUS "Target is 64 bits")
             set (ADDRESSMODEL "64")
         else()
@@ -302,21 +303,30 @@ endfunction()
 
 if (NOT Boost_PYTHON_LIBRARY)
     message(STATUS "boost-python not found by cmake ... trying to determine boost-python now manually ...")
+    
     if (WIN32)
         set(bp_version "python${Python_VERSION_MAJOR}${Python_VERSION_MINOR}-mt")
         string(TOUPPER ${bp_version} BP_VERSION)
 
-        message(STATUS "... looking for ${bp_version} in BOOST_ROOT=${BOOST_ROOT}")
+        message(STATUS "... (win32) looking for ${bp_version} in BOOST_ROOT=${BOOST_ROOT}")
         find_package(Boost 1.65 COMPONENTS "${bp_version}")
+
+        ## local var evaluated before cache, and cache setting does not overwrite local.
+        ## so we need to set booth here for repeated cmake calls 
         set(Boost_PYTHON_FOUND ${Boost_${bp_version}_FOUND} CACHE BOOL "boost python found")
+        set(Boost_PYTHON_FOUND TRUE)
         set(Boost_PYTHON_LIBRARY ${Boost_${BP_VERSION}_LIBRARY} CACHE FILEPATH "boost python lib")
+        set(Boost_PYTHON_LIBRARY ${Boost_${BP_VERSION}_LIBRARY})
 
         if (NOT Boost_PYTHON_FOUND)
             set(Boost_PYTHON_LIBRARY ${BOOST_ROOT}/lib/libboost_${bp_version}.dll)
-            message(STATUS "... looking for ${Boost_PYTHON_LIBRARY}")
+            message(STATUS "... (win32) looking for ${Boost_PYTHON_LIBRARY}")
+            
             if (EXISTS ${Boost_PYTHON_LIBRARY})
                 message(STATUS "... found.")
-                set(Boost_PYTHON_FOUND TRUE CACHE BOOL "boost python lib found")
+                set(Boost_PYTHON_FOUND TRUE CACHE BOOL "boost python found")
+                set(Boost_PYTHON_FOUND TRUE)
+               
                 set(Boost_PYTHON_LIBRARY ${Boost_PYTHON_LIBRARY} CACHE FILEPATH "boost python lib")
             else()
                 message(STATUS "Sorry but no boost-python found.")
@@ -365,7 +375,6 @@ if (NOT Boost_PYTHON_LIBRARY)
     endif()
 endif()
 
-
 ################################################################################
 #   misc third party stuff
 ################################################################################
@@ -378,8 +387,26 @@ endif()
 
 set (UMFPACK_FOUND FALSE)
 
+find_library(Triangle_LIBRARIES
+            NAMES
+                libtri.a
+	            tri
+                triangle
+                libtriangle
+            PATHS
+                ${Triangle_PREFIX_PATH}
+                ${EXTERNAL_DIR}
+                ${PROJECT_SOURCE_DIR}/external
+                ${PROJECT_BINARY_DIR}/external
+            PATH_SUFFIXES
+                lib
+            )
+
+message(STATUS "Triangle_LIBRARIES = ${Triangle_LIBRARIES}")
+            
 find_or_build_package(Triangle triangle LOCAL)
 #find_package(Triangle)
+
 set(BLA_VENDOR OpenBLAS)
 find_or_build_package(BLAS lapack)
 find_or_build_package(LAPACK lapack)
