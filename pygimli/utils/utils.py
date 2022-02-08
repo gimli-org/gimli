@@ -235,14 +235,10 @@ def prettyFloat(value, roundValue=False):
         return string.replace(".0", "")
     elif string.endswith(".00"):
         return string.replace(".00", "")
-<<<<<<< HEAD
     elif '.' in string and not 'e' in string and string.endswith("00"):
         return string[0:len(string)-2]
     elif '.' in string and not 'e' in string and string.endswith("0"):
         # pg._r(string[0:len(string)-1])
-=======
-    elif '.' in string and string.endswith(".0"):
->>>>>>> dev
         return string[0:len(string)-1]
     else:
         return string

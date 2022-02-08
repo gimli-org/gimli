@@ -46,12 +46,8 @@ def _(*args, c=None):
     except Exception:
         return '\033[' + c + 'm' + _msg(*args) + __ANSICOLORS__['NC']
 
-<<<<<<< HEAD
-def _clsNameFromFrame(fr):
-=======
 
-def _get_class_from_frame(fr):
->>>>>>> dev
+def _clsNameFromFrame(fr):
     args, _, _, value_dict = inspect.getargvalues(fr)
     if len(args) and args[0] == 'self':
         instance = value_dict.get('self', None)
@@ -328,7 +324,7 @@ def renameKwarg(old, new, kwargs, ver=''):
                        "' to '" + new + "' and will be removed in v " + ver)
         kwargs[new] = kwargs.pop(old)
 
-<<<<<<< HEAD
+
 def renameArg(old, new, kwargs, default, ver=''):
     """Argument old is renamed into new.
     Look in kwargs if the old name is used and return these value or the default.
@@ -340,8 +336,6 @@ def renameArg(old, new, kwargs, default, ver=''):
         return kwargs[new]
     return default
 
-=======
->>>>>>> dev
 
 def warnNonEmptyArgs(kwargs):
     if len(kwargs) > 0:
