@@ -4,43 +4,53 @@ basic/search.html
 
 Template for the search page.
 
-:copyright: Copyright 2007-2011 by the Sphinx team, see AUTHORS.
+:copyright: Copyright 2007-2022 by the Sphinx team, see AUTHORS.
 :license: BSD, see LICENSE for details.
 #}
-{% extends "layout.html" %}
+{%- extends "layout.html" %}
 {% set title = _('Search') %}
-{% set script_files = script_files + ['_static/searchtools.js'] %}
-{% set script_files = script_files + ['searchindex.js'] %}
+{%- block scripts %}
+{{ super() }}
+<script src="{{ pathto('_static/searchtools.js', 1) }}"></script>
+<script src="{{ pathto('_static/language_data.js', 1) }}"></script>
+{%- endblock %}
+{% block extrahead %}
+<script src="{{ pathto('searchindex.js', 1) }}" defer></script>
+{{ super() }}
+{% endblock %}
 {% block body %}
 <h1 id="search-documentation">{{ _('Search') }}</h1>
-<div id="fallback" class="admonition warning">
-    <script type="text/javascript">
-        $('#fallback').hide();
-        $("input.search").focus();
-        </script>
+{% block scriptwarning %}
+<noscript>
+    <div class="admonition warning">
         <p>
-        {% trans %}Please activate JavaScript to enable the search
-        functionality.{% endtrans %}
+            {% trans %}Please activate JavaScript to enable the search
+            functionality.{% endtrans %}
         </p>
     </div>
-    <p>
-    {% trans %}From here you can search the pyGIMLi documentation. Enter your
-    search words into the box in the navigation bar and press "Enter". Note that
-    the search function will automatically search for all of the words. Pages
-    containing fewer words won't appear in the result list.{% endtrans %}
-    </p>
-    {% if search_performed %}
-    {% if not search_results %}
-    <p>{{ _('Your search did not match any results.') }}</p>
-    {% endif %}
-    {% endif %}
-    <div id="search-results">
-        {% if search_results %}
-          <div class="list-group list-group-flush">
-          {% for href, caption, context in search_results %}
-          <a class="list-group-item list-group-item-action" href="{{ pathto(item.href) }}">{{ caption }}</a>
-          {% endfor %}
-          </div>
-        {% endif %}
+</noscript>
+{% endblock %}
+{% block searchtext %}
+<p>
+    {% trans %}Searching for multiple words only shows matches that contain
+    all words.{% endtrans %}
+</p>
+{% endblock %}
+{% block searchresults %}
+{% if search_performed %}
+<h2>{{ _('Search Results') }}</h2>
+{% if not search_results %}
+<p>{{ _('Your search did not match any documents. Please make sure that all words are spelled correctly and that you\'ve selected enough categories.') }}</p>
+{% endif %}
+{% endif %}
+<div id="search-results">
+    {% if search_results %}
+    <div class="list-group list-group-flush">
+        {% for href, caption, context in search_results %}
+        <a class="list-group-item list-group-item-action" href="{{ pathto(item.href) }}">{{ caption }}</a>
+        {% endfor %}
     </div>
-    {% endblock %}
+    {% endif %}
+</div>
+{% endblock %}
+{% endblock %}
