@@ -60,7 +60,7 @@ api:
 	cp -f pygimliapi/physics_overwrite pygimliapi/_generated/pygimli.physics.rst
 
 gallery:
-	python3 ./sidebar_gallery.py
+	python ./sidebar_gallery.py
 
 html-nogallery: api
 	$(SPHINXBUILD) -D plot_gallery=0 -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
