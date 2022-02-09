@@ -13,9 +13,11 @@ import re
 from glob import glob
 from os.path import basename, dirname, join
 
+import pygimli as pg
 
 def make_gallery(src_path, out_path):
     """TODO DOCUMENTME."""
+    pg.info(f"Create gallery: {src_path} at: {out_path}")
     example_dir = join(src_path, "examples")
     tutorial_dir = join(src_path, "tutorials")
     img_dir = "{{ pathto('_images', 1) }}"
@@ -29,16 +31,20 @@ def make_gallery(src_path, out_path):
     # Get captions
     def readRSTSecTitles(fname, verbose=False):
         """ Return list of section titles found in a given RST file. """
+        print('fname:', fname)
         rst_titles = re.compile(r"^(.+)\n[-=]+\n", flags=re.MULTILINE)
-        with open(fname) as f:
+        
+        with open(fname, encoding="utf8") as f:
+
             titles = re.findall(rst_titles, f.read())
             if verbose:
                 print(("File:", fname))
                 print(("Title:", titles))
+
         # go through lines only if compiled regex fails (py2/py3 issue)
         if not titles:
             print(("WARNING: Problem reading section title in", fname))
-            with open(fname) as f:
+            with open(fname, encoding="utf8") as f:
                 title = "unknown"
                 for line in f.readlines():
                     if "---" in line or "===" in line:

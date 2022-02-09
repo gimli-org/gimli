@@ -14,10 +14,10 @@ DEFAULT_STYLES = {
     },
     'Data': {
         'color': 'C0',  # blueish
-        'lw': 0.5,
+        'lw': 1.5,
         'linestyle': ':',
         'marker': 'o',
-        'ms': 4
+        'ms': 6
     },
     'Response': {
         'color': 'C0',  # blueish
