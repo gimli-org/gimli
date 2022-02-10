@@ -366,7 +366,9 @@ void ModellingBase::createConstraints(){
 }
 
 void ModellingBase::clearConstraints(){
-    if (constraints_) constraints_->clear();
+    if (constraints_) {
+        constraints_->clear();
+    }
 }
 
 MatrixBase * ModellingBase::constraints() {

@@ -53,6 +53,7 @@ class Inversion(object):
 
         self._inv = None
         self._fop = None
+        self._lam = 20      # lambda regularization 
 
         ### cache: keep startmodel if set explicit or calculated from FOP, will be recalulated for every run if not set explicit 
         self._startModel = None
@@ -189,14 +190,14 @@ class Inversion(object):
         if model is None:
             return None
         elif isinstance(model, float) or isinstance(model, int):
-            pg.info("Startmodel set from given value.", float(model))
+            pg.info("Homogeneous starting model set to:", float(model))
             return np.ones(self.parameterCount) * float(model)
         elif hasattr(model, '__iter__'):
             if len(model) == self.parameterCount:
-                pg.info("Startmodel set from given array.", model)
+                pg.info("Starting model set from given array.", model)
                 return model
             else:
-                pg.error("Startmodel size invalid {0} != {1}.".
+                pg.error("Starting model size invalid {0} != {1}.".
                          format(len(model), self.parameterCount))
         return None
 
@@ -327,12 +328,12 @@ class Inversion(object):
 
     @property
     def lam(self):
-        return self.inv.getLambda()
+        return self._lam
 
     @lam.setter
     def lam(self, lam):
-        self.inv.setLambda(lam)
-
+        self._lam = lam
+        
     def setDeltaChiStop(self, it):
         self.inv.setDeltaPhiAbortPercent(it)
 
@@ -416,9 +417,11 @@ class Inversion(object):
             Overwrite class settings for delta data phi aborting criteria.
             Default is 1%
         cType: int[1]
-            Set global contraint type for all regions.
+            Temporary global contraint type for all regions.
         startModel: array
             Temporary starting model for the current inversion run.
+        lam: float
+            Temporary regularization parameter lambda.
         """
         self.reset()
         if self.isFrameWork:
@@ -430,17 +433,19 @@ class Inversion(object):
 
         maxIter = kwargs.pop('maxIter', self.maxIter)
         minDPhi = kwargs.pop('dPhi', self.minDPhi)
+        showProgress = kwargs.pop('showProgress', False)
 
         self.verbose = kwargs.pop('verbose', self.verbose)
         self.debug = kwargs.pop('debug', self.debug)
         self.robustData = kwargs.pop('robustData', False)
 
-        # pg._g('verbose:',
-        #       self.verbose, self.fop.verbose(), self.inv.verbose())
-        self.lam = kwargs.pop('lam', 20)
+        lam = kwargs.pop('lam', self.lam)
+        self.inv.setLambda(lam)
 
-        showProgress = kwargs.pop('showProgress', False)
+        if 'cType' in kwargs:
+            self.fop.setRegionProperties('*', cType=kwargs['cType'])
 
+        ### This triggers the update of all fop properties, any property setting need to be done before this step
         self.inv.setTransModel(self.fop.modelTrans)
 
         self.dataVals = dataVals
@@ -448,8 +453,6 @@ class Inversion(object):
 
         self.inv.setData(self._dataVals)
         self.inv.setRelativeError(self._errorVals)
-        if 'cType' in kwargs:
-            self.fop.setRegionProperties('*', cType=kwargs['cType'])
 
         # temporary set max iter to one for the initial run call
         maxIterTmp = self.maxIter
@@ -542,8 +545,9 @@ class Inversion(object):
                 self._postStep(i, self)
 
             # Do we need to check the following before oder after chi2 calc??
-            self.lam = self.lam * self.inv.lambdaFactor()
-
+            lam *= self.inv.lambdaFactor()
+            self.inv.setLambda(lam)
+            
             if self.robustData:
                 self.inv.robustWeighting()
 
@@ -555,7 +559,7 @@ class Inversion(object):
 
             if self.verbose:
                 print("chi² = {0} (dPhi = {1}%) lam: {2}".format(
-                    round(chi2, 2), round((1-dPhi)*100, 2), self.lam))
+                    round(chi2, 2), round((1-dPhi)*100, 2), lam))
 
             if chi2 <= 1 and self.stopAtChi1:
                 print("\n")

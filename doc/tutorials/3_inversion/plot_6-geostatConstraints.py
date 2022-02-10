@@ -171,8 +171,7 @@ inv = pg.Inversion(fop=fop)
 inv.transData = tLog
 inv.transModel = tLog
 inv.lam = 40
-startModel = pg.Vector(mesh.cellCount(), 30)
-inv.startModel = startModel
+inv.startModel = 30 # homogeneous model 
 
 # Initially, we use the first-order constraints (default)
 res = inv.run(vals, error, cType=1, lam=35)
