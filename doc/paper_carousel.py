@@ -1,6 +1,14 @@
 # Paper examples on start page. Images have to be in _static/usecases.
 # Order does not matter, will be shuffled on doc build.
 showcase = [
+    dict(img="arboleda-zapata2022.jpg",
+         title="Inference analysis of model ensembles",
+         subtitle="Arboleda-Zapata et al. (2022), Journal of Applied Geophysics",
+         link="https://doi.org/10.1016/j.jappgeo.2021.104512"),
+    dict(img="wellmann2022.jpg",
+         title="Augmented reality sandbox for education and outreach",
+         subtitle="Wellmann et al. (2022), Geosphere",
+         link="https://doi.org/10.1130/GES02455.1"),
     dict(img="skibbe2021.png",
          title="Structurally coupled MRT and ERT",
          subtitle="Skibbe et al. (2021), Geophysics",

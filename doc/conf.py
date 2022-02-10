@@ -157,7 +157,8 @@ except ImportError:
     due to missing references.
 
     Install sphinx_gallery via:
-    sudo pip install sphinx-gallery
+
+        sudo pip3 install sphinx-gallery
     """
     pygimli.warn(err)
 
@@ -165,9 +166,9 @@ except ImportError:
 intersphinx_mapping = {
     'python': ('https://docs.python.org/dev', (None, 'intersphinx/python-objects.inv')),
     'numpy': ('https://numpy.org/doc/stable', (None, 'intersphinx/numpy-objects.inv')),
-    'scipy': ('https://docs.scipy.org/doc/scipy/reference', (None, 'intersphinx/scipy-objects.inv')),
+    'scipy': ('https://docs.scipy.org/doc/scipy/', (None, 'intersphinx/scipy-objects.inv')),
     'matplotlib': ('https://matplotlib.org/stable', (None, 'intersphinx/matplotlib-objects.inv')),
-    'pyvista': ('https://docs.pyvista.org', None),
+    'pyvista': ('https://docs.pyvista.org', (None, 'intersphinx/pyvista-objects.inv')),
 }
 
 autoclass_content = "class"
