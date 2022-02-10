@@ -571,3 +571,8 @@ class GeostatisticConstraintsMatrix(pgcore.MatrixBase):
 
     def rows(self):
         return self.nModel
+
+    def clear(self):
+        self.CM05 = None
+        self.nModel = 0
+        self.spur = None

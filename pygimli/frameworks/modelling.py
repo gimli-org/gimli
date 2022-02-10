@@ -293,7 +293,6 @@ class Modelling(pg.core.ModellingBase):
 
             if vals['fix'] is not None:
                 if rMgr.region(rID).fixValue() != vals['fix']:
-                    pg._r(vals['background'])
                     vals['background'] = True
                     rMgr.region(rID).setFixValue(vals['fix'])
                     self._regionChanged = True
