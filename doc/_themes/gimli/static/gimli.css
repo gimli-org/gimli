@@ -1063,3 +1063,8 @@ div.dataTables_wrapper div.dataTables_filter {
 table#publications {
     font-size: 14px;
 }
+
+.context {
+  color: #a1a1a1;
+  font-size: smaller;
+}
