@@ -174,16 +174,16 @@ class VESModelling(Block1DModelling):
         ra = data
         raE = error
 
-        style = dict(pg.frameworks.modelling.DEFAULT_STYLES.get(
-            label, pg.frameworks.modelling.DEFAULT_STYLES['Default']))
+        style = dict(pg.frameworks.modelling.DEFAULT_STYLES.get(label, 
+                        pg.frameworks.modelling.DEFAULT_STYLES['Default']))
         style.update(kwargs)
         a1 = ax
         plot = getattr(a1, plot)
+        
         if label is None:
             label = r'$\varrho_a$'
-
-        del style["linestyle"]  # to remove mpl warning
-        plot(ra, ab2, 'x-', label=label, **style)
+        
+        plot(ra, ab2, label=label, **style)
 
         if raE is not None:
             raErr = np.array(ra * raE)
@@ -352,7 +352,7 @@ class VESCModelling(VESModelling):
         super(VESCModelling, self).drawData(a1, ra, error=raE,
                                             label=labels[0], **style)
 
-        style['Color'] = 'C2'
+        style['color'] = 'C2'
 
         a2.semilogy(phi, self.ab2, label=labels[1], **style)
 

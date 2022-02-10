@@ -134,7 +134,6 @@ Pos operator * (const Matrix3 < ValueType > & A, const Pos & b) {
 /*! Pure virtual interface class for matrices.
  * If you want your own Jacobian matrix to be used in \ref Inversion or \ref ModellingBase
  you have to derive your matrix from this class and implement all necessary members. */
-
 class DLLEXPORT MatrixBase{
 public:
 
@@ -156,29 +155,29 @@ public:
 
     /*! Return number of cols */
     virtual Index rows() const {
-       THROW_TO_IMPL
+       log(Warning, "no rows() implemented for: ", typeid(*this).name());
        return 0;
     }
 
     /*! Return number of colums */
     virtual Index cols() const {
-        THROW_TO_IMPL
+        log(Warning, "no cols() implemented for: ", typeid(*this).name());
         return 0;
     }
 
     /*! Resize this matrix to rows, cols */
     virtual void resize(Index rows, Index cols){
-       THROW_TO_IMPL
+       log(Warning, "no resize(Index rows, Index cols) implemented for: ", typeid(*this).name());
     }
 
     /*! Fill Vector with 0.0. Don't change size.*/
     virtual void clean() {
-        THROW_TO_IMPL
+        log(Warning, "no clean() implemented for: ", typeid(*this).name());
     }
 
     /*! Clear the data, set size to zero and frees memory. */
     virtual void clear() {
-        THROW_TO_IMPL
+        log(Warning, "no clear() implemented for: ", typeid(*this).name());
     }
 
     /*! Return this * a. For being numpy api-compatible  */
@@ -188,34 +187,34 @@ public:
 
     /*! Return this * a  */
     virtual RVector mult(const RVector & a) const {
-       THROW_TO_IMPL
+       log(Warning, "no RVector mult(const RVector & a) implemented for: ", typeid(*this).name());
        return RVector(rows());
     }
 
     /*! Return this * a  */
     virtual CVector mult(const CVector & a) const {
-       THROW_TO_IMPL
-       return CVector(rows());
+        log(Warning, "no CVector mult(const CVector & a) implemented for: ", typeid(*this).name());
+        return CVector(rows());
     }
 
     virtual RVector mult(const RVector & b, Index startI, Index endI) const {
-        THROW_TO_IMPL
+        log(Warning, "no RVector mult(const RVector & b, Index startI, Index endI) implemented for: ", typeid(*this).name());
         return RVector(rows());
     }
     virtual CVector mult(const CVector & b, Index startI, Index endI) const {
-        THROW_TO_IMPL
+        log(Warning, "no CVector mult(const CVector & b, Index startI, Index endI) implemented for: ", typeid(*this).name());
         return CVector(rows());
     }
 
     /*! Return this.T * a */
     virtual RVector transMult(const RVector & a) const {
-        THROW_TO_IMPL
+        log(Warning, "no RVector transMult(const RVector & a) implemented for: ", typeid(*this).name());
         return RVector(cols());
     }
 
     /*! Return this.T * a */
     virtual CVector transMult(const CVector & a) const {
-        THROW_TO_IMPL
+        log(Warning, "no CVector transMult(const CVector & a) implemented for: ", typeid(*this).name());
         return CVector(cols());
     }
 /*
@@ -270,7 +269,7 @@ public:
 
     /*! Save this matrix into the file filename given. */
     virtual void save(const std::string & filename) const {
-        log(Warning, "save for this matrix type is not supported");
+        log(Warning, "no save(const std::string & filename) implemented for: ", typeid(*this).name());
     }
 
 protected:

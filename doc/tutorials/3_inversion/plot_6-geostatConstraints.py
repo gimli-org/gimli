@@ -29,6 +29,7 @@ Let us illustrate this by a simple mesh:
 # --------------------------------------------
 # We create a simple mesh using a box geometry
 import matplotlib.pyplot as plt
+import numpy as np
 import pygimli as pg
 import pygimli.meshtools as mt
 
@@ -159,6 +160,7 @@ kw = dict(
     orientation='vertical',
     cMap='Spectral_r',
     logScale=True)
+
 # We want to use a homogenenous starting model
 tLog = pg.trans.TransLog()
 vals = [30, 50, 300, 100, 200]
@@ -171,28 +173,37 @@ inv.transModel = tLog
 inv.lam = 40
 startModel = pg.Vector(mesh.cellCount(), 30)
 inv.startModel = startModel
+
 # Initially, we use the first-order constraints (default)
 res = inv.run(vals, error, cType=1, lam=35)
-print(('Ctype=1: ' + '{:.1f} ' * 6).format((*fop(res)), inv.chi2()))
+print(('Ctype=1: ' + '{:.1f} ' * 6).format(*fop(res), inv.chi2()))
 pg.show(mesh, res, ax=ax[0, 0], **kw)
 ax[0, 0].set_title("1st order")
+np.testing.assert_approx_equal(inv.chi2(),  1.1, significant=1)
+
 # Next, we use the second order (curvature) constraint type
 res = inv.run(vals, error, cType=2, lam=1000)
-print(('Ctype=2: ' + '{:.1f} ' * 6).format((*fop(res)), inv.chi2()))
+print(('Ctype=2: ' + '{:.1f} ' * 6).format(*fop(res), inv.chi2()))
 pg.show(mesh, res, ax=ax[0, 1], **kw)
 ax[0, 1].set_title("2nd order")
+np.testing.assert_approx_equal(inv.chi2(),  1.1, significant=1)
+
 # Now we set the geostatistic isotropic operator with 5m correlation length
 fop.setConstraints(C)
 res = inv.run(vals, error, lam=25)
-print(('Cg-5/5m: ' + '{:.1f} ' * 6).format((*fop(res)), inv.chi2()))
+print(('Cg-5/5m: ' + '{:.1f} ' * 6).format(*fop(res), inv.chi2()))
 pg.show(mesh, res, ax=ax[1, 0], **kw)
 ax[1, 0].set_title("I=5")
+np.testing.assert_approx_equal(inv.chi2(),  1.2, significant=1)
+
 # and finally we use the dipping constraint matrix
 fop.setConstraints(Cdip)
 res = inv.run(vals, error, lam=35)
-print(('Cg-9/2m: ' + '{:.1f} ' * 6).format((*fop(res)), inv.chi2()))
+print(('Cg-9/2m: ' + '{:.1f} ' * 6).format(*fop(res), inv.chi2()))
 pg.show(mesh, res, ax=ax[1, 1], **kw)
 ax[1, 1].set_title("I=[10/2], dip=25")
+np.testing.assert_approx_equal(inv.chi2(),  1.2, significant=1)
+
 # plot the position of the priors
 for ai in ax.flat:
     for po in pos:
