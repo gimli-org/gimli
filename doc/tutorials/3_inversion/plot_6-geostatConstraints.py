@@ -40,7 +40,6 @@ import pygimli.meshtools as mt
 rect = mt.createRectangle(start=[0, -10], end=[10, 0])
 mesh = mt.createMesh(rect, quality=34.5, area=0.1)
 
-# %%
 # We compute such a covariance matrix by calling
 CM = pg.utils.covarianceMatrix(mesh, I=5)  # I taken for both x and y
 # We search for the cell where the midpoint (5, -5) is located in
@@ -182,8 +181,8 @@ pg.show(mesh, res, ax=ax[0, 0], **kw)
 ax[0, 0].set_title("1st order")
 np.testing.assert_array_less(inv.chi2(), 1.2)
 
-# %% Next, we use the second order (curvature) constraint type
-res = inv.run(vals, error, cType=2, lam=25, startModel=30)
+# Next, we use the second order (curvature) constraint type
+res = inv.run(vals, error, cType=2, lam=25)
 print(('Ctype=2: ' + '{:.1f} ' * 6).format(*fop(res), inv.chi2()))
 pg.show(mesh, res, ax=ax[0, 1], **kw)
 ax[0, 1].set_title("2nd order")
@@ -213,6 +212,7 @@ for ai in ax.flat:
     p.set_array(np.array(vals))
     p.set_norm(LogNorm(kw['cMin'], kw['cMax']))
     ai.add_collection(p)
+
 # %%
 # Note that all four regularization operators fit the data equivalently but
 # the images (i.e. how the gaps between the data points are filled) are quite
