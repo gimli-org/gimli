@@ -3,7 +3,7 @@
 
 
 from .modelling import (Modelling, Block1DModelling, MeshModelling,
-                        JointModelling,
+                        JointModelling, PriorModelling,
                         PetroModelling, LCModelling, ParameterModelling)
 
 from .inversion import (Inversion, MarquardtInversion,
