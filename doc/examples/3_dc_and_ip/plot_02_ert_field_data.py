@@ -67,4 +67,4 @@ mgr.showResultAndFit()
 
 ###############################################################################
 # Or just plot the model only using your own options.
-mgr.showResult(mod, cMin=5, cMax=30, cMap="turbo", logScale=True)
+mgr.showResult(mod, cMin=5, cMax=30, cMap="Spectral_r", logScale=True)
