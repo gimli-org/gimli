@@ -29,6 +29,10 @@ Let us illustrate this by a simple mesh:
 # --------------------------------------------
 # We create a simple mesh using a box geometry
 import matplotlib.pyplot as plt
+from matplotlib.patches import CirclePolygon
+from matplotlib.collections import PatchCollection
+from matplotlib.colors import LogNorm
+import numpy as np
 import pygimli as pg
 import pygimli.meshtools as mt
 
@@ -36,7 +40,6 @@ import pygimli.meshtools as mt
 rect = mt.createRectangle(start=[0, -10], end=[10, 0])
 mesh = mt.createMesh(rect, quality=34.5, area=0.1)
 
-# %%
 # We compute such a covariance matrix by calling
 CM = pg.utils.covarianceMatrix(mesh, I=5)  # I taken for both x and y
 # We search for the cell where the midpoint (5, -5) is located in
@@ -106,7 +109,7 @@ ax, cb = pg.show(mesh, pg.abs(Cdip * vec), **kwLog)
 
 # %%
 # Even in the linear scale, but more in the log scale one can see the
-# regularization footprint in the shape of an ellipsis. 
+# regularization footprint in the shape of an ellipsis.
 
 # %%
 # In order to illustrate the role of the constraints, we use a very simple
@@ -159,44 +162,57 @@ kw = dict(
     orientation='vertical',
     cMap='Spectral_r',
     logScale=True)
+
 # We want to use a homogenenous starting model
-tLog = pg.trans.TransLog()
 vals = [30, 50, 300, 100, 200]
 # We assume a 5% relative accuracy of the values
 error = pg.Vector(len(vals), 0.05)
 # set up data and model transformation log-scaled
+tLog = pg.trans.TransLog()
 inv = pg.Inversion(fop=fop)
 inv.transData = tLog
 inv.transModel = tLog
 inv.lam = 40
-startModel = pg.Vector(mesh.cellCount(), 30)
-inv.startModel = startModel
+inv.startModel = 30
 # Initially, we use the first-order constraints (default)
-res = inv.run(vals, error, cType=1, lam=35)
-print(('Ctype=1: ' + '{:.1f} ' * 6).format((*fop(res)), inv.chi2()))
+res = inv.run(vals, error, cType=1, lam=30)
+print(('Ctype=1: ' + '{:.1f} ' * 6).format(*fop(res), inv.chi2()))
 pg.show(mesh, res, ax=ax[0, 0], **kw)
 ax[0, 0].set_title("1st order")
+np.testing.assert_array_less(inv.chi2(), 1.2)
+
 # Next, we use the second order (curvature) constraint type
-res = inv.run(vals, error, cType=2, lam=1000)
-print(('Ctype=2: ' + '{:.1f} ' * 6).format((*fop(res)), inv.chi2()))
+res = inv.run(vals, error, cType=2, lam=25)
+print(('Ctype=2: ' + '{:.1f} ' * 6).format(*fop(res), inv.chi2()))
 pg.show(mesh, res, ax=ax[0, 1], **kw)
 ax[0, 1].set_title("2nd order")
+np.testing.assert_array_less(inv.chi2(), 1.2)
+
 # Now we set the geostatistic isotropic operator with 5m correlation length
 fop.setConstraints(C)
-res = inv.run(vals, error, lam=25)
-print(('Cg-5/5m: ' + '{:.1f} ' * 6).format((*fop(res)), inv.chi2()))
+res = inv.run(vals, error, lam=15)
+print(('Cg-5/5m: ' + '{:.1f} ' * 6).format(*fop(res), inv.chi2()))
 pg.show(mesh, res, ax=ax[1, 0], **kw)
 ax[1, 0].set_title("I=5")
+np.testing.assert_array_less(inv.chi2(), 1.2)
+
 # and finally we use the dipping constraint matrix
 fop.setConstraints(Cdip)
-res = inv.run(vals, error, lam=35)
-print(('Cg-9/2m: ' + '{:.1f} ' * 6).format((*fop(res)), inv.chi2()))
+res = inv.run(vals, error, lam=15)
+print(('Cg-9/2m: ' + '{:.1f} ' * 6).format(*fop(res), inv.chi2()))
 pg.show(mesh, res, ax=ax[1, 1], **kw)
 ax[1, 1].set_title("I=[10/2], dip=25")
+np.testing.assert_array_less(inv.chi2(), 1.2)
+
 # plot the position of the priors
+patches = [CirclePolygon(po, 0.2) for po in pos]
 for ai in ax.flat:
-    for po in pos:
-        ai.plot(*po, marker='o', markersize=10, color='k', fillstyle='none')
+    p = PatchCollection(patches, cmap=kw['cMap'])
+    p.set_facecolor(None)
+    p.set_array(np.array(vals))
+    p.set_norm(LogNorm(kw['cMin'], kw['cMax']))
+    ai.add_collection(p)
+
 # %%
 # Note that all four regularization operators fit the data equivalently but
 # the images (i.e. how the gaps between the data points are filled) are quite

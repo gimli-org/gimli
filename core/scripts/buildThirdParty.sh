@@ -299,19 +299,30 @@ needGCC(){
 }
 needPYTHON(){
 
-    if command -v python3 2>/dev/null; then
-        PYTHONEXE=python3
-    elif command -v python 2>/dev/null; then
-        PYTHONEXE=python
+    echo "*** Need python "
+
+    if [ "$SYSTEM" == "WIN" ]; then
+        # don't check for python3 in win .. it will find msys python not anaconda
+        if command -v python 2>/dev/null; then
+            PYTHONEXE=python
+        else
+            echo "Cannot find python interpreter. Please consider install anaconda."
+        fi
     else
-        echo "cannot find python interpreter"
+        if command -v python3 2>/dev/null; then
+            PYTHONEXE=python3
+        elif command -v python 2>/dev/null; then
+            PYTHONEXE=python
+        else
+            echo "cannot find python interpreter"
+        fi
     fi
 
     HAVEPYTHON=1
     PYTHONVERSION=`"$PYTHONEXE" -c 'import sys; print(sys.version)'`
     PYTHONMAJOR=`"$PYTHONEXE" -c 'import sys; print(sys.version_info.major)'`
     PYTHONMINOR=`"$PYTHONEXE" -c 'import sys; print(sys.version_info.minor)'`
-    #echo $PYTHONVERSION $PYTHONMAJOR
+    echo "Python version found py" $PYTHONMAJOR $PYTHONMINOR $PYTHONVERSION 
 
     PYTHON_HOME=`which $PYTHONEXE`
     PYTHON_HOME=${PYTHON_HOME%/*}
@@ -384,6 +395,8 @@ prepBOOST(){
     BOOST_ROOT_WIN=${BOOST_ROOT_WIN/\/e\//E:\/}
 }
 buildBOOST(){
+    echo "*** building boost ... "
+    
     checkTOOLSET
     prepBOOST
 
@@ -738,7 +751,8 @@ showHelp(){
 if [ -z "$TOOLSET" ]; then
     TOOLSET=none
 fi
-echo "TOOLSET set to: " $TOOLSET
+echo "****** Third party build via bash script for: $@ ******"
+echo "env: TOOLSET set to: " $TOOLSET
 
 if [ -n "$BOOST_VERSION" ]; then
     BOOST_VERSION=$BOOST_VERSION
@@ -757,12 +771,10 @@ if [ -z "$PARALLEL_BUILD" ]; then
 fi
 echo "Installing at " $GIMLI_PREFIX
 
-
 CMAKE_BUILD_TYPE=Release
 
 for arg in $@
 do
-    echo $arg
     case $arg in
     msvc)
         SetMSVC_TOOLSET;;

@@ -180,8 +180,7 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
                                         vmax=max(gci.get_array()))
             gci.set_norm(norm)
         cbar.on_mappable_changed(gci)
-        #cbar.update_normal(gci)
-
+        # cbar.update_normal(gci)
 
     if levels is not None:
         nLevs = len(levels)
@@ -198,9 +197,8 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
             # cMap.set_under('yellow')
             # cMap.set_over('cyan')
 
-        #cbar.mappable.get_norm().clip=False
+        # cbar.mappable.get_norm().clip=False
         cbar.mappable.set_cmap(cMap)
-
 
     needLevelUpdate = False
 

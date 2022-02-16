@@ -1,5 +1,5 @@
 /******************************************************************************
- *   Copyright (C) 2006-2021 by the GIMLi development team                    *
+ *   Copyright (C) 2006-2022 by the GIMLi development team                    *
  *   Carsten Rücker carsten@resistivity.net                                   *
  *                                                                            *
  *   Licensed under the Apache License, Version 2.0 (the "License");          *
@@ -346,7 +346,6 @@ template< typename T > inline std::string str(const T & v){
 enum LogType {Verbose, Info, Warning, Error, Debug, Critical};
 DLLEXPORT void log(LogType type, const std::string & msg);
 
-#ifndef PYGIMLI_CAST // castxml complains on older gcc/clang
 template<typename Value, typename... Values>
 std::string str(Value v, Values... vs){
     std::ostringstream os;
@@ -355,11 +354,12 @@ std::string str(Value v, Values... vs){
     (void) expander{ 0, (os << " " << vs, void(), 0)... };
     return os.str();
 }
+#ifndef PYGIMLI_CAST // castxml complains on older gcc/clang
+#endif
 template<typename... Values>
 void log(LogType type, Values... vs){
     return log(type, str(vs...));
 }
-#endif
 
 DLLEXPORT std::string versionStr();
 

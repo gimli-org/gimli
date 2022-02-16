@@ -79,7 +79,7 @@ def plotABMN(ax, scheme, idx):
         else:
             color = "blue"
         ax.plot(x, y, marker=".", color=color, ms=10)
-        ax.annotate(elec.upper(), xy=(x, y), size=12, ha="center", fontsize=10, bbox=dict(
+        ax.annotate(elec.upper(), xy=(x, y), ha="center", fontsize=10, bbox=dict(
             boxstyle="round", fc=(0.8, 0.8, 0.8), ec=color), xytext=(0, 20),
                     textcoords='offset points', arrowprops=dict(
                         arrowstyle="wedge, tail_width=.5", fc=color, ec=color,
@@ -87,7 +87,8 @@ def plotABMN(ax, scheme, idx):
         ax.plot(coords["a"][0],)
 
 labels = ["Dipole-Dipole", "Wenner", "Schlumberger"]
-fig, ax = plt.subplots(scheme.size(), 1, sharex=True, figsize=(8,8))
+fig, ax = plt.subplots(scheme.size(), 1, sharex=True, figsize=(6,8))
+
 for i, sens in enumerate(fop.jacobian()):
     # Label in lower-left corner
     ax[i].text(.01, .15, labels[i], horizontalalignment='left',
@@ -102,3 +103,5 @@ for i, sens in enumerate(fop.jacobian()):
     normsens /= np.max(normsens)
     pg.show(mesh, normsens, cMap="RdGy_r", ax=ax[i], orientation="vertical",
             label="Normalized\nsensitivity", nLevs=3, cMin=-1, cMax=1)
+
+fig.tight_layout()

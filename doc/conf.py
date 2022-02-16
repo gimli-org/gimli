@@ -114,17 +114,18 @@ try:
                           join(SPHINXDOC_PATH, 'tutorials')],
         'gallery_dirs': ['_examples_auto', '_tutorials_auto'],
         'reference_url': {
-            'pygimli': "https://pygimli.org",
-            'numpy': 'https://docs.scipy.org/doc/numpy',
+            'pygimli': 'https://pygimli.org',
+            'python': 'https://docs.python.org/dev',
+            'numpy': 'https://numpy.org/doc/stable',
             'scipy': 'https://docs.scipy.org/doc/scipy/reference',
-            'matplotlib': 'https://matplotlib.org',
+            'matplotlib': 'https://matplotlib.org/stable',
         },
 
         # Don't report time of fast scripts (< 10 sec)
         "min_reported_time": 10,
 
         # path where to store your example linker templates
-        'backreferences_dir': 'pygimliapi/_generated',
+        'backreferences_dir': 'pygimliapi' + os.path.sep + '_generated',
 
         # Your documented modules. You can use a string or a list of strings
         'doc_module': 'pygimli',
@@ -135,7 +136,7 @@ try:
         'remove_config_comments': True,
 
         # Only parse filenames starting with plot_
-        'filename_pattern': '/plot_',
+        'filename_pattern': 'plot_',
 
         'first_notebook_cell': ("# Checkout www.pygimli.org for more examples\n"
                                 "%matplotlib inline"),
@@ -156,17 +157,18 @@ except ImportError:
     due to missing references.
 
     Install sphinx_gallery via:
-    sudo pip install sphinx-gallery
+
+        sudo pip3 install sphinx-gallery
     """
     pygimli.warn(err)
 
 
 intersphinx_mapping = {
-    'python': ('https://docs.python.org/{.major}'.format(sys.version_info), None),
-    'numpy': ('https://docs.scipy.org/doc/numpy', None),
-    'scipy': ('https://docs.scipy.org/doc/scipy/reference', None),
-    'matplotlib': ('https://matplotlib.org', None),
-    'pyvista': ('https://docs.pyvista.org', None)
+    'python': ('https://docs.python.org/dev', (None, 'intersphinx/python-objects.inv')),
+    'numpy': ('https://numpy.org/doc/stable', (None, 'intersphinx/numpy-objects.inv')),
+    'scipy': ('https://docs.scipy.org/doc/scipy/', (None, 'intersphinx/scipy-objects.inv')),
+    'matplotlib': ('https://matplotlib.org/stable', (None, 'intersphinx/matplotlib-objects.inv')),
+    'pyvista': ('https://docs.pyvista.org', (None, 'intersphinx/pyvista-objects.inv')),
 }
 
 autoclass_content = "class"
@@ -211,7 +213,7 @@ master_doc = 'documentation'
 
 # General information about the project.
 project = 'pyGIMLi'
-copyright = '2021 - GIMLi Development Team'
+copyright = '2022 - GIMLi Development Team'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -512,8 +514,10 @@ doxylink = {'gimliapi': (join(DOXY_BUILD_DIR, 'gimli.tag'), 'https://www.pygimli
 from bib2html import write_html
 publications = write_html()
 
-# Create small gallery of all tutorials and examples in the sidebar.
-make_gallery(SPHINXDOC_PATH, DOC_BUILD_DIR)
+################################################################################################
+# Extra call to create small gallery of all already made tutorials and examples in the sidebar.
+################################################################################################
+make_gallery(os.path.abspath(SPHINXDOC_PATH), os.path.abspath(DOC_BUILD_DIR))
 
 # Add carousel to start page
 from paper_carousel import showcase

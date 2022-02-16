@@ -1,5 +1,5 @@
 /******************************************************************************
- *   Copyright (C) 2006-2021 by the GIMLi development team                    *
+ *   Copyright (C) 2006-2022 by the GIMLi development team                    *
  *   Carsten Rücker carsten@resistivity.net                                   *
  *                                                                            *
  *   Licensed under the Apache License, Version 2.0 (the "License");          *
@@ -541,9 +541,6 @@ Boundary * Mesh::copyBoundary(const Boundary & bound, double tol, bool check){
 
         Boundary * conParent = findBoundary(conNodes);
         Boundary * secParent = findSecParent(secNodes);
-
-        // __MS("sizes:" << conNodes.size() <<" " <<secNodes.size())
-        // __MS("parents: " << conParent <<" " << secParent)
 
         if (!isFreeFace){
             conParent = findBoundary(conNodes);

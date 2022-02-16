@@ -1550,6 +1550,36 @@ def polyCreateWorld(filename, x=None, depth=None, y=None, marker=0,
     os.system(syscal)
 
 
+def createSurface(mesh, boundaryMarker=None, verbose=True):
+    """Convert a 2D mesh into a 3D surface mesh.
+    
+    Parameters
+    ----------
+    mesh: :gimliapi:`GIMLI::Mesh`
+        The 2D input mesh.
+    boundaryMarker: int[0]
+        Boundary marker for the resulting faces. If set to None the cell markers if the mesh are taken.
+
+    Returns
+    -------
+    :gimliapi:`GIMLI::Mesh`
+        The 3D surface mesh.
+    """
+    if mesh.dimension() != 2:
+        pg.error("Need two dimensional mesh")
+    if mesh.cellCount() == 0:
+        pg.error("Need a two dimensional mesh with cells")
+    
+    surface = pg.Mesh(dim=3, isGeometry=True)
+
+    nodes = [surface.createNode(n.pos()).id() for n in mesh.nodes()]    
+
+    for c in mesh.cells():
+        surface.createBoundary(c.ids(), marker=c.marker())
+
+    return surface
+        
+
 def createFacet(mesh, boundaryMarker=None, verbose=True):
     """Create a coplanar PLC of a 2d mesh or poly
 
@@ -1628,8 +1658,8 @@ def createCube(size=[1.0, 1.0, 1.0], pos=None,
 
     """
     if start is not None and end is not None:
-        size = end-start
-        pos = start + size/2
+        size = pg.Pos(end) - pg.Pos(start)
+        pos = pg.Pos(start) + pg.Pos(size)/2
 
     poly = pg.Mesh(3, isGeometry=True)
 

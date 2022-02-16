@@ -13,3 +13,4 @@ sphinxcontrib-doxylink
 pillow
 scipy
 bibtexparser
+pyvista==0.24.0
