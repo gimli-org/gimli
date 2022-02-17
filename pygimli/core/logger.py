@@ -46,6 +46,7 @@ def _(*args, c=None):
     except Exception:
         return '\033[' + c + 'm' + _msg(*args) + __ANSICOLORS__['NC']
 
+
 def _clsNameFromFrame(fr):
     args, _, _, value_dict = inspect.getargvalues(fr)
     if len(args) and args[0] == 'self':
@@ -322,6 +323,7 @@ def renameKwarg(old, new, kwargs, ver=''):
         logger.warning("Keyword argument changed from '" + old +
                        "' to '" + new + "' and will be removed in v " + ver)
         kwargs[new] = kwargs.pop(old)
+
 
 def renameArg(old, new, kwargs, default, ver=''):
     """Argument old is renamed into new.

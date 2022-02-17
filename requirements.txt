@@ -24,4 +24,5 @@ ipython
 
 # for testing
 pytest
-
+meshio
+tetgen

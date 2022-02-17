@@ -1,5 +1,5 @@
 /******************************************************************************
- *   Copyright (C) 2006-2021 by the GIMLi development team                    *
+ *   Copyright (C) 2006-2022 by the GIMLi development team                    *
  *   Carsten Rücker carsten@resistivity.net                                   *
  *                                                                            *
  *   Licensed under the Apache License, Version 2.0 (the "License");          *
@@ -1515,6 +1515,7 @@ ElementMatrix < double >::add(const ElementMatrix < double > & B,
 template < > DLLEXPORT
 void ElementMatrix < double >::integrate() const {
     if (_newStyle && !this->_integrated){
+        // __M
         const RVector &w = *this->_w;
         Index nRules(w.size());
 

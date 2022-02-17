@@ -337,3 +337,9 @@ def _createTwin(ax, funct):
         tax = getattr(ax, funct)()
 
     return tax
+
+def isInteractive():
+    """Returns False if a non-interactive backend is used, e.g. for Jupyter Notebooks and sphinx builds."""
+    backend = plt.get_backend().lower()
+    inlineBackend = "inline" in backend or backend == "agg"
+    return not inlineBackend

@@ -1968,7 +1968,8 @@ def createParaMesh(*args, **kwargs):
     plc = pg.meshtools.createParaMeshPLC(*args, **kwargs)
     kwargs.pop('paraMaxCellSize', 0)
     kwargs.pop('boundaryMaxCellSize', 0)
-    mesh = createMesh(plc, **kwargs, smooth=kwargs.pop('smooth', [2, 10]))
+    smooth = kwargs.pop('smooth', [2, 10])
+    mesh = createMesh(plc, **kwargs, smooth=smooth)
     return mesh
 
 

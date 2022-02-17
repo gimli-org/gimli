@@ -1,5 +1,5 @@
 /******************************************************************************
- *   Copyright (C) 2005-2021 by the GIMLi development team                    *
+ *   Copyright (C) 2005-2022 by the GIMLi development team                    *
  *   Carsten Rücker carsten@resistivity.net                                   *
  *                                                                            *
  *   Licensed under the Apache License, Version 2.0 (the "License");          *
@@ -260,7 +260,7 @@ int CHOLMODWrapper::initMatrixChol_(SparseMatrix < ValueType > & S, int xType){
         ((cholmod_sparse*)A_)->p     = (void*)S.colPtr();   /* column pointers (size n+1) or col indices (size nzmax) */
         ((cholmod_sparse*)A_)->i     = (void*)S.rowIdx();   /* row indices, size nzmax */
 
-        ((cholmod_sparse*)A_)->x     = S.vals();     /* numerical values, size nzmax */
+        ((cholmod_sparse*)A_)->x     = S.pVals();     /* numerical values, size nzmax */
         ((cholmod_sparse*)A_)->stype = stype_;
 
         ((cholmod_sparse*)A_)->itype = CHOLMOD_INT;

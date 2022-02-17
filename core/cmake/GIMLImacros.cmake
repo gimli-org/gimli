@@ -152,6 +152,7 @@ function(find_python_module module)
 endfunction(find_python_module)
 
 macro(findBuildTools)
+    message(STATUS "checking for some build tools ...")
     #unzip try cmake -E tar
     #find_package(Tar REQUIRED)  ${CMAKE_COMMAND} -E tar "cfvz"
     find_program(PATCH_TOOL NAMES patch  REQUIRED)
@@ -179,14 +180,16 @@ endmacro()
 
 macro(find_or_build_package_check package get_package checkVar forceLocal)
 
+    message(STATUS "** Find or build ${package} at: ${checkVar}")
     find_package(${package})
+    message(STATUS "Found: ${${package}_FOUND}")
 
     string(TOUPPER ${package} upper_package)
     string(TOLOWER ${package} lower_package)
 
     set (FORCE_LOCAL_REBUILD 0)
 
-    message(STATUS "${package} is local ${forceLocal}")
+    message(STATUS "Local build ${package} forced: ${forceLocal}")
 
     if ($ENV{CLEAN})
         if(${forceLocal} OR ${package}_LOCAL)
@@ -200,7 +203,7 @@ macro(find_or_build_package_check package get_package checkVar forceLocal)
 
         findBuildTools()
 
-        message(STATUS "${package} NOT found .. building version from foreign sources into ${THIRDPARTY_DIR}" )
+        message(STATUS "building ${package} from foreign sources into ${THIRDPARTY_DIR}" )
 
         file(MAKE_DIRECTORY ${THIRDPARTY_DIR})
 
@@ -219,11 +222,13 @@ macro(find_or_build_package_check package get_package checkVar forceLocal)
 				${THIRDPARTY_DIR}
         )
 
+        message(STATUS "checking again for ${package} ...")
 		find_package(${package})
+        message(STATUS "Found: ${${package}_FOUND}")
 
         set(${package}_LOCAL 1 CACHE INTERNAL "this package was build local")
     else()
-        message(STATUS "${package} found" )
+        message(STATUS "** Find or build ${package} done.")
     endif()
 
 endmacro()

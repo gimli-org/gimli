@@ -35,7 +35,7 @@ from .polytools import createParaDomain2D  # keep for backward compatibility
 from .polytools import (createCircle, createCube, createCylinder, createFacet,
                         createSurface,
                         createLine, createParaMeshPLC, createPolygon,
-                        createRectangle, createWorld, exportPLC, mergePLC,
+                        createRectangle, createWorld, exportPLC, merge, mergePLC,
                         mergePLC3D, readPLC, syscallTetgen, extrude)
 
 from .quality import quality

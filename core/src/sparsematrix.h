@@ -1,5 +1,5 @@
 /******************************************************************************
- *   Copyright (C) 2006-2021 by the GIMLi development team                    *
+ *   Copyright (C) 2006-2022 by the GIMLi development team                    *
  *   Carsten Rücker carsten@resistivity.net                                   *
  *                                                                            *
  *   Licensed under the Apache License, Version 2.0 (the "License");          *
@@ -358,7 +358,7 @@ public:
 
         rows_ = colPtr_.size() - 1;
         cols_ = max(rowIdx_) + 1;
-        //** freeing idxMap ist expensive
+        //** freeing idxMap is expensive
     }
 
     void fillStiffnessMatrix(const Mesh & mesh){
@@ -366,9 +366,12 @@ public:
         fillStiffnessMatrix(mesh, a);
     }
 
-    void fillStiffnessMatrix(const Mesh & mesh, const RVector & a){
-        clean();
-        buildSparsityPattern(mesh);
+    void fillStiffnessMatrix(const Mesh & mesh, const RVector & a, bool rebuildPattern=true){
+        if (rebuildPattern == true || this->size() == 0){
+            buildSparsityPattern(mesh);
+        } else {
+            this->clean();
+        }
         ElementMatrix < double > A_l;
 
         for (uint i = 0; i < mesh.cellCount(); i ++){
@@ -382,9 +385,12 @@ public:
         fillMassMatrix(mesh, a);
     }
 
-    void fillMassMatrix(const Mesh & mesh, const RVector & a){
-        clean();
-        buildSparsityPattern(mesh);
+    void fillMassMatrix(const Mesh & mesh, const RVector & a, bool rebuildPattern=true){
+        if (rebuildPattern == true || this->size() == 0){
+            buildSparsityPattern(mesh);
+        } else {
+            this->clean();
+        }
         ElementMatrix < double > A_l;
 
         for (uint i = 0; i < mesh.cellCount(); i ++){
@@ -405,11 +411,16 @@ public:
     inline const int & rowIdx() const { if (valid_) return rowIdx_[0]; else SPARSE_NOT_VALID; return rowIdx_[0]; }
     inline const std::vector < int > & vecRowIdx() const { return rowIdx_; }
 
-    inline ValueType * vals() { if (valid_) return &vals_[0]; else SPARSE_NOT_VALID; return 0; }
+    //!! check if needed
+    inline ValueType * pVals() { if (valid_) return &vals_[0]; else SPARSE_NOT_VALID; return 0; }
 //     inline const ValueType * vals() const { if (valid_) return &vals_[0]; else SPARSE_NOT_VALID; return 0; }
 //     inline const ValueType & vals() const { if (valid_) return vals_[0]; else SPARSE_NOT_VALID; return vals_[0]; }
     inline const Vector < ValueType > & vecVals() const { return vals_; }
     inline Vector < ValueType > & vecVals() { return vals_; }
+
+    //!!prefered
+    inline Vector < ValueType > & values() { return vals_; }
+    inline const Vector < ValueType > & values() const { return vals_; }
 
     inline Index size() const { return rows(); }
     inline Index nVals() const { return vals_.size(); }

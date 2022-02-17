@@ -20,7 +20,8 @@ from .utils import (hold,
                     setPlotStuff,
                     setPrettyTimeTicks,
                     plotLines,
-                    twin, createTwinX, createTwinY)
+                    twin, createTwinX, createTwinY,
+                    isInteractive)
 
 from .boreholes import BoreHole, BoreHoles, create_legend
 

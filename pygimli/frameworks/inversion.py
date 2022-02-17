@@ -14,7 +14,8 @@ class Inversion(object):
 
     Changes to prior Versions (remove me)
 
-        * holds the starting model itself, fop only provide a creator for SM
+        * holds the starting model itself, forward operator only provides a
+        method to create the starting model
         fop.createStartModel(dataValues)
 
     Attributes
@@ -23,14 +24,17 @@ class Inversion(object):
         Give verbose output
     debug : bool
         Give debug output
-    startModel : array
-        Holds the current starting model
+    startModel : float|array|None
+        Holds the current starting model. The starting model can be set via init argument 
+        or as propery. If not set explicit, it will be estimated from the forward operator assoiated methods.
+        This property will be recalulated for every run call if not set explicit with self.startModel = float|array, or None to reforce autogeneration.
+        Note, the run call accept a temporary startModel for the current calucaltion.
     model : array
         Holds the last active model
     maxIter : int [20]
         Maximal interation number.
     stopAtChi1 : bool [True]
-        Stop iteration when chi² is one. If set to false the iteration stops
+        Stop iteration when chi² is one. If set to False the iteration stops
         after maxIter or convergence reached (self.inv.deltaPhiAbortPercent())
     """
 
@@ -50,6 +54,11 @@ class Inversion(object):
         self._inv = None
         self._fop = None
 
+        ### cache: keep startmodel if set explicit or calculated from FOP, will be recalulated for every run if not set explicit 
+        self._startModel = None
+        ### flag to keep startModel if set manual by init or self.startModel until self.startModel = None
+        self._keepStartModel = False 
+        
         self.reset()
 
         if inv is not None:
@@ -65,13 +74,21 @@ class Inversion(object):
         if fop is not None:
             self.setForwardOperator(fop)
 
+        if "startModel" in kwargs:
+            self.startModel = kwargs["startModel"]
+        
     def reset(self):
-        """"""
+        """Reset function currently called at the beginning of every inversion
+        run."""
+        # FW: Note that this is called at the beginning of run. I therefore
+        # removed the startingModel here to allow explicitly set starting models
+        # by the user.
+        if self._keepStartModel == False:
+            self._startModel = None
         self._model = None
-        self._startModel = None
         self._dataVals = None
         self._errorVals = None
-
+        
     @property
     def inv(self):
         return self._inv
@@ -131,7 +148,7 @@ class Inversion(object):
         """ Gives the current default starting model.
 
         Returns the current default starting model or
-        call fop.createStartmodel() if non is defined.
+        calls `fop.createStartmodel()` if none is defined.
         """
         if self._startModel is None:
             sm = self.fop.regionManager().createStartModel()
@@ -154,18 +171,34 @@ class Inversion(object):
             Model used as starting model.
             Float value is used as constant model.
         """
+        sm = self.convertStartModel(model)
+        if sm is None:
+            self._keepStartModel = False
+        else:
+            self._keepStartModel = True
+        self._startModel = sm
+        
+    def convertStartModel(self, model):
+        """Convert scalar or array into startmodel with valid range or self.parameterCount, if possible.
+
+        Attributes
+        ----------
+        model: float|int|array|None
+
+        """
         if model is None:
-            self._startModel = None
+            return None
         elif isinstance(model, float) or isinstance(model, int):
-            self._startModel = np.ones(self.parameterCount) * float(model)
             pg.info("Startmodel set from given value.", float(model))
+            return np.ones(self.parameterCount) * float(model)
         elif hasattr(model, '__iter__'):
             if len(model) == self.parameterCount:
                 pg.info("Startmodel set from given array.", model)
-                self._startModel = model
+                return model
             else:
                 pg.error("Startmodel size invalid {0} != {1}.".
                          format(len(model), self.parameterCount))
+        return None
 
     @property
     def model(self):
@@ -383,7 +416,9 @@ class Inversion(object):
             Overwrite class settings for delta data phi aborting criteria.
             Default is 1%
         cType: int[1]
-            Set global contraints type for all regions.
+            Set global contraint type for all regions.
+        startModel: array
+            Temporary starting model for the current inversion run.
         """
         self.reset()
         if self.isFrameWork:
@@ -404,7 +439,6 @@ class Inversion(object):
         #       self.verbose, self.fop.verbose(), self.inv.verbose())
         self.lam = kwargs.pop('lam', 20)
 
-        # progress = kwargs.pop('progress', None)  # NOT USED
         showProgress = kwargs.pop('showProgress', False)
 
         self.inv.setTransModel(self.fop.modelTrans)
@@ -415,10 +449,6 @@ class Inversion(object):
         self.dataVals = dataVals
         self.errorVals = errorVals
 
-        sm = kwargs.pop('startModel', None)
-        if sm is not None:
-            self.startModel = sm
-
         self.inv.setData(self._dataVals)
         self.inv.setRelativeError(self._errorVals)
         if 'cType' in kwargs:
@@ -428,6 +458,11 @@ class Inversion(object):
         maxIterTmp = self.maxIter
         self.maxIter = 1
 
+        startModel = self.convertStartModel(kwargs.pop('startModel', None))
+        #### we cannot add the following into kwargs.pop, since someone may call with explicit startModel=None
+        if startModel is None:
+            startModel = self.startModel
+        
         if self.verbose:
             pg.info('Starting inversion.')
             print("fop:", self.inv.fop())
@@ -452,12 +487,12 @@ class Inversion(object):
             print("min/max (error): {0}%/{1}%".format(
                 pf(100*min(self._errorVals)), pf(100*max(self._errorVals))))
             print("min/max (start model): {0}/{1}".format(
-                pf(min(self.startModel)), pf(max(self.startModel))))
+                pf(min(startModel)), pf(max(startModel))))
 
         # To ensure reproduceability of the run() call, inv.start() will
         # reset self.inv.model() to fop.startModel().
-        self.fop.setStartModel(self.startModel)
-        self.inv.setReferenceModel(self.startModel)
+        self.fop.setStartModel(startModel)
+        self.inv.setReferenceModel(startModel)
 
         if self.verbose:
             print("-" * 80)
@@ -475,7 +510,7 @@ class Inversion(object):
 
         lastPhi = self.phi()
         self.chi2History = [self.chi2()]
-        self.modelHistory = [self.startModel]
+        self.modelHistory = [startModel]
 
         for i in range(1, maxIter):
 
@@ -551,17 +586,20 @@ class Inversion(object):
         return self.model
 
     def showProgress(self, style='all'):
-        r"""Called if showProgress=True is set for the inversion run.
-
-        TODO
-            *Discuss .. its a useful function but breaks a little
-                the FrameWork work only concept.
+        r"""Showing the inversion progress after every iteration. Can show
+        models if `drawModel` method exists. The default fallback is plotting
+        the :math:`\chi^2` fit as a function of iterations. Called if
+        `showProgress=True` is set for the inversion run.
         """
+
+        if self.fop.drawModel is None:
+            style = 'convergence' 
+
         if self.axs is None:
             axs = None
             if style == 'all' or style is True:
                 fig, axs = pg.plt.subplots(1, 2)
-            elif style == 'Model':
+            else:
                 fig, axs = pg.plt.subplots(1, 1)
             self.axs = axs
         ax = self.axs
@@ -574,7 +612,7 @@ class Inversion(object):
                     other_ax.clear()
 
             self.fop.drawModel(ax, self.inv.model())
-        else:
+        elif style == 'all':
             # for other_ax in ax[0].figure.axes:
             #     other_ax.clear()
             for _ax in self.axs:
@@ -601,11 +639,20 @@ class Inversion(object):
                 fontsize=8)
 
             ax[1].figure.tight_layout()
+
+        elif style == 'convergence':
+            ax.semilogy(self.inv.iter(), self.inv.chi2(), "ro")
+            if self.inv.iter() == 1:
+                ax.set_xlabel("Iteration")
+                ax.set_ylabel("$\chi^2$")
+                ax.autoscale(tight=True)
+                ax.axhline(y=1, ls="--")
+
         pg.plt.pause(0.05)
 
 
 class MarquardtInversion(Inversion):
-    """Marquardt scheme (local damping with decreasing regularization."""
+    """Marquardt scheme, i.e. local damping with decreasing strength."""
 
     def __init__(self, fop=None, **kwargs):
         super(MarquardtInversion, self).__init__(fop, **kwargs)

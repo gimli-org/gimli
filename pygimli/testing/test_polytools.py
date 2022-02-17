@@ -21,7 +21,6 @@ class TestMisc(unittest.TestCase):
         # pg.show(mesh, markers=True)
         # pg.show(mesh2, markers=True)
 
-
 class TestCreateRectangle(unittest.TestCase):
     def test_region_marker_position_basics(self):
         rect1 = mt.createRectangle(
