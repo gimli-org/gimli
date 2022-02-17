@@ -13,7 +13,7 @@ import pygimli as pg
 from pygimli.meshtools import (readFenicsHDF5Mesh, readGmsh, readPLC, readSTL,
                                readMeshIO)
 from pygimli.utils import readGPX
-from pygimli.utils import cache
+# from pygimli.utils import cache  # not used yet
 from pygimli.physics.traveltime import load as loadTT
 
 
@@ -240,13 +240,17 @@ def getExampleFile(path, load=False, verbose=False):
         if verbose:
             pg.info("Getting:", fileName)
         os.makedirs(os.path.dirname(fileName), exist_ok=True)
-        tmp = urlretrieve(url, fileName)
+        urlretrieve(url, fileName)
     else:
         if verbose:
             pg.info("File already exists:", fileName)
 
     if load:
         print(fileName)
-        d = pg.load(fileName)
+        # d = pg.load(fileName)
         return pg.load(fileName)
     return fileName
+
+def getExampleData(path, verbose=False):
+    """Shortcut to load example data."""
+    return getExampleFile(path, load=True, verbose=verbose)
