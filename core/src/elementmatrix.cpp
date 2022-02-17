@@ -1515,6 +1515,7 @@ ElementMatrix < double >::add(const ElementMatrix < double > & B,
 template < > DLLEXPORT
 void ElementMatrix < double >::integrate() const {
     if (_newStyle && !this->_integrated){
+        // __M
         const RVector &w = *this->_w;
         Index nRules(w.size());
 
