@@ -298,6 +298,7 @@ def createColorBar(gci, orientation='horizontal', size=0.2, pad=None,
                 if pad is None:
                     pad = 0.5
                 cax = divider.append_axes("bottom", size=size, pad=pad)
+
             else:
                 if pad is None:
                     pad = 0.1
@@ -307,6 +308,14 @@ def createColorBar(gci, orientation='horizontal', size=0.2, pad=None,
         #store the cbar into the axes to reuse it on the next call
         ax.__cBar__ = cbar
         updateColorBar(cbar, **kwargs)
+        try:  # mpl 3.5
+            if orientation == 'horizontal':
+                cbar.ax.xaxis.set_major_formatter(ticker.ScalarFormatter())
+            else:
+                cbar.ax.yaxis.set_major_formatter(ticker.ScalarFormatter())
+        except:
+            pass
+
 
     return cbar
 
