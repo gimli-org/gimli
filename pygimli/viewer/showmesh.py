@@ -76,7 +76,7 @@ def show(obj=None, data=None, **kwargs):
 
     # Empty call just to create an axes
     # if obj is None and 'mesh' not in kwargs:
-    if obj is None and not 'mesh' in kwargs.keys():
+    if obj is None and 'mesh' not in kwargs.keys():
         ax = kwargs.pop('ax', None)
 
         if ax is None:
