@@ -361,43 +361,16 @@ public:
         //** freeing idxMap is expensive
     }
 
+    void fillStiffnessMatrix(const Mesh & mesh, const RVector & a, bool rebuildPattern=true);
     void fillStiffnessMatrix(const Mesh & mesh){
         RVector a(mesh.cellCount(), 1.0);
         fillStiffnessMatrix(mesh, a);
     }
 
-    void fillStiffnessMatrix(const Mesh & mesh, const RVector & a, bool rebuildPattern=true){
-        if (rebuildPattern == true || this->size() == 0){
-            buildSparsityPattern(mesh);
-        } else {
-            this->clean();
-        }
-        ElementMatrix < double > A_l;
-
-        for (uint i = 0; i < mesh.cellCount(); i ++){
-            A_l.ux2uy2uz2(mesh.cell(i));
-            A_l *= a[mesh.cell(i).id()];
-            *this += A_l;
-        }
-    }
+    void fillMassMatrix(const Mesh & mesh, const RVector & a, bool rebuildPattern=true);
     void fillMassMatrix(const Mesh & mesh){
         RVector a(mesh.cellCount(), 1.0);
         fillMassMatrix(mesh, a);
-    }
-
-    void fillMassMatrix(const Mesh & mesh, const RVector & a, bool rebuildPattern=true){
-        if (rebuildPattern == true || this->size() == 0){
-            buildSparsityPattern(mesh);
-        } else {
-            this->clean();
-        }
-        ElementMatrix < double > A_l;
-
-        for (uint i = 0; i < mesh.cellCount(); i ++){
-            A_l.u2(mesh.cell(i));
-            A_l *= a[mesh.cell(i).id()];
-            *this += A_l;
-        }
     }
 
     /*! symmetric type. 0 = nonsymmetric, -1 symmetric lower part, 1 symmetric upper part.*/
@@ -541,6 +514,16 @@ inline RSparseMatrix imag(const CSparseMatrix & A){
     return RSparseMatrix(A.vecColPtr(), A.vecRowIdx(),
                          imag(A.vecVals()), A.stype());
 }
+
+template <> DLLEXPORT void SparseMatrix< double >::
+fillMassMatrix(const Mesh & mesh, const RVector & a, bool rebuildPattern);
+template <> DLLEXPORT void SparseMatrix< Complex >::
+fillMassMatrix(const Mesh & mesh, const RVector & a, bool rebuildPattern);
+
+template <> DLLEXPORT void SparseMatrix< double >::
+fillStiffnessMatrix(const Mesh & mesh, const RVector & a, bool rebuildPattern);
+template <> DLLEXPORT void SparseMatrix< Complex >::
+fillStiffnessMatrix(const Mesh & mesh, const RVector & a, bool rebuildPattern);
 
 } // namespace GIMLI
 #endif //GIMLI_SPARSEMATRIX__H
