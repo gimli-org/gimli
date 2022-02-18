@@ -242,6 +242,58 @@ template <> Complex SparseMatrix< Complex >
     return Complex(0);
 }
 
+template <class ValueType > void 
+_T_fillMassMatrix(SparseMatrix< ValueType > * self, 
+                  const Mesh & mesh, const RVector & a, bool rebuildPattern){
+    if (rebuildPattern == true || self->size() == 0){
+        self->buildSparsityPattern(mesh);
+    } else {
+        self->clean();
+    }
+    ElementMatrix < double > A_l;
+
+    for (uint i = 0; i < mesh.cellCount(); i ++){
+        A_l.u2(mesh.cell(i));
+        A_l *= a[mesh.cell(i).id()];
+        *self += A_l;
+    }
+}
+
+template <> void SparseMatrix< double >
+::fillMassMatrix(const Mesh & mesh, const RVector & a, bool rebuildPattern){
+    _T_fillMassMatrix(this, mesh, a, rebuildPattern);
+}
+template <> void SparseMatrix< Complex >
+::fillMassMatrix(const Mesh & mesh, const RVector & a, bool rebuildPattern){
+    _T_fillMassMatrix(this, mesh, a, rebuildPattern);
+}
+
+template <class ValueType > void 
+_T_fillStiffnessMatrix(SparseMatrix< ValueType > * self,
+                       const Mesh & mesh, const RVector & a, bool rebuildPattern){
+    if (rebuildPattern == true || self->size() == 0){
+        self->buildSparsityPattern(mesh);
+    } else {
+        self->clean();
+    }
+    ElementMatrix < double > A_l;
+
+    for (uint i = 0; i < mesh.cellCount(); i ++){
+        A_l.ux2uy2uz2(mesh.cell(i));
+        A_l *= a[mesh.cell(i).id()];
+        *self += A_l;
+    }
+}
+
+template <> void SparseMatrix< double >
+::fillStiffnessMatrix(const Mesh & mesh, const RVector & a, bool rebuildPattern){
+    _T_fillStiffnessMatrix(this, mesh, a, rebuildPattern);
+}
+template <> void SparseMatrix< Complex >
+::fillStiffnessMatrix(const Mesh & mesh, const RVector & a, bool rebuildPattern){
+    _T_fillStiffnessMatrix(this, mesh, a, rebuildPattern);
+}
+
 } // namespace GIMLI{
 
 
