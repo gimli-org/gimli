@@ -22,7 +22,7 @@ from .core import matrix # alias all from .core.matrix.* to pg.matrix.*
 
 from .core.matrix import (BlockMatrix, Matrix, SparseMapMatrix, SparseMatrix)
 
-from .core.logger import (_, _d, _g, _r, _y, _b, critical, d, debug, 
+from .core.logger import (_, _d, _g, _r, _y, _b, critical, d, debug,
                           deprecated, renameKwarg, renameArg,
                           error, info, setDebug, setLogLevel, setVerbose, v,
                           verbose, warn)
@@ -35,6 +35,8 @@ from .meshtools import createGrid, interpolate
 from .solver import solve
 from .utils import boxprint, cache, cut, unique, unit, cmap, randn
 from .utils import prettify as pf
+def ppf(v): print(pf(v))
+
 from .viewer import plt, show, wait
 from .frameworks import fit, Modelling, Inversion
 from .testing import test#, setTestingMode, testingMode

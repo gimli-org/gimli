@@ -186,7 +186,6 @@ def prettify(value, roundValue=False):
         #             return super()._iterencode(o)
         #         except:
         #             return "{0} is not JSON serializable".format(type(o))
-
         try:
             return json.dumps(value, indent=4)
         except Exception as e:

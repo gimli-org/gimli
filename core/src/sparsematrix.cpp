@@ -22,7 +22,7 @@
 namespace GIMLI{
 
 
-// template <> void 
+// template <> void
 // SparseMatrix(const IndexArray & colPtr,
 //              const IndexArray & rowIdx,
 //              const Vector < double > vals, int stype=0)
@@ -38,7 +38,7 @@ namespace GIMLI{
 //         rows_ = colPtr_.size() - 1;
 //     }
 
-// template <> void 
+// template <> void
 // SparseMatrix(const std::vector < int > & colPtr,
 //              const std::vector < int > & rowIdx,
 //              const Vector < double > vals, int stype=0)
@@ -54,7 +54,7 @@ namespace GIMLI{
 
 
 
-template <> void 
+template <> void
 SparseMatrix< double >::copy_(const SparseMapMatrix< double, Index > & S){
     this->clear();
     Index col = 0, row = 0;
@@ -132,8 +132,9 @@ void SparseMatrix< Complex >::copy_(const SparseMapMatrix< Complex, Index > & S)
     valid_ = true;
 }
 
-template <> void 
-SparseMatrix< double >::add(const ElementMatrix< double > & A, const double & scale, bool neg){
+template <> void
+SparseMatrix< double >::add(const ElementMatrix< double > & A,
+                            const double & scale, bool neg){
     double b = scale;
     if (neg == true) b *= -1.0;
 
@@ -155,19 +156,19 @@ SparseMatrix< double >::add(const ElementMatrix< double > & A, const double & sc
         }
     }
 }
-template <> void 
+template <> void
 SparseMatrix< double >::add(const ElementMatrix< double > & A, const Pos & scale, bool neg){
     THROW_TO_IMPL
 }
-template <> void 
+template <> void
 SparseMatrix< double >::add(const ElementMatrix< double > & A, const Matrix < double > & scale, bool neg){
     THROW_TO_IMPL
 }
 
-template <> void 
+template <> void
 SparseMatrix< Complex >::add(const ElementMatrix < double > & A, const Complex & scale, bool neg){
     if (!valid_) SPARSE_NOT_VALID;
-    
+
     for (Index i = 0, imax = A.size(); i < imax; i++){
         for (Index j = 0, jmax = A.size(); j < jmax; j++){
             if (neg == true) {
@@ -178,11 +179,11 @@ SparseMatrix< Complex >::add(const ElementMatrix < double > & A, const Complex &
         }
     }
 }
-template <> void 
+template <> void
 SparseMatrix< Complex >::add(const ElementMatrix < double > & A, const Pos & scale, bool neg){
     THROW_TO_IMPL
 }
-template <> void 
+template <> void
 SparseMatrix< Complex >::add(const ElementMatrix < double > & A, const CMatrix & scale, bool neg){
     THROW_TO_IMPL
 }
@@ -242,8 +243,8 @@ template <> Complex SparseMatrix< Complex >
     return Complex(0);
 }
 
-template <class ValueType > void 
-_T_fillMassMatrix(SparseMatrix< ValueType > * self, 
+template <class ValueType > void
+_T_fillMassMatrix(SparseMatrix< ValueType > * self,
                   const Mesh & mesh, const RVector & a, bool rebuildPattern){
     if (rebuildPattern == true || self->size() == 0){
         self->buildSparsityPattern(mesh);
@@ -268,7 +269,7 @@ template <> void SparseMatrix< Complex >
     _T_fillMassMatrix(this, mesh, a, rebuildPattern);
 }
 
-template <class ValueType > void 
+template <class ValueType > void
 _T_fillStiffnessMatrix(SparseMatrix< ValueType > * self,
                        const Mesh & mesh, const RVector & a, bool rebuildPattern){
     if (rebuildPattern == true || self->size() == 0){

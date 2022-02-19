@@ -265,7 +265,7 @@ DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(std::vector< std::vector< RMatrix > >)
 
 void ElementMatrixMap::dot(const ElementMatrixMap & B,
                            ElementMatrixMap & ret) const {
-    
+
     if (this->size() == 1 && this->mats()[0].order() == 0){
         ret.resize(B.size());
         //const_space * B
@@ -310,7 +310,7 @@ void ElementMatrixMap::dot(const ElementMatrixMap & B,
             }
             if (!m.nCoeff() > 0){
                 THROW_TO_IMPL
-            }   
+            }
 
             ret.pMat(i)->copyFrom(m, false);
             ret.pMat(i)->setIds(m.rowIDs(), range(col, col+nCoeff));
@@ -320,7 +320,7 @@ void ElementMatrixMap::dot(const ElementMatrixMap & B,
         }
         return;
     }
-   
+
     ASSERT_EQUAL_SIZE((*this), B)
     ret.resize(B.size());
     Index i = 0;
@@ -331,13 +331,49 @@ void ElementMatrixMap::dot(const ElementMatrixMap & B,
 }
 
 template < class ValueType, class RetType >
-void assembleConstT_(const ElementMatrixMap * self, const ValueType & f, RetType & R, bool neg){
+void assembleConstT_(const ElementMatrixMap * self, const ValueType & f,
+                     RetType & R, bool neg){
+
     ASSERT_NON_EMPTY(R)
+
     // R.clean(); dont clean
     for (auto &m : self->mats()){
         R.add(m, f, neg);
     }
 }
+
+template < >
+void assembleConstT_(const ElementMatrixMap * self, const double & f,
+                     SparseMatrixBase & R, bool neg){
+
+    ALLOW_PYTHON_THREADS
+
+    Stopwatch s(true);
+    ASSERT_NON_EMPTY(R)
+
+    RSparseMatrix &S = dynamic_cast< RSparseMatrix &>(R);
+
+    // R.clean(); dont clean
+    for (auto &m : self->mats()){
+        // R.add(m, f, neg);
+
+        S.add(m, f, neg);
+
+        // m.integrate();
+
+        // for (Index i = 0, imax = m.rows(); i < imax; i++){
+        //     for (Index j = 0, jmax = m.cols(); j < jmax; j++){
+        //         // __MS(A.rowIDs()[i] << " " << A.colIDs()[j] << "  "
+        //         //       << scale << " " << A.getVal(i, j))
+        //         S.addVal(m.rowIDs()[i], m.colIDs()[j], f * m.getVal(i, j));
+        //     }
+        // }
+    }
+    __MS(s.duration(), s.cycles());
+}
+
+
+
 template < class ValueType, class RetType >
 void assemblePerCellT_(const ElementMatrixMap * self, const ValueType & f, RetType & R, bool neg){
     ASSERT_NON_EMPTY(R)
