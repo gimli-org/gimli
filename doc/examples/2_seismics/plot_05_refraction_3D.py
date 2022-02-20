@@ -48,7 +48,7 @@ vel = 300 + -pg.z(mesh.cellCenters()) * 100
 
 if pyvista:
     label = pg.utils.unit("vel")
-    pg.show(mesh, vel, label=label)
+    pg.show(mesh, vel, label=label, notebook=True)
 
 ################################################################################
 # Set-up data container.
