@@ -193,10 +193,7 @@ def testShowPV():
     # pg.show(m1)
 
     pg.rc['view3D'] = 'pyvista'
-    #pg.show(m1, notebook=True)
-
-    pg.show(m1)
-
+    pg.show(m1, notebook=True)
 
 def testCoverage():
     grid = pg.createGrid(10,10)
