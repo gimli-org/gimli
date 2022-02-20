@@ -31,6 +31,12 @@
 
 namespace GIMLI{
 
+#define _MATRIX_WS_SIZE 8192
+
+static double _wsA[_MATRIX_WS_SIZE];
+static double _wsB[_MATRIX_WS_SIZE];
+static double _wsC[_MATRIX_WS_SIZE];
+
 
 void toEigenMatrix(const RMatrix & m, SmallMatrix & r){
     r.resize(m.rows(), m.cols());
@@ -282,14 +288,23 @@ void matMult_RM(const RMatrix & A, const RMatrix & B,
 
     if (bIsTrans) bTrans = CblasTrans;
 
+// not threadsafe at all
+    if ((k * m) > _MATRIX_WS_SIZE || (k * n) > _MATRIX_WS_SIZE || (m * n) > _MATRIX_WS_SIZE){
+        __MS(k * m, k * n, m * n )
+        THROW_TO_IMPL
+    }
 
-    double *A2 = new double[m * k];
-    double *B2 = new double[k * n];
-    double *C2 = new double[m * n];
+    A.dumpData(&_wsA[0]);
+    B.dumpData(&_wsB[0]);
+    C.dumpData(&_wsC[0]);
+    
+    // double *A2 = new double[m * k];
+    // double *B2 = new double[k * n];
+    // double *C2 = new double[m * n];
 
-    A.dumpData(A2);
-    B.dumpData(B2);
-    C.dumpData(C2);
+    // A.dumpData(A2);
+    // B.dumpData(B2);
+    // C.dumpData(C2);
 
     // cblas_dgemm(CblasRowMajor, CblasTrans, CblasNoTrans, m, n, k,
     //             a, A2, m, B2, n, b, C2, n);
@@ -297,14 +312,14 @@ void matMult_RM(const RMatrix & A, const RMatrix & B,
     // lda ## leading dimension for a, means column for CblasRowMajor
     cblas_dgemm(CblasRowMajor, aTrans, bTrans,
                 m, n, k,
-                a, A2, k, B2, bRows,
-                b, C2, n);
+                a, &_wsA[0], k, &_wsB[0], bRows,
+                b, &_wsC[0], n);
 
-    C.fromData(C2, m, n);
+    C.fromData(&_wsC[0], m, n);
 
-    delete [] A2;
-    delete [] B2;
-    delete [] C2;
+    // delete [] A2;
+    // delete [] B2;
+    // delete [] C2;
 #else
 
     // __MS("\t: ", C.rows(), C.cols(), bIsTrans)
@@ -372,6 +387,7 @@ void matTransMult(const SmallMatrix & A, const SmallMatrix & B,
     matTransMult_RM(A, B, C, a, b);
 #endif
 }
+
 void matTransMult_RM(const RMatrix & A, const RMatrix & B,
                      RMatrix & C, double a, double b){
 
@@ -431,18 +447,30 @@ void matTransMult_RM(const RMatrix & A, const RMatrix & B,
     }
 
 #if OPENBLAS_CBLAS_FOUND
+// __MS("OPENBLAS")
     CBLAS_TRANSPOSE aTrans = CblasTrans;
     CBLAS_TRANSPOSE bTrans = CblasNoTrans;
 
     if (bIsTrans) bTrans = CblasTrans;
+    
+    if ((k * m) > _MATRIX_WS_SIZE || (k * n) > _MATRIX_WS_SIZE || (m * n) > _MATRIX_WS_SIZE){
+        __MS(k * m, k * n, m * n )
+        THROW_TO_IMPL
+    }
 
-    double *A2 = new double[k * m];
-    double *B2 = new double[k * n];
-    double *C2 = new double[m * n];
+    // double *A2 = new double[k * m];
+    // double *B2 = new double[k * n];
+    // double *C2 = new double[m * n];
 
-    A.dumpData(A2);
-    B.dumpData(B2);
-    C.dumpData(C2);
+    // not threadsafe at all
+    A.dumpData(&_wsA[0]);
+    B.dumpData(&_wsB[0]);
+    C.dumpData(&_wsC[0]);
+    
+
+    // A.dumpData(A2);
+    // B.dumpData(B2);
+    // C.dumpData(C2);
 
     // std::cout << "A" << std::endl;
     // for (Index i = 0; i < m*k; i ++ ){std::cout << A2[i] << " ";} std::cout << std::endl;
@@ -452,23 +480,23 @@ void matTransMult_RM(const RMatrix & A, const RMatrix & B,
     // for (Index i = 0; i < m*n; i ++ ){std::cout << C2[i] << " ";} std::cout << std::endl;
 
     cblas_dgemm(CblasRowMajor, aTrans, bTrans, m, n, k,
-                a, A2, m, B2, bRows,
-                b, C2, n);
+                a, &_wsA[0], m, &_wsB[0], bRows,
+                b, &_wsC[0], n);
 
     // std::cout << "C2" << std::endl;
     // for (Index i = 0; i < m*n; i ++ ){std::cout << C2[i] << " ";} std::cout << std::endl;
 
-    C.fromData(C2, m, n);
+    C.fromData(&_wsC[0], m, n);
 
     // std::cout << "C3" << std::endl;
     // std::cout << C << std::endl;
 
-    delete [] A2;
-    delete [] B2;
-    delete [] C2;
+    // delete [] A2;
+    // delete [] B2;
+    // delete [] C2;
 
 #else
-
+// __MS("GIMLI")
     for (Index i = 0; i < A.cols(); i ++){
         for (Index j = 0; j < n; j ++){
             double c = 0;

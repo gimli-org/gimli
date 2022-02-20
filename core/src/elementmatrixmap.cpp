@@ -267,8 +267,9 @@ void ElementMatrixMap::dot(const ElementMatrixMap & B,
                            ElementMatrixMap & ret) const {
 
     if (this->size() == 1 && this->mats()[0].order() == 0){
+        //** this is: const Space * B
+
         ret.resize(B.size());
-        //const_space * B
         Index row = this->mats()[0].dofOffset();
         Index i = 0;
         Index nCoeff = this->mats()[0].nCoeff();
@@ -298,8 +299,9 @@ void ElementMatrixMap::dot(const ElementMatrixMap & B,
         return;
     }
     if (B.size() == 1 && B.mats()[0].order() == 0){
+        //** this is: A * const Space
+
         ret.resize(this->size());
-        //A * const_space
         Index col = B.mats()[0].dofOffset();
         Index i = 0;
         Index nCoeff = B.mats()[0].nCoeff();
@@ -321,6 +323,7 @@ void ElementMatrixMap::dot(const ElementMatrixMap & B,
         return;
     }
 
+    // __MS(this->size(), B.size())
     ASSERT_EQUAL_SIZE((*this), B)
     ret.resize(B.size());
     Index i = 0;
@@ -348,26 +351,44 @@ void assembleConstT_(const ElementMatrixMap * self, const double & f,
 
     ALLOW_PYTHON_THREADS
 
-    Stopwatch s(true);
     ASSERT_NON_EMPTY(R)
-
-    RSparseMatrix &S = dynamic_cast< RSparseMatrix &>(R);
+    
+    Stopwatch s(true);
 
     // R.clean(); dont clean
-    for (auto &m : self->mats()){
-        // R.add(m, f, neg);
+    // for (auto &m : self->mats()){
+    //     R.add(m, f, neg);
+    // }
 
-        S.add(m, f, neg);
+    double b = f;
 
-        // m.integrate();
+    RSparseMatrix &S = dynamic_cast< RSparseMatrix &>(R);
+    ///// TMP hack
 
-        // for (Index i = 0, imax = m.rows(); i < imax; i++){
-        //     for (Index j = 0, jmax = m.cols(); j < jmax; j++){
-        //         // __MS(A.rowIDs()[i] << " " << A.colIDs()[j] << "  "
-        //         //       << scale << " " << A.getVal(i, j))
-        //         S.addVal(m.rowIDs()[i], m.colIDs()[j], f * m.getVal(i, j));
-        //     }
+    if (neg == true) {
+        __MS("inline")
+        // R.clean(); dont clean
+        for (auto &m : self->mats()){
+            m.integrate();
+
+            for (Index i = 0, imax = m.rows(); i < imax; i++){
+                for (Index j = 0, jmax = m.cols(); j < jmax; j++){
+                    // __MS(A.rowIDs()[i] << " " << A.colIDs()[j] << "  "
+                    //       << scale << " " << A.getVal(i, j))
+                    S.addVal(m.rowIDs()[i], m.colIDs()[j], b * m.getVal(i, j));
+                }
+            }
+        }
+    } else {
+        __MS("method template")
+        // for (Index i = 0; i < self->size(); i++){
+        //     S.addS(self->mats()[i], f, neg);
         // }
+
+        for (auto &m : self->mats()){
+            S.addS(m, f, neg);
+            // S.add(m, f, neg);
+        }
     }
     __MS(s.duration(), s.cycles());
 }

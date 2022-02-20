@@ -339,6 +339,9 @@ public:
     virtual void add(const ElementMatrix < double > & A, const A_TYPE &, bool neg=false){ \
         THROW_TO_IMPL \
     } \
+    void addS(const ElementMatrix < double > & A, const A_TYPE &, bool neg=false){ \
+        THROW_TO_IMPL \
+    } \
 
     DEFINE_ADDS(double)
     DEFINE_ADDS(RVector3)

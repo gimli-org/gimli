@@ -146,14 +146,15 @@ SparseMatrix< double >::add(const ElementMatrix< double > & A,
             }
         }
     } else {
-        A.integrate();
-        for (Index i = 0, imax = A.rows(); i < imax; i++){
-            for (Index j = 0, jmax = A.cols(); j < jmax; j++){
-                // __MS(A.rowIDs()[i] << " " << A.colIDs()[j] << "  "
-                //       << scale << " " << A.getVal(i, j))
-                addVal(A.rowIDs()[i], A.colIDs()[j], b * A.getVal(i, j));
-            }
-        }
+        this->addS(A, scale, neg);
+        // A.integrate();
+        // for (Index i = 0, imax = A.rows(); i < imax; i++){
+        //     for (Index j = 0, jmax = A.cols(); j < jmax; j++){
+        //         // __MS(A.rowIDs()[i] << " " << A.colIDs()[j] << "  "
+        //         //       << scale << " " << A.getVal(i, j))
+        //         addVal(A.rowIDs()[i], A.colIDs()[j], b * A.getVal(i, j));
+        //     }
+        // }
     }
 }
 template <> void

@@ -32,7 +32,10 @@ std::ostream & operator << (std::ostream & str, const GIMLI::Node & n){
 
 std::ostream & operator << (std::ostream & str, 
                             const std::vector < GIMLI::Node * > & nodes){
-    for (auto *n: nodes) str << n->id() << " "; str << std::endl;
+    for (auto *n: nodes) {
+        str << n->id() << " "; 
+    }
+    str << std::endl;
     return str;
 }
 

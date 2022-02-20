@@ -255,6 +255,21 @@ public:
     virtual void add(const ElementMatrix< double > & A, const Pos & scale, bool neg=false);
     virtual void add(const ElementMatrix< double > & A, const Matrix < ValueType > & scale, bool neg=false);
 
+    /*! Perftest .. maybe optimizer problem. */
+    void addS(const ElementMatrix< double > & A, const ValueType & scale, bool neg=false){
+        
+        ValueType b = scale;
+        if (neg == true) b *= -1.0;
+        A.integrate();
+
+         for (Index i = 0, imax = A.rows(); i < imax; i++){
+            for (Index j = 0, jmax = A.cols(); j < jmax; j++){
+                    this->addVal(A.rowIDs()[i], A.colIDs()[j], b * A.getVal(i, j));
+            }
+        }
+    }
+
+
     void clean(){ for (Index i = 0, imax = nVals(); i < imax; i++) vals_[i] = (ValueType)(0); }
 
     void clear(){
