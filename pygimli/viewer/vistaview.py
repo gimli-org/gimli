@@ -26,21 +26,8 @@ else:
 if panel is None:
     pg.warn("Please install panel to plot 3D models in Jupyter Notebooks - conda install panel")
 else:
-    pyvista.set_jupyter_backend('panel')
+    pyvista.set_jupyter_backend('panel')    
 
-#if pythreejs is None:
- #   pg.warn("Please install pythreejs")
-#else:
- #   pyvista.set_jupyter_backend('pythreejs')
-
-#if ipygany is None:
- #   pg.warn("Please install ipygany")
-#else:
- #   pyvista.set_jupyter_backend('ipygany')    
-# True for Jupyter notebooks and sphinx-builds
-#_backend = plt.get_backend().lower()
-#inline = "inline" in _backend or _backend == "agg"
-#jupyter_backend='ipygany'
 if PyQt5 is None:
     inline = True
 else:
