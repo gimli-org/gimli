@@ -118,7 +118,7 @@ def isMatrix(v, shape=None):
     try:
         if shape is None:
             return isinstance(v, RMatrix) or \
-                hasattr(v, 'ndim') and v.ndim == 2 or \
+                    hasattr(v, 'ndim') and v.ndim == 2 or \
                     isinstance(v, list) and isArray(v[0])
         return isMatrix(v) and (hasattr(v, 'shape') and v.shape == shape)
     except:
