@@ -25,7 +25,7 @@ class Inversion(object):
     debug : bool
         Give debug output
     startModel : float|array|None
-        Holds the current starting model. The starting model can be set via init argument 
+        Holds the current starting model. The starting model can be set via init argument
         or as propery. If not set explicit, it will be estimated from the forward operator assoiated methods.
         This property will be recalulated for every run call if not set explicit with self.startModel = float|array, or None to reforce autogeneration.
         Note, the run call accept a temporary startModel for the current calucaltion.
@@ -53,12 +53,13 @@ class Inversion(object):
 
         self._inv = None
         self._fop = None
+        self._lam = 20      # lambda regularization
 
-        ### cache: keep startmodel if set explicit or calculated from FOP, will be recalulated for every run if not set explicit 
+        ### cache: keep startmodel if set explicit or calculated from FOP, will be recalulated for every run if not set explicit
         self._startModel = None
         ### flag to keep startModel if set manual by init or self.startModel until self.startModel = None
-        self._keepStartModel = False 
-        
+        self._keepStartModel = False
+
         self.reset()
 
         if inv is not None:
@@ -76,7 +77,7 @@ class Inversion(object):
 
         if "startModel" in kwargs:
             self.startModel = kwargs["startModel"]
-        
+
     def reset(self):
         """Reset function currently called at the beginning of every inversion
         run."""
@@ -88,7 +89,7 @@ class Inversion(object):
         self._model = None
         self._dataVals = None
         self._errorVals = None
-        
+
     @property
     def inv(self):
         return self._inv
@@ -141,7 +142,7 @@ class Inversion(object):
 
     @modelTrans.setter
     def modelTrans(self, mt):
-        self.fop.modelTrans = self._modelTrans
+        self.fop.modelTrans = mt  # self._modelTrans # ????
 
     @property
     def startModel(self):
@@ -177,7 +178,7 @@ class Inversion(object):
         else:
             self._keepStartModel = True
         self._startModel = sm
-        
+
     def convertStartModel(self, model):
         """Convert scalar or array into startmodel with valid range or self.parameterCount, if possible.
 
@@ -189,14 +190,14 @@ class Inversion(object):
         if model is None:
             return None
         elif isinstance(model, float) or isinstance(model, int):
-            pg.info("Startmodel set from given value.", float(model))
+            pg.info("Homogeneous starting model set to:", float(model))
             return np.ones(self.parameterCount) * float(model)
         elif hasattr(model, '__iter__'):
             if len(model) == self.parameterCount:
-                pg.info("Startmodel set from given array.", model)
+                pg.info("Starting model set from given array.", model)
                 return model
             else:
-                pg.error("Startmodel size invalid {0} != {1}.".
+                pg.error("Starting model size invalid {0} != {1}.".
                          format(len(model), self.parameterCount))
         return None
 
@@ -260,7 +261,7 @@ class Inversion(object):
         #     print(self._dataVals)
         #     pg.warn("Found zero data values. \
         #             Setting them to a TOLERANCE value of 1e-12")
-        #     pg.fixZero(self._dataVals, 1e-12)
+        #     pg.core.fixZero(self._dataVals, 1e-12)
 
     @property
     def errorVals(self):
@@ -282,7 +283,7 @@ class Inversion(object):
             print(self._errorVals)
             pg.warn(
                 "Found zero error values. Setting them to fallback value of 1")
-            pg.fixZero(self._errorVals, 1)
+            pg.core.fixZero(self._errorVals, 1)
 
     @property
     def parameterCount(self):
@@ -327,11 +328,11 @@ class Inversion(object):
 
     @property
     def lam(self):
-        return self.inv.getLambda()
+        return self._lam
 
     @lam.setter
     def lam(self, lam):
-        self.inv.setLambda(lam)
+        self._lam = lam
 
     def setDeltaChiStop(self, it):
         self.inv.setDeltaPhiAbortPercent(it)
@@ -416,9 +417,11 @@ class Inversion(object):
             Overwrite class settings for delta data phi aborting criteria.
             Default is 1%
         cType: int[1]
-            Set global contraint type for all regions.
+            Temporary global contraint type for all regions.
         startModel: array
             Temporary starting model for the current inversion run.
+        lam: float
+            Temporary regularization parameter lambda.
         """
         self.reset()
         if self.isFrameWork:
@@ -430,17 +433,19 @@ class Inversion(object):
 
         maxIter = kwargs.pop('maxIter', self.maxIter)
         minDPhi = kwargs.pop('dPhi', self.minDPhi)
+        showProgress = kwargs.pop('showProgress', False)
 
         self.verbose = kwargs.pop('verbose', self.verbose)
         self.debug = kwargs.pop('debug', self.debug)
         self.robustData = kwargs.pop('robustData', False)
 
-        # pg._g('verbose:',
-        #       self.verbose, self.fop.verbose(), self.inv.verbose())
-        self.lam = kwargs.pop('lam', 20)
+        lam = kwargs.pop('lam', self.lam)
+        self.inv.setLambda(lam)
 
-        showProgress = kwargs.pop('showProgress', False)
+        if 'cType' in kwargs:
+            self.fop.setRegionProperties('*', cType=kwargs['cType'])
 
+        ### This triggers the update of all fop properties, any property setting need to be done before this step
         self.inv.setTransModel(self.fop.modelTrans)
 
         if 'cType' in kwargs:
@@ -451,8 +456,6 @@ class Inversion(object):
 
         self.inv.setData(self._dataVals)
         self.inv.setRelativeError(self._errorVals)
-        if 'cType' in kwargs:
-            self.fop.setRegionProperties('*', cType=kwargs['cType'])
 
         # temporary set max iter to one for the initial run call
         maxIterTmp = self.maxIter
@@ -462,7 +465,7 @@ class Inversion(object):
         #### we cannot add the following into kwargs.pop, since someone may call with explicit startModel=None
         if startModel is None:
             startModel = self.startModel
-        
+
         if self.verbose:
             pg.info('Starting inversion.')
             print("fop:", self.inv.fop())
@@ -492,7 +495,9 @@ class Inversion(object):
         # To ensure reproduceability of the run() call, inv.start() will
         # reset self.inv.model() to fop.startModel().
         self.fop.setStartModel(startModel)
-        self.inv.setReferenceModel(startModel)
+        if kwargs.pop("isReference", False):
+            self.inv.setReferenceModel(startModel)
+            pg.info("Setting starting model as reference!")
 
         if self.verbose:
             print("-" * 80)
@@ -545,7 +550,8 @@ class Inversion(object):
                 self._postStep(i, self)
 
             # Do we need to check the following before oder after chi2 calc??
-            self.lam = self.lam * self.inv.lambdaFactor()
+            lam *= self.inv.lambdaFactor()
+            self.inv.setLambda(lam)
 
             if self.robustData:
                 self.inv.robustWeighting()
@@ -558,7 +564,7 @@ class Inversion(object):
 
             if self.verbose:
                 print("chi² = {0} (dPhi = {1}%) lam: {2}".format(
-                    round(chi2, 2), round((1-dPhi)*100, 2), self.lam))
+                    round(chi2, 2), round((1-dPhi)*100, 2), lam))
 
             if chi2 <= 1 and self.stopAtChi1:
                 print("\n")
@@ -568,7 +574,7 @@ class Inversion(object):
                 break
 
             # if dPhi < -minDPhi:
-            if (dPhi > (1.0 - minDPhi / 100.0)) and i > 2:
+            if (dPhi > (1.0 - minDPhi / 100.0)) and i > 2:  # should be minIter
                 if self.verbose:
                     pg.boxprint(
                         "Abort criteria reached: dPhi = {0} (< {1}%)".format(
@@ -593,7 +599,7 @@ class Inversion(object):
         """
 
         if self.fop.drawModel is None:
-            style = 'convergence' 
+            style = 'convergence'
 
         if self.axs is None:
             axs = None
@@ -659,6 +665,7 @@ class MarquardtInversion(Inversion):
         self.stopAtChi1 = False
         self.inv.setLocalRegularization(True)
         self.inv.setLambdaFactor(0.8)
+        self.inv.setDeltaPhiAbortPercent(0.5)
 
     def run(self, dataVals, errorVals, **kwargs):
         r"""Parameters

@@ -1551,7 +1551,7 @@ def polyCreateWorld(filename, x=None, depth=None, y=None, marker=0,
 
 def createSurface(mesh, boundaryMarker=None, verbose=True):
     """Convert a 2D mesh into a 3D surface mesh.
-    
+
     Parameters
     ----------
     mesh: :gimliapi:`GIMLI::Mesh`
@@ -1571,12 +1571,20 @@ def createSurface(mesh, boundaryMarker=None, verbose=True):
 
     surface = pg.Mesh(dim=3, isGeometry=True)
 
+<<<<<<< HEAD
     nodes = [surface.createNode(n.pos()).id() for n in mesh.nodes()]
+=======
+    [surface.createNode(n.pos()).id() for n in mesh.nodes()]
+>>>>>>> dev
 
     for c in mesh.cells():
         surface.createBoundary(c.ids(), marker=c.marker())
 
     return surface
+<<<<<<< HEAD
+=======
+
+>>>>>>> dev
 
 def createFacet(mesh, boundaryMarker=None, verbose=True):
     """Create a coplanar PLC of a 2d mesh or poly
@@ -1656,8 +1664,8 @@ def createCube(size=[1.0, 1.0, 1.0], pos=None,
 
     """
     if start is not None and end is not None:
-        size = pg.Pos(end)-pg.Pos(start)
-        pos = pg.Pos(start) + size/2
+        size = pg.Pos(end) - pg.Pos(start)
+        pos = pg.Pos(start) + pg.Pos(size)/2
 
     poly = pg.Mesh(3, isGeometry=True)
 

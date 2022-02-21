@@ -39,7 +39,7 @@ def showMesh3D(mesh, data, **kwargs):
     """
     Calling the defined function to show the 3D object.
     """
-    if pg.rc['view3D'] == 'fallback' or pg.rc['view3D'] == None:
+    if pg.rc['view3D'] == 'fallback' or pg.rc['view3D'] is None:
 
         kwargs.pop('gui', None)
         kwargs['alpha'] = kwargs.pop('opacity', None)
@@ -58,9 +58,9 @@ def showMesh3DFallback(mesh, data, **kwargs):
 
     if ax is None or not isinstance(ax, Axes3D):
         fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d', 
+        ax = fig.add_subplot(111, projection='3d',
                              proj_type='persp'
-                             #proj_type='ortho'
+                             # proj_type='ortho'
                              )
 
     if mesh.boundaryCount() > 0:

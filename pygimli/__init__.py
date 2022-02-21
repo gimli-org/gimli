@@ -41,7 +41,7 @@ from .viewer import plt, show, wait
 from .frameworks import fit, Modelling, Inversion
 from .testing import test#, setTestingMode, testingMode
 
-from .core.load import getCachePath, getExampleFile
+from .core.load import getCachePath, getExampleFile, getExampleData
 from .core.load import load, optImport
 
 def checkAndFixLocaleDecimal_point(verbose=False):

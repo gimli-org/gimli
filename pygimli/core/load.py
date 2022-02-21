@@ -13,7 +13,7 @@ import pygimli as pg
 from pygimli.meshtools import (readFenicsHDF5Mesh, readGmsh, readPLC, readSTL,
                                readMeshIO)
 from pygimli.utils import readGPX
-from pygimli.utils import cache
+# from pygimli.utils import cache  # not used yet
 from pygimli.physics.traveltime import load as loadTT
 
 
@@ -270,3 +270,7 @@ def getExampleFile(path, load=False, verbose=False, **kwargs):
         return pg.load(fileName)
         
     return fileName
+
+def getExampleData(path, verbose=False):
+    """Shortcut to load example data."""
+    return getExampleFile(path, load=True, verbose=verbose)

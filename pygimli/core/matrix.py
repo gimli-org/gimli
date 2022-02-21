@@ -206,8 +206,11 @@ def __stdVectorRSparseMapMatrix_Mult__(self, b):
 pgcore.stdVectorRSparseMapMatrix.__mul__ = __stdVectorRSparseMapMatrix_Mult__
 
 
-## Special Monkeypatch core classes
-__BlockMatrix_addMatrix__ = pgcore.RBlockMatrix.addMatrix
+def __RVector_format(self, f):
+    print(f)
+    return str(self)
+
+pgcore.RVector.__format__ = __RVector_format
 
 
 def __BlockMatrix_addMatrix_happy_GC__(self, M, row=None, col=None,
@@ -686,3 +689,8 @@ class GeostatisticConstraintsMatrix(pgcore.MatrixBase):
 
     def rows(self):
         return self.nModel
+
+    def clear(self):
+        self.CM05 = None
+        self.nModel = 0
+        self.spur = None

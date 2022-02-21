@@ -180,8 +180,7 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
                                         vmax=max(gci.get_array()))
             gci.set_norm(norm)
         cbar.on_mappable_changed(gci)
-        #cbar.update_normal(gci)
-
+        # cbar.update_normal(gci)
 
     if levels is not None:
         nLevs = len(levels)
@@ -198,9 +197,8 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
             # cMap.set_under('yellow')
             # cMap.set_over('cyan')
 
-        #cbar.mappable.get_norm().clip=False
+        # cbar.mappable.get_norm().clip=False
         cbar.mappable.set_cmap(cMap)
-
 
     needLevelUpdate = False
 
@@ -302,6 +300,7 @@ def createColorBar(gci, orientation='horizontal', size=0.2, pad=None,
                 if pad is None:
                     pad = 0.5
                 cax = divider.append_axes("bottom", size=size, pad=pad)
+
             else:
                 if pad is None:
                     pad = 0.1
@@ -311,6 +310,14 @@ def createColorBar(gci, orientation='horizontal', size=0.2, pad=None,
         #store the cbar into the axes to reuse it on the next call
         ax.__cBar__ = cbar
         updateColorBar(cbar, **kwargs)
+        try:  # mpl 3.5
+            if orientation == 'horizontal':
+                cbar.ax.xaxis.set_major_formatter(ticker.ScalarFormatter())
+            else:
+                cbar.ax.yaxis.set_major_formatter(ticker.ScalarFormatter())
+        except:
+            pass
+
 
     return cbar
 

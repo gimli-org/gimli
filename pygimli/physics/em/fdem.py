@@ -9,6 +9,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 import pygimli as pg
 from pygimli.viewer.mpl import show1dmodel, drawModel1D
+from .hemmodelling import HEMmodelling
 # from pygimli.matrix import NDMatrix
 
 
@@ -177,6 +178,7 @@ class FDEM():
         self.x = x
         self.frequencies = freqs
         self.coilSpacing = coilSpacing
+        self.scaling = "ppm"
 
         self.IP = inphase
         self.OP = outphase
@@ -189,8 +191,11 @@ class FDEM():
         if filename:
             # check if filename extension is TXT or CSV
             fl = filename.lower()
-            if fl.rfind('.txt') > 0 or fl.rfind('.csv') > 0:
-                self.importEmsysAsciiData(filename)
+            if fl.endswith('.txt') or fl.endswith('.csv'):
+                try:
+                    self.importMaxMinData(filename)
+                except Exception:
+                    self.importEmsysAsciiData(filename)
             else:
                 self.importMaxminData(filename)
         if np.any(self.frequencies):
@@ -314,7 +319,7 @@ class FDEM():
         self.isActiveFreq = self.frequencies > 0.0
         self.activeFreq = np.nonzero(self.isActiveFreq)[0]
 
-    def importMaxminData(self, filename, verbose=False):
+    def importIPXData(self, filename, verbose=False):
         """Import MaxMin IPX format with pos, data, frequencies & geometry."""
         delim = None
         fid = open(filename)
@@ -348,6 +353,46 @@ class FDEM():
         else:
             self.x = x
 
+    def importMaxMinData(self, filename, verbose=False):
+        """Import MaxMin ASCII export (*.txt) data."""
+        with open(filename) as fid:
+            lines = fid.readlines()
+
+        self.coilSpacing = 99.9
+        f, re, im, err, cond = [], [], [], [], []
+        x, RE, IM, ERR, COND = [], [], [], [], []
+        for i, line in enumerate(lines):
+            stline = line.split()
+            if line.startswith("Coil Sep"):
+                self.coilSpacing = float(stline[-1])
+            if len(stline) > 3 and stline[3].find("Stn") >= 0:
+                x.append(float(stline[4]))
+                if len(re) > 0:
+                    RE.append(np.array(re))
+                    IM.append(np.array(im))
+                    ERR.append(np.array(err))
+                    COND.append(np.array(cond))
+                    f, re, im, err, cond = [], [], [], [], []
+
+            if len(stline) > 0 and stline[0] == "MAX1":  # data
+                f.append(float(stline[1]))
+                re.append(float(stline[3]))
+                im.append(float(stline[5]))
+                err.append(float(stline[7]))
+                cond.append(float(stline[9]))
+
+        if len(re) > 0:
+            RE.append(np.array(re))
+            IM.append(np.array(im))
+            ERR.append(np.array(err))
+            COND.append(np.array(cond))
+
+        self.x = np.array(x)
+        self.frequencies = np.array(f)
+        self.IP = np.array(RE)
+        self.OP = np.array(IM)
+        self.ERR = np.array(ERR)
+
     def deactivate(self, fr):
         """Deactivate a single frequency."""
         fi = np.nonzero(np.absolute(self.frequencies / fr - 1.) < 0.1)
@@ -358,7 +403,7 @@ class FDEM():
         """Return active (i.e., non-deactivated) frequencies."""
         return self.frequencies[self.activeFreq]
 
-    def FOP(self, nlay=2):  # createFOP deciding upon block or smooth
+    def FOP(self, nlay=2, useHEM=1):  # createFOP deciding upon block or smooth
         """Forward modelling operator using a block discretization.
 
         Parameters
@@ -366,8 +411,12 @@ class FDEM():
         nlay : int
             Number of blocks
         """
-        return pg.core.FDEM1dModelling(nlay, self.freq(), self.coilSpacing,
-                                       -self.height)
+        if useHEM:
+            return HEMmodelling(nlay, self.height, f=self.freq(),
+                                r=self.coilSpacing, scaling=self.scaling)
+        else:
+            return pg.core.FDEM1dModelling(nlay, self.freq(), self.coilSpacing,
+                                           -self.height)
 
     def FOPsmooth(self, zvec):
         """Forward modelling operator using fixed layers (smooth inversion)
@@ -421,8 +470,8 @@ class FDEM():
         return np.tile(np.maximum(err * 0.7071, minvalue), 2)
 #        return pg.asvector(np.tile(np.maximum(err * 0.7071, minvalue), 2))
 
-    def invBlock(self, xpos=0, nlay=2, noise=1.0, show=True,
-                 stmod=30., lam=1000., lBound=0., uBound=0., verbose=False):
+    def invBlock(self, xpos=0, nlay=2, noise=1.0, show=True, stmod=30.,
+                 lam=1000., lBound=0., uBound=0., verbose=False, **kwargs):
         """Create and return Gimli inversion instance for block inversion.
 
         Parameters
@@ -452,28 +501,31 @@ class FDEM():
         verbose : bool
             Be verbose
         """
-        self.transThk = pg.trans.TransLog()
-        self.transRes = pg.trans.TransLogLU(lBound, uBound)
-        self.transData = pg.trans.Trans()
+        # self.transThk = pg.trans.TransLog()
+        # self.transRes = pg.trans.TransLogLU(lBound, uBound)
+        # self.transData = pg.trans.Trans()
+        self.transData = pg.trans.TransSymLog(tol=0.1)
+        self.transLog = pg.trans.TransLog()
 
+        useHEM = kwargs.pop("useHEM", False)
         # EM forward operator
         if isinstance(nlay, pg.core.FDEM1dModelling):
             self.fop = nlay
         else:
-            self.fop = self.FOP(nlay)
+            self.fop = self.FOP(nlay, useHEM=useHEM)
 
-        data = self.datavec(xpos)
+        dataVec = self.datavec(xpos)
 
-        self.fop.region(0).setTransModel(self.transThk)
-        self.fop.region(1).setTransModel(self.transRes)
+        # self.fop.region(0).setTransModel(self.transThk)
+        # self.fop.region(1).setTransModel(self.transRes)
 
         if isinstance(noise, float):
-            noiseVec = pg.Vector(len(data), noise)
+            errorVec = pg.Vector(len(dataVec), noise)
         else:
-            noiseVec = pg.asvector(noise)
+            errorVec = pg.asvector(noise)
 
         # independent EM inversion
-        self.inv = pg.core.Inversion(data, self.fop, self.transData, verbose)
+
         if isinstance(stmod, float):  # real model given
             model = pg.Vector(nlay * 2 - 1, stmod)
             model[0] = 2.
@@ -483,15 +535,31 @@ class FDEM():
             else:
                 model = pg.Vector(nlay * 2 - 1, 30.)
 
-        self.inv.setAbsoluteError(noiseVec)
-        self.inv.setLambda(lam)
-        self.inv.setMarquardtScheme(0.8)
-        self.inv.setDeltaPhiAbortPercent(0.5)
-        self.inv.setModel(model)
-        # self.inv.setReferenceModel(model)
-        self.model1d = self.inv.run()
+            print("Model", model)
+        if 1:
+            from pygimli.frameworks import MarquardtInversion
+            self.inv = MarquardtInversion(fop=self.fop, verbose=verbose,
+                                          debug=True)
+            self.inv.dataTrans = self.transData
+            self.inv.modelTrans = self.transLog
+            # self.dataTrans = self.transData
+            self.model1d = self.inv.run(dataVec, np.abs(errorVec/dataVec),
+                                        lam=lam, startModel=model, **kwargs)
+            response = self.inv.response
+        else:
+            self.inv = pg.core.RInversion(data, self.fop, self.transData,
+                                          verbose)
+            self.inv.setAbsoluteError(errorVec)
+            self.inv.setLambda(lam)
+            self.inv.setMarquardtScheme(0.8)
+            self.inv.setDeltaPhiAbortPercent(0.5)
+            self.inv.setModel(model)
+            self.model1d = self.inv.run()
+            response = self.inv.response()
+
         if show:
-            self.plotData(response=self.inv.response())
+            self.plotData(xpos=xpos, response=response)
+
         return self.model1d
 
     def plotData(self, xpos=0, response=None, error=None, ax=None,
