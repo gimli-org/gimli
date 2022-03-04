@@ -94,6 +94,12 @@ pgcore.CMatrix.__repr__ = __CMatrix_str
 pgcore.ElementMatrix.__repr__ = __ElementMatrix_str
 
 
+def __RVector_format(self, f):
+    print(f)
+    return str(self)
+
+pgcore.RVector.__format__ = __RVector_format
+
 # Special Monkeypatch core classes
 __BlockMatrix_addMatrix__ = pgcore.RBlockMatrix.addMatrix
 
@@ -565,3 +571,8 @@ class GeostatisticConstraintsMatrix(pgcore.MatrixBase):
 
     def rows(self):
         return self.nModel
+
+    def clear(self):
+        self.CM05 = None
+        self.nModel = 0
+        self.spur = None

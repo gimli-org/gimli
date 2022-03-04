@@ -40,7 +40,12 @@ def symlog(x, tol=1e-12, linearSpread=0):
     if tol is None:
         tol = np.min(np.abs(x))
 
-    return np.sign(x) * (np.log10(1 + np.abs(x/tol))+linearSpread/2)
+    x = np.atleast_1d(x)
+    res = np.ones_like(x) * np.nan  # avoid signs of nan
+    fi = np.isfinite(x)
+    res[fi] = np.sign(x[fi]) * (np.log10(1 + np.abs(x[fi]/tol))+linearSpread/2)
+
+    return res
 
 
 def symlogInv(y, tol=1e-12, linearSpread=0):

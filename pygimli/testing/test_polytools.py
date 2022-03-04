@@ -21,7 +21,6 @@ class TestMisc(unittest.TestCase):
         # pg.show(mesh, markers=True)
         # pg.show(mesh2, markers=True)
 
-
 class TestCreateRectangle(unittest.TestCase):
     def test_region_marker_position_basics(self):
         rect1 = mt.createRectangle(
@@ -348,6 +347,19 @@ class Test3DMerge(unittest.TestCase):
         # print(mesh)
         # mesh.exportBoundaryVTU('b.vtu')
         #pg.show(mesh)
+
+    def test_face_inCube(self):
+        # plc = mt.createCube()
+        
+        # face = mt.createSurface(mt.createGrid(x=np.linspace(-0.5, 0.5, 2), y=np.linspace(-0.5, 0.5, 2)))
+        
+        # m = mt.mergePLC3D([plc, face])
+        # mt.exportPLC(m, 'tmp.poly')
+        # mesh = mt.createMesh(m, verbose=True)
+        # pg.show(mesh)
+        #
+        ## incomplete!! Fix me, tetgen segfaults
+        pass
 
 
     def test_appendTetrahedron(self):

@@ -916,11 +916,10 @@ Index RegionManager::interRegionConstraintsCount() const {
 void RegionManager::fillConstraints(RSparseMapMatrix & C){
     // __M
     Index nModel  = parameterCount();
-    // __MS(nModel)
+    //__MS(nModel)
     Index nConstr = constraintCount();
 
     this->_cWeights.resize(nConstr, 1.0);
-
     C.clear();
 
     //!** no regions: fill 0th-order constraints
@@ -946,7 +945,7 @@ void RegionManager::fillConstraints(RSparseMapMatrix & C){
         // __MS(cID)
     }
     
-    __MS(interRegionConstraints_.size())
+    // __MS(interRegionConstraints_.size())
     if (interRegionConstraints_.size() > 0){
         if (verbose_) std::cout << "Creating inter region constraints." << std::endl;
 

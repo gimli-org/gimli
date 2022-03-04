@@ -542,9 +542,6 @@ Boundary * Mesh::copyBoundary(const Boundary & bound, double tol, bool check){
         Boundary * conParent = findBoundary(conNodes);
         Boundary * secParent = findSecParent(secNodes);
 
-        // __MS("sizes:" << conNodes.size() <<" " <<secNodes.size())
-        // __MS("parents: " << conParent <<" " << secParent)
-
         if (!isFreeFace){
             conParent = findBoundary(conNodes);
 

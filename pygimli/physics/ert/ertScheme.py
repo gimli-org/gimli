@@ -724,7 +724,7 @@ if __name__ == '__main__':
     for i, schemeName in enumerate(schemes):
         shm = ert.createData(elecs=41, schemeName=schemeName)
         print(schemeName, shm)
-        k = ert.geometricFactor(shm)
+        k = ert.geometricFactors(shm)
         mg = DataSchemeManager()
         longname = mg.scheme(schemeName).name
         ert.show(shm, vals=np.abs(k), ax=ax.flat[i], colorBar=1, logScale=0,

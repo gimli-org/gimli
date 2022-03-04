@@ -45,7 +45,7 @@ separate environment. Here we call this environment pg, but you can give it any
 name. Note that this environment has to be created only once.
 
 ``` bash
-conda create -n pg -c gimli -c conda-forge pygimli=1.2.3
+conda create -n pg -c gimli -c conda-forge pygimli=1.2.4
 ```
 
 If you are using Windows or Mac, a new environment named “pg” should be visible in the Anaconda Navigator. If you want to use pygimli from the command line, you have to activate the environment. You can put this line in your ~/.bashrc file so that it is activated automatically if you open a terminal.

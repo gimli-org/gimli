@@ -4,12 +4,13 @@ channels:
   - defaults
   - gimli
 dependencies:
-  - pgcore >= 1.2.2
+  - pgcore >= 1.2.4
   - matplotlib
   - jupyter
   - sphinx >= 1.8.5
   - pytest
   - numpy
+  - scipy
   - pytest-cov
   - pytest-html
   - sphinx-gallery
@@ -19,4 +20,6 @@ dependencies:
   - sphinxcontrib-doxylink
   - scipy
   - bibtexparser
-  - pyvista =0.24
+  - pyvista=0.24
+  - meshio
+  - tetgen
