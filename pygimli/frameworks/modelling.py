@@ -14,10 +14,10 @@ DEFAULT_STYLES = {
     },
     'Data': {
         'color': 'C0',  # blueish
-        'lw': 0.5,
+        'lw': 1.5,
         'linestyle': ':',
         'marker': 'o',
-        'ms': 4
+        'ms': 6
     },
     'Response': {
         'color': 'C0',  # blueish
@@ -293,7 +293,6 @@ class Modelling(pg.core.ModellingBase):
 
             if vals['fix'] is not None:
                 if rMgr.region(rID).fixValue() != vals['fix']:
-                    pg._r(vals['background'])
                     vals['background'] = True
                     rMgr.region(rID).setFixValue(vals['fix'])
                     self._regionChanged = True
@@ -1011,3 +1010,27 @@ class ParameterModelling(Modelling):
         for k, p in self._params.items():
             label += k + "={0} ".format(pg.utils.prettyFloat(model[p]))
         pg.info("Model: ", label)
+
+
+class PriorModelling(Modelling):
+    """Forward operator for grabbing values out of a mesh (prior data)."""
+
+    def __init__(self, mesh, pos, **kwargs):
+        """Init with mesh and some positions that are converted into ids."""
+        super().__init__(**kwargs)
+        self.setMesh(mesh)
+        self.ind = [mesh.findCell(po).id() for po in pos]
+        self.J = pg.SparseMapMatrix()
+        self.J.resize(len(self.ind), mesh.cellCount())
+        for i, ii in enumerate(self.ind):
+            self.J.setVal(i, ii, 1.0)
+
+        self.setJacobian(self.J)
+
+    def response(self, model):
+        """Return values at the indexed cells."""
+        return model[self.ind]
+
+    def createJacobian(self, model):
+        """Do nothing (linear)."""
+        pass

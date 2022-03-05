@@ -1,11 +1,14 @@
 ﻿#!/usr/bin/env python
 # coding: utf-8
 """Classes for modelling helicopter electromagnetics (HEM) using VMD solvers"""
-import numpy as np
-import pygimli as pg
 from math import sqrt, pi
+import numpy as np
+
 from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.cm import register_cmap
+
+import pygimli as pg
+from pygimli.frameworks import Block1DModelling
 
 
 def registerDAEROcmap():
@@ -25,7 +28,8 @@ def registerDAEROcmap():
     return daero
 
 
-class HEMmodelling(pg.core.ModellingBase):
+# class HEMmodelling(Block1DModelling):
+class HEMmodelling(pg.Modelling):
     """HEM Airborne modelling class based on the BGR RESOLVE system."""
 
     # Constants, should rather use pygiml/physics/constants
@@ -79,8 +83,10 @@ class HEMmodelling(pg.core.ModellingBase):
 
         self.wem = (2.0 * pi * self.f) ** 2 * self.ep0 * self.mu0
         self.iwm = np.complex(0, 1) * 2.0 * pi * self.f * self.mu0
+        # super().__init__(nLayers=nlay)
         mesh = pg.meshtools.createMesh1DBlock(nlay)
-        pg.core.ModellingBase.__init__(self, mesh)
+        super().__init__()
+        self.setMesh(mesh)
 
     def response(self, par):
         """Compute response vector by pasting in-phase and out-phase data."""

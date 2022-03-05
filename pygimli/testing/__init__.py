@@ -38,6 +38,7 @@ import warnings
 #     """
 #     return globals()[__testingMode__]
 
+
 def test(target=None, show=False, onlydoctests=False, coverage=False,
          htmlreport=False, abort=False, verbose=True):
     """Run docstring examples and additional tests.
@@ -74,8 +75,8 @@ def test(target=None, show=False, onlydoctests=False, coverage=False,
     np.random.seed(1337)
     plt.rcParams["figure.max_open_warning"] = 1000
     warnings.filterwarnings("ignore", category=UserWarning,
-                            message='Matplotlib is currently using agg, which is a'
-                                    ' non-GUI backend, so cannot show the figure.')
+                            message='Matplotlib is currently using agg, a '
+                                    'non-GUI backend, so cannot show figure.')
 
     printopt = np.get_printoptions()
 
@@ -98,7 +99,7 @@ def test(target=None, show=False, onlydoctests=False, coverage=False,
             mod = importlib.import_module(mod_name)
             target = getattr(mod, func_name)
 
-        if show: # Keep figure openend if single function is tested
+        if show:  # Keep figure openend if single function is tested
             plt.ioff()
 
         import doctest

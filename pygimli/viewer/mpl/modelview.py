@@ -335,6 +335,8 @@ def showStitchedModels(models, ax=None, x=None, cMin=None, cMax=None, thk=None,
             xt = np.unique(np.clip(kwargs['cticks'], cMin, cMax))
             cb.set_ticks(xt)
             cb.set_ticklabels([str(xti) for xti in xt])
+        if 'label' in kwargs:
+            cb.set_label(kwargs['label'])
 
     plt.draw()
     return ax  # maybe return cb as well?
