@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 """TODO DOCUMENT ME"""
 from copy import deepcopy
+from lib2to3.pytree import Base
 
 import numpy as np
 import numpy.matlib
@@ -1122,7 +1123,7 @@ class LinSolver(object):
 
         self._desiredArrayType = np.array
         self._solver = factorized(self._m)
-        
+
     def __call__(self, b):
         """short cut to self.solve(b)"""
         return self.solve(b)
@@ -1136,7 +1137,15 @@ class LinSolver(object):
     def solve(self, b):
         """ """
         pg.tic(key='LinSolver.solve')
-        x = self._solver(self._convertRHS(b))
+        try:
+            x = self._solver(self._convertRHS(b))
+        except BaseException as e:
+            try:
+                x = self._solver.solve(self._convertRHS(b))
+                pg.warning('solving first try fails:', e)
+            except BaseException as e:
+                print(self._solver)
+                pg.critical('solving fails:', e)
         self.solverTime = pg.dur(key='LinSolver.solve', reset=True)
         if self.verbose:
             pg.info("Matrix solve:", self.solverTime)
@@ -2610,7 +2619,7 @@ def crankNicolson(times, S, I, f=None,
         rhs[:] = f
 
     u = np.zeros((len(times), dof))
-    
+
     if u0 is not None and not pg.isScalar(u0, 0):
         u[0, :] = u0
 
