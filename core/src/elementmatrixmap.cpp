@@ -97,7 +97,7 @@ void integrateBLConstT_(const ElementMatrixMap & A,
             if (!m.isIntegrated()){
                 log(Error, "B need to be integrated");
             }
-            if (!m.nCoeff() > 0){
+            if (m.nCoeff() == 0){
                 THROW_TO_IMPL
             }
             for (Index i = 0; i < m.rows(); i ++){
@@ -310,7 +310,7 @@ void ElementMatrixMap::dot(const ElementMatrixMap & B,
             if (!m.isIntegrated()){
                 log(Error, "A need to be integrated");
             }
-            if (!m.nCoeff() > 0){
+            if (m.nCoeff() == 0){
                 THROW_TO_IMPL
             }
 
@@ -349,48 +349,48 @@ template < >
 void assembleConstT_(const ElementMatrixMap * self, const double & f,
                      SparseMatrixBase & R, bool neg){
 
-    ALLOW_PYTHON_THREADS
 
     ASSERT_NON_EMPTY(R)
     
     Stopwatch s(true);
 
     // R.clean(); dont clean
-    // for (auto &m : self->mats()){
-    //     R.add(m, f, neg);
-    // }
-
-    double b = f;
-
-    RSparseMatrix &S = dynamic_cast< RSparseMatrix &>(R);
-    ///// TMP hack
-
-    if (neg == true) {
-        __MS("inline")
-        // R.clean(); dont clean
-        for (auto &m : self->mats()){
-            m.integrate();
-
-            for (Index i = 0, imax = m.rows(); i < imax; i++){
-                for (Index j = 0, jmax = m.cols(); j < jmax; j++){
-                    // __MS(A.rowIDs()[i] << " " << A.colIDs()[j] << "  "
-                    //       << scale << " " << A.getVal(i, j))
-                    S.addVal(m.rowIDs()[i], m.colIDs()[j], b * m.getVal(i, j));
-                }
-            }
-        }
-    } else {
-        __MS("method template")
-        // for (Index i = 0; i < self->size(); i++){
-        //     S.addS(self->mats()[i], f, neg);
-        // }
-
-        for (auto &m : self->mats()){
-            S.addS(m, f, neg);
-            // S.add(m, f, neg);
-        }
+    for (auto &m : self->mats()){
+        R.add(m, f, neg);
     }
-    __MS(s.duration(), s.cycles());
+
+    // ALLOW_PYTHON_THREADS
+    // double b = f;
+
+    // RSparseMatrix &S = dynamic_cast< RSparseMatrix &>(R);
+    // ///// TMP hack
+
+    // if (neg == true) {
+    //     __MS("inline")
+    //     // R.clean(); dont clean
+    //     for (auto &m : self->mats()){
+    //         m.integrate();
+
+    //         for (Index i = 0, imax = m.rows(); i < imax; i++){
+    //             for (Index j = 0, jmax = m.cols(); j < jmax; j++){
+    //                 // __MS(A.rowIDs()[i] << " " << A.colIDs()[j] << "  "
+    //                 //       << scale << " " << A.getVal(i, j))
+    //                 S.addVal(m.rowIDs()[i], m.colIDs()[j], b * m.getVal(i, j));
+    //             }
+    //         }
+    //     }
+    // } else {
+    //     __MS("method template")
+    //     // for (Index i = 0; i < self->size(); i++){
+    //     //     S.addS(self->mats()[i], f, neg);
+    //     // }
+
+    //     for (auto &m : self->mats()){
+    //         S.addS(m, f, neg);
+    //         // S.add(m, f, neg);
+    //     }
+    // }
+    // __MS(s.duration(), s.cycles());
 }
 
 

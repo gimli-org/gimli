@@ -44,7 +44,10 @@ public:
 
     ~LinSolver();
 
+    /*! Forward to \ref solve. */
     RVector operator()(const RVector & rhs);
+    
+    /*! Forward to \ref solve. */
     CVector operator()(const CVector & rhs);
 
     void solve(const RVector & rhs, RVector & solution);

@@ -115,8 +115,7 @@ def toCSR(A):
     return sparseMatrix2csr(A)
 
 def toCSC(A):
-    pg.warn('bad efficency toCSC')
-    return sparseMatrix2csr(A).tocsc()
+    return sparseMatrix2csc(A)
 
 def toCOO(A):
     return sparseMatrix2coo(A)
@@ -140,15 +139,14 @@ def sparseMatrix2csr(A):
     from scipy.sparse import csr_matrix
 
     if isinstance(A, pg.matrix.CSparseMapMatrix):
-        C = pg.utils.toSparseMatrix(A)
-        return csr_matrix((C.vecVals().array(),
-                           C.vecRowIdx(),
-                           C.vecColPtr()), dtype=complex)
+        return toCOO(A).tocsr()
+        
     if isinstance(A, pg.matrix.SparseMapMatrix):
-        C = pg.utils.toSparseMatrix(A)
-        return csr_matrix((C.vecVals().array(),
-                           C.vecRowIdx(),
-                           C.vecColPtr()))
+        return toCOO(A).tocsr()
+        # C = pg.utils.toSparseMatrix(A)
+        # return csr_matrix((C.vecVals().array(),
+        #                    C.vecRowIdx(),
+        #                    C.vecColPtr()))
     elif isinstance(A, pg.matrix.SparseMatrix):
         return csr_matrix((A.vecVals().array(),
                            A.vecRowIdx(),
@@ -164,6 +162,38 @@ def sparseMatrix2csr(A):
 
     return csr_matrix(A)
 
+def sparseMatrix2csc(A):
+    """Convert SparseMatrix to scipy.csr_matrix.
+
+    Compressed Sparse Column matrix, i.e., Compressed Column Storage (CCS)
+
+    Parameters
+    ----------
+    A: pg.matrix.SparseMapMatrix | pg.matrix.SparseMatrix
+        Matrix to convert from.
+
+    Returns
+    -------
+    mat: scipy.csc_matrix
+        Matrix to convert into.
+    """
+    #optImport(scipy.sparse, requiredFor="toCRC_matrix")
+    from scipy.sparse import csc_matrix
+
+    if isinstance(A, pg.matrix.CSparseMapMatrix):
+        return toCOO(A).tocsc()
+    if isinstance(A, pg.matrix.SparseMapMatrix):
+        return toCOO(A).tocsc()
+    elif isinstance(A, pg.matrix.SparseMatrix):
+        return toCSR(A).tocsc()
+    elif isinstance(A, pg.matrix.CSparseMatrix):
+        return toCSR(A).tocsc()
+        
+    elif isinstance(A, pg.matrix.BlockMatrix):
+        M = A.sparseMapMatrix()
+        return sparseMatrix2csc(M)
+
+    return csc_matrix(A)
 
 def sparseMatrix2coo(A, rowOffset=0, colOffset=0):
     """Convert SparseMatrix to scipy.coo_matrix.

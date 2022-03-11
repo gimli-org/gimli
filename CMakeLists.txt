@@ -174,7 +174,7 @@ if (NOT PYVERSION)
 endif()
 
 if (NOT PYTHON_EXECUTABLE AND NOT ${CMAKE_VERSION} VERSION_LESS "3.15.0")
-    message(STATUS "Searching for python:" ${PYVERSION})
+    message(STATUS "Searching for python: " ${PYVERSION})
     set (Python_FIND_STRATEGY LOCATION) # from cmake 3.15
     find_package(Python ${PYVERSION} EXACT COMPONENTS Interpreter NumPy Development REQUIRED)
 

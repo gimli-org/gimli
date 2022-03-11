@@ -1571,20 +1571,13 @@ def createSurface(mesh, boundaryMarker=None, verbose=True):
 
     surface = pg.Mesh(dim=3, isGeometry=True)
 
-<<<<<<< HEAD
     nodes = [surface.createNode(n.pos()).id() for n in mesh.nodes()]
-=======
-    [surface.createNode(n.pos()).id() for n in mesh.nodes()]
->>>>>>> dev
 
     for c in mesh.cells():
         surface.createBoundary(c.ids(), marker=c.marker())
 
     return surface
-<<<<<<< HEAD
-=======
 
->>>>>>> dev
 
 def createFacet(mesh, boundaryMarker=None, verbose=True):
     """Create a coplanar PLC of a 2d mesh or poly

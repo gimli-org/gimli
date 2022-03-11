@@ -944,13 +944,8 @@ void RegionManager::fillConstraints(RSparseMapMatrix & C){
         cID += x.second->constraintCount();
         // __MS(cID)
     }
-<<<<<<< HEAD
-
-    __MS(interRegionConstraints_.size())
-=======
     
     // __MS(interRegionConstraints_.size())
->>>>>>> dev
     if (interRegionConstraints_.size() > 0){
         if (verbose_) std::cout << "Creating inter region constraints." << std::endl;
 

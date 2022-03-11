@@ -120,7 +120,7 @@ template <> void
 SparseMapMatrix< Complex, Index >::add(const ElementMatrix < double > & A, 
                                        const Complex & scale, bool neg){
     A.integrate();
-    __MS("inuse?")
+    // __MS("inuse?")
     //neg unused
     for (Index i = 0, imax = A.rows(); i < imax; i++){
         for (Index j = 0, jmax = A.mat().cols(); j < jmax; j++){
@@ -133,7 +133,7 @@ template <> void
 SparseMapMatrix< Complex, Index >::add(const ElementMatrix < double > & A, 
                                        const Vector < Complex > & scale, bool neg){
     A.integrate();
-    __MS("inuse?")
+    // __MS("inuse?")
     //neg unused
     for (Index i = 0, imax = A.rows(); i < imax; i++){
         for (Index j = 0, jmax = A.mat().cols(); j < jmax; j++){

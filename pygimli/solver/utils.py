@@ -48,7 +48,7 @@ class ConstitutiveMatrix(np.ndarray):
 
 
 def toLamMu(E=None, G=None, nu=None, dim=2):
-    """ Convert elastic parameters to Lame' constants lam and mu
+    """ Convert elastic parameters to Lame' constants $\lambda$ and $\mu$
     
     Args
     ----
@@ -63,6 +63,8 @@ def toLamMu(E=None, G=None, nu=None, dim=2):
         lam = 1. Lame' constant and 2. Lame' constant = G
     
     """
+    lam = None
+    mu = None
     if E is not None and G is not None:
         if G < 1/3 * E or G > 1/2 * E:
             pg.error(f'G need to be between {E*1/3:e} and {E*0.5:e}')

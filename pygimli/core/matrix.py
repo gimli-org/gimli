@@ -213,6 +213,10 @@ def __RVector_format(self, f):
 pgcore.RVector.__format__ = __RVector_format
 
 
+# Special Monkeypatch core classes
+# keep original method
+__BlockMatrix_addMatrix__ = pgcore.RBlockMatrix.addMatrix
+
 def __BlockMatrix_addMatrix_happy_GC__(self, M, row=None, col=None,
                                        scale=1.0, transpose=False):
     """Add an existing matrix to this block matrix and return a unique index.

@@ -27,7 +27,7 @@ from .gps import GKtoUTM, findUTMZone, getProjection, getUTMProjection, readGPX
 from .hankel import hankelFC
 from .postinversion import iterateBounds, modCovar
 from .sparseMat2Numpy import (convertCRSIndex2Map, sparseMatrix2Array,
-                              sparseMatrix2coo, sparseMatrix2csr, sparseMatrix2Dense,
+                              sparseMatrix2coo, sparseMatrix2csr, sparseMatrix2Dense, sparseMatrix2csc, 
                               toSparseMatrix, toSparseMapMatrix,
                               toCSC, toCSR, toCOO,
                               toDense, reduceEntries,

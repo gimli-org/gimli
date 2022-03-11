@@ -1047,8 +1047,9 @@ def showSparseMatrix(mat, full=False):
         if full is True:
             print(np.array(matD))
 
+
 class LinSolver(object):
-    """Proxy class for the direct solution of linear systems of equations."""
+    """Proxy class for the solution of linear systems of equations."""
     def __init__(self, mat=None, solver=None, verbose=False, **kwargs):
         """Init the solver class with Matrix and starts factorization.
 
@@ -1057,15 +1058,19 @@ class LinSolver(object):
         solver: str
             If solver is none decide form Matrix type
         """
-        self._m = None ## hold local copy if we need to convert the matrix first
         self.verbose = verbose
-        self._solver = None
+        
+        self._m = None ## hold local copy if we need to convert the matrix first
+        self._x = None ## hold local copy for result
+        self._solver = None ## (str) 'pg', 'scipy', ...
         self.factorTime = 0.0
         self.solvingTime = 0.0
-        self.solver = ''
-        self._factorize = 'factorizePG'
+        self.solverStr= ''
         self._factorized = False
         self._desiredArrayType = np.array
+
+        # callback for solving
+        self._solveCB = None
 
         if solver is None:
             if isinstance(mat, pg.matrix.MatrixBase):
@@ -1080,16 +1085,18 @@ class LinSolver(object):
                     solver = 'SciPy'
 
         if solver.lower() == 'pg':
-            self.solver = 'PG'
+            self.solverStr = 'PG'
         elif solver.lower() == 'scipy':
-            self.solver = 'SciPy'
+            self.solverStr = 'SciPy'
         else:
-            self.solver = solver
-
-        self._factorize = 'factorize' + self.solver
-
+            pg.critical('inuse?')
+            self.solverStr = solver
+            
+        self._solveCB = getattr(self, f'solve_{self.solverStr}')
+        self._factorizeCB = getattr(self, f'factorize_{self.solverStr}')
+        
         if self.verbose:
-            pg.info("Solving with {0}".format(self.solver))
+            pg.info("Solving with {0}".format(self.solverStr))
 
         if mat is not None:
             self.factorize(mat)
@@ -1100,22 +1107,42 @@ class LinSolver(object):
     def factorize(self, mat):
         """Factorize matrix mat."""
         pg.tic(key='LinSolver.factorize')
-        getattr(self, self._factorize)(mat)
+
+        self._factorizeCB(mat)
+        self._factorized = True
+
         self.factorTime = pg.dur(key='LinSolver.factorize', reset=True)
 
         if self.verbose:
             pg.info("Matrix factorization:", self.factorTime)
-        self._factorized = True
 
-    def factorizePG(self, mat):
+    def solve(self, b):
+        """ """
+        pg.tic(key='LinSolver.solve')
+
+        x = self._solveCB(b)
+
+        self.solverTime = pg.dur(key='LinSolver.solve', reset=True)
+        if self.verbose:
+            pg.info("Matrix solve:", self.solverTime)
+        return x
+
+    def factorize_PG(self, mat):
         """"""
         self._m = pg.utils.toSparseMatrix(mat)
         self._desiredArrayType = pg.Vector
         self._solver = pg.core.LinSolver(self._m, verbose=self.verbose)
 
-    def factorizeSciPy(self, mat):
+    def solve_PG(self, b):
         """"""
-        self._m = pg.utils.sparseMatrix2csr(mat)
+        self._x = pg.Vector()
+        self._solver.solve(self._convertRHS(b), self._x)
+        return self._x
+
+    def factorize_SciPy(self, mat):
+        """"""
+        self._m = pg.utils.sparseMatrix2csc(mat)
+
         scipy = pg.optImport('scipy', 'Used for sparse linear solver.')
 
         import scipy.sparse
@@ -1123,6 +1150,11 @@ class LinSolver(object):
 
         self._desiredArrayType = np.array
         self._solver = factorized(self._m)
+
+    def solve_SciPy(self, b):
+        """"""
+        self._x = self._solver(self._convertRHS(b))
+        return self._x
 
     def __call__(self, b):
         """short cut to self.solve(b)"""
@@ -1133,23 +1165,6 @@ class LinSolver(object):
         if not isinstance(b, type(self._desiredArrayType(0))):
             return self._desiredArrayType(b)
         return b
-
-    def solve(self, b):
-        """ """
-        pg.tic(key='LinSolver.solve')
-        try:
-            x = self._solver(self._convertRHS(b))
-        except BaseException as e:
-            try:
-                x = self._solver.solve(self._convertRHS(b))
-                pg.warning('solving first try fails:', e)
-            except BaseException as e:
-                print(self._solver)
-                pg.critical('solving fails:', e)
-        self.solverTime = pg.dur(key='LinSolver.solve', reset=True)
-        if self.verbose:
-            pg.info("Matrix solve:", self.solverTime)
-        return x
 
 
 def linSolve(mat, b, solver=None, verbose=False, **kwargs):
