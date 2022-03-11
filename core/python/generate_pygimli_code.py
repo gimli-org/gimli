@@ -5,6 +5,13 @@ import os
 import shutil
 import sys
 
+try:
+    import pygimli as pg
+except:
+    class pg:
+        def _g(*args):
+            print(*args)
+
 from environment_for_pygimli_build import settings
 
 import hand_made_wrappers
@@ -291,7 +298,11 @@ def generate(defined_symbols, extraIncludes):
     try:
         hand_made_wrappers.apply(mb)
     except BaseException as e:
-        print(e)
+        import traceback
+        traceback.print_exc(file=sys.stdout)
+        
+        pg.error(e)
+        sys.exit()
 
     logger.info("Apply custom rvalues.")
     # START manual r-value converters

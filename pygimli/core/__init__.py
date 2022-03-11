@@ -657,7 +657,9 @@ def __RVector3ArrayCall__(self, dtype=None):
 # default converter from RVector to numpy array
 
 def __RVectorArrayCall__(self, dtype=None):
-
+    #
+    # This wrapper is needed to catch explicit type conversion from np.asarray
+    #
     #if idx and not isinstance(idx, numpy.dtype):
     #print("self:", self)
     #print("idx:", idx, type(idx) )
@@ -671,8 +673,10 @@ def __RVectorArrayCall__(self, dtype=None):
     return self.array()
 
 def __CVectorArrayCall__(self, dtype=None):
-
-    #if idx and not isinstance(idx, numpy.dtype):
+    #
+    # This wrapper is needed to catch explicit type conversion from np.asarray
+    #
+    # #if idx and not isinstance(idx, numpy.dtype):
     #print("self:", self)
     #print("idx:", idx, type(idx) )
     #raise Exception("we need to fix this")
@@ -689,8 +693,7 @@ def __CVectorArrayCall__(self, dtype=None):
 pgcore.RVector.__array__ = __RVectorArrayCall__
 # not yet ready handmade_wrappers.py
 pgcore.BVector.__array__ = __RVectorArrayCall__
-# not yet ready handmade_wrappers.py
-# pgcore.IndexArray.__array__ = __RVectorArrayCall__
+pgcore.IndexArray.__array__ = __RVectorArrayCall__
 pgcore.R3Vector.__array__ = __RVectorArrayCall__
 pgcore.RVector3.__array__ = __RVector3ArrayCall__
 

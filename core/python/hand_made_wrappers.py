@@ -4,6 +4,13 @@
 import os
 import environment_for_pygimli_build
 
+try:
+    import pygimli as pg
+except:
+    class pg:
+        def _g(*args):
+            print(*args)
+
 
 WRAPPER_DEFINITION_RVector3 =\
     """
@@ -200,23 +207,23 @@ def apply_reg(class_, code):
         class_.add_registration_code(c)
 
 def apply(mb):
-    print("Register 'Vector<double>' handmade wrapper")
+    pg._g("Register 'Vector<double>' handmade wrapper")
     rt = mb.class_('Vector<double>')
     rt.add_declaration_code(WRAPPER_DEFINITION_RVector)
     apply_reg(rt, WRAPPER_REGISTRATION_RVector)
 
-    print("Register 'Vector<Complex>' handmade wrapper")
+    pg._g("Register 'Vector<Complex>' handmade wrapper")
     rt = mb.class_('Vector< std::complex< double > >')
     rt.add_declaration_code(WRAPPER_DEFINITION_CVector)
     apply_reg(rt, WRAPPER_REGISTRATION_CVector)
 
-    print("Register 'Vector<bool>' handmade wrapper")
+    pg._g("Register 'Vector<bool>' handmade wrapper")
     rt = mb.class_('Vector<bool>')
     rt.add_declaration_code(WRAPPER_DEFINITION_BVector)
     apply_reg(rt, WRAPPER_REGISTRATION_BVector)
 
-    print("Register 'IndexArray' handmade wrapper")
-    rt = mb.class_('IndexArray')
+    pg._g("Register 'IndexArray' handmade wrapper")
+    rt = mb.class_('Vector<unsigned long>')
     rt.add_declaration_code(WRAPPER_DEFINITION_IndexArray)
     apply_reg(rt, WRAPPER_REGISTRATION_IndexArray)
 
@@ -225,11 +232,13 @@ def apply(mb):
     # rt.add_declaration_code(WRAPPER_DEFINITION_IndexArray)
     # apply_reg(rt, WRAPPER_REGISTRATION_IndexArray)
 
+    pg._g("Register 'PosList' handmade wrapper")
     rt = mb.class_('Vector< GIMLI::Pos >')
     rt.add_declaration_code(WRAPPER_DEFINITION_R3Vector)
     apply_reg(rt, WRAPPER_REGISTRATION_R3Vector)
 
     try:
+        pg._g("Register 'Pos' handmade wrapper")
         rt = mb.class_('Pos')
         rt.add_declaration_code(WRAPPER_DEFINITION_RVector3)
         apply_reg(rt, WRAPPER_REGISTRATION_RVector3)
@@ -237,12 +246,20 @@ def apply(mb):
 
         mb.add_declaration_code(WRAPPER_DEFINITION_General)
         apply_reg(mb, WRAPPER_REGISTRATION_General)
-    except:
+    except Exception as e:
+        pg.warn('Skipping', e)
+
         pass
 
-    #vec_iterators = mb.classes(lambda cls: cls.name.startswith('R'))
+    try:
+        #vec_iterators = mb.classes(lambda cls: cls.name.startswith('R'))
 
-    vec_iterators = mb.classes(
-        lambda cls: cls.name.startswith('VectorIterator'))
-    for cls in vec_iterators:
-        iter_as_generator_vector(cls)
+        vec_iterators = mb.classes(
+            lambda cls: cls.name.startswith('VectorIterator'))
+        for cls in vec_iterators:
+            iter_as_generator_vector(cls)
+    except Exception as e:
+        
+        pg.warn('Skipping VectorIterator generators', e)
+
+        pass

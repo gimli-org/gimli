@@ -6,7 +6,7 @@ import numpy as np
 import pygimli as pg
 
 
-class TestRVectorMethods(unittest.TestCase):
+class TestConversionMethods(unittest.TestCase):
 
     def test_RVector(self):
         """ implemented in custom_rvalue.cpp"""
@@ -111,7 +111,7 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(a.size(), len(x))
         self.assertEqual(pg.sum(a), sum(x))
 
-        x = np.arange(10, dtype=np.long)
+        x = np.arange(10, dtype=np.compat.long)
         a = pg.IVector(x)
         self.assertEqual(a.size(), len(x))
         self.assertEqual(pg.sum(a), sum(x))
@@ -136,12 +136,12 @@ class TestRVectorMethods(unittest.TestCase):
         self.assertEqual(a.size(), len(x))
         self.assertEqual(pg.sum(a), sum(x))
 
-        x = np.arange(10, dtype=np.int)
+        x = np.arange(10, dtype=int)
         a = pg.Vector(x)
         self.assertEqual(a.size(), len(x))
         self.assertEqual(pg.sum(a), sum(x))
 
-        x = np.arange(10, dtype=np.long)
+        x = np.arange(10, dtype=np.compat.long)
         a = pg.Vector(x)
 
         self.assertEqual(a.size(), len(x))
@@ -222,7 +222,7 @@ class TestRVectorMethods(unittest.TestCase):
         v = pg.CVector(10, 1.1 + 1j*3)
         a = np.array(v)
         self.assertEqual(type(a), np.ndarray)
-        self.assertEqual(a.dtype, np.complex)
+        self.assertEqual(a.dtype, complex)
         self.assertEqual(len(a), 10)
         self.assertEqual(a[0], 1.1 + 1j*3)
 
@@ -251,22 +251,42 @@ class TestRVectorMethods(unittest.TestCase):
 
     def test_IndexArrayToNumpy(self):
         """Implemented through hand_made_wrapper.py"""
-        # check if array is really taken
-        # not yet taken: .. see __init__.py:__BVectorArrayCall__
-        v = pg.core.IndexArray(10, 2)
+        v = pg.core.IndexArray(1000000, 2)
         self.assertEqual(type(v), pg.core.IndexArray)
-        # print(type(v[0]))
-        # print(pg.showSizes())
-        a = np.asarray(v)
-        self.assertEqual(type(a), np.ndarray)
-        # self.assertEqual(a.dtype, 'int64')
-        self.assertEqual(len(a), 10)
-        self.assertEqual(sum(a), 20)
+        
+        pg.tic()
+        a = v.array()
+        dur1 = pg.dur(reset=True)
+        # pg.toc('v.array', reset=True)
 
-        a = np.array(v)
         self.assertEqual(type(a), np.ndarray)
-        self.assertEqual(len(a), 10)
-        self.assertEqual(sum(a), 20)
+        self.assertEqual(a.dtype, 'int64')
+        self.assertEqual(len(a), len(v))
+        self.assertEqual(sum(a), len(v)*2)
+
+        pg.tic()
+        a = np.asarray(v)
+        dur2 = pg.dur(reset=True)
+        # pg.toc('asarray', reset=True)
+        # check if internal conversion is used, its times 100 slower else
+        self.assertEqual(dur2/dur1 < 10, True)
+        
+        self.assertEqual(type(a), np.ndarray)
+        self.assertEqual(a.dtype, 'int64')
+        self.assertEqual(len(a), len(v))
+        self.assertEqual(sum(a), len(v)*2)
+
+        pg.tic()
+        a = np.array(v)
+        dur2 = pg.dur(reset=True)
+        # pg.toc('array', reset=True)
+        # check if internal conversion is used, its times 100 slower else
+        self.assertEqual(dur2/dur1 < 10, True)
+        
+        self.assertEqual(type(a), np.ndarray)
+        self.assertEqual(a.dtype, 'int64')
+        self.assertEqual(len(a), len(v))
+        self.assertEqual(sum(a), len(v)*2)
 
     def test_RVector3ToNumpy(self):
         """Implemented through hand_made_wrapper.py"""
