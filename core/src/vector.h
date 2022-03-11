@@ -66,7 +66,7 @@ namespace GIMLI{
 
 template < class ValueType, class A > class __VectorExpr;
 
-// forwarding inline 
+// forwarding inline
 IndexArray find(const BVector & v);
 
 DLLEXPORT IndexArray range(Index start, Index stop, Index step=1);
@@ -225,7 +225,7 @@ public:
         resize(l.size());
         std::copy(l.begin(), l.end(), data_);
     }
-    
+
     /*!
      * Construct vector from file. Shortcut for Vector::load
      */
@@ -295,7 +295,7 @@ public:
     Vector< ValueType > & setVal(const Eigen::VectorXd & v, const IVector & ids);
     Vector< ValueType > & addVal(const Eigen::VectorXd & v, const IVector & ids);
 
-#endif    
+#endif
 
     /*! Assignment operator. Creates a new vector as from expression. */
     template < class A > Vector< ValueType > & operator = (const __VectorExpr< ValueType, A > & v) {
@@ -478,7 +478,9 @@ public:
     /*! Set multiple values. Throws out of range exception if index check fails. */
     inline Vector< ValueType > & setVal(const ValueType & val,
                                         const IndexArray & ids) {
-        for (Index i = 0; i < ids.size(); i ++) setVal(val, ids[i]);
+        for (Index i = 0; i < ids.size(); i ++) {
+            setVal(val, ids[i]);
+        }
         return *this;
     }
 
@@ -684,7 +686,9 @@ public:
         BVector ret(this->size(), 0);
 
         std::less<ValueType> l;
-        for (Index i = 0; i < v.size(); i ++) ret[i] = l(data_[i], v[i]);
+        for (Index i = 0; i < v.size(); i ++) {
+            ret[i] = l(data_[i], v[i]);
+        }
         return ret;
     }
 #endif
@@ -694,7 +698,7 @@ public:
         ASSERT_EQUAL(this->size(), v.size()) \
         BVector ret(this->size(), 0); \
         FUNCT<ValueType> f; \
-        for (Index i = 0; i < v.size(); i ++) ret[i] = f(data_[i], v[i]); \
+        for (Index i = 0; i < v.size(); i ++){ret[i] = f(data_[i], v[i]);} \
         return ret; \
     } \
 
@@ -745,7 +749,7 @@ DEFINE_COMPARE_OPERATOR__(>, std::greater)
         ASSERT_SIZE_GREATER_EQUAL((*this), v) \
         std::transform(data_, data_ + v.size(), &v[0], data_, FUNCT()); return *this; } \
   inline Vector< ValueType > & operator OP##= (const ValueType & val) { \
-        for (Index i = 0; i < size_; i ++) data_[i] OP##= val; return *this; } \
+        for (Index i = 0; i < size_; i ++){data_[i] OP##= val;}return *this; } \
 
 DEFINE_UNARY_MOD_OPERATOR__(+, PLUS)
 DEFINE_UNARY_MOD_OPERATOR__(-, MINUS)
@@ -1018,22 +1022,22 @@ protected:
 template <> DLLEXPORT void Vector< Pos >::clean();
 
 // /*! Implement specialized type traits in vector.cpp */
-template <> DLLEXPORT void 
+template <> DLLEXPORT void
 Vector<double>::add(const ElementMatrix < double >& A, bool neg);
-template <> DLLEXPORT void 
+template <> DLLEXPORT void
 Vector<double>::add(const ElementMatrix < double >& A, const double & a, bool neg);
-template <> DLLEXPORT void 
+template <> DLLEXPORT void
 Vector<double>::add(const ElementMatrix < double >& A, const Pos & a, bool neg);
-template <> DLLEXPORT void 
+template <> DLLEXPORT void
 Vector<double>::add(const ElementMatrix < double >& A, const RMatrix & a, bool neg);
 
-template< typename ValueType > void 
+template< typename ValueType > void
 Vector< ValueType >::add(const ElementMatrix < double >& A,  bool neg){ THROW_TO_IMPL}
-template< typename ValueType > void 
+template< typename ValueType > void
 Vector< ValueType >::add(const ElementMatrix < double >& A, const double & a, bool neg){THROW_TO_IMPL}
-template< typename ValueType > void 
+template< typename ValueType > void
 Vector< ValueType >::add(const ElementMatrix < double >& A, const Pos & a, bool neg){THROW_TO_IMPL}
-template< typename ValueType > void 
+template< typename ValueType > void
 Vector< ValueType >::add(const ElementMatrix < double >& A, const RMatrix & a, bool neg){THROW_TO_IMPL}
 
 // removeme in V1.2, 20200727

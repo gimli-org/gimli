@@ -42,7 +42,7 @@ PyObject * RVector_getArray(GIMLI::RVector & vec){
     PyObject * ret = PyArray_SimpleNew(1, &length, NPY_DOUBLE);
     std::memcpy(PyArray_DATA(reinterpret_cast<PyArrayObject*>(ret)),
                 (void *)(&vec[0]), length * sizeof(double));
-        
+
     return ret;
 }
 
@@ -63,7 +63,7 @@ PyObject * CVector_getArray(GIMLI::CVector & vec){
     PyObject * ret = PyArray_SimpleNew(1, &length, NPY_COMPLEX128);
     std::memcpy(PyArray_DATA(reinterpret_cast<PyArrayObject*>(ret)),
                 (void *)(&vec[0]), length * sizeof(GIMLI::Complex));
-    
+
     return ret;
 }
 
@@ -85,7 +85,7 @@ PyObject * BVector_getArray(GIMLI::BVector & vec){
     PyObject * ret = PyArray_SimpleNew(1, &length, NPY_BOOL);
     std::memcpy(PyArray_DATA(reinterpret_cast<PyArrayObject*>(ret)),
                 (void *)(&vec[0]), length * sizeof(bool));
-        
+
     return ret;
 
     //PyObject * ret = PyArray_SimpleNew(1, &length, NPY_BOOL);
@@ -111,7 +111,7 @@ PyObject * IndexArray_getArray(GIMLI::IndexArray & vec){
     PyObject * ret = PyArray_SimpleNew(1, &length, NPY_LONG);
     std::memcpy(PyArray_DATA(reinterpret_cast<PyArrayObject*>(ret)),
                 (void *)(&vec[0]), length * sizeof(GIMLI::Index));
-        
+
     return ret;
 }
 
@@ -204,7 +204,7 @@ def apply(mb):
     rt = mb.class_('Vector<double>')
     rt.add_declaration_code(WRAPPER_DEFINITION_RVector)
     apply_reg(rt, WRAPPER_REGISTRATION_RVector)
-    
+
     print("Register 'Vector<Complex>' handmade wrapper")
     rt = mb.class_('Vector< std::complex< double > >')
     rt.add_declaration_code(WRAPPER_DEFINITION_CVector)
@@ -215,13 +215,15 @@ def apply(mb):
     rt.add_declaration_code(WRAPPER_DEFINITION_BVector)
     apply_reg(rt, WRAPPER_REGISTRATION_BVector)
 
-    #rt = mb.class_('IndexArray')
-    #rt.add_declaration_code(WRAPPER_DEFINITION_IndexArray)
-    #apply_reg(rt, WRAPPER_REGISTRATION_IndexArray)
+    print("Register 'IndexArray' handmade wrapper")
+    rt = mb.class_('IndexArray')
+    rt.add_declaration_code(WRAPPER_DEFINITION_IndexArray)
+    apply_reg(rt, WRAPPER_REGISTRATION_IndexArray)
 
-    #rt = mb.class_('Vector<GIMLI::Index>')
-    #rt.add_declaration_code(WRAPPER_DEFINITION_IndexArray)
-    #apply_reg(rt, WRAPPER_REGISTRATION_IndexArray)
+    # print("Register 'IndexArray' handmade wrapper")
+    # rt = mb.class_('Vector<GIMLI::Index>')
+    # rt.add_declaration_code(WRAPPER_DEFINITION_IndexArray)
+    # apply_reg(rt, WRAPPER_REGISTRATION_IndexArray)
 
     rt = mb.class_('Vector< GIMLI::Pos >')
     rt.add_declaration_code(WRAPPER_DEFINITION_R3Vector)

@@ -462,29 +462,29 @@ public:
     #define DEFINE_UNARY_MOD_OPERATOR__(OP, NAME) \
     inline Matrix < ValueType > & operator OP##=(const Matrix < ValueType>&A){\
         if (A.rows() == this->rows() && A.cols() == this->cols()) { \
-            for (Index i = 0; i < mat_.size(); i ++) mat_[i] OP##= A[i]; \
+            for (Index i = 0; i < mat_.size(); i ++) {mat_[i] OP##= A[i];} \
             return *this;\
         }\
         if (A.rows() == 1 && A.cols() == this->cols()) { \
-            for (Index i = 0; i < mat_.size(); i ++) mat_[i] OP##= A[0]; \
+            for (Index i = 0; i < mat_.size(); i ++) {mat_[i] OP##= A[0]; }\
             return *this;\
         } \
         if (A.cols() == 1 && A.rows() == this->rows()) { \
-            for (Index i = 0; i < mat_.size(); i ++) mat_[i] OP##= A[i][0]; \
+            for (Index i = 0; i < mat_.size(); i ++) {mat_[i] OP##= A[i][0];} \
             return *this;\
         } \
         if (this->rows() == 1 && this->cols() == A.cols()){ \
             Vector < ValueType > tmp(this->row(0)); \
             this->resize(A.rows(), this->cols()); \
-            for (Index i = 0; i < mat_.size(); i ++) \
-                this->setRow(i, A[i] OP tmp); \
+            for (Index i = 0; i < mat_.size(); i ++){ \
+                this->setRow(i, A[i] OP tmp);} \
             return *this;\
         } \
         if (this->cols() == 1 && this->rows() == A.rows()){ \
             Vector < ValueType > tmp(this->col(0)); \
             this->resize(this->rows(), A.cols()); \
-            for (Index i = 0; i < mat_.size(); i ++) \
-                this->setRow(i, A[i] OP tmp[i]); \
+            for (Index i = 0; i < mat_.size(); i ++){ \
+                this->setRow(i, A[i] OP tmp[i]);} \
             return *this;\
         } \
         throwLengthError(WHERE_AM_I + " Cannot operate on mishaped matrices. "+\
@@ -493,9 +493,9 @@ public:
         return *this;\
     }\
     inline Matrix < ValueType > & operator OP##= (const ValueType & val) { \
-      for (Index i = 0; i < mat_.size(); i ++) mat_[i] OP##= val; return*this;}\
+      for (Index i = 0; i < mat_.size(); i ++){mat_[i] OP##= val;}return*this;}\
     inline Matrix < ValueType > & operator OP##= (const Vector < ValueType > & val) { \
-      for (Index i = 0; i < mat_.size(); i ++) mat_[i] OP##= val; return*this;}\
+      for (Index i = 0; i < mat_.size(); i ++){mat_[i] OP##= val;}return*this;}\
 
     DEFINE_UNARY_MOD_OPERATOR__(+, PLUS)
     DEFINE_UNARY_MOD_OPERATOR__(-, MINUS)

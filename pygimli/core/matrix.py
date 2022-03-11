@@ -295,16 +295,15 @@ def __SparseMatrixEqual__(self, T):
     """Compare two SparseMatrices"""
     from pygimli.utils import sparseMatrix2Array
 
-    if self.rows() != T.rows() or self.cols() != T.cols():
-        warn("Compare sizes invalid {0},{1} vs. {2},{3}: ".format(
-            self.rows(), self.cols(), T.rows(), T.cols()))
+    if self.shape[0] != T.shape[0] or self.shape[1] != T.shape[1]:
+        warn(f'Compare sizes invalid {self.shape} vs. {T.shape}: ')
         return False
 
-    rowsA, colsA, valsA = sparseMatrix2Array(self, indices=True)
-    rowsB, colsB, valsB = sparseMatrix2Array(T, indices=True)
+    rowsA, colsA, valsA = sparseMatrix2Array(self, indices=True, getInCRS=True)
+    rowsB, colsB, valsB = sparseMatrix2Array(T, indices=True, getInCRS=True)
 
     if len(valsA) != len(valsB):
-        warn("Compare value sizes invalid: ", len(valsA), len(valsB))
+        warn(f'Compare value sizes invalid: {len(valsA)}, {len(valsB)}')
         return False
 
     meanA = np.mean(abs(valsA))

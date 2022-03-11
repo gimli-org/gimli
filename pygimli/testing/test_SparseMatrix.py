@@ -12,20 +12,109 @@ class TestSparseMatrix(unittest.TestCase):
     def test_Convert(self):
         """
         """
-        colIds = range(10)
-        rowIds = range(10)
-        vals = np.ones(10)
+        def _cmp_(A, B, timings=False):
 
-        # Construct SparseMap Matrix from python arrays
-        A = pg.matrix.SparseMapMatrix(colIds, rowIds, vals)
+            At = pg.utils.toCSR(A)
+            Bt = pg.utils.toCSR(B)
+            # np.testing.assert_equal(pg.utils.toSparseMatrix(A) == pg.utils.toSparseMatrix(B), True)
 
-        # Construct SparseMap -> CRS (compressed row storage)
+            # A.indptr, A.indices, A.data
+            # B.indptr, B.indices, B.data
+            if timings == True:
+                pg.toc('cmp:',  reset=True)
+
+            np.testing.assert_equal(At.indptr, Bt.indptr)
+            np.testing.assert_equal(At.indices, Bt.indices)
+            np.testing.assert_allclose(At.data, Bt.data)
+            np.testing.assert_equal(np.sum(np.abs(At.data)) > 0, True)
+
+
+
+
+        def _test_(A, timings=False):
+            """ Test and all conversions for matrix A with timings
+            """
+            if timings == True:
+                print(f'A.shape: {A.shape}')
+
+            pg.tic()
+            T = pg.utils.toSparseMatrix(A)
+            if timings == True:
+                pg.toc(f'{type(A)} -> RSparseMatrix:',  reset=True)
+            _cmp_(A, T, timings)
+
+            T = pg.utils.toSparseMapMatrix(A)
+            if timings == True:
+                pg.toc(f'{type(A)} -> RSparseMapMatrix:',  reset=True)
+            _cmp_(A, T, timings)
+
+            T = pg.utils.toCOO(A)
+            if timings == True:
+                pg.toc(f'{type(A)} -> COO', reset=True)
+            _cmp_(A, T, timings)
+
+            T = pg.utils.toCSR(A)
+            if timings == True:
+                pg.toc(f'{type(A)} -> CSR', reset=True)
+            _cmp_(A, T, timings)
+
+            T = pg.utils.toCSC(A)
+            if timings == True:
+                pg.toc(f'{type(A)} -> CSC', reset=True)
+            _cmp_(A, T, timings)
+
+
+        # colIds = range(10)
+        # rowIds = range(10)
+        # vals = np.ones(10)
+
+        # # Construct SparseMap Matrix from python arrays
+        # A = pg.matrix.SparseMapMatrix(colIds, rowIds, vals)
+        # _test_(A, timings=False)
+
+
+        grid = pg.createGrid(20, 20, 20)
+
+        # alpha = pg.math.toComplex(np.ones(grid.cellCount()),
+        #                           np.ones(grid.cellCount())*1.0)
+
+        A = pg.solver.createStiffnessMatrix(grid,
+                                            a=np.ones(grid.cellCount())*3.14)
+
+        # A = pg.solver.createMassMatrix(grid)
+
+        pg._g('############')
+        pg.tic()
+        T = pg.utils.sparseMatrix2csr(A)
+        #T = pg.utils.toCSR(A)
+        pg.toc('toCSR')
+        _cmp_(T, A, timings=True)
+        sys.exit()
+
+        _test_(A, timings=True)
+        _test_(pg.utils.toSparseMapMatrix(A), timings=True)
+        _test_(pg.utils.toCOO(A), timings=True)
+        _test_(pg.utils.toCSR(A), timings=True)
+        _test_(pg.utils.toCSC(A), timings=True)
+
+
+
+
+
+
+
+
+
+
+        sys.exit()
+
+        # SparseMap -> CRS (compressed row storage)
         S = pg.utils.toSparseMatrix(A)
 
-        # Construct CRS -> SparseMap
+        # CRS -> SparseMap (COO)
         A2 = pg.utils.toSparseMapMatrix(S)
 
-        # all should by identity matrix
+        # all should be identity matrix
         np.testing.assert_equal(A2.getVal(1, 1), 1.0)
         np.testing.assert_equal(sum(S * np.ones(S.cols())), S.rows())
         np.testing.assert_equal(sum(A2 * np.ones(A2.cols())), A2.rows())
@@ -103,11 +192,8 @@ class TestSparseMatrix(unittest.TestCase):
         np.testing.assert_equal(sciA1.col, sciA2.col)
 
         ### toSparseMatrix
-
         sciCSR = pg.utils.sparseMatrix2csr(pg.utils.toSparseMatrix(mm))
         np.testing.assert_equal(pg.utils.toSparseMatrix(sciCSR) == mm, True)
-
-
 
     def test_Access(self):
         #addVal(0, 1, 1.2) kommt nach der konvertierung auch wieder [0], [1], [1.2]
