@@ -399,6 +399,15 @@ public:
     inline const int & rowIdx() const { if (valid_) return rowIdx_[0]; else SPARSE_NOT_VALID; return rowIdx_[0]; }
     inline const std::vector < int > & vecRowIdx() const { return rowIdx_; }
 
+    inline void fillIndices(IndexArray & ids) const { 
+        ids.resize(rowIdx_.size());
+        for (Index i = 0; i < ids.size(); i ++) {ids[i] = Index(rowIdx_[i]);}
+    }
+    inline void fillIndptr(IndexArray & ptr) const { 
+        ptr.resize(colPtr_.size());
+        for (Index i = 0; i < ptr.size(); i ++) {ptr[i] = Index(colPtr_[i]);}
+    }
+
     //!! check if needed
     inline ValueType * pVals() { if (valid_) return &vals_[0]; else SPARSE_NOT_VALID; return 0; }
 //     inline const ValueType * vals() const { if (valid_) return &vals_[0]; else SPARSE_NOT_VALID; return 0; }

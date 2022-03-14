@@ -10,6 +10,9 @@ except:
     class pg:
         def _g(*args):
             print(*args)
+        def warn(*args):
+            print(*args)
+
 
 
 WRAPPER_DEFINITION_RVector3 =\
@@ -123,6 +126,28 @@ PyObject * IndexArray_getArray(GIMLI::IndexArray & vec){
 }
 
 """
+WRAPPER_REGISTRATION_StdVecI = [
+    """def("array", &StdVecI_getArray,
+       "PyGIMLI Helper Function: extract a numpy array object from a StdVecI ");""",
+]
+
+WRAPPER_DEFINITION_StdVecI =\
+    """
+#include <numpy/arrayobject.h>
+
+PyObject * StdVecI_getArray(std::vector < int >  & vec){
+    import_array2("Cannot import numpy c-api from pygimli hand_make_wrapper", NULL);
+    npy_intp length = (ssize_t)vec.size();
+
+    PyObject * ret = PyArray_SimpleNew(1, &length, NPY_LONG);
+    __MS("implementme")
+    //std::memcpy(PyArray_DATA(reinterpret_cast<PyArrayObject*>(ret)),
+    //            (void *)(&vec[0]), length * sizeof(GIMLI::Index));
+
+    return ret;
+}
+
+"""
 WRAPPER_REGISTRATION_IndexArray = [
     """def("array", &IndexArray_getArray,
        "PyGIMLI Helper Function: extract a numpy array object from a IndexArray ");""",
@@ -207,30 +232,50 @@ def apply_reg(class_, code):
         class_.add_registration_code(c)
 
 def apply(mb):
-    pg._g("Register 'Vector<double>' handmade wrapper")
-    rt = mb.class_('Vector<double>')
-    rt.add_declaration_code(WRAPPER_DEFINITION_RVector)
-    apply_reg(rt, WRAPPER_REGISTRATION_RVector)
+    try:
+        pg._g("Register 'Vector<double>' handmade wrapper")
+        rt = mb.class_('Vector<double>')
+        rt.add_declaration_code(WRAPPER_DEFINITION_RVector)
+        apply_reg(rt, WRAPPER_REGISTRATION_RVector)
 
-    pg._g("Register 'Vector<Complex>' handmade wrapper")
-    rt = mb.class_('Vector< std::complex< double > >')
-    rt.add_declaration_code(WRAPPER_DEFINITION_CVector)
-    apply_reg(rt, WRAPPER_REGISTRATION_CVector)
+        pg._g("Register 'Vector<Complex>' handmade wrapper")
+        rt = mb.class_('Vector< std::complex< double > >')
+        rt.add_declaration_code(WRAPPER_DEFINITION_CVector)
+        apply_reg(rt, WRAPPER_REGISTRATION_CVector)
 
-    pg._g("Register 'Vector<bool>' handmade wrapper")
-    rt = mb.class_('Vector<bool>')
-    rt.add_declaration_code(WRAPPER_DEFINITION_BVector)
-    apply_reg(rt, WRAPPER_REGISTRATION_BVector)
+        pg._g("Register 'Vector<bool>' handmade wrapper")
+        rt = mb.class_('Vector<bool>')
+        rt.add_declaration_code(WRAPPER_DEFINITION_BVector)
+        apply_reg(rt, WRAPPER_REGISTRATION_BVector)
 
-    pg._g("Register 'IndexArray' handmade wrapper")
-    rt = mb.class_('Vector<unsigned long>')
-    rt.add_declaration_code(WRAPPER_DEFINITION_IndexArray)
-    apply_reg(rt, WRAPPER_REGISTRATION_IndexArray)
+        pg._g("Register 'IndexArray' handmade wrapper")
+        rt = mb.class_('Vector<unsigned long>')
+        rt.add_declaration_code(WRAPPER_DEFINITION_IndexArray)
+        apply_reg(rt, WRAPPER_REGISTRATION_IndexArray)
+
+        pg._g("Register 'StdVecI' handmade wrapper")
+        rt = mb.class_('vector<int, std::allocator<int> >')
+        rt.add_declaration_code(WRAPPER_DEFINITION_StdVecI)
+        apply_reg(rt, WRAPPER_REGISTRATION_StdVecI)
+    except BaseException as e:
+        pg.warn('Skipping', e)
+
+        for c in mb.classes():
+            try:
+                for mem in c.member_functions():
+                    if mem.decl_string.find('size') > -1:
+                        print('class:', c.name, mem.decl_string)
+            except:
+                pass
+
 
     # print("Register 'IndexArray' handmade wrapper")
     # rt = mb.class_('Vector<GIMLI::Index>')
     # rt.add_declaration_code(WRAPPER_DEFINITION_IndexArray)
     # apply_reg(rt, WRAPPER_REGISTRATION_IndexArray)
+
+
+
 
     pg._g("Register 'PosList' handmade wrapper")
     rt = mb.class_('Vector< GIMLI::Pos >')
