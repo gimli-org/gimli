@@ -199,22 +199,66 @@ class TestConversionMethods(unittest.TestCase):
         p = pg.RVector3(x)
         self.assertEqual(p.dist([0.0, 1.0, 0.0]), 0.0)
 
+    def __test_array_conversion(self, v, dtype, perf=False):
+        pg.tic()
+        a = v.array()
+        dur1 = pg.dur(reset=True)
+        if perf is True:
+            print(f'v.array() {dur1}s')
+
+        self.assertEqual(type(a), np.ndarray)
+        self.assertEqual(a.dtype, dtype)
+        self.assertEqual(len(a), len(v))
+        self.assertEqual(sum(a), len(v)*2)
+
+        pg.tic()
+        # like array but will NOT make a own copy
+        b = np.asarray(v)
+        dur2 = pg.dur(reset=True)
+        if perf is True:
+            print(f'np.asarray(v) {dur2}s')
+
+        # check if internal conversion is used, its times 100 slower else
+        self.assertEqual(dur2/dur1 < 100, True)
+        self.assertEqual(type(b), np.ndarray)
+        self.assertEqual(b.dtype, dtype)
+        self.assertEqual(len(b), len(v))
+        self.assertEqual(sum(b), len(v)*2)
+
+        pg.tic()
+        # like array but will make a own copy
+        c = np.array(v)
+        dur2 = pg.dur(reset=True)
+        if perf is True:
+            print(f'np.array(v) {dur2}s')
+
+        # check if internal conversion is used, its times 100 slower else
+        self.assertEqual(dur2/dur1 < 500, True)
+
+        self.assertEqual(type(c), np.ndarray)
+        self.assertEqual(c.dtype, dtype)
+        self.assertEqual(len(c), len(v))
+        self.assertEqual(sum(c), len(v)*2)
+
+        pg.tic()
+        # like asarray
+        d = np.array(v, copy=False)
+        dur2 = pg.dur(reset=True)
+        if perf is True:
+            print(f'np.array(v, copy=False) {dur2}s')
+        # check if internal conversion is used, its times 100 slower else
+        self.assertEqual(dur2/dur1 < 10, True)
+
+        self.assertEqual(type(d), np.ndarray)
+        self.assertEqual(d.dtype, dtype)
+        self.assertEqual(len(d), len(v))
+        self.assertEqual(sum(d), len(v)*2)
+
     def test_RVectorToNumpy(self):
         """Implemented through hand_made_wrapper.py"""
         # check ob wirklich from array genommen wird!
-        v = pg.Vector(10, 1.1)
-
-        a = np.asarray(v)
-        self.assertEqual(type(a), np.ndarray)
-        self.assertEqual(len(a), 10)
-        self.assertEqual(a[0], 1.1)
-
-        a = np.asarray(v, "int")
-        self.assertEqual(a[0], 1)
-
-        a = np.array(v)
-        self.assertEqual(type(a), np.ndarray)
-        self.assertEqual(len(a), 10)
+        v = pg.Vector(1000000, 2.0)
+        self.__test_array_conversion(v, 'float', perf=False)
 
     def test_CVectorToNumpy(self):
         """Implemented through hand_made_wrapper.py"""
@@ -249,44 +293,23 @@ class TestConversionMethods(unittest.TestCase):
         self.assertEqual(len(a), 10)
         self.assertEqual(sum(a), 10)
 
+
     def test_IndexArrayToNumpy(self):
         """Implemented through hand_made_wrapper.py"""
         v = pg.core.IndexArray(1000000, 2)
         self.assertEqual(type(v), pg.core.IndexArray)
-        
-        pg.tic()
-        a = v.array()
-        dur1 = pg.dur(reset=True)
-        # pg.toc('v.array', reset=True)
 
-        self.assertEqual(type(a), np.ndarray)
-        self.assertEqual(a.dtype, 'int64')
-        self.assertEqual(len(a), len(v))
-        self.assertEqual(sum(a), len(v)*2)
+        self.__test_array_conversion(v, 'uint64', perf=False)
 
-        pg.tic()
-        a = np.asarray(v)
-        dur2 = pg.dur(reset=True)
-        # pg.toc('asarray', reset=True)
-        # check if internal conversion is used, its times 100 slower else
-        self.assertEqual(dur2/dur1 < 10, True)
-        
-        self.assertEqual(type(a), np.ndarray)
-        self.assertEqual(a.dtype, 'int64')
-        self.assertEqual(len(a), len(v))
-        self.assertEqual(sum(a), len(v)*2)
+    def test_StdVecIToNumpy(self):
+        """Implemented through hand_made_wrapper.py"""
+        v = pg.core.stdVectorI()
+        for v_ in [2]*1000000:
+            v.append(v_)
+        self.assertEqual(type(v), pg.core.stdVectorI)
+        self.assertEqual(sum(v), len(v)*2)
 
-        pg.tic()
-        a = np.array(v)
-        dur2 = pg.dur(reset=True)
-        # pg.toc('array', reset=True)
-        # check if internal conversion is used, its times 100 slower else
-        self.assertEqual(dur2/dur1 < 10, True)
-        
-        self.assertEqual(type(a), np.ndarray)
-        self.assertEqual(a.dtype, 'int64')
-        self.assertEqual(len(a), len(v))
-        self.assertEqual(sum(a), len(v)*2)
+        self.__test_array_conversion(v, 'int32', perf=False)
 
     def test_RVector3ToNumpy(self):
         """Implemented through hand_made_wrapper.py"""

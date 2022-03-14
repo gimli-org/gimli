@@ -689,12 +689,13 @@ def __CVectorArrayCall__(self, dtype=None):
     return self.array()
 
 # default converter from RVector to numpy array
-
 pgcore.RVector.__array__ = __RVectorArrayCall__
 # not yet ready handmade_wrappers.py
 pgcore.BVector.__array__ = __RVectorArrayCall__
 pgcore.IndexArray.__array__ = __RVectorArrayCall__
+pgcore.stdVectorI.__array__ = __RVectorArrayCall__
 pgcore.R3Vector.__array__ = __RVectorArrayCall__
+
 pgcore.RVector3.__array__ = __RVector3ArrayCall__
 
 # see bug description
