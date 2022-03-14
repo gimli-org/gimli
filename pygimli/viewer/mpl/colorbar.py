@@ -316,7 +316,6 @@ def createColorBar(gci, orientation='horizontal', size=0.2, pad=None,
         except:
             pass
 
-
     return cbar
 
 
@@ -372,11 +371,21 @@ def createColorBarOnly(cMin=1, cMax=100, logScale=False, cMap=None, nLevs=5,
     #        cbar.ax.yaxis.set_label_position('left')
     if levels is not None:
         kwargs['levels'] = levels
+
     updateColorBar(cbar, cMin=cMin, cMax=cMax, nLevs=nLevs, label=label,
                    **kwargs)
 
     if aspect is not None:
         ax.set_aspect(aspect)
+
+    try:  # mpl 3.5
+        if kwargs.pop("orientation", None) == 'vertical':
+            cbar.ax.yaxis.set_major_formatter(ticker.ScalarFormatter())
+        else:
+            cbar.ax.xaxis.set_major_formatter(ticker.ScalarFormatter())
+    except:
+        pass
+
 
     if savefig is not None:
         saveFigure(fig, savefig)
