@@ -369,6 +369,15 @@ public:
 
     inline ValueType & val(const iterator & I) { return (*I).second;  }
 
+    inline Vector< ValueType > values() const {
+        Vector< ValueType > ret(C_.size());
+        Index i = 0;
+        for (const_iterator it = this->begin(); it != this->end(); it ++, i ++){
+            ret[i] = val(it);
+        }
+        return ret;
+    }
+
     inline ValueType getVal(IndexType i, IndexType j) { return (*this)[i][j]; }
 
     inline void setVal(IndexType i, IndexType j, const ValueType & val) {
