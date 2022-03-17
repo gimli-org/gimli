@@ -148,7 +148,7 @@ het.set('rhoa', het('k') * het('u') / het('i'))
 
 het.save('simulated.dat', 'a b m n rhoa k u i')
 
-np.testing.assert_approx_equal(het('rhoa')[0], 9.95, 2)
+np.testing.assert_approx_equal(het('rhoa')[0], 9.5, 1)
 
 # np.testing.assert_approx_equal(het('k')[0], 0.820615269548)
 
