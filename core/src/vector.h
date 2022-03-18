@@ -51,6 +51,7 @@
 #include <fstream>
 #include <cerrno>
 #include <iterator>
+#include <memory>
 
 #if USE_EIGEN3
     #include <Eigen/Dense>
@@ -269,9 +270,10 @@ public:
         //std::copy(&v[0], &v[v.size()], data_);
     }
     /*! Create Vector from borrowed data. */
-    Vector(Index n, ValueType * data)
-        : size_(0), data_(0), capacity_(0){
-        
+    Vector(Index n, const std::shared_ptr<ValueType> & d, Index offset=0)
+        : size_(n), data_(0), capacity_(0){
+        this->_borrowedData = d;
+        data_ = &d.get()[offset];
     }
 
     template < class ValueType2 > Vector(const Vector< ValueType2 > & v)
@@ -715,19 +717,19 @@ DEFINE_COMPARE_OPERATOR_VEC__(>, std::greater)
 
 #define DEFINE_COMPARE_OPERATOR__(OP, FUNCT) \
     inline BVector operator OP (const int & v) const { \
-        BVector ret(this->size(), 0); \
+        BVector ret(this->size(), false); \
         FUNCT<ValueType> f; \
         for (Index i = 0; i < this->size(); i ++){ ret[i] = f(data_[i], ValueType(v)); } \
         return ret;\
     } \
     inline BVector operator OP (const uint & v) const { \
-        BVector ret(this->size(), 0); \
+        BVector ret(this->size(), false); \
         FUNCT<ValueType> f; \
         for (Index i = 0; i < this->size(); i ++){ ret[i] = f(data_[i], ValueType(v)); } \
         return ret;\
     } \
     inline BVector operator OP (const ValueType & v) const { \
-        BVector ret(this->size(), 0); \
+        BVector ret(this->size(), false); \
         FUNCT<ValueType> f; \
         for (Index i = 0; i < this->size(); i ++){ ret[i] = f(data_[i], v); } \
         return ret;\
@@ -781,6 +783,10 @@ DEFINE_UNARY_MOD_OPERATOR__(*, MULT)
 
     /*! Reserve memory. Old data are preserved*/
     void reserve(Index n){
+
+        if (this->_borrowedData.use_count() > 0){
+            throwError("Vector with borrowed data can't be resized.");
+        }
 
         Index newCapacity = max(1, n);
         if (capacity_ != 0){
@@ -1016,6 +1022,7 @@ protected:
 
     Index size_;
     ValueType * data_;
+    std::shared_ptr< ValueType > _borrowedData;
     Index capacity_;
 
     static const Index minSizePerThread = 10000;
@@ -1468,13 +1475,13 @@ inline RVector operator * (const RVector & a, const BVector & b){
 #define DEFINE_COMPARE_OPERATOR__(OP) \
 template < class ValueType, class A > BVector \
 operator OP (const __VectorExpr< ValueType, A > & vec, const ValueType & v){ \
-    BVector ret(vec.size(), 0); \
+    BVector ret(vec.size(), false); \
     for (Index i = 0; i < ret.size(); i ++) ret[i] = vec[i] OP v; \
     return ret;\
 } \
 template < class ValueType > BVector \
 operator OP (const std::vector < ValueType > & vec, const ValueType & v){ \
-    BVector ret(vec.size(), 0); \
+    BVector ret(vec.size(), false); \
     for (Index i = 0; i < ret.size(); i ++) ret[i] = vec[i] OP v; \
     return ret;\
 } \
