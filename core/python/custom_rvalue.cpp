@@ -18,21 +18,10 @@
 #include "pos.h"
 #include "vector.h"
 #include "matrix.h"
+#include "numpy.hpp"
 
 // cp ../gimli/core/python/custom_rvalue.cpp core/python/generated/custom_rvalue.cpp && make pg
-static int __numpy_initialized = 0;
 
-// this fails for win since py39
-// const static int __numpy_initialized = initNumpy();
-
-int initNumpy(){
-    // Needed or py* checks will segfault
-    if (__numpy_initialized == 0){
-        import_array2("Cannot import numpy.core.multiarray c-api for rvalue converters.", 0);
-        __numpy_initialized = 1;
-    }
-    return 0;
-}
 
 
 namespace bp = boost::python;
@@ -297,6 +286,7 @@ struct PySequence2RVector{
         void* memory_chunk = the_storage->storage.bytes;
 
         bp::object py_sequence(bp::handle<>(bp::borrowed(obj)));
+        
         GIMLI::Vector< double > * vec = new (memory_chunk) GIMLI::Vector< double >(len(py_sequence));
         data->convertible = memory_chunk;
 
@@ -431,22 +421,44 @@ struct PySequence2IndexArray{
     }
 
     /*! Convert obj into IndexArray */
-    static void construct(PyObject* obj, bp::converter::rvalue_from_python_stage1_data * data){
-        __DC(obj, "\t constructing IndexArray")
+    static void construct(PyObject * obj, 
+                          bp::converter::rvalue_from_python_stage1_data * data){
+
         bp::object py_sequence(bp::handle<>(bp::borrowed(obj)));
 
         typedef bp::converter::rvalue_from_python_storage< GIMLI::IndexArray > storage_t;
 
-        storage_t* the_storage = reinterpret_cast<storage_t*>(data);
-        void* memory_chunk = the_storage->storage.bytes;
+        storage_t * the_storage = reinterpret_cast<storage_t*>(data);
+        void * memory_chunk = the_storage->storage.bytes;
 
         GIMLI::IndexArray * vec = new (memory_chunk) GIMLI::IndexArray(len(py_sequence));
         data->convertible = memory_chunk;
+
+        __DC(obj, "\t is array:", obj->ob_type->tp_name)
+        __DC(obj, "\t is array", PyObject_TypeCheck(obj, &PyGenericArrType_Type))
+
+        if (PyObject_TypeCheck(obj, &PyGenericArrType_Type)){
+            __DC(obj, "\t is array")
+            PyArrayObject *arr = (PyArrayObject *)obj;
+
+            __DC("\t", obj, "\t ndarray.ndim: ", PyArray_NDIM(arr))
+            __DC("\t", obj, "\t ndarray.dtype: ", PyArray_TYPE(arr))
+            __DC("\t", obj, "\t NPY_UINT64: ", NPY_UINT64)
+            __DC("\t", obj, "\t NPY_INT64: ", NPY_INT64)
+            __DC("\t", obj, "\t ndarray.onsegment: ", PyArray_ISONESEGMENT(arr))
+            
+        }
+
+        __DC(obj, "\t constructing IndexArray")
         __DC(obj, "\t from list")
         for (GIMLI::Index i = 0; i < vec->size(); i ++){
             (*vec)[i] = bp::extract< GIMLI::Index >(py_sequence[i]);
         }
     }
+    static void destruct(){
+        __DC("Destruct")
+    }
+
 private:
 };
 
@@ -779,9 +791,11 @@ void register_numpy_to_double_conversion(){
                                         bp::type_id< double >());
 }
 void register_pysequence_to_indexvector_conversion(){
-    bp::converter::registry::push_back(& r_values_impl::PySequence2IndexArray::convertible,
-                                        & r_values_impl::PySequence2IndexArray::construct,
-                                        bp::type_id< GIMLI::IndexArray >());
+    bp::converter::registry::push_back(
+        & r_values_impl::PySequence2IndexArray::convertible,
+        & r_values_impl::PySequence2IndexArray::construct,
+        bp::type_id< GIMLI::IndexArray >()
+    );
 }
 
 void register_pysequence_to_ivector_conversion(){
@@ -823,6 +837,6 @@ void register_pytuple_to_rvector3_conversion(){
 }
 void register_numpy_to_rmatrix_conversion(){
     bp::converter::registry::push_back(& r_values_impl::Numpy2RMatrix::convertible,
-                                        & r_values_impl::Numpy2RMatrix::construct,
-                                        bp::type_id< GIMLI::Matrix< double > >());
+               & r_values_impl::Numpy2RMatrix::construct,
+                bp::type_id< GIMLI::Matrix< double > >());
 }

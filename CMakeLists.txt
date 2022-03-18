@@ -64,7 +64,7 @@ if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX)
     set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
     # run with -DCMAKE_BUILD_TYPE=Debug
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -p -O -ansi -pedantic -fno-omit-frame-pointer -Wall ${CMAKE_CXX_NO_WARNING}")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -pg -O2 -ansi -pedantic -fno-omit-frame-pointer -Wall ${CMAKE_CXX_NO_WARNING}")
     set(CMAKE_LDD_FLAGS_DEBUG "-ltcmalloc")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -ansi -pedantic -fno-omit-frame-pointer -Wall ${CMAKE_CXX_NO_WARNING}")
         

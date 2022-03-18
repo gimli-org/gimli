@@ -5,6 +5,8 @@
 import numpy as np
 import pygimli as pg
 
+from scipy.sparse import csr_matrix, coo_matrix, csc_matrix
+
 
 def toSparseMatrix(A):
     """Convert any matrix type to pg.SparseMatrix and return copy of it.
@@ -40,8 +42,6 @@ def toSparseMatrix(A):
         S.copy_(A)
         return S
 
-    from scipy.sparse import csr_matrix
-
     if isinstance(A, csr_matrix):
         #pg.core.setDeepDebug(1)
         if len(A.data) == 0:
@@ -53,7 +53,7 @@ def toSparseMatrix(A):
         #pg.core.setDeepDebug(0)
         return A
 
-    return toSparseMatrix(csr_matrix(A))
+    return toSparseMatrix(toCSR(A))
 
 
 def toSparseMapMatrix(A):
@@ -87,23 +87,16 @@ def toSparseMapMatrix(A):
         S.copy_(A)
         return A
 
-    from scipy.sparse import csr_matrix
     if isinstance(A, csr_matrix):
-        pg.warn('bad efficency csr->mapMatrix')
-
         return toSparseMapMatrix(pg.SparseMatrix(A.indptr, A.indices, A.data))
 
-    from scipy.sparse import csc_matrix
     if isinstance(A, csc_matrix):
-        pg.warn('bad efficency csc->mapMatrix')
-        return toSparseMapMatrix(csr_matrix(A))
+        return toSparseMapMatrix(A.tocsr())
 
-    from scipy.sparse import coo_matrix
     if isinstance(A, coo_matrix):
-        pg.warn('bad efficency coo->mapMatrix')
-        return toSparseMapMatrix(csr_matrix(A))
+        return pg.core.SparseMapMatrix(A.row, A.col, A.data)
 
-    return toSparseMapMatrix(csr_matrix(A))
+    return toSparseMapMatrix(toCOO(A))
 
 def toCSR(A):
     return sparseMatrix2csr(A)
@@ -130,7 +123,7 @@ def sparseMatrix2csr(A):
         Matrix to convert into.
     """
     #optImport(scipy.sparse, requiredFor="toCRS_matrix")
-    from scipy.sparse import csr_matrix
+
 
     if isinstance(A, pg.matrix.CSparseMapMatrix):
         return toCOO(A).tocsr()
@@ -142,70 +135,15 @@ def sparseMatrix2csr(A):
         #                    C.vecRowIdx(),
         #                    C.vecColPtr()))
     elif isinstance(A, pg.matrix.SparseMatrix):
-        pg.toc('0 reset', reset=True)
+        
+        return csr_matrix((A.vecVals().array(), 
+                           A.vecRowIdx().array(), 
+                           A.vecColPtr().array()), shape=A.shape)
 
-        data = A.vecVals().array()
-        rowIdx = A.vecRowIdx()
-        colPtr = A.vecColPtr()
-        pg.toc('1a convert', reset=True)
-        print(type(rowIdx))
-        print(type(colPtr))
-        ret = csr_matrix((data, rowIdx, colPtr), shape=A.shape)
-        pg.toc('2a init csr', reset=True)
-
-
-        rowIdx = pg.core.IndexArray(A.vecRowIdx()).array()
-        colPtr = pg.core.IndexArray(A.vecColPtr()).array()
-        pg.toc('1b convert', reset=True)
-        print(type(rowIdx))
-        print(type(colPtr))
-        ret = csr_matrix((data, rowIdx, colPtr), shape=A.shape)
-        pg.toc('2b init csr', reset=True)
-
-
-        rowIdx = np.array(A.vecRowIdx(), dtype=int)
-        colPtr = np.array(A.vecColPtr(), dtype=int)
-        pg.toc('1c convert', reset=True)
-        print(type(rowIdx))
-        print(type(colPtr))
-        ret = csr_matrix((data, rowIdx, colPtr), shape=A.shape)
-        pg.toc('2c init csr', reset=True)
-        return ret
-
-        rowIdx = np.array(A.vecRowIdx(), dtype=int)
-        colPtr = np.array(A.vecColPtr(), dtype=int)
-        pg.toc('1 convert', reset=True)
-
-        ret = csr_matrix((data, rowIdx, colPtr), shape=A.shape)
-        pg.toc('2 init csr', reset=True)
-
-        # rowIdx = np.array(A.vecRowIdx(), dtype=int)
-        # colPtr = np.array(A.vecColPtr(), dtype=int)
-
-
-        # vals = pg.Vector()
-        # rows = pg.core.IndexArray([0])
-        # cols = pg.core.IndexArray([0])
-
-        # pg.toc('3 convert map', reset=True)
-
-        # if isinstance(A, pg.matrix.SparseMatrix):
-        #     C = toSparseMapMatrix(A)
-        #     C.fillArrays(vals=vals, rows=rows, cols=cols)
-
-
-        # ret = csr_matrix((vals, (rows, cols)), shape=A.shape)
-        # pg.toc('4 init csr2', reset=True)
-
-
-
-        return csr_matrix((A.vecVals().array(),
-                           A.vecRowIdx(),
-                           A.vecColPtr()))
     elif isinstance(A, pg.matrix.CSparseMatrix):
-        csr = csr_matrix((A.vecVals().array(),
-                           A.vecRowIdx(),
-                           A.vecColPtr()), dtype=complex)
+        return csr_matrix((A.vecVals().array(),
+                           A.vecRowIdx().array(),
+                           A.vecColPtr().array()), shape=A.shape, dtype=complex)
         return csr
     elif isinstance(A, pg.matrix.BlockMatrix):
         M = A.sparseMapMatrix()
@@ -230,8 +168,7 @@ def sparseMatrix2csc(A):
         Matrix to convert into.
     """
     #optImport(scipy.sparse, requiredFor="toCRC_matrix")
-    from scipy.sparse import csc_matrix
-
+    
     if isinstance(A, pg.matrix.CSparseMapMatrix):
         return toCOO(A).tocsc()
     if isinstance(A, pg.matrix.SparseMapMatrix):
@@ -261,8 +198,7 @@ def sparseMatrix2coo(A, rowOffset=0, colOffset=0):
     mat: scipy.coo_matrix
         Matrix to convert into.
     """
-    from scipy.sparse import coo_matrix
-
+    
     vals = pg.Vector()
     rows = pg.core.IndexArray([0])
     cols = pg.core.IndexArray([0])
@@ -327,19 +263,22 @@ def sparseMatrix2Array(matrix, indices=True, getInCRS=True):
         the matrix in the defined format.
 
     """
-    mat = toSparseMatrix(matrix)
+    if getInCRS is True:
+        mat = toCSR(matrix)
+        rows = mat.indices
+        cols = mat.indptr
+        vals = mat.data
+    else:
+        mat = toCOO(matrix)
+        rows = mat.row
+        cols = mat.col
+        vals = mat.data
 
-    vals = np.array(mat.vecVals())
     if indices is True:
-        rows = list(mat.vecRowIdx())
-        cols = list(mat.vecColPtr())
-        if getInCRS:
-            return list(rows), list(cols), vals
-        else:
-            rr, cc = convertCRSIndex2Map(rows, cols)
-            return rr, cc, vals
+        return rows, cols, vals
     else:
         return vals
+
 
 def sparseMatrix2Dense(matrix):
     """Convert sparse matrix to dense ndarray"""

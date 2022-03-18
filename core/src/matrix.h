@@ -77,6 +77,9 @@ namespace GIMLI{
 
 #endif
 
+template < class ValueType >
+bool load(Matrix < ValueType > & A, const std::string & filename);
+    
 template < class ValueType > class DLLEXPORT Matrix3 {
 public:
     ValueType mat_[9];
@@ -409,20 +412,20 @@ template < class ValueType > class DLLEXPORT Matrix : public MatrixBase {
 public:
     /*! Constructs an empty matrix with the dimension rows x cols. Content of the matrix is zero. */
     Matrix()
-        : MatrixBase() {
+        : MatrixBase(), _cols(0) {
         resize(0, 0);
     }
     Matrix(Index rows)
-        : MatrixBase() {
+        : MatrixBase(), _cols(0) {
         resize(rows, 0);
     }
     // no default arg here .. pygimli@win64 linker bug
     Matrix(Index rows, Index cols)
-        : MatrixBase() {
+        : MatrixBase(), _cols(0) {
         resize(rows, cols);
     }
     Matrix(Index rows, Index cols, ValueType *src)
-        : MatrixBase() {
+        : MatrixBase(), _cols(0) {
         fromData(src, rows, cols);
     }
     // Matrix(const Vector< ValueType > & r)
@@ -436,8 +439,8 @@ public:
         : MatrixBase(){ copy_(mat); }
 
     /*! Constructor, read matrix from file see \ref load(Matrix < ValueType > & A, const std::string & filename). */
-    Matrix(const std::string & filename)
-        : MatrixBase() { load(*this, filename); }
+    Matrix(const std::string & fileName)
+        : MatrixBase() { this->load(fileName); }
 
     /*! Copyconstructor */
     Matrix(const Matrix < ValueType > & mat)
@@ -455,6 +458,12 @@ public:
 
     /*! Force the copy of the matrix entries. */
     inline void copy(const Matrix < ValueType > & mat){ copy_(mat); }
+
+    /*! Load content of file. */
+    inline bool load(const std::string & fileName){ 
+        return GIMLI::load(*this, fileName);
+    }
+
 
     /*! Return entity rtti value. */
     virtual uint rtti() const { return GIMLI_MATRIX_RTTI; }
@@ -561,9 +570,8 @@ public:
     }
 
     /*! Return number of colums. */
-    inline Index cols() const {
-        if (mat_.size() > 0) return mat_[0].size();
-        return 0;
+    inline Index cols() const { 
+        return this->_cols; 
     }
 
     /*! Set a value. Throws out of range exception if index check fails. */
@@ -736,24 +744,36 @@ public:
         for (Index i = 0; i < mat_.size(); i ++) mat_[i].round(tolerance);
         // ??? std::for_each(mat_.begin, mat_.end, boost::bind(&Vector< ValueType >::round, tolerance));
     }
-	std::vector < Vector< ValueType > > mat_;
 
     void dumpData(ValueType * target) const{
         //target.resize(this.rows(), this.cols());
+        
+        Index N = sizeof(ValueType) * this->cols();
+        // std::memcpy(&target[0], &mat_[0][0], N*mat_.size());
+
         for (Index i = 0; i < mat_.size(); i ++) {
-            std::memcpy(&target[i*this->cols()], &mat_[i][0], sizeof(ValueType) * this->cols());
+            std::memcpy(&target[i*this->cols()], &mat_[i][0], N);
         }
     }
     void fromData(ValueType * src, Index m, Index n){
         this->resize(m, n);
+        Index N = sizeof(ValueType) * n;
         for (Index i = 0; i < m; i ++) {
-            std::memcpy(&mat_[i][0], &src[i*n], sizeof(ValueType) * n);
+            std::memcpy(&mat_[i][0], &src[i*n], N);
         }
     }
+
+	std::vector < Vector< ValueType > > mat_;
+
 protected:
+    
+
+    Index _cols;
 
     void allocate_(Index rows, Index cols){
 //         __MS(rows << " " << cols)
+        this->_cols = cols;
+
         if (mat_.size() != rows) mat_.resize(rows);
         for (Index i = 0; i < mat_.size(); i ++) {
 //             __MS(this << " " << &mat_[i] << " "<< cols)
@@ -767,7 +787,6 @@ protected:
         allocate_(mat.rows(), mat.cols());
         for (Index i = 0; i < mat_.size(); i ++) mat_[i] = mat[i];
     }
-
 
     /*! BVector flag(rows) for free use, e.g., check if rows are set valid. */
     BVector rowFlag_;

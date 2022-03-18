@@ -254,7 +254,7 @@ def toc(msg=None, box=False, reset=False, key=0):
     m, s = divmod(seconds, 60)
     h, m = divmod(m, 60)
     if h <= 0 and m <= 0:
-        time = "%.2f" % s
+        time = pf(s)
     elif h <= 0:
         if m == 1.0:
             time = "%d minute and %.2f" % (m, s)

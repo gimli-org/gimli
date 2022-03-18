@@ -77,8 +77,7 @@ public:
 
     #undef DEFINE_INTEGRATOR
 
-    // To avoid ambiguity between Pos|RVector and PosVector|Matrix we define a slightly different 
-    // interface with differnt keyword names and python have to be decide what is called
+    // To avoid ambiguity between Pos|RVector and PosVector|Matrix we define a slightly different interface with differnt keyword names and python have to be decide what is called
     #define DEFINE_INTEGRATOR(A_TYPE) \
         /*! Integrate into bilinear form R = \int_mesh this * f * R \d mesh an\
         R = RSparseMapMatrix(dof, dof) and \
@@ -108,10 +107,11 @@ public:
     DEFINE_ASSEMBLER(std::vector< RMatrix >)// const matrix for each cell
     #undef DEFINE_ASSEMBLER
 
+    // To avoid ambiguity between Pos|RVector and PosVector|Matrix we define a slightly different interface with differnt keyword names and python have to be decide what is called
     #define DEFINE_ASSEMBLER(A_TYPE) \
         /*! Assemble linear form with non continuous properties. */ \
-        void assemble(const A_TYPE & v, RVector & R, bool neg=false) const; \
         /*! Assemble bilinear form with non continuous properties. */ \
+        void assemble(const A_TYPE & v, RVector & R, bool neg=false) const; \
         void assemble(const A_TYPE & v, SparseMatrixBase & A, bool neg=false) const; \
 
     DEFINE_ASSEMBLER(Pos)  // const Pos for all cells

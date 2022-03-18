@@ -243,7 +243,7 @@ void register_tuple(){
     converter::registry::push_back( &from_py_sequence<TTuple>::convertible
                                     , &from_py_sequence<TTuple>::construct
                                     , type_id<TTuple>() );
-};
+}
 
 } } //boost::python
 

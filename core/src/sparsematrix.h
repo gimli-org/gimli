@@ -127,6 +127,7 @@ public:
 
     #define DEFINE_SPARSEMATRIX_UNARY_MOD_OPERATOR__(OP, FUNCT) \
         void FUNCT(int i, int j, ValueType val){ \
+            ASSERT_NON_EMPTY(colPtr_) \
             if ((stype_ < 0 && i > j) || (stype_ > 0 && i < j)) return; \
             if (abs(val) > TOLERANCE || 1){ \
                 for (int k = colPtr_[i]; k < colPtr_[i + 1]; k ++){ \
@@ -262,16 +263,17 @@ public:
         if (neg == true) b *= -1.0;
         A.integrate();
 
-         for (Index i = 0, imax = A.rows(); i < imax; i++){
+        for (Index i = 0, imax = A.rows(); i < imax; i++){
             for (Index j = 0, jmax = A.cols(); j < jmax; j++){
                     this->addVal(A.rowIDs()[i], A.colIDs()[j], b * A.getVal(i, j));
             }
         }
     }
 
+    /*! Set all values to zero but keep sparsity pattern.*/
+    void clean(){ this->vals_*=ValueType(0); }
 
-    void clean(){ for (Index i = 0, imax = nVals(); i < imax; i++) vals_[i] = (ValueType)(0); }
-
+    /*! Clear the whole matrix and remvoe values and sparsity pattern.*/
     void clear(){
         colPtr_.clear();
         rowIdx_.clear();

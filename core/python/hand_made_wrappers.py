@@ -47,17 +47,10 @@ WRAPPER_REGISTRATION_RVector3 = [
 WRAPPER_DEFINITION_RVector =\
     """
 #include <numpy/arrayobject.h>
+#include "numpy.hpp"
 
 PyObject * RVector_getArray(GIMLI::RVector & vec){
-    import_array2("Cannot import numpy c-api from pygimli hand_make_wrapper", NULL);
-    npy_intp length = (ssize_t)vec.size();
-    PyObject * ret = PyArray_SimpleNewFromData(1, &length,
-                                               NPY_DOUBLE, (void *)(&vec[0]));
-
-    //std::memcpy(PyArray_DATA(reinterpret_cast<PyArrayObject*>(ret)),
-    //            (void *)(&vec[0]), length * sizeof(double));
-
-    return ret;
+    return GIMLI::toNumpyArray(vec);
 }
 
 """
@@ -69,16 +62,10 @@ WRAPPER_REGISTRATION_RVector = [
 WRAPPER_DEFINITION_CVector =\
     """
 #include <numpy/arrayobject.h>
+#include "numpy.hpp"
 
 PyObject * CVector_getArray(GIMLI::CVector & vec){
-    import_array2("Cannot import numpy c-api from pygimli hand_make_wrapper", NULL);
-    npy_intp length = (ssize_t)vec.size();
-
-    PyObject * ret = PyArray_SimpleNew(1, &length, NPY_COMPLEX128);
-    std::memcpy(PyArray_DATA(reinterpret_cast<PyArrayObject*>(ret)),
-                (void *)(&vec[0]), length * sizeof(GIMLI::Complex));
-
-    return ret;
+    return GIMLI::toNumpyArray(vec);
 }
 
 """
@@ -91,21 +78,10 @@ WRAPPER_REGISTRATION_CVector = [
 WRAPPER_DEFINITION_BVector =\
     """
 #include <numpy/arrayobject.h>
+#include "numpy.hpp"
 
 PyObject * BVector_getArray(GIMLI::BVector & vec){
-    import_array2("Cannot import numpy c-api from pygimli hand_make_wrapper", NULL);
-    npy_intp length = (ssize_t)vec.size();
-
-    PyObject * ret = PyArray_SimpleNew(1, &length, NPY_BOOL);
-    std::memcpy(PyArray_DATA(reinterpret_cast<PyArrayObject*>(ret)),
-                (void *)(&vec[0]), length * sizeof(bool));
-
-    return ret;
-
-    //PyObject * ret = PyArray_SimpleNew(1, &length, NPY_BOOL);
-    //char * cout = (char *)PyArray_DATA(reinterpret_cast<PyArrayObject*>(ret));
-    //for (ssize_t i=0; i<length; i++)  { cout[i] = vec[i]; }
-    //return ret;
+    return GIMLI::toNumpyArray(vec);
 }
 
 """
@@ -118,18 +94,10 @@ WRAPPER_REGISTRATION_BVector = [
 WRAPPER_DEFINITION_IndexArray =\
     """
 #include <numpy/arrayobject.h>
+#include <numpy.hpp>
 
 PyObject * IndexArray_getArray(GIMLI::IndexArray & vec){
-    import_array2("Cannot import numpy c-api from pygimli hand_make_wrapper", NULL);
-    npy_intp length = (ssize_t)vec.size();
-    PyObject * ret = PyArray_SimpleNewFromData(1, &length,
-                                               NPY_UINT64, (void *)(&vec[0]));
-
-    //PyObject * ret = PyArray_SimpleNew(1, &length, NPY_LONG);
-    //std::memcpy(PyArray_DATA(reinterpret_cast<PyArrayObject*>(ret)),
-    //            (void *)(&vec[0]), length * sizeof(GIMLI::Index));
-
-    return ret;
+    return GIMLI::toNumpyArray(vec);
 }
 
 """
@@ -141,18 +109,10 @@ WRAPPER_REGISTRATION_StdVecI = [
 WRAPPER_DEFINITION_StdVecI =\
     """
 #include <numpy/arrayobject.h>
+#include <numpy.hpp>
 
 PyObject * StdVecI_getArray(std::vector < int >  & vec){
-    import_array2("Cannot import numpy c-api from pygimli hand_make_wrapper", NULL);
-    npy_intp length = (ssize_t)vec.size();
-
-    PyObject * ret = PyArray_SimpleNewFromData(1, &length,
-                                               NPY_INT32, (void *)(&vec[0]));
-    // __MS("implementme")
-    //std::memcpy(PyArray_DATA(reinterpret_cast<PyArrayObject*>(ret)),
-    //            (void *)(&vec[0]), length * sizeof(GIMLI::Index));
-
-    return ret;
+    return GIMLI::toNumpyArray(vec);
 }
 
 """
@@ -257,16 +217,24 @@ def apply(mb):
         apply_reg(rt, WRAPPER_REGISTRATION_BVector)
 
         pg._g("Register 'IndexArray' handmade wrapper")
-        #rt = mb.class_('Vector<unsigned long>') # working for linux
-        rt = mb.class_('Vector<unsigned long long>') # test for mingw
-        #rt = mb.class_('Vector<size_t>')
-        rt.add_declaration_code(WRAPPER_DEFINITION_IndexArray)
-        apply_reg(rt, WRAPPER_REGISTRATION_IndexArray)
+        rt = None
+        try:
+            rt = mb.class_('Vector<unsigned long>') # working for linux
+            rt.add_declaration_code(WRAPPER_DEFINITION_IndexArray)
+            apply_reg(rt, WRAPPER_REGISTRATION_IndexArray)
+        except:
+            rt = mb.class_('Vector<unsigned long long>') # working for mingw
+            rt.add_declaration_code(WRAPPER_DEFINITION_IndexArray)
+            apply_reg(rt, WRAPPER_REGISTRATION_IndexArray)
+
 
         pg._g("Register 'StdVecI' handmade wrapper")
         rt = mb.class_('vector<int, std::allocator<int> >')
         rt.add_declaration_code(WRAPPER_DEFINITION_StdVecI)
         apply_reg(rt, WRAPPER_REGISTRATION_StdVecI)
+        
+
+
     except BaseException as e:
         pg.warn('Skipping', e)
 

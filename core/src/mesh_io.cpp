@@ -557,6 +557,7 @@ void Mesh::loadBinaryV2(const std::string & fbody) {
     if (version == 3){
         uint8 *dummy = new uint8[128]; readFromFile(file, dummy[0], 128);
         this->setGeometry(bool(dummy[0]));
+        delete [] dummy;
     } else if (version != 2){
         throwError(WHERE_AM_I + " wrong version " + str(version));
     }
@@ -630,6 +631,7 @@ void Mesh::loadBinaryV2(const std::string & fbody) {
         delete [] boundMarker;
         delete [] leftCells;
         delete [] rightCells;
+        
     }
 
     size_t nData; readFromFile(file, nData);

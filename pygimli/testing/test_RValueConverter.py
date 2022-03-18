@@ -301,8 +301,16 @@ class TestConversionMethods(unittest.TestCase):
 
         self.__test_array_conversion(v, 'uint64', perf=False)
 
+
     def test_StdVecIToNumpy(self):
         """Implemented through hand_made_wrapper.py"""
+        A = pg.matrix.SparseMapMatrix(range(10), range(10), np.ones(10))
+        A = pg.utils.toSparseMatrix(A)
+
+        np.testing.assert_allclose(A.vecRowIdx().array(), range(10))
+        np.testing.assert_allclose(np.asarray(A.vecRowIdx()), range(10))
+        np.testing.assert_allclose(np.array(A.vecRowIdx()), range(10))
+        
         v = pg.core.stdVectorI()
         for v_ in [2]*1000000:
             v.append(v_)
@@ -311,6 +319,7 @@ class TestConversionMethods(unittest.TestCase):
 
         self.__test_array_conversion(v, 'int32', perf=False)
 
+
     def test_RVector3ToNumpy(self):
         """Implemented through hand_made_wrapper.py"""
         v = pg.RVector3()
@@ -318,6 +327,7 @@ class TestConversionMethods(unittest.TestCase):
         a = np.array(v)
         self.assertEqual(type(a), np.ndarray)
         self.assertEqual(len(a), 3)
+
 
     def test_R3VectorToNumpy(self):
         """Implemented through hand_made_wrapper.py"""

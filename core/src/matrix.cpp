@@ -310,10 +310,15 @@ void matMult_RM(const RMatrix & A, const RMatrix & B,
     //             a, A2, m, B2, n, b, C2, n);
 
     // lda ## leading dimension for a, means column for CblasRowMajor
+    // Stopwatch sw;
     cblas_dgemm(CblasRowMajor, aTrans, bTrans,
                 m, n, k,
                 a, &_wsA[0], k, &_wsB[0], bRows,
                 b, &_wsC[0], n);
+
+    // if (debug()){
+    //     print("dgemm:", sw.duration());
+    // }
 
     C.fromData(&_wsC[0], m, n);
 
@@ -351,6 +356,8 @@ void matMult_RM(const RMatrix & A, const RMatrix & B,
 
 void matTransMult(const SmallMatrix & A, const SmallMatrix & B,
                   SmallMatrix & C, double a, double b){
+//** C = a * A.T*B + b*C || C = a * A.T*B.T + b*C
+
 #if USE_EIGEN3
     if (A.rows() == B.rows()){
 
@@ -401,7 +408,7 @@ void matTransMult_RM(const RMatrix & A, const RMatrix & B,
     //** **MEH C = (a * A.T*B).T + b*C if C has the right dimension **  MEH
     // c-transpose check only for b != 0.0, else c is resized
 
-    bool retTrans = false;
+    // bool retTrans = false;
 
     // A(k, m).T * B(k, n) = C(m, n)
 
@@ -427,7 +434,7 @@ void matTransMult_RM(const RMatrix & A, const RMatrix & B,
                 // __MS("ret transmult")
                 return matTransMult_RM(B, A, C, a, b);
 
-                retTrans = true;
+                // retTrans = true;
             } else {
                 //** resize target array
                 C.resize(m, n);
@@ -479,9 +486,13 @@ void matTransMult_RM(const RMatrix & A, const RMatrix & B,
     // std::cout << "C1" << std::endl;
     // for (Index i = 0; i < m*n; i ++ ){std::cout << C2[i] << " ";} std::cout << std::endl;
 
+    // Stopwatch sw;
     cblas_dgemm(CblasRowMajor, aTrans, bTrans, m, n, k,
                 a, &_wsA[0], m, &_wsB[0], bRows,
                 b, &_wsC[0], n);
+    // if (debug()){
+    //     print("dgemm:", sw.duration());
+    // }
 
     // std::cout << "C2" << std::endl;
     // for (Index i = 0; i < m*n; i ++ ){std::cout << C2[i] << " ";} std::cout << std::endl;

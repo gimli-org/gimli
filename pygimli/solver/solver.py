@@ -1141,7 +1141,7 @@ class LinSolver(object):
 
     def factorize_SciPy(self, mat):
         """"""
-        self._m = pg.utils.sparseMatrix2csc(mat)
+        self._m = pg.utils.toCSC(mat)
 
         scipy = pg.optImport('scipy', 'Used for sparse linear solver.')
 
@@ -1239,7 +1239,7 @@ def linSolve(mat, b, solver=None, verbose=False, **kwargs):
 
     elif solver == 'scipy':
         # pg._r(swatch.duration(restart=True))
-        _m = pg.utils.sparseMatrix2csr(mat)
+        _m = pg.utils.toCSR(mat)
         # pg._r('convert', swatch.duration(restart=True))
 
         scipy = pg.optImport('scipy', 'Used for sparse linear solver.')

@@ -334,7 +334,7 @@ ElementMatrix < double > & ElementMatrix < double >::dudi(
     double dsdi = ent.shape().drstdxyz(1, dim);
     double dtdi = ent.shape().drstdxyz(2, dim);
 
-    double A = ent.shape().domainSize();
+    // double A = ent.shape().domainSize();
 
     for (Index i = 0; i < nVerts; i ++){
         switch (ent.dim()){
@@ -1548,7 +1548,7 @@ ElementMatrix < double > & ElementMatrix < double >::pot(
     this->_x = &IntegrationRules::instance().abscissa(ent.shape(), this->_order);
 
     const PosVector &x = *this->_x;
-    const RVector &w = *this->_w;
+    // const RVector &w = *this->_w;
 
     Index nRules(_x->size());
     Index nVerts(_ent->nodeCount());
@@ -1637,7 +1637,7 @@ ElementMatrix < double > & ElementMatrix < double >::grad(
     this->_x = &IntegrationRules::instance().abscissa(ent.shape(), this->_order);
 
     const PosVector &x = *this->_x;
-    const RVector &w = *this->_w;
+    // const RVector &w = *this->_w;
 
     Index nRules(_x->size());
     Index nVerts(_ent->nodeCount());
@@ -2104,7 +2104,7 @@ void dot(const ElementMatrix < double > & A,
          const ElementMatrix < double > & B,
          const RMatrix & c,
          ElementMatrix < double > & C){
-
+// __M
     _prepDot(A, B, C);
 
     if (c.rows() != A.cols() || c.cols() != B.cols()){
@@ -2121,18 +2121,20 @@ void dot(const ElementMatrix < double > & A,
 
     SmallMatrix AtC;
 
-    double beta = 0.0;
-
     //** mat = sum A_i.T * C_i * B_i
     // log(Info, "A:(", A.rows(), ",", A.cols(), ")",
     //           "B:(", B.rows(), ",", B.cols(), ")");
 #if USE_EIGEN3
     SmallMatrix ce;
     toEigenMatrix(c, ce);
+#else 
+    const SmallMatrix &ce = c;
 #endif
 
+    // double beta = 0.0;
+
     for (Index i = 0; i < w.size(); i ++ ){
-        if (i > 0) beta = 1.0;
+        // if (i > 0) beta = 1.0;
 
         const SmallMatrix & Ai = A.matX()[i];
         const SmallMatrix & Bi = B.matX()[i];
@@ -2144,11 +2146,11 @@ void dot(const ElementMatrix < double > & A,
         // __MS ("Ai:(", Ai.rows(), ",", Ai.cols(), ")",
         //       "Bi:(", Bi.rows(), ",", Bi.cols(), ")");
 
-    #if USE_EIGEN3
+    // #if USE_EIGEN3
+    // #else
+    //     matTransMult(Ai, c, AtC, 1.0, 0.0);
+    // #endif
         matTransMult(Ai, ce, AtC, 1.0, 0.0);
-    #else
-        matTransMult(Ai, c, AtC, 1.0, 0.0);
-    #endif
         matMult(AtC, Bi, Ci, 1.0, 0.0);
 
         *C.pMat() += Ci * wS;
@@ -2247,7 +2249,7 @@ void mult(const ElementMatrix < double > & A, const Pos & f,
     C.copyFrom(A, false);
 
     const PosVector &x = *A.x();
-    const RVector &w = *A.w();
+    // const RVector &w = *A.w();
 
     Index nRules(x.size());
 
@@ -2339,7 +2341,7 @@ void mult(const ElementMatrix < double > & A, const RMatrix &  b,
     C.copyFrom(A, false);
 
     const PosVector &x = *A.x();
-    const RVector &w = *A.w();
+    // const RVector &w = *A.w();
 
     Index nRules(x.size());
 
@@ -2726,7 +2728,7 @@ void createForceVectorPerCell_(const Mesh & mesh, Index order, RVector & ret,
     }
     Index dof = mesh.nodeCount() * nCoeff;
     ret.resize(dof);
-    Index id = 0;
+
     ElementMatrix < double > u;
     for (auto &cell: mesh.cells()){
         u.pot(*cell, order, true, nCoeff, mesh.nodeCount(), dofOffset);
@@ -2750,7 +2752,7 @@ void createForceVectorMult_(const Mesh & mesh, Index order, RVector & ret,
     }
     Index dof = mesh.nodeCount() * nCoeff;
     ret.resize(dof);
-    Index id = 0;
+    
     ElementMatrix < double > u;
     ElementMatrix < double > ua;
 

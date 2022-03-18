@@ -268,6 +268,11 @@ public:
         for (Index i = 0; i < v.size(); i ++) data_[i] = v[i];
         //std::copy(&v[0], &v[v.size()], data_);
     }
+    /*! Create Vector from borrowed data. */
+    Vector(Index n, ValueType * data)
+        : size_(0), data_(0), capacity_(0){
+        
+    }
 
     template < class ValueType2 > Vector(const Vector< ValueType2 > & v)
         : size_(0), data_(0), capacity_(0){

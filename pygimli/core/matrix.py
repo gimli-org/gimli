@@ -308,6 +308,7 @@ def __SparseMatrixEqual__(self, T):
 
     meanA = np.mean(abs(valsA))
     nAB = np.linalg.norm(valsA-valsB)
+
     if np.isnan(nAB):
         print(valsA)
         print(valsB)
@@ -323,7 +324,7 @@ def __SparseMatrixEqual__(self, T):
         print(f'nAB/meanA = {nAB/meanA}')
 
     if meanA > 1e-10:
-        return rowsA == rowsB and colsA == colsB and nAB/meanA < 1e-12
+        return np.all(rowsA == rowsB) and np.all(colsA == colsB) and nAB/meanA < 1e-12
     else:
         return nAB < 1e-12
 

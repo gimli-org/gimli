@@ -71,7 +71,9 @@ void integrateBLConstT_(const ElementMatrixMap & A,
                         const ElementMatrixMap & B,
                         const ValueType & f, SparseMatrixBase & R, bool neg){
 
-    // __MS(A.size())
+    // __MS(f)
+    // __MS(typeid(f).name())
+
     if (A.size() == 1 && A.mats()[0].order() == 0){
         //const_space * B
         Index row = A.mats()[0].dofOffset();

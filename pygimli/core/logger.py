@@ -275,7 +275,7 @@ def info(*args):
 
 
 def warn(*args):
-    logger.warning(_msg(*args))
+    logger.warning(f'{whereAmI(nr=2)} - {_msg(*args)}')
 
 
 def error(*args):
