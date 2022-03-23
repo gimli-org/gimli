@@ -302,7 +302,7 @@ Mesh.createMeshWithSecondaryNodes = __createMeshWithSecondaryNodes__
 
 
 __Mesh_deform__ = Mesh.deform
-def __deform__(self, u, mag=1.0):
+def __deform__(self, u, magnify=1.0):
     v = None
     dof = self.nodeCount()
     if hasattr(u, 'values'):
@@ -329,7 +329,7 @@ def __deform__(self, u, mag=1.0):
     elif len(u) == self.nodeCount() and u.ndim == 2:
         v = u.reshape(self.nodeCount() * u.shape[1], order='F')
 
-    return __Mesh_deform__(self, v, mag)
+    return __Mesh_deform__(self, v, magnify)
 
 Mesh.deform = __deform__
 
