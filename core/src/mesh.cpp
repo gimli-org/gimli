@@ -2582,6 +2582,7 @@ RegionMarker * Mesh::regionMarker(SIndex marker){
 }
 
 Index Mesh::hash() const {
+
     return GIMLI::hash(this->positions(true),
                        this->cellMarkers(),
                        this->boundaryMarkers(),

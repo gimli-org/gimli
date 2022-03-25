@@ -17,6 +17,7 @@ try:
     import pygimli as pg
     from .showmatrix import showMatrix
     from .mpl import drawMesh, drawModel, drawField, drawSensors, drawStreams
+    from .mpl import drawSelectedMeshBoundaries
     from .mpl import addCoverageAlpha
     from .mpl import updateAxes
     from .mpl import createColorBar, updateColorBar
@@ -139,6 +140,11 @@ def show(obj=None, data=None, **kwargs):
             return showMesh3D(mesh, data, **kwargs)
         else:
             pg.error("ERROR: Mesh not valid.", mesh)
+
+    if isinstance(obj, pg.core.Boundary):
+        ax = kwargs.pop('ax', None)
+        drawSelectedMeshBoundaries(ax, [obj], **kwargs)
+        return ax, None
 
     pg.error("Can't interprete obj: {0} to show.".format(obj))
     return None, None
@@ -408,7 +414,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
         if gci is not None and hasattr(gci, 'set_antialiased'):
             gci.set_antialiased(True)
             gci.set_linewidth(0.3)
-            gci.set_edgecolor("0.1")
+            gci.set_edgecolor(kwargs.pop('color', "0.1"))
         else:
             pg.viewer.mpl.drawSelectedMeshBoundaries(
                 ax, mesh.boundaries(),
