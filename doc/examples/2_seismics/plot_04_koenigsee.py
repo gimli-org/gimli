@@ -38,10 +38,12 @@ pg.physics.traveltime.drawFirstPicks(ax, data)
 
 ################################################################################
 # We initialize the refraction manager.
+
 mgr = TravelTimeManager()
 
 # Alternatively, one can plot a matrix plot of apparent velocities which is the
 # more general function also making sense for crosshole data.
+
 ax, cbar = mgr.showData(data)
 
 ################################################################################
@@ -52,13 +54,21 @@ mgr.invert(data, secNodes=3, paraMaxCellSize=5.0,
            zWeight=0.2, vTop=500, vBottom=5000,
            verbose=1)
 
-ax, cbar = mgr.showResult(logScale=True)
-mgr.drawRayPaths(ax=ax, color="w", lw=0.3, alpha=0.5)
-
 ################################################################################
 # Show result and fit of measured data and model response. You may want to save your results too.
+
 fig = mgr.showResultAndFit()
 mgr.saveResult()
+
+################################################################################
+# You can plot only the model and customize with a bunch of keywords
+
+ax, cbar = mgr.showResult(logScale=False, cMin=500, cMax=3000, cMap="plasma_r",
+                          coverage=mgr.standardizedCoverage())
+mgr.drawRayPaths(ax=ax, color="k", lw=0.3, alpha=0.5)
+
+# mgr.coverage() yields the ray coverage in m and standardizedCoverage as 0/1
+
 ################################################################################
 # You can play around with the gradient starting model (`vTop` and `vBottom`
 # arguments) and the regularization strength `lam`. You can also customize the
