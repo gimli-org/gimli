@@ -3,6 +3,7 @@
 """Define special colorbar behavior."""
 
 
+from packaging import version
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
@@ -557,7 +558,6 @@ def addCoverageAlpha(patches, coverage, dropThreshold=0.4):
             ma = max(C)
         else:
             ma = hh[max(np.where(nnn < dropThreshold)[0])]
-
 #            mi = hh[min(np.where(nnn > 0.2)[0])]
 #            ma = hh[max(np.where(nnn < 0.7)[0])]
 
@@ -567,12 +567,15 @@ def addCoverageAlpha(patches, coverage, dropThreshold=0.4):
 
 #    else:
 #        print('taking the values directly')
+    if version.parse(mpl.__version__) >= version.parse("3.4"):
+        patches.set_alpha(C)
+        patches.set_snap(True)
+    else:
+        patches.set_facecolors(cols)
 
-    # add alpha value to the color values
-    cols[:, 3] = C
-
-    patches._facecolors = cols
-
+    # add alpha value to the color values (outdated and not working in mpl=3.5)
+    # cols[:, 3] = C
+    # patches._facecolors = cols
     # delete patch data to avoid automatically rewrite of _facecolors
     # patches._A = None
 
