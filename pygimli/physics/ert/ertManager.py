@@ -489,7 +489,7 @@ class ERTManager(MeshMethodManager):
 
     def standardizedCoverage(self, threshold=0.01):
         """Return standardized coverage vector (0|1) using thresholding."""
-        return 1.0*(abs(self.coverage()) > threshold)
+        return 1.0*(self.coverage() > threshold)
 
     def saveResult(self, folder=None, size=(16, 10), **kwargs):
         """Save all results in the specified folder.
