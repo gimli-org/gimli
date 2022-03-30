@@ -52,34 +52,79 @@ def toLamMu(E=None, G=None, nu=None, dim=2):
     
     Args
     ----
-    E: float [None]
+    E: float, dict(marker, val) [None]
         Young's Modulus
-    nu: float [None]
+    nu: float, dict(marker, val) [None]
         Poisson's ratio
+    G: float, dict(marker, val) [None]
+        Shear modulus
 
     Returns
     -------
     lam, mu
-        lam = 1. Lame' constant and 2. Lame' constant = G
+        lam is 1. Lame' constant and mu is 2. Lame' constant (shear modulus)
+        If one of the input args is a dictionary of marker and value, the returning values are are dictionary too.
     
     """
     lam = None
     mu = None
-    if E is not None and G is not None:
-        if G < 1/3 * E or G > 1/2 * E:
-            pg.error(f'G need to be between {E*1/3:e} and {E*0.5:e}')
-        
-        lam = G*(E-2*G) /(3*G-E)
-        mu = G
-    elif E is not None and nu is not None:
-        if nu == 0.5 or nu >= 1.0:
-            pg.critical('nu should be greater or smaller than 0.5 and < 1')
-        
-        lam = (E * nu) / ((1 + nu) * (1 - 2*nu))
-        mu  = E / (2*(1 + nu))
-        
-        if dim == 2:
-            lam = 2*mu*lam/(2*mu + lam)
+
+    markers = []
+
+    if isinstance(E, dict):
+        markers = list(E.keys())
+    if isinstance(G, dict):
+        markers += list(G.keys())
+    if isinstance(nu, dict):
+        markers += list(nu.keys())
+    
+    if len(markers) > 0:
+        markers = pg.utils.unique(markers)
+
+        lam = dict()
+        mu = dict()
+
+        for m in markers:
+
+            try:
+                _E = E[m]
+            except:
+                _E = E
+            
+            try:
+                _G = G[m]
+            except:
+                _G = G
+            
+            try:
+                _nu = nu[m]
+            except:
+                _nu = nu
+
+            _l, _m = toLamMu(E=_E, G=_G, nu=_nu, dim=dim)
+            lam[m] = _l
+            mu[m] = _m
+
+    else:
+
+        if E is not None and G is not None:
+            if G < 1/3 * E or G > 1/2 * E:
+                pg.error(f'G need to be between {E*1/3:e} and {E*0.5:e}')
+            
+            lam = G*(E-2*G) /(3*G-E)
+            mu = G
+        elif E is not None and nu is not None:
+            if nu == 0.5 or nu >= 1.0:
+                pg.critical('nu should be greater or smaller than 0.5 and < 1')
+            
+            lam = (E * nu) / ((1 + nu) * (1 - 2*nu))
+            mu  = E / (2*(1 + nu))
+            
+            if dim == 2:
+                lam = 2*mu*lam/(2*mu + lam)
+        else:
+            print(E, G, nu, dim)
+            pg.critical('implementme')
 
     return lam, mu
 
@@ -102,7 +147,7 @@ def createConstitutiveMatrix(lam=None, mu=None, E=None, nu=None, dim=2,
     lam: float [None]
         1. Lame' constant
     mu: float [None]
-        2. Lame' constant = G = Schubmodul
+        2. Lame' constant (shear modulus G)
     E: float [None]
         Young's Modulus
     nu: float [None]
