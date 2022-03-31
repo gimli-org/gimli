@@ -176,7 +176,11 @@ def createConstitutiveMatrix(lam=None, mu=None, E=None, nu=None, dim=2,
         else:
             pg.critical("Can't find mu and lam")
 
-    if dim == 2:
+
+    if dim == 1:
+        pg.critical('C for dim==1 not yet implemented')
+
+    elif dim == 2:
         #2d plane:
         ## for pure 2d plane stress
         C = ConstitutiveMatrix(np.zeros((3, 3)),

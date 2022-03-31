@@ -1014,12 +1014,20 @@ template < class ValueType >
 bool loadMatrixSingleBin(Matrix < ValueType > & A,
                           const std::string & filename){
 
+    std::ifstream testFile(filename, std::ios::binary);
+    const auto begin = testFile.tellg();
+    testFile.seekg (0, std::ios::end);
+    const auto end = testFile.tellg();
+    const auto fsize = (end-begin);
+    testFile.close();
+
     FILE *file; file = fopen(filename.c_str(), "r+b");
 
     if (!file) {
         throwError(WHERE_AM_I + " " +
                    filename + ": " + strerror(errno));
     }
+
     Index ret;
     uint32 rows = 0;
     ret = fread(&rows, sizeof(uint32), 1, file);
@@ -1027,6 +1035,13 @@ bool loadMatrixSingleBin(Matrix < ValueType > & A,
     uint32 cols = 0;
     ret = fread(&cols, sizeof(uint32), 1, file);
     if (ret == 0) throwError("fail reading file " + filename);
+
+    if (rows*cols*sizeof(ValueType) + 2*sizeof(uint32) != (uint32)fsize){
+        __MS("rows: ", rows, " cols: ", cols, " fsize: ", fsize)
+        __MS(" filesize needed: ", rows*cols*sizeof(ValueType)+2*sizeof(uint32))
+        
+        throwError(WHERE_AM_I + " " + filename + ": size invalid");
+    }
 
     A.resize(rows, cols);
     for (uint32 i = 0; i < rows; i ++){

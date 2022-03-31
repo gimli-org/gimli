@@ -405,7 +405,7 @@ def drawModel(ax, mesh, data=None, tri=False, rasterized=False,
 
 
 def drawSelectedMeshBoundaries(ax, boundaries, color=None, linewidth=1.0,
-                               linestyles="-"):
+                               linestyles="-", **kwargs):
     """Draw mesh boundaries into a given axes.
 
     Parameters
@@ -435,7 +435,9 @@ def drawSelectedMeshBoundaries(ax, boundaries, color=None, linewidth=1.0,
         lines.append(list(zip([bound.node(0).x(), bound.node(1).x()],
                               [bound.node(0).y(), bound.node(1).y()])))
 
-    lineCollection = mpl.collections.LineCollection(lines, antialiaseds=drawAA)
+    lineCollection = mpl.collections.LineCollection(lines, 
+                                                    antialiaseds=drawAA, 
+                                                    **kwargs)
 
     if color is None:
         viewdata = [b.marker() for b in boundaries]

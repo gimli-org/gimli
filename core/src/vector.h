@@ -828,6 +828,9 @@ DEFINE_UNARY_MOD_OPERATOR__(*, MULT)
         return *this;
     }
 
+    inline void assign(const Vector< ValueType > & v){
+        this->copy_(v);
+    }
     template < class ExprOP > inline void assign(const ExprOP & v){
         if (v.size()) {
             resize(v.size());

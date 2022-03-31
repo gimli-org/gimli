@@ -3,6 +3,7 @@
 """Define special colorbar behavior."""
 
 
+from packaging import version
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
@@ -318,7 +319,6 @@ def createColorBar(gci, orientation='horizontal', size=0.2, pad=None,
         except:
             pass
 
-
     return cbar
 
 
@@ -374,11 +374,21 @@ def createColorBarOnly(cMin=1, cMax=100, logScale=False, cMap=None, nLevs=5,
     #        cbar.ax.yaxis.set_label_position('left')
     if levels is not None:
         kwargs['levels'] = levels
+
     updateColorBar(cbar, cMin=cMin, cMax=cMax, nLevs=nLevs, label=label,
                    **kwargs)
 
     if aspect is not None:
         ax.set_aspect(aspect)
+
+    try:  # mpl 3.5
+        if kwargs.pop("orientation", None) == 'vertical':
+            cbar.ax.yaxis.set_major_formatter(ticker.ScalarFormatter())
+        else:
+            cbar.ax.xaxis.set_major_formatter(ticker.ScalarFormatter())
+    except:
+        pass
+
 
     if savefig is not None:
         saveFigure(fig, savefig)
@@ -544,13 +554,12 @@ def addCoverageAlpha(patches, coverage, dropThreshold=0.4):
         nnn = nn.cumsum(axis=0) / float(len(C))
 
         #        print("min-max nnn ", min(nnn), max(nnn))
-        mi = hh[min(np.where(nnn > 0.02)[0])]
+        mi = hh[np.min(np.where(nnn > 0.02)[0])]
 
-        if min(nnn) > dropThreshold:
-            ma = max(C)
+        if np.min(nnn) > dropThreshold:
+            ma = np.max(C)
         else:
-            ma = hh[max(np.where(nnn < dropThreshold)[0])]
-
+            ma = hh[np.max(np.where(nnn < dropThreshold)[0])]
 #            mi = hh[min(np.where(nnn > 0.2)[0])]
 #            ma = hh[max(np.where(nnn < 0.7)[0])]
 
@@ -561,14 +570,12 @@ def addCoverageAlpha(patches, coverage, dropThreshold=0.4):
 #    else:
 #        print('taking the values directly')
 
-    # add alpha value to the color values
-    pg._g(C)
-    cols[:, 3] = C
-
-    patches._facecolors = cols
-
-    # delete patch data to avoid automatically rewrite of _facecolors
-    # patches._A = None
+    if version.parse(mpl.__version__) >= version.parse("3.4"):
+        patches.set_alpha(C)
+        patches.set_snap(True)
+    else:
+        cols[:, 3] = C
+        patches.set_facecolors(cols)
 
     if hasattr(patches, 'ax'):
         updateAxes(patches.ax)
