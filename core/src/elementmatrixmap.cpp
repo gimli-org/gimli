@@ -66,13 +66,63 @@ void integrateLPerCellT_(const ElementMatrixMap * self,
     }
 }
 
+void fillSparsityPattern(RSparseMatrix & R, const ElementMatrixMap & A){
+
+    // maybe count dofs before
+    std::vector < std::set< Index > > idxMap(A.dof());
+    for (auto &m : A.mats()){
+        const IndexArray &a = m.rowIDs();
+        const IndexArray &b = m.colIDs();
+
+        for (Index i = 0; i < a.size(); i ++){
+            for (Index j = 0; j < b.size(); j ++){
+                idxMap[a[i]].insert(b[j]);
+            }
+        }
+    }
+
+}
+void fillSparsityPattern(RSparseMatrix & R, const ElementMatrixMap & A,
+                                           const ElementMatrixMap & B){
+    if (A.size() == 1 && A.mats()[0].order() == 0){
+        //const_space * B
+        THROW_TO_IMPL
+    }
+    if (B.size() == 1 && B.mats()[0].order() == 0){
+        //A * const_space
+        THROW_TO_IMPL
+    }
+    ASSERT_EQUAL_SIZE(A.mats(), B.mats())
+    Index i = 0;
+
+    // maybe count dofs before
+    std::vector < std::set< Index > > idxMap(max(A.dof(), B.dof()));
+
+    for (auto &m : A.mats()){
+        const IndexArray &a = m.rowIDs();
+        const IndexArray &b = B.mats()[i].rowIDs();
+
+        for (Index i = 0; i < a.size(); i ++){
+            for (Index j = 0; j < b.size(); j ++){
+                idxMap[a[i]].insert(b[j]);
+            }
+        }
+    }
+
+}
+
 template < class ValueType >
 void integrateBLConstT_(const ElementMatrixMap & A,
                         const ElementMatrixMap & B,
                         const ValueType & f, SparseMatrixBase & R, bool neg){
 
-    // __MS(f)
-    // __MS(typeid(f).name())
+    __MS(f)
+    __MS(typeid(f).name())
+    __MS(typeid(R).name())
+
+
+
+
 
     if (A.size() == 1 && A.mats()[0].order() == 0){
         //const_space * B
@@ -353,7 +403,7 @@ void assembleConstT_(const ElementMatrixMap * self, const double & f,
 
 
     ASSERT_NON_EMPTY(R)
-    
+
     Stopwatch s(true);
 
     // R.clean(); dont clean
@@ -517,6 +567,8 @@ RVector ElementMatrixMap::mult(const RVector & a, const RVector & b) const{
 
 void createUMap(const Mesh & mesh, Index order, ElementMatrixMap & ret,
                 Index nCoeff, Index dofOffset){
+
+
     // don't use cache here // check!
     if (mesh.nodeCount() == 0){
         // empty mesh. this map is for constant space and only contain 1 entry
@@ -525,9 +577,11 @@ void createUMap(const Mesh & mesh, Index order, ElementMatrixMap & ret,
         ret.pMat(0)->resize(1, 1, false);
         ret.pMat(0)->pMat()->setVal(0, 0, 1.);
         ret.pMat(0)->setIds(range(dofOffset, dofOffset+nCoeff), {0});
+        ret.setDof(dofOffset+nCoeff);
         return;
     }
 
+    ret.setDof(mesh.cellCount()*nCoeff + dofOffset);
     ret.resize(mesh.cellCount());
 
     for (auto &cell: mesh.cells()){
@@ -550,6 +604,7 @@ void createdUMap(const Mesh & mesh, Index order,
         // don't use cache here // check!
 
     ret.resize(mesh.cellCount());
+    ret.setDof(mesh.cellCount()*nCoeff + dofOffset);
 
     for (auto &cell: mesh.cells()){
         // grad(const MeshEntity & ent, Index order,
@@ -582,6 +637,7 @@ void createIdentityMap(const Mesh & mesh, Index order,
         ret.pMat(cell->id())->identity(*cell, order,
                                        nCoeff, mesh.nodeCount(), dofOffset);
     }
+    ret.setDof(mesh.cellCount()*nCoeff + dofOffset);
 }
 
 ElementMatrixMap createIdentityMap(const Mesh & mesh, Index order,
@@ -601,6 +657,8 @@ ATM. Only for gradients without Voigt or Kelvin notation.
         sym(m, *ret.pMat(i));
         i++;
     }
+    // set row ids() .. maybe rename to dofs
+    THROW_TO_IMPL
 }
 ElementMatrixMap sym(const ElementMatrixMap & A){
     ElementMatrixMap ret;

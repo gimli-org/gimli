@@ -116,10 +116,9 @@ public:
 
     DEFINE_ASSEMBLER(Pos)  // const Pos for all cells
     DEFINE_ASSEMBLER(std::vector< Pos >)  // const Pos for each cell
-    
+
     #undef DEFINE_ASSEMBLER
 
-    
     const std::vector< ElementMatrix < double > > & mats() const;
 
     ElementMatrix < double > * pMat(Index i){ return & mats_[i]; }
@@ -145,6 +144,9 @@ public:
 
     Index cols() const { return cols_; }
 
+    Index dof() const { return this->dof_; }
+    void setDof(Index d) { this->dof_ = d; }
+
 protected:
     std::vector< ElementMatrix < double > > mats_;
     mutable std::vector < PosVector > quadrPnts_; // cache Q for mats_
@@ -155,6 +157,7 @@ protected:
 
     Index rows_;
     Index cols_;
+    Index dof_;
 };
 
 
