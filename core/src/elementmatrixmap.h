@@ -126,6 +126,10 @@ public:
     const std::vector < PosVector > & quadraturePoints() const;
     PosVector entityCenters() const;
 
+    void fillSparsityPattern(RSparseMatrix & R);
+
+    void fillSparsityPattern(RSparseMatrix & R, const ElementMatrixMap & A);
+
     /*!Calculate copy of this + B, depending on requested dim. */
     void add(const ElementMatrixMap & B, ElementMatrixMap & ret, Index dim=1, double b=1.0) const;
 

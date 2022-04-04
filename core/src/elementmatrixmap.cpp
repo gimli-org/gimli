@@ -66,48 +66,47 @@ void integrateLPerCellT_(const ElementMatrixMap * self,
     }
 }
 
-void fillSparsityPattern(RSparseMatrix & R, const ElementMatrixMap & A){
+void ElementMatrixMap::fillSparsityPattern(RSparseMatrix & R){
 
     // maybe count dofs before
-    std::vector < std::set< Index > > idxMap(A.dof());
-    for (auto &m : A.mats()){
-        const IndexArray &a = m.rowIDs();
-        const IndexArray &b = m.colIDs();
+    // std::vector < std::set< Index > > idxMap(A.dof());
+    // for (auto &m : A.mats()){
+    //     const IndexArray &a = m.rowIDs();
+    //     const IndexArray &b = m.colIDs();
 
-        for (Index i = 0; i < a.size(); i ++){
-            for (Index j = 0; j < b.size(); j ++){
-                idxMap[a[i]].insert(b[j]);
-            }
-        }
-    }
-
+    //     for (Index i = 0; i < a.size(); i ++){
+    //         for (Index j = 0; j < b.size(); j ++){
+    //             idxMap[a[i]].insert(b[j]);
+    //         }
+    //     }
+    // }
 }
-void fillSparsityPattern(RSparseMatrix & R, const ElementMatrixMap & A,
-                                           const ElementMatrixMap & B){
-    if (A.size() == 1 && A.mats()[0].order() == 0){
-        //const_space * B
-        THROW_TO_IMPL
-    }
-    if (B.size() == 1 && B.mats()[0].order() == 0){
-        //A * const_space
-        THROW_TO_IMPL
-    }
-    ASSERT_EQUAL_SIZE(A.mats(), B.mats())
-    Index i = 0;
+void ElementMatrixMap::fillSparsityPattern(RSparseMatrix & R,
+                                           const ElementMatrixMap & A){
+    // if (A.size() == 1 && A.mats()[0].order() == 0){
+    //     //const_space * B
+    //     THROW_TO_IMPL
+    // }
+    // if (B.size() == 1 && B.mats()[0].order() == 0){
+    //     //A * const_space
+    //     THROW_TO_IMPL
+    // }
+    // ASSERT_EQUAL_SIZE(A.mats(), B.mats())
+    // Index i = 0;
 
-    // maybe count dofs before
-    std::vector < std::set< Index > > idxMap(max(A.dof(), B.dof()));
+    // // maybe count dofs before
+    // std::vector < std::set< Index > > idxMap(max(A.dof(), B.dof()));
 
-    for (auto &m : A.mats()){
-        const IndexArray &a = m.rowIDs();
-        const IndexArray &b = B.mats()[i].rowIDs();
+    // for (auto &m : A.mats()){
+    //     const IndexArray &a = m.rowIDs();
+    //     const IndexArray &b = B.mats()[i].rowIDs();
 
-        for (Index i = 0; i < a.size(); i ++){
-            for (Index j = 0; j < b.size(); j ++){
-                idxMap[a[i]].insert(b[j]);
-            }
-        }
-    }
+    //     for (Index i = 0; i < a.size(); i ++){
+    //         for (Index j = 0; j < b.size(); j ++){
+    //             idxMap[a[i]].insert(b[j]);
+    //         }
+    //     }
+    // }
 
 }
 
