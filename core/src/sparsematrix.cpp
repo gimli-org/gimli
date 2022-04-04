@@ -296,6 +296,67 @@ template <> void SparseMatrix< Complex >
     _T_fillStiffnessMatrix(this, mesh, a, rebuildPattern);
 }
 
+template <class ValueType > void
+_T_buildSparsityPattern_(SparseMatrix< ValueType > * self,
+                         const std::vector < std::set< Index > > & idxMap){
+
+    Index nVals = 0;
+    for (auto & r: idxMap){
+        nVals += r.size();
+    }
+
+    // for (std::vector < std::set< Index > >::iterator mIt = idxMap.begin();
+    //     mIt != idxMap.end(); mIt++){
+    //     //std::sort((*mIt).begin(), (*mIt).end());
+    //     nVals += (*mIt).size();
+    // }
+
+//         std::cout << "timwe: " << swatch.duration( true) << std::endl;
+//         exit(0);
+
+    std::vector < int > & colPtr = self->vecColPtr();
+    std::vector < int > & rowIdx = self->vecRowIdx();
+
+    colPtr.resize(idxMap.size() + 1);
+    rowIdx.resize(nVals);
+    self->vecVals().resize(nVals);
+    self->vecVals().clean();
+
+    colPtr[0] = 0;
+    Index k = 0;
+    Index row = 0;
+
+    for (auto & r: idxMap){
+        for (auto & c: r){
+            rowIdx[k] = c;
+            //vals_[k] = (ValueType)0.0;
+            k++;
+        }
+        row++;
+        colPtr[row] = k;
+    }
+    self->setValid(true);
+
+    if (colPtr.size() - 1 != self->rows() ||
+        (Index)max(rowIdx) + 1 != self->cols()){
+        __MS(colPtr.size() - 1, self->rows(), max(rowIdx) + 1, self->cols())
+        log(Error, "build Sparsity Pattern failed!");
+    }
+    // rows_ = colPtr_.size() - 1;
+    // cols_ = max(rowIdx_) + 1;
+    //** freeing idxMap is expensive
+
+}
+
+template <> void SparseMatrix< double >
+::buildSparsityPattern(const std::vector < std::set< Index > > & idxMap){
+    _T_buildSparsityPattern_(this, idxMap);
+}
+template <> void SparseMatrix< Complex >
+::buildSparsityPattern(const std::vector < std::set< Index > > & idxMap){
+    _T_buildSparsityPattern_(this, idxMap);
+}
+
 } // namespace GIMLI{
 
 

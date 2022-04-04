@@ -66,8 +66,10 @@ void integrateLPerCellT_(const ElementMatrixMap * self,
     }
 }
 
-void ElementMatrixMap::fillSparsityPattern(RSparseMatrix & R){
+void ElementMatrixMap::fillSparsityPattern(RSparseMatrix & R) const {
 
+    __M
+    __MS(this->dof())
     // maybe count dofs before
     // std::vector < std::set< Index > > idxMap(A.dof());
     // for (auto &m : A.mats()){
@@ -82,32 +84,41 @@ void ElementMatrixMap::fillSparsityPattern(RSparseMatrix & R){
     // }
 }
 void ElementMatrixMap::fillSparsityPattern(RSparseMatrix & R,
-                                           const ElementMatrixMap & A){
-    // if (A.size() == 1 && A.mats()[0].order() == 0){
-    //     //const_space * B
-    //     THROW_TO_IMPL
-    // }
-    // if (B.size() == 1 && B.mats()[0].order() == 0){
-    //     //A * const_space
-    //     THROW_TO_IMPL
-    // }
-    // ASSERT_EQUAL_SIZE(A.mats(), B.mats())
-    // Index i = 0;
+                                           const ElementMatrixMap & B) const {
 
-    // // maybe count dofs before
-    // std::vector < std::set< Index > > idxMap(max(A.dof(), B.dof()));
+    const ElementMatrixMap & A = *this;
 
-    // for (auto &m : A.mats()){
-    //     const IndexArray &a = m.rowIDs();
-    //     const IndexArray &b = B.mats()[i].rowIDs();
+    if (R.rows() == A.dof() && R.cols() == B.dof()){
+        // assume R have already valid pattern
+        return ;
+    }
+    R.resize(A.dof(), B.dof());
 
-    //     for (Index i = 0; i < a.size(); i ++){
-    //         for (Index j = 0; j < b.size(); j ++){
-    //             idxMap[a[i]].insert(b[j]);
-    //         }
-    //     }
-    // }
+    if (A.size() == 1 && A.mats()[0].order() == 0){
+        //const_space * B
+        THROW_TO_IMPL
+    }
+    if (B.size() == 1 && B.mats()[0].order() == 0){
+        //A * const_space
+        THROW_TO_IMPL
+    }
+    ASSERT_EQUAL_SIZE(A.mats(), B.mats())
+    Index i = 0;
 
+    std::vector < std::set< Index > > idxMap(A.dof());
+
+    for (auto &m : A.mats()){
+        const IndexArray &a = m.rowIDs();
+        const IndexArray &b = B.mats()[i].rowIDs();
+
+        for (Index i = 0; i < a.size(); i ++){
+            for (Index j = 0; j < b.size(); j ++){
+                idxMap[a[i]].insert(b[j]);
+            }
+        }
+    }
+
+    R.buildSparsityPattern(idxMap);
 }
 
 template < class ValueType >
@@ -119,7 +130,9 @@ void integrateBLConstT_(const ElementMatrixMap & A,
     __MS(typeid(f).name())
     __MS(typeid(R).name())
 
-
+    if (R.rtti() == GIMLI_SPARSE_CRS_MATRIX_RTTI){
+        A.fillSparsityPattern(*dynamic_cast< RSparseMatrix * >(&R), B);
+    }
 
 
 
@@ -580,7 +593,7 @@ void createUMap(const Mesh & mesh, Index order, ElementMatrixMap & ret,
         return;
     }
 
-    ret.setDof(mesh.cellCount()*nCoeff + dofOffset);
+    ret.setDof(mesh.nodeCount()*nCoeff + dofOffset);
     ret.resize(mesh.cellCount());
 
     for (auto &cell: mesh.cells()){
@@ -603,7 +616,7 @@ void createdUMap(const Mesh & mesh, Index order,
         // don't use cache here // check!
 
     ret.resize(mesh.cellCount());
-    ret.setDof(mesh.cellCount()*nCoeff + dofOffset);
+    ret.setDof(mesh.nodeCount() * nCoeff + dofOffset);
 
     for (auto &cell: mesh.cells()){
         // grad(const MeshEntity & ent, Index order,
@@ -636,7 +649,7 @@ void createIdentityMap(const Mesh & mesh, Index order,
         ret.pMat(cell->id())->identity(*cell, order,
                                        nCoeff, mesh.nodeCount(), dofOffset);
     }
-    ret.setDof(mesh.cellCount()*nCoeff + dofOffset);
+    ret.setDof(mesh.nodeCount()*nCoeff + dofOffset);
 }
 
 ElementMatrixMap createIdentityMap(const Mesh & mesh, Index order,

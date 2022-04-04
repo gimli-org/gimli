@@ -252,13 +252,16 @@ public:
     void add(const ElementMatrix< double > & A, bool neg=false){
         return add(A, ValueType(1.0), neg);
     }
-    virtual void add(const ElementMatrix< double > & A, const ValueType & scale, bool neg=false);
-    virtual void add(const ElementMatrix< double > & A, const Pos & scale, bool neg=false);
-    virtual void add(const ElementMatrix< double > & A, const Matrix < ValueType > & scale, bool neg=false);
+    virtual void add(const ElementMatrix< double > & A,
+                     const ValueType & scale, bool neg=false);
+    virtual void add(const ElementMatrix< double > & A,
+                     const Pos & scale, bool neg=false);
+    virtual void add(const ElementMatrix< double > & A,
+                     const Matrix < ValueType > & scale, bool neg=false);
 
     /*! Perftest .. maybe optimizer problem. */
     void addS(const ElementMatrix< double > & A, const ValueType & scale, bool neg=false){
-        
+
         ValueType b = scale;
         if (neg == true) b *= -1.0;
         A.integrate();
@@ -378,6 +381,8 @@ public:
         //** freeing idxMap is expensive
     }
 
+    void buildSparsityPattern(const std::vector < std::set< Index > > & idxMap);
+
     void fillStiffnessMatrix(const Mesh & mesh, const RVector & a, bool rebuildPattern=true);
     void fillStiffnessMatrix(const Mesh & mesh){
         RVector a(mesh.cellCount(), 1.0);
@@ -393,19 +398,25 @@ public:
     /*! symmetric type. 0 = nonsymmetric, -1 symmetric lower part, 1 symmetric upper part.*/
     inline int stype() const {return stype_;}
 
-    inline int * colPtr() { if (valid_) return &colPtr_[0]; else SPARSE_NOT_VALID;  return 0; }
-    inline const int & colPtr() const { if (valid_) return colPtr_[0]; else SPARSE_NOT_VALID; return colPtr_[0]; }
+    inline int * colPtr() { if (valid_) return &colPtr_[0]; else
+                                        SPARSE_NOT_VALID;  return 0; }
+    inline const int & colPtr() const { if (valid_) return colPtr_[0]; else
+                                       SPARSE_NOT_VALID; return colPtr_[0]; }
+    inline std::vector < int > & vecColPtr() { return colPtr_; }
     inline const std::vector < int > & vecColPtr() const { return colPtr_; }
 
-    inline int * rowIdx() { if (valid_) return &rowIdx_[0]; else SPARSE_NOT_VALID; return 0; }
-    inline const int & rowIdx() const { if (valid_) return rowIdx_[0]; else SPARSE_NOT_VALID; return rowIdx_[0]; }
+    inline int * rowIdx() { if (valid_) return &rowIdx_[0]; else
+                            SPARSE_NOT_VALID; return 0; }
+    inline const int & rowIdx() const { if (valid_) return rowIdx_[0]; else
+                                        SPARSE_NOT_VALID; return rowIdx_[0]; }
+    inline std::vector < int > & vecRowIdx() { return rowIdx_; }
     inline const std::vector < int > & vecRowIdx() const { return rowIdx_; }
 
-    inline void fillIndices(IndexArray & ids) const { 
+    inline void fillIndices(IndexArray & ids) const {
         ids.resize(rowIdx_.size());
         for (Index i = 0; i < ids.size(); i ++) {ids[i] = Index(rowIdx_[i]);}
     }
-    inline void fillIndptr(IndexArray & ptr) const { 
+    inline void fillIndptr(IndexArray & ptr) const {
         ptr.resize(colPtr_.size());
         for (Index i = 0; i < ptr.size(); i ++) {ptr[i] = Index(colPtr_[i]);}
     }
@@ -446,6 +457,13 @@ public:
     }
 
     bool valid() const { return valid_; }
+    void setValid(bool v) { valid_ = v; }
+
+    /*! Just set the matrix dimensions, not usefull until proper fill of pattern. Only use for internal use.*/
+    inline virtual void resize(Index rows, Index cols){
+        rows_ = rows;
+        cols_ = cols;
+    }
 
 protected:
 
@@ -550,6 +568,12 @@ template <> DLLEXPORT void SparseMatrix< double >::
 fillStiffnessMatrix(const Mesh & mesh, const RVector & a, bool rebuildPattern);
 template <> DLLEXPORT void SparseMatrix< Complex >::
 fillStiffnessMatrix(const Mesh & mesh, const RVector & a, bool rebuildPattern);
+
+template <> DLLEXPORT void SparseMatrix< double >::
+buildSparsityPattern(const std::vector < std::set< Index > > & idxMap);
+template <> DLLEXPORT void SparseMatrix< Complex >::
+buildSparsityPattern(const std::vector < std::set< Index > > & idxMap);
+
 
 } // namespace GIMLI
 #endif //GIMLI_SPARSEMATRIX__H
