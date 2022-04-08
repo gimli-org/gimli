@@ -239,8 +239,17 @@ public:
      */
     Vector(const Vector< ValueType > & v)
         : size_(0), data_(0), capacity_(0){
-        resize(v.size());
-        copy_(v);
+            
+        if (v._borrowedData){
+            __MS(v.size())
+            __MS(v._borrowedDataOffset)
+            size_ = v.size();
+            this->_borrowedData = v._borrowedData;
+            this->_borrowedDataOffset = v._borrowedDataOffset;
+            this->data_ = &v._borrowedData[v._borrowedDataOffset];
+        } else {
+            copy_(v);
+        }
     }
     /*!
      * Copy constructor. Create new vector as a deep copy of the slice v[start, end)
@@ -270,9 +279,10 @@ public:
         //std::copy(&v[0], &v[v.size()], data_);
     }
     /*! Create Vector from borrowed data. */
-    Vector(Index n, const std::shared_ptr<ValueType> & d, Index offset=0)
+    Vector(Index n, const std::shared_ptr< ValueType [] > & d, Index offset=0)
         : size_(n), data_(0), capacity_(0){
         this->_borrowedData = d;
+        this->_borrowedDataOffset = offset;
         data_ = &d.get()[offset];
     }
 
@@ -290,7 +300,6 @@ public:
     /*! Assignment operator. Creates a new vector as copy of v */
     Vector< ValueType > & operator = (const Vector< ValueType > & v) {
         if (this != &v) {
-            resize(v.size());
             copy_(v);
         }
         return *this;
@@ -797,6 +806,12 @@ DEFINE_UNARY_MOD_OPERATOR__(*, MULT)
 //         __MS(n << " " << capacity_ << " " << newCapacity)
 
         if (newCapacity != capacity_) {
+
+            if (this->_borrowedData){
+                log(Error, "Cannot resize Vector with borrowed data");
+                return;
+            }
+
             ValueType * buffer = new ValueType[newCapacity];
 
             std::memcpy(buffer, data_, sizeof(ValueType) * min(capacity_, newCapacity));
@@ -992,27 +1007,38 @@ DEFINE_UNARY_MOD_OPERATOR__(*, MULT)
         }
         return seed;
     }
+
+    // std::shared_ptr< ValueType [] > & borrowedData() const { 
+    //     return _borrowedData; }
+    
+    std::shared_ptr< ValueType [] > _borrowedData;
+    Index _borrowedDataOffset;
 protected:
 
     void free_(){
         size_ = 0;
         capacity_ = 0;
-        if (data_)  delete [] data_;
+        if (this->_borrowedData){
+            // delete [] this->_borrowedData;
+        } else {
+            if (data_)  delete [] data_;
+        }
         data_  = NULL;
     }
 
     void copy_(const Vector< ValueType > & v){
+        
         if (v.size()) {
             resize(v.size());
-            //"" check speed for memcpy here
-             //std::memcpy(data_, v.data_, sizeof(ValType)*v.size());
-             // memcpy is approx 0.3% faster but copy is extensively testet
-             // cleanest solution needs iterator rewriting:
-             // std::copy(v.begin(), v.end(), this->begin());
-             std::copy(&v[0], &v[v.size()], data_); // only works without bound check in subscription operator
+                //"" check speed for memcpy here
+                //std::memcpy(data_, v.data_, sizeof(ValType)*v.size());
+                // memcpy is approx 0.3% faster but copy is extensively testet
+                // cleanest solution needs iterator rewriting:
+                // std::copy(v.begin(), v.end(), this->begin());
+            std::copy(&v[0], &v[v.size()], data_); // only works without bound check in subscription operator
+    //         __MS(data_)
+    //         __MS(*this)
         }
-//         __MS(data_)
-//         __MS(*this)
     }
 
     template < class ExprOP > inline void assign_(const ExprOP & v) {
@@ -1025,8 +1051,8 @@ protected:
 
     Index size_;
     ValueType * data_;
-    std::shared_ptr< ValueType > _borrowedData;
     Index capacity_;
+    
 
     static const Index minSizePerThread = 10000;
     static const int maxThreads = 8;

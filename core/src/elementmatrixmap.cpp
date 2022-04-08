@@ -68,24 +68,39 @@ void integrateLPerCellT_(const ElementMatrixMap * self,
 
 void ElementMatrixMap::fillSparsityPattern(RSparseMatrix & R) const {
 
-    __M
-    __MS(this->dof())
-    // maybe count dofs before
-    // std::vector < std::set< Index > > idxMap(A.dof());
-    // for (auto &m : A.mats()){
-    //     const IndexArray &a = m.rowIDs();
-    //     const IndexArray &b = m.colIDs();
+    const ElementMatrixMap & A = *this;
+    Stopwatch sw(true);
+    if (R.rows() == A.dof() && R.cols() == A.dofB()){
+        // assume R have already valid pattern
+        return ;
+    }
+    
+    R.resize(A.dof(), A.dofB());
 
-    //     for (Index i = 0; i < a.size(); i ++){
-    //         for (Index j = 0; j < b.size(); j ++){
-    //             idxMap[a[i]].insert(b[j]);
-    //         }
-    //     }
-    // }
+    // maybe count dofs before
+    std::vector < std::set< Index > > idxMap(A.dof());
+    Index i = 0;
+    for (auto &m : A.mats()){
+        const IndexArray &a = m.rowIDs();
+        const IndexArray &b = m.colIDs();
+
+        for (Index k = 0; k < a.size(); k ++){
+            for (Index l = 0; l < b.size(); l ++){
+                idxMap[a[k]].insert(b[l]);
+            }
+        }
+        i++;
+    }
+    __MS(sw.duration(true))
+    R.buildSparsityPattern(idxMap);
+    __MS(sw.duration())
+    // __MS(R.values().size())
 }
+
 void ElementMatrixMap::fillSparsityPattern(RSparseMatrix & R,
                                            const ElementMatrixMap & B) const {
 
+    Stopwatch sw(true);
     const ElementMatrixMap & A = *this;
 
     if (R.rows() == A.dof() && R.cols() == B.dof()){
@@ -103,22 +118,26 @@ void ElementMatrixMap::fillSparsityPattern(RSparseMatrix & R,
         THROW_TO_IMPL
     }
     ASSERT_EQUAL_SIZE(A.mats(), B.mats())
-    Index i = 0;
 
     std::vector < std::set< Index > > idxMap(A.dof());
 
+    Index i = 0;
     for (auto &m : A.mats()){
         const IndexArray &a = m.rowIDs();
         const IndexArray &b = B.mats()[i].rowIDs();
-
-        for (Index i = 0; i < a.size(); i ++){
-            for (Index j = 0; j < b.size(); j ++){
-                idxMap[a[i]].insert(b[j]);
+        
+        for (Index k = 0; k < a.size(); k ++){
+            for (Index l = 0; l < b.size(); l ++){
+                idxMap[a[k]].insert(b[l]);
             }
         }
+        i++;
     }
 
+    __MS(sw.duration(true))
     R.buildSparsityPattern(idxMap);
+    __MS(sw.duration())
+//     __MS(R.values().size())
 }
 
 template < class ValueType >
@@ -126,15 +145,9 @@ void integrateBLConstT_(const ElementMatrixMap & A,
                         const ElementMatrixMap & B,
                         const ValueType & f, SparseMatrixBase & R, bool neg){
 
-    __MS(f)
-    __MS(typeid(f).name())
-    __MS(typeid(R).name())
-
-    if (R.rtti() == GIMLI_SPARSE_CRS_MATRIX_RTTI){
-        A.fillSparsityPattern(*dynamic_cast< RSparseMatrix * >(&R), B);
-    }
-
-
+    // __MS(f)
+    // __MS(typeid(f).name())
+    // __MS(typeid(R).name())
 
     if (A.size() == 1 && A.mats()[0].order() == 0){
         //const_space * B
@@ -263,9 +276,12 @@ DEFINE_INTEGRATE_ELEMENTMAP_L_PERCELL_IMPL(std::vector< std::vector< RMatrix > >
 
 
 #define DEFINE_INTEGRATE_ELEMENTMAP_BL_IMPL(A_TYPE) \
-void ElementMatrixMap::integrate(const ElementMatrixMap & R, const A_TYPE & f, \
-                                 SparseMatrixBase & A, bool neg) const {\
-    integrateBLConstT_(*this, R, f, A, neg); \
+void ElementMatrixMap::integrate(const ElementMatrixMap & B, const A_TYPE & f, \
+                                 SparseMatrixBase & R, bool neg) const {\
+    if (R.rtti() == GIMLI_SPARSE_CRS_MATRIX_RTTI){\
+        this->fillSparsityPattern(*dynamic_cast< RSparseMatrix * >(&R), B);\
+    }\
+    integrateBLConstT_(*this, B, f, R, neg); \
 }
 DEFINE_INTEGRATE_ELEMENTMAP_BL_IMPL(double)
 DEFINE_INTEGRATE_ELEMENTMAP_BL_IMPL(Pos)
@@ -274,9 +290,12 @@ DEFINE_INTEGRATE_ELEMENTMAP_BL_IMPL(RMatrix)
 
 
 #define DEFINE_INTEGRATE_ELEMENTMAP_BL_PERCELL_IMPL(A_TYPE) \
-void ElementMatrixMap::integrate(const ElementMatrixMap & R, const A_TYPE & f, \
-                                 SparseMatrixBase & A, bool neg) const {\
-    integrateBLPerCellT_(*this, R, f, A, neg); \
+void ElementMatrixMap::integrate(const ElementMatrixMap & B, const A_TYPE & f, \
+                                 SparseMatrixBase & R, bool neg) const {\
+    if (R.rtti() == GIMLI_SPARSE_CRS_MATRIX_RTTI){\
+        this->fillSparsityPattern(*dynamic_cast< RSparseMatrix * >(&R), B);\
+    }\
+    integrateBLPerCellT_(*this, B, f, R, neg); \
 }
 DEFINE_INTEGRATE_ELEMENTMAP_BL_PERCELL_IMPL(RVector)
 DEFINE_INTEGRATE_ELEMENTMAP_BL_PERCELL_IMPL(PosVector)
@@ -334,6 +353,7 @@ void ElementMatrixMap::dot(const ElementMatrixMap & B,
         //** this is: const Space * B
 
         ret.resize(B.size());
+        ret.setDof(1, B.dof());
         Index row = this->mats()[0].dofOffset();
         Index i = 0;
         Index nCoeff = this->mats()[0].nCoeff();
@@ -366,6 +386,7 @@ void ElementMatrixMap::dot(const ElementMatrixMap & B,
         //** this is: A * const Space
 
         ret.resize(this->size());
+        ret.setDof(this->dof(), 1);
         Index col = B.mats()[0].dofOffset();
         Index i = 0;
         Index nCoeff = B.mats()[0].nCoeff();
@@ -390,6 +411,8 @@ void ElementMatrixMap::dot(const ElementMatrixMap & B,
     // __MS(this->size(), B.size())
     ASSERT_EQUAL_SIZE((*this), B)
     ret.resize(B.size());
+    ret.setDof(this->dof(), B.dof());
+    
     Index i = 0;
     for (auto &m : this->mats()){
         GIMLI::dot(m, B.mats()[i], *ret.pMat(i));
@@ -413,11 +436,12 @@ template < >
 void assembleConstT_(const ElementMatrixMap * self, const double & f,
                      SparseMatrixBase & R, bool neg){
 
+    if (R.size() == 0) R.resize(self->dof(), 0);
 
     ASSERT_NON_EMPTY(R)
 
     Stopwatch s(true);
-
+ 
     // R.clean(); dont clean
     for (auto &m : self->mats()){
         R.add(m, f, neg);
@@ -474,6 +498,9 @@ void ElementMatrixMap::assemble(const A_TYPE & f, RVector & R, bool neg) const {
     assembleConstT_(this, f, R, neg); \
 } \
 void ElementMatrixMap::assemble(const A_TYPE & f, SparseMatrixBase & R, bool neg) const { \
+    if (R.rtti() == GIMLI_SPARSE_CRS_MATRIX_RTTI){\
+        this->fillSparsityPattern(*dynamic_cast< RSparseMatrix * >(&R));\
+    }\
     assembleConstT_(this, f, R, neg); \
 } \
 
@@ -487,6 +514,9 @@ void ElementMatrixMap::assemble(const A_TYPE & f, RVector & R, bool neg) const {
     assemblePerCellT_(this, f, R, neg); \
 } \
 void ElementMatrixMap::assemble(const A_TYPE & f, SparseMatrixBase & R, bool neg) const { \
+    if (R.rtti() == GIMLI_SPARSE_CRS_MATRIX_RTTI){\
+        this->fillSparsityPattern(*dynamic_cast< RSparseMatrix * >(&R));\
+    }\
     assemblePerCellT_(this, f, R, neg); \
 } \
 

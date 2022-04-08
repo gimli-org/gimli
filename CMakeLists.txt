@@ -54,7 +54,8 @@ message("***********************************************")
 
 if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX)
 
-    add_definitions(-std=c++11)
+    # c++17 index access to std::share_ptr
+    add_definitions(-std=c++17)
     set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "-Os")
 
     set(CMAKE_CXX_NO_WARNING "${CMAKE_CXX_NO_WARNING} -Wno-class-memaccess") # new since gcc.8 maybe need to be checked

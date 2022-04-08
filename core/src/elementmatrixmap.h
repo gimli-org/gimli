@@ -27,6 +27,13 @@ namespace GIMLI{
 
 class DLLEXPORT ElementMatrixMap {
 public:
+    ElementMatrixMap(){
+        rows_ = 0; // think to remove
+        cols_ = 0; // think to remove
+        dofA_ = 0;
+        dofB_ = 0;
+    }
+
 
     void push_back(const ElementMatrix < double > & Ai);
 
@@ -145,11 +152,13 @@ public:
     Index size() const { return mats_.size();}
 
     Index rows() const { return rows_; }
-
     Index cols() const { return cols_; }
 
-    Index dof() const { return this->dof_; }
-    void setDof(Index d) { this->dof_ = d; }
+
+    Index dof() const { return this->dofA_; }
+    Index dofB() const { return this->dofB_; }
+    void setDof(Index a) { this->dofA_ = a; }
+    void setDof(Index a, Index b) { this->dofA_ = a; this->dofB_ = b;}
 
 protected:
     std::vector< ElementMatrix < double > > mats_;
@@ -159,9 +168,12 @@ protected:
     std::vector< IndexArray > _ids;
     std::vector< Index > row_;
 
+    
     Index rows_;
     Index cols_;
-    Index dof_;
+
+    Index dofA_;
+    Index dofB_;
 };
 
 

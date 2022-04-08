@@ -27,6 +27,9 @@
 #include "pos.h"
 #include "vector.h"
 
+#include <cstddef>
+#include <memory>
+
 #include <cstring>
 #include <fstream>
 #include <iostream>
@@ -406,6 +409,217 @@ protected:
     double val_;
 };
 
+
+//! Simple row-ordered dense matrix based on continuous memory block. 
+/*! Simple row-ordered dense matrix based on continuous memory block. */
+template < class ValueType > class DLLEXPORT DenseMatrix : public MatrixBase {
+public:
+    /*! Return entity rtti value. */
+    virtual uint rtti() const { return GIMLI_DENSE_MATRIX_RTTI; }
+
+    /*!Create Densematrix with specified dimensions.*/
+    DenseMatrix(Index rows, Index cols) : MatrixBase(), _cols(0) {
+        this->resize(rows, cols);
+    }
+    ~DenseMatrix(){
+        free_();
+    }
+
+    /*!Return write access \ref Vector of borrowed memory for the ith row.*/
+    Vector< ValueType > operator[](Index i) {
+        ASSERT_THIS_SIZE(i)
+        return Vector< ValueType >(this->_cols, _data, i * this->_rows);
+    }
+    /*!Return \ref Vector of borrowed memory for the ith row.*/
+    Vector< ValueType > operator[](Index i) const {
+        ASSERT_THIS_SIZE(i)
+        return Vector< ValueType >(this->_cols, _data, i * this->_rows);
+    }
+    /*! Read only access to matrix element i,j. */
+    inline const ValueType & operator ()(Index i, Index j) const {
+        ASSERT_THIS_SIZE(i)
+        ASSERT_EQUAL(j, _cols)
+        return _data.get()[this->cols_ * i + j];
+    }
+
+    /*! Write access to matrix element i,j. */
+    inline ValueType & operator ()(Index i, Index j) {
+        ASSERT_THIS_SIZE(i)
+        ASSERT_EQUAL(j, _cols)
+        return _data.get()[this->cols_ * i + j];
+    }
+
+    /*! Read only access to matrix row i. */
+    inline Vector< ValueType > operator ()(Index i) const {
+        return this->operator[](i);
+    }
+
+    /*! Write access to matrix row i */
+    inline Vector< ValueType > operator ()(Index i) {
+        return this->operator[](i);
+    }
+
+    inline const ValueType * pData() const { return _data.get(); }
+    inline ValueType * pData(){ return _data.get(); }
+
+    std::shared_ptr< ValueType [] > & data(){ 
+        return _data;
+    }
+
+    inline Vector< ValueType > row(Index i) const {
+        return this->operator[](i);
+    }
+    inline Vector< ValueType > row(Index i) {
+        return this->operator[](i);
+    }
+    inline void setRow(Index i, const Vector< ValueType > r ) const {
+        THROW_TO_IMPL
+        // return this->operator[](i);
+    }
+
+    inline Vector< ValueType > col(Index i) const {
+        THROW_TO_IMPL
+        return this->operator[](i);
+    }
+    inline Vector< ValueType > back() {
+        ASSERT_THIS_SIZE(1)
+        return this->operator[](_rows - 1);
+    }
+    void push_back(const Vector< ValueType > & vec) {
+        THROW_TO_IMPL
+    }
+
+    #define DEFINE_UNARY_MOD_OPERATOR__(OP, NAME) \
+    inline DenseMatrix < ValueType > & operator OP##=(const DenseMatrix < ValueType>&A){\
+        if (A.rows() == this->rows() && A.cols() == this->cols()) { \
+            for (Index i = 0; i < _rows*_cols; i ++) {_data[i] OP##= A.pData()[i];} \
+            return *this;\
+        }\
+        if (A.rows() == 1 && A.cols() == this->cols()) { \
+            for (Index i = 0; i < this->size(); i ++) {this->operator[](i) OP##= A[0]; }\
+            return *this;\
+        } \
+        if (A.cols() == 1 && A.rows() == this->rows()) { \
+            for (Index i = 0; i < this->size(); i ++) {this->operator[](i) OP##= A[i][0];} \
+            return *this;\
+        } \
+        if (this->rows() == 1 && this->cols() == A.cols()){ \
+            Vector < ValueType > tmp(this->row(0)); \
+            this->resize(A.rows(), this->cols()); \
+            for (Index i = 0; i < this->size(); i ++){ \
+                this->setRow(i, A[i] OP tmp);} \
+            return *this;\
+        } \
+        if (this->cols() == 1 && this->rows() == A.rows()){ \
+            Vector < ValueType > tmp(this->col(0)); \
+            this->resize(this->rows(), A.cols()); \
+            for (Index i = 0; i < this->size(); i ++){ \
+                this->setRow(i, A[i] OP tmp[i]);} \
+            return *this;\
+        } \
+        throwLengthError(WHERE_AM_I + " Cannot operate on mishaped matrices. "+\
+            "(" + str(this->rows()) + "," + str(this->cols()) + ") " + "OP" + \
+            " (" + str(A.rows()) + "," + str(A.cols()) + ")" );\
+        return *this;\
+    }\
+    inline DenseMatrix < ValueType > & operator OP##= (const ValueType & val) { \
+      for (Index i = 0; i < _rows*_cols; i ++){_data.get()[i] OP##= val;}return*this;}\
+    inline DenseMatrix < ValueType > & operator OP##= (const Vector < ValueType > & val) { \
+      for (Index i = 0; i < this->size(); i ++){this->operator[](i) OP##= val;}return*this;}\
+
+    DEFINE_UNARY_MOD_OPERATOR__(+, PLUS)
+    DEFINE_UNARY_MOD_OPERATOR__(-, MINUS)
+    DEFINE_UNARY_MOD_OPERATOR__(/, DIVID)
+    DEFINE_UNARY_MOD_OPERATOR__(*, MULT)
+
+    #undef DEFINE_UNARY_MOD_OPERATOR__
+
+    /*! Resize the matrix to rows x cols. */
+    virtual void round(ValueType tol){ 
+        THROW_TO_IMPL
+    }
+
+    /*! Resize the matrix to rows x cols. */
+    virtual void resize(Index rows, Index cols){ 
+        // content not more valid anymore 
+        allocate_(rows, cols); 
+    }
+
+    /*! Fill Vector with 0.0. Don't change size.*/
+    inline void clean() {
+        std::memset(_data.get(), '\0', sizeof(ValueType) * _rows*_cols);
+    }
+
+    /*! Clear the matrix and free memory. */
+    inline void clear() { this->free_(); }
+
+    /*! Return number of rows. */
+    inline Index rows() const { return this->_rows; }
+
+    /*! Return number of colums. */
+    inline Index cols() const { return this->_cols; }
+    
+
+protected:
+
+    void allocate_(Index rows, Index cols){
+     
+        if (rows * cols > _rows * _cols){
+         
+            if (_data.use_count() > 1){
+                __MS(_data.use_count())
+               log(Error, "Matrix data are in use and can't be new allocated.");
+            }
+            if (_data.use_count() == 1){
+                _data.reset();
+            }
+
+            _data = std::shared_ptr< ValueType [] >(new ValueType[rows*cols]);
+            if (rows*cols > 0) {
+                std::memset(_data.get(), '\0', sizeof(ValueType) * rows*cols);
+            }
+        }
+        _rows = rows;
+        _cols = cols;
+    }
+
+    void free_(){
+        _rows = 0;
+        _cols = 0;
+        if (_data.use_count() > 1){
+            __MS(_data.use_count())
+            log(Error, "Matrix data are in use and can't be new deallocated.");
+        }
+        if (_data.use_count() == 1){
+            _data.reset();
+        }
+    }
+
+    Index _rows;
+    Index _cols;
+    std::shared_ptr< ValueType [] > _data;
+};
+
+#define DEFINE_BINARY_OPERATOR__(OP, NAME) \
+template < class ValueType > \
+DenseMatrix < ValueType > operator OP (const DenseMatrix < ValueType > & A, \
+                                       const DenseMatrix < ValueType > & B) { \
+DenseMatrix < ValueType > tmp(A); \
+return tmp OP##= B; } \
+template < class ValueType > \
+DenseMatrix < ValueType > operator OP (const DenseMatrix < ValueType > & A, \
+                                       const ValueType & v) { \
+DenseMatrix < ValueType > tmp(A); \
+return tmp OP##= v; }
+
+DEFINE_BINARY_OPERATOR__(+, PLUS)
+DEFINE_BINARY_OPERATOR__(-, MINUS)
+DEFINE_BINARY_OPERATOR__(/, DIVID)
+DEFINE_BINARY_OPERATOR__(*, MULT)
+
+#undef DEFINE_BINARY_OPERATOR__
+
+
 //! Simple row-based dense matrix based on \ref Vector
 /*! Simple row-based dense matrix based on \ref Vector */
 template < class ValueType > class DLLEXPORT Matrix : public MatrixBase {
@@ -463,7 +677,6 @@ public:
     inline bool load(const std::string & fileName){ 
         return GIMLI::load(*this, fileName);
     }
-
 
     /*! Return entity rtti value. */
     virtual uint rtti() const { return GIMLI_MATRIX_RTTI; }
@@ -562,7 +775,9 @@ public:
     }
 
     /*! Clear the matrix and free memory. */
-    inline void clear() { mat_.clear(); }
+    inline void clear() {
+        mat_.clear(); this->_cols = 0;
+    }
 
     /*! Return number of rows. */
     inline Index rows() const {
@@ -583,6 +798,7 @@ public:
     inline void setRow(Index i, const Vector < ValueType > & val) {
         ASSERT_THIS_SIZE(i)
         mat_[i] = val;
+        this->_cols = max(this->_cols, val.size());
     }
 
     /*! Set a value. Throws out of range exception if index check fails. */
@@ -628,11 +844,23 @@ public:
         return col;
     }
 
-    /*! Add another row vector add the end. */
+    /*! Add another row vector at the end. */
     inline void push_back(const Vector < ValueType > & vec) {
-        //**!!! length check necessary
+        //** push_back reallocates mem and copies content
+        this->_cols = max(this->_cols, vec.size());
         mat_.push_back(vec);
         rowFlag_.resize(rowFlag_.size() + 1);
+
+        // don't use vec here .. if vec was content of this matrix is isnt
+        // valid anymore after any reallocation
+
+        // if (vec.size() > 10){
+        //     print(&vec);
+        //     for (auto &v: mat_){
+        //         print(&v, v);
+        //     }
+        // }
+
     }
 
     /*! Return last row vector. */
@@ -675,64 +903,15 @@ public:
     /*! A += a.T*/
     Matrix < ValueType > & transAdd(const Matrix < ValueType > & a);
 
-
     /*! Multiplication (A*b) with a vector of the same value type. */
     Vector < ValueType > mult(const Vector < ValueType > & b) const;
-    //  {
-    //     Index cols = this->cols();
-    //     Index rows = this->rows();
-
-    //     Vector < ValueType > ret(rows, 0.0);
-
-    //     //ValueType tmpval = 0;
-    //     if (b.size() == cols){
-    //         for (Index i = 0; i < rows; ++i){
-    //             ret[i] = sum(mat_[i] * b);
-    //         }
-    //     } else {
-    //         throwLengthError(WHERE_AM_I + " " + str(cols) + " != " + str(b.size()));
-    //     }
-    //     return ret;
-    // }
 
     /*! Multiplication (A*b) with a part of a vector between two defined indices. */
-    Vector < ValueType > mult(const Vector < ValueType > & b, Index startI, Index endI) const;
-    //  {
-    //     Index cols = this->cols();
-    //     Index rows = this->rows();
-    //     Index bsize = Index(endI - startI);
-
-    //     if (bsize != cols) {
-    //         throwLengthError(WHERE_AM_I + " " + str(cols) + " < " + str(endI) + "-" + str(startI));
-    //     }
-    //     Vector < ValueType > ret(rows, 0.0);
-    //     for (Index i = 0; i < rows; ++i){
-    //         for (Index j = startI; j < endI; j++) {
-    //             ret[i] += mat_[i][j] * b[j];
-    //         }
-    //     }
-    //     return ret;
-    // }
+    Vector < ValueType > mult(const Vector < ValueType > & b, 
+                              Index startI, Index endI) const;
 
     /*! Transpose multiplication (A^T*b) with a vector of the same value type. */
     Vector< ValueType > transMult(const Vector < ValueType > & b) const;
-    //  {
-    //     Index cols = this->cols();
-    //     Index rows = this->rows();
-    //     Vector < ValueType > ret(cols, 0.0);
-    //     //ValueType tmpval = 0;
-
-    //     if (b.size() == rows){
-    //         for(Index i = 0; i < rows; i++){
-    //             for(Index j = 0; j < cols; j++){
-    //                 ret[j] +=  mat_[i][j] * b[i];
-    //             }
-    //         }
-    //     } else {
-    //         throwLengthError(WHERE_AM_I + " " + str(rows) + " != " + str(b.size()));
-    //     }
-    //     return ret;
-    // }
 
     /*! Save matrix to file. */
     virtual void save(const std::string & filename) const {
@@ -876,18 +1055,21 @@ Vector < ValueType > multMT(const Matrix < ValueType > & A, const Vector < Value
 #endif
 }
 
-template < class ValueType >
-bool operator == (const Matrix< ValueType > & A, const Matrix< ValueType > & B){
+template < class Mat >
+bool operator == (const Mat & A, const Mat & B){
+
     if (A.rows() != B.rows() || A.cols() != B.cols()) return false;
     for (Index i = 0; i < A.rows(); i ++){
+        // __MS(i, A.rows(), A[i] != B[i])
         if (A[i] != B[i]) return false;
     }
     return true;
 }
 
-template < class ValueType >
-void scaleMatrix(Matrix < ValueType >& A,
-                  const Vector < ValueType > & l, const Vector < ValueType > & r){
+template < class ValueType, template < typename > class Mat >
+void scaleMatrix(Mat < ValueType >& A,
+                 const Vector < ValueType > & l, 
+                 const Vector < ValueType > & r){
     Index rows = A.rows();
     Index cols = A.cols();
     if (rows != l.size()){
@@ -903,9 +1085,10 @@ void scaleMatrix(Matrix < ValueType >& A,
     }
 }
 
-template < class ValueType >
-void rank1Update(Matrix < ValueType > & A,
-                  const Vector < ValueType > & u, const Vector < ValueType > & v) {
+template < class ValueType, template < typename > class Mat >
+void rank1Update(Mat < ValueType > & A,
+                 const Vector < ValueType > & u, 
+                 const Vector < ValueType > & v) {
     Index rows = A.rows();
     Index cols = A.cols();
     if (rows != u.size()){
@@ -923,11 +1106,11 @@ void rank1Update(Matrix < ValueType > & A,
     return;
 }
 
-template < class ValueType >
-Matrix < ValueType > fliplr(const Matrix< ValueType > & m){
-    Matrix < ValueType > n;
-    for (Index i = 0; i < m.rows(); i ++) n.push_back(fliplr(m[i]));
-    return n;
+template < class ValueType, template < typename > class Mat >
+Mat < ValueType > fliplr(const Mat< ValueType > & m){
+    Mat < ValueType > ret(m.rows(), m.cols());
+    for (Index i = 0; i < m.rows(); i ++) ret[i] = fliplr(m[i]);
+    return ret;
 }
 
 template < class ValueType >
@@ -1370,23 +1553,34 @@ inline void save(MatrixBase & A, const std::string & filename){
 inline RVector operator * (const MatrixBase & A, const RVector & b){
     return A.mult(b);
 }
+template < class ValueType, template < typename > class Mat >
+Vector < ValueType > operator * (const Mat< ValueType > & A, 
+                                const Vector < ValueType > & b){
+    return A.mult(b);
+}
+
+// inline RVector operator * (const RMatrix & A, const RVector & b){
+//     return A.mult(b);
+// }
+// inline CVector operator * (const CMatrix & A, const CVector & b){
+//     return A.mult(b);
+// }
 
 inline RVector transMult(const MatrixBase & A, const RVector & b){
     return A.transMult(b);
 }
+template < class ValueType, template < typename > class Mat >
+Vector < ValueType > transMult(const Mat< ValueType > & A, 
+                               const Vector < ValueType > & b){
+    return A.transMult(b);
+}
 
-inline RVector operator * (const RMatrix & A, const RVector & b){
-    return A.mult(b);
-}
-inline CVector operator * (const CMatrix & A, const CVector & b){
-    return A.mult(b);
-}
-inline RVector transMult(const RMatrix & A, const RVector & b){
-    return A.transMult(b);
-}
-inline CVector transMult(const CMatrix & A, const CVector & b){
-    return A.transMult(b);
-}
+// inline RVector transMult(const RMatrix & A, const RVector & b){
+//     return A.transMult(b);
+// }
+// inline CVector transMult(const CMatrix & A, const CVector & b){
+//     return A.transMult(b);
+// }
 
 inline RMatrix real(const CMatrix & A){
     RMatrix R(A.rows(), A.cols());
@@ -1401,6 +1595,13 @@ inline RMatrix imag(const CMatrix & A){
 
 template < class T >
 std::ostream & operator << (std::ostream & str, const Matrix < T > & M){
+    for (Index i = 0; i < M.rows(); i ++) {
+        str << M[i] << std::endl;
+    }
+    return str;
+}
+template < class T >
+std::ostream & operator << (std::ostream & str, const DenseMatrix < T > & M){
     for (Index i = 0; i < M.rows(); i ++) {
         str << M[i] << std::endl;
     }

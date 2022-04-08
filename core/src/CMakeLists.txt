@@ -57,6 +57,7 @@ endif()
 
 if (OpenBLAS_INCLUDE_DIR)
     include_directories(${OpenBLAS_INCLUDE_DIR})
+    target_link_libraries(${libgimli_TARGET_NAME} openblas)
 endif()
 
 if (USE_BOOST_THREAD)
@@ -68,6 +69,7 @@ if (USE_BOOST_THREAD)
         target_link_libraries(${libgimli_TARGET_NAME} ${Boost_SYSTEM_LIBRARIES})
     endif (Boost_SYSTEM_FOUND)
 endif(USE_BOOST_THREAD)
+
 
 if (WIN32)
     target_link_libraries(${libgimli_TARGET_NAME} psapi)
@@ -97,6 +99,7 @@ elseif (UNIX AND NOT APPLE)
 	endif (READPROC_FOUND)
 	install(TARGETS ${libgimli_TARGET_NAME} LIBRARY DESTINATION ${LIBRARY_INSTALL_DIR})
 endif(WIN32)
+
 
 install(FILES ${HEADER_FILES} ${PROJECT_BINARY_DIR}/${libgimli_TARGET_NAME}_export.h
         DESTINATION ${INCLUDE_INSTALL_DIR})

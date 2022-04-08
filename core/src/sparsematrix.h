@@ -259,8 +259,9 @@ public:
     virtual void add(const ElementMatrix< double > & A,
                      const Matrix < ValueType > & scale, bool neg=false);
 
-    /*! Perftest .. maybe optimizer problem. */
-    void addS(const ElementMatrix< double > & A, const ValueType & scale, bool neg=false){
+    /*! Perftest .. maybe optimizer problem. Single calls outside calls of addVall suffer from polymorphism. */
+    void addS(const ElementMatrix< double > & A, const ValueType & scale, 
+              bool neg=false){
 
         ValueType b = scale;
         if (neg == true) b *= -1.0;
@@ -311,76 +312,7 @@ public:
     void copy_(const SparseMapMatrix< double, Index > & S);
     void copy_(const SparseMapMatrix< Complex, Index > & S);
 
-    void buildSparsityPattern(const Mesh & mesh){
-        Stopwatch swatch(true);
-
-        colPtr_.resize(mesh.nodeCount() + 1);
-
-        //*** much to slow
-        //RSparseMapMatrix S(mesh.nodeCount(), mesh.nodeCount());
-
-        Index col = 0, row = 0;
-
-        // need unique(sort) maybe to slow
-//        std::vector < std::vector< Index > > idxMap(mesh.nodeCount());
-//         for (std::vector < std::vector< Index > >::iterator mIt = idxMap.begin(); mIt != idxMap.end(); mIt++){
-//             (*mIt).reserve(100);
-//         }
-
-// using set is by a factor of approx 5 more expensive
-        std::vector < std::set< Index > > idxMap(mesh.nodeCount());
-
-        Cell *cell = 0;
-        uint nc = 0;
-
-        for (uint c = 0; c < mesh.cellCount(); c ++){
-            cell = &mesh.cell(c);
-            nc = cell->nodeCount();
-
-            for (uint i = 0; i < nc; i ++){
-                for (uint j = 0; j < nc; j ++){
-                    row = cell->node(i).id();
-                    col = cell->node(j).id();
-                    //idxMap[col].push_back(row);
-                    idxMap[col].insert(row);
-                    //S[col][row] = 1;
-                }
-            }
-        }
-
-        int nVals = 0;
-        for (std::vector < std::set< Index > >::iterator mIt = idxMap.begin();
-             mIt != idxMap.end(); mIt++){
-            //std::sort((*mIt).begin(), (*mIt).end());
-            nVals += (*mIt).size();
-        }
-
-//         std::cout << "timwe: " << swatch.duration( true) << std::endl;
-//         exit(0);
-
-        rowIdx_.reserve(nVals);
-        rowIdx_.resize(nVals);
-        vals_.resize(nVals);
-
-        colPtr_[0] = 0;
-        Index k = 0;
-        row = 0;
-        for (std::vector < std::set< Index > >::iterator mIt = idxMap.begin(); mIt != idxMap.end(); mIt++){
-            for (std::set< Index >::iterator sIt = (*mIt).begin(); sIt != (*mIt).end(); sIt++){
-                rowIdx_[k] = (*sIt);
-                vals_[k] = (ValueType)0.0;
-                k++;
-            }
-            row++;
-            colPtr_[row] = k;
-        }
-        valid_ = true;
-
-        rows_ = colPtr_.size() - 1;
-        cols_ = max(rowIdx_) + 1;
-        //** freeing idxMap is expensive
-    }
-
+    void buildSparsityPattern(const Mesh & mesh);
     void buildSparsityPattern(const std::vector < std::set< Index > > & idxMap);
 
     void fillStiffnessMatrix(const Mesh & mesh, const RVector & a, bool rebuildPattern=true);
@@ -568,6 +500,11 @@ template <> DLLEXPORT void SparseMatrix< double >::
 fillStiffnessMatrix(const Mesh & mesh, const RVector & a, bool rebuildPattern);
 template <> DLLEXPORT void SparseMatrix< Complex >::
 fillStiffnessMatrix(const Mesh & mesh, const RVector & a, bool rebuildPattern);
+
+template <> DLLEXPORT void SparseMatrix< double >::
+buildSparsityPattern(const Mesh & mesh);
+template <> DLLEXPORT void SparseMatrix< Complex >::
+buildSparsityPattern(const Mesh & mesh);
 
 template <> DLLEXPORT void SparseMatrix< double >::
 buildSparsityPattern(const std::vector < std::set< Index > > & idxMap);

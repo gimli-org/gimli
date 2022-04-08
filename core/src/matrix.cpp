@@ -255,6 +255,32 @@ void matMult(const SmallMatrix & A, const SmallMatrix & B,
     return matMult_RM(A, B, C, a, b);
 #endif
 }
+
+void matMult_RM_(const RMatrix & A, const RMatrix & B,
+                 RMatrix & C, double a, double b, bool bIsTrans, Index n){
+    for (Index i = 0; i < A.rows(); i ++){
+        for (Index j = 0; j < n; j ++){
+            double c = 0;
+            for (Index k = 0; k < A.cols(); k ++){
+                if (bIsTrans){
+                    c += A[i][k] * B[j][k];
+                } else {
+                    c += A[i][k] * B[k][j];
+                }
+            }
+            if (b == 0.0){
+                C[i][j] = a * c;
+            } else if (b == 1.0){
+                C[i][j] += a * c;
+            } else if (b == -1.0){
+                C[i][j] -= a * c;
+            } else {
+                C[i][j] = b * C[i][j] + a * c;
+            }
+        }
+    }
+}
+
 void matMult_RM(const RMatrix & A, const RMatrix & B,
                 RMatrix & C, double a, double b){
     // C = a * A*B + b*C || C = a * A*B.T + b*C
@@ -282,6 +308,10 @@ void matMult_RM(const RMatrix & A, const RMatrix & B,
     C.resize(m, n);
 
 #if OPENBLAS_CBLAS_FOUND
+
+    if (noCBlas()){
+        return matMult_RM_(A, B, C, a, b, bIsTrans, n);
+    }
 
     CBLAS_TRANSPOSE aTrans = CblasNoTrans;
     CBLAS_TRANSPOSE bTrans = CblasNoTrans;
@@ -327,30 +357,9 @@ void matMult_RM(const RMatrix & A, const RMatrix & B,
     // delete [] C2;
 #else
 
+    matMult_RM_(A, B, C, a, b, bIsTrans, n);
     // __MS("\t: ", C.rows(), C.cols(), bIsTrans)
 
-    for (Index i = 0; i < A.rows(); i ++){
-
-        for (Index j = 0; j < n; j ++){
-            double c = 0;
-            for (Index k = 0; k < A.cols(); k ++){
-                if (bIsTrans){
-                    c += A[i][k] * B[j][k];
-                } else {
-                    c += A[i][k] * B[k][j];
-                }
-            }
-            if (b == 0.0){
-                C[i][j] = a * c;
-            } else if (b == 1.0){
-                C[i][j] += a * c;
-            } else if (b == -1.0){
-                C[i][j] -= a * c;
-            } else {
-                C[i][j] = b * C[i][j] + a * c;
-            }
-        }
-    }
 #endif
 }
 
@@ -389,11 +398,37 @@ void matTransMult(const SmallMatrix & A, const SmallMatrix & B,
     } else {
         log(Error, "matTransMult sizes mismatch. ", A.rows(), "!=", B.rows());
     }
-
 #else
     matTransMult_RM(A, B, C, a, b);
 #endif
 }
+
+void matTransMult_RM_(const RMatrix & A, const RMatrix & B,
+                     RMatrix & C, double a, double b, bool bIsTrans, Index n){
+    // private!! only use this after size checks
+
+    for (Index i = 0; i < A.cols(); i ++){
+        for (Index j = 0; j < n; j ++){
+            double c = 0;
+
+            for (Index k = 0; k < A.rows(); k ++){
+                if (bIsTrans){
+                    c += A[k][i] * B[j][k];
+                } else {
+                    c += A[k][i] * B[k][j];
+                }
+            }
+            if (b == 0.0){
+                C[i][j] = a * c;
+            } else if (b == 1.0){
+                C[i][j] += a * c;
+            } else {
+                C[i][j] = b * C[i][j] + a * c;
+            }
+        }
+    }
+}
+
 
 void matTransMult_RM(const RMatrix & A, const RMatrix & B,
                      RMatrix & C, double a, double b){
@@ -454,6 +489,11 @@ void matTransMult_RM(const RMatrix & A, const RMatrix & B,
     }
 
 #if OPENBLAS_CBLAS_FOUND
+    
+    if (noCBlas()){
+        matTransMult_RM_(A, B, C, a, b, bIsTrans, n);
+    }
+
 // __MS("OPENBLAS")
     CBLAS_TRANSPOSE aTrans = CblasTrans;
     CBLAS_TRANSPOSE bTrans = CblasNoTrans;
@@ -507,34 +547,7 @@ void matTransMult_RM(const RMatrix & A, const RMatrix & B,
     // delete [] C2;
 
 #else
-// __MS("GIMLI")
-    for (Index i = 0; i < A.cols(); i ++){
-        for (Index j = 0; j < n; j ++){
-            double c = 0;
-
-            for (Index k = 0; k < A.rows(); k ++){
-
-                if (bIsTrans){
-                    c += A[k][i] * B[j][k];
-                } else {
-                    c += A[k][i] * B[k][j];
-                }
-            }
-            if (retTrans){
-                THROW_TO_IMPL
-                // C[j][i] = a * c + C[j][i]*b;
-            } else {
-
-                if (b == 0.0){
-                    C[i][j] = a * c;
-                } else if (b == 1.0){
-                    C[i][j] += a * c;
-                } else {
-                    C[i][j] = b * C[i][j] + a * c;
-                }
-            }
-        }
-    }
+    matTransMult_RM_(A, B, C, a, b, bIsTrans, n);
 #endif
 
 }

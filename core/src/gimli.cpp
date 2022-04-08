@@ -46,6 +46,7 @@ namespace GIMLI{
 static bool __SAVE_PYTHON_GIL__ = false;
 static bool __GIMLI_DEBUG__ = false;
 static int __GIMLI_DEEP_DEBUG__ = 0;
+static int __GIMLI_NO_CBLAS__ = false;
 
 Index __setTC__(){
     long tc = numberOfCPU();
@@ -77,6 +78,9 @@ bool debug(){ return __GIMLI_DEBUG__;}
 
 void setDeepDebug(int level){__GIMLI_DEEP_DEBUG__ = level;}
 int deepDebug(){ return __GIMLI_DEEP_DEBUG__; }
+
+void setNoCBlas(bool s ){__GIMLI_NO_CBLAS__ = s;}
+bool noCBlas(){ return __GIMLI_NO_CBLAS__; }
 
 void setThreadCount(Index nThreads){
     log(Debug, "Set amount of threads to " + str(nThreads));

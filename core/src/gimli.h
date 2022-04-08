@@ -268,6 +268,7 @@ static const uint8 MESH_SHAPE_PYRAMID_RTTI     = 234;
 
 static const uint8 GIMLI_MATRIXBASE_RTTI        = 0;
 static const uint8 GIMLI_MATRIX_RTTI            = 1;
+static const uint8 GIMLI_DENSE_MATRIX_RTTI      = 2;
 static const uint8 GIMLI_SPARSEMATRIXBASE_RTTI  = 10;
 static const uint8 GIMLI_SPARSE_MAP_MATRIX_RTTI = 11;
 static const uint8 GIMLI_SPARSE_CRS_MATRIX_RTTI = 12;
@@ -355,6 +356,11 @@ DLLEXPORT int deepDebug();
 Default is number of CPU. */
 DLLEXPORT void setThreadCount(Index nThreads);
 DLLEXPORT Index threadCount();
+
+/*! Decative use of cblas e.g., for matrix mult. Mainly for debug purposes. */
+DLLEXPORT void setNoCBlas(bool s);
+DLLEXPORT bool noCBlas();
+
 
 /*! For some debug purposes only */
 DLLEXPORT void showSizes();
