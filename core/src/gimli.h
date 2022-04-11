@@ -309,6 +309,7 @@ typedef SparseMapMatrix< double, Index >  RSparseMapMatrix;
 typedef SparseMapMatrix< Complex, Index >  CSparseMapMatrix;
 
 template < class ValueType > class Matrix;
+template < class ValueType > class DenseMatrix;
 template < class ValueType > class BlockMatrix;
 template < class ValueType > class Matrix3;
 template < class ValueType > class Vector;
@@ -327,6 +328,8 @@ typedef Matrix < double > RMatrix;
 typedef Matrix3< double > RMatrix3;
 typedef Matrix < Complex > CMatrix;
 typedef BlockMatrix < double > RBlockMatrix;
+
+typedef DenseMatrix < double > RDenseMatrix;
 
 //#typedef Vector< unsigned char > BVector;
 
@@ -519,14 +522,14 @@ vector < ptr * > vP;
 for_each(vP.begin(), vP.end(), deletePtr());
 */
 struct DLLEXPORT newPtr{
-    template < typename T > void operator()(T * p) { 
+    template < typename T > void operator()(T * p) {
         deletePtr(p);
-        p = new T(); 
+        p = new T();
     }
 };
 struct DLLEXPORT deletePtr{
-    template < typename T > void operator()(T * p) { 
-        if (p != nullptr) delete p; 
+    template < typename T > void operator()(T * p) {
+        if (p != nullptr) delete p;
         p = nullptr;
     }
 };

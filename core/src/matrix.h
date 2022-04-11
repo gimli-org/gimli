@@ -417,18 +417,29 @@ public:
     /*! Return entity rtti value. */
     virtual uint rtti() const { return GIMLI_DENSE_MATRIX_RTTI; }
 
-    DenseMatrix() : MatrixBase(), _cols(0), _rows(0) {
+    DenseMatrix()
+        : MatrixBase(), _rows(0), _cols(0) {
         this->resize(0, 0);
     }
 
     /*!Create Densematrix with specified dimensions.*/
-    DenseMatrix(Index rows, Index cols) : MatrixBase(), _cols(0), _rows(0) {
+    DenseMatrix(Index rows, Index cols)
+        : MatrixBase(), _rows(0), _cols(0) {
         this->resize(rows, cols);
     }
-    DenseMatrix(const DenseMatrix < ValueType > & mat) : MatrixBase(), _cols(0), _rows(0) {
+    /*!Create Densematrix with specified dimensions and copy content
+    from data.*/
+    DenseMatrix(Index rows, Index cols, ValueType * data)
+        : MatrixBase(), _rows(0), _cols(0) {
+        this->resize(rows, cols);
+        std::memcpy(_data.get(), data, sizeof(ValueType)*length());
+    }
+
+    DenseMatrix(const DenseMatrix < ValueType > & mat)
+        : MatrixBase(), _rows(0), _cols(0) {
         copy_(mat);
     }
- 
+
     virtual ~DenseMatrix(){
         free_();
     }
@@ -480,6 +491,21 @@ public:
     std::shared_ptr< ValueType [] > & data(){
         return _data;
     }
+    /*! For template compatablity. Does nothing but return data buffer.*/
+    ValueType * toData(ValueType * target) const {
+        return _data.get();
+    }
+    /*! For template compatablity. Does nothing if src is equal data or perform memcopy. */
+    void fromData(ValueType * src, Index m, Index n){
+        if (src != _data.get()){
+            __MS(src)
+            __MS(_data.get())
+            __MS("should I be here? Check!")
+            ASSERT_THIS_SIZE(m)
+            ASSERT_EQUAL(n, this->_cols)
+            std::memcpy(src, _data.get(), sizeof(ValueType) * length());
+        }
+    }
 
     inline Vector< ValueType > row(Index i) const {
         return this->operator[](i);
@@ -488,13 +514,15 @@ public:
         return this->operator[](i);
     }
     inline void setRow(Index i, const Vector< ValueType > r ) const {
-        THROW_TO_IMPL
-        // return this->operator[](i);
+        this->operator[](i).assign(r);
     }
 
-    inline Vector< ValueType > col(Index i) const {
-        THROW_TO_IMPL
-        return this->operator[](i);
+    inline Vector< ValueType > col(Index c) const {
+        Vector < ValueType > ret(this->_rows);
+        for (Index i = 0; i < this->_rows; i ++){
+            ret[i] = _data[i*this->_cols + c];
+        }
+        return ret;
     }
     inline Vector< ValueType > back() {
         ASSERT_THIS_SIZE(1)
@@ -510,7 +538,7 @@ public:
             log(Error, "Cannot push_back on data that has been borrowed.");
         }
         Index oldLength = length();
-        
+
         ValueType tmp[oldLength];
         std::memcpy(tmp, &_data[0], oldLength);
         this->resize(_rows+1, _cols);
@@ -522,7 +550,7 @@ public:
         // __M
         operator[](this->_rows-1) = vec;
         // __M
-        // _data = d; 
+        // _data = d;
         // __M
     }
 
@@ -584,9 +612,10 @@ public:
     /*! Transpose multiplication (A^T*b) with a vector of the same value type. */
     Vector< ValueType > transMult(const Vector < ValueType > & b) const;
 
-    /*! Resize the matrix to rows x cols. */
-    virtual void round(ValueType tol){
-        THROW_TO_IMPL
+    /*! Round all values of this matrix to tol.*/
+    inline void round(const ValueType & tol){
+        Vector < ValueType > view(length(), this->_data, 0);
+        view.round(tol);
     }
 
     /*! Resize the matrix to rows x cols. */
@@ -995,15 +1024,13 @@ public:
         // ??? std::for_each(mat_.begin, mat_.end, boost::bind(&Vector< ValueType >::round, tolerance));
     }
 
-    void dumpData(ValueType * target) const{
-        //target.resize(this.rows(), this.cols());
-
+    ValueType * toData(ValueType * buf) const{
         Index N = sizeof(ValueType) * this->cols();
-        // std::memcpy(&target[0], &mat_[0][0], N*mat_.size());
 
         for (Index i = 0; i < mat_.size(); i ++) {
-            std::memcpy(&target[i*this->cols()], &mat_[i][0], N);
+            std::memcpy(&buf[i*this->cols()], &mat_[i][0], N);
         }
+        return buf;
     }
     void fromData(ValueType * src, Index m, Index n){
         this->resize(m, n);
@@ -1493,32 +1520,30 @@ bool loadMatrixRow(Matrix < ValueType > & A,
 /*!Inplace matrix calculation: $C = a * A.T * B * A$ + b*C.
 Size of A is (n,m) and B need to be square (n,n), C will resized to (m,m).
 AtB might be for temporary memory allocation.  */
+DLLEXPORT void matMultABA(const RDenseMatrix & A,
+                          const RDenseMatrix & B,
+                          RDenseMatrix & C,
+                          RDenseMatrix & AtB, double a=1.0, double b=0.0);
 DLLEXPORT void matMultABA(const SmallMatrix & A,
                           const SmallMatrix & B,
                           SmallMatrix & C,
                           SmallMatrix & AtB, double a=1.0, double b=0.0);
-DLLEXPORT void matMultABA_RM(const RMatrix & A,
-                          const RMatrix & B,
-                          RMatrix & C,
-                          RMatrix & AtB, double a=1.0, double b=0.0);
 
 /*!Inplace matrix calculation: $C = a*A*B + b*C$. B are transposed if needed to fit appropriate dimensions. */
+DLLEXPORT void matMult(const RDenseMatrix & A,
+                       const RDenseMatrix & B,
+                       RDenseMatrix & C, double a=1.0, double b=0.0);
 DLLEXPORT void matMult(const SmallMatrix & A,
                        const SmallMatrix & B,
                        SmallMatrix & C, double a=1.0, double b=0.0);
-DLLEXPORT void matMult_RM(const RMatrix & A,
-                       const RMatrix & B,
-                       RMatrix & C, double a=1.0, double b=0.0);
 
 /*!Inplace matrix calculation: $C = a * A.T * B + b*C$. B are transposed if needed to fit appropriate dimensions. */
+DLLEXPORT void matTransMult(const RDenseMatrix & A,
+                            const RDenseMatrix & B,
+                            RDenseMatrix & C, double a=1.0, double b=0.0);
 DLLEXPORT void matTransMult(const SmallMatrix & A,
                             const SmallMatrix & B,
                             SmallMatrix & C, double a=1.0, double b=0.0);
-
-DLLEXPORT void matTransMult_RM(const RMatrix & A,
-                            const RMatrix & B,
-                            RMatrix & C, double a=1.0, double b=0.0);
-
 
 /*! Return determinant for Matrix(2 x 2). */
 template < class T > inline T det(const T & a, const T & b, const T & c, const T & d){
