@@ -82,7 +82,7 @@ namespace GIMLI{
 
 template < class ValueType >
 bool load(Matrix < ValueType > & A, const std::string & filename);
-    
+
 template < class ValueType > class DLLEXPORT Matrix3 {
 public:
     ValueType mat_[9];
@@ -410,7 +410,7 @@ protected:
 };
 
 
-//! Simple row-ordered dense matrix based on continuous memory block. 
+//! Simple row-ordered dense matrix based on continuous memory block.
 /*! Simple row-ordered dense matrix based on continuous memory block. */
 template < class ValueType > class DLLEXPORT DenseMatrix : public MatrixBase {
 public:
@@ -438,15 +438,17 @@ public:
     /*! Read only access to matrix element i,j. */
     inline const ValueType & operator ()(Index i, Index j) const {
         ASSERT_THIS_SIZE(i)
-        ASSERT_EQUAL(j, _cols)
-        return _data.get()[this->cols_ * i + j];
+        ASSERT_EQUAL(j, this->_cols)
+        return _data[this->_cols * i + j];
+        //return _data.get()[this->_cols * i + j];
     }
 
     /*! Write access to matrix element i,j. */
     inline ValueType & operator ()(Index i, Index j) {
         ASSERT_THIS_SIZE(i)
         ASSERT_EQUAL(j, _cols)
-        return _data.get()[this->cols_ * i + j];
+        return _data[this->_cols * i + j];
+        // return _data.get()[this->_cols * i + j];
     }
 
     /*! Read only access to matrix row i. */
@@ -462,7 +464,7 @@ public:
     inline const ValueType * pData() const { return _data.get(); }
     inline ValueType * pData(){ return _data.get(); }
 
-    std::shared_ptr< ValueType [] > & data(){ 
+    std::shared_ptr< ValueType [] > & data(){
         return _data;
     }
 
@@ -486,7 +488,23 @@ public:
         return this->operator[](_rows - 1);
     }
     void push_back(const Vector< ValueType > & vec) {
-        THROW_TO_IMPL
+        ASSERT_VEC_SIZE(vec, this->_cols)
+        log(Warning, "Efficency .. push_back for dense matrix not recommanded");
+        __MS("Check Refcounter!")
+        if (_data.use_count() > 1){
+            __MS(_data.use_count())
+            log(Error, "Cannot push_back on data that has been borrowed.");
+        }
+        std::shared_ptr< ValueType [] > d(new ValueType[(_rows+1)*_cols]);
+        __M
+        std::memcpy(&d[0], &_data[0], _rows*_cols);
+        __M
+        this->_rows ++;
+        __M
+        operator[](this->_rows-1) = vec;
+        __M
+        _data = d;
+        __M
     }
 
     #define DEFINE_UNARY_MOD_OPERATOR__(OP, NAME) \
@@ -535,14 +553,14 @@ public:
     #undef DEFINE_UNARY_MOD_OPERATOR__
 
     /*! Resize the matrix to rows x cols. */
-    virtual void round(ValueType tol){ 
+    virtual void round(ValueType tol){
         THROW_TO_IMPL
     }
 
     /*! Resize the matrix to rows x cols. */
-    virtual void resize(Index rows, Index cols){ 
-        // content not more valid anymore 
-        allocate_(rows, cols); 
+    virtual void resize(Index rows, Index cols){
+        // content not more valid anymore
+        allocate_(rows, cols);
     }
 
     /*! Fill Vector with 0.0. Don't change size.*/
@@ -558,14 +576,14 @@ public:
 
     /*! Return number of colums. */
     inline Index cols() const { return this->_cols; }
-    
+
 
 protected:
 
     void allocate_(Index rows, Index cols){
-     
+
         if (rows * cols > _rows * _cols){
-         
+
             if (_data.use_count() > 1){
                 __MS(_data.use_count())
                log(Error, "Matrix data are in use and can't be new allocated.");
@@ -674,7 +692,7 @@ public:
     inline void copy(const Matrix < ValueType > & mat){ copy_(mat); }
 
     /*! Load content of file. */
-    inline bool load(const std::string & fileName){ 
+    inline bool load(const std::string & fileName){
         return GIMLI::load(*this, fileName);
     }
 
@@ -785,8 +803,8 @@ public:
     }
 
     /*! Return number of colums. */
-    inline Index cols() const { 
-        return this->_cols; 
+    inline Index cols() const {
+        return this->_cols;
     }
 
     /*! Set a value. Throws out of range exception if index check fails. */
@@ -907,7 +925,7 @@ public:
     Vector < ValueType > mult(const Vector < ValueType > & b) const;
 
     /*! Multiplication (A*b) with a part of a vector between two defined indices. */
-    Vector < ValueType > mult(const Vector < ValueType > & b, 
+    Vector < ValueType > mult(const Vector < ValueType > & b,
                               Index startI, Index endI) const;
 
     /*! Transpose multiplication (A^T*b) with a vector of the same value type. */
@@ -926,7 +944,7 @@ public:
 
     void dumpData(ValueType * target) const{
         //target.resize(this.rows(), this.cols());
-        
+
         Index N = sizeof(ValueType) * this->cols();
         // std::memcpy(&target[0], &mat_[0][0], N*mat_.size());
 
@@ -945,7 +963,7 @@ public:
 	std::vector < Vector< ValueType > > mat_;
 
 protected:
-    
+
 
     Index _cols;
 
@@ -1068,7 +1086,7 @@ bool operator == (const Mat & A, const Mat & B){
 
 template < class ValueType, template < typename > class Mat >
 void scaleMatrix(Mat < ValueType >& A,
-                 const Vector < ValueType > & l, 
+                 const Vector < ValueType > & l,
                  const Vector < ValueType > & r){
     Index rows = A.rows();
     Index cols = A.cols();
@@ -1087,7 +1105,7 @@ void scaleMatrix(Mat < ValueType >& A,
 
 template < class ValueType, template < typename > class Mat >
 void rank1Update(Mat < ValueType > & A,
-                 const Vector < ValueType > & u, 
+                 const Vector < ValueType > & u,
                  const Vector < ValueType > & v) {
     Index rows = A.rows();
     Index cols = A.cols();
@@ -1222,7 +1240,7 @@ bool loadMatrixSingleBin(Matrix < ValueType > & A,
     if (rows*cols*sizeof(ValueType) + 2*sizeof(uint32) != (uint32)fsize){
         __MS("rows: ", rows, " cols: ", cols, " fsize: ", fsize)
         __MS(" filesize needed: ", rows*cols*sizeof(ValueType)+2*sizeof(uint32))
-        
+
         throwError(WHERE_AM_I + " " + filename + ": size invalid");
     }
 
@@ -1554,7 +1572,7 @@ inline RVector operator * (const MatrixBase & A, const RVector & b){
     return A.mult(b);
 }
 template < class ValueType, template < typename > class Mat >
-Vector < ValueType > operator * (const Mat< ValueType > & A, 
+Vector < ValueType > operator * (const Mat< ValueType > & A,
                                 const Vector < ValueType > & b){
     return A.mult(b);
 }
@@ -1570,7 +1588,7 @@ inline RVector transMult(const MatrixBase & A, const RVector & b){
     return A.transMult(b);
 }
 template < class ValueType, template < typename > class Mat >
-Vector < ValueType > transMult(const Mat< ValueType > & A, 
+Vector < ValueType > transMult(const Mat< ValueType > & A,
                                const Vector < ValueType > & b){
     return A.transMult(b);
 }

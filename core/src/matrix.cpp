@@ -31,6 +31,8 @@
 
 namespace GIMLI{
 
+template class DenseMatrix< double >;
+
 #define _MATRIX_WS_SIZE 8192
 
 static double _wsA[_MATRIX_WS_SIZE];
@@ -327,7 +329,7 @@ void matMult_RM(const RMatrix & A, const RMatrix & B,
     A.dumpData(&_wsA[0]);
     B.dumpData(&_wsB[0]);
     C.dumpData(&_wsC[0]);
-    
+
     // double *A2 = new double[m * k];
     // double *B2 = new double[k * n];
     // double *C2 = new double[m * n];
@@ -489,7 +491,7 @@ void matTransMult_RM(const RMatrix & A, const RMatrix & B,
     }
 
 #if OPENBLAS_CBLAS_FOUND
-    
+
     if (noCBlas()){
         matTransMult_RM_(A, B, C, a, b, bIsTrans, n);
     }
@@ -499,7 +501,7 @@ void matTransMult_RM(const RMatrix & A, const RMatrix & B,
     CBLAS_TRANSPOSE bTrans = CblasNoTrans;
 
     if (bIsTrans) bTrans = CblasTrans;
-    
+
     if ((k * m) > _MATRIX_WS_SIZE || (k * n) > _MATRIX_WS_SIZE || (m * n) > _MATRIX_WS_SIZE){
         __MS(k * m, k * n, m * n )
         THROW_TO_IMPL
@@ -513,7 +515,7 @@ void matTransMult_RM(const RMatrix & A, const RMatrix & B,
     A.dumpData(&_wsA[0]);
     B.dumpData(&_wsB[0]);
     C.dumpData(&_wsC[0]);
-    
+
 
     // A.dumpData(A2);
     // B.dumpData(B2);

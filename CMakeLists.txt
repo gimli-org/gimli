@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10) 
+cmake_minimum_required(VERSION 3.10)
 #recommanded: cmake_minimum_required(VERSION 3.15)
 #BOOST_MAX_VERISION: 1.65 UBUNTU:18
 
@@ -60,15 +60,15 @@ if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX)
 
     set(CMAKE_CXX_NO_WARNING "${CMAKE_CXX_NO_WARNING} -Wno-class-memaccess") # new since gcc.8 maybe need to be checked
     set(CMAKE_CXX_NO_WARNING "${CMAKE_CXX_NO_WARNING} -Wno-int-in-bool-context") # BVector * bool .. need exclusion for type specs
-    
+
     set(CMAKE_CXX_FLAGS_RELEASE "_UNSET" CACHE STRING "")
     set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
     # run with -DCMAKE_BUILD_TYPE=Debug
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -pg -O2 -ansi -pedantic -fno-omit-frame-pointer -Wall ${CMAKE_CXX_NO_WARNING}")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -pg -ansi -pedantic -fno-omit-frame-pointer -Wall ${CMAKE_CXX_NO_WARNING}")
     set(CMAKE_LDD_FLAGS_DEBUG "-ltcmalloc")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -ansi -pedantic -fno-omit-frame-pointer -Wall ${CMAKE_CXX_NO_WARNING}")
-        
+
     if (WIN32 OR CONDA_BUILD)
         set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-deprecated-declarations")
         set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wno-class-memaccess") # new since gcc.8 maybe need to be checked
@@ -104,7 +104,7 @@ if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX)
     if (NOT WIN32 AND ASAN)
         set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address")
     endif()
-    
+
 elseif(MSVC)
 	# MSVC complain a lot of possible unsecure std function
 	add_definitions(-D_SCL_SECURE_NO_WARNINGS)
@@ -243,7 +243,7 @@ message(STATUS "Trying to guess boost installation:")
 
 if (NOT Boost_INCLUDE_DIR)
     message(STATUS "no Boost_INCLUDE_DIR")
-    
+
     if (BOOST_ROOT)
         message(STATUS "Found boost root: ${BOOST_ROOT}")
         get_filename_component(BOOST_ROOT "${BOOST_ROOT}" ABSOLUTE)
@@ -310,7 +310,7 @@ endfunction()
 
 if (NOT Boost_PYTHON_LIBRARY)
     message(STATUS "boost-python not found by cmake ... trying to determine boost-python now manually ...")
-    
+
     if (WIN32)
         set(bp_version "python${Python_VERSION_MAJOR}${Python_VERSION_MINOR}-mt")
         string(TOUPPER ${bp_version} BP_VERSION)
@@ -319,7 +319,7 @@ if (NOT Boost_PYTHON_LIBRARY)
         find_package(Boost 1.65 COMPONENTS "${bp_version}")
 
         ## local var evaluated before cache, and cache setting does not overwrite local.
-        ## so we need to set booth here for repeated cmake calls 
+        ## so we need to set booth here for repeated cmake calls
         set(Boost_PYTHON_FOUND ${Boost_${bp_version}_FOUND} CACHE BOOL "boost python found")
         set(Boost_PYTHON_FOUND TRUE)
         set(Boost_PYTHON_LIBRARY ${Boost_${BP_VERSION}_LIBRARY} CACHE FILEPATH "boost python lib")
@@ -328,12 +328,12 @@ if (NOT Boost_PYTHON_LIBRARY)
         if (NOT Boost_PYTHON_FOUND)
             set(Boost_PYTHON_LIBRARY ${BOOST_ROOT}/lib/libboost_${bp_version}.dll)
             message(STATUS "... (win32) looking for ${Boost_PYTHON_LIBRARY}")
-            
+
             if (EXISTS ${Boost_PYTHON_LIBRARY})
                 message(STATUS "... found.")
                 set(Boost_PYTHON_FOUND TRUE CACHE BOOL "boost python found")
                 set(Boost_PYTHON_FOUND TRUE)
-               
+
                 set(Boost_PYTHON_LIBRARY ${Boost_PYTHON_LIBRARY} CACHE FILEPATH "boost python lib")
             else()
                 message(STATUS "Sorry but no boost-python found.")
@@ -410,7 +410,7 @@ find_library(Triangle_LIBRARIES
             )
 
 message(STATUS "Triangle_LIBRARIES = ${Triangle_LIBRARIES}")
-            
+
 find_or_build_package(Triangle triangle LOCAL)
 #find_package(Triangle)
 

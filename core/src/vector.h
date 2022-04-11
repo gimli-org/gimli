@@ -239,7 +239,7 @@ public:
      */
     Vector(const Vector< ValueType > & v)
         : size_(0), data_(0), capacity_(0){
-            
+
         if (v._borrowedData){
             __MS(v.size())
             __MS(v._borrowedDataOffset)
@@ -1008,9 +1008,9 @@ DEFINE_UNARY_MOD_OPERATOR__(*, MULT)
         return seed;
     }
 
-    // std::shared_ptr< ValueType [] > & borrowedData() const { 
+    // std::shared_ptr< ValueType [] > & borrowedData() const {
     //     return _borrowedData; }
-    
+
     std::shared_ptr< ValueType [] > _borrowedData;
     Index _borrowedDataOffset;
 protected:
@@ -1027,17 +1027,26 @@ protected:
     }
 
     void copy_(const Vector< ValueType > & v){
-        
+
         if (v.size()) {
+            if (this->_borrowedData){
+            __MS(this->_borrowedData)
+            __MS(this->_borrowedData.get())
+
+            }
+
+            __MS(*this)
             resize(v.size());
                 //"" check speed for memcpy here
                 //std::memcpy(data_, v.data_, sizeof(ValType)*v.size());
                 // memcpy is approx 0.3% faster but copy is extensively testet
                 // cleanest solution needs iterator rewriting:
                 // std::copy(v.begin(), v.end(), this->begin());
+            __MS(v)
+
             std::copy(&v[0], &v[v.size()], data_); // only works without bound check in subscription operator
-    //         __MS(data_)
-    //         __MS(*this)
+             __MS(data_)
+             __MS(*this)
         }
     }
 
@@ -1052,7 +1061,7 @@ protected:
     Index size_;
     ValueType * data_;
     Index capacity_;
-    
+
 
     static const Index minSizePerThread = 10000;
     static const int maxThreads = 8;

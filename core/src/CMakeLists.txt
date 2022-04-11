@@ -9,10 +9,18 @@ if (NOT MSVC)
 	list(REMOVE_ITEM SOURCE_FILES wingetopt.cpp)
 endif(NOT MSVC)
 
+
 ###########################################################################
 #                       SHARED LIBRARY SET UP
 ###########################################################################
 add_library(${libgimli_TARGET_NAME} SHARED ${SOURCE_FILES} ${HEADER_FILES})
+
+target_precompile_headers(${libgimli_TARGET_NAME}
+    PUBLIC
+        ${HEADER_FILES}
+    #    gimli.h
+    # INTERFACE
+)
 
 include (GenerateExportHeader)
 

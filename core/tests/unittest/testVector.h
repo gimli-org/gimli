@@ -260,7 +260,7 @@ public:
 //         std::less< std::complex<double> > l;
 //         std::cout << l(Complex(.0, 0.0), Complex(.0, 0.0)) << std::endl;
     }
-    
+
     void testFunctions(){
         typedef Vector < double > Vec;
 
@@ -387,25 +387,40 @@ public:
         CPPUNIT_ASSERT(A.rows() == 5);
         CPPUNIT_ASSERT(A.cols() == 5);
 
-        // A.resize(3, 2); CPPUNIT_ASSERT(A.cols() == 2);
-        // A.resize(8, 9); CPPUNIT_ASSERT(A.cols() == 9);
+        A.resize(3, 2); CPPUNIT_ASSERT(A.cols() == 2);
+        print(A);
+
+        A.resize(8, 9); CPPUNIT_ASSERT(A.cols() == 9);
+print(A);
 
         A[0][0] = 1.0;
-        A[1] = A[0];
+print(A);
+print("#", A[0]);
+print("+", A[1]);
+        A[1] = A[0];// copies borrowed content
+print(A);
+print("#", A[0]);
+print("+", A[1]);
 
         CPPUNIT_ASSERT(A[0] == A[1]);
 
         CPPUNIT_ASSERT(A.row(2) != A[1]);
+        print(A);
+
         CPPUNIT_ASSERT(A[0][0] == 1.0);
+        print(A);
         CPPUNIT_ASSERT(A[1][0] == 1.0);
 
         CPPUNIT_ASSERT(A == A);
         CPPUNIT_ASSERT(fliplr(fliplr(A)) == A);
 
         __M
-        A.push_back(A[0]); CPPUNIT_ASSERT(A.rows() == 9);
+        Vec T(5);
+        T = A[0]; // copies content
+        A.push_back(T); CPPUNIT_ASSERT(A.rows() == 9);
         __M
-        
+
+        CPPUNIT_ASSERT(A.back() == A[0]);
         CPPUNIT_ASSERT(A[A.rows()-1] == A.back());
 
         Mat B(A);
@@ -489,7 +504,7 @@ public:
         for (Index i = 0; i < m*k; i ++ ){_A[i] = i+1;}
         for (Index i = 0; i < k*n; i ++ ){_B[i] = i+1;}
 
-        //** Test A*B 
+        //** Test A*B
         GIMLI::RMatrix A(m, k, _A);
         GIMLI::RMatrix B(k, n, _B);
         GIMLI::RMatrix C;
@@ -533,7 +548,7 @@ public:
                        GIMLI::RVector(std::vector< double >{70., 80., 90}));
         CPPUNIT_ASSERT(C2[1] ==
                        GIMLI::RVector(std::vector< double >{158, 184, 210}));
-        
+
         //** Test AT*B where should be transposed to fit dimensions
 
         GIMLI::matTransMult(AT, BT, C2, 1.0, 0.0);
@@ -552,7 +567,7 @@ public:
         B += 2.0;
         GIMLI::RMatrix AB(2, 3);
         AB += 3.0; AB[0][2] = 5; AB[1][2] = 5;
-        
+
         // std::cout << "A\n" << A << std::endl;
         // std::cout << "B\n" << B << std::endl;
 
@@ -563,7 +578,7 @@ public:
 
         CPPUNIT_ASSERT(A+B == AB);
         CPPUNIT_ASSERT(B+A == AB);
-        
+
 
         A = GIMLI::RMatrix(3, 1);
         A += 1.0; A[2][0] = 3;
@@ -571,7 +586,7 @@ public:
         B += 2.0;
         AB = GIMLI::RMatrix(3, 2);
         AB += 3.0; AB[2][0] = 5; AB[2][1] = 5;
-        
+
 
         // std::cout << "A" << A << std::endl;
         // std::cout << "B" << B << std::endl;
@@ -655,7 +670,7 @@ public:
         CPPUNIT_ASSERT((E.values() == GIMLI::RVector{0, 4, 8}));
         CPPUNIT_ASSERT((E.rowIDs() == GIMLI::IVector{0, 1, 2}));
         CPPUNIT_ASSERT((E.colIDs() == GIMLI::IVector{0, 1, 2}));
-    
+
     }
 
     void testIO(){
