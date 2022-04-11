@@ -1030,23 +1030,22 @@ protected:
 
         if (v.size()) {
             if (this->_borrowedData){
-            __MS(this->_borrowedData)
-            __MS(this->_borrowedData.get())
-
+                // __MS(this->_borrowedData)
+                // __MS(this->_borrowedData.get())
             }
 
-            __MS(*this)
+            // __MS(*this)
             resize(v.size());
                 //"" check speed for memcpy here
                 //std::memcpy(data_, v.data_, sizeof(ValType)*v.size());
                 // memcpy is approx 0.3% faster but copy is extensively testet
                 // cleanest solution needs iterator rewriting:
                 // std::copy(v.begin(), v.end(), this->begin());
-            __MS(v)
+            // __MS(v)
 
             std::copy(&v[0], &v[v.size()], data_); // only works without bound check in subscription operator
-             __MS(data_)
-             __MS(*this)
+            //  __MS(data_)
+            //  __MS(*this)
         }
     }
 

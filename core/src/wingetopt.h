@@ -1,3 +1,4 @@
+
 #ifndef __GETOPT_H__
 /**
  * DISCLAIMER
@@ -12,11 +13,13 @@
 
 #define __GETOPT_H__
 
+#if defined(WINDOWS) || defined(_WIN32) || defined(WIN32)
+
 /* All the headers include this file. */
 #include <crtdefs.h>
 
 #ifdef __cplusplus
-extern "C" {
+  extern "C" {
 #endif
 
 extern int optind;		/* index of first non-option in argv      */
@@ -38,6 +41,7 @@ extern int getopt(int nargc, char * const *nargv, const char *options);
 # define optreset  __mingw_optreset
 extern int optreset;
 #endif
+
 #ifdef __cplusplus
 }
 #endif
@@ -50,7 +54,10 @@ extern int optreset;
  * specific block, only when *not* __UNISTD_H_SOURCED__, in which
  * to declare the extended API.
  */
+#endif /* defined(WINDOWS) || defined(_WIN32) || defined(WIN32) */
 #endif /* !defined(__GETOPT_H__) */
+
+#if defined(WINDOWS) || defined(_WIN32) || defined(WIN32)
 
 #if !defined(__UNISTD_H_SOURCED__) && !defined(__GETOPT_LONG_H__)
 #define __GETOPT_LONG_H__
@@ -85,11 +92,13 @@ extern int getopt_long_only(int nargc, char * const *nargv, const char *options,
 /*
  * ...for the long form API only; keep this for compatibility.
  */
-# define HAVE_DECL_GETOPT	1
+  # define HAVE_DECL_GETOPT	1
 #endif
 
 #ifdef __cplusplus
-}
+  }
 #endif
+
+#endif /* defined(WINDOWS) || defined(_WIN32) || defined(WIN32) */
 
 #endif /* !defined(__UNISTD_H_SOURCED__) && !defined(__GETOPT_LONG_H__) */

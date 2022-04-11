@@ -388,37 +388,31 @@ public:
         CPPUNIT_ASSERT(A.cols() == 5);
 
         A.resize(3, 2); CPPUNIT_ASSERT(A.cols() == 2);
-        print(A);
-
         A.resize(8, 9); CPPUNIT_ASSERT(A.cols() == 9);
-print(A);
-
         A[0][0] = 1.0;
-print(A);
-print("#", A[0]);
-print("+", A[1]);
         A[1] = A[0];// copies borrowed content
-print(A);
-print("#", A[0]);
-print("+", A[1]);
 
         CPPUNIT_ASSERT(A[0] == A[1]);
 
         CPPUNIT_ASSERT(A.row(2) != A[1]);
-        print(A);
-
+ 
         CPPUNIT_ASSERT(A[0][0] == 1.0);
-        print(A);
         CPPUNIT_ASSERT(A[1][0] == 1.0);
 
         CPPUNIT_ASSERT(A == A);
+        
+        Mat A2(A);
+        CPPUNIT_ASSERT(A2 == A);
+        Mat A3;
+        A3 = A;
+        CPPUNIT_ASSERT(A3 == A);
+
         CPPUNIT_ASSERT(fliplr(fliplr(A)) == A);
 
-        __M
         Vec T(5);
         T = A[0]; // copies content
-        A.push_back(T); CPPUNIT_ASSERT(A.rows() == 9);
-        __M
+        A.push_back(T); 
+        CPPUNIT_ASSERT(A.rows() == 9);
 
         CPPUNIT_ASSERT(A.back() == A[0]);
         CPPUNIT_ASSERT(A[A.rows()-1] == A.back());

@@ -417,23 +417,36 @@ public:
     /*! Return entity rtti value. */
     virtual uint rtti() const { return GIMLI_DENSE_MATRIX_RTTI; }
 
+    DenseMatrix() : MatrixBase(), _cols(0), _rows(0) {
+        this->resize(0, 0);
+    }
+
     /*!Create Densematrix with specified dimensions.*/
-    DenseMatrix(Index rows, Index cols) : MatrixBase(), _cols(0) {
+    DenseMatrix(Index rows, Index cols) : MatrixBase(), _cols(0), _rows(0) {
         this->resize(rows, cols);
     }
-    ~DenseMatrix(){
+    DenseMatrix(const DenseMatrix < ValueType > & mat) : MatrixBase(), _cols(0), _rows(0) {
+        copy_(mat);
+    }
+ 
+    virtual ~DenseMatrix(){
         free_();
+    }
+    DenseMatrix < ValueType > & operator=(const DenseMatrix < ValueType > & mat) {
+        if (this != & mat){
+            copy_(mat);
+        } return *this;
     }
 
     /*!Return write access \ref Vector of borrowed memory for the ith row.*/
     Vector< ValueType > operator[](Index i) {
         ASSERT_THIS_SIZE(i)
-        return Vector< ValueType >(this->_cols, _data, i * this->_rows);
+        return Vector< ValueType >(this->_cols, _data, this->_cols * i);
     }
     /*!Return \ref Vector of borrowed memory for the ith row.*/
     Vector< ValueType > operator[](Index i) const {
         ASSERT_THIS_SIZE(i)
-        return Vector< ValueType >(this->_cols, _data, i * this->_rows);
+        return Vector< ValueType >(this->_cols, _data, this->_cols * i);
     }
     /*! Read only access to matrix element i,j. */
     inline const ValueType & operator ()(Index i, Index j) const {
@@ -491,20 +504,26 @@ public:
         ASSERT_VEC_SIZE(vec, this->_cols)
         log(Warning, "Efficency .. push_back for dense matrix not recommanded");
         __MS("Check Refcounter!")
+
         if (_data.use_count() > 1){
             __MS(_data.use_count())
             log(Error, "Cannot push_back on data that has been borrowed.");
         }
-        std::shared_ptr< ValueType [] > d(new ValueType[(_rows+1)*_cols]);
-        __M
-        std::memcpy(&d[0], &_data[0], _rows*_cols);
-        __M
-        this->_rows ++;
-        __M
+        Index oldLength = length();
+        
+        ValueType tmp[oldLength];
+        std::memcpy(tmp, &_data[0], oldLength);
+        this->resize(_rows+1, _cols);
+        std::memcpy(&_data[0], tmp, oldLength);
+
+        // std::shared_ptr< ValueType [] > d(new ValueType[(_rows+1)*_cols]);
+        // std::memcpy(&d[0], &_data[0], length());
+        // this->_rows ++;
+        // __M
         operator[](this->_rows-1) = vec;
-        __M
-        _data = d;
-        __M
+        // __M
+        // _data = d; 
+        // __M
     }
 
     #define DEFINE_UNARY_MOD_OPERATOR__(OP, NAME) \
@@ -552,6 +571,19 @@ public:
 
     #undef DEFINE_UNARY_MOD_OPERATOR__
 
+    /*! A += a.T*/
+    DenseMatrix < ValueType > & transAdd(const DenseMatrix < ValueType > & a);
+
+    /*! Multiplication (A*b) with a vector of the same value type. */
+    Vector < ValueType > mult(const Vector < ValueType > & b) const;
+
+    /*! Multiplication (A*b) with a part of a vector between two defined indices. */
+    Vector < ValueType > mult(const Vector < ValueType > & b,
+                              Index startI, Index endI) const;
+
+    /*! Transpose multiplication (A^T*b) with a vector of the same value type. */
+    Vector< ValueType > transMult(const Vector < ValueType > & b) const;
+
     /*! Resize the matrix to rows x cols. */
     virtual void round(ValueType tol){
         THROW_TO_IMPL
@@ -577,11 +609,15 @@ public:
     /*! Return number of colums. */
     inline Index cols() const { return this->_cols; }
 
+    inline Index length() const {return this->_rows * this->_cols;}
 
 protected:
+    void copy_(const DenseMatrix< ValueType > & mat){
+        resize(mat.rows(), mat.cols());
+        std::memcpy(_data.get(), mat.pData(), sizeof(ValueType) * length());
+    }
 
     void allocate_(Index rows, Index cols){
-
         if (rows * cols > _rows * _cols){
 
             if (_data.use_count() > 1){
@@ -591,11 +627,8 @@ protected:
             if (_data.use_count() == 1){
                 _data.reset();
             }
-
             _data = std::shared_ptr< ValueType [] >(new ValueType[rows*cols]);
-            if (rows*cols > 0) {
-                std::memset(_data.get(), '\0', sizeof(ValueType) * rows*cols);
-            }
+            std::memset(_data.get(), '\0', sizeof(ValueType) * rows*cols);
         }
         _rows = rows;
         _cols = cols;
@@ -637,6 +670,26 @@ DEFINE_BINARY_OPERATOR__(*, MULT)
 
 #undef DEFINE_BINARY_OPERATOR__
 
+template <> DLLEXPORT Vector<double>
+DenseMatrix<double>::mult(const Vector < double > & b, Index startI, Index endI) const;
+template <> DLLEXPORT Vector<Complex>
+DenseMatrix<Complex>::mult(const Vector < Complex > & b, Index startI, Index endI) const;
+
+template <> DLLEXPORT Vector<double>
+DenseMatrix<double>::mult(const Vector < double > & b) const;
+template <> DLLEXPORT Vector<Complex>
+DenseMatrix<Complex>::mult(const Vector < Complex > & b) const;
+
+template <> DLLEXPORT Vector<double>
+DenseMatrix<double>::transMult(const Vector < double > & b) const;
+template <> DLLEXPORT Vector<Complex>
+DenseMatrix<Complex>::transMult(const Vector < Complex > & b) const;
+
+template <> DLLEXPORT DenseMatrix<double> &
+DenseMatrix<double>::transAdd(const DenseMatrix < double > & a);
+template <> DLLEXPORT DenseMatrix<Complex> &
+DenseMatrix<Complex>::transAdd(const DenseMatrix < Complex > & a);
+
 
 //! Simple row-based dense matrix based on \ref Vector
 /*! Simple row-based dense matrix based on \ref Vector */
@@ -674,7 +727,7 @@ public:
     Matrix(const std::string & fileName)
         : MatrixBase() { this->load(fileName); }
 
-    /*! Copyconstructor */
+    /*! Copy constructor */
     Matrix(const Matrix < ValueType > & mat)
         : MatrixBase() { copy_(mat); }
 

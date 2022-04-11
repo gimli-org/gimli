@@ -90,6 +90,43 @@ void toRVector(const Eigen::VectorXd & m, RVector & r, double b){
 }
 #endif
 
+
+template <> Vector<double>
+DenseMatrix<double>::mult(const Vector < double > & b, Index startI, Index endI) const {
+    THROW_TO_IMPL
+}
+template <> Vector<Complex>
+DenseMatrix<Complex>::mult(const Vector < Complex > & b, Index startI, Index endI) const {
+    THROW_TO_IMPL
+}
+template <> Vector<double>
+DenseMatrix<double>::mult(const Vector < double > & b) const{
+    THROW_TO_IMPL
+}
+template <> Vector<Complex>
+DenseMatrix<Complex>::mult(const Vector < Complex > & b) const{
+    THROW_TO_IMPL
+}
+template <> Vector<double>
+DenseMatrix<double>::transMult(const Vector < double > & b) const{
+    THROW_TO_IMPL
+}
+template <> Vector<Complex>
+DenseMatrix<Complex>::transMult(const Vector < Complex > & b) const{
+    THROW_TO_IMPL
+}
+template <> DenseMatrix<double> &
+DenseMatrix<double>::transAdd(const DenseMatrix < double > & a) {
+    THROW_TO_IMPL
+}
+template <> DenseMatrix<Complex> &
+DenseMatrix<Complex>::transAdd(const DenseMatrix < Complex > & a){
+    THROW_TO_IMPL
+}
+
+
+
+
 template < class ValueType > Vector < ValueType >
 _mult(const Matrix< ValueType > & M, const Vector < ValueType > & b) {
     Index cols = M.cols();

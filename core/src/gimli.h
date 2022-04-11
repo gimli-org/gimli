@@ -1,3 +1,4 @@
+
 /******************************************************************************
  *   Copyright (C) 2006-2022 by the GIMLi development team                    *
  *   Carsten Rücker carsten@resistivity.net                                   *
