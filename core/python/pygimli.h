@@ -508,6 +508,7 @@ namespace pyplusplus{ namespace aliases{
     typedef GIMLI::Matrix3< double >                     RMatrix3;
     typedef GIMLI::Matrix< std::complex< double > >      CMatrix;
     typedef GIMLI::DenseMatrix< double >                 RDenseMatrix;
+    typedef GIMLI::DenseMatrix< std::complex< double > > CDenseMatrix;
 
     typedef GIMLI::BlockMatrix< double >                 RBlockMatrix;
 

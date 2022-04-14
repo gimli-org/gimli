@@ -330,6 +330,7 @@ typedef Matrix < Complex > CMatrix;
 typedef BlockMatrix < double > RBlockMatrix;
 
 typedef DenseMatrix < double > RDenseMatrix;
+typedef DenseMatrix < Complex > CDenseMatrix;
 
 //#typedef Vector< unsigned char > BVector;
 

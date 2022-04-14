@@ -241,8 +241,8 @@ public:
         : size_(0), data_(0), capacity_(0){
 
         if (v._borrowedData){
-            __MS(v.size())
-            __MS(v._borrowedDataOffset)
+            // __MS(v.size())
+            // __MS(v._borrowedDataOffset)
             size_ = v.size();
             this->_borrowedData = v._borrowedData;
             this->_borrowedDataOffset = v._borrowedDataOffset;

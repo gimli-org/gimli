@@ -410,6 +410,26 @@ protected:
 };
 
 
+/*! c = alpha * A*b + beta * c */
+void DLLEXPORT mult(const RDenseMatrix & A, const RVector & b, RVector & c, 
+                    const double & alpha=1.0, 
+                    const double & beta=0.0);
+/*! c = alpha * A*b + beta * c */
+void DLLEXPORT mult(const RMatrix & A, const RVector & b, RVector & c, 
+                    const double & alpha=1.0, 
+                    const double & beta=0.0);
+
+/*! c = alpha * A*b + beta * c */
+void DLLEXPORT mult(const CDenseMatrix & A, const CVector & b, CVector & c,
+                    const Complex & alpha=Complex(1.0), 
+                    const Complex & beta=Complex(0.0));
+
+/*! c = alpha * A*b + beta * c */
+void DLLEXPORT mult(const CMatrix & A, const CVector & b, CVector & c,
+                    const Complex & alpha=Complex(1.0), 
+                    const Complex & beta=Complex(0.0));
+
+
 //! Simple row-ordered dense matrix based on continuous memory block.
 /*! Simple row-ordered dense matrix based on continuous memory block. */
 template < class ValueType > class DLLEXPORT DenseMatrix : public MatrixBase {
@@ -451,13 +471,11 @@ public:
 
     /*!Return write access \ref Vector of borrowed memory for the ith row.*/
     Vector< ValueType > operator[](Index i) {
-        ASSERT_THIS_SIZE(i)
-        return Vector< ValueType >(this->_cols, _data, this->_cols * i);
+        return row(i);
     }
     /*!Return \ref Vector of borrowed memory for the ith row.*/
     Vector< ValueType > operator[](Index i) const {
-        ASSERT_THIS_SIZE(i)
-        return Vector< ValueType >(this->_cols, _data, this->_cols * i);
+        return row(i);
     }
     /*! Read only access to matrix element i,j. */
     inline const ValueType & operator ()(Index i, Index j) const {
@@ -477,20 +495,29 @@ public:
 
     /*! Read only access to matrix row i. */
     inline Vector< ValueType > operator ()(Index i) const {
-        return this->operator[](i);
+        return row(i);
     }
 
     /*! Write access to matrix row i */
     inline Vector< ValueType > operator ()(Index i) {
-        return this->operator[](i);
+        return row(i);
     }
 
-    inline const ValueType * pData() const { return _data.get(); }
-    inline ValueType * pData(){ return _data.get(); }
+    inline void setVal(Index i, Index j, const ValueType & v){
+        _data[this->_cols * i + j]  = v;
+    }
+    inline void addVal(Index i, Index j, const ValueType & v){
+        _data[this->_cols * i + j] += v;
+    }
 
+    inline ValueType * pData(){ return _data.get(); }
+    inline const ValueType * pData() const { return _data.get(); }
+    // #ifndef PYGIMLI_CAST
+    // #endif
     std::shared_ptr< ValueType [] > & data(){
         return _data;
     }
+
     /*! For template compatablity. Does nothing but return data buffer.*/
     ValueType * toData(ValueType * target) const {
         return _data.get();
@@ -498,8 +525,6 @@ public:
     /*! For template compatablity. Does nothing if src is equal data or perform memcopy. */
     void fromData(ValueType * src, Index m, Index n){
         if (src != _data.get()){
-            __MS(src)
-            __MS(_data.get())
             __MS("should I be here? Check!")
             ASSERT_THIS_SIZE(m)
             ASSERT_EQUAL(n, this->_cols)
@@ -507,14 +532,14 @@ public:
         }
     }
 
-    inline Vector< ValueType > row(Index i) const {
-        return this->operator[](i);
-    }
-    inline Vector< ValueType > row(Index i) {
-        return this->operator[](i);
-    }
+    /*! Return read only view to row i*/
+    Vector< ValueType > row(Index i) const;
+
+    /*! Return view to row i*/
+    Vector< ValueType > row(Index i);
+
     inline void setRow(Index i, const Vector< ValueType > r ) const {
-        this->operator[](i).assign(r);
+        row(i).assign(r);
     }
 
     inline Vector< ValueType > col(Index c) const {
@@ -526,7 +551,7 @@ public:
     }
     inline Vector< ValueType > back() {
         ASSERT_THIS_SIZE(1)
-        return this->operator[](_rows - 1);
+        return row(_rows - 1);
     }
     void push_back(const Vector< ValueType > & vec) {
         ASSERT_VEC_SIZE(vec, this->_cols)
@@ -539,7 +564,7 @@ public:
         }
         Index oldLength = length();
 
-        ValueType tmp[oldLength];
+        ValueType *tmp = new ValueType[oldLength];
         std::memcpy(tmp, &_data[0], oldLength);
         this->resize(_rows+1, _cols);
         std::memcpy(&_data[0], tmp, oldLength);
@@ -548,7 +573,8 @@ public:
         // std::memcpy(&d[0], &_data[0], length());
         // this->_rows ++;
         // __M
-        operator[](this->_rows-1) = vec;
+        row(this->_rows-1).assign(vec);
+        delete [] tmp;
         // __M
         // _data = d;
         // __M
@@ -557,15 +583,15 @@ public:
     #define DEFINE_UNARY_MOD_OPERATOR__(OP, NAME) \
     inline DenseMatrix < ValueType > & operator OP##=(const DenseMatrix < ValueType>&A){\
         if (A.rows() == this->rows() && A.cols() == this->cols()) { \
-            for (Index i = 0; i < _rows*_cols; i ++) {_data[i] OP##= A.pData()[i];} \
+            for (Index i = 0; i < length(); i ++) {_data[i] OP##= A.pData()[i];} \
             return *this;\
         }\
         if (A.rows() == 1 && A.cols() == this->cols()) { \
-            for (Index i = 0; i < this->size(); i ++) {this->operator[](i) OP##= A[0]; }\
+            for (Index i = 0; i < this->size(); i ++) {row(i) OP##= A[0]; }\
             return *this;\
         } \
         if (A.cols() == 1 && A.rows() == this->rows()) { \
-            for (Index i = 0; i < this->size(); i ++) {this->operator[](i) OP##= A[i][0];} \
+            for (Index i = 0; i < this->size(); i ++) {row(i) OP##= A[i][0];} \
             return *this;\
         } \
         if (this->rows() == 1 && this->cols() == A.cols()){ \
@@ -588,9 +614,9 @@ public:
         return *this;\
     }\
     inline DenseMatrix < ValueType > & operator OP##= (const ValueType & val) { \
-      for (Index i = 0; i < _rows*_cols; i ++){_data.get()[i] OP##= val;}return*this;}\
+      for (Index i = 0; i < length(); i ++){_data.get()[i] OP##= val;}return*this;}\
     inline DenseMatrix < ValueType > & operator OP##= (const Vector < ValueType > & val) { \
-      for (Index i = 0; i < this->size(); i ++){this->operator[](i) OP##= val;}return*this;}\
+      for (Index i = 0; i < this->size(); i ++){row(i) OP##= val;}return*this;}\
 
     DEFINE_UNARY_MOD_OPERATOR__(+, PLUS)
     DEFINE_UNARY_MOD_OPERATOR__(-, MINUS)
@@ -603,7 +629,12 @@ public:
     DenseMatrix < ValueType > & transAdd(const DenseMatrix < ValueType > & a);
 
     /*! Multiplication (A*b) with a vector of the same value type. */
-    Vector < ValueType > mult(const Vector < ValueType > & b) const;
+    inline Vector < ValueType > mult(const Vector < ValueType > & x) const {
+        ASSERT_VEC_SIZE(x, cols())
+        Vector < ValueType > ret(rows(), 0.0);
+        GIMLI::mult((*this), x, ret); 
+        return ret;
+    }
 
     /*! Multiplication (A*b) with a part of a vector between two defined indices. */
     Vector < ValueType > mult(const Vector < ValueType > & b,
@@ -613,10 +644,7 @@ public:
     Vector< ValueType > transMult(const Vector < ValueType > & b) const;
 
     /*! Round all values of this matrix to tol.*/
-    inline void round(const ValueType & tol){
-        Vector < ValueType > view(length(), this->_data, 0);
-        view.round(tol);
-    }
+    void round(const ValueType & tol);
 
     /*! Resize the matrix to rows x cols. */
     virtual void resize(Index rows, Index cols){
@@ -699,15 +727,25 @@ DEFINE_BINARY_OPERATOR__(*, MULT)
 
 #undef DEFINE_BINARY_OPERATOR__
 
+template <> DLLEXPORT Vector< double > 
+DenseMatrix< double >::row(Index i) const;
+template <>  DLLEXPORT Vector< double > 
+DenseMatrix< double >::row(Index i);
+template <>  DLLEXPORT void
+DenseMatrix< double >::round(const double & v);
+
+template <> Vector< Complex >
+DenseMatrix< Complex >::row(Index i) const;
+template <> Vector< Complex >
+DenseMatrix< Complex >::row(Index i);
+template <>  DLLEXPORT void
+DenseMatrix< Complex >::round(const Complex & v);
+
+
 template <> DLLEXPORT Vector<double>
 DenseMatrix<double>::mult(const Vector < double > & b, Index startI, Index endI) const;
 template <> DLLEXPORT Vector<Complex>
 DenseMatrix<Complex>::mult(const Vector < Complex > & b, Index startI, Index endI) const;
-
-template <> DLLEXPORT Vector<double>
-DenseMatrix<double>::mult(const Vector < double > & b) const;
-template <> DLLEXPORT Vector<Complex>
-DenseMatrix<Complex>::mult(const Vector < Complex > & b) const;
 
 template <> DLLEXPORT Vector<double>
 DenseMatrix<double>::transMult(const Vector < double > & b) const;
@@ -1004,8 +1042,13 @@ public:
     Matrix < ValueType > & transAdd(const Matrix < ValueType > & a);
 
     /*! Multiplication (A*b) with a vector of the same value type. */
-    Vector < ValueType > mult(const Vector < ValueType > & b) const;
-
+    inline Vector < ValueType > mult(const Vector < ValueType > & x) const {
+        ASSERT_VEC_SIZE(x, cols())
+        Vector < ValueType > ret(rows(), 0.0);
+        GIMLI::mult(*this, x, ret); 
+        return ret;
+    }
+    
     /*! Multiplication (A*b) with a part of a vector between two defined indices. */
     Vector < ValueType > mult(const Vector < ValueType > & b,
                               Index startI, Index endI) const;
@@ -1075,11 +1118,6 @@ template <> DLLEXPORT Vector<Complex>
 Matrix<Complex>::mult(const Vector < Complex > & b, Index startI, Index endI) const;
 
 template <> DLLEXPORT Vector<double>
-Matrix<double>::mult(const Vector < double > & b) const;
-template <> DLLEXPORT Vector<Complex>
-Matrix<Complex>::mult(const Vector < Complex > & b) const;
-
-template <> DLLEXPORT Vector<double>
 Matrix<double>::transMult(const Vector < double > & b) const;
 template <> DLLEXPORT Vector<Complex>
 Matrix<Complex>::transMult(const Vector < Complex > & b) const;
@@ -1109,49 +1147,49 @@ DEFINE_BINARY_OPERATOR__(*, MULT)
 
 #undef DEFINE_BINARY_OPERATOR__
 
-template< class ValueType > class DLLEXPORT Mult{
-public:
-    Mult(Vector< ValueType > & x, const Vector< ValueType > & b, const Matrix < ValueType > & A, Index start, Index end) :
-        x_(&x), b_(&b), A_(&A), start_(start), end_(end){
-    }
-    void operator()() {
-        for (Index i = start_; i < end_; i++) (*x_)[i] = sum((*A_)[i] * *b_);
-    }
+// template< class ValueType > class DLLEXPORT Mult{
+// public:
+//     Mult(Vector< ValueType > & x, const Vector< ValueType > & b, const Matrix < ValueType > & A, Index start, Index end) :
+//         x_(&x), b_(&b), A_(&A), start_(start), end_(end){
+//     }
+//     void operator()() {
+//         for (Index i = start_; i < end_; i++) (*x_)[i] = sum((*A_)[i] * *b_);
+//     }
 
-    Vector< ValueType > * x_;
-    const Vector< ValueType > * b_;
-    const Matrix< ValueType > * A_;
-    Index start_;
-    Index end_;
-};
+//     Vector< ValueType > * x_;
+//     const Vector< ValueType > * b_;
+//     const Matrix< ValueType > * A_;
+//     Index start_;
+//     Index end_;
+// };
 
-template < class ValueType >
-Vector < ValueType > multMT(const Matrix < ValueType > & A, const Vector < ValueType > & b){
-#ifdef USE_THREADS
-    Index cols = A.cols();
-    Index rows = A.rows();
+// template < class ValueType >
+// Vector < ValueType > multMT(const Matrix < ValueType > & A, const Vector < ValueType > & b){
+// #ifdef USE_THREADS
+//     Index cols = A.cols();
+//     Index rows = A.rows();
 
-    Vector < ValueType > ret(rows);
-    boost::thread_group threads;
-    Index nThreads = 2;
-    Index singleCalcCount = Index(ceil((double)rows / (double)nThreads));
- //   CycleCounter cc;
+//     Vector < ValueType > ret(rows);
+//     boost::thread_group threads;
+//     Index nThreads = 2;
+//     Index singleCalcCount = Index(ceil((double)rows / (double)nThreads));
+//  //   CycleCounter cc;
 
-    for (Index i = 0; i < nThreads; i ++){
-// 	Vector < ValueType > *start = &A[singleCalcCount * i];
-//         Vector < ValueType > *end   = &A[singleCalcCount * (i + 1)];
-        Index start = singleCalcCount * i;
-        Index end   = singleCalcCount * (i + 1);
-	if (i == nThreads -1) end = A.rows();
-//	cc.tic();
-        threads.create_thread(Mult< ValueType >(ret, b, A, start, end));
-  //      std::cout << cc.toc() << std::endl;
-    }
-    threads.join_all();
-#else
-    return mult(A, b);
-#endif
-}
+//     for (Index i = 0; i < nThreads; i ++){
+// // 	Vector < ValueType > *start = &A[singleCalcCount * i];
+// //         Vector < ValueType > *end   = &A[singleCalcCount * (i + 1)];
+//         Index start = singleCalcCount * i;
+//         Index end   = singleCalcCount * (i + 1);
+// 	if (i == nThreads -1) end = A.rows();
+// //	cc.tic();
+//         threads.create_thread(Mult< ValueType >(ret, b, A, start, end));
+//   //      std::cout << cc.toc() << std::endl;
+//     }
+//     threads.join_all();
+// #else
+//     return mult(A, b);
+// #endif
+// }
 
 template < class Mat >
 bool operator == (const Mat & A, const Mat & B){
@@ -1645,6 +1683,8 @@ inline void save(const MatrixBase & A, const std::string & filename){
 inline void save(MatrixBase & A, const std::string & filename){
     A.save(filename);
 }
+
+
 
 inline RVector operator * (const MatrixBase & A, const RVector & b){
     return A.mult(b);

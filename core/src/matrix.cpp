@@ -90,35 +90,110 @@ void toRVector(const Eigen::VectorXd & m, RVector & r, double b){
 }
 #endif
 
-
-template <> Vector<double>
-DenseMatrix<double>::mult(const Vector < double > & b, Index startI, Index endI) const {
-    THROW_TO_IMPL
-    return Vector < double >();
+template <> Vector< double >
+DenseMatrix< double >::row(Index i) const {
+    ASSERT_THIS_SIZE(i)
+    return Vector< double >(this->_cols, _data, this->_cols * i);
 }
-template <> Vector<Complex>
-DenseMatrix<Complex>::mult(const Vector < Complex > & b, Index startI, Index endI) const {
-    THROW_TO_IMPL
-    return Vector < Complex >();
+template <> Vector< double >
+DenseMatrix< double >::row(Index i) {
+    ASSERT_THIS_SIZE(i)
+    return Vector< double >(this->_cols, _data, this->_cols * i);
 }
-template <> Vector<double>
-DenseMatrix<double>::mult(const Vector < double > & b) const{
-    ASSERT_VEC_SIZE(b, this->_cols)
-    Vector < double > ret(this->_rows);
+template <> void
+DenseMatrix< double >::round(const double & tol){
+    Vector < double > view(length(), this->_data, 0);
+    view.round(tol);
+}
+template <> Vector< Complex >
+DenseMatrix< Complex >::row(Index i) const {
+    ASSERT_THIS_SIZE(i)
+    return Vector< Complex >(this->_cols, _data, this->_cols * i);
+}
+template <> Vector< Complex >
+DenseMatrix< Complex >::row(Index i) {
+    ASSERT_THIS_SIZE(i)
+    return Vector< Complex >(this->_cols, _data, this->_cols * i);
+}
+template <> void
+DenseMatrix< Complex >::round(const Complex & tol){
+    THROW_TO_IMPL
+}
 
-    for (Index i = 0; i < this->_rows; i ++){
-        ret[i] = GIMLI::dot(row(i), b);
+template < class ValueType, class Mat > 
+void mult_T(const Mat & A, const Vector < ValueType > & b,
+          Vector < ValueType > & c, 
+          const ValueType & alpha, const ValueType & beta){
+    // Stopwatch sw;
+    for (Index i = 0; i < A.rows(); i ++){
+        c[i] = alpha * sum(A.row(i) * b);
+        if (beta != 0.0){
+            c[i] = alpha * sum(A.row(i) * b) + beta * c[i];
+        }
     }
+    // print("mult impl:", sw.duration());
+}
 
-    return ret;
+void mult(const RDenseMatrix & A, const Vector < double > & b,
+          Vector < double > & c, 
+          const double & alpha, const double & beta){
+    Index m = A.cols();
+    Index n = A.rows();
+    ASSERT_VEC_SIZE(b, n)
+    c.resize(m);
+
+#if OPENBLAS_CBLAS_FOUND
+    // Stopwatch sw;
+    if (noCBlas()){
+        mult_T(A, b, c, alpha, beta);
+    } else {
+        cblas_dgemv(CblasRowMajor, CblasNoTrans, m, n, alpha, 
+                    A.pData(), n, &b[0],
+                    1, beta, &c[0], 1);
+
+        // print("dgemv:", sw.duration());
+    }
+#else //#if OPENBLAS_CBLAS_FOUND
+    mult_T(A, b, c, alpha, beta);
+#endif
 }
-template <> Vector<Complex>
-DenseMatrix<Complex>::mult(const Vector < Complex > & b) const{
-    ASSERT_VEC_SIZE(b, this->_cols)
-    Vector < double > ret(this->_rows);
+void mult(const CDenseMatrix & A, const Vector < Complex > & b,
+          Vector < Complex > & c, 
+          const Complex & alpha, const Complex & beta){
+    Index m = A.cols();
+    Index n = A.rows();
+    ASSERT_VEC_SIZE(b, n)
+    c.resize(m);
+
+#if OPENBLAS_CBLAS_FOUND
+    Stopwatch sw;
+    if (noCBlas()){
+        mult_T(A, b, c, alpha, beta);
+    } else {
+        THROW_TO_IMPL
+        // cblas_dgemv(CblasRowMajor, CblasNoTrans, m, n, alpha, 
+        //             A.pData(), n, &b[0],
+        //             1, beta, &c[0], 1);
+
+        // print("dgemv:", sw.duration());
+    }
+#else //#if OPENBLAS_CBLAS_FOUND
+    mult_T(A, b, c, alpha, beta);
+#endif
+}
+
+template <> DLLEXPORT RVector
+DenseMatrix<double>::mult(const RVector & b, Index startI, Index endI) const{
     THROW_TO_IMPL
-    return ret;
+    return RVector();
 }
+template <> DLLEXPORT CVector
+DenseMatrix<Complex>::mult(const CVector & b, Index startI, Index endI) const{
+    THROW_TO_IMPL
+    return CVector();
+}
+
+
 template <> Vector<double>
 DenseMatrix<double>::transMult(const Vector < double > & b) const{
     ASSERT_VEC_SIZE(b, this->_rows)
@@ -150,32 +225,21 @@ DenseMatrix<Complex>::transAdd(const DenseMatrix < Complex > & a){
 //###########
 // Matrix related implementations
 //###########
-
-template < class ValueType > Vector < ValueType >
-_mult(const Matrix< ValueType > & M, const Vector < ValueType > & b) {
-    Index cols = M.cols();
-    Index rows = M.rows();
-
-    Vector < ValueType > ret(rows, 0.0);
-
-    //ValueType tmpval = 0;
-    if (b.size() == cols){
-        for (Index i = 0; i < rows; ++i){
-            ret[i] = sum(M.mat_[i] * b);
-            // for (Index j = 0; j < cols; j++){
-            //     ret[i] += M.mat_[i][j] * b[j];
-            // }
-        }
-    } else {
-        throwLengthError(WHERE_AM_I + " " + str(cols) + " != " + str(b.size()));
-    }
-    return ret;
+void mult(const RMatrix & A, const RVector & b, RVector & c, 
+          const double & alpha, const double & beta){
+    ASSERT_VEC_SIZE(b, A.rows())
+    c.resize(A.cols());
+    return mult_T(A, b, c, alpha, beta);
+    // Bufferalloc for OPENBLAS to xpensive
 }
 
-template<> Vector < double >
-Matrix< double >::mult(const Vector < double > & b) const { return _mult((*this), b); }
-template<> Vector < Complex >
-Matrix< Complex >::mult(const Vector < Complex > & b) const { return _mult((*this), b); }
+void mult(const CMatrix & A, const CVector & b,
+          CVector & c, const Complex & alpha, const Complex & beta){
+    ASSERT_VEC_SIZE(b, A.rows())
+    c.resize(A.cols());
+    return mult_T(A, b, c, alpha, beta);
+    // Bufferalloc for OPENBLAS to xpensive
+}
 
 template < class ValueType > Vector < ValueType >
 _mult(const Matrix< ValueType > & M, const Vector < ValueType > & b, Index startI, Index endI) {
@@ -186,6 +250,7 @@ _mult(const Matrix< ValueType > & M, const Vector < ValueType > & b, Index start
     if (bsize != cols) {
         throwLengthError(WHERE_AM_I + " " + str(cols) + " < " + str(endI) + "-" + str(startI));
     }
+    
     Vector < ValueType > ret(rows, 0.0);
     for (Index i = 0; i < rows; ++i){
         for (Index j = startI; j < endI; j++) {
@@ -307,6 +372,9 @@ void matMultABA_T(const Mat & A, const Mat & B,
 template < class Mat >
 void matMult_T_impl(const Mat & A, const Mat & B, Mat & C,
                  double a, double b, bool bIsTrans, Index n){
+    
+    Stopwatch sw;
+
     for (Index i = 0; i < A.rows(); i ++){
         for (Index j = 0; j < n; j ++){
             double c = 0;
@@ -328,6 +396,9 @@ void matMult_T_impl(const Mat & A, const Mat & B, Mat & C,
             }
         }
     }
+    
+    print("matmult_impl:", sw.duration());
+    
 }
 template < class Mat >
 void matMult_T(const Mat & A, const Mat & B,
@@ -375,8 +446,8 @@ void matMult_T(const Mat & A, const Mat & B,
 
     double * bA = A.toData(&_wsA[0]);
     double * bB = B.toData(&_wsB[0]);
-    double * bC = B.toData(&_wsC[0]);
-    __MS(bC)
+    double * bC = C.toData(&_wsC[0]);
+    // __MS(bC)
     // A.dumpData(&_wsA[0]);
     // B.dumpData(&_wsB[0]);
     // C.dumpData(&_wsC[0]);
@@ -393,16 +464,16 @@ void matMult_T(const Mat & A, const Mat & B,
     //             a, A2, m, B2, n, b, C2, n);
 
     // lda ## leading dimension for a, means column for CblasRowMajor
-    // Stopwatch sw;
+    Stopwatch sw;
     cblas_dgemm(CblasRowMajor, aTrans, bTrans,
                 m, n, k,
                 a, bA, k, bB, bRows,
                 b, bC, n);
 
     // if (debug()){
-    //     print("dgemm:", sw.duration());
+        print("dgemm:", sw.duration());
     // }
-    __MS(bC)
+    // __MS(bC)
     C.fromData(bC, m, n);
 
 

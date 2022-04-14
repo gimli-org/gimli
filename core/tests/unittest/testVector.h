@@ -465,8 +465,13 @@ public:
         testMatrix_< GIMLI::Matrix < double >, double >();
         testMatrix_< GIMLI::DenseMatrix < double >, double >();
 
+        GIMLI::setNoCBlas(true);
         testMatrixMult< GIMLI::Matrix < double > >();
         testMatrixMult< GIMLI::DenseMatrix < double > >();
+        GIMLI::setNoCBlas(false);
+        testMatrixMult< GIMLI::Matrix < double > >();
+        testMatrixMult< GIMLI::DenseMatrix < double > >();
+
         testMatrixResizes< GIMLI::Matrix < double > > ();
     }
 

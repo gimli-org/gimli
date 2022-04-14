@@ -15,10 +15,10 @@ endif(NOT MSVC)
 ###########################################################################
 add_library(${libgimli_TARGET_NAME} SHARED ${SOURCE_FILES} ${HEADER_FILES})
 
-target_precompile_headers(${libgimli_TARGET_NAME}
-PUBLIC
-${HEADER_FILES}
-)
+# target_precompile_headers(${libgimli_TARGET_NAME}
+# PUBLIC
+# ${HEADER_FILES}
+# )
 #INTERFACE
 #       gimli.h
 
