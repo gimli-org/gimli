@@ -24,12 +24,13 @@ BlockMatrix = pgcore.RBlockMatrix
 
 # General Monkeypatch core classes
 __Matrices = [pgcore.MatrixBase,
-              pgcore.RSparseMatrix,
-              pgcore.RSparseMapMatrix,
-              pgcore.CSparseMatrix,
-              pgcore.CSparseMapMatrix,
-              pgcore.RBlockMatrix,
-              pgcore.IdentityMatrix]
+              #pgcore.RSparseMatrix,
+              #pgcore.RSparseMapMatrix,
+              #pgcore.CSparseMatrix,
+              #pgcore.CSparseMapMatrix,
+              #pgcore.RBlockMatrix,
+              #pgcore.IdentityMatrix
+              ]
 
 for m in __Matrices:
     m.ndim = 2
@@ -42,6 +43,7 @@ pgcore.RSparseMapMatrix.dtype = np.float
 pgcore.CSparseMapMatrix.dtype = np.complex
 pgcore.RSparseMatrix.dtype = np.float
 pgcore.CSparseMatrix.dtype = np.complex
+pgcore.RDenseMatrix.dtype = np.float
 
 
 def __RMatrix_str(self):
@@ -136,6 +138,7 @@ def __ElementMatrix_str(self):
 
 
 pgcore.RMatrix.__repr__ = __RMatrix_str
+pgcore.RDenseMatrix.__repr__ = __RMatrix_str
 pgcore.CMatrix.__repr__ = __CMatrix_str
 pgcore.ElementMatrix.__repr__ = __ElementMatrix_str
 

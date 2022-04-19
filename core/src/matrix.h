@@ -411,22 +411,22 @@ protected:
 
 
 /*! c = alpha * A*b + beta * c */
-void DLLEXPORT mult(const RDenseMatrix & A, const RVector & b, RVector & c, 
-                    const double & alpha=1.0, 
+void DLLEXPORT mult(const RDenseMatrix & A, const RVector & b, RVector & c,
+                    const double & alpha=1.0,
                     const double & beta=0.0);
 /*! c = alpha * A*b + beta * c */
-void DLLEXPORT mult(const RMatrix & A, const RVector & b, RVector & c, 
-                    const double & alpha=1.0, 
+void DLLEXPORT mult(const RMatrix & A, const RVector & b, RVector & c,
+                    const double & alpha=1.0,
                     const double & beta=0.0);
 
 /*! c = alpha * A*b + beta * c */
 void DLLEXPORT mult(const CDenseMatrix & A, const CVector & b, CVector & c,
-                    const Complex & alpha=Complex(1.0), 
+                    const Complex & alpha=Complex(1.0),
                     const Complex & beta=Complex(0.0));
 
 /*! c = alpha * A*b + beta * c */
 void DLLEXPORT mult(const CMatrix & A, const CVector & b, CVector & c,
-                    const Complex & alpha=Complex(1.0), 
+                    const Complex & alpha=Complex(1.0),
                     const Complex & beta=Complex(0.0));
 
 
@@ -519,7 +519,7 @@ public:
     }
 
     /*! For template compatablity. Does nothing but return data buffer.*/
-    ValueType * toData(ValueType * target) const {
+    ValueType * toData(ValueType * target, Index size=0) const {
         return _data.get();
     }
     /*! For template compatablity. Does nothing if src is equal data or perform memcopy. */
@@ -632,7 +632,7 @@ public:
     inline Vector < ValueType > mult(const Vector < ValueType > & x) const {
         ASSERT_VEC_SIZE(x, cols())
         Vector < ValueType > ret(rows(), 0.0);
-        GIMLI::mult((*this), x, ret); 
+        GIMLI::mult((*this), x, ret);
         return ret;
     }
 
@@ -727,18 +727,18 @@ DEFINE_BINARY_OPERATOR__(*, MULT)
 
 #undef DEFINE_BINARY_OPERATOR__
 
-template <> DLLEXPORT Vector< double > 
+template <> DLLEXPORT Vector< double >
 DenseMatrix< double >::row(Index i) const;
-template <>  DLLEXPORT Vector< double > 
+template <> DLLEXPORT Vector< double >
 DenseMatrix< double >::row(Index i);
-template <>  DLLEXPORT void
+template <> DLLEXPORT void
 DenseMatrix< double >::round(const double & v);
 
-template <> Vector< Complex >
+template <> DLLEXPORT Vector< Complex >
 DenseMatrix< Complex >::row(Index i) const;
-template <> Vector< Complex >
+template <> DLLEXPORT Vector< Complex >
 DenseMatrix< Complex >::row(Index i);
-template <>  DLLEXPORT void
+template <> DLLEXPORT void
 DenseMatrix< Complex >::round(const Complex & v);
 
 
@@ -1045,10 +1045,10 @@ public:
     inline Vector < ValueType > mult(const Vector < ValueType > & x) const {
         ASSERT_VEC_SIZE(x, cols())
         Vector < ValueType > ret(rows(), 0.0);
-        GIMLI::mult(*this, x, ret); 
+        GIMLI::mult(*this, x, ret);
         return ret;
     }
-    
+
     /*! Multiplication (A*b) with a part of a vector between two defined indices. */
     Vector < ValueType > mult(const Vector < ValueType > & b,
                               Index startI, Index endI) const;
@@ -1067,7 +1067,8 @@ public:
         // ??? std::for_each(mat_.begin, mat_.end, boost::bind(&Vector< ValueType >::round, tolerance));
     }
 
-    ValueType * toData(ValueType * buf) const{
+    /*!Copy matrix content into buf of length size.*/
+    ValueType * toData(ValueType * buf, Index size=0) const{
         Index N = sizeof(ValueType) * this->cols();
 
         for (Index i = 0; i < mat_.size(); i ++) {
@@ -1683,8 +1684,6 @@ inline void save(const MatrixBase & A, const std::string & filename){
 inline void save(MatrixBase & A, const std::string & filename){
     A.save(filename);
 }
-
-
 
 inline RVector operator * (const MatrixBase & A, const RVector & b){
     return A.mult(b);

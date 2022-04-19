@@ -120,22 +120,23 @@ DenseMatrix< Complex >::round(const Complex & tol){
     THROW_TO_IMPL
 }
 
-template < class ValueType, class Mat > 
+template < class ValueType, class Mat >
 void mult_T(const Mat & A, const Vector < ValueType > & b,
-          Vector < ValueType > & c, 
+          Vector < ValueType > & c,
           const ValueType & alpha, const ValueType & beta){
-    // Stopwatch sw;
+    Stopwatch sw;
     for (Index i = 0; i < A.rows(); i ++){
-        c[i] = alpha * sum(A.row(i) * b);
-        if (beta != 0.0){
+        if (beta == 0.0){
+            c[i] = alpha * sum(A.row(i) * b);
+        } else {
             c[i] = alpha * sum(A.row(i) * b) + beta * c[i];
         }
     }
-    // print("mult impl:", sw.duration());
+    print("mult impl:", sw.duration());
 }
 
 void mult(const RDenseMatrix & A, const Vector < double > & b,
-          Vector < double > & c, 
+          Vector < double > & c,
           const double & alpha, const double & beta){
     Index m = A.cols();
     Index n = A.rows();
@@ -143,22 +144,22 @@ void mult(const RDenseMatrix & A, const Vector < double > & b,
     c.resize(m);
 
 #if OPENBLAS_CBLAS_FOUND
-    // Stopwatch sw;
+    Stopwatch sw;
     if (noCBlas()){
         mult_T(A, b, c, alpha, beta);
     } else {
-        cblas_dgemv(CblasRowMajor, CblasNoTrans, m, n, alpha, 
+        cblas_dgemv(CblasRowMajor, CblasNoTrans, m, n, alpha,
                     A.pData(), n, &b[0],
                     1, beta, &c[0], 1);
 
-        // print("dgemv:", sw.duration());
+        print("dgemv:", sw.duration());
     }
 #else //#if OPENBLAS_CBLAS_FOUND
     mult_T(A, b, c, alpha, beta);
 #endif
 }
 void mult(const CDenseMatrix & A, const Vector < Complex > & b,
-          Vector < Complex > & c, 
+          Vector < Complex > & c,
           const Complex & alpha, const Complex & beta){
     Index m = A.cols();
     Index n = A.rows();
@@ -171,7 +172,7 @@ void mult(const CDenseMatrix & A, const Vector < Complex > & b,
         mult_T(A, b, c, alpha, beta);
     } else {
         THROW_TO_IMPL
-        // cblas_dgemv(CblasRowMajor, CblasNoTrans, m, n, alpha, 
+        // cblas_dgemv(CblasRowMajor, CblasNoTrans, m, n, alpha,
         //             A.pData(), n, &b[0],
         //             1, beta, &c[0], 1);
 
@@ -225,7 +226,7 @@ DenseMatrix<Complex>::transAdd(const DenseMatrix < Complex > & a){
 //###########
 // Matrix related implementations
 //###########
-void mult(const RMatrix & A, const RVector & b, RVector & c, 
+void mult(const RMatrix & A, const RVector & b, RVector & c,
           const double & alpha, const double & beta){
     ASSERT_VEC_SIZE(b, A.rows())
     c.resize(A.cols());
@@ -250,7 +251,7 @@ _mult(const Matrix< ValueType > & M, const Vector < ValueType > & b, Index start
     if (bsize != cols) {
         throwLengthError(WHERE_AM_I + " " + str(cols) + " < " + str(endI) + "-" + str(startI));
     }
-    
+
     Vector < ValueType > ret(rows, 0.0);
     for (Index i = 0; i < rows; ++i){
         for (Index j = startI; j < endI; j++) {
@@ -372,7 +373,7 @@ void matMultABA_T(const Mat & A, const Mat & B,
 template < class Mat >
 void matMult_T_impl(const Mat & A, const Mat & B, Mat & C,
                  double a, double b, bool bIsTrans, Index n){
-    
+
     Stopwatch sw;
 
     for (Index i = 0; i < A.rows(); i ++){
@@ -396,9 +397,9 @@ void matMult_T_impl(const Mat & A, const Mat & B, Mat & C,
             }
         }
     }
-    
+
     print("matmult_impl:", sw.duration());
-    
+
 }
 template < class Mat >
 void matMult_T(const Mat & A, const Mat & B,
@@ -444,9 +445,9 @@ void matMult_T(const Mat & A, const Mat & B,
         THROW_TO_IMPL
     }
 
-    double * bA = A.toData(&_wsA[0]);
-    double * bB = B.toData(&_wsB[0]);
-    double * bC = C.toData(&_wsC[0]);
+    double * bA = A.toData(&_wsA[0], _MATRIX_WS_SIZE);
+    double * bB = B.toData(&_wsB[0], _MATRIX_WS_SIZE);
+    double * bC = C.toData(&_wsC[0], _MATRIX_WS_SIZE);
     // __MS(bC)
     // A.dumpData(&_wsA[0]);
     // B.dumpData(&_wsB[0]);
