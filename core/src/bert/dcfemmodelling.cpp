@@ -1691,8 +1691,8 @@ void DCMultiElectrodeModelling::calculate(DataContainerERT & data, bool reciproc
         createCurrentPattern(eA, eB, false);
         calculate(eA, eB);
 
-        if (buildCompleteElectrodeModel_ && potentialsCEM_.rows()){
-            std::cout << "Save cemMatrix.matrix for debugging purposes" << std::endl;
+        if (verbose_ && buildCompleteElectrodeModel_ && potentialsCEM_.rows()){
+            std::cout << "Saving cemMatrix.matrix for debugging purposes" << std::endl;
             saveMatrixRow(potentialsCEM_, "cemMatrix.matrix");
         }
 
