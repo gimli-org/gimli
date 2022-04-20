@@ -491,6 +491,17 @@ class ERTManager(MeshMethodManager):
         """Return standardized coverage vector (0|1) using thresholding."""
         return 1.0*(self.coverage() > threshold)
 
+    def showMisfit(self, **kwargs):
+        """Show relative or error-weighted data misfit."""
+        misfit = self.inv.response / self.data["rhoa"] * 100 - 100
+        kwargs.setdefault("cMax", np.max(misfit))
+        kwargs.setdefault("cMin", -kwargs["cMax"])
+        kwargs.setdefault("cMap", "bwr")
+        kwargs.setdefault("logScale", False)
+        kwargs.setdefault("label", "relative misfit (%)")
+
+        self.showData(vals=misfit, **kwargs)
+
     def saveResult(self, folder=None, size=(16, 10), **kwargs):
         """Save all results in the specified folder.
 
