@@ -470,11 +470,14 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
             cBar.set_ticklabels(labels)
 
     if coverage is not None:
-        if len(data) == mesh.cellCount():
+        if isinstance(coverage, float):
+            gci.set_alpha(coverage)
+        elif len(data) == len(coverage) == mesh.cellCount():
             addCoverageAlpha(gci, coverage,
                              dropThreshold=kwargs.pop('dropThreshold', 0.4))
         else:
-            pg.error('show, coverage wrong length, toImplement')
+            pg.error('Coverage needs to be either of type float or an array with',
+                     'the same length as data and mesh.cellCount().')
             # addCoverageAlpha(gci, pg.core.cellDataToPointData(mesh,
             #                                                   coverage))
 
