@@ -334,10 +334,13 @@ class Inversion(object):
     def lam(self, lam):
         self._lam = lam
 
-    @pg.renamed(setDeltaChiStop)
     def setDeltaPhiStop(self, it):
         """Define minimum relative decrease in objective function to stop."""
         self.inv.setDeltaPhiAbortPercent(it)
+
+    @pg.renamed(setDeltaPhiStop)
+    def setDeltaChiStop(self, it):
+        self.setDeltaPhiStop(it)
 
     def echoStatus(self):
         """Echo inversion status (model, response, rms, chi^2, phi)."""
@@ -404,7 +407,17 @@ class Inversion(object):
         if len(args) == 0:
             args = ('*',)
 
-        self.fop.setRegionProperties(*args, **kwargs)
+        if "operator" in kwargs:
+            self.fop.setConstraints(kwargs.pop("operator"))
+        if "C" in kwargs:
+            self.fop.setConstraints(kwargs.pop("C"))
+        # if "correlationLengths" in kwargs:
+        #     self.C_ = pg.matrix.GeostatisticConstraintsMatrix(
+        #         mesh=self.fop.pd, I=kwargs.pop("correlationLengths"),
+        #         dip=kwargs.pop("dip", 0), strike=kwargs.pop("strike", 0))
+        #     self.fop.setConstraints(self.C_)
+        if len(kwargs) > 0:
+            self.fop.setRegionProperties(*args, **kwargs)
 
     def run(self, dataVals, errorVals, **kwargs):
         """Run inversion.
