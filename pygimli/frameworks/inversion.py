@@ -334,19 +334,25 @@ class Inversion(object):
     def lam(self, lam):
         self._lam = lam
 
-    def setDeltaChiStop(self, it):
+    @pg.renamed(setDeltaChiStop)
+    def setDeltaPhiStop(self, it):
+        """Define minimum relative decrease in objective function to stop."""
         self.inv.setDeltaPhiAbortPercent(it)
 
     def echoStatus(self):
+        """Echo inversion status (model, response, rms, chi^2, phi)."""
         self.inv.echoStatus()
 
     def setPostStep(self, p):
+        """Set a function to be called after each iteration."""
         self._postStep = p
 
     def setPreStep(self, p):
+        """Set a function to be called before each iteration."""
         self._preStep = p
 
     def setData(self, data):
+        """Set data."""
         # QUESTION_ISNEEDED
         if isinstance(data, pg.DataContainer):
             raise Exception("should not be here .. its Managers job")
@@ -355,10 +361,11 @@ class Inversion(object):
             self.dataVals = data
 
     def chi2(self, response=None):
+        """Chi-squared misfit (mean of squared error-weighted misfit)."""
         return self.phiData(response) / len(self.dataVals)
 
     def phiData(self, response=None):
-        """ """
+        """Data objective function (sum of suqred error-weighted misfit)."""
         if response is None:
             response = self.response
 
@@ -369,7 +376,7 @@ class Inversion(object):
         return pg.math.dot(dData, dData)
 
     def phiModel(self, model=None):
-        """ """
+        """Model objective function (norm of regularization term)."""
         if model is None:
             model = self.model
 
@@ -377,7 +384,7 @@ class Inversion(object):
         return pg.math.dot(rough, rough)
 
     def phi(self, model=None, response=None):
-        """ """
+        """Total objective function (phiD + lambda * phiM)"""
         phiD = self.phiData(response)
         if self.inv.localRegularization():
             return phiD
@@ -391,6 +398,13 @@ class Inversion(object):
     def absrms(self):
         """Absolute root-mean-square misfit of the last run."""
         return self.inv.absrms()
+
+    def setRegularization(self, *args, **kwargs):
+        """Pass regularization options to forward operator (for now)."""
+        if len(args) == 0:
+            args = ('*',)
+
+        self.fop.setRegionProperties(*args, **kwargs)
 
     def run(self, dataVals, errorVals, **kwargs):
         """Run inversion.
@@ -589,9 +603,10 @@ class Inversion(object):
         return self.model
 
     def showProgress(self, style='all'):
-        r"""Showing the inversion progress after every iteration. Can show
-        models if `drawModel` method exists. The default fallback is plotting
-        the :math:`\chi^2` fit as a function of iterations. Called if
+        r"""Show the inversion progress after every iteration.
+
+        Can show models if `drawModel` method exists. The default fallback is
+        plotting the :math:`\chi^2` fit as a function of iterations. Called if
         `showProgress=True` is set for the inversion run.
         """
 
