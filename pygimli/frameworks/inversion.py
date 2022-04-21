@@ -191,7 +191,7 @@ class Inversion(object):
             return None
         elif isinstance(model, float) or isinstance(model, int):
             pg.info("Homogeneous starting model set to:", float(model))
-            return np.ones(self.parameterCount) * float(model)
+            return np.full(self.parameterCount, float(model))
         elif hasattr(model, '__iter__'):
             if len(model) == self.parameterCount:
                 pg.info("Starting model set from given array.", model)
@@ -403,7 +403,10 @@ class Inversion(object):
         return self.inv.absrms()
 
     def setRegularization(self, *args, **kwargs):
-        """Pass regularization options to forward operator (for now)."""
+        """Set regularization properties.
+        
+        
+        """
         if len(args) == 0:
             args = ('*',)
 
@@ -411,11 +414,7 @@ class Inversion(object):
             self.fop.setConstraints(kwargs.pop("operator"))
         if "C" in kwargs:
             self.fop.setConstraints(kwargs.pop("C"))
-        # if "correlationLengths" in kwargs:
-        #     self.C_ = pg.matrix.GeostatisticConstraintsMatrix(
-        #         mesh=self.fop.pd, I=kwargs.pop("correlationLengths"),
-        #         dip=kwargs.pop("dip", 0), strike=kwargs.pop("strike", 0))
-        #     self.fop.setConstraints(self.C_)
+
         if len(kwargs) > 0:
             self.fop.setRegionProperties(*args, **kwargs)
 

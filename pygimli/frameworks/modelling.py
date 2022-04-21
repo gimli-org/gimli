@@ -248,6 +248,9 @@ class Modelling(pg.core.ModellingBase):
                                                 'background': None,
                                                 'single': None,
                                                 'fix': None,
+                                                'correlationLengths':None,
+                                                'dip':None,
+                                                'strike':None,
                                                 }
 
         for key in list(kwargs.keys()):
@@ -286,7 +289,7 @@ class Modelling(pg.core.ModellingBase):
         if self._regionsNeedUpdate is False:
             return
 
-        # call super class her because self.regionManager() calls always
+        # call super class her because self.regionManager() calls allways
         #  __applyRegionProperies itself
         rMgr = super(Modelling, self).regionManager()
         for rID, vals in self._regionProperties.items():
@@ -326,6 +329,13 @@ class Modelling(pg.core.ModellingBase):
 
             if vals['limits'][1] > 0:
                 rMgr.region(rID).setUpperBound(vals['limits'][1])
+
+            if vals['correlationLengths'] is not None:
+                self.clearConstraints()
+            if vals['dip'] is not None:
+                self.clearConstraints()
+            if vals['strike'] is not None:
+                self.clearConstraints()
 
         for r1, r2, w in self._interRegionCouplings:
             rMgr.setInterRegionConstraint(r1, r2, w)
@@ -487,6 +497,7 @@ class MeshModelling(Modelling):
 
     @property
     def mesh(self):
+        pg._r("inuse ?")
         if self._fop is not None:
             pg._r("inuse ?")
             return self._fop.mesh
@@ -506,8 +517,36 @@ class MeshModelling(Modelling):
 
     def createConstraints(self):
         """"""
+        # just ensure there is valid mesh
         self.mesh()
-        super().createConstraints()
+
+        foundGeoStat = False
+        for reg, props in self.regionProperties().items():
+
+            if props['correlationLengths'] is not None or \
+                props['dip'] is not None or \
+                props['strike'] is not None:
+    
+                I = props.get('correlationLengths') or 5
+                dip = props.get('dip') or 0
+                strike = props.get('strike') or 0
+
+                pg.info(f'Createing GeostatisticConstraintsMatrix for region {reg} with: I={I}, dip={dip}, strike={strike}')
+
+                if foundGeoStat == True:
+                    pg.critical('Only one global GeostatisticConstraintsMatrix possible at the moment.')
+                
+                ### we need to keep a copy of C until refcounting in the core works
+                self._C = pg.matrix.GeostatisticConstraintsMatrix(
+                    mesh=self.paraDomain, I=I, dip=dip, strike=strike,
+                )
+
+                foundGeoStat = True
+                self.setConstraints(self._C)
+
+        if foundGeoStat == False:
+            super().createConstraints()
+        
         return self.constraints()
 
     def paraModel(self, model):
@@ -557,6 +596,7 @@ class MeshModelling(Modelling):
 
         m = self.createRefinedFwdMesh(m)
         self.setMeshPost(m)
+        
         self._regionChanged = False
         super(Modelling, self).setMesh(m, ignoreRegionManager=True)
 
@@ -1012,7 +1052,7 @@ class ParameterModelling(Modelling):
         pg.info("Model: ", label)
 
 
-class PriorModelling(Modelling):
+class PriorModelling(MeshModelling):
     """Forward operator for grabbing values out of a mesh (prior data)."""
 
     def __init__(self, mesh, pos, **kwargs):
@@ -1034,3 +1074,6 @@ class PriorModelling(Modelling):
     def createJacobian(self, model):
         """Do nothing (linear)."""
         pass
+    
+    def createRefinedFwdMesh(self, mesh):
+        return mesh

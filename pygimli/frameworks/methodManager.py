@@ -60,6 +60,12 @@ def fit(funct, data, err=None, **kwargs):
     >>> _ = pg.plt.plot(t, response, label='response')
     >>> _ = pg.plt.legend()
     """
+    if isinstance(data, list):
+        data = np.array(data)
+    if isinstance(err, (float, int)):
+        err = np.full(len(data), err)
+
+
     mgr = ParameterInversionManager(funct, **kwargs)
     model = mgr.invert(data, err, **kwargs)
     return model, mgr.fw.response
@@ -600,6 +606,8 @@ class ParameterInversionManager(MethodManager):
         dataSpace = kwargs.pop(self.fop.dataSpaceName, None)
 
         if dataSpace is not None:
+            if isinstance(dataSpace, list):
+                dataSpace = np.array(dataSpace)
             self.fop.dataSpace = dataSpace
 
         limits = kwargs.pop('limits', {})
