@@ -477,10 +477,15 @@ void matMult_T(const Mat & A, const Mat & B,
     // __MS(bC)
     C.fromData(bC, m, n);
 
+    // vector is new so buffer was to small for RMatrix, which allocate her own
+    if (bA != _wsA && A.rtti() == GIMLI_MATRIX_RTTI){
+        delete [] bA;
+        delete [] bB;
+        delete [] bC;
+    }
 
-    // delete [] A2;
-    // delete [] B2;
-    // delete [] C2;
+
+
 #else
 
     matMult_T_impl(A, B, C, a, b, bIsTrans, n);

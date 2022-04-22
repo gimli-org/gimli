@@ -927,6 +927,9 @@ public:
         return this->_cols;
     }
 
+    inline Index length() const {return rows() * cols();}
+
+
     /*! Set a value. Throws out of range exception if index check fails. */
     // inline void setRow(const Vector < ValueType > & val, Index i) {
     //     log(Warning, "deprecated use setRow(i, val)");
@@ -1067,14 +1070,21 @@ public:
         // ??? std::for_each(mat_.begin, mat_.end, boost::bind(&Vector< ValueType >::round, tolerance));
     }
 
-    /*!Copy matrix content into buf of length size.*/
+    /*!Copy matrix content into buf of length size. If size is not sufficient,  a new buffer is created which need to be deleted manually. */
     ValueType * toData(ValueType * buf, Index size=0) const{
+        ValueType * b_;
+        
+        if (size < length()){
+            b_ = new ValueType[length()];
+        } else {
+            b_ = buf;
+        }
         Index N = sizeof(ValueType) * this->cols();
 
         for (Index i = 0; i < mat_.size(); i ++) {
-            std::memcpy(&buf[i*this->cols()], &mat_[i][0], N);
+            std::memcpy(&b_[i*this->cols()], &mat_[i][0], N);
         }
-        return buf;
+        return b_;
     }
     void fromData(ValueType * src, Index m, Index n){
         this->resize(m, n);
