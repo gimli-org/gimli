@@ -321,7 +321,10 @@ class Modelling(pg.core.ModellingBase):
                     self.clearConstraints()
                     rMgr.region(rID).setConstraintType(vals['cType'])
 
-            rMgr.region(rID).setZWeight(vals['zWeight'])
+            if vals['zWeight'] is not None:
+                rMgr.region(rID).setZWeight(vals['zWeight'])
+                self.clearConstraints()
+
             rMgr.region(rID).setModelControl(vals['modelControl'])
 
             if vals['limits'][0] > 0:

@@ -57,9 +57,17 @@ ert.show(data, data['err']*100)
 # the inversion. The inversion mesh will be created with some optional values
 # for the parametric mesh generation.
 #
-mod = mgr.invert(data, lam=10, verbose=True,
+#mgr.fop.setRegionProperties('*', zWeight=0.1)
+mod = mgr.invert(data, lam=10, verbose=True, zWeight=1.0, maxIter=1,
                  paraDX=0.3, paraMaxCellSize=10, paraDepth=20, quality=33.6)
 
+mgr.showResult()
+
+mod = mgr.invert(data, lam=10, verbose=True, zWeight=0.1, maxIter=1,
+                 paraDX=0.3, paraMaxCellSize=10, paraDepth=20, quality=33.6)
+
+mgr.showResult()
+sys.exit()
 ###############################################################################
 # We can view the resulting model in the usual way.
 mgr.showResultAndFit()

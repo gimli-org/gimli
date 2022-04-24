@@ -1800,7 +1800,7 @@ void DCMultiElectrodeModelling::calculateK_(const std::vector < ElectrodeShape *
 // MEMINFO
 
 //** START  assemble matrix
-    if (verbose_) std::cout << "Assembling system matrix ... " ;
+    if (debug) std::cout << "Assembling system matrix ... " ;
     dcfemDomainAssembleStiffnessMatrix(S_, *mesh_, k);
     dcfemBoundaryAssembleStiffnessMatrix(S_, *mesh_, sourceCenterPos_, k);
 
@@ -1826,7 +1826,7 @@ void DCMultiElectrodeModelling::calculateK_(const std::vector < ElectrodeShape *
 //             //** FIXME this fails with passive bodies
             elecs.push_back(electrodeRef_);
         }
-        if (verbose_) std::cout << "Assembling complete electrode model ... " << std::endl;
+        if (debug) std::cout << "Assembling complete electrode model ... " << std::endl;
 
         for (Index i = 0; i < passiveCEM_.size(); i ++) elecs.push_back(passiveCEM_[i]);
 
@@ -1858,12 +1858,12 @@ void DCMultiElectrodeModelling::calculateK_(const std::vector < ElectrodeShape *
 
     //** START solving
 
-    LinSolver solver(verbose_);
+    LinSolver solver(debug);
     //solver.setSolverType(LDL);
     //    std::cout << "solver: " << solver.solverName() << std::endl;
 
     solver.setMatrix(S_, 1);
-    if (verbose_) std::cout << "Factorizing (" << solver.solverName() << ") system matrix ... ";
+    if (debug) std::cout << "Factorizing (" << solver.solverName() << ") system matrix ... ";
 
 // MEMINFO
 
