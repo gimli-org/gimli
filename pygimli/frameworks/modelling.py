@@ -219,13 +219,35 @@ class Modelling(pg.core.ModellingBase):
 
             startModel=None, limits=None, trans=None,
             cType=None, zWeight=None, modelControl=None,
-            background=None, single=None, fix=None
+            background=None, fix=None, single=None,
+            correlationLengths=None, dip=None, strike=None
 
         Parameters
         ----------
-        regionNr: int, [int], '*'
-            Region number, list of, or wildcard for all.
-
+        regionNr : int, [ints], '*'
+            Region number, list of numbers, or wildcard "*" for all.
+        startModel : float
+            starting model value
+        limits : [float, float]
+            lower and upper limit for value using a barrier transform
+        trans : str
+            transformation for model barrier: "log", "cot", "lin"
+        cType : int
+            constraint (regularization) type
+        zWeight : float
+            relative weight for vertical boundaries
+        background : bool
+            exclude region from inversion completely (prolongation)
+        fix : float
+            exclude region from inversion completely (fix to value)
+        single : bool
+            reduce region to one unknown
+        correlationLengths : [floats]
+            correlation lengths for geostatistical inversion (x', y', z')
+        dip : float [0]
+            angle between x and x' (first correlation length)
+        strike : float [0]
+            angle between y and y' (second correlation length)
         """
         if regionNr == '*':
             for regionNr in self.regionManager().regionIdxs():
@@ -529,7 +551,7 @@ class MeshModelling(Modelling):
             if props['correlationLengths'] is not None or \
                 props['dip'] is not None or \
                 props['strike'] is not None:
-    
+
                 I = props.get('correlationLengths') or 5
                 dip = props.get('dip') or 0
                 strike = props.get('strike') or 0
@@ -538,7 +560,7 @@ class MeshModelling(Modelling):
 
                 if foundGeoStat == True:
                     pg.critical('Only one global GeostatisticConstraintsMatrix possible at the moment.')
-                
+
                 ### we need to keep a copy of C until refcounting in the core works
                 self._C = pg.matrix.GeostatisticConstraintsMatrix(
                     mesh=self.paraDomain, I=I, dip=dip, strike=strike,
@@ -549,7 +571,7 @@ class MeshModelling(Modelling):
 
         if foundGeoStat == False:
             super().createConstraints()
-        
+
         return self.constraints()
 
     def paraModel(self, model):
@@ -599,7 +621,7 @@ class MeshModelling(Modelling):
 
         m = self.createRefinedFwdMesh(m)
         self.setMeshPost(m)
-        
+
         self._regionChanged = False
         super(Modelling, self).setMesh(m, ignoreRegionManager=True)
 
@@ -1077,6 +1099,6 @@ class PriorModelling(MeshModelling):
     def createJacobian(self, model):
         """Do nothing (linear)."""
         pass
-    
+
     def createRefinedFwdMesh(self, mesh):
         return mesh
