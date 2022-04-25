@@ -229,10 +229,10 @@ ax.grid()
 a = [None]*domain.cellCount()
 for c in domain.cells():
     if c.center()[0] < np.pi:
-        a[c.id()] = pg.solver.anisotropyMatrix(lon=1.0, trans=10.0,
+        a[c.id()] = pg.solver.createAnisotropyMatrix(lon=1.0, trans=10.0,
                                                theta=-45/180 * np.pi)
     else:
-        a[c.id()] = pg.solver.anisotropyMatrix(lon=1.0, trans=10.0,
+        a[c.id()] = pg.solver.createAnisotropyMatrix(lon=1.0, trans=10.0,
                                                theta=45/180 * np.pi)
 
 u = pg.solve(domain, a=a, f=f, bc={'Dirichlet':{'*': 0}})
