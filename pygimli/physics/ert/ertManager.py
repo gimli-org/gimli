@@ -493,7 +493,7 @@ class ERTManager(MeshMethodManager):
 
     def showMisfit(self, **kwargs):
         """Show relative or error-weighted data misfit."""
-        misfit = self.inv.response / self.data["rhoa"] * 100 - 100
+        misfit = - self.inv.response / self.data["rhoa"] * 100 + 100
         kwargs.setdefault("cMax", np.max(misfit))
         kwargs.setdefault("cMin", -kwargs["cMax"])
         kwargs.setdefault("cMap", "bwr")
