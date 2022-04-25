@@ -50,7 +50,7 @@ def __RMatrix_str(self):
     if self.rows() < 6:
         s += '\n'
         for v in range(self.rows()):
-            s += self[v].__str__(True) + '\n'
+            s += self[v].__str__() + '\n'
     return s
 
 
@@ -60,7 +60,7 @@ def __CMatrix_str(self):
     if self.rows() < 6:
         s += '\n'
         for v in range(self.rows()):
-            s += self[v].__str__(True) + '\n'
+            s += self[v].__str__() + '\n'
     return s
 
 
