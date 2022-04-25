@@ -556,7 +556,8 @@ class MeshModelling(Modelling):
                 dip = props.get('dip') or 0
                 strike = props.get('strike') or 0
 
-                pg.info(f'Createing GeostatisticConstraintsMatrix for region {reg} with: I={I}, dip={dip}, strike={strike}')
+                pg.info('Creating GeostatisticConstraintsMatrix for region' +
+                        f' {reg} with: I={I}, dip={dip}, strike={strike}')
 
                 if foundGeoStat == True:
                     pg.critical('Only one global GeostatisticConstraintsMatrix possible at the moment.')

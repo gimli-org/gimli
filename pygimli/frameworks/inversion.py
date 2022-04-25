@@ -485,6 +485,7 @@ class Inversion(object):
         if self.fop is None:
             raise Exception("Need valid forward operator for inversion run.")
 
+        self.fop.setVerbose(False)  # gets rid of CHOLMOD messages
         maxIter = kwargs.pop('maxIter', self.maxIter)
         minDPhi = kwargs.pop('dPhi', self.minDPhi)
         showProgress = kwargs.pop('showProgress', False)

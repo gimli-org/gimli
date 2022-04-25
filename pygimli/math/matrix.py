@@ -124,7 +124,15 @@ class MultLeftRightMatrix(MultMatrix):
     """Matrix consisting of actual RMatrix and left-hand-side vector."""
 
     def __init__(self, A, left, right, verbose=False):
-        """Constructor saving matrix and vector."""
+        """Initialize matrix by matrix and vectors.
+
+        Parameters
+        ----------
+        A : pg.core.MatrixBase derived
+            main matrix
+        left, right : pg.Vector
+            left and right side vectors to weight individual rows & columns
+        """
         if A.cols() != len(right):
             raise Exception("Matrix columns do not fit right vector length!")
         if A.rows() != len(left):
@@ -163,9 +171,23 @@ LRMultRMatrix = MultLeftRightMatrix  # alias for backward compatibility
 
 
 class Add2Matrix(pgcore.MatrixBase):
-    """Matrix by adding two matrices."""
+    """Matrix by addition of two matrices implicitly.
+
+        The matrix holds two matrices and distributes multiplication in 2 parts
+
+        M = A + B
+        M * x = A * x + B * x
+        M.T * y = B^T * y + A.T^*y
+    """
 
     def __init__(self, A, B):
+        """Initialize matrix.
+
+        Parameters
+        ----------
+        A, B : any Matrix derived from pg.core.MatrixBase
+            submatrices to be multiplied (A/B.cols() and rows() need to match)
+        """
         super().__init__()
         self.A = A
         self.B = B
@@ -190,12 +212,23 @@ class Add2Matrix(pgcore.MatrixBase):
 
 
 class Mult2Matrix(pgcore.MatrixBase):
-    """Matrix by multiplying two matrices.
-        M*x = A * (B*x)
-        M.T*x = (A*x) * B
+    """Matrix by multipication of two matrices implicitly.
+
+        The matrix holds two matrices and distributes multiplication in 2 parts
+
+        M = A * B
+        M * x = A * (B*x)
+        M.T * y = B^T * (A.T^*y) = (y^T * A * B)^T
     """
 
     def __init__(self, A, B):
+        """Initialize matrix.
+
+        Parameters
+        ----------
+        A, B : any Matrix derived from pg.core.MatrixBase
+            submatrices to be multiplied (A.cols() must equal B.rows())
+        """
         super().__init__()
         self.A = A
         self.B = B
@@ -222,6 +255,13 @@ class DiagonalMatrix(pgcore.MatrixBase):
     """Square matrix with a vector on the main diagonal."""
 
     def __init__(self, d):
+        """Initialize matrix
+
+        Parameters
+        ----------
+        d : Vector
+            vector holding diagonal elements
+        """
         super().__init__()
         self.d = d
 
@@ -259,7 +299,7 @@ class Cm05Matrix(pgcore.MatrixBase):
         """
         super().__init__(verbose)  # only in Python 3
         self._mul = None
-        
+
         if isinstance(A, str):
             self.load(A)
         else:
@@ -271,7 +311,7 @@ class Cm05Matrix(pgcore.MatrixBase):
             if verbose:
                 t = pg.tic(key='init cm05')
             self.ew, self.EV = eigh(A)
-            
+
             if verbose:
                 pg.info('(C) Time for eigenvalue decomposition: {:.1f}s'.format(
                     pg.dur(key='init cm05')))
@@ -293,7 +333,7 @@ class Cm05Matrix(pgcore.MatrixBase):
         d = np.load(fileName + '.npy', allow_pickle=True).tolist()
         self.ew = d['ew']
         self.EV = d['EV']
-        
+
     def rows(self):
         """Return number of rows (using underlying matrix)."""
         return len(self.ew)
@@ -373,14 +413,14 @@ class GeostatisticConstraintsMatrix(pgcore.MatrixBase):
 
             if isinstance(CM, pgcore.Mesh):
                 CM = covarianceMatrix(CM, **kwargs)
-            
+
             if CM is None and mesh is not None:
                 CM = covarianceMatrix(mesh, **kwargs)
             else:
                 pg.critical('Give either CM or mesh')
 
             self.Cm05 = createCm05(CM)
-        
+
     @property
     def spur(self):
         if self._spur is None:
@@ -401,9 +441,9 @@ class GeostatisticConstraintsMatrix(pgcore.MatrixBase):
         """Save the content of this matrix. Used for caching until pickling is possible for this class
         """
         self.Cm05.save(fileName + '-Cm05')
-        np.save(fileName, dict(verbose=self.verbose(), 
+        np.save(fileName, dict(verbose=self.verbose(),
                                withRef=self.withRef,
-                               Cm05=fileName +'-Cm05'), 
+                               Cm05=fileName +'-Cm05'),
                         allow_pickle=True)
 
 
