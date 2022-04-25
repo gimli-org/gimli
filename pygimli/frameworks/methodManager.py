@@ -334,7 +334,7 @@ class MethodManager(object):
 
         if abs(min(vals)) < 1e-12:
             print(min(vals), max(vals))
-            pg.critical("There are zero data values.")
+            pg.critical("There are data values equals 0.0")
 
         return vals
 

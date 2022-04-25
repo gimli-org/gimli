@@ -233,7 +233,7 @@ class CacheManager(object):
             argHash = argHash ^ valHash(a)
 
         for k, v in kwargs.items():
-            argHash = argHash ^ valHash(a)
+            argHash = argHash ^ valHash(k) ^ valHash(v)
             
         pg.debug("Hashing took:", pg.dur(), "s")
         return funcHash ^ versionHash ^ codeHash ^ argHash

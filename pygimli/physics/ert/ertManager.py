@@ -366,7 +366,6 @@ class ERTManager(MeshMethodManager):
             if not data.allNonZero('k'):
                 pg.warn("Data file contains no geometric factors (token='k').")
                 data['k'] = createGeometricFactors(data, verbose=True)
-
             if self.fop.complex():
                 if not data.haveData('rhoa'):
                     pg.critical('Datacontainer have no "rhoa" values.')
