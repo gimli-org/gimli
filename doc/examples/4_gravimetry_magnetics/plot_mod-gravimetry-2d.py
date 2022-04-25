@@ -36,7 +36,7 @@ gz_a = gradUCylinderHoriz(pnts, radius, dRho, pos)[:, 1]
 ###############################################################################
 # Integration for a 2D polygon after :cite:`WonBev1987`
 circ = createCircle([0, -depth], radius=radius, marker=2, area=0.1,
-                    segments=16)
+                    nSegments=16)
 gz_p = solveGravimetry(circ, dRho, pnts, complete=False)
 
 ###############################################################################
