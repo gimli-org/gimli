@@ -2158,6 +2158,7 @@ void DCSRMultiElectrodeModelling::preCalculate(const std::vector < ElectrodeShap
 void DCSRMultiElectrodeModelling::calculateK(const std::vector < ElectrodeShape * > & eA,
                                              const std::vector < ElectrodeShape * > & eB,
                                              RMatrix & solutionK, int kIdx) {
+    bool debug = false;
     if (complex_){
         THROW_TO_IMPL
     }
@@ -2201,9 +2202,9 @@ void DCSRMultiElectrodeModelling::calculateK(const std::vector < ElectrodeShape 
     //mesh_->setCellAttributes(tmpRho);
 
 // MEMINFO
-    LinSolver solver(false);
+    LinSolver solver(debug);
     solver.setMatrix(S_, 1);
-    if (verbose_) std::cout << "Factorize (" << solver.solverName() << ") matrix ... " << swatch.duration() << std::endl;
+    if (debug) std::cout << "Factorize (" << solver.solverName() << ") matrix ... " << swatch.duration() << std::endl;
 
 // MEMINFO
 

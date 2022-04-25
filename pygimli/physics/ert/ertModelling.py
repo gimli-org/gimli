@@ -74,6 +74,8 @@ class ERTModelling(ERTModellingBase):
         self._core.initJacobian()
         self.setJacobian(self._core.jacobian())
 
+        self._core.setRegionManager(self.regionManager())
+
         # called from the ERTManager .. needed?
         self.solution = self._core.solution
         self.setComplex = self._core.setComplex
