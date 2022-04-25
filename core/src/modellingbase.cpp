@@ -180,9 +180,14 @@ void ModellingBase::setMesh(const Mesh & mesh, bool ignoreRegionManager) {
     Stopwatch swatch(true);
     if (regionManagerInUse_ && !ignoreRegionManager){
         // && holdRegionInfos e.g., just give it a try to ignore the regionmanager if necessary
-        regionManager_->setMesh(mesh);//#, ignoreRegionManger);
-        if (verbose_) std::cout << "ModellingBase::setMesh() switch to regionmanager mesh" << std::endl;
-        setMesh_(regionManager_->mesh());
+        // if (ownRegionManager_ == true){
+        //     __M
+            regionManager_->setMesh(mesh);//#, ignoreRegionManger);
+            if (verbose_) std::cout << "ModellingBase::setMesh() switch to regionmanager mesh" << std::endl;
+            setMesh_(regionManager_->mesh());
+        // } else {
+        //     __MS("omiiting")
+        // }
     } else {
         if (verbose_) std::cout << "ModellingBase::setMesh() copying new mesh ... ";
         setMesh_(mesh);
@@ -490,6 +495,7 @@ void ModellingBase::mapModel(const RVector & model, double background){
 }
 
 void ModellingBase::initRegionManager() {
+    // clean this up .. this will fail for second try with mesh
     if (!regionManagerInUse_){
         if (mesh_){
             regionManager_->setMesh(*mesh_);

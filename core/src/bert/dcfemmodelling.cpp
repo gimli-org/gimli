@@ -1421,7 +1421,7 @@ void DCMultiElectrodeModelling::createJacobian_(const CVector & model,
                          matrixClusterIds, this->nThreads_, this->verbose_);
 
     if (model.size() == J->cols()){
-        __MS("check")
+        // __MS("check")
         CVector m2(model*model);
         //CVector m2(model*conj(model));
         if (model.size() == J->cols()){

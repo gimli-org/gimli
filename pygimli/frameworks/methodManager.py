@@ -696,7 +696,8 @@ class MeshMethodManager(MethodManager):
 
         mesh : pg.Mesh [None]
 
-        zWeight : float [1.0]
+        zWeight : float [None]
+            Set zWeight or use defaults from regionManager.
 
         startModel : float | iterable [None]
 
