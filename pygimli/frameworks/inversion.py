@@ -403,9 +403,37 @@ class Inversion(object):
         return self.inv.absrms()
 
     def setRegularization(self, *args, **kwargs):
-        """Set regularization properties.
-        
-        
+        """Set regularization properties for the inverse problem.
+
+        This can be for specific regions (args) or all regions (no args).
+
+        Parameters
+        ----------
+        regionNr : int, [ints], '*'
+            Region number, list of numbers, or wildcard "*" for all.
+
+        startModel : float
+            starting model value
+        limits : [float, float]
+            lower and upper limit for value using a barrier transform
+        trans : str
+            transformation for model barrier: "log", "cot", "lin"
+        cType : int
+            constraint (regularization) type
+        zWeight : float
+            relative weight for vertical boundaries
+        background : bool
+            exclude region from inversion completely (prolongation)
+        fix : float
+            exclude region from inversion completely (fix to value)
+        single : bool
+            reduce region to one unknown
+        correlationLengths : [floats]
+            correlation lengths for geostatistical inversion (x', y', z')
+        dip : float [0]
+            angle between x and x' (first correlation length)
+        strike : float [0]
+            angle between y and y' (second correlation length)
         """
         if len(args) == 0:
             args = ('*',)
