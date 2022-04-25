@@ -686,7 +686,7 @@ class MeshMethodManager(MethodManager):
 
         self.fop.setMesh(mesh, ignoreRegionManager=ignoreRegionManager)
 
-    def invert(self, data=None, mesh=None, zWeight=1.0, startModel=None,
+    def invert(self, data=None, mesh=None, startModel=None,
                **kwargs):
         """Run the full inversion.
 
@@ -746,7 +746,8 @@ class MeshMethodManager(MethodManager):
 
         kwargs['startModel'] = startModel
 
-        self.fop.setRegionProperties('*', zWeight=zWeight)
+        if 'zWeight' in kwargs:
+            self.fop.setRegionProperties('*', zWeight=kwargs.pop('zWeight'))
 
         # Limits is no mesh related argument here or base??
         limits = kwargs.pop('limits', None)
