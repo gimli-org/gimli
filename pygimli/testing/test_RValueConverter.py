@@ -112,6 +112,7 @@ class TestConversionMethods(unittest.TestCase):
         self.assertEqual(pg.sum(a), sum(x))
 
         x = np.arange(10, dtype=np.compat.long)
+
         a = pg.IVector(x)
         self.assertEqual(a.size(), len(x))
         self.assertEqual(pg.sum(a), sum(x))

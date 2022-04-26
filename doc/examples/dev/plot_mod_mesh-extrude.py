@@ -12,15 +12,15 @@ from pygimli.meshtools import polytools as plc
 # import pygimli.meshtools as mt
 
 
-c1 = plc.createCircle(pos=(-5.0, 0.0), radius=0.1, segments=5,
+c1 = plc.createCircle(pos=(-5.0, 0.0), radius=0.1, nSegments=5,
                       start=math.pi, end=2*math.pi, isClosed=False)
-c2 = plc.createCircle(pos=(5.0, 0.0), radius=0.1, segments=5,
+c2 = plc.createCircle(pos=(5.0, 0.0), radius=0.1, nSegments=5,
                       start=math.pi, end=2*math.pi, isClosed=False)
 
-left = plc.createLine(start=(-20, 0.0), end=(-5.1, 0.0), segments=10)
+left = plc.createLine(start=(-20, 0.0), end=(-5.1, 0.0), nSegments=10)
 left.node(8).setMarker(1)
-mid = plc.createLine(start=(-4.9, 0.0), end=(4.9, 0.0), segments=20)
-right = plc.createLine(start=(5.1, 0.0), end=(20, 0.0), segments=10)
+mid = plc.createLine(start=(-4.9, 0.0), end=(4.9, 0.0), nSegments=20)
+right = plc.createLine(start=(5.1, 0.0), end=(20, 0.0), nSegments=10)
 left.node(2).setMarker(1)
 
 border = plc.mergePLC([left, c1, mid, c2, right])

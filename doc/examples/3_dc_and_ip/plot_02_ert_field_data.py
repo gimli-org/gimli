@@ -59,6 +59,8 @@ ert.show(data, data['err']*100)
 mod = mgr.invert(data, lam=10, verbose=True,
                  paraDX=0.3, paraMaxCellSize=10, paraDepth=20, quality=33.6)
 
+mgr.showResult()
+
 ###############################################################################
 # We can view the resulting model in the usual way.
 mgr.showResultAndFit()

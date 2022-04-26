@@ -71,6 +71,9 @@ class ERTModelling(ERTModellingBase):
         else:
             self._core = pg.core.DCMultiElectrodeModelling(verbose=verbose)
 
+        # Its good that the core knows about the actual RM
+        self._core.setRegionManager(self.regionManagerRef())
+
         self._core.initJacobian()
         self.setJacobian(self._core.jacobian())
 
@@ -141,6 +144,7 @@ class ERTModelling(ERTModellingBase):
         """Forward response (apparent resistivity)."""
         # ensure the mesh is initialized
         self.mesh()
+
         if self.complex() and self._conjImag:
             pg.warn('flip imaginary part for response calc')
             mod = self.flipImagPart(mod)

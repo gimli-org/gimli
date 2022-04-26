@@ -55,15 +55,19 @@ ModellingBase::ModellingBase(const Mesh & mesh, DataContainer & data, bool verbo
 }
 
 ModellingBase::~ModellingBase() {
+    // __MS("delete: " << this)
     if (ownRegionManager_) delete regionManager_;
     if (mesh_) delete mesh_;
     if (jacobian_ && ownJacobian_) delete jacobian_;
     if (constraints_ && ownConstraints_) delete constraints_;
+
 }
 
 void ModellingBase::init_() {
     regionManager_      = new RegionManager(verbose_);
     regionManagerInUse_ = false;
+
+    // __MS("create: " << this)
 
     mesh_               = 0;
     jacobian_           = 0;
@@ -176,9 +180,14 @@ void ModellingBase::setMesh(const Mesh & mesh, bool ignoreRegionManager) {
     Stopwatch swatch(true);
     if (regionManagerInUse_ && !ignoreRegionManager){
         // && holdRegionInfos e.g., just give it a try to ignore the regionmanager if necessary
-        regionManager_->setMesh(mesh);//#, ignoreRegionManger);
-        if (verbose_) std::cout << "ModellingBase::setMesh() switch to regionmanager mesh" << std::endl;
-        setMesh_(regionManager_->mesh());
+        // if (ownRegionManager_ == true){
+        //     __M
+            regionManager_->setMesh(mesh);//#, ignoreRegionManger);
+            if (verbose_) std::cout << "ModellingBase::setMesh() switch to regionmanager mesh" << std::endl;
+            setMesh_(regionManager_->mesh());
+        // } else {
+        //     __MS("omiiting")
+        // }
     } else {
         if (verbose_) std::cout << "ModellingBase::setMesh() copying new mesh ... ";
         setMesh_(mesh);
@@ -389,7 +398,8 @@ RSparseMapMatrix & ModellingBase::constraintsRef() {
     return *dynamic_cast < RSparseMapMatrix *>(constraints_);
 }
 
-RVector ModellingBase::createMappedModel(const RVector & model, double background) const {
+RVector ModellingBase::createMappedModel(const RVector & model, 
+                                         double background) const {
     if (mesh_ == 0) throwError("ModellingBase has no mesh for ModellingBase::createMappedModel");
 
     // __MS("createMappedModel: " << model.size() << " " <<  mesh_->cellCount())
@@ -451,7 +461,11 @@ RVector ModellingBase::createMappedModel(const RVector & model, double backgroun
         // if (abs(cellAtts[i]) < TOLERANCE){ // this will never work since the prior prolongation
         if (mesh_->cell(i).marker() <= MARKER_FIXEDVALUE_REGION){
                 // setting fixed values
-            SIndex regionMarker = -(mesh_->cell(i).marker() - MARKER_FIXEDVALUE_REGION);
+            SIndex regionMarker = -(mesh_->cell(i).marker() -           
+                                    MARKER_FIXEDVALUE_REGION);
+
+            // __MS(regionManagerInUse_ << " " << this <<  " " << 
+            //         regionManager_->region(regionMarker)->fixValue())
             if (regionManagerInUse_){
                 double val = regionManager_->region(regionMarker)->fixValue();
                 if (warned == false){
@@ -462,7 +476,7 @@ RVector ModellingBase::createMappedModel(const RVector & model, double backgroun
             } else {
                 // temporay hack until fixed in modelling.py
                 if (warned == false){
-                    __MS(cellAtts[i])
+                    // __MS(cellAtts[i])
                     log(Warning, "** TMP HACk ** fixing region: ", regionMarker, " to: ", 1/0.058);
                     warned = true;
                 }
@@ -481,12 +495,14 @@ void ModellingBase::mapModel(const RVector & model, double background){
 }
 
 void ModellingBase::initRegionManager() {
+    // clean this up .. this will fail for second try with mesh
     if (!regionManagerInUse_){
         if (mesh_){
             regionManager_->setMesh(*mesh_);
             this->setMesh_(regionManager_->mesh());
         }
         regionManagerInUse_ = true;
+        // __MS(regionManagerInUse_ << " " << this)
     }
 }
 
@@ -502,6 +518,7 @@ void ModellingBase::setRegionManager(RegionManager * reg){
         regionManager_      = new RegionManager(verbose_);
         ownRegionManager_   = true; // we really refcounter
     }
+    // __MS(regionManagerInUse_ << " " << this)
 }
 
 const RegionManager & ModellingBase::regionManager() const {
