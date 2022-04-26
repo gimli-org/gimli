@@ -10,13 +10,9 @@ from .core import (CMatrix, CSparseMapMatrix, CSparseMatrix,
                    RSparseMapMatrix, RSparseMatrix, ElementMatrix,
                    IVector, MatrixBase, R3Vector, RVector)
 
-<<<<<<< HEAD
 from .logger import critical, warn, error
 from .base import isArray
-=======
-from .logger import critical, warn, info
 
->>>>>>> dev
 
 # make core matrices (now in pgcore, later pg.core) available here for brevity
 # useful aliases
