@@ -354,9 +354,22 @@ class Cm05Matrix(pgcore.MatrixBase):
 
 
 class RepeatVMatrix(pgcore.BlockMatrix):
-    """Matrix holding a base matrix N times vertically."""
+    """Matrix repeating a base matrix N times vertically. Only A is stored.
+
+        M = | A |
+            | A |
+            | A |
+    """
     def __init__(self, A, num):
-        """Initialize."""
+        """Init matrix by specify matrix and number of repetitions.
+
+        Parameters
+        ----------
+        A : pg.MatrixBase (or derived)
+            matrix for constraining a single frame (e.g. 1st order smoothness)
+        num : int
+            number of repetitions
+        """
         super().__init__()
         self.A_ = A
         self.Aid = self.addMatrix(self.A_)
@@ -369,9 +382,20 @@ class RepeatVMatrix(pgcore.BlockMatrix):
 
 
 class RepeatHMatrix(pgcore.BlockMatrix):
-    """Matrix holding a base matrix N times horizontally."""
+    """Matrix repeating a base matrix N times horizontally. Only A is stored.
+
+        M = [ A A A ]
+    """
     def __init__(self, A, num):
-        """Initialize."""
+        """Init matrix by specify matrix and number of repetitions.
+
+        Parameters
+        ----------
+        A : pg.MatrixBase (or derived)
+            matrix for constraining a single frame (e.g. 1st order smoothness)
+        num : int
+            number of repetitions
+        """
         super().__init__()
         self.A_ = A
         self.Aid = self.addMatrix(self.A_)
@@ -384,9 +408,22 @@ class RepeatHMatrix(pgcore.BlockMatrix):
 
 
 class RepeatDMatrix(pgcore.BlockMatrix):
-    """Matrix holding a base matrix N times diagonally."""
+    """Matrix repeating a base matrix N times diagonally. Only A is stored.
+
+        M = | A     |
+            |   A   |
+            |     A |
+    """
     def __init__(self, A, num):
-        """Initialize."""
+        """Init matrix by specify matrix and number of repetitions.
+
+        Parameters
+        ----------
+        A : pg.MatrixBase (or derived)
+            matrix for constraining a single frame (e.g. 1st order smoothness)
+        num : int
+            number of repetitions
+        """
         super().__init__()
         self.A_ = A
         self.Aid = self.addMatrix(self.A_)
@@ -401,9 +438,24 @@ class RepeatDMatrix(pgcore.BlockMatrix):
 
 
 class FrameConstraintMatrix(RepeatDMatrix):
-    """Matrix holding a base matrix N times vertically."""
+    """Matrix constraining meshes inside and between frames of same mesh.
+
+        M = |  A        |
+            |     A     |
+            |        A  |
+            | -I +I     |
+            |    -I  +I |
+    """
     def __init__(self, A, num):
-        """Initialize."""
+        """Init matrix by specifying number of frames.
+
+        Parameters
+        ----------
+        A : pg.MatrixBase (or derived)
+            matrix for constraining a single frame (e.g. 1st order smoothness)
+        num : int
+            number of frames
+        """
         super().__init__(A, num)
         self.nm = A.cols()  # model parameter per frame
         self.nb = A.rows()  # boundaries per frame
@@ -419,15 +471,13 @@ class FrameConstraintMatrix(RepeatDMatrix):
 
         self.recalcMatrixSize()
 
-class NDMatrix(pgcore.BlockMatrix):
-    """Diagonal block (block-Jacobi) matrix derived from pg.matrix.BlockMatrix.
 
-    (to be moved to a better place at a later stage)
-    """
+class NDMatrix(pgcore.BlockMatrix):
+    """Diagonal block (block-Jacobi) matrix ."""
 
     def __init__(self, num, nrows, ncols):
-        super().__init__()  # call inherited init function
-        self.Ji = []  # list of individual block matrices
+        super().__init__()
+        self.Ji = []
         for i in range(num):
             self.Ji.append(pgcore.Matrix())
             self.Ji[-1].resize(nrows, ncols)
