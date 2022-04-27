@@ -353,6 +353,53 @@ class Cm05Matrix(pgcore.MatrixBase):
         return self.mult(x)  # matrix is symmetric by definition
 
 
+class RepeatVMatrix(pgcore.BlockMatrix):
+    """Matrix holding a base matrix N times vertically."""
+    def __init__(self, A, num):
+        """Initialize."""
+        super().__init__()
+        self.A_ = A
+        self.Aid = self.addMatrix(self.A_)
+        nr = 0
+        for i in range(num):
+            self.addMatrixEntry(self.Aid, nr, 0)
+            nr += A.rows()
+
+        self.recalcMatrixSize()
+
+
+class RepeatHMatrix(pgcore.BlockMatrix):
+    """Matrix holding a base matrix N times vertically."""
+    def __init__(self, A, num):
+        """Initialize."""
+        super().__init__()
+        self.A_ = A
+        self.Aid = self.addMatrix(self.A_)
+        nc = 0
+        for i in range(num):
+            self.addMatrixEntry(self.Aid, 0, nc)
+            nc += A.cols()
+
+        self.recalcMatrixSize()
+
+
+class RepeatDMatrix(pgcore.BlockMatrix):
+    """Matrix holding a base matrix N times vertically."""
+    def __init__(self, A, num):
+        """Initialize."""
+        super().__init__()
+        self.A_ = A
+        self.Aid = self.addMatrix(self.A_)
+        nc = 0
+        nr = 0
+        for i in range(num):
+            self.addMatrixEntry(self.Aid, nr, nc)
+            nc += A.cols()
+            nr += A.rows()
+
+        self.recalcMatrixSize()
+
+
 class NDMatrix(pgcore.BlockMatrix):
     """Diagonal block (block-Jacobi) matrix derived from pg.matrix.BlockMatrix.
 
@@ -360,7 +407,7 @@ class NDMatrix(pgcore.BlockMatrix):
     """
 
     def __init__(self, num, nrows, ncols):
-        super(NDMatrix, self).__init__()  # call inherited init function
+        super().__init__()  # call inherited init function
         self.Ji = []  # list of individual block matrices
         for i in range(num):
             self.Ji.append(pgcore.Matrix())
