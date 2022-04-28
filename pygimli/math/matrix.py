@@ -446,7 +446,7 @@ class FrameConstraintMatrix(RepeatDMatrix):
             | -I +I     |
             |    -I  +I |
     """
-    def __init__(self, A, num):
+    def __init__(self, A, num, scale=1.0):
         """Init matrix by specifying number of frames.
 
         Parameters
@@ -459,8 +459,8 @@ class FrameConstraintMatrix(RepeatDMatrix):
         super().__init__(A, num)
         self.nm = A.cols()  # model parameter per frame
         self.nb = A.rows()  # boundaries per frame
-        self.Iminus_ = pgcore.IdentityMatrix(self.nm, val=-1.0)
-        self.Iplus_ = pgcore.IdentityMatrix(self.nm, val=1.0)
+        self.Iminus_ = pgcore.IdentityMatrix(self.nm, val=-scale)
+        self.Iplus_ = pgcore.IdentityMatrix(self.nm, val=scale)
         self.Im = self.addMatrix(self.Iminus_)
         self.Ip = self.addMatrix(self.Iplus_)
         nc = self.rows()
