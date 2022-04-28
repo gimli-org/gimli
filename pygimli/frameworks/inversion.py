@@ -180,7 +180,8 @@ class Inversion(object):
         self._startModel = sm
 
     def convertStartModel(self, model):
-        """Convert scalar or array into startmodel with valid range or self.parameterCount, if possible.
+        """Convert scalar or array into startmodel with valid range or
+            self.fop.parameterCount, if possible.
 
         Attributes
         ----------
@@ -191,14 +192,14 @@ class Inversion(object):
             return None
         elif isinstance(model, float) or isinstance(model, int):
             pg.info("Homogeneous starting model set to:", float(model))
-            return np.full(self.parameterCount, float(model))
+            return np.full(self.fop.parameterCount, float(model))
         elif hasattr(model, '__iter__'):
-            if len(model) == self.parameterCount:
+            if len(model) == self.fop.parameterCount:
                 pg.info("Starting model set from given array.", model)
                 return model
             else:
                 pg.error("Starting model size invalid {0} != {1}.".
-                         format(len(model), self.parameterCount))
+                         format(len(model), self.fop.parameterCount))
         return None
 
     @property
@@ -284,13 +285,6 @@ class Inversion(object):
             pg.warn(
                 "Found zero error values. Setting them to fallback value of 1")
             pg.core.fixZero(self._errorVals, 1)
-
-    @property
-    def parameterCount(self):
-        pC = self.fop.regionManager().parameterCount()
-        if pC == 0:
-            pg.warn("Parameter count is 0")
-        return pC
 
     @property
     def robustData(self):

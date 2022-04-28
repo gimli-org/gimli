@@ -167,6 +167,14 @@ class Modelling(pg.core.ModellingBase):
         self._applyRegionProperties()
         return super(Modelling, self).regionManager()
 
+    @property
+    def parameterCount(self):
+        pC = self.regionManager().parameterCount()
+        if pC == 0:
+            pg.warn("Parameter count is 0")
+
+        return pC
+
     def ensureContent(self):
         pass
 
@@ -177,11 +185,6 @@ class Modelling(pg.core.ModellingBase):
     def createDefaultStartModel(self, dataVals):
         """Create the default startmodel as the median of the data values."""
         pg.critical("'don't use me")
-        # mv = pg.math.median(dataVals)
-        # pg.info("Set default startmodel to "
-        #         "median(data values)={0}".format(mv))
-        # sm = pg.Vector(self.regionManager().parameterCount(), mv)
-        # return sm
 
     def createStartModel(self, dataVals=None):
         """Create the default startmodel as the median of the data values.
@@ -193,7 +196,7 @@ class Modelling(pg.core.ModellingBase):
         if dataVals is not None:
             mv = pg.math.median(dataVals)
             pg.info("Use median(data values)={0}".format(mv))
-            sm = pg.Vector(self.regionManager().parameterCount(), mv)
+            sm = pg.Vector(self.parameterCount, mv)
         else:
             sm = self.regionManager().createStartModel()
         return sm
@@ -934,8 +937,8 @@ class LCModelling(Modelling):
         cID = [c.id() for c in self._mesh.cells()]
         # print(np.array(pID))
         # print(np.array(cID))
-        # print(self.regionManager().parameterCount())
-        perm = [0]*self.regionManager().parameterCount()
+        # print(self.parameterCount
+        perm = [0]*self.parameterCount
         for i in range(len(perm)):
             perm[pID[i]] = cID[i]
 
