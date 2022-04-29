@@ -176,6 +176,25 @@ public:
             this->setVal(it->first.first, it->first.second, it->second);
         }
     }
+    /*!Copy constructor from Matrix. Drops all absolute values lower than droptol. */
+    SparseMapMatrix(const Matrix< ValueType > & S, 
+                    const ValueType & dropTol=0.0)
+        : SparseMatrixBase(){
+        clear();
+        cols_ = S.cols();
+        rows_ = S.rows();
+        stype_ = 0;
+
+        ValueType v;
+        for (Index i = 0; i < S.rows(); i ++ ){
+            for (Index j = 0; j < S.cols(); j ++ ){
+                v = S[i][j];
+                if (abs(v) > dropTol){
+                    this->setVal(i, j, v);
+                }
+            }
+        }
+    }
     #ifndef PYGIMLI_CAST // disallow automatic type conversion from python
     SparseMapMatrix(const SparseMatrix< ValueType > & S)
         : SparseMatrixBase(){
@@ -265,7 +284,7 @@ public:
     }
     void reduce(const IVector & ids, bool keepDiag=true);
 
-    /*! symmetric type. 0 = nonsymmetric, -1 symmetric lower part, 1 symmetric upper part.*/
+    /*! symmetric type. 0 = unsymmetric, -1 symmetric lower part, 1 symmetric upper part.*/
     inline int stype() const {return stype_;}
 
     inline void setRows(IndexType r) { rows_ = r ; }
@@ -408,43 +427,53 @@ public:
         // }
     }
 
-    /*! SparseMapMatrix: this * a , inplace add to ret */
-    virtual void mult(const Vector < ValueType > & a,
-                      Vector < ValueType > & ret) const;
+    /*! Multiplication c = alpha * (A*b) + beta * c. */
+    virtual void mult(const Vector < ValueType > & b, 
+                      Vector < ValueType >& c, 
+                      const ValueType & alpha=1.0, 
+                      const ValueType & beta=0.0, 
+                      Index bOff=0, Index cOff=0) const {
+        return GIMLI::mult(*this, b, c, alpha, beta, bOff, cOff);
+    }
+    /*! Return this * a  */
+    inline Vector < ValueType > mult(const Vector < ValueType > & b) const {
+        Vector < ValueType > ret(this->rows(), 0.0);
+        this->mult(b, ret);
+        return ret;
+    }
+    /*! Multiplication c = alpha * (A*b) + beta * c. */
+    inline void transMult(const Vector < ValueType > & b, 
+                          Vector < ValueType > & c, 
+                          const ValueType & alpha=1.0, 
+                          const ValueType & beta=0.0, 
+                          Index bOff=0, Index cOff=0) const {
+        return GIMLI::transMult(*this, b, c, alpha, beta, bOff, cOff);
+    }
+    /*! Return this.T * a */
+    inline Vector < ValueType > transMult(const Vector < ValueType > & b) const {
+        Vector < ValueType > ret(this->cols(), 0.0);
+        this->transMult(b, ret);
+        return ret;
+    }
+
+    
     /*! ret = [this * ax, this * ay, this * az. with ret = r3 and a is sqeezed pos vector. a = [ax, ay, az] */
     virtual void mult(const Vector < ValueType > & a,
                       Vector < Pos > & ret) const;
-    /*! SparseMapMatrix: this.T * a , inplace add to ret */
-    virtual void transMult(const Vector < ValueType > & a,
-                           Vector < ValueType > & ret) const;
     /*! ret = [this.T * ax, this.T * ay, this.T * az. with ret = r3 and a is sqeezed pos vector. a = [ax, ay, az] */
     virtual void transMult(const Vector < ValueType > & a,
                            Vector < Pos > & ret) const;
 
-    /*! Return SparseMapMatrix: this * a. */
-    virtual Vector < ValueType > mult(const Vector < ValueType > & a) const {
-        Vector < ValueType > ret(this->rows(), 0.0);
-        mult(a, ret);
-        return ret;
-    }
-    /*! Return SparseMapMatrix: this.T * a */
-    virtual Vector < ValueType > transMult(const Vector < ValueType > & a)const{
-        Vector < ValueType > ret(this->cols(), 0.0);
-        transMult(a, ret);
-        return ret;
-    }
 
     virtual Vector < ValueType > col(const Index i) {
         Vector < ValueType > null(this->cols(), 0.0);
         null[i] = 1.0;
-
         return this->mult(null);
     }
 
     virtual Vector < ValueType > row(const Index i) {
         Vector < ValueType > null(this->rows(), 0.0);
         null[i] = 1.0;
-
         return this->transMult(null);
     }
 
@@ -549,7 +578,6 @@ public:
             ret[i] = idx2(it);
         }
         return ret;
-
     }
 
 protected:
@@ -684,23 +712,24 @@ void SparseMapMatrix< ValueType, Index >::
 template <> DLLEXPORT void SparseMapMatrix< double, Index >::
     copy_(const SparseMatrix< double > & S);
 
-template <> DLLEXPORT void SparseMapMatrix< double, Index >::
-    mult(const Vector < double > & a, Vector < double > & ret) const;
-template <> DLLEXPORT void SparseMapMatrix< double, Index >::
-    mult(const Vector < double > & a, Vector < Pos > & ret) const;
-template <> DLLEXPORT void SparseMapMatrix< double, Index >::
-    transMult(const Vector < double > & a, Vector < double > & ret) const;
-template <> DLLEXPORT void SparseMapMatrix< double, Index >::
-    transMult(const Vector < double > & a, Vector < Pos > & ret) const;
+// template <> DLLEXPORT void SparseMapMatrix< double, Index >::
+//     mult(const Vector < double > & a, Vector < double > & ret) const;
+// template <> DLLEXPORT void SparseMapMatrix< double, Index >::
+//     transMult(const Vector < double > & a, Vector < double > & ret) const;
 
+// template <> DLLEXPORT void SparseMapMatrix< Complex, Index >::
+//     mult(const Vector < Complex > & a, Vector < Complex > & ret) const;
+// template <> DLLEXPORT void SparseMapMatrix< Complex, Index >::
+//     transMult(const Vector < Complex > & a, Vector < Complex > & ret) const;
+
+template <> DLLEXPORT void SparseMapMatrix< double, Index >::
+    mult(const RVector & a, Vector < Pos > & ret) const;
 template <> DLLEXPORT void SparseMapMatrix< Complex, Index >::
-    mult(const Vector < Complex > & a, Vector < Complex > & ret) const;
+    mult(const CVector & a, Vector < Pos > & ret) const;
+template <> DLLEXPORT void SparseMapMatrix< double, Index >::
+    transMult(const RVector & a, Vector < Pos > & ret) const;
 template <> DLLEXPORT void SparseMapMatrix< Complex, Index >::
-    mult(const Vector < Complex > & a, Vector < Pos > & ret) const;
-template <> DLLEXPORT void SparseMapMatrix< Complex, Index >::
-    transMult(const Vector < Complex > & a, Vector < Complex > & ret) const;
-template <> DLLEXPORT void SparseMapMatrix< Complex, Index >::
-    transMult(const Vector < Complex > & a, Vector < Pos > & ret) const;
+    transMult(const CVector & a, Vector < Pos > & ret) const;
 
 template <> DLLEXPORT void SparseMapMatrix< double, Index >::
     add(const ElementMatrix < double > & A, const double & scale, bool neg);

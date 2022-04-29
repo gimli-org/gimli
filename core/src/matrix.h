@@ -182,6 +182,35 @@ Pos operator * (const Matrix3 < ValueType > & A, const Pos & b) {
                              A[6] * b[0] + A[7] * b[1] + A[8] * b[2]);
 }
 
+#define DEFINE_MATRIX_MULT_INTERFACE(MAT, VALTYPE) \
+/*! c = alpha * A*b + beta * c */ \
+void DLLEXPORT mult(const MAT & A,  \
+                    const Vector<VALTYPE> & b, Vector<VALTYPE> & c,\
+                    const VALTYPE & alpha=1.0, const VALTYPE & beta=0.0,\
+                    Index bOff = 0, Index cOff = 0);\
+/*! c = alpha * A.T*b + beta * c */ \
+void DLLEXPORT transMult(const MAT & A,  \
+                    const Vector<VALTYPE> & b, Vector<VALTYPE> & c,\
+                    const VALTYPE & alpha=1.0, const VALTYPE & beta=0.0,\
+                    Index bOff = 0, Index cOff = 0);\
+void DLLEXPORT mult(const MAT & A,  \
+                    const MAT & b, MAT & c,\
+                    const VALTYPE & alpha=1.0, const VALTYPE & beta=0.0);\
+void DLLEXPORT transMult(const MAT & A,  \
+                    const MAT & b, MAT & c,\
+                    const VALTYPE & alpha=1.0, const VALTYPE & beta=0.0);\
+
+DEFINE_MATRIX_MULT_INTERFACE(RDenseMatrix, double)
+DEFINE_MATRIX_MULT_INTERFACE(CDenseMatrix, Complex)
+DEFINE_MATRIX_MULT_INTERFACE(RMatrix, double)
+DEFINE_MATRIX_MULT_INTERFACE(CMatrix, Complex)
+DEFINE_MATRIX_MULT_INTERFACE(RSparseMapMatrix, double)
+DEFINE_MATRIX_MULT_INTERFACE(CSparseMapMatrix, Complex)
+DEFINE_MATRIX_MULT_INTERFACE(RSparseMatrix, double)
+DEFINE_MATRIX_MULT_INTERFACE(CSparseMatrix, Complex)
+
+#undef DEFINE_MATRIX_MULT_INTERFACE
+
 //! Interface class for matrices.
 /*! Pure virtual interface class for matrices.
  * If you want your own Jacobian matrix to be used in \ref Inversion or \ref ModellingBase
@@ -235,19 +264,61 @@ public:
 
     /*! Return this * a. For being numpy api-compatible  */
     virtual RVector dot(const RVector & a) const {
-        return mult(a);
+        return this->mult(a);
+    }
+
+    /*! Multiplication c = alpha * (A*b) + beta * c. */
+    virtual void mult(const RVector & b, RVector & c, 
+                     const double & alpha=1.0, 
+                     const double & beta=0.0, 
+                     Index bOff=0, Index cOff=0) const {
+        log(Warning, "no mult(const & b, const & b, alpha, beta, bOff, cOff) implemented for: ", typeid(*this).name());
+    }
+    /*! Multiplication c = alpha * (A*b) + beta * c. */
+    virtual void transMult(const RVector & b, RVector & c, 
+                     const double & alpha=1.0, 
+                     const double & beta=0.0, 
+                     Index bOff=0, Index cOff=0) const {
+        log(Warning, "no transMult(const & b, const & b, alpha, beta, bOff, cOff) implemented for: ", typeid(*this).name());
+    }
+    /*! Multiplication c = alpha * (A*b) + beta * c. */
+    virtual void mult(const CVector & b, CVector & c, 
+                     const Complex & alpha=1.0, 
+                     const Complex & beta=0.0, 
+                     Index bOff=0, Index cOff=0) const {
+        log(Warning, "no mult(const & b, const & b, alpha, beta, bOff, cOff) implemented for: ", typeid(*this).name());
+    }
+    /*! Multiplication c = alpha * (A*b) + beta * c. */
+    virtual void transMult(const CVector & b, CVector & c, 
+                     const Complex & alpha=1.0, 
+                     const Complex & beta=0.0, 
+                     Index bOff=0, Index cOff=0) const {
+        log(Warning, "no transMult(const & b, const & b, alpha, beta, bOff, cOff) implemented for: ", typeid(*this).name());
     }
 
     /*! Return this * a  */
-    virtual RVector mult(const RVector & a) const {
-       log(Warning, "no RVector mult(const RVector & a) implemented for: ", typeid(*this).name());
-       return RVector(rows());
+    virtual RVector mult(const RVector & b) const {
+        RVector ret(this->rows(), 0.0);
+        this->mult(b, ret);
+        return ret;
     }
-
     /*! Return this * a  */
-    virtual CVector mult(const CVector & a) const {
-        log(Warning, "no CVector mult(const CVector & a) implemented for: ", typeid(*this).name());
-        return CVector(rows());
+    virtual CVector mult(const CVector & b) const {
+        CVector ret(this->rows(), 0.0);
+        this->mult(b, ret);
+        return ret;
+    }
+    /*! Return this.T * a */
+    virtual RVector transMult(const RVector & b) const {
+        RVector ret(this->cols(), 0.0);
+        this->transMult(b, ret);
+        return ret;
+    }
+    /*! Return this.T * a */
+    virtual CVector transMult(const CVector & b) const {
+        CVector ret(this->cols(), 0.0);
+        this->transMult(b, ret);
+        return ret;
     }
 
     virtual RVector mult(const RVector & b, Index startI, Index endI) const {
@@ -259,17 +330,6 @@ public:
         return CVector(rows());
     }
 
-    /*! Return this.T * a */
-    virtual RVector transMult(const RVector & a) const {
-        log(Warning, "no RVector transMult(const RVector & a) implemented for: ", typeid(*this).name());
-        return RVector(cols());
-    }
-
-    /*! Return this.T * a */
-    virtual CVector transMult(const CVector & a) const {
-        log(Warning, "no CVector transMult(const CVector & a) implemented for: ", typeid(*this).name());
-        return CVector(cols());
-    }
 /*
     virtual void setCol(Index col, const RVector & v) const {
         THROW_TO_IMPL
@@ -410,25 +470,14 @@ protected:
 };
 
 
-/*! c = alpha * A*b + beta * c */
-void DLLEXPORT mult(const RDenseMatrix & A, const RVector & b, RVector & c,
-                    const double & alpha=1.0,
-                    const double & beta=0.0);
-/*! c = alpha * A*b + beta * c */
-void DLLEXPORT mult(const RMatrix & A, const RVector & b, RVector & c,
-                    const double & alpha=1.0,
-                    const double & beta=0.0);
+Index DLLEXPORT cblasCount(bool reset=false);
+double DLLEXPORT cblasSumTime(bool reset=false);
+double DLLEXPORT cblasMinTime(bool reset=false);
 
-/*! c = alpha * A*b + beta * c */
-void DLLEXPORT mult(const CDenseMatrix & A, const CVector & b, CVector & c,
-                    const Complex & alpha=Complex(1.0),
-                    const Complex & beta=Complex(0.0));
 
-/*! c = alpha * A*b + beta * c */
-void DLLEXPORT mult(const CMatrix & A, const CVector & b, CVector & c,
-                    const Complex & alpha=Complex(1.0),
-                    const Complex & beta=Complex(0.0));
-
+//##############################################################################
+// DenseMatrix
+//##############################################################################
 
 //! Simple row-ordered dense matrix based on continuous memory block.
 /*! Simple row-ordered dense matrix based on continuous memory block. */
@@ -458,6 +507,15 @@ public:
     DenseMatrix(const DenseMatrix < ValueType > & mat)
         : MatrixBase(), _rows(0), _cols(0) {
         copy_(mat);
+    }
+    DenseMatrix(const Matrix < ValueType > & S)
+        : MatrixBase(), _rows(0), _cols(0) {
+        this->resize(S.rows(), S.cols());
+        for (Index i = 0; i < S.rows(); i ++ ){
+            for (Index j = 0; j < S.cols(); j ++ ){
+                this->setVal(i, j, S[i][j]);
+            }
+        }
     }
 
     virtual ~DenseMatrix(){
@@ -628,21 +686,53 @@ public:
     /*! A += a.T*/
     DenseMatrix < ValueType > & transAdd(const DenseMatrix < ValueType > & a);
 
-    /*! Multiplication (A*b) with a vector of the same value type. */
-    inline Vector < ValueType > mult(const Vector < ValueType > & x) const {
-        ASSERT_VEC_SIZE(x, cols())
-        Vector < ValueType > ret(rows(), 0.0);
-        GIMLI::mult((*this), x, ret);
+    /*! Multiplication c = alpha * (A*b) + beta * c. */
+    virtual void mult(const Vector < ValueType > & b, 
+                      Vector < ValueType >& c, 
+                      const ValueType & alpha=1.0, 
+                      const ValueType & beta=0.0, 
+                      Index bOff=0, Index cOff=0) const {
+        return GIMLI::mult(*this, b, c, alpha, beta, bOff, cOff);
+    }
+    /*! Multiplication c = alpha * (A*b) + beta * c. */
+    inline void transMult(const Vector < ValueType > & b, 
+                          Vector < ValueType > & c, 
+                          const ValueType & alpha=1.0, 
+                          const ValueType & beta=0.0, 
+                          Index bOff=0, Index cOff=0) const {
+        return GIMLI::transMult(*this, b, c, alpha, beta, bOff, cOff);
+    }
+    /*! Return this * a  */
+    inline Vector < ValueType > mult(const Vector < ValueType > & b) const {
+        Vector < ValueType > ret(this->rows(), 0.0);
+        this->mult(b, ret);
+        return ret;
+    }
+    /*! Return this.T * a */
+    inline Vector < ValueType > transMult(const Vector < ValueType > & b) const {
+        Vector < ValueType > ret(this->cols(), 0.0);
+        this->transMult(b, ret);
         return ret;
     }
 
-    /*! Multiplication (A*b) with a part of a vector between two defined indices. */
-    Vector < ValueType > mult(const Vector < ValueType > & b,
-                              Index startI, Index endI) const;
+    /*! Multiplication C = alpha * (A*B) + beta * C. */
+    inline void mult(const DenseMatrix < ValueType > & B, 
+                     DenseMatrix < ValueType > & C, 
+                     const ValueType & alpha = 1.0, 
+                     const ValueType & beta = 0.0) const {
+        GIMLI::mult((*this), B, C, alpha, beta);
+    }
 
-    /*! Transpose multiplication (A^T*b) with a vector of the same value type. */
-    Vector< ValueType > transMult(const Vector < ValueType > & b) const;
 
+    /*! Multiplication C = alpha * (A*B) + beta * C. */
+    inline void transMult(const DenseMatrix < ValueType > & B, 
+                          DenseMatrix < ValueType > & C, 
+                          const ValueType & alpha = 1.0, 
+                          const ValueType & beta = 0.0) const {
+        GIMLI::transMult((*this), B, C, alpha, beta);
+    }
+
+    
     /*! Round all values of this matrix to tol.*/
     void round(const ValueType & tol);
 
@@ -731,6 +821,7 @@ template <> DLLEXPORT Vector< double >
 DenseMatrix< double >::row(Index i) const;
 template <> DLLEXPORT Vector< double >
 DenseMatrix< double >::row(Index i);
+
 template <> DLLEXPORT void
 DenseMatrix< double >::round(const double & v);
 
@@ -741,22 +832,15 @@ DenseMatrix< Complex >::row(Index i);
 template <> DLLEXPORT void
 DenseMatrix< Complex >::round(const Complex & v);
 
-
-template <> DLLEXPORT Vector<double>
-DenseMatrix<double>::mult(const Vector < double > & b, Index startI, Index endI) const;
-template <> DLLEXPORT Vector<Complex>
-DenseMatrix<Complex>::mult(const Vector < Complex > & b, Index startI, Index endI) const;
-
-template <> DLLEXPORT Vector<double>
-DenseMatrix<double>::transMult(const Vector < double > & b) const;
-template <> DLLEXPORT Vector<Complex>
-DenseMatrix<Complex>::transMult(const Vector < Complex > & b) const;
-
 template <> DLLEXPORT DenseMatrix<double> &
 DenseMatrix<double>::transAdd(const DenseMatrix < double > & a);
 template <> DLLEXPORT DenseMatrix<Complex> &
 DenseMatrix<Complex>::transAdd(const DenseMatrix < Complex > & a);
 
+
+//##############################################################################
+// Matrix
+//##############################################################################
 
 //! Simple row-based dense matrix based on \ref Vector
 /*! Simple row-based dense matrix based on \ref Vector */
@@ -1044,20 +1128,49 @@ public:
     /*! A += a.T*/
     Matrix < ValueType > & transAdd(const Matrix < ValueType > & a);
 
-    /*! Multiplication (A*b) with a vector of the same value type. */
-    inline Vector < ValueType > mult(const Vector < ValueType > & x) const {
-        ASSERT_VEC_SIZE(x, cols())
-        Vector < ValueType > ret(rows(), 0.0);
-        GIMLI::mult(*this, x, ret);
+    /*! Multiplication c = alpha * (A*b) + beta * c. */
+    virtual void mult(const Vector < ValueType > & b, 
+                      Vector < ValueType >& c, 
+                      const ValueType & alpha=1.0, 
+                      const ValueType & beta=0.0, 
+                      Index bOff=0, Index cOff=0) const {
+        return GIMLI::mult(*this, b, c, alpha, beta, bOff, cOff);
+    }
+    /*! Return this * a  */
+    inline Vector < ValueType > mult(const Vector < ValueType > & b) const {
+        Vector < ValueType > ret(this->rows(), 0.0);
+        this->mult(b, ret);
+        return ret;
+    }
+    /*! Multiplication c = alpha * (A*b) + beta * c. */
+    inline void transMult(const Vector < ValueType > & b, 
+                          Vector < ValueType > & c, 
+                          const ValueType & alpha=1.0, 
+                          const ValueType & beta=0.0, 
+                          Index bOff=0, Index cOff=0) const {
+        return GIMLI::transMult(*this, b, c, alpha, beta, bOff, cOff);
+    }
+    /*! Return this.T * a */
+    inline Vector < ValueType > transMult(const Vector < ValueType > & b) const {
+        Vector < ValueType > ret(this->cols(), 0.0);
+        this->transMult(b, ret);
         return ret;
     }
 
-    /*! Multiplication (A*b) with a part of a vector between two defined indices. */
-    Vector < ValueType > mult(const Vector < ValueType > & b,
-                              Index startI, Index endI) const;
-
-    /*! Transpose multiplication (A^T*b) with a vector of the same value type. */
-    Vector< ValueType > transMult(const Vector < ValueType > & b) const;
+    /*! Multiplication C = alpha * (A*B) + beta * C. */
+    inline void mult(const Matrix < ValueType > & B, 
+                     Matrix < ValueType > & C, 
+                     const ValueType & alpha = 1.0, 
+                     const ValueType & beta = 0.0) const {
+        GIMLI::mult((*this), B, C, alpha, beta);
+    }
+    /*! Multiplication C = alpha * (A*B) + beta * C. */
+    inline void transMult(const Matrix < ValueType > & B, 
+                          Matrix < ValueType > & C, 
+                          const ValueType & alpha = 1.0, 
+                          const ValueType & beta = 0.0) const {
+        GIMLI::transMult((*this), B, C, alpha, beta);
+    }
 
     /*! Save matrix to file. */
     virtual void save(const std::string & filename) const {
@@ -1123,15 +1236,6 @@ protected:
     BVector rowFlag_;
 };
 
-template <> DLLEXPORT Vector<double>
-Matrix<double>::mult(const Vector < double > & b, Index startI, Index endI) const;
-template <> DLLEXPORT Vector<Complex>
-Matrix<Complex>::mult(const Vector < Complex > & b, Index startI, Index endI) const;
-
-template <> DLLEXPORT Vector<double>
-Matrix<double>::transMult(const Vector < double > & b) const;
-template <> DLLEXPORT Vector<Complex>
-Matrix<Complex>::transMult(const Vector < Complex > & b) const;
 
 template <> DLLEXPORT Matrix<double> &
 Matrix<double>::transAdd(const Matrix < double > & a);
@@ -1157,50 +1261,6 @@ DEFINE_BINARY_OPERATOR__(/, DIVID)
 DEFINE_BINARY_OPERATOR__(*, MULT)
 
 #undef DEFINE_BINARY_OPERATOR__
-
-// template< class ValueType > class DLLEXPORT Mult{
-// public:
-//     Mult(Vector< ValueType > & x, const Vector< ValueType > & b, const Matrix < ValueType > & A, Index start, Index end) :
-//         x_(&x), b_(&b), A_(&A), start_(start), end_(end){
-//     }
-//     void operator()() {
-//         for (Index i = start_; i < end_; i++) (*x_)[i] = sum((*A_)[i] * *b_);
-//     }
-
-//     Vector< ValueType > * x_;
-//     const Vector< ValueType > * b_;
-//     const Matrix< ValueType > * A_;
-//     Index start_;
-//     Index end_;
-// };
-
-// template < class ValueType >
-// Vector < ValueType > multMT(const Matrix < ValueType > & A, const Vector < ValueType > & b){
-// #ifdef USE_THREADS
-//     Index cols = A.cols();
-//     Index rows = A.rows();
-
-//     Vector < ValueType > ret(rows);
-//     boost::thread_group threads;
-//     Index nThreads = 2;
-//     Index singleCalcCount = Index(ceil((double)rows / (double)nThreads));
-//  //   CycleCounter cc;
-
-//     for (Index i = 0; i < nThreads; i ++){
-// // 	Vector < ValueType > *start = &A[singleCalcCount * i];
-// //         Vector < ValueType > *end   = &A[singleCalcCount * (i + 1)];
-//         Index start = singleCalcCount * i;
-//         Index end   = singleCalcCount * (i + 1);
-// 	if (i == nThreads -1) end = A.rows();
-// //	cc.tic();
-//         threads.create_thread(Mult< ValueType >(ret, b, A, start, end));
-//   //      std::cout << cc.toc() << std::endl;
-//     }
-//     threads.join_all();
-// #else
-//     return mult(A, b);
-// #endif
-// }
 
 template < class Mat >
 bool operator == (const Mat & A, const Mat & B){
@@ -1572,30 +1632,37 @@ AtB might be for temporary memory allocation.  */
 DLLEXPORT void matMultABA(const RDenseMatrix & A,
                           const RDenseMatrix & B,
                           RDenseMatrix & C,
-                          RDenseMatrix & AtB, double a=1.0, double b=0.0);
+                          RDenseMatrix & AtB, 
+                          const double & a=1.0, const double & b=0.0);
 DLLEXPORT void matMultABA(const SmallMatrix & A,
                           const SmallMatrix & B,
                           SmallMatrix & C,
-                          SmallMatrix & AtB, double a=1.0, double b=0.0);
+                          SmallMatrix & AtB, 
+                          const double & a=1.0, const double & b=0.0);
 
 /*!Inplace matrix calculation: $C = a*A*B + b*C$. B are transposed if needed to fit appropriate dimensions. */
 DLLEXPORT void matMult(const RDenseMatrix & A,
                        const RDenseMatrix & B,
-                       RDenseMatrix & C, double a=1.0, double b=0.0);
+                       RDenseMatrix & C, 
+                       const double & a=1.0, const double & b=0.0);
 DLLEXPORT void matMult(const SmallMatrix & A,
                        const SmallMatrix & B,
-                       SmallMatrix & C, double a=1.0, double b=0.0);
+                       SmallMatrix & C, 
+                       const double & a=1.0, const double & b=0.0);
 
 /*!Inplace matrix calculation: $C = a * A.T * B + b*C$. B are transposed if needed to fit appropriate dimensions. */
 DLLEXPORT void matTransMult(const RDenseMatrix & A,
                             const RDenseMatrix & B,
-                            RDenseMatrix & C, double a=1.0, double b=0.0);
+                            RDenseMatrix & C, 
+                            const double & a=1.0, const double & b=0.0);
 DLLEXPORT void matTransMult(const SmallMatrix & A,
                             const SmallMatrix & B,
-                            SmallMatrix & C, double a=1.0, double b=0.0);
+                            SmallMatrix & C, 
+                            const double & a=1.0, const double & b=0.0);
 
 /*! Return determinant for Matrix(2 x 2). */
-template < class T > inline T det(const T & a, const T & b, const T & c, const T & d){
+template < class T > inline T det(const T & a, const T & b, 
+                                  const T & c, const T & d){
     return a * d - b * c;
 }
 

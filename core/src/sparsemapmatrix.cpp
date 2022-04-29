@@ -194,52 +194,89 @@ THROW_TO_IMPL
 }
 
 template <class ValueType> void
-mult_(const SparseMapMatrix< ValueType, Index > * A,
-      const Vector < ValueType > & a, Vector < ValueType > & ret) {
+mult_T_impl(const SparseMapMatrix< ValueType, Index > & A,
+            const Vector < ValueType > & b, Vector < ValueType > & c,
+            const ValueType & alpha, const ValueType & beta,
+            Index bOff, Index cOff, bool trans) {
 
-    if (A->rows() != ret.size()) ret.resize(A->rows());
-    ASSERT_GREATER_EQUAL(a.size(), A->cols())
+    if (trans){
+        ASSERT_GREATER_EQUAL(b.size() + bOff, A.rows())
+        if (c.size() < A.cols() + cOff) c.resize(A.cols() + cOff);
+    } else {
+        ASSERT_GREATER_EQUAL(b.size() + bOff, A.cols())
+        if (c.size() < A.rows() + cOff) c.resize(A.rows() + cOff);
+    }
+    c *= beta;
 
-    if (A->stype() == 0){
-        for (auto it = A->begin(); it != A->end(); it ++){
-            ret[it->first.first] += a[it->first.second] * it->second;
-        }
-    } else if (A->stype() == -1){
-
-        for (auto it = A->begin(); it != A->end(); it ++){
-            Index I = it->first.first;
-            Index J = it->first.second;
-
-            ret[I] += a[J] * conj(it->second);
-
-            if (J > I){
-                ret[J] += a[I] * it->second;
+    if (A.stype() == 0){ // non-symmetric
+        if (trans){
+            for (auto it = A.begin(); it != A.end(); it ++){
+                c[it->first.second] += alpha * b[it->first.first] * it->second;
+            }
+        } else {
+            for (auto it = A.begin(); it != A.end(); it ++){
+                c[it->first.first] += alpha * b[it->first.second] * it->second;
             }
         }
-    } else if (A->stype() ==  1){
-        for (auto it = A->begin(); it != A->end(); it ++){
-            Index I = it->first.first;
-            Index J = it->first.second;
+    } else if (A.stype() == -1){
+        if (trans){
+            THROW_TO_IMPL
+        } else {
+            for (auto it = A.begin(); it != A.end(); it ++){
+                Index I = it->first.first;
+                Index J = it->first.second;
 
-            ret[I] += a[J] * conj(it->second);
+                c[I] += alpha * b[J] * conj(it->second);
 
-            if (J < I){
-                ret[J] += a[I] * it->second;
+                if (J > I){
+                    c[J] += alpha * b[I] * it->second;
+                }
+            }
+        }
+    } else if (A.stype() ==  1){
+        if (trans){
+            THROW_TO_IMPL
+        } else {
+            for (auto it = A.begin(); it != A.end(); it ++){
+                Index I = it->first.first;
+                Index J = it->first.second;
+
+                c[I] += alpha * b[J] * conj(it->second);
+
+                if (J < I){
+                    c[J] += alpha * b[I] * it->second;
+                }
             }
         }
     }
 }
+void mult(const SparseMapMatrix< double, Index > & A,
+          const RVector & b, RVector & c,
+          const double & alpha, const double & beta,
+          Index bOff, Index cOff){
+    return mult_T_impl(A, b, c, alpha, beta, bOff, cOff, false);
+}
+void mult(const SparseMapMatrix< Complex, Index > & A,
+          const CVector & b, CVector & c,
+          const Complex & alpha, const Complex & beta,
+          Index bOff, Index cOff){
+    return mult_T_impl(A, b, c, alpha, beta, bOff, cOff, false);
+}
+void transMult(const SparseMapMatrix< double, Index > & A,
+          const RVector & b, RVector & c,
+          const double & alpha, const double & beta,
+          Index bOff, Index cOff){
+    return mult_T_impl(A, b, c, alpha, beta, bOff, cOff, true);
+}
+void transMult(const SparseMapMatrix< Complex, Index > & A,
+          const CVector & b, CVector & c,
+          const Complex & alpha, const Complex & beta,
+          Index bOff, Index cOff){
+    return mult_T_impl(A, b, c, alpha, beta, bOff, cOff, true);
+}
 
 template <> void SparseMapMatrix< double, Index >::
-    mult(const Vector < double > & a, Vector < double > & ret) const{
-    mult_(this, a, ret);
-}
-template <> void SparseMapMatrix< Complex, Index >::
-    mult(const Vector < Complex > & a, Vector < Complex > & ret) const{
-    mult_(this, a, ret);
-}
-template <> void SparseMapMatrix< double, Index >::
-    mult(const Vector < double > & a, Vector < Pos > & ret) const {
+mult(const Vector < double > & a, Vector < Pos > & ret) const {
     if (this->rows() != ret.size()) ret.resize(this->rows(), Pos(0.0, 0.0));
 
     Index nCoeff(a.size() / this->cols());
@@ -261,36 +298,7 @@ template <> void SparseMapMatrix< double, Index >::
 }
 template <> void SparseMapMatrix< Complex, Index >::
     mult(const Vector < Complex > & a, Vector < Pos > & ret) const {
-THROW_TO_IMPL
-}
-
-
-template < class ValueType >
-void transMult_(const SparseMapMatrix< ValueType, Index > * A,
-                const Vector < ValueType > & a,
-                Vector < ValueType > & ret) {
-    if (A->cols() != ret.size()) ret.resize(A->cols());
-
-    ASSERT_GREATER_EQUAL(a.size(), A->rows())
-
-    if (A->stype() == 0){
-        for (auto it = A->begin(); it != A->end(); it ++){
-            ret[it->first.second] += a[it->first.first] * it->second;
-        }
-    } else if (A->stype() == -1){
-        THROW_TO_IMPL
-    } else if (A->stype() ==  1){
-        THROW_TO_IMPL
-    }
-}
-template <> void SparseMapMatrix< double, Index >::
-    transMult(const Vector < double > & a, Vector < double > & ret) const{
-    transMult_(this, a, ret);
-}
-template <> void SparseMapMatrix< Complex, Index >::
-    transMult(const Vector < Complex > & a, Vector < Complex > & ret) const{
     THROW_TO_IMPL
-    //transMult_(this, a, ret);
 }
 template <> void SparseMapMatrix< double, Index >::
     transMult(const Vector < double > & a, Vector < Pos > & ret) const{
@@ -341,8 +349,8 @@ void mult(const std::vector < RSparseMapMatrix > & A,
     //!! implement with ompl .. refactor with above
     if (ret.size() != A.size()) ret.resize(A.size());
     for (Index i = 0; i < A.size(); i ++ ){
-        ret[i] *= 0.0;
-        A[i].mult(b, ret[i]);
+        // ret[i] *= 0.0;
+        A[i].mult(b, ret[i], 1.0, 0.0);
     }
 }
 

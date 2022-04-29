@@ -445,6 +445,195 @@ template <> void SparseMatrix< Complex >
     _T_buildSparsityPattern_(this, idxMap);
 }
 
+template <class ValueType> void
+mult_T_impl(const SparseMatrix< ValueType > & A,
+            const Vector < ValueType > & b, Vector < ValueType > & c,
+            const ValueType & alpha, const ValueType & beta,
+            Index bOff, Index cOff, bool trans) {
+
+    if (trans){
+        ASSERT_GREATER_EQUAL(b.size() + bOff, A.rows())
+        if (c.size() < A.cols() + cOff) c.resize(A.cols() + cOff);
+    } else {
+        ASSERT_GREATER_EQUAL(b.size() + bOff, A.cols())
+        if (c.size() < A.rows() + cOff) c.resize(A.rows() + cOff);
+    }
+    THROW_TO_IMPL
+    // c *= beta;
+
+    // if (A.stype() == 0){ // non-symmetric
+    //     if (trans){
+    //         for (auto it = A.begin(); it != A.end(); it ++){
+    //             c[it->first.second] += alpha * b[it->first.first] * it->second;
+    //         }
+    //     } else {
+    //         for (auto it = A.begin(); it != A.end(); it ++){
+    //             c[it->first.first] += alpha * b[it->first.second] * it->second;
+    //         }
+    //     }
+    // } else if (A.stype() == -1){
+    //     if (trans){
+    //         THROW_TO_IMPL
+    //     } else {
+    //         for (auto it = A.begin(); it != A.end(); it ++){
+    //             Index I = it->first.first;
+    //             Index J = it->first.second;
+
+    //             c[I] += alpha * b[J] * conj(it->second);
+
+    //             if (J > I){
+    //                 c[J] += alpha * b[I] * it->second;
+    //             }
+    //         }
+    //     }
+    // } else if (A.stype() ==  1){
+    //     if (trans){
+    //         THROW_TO_IMPL
+    //     } else {
+    //         for (auto it = A.begin(); it != A.end(); it ++){
+    //             Index I = it->first.first;
+    //             Index J = it->first.second;
+
+    //             c[I] += alpha * b[J] * conj(it->second);
+
+    //             if (J < I){
+    //                 c[J] += alpha * b[I] * it->second;
+    //             }
+    //         }
+    //     }
+    // }
+}
+
+
+
+// /*! Return this * a  */
+//     virtual Vector < ValueType > mult(const Vector < ValueType > & a) const {
+//         if (a.size() < this->cols()){
+//             throwLengthError(WHERE_AM_I + " SparseMatrix size(): " + str(this->cols()) + " a.size(): " +
+//                                 str(a.size())) ;
+//         }
+
+//         Vector < ValueType > ret(this->rows(), 0.0);
+
+//         if (stype_ == 0){
+//             // for each row
+//             for (Index i = 0; i < this->rows(); i++){
+//             // iterate through compressed col
+//                 for (int j = this->vecColPtr()[i]; j < this->vecColPtr()[i + 1]; j ++){
+//                     ret[i] += a[this->vecRowIdx()[j]] * this->vecVals()[j];
+//                 }
+//             }
+//         } else if (stype_ == -1){
+//             Index J;
+//             for (Index i = 0; i < ret.size(); i++){
+//                 for (int j = this->vecColPtr()[i]; j < this->vecColPtr()[i + 1]; j ++){
+//                     J = this->vecRowIdx()[j];
+
+// //                     __MS( i << "  " << J << " " << this->vecVals()[j])
+//                     ret[i] += a[J] * conj(this->vecVals()[j]);
+
+//                     if (J > i){
+// //                         __MS( J << "  " << i << " " << this->vecVals()[j])
+//                         ret[J] += a[i] * this->vecVals()[j];
+//                     }
+//                 }
+//             }
+
+//             //#THROW_TO_IMPL
+//         } else if (stype_ == 1){
+//             Index J;
+//             for (Index i = 0; i < ret.size(); i++){
+//                 for (int j = this->vecColPtr()[i]; j < this->vecColPtr()[i + 1]; j ++){
+//                     J = this->vecRowIdx()[j];
+
+// //                     __MS( i << "  " << J << " " << this->vecVals()[j])
+//                     ret[i] += a[J] * conj(this->vecVals()[j]);
+
+//                     if (J < i){
+// //                         __MS( J << "  " << i << " " << this->vecVals()[j])
+//                         ret[J] += a[i] * this->vecVals()[j];
+//                     }
+//                 }
+//             }
+//         }
+//         return ret;
+//     }
+
+//     /*! Return this.T * a */
+//     virtual Vector < ValueType > transMult(const Vector < ValueType > & a) const {
+
+//         if (a.size() < this->rows()){
+//             throwLengthError(WHERE_AM_I + " SparseMatrix size(): " + str(this->rows()) + " a.size(): " +
+//                                 str(a.size())) ;
+//         }
+
+//         Vector < ValueType > ret(this->cols(), 0.0);
+
+//         if (stype_ == 0){
+//             for (Index i = 0; i < this->rows(); i++){
+//                 for (int j = this->vecColPtr()[i]; j < this->vecColPtr()[i + 1]; j ++){
+//                     ret[this->vecRowIdx()[j]] += a[i] * this->vecVals()[j];
+//                 }
+//             }
+
+//         } else if (stype_ == -1){
+//             THROW_TO_IMPL
+//         } else if (stype_ ==  1){
+//             THROW_TO_IMPL
+//         }
+//         return ret;
+//     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+void mult(const SparseMatrix< double > & A,
+          const RVector & b, RVector & c,
+          const double & alpha, const double & beta,
+          Index bOff, Index cOff){
+    return mult_T_impl(A, b, c, alpha, beta, bOff, cOff, false);
+}
+void mult(const SparseMatrix< Complex > & A,
+          const CVector & b, CVector & c,
+          const Complex & alpha, const Complex & beta,
+          Index bOff, Index cOff){
+    return mult_T_impl(A, b, c, alpha, beta, bOff, cOff, false);
+}
+void transMult(const SparseMatrix< double > & A,
+          const RVector & b, RVector & c,
+          const double & alpha, const double & beta,
+          Index bOff, Index cOff){
+    return mult_T_impl(A, b, c, alpha, beta, bOff, cOff, true);
+}
+void transMult(const SparseMatrix< Complex > & A,
+          const CVector & b, CVector & c,
+          const Complex & alpha, const Complex & beta,
+          Index bOff, Index cOff){
+    return mult_T_impl(A, b, c, alpha, beta, bOff, cOff, true);
+}
+
 } // namespace GIMLI{
 
 

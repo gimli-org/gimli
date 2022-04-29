@@ -465,14 +465,24 @@ public:
         testMatrix_< GIMLI::Matrix < double >, double >();
         testMatrix_< GIMLI::DenseMatrix < double >, double >();
 
-        GIMLI::setNoCBlas(true);
-        testMatrixMult< GIMLI::Matrix < double > >();
-        testMatrixMult< GIMLI::DenseMatrix < double > >();
-        GIMLI::setNoCBlas(false);
-        testMatrixMult< GIMLI::Matrix < double > >();
-        testMatrixMult< GIMLI::DenseMatrix < double > >();
-
         testMatrixResizes< GIMLI::Matrix < double > > ();
+        
+        GIMLI::setNoCBlas(true);
+        testMatrixMV< GIMLI::Matrix < double > >();
+        testMatrixMV< GIMLI::DenseMatrix < double > >();
+        GIMLI::setNoCBlas(false);
+        testMatrixMV< GIMLI::Matrix < double > >();
+        testMatrixMV< GIMLI::DenseMatrix < double > >();
+        
+        testMatrixMV< GIMLI::RSparseMapMatrix >();
+        testMatrixMV< GIMLI::RSparseMatrix >();
+        
+        GIMLI::setNoCBlas(true);
+        testMatrixMM< GIMLI::Matrix < double > >();
+        testMatrixMM< GIMLI::DenseMatrix < double > >();
+        GIMLI::setNoCBlas(false);
+        testMatrixMM< GIMLI::Matrix < double > >();
+        testMatrixMM< GIMLI::DenseMatrix < double > >();
     }
 
     void testSmallMatrix(){
@@ -482,7 +492,44 @@ public:
     }
 
     template < class M >
-    void testMatrixMult(){
+    void testMatrixMV(){
+        Index m = 2;
+        Index n = 3;
+        
+        double *_A = new double[m * n];
+        for (Index i = 0; i < m*n; i ++ ) _A[i] = i+1;
+        GIMLI::Matrix A_(m, n, _A);
+
+        typedef M Mat;
+        Mat A(A_);
+
+        GIMLI::RVector b(GIMLI::range(1, n+1));
+        GIMLI::RVector c(A.mult(b));
+        // print(A)
+        // print(b);
+        // print(c);
+
+        CPPUNIT_ASSERT(c == GIMLI::RVector({14, 32}));
+        A.mult(b, c, 2.0, 3.0);
+        CPPUNIT_ASSERT(c == GIMLI::RVector({70, 160}));
+
+        A.mult(b, c, 2.0, -3.0);
+        CPPUNIT_ASSERT(c == GIMLI::RVector({-182, -416}));
+
+        CPPUNIT_ASSERT(A.mult(GIMLI::range(1, n+1))==GIMLI::RVector({14, 32}));
+        CPPUNIT_ASSERT(A.transMult(GIMLI::range(1, m+1))==GIMLI::RVector({9, 12, 15}));
+
+        for (Index i = 0; i < m*n; i ++ ) _A[i] = i+1;
+        GIMLI::Matrix B_(n, m, _A);
+
+        Mat B(B_);
+        
+        CPPUNIT_ASSERT(B.mult(GIMLI::range(1, m+1))==GIMLI::RVector({5, 11, 17}));
+        CPPUNIT_ASSERT(B.transMult(GIMLI::range(1, n+1))==GIMLI::RVector({22,28}));
+    }
+
+    template < class M >
+    void testMatrixMM(){
         typedef M Mat;
 
         // m = 2
@@ -509,7 +556,7 @@ public:
         Mat A(m, k, _A);
         Mat B(k, n, _B);
         Mat C;
-        GIMLI::matMult(A, B, C, 1.0, 0.0);
+        GIMLI::mult(A, B, C, 1.0, 0.0);
         CPPUNIT_ASSERT(C.rows() == m);
         CPPUNIT_ASSERT(C.cols() == n);
         CPPUNIT_ASSERT(C[0] ==
@@ -524,7 +571,7 @@ public:
                 BT[i][j] = B[j][i];
             }
         }
-        GIMLI::matMult(A, BT, C, 1.0, 0.0);
+        GIMLI::mult(A, BT, C, 1.0, 0.0);
         CPPUNIT_ASSERT(C.rows() == m);
         CPPUNIT_ASSERT(C.cols() == n);
         CPPUNIT_ASSERT(C[0] ==
@@ -542,7 +589,7 @@ public:
         }
 
         Mat C2;
-        GIMLI::matTransMult(AT, B, C2, 1.0, 0.0);
+        GIMLI::transMult(AT, B, C2, 1.0, 0.0);
         CPPUNIT_ASSERT(C2.rows() == m);
         CPPUNIT_ASSERT(C2.cols() == n);
         CPPUNIT_ASSERT(C2[0] ==
@@ -552,7 +599,7 @@ public:
 
         //** Test AT*B where should be transposed to fit dimensions
 
-        GIMLI::matTransMult(AT, BT, C2, 1.0, 0.0);
+        GIMLI::transMult(AT, BT, C2, 1.0, 0.0);
         CPPUNIT_ASSERT(C2.rows() == m);
         CPPUNIT_ASSERT(C2.cols() == n);
         CPPUNIT_ASSERT(C2[0] ==

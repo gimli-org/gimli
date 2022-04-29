@@ -28,15 +28,19 @@ template <> Vector < double > BlockMatrix< double >::mult(const Vector < double 
 
     RVector ret(rows_);
 
-    for (Index i = 0; i < entries_.size(); i ++ ){
+    for (Index i = 0; i < entries_.size(); i ++){
         BlockMatrixEntry entry = entries_[i];
 
         MatrixBase *mat = matrices_[entry.matrixID];
 
-        ret.addVal(mat->mult(b.getVal(entry.colStart,
-                                        entry.colStart + mat->cols())) *
-                    entry.scale,
-                    entry.rowStart, entry.rowStart + mat->rows());
+        //!! will not work with CustomMatrices from python with simplified mult
+        mat->mult(b, ret, 1.0, 1.0, entry.colStart, entry.rowStart);
+
+
+        // ret.addVal(mat->mult(b.getVal(entry.colStart,
+        //                                 entry.colStart + mat->cols())) *
+        //             entry.scale,
+        //             entry.rowStart, entry.rowStart + mat->rows());
     }
 
     return ret;
