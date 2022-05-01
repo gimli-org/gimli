@@ -811,6 +811,7 @@ class MeshInversion(Inversion):
         if mesh is not None:
             self.fop.setMesh(mesh)
 
+        pg._r('ami here')
         # maybe move this to the fop
         if zWeight is None:
             zWeight = self._zWeight
