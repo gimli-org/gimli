@@ -1,6 +1,8 @@
 # This script is for continuous integration using Jenkins (http://jenkins-ci.org/)
 # It is called from the parent directory, i.e. bash -xe trunk/.jenkins.sh
 
+rm -rf /var/lib/jenkins/.cache/pygimli # We need a better cleaning process
+
 echo "Starting automatic build #$BUILD_NUMBER on" `date`
 start=$(date +"%s")
 

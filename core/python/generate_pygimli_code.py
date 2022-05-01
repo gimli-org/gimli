@@ -43,7 +43,7 @@ import logging
 
 from pygccxml import utils
 logger = utils.loggers.cxx_parser
-#logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.DEBUG)
 
 from pygccxml import declarations
 from pygccxml.declarations import access_type_matcher_t
@@ -320,6 +320,7 @@ def generate(defined_symbols, extraIncludes):
         'register_numpy_to_uint64_conversion',
         'register_numpy_to_double_conversion',
         'register_numpy_to_rmatrix_conversion',
+        'register_numpy_to_rdensematrix_conversion',
         'register_numpy_to_int32_conversion',
         'register_numpy_to_uint32_conversion',
     ]
@@ -545,15 +546,16 @@ def generate(defined_symbols, extraIncludes):
                     mem.exclude()
 
 
-        if c.name.startswith("Matrix<double>"):
+        if c.name.startswith("Matrix<double>") or \
+            c.name.startswith("DenseMatrix<double>"):
             
             for mem in c.constructors():
                 pass
                 #print("\t constructors:", mem)
             for mem in c.operators():
-                # print("\t operator:", mem)
-                # print("\t\t\t:", mem.name)
-                # print("\t\t\t:", mem.decl_string)
+                print("\t operator:", mem)
+                print("\t\t\t:", mem.name)
+                print("\t\t\t:", mem.decl_string)
 
                 if "operator()" in mem.name:
                     #print("Exclude: " + str(mem))
@@ -587,9 +589,9 @@ def generate(defined_symbols, extraIncludes):
     # ]
     # , call_policies.reference_existing_object)
 
-    setMemberFunctionCallPolicieByReturn(
-        mb,
-        ['::std::string *', 'float *', 'double *',
+    setMemberFunctionCallPolicieByReturn(mb,
+        ['::std::string *', 'float *', 
+        'double *', 'double const *',
          'int *',
          'long *',
          'long int *',

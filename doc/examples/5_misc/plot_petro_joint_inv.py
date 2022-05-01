@@ -29,12 +29,12 @@ def createSynthModel():
        parametric mesh for inversion.
     """
     # Create the synthetic model
-    world = mt.createCircle(boundaryMarker=-1, segments=64)
+    world = mt.createCircle(boundaryMarker=-1, nSegments=64)
     tri = mt.createPolygon([[-0.8, -0], [-0.5, -0.7], [0.7, 0.5]],
                            isClosed=True, area=0.0015)
-    c1 = mt.createCircle(radius=0.2, pos=[-0.2, 0.5], segments=32,
+    c1 = mt.createCircle(radius=0.2, pos=[-0.2, 0.5], nSegments=32,
                          area=0.0025, marker=3)
-    c2 = mt.createCircle(radius=0.2, pos=[0.32, -0.3], segments=32,
+    c2 = mt.createCircle(radius=0.2, pos=[0.32, -0.3], nSegments=32,
                          area=0.0025, marker=3)
 
     poly = mt.mergePLC([world, tri, c1, c2])
@@ -42,7 +42,7 @@ def createSynthModel():
     poly.addRegionMarker([0.0, 0, 0], 1, area=0.0015)
     poly.addRegionMarker([-0.9, 0, 0], 2, area=0.0015)
 
-    c = mt.createCircle(radius=0.99, segments=16, start=np.pi, end=np.pi*3)
+    c = mt.createCircle(radius=0.99, nSegments=16, start=np.pi, end=np.pi*3)
     [poly.createNode(p.pos(), -99) for p in c.nodes()]
     mesh = pg.meshtools.createMesh(poly, q=34.4, smooth=[1, 10])
     mesh.scale(1.0/5.0)
@@ -53,7 +53,7 @@ def createSynthModel():
                                       mesh.cellCount(), mesh)
 
     # Create the parametric mesh that only reflect the domain geometry
-    world = mt.createCircle(boundaryMarker=-1, segments=32, area=0.0051)
+    world = mt.createCircle(boundaryMarker=-1, nSegments=32, area=0.0051)
     paraMesh = pg.meshtools.createMesh(world, q=34.0, smooth=[1, 10])
     paraMesh.scale(1.0/5.0)
 

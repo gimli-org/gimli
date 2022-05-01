@@ -56,7 +56,7 @@ fig, ax = pg.plt.subplots(nrows=3, ncols=2, figsize=(12,8), sharex=True)
 
 # Horizontal cylinder
 circ = createCircle([0, -depth], radius=radius, marker=2, area=0.1,
-                    segments=32)
+                    nSegments=32)
 
 pg.show(circ, ax=ax[0,0], fillRegion=False)
 

@@ -26,6 +26,15 @@ macro(add_python_module PYTHON_MODULE_NAME SOURCE_DIR EXTRA_LIBS OUTDIR)
 
     add_library(${PYTHON_TARGET_NAME} MODULE ${${PYTHON_MODULE_NAME}_SOURCE_FILES})
 
+
+    # target_precompile_headers(${libgimli_TARGET_NAME}
+    #     PUBLIC
+    #         pygimli.h
+    # )
+    #INTERFACE
+    #       gimli.h
+    
+
     target_link_libraries(${PYTHON_TARGET_NAME} ${EXTRA_LIBS})
     target_link_libraries(${PYTHON_TARGET_NAME} ${Python_LIBRARIES})
     target_link_libraries(${PYTHON_TARGET_NAME} ${Boost_LIBRARIES})

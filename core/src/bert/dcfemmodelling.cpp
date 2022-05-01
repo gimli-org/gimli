@@ -1421,7 +1421,7 @@ void DCMultiElectrodeModelling::createJacobian_(const CVector & model,
                          matrixClusterIds, this->nThreads_, this->verbose_);
 
     if (model.size() == J->cols()){
-        __MS("check")
+        // __MS("check")
         CVector m2(model*model);
         //CVector m2(model*conj(model));
         if (model.size() == J->cols()){
@@ -1800,7 +1800,7 @@ void DCMultiElectrodeModelling::calculateK_(const std::vector < ElectrodeShape *
 // MEMINFO
 
 //** START  assemble matrix
-    if (verbose_) std::cout << "Assembling system matrix ... " ;
+    if (debug) std::cout << "Assembling system matrix ... " ;
     dcfemDomainAssembleStiffnessMatrix(S_, *mesh_, k);
     dcfemBoundaryAssembleStiffnessMatrix(S_, *mesh_, sourceCenterPos_, k);
 
@@ -1826,7 +1826,7 @@ void DCMultiElectrodeModelling::calculateK_(const std::vector < ElectrodeShape *
 //             //** FIXME this fails with passive bodies
             elecs.push_back(electrodeRef_);
         }
-        if (verbose_) std::cout << "Assembling complete electrode model ... " << std::endl;
+        if (debug) std::cout << "Assembling complete electrode model ... " << std::endl;
 
         for (Index i = 0; i < passiveCEM_.size(); i ++) elecs.push_back(passiveCEM_[i]);
 
@@ -1858,12 +1858,12 @@ void DCMultiElectrodeModelling::calculateK_(const std::vector < ElectrodeShape *
 
     //** START solving
 
-    LinSolver solver(verbose_);
+    LinSolver solver(debug);
     //solver.setSolverType(LDL);
     //    std::cout << "solver: " << solver.solverName() << std::endl;
 
     solver.setMatrix(S_, 1);
-    if (verbose_) std::cout << "Factorizing (" << solver.solverName() << ") system matrix ... ";
+    if (debug) std::cout << "Factorizing (" << solver.solverName() << ") system matrix ... ";
 
 // MEMINFO
 
@@ -2158,6 +2158,7 @@ void DCSRMultiElectrodeModelling::preCalculate(const std::vector < ElectrodeShap
 void DCSRMultiElectrodeModelling::calculateK(const std::vector < ElectrodeShape * > & eA,
                                              const std::vector < ElectrodeShape * > & eB,
                                              RMatrix & solutionK, int kIdx) {
+    bool debug = false;
     if (complex_){
         THROW_TO_IMPL
     }
@@ -2201,9 +2202,10 @@ void DCSRMultiElectrodeModelling::calculateK(const std::vector < ElectrodeShape 
     //mesh_->setCellAttributes(tmpRho);
 
 // MEMINFO
-    LinSolver solver(false);
+    LinSolver solver(debug);
     solver.setMatrix(S_, 1);
     // if (verbose_) std::cout << "Factorize (" << solver.solverName() << ") matrix ... " << swatch.duration() << std::endl;
+    if (debug) std::cout << "Factorize (" << solver.solverName() << ") matrix ... " << swatch.duration() << std::endl;
 
 // MEMINFO
 

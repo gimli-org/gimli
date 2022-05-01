@@ -241,8 +241,8 @@ public:
         : size_(0), data_(0), capacity_(0){
 
         if (v._borrowedData){
-            __MS(v.size())
-            __MS(v._borrowedDataOffset)
+            // __MS(v.size())
+            // __MS(v._borrowedDataOffset)
             size_ = v.size();
             this->_borrowedData = v._borrowedData;
             this->_borrowedDataOffset = v._borrowedDataOffset;
@@ -762,7 +762,7 @@ DEFINE_COMPARE_OPERATOR__(>, std::greater)
 #define DEFINE_UNARY_MOD_OPERATOR__(OP, FUNCT) \
   inline Vector< ValueType > & operator OP##= (const Vector < ValueType > & v) { \
         if (v.size() == 1) return *this OP##= v[0];\
-        ASSERT_SIZE_GREATER_EQUAL((*this), v) \
+        ASSERT_SIZES_GREATER_EQUAL((*this), v) \
         std::transform(data_, data_ + v.size(), &v[0], data_, FUNCT()); return *this; } \
   inline Vector< ValueType > & operator OP##= (const ValueType & val) { \
         for (Index i = 0; i < size_; i ++){data_[i] OP##= val;}return *this; } \
@@ -776,6 +776,15 @@ DEFINE_UNARY_MOD_OPERATOR__(*, MULT)
 
     /*! Negation operator thats return a copy of this with negative values. */
     inline Vector < ValueType > operator - () const { return *this * -1.0; }
+
+    /*! Return dot(this, b[off::]) */
+    ValueType mult(const Vector< ValueType > & b, Index off=0) const {
+        ASSERT_SIZE_GREATER_EQUAL(b, this->size() + off)
+        ValueType s = ValueType(0.0);
+        for (Index i = 0; i < this->size(); i ++) s+= data_[i] * b[i+off];
+        return s;
+    }
+
 
     /*! Resize if n differs size() and fill new with val. Old data are preserved. */
     void resize(Index n, ValueType fill){

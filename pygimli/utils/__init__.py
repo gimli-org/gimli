@@ -20,7 +20,7 @@ from .base import rmsWithErr as rmswitherr
 from .complex import (isComplex, toComplex, toPolar, squeezeComplex,
                       toRealMatrix, KramersKronig)
 
-from .cache import (cache, strHash)
+from .cache import (cache, strHash, noCache)
 from .geostatistics import (computeInverseRootMatrix, covarianceMatrix,
                             generateGeostatisticalModel)
 from .gps import GKtoUTM, findUTMZone, getProjection, getUTMProjection, readGPX

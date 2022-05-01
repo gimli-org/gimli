@@ -191,7 +191,7 @@ class Inversion(object):
             return None
         elif isinstance(model, float) or isinstance(model, int):
             pg.info("Homogeneous starting model set to:", float(model))
-            return np.ones(self.parameterCount) * float(model)
+            return np.full(self.parameterCount, float(model))
         elif hasattr(model, '__iter__'):
             if len(model) == self.parameterCount:
                 pg.info("Starting model set from given array.", model)
@@ -334,19 +334,28 @@ class Inversion(object):
     def lam(self, lam):
         self._lam = lam
 
-    def setDeltaChiStop(self, it):
+    def setDeltaPhiStop(self, it):
+        """Define minimum relative decrease in objective function to stop."""
         self.inv.setDeltaPhiAbortPercent(it)
 
+    @pg.renamed(setDeltaPhiStop)
+    def setDeltaChiStop(self, it):
+        self.setDeltaPhiStop(it)
+
     def echoStatus(self):
+        """Echo inversion status (model, response, rms, chi^2, phi)."""
         self.inv.echoStatus()
 
     def setPostStep(self, p):
+        """Set a function to be called after each iteration."""
         self._postStep = p
 
     def setPreStep(self, p):
+        """Set a function to be called before each iteration."""
         self._preStep = p
 
     def setData(self, data):
+        """Set data."""
         # QUESTION_ISNEEDED
         if isinstance(data, pg.DataContainer):
             raise Exception("should not be here .. its Managers job")
@@ -355,10 +364,11 @@ class Inversion(object):
             self.dataVals = data
 
     def chi2(self, response=None):
+        """Chi-squared misfit (mean of squared error-weighted misfit)."""
         return self.phiData(response) / len(self.dataVals)
 
     def phiData(self, response=None):
-        """ """
+        """Data objective function (sum of suqred error-weighted misfit)."""
         if response is None:
             response = self.response
 
@@ -369,7 +379,7 @@ class Inversion(object):
         return pg.math.dot(dData, dData)
 
     def phiModel(self, model=None):
-        """ """
+        """Model objective function (norm of regularization term)."""
         if model is None:
             model = self.model
 
@@ -377,7 +387,7 @@ class Inversion(object):
         return pg.math.dot(rough, rough)
 
     def phi(self, model=None, response=None):
-        """ """
+        """Total objective function (phiD + lambda * phiM)"""
         phiD = self.phiData(response)
         if self.inv.localRegularization():
             return phiD
@@ -391,6 +401,50 @@ class Inversion(object):
     def absrms(self):
         """Absolute root-mean-square misfit of the last run."""
         return self.inv.absrms()
+
+    def setRegularization(self, *args, **kwargs):
+        """Set regularization properties for the inverse problem.
+
+        This can be for specific regions (args) or all regions (no args).
+
+        Parameters
+        ----------
+        regionNr : int, [ints], '*'
+            Region number, list of numbers, or wildcard "*" for all.
+
+        startModel : float
+            starting model value
+        limits : [float, float]
+            lower and upper limit for value using a barrier transform
+        trans : str
+            transformation for model barrier: "log", "cot", "lin"
+        cType : int
+            constraint (regularization) type
+        zWeight : float
+            relative weight for vertical boundaries
+        background : bool
+            exclude region from inversion completely (prolongation)
+        fix : float
+            exclude region from inversion completely (fix to value)
+        single : bool
+            reduce region to one unknown
+        correlationLengths : [floats]
+            correlation lengths for geostatistical inversion (x', y', z')
+        dip : float [0]
+            angle between x and x' (first correlation length)
+        strike : float [0]
+            angle between y and y' (second correlation length)
+        """
+        if len(args) == 0:
+            args = ('*',)
+
+        if "operator" in kwargs:
+            self.fop.setConstraints(kwargs.pop("operator"))
+        if "C" in kwargs:
+            self.fop.setConstraints(kwargs.pop("C"))
+
+        if len(kwargs) > 0:
+            self.fop.setRegionProperties(*args, **kwargs)
 
     def run(self, dataVals, errorVals, **kwargs):
         """Run inversion.
@@ -431,6 +485,7 @@ class Inversion(object):
         if self.fop is None:
             pg.critical("Need a valid forward operator for the inversion run.")
 
+        self.fop.setVerbose(False)  # gets rid of CHOLMOD messages
         maxIter = kwargs.pop('maxIter', self.maxIter)
         minDPhi = kwargs.pop('dPhi', self.minDPhi)
         showProgress = kwargs.pop('showProgress', False)
@@ -592,9 +647,10 @@ class Inversion(object):
         return self.model
 
     def showProgress(self, style='all'):
-        r"""Showing the inversion progress after every iteration. Can show
-        models if `drawModel` method exists. The default fallback is plotting
-        the :math:`\chi^2` fit as a function of iterations. Called if
+        r"""Show the inversion progress after every iteration.
+
+        Can show models if `drawModel` method exists. The default fallback is
+        plotting the :math:`\chi^2` fit as a function of iterations. Called if
         `showProgress=True` is set for the inversion run.
         """
 

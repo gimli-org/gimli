@@ -204,7 +204,8 @@ void print(Args&&... args) {
     throwLengthError(WHERE_AM_I + " " + str(m.size()) + " != " + str(n.size()));
 #define ASSERT_GREATER_EQUAL(m, n) if (m < n) \
     throwLengthError(WHERE_AM_I + " " + str(m) + " is not greater-equal " + str(n));
-#define ASSERT_SIZE_GREATER_EQUAL(m, n) ASSERT_GREATER_EQUAL(m.size(),n.size())
+#define ASSERT_SIZE_GREATER_EQUAL(m, n) ASSERT_GREATER_EQUAL(m.size(), n)
+#define ASSERT_SIZES_GREATER_EQUAL(m, n) ASSERT_GREATER_EQUAL(m.size(), n.size())
 #define ASSERT_THIS_SIZE(n) if (n < 0 || n >= this->size()) \
     throwLengthError(WHERE_AM_I + " " + str(this->size()) + " <= " + str(n));
 #define ASSERT_VEC_SIZE(vec, n) if (n != vec.size()) \
@@ -309,6 +310,7 @@ typedef SparseMapMatrix< double, Index >  RSparseMapMatrix;
 typedef SparseMapMatrix< Complex, Index >  CSparseMapMatrix;
 
 template < class ValueType > class Matrix;
+template < class ValueType > class DenseMatrix;
 template < class ValueType > class BlockMatrix;
 template < class ValueType > class Matrix3;
 template < class ValueType > class Vector;
@@ -327,6 +329,9 @@ typedef Matrix < double > RMatrix;
 typedef Matrix3< double > RMatrix3;
 typedef Matrix < Complex > CMatrix;
 typedef BlockMatrix < double > RBlockMatrix;
+
+typedef DenseMatrix < double > RDenseMatrix;
+typedef DenseMatrix < Complex > CDenseMatrix;
 
 //#typedef Vector< unsigned char > BVector;
 
@@ -519,14 +524,14 @@ vector < ptr * > vP;
 for_each(vP.begin(), vP.end(), deletePtr());
 */
 struct DLLEXPORT newPtr{
-    template < typename T > void operator()(T * p) { 
+    template < typename T > void operator()(T * p) {
         deletePtr(p);
-        p = new T(); 
+        p = new T();
     }
 };
 struct DLLEXPORT deletePtr{
-    template < typename T > void operator()(T * p) { 
-        if (p != nullptr) delete p; 
+    template < typename T > void operator()(T * p) {
+        if (p != nullptr) delete p;
         p = nullptr;
     }
 };

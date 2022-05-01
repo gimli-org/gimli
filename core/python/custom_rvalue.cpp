@@ -22,6 +22,22 @@
 
 // cp ../gimli/core/python/custom_rvalue.cpp core/python/generated/custom_rvalue.cpp && make pg
 
+// static int __numpy_initialized_ = 0;
+
+// this fails for win since py39
+// const static int __numpy_initialized = initNumpy_();
+
+// doesnt make any sense to me: when I use initNumpy() template from pg Matrix conversion segfaults
+int initNumpy_(){
+    return initNumpy(); // this segfaults WTF? // maybe just a ghost
+
+    // Needed or py* checks will segfault
+    // if (__numpy_initialized_ == 0){
+    //     import_array2("Cannot import numpy.core.multiarray c-api for value converters.", 0);
+    //     __numpy_initialized_ = 1;
+    // }
+    // return 0;
+}
 
 
 namespace bp = boost::python;
@@ -41,7 +57,7 @@ std::ostream & operator << (std::ostream & os, const bp::object& o){
 namespace r_values_impl{
 
 template < class ValueType, class SeqType > void * checkConvertibleSequenz(PyObject * obj){
-    initNumpy();
+    initNumpy_();
 
     if (!obj){
         __DC("\t", obj, "\t abborting .. !Object")
@@ -63,14 +79,17 @@ template < class ValueType, class SeqType > void * checkConvertibleSequenz(PyObj
         return NULL;
     }
 
-    if (typeid(SeqType) == typeid(GIMLI::RMatrix)){
+    if (typeid(SeqType) == typeid(GIMLI::RMatrix) || 
+        typeid(SeqType) == typeid(GIMLI::RDenseMatrix)
+    ){
         if (strcmp(obj->ob_type->tp_name, "RVector") == 0){
             __DC("\t", obj, "\t abborting .. RVector will not be converted into RMatrix")
             return NULL;
         }
     }
 
-    if (typeid(SeqType) == typeid(GIMLI::RMatrix)){
+    if (typeid(SeqType) == typeid(GIMLI::RMatrix)||
+        typeid(SeqType) == typeid(GIMLI::RDenseMatrix)){
         if (strcmp(obj->ob_type->tp_name, "list") == 0){
             __DC("\t", obj, "\t abborting .. list will not be converted into RMatrix")
             return NULL;
@@ -95,13 +114,20 @@ template < class ValueType, class SeqType > void * checkConvertibleSequenz(PyObj
                 return NULL;
             }
         }
-        if (typeid(ValueType) == typeid(GIMLI::RMatrix)){
+        if (typeid(ValueType) == typeid(GIMLI::RMatrix) ||
+            typeid(ValueType) == typeid(GIMLI::RDenseMatrix)){
             if (PyArray_NDIM(arr) != 2){
                 __DC("\t", obj, "\t ndarray.ndim != 2 and is non convertable to GIMLI::RMatrix")
                 return NULL;
             }
         } 
         if (typeid(ValueType) == typeid(double) && typeid(SeqType) == typeid(GIMLI::RMatrix)) {
+            if (PyArray_NDIM(arr) != 2){
+                __DC("\t", obj, "\t ndarray.ndim != 2 and is non convertable to std::vector< RVector > ")
+                return NULL;
+            }
+        }
+        if (typeid(ValueType) == typeid(double) && typeid(SeqType) == typeid(GIMLI::RDenseMatrix)) {
             if (PyArray_NDIM(arr) != 2){
                 __DC("\t", obj, "\t ndarray.ndim != 2 and is non convertable to std::vector< RVector > ")
                 return NULL;
@@ -183,7 +209,8 @@ template < class ValueType, class SeqType > void * checkConvertibleSequenz(PyObj
 }
 
 template < class ValueType > void * checkConvertibleNumpyScalar(PyObject * obj){
-    initNumpy();
+    initNumpy_();
+    // import_array2("Cannot import numpy.core.multiarray c-api for value converters.", 0);
 
     // will be used for every convert of numpy scalars here e.g. for list conversion
     if (!obj){
@@ -194,7 +221,9 @@ template < class ValueType > void * checkConvertibleNumpyScalar(PyObject * obj){
         __DC(obj, "(", obj->ob_type->tp_name, ") -> " +
             GIMLI::type(ValueType(0))) // FW: Caused problems during Mac build
         __DC("\tType:", Py_TYPE(obj))
-        __DC("\tArray:", PyObject_TypeCheck(obj, &PyArray_Type))
+        
+    
+        // __DC("\tArray:", PyObject_TypeCheck(obj, &PyArray_Type))
         __DC("\tPyGenericArrType_Type:", PyObject_TypeCheck(obj, &PyGenericArrType_Type))
         __DC("\tPyIntegerArrType_Type:", PyObject_TypeCheck(obj, &PyIntegerArrType_Type))
         __DC("\tPySignedIntegerArrType_Type:", PyObject_TypeCheck(obj, &PySignedIntegerArrType_Type))
@@ -649,6 +678,79 @@ struct Numpy2RMatrix{
 private:
 };
 
+
+struct Numpy2RDenseMatrix{
+
+    /*! Check if the object is convertible */
+    static void * convertible(PyObject * obj){
+        __DC(obj, "check convertible (", 
+             obj->ob_type->tp_name, ") -> RDenseMatrix")
+        return checkConvertibleSequenz< double, GIMLI::DenseMatrix< double > >(obj);
+    }
+
+    /*! Convert obj into RVector */
+    static void construct(PyObject* obj,        
+                          bp::converter::rvalue_from_python_stage1_data * data){
+        __DC(obj, "\t constructing RDenseMatrix")
+
+        bp::object py_sequence(bp::handle<>(bp::borrowed(obj)));
+
+        typedef bp::converter::rvalue_from_python_storage< GIMLI::DenseMatrix < double > > storage_t;
+
+        storage_t* the_storage = reinterpret_cast<storage_t*>(data);
+        void* memory_chunk = the_storage->storage.bytes;
+
+        PyArrayObject *arr = (PyArrayObject *)obj;
+
+        if (PyArray_TYPE(arr) == 12) {
+            __DC("\ttype=", PyArray_TYPE(arr)
+               , " ISONESEGMENT:", PyArray_ISONESEGMENT(arr)
+               , " IS_C_CONTIGUOUS:", PyArray_IS_C_CONTIGUOUS(arr)
+               , " IS_F_CONTIGUOUS:", PyArray_IS_F_CONTIGUOUS(arr)
+                )
+            int nDim = PyArray_NDIM(arr);
+            if (nDim != 2){
+                __DC("nDim=", nDim)
+                GIMLI::throwToImplement("Only numpy.ndarray with ndim == 2 can be converted to GIMLI::RDenseMatrix");
+            }
+            GIMLI::Index rows = PyArray_DIM(arr, 0);
+            GIMLI::Index cols = PyArray_DIM(arr, 1);
+            GIMLI::DenseMatrix < double > *mat = new (memory_chunk)
+                                    GIMLI::DenseMatrix < double >(rows, cols);
+            data->convertible = memory_chunk;
+            __DC("rows=", rows, " cols=", cols)
+
+            if (PyArray_ISONESEGMENT(arr)){
+                double * arrData = (double*)PyArray_DATA(arr);
+                if (PyArray_IS_C_CONTIGUOUS(arr)){
+                    std::memcpy(mat->pData(), arrData,
+                                mat->length() * sizeof(double));
+                } else {
+                    // assume Fortran like column orientated mem
+                    // slow elementwise copy needed until someone knows
+                    // a better way
+                    __M
+                    for (GIMLI::Index i = 0; i < cols; i ++ ){
+                        for (GIMLI::Index j = 0; j < rows; j ++ ){
+                            mat->setVal(j, i, (double)arrData[j + i*rows]);
+                        }
+                    }
+                }
+            } else {
+                GIMLI::throwToImplement("numpy.ndarray is not one segment .. not yet implemented. .. try convert them with: np.ascontiguousarray(..) or drop a note with it seems to be a performance issue.");
+            }
+
+            return;
+        } else {
+            __DC("implementme: type=", PyArray_TYPE(arr))
+        }
+
+        GIMLI::throwToImplement("Unknown rvalue type conversion from numpy.ndarray of type " + GIMLI::str(PyArray_TYPE(arr)) +
+         + " to GIMLI::RDenseMatrix");
+    }
+
+};
+
 template < class ValueType > void convertFromNumpyScalar(PyObject* obj,
                         bp::converter::rvalue_from_python_stage1_data * data){
     // __DC(obj, "\tNumpyScalar -> " + GIMLI::type(ValueType(0)) + " check OK: ") // FW: Mac problems
@@ -839,4 +941,9 @@ void register_numpy_to_rmatrix_conversion(){
     bp::converter::registry::push_back(& r_values_impl::Numpy2RMatrix::convertible,
                & r_values_impl::Numpy2RMatrix::construct,
                 bp::type_id< GIMLI::Matrix< double > >());
+}
+void register_numpy_to_rdensematrix_conversion(){
+    bp::converter::registry::push_back(& r_values_impl::Numpy2RMatrix::convertible,
+               & r_values_impl::Numpy2RDenseMatrix::construct,
+                bp::type_id< GIMLI::DenseMatrix< double > >());
 }

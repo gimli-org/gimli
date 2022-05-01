@@ -171,84 +171,7 @@ public:
 
     virtual uint rtti() const { return GIMLI_SPARSE_CRS_MATRIX_RTTI; }
 
-    /*! Return this * a  */
-    virtual Vector < ValueType > mult(const Vector < ValueType > & a) const {
-        if (a.size() < this->cols()){
-            throwLengthError(WHERE_AM_I + " SparseMatrix size(): " + str(this->cols()) + " a.size(): " +
-                                str(a.size())) ;
-        }
-
-        Vector < ValueType > ret(this->rows(), 0.0);
-
-        if (stype_ == 0){
-            // for each row
-            for (Index i = 0; i < this->rows(); i++){
-            // iterate through compressed col
-                for (int j = this->vecColPtr()[i]; j < this->vecColPtr()[i + 1]; j ++){
-                    ret[i] += a[this->vecRowIdx()[j]] * this->vecVals()[j];
-                }
-            }
-        } else if (stype_ == -1){
-            Index J;
-            for (Index i = 0; i < ret.size(); i++){
-                for (int j = this->vecColPtr()[i]; j < this->vecColPtr()[i + 1]; j ++){
-                    J = this->vecRowIdx()[j];
-
-//                     __MS( i << "  " << J << " " << this->vecVals()[j])
-                    ret[i] += a[J] * conj(this->vecVals()[j]);
-
-                    if (J > i){
-//                         __MS( J << "  " << i << " " << this->vecVals()[j])
-                        ret[J] += a[i] * this->vecVals()[j];
-                    }
-                }
-            }
-
-            //#THROW_TO_IMPL
-        } else if (stype_ == 1){
-            Index J;
-            for (Index i = 0; i < ret.size(); i++){
-                for (int j = this->vecColPtr()[i]; j < this->vecColPtr()[i + 1]; j ++){
-                    J = this->vecRowIdx()[j];
-
-//                     __MS( i << "  " << J << " " << this->vecVals()[j])
-                    ret[i] += a[J] * conj(this->vecVals()[j]);
-
-                    if (J < i){
-//                         __MS( J << "  " << i << " " << this->vecVals()[j])
-                        ret[J] += a[i] * this->vecVals()[j];
-                    }
-                }
-            }
-        }
-        return ret;
-    }
-
-    /*! Return this.T * a */
-    virtual Vector < ValueType > transMult(const Vector < ValueType > & a) const {
-
-        if (a.size() < this->rows()){
-            throwLengthError(WHERE_AM_I + " SparseMatrix size(): " + str(this->rows()) + " a.size(): " +
-                                str(a.size())) ;
-        }
-
-        Vector < ValueType > ret(this->cols(), 0.0);
-
-        if (stype_ == 0){
-            for (Index i = 0; i < this->rows(); i++){
-                for (int j = this->vecColPtr()[i]; j < this->vecColPtr()[i + 1]; j ++){
-                    ret[this->vecRowIdx()[j]] += a[i] * this->vecVals()[j];
-                }
-            }
-
-        } else if (stype_ == -1){
-            THROW_TO_IMPL
-        } else if (stype_ ==  1){
-            THROW_TO_IMPL
-        }
-        return ret;
-    }
-
+    
     void add(const ElementMatrix< double > & A, bool neg=false){
         return add(A, ValueType(1.0), neg);
     }
@@ -325,6 +248,35 @@ public:
     void fillMassMatrix(const Mesh & mesh){
         RVector a(mesh.cellCount(), 1.0);
         fillMassMatrix(mesh, a);
+    }
+
+    /*! Multiplication c = alpha * (A*b) + beta * c. */
+    virtual void mult(const Vector < ValueType > & b, 
+                      Vector < ValueType >& c, 
+                      const ValueType & alpha=1.0, 
+                      const ValueType & beta=0.0, 
+                      Index bOff=0, Index cOff=0) const {
+        return GIMLI::mult(*this, b, c, alpha, beta, bOff, cOff);
+    }
+    /*! Return this * a  */
+    inline Vector < ValueType > mult(const Vector < ValueType > & b) const {
+        Vector < ValueType > ret(this->rows(), 0.0);
+        this->mult(b, ret);
+        return ret;
+    }
+    /*! Multiplication c = alpha * (A*b) + beta * c. */
+    inline void transMult(const Vector < ValueType > & b, 
+                          Vector < ValueType > & c, 
+                          const ValueType & alpha=1.0, 
+                          const ValueType & beta=0.0, 
+                          Index bOff=0, Index cOff=0) const {
+        return GIMLI::transMult(*this, b, c, alpha, beta, bOff, cOff);
+    }
+    /*! Return this.T * a */
+    inline Vector < ValueType > transMult(const Vector < ValueType > & b) const {
+        Vector < ValueType > ret(this->cols(), 0.0);
+        this->transMult(b, ret);
+        return ret;
     }
 
     /*! symmetric type. 0 = nonsymmetric, -1 symmetric lower part, 1 symmetric upper part.*/

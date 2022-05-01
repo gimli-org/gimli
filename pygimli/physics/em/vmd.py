@@ -285,7 +285,7 @@ class VMDTimeDomainModelling(VMDModelling):
         nt = len(t)
         ncnt = nc + nt
 
-        fef = np.zeros((ncnt, nr), np.complex)
+        fef = np.zeros((ncnt, nr), complex)
         ePhi = np.zeros((nt, nr))
 
         omega = 10. ** (0.1 * (1 - (-nc + nc0 + np.arange(1, ncnt)))) / t[0]

@@ -366,7 +366,6 @@ class ERTManager(MeshMethodManager):
             if not data.allNonZero('k'):
                 pg.warn("Data file contains no geometric factors (token='k').")
                 data['k'] = createGeometricFactors(data, verbose=True)
-
             if self.fop.complex():
                 if not data.haveData('rhoa'):
                     pg.critical('Datacontainer have no "rhoa" values.')
@@ -490,6 +489,17 @@ class ERTManager(MeshMethodManager):
     def standardizedCoverage(self, threshold=0.01):
         """Return standardized coverage vector (0|1) using thresholding."""
         return 1.0*(self.coverage() > threshold)
+
+    def showMisfit(self, **kwargs):
+        """Show relative or error-weighted data misfit."""
+        misfit = - self.inv.response / self.data["rhoa"] * 100 + 100
+        kwargs.setdefault("cMax", np.max(misfit))
+        kwargs.setdefault("cMin", -kwargs["cMax"])
+        kwargs.setdefault("cMap", "bwr")
+        kwargs.setdefault("logScale", False)
+        kwargs.setdefault("label", "relative misfit (%)")
+
+        self.showData(vals=misfit, **kwargs)
 
     def saveResult(self, folder=None, size=(16, 10), **kwargs):
         """Save all results in the specified folder.

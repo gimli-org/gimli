@@ -23,3 +23,4 @@ dependencies:
   - pyvista=0.24
   - meshio
   - tetgen
+  - conda-build

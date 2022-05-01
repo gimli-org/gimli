@@ -137,6 +137,7 @@ def createConstitutiveMatrix(lam=None, mu=None, E=None, nu=None, dim=2,
 
     TODO
     ----
+        * dim == 1
         * Tests
         * Examples
         * compare Voigts/Kelvin Notation

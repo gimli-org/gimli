@@ -112,6 +112,7 @@ class TestConversionMethods(unittest.TestCase):
         self.assertEqual(pg.sum(a), sum(x))
 
         x = np.arange(10, dtype=np.compat.long)
+
         a = pg.IVector(x)
         self.assertEqual(a.size(), len(x))
         self.assertEqual(pg.sum(a), sum(x))
@@ -187,6 +188,32 @@ class TestConversionMethods(unittest.TestCase):
         A = pg.Matrix(M.T)
         self.assertEqual(A.row(0), M[:,0])
         self.assertEqual(A.row(1), M[:,1])
+
+    def test_NumpyToRDenseMatrix(self):
+        """Implemented in custom_rvalue.cpp."""
+        M = np.ndarray((5, 4))
+        A = pg.core.RDenseMatrix(M)
+        self.assertEqual(A.rows(), M.shape[0])
+        self.assertEqual(A.cols(), M.shape[1])
+
+        M = np.arange(20.).reshape((5, 4))
+        A = pg.core.RDenseMatrix(M)
+        self.assertEqual(sum(A[0]), sum(M[0]))
+        self.assertEqual(sum(A[1]), sum(M[1]))
+        self.assertEqual(sum(A[2]), sum(M[2]))
+        self.assertEqual(sum(A[3]), sum(M[3]))
+
+        M = np.zeros((6,2), dtype=float)
+        M[0:3,0] = 1
+        M[3:,1] = 1
+        A = pg.core.RDenseMatrix(M)
+        self.assertEqual(A.col(0), M[:,0])
+        self.assertEqual(A.col(1), M[:,1])
+
+        A = pg.core.RDenseMatrix(M.T)
+        self.assertEqual(A.row(0), M[:,0])
+        self.assertEqual(A.row(1), M[:,1])
+
 
     def test_NumpyToRVector3(self):
         """Implemented in custom_rvalue.cpp."""

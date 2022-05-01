@@ -467,6 +467,7 @@ def __getValMatrix(self, idx):
 
 
 pgcore.RMatrix.__setitem__ = __setVal
+pgcore.RDenseMatrix.__setitem__ = __setVal
 #pgcore.RMatrix.__getitem__ = __getVal  # inuse? very slow -- inline is better
 
 pgcore.RVector.__setitem__ = __setVal
@@ -610,6 +611,7 @@ def __MatIterCall__(self):
 
 
 pgcore.RMatrix.__iter__ = __MatIterCall__
+pgcore.RDenseMatrix.__iter__ = __MatIterCall__
 pgcore.CMatrix.__iter__ = __MatIterCall__
 
 

@@ -228,6 +228,7 @@ DEFINE_COMPARE_OPERATOR__(>)
     template class VectorIterator< GIMLI::Complex >;
 
     template class Matrix< double >;
+    template class DenseMatrix< double >;
     template class Matrix< std::complex< double > >;
     template class Matrix3< double >;
 
@@ -303,7 +304,7 @@ DEFINE_XVECTOR_STUFF__(RVector) //RVector last since auto rhs conversion will fa
     template CSparseMatrix operator * (const CSparseMatrix & A, const GIMLI::Complex & b);
 
     template class ElementMatrix< double >;
-    
+
     template RVector unique(const RVector & a);
     // template IndexArray unique(const IndexArray & a);
     template IVector unique(const IVector & a);
@@ -506,6 +507,8 @@ namespace pyplusplus{ namespace aliases{
     typedef GIMLI::Matrix< double >                      RMatrix;
     typedef GIMLI::Matrix3< double >                     RMatrix3;
     typedef GIMLI::Matrix< std::complex< double > >      CMatrix;
+    typedef GIMLI::DenseMatrix< double >                 RDenseMatrix;
+    typedef GIMLI::DenseMatrix< std::complex< double > > CDenseMatrix;
 
     typedef GIMLI::BlockMatrix< double >                 RBlockMatrix;
 
