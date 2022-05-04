@@ -305,18 +305,14 @@ def createColorBar(gci, orientation='horizontal', size=0.2, pad=None,
                     pad = 0.1
                 cax = divider.append_axes("right", size=size, pad=pad)
 
+
         cbar = cbarTarget.colorbar(gci, cax=cax, orientation=orientation)
+
         #store the cbar into the axes to reuse it on the next call
         ax.__cBar__ = cbar
-        updateColorBar(cbar, **kwargs)
-        try:  # mpl 3.5
-            if orientation == 'horizontal':
-                cbar.ax.xaxis.set_major_formatter(ticker.ScalarFormatter())
-            else:
-                cbar.ax.yaxis.set_major_formatter(ticker.ScalarFormatter())
-        except:
-            pass
 
+        updateColorBar(cbar, **kwargs)
+        
     return cbar
 
 
@@ -379,14 +375,7 @@ def createColorBarOnly(cMin=1, cMax=100, logScale=False, cMap=None, nLevs=5,
     if aspect is not None:
         ax.set_aspect(aspect)
 
-    try:  # mpl 3.5
-        if kwargs.pop("orientation", None) == 'vertical':
-            cbar.ax.yaxis.set_major_formatter(ticker.ScalarFormatter())
-        else:
-            cbar.ax.xaxis.set_major_formatter(ticker.ScalarFormatter())
-    except:
-        pass
-
+    updateColorBar(cbar, **kwargs)
 
     if savefig is not None:
         saveFigure(fig, savefig)
@@ -431,48 +420,38 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5, levels=None):
 
     # FIXME: [10.1, 10.2, 10.3] mapped to [10 10 10]
 
-    cbarLevelsString = []
     if np.all(np.array(cbarLevels) < 1e-2):
         pg.debug("All values smaller than 1e-4, avoiding additional rounding.")
         roundValue = False
     else:
         roundValue = True
 
-    for i in cbarLevels:
-        cbarLevelsString.append(prettyFloat(i, roundValue))
-
+    # cbarLevelsString = []
+    # for i in cbarLevels:
+    #     cbarLevelsString.append(prettyFloat(i, roundValue))
+    
     if hasattr(cbar, 'mappable'):
         #cbar.set_clim(cMin, cMax)
         cbar.mappable.set_clim(vmin=cMin, vmax=cMax)
 
     cbar.set_ticks(cbarLevels)
-    cbar.set_ticklabels(cbarLevelsString)
+    # cbar.set_ticklabels(cbarLevelsString)
     cbar.draw_all()
 
     # necessary since mpl 3.0
     cbar.ax.minorticks_off()
 
+    @ticker.FuncFormatter
+    def pfMajorFormatter(x, pos):
+        return prettyFloat(x) % x
 
-def setMappableValues(mappable, dataIn):
-    """Change the data values for a given mappable."""
-    pg.critical('remove me')
-    data = dataIn
-    if not isinstance(data, np.ma.core.MaskedArray):
-        data = np.array(dataIn)
-
-    # set bad value color to white
-    if mappable.get_cmap() is not None:
-
-        try:
-            import copy
-            ## from mpl 3.3
-            cm_ = copy.copy(mappable.get_cmap()).set_bad([1.0, 1.0, 1.0, 0.0])
-            mappable.set_cmap(cm_)
-        except:
-            ## old prior mpl 3.3
-            mappable.get_cmap().set_bad([1.0, 1.0, 1.0, 0.0])
-
-    mappable.set_array(data)
+    try:  # mpl 3.5
+        if cbar.orientation == 'horizontal':
+            cbar.ax.xaxis.set_major_formatter(pfMajorFormatter)
+        else:
+            cbar.ax.xaxis.set_major_formatter(pfMajorFormatter)
+    except Exception as e:
+        pg.warn(e)
 
 
 def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=None,
@@ -487,8 +466,9 @@ def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=None,
         try:
             import copy
             ## from mpl 3.3
-            cm_ = copy.copy(mappable.get_cmap()).set_bad([1.0, 1.0, 1.0, 0.0])
-            mappable.set_cmap(cm_)
+            #cm_ = copy.copy(mappable.get_cmap()).set_bad([1.0, 1.0, 1.0, 0.0])
+            #mappable.set_cmap(cm_)
+            pass
         except:
             ## old prior mpl 3.3
             mappable.get_cmap().set_bad([1.0, 1.0, 1.0, 0.0])

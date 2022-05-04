@@ -202,6 +202,19 @@ class TestMeshGenerator(unittest.TestCase):
         # print(mesh)
         # print(mesh["Marker"])
 
+    def test_SimpleMeshExport(self):
+       
+        mesh = pg.createGrid(3, 3)
+        verts = mesh.positions()
+        cellIds = [c.ids() for c in mesh.cells()]
+
+        mesh2 = pg.Mesh(2)
+        [mesh2.createNode(v) for v in verts]
+        [mesh2.createCell(c) for c in cellIds]
+
+        np.testing.assert_array_equal(mesh2.nodeCount(), mesh.nodeCount())
+        np.testing.assert_array_equal(mesh2.cellCount(), mesh.cellCount())
+        
 
 
 if __name__ == '__main__':

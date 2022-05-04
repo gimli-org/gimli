@@ -496,7 +496,6 @@ class Inversion(object):
 
         ### This triggers the update of all fop properties, any property setting need to be done before this step
         self.inv.setTransModel(self.fop.modelTrans)
-
         self.dataVals = dataVals
         self.errorVals = errorVals
 
@@ -515,21 +514,22 @@ class Inversion(object):
         if self.verbose:
             pg.info('Starting inversion.')
             print("fop:", self.inv.fop())
-            if isinstance(self.dataTrans, pg.trans.TransCumulative):
+            if isinstance(self.inv.transData(), pg.trans.TransCumulative):
                 print("Data transformation (cumulative):")
-                for i in range(self.dataTrans.size()):
-                    print("\t", i, self.dataTrans.at(i))
+                for i in range(self.inv.transData().size()):
+                    print("\t", i, self.inv.transDataataTrans().at(i))
             else:
-                print("Data transformation:", self.dataTrans)
-            if isinstance(self.modelTrans, pg.trans.TransCumulative):
+                print("Data transformation:", self.inv.transData())
+            
+            if isinstance(self.inv.transModel(), pg.trans.TransCumulative):
                 print("Model transformation (cumulative):")
-                for i in range(self.modelTrans.size()):
+                for i in range(self.inv.transModel().size()):
                     if i < 10:
-                        print("\t", i, self.modelTrans.at(i))
+                        print("\t", i, self.inv.transModel().at(i))
                     else:
                         print(".", end='')
             else:
-                print("Model transformation:", self.modelTrans)
+                print("Model transformation:", self.inv.transModel())
 
             print("min/max (data): {0}/{1}".format(pf(min(self._dataVals)),
                                                    pf(max(self._dataVals))))
