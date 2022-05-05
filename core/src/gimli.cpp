@@ -47,8 +47,10 @@ static bool __GIMLI_DEBUG__ = false;
 static int __GIMLI_DEEP_DEBUG__ = 0;
 
 Index __setTC__(){
-    long tc = numberOfCPU();
+    // to close to number of cpu can bring significent shedular overhead
+    long tc = numberOfCPU()-2;
     if (tc == -1) return 1;
+    setThreadCount(tc);
     return (Index)(tc);
 }
 
