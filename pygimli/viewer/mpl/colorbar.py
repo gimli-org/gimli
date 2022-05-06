@@ -310,14 +310,21 @@ def createColorBar(gci, orientation='horizontal', size=0.2, pad=None,
         cbar = cbarTarget.colorbar(gci, cax=cax, orientation=orientation)
         #store the cbar into the axes to reuse it on the next call
         ax.__cBar__ = cbar
+        
         updateColorBar(cbar, **kwargs)
+
+        @ticker.FuncFormatter
+        def pfMajorFormatter(x, pos):
+            return prettyFloat(x) % x
+
         try:  # mpl 3.5
             if orientation == 'horizontal':
-                cbar.ax.xaxis.set_major_formatter(ticker.ScalarFormatter())
+                cbar.ax.xaxis.set_major_formatter(pfMajorFormatter)
             else:
-                cbar.ax.yaxis.set_major_formatter(ticker.ScalarFormatter())
+                cbar.ax.yaxis.set_major_formatter(pfMajorFormatter)
         except:
             pass
+
 
     return cbar
 
@@ -375,20 +382,24 @@ def createColorBarOnly(cMin=1, cMax=100, logScale=False, cMap=None, nLevs=5,
     if levels is not None:
         kwargs['levels'] = levels
 
-    updateColorBar(cbar, cMin=cMin, cMax=cMax, nLevs=nLevs, label=label,
-                   **kwargs)
 
     if aspect is not None:
         ax.set_aspect(aspect)
 
+    updateColorBar(cbar, cMin=cMin, cMax=cMax, nLevs=nLevs, label=label,
+                   **kwargs)
+
+    @ticker.FuncFormatter
+    def pfMajorFormatter(x, pos):
+        return prettyFloat(x) % x
+
     try:  # mpl 3.5
-        if kwargs.pop("orientation", None) == 'vertical':
-            cbar.ax.yaxis.set_major_formatter(ticker.ScalarFormatter())
+        if orientation == 'horizontal':
+            cbar.ax.xaxis.set_major_formatter(pfMajorFormatter)
         else:
-            cbar.ax.xaxis.set_major_formatter(ticker.ScalarFormatter())
+            cbar.ax.yaxis.set_major_formatter(pfMajorFormatter)
     except:
         pass
-
 
     if savefig is not None:
         saveFigure(fig, savefig)
@@ -410,7 +421,6 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5, levels=None):
             pg.error('no cbar mappable. Cannot find cmax')
 
     if cMin == cMax:
-
         cMin *= 0.999
         cMax *= 1.001
 
@@ -440,15 +450,10 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5, levels=None):
     else:
         roundValue = True
 
-    for i in cbarLevels:
-        cbarLevelsString.append(prettyFloat(i, roundValue))
-
     if hasattr(cbar, 'mappable'):
-        #cbar.set_clim(cMin, cMax)
         cbar.mappable.set_clim(vmin=cMin, vmax=cMax)
 
     cbar.set_ticks(cbarLevels)
-    cbar.set_ticklabels(cbarLevelsString)
     cbar.draw_all()
 
     # necessary since mpl 3.0

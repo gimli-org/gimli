@@ -30,12 +30,12 @@
 namespace GIMLI{
 
 //! Block matrices for easier inversion, see appendix E in GIMLi tutorial
-class BlockMatrixEntry {
+template < class ValueType > class BlockMatrixEntry {
 public:
     Index rowStart;
     Index colStart;
     Index matrixID;
-    double scale;
+    ValueType scale;
     bool transpose;
 };
 
@@ -43,7 +43,7 @@ template < class ValueType >
 class DLLEXPORT BlockMatrix : public MatrixBase{
 public:
     BlockMatrix(bool verbose=false)
-        : MatrixBase(verbose), rows_(0), cols_(0) {
+        : MatrixBase(verbose) {
     }
 
     virtual ~BlockMatrix(){
@@ -54,10 +54,6 @@ public:
     virtual uint rtti() const { return GIMLI_BLOCKMATRIX_RTTI; }
 
     virtual const Vector < ValueType > operator [] (Index r) const { return this->row(r); }
-
-    virtual Index rows() const { recalcMatrixSize(); return rows_; }
-
-    virtual Index cols() const { recalcMatrixSize(); return cols_; }
 
     virtual const Vector < ValueType > row(Index r) const {
         ASSERT_RANGE(r, 0, rows())
@@ -93,7 +89,7 @@ public:
         return *matrices_[idx];
     }
 
-    std::vector< BlockMatrixEntry > entries() const {
+    std::vector< BlockMatrixEntry < ValueType > > entries() const {
         return entries_; }
 
     /*! Syntaxtic sugar for addMatrix */
@@ -112,7 +108,7 @@ public:
 
     /*!Shortcut for addMatrix and addMatrixEntry. */
     Index addMatrix(MatrixBase * matrix, Index rowStart, Index colStart,
-                    ValueType scale=1.0){
+                    const ValueType & scale=1.0){
         Index matrixID = addMatrix(matrix);
         addMatrixEntry(matrixID, rowStart, colStart, scale);
         return matrixID;
@@ -126,12 +122,12 @@ public:
 
     /*!Set a entry to this block matrix with the matrix index matrixID.*/
     void addMatrixEntry(Index matrixID, Index rowStart, Index colStart,
-                        ValueType scale, bool transpose=false){
+                        const ValueType & scale, bool transpose=false){
         if (matrixID > matrices_.size()){
             throwLengthError(WHERE_AM_I + " matrix entry to large: " +
             str(matrixID) + " " + str(matrices_.size()));
         }
-        BlockMatrixEntry entry;
+        BlockMatrixEntry < ValueType > entry;
         entry.rowStart = rowStart;
         entry.colStart = colStart;
         entry.matrixID = matrixID;
@@ -142,21 +138,67 @@ public:
         recalcMatrixSize();
     }
 
-    void recalcMatrixSize() const {
+    void recalcMatrixSize() {
         for (Index i = 0; i < entries_.size(); i++){
-            BlockMatrixEntry entry(entries_[i]);
+            BlockMatrixEntry < ValueType > entry(entries_[i]);
             MatrixBase *mat = matrices_[entry.matrixID];
 
-            rows_ = max(rows_, entry.rowStart + mat->rows());
-            cols_ = max(cols_, entry.colStart + mat->cols());
+            _rows = max(_rows, entry.rowStart + mat->rows());
+            _cols = max(_cols, entry.colStart + mat->cols());
         }
     }
 
-    virtual Vector < ValueType > mult(const Vector < ValueType > & b) const;
+    /*! Multiplication c = alpha * (A*b) + beta * c. */
+    inline void mult(const Vector < ValueType > & b, 
+                      Vector < ValueType >& c, 
+                      const ValueType & alpha=1.0, 
+                      const ValueType & beta=0.0, 
+                      Index bOff=0, Index cOff=0) const {
+        return GIMLI::mult(*this, b, c, alpha, beta, bOff, cOff);
+    }
+    /*! Multiplication c = alpha * (A.T*b) + beta * c. */
+    inline void transMult(const Vector < ValueType > & b, 
+                          Vector < ValueType > & c, 
+                          const ValueType & alpha=1.0, 
+                          const ValueType & beta=0.0, 
+                          Index bOff=0, Index cOff=0) const {
+        return GIMLI::transMult(*this, b, c, alpha, beta, bOff, cOff);
+    }
+    /*! Multiplication c = alpha * (A*b) + beta * c. 
+    Same as mult but slightly faster to call from python because of unique name. */
+    inline void multMV(const Vector < ValueType > & b, 
+                       Vector < ValueType >& c, 
+                       const ValueType & alpha=1.0, 
+                       const ValueType & beta=0.0, 
+                       Index bOff=0, Index cOff=0) const {
+        return GIMLI::mult(*this, b, c, alpha, beta, bOff, cOff);
+    }
+    /*! Multiplication c = alpha * (A.T*b) + beta * c. 
+    Same like transMult but slightly faster to call from python because of unique name. */
+    inline void transMultMV(const Vector < ValueType > & b, 
+                            Vector < ValueType > & c, 
+                            const ValueType & alpha=1.0, 
+                            const ValueType & beta=0.0, 
+                            Index bOff=0, Index cOff=0) const {
+        return GIMLI::transMult(*this, b, c, alpha, beta, bOff, cOff);
+    }
 
-    virtual Vector < ValueType > transMult(const Vector < ValueType > & b) const;
-
-    RSparseMapMatrix sparseMapMatrix() const;
+    /*! Return this * a  */
+    inline Vector < ValueType > mult(const Vector < ValueType > & b) const {
+        Vector < ValueType > ret(this->rows(), 0.0);
+        this->multMV(b, ret);
+        return ret;
+    }
+    /*! Return this.T * a */
+    inline Vector < ValueType > transMult(const Vector < ValueType > & b) const {
+        Vector < ValueType > ret(this->cols(), 0.0);
+        this->transMultMV(b, ret);
+        return ret;
+    }
+    
+    SparseMapMatrix< ValueType, Index > sparseMapMatrix() const;
+    
+    SparseMatrix< ValueType > sparseMatrix() const;
 
     virtual void save(const std::string & filename) const {
         std::cerr << WHERE_AM_I << "WARNING " << " don't save blockmatrix."  << std::endl;
@@ -165,28 +207,29 @@ public:
 
 protected:
     std::vector< MatrixBase * > matrices_;
-    std::vector< BlockMatrixEntry > entries_;
-private:
-    /*! Max row size.*/
-    mutable Index rows_;
-
-    /*! Max col size.*/
-    mutable Index cols_;
+    std::vector< BlockMatrixEntry < ValueType > > entries_;
 };
 
-template <> DLLEXPORT RVector BlockMatrix< double >::
-    mult(const RVector & b) const;
+template <> DLLEXPORT RSparseMapMatrix 
+BlockMatrix< double >::sparseMapMatrix() const;
 
-template <> DLLEXPORT RVector BlockMatrix< double >::
-    transMult(const RVector & b) const;
+template <> DLLEXPORT CSparseMapMatrix 
+BlockMatrix< Complex >::sparseMapMatrix() const;
 
-template <> DLLEXPORT RSparseMapMatrix BlockMatrix< double >::
-    sparseMapMatrix() const;
+template <> DLLEXPORT RSparseMatrix 
+BlockMatrix< double >:: sparseMatrix() const;
 
-inline RVector transMult(const BlockMatrix < double > & A, const RVector & b){
+template <> DLLEXPORT CSparseMatrix 
+BlockMatrix< Complex >::sparseMatrix() const;
+
+
+inline DLLEXPORT RVector mult(const BlockMatrix < double > & A, const RVector & b){
+    return A.mult(b);
+}
+inline DLLEXPORT RVector transMult(const BlockMatrix < double > & A, const RVector & b){
     return A.transMult(b);
 }
-inline RVector operator * (const BlockMatrix < double >  & A, const RVector & b){
+inline DLLEXPORT RVector operator * (const BlockMatrix < double >  & A, const RVector & b){
     return A.mult(b);
 }
 

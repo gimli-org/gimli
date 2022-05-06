@@ -25,8 +25,8 @@ namespace GIMLI{
 template <> void
 SparseMapMatrix< double, Index >::copy_(const SparseMatrix< double > & S){
     clear();
-    cols_ = S.cols();
-    rows_ = S.rows();
+    _rows = S.rows();
+    _cols = S.cols();
     stype_ = S.stype();
 
     // std::vector < int > colPtr(S.vecColPtr());
@@ -41,6 +41,11 @@ SparseMapMatrix< double, Index >::copy_(const SparseMatrix< double > & S){
 }
 template<>
 void SparseMapMatrix< Complex, Index >::copy_(const SparseMatrix< Complex > & S){
+    clear();
+    _rows = S.rows();
+    _cols = S.cols();
+    stype_ = S.stype();
+    
     THROW_TO_IMPL
 }
 
@@ -200,24 +205,31 @@ mult_T_impl(const SparseMapMatrix< ValueType, Index > & A,
             Index bOff, Index cOff, bool trans) {
 
     if (trans){
-        ASSERT_GREATER_EQUAL(b.size() + bOff, A.rows())
-        if (c.size() < A.cols() + cOff) c.resize(A.cols() + cOff);
+        ASSERT_GREATER_EQUAL(b.size() + bOff, A.nRows())
+        if (c.size() < A.nCols() + cOff) c.resize(A.nCols() + cOff);
     } else {
-        ASSERT_GREATER_EQUAL(b.size() + bOff, A.cols())
-        if (c.size() < A.rows() + cOff) c.resize(A.rows() + cOff);
+        ASSERT_GREATER_EQUAL(b.size() + bOff, A.nCols())
+        if (c.size() < A.nRows() + cOff) c.resize(A.nRows() + cOff);
     }
     c *= beta;
 
     if (A.stype() == 0){ // non-symmetric
         if (trans){
-            for (auto it = A.begin(); it != A.end(); it ++){
-                c[it->first.second] += alpha * b[it->first.first] * it->second;
+            for (auto &it: A){
+                c[it.first.second] += alpha * b[it.first.first] * it.second;
             }
+            // for (auto it = A.begin(), itE = A.end(); it != itE; it ++){
+            //     c[it->first.second] += alpha * b[it->first.first] * it->second;
+            // }
         } else {
-            for (auto it = A.begin(); it != A.end(); it ++){
-                c[it->first.first] += alpha * b[it->first.second] * it->second;
+            for (auto &it: A){
+                c[it.first.first] += alpha * b[it.first.second] * it.second;
             }
+            // for (auto it = A.begin(), itE = A.end(); it != itE; it ++){
+            //     c[it->first.first] += alpha * b[it->first.second] * it->second;
+            // }
         }
+
     } else if (A.stype() == -1){
         if (trans){
             THROW_TO_IMPL

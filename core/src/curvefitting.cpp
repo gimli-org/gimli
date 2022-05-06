@@ -109,7 +109,7 @@ HarmonicModelling::HarmonicModelling(size_t nh, const RVector & tvec, bool verbo
 }
 
 RVector HarmonicModelling::response(const RVector & par){
-    return transMult (A_ , par);
+    return A_.transMult(par);
 }
 
 RVector HarmonicModelling::response(const RVector & par, const RVector tvec){

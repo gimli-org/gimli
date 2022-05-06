@@ -21,46 +21,13 @@
 
 namespace GIMLI{
 
-
-// template <> void
-// SparseMatrix(const IndexArray & colPtr,
-//              const IndexArray & rowIdx,
-//              const Vector < double > vals, int stype=0)
-//         : SparseMatrixBase(){
-//         colPtr_ = std::vector < int >(colPtr.size());
-//         rowIdx_ = std::vector < int >(rowIdx.size());
-//         for (Index i = 0; i < colPtr_.size(); i ++ ) colPtr_[i] = colPtr[i];
-//         for (Index i = 0; i < rowIdx_.size(); i ++ ) rowIdx_[i] = rowIdx[i];
-//         vals_   = vals;
-//         stype_  = stype;
-//         valid_  = true;
-//         cols_ = max(rowIdx_) + 1;
-//         rows_ = colPtr_.size() - 1;
-//     }
-
-// template <> void
-// SparseMatrix(const std::vector < int > & colPtr,
-//              const std::vector < int > & rowIdx,
-//              const Vector < double > vals, int stype=0)
-//         : SparseMatrixBase(){
-//           colPtr_ = colPtr;
-//           rowIdx_ = rowIdx;
-//           vals_   = vals;
-//           stype_  = stype;
-//           valid_  = true;
-//           cols_ = max(rowIdx_) + 1;
-//           rows_ = colPtr_.size() - 1;
-//     }
-
-
-
 template <> void
 SparseMatrix< double >::copy_(const SparseMapMatrix< double, Index > & S){
     this->clear();
     Index col = 0, row = 0;
     double val;
-    cols_ = S.cols();
-    rows_ = S.rows();
+    _cols = S.cols();
+    _rows = S.rows();
     std::vector < std::map < Index, double > > rowColMap(S.rows());
 
     for (typename SparseMapMatrix< double, Index>::const_iterator
@@ -98,8 +65,8 @@ void SparseMatrix< Complex >::copy_(const SparseMapMatrix< Complex, Index > & S)
     this->clear();
     Index col = 0, row = 0;
     Complex val;
-    cols_ = S.cols();
-    rows_ = S.rows();
+    _cols = S.cols();
+    _rows = S.rows();
     std::vector < std::map < Index, Complex > > rowColMap(S.rows());
 
     for (typename SparseMapMatrix< Complex, Index>::const_iterator
@@ -339,8 +306,8 @@ template <> void SparseMatrix< double >
             }
         }
 
-        rows_ = mesh.nodeCount();
-        cols_ = mesh.nodeCount();
+        _rows = mesh.nodeCount();
+        _cols = mesh.nodeCount();
 
         __MS(sw.duration(true))
         this->buildSparsityPattern(idxMap);
@@ -376,8 +343,8 @@ template <> void SparseMatrix< double >
 //         }
 //         valid_ = true;
 
-//         rows_ = colPtr_.size() - 1;
-//         cols_ = max(rowIdx_) + 1;
+//         _rows = colPtr_.size() - 1;
+//         _cols = max(rowIdx_) + 1;
 //         //** freeing idxMap is expensive
 }
 
@@ -430,8 +397,8 @@ _T_buildSparsityPattern_(SparseMatrix< ValueType > * self,
         __MS(colPtr.size() - 1, self->rows(), max(rowIdx) + 1, self->cols())
         log(Error, "build Sparsity Pattern failed!");
     }
-    // rows_ = colPtr_.size() - 1;
-    // cols_ = max(rowIdx_) + 1;
+    // _rows = colPtr_.size() - 1;
+    // _cols = max(rowIdx_) + 1;
     //** freeing idxMap is expensive
 
 }
@@ -452,56 +419,71 @@ mult_T_impl(const SparseMatrix< ValueType > & A,
             Index bOff, Index cOff, bool trans) {
 
     if (trans){
-        ASSERT_GREATER_EQUAL(b.size() + bOff, A.rows())
-        if (c.size() < A.cols() + cOff) c.resize(A.cols() + cOff);
+        ASSERT_GREATER_EQUAL(b.size() + bOff, A.nRows())
+        if (c.size() < A.nCols() + cOff) c.resize(A.nCols() + cOff);
     } else {
-        ASSERT_GREATER_EQUAL(b.size() + bOff, A.cols())
-        if (c.size() < A.rows() + cOff) c.resize(A.rows() + cOff);
+        ASSERT_GREATER_EQUAL(b.size() + bOff, A.nCols())
+        if (c.size() < A.nRows() + cOff) c.resize(A.nRows() + cOff);
     }
-    THROW_TO_IMPL
-    // c *= beta;
+    c *= beta;
+    Index count = 0;
 
-    // if (A.stype() == 0){ // non-symmetric
-    //     if (trans){
-    //         for (auto it = A.begin(); it != A.end(); it ++){
-    //             c[it->first.second] += alpha * b[it->first.first] * it->second;
-    //         }
-    //     } else {
-    //         for (auto it = A.begin(); it != A.end(); it ++){
-    //             c[it->first.first] += alpha * b[it->first.second] * it->second;
-    //         }
-    //     }
-    // } else if (A.stype() == -1){
-    //     if (trans){
-    //         THROW_TO_IMPL
-    //     } else {
-    //         for (auto it = A.begin(); it != A.end(); it ++){
-    //             Index I = it->first.first;
-    //             Index J = it->first.second;
+    if (A.stype() == 0){
+        // for each row
+        ValueType si = 0.0;
+        ValueType bi = 0.0;
 
-    //             c[I] += alpha * b[J] * conj(it->second);
+        for (Index i = 0, iMax = A.rows(); i < iMax; i++){
+            if (trans){
+                bi = b[i];
+                for (int j = A.vecColPtr()[i]; j < A.vecColPtr()[i + 1]; j ++){
+                    c[A.vecRowIdx()[j]] += alpha * bi * A.vecVals()[j];
+                }
+            } else {
+                si = c[i];
+                for (int j = A.vecColPtr()[i], jMax=A.vecColPtr()[i+1]; 
+                     j < jMax; j ++){
+                    si += alpha * b[A.vecRowIdx()[j]] * A.vecVals()[j];
+                    count ++;
+                }
+                c[i] = si;
+            }
+        }
+        return;
+        // print('3', sw.duration(true), count);
+    } else if (A.stype() == -1){
+        THROW_TO_IMPL
+//         Index J;
+//         for (Index i = 0; i < ret.size(); i++){
+//             for (int j = this->vecColPtr()[i]; j < this->vecColPtr()[i + 1]; j ++){
+//                 J = this->vecRowIdx()[j];
 
-    //             if (J > I){
-    //                 c[J] += alpha * b[I] * it->second;
-    //             }
-    //         }
-    //     }
-    // } else if (A.stype() ==  1){
-    //     if (trans){
-    //         THROW_TO_IMPL
-    //     } else {
-    //         for (auto it = A.begin(); it != A.end(); it ++){
-    //             Index I = it->first.first;
-    //             Index J = it->first.second;
+// //                     __MS( i << "  " << J << " " << this->vecVals()[j])
+//                 ret[i] += a[J] * conj(this->vecVals()[j]);
 
-    //             c[I] += alpha * b[J] * conj(it->second);
+//                 if (J > i){
+// //                         __MS( J << "  " << i << " " << this->vecVals()[j])
+//                     ret[J] += a[i] * this->vecVals()[j];
+//                 }
+//             }
+//         }
+    } else if (A.stype() == 1){
+        THROW_TO_IMPL
+//         Index J;
+//         for (Index i = 0; i < ret.size(); i++){
+//             for (int j = this->vecColPtr()[i]; j < this->vecColPtr()[i + 1]; j ++){
+//                 J = this->vecRowIdx()[j];
 
-    //             if (J < I){
-    //                 c[J] += alpha * b[I] * it->second;
-    //             }
-    //         }
-    //     }
-    // }
+// //                     __MS( i << "  " << J << " " << this->vecVals()[j])
+//                 ret[i] += a[J] * conj(this->vecVals()[j]);
+
+//                 if (J < i){
+// //                         __MS( J << "  " << i << " " << this->vecVals()[j])
+//                     ret[J] += a[i] * this->vecVals()[j];
+//                 }
+//             }
+//         }
+    }
 }
 
 
@@ -514,50 +496,6 @@ mult_T_impl(const SparseMatrix< ValueType > & A,
 //         }
 
 //         Vector < ValueType > ret(this->rows(), 0.0);
-
-//         if (stype_ == 0){
-//             // for each row
-//             for (Index i = 0; i < this->rows(); i++){
-//             // iterate through compressed col
-//                 for (int j = this->vecColPtr()[i]; j < this->vecColPtr()[i + 1]; j ++){
-//                     ret[i] += a[this->vecRowIdx()[j]] * this->vecVals()[j];
-//                 }
-//             }
-//         } else if (stype_ == -1){
-//             Index J;
-//             for (Index i = 0; i < ret.size(); i++){
-//                 for (int j = this->vecColPtr()[i]; j < this->vecColPtr()[i + 1]; j ++){
-//                     J = this->vecRowIdx()[j];
-
-// //                     __MS( i << "  " << J << " " << this->vecVals()[j])
-//                     ret[i] += a[J] * conj(this->vecVals()[j]);
-
-//                     if (J > i){
-// //                         __MS( J << "  " << i << " " << this->vecVals()[j])
-//                         ret[J] += a[i] * this->vecVals()[j];
-//                     }
-//                 }
-//             }
-
-//             //#THROW_TO_IMPL
-//         } else if (stype_ == 1){
-//             Index J;
-//             for (Index i = 0; i < ret.size(); i++){
-//                 for (int j = this->vecColPtr()[i]; j < this->vecColPtr()[i + 1]; j ++){
-//                     J = this->vecRowIdx()[j];
-
-// //                     __MS( i << "  " << J << " " << this->vecVals()[j])
-//                     ret[i] += a[J] * conj(this->vecVals()[j]);
-
-//                     if (J < i){
-// //                         __MS( J << "  " << i << " " << this->vecVals()[j])
-//                         ret[J] += a[i] * this->vecVals()[j];
-//                     }
-//                 }
-//             }
-//         }
-//         return ret;
-//     }
 
 //     /*! Return this.T * a */
 //     virtual Vector < ValueType > transMult(const Vector < ValueType > & a) const {

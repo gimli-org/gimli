@@ -19,60 +19,77 @@
 
 namespace GIMLI{
 
-template <> Vector < double > BlockMatrix< double >::mult(const Vector < double >  & b) const{
-    // no need to check here .. let the matrices itself check
-    // if (b.size() != this->cols()){
-    //     throwLengthError(WHERE_AM_I + " wrong size of vector b (" +
-    //     str(b.size()) + ") needed: " + str(this->cols()));
-    // }
+template < class ValueType, class Mat >
+void mult_MV_T(const Mat & A, 
+          const Vector < ValueType > & b, Vector < ValueType > & c,
+          const ValueType & alpha, const ValueType & beta,
+          Index bOff, Index cOff, bool trans=false){
 
-    RVector ret(rows_);
-
-    for (Index i = 0; i < entries_.size(); i ++){
-        BlockMatrixEntry entry = entries_[i];
-
-        MatrixBase *mat = matrices_[entry.matrixID];
-
-        //!! will not work with CustomMatrices from python with simplified mult
-        mat->mult(b, ret, 1.0, 1.0, entry.colStart, entry.rowStart);
-
-
-        // ret.addVal(mat->mult(b.getVal(entry.colStart,
-        //                                 entry.colStart + mat->cols())) *
-        //             entry.scale,
-        //             entry.rowStart, entry.rowStart + mat->rows());
+    if (trans){
+        ASSERT_GREATER_EQUAL(b.size() + bOff, A.rows())
+        c.resize(A.cols() + cOff);
+    } else {
+        ASSERT_GREATER_EQUAL(b.size() + bOff, A.cols())
+        c.resize(A.rows() + cOff);
     }
 
-    return ret;
-}
-template <> Vector < double >
-BlockMatrix< double >::transMult(const Vector < double > & b) const{
-        // no need to check here .. let the matrices itself check
-    // if (b.size() != this->rows()){
-    //     throwLengthError(WHERE_AM_I + " wrong size of vector b (" +
-    //     str(b.size()) + ") needed: " + str(this->rows()));
-    // }
+    c *= beta;
 
-    RVector ret(cols_);
-        for (Index i = 0; i < entries_.size(); i++){
-        BlockMatrixEntry entry = entries_[i];
+    for (auto &entry: A.entries()){
+        if (entry.transpose) {
+            THROW_TO_IMPL
+        }
+        const MatrixBase & mat = A.matRef(entry.matrixID);
 
-        MatrixBase *mat = matrices_[entry.matrixID];
-
-        ret.addVal(mat->transMult(b.getVal(entry.rowStart,
-                                            entry.rowStart + mat->rows())) *
-                    entry.scale,
-                    entry.colStart, entry.colStart + mat->cols());
+        if (trans){
+            c.addVal(alpha * mat.transMult(b.getVal(entry.rowStart,
+                                            entry.rowStart + mat.rows())) *
+                     entry.scale, entry.colStart, entry.colStart + mat.cols());
+        } else {
+            c.addVal(alpha * mat.mult(b.getVal(entry.colStart,
+                                        entry.colStart + mat.cols())) *
+                    entry.scale, entry.rowStart, entry.rowStart + mat.rows());
+        }
     }
-    return ret;
 }
-template <>
-RSparseMapMatrix BlockMatrix< double >::sparseMapMatrix() const {
+
+void mult(const RBlockMatrix & A, 
+          const RVector & b, RVector & c,
+          const double & alpha, const double & beta,
+          Index bOff, Index cOff){
+    mult_MV_T(A, b, c, alpha, beta, bOff, cOff, false);
+}
+
+void transMult(const RBlockMatrix & A, 
+               const RVector & b, RVector & c, 
+               const double & alpha, const double & beta,
+               Index bOff, Index cOff){
+    mult_MV_T(A, b, c, alpha, beta, bOff, cOff, true);
+}
+
+void mult(const CBlockMatrix & A, 
+          const CVector & b, CVector & c,
+          const Complex & alpha, const Complex & beta,
+          Index bOff, Index cOff){
+              THROW_TO_IMPL
+    // mult_MV_T(A, b, c, alpha, beta, bOff, cOff, false);
+}
+
+void transMult(const CBlockMatrix & A, 
+               const CVector & b, CVector & c, 
+               const Complex & alpha, const Complex & beta,
+               Index bOff, Index cOff){
+                   THROW_TO_IMPL
+    // mult_MV_T(A, b, c, alpha, beta, bOff, cOff, true);
+}
+
+template <> RSparseMapMatrix 
+BlockMatrix< double >::sparseMapMatrix() const {
 
     RSparseMapMatrix ret(this->rows(), this->cols());
 
     for (Index i = 0; i < entries_.size(); i++){
-        BlockMatrixEntry entry(entries_[i]);
+        auto entry(entries_[i]);
 
         MatrixBase *mat = matrices_[entry.matrixID];
 
@@ -96,6 +113,24 @@ RSparseMapMatrix BlockMatrix< double >::sparseMapMatrix() const {
     }
     return ret;
 }
+
+template <> CSparseMapMatrix 
+BlockMatrix< Complex >::sparseMapMatrix() const {
+    THROW_TO_IMPL
+    return CSparseMatrix();
+}
+template <> RSparseMatrix 
+BlockMatrix< double >::sparseMatrix() const {
+    log(Warning, "Efficiency check needed.");
+    return RSparseMatrix(this->sparseMapMatrix());
+}
+template <> CSparseMatrix 
+BlockMatrix< Complex >::sparseMatrix() const {
+    log(Warning, "Efficiency check needed.");
+    return CSparseMatrix(this->sparseMapMatrix());
+}
+
+
 
 } // namespace GIMLI
 

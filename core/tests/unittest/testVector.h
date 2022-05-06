@@ -16,27 +16,33 @@ using namespace GIMLI;
 class VectorTest : public CppUnit::TestFixture  {
     CPPUNIT_TEST_SUITE(VectorTest);
 
-    // CPPUNIT_TEST(testIterator);
-    // CPPUNIT_TEST(testEquality);
-    // CPPUNIT_TEST(testFill);
-    // CPPUNIT_TEST(testSetVal);
-    // CPPUNIT_TEST(testUnaryOperations);
-    // CPPUNIT_TEST(testBinaryOperations);
-    // CPPUNIT_TEST(testExpressionOperators);
-    // CPPUNIT_TEST(testFunctions);
-    // CPPUNIT_TEST(testStdVectorTemplates);
-    // CPPUNIT_TEST(testCVector);
-    // CPPUNIT_TEST(testRVector3);
+    CPPUNIT_TEST(testContructor);
+    CPPUNIT_TEST(testIterator);
+    CPPUNIT_TEST(testEquality);
+    CPPUNIT_TEST(testFill);
+    CPPUNIT_TEST(testSetVal);
+    CPPUNIT_TEST(testUnaryOperations);
+    CPPUNIT_TEST(testBinaryOperations);
+    CPPUNIT_TEST(testExpressionOperators);
+    CPPUNIT_TEST(testFunctions);
+    CPPUNIT_TEST(testStdVectorTemplates);
+    CPPUNIT_TEST(testCVector);
+    CPPUNIT_TEST(testRVector3);
     CPPUNIT_TEST(testMatrix);
-    // CPPUNIT_TEST(testBlockMatrix);
-    // CPPUNIT_TEST(testSparseMapMatrix);
-    // CPPUNIT_TEST(testFind);
-    // CPPUNIT_TEST(testIO);
+    CPPUNIT_TEST(testBlockMatrix);
+    CPPUNIT_TEST(testSparseMapMatrix);
+    CPPUNIT_TEST(testFind);
+    CPPUNIT_TEST(testIO);
 
     CPPUNIT_TEST_SUITE_END();
 
 public:
 
+    void testContructor(){
+        double buf[5]={0.0, 1.0, 2.0, 3.0, 4.0};
+        RVector x(buf, 5);
+        CPPUNIT_ASSERT(sum(x) == 10);
+    }
     void testIterator(){
         RVector v(10); v.fill(x__ + 1.0);
         testIterator_(v);
@@ -476,7 +482,7 @@ public:
         
         testMatrixMV< GIMLI::RSparseMapMatrix >();
         testMatrixMV< GIMLI::RSparseMatrix >();
-        
+
         GIMLI::setNoCBlas(true);
         testMatrixMM< GIMLI::Matrix < double > >();
         testMatrixMM< GIMLI::DenseMatrix < double > >();
@@ -559,6 +565,7 @@ public:
         GIMLI::mult(A, B, C, 1.0, 0.0);
         CPPUNIT_ASSERT(C.rows() == m);
         CPPUNIT_ASSERT(C.cols() == n);
+
         CPPUNIT_ASSERT(C[0] ==
                        GIMLI::RVector(std::vector< double >{70., 80., 90}));
         CPPUNIT_ASSERT(C[1] ==
@@ -675,11 +682,14 @@ public:
             }
         }
 
+        A.recalcMatrixSize();
+
         CPPUNIT_ASSERT(A.rows() == 9);
         CPPUNIT_ASSERT(A.cols() == 6);
 
         GIMLI::RVector b(A.cols(), 1);
         CPPUNIT_ASSERT(sum(A.mult(b)) == 18);
+
         GIMLI::RVector c(A.rows(), 1);
         CPPUNIT_ASSERT(sum(A.transMult(c)) == 18);
     }
@@ -703,6 +713,11 @@ public:
                 D[i][j] = 1.0;
             }
         }
+        RVector v;
+        IndexArray r;
+        IndexArray c;
+        D.fillArrays(v, r, c);
+
         CPPUNIT_ASSERT(D.col(2) == GIMLI::RVector(D.rows(), 1.0));
         CPPUNIT_ASSERT(D.row(2) == GIMLI::RVector(D.cols(), 1.0));
 
@@ -712,7 +727,7 @@ public:
         RSparseMapMatrix E(3,3);
         for (Index i = 0; i < E.rows(); i ++ ){
             for (Index j = 0; j < E.cols(); j ++ ){
-                A[i][j] = i*E.rows()+j;
+                E[i][j] = i*E.rows()+j;
             }
         }
 
@@ -720,7 +735,6 @@ public:
         CPPUNIT_ASSERT((E.values() == GIMLI::RVector{0, 4, 8}));
         CPPUNIT_ASSERT((E.rowIDs() == GIMLI::IVector{0, 1, 2}));
         CPPUNIT_ASSERT((E.colIDs() == GIMLI::IVector{0, 1, 2}));
-
     }
 
     void testIO(){

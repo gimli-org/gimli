@@ -76,55 +76,55 @@ double cblasMinTime(bool reset){
 }
 
 
-void toEigenMatrix(const RMatrix & m, SmallMatrix & r){
-    r.resize(m.rows(), m.cols());
+// void toEigenMatrix(const RMatrix & m, RMatrix & r){
+//     r.resize(m.rows(), m.cols());
 
-    for (Index i=0; i < r.rows(); i ++){
-#if USE_EIGEN3
-        r(i, Eigen::all) = Eigen::Map <const Eigen::VectorXd>(&m[i][0],
-                                                              r.cols());
-#else
-    for (Index j=0; j < r.cols(); j ++){
-        r(i,j) = m(i,j);
-    }
-#endif
-    }
-}
-void toRMatrix(const SmallMatrix & m, RMatrix & r){
-    r.resize(m.rows(), m.cols());
+//     for (Index i=0; i < r.rows(); i ++){
+// #if USE_EIGEN3
+//         r(i, Eigen::all) = Eigen::Map <const Eigen::VectorXd>(&m[i][0],
+//                                                               r.cols());
+// #else
+//     for (Index j=0; j < r.cols(); j ++){
+//         r(i,j) = m(i,j);
+//     }
+// #endif
+//     }
+// }
+// void toRMatrix(const RMatrix & m, RMatrix & r){
+//     r.resize(m.rows(), m.cols());
 
-    // optimize if in use
-    for (Index i=0; i < r.rows(); i ++){
-        for (Index j=0; j < r.cols(); j ++){
-            r(i,j) = m(i,j);
-        }
-    }
-}
+//     // optimize if in use
+//     for (Index i=0; i < r.rows(); i ++){
+//         for (Index j=0; j < r.cols(); j ++){
+//             r(i,j) = m(i,j);
+//         }
+//     }
+// }
 
-#if USE_EIGEN3
-void toRVector(const Eigen::VectorXd & m, RVector & r, double b){
-    r.resize(m.size());
+// #if USE_EIGEN3
+// void toRVector(const Eigen::VectorXd & m, RVector & r, double b){
+//     r.resize(m.size());
 
-    // optimize if in use
-    if (b == 0.0){
-        for (Index i=0; i < m.size(); i ++){
-            r[i] = m(i);
-        }
-    } else if (b == 1.0){
-        for (Index i=0; i < m.size(); i ++){
-            r[i] += m(i);
-        }
-    } else if (b == -1.0){
-        for (Index i=0; i < m.size(); i ++){
-            r[i] -= m(i);
-        }
-    } else {
-        for (Index i=0; i < m.size(); i ++){
-            r[i] = m(i) + r[i] * b;
-        }
-    }
-}
-#endif
+//     // optimize if in use
+//     if (b == 0.0){
+//         for (Index i=0; i < m.size(); i ++){
+//             r[i] = m(i);
+//         }
+//     } else if (b == 1.0){
+//         for (Index i=0; i < m.size(); i ++){
+//             r[i] += m(i);
+//         }
+//     } else if (b == -1.0){
+//         for (Index i=0; i < m.size(); i ++){
+//             r[i] -= m(i);
+//         }
+//     } else {
+//         for (Index i=0; i < m.size(); i ++){
+//             r[i] = m(i) + r[i] * b;
+//         }
+//     }
+// }
+// #endif
 
 //##############################################################################
 // DenseMatrix related implementations
@@ -160,20 +160,31 @@ DenseMatrix< Complex >::round(const Complex & tol){
     THROW_TO_IMPL
 }
 
-/*! Generic fall back implementation for c = alpha*(A*b) + beta*c*/
+/*! Generic fall back implementation for c = alpha*(A*b) + beta*c. */
 template < class ValueType, class Mat >
-void mult_T_impl(const Mat & A, 
+void mult_MV_fallback_T(const Mat & A, 
                  const Vector < ValueType > & b, Vector < ValueType > & c,
                  const ValueType & alpha, const ValueType & beta,
-                 Index bOff, Index cOff){
+                 Index bOff, Index cOff, bool trans=false){
 
-    ASSERT_GREATER_EQUAL(b.size() + bOff, A.cols())
-    c.resize(A.rows() + cOff);
+    // __MS(A.cols(), A.rows(), typeid(A).name())
+    if (trans){
+        ASSERT_GREATER_EQUAL(b.size() + bOff, A.rows())
+        c.resize(A.cols() + cOff);
+    } else {
+        ASSERT_GREATER_EQUAL(b.size() + bOff, A.cols())
+        c.resize(A.rows() + cOff);
+    }
+
     Stopwatch sw;
     ValueType _c = 0.0;
     
-    for (Index i = 0; i < A.rows(); i ++){
-        _c = A.row(i).mult(b, bOff);
+    for (Index i = 0, iMax = c.size()-cOff; i < iMax; i ++){
+        if (trans){
+            _c = A.col(i).mult(b, bOff);
+        } else {
+            _c = A.row(i).mult(b, bOff);
+        }
     
         if (alpha != 1.0){
             _c *= alpha;
@@ -191,44 +202,12 @@ void mult_T_impl(const Mat & A,
     }
     // print("mult impl:", sw.duration());
 }
-/*! Generic fall back implementation for c = alpha*(A.T*b) + beta*c*/
-template < class ValueType, class Mat >
-void transMult_T_impl(const Mat & A, 
-                      const Vector < ValueType > & b, Vector < ValueType > & c,
-                      const ValueType & alpha, const ValueType & beta,
-                      Index bOff, Index cOff){
-
-    ASSERT_GREATER_EQUAL(b.size() + bOff, A.rows())
-    c.resize(A.cols() + cOff);
-    Stopwatch sw;
-    ValueType _c;
-
-    for (Index i = 0; i < A.cols(); i ++){
-        _c = A.col(i).mult(b, bOff);
-
-        if (alpha != 1.0){
-            _c *= alpha;
-        }
-    
-        if (beta == 0.0){
-            c[i + cOff] = _c;
-        } else if (beta == 1.0){
-            c[i + cOff] += _c;
-        } else if (beta == -1.0){
-            c[i + cOff] -= _c;
-        } else {
-            c[i + cOff] = _c + beta * c[i + cOff];
-        }
-    }
-
-    // print("transmult impl:", sw.duration());
-}
 
 /*! Generic fall back implementation for C = a*(A*B) + b*C*/
 template <class ValueType, class Mat >
-void mult_T_impl(const Mat & A, const Mat & B, Mat & C,
-                 const ValueType & alpha, const ValueType & beta, 
-                 bool bIsTrans, Index n){
+void mult_MM_fallback_T(const Mat & A, const Mat & B, Mat & C,
+                        const ValueType & alpha, const ValueType & beta, 
+                        bool bIsTrans, Index n){
 
     if (bIsTrans){
         ASSERT_EQUAL(A.cols(), B.cols())                 
@@ -241,16 +220,22 @@ void mult_T_impl(const Mat & A, const Mat & B, Mat & C,
     Stopwatch sw;
     double c = 0;
     for (Index i = 0; i < A.rows(); i ++){
-        RVector Ai(A[i]);
+        const RVector & Ai = A[i];
+
         for (Index j = 0; j < n; j ++){
             c = 0;
-            for (Index k = 0; k < A.cols(); k ++){
-                if (bIsTrans){
-                    c += Ai[k] * B[j][k];
-                } else {
+
+            if (bIsTrans){
+                const RVector & Bj = B[j];
+                for (Index k = 0; k < A.cols(); k ++){
+                    c += Ai[k] * Bj[k];
+                }
+            } else{
+                for (Index k = 0; k < A.cols(); k ++){
                     c += Ai[k] * B[k][j];
                 }
             }
+
             if (alpha != 1.0){
                 c *= alpha;
             }
@@ -265,13 +250,13 @@ void mult_T_impl(const Mat & A, const Mat & B, Mat & C,
             }
         }
     }
-    print("matmult_impl:", sw.duration());
+    print("mult_MM_impl:", sw.duration());
 }
 
 template <class ValueType, class Mat >
-void transMult_T_impl(const Mat & A, const Mat & B, Mat & C, 
-                      const ValueType & alpha, const ValueType & beta, 
-                      bool bIsTrans, Index n){
+void transMult_MM_fallback_T(const Mat & A, const Mat & B, Mat & C, 
+                             const ValueType & alpha, const ValueType & beta, 
+                             bool bIsTrans, Index n){
 
     if (bIsTrans){
         ASSERT_EQUAL(A.rows(), B.cols())                 
@@ -311,7 +296,7 @@ void transMult_T_impl(const Mat & A, const Mat & B, Mat & C,
 }
 
 template < class Mat >
-void matMult_T(const Mat & A, const Mat & B,
+void mult_MM_T(const Mat & A, const Mat & B,
                Mat & C, const double & a, const double & b){
     // C = a * A*B + b*C || C = a * A*B.T + b*C
 
@@ -340,7 +325,7 @@ void matMult_T(const Mat & A, const Mat & B,
 #if OPENBLAS_CBLAS_FOUND
 
     if (noCBlas()){
-        return mult_T_impl(A, B, C, a, b, bIsTrans, n);
+        return mult_MM_fallback_T(A, B, C, a, b, bIsTrans, n);
     }
 
     CBLAS_TRANSPOSE aTrans = CblasNoTrans;
@@ -370,18 +355,18 @@ void matMult_T(const Mat & A, const Mat & B,
         delete [] bC;
     }
 #else
-    mult_T_impl(A, B, C, a, b, bIsTrans, n);
+    mult_MM_fallback_T(A, B, C, a, b, bIsTrans, n);
 #endif
 }
 
 template < class Mat >
-void matMult_T(const Mat & A, const Mat & B,
-                    Mat & C, const Complex & a, const Complex & b){
+void mult_MM_T(const Mat & A, const Mat & B,
+               Mat & C, const Complex & a, const Complex & b){
     THROW_TO_IMPL
 }
 
 template < class Mat >
-void matTransMult_T(const Mat & A, const Mat & B,
+void transMult_MM_T(const Mat & A, const Mat & B,
                     Mat & C, const double & a, const double & b){
 
     Index k = A.rows(); // B.rows()
@@ -404,7 +389,7 @@ void matTransMult_T(const Mat & A, const Mat & B,
                 //** Target array seems needed to be transposed
                 //** C = a*(A.T*B).T + b * C
                 // __MS("ret transmult")
-                return matTransMult_T(B, A, C, a, b);
+                return transMult_MM_T(B, A, C, a, b);
 
                 // retTrans = true;
             } else {
@@ -428,7 +413,7 @@ void matTransMult_T(const Mat & A, const Mat & B,
 #if OPENBLAS_CBLAS_FOUND
 
     if (noCBlas()){
-        transMult_T_impl(A, B, C, a, b, bIsTrans, n);
+        transMult_MM_fallback_T(A, B, C, a, b, bIsTrans, n);
     }
 
     CBLAS_TRANSPOSE aTrans = CblasTrans;
@@ -457,13 +442,13 @@ void matTransMult_T(const Mat & A, const Mat & B,
     }
     
 #else
-    transMult_T_impl(A, B, C, a, b, bIsTrans, n);
+    mult_MV_fallback_T(A, B, C, a, b, bIsTrans, n);
 #endif
 
 }
 
 template < class Mat >
-void matTransMult_T(const Mat & A, const Mat & B,
+void transMult_MM_T(const Mat & A, const Mat & B,
                     Mat & C, const Complex & a, const Complex & b){
     THROW_TO_IMPL
 }
@@ -477,7 +462,7 @@ void mult(const RDenseMatrix & A,
 #if OPENBLAS_CBLAS_FOUND
     Stopwatch sw;
     if (noCBlas()){
-        mult_T_impl(A, b, c, alpha, beta, bOff, cOff);
+        mult_MV_fallback_T(A, b, c, alpha, beta, bOff, cOff);
     } else {
         
         Index m = A.rows();
@@ -492,7 +477,7 @@ void mult(const RDenseMatrix & A,
         _updateCblasTime_(sw.duration());
     }
 #else //#if OPENBLAS_CBLAS_FOUND
-    mult_T_impl(A, b, c, alpha, beta, bOff, cOff);
+    mult_MV_fallback_T(A, b, c, alpha, beta, bOff, cOff);
 #endif
 }
 void mult(const CDenseMatrix & A, 
@@ -503,7 +488,7 @@ void mult(const CDenseMatrix & A,
 #if OPENBLAS_CBLAS_FOUND
     Stopwatch sw;
     if (noCBlas()){
-        mult_T_impl(A, b, c, alpha, beta, bOff, cOff);
+        mult_MV_fallback_T(A, b, c, alpha, beta, bOff, cOff);
     } else {
         Index m = A.rows();
         Index n = A.cols();
@@ -517,7 +502,7 @@ void mult(const CDenseMatrix & A,
         // print("dgemv:", sw.duration());
     }
 #else //#if OPENBLAS_CBLAS_FOUND
-    mult_T_impl(A, b, c, alpha, beta, bOff, cOff);
+    mult_MV_fallback_T(A, b, c, alpha, beta, bOff, cOff);
 #endif
 }
 
@@ -530,7 +515,7 @@ void transMult(const RDenseMatrix & A,
 #if OPENBLAS_CBLAS_FOUND
     Stopwatch sw;
     if (noCBlas()){
-        transMult_T_impl(A, b, c, alpha, beta, bOff, cOff);
+        mult_MV_fallback_T(A, b, c, alpha, beta, bOff, cOff, true);
     } else {
         Index m = A.rows();
         Index n = A.cols();
@@ -543,7 +528,7 @@ void transMult(const RDenseMatrix & A,
         _updateCblasTime_(sw.duration());
     }
 #else //#if OPENBLAS_CBLAS_FOUND
-    transMult_T_impl(A, b, c, alpha, beta, bOff, cOff);
+    mult_MV_fallback_T(A, b, c, alpha, beta, bOff, cOff, true);
 #endif
 }
 
@@ -556,7 +541,7 @@ void transMult(const CDenseMatrix & A,
 #if OPENBLAS_CBLAS_FOUND
     Stopwatch sw;
     if (noCBlas()){
-        transMult_T_impl(A, b, c, alpha, beta, bOff, cOff);
+        mult_MV_fallback_T(A, b, c, alpha, beta, bOff, cOff, true);
     } else {
         Index m = A.rows();
         Index n = A.cols();
@@ -570,7 +555,7 @@ void transMult(const CDenseMatrix & A,
         _updateCblasTime_(sw.duration());
     }
 #else //#if OPENBLAS_CBLAS_FOUND
-    transMult_T_impl(A, b, c, alpha, beta, bOff, cOff);
+    mult_MV_fallback_T(A, b, c, alpha, beta, bOff, cOff, true);
 #endif
 }
 
@@ -587,31 +572,19 @@ DenseMatrix<Complex>::transAdd(const DenseMatrix < Complex > & a){
 
 void mult(const RDenseMatrix & A, const RDenseMatrix & B,
           RDenseMatrix & C, const double & a, const double & b){
-    return matMult_T(A, B, C, a, b);
+    return mult_MM_T(A, B, C, a, b);
 }
 void mult(const CDenseMatrix & A, const CDenseMatrix & B,
           CDenseMatrix & C, const Complex & a, const Complex & b){
-    return matMult_T(A, B, C, a, b);
+    return mult_MM_T(A, B, C, a, b);
 }
 void transMult(const RDenseMatrix & A, const RDenseMatrix & B,
                RDenseMatrix & C, const double & a, const double & b){
-    matTransMult_T(A, B, C, a, b);
+    transMult_MM_T(A, B, C, a, b);
 }
 void transMult(const CDenseMatrix & A, const CDenseMatrix & B,
                CDenseMatrix & C, const Complex & a, const Complex & b){
-    matTransMult_T(A, B, C, a, b);
-}
-
-
-void matMult(const RDenseMatrix & A, const RDenseMatrix & B,
-             RDenseMatrix & C, const double & a, const double & b){
-    __M
-    return matMult_T(A, B, C, a, b);
-}
-void matTransMult(const RDenseMatrix & A, const RDenseMatrix & B,
-                  RDenseMatrix & C, const double & a, const double & b){
-    __M
-    matTransMult_T(A, B, C, a, b);
+    transMult_MM_T(A, B, C, a, b);
 }
 
 
@@ -622,28 +595,28 @@ void mult(const RMatrix & A,
           const RVector & b, RVector & c,
           const double & alpha, const double & beta, 
           Index bOff, Index cOff){
-    return mult_T_impl(A, b, c, alpha, beta, bOff, cOff);
+    return mult_MV_fallback_T(A, b, c, alpha, beta, bOff, cOff);
     // Bufferalloc for OPENBLAS to xpensive
 }
 void mult(const CMatrix & A, 
           const CVector & b, CVector & c, 
           const Complex & alpha, const Complex & beta,
           Index bOff, Index cOff){
-    return mult_T_impl(A, b, c, alpha, beta, bOff, cOff);
+    return mult_MV_fallback_T(A, b, c, alpha, beta, bOff, cOff);
     // Bufferalloc for OPENBLAS to xpensive
 }
 void transMult(const RMatrix & A, 
           const RVector & b, RVector & c,
           const double & alpha, const double & beta, 
           Index bOff, Index cOff){
-    return transMult_T_impl(A, b, c, alpha, beta, bOff, cOff);
+    return mult_MV_fallback_T(A, b, c, alpha, beta, bOff, cOff, true);
     // Bufferalloc for OPENBLAS to xpensive
 }
 void transMult(const CMatrix & A, 
           const CVector & b, CVector & c, 
           const Complex & alpha, const Complex & beta,
           Index bOff, Index cOff){
-    return transMult_T_impl(A, b, c, alpha, beta, bOff, cOff);
+    return mult_MV_fallback_T(A, b, c, alpha, beta, bOff, cOff, true);
     // Bufferalloc for OPENBLAS to xpensive
 }
 
@@ -683,24 +656,20 @@ void matMultABA_T(const Mat & A, const Mat & B,
         return;
     }
     AtB.resize(A.cols(), B.rows());
-    matTransMult_T(A, B, AtB, 1.0, 0.0);
-    matMult_T(AtB, A, C, a, b);
+    transMult_MM_T(A, B, AtB, 1.0, 0.0);
+    mult_MM_T(AtB, A, C, a, b);
 }
 
 void matMultABA(const RDenseMatrix & A, const RDenseMatrix & B,
                 RDenseMatrix & C, RDenseMatrix & AtB,
                 const double & a, const double & b){
-    THROW_TO_IMPL
+    return matMultABA_T(A, B, C, AtB, a, b);
 }
-void matMultABA(const SmallMatrix & A, const SmallMatrix & B,
-                SmallMatrix & C, SmallMatrix & AtB, 
+void matMultABA(const RMatrix & A, const RMatrix & B,
+                RMatrix & C, RMatrix & AtB, 
                 const double & a, const double & b){
 
-#if USE_EIGEN3
-    THROW_TO_IMPL
-#else
     return matMultABA_T(A, B, C, AtB, a, b);
-#endif
 }
 
 void mult(const CMatrix & A, 
@@ -716,92 +685,82 @@ void transMult(const CMatrix & A,
                const Complex & beta){
     THROW_TO_IMPL
 }
-void matMult(const SmallMatrix & A, const SmallMatrix & B,
-          SmallMatrix & C, const double & a, const double & b){
-    __M
-    return mult(A, B, C, a, b);
-}
 
-void mult(const SmallMatrix & A, const SmallMatrix & B,
-          SmallMatrix & C, const double & a, const double & b){
-#if USE_EIGEN3
-    if (A.cols() == B.rows()){
+void mult(const RMatrix & A, const RMatrix & B,
+          RMatrix & C, const double & a, const double & b){
+// #if USE_EIGEN3
+//     if (A.cols() == B.rows()){
 
-        if (C.rows() != A.rows() || C.cols() != B.cols()){
-            C.resize(A.rows(), B.cols());
-        }
-        if (b == 0.0){
-            C = a*(A*B);
-        } else if (b == 1.0){
-            C += a*(A*B);
-        } else if (b == -1.0){
-            C += a*(A*B);
-        } else {
-            C = b*C + a*(A*B);
-        }
-    } else if (A.cols() == B.cols()){
-        if (C.rows() != A.rows() || C.cols() != B.rows()){
-            C.resize(A.rows(), B.rows());
-        }
-        if (b == 0.0){
-            C = a*(A*B.transpose());
-        } else if (b == 1.0){
-            C += a*(A*B.transpose());
-        } else if (b == -1.0){
-            C += a*(A*B.transpose());
-        } else {
-            C = b*C + a*(A*B.transpose());
-        }
-    } else {
-        log(Error, "matMult sizes mismatch. ", A.cols(), "!=", B.rows());
-    }
+//         if (C.rows() != A.rows() || C.cols() != B.cols()){
+//             C.resize(A.rows(), B.cols());
+//         }
+//         if (b == 0.0){
+//             C = a*(A*B);
+//         } else if (b == 1.0){
+//             C += a*(A*B);
+//         } else if (b == -1.0){
+//             C += a*(A*B);
+//         } else {
+//             C = b*C + a*(A*B);
+//         }
+//     } else if (A.cols() == B.cols()){
+//         if (C.rows() != A.rows() || C.cols() != B.rows()){
+//             C.resize(A.rows(), B.rows());
+//         }
+//         if (b == 0.0){
+//             C = a*(A*B.transpose());
+//         } else if (b == 1.0){
+//             C += a*(A*B.transpose());
+//         } else if (b == -1.0){
+//             C += a*(A*B.transpose());
+//         } else {
+//             C = b*C + a*(A*B.transpose());
+//         }
+//     } else {
+//         log(Error, "matMult sizes mismatch. ", A.cols(), "!=", B.rows());
+//     }
 
-#else
-    return matMult_T(A, B, C, a, b);
-#endif
+// #else
+    return mult_MM_T(A, B, C, a, b);
+// #endif
 }
-void matTransMult(const SmallMatrix & A, const SmallMatrix & B,
-               SmallMatrix & C, const double & a, const double & b){
-    __M
-    transMult(A, B, C, a, b);
-}
-void transMult(const SmallMatrix & A, const SmallMatrix & B,
-                  SmallMatrix & C, const double & a, const double & b){
+void transMult(const RMatrix & A, const RMatrix & B,
+               RMatrix & C, const double & a, const double & b){
 //** C = a * A.T*B + b*C || C = a * A.T*B.T + b*C
-#if USE_EIGEN3
-    if (A.rows() == B.rows()){
+// #if USE_EIGEN3
+//     if (A.rows() == B.rows()){
 
-        if (C.rows() != A.cols() || C.cols() != B.cols()){
-            C.resize(A.cols(), B.cols());
-        }
-        if (b == 0.0){
-            C = a*(A.transpose()*B);
-        } else if (b == 1.0){
-            C += a*(A.transpose()*B);
-        } else if (b == -1.0){
-            C += a*(A.transpose()*B);
-        } else {
-            C = b*C + a*(A.transpose()*B);
-        }
-    } else if (A.rows() == B.cols()){
-        if (C.rows() != A.cols() || C.cols() != B.rows()){
-            C.resize(A.cols(), B.rows());
-        }
-        if (b == 0.0){
-            C = a*(A.transpose()*B.transpose());
-        } else if (b == 1.0){
-            C += a*(A.transpose()*B.transpose());
-        } else if (b == -1.0){
-            C += a*(A.transpose()*B.transpose());
-        } else {
-            C = b*C + a*(A.transpose()*B.transpose());
-        }
-    } else {
-        log(Error, "matTransMult sizes mismatch. ", A.rows(), "!=", B.rows());
-    }
-#else
-    matTransMult_T(A, B, C, a, b);
-#endif
+//         if (C.rows() != A.cols() || C.cols() != B.cols()){
+//             C.resize(A.cols(), B.cols());
+//         }
+//         if (b == 0.0){
+//             C = a*(A.transpose()*B);
+//         } else if (b == 1.0){
+//             C += a*(A.transpose()*B);
+//         } else if (b == -1.0){
+//             C += a*(A.transpose()*B);
+//         } else {
+//             C = b*C + a*(A.transpose()*B);
+//         }
+//     } else if (A.rows() == B.cols()){
+//         if (C.rows() != A.cols() || C.cols() != B.rows()){
+//             C.resize(A.cols(), B.rows());
+//         }
+//         if (b == 0.0){
+//             C = a*(A.transpose()*B.transpose());
+//         } else if (b == 1.0){
+//             C += a*(A.transpose()*B.transpose());
+//         } else if (b == -1.0){
+//             C += a*(A.transpose()*B.transpose());
+//         } else {
+//             C = b*C + a*(A.transpose()*B.transpose());
+//         }
+//     } else {
+//         log(Error, "matTransMult sizes mismatch. ", A.rows(), "!=", B.rows());
+//     }
+// #else
+    transMult_MM_T(A, B, C, a, b);
+// #endif
 }
 
 

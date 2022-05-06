@@ -137,7 +137,7 @@ void Vector< RVector3 >::clean(){
 
 
 IndexArray range(Index start, Index stop, Index step){
-    IndexArray ret(0, 0);
+    IndexArray ret(0);
     for (Index i = start; i < stop; i += step){
         ret.push_back(i);
     }

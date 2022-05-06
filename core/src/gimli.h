@@ -154,6 +154,10 @@ void log(LogType type, Values... vs){
 }
 
 // simple python like std out
+inline void print() {
+    std::cout << std::endl;
+}
+
 template<class Head>
 void print(std::ostream& s, Head&& head) {
     s << std::forward<Head>(head) << std::endl;
@@ -329,6 +333,7 @@ typedef Matrix < double > RMatrix;
 typedef Matrix3< double > RMatrix3;
 typedef Matrix < Complex > CMatrix;
 typedef BlockMatrix < double > RBlockMatrix;
+typedef BlockMatrix < Complex > CBlockMatrix;
 
 typedef DenseMatrix < double > RDenseMatrix;
 typedef DenseMatrix < Complex > CDenseMatrix;

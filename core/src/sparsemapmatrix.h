@@ -157,19 +157,21 @@ public:
 
     /*!stype .. symmetric style. stype=0 (full), stype=1 (UpperRight), stype=2 (LowerLeft)*/
     SparseMapMatrix(IndexType r=0, IndexType c=0, int stype=0)
-        : SparseMatrixBase(), rows_(r), cols_(c), stype_(stype) {
+        : SparseMatrixBase(), stype_(stype) {
+        _rows = r;
+        _cols = c;
     }
 
     SparseMapMatrix(const std::string & filename)
-        : SparseMatrixBase(), rows_(0), cols_(0), stype_(0) {
+        : SparseMatrixBase(), stype_(0) {
         this->load(filename);
     }
 
     SparseMapMatrix(const SparseMapMatrix< ValueType, IndexType > & S)
         : SparseMatrixBase(){
         clear();
-        cols_ = S.cols();
-        rows_ = S.rows();
+        _rows = S.rows();
+        _cols = S.cols();
         stype_ = S.stype();
 
         for (const_iterator it = S.begin(); it != S.end(); it ++){
@@ -181,8 +183,8 @@ public:
                     const ValueType & dropTol=0.0)
         : SparseMatrixBase(){
         clear();
-        cols_ = S.cols();
-        rows_ = S.rows();
+        _rows = S.rows();
+        _cols = S.cols();
         stype_ = 0;
 
         ValueType v;
@@ -209,16 +211,16 @@ public:
         ASSERT_EQUAL(i.size(), j.size())
         ASSERT_EQUAL(i.size(), v.size())
         stype_ = 0;
-        cols_ = max(j)+1;
-        rows_ = max(i)+1;
+        _rows = max(i)+1;
+        _cols = max(j)+1;
         for (Index n = 0; n < i.size(); n ++ ) (*this)[i[n]][j[n]] = v[n];
     }
 
     SparseMapMatrix< ValueType, IndexType > & operator = (const SparseMapMatrix< ValueType, IndexType > & S){
         if (this != &S){
             clear();
-            cols_ = S.cols();
-            rows_ = S.rows();
+            _rows = S.rows();
+            _cols = S.cols();
             stype_ = S.stype();
             for (const_iterator it = S.begin(); it != S.end(); it ++){
                 this->setVal(it->first.first, it->first.second, it->second);
@@ -237,8 +239,8 @@ public:
     virtual uint rtti() const { return GIMLI_SPARSE_MAP_MATRIX_RTTI; }
 
     void resize(Index rows, Index cols){
-        rows_ = rows;
-        cols_ = cols;
+        _rows = rows;
+        _cols = cols;
     }
 
     void copy_(const SparseMatrix< double > & S);
@@ -257,7 +259,7 @@ public:
 
     virtual void clear() {
         C_.clear();
-        cols_ = 0; rows_ = 0; stype_ = 0;
+        _cols = 0; _rows = 0; stype_ = 0;
     }
 
     void cleanRow(IndexType row){
@@ -287,15 +289,14 @@ public:
     /*! symmetric type. 0 = unsymmetric, -1 symmetric lower part, 1 symmetric upper part.*/
     inline int stype() const {return stype_;}
 
-    inline void setRows(IndexType r) { rows_ = r ; }
-    virtual IndexType rows()     const { return rows_; }
-    virtual IndexType nRows()     const { return rows_; }
+    inline void setRows(IndexType r) { _rows = r ; }
+    inline void setCols(IndexType c) { _cols = c ; }
 
-    inline void setCols(IndexType c) { cols_ = c ; }
-    virtual IndexType cols()     const { return cols_; }
-    virtual IndexType nCols()     const { return cols_; }
+    // virtual IndexType cols()     const { return _cols; }
+    inline IndexType nRows()     const { return _rows; }
+    inline IndexType nCols()     const { return _cols; }
 
-    inline IndexType size()     const { return C_.size(); }
+    // inline IndexType size()     const { return C_.size(); }
     inline IndexType max_size() const { return C_.max_size(); }
     inline IndexType nVals()    const { return C_.size(); }
 
@@ -306,9 +307,12 @@ public:
     inline const_iterator end()   const { return C_.end(); }
 
     /*!Scale with scale */
-    void add(const ElementMatrix < double > & A, const ValueType & scale=1.0, bool neg=false);
-    void add(const ElementMatrix < double > & A, const Pos & scale, bool neg=false);
-    void add(const ElementMatrix < double > & A, const Matrix< ValueType> & scale, bool neg=false);
+    void add(const ElementMatrix < double > & A, 
+             const ValueType & scale=1.0, bool neg=false);
+    void add(const ElementMatrix < double > & A, 
+             const Pos & scale, bool neg=false);
+    void add(const ElementMatrix < double > & A, 
+             const Matrix< ValueType> & scale, bool neg=false);
     /*!Scale with values from vector scale. Take values from scale[A.ids()]. */
     void add(const ElementMatrix < double > & A,
              const Vector < ValueType > & scale, bool neg=false);
@@ -356,28 +360,27 @@ public:
     class Aux {  // for index operator below
     public:
         Aux(IndexType r, IndexType maxs, ContainerType & Cont, int stype)
-            : Row(r), maxColumns(maxs), C(Cont), stype_(stype) { }
+            : _row(r), _maxColumns(maxs), _C(Cont), stype_(stype) { }
 
         MatElement operator [] (IndexType c) {
-//             __MS( stype_ << " " << c << " " << Row )
-            if ((c < 0 || c >= maxColumns) || (stype_ < 0 && c < Row) || (stype_ > 0 && c > Row)) {
+            if ((c < 0 || c >= _maxColumns) || (stype_ < 0 && c < _row) || (stype_ > 0 && c > _row)) {
                 throwLengthError(
-                                  WHERE_AM_I + " idx = " + str(c) + ", " + str(Row) + " maxcol = "
-                                  + str(maxColumns) + " stype: " + str(stype_));
+                                  WHERE_AM_I + " idx = " + str(c) + ", " + str(_row) + " maxcol = "
+                                  + str(_maxColumns) + " stype: " + str(stype_));
             }
-            return MatElement(C, Row, c);
+            return MatElement(_C, _row, c);
         }
     protected:
-        IndexType Row, maxColumns;
-        ContainerType & C;
+        IndexType _row, _maxColumns;
+        ContainerType & _C;
         int stype_;
     };
 
     Aux operator [] (IndexType r) {
-        if (r < 0 || r >= rows_){
+        if (r < 0 || r >= _rows){
             throwLengthError(
                               WHERE_AM_I + " idx = " + str(r) + " maxrow = "
-                              + str(rows_));
+                              + str(_rows));
         }
         return Aux(r, cols(), C_, stype_);
     }
@@ -397,51 +400,45 @@ public:
     inline void setVal(IndexType i, IndexType j, const ValueType & val) {
         if ((stype_ < 0 && i > j) || (stype_ > 0 && i < j)) return;
 
-        if (i >= rows_) rows_ = i+1;
-        if (j >= cols_) cols_ = j+1;
+        if (i >= _rows) _rows = i+1;
+        if (j >= _cols) _cols = j+1;
         //__MS(i,j,val)
         (*this)[i][j] = val;
-        // if ((i >= 0 && i < rows_) && (j >=0 && j < cols_)) {
+        // if ((i >= 0 && i < _rows) && (j >=0 && j < _cols)) {
         // } else {
         //     throwLengthError(
         //                       WHERE_AM_I +
-        //                       " i = " + str(i) + " max_row = " + str(rows_) +
-        //                       " j = " + str(j) + " max_col = " + str(cols_)
+        //                       " i = " + str(i) + " max_row = " + str(_rows) +
+        //                       " j = " + str(j) + " max_col = " + str(_cols)
         //                      );
         // }
     }
     inline void addVal(IndexType i, IndexType j, const ValueType & val) {
         if ((stype_ < 0 && i > j) || (stype_ > 0 && i < j)) return;
-        if (i >= rows_) rows_ = i+1;
-        if (j >= cols_) cols_ = j+1;
+        if (i >= _rows) _rows = i+1;
+        if (j >= _cols) _cols = j+1;
         (*this)[i][j] += val;
 
-        // if ((i >= 0 && i < rows_) && (j >=0 && j < cols_)) {
+        // if ((i >= 0 && i < _rows) && (j >=0 && j < _cols)) {
         //     (*this)[i][j] += val;
         // } else {
         //     throwLengthError(
         //                       WHERE_AM_I +
-        //                       " i = " + str(i) + " max_row = " + str(rows_) +
-        //                       " j = " + str(j) + " max_col = " + str(cols_)
+        //                       " i = " + str(i) + " max_row = " + str(_rows) +
+        //                       " j = " + str(j) + " max_col = " + str(_cols)
         //                      );
         // }
     }
 
     /*! Multiplication c = alpha * (A*b) + beta * c. */
-    virtual void mult(const Vector < ValueType > & b, 
+    inline void mult(const Vector < ValueType > & b, 
                       Vector < ValueType >& c, 
                       const ValueType & alpha=1.0, 
                       const ValueType & beta=0.0, 
                       Index bOff=0, Index cOff=0) const {
         return GIMLI::mult(*this, b, c, alpha, beta, bOff, cOff);
     }
-    /*! Return this * a  */
-    inline Vector < ValueType > mult(const Vector < ValueType > & b) const {
-        Vector < ValueType > ret(this->rows(), 0.0);
-        this->mult(b, ret);
-        return ret;
-    }
-    /*! Multiplication c = alpha * (A*b) + beta * c. */
+    /*! Multiplication c = alpha * (A.T*b) + beta * c. */
     inline void transMult(const Vector < ValueType > & b, 
                           Vector < ValueType > & c, 
                           const ValueType & alpha=1.0, 
@@ -449,14 +446,18 @@ public:
                           Index bOff=0, Index cOff=0) const {
         return GIMLI::transMult(*this, b, c, alpha, beta, bOff, cOff);
     }
+    /*! Return this * a  */
+    inline Vector < ValueType > mult(const Vector < ValueType > & b) const {
+        Vector < ValueType > ret(this->rows(), 0.0);
+        this->mult(b, ret);
+        return ret;
+    }
     /*! Return this.T * a */
     inline Vector < ValueType > transMult(const Vector < ValueType > & b) const {
         Vector < ValueType > ret(this->cols(), 0.0);
         this->transMult(b, ret);
         return ret;
     }
-
-    
     /*! ret = [this * ax, this * ay, this * az. with ret = r3 and a is sqeezed pos vector. a = [ax, ay, az] */
     virtual void mult(const Vector < ValueType > & a,
                       Vector < Pos > & ret) const;
@@ -582,7 +583,7 @@ public:
 
 protected:
 
-  IndexType rows_, cols_;
+//   IndexType _rows, _cols;
   ContainerType C_;
   // 0 .. nonsymmetric, -1 symmetric lower part, 1 symmetric upper part
   int stype_;

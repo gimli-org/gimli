@@ -53,7 +53,7 @@ public:
 
   /*! Default constructor. Builds invalid sparse matrix */
     SparseMatrix()
-        : SparseMatrixBase(), valid_(false), stype_(0), rows_(0), cols_(0){ }
+        : SparseMatrixBase(), valid_(false), stype_(0){ }
 
     /*! Copy constructor. */
     SparseMatrix(const SparseMatrix < ValueType > & S)
@@ -61,8 +61,8 @@ public:
           colPtr_(S.vecColPtr()),
           rowIdx_(S.vecRowIdx()),
           vals_(S.vecVals()), valid_(true), stype_(0){
-          rows_ = S.rows();
-          cols_ = S.cols();
+          _rows = S.rows();
+          _cols = S.cols();
     }
 
     /*! Copy constructor. */
@@ -86,8 +86,8 @@ public:
         vals_   = vals;
         stype_  = stype;
         valid_  = true;
-        cols_ = max(rowIdx_) + 1;
-        rows_ = colPtr_.size() - 1;
+        _cols = max(rowIdx_) + 1;
+        _rows = colPtr_.size() - 1;
     }
 
     SparseMatrix(const std::vector < int > & colPtr,
@@ -99,8 +99,8 @@ public:
           vals_   = vals;
           stype_  = stype;
           valid_  = true;
-          cols_ = max(rowIdx_) + 1;
-          rows_ = colPtr_.size() - 1;
+          _cols = max(rowIdx_) + 1;
+          _rows = colPtr_.size() - 1;
     }
 
     /*! Destructor */
@@ -114,8 +114,8 @@ public:
             vals_   = S.vecVals();
             stype_  = S.stype();
             valid_  = true;
-            cols_ = S.cols();
-            rows_ = S.rows();
+            _cols = S.cols();
+            _rows = S.rows();
 
         } return *this;
     }
@@ -161,9 +161,12 @@ public:
 
     SparseMatrix< ValueType > & operator += (const ElementMatrix< double > & A){
         if (!valid_) SPARSE_NOT_VALID;
-        for (Index i = 0, imax = A.size(); i < imax; i++){
-            for (Index j = 0, jmax = A.size(); j < jmax; j++){
-                addVal(A.idx(i), A.idx(j), A.getVal(i, j));
+        Index As = A.size();
+        Index Ai = 0;
+        for (Index i = 0; i < As; i++){
+            Ai = A.idx(i);
+            for (Index j = 0; j < As; j++){
+                addVal(Ai, A.idx(j), A.getVal(i, j));
             }
         }
         return *this;
@@ -206,8 +209,8 @@ public:
         rowIdx_.clear();
         vals_.clear();
         valid_ = false;
-        cols_ = 0;
-        rows_ = 0;
+        _cols = 0;
+        _rows = 0;
     }
 
     virtual void setVal(Index i, Index j, const ValueType & val);
@@ -251,26 +254,26 @@ public:
     }
 
     /*! Multiplication c = alpha * (A*b) + beta * c. */
-    virtual void mult(const Vector < ValueType > & b, 
+    inline void mult(const Vector < ValueType > & b, 
                       Vector < ValueType >& c, 
                       const ValueType & alpha=1.0, 
                       const ValueType & beta=0.0, 
                       Index bOff=0, Index cOff=0) const {
         return GIMLI::mult(*this, b, c, alpha, beta, bOff, cOff);
     }
-    /*! Return this * a  */
-    inline Vector < ValueType > mult(const Vector < ValueType > & b) const {
-        Vector < ValueType > ret(this->rows(), 0.0);
-        this->mult(b, ret);
-        return ret;
-    }
-    /*! Multiplication c = alpha * (A*b) + beta * c. */
+    /*! Multiplication c = alpha * (A.T*b) + beta * c. */
     inline void transMult(const Vector < ValueType > & b, 
                           Vector < ValueType > & c, 
                           const ValueType & alpha=1.0, 
                           const ValueType & beta=0.0, 
                           Index bOff=0, Index cOff=0) const {
         return GIMLI::transMult(*this, b, c, alpha, beta, bOff, cOff);
+    }
+    /*! Return this * a  */
+    inline Vector < ValueType > mult(const Vector < ValueType > & b) const {
+        Vector < ValueType > ret(this->rows(), 0.0);
+        this->mult(b, ret);
+        return ret;
     }
     /*! Return this.T * a */
     inline Vector < ValueType > transMult(const Vector < ValueType > & b) const {
@@ -316,12 +319,12 @@ public:
     inline Vector < ValueType > & values() { return vals_; }
     inline const Vector < ValueType > & values() const { return vals_; }
 
-    inline Index size() const { return rows(); }
+    // inline Index size() const { return rows(); }
     inline Index nVals() const { return vals_.size(); }
-    inline Index cols() const { return cols_; }
-    inline Index rows() const { return rows_; }
-    inline Index nCols() const { return cols(); }
-    inline Index nRows() const { return rows(); }
+    // inline Index cols() const { return _cols; }
+    // inline Index rows() const { return _rows; }
+    inline Index nCols() const { return _cols; }
+    inline Index nRows() const { return _rows; }
 
     void save(const std::string & fileName) const {
         if (!valid_) SPARSE_NOT_VALID;
@@ -345,8 +348,8 @@ public:
 
     /*! Just set the matrix dimensions, not usefull until proper fill of pattern. Only use for internal use.*/
     inline virtual void resize(Index rows, Index cols){
-        rows_ = rows;
-        cols_ = cols;
+        _rows = rows;
+        _cols = cols;
     }
 
 protected:
@@ -359,8 +362,6 @@ protected:
 
     bool valid_;
     int stype_;
-    Index rows_;
-    Index cols_;
 };
 
 

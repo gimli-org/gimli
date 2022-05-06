@@ -44,28 +44,29 @@ std::ostream & operator << (std::ostream & str,
     return str;
 }
 
-#if USE_EIGEN3
-#define DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__(OP) \
-template < > ElementMatrix < double > & \
-ElementMatrix < double >::operator OP##= (double val) { \
-    if (this->_newStyle){ \
-        if (this->_integrated){ \
-            mat_.array() OP##= val; \
-        } \
-        for (auto & m: _matX){ \
-            m.array() OP##= val; \
-        } \
-        return *this;\
-    } \
-    mat_.array() OP##= val; \
-    return *this; \
-} \
-
-DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__(+)
-DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__(-)
-DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__(/)
-DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__(*)
-#else
+/*
+// #if USE_EIGEN3
+// #define DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__(OP) \
+// template < > ElementMatrix < double > & \
+// ElementMatrix < double >::operator OP##= (double val) { \
+//     if (this->_newStyle){ \
+//         if (this->_integrated){ \
+//             mat_.array() OP##= val; \
+//         } \
+//         for (auto & m: _matX){ \
+//             m.array() OP##= val; \
+//         } \
+//         return *this;\
+//     } \
+//     mat_.array() OP##= val; \
+//     return *this; \
+// } \
+*/
+// DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__(+)
+// DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__(-)
+// DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__(/)
+// DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__(*)
+// #else
 
 #define DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__(OP) \
 template < > ElementMatrix < double > & \
@@ -89,7 +90,7 @@ DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__(/)
 DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__(*)
 
 #undef DEFINE_ELEMENTMATRIX_UNARY_MOD_OPERATOR__
-#endif
+// #endif
 
 template < >  ElementMatrix < double > &
 ElementMatrix < double >::operator += (const ElementMatrix < double > & E){
@@ -123,16 +124,16 @@ ElementMatrix < double >::operator[](Index row) const {
 
 template < > DLLEXPORT Vector< double >
 ElementMatrix < double >::row_RM(Index i) const {
-    #if USE_EIGEN3
-        Vector< double > ret(this->cols());
-        for (Index j = 0; j < ret.size(); j ++){
-            ret[j] = mat_(i,j);
-        }
-        return ret;
-        //__MS("eigen3")
-    #else
+    // #if USE_EIGEN3
+    //     Vector< double > ret(this->cols());
+    //     for (Index j = 0; j < ret.size(); j ++){
+    //         ret[j] = mat_(i,j);
+    //     }
+    //     return ret;
+    //     //__MS("eigen3")
+    // #else
         return this->mat_.row(i);
-    #endif
+    // #endif
 }
 template < > DLLEXPORT Vector< double >
 ElementMatrix < double >::col(Index i) const {
@@ -149,35 +150,35 @@ ElementMatrix < double >::setMatXI(Index i, const SmallMatrix & m){
     //this->_integrated = false; ## better here but lead to problems until integration is marked correctly for ref imnpl.
     this->_matX[i] = m;
 }
-template < > DLLEXPORT void
-ElementMatrix < double >::setMatXI_RM(Index i, const RMatrix & m){
-#if USE_EIGEN3
-    toEigenMatrix(m, this->_matX[i]);
-#else
-    return this->setMatXI(i, m);
-#endif
-}
-template < > DLLEXPORT void
-ElementMatrix < double >::setMat_RM(const RMatrix & m){
-#if USE_EIGEN3
-// __MS(m)
-    toEigenMatrix(m, this->mat_);
-// __MS(this->mat_)
-#else
-    return this->setMat(m);
-#endif
-}
-template < > DLLEXPORT RMatrix
-ElementMatrix < double >::mat_RM() const {
-    // __MS(this->mat().rows(), this->mat().cols() )
-#if USE_EIGEN3
-    RMatrix r;
-    toRMatrix(this->mat(), r);
-    return r;
-#else
-    return this->mat();
-#endif
-}
+// template < > DLLEXPORT void
+// ElementMatrix < double >::setMatXI_RM(Index i, const SmallMatrix  & m){
+// // #if USE_EIGEN3
+// //     toEigenMatrix(m, this->_matX[i]);
+// // #else
+//     return this->setMatXI(i, m);
+// // #endif
+// }
+// template < > DLLEXPORT void
+// ElementMatrix < double >::setMat_RM(const SmallMatrix  & m){
+// // #if USE_EIGEN3
+// // __MS(m)
+//     // toEigenMatrix(m, this->mat_);
+// // __MS(this->mat_)
+// // #else
+//     return this->setMat(m);
+// // #endif
+// }
+// template < > DLLEXPORT SmallMatrix 
+// ElementMatrix < double >::mat_RM() const {
+//     // __MS(this->mat().rows(), this->mat().cols() )
+// // #if USE_EIGEN3
+// //     SmallMatrix  r;
+// //     toSmallMatrix (this->mat(), r);
+// //     return r;
+// // #else
+//     return this->mat();
+// #endif
+// }
 
 
 template < > DLLEXPORT void
@@ -212,7 +213,7 @@ ElementMatrix < double >::u(const MeshEntity & ent,
         uint nRules = w.size();
 
         RVector u(nVerts);
-        RMatrix N(nVerts, nRules);
+        SmallMatrix  N(nVerts, nRules);
 
         RVector tmp;
         for (uint i = 0; i < nRules; i ++){
@@ -234,19 +235,19 @@ ElementMatrix < double >::u(const MeshEntity & ent,
         mat_(0,i) = A * it->second[i];
         if (this->_nDof > 0){
             if (ent.dim() == 2){
-                #if USE_EIGEN3
-                    __MS("EIGENCHECK")
-                    //mat_(nVerts) = setVal(mat_[0][i], nVerts + i);
-                #else
-                    mat_[nVerts].setVal(mat_[0][i], nVerts + i);
-                #endif
+                // #if USE_EIGEN3
+                //     __MS("EIGENCHECK")
+                //     //mat_(nVerts) = setVal(mat_[0][i], nVerts + i);
+                // #else
+                mat_[nVerts].setVal(mat_[0][i], nVerts + i);
+                // #endif
             }
             if (ent.dim() == 3){
-                #if USE_EIGEN3
-                    __MS("EIGENCHECK")
-                #else
-                    mat_[2*nVerts].setVal(mat_[0][i], 2*nVerts + i);
-                #endif
+                // #if USE_EIGEN3
+                //     __MS("EIGENCHECK")
+                // #else
+                mat_[2*nVerts].setVal(mat_[0][i], 2*nVerts + i);
+                // #endif
             }
         }
     }
@@ -262,13 +263,13 @@ ElementMatrix < double > & ElementMatrix < double >::u2(const MeshEntity & ent,
                                                         bool verbose){
 
     uint nVerts = ent.nodeCount();
-    std::map< uint, RMatrix>::const_iterator it = u2Cache_.find(ent.rtti());
+    std::map< uint, SmallMatrix >::const_iterator it = u2Cache_.find(ent.rtti());
 
     if (it == u2Cache_.end()) {
         uint nRules = w.size();
 
-        RMatrix u2(nVerts, nVerts);
-        RMatrix N(nVerts, nRules);
+        SmallMatrix  u2(nVerts, nVerts);
+        SmallMatrix  N(nVerts, nRules);
 
         RVector tmp;
         for (uint i = 0; i < nRules; i ++){
@@ -700,12 +701,12 @@ ElementMatrix < double > & ElementMatrix < double >::gradU(const MeshEntity & en
             // __MS(*this)
             // __MS(_B[i])
             // __MS(_B[i][j])
-#if USE_EIGEN3
-__MS("EIGENNEEDFIX")
-#else
+// #if USE_EIGEN3
+// __MS("EIGENNEEDFIX")
+// #else
 
             mat_(j * ent.nodeCount()) += _B[i][j] * w[i] * ent.size();
-#endif
+// #endif
 
         }
         // check performance if this works
@@ -729,7 +730,7 @@ ElementMatrix < double > & ElementMatrix < double >::gradU(const Cell & cell,
 
 template < > DLLEXPORT
 RVector ElementMatrix < double >::stress(const MeshEntity & ent,
-                                         const RMatrix & C,
+                                         const SmallMatrix  & C,
                                          const RVector & u, bool voigtNotation){
     const RVector * w = 0;
     const PosVector * x = 0;
@@ -770,21 +771,21 @@ ElementMatrix < double > & ElementMatrix < double >::gradU2(const MeshEntity & e
         for (Index i = 0; i < w.size(); i ++ ){
             // B.T * B
             if (i > 0) beta = 1.0;
-            #if USE_EIGEN3
-                __MS("eigen3")
-            #else
-            matTransMult(_B[i], _B[i], mat_, w[i] * ent.size() * C[0][0], beta);
-            #endif
+            // #if USE_EIGEN3
+            //     __MS("eigen3")
+            // #else
+            _B[i].transMult(_B[i], mat_, w[i] * ent.size() * C[0][0], beta);
+            // #endif
         }
     } else {
         for (Index i = 0; i < w.size(); i ++ ){
             // B.T * C * B
             if (i > 0) beta = 1.0;
-            #if USE_EIGEN3
-                __MS("eigen3")
-            #else
+            // #if USE_EIGEN3
+            //     __MS("eigen3")
+            // #else
             matMultABA(_B[i], C, mat_, _abaTmp, w[i] * ent.size(), beta);
-            #endif
+            // #endif
         }
         // check performance if this works
         // iterator over weights in fill Gradient
@@ -1461,12 +1462,12 @@ ElementMatrix < double >::add(const ElementMatrix < double > & B,
             const auto & Br = B.matX()[r];
             // print("A:", Ar);
             // print("B:", Br);
-#if USE_EIGEN3
-            // print("As:", Ar.colwise().sum());
-            // print("Bs:", Br.colwise().sum());
+// #if USE_EIGEN3
+//             // print("As:", Ar.colwise().sum());
+//             // print("Bs:", Br.colwise().sum());
 
-            Ar = Ar.colwise().sum().eval() + Br.colwise().sum();
-#else
+//             Ar = Ar.colwise().sum().eval() + Br.colwise().sum();
+// #else
             for (Index i=0; i < Br.size(); i ++){
                 Ar[0] += Br[i];
             }
@@ -1475,7 +1476,7 @@ ElementMatrix < double >::add(const ElementMatrix < double > & B,
             }
             Ar.resize(1, Ar.cols());
 
-#endif
+// #endif
             // print("A2:", Ar);
         }
     } else {
@@ -1484,26 +1485,26 @@ ElementMatrix < double >::add(const ElementMatrix < double > & B,
         for (Index r=0; r < this->_matX.size(); r++){
             auto & Ar = this->_matX[r];
             const auto & Br = B.matX()[r];
-#if USE_EIGEN3
+// #if USE_EIGEN3
 
-            if (Ar.rows() == 1 && Ar.cols() == Br.cols()){
-                auto Ar0 = Ar.row(0).eval();
+//             if (Ar.rows() == 1 && Ar.cols() == Br.cols()){
+//                 auto Ar0 = Ar.row(0).eval();
 
-                Ar.resize(Br.rows(), Ar.cols());
+//                 Ar.resize(Br.rows(), Ar.cols());
 
-                for (Index i = 0; i < Br.rows(); i ++){
-                    Ar.row(i) = Ar0 + Br.row(i);
-                }
-            } else if (Br.rows() == 1 && Ar.cols() == Br.cols()){
-                for (Index i = 0; i < Ar.rows(); i ++){
-                    Ar.row(i) += Br.row(0);
-                }
-            } else {
-                THROW_TO_IMPL
-            }
-#else
+//                 for (Index i = 0; i < Br.rows(); i ++){
+//                     Ar.row(i) = Ar0 + Br.row(i);
+//                 }
+//             } else if (Br.rows() == 1 && Ar.cols() == Br.cols()){
+//                 for (Index i = 0; i < Ar.rows(); i ++){
+//                     Ar.row(i) += Br.row(0);
+//                 }
+//             } else {
+//                 THROW_TO_IMPL
+//             }
+// #else
             Ar += Br;
-#endif
+// #endif
             // print("A2:", Ar);
         }
 
@@ -1524,7 +1525,11 @@ void ElementMatrix < double >::integrate() const {
         for (Index i = 0; i < nRules; i ++){
             // improve either with matrix expressions or shift w as scale
             // __MS(_matX[i] * (w[i] * this->_ent->size()))
-            MAT_TRANS_ADD(this->mat_, (_matX[i] * (w[i] * this->_ent->size())))
+            
+            this->mat_.transAdd((_matX[i] * (w[i] * this->_ent->size())));
+
+            // MAT_TRANS_ADD(this->mat_, (_matX[i] * (w[i] * this->_ent->size())))
+
             // __MS(this->mat_)
         }
         // __MS(this->mat_)
@@ -1570,7 +1575,7 @@ ElementMatrix < double > & ElementMatrix < double >::pot(
 
     _matX.resize(nRules);
 
-    RMatrix N(nRules, nVerts);
+    SmallMatrix  N(nRules, nVerts);
 
     for (Index i = 0; i < nRules; i ++ ){
         // transpose might be better?? check
@@ -1582,8 +1587,8 @@ ElementMatrix < double > & ElementMatrix < double >::pot(
 
     for (Index i = 0; i < nRules; i ++ ){
         for (Index n = 0; n < nCoeff; n ++ ){
-            //_matX[i][n].setVal(N[i], n*nVerts, (n+1)*nVerts);
-    SET_MAT_ROW_SLICE(_matX[i], n, N[i], 1, n*nVerts, (n+1)*nVerts);
+            _matX[i][n].setVal(N[i], n*nVerts, (n+1)*nVerts);
+    // SET_MAT_ROW_SLICE(_matX[i], n, N[i], 1, n*nVerts, (n+1)*nVerts);
             //_matX[i](n, seq(n*nVerts, (n+1)*nVerts)) = &N[i];
         }
     }
@@ -1730,87 +1735,91 @@ ElementMatrix < double > & ElementMatrix < double >::grad(
         if (nCoeff == 1){
             //** scalar field
             if (ent.dim() > 0){
-SET_MAT_ROW_SLICE(_matX[i],0,dNdx_[i], 1, 0, nVerts);
+                _matX[i](0).setVal(dNdx_[i], 0, nVerts); //dNx/dx
+// SET_MAT_ROW_SLICE(_matX[i],0,dNdx_[i], 1, 0, nVerts);
             }
             if (ent.dim() > 1){
-SET_MAT_ROW_SLICE(_matX[i],1,dNdy_[i], 1, 0, nVerts);
+                _matX[i](1).setVal(dNdy_[i], 0, nVerts); //dNy/dy
+// SET_MAT_ROW_SLICE(_matX[i],1,dNdy_[i], 1, 0, nVerts);
             }
             if (ent.dim() > 2){
-SET_MAT_ROW_SLICE(_matX[i],2,dNdz_[i], 1, 0, nVerts);
+                _matX[i](2).setVal(dNdz_[i], 0, nVerts); //dNz/dz
+// SET_MAT_ROW_SLICE(_matX[i],2,dNdz_[i], 1, 0, nVerts);
             }
         } else {
             //** vector field
             if (ent.dim() == 1){
-SET_MAT_ROW_SLICE(_matX[i],0,dNdx_[i], 1, 0 * nVerts, 1 * nVerts);
+                _matX[i](0).setVal(dNdx_[i], 0, nVerts); //dNx/dx
+// SET_MAT_ROW_SLICE(_matX[i],0,dNdx_[i], 1, 0 * nVerts, 1 * nVerts);
             } else if (ent.dim() == 2){
                 if (elastic == true){
                     // special case for constitutive matrix (2x3)
-        // _matX[i](0).setVal(dNdx_[i], 0 * nVerts, 1 * nVerts); //dNx/dx
-        // _matX[i](1).setVal(dNdy_[i], 1 * nVerts, 2 * nVerts); //dNy/dy
-        // _matX[i](2).setVal(dNdy_[i] * a, 0 * nVerts, 1 * nVerts); //dNy/dx
-        // _matX[i](2).setVal(dNdx_[i] * a, 1 * nVerts, 2 * nVerts); //dNx/dy
-SET_MAT_ROW_SLICE(_matX[i], 0,dNdx_[i], 1, 0 * nVerts, 1 * nVerts); //dNx/dx
-SET_MAT_ROW_SLICE(_matX[i], 1,dNdy_[i], 1, 1 * nVerts, 2 * nVerts); //dNy/dy
-SET_MAT_ROW_SLICE(_matX[i], 2,dNdy_[i], a, 0 * nVerts, 1 * nVerts); //dNy/dx
-SET_MAT_ROW_SLICE(_matX[i], 2,dNdx_[i], a, 1 * nVerts, 2 * nVerts); //dNx/dy
+        _matX[i](0).setVal(dNdx_[i], 0 * nVerts, 1 * nVerts); //dNx/dx
+        _matX[i](1).setVal(dNdy_[i], 1 * nVerts, 2 * nVerts); //dNy/dy
+        _matX[i](2).setVal(dNdy_[i] * a, 0 * nVerts, 1 * nVerts); //dNy/dx
+        _matX[i](2).setVal(dNdx_[i] * a, 1 * nVerts, 2 * nVerts); //dNx/dy
+// SET_MAT_ROW_SLICE(_matX[i], 0,dNdx_[i], 1, 0 * nVerts, 1 * nVerts); //dNx/dx
+// SET_MAT_ROW_SLICE(_matX[i], 1,dNdy_[i], 1, 1 * nVerts, 2 * nVerts); //dNy/dy
+// SET_MAT_ROW_SLICE(_matX[i], 2,dNdy_[i], a, 0 * nVerts, 1 * nVerts); //dNy/dx
+// SET_MAT_ROW_SLICE(_matX[i], 2,dNdx_[i], a, 1 * nVerts, 2 * nVerts); //dNx/dy
                 } else{
                 // full matrix still unsure how to add constitutive for it
-            // _matX[i](0).setVal(dNdx_[i], 0 * nVerts, 1 * nVerts); //dNx/dx
-            // _matX[i](1).setVal(dNdy_[i], 0 * nVerts, 1 * nVerts); //dNx/dy
-            // _matX[i](2).setVal(dNdx_[i], 1 * nVerts, 2 * nVerts); //dNy/dx
-            // _matX[i](3).setVal(dNdy_[i], 1 * nVerts, 2 * nVerts); //dNy/dy
-SET_MAT_ROW_SLICE(_matX[i], 0, dNdx_[i], 1, 0 * nVerts, 1 * nVerts); //dNx/dx
-SET_MAT_ROW_SLICE(_matX[i], 1, dNdy_[i], 1, 0 * nVerts, 1 * nVerts); //dNx/dy
-SET_MAT_ROW_SLICE(_matX[i], 2, dNdx_[i], 1, 1 * nVerts, 2 * nVerts); //dNy/dx
-SET_MAT_ROW_SLICE(_matX[i], 3, dNdy_[i], 1, 1 * nVerts, 2 * nVerts); //dNy/dy
+            _matX[i](0).setVal(dNdx_[i], 0 * nVerts, 1 * nVerts); //dNx/dx
+            _matX[i](1).setVal(dNdy_[i], 0 * nVerts, 1 * nVerts); //dNx/dy
+            _matX[i](2).setVal(dNdx_[i], 1 * nVerts, 2 * nVerts); //dNy/dx
+            _matX[i](3).setVal(dNdy_[i], 1 * nVerts, 2 * nVerts); //dNy/dy
+// SET_MAT_ROW_SLICE(_matX[i], 0, dNdx_[i], 1, 0 * nVerts, 1 * nVerts); //dNx/dx
+// SET_MAT_ROW_SLICE(_matX[i], 1, dNdy_[i], 1, 0 * nVerts, 1 * nVerts); //dNx/dy
+// SET_MAT_ROW_SLICE(_matX[i], 2, dNdx_[i], 1, 1 * nVerts, 2 * nVerts); //dNy/dx
+// SET_MAT_ROW_SLICE(_matX[i], 3, dNdy_[i], 1, 1 * nVerts, 2 * nVerts); //dNy/dy
                    }
             } else if (ent.dim() == 3){
 
 
                 if (elastic == true){
                     // special case for constitutive matrix (3x6)
-// _matX[i](0).setVal(dNdx_[i], 0 * nVerts, 1 * nVerts); //dNx/dx
-// _matX[i](1).setVal(dNdy_[i], 1 * nVerts, 2 * nVerts); //dNy/dy
-// _matX[i](2).setVal(dNdz_[i], 2 * nVerts, 3 * nVerts); //dNz/dz
-// _matX[i](3).setVal(dNdy_[i] * a, 0 * nVerts, 1 * nVerts);//dNy/dx
-// _matX[i](3).setVal(dNdx_[i] * a, 1 * nVerts, 2 * nVerts);//dNx/dy
-// _matX[i](4).setVal(dNdz_[i] * a, 1 * nVerts, 2 * nVerts);//dNz/dy
-// _matX[i](4).setVal(dNdy_[i] * a, 2 * nVerts, 3 * nVerts);//dNy/dz
-// _matX[i](5).setVal(dNdz_[i] * a, 0 * nVerts, 1 * nVerts);//dNz/dx
-// _matX[i](5).setVal(dNdx_[i] * a, 2 * nVerts, 3 * nVerts);//dNx/dz
-SET_MAT_ROW_SLICE(_matX[i],0,dNdx_[i], 1, 0 * nVerts, 1 * nVerts); //dNx/dx
-SET_MAT_ROW_SLICE(_matX[i],1,dNdy_[i], 1, 1 * nVerts, 2 * nVerts); //dNy/dy
-SET_MAT_ROW_SLICE(_matX[i],2,dNdz_[i], 1, 2 * nVerts, 3 * nVerts); //dNz/dz
+_matX[i](0).setVal(dNdx_[i], 0 * nVerts, 1 * nVerts); //dNx/dx
+_matX[i](1).setVal(dNdy_[i], 1 * nVerts, 2 * nVerts); //dNy/dy
+_matX[i](2).setVal(dNdz_[i], 2 * nVerts, 3 * nVerts); //dNz/dz
+_matX[i](3).setVal(dNdy_[i] * a, 0 * nVerts, 1 * nVerts);//dNy/dx
+_matX[i](3).setVal(dNdx_[i] * a, 1 * nVerts, 2 * nVerts);//dNx/dy
+_matX[i](4).setVal(dNdz_[i] * a, 1 * nVerts, 2 * nVerts);//dNz/dy
+_matX[i](4).setVal(dNdy_[i] * a, 2 * nVerts, 3 * nVerts);//dNy/dz
+_matX[i](5).setVal(dNdz_[i] * a, 0 * nVerts, 1 * nVerts);//dNz/dx
+_matX[i](5).setVal(dNdx_[i] * a, 2 * nVerts, 3 * nVerts);//dNx/dz
+// SET_MAT_ROW_SLICE(_matX[i],0,dNdx_[i], 1, 0 * nVerts, 1 * nVerts); //dNx/dx
+// SET_MAT_ROW_SLICE(_matX[i],1,dNdy_[i], 1, 1 * nVerts, 2 * nVerts); //dNy/dy
+// SET_MAT_ROW_SLICE(_matX[i],2,dNdz_[i], 1, 2 * nVerts, 3 * nVerts); //dNz/dz
 
-SET_MAT_ROW_SLICE(_matX[i],3,dNdy_[i], a, 0 * nVerts, 1 * nVerts);//dNy/dx
-SET_MAT_ROW_SLICE(_matX[i],3,dNdx_[i], a, 1 * nVerts, 2 * nVerts);//dNx/dy
-SET_MAT_ROW_SLICE(_matX[i],4,dNdz_[i], a, 1 * nVerts, 2 * nVerts);//dNz/dy
-SET_MAT_ROW_SLICE(_matX[i],4,dNdy_[i], a, 2 * nVerts, 3 * nVerts);//dNy/dz
-SET_MAT_ROW_SLICE(_matX[i],5,dNdz_[i], a, 0 * nVerts, 1 * nVerts);//dNz/dx
-SET_MAT_ROW_SLICE(_matX[i],5,dNdx_[i], a, 2 * nVerts, 3 * nVerts);//dNx/dz
+// SET_MAT_ROW_SLICE(_matX[i],3,dNdy_[i], a, 0 * nVerts, 1 * nVerts);//dNy/dx
+// SET_MAT_ROW_SLICE(_matX[i],3,dNdx_[i], a, 1 * nVerts, 2 * nVerts);//dNx/dy
+// SET_MAT_ROW_SLICE(_matX[i],4,dNdz_[i], a, 1 * nVerts, 2 * nVerts);//dNz/dy
+// SET_MAT_ROW_SLICE(_matX[i],4,dNdy_[i], a, 2 * nVerts, 3 * nVerts);//dNy/dz
+// SET_MAT_ROW_SLICE(_matX[i],5,dNdz_[i], a, 0 * nVerts, 1 * nVerts);//dNz/dx
+// SET_MAT_ROW_SLICE(_matX[i],5,dNdx_[i], a, 2 * nVerts, 3 * nVerts);//dNx/dz
                 } else {
                 // full matrix still unsure how to add constitutive for it
-            // _matX[i](0).setVal(dNdx_[i], 0 * nVerts, 1 * nVerts); //dNx/dx
-            // _matX[i](1).setVal(dNdy_[i], 0 * nVerts, 1 * nVerts); //dNx/dy
-            // _matX[i](2).setVal(dNdz_[i], 0 * nVerts, 1 * nVerts); //dNx/dz
+            _matX[i](0).setVal(dNdx_[i], 0 * nVerts, 1 * nVerts); //dNx/dx
+            _matX[i](1).setVal(dNdy_[i], 0 * nVerts, 1 * nVerts); //dNx/dy
+            _matX[i](2).setVal(dNdz_[i], 0 * nVerts, 1 * nVerts); //dNx/dz
 
-            // _matX[i](3).setVal(dNdx_[i], 1 * nVerts, 2 * nVerts); //dNy/dx
-            // _matX[i](4).setVal(dNdy_[i], 1 * nVerts, 2 * nVerts); //dNy/dy
-            // _matX[i](5).setVal(dNdz_[i], 1 * nVerts, 2 * nVerts); //dNy/dz
+            _matX[i](3).setVal(dNdx_[i], 1 * nVerts, 2 * nVerts); //dNy/dx
+            _matX[i](4).setVal(dNdy_[i], 1 * nVerts, 2 * nVerts); //dNy/dy
+            _matX[i](5).setVal(dNdz_[i], 1 * nVerts, 2 * nVerts); //dNy/dz
 
-            // _matX[i](6).setVal(dNdx_[i], 2 * nVerts, 3 * nVerts); //dNz/dx
-            // _matX[i](7).setVal(dNdy_[i], 2 * nVerts, 3 * nVerts); //dNz/dy
-            // _matX[i](8).setVal(dNdz_[i], 2 * nVerts, 3 * nVerts); //dNz/dz
+            _matX[i](6).setVal(dNdx_[i], 2 * nVerts, 3 * nVerts); //dNz/dx
+            _matX[i](7).setVal(dNdy_[i], 2 * nVerts, 3 * nVerts); //dNz/dy
+            _matX[i](8).setVal(dNdz_[i], 2 * nVerts, 3 * nVerts); //dNz/dz
 
-SET_MAT_ROW_SLICE(_matX[i],0, dNdx_[i], 1, 0 * nVerts, 1 * nVerts); //dNx/dx
-SET_MAT_ROW_SLICE(_matX[i],1, dNdy_[i], 1, 0 * nVerts, 1 * nVerts); //dNx/dy
-SET_MAT_ROW_SLICE(_matX[i],2, dNdz_[i], 1, 0 * nVerts, 1 * nVerts); //dNx/dz
-SET_MAT_ROW_SLICE(_matX[i],3, dNdx_[i], 1, 1 * nVerts, 2 * nVerts); //dNy/dx
-SET_MAT_ROW_SLICE(_matX[i],4, dNdy_[i], 1, 1 * nVerts, 2 * nVerts); //dNy/dy
-SET_MAT_ROW_SLICE(_matX[i],5, dNdz_[i], 1, 1 * nVerts, 2 * nVerts); //dNy/dz
-SET_MAT_ROW_SLICE(_matX[i],6, dNdx_[i], 1, 2 * nVerts, 3 * nVerts); //dNz/dx
-SET_MAT_ROW_SLICE(_matX[i],7, dNdy_[i], 1, 2 * nVerts, 3 * nVerts); //dNz/dy
-SET_MAT_ROW_SLICE(_matX[i],8, dNdz_[i], 1, 2 * nVerts, 3 * nVerts); //dNz/dz
+// SET_MAT_ROW_SLICE(_matX[i],0, dNdx_[i], 1, 0 * nVerts, 1 * nVerts); //dNx/dx
+// SET_MAT_ROW_SLICE(_matX[i],1, dNdy_[i], 1, 0 * nVerts, 1 * nVerts); //dNx/dy
+// SET_MAT_ROW_SLICE(_matX[i],2, dNdz_[i], 1, 0 * nVerts, 1 * nVerts); //dNx/dz
+// SET_MAT_ROW_SLICE(_matX[i],3, dNdx_[i], 1, 1 * nVerts, 2 * nVerts); //dNy/dx
+// SET_MAT_ROW_SLICE(_matX[i],4, dNdy_[i], 1, 1 * nVerts, 2 * nVerts); //dNy/dy
+// SET_MAT_ROW_SLICE(_matX[i],5, dNdz_[i], 1, 1 * nVerts, 2 * nVerts); //dNy/dz
+// SET_MAT_ROW_SLICE(_matX[i],6, dNdx_[i], 1, 2 * nVerts, 3 * nVerts); //dNz/dx
+// SET_MAT_ROW_SLICE(_matX[i],7, dNdy_[i], 1, 2 * nVerts, 3 * nVerts); //dNz/dy
+// SET_MAT_ROW_SLICE(_matX[i],8, dNdz_[i], 1, 2 * nVerts, 3 * nVerts); //dNz/dz
                 }
             }
         }
@@ -1895,9 +1904,9 @@ ElementMatrix < double >::trace() const {
     return 0;
 }
 
-template < > DLLEXPORT RMatrix
+template < > DLLEXPORT SmallMatrix 
 ElementMatrix < double >::traceX() const {
-    RMatrix ret(_matX.size());
+    SmallMatrix  ret(_matX.size());
     Index i = 0;
     for (auto & m: _matX){
         if (m.size() == 4){
@@ -1970,7 +1979,7 @@ void dot(const ElementMatrix < double > & A,
             //
             // !! compare the following with the working
             //
-            // RMatrix sA(1, Ai.cols());
+            // SmallMatrix  sA(1, Ai.cols());
             // sA[0] += Ai[0]; // v_x/dx
             // if (A.entity()->dim() == 2){
             //     ASSERT_VEC_SIZE(Ai, 2*2)
@@ -1995,7 +2004,7 @@ void dot(const ElementMatrix < double > & A,
             }
 
             // __MS(ids)
-            // RMatrix Aii(Ai[0]);
+            // SmallMatrix  Aii(Ai[0]);
             // for (Index i = 1; i < ids.size(); i ++){
             //     Aii += Ai[ids[i]];
             // }
@@ -2009,13 +2018,13 @@ void dot(const ElementMatrix < double > & A,
 
             if (verbose) __MS("Aii", Aii)
 
-            matTransMult(Aii, Bi, Ci, b, 0.0);
+            Aii.transMult(Bi, Ci, b, 0.0);
 
             // __MS(Ci.rows(), Ci.cols());
                 // THROW_TO_IMPL
 
         } else if (B.isDiv() || (Bi.rows() > 1 && Ai.rows() == 1)){
-            // RMatrix sB(1, Bi.cols());
+            // SmallMatrix  sB(1, Bi.cols());
             // sB[0] += Bi[0]; // v_x/dx
             // if (B.entity()->dim() == 2){
             //     ASSERT_VEC_SIZE(Bi, 2*2)
@@ -2047,13 +2056,13 @@ void dot(const ElementMatrix < double > & A,
             for (Index i = 1; i < ids.size(); i ++){
                 Bii.row(0) += Bi.row(ids[i]);
             }
-            matTransMult(Ai, Bii, Ci, b, 0.0);
+            Ai.transMult(Bii, Ci, b, 0.0);
 
             // double bi = 0;
             // for (auto i: ids){
             //     // __MS(i)
             //     if (i > 0) bi = 1.0;
-            //     RMatrix Bii(1, Bi[i].size());
+            //     SmallMatrix  Bii(1, Bi[i].size());
             //     Bii[0] = Bi[i];
             //     matTransMult(Ai, Bii, Ci, b, bi);
             // }
@@ -2065,9 +2074,7 @@ void dot(const ElementMatrix < double > & A,
             if (verbose){
                 __MS("no div transMult")
             }
-            matTransMult(Ai, Bi, Ci, b, 0.0);
-            //matMult(Ai, Bi, Ci, b, 0.0);
-
+            Ai.transMult(Bi, Ci, b, 0.0);
         }
         if (verbose){
             __MS("Ci:\n ", Ci.rows(), " ", Ci.cols(), "\n ", Ci)
@@ -2102,7 +2109,7 @@ void dot(const ElementMatrix < double > & A,
 }
 void dot(const ElementMatrix < double > & A,
          const ElementMatrix < double > & B,
-         const RMatrix & c,
+         const SmallMatrix  & c,
          ElementMatrix < double > & C){
 // __M
     _prepDot(A, B, C);
@@ -2124,12 +2131,12 @@ void dot(const ElementMatrix < double > & A,
     //** mat = sum A_i.T * C_i * B_i
     // log(Info, "A:(", A.rows(), ",", A.cols(), ")",
     //           "B:(", B.rows(), ",", B.cols(), ")");
-#if USE_EIGEN3
-    SmallMatrix ce;
-    toEigenMatrix(c, ce);
-#else 
+// #if USE_EIGEN3
+//     SmallMatrix ce;
+//     toEigenMatrix(c, ce);
+// #else 
     const SmallMatrix &ce = c;
-#endif
+// #endif
 
     // double beta = 0.0;
 
@@ -2150,8 +2157,8 @@ void dot(const ElementMatrix < double > & A,
     // #else
     //     matTransMult(Ai, c, AtC, 1.0, 0.0);
     // #endif
-        matTransMult(Ai, ce, AtC, 1.0, 0.0);
-        matMult(AtC, Bi, Ci, 1.0, 0.0);
+        Ai.transMult(ce, AtC, 1.0, 0.0);
+        AtC.mult(Bi, Ci, 1.0, 0.0);
 
         *C.pMat() += Ci * wS;
     }
@@ -2178,7 +2185,7 @@ THROW_TO_IMPL
 }
 void dot(const ElementMatrix < double > & A,
          const ElementMatrix < double > & B,
-         const std::vector < RMatrix > & c,
+         const std::vector < SmallMatrix  > & c,
          ElementMatrix < double > & C){
 THROW_TO_IMPL
 }
@@ -2218,8 +2225,8 @@ DEFINE_DOT_MULT_WITH_RETURN(double)
 DEFINE_DOT_MULT_WITH_RETURN(const RVector &)
 DEFINE_DOT_MULT_WITH_RETURN(const Pos &)
 DEFINE_DOT_MULT_WITH_RETURN(const PosVector &)
-DEFINE_DOT_MULT_WITH_RETURN(const RMatrix &)
-DEFINE_DOT_MULT_WITH_RETURN(const std::vector < RMatrix > &)
+DEFINE_DOT_MULT_WITH_RETURN(const SmallMatrix  &)
+DEFINE_DOT_MULT_WITH_RETURN(const std::vector < SmallMatrix  > &)
 DEFINE_DOT_MULT_WITH_RETURN(const FEAFunction &)
 
 #undef DEFINE_DOT_MULT_WITH_RETURN
@@ -2297,7 +2304,8 @@ void mult(const ElementMatrix < double > & A, const RVector & b,
         // print("iC:", mr);
         for (Index k = 0; k < mr.rows(); k ++){
             // print('r', r, 'k', k, mr(k), b[r]);
-            MAT_ROW_IMUL(mr, k, b[r])
+            // MAT_ROW_IMUL(mr, k, b[r])
+            mr[k] *= b[r];
         }
     }
     C.integrate();
@@ -2326,7 +2334,7 @@ void mult(const ElementMatrix < double > & A, const PosVector & f,
     C.integrate();
 }
 // constant Matrix
-void mult(const ElementMatrix < double > & A, const RMatrix &  b,
+void mult(const ElementMatrix < double > & A, const SmallMatrix  &  b,
           ElementMatrix < double > & C){
 
     if (b.rows()*b.cols() == A.cols()){
@@ -2368,10 +2376,10 @@ void mult(const ElementMatrix < double > & A, const RMatrix &  b,
     // __MS(A.rows(), A.cols())
     // __MS(b.rows(), b.cols())
     // __MS(C.rows(), C.cols())
-#if USE_EIGEN3
-        SmallMatrix be;
-        toEigenMatrix(b, be);
-#endif
+// #if USE_EIGEN3
+//         SmallMatrix be;
+//         toEigenMatrix(b, be);
+// #endif
 
         double beta = 0.0;
         for (Index i = 0; i < nRules; i++){
@@ -2383,18 +2391,18 @@ void mult(const ElementMatrix < double > & A, const RMatrix &  b,
             Ci *= 0.0; // test and optimize me with C creation
             //matTransMult(Ai, b, Ci, 1.0, beta);
             // result is no bilinear form, so keep it a rowMatrix
-#if USE_EIGEN3
-            matMult(be, Ai, Ci, 1.0, beta);
-#else
-            matMult(b, Ai, Ci, 1.0, beta);
-#endif
+// #if USE_EIGEN3
+//             be.mult(Ai, Ci, 1.0, beta);
+// #else
+            b.mult(Ai, Ci, 1.0, beta);
+// #endif
         }
         C.integrate(); // check if necessary
     }
 }
 
 // matrix per quadrature
-void mult(const ElementMatrix < double > & A, const std::vector < RMatrix > & b,
+void mult(const ElementMatrix < double > & A, const std::vector < SmallMatrix  > & b,
           ElementMatrix < double > & C){
     C.copyFrom(A, false);
     const PosVector &x = *A.x();
@@ -2412,11 +2420,11 @@ void mult(const ElementMatrix < double > & A, const std::vector < RMatrix > & b,
         const SmallMatrix & Ai = A.matX()[i];
         // A.T * C
         Ci *= 0.0; // test and optimize me with C creation
-#if USE_EIGEN3
-        __MS("EIGENNEEDFIX")
-#else
-        matTransMult(Ai, b[i], Ci, 1.0, beta);
-#endif
+// #if USE_EIGEN3
+//         __MS("EIGENNEEDFIX")
+// #else
+        Ai.transMult(b[i], Ci, 1.0, beta);
+// #endif
     }
     C.integrate();
 }
@@ -2443,7 +2451,7 @@ void mult(const ElementMatrix < double > & A, const FEAFunction & b,
         if (b.evalOnCellCenter()){
             return mult(A, b.evalRM(A.entity()->center(), A.entity()), C);
         }
-        std::vector < RMatrix > e;
+        std::vector < SmallMatrix  > e;
         evaluateQuadraturePoints(*A.entity(), *A.x(), b, e);
         mult(A, e, C);
     }
@@ -2515,8 +2523,8 @@ void ElementMatrix < double >::integrate(A_TYPE f, \
 // DEFINE_INTEGRATOR(Pos)      // const vector
 // DEFINE_INTEGRATOR(RVector)  // scalar for each quadr
 // DEFINE_INTEGRATOR(PosVector)  // vector for each quadr
-DEFINE_INTEGRATOR(const RMatrix & )  // const Matrix
-DEFINE_INTEGRATOR(const std::vector< RMatrix > &)// matrix for each quadrs
+DEFINE_INTEGRATOR(const SmallMatrix  & )  // const Matrix
+DEFINE_INTEGRATOR(const std::vector< SmallMatrix  > &)// matrix for each quadrs
 DEFINE_INTEGRATOR(const FEAFunction &)
 #undef DEFINE_INTEGRATOR
 
@@ -2531,7 +2539,7 @@ void ElementMatrix < double >::integrate(const ElementMatrix < double > & B, \
 }
 
 DEFINE_INTEGRATOR(double)   // const scalar
-DEFINE_INTEGRATOR(const RMatrix &)  // const Matrix
+DEFINE_INTEGRATOR(const SmallMatrix  &)  // const Matrix
 #undef DEFINE_INTEGRATOR
 
 #define DEFINE_INTEGRATOR(A_TYPE) \
@@ -2547,7 +2555,7 @@ void ElementMatrix < double >::integrate(const ElementMatrix < double > & B, \
 }
 
 DEFINE_INTEGRATOR(const RVector &)  // scalar for each quadr
-DEFINE_INTEGRATOR(const std::vector< RMatrix > &)// matrix for each quadrs
+DEFINE_INTEGRATOR(const std::vector< SmallMatrix  > &)// matrix for each quadrs
 #undef DEFINE_INTEGRATOR
 
 template < >
@@ -2618,7 +2626,7 @@ void evaluateQuadraturePoints(const Mesh & mesh, Index order,
 
 void evaluateQuadraturePoints(const Mesh & mesh, Index order,
                               const FEAFunction & f,
-                              std::vector< RMatrix > & ret){
+                              std::vector< SmallMatrix  > & ret){
     THROW_TO_IMPL
 }
 
@@ -2640,7 +2648,7 @@ void evaluateQuadraturePoints(const MeshEntity & ent, const PosVector & x,
 
 void evaluateQuadraturePoints(const MeshEntity & ent, const PosVector & x,
                               const FEAFunction & f,
-                              std::vector < RMatrix > & ret){
+                              std::vector < SmallMatrix  > & ret){
     ret.resize(x.size());
     for (Index i = 0; i < x.size(); i ++){
         ret[i] = f.evalRM(ent.shape().xyz(x[i]), &ent);
@@ -2673,7 +2681,7 @@ void evaluateQuadraturePoints(const Mesh & mesh, Index order,
 
 void evaluateQuadraturePoints(const Mesh & mesh, Index order,
                               const FEAFunction & f,
-                              std::vector< std::vector< RMatrix > > & ret){
+                              std::vector< std::vector< SmallMatrix  > > & ret){
     evaluateQuadraturePoints_(mesh, order, f, ret);
 }
 
@@ -2917,22 +2925,22 @@ DEFINE_CREATE_SCALAR_IMPL(const Pos &, PosVector)
 
 //** IMPL constant matrix
 void createForceVector(const Mesh & mesh, Index order, RVector & ret,
-                       const RMatrix & a, Index nCoeff, Index dofOffset){
-    std::vector < RMatrix > aM(1);
+                       const SmallMatrix  & a, Index nCoeff, Index dofOffset){
+    std::vector < SmallMatrix  > aM(1);
     aM[0] = a;
     createForceVectorPerCell_(mesh, order, ret, aM, nCoeff, dofOffset);
 }
 void createMassMatrix(const Mesh & mesh, Index order, RSparseMapMatrix & ret,
-                      const RMatrix & a, Index nCoeff, Index dofOffset){
-    std::vector < RMatrix > aM(1);
+                      const SmallMatrix  & a, Index nCoeff, Index dofOffset){
+    std::vector < SmallMatrix  > aM(1);
     aM[0] = a;
     createMassMatrixPerCell_(mesh, order, ret, aM, nCoeff, dofOffset);
 }
 void createStiffnessMatrix (const Mesh & mesh, Index order,
-                            RSparseMapMatrix & ret, const RMatrix & a,
+                            RSparseMapMatrix & ret, const SmallMatrix  & a,
                             Index nCoeff, Index dofOffset,
                             bool elastic, bool kelvin){
-    std::vector < RMatrix > aM(1);
+    std::vector < SmallMatrix  > aM(1);
     aM[0] = a;
     createStiffnessMatrixPerCell_(mesh, order, ret, aM,
                                   nCoeff, dofOffset, elastic, kelvin);
@@ -2959,7 +2967,7 @@ void createStiffnessMatrix (const Mesh & mesh, Index order, \
 
 DEFINE_CREATE_PERCELL_IMPL(const RVector &)
 DEFINE_CREATE_PERCELL_IMPL(const PosVector &)
-DEFINE_CREATE_PERCELL_IMPL(const std::vector< RMatrix > &)
+DEFINE_CREATE_PERCELL_IMPL(const std::vector< SmallMatrix  > &)
 #undef DEFINE_CREATE_PERCELL_IMPL
 
 
@@ -2985,7 +2993,7 @@ void createStiffnessMatrix(const Mesh & mesh, Index order, \
 
 DEFINE_CREATE_FORCE_VECTOR_IMPL(const std::vector< RVector > &)
 DEFINE_CREATE_FORCE_VECTOR_IMPL(const std::vector< PosVector > &)
-DEFINE_CREATE_FORCE_VECTOR_IMPL(const std::vector< std::vector < RMatrix > > &)
+DEFINE_CREATE_FORCE_VECTOR_IMPL(const std::vector< std::vector < SmallMatrix  > > &)
 #undef DEFINE_CREATE_FORCE_VECTOR_IMPL
 
 //** IMPL fallbacks

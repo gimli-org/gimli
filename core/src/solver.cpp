@@ -58,12 +58,12 @@ int solveCGLSCDWWhtrans(const MatrixBase & S, const MatrixBase & C,
     if (roughness.size() != nConst) std::cerr << "roughness.size != nConst " << roughness.size() << " / " << nConst << std::endl;
 
 //Ch  Vec cdx(transMult(C, Vec(wc * wc * (C * Vec(wm * deltaX)))) * wm * lambda); // nModel
-    Vec cdx(transMult(C, Vec(wc * roughness)) * wm * lambda); // nModel
+    Vec cdx(C.transMult(Vec(wc * roughness)) * wm * lambda); // nModel
     Vec z((bR - S * Vec(x / tm) * td) * dW); // nData
-    Vec p(transMult(S, Vec(z * dW * td)) / tm   
-          - transMult(C, Vec(wc * wc * (C * Vec(wm * x)))) * wm * lambda
+    Vec p(S.transMult(Vec(z * dW * td)) / tm   
+          - C.transMult(Vec(wc * wc * (C * Vec(wm * x)))) * wm * lambda
           - cdx );// nModel
-    Vec r(transMult(S, Vec(bR * dW * dW * td)) / tm - cdx); // nModel
+    Vec r(S.transMult(Vec(bR * dW * dW * td)) / tm - cdx); // nModel
     
     // p = round(p, 1e-10);
     // r = round(r, 1e-10);
@@ -180,8 +180,8 @@ __MS("##################################################################")
         wmx.assign(wm * x);
         wcwcCwmx.assign(wc * wc * (C * wmx));
 
-        r =   transMult(S, zdWtd) / tm 
-            - transMult(C, wcwcCwmx) * wm * lambda - cdx;
+        r =   S.transMult(zdWtd) / tm 
+            - C.transMult(wcwcCwmx) * wm * lambda - cdx;
         // r = transMult(S, Vec(z * dW * td)) / tm 
         //     - transMult(C, Vec(wc * wc * (C * Vec(wm * x)))) * wm * lambda 
         //     - cdx;

@@ -36,13 +36,13 @@ Stopwatch::~Stopwatch() {
 }
 
 void Stopwatch::start(){
-    this->_start = std::chrono::steady_clock::now();
+    this->_start = std::chrono::high_resolution_clock::now();
     _state = running;
     _cCounter.tic();
 }
 
 void Stopwatch::stop(bool verbose){
-    this->_stop = std::chrono::steady_clock::now();
+    this->_stop = std::chrono::high_resolution_clock::now();
     _state = halted;
     if (verbose) std::cout << "time: " << duration() << "s" << std::endl;
 }
@@ -58,7 +58,7 @@ void Stopwatch::reset(){
 }
 
 double Stopwatch::duration(bool res){
-    std::chrono::time_point<std::chrono::steady_clock> now;
+    std::chrono::time_point<std::chrono::high_resolution_clock> now;
     
     if (_state == undefined) {
         log(Error, "Stopwatch not started!");
@@ -69,7 +69,7 @@ double Stopwatch::duration(bool res){
         // double t = (stoptime.time - starttime.time) + 
         //     double(stoptime.millitm - starttime.millitm) / 1000.0;
             
-        now = std::chrono::steady_clock::now();
+        now = std::chrono::high_resolution_clock::now();
     } else {
         now = this->_stop;
     }

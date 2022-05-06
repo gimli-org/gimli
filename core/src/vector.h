@@ -226,6 +226,12 @@ public:
         resize(l.size());
         std::copy(l.begin(), l.end(), data_);
     }
+    Vector(ValueType * buf, Index n):
+        size_(0), data_(0), capacity_(0){
+        reserve(n);
+        size_ = n;
+        std::memcpy(data_, buf, sizeof(ValueType) * n);
+    }
 
     /*!
      * Construct vector from file. Shortcut for Vector::load

@@ -197,27 +197,27 @@ def prettify(value, roundValue=False):
             value)
     return value
 
-
-def prettyFloat(value, roundValue=False):
+def prettyFloat(value, roundValue=None):
     """Return prettified string for a float value.
 
     TODO
     ----
-        add flag for round to
+        add number for round to
         add test
     """
     ## test-cases:
     # if change things her, look that they are still good (mod-dc-2d)
-    if roundValue and abs(round(value)-value) < 1e-4 and abs(value) < 1e3 and 0:
-        string = str(int(round(value, 2)))
+    if isinstance(roundValue, int) and abs(round(value)-value) < 1e-4 and abs(value) < 1e3 and 0:
+        string = str(int(round(value, roundValue)))
     elif abs(value) < 1e-14:
         string = "0"
     elif abs(value) > 1e4 or abs(value) <= 1e-3:
         string = str("%.1e" % value)
     elif abs(value) < 1e-2:
         string = str("%.4f" % round(value, 4))
-    elif abs(value) < 1e-1:
-        string = str("%.3f" % round(value, 3))
+    # max two values after comma
+    # elif abs(value) < 1e-1:
+    #     string = str("%.3f" % round(value, 3))
     elif abs(value) < 1e0:
         string = str("%.2f" % round(value, 2))
     elif abs(value) < 1e1:

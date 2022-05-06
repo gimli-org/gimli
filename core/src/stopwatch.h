@@ -93,7 +93,7 @@ public:
 protected:
     enum watchstate {undefined,halted,running} _state;
 
-    std::chrono::time_point<std::chrono::steady_clock> _start, _stop;
+    std::chrono::time_point<std::chrono::high_resolution_clock> _start, _stop;
     RVector *_store;
     
     CycleCounter _cCounter;
