@@ -312,7 +312,11 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
             uniquemarkers, uniqueidx = np.unique(
                 np.array(mesh.cellMarkers()), return_inverse=True)
             label = "Cell markers"
-            cMap = plt.cm.get_cmap("Set3", len(uniquemarkers))
+            
+            if cMap == 'viridis':
+                cMap = "Set3"
+            cMap = plt.cm.get_cmap(cMap, len(uniquemarkers))
+            
             kwargs["logScale"] = False
             kwargs["cMin"] = -0.5
             kwargs["cMax"] = len(uniquemarkers) - 0.5

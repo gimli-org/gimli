@@ -466,7 +466,7 @@ def interpolate(*args, **kwargs):
     * 1D point set :math:`u(x)` for ascending :math:`x`.
       Find interpolation function :math:`I = u(x)` and
       returns :math:`u_{\text{i}} = I(x_{\text{i}})`
-      (interpolation methods are [**linear** via matplotlib,
+      (interpolation methods are [**linear** via numpy,
       cubic **spline** via scipy, fit **harmonic** functions' via pygimli])
       Note, for 'linear' and 'spline' the interpolate contains all original
       coordinates while 'harmonic' returns an approximate best fit.
@@ -478,7 +478,7 @@ def interpolate(*args, **kwargs):
             * :math:`x` - function sample points
             * :math:`u` - function values
         kwargs:
-            * method : string
+            * method : string ['linear']
                 Specify interpolation method 'linear, 'spline', 'harmonic'
             * nc : int
                 Number of harmonic coefficients for the 'harmonic' method.
@@ -524,6 +524,7 @@ def interpolate(*args, **kwargs):
     fallback = kwargs.pop('fallback', 0.0)
     verbose = kwargs.pop('verbose', False)
     pgcore = False
+
     if 'srcMesh' in kwargs:
         pgcore = True
 
@@ -538,6 +539,10 @@ def interpolate(*args, **kwargs):
                 pgcore = False  # (outMesh, inMesh, vals)
             else:
                 pgcore = True
+
+        if len(args) == 4 and isinstance(args[3], str):
+            return pg.interpolate(args[0], args[1], args[2], method=args[3], 
+                                  **kwargs)
 
     if pgcore:
         if isinstance(args[0], pg.Mesh):

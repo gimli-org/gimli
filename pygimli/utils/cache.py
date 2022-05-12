@@ -25,7 +25,6 @@ import json
 import time
 
 import numpy as np
-
 import pygimli as pg
 
 
@@ -58,6 +57,10 @@ def valHash(a):
         else:
             print(a)
             pg.error('no hash for numpy array')
+    elif callable(a):
+        # pg._r('hash:', inspect.getsource(a))
+        return strHash(inspect.getsource(a))
+
 
     return hash(a)
 

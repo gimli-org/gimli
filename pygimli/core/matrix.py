@@ -75,7 +75,7 @@ def __ElementMatrix_str(self):
     import pygimli as pg
     self.integrate()
 
-    if self.mat_RM().cols() == 0 and self.mat_RM().rows() == 0:
+    if self.mat().cols() == 0 and self.mat().rows() == 0:
         return 'Empty ElementMatrix\n'
 
     maxRowID = int(np.log10(max(self.rowIDs())))+2
@@ -96,31 +96,31 @@ def __ElementMatrix_str(self):
     # print(self.mat())
     # print(self.colIDs())
     # print(self.rowIDs())
-    for i in range(self.mat_RM().cols()):
+    for i in range(self.mat().cols()):
         s += str(self.colIDs()[i]).rjust(9)
     s += '\n'
 
-    s += '  ' + '-' * self.mat_RM().cols()*(9 + maxRowID) + '-\n'
+    s += '  ' + '-' * self.mat.cols()*(9 + maxRowID) + '-\n'
 
-    for i in range(self.mat_RM().rows()):
+    for i in range(self.mat.rows()):
         s += str(self.rowIDs()[i]).rjust(maxRowID) + " :"
         if isinstance(self.multR, (int, float)):
             for v in self.row_RM(i)*self.multR:
                 s += pg.pf(v).rjust(9)
         elif pg.isPos(self.multR):
-            if self.mat_RM().cols() == len(self.multR):
+            if self.mat.cols() == len(self.multR):
                 for v in self.row_RM(i)*self.multR:
                     s += pg.pf(v).rjust(9)
             else:
                 print(self.row_RM)
                 print(self.multR)
                 pg.critical('invalid element multR.')
-        elif pg.isArray(self.multR, self.mat_RM().cols()):
+        elif pg.isArray(self.multR, self.mat.cols()):
             for v in self.row_RM(i)*self.multR:
                 s += pg.pf(v).rjust(9)
 
         elif pg.isMatrix(self.multR):
-            if pg.isArray(self.multR.flatten(), self.mat_RM().cols()):
+            if pg.isArray(self.multR.flatten(), self.mat.cols()):
                 for v in self.row_RM(i)*self.multR.flatten():
                     s += pg.pf(v).rjust(9)
             else:
@@ -129,7 +129,7 @@ def __ElementMatrix_str(self):
                 pg.critical('invalid matrix element multR.')
 
         elif self.multR is not None:
-            print(self.mat_RM())
+            print(self.mat)
             print(self.multR)
             pg.critical('invalid element multR.')
         else:

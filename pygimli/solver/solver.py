@@ -109,25 +109,23 @@ def boundaryIdsFromDictKey(mesh, key, outside=True):
 def cellValues(mesh, arg, **kwargs):
     """Get a value for each cell.
 
-    Returns a array or vector of length mesh.cellCount() based on arg.
-    The preferable arg is a dictionary for the cell marker and the appropriate
-    cell value. The designated value can be calculated using a
-    callable(cell, **kwargs), which is called on demand
+    Returns an array or vector of length mesh.cellCount() based on arg.
+    The preferable arg is a dictionary for the cell markers and the appropriate
+    cell values. The designated value can be calculated using a
+    callable(cell, **kwargs), which is called on demand.
 
     Parameters
     ----------
-    mesh : :gimliapi:`GIMLI::Mesh`
+    mesh: :gimliapi:`GIMLI::Mesh`
         Used if arg is callable
 
-    arg : float | int | complex | ndarray | iterable | callable | dict
+    arg: float | int | complex | ndarray | iterable | callable | dict
         Argument to be parsed as cell data.
         If arg is a dictionary, the dict key will be interpreted as cell marker:
 
-        Dictionary is key: value. Value can be float, int, complex or ndarray.
-        The last for anistropic or elastic tensors.
-
-        Key can be integer for cell marker or str, which will be interpreted as
-        splice or list. See examples or parseDictKey_.
+        Dictionary is {key: value, }. Value can be float, int, complex or ndarray. The latter for anistropic or elastic tensors.
+        Key can be integer for the cell marker or a str, which will be interpreted as wildcard, splice or list. See examples or parseDictKey_.
+        String keys will be interpreted before integer keys, the latter will overwite the first, i.e. you can fill all with wildcard '*' and specify others with integers.
 
         Iterable of length mesh.nodeCount() will be interpolated to cellCenters.
 
@@ -150,11 +148,15 @@ def cellValues(mesh, arg, **kwargs):
     >>> print(pg.solver.cellValues(mesh, [1, 2, 3, 4]))
     [1, 2, 3, 4]
     >>> print(pg.solver.cellValues(mesh, {1:1.0, 2:10}))
-    [1.0, 1.0, 10, 10]
+    [ 1.  1. 10. 10.]
     >>> print(pg.solver.cellValues(mesh, {':':2.0}))
-    [2.0, 2.0, 2.0, 2.0]
+    [2. 2. 2. 2.]
     >>> print(pg.solver.cellValues(mesh, {'0:2':3.0}))
-    [3.0, 3.0, None, None]
+    [3.0 3.0 None None]
+    >>> print(pg.solver.cellValues(mesh, {'*':1.0, '2':2.0}))
+    [1. 1. 2. 2.]
+    >>> print(pg.solver.cellValues(mesh, {2:2.0, '*':1.0}))
+    [1. 1. 2. 2.]
     >>> print(pg.solver.cellValues(mesh, np.ones(mesh.nodeCount())))
     4 [1.0, 1.0, 1.0, 1.0]
     >>> print(np.array(pg.solver.cellValues(mesh, {'1:3' : np.diag([1.0, 2.0])})))
@@ -182,7 +184,7 @@ def cellValues(mesh, arg, **kwargs):
      [[0.+0.j 0.+0.j]
       [0.+0.j 0.+0.j]]]
     >>> print(pg.solver.cellValues(mesh, {'1,2':1 + 1j*2.0}))
-    [(1+2j), (1+2j), (1+2j), (1+2j)]
+    [1.+2.j 1.+2.j 1.+2.j 1.+2.j]
     >>> def cellVal(c, b=1):
     ...     return c.center()[0]*b
     >>> t = pg.solver.cellValues(mesh, {':' : cellVal})
@@ -199,18 +201,31 @@ def cellValues(mesh, arg, **kwargs):
 
         ret = [None] * mesh.cellCount()
 
+        ### fill all with wildcard first
         for key, val in arg.items():
-            if isinstance(key, str):
+            if isinstance(key, str) and key == '*':
                 mas = parseDictKey_(key, mesh.cellMarkers())
 
                 for m in mas:
                     for i in pg.find(mesh.cellMarkers() == m):
                         ret[i] = val
-            else:
+
+        ### fill all string keys
+        for key, val in arg.items():
+            if isinstance(key, str) and not key == '*':
+                mas = parseDictKey_(key, mesh.cellMarkers())
+
+                for m in mas:
+                    for i in pg.find(mesh.cellMarkers() == m):
+                        ret[i] = val
+
+        ### fill all integer keys
+        for key, val in arg.items():
+            if isinstance(key, int):
                 for i in pg.find(mesh.cellMarkers() == key):
                     ret[i] = val
 
-        return ret
+        return np.array(ret)
 
     # if arg have already the correct size
     if hasattr(arg, '__len__'):
@@ -2649,6 +2664,11 @@ def crankNicolson(times, S, I, f=None,
     dt = 0.0
     for n in range(1, len(times)):
         newDt = times[n] - times[n-1]
+        if timeMeasure:
+            pg.tic(key='CrankNicolsonLoop')
+
+        if newDt < 1e-8 :
+            pg.critical('Cannot find delta t for times', times)
 
         if abs(newDt - dt) > 1e-8:
             ## new dt, so we need to factorize the matrix again
@@ -2663,9 +2683,6 @@ def crankNicolson(times, S, I, f=None,
             solver.factorize(A)
 
             St = None
-
-        if timeMeasure:
-            pg.tic(key='CrankNicolsonLoop')
 
         if theta == 0:
             if St is None:

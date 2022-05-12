@@ -1012,6 +1012,7 @@ class ParameterModelling(Modelling):
         self._params = {}
         self.dataSpace = None  # x, t freqs, or whatever
         self.defaultModelTrans = 'lin'
+        self._model = None # last active to use the FOP as function for interpolation
 
         super(ParameterModelling, self).__init__(**kwargs)
 
@@ -1021,6 +1022,10 @@ class ParameterModelling(Modelling):
     @property
     def params(self):
         return self._params
+
+    @property
+    def model(self):
+        return self._model
 
     def _initFunction(self, funct):
         """Init any function and interpret possible args and kwargs."""
@@ -1050,8 +1055,13 @@ class ParameterModelling(Modelling):
         if self.dataSpace is None:
             pg.critical('no data space given')
 
+        ## Store model, which can be handy
+        self._model = np.array(params)
         ret = self.function(self.dataSpace, *params)
         return ret
+
+    def __call__(self, dataSpace):
+        return self.function(np.asarray(dataSpace), *self._model.tolist())
 
     def setRegionProperties(self, k, **kwargs):
         """Set Region Properties by parameter name."""
@@ -1070,8 +1080,10 @@ class ParameterModelling(Modelling):
         self.setRegionProperties(name, **kwargs)
         return id
 
-    def drawModel(self, ax, model):
+    def drawModel(self, ax=None, model=None):
         """"""
+        if model is None:
+            model = self._model
         label = ''
         for k, p in self._params.items():
             label += k + "={0} ".format(pg.utils.prettyFloat(model[p]))

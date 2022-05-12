@@ -65,9 +65,12 @@ def fit(funct, data, err=None, **kwargs):
     if isinstance(err, (float, int)):
         err = np.full(len(data), err)
 
-
     mgr = ParameterInversionManager(funct, **kwargs)
     model = mgr.invert(data, err, **kwargs)
+
+    if kwargs.get('retFOP', False):
+        return mgr.fw.fop
+
     return model, mgr.fw.response
 
 
