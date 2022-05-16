@@ -19,6 +19,7 @@ from .utils import (hold,
                     setOutputStyle,
                     setPlotStuff,
                     setPrettyTimeTicks,
+                    setPrettyTimeAxis,
                     plotLines,
                     twin, createTwinX, createTwinY,
                     isInteractive)

@@ -47,9 +47,9 @@ def hold(val=1):
 
 def waitOnExit():
     backend = matplotlib.get_backend()
+ 
     if not 'inline' in backend:
-        if 'Qt' in backend or 'Wx' in backend:
-
+        if 'Qt' in backend or 'Wx' in backend or 'TkAgg' in backend:
             if len(plt.get_fignums()) > 0:
                 pg.info('Showing pending widgets on exit. '
                         'Close all figures or Ctrl-C to quit the programm')
@@ -136,6 +136,100 @@ def setPrettyTimeTicks(ax):
 
     ax.xaxis.set_major_formatter(major_formatter)
     pg.viewer.mpl.updateAxes(ax)
+
+
+
+class MyLogFormatterMathtext(ticker.LogFormatterMathtext):
+    def __init__(self, minExp=4, **kwargs):
+        super().__init__(**kwargs)
+        self._minExp = minExp
+
+    def __call__(self, x, pos=None):
+        import matplotlib as mpl
+        import math
+        # docstring inherited
+        usetex = mpl.rcParams['text.usetex']
+
+        min_exp = self._minExp
+
+        if x == 0:  # Symlog
+            return r'$\mathdefault{0}$'
+
+        sign_string = '-' if x < 0 else ''
+        x = abs(x)
+        b = self._base
+
+        # only label the decades
+        fx = math.log(x) / math.log(b)
+        is_x_decade = ticker.is_close_to_int(fx)
+        exponent = round(fx) if is_x_decade else np.floor(fx)
+        coeff = round(b ** (fx - exponent))
+        if is_x_decade:
+            fx = round(fx)
+
+        if self.labelOnlyBase and not is_x_decade:
+            return ''
+        if self._sublabels is not None and coeff not in self._sublabels:
+            return ''
+
+        # use string formatting of the base if it is not an integer
+        if b % 1 == 0.0:
+            base = '%d' % b
+        else:
+            base = '%s' % b
+
+        if abs(fx) < min_exp:
+            
+            return r'$\mathdefault{%s%g}$' % (sign_string, x)
+        elif not is_x_decade:
+            return self._non_decade_format(sign_string, base, fx, usetex)
+        else:
+            return r'$\mathdefault{%s%s^{%d}}$' % (sign_string, base, fx)
+
+
+def setPrettyTimeAxis(axis, unit=None):
+    
+    @ticker.FuncFormatter
+    def pfMajorFormatter(x, pos):
+        return pg.utils.prettyTime(x) % x
+            
+    # axis.set_major_formatter(pfMajorFormatter)
+    # axis.set_major_formatter(pfMajorFormatter)
+    #axis.set_major_formatter(ticker.LogFormatter())
+    #axis.set_major_formatter(ticker.LogFormatterExponent())
+    #axis.set_major_formatter(ticker.LogFormatterMathtext())
+    #axis.set_major_formatter(ticker.LogFormatterSciNotation())
+    
+    if unit == 'y':
+        #pg._r(dir(axis))
+        axis.set_major_formatter(MyLogFormatterMathtext(minExp=4))
+        axis._axes.set_xlabel('Zeit in Jahren')
+
+    else:
+        @ticker.FuncFormatter
+        def major_formatter(x, pos):
+            return pg.utils.prettyTime(x) % x
+
+        axis.set_major_formatter(major_formatter)
+        axis._axes.set_xlabel('Zeit')
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
