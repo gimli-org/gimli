@@ -331,12 +331,8 @@ pgcore.IndexArray.setVal = __newIndexArraySetVal__
 ############################
 def __getVal(self, idx):
     """Hell slow"""
-
-    # print("getval", type(idx), idx)
-    # print(dir(idx))
     if isinstance(idx, pgcore.BVector) or isinstance(
             idx, pgcore.IVector) or isinstance(idx, pgcore.IndexArray):
-        # print("BVector, IVector, IndexArray", idx)
         return self.get_(idx)
     elif isinstance(idx, slice):
 
@@ -378,7 +374,7 @@ def __getVal(self, idx):
         return self.get_([int(a) for a in idx])
 
     elif idx < 0:
-        idx = len(self) - idx
+        idx = len(self) + idx
 
     return self.getVal(int(idx))
 

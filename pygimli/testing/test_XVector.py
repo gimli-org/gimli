@@ -203,6 +203,7 @@ class TestRVectorMethods(unittest.TestCase):
         a = pg.Vector(np.arange(10.))
 
         np.testing.assert_array_equal(a[:], np.arange(10.)[:])
+        np.testing.assert_array_equal(a[:, np.newaxis], a)
         np.testing.assert_array_equal(a[::], np.arange(10.)[::])
         np.testing.assert_array_equal(a[::1], np.arange(10.)[::1])
         np.testing.assert_array_equal(a[::-1], np.arange(10.)[::-1])
