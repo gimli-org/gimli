@@ -350,7 +350,6 @@ def __getVal(self, idx):
         if idx.step is None:
             return self.getVal(int(s), int(e))
         else:
-            #print(s,e,idx.step)
             step = idx.step
             if step < 0 and idx.start is None and idx.stop is None:
                 ids = range(e - 1, s - 1, idx.step)
@@ -371,11 +370,16 @@ def __getVal(self, idx):
             if idx[0].dtype == 'bool':
                 return self.get_([i for i, x in enumerate(idx) if x])
                 # return self[np.nonzero(idx)[0]]
-        # print("default")
+        elif isinstance(idx[0], slice):  # try fixing newaxis
+            return self[idx[0]]
+        # elif isinstance(idx[0], None) and isinstance(idx[1], slice):
+            # return self[idx[1]]
+
+        print(idx, idx[0], idx[1])
         return self.get_([int(a) for a in idx])
 
-    elif idx == -1:
-        idx = len(self) - 1
+    elif idx < 0:
+        idx = len(self) - idx
 
     return self.getVal(int(idx))
 
