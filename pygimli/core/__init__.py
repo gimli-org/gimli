@@ -375,7 +375,6 @@ def __getVal(self, idx):
         # elif isinstance(idx[0], None) and isinstance(idx[1], slice):
             # return self[idx[1]]
 
-        print(idx, idx[0], idx[1])
         return self.get_([int(a) for a in idx])
 
     elif idx < 0:
