@@ -3,14 +3,14 @@
 """
 Imports and extensions of the C++ bindings.
 """
-import os
 import sys
-import traceback
+# import traceback
 
 import numpy as np
 
 from .core import pgcore
 from .core import *
+from .logger import error, critical
 
 # #######################################
 # ###  Global convenience functions #####
@@ -391,14 +391,14 @@ def __setVal(self, idx, val):
                 self.setVal(val, int(idx.start), int(idx.stop))
             return
         else:
-            pg.critical("not yet implemented for slice:", slice)
+            critical("not yet implemented for slice:", slice)
     elif isinstance(idx, tuple):
         # print("tuple", idx, type(idx))
         if isinstance(self, pgcore.RMatrix):
             self.rowRef(int(idx[0])).setVal(val, int(idx[1]))
             return
         else:
-            pg.error("Can't set index with tuple", idx, "for", self)
+            error("Can't set index with tuple", idx, "for", self)
             return
     # if isinstance(idx, pgcore.BVector):
     # print("__setVal", self, idx, 'val:', val)
@@ -488,7 +488,7 @@ _vecs = [pgcore.RVector,
 for v in _vecs:
     v.ndim = 1
     v.__len__ = lambda self: self.size()
-    v.shape = property(lambda self: (self.size(), None))
+    v.shape = property(lambda self: (self.size(),))
     # if hasattr(v, '__call__') and callable(getattr(v, '__call__')):
     try:
         del v.__call__
@@ -748,7 +748,7 @@ def abs(v):
     Create abs in the sense of distance instead of vanishing the sign. Used
     to calculate the length of coordinates, or anything that can be interpreted
     as coordinate.
-    
+
     Args
     ----
     v: iterable of float, complex, or :gimliapi:`GIMLI::Pos`
@@ -762,13 +762,13 @@ def abs(v):
     --------
     >>> import numpy as np
     >>> import pygimli as pg
-    >>> pg.abs([1.0, 1.0, 1.0]) 
+    >>> pg.abs([1.0, 1.0, 1.0])
     1.7320508075688772
-    >>> pg.abs(np.array([1.0, 1.0, 1.0])) 
+    >>> pg.abs(np.array([1.0, 1.0, 1.0]))
     1.7320508075688772
-    >>> pg.abs(np.array([1.0, 1.0])) 
+    >>> pg.abs(np.array([1.0, 1.0]))
     1.4142135623730951
-    >>> pg.abs([[1.0, 1.0, 1.0], [1.0, 1.0, 1.0]]) 
+    >>> pg.abs([[1.0, 1.0, 1.0], [1.0, 1.0, 1.0]])
     2 [1.7320508075688772, 1.7320508075688772]
     >>> pg.abs(np.array([[1.0, 1.0, 1.0], [1.0, 1.0, 1.0]]))
     2 [1.7320508075688772, 1.7320508075688772]
@@ -786,7 +786,7 @@ def abs(v):
         return pgcore.absR3(v)
     elif isinstance(v, list):
         ## possible [x,y,[z]] or [pos, ...]
-        
+
         try:
             return pgcore.RVector3(v).abs()
         except:
@@ -806,9 +806,9 @@ def abs(v):
             v[i] = pgcore.abs(v[i])
         return v
     elif hasattr(v, 'vals'):
-        return pg.abs(v.vals)
+        return pgcore.abs(v.vals)
     elif hasattr(v, 'values'):
-        return pg.abs(v.values)
+        return pgcore.abs(v.values)
 
     return pgcore.fabs(v)
 
@@ -874,7 +874,7 @@ def __ModellingBase__createJacobian_mt__(self, model, resp):
     import numpy as np
 
     nModel = len(model)
-    nData = len(resp)
+    # nData = len(resp)  # not used
 
     fak = 1.05
 
@@ -1062,7 +1062,7 @@ def x(instance):
     ----------
     instance : DataContainer, Mesh, R3Vector, np.array, list(RVector3)
         Return the associated coordinate positions for the given class instance.
-    
+
     Examples
     --------
     >>> import numpy as np
@@ -1119,4 +1119,3 @@ from .trans import *  # why do we need that?
 #                      MultLeftRightMatrix, MultRightMatrix, RMultRMatrix)
 from .matrix import (BlockMatrix, SparseMatrix, SparseMapMatrix, IdentityMatrix,
                      Matrix)
-
