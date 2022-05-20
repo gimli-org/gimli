@@ -16,9 +16,7 @@ from .methodManager import (fit, MethodManager, MethodManager1d,
                             PetroInversionManager,
                             JointPetroInversionManager)
 
-# will be removed very soon
-# from .methodManager import (MethodManager0,
-#                             MeshMethodManager0)
+from .timelapse import MultiFrameModelling
 
 # from .resolution import computeR
 

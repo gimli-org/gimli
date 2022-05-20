@@ -800,14 +800,6 @@ class MeshMethodManager(MethodManager):
                     horizontalalignment='right',
                     verticalalignment='center')
 
-        # if not kwargs.pop('hideFittingAnnotation', False):
-        #     axs[0].text(0.01, 1.0025, "rrms: {0}, $\chi^2$: {1}"
-        #             .format(pg.utils.prettyFloat(self.fw.inv.relrms()),
-        #                     pg.utils.prettyFloat(self.fw.inv.chi2())),
-        #             transform=axs[0].transAxes,
-        #             horizontalalignment='left',
-        #             verticalalignment='bottom')
-
         return axs
 
     def coverage(self):
