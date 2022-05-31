@@ -173,7 +173,7 @@ def logDropTol(p, dropTol=1e-3):
     return tmp
 
 
-def prettify(value, roundValue=False):
+def prettify(value, roundValue=False, mathtex=False):
     """Return prettified string for value .. if possible."""
     if isinstance(value, dict):
         import json
@@ -191,13 +191,14 @@ def prettify(value, roundValue=False):
         except Exception as e:
             pg.warning('prettify fails:', e)
             return str(value)
-    elif pg.isScalar(value):
-        return prettyFloat(value, roundValue)
+    elif isinstance(value, np.int64) or pg.isScalar(value):
+        return prettyFloat(value, roundValue, mathtex)
+
     pg.warn("Don't know how to prettify the string representation for: ",
-            value)
+            value, type(value))
     return value
 
-def prettyFloat(value, roundValue=None):
+def prettyFloat(value, roundValue=None, mathtex=False):
     """Return prettified string for a float value.
 
     TODO
@@ -231,16 +232,25 @@ def prettyFloat(value, roundValue=None):
     # print(string.endswith("0") and string[-2] == '.')
     if string.endswith(".0"):
         # pg._r(string.replace(".0", ""))
-        return string.replace(".0", "")
+        string = string.replace(".0", "")
     elif string.endswith(".00"):
-        return string.replace(".00", "")
+        string = string.replace(".00", "")
     elif '.' in string and not 'e' in string and string.endswith("00"):
-        return string[0:len(string)-2]
+        string = string[0:len(string)-2]
     elif '.' in string and not 'e' in string and string.endswith("0"):
         # pg._r(string[0:len(string)-1])
-        return string[0:len(string)-1]
-    else:
-        return string
+        string = string[0:len(string)-1]
+    
+    if mathtex is True:
+        if 'e+' in string:
+            string = string.replace('e+', '$\cdot 10^{')
+            string+='}$'
+        elif 'e-' in string:
+            string = string.replace('e-', '$\cdot 10^{-')
+            string+='}$'
+            
+    return string
+
 
 def prettyTime(t):
     """Return prettified time in seconds as string.

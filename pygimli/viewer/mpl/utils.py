@@ -204,6 +204,15 @@ def setPrettyTimeAxis(axis, unit=None):
         #pg._r(dir(axis))
         axis.set_major_formatter(MyLogFormatterMathtext(minExp=4))
         axis._axes.set_xlabel('Zeit in Jahren')
+        # https://matplotlib.org/3.5.0/gallery/axisartist/demo_ticklabel_alignment.html
+        #axis._axes.axis["bottom"].major_ticklabels.set_va("bottom")
+        #print(axis)
+        #print(dir(axis))
+        #axis.get_majorticklabels().set_va("bottom")  #nope
+        #axis.get_major_formatter().set_va("bottom")  #nope
+
+        # ticklabs = axis.get_ticklabels()
+        # axis.set_ticklabels(ticklabs, va='bottom')
 
     else:
         @ticker.FuncFormatter

@@ -375,7 +375,6 @@ def drawModel(ax, mesh, data=None, tri=False, rasterized=False,
             data = pg.Vector(mesh.cellCount())
 
         if len(data) != mesh.cellCount():
-            print(data, mesh)
             pg.info("drawModel have wrong data length .. " +
                     " indexing data from cellMarkers()")
             viewdata = data[mesh.cellMarkers()]

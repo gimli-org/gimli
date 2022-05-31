@@ -305,14 +305,28 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
     gci = None
     validData = False
 
+    uniquemarkers = None
+    ### if levels equals unqiue cell data, plot as markers
+    if kwargs.get('levels', None):
+        ud = pg.unique(data)
+        levs = kwargs.pop('levels')
+        if ud == levs:
+            kwargs["boundaryMarkers"] = kwargs.get("boundaryMarkers", False)
+
+            uniquemarkers, uniqueidx = np.unique(
+                    np.array(data), return_inverse=True)
+
+            markers = True
+
     if markers:
         kwargs["boundaryMarkers"] = kwargs.get("boundaryMarkers", True)
 
         if mesh.cellCount() > 0:
-            uniquemarkers, uniqueidx = np.unique(
-                np.array(mesh.cellMarkers()), return_inverse=True)
-            label = "Cell markers"
-            
+            if uniquemarkers is None:
+                uniquemarkers, uniqueidx = np.unique(
+                    np.array(mesh.cellMarkers()), return_inverse=True)
+                label = "Cell markers"
+                        
             if cMap == 'viridis':
                 cMap = "Set3"
             cMap = plt.cm.get_cmap(cMap, len(uniquemarkers))
@@ -320,8 +334,9 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
             kwargs["logScale"] = False
             kwargs["cMin"] = -0.5
             kwargs["cMax"] = len(uniquemarkers) - 0.5
-            data = np.arange(len(uniquemarkers))[uniqueidx]
-
+            
+            data = np.arange(len(uniquemarkers))[uniqueidx] 
+            
     if data is None:
         showMesh = True
         mesh.createNeighborInfos()
@@ -489,7 +504,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
             cBar.set_ticks(ticks)
             labels = []
             for marker in uniquemarkers:
-                labels.append(str((marker)))
+                labels.append(pg.pf(marker, mathtex=True))
             cBar.set_ticklabels(labels)
 
     if coverage is not None:
@@ -517,6 +532,11 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
 
     if hold:
         pg.viewer.mpl.hold(val=lastHoldStatus)
+
+
+    if kwargs.get('depth', False):
+        pg.viewer.mpl.adjustWorldAxes(ax)
+
 
     if savefig:
         print('saving: ' + savefig + ' ...')
