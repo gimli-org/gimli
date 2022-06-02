@@ -5,17 +5,19 @@ from .modelling import MeshModelling
 
 class MultiFrameModelling(MeshModelling):
     """Full frame (multiple fop parallel) forward modelling."""
-    def __init__(self, scalef=1.0):
+    def __init__(self, modellingOperator, scalef=1.0):
         """Init class and jacobian matrix."""
         super().__init__()
+        self.modellingOperator = modellingOperator
         self.jac = pg.matrix.BlockMatrix()
         self.scalef = scalef
 
-    def setData(self, alldata, fop):
+    def setData(self, alldata, modellingOperator=None):
         """Distribute the data containers amongst the fops."""
+        modellingOperator = modellingOperator or self.modellingOperator
         self.fops = []
         for i, data in enumerate(alldata):
-            fopi = fop()
+            fopi = modellingOperator()
             fopi.setData(data)
             self.fops.append(fopi)
 
