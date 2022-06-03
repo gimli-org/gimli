@@ -412,6 +412,28 @@ class Modelling(pg.core.ModellingBase):
             raise Exception("No yet implemented")
 
 
+class LinearModelling(Modelling):
+    """Modelling class for linearized problems with a given matrix."""
+    def __init__(self, A):
+        """Initialize by storing the (reference to the) matrix."""
+        super().__init__()
+        self.A = A
+        self.setJacobian(self.A)
+
+    def response(self, model):
+        """Linearized forward modelling by matrix-vector product."""
+        return self.A * model
+
+    def createJacobian(self, model):
+        """Do not compute a jacobian (linear)."""
+        pass
+
+    @property
+    def parameterCount(self):
+        """Define the number of parameters from the matrix size."""
+        return self.A.cols()
+
+
 class Block1DModelling(Modelling):
     """General forward operator for 1D layered models.
 
