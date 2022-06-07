@@ -318,6 +318,26 @@ def importAsciiColumns(filename, verbose=False, return_header=False):
     header = {}
     with open(filename, 'r', encoding='iso-8859-15') as fi:
         content = fi.readlines()
+        if content[0].startswith('Injection'):  # Resecs lead-in
+            for n in range(20):
+                if len(content[n]) < 2:
+                    break
+
+            content = content[n+1:]
+
+        if content[0].startswith('Filename'):  # ABEM lead-in
+            for n in range(1000):
+                if content[n].find("MeasID") > 0:
+                    break
+
+            for i in range(n):
+                sp = content[i].split(":")
+                if len(sp) > 1:
+                    tok = sp[0].lstrip("\t").lstrip("- ")
+                    header[tok] = sp[1].rstrip("\n").rstrip("\r")
+
+            content = content[n:]
+
         d = readAsDictionary(content, sep='\t')
         if len(d) < 2:
             d = readAsDictionary(content)
