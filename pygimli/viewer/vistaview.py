@@ -70,7 +70,6 @@ def showMesh3DFallback(mesh, data, **kwargs):
 
     return ax, None
 
-
 def showMesh3DVista(mesh, data=None, **kwargs):
     """
     Make use of the actual 3D visualization tool kit
@@ -117,7 +116,15 @@ def showMesh3DVista(mesh, data=None, **kwargs):
         plotter = drawModel(None, mesh, data, notebook=notebook, 
                             cMap=cMap, **kwargs)
         
-        if not hold:
-            plotter.show(jupyter_backend=backend)
+        plotter.enable_anti_aliasing()
+
+        if notebook is True:        
+            plotter.__show = plotter.show
+            plotter.show = lambda *args, **kwargs: plotter.__show(*args, 
+                                                jupyter_backend=backend, **kwargs)
+
+        if not hold is True:
+            plotter.show()
         
+        # , None to keep compatability 
         return plotter, None

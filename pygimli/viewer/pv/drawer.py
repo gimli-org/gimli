@@ -22,7 +22,8 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
         The colormap string.
     bc: pyvista color ['#EEEEEE']
         Background color.
-
+    style: str['surface']
+        Possible options:"surface","wireframe","points" 
     Returns
     -------
     ax: pyvista.Plotter [optional]
@@ -33,10 +34,12 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
     opacity = kwargs.pop('alpha', kwargs.pop('opacity', 1))
     cMap = kwargs.pop('cMap', None)
     color = kwargs.pop('color', 'k')
-    style = kwargs.pop('style', 'wireframe')
+    style = kwargs.pop('style', 'surface')
+    #style = kwargs.pop('style', 'wireframe')
     returnActor = kwargs.pop('returnActor', False)
     showMesh = kwargs.pop('showMesh', False)
     grid = kwargs.pop('grid', False)
+    colorBar = kwargs.pop('colorBar', True)
     # background color
     bc = kwargs.pop('bc', '#EEEEEE')
 
@@ -57,8 +60,9 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
     _actor = ax.add_mesh(mesh,  # type: pv.UnstructuredGrid
                          cmap=cMap,
                          #color=color,
-                         #style=style,
+                         style=style,
                          show_edges=showMesh,
+                         show_scalar_bar=colorBar,
                          opacity=opacity,
                          )
 
@@ -199,6 +203,8 @@ def drawStreamLines(ax, mesh, data, label=None, radius=0.01, **kwargs):
     All kwargs will be forwarded to pyvistas streamline filter:
     https://docs.pyvista.org/core/filters.html?highlight=streamlines#pyvista.DataSetFilters.streamlines
     """
+    if label is None:
+        label = 'grad'
 
     if isinstance(mesh, pg.Mesh):
 
@@ -215,6 +221,7 @@ def drawStreamLines(ax, mesh, data, label=None, radius=0.01, **kwargs):
         # add data to the mesh and convert to pyvista grid
         mesh = pgMesh2pvMesh(mesh, grad.T, label)
 
+
     elif isinstance(mesh, pv.UnstructuredGrid):
         if label not in mesh.point_arrays:  # conversion needed
             mesh.cell_data_to_point_data()
@@ -222,8 +229,7 @@ def drawStreamLines(ax, mesh, data, label=None, radius=0.01, **kwargs):
     if label is None:
         label = list(mesh.point_arrays.keys())[0]
 
-    kwargs['vectors'] = label
+    #kwargs['vectors'] = label
 
-    streamlines = mesh.streamlines(**kwargs)
-
-    ax.add_mesh(streamlines.tube(radius=radius))
+    streams = mesh.streamlines(vectors=label, **kwargs)
+    ax.add_mesh(streams.tube(radius=radius), show_scalar_bar=False)

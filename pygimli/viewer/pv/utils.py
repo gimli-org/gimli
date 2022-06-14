@@ -38,6 +38,7 @@ def pgMesh2pvMesh(mesh, data=None, label=None):
             elif len(k[1]) == mesh.cellCount():
                 grid.rename_array('Marker', 'Cell marker')
 
+
     # check the given data as well
     try:
         if data is not None:
@@ -52,6 +53,9 @@ def pgMesh2pvMesh(mesh, data=None, label=None):
     except Exception as e:
         print(e)
         pg.error("fix pyvista bindings")
+
+    # print(grid.cell_data)
+    # print(grid.point_data)
 
     if label is None:
         # last data that was added
