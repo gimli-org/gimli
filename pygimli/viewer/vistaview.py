@@ -5,44 +5,42 @@ import sys
 import matplotlib.pyplot as plt
 import pygimli as pg
 
-
 PyQt5 = pg.optImport('PyQt5', requiredFor="use pyGIMLi's 3D viewer")
 pyvista = pg.optImport('pyvista', requiredFor="properly visualize 3D data")
+panel = pg.optImport('panel', requiredFor='pyvista jupyter backend')
 
+print(pyvista.__version__)
 if pyvista is None:
     view3Dcallback = 'showMesh3DFallback'
-    pg.rc['view3D'] = 'fallback'
 else:
     view3Dcallback = 'showMesh3DVista'
     vers_users = pyvista.__version__
     vers_userf = float(pyvista.__version__[::-1].replace('.', '', 1)[::-1])
-    vers_needs = '0.23.2'
-    vers_needf = 0.232
+    vers_needs = '0.33.0'
+    vers_needf = 0.330
     if vers_userf < vers_needf:
         pg.warn("Please consider updating PyVista to at least {}".format(
             vers_needs))
-    pg.debug("Using pyvista: {}".format(vers_users))
     from pygimli.viewer.pv import drawModel
 
-# True for Jupyter notebooks and sphinx-builds
-_inlineBackend_ = not pg.viewer.isInteractive()
+if panel is None:
+    pg.warn("Please install panel to plot 3D models in Jupyter Notebooks - conda install panel")
+else:
+    pyvista.set_jupyter_backend('panel')    
 
-if PyQt5 is None or _inlineBackend_:
-    _inlineBackend_ = True
+if PyQt5 is None:
+    inline = True
 else:
     from .pv.show3d import Show3D
     from PyQt5 import Qt
-    _inlineBackend_ = False
+    inline = False
 
 
 def showMesh3D(mesh, data, **kwargs):
     """
     Calling the defined function to show the 3D object.
     """
-    if pg.rc['view3D'] == 'fallback' or pg.rc['view3D'] is None:
-
-        kwargs.pop('gui', None)
-        kwargs['alpha'] = kwargs.pop('opacity', None)
+    if pg.rc['view3D'] == 'fallback':
         return showMesh3DFallback(mesh, data, **kwargs)
 
     return globals()[view3Dcallback](mesh, data, **kwargs)
@@ -58,16 +56,12 @@ def showMesh3DFallback(mesh, data, **kwargs):
 
     if ax is None or not isinstance(ax, Axes3D):
         fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d',
-                             proj_type='persp'
-                             # proj_type='ortho'
-                             )
+        ax = fig.gca(projection='3d', proj_type='persp')
+        #ax = fig.gca(projection='3d', proj_type='ortho')
 
     if mesh.boundaryCount() > 0:
         x, y, tri, z, dataIndex = pg.viewer.mpl.createTriangles(mesh)
-        kwargs.pop('notebook', False)
-        kwargs.pop('hold', False)
-        ax.plot_trisurf(x, y, tri, z, **kwargs)
+        ax.plot_trisurf(x, y, tri, z)
     else:
         if mesh.nodeCount() < 1e4:
             x = pg.x(mesh.positions())
@@ -104,8 +98,8 @@ def showMesh3DVista(mesh, data=None, **kwargs):
     """
     hold = kwargs.pop('hold', False)
     cmap = kwargs.pop('cmap', 'viridis')
-    notebook = kwargs.pop('notebook', _inlineBackend_)
-    gui = kwargs.pop('gui', False)
+    notebook = kwargs.pop('notebook', inline)
+    gui = kwargs.pop('gui', not notebook)
 
     # add given data from argument
     if gui:
@@ -118,15 +112,8 @@ def showMesh3DVista(mesh, data=None, **kwargs):
 
     else:
         if notebook:
-            pyvista.set_plot_theme('document')
-
-        try:
             plotter = drawModel(None, mesh, data, notebook=notebook, cmap=cmap,
-                                **kwargs)
-        except Exception as e:
-            print(e)
-            pg.error("fix pyvista bindings")
-
+                            **kwargs)
         if not hold:
             plotter.show()
         return plotter, None

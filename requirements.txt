@@ -14,7 +14,8 @@ sphinxcontrib-programoutput
 sphinxcontrib-doxylink
 sphinx-gallery
 bibtexparser
-pyvista==0.24.2
+pyvista==0.33
+panel
 
 # optional, but strongly recommended
 scipy
