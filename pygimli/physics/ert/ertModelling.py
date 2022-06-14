@@ -71,6 +71,9 @@ class ERTModelling(ERTModellingBase):
         else:
             self._core = pg.core.DCMultiElectrodeModelling(verbose=verbose)
 
+        # Its good that the core knows about the actual RM
+        self._core.setRegionManager(self.regionManagerRef())
+
         self._core.initJacobian()
         self.setJacobian(self._core.jacobian())
 
@@ -105,7 +108,7 @@ class ERTModelling(ERTModellingBase):
         """Create Starting model for ERT inversion."""
         if self.complex():
             dataC = pg.utils.toComplex(dataVals)
-            nModel = self.regionManager().parameterCount() // 2
+            nModel = self.parameterCount // 2
             smRe = np.ones(nModel) * np.median(np.median(dataC.real))
             smIm = np.ones(nModel) * np.median(np.median(dataC.imag))
 
@@ -141,6 +144,7 @@ class ERTModelling(ERTModellingBase):
         """Forward response (apparent resistivity)."""
         # ensure the mesh is initialized
         self.mesh()
+
         if self.complex() and self._conjImag:
             pg.warn('flip imaginary part for response calc')
             mod = self.flipImagPart(mod)
@@ -279,7 +283,7 @@ class ERTModellingReference(ERTModellingBase):
             self.response(model)
 
         J = self.jacobian()
-        J.resize(self.data.size(), self.regionManager().parameterCount())
+        J.resize(self.data.size(), self.parameterCount)
 
         cells = self.mesh().findCellByMarker(0, -1)
         Si = pg.matrix.ElementMatrix()
@@ -292,8 +296,7 @@ class ERTModellingReference(ERTModellingBase):
             print("Calculate sensitivity matrix for model: ",
                   min(model), max(model))
 
-        Jt = pg.Matrix(self.data.size(),
-                       self.regionManager().parameterCount())
+        Jt = pg.Matrix(self.data.size(), self.parameterCount)
 
         for kIdx, w in enumerate(self.w):
             k = self.k[kIdx]

@@ -723,7 +723,7 @@ def parseMapToCellArray(attributeMap, mesh, default=0.0):
                 else:
                     #print('---------------------')
                     #print(att, idx, pair[1], type(pair[1]), float(pair[1]))
-                    if isinstance(pair[1], np.complex):
+                    if isinstance(pair[1], complex):
                         if not isinstance(att, pg.CVector):
                             att = pg.math.toComplex(att)
                         att.setVal(val=pair[1], ids=idx)

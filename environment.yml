@@ -24,3 +24,4 @@ dependencies:
   - meshio
   - tetgen
   - panel
+  - conda-build

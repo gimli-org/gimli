@@ -29,8 +29,37 @@ import numpy as np
 import pygimli as pg
 
 
+__NO_CACHE__ = False
+
+def noCache(c):
+    global __NO_CACHE__
+    __NO_CACHE__ = c
+
 def strHash(string):
     return int(hashlib.sha224(string.encode()).hexdigest()[:16], 16)
+
+def valHash(a):
+    
+    if isinstance(a, str):
+        return strHash(a)
+    elif isinstance(a, int):
+        return a
+    elif isinstance(a, list):
+        hsh = 0
+        for item in a:
+            hsh = hsh ^ valHash(item)
+        return hsh
+    elif isinstance(a, np.ndarray):
+        if a.ndim == 1:
+            return hash(pg.Vector(a))
+        elif a.ndim == 2:
+            # convert to RVector to use memcopy
+            return hash(pg.Vector(a.reshape((1,a.shape[0]*a.shape[1]))[0]))
+        else:
+            print(a)
+            pg.error('no hash for numpy array')
+
+    return hash(a)
 
 class Cache(object):
     def __init__(self, hashValue):
@@ -84,6 +113,8 @@ class Cache(object):
         elif self.info['type'] == 'ndarray':
             pg.info('Save ndarray')
             np.save(self._name, v, allow_pickle=True)
+        elif hasattr(v, 'save') and hasattr(v, 'load'):
+            v.save(self._name)
         else:
             np.save(self._name, v, allow_pickle=True)
             # pg.warn('ascii save of type', self.info['type'], 'might by dangerous')
@@ -112,6 +143,8 @@ class Cache(object):
                 # if len(self.info['type']) != 1:
                 #     pg.error('only single return caches supported for now.')
 
+                #pg._y(pg.pf(self.info))
+                
                 if self.info['type'] == 'DataContainerERT':
                     self._value = pg.DataContainerERT(self.info['file'],
                                                       removeInvalid=False)
@@ -127,6 +160,11 @@ class Cache(object):
                 elif self.info['type'] == 'ndarray':
                     self._value = np.load(self.info['file'] + '.npy',
                                           allow_pickle=True)
+                elif self.info['type'] == 'Cm05Matrix':
+                    self._value = pg.matrix.Cm05Matrix(self.info['file'])
+                elif self.info['type'] == 'GeostatisticConstraintsMatrix':
+                    self._value = pg.matrix.GeostatisticConstraintsMatrix(
+                                                            self.info['file'])
                 else:
                     self._value = np.load(self.info['file'] + '.npy',
                                           allow_pickle=True)
@@ -192,23 +230,11 @@ class CacheManager(object):
 
         argHash = 0
         for a in args:
-            if isinstance(a, str):
-                argHash = argHash ^ strHash(a)
-            elif isinstance(a, list):
-                for item in a:
-                    if isinstance(item, str):
-                        argHash = argHash ^ strHash(item)
-                    else:
-                        argHash = argHash ^ hash(item)
-            else:
-                argHash = argHash ^ hash(a)
+            argHash = argHash ^ valHash(a)
 
         for k, v in kwargs.items():
-            if isinstance(v, str):
-                argHash = argHash ^ strHash(v)
-            else:
-                argHash = argHash ^ hash(v)
-
+            argHash = argHash ^ valHash(k) ^ valHash(v)
+            
         pg.debug("Hashing took:", pg.dur(), "s")
         return funcHash ^ versionHash ^ codeHash ^ argHash
 
@@ -229,7 +255,7 @@ def cache(funct):
     """Cache decorator."""
     def wrapper(*args, **kwargs):
 
-        if '--noCache' in sys.argv or '-N' in sys.argv:
+        if '--noCache' in sys.argv or '-N' in sys.argv or __NO_CACHE__ is True:
             return funct(*args, **kwargs)
 
         cache = CacheManager().cache(funct, *args, **kwargs)

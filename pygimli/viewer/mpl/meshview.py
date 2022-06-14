@@ -405,7 +405,7 @@ def drawModel(ax, mesh, data=None, tri=False, rasterized=False,
 
 
 def drawSelectedMeshBoundaries(ax, boundaries, color=None, linewidth=1.0,
-                               linestyles="-"):
+                               linestyles="-", **kwargs):
     """Draw mesh boundaries into a given axes.
 
     Parameters
@@ -435,7 +435,9 @@ def drawSelectedMeshBoundaries(ax, boundaries, color=None, linewidth=1.0,
         lines.append(list(zip([bound.node(0).x(), bound.node(1).x()],
                               [bound.node(0).y(), bound.node(1).y()])))
 
-    lineCollection = mpl.collections.LineCollection(lines, antialiaseds=drawAA)
+    lineCollection = mpl.collections.LineCollection(lines, 
+                                                    antialiaseds=drawAA, 
+                                                    **kwargs)
 
     if color is None:
         viewdata = [b.marker() for b in boundaries]
@@ -1064,7 +1066,7 @@ def drawStreamLines(ax, mesh, u, nx=25, ny=25, **kwargs):
     return gci
 
 
-def drawStreamLine_(ax, mesh, c, data, dataMesh=None, linewidth=1.0,
+def drawStreamLine(ax, mesh, c, data, dataMesh=None, linewidth=1.0,
                     dropTol=0.0, **kwargs):
     """Draw a single streamline.
 
@@ -1203,7 +1205,7 @@ def drawStreams(ax, mesh, data, startStream=3, coarseMesh=None, quiver=False,
     Keyword Arguments
     -----------------
     **kwargs
-        Additional kwargs forwarded to axe.quiver, drawStreamLine_
+        Additional kwargs forwarded to axe.quiver, drawStreamLine
 
     Examples
     --------
@@ -1275,7 +1277,7 @@ def drawStreams(ax, mesh, data, startStream=3, coarseMesh=None, quiver=False,
                 [(viewMesh.xmax() - viewMesh.xmax()) / 2.0, y])
             if c is not None:
                 if c.valid():
-                    drawStreamLine_(ax, viewMesh, c, data, dataMesh, **kwargs)
+                    drawStreamLine(ax, viewMesh, c, data, dataMesh, **kwargs)
 
     elif startStream == 2:
         # start a stream from each boundary cell
@@ -1284,7 +1286,7 @@ def drawStreams(ax, mesh, data, startStream=3, coarseMesh=None, quiver=False,
                 [x, (viewMesh.ymax() - viewMesh.ymax()) / 2.0])
             if c is not None:
                 if c.valid():
-                    drawStreamLine_(ax, viewMesh, c, data, dataMesh, **kwargs)
+                    drawStreamLine(ax, viewMesh, c, data, dataMesh, **kwargs)
 
     elif startStream == 3:
         # start a stream from each boundary cell
@@ -1294,12 +1296,12 @@ def drawStreams(ax, mesh, data, startStream=3, coarseMesh=None, quiver=False,
                 c = b.rightCell()
 
             if c.valid():
-                drawStreamLine_(ax, viewMesh, c, data, dataMesh, **kwargs)
+                drawStreamLine(ax, viewMesh, c, data, dataMesh, **kwargs)
 
     # start a stream from each unused cell
     for c in viewMesh.cells():
         if c.valid():
-            drawStreamLine_(ax, viewMesh, c, data, dataMesh, **kwargs)
+            drawStreamLine(ax, viewMesh, c, data, dataMesh, **kwargs)
 
     for c in viewMesh.cells():
         c.setValid(True)

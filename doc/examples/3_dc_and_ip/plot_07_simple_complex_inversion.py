@@ -35,10 +35,8 @@ from pygimli.physics import ert
 
 
 def get_scheme():
-    scheme = ert.createERTData(
-        elecs=np.linspace(start=0, stop=50, num=51),
-        schemeName='dd'
-    )
+    scheme = ert.createData(elecs=np.linspace(start=0, stop=50, num=51),
+                            schemeName='dd')
     # Not strictly required, but we switch potential electrodes to yield
     # positive geometric factors. Note that this was also done for the
     # synthetic data inverted later.
@@ -191,10 +189,8 @@ def plot_fwd_model(axes):
 
 ###############################################################################
 # Create a measurement scheme for 51 electrodes, spacing 1
-scheme = ert.createERTData(
-    elecs=np.linspace(start=0, stop=50, num=51),
-    schemeName='dd'
-)
+scheme = ert.createData(elecs=np.linspace(start=0, stop=50, num=51),
+                        schemeName='dd')
 # Not strictly required, but we switch potential electrodes to yield positive
 # geometric factors. Note that this was also done for the synthetic data
 # inverted later.
@@ -249,12 +245,17 @@ J0 = J_re + 1j * J_im
 ###############################################################################
 # Regularization matrix
 rm = fop.regionManager()
+rm.setMesh(mesh) # need to set here manually because of ignoreRegionManager=True
 rm.setVerbose(True)
 rm.setConstraintType(2)
 
 Wm = pg.matrix.SparseMapMatrix()
 rm.fillConstraints(Wm)
+#print(Wm)
+#print(Wm.values())
 Wm = pg.utils.sparseMatrix2coo(Wm)
+#print(Wm)
+
 ###############################################################################
 # read-in data and determine error parameters
 # filename = pg.getExampleFile(

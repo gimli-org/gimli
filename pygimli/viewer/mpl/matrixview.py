@@ -42,7 +42,7 @@ def drawSparseMatrix(ax, mat, **kwargs):
     mat = pg.utils.sparseMatrix2coo(mat)
     mat.row += row
     mat.col += col
-    gci = ax.spy(mat, color=color)
+    gci = ax.spy(mat, color=color, **kwargs)
 
     ax.autoscale(enable=True, axis='both', tight=True)
     return gci

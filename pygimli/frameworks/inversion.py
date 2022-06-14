@@ -25,7 +25,7 @@ class Inversion(object):
     debug : bool
         Give debug output
     startModel : float|array|None
-        Holds the current starting model. The starting model can be set via init argument 
+        Holds the current starting model. The starting model can be set via init argument
         or as propery. If not set explicit, it will be estimated from the forward operator assoiated methods.
         This property will be recalulated for every run call if not set explicit with self.startModel = float|array, or None to reforce autogeneration.
         Note, the run call accept a temporary startModel for the current calucaltion.
@@ -53,13 +53,13 @@ class Inversion(object):
 
         self._inv = None
         self._fop = None
-        self._lam = 20      # lambda regularization 
+        self._lam = 20      # lambda regularization
 
-        ### cache: keep startmodel if set explicit or calculated from FOP, will be recalulated for every run if not set explicit 
+        ### cache: keep startmodel if set explicit or calculated from FOP, will be recalulated for every run if not set explicit
         self._startModel = None
         ### flag to keep startModel if set manual by init or self.startModel until self.startModel = None
-        self._keepStartModel = False 
-        
+        self._keepStartModel = False
+
         self.reset()
 
         if inv is not None:
@@ -77,7 +77,7 @@ class Inversion(object):
 
         if "startModel" in kwargs:
             self.startModel = kwargs["startModel"]
-        
+
     def reset(self):
         """Reset function currently called at the beginning of every inversion
         run."""
@@ -89,7 +89,7 @@ class Inversion(object):
         self._model = None
         self._dataVals = None
         self._errorVals = None
-        
+
     @property
     def inv(self):
         return self._inv
@@ -178,9 +178,10 @@ class Inversion(object):
         else:
             self._keepStartModel = True
         self._startModel = sm
-        
+
     def convertStartModel(self, model):
-        """Convert scalar or array into startmodel with valid range or self.parameterCount, if possible.
+        """Convert scalar or array into startmodel with valid range or
+            self.fop.parameterCount, if possible.
 
         Attributes
         ----------
@@ -191,14 +192,14 @@ class Inversion(object):
             return None
         elif isinstance(model, float) or isinstance(model, int):
             pg.info("Homogeneous starting model set to:", float(model))
-            return np.ones(self.parameterCount) * float(model)
+            return np.full(self.fop.parameterCount, float(model))
         elif hasattr(model, '__iter__'):
-            if len(model) == self.parameterCount:
+            if len(model) == self.fop.parameterCount:
                 pg.info("Starting model set from given array.", model)
                 return model
             else:
                 pg.error("Starting model size invalid {0} != {1}.".
-                         format(len(model), self.parameterCount))
+                         format(len(model), self.fop.parameterCount))
         return None
 
     @property
@@ -261,7 +262,7 @@ class Inversion(object):
         #     print(self._dataVals)
         #     pg.warn("Found zero data values. \
         #             Setting them to a TOLERANCE value of 1e-12")
-        #     pg.fixZero(self._dataVals, 1e-12)
+        #     pg.core.fixZero(self._dataVals, 1e-12)
 
     @property
     def errorVals(self):
@@ -283,14 +284,7 @@ class Inversion(object):
             print(self._errorVals)
             pg.warn(
                 "Found zero error values. Setting them to fallback value of 1")
-            pg.fixZero(self._errorVals, 1)
-
-    @property
-    def parameterCount(self):
-        pC = self.fop.regionManager().parameterCount()
-        if pC == 0:
-            pg.warn("Parameter count is 0")
-        return pC
+            pg.core.fixZero(self._errorVals, 1)
 
     @property
     def robustData(self):
@@ -333,20 +327,29 @@ class Inversion(object):
     @lam.setter
     def lam(self, lam):
         self._lam = lam
-        
-    def setDeltaChiStop(self, it):
+
+    def setDeltaPhiStop(self, it):
+        """Define minimum relative decrease in objective function to stop."""
         self.inv.setDeltaPhiAbortPercent(it)
 
+    @pg.renamed(setDeltaPhiStop)
+    def setDeltaChiStop(self, it):
+        self.setDeltaPhiStop(it)
+
     def echoStatus(self):
+        """Echo inversion status (model, response, rms, chi^2, phi)."""
         self.inv.echoStatus()
 
     def setPostStep(self, p):
+        """Set a function to be called after each iteration."""
         self._postStep = p
 
     def setPreStep(self, p):
+        """Set a function to be called before each iteration."""
         self._preStep = p
 
     def setData(self, data):
+        """Set data."""
         # QUESTION_ISNEEDED
         if isinstance(data, pg.DataContainer):
             raise Exception("should not be here .. its Managers job")
@@ -355,10 +358,11 @@ class Inversion(object):
             self.dataVals = data
 
     def chi2(self, response=None):
+        """Chi-squared misfit (mean of squared error-weighted misfit)."""
         return self.phiData(response) / len(self.dataVals)
 
     def phiData(self, response=None):
-        """ """
+        """Data objective function (sum of suqred error-weighted misfit)."""
         if response is None:
             response = self.response
 
@@ -369,7 +373,7 @@ class Inversion(object):
         return pg.math.dot(dData, dData)
 
     def phiModel(self, model=None):
-        """ """
+        """Model objective function (norm of regularization term)."""
         if model is None:
             model = self.model
 
@@ -377,7 +381,7 @@ class Inversion(object):
         return pg.math.dot(rough, rough)
 
     def phi(self, model=None, response=None):
-        """ """
+        """Total objective function (phiD + lambda * phiM)"""
         phiD = self.phiData(response)
         if self.inv.localRegularization():
             return phiD
@@ -391,6 +395,50 @@ class Inversion(object):
     def absrms(self):
         """Absolute root-mean-square misfit of the last run."""
         return self.inv.absrms()
+
+    def setRegularization(self, *args, **kwargs):
+        """Set regularization properties for the inverse problem.
+
+        This can be for specific regions (args) or all regions (no args).
+
+        Parameters
+        ----------
+        regionNr : int, [ints], '*'
+            Region number, list of numbers, or wildcard "*" for all.
+
+        startModel : float
+            starting model value
+        limits : [float, float]
+            lower and upper limit for value using a barrier transform
+        trans : str
+            transformation for model barrier: "log", "cot", "lin"
+        cType : int
+            constraint (regularization) type
+        zWeight : float
+            relative weight for vertical boundaries
+        background : bool
+            exclude region from inversion completely (prolongation)
+        fix : float
+            exclude region from inversion completely (fix to value)
+        single : bool
+            reduce region to one unknown
+        correlationLengths : [floats]
+            correlation lengths for geostatistical inversion (x', y', z')
+        dip : float [0]
+            angle between x and x' (first correlation length)
+        strike : float [0]
+            angle between y and y' (second correlation length)
+        """
+        if len(args) == 0:
+            args = ('*',)
+
+        if "operator" in kwargs:
+            self.fop.setConstraints(kwargs.pop("operator"))
+        if "C" in kwargs:
+            self.fop.setConstraints(kwargs.pop("C"))
+
+        if len(kwargs) > 0:
+            self.fop.setRegionProperties(*args, **kwargs)
 
     def run(self, dataVals, errorVals, **kwargs):
         """Run inversion.
@@ -431,6 +479,7 @@ class Inversion(object):
         if self.fop is None:
             raise Exception("Need valid forward operator for inversion run.")
 
+        self.fop.setVerbose(False)  # gets rid of CHOLMOD messages
         maxIter = kwargs.pop('maxIter', self.maxIter)
         minDPhi = kwargs.pop('dPhi', self.minDPhi)
         showProgress = kwargs.pop('showProgress', False)
@@ -447,7 +496,6 @@ class Inversion(object):
 
         ### This triggers the update of all fop properties, any property setting need to be done before this step
         self.inv.setTransModel(self.fop.modelTrans)
-
         self.dataVals = dataVals
         self.errorVals = errorVals
 
@@ -462,25 +510,26 @@ class Inversion(object):
         #### we cannot add the following into kwargs.pop, since someone may call with explicit startModel=None
         if startModel is None:
             startModel = self.startModel
-        
+
         if self.verbose:
             pg.info('Starting inversion.')
             print("fop:", self.inv.fop())
-            if isinstance(self.dataTrans, pg.trans.TransCumulative):
+            if isinstance(self.inv.transData(), pg.trans.TransCumulative):
                 print("Data transformation (cumulative):")
-                for i in range(self.dataTrans.size()):
-                    print("\t", i, self.dataTrans.at(i))
+                for i in range(self.inv.transData().size()):
+                    print("\t", i, self.inv.transDataataTrans().at(i))
             else:
-                print("Data transformation:", self.dataTrans)
-            if isinstance(self.modelTrans, pg.trans.TransCumulative):
+                print("Data transformation:", self.inv.transData())
+            
+            if isinstance(self.inv.transModel(), pg.trans.TransCumulative):
                 print("Model transformation (cumulative):")
-                for i in range(self.modelTrans.size()):
+                for i in range(self.inv.transModel().size()):
                     if i < 10:
-                        print("\t", i, self.modelTrans.at(i))
+                        print("\t", i, self.inv.transModel().at(i))
                     else:
                         print(".", end='')
             else:
-                print("Model transformation:", self.modelTrans)
+                print("Model transformation:", self.inv.transModel())
 
             print("min/max (data): {0}/{1}".format(pf(min(self._dataVals)),
                                                    pf(max(self._dataVals))))
@@ -549,7 +598,7 @@ class Inversion(object):
             # Do we need to check the following before oder after chi2 calc??
             lam *= self.inv.lambdaFactor()
             self.inv.setLambda(lam)
-            
+
             if self.robustData:
                 self.inv.robustWeighting()
 
@@ -589,14 +638,15 @@ class Inversion(object):
         return self.model
 
     def showProgress(self, style='all'):
-        r"""Showing the inversion progress after every iteration. Can show
-        models if `drawModel` method exists. The default fallback is plotting
-        the :math:`\chi^2` fit as a function of iterations. Called if
+        r"""Show the inversion progress after every iteration.
+
+        Can show models if `drawModel` method exists. The default fallback is
+        plotting the :math:`\chi^2` fit as a function of iterations. Called if
         `showProgress=True` is set for the inversion run.
         """
 
         if self.fop.drawModel is None:
-            style = 'convergence' 
+            style = 'convergence'
 
         if self.axs is None:
             axs = None

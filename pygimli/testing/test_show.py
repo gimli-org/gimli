@@ -69,25 +69,37 @@ def testColorbar():
     grid = pg.createGrid(x=np.linspace(10., 110., 11)-5, y=np.linspace(0., 20, 2))
 
     fig, axs = plt.subplots(nrows=3, ncols=3, figsize=((10,6)))
-    ax, cbar = pg.show(grid, data=pg.x(grid.cellCenter()), label='log x',
+    ax, cbar = pg.show(grid, data=pg.x(grid.cellCenter()), 
+                       label='log x',
                        ax=axs[0][0], showMesh=True, cMap='Paired', logScale=True)
-    ax, cbar = pg.show(grid, data=pg.x(grid.cellCenter())+5., label='log x',
+    ax, cbar = pg.show(grid, data=pg.x(grid.cellCenter())+5., 
+                       label='log x',
                        ax=axs[1][0], showMesh=True, cMap='Paired', logScale=True)
     pg.viewer.mpl.setMappableData(cbar.mappable, pg.x(grid.cellCenter()))
 
     ax, cbar = pg.show(grid, data=pg.x(grid.cellCenter()), logScale=True,
                        ax=axs[2][0], showMesh=True, cMap='Paired')
     ###########################################################################
-    ax, cbar = pg.show(grid, data=pg.x(grid.cellCenter()), label='lin x',
+    ax, cbar = pg.show(grid, data=pg.x(grid.cellCenter()), 
+                       label='lin x, cMap=Paired',
                        ax=axs[0][1], logScale=False, cMap='Paired')
-    ax, cbar = pg.show(grid, data=pg.x(grid.cellCenter())+5, label='lin x',
+    ax, cbar = pg.show(grid, data=pg.x(grid.cellCenter())+5, 
+                       label='lin x, cMap=Paired (same like above)',
                        ax=axs[1][1], logScale=False, cMap='Paired')
+    
+    ##!!// thisfails and changes cmap
     pg.viewer.mpl.setMappableData(cbar.mappable, pg.x(grid.cellCenter()))
+
+
+
     ###########################################################################
-    grid = pg.createGrid(x=np.linspace(10., 110., 11)-25, y=np.linspace(0., 20, 2))
-    ax, cbar = pg.show(grid, data=pg.x(grid.cellCenter()), label='log with neg. x',
+    grid = pg.createGrid(x=np.linspace(10., 110., 11)-25, 
+                         y=np.linspace(0., 20, 2))
+    ax, cbar = pg.show(grid, data=pg.x(grid.cellCenter()), 
+                        label='log with neg. x',
                        ax=axs[0][2], showMesh=True, cMap='Paired', logScale=True)
-    ax, cbar = pg.show(grid, data=pg.x(grid.cellCenter())-45, label='log with neg. x',
+    ax, cbar = pg.show(grid, data=pg.x(grid.cellCenter())-45, 
+                       label='log with neg. x',
                        ax=axs[1][2], showMesh=True, cMap='Paired', logScale=True)
     pg.viewer.mpl.setMappableData(cbar.mappable, pg.x(grid.cellCenter()))
     ax.figure.tight_layout()
@@ -207,9 +219,9 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         locals()[sys.argv[1]]()
     else:
-        testShowVariants()
+        # testShowVariants()
         testColorbar()
-        testCBarLevels()
-        testColRange()
-        testCoverage()
+        #testCBarLevels()
+        # testColRange()
+        # testCoverage()
     

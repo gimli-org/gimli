@@ -304,8 +304,11 @@ bool RInversion::oneStep() {
         DOSAVE save(tM_->deriv(model_), "modelTrans");
         DOSAVE save(tD_->deriv(response_), "responseTrans");
 
+
+
         if (verbose_) std::cout << "solve CGLSCDWWtrans with lambda = " << lambda_ << std::endl;
 
+        try{
         solveCGLSCDWWhtrans(*forward_->jacobian(), *forward_->constraints(),
                                 dataWeight_,
                                 deltaDataIter_,
@@ -315,6 +318,20 @@ bool RInversion::oneStep() {
                                 tD_->deriv(response_),
                                 lambda_, roughness, maxCGLSIter_, CGLStol_,
                                 dosave_);
+        } catch(...){
+            __MS("Debug halt! 1700")
+            forward_->mesh()->save("S1700.bms");
+            forward_->regionManager().mesh().save("R1700.bms");
+            
+            // __MS("Debug halt! 17708")
+            // forward_->mesh()->save("S17708.bms");
+            // forward_->regionManager().mesh().save("R17708.bms");
+            
+            std::cout<<forward_->mesh()->boundary(2121).marker() << std::endl;
+            std::cout<<forward_->mesh()->boundary(2122).marker() << std::endl;
+
+            exit(1);
+        }
     } // else no optimization
 
     //restrictMax(deltaModelIter_, 50.0); // only work for log trans

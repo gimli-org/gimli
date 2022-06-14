@@ -18,8 +18,7 @@ from .core import (BVector, CVector, DataContainer, DataContainerERT,
 from .core import isScalar, isArray, isPos, isR3Array, isComplex, isMatrix
 
 from .core import math # alias all from .core.math.* to pg.math.*
-from .core import matrix # alias all from .core.matrix.* to pg.matrix.*
-
+#from .core import matrix # alias all from .core.matrix.* to pg.matrix.*
 from .core.matrix import (BlockMatrix, Matrix, SparseMapMatrix, SparseMatrix)
 
 from .core.logger import (_, _d, _g, _r, _y, _b, critical, d, debug,
@@ -39,8 +38,12 @@ from .viewer import plt, show, wait
 from .frameworks import fit, Modelling, Inversion
 from .testing import test#, setTestingMode, testingMode
 
+from .math import matrix # alias all from .core.matrix.* to pg.matrix.*
+
+
 from .core.load import getCachePath, getExampleFile, getExampleData
 from .core.load import load, optImport
+
 
 def checkAndFixLocaleDecimal_point(verbose=False):
     """

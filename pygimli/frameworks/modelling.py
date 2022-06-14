@@ -167,6 +167,14 @@ class Modelling(pg.core.ModellingBase):
         self._applyRegionProperties()
         return super(Modelling, self).regionManager()
 
+    @property
+    def parameterCount(self):
+        pC = self.regionManager().parameterCount()
+        if pC == 0:
+            pg.warn("Parameter count is 0")
+
+        return pC
+
     def ensureContent(self):
         pass
 
@@ -177,11 +185,6 @@ class Modelling(pg.core.ModellingBase):
     def createDefaultStartModel(self, dataVals):
         """Create the default startmodel as the median of the data values."""
         pg.critical("'don't use me")
-        # mv = pg.math.median(dataVals)
-        # pg.info("Set default startmodel to "
-        #         "median(data values)={0}".format(mv))
-        # sm = pg.Vector(self.regionManager().parameterCount(), mv)
-        # return sm
 
     def createStartModel(self, dataVals=None):
         """Create the default startmodel as the median of the data values.
@@ -193,7 +196,7 @@ class Modelling(pg.core.ModellingBase):
         if dataVals is not None:
             mv = pg.math.median(dataVals)
             pg.info("Use median(data values)={0}".format(mv))
-            sm = pg.Vector(self.regionManager().parameterCount(), mv)
+            sm = pg.Vector(self.parameterCount, mv)
         else:
             sm = self.regionManager().createStartModel()
         return sm
@@ -219,13 +222,35 @@ class Modelling(pg.core.ModellingBase):
 
             startModel=None, limits=None, trans=None,
             cType=None, zWeight=None, modelControl=None,
-            background=None, single=None, fix=None
+            background=None, fix=None, single=None,
+            correlationLengths=None, dip=None, strike=None
 
         Parameters
         ----------
-        regionNr: int, [int], '*'
-            Region number, list of, or wildcard for all.
-
+        regionNr : int, [ints], '*'
+            Region number, list of numbers, or wildcard "*" for all.
+        startModel : float
+            starting model value
+        limits : [float, float]
+            lower and upper limit for value using a barrier transform
+        trans : str
+            transformation for model barrier: "log", "cot", "lin"
+        cType : int
+            constraint (regularization) type
+        zWeight : float
+            relative weight for vertical boundaries
+        background : bool
+            exclude region from inversion completely (prolongation)
+        fix : float
+            exclude region from inversion completely (fix to value)
+        single : bool
+            reduce region to one unknown
+        correlationLengths : [floats]
+            correlation lengths for geostatistical inversion (x', y', z')
+        dip : float [0]
+            angle between x and x' (first correlation length)
+        strike : float [0]
+            angle between y and y' (second correlation length)
         """
         if regionNr == '*':
             for regionNr in self.regionManager().regionIdxs():
@@ -248,6 +273,9 @@ class Modelling(pg.core.ModellingBase):
                                                 'background': None,
                                                 'single': None,
                                                 'fix': None,
+                                                'correlationLengths':None,
+                                                'dip':None,
+                                                'strike':None,
                                                 }
 
         for key in list(kwargs.keys()):
@@ -286,7 +314,7 @@ class Modelling(pg.core.ModellingBase):
         if self._regionsNeedUpdate is False:
             return
 
-        # call super class her because self.regionManager() calls always
+        # call super class her because self.regionManager() calls allways
         #  __applyRegionProperies itself
         rMgr = super(Modelling, self).regionManager()
         for rID, vals in self._regionProperties.items():
@@ -318,7 +346,10 @@ class Modelling(pg.core.ModellingBase):
                     self.clearConstraints()
                     rMgr.region(rID).setConstraintType(vals['cType'])
 
-            rMgr.region(rID).setZWeight(vals['zWeight'])
+            if vals['zWeight'] is not None:
+                rMgr.region(rID).setZWeight(vals['zWeight'])
+                self.clearConstraints()
+
             rMgr.region(rID).setModelControl(vals['modelControl'])
 
             if vals['limits'][0] > 0:
@@ -326,6 +357,13 @@ class Modelling(pg.core.ModellingBase):
 
             if vals['limits'][1] > 0:
                 rMgr.region(rID).setUpperBound(vals['limits'][1])
+
+            if vals['correlationLengths'] is not None:
+                self.clearConstraints()
+            if vals['dip'] is not None:
+                self.clearConstraints()
+            if vals['strike'] is not None:
+                self.clearConstraints()
 
         for r1, r2, w in self._interRegionCouplings:
             rMgr.setInterRegionConstraint(r1, r2, w)
@@ -372,6 +410,28 @@ class Modelling(pg.core.ModellingBase):
         else:
             print(kwargs)
             raise Exception("No yet implemented")
+
+
+class LinearModelling(Modelling):
+    """Modelling class for linearized problems with a given matrix."""
+    def __init__(self, A):
+        """Initialize by storing the (reference to the) matrix."""
+        super().__init__()
+        self.A = A
+        self.setJacobian(self.A)
+
+    def response(self, model):
+        """Linearized forward modelling by matrix-vector product."""
+        return self.A * model
+
+    def createJacobian(self, model):
+        """Do not compute a jacobian (linear)."""
+        pass
+
+    @property
+    def parameterCount(self):
+        """Define the number of parameters from the matrix size."""
+        return self.A.cols()
 
 
 class Block1DModelling(Modelling):
@@ -487,6 +547,7 @@ class MeshModelling(Modelling):
 
     @property
     def mesh(self):
+        pg._r("inuse ?")
         if self._fop is not None:
             pg._r("inuse ?")
             return self._fop.mesh
@@ -506,8 +567,37 @@ class MeshModelling(Modelling):
 
     def createConstraints(self):
         """"""
+        # just ensure there is valid mesh
         self.mesh()
-        super().createConstraints()
+
+        foundGeoStat = False
+        for reg, props in self.regionProperties().items():
+
+            if props['correlationLengths'] is not None or \
+                props['dip'] is not None or \
+                props['strike'] is not None:
+
+                I = props.get('correlationLengths') or 5
+                dip = props.get('dip') or 0
+                strike = props.get('strike') or 0
+
+                pg.info('Creating GeostatisticConstraintsMatrix for region' +
+                        f' {reg} with: I={I}, dip={dip}, strike={strike}')
+
+                if foundGeoStat == True:
+                    pg.critical('Only one global GeostatisticConstraintsMatrix possible at the moment.')
+
+                ### we need to keep a copy of C until refcounting in the core works
+                self._C = pg.matrix.GeostatisticConstraintsMatrix(
+                    mesh=self.paraDomain, I=I, dip=dip, strike=strike,
+                )
+
+                foundGeoStat = True
+                self.setConstraints(self._C)
+
+        if foundGeoStat == False:
+            super().createConstraints()
+
         return self.constraints()
 
     def paraModel(self, model):
@@ -557,6 +647,7 @@ class MeshModelling(Modelling):
 
         m = self.createRefinedFwdMesh(m)
         self.setMeshPost(m)
+
         self._regionChanged = False
         super(Modelling, self).setMesh(m, ignoreRegionManager=True)
 
@@ -868,8 +959,8 @@ class LCModelling(Modelling):
         cID = [c.id() for c in self._mesh.cells()]
         # print(np.array(pID))
         # print(np.array(cID))
-        # print(self.regionManager().parameterCount())
-        perm = [0]*self.regionManager().parameterCount()
+        # print(self.parameterCount
+        perm = [0]*self.parameterCount
         for i in range(len(perm)):
             perm[pID[i]] = cID[i]
 
@@ -1012,7 +1103,7 @@ class ParameterModelling(Modelling):
         pg.info("Model: ", label)
 
 
-class PriorModelling(Modelling):
+class PriorModelling(MeshModelling):
     """Forward operator for grabbing values out of a mesh (prior data)."""
 
     def __init__(self, mesh, pos, **kwargs):
@@ -1034,3 +1125,6 @@ class PriorModelling(Modelling):
     def createJacobian(self, model):
         """Do nothing (linear)."""
         pass
+
+    def createRefinedFwdMesh(self, mesh):
+        return mesh

@@ -707,16 +707,27 @@ class SIPSpectrum(object):
 
         Parameters
         ----------
-        ePhi : float
+        ePhi : float [0.001]
+            absolute error of phase angle in rad
+        eAmp : float [0.01 = 1%]
             absolute error of phase angle
         lam : float
             regularization parameter
+        robust : bool [False]
+            use robustData (L1 norm on data side)
+        useRho : bool [True]
+            Cole-Cole defined for impedance/resistivity, otherwise conductivity
+        useMult : bool [False]
+            the two terms are combined as product (otherwise sum)
+        tauRho : bool [False]
+            in case of useRho=False the time constant is defined like for rho
         mpar1/2, taupar1/2, cpar1/2 : list[3]
             inversion parameters (starting value, lower bound, upper bound)
             for Cole-Cole parameters (m, tau, c)
 
         """
-        f2CC = DoubleColeCole(self.f, rho=useRho, aphi=aphi, tauRho=False)
+        f2CC = DoubleColeCole(self.f, rho=useRho, aphi=aphi, tauRho=False,
+                              useMult=useMult)
         if useRho:
             rhoStart = min(self.amp)
             f2CC.region(0).setParameters(rhoStart, 0., rhoStart*10)

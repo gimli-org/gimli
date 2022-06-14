@@ -174,15 +174,15 @@ class VESModelling(Block1DModelling):
         ra = data
         raE = error
 
-        style = dict(pg.frameworks.modelling.DEFAULT_STYLES.get(label, 
+        style = dict(pg.frameworks.modelling.DEFAULT_STYLES.get(label,
                         pg.frameworks.modelling.DEFAULT_STYLES['Default']))
         style.update(kwargs)
         a1 = ax
         plot = getattr(a1, plot)
-        
+
         if label is None:
             label = r'$\varrho_a$'
-        
+
         plot(ra, ab2, label=label, **style)
 
         if raE is not None:
@@ -414,7 +414,7 @@ class VESManager(MethodManager1d):
 
         super(VESManager, self).__init__(**kwargs)
 
-        self.inv.setDeltaChiStop(1)
+        self.inv.setDeltaPhiStop(1)
 
         self.dataTrans = None
         self.rhoaTrans = pg.trans.TransLog()
