@@ -1721,7 +1721,7 @@ def extrude(p2, z=-1.0, boundaryMarker=0, **kwargs):
         pg.error("need two dimensional mesh or poly")
 
     if p2.cellCount() > 0:
-        return pg.meshtools.extrudeMesh(p2, **kwargs)
+        return pg.meshtools.extrudeMesh(p2, z, **kwargs)
         #pg.critical("Implementme")
 
     poly = pg.Mesh(3, isGeometry=True)

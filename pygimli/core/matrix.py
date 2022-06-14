@@ -100,15 +100,15 @@ def __ElementMatrix_str(self):
         s += str(self.colIDs()[i]).rjust(9)
     s += '\n'
 
-    s += '  ' + '-' * self.mat.cols()*(9 + maxRowID) + '-\n'
+    s += '  ' + '-' * self.mat().cols()*(9 + maxRowID) + '-\n'
 
-    for i in range(self.mat.rows()):
+    for i in range(self.mat().rows()):
         s += str(self.rowIDs()[i]).rjust(maxRowID) + " :"
         if isinstance(self.multR, (int, float)):
             for v in self.row_RM(i)*self.multR:
                 s += pg.pf(v).rjust(9)
         elif pg.isPos(self.multR):
-            if self.mat.cols() == len(self.multR):
+            if self.mat().cols() == len(self.multR):
                 for v in self.row_RM(i)*self.multR:
                     s += pg.pf(v).rjust(9)
             else:
@@ -120,20 +120,20 @@ def __ElementMatrix_str(self):
                 s += pg.pf(v).rjust(9)
 
         elif pg.isMatrix(self.multR):
-            if pg.isArray(self.multR.flatten(), self.mat.cols()):
-                for v in self.row_RM(i)*self.multR.flatten():
+            if pg.isArray(self.multR.flatten(), self.mat().cols()):
+                for v in self.row(i)*self.multR.flatten():
                     s += pg.pf(v).rjust(9)
             else:
-                print(self.row_RM)
+                print(self.row)
                 print(self.multR)
                 pg.critical('invalid matrix element multR.')
 
         elif self.multR is not None:
-            print(self.mat)
+            print(self.mat())
             print(self.multR)
             pg.critical('invalid element multR.')
         else:
-            for v in self.row_RM(i):
+            for v in self.row(i):
                 s += pg.pf(v).rjust(9)
         s += '\n'
     return s

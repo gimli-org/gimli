@@ -57,11 +57,15 @@ def valHash(a):
         else:
             print(a)
             pg.error('no hash for numpy array')
+    elif hasattr(a, '__hash__'):
+        return hash(a)    
+
     elif callable(a):
+        # for lambdas
         # pg._r('hash:', inspect.getsource(a))
         return strHash(inspect.getsource(a))
 
-
+    pg.critical('cannot find hash for:', a)
     return hash(a)
 
 class Cache(object):
