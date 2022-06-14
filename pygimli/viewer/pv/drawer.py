@@ -18,7 +18,7 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
         The mesh to show.
     notebook: bool [False]
         Sets the plotter up for jupyter notebook/lab.
-    cmap: str ['viridis']
+    cMap: str ['viridis']
         The colormap string.
 
     Returns
@@ -28,8 +28,8 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
     """
     # sort out a few kwargs to not confuse the plotter initialization
     show_edges = kwargs.pop('show_edges', True)
-    opacity = kwargs.pop('alpha', kwargs.pop('opacity', 1))
-    cmap = kwargs.pop('cmap', None)
+    opacity = kwargs.pop('alpha', kwargs.pop('opacity', 0))
+    cMap = kwargs.pop('cMap', None)
     color = kwargs.pop('color', 'k')
     style = kwargs.pop('style', 'wireframe')
     returnActor = kwargs.pop('returnActor', False)
@@ -39,7 +39,9 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
         #     ax = pv.PlotterITK(**kwargs)
         # else:
         ax = pv.Plotter(notebook=notebook, **kwargs)
+        ax.background_color = 'white'
 
+       
     ax.show_bounds(all_edges=True, minor_ticks=True)
     ax.add_axes()
 
@@ -47,11 +49,11 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
         mesh = pgMesh2pvMesh(mesh)
 
     _actor = ax.add_mesh(mesh,  # type: pv.UnstructuredGrid
-                         cmap=cmap,
-                         color=color,
-                         style=style,
-                         show_edges=show_edges,
-                         opacity=opacity,
+                        #  cmap=cMap,
+                        #  color=color,
+                        #  style=style,
+                         show_edges=True,
+                         #opacity=opacity,
                          )
 
     if returnActor:
@@ -88,8 +90,8 @@ def drawModel(ax=None, mesh=None, data=None, **kwargs):
 
     mesh = pgMesh2pvMesh(mesh, data, kwargs.pop('label', None))
 
-    if 'cmap' not in kwargs:
-        kwargs['cmap'] = 'viridis'
+    if 'cMap' not in kwargs:
+        kwargs['cMap'] = 'viridis'
     return drawMesh(ax, mesh, **kwargs)
 
 

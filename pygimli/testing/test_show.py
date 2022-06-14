@@ -200,12 +200,46 @@ def testCBarLevels():
 
 
 def testShowPV():
+    """
+        # Run from notebook
+        import pygimli as pg
+        from pygimli.testing.test_show import testShowPV
+        testShowPV()
+    """
+
     m1 = mt.createCube()
+    m1.setBoundaryMarkers(range(m1.boundaryCount()))
+    
     # pg.rc['view3D'] = 'fallback'
     # pg.show(m1)
 
     pg.rc['view3D'] = 'pyvista'
-    pg.show(m1, notebook=True)
+    print('Show Boundary:', m1)
+    pg.show(m1)
+
+    m1 = mt.createMesh(m1)
+    print('Show Cells:', m1)
+    m1.setCellMarkers(range(m1.cellCount()))
+    pg.show(m1)
+
+    print('Show Field (x)')
+    pg.show(m1, data=pg.x(m1), label='x')
+    
+
+def testPVBackends():
+    m1 = mt.createCube()
+    
+    # pg.rc['view3D'] = 'fallback'
+    # pg.show(m1)
+
+    pg.rc['view3D'] = 'pyvista'
+    print('Panel')
+    pg.show(m1, backend='panel')
+    print('Pythreejs')
+    pg.show(m1, backend='pythreejs')
+    print('ipyvtklink')
+    pg.show(m1, backend='ipyvtklink')
+
 
 def testCoverage():
     grid = pg.createGrid(10,10)
@@ -220,7 +254,8 @@ if __name__ == '__main__':
         locals()[sys.argv[1]]()
     else:
         # testShowVariants()
-        testColorbar()
+        # testColorbar()
+        testShowPV()
         #testCBarLevels()
         # testColRange()
         # testCoverage()

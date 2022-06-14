@@ -9,7 +9,6 @@ PyQt5 = pg.optImport('PyQt5', requiredFor="use pyGIMLi's 3D viewer")
 pyvista = pg.optImport('pyvista', requiredFor="properly visualize 3D data")
 panel = pg.optImport('panel', requiredFor='pyvista jupyter backend')
 
-print(pyvista.__version__)
 if pyvista is None:
     view3Dcallback = 'showMesh3DFallback'
 else:
@@ -18,22 +17,21 @@ else:
     vers_userf = float(pyvista.__version__[::-1].replace('.', '', 1)[::-1])
     vers_needs = '0.33.0'
     vers_needf = 0.330
+
     if vers_userf < vers_needf:
         pg.warn("Please consider updating PyVista to at least {}".format(
             vers_needs))
+    
+    #print(pyvista.__version__)
+    
     from pygimli.viewer.pv import drawModel
 
-if panel is None:
-    pg.warn("Please install panel to plot 3D models in Jupyter Notebooks - conda install panel")
-else:
-    pyvista.set_jupyter_backend('panel')    
-
-if PyQt5 is None:
-    inline = True
-else:
-    from .pv.show3d import Show3D
-    from PyQt5 import Qt
-    inline = False
+# if PyQt5 is None:
+#     inline = True
+# else:
+#     from .pv.show3d import Show3D
+#     from PyQt5 import Qt
+#     inline = False
 
 
 def showMesh3D(mesh, data, **kwargs):
@@ -97,23 +95,29 @@ def showMesh3DVista(mesh, data=None, **kwargs):
     (and values) from the dictionary.
     """
     hold = kwargs.pop('hold', False)
-    cmap = kwargs.pop('cmap', 'viridis')
-    notebook = kwargs.pop('notebook', inline)
+    cMap = kwargs.pop('cMap', 'viridis')
+    notebook = kwargs.pop('notebook', pg.notebook())
+
     gui = kwargs.pop('gui', not notebook)
 
     # add given data from argument
-    if gui:
+    # GUI tmp deactivated
+    if gui and 0: 
         app = Qt.QApplication(sys.argv)
         s3d = Show3D(app)
-        s3d.addMesh(mesh, data, cmap=cmap, **kwargs)
+        s3d.addMesh(mesh, data, cMap=cMap, **kwargs)
         if not hold:
             s3d.wait()
         return s3d.plotter, s3d  # plotter, gui
 
     else:
-        if notebook:
-            plotter = drawModel(None, mesh, data, notebook=notebook, cmap=cmap,
-                            **kwargs)
+
+        backend = kwargs.pop('backend', 'panel')
+
+        plotter = drawModel(None, mesh, data, notebook=notebook, 
+                            cMap=cMap, **kwargs)
+        
         if not hold:
-            plotter.show()
+            plotter.show(jupyter_backend=backend)
+        
         return plotter, None
