@@ -339,7 +339,6 @@ def prettyTime(t):
             return prettyFloat(t*1e9) + " ns"
         return prettyFloat(t) + " s"
 
-
 def niceLogspace(vMin, vMax, nDec=10):
     """Create nice logarithmic space from the next decade lower to vMin to
     decade larger then vMax.

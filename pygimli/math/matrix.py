@@ -353,15 +353,131 @@ class Cm05Matrix(pgcore.MatrixBase):
         return self.mult(x)  # matrix is symmetric by definition
 
 
-class NDMatrix(pgcore.BlockMatrix):
-    """Diagonal block (block-Jacobi) matrix derived from pg.matrix.BlockMatrix.
+class RepeatVMatrix(pgcore.BlockMatrix):
+    """Matrix repeating a base matrix N times vertically. Only A is stored.
 
-    (to be moved to a better place at a later stage)
+        M = | A |
+            | A |
+            | A |
     """
+    def __init__(self, A, num):
+        """Init matrix by specify matrix and number of repetitions.
+
+        Parameters
+        ----------
+        A : pg.MatrixBase (or derived)
+            matrix for constraining a single frame (e.g. 1st order smoothness)
+        num : int
+            number of repetitions
+        """
+        super().__init__()
+        self.A_ = A
+        self.Aid = self.addMatrix(self.A_)
+        nr = 0
+        for i in range(num):
+            self.addMatrixEntry(self.Aid, nr, 0)
+            nr += A.rows()
+
+        self.recalcMatrixSize()
+
+
+class RepeatHMatrix(pgcore.BlockMatrix):
+    """Matrix repeating a base matrix N times horizontally. Only A is stored.
+
+        M = [ A A A ]
+    """
+    def __init__(self, A, num):
+        """Init matrix by specify matrix and number of repetitions.
+
+        Parameters
+        ----------
+        A : pg.MatrixBase (or derived)
+            matrix for constraining a single frame (e.g. 1st order smoothness)
+        num : int
+            number of repetitions
+        """
+        super().__init__()
+        self.A_ = A
+        self.Aid = self.addMatrix(self.A_)
+        nc = 0
+        for i in range(num):
+            self.addMatrixEntry(self.Aid, 0, nc)
+            nc += A.cols()
+
+        self.recalcMatrixSize()
+
+
+class RepeatDMatrix(pgcore.BlockMatrix):
+    """Matrix repeating a base matrix N times diagonally. Only A is stored.
+
+        M = | A     |
+            |   A   |
+            |     A |
+    """
+    def __init__(self, A, num):
+        """Init matrix by specify matrix and number of repetitions.
+
+        Parameters
+        ----------
+        A : pg.MatrixBase (or derived)
+            matrix for constraining a single frame (e.g. 1st order smoothness)
+        num : int
+            number of repetitions
+        """
+        super().__init__()
+        self.A_ = A
+        self.Aid = self.addMatrix(self.A_)
+        nc = 0
+        nr = 0
+        for i in range(num):
+            self.addMatrixEntry(self.Aid, nr, nc)
+            nc += A.cols()
+            nr += A.rows()
+
+        self.recalcMatrixSize()
+
+
+class FrameConstraintMatrix(RepeatDMatrix):
+    """Matrix constraining meshes inside and between frames of same mesh.
+
+        M = |  A        |
+            |     A     |
+            |        A  |
+            | -I +I     |
+            |    -I  +I |
+    """
+    def __init__(self, A, num, scale=1.0):
+        """Init matrix by specifying number of frames.
+
+        Parameters
+        ----------
+        A : pg.MatrixBase (or derived)
+            matrix for constraining a single frame (e.g. 1st order smoothness)
+        num : int
+            number of frames
+        """
+        super().__init__(A, num)
+        self.nm = A.cols()  # model parameter per frame
+        self.nb = A.rows()  # boundaries per frame
+        self.Iminus_ = pgcore.IdentityMatrix(self.nm, val=-scale)
+        self.Iplus_ = pgcore.IdentityMatrix(self.nm, val=scale)
+        self.Im = self.addMatrix(self.Iminus_)
+        self.Ip = self.addMatrix(self.Iplus_)
+        nc = self.rows()
+        for i in range(num-1):
+            self.addMatrixEntry(self.Im, nc, i*self.nm)
+            self.addMatrixEntry(self.Ip, nc, (i+1)*self.nm)
+            nc += self.nm
+
+        self.recalcMatrixSize()
+
+
+class NDMatrix(pgcore.BlockMatrix):
+    """Diagonal block (block-Jacobi) matrix ."""
 
     def __init__(self, num, nrows, ncols):
-        super(NDMatrix, self).__init__()  # call inherited init function
-        self.Ji = []  # list of individual block matrices
+        super().__init__()
+        self.Ji = []
         for i in range(num):
             self.Ji.append(pgcore.Matrix())
             self.Ji[-1].resize(nrows, ncols)

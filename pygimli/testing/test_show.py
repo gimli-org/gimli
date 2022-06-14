@@ -69,25 +69,37 @@ def testColorbar():
     grid = pg.createGrid(x=np.linspace(10., 110., 11)-5, y=np.linspace(0., 20, 2))
 
     fig, axs = plt.subplots(nrows=3, ncols=3, figsize=((10,6)))
-    ax, cbar = pg.show(grid, data=pg.x(grid.cellCenter()), label='log x',
+    ax, cbar = pg.show(grid, data=pg.x(grid.cellCenter()), 
+                       label='log x',
                        ax=axs[0][0], showMesh=True, cMap='Paired', logScale=True)
-    ax, cbar = pg.show(grid, data=pg.x(grid.cellCenter())+5., label='log x',
+    ax, cbar = pg.show(grid, data=pg.x(grid.cellCenter())+5., 
+                       label='log x',
                        ax=axs[1][0], showMesh=True, cMap='Paired', logScale=True)
     pg.viewer.mpl.setMappableData(cbar.mappable, pg.x(grid.cellCenter()))
 
     ax, cbar = pg.show(grid, data=pg.x(grid.cellCenter()), logScale=True,
                        ax=axs[2][0], showMesh=True, cMap='Paired')
     ###########################################################################
-    ax, cbar = pg.show(grid, data=pg.x(grid.cellCenter()), label='lin x',
+    ax, cbar = pg.show(grid, data=pg.x(grid.cellCenter()), 
+                       label='lin x, cMap=Paired',
                        ax=axs[0][1], logScale=False, cMap='Paired')
-    ax, cbar = pg.show(grid, data=pg.x(grid.cellCenter())+5, label='lin x',
+    ax, cbar = pg.show(grid, data=pg.x(grid.cellCenter())+5, 
+                       label='lin x, cMap=Paired (same like above)',
                        ax=axs[1][1], logScale=False, cMap='Paired')
+    
+    ##!!// thisfails and changes cmap
     pg.viewer.mpl.setMappableData(cbar.mappable, pg.x(grid.cellCenter()))
+
+
+
     ###########################################################################
-    grid = pg.createGrid(x=np.linspace(10., 110., 11)-25, y=np.linspace(0., 20, 2))
-    ax, cbar = pg.show(grid, data=pg.x(grid.cellCenter()), label='log with neg. x',
+    grid = pg.createGrid(x=np.linspace(10., 110., 11)-25, 
+                         y=np.linspace(0., 20, 2))
+    ax, cbar = pg.show(grid, data=pg.x(grid.cellCenter()), 
+                        label='log with neg. x',
                        ax=axs[0][2], showMesh=True, cMap='Paired', logScale=True)
-    ax, cbar = pg.show(grid, data=pg.x(grid.cellCenter())-45, label='log with neg. x',
+    ax, cbar = pg.show(grid, data=pg.x(grid.cellCenter())-45, 
+                       label='log with neg. x',
                        ax=axs[1][2], showMesh=True, cMap='Paired', logScale=True)
     pg.viewer.mpl.setMappableData(cbar.mappable, pg.x(grid.cellCenter()))
     ax.figure.tight_layout()
@@ -188,14 +200,56 @@ def testCBarLevels():
 
 
 def testShowPV():
+    """
+        # Run from notebook
+        import pygimli as pg
+        from pygimli.testing.test_show import testShowPV
+        testShowPV()
+    """
     m1 = mt.createCube()
+    m1.setBoundaryMarkers(range(m1.boundaryCount()))
+    
+    m2 = mt.createCube()
+    m2.scale(0.5)
+    
+    pg.rc['view3D'] = 'pyvista'
+    print('Show Boundary:', m1)
+    pg.show(m1+m2, bc='#DDDDFF', alpha=0.5)
+
+    m1 = mt.createMesh(m1, area=0.1)
+
+    print('Show Cells:', m1)
+    m1.setCellMarkers(range(m1.cellCount()))
+    pg.show(m1, showMesh=True)
+
+    print('Show Field (x)')
+    pg.show(m1, data=pg.x(m1), label='x', cMap='Spectral_r')
+    
+    print('Show Streams (x)')
+    u = pg.x(m1)
+    vel = -pg.solver.grad(m1, u)
+        
+    ax,_ = pg.show(m1, data=u, label='x', alpha=0.2, hold=True)
+    pg.viewer.pv.drawStreamLines(ax, m1, vel, radius=0.01,
+                                 source_radius=0.5,
+                                 source_center=[-.5, -0., -0.])
+    pg.viewer.pv.drawSlice(ax, m1, data=u, label='x', normal=[0,1,0])
+    ax.show()
+
+
+def testPVBackends():
+    m1 = mt.createCube()
+    
     # pg.rc['view3D'] = 'fallback'
     # pg.show(m1)
 
     pg.rc['view3D'] = 'pyvista'
-    #pg.show(m1, notebook=True)
-
-    pg.show(m1)
+    print('Panel')
+    pg.show(m1, backend='panel')
+    print('Pythreejs')
+    pg.show(m1, backend='pythreejs')
+    print('ipyvtklink')
+    pg.show(m1, backend='ipyvtklink')
 
 
 def testCoverage():
@@ -210,9 +264,10 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         locals()[sys.argv[1]]()
     else:
-        testShowVariants()
-        testColorbar()
-        testCBarLevels()
-        testColRange()
-        testCoverage()
+        # testShowVariants()
+        # testColorbar()
+        testShowPV()
+        #testCBarLevels()
+        # testColRange()
+        # testCoverage()
     

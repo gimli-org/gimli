@@ -382,7 +382,7 @@ def getBKGaddress(xlim, ylim, imsize=1000, zone=32, service='dop40',
 
 
 def underlayBKGMap(ax, mode='DOP', utmzone=32, epsg=0, imsize=2500, uuid='',
-                   usetls=False):
+                   usetls=False, origin=None):
     """Underlay digital orthophoto or topographic (mode='DTK') map under axes.
 
     First accessed, the image is obtained from BKG, saved and later loaded.
@@ -411,7 +411,12 @@ def underlayBKGMap(ax, mode='DOP', utmzone=32, epsg=0, imsize=2500, uuid='',
         imsize = int((ax[1] - ax[0]) / 0.4)  # use original 40cm pixel size
         if imsize > 5000:  # limit overly sized images
             imsize = 2500  # default value
-    ad, box = getBKGaddress(ax.get_xlim(), ax.get_ylim(), imsize, zone=utmzone,
+    xl = np.array(ax.get_xlim())
+    yl = np.array(ax.get_ylim())
+    if origin:
+        xl += origin[0]
+        yl += origin[1]
+    ad, box = getBKGaddress(xl, yl, imsize, zone=utmzone,
                             service=wms[mode.upper()], usetls=usetls,
                             uuid=uuid, epsg=epsg,
                             fmt=fmt[mode.upper()], layer=lay[mode.upper()])
@@ -425,5 +430,11 @@ def underlayBKGMap(ax, mode='DOP', utmzone=32, epsg=0, imsize=2500, uuid='',
 
     im = mpimg.imread(imname)
     bb = [int(bi) for bi in box.split(',')]  # bounding box
+    if origin:
+        bb[0] -= origin[0]
+        bb[2] -= origin[0]
+        bb[1] -= origin[1]
+        bb[3] -= origin[1]
+
     ax.imshow(im, extent=[bb[0], bb[2], bb[1], bb[3]],
               interpolation='nearest')

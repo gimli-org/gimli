@@ -18,9 +18,12 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
         The mesh to show.
     notebook: bool [False]
         Sets the plotter up for jupyter notebook/lab.
-    cmap: str ['viridis']
+    cMap: str ['viridis']
         The colormap string.
-
+    bc: pyvista color ['#EEEEEE']
+        Background color.
+    style: str['surface']
+        Possible options:"surface","wireframe","points" 
     Returns
     -------
     ax: pyvista.Plotter [optional]
@@ -29,17 +32,25 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
     # sort out a few kwargs to not confuse the plotter initialization
     show_edges = kwargs.pop('show_edges', True)
     opacity = kwargs.pop('alpha', kwargs.pop('opacity', 1))
-    cmap = kwargs.pop('cmap', None)
+    cMap = kwargs.pop('cMap', None)
     color = kwargs.pop('color', 'k')
-    style = kwargs.pop('style', 'wireframe')
+    style = kwargs.pop('style', 'surface')
+    #style = kwargs.pop('style', 'wireframe')
     returnActor = kwargs.pop('returnActor', False)
+    showMesh = kwargs.pop('showMesh', False)
+    grid = kwargs.pop('grid', False)
+    colorBar = kwargs.pop('colorBar', True)
+    # background color
+    bc = kwargs.pop('bc', '#EEEEEE')
 
     if ax is None:
         # if notebook:
         #     ax = pv.PlotterITK(**kwargs)
         # else:
         ax = pv.Plotter(notebook=notebook, **kwargs)
+        ax.background_color = bc
 
+    #if grid is True:
     ax.show_bounds(all_edges=True, minor_ticks=True)
     ax.add_axes()
 
@@ -47,10 +58,11 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
         mesh = pgMesh2pvMesh(mesh)
 
     _actor = ax.add_mesh(mesh,  # type: pv.UnstructuredGrid
-                         cmap=cmap,
-                         color=color,
+                         cmap=cMap,
+                         #color=color,
                          style=style,
-                         show_edges=show_edges,
+                         show_edges=showMesh,
+                         show_scalar_bar=colorBar,
                          opacity=opacity,
                          )
 
@@ -88,8 +100,8 @@ def drawModel(ax=None, mesh=None, data=None, **kwargs):
 
     mesh = pgMesh2pvMesh(mesh, data, kwargs.pop('label', None))
 
-    if 'cmap' not in kwargs:
-        kwargs['cmap'] = 'viridis'
+    if 'cMap' not in kwargs:
+        kwargs['cMap'] = 'viridis'
     return drawMesh(ax, mesh, **kwargs)
 
 
@@ -191,6 +203,8 @@ def drawStreamLines(ax, mesh, data, label=None, radius=0.01, **kwargs):
     All kwargs will be forwarded to pyvistas streamline filter:
     https://docs.pyvista.org/core/filters.html?highlight=streamlines#pyvista.DataSetFilters.streamlines
     """
+    if label is None:
+        label = 'grad'
 
     if isinstance(mesh, pg.Mesh):
 
@@ -207,6 +221,7 @@ def drawStreamLines(ax, mesh, data, label=None, radius=0.01, **kwargs):
         # add data to the mesh and convert to pyvista grid
         mesh = pgMesh2pvMesh(mesh, grad.T, label)
 
+
     elif isinstance(mesh, pv.UnstructuredGrid):
         if label not in mesh.point_arrays:  # conversion needed
             mesh.cell_data_to_point_data()
@@ -214,8 +229,7 @@ def drawStreamLines(ax, mesh, data, label=None, radius=0.01, **kwargs):
     if label is None:
         label = list(mesh.point_arrays.keys())[0]
 
-    kwargs['vectors'] = label
+    #kwargs['vectors'] = label
 
-    streamlines = mesh.streamlines(**kwargs)
-
-    ax.add_mesh(streamlines.tube(radius=radius))
+    streams = mesh.streamlines(vectors=label, **kwargs)
+    ax.add_mesh(streams.tube(radius=radius), show_scalar_bar=False)

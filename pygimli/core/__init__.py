@@ -3,14 +3,14 @@
 """
 Imports and extensions of the C++ bindings.
 """
-import os
 import sys
-import traceback
+# import traceback
 
 import numpy as np
 
 from .core import pgcore
 from .core import *
+from .logger import error, critical
 
 # #######################################
 # ###  Global convenience functions #####
@@ -331,12 +331,8 @@ pgcore.IndexArray.setVal = __newIndexArraySetVal__
 ############################
 def __getVal(self, idx):
     """Hell slow"""
-
-    # print("getval", type(idx), idx)
-    # print(dir(idx))
     if isinstance(idx, pgcore.BVector) or isinstance(
             idx, pgcore.IVector) or isinstance(idx, pgcore.IndexArray):
-        # print("BVector, IVector, IndexArray", idx)
         return self.get_(idx)
     elif isinstance(idx, slice):
 
@@ -350,7 +346,6 @@ def __getVal(self, idx):
         if idx.step is None:
             return self.getVal(int(s), int(e))
         else:
-            #print(s,e,idx.step)
             step = idx.step
             if step < 0 and idx.start is None and idx.stop is None:
                 ids = range(e - 1, s - 1, idx.step)
@@ -371,11 +366,15 @@ def __getVal(self, idx):
             if idx[0].dtype == 'bool':
                 return self.get_([i for i, x in enumerate(idx) if x])
                 # return self[np.nonzero(idx)[0]]
-        # print("default")
+        elif isinstance(idx[0], slice):  # try fixing newaxis
+            return self[idx[0]]
+        # elif isinstance(idx[0], None) and isinstance(idx[1], slice):
+            # return self[idx[1]]
+
         return self.get_([int(a) for a in idx])
 
-    elif idx == -1:
-        idx = len(self) - 1
+    elif idx < 0:
+        idx = len(self) + idx
 
     return self.getVal(int(idx))
 
@@ -391,14 +390,14 @@ def __setVal(self, idx, val):
                 self.setVal(val, int(idx.start), int(idx.stop))
             return
         else:
-            pg.critical("not yet implemented for slice:", slice)
+            critical("not yet implemented for slice:", slice)
     elif isinstance(idx, tuple):
         # print("tuple", idx, type(idx))
         if isinstance(self, pgcore.RMatrix):
             self.rowRef(int(idx[0])).setVal(val, int(idx[1]))
             return
         else:
-            pg.error("Can't set index with tuple", idx, "for", self)
+            error("Can't set index with tuple", idx, "for", self)
             return
     # if isinstance(idx, pgcore.BVector):
     # print("__setVal", self, idx, 'val:', val)
@@ -501,7 +500,7 @@ _vecs = [pgcore.RVector,
 for v in _vecs:
     v.ndim = 1
     v.__len__ = lambda self: self.size()
-    v.shape = property(lambda self: (self.size(), None))
+    v.shape = property(lambda self: (self.size(),))
     # if hasattr(v, '__call__') and callable(getattr(v, '__call__')):
     try:
         del v.__call__
@@ -804,6 +803,10 @@ def abs(v):
         return pgcore.absR3(v)
     elif isinstance(v, list):
         ## possible [x,y,[z]] or [pos, ...]
+<<<<<<< HEAD
+=======
+
+>>>>>>> dev
         try:
             return pgcore.RVector3(v).abs()
         except:
@@ -822,11 +825,18 @@ def abs(v):
         for i in range(len(v)):
             v[i] = pgcore.abs(v[i])
         return v
+<<<<<<< HEAD
     elif hasattr(v, 'values'):
         #import pygimli as pg
         return abs(v.values)
     elif hasattr(v, 'vals'):
         return abs(v.vals)
+=======
+    elif hasattr(v, 'vals'):
+        return pgcore.abs(v.vals)
+    elif hasattr(v, 'values'):
+        return pgcore.abs(v.values)
+>>>>>>> dev
 
     return pgcore.fabs(v)
 
@@ -892,7 +902,7 @@ def __ModellingBase__createJacobian_mt__(self, model, resp):
     import numpy as np
 
     nModel = len(model)
-    nData = len(resp)
+    # nData = len(resp)  # not used
 
     fak = 1.05
 
@@ -1150,4 +1160,3 @@ from .trans import *  # why do we need that?
 #                      MultLeftRightMatrix, MultRightMatrix, RMultRMatrix)
 from .matrix import (BlockMatrix, SparseMatrix, SparseMapMatrix, IdentityMatrix,
                      Matrix)
-

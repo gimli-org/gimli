@@ -48,7 +48,7 @@ vel = 300 + -pg.z(mesh.cellCenters()) * 100
 
 if pyvista:
     label = pg.utils.unit("vel")
-    pg.show(mesh, vel, label=label)
+    pg.show(mesh, vel, label=label, notebook=True)
 
 ################################################################################
 # Set-up data container.
@@ -81,7 +81,7 @@ for receiver in sensors[1:]:
 # Plot final ray paths.
 
 if pyvista:
-    plotter, _ = pg.show(mesh, label=label, alpha=0.1, hold=True)
+    plotter, _ = pg.show(mesh, hold=True, notebook=True)
     drawSensors(plotter, sensors, diam=0.5, color='yellow')
 
     for ray in rays:

@@ -108,7 +108,7 @@ class ERTModelling(ERTModellingBase):
         """Create Starting model for ERT inversion."""
         if self.complex():
             dataC = pg.utils.toComplex(dataVals)
-            nModel = self.regionManager().parameterCount() // 2
+            nModel = self.parameterCount // 2
             smRe = np.ones(nModel) * np.median(np.median(dataC.real))
             smIm = np.ones(nModel) * np.median(np.median(dataC.imag))
 
@@ -283,7 +283,7 @@ class ERTModellingReference(ERTModellingBase):
             self.response(model)
 
         J = self.jacobian()
-        J.resize(self.data.size(), self.regionManager().parameterCount())
+        J.resize(self.data.size(), self.parameterCount)
 
         cells = self.mesh().findCellByMarker(0, -1)
         Si = pg.matrix.ElementMatrix()
@@ -296,8 +296,7 @@ class ERTModellingReference(ERTModellingBase):
             print("Calculate sensitivity matrix for model: ",
                   min(model), max(model))
 
-        Jt = pg.Matrix(self.data.size(),
-                       self.regionManager().parameterCount())
+        Jt = pg.Matrix(self.data.size(), self.parameterCount)
 
         for kIdx, w in enumerate(self.w):
             k = self.k[kIdx]

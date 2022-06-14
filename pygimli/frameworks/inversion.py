@@ -180,7 +180,8 @@ class Inversion(object):
         self._startModel = sm
 
     def convertStartModel(self, model):
-        """Convert scalar or array into startmodel with valid range or self.parameterCount, if possible.
+        """Convert scalar or array into startmodel with valid range or
+            self.fop.parameterCount, if possible.
 
         Attributes
         ----------
@@ -191,14 +192,14 @@ class Inversion(object):
             return None
         elif isinstance(model, float) or isinstance(model, int):
             pg.info("Homogeneous starting model set to:", float(model))
-            return np.full(self.parameterCount, float(model))
+            return np.full(self.fop.parameterCount, float(model))
         elif hasattr(model, '__iter__'):
-            if len(model) == self.parameterCount:
+            if len(model) == self.fop.parameterCount:
                 pg.info("Starting model set from given array.", model)
                 return model
             else:
                 pg.error("Starting model size invalid {0} != {1}.".
-                         format(len(model), self.parameterCount))
+                         format(len(model), self.fop.parameterCount))
         return None
 
     @property
@@ -284,13 +285,6 @@ class Inversion(object):
             pg.warn(
                 "Found zero error values. Setting them to fallback value of 1")
             pg.core.fixZero(self._errorVals, 1)
-
-    @property
-    def parameterCount(self):
-        pC = self.fop.regionManager().parameterCount()
-        if pC == 0:
-            pg.warn("Parameter count is 0")
-        return pC
 
     @property
     def robustData(self):
@@ -502,10 +496,6 @@ class Inversion(object):
 
         ### This triggers the update of all fop properties, any property setting need to be done before this step
         self.inv.setTransModel(self.fop.modelTrans)
-
-        if 'cType' in kwargs:
-            self.fop.setRegionProperties('*', cType=kwargs.pop('cType'))
-
         self.dataVals = dataVals
         self.errorVals = errorVals
 
@@ -524,21 +514,22 @@ class Inversion(object):
         if self.verbose:
             pg.info('Starting inversion.')
             print("fop:", self.inv.fop())
-            if isinstance(self.dataTrans, pg.trans.TransCumulative):
+            if isinstance(self.inv.transData(), pg.trans.TransCumulative):
                 print("Data transformation (cumulative):")
-                for i in range(self.dataTrans.size()):
-                    print("\t", i, self.dataTrans.at(i))
+                for i in range(self.inv.transData().size()):
+                    print("\t", i, self.inv.transDataataTrans().at(i))
             else:
-                print("Data transformation:", self.dataTrans)
-            if isinstance(self.modelTrans, pg.trans.TransCumulative):
+                print("Data transformation:", self.inv.transData())
+            
+            if isinstance(self.inv.transModel(), pg.trans.TransCumulative):
                 print("Model transformation (cumulative):")
-                for i in range(self.modelTrans.size()):
+                for i in range(self.inv.transModel().size()):
                     if i < 10:
-                        print("\t", i, self.modelTrans.at(i))
+                        print("\t", i, self.inv.transModel().at(i))
                     else:
                         print(".", end='')
             else:
-                print("Model transformation:", self.modelTrans)
+                print("Model transformation:", self.inv.transModel())
 
             print("min/max (data): {0}/{1}".format(pf(min(self._dataVals)),
                                                    pf(max(self._dataVals))))
