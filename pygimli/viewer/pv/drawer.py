@@ -20,6 +20,8 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
         Sets the plotter up for jupyter notebook/lab.
     cMap: str ['viridis']
         The colormap string.
+    bc: pyvista color ['#EEEEEE']
+        Background color.
 
     Returns
     -------
@@ -28,20 +30,24 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
     """
     # sort out a few kwargs to not confuse the plotter initialization
     show_edges = kwargs.pop('show_edges', True)
-    opacity = kwargs.pop('alpha', kwargs.pop('opacity', 0))
+    opacity = kwargs.pop('alpha', kwargs.pop('opacity', 1))
     cMap = kwargs.pop('cMap', None)
     color = kwargs.pop('color', 'k')
     style = kwargs.pop('style', 'wireframe')
     returnActor = kwargs.pop('returnActor', False)
+    showMesh = kwargs.pop('showMesh', False)
+    grid = kwargs.pop('grid', False)
+    # background color
+    bc = kwargs.pop('bc', '#EEEEEE')
 
     if ax is None:
         # if notebook:
         #     ax = pv.PlotterITK(**kwargs)
         # else:
         ax = pv.Plotter(notebook=notebook, **kwargs)
-        ax.background_color = 'white'
+        ax.background_color = bc
 
-       
+    #if grid is True:
     ax.show_bounds(all_edges=True, minor_ticks=True)
     ax.add_axes()
 
@@ -49,11 +55,11 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
         mesh = pgMesh2pvMesh(mesh)
 
     _actor = ax.add_mesh(mesh,  # type: pv.UnstructuredGrid
-                        #  cmap=cMap,
-                        #  color=color,
-                        #  style=style,
-                         show_edges=True,
-                         #opacity=opacity,
+                         cmap=cMap,
+                         #color=color,
+                         #style=style,
+                         show_edges=showMesh,
+                         opacity=opacity,
                          )
 
     if returnActor:

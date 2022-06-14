@@ -210,21 +210,27 @@ def testShowPV():
     m1 = mt.createCube()
     m1.setBoundaryMarkers(range(m1.boundaryCount()))
     
+    m2 = mt.createCube()
+    m2.scale(0.5)
+    m1 = mt.merge([m1, m2])
+    #pg.show([m1+m2])
+
     # pg.rc['view3D'] = 'fallback'
     # pg.show(m1)
 
     pg.rc['view3D'] = 'pyvista'
     print('Show Boundary:', m1)
-    pg.show(m1)
+    pg.show(m1, bc='#DDDDFF', alpha=0.5)
 
-    m1 = mt.createMesh(m1)
+    m1 = mt.createMesh(m1, area=0.1)
     print('Show Cells:', m1)
     m1.setCellMarkers(range(m1.cellCount()))
-    pg.show(m1)
+    pg.show(m1, showMesh=True)
 
     print('Show Field (x)')
-    pg.show(m1, data=pg.x(m1), label='x')
+    pg.show(m1, data=pg.x(m1), label='x', cMap='Spectral_r')
     
+
 
 def testPVBackends():
     m1 = mt.createCube()
