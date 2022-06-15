@@ -9,6 +9,7 @@ PyQt5 = pg.optImport('PyQt5', requiredFor="use pyGIMLi's 3D viewer")
 pyvista = pg.optImport('pyvista', requiredFor="properly visualize 3D data")
 panel = pg.optImport('panel', requiredFor='pyvista jupyter backend')
 
+
 if pyvista is None:
     view3Dcallback = 'showMesh3DFallback'
 else:
@@ -35,8 +36,7 @@ else:
 
 
 def showMesh3D(mesh, data, **kwargs):
-    """
-    Calling the defined function to show the 3D object.
+    """Calling the defined function to show the 3D object.
     """
     if pg.rc['view3D'] == 'fallback':
         return showMesh3DFallback(mesh, data, **kwargs)
@@ -45,8 +45,7 @@ def showMesh3D(mesh, data, **kwargs):
 
 
 def showMesh3DFallback(mesh, data, **kwargs):
-    """
-    Plot the 3D object sketchy.
+    """Plot the 3D object sketchy.
     """
     ax = kwargs.pop('ax', None)
 
@@ -71,8 +70,7 @@ def showMesh3DFallback(mesh, data, **kwargs):
     return ax, None
 
 def showMesh3DVista(mesh, data=None, **kwargs):
-    """
-    Make use of the actual 3D visualization tool kit
+    """Make use of the actual 3D visualization tool kit
 
     Parameters
     ----------
@@ -119,6 +117,7 @@ def showMesh3DVista(mesh, data=None, **kwargs):
         plotter.enable_anti_aliasing()
 
         if notebook is True:        
+            # monkey patch show of this plotter instance so we can use multiple backends and only plotter.show() .. whoever this needs.
             plotter.__show = plotter.show
             plotter.show = lambda *args, **kwargs: plotter.__show(*args, 
                                                 jupyter_backend=backend, **kwargs)

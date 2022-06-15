@@ -6,7 +6,8 @@ import os.path
 import tempfile
 
 from importlib import import_module
-from urllib.request import urlretrieve
+import contextlib
+from urllib.request import urlopen
 
 import numpy as np
 import pygimli as pg
@@ -208,11 +209,62 @@ def load(fname, verbose=False, testAll=True, realName=None):
                         "and could not be imported.".format(suffix))
 
 
-def getExampleFile(path, load=False, verbose=False, **kwargs):
-    """Download and return a file name to the local example repository.
+def getMD5(fileName):
+    """ Return md5 checksum for given fileName.
+    """
+    import hashlib
+    md5 = hashlib.md5()
+    
+    with open(fileName, "rb") as fi:
+        content = fi.read()
+        md5.update(content)
+
+    return md5.hexdigest()
+    
+
+def getUrlFile(url, fileName, timeout=10, verbose=False):
+    """ Write file from url. Path will be created.
+    """
+    import hashlib
+    md5_hash = hashlib.md5()
+
+    with contextlib.closing(urlopen(url, timeout=timeout)) as fp:
+        header = dict(fp.getheaders())
+        #print(pg.pf(header))
+        length = int(header['Content-Length'])
+
+        p = pg.utils.ProgressBar(length)
+        blockSize = 1024 * 8
+        block = fp.read(blockSize)
+        blockCounter = 1
+        if block:
+            os.makedirs(os.path.dirname(fileName), exist_ok=True)
+            with open(fileName, 'wb') as outFile:
+                if verbose:
+                    p(min(length-1, blockCounter*blockSize))
+                md5_hash.update(block)
+                outFile.write(block)
+                while True:
+                    block = fp.read(blockSize)
+                    blockCounter += 1
+                    if not block:
+                        break
+                    if verbose:
+                        p(min(length-1, blockCounter*blockSize))
+                    md5_hash.update(block)
+                    outFile.write(block)
+        else:
+            pg.critical('File or connection error:', url, fileName)
+    if verbose:
+        digest = md5_hash.hexdigest()
+        print('md5:', digest)
+        #print('md5:', getMD5(fileName))
+
+
+def getExampleFile(path, load=False, force=False, verbose=False, **kwargs):
+    """Download and return a filename to the example repository.
 
     Content will not be downloaded if already exists.
-
     TODO:
         * checksum or hash test for the content.
         * provide release or github version for specific repo
@@ -223,6 +275,8 @@ def getExampleFile(path, load=False, verbose=False, **kwargs):
         Path to the remote repo
     load: bool [False]
         Try to load the file and return the relating object.
+    force: bool [False]
+        Don't use cached file and get it in every case.
 
     Keyword Args
     ------------
@@ -250,26 +304,19 @@ def getExampleFile(path, load=False, verbose=False, **kwargs):
                             __gimliExampleDataBase__, 
                             repo, branch, path)
 
-    if not os.path.exists(fileName):
+    if not os.path.exists(fileName) or force is True:
         if verbose:
-            pg.info("Getting:", fileName)
-        os.makedirs(os.path.dirname(fileName), exist_ok=True)
-        try:
-            tmp = urlretrieve(url, fileName)
-        except BaseException as e:
-            print(url)
-            print(fileName)
-            pg.critical(e)
-
+            pg.info(f'Getting: {fileName} from {url}')
+        
+        getUrlFile(url, fileName, verbose=verbose)
     else:
         if verbose:
             pg.info("File already exists:", fileName)
 
-    if load:
-        pg.info('loading:', fileName)
-        return pg.load(fileName)
-        
+    if load is True:
+        return pg.load(fileName, verbose=verbose)
     return fileName
+    
 
 def getExampleData(path, verbose=False):
     """Shortcut to load example data."""

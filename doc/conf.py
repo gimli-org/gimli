@@ -170,7 +170,7 @@ intersphinx_mapping = {
     'numpy': ('https://numpy.org/doc/stable', (None, 'intersphinx/numpy-objects.inv')),
     'scipy': ('https://docs.scipy.org/doc/scipy/', (None, 'intersphinx/scipy-objects.inv')),
     'matplotlib': ('https://matplotlib.org/stable', (None, 'intersphinx/matplotlib-objects.inv')),
-    'pyvista': ('https://docs.pyvista.org', (None, 'intersphinx/pyvista-objects.inv')),
+    'pyvista': ('https://docs.pyvista.org', (None, 'intersphinx/pyvista-objects.inv')), # do we need to link again pv api?
 }
 
 autoclass_content = "class"
