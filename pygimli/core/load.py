@@ -18,13 +18,8 @@ from pygimli.utils import readGPX
 from pygimli.physics.traveltime import load as loadTT
 
 
-gimliExampleDataPath='gimli-org/example-data/'
-# Example data repository
-exampleDataRepository = ''.join((
-    'https://raw.githubusercontent.com/',  # RAW files
-    gimliExampleDataPath,  # Organization and repository
-    'master/'  # Branch
-))
+__gimliExampleDataRepo__ = 'gimli-org/example-data/'
+__gimliExampleDataBase__ = 'example-data'
 
 
 def optImport(module, requiredFor="use the full functionality"):
@@ -212,7 +207,6 @@ def load(fname, verbose=False, testAll=True, realName=None):
     raise Exception("File type of {0} is unknown or file does not exist "
                         "and could not be imported.".format(suffix))
 
-
 def getMD5(fileName):
     """ Return md5 checksum for given fileName.
     """
@@ -265,14 +259,16 @@ def getUrlFile(url, fileName, timeout=10, verbose=False):
         #print('md5:', getMD5(fileName))
 
 
-def getExampleFile(path, load=False, force=False, verbose=False):
+def getExampleFile(path, load=False, force=False, verbose=False, **kwargs):
     """Download and return a filename to the example repository.
 
+    Content will not be downloaded if already exists.
     TODO:
-        checksum or hash test for the content.
+        * checksum or hash test for the content.
+        * provide release or github version for specific repo
 
-    Parameters
-    ----------
+    Args
+    ----
     path: str
         Path to the remote repo
     load: bool [False]
@@ -280,17 +276,31 @@ def getExampleFile(path, load=False, force=False, verbose=False):
     force: bool [False]
         Don't use cached file and get it in every case.
 
+    Keyword Args
+    ------------
+    githubRepo: str
+        Third party github data repository.
+    branch: str ['master']
+        branchname
+
     Returns
     -------
     filename: str
-        Filename to the data content
+        Local file name to the data content.
     data: obj
-        content of the path if load is True
+        Content of the file if 'load' is set True.
     """
-    url = exampleDataRepository + path
+    repo = kwargs.pop('githubRepo', __gimliExampleDataRepo__)
+    branch = kwargs.pop('branch', 'master')
 
-    fileName = os.path.join(pg.core.config.getConfigPath(), 
-                            gimliExampleDataPath, path)
+    url = '/'.join(('https://raw.githubusercontent.com/',  # RAW files
+                   repo, branch, path))
+
+    pg.info(f'Looking for {path} in {repo}')
+
+    fileName = os.path.join(getCachePath(), 
+                            __gimliExampleDataBase__, 
+                            repo, branch, path)
 
     if not os.path.exists(fileName) or force is True:
         if verbose:
@@ -304,6 +314,7 @@ def getExampleFile(path, load=False, force=False, verbose=False):
     if load is True:
         return pg.load(fileName, verbose=verbose)
     return fileName
+    
 
 def getExampleData(path, verbose=False):
     """Shortcut to load example data."""
