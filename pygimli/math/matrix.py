@@ -589,3 +589,45 @@ class GeostatisticConstraintsMatrix(pgcore.MatrixBase):
     def clear(self):
         self.Cm05 = None
         self._spur = None
+
+
+def hstack(mats):
+    """Syntactic sugar function to horizontally stacked matrix."""
+    assert not np.any(np.diff([m.rows() for m in mats])), \
+        "Matrix row numbers do not match!"
+    A = pgcore.BlockMatrix()
+    icol = 0
+    for mat in mats:
+        A.addMatrix(mat, 0, icol)
+        icol += mat.cols()
+
+    A.recalcMatrixSize()
+    return A
+
+
+def vstack(mats):
+    """Syntactic sugar function to vertically stacked matrix."""
+    assert not np.any(np.diff([m.cols() for m in mats])), \
+        "Matrix column numbers do not match!"
+    A = pgcore.BlockMatrix()
+    irow = 0
+    for mat in mats:
+        A.addMatrix(mat, irow, 0)
+        irow += mat.rows()
+
+    A.recalcMatrixSize()
+    return A
+
+
+def dstack(mats):
+    """Syntactic sugar function to diagonally stacked matrix."""
+    A = pgcore.BlockMatrix()
+    irow = 0
+    icol = 0
+    for mat in mats:
+        A.addMatrix(mat, irow, icol)
+        irow += mat.rows()
+        icol += mat.cols()
+
+    A.recalcMatrixSize()
+    return A
