@@ -550,27 +550,29 @@ class GeostatisticConstraintsMatrix(pgcore.MatrixBase):
     def nModel(self):
         try:
             return self.Cm05.size()
-        except Exception as e:
+        except Exception:
             return 0
 
     def save(self, fileName):
-        """Save the content of this matrix. Used for caching until pickling is possible for this class
+        """Save content of this matrix.
+
+        Used for caching until pickling is possible for this class
         """
         self.Cm05.save(fileName + '-Cm05')
         np.save(fileName, dict(verbose=self.verbose(),
                                withRef=self.withRef,
-                               Cm05=fileName +'-Cm05'),
-                        allow_pickle=True)
-
+                               Cm05=fileName + '-Cm05'),
+                allow_pickle=True)
 
     def load(self, fileName):
-        """Load the content of this matrix. Used for caching until pickling is possible for this class
+        """Load the content of this matrix.
+
+        Used for caching until pickling is possible for this class
         """
         d = np.load(fileName + '.npy', allow_pickle=True).tolist()
         self.setVerbose(d['verbose'], )
         self.withRef = d['withRef']
         self.Cm05 = Cm05Matrix(d['Cm05'])
-
 
     def mult(self, x):
         return self.Cm05.mult(x) - self.spur * x
