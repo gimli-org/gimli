@@ -20,7 +20,8 @@ dependencies:
   - sphinxcontrib-doxylink
   - scipy
   - bibtexparser
-  - pyvista=0.24
+  - pyvista=0.33
   - meshio
   - tetgen
+  - panel
   - conda-build

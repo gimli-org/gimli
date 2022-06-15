@@ -13,4 +13,5 @@ sphinxcontrib-doxylink
 pillow
 scipy
 bibtexparser
-pyvista==0.24.0
+pyvista==0.33
+panel

@@ -47,7 +47,7 @@ vel = -pg.solver.grad(mesh, h) * kArray
 
 pg.show(mesh, h, label="Hydraulic head (m)")
 
-ax, _ = pg.show(mesh, hold=True, alpha=0.3)
+ax, _ = pg.show(mesh, alpha=0.3, hold=True, colorBar=False)
 drawStreamLines(ax, mesh, vel, radius=.1, source_radius=10)
 drawSlice(ax, mesh, normal=[0,1,0], data=pg.abs(vel), label="Absolute velocity")
 ax.show()

@@ -210,6 +210,12 @@ def version(cache=True):
 __swatch__ = dict()
 
 
+def notebook():
+    """Determine if run inside jupyther notebook or spyder"""
+    import sys
+    return 'ipykernel_launcher.py' in sys.argv[0]
+
+
 def tic(msg=None, key=0):
     """Start global timer. Print elapsed time with `toc()`.
 

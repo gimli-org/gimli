@@ -145,8 +145,10 @@ try:
         }
 
     pyvista = pygimli.optImport("pyvista", "building the gallery with 3D visualizations")
+    panel = pygimli.optImport("panel", "Jupyter backend for 3D visualizations on jupyter notebooks")
     if pyvista:
         pyvista.OFF_SCREEN = True
+        pyvista.set_jupyter_backend('panel')
         pyvista.rcParams['window_size'] = np.array([1024, 768]) * 2
         sphinx_gallery_conf["image_scrapers"] = (pyvista.Scraper(), 'matplotlib')
 
