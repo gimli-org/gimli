@@ -1,12 +1,31 @@
-import tempfile
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 import numpy as np
-
 import pygimli as pg
 
 pv = pg.optImport('pyvista', requiredFor="properly visualize 3D data")
 
 
-def pgMesh2pvMesh(mesh, data=None, label=None):
+pgVTKCELLTypes = {
+    pg.core.MESH_EDGE_CELL_RTTI:     3,
+    pg.core.MESH_EDGE_RTTI:          3,
+    pg.core.MESH_EDGE3_RTTI:         21,
+    pg.core.MESH_EDGE3_CELL_RTTI:    21 ,
+    pg.core.MESH_TRIANGLE_RTTI:      5  ,
+    pg.core.MESH_TRIANGLE6_RTTI:     22 ,
+    pg.core.MESH_QUADRANGLE_RTTI:    9  ,
+    pg.core.MESH_QUADRANGLE8_RTTI:   23 ,
+    pg.core.MESH_TETRAHEDRON_RTTI:   10 ,
+    pg.core.MESH_TETRAHEDRON10_RTTI: 24 ,
+    pg.core.MESH_TRIPRISM_RTTI:      13 ,
+    pg.core.MESH_TRIPRISM15_RTTI:    13 ,
+    pg.core.MESH_PYRAMID_RTTI:       14 ,
+    pg.core.MESH_PYRAMID13_RTTI:     14 ,
+    pg.core.MESH_HEXAHEDRON_RTTI:    12 ,
+    pg.core.MESH_HEXAHEDRON20_RTTI:  25 ,
+}
+
+def pgMesh2pvMesh(mesh, data=None, label=None, boundaries=False):
     """
     pyGIMLi's mesh format is different from pyvista's needs,
     some preparation is necessary.
@@ -18,11 +37,27 @@ def pgMesh2pvMesh(mesh, data=None, label=None):
     data: iterable
         Parameter to distribute to cells/nodes.
     """
-    _, tmp = tempfile.mkstemp(suffix=".vtk")
-    # export given mesh temporarily is the easiest and fastest option ATM
+    if boundaries is True:
+        b = mesh.createSubMesh(mesh.boundaries([b.id() for b in mesh.boundaries() if b.outside() or b.marker() != 0]))
+        return pgMesh2pvMesh(b, data, label)
     
-    mesh.exportVTK(tmp)
-    grid = pv.read(tmp)
+    if mesh.cellCount() > 0:
+        grid = pv.UnstructuredGrid(
+            np.asarray([[len(c.ids()), *c.ids()] for c in mesh.cells()]).flatten(),
+            np.asarray([pgVTKCELLTypes[c.rtti()] for c in mesh.cells()]).flatten(),
+            np.asarray(mesh.positions()))
+
+        grid.cell_data['Cell marker'] = np.asarray(mesh.cellMarkers())
+
+    elif mesh.boundaryCount() > 0:
+        #pg._g('faces')
+        grid = pv.PolyData(np.asarray(mesh.positions()), 
+                faces=[[len(b.ids()), *b.ids()] for b in mesh.boundaries()])
+        grid.cell_data['Boundary marker'] = np.asarray(mesh.boundaryMarkers())
+        
+    else:
+        grid = pv.PolyData(np.asarray(mesh.positions()))
+
 
     # check for parameters inside the pg.Mesh
     for key, values in mesh.dataMap():
@@ -31,14 +66,7 @@ def pgMesh2pvMesh(mesh, data=None, label=None):
         elif len(values) == mesh.nodeCount():
             grid.point_data[key] = np.asarray(values)
 
-    for k in grid.cell_data.items():
-        if k[0] == 'Marker':
-            if len(k[1]) == mesh.boundaryCount():
-                grid.rename_array('Marker', 'Boundary marker')
-            elif len(k[1]) == mesh.cellCount():
-                grid.rename_array('Marker', 'Cell marker')
-
-
+    
     # check the given data as well
     try:
         if data is not None:

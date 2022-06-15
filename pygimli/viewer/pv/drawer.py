@@ -33,39 +33,44 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
     show_edges = kwargs.pop('show_edges', True)
     opacity = kwargs.pop('alpha', kwargs.pop('opacity', 1))
     cMap = kwargs.pop('cMap', None)
-    color = kwargs.pop('color', 'k')
+    color = kwargs.pop('color', None)
     style = kwargs.pop('style', 'surface')
-    #style = kwargs.pop('style', 'wireframe')
     returnActor = kwargs.pop('returnActor', False)
     showMesh = kwargs.pop('showMesh', False)
     grid = kwargs.pop('grid', False)
     colorBar = kwargs.pop('colorBar', True)
-    # background color
-    bc = kwargs.pop('bc', '#EEEEEE')
+    name = kwargs.pop('name', 'Mesh')
+    bc = kwargs.pop('bc', '#EEEEEE') # background color
+    filt = kwargs.pop('filter', {}) 
 
     if ax is None:
-        # if notebook:
-        #     ax = pv.PlotterITK(**kwargs)
-        # else:
         ax = pv.Plotter(notebook=notebook, **kwargs)
         ax.background_color = bc
 
     #if grid is True:
+        #implementme
+
     ax.show_bounds(all_edges=True, minor_ticks=True)
     ax.add_axes()
 
     if isinstance(mesh, pg.Mesh):
         mesh = pgMesh2pvMesh(mesh)
 
+    for k, fi in filt.items():
+        if k.lower() == 'clip':
+            mesh = mesh.clip(**fi)
+        else:
+            pg.error('filter:', k, 'not yet implemented')
+
     _actor = ax.add_mesh(mesh,  # type: pv.UnstructuredGrid
                          cmap=cMap,
-                         #color=color,
+                         color=color,
                          style=style,
                          show_edges=showMesh,
                          show_scalar_bar=colorBar,
                          opacity=opacity,
                          )
-
+    
     if returnActor:
         return ax, _actor
     else:
@@ -90,18 +95,30 @@ def drawModel(ax=None, mesh=None, data=None, **kwargs):
     ax: pyvista.Plotter [optional]
         The plotter
     """
+    defaultCMap = kwargs.pop('cMap', 'viridis')
+
     if all(v is None for v in [ax, mesh, data]):
         pg.critical("At least mesh or data should not be None")
         return None
 
-    if data is not None or len(mesh.dataMap()) != 0:
-        kwargs['style'] = 'surface'
-        kwargs['color'] = None
+    if kwargs.pop('markers', False) is True:
+        ## show boundary mesh with markers
+        data = mesh.boundaryMarkers()
+        defaultCMap = pg.plt.cm.get_cmap("Set3", max(1, len(pg.unique(data))))
+        kwargs['label'] = 'Boundary marker'
+        mesh = pgMesh2pvMesh(mesh, data, kwargs.pop('label', None), 
+                             boundaries=True)
+    else:
 
-    mesh = pgMesh2pvMesh(mesh, data, kwargs.pop('label', None))
+        if data is not None or len(mesh.dataMap()) != 0:
+            kwargs['style'] = 'surface'
+            kwargs['color'] = None
 
-    if 'cMap' not in kwargs:
-        kwargs['cMap'] = 'viridis'
+        mesh = pgMesh2pvMesh(mesh, data, kwargs.pop('label', None))
+
+    kwargs['cMap'] = defaultCMap
+
+   
     return drawMesh(ax, mesh, **kwargs)
 
 

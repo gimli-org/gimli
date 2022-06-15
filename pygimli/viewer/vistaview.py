@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """Plot 3D mesh."""
 
@@ -91,9 +92,14 @@ def showMesh3DVista(mesh, data=None, **kwargs):
     Not having PyQt5 installed results in displaying the first key
     (and values) from the dictionary.
     """
+    # for compatibiliy remove show kwargs that are not needed
+    kwargs.pop('figsize', False)
+    
+
     hold = kwargs.pop('hold', False)
     cMap = kwargs.pop('cMap', 'viridis')
     notebook = kwargs.pop('notebook', pg.notebook())
+
 
     gui = kwargs.pop('gui', not notebook)
 
@@ -108,7 +114,7 @@ def showMesh3DVista(mesh, data=None, **kwargs):
         return s3d.plotter, s3d  # plotter, gui
 
     else:
-
+        
         backend = kwargs.pop('backend', 'panel')
 
         plotter = drawModel(None, mesh, data, notebook=notebook, 
