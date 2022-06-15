@@ -208,7 +208,6 @@ def load(fname, verbose=False, testAll=True, realName=None):
     raise Exception("File type of {0} is unknown or file does not exist "
                         "and could not be imported.".format(suffix))
 
-
 def getMD5(fileName):
     """ Return md5 checksum for given fileName.
     """
