@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 """Generic matrix visualization tools."""
 
-import matplotlib as mpl
+# import matplotlib as mpl
 import numpy as np
 
 import pygimli as pg
 
-from .mpl import createColorBar, updateColorBar
+from .mpl import createColorBar  # , updateColorBar
 from .mpl.matrixview import drawBlockMatrix, drawSparseMatrix
 
 
@@ -29,7 +29,6 @@ def showMatrix(mat, ax=None, **kwargs):
     """
     cBar = None
     if ax is None:
-        print(ax)
         ax = pg.show()[0]
 
     try:
