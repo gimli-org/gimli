@@ -273,6 +273,10 @@ std::string lower(const std::string & str){
     return lo;
 }
 
+bool endswith(const std::string & a, const std::string & b) {
+    return a.find(b, a.size() - b.size()) != std::string::npos;
+}
+
 
 std::map < float, float > loadFloatMap(const std::string & filename){
     std::map < float, float > aMap;

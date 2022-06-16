@@ -518,6 +518,8 @@ DLLEXPORT std::string replace(const std::string & str, const char from, const ch
 /*!convert all chars in str to lower and return the result*/
 DLLEXPORT std::string lower(const std::string & str);
 
+DLLEXPORT bool endswith(const std::string & a, const std::string & b);
+    
 // template < typename T > inline void swapVal(T & a, T & m){
 //     T tmp(a); a = m; m = tmp;
 // }

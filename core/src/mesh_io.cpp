@@ -696,33 +696,45 @@ void Mesh::exportVTK(const std::string & fbody,
         return;
     }
 
-    std::map< std::string, RVector > nData(dataMap);
-    std::map< std::string, RVector > cData(dataMap);
-    std::map< std::string, RVector > bData(dataMap);
-    //std::map< std::string, R3Vector > vData(dataMap);
+    std::map< std::string, RVector > nData;
+    std::map< std::string, RVector > cData;
+    std::map< std::string, RVector > bData;
+    std::map< std::string, PosVector > vData;
 
-    for (auto & r: dataMap){
-        if (r.second.size() == this->cellCount()){
-            if (haveInfNaN(r.second)){
-                log(Warning, "data: ", r.first, " contains inf or nan values .. skipping");    
+    for (auto &nd: dataMap){
+        if (haveInfNaN(nd.second)){
+            log(Warning, "data: ", nd.first, " contains inf or nan values .. skipping");    
+            continue;
+        }
+        
+        if (nd.second.size() == this->cellCount()){
+            // __MS("add C", nd.first)
+            cData[nd.first] = nd.second;
+        }
+        else if (nd.second.size() == this->boundaryCount()){
+            // __MS("add B", nd.first)
+            bData[nd.first] = nd.second;
+        }
+        else if (nd.second.size() == this->nodeCount()){
+            if (endswith(nd.first, "_x")){
+                std::string name = nd.first.substr(0, nd.first.size()-2);
+                // __MS("add V", name)
+                vData[name] = r3(dataMap.at(name + "_x"), 
+                                 dataMap.at(name + "_y"), 
+                                 dataMap.at(name + "_z"));
+            } else if (endswith(nd.first, "_y") || endswith(nd.first, "_z")){
+                // __MS("ignore", nd.first)
             } else {
-                cData[r.first] = r.second;
-            }
-        } else if (r.second.size() == this->boundaryCount()){
-            if (haveInfNaN(r.second)){
-                log(Warning, "data: ", r.first, " contains inf or nan values .. skipping");    
-            } else {
-                bData[r.first] = r.second;
-            }
-        } else if (r.second.size() == this->nodeCount()){
-            if (haveInfNaN(r.second)){
-                log(Warning, "data: ", r.first, " contains inf or nan values .. skipping");    
-            } else {
-                nData[r.first] = r.second;
+                // __MS("add N", nd.first)
+                nData[nd.first] = nd.second;
             }
         } else {
-            log(Warning, "data: ", r.first, " not written to vtk. size: ", r.second.size());
+            log(Warning, "data: ", nd.first, " not written to vtk. size: ", nd.second.size());
         }
+    }
+
+    if (vec.size() == nodeCount()){
+        vData["vec"] = vec;
     }
 
     if (cellCount() > 0){
@@ -986,19 +998,23 @@ void Mesh::exportVTK(const std::string & fbody,
     }
 
     //** write point vector data
-    if (vec.size() == nodeCount()){
-        log(Debug, "write vector field data: vec");
-        file << "VECTORS vec double" << std::endl;
+    if (vData.size() > 0){
+        for (auto & nd: vData){
+            if (nd.second.size() == (uint)nodeCount()){
+                log(Debug, "write vector field data: " + nd.first);
+                file << "VECTORS " + nd.first + " double" << std::endl;
 
-        for (Index i = 0; i < vec.size(); i ++){
-            file << vec[i][0] << " "
-                 << vec[i][1] << " "
-                 << vec[i][2] << " " << std::endl;
-        }
-    } else {
-        if (vec.size() > 0){
-            std::cerr << "Vector data size does not match node size: "
-                      << vec.size() << " " << nodeCount() << std::endl;
+                for (Index i = 0; i < nd.second.size(); i ++){
+                    file << nd.second[i][0] << " "
+                         << nd.second[i][1] << " "
+                         << nd.second[i][2] << " " << std::endl;
+                }
+            } else {
+                if (nd.second.size() > 0){
+                    std::cerr << "Vector " + nd.first + " data size does not match node size: "
+                            << nd.second.size() << " " << nodeCount() << std::endl;
+                }
+            }
         }
     }
 

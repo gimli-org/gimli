@@ -40,6 +40,16 @@ std::vector < Pos > loadRVector3(const std::string & fileName){
     return l;
 }
 
+R3Vector r3(const RVector & x, const RVector & y, const RVector & z){
+    ASSERT_EQUAL_SIZE(x, y)
+    ASSERT_EQUAL_SIZE(x, z)
+    R3Vector ret(x.size());
+    for (Index i = 0; i < x.size(); i ++) { 
+        ret[i] = RVector3(x[i], y[i], z[i]);
+    }
+    return ret;
+}
+
 void saveRVector3(const std::vector < Pos > l, const std::string & fileName){
     std::fstream file; openOutFile(fileName, & file);
     for (uint i = 0; i < l.size(); i ++) file << l[i] << std::endl;

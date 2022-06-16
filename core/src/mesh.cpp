@@ -2082,7 +2082,6 @@ Mesh Mesh::createSubMesh(const std::vector< Node * > & nodes) const {
     return mesh;
 }
 
-
 void Mesh::addData(const std::string & name, const RVector & data) {
   //  std::cout << "add export Data: " << name << " " << min(data) << " "  << max(data) << std::endl;
     if (dataMap_.count(name)){

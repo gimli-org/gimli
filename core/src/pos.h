@@ -45,6 +45,8 @@ DLLEXPORT RVector y(const R3Vector & rv);
 /*! Return array of all z-coordinates. [:,2]*/
 DLLEXPORT RVector z(const R3Vector & rv);
 
+DLLEXPORT R3Vector r3(const RVector & x, const RVector & y, const RVector & z);
+    
 DLLEXPORT RVector absR3(const R3Vector & vPos);
 
 DLLEXPORT void swapXY(R3Vector & rv);

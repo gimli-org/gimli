@@ -9,9 +9,9 @@ from math import ceil
 from .core import (cat, HexahedronShape, Line, RSparseMapMatrix,
                         Mesh, MeshEntity, Node, Boundary, RVector, RVector3,
                         PolygonFace, TetrahedronShape, TriangleFace)
-from .logger import deprecated, error, info, warn, critical
+from .logger import deprecated, error, info, warn, critical, _r
 
-from ..meshtools import mergePLC, exportPLC
+from ..meshtools import mergePLC, exportPLC, interpolate
 
 from .base import isScalar, isArray, isPos, isR3Array, isComplex
 
@@ -102,7 +102,45 @@ def __Mesh_setVal(self, key, val):
 
     Multiple arrays via matrix will be saved too.
     """
+    def _matchSize(val, v=None):
+        if v is not None:
+            _v = v
+        else:
+            _v = val.values
+
+        if len(_v) == self.nodeCount() or \
+            len(_v) == self.cellCount() or \
+             len(_v) == self.boundaryCount():
+            return _v
+        else:
+            return interpolate(val.mesh, _v.T, self.positions()).T
+            # FIXME
+            # return np.asarray(val.qpInterpMatrix(self.positions()) * _v)
+
+    ## find values from special objects
+    # _r(type(val), hasattr(val, 'history'))
+
+    if hasattr(val, 'history') and hasattr(val, 'values'):
+        # print(key, 'history:', len(val.history), len(val.values))
+
+        # print(val.history[0].shape)
+        # print(_matchSize(val, val.history[0]).shape)
+
+        v = [_matchSize(val, _v) for _v in val.history]
+        v.append(_matchSize(val))
+        val = v
+        # print(np.asarray(v).shape)
+        # print(_matchSize(val).shape)
+
+        # val = np.asarray(v).shape
+        # print(len(val), val[0].shape)
+        # print(key, len(val), isR3Array(val))
+    elif hasattr(val, 'values'):
+        val = _matchSize(val)
+        #.eval(mesh.positions())
+
     # print(key, len(val), isR3Array(val))
+
 
     if isR3Array(val):
         return self.addData(key, val)
