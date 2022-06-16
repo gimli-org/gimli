@@ -592,7 +592,28 @@ class GeostatisticConstraintsMatrix(pgcore.MatrixBase):
 
 
 def hstack(mats):
-    """Syntactic sugar function to horizontally stacked matrix."""
+    """Syntactic sugar function to horizontally stacked matrix.
+
+    Parameters
+    ----------
+    mats : iterable
+        list of matrices (any pyGIMLi matrix)
+
+    Returns
+    -------
+    mat : :gimliapi:`GIMLI::Blockmatrix`
+        pyGIMLi block matrix
+
+    Examples
+    --------
+    >>> import pygimli as pg
+    >>> A = pg.Matrix(4, 3)
+    >>> B = pg.Matrix(4, 2)
+    >>> H = pg.matrix.hstack([A, B])
+    >>> print(H)
+    pg.matrix.BlockMatrix of size 4 x 5 consisting of 2 submatrices.
+    >>> pg.show(H)
+    """
     assert not np.any(np.diff([m.rows() for m in mats])), \
         "Matrix row numbers do not match!"
     A = pgcore.BlockMatrix()
@@ -606,7 +627,28 @@ def hstack(mats):
 
 
 def vstack(mats):
-    """Syntactic sugar function to vertically stacked matrix."""
+    """Syntactic sugar function to vertically stacked matrix.
+
+    Parameters
+    ----------
+    mats : iterable
+        list of matrices (any pyGIMLi matrix)
+
+    Returns
+    -------
+    mat : :gimliapi:`GIMLI::Blockmatrix`
+        pyGIMLi block matrix
+
+    Examples
+    --------
+    >>> import pygimli as pg
+    >>> A = pg.Matrix(3, 4)
+    >>> B = pg.Matrix(2, 4)
+    >>> V = pg.matrix.vstack([A, B])
+    >>> print(V)
+    pg.matrix.BlockMatrix of size 5 x 4 consisting of 2 submatrices.
+    >>> pg.show(V)
+    """
     assert not np.any(np.diff([m.cols() for m in mats])), \
         "Matrix column numbers do not match!"
     A = pgcore.BlockMatrix()
@@ -620,7 +662,28 @@ def vstack(mats):
 
 
 def dstack(mats):
-    """Syntactic sugar function to diagonally stacked matrix."""
+    """Syntactic sugar function to diagonally stacked matrix.
+
+    Parameters
+    ----------
+    mats : iterable
+        list of matrices (any pyGIMLi matrix)
+
+    Returns
+    -------
+    mat : :gimliapi:`GIMLI::Blockmatrix`
+        pyGIMLi block matrix
+
+    Examples
+    --------
+    >>> import pygimli as pg
+    >>> A = pg.Matrix(2, 3)
+    >>> B = pg.Matrix(4, 5)
+    >>> D = pg.matrix.dstack([A, B])
+    >>> print(D)
+    pg.matrix.BlockMatrix of size 6 x 8 consisting of 2 submatrices.
+    >>> pg.show(D)
+    """
     A = pgcore.BlockMatrix()
     irow = 0
     icol = 0
@@ -631,3 +694,9 @@ def dstack(mats):
 
     A.recalcMatrixSize()
     return A
+
+
+if __name__ == "__main__":
+    pg.test(vstack)
+    pg.test(hstack)
+    pg.test(dstack)
