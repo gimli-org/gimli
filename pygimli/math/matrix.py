@@ -43,7 +43,7 @@ class TransposedMatrix(pgcore.BlockMatrix):
 
 
 class SquaredMatrix(pgcore.BlockMatrix):
-    """Wrapper for squared (least-squares) matrix (of any kind)."""
+    """Wrapper for squared (least-squares) matrix A^T*A (of any kind)."""
 
     def __init__(self, A, verbose=False):
         super().__init__(verbose)
@@ -64,6 +64,30 @@ class SquaredMatrix(pgcore.BlockMatrix):
     def transMult(self, x):
         """Multiplication from right-hand-side ((A^T*A)^T*x)."""
         return self._A.transMult(self._A.mult(x))
+
+
+class SquaredTransposeMatrix(pgcore.BlockMatrix):
+    """Wrapper for squared (least-squares) matrix A*A^T (of any kind)."""
+
+    def __init__(self, A, verbose=False):
+        super().__init__(verbose)
+        self._A = A
+
+    def rows(self):
+        """Return number of rows (rows of underlying matrix)."""
+        return self._A.rows()
+
+    def cols(self):
+        """Return number of cols (rows of underlying matrix)."""
+        return self._A.rows()
+
+    def mult(self, x):
+        """Multiplication from right-hand-side (A.T*A*x)."""
+        return self._A.mult(self._A.transMult(x))
+
+    def transMult(self, x):
+        """Multiplication from right-hand-side ((A^T*A)^T*x)."""
+        return self._A.mult(self._A.transMult(x))
 
 
 class MultMatrix(pgcore.MatrixBase):
@@ -748,8 +772,9 @@ if __name__ == "__main__":
     B = TransposedMatrix(A)
     x = pg.Vector(3, 1.0)
     print(B*x)
+    y = pg.Vector(4, 1.0)
     C = SquaredMatrix(A)
-    print(B*x)
+    print(C*y)
     # pg.test(vstack)
     # pg.test(hstack)
     # pg.test(dstack)

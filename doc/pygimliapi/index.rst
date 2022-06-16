@@ -29,6 +29,8 @@ pyGIMLi API Reference
   frameworks
   .. math
   .. matrix
+  math
+  .. matrix
   meshtools
   physics
   solver
