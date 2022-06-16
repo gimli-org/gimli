@@ -27,6 +27,7 @@ def showMatrix(mat, ax=None, **kwargs):
     -------
         mpl.axes, Colorbar
     """
+    cBar = None
     if ax is None:
         print(ax)
         ax = pg.show()[0]
@@ -42,7 +43,6 @@ def showMatrix(mat, ax=None, **kwargs):
 
     if isinstance(mat, (pg.core.RSparseMapMatrix, pg.core.RSparseMatrix)):
         gci = drawSparseMatrix(ax, mat, **kwargs)
-        cBar = None
     elif isinstance(mat, pg.matrix.BlockMatrix):
         gci, cBar = drawBlockMatrix(ax, mat, **kwargs)
 
@@ -64,4 +64,5 @@ def showMatrix(mat, ax=None, **kwargs):
 
     else:
         pg.error("Matrix type not supported yet.")
+
     return ax, cBar
