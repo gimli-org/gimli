@@ -27,15 +27,13 @@ pyGIMLi API Reference
 
   .. core
   frameworks
-  .. math
-  .. matrix
   math
-  .. matrix
+  matrix
   meshtools
   physics
   solver
   testing
-  .. trans
+  trans
   utils
   viewer
 

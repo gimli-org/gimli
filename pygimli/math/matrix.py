@@ -9,7 +9,7 @@ import pygimli.core as pgcore
 
 from pygimli.core import (CMatrix, CSparseMapMatrix, CSparseMatrix,
                           RSparseMapMatrix, RSparseMatrix, ElementMatrix,
-                          IVector, MatrixBase, R3Vector, RVector)
+                          MatrixBase)
 
 IdentityMatrix = pgcore.IdentityMatrix
 Matrix = pgcore.RMatrix
@@ -18,7 +18,7 @@ SparseMapMatrix = pgcore.RSparseMapMatrix
 BlockMatrix = pgcore.RBlockMatrix
 
 
-class TransposedMatrix(pgcore.BlockMatrix):
+class TransposedMatrix(MatrixBase):
     """Wrapper for transposed matrix (of any kind)."""
 
     def __init__(self, A, verbose=False):
@@ -42,7 +42,7 @@ class TransposedMatrix(pgcore.BlockMatrix):
         return self._A.mult(x)
 
 
-class SquaredMatrix(pgcore.BlockMatrix):
+class SquaredMatrix(MatrixBase):
     """Wrapper for squared (least-squares) matrix A^T*A (of any kind)."""
 
     def __init__(self, A, verbose=False):
@@ -66,7 +66,7 @@ class SquaredMatrix(pgcore.BlockMatrix):
         return self._A.transMult(self._A.mult(x))
 
 
-class SquaredTransposeMatrix(pgcore.BlockMatrix):
+class SquaredTransposeMatrix(MatrixBase):
     """Wrapper for squared (least-squares) matrix A*A^T (of any kind)."""
 
     def __init__(self, A, verbose=False):
@@ -90,7 +90,7 @@ class SquaredTransposeMatrix(pgcore.BlockMatrix):
         return self._A.mult(self._A.transMult(x))
 
 
-class MultMatrix(pgcore.MatrixBase):
+class MultMatrix(MatrixBase):
     """Base Matrix class for all matrix types holding a matrix."""
 
     def __init__(self, A, verbose=False):
@@ -241,7 +241,7 @@ class MultLeftRightMatrix(MultMatrix):
 LRMultRMatrix = MultLeftRightMatrix  # alias for backward compatibility
 
 
-class Add2Matrix(pgcore.MatrixBase):
+class Add2Matrix(MatrixBase):
     """Matrix by addition of two matrices implicitly.
 
         The matrix holds two matrices and distributes multiplication in 2 parts
@@ -282,7 +282,7 @@ class Add2Matrix(pgcore.MatrixBase):
         return self.A.rows()
 
 
-class Mult2Matrix(pgcore.MatrixBase):
+class Mult2Matrix(MatrixBase):
     """Matrix by multipication of two matrices implicitly.
 
         The matrix holds two matrices and distributes multiplication in 2 parts
@@ -322,7 +322,7 @@ class Mult2Matrix(pgcore.MatrixBase):
         return self.A.rows()
 
 
-class DiagonalMatrix(pgcore.MatrixBase):
+class DiagonalMatrix(MatrixBase):
     """Square matrix with a vector on the main diagonal."""
 
     def __init__(self, d):
@@ -352,12 +352,14 @@ class DiagonalMatrix(pgcore.MatrixBase):
         """Number of rows (length of diagonal)."""
         return len(self.d)
 
+
 @pg.cache
 def createCm05(A):
     """Globally cached helper function to create Cm05Matrix."""
     return pg.matrix.Cm05Matrix(A, verbose=True)
 
-class Cm05Matrix(pgcore.MatrixBase):
+
+class Cm05Matrix(MatrixBase):
     """Matrix implicitly representing the inverse square-root."""
 
     def __init__(self, A, verbose=False):
@@ -380,14 +382,15 @@ class Cm05Matrix(pgcore.MatrixBase):
                 raise Exception("Matrix must by square (and symmetric)!")
 
             if verbose:
-                t = pg.tic(key='init cm05')
+                pg.tic(key='init cm05')
+
             self.ew, self.EV = eigh(A)
 
             if verbose:
-                pg.info('(C) Time for eigenvalue decomposition: {:.1f}s'.format(
-                    pg.dur(key='init cm05')))
+                pg.info('(C) Time for eigenvalue decomposition {:.1f}s'.format(
+                        pg.dur(key='init cm05')))
 
-            #self.A = A
+            # self.A = A
 
     @property
     def mul(self):
@@ -396,11 +399,15 @@ class Cm05Matrix(pgcore.MatrixBase):
         return self._mul
 
     def save(self, fileName):
-        """Save the content of this matrix. Used for caching until pickling is possible for this class"""
+        """Save the content of this matrix.
+
+        Used for caching until pickling is possible for this class"""
         np.save(fileName, dict(ew=self.ew, EV=self.EV), allow_pickle=True)
 
     def load(self, fileName):
-        """Load the content of this matrix. Used for caching until pickling is possible for this class"""
+        """Load the content of this matrix.
+
+        Used for caching until pickling is possible for this class"""
         d = np.load(fileName + '.npy', allow_pickle=True).tolist()
         self.ew = d['ew']
         self.EV = d['EV']
@@ -424,13 +431,14 @@ class Cm05Matrix(pgcore.MatrixBase):
         return self.mult(x)  # matrix is symmetric by definition
 
 
-class RepeatVMatrix(pgcore.BlockMatrix):
+class RepeatVMatrix(BlockMatrix):
     """Matrix repeating a base matrix N times vertically. Only A is stored.
 
         M = | A |
             | A |
             | A |
     """
+
     def __init__(self, A, num):
         """Init matrix by specify matrix and number of repetitions.
 
@@ -452,11 +460,12 @@ class RepeatVMatrix(pgcore.BlockMatrix):
         self.recalcMatrixSize()
 
 
-class RepeatHMatrix(pgcore.BlockMatrix):
+class RepeatHMatrix(BlockMatrix):
     """Matrix repeating a base matrix N times horizontally. Only A is stored.
 
         M = [ A A A ]
     """
+
     def __init__(self, A, num):
         """Init matrix by specify matrix and number of repetitions.
 
@@ -478,13 +487,14 @@ class RepeatHMatrix(pgcore.BlockMatrix):
         self.recalcMatrixSize()
 
 
-class RepeatDMatrix(pgcore.BlockMatrix):
+class RepeatDMatrix(BlockMatrix):
     """Matrix repeating a base matrix N times diagonally. Only A is stored.
 
         M = | A     |
             |   A   |
             |     A |
     """
+
     def __init__(self, A, num):
         """Init matrix by specify matrix and number of repetitions.
 
@@ -517,6 +527,7 @@ class FrameConstraintMatrix(RepeatDMatrix):
             | -I +I     |
             |    -I  +I |
     """
+
     def __init__(self, A, num, scale=1.0):
         """Init matrix by specifying number of frames.
 
