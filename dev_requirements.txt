@@ -1,4 +1,4 @@
-# pip install -r requirements.txt --user
+# pip install -r dev_requirements.txt --user
 # pip list
 # pip install package== --user # list all possible versions for <pip-20.3
 # pip install --use-deprecated=legacy-resolver package== --user # same as above for >=pip-20.3 and <pip-21
@@ -6,15 +6,15 @@
 
 pyplusplus==1.8.4
 
-# for py3.8
+# for py3.9
 pygccxml==2.0.0
-sphinx==1.8.5
+sphinx
 sphinxcontrib-bibtex
 sphinxcontrib-programoutput
 sphinxcontrib-doxylink
 sphinx-gallery
 bibtexparser
-pyvista==0.33
+pyvista
 panel
 
 # optional, but strongly recommended

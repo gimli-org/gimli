@@ -6,7 +6,8 @@ import os.path
 import tempfile
 
 from importlib import import_module
-from urllib.request import urlretrieve
+import contextlib
+from urllib.request import urlopen
 
 import numpy as np
 import pygimli as pg
@@ -17,13 +18,8 @@ from pygimli.utils import readGPX
 from pygimli.physics.traveltime import load as loadTT
 
 
-gimliExampleDataPath='gimli-org/example-data/'
-# Example data repository
-exampleDataRepository = ''.join((
-    'https://raw.githubusercontent.com/',  # RAW files
-    gimliExampleDataPath,  # Organization and repository
-    'master/'  # Branch
-))
+__gimliExampleDataRepo__ = 'gimli-org/example-data/'
+__gimliExampleDataBase__ = 'example-data'
 
 
 def optImport(module, requiredFor="use the full functionality"):
@@ -211,45 +207,114 @@ def load(fname, verbose=False, testAll=True, realName=None):
     raise Exception("File type of {0} is unknown or file does not exist "
                         "and could not be imported.".format(suffix))
 
+def getMD5(fileName):
+    """ Return md5 checksum for given fileName.
+    """
+    import hashlib
+    md5 = hashlib.md5()
+    
+    with open(fileName, "rb") as fi:
+        content = fi.read()
+        md5.update(content)
 
-def getExampleFile(path, load=False, verbose=False):
+    return md5.hexdigest()
+    
+
+def getUrlFile(url, fileName, timeout=10, verbose=False):
+    """ Write file from url. Path will be created.
+    """
+    import hashlib
+    md5_hash = hashlib.md5()
+
+    with contextlib.closing(urlopen(url, timeout=timeout)) as fp:
+        header = dict(fp.getheaders())
+        #print(pg.pf(header))
+        length = int(header['Content-Length'])
+
+        p = pg.utils.ProgressBar(length)
+        blockSize = 1024 * 8
+        block = fp.read(blockSize)
+        blockCounter = 1
+        if block:
+            os.makedirs(os.path.dirname(fileName), exist_ok=True)
+            with open(fileName, 'wb') as outFile:
+                if verbose:
+                    p(min(length-1, blockCounter*blockSize))
+                md5_hash.update(block)
+                outFile.write(block)
+                while True:
+                    block = fp.read(blockSize)
+                    blockCounter += 1
+                    if not block:
+                        break
+                    if verbose:
+                        p(min(length-1, blockCounter*blockSize))
+                    md5_hash.update(block)
+                    outFile.write(block)
+        else:
+            pg.critical('File or connection error:', url, fileName)
+    if verbose:
+        digest = md5_hash.hexdigest()
+        print('md5:', digest)
+        #print('md5:', getMD5(fileName))
+
+
+def getExampleFile(path, load=False, force=False, verbose=False, **kwargs):
     """Download and return a filename to the example repository.
 
+    Content will not be downloaded if already exists.
     TODO:
-        checksum or hash test for the content.
+        * checksum or hash test for the content.
+        * provide release or github version for specific repo
 
-    Parameters
-    ----------
+    Args
+    ----
     path: str
         Path to the remote repo
     load: bool [False]
         Try to load the file and return the relating object.
+    force: bool [False]
+        Don't use cached file and get it in every case.
+
+    Keyword Args
+    ------------
+    githubRepo: str
+        Third party github data repository.
+    branch: str ['master']
+        branchname
 
     Returns
     -------
     filename: str
-        Filename to the data content
+        Local file name to the data content.
     data: obj
-        content of the path if load is True
+        Content of the file if 'load' is set True.
     """
-    url = exampleDataRepository + path
+    repo = kwargs.pop('githubRepo', __gimliExampleDataRepo__)
+    branch = kwargs.pop('branch', 'master')
 
-    fileName = os.path.join(tempfile.gettempdir(), gimliExampleDataPath, path)
+    url = '/'.join(('https://raw.githubusercontent.com/',  # RAW files
+                   repo, branch, path))
 
-    if not os.path.exists(fileName):
+    pg.info(f'Looking for {path} in {repo}')
+
+    fileName = os.path.join(getCachePath(), 
+                            __gimliExampleDataBase__, 
+                            repo, branch, path)
+
+    if not os.path.exists(fileName) or force is True:
         if verbose:
-            pg.info("Getting:", fileName)
-        os.makedirs(os.path.dirname(fileName), exist_ok=True)
-        urlretrieve(url, fileName)
+            pg.info(f'Getting: {fileName} from {url}')
+        
+        getUrlFile(url, fileName, verbose=verbose)
     else:
         if verbose:
             pg.info("File already exists:", fileName)
 
-    if load:
-        print(fileName)
-        # d = pg.load(fileName)
-        return pg.load(fileName)
+    if load is True:
+        return pg.load(fileName, verbose=verbose)
     return fileName
+    
 
 def getExampleData(path, verbose=False):
     """Shortcut to load example data."""

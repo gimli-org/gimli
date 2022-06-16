@@ -209,19 +209,21 @@ def testShowPV():
     m1 = mt.createCube()
     m1.setBoundaryMarkers(range(m1.boundaryCount()))
     
-    m2 = mt.createCube()
+    m2 = mt.createCube(boundaryMarker=8)
     m2.scale(0.5)
     
     pg.rc['view3D'] = 'pyvista'
     print('Show Boundary:', m1)
     pg.show(m1+m2, bc='#DDDDFF', alpha=0.5)
-
-    m1 = mt.createMesh(m1, area=0.1)
+    m1 = mt.createMesh(m1+m2, area=0.1)
 
     print('Show Cells:', m1)
     m1.setCellMarkers(range(m1.cellCount()))
     pg.show(m1, showMesh=True)
 
+    print('Show Markers with vtk filters:', m1)
+    ax, _ = pg.show(m1, markers=True, filter={'clip':{'origin':(0, 0, 0)},},)
+    
     print('Show Field (x)')
     pg.show(m1, data=pg.x(m1), label='x', cMap='Spectral_r')
     
