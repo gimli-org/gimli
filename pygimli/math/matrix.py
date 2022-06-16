@@ -18,6 +18,29 @@ SparseMapMatrix = pgcore.RSparseMapMatrix
 BlockMatrix = pgcore.RBlockMatrix
 
 
+class TransposedMatrix(pgcore.BlockMatrix):
+    """Wrapper for transposed matrix (of any kind)."""
+
+    def __init__(self, A, verbose=False):
+        super().__init__(verbose)
+        self._A = A
+
+    def rows(self):
+        """Return number of rows (cols of underlying matrix)."""
+        return self._A.cols()
+
+    def cols(self):
+        """Return number of cols (rows of underlying matrix)."""
+        return self._A.rows()
+
+    def mult(self, x):
+        """Multiplication from right-hand-side (A.T*x)."""
+        return self._A.transMult(x)
+
+    def transMult(self, x):
+        """Multiplication from right-hand-side (A*x)"""
+        return self._A.mult(x)
+
 
 class MultMatrix(pgcore.MatrixBase):
     """Base Matrix class for all matrix types holding a matrix."""
@@ -697,6 +720,10 @@ def dstack(mats):
 
 
 if __name__ == "__main__":
-    pg.test(vstack)
-    pg.test(hstack)
-    pg.test(dstack)
+    A = pg.Matrix(3, 4)
+    B = TransposedMatrix(A)
+    x = pg.Vector(3, 1.0)
+    print(B*x)
+    # pg.test(vstack)
+    # pg.test(hstack)
+    # pg.test(dstack)
