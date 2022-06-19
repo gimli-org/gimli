@@ -700,6 +700,7 @@ void Mesh::exportVTK(const std::string & fbody,
     std::map< std::string, RVector > cData;
     std::map< std::string, RVector > bData;
     std::map< std::string, PosVector > vData;
+    std::map< std::string, RMatrix > fData;
 
     for (auto &nd: dataMap){
         if (haveInfNaN(nd.second)){
@@ -707,29 +708,41 @@ void Mesh::exportVTK(const std::string & fbody,
             continue;
         }
         
-        if (nd.second.size() == this->cellCount()){
-            // __MS("add C", nd.first)
-            cData[nd.first] = nd.second;
-        }
-        else if (nd.second.size() == this->boundaryCount()){
-            // __MS("add B", nd.first)
-            bData[nd.first] = nd.second;
-        }
-        else if (nd.second.size() == this->nodeCount()){
-            if (endswith(nd.first, "_x")){
-                std::string name = nd.first.substr(0, nd.first.size()-2);
-                // __MS("add V", name)
-                vData[name] = r3(dataMap.at(name + "_x"), 
-                                 dataMap.at(name + "_y"), 
-                                 dataMap.at(name + "_z"));
-            } else if (endswith(nd.first, "_y") || endswith(nd.first, "_z")){
-                // __MS("ignore", nd.first)
-            } else {
-                // __MS("add N", nd.first)
-                nData[nd.first] = nd.second;
+        size_t pos = 0;
+        if (0 && (pos = nd.first.find('#', 0)) != std::string::npos){
+            std::string name = nd.first.substr(0, pos);
+        
+            if (fData.count(name) == 0){
+                fData[name] = RMatrix(0, nd.second.size());
             }
+            fData[name].push_back(nd.second);
         } else {
-            log(Warning, "data: ", nd.first, " not written to vtk. size: ", nd.second.size());
+        
+            if (nd.second.size() == this->cellCount()){
+                // __MS("add C", nd.first)
+                cData[nd.first] = nd.second;
+            }
+            else if (nd.second.size() == this->boundaryCount()){
+                // __MS("add B", nd.first)
+                bData[nd.first] = nd.second;
+            }
+            else if (nd.second.size() == this->nodeCount()){
+                if (endswith(nd.first, "_x")){
+                    std::string name = nd.first.substr(0, nd.first.size()-2);
+                    // __MS("add V", name)
+                    vData[name] = r3(dataMap.at(name + "_x"), 
+                                    dataMap.at(name + "_y"), 
+                                    dataMap.at(name + "_z"));
+                } else if (endswith(nd.first, "_y") || endswith(nd.first, "_z")){
+                    // __MS("ignore", nd.first)
+                } else {
+                    // __MS("add N", nd.first)
+                    nData[nd.first] = nd.second;
+                }
+                
+            } else {
+                log(Warning, "data: ", nd.first, " not written to vtk. size: ", nd.second.size());
+            }
         }
     }
 
@@ -997,6 +1010,26 @@ void Mesh::exportVTK(const std::string & fbody,
         }
     }
 
+    // not yet working correctly .. it seams fields for time series need to exported seperatly
+    if (fData.size() > 0){
+        
+        log(Debug, "writing field data");
+        file << "FIELD fieldData " << fData.size() << std::endl;
+        int numComponents = 1;
+        for (auto & nd: fData){
+            log(Debug, "writing field data: " + nd.first + " " + 
+                    str(nd.second.rows()) + " x " +  str(nd.second.cols()));
+
+            file << nd.first << " " << nd.second.cols() << " " << nd.second.rows() << " float" << std::endl;
+            for (Index i = 0, imax = nd.second.rows(); i < imax; i ++) {
+                for (Index j = 0, jmax = nd.second.cols(); j < jmax; j ++) {
+                    file << nd.second[i][j] << " ";
+                }
+                file << std::endl;
+            }
+        }
+    }
+
     //** write point vector data
     if (vData.size() > 0){
         for (auto & nd: vData){
@@ -1089,7 +1122,7 @@ void Mesh::importVTK(const std::string & fbody) {
                     }
                 }
                 else if (row[0] == "VECTORS") {
-                    log(Warning, " .. clean up VTK vector data read");
+                    // log(Warning, " .. clean up VTK vector data read");
                     std::string name(row[1]);
                     std::vector < std::string > r(getRowSubstrings(file));
                     if (r.size()){

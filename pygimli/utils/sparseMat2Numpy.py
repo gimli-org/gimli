@@ -301,7 +301,13 @@ def reduceEntries(A, idx):
         pg.tic()
 
     if 1:
-        A.reduce(idx, True)
+        try:
+            A.reduce(idx, True)
+        except:
+            for i, ix in enumerate(idx):
+                A.cleanRow(ix)
+                A.cleanCol(ix)
+
         for i, ix in enumerate(idx):
             A.setVal(ix, ix, 1.0)
     else:

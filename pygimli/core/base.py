@@ -112,6 +112,7 @@ def isR3Array(v, N=None):
         return False
 
 isPosList = isR3Array
+isVecField = isR3Array
 
 def isMatrix(v, shape=None):
     """Check is v has ndim=2 or is comparable list"""

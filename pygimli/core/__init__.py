@@ -1137,7 +1137,8 @@ def search(what):
     """Utility function to search docstrings for string `what`."""
     np.lookfor(what, module="pygimli", import_modules=False)
 
-from .base import (isScalar, isArray, isPos, isR3Array,
+
+from .base import (isScalar, isArray, isPos, isR3Array, isVecField,
                    isPosList, isComplex, isMatrix)
 
 # Import from submodules at the end

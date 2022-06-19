@@ -39,6 +39,43 @@ def __Mesh_unique_dataKeys(self):
 
 Mesh.dataKeys = __Mesh_unique_dataKeys
 
+
+def __Mesh_getData__(self):
+    ret = {}
+    # print(self)
+    for k, v in self.dataMap():
+        # print(k, v)
+        if '_y' in k or '_z' in k:
+            continue
+        
+        name = k
+
+        if '_x' in name:
+            name = k[0:name.find('_x')]
+            v = np.asarray([v, self[name + '_y'], self[name + '_z']]).T
+
+        if '#' in name:
+            name = name[0:name.find('#')]
+
+            if name not in ret:
+                ret[name] = [np.asarray(v)]
+            else:
+                ret[name].append(np.asarray(v))
+
+            #print('\t', name, ret[name].shape)
+        else:
+            ret[name] = v
+        
+    for k , v in ret.items():
+        ret[k] = np.asarray(v)
+        # print(k, ret[k].shape)
+
+    return ret
+        
+
+Mesh.dataDict = __Mesh_getData__
+
+
 def __Mesh_str(self):
     st = "Mesh: Nodes: " + str(self.nodeCount()) + " Cells: " + str(
         self.cellCount()) + " Boundaries: " + str(self.boundaryCount())
@@ -47,17 +84,18 @@ def __Mesh_str(self):
         st += " secNodes: " + str(self.secondaryNodeCount())
 
     if len(list(self.dataMap().keys())) > 0:
-        st += "\nMesh contains data: "
+        st += "\nMesh contains data:\n"
 
-        uniqueNames = self.dataKeys()
+        data = self.dataDict()
+        #uniqueNames = self.dataKeys()
 
-        for d, v in uniqueNames.items():
+        for d, v in data.items():
             if len(v) > 1:
-                st += d + "[0,...,{})".format(len(v))
+                st += f'\t{d} :{v.shape}'
             else:
-                st += d
+                st += f'\t{d}'
 
-            st += ', '
+            st += '\n'
 
         st = st.rstrip(', ')
 
@@ -97,6 +135,7 @@ def __Node_str(self):
     return s
 Node.__repr__ =__Node_str
 
+
 def __Mesh_setVal(self, key, val):
     """Index access to the mesh data.
 
@@ -118,7 +157,7 @@ def __Mesh_setVal(self, key, val):
             # return np.asarray(val.qpInterpMatrix(self.positions()) * _v)
 
     ## find values from special objects
-    # _r(type(val), hasattr(val, 'history'))
+    #_r(type(val), hasattr(val, 'history'))
 
     if hasattr(val, 'history') and hasattr(val, 'values'):
         # print(key, 'history:', len(val.history), len(val.values))
@@ -136,6 +175,7 @@ def __Mesh_setVal(self, key, val):
         # print(len(val), val[0].shape)
         # print(key, len(val), isR3Array(val))
     elif hasattr(val, 'values'):
+        _r(key ,val.shape)
         val = _matchSize(val)
         #.eval(mesh.positions())
 
@@ -171,6 +211,7 @@ def __Mesh_getVal(self, key):
 
         uniqueNames = {}
         for d in self.dataMap().keys():
+            #print(d)
             if '_y' in d or '_z' in d:
                 continue
 
@@ -202,7 +243,7 @@ def __Mesh_getVal(self, key):
                 return uniqueNames[key]
 
         critical('The mesh does not have the requested data:', key,
-                    '. Available:', uniqueNames)
+                    '. Available:', uniqueNames.keys())
 
 
 Mesh.__getitem__ = __Mesh_getVal

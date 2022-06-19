@@ -137,7 +137,6 @@ class TestMeshGenerator(unittest.TestCase):
         # pg.core.setDeepDebug(True)
         # pg.core.setDeepDebug(False)
 
-
         np.testing.assert_array_equal(mesh['a'], a)
         np.testing.assert_array_equal(mesh['b'], b)
         np.testing.assert_array_equal(mesh['v'], c)
@@ -145,6 +144,7 @@ class TestMeshGenerator(unittest.TestCase):
 
         #mesh['c'] = pg.PosList(10, [1.0, 0., 0.0])
 
+        
     def test_meshBMS(self):
         # text bms version v3 which stores geometry flag
         mesh = pg.Mesh(2, isGeometry=True)
@@ -162,16 +162,31 @@ class TestMeshGenerator(unittest.TestCase):
         cM = np.arange(grid.cellCount())
         grid.setCellMarkers(cM)
 
+        #grid['n-field'] = np.ones((4, grid.nodeCount()))
+        grid['c-field'] = np.ones((4, grid.cellCount()))
+        
         import tempfile as tmp
         _, fn = tmp.mkstemp(suffix='.vtk')
 
+
+        fn = "l.vtk"
         grid.exportVTK(fn)
         mesh = pg.load(fn)
+
+
+
+
+
+
+
         np.testing.assert_array_equal(mesh.cellMarkers(), cM)
         np.testing.assert_array_equal(mesh['Marker'], cM)
 
         mesh = pg.meshtools.readMeshIO(fn)
         np.testing.assert_array_equal(mesh['Marker'], cM)
+
+
+
 
         fn = pg.getExampleFile('meshes/test_tetgen_dataCol.vtk')
         mesh = pg.load(fn)

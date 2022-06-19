@@ -2593,7 +2593,7 @@ def checkCFL(times, mesh, vMax, verbose=False):
 
 def crankNicolson(times, S, I, f=None,
                   u0=None, theta=1.0, dirichlet=None,
-                  solver=None, progress=None):
+                  solver=None, progress=None, swatches=None):
     """Generic Crank Nicolson solver for time dependend problems.
 
     Limitations so far:
@@ -2634,7 +2634,11 @@ def crankNicolson(times, S, I, f=None,
     if len(times) < 2:
         raise BaseException("We need at least 2 times for "
                             "Crank-Nicolsen time discretization." + str(len(times)))
-    # sw = pg.core.Stopwatch(True)
+
+    try: swatches('CN prep').start()
+    except: pass
+    
+    # print(swatches)
     timeAssemble = []
     timeSolve = []
     timeMeasure = False
@@ -2656,13 +2660,17 @@ def crankNicolson(times, S, I, f=None,
     if theta == 0:
         A = I.copy()
 
-    if type(solver) is str:
+    if isinstance(solver, str):
         solver = pg.solver.LinSolver(solver=solver)
     if solver is None:
         solver = pg.solver.LinSolver(solver='scipy')
 
+    try: swatches('CN prep').store()
+    except: pass
+    
     dt = 0.0
     for n in range(1, len(times)):
+        
         newDt = times[n] - times[n-1]
         if timeMeasure:
             pg.tic(key='CrankNicolsonLoop')
@@ -2671,6 +2679,8 @@ def crankNicolson(times, S, I, f=None,
             pg.critical('Cannot find delta t for times', times)
 
         if abs(newDt - dt) > 1e-8:
+            try: swatches('CN factorize').start()
+            except: pass
             ## new dt, so we need to factorize the matrix again
             dt = newDt
             #pg.info('dt', dt)
@@ -2683,6 +2693,12 @@ def crankNicolson(times, S, I, f=None,
             solver.factorize(A)
 
             St = None
+            
+            try: swatches('CN factorize').store()
+            except: pass
+
+        try: swatches('CN build').start()
+        except: pass
 
         if theta == 0:
             if St is None:
@@ -2695,13 +2711,26 @@ def crankNicolson(times, S, I, f=None,
                 St = I - S *(dt*(1.-theta)) # cache what's possible
             b = St * u[n-1] + dt * ((1.0 - theta) * rhs[n-1] + theta * rhs[n])
 
+        try: swatches('CN build').store()
+        except: pass
+
+        try: swatches('CN dirichlet').start()
+        except: pass
         if dirichlet is not None:
             dirichlet.apply(b)
+        try: swatches('CN dirichlet').store()
+        except: pass
 
         if timeMeasure:
             timeAssemble.append(pg.dur(key='CrankNicolsonLoop', reset=True))
 
+        try: swatches('CN solve').start()
+        except: pass
+
         u[n, :] = solver(b)
+    
+        try: swatches('CN solve').store()
+        except: pass
 
         if timeMeasure:
             timeSolve.append(pg.dur(key='CrankNicolsonLoop'))
