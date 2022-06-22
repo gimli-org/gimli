@@ -25,7 +25,11 @@ else:
             vers_needs))
     
     #print(pyvista.__version__)
-    
+    from pyvista import themes
+    #pyvista.set_plot_theme('white')
+    #pyvista.global_theme.color = 'white'  
+
+
     from pygimli.viewer.pv import drawModel
 
 # if PyQt5 is None:

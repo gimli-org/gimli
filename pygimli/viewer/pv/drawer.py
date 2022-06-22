@@ -1,7 +1,8 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import numpy as np
-
 import pygimli as pg
-
 from .utils import pgMesh2pvMesh
 
 pv = pg.optImport('pyvista', requiredFor="properly visualize 3D data")
@@ -43,6 +44,7 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
     bc = kwargs.pop('bc', '#EEEEEE') # background color
     filt = kwargs.pop('filter', {}) 
 
+    
     if ax is None:
         ax = pv.Plotter(notebook=notebook, **kwargs)
         ax.background_color = bc
