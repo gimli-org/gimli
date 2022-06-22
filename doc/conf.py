@@ -144,13 +144,17 @@ try:
         'reset_modules': (reset_mpl),
         }
 
-    pyvista = pygimli.optImport("pyvista", "building the gallery with 3D visualizations")
-    panel = pygimli.optImport("panel", "Jupyter backend for 3D visualizations on jupyter notebooks")
+    pyvista = pygimli.optImport("pyvista", "build the gallery with 3D visualizations")
     if pyvista:
         pyvista.OFF_SCREEN = True
-        pyvista.set_jupyter_backend('panel')
-        pyvista.rcParams['window_size'] = np.array([1024, 768]) * 2
-        sphinx_gallery_conf["image_scrapers"] = (pyvista.Scraper(), 'matplotlib')
+        pyvista.set_plot_theme("document")
+        pyvista.global_theme.window_size = [1024, 768]
+        pyvista.global_theme.font.size = 22
+        pyvista.global_theme.font.label_size = 22
+        pyvista.global_theme.font.title_size = 22
+        pyvista.global_theme.return_cpos = False
+        pyvista.set_jupyter_backend('static') 
+        sphinx_gallery_conf["image_scrapers"] = ('pyvista', 'matplotlib')
 
 except ImportError:
     err = """

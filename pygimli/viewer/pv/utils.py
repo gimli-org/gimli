@@ -37,7 +37,7 @@ def pgMesh2pvMesh(mesh, data=None, label=None, boundaries=False):
     data: iterable
         Parameter to distribute to cells/nodes.
     """
-    if boundaries is True:
+    if boundaries:
         b = mesh.createSubMesh(mesh.boundaries([b.id() for b in mesh.boundaries() if b.outside() or b.marker() != 0]))
         return pgMesh2pvMesh(b, data, label)
     

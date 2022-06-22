@@ -6,18 +6,20 @@ import sys
 import matplotlib.pyplot as plt
 import pygimli as pg
 
-PyQt5 = pg.optImport('PyQt5', requiredFor="use pyGIMLi's 3D viewer")
-pyvista = pg.optImport('pyvista', requiredFor="properly visualize 3D data")
-panel = pg.optImport('panel', requiredFor='pyvista jupyter backend')
+PyQt5 = pg.optImport("PyQt5", requiredFor="use pyGIMLi's 3D viewer")
+pyvista = pg.optImport("pyvista", requiredFor="properly visualize 3D data")
+panel = pg.optImport(
+    "panel", requiredFor="use interactive 3D visualizations within Jupyter notebooks"
+)
 
 
 if pyvista is None:
-    view3Dcallback = 'showMesh3DFallback'
+    view3Dcallback = "showMesh3DFallback"
 else:
-    view3Dcallback = 'showMesh3DVista'
+    view3Dcallback = "showMesh3DVista"
     vers_users = pyvista.__version__
-    vers_userf = float(pyvista.__version__[::-1].replace('.', '', 1)[::-1])
-    vers_needs = '0.33.0'
+    vers_userf = float(pyvista.__version__[::-1].replace(".", "", 1)[::-1])
+    vers_needs = "0.33.0"
     vers_needf = 0.330
 
     if vers_userf < vers_needf:
@@ -25,10 +27,9 @@ else:
             vers_needs))
     
     #print(pyvista.__version__)
-    from pyvista import themes
+    #from pyvista import themes
     #pyvista.set_plot_theme('white')
     #pyvista.global_theme.color = 'white'  
-
 
     from pygimli.viewer.pv import drawModel
 
@@ -41,25 +42,23 @@ else:
 
 
 def showMesh3D(mesh, data, **kwargs):
-    """Calling the defined function to show the 3D object.
-    """
-    if pg.rc['view3D'] == 'fallback':
+    """Calling the defined function to show the 3D object."""
+    if pg.rc["view3D"] == "fallback":
         return showMesh3DFallback(mesh, data, **kwargs)
 
     return globals()[view3Dcallback](mesh, data, **kwargs)
 
 
 def showMesh3DFallback(mesh, data, **kwargs):
-    """Plot the 3D object sketchy.
-    """
-    ax = kwargs.pop('ax', None)
+    """Plot the 3D object sketchy."""
+    ax = kwargs.pop("ax", None)
 
     from mpl_toolkits.mplot3d import Axes3D
 
     if ax is None or not isinstance(ax, Axes3D):
         fig = plt.figure()
-        ax = fig.gca(projection='3d', proj_type='persp')
-        #ax = fig.gca(projection='3d', proj_type='ortho')
+        ax = fig.gca(projection="3d", proj_type="persp")
+        # ax = fig.gca(projection='3d', proj_type='ortho')
 
     if mesh.boundaryCount() > 0:
         x, y, tri, z, dataIndex = pg.viewer.mpl.createTriangles(mesh)
@@ -69,10 +68,11 @@ def showMesh3DFallback(mesh, data, **kwargs):
             x = pg.x(mesh.positions())
             y = pg.y(mesh.positions())
             z = pg.z(mesh.positions())
-            ax.scatter(x, y, z, 'ko')
-    ax.set_title('Fallback, install pyvista for proper 3D visualization')
+            ax.scatter(x, y, z, "ko")
+    ax.set_title("Fallback, install pyvista for proper 3D visualization")
 
     return ax, None
+
 
 def showMesh3DVista(mesh, data=None, **kwargs):
     """Make use of the actual 3D visualization tool kit
@@ -97,19 +97,17 @@ def showMesh3DVista(mesh, data=None, **kwargs):
     (and values) from the dictionary.
     """
     # for compatibiliy remove show kwargs that are not needed
-    kwargs.pop('figsize', False)
-    
+    kwargs.pop("figsize", False)
 
-    hold = kwargs.pop('hold', False)
-    cMap = kwargs.pop('cMap', 'viridis')
-    notebook = kwargs.pop('notebook', pg.notebook())
+    hold = kwargs.pop("hold", False)
+    cMap = kwargs.pop("cMap", "viridis")
+    notebook = kwargs.pop("notebook", pg.notebook())
 
-
-    gui = kwargs.pop('gui', not notebook)
+    gui = kwargs.pop("gui", not notebook)
 
     # add given data from argument
     # GUI tmp deactivated
-    if gui and 0: 
+    if gui and 0:
         app = Qt.QApplication(sys.argv)
         s3d = Show3D(app)
         s3d.addMesh(mesh, data, cMap=cMap, **kwargs)
@@ -118,22 +116,22 @@ def showMesh3DVista(mesh, data=None, **kwargs):
         return s3d.plotter, s3d  # plotter, gui
 
     else:
-        
-        backend = kwargs.pop('backend', 'panel')
 
-        plotter = drawModel(None, mesh, data, notebook=notebook, 
-                            cMap=cMap, **kwargs)
-        
+        backend = kwargs.pop("backend", "panel")
+
+        plotter = drawModel(None, mesh, data, notebook=notebook, cMap=cMap, **kwargs)
+
         plotter.enable_anti_aliasing()
 
-        if notebook is True:        
+        if notebook:
             # monkey patch show of this plotter instance so we can use multiple backends and only plotter.show() .. whoever this needs.
             plotter.__show = plotter.show
-            plotter.show = lambda *args, **kwargs: plotter.__show(*args, 
-                                                jupyter_backend=backend, **kwargs)
+            plotter.show = lambda *args, **kwargs: plotter.__show(
+                *args, jupyter_backend=backend, **kwargs
+            )
 
-        if not hold is True:
+        if not hold:
             plotter.show()
-        
-        # , None to keep compatability 
+
+        # , None to keep compatability
         return plotter, None
