@@ -1564,7 +1564,6 @@ void Mesh::importSTL(const std::string & fileName, bool isBinary, double snap){
         int nFaces = 0;
         ret = fread(&nFaces, 4, 1, file);
         if (ret == 0) throwError(WHERE_AM_I + " Oops");
-        __MS(nFaces)
 
         float rd[48];
         char padding[2];
