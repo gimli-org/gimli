@@ -13,5 +13,5 @@ sphinxcontrib-doxylink
 pillow
 scipy
 bibtexparser
-pyvista==0.33
+pyvista>=0.33
 panel
