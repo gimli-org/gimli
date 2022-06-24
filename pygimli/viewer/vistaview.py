@@ -101,7 +101,12 @@ def showMesh3DVista(mesh, data=None, **kwargs):
 
     hold = kwargs.pop("hold", False)
     cMap = kwargs.pop("cMap", "viridis")
-    notebook = kwargs.pop("notebook", pg.notebook())
+    notebook = kwargs.pop("notebook", pg.isNotebook())
+
+    # For sphinx builds and non-interactive agg backend
+    if not pg.viewer.mpl.isInteractive():
+        notebook = False
+        kwargs["backend"] = None
 
     gui = kwargs.pop("gui", not notebook)
 
