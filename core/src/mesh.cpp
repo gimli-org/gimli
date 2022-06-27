@@ -509,7 +509,7 @@ Boundary * findSecParent(const std::vector < Node * > & v){
     return 0;
 }
 Boundary * Mesh::copyBoundary(const Boundary & bound, double tol, bool check){
-    bool debug = true;
+    bool debug = false;
     if (debug)
     __MS("copyBoundary", bound.ids())
 

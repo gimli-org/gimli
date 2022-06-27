@@ -45,19 +45,18 @@ def hold(val=1):
     globals()[holdAxes__] = val
 
 
+@atexit.register
 def waitOnExit():
     backend = matplotlib.get_backend()
+
+    #pg._r(backend, len(plt.get_fignums()))
  
     if not 'inline' in backend:
-        if 'Qt' in backend or 'Wx' in backend or 'TkAgg' in backend:
+        if 'Qt' in backend or 'Wx' in backend or 'Tk' in backend or 'GTK' in backend:
             if len(plt.get_fignums()) > 0:
                 pg.info('Showing pending widgets on exit. '
                         'Close all figures or Ctrl-C to quit the programm')
                 pg.wait()
-
-# this can't be changed after import
-if pg.rc['waitOnExit'] is True:
-    atexit.register(waitOnExit)
 
 
 def wait(**kwargs):
@@ -66,6 +65,9 @@ def wait(**kwargs):
     # ax.canvas.draw_onIdle()
     updateAxes(plt.gca())
     kp = kwargs.pop('untilKeyPressed', False)
+    # keep sure interactive mode is off
+    plt.ioff()
+    
     if kp == True:
         plt.waitforbuttonpress(**kwargs)
     else:
@@ -222,26 +224,6 @@ def setPrettyTimeAxis(axis, unit=None):
         axis.set_major_formatter(major_formatter)
         axis._axes.set_xlabel('Zeit')
         
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 def setOutputStyle(dim='w', paperMargin=5, xScale=1.0, yScale=1.0, fontsize=9,
                    scale=1, usetex=True):
     """Set preferred output style."""
