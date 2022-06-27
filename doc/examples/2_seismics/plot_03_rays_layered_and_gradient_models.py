@@ -178,8 +178,8 @@ for j, (case, mesh, vel) in enumerate(zip(["layered", "gradient"],
             sourceNode = mgr.fop.mesh().findNearestNode([0.0, 0.0])
 
             path = mgr.fop.dijkstra.shortestPath(sourceNode, recNode)
-            points = mgr.fop.mesh().positions(withSecNodes=True)[path]
-            ax[0, j].plot(pg.x(points), pg.y(points), cols[i], label=lab)
+            points = mgr.fop.mesh().positions(withSecNodes=True)[path].array()
+            ax[0, j].plot(points[:,0], points[:,1], cols[i], label=lab)
 
     t_ana = ana(px)
 

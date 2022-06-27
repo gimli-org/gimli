@@ -314,7 +314,7 @@ def createColorBar(gci, orientation='horizontal', size=0.2, pad=None,
         ax.__cBar__ = cbar
 
         updateColorBar(cbar, **kwargs)
-        
+
     return cbar
 
 
@@ -371,11 +371,13 @@ def createColorBarOnly(cMin=1, cMax=100, logScale=False, cMap=None, nLevs=5,
     if levels is not None:
         kwargs['levels'] = levels
 
-
     if aspect is not None:
         ax.set_aspect(aspect)
 
-    updateColorBar(cbar, **kwargs)
+    updateColorBar(cbar, cMin=cMin, cMax=cMax, nLevs=nLevs, label=label,
+                   **kwargs)
+
+    # updateColorBar(cbar, **kwargs)
 
     if savefig is not None:
         saveFigure(fig, savefig)
@@ -428,7 +430,7 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5, levels=None):
     # cbarLevelsString = []
     # for i in cbarLevels:
     #     cbarLevelsString.append(prettyFloat(i, roundValue))
-    
+
     if hasattr(cbar, 'mappable'):
         cbar.mappable.set_clim(vmin=cMin, vmax=cMax)
 

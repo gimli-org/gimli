@@ -9,7 +9,7 @@ import pygimli.core as pgcore
 
 from pygimli.core import (CMatrix, CSparseMapMatrix, CSparseMatrix,
                           RSparseMapMatrix, RSparseMatrix, ElementMatrix,
-                          IVector, MatrixBase, R3Vector, RVector)
+                          MatrixBase)
 
 IdentityMatrix = pgcore.IdentityMatrix
 Matrix = pgcore.RMatrix
@@ -18,8 +18,79 @@ SparseMapMatrix = pgcore.RSparseMapMatrix
 BlockMatrix = pgcore.RBlockMatrix
 
 
+class TransposedMatrix(MatrixBase):
+    """Wrapper for transposed matrix (of any kind)."""
 
-class MultMatrix(pgcore.MatrixBase):
+    def __init__(self, A, verbose=False):
+        super().__init__(verbose)
+        self._A = A
+
+    def rows(self):
+        """Return number of rows (cols of underlying matrix)."""
+        return self._A.cols()
+
+    def cols(self):
+        """Return number of cols (rows of underlying matrix)."""
+        return self._A.rows()
+
+    def mult(self, x):
+        """Multiplication from right-hand-side (A.T*x)."""
+        return self._A.transMult(x)
+
+    def transMult(self, x):
+        """Multiplication from right-hand-side (A*x)"""
+        return self._A.mult(x)
+
+
+class SquaredMatrix(MatrixBase):
+    """Wrapper for squared (least-squares) matrix A^T*A (of any kind)."""
+
+    def __init__(self, A, verbose=False):
+        super().__init__(verbose)
+        self._A = A
+
+    def rows(self):
+        """Return number of rows (cols of underlying matrix)."""
+        return self._A.cols()
+
+    def cols(self):
+        """Return number of cols (cols of underlying matrix)."""
+        return self._A.cols()
+
+    def mult(self, x):
+        """Multiplication from right-hand-side (A.T*A*x)."""
+        return self._A.transMult(self._A.mult(x))
+
+    def transMult(self, x):
+        """Multiplication from right-hand-side ((A^T*A)^T*x)."""
+        return self._A.transMult(self._A.mult(x))
+
+
+class SquaredTransposeMatrix(MatrixBase):
+    """Wrapper for squared (least-squares) matrix A*A^T (of any kind)."""
+
+    def __init__(self, A, verbose=False):
+        super().__init__(verbose)
+        self._A = A
+
+    def rows(self):
+        """Return number of rows (rows of underlying matrix)."""
+        return self._A.rows()
+
+    def cols(self):
+        """Return number of cols (rows of underlying matrix)."""
+        return self._A.rows()
+
+    def mult(self, x):
+        """Multiplication from right-hand-side (A.T*A*x)."""
+        return self._A.mult(self._A.transMult(x))
+
+    def transMult(self, x):
+        """Multiplication from right-hand-side ((A^T*A)^T*x)."""
+        return self._A.mult(self._A.transMult(x))
+
+
+class MultMatrix(MatrixBase):
     """Base Matrix class for all matrix types holding a matrix."""
 
     def __init__(self, A, verbose=False):
@@ -170,7 +241,7 @@ class MultLeftRightMatrix(MultMatrix):
 LRMultRMatrix = MultLeftRightMatrix  # alias for backward compatibility
 
 
-class Add2Matrix(pgcore.MatrixBase):
+class Add2Matrix(MatrixBase):
     """Matrix by addition of two matrices implicitly.
 
         The matrix holds two matrices and distributes multiplication in 2 parts
@@ -211,7 +282,7 @@ class Add2Matrix(pgcore.MatrixBase):
         return self.A.rows()
 
 
-class Mult2Matrix(pgcore.MatrixBase):
+class Mult2Matrix(MatrixBase):
     """Matrix by multipication of two matrices implicitly.
 
         The matrix holds two matrices and distributes multiplication in 2 parts
@@ -251,7 +322,7 @@ class Mult2Matrix(pgcore.MatrixBase):
         return self.A.rows()
 
 
-class DiagonalMatrix(pgcore.MatrixBase):
+class DiagonalMatrix(MatrixBase):
     """Square matrix with a vector on the main diagonal."""
 
     def __init__(self, d):
@@ -281,12 +352,14 @@ class DiagonalMatrix(pgcore.MatrixBase):
         """Number of rows (length of diagonal)."""
         return len(self.d)
 
+
 @pg.cache
 def createCm05(A):
     """Globally cached helper function to create Cm05Matrix."""
     return pg.matrix.Cm05Matrix(A, verbose=True)
 
-class Cm05Matrix(pgcore.MatrixBase):
+
+class Cm05Matrix(MatrixBase):
     """Matrix implicitly representing the inverse square-root."""
 
     def __init__(self, A, verbose=False):
@@ -309,14 +382,15 @@ class Cm05Matrix(pgcore.MatrixBase):
                 raise Exception("Matrix must by square (and symmetric)!")
 
             if verbose:
-                t = pg.tic(key='init cm05')
+                pg.tic(key='init cm05')
+
             self.ew, self.EV = eigh(A)
 
             if verbose:
-                pg.info('(C) Time for eigenvalue decomposition: {:.1f}s'.format(
-                    pg.dur(key='init cm05')))
+                pg.info('(C) Time for eigenvalue decomposition {:.1f}s'.format(
+                        pg.dur(key='init cm05')))
 
-            #self.A = A
+            # self.A = A
 
     @property
     def mul(self):
@@ -325,11 +399,15 @@ class Cm05Matrix(pgcore.MatrixBase):
         return self._mul
 
     def save(self, fileName):
-        """Save the content of this matrix. Used for caching until pickling is possible for this class"""
+        """Save the content of this matrix.
+
+        Used for caching until pickling is possible for this class"""
         np.save(fileName, dict(ew=self.ew, EV=self.EV), allow_pickle=True)
 
     def load(self, fileName):
-        """Load the content of this matrix. Used for caching until pickling is possible for this class"""
+        """Load the content of this matrix.
+
+        Used for caching until pickling is possible for this class"""
         d = np.load(fileName + '.npy', allow_pickle=True).tolist()
         self.ew = d['ew']
         self.EV = d['EV']
@@ -353,13 +431,14 @@ class Cm05Matrix(pgcore.MatrixBase):
         return self.mult(x)  # matrix is symmetric by definition
 
 
-class RepeatVMatrix(pgcore.BlockMatrix):
+class RepeatVMatrix(BlockMatrix):
     """Matrix repeating a base matrix N times vertically. Only A is stored.
 
         M = | A |
             | A |
             | A |
     """
+
     def __init__(self, A, num):
         """Init matrix by specify matrix and number of repetitions.
 
@@ -381,11 +460,12 @@ class RepeatVMatrix(pgcore.BlockMatrix):
         self.recalcMatrixSize()
 
 
-class RepeatHMatrix(pgcore.BlockMatrix):
+class RepeatHMatrix(BlockMatrix):
     """Matrix repeating a base matrix N times horizontally. Only A is stored.
 
         M = [ A A A ]
     """
+
     def __init__(self, A, num):
         """Init matrix by specify matrix and number of repetitions.
 
@@ -407,13 +487,14 @@ class RepeatHMatrix(pgcore.BlockMatrix):
         self.recalcMatrixSize()
 
 
-class RepeatDMatrix(pgcore.BlockMatrix):
+class RepeatDMatrix(BlockMatrix):
     """Matrix repeating a base matrix N times diagonally. Only A is stored.
 
         M = | A     |
             |   A   |
             |     A |
     """
+
     def __init__(self, A, num):
         """Init matrix by specify matrix and number of repetitions.
 
@@ -446,6 +527,7 @@ class FrameConstraintMatrix(RepeatDMatrix):
             | -I +I     |
             |    -I  +I |
     """
+
     def __init__(self, A, num, scale=1.0):
         """Init matrix by specifying number of frames.
 
@@ -550,27 +632,29 @@ class GeostatisticConstraintsMatrix(pgcore.MatrixBase):
     def nModel(self):
         try:
             return self.Cm05.size()
-        except Exception as e:
+        except Exception:
             return 0
 
     def save(self, fileName):
-        """Save the content of this matrix. Used for caching until pickling is possible for this class
+        """Save content of this matrix.
+
+        Used for caching until pickling is possible for this class
         """
         self.Cm05.save(fileName + '-Cm05')
         np.save(fileName, dict(verbose=self.verbose(),
                                withRef=self.withRef,
-                               Cm05=fileName +'-Cm05'),
-                        allow_pickle=True)
-
+                               Cm05=fileName + '-Cm05'),
+                allow_pickle=True)
 
     def load(self, fileName):
-        """Load the content of this matrix. Used for caching until pickling is possible for this class
+        """Load the content of this matrix.
+
+        Used for caching until pickling is possible for this class
         """
         d = np.load(fileName + '.npy', allow_pickle=True).tolist()
         self.setVerbose(d['verbose'], )
         self.withRef = d['withRef']
         self.Cm05 = Cm05Matrix(d['Cm05'])
-
 
     def mult(self, x):
         return self.Cm05.mult(x) - self.spur * x
@@ -587,3 +671,121 @@ class GeostatisticConstraintsMatrix(pgcore.MatrixBase):
     def clear(self):
         self.Cm05 = None
         self._spur = None
+
+
+def hstack(mats):
+    """Syntactic sugar function to horizontally stacked matrix.
+
+    Parameters
+    ----------
+    mats : iterable
+        list of matrices (any pyGIMLi matrix)
+
+    Returns
+    -------
+    mat : :gimliapi:`GIMLI::Blockmatrix`
+        pyGIMLi block matrix
+
+    Examples
+    --------
+    >>> import pygimli as pg
+    >>> A = pg.Matrix(4, 3)
+    >>> B = pg.Matrix(4, 2)
+    >>> H = pg.matrix.hstack([A, B])
+    >>> ax, _ = pg.show(H)
+    >>> print(H)
+    pg.matrix.BlockMatrix of size 4 x 5 consisting of 2 submatrices.
+    """
+    assert not np.any(np.diff([m.rows() for m in mats])), \
+        "Matrix row numbers do not match!"
+    A = pgcore.BlockMatrix()
+    icol = 0
+    for mat in mats:
+        A.addMatrix(mat, 0, icol)
+        icol += mat.cols()
+
+    A.recalcMatrixSize()
+    return A
+
+
+def vstack(mats):
+    """Syntactic sugar function to vertically stacked matrix.
+
+    Parameters
+    ----------
+    mats : iterable
+        list of matrices (any pyGIMLi matrix)
+
+    Returns
+    -------
+    mat : :gimliapi:`GIMLI::Blockmatrix`
+        pyGIMLi block matrix
+
+    Examples
+    --------
+    >>> import pygimli as pg
+    >>> A = pg.Matrix(3, 4)
+    >>> B = pg.Matrix(2, 4)
+    >>> V = pg.matrix.vstack([A, B])
+    >>> ax, _ = pg.show(V)
+    >>> print(V)
+    pg.matrix.BlockMatrix of size 5 x 4 consisting of 2 submatrices.
+    """
+    assert not np.any(np.diff([m.cols() for m in mats])), \
+        "Matrix column numbers do not match!"
+    A = pgcore.BlockMatrix()
+    irow = 0
+    for mat in mats:
+        A.addMatrix(mat, irow, 0)
+        irow += mat.rows()
+
+    A.recalcMatrixSize()
+    return A
+
+
+def dstack(mats):
+    """Syntactic sugar function to diagonally stacked matrix.
+
+    Parameters
+    ----------
+    mats : iterable
+        list of matrices (any pyGIMLi matrix)
+
+    Returns
+    -------
+    mat : :gimliapi:`GIMLI::Blockmatrix`
+        pyGIMLi block matrix
+
+    Examples
+    --------
+    >>> import pygimli as pg
+    >>> A = pg.Matrix(2, 3)
+    >>> B = pg.Matrix(4, 5)
+    >>> D = pg.matrix.dstack([A, B])
+    >>> ax, _ = pg.show(D)
+    >>> print(D)
+    pg.matrix.BlockMatrix of size 6 x 8 consisting of 2 submatrices.
+    """
+    A = pgcore.BlockMatrix()
+    irow = 0
+    icol = 0
+    for mat in mats:
+        A.addMatrix(mat, irow, icol)
+        irow += mat.rows()
+        icol += mat.cols()
+
+    A.recalcMatrixSize()
+    return A
+
+
+if __name__ == "__main__":
+    A = pg.Matrix(3, 4)
+    B = TransposedMatrix(A)
+    x = pg.Vector(3, 1.0)
+    print(B*x)
+    y = pg.Vector(4, 1.0)
+    C = SquaredMatrix(A)
+    print(C*y)
+    # pg.test(vstack)
+    # pg.test(hstack)
+    # pg.test(dstack)

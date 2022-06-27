@@ -14,7 +14,8 @@ class ProgressBar(object):
     """Animated text-based progressbar.
 
     Animated text-based progressbar for intensive loops. Should work in the
-    console and in the IPython Notebook.
+    console. In IPython Notebooks a 'tqdm' progressbar instance is created and 
+    can be configured with appropriate keyword arguments.
 
     Todo
     ----
@@ -29,6 +30,11 @@ class ProgressBar(object):
     sign : str
         Sign used to fill the bar.
 
+    Additional Args
+    ---------------
+    Forwarded to create the tqdm progressbar instance. See
+    https://tqdm.github.io/docs/tqdm/
+
     Examples
     --------
     >>> from pygimli.utils import ProgressBar
@@ -37,7 +43,7 @@ class ProgressBar(object):
     \r[+++++++++++       30%                 ] 6 of 20 complete
     """
 
-    def __init__(self, its, width=80, sign=":"):
+    def __init__(self, its, width=80, sign=":", **kwargs):
         """Constructor."""
         self.its = int(its)
         self.width = width
@@ -45,6 +51,15 @@ class ProgressBar(object):
         self.pBar = "[]"
         self._amount(0)
         self._swatch = pg.core.Stopwatch()
+        self._nbProgress = None
+
+        if pg.isNotebook():
+            tqdm = pg.optImport('tqdm', requiredFor="use a nice progressbar in jupyter notebook")
+            if tqdm is not None:
+                from tqdm.notebook import tqdm
+                fmt = kwargs.pop('bar_format',
+                    '{desc} {percentage:3.0f}%|{bar}|{n_fmt}/{total_fmt} [{elapsed} < {remaining}]')
+                self._nbProgress = tqdm(total=its, bar_format = fmt, **kwargs)
 
     def __call__(self, it, msg=""):
         self.update(it, msg)
@@ -66,14 +81,23 @@ class ProgressBar(object):
             self._swatch.start()
         self._swatch.store()
 
-        self._setbar(iteration + 1)
-        if len(msg) >= 1:
-            self.pBar += " (" + msg + ")"
-        print("\r" + self.pBar, end="")
-        sys.stdout.flush()
+        if self._nbProgress is not None:
+            ## TODO maybe catch if someone don't call with iteration steps == 1, why ever
+            self._nbProgress.update(n=1)
+        else:
+            self._setbar(iteration + 1)
+            if len(msg) >= 1:
+                self.pBar += " (" + msg + ")"
+            print("\r" + self.pBar, end="")
+            sys.stdout.flush()
+        
+        ## last iteration here
         if iteration == self.its-1:
-            print()
-
+            if self.nbProgress is not None:
+                self.nbProgress.close()
+            else:
+                print()
+                
     def _setbar(self, elapsed_it):
         """Reset pBar based on current iteration number."""
         self._amount((elapsed_it / float(self.its)) * 100.0)

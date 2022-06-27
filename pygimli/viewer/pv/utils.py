@@ -5,7 +5,6 @@ import pygimli as pg
 
 pv = pg.optImport('pyvista', requiredFor="properly visualize 3D data")
 
-
 pgVTKCELLTypes = {
     pg.core.MESH_EDGE_CELL_RTTI:     3,
     pg.core.MESH_EDGE_RTTI:          3,
@@ -51,9 +50,10 @@ def pgMesh2pvMesh(mesh, data=None, label=None, boundaries=False):
         grid.cell_data['Cell marker'] = np.asarray(mesh.cellMarkers())
 
     elif mesh.boundaryCount() > 0:
-        #pg._g('faces')
         grid = pv.PolyData(np.asarray(mesh.positions()), 
-                faces=[[len(b.ids()), *b.ids()] for b in mesh.boundaries()])
+                faces=np.hstack([[len(b.ids()), *b.ids()] 
+                                        for b in mesh.boundaries()]))
+        
         grid.cell_data['Boundary marker'] = np.asarray(mesh.boundaryMarkers())
         
     else:

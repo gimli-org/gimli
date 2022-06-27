@@ -212,7 +212,7 @@ def version(cache=True):
 __swatch__ = dict()
 
 
-def notebook():
+def isNotebook():
     """Determine if run inside jupyther notebook or spyder"""
     import sys
     return 'ipykernel_launcher.py' in sys.argv[0]

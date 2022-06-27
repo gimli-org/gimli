@@ -691,12 +691,12 @@ class SIPSpectrum(object):
             inversion parameters for Cole exponent: start, lower, upper bound
         """
         if useCond:  # use conductivity formulation instead of resistivity
-            self.mCC, self.ampCC, self.phiCC = fitCCCC(self.f, self.amp,
-                                                       self.phi, **kwargs)
+            self.mCC, self.ampCC, self.phiCC, self.chi2 = fitCCCC(
+                self.f, self.amp, self.phi, **kwargs)
             self.mCC[0] = 1. / self.mCC[0]
         else:
-            self.mCC, self.ampCC, self.phiCC = fitCCC(self.f, self.amp,
-                                                      self.phi, **kwargs)
+            self.mCC, self.ampCC, self.phiCC, self.chi2 = fitCCC(
+                self.f, self.amp, self.phi, **kwargs)
 
     def fitDoubleColeCole(self, ePhi=0.001, eAmp=0.01, lam=1000., robust=False,
                           verbose=True, useRho=True, useMult=False, aphi=True,
@@ -759,6 +759,7 @@ class SIPSpectrum(object):
         ICC.setDeltaPhiAbortPercent(1)
     #    ICC.setMaxIter(0)
         self.mCC = ICC.run()  # run inversion
+        self.chi2 = ICC.chi2()
         if verbose:
             ICC.echoStatus()
 
