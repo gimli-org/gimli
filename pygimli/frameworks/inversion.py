@@ -578,7 +578,10 @@ class Inversion(object):
                 print("inv.iter", i + 1, "... ", end='')
 
             try:
-                self.inv.oneStep()
+                if hasattr(self, "oneStep"):
+                    self.oneStep()
+                else:
+                    self.inv.oneStep()
             except RuntimeError as e:
                 print(e)
                 pg.error('One step failed. '
