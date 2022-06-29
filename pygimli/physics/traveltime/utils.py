@@ -125,7 +125,7 @@ def createRAData(sensors, shotDistance=1):
     return data
 
 
-def createGradientModel2D(data, mesh, vTop, vBot):
+def createGradientModel2D(data, mesh, vTop, vBot, flat=False):
     """Create 2D velocity gradient model.
 
     Creates a smooth, linear, starting model that takes the slope
@@ -154,19 +154,22 @@ def createGradientModel2D(data, mesh, vTop, vBot):
         A numpy array with slowness values that can be used to start
         the inversion.
     """
+    xVals = pg.x(data)
     yVals = pg.y(data)
     if abs(min(yVals)) < 1e-8 and abs(max(yVals)) < 1e-8:
         yVals = pg.z(data)
-
-    p = np.polyfit(pg.x(data), yVals, deg=1)  # slope-intercept form
-    n = np.asarray([-p[0], 1.0])  # normal vector
-    nLen = np.sqrt(np.dot(n, n))
 
     x = pg.x(mesh.cellCenters())
     z = pg.y(mesh.cellCenters())
     pos = np.column_stack((x, z))
 
-    d = np.array([np.abs(np.dot(pos[i, :], n) - p[1]) / nLen for i
-                  in range(pos.shape[0])])
+    if flat:
+        p = np.polyfit(xVals, yVals, deg=1)  # slope-intercept form
+        n = np.asarray([-p[0], 1.0])  # normal vector
+        nLen = np.sqrt(np.dot(n, n))
+        d = np.array([np.abs(np.dot(pos[i, :], n) - p[1]) / nLen for i
+                      in range(pos.shape[0])])
+    else:
+        d = np.interp(x, xVals, yVals) - z
 
     return 1.0 / np.interp(d, [min(d), max(d)], [vTop, vBot])
