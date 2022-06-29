@@ -44,10 +44,17 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
     bc = kwargs.pop('bc', '#EEEEEE') # background color
     filt = kwargs.pop('filter', {}) 
 
-    
+    #theme = pv.themes.DarkTheme()
+    theme = pv.themes.DefaultTheme()
+    theme.background = bc
+    theme.antialiasing = True
+    theme.font.color = 'k'  
+
     if ax is None:
-        ax = pv.Plotter(notebook=notebook, **kwargs)
-        ax.background_color = bc
+        ax = pv.Plotter(notebook=notebook, 
+                        theme=theme,
+                        **kwargs)
+        #ax.background_color = bc
 
     #if grid is True:
         #implementme
@@ -58,13 +65,20 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
     if isinstance(mesh, pg.Mesh):
         mesh = pgMesh2pvMesh(mesh)
 
+    dataName = list(mesh.cell_data.keys())[0]
+
     for k, fi in filt.items():
         if k.lower() == 'clip':
+            
+            if isinstance(mesh, pv.core.pointset.UnstructuredGrid):
+                fi['crinkle'] = fi.pop('crinkle', True)
+
             mesh = mesh.clip(**fi)
         else:
             pg.error('filter:', k, 'not yet implemented')
 
     _actor = ax.add_mesh(mesh,  # type: pv.UnstructuredGrid
+                         scalars=dataName, 
                          cmap=cMap,
                          color=color,
                          style=style,

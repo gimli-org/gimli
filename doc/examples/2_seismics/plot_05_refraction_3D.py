@@ -81,7 +81,7 @@ for receiver in sensors[1:]:
 # Plot final ray paths.
 
 if pyvista:
-    plotter, _ = pg.show(mesh, hold=True, notebook=True)
+    plotter, _ = pg.show(mesh, hold=True)
     drawSensors(plotter, sensors, diam=0.5, color='yellow')
 
     for ray in rays:
@@ -90,4 +90,4 @@ if pyvista:
             stop = tuple(ray[i + 1])
             line = pyvista.Line(start, stop)
             plotter.add_mesh(line, color='green', line_width=2)
-    plotter.show()
+    # plotter.show()
