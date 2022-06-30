@@ -144,3 +144,67 @@ def cgls(A, b, x=None, maxiter=200, tol=1e-8, verbose=False, damp=0.0):
             break
 
     return x
+
+
+def rrls(A, b, x=None, maxiter=200, tol=1e-8, verbose=False, damp=0.0):
+    """Solve A x = b in a Least-Squares sense using conjugate gradients (CGLS).
+
+    After Page and Saunders (1982)
+
+    Parameters
+    ==========
+    A : pg.MatrixBase or derived class
+        matrix (typically Jacobian and constraint matrix)
+    b : pg.Vector
+        right-hand-side vector (typically data misfit and model roughness)
+    x : pg.Vector [zero vector]
+        starting vector
+    damp : float [0.0]
+        damping value for very ill-conditioned systems
+    maxiter : int [200]
+        maximum iteration number
+    tol : float [1e-8]
+        solution tolerance
+    verbose : bool [False]
+        print out convergence every 10th iteration
+
+    Returns
+    =======
+    x : pg.Vector
+        solution x for A^T A x = A^T b
+    """
+    if x is None:  # no starting vector
+        x = pg.Vector(A.cols())
+        r = b.copy()
+    else:
+        r = b - A.mult(x)
+
+    v = A.transMult(r)
+    theta = norm(v)
+    v /= theta
+    w = v.copy()
+    rr = pg.math.dot(r, r)
+    rr0 = rr
+    for i in range(maxiter):
+        if verbose and (i % 10 == 0):
+            print(i, rr, rr/rr0)
+
+        p = A.mult(w)
+        rho = norm(p)
+        p /= rho
+        lam = pg.math.dot(p, r)
+        r -= p * lam
+        v = A.transMult(p) - rho * v
+        theta = norm(v)
+        v /= theta
+        x += w * (lam/rho)
+        w = v - w * (theta/rho)
+        rr = pg.math.dot(r, r)
+        if rr / rr0 < tol:
+            if verbose:
+                print("Solution norm reached")
+                print(i, rr, rr/rr0)
+
+            break
+
+    return x
