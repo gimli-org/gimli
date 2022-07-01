@@ -460,22 +460,16 @@ class TDEM():
         """Return a single sounding."""
         return self.DATA[i]
 
-    def getFOP(self, nr=0):
-        """Return forward operator."""
-        snd = self.DATA[0]
-        return VMDTimeDomainModelling(snd['TIME'], TxArea(snd), 1)
-        # RxArea(snd))
-        # return VMDTimeDomainModelling(snd['TIME'], TxArea(snd), RxArea(snd))
-
-    def invert(self, nr=0, nlay=4, thickness=None, errorFloor=0.03):
+    def invert(self, nr=0, nlay=4, thickness=None, errorFloor=0.05):
         """Do inversion."""
-        self.fop = self.getFOP(nr)
         snd = self.DATA[nr]
+        self.fop = VMDTimeDomainModelling(snd['TIME'], TxArea(snd), 1,
+                                          nLayers=nlay)
         rhoa, t, err = get_rhoa(snd)
         self.fop.t = t
         model = self.fop.createStartModel(rhoa, nlay, thickness=None)
         self.INV = pg.frameworks.MarquardtInversion(fop=self.fop)
-        errorVals = snd.pop('ST_DEV', 0)/snd['VOLTAGE'] + errorFloor
+        errorVals = np.maximum(snd.pop('ST_DEV', 0)/snd['VOLTAGE'], errorFloor)
         self.model = self.INV.run(dataVals=rhoa, errorVals=errorVals,
                                   startModel=model)
         return self.model
@@ -485,10 +479,12 @@ class TDEM():
         t = self.DATA[0]['TIME']
         v = np.zeros_like(t)
         V = np.zeros((len(v), len(self.DATA)))
+        ST = np.zeros(len(self.DATA))
         sumstacks = 0
         for i, snd in enumerate(self.DATA):
             if np.allclose(snd['TIME'], t):
                 stacks = snd.pop('STACK_SIZE', 1)
+                ST[i] = stacks
                 v += snd['VOLTAGE'] * stacks
                 sumstacks += stacks
                 V[:, i] = snd['VOLTAGE']
@@ -497,12 +493,13 @@ class TDEM():
 
         v /= sumstacks
         VM = np.ma.masked_less_equal(V, 0)
-        err = np.std(VM, axis=1).data
+        # err = np.std(VM, axis=1).data
+        err = np.std(np.log(VM), axis=1).data
         snd = self.DATA[0].copy()
         fi = np.nonzero((t >= tmin) & (t <= tmax))[0]
         snd['TIME'] = t[fi]
         snd['VOLTAGE'] = v[fi]
-        snd['ST_DEV'] = err[fi]
+        snd['ST_DEV'] = err[fi] * v[fi]
         del snd['data']
         tem = TDEM()
         tem.DATA = [snd]
