@@ -340,6 +340,7 @@ def getname(snd):
 
 class TDEM():
     """TEM class mainly for holding data etc."""
+    basename = "new"
 
     def __init__(self, filename=None):
         """Initialize class and (optionally) load data"""
@@ -360,11 +361,41 @@ class TDEM():
         elif filename.lower().endswith('.dat'):  # dangerous
             self.DATA = readUniKTEMData(filename)
 
+        self.basename = filename  # .rstrip()
+
     def __repr__(self):
         return "<TDEMdata: %d soundings>" % (len(self.DATA))
 
     def showInfos(self):  # only for old scripts using it
         print(self.__repr__)
+
+    def gather(self, token):
+        """Collect item from all soundings."""
+        if token == "LOOP_SIZE":
+            mylist = [np.array(snd["LOOP_SIZE"].split(), dtype=float)
+                      for snd in self.DATA]
+        else:
+            mylist = [snd[token] for snd in self.DATA]
+
+        return np.array(mylist)
+
+    def filterSoundings(self, token, value):
+        """Filter all values matching a certain token."""
+        vals = self.gather(token)
+        ind = np.nonzero(vals == value)[0]
+        # bind = vals == value
+        if np.any(ind):
+            self.DATA = [self.DATA[i] for i in ind]
+        else:
+            print("No data matching the filter criteria")
+
+    def filterData(self, token, vmin=0, vmax=9e99):
+        """Filter all sounding data according to criterion."""
+        for snd in self.DATA:
+            vals = snd[token]
+            bind = (vals >= vmin) & (vals <= vmax)
+            for col in snd["column_names"]:
+                snd[col] = snd[col][bind]
 
     def plotTransients(self, ax=None, **kwargs):
         """Plot all transients into one window"""
@@ -432,10 +463,11 @@ class TDEM():
     def getFOP(self, nr=0):
         """Return forward operator."""
         snd = self.DATA[0]
-        return VMDTimeDomainModelling(snd['TIME'], TxArea(snd), 1) # RxArea(snd))
+        return VMDTimeDomainModelling(snd['TIME'], TxArea(snd), 1)
+        # RxArea(snd))
         # return VMDTimeDomainModelling(snd['TIME'], TxArea(snd), RxArea(snd))
 
-    def invert(self, nr=0, nlay=4, thickness=None):
+    def invert(self, nr=0, nlay=4, thickness=None, errorFloor=0.03):
         """Do inversion."""
         self.fop = self.getFOP(nr)
         snd = self.DATA[nr]
@@ -443,12 +475,7 @@ class TDEM():
         self.fop.t = t
         model = self.fop.createStartModel(rhoa, nlay, thickness=None)
         self.INV = pg.frameworks.MarquardtInversion(fop=self.fop)
-        # self.INV = pg.Inversion(rhoa, self.fop)
-        # self.INV.setMarquardtScheme(0.9)
-        # self.INV.setModel(model)
-        # self.INV.setLambda(1000)
-        # self.INV.setRelativeError(snd.pop('ST_DEV', 0)/snd['VOLTAGE']+0.03)
-        errorVals = snd.pop('ST_DEV', 0)/snd['VOLTAGE']+0.03
+        errorVals = snd.pop('ST_DEV', 0)/snd['VOLTAGE'] + errorFloor
         self.model = self.INV.run(dataVals=rhoa, errorVals=errorVals,
                                   startModel=model)
         return self.model
