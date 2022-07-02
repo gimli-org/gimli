@@ -452,11 +452,16 @@ class TDEM():
         ax.set_xlabel(r'$\rho_a$ [$\Omega$m]')
         if plotLegend:
             ax.legend(loc='best')
+
         ax.grid(True)
         ax.set_ylim(ax.get_ylim()[::-1])
         return ax
 
     def __call__(self, i=0):
+        """Return a single sounding."""
+        return self.DATA[i]
+
+    def __getitem__(self, i=0):
         """Return a single sounding."""
         return self.DATA[i]
 
