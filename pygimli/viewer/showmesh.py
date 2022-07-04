@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """Generic mesh visualization tools."""
 
@@ -136,7 +137,7 @@ def show(obj=None, data=None, **kwargs):
             return showMesh(mesh, data, **kwargs)
         elif mesh.dim() == 3:
 
-            from .vistaview import showMesh3D
+            from .pv import showMesh3D
             return showMesh3D(mesh, data, **kwargs)
         else:
             pg.error("ERROR: Mesh not valid.", mesh)
