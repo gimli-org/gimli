@@ -159,5 +159,5 @@ if __name__ == '__main__':
     ax.loglog(inv.response, ab2, "-")
     # %%
     fig, ax = pg.plt.subplots()
-    pg.viewer.mpl.drawModel1D(ax, model=model)
-    pg.viewer.mpl.drawModel1D(ax, )
+    pg.viewer.mpl.drawModel1D(ax, model=model, plot="semilogx")
+    pg.viewer.mpl.drawModel1D(ax, synthk, synres)

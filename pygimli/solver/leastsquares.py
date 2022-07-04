@@ -50,13 +50,13 @@ def lsqr(A, b, x=None, maxiter=200, tol=1e-8, verbose=False, damp=0.0):
     rhoU = alfa
     for i in range(maxiter):
         if verbose and (i % 10 == 0):
-            print(i, Arnorm, Arnorm/Arnorm0)
+            pg.info(i, Arnorm, Arnorm/Arnorm0)
 
         u = A.mult(v) - alfa * u
         beta = norm(u)
         if np.isclose(beta, 0.0):
             if verbose:
-                print("stopping due to beta=0")
+                pg.info("stopping due to beta=0")
 
             break
 
@@ -72,18 +72,20 @@ def lsqr(A, b, x=None, maxiter=200, tol=1e-8, verbose=False, damp=0.0):
         phi = c * phiU
         phiU = s * phiU
         x += (phi/rho) * w
-        w = v - (theta/rho) * w
+        # w = v - (theta/rho) * w
+        w *= -theta / rho
+        w += v
         Arnorm = phiU * alfa * abs(c)
         if Arnorm / Arnorm0 < tol:
             if verbose:
-                print("Solution norm reached")
-                print(i, Arnorm, Arnorm/Arnorm0)
+                pg.info("Solution norm reached")
+                pg.info(i, Arnorm, Arnorm/Arnorm0)
 
             break
 
     if verbose:
-        print("Maximum iteration reached")
-        print(i, Arnorm, Arnorm/Arnorm0)
+        pg.info("Maximum iteration reached")
+        pg.info(i, Arnorm, Arnorm/Arnorm0)
 
     return x
 
@@ -128,7 +130,7 @@ def rrlsqr(A, b, x=None, maxiter=200, tol=1e-8, verbose=False, damp=0.0):
     alfa = norm(v)
     v /= alfa
     Arnorm0 = alfa * 1.0
-    Arnorm = Arnorm0 * 1.0
+    # Arnorm = Arnorm0 * 1.0
     w = v.copy()
     phiU = beta
     rhoU = alfa
@@ -136,7 +138,7 @@ def rrlsqr(A, b, x=None, maxiter=200, tol=1e-8, verbose=False, damp=0.0):
     rr0 = rr
     for i in range(maxiter):
         if verbose and (i % 10 == 0):
-            print(i, rr, rr/rr0)
+            pg.info(i, rr, rr/rr0)
 
         p = A.mult(w)
         lam = dot(p, r) / dot(p, p)
@@ -145,7 +147,7 @@ def rrlsqr(A, b, x=None, maxiter=200, tol=1e-8, verbose=False, damp=0.0):
         beta = norm(u)
         if np.isclose(beta, 0.0):
             if verbose:
-                print("stopping due to beta=0")
+                pg.info("stopping due to beta=0")
 
             break
 
@@ -153,22 +155,23 @@ def rrlsqr(A, b, x=None, maxiter=200, tol=1e-8, verbose=False, damp=0.0):
         v = A.transMult(u) - beta * v
         alfa = norm(v)
         v /= alfa
-        
+
         rho = sqrt(rhoU**2 + beta**2)
         c = rhoU / rho
         s = beta / rho
         theta = s * alfa
         rhoU = - c * alfa
-        phi = c * phiU
+        # phi = c * phiU
         phiU = s * phiU
         x += w * lam
-        w = v - w * (theta/rho)
-
+        # w = v - w * (theta/rho)
+        w *= - theta/rho
+        w += v
         rr = dot(r, r)
         if rr / rr0 < tol:
             if verbose:
-                print("Solution norm reached")
-                print(i, rr, rr/rr0)
+                pg.info("Solution norm reached")
+                pg.info(i, rr, rr/rr0)
 
             break
 
@@ -215,7 +218,7 @@ def cgls(A, b, x=None, maxiter=200, tol=1e-8, verbose=False, damp=0.0):
     rr0 = rr
     for i in range(maxiter):
         if verbose and (i % 10 == 0):
-            print(i, rr, rr/rr0)
+            pg.info(i, rr, rr/rr0)
 
         q = A.mult(p)
         alfa = gamma / dot(q, q)
@@ -230,8 +233,8 @@ def cgls(A, b, x=None, maxiter=200, tol=1e-8, verbose=False, damp=0.0):
         rr = dot(r, r)
         if rr / rr0 < tol:
             if verbose:
-                print("Solution norm reached")
-                print(i, rr, rr/rr0)
+                pg.info("Solution norm reached")
+                pg.info(i, rr, rr/rr0)
 
             break
 
@@ -279,7 +282,7 @@ def rrls(A, b, x=None, maxiter=200, tol=1e-8, verbose=False, damp=0.0):
     rr0 = rr
     for i in range(maxiter):
         if verbose and (i % 10 == 0):
-            print(i, rr, rr/rr0)
+            pg.info(i, rr, rr/rr0)
 
         p = A.mult(w)
         rho = norm(p)
@@ -294,8 +297,8 @@ def rrls(A, b, x=None, maxiter=200, tol=1e-8, verbose=False, damp=0.0):
         rr = dot(r, r)
         if rr / rr0 < tol:
             if verbose:
-                print("Solution norm reached")
-                print(i, rr, rr/rr0)
+                pg.info("Solution norm reached")
+                pg.info(i, rr, rr/rr0)
 
             break
 
