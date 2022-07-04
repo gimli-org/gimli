@@ -79,14 +79,10 @@ class LSQRInversion(pg.Inversion):
             tau = self.lineSearchQuad(dM, responseLS)
         if tau > 0.9:  # save time and take 1
             tau = 1.0
-        else:
-            self.fop.response(self.model)
-
-        if tau < 0.1:  # still not working
+        elif tau < 0.1:  # still not working
             tau = 0.1  # tra a small value
 
         self.model = tM.update(self.model, dM*tau)
-        # print("model", min(self.model()), max(self.model()))
         if tau == 1.0:
             self.inv.setResponse(responseLS)
         else:  # compute new response
