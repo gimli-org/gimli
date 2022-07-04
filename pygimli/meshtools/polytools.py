@@ -900,7 +900,7 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
     # define para domain without surface
     n1 = poly.createNode([xMin - paraBound, sensors[0][iz]])
     if balanceDepth:
-        bD = min(sensors[0][iz] - paraDepth, sensors[0][iz] - paraDepth)
+        bD = min(sensors[0][iz] - paraDepth, sensors[-1][iz] - paraDepth)
         n2 = poly.createNode([xMin - paraBound, bD])
         n3 = poly.createNode([xMax + paraBound, bD])
     else:
