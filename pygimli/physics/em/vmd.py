@@ -20,6 +20,7 @@ class VMDModelling(Block1DModelling):
 
     The VMD is at the origin ::math::`r_s = (0.0)` and ::math::`z_s=0`.
     """
+
     def __init__(self, **kwargs):
         """Initialize forward operator.
 
@@ -33,6 +34,7 @@ class VMDModelling(Block1DModelling):
             Forward to ModellingBase
         """
         super(VMDModelling, self).__init__(**kwargs)
+        self.nLayers = kwargs.pop("nLayers", 0)
 
     def createStartModel(self, rhoa):
         r"""Create suitable starting model.
@@ -44,7 +46,8 @@ class VMDModelling(Block1DModelling):
             pg.critical("Model space is not been initialized.")
 
         skinDepth = np.sqrt(max(self.t) * pg.math.median(rhoa)) * 500
-        thk = np.arange(self.nLayers)/sum(np.arange(self.nLayers)) * skinDepth / 2.
+        thk = np.arange(self.nLayers) / sum(np.arange(self.nLayers)) * \
+            skinDepth / 2.
         startThicks = thk[1:]
 
         # layer thickness properties
@@ -205,8 +208,8 @@ class VMDModelling(Block1DModelling):
 
 
 class VMDTimeDomainModelling(VMDModelling):
-    """
-    """
+    """Vertical magnetic dipole (VMD) modelling."""
+
     def __init__(self, times, txArea, rxArea=None, **kwargs):
         """
         """

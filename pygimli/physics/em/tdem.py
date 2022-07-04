@@ -340,6 +340,7 @@ def getname(snd):
 
 class TDEM():
     """TEM class mainly for holding data etc."""
+    basename = "new"
 
     def __init__(self, filename=None):
         """Initialize class and (optionally) load data"""
@@ -360,11 +361,41 @@ class TDEM():
         elif filename.lower().endswith('.dat'):  # dangerous
             self.DATA = readUniKTEMData(filename)
 
+        self.basename = filename  # .rstrip()
+
     def __repr__(self):
         return "<TDEMdata: %d soundings>" % (len(self.DATA))
 
     def showInfos(self):  # only for old scripts using it
         print(self.__repr__)
+
+    def gather(self, token):
+        """Collect item from all soundings."""
+        if token == "LOOP_SIZE":
+            mylist = [np.array(snd["LOOP_SIZE"].split(), dtype=float)
+                      for snd in self.DATA]
+        else:
+            mylist = [snd[token] for snd in self.DATA]
+
+        return np.array(mylist)
+
+    def filterSoundings(self, token, value):
+        """Filter all values matching a certain token."""
+        vals = self.gather(token)
+        ind = np.nonzero(vals == value)[0]
+        # bind = vals == value
+        if np.any(ind):
+            self.DATA = [self.DATA[i] for i in ind]
+        else:
+            print("No data matching the filter criteria")
+
+    def filterData(self, token, vmin=0, vmax=9e99):
+        """Filter all sounding data according to criterion."""
+        for snd in self.DATA:
+            vals = snd[token]
+            bind = (vals >= vmin) & (vals <= vmax)
+            for col in snd["column_names"]:
+                snd[col] = snd[col][bind]
 
     def plotTransients(self, ax=None, **kwargs):
         """Plot all transients into one window"""
@@ -421,6 +452,7 @@ class TDEM():
         ax.set_xlabel(r'$\rho_a$ [$\Omega$m]')
         if plotLegend:
             ax.legend(loc='best')
+
         ax.grid(True)
         ax.set_ylim(ax.get_ylim()[::-1])
         return ax
@@ -429,26 +461,20 @@ class TDEM():
         """Return a single sounding."""
         return self.DATA[i]
 
-    def getFOP(self, nr=0):
-        """Return forward operator."""
-        snd = self.DATA[0]
-        return VMDTimeDomainModelling(snd['TIME'], TxArea(snd), 1) # RxArea(snd))
-        # return VMDTimeDomainModelling(snd['TIME'], TxArea(snd), RxArea(snd))
+    def __getitem__(self, i=0):
+        """Return a single sounding."""
+        return self.DATA[i]
 
-    def invert(self, nr=0, nlay=4, thickness=None):
+    def invert(self, nr=0, nlay=4, thickness=None, errorFloor=0.05):
         """Do inversion."""
-        self.fop = self.getFOP(nr)
         snd = self.DATA[nr]
+        self.fop = VMDTimeDomainModelling(snd['TIME'], TxArea(snd), 1,
+                                          nLayers=nlay)
         rhoa, t, err = get_rhoa(snd)
         self.fop.t = t
         model = self.fop.createStartModel(rhoa, nlay, thickness=None)
         self.INV = pg.frameworks.MarquardtInversion(fop=self.fop)
-        # self.INV = pg.Inversion(rhoa, self.fop)
-        # self.INV.setMarquardtScheme(0.9)
-        # self.INV.setModel(model)
-        # self.INV.setLambda(1000)
-        # self.INV.setRelativeError(snd.pop('ST_DEV', 0)/snd['VOLTAGE']+0.03)
-        errorVals = snd.pop('ST_DEV', 0)/snd['VOLTAGE']+0.03
+        errorVals = np.maximum(snd.pop('ST_DEV', 0)/snd['VOLTAGE'], errorFloor)
         self.model = self.INV.run(dataVals=rhoa, errorVals=errorVals,
                                   startModel=model)
         return self.model
@@ -458,10 +484,12 @@ class TDEM():
         t = self.DATA[0]['TIME']
         v = np.zeros_like(t)
         V = np.zeros((len(v), len(self.DATA)))
+        ST = np.zeros(len(self.DATA))
         sumstacks = 0
         for i, snd in enumerate(self.DATA):
             if np.allclose(snd['TIME'], t):
                 stacks = snd.pop('STACK_SIZE', 1)
+                ST[i] = stacks
                 v += snd['VOLTAGE'] * stacks
                 sumstacks += stacks
                 V[:, i] = snd['VOLTAGE']
@@ -470,12 +498,13 @@ class TDEM():
 
         v /= sumstacks
         VM = np.ma.masked_less_equal(V, 0)
-        err = np.std(VM, axis=1).data
+        # err = np.std(VM, axis=1).data
+        err = np.std(np.log(VM), axis=1).data
         snd = self.DATA[0].copy()
         fi = np.nonzero((t >= tmin) & (t <= tmax))[0]
         snd['TIME'] = t[fi]
         snd['VOLTAGE'] = v[fi]
-        snd['ST_DEV'] = err[fi]
+        snd['ST_DEV'] = err[fi] * v[fi]
         del snd['data']
         tem = TDEM()
         tem.DATA = [snd]

@@ -273,9 +273,9 @@ class Modelling(pg.core.ModellingBase):
                                                 'background': None,
                                                 'single': None,
                                                 'fix': None,
-                                                'correlationLengths':None,
-                                                'dip':None,
-                                                'strike':None,
+                                                'correlationLengths': None,
+                                                'dip': None,
+                                                'strike': None,
                                                 }
 
         for key in list(kwargs.keys()):
@@ -414,6 +414,7 @@ class Modelling(pg.core.ModellingBase):
 
 class LinearModelling(Modelling):
     """Modelling class for linearized problems with a given matrix."""
+
     def __init__(self, A):
         """Initialize by storing the (reference to the) matrix."""
         super().__init__()
@@ -556,7 +557,7 @@ class MeshModelling(Modelling):
 
     @property
     def paraDomain(self):
-        """"""
+        """Return parameter (inverse) mesh."""
         # We need our own copy here because its possible that we want to use
         # the mesh after the fop was deleted
         if not self.mesh():
@@ -566,7 +567,7 @@ class MeshModelling(Modelling):
         return self._pd
 
     def createConstraints(self):
-        """"""
+        """Create constraint matrix."""
         # just ensure there is valid mesh
         self.mesh()
 
@@ -575,27 +576,28 @@ class MeshModelling(Modelling):
 
             if props['correlationLengths'] is not None or \
                 props['dip'] is not None or \
-                props['strike'] is not None:
+                    props['strike'] is not None:
 
-                I = props.get('correlationLengths') or 5
+                cL = props.get('correlationLengths') or 5
                 dip = props.get('dip') or 0
                 strike = props.get('strike') or 0
 
                 pg.info('Creating GeostatisticConstraintsMatrix for region' +
-                        f' {reg} with: I={I}, dip={dip}, strike={strike}')
+                        f' {reg} with: I={cL}, dip={dip}, strike={strike}')
 
-                if foundGeoStat == True:
-                    pg.critical('Only one global GeostatisticConstraintsMatrix possible at the moment.')
+                if foundGeoStat is True:
+                    pg.critical('Only one global GeostatisticConstraintsMatrix'
+                                'possible at the moment.')
 
-                ### we need to keep a copy of C until refcounting in the core works
+                # keep a copy of C until refcounting in the core works
                 self._C = pg.matrix.GeostatisticConstraintsMatrix(
-                    mesh=self.paraDomain, I=I, dip=dip, strike=strike,
+                    mesh=self.paraDomain, I=cL, dip=dip, strike=strike,
                 )
 
                 foundGeoStat = True
                 self.setConstraints(self._C)
 
-        if foundGeoStat == False:
+        if foundGeoStat is False:
             super().createConstraints()
 
         return self.constraints()

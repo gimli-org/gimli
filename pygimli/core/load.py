@@ -3,7 +3,6 @@
 
 import sys
 import os.path
-import tempfile
 
 from importlib import import_module
 import contextlib
@@ -68,7 +67,7 @@ def optImport(module, requiredFor="use the full functionality"):
 
 
 def opt_import(*args, **kwargs):
-    pg.deprecated() # last vis: 20190903
+    pg.deprecated()  # last vis: 20190903
     return optImport(*args, **kwargs)
 
 
@@ -123,7 +122,7 @@ def load(fname, verbose=False, testAll=True, realName=None):
     4
     """
     ImportFilter = {
-        #maybe we can inflate the importer list from the submodules itself.
+        # maybe inflate the importer list from the submodules itself.
         # Data
         ".dat": pg.DataContainerERT,
         ".data": pg.DataContainerERT,
@@ -134,7 +133,7 @@ def load(fname, verbose=False, testAll=True, realName=None):
         ".tom": loadTT,
         ".collect": pg.core.DataMap,
         # Vectors
-        #".dat": pg.Vector,
+        # ".dat": pg.Vector,
         ".vector": pg.Vector,
         ".vec": pg.Vector,
         ".idx": pg.IVector,
@@ -194,31 +193,33 @@ def load(fname, verbose=False, testAll=True, realName=None):
                     "Trying auto-detect." % suffix)
     else:
         if verbose:
-            print("File extension {0} is unknown. Trying auto-detect.".format(suffix))
+            print("File extension {0} is unknown. Trying auto-detect.".format(
+                suffix))
 
     if testAll:
         for routine in ImportFilter.values():
             try:
                 return routine(fname)
-            except Exception as _:
+            except Exception:
                 # print(e)
                 pass
 
     raise Exception("File type of {0} is unknown or file does not exist "
-                        "and could not be imported.".format(suffix))
+                    "and could not be imported.".format(suffix))
+
 
 def getMD5(fileName):
     """ Return md5 checksum for given fileName.
     """
     import hashlib
     md5 = hashlib.md5()
-    
+
     with open(fileName, "rb") as fi:
         content = fi.read()
         md5.update(content)
 
     return md5.hexdigest()
-    
+
 
 def getUrlFile(url, fileName, timeout=10, verbose=False):
     """ Write file from url. Path will be created.
@@ -228,7 +229,7 @@ def getUrlFile(url, fileName, timeout=10, verbose=False):
 
     with contextlib.closing(urlopen(url, timeout=timeout)) as fp:
         header = dict(fp.getheaders())
-        #print(pg.pf(header))
+        # print(pg.pf(header))
         length = int(header['Content-Length'])
 
         p = pg.utils.ProgressBar(length)
@@ -256,7 +257,7 @@ def getUrlFile(url, fileName, timeout=10, verbose=False):
     if verbose:
         digest = md5_hash.hexdigest()
         print('md5:', digest)
-        #print('md5:', getMD5(fileName))
+        # print('md5:', getMD5(fileName))
 
 
 def getExampleFile(path, load=False, force=False, verbose=False, **kwargs):
@@ -298,14 +299,14 @@ def getExampleFile(path, load=False, force=False, verbose=False, **kwargs):
 
     pg.info(f'Looking for {path} in {repo}')
 
-    fileName = os.path.join(getCachePath(), 
-                            __gimliExampleDataBase__, 
+    fileName = os.path.join(getCachePath(),
+                            __gimliExampleDataBase__,
                             repo, branch, path)
 
     if not os.path.exists(fileName) or force is True:
         if verbose:
             pg.info(f'Getting: {fileName} from {url}')
-        
+
         getUrlFile(url, fileName, verbose=verbose)
     else:
         if verbose:
@@ -314,7 +315,7 @@ def getExampleFile(path, load=False, force=False, verbose=False, **kwargs):
     if load is True:
         return pg.load(fileName, verbose=verbose)
     return fileName
-    
+
 
 def getExampleData(path, verbose=False):
     """Shortcut to load example data."""
