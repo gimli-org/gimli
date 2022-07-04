@@ -39,10 +39,9 @@ from .frameworks import fit, Modelling, Inversion
 from .testing import test#, setTestingMode, testingMode
 
 from .math import matrix # alias all from .core.matrix.* to pg.matrix.*
+from .core.load import (load, optImport, getCachePath, getExampleFile, getExampleData)
 
 
-from .core.load import getCachePath, getExampleFile, getExampleData
-from .core.load import load, optImport
 
 
 def checkAndFixLocaleDecimal_point(verbose=False):

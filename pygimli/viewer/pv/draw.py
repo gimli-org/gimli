@@ -44,18 +44,19 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
     bc = kwargs.pop('bc', '#EEEEEE') # background color
     filt = kwargs.pop('filter', {}) 
 
-    #theme = pv.themes.DarkTheme()
     theme = pv.themes.DefaultTheme()
     theme.background = bc
-    theme.antialiasing = True
+    
+    # seems to be broken .. results on pure black screens on some machines
+    #theme.antialiasing = True
+    
     theme.font.color = 'k'  
 
     if ax is None:
         ax = pv.Plotter(notebook=notebook, 
                         theme=theme,
-                        **kwargs)
-        #ax.background_color = bc
-
+                        **kwargs
+                        )
     #if grid is True:
         #implementme
 
