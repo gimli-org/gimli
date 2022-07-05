@@ -197,3 +197,123 @@ Adding an example to the paper carousel
        title="Improved geophysical images through geostatistical regularization",
        subtitle="Jordi et al. (2018), Geophysical Journal International",
        link="https://doi.org/10.1093/gji/ggy055")
+
+
+.. _sec:Coding_rules:
+
+Coding Guidelines
+-----------------
+
+* General we try to use Pep 8 https://www.python.org/dev/peps/pep-0008/?
+
+* All names should be literally and in CamelShape style.
+
+* Classes starts with Upper Case Letter.
+
+* Members and Methods always starts with Lower Case Letter.
+
+* All class member (self.member) need to be initialized in the Constructor.
+
+* (ugly²) Do not use multi initialize in one line, e.g., a, b, c = 0, 0, 0
+
+* check for data types with 'if isinstance(var, type):' instead 'if type(var) == type:'
+
+.. _sec:coding_guidelines:
+
+
+Use pylint or prospector to improve code quality.
+
+We use: (exceptions in .landscape.yml)
+
+* pep8
+* pep257
+* pylint
+* pyflakes
+
+Behaviour by name for global functions:
+.......................................
+
+.. code-block:: python
+    createFOO(...)
+        """Always needs to return an instance of FOO.""
+.. code-block:: python
+    showFOO(Bar, ...)
+        """Always open a window or optionally use a given Axes to show us Bar as Foo."""
+        return ax, cbar
+.. code-block:: python
+    drawFOO(ax, Bar...)
+        """Always need an Axes ax and draws Bar as Foo""
+        return graphics_object
+.. code-block:: python
+    readFOO(fileName, *args):
+        """Read object from disc."""
+        return obj
+.. code-block:: python
+    importFOO(fileName, obj, *args):
+        """Import object from disc into an existing object."""
+        return obj
+.. code-block:: python
+    exportFOO(obj, fileName):
+        """Export object to disc in foreign (FOOs) format."""
+        return true
+.. code-block:: python
+    convertFOO(fooObj):
+        """Convert Foo obj into gimli Obj"""
+        return gimliObj
+
+API Documentation and doctests
+..............................
+
+Use the following documentation syntax or see at:
+https://www.sphinx-doc.org/en/master/usage/extensions/napoleon.html
+
+.. code-block:: python
+  def foo(arg1, arg2):
+  """Short description, i.e., one line to explain what foo does. [DOT_AT_END]
+    [ONE BLANKLINE]
+    Explain a little bit more verbose was foo does. Use references :cite:`Archie1942`
+    Use links to pygimli api :py:mod:pygimli.manager` for modules
+    :py:func:pygimli.solver.solveFiniteElements for functions
+    
+    Use math.
+    .. math :
+        a + \simga * \rho
+    
+    Explain all parameters.
+    
+    Args
+    ----
+    arg1: type | use links to :gimliapi:`GIMLI::Mesh`
+        Describe arg1.
+    arg2: type
+        Describe arg2.
+
+    Keyword Args
+    ------------
+    args: type
+        Description.
+
+    Attributes
+    ----------
+    For members
+
+    Returns
+    -------
+    type:
+
+    Examples
+    --------
+    >>> import foo
+    >>>
+    >>>
+
+    See Also
+    --------
+        average : Weighted average,
+        e.g., Link to tutorials :ref:`tut:Modelling_BC` assuming there
+        has been set a appropriate label in the tutorial.
+
+    References
+    ----------
+    if not in global bib
+    """

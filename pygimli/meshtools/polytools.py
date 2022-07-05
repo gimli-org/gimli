@@ -774,22 +774,22 @@ def createParaDomain2D(*args, **kwargs):
     return createParaMeshPLC(*args, **kwargs)
 
 
-def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
+def createParaMeshPLC(sensors, paraDX=1, paraDepth=-1, paraBoundary=2,
                       paraMaxCellSize=0.0, boundary=-1, boundaryMaxCellSize=0,
                       balanceDepth=True,
                       isClosed=False, addNodes=1, **kwargs):
-    """Create a PLC mesh for an inversion parameter mesh.
+    """Create a geometry (PLC) for an inversion parameter mesh.
 
-    Create a PLC mesh for an inversion parameter mesh with for a given list of
+    Create an inversion mesh geometry (PLC) for a given list of
     sensor positions. Sensor positions are assumed to be on the surface and
-    must be sorted and unique.
+    must be unique and sorted along x coordinate. 
 
     You can create a parameter mesh without sensors if you just set [xMin,
     xMax] as sensors.
 
     The PLC is a :gimliapi:`GIMLI::Mesh` and contain nodes, edges and two
     region markers, one for the parameters domain (marker=2) and a larger
-    boundary around the outside (marker=1)
+    boundary around the outside (marker=1).
 
     TODO:
         * additional topographic points
@@ -807,9 +807,8 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
         e.g., 0.5 means 1 additional node between two neighboring sensors
         e.g., 0.33 means 2 additional equidistant nodes between two sensors
 
-    paraDepth : float, optional
-        Maximum depth for parametric domain, 0 (default) means 0.4 * maximum
-        sensor range.
+    paraDepth : float[-1], optional
+        Maximum depth in m for parametric domain. Automatic for values <=0 result in 0.4 * maximum sensor span range in m
 
     balanceDepth: bool [True]
         Equal depth for the parametric domain.
@@ -818,10 +817,10 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
         Margin for parameter domain in absolute sensor distances. 2 (default).
 
     paraMaxCellSize: double, optional
-        Maximum size for parametric size in m*m
+        Maximum cell size for parametric region in m²
 
     boundaryMaxCellSize: double, optional
-        Maximum cells size in the boundary region in m*m
+        Maximum cells size in the boundary region in m²
 
     boundary : float, optional
         Boundary width to be appended for domain prolongation in absolute
@@ -893,7 +892,7 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=0, paraBoundary=2,
 
     paraBound = eSpacing * paraBoundary
 
-    if paraDepth == 0:
+    if paraDepth <= 0.0:
         paraDepth = 0.4 * (xMax - xMin)
 
     poly = pg.Mesh(dim=2, isGeometry=True)

@@ -62,6 +62,15 @@ class TravelTimeManager(MeshMethodManager):
         """Create default inversion mesh.
 
         Inversion mesh for traveltime inversion does not need boundary region.
+
+        Args
+        ----
+        data: DataContainer
+            Data container to read sensors from.
+
+        Keyword Args
+        ------------
+        Forwarded to `:py:func:pygimli.meshtools.createParaMesh`
         """
         d = data or self.data
 

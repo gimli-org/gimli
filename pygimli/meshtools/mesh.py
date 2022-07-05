@@ -1910,39 +1910,25 @@ def mergeMeshes(meshList, verbose=False):
     return mesh
 
 
-def createParaMesh(*args, **kwargs):
+def createParaMesh(data, **kwargs):
     """Create parameter mesh from list of sensor positions.
 
-    Create parameter mesh from list of sensor positions.
+    Create parameter mesh from list of sensor positions. Use `:py:func:pygimli.meshtools.createParaMeshPLC` and `:py:func:pygimli.meshtools.createMesh` and forwards keyword arguments respectively.
 
-    Parameters
-    ----------
-    sensors : list of RVector3 objects
-        Sensor positions. Must be sorted and unique in positive x direction.
-        Depth need to be y-coordinate.
-    paraDX : float
-        Relative distance for refinement nodes between two electrodes (1=none),
-        e.g., 0.5 means 1 additional node between two neighboring electrodes
-        e.g., 0.33 means 2 additional equidistant nodes between two electrodes
-    paraDepth : float, optional
-        Maximum depth for parametric domain, 0 (default) means 0.4 * maximum
-        sensor range.
-    paraBoundary : float, optional
-        Margin for parameter domain in absolute sensor distances. 2 (default).
-    paraMaxCellSize: double [0], optional
-        Maximum size for parametric size in m*m (0-no constraint)
-    boundaryMaxCellSize: double [0], optional
-        Maximum cells size in the boundary region in m*m (0-no constraint)
-    boundary : float, optional
-        Boundary width to be appended for domain prolongation in absolute
-        para domain width.
-        Values <=0 force the boundary to be 4 times para domain width.
+    Args
+    ----
+    data: DataContainer
+        Data container to read sensors positions from.
+            
+    Keyword Args
+    ------------
+        Forwarded to `:py:func:pygimli.meshtools.createParaMeshPLC`
 
     Returns
     -------
     poly: :gimliapi:`GIMLI::Mesh`
     """
-    plc = pg.meshtools.createParaMeshPLC(*args, **kwargs)
+    plc = pg.meshtools.createParaMeshPLC(data, **kwargs)
     kwargs.pop('paraMaxCellSize', 0)
     kwargs.pop('boundaryMaxCellSize', 0)
     smooth = kwargs.pop('smooth', [2, 10])
