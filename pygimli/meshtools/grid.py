@@ -402,9 +402,9 @@ def appendTriangleBoundary(mesh, xbound=10, ybound=10, marker=1,
 
 def appendBoundaryGrid(grid, xbound=None, ybound=None, zbound=None,
                        marker=1, isSubSurface=True, **kwargs):
-    """ Return a copy of grid surrounded by boundary grid.
+    """ Return a copy of grid surrounded by a boundary grid.
 
-    Note that the input grid needs to be a 2d or 3d grid with quad/hex cells.
+    Note, the input grid needs to be a 2d or 3d grid with quad/hex cells.
 
     TODO
     ----
@@ -446,7 +446,8 @@ def appendBoundaryGrid(grid, xbound=None, ybound=None, zbound=None,
     ...                            zbound=[1, 3, 6],
     ...                            marker=2,
     ...                            isSubSurface=False)
-    >>> ax, _ = pg.show(g2, g2.cellMarkers(), hold=True, opacity=0.5);
+    >>> ax, _ = pg.show(g2, g2.cellMarkers(), showMesh=True,
+    ...                 filter={'clip':{}});
     """
     if isSubSurface:
         pg.critical('Implement me')
@@ -563,7 +564,8 @@ def appendTetrahedronBoundary(mesh, xbound=10, ybound=10, zbound=10,
     ...
     >>> mesh = mt.appendBoundary(grid, xbound=5, ybound=5, zbound=5,
     ...                          isSubSurface=False)
-    >>> ax, _ = pg.show(mesh, mesh.cellMarkers(), hold=True, opacity=0.5)
+    >>> ax, _ = pg.show(mesh, mesh.cellMarkers(), showMesh=True,
+    ...                 filter={'clip':{}})
     """
     if isSubSurface:
         pg.critical('Implement me')

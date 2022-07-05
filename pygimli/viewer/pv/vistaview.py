@@ -65,7 +65,7 @@ def showMesh3DFallback(mesh, data, **kwargs):
 
 
 def showMesh3DVista(mesh, data=None, **kwargs):
-    """Make use of the actual 3D visualization tool kit
+    """Make use of the actual 3D visualization tool kit.
 
     Parameters
     ----------
@@ -116,10 +116,12 @@ def showMesh3DVista(mesh, data=None, **kwargs):
 
         backend = kwargs.pop("backend", "panel")
 
-        plotter = drawModel(None, mesh, data, notebook=notebook, cMap=cMap, **kwargs)
+        plotter = drawModel(None, mesh, data, notebook=notebook, 
+                            cMap=cMap, **kwargs)
 
         # seems top be broken on some machines
-        #plotter.enable_anti_aliasing()
+        if kwargs.get('aa', False):
+            plotter.enable_anti_aliasing()
 
         if notebook:
             # monkey patch show of this plotter instance so we can use multiple backends and only plotter.show() .. whoever this needs.
@@ -127,6 +129,9 @@ def showMesh3DVista(mesh, data=None, **kwargs):
             plotter.show = lambda *args, **kwargs: plotter.__show(
                 *args, jupyter_backend=backend, **kwargs
             )
+        else:
+            plotter.__show = plotter.show
+            plotter.show = lambda *args, **kwargs: plotter.__show(*args, **kwargs) if pg.viewer.mpl.isInteractive() else False
 
         if not hold:
             plotter.show()
