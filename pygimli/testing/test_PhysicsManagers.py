@@ -36,19 +36,20 @@ class TestManagers(unittest.TestCase):
     def test_VMD(self, showProgress=False):
         t = np.logspace(-5.5, -2.2, 20)
         verbose = False
+        synthModel = np.array([25., 5., 100., 150., 1., 10., 4.])
+        nLayers = (len(synthModel)+1) // 2
         fop = VMDTimeDomainModelling(times=t, txArea=10000.0, rxArea=10000.0,
-                                     verbose=verbose)
+                                     nLayers=nLayers, verbose=verbose)
         # [thick[3], res[4]] nLay=4
 
         vmdMgr = pg.frameworks.MethodManager1d(fop)
-        synthModel = np.array([25., 5., 100., 150., 1., 10., 4.])
 
         ra = vmdMgr.simulate(synthModel)
 
         err = abs(np.log(t)/2) * 0.01
         ra *= 1. + pg.randn(len(ra), seed=1337) * err
 
-        model = vmdMgr.invert(ra, err, nLayers=4, layerLimits=[2, 500],
+        model = vmdMgr.invert(ra, err, nLayers=nLayers, layerLimits=[2, 500],
                               maxIter=50,
                               showProgress=showProgress, verbose=verbose)
 
@@ -60,8 +61,8 @@ class TestManagers(unittest.TestCase):
         """
         """
         thicks = [2., 10.]
-        res = [100., 5., 30] # Ohm m
-        phi = [0., 20., 0.] #neg mrad
+        res = [100., 5., 30]  # Ohm m
+        phi = [0., 20., 0.]  # neg mrad
 
         # model fails
         # thicks = [2., 6., 10.]
