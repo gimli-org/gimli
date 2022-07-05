@@ -9,7 +9,7 @@ pv = pg.optImport('pyvista', requiredFor="properly visualize 3D data")
 
 
 def drawMesh(ax, mesh, notebook=False, **kwargs):
-    """
+    """Draw a mesh into a given plotter.
 
     Parameters
     ----------
@@ -25,6 +25,9 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
         Background color.
     style: str['surface']
         Possible options:"surface","wireframe","points" 
+    label: str
+        Data to be plottet. If None the first is taken.
+
     Returns
     -------
     ax: pyvista.Plotter [optional]
@@ -43,6 +46,7 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
     name = kwargs.pop('name', 'Mesh')
     bc = kwargs.pop('bc', '#EEEEEE') # background color
     filt = kwargs.pop('filter', {}) 
+    dataName = kwargs.pop('label', list(mesh.cell_data.keys())[0])
 
     theme = pv.themes.DefaultTheme()
     theme.background = bc
@@ -66,7 +70,6 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
     if isinstance(mesh, pg.Mesh):
         mesh = pgMesh2pvMesh(mesh)
 
-    dataName = list(mesh.cell_data.keys())[0]
 
     for k, fi in filt.items():
         if k.lower() == 'clip':
@@ -95,8 +98,7 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
 
 
 def drawModel(ax=None, mesh=None, data=None, **kwargs):
-    """
-    Draw the mesh with given data.
+    """Draw a mesh with given data.
 
     Parameters
     ----------
@@ -113,6 +115,7 @@ def drawModel(ax=None, mesh=None, data=None, **kwargs):
         The plotter
     """
     defaultCMap = kwargs.pop('cMap', 'viridis')
+    dataName = kwargs.pop('label', None)
 
     if all(v is None for v in [ax, mesh, data]):
         pg.critical("At least mesh or data should not be None")
@@ -122,19 +125,23 @@ def drawModel(ax=None, mesh=None, data=None, **kwargs):
         ## show boundary mesh with markers
         data = mesh.boundaryMarkers()
         defaultCMap = pg.plt.cm.get_cmap("Set3", max(1, len(pg.unique(data))))
-        kwargs['label'] = 'Boundary marker'
-        mesh = pgMesh2pvMesh(mesh, data, kwargs.pop('label', None), 
-                             boundaries=True)
+        dataName = 'Boundary Marker'
+        mesh = pgMesh2pvMesh(mesh, data, dataName, boundaries=True)
     else:
 
         if data is not None or len(mesh.dataMap()) != 0:
             kwargs['style'] = 'surface'
             kwargs['color'] = None
+        if dataName is None and data is not None:
+            if len(data) == mesh.cellCount():
+                dataName = 'Cell data'
+            elif len(data) == mesh.nodeCount():
+                dataName = 'Node data'
 
-        mesh = pgMesh2pvMesh(mesh, data, kwargs.pop('label', None))
+        mesh = pgMesh2pvMesh(mesh, data, dataName)
 
     kwargs['cMap'] = defaultCMap
-
+    kwargs['label'] = dataName
    
     return drawMesh(ax, mesh, **kwargs)
 

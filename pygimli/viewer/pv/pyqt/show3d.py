@@ -10,8 +10,9 @@ import signal
 import sys
 
 import pygimli as pg
-from .drawer import drawMesh
-from .utils import pgMesh2pvMesh
+import pygimli.viewer.pv
+#from .draw import drawMesh
+#from .utils import pgMesh2pvMesh
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QIcon
@@ -20,7 +21,7 @@ from PyQt5.QtWidgets import (
     QFileDialog, QSplitter, QLabel, QAction, QDialog, QStatusBar
 )
 
-from .gwidgets import (
+from gwidgets import (
     GToolBar, GButton, GLineEdit, GComboBox, GSlider, GDoubleSpinBox, CMAPS
 )
 
