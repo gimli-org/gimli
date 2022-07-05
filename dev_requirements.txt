@@ -14,7 +14,7 @@ sphinxcontrib-programoutput
 sphinxcontrib-doxylink
 sphinx-gallery
 bibtexparser
-pyvista
+pyvista>=0.34
 panel
 
 # optional, but strongly recommended

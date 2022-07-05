@@ -47,7 +47,7 @@ def load(fileName, verbose=False, **kwargs):
         pg.info("Try to import using pybert .. if available")
 
     pb = pg.optImport('pybert')
-    data = pb.loadData(fileName)
+    data = pb.importData(fileName)
 
     if isinstance(data, pg.DataContainerERT):
         return data
