@@ -29,5 +29,5 @@ geometricFactor = pg.core.geometricFactors
 geometricFactors = geometricFactor
 
 # Module prototypes
-DataContainer = pg.ERTDataContainer
-Manager = pg.ERTManager
+DataContainer = pg.core.DataContainerERT
+Manager = ERTManager
