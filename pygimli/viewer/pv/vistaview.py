@@ -2,11 +2,10 @@
 # -*- coding: utf-8 -*-
 """Plot 3D mesh."""
 
-import sys
+import os
 import pygimli as pg
 
-pyvista = pg.optImport("pyvista", 
-    requiredFor="properly visualize 3D data")
+pyvista = pg.optImport("pyvista", requiredFor="properly visualize 3D data")
 panel = pg.optImport("panel", 
     requiredFor="use interactive 3D visualizations within Jupyter notebooks")
 
@@ -16,18 +15,13 @@ else:
     view3Dcallback = "showMesh3DVista"
     vers_users = pyvista.__version__
     vers_userf = float(pyvista.__version__[::-1].replace(".", "", 1)[::-1])
-    vers_needs = "0.33.0"
-    vers_needf = 0.330
+    vers_needs = "0.34.0"
+    vers_needf = 0.340
 
     if vers_userf < vers_needf:
         pg.warn("Please consider updating PyVista to at least {}".format(
             vers_needs))
     
-    #print(pyvista.__version__)
-    #from pyvista import themes
-    #pyvista.set_plot_theme('white')
-    #pyvista.global_theme.color = 'white'  
-
     from .draw import drawModel
 
 
