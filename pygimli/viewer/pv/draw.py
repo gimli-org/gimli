@@ -87,6 +87,7 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
                          color=color,
                          style=style,
                          show_edges=showMesh,
+                         #edge_color='white',
                          show_scalar_bar=colorBar,
                          opacity=opacity,
                          )

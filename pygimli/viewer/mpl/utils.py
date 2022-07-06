@@ -48,8 +48,8 @@ def hold(val=1):
 def waitOnExit():
     backend = matplotlib.get_backend()
     if not 'inline' in backend:
-        if 'Qt' in backend or 'Wx' in backend:
-
+        if 'Qt' in backend or 'Wx' in backend or 'Tk' in backend or 'GTK' in backend:
+        
             if len(plt.get_fignums()) > 0:
                 pg.info('Showing pending widgets on exit. '
                         'Close all figures or Ctrl-C to quit the programm')

@@ -66,6 +66,11 @@ Mesh.__repr__ =__Mesh_str
 
 
 def __addPLCs__(self, other):
+    if isR3Array(other):
+        m = Mesh(dim=self.dim(), isGeometry=True)
+        [m.createNode(n) for n in other]
+        other = m
+
     if self.isGeometry() and other.isGeometry():
         return mergePLC([self, other])
     else:

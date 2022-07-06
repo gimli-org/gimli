@@ -1317,11 +1317,11 @@ def drawSensors(ax, sensors, diam=None, coords=None, **kwargs):
     ax : mpl axe instance
 
     sensors : vector or list of RVector3
-        list of positions to plot
+        List of positions to plot.
     diam : float [None]
-        diameter of circles (None leads to point distance by 8)
+        Diameter of circles (None leads to point distance by 8).
     coords: (int, int) [0, 1]
-        Coordinates to take (usually x and y)
+        Coordinates to take (usually x and y).
 
     Keyword Arguments
     -----------------
@@ -1342,13 +1342,15 @@ def drawSensors(ax, sensors, diam=None, coords=None, **kwargs):
     """
     if coords is None:
         coords = [0, 2]
-        if not pg.core.zVari(sensors) and sensors[0][2] == 0.0:
+
+        if len(sensors[0]) == 2 or \
+            not pg.core.zVari(sensors) and sensors[0][2] == 0.0:
             coords = [0, 1]
 
     eCircles = []
 
     if diam is None:
-        eSpacing = sensors[0].distance(sensors[1])
+        eSpacing = pg.Pos(sensors[0]).distance(sensors[1])
         diam = eSpacing / 8.0
 
     for i, e in enumerate(sensors):

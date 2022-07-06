@@ -125,6 +125,12 @@ def createRectangle(start=None, end=None, pos=None, size=None, **kwargs):
             Marker for the resulting boundary edges
         leftDirection : bool [True]
             TODO Rotational direction
+        pnts: [[x, y],]
+            Return squared rectangle of origin-aligned boundingbox for pnts.
+        minBB: False
+            Return squared rectangle of non-origin-aligned minimal boundingbox for pnts.
+        minBBOffset: [1.0, 1.0]
+            Offset for minimal boundingbox in x and y direction in relative extend .. whatever that means for non aligned boxes.
 
     Returns
     -------
@@ -140,9 +146,107 @@ def createRectangle(start=None, end=None, pos=None, size=None, **kwargs):
     ...                      marker=1, area=0.1, markerPosition=[0, -2])
     >>> r2 = mt.createRectangle(start=[0.5, -0.5], end=[2, -2],
     ...                      marker=2, area=1.1)
-    >>> _ = pg.show(mt.mergePLC([r1, r2]))
-    >>> pg.wait()
+    >>> pnts3 = [[-0.5, 0], [0, 0.2], [-0.2, 0.5], [-0.3, 0.25]]
+    >>> r3 = mt.createRectangle(pnts=pnts3, marker=3, area=0.2)
+    >>> pnts4 = [[1.5, 0], [2.0, 0.2], [1.8, 0.5], [1.7, 0.25]]
+    >>> r4 = mt.createRectangle(pnts=pnts4, marker=4, minBB=True)
+    >>> pnts5 = [[-0.5, -1], [0, -0.8], [-0.2, -0.5], [-0.3, -0.75]]
+    >>> r5 = mt.createRectangle(pnts=pnts5, marker=5, 
+    ...                         minBB=True, minBBOffset=[1.2, 1.2])
+    >>> ax, _ = pg.show(mt.mergePLC([r1, r2, r3, r4, r5]))
+    >>> pg.viewer.mpl.drawSensors(ax, pnts3)
+    >>> pg.viewer.mpl.drawSensors(ax, pnts4)
+    >>> pg.viewer.mpl.drawSensors(ax, pnts5)
     """
+    pnts = kwargs.pop('pnts', None)
+    if pnts is not None:
+        if len(pnts) == 1:
+            return createRectangle(pos=pnts[0], size=[1,1], **kwargs)
+        if len(pnts) == 2:
+            return createRectangle(start=pnts[0], end=pnts[1], **kwargs)
+
+        minBB = kwargs.pop('minBB', False)
+        minBBBoundary = kwargs.pop('minBBOffset', [1.0, 1.0])
+
+        if not minBB:
+            xMin = min(pg.x(pnts))
+            xMax = max(pg.x(pnts))
+            yMin = min(pg.y(pnts))
+            yMax = max(pg.y(pnts))
+
+            bb = np.asarray([[xMin, yMin],[xMax, yMax]])
+            
+            bbScale = (bb[1]-bb[0])*(minBBBoundary-np.asarray([1.0, 1.0]))
+            return createRectangle(start=bb[0]-bbScale, end=bb[1]+bbScale, 
+                                **kwargs)
+        else:
+            # create convex hull
+            m = pg.meshtools.createMesh(pnts)
+            if m.boundaryCount() == 0:
+                # probably linear pnts so no convex hull
+                for i in range(m.nodeCount()-1):
+                    m.createBoundary([i, i+1])
+            
+                    bs = pg.meshtools.createLine(pnts[0], pnts[-1])
+            else:        
+                bs = m.createSubMesh(m.boundaries([b.id() 
+                                    for b in m.boundaries() if b.outside()]))
+            
+            def getBB(m, off, rot):
+                # Rotate hull and find bb
+                m2 = pg.Mesh(m)
+                m2.translate(-off)
+                m2.transform(rot)
+                m2.translate(off)
+                
+                # Increase bb if zero width or lenght
+                bb = m2.bb()
+                if (bb[1]-bb[0])[0] < 1e-12:
+                    bb[1][0] += 0.5
+                    bb[0][0] -= 0.5
+                if (bb[1]-bb[0])[1] < 1e-12:
+                    bb[1][1] += 0.5
+                    bb[0][1] -= 0.5
+
+                return bb
+
+            off = 0
+            minSize = [9e99, None, None, None]
+            
+            for b in bs.boundaries():
+                # normalize to origin
+                off = b.node(0).pos()
+                # rotation to origin x axis
+                rot = pg.core.getRotation((b.node(1).pos()-off), [1, 0])
+
+                # get bounding box for normalized mesh
+                bb = getBB(bs, off, rot)
+
+                # compare size off bb and collect minimum size
+                s = (bb[1]-bb[0]).abs()
+                if s < minSize[0]:
+                    minSize[0] = s
+                    minSize[1] = bb
+                    minSize[2] = b.node(1).pos()
+                    minSize[3] = off
+
+            # Rotate bb back and create rectangle 
+            bb = minSize[1]
+            off = minSize[3]
+
+            bbScale = (bb[1]-bb[0])*(minBBBoundary-np.asarray([1.0, 1.0]))
+            r = createRectangle(start=bb[0]-bbScale, end=bb[1]+bbScale, 
+                                **kwargs)
+
+            rot = pg.core.getRotation([1, 0], minSize[2]-off)
+            r.translate(-off)
+            r.transform(rot)
+            r.translate(off)
+
+            # pg.show(r)
+            # pg.wait()
+            return r
+
     if start is None:
         start = [-0.5, 0.5]
     if end is None:
@@ -843,10 +947,10 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=-1, paraBoundary=2,
     --------
     >>> # no need to import matplotlib, pygimli show does.
     >>> import pygimli as pg
-    >>> import pygimli.meshtools as plc
+    >>> import pygimli.meshtools as mt
     >>> # Create the simplest paramesh PLC with a para box of 10 m without
     >>> # sensors
-    >>> p = plc.createParaMeshPLC([0,10])
+    >>> p = mt.createParaMeshPLC([0,10])
     >>> # you can add subsurface sensors now with
     >>> for z in range(1,4):
     ...     n = p.createNode((5,-z), -99)
@@ -970,6 +1074,264 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=-1, paraBoundary=2,
                         pg.core.MARKER_BOUND_HOMOGEN_NEUMANN)
 
     return poly
+
+
+def createParaMeshSurface(sensors, paraBoundary=None, boundary=-1,          
+                          surfaceMeshQuality=30, addTopo=None):
+    r"""Create a surface mesh for an 3D inversion parameter mesh.
+        
+        Create a surface mesh for an 3D inversion parameter mesh.
+        Topographic information (Z-coodinate non equal zero) can be from sensors together with addTopo, or in addTopo alone if provided.
+        Outside boundary corners are set to median of all topography.
+        
+    Args
+    ----
+    sensors: DataContainer with sensorPositions()
+        Sensor positions. 
+
+    paraBoundary: [float, float] [1.1, 1.1]
+        Margin for parameter domain in relative extend.
+        
+    boundary: [float, float] [10., 10.]
+        Boundary width to be appended for domain prolongation in relative  para domain size.
+
+    surfaceMeshQuality: float (30)
+        Quality of the surface mesh.
+
+    addTopo: [[x,y,z],]
+        Number of additional nodes for topography.
+
+    Returns
+    -------
+    surface: :gimliapi:`GIMLI::Mesh`
+        3D Surface mesh
+
+    Examples
+    --------
+    >>> # no need to import matplotlib, pygimli show does.
+    >>> import numpy as np
+    >>> import pygimli as pg
+    >>> import pygimli.meshtools as mt
+    >>> # very simple design: 10 sensors on 1D profile in 3D topography
+    >>> x = np.linspace(-10, 10, 10)
+    >>> topo = [[15, -15, 10], [-15, 15, -10]]
+    >>> surface = mt.createParaMeshSurface(np.asarray([x, x, x*0]).T, 
+    ...                                    paraBoundary=[1.2, 1.2], 
+    ...                                    boundary=[2, 2], 
+    ...                                    surfaceMeshQuality=30, 
+    ...                                    addTopo=topo)
+    >>> pg.show(surface, showMesh=True, color='white')        
+    """
+    if hasattr(sensors, 'sensors'):
+        sensors = sensors.sensors()
+    sensors = np.asarray(sensors)
+
+    if paraBoundary is None:
+        paraBoundary = [1.1, 1.1]
+
+    if boundary is None:
+        boundary = [10.0, 10.0]
+
+    ## find maximal extent    
+    boundaryRect = pg.meshtools.createRectangle(pnts=sensors[:,0:2], 
+                                                minBB=False, 
+                                                minBBOffset=boundary)
+    for i in range(4):
+        boundaryRect.boundary(i).setMarker(i+1)
+        boundaryRect.node(i).setMarker((i%4+1)*10)
+        
+
+    # pg.show(boundaryRect, showNodes=True)
+    # pg.wait()
+    # sys.exit()
+
+    ## collect all pnts with topography
+    if addTopo is not None:
+        if min(sensors[:,2]) != max(sensors[:,2]) and sensors[0][2] != 0.0:
+            pnts = np.vstack((sensors, addTopo))
+        else:
+            pnts = np.asarray(addTopo)
+    else:
+        pnts = np.array(sensors)        
+    
+
+    ## add maximal extent corners to median topo
+    boundaryRect.translate([0, 0, np.median(pnts[:,2])])
+    pnts = np.vstack((boundaryRect.positions(), pnts))
+    
+    ## create mesh for topo interpolation
+    pntsSurface = pg.meshtools.createMesh(pnts[:,0:2])
+
+    ## find parameter extent
+    paraRect = pg.meshtools.createRectangle(pnts=sensors[:,0:2], 
+                                            minBB=True, 
+                                            minBBOffset=paraBoundary)
+    for i in range(4):
+        paraRect.boundary(i).setMarker(i+5)
+        paraRect.node(i).setMarker((i%4+5)*10)
+    
+    ## create surface mesh of sensors and with maximal and parameter extent 
+    surfacePLC = boundaryRect + paraRect + sensors[:,0:2]
+    surface = pg.meshtools.createMesh(surfacePLC, quality=surfaceMeshQuality)
+
+    ## interpolate Topography to surface
+    sZ = pg.interpolate(pntsSurface, pnts[:,2], surface.positions())
+    for n in surface.nodes():
+        n.translate(0, 0, sZ[n.id()])
+
+    #ax, _ = pg.show(boundaryRect)
+    # pg.show(paraRect, ax=ax)
+    # ax.plot(sensors[:,0],sensors[:,1], '.')
+    # pg.show(pntsSurface, ax=ax)
+    #pg.show(surface, ax=ax, color='red', markers=True)
+    
+    ## create 3D surfacemesh
+    s = pg.meshtools.createSurface(surface, 
+                        boundaryMarker=pg.core.MARKER_BOUND_HOMOGEN_NEUMANN)
+
+    return s
+    # pg.show(surface, showMesh=True)
+
+
+def createParaMeshPLC3D(sensors, paraDX=0, paraDepth=-1, paraBoundary=None,
+                        paraMaxCellSize=0.0, boundary=-1, boundaryMaxCellSize=0,
+                        surfaceMeshQuality=30, addTopo=None,
+                        isClosed=False, **kwargs):
+    r"""Create a geometry (PLC) for an 3D inversion parameter mesh.
+    
+        TODO
+        ----
+            * 3D without TOPO
+            * better paraBoundary scale for with and height
+
+        Args
+        ----
+        sensors: DataContainer with sensorPositions()
+            Sensor positions. 
+
+        paraDX : float [1]
+            Absolute distance for node refinement (0=none). Refinement node will be placed below the surface.
+
+        paraDepth : float[-1], optional
+            Maximum depth in m for parametric domain. Automatic for values <=0 result in 0.4 * maximum sensor span range in m. Depth is set to median sensors depth + paraDepth.
+
+        paraBoundary: [float, float] [1.1, 1.1]
+            Margin for parameter domain in relative extend.
+            
+        paraMaxCellSize: double, optional
+            Maximum cell size for parametric region in m²
+
+        boundaryMaxCellSize: double, optional
+            Maximum cells size in the boundary region in m²
+
+        boundary: [float, float] [10., 10.]
+            Boundary width to be appended for domain prolongation in relative  para domain size.
+
+        surfaceMeshQuality: float (30)
+            Quality of the surface mesh.
+
+        addTopo: [[x,y,z],]
+            Number of additional nodes for topography.
+
+        Returns
+        -------
+        poly: :gimliapi:`GIMLI::Mesh`
+            Piecewise linear complex (PLC) containing nodes and edges
+
+    """
+    if hasattr(sensors, 'sensors'):
+        sensors = sensors.sensors()
+    sensors = np.asarray(sensors)
+
+    surface = pg.meshtools.createParaMeshSurface(sensors, 
+                                    paraBoundary=paraBoundary,
+                                    boundary=boundary,
+                                    surfaceMeshQuality=surfaceMeshQuality,
+                                    addTopo=addTopo)
+
+    ## find depth and paradepth    
+    xSpan = (max(sensors[:,0]) - min(sensors[:,0]))
+    ySpan = (max(sensors[:,1]) - min(sensors[:,1]))
+    
+    if paraDepth == -1:
+        paraDepth = (0.4*(max(xSpan, ySpan)))
+
+    paraDepth = np.median(sensors[:,2]) - paraDepth
+    depth = paraDepth - max(boundary[0]*xSpan, boundary[1]*ySpan)/2
+   
+
+    bounds = [surface]
+    # close outer surfaces
+    bttm = []
+    for i in range(4):
+        
+        p = [n.pos() for n in surface.nodes() if n.marker() == i+1]
+        p.append(surface.nodes(surface.nodeMarkers()==(i%4+1)*10)[0].pos())
+        p.append(surface.nodes(surface.nodeMarkers()==((i+1)%4+1)*10)[0].pos())
+        p.sort()
+
+        p0 = pg.Pos(p[-1])
+        p0[2] = depth
+        p.append(p0)
+
+        p1 = pg.Pos(p[0])
+        p1[2] = depth
+        p.append(p1)
+
+        m = pg.meshtools.createPolygon(p, isClosed=True)
+        f = pg.meshtools.createFacet(m, boundaryMarker=-2)
+        
+        bounds.append(f)
+        bttm.append(p0)
+        bttm.append(p1)
+    
+    m = pg.meshtools.createRectangle(pnts=bttm, minBB=True)
+    m.translate([0, 0, depth])
+    bttmA = pg.meshtools.createFacet(m, boundaryMarker=-2)
+    bounds.append(bttmA)
+
+    # close para surfaces
+    bttm = []
+    for i in range(4):
+        
+        p = [n.pos() for n in surface.nodes() if n.marker() == i+5]
+        p.append(surface.nodes(surface.nodeMarkers()==(i%4+5)*10)[0].pos())
+        p.append(surface.nodes(surface.nodeMarkers()==((i+1)%4+5)*10)[0].pos())
+        p.sort()
+
+        p0 = pg.Pos(p[-1])
+        p0[2] = paraDepth
+        p.append(p0)
+        
+        p1 = pg.Pos(p[0])
+        p1[2] = paraDepth
+        p.append(p1)
+
+        m = pg.meshtools.createPolygon(p[::-1], isClosed=True)
+        f = pg.meshtools.createFacet(m, boundaryMarker=1)
+        
+        bounds.append(f)
+        bttm.append(p0)
+        bttm.append(p1)
+    
+    m = pg.meshtools.createRectangle(pnts=bttm, minBB=True)
+    m.translate([0, 0, paraDepth])
+    bttmP = pg.meshtools.createFacet(m, boundaryMarker=1)
+    bounds.append(bttmP)
+
+    pdPLC = pg.meshtools.mergePLC(bounds)
+
+    if paraDX > 0:
+        for s in sensors:
+            pdPLC.createNode(s - [0.0, 0.0, paraDX])
+            
+
+    pdPLC.addRegionMarker(pg.center(bttmA.positions()) + [0.0, 0.0, 0.1], 
+                          marker=1, area=boundaryMaxCellSize)
+    pdPLC.addRegionMarker(pg.center(bttmP.positions()) + [0.0, 0.0, 0.1],  
+                          marker=2, area=paraMaxCellSize)
+    
+    return pdPLC
 
 
 def readPLC(filename, comment='#'):
@@ -1569,12 +1931,18 @@ def createSurface(mesh, boundaryMarker=None, verbose=True):
     if mesh.cellCount() == 0:
         pg.error("Need a two dimensional mesh with cells")
 
+    # think to use this
+    # s = surface.createHull()
+
     surface = pg.Mesh(dim=3, isGeometry=True)
 
-    [surface.createNode(n.pos()).id() for n in mesh.nodes()]
+    [surface.createNode(n.pos(), n.marker()).id() for n in mesh.nodes()]
 
     for c in mesh.cells():
         surface.createBoundary(c.ids(), marker=c.marker())
+
+    if boundaryMarker is not None:
+        surface.setBoundaryMarkers(np.full(surface.boundaryCount(), boundaryMarker))
 
     return surface
 
