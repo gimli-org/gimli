@@ -34,14 +34,12 @@ from .meshtools import createGrid, interpolate
 from .solver import solve
 from .utils import boxprint, cache, cut, unique, unit, cmap, randn
 from .utils import prettify as pf
-from .viewer import plt, show, wait
+from .viewer import plt, show, wait, quiet
 from .frameworks import fit, Modelling, Inversion
 from .testing import test#, setTestingMode, testingMode
 
 from .math import matrix # alias all from .core.matrix.* to pg.matrix.*
 from .core.load import (load, optImport, getCachePath, getExampleFile, getExampleData)
-
-
 
 
 def checkAndFixLocaleDecimal_point(verbose=False):

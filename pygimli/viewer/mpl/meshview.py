@@ -1319,7 +1319,7 @@ def drawSensors(ax, sensors, diam=None, coords=None, **kwargs):
     sensors : vector or list of RVector3
         List of positions to plot.
     diam : float [None]
-        Diameter of circles (None leads to point distance by 8).
+        Diameter of circles (None leads to point distance by 4).
     coords: (int, int) [0, 1]
         Coordinates to take (usually x and y).
 
@@ -1351,7 +1351,7 @@ def drawSensors(ax, sensors, diam=None, coords=None, **kwargs):
 
     if diam is None:
         eSpacing = pg.Pos(sensors[0]).distance(sensors[1])
-        diam = eSpacing / 8.0
+        diam = eSpacing / 2.5
 
     for i, e in enumerate(sensors):
         eCircles.append(mpl.patches.Circle((e[coords[0]],
