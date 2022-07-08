@@ -6,9 +6,10 @@ import sys
 import matplotlib.pyplot as plt
 import pygimli as pg
 
-PyQt5 = pg.optImport('PyQt5', requiredFor="use pyGIMLi's 3D viewer")
-pyvista = pg.optImport('pyvista', requiredFor="properly visualize 3D data")
-panel = pg.optImport('panel', requiredFor='pyvista jupyter backend')
+PyQt5 = pg.optImport("PyQt5", requiredFor="use pyGIMLi's 3D viewer")
+pyvista = pg.optImport("pyvista", requiredFor="properly visualize 3D data")
+panel = pg.optImport("panel", 
+    requiredFor="use interactive 3D visualizations within Jupyter notebooks")
 
 
 if pyvista is None:
@@ -85,7 +86,7 @@ def showMesh3DVista(mesh, data=None, **kwargs):
         The plotter from pyvista.
     gui: Show3D [None]
         The small gui based on pyvista. Note that this is returned as 'None'
-        if gui is passed as 'False'.
+        # if gui is passed as 'False'.
 
     Note
     ----
@@ -114,21 +115,23 @@ def showMesh3DVista(mesh, data=None, **kwargs):
         return s3d.plotter, s3d  # plotter, gui
 
     else:
-        
-        backend = kwargs.pop('backend', 'panel')
+        backend = None:
 
-        plotter = drawModel(None, mesh, data, notebook=notebook, 
-                            cMap=cMap, **kwargs)
-        
+        if notebook:
+            backend = kwargs.pop("backend", "panel")
+
+        plotter = drawModel(None, mesh, data, notebook=notebook, cMap=cMap, **kwargs)
+
         plotter.enable_anti_aliasing()
 
         if notebook is True:        
             # monkey patch show of this plotter instance so we can use multiple backends and only plotter.show() .. whoever this needs.
             plotter.__show = plotter.show
-            plotter.show = lambda *args, **kwargs: plotter.__show(*args, 
-                                                jupyter_backend=backend, **kwargs)
-
-        if not hold is True:
+            plotter.show = lambda *args, **kwargs: plotter.__show(
+                *args, jupyter_backend=backend, **kwargs
+            )
+    
+        if not hold:
             plotter.show()
         
         # , None to keep compatability 
