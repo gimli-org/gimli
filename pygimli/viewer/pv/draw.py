@@ -45,6 +45,7 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
     colorBar = kwargs.pop('colorBar', True)
 <<<<<<< Updated upstream:pygimli/viewer/pv/draw.py
 <<<<<<< Updated upstream:pygimli/viewer/pv/draw.py
+<<<<<<< Updated upstream:pygimli/viewer/pv/draw.py
     name = kwargs.pop('name', 'Mesh')
     bc = kwargs.pop('bc', '#EEEEEE') # background color
     filt = kwargs.pop('filter', {}) 
@@ -57,6 +58,9 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
     #theme.antialiasing = True
     
     theme.font.color = 'k'  
+=======
+    bc = kwargs.pop('bc', '#EEEEEE') # background color
+>>>>>>> Stashed changes:pygimli/viewer/pv/drawer.py
 =======
     bc = kwargs.pop('bc', '#EEEEEE') # background color
 >>>>>>> Stashed changes:pygimli/viewer/pv/drawer.py
@@ -125,8 +129,13 @@ def drawModel(ax=None, mesh=None, data=None, **kwargs):
     """
 <<<<<<< Updated upstream:pygimli/viewer/pv/draw.py
 <<<<<<< Updated upstream:pygimli/viewer/pv/draw.py
+<<<<<<< Updated upstream:pygimli/viewer/pv/draw.py
     defaultCMap = kwargs.pop('cMap', 'viridis')
     dataName = kwargs.pop('label', None)
+=======
+
+    defaultCMap = 'viridis'
+>>>>>>> Stashed changes:pygimli/viewer/pv/drawer.py
 =======
 
     defaultCMap = 'viridis'
@@ -143,6 +152,7 @@ def drawModel(ax=None, mesh=None, data=None, **kwargs):
     if kwargs.pop('markers', False) is True:
         ## show boundary mesh with markers
         data = mesh.boundaryMarkers()
+<<<<<<< Updated upstream:pygimli/viewer/pv/draw.py
 <<<<<<< Updated upstream:pygimli/viewer/pv/draw.py
 <<<<<<< Updated upstream:pygimli/viewer/pv/draw.py
         defaultCMap = pg.plt.cm.get_cmap("Set3", max(1, len(pg.unique(data))))
@@ -167,6 +177,8 @@ def drawModel(ax=None, mesh=None, data=None, **kwargs):
 =======
 =======
 >>>>>>> Stashed changes:pygimli/viewer/pv/drawer.py
+=======
+>>>>>>> Stashed changes:pygimli/viewer/pv/drawer.py
         defaultCMap = 'Set3'
         kwargs['label'] = 'Boundary marker'
         mesh = pgMesh2pvMesh(mesh, data, kwargs.pop('label', None), 
@@ -183,6 +195,9 @@ def drawModel(ax=None, mesh=None, data=None, **kwargs):
         kwargs['cMap'] = defaultCMap
 
 <<<<<<< Updated upstream:pygimli/viewer/pv/draw.py
+<<<<<<< Updated upstream:pygimli/viewer/pv/draw.py
+>>>>>>> Stashed changes:pygimli/viewer/pv/drawer.py
+=======
 >>>>>>> Stashed changes:pygimli/viewer/pv/drawer.py
 =======
 >>>>>>> Stashed changes:pygimli/viewer/pv/drawer.py

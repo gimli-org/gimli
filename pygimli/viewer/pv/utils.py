@@ -46,8 +46,11 @@ pgVTKCELLTypes = {
 }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
+=======
+>>>>>>> Stashed changes
 pgVTKCELLTypes = {
     pg.core.MESH_EDGE_CELL_RTTI:     3,
     pg.core.MESH_EDGE_RTTI:          3,
@@ -67,6 +70,9 @@ pgVTKCELLTypes = {
     pg.core.MESH_HEXAHEDRON20_RTTI:  25 ,
 }
 
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 def pgMesh2pvMesh(mesh, data=None, label=None, boundaries=False):
     """
@@ -81,6 +87,7 @@ def pgMesh2pvMesh(mesh, data=None, label=None, boundaries=False):
         Parameter to distribute to cells/nodes.
     """
     if boundaries is True:
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
         mesh.createNeighbourInfos()
@@ -107,6 +114,8 @@ def pgMesh2pvMesh(mesh, data=None, label=None, boundaries=False):
 =======
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
         # b = mesh.createSubMesh([b, for b in mesh.boundaries() if b.isoutsidee() or b.marker() != 0])
 
         # print(b)
@@ -126,6 +135,9 @@ def pgMesh2pvMesh(mesh, data=None, label=None, boundaries=False):
                 faces=[[len(b.ids()), *b.ids()] for b in mesh.boundaries()])
         grid.cell_data['Boundary marker'] = np.asarray(mesh.boundaryMarkers())
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -143,7 +155,11 @@ def pgMesh2pvMesh(mesh, data=None, label=None, boundaries=False):
 
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
+=======
+    
+>>>>>>> Stashed changes
 =======
     
 >>>>>>> Stashed changes
