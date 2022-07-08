@@ -231,7 +231,13 @@ def testShowPV():
     pg.rc['view3D'] = 'pyvista'
     print('Show Boundary:', m1)
     pg.show(m1+m2, bc='#DDDDFF', alpha=0.5)
+<<<<<<< Updated upstream
     m1 = mt.createMesh(m1+m2, area=0.1)
+=======
+
+    m1 = mt.createMesh(m1, area=0.1)
+    m1 = mt.createMesh(m1)#, area=0.1)
+>>>>>>> Stashed changes
 
     print('Show Cells:', m1)
     m1.setCellMarkers(range(m1.cellCount()))

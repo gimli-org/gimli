@@ -57,9 +57,8 @@ def valHash(a):
         else:
             print(a)
             pg.error('no hash for numpy array')
-    elif hasattr(a, '__hash__'):
+    elif hasattr(a, '__hash__') and not callable(a):
         return hash(a)    
-
     elif callable(a):
         # for lambdas
         # pg._r('hash:', inspect.getsource(a))
@@ -109,6 +108,7 @@ class Cache(object):
 
         self.info['file'] = self._name
 
+        # pg._r(self.info)
         self.updateCacheInfo()
 
         if self.info['type'] == 'Mesh':
@@ -137,6 +137,7 @@ class Cache(object):
 
     def restore(self):
         """Read data from json infos"""
+        
         if os.path.exists(self._name + '.json'):
 
             # Fricking mpl kills locale setting to system default .. this went
@@ -160,7 +161,6 @@ class Cache(object):
                     self._value = pg.Vector()
                     self._value.load(self.info['file'], format=pg.core.Binary)
                 elif self.info['type'] == 'Mesh':
-                    pg.tic()
                     self._value = pg.Mesh()
                     self._value.loadBinaryV2(self.info['file'] + '.bms')
                     pg.debug("Restoring cache took:", pg.dur(), "s")
@@ -230,8 +230,8 @@ class CacheManager(object):
     def hash(self, funct, *args, **kwargs):
         """"Create a hash value"""
         pg.tic()
-        functInfo = self.functInfo(funct)
-        funcHash = strHash(functInfo)
+        funcInfo = self.functInfo(funct)
+        funcHash = strHash(funcInfo)
         versionHash = strHash(pg.versionStr())
         codeHash = strHash(inspect.getsource(funct))
 
@@ -242,6 +242,7 @@ class CacheManager(object):
         for k, v in kwargs.items():
             argHash = argHash ^ valHash(k) ^ valHash(v)
             
+        # pg._g(funcHash, versionHash, codeHash, argHash)
         pg.debug("Hashing took:", pg.dur(), "s")
         return funcHash ^ versionHash ^ codeHash ^ argHash
 
@@ -266,6 +267,7 @@ def cache(funct):
             return funct(*args, **kwargs)
 
         cache = CacheManager().cache(funct, *args, **kwargs)
+
         if cache.value is not None:
             return cache.value
         else:

@@ -43,6 +43,7 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
     showMesh = kwargs.pop('showMesh', False)
     grid = kwargs.pop('grid', False)
     colorBar = kwargs.pop('colorBar', True)
+<<<<<<< Updated upstream:pygimli/viewer/pv/draw.py
     name = kwargs.pop('name', 'Mesh')
     bc = kwargs.pop('bc', '#EEEEEE') # background color
     filt = kwargs.pop('filter', {}) 
@@ -55,6 +56,9 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
     #theme.antialiasing = True
     
     theme.font.color = 'k'  
+=======
+    bc = kwargs.pop('bc', '#EEEEEE') # background color
+>>>>>>> Stashed changes:pygimli/viewer/pv/drawer.py
 
     if ax is None:
         ax = pv.Plotter(notebook=notebook, 
@@ -115,8 +119,13 @@ def drawModel(ax=None, mesh=None, data=None, **kwargs):
     ax: pyvista.Plotter [optional]
         The plotter
     """
+<<<<<<< Updated upstream:pygimli/viewer/pv/draw.py
     defaultCMap = kwargs.pop('cMap', 'viridis')
     dataName = kwargs.pop('label', None)
+=======
+
+    defaultCMap = 'viridis'
+>>>>>>> Stashed changes:pygimli/viewer/pv/drawer.py
 
     if all(v is None for v in [ax, mesh, data]):
         pg.critical("At least mesh or data should not be None")
@@ -125,6 +134,7 @@ def drawModel(ax=None, mesh=None, data=None, **kwargs):
     if kwargs.pop('markers', False) is True:
         ## show boundary mesh with markers
         data = mesh.boundaryMarkers()
+<<<<<<< Updated upstream:pygimli/viewer/pv/draw.py
         defaultCMap = pg.plt.cm.get_cmap("Set3", max(1, len(pg.unique(data))))
         dataName = 'Boundary Marker'
         mesh = pgMesh2pvMesh(mesh, data, dataName, boundaries=True)
@@ -144,6 +154,23 @@ def drawModel(ax=None, mesh=None, data=None, **kwargs):
     kwargs['cMap'] = defaultCMap
     kwargs['label'] = dataName
    
+=======
+        defaultCMap = 'Set3'
+        kwargs['label'] = 'Boundary marker'
+        mesh = pgMesh2pvMesh(mesh, data, kwargs.pop('label', None), 
+                             boundaries=True)
+    else:
+
+        if data is not None or len(mesh.dataMap()) != 0:
+            kwargs['style'] = 'surface'
+            kwargs['color'] = None
+
+        mesh = pgMesh2pvMesh(mesh, data, kwargs.pop('label', None))
+
+    if 'cMap' not in kwargs:
+        kwargs['cMap'] = defaultCMap
+
+>>>>>>> Stashed changes:pygimli/viewer/pv/drawer.py
     return drawMesh(ax, mesh, **kwargs)
 
 
