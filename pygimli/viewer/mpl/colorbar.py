@@ -449,7 +449,7 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5, levels=None):
         if cbar.orientation == 'horizontal':
             cbar.ax.xaxis.set_major_formatter(pfMajorFormatter)
         else:
-            cbar.ax.xaxis.set_major_formatter(pfMajorFormatter)
+            cbar.ax.yaxis.set_major_formatter(pfMajorFormatter)
     except Exception as e:
         pg.warn(e)
 

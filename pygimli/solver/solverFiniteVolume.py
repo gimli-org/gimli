@@ -4,8 +4,7 @@
 
 import numpy as np
 import pygimli as pg
-from pygimli.viewer import show
-from pygimli.meshtools import createMesh
+
 from pygimli.solver import identity  # , parseArgToArray, parseArgToBoundaries
 
 

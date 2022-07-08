@@ -10,7 +10,6 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 import pygimli as pg
 from pygimli.viewer.mpl import show1dmodel, drawModel1D
 from .hemmodelling import HEMmodelling
-# from pygimli.matrix import NDMatrix
 
 
 def cmapDAERO():

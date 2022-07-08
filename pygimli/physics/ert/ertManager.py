@@ -501,6 +501,36 @@ class ERTManager(MeshMethodManager):
 
         self.showData(vals=misfit, **kwargs)
 
+    def showModel(self, model=None, elecs=True, ax=None, **kwargs):
+        """Show the last inversion result.
+
+        Parameters
+        ----------
+        ax : mpl axes
+            Axes object to draw into. Create a new if its not given.
+
+        model : iterable [None]
+            Model values to be draw. Default is self.model from the last run
+
+        Returns
+        -------
+        ax, cbar
+        """
+        if model is None:
+            model = self.model
+        
+        if ax is None:
+            fig, ax = pg.plt.subplots()
+
+        ax, cBar = self.fop.drawModel(ax, model, coverage=self.coverage(),
+                                      **kwargs)
+        if elecs is True:
+            pg.viewer.mpl.drawSensors(ax, self.fop.data.sensors())
+
+        return ax, cBar
+
+               
+
     def saveResult(self, folder=None, size=(16, 10), **kwargs):
         """Save all results in the specified folder.
 
@@ -534,7 +564,7 @@ class ERTManager(MeshMethodManager):
 
         if self.paraDomain.dim() == 2:
             fig, ax = plt.subplots(figsize=size)
-            self.showResult(ax=ax, coverage=self.coverage(), **kwargs)
+            self.showModel(ax=ax, **kwargs)
             fig.savefig(path + '/resistivity.pdf', bbox_inches="tight")
             return path, fig, ax
         return path

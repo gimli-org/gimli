@@ -144,7 +144,7 @@ class FatrayDijkstraModellingInterpolate(TravelTimeDijkstraModelling):
         self.sensorNodes = [self.mesh().findNearestNode(pos)
                             for pos in self.data().sensorPositions()]
         if (self.iMat.cols() != self.mesh().nodeCount() or
-            self.iMat.rows() != self.mesh().cellCount()):
+                self.iMat.rows() != self.mesh().cellCount()):
             self.iMat = self.mesh().interpolationMatrix(
                     self.mesh().cellCenters())
 

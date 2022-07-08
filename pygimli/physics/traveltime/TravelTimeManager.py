@@ -62,6 +62,15 @@ class TravelTimeManager(MeshMethodManager):
         """Create default inversion mesh.
 
         Inversion mesh for traveltime inversion does not need boundary region.
+
+        Args
+        ----
+        data: DataContainer
+            Data container to read sensors from.
+
+        Keyword Args
+        ------------
+        Forwarded to `:py:func:pygimli.meshtools.createParaMesh`
         """
         d = data or self.data
 
@@ -243,13 +252,48 @@ class TravelTimeManager(MeshMethodManager):
         self.fw.model = velocity
         return velocity
 
-    def drawRayPaths(self, ax, model=None, **kwargs):
-        """Draw the the ray paths for model or last model.
-
-        If model is not specifies, the last calculated Jacobian is used.
+    def getRayPaths(self, model=None):
+        """Compute ray paths.
+        
+        If model is not specified, the last calculated Jacobian is used.
 
         Parameters
         ----------
+        model : array
+            Velocity model for which to calculate and visualize ray paths (the
+            default is model for last Jacobian calculation in self.velocity).
+
+        Returns
+        -------
+        list of two-column array holding x and y positions
+        """
+        if model is not None:
+            if self.fop.jacobian().size() == 0 or model != self.model:
+                self.fop.createJacobian(1/model)
+        else:
+            model = self.model
+
+        shots = self.fop.data.id("s")
+        recei = self.fop.data.id("g")
+
+        segs = []
+        nodes = self.fop._core.mesh().positions(withSecNodes=True)
+        for s, g in zip(shots, recei):
+            wi = self.fop.way(s, g)
+            points = nodes[wi]
+            segs.append(np.column_stack((pg.x(points), pg.y(points))))
+
+        return segs
+
+    def drawRayPaths(self, ax, model=None, rayPaths=None, **kwargs):
+        """Draw the the ray paths for model or last model.
+
+        If model is not specified, the last calculated Jacobian is used.
+
+        Parameters
+        ----------
+        rayPaths : list of np.array
+            x/y column array with ray point positions
         model : array
             Velocity model for which to calculate and visualize ray paths (the
             default is model for last Jacobian calculation in self.velocity).
@@ -263,26 +307,13 @@ class TravelTimeManager(MeshMethodManager):
         -------
         lc : matplotlib.LineCollection
         """
-        if model is not None:
-            if self.fop.jacobian().size() == 0 or model != self.model:
-                self.fop.createJacobian(1/model)
-        else:
-            model = self.model
+        rayPaths = rayPaths or self.getRayPaths(model=model)
 
         _ = kwargs.setdefault("color", "w")
         _ = kwargs.setdefault("alpha", 0.5)
         _ = kwargs.setdefault("linewidths", 0.8)
 
-        shots = self.fop.data.id("s")
-        recei = self.fop.data.id("g")
-
-        segs = []
-        for s, g in zip(shots, recei):
-            wi = self.fop.way(s, g)
-            points = self.fop._core.mesh().positions(withSecNodes=True)[wi]
-            segs.append(np.column_stack((pg.x(points), pg.y(points))))
-
-        lc = LineCollection(segs, **kwargs)
+        lc = LineCollection(rayPaths, **kwargs)
         ax.add_collection(lc)
 
         return lc

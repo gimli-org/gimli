@@ -466,6 +466,7 @@ class MethodManager(object):
         if ax is None:
             fig, ax = pg.plt.subplots()
 
+
         if data is None:
             data = self.data
 
@@ -520,8 +521,18 @@ class MethodManager(object):
         return ax, cBar
 
     def showResultAndFit(self, **kwargs):
-        """Calls showResults and showFit."""
-        fig = pg.plt.figure()
+        """Calls showResults and showFit.
+        
+        Keyword Args
+        ............
+        saveFig: str[None]
+            If not None save figure.
+        
+        """
+        saveFig = kwargs.pop('saveFig', None)
+
+
+        fig = pg.plt.figure(figsize=kwargs.pop('figsize', (11,6)))
         ax = fig.add_subplot(1, 2, 1)
 
         self.showResult(ax=ax, model=self.model, **kwargs)
@@ -532,6 +543,10 @@ class MethodManager(object):
         self.showFit(axs=[ax1, ax2], **kwargs)
 
         fig.tight_layout()
+
+        if saveFig is not None:
+            fig.savefig(saveFig, bbox_inches="tight")
+
         return fig
 
     @staticmethod

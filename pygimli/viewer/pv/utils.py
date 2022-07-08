@@ -42,19 +42,22 @@ def pgMesh2pvMesh(mesh, data=None, label=None, boundaries=False):
         return pgMesh2pvMesh(b, data, label)
     
     if mesh.cellCount() > 0:
+        ids = []
+        for c in mesh.cells():
+            ids.extend([len(c.ids()), *c.ids()])
         grid = pv.UnstructuredGrid(
-            np.asarray([[len(c.ids()), *c.ids()] for c in mesh.cells()]).flatten(),
+            np.asarray(ids),
             np.asarray([pgVTKCELLTypes[c.rtti()] for c in mesh.cells()]).flatten(),
             np.asarray(mesh.positions()))
 
-        grid.cell_data['Cell marker'] = np.asarray(mesh.cellMarkers())
+        grid.cell_data['Cell Marker'] = np.asarray(mesh.cellMarkers())
 
     elif mesh.boundaryCount() > 0:
         grid = pv.PolyData(np.asarray(mesh.positions()), 
                 faces=np.hstack([[len(b.ids()), *b.ids()] 
                                         for b in mesh.boundaries()]))
         
-        grid.cell_data['Boundary marker'] = np.asarray(mesh.boundaryMarkers())
+        grid.cell_data['Boundary Marker'] = np.asarray(mesh.boundaryMarkers())
         
     else:
         grid = pv.PolyData(np.asarray(mesh.positions()))
@@ -67,21 +70,26 @@ def pgMesh2pvMesh(mesh, data=None, label=None, boundaries=False):
         elif len(values) == mesh.nodeCount():
             grid.point_data[key] = np.asarray(values)
 
-    
+
     # check the given data as well
     try:
         if data is not None:
             if len(data) == mesh.cellCount():
+                if label is None:
+                    label = 'Cell data'
                 grid.cell_data[label] = np.asarray(data)
             elif len(data) == mesh.nodeCount():
+                if label is None:
+                    label = 'Node data'
                 grid.point_data[label] = np.asarray(data)
             else:
                 pg.warn("Given data fits neither cell count nor node count:")
                 pg.warn("{} vs. {} vs. {}".format(len(data), mesh.cellCount(),
                                                 mesh.nodeCount()))
     except Exception as e:
+        print(label)
         print(e)
-        pg.error("fix pyvista bindings")
+        pg.error("fix pyvista mesh conversion")
 
     # print(grid.cell_data)
     # print(grid.point_data)

@@ -578,7 +578,10 @@ class Inversion(object):
                 print("inv.iter", i + 1, "... ", end='')
 
             try:
-                self.inv.oneStep()
+                if hasattr(self, "oneStep"):
+                    self.oneStep()
+                else:
+                    self.inv.oneStep()
             except RuntimeError as e:
                 print(e)
                 pg.error('One step failed. '
@@ -599,10 +602,6 @@ class Inversion(object):
 
             if self._postStep and callable(self._postStep):
                 self._postStep(i, self)
-
-            # Do we need to check the following before oder after chi2 calc??
-            lam *= self.inv.lambdaFactor()
-            self.inv.setLambda(lam)
 
             if self.robustData:
                 self.inv.robustWeighting()
@@ -633,6 +632,9 @@ class Inversion(object):
                 break
 
             lastPhi = phi
+
+            lam *= self.inv.lambdaFactor()
+            self.inv.setLambda(lam)
 
         # will never work as expected until we unpack kwargs .. any idea for
         # better strategy?

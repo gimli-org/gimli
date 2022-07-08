@@ -32,11 +32,12 @@ from .mesh import (convert, convertMeshioMesh, convertHDF5Mesh, createMesh,
                    toSubsurface, fromSubsurface)
 
 from .polytools import createParaDomain2D  # keep for backward compatibility
-from .polytools import (createCircle, createCube, createCylinder, createFacet,
-                        createSurface,
-                        createLine, createParaMeshPLC, createPolygon,
-                        createRectangle, createWorld, exportPLC, merge, mergePLC,
-                        mergePLC3D, readPLC, syscallTetgen, extrude)
+from .polytools import (createCircle, createCube, createCylinder, 
+                        createFacet, createLine, createPolygon, createRectangle, createSurface, createWorld,
+                        createParaMeshPLC, createParaMeshSurface,
+                        createParaMeshPLC3D,
+                        merge, mergePLC, mergePLC3D, 
+                        readPLC, exportPLC, syscallTetgen, extrude)
 
 from .quality import quality
 

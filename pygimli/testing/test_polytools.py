@@ -239,9 +239,7 @@ class Test3DMerge(unittest.TestCase):
         self.assertEqual(w.boundaryCount(), 6+5+5+5+6+3)
 
         # w.exportPLC('t.poly')
-        
-        m = mt.createMesh(w)
-        pg.show(m, m.cellMarkers())
+        #pg.show(mt.createMesh(w))
 
     def test_cube_cube_coplanar_touchface(self):
         w = mt.createCube(marker=1)
@@ -271,10 +269,9 @@ class Test3DMerge(unittest.TestCase):
         self.assertEqual(w.nodeCount(), 8+8+8+8+8)
         self.assertEqual(w.boundaryCount(), 6+5+5+5+5)
 
-        pg.show(w)
+        #pg.show(w)
         # w.exportPLC('t.poly')
-        m = mt.createMesh(w)
-        pg.show(m, m.cellMarkers())
+        #pg.show(mt.createMesh(w))
 
     def test_smallcube_in_bigcube(self):
         """
@@ -297,10 +294,8 @@ class Test3DMerge(unittest.TestCase):
         # self.assertEqual(w.boundaryCount(), 8)
 
         # print(w)
-        #pg.show(w)
-        m = mt.createMesh(w)
-        pg.show(m, m.cellMarkers())
-        
+        # pg.show(w)
+        # pg.show(mt.createMesh(w))
 
     def test_cyl_on_cyl(self):
         # merge only works if smaller face merged into larger face on contact plane
@@ -438,13 +433,13 @@ class Test3DMerge(unittest.TestCase):
         #pg.show(grid)
         mesh = mt.appendBoundary(grid, xbound=5, ybound=5, zbound=5,
                                  isSubSurface=False)
-        ax, _ = pg.show(mesh, mesh.cellMarkers(), hold=True, opacity=0.5)
+        #ax, _ = pg.show(mesh, mesh.cellMarkers(), hold=True, opacity=0.5)
 
-        try:
-            # fallback mpl axes have no show
-            ax.show()
-        except:
-            pass
+        # try:
+        #     fallback mpl axes have no show
+        #     ax.show()
+        # except:
+        #     pass
 
 
 if __name__ == '__main__':

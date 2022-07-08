@@ -17,6 +17,7 @@ import pygimli as pg
 from pygimli.utils import prettyFloat, prettyTime
 
 holdAxes__ = 0
+__lastBackend__ = None
 
 
 def updateFig(fig, force=False, sleep=.0001):
@@ -45,14 +46,29 @@ def hold(val=1):
     globals()[holdAxes__] = val
 
 
+def quiet(on=True):
+    """Toggle quiet mode to avoid popping figures.
+
+    Args
+    ....
+    on: bool[True]
+        Set Matplotlib backend to 'agg' and restore old backend if set to False.
+    """
+
+    if on is True:
+        globals()[__lastBackend__] = matplotlib.get_backend()
+        matplotlib.use('agg')
+    else:
+        if matplotlib.use(globals()[__lastBackend__]) is not None:
+            matplotlib.use(globals()[__lastBackend__])
+
+
 @atexit.register
 def waitOnExit():
     backend = matplotlib.get_backend()
-
-    #pg._r(backend, len(plt.get_fignums()))
- 
     if not 'inline' in backend:
         if 'Qt' in backend or 'Wx' in backend or 'Tk' in backend or 'GTK' in backend:
+        
             if len(plt.get_fignums()) > 0:
                 pg.info('Showing pending widgets on exit. '
                         'Close all figures or Ctrl-C to quit the programm')

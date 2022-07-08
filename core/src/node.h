@@ -72,6 +72,7 @@ public:
 
     inline const RVector3 & pos() const { return pos_; }
 
+    /*! Don't use this if you plan to modify the nodes posisiton. The mesh won't get any notifications of the change and this not remove geometry caches. */
     inline RVector3 & pos() { return pos_; }
 
     inline void insertBoundary(Boundary * bound){ boundSet_.insert(bound); }

@@ -18,6 +18,7 @@ from .ves import VESModelling, VESCModelling, VESManager
 from .visualization import showERTData, drawERTData, generateDataPDF
 from .importData import load
 
+
 @pg.renamed(createData, '1.3')  # 20210302
 def createERTData(*args, **kwargs):
     pass
@@ -26,3 +27,7 @@ showData = showERTData
 show = showERTData  # better create a function that can also handle mgr
 geometricFactor = pg.core.geometricFactors
 geometricFactors = geometricFactor
+
+# Module prototypes
+DataContainer = pg.core.DataContainerERT
+Manager = ERTManager

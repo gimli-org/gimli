@@ -206,6 +206,14 @@ void DataContainer::setSensorPositions(const PosVector & sensors) {
 int DataContainer::load(const std::string & fileName,
                         bool sensorIndicesFromOne,
                         bool removeInvalid){
+
+    // __MS(std::locale::locale(LC_NUMERIC));
+    // __MS(std::localeconv()->decimal_point[0]));
+    //putenv("LC_NUMERIC=C");
+    std::setlocale(LC_NUMERIC, "C");
+    // __MS(std::locale(LC_NUMERIC, "C"));
+    // __MS(std::localeconv()->decimal_point[0]));
+                            
     clear();
     setSensorIndexOnFileFromOne(sensorIndicesFromOne);
 

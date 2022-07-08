@@ -7,6 +7,7 @@ import matplotlib
 # are the following suitable for a drawing package?
 from .utils import (hold,
                     wait,
+                    quiet,
                     updateFig,
                     updateAxes,
                     renameDepthTicks,

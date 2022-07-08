@@ -58,7 +58,6 @@ needs_sphinx = "1.8" # due to napoleon
 deps = ["sphinxcontrib-programoutput",
         "sphinxcontrib-bibtex",
         "sphinxcontrib-doxylink",
-        #"sphinx.gallery", # testing does not work
 	    "bibtexparser",
 	]
 
@@ -113,13 +112,15 @@ try:
         "examples_dirs": [join(SPHINXDOC_PATH, "examples"),
                           join(SPHINXDOC_PATH, "tutorials")],
         "gallery_dirs": ["_examples_auto", "_tutorials_auto"],
-        "reference_url": {
-            "pygimli": "https://pygimli.org",
-            "python": "https://docs.python.org/dev",
-            "numpy": "https://numpy.org/doc/stable",
-            "scipy": "https://docs.scipy.org/doc/scipy/reference",
-            "matplotlib": "https://matplotlib.org/stable",
-        },
+
+        # Currently deactivated until this is fixed: https://github.com/sphinx-gallery/sphinx-gallery/issues/967
+        # "reference_url": {
+        #     "pygimli": "https://pygimli.org",
+        #     "python": "https://docs.python.org/dev",
+        #     "numpy": "https://numpy.org/doc/stable",
+        #     "scipy": "https://docs.scipy.org/doc/scipy/reference",
+        #     "matplotlib": "https://matplotlib.org/stable",
+        # },
 
         # Don"t report time of fast scripts (< 10 sec)
         "min_reported_time": 10,
@@ -138,16 +139,18 @@ try:
         # Only parse filenames starting with plot_
         "filename_pattern": "plot_",
 
-        "first_notebook_cell": ("# Checkout www.pygimli.org for more examples\n"
-                                "%matplotlib inline"),
+        "first_notebook_cell": ("# Checkout www.pygimli.org for more examples"),
 
         "reset_modules": (reset_mpl),
         }
 
     pyvista = pygimli.optImport("pyvista", "build the gallery with 3D visualizations")
     if pyvista:
-        os.environ["PYVISTA_OFF_SCREEN"] = "true"
+        # necessary when building the sphinx gallery
+        os.environ['PYVISTA_BUILDING_GALLERY'] = "true"
         pyvista.BUILDING_GALLERY = True
+        os.environ["PYVISTA_OFF_SCREEN"] = "true"
+        pyvista.OFF_SCREEN = True
         pyvista.set_plot_theme("document")
         pyvista.global_theme.window_size = [1024, 768]
         pyvista.global_theme.font.size = 22
@@ -171,11 +174,10 @@ except ImportError:
 
 
 intersphinx_mapping = {
-    "python": ("https://docs.python.org/dev", (None, "intersphinx/python-objects.inv")),
-    "numpy": ("https://numpy.org/doc/stable", (None, "intersphinx/numpy-objects.inv")),
-    "scipy": ("https://docs.scipy.org/doc/scipy/", (None, "intersphinx/scipy-objects.inv")),
-    "matplotlib": ("https://matplotlib.org/stable", (None, "intersphinx/matplotlib-objects.inv")),
-    "pyvista": ("https://docs.pyvista.org", (None, "intersphinx/pyvista-objects.inv")), # do we need to link again pv api?
+    "python": ("https://docs.python.org/3/", None),
+    "numpy": ("https://numpy.org/doc/stable/", None),
+    "scipy": ("https://docs.scipy.org/doc/scipy/reference/", None),
+    "matplotlib": ("http://matplotlib.org/stable/", None),
 }
 
 autoclass_content = "class"

@@ -2,16 +2,12 @@
 # -*- coding: utf-8 -*-
 """Plot 3D mesh."""
 
-import sys
-import matplotlib.pyplot as plt
+import os
 import pygimli as pg
 
-PyQt5 = pg.optImport("PyQt5", requiredFor="use pyGIMLi's 3D viewer")
 pyvista = pg.optImport("pyvista", requiredFor="properly visualize 3D data")
-panel = pg.optImport(
-    "panel", requiredFor="use interactive 3D visualizations within Jupyter notebooks"
-)
-
+panel = pg.optImport("panel", 
+    requiredFor="use interactive 3D visualizations within Jupyter notebooks")
 
 if pyvista is None:
     view3Dcallback = "showMesh3DFallback"
@@ -19,26 +15,14 @@ else:
     view3Dcallback = "showMesh3DVista"
     vers_users = pyvista.__version__
     vers_userf = float(pyvista.__version__[::-1].replace(".", "", 1)[::-1])
-    vers_needs = "0.33.0"
-    vers_needf = 0.330
+    vers_needs = "0.34.0"
+    vers_needf = 0.340
 
     if vers_userf < vers_needf:
         pg.warn("Please consider updating PyVista to at least {}".format(
             vers_needs))
     
-    #print(pyvista.__version__)
-    #from pyvista import themes
-    #pyvista.set_plot_theme('white')
-    #pyvista.global_theme.color = 'white'  
-
-    from pygimli.viewer.pv import drawModel
-
-# if PyQt5 is None:
-#     inline = True
-# else:
-#     from .pv.show3d import Show3D
-#     from PyQt5 import Qt
-#     inline = False
+    from .draw import drawModel
 
 
 def showMesh3D(mesh, data, **kwargs):
@@ -52,7 +36,7 @@ def showMesh3D(mesh, data, **kwargs):
 def showMesh3DFallback(mesh, data, **kwargs):
     """Plot the 3D object sketchy."""
     ax = kwargs.pop("ax", None)
-
+    import matplotlib.pyplot as plt
     from mpl_toolkits.mplot3d import Axes3D
 
     if ax is None or not isinstance(ax, Axes3D):
@@ -75,7 +59,7 @@ def showMesh3DFallback(mesh, data, **kwargs):
 
 
 def showMesh3DVista(mesh, data=None, **kwargs):
-    """Make use of the actual 3D visualization tool kit
+    """Make use of the actual 3D visualization tool kit.
 
     Parameters
     ----------
@@ -108,25 +92,30 @@ def showMesh3DVista(mesh, data=None, **kwargs):
         notebook = False
         kwargs["backend"] = None
 
-    gui = kwargs.pop("gui", not notebook)
+    gui = kwargs.pop("gui", False)
 
     # add given data from argument
     # GUI tmp deactivated
-    if gui and 0:
-        app = Qt.QApplication(sys.argv)
-        s3d = Show3D(app)
-        s3d.addMesh(mesh, data, cMap=cMap, **kwargs)
-        if not hold:
-            s3d.wait()
-        return s3d.plotter, s3d  # plotter, gui
+    if gui:
+        pg.error('pyqt show gui currently not maintained')
+        return None
+        # app = Qt.QApplication(sys.argv)
+        # s3d = Show3D(app)
+        # s3d.addMesh(mesh, data, cMap=cMap, **kwargs)
+        # if not hold:
+        #     s3d.wait()
+        # return s3d.plotter, s3d  # plotter, gui
 
     else:
 
         backend = kwargs.pop("backend", "panel")
 
-        plotter = drawModel(None, mesh, data, notebook=notebook, cMap=cMap, **kwargs)
+        plotter = drawModel(None, mesh, data, notebook=notebook, 
+                            cMap=cMap, **kwargs)
 
-        plotter.enable_anti_aliasing()
+        # seems top be broken on some machines
+        if kwargs.get('aa', False):
+            plotter.enable_anti_aliasing()
 
         if notebook:
             # monkey patch show of this plotter instance so we can use multiple backends and only plotter.show() .. whoever this needs.
@@ -134,6 +123,9 @@ def showMesh3DVista(mesh, data=None, **kwargs):
             plotter.show = lambda *args, **kwargs: plotter.__show(
                 *args, jupyter_backend=backend, **kwargs
             )
+        else:
+            plotter.__show = plotter.show
+            plotter.show = lambda *args, **kwargs: plotter.__show(*args, **kwargs) if pg.viewer.mpl.isInteractive() else False
 
         if not hold:
             plotter.show()
