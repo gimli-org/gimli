@@ -237,6 +237,9 @@ def testShowPV():
 
     m1 = mt.createMesh(m1, area=0.1)
     m1 = mt.createMesh(m1)#, area=0.1)
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
     print('Show Cells:', m1)
