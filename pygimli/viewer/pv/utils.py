@@ -24,56 +24,6 @@ pgVTKCELLTypes = {
     pg.core.MESH_HEXAHEDRON20_RTTI:  25 ,
 }
 
-<<<<<<< Updated upstream
-=======
-pgVTKCELLTypes = {
-    pg.core.MESH_EDGE_CELL_RTTI:     3,
-    pg.core.MESH_EDGE_RTTI:          3,
-    pg.core.MESH_EDGE3_RTTI:         21,
-    pg.core.MESH_EDGE3_CELL_RTTI:    21 ,
-    pg.core.MESH_TRIANGLE_RTTI:      5  ,
-    pg.core.MESH_TRIANGLE6_RTTI:     22 ,
-    pg.core.MESH_QUADRANGLE_RTTI:    9  ,
-    pg.core.MESH_QUADRANGLE8_RTTI:   23 ,
-    pg.core.MESH_TETRAHEDRON_RTTI:   10 ,
-    pg.core.MESH_TETRAHEDRON10_RTTI: 24 ,
-    pg.core.MESH_TRIPRISM_RTTI:      13 ,
-    pg.core.MESH_TRIPRISM15_RTTI:    13 ,
-    pg.core.MESH_PYRAMID_RTTI:       14 ,
-    pg.core.MESH_PYRAMID13_RTTI:     14 ,
-    pg.core.MESH_HEXAHEDRON_RTTI:    12 ,
-    pg.core.MESH_HEXAHEDRON20_RTTI:  25 ,
-}
-
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
-=======
->>>>>>> Stashed changes
-pgVTKCELLTypes = {
-    pg.core.MESH_EDGE_CELL_RTTI:     3,
-    pg.core.MESH_EDGE_RTTI:          3,
-    pg.core.MESH_EDGE3_RTTI:         21,
-    pg.core.MESH_EDGE3_CELL_RTTI:    21 ,
-    pg.core.MESH_TRIANGLE_RTTI:      5  ,
-    pg.core.MESH_TRIANGLE6_RTTI:     22 ,
-    pg.core.MESH_QUADRANGLE_RTTI:    9  ,
-    pg.core.MESH_QUADRANGLE8_RTTI:   23 ,
-    pg.core.MESH_TETRAHEDRON_RTTI:   10 ,
-    pg.core.MESH_TETRAHEDRON10_RTTI: 24 ,
-    pg.core.MESH_TRIPRISM_RTTI:      13 ,
-    pg.core.MESH_TRIPRISM15_RTTI:    13 ,
-    pg.core.MESH_PYRAMID_RTTI:       14 ,
-    pg.core.MESH_PYRAMID13_RTTI:     14 ,
-    pg.core.MESH_HEXAHEDRON_RTTI:    12 ,
-    pg.core.MESH_HEXAHEDRON20_RTTI:  25 ,
-}
-
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 def pgMesh2pvMesh(mesh, data=None, label=None, boundaries=False):
     """
     pyGIMLi's mesh format is different from pyvista's needs,
@@ -87,9 +37,6 @@ def pgMesh2pvMesh(mesh, data=None, label=None, boundaries=False):
         Parameter to distribute to cells/nodes.
     """
     if boundaries is True:
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
         mesh.createNeighbourInfos()
         b = mesh.createSubMesh(mesh.boundaries([b.id() for b in mesh.boundaries() if b.outside() or b.marker() != 0]))
         return pgMesh2pvMesh(b, data, label)
@@ -111,11 +58,7 @@ def pgMesh2pvMesh(mesh, data=None, label=None, boundaries=False):
                                         for b in mesh.boundaries()]))
         
         grid.cell_data['Boundary Marker'] = np.asarray(mesh.boundaryMarkers())
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
+
         # b = mesh.createSubMesh([b, for b in mesh.boundaries() if b.isoutsidee() or b.marker() != 0])
 
         # print(b)
@@ -134,13 +77,6 @@ def pgMesh2pvMesh(mesh, data=None, label=None, boundaries=False):
         grid = pv.PolyData(np.asarray(mesh.positions()), 
                 faces=[[len(b.ids()), *b.ids()] for b in mesh.boundaries()])
         grid.cell_data['Boundary marker'] = np.asarray(mesh.boundaryMarkers())
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
         
     else:
         grid = pv.PolyData(np.asarray(mesh.positions()))
@@ -153,19 +89,6 @@ def pgMesh2pvMesh(mesh, data=None, label=None, boundaries=False):
         elif len(values) == mesh.nodeCount():
             grid.point_data[key] = np.asarray(values)
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-
-=======
-    
->>>>>>> Stashed changes
-=======
-    
->>>>>>> Stashed changes
-=======
-    
->>>>>>> Stashed changes
     # check the given data as well
     try:
         if data is not None:
