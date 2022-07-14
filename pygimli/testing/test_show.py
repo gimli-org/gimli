@@ -222,6 +222,17 @@ def testShowPV():
         from pygimli.testing.test_show import testShowPV
         testShowPV()
     """
+    tet = pg.Mesh(3)
+    tet.createNode([0.0, 0.0, 0.0])
+    tet.createNode([1.0, 0.0, 0.0])
+    tet.createNode([0.0, 1.0, 0.0])
+    tet.createNode([0.0, 0.0, 1.0])
+    tet.createCell([0, 1, 2, 3])
+    tet2 = tet.createP2()
+    tet2.exportVTK('tet2')
+    pg.show(tet2, showMesh=True)
+    exit()
+
     m1 = mt.createCube()
     m1.setBoundaryMarkers(range(m1.boundaryCount()))
     
@@ -239,7 +250,7 @@ def testShowPV():
 
     print('Show Markers with vtk filters:', m1)
     ax, _ = pg.show(m1, markers=True, filter={'clip':{'origin':(0, 0, 0)},},)
-    
+        
     print('Show Field (x)')
     pg.show(m1, data=pg.x(m1), label='x', cMap='Spectral_r')
     
@@ -283,8 +294,8 @@ if __name__ == '__main__':
         locals()[sys.argv[1]]()
     else:
         # testShowVariants()
-        testColorbar()
-        #testShowPV()
+        #testColorbar()
+        testShowPV()
         #testCBarLevels()
         # testColRange()
         # testCoverage()

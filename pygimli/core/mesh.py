@@ -11,7 +11,7 @@ from .core import (cat, HexahedronShape, Line, RSparseMapMatrix,
                         PolygonFace, TetrahedronShape, TriangleFace)
 from .logger import deprecated, error, info, warn, critical
 
-from ..meshtools import mergePLC, exportPLC
+from ..meshtools import mergePLC, exportPLC, interpolateAlongCurve
 
 from .base import isScalar, isArray, isPos, isR3Array, isComplex
 
@@ -590,3 +590,50 @@ def __Mesh_cutBoundary__(self, marker, boundaryMarker=None):
                                 marker=boundaryMarker)
         b.setLeftCell(rightCells[i])
 Mesh.cutBoundary = __Mesh_cutBoundary__
+
+def __Mesh__align__(self, pnts):
+    """Align 2D mesh along 3D coordinates.
+        
+    Align a xy-mesh along xyz-coordinates. x and y coordinates of the 2D mesh will be interpolated to x and y of pnts, where depth y from the mesh will become z and preserves its values.
+
+    TODO
+    ....
+        * handle z coordinate if pnts contain z
+
+    Args
+    ....
+    mesh: :gimliapi:`GIMLI::Mesh`
+        2D mesh, assumed to be aligned along x-axis. Depth is y-axis.
+    pnts: [[x,y],] | [[dx, x, y],]
+        * `shape[1] == 2`: Points that will be interpreted as xyz coordinates. 
+        * `shape[1] == 3`: interpreted as dx, x, y. Dx should start with <=0 max dx should be larger than `mesh.xmax() - mesh.xmin()`
+    """
+    if self.dim() != 2:
+        pg.critical("Only 2D meshes can be aligned to 3D coordinates")
+
+    A = None
+
+    pnts = np.asarray(pnts)
+    if pnts.ndim == 2:
+        if pnts.shape[1] == 2:
+            A = np.zeros((3, pnts.shape[0]))
+            A[0] = pg.utils.cumDist(pnts)
+            A[1] = pnts[:,0]
+            A[2] = pnts[:,1]
+            
+        elif pnts.shape[1] == 3:
+            A = pnts
+        
+    if A is None:
+        print(pnts)
+        pg.critical("Can't, interprete ptns")
+
+    tn = [n.pos()[0] for n in self.nodes()]
+    zn = [n.pos()[1] for n in self.nodes()]
+
+    p = interpolateAlongCurve(A[:,1:3], tn, tCurve=A[:,0])
+
+    for i, n in enumerate(self.nodes()):
+        n.setPos((p[i][0], p[i][1], zn[i]))
+
+Mesh.align = __Mesh__align__
