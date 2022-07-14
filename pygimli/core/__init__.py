@@ -326,14 +326,15 @@ pgcore.IndexArray.setVal = __newIndexArraySetVal__
 
 
 ############################
-# Indexing [] operator for RVector, CVector,
+# Indexing [] operator for RVector, CVector, IndexArray,
 #                          RVector3, R3Vector, RMatrix, CMatrix
 ############################
 def __getVal(self, idx):
     """Hell slow"""
-    if isinstance(idx, pgcore.BVector) or isinstance(
-            idx, pgcore.IVector) or isinstance(idx, pgcore.IndexArray):
+    if isinstance(idx, pgcore.BVector) or isinstance(idx, pgcore.IVector): 
         return self.get_(idx)
+    elif isinstance(idx, pgcore.IndexArray):
+        return self.getIA_(idx)
     elif isinstance(idx, slice):
 
         s = idx.start
@@ -360,7 +361,7 @@ def __getVal(self, idx):
 
     elif isinstance(idx, list) or hasattr(idx, '__iter__'):
         if isinstance(idx[0], int):
-            return self.get_(idx)
+            return self.getIA_(idx)
         elif hasattr(idx[0], 'dtype'):
             # print("numpy: ", idx[0].dtype.str, idx[0].dtype ,type(idx[0]))
             if idx[0].dtype == 'bool':

@@ -272,8 +272,8 @@ https://www.sphinx-doc.org/en/master/usage/extensions/napoleon.html
   """Short description, i.e., one line to explain what foo does. [DOT_AT_END]
     [ONE BLANKLINE]
     Explain a little bit more verbose was foo does. Use references :cite:`Archie1942`
-    Use links to pygimli api :py:mod:pygimli.manager` for modules
-    :py:func:pygimli.solver.solveFiniteElements for functions
+    Use links to pygimli api :gimliapi:`GIMLI::Mesh`, `:py:mod:pygimli.manager` for modules, 
+    `:py:func:pygimli.solver.solveFiniteElements` for functions
     
     Use math.
     .. math :

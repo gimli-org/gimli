@@ -291,6 +291,18 @@ class TestRVectorMethods(unittest.TestCase):
         np.testing.assert_array_equal(sum(I), 2)
         np.testing.assert_array_equal(np.sum(I), 2)
 
+    def testIndexGetter(self):
+        s = pg.core.RVector(range(5))
+        np.testing.assert_array_equal(s, s[range(5)])
+                
+        s = pg.IVector(range(5))
+        np.testing.assert_array_equal(s, s[range(5)])
+        np.testing.assert_array_equal(s, s[s])
+
+        s = pg.core.IndexArray(range(5))
+        np.testing.assert_array_equal(s, s[range(5)])
+        np.testing.assert_array_equal(s, s[s])
+
     def testComparison(self):
         a = pg.Vector(10, 1)
         b = pg.Vector(10, 2)

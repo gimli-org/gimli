@@ -304,11 +304,15 @@ DEFINE_XVECTOR_STUFF__(RVector) //RVector last since auto rhs conversion will fa
     template CSparseMatrix operator * (const CSparseMatrix & A, const GIMLI::Complex & b);
 
     template class ElementMatrix< double >;
+<<<<<<< HEAD
+=======
+    template std::ostream & operator << (std::ostream & str,
+                                         const ElementMatrix< double > & p);
+>>>>>>> dev
 
     template RVector unique(const RVector & a);
     // template IndexArray unique(const IndexArray & a);
     template IVector unique(const IVector & a);
-
     template RVector sort(const RVector & a);
     // template IndexArray sort(const IndexArray & a);
     template IVector sort(const IVector & a);

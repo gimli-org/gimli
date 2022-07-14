@@ -362,11 +362,21 @@ class ERTManager(MeshMethodManager):
         THINKABOUT: Data will be changed, or should the manager keep a copy?
         """
         data = data or pg.DataContainerERT(self.data)
+        topo = min(pg.z(data)) != max(pg.z(data))
+
+
         if isinstance(data, pg.DataContainer):
             if not data.allNonZero('k'):
-                pg.warn("Data file contains no geometric factors (token='k').")
-                data['k'] = createGeometricFactors(data, verbose=True)
+
+                pg.critical("Data file contains no geometric factors (token='k').")
+                # numeric = min(pg.z(data)) != max(pg.z(data))
+                # data['k'] = createGeometricFactors(data, 
+                #                                 numerical=topo, 
+                #                                 #p2=True,
+                #                                 verbose=self.verbose)
+
             if self.fop.complex():
+
                 if not data.haveData('rhoa'):
                     pg.critical('Datacontainer have no "rhoa" values.')
                 if not data.haveData('ip'):
@@ -381,14 +391,18 @@ class ERTManager(MeshMethodManager):
 
             else:
                 if not data.haveData('rhoa'):
+
                     if data.allNonZero('r'):
                         pg.info("Creating apparent resistivies from "
                                 "impedences rhoa = r * k")
                         data['rhoa'] = data['r'] * data['k']
+
                     elif data.allNonZero('u') and data.allNonZero('i'):
+
                         pg.info("Creating apparent resistivies from "
                                 "voltage and currrent rhoa = u/i * k")
                         data['rhoa'] = data['u']/data['i'] * data['k']
+
                     else:
                         pg.critical("Datacontainer have neither: "
                                     "apparent resistivies 'rhoa', "
@@ -397,13 +411,13 @@ class ERTManager(MeshMethodManager):
 
                 if any(data['rhoa'] < 0) and \
                         isinstance(self.inv.dataTrans, pg.core.TransLog):
-                    print(pg.find(data['rhoa'] < 0))
-                    print(data['rhoa'][data['rhoa'] < 0])
-                    pg.critical("Found negative apparent resistivities. "
-                                "These can't be processed with logarithmic "
-                                "data transformation. You should consider to "
-                                "filter them out using "
-                                "data.remove(data['rhoa'] < 0).")
+                    # print(pg.find(data['rhoa'] < 0))
+                    # print(data['rhoa'][data['rhoa'] < 0])
+                    pg.warning("Found negative apparent resistivities. "
+                               "These can't be processed with logarithmic "
+                               "data transformation. You should consider to "
+                               "filter them out using "
+                               "data.remove(data['rhoa'] < 0).")
 
                 return data['rhoa']
 
@@ -443,6 +457,7 @@ class ERTManager(MeshMethodManager):
 
         return rae  # not set if err is no DataContainer (else missing)
 
+
     def estimateError(self, data=None, **kwargs):
         """Estimate error composed of an absolute and a relative part.
 
@@ -474,6 +489,7 @@ class ERTManager(MeshMethodManager):
 
         return error
 
+
     def coverage(self):
         """Coverage vector considering the logarithmic transformation."""
         covTrans = pg.core.coverageDCtrans(self.fop.jacobian(),
@@ -486,9 +502,11 @@ class ERTManager(MeshMethodManager):
 
         return np.log10(covTrans / paramSizes)
 
+
     def standardizedCoverage(self, threshold=0.01):
         """Return standardized coverage vector (0|1) using thresholding."""
         return 1.0*(self.coverage() > threshold)
+
 
     def showMisfit(self, **kwargs):
         """Show relative or error-weighted data misfit."""
@@ -500,6 +518,7 @@ class ERTManager(MeshMethodManager):
         kwargs.setdefault("label", "relative misfit (%)")
 
         self.showData(vals=misfit, **kwargs)
+
 
     def showModel(self, model=None, elecs=True, ax=None, **kwargs):
         """Show the last inversion result.
