@@ -222,17 +222,6 @@ def testShowPV():
         from pygimli.testing.test_show import testShowPV
         testShowPV()
     """
-    tet = pg.Mesh(3)
-    tet.createNode([0.0, 0.0, 0.0])
-    tet.createNode([1.0, 0.0, 0.0])
-    tet.createNode([0.0, 1.0, 0.0])
-    tet.createNode([0.0, 0.0, 1.0])
-    tet.createCell([0, 1, 2, 3])
-    tet2 = tet.createP2()
-    tet2.exportVTK('tet2')
-    pg.show(tet2, showMesh=True)
-    exit()
-
     m1 = mt.createCube()
     m1.setBoundaryMarkers(range(m1.boundaryCount()))
     
@@ -253,6 +242,12 @@ def testShowPV():
         
     print('Show Field (x)')
     pg.show(m1, data=pg.x(m1), label='x', cMap='Spectral_r')
+
+    print('Show TetP2 Field (x)')
+    m2 = mt.createGrid(4,4,4)
+    m2 = mt.refineHex2Tet(m2)
+    m2 = m2.createP2()
+    pg.show(m2, data=pg.z(m2), showMesh=True, label='x', cMap='Spectral_r')
     
     print('Show Streams (x)')
     u = pg.x(m1)

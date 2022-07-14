@@ -46,17 +46,10 @@ def pgMesh2pvMesh(mesh, data=None, label=None, boundaries=False):
         for c in mesh.cells():
             if c.rtti() == pg.core.MESH_TETRAHEDRON10_RTTI:
                 # gimli still work with old zienk. counting
-                print(c.ids())
-                print(c.ids()[0])
-                
-                print(c.ids()[c.ids()])
-
-
                 ids.extend([len(c.ids()), *(c.ids()[[0,1,2,3,4,7,5,6,9,8]])])
             else:
                 ids.extend([len(c.ids()), *c.ids()])
 
-        print(ids)
         grid = pv.UnstructuredGrid(
             np.asarray(ids),
             np.asarray([pgVTKCELLTypes[c.rtti()] for c in mesh.cells()]).flatten(),

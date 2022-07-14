@@ -779,7 +779,6 @@ void Mesh::exportVTK(const std::string & fbody,
                 file << cell(i).nodeCount() << "\t";
             }
             if (cell(i).rtti() == MESH_TETRAHEDRON10_RTTI && oldTet10NumberingStyle_){
-                __M
                 file << cell(i).node(0).id() << "\t" << cell(i).node(1).id() << "\t"
                     << cell(i).node(2).id() << "\t" << cell(i).node(3).id() << "\t"
                     << cell(i).node(4).id() << "\t" << cell(i).node(7).id() << "\t"

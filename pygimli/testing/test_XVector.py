@@ -303,9 +303,6 @@ class TestRVectorMethods(unittest.TestCase):
         np.testing.assert_array_equal(s, s[range(5)])
         np.testing.assert_array_equal(s, s[s])
 
-        
-
-
     def testComparison(self):
         a = pg.Vector(10, 1)
         b = pg.Vector(10, 2)
