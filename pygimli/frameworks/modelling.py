@@ -573,10 +573,9 @@ class MeshModelling(Modelling):
 
         foundGeoStat = False
         for reg, props in self.regionProperties().items():
-
-            if props['correlationLengths'] is not None or \
-                props['dip'] is not None or \
-                    props['strike'] is not None:
+            if not props['background'] and \
+                props['correlationLengths'] is not None or \
+                    props['dip'] is not None or props['strike'] is not None:
 
                 cL = props.get('correlationLengths') or 5
                 dip = props.get('dip') or 0
