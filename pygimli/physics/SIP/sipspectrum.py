@@ -808,7 +808,7 @@ class SIPSpectrum(object):
             reNorm, imNorm = self.zNorm()
             fDD = DebyeComplex(self.f, self.tau)
             Znorm = pg.cat(reNorm, imNorm)
-            IDD = pg.core.Inversion(Znorm, fDD, tLog, tM, False)
+            IDD = pg.core.Inversion(Znorm, fDD, tLin, tM, False)
             IDD.setAbsoluteError(max(Znorm)*0.003+ePhi)
         else:
             fDD = DebyePhi(self.f, self.tau)
