@@ -418,6 +418,9 @@ public:
     Vector < ValueType > get_(const BVector & bv) const {
         return this->get_(GIMLI::find(bv));
     }
+    Vector < ValueType > getIA_(const IndexArray & iA) const {
+        return this->get_(iA);
+    }
 
 #ifndef PYGIMLI_CAST
     /*!

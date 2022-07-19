@@ -231,19 +231,7 @@ def testShowPV():
     pg.rc['view3D'] = 'pyvista'
     print('Show Boundary:', m1)
     pg.show(m1+m2, bc='#DDDDFF', alpha=0.5)
-<<<<<<< Updated upstream
     m1 = mt.createMesh(m1+m2, area=0.1)
-=======
-
-    m1 = mt.createMesh(m1, area=0.1)
-    m1 = mt.createMesh(m1)#, area=0.1)
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 
     print('Show Cells:', m1)
     m1.setCellMarkers(range(m1.cellCount()))
@@ -251,9 +239,15 @@ def testShowPV():
 
     print('Show Markers with vtk filters:', m1)
     ax, _ = pg.show(m1, markers=True, filter={'clip':{'origin':(0, 0, 0)},},)
-    
+        
     print('Show Field (x)')
     pg.show(m1, data=pg.x(m1), label='x', cMap='Spectral_r')
+
+    print('Show TetP2 Field (x)')
+    m2 = mt.createGrid(4,4,4)
+    m2 = mt.refineHex2Tet(m2)
+    m2 = m2.createP2()
+    pg.show(m2, data=pg.z(m2), showMesh=True, label='x', cMap='Spectral_r')
     
     print('Show Streams (x)')
     u = pg.x(m1)
@@ -295,8 +289,8 @@ if __name__ == '__main__':
         locals()[sys.argv[1]]()
     else:
         # testShowVariants()
-        testColorbar()
-        #testShowPV()
+        #testColorbar()
+        testShowPV()
         #testCBarLevels()
         # testColRange()
         # testCoverage()
