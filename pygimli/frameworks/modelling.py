@@ -1111,7 +1111,7 @@ class PriorModelling(MeshModelling):
         """Init with mesh and some positions that are converted into ids."""
         super().__init__(**kwargs)
         self.setMesh(mesh)
-        self.ind = [mesh.findCell(po).id() for po in pos]
+        self.ind = np.array([mesh.findCell(po).id() for po in pos])
         self.J = pg.SparseMapMatrix()
         self.J.resize(len(self.ind), mesh.cellCount())
         for i, ii in enumerate(self.ind):
