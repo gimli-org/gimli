@@ -492,9 +492,8 @@ def convertMeshioMesh(mesh, verbose=False):
             ret.createCell(c)
 
     for k, d in mesh.cell_data.items():
-        #pg._g(d[0])
         ret[k] = d[0].T
-            
+
     for k, d in mesh.point_data.items():
         if d.ndim == 2:
             if d.shape[1] == 3:
@@ -1353,8 +1352,8 @@ def convertHDF5Mesh(h5Mesh, group='mesh', indices='cell_indices',
         try:
             mesh_cells = inmesh[cells][mesh_indices]
         except IndexError as IE:
-            print('Fenics Indices aren\'t just in arbitrary order in range\
-(0, cellCount) as expected. Need Fix.')
+            print('Fenics Indices aren\'t just in arbitrary order in the '
+                  'range (0, cellCount) as expected. Needs Fix.')
             raise IE
     else:
         # case 2/2: indices implicit: [0, ... cellCount)
@@ -1919,7 +1918,7 @@ def createParaMesh(data, **kwargs):
     ----
     data: DataContainer
         Data container to read sensors positions from.
-            
+
     Keyword Args
     ------------
         Forwarded to `:py:func:pygimli.meshtools.createParaMeshPLC`
@@ -2032,7 +2031,7 @@ def createParaMesh2DGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
     if boundary < 0:
         boundary = abs((paraXLimits[1] - paraXLimits[0]) * 4.0)
 
-    mesh = pg.meshtools.appendTriangleBoundary(
+    mesh = pg.meshtools.appendTriangleBoundary(  # circular import?
         mesh, xbound=boundary, ybound=boundary, marker=1, addNodes=5, **kwargs)
 
     return mesh

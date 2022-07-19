@@ -519,12 +519,12 @@ class MethodManager(object):
 
     def showResultAndFit(self, **kwargs):
         """Calls showResults and showFit.
-        
+
         Keyword Args
         ............
         saveFig: str[None]
             If not None save figure.
-        
+
         """
         saveFig = kwargs.pop('saveFig', None)
 
@@ -762,13 +762,10 @@ class MeshMethodManager(MethodManager):
 
         kwargs['startModel'] = startModel
 
-        if 'zWeight' in kwargs:
-            self.fop.setRegionProperties('*', zWeight=kwargs.pop('zWeight'))
-
-        # Limits is no mesh related argument here or base??
-        limits = kwargs.pop('limits', None)
-        if limits is not None:
-            self.fop.setRegionProperties('*', limits=limits)
+        for kw in ["zWeight", "correlationLengths", "limits"]:
+            if kw in kwargs:
+                di = {kw: kwargs.pop(kw)}
+                self.fop.setRegionProperties('*', **di)
 
         self.preRun(**kwargs)
         self.fw.run(dataVals, errorVals, **kwargs)
