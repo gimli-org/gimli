@@ -360,6 +360,8 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
         if hasattr(data[0], '__len__') and not \
                 isinstance(data, np.ma.core.MaskedArray):
 
+            data = np.asarray(data)
+            
             ### [u,v] x N
             if len(data) == 2:
                 data = np.array(data).T
@@ -376,7 +378,6 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
             else:
 
                 ### Try animation frames x N
-                data = np.asarray(data)
                 if data.ndim == 2:
                     if data.shape[1] == mesh.cellCount() or \
                        data.shape[1] == mesh.nodeCount():
