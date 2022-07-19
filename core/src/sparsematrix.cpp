@@ -309,9 +309,9 @@ template <> void SparseMatrix< double >
         _rows = mesh.nodeCount();
         _cols = mesh.nodeCount();
 
-        __MS(sw.duration(true))
+        __MS("collect pattern:", sw.duration(true))
         this->buildSparsityPattern(idxMap);
-        __MS(sw.duration())
+        __MS("build pattern:", sw.duration())
         // __MS(vals_.size())
         return ;
 

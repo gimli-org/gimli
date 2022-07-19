@@ -8,15 +8,15 @@ Mesh generation and modification.
     (unstructured), both objects are treated the same internally.
 """
 
-from pygimli.core import (createMesh1D, createMesh1DBlock, createMesh2D, 
-                          createMesh3D)
+from pygimli.core import (createMesh1D, createMesh1DBlock,
+                          createMesh2D, createMesh3D)
 
 from .grid import (createGrid, createGridPieShaped,
                    appendBoundary,
                    appendBoundaryGrid,
-                   appendTriangleBoundary,
-                   appendTetrahedronBoundary, 
-                   )
+                   appendTriangleBoundary,  # why is this in grid.py?
+                   appendTetrahedronBoundary)
+
 from .mapping import (cellDataToBoundaryData, cellDataToNodeData,
                       fillEmptyToCellArray, interpolate, interpolateAlongCurve,
                       nodeDataToBoundaryData, nodeDataToCellData,
@@ -40,8 +40,6 @@ from .polytools import (createCircle, createCube, createCylinder,
                         readPLC, exportPLC, syscallTetgen, extrude)
 
 from .quality import quality
-
-
 
 #  This is neither functional nor good practice  #  why?
 #  __all__ = [name for name in dir() if '_' not in name]

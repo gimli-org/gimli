@@ -67,7 +67,7 @@ void integrateLPerCellT_(const ElementMatrixMap * self,
 }
 
 void ElementMatrixMap::fillSparsityPattern(RSparseMatrix & R) const {
-
+    // this * this.T -> quadratic symmetric
     const ElementMatrixMap & A = *this;
     Stopwatch sw(true);
     if (R.rows() == A.dof() && R.cols() == A.dofB()){
@@ -91,14 +91,16 @@ void ElementMatrixMap::fillSparsityPattern(RSparseMatrix & R) const {
         }
         i++;
     }
-    __MS(sw.duration(true))
+    __MS("pattern A*A.T (idx)", sw.duration(true))
     R.buildSparsityPattern(idxMap);
-    __MS(sw.duration())
+    __MS("pattern A*A.T (build)", sw.duration(true))
+    
     // __MS(R.values().size())
 }
 
 void ElementMatrixMap::fillSparsityPattern(RSparseMatrix & R,
                                            const ElementMatrixMap & B) const {
+    // this * B.T
 
     Stopwatch sw(true);
     const ElementMatrixMap & A = *this;
@@ -134,10 +136,10 @@ void ElementMatrixMap::fillSparsityPattern(RSparseMatrix & R,
         i++;
     }
 
-    __MS(sw.duration(true))
+    __MS("pattern A*B.T (idx)", sw.duration(true))
     R.buildSparsityPattern(idxMap);
-    __MS(sw.duration())
-//     __MS(R.values().size())
+    __MS("pattern A*B.T (build)", sw.duration(true))
+    //     __MS(R.values().size())
 }
 
 template < class ValueType >

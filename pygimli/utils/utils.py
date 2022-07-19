@@ -52,6 +52,7 @@ class ProgressBar(object):
         self._amount(0)
         self._swatch = pg.core.Stopwatch()
         self._nbProgress = None
+        self._iter = -1
 
         if pg.isNotebook():
             tqdm = pg.optImport('tqdm', requiredFor="use a nice progressbar in jupyter notebook")
@@ -72,7 +73,7 @@ class ProgressBar(object):
     @property
     def tIter(self):
         """Return time passed since last iteration."""
-        return self._swatch.stored().last()-self._swatch.stored().last(1)
+        return self._swatch.stored().last() - self._swatch.stored().last(1)
 
     def update(self, iteration, msg=""):
         """Update ProgressBar by iteration number starting at 0 with optional
@@ -83,7 +84,7 @@ class ProgressBar(object):
 
         if self._nbProgress is not None:
             ## TODO maybe catch if someone don't call with iteration steps == 1, why ever
-            self._nbProgress.update(n=1)
+            self._nbProgress.update(n=iteration-self._iter)
         else:
             self._setbar(iteration + 1)
             if len(msg) >= 1:
@@ -93,11 +94,13 @@ class ProgressBar(object):
         
         ## last iteration here
         if iteration == self.its-1:
-            if self.nbProgress is not None:
-                self.nbProgress.close()
+            if self._nbProgress is not None:
+                self._nbProgress.close()
             else:
                 print()
                 
+        self._iter = iteration
+
     def _setbar(self, elapsed_it):
         """Reset pBar based on current iteration number."""
         self._amount((elapsed_it / float(self.its)) * 100.0)

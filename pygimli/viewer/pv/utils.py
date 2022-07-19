@@ -36,8 +36,7 @@ def pgMesh2pvMesh(mesh, data=None, label=None, boundaries=False):
     data: iterable
         Parameter to distribute to cells/nodes.
     """
-    if boundaries is True:
-        mesh.createNeighbourInfos()
+    if boundaries:
         b = mesh.createSubMesh(mesh.boundaries([b.id() for b in mesh.boundaries() if b.outside() or b.marker() != 0]))
         return pgMesh2pvMesh(b, data, label)
     
@@ -63,7 +62,7 @@ def pgMesh2pvMesh(mesh, data=None, label=None, boundaries=False):
                                         for b in mesh.boundaries()]))
         
         grid.cell_data['Boundary Marker'] = np.asarray(mesh.boundaryMarkers())
-
+        
     else:
         grid = pv.PolyData(np.asarray(mesh.positions()))
 
@@ -74,6 +73,7 @@ def pgMesh2pvMesh(mesh, data=None, label=None, boundaries=False):
             grid.cell_data[key] = np.asarray(values)
         elif len(values) == mesh.nodeCount():
             grid.point_data[key] = np.asarray(values)
+
 
     # check the given data as well
     try:

@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import pygimli as pg
 from pygimli.frameworks import MeshMethodManager
 from .ertModelling import ERTModelling, ERTModellingReference
-from .ert import createInversionMesh, createGeometricFactors, estimateError
+from .ert import createInversionMesh, estimateError
 from pygimli.utils import getSavePath
 
 
@@ -370,8 +370,8 @@ class ERTManager(MeshMethodManager):
 
                 pg.critical("Data file contains no geometric factors (token='k').")
                 # numeric = min(pg.z(data)) != max(pg.z(data))
-                # data['k'] = createGeometricFactors(data, 
-                #                                 numerical=topo, 
+                # data['k'] = createGeometricFactors(data,
+                #                                 numerical=topo,
                 #                                 #p2=True,
                 #                                 verbose=self.verbose)
 
@@ -537,7 +537,7 @@ class ERTManager(MeshMethodManager):
         """
         if model is None:
             model = self.model
-        
+
         if ax is None:
             fig, ax = pg.plt.subplots()
 
@@ -548,7 +548,7 @@ class ERTManager(MeshMethodManager):
 
         return ax, cBar
 
-               
+
 
     def saveResult(self, folder=None, size=(16, 10), **kwargs):
         """Save all results in the specified folder.

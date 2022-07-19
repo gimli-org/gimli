@@ -349,24 +349,41 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
     elif isinstance(data, pg.core.R3Vector):
         drawStreams(ax, mesh, data, **kwargs)
     else:
+
+
         # check for map like data=[[marker, val], ....]
         if isinstance(data, list) and \
                 isinstance(data[0], list) and isinstance(data[0][0], int):
             data = pg.solver.parseMapToCellArray(data, mesh)
 
+
         if hasattr(data[0], '__len__') and not \
                 isinstance(data, np.ma.core.MaskedArray):
-            if len(data) == 2:  # [u,v] x N
+
+            ### [u,v] x N
+            if len(data) == 2:
                 data = np.array(data).T
 
+            ### N x [u,v]
             if data.shape[1] == 2:
                 drawStreams(ax, mesh, data, **kwargs)
 
-            elif data.shape[1] == 3:  # probably N x [u,v,w]
+            ### N x [u,v,w]
+            elif data.shape[1] == 3:  
                 # if sum(data[:, 0]) != sum(data[:, 1]):
                 # drawStreams(ax, mesh, data, **kwargs)
                 drawStreams(ax, mesh, data[:, 0:2], **kwargs)
             else:
+
+                ### Try animation frames x N
+                data = np.asarray(data)
+                if data.ndim == 2:
+                    if data.shape[1] == mesh.cellCount() or \
+                       data.shape[1] == mesh.nodeCount():
+            
+                        return showAnimation(mesh, data, cMap=cMap, **kwargs)
+
+
                 pg.warn("No valid stream data:", data.shape, data.ndim)
                 showMesh = True
         # elif min(data) == max(data):  # or pg.core.haveInfNaN(data):
@@ -611,3 +628,54 @@ def showBoundaryNorm(mesh, normMap=None, **kwargs):
     time.sleep(0.05)
 
     return ax
+
+
+def showAnimation(mesh, data, **kwargs):
+    """Show timelapse mesh data. 
+    
+    TODO
+    ----
+        * 3D
+
+    Parameters
+    ----------
+
+    mesh: :gimliapi:`GIMLI::Mesh`
+        2D GIMLi mesh
+    data: [NxM] iterable
+        Data matrix for N frames with suitable data size. 
+
+    Keyword Args
+    ------------
+    dpi : int[96]
+        Movie resolution.
+
+    Rest is forwarded to :py:func:pygimli.viewer.show:
+
+    """
+    import matplotlib.animation
+    import matplotlib.pyplot as plt
+    import numpy as np
+    
+    plt.rcParams["animation.html"] = "jshtml"
+    plt.rcParams['figure.dpi'] = kwargs.pop('dpi',96)  
+    plt.rcParams['animation.embed_limit'] = 50
+    
+    flux = kwargs.pop('flux', None)
+
+    plt.ioff()
+
+    #q = m['Flux']
+    ax,_ = pg.show(mesh, data[0])
+
+    p = pg.utils.ProgressBar(len(data))
+    def animate(t):
+        p.update(t)
+        ax.clear()
+        pg.show(mesh, data[t], ax=ax, **kwargs)
+        if flux is not None:
+            pg.show(mesh, flux[t], ax=ax)
+    
+    anim = matplotlib.animation.FuncAnimation(ax.figure, animate, 
+                                              frames=len(data))
+    return anim

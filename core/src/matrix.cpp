@@ -625,7 +625,10 @@ _transAdd(Matrix < ValueType > * a, const Matrix < ValueType > & b){
     // a+=b.T
     if (a->rows() != b.cols() || a->cols() != b.rows()){
         __MS(a->rows(), a->cols(), ":",  b.rows(), b.cols())
+        // print(*a);
+        // print(b);
         log(Error, "Matrix _transAdd with wrong dimensions");
+        // #exit(-1);
         return *a;
     }
 
