@@ -4,3 +4,5 @@
 
 from .showmesh import plt, show, showBoundaryNorm, showMesh, showAnimation
 from .showmatrix import showMatrix
+
+from .mpl import hold, wait, quiet, isInteractive

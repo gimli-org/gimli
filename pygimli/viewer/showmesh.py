@@ -659,6 +659,7 @@ def showAnimation(mesh, data, **kwargs):
     
     plt.rcParams["animation.html"] = "jshtml"
     plt.rcParams['figure.dpi'] = kwargs.pop('dpi',96)  
+    plt.rcParams['animation.embed_limit'] = 50
     
     flux = kwargs.pop('flux', None)
 
@@ -668,7 +669,6 @@ def showAnimation(mesh, data, **kwargs):
     ax,_ = pg.show(mesh, data[0])
 
     p = pg.utils.ProgressBar(len(data))
-
     def animate(t):
         p.update(t)
         ax.clear()
@@ -676,5 +676,6 @@ def showAnimation(mesh, data, **kwargs):
         if flux is not None:
             pg.show(mesh, flux[t], ax=ax)
     
-    anim = matplotlib.animation.FuncAnimation(ax.figure, animate, frames=len(data))
+    anim = matplotlib.animation.FuncAnimation(ax.figure, animate, 
+                                              frames=len(data))
     return anim

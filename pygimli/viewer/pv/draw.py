@@ -55,7 +55,6 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
     #theme.antialiasing = True
     
     theme.font.color = 'k'  
-    bc = kwargs.pop('bc', '#EEEEEE') # background color
 
     if ax is None:
         ax = pv.Plotter(notebook=notebook, 
@@ -118,8 +117,6 @@ def drawModel(ax=None, mesh=None, data=None, **kwargs):
     """
     defaultCMap = kwargs.pop('cMap', 'viridis')
     dataName = kwargs.pop('label', None)
-
-    defaultCMap = 'viridis'
 
     if all(v is None for v in [ax, mesh, data]):
         pg.critical("At least mesh or data should not be None")
