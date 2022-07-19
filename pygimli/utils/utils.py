@@ -78,8 +78,8 @@ class ProgressBar(object):
         
         ## last iteration here
         if iteration == self.its-1:
-            if self.nbProgress is not None:
-                self.nbProgress.close()
+            if self._nbProgress is not None:
+                self._nbProgress.close()
             else:
                 print()
                 
