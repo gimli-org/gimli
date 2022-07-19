@@ -69,15 +69,6 @@ def testColorbar():
     grid = pg.createGrid(x=np.linspace(10., 110., 11)-5, 
                          y=np.linspace(0., 20, 2))
 
-    pg.show(grid, pg.x(grid.cellCenter()), tri=True, shading='gouraud',
-            cMap='Spectral_r', logScale=True, cMin=0.01, cMax=10,
-            levels=[10, 55, 100],
-            orientation="vertical",
-            colorBar=True)
-
-    sys.exit()
-
-
     fig, axs = plt.subplots(nrows=3, ncols=3, figsize=((10,6)))
     ax, cbar = pg.show(grid, data=pg.x(grid.cellCenter()), 
                        label='log x',
