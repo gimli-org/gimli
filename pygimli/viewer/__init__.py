@@ -2,5 +2,5 @@
 """Interface for 2D and 3D visualizations."""
 
 
-from .showmesh import plt, show, showBoundaryNorm, showMesh
+from .showmesh import plt, show, showBoundaryNorm, showMesh, showAnimation
 from .showmatrix import showMatrix

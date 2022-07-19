@@ -1119,7 +1119,7 @@ def createParaMeshSurface(sensors, paraBoundary=None, boundary=-1,
     ...                                    boundary=[2, 2], 
     ...                                    surfaceMeshQuality=30, 
     ...                                    addTopo=topo)
-    >>> pg.show(surface, showMesh=True, color='white')        
+    >>> _ = pg.show(surface, showMesh=True, color='white')
     """
     if hasattr(sensors, 'sensors'):
         sensors = sensors.sensors()

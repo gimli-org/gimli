@@ -98,6 +98,8 @@ class ProgressBar(object):
             else:
                 print()
                 
+        self._iter = iteration
+
     def _setbar(self, elapsed_it):
         """Reset pBar based on current iteration number."""
         self._amount((elapsed_it / float(self.its)) * 100.0)
