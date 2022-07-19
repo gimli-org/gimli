@@ -1239,29 +1239,30 @@ void Mesh::createRefined_(const Mesh & mesh, bool p2, bool h2){
 
                     for (Index j = 0; j < n.size(); j ++) {
 
-                        n[j] = createRefinementNode_(& this->node(c.node(Tet10NodeSplitZienk[j][0]).id()),
-                                                        & this->node(c.node(Tet10NodeSplitZienk[j][1]).id()),
+                        n[j] = createRefinementNode_(
+                        & this->node(c.node(Tet10NodeSplitZienk[j][0]).id()),
+                        & this->node(c.node(Tet10NodeSplitZienk[j][1]).id()),
                                                         nodeMatrix);
                     }
 
                     if (h2){
-                        this->createTetrahedron(*n[4], *n[6], *n[5], *n[0], cID);
-                        this->createTetrahedron(*n[4], *n[5], *n[6], *n[9], cID);
-                        this->createTetrahedron(*n[7], *n[9], *n[4], *n[1], cID);
-                        this->createTetrahedron(*n[7], *n[4], *n[9], *n[5], cID);
-                        this->createTetrahedron(*n[8], *n[7], *n[5], *n[2], cID);
-                        this->createTetrahedron(*n[8], *n[5], *n[7], *n[9], cID);
-                        this->createTetrahedron(*n[6], *n[9], *n[8], *n[3], cID);
-                        this->createTetrahedron(*n[6], *n[8], *n[9], *n[5], cID);
+                       this->createTetrahedron(*n[4], *n[6], *n[5], *n[0], cID);
+                       this->createTetrahedron(*n[4], *n[5], *n[6], *n[9], cID);
+                       this->createTetrahedron(*n[7], *n[9], *n[4], *n[1], cID);
+                       this->createTetrahedron(*n[7], *n[4], *n[9], *n[5], cID);
+                       this->createTetrahedron(*n[8], *n[7], *n[5], *n[2], cID);
+                       this->createTetrahedron(*n[8], *n[5], *n[7], *n[9], cID);
+                       this->createTetrahedron(*n[6], *n[9], *n[8], *n[3], cID);
+                       this->createTetrahedron(*n[6], *n[8], *n[9], *n[5], cID);
                     }
 
                 } else {
                     for (Index j = 0; j < n.size(); j ++) {
-                        n[j] = createRefinementNode_(& this->node(c.node(Tet10NodeSplit[j][0]).id()),
-                                                        & this->node(c.node(Tet10NodeSplit[j][1]).id()),
-                                                        nodeMatrix);
+                        n[j] = createRefinementNode_(
+                        & this->node(c.node(Tet10NodeSplit[j][0]).id()),
+                        & this->node(c.node(Tet10NodeSplit[j][1]).id()),
+                                                   nodeMatrix);
                     }
-
                     if (h2){
                         THROW_TO_IMPL
                     }

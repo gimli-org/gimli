@@ -51,6 +51,7 @@ class ProgressBar(object):
         self.pBar = "[]"
         self._amount(0)
         self.nbProgress = None
+        self._iter = -1
 
         if pg.isNotebook():
             tqdm = pg.optImport('tqdm', requiredFor="use a nice progressbar in jupyter notebook")
@@ -68,7 +69,7 @@ class ProgressBar(object):
         message."""
         if self.nbProgress is not None:
             ## TODO maybe catch if someone don't call with iteration steps == 1, why ever
-            self.nbProgress.update(n=1)
+            self.nbProgress.update(n=iteration-self._iter)
         else:
             self._setbar(iteration + 1)
             if len(msg) >= 1:
@@ -83,6 +84,8 @@ class ProgressBar(object):
             else:
                 print()
                 
+        self._iter = iteration
+
     def _setbar(self, elapsed_it):
         """Reset pBar based on current iteration number."""
         self._amount((elapsed_it / float(self.its)) * 100.0)
