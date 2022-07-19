@@ -616,6 +616,7 @@ def showAnimation(mesh, data, **kwargs):
     
     plt.rcParams["animation.html"] = "jshtml"
     plt.rcParams['figure.dpi'] = kwargs.pop('dpi',96)  
+    plt.rcParams['animation.embed_limit'] = 50
     
     flux = kwargs.pop('flux', None)
 
