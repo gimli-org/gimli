@@ -645,10 +645,10 @@ def showAnimation(mesh, data, ax=None, **kwargs):
 
         if times is not None and len(times) > t:
             #ax.text(0.02, 0.02, f't={pg.pf(times[t])}',
-            ax.text(0.01, 0.02, f't={pg.utils.prettyTime(times[t])}',
+            ax.text(0.01, 1.01, f't={pg.utils.prettyTime(times[t])}',
                     horizontalalignment='left',
                     verticalalignment='bottom', 
-                    transform=ax.transAxes, color='w', fontsize=8)
+                    transform=ax.transAxes, color='k', fontsize=8)
     
     if pg.isNotebook() is False:
         global __Animation_Keeper__
