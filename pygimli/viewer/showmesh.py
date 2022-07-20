@@ -343,7 +343,8 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
                     if data.shape[1] == mesh.cellCount() or \
                        data.shape[1] == mesh.nodeCount():
             
-                        return showAnimation(mesh, data, cMap=cMap, **kwargs)
+                        return showAnimation(mesh, data, cMap=cMap, 
+                                             ax=ax, **kwargs)
 
 
                 pg.warn("No valid stream data:", data.shape, data.ndim)
@@ -587,9 +588,13 @@ def showBoundaryNorm(mesh, normMap=None, **kwargs):
     return ax
 
 
-def showAnimation(mesh, data, **kwargs):
+__Animation_Keeper__ = None
+
+def showAnimation(mesh, data, ax=None, **kwargs):
     """Show timelapse mesh data. 
     
+    Time will be annotated if the mesh contains a valid 'times' data array.
+
     TODO
     ----
         * 3D
@@ -622,9 +627,13 @@ def showAnimation(mesh, data, **kwargs):
 
     plt.ioff()
 
-    #q = m['Flux']
-    ax,_ = pg.show(mesh, data[0])
+    pg.show(mesh, data[0], ax=ax)
 
+    try:
+        times = mesh['times']
+    except:
+        times = None
+    
     p = pg.utils.ProgressBar(len(data))
 
     def animate(t):
@@ -633,6 +642,18 @@ def showAnimation(mesh, data, **kwargs):
         pg.show(mesh, data[t], ax=ax, **kwargs)
         if flux is not None:
             pg.show(mesh, flux[t], ax=ax)
+
+        if times is not None and len(times) > t:
+            #ax.text(0.02, 0.02, f't={pg.pf(times[t])}',
+            ax.text(0.01, 0.02, f't={pg.utils.prettyTime(times[t])}',
+                    horizontalalignment='left',
+                    verticalalignment='bottom', 
+                    transform=ax.transAxes, color='w', fontsize=8)
     
-    anim = matplotlib.animation.FuncAnimation(ax.figure, animate, frames=len(data))
-    return anim
+    if pg.isNotebook() is False:
+        global __Animation_Keeper__
+
+    __Animation_Keeper__ = matplotlib.animation.FuncAnimation(ax.figure,
+                                                              animate, 
+                                                              frames=len(data))
+    return __Animation_Keeper__
