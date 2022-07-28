@@ -31,6 +31,7 @@ class VectorTest : public CppUnit::TestFixture  {
     CPPUNIT_TEST(testMatrix);
     CPPUNIT_TEST(testBlockMatrix);
     CPPUNIT_TEST(testSparseMapMatrix);
+    CPPUNIT_TEST(testSparseMatrixRowCol);
     CPPUNIT_TEST(testFind);
     CPPUNIT_TEST(testIO);
 
@@ -489,6 +490,32 @@ public:
         GIMLI::setNoCBlas(false);
         testMatrixMM< GIMLI::Matrix < double > >();
         testMatrixMM< GIMLI::DenseMatrix < double > >();
+    }
+
+    void testSparseMatrixRowCol(){
+        Index m = 2;
+        Index n = 3;
+        
+        double *_A = new double[m * n];
+        for (Index i = 0; i < m*n; i ++ ) _A[i] = i+1;
+        GIMLI::Matrix A_(m, n, _A);
+        
+        GIMLI::RSparseMatrix AS(A_);
+
+        CPPUNIT_ASSERT(AS.row(0) == AS.transMult(GIMLI::RVector({1, 0})));
+        CPPUNIT_ASSERT(AS.row(1) == AS.transMult(GIMLI::RVector({0, 1})));
+        CPPUNIT_ASSERT(AS.col(0) == AS.mult(GIMLI::RVector({1, 0, 0})));
+        CPPUNIT_ASSERT(AS.col(1) == AS.mult(GIMLI::RVector({0, 1, 0})));
+        CPPUNIT_ASSERT(AS.col(2) == AS.mult(GIMLI::RVector({0, 0, 1})));
+
+        GIMLI::RSparseMapMatrix AM(A_);
+
+        CPPUNIT_ASSERT(AM.row(0) == AM.transMult(GIMLI::RVector({1, 0})));
+        CPPUNIT_ASSERT(AM.row(1) == AM.transMult(GIMLI::RVector({0, 1})));
+        CPPUNIT_ASSERT(AM.col(0) == AM.mult(GIMLI::RVector({1, 0, 0})));
+        CPPUNIT_ASSERT(AM.col(1) == AM.mult(GIMLI::RVector({0, 1, 0})));
+        CPPUNIT_ASSERT(AM.col(2) == AM.mult(GIMLI::RVector({0, 0, 1})));
+    
     }
 
     void testSmallMatrix(){

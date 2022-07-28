@@ -465,17 +465,37 @@ public:
     virtual void transMult(const Vector < ValueType > & a,
                            Vector < Pos > & ret) const;
 
-
-    virtual Vector < ValueType > col(const Index i) {
-        Vector < ValueType > null(this->cols(), 0.0);
-        null[i] = 1.0;
-        return this->mult(null);
+    Vector < ValueType > col(const Index c) const {
+        ASSERT_RANGE(c, 0, cols())
+        Vector < ValueType > b(rows(), 0.0);
+        for (const_iterator it = this->begin(); it != this->end(); it ++){
+            if (idx2(it) == c){
+                b[idx1(it)] = val(it);
+            }
+        }
+        return b;
+        // Vector < ValueType > null(this->cols(), 0.0);
+        // null[i] = 1.0;
+        // return this->mult(null);
     }
 
-    virtual Vector < ValueType > row(const Index i) {
-        Vector < ValueType > null(this->rows(), 0.0);
-        null[i] = 1.0;
-        return this->transMult(null);
+    Vector < ValueType > row(const Index r) const {
+        ASSERT_RANGE(r, 0, rows())
+        Vector < ValueType > b(cols(), 0.0);
+        for (const_iterator it = this->begin(); it != this->end(); it ++){
+            if (idx1(it) == r){
+                b[idx2(it)] = val(it);
+            }
+        }
+
+        // for (int col = colPtr_[r]; col < colPtr_[r + 1]; col ++){
+        //     b[rowIdx_[col]] = vals_[col];
+        // }
+        return b;
+
+        // Vector < ValueType > null(this->rows(), 0.0);
+        // null[i] = 1.0;
+        // return this->transMult(null);
     }
 
     void save(const std::string & filename) const {
