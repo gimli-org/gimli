@@ -1015,7 +1015,7 @@ void Mesh::exportVTK(const std::string & fbody,
         
         log(Debug, "writing field data");
         file << "FIELD fieldData " << fData.size() << std::endl;
-        int numComponents = 1;
+        //int numComponents = 1;
         for (auto & nd: fData){
             log(Debug, "writing field data: " + nd.first + " " + 
                     str(nd.second.rows()) + " x " +  str(nd.second.cols()));

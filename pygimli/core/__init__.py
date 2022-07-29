@@ -385,6 +385,9 @@ def __setVal(self, idx, val):
     # print("__setVal", self, 'idx', idx, 'val:', val)
     if isinstance(idx, slice):
         if idx.step is None:
+            if int(idx.stop) >= self.size():
+                self.resize(idx.stop)
+
             if idx.start is None:
                 self.setVal(val, 0, int(idx.stop))
             else:

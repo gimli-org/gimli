@@ -240,6 +240,7 @@ public:
 
     void buildSparsityPattern(const Mesh & mesh);
     void buildSparsityPattern(const std::vector < std::set< Index > > & idxMap);
+    void addSparsityPattern(const std::vector < std::set< Index > > & idxMap);
 
     void fillStiffnessMatrix(const Mesh & mesh, const RVector & a, bool rebuildPattern=true);
     void fillStiffnessMatrix(const Mesh & mesh){
@@ -325,6 +326,24 @@ public:
     // inline Index rows() const { return _rows; }
     inline Index nCols() const { return _cols; }
     inline Index nRows() const { return _rows; }
+
+    /*! Return copy of the c-th column. */
+    Vector < ValueType > col(Index c) const{
+        ASSERT_RANGE(c, 0, cols())
+        Vector < ValueType > b(cols(), 0.0);
+        b[c] = 1.0;
+        return this->mult(b);
+    }
+    /*! Return copy of the r-th row. */
+    Vector < ValueType > row(Index r) const {
+        ASSERT_RANGE(r, 0, rows())
+        Vector < ValueType > ret(cols(), 0.0);
+
+        for (int col = colPtr_[r]; col < colPtr_[r + 1]; col ++){
+            ret[rowIdx_[col]] = vals_[col];
+        }
+        return ret;
+    }
 
     void save(const std::string & fileName) const {
         if (!valid_) SPARSE_NOT_VALID;
@@ -463,6 +482,11 @@ template <> DLLEXPORT void SparseMatrix< double >::
 buildSparsityPattern(const std::vector < std::set< Index > > & idxMap);
 template <> DLLEXPORT void SparseMatrix< Complex >::
 buildSparsityPattern(const std::vector < std::set< Index > > & idxMap);
+
+template <> DLLEXPORT void SparseMatrix< double >::
+addSparsityPattern(const std::vector < std::set< Index > > & idxMap);
+template <> DLLEXPORT void SparseMatrix< Complex >::
+addSparsityPattern(const std::vector < std::set< Index > > & idxMap);
 
 
 } // namespace GIMLI

@@ -392,11 +392,13 @@ _T_buildSparsityPattern_(SparseMatrix< ValueType > * self,
     }
     self->setValid(true);
 
-    if (colPtr.size() - 1 != self->rows() ||
-        (Index)max(rowIdx) + 1 != self->cols()){
-        __MS(colPtr.size() - 1, self->rows(), max(rowIdx) + 1, self->cols())
-        log(Error, "build Sparsity Pattern failed!");
-    }
+    self->resize(colPtr.size() - 1, (Index)max(rowIdx) + 1);
+    // if (colPtr.size() - 1 != self->rows() ||
+    //     (Index)max(rowIdx) + 1 != self->cols()){
+
+    //     __MS(colPtr.size() - 1, self->rows(), max(rowIdx) + 1, self->cols())
+    //     log(Error, "build Sparsity Pattern failed!");
+    // }
     // _rows = colPtr_.size() - 1;
     // _cols = max(rowIdx_) + 1;
     //** freeing idxMap is expensive
@@ -411,6 +413,35 @@ template <> void SparseMatrix< Complex >
 ::buildSparsityPattern(const std::vector < std::set< Index > > & idxMap){
     _T_buildSparsityPattern_(this, idxMap);
 }
+
+template <class ValueType > void
+_T_addSparsityPattern_(SparseMatrix< ValueType > * self,
+                       const std::vector < std::set< Index > > & idxMap){
+    // optimize if necessary
+    // __M
+    SparseMapMatrix< ValueType, Index > A1(*self);
+    // print("self", self->rows(), self->cols());
+    // print("A1", A1.rows(), A1.cols());
+    SparseMatrix< ValueType > B2;
+    B2.buildSparsityPattern(idxMap);
+    // print("B2", B2.rows(), B2.cols());
+    SparseMapMatrix< ValueType, Index > A2(B2);
+    // print("A2", A2.rows(), A2.cols());
+    A1 += A2;
+    // print("A1", A1.rows(), A1.cols());
+    self->copy_(A1);
+    // print("self", self->rows(), self->cols());
+}
+
+template <> void SparseMatrix< double >
+::addSparsityPattern(const std::vector < std::set< Index > > & idxMap){
+    _T_addSparsityPattern_(this, idxMap);
+}
+template <> void SparseMatrix< Complex >
+::addSparsityPattern(const std::vector < std::set< Index > > & idxMap){
+    _T_addSparsityPattern_(this, idxMap);
+}
+
 
 template <class ValueType> void
 mult_T_impl(const SparseMatrix< ValueType > & A,

@@ -349,47 +349,6 @@ public:
         THROW_TO_IMPL
     }*/
 
-    /*! Brute force column separation fallback .. should be overwriten if you
-     * need performance for your onw matrix type. */
-    //template< class ValueType > virtual const RVector col(Index r) const{
-//         __M
-//         ASSERT_RANGE(r, 0, cols())
-//         RVector b(cols(), 0.0);
-//         b[r] = 1.0;
-//         return this->mult(b);
-//     }
-
-//     /*! Brute force row separation fallback .. should be overwriten if you
-//      * need performance for your onw matrix type. */
-//     template< class ValueType > const Vector < ValueType > row(Index r) const{
-//         __M
-//         ASSERT_RANGE(r, 0, rows())
-//         Vector < ValueType > b(rows(), 0.0);
-//         b[r] = 1.0;
-//         return this->transMult(b);
-//     }
-    // these template function above will not work until MatrixBase is a non template function
-    /*! Brute force column separation fallback .. should be overwriten if you
-     * need performance for your onw matrix type. */
-//     virtual const RVector col(Index r) const{
-//         __M
-//         ASSERT_RANGE(r, 0, cols())
-//         RVector b(cols(), 0.0);
-//         b[r] = 1.0;
-//         return this->mult(b);
-//     }
-//
-//     /*! Brute force row separation fallback .. should be overwriten if you
-//      * need performance for your onw matrix type. */
-//     virtual const RVector row(Index r) const {
-//         __M
-//         ASSERT_RANGE(r, 0, rows())
-//         RVector b(rows(), 0.0);
-//         b[r] = 1.0;
-//         return this->transMult(b);
-//     }
-
-
     /*! Save this matrix into the file filename given. */
     virtual void save(const std::string & filename) const {
         log(Warning, "no save(const std::string & filename) implemented for: ", typeid(*this).name());

@@ -440,7 +440,7 @@ def generate(defined_symbols, extraIncludes):
           '::GIMLI::__VectorExpr',
           '::GIMLI::Expr',
           '::GIMLI::InversionBase',
-          'GIMLI::XAxis__',
+          '::GIMLI::XAxis__',
           '::GIMLI::YAxis__',
           'GIMLI::ZAxis__',
           'GIMLI::ElectrodeShape',
@@ -466,6 +466,8 @@ def generate(defined_symbols, extraIncludes):
           'IVectorIter',
           'RVectorIter',
           'FunctionDD',
+          '::GIMLI::print',
+          'print',
           ]
 
     for c in main_ns.free_functions():

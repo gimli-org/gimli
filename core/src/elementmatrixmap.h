@@ -156,6 +156,7 @@ public:
 
 
     Index dof() const { return this->dofA_; }
+    Index dofA() const { return this->dofA_; }
     Index dofB() const { return this->dofB_; }
     void setDof(Index a) { this->dofA_ = a; }
     void setDof(Index a, Index b) { this->dofA_ = a; this->dofB_ = b;}
