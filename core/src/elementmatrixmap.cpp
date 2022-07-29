@@ -39,7 +39,7 @@ void ElementMatrixMap::push_back(const ElementMatrix < double > & Ai){
 }
 
 template < class ValueType >
-void integrateLConstT_(const ElementMatrixMap * self,
+void _T_integrateLConst(const ElementMatrixMap * self,
                      const ValueType & f, RVector & R, bool neg){
     ASSERT_NON_EMPTY(R)
     for (auto &m : self->mats()){
@@ -52,7 +52,7 @@ void integrateLConstT_(const ElementMatrixMap * self,
 }
 
 template < class ValueType >
-void integrateLPerCellT_(const ElementMatrixMap * self,
+void _T_integrateLPerCell(const ElementMatrixMap * self,
                         const ValueType & f, RVector & R, bool neg){
     ASSERT_NON_EMPTY(R)
     ASSERT_EQUAL_SIZE(self->mats(), f)
@@ -68,15 +68,16 @@ void integrateLPerCellT_(const ElementMatrixMap * self,
 
 void ElementMatrixMap::fillSparsityPattern(RSparseMatrix & R) const {
     // this * this.T -> quadratic (not necessary) symmetric e.g. u*c
-   
+//    __M
     const ElementMatrixMap & A = *this;
-    //__MS(A.dof(), A.dofB(), R.rows(), R.cols())
+
+    //__MS(&A, A.dofA(), A.dofB(), R.rows(), R.cols())
+    
     Stopwatch sw(true);
     if (R.rows() == A.dof() && R.cols() == A.dofB()){
-        // assume R have already valid pattern
+        // assume R have already a valid pattern
         return ;
-    }
-    R.resize(A.dof(), A.dofB());
+    } 
     // maybe count dofs before
     std::vector < std::set< Index > > idxMap(A.dof());
     Index i = 0;
@@ -86,14 +87,21 @@ void ElementMatrixMap::fillSparsityPattern(RSparseMatrix & R) const {
 
         for (Index k = 0; k < a.size(); k ++){
             for (Index l = 0; l < b.size(); l ++){
-                idxMap[a[k]].insert(b[l]);
+                idxMap.at(a[k]).insert(b[l]);
             }
         }
         i++;
     }
-    __MS("pattern A*A.T (idx)", sw.duration(true))
-    R.buildSparsityPattern(idxMap);
-    __MS("pattern A*A.T (build)", sw.duration(true))
+    // __MS("pattern A*A.T (idx)", sw.duration(true))
+    if (R.rows() > 0 && R.cols() > 0){
+        // assume R is valid and the new pattern need to be add
+        R.addSparsityPattern(idxMap);
+        // __MS("addpattern A*A.T (build)", sw.duration(true))
+    } else {
+        // R.resize(A.dof(), A.dofB());
+        R.buildSparsityPattern(idxMap);
+        // __MS("pattern A*A.T (build)", sw.duration(true))
+    }
     
     // __MS(R.values().size())
 }
@@ -102,6 +110,7 @@ void ElementMatrixMap::fillSparsityPattern(RSparseMatrix & R,
                                            const ElementMatrixMap & B) const {
     // this * B.T
 
+    // __MS(R.rows(), R.cols(), this->dof(), this->dofB(), B.dof(), B.dofB())
     Stopwatch sw(true);
     const ElementMatrixMap & A = *this;
 
@@ -109,7 +118,6 @@ void ElementMatrixMap::fillSparsityPattern(RSparseMatrix & R,
         // assume R have already valid pattern
         return ;
     }
-    R.resize(A.dof(), B.dof());
 
     if (A.size() == 1 && A.mats()[0].order() == 0){
         //const_space * B
@@ -130,20 +138,26 @@ void ElementMatrixMap::fillSparsityPattern(RSparseMatrix & R,
         
         for (Index k = 0; k < a.size(); k ++){
             for (Index l = 0; l < b.size(); l ++){
-                idxMap[a[k]].insert(b[l]);
+                idxMap.at(a[k]).insert(b[l]);
             }
         }
         i++;
     }
+    // __MS("pattern A*B.T (idx)", sw.duration(true))
 
-    __MS("pattern A*B.T (idx)", sw.duration(true))
-    R.buildSparsityPattern(idxMap);
-    __MS("pattern A*B.T (build)", sw.duration(true))
-    //     __MS(R.values().size())
+    if (R.rows() > 0 && R.cols() > 0){
+        // assume R is valid and the new pattern need to be add
+        R.addSparsityPattern(idxMap);
+        // __MS("addpattern A*B.T (build)", sw.duration(true))
+    } else {
+        // R.resize(A.dof(), A.dofB());
+        R.buildSparsityPattern(idxMap);
+        // __MS("pattern A*B.T (build)", sw.duration(true))
+    }
 }
 
 template < class ValueType >
-void integrateBLConstT_(const ElementMatrixMap & A,
+void _T_integrateBLConst(const ElementMatrixMap & A,
                         const ElementMatrixMap & B,
                         const ValueType & f, SparseMatrixBase & R, bool neg){
 
@@ -186,7 +200,7 @@ void integrateBLConstT_(const ElementMatrixMap & A,
         }
         return;
     }
-
+// __M
     ASSERT_EQUAL_SIZE(A.mats(), B.mats())
     Index i = 0;
     for (auto &m : A.mats()){
@@ -200,9 +214,11 @@ void integrateBLConstT_(const ElementMatrixMap & A,
 }
 
 template < class ValueType >
-void integrateBLPerCellT_(const ElementMatrixMap & A,
+void _T_integrateBLPerCell(const ElementMatrixMap & A,
                           const ElementMatrixMap & B,
                           const ValueType & f, SparseMatrixBase & R, bool neg){
+
+// __M
     ASSERT_EQUAL_SIZE(A.mats(), B.mats())
     ASSERT_EQUAL_SIZE(A, f)
     Index i = 0;
@@ -220,10 +236,11 @@ void integrateBLPerCellT_(const ElementMatrixMap & A,
 #define DEFINE_INTEGRATE_ELEMENTMAP_L_IMPL(A_TYPE) \
 void ElementMatrixMap::integrate(const A_TYPE & f, \
                                  RVector & R, bool neg) const {\
-    integrateLConstT_(this, f, R, neg); \
+    _T_integrateLConst(this, f, R, neg); \
 } \
 void ElementMatrixMap::mult(const A_TYPE & f, ElementMatrixMap & ret) const { \
     ret.resize(this->size());\
+    ret.setDof(this->dofA(), this->dofB()); \
     Index i = 0; \
     for (auto const &m : this->mats_){ \
         GIMLI::mult(m, f, *ret.pMat(i)); \
@@ -242,6 +259,8 @@ void ElementMatrixMap::add(const ElementMatrixMap & B,
     ASSERT_EQUAL_SIZE(this->mats(), B.mats())
 
     ret.resize(this->size());
+    ret.setDof(this->dofA(), this->dofB());
+
     Index i = 0;
     for (auto const &m: this->mats_){
         ret.pMat(i)->copyFrom(m);
@@ -257,10 +276,11 @@ void ElementMatrixMap::add(const ElementMatrixMap & B,
 
 #define DEFINE_INTEGRATE_ELEMENTMAP_L_PERCELL_IMPL(A_TYPE) \
 void ElementMatrixMap::integrate(const A_TYPE & f, RVector & R , bool neg) const { \
-    integrateLPerCellT_(this, f, R, neg); \
+    _T_integrateLPerCell(this, f, R, neg); \
 } \
 void ElementMatrixMap::mult(const A_TYPE & f, ElementMatrixMap & ret) const { \
     ret.resize(this->size()); \
+    ret.setDof(this->dofA(), this->dofB()); \
     Index i = 0; \
     for (auto const &m : this->mats_){ \
         GIMLI::mult(m, f[m.entity()->id()], *ret.pMat(i)); \
@@ -275,7 +295,7 @@ DEFINE_INTEGRATE_ELEMENTMAP_L_PERCELL_IMPL(std::vector< RVector >)
 DEFINE_INTEGRATE_ELEMENTMAP_L_PERCELL_IMPL(std::vector< PosVector >)
 DEFINE_INTEGRATE_ELEMENTMAP_L_PERCELL_IMPL(std::vector< std::vector< RMatrix > >)
 #undef DEFINE_INTEGRATE_ELEMENTMAP_L_PERCELL_IMPL
-
+// 
 
 #define DEFINE_INTEGRATE_ELEMENTMAP_BL_IMPL(A_TYPE) \
 void ElementMatrixMap::integrate(const ElementMatrixMap & B, const A_TYPE & f, \
@@ -283,7 +303,7 @@ void ElementMatrixMap::integrate(const ElementMatrixMap & B, const A_TYPE & f, \
     if (R.rtti() == GIMLI_SPARSE_CRS_MATRIX_RTTI){\
         this->fillSparsityPattern(*dynamic_cast< RSparseMatrix * >(&R), B);\
     }\
-    integrateBLConstT_(*this, B, f, R, neg); \
+    _T_integrateBLConst(*this, B, f, R, neg); \
 }
 DEFINE_INTEGRATE_ELEMENTMAP_BL_IMPL(double)
 DEFINE_INTEGRATE_ELEMENTMAP_BL_IMPL(Pos)
@@ -297,7 +317,7 @@ void ElementMatrixMap::integrate(const ElementMatrixMap & B, const A_TYPE & f, \
     if (R.rtti() == GIMLI_SPARSE_CRS_MATRIX_RTTI){\
         this->fillSparsityPattern(*dynamic_cast< RSparseMatrix * >(&R), B);\
     }\
-    integrateBLPerCellT_(*this, B, f, R, neg); \
+    _T_integrateBLPerCell(*this, B, f, R, neg); \
 }
 DEFINE_INTEGRATE_ELEMENTMAP_BL_PERCELL_IMPL(RVector)
 DEFINE_INTEGRATE_ELEMENTMAP_BL_PERCELL_IMPL(PosVector)
@@ -416,10 +436,12 @@ void ElementMatrixMap::dot(const ElementMatrixMap & B,
         return;
     }
 
+    const auto &A = *this;
     // __MS(this->size(), B.size())
-    ASSERT_EQUAL_SIZE((*this), B)
+    ASSERT_EQUAL_SIZE(A, B)
+    // __MS(A.size(), A.dofA(), A.dofB(), B.size(), B.dofA(), B.dofB())
     ret.resize(B.size());
-    ret.setDof(this->dof(), B.dof());
+    ret.setDof(A.dof(), B.dof());
     
     Index i = 0;
     for (auto &m : this->mats()){
@@ -429,7 +451,7 @@ void ElementMatrixMap::dot(const ElementMatrixMap & B,
 }
 
 template < class ValueType, class RetType >
-void assembleFConstT_(const ElementMatrixMap * self, const ValueType & f,
+void _T_assembleFConst(const ElementMatrixMap * self, const ValueType & f,
                      RetType & R, bool neg){
     ASSERT_NON_EMPTY(R)
 
@@ -440,7 +462,7 @@ void assembleFConstT_(const ElementMatrixMap * self, const ValueType & f,
 }
 
 template < >
-void assembleFConstT_(const ElementMatrixMap * self, const double & f,
+void _T_assembleFConst(const ElementMatrixMap * self, const double & f,
                      SparseMatrixBase & R, bool neg){
     if (R.size() == 0) R.resize(self->dof(), 0);
     ASSERT_NON_EMPTY(R)
@@ -499,13 +521,13 @@ void assembleFPerCellT_(const ElementMatrixMap * self, const ValueType & f,
 
 #define DEFINE_ASSEMBLER_L(A_TYPE) \
 void ElementMatrixMap::assemble(const A_TYPE & f, RVector & R, bool neg) const { \
-    assembleFConstT_(this, f, R, neg); \
+    _T_assembleFConst(this, f, R, neg); \
 } \
 void ElementMatrixMap::assemble(const A_TYPE & f, SparseMatrixBase & R, bool neg) const { \
     if (R.rtti() == GIMLI_SPARSE_CRS_MATRIX_RTTI){\
         this->fillSparsityPattern(*dynamic_cast< RSparseMatrix * >(&R));\
     }\
-    assembleFConstT_(this, f, R, neg); \
+    _T_assembleFConst(this, f, R, neg); \
 } \
 
 DEFINE_ASSEMBLER_L(double)   // const scalar for all cells
@@ -650,7 +672,8 @@ void createdUMap(const Mesh & mesh, Index order,
         // don't use cache here // check!
 
     ret.resize(mesh.cellCount());
-    ret.setDof(mesh.nodeCount() * nCoeff + dofOffset);
+    ret.setDof(mesh.nodeCount() * nCoeff + dofOffset,
+               mesh.nodeCount() * nCoeff + dofOffset);
 
     for (auto &cell: mesh.cells()){
         // grad(const MeshEntity & ent, Index order,
@@ -662,6 +685,7 @@ void createdUMap(const Mesh & mesh, Index order,
                                     nCoeff, mesh.nodeCount(), dofOffset,
                                     kelvin);
     }
+    // __MS(&ret, ret.dofA(), ret.dofB())
 }
 
 ElementMatrixMap createdUMap(const Mesh & mesh, Index order,
@@ -669,8 +693,8 @@ ElementMatrixMap createdUMap(const Mesh & mesh, Index order,
                              Index nCoeff, Index dofOffset){
     ElementMatrixMap ret;
     createdUMap(mesh, order, ret,
-               elastic, div, kelvin,
-               nCoeff, dofOffset);
+                elastic, div, kelvin,
+                nCoeff, dofOffset);
     return ret;
 }
 

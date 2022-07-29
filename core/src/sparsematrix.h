@@ -240,6 +240,7 @@ public:
 
     void buildSparsityPattern(const Mesh & mesh);
     void buildSparsityPattern(const std::vector < std::set< Index > > & idxMap);
+    void addSparsityPattern(const std::vector < std::set< Index > > & idxMap);
 
     void fillStiffnessMatrix(const Mesh & mesh, const RVector & a, bool rebuildPattern=true);
     void fillStiffnessMatrix(const Mesh & mesh){
@@ -481,6 +482,11 @@ template <> DLLEXPORT void SparseMatrix< double >::
 buildSparsityPattern(const std::vector < std::set< Index > > & idxMap);
 template <> DLLEXPORT void SparseMatrix< Complex >::
 buildSparsityPattern(const std::vector < std::set< Index > > & idxMap);
+
+template <> DLLEXPORT void SparseMatrix< double >::
+addSparsityPattern(const std::vector < std::set< Index > > & idxMap);
+template <> DLLEXPORT void SparseMatrix< Complex >::
+addSparsityPattern(const std::vector < std::set< Index > > & idxMap);
 
 
 } // namespace GIMLI
