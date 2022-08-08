@@ -4,10 +4,9 @@ Created on Mon Feb 16 09:33:14 2015
 
 @author: Marcus Wennermark
 """
-
-import matplotlib.patches as mpatches
-import matplotlib.pyplot as plt
 import numpy as np
+# try to avoid plt impoert #
+# import matplotlib.pyplot as plt
 
 from .modelview import draw1DColumn
 
@@ -16,6 +15,7 @@ def create_legend(ax, cmap, ids, classes):
     """
     Create a list of patch objects that can be used for borehole legends.
     """
+    import matplotlib.patches as mpatches
 
     patches = [mpatches.Patch(color=cmap(i), label=classes[i]) for i in ids]
     return patches

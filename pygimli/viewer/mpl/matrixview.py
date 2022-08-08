@@ -3,7 +3,8 @@
 """Functions to draw various pygimli matrices with matplotlib."""
 
 import numpy as np
-import matplotlib.pyplot as plt
+# try to avoid plt impoert #
+# import matplotlib.pyplot as plt
 
 import pygimli as pg
 

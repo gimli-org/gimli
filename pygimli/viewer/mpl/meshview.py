@@ -2,9 +2,6 @@
 """Draw mesh/model/fields with matplotlib."""
 
 import textwrap
-
-import matplotlib as mpl
-import matplotlib.pyplot as plt
 import numpy as np
 
 import pygimli as pg
@@ -81,7 +78,7 @@ class CellBrowser(object):
         if ax:
             self.ax = ax
         else:
-            self.ax = mpl.pyplot.gca()
+            self.ax = pg.plt.gca()
 
         self._connected = False
 
@@ -424,6 +421,7 @@ def drawSelectedMeshBoundaries(ax, boundaries, color=None, linewidth=1.0,
     -------
     lco : matplotlib line collection object
     """
+    import matplotlib as mpl
     drawAA = True
     lines = []
 
@@ -476,6 +474,7 @@ def drawSelectedMeshBoundariesShadow(ax, boundaries, first='x', second='y',
     -------
     lco : matplotlib line collection object
     """
+    import matplotlib as mpl
     polys = []
 
     for cell in boundaries:
@@ -727,7 +726,7 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True,
             if regionMarker:
                 cbar = createColorBar(gci, label="Region markers")
                 updateColorBar(
-                    cbar, cMap=plt.cm.get_cmap("Set3", len(uniquemarkers)),
+                    cbar, cMap=pg.plt.cm.get_cmap("Set3", len(uniquemarkers)),
                     cMin=-0.5, cMax=len(uniquemarkers) - 0.5)
                 ticks = np.arange(len(uniquemarkers))
 
@@ -806,6 +805,7 @@ def _createCellPolygon(cell):
 
 def createMeshPatches(ax, mesh, rasterized=False, verbose=True):
     """Utility function to create 2d mesh patches within a given ax."""
+    import matplotlib as mpl
     if not mesh:
         pg.error("drawMeshBoundaries(ax, mesh): invalid mesh:", mesh)
         return
@@ -1108,6 +1108,7 @@ def drawStreamLine(ax, mesh, c, data, dataMesh=None, linewidth=1.0,
             Color of the arrow's head.
         Additional kwargs are forwarded to mpl.LineCollection, mpl.Polygon
     """
+    import matplotlib as mpl
     x, y, v = streamline(mesh, data, startCoord=c.center(), dLengthSteps=5,
                          dataMesh=dataMesh, maxSteps=10000, verbose=False,
                          coords=[0, 1])
@@ -1340,6 +1341,7 @@ def drawSensors(ax, sensors, diam=None, coords=None, **kwargs):
     >>> ax.set_aspect('equal')
     >>> pg.wait()
     """
+    import matplotlib as mpl
     if coords is None:
         coords = [0, 2]
 
@@ -1460,6 +1462,7 @@ def drawParameterConstraints(ax, mesh, cMat, cWeights=None):
     cWeights : iterable float
         Weights for all constraints. Need to have a lengths == cMat.rows()
     """
+    import matplotlib as mpl
     start, end = _createParameterContraintsLines(mesh, cMat, cWeights)
 
     lines = []

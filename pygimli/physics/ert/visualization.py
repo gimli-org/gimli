@@ -7,8 +7,8 @@ from math import pi
 import numpy as np
 from numpy import ma
 
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_pdf import PdfPages
+# import matplotlib.pyplot as plt
+# from matplotlib.backends.backend_pdf import PdfPages
 
 import pygimli as pg
 from pygimli.viewer.mpl.dataview import showValMapPatches

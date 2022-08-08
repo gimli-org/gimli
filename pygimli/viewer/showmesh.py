@@ -3,14 +3,15 @@
 """Generic mesh visualization tools."""
 
 import os
-from pygimli.viewer.mpl.colorbar import setMappableData
 import sys
 import time
 import traceback
 
 import numpy as np
 # plt should not be used outside of viewer.mpl
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
+
+from pygimli.viewer.mpl.colorbar import setMappableData
 
 from .. core.logger import renameKwarg
 
@@ -20,7 +21,7 @@ try:
     from .mpl import drawMesh, drawModel, drawField, drawSensors, drawStreams
     from .mpl import drawSelectedMeshBoundaries
     from .mpl import addCoverageAlpha
-    from .mpl import updateAxes
+    from .mpl import updateAxes, registerShowPendingFigsAtExit
     from .mpl import createColorBar, updateColorBar
     from .mpl import CellBrowser
     from .mpl.colorbar import cmapFromName
@@ -76,14 +77,17 @@ def show(obj=None, data=None, **kwargs):
         print("Deprecation Warning: Please use keyword `ax` instead of `axes`")
         kwargs['ax'] = kwargs.pop('axes', None)
 
-    # Empty call just to create an axes
+    # Empty call just to create an mpl axes
     # if obj is None and 'mesh' not in kwargs:
     if obj is None and 'mesh' not in kwargs.keys():
         ax = kwargs.pop('ax', None)
 
         if ax is None:
-            ax = plt.subplots(figsize=kwargs.pop('figsize', None))[1]
+            ax = pg.plt.subplots(figsize=kwargs.pop('figsize', None))[1]
+            
         return ax, None
+
+    #registerShowPendingFigsAtExit()
 
     # try to check if obj containes a mesh
     if hasattr(obj, 'mesh'):
@@ -257,6 +261,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
 
     cBar : matplotlib.colorbar
     """
+
     renameKwarg('cmap', 'cMap', kwargs)
 
     cMap = kwargs.pop('cMap', 'viridis')
@@ -294,7 +299,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
             uniquemarkers, uniqueidx = np.unique(
                 np.array(mesh.cellMarkers()), return_inverse=True)
             label = "Cell markers"
-            cMap = plt.cm.get_cmap("Set3", len(uniquemarkers))
+            cMap = pg.plt.cm.get_cmap("Set3", len(uniquemarkers))
             kwargs["logScale"] = False
             kwargs["cMin"] = -0.5
             kwargs["cMax"] = len(uniquemarkers) - 0.5
@@ -312,12 +317,10 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
         drawStreams(ax, mesh, data, **kwargs)
     else:
 
-
         # check for map like data=[[marker, val], ....]
         if isinstance(data, list) and \
                 isinstance(data[0], list) and isinstance(data[0][0], int):
             data = pg.solver.parseMapToCellArray(data, mesh)
-
 
         if hasattr(data[0], '__len__') and not \
                 isinstance(data, np.ma.core.MaskedArray):
@@ -435,9 +438,9 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
             gci.set_linewidth(0.3)
             gci.set_edgecolor(kwargs.pop('color', "0.1"))
         else:
-            pg.viewer.mpl.drawSelectedMeshBoundaries(
-                ax, mesh.boundaries(),
-                color=kwargs.pop('color', "0.1"), linewidth=0.3)
+            pg.viewer.mpl.drawSelectedMeshBoundaries(ax, mesh.boundaries(),
+                color=kwargs.pop('color', "0.1"), 
+                linewidth=0.3)
             # drawMesh(ax, mesh, **kwargs)
 
     if bool(showBoundary) is True:
@@ -447,10 +450,9 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
                                                  linewidth=1.4)
 
     if kwargs.pop("boundaryMarkers", False):
-        pg.viewer.mpl.drawBoundaryMarkers(
-            ax, mesh,
-            clipBoundaryMarkers=kwargs.pop('clipBoundaryMarkers', False),
-            **kwargs.pop('boundaryProps', {}))
+        pg.viewer.mpl.drawBoundaryMarkers(ax, mesh,
+                clipBoundaryMarkers=kwargs.pop('clipBoundaryMarkers', False),
+                **kwargs.pop('boundaryProps', {}))
 
     fitView = kwargs.pop('fitView', fitViewDefault)
 
@@ -616,8 +618,7 @@ def showAnimation(mesh, data, ax=None, **kwargs):
 
     """
     import matplotlib.animation
-    import matplotlib.pyplot as plt
-    import numpy as np
+    plt = pg.plt
     
     plt.rcParams["animation.html"] = "jshtml"
     plt.rcParams['figure.dpi'] = kwargs.pop('dpi',96)  

@@ -1,16 +1,11 @@
 # -*- coding: utf-8 -*-
 """Model viewer functions."""
-
 import numpy as np
-
-import matplotlib.pyplot as plt
-from matplotlib.patches import Rectangle
-from matplotlib.collections import PatchCollection
-import matplotlib.colors as colors
 
 import pygimli as pg
 
 from .colorbar import setMappableData
+
 # from pygimli.viewer.mpl.modelview import cmapFromName
 from pygimli.utils import rndig
 from .utils import updateAxes as updateAxes_
@@ -140,6 +135,10 @@ def draw1DColumn(ax, x, val, thk, width=30, ztopo=0, cmin=1, cmax=1000,
     <matplotlib.collections.PatchCollection object at ...>
     >>> _ = ax.set_ylim(-np.sum(thk), 0)
     """
+    from matplotlib.patches import Rectangle
+    from matplotlib.collections import PatchCollection
+    import matplotlib.colors as colors
+
     z = -np.hstack((0., np.cumsum(thk), np.sum(thk) * 1.5)) + ztopo
     recs = []
     for i in range(len(val)):

@@ -1,14 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """Define special colorbar behavior."""
-
+import numpy as np
 
 from packaging import version
-import matplotlib as mpl
-import matplotlib.pyplot as plt
-import matplotlib.ticker as ticker
-import numpy as np
-from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 import pygimli as pg
 from . import saveFigure, updateAxes
@@ -30,6 +25,7 @@ def autolevel(z, nLevs, logScale=None, zMin=None, zMax=None):
     >>> autolevel(x, 4, logScale=True)
     array([   1.,   10.,  100., 1000.])
     """
+    import matplotlib.ticker as ticker
     locator = None
 
     if logScale:
@@ -84,27 +80,27 @@ def cmapFromName(cmapname='jet', ncols=256, bad=None, **kwargs):
     cMap:
         matplotlib Colormap
     """
-
+    import matplotlib as mpl
     if not bad:
         bad = [1.0, 1.0, 1.0, 0.0]
 
     renameKwarg('cmap', 'cMap', kwargs)
 
-    cmapname = kwargs.pop('cMap', cmapname)
+    cMapName = kwargs.pop('cMap', cmapname)
 
     cMap = None
-    if cmapname is None:
-        cmapname = 'jet'
+    if cMapName is None:
+        cMapName = 'viridis'
 
-    if cmapname == 'b2r':
+    if cMapName == 'b2r':
         pg.warn("Don't use manual b2r cMap, use MPL internal 'RdBu' instead.")
         cMap = "RdBu_r"
     else:
         try:
             import copy
-            cMap = copy.copy(mpl.cm.get_cmap(cmapname, ncols))
+            cMap = copy.copy(mpl.cm.get_cmap(cMapName, ncols))
         except BaseException as e:
-            pg.warn("Could not retrieve colormap ", cmapname, e)
+            pg.warn("Could not retrieve colormap ", cMapName, e)
 
     cMap.set_bad(bad)
     return cMap
@@ -172,7 +168,8 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
     label: str
         Colorbar name.
     """
-    # print('update colorbar: ', cMin, cMax, cMap,
+    import matplotlib as mpl
+        # print('update colorbar: ', cMin, cMax, cMap,
     #         logScale, ', nCols:', nCols, nLevs, ', label:', label, levels)
 
     if gci is not None:
@@ -260,7 +257,8 @@ def createColorBar(gci, orientation='horizontal', size=0.2, pad=None,
     **kwargs :
         Forwarded to updateColorBar
     """
-    cbarTarget = plt
+    from mpl_toolkits.axes_grid1 import make_axes_locatable
+    cbarTarget = pg.plt
     cax = None
     divider = None
     #    if hasattr(patches, 'figure'):
@@ -305,7 +303,6 @@ def createColorBar(gci, orientation='horizontal', size=0.2, pad=None,
                     pad = 0.1
                 cax = divider.append_axes("right", size=size, pad=pad)
 
-
         cbar = cbarTarget.colorbar(gci, cax=cax, orientation=orientation)
 
         #store the cbar into the axes to reuse it on the next call
@@ -345,7 +342,7 @@ def createColorBarOnly(cMin=1, cMax=100, logScale=False, cMap=None, nLevs=5,
     >>> # pg.wait()
     """
     if ax is None:
-        fig = plt.figure()
+        fig = pg.plt.figure()
         if orientation == 'horizontal':
             ax = fig.add_axes([0.035, 0.6, 0.93, 0.05])
         else:
@@ -385,6 +382,9 @@ def createColorBarOnly(cMin=1, cMax=100, logScale=False, cMap=None, nLevs=5,
 
 def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5, levels=None):
     """Set colorbar levels given a number of levels and min/max values."""
+    import matplotlib as mpl
+    import matplotlib.ticker as ticker
+    
     if cMin is None:
         if hasattr(cbar, 'mappable'):
             cMin = cbar.mappable.get_clim()[0]
@@ -457,6 +457,7 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5, levels=None):
 def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=None,
                     **kwargs):
     """Change the data values for a given mappable."""
+    import matplotlib as mpl
     data = dataIn
     if not isinstance(data, np.ma.core.MaskedArray):
         data = np.array(dataIn)
@@ -547,7 +548,7 @@ def addCoverageAlpha(patches, coverage, dropThreshold=0.4):
 
 #    else:
 #        print('taking the values directly')
-
+    import matplotlib as mpl
     if version.parse(mpl.__version__) >= version.parse("3.4"):
         patches.set_alpha(C)
         patches.set_snap(True)

@@ -2,12 +2,7 @@
 # -*- coding: utf-8 -*-
 """Some data related viewer."""
 
-import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.collections import PatchCollection
-from matplotlib.colors import LogNorm, Normalize
-from matplotlib.patches import Rectangle, Wedge
-
 import pygimli as pg
 
 from .utils import updateAxes as updateAxes_
@@ -107,6 +102,10 @@ def drawValMapPatches(ax, vals, xVec=None, yVec=None, dx=1, dy=None, **kwargs):
     circular : bool
         assume circular (cyclic) positions
     """
+    from matplotlib.collections import PatchCollection
+    from matplotlib.colors import LogNorm, Normalize
+    from matplotlib.patches import Rectangle, Wedge
+
     recs = []
 
     circular = kwargs.pop('circular', False)
@@ -440,6 +439,8 @@ def drawDataMatrix(ax, mat, xmap=None, ymap=None, cMin=None, cMax=None,
     label : string
         colorbar label
     """
+    from matplotlib.colors import LogNorm, Normalize
+
     if xmap is None:
         xmap = {i: i for i in range(mat.shape[0])}
     if ymap is None:

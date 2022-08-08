@@ -10,8 +10,6 @@ import sys
 import os
 from glob import glob
 import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.cm import Spectral
 
 import pygimli as pg
 from pygimli.viewer.mpl import showStitchedModels
@@ -377,7 +375,7 @@ class MRSprofile():
         print('Total RMS/Chi^2 value:')
         print(np.round(self.totalRMS, 2), np.round(self.totalChi2, 2))
 
-    def showWC(self, wlim=(0, 0.5), ax=None, cmap=Spectral,
+    def showWC(self, wlim=(0, 0.5), ax=None, cmap='Spectral',
                title=r'$\theta$ (-)'):
         """Show water content distribution as stitched model section."""
         fig = None
@@ -389,7 +387,7 @@ class MRSprofile():
                            title=title, cmin=wlim[0], cmax=wlim[1])
         return fig, ax
 
-    def showT2(self, tlim=(0.05, 0.5), ax=None, cmap=Spectral,
+    def showT2(self, tlim=(0.05, 0.5), ax=None, cmap='Spectral',
                title=r'$T_2^*$ (s)'):
         """Show relaxation time distribution as stitched model section."""
         fig = None
@@ -413,7 +411,7 @@ class MRSprofile():
         ax.legend(numpoints=1, loc=2)
         axb.legend(numpoints=1, loc=1)
 
-    def showModel(self, showFit=0, cmap=Spectral, figsize=(13, 12),
+    def showModel(self, showFit=0, cmap='Spectral', figsize=(13, 12),
                   wlim=(0, 0.5), tlim=(0.05, 0.5)):
         """Show 2d model as stitched 1d models along with fit."""
         fig, ax = plt.subplots(nrows=2+showFit, figsize=figsize, sharex=True)

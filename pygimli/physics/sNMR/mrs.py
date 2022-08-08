@@ -6,7 +6,7 @@
 import time
 import numpy as np
 
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 
 import pygimli as pg
 from pygimli.utils import iterateBounds
