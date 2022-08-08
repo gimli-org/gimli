@@ -3,14 +3,15 @@
 """Generic mesh visualization tools."""
 
 import os
-from pygimli.viewer.mpl.colorbar import setMappableData
 import sys
 import time
 import traceback
 
 import numpy as np
 # plt should not be used outside of viewer.mpl
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
+
+from pygimli.viewer.mpl.colorbar import setMappableData
 
 from .. core.logger import renameKwarg
 
@@ -20,7 +21,7 @@ try:
     from .mpl import drawMesh, drawModel, drawField, drawSensors, drawStreams
     from .mpl import drawSelectedMeshBoundaries
     from .mpl import addCoverageAlpha
-    from .mpl import updateAxes
+    from .mpl import updateAxes, registerShowPendingFigsAtExit
     from .mpl import createColorBar, updateColorBar
     from .mpl import CellBrowser
     from .mpl.colorbar import cmapFromName
@@ -78,13 +79,14 @@ def show(obj=None, data=None, **kwargs):
         print("Deprecation Warning: Please use keyword `ax` instead of `axes`")
         kwargs['ax'] = kwargs.pop('axes', None)
 
-    # Empty call just to create an axes
+    # Empty call just to create an mpl axes
     # if obj is None and 'mesh' not in kwargs:
     if obj is None and 'mesh' not in kwargs.keys():
         ax = kwargs.pop('ax', None)
 
         if ax is None:
-            ax = plt.subplots(figsize=kwargs.pop('figsize', None))[1]
+            ax = pg.plt.subplots(figsize=kwargs.pop('figsize', None))[1]
+            
         return ax, None
 
     if isinstance(obj, int):
@@ -93,20 +95,24 @@ def show(obj=None, data=None, **kwargs):
         if isinstance(data, int):
             ncols = data
 
-        fig, ax = plt.subplots(nrows=nrows, ncols=ncols,
+        fig, ax = pg.plt.subplots(nrows=nrows, ncols=ncols,
                           figsize=kwargs.pop('figsize', None))
 
-        print(ax)
         return ax, None
 
-    ### try to interprete obj containes a mesh
+    ### obj containes a mesh and data has values
     if hasattr(obj, 'mesh') and hasattr(obj, 'values'):
         return pg.show(obj.mesh, obj.values,
                        label=kwargs.pop('label', obj.name),
                         **kwargs)
+    ### obj containes a mesh and data need to be evaluated 
     if hasattr(obj, 'mesh') and hasattr(obj, 'eval'):
         return pg.show(obj.mesh, obj.eval(),
                        **kwargs)
+
+    # try to check if obj containes a mesh
+    if hasattr(obj, 'mesh'):
+        return pg.show(obj.mesh, obj, **kwargs)
 
     # try to interpret obj as ERT Data
     if isinstance(obj, pg.DataContainerERT):
@@ -276,6 +282,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
 
     cBar : matplotlib.colorbar
     """
+
     renameKwarg('cmap', 'cMap', kwargs)
 
     cMap = kwargs.pop('cMap', 'viridis')
@@ -330,7 +337,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
                         
             if cMap == 'viridis':
                 cMap = "Set3"
-            cMap = plt.cm.get_cmap(cMap, len(uniquemarkers))
+            cMap = pg.plt.cm.get_cmap(cMap, len(uniquemarkers))
             
             kwargs["logScale"] = False
             kwargs["cMin"] = -0.5
@@ -350,12 +357,10 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
         drawStreams(ax, mesh, data, **kwargs)
     else:
 
-
         # check for map like data=[[marker, val], ....]
         if isinstance(data, list) and \
                 isinstance(data[0], list) and isinstance(data[0][0], int):
             data = pg.solver.parseMapToCellArray(data, mesh)
-
 
         if hasattr(data[0], '__len__') and not \
                 isinstance(data, np.ma.core.MaskedArray):
@@ -382,7 +387,8 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
                     if data.shape[1] == mesh.cellCount() or \
                        data.shape[1] == mesh.nodeCount():
             
-                        return showAnimation(mesh, data, cMap=cMap, **kwargs)
+                        return showAnimation(mesh, data, cMap=cMap, 
+                                             ax=ax, **kwargs)
 
 
                 pg.warn("No valid stream data:", data.shape, data.ndim)
@@ -473,9 +479,9 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
             gci.set_linewidth(0.3)
             gci.set_edgecolor(kwargs.pop('color', "0.1"))
         else:
-            pg.viewer.mpl.drawSelectedMeshBoundaries(
-                ax, mesh.boundaries(),
-                color=kwargs.pop('color', "0.1"), linewidth=0.3)
+            pg.viewer.mpl.drawSelectedMeshBoundaries(ax, mesh.boundaries(),
+                color=kwargs.pop('color', "0.1"), 
+                linewidth=0.3)
             # drawMesh(ax, mesh, **kwargs)
 
     if bool(showBoundary) is True:
@@ -631,9 +637,13 @@ def showBoundaryNorm(mesh, normMap=None, **kwargs):
     return ax
 
 
-def showAnimation(mesh, data, **kwargs):
+__Animation_Keeper__ = None
+
+def showAnimation(mesh, data, ax=None, **kwargs):
     """Show timelapse mesh data. 
     
+    Time will be annotated if the mesh contains a valid 'times' data array.
+
     TODO
     ----
         * 3D
@@ -655,8 +665,7 @@ def showAnimation(mesh, data, **kwargs):
 
     """
     import matplotlib.animation
-    import matplotlib.pyplot as plt
-    import numpy as np
+    plt = pg.plt
     
     plt.rcParams["animation.html"] = "jshtml"
     plt.rcParams['figure.dpi'] = kwargs.pop('dpi',96)  
@@ -666,9 +675,13 @@ def showAnimation(mesh, data, **kwargs):
 
     plt.ioff()
 
-    #q = m['Flux']
-    ax,_ = pg.show(mesh, data[0])
+    pg.show(mesh, data[0], ax=ax)
 
+    try:
+        times = mesh['times']
+    except:
+        times = None
+    
     p = pg.utils.ProgressBar(len(data))
     def animate(t):
         p.update(t)
@@ -676,7 +689,18 @@ def showAnimation(mesh, data, **kwargs):
         pg.show(mesh, data[t], ax=ax, **kwargs)
         if flux is not None:
             pg.show(mesh, flux[t], ax=ax)
+
+        if times is not None and len(times) > t:
+            #ax.text(0.02, 0.02, f't={pg.pf(times[t])}',
+            ax.text(0.01, 1.01, f't={pg.utils.prettyTime(times[t])}',
+                    horizontalalignment='left',
+                    verticalalignment='bottom', 
+                    transform=ax.transAxes, color='k', fontsize=8)
     
-    anim = matplotlib.animation.FuncAnimation(ax.figure, animate, 
-                                              frames=len(data))
-    return anim
+    if pg.isNotebook() is False:
+        global __Animation_Keeper__
+
+    __Animation_Keeper__ = matplotlib.animation.FuncAnimation(ax.figure,
+                                                              animate, 
+                                                              frames=len(data))
+    return __Animation_Keeper__

@@ -3,9 +3,9 @@
 """Frequency Domain Electromagnetics (FDEM) functions and class."""
 
 import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.colors import LinearSegmentedColormap
-from mpl_toolkits.axes_grid1 import make_axes_locatable
+# import matplotlib.pyplot as plt
+# from matplotlib.colors import LinearSegmentedColormap
+# from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 import pygimli as pg
 from pygimli.viewer.mpl import show1dmodel, drawModel1D

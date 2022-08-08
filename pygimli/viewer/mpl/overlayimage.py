@@ -2,11 +2,10 @@
 """Overlay / Underlay an image or a geo referenced map to mpl.ax."""
 
 import os
-
 import math
 
 import numpy as np
-import matplotlib.image as mpimg
+#import matplotlib.image as mpimg
 
 import pygimli as pg
 

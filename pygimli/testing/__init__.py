@@ -14,7 +14,6 @@ Please check: https://docs.pytest.org/en/latest/
 import sys
 from os.path import join, realpath
 
-import matplotlib.pyplot as plt
 import numpy as np
 
 import pygimli as pg
@@ -73,6 +72,7 @@ def test(target=None, show=False, onlydoctests=False, coverage=False,
     # pg.setTestingMode(True)
     # Remove figure warnings
     np.random.seed(1337)
+    plt = pg.plt
     plt.rcParams["figure.max_open_warning"] = 1000
     warnings.filterwarnings("ignore", category=UserWarning,
                             message='Matplotlib is currently using agg, a '
@@ -115,6 +115,7 @@ def test(target=None, show=False, onlydoctests=False, coverage=False,
                           "Try 'sudo pip install pytest'.")
 
     old_backend = plt.get_backend()
+    #pg._r(old_backend, show)
     if not show:
         plt.switch_backend("Agg")
     else:

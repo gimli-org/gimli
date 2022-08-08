@@ -4,9 +4,6 @@
 """Class for managing first arrival travel time inversions"""
 import os
 import numpy as np
-import matplotlib.pyplot as plt
-
-from matplotlib.collections import LineCollection
 
 import pygimli as pg
 from pygimli.frameworks import MeshMethodManager
@@ -313,6 +310,7 @@ class TravelTimeManager(MeshMethodManager):
         _ = kwargs.setdefault("alpha", 0.5)
         _ = kwargs.setdefault("linewidths", 0.8)
 
+        from matplotlib.collections import LineCollection
         lc = LineCollection(rayPaths, **kwargs)
         ax.add_collection(lc)
 
@@ -385,7 +383,7 @@ class TravelTimeManager(MeshMethodManager):
     def showCoverage(self, ax=None, name='coverage', **kwargs):
         """Show the ray coverage in log-scale."""
         if ax is None:
-            fig, ax = plt.subplots()
+            fig, ax = pg.plt.subplots()
 
         cov = self.rayCoverage()
         return pg.show(self.fop.paraDomain,
@@ -448,4 +446,5 @@ class TravelTimeManager(MeshMethodManager):
             fig.set_size_inches(size)
             fig.savefig(os.path.join(path, 'velocity.pdf'), bbox_inches='tight')
             pg.plt.close(fig)
+            
         return path

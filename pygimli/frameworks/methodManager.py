@@ -1,12 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
-"""Method Manager
+"""Method Manager.
 
 Provide the end user interface for method (geophysical) dependent
 modelling and inversion as well as data and model visualization.
 """
-
 import numpy as np
 import pygimli as pg
 
