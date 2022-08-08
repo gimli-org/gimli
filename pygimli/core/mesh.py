@@ -256,8 +256,8 @@ Mesh.__getitem__ = __Mesh_getVal
 
 def __MeshBoundingBox__(self):
     bb = self.boundingBox()
-    mi = RVector3([bb.min()[i] for i in range(self.dim())])
-    ma = RVector3([bb.max()[i] for i in range(self.dim())])
+    mi = RVector3([bb.min()[i] for i in range(3)])
+    ma = RVector3([bb.max()[i] for i in range(3)])
     return [mi, ma]
 Mesh.bb = __MeshBoundingBox__
 
