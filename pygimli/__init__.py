@@ -36,7 +36,7 @@ from .utils import boxprint, cache, cut, unique, unit, cmap, randn
 from .utils import prettify as pf
 def ppf(v): print(pf(v))
 
-from .viewer import plt, show, wait, quiet
+from .viewer import show, wait, quiet
 from .frameworks import fit, Modelling, Inversion
 from .testing import test#, setTestingMode, testingMode
 
