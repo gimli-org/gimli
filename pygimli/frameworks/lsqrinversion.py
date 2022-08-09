@@ -1,6 +1,7 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 from math import sqrt
 import numpy as np
-import matplotlib.pyplot as plt
 import pygimli as pg
 
 from pygimli.solver.leastsquares import lsqr as lssolver

@@ -5,7 +5,7 @@ pyGIMLi - An open-source library for modelling and inversion in geophysics
 import sys
 import locale
 
-from .core.decorators import (renamed, singleton)
+from .core.decorators import (renamed, singleton, moduleProperty)
 
 ### Import everything that should be accessible through main namespace.
 from .core import (BVector, CVector, DataContainer, DataContainerERT,
@@ -35,8 +35,11 @@ from .solver import solve
 from .utils import boxprint, cache, cut, unique, unit, cmap, randn
 from .utils import prettify as pf
 
-from .viewer import plt, show, wait, quiet
-from .frameworks import fit, Modelling, Inversion
+from .viewer import show, wait, quiet
+
+from .frameworks import fit
+from .frameworks import Modelling
+from .frameworks import Inversion
 from .testing import test#, setTestingMode, testingMode
 
 from .math import matrix # alias all from .core.matrix.* to pg.matrix.*
@@ -205,14 +208,14 @@ def version(cache=True):
         info('Version: ' + __version__ + " core:" + versionStr())
     return __version__
 
-__swatch__ = dict()
-
 
 def isNotebook():
     """Determine if run inside jupyther notebook or spyder"""
     import sys
     return 'ipykernel_launcher.py' in sys.argv[0]
 
+
+__swatch__ = dict()
 
 def tic(msg=None, key=0):
     """Start global timer. Print elapsed time with `toc()`.
@@ -284,3 +287,32 @@ def dur(reset=False, key=0):
     else:
         warn("No stopwatch for id {0}".format(key))
         return 0.0
+
+
+# special shortcut pg.plt with lazy evaluation
+@moduleProperty
+def _plt():
+    import time
+    t0 = time.time()
+    import matplotlib.pyplot as plt
+    #print('importing plt took ', time.time() - t0)
+    
+    from .viewer.mpl import registerShowPendingFigsAtExit
+    registerShowPendingFigsAtExit()
+
+    # plt.subplots() resets locale setting to system default .. this went
+    # horrible wrong for german 'decimal_point': ','
+    # https://github.com/matplotlib/matplotlib/issues/6706
+    # Qt5Agg resets it after importing figure;
+    # TkAgg resets it after importing pyplot.
+    # until its fixed we should maybe silently initialize the qt5agg backend and
+    # refix the locale afterwards. If someone have a plan to do.
+
+    checkAndFixLocaleDecimal_point(verbose=False)
+
+    # Set global hold if mpl inline backend is used (as in Jupyter Notebooks)
+    if 'inline' in plt.get_backend():
+        hold(1)
+
+    return plt
+

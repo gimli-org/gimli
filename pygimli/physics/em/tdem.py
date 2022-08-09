@@ -4,7 +4,7 @@
 import sys
 from math import pi
 import numpy as np
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import pygimli as pg
 from . vmd import VMDTimeDomainModelling
 

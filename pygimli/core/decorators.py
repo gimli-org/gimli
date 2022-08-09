@@ -3,6 +3,7 @@
 """
 Useful utility decorators.
 """
+import sys
 
 
 class renamed:
@@ -37,3 +38,40 @@ def singleton(cls):
         return wrapper.instance
     wrapper.instance = None
     return wrapper
+
+
+# Lazy evalation of expensive modules (eg. mpl.pylab)
+# found: https://stackoverflow.com/questions/880530/can-modules-have-properties-the-same-way-that-objects-can
+class AttrGetter:
+    def __new__(cls, gt):
+        if isinstance(gt, cls):
+            return gt
+        else:
+            o = super().__new__(cls)
+            o.oldgetattr = gt
+            o.funcmap = {}
+            return o
+
+    def __call__(self, name):
+        name2 = "_" + name
+        if name2 in self.funcmap:
+            return self.funcmap[name2]()
+        else:
+            return self.oldgetattr(name)
+
+    def add(self, func):
+        self.funcmap[func.__name__] = func
+
+
+def moduleProperty(func):
+    """Decorator to turn module functions into properties.
+    Function names must be prefixed with an underscore."""
+    module = sys.modules[func.__module__]
+    def base_getattr(name):
+        raise AttributeError(
+            f"module '{module.__name__}' has no attribute '{name}'")
+    ag = AttrGetter(getattr(module, '__getattr__', base_getattr))
+    module.__getattr__ = ag
+    ag.add(func)
+    return func
+

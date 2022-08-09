@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 """Pyvista based drawing functions used by pygimli.viewer."""
 
-
 from .vistaview import (showMesh3D)
 
 from .draw import (drawMesh, drawModel, drawSensors, drawSlice, drawStreamLines)
