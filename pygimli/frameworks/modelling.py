@@ -79,7 +79,8 @@ class Modelling(pg.core.ModellingBase):
         self._modelTrans = None
 
         self.fop = kwargs.pop('fop', None)
-        super(Modelling, self).__init__(**kwargs)
+        # super(Modelling, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
         self._regionProperties = {}
         self._interRegionCouplings = []
@@ -162,10 +163,10 @@ class Modelling(pg.core.ModellingBase):
         """
         self._regionManagerInUse = True
         # initialize RM if necessary
-        super(Modelling, self).regionManager()
+        super().regionManager()
         # set all local properties
         self._applyRegionProperties()
-        return super(Modelling, self).regionManager()
+        return super().regionManager()
 
     @property
     def parameterCount(self):
@@ -661,7 +662,7 @@ class MeshModelling(Modelling):
         if self._regionManagerInUse and self._regionChanged is True:
             self.createFwdMesh_()
 
-        return super(Modelling, self).mesh()
+        return super().mesh()
 
     def setMesh(self, mesh, ignoreRegionManager=False):
         """Set mesh and specify whether region manager can be ignored."""
