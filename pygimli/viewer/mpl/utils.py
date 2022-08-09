@@ -9,7 +9,6 @@ import pygimli as pg
 from pygimli.utils import prettyFloat
 
 holdAxes__ = 0
-__lastBackend__ = None
 
 
 def updateFig(fig, force=False, sleep=.0001):
@@ -38,7 +37,8 @@ def hold(val=1):
     globals()[holdAxes__] = val
 
 
-def quiet(on=True):
+__lastBackend__ = None
+def noShow(on=True):
     """Toggle quiet mode to avoid popping figures.
 
     Args
@@ -46,12 +46,12 @@ def quiet(on=True):
     on: bool[True]
         Set Matplotlib backend to 'agg' and restore old backend if set to False.
     """
-
+    import matplotlib
     if on is True:
         globals()[__lastBackend__] = matplotlib.get_backend()
         matplotlib.use('agg')
     else:
-        if matplotlib.use(globals()[__lastBackend__]) is not None:
+        if globals()[__lastBackend__] is not None:
             matplotlib.use(globals()[__lastBackend__])
 
 __registeredShowPendingFigsAtExit__ = False
