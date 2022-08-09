@@ -14,9 +14,9 @@ __lastBackend__ = None
 
 def updateFig(fig, force=False, sleep=.01):
     """For internal use."""
-    pg._r(f'udpateFig hold:{__holdAxes__} force: {force}' )
+    # pg._r(f'udpateFig hold:{__holdAxes__} force: {force}' )
     if __holdAxes__ == False:
-        pg._y('udpateFig')
+        # pg._y('udpateFig')
         try:
             fig.canvas.draw_idle()
             if force:
@@ -26,7 +26,7 @@ def updateFig(fig, force=False, sleep=.01):
                 #pg.plt.pause(sleep)
                 time.sleep(sleep)
                 #time.sleep(1)
-                pg._g('draw sleep:', sleep)
+                # pg._g('draw sleep:', sleep)
         except BaseException as e:
             print(fig, e)
             pg.warn("Exception raised", e)

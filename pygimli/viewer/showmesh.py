@@ -510,7 +510,7 @@ def showMesh(mesh, data=None, hold=True, block=False, colorBar=None,
         except BaseException:
             pass
 
-    pg._r(hold)
+    # pg._r(hold)
     pg.viewer.mpl.updateAxes(ax)
 
     pg.viewer.mpl.hold(val=lastHoldStatus)
