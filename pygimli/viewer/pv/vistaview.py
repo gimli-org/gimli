@@ -88,7 +88,7 @@ def showMesh3DVista(mesh, data=None, **kwargs):
     notebook = kwargs.pop("notebook", pg.isNotebook())
 
     # For sphinx builds and non-interactive agg backend
-    if not pg.viewer.mpl.isInteractive():
+    if not notebook and not pg.viewer.mpl.isInteractive():
         notebook = False
         kwargs["backend"] = None
 

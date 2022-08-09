@@ -143,7 +143,7 @@ class Modelling(pg.core.ModellingBase):
             pg.critical('in use?')
             self.fop.setData(data)
         else:
-            super(Modelling, self).setData(data)
+            super().setData(data)
             self._data = data
 
         self.setDataPost(self.data)
@@ -318,7 +318,7 @@ class Modelling(pg.core.ModellingBase):
 
         # call super class her because self.regionManager() calls allways
         #  __applyRegionProperies itself
-        rMgr = super(Modelling, self).regionManager()
+        rMgr = super().regionManager()
         for rID, vals in self._regionProperties.items():
 
             if vals['fix'] is not None:
@@ -537,7 +537,7 @@ class MeshModelling(Modelling):
     """Modelling class with a mesh discretization."""
 
     def __init__(self, **kwargs):
-        super(MeshModelling, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self._axs = None
         self._meshNeedsUpdate = True
         self._baseMesh = None
@@ -546,7 +546,7 @@ class MeshModelling(Modelling):
         self._pd = None
 
     def __hash__(self):
-        return super(MeshModelling, self).__hash__() ^ hash(self.mesh())
+        return super().__hash__() ^ hash(self.mesh())
 
     @property
     def mesh(self):
@@ -652,7 +652,7 @@ class MeshModelling(Modelling):
         self.setMeshPost(m)
 
         self._regionChanged = False
-        super(Modelling, self).setMesh(m, ignoreRegionManager=True)
+        super().setMesh(m, ignoreRegionManager=True)
 
     # This might be confusing for users: self.mesh vs. self.mesh()
     # pyflakes complains about redefinition
@@ -805,6 +805,7 @@ class PetroModelling(MeshModelling):
         self.setJacobian(self._jac)  # to be sure .. test if necessary
 
 
+# class JointModelling(Modelling):
 class JointModelling(MeshModelling):
     """Cumulative (joint) forward operator."""
 
@@ -816,10 +817,8 @@ class JointModelling(MeshModelling):
 
         # self.modelTrans = self.fops[0].modelTrans
         self.modelTrans = pg.core.TransLogLU()
-        # fixme
-        # self.modelTrans = pg.trans.TransCumulative()
-        # for i, f in enumerate(self.fops):
-        #     self.modelTrans.add(f.modelTrans)
+        self.fops[0].regionManager()
+        self.setRegionManager(self.fops[0].regionManagerRef())
 
     def createStartModel(self, data):
         """Use inverse transformation to get m(p) for the starting model."""
@@ -841,8 +840,7 @@ class JointModelling(MeshModelling):
             f.createJacobian(model)
 
     def setData(self, data):
-        """Distribute list of data to the forward operators
-        """
+        """Distribute list of data to the forward operators."""
         if len(data) != len(self.fops):
             pg.critical("Please provide data for all forward operators")
 
@@ -854,12 +852,18 @@ class JointModelling(MeshModelling):
             nData += data[i].size()  # update total vector length
         self.setJacobian(self.jac)
 
-    def setMesh(self, mesh, **kwargs):
-        """Set the parameter mesh to all fops
-        """
+    def setMesh(self, mesh, **kwargs):  # to be removed from here
+        """Set the parameter mesh to all fops."""
         for fi in self.fops:
             fi.setMesh(mesh)
+
         self.setRegionManager(self.fops[0].regionManagerRef())
+
+
+# class JointMeshModelling(JointModelling):
+#    def __init__(self, fopList):
+        # super().__init__(self, fopList)
+        # self.setRegionManager(self.fops[0].regionManagerRef())
 
 
 class LCModelling(Modelling):
@@ -1109,11 +1113,16 @@ class ParameterModelling(Modelling):
 class PriorModelling(MeshModelling):
     """Forward operator for grabbing values out of a mesh (prior data)."""
 
-    def __init__(self, mesh, pos, **kwargs):
+    def __init__(self, mesh=None, pos=None, **kwargs):
         """Init with mesh and some positions that are converted into ids."""
         super().__init__(**kwargs)
-        self.setMesh(mesh)
-        self.ind = np.array([mesh.findCell(po).id() for po in pos])
+        self.pos = pos
+        if mesh is not None:
+            self.setMesh(mesh)
+
+    def setMesh(self, mesh):
+        super().setMesh(mesh)
+        self.ind = np.array([mesh.findCell(po).id() for po in self.pos])
         self.J = pg.SparseMapMatrix()
         self.J.resize(len(self.ind), mesh.cellCount())
         for i, ii in enumerate(self.ind):
