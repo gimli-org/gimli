@@ -74,7 +74,7 @@ pg.show(mesh, data=np.real(rho), ax=axes[0, 0], label=r"$\rho'$~[$\Omega$m]")
 pg.show(mesh, data=np.imag(rho), ax=axes[0, 1], label=r"$\rho''$~[$\Omega$m]")
 pg.show(mesh, data=np.abs(rho), ax=axes[1, 0], label=r"$|\rho$|~[$\Omega$m]")
 pg.show(
-    mesh, data=np.arctan2(np.imag(rho), np.real(rho)),
+    mesh, data=np.arctan2(np.imag(rho), np.real(rho))*1000,
     ax=axes[1, 1], label=r"$\phi$ [mrad]"
 )
 fig.tight_layout()

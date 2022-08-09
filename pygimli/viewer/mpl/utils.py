@@ -8,21 +8,25 @@ import numpy as np
 import pygimli as pg
 from pygimli.utils import prettyFloat
 
-holdAxes__ = 0
+__holdAxes__ = True
 __lastBackend__ = None
 
 
-def updateFig(fig, force=False, sleep=.0001):
+def updateFig(fig, force=False, sleep=.01):
     """For internal use."""
-    if not holdAxes__:
+    pg._r(f'udpateFig hold:{__holdAxes__} force: {force}' )
+    if __holdAxes__ == False:
+        pg._y('udpateFig')
         try:
             fig.canvas.draw_idle()
             if force:
                 fig.canvas.flush_events()
                 #fig.canvas.draw()
                 #pg.plt.show(block=False)
-                pg.plt.pause(sleep)
-                #time.sleep(sleep)
+                #pg.plt.pause(sleep)
+                time.sleep(sleep)
+                #time.sleep(1)
+                pg._g('draw sleep:', sleep)
         except BaseException as e:
             print(fig, e)
             pg.warn("Exception raised", e)
@@ -33,12 +37,29 @@ def updateAxes(ax, force=False):
     updateFig(ax.figure, force=force)
 
 
-def hold(val=1):
+def hold(val=True):
     """TODO WRITEME."""
-    globals()[holdAxes__] = val
+    globals()[__holdAxes__] = val
 
 
-def quiet(on=True):
+def wait(**kwargs):
+    """TODO WRITEME."""
+    # plt.pause seems to be broken in mpl:2.1
+    # ax.canvas.draw_onIdle()
+    import matplotlib.pyplot as plt
+
+    #if len(plt.get_fignums()) > 0:
+    #for f in plt.get_fignums():
+    #    updateFig(f)
+    updateFig(plt.gca())
+    kp = kwargs.pop('untilKeyPressed', False)
+    if kp == True:
+        plt.waitforbuttonpress(**kwargs)
+    else:
+        plt.show(**kwargs)
+
+
+def noShow(on=True):
     """Toggle quiet mode to avoid popping figures.
 
     Args
@@ -46,12 +67,12 @@ def quiet(on=True):
     on: bool[True]
         Set Matplotlib backend to 'agg' and restore old backend if set to False.
     """
-
+    import matplotlib
     if on is True:
         globals()[__lastBackend__] = matplotlib.get_backend()
         matplotlib.use('agg')
     else:
-        if matplotlib.use(globals()[__lastBackend__]) is not None:
+        if globals()[__lastBackend__] is not None:
             matplotlib.use(globals()[__lastBackend__])
 
 __registeredShowPendingFigsAtExit__ = False
@@ -86,19 +107,6 @@ def registerShowPendingFigsAtExit():
                             pg.wait()
                 
     __registeredShowPendingFigsAtExit__ = True
-
-
-def wait(**kwargs):
-    """TODO WRITEME."""
-    # plt.pause seems to be broken in mpl:2.1
-    # ax.canvas.draw_onIdle()
-    import matplotlib.pyplot as plt
-    updateAxes(plt.gca())
-    kp = kwargs.pop('untilKeyPressed', False)
-    if kp == True:
-        plt.waitforbuttonpress(**kwargs)
-    else:
-        plt.show(**kwargs)
 
 
 def saveFigure(fig, filename, pdfTrim=False):
@@ -296,7 +304,7 @@ def saveAnimation(mesh, data, out, vData=None, plc=None, label='', cMin=None,
 
         if vData is not None:
             ax.clear()
-            pg.viewer.mpl.holdAxes_ = 1
+            pg.viewer.mpl.__holdAxes_ = 1
             pg.viewer.mpl.drawModel(ax, mesh, data=data[i], cMin=cMin,
                                    cMax=cMax, cMap=cmap, logScale=logScale)
             pg.viewer.mpl.drawStreams(ax, mesh, vData[i], **kwargs)

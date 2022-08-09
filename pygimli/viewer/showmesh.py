@@ -118,11 +118,11 @@ def show(obj=None, data=None, **kwargs):
     if isinstance(mesh, list):
         ax = kwargs.pop('ax', None)
 
-        ax, cBar = show(mesh[0], data, hold=1, ax=ax,
+        ax, cBar = show(mesh[0], data, hold=True, ax=ax,
                         fitView=fitView, **kwargs)
 
         for m in mesh[1:]:
-            ax, cBar = show(m, data, ax=ax, hold=1, fitView=False, **kwargs)
+            ax, cBar = show(m, data, ax=ax, hold=True, fitView=False, **kwargs)
 
         if fitView is not False:
             ax.autoscale(enable=True, axis='both', tight=True)
@@ -155,7 +155,7 @@ def show(obj=None, data=None, **kwargs):
     return None, None
 
 
-def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
+def showMesh(mesh, data=None, hold=True, block=False, colorBar=None,
              label=None, coverage=None, ax=None, savefig=None,
              showMesh=False, showBoundary=None,
              markers=False, **kwargs):
@@ -195,16 +195,14 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
 
         . pg.core.stdVectorRVector3 -- sensor positions
             forward to :py:mod:`pygimli.viewer.mpl.drawSensors`
-    hold: bool [false]
-        Set interactive plot mode for matplotlib.
-        If this is set to false [default] your script will open
-        a window with the figure and draw your content.
-        If set to true nothing happens until you either force another show with
-        hold=False, you call plt.show() or pg.wait().
-        If you want show with stopping your script set block = True.
-    block: bool [false]
-        Force show drawing your content and block the script until you
-        close the current figure.
+    hold: bool [True]
+        Holds back the opening of the Figure.
+        If set to True [default] nothing happens until you either force another show with hold=False or block=True or call pg.wait() or pg.plt.show().
+        If hold is set to False your script will open
+        the figure and continue working.
+    block: bool [False]
+        Force to open the Figure of your content and blocks the script until you
+        close the current figure. Same like pg.show(); pg.wait()
     colorBar: bool [None], Colorbar
         Create and show a colorbar. If colorBar is a valid colorbar then only
         its values will be updated.
@@ -284,11 +282,9 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
     if block:
         hold = True
 
-    lastHoldStatus = pg.viewer.mpl.utils.holdAxes__
-    if not lastHoldStatus or hold:
-        pg.viewer.mpl.hold(val=1)
-        hold = True
-
+    lastHoldStatus = pg.viewer.mpl.utils.__holdAxes__
+    pg.viewer.mpl.hold(val=hold)
+    
     gci = None
     validData = False
 
@@ -502,20 +498,23 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
             # addCoverageAlpha(gci, pg.core.cellDataToPointData(mesh,
             #                                                   coverage))
 
-    if not hold or block is not False and plt.get_backend().lower() != "agg":
+
+    if not hold or block is not False and pg.plt.get_backend().lower() != "agg":
         if data is not None:
             if len(data) == mesh.cellCount():
                 CellBrowser(mesh, data, ax=ax)
 
-        plt.show(block=block)
+        pg.plt.show(block=block)
         try:
             plt.pause(0.01)
         except BaseException:
             pass
 
-    if hold:
-        pg.viewer.mpl.hold(val=lastHoldStatus)
+    pg._r(hold)
+    pg.viewer.mpl.updateAxes(ax)
 
+    pg.viewer.mpl.hold(val=lastHoldStatus)
+    
     if savefig:
         print('saving: ' + savefig + ' ...')
 

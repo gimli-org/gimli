@@ -35,7 +35,7 @@ from .solver import solve
 from .utils import boxprint, cache, cut, unique, unit, cmap, randn
 from .utils import prettify as pf
 
-from .viewer import show, wait, quiet
+from .viewer import show, wait, noShow, hold
 
 from .frameworks import fit
 from .frameworks import Modelling

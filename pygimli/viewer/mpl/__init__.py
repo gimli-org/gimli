@@ -5,7 +5,7 @@
 # are the following suitable for a drawing package?
 from .utils import (hold,
                     wait,
-                    quiet,
+                    noShow,
                     updateFig,
                     updateAxes,
                     renameDepthTicks,
