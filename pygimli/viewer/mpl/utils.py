@@ -2,7 +2,7 @@
 """Plotting utilities used throughout the viewer.mpl package."""
 import sys
 import os
-
+import time
 import numpy as np
 
 import pygimli as pg
@@ -12,34 +12,27 @@ __holdAxes__ = True
 __lastBackend__ = None
 
 
-def updateFig(fig, force=False, sleep=.01):
+def updateFig(fig, force=True, sleep=.001):
     """For internal use."""
-    # pg._r(f'udpateFig hold:{__holdAxes__} force: {force}' )
-    if __holdAxes__ == False:
-        # pg._y('udpateFig')
+    if globals()['__holdAxes__'] == False:
         try:
             fig.canvas.draw_idle()
             if force:
                 fig.canvas.flush_events()
-                #fig.canvas.draw()
-                #pg.plt.show(block=False)
-                #pg.plt.pause(sleep)
                 time.sleep(sleep)
-                #time.sleep(1)
-                # pg._g('draw sleep:', sleep)
         except BaseException as e:
             print(fig, e)
             pg.warn("Exception raised", e)
 
 
-def updateAxes(ax, force=False):
+def updateAxes(ax, force=True):
     """For internal use."""
     updateFig(ax.figure, force=force)
 
 
 def hold(val=True):
     """TODO WRITEME."""
-    globals()[__holdAxes__] = val
+    globals()['__holdAxes__'] = val
 
 
 def wait(**kwargs):
@@ -304,7 +297,7 @@ def saveAnimation(mesh, data, out, vData=None, plc=None, label='', cMin=None,
 
         if vData is not None:
             ax.clear()
-            pg.viewer.mpl.__holdAxes_ = 1
+            pg.hold(True)
             pg.viewer.mpl.drawModel(ax, mesh, data=data[i], cMin=cMin,
                                    cMax=cMax, cMap=cmap, logScale=logScale)
             pg.viewer.mpl.drawStreams(ax, mesh, vData[i], **kwargs)

@@ -155,7 +155,7 @@ def show(obj=None, data=None, **kwargs):
     return None, None
 
 
-def showMesh(mesh, data=None, hold=True, block=False, colorBar=None,
+def showMesh(mesh, data=None, block=False, colorBar=None,
              label=None, coverage=None, ax=None, savefig=None,
              showMesh=False, showBoundary=None,
              markers=False, **kwargs):
@@ -195,11 +195,6 @@ def showMesh(mesh, data=None, hold=True, block=False, colorBar=None,
 
         . pg.core.stdVectorRVector3 -- sensor positions
             forward to :py:mod:`pygimli.viewer.mpl.drawSensors`
-    hold: bool [True]
-        Holds back the opening of the Figure.
-        If set to True [default] nothing happens until you either force another show with hold=False or block=True or call pg.wait() or pg.plt.show().
-        If hold is set to False your script will open
-        the figure and continue working.
     block: bool [False]
         Force to open the Figure of your content and blocks the script until you
         close the current figure. Same like pg.show(); pg.wait()
@@ -232,17 +227,23 @@ def showMesh(mesh, data=None, hold=True, block=False, colorBar=None,
 
     Keyword Arguments
     -----------------
-    **kwargs:
-        * xlabel: str [None]
+    xlabel: str [None]
             Add label to the x axis
-        * ylabel: str [None]
+    ylabel: str [None]
             Add label to the y axis
-        fitView: bool
+    fitView: bool
             Fit the axes limits to the all content of the axes. Default True.
-        boundaryProps: dict
+    boundaryProps: dict
             Arguments for plotboundar
-        All remaining will be forwarded to the draw functions
-        and matplotlib methods, respectively.
+    
+    hold: bool [pg.hold()]
+        Holds back the opening of the Figure.
+        If set to True [default] nothing happens until you either force another show with hold=False or block=True or call pg.wait() or pg.plt.show().
+        If hold is set to False your script will open the figure and continue working. You can change global hold with pg.hold(bool).
+
+    All remaining will be forwarded to the draw functions
+    and matplotlib methods, respectively.
+    
 
     Examples
     --------
@@ -259,7 +260,6 @@ def showMesh(mesh, data=None, hold=True, block=False, colorBar=None,
 
     cBar : matplotlib.colorbar
     """
-
     renameKwarg('cmap', 'cMap', kwargs)
 
     cMap = kwargs.pop('cMap', 'viridis')
@@ -279,12 +279,14 @@ def showMesh(mesh, data=None, hold=True, block=False, colorBar=None,
     # horrible wrong for german 'decimal_point': ','
     pg.checkAndFixLocaleDecimal_point(verbose=False)
 
-    if block:
+    hold = kwargs.pop('hold', pg.viewer.mpl.utils.__holdAxes__)
+    
+    if block is True:
         hold = True
 
     lastHoldStatus = pg.viewer.mpl.utils.__holdAxes__
     pg.viewer.mpl.hold(val=hold)
-    
+
     gci = None
     validData = False
 
@@ -510,7 +512,6 @@ def showMesh(mesh, data=None, hold=True, block=False, colorBar=None,
         except BaseException:
             pass
 
-    # pg._r(hold)
     pg.viewer.mpl.updateAxes(ax)
 
     pg.viewer.mpl.hold(val=lastHoldStatus)

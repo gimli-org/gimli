@@ -317,6 +317,6 @@ def _plt():
 
     # Set global hold if mpl inline backend is used (as in Jupyter Notebooks)
     if 'inline' in plt.get_backend():
-        hold(1)
+        hold(True)
 
     return plt
