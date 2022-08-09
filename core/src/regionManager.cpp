@@ -494,7 +494,7 @@ void Region::fillBoundarySize(RVector & vec, Index boundStart){
 void Region::setTransModel(Trans< RVector > & tM){
 
     if (isBackground_){
-        // log(Warning, "Region Nr:", marker_, " is background and should not get a model transformiation."); 
+        // log(Warning, "Region Nr:", marker_, " is background and should not get a model transformation."); 
         return;
     }
 
