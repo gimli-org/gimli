@@ -43,11 +43,23 @@ def valHash(a):
         return strHash(a)
     elif isinstance(a, int):
         return a
+    elif isinstance(a, dict):
+        hsh = 0
+        for k, v in a.items():
+            # pg._y(k, valHash(k))
+            # pg._y(v, valHash(v))
+            hsh = hsh ^ valHash(k) ^ valHash(v)
+            
+        return hsh
     elif isinstance(a, list):
         hsh = 0
         for item in a:
             hsh = hsh ^ valHash(item)
         return hsh
+    elif isinstance(a, pg.core.stdVectorNodes):
+        ### cheap hash .. we assume the nodes are part of a mesh which is hashed anyways
+        # pg._r('pg.core.stdVectorNodes: ', a, hash(len(a)))
+        return hash(len(a))
     elif isinstance(a, np.ndarray):
         if a.ndim == 1:
             return hash(pg.Vector(a))
@@ -58,10 +70,11 @@ def valHash(a):
             print(a)
             pg.error('no hash for numpy array')
     elif hasattr(a, '__hash__') and not callable(a):
+        # pg._r('has hash: ', a, hash(a))
         return hash(a)    
     elif callable(a):
         # for lambdas
-        # pg._r('hash:', inspect.getsource(a))
+        # pg._r('callable: ', inspect.getsource(a))
         return strHash(inspect.getsource(a))
 
     pg.critical('cannot find hash for:', a)
@@ -242,7 +255,7 @@ class CacheManager(object):
         for k, v in kwargs.items():
             argHash = argHash ^ valHash(k) ^ valHash(v)
             
-        # pg._g(funcHash, versionHash, codeHash, argHash)
+        #pg._g(funcHash, versionHash, codeHash, argHash)
         pg.debug("Hashing took:", pg.dur(), "s")
         return funcHash ^ versionHash ^ codeHash ^ argHash
 

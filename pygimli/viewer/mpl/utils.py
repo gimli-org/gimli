@@ -1,18 +1,10 @@
 # CODING=Utf-8
 """Plotting utilities used throughout the viewer.mpl package."""
-
+import sys
 import os
-import atexit
 
 import numpy as np
 
-# TODO expensive import costs 75% of total time
-# see: python -X importtime -c 'import pygimli'
-# import matplotlib.animation as animation
-import matplotlib
-import matplotlib.pyplot as plt
-import matplotlib.ticker as ticker
-    
 import pygimli as pg
 from pygimli.utils import prettyFloat, prettyTime
 
@@ -62,23 +54,45 @@ def quiet(on=True):
         if matplotlib.use(globals()[__lastBackend__]) is not None:
             matplotlib.use(globals()[__lastBackend__])
 
+__registeredShowPendingFigsAtExit__ = False
 
-@atexit.register
-def waitOnExit():
-    backend = matplotlib.get_backend()
-    if not 'inline' in backend:
-        if 'Qt' in backend or 'Wx' in backend or 'Tk' in backend or 'GTK' in backend:
-        
-            if len(plt.get_fignums()) > 0:
-                pg.info('Showing pending widgets on exit. '
-                        'Close all figures or Ctrl-C to quit the programm')
-                pg.wait()
+def registerShowPendingFigsAtExit():
+    """If called it register a closing function that will ensure all pending MPL figures are shown.
+
+    Its only set on demand by pg.show() since we only need it if matplotlib is used. 
+    """
+    global __registeredShowPendingFigsAtExit__
+    if __registeredShowPendingFigsAtExit__ == False:
+        import atexit
+
+        @atexit.register
+        def waitOnExit():
+            """ Call on script end to ensure to open all remaining mpl figures.
+            """
+            # only call it if mpl has been used
+            if 'matplotlib.pyplot' in sys.modules:
+                import matplotlib.pyplot as plt
+
+                backend = sys.modules['matplotlib.pyplot'].get_backend()
+                #backend = plt.get_backend()
+                #print('backend', backend)
+
+                if not 'inline' in backend:
+                    if 'Qt' in backend or 'Wx' in backend or 'Tk' in backend or 'GTK' in backend:
+                        #print(plt.get_fignums())
+                        if len(plt.get_fignums()) > 0:
+                            pg.info('Showing pending widgets on exit. '
+                                        'Close all figures or Ctrl-C to quit the programm')
+                            pg.wait()
+                
+    __registeredShowPendingFigsAtExit__ = True
 
 
 def wait(**kwargs):
     """TODO WRITEME."""
     # plt.pause seems to be broken in mpl:2.1
     # ax.canvas.draw_onIdle()
+    import matplotlib.pyplot as plt
     updateAxes(plt.gca())
     kp = kwargs.pop('untilKeyPressed', False)
     # keep sure interactive mode is off
@@ -156,56 +170,55 @@ def setPrettyTimeTicks(ax):
     pg.viewer.mpl.updateAxes(ax)
 
 
-
-class MyLogFormatterMathtext(ticker.LogFormatterMathtext):
-    def __init__(self, minExp=4, **kwargs):
-        super().__init__(**kwargs)
-        self._minExp = minExp
-
-    def __call__(self, x, pos=None):
-        import matplotlib as mpl
-        import math
-        # docstring inherited
-        usetex = mpl.rcParams['text.usetex']
-
-        min_exp = self._minExp
-
-        if x == 0:  # Symlog
-            return r'$\mathdefault{0}$'
-
-        sign_string = '-' if x < 0 else ''
-        x = abs(x)
-        b = self._base
-
-        # only label the decades
-        fx = math.log(x) / math.log(b)
-        is_x_decade = ticker.is_close_to_int(fx)
-        exponent = round(fx) if is_x_decade else np.floor(fx)
-        coeff = round(b ** (fx - exponent))
-        if is_x_decade:
-            fx = round(fx)
-
-        if self.labelOnlyBase and not is_x_decade:
-            return ''
-        if self._sublabels is not None and coeff not in self._sublabels:
-            return ''
-
-        # use string formatting of the base if it is not an integer
-        if b % 1 == 0.0:
-            base = '%d' % b
-        else:
-            base = '%s' % b
-
-        if abs(fx) < min_exp:
-            
-            return r'$\mathdefault{%s%g}$' % (sign_string, x)
-        elif not is_x_decade:
-            return self._non_decade_format(sign_string, base, fx, usetex)
-        else:
-            return r'$\mathdefault{%s%s^{%d}}$' % (sign_string, base, fx)
-
-
 def setPrettyTimeAxis(axis, unit=None):
+
+    class MyLogFormatterMathtext(ticker.LogFormatterMathtext):
+        def __init__(self, minExp=4, **kwargs):
+            super().__init__(**kwargs)
+            self._minExp = minExp
+
+        def __call__(self, x, pos=None):
+            import matplotlib as mpl
+            import math
+            # docstring inherited
+            usetex = mpl.rcParams['text.usetex']
+
+            min_exp = self._minExp
+
+            if x == 0:  # Symlog
+                return r'$\mathdefault{0}$'
+
+            sign_string = '-' if x < 0 else ''
+            x = abs(x)
+            b = self._base
+
+            # only label the decades
+            fx = math.log(x) / math.log(b)
+            is_x_decade = ticker.is_close_to_int(fx)
+            exponent = round(fx) if is_x_decade else np.floor(fx)
+            coeff = round(b ** (fx - exponent))
+            if is_x_decade:
+                fx = round(fx)
+
+            if self.labelOnlyBase and not is_x_decade:
+                return ''
+            if self._sublabels is not None and coeff not in self._sublabels:
+                return ''
+
+            # use string formatting of the base if it is not an integer
+            if b % 1 == 0.0:
+                base = '%d' % b
+            else:
+                base = '%s' % b
+
+            if abs(fx) < min_exp:
+                
+                return r'$\mathdefault{%s%g}$' % (sign_string, x)
+            elif not is_x_decade:
+                return self._non_decade_format(sign_string, base, fx, usetex)
+            else:
+                return r'$\mathdefault{%s%s^{%d}}$' % (sign_string, base, fx)
+
     
     @ticker.FuncFormatter
     def pfMajorFormatter(x, pos):
@@ -337,6 +350,7 @@ def createAnimation(fig, animate, nFrames, dpi, out):
 
     Until I know a better place.
     """
+    from matplotlib.animation import animation
     anim = animation.FuncAnimation(fig, animate, frames=nFrames,
                                    interval=0.001, repeat=False)
     anim.save(out + ".mp4", writer=None, fps=20, dpi=dpi, codec=None,
@@ -358,7 +372,7 @@ def saveAnimation(mesh, data, out, vData=None, plc=None, label='', cMin=None,
     """
     dpi = 92
     scale = 1
-    fig = plt.figure(facecolor='white',
+    fig = pg.plt.figure(facecolor='white',
                      figsize=(scale * 800 / dpi, scale * 490 / dpi), dpi=dpi)
     ax = fig.add_subplot(1, 1, 1)
 
@@ -441,6 +455,6 @@ def _createTwin(ax, funct):
 
 def isInteractive():
     """Returns False if a non-interactive backend is used, e.g. for Jupyter Notebooks and sphinx builds."""
-    backend = plt.get_backend().lower()
+    backend = pg.plt.get_backend().lower()
     inlineBackend = "inline" in backend or backend == "agg"
     return not inlineBackend
