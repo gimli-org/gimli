@@ -9,8 +9,6 @@ import time
 import traceback
 
 import numpy as np
-# plt should not be used outside of viewer.mpl
-import matplotlib.pyplot as plt
 
 from .. core.logger import renameKwarg
 
@@ -84,7 +82,7 @@ def show(obj=None, data=None, **kwargs):
         ax = kwargs.pop('ax', None)
 
         if ax is None:
-            ax = plt.subplots(figsize=kwargs.pop('figsize', None))[1]
+            ax = pg.plt.subplots(figsize=kwargs.pop('figsize', None))[1]
         return ax, None
 
     if isinstance(obj, int):
@@ -93,7 +91,7 @@ def show(obj=None, data=None, **kwargs):
         if isinstance(data, int):
             ncols = data
 
-        fig, ax = plt.subplots(nrows=nrows, ncols=ncols,
+        fig, ax = pg.plt.subplots(nrows=nrows, ncols=ncols,
                           figsize=kwargs.pop('figsize', None))
 
         print(ax)
@@ -330,7 +328,7 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
                         
             if cMap == 'viridis':
                 cMap = "Set3"
-            cMap = plt.cm.get_cmap(cMap, len(uniquemarkers))
+            cMap = pg.plt.cm.get_cmap(cMap, len(uniquemarkers))
             
             kwargs["logScale"] = False
             kwargs["cMin"] = -0.5
@@ -538,14 +536,14 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
             # addCoverageAlpha(gci, pg.core.cellDataToPointData(mesh,
             #                                                   coverage))
 
-    if not hold or block is not False and plt.get_backend().lower() != "agg":
+    if not hold or block is not False and pg.plt.get_backend().lower() != "agg":
         if data is not None:
             if len(data) == mesh.cellCount():
                 CellBrowser(mesh, data, ax=ax)
 
-        plt.show(block=block)
+        pg.plt.show(block=block)
         try:
-            plt.pause(0.01)
+            pg.plt.pause(0.01)
         except BaseException:
             pass
 
