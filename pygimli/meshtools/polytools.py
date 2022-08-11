@@ -1186,7 +1186,7 @@ def createParaMeshSurface(sensors, paraBoundary=None, boundary=-1,
 
 
 def createParaMeshPLC3D(sensors, paraDX=0, paraDepth=-1, paraBoundary=None,
-                        paraMaxCellSize=0.0, boundary=-1,
+                        paraMaxCellSize=0.0, boundary=None,
                         boundaryMaxCellSize=0, surfaceMeshQuality=30,
                         addTopo=None, isClosed=False, **kwargs):
     r"""Create a geometry (PLC) for an 3D inversion parameter mesh.
@@ -1236,7 +1236,11 @@ def createParaMeshPLC3D(sensors, paraDX=0, paraDepth=-1, paraBoundary=None,
     """
     if hasattr(sensors, 'sensors'):
         sensors = sensors.sensors()
+
     sensors = np.asarray(sensors)
+
+    if boundary is None:
+        boundary = [10.0, 10.0]
 
     surface = pg.meshtools.createParaMeshSurface(
         sensors, paraBoundary=paraBoundary, boundary=boundary,
