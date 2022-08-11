@@ -1494,17 +1494,13 @@ void Mesh::cleanNeighborInfos(){
 }
 
 void Mesh::createNeighborInfos(bool force){
-//     double med = 0.;
-//     __MS(neighborsKnown_ << " " <<force)
     if (!neighborsKnown_ || force){
         this->cleanNeighborInfos();
 
 //         Stopwatch sw(true);
 
         for (Index i = 0; i < cellCount(); i ++){
-//            if (i%10000 ==0) __MS(i);
             createNeighborInfosCell_(&cell(i));
-//             med+=sw.duration(true);
         }
         neighborsKnown_ = true;
     } else {
@@ -1937,7 +1933,7 @@ void Mesh::createMeshByCells(const Mesh & mesh, const std::vector < Cell * > & c
     }
 
     //! Create all remaining boundaries
-    createNeighborInfos();
+    // createNeighborInfos();
 }
 
 

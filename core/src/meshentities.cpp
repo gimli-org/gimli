@@ -364,6 +364,19 @@ void MeshEntity::changed(){
     gradUCache_.setValid(false);
 }
 
+bool MeshEntity::enforcePositiveDirection(){
+    // __MS(this->shape_->createJacobian().det())
+    // if (this->shape_->createJacobian().det() < 0){
+    //     std::reverse(nodeVector_.begin(), nodeVector_.end());
+    //     this->changed();
+
+        // __MS(this->shape_->createJacobian().det())
+    //     return true;
+    // }
+    __M
+    return false;
+}
+
 //############### Cell ##################
 
 Cell::Cell() : MeshEntity(), attribute_(){

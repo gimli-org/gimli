@@ -724,8 +724,6 @@ class MeshMethodManager(MethodManager):
 
         mesh : pg.Mesh [None]
 
-        zWeight : float [None]
-            Set zWeight or use defaults from regionManager.
 
         startModel : float | iterable [None]
 
@@ -733,7 +731,14 @@ class MeshMethodManager(MethodManager):
 
         Keyword Arguments
         -----------------
-        forwarded to Inversion.run
+        zWeight : float [None]
+            Set zWeight or use defaults from regionManager.
+
+        correlationLengths
+        
+        limits: [float, float]
+
+        Al other are forwarded to Inversion.run
 
         Returns
         -------

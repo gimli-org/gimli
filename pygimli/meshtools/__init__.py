@@ -70,6 +70,7 @@ __all__ = [
     'createCircle',
     'createLine',
     'createParaMeshPLC',
+    'createParaMeshPLC3D',
     'convertHDF5Mesh',
     'exportHDF5Mesh',
     'exportFenicsHDF5Mesh',

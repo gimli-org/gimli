@@ -20,6 +20,7 @@ import math
 import os
 from os import system
 
+import functools
 import numpy as np
 import pygimli as pg
 
@@ -1259,6 +1260,15 @@ def createParaMeshPLC3D(sensors, paraDX=0, paraDepth=-1, paraBoundary=None,
     paraDepth = np.median(sensors[:,2]) - paraDepth
     depth = paraDepth - max(boundary[0]*xSpan, boundary[1]*ySpan)/2
    
+    def sortP(p):
+        base = pg.core.Line(p[0], p[1]).at(-1e7)
+        def cmp_(p1, p2):
+            if p1.distSquared(base) < p2.distSquared(base):
+                return -1
+            else:
+                return 1
+        
+        p.sort(key=functools.cmp_to_key(cmp_))
 
     bounds = [surface]
     # close outer surfaces
@@ -1268,7 +1278,7 @@ def createParaMeshPLC3D(sensors, paraDX=0, paraDepth=-1, paraBoundary=None,
         p = [n.pos() for n in surface.nodes() if n.marker() == i+1]
         p.append(surface.nodes(surface.nodeMarkers()==(i%4+1)*10)[0].pos())
         p.append(surface.nodes(surface.nodeMarkers()==((i+1)%4+1)*10)[0].pos())
-        p.sort()
+        sortP(p)
 
         p0 = pg.Pos(p[-1])
         p0[2] = depth
@@ -1297,7 +1307,7 @@ def createParaMeshPLC3D(sensors, paraDX=0, paraDepth=-1, paraBoundary=None,
         p = [n.pos() for n in surface.nodes() if n.marker() == i+5]
         p.append(surface.nodes(surface.nodeMarkers()==(i%4+5)*10)[0].pos())
         p.append(surface.nodes(surface.nodeMarkers()==((i+1)%4+5)*10)[0].pos())
-        p.sort()
+        sortP(p)
 
         p0 = pg.Pos(p[-1])
         p0[2] = paraDepth
@@ -1325,7 +1335,6 @@ def createParaMeshPLC3D(sensors, paraDX=0, paraDepth=-1, paraBoundary=None,
         for s in sensors:
             pdPLC.createNode(s - [0.0, 0.0, paraDX])
             
-
     pdPLC.addRegionMarker(pg.center(bttmA.positions()) + [0.0, 0.0, 0.1], 
                           marker=1, area=boundaryMaxCellSize)
     pdPLC.addRegionMarker(pg.center(bttmP.positions()) + [0.0, 0.0, 0.1],  
