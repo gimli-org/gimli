@@ -66,19 +66,21 @@ plc.createNode([0.75, 0.25, 0.5], marker=-1000)
 ###############################################################################
 # For sufficient numerical accuracy it is generally a good idea to refine the
 # mesh in the vicinity of the electrodes positions.
-# We force the local mesh refinement by an additional node at 1/2 mm
+# We force the local mesh refinement by an additional node at 1 mm
 # distance in -z-direction.
 
 for s in plc.positions(pg.find(plc.nodeMarkers() == -99)):
-    plc.createNode(s - [0.0, 0.0, 1e-3/2])
+    plc.createNode(s - [0.0, 0.0, 1e-3])
 
 # Also refine the reference node
-plc.createNode([0.5, 0.5, -0.5 - 1e-3/2])
+plc.createNode([0.5, 0.5, -0.5 - 1e-3])
+#pg.show(plc, markers=True, showMesh=True)
 
 ###############################################################################
 # Create the tetrahedron mesh (calling the tetgen mesh generator)
 
 mesh = mt.createMesh(plc)
+pg.show(mesh, markers=True, showMesh=True)
 
 ###############################################################################
 # First we want to simulate our ERT response for a homogeneous resistivity
@@ -114,17 +116,18 @@ hom.save('homogeneous.ohm', 'a b m n u')
 cube = mt.createCube(size=[0.3, 0.2, 0.8], pos=[0.7, 0.2], marker=2)
 plc += cube
 
+pg.show(plc, alpha=0.3)
 mesh = mt.createMesh(plc)
-print(mesh)
 
 ###############################################################################
-# Until we find a way (TODO) showing 3D structures in a 2D documentation,
-# it is advisable to control the geometry in a 3D viewer. We recommend Paraview
-# https://www.paraview.org/ and will export the geometry and in the
-# vtk file format.
+# Also its advisable to control the geometry in a 3D viewer. 
+# We recommend Paraview https://www.paraview.org/ and 
+# will export the geometry and in the vtk file format.
 
 # plc.exportVTK('plc')
 # mesh.exportVTK('mesh')
+pg.show(mesh, mesh.cellMarkers(), showMesh=True, 
+        filter={'clip':{'origin':(0.7, 0, 0.0)},})
 
 ###############################################################################
 # Now that we have a mesh with different regions and cell markers, we can define
@@ -135,7 +138,6 @@ print(mesh)
 res = [[1, 10.0], [2, 100.0]]  # map markers 1 and 2 to 10 and 100 Ohmm, resp.
 het = ert.simulate(mesh, res=res, scheme=shm, sr=False,
                    calcOnly=True, verbose=True)
-pg.show(mesh, notebook=True)
 
 ###############################################################################
 # The apparent resistivity for a homogeneous model of 1 Ohmm should be 1 Ohmm.
@@ -152,8 +154,6 @@ np.testing.assert_approx_equal(het('rhoa')[0], 9.5, 1)
 
 # np.testing.assert_approx_equal(het('k')[0], 0.820615269548)
 
-pg.wait()
-
 ###############################################################################
 # For such kind of simulations, the homogeneous part should be high accurate
 # because it is usually needed once after storing the geometric factors.
@@ -168,5 +168,6 @@ pg.wait()
 # checks:
 # TODO:
 # * any idea for a Figure here?
+# * maybe show data and effect of topography
 # * Alternatively, we can create a real cavity by changing the marker
 # in isHole flag for createCube (check)
