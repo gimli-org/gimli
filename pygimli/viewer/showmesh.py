@@ -8,6 +8,10 @@ import time
 import traceback
 
 import numpy as np
+<<<<<<< HEAD
+=======
+
+>>>>>>> dev
 from pygimli.viewer.mpl.colorbar import setMappableData
 
 from .. core.logger import renameKwarg
@@ -18,7 +22,7 @@ try:
     from .mpl import drawMesh, drawModel, drawField, drawSensors, drawStreams
     from .mpl import drawSelectedMeshBoundaries
     from .mpl import addCoverageAlpha
-    from .mpl import updateAxes, registerShowPendingFigsAtExit
+    from .mpl import updateAxes  # , registerShowPendingFigsAtExit
     from .mpl import createColorBar, updateColorBar
     from .mpl import CellBrowser
     from .mpl.colorbar import cmapFromName
@@ -83,9 +87,10 @@ def show(obj=None, data=None, **kwargs):
 
         if ax is None:
             ax = pg.plt.subplots(figsize=kwargs.pop('figsize', None))[1]
-            
+
         return ax, None
 
+<<<<<<< HEAD
     if isinstance(obj, int):
         nrows = obj
         ncols = 1
@@ -106,6 +111,9 @@ def show(obj=None, data=None, **kwargs):
     if hasattr(obj, 'mesh') and hasattr(obj, 'eval'):
         return pg.show(obj.mesh, obj.eval(),
                        **kwargs)
+=======
+    # registerShowPendingFigsAtExit()
+>>>>>>> dev
 
     # try to check if obj containes a mesh
     if hasattr(obj, 'mesh'):
@@ -135,12 +143,11 @@ def show(obj=None, data=None, **kwargs):
 
     if isinstance(mesh, list):
         ax = kwargs.pop('ax', None)
-
-        ax, cBar = show(mesh[0], data, hold=1, ax=ax,
+        ax, cBar = show(mesh[0], data, hold=True, ax=ax,
                         fitView=fitView, **kwargs)
 
         for m in mesh[1:]:
-            ax, cBar = show(m, data, ax=ax, hold=1, fitView=False, **kwargs)
+            ax, cBar = show(m, data, ax=ax, hold=True, fitView=False, **kwargs)
 
         if fitView is not False:
             ax.autoscale(enable=True, axis='both', tight=True)
@@ -148,6 +155,14 @@ def show(obj=None, data=None, **kwargs):
         return ax, cBar
 
     if isinstance(mesh, pg.Mesh):
+        if isinstance(data, str):
+            if data in mesh.dataKeys():
+                data = mesh[data]
+            # elif 0:  # maybe check x, y, z, cellMarker etc.
+            else:
+                pg.error(f"Could not retrieve data from key {data}")
+                return None, None
+
         if mesh.dim() == 2:
             if pg.zero(pg.y(mesh)):
                 pg.info("swap z<->y coordinates for visualization.")
@@ -173,7 +188,7 @@ def show(obj=None, data=None, **kwargs):
     return None, None
 
 
-def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
+def showMesh(mesh, data=None, block=False, colorBar=None,
              label=None, coverage=None, ax=None, savefig=None,
              showMesh=False, showBoundary=None,
              markers=False, **kwargs):
@@ -213,16 +228,9 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
 
         . pg.core.stdVectorRVector3 -- sensor positions
             forward to :py:mod:`pygimli.viewer.mpl.drawSensors`
-    hold: bool [false]
-        Set interactive plot mode for matplotlib.
-        If this is set to false [default] your script will open
-        a window with the figure and draw your content.
-        If set to true nothing happens until you either force another show with
-        hold=False, you call plt.show() or pg.wait().
-        If you want show with stopping your script set block = True.
-    block: bool [false]
-        Force show drawing your content and block the script until you
-        close the current figure.
+    block: bool [False]
+        Force to open the Figure of your content and blocks the script until
+        you close the current figure. Same like pg.show(); pg.wait()
     colorBar: bool [None], Colorbar
         Create and show a colorbar. If colorBar is a valid colorbar then only
         its values will be updated.
@@ -252,17 +260,25 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
 
     Keyword Arguments
     -----------------
-    **kwargs:
-        * xlabel: str [None]
+    xlabel: str [None]
             Add label to the x axis
-        * ylabel: str [None]
+    ylabel: str [None]
             Add label to the y axis
-        fitView: bool
+    fitView: bool
             Fit the axes limits to the all content of the axes. Default True.
-        boundaryProps: dict
+    boundaryProps: dict
             Arguments for plotboundar
-        All remaining will be forwarded to the draw functions
-        and matplotlib methods, respectively.
+
+    hold: bool [pg.hold()]
+        Holds back the opening of the Figure.
+        If set to True [default] nothing happens until you either force another
+        show with hold=False or block=True or call pg.wait() or pg.plt.show().
+        If hold is set to False your script will open the figure and continue
+        working. You can change global hold with pg.hold(bool).
+
+    All remaining will be forwarded to the draw functions
+    and matplotlib methods, respectively.
+
 
     Examples
     --------
@@ -279,7 +295,6 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
 
     cBar : matplotlib.colorbar
     """
-
     renameKwarg('cmap', 'cMap', kwargs)
 
     cMap = kwargs.pop('cMap', 'viridis')
@@ -299,13 +314,13 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
     # horrible wrong for german 'decimal_point': ','
     pg.checkAndFixLocaleDecimal_point(verbose=False)
 
-    if block:
+    hold = kwargs.pop('hold', pg.viewer.mpl.utils.__holdAxes__)
+
+    if block is True:
         hold = True
 
-    lastHoldStatus = pg.viewer.mpl.utils.holdAxes__
-    if not lastHoldStatus or hold:
-        pg.viewer.mpl.hold(val=1)
-        hold = True
+    lastHoldStatus = pg.viewer.mpl.utils.__holdAxes__
+    pg.viewer.mpl.hold(val=hold)
 
     gci = None
     validData = False
@@ -362,31 +377,39 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
         if hasattr(data[0], '__len__') and not \
                 isinstance(data, np.ma.core.MaskedArray):
 
+<<<<<<< HEAD
             data = np.asarray(data)
             
             ### [u,v] x N
+=======
+            # [u,v] x N
+>>>>>>> dev
             if len(data) == 2:
                 data = np.array(data).T
 
-            ### N x [u,v]
+            # N x [u,v]
             if data.shape[1] == 2:
                 drawStreams(ax, mesh, data, **kwargs)
 
-            ### N x [u,v,w]
-            elif data.shape[1] == 3:  
+            # N x [u,v,w]
+            elif data.shape[1] == 3:
                 # if sum(data[:, 0]) != sum(data[:, 1]):
                 # drawStreams(ax, mesh, data, **kwargs)
                 drawStreams(ax, mesh, data[:, 0:2], **kwargs)
             else:
 
+<<<<<<< HEAD
                 ### Try animation frames x N
+=======
+                # Try animation frames x N
+                data = np.asarray(data)
+>>>>>>> dev
                 if data.ndim == 2:
                     if data.shape[1] == mesh.cellCount() or \
                        data.shape[1] == mesh.nodeCount():
-            
-                        return showAnimation(mesh, data, cMap=cMap, 
-                                             ax=ax, **kwargs)
 
+                        return showAnimation(mesh, data, cMap=cMap,
+                                             ax=ax, **kwargs)
 
                 pg.warn("No valid stream data:", data.shape, data.ndim)
                 showMesh = True
@@ -476,8 +499,8 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
             gci.set_linewidth(0.3)
             gci.set_edgecolor(kwargs.pop('color', "0.1"))
         else:
-            pg.viewer.mpl.drawSelectedMeshBoundaries(ax, mesh.boundaries(),
-                color=kwargs.pop('color', "0.1"), 
+            pg.viewer.mpl.drawSelectedMeshBoundaries(
+                ax, mesh.boundaries(), color=kwargs.pop('color', "0.1"),
                 linewidth=0.3)
             # drawMesh(ax, mesh, **kwargs)
 
@@ -488,10 +511,17 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
                                                  linewidth=1.4)
 
     if kwargs.pop("boundaryMarkers", False):
+<<<<<<< HEAD
         pg.viewer.mpl.drawBoundaryMarkers(ax, mesh,
                     clipBoundaryMarkers=kwargs.pop('clipBoundaryMarkers', False),
                     bc=kwargs.pop('bc', None),
                     **kwargs.pop('boundaryProps', {}) )
+=======
+        pg.viewer.mpl.drawBoundaryMarkers(
+            ax, mesh,
+            clipBoundaryMarkers=kwargs.pop('clipBoundaryMarkers', False),
+            **kwargs.pop('boundaryProps', {}))
+>>>>>>> dev
 
     fitView = kwargs.pop('fitView', fitViewDefault)
 
@@ -536,8 +566,8 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
             addCoverageAlpha(gci, coverage,
                              dropThreshold=kwargs.pop('dropThreshold', 0.4))
         else:
-            pg.error('Coverage needs to be either of type float or an array with',
-                     'the same length as data and mesh.cellCount().')
+            pg.error('Coverage needs to be either of type float or an array',
+                     'with the same length as data and mesh.cellCount().')
             # addCoverageAlpha(gci, pg.core.cellDataToPointData(mesh,
             #                                                   coverage))
 
@@ -552,8 +582,9 @@ def showMesh(mesh, data=None, hold=False, block=False, colorBar=None,
         except BaseException:
             pass
 
-    if hold:
-        pg.viewer.mpl.hold(val=lastHoldStatus)
+    pg.viewer.mpl.updateAxes(ax)
+
+    pg.viewer.mpl.hold(val=lastHoldStatus)
 
 
     if kwargs.get('depth', False):
@@ -636,9 +667,10 @@ def showBoundaryNorm(mesh, normMap=None, **kwargs):
 
 __Animation_Keeper__ = None
 
+
 def showAnimation(mesh, data, ax=None, **kwargs):
-    """Show timelapse mesh data. 
-    
+    """Show timelapse mesh data.
+
     Time will be annotated if the mesh contains a valid 'times' data array.
 
     TODO
@@ -651,7 +683,7 @@ def showAnimation(mesh, data, ax=None, **kwargs):
     mesh: :gimliapi:`GIMLI::Mesh`
         2D GIMLi mesh
     data: [NxM] iterable
-        Data matrix for N frames with suitable data size. 
+        Data matrix for N frames with suitable data size.
 
     Keyword Args
     ------------
@@ -663,11 +695,11 @@ def showAnimation(mesh, data, ax=None, **kwargs):
     """
     import matplotlib.animation
     plt = pg.plt
-    
+
     plt.rcParams["animation.html"] = "jshtml"
-    plt.rcParams['figure.dpi'] = kwargs.pop('dpi',96)  
+    plt.rcParams['figure.dpi'] = kwargs.pop('dpi', 96)
     plt.rcParams['animation.embed_limit'] = 50
-    
+
     flux = kwargs.pop('flux', None)
 
     plt.ioff()
@@ -676,9 +708,9 @@ def showAnimation(mesh, data, ax=None, **kwargs):
 
     try:
         times = mesh['times']
-    except:
+    except Exception:
         times = None
-    
+
     p = pg.utils.ProgressBar(len(data))
     def animate(t):
         p.update(t)
@@ -688,16 +720,16 @@ def showAnimation(mesh, data, ax=None, **kwargs):
             pg.show(mesh, flux[t], ax=ax)
 
         if times is not None and len(times) > t:
-            #ax.text(0.02, 0.02, f't={pg.pf(times[t])}',
+            # ax.text(0.02, 0.02, f't={pg.pf(times[t])}',
             ax.text(0.01, 1.01, f't={pg.utils.prettyTime(times[t])}',
                     horizontalalignment='left',
-                    verticalalignment='bottom', 
+                    verticalalignment='bottom',
                     transform=ax.transAxes, color='k', fontsize=8)
-    
+
     if pg.isNotebook() is False:
         global __Animation_Keeper__
 
     __Animation_Keeper__ = matplotlib.animation.FuncAnimation(ax.figure,
-                                                              animate, 
+                                                              animate,
                                                               frames=len(data))
     return __Animation_Keeper__

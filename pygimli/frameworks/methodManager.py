@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Method Manager.
+
+"""Method Manager
 
 Provide the end user interface for method (geophysical) dependent
 modelling and inversion as well as data and model visualization.
 """
+
 import numpy as np
 import pygimli as pg
 
@@ -525,19 +527,32 @@ class MethodManager(object):
         ............
         saveFig: str[None]
             If not None save figure.
+        axs: [mpl.Axes]
+            Give 3 axes and its plotted into them instead of creating 3 new.
 
         """
         saveFig = kwargs.pop('saveFig', None)
+        
+        if 'axs' in kwargs:
+            axs = kwargs.pop('axs')
+            if len(axs) != 3:
+                pg.critical("You need to provide a list of 3 axes.")
+            ax = axs[0]
+            ax1 = axs[1]
+            ax2 = axs[2]
+        else:
+            fig = pg.plt.figure(figsize=kwargs.pop('figsize', (11,6)))
+            ax = fig.add_subplot(1, 2, 1)
 
+            ax1 = fig.add_subplot(2, 2, 2)
+            ax2 = fig.add_subplot(2, 2, 4)
 
-        fig = pg.plt.figure(figsize=kwargs.pop('figsize', (11,6)))
-        ax = fig.add_subplot(1, 2, 1)
+        fig = ax.figure 
+        
+        if 'title' in kwargs:
+            fig.suptitle(kwargs['title'])
 
         self.showResult(ax=ax, model=self.model, **kwargs)
-
-        ax1 = fig.add_subplot(2, 2, 2)
-        ax2 = fig.add_subplot(2, 2, 4)
-
         self.showFit(axs=[ax1, ax2], **kwargs)
 
         fig.tight_layout()
@@ -712,8 +727,6 @@ class MeshMethodManager(MethodManager):
 
         mesh : pg.Mesh [None]
 
-        zWeight : float [None]
-            Set zWeight or use defaults from regionManager.
 
         startModel : float | iterable [None]
 
@@ -721,7 +734,14 @@ class MeshMethodManager(MethodManager):
 
         Keyword Arguments
         -----------------
-        forwarded to Inversion.run
+        zWeight : float [None]
+            Set zWeight or use defaults from regionManager.
+
+        correlationLengths
+        
+        limits: [float, float]
+
+        Al other are forwarded to Inversion.run
 
         Returns
         -------

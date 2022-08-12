@@ -107,6 +107,7 @@ class ERTManager(MeshMethodManager):
         """Set primary potential from external is not supported anymore."""
         pg.critical("Not implemented.")
 
+    
     def simulate(self, mesh, scheme, res, **kwargs):
         """Simulate an ERT measurement.
 
@@ -199,6 +200,8 @@ class ERTManager(MeshMethodManager):
         # >>> rhoa = data.get('rhoa').array()
         # >>> phia = data.get('phia').array()
         """
+        pg.critical('Obsolete, do not use!. Use ert.simulate instead')    
+
         verbose = kwargs.pop('verbose', self.verbose)
         calcOnly = kwargs.pop('calcOnly', False)
         returnFields = kwargs.pop("returnFields", False)
@@ -548,7 +551,6 @@ class ERTManager(MeshMethodManager):
         return ax, cBar
 
 
-
     def saveResult(self, folder=None, size=(16, 10), **kwargs):
         """Save all results in the specified folder.
 
@@ -562,7 +564,7 @@ class ERTManager(MeshMethodManager):
         subfolder = self.__class__.__name__
         path = getSavePath(folder, subfolder)
 
-        pg.info('Saving resistivity data to: {}'.format(path))
+        pg.info('Saving inversion results to: {}'.format(path))
 
         np.savetxt(path + '/resistivity.vector',
                    self.model)
@@ -570,6 +572,10 @@ class ERTManager(MeshMethodManager):
                    self.coverage())
         np.savetxt(path + '/resistivity-scov.vector',
                    self.standardizedCoverage())
+
+        self.fop.data.save(os.path.join(path, 'data.dat'),
+                           'a b m n rhoa k err ip iperr')
+        self.mesh.save(os.path.join(path, 'mesh'))
 
         m = pg.Mesh(self.paraDomain)
         m['Resistivity'] = self.paraModel(self.model)
@@ -581,7 +587,7 @@ class ERTManager(MeshMethodManager):
         self.fop.mesh().save(os.path.join(path, 'resistivity-mesh'))
 
         if self.paraDomain.dim() == 2:
-            fig, ax = plt.subplots(figsize=size)
+            fig, ax = pg.plt.subplots(figsize=size)
             self.showModel(ax=ax, **kwargs)
             fig.savefig(path + '/resistivity.pdf', bbox_inches="tight")
             return path, fig, ax

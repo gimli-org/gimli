@@ -11,9 +11,9 @@ from .core import (cat, HexahedronShape, Line, RSparseMapMatrix,
                         PolygonFace, TetrahedronShape, TriangleFace)
 from .logger import deprecated, error, info, warn, critical, _r
 
-from ..meshtools import mergePLC, exportPLC, interpolateAlongCurve, interpolate
-
 from .base import isScalar, isArray, isPos, isR3Array, isComplex
+
+from ..meshtools import mergePLC, exportPLC, interpolateAlongCurve
 
 
 def __Mesh_unique_dataKeys(self):
@@ -710,24 +710,30 @@ def __Mesh__align__(self, pnts):
     pnts = np.asarray(pnts)
     if pnts.ndim == 2:
         if pnts.shape[1] == 2:
-            A = np.zeros((3, pnts.shape[0]))
-            A[0] = pg.utils.cumDist(pnts)
-            A[1] = pnts[:,0]
-            A[2] = pnts[:,1]
+            
+            A = np.zeros((pnts.shape[0], 3))
+
+            from ..utils import cumDist
+            A[:,0] = cumDist(pnts[:,0:2])
+            A[:,1] = pnts[:,0]
+            A[:,2] = pnts[:,1]
             
         elif pnts.shape[1] == 3:
             A = pnts
         
     if A is None:
         print(pnts)
-        pg.critical("Can't, interprete ptns")
+        pg.critical("Can't, interprete ptns.")
 
     tn = [n.pos()[0] for n in self.nodes()]
     zn = [n.pos()[1] for n in self.nodes()]
-
+    
     p = interpolateAlongCurve(A[:,1:3], tn, tCurve=A[:,0])
 
     for i, n in enumerate(self.nodes()):
         n.setPos((p[i][0], p[i][1], zn[i]))
+
+    self.geometryChanged()
+    
 
 Mesh.align = __Mesh__align__

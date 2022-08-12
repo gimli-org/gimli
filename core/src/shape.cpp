@@ -138,16 +138,6 @@ Node & Shape::node(Index i) const {
     return *((*nodeVector_)[i]);
 }
 
-bool Shape::enforcePositiveDirection(){
-    __MS("inuse?")
-    // if (createJacobian().det() < 0){
-    //     std::reverse(nodeVector_.begin(), nodeVector_.end());
-    //     this->changed();
-    //     return true;
-    // }
-    return false;
-}
-
 RVector3 Shape::center() const {
     RVector3 center(0.0, 0.0, 0.0);
     //** count only until node count .. shape shares nodeVector but only use the
