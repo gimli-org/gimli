@@ -42,9 +42,10 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
     returnActor = kwargs.pop('returnActor', False)
     showMesh = kwargs.pop('showMesh', False)
     grid = kwargs.pop('grid', False)
-    colorBar = kwargs.pop('colorBar', True)
+    colorBar = kwargs.pop('colorBar', style != 'wireframe')
     name = kwargs.pop('name', 'Mesh')
     bc = kwargs.pop('bc', '#EEEEEE') # background color
+    lw = kwargs.pop('line_width', 0.1)
     filt = kwargs.pop('filter', {}) 
     dataName = kwargs.pop('label', list(mesh.cell_data.keys())[0])
 
@@ -87,6 +88,7 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
                          color=color,
                          style=style,
                          show_edges=showMesh,
+                         line_width=lw,
                          #edge_color='white',
                          show_scalar_bar=colorBar,
                          opacity=opacity,
