@@ -2037,5 +2037,50 @@ def createParaMesh2DGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
     return mesh
 
 
+def extractUpperSurface2dMesh(mesh, zCut=None):
+    """Extract 2d mesh from the upper surface of a 3D mesh.
+
+    Useful for showing a quick 2D plot of a 3D parameter distribution
+    All cell-based parameters are copied to the new mesh
+
+    Parameters
+    ----------
+    mesh : pg.Mesh
+        input mesh (3D)
+    zCut : float
+        z value to distinguish between top and bottom
+
+    Returns
+    -------
+    mesh2d : pg.Mesh
+        output 2D mesh consisting of triangles or quadrangles
+
+    Examples
+    --------
+    >>> import pygimli as pg
+    >>> from pygimli.meshtools import extractUpperSurface2dMesh
+    >>> mesh3d = pg.createGrid(5, 4, 3)
+    >>> mesh3d["val"] = pg.utils.grange(0, mesh3d.cellCount(), 1)
+    >>> mesh2d = extractUpperSurface2dMesh(mesh3d)
+    >>> ax, _ = pg.show(mesh2d, "val")
+    """
+    if mesh.boundaryCount() == 0:
+        mesh.createNeighborInfos()
+
+    zCut = zCut or pg.mean(pg.z(mesh))
+    bind = [b.id() for b in mesh.boundaries() if b.outside() and
+            b.center().z() > zCut and b.shape().norm().z() != 0]
+    bMesh = mesh.createSubMesh(mesh.boundaries(bind))
+    cind = np.array([mesh.boundary(i).leftCell().id() for i in bind])
+    mesh2d = pg.Mesh(2)
+    [mesh2d.createNode(n.pos()) for n in bMesh.nodes()]
+    for b in bMesh.boundaries():
+        mesh2d.createCell([n.id() for n in b.nodes()])
+    for k in mesh.dataKeys():
+        mesh2d[k] = mesh[k][cind]
+
+    return mesh2d
+
+
 if __name__ == "__main__":
     pass
