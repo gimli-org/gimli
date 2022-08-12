@@ -65,7 +65,6 @@ def fit(funct, data, err=None, **kwargs):
     if isinstance(err, (float, int)):
         err = np.full(len(data), err)
 
-
     mgr = ParameterInversionManager(funct, **kwargs)
     model = mgr.invert(data, err, **kwargs)
     return model, mgr.fw.response
@@ -463,7 +462,6 @@ class MethodManager(object):
         if ax is None:
             fig, ax = pg.plt.subplots()
 
-
         if data is None:
             data = self.data
 
@@ -529,7 +527,7 @@ class MethodManager(object):
 
         """
         saveFig = kwargs.pop('saveFig', None)
-        
+
         if 'axs' in kwargs:
             axs = kwargs.pop('axs')
             if len(axs) != 3:
@@ -538,14 +536,14 @@ class MethodManager(object):
             ax1 = axs[1]
             ax2 = axs[2]
         else:
-            fig = pg.plt.figure(figsize=kwargs.pop('figsize', (11,6)))
+            fig = pg.plt.figure(figsize=kwargs.pop('figsize', (11, 6)))
             ax = fig.add_subplot(1, 2, 1)
 
             ax1 = fig.add_subplot(2, 2, 2)
             ax2 = fig.add_subplot(2, 2, 4)
 
-        fig = ax.figure 
-        
+        fig = ax.figure
+
         if 'title' in kwargs:
             fig.suptitle(kwargs['title'])
 
@@ -734,9 +732,17 @@ class MeshMethodManager(MethodManager):
         zWeight : float [None]
             Set zWeight or use defaults from regionManager.
 
-        correlationLengths
-        
+        correlationLengths : [float, float, float]
+            Correlation lengths for geostatistical regularization
+
+        dip : float
+            rotation axis between first and last dimension (x and z)
+
+        strike : float
+            rotation axis between first and second dimension (x and y)
+
         limits: [float, float]
+            lower and upper value bounds for logarithmic transformation
 
         Al other are forwarded to Inversion.run
 
