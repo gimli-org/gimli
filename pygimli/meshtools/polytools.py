@@ -1215,10 +1215,10 @@ def createParaMeshPLC3D(sensors, paraDX=0, paraDepth=-1, paraBoundary=None,
             Margin for parameter domain in relative extend.
 
         paraMaxCellSize: double, optional
-            Maximum cell size for parametric region in m²
+            Maximum cell size for parametric region in m³
 
         boundaryMaxCellSize: double, optional
-            Maximum cells size in the boundary region in m²
+            Maximum cells size in the boundary region in m³
 
         boundary: [float, float] [10., 10.]
             Boundary width to be appended for domain prolongation in relative
@@ -1256,7 +1256,7 @@ def createParaMeshPLC3D(sensors, paraDX=0, paraDepth=-1, paraBoundary=None,
 
     paraDepth = np.median(sensors[:, 2]) - paraDepth
     depth = paraDepth - max(boundary[0]*xSpan, boundary[1]*ySpan)/2
-   
+
     def sortP(p):
         base = pg.core.Line(p[0], p[1]).at(-1e7)
         def cmp_(p1, p2):
@@ -1264,7 +1264,7 @@ def createParaMeshPLC3D(sensors, paraDX=0, paraDepth=-1, paraBoundary=None,
                 return -1
             else:
                 return 1
-        
+
         p.sort(key=functools.cmp_to_key(cmp_))
 
     bounds = [surface]
@@ -1330,8 +1330,8 @@ def createParaMeshPLC3D(sensors, paraDX=0, paraDepth=-1, paraBoundary=None,
     if paraDX > 0:
         for s in sensors:
             pdPLC.createNode(s - [0.0, 0.0, paraDX])
-            
-    pdPLC.addRegionMarker(pg.center(bttmA.positions()) + [0.0, 0.0, 0.1], 
+
+    pdPLC.addRegionMarker(pg.center(bttmA.positions()) + [0.0, 0.0, 0.1],
                           marker=1, area=boundaryMaxCellSize)
     pdPLC.addRegionMarker(pg.center(bttmP.positions()) + [0.0, 0.0, 0.1],
                           marker=2, area=paraMaxCellSize)
