@@ -4,7 +4,7 @@ r"""
 Heat equation in 2D
 -------------------
 
-This tutorial simulates the stationary heat equation in 2D. The example is
+This tutorial solves the stationary heat equation in 2D. The example is
 taken from the pyGIMLi paper (https://cg17.pygimli.org).
 """
 
@@ -20,10 +20,10 @@ block = mt.createRectangle(start=[-6, -3.5], end=[6, -6.0],
                            marker=4,  boundaryMarker=10, area=0.1)
 # Merge geometrical entities
 geom = world + block
-pg.show(geom, boundaryMarker=True)
+pg.show(geom, markers=True);
 
 ###############################################################################
-# Create a mesh from based on the geometry definition. The quality of the mesh 
+# Create a mesh from based on the geometry definition. 
 # When calling the :func:`pg.meshtools.createMesh` function, a quality parameter
 # can be forwarded to Triangle, which prescribes the minimum angle allowed in
 # the final mesh. For a tutorial on the quality of the mesh please refer to : 
@@ -32,14 +32,14 @@ pg.show(geom, boundaryMarker=True)
 # Note: Incrementing quality increases computer time, take precaution with quality 
 # values over 33.
 mesh = mt.createMesh(geom, quality=33, area=0.2, smooth=[1, 10])
-pg.show(mesh)
+pg.show(mesh);
 
 ###############################################################################
 # Call :py:func:`pygimli.solver.solveFiniteElements` to solve the heat
 # diffusion equation :math:`\nabla\cdot(a\nabla T)=0` with :math:`T(bottom)=1`
 # and :math:`T(top)=0`, where :math:`a` is the thermal diffusivity and :math:`T`
 # is the temperature distribution. We assign thermal diffusivities to the four regions
-# using their marker number in a dictionary (a) and the fixed temperatures at the 
+# using their marker numbers in a dictionary (a) and the fixed temperatures at the 
 # boundaries using Dirichlet boundary conditions with the respective markers in 
 # another dictionary (bc) 
 T = pg.solver.solveFiniteElements(mesh,
