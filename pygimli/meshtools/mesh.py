@@ -2045,14 +2045,14 @@ def extractUpperSurface2dMesh(mesh, zCut=None):
 
     Parameters
     ----------
-    mesh : pg.Mesh
-        input mesh (3D)
-    zCut : float
+    mesh: :gimliapi:`GIMLI::Mesh`
+        Input mesh (3D)
+    zCut: float
         z value to distinguish between top and bottom
 
     Returns
     -------
-    mesh2d : pg.Mesh
+    mesh2d: :gimliapi:`GIMLI::Mesh`
         output 2D mesh consisting of triangles or quadrangles
 
     Examples
@@ -2071,11 +2071,14 @@ def extractUpperSurface2dMesh(mesh, zCut=None):
     bind = [b.id() for b in mesh.boundaries() if b.outside() and
             b.center().z() > zCut and b.shape().norm().z() != 0]
     bMesh = mesh.createSubMesh(mesh.boundaries(bind))
-    cind = np.array([mesh.boundary(i).leftCell().id() for i in bind])
+
     mesh2d = pg.Mesh(2)
     [mesh2d.createNode(n.pos()) for n in bMesh.nodes()]
     for b in bMesh.boundaries():
         mesh2d.createCell([n.id() for n in b.nodes()])
+    
+    # copy data
+    cind = np.array([mesh.boundary(i).leftCell().id() for i in bind])
     for k in mesh.dataKeys():
         mesh2d[k] = mesh[k][cind]
 

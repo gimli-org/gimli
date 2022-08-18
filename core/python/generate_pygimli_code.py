@@ -373,7 +373,11 @@ def generate(defined_symbols, extraIncludes):
                 'getNonEmptyRow',
                 'getSubstrings',
                 'abs',
-                'type']
+                'type',
+                '::GIMLI::print',
+                'print',
+                'range',
+          ]
             )
 
     exclude(main_ns.free_operators,
@@ -455,6 +459,9 @@ def generate(defined_symbols, extraIncludes):
           'IVectorIter',
           'RVectorIter',
           'FunctionDD',
+          '::GIMLI::print',
+          'print',
+          'range',
           ]
 
     for c in main_ns.free_functions():

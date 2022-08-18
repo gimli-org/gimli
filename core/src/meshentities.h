@@ -43,6 +43,10 @@ DLLEXPORT Boundary * findBoundary(const Node & n1, const Node & n2, const Node &
 
 DLLEXPORT Boundary * findBoundary(const std::vector < Node * > & n);
 
+/*! Find all boundaries that have these nodes in common. */
+DLLEXPORT std::set < Boundary * >  
+findBoundaries(const std::vector < Node * > & n);
+
 /*! */
 DLLEXPORT Boundary * findCommonBoundary(const Cell & c1, const Cell & c2);
 
