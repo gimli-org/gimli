@@ -18,10 +18,10 @@
 
 #include "meshentities.h"
 
-#include "node.h"
-#include "shape.h"
 #include "line.h"
 #include "mesh.h"
+#include "node.h"
+#include "shape.h"
 
 #include <map>
 #include <algorithm>
@@ -73,14 +73,17 @@ Boundary * findBoundary(const std::vector < Node * > & n) {
     else if (n.size() == 3) return findBoundary(*n[0], *n[1], *n[2]);
     else if (n.size() == 4) return findBoundary(*n[0], *n[1], *n[2], *n[3]);
 
+    return findBoundary_(findBoundaries(n));
+}
+
+std::set < Boundary * > findBoundaries(const std::vector < Node * > & n){
     std::vector < std::set< Boundary * > > bs(n.size());
 
     for (uint i = 0; i < n.size(); i ++) bs[i] = n[i]->boundSet();
 
     std::set < Boundary * > common;
     intersectionSet(common, bs);
-
-    return findBoundary_(common);
+    return common;
 }
 
 Boundary * findCommonBoundary(const Cell & c1, const Cell & c2){

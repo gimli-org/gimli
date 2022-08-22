@@ -328,7 +328,8 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
             data = pg.solver.parseMapToCellArray(data, mesh)
 
         if hasattr(data[0], '__len__') and not \
-                isinstance(data, np.ma.core.MaskedArray):
+                isinstance(data, np.ma.core.MaskedArray) and not \
+                isinstance(data[0], str):
 
             # [u,v] x N
             if len(data) == 2:
@@ -342,7 +343,7 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
             elif data.shape[1] == 3:
                 # if sum(data[:, 0]) != sum(data[:, 1]):
                 # drawStreams(ax, mesh, data, **kwargs)
-                drawStreams(ax, mesh, data[:, 0:2], **kwargs)
+                drawStreams(ax, mesh, data[:, :2], **kwargs)
             else:
 
                 # Try animation frames x N

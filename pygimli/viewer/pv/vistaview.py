@@ -117,17 +117,17 @@ def showMesh3DVista(mesh, data=None, **kwargs):
         if kwargs.get('aa', False):
             plotter.enable_anti_aliasing()
 
-        if notebook:
+        if notebook is True:
             # monkey patch show of this plotter instance so we can use multiple backends and only plotter.show() .. whoever this needs.
             plotter.__show = plotter.show
-            plotter.show = lambda *args, **kwargs: plotter.__show(
-                *args, jupyter_backend=backend, **kwargs
-            )
+            plotter.show = lambda *args, **kwargs: plotter.__show(*args, 
+                    jupyter_backend=backend, **kwargs)
         else:
             plotter.__show = plotter.show
-            plotter.show = lambda *args, **kwargs: plotter.__show(*args, **kwargs) if pg.viewer.mpl.isInteractive() else False
+            plotter.show = lambda *args, **kwargs: plotter.__show(*args, 
+            **kwargs) if pg.viewer.mpl.isInteractive() else False
 
-        if not hold:
+        if hold is False:
             plotter.show()
 
         # , None to keep compatability

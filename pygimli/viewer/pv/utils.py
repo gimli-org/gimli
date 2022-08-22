@@ -38,6 +38,12 @@ def pgMesh2pvMesh(mesh, data=None, label=None, boundaries=False):
         Parameter to distribute to cells/nodes.
     """
     if boundaries:
+        mesh.createNeighbourInfos()
+        
+        if mesh.cellCount() == 0:
+            ### mesh is already a boundary mesh
+            return pgMesh2pvMesh(mesh, data, label)    
+
         b = mesh.createSubMesh(mesh.boundaries([b.id() for b in mesh.boundaries() if b.outside() or b.marker() != 0]))
         return pgMesh2pvMesh(b, data, label)
     
@@ -82,6 +88,10 @@ def pgMesh2pvMesh(mesh, data=None, label=None, boundaries=False):
             if len(data) == mesh.cellCount():
                 if label is None:
                     label = 'Cell data'
+                grid.cell_data[label] = np.asarray(data)
+            elif len(data) == mesh.boundaryCount():
+                if label is None:
+                    label = 'Boundary data'
                 grid.cell_data[label] = np.asarray(data)
             elif len(data) == mesh.nodeCount():
                 if label is None:

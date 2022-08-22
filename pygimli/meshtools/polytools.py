@@ -1081,7 +1081,8 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=-1, paraBoundary=2,
 
 
 def createParaMeshSurface(sensors, paraBoundary=None, boundary=-1,
-                          surfaceMeshQuality=30, addTopo=None):
+                          surfaceMeshQuality=30, surfaceMeshArea=0,
+                          addTopo=None):
     r"""Create surface mesh for an 3D inversion parameter mesh.
 
         Topographic information (non-zero z-coodinate) can be from sensors
@@ -1100,8 +1101,11 @@ def createParaMeshSurface(sensors, paraBoundary=None, boundary=-1,
         Boundary width to be appended for domain prolongation in relative
         para domain size.
 
-    surfaceMeshQuality: float (30)
+    surfaceMeshQuality: float [30]
         Quality of the surface mesh.
+
+    surfaceMeshArea: float [0]
+        Max cell Size for parametric domain.
 
     addTopo: [[x,y,z],]
         Number of additional nodes for topography.
@@ -1164,7 +1168,9 @@ def createParaMeshSurface(sensors, paraBoundary=None, boundary=-1,
     # find parameter extent
     paraRect = pg.meshtools.createRectangle(pnts=sensors[:, 0:2],
                                             minBB=True,
-                                            minBBOffset=paraBoundary)
+                                            minBBOffset=paraBoundary,
+                                            area=surfaceMeshArea,
+                                            )
     for i in range(4):
         paraRect.boundary(i).setMarker(i + 5)
         paraRect.node(i).setMarker((i % 4 + 5) * 10)
@@ -1188,7 +1194,8 @@ def createParaMeshSurface(sensors, paraBoundary=None, boundary=-1,
 
 def createParaMeshPLC3D(sensors, paraDX=0, paraDepth=-1, paraBoundary=None,
                         paraMaxCellSize=0.0, boundary=None,
-                        boundaryMaxCellSize=0, surfaceMeshQuality=30,
+                        boundaryMaxCellSize=0, 
+                        surfaceMeshQuality=30, surfaceMeshArea=0,
                         addTopo=None, isClosed=False, **kwargs):
     r"""Create a geometry (PLC) for an 3D inversion parameter mesh.
 
@@ -1215,17 +1222,20 @@ def createParaMeshPLC3D(sensors, paraDX=0, paraDepth=-1, paraBoundary=None,
             Margin for parameter domain in relative extend.
 
         paraMaxCellSize: double, optional
-            Maximum cell size for parametric region in m²
+            Maximum cell size for parametric region in m³
 
         boundaryMaxCellSize: double, optional
-            Maximum cells size in the boundary region in m²
+            Maximum cells size in the boundary region in m³
 
         boundary: [float, float] [10., 10.]
             Boundary width to be appended for domain prolongation in relative
             para domain size.
 
-        surfaceMeshQuality: float (30)
+        surfaceMeshQuality: float [30]
             Quality of the surface mesh.
+        
+        surfaceMeshArea: float [0]
+            Max boundary size for surface area in parametric region.
 
         addTopo: [[x,y,z],]
             Number of additional nodes for topography.
@@ -1245,7 +1255,9 @@ def createParaMeshPLC3D(sensors, paraDX=0, paraDepth=-1, paraBoundary=None,
 
     surface = pg.meshtools.createParaMeshSurface(
         sensors, paraBoundary=paraBoundary, boundary=boundary,
-        surfaceMeshQuality=surfaceMeshQuality, addTopo=addTopo)
+        surfaceMeshQuality=surfaceMeshQuality, 
+        surfaceMeshArea=surfaceMeshArea, 
+        addTopo=addTopo)
 
     # find depth and paradepth
     xSpan = (max(sensors[:, 0]) - min(sensors[:, 0]))
@@ -1256,7 +1268,7 @@ def createParaMeshPLC3D(sensors, paraDX=0, paraDepth=-1, paraBoundary=None,
 
     paraDepth = np.median(sensors[:, 2]) - paraDepth
     depth = paraDepth - max(boundary[0]*xSpan, boundary[1]*ySpan)/2
-   
+
     def sortP(p):
         base = pg.core.Line(p[0], p[1]).at(-1e7)
         def cmp_(p1, p2):
@@ -1264,7 +1276,7 @@ def createParaMeshPLC3D(sensors, paraDX=0, paraDepth=-1, paraBoundary=None,
                 return -1
             else:
                 return 1
-        
+
         p.sort(key=functools.cmp_to_key(cmp_))
 
     bounds = [surface]
@@ -1330,8 +1342,8 @@ def createParaMeshPLC3D(sensors, paraDX=0, paraDepth=-1, paraBoundary=None,
     if paraDX > 0:
         for s in sensors:
             pdPLC.createNode(s - [0.0, 0.0, paraDX])
-            
-    pdPLC.addRegionMarker(pg.center(bttmA.positions()) + [0.0, 0.0, 0.1], 
+
+    pdPLC.addRegionMarker(pg.center(bttmA.positions()) + [0.0, 0.0, 0.1],
                           marker=1, area=boundaryMaxCellSize)
     pdPLC.addRegionMarker(pg.center(bttmP.positions()) + [0.0, 0.0, 0.1],
                           marker=2, area=paraMaxCellSize)

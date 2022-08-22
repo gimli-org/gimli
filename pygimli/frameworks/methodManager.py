@@ -65,7 +65,6 @@ def fit(funct, data, err=None, **kwargs):
     if isinstance(err, (float, int)):
         err = np.full(len(data), err)
 
-
     mgr = ParameterInversionManager(funct, **kwargs)
     model = mgr.invert(data, err, **kwargs)
     return model, mgr.fw.response
@@ -92,13 +91,13 @@ class MethodManager(object):
 
     Attributes
     ----------
-    verbose : bool
+    verbose: bool
         Give verbose output.
 
-    debug : bool
+    debug: bool
         Give debug output.
 
-    fop : :py:mod:`pygimli.frameworks.Modelling`
+    fop: :py:mod:`pygimli.frameworks.Modelling`
         Forward Operator instance .. knows the physics.
         fop is initialized by
         :py:mod:`pygimli.manager.MethodManager.initForwardOperator`
@@ -106,7 +105,7 @@ class MethodManager(object):
         :py:mod:`pygimli.manager.MethodManager.createForwardOperator` method
         in any derived classes.
 
-    inv : :py:mod:`pygimli.frameworks.Inversion`.
+    inv: :py:mod:`pygimli.frameworks.Inversion`.
         Inversion framework instance .. knows the reconstruction approach.
         The attribute inv is initialized by default but can be changed
         overwriting
@@ -274,18 +273,18 @@ class MethodManager(object):
 
         Parameters
         ----------
-        data : iterable
+        data: iterable
             Data values for which the errors should be estimated.
 
-        errLevel : float (0.01)
+        errLevel: float (0.01)
             Error level in percent/100 (i.e., 3% = 0.03).
 
-        absError : float (None)
+        absError: float (None)
             Absolute error in the unit of the data.
 
         Returns
         -------
-        err : array
+        err: array
             Returning array of size len(data)
         """
         if absError is not None:
@@ -389,10 +388,10 @@ class MethodManager(object):
 
         Parameters
         ----------
-        dataVals : iterable
+        dataVals: iterable
             Data values to be inverted.
 
-        errVals : iterable | float
+        errVals: iterable | float
             Error value for the given data.
             If errVals is float we assume this means to be a global relative
             error and force self.estimateError to be called.
@@ -422,10 +421,10 @@ class MethodManager(object):
 
         Parameters
         ----------
-        ax : mpl axes
+        ax: mpl axes
             Axes object to draw into. Create a new if its not given.
 
-        model : iterable
+        model: iterable
             Model data to be draw.
 
         Returns
@@ -449,10 +448,10 @@ class MethodManager(object):
 
         Parameters
         ----------
-        ax : mpl axes
+        ax: mpl axes
             Axes object to draw into. Create a new if its not given.
 
-        data : iterable | pg.DataContainer
+        data: iterable | pg.DataContainer
             Data values to be draw.
 
         Returns
@@ -462,7 +461,6 @@ class MethodManager(object):
         """
         if ax is None:
             fig, ax = pg.plt.subplots()
-
 
         if data is None:
             data = self.data
@@ -478,10 +476,10 @@ class MethodManager(object):
 
         Parameters
         ----------
-        ax : mpl axes
+        ax: mpl axes
             Axes object to draw into. Create a new if its not given.
 
-        model : iterable [None]
+        model: iterable [None]
             Model values to be draw. Default is self.model from the last run
 
         Returns
@@ -529,7 +527,7 @@ class MethodManager(object):
 
         """
         saveFig = kwargs.pop('saveFig', None)
-        
+
         if 'axs' in kwargs:
             axs = kwargs.pop('axs')
             if len(axs) != 3:
@@ -538,14 +536,14 @@ class MethodManager(object):
             ax1 = axs[1]
             ax2 = axs[2]
         else:
-            fig = pg.plt.figure(figsize=kwargs.pop('figsize', (11,6)))
+            fig = pg.plt.figure(figsize=kwargs.pop('figsize', (11, 6)))
             ax = fig.add_subplot(1, 2, 1)
 
             ax1 = fig.add_subplot(2, 2, 2)
             ax2 = fig.add_subplot(2, 2, 4)
 
-        fig = ax.figure 
-        
+        fig = ax.figure
+
         if 'title' in kwargs:
             fig.suptitle(kwargs['title'])
 
@@ -680,7 +678,7 @@ class MeshMethodManager(MethodManager):
 
         Attribute
         ---------
-        mesh: pg.Mesh
+        mesh: :gimliapi:`GIMLI::Mesh`
             Copy of the main mesh to be distributed to inversion and the fop.
             You can overwrite it with invert(mesh=mesh).
         """
@@ -704,12 +702,13 @@ class MeshMethodManager(MethodManager):
 
     def setMesh(self, mesh, **kwargs):
         """Set a mesh and distribute it to the forward operator"""
+        # keep a copy of the original mesh
         self.mesh = mesh
         self.applyMesh(mesh, **kwargs)
 
     def applyMesh(self, mesh, ignoreRegionManager=False, **kwargs):
         """ """
-        if ignoreRegionManager:
+        if ignoreRegionManager is True:
             mesh = self.fop.createRefinedFwdMesh(mesh, **kwargs)
 
         self.fop.setMesh(mesh, ignoreRegionManager=ignoreRegionManager)
@@ -720,12 +719,11 @@ class MeshMethodManager(MethodManager):
 
         Parameters
         ----------
-        data : pg.DataContainer
+        data: pg.DataContainer
 
-        mesh : pg.Mesh [None]
-
-
-        startModel : float | iterable [None]
+        mesh: :gimliapi:`GIMLI::Mesh` [None]
+            
+        startModel: float | iterable [None]
 
             If set to None fop.createDefaultStartModel(dataValues) is called.
 
@@ -734,9 +732,17 @@ class MeshMethodManager(MethodManager):
         zWeight : float [None]
             Set zWeight or use defaults from regionManager.
 
-        correlationLengths
-        
+        correlationLengths : [float, float, float]
+            Correlation lengths for geostatistical regularization
+
+        dip : float
+            rotation axis between first and last dimension (x and z)
+
+        strike : float
+            rotation axis between first and second dimension (x and y)
+
         limits: [float, float]
+            lower and upper value bounds for logarithmic transformation
 
         Al other are forwarded to Inversion.run
 
@@ -876,9 +882,13 @@ class PetroInversionManager(MeshMethodManager):
         super().__init__(fop=petrofop, **kwargs)
 
 
-# Really necessary? Should a combination of petro and joint do the same
 class JointPetroInversionManager(MeshMethodManager):
-    """Joint inversion targeting at the same parameter through petrophysics."""
+    """Joint inversion targeting at the same parameter through petrophysics.
+    
+    This is just syntactic sugar for the combination of
+    :py:mod:`pygimli.frameworks.PetroModelling` and 
+    :py:mod:`pygimli.frameworks.JointModelling`. 
+    """
 
     def __init__(self, petros, mgrs):
         """Initialize with lists of managers and transformations"""
