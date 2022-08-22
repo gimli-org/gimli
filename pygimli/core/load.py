@@ -155,6 +155,9 @@ def load(fname, verbose=False, testAll=True, realName=None):
         ".xy": np.loadtxt,  #
     }
 
+    if fname.startswith('https://') or fname.startswith('http://'):
+        return getExampleData(fname)
+
     if not os.path.exists(fname):
         raise Exception("File or directory named %s does not exist." % (fname))
 
@@ -294,14 +297,24 @@ def getExampleFile(path, load=False, force=False, verbose=False, **kwargs):
     repo = kwargs.pop('githubRepo', __gimliExampleDataRepo__)
     branch = kwargs.pop('branch', 'master')
 
-    url = '/'.join(('https://raw.githubusercontent.com/',  # RAW files
-                   repo, branch, path))
+    fileName = ''
+    if not path.startswith('http://'): 
+        url = '/'.join(('https://raw.githubusercontent.com/',  # RAW files
+                           repo, branch, path))
 
-    pg.info(f'Looking for {path} in {repo}')
+        pg.info(f'Looking for {path} in {repo}')
 
-    fileName = os.path.join(getCachePath(),
+        fileName = os.path.join(getCachePath(),
                             __gimliExampleDataBase__,
                             repo, branch, path)
+    else:
+        url = path
+        fileName = os.path.join(getCachePath(),
+                                __gimliExampleDataBase__,
+                                *url.split('http://')[1].split('/'),
+                                )
+
+        pg.info(f'Looking for {url}')
 
     if not os.path.exists(fileName) or force is True:
         if verbose:

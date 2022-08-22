@@ -200,7 +200,7 @@ class ERTManager(MeshMethodManager):
         # >>> rhoa = data.get('rhoa').array()
         # >>> phia = data.get('phia').array()
         """
-        pg.critical('Obsolete, do not use!. Use ert.simulate instead')    
+        #pg.critical('Obsolete, do not use!. Use ert.simulate instead')    
 
         verbose = kwargs.pop('verbose', self.verbose)
         calcOnly = kwargs.pop('calcOnly', False)
