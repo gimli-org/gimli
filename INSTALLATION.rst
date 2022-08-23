@@ -19,7 +19,7 @@ Open a terminal (Linux & Mac) or the Anaconda Prompt (Windows) and type:
 
 .. code-block:: bash
 
-    conda create -n pg -c gimli -c conda-forge pygimli=1.2.6
+    conda create -n pg -c gimli -c conda-forge pygimli=1.3.0
 
 If you are using Windows or Mac, a new environment named "pg" should be visible
 in the Anaconda Navigator. If you want to use pyGIMLi from the command line, you
@@ -61,12 +61,13 @@ Staying up-to-date
 ------------------
 
 Update your pyGIMLi installation from time to time, if want to have the newest
-functionality:
-
+functionality. 
 .. code-block:: bash
 
     conda update -c gimli -c conda-forge pygimli
 
+If there something went wrong and you are running an old, not further
+supported python version, consider a fresh install in a new clean environment.
 The only drawback of using conda is that you are bound to the rhythm in which we
 update the conda packages. In order to work with the latest Python codes you
 should create an environment with the latest pyGIMLi C++ core only,
