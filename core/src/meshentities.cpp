@@ -86,8 +86,6 @@ std::set < Boundary * > findBoundaries(const std::vector < Node * > & n){
     return common;
 }
 
-
-
 Boundary * findCommonBoundary(const Cell & c1, const Cell & c2){
     for (Index i = 0; i < c1.boundaryCount(); i ++){
         Boundary * b = findBoundary(c1.boundaryNodes(i));

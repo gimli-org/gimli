@@ -512,6 +512,9 @@ namespace pyplusplus{ namespace aliases{
     typedef GIMLI::DenseMatrix< std::complex< double > > CDenseMatrix;
 
     typedef GIMLI::BlockMatrix< double >                 RBlockMatrix;
+    typedef GIMLI::BlockMatrix< Complex >                CBlockMatrix;
+    typedef GIMLI::BlockMatrixEntry< double >            RBlockMatrixEntry;
+    typedef GIMLI::BlockMatrixEntry< Complex >           CBlockMatrixEntry;
 
     typedef GIMLI::Quaternion< double >                  RQuaternion;
 
@@ -568,7 +571,8 @@ namespace pyplusplus{ namespace aliases{
     typedef std::vector< GIMLI::RVector3 >              stdVectorRVector3;
     typedef std::vector< GIMLI::R3Vector >              stdVectorR3Vector;
     typedef std::vector< GIMLI::RMatrix3 >              stdVectorMatrix3;
-    typedef std::vector< GIMLI::BlockMatrixEntry< double > > stdVectorRBlockMatrixEntry;
+    typedef std::vector< RBlockMatrixEntry >         stdVectorRBlockMatrixEntry;
+    typedef std::vector< CBlockMatrixEntry >         stdVectorCBlockMatrixEntry;
     typedef std::vector< GIMLI::RSparseMapMatrix >   stdVectorRSparseMapMatrix;
 
     typedef std::vector< GIMLI::PolynomialElement<double> > stdVectorPolynomialElementR;
@@ -593,10 +597,13 @@ namespace pyplusplus{ namespace aliases{
     typedef std::map< float, Complex >                  stdMapF_C;
     typedef std::map< int, double >                     stdMapI_D;
     typedef std::map< long, unsigned long >             stdMapL_UL;
+    typedef std::map< unsigned long, unsigned long >             stdMapUL_UL;
     typedef std::map< unsigned long, double >           stdMapUL_D;
     typedef std::map< int, int >                        stdMapI_I;
     typedef std::map< std::string, std::string >        stdMapS_S;
-
+    
+    typedef std::pair<unsigned long, unsigned long>     stdPairUL_UL;
+    
 #ifdef WIN32
     typedef std::map< long long, double > stdMapL_D;
     typedef std::map< unsigned long long, unsigned long long > stdMapL_L;
@@ -604,7 +611,8 @@ namespace pyplusplus{ namespace aliases{
     typedef std::map< std::pair< long long, long long > , double > stdMapL_L_D;
 #else
     typedef std::map< long, double > stdMapL_D;
-    typedef std::map<std::pair<unsigned long, unsigned long>, double > stdMapL_L_D;
+    typedef std::map< stdPairUL_UL, double > stdMapUL_UL_D;
+    typedef std::map<std::pair<long, long>, double > stdMapL_L_D;
     typedef std::set< long int >                        stdSetL;
     typedef std::map< long, long >                      stdMapL_L;
 #endif
@@ -632,6 +640,8 @@ namespace pyplusplus{ namespace aliases{
     typedef std::set< GIMLI::Node * >                 stdSetNodes;
     typedef std::set< GIMLI::Boundary * >             stdSetBoundaries;
     typedef std::set< GIMLI::Cell * >                 stdSetCells;
+    typedef std::set< unsigned long >                 stdSetUL;
+    typedef std::vector< stdSetUL >                   stdVecSetUL;
 
 }} //pyplusplus::aliases
 

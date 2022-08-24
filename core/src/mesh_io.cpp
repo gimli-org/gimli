@@ -941,7 +941,7 @@ void Mesh::exportVTK(const std::string & fbody,
 
             RVector tmp(boundaryCount());
             std::transform(boundaryVector_.begin(), boundaryVector_.end(),
-                           &tmp[0], std::mem_fun(&Boundary::marker));
+                           &tmp[0], std::mem_fn(&Boundary::marker));
 
             if (!bData.count("Marker")) bData["Marker"] = this->boundaryMarkers();
             
@@ -1173,7 +1173,7 @@ void Mesh::importVTK(const std::string & fbody) {
                         ny = toInt(row[2]);
                         nz = toInt(row[3]);
                     } else {
-                        __MS(row)
+                        // __MS(row)  // fail to compile with gcc12
                         THROW_TO_IMPL
                     }
                 } else if (row[0] == "POINTS"){
@@ -1205,7 +1205,7 @@ void Mesh::importVTK(const std::string & fbody) {
             }
         }
     } else {
-        __MS(row)
+        // __MS(row) // fail to compile with gcc12
         THROW_TO_IMPL
     }
 //     __MS(dimension_)
@@ -1367,7 +1367,7 @@ void Mesh::exportVTU(const std::string & fbody, bool binary) const {
     std::map< std::string, RVector > data(dataMap_);
     if (cellCount() > 0){
         RVector tmp(cellCount());
-        std::transform(cellVector_.begin(), cellVector_.end(), &tmp[0], std::mem_fun(&Cell::marker));
+        std::transform(cellVector_.begin(), cellVector_.end(), &tmp[0], std::mem_fn(&Cell::marker));
         if (!data.count("_Marker")) data.insert(std::make_pair("_Marker",  tmp));
         if (!data.count("_Attribute")) data.insert(std::make_pair("_Attribute",  cellAttributes()));
     }
@@ -1407,7 +1407,7 @@ void Mesh::exportBoundaryVTU(const std::string & fbody, bool binary) const {
     RVector tmp(boundMesh.boundaryCount());
     std::transform(boundMesh.boundaries().begin(),
                    boundMesh.boundaries().end(),
-                   &tmp[0], std::mem_fun(&Boundary::marker));
+                   &tmp[0], std::mem_fn(&Boundary::marker));
 
     if (!boundData.count("_BoundaryMarker")) boundData.insert(std::make_pair("_BoundaryMarker",  tmp));
 
