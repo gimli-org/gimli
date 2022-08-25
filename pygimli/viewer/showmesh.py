@@ -8,10 +8,6 @@ import time
 import traceback
 
 import numpy as np
-<<<<<<< HEAD
-=======
-
->>>>>>> dev
 from pygimli.viewer.mpl.colorbar import setMappableData
 
 from .. core.logger import renameKwarg
@@ -90,7 +86,6 @@ def show(obj=None, data=None, **kwargs):
 
         return ax, None
 
-<<<<<<< HEAD
     if isinstance(obj, int):
         nrows = obj
         ncols = 1
@@ -111,9 +106,6 @@ def show(obj=None, data=None, **kwargs):
     if hasattr(obj, 'mesh') and hasattr(obj, 'eval'):
         return pg.show(obj.mesh, obj.eval(),
                        **kwargs)
-=======
-    # registerShowPendingFigsAtExit()
->>>>>>> dev
 
     # try to check if obj containes a mesh
     if hasattr(obj, 'mesh'):
@@ -377,13 +369,9 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
         if hasattr(data[0], '__len__') and not \
                 isinstance(data, np.ma.core.MaskedArray):
 
-<<<<<<< HEAD
             data = np.asarray(data)
             
             ### [u,v] x N
-=======
-            # [u,v] x N
->>>>>>> dev
             if len(data) == 2:
                 data = np.array(data).T
 
@@ -398,12 +386,7 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
                 drawStreams(ax, mesh, data[:, 0:2], **kwargs)
             else:
 
-<<<<<<< HEAD
                 ### Try animation frames x N
-=======
-                # Try animation frames x N
-                data = np.asarray(data)
->>>>>>> dev
                 if data.ndim == 2:
                     if data.shape[1] == mesh.cellCount() or \
                        data.shape[1] == mesh.nodeCount():
@@ -511,17 +494,10 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
                                                  linewidth=1.4)
 
     if kwargs.pop("boundaryMarkers", False):
-<<<<<<< HEAD
         pg.viewer.mpl.drawBoundaryMarkers(ax, mesh,
                     clipBoundaryMarkers=kwargs.pop('clipBoundaryMarkers', False),
                     bc=kwargs.pop('bc', None),
                     **kwargs.pop('boundaryProps', {}) )
-=======
-        pg.viewer.mpl.drawBoundaryMarkers(
-            ax, mesh,
-            clipBoundaryMarkers=kwargs.pop('clipBoundaryMarkers', False),
-            **kwargs.pop('boundaryProps', {}))
->>>>>>> dev
 
     fitView = kwargs.pop('fitView', fitViewDefault)
 

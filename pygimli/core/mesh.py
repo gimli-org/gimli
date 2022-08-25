@@ -13,7 +13,7 @@ from .logger import deprecated, error, info, warn, critical, _r
 
 from .base import isScalar, isArray, isPos, isR3Array, isComplex
 
-from ..meshtools import mergePLC, exportPLC, interpolateAlongCurve
+from ..meshtools import mergePLC, exportPLC, interpolateAlongCurve, interpolate
 
 
 def __Mesh_unique_dataKeys(self):

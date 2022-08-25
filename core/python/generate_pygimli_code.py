@@ -416,11 +416,11 @@ def generate(defined_symbols, extraIncludes):
                 'FunctionDD',
                 'H2SparseMapMatrix',
                 #'::GIMLI::VectorIterator<GIMLI::Pos>', # needed
-                '::GIMLI::VectorIterator<bool>',
-                '::GIMLI::VectorIterator<double>',
-                '::GIMLI::VectorIterator<long>',
+                #'::GIMLI::VectorIterator<bool>',
+                #'::GIMLI::VectorIterator<double>',
+                #'::GIMLI::VectorIterator<long>',
                 # ::GIMLI::VectorIterator<unsigned long>', needed
-                '::GIMLI::VectorIterator<std::complex<double> >', 
+                #'::GIMLI::VectorIterator<std::complex<double> >', 
                   ]
             )
 

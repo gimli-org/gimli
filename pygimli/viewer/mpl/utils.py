@@ -97,7 +97,7 @@ def registerShowPendingFigsAtExit():
                         if len(plt.get_fignums()) > 0:
                             pg.info('Showing pending widgets on exit. '
                                         'Close all figures or Ctrl-C to quit the programm')
-                            pg.wait()
+                            #pg.wait()
                 
     __registeredShowPendingFigsAtExit__ = True
 
