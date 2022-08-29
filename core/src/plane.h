@@ -54,14 +54,20 @@ public:
     Plane & operator = (const Plane & plane);
 
     /*! Equal_to operator */
-    inline bool operator == (const Plane & plane){ return this->compare(plane); }
+    inline bool operator == (const Plane & plane){ 
+        return this->compare(plane);
+    }
 
     /*! Not_equal_to operator */
-    inline bool operator != (const Plane & plane){ return !(*this== plane); }
+    inline bool operator != (const Plane & plane){ 
+        return !(*this== plane);
+    }
 
     /*! Compare two planes with a given tolerance. Check if both norms and distances are equal.
-    | norm - p.norm | < tol && | d_ - p.d | < tol */
-    bool compare(const Plane & p, double tol = TOLERANCE);
+    | norm - p.norm | < tol && | d_ - p.d | < tol. 
+    If bothDirection is True  | norm - p.norm | can be 2.0 to allow for coplanar check with different orientations.*/
+    bool compare(const Plane & p, double tol=TOLERANCE, bool bothDirs=false);
+    
 
     /*! Returns true if the plane is valid and pos touch this plane.
         Touch when plane.distance(pos) < tol. */

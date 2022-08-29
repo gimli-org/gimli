@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """Curve-fitting with harmonic functions plus offset and drift."""
 import numpy as np

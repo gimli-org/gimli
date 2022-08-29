@@ -324,16 +324,16 @@ inline bool operator != (const RVector3 & a , const RVector3 & b){
     return !(a == b);
 }
 inline bool operator < (const RVector3 & a , const RVector3 & b){
-    std::cout << WHERE_AM_I << std::endl; return true;
+    return a.distSquared() < b.distSquared();
 }
 inline bool operator <= (const RVector3 & a , const RVector3 & b){
-    std::cout << WHERE_AM_I << std::endl; return true;
+    return a.distSquared() <= b.distSquared();
 }
 inline bool operator > (const RVector3 & a , const RVector3 & b){
-    std::cout << WHERE_AM_I << std::endl; return true;
+    return a.distSquared() > b.distSquared();
 }
 inline bool operator >= (const RVector3 & a , const RVector3 & b){
-    std::cout << WHERE_AM_I << std::endl; return true;
+    return a.distSquared() >= b.distSquared();
 }
 inline RVector3 RINT(const RVector3 & a) {
     std::cout << WHERE_AM_I << std::endl;

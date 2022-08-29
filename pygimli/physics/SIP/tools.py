@@ -9,7 +9,7 @@ from .models import ColeColeComplex, ColeColeComplexSigma, PeltonPhiEM
 from .models import ColeColeAbs, ColeColePhi, DoubleColeColePhi
 
 
-def fitCCEMPhi(f, phi,  ePhi=0.001, lam=1000., 
+def fitCCEMPhi(f, phi,  ePhi=0.001, lam=1000.,
                mpar=(0.2, 0, 1), taupar=(1e-2, 1e-5, 100),
                cpar=(0.25, 0, 1), empar=(1e-7, 1e-9, 1e-5), verbose=True):
     """Fit a Cole-Cole term with additional EM term to phase."""
@@ -114,7 +114,7 @@ def fitCCC(f, amp, phi, eRho=0.01, ePhi=0.001, lam=1000., mstart=None,
     model = ICC.run()  # run inversion
     ICC.echoStatus()
     response = ICC.response()
-    return model, response[:len(f)], response[len(f):]
+    return model, response[:len(f)], response[len(f):], ICC.chi2()
 
 
 def fitCCCC(f, amp, phi, error=0.01, lam=10., taupar=(1e-2, 1e-5, 100),
@@ -139,7 +139,7 @@ def fitCCCC(f, amp, phi, error=0.01, lam=10., taupar=(1e-2, 1e-5, 100),
     response = np.asarray(ICC.response())
     rRe, rIm = response[:len(f)], response[len(f):]
     rAmp = 1./np.sqrt(rRe**2+rIm**2)
-    return model, rAmp, np.arctan(rIm/rRe)
+    return model, rAmp, np.arctan(rIm/rRe), ICC.chi2()
 
 
 if __name__ == "__main__":

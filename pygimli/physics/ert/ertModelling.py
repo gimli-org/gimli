@@ -23,17 +23,44 @@ class ERTModellingBase(MeshModelling):
         super(ERTModellingBase, self).__init__(**kwargs)
 
     def drawData(self, ax, data=None, **kwargs):
-        """Draw data in given axe."""
+        """Draw data on given axes.
+
+        Args
+        ----
+        ax: MPL Axe
+            Axes instance to draw into.
+        data: iterable | :py:func:pygimli.pyhsics.ert.DataContainer`
+            Datavalues to draw
+
+            * data is array, taken as values and draw on self.data structure
+            * data is Datacontainer, draw data['rhoa'] on data structure
+            * data is None, draw self.data['rhoa'] on self.data structure
+
+        Keyword Args
+        ------------
+        vals: iterable
+            Draw vals on self.data structure if no data are given.
+
+        Remaining kwargs are forwarded to
+        :py:func:pygimli.pyhsics.ert.showERTData`
+        """
         kwargs['label'] = kwargs.pop('label', pg.unit('res'))
         kwargs['cMap'] = kwargs.pop('cMap', pg.utils.cMap('res'))
 
+        vals = None
         if hasattr(data, '__iter__'):
+            # show data values from array
             vals = data
             data = self.data
-        elif data is None:
+        elif isinstance(data, pg.DataContainerERT):
+            # data is given DataContainer
+            pass
+        else:
+            # data is self.DataContainer
             data = self.data
 
-        vals = kwargs.pop('vals', data['rhoa'])
+        if vals is None:
+            vals = kwargs.pop('vals', data['rhoa'])
 
         return showERTData(data, vals=vals, ax=ax, **kwargs)
 
@@ -449,7 +476,6 @@ class ERTModellingReference(ERTModellingBase):
             c = mesh.findCell(e)
             rhs[i][c.ids()] = c.N(c.shape().rst(e))
         return rhs
-
 
 
 if __name__ == "__main__":

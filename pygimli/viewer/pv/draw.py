@@ -1,14 +1,15 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import numpy as np
-
 import pygimli as pg
-
 from .utils import pgMesh2pvMesh
 
 pv = pg.optImport('pyvista', requiredFor="properly visualize 3D data")
 
 
 def drawMesh(ax, mesh, notebook=False, **kwargs):
-    """
+    """Draw a mesh into a given plotter.
 
     Parameters
     ----------
@@ -18,8 +19,14 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
         The mesh to show.
     notebook: bool [False]
         Sets the plotter up for jupyter notebook/lab.
-    cmap: str ['viridis']
+    cMap: str ['viridis']
         The colormap string.
+    bc: pyvista color ['#EEEEEE']
+        Background color.
+    style: str['surface']
+        Possible options:"surface","wireframe","points" 
+    label: str
+        Data to be plottet. If None the first is taken.
 
     Returns
     -------
@@ -29,16 +36,34 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
     # sort out a few kwargs to not confuse the plotter initialization
     show_edges = kwargs.pop('show_edges', True)
     opacity = kwargs.pop('alpha', kwargs.pop('opacity', 1))
-    cmap = kwargs.pop('cmap', None)
-    color = kwargs.pop('color', 'k')
-    style = kwargs.pop('style', 'wireframe')
+    cMap = kwargs.pop('cMap', None)
+    color = kwargs.pop('color', None)
+    style = kwargs.pop('style', 'surface')
     returnActor = kwargs.pop('returnActor', False)
+    showMesh = kwargs.pop('showMesh', False)
+    grid = kwargs.pop('grid', False)
+    colorBar = kwargs.pop('colorBar', style != 'wireframe')
+    name = kwargs.pop('name', 'Mesh')
+    bc = kwargs.pop('bc', '#EEEEEE') # background color
+    lw = kwargs.pop('line_width', 0.1)
+    filt = kwargs.pop('filter', {}) 
+    dataName = kwargs.pop('label', list(mesh.cell_data.keys())[0])
+
+    theme = pv.themes.DefaultTheme()
+    theme.background = bc
+    
+    # seems to be broken .. results on pure black screens on some machines
+    #theme.antialiasing = True
+    
+    theme.font.color = 'k'  
 
     if ax is None:
-        # if notebook:
-        #     ax = pv.PlotterITK(**kwargs)
-        # else:
-        ax = pv.Plotter(notebook=notebook, **kwargs)
+        ax = pv.Plotter(notebook=notebook, 
+                        theme=theme,
+                        **kwargs
+                        )
+    #if grid is True:
+        #implementme
 
     ax.show_bounds(all_edges=True, minor_ticks=True)
     ax.add_axes()
@@ -46,14 +71,29 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
     if isinstance(mesh, pg.Mesh):
         mesh = pgMesh2pvMesh(mesh)
 
+
+    for k, fi in filt.items():
+        if k.lower() == 'clip':
+            
+            if isinstance(mesh, pv.core.pointset.UnstructuredGrid):
+                fi['crinkle'] = fi.pop('crinkle', True)
+
+            mesh = mesh.clip(**fi)
+        else:
+            pg.error('filter:', k, 'not yet implemented')
+
     _actor = ax.add_mesh(mesh,  # type: pv.UnstructuredGrid
-                         cmap=cmap,
+                         scalars=dataName, 
+                         cmap=cMap,
                          color=color,
                          style=style,
-                         show_edges=show_edges,
+                         show_edges=showMesh,
+                         line_width=lw,
+                         #edge_color='white',
+                         show_scalar_bar=colorBar,
                          opacity=opacity,
                          )
-
+    
     if returnActor:
         return ax, _actor
     else:
@@ -61,8 +101,7 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
 
 
 def drawModel(ax=None, mesh=None, data=None, **kwargs):
-    """
-    Draw the mesh with given data.
+    """Draw a mesh with given data.
 
     Parameters
     ----------
@@ -78,18 +117,35 @@ def drawModel(ax=None, mesh=None, data=None, **kwargs):
     ax: pyvista.Plotter [optional]
         The plotter
     """
+    defaultCMap = kwargs.pop('cMap', 'viridis')
+    dataName = kwargs.pop('label', None)
+
     if all(v is None for v in [ax, mesh, data]):
         pg.critical("At least mesh or data should not be None")
         return None
 
-    if data is not None or len(mesh.dataMap()) != 0:
-        kwargs['style'] = 'surface'
-        kwargs['color'] = None
+    if kwargs.pop('markers', False) is True:
+        ## show boundary mesh with markers
+        data = mesh.boundaryMarkers()
+        defaultCMap = pg.plt.cm.get_cmap("Set3", max(1, len(pg.unique(data))))
+        dataName = 'Boundary Marker'
+        mesh = pgMesh2pvMesh(mesh, data, dataName, boundaries=True)
+    else:
 
-    mesh = pgMesh2pvMesh(mesh, data, kwargs.pop('label', None))
+        if data is not None or len(mesh.dataMap()) != 0:
+            kwargs['style'] = 'surface'
+            kwargs['color'] = None
+        if dataName is None and data is not None:
+            if len(data) == mesh.cellCount():
+                dataName = 'Cell data'
+            elif len(data) == mesh.nodeCount():
+                dataName = 'Node data'
 
-    if 'cmap' not in kwargs:
-        kwargs['cmap'] = 'viridis'
+        mesh = pgMesh2pvMesh(mesh, data, dataName)
+
+    kwargs['cMap'] = defaultCMap
+    kwargs['label'] = dataName
+   
     return drawMesh(ax, mesh, **kwargs)
 
 
@@ -191,6 +247,8 @@ def drawStreamLines(ax, mesh, data, label=None, radius=0.01, **kwargs):
     All kwargs will be forwarded to pyvistas streamline filter:
     https://docs.pyvista.org/core/filters.html?highlight=streamlines#pyvista.DataSetFilters.streamlines
     """
+    if label is None:
+        label = 'grad'
 
     if isinstance(mesh, pg.Mesh):
 
@@ -207,6 +265,7 @@ def drawStreamLines(ax, mesh, data, label=None, radius=0.01, **kwargs):
         # add data to the mesh and convert to pyvista grid
         mesh = pgMesh2pvMesh(mesh, grad.T, label)
 
+
     elif isinstance(mesh, pv.UnstructuredGrid):
         if label not in mesh.point_arrays:  # conversion needed
             mesh.cell_data_to_point_data()
@@ -214,8 +273,7 @@ def drawStreamLines(ax, mesh, data, label=None, radius=0.01, **kwargs):
     if label is None:
         label = list(mesh.point_arrays.keys())[0]
 
-    kwargs['vectors'] = label
+    #kwargs['vectors'] = label
 
-    streamlines = mesh.streamlines(**kwargs)
-
-    ax.add_mesh(streamlines.tube(radius=radius))
+    streams = mesh.streamlines(vectors=label, **kwargs)
+    ax.add_mesh(streams.tube(radius=radius), show_scalar_bar=False)

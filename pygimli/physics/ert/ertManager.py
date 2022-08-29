@@ -4,12 +4,11 @@
 
 import os.path
 import numpy as np
-import matplotlib.pyplot as plt
 
 import pygimli as pg
 from pygimli.frameworks import MeshMethodManager
 from .ertModelling import ERTModelling, ERTModellingReference
-from .ert import createInversionMesh, createGeometricFactors, estimateError
+from .ert import createInversionMesh, estimateError
 from pygimli.utils import getSavePath
 
 
@@ -108,6 +107,7 @@ class ERTManager(MeshMethodManager):
         """Set primary potential from external is not supported anymore."""
         pg.critical("Not implemented.")
 
+    
     def simulate(self, mesh, scheme, res, **kwargs):
         """Simulate an ERT measurement.
 
@@ -200,6 +200,8 @@ class ERTManager(MeshMethodManager):
         # >>> rhoa = data.get('rhoa').array()
         # >>> phia = data.get('phia').array()
         """
+        pg.warn('Obsolete, do not use!. Use ert.simulate instead')    
+
         verbose = kwargs.pop('verbose', self.verbose)
         calcOnly = kwargs.pop('calcOnly', False)
         returnFields = kwargs.pop("returnFields", False)
@@ -362,11 +364,21 @@ class ERTManager(MeshMethodManager):
         THINKABOUT: Data will be changed, or should the manager keep a copy?
         """
         data = data or pg.DataContainerERT(self.data)
+        topo = min(pg.z(data)) != max(pg.z(data))
+
+
         if isinstance(data, pg.DataContainer):
             if not data.allNonZero('k'):
-                pg.warn("Data file contains no geometric factors (token='k').")
-                data['k'] = createGeometricFactors(data, verbose=True)
+
+                pg.critical("Data file contains no geometric factors (token='k').")
+                # numeric = min(pg.z(data)) != max(pg.z(data))
+                # data['k'] = createGeometricFactors(data,
+                #                                 numerical=topo,
+                #                                 #p2=True,
+                #                                 verbose=self.verbose)
+
             if self.fop.complex():
+
                 if not data.haveData('rhoa'):
                     pg.critical('Datacontainer have no "rhoa" values.')
                 if not data.haveData('ip'):
@@ -381,14 +393,18 @@ class ERTManager(MeshMethodManager):
 
             else:
                 if not data.haveData('rhoa'):
+
                     if data.allNonZero('r'):
                         pg.info("Creating apparent resistivies from "
                                 "impedences rhoa = r * k")
                         data['rhoa'] = data['r'] * data['k']
+
                     elif data.allNonZero('u') and data.allNonZero('i'):
+
                         pg.info("Creating apparent resistivies from "
                                 "voltage and currrent rhoa = u/i * k")
                         data['rhoa'] = data['u']/data['i'] * data['k']
+
                     else:
                         pg.critical("Datacontainer have neither: "
                                     "apparent resistivies 'rhoa', "
@@ -397,13 +413,13 @@ class ERTManager(MeshMethodManager):
 
                 if any(data['rhoa'] < 0) and \
                         isinstance(self.inv.dataTrans, pg.core.TransLog):
-                    print(pg.find(data['rhoa'] < 0))
-                    print(data['rhoa'][data['rhoa'] < 0])
-                    pg.critical("Found negative apparent resistivities. "
-                                "These can't be processed with logarithmic "
-                                "data transformation. You should consider to "
-                                "filter them out using "
-                                "data.remove(data['rhoa'] < 0).")
+                    # print(pg.find(data['rhoa'] < 0))
+                    # print(data['rhoa'][data['rhoa'] < 0])
+                    pg.warning("Found negative apparent resistivities. "
+                               "These can't be processed with logarithmic "
+                               "data transformation. You should consider to "
+                               "filter them out using "
+                               "data.remove(data['rhoa'] < 0).")
 
                 return data['rhoa']
 
@@ -443,6 +459,7 @@ class ERTManager(MeshMethodManager):
 
         return rae  # not set if err is no DataContainer (else missing)
 
+
     def estimateError(self, data=None, **kwargs):
         """Estimate error composed of an absolute and a relative part.
 
@@ -474,6 +491,7 @@ class ERTManager(MeshMethodManager):
 
         return error
 
+
     def coverage(self):
         """Coverage vector considering the logarithmic transformation."""
         covTrans = pg.core.coverageDCtrans(self.fop.jacobian(),
@@ -486,9 +504,11 @@ class ERTManager(MeshMethodManager):
 
         return np.log10(covTrans / paramSizes)
 
+
     def standardizedCoverage(self, threshold=0.01):
         """Return standardized coverage vector (0|1) using thresholding."""
         return 1.0*(self.coverage() > threshold)
+
 
     def showMisfit(self, **kwargs):
         """Show relative or error-weighted data misfit."""
@@ -500,6 +520,36 @@ class ERTManager(MeshMethodManager):
         kwargs.setdefault("label", "relative misfit (%)")
 
         self.showData(vals=misfit, **kwargs)
+
+
+    def showModel(self, model=None, elecs=True, ax=None, **kwargs):
+        """Show the last inversion result.
+
+        Parameters
+        ----------
+        ax : mpl axes
+            Axes object to draw into. Create a new if its not given.
+
+        model : iterable [None]
+            Model values to be draw. Default is self.model from the last run
+
+        Returns
+        -------
+        ax, cbar
+        """
+        if model is None:
+            model = self.model
+
+        if ax is None:
+            fig, ax = pg.plt.subplots()
+
+        ax, cBar = self.fop.drawModel(ax, model, coverage=self.coverage(),
+                                      **kwargs)
+        if elecs is True:
+            pg.viewer.mpl.drawSensors(ax, self.fop.data.sensors())
+
+        return ax, cBar
+
 
     def saveResult(self, folder=None, size=(16, 10), **kwargs):
         """Save all results in the specified folder.
@@ -514,7 +564,7 @@ class ERTManager(MeshMethodManager):
         subfolder = self.__class__.__name__
         path = getSavePath(folder, subfolder)
 
-        pg.info('Saving resistivity data to: {}'.format(path))
+        pg.info('Saving inversion results to: {}'.format(path))
 
         np.savetxt(path + '/resistivity.vector',
                    self.model)
@@ -522,6 +572,10 @@ class ERTManager(MeshMethodManager):
                    self.coverage())
         np.savetxt(path + '/resistivity-scov.vector',
                    self.standardizedCoverage())
+
+        self.fop.data.save(os.path.join(path, 'data.dat'),
+                           'a b m n rhoa k err ip iperr')
+        self.mesh.save(os.path.join(path, 'mesh'))
 
         m = pg.Mesh(self.paraDomain)
         m['Resistivity'] = self.paraModel(self.model)
@@ -533,8 +587,8 @@ class ERTManager(MeshMethodManager):
         self.fop.mesh().save(os.path.join(path, 'resistivity-mesh'))
 
         if self.paraDomain.dim() == 2:
-            fig, ax = plt.subplots(figsize=size)
-            self.showResult(ax=ax, coverage=self.coverage(), **kwargs)
+            fig, ax = pg.plt.subplots(figsize=size)
+            self.showModel(ax=ax, **kwargs)
             fig.savefig(path + '/resistivity.pdf', bbox_inches="tight")
             return path, fig, ax
         return path

@@ -25,10 +25,12 @@ class Inversion(object):
     debug : bool
         Give debug output
     startModel : float|array|None
-        Holds the current starting model. The starting model can be set via init argument
-        or as propery. If not set explicit, it will be estimated from the forward operator assoiated methods.
-        This property will be recalulated for every run call if not set explicit with self.startModel = float|array, or None to reforce autogeneration.
-        Note, the run call accept a temporary startModel for the current calucaltion.
+        Current starting model that can be set in the init or as property.
+        If not set explicitly, it will be estimated from the forward operator
+        methods. This property will be recalulated for every run call if not
+        set explicitly with self.startModel = float|array, or None to reforce
+        autogeneration. Note that the run call accepts a temporary startModel
+        (for the current calculation only).
     model : array
         Holds the last active model
     maxIter : int [20]
@@ -55,9 +57,11 @@ class Inversion(object):
         self._fop = None
         self._lam = 20      # lambda regularization
 
-        ### cache: keep startmodel if set explicit or calculated from FOP, will be recalulated for every run if not set explicit
+        # cache: keep startmodel if set explicitly or calculated from FOP, will
+        # be recalulated for every run if not set explicitly
         self._startModel = None
-        ### flag to keep startModel if set manual by init or self.startModel until self.startModel = None
+        # flag to keep startModel if set manually by init or self.startModel
+        # unless self.startModel = None
         self._keepStartModel = False
 
         self.reset()
@@ -79,13 +83,13 @@ class Inversion(object):
             self.startModel = kwargs["startModel"]
 
     def reset(self):
-        """Reset function currently called at the beginning of every inversion
-        run."""
+        """Reset function currently called at beginning of every inversion."""
         # FW: Note that this is called at the beginning of run. I therefore
-        # removed the startingModel here to allow explicitly set starting models
-        # by the user.
-        if self._keepStartModel == False:
+        # removed the startingModel here to allow explicitly set starting
+        # models by the user.
+        if self._keepStartModel is False:
             self._startModel = None
+
         self._model = None
         self._dataVals = None
         self._errorVals = None
@@ -296,6 +300,15 @@ class Inversion(object):
             self.inv.setRobustData(v)
 
     @property
+    def blockyModel(self):
+        return self.inv.blockyModel()
+               
+    @blockyModel.setter
+    def blockyModel(self, v):
+        if self.inv is not None:
+            self.inv.setBlockyModel(v)
+            
+    @property
     def maxIter(self):
         return self.inv.maxIter()
 
@@ -494,7 +507,7 @@ class Inversion(object):
         if 'cType' in kwargs:
             self.fop.setRegionProperties('*', cType=kwargs['cType'])
 
-        ### This triggers the update of all fop properties, any property setting need to be done before this step
+        # Triggers update of fop properties, any property to be set before.
         self.inv.setTransModel(self.fop.modelTrans)
         self.dataVals = dataVals
         self.errorVals = errorVals
@@ -507,7 +520,8 @@ class Inversion(object):
         self.maxIter = 1
 
         startModel = self.convertStartModel(kwargs.pop('startModel', None))
-        #### we cannot add the following into kwargs.pop, since someone may call with explicit startModel=None
+        # we cannot add the following into kwargs.pop, since someone may call
+        # with explicit startModel=None
         if startModel is None:
             startModel = self.startModel
 
@@ -520,7 +534,7 @@ class Inversion(object):
                     print("\t", i, self.inv.transDataataTrans().at(i))
             else:
                 print("Data transformation:", self.inv.transData())
-            
+
             if isinstance(self.inv.transModel(), pg.trans.TransCumulative):
                 print("Model transformation (cumulative):")
                 for i in range(self.inv.transModel().size()):
@@ -573,7 +587,10 @@ class Inversion(object):
                 print("inv.iter", i + 1, "... ", end='')
 
             try:
-                self.inv.oneStep()
+                if hasattr(self, "oneStep"):
+                    self.oneStep()
+                else:
+                    self.inv.oneStep()
             except RuntimeError as e:
                 print(e)
                 pg.error('One step failed. '
@@ -595,16 +612,13 @@ class Inversion(object):
             if self._postStep and callable(self._postStep):
                 self._postStep(i, self)
 
-            # Do we need to check the following before oder after chi2 calc??
-            lam *= self.inv.lambdaFactor()
-            self.inv.setLambda(lam)
-
             if self.robustData:
                 self.inv.robustWeighting()
 
-            if self.inv.blockyModel():
+            if self.blockyModel:
                 self.inv.constrainBlocky()
 
+            
             phi = self.phi()
             dPhi = phi/lastPhi
 
@@ -628,6 +642,9 @@ class Inversion(object):
                 break
 
             lastPhi = phi
+
+            lam *= self.inv.lambdaFactor()
+            self.inv.setLambda(lam)
 
         # will never work as expected until we unpack kwargs .. any idea for
         # better strategy?
@@ -697,7 +714,7 @@ class Inversion(object):
             ax.semilogy(self.inv.iter(), self.inv.chi2(), "ro")
             if self.inv.iter() == 1:
                 ax.set_xlabel("Iteration")
-                ax.set_ylabel("$\chi^2$")
+                ax.set_ylabel(r"$\chi^2$")
                 ax.autoscale(tight=True)
                 ax.axhline(y=1, ls="--")
 
@@ -730,11 +747,11 @@ class MarquardtInversion(Inversion):
 
 
 class Block1DInversion(MarquardtInversion):
-    """
+    """Inversion of layered models (including layer thickness)
+
     Attributes
     ----------
     nLayers : int
-
     """
 
     def __init__(self, fop=None, **kwargs):
@@ -832,8 +849,9 @@ class Block1DInversion(MarquardtInversion):
 
 
 class MeshInversion(Inversion):
-    """
-    ** UNUSED ** TO BE REMOVED
+    """Mesh-based inversion
+
+    ** UNUSED ** TO BE REMOVED or reactivated?
     Attributes
     ----------
 
@@ -877,6 +895,8 @@ class MeshInversion(Inversion):
 
 
 class PetroInversion(Inversion):
+    """Inversion of a petrophysically related property instead of intrinsic."""
+
     def __init__(self, petro, fop=None, **kwargs):
         """
         Parameters

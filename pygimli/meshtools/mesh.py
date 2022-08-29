@@ -492,9 +492,8 @@ def convertMeshioMesh(mesh, verbose=False):
             ret.createCell(c)
 
     for k, d in mesh.cell_data.items():
-        #pg._g(d[0])
         ret[k] = d[0].T
-            
+
     for k, d in mesh.point_data.items():
         if d.ndim == 2:
             if d.shape[1] == 3:
@@ -1353,8 +1352,8 @@ def convertHDF5Mesh(h5Mesh, group='mesh', indices='cell_indices',
         try:
             mesh_cells = inmesh[cells][mesh_indices]
         except IndexError as IE:
-            print('Fenics Indices aren\'t just in arbitrary order in range\
-(0, cellCount) as expected. Need Fix.')
+            print('Fenics Indices aren\'t just in arbitrary order in the '
+                  'range (0, cellCount) as expected. Needs Fix.')
             raise IE
     else:
         # case 2/2: indices implicit: [0, ... cellCount)
@@ -1910,39 +1909,25 @@ def mergeMeshes(meshList, verbose=False):
     return mesh
 
 
-def createParaMesh(*args, **kwargs):
+def createParaMesh(data, **kwargs):
     """Create parameter mesh from list of sensor positions.
 
-    Create parameter mesh from list of sensor positions.
+    Create parameter mesh from list of sensor positions. Use `:py:func:pygimli.meshtools.createParaMeshPLC` and `:py:func:pygimli.meshtools.createMesh` and forwards keyword arguments respectively.
 
-    Parameters
-    ----------
-    sensors : list of RVector3 objects
-        Sensor positions. Must be sorted and unique in positive x direction.
-        Depth need to be y-coordinate.
-    paraDX : float
-        Relative distance for refinement nodes between two electrodes (1=none),
-        e.g., 0.5 means 1 additional node between two neighboring electrodes
-        e.g., 0.33 means 2 additional equidistant nodes between two electrodes
-    paraDepth : float, optional
-        Maximum depth for parametric domain, 0 (default) means 0.4 * maximum
-        sensor range.
-    paraBoundary : float, optional
-        Margin for parameter domain in absolute sensor distances. 2 (default).
-    paraMaxCellSize: double [0], optional
-        Maximum size for parametric size in m*m (0-no constraint)
-    boundaryMaxCellSize: double [0], optional
-        Maximum cells size in the boundary region in m*m (0-no constraint)
-    boundary : float, optional
-        Boundary width to be appended for domain prolongation in absolute
-        para domain width.
-        Values <=0 force the boundary to be 4 times para domain width.
+    Args
+    ----
+    data: DataContainer
+        Data container to read sensors positions from.
+
+    Keyword Args
+    ------------
+        Forwarded to `:py:func:pygimli.meshtools.createParaMeshPLC`
 
     Returns
     -------
     poly: :gimliapi:`GIMLI::Mesh`
     """
-    plc = pg.meshtools.createParaMeshPLC(*args, **kwargs)
+    plc = pg.meshtools.createParaMeshPLC(data, **kwargs)
     kwargs.pop('paraMaxCellSize', 0)
     kwargs.pop('boundaryMaxCellSize', 0)
     smooth = kwargs.pop('smooth', [2, 10])
@@ -2046,10 +2031,58 @@ def createParaMesh2DGrid(sensors, paraDX=1, paraDZ=1, paraDepth=0, nLayers=11,
     if boundary < 0:
         boundary = abs((paraXLimits[1] - paraXLimits[0]) * 4.0)
 
-    mesh = pg.meshtools.appendTriangleBoundary(
+    mesh = pg.meshtools.appendTriangleBoundary(  # circular import?
         mesh, xbound=boundary, ybound=boundary, marker=1, addNodes=5, **kwargs)
 
     return mesh
+
+
+def extractUpperSurface2dMesh(mesh, zCut=None):
+    """Extract 2d mesh from the upper surface of a 3D mesh.
+
+    Useful for showing a quick 2D plot of a 3D parameter distribution
+    All cell-based parameters are copied to the new mesh
+
+    Parameters
+    ----------
+    mesh: :gimliapi:`GIMLI::Mesh`
+        Input mesh (3D)
+    zCut: float
+        z value to distinguish between top and bottom
+
+    Returns
+    -------
+    mesh2d: :gimliapi:`GIMLI::Mesh`
+        output 2D mesh consisting of triangles or quadrangles
+
+    Examples
+    --------
+    >>> import pygimli as pg
+    >>> from pygimli.meshtools import extractUpperSurface2dMesh
+    >>> mesh3d = pg.createGrid(5, 4, 3)
+    >>> mesh3d["val"] = pg.utils.grange(0, mesh3d.cellCount(), 1)
+    >>> mesh2d = extractUpperSurface2dMesh(mesh3d)
+    >>> ax, _ = pg.show(mesh2d, "val")
+    """
+    if mesh.boundaryCount() == 0:
+        mesh.createNeighborInfos()
+
+    zCut = zCut or pg.mean(pg.z(mesh))
+    bind = [b.id() for b in mesh.boundaries() if b.outside() and
+            b.center().z() > zCut and b.shape().norm().z() != 0]
+    bMesh = mesh.createSubMesh(mesh.boundaries(bind))
+
+    mesh2d = pg.Mesh(2)
+    [mesh2d.createNode(n.pos()) for n in bMesh.nodes()]
+    for b in bMesh.boundaries():
+        mesh2d.createCell([n.id() for n in b.nodes()])
+    
+    # copy data
+    cind = np.array([mesh.boundary(i).leftCell().id() for i in bind])
+    for k in mesh.dataKeys():
+        mesh2d[k] = mesh[k][cind]
+
+    return mesh2d
 
 
 if __name__ == "__main__":

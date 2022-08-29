@@ -43,6 +43,10 @@ DLLEXPORT Boundary * findBoundary(const Node & n1, const Node & n2, const Node &
 
 DLLEXPORT Boundary * findBoundary(const std::vector < Node * > & n);
 
+/*! Find all boundaries that have these nodes in common. */
+DLLEXPORT std::set < Boundary * >  
+findBoundaries(const std::vector < Node * > & n);
+
 /*! */
 DLLEXPORT Boundary * findCommonBoundary(const Cell & c1, const Cell & c2);
 
@@ -202,7 +206,7 @@ public:
     /*! Geometry has been changed. Deletes cache.*/
     void changed();
 
-void addSecondaryNode(Node * n);
+    void addSecondaryNode(Node * n);
 
     void delSecondaryNode(Node * n);
 
@@ -212,6 +216,10 @@ void addSecondaryNode(Node * n);
     const std::vector < Node * > allNodes() const;
 
     Index allNodeCount() const;
+
+    /*! Reverse node sequence order to enforce positive Jacobian determinant.
+     * Please use with care! Return True if the order has been changed.*/
+    virtual bool enforcePositiveDirection();
 
 protected:
     void fillShape_();

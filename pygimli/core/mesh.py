@@ -11,9 +11,9 @@ from .core import (cat, HexahedronShape, Line, RSparseMapMatrix,
                         PolygonFace, TetrahedronShape, TriangleFace)
 from .logger import deprecated, error, info, warn, critical
 
-from ..meshtools import mergePLC, exportPLC
-
 from .base import isScalar, isArray, isPos, isR3Array, isComplex
+
+from ..meshtools import mergePLC, exportPLC, interpolateAlongCurve
 
 
 def __Mesh_unique_dataKeys(self):
@@ -66,6 +66,11 @@ Mesh.__repr__ =__Mesh_str
 
 
 def __addPLCs__(self, other):
+    if isR3Array(other):
+        m = Mesh(dim=self.dim(), isGeometry=True)
+        [m.createNode(n) for n in other]
+        other = m
+
     if self.isGeometry() and other.isGeometry():
         return mergePLC([self, other])
     else:
@@ -108,7 +113,8 @@ def __Mesh_setVal(self, key, val):
         return self.addData(key, val)
 
     if isinstance(val, list) and isinstance(val[0], (RVector, np.ndarray)) or \
-        val.ndim == 2:
+        val.ndim == 2 or \
+        val.ndim == 3:
 
         #print(val.ndim)
         maxDigit = ceil(np.log10(len(val)))
@@ -119,7 +125,14 @@ def __Mesh_setVal(self, key, val):
             self.addData('{}#{}'.format(key, str(i).zfill(maxDigit)),
                          np.asarray(v))
     else:
-        self.addData(key, val)
+
+        try:
+            self.addData(key, val)
+        except:
+            print(key)
+            print(val)
+            print(val.shape)
+            pg.error('Could not add data.')
 
     #print('keys', self.dataMap.keys())
 Mesh.__setitem__ = __Mesh_setVal
@@ -172,8 +185,8 @@ Mesh.__getitem__ = __Mesh_getVal
 
 def __MeshBoundingBox__(self):
     bb = self.boundingBox()
-    mi = RVector3([bb.min()[i] for i in range(self.dim())])
-    ma = RVector3([bb.max()[i] for i in range(self.dim())])
+    mi = RVector3([bb.min()[i] for i in range(3)])
+    ma = RVector3([bb.max()[i] for i in range(3)])
     return [mi, ma]
 Mesh.bb = __MeshBoundingBox__
 
@@ -585,3 +598,56 @@ def __Mesh_cutBoundary__(self, marker, boundaryMarker=None):
                                 marker=boundaryMarker)
         b.setLeftCell(rightCells[i])
 Mesh.cutBoundary = __Mesh_cutBoundary__
+
+def __Mesh__align__(self, pnts):
+    """Align 2D mesh along 3D coordinates.
+        
+    Align a xy-mesh along xyz-coordinates. x and y coordinates of the 2D mesh will be interpolated to x and y of pnts, where depth y from the mesh will become z and preserves its values.
+
+    TODO
+    ....
+        * handle z coordinate if pnts contain z
+
+    Args
+    ....
+    mesh: :gimliapi:`GIMLI::Mesh`
+        2D mesh, assumed to be aligned along x-axis. Depth is y-axis.
+    pnts: [[x,y],] | [[dx, x, y],]
+        * `shape[1] == 2`: Points that will be interpreted as xyz coordinates. 
+        * `shape[1] == 3`: interpreted as dx, x, y. Dx should start with <=0 max dx should be larger than `mesh.xmax() - mesh.xmin()`
+    """
+    if self.dim() != 2:
+        pg.critical("Only 2D meshes can be aligned to 3D coordinates")
+
+    A = None
+
+    pnts = np.asarray(pnts)
+    if pnts.ndim == 2:
+        if pnts.shape[1] == 2:
+            
+            A = np.zeros((pnts.shape[0], 3))
+
+            from ..utils import cumDist
+            A[:,0] = cumDist(pnts[:,0:2])
+            A[:,1] = pnts[:,0]
+            A[:,2] = pnts[:,1]
+            
+        elif pnts.shape[1] == 3:
+            A = pnts
+        
+    if A is None:
+        print(pnts)
+        pg.critical("Can't, interprete ptns.")
+
+    tn = [n.pos()[0] for n in self.nodes()]
+    zn = [n.pos()[1] for n in self.nodes()]
+    
+    p = interpolateAlongCurve(A[:,1:3], tn, tCurve=A[:,0])
+
+    for i, n in enumerate(self.nodes()):
+        n.setPos((p[i][0], p[i][1], zn[i]))
+
+    self.geometryChanged()
+    
+
+Mesh.align = __Mesh__align__

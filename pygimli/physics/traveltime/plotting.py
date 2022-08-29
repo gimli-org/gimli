@@ -1,10 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """Plotting functions for traveltime."""
-# general purpose
-import matplotlib.pyplot as plt
 import numpy as np
-# pygimli
+
 import pygimli as pg
 from pygimli.viewer.mpl import createColorBar  # , updateColorBar
 # local
@@ -81,7 +79,7 @@ def drawFirstPicks(ax, data, tt=None, plotva=False, **kwargs):
 
     uns = np.unique(sx)
 
-    cols = plt.cm.tab10(np.arange(10))
+    cols = pg.plt.cm.tab10(np.arange(10))
     kwargs.setdefault('marker', 'x')
     kwargs.setdefault('markersize', 8)
     kwargs.setdefault('linestyle', '-')

@@ -53,6 +53,7 @@ endif()
 
 if (OpenBLAS_INCLUDE_DIR)
     include_directories(${OpenBLAS_INCLUDE_DIR})
+    target_link_libraries(${libgimli_TARGET_NAME} openblas)
 endif()
 
 if (USE_BOOST_THREAD)

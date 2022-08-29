@@ -7,7 +7,6 @@ import codecs
 
 from math import log10, exp, pi
 import numpy as np
-import matplotlib.pyplot as plt
 
 import pygimli as pg
 from pygimli.utils import isComplex, squeezeComplex, toComplex, KramersKronig
@@ -412,7 +411,7 @@ class SIPSpectrum(object):
     def showPhase(self, ax=None, **kwargs):
         """Plot phase spectrum (-phi over frequency)."""
         if ax is None:
-            fig, ax = plt.subplots()
+            fig, ax = pg.plt.subplots()
             self.fig['phase'] = fig
 
         drawPhaseSpectrum(ax, self.f, self.phi*1000, **kwargs)
@@ -454,7 +453,6 @@ class SIPSpectrum(object):
             self.fig['data'] = fig
 
         ax[0].set_title(kwargs.pop("title", self.basename))
-        # plt.show(block=False)
         return fig, ax
 
     def getKK(self, use0=False):
@@ -494,7 +492,7 @@ class SIPSpectrum(object):
     def checkCRKK(self, useEps=False, use0=False, ax=None):
         """Check coupling removal (CR) by Kramers-Kronig (KK) relation"""
         if ax is None:
-            fig, ax = plt.subplots()
+            fig, ax = pg.plt.subplots()
             self.fig['dataCRKK'] = fig
 
         ax.semilogx(self.f, self.phi*1000, "+-", label='org')
@@ -512,7 +510,7 @@ class SIPSpectrum(object):
     def showPolarPlot(self, cond=False):
         """Show data in a polar plot (imaginary vs. real parts)."""
         re, im = self.realimag(cond=cond)
-        fig, ax = plt.subplots()
+        fig, ax = pg.plt.subplots()
         self.fig['polar'] = fig
         ax.plot(re, im, 'b.')
         ax.set_aspect(1)
@@ -691,12 +689,12 @@ class SIPSpectrum(object):
             inversion parameters for Cole exponent: start, lower, upper bound
         """
         if useCond:  # use conductivity formulation instead of resistivity
-            self.mCC, self.ampCC, self.phiCC = fitCCCC(self.f, self.amp,
-                                                       self.phi, **kwargs)
+            self.mCC, self.ampCC, self.phiCC, self.chi2 = fitCCCC(
+                self.f, self.amp, self.phi, **kwargs)
             self.mCC[0] = 1. / self.mCC[0]
         else:
-            self.mCC, self.ampCC, self.phiCC = fitCCC(self.f, self.amp,
-                                                      self.phi, **kwargs)
+            self.mCC, self.ampCC, self.phiCC, self.chi2 = fitCCC(
+                self.f, self.amp, self.phi, **kwargs)
 
     def fitDoubleColeCole(self, ePhi=0.001, eAmp=0.01, lam=1000., robust=False,
                           verbose=True, useRho=True, useMult=False, aphi=True,
@@ -759,6 +757,7 @@ class SIPSpectrum(object):
         ICC.setDeltaPhiAbortPercent(1)
     #    ICC.setMaxIter(0)
         self.mCC = ICC.run()  # run inversion
+        self.chi2 = ICC.chi2()
         if verbose:
             ICC.echoStatus()
 
@@ -807,7 +806,7 @@ class SIPSpectrum(object):
             reNorm, imNorm = self.zNorm()
             fDD = DebyeComplex(self.f, self.tau)
             Znorm = pg.cat(reNorm, imNorm)
-            IDD = pg.core.Inversion(Znorm, fDD, tLog, tM, False)
+            IDD = pg.core.Inversion(Znorm, fDD, tLin, tM, False)
             IDD.setAbsoluteError(max(Znorm)*0.003+ePhi)
         else:
             fDD = DebyePhi(self.f, self.tau)
@@ -875,7 +874,7 @@ class SIPSpectrum(object):
             tCC = tstr.format(*mCC)
 
         if ax is None:
-            fig, ax = plt.subplots(nrows=2+(self.mDD is not None),
+            fig, ax = pg.plt.subplots(nrows=2+(self.mDD is not None),
                                    figsize=(12, 12))
         else:
             fig = ax[0].figure
@@ -928,7 +927,7 @@ class SIPSpectrum(object):
 
             fig.savefig(savename, bbox_inches='tight')
 
-        plt.show(block=False)
+        pg.plt.show(block=False)
         return fig, ax
 
     def saveFigures(self, name=None, ext='pdf'):

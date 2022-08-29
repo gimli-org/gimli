@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 """Spectral induced polarization (SIP) plotting tools"""
 
-import matplotlib.pyplot as plt
-
 import pygimli as pg
 
 
@@ -55,7 +53,7 @@ def drawPhaseSpectrum(ax, freq, phi, ylabel=r'$-\phi$ (mrad)',
 def showSpectrum(freq, amp, phi, nrows=2, ylog=None, axs=None, **kwargs):
     """Show amplitude and phase spectra in two subplots."""
     if axs is None:
-        fig, axs = plt.subplots(nrows=nrows, sharex=(nrows == 2))
+        fig, axs = pg.plt.subplots(nrows=nrows, sharex=(nrows == 2))
     else:
         fig = axs[0].figure
     drawAmplitudeSpectrum(axs[0], freq, amp, ylog=ylog, **kwargs)

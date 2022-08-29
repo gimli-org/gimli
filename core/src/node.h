@@ -28,7 +28,7 @@
 
 namespace GIMLI{
 
-enum NodeState{No, Secondary, Connected};
+enum NodeState{No, Original, Secondary, Connected};
 
 //! 3D Node
 /*!
@@ -72,6 +72,7 @@ public:
 
     inline const RVector3 & pos() const { return pos_; }
 
+    /*! Don't use this if you plan to modify the nodes posisiton. The mesh won't get any notifications of the change and this not remove geometry caches. */
     inline RVector3 & pos() { return pos_; }
 
     inline void insertBoundary(Boundary * bound){ boundSet_.insert(bound); }
@@ -146,6 +147,8 @@ protected:
 }; // class Node
 
 DLLEXPORT std::ostream & operator << (std::ostream & str, const GIMLI::Node & node);
+
+DLLEXPORT std::ostream & operator << (std::ostream & str, const std::vector < GIMLI::Node * > & nodes);
 
 inline bool operator == (const Node & n1, const Node & n2) { return n1.pos() == n2.pos(); }
 

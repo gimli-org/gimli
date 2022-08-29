@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """pyGIMLi - Inversion Frameworks.
 
@@ -79,7 +80,8 @@ class Modelling(pg.core.ModellingBase):
         self._modelTrans = None
 
         self.fop = kwargs.pop('fop', None)
-        super(Modelling, self).__init__(**kwargs)
+        # super(Modelling, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
         self._regionProperties = {}
         self._interRegionCouplings = []
@@ -141,7 +143,7 @@ class Modelling(pg.core.ModellingBase):
             pg.critical('in use?')
             self.fop.setData(data)
         else:
-            super(Modelling, self).setData(data)
+            super().setData(data)
             self._data = data
 
         self.setDataPost(self.data)
@@ -162,10 +164,10 @@ class Modelling(pg.core.ModellingBase):
         """
         self._regionManagerInUse = True
         # initialize RM if necessary
-        super(Modelling, self).regionManager()
+        super().regionManager()
         # set all local properties
         self._applyRegionProperties()
-        return super(Modelling, self).regionManager()
+        return super().regionManager()
 
     @property
     def parameterCount(self):
@@ -273,9 +275,9 @@ class Modelling(pg.core.ModellingBase):
                                                 'background': None,
                                                 'single': None,
                                                 'fix': None,
-                                                'correlationLengths':None,
-                                                'dip':None,
-                                                'strike':None,
+                                                'correlationLengths': None,
+                                                'dip': None,
+                                                'strike': None,
                                                 }
 
         for key in list(kwargs.keys()):
@@ -316,7 +318,7 @@ class Modelling(pg.core.ModellingBase):
 
         # call super class her because self.regionManager() calls allways
         #  __applyRegionProperies itself
-        rMgr = super(Modelling, self).regionManager()
+        rMgr = super().regionManager()
         for rID, vals in self._regionProperties.items():
 
             if vals['fix'] is not None:
@@ -414,6 +416,7 @@ class Modelling(pg.core.ModellingBase):
 
 class LinearModelling(Modelling):
     """Modelling class for linearized problems with a given matrix."""
+
     def __init__(self, A):
         """Initialize by storing the (reference to the) matrix."""
         super().__init__()
@@ -534,7 +537,7 @@ class MeshModelling(Modelling):
     """Modelling class with a mesh discretization."""
 
     def __init__(self, **kwargs):
-        super(MeshModelling, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self._axs = None
         self._meshNeedsUpdate = True
         self._baseMesh = None
@@ -543,7 +546,7 @@ class MeshModelling(Modelling):
         self._pd = None
 
     def __hash__(self):
-        return super(MeshModelling, self).__hash__() ^ hash(self.mesh())
+        return super().__hash__() ^ hash(self.mesh())
 
     @property
     def mesh(self):
@@ -556,7 +559,7 @@ class MeshModelling(Modelling):
 
     @property
     def paraDomain(self):
-        """"""
+        """Return parameter (inverse) mesh."""
         # We need our own copy here because its possible that we want to use
         # the mesh after the fop was deleted
         if not self.mesh():
@@ -566,36 +569,36 @@ class MeshModelling(Modelling):
         return self._pd
 
     def createConstraints(self):
-        """"""
+        """Create constraint matrix."""
         # just ensure there is valid mesh
         self.mesh()
 
         foundGeoStat = False
         for reg, props in self.regionProperties().items():
+            if not props['background'] and \
+                props['correlationLengths'] is not None or \
+                    props['dip'] is not None or props['strike'] is not None:
 
-            if props['correlationLengths'] is not None or \
-                props['dip'] is not None or \
-                props['strike'] is not None:
-
-                I = props.get('correlationLengths') or 5
+                cL = props.get('correlationLengths') or 5
                 dip = props.get('dip') or 0
                 strike = props.get('strike') or 0
 
                 pg.info('Creating GeostatisticConstraintsMatrix for region' +
-                        f' {reg} with: I={I}, dip={dip}, strike={strike}')
+                        f' {reg} with: I={cL}, dip={dip}, strike={strike}')
 
-                if foundGeoStat == True:
-                    pg.critical('Only one global GeostatisticConstraintsMatrix possible at the moment.')
+                if foundGeoStat is True:
+                    pg.critical('Only one global GeostatisticConstraintsMatrix'
+                                'possible at the moment.')
 
-                ### we need to keep a copy of C until refcounting in the core works
+                # keep a copy of C until refcounting in the core works
                 self._C = pg.matrix.GeostatisticConstraintsMatrix(
-                    mesh=self.paraDomain, I=I, dip=dip, strike=strike,
+                    mesh=self.paraDomain, I=cL, dip=dip, strike=strike,
                 )
 
                 foundGeoStat = True
                 self.setConstraints(self._C)
 
-        if foundGeoStat == False:
+        if foundGeoStat is False:
             super().createConstraints()
 
         return self.constraints()
@@ -606,12 +609,18 @@ class MeshModelling(Modelling):
         return mod
 
     def ensureContent(self):
-        """"""
-        # Be sure the mesh is initialized when needed
+        """Internal function to ensure there is a valid initialized mesh.
+
+        Initialization means the cell marker are recounted and/or there was a mesh refinement or boundary enlargement, all to fit the needs for the method depending forward problem.
+        """
+        ## We need to call this once to be sure the mesh is initialized when needed
         self.mesh()
 
     def setMeshPost(self, data):
-        """Called when the mesh has been set successfully."""
+        """Interface to be called when the mesh has been set successfully.
+        
+        Might be overwritten by child classes.
+        """
         pass
 
     def createRefinedFwdMesh(self, mesh):
@@ -649,26 +658,27 @@ class MeshModelling(Modelling):
         self.setMeshPost(m)
 
         self._regionChanged = False
-        super(Modelling, self).setMesh(m, ignoreRegionManager=True)
+        super().setMesh(m, ignoreRegionManager=True)
 
-    # This might be confusing for users: self.mesh vs. self.mesh()
-    # pyflakes complains about redefinition
     def mesh(self):
-        """Return mesh."""
+        """Returns the current used mesh."""
         self._applyRegionProperties()
 
         if self._regionManagerInUse and self._regionChanged is True:
             self.createFwdMesh_()
 
-        return super(Modelling, self).mesh()
+        return super().mesh()
 
     def setMesh(self, mesh, ignoreRegionManager=False):
         """Set mesh and specify whether region manager can be ignored."""
+        ### keep a copy, just in case
         self._baseMesh = mesh
+
         if ignoreRegionManager is False:
             self._regionManagerInUse = True
 
-        if ignoreRegionManager or not self._regionManagerInUse:
+        ### Modelling without region manager
+        if ignoreRegionManager is True or not self._regionManagerInUse:
             self._regionManagerInUse = False
             if self.fop is not None:
                 pg.critical('in use?')
@@ -679,9 +689,9 @@ class MeshModelling(Modelling):
 
             self.setMeshPost(mesh)
             return
-        self.clearRegionProperties()
 
         # copy the mesh to the region manager who renumber cell markers
+        self.clearRegionProperties()
         self.regionManager().setMesh(mesh)
         self.setDefaultBackground()
 
@@ -801,7 +811,8 @@ class PetroModelling(MeshModelling):
         # pg._r("create Jacobian", self, self._jac)
         self.setJacobian(self._jac)  # to be sure .. test if necessary
 
-
+#220817 to be changed !! 
+# class JointModelling(Modelling):
 class JointModelling(MeshModelling):
     """Cumulative (joint) forward operator."""
 
@@ -813,10 +824,8 @@ class JointModelling(MeshModelling):
 
         # self.modelTrans = self.fops[0].modelTrans
         self.modelTrans = pg.core.TransLogLU()
-        # fixme
-        # self.modelTrans = pg.trans.TransCumulative()
-        # for i, f in enumerate(self.fops):
-        #     self.modelTrans.add(f.modelTrans)
+        self.fops[0].regionManager()
+        self.setRegionManager(self.fops[0].regionManagerRef())
 
     def createStartModel(self, data):
         """Use inverse transformation to get m(p) for the starting model."""
@@ -838,8 +847,7 @@ class JointModelling(MeshModelling):
             f.createJacobian(model)
 
     def setData(self, data):
-        """Distribute list of data to the forward operators
-        """
+        """Distribute list of data to the forward operators."""
         if len(data) != len(self.fops):
             pg.critical("Please provide data for all forward operators")
 
@@ -851,12 +859,16 @@ class JointModelling(MeshModelling):
             nData += data[i].size()  # update total vector length
         self.setJacobian(self.jac)
 
-    def setMesh(self, mesh, **kwargs):
-        """Set the parameter mesh to all fops
-        """
+    def setMesh(self, mesh, **kwargs):  # to be removed from here
+        """Set the parameter mesh to all fops."""
         for fi in self.fops:
             fi.setMesh(mesh)
-        self.setRegionManager(self.fops[0].regionManagerRef())
+
+#220817 to be implemented!!
+# class JointMeshModelling(JointModelling):
+#    def __init__(self, fopList):
+        # super().__init__(self, fopList)
+        # self.setRegionManager(self.fops[0].regionManagerRef())
 
 
 class LCModelling(Modelling):
@@ -1106,11 +1118,16 @@ class ParameterModelling(Modelling):
 class PriorModelling(MeshModelling):
     """Forward operator for grabbing values out of a mesh (prior data)."""
 
-    def __init__(self, mesh, pos, **kwargs):
+    def __init__(self, mesh=None, pos=None, **kwargs):
         """Init with mesh and some positions that are converted into ids."""
         super().__init__(**kwargs)
-        self.setMesh(mesh)
-        self.ind = [mesh.findCell(po).id() for po in pos]
+        self.pos = pos
+        if mesh is not None:
+            self.setMesh(mesh)
+
+    def setMesh(self, mesh):
+        super().setMesh(mesh)
+        self.ind = np.array([mesh.findCell(po).id() for po in self.pos])
         self.J = pg.SparseMapMatrix()
         self.J.resize(len(self.ind), mesh.cellCount())
         for i, ii in enumerate(self.ind):

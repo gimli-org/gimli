@@ -7,8 +7,8 @@ from math import pi
 import numpy as np
 from numpy import ma
 
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_pdf import PdfPages
+# import matplotlib.pyplot as plt
+# from matplotlib.backends.backend_pdf import PdfPages
 
 import pygimli as pg
 from pygimli.viewer.mpl.dataview import showValMapPatches
@@ -162,12 +162,13 @@ def drawERTData(ax, data, vals=None, **kwargs):
     vals = ma.array(vals, mask=~valid)
 
     ind = kwargs.pop('ind', None)
-
+    sw = kwargs.pop("switch", False)
     if ind is not None:
         vals = vals[ind]
-        mid, sep = midconfERT(data, ind)
+        mid, sep = midconfERT(data, ind, switch=sw)
     else:
-        mid, sep = midconfERT(data, circular=kwargs.get('circular', False))
+        mid, sep = midconfERT(data, circular=kwargs.get('circular', False),
+                              switch=sw)
 
     # var = kwargs.pop('var', 0)  # not used anymore
     cbar = None
@@ -193,7 +194,7 @@ def drawERTData(ax, data, vals=None, **kwargs):
         ax.set_aspect(1)
 
     else:
-        ytl = generateConfStr(np.sort([int(k) for k in ymap]))
+        ytl = generateConfStr(np.sort([int(k) for k in ymap]), switch=sw)
         # if only DD1/WE1 in WB/SL data rename to WB/SL
         if 'DD1' in ytl and 'WB2' in ytl and 'DD2'not in ytl:
             ytl[ytl.index('DD1')] = 'WB1'
@@ -212,7 +213,7 @@ def drawERTData(ax, data, vals=None, **kwargs):
     return ax, cbar
 
 
-def midconfERT(data, ind=None, rnum=1, circular=False):
+def midconfERT(data, ind=None, rnum=1, circular=False, switch=False):
     """Return the midpoint and configuration key for ERT data.
 
     Return the midpoint and configuration key for ERT data.
@@ -252,6 +253,9 @@ def midconfERT(data, ind=None, rnum=1, circular=False):
     x0 = data.sensorPosition(0).x()
     xe = pg.x(data.sensorPositions()) - x0
     ux = pg.unique(xe)
+    mI, mO, mT = 1, 100, 10000
+    if switch:
+        mI, mO = mO, mI
 
     if len(ux) * 2 > data.sensorCount():  # 2D with topography case
         dx = np.array(pg.utils.diff(pg.utils.cumDist(data.sensorPositions())))
@@ -265,7 +269,7 @@ def midconfERT(data, ind=None, rnum=1, circular=False):
                 dx = np.ones(len(dx)) * dxM
             else:
                 # topography with probably missing electrodes
-                dx = np.floor(dx/np.round(dxM))*dxM
+                dx = np.floor(dx/np.round(dxM)) * dxM
                 pass
         if max(dx) < 0.5:
             print("Detecting small distances, using mm accuracy")
@@ -329,18 +333,18 @@ def midconfERT(data, ind=None, rnum=1, circular=False):
             v[v > pi] = 2*pi - v[v > pi]
 
     # 2-point (default) 00000
-    sep = np.abs(a-m)
+    sep = np.abs(a-m)  # * mI # does not make sense here
     mid = (a+m) / 2
 
     # 3-point (PD, DP) (now only b==-1 or n==-<1, check also for a and m)
     imn = np.isfinite(n)*np.isnan(b)
     mid[imn] = (m[imn]+n[imn]) / 2
-    sep[imn] = np.minimum(am[imn], an[imn]) + 10000 + 100 * (mn[imn]-1) + \
-        (np.sign(a[imn]-m[imn])/2+0.5) * 10000
+    sep[imn] = np.minimum(am[imn], an[imn]) * mI + mT + mO * (mn[imn]-1) + \
+        (np.sign(a[imn]-m[imn])/2+0.5) * mT
     iab = np.isfinite(b)*np.isnan(n)
     mid[iab] = (a[iab]+b[iab]) / 2  # better 20000 or -10000?
-    sep[iab] = np.minimum(am[iab], bm[iab]) + 10000 + 100 * (ab[iab]-1) + \
-        (np.sign(a[iab]-n[iab])/2+0.5) * 10000
+    sep[iab] = np.minimum(am[iab], bm[iab]) * mI + mT + mO * (ab[iab]-1) + \
+        (np.sign(a[iab]-n[iab])/2+0.5) * mT
     #  + 10000*(a-m)
 
     # 4-point alpha: 30000 (WE) or 4000 (SL)
@@ -352,12 +356,12 @@ def midconfERT(data, ind=None, rnum=1, circular=False):
 
     mid[ialfa] = (m[ialfa] + n[ialfa]) / 2
     spac = np.minimum(bn[ialfa], bm[ialfa])
-    abmn3 = np.round((3*mn[ialfa]-ab[ialfa])*10000)/10000
-    sep[ialfa] = spac + (mn[ialfa]-1)*100*(abmn3 != 0) + \
-        30000 + (abmn3 < 0)*10000
+    abmn3 = np.round((3*mn[ialfa]-ab[ialfa])*mT)/mT
+    sep[ialfa] = spac * mI + (mn[ialfa]-1) * mO * (abmn3 != 0) + \
+        3*mT + (abmn3 < 0)*mT
     # gradient
 
-    # %% 4-point beta
+    # 4-point beta
     ibeta = np.copy(iabmn)
     ibeta[iabmn] = (bm[iabmn] >= mn[iabmn]) & (~ialfa[iabmn])
 
@@ -385,29 +389,37 @@ def midconfERT(data, ind=None, rnum=1, circular=False):
         mid[iOpp] = _averageAngle([b[iOpp], m[iOpp]])
 
         minAb = min(ab[ibeta])
-        sep[ibeta] = 50000 + (np.round(ab[ibeta]/minAb)) * 100 + \
+        sep[ibeta] = 5 * mT + (np.round(ab[ibeta]/minAb)) * mO + \
             np.round(np.minimum(np.minimum(am[ibeta], an[ibeta]),
-                                np.minimum(bm[ibeta], bn[ibeta])) / minAb)
+                                np.minimum(bm[ibeta], bn[ibeta])) / minAb) * mI
     else:
         mid[ibeta] = (a[ibeta] + b[ibeta] + m[ibeta] + n[ibeta]) / 4
 
-        sep[ibeta] = 50000 + (ab[ibeta]-1) * 100 + np.minimum(
-            np.minimum(am[ibeta], an[ibeta]), np.minimum(bm[ibeta], bn[ibeta]))
+        sep[ibeta] = 5 * mT + (ab[ibeta]-1) * mO + np.minimum(
+            np.minimum(am[ibeta], an[ibeta]),
+            np.minimum(bm[ibeta], bn[ibeta])) * mI
 
     # %% 4-point gamma
     # multiply with electrode distance and add first position
     if not circular:
         mid *= de
         mid += x0
+
     return mid, sep
 
 
-def generateConfStr(yy):
+def generateConfStr(yy, switch=False):
     """Generate configuration string to characterize array."""
+    mI, mO, mT = 1, 100, 10000
     types = ['PP', 'PD', 'DP', 'WA', 'SL', 'DD']  # base types
-    spac = yy % 100  # source-receiver distance
-    dip = np.round(yy//100) % 100  # MN dipole length
-    typ = np.round(yy//10000)
+    typ = np.round(yy//mT)
+    if switch:
+        dip = yy % mO  # source-receiver distance
+        spac = np.round(yy//mO) % mO  # MN dipole length
+    else:
+        spac = yy % mO  # source-receiver distance
+        dip = np.round(yy//mO) % mO  # MN dipole length
+
     # check if SL is actually GR (multi-gradient)
 
     # check if DD-n-n should be renamed

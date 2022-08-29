@@ -8,21 +8,18 @@ file (GLOB unitTest_HEADERS RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" *.h)
 add_executable(gimliUnitTest unitTest.cpp ${unitTest_HEADERS})
 
 if (CPPUNIT_FOUND)
+
     add_definitions(-DHAVE_UNITTEST)
+    
     include_directories(${CPPUNIT_INCLUDE_DIR})
+    
     target_link_libraries(gimliUnitTest ${CPPUNIT_LIBRARIES})
-
-
-    #if (CHOLMOD_FOUND)
-    #    target_link_libraries(gimliUnitTest ${CPPUNIT_LIBRARIES})
-    #endif (CHOLMOD_FOUND)
-
-    # target_link_libraries(gimliUnitTest ${Boost_THREAD_LIBRARY}) # maybe obsolete 200103
+    
     target_link_libraries(gimliUnitTest gimli)
-    target_link_libraries(gimliUnitTest ${BLAS_LIBRARIES})
-    #target_link_libraries(gimliUnitTest pthread)
-    #target_link_libraries(gimliUnitTest ${CHOLMOD_LIBRARIES})
-
+    
+    
+    # target_link_libraries(gimliUnitTest ../../../lib/libgimli.so)
+    
     add_dependencies(check gimliUnitTest)
 
     ADD_CUSTOM_TARGET(gtest)

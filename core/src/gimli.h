@@ -126,12 +126,62 @@ typedef int64_t int64;
     #define __FILENAME__ __FILE__
 #endif
 
+
+#ifndef PYGIMLI_CAST // castxml complains on older gcc/clang
+inline std::string str(){ return "";}
+#endif
+//! General template for conversion to string, should supersede all sprintf etc.
+template< typename T > inline std::string str(const T & v){
+    std::ostringstream os;
+    os << v;
+    return os.str();
+}
+enum LogType {Verbose, Info, Warning, Error, Debug, Critical};
+DLLEXPORT void log(LogType type, const std::string & msg);
+
+
+template<typename Value, typename... Values>
+std::string str(Value v, Values... vs){
+    std::ostringstream os;
+    using expander = int[];
+    os << v; // first
+    (void) expander{ 0, (os << " " << vs, void(), 0)... };
+    return os.str();
+}
+template<typename... Values>
+void log(LogType type, Values... vs){
+    return log(type, str(vs...));
+}
+
+// simple python like std out
+inline void print() {
+    std::cout << std::endl;
+}
+
+template<class Head>
+void print(std::ostream& s, Head&& head) {
+    s << std::forward<Head>(head) << std::endl;
+}
+
+template<class Head, class... Tail>
+void print(std::ostream& s, Head&& head, Tail&&... tail) {
+    s << std::forward<Head>(head) << " ";
+    print(s, std::forward<Tail>(tail)...);
+}
+
+template<class... Args>
+void print(Args&&... args) {
+    print(std::cout, std::forward<Args>(args)...);
+}
+
 #define WHERE GIMLI::str(__FILENAME__) + ":" + GIMLI::str(__LINE__) + "\t"
 #define WHERE_AM_I WHERE + "\t" + GIMLI::str(__ASSERT_FUNCTION) + " "
 #define TO_IMPL WHERE_AM_I + " not yet implemented\n " + GIMLI::versionStr() + "\nPlease send the messages above, the commandline and all necessary data to the author."
 
 #define __M std::cout << "*** " << WHERE << std::endl;
 #define __MS(str) std::cout << "*** " <<str << " " << WHERE << std::endl;
+// temporary
+#define __MSP(...) GIMLI::print("+++", WHERE, "\n", __VA_ARGS__, "\n---");
 #define __D if (debug()) std::cout << "Debug: " << WHERE << std::endl;
 #define __DS(str) if (debug()) std::cout << "Debug: " << str << " " << WHERE << std::endl;
 
@@ -335,31 +385,6 @@ private:
 #else
 //     #include <Python.h>
 #endif
-
-inline std::string str(){ return "";}
-//! General template for conversion to string, should supersede all sprintf etc.
-template< typename T > inline std::string str(const T & v){
-    std::ostringstream os;
-    os << v;
-    return os.str();
-}
-enum LogType {Verbose, Info, Warning, Error, Debug, Critical};
-DLLEXPORT void log(LogType type, const std::string & msg);
-
-template<typename Value, typename... Values>
-std::string str(Value v, Values... vs){
-    std::ostringstream os;
-    using expander = int[];
-    os << v; // first
-    (void) expander{ 0, (os << " " << vs, void(), 0)... };
-    return os.str();
-}
-#ifndef PYGIMLI_CAST // castxml complains on older gcc/clang
-#endif
-template<typename... Values>
-void log(LogType type, Values... vs){
-    return log(type, str(vs...));
-}
 
 DLLEXPORT std::string versionStr();
 

@@ -345,8 +345,9 @@ def createGeometricFactors(scheme, numerical=None, mesh=None, dim=3,
         return pg.core.geometricFactors(scheme, forceFlatEarth=True, dim=dim)
 
     if mesh is None:
+        pg.info('Create default mesh for geometric factor calculation.')
         mesh = createInversionMesh(scheme)
-
+        
     if verbose:
         pg.info('mesh', mesh)
 

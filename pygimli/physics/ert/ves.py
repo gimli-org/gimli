@@ -28,9 +28,9 @@ class VESModelling(Block1DModelling):
         Part of data basis. Distances between B and N electrodes.
         B is second power, N is second potential electrode.
     ab2 :
-        Half distance between A and B.
+        Half distance between the current electrodes A and B.
     mn2 :
-        Half distance between A and B.
+        Half distance between the potential electrodes M and N.
         Only used for input (feeding am etc.).
     """
 

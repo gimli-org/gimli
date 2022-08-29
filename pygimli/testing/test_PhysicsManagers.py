@@ -7,7 +7,8 @@ import unittest
 import numpy as np
 
 import pygimli as pg
-from pygimli.physics import VESManager, ERTManager
+from pygimli.physics import ert
+from pygimli.physics import VESManager
 from pygimli.physics.em import VMDTimeDomainModelling
 
 # pg.setTestingMode(True)
@@ -17,17 +18,17 @@ class TestManagers(unittest.TestCase):
 
     def test_ERT(self, showProgress=False):
         dat = pg.getExampleFile('ert/gallery.dat', load=True, verbose=True)
-
+        dat['k'] = ert.createGeometricFactors(dat)
         mesh = pg.meshtools.createParaMesh(dat.sensors(), quality=33.4,
                                  paraDX=0.3, paraMaxCellSize=0.5, paraDepth=8)
         #with SR
-        ert = ERTManager(sr=True, useBert=True, verbose=False, debug=False)
-        mod = ert.invert(dat, mesh=mesh, maxIter=20, lam=10)
-        np.testing.assert_approx_equal(ert.inv.chi2(), 1.003, significant=3)
+        mgr = ert.ERTManager(sr=True, useBert=True, verbose=False, debug=False)
+        mod = mgr.invert(dat, mesh=mesh, maxIter=20, lam=10)
+        np.testing.assert_approx_equal(mgr.inv.chi2(), 1.003, significant=3)
 
         #without SR
-        ert = ERTManager(sr=False, useBert=True, verbose=False, debug=False)
-        mod = ert.invert(dat, mesh=mesh, maxIter=20, lam=10)
+        mgr = ert.ERTManager(sr=False, useBert=True, verbose=False, debug=False)
+        mod = mgr.invert(dat, mesh=mesh, maxIter=20, lam=10)
         # np.testing.assert_approx_equal(ert.inv.chi2(), 0.9833, significant=3)
 
     def test_TT(self, showProgress=False):
@@ -36,19 +37,20 @@ class TestManagers(unittest.TestCase):
     def test_VMD(self, showProgress=False):
         t = np.logspace(-5.5, -2.2, 20)
         verbose = False
+        synthModel = np.array([25., 5., 100., 150., 1., 10., 4.])
+        nLayers = (len(synthModel)+1) // 2
         fop = VMDTimeDomainModelling(times=t, txArea=10000.0, rxArea=10000.0,
-                                     verbose=verbose)
+                                     nLayers=nLayers, verbose=verbose)
         # [thick[3], res[4]] nLay=4
 
         vmdMgr = pg.frameworks.MethodManager1d(fop)
-        synthModel = np.array([25., 5., 100., 150., 1., 10., 4.])
 
         ra = vmdMgr.simulate(synthModel)
 
         err = abs(np.log(t)/2) * 0.01
         ra *= 1. + pg.randn(len(ra), seed=1337) * err
 
-        model = vmdMgr.invert(ra, err, nLayers=4, layerLimits=[2, 500],
+        model = vmdMgr.invert(ra, err, nLayers=nLayers, layerLimits=[2, 500],
                               maxIter=50,
                               showProgress=showProgress, verbose=verbose)
 
@@ -60,8 +62,8 @@ class TestManagers(unittest.TestCase):
         """
         """
         thicks = [2., 10.]
-        res = [100., 5., 30] # Ohm m
-        phi = [0., 20., 0.] #neg mrad
+        res = [100., 5., 30]  # Ohm m
+        phi = [0., 20., 0.]  # neg mrad
 
         # model fails
         # thicks = [2., 6., 10.]

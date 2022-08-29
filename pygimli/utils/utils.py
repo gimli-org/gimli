@@ -14,7 +14,8 @@ class ProgressBar(object):
     """Animated text-based progressbar.
 
     Animated text-based progressbar for intensive loops. Should work in the
-    console and in the IPython Notebook.
+    console. In IPython Notebooks a 'tqdm' progressbar instance is created and 
+    can be configured with appropriate keyword arguments.
 
     Todo
     ----
@@ -29,6 +30,11 @@ class ProgressBar(object):
     sign : str
         Sign used to fill the bar.
 
+    Additional Args
+    ---------------
+    Forwarded to create the tqdm progressbar instance. See
+    https://tqdm.github.io/docs/tqdm/
+
     Examples
     --------
     >>> from pygimli.utils import ProgressBar
@@ -37,13 +43,23 @@ class ProgressBar(object):
     \r[+++++++++++       30%                 ] 6 of 20 complete
     """
 
-    def __init__(self, its, width=80, sign=":"):
+    def __init__(self, its, width=80, sign=":", **kwargs):
         """Constructor."""
         self.its = int(its)
         self.width = width
         self.sign = sign[0]  # take first character only if sign is longer
         self.pBar = "[]"
         self._amount(0)
+        self.nbProgress = None
+        self._iter = -1
+
+        if pg.isNotebook():
+            tqdm = pg.optImport('tqdm', requiredFor="use a nice progressbar in jupyter notebook")
+            if tqdm is not None:
+                from tqdm.notebook import tqdm
+                fmt = kwargs.pop('bar_format',
+                    '{desc} {percentage:3.0f}%|{bar}|{n_fmt}/{total_fmt} [{elapsed} < {remaining}]')
+                self.nbProgress = tqdm(total=its, bar_format = fmt, **kwargs)
 
     def __call__(self, it, msg=""):
         self.update(it, msg)
@@ -51,13 +67,24 @@ class ProgressBar(object):
     def update(self, iteration, msg=""):
         """Update ProgressBar by iteration number starting at 0 with optional
         message."""
-        self._setbar(iteration + 1)
-        if len(msg) >= 1:
-            self.pBar += " (" + msg + ")"
-        print("\r" + self.pBar, end="")
-        sys.stdout.flush()
+        if self.nbProgress is not None:
+            ## TODO maybe catch if someone don't call with iteration steps == 1, why ever
+            self.nbProgress.update(n=iteration-self._iter)
+        else:
+            self._setbar(iteration + 1)
+            if len(msg) >= 1:
+                self.pBar += " (" + msg + ")"
+            print("\r" + self.pBar, end="")
+            sys.stdout.flush()
+        
+        ## last iteration here
         if iteration == self.its-1:
-            print()
+            if self.nbProgress is not None:
+                self.nbProgress.close()
+            else:
+                print()
+                
+        self._iter = iteration
 
     def _setbar(self, elapsed_it):
         """Reset pBar based on current iteration number."""
@@ -227,6 +254,95 @@ def prettyFloat(value, roundValue=None):
         return string[0:len(string)-1]
     else:
         return string
+        
+
+def prettyTime(t):
+    """Return prettified time in seconds as string.
+        No months, no leap year.
+
+    TODO
+    ----
+        * weeks (needed)
+        * > 1000 years
+
+    Args
+    ----
+    t: float
+        Time in seconds, should be > 0
+
+    Examples
+    --------
+    >>> from pygimli.utils import prettyTime
+    >>> print(prettyTime(1))
+    1 s
+    >>> print(prettyTime(3600*24))
+    1 day
+    >>> print(prettyTime(2*3600*24))
+    2 days
+    >>> print(prettyTime(365*3600*24))
+    1 year
+    >>> print(prettyTime(3600))
+    1 hour
+    >>> print(prettyTime(2*3600))
+    2 hours
+    >>> print(prettyTime(3660))
+    1h1m
+    >>> print(prettyTime(1e-3))
+    1 ms
+    >>> print(prettyTime(1e-6))
+    1 µs
+    >>> print(prettyTime(1e-9))
+    1 ns
+    """
+    if abs(t) > 1:
+        seconds = int(t)
+        years, seconds = divmod(seconds, 365*86400)
+        days, seconds = divmod(seconds, 86400)
+        hours, seconds = divmod(seconds, 3600)
+        minutes, seconds = divmod(seconds, 60)
+        if years > 0:
+            if days >=1:
+                return '%dy%dd' % (years, days)
+            else:
+                if years > 1:
+                    return '%d years' % (years,)
+                else:
+                    return '%d year' % (years,)
+        elif days > 0:
+            if hours >=1:
+                return '%dd%dh' % (days, hours)
+            else:
+                if days > 1:
+                    return '%d days' % (days,)
+                else:
+                    return '%d day' % (days,)
+        elif hours > 0:
+            if minutes >=1:
+                return '%dh%dm' % (hours, minutes)
+            else:
+                if hours > 1:
+                    return '%d hours' % (hours)
+                else:
+                    return '%d hour' % (hours)
+        elif minutes > 0:
+            if seconds >=1:
+                return '%dm%ds' % (minutes, seconds)
+            else:
+                if minutes > 1:
+                    return '%d minutes' % (minutes)
+                else:
+                    return '%d minute' % (minutes)
+        else:
+            return '%d s' % (seconds,)
+    else:
+        if abs(t) >= 1e-3 and abs(t) <= 0.1:
+            return prettyFloat(t*1e3) + " ms"
+        elif abs(t) >= 1e-6 and abs(t) <= 1e-3:
+            return prettyFloat(t*1e6) + " µs"
+        elif abs(t) >= 1e-9 and abs(t) <= 1e-6:
+            return prettyFloat(t*1e9) + " ns"
+        return prettyFloat(t) + " s"
+
 
 def niceLogspace(vMin, vMax, nDec=10):
     """Create nice logarithmic space from the next decade lower to vMin to

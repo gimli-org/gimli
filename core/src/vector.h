@@ -64,6 +64,10 @@ template < class ValueType, class A > class __VectorExpr;
 
 IndexArray find(const BVector & v);
 
+DLLEXPORT IndexArray range(Index start, Index stop, Index step=1);
+DLLEXPORT IndexArray range(Index stop);
+
+
 #ifndef PYGIMLI_CAST
 inline void Dump(const void * mem, unsigned int n) {
     const char * p = reinterpret_cast< const char *>(mem);
@@ -365,6 +369,9 @@ public:
     /*! */
     Vector < ValueType > get_(const BVector & bv) const {
         return this->get_(GIMLI::find(bv));
+    }
+    Vector < ValueType > getIA_(const IndexArray & iA) const {
+        return this->get_(iA);
     }
 
 #ifndef PYGIMLI_CAST
