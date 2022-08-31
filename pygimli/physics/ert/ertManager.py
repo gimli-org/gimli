@@ -107,7 +107,7 @@ class ERTManager(MeshMethodManager):
         """Set primary potential from external is not supported anymore."""
         pg.critical("Not implemented.")
 
-    
+
     def simulate(self, mesh, scheme, res, **kwargs):
         """Simulate an ERT measurement.
 
@@ -200,7 +200,7 @@ class ERTManager(MeshMethodManager):
         # >>> rhoa = data.get('rhoa').array()
         # >>> phia = data.get('phia').array()
         """
-        pg.warn('Obsolete, do not use!. Use ert.simulate instead')    
+        pg.warn('Obsolete, do not use!. Use ert.simulate instead')
 
         verbose = kwargs.pop('verbose', self.verbose)
         calcOnly = kwargs.pop('calcOnly', False)
