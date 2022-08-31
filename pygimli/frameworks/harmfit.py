@@ -20,7 +20,7 @@ class HarmFunctor(object):
         """Yield function call."""
         nc = len(self.coeff_) / 2
         A = np.ones(nc * 2) * 0.5
-        A[1] = 3. * x
+        A[1] = x
         A[2::2] = np.sin(2.0 * np.pi * np.arange(1, nc) *
                          (x - self.xmin_) / self.xSpan_)
         A[3::2] = np.cos(2.0 * np.pi * np.arange(1, nc) *
