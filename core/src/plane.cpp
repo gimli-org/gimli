@@ -206,5 +206,4 @@ bool Plane::compare(const Plane & plane, double tol, bool bothDirs){
     return false;
 }
 
-
 } //namespace GIMLI

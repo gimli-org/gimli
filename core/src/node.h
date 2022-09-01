@@ -150,7 +150,6 @@ DLLEXPORT std::ostream & operator << (std::ostream & str, const GIMLI::Node & no
 
 DLLEXPORT std::ostream & operator << (std::ostream & str, const std::vector < GIMLI::Node * > & nodes);
 
-
 inline bool operator == (const Node & n1, const Node & n2) { return n1.pos() == n2.pos(); }
 
 } // namespace GIMLI

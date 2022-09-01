@@ -18,10 +18,10 @@
 
 #include "meshentities.h"
 
-#include "node.h"
-#include "shape.h"
 #include "line.h"
 #include "mesh.h"
+#include "node.h"
+#include "shape.h"
 
 #include <map>
 #include <algorithm>

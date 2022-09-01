@@ -208,9 +208,12 @@ def testCBarLevels():
 
 def testShowPV():
     """
-        # Run from notebook
         import pygimli as pg
         from pygimli.testing.test_show import testShowPV
+        import pyvista as pv
+        print(pv.__version__)
+        import panel as pnl
+        print(pnl.__version__)
         testShowPV()
     """
     m1 = mt.createCube()

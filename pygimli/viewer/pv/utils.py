@@ -88,6 +88,10 @@ def pgMesh2pvMesh(mesh, data=None, label=None, boundaries=False):
                 if label is None:
                     label = 'Cell data'
                 grid.cell_data[label] = np.asarray(data)
+            elif len(data) == mesh.boundaryCount():
+                if label is None:
+                    label = 'Boundary data'
+                grid.cell_data[label] = np.asarray(data)
             elif len(data) == mesh.nodeCount():
                 if label is None:
                     label = 'Node data'

@@ -29,7 +29,7 @@ from .mesh import (convert, convertMeshioMesh, convertHDF5Mesh, createMesh,
                    readFenicsHDF5Mesh, readGmsh, readHDF5Mesh,
                    readHydrus2dMesh, readHydrus3dMesh, readSTL, readTetgen,
                    readTriangle, readMeshIO, refineHex2Tet, refineQuad2Tri,
-                   toSubsurface, fromSubsurface)
+                   toSubsurface, fromSubsurface, extractUpperSurface2dMesh)
 
 from .polytools import createParaDomain2D  # keep for backward compatibility
 from .polytools import (createCircle, createCube, createCylinder, 

@@ -135,7 +135,6 @@ void Vector< RVector3 >::clean(){
      }
 }
 
-
 IndexArray range(Index start, Index stop, Index step){
     IndexArray ret(0);
     for (Index i = start; i < stop; i += step){
@@ -147,7 +146,6 @@ IndexArray range(Index start, Index stop, Index step){
 IndexArray range(Index stop){
     return range(0, stop, 1);
 }
-
 
 } // namespace GIMLI{
 

@@ -174,7 +174,6 @@ void print(Args&&... args) {
     print(std::cout, std::forward<Args>(args)...);
 }
 
-
 #define WHERE GIMLI::str(__FILENAME__) + ":" + GIMLI::str(__LINE__) + "\t"
 #define WHERE_AM_I WHERE + "\t" + GIMLI::str(__ASSERT_FUNCTION) + " "
 #define TO_IMPL WHERE_AM_I + " not yet implemented\n " + GIMLI::versionStr() + "\nPlease send the messages above, the commandline and all necessary data to the author."

@@ -317,7 +317,8 @@ class Test3DMerge(unittest.TestCase):
         m = mt.createMesh(w)
         pg.show(m, m.cellMarkers())
         # pg.show(mt.createMesh(w))
-
+         
+    
     def test_face_in_face(self):
         """Test subface with different marker constructed with hole marker."""
         w = mt.createCube(marker=1, boundaryMarker=1)
@@ -353,7 +354,9 @@ class Test3DMerge(unittest.TestCase):
         # mesh.exportBoundaryVTU('b.vtu')
         #pg.show(mesh)
 
+   
     def test_cube_cube_halfside(self):
+        """Add half size cube on another cube"""
         D=1
         H=1
         W=3
@@ -366,7 +369,7 @@ class Test3DMerge(unittest.TestCase):
         c2 = mt.createCube([D, W-2*D, H], pos=[0, -(W)/2+D/2-0.00, 0], marker=2) 
         #plc = mt.merge([c2, c1L, c1R])
         plc = mt.merge([c2, c1L])
-        plc.exportPLC('cubecut')
+        #plc.exportPLC('cubecut')
         pg.show(plc)
 
         self.assertEqual(plc.nodeCount(), 14)
@@ -440,6 +443,7 @@ class Test3DMerge(unittest.TestCase):
         #     ax.show()
         # except:
         #     pass
+
 
 
 if __name__ == '__main__':

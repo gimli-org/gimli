@@ -59,7 +59,9 @@ public:
     }
 
     /*! Not_equal_to operator */
-    inline bool operator != (const Plane & plane){ return !(*this== plane); }
+    inline bool operator != (const Plane & plane){ 
+        return !(*this== plane);
+    }
 
     /*! Compare two planes with a given tolerance. Check if both norms and distances are equal.
     | norm - p.norm | < tol && | d_ - p.d | < tol. 

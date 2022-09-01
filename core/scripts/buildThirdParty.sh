@@ -171,6 +171,28 @@ SetCLANG_TOOLSET(){
     fi
 }
 
+function copySRC_From_EXT_PATH(){
+    echo "GIMLI_THIRDPARTY_SRC: $GIMLI_THIRDPARTY_SRC"
+    if [ ! -d $_SRC_ ]; then
+        NAME=`basename $_SRC_`
+        echo "BASNAME=$NAME"
+        if [ ! -z $GIMLI_THIRDPARTY_SRC ]; then
+            echo "checking GIMLI_THIRDPARTY_SRC: $GIMLI_THIRDPARTY_SRC/$NAME"
+            if [ -d $GIMLI_THIRDPARTY_SRC/$NAME ]; then
+                echo "Found external Thirdparty Sources .. using them instead of downloading."
+                echo "cp -r $GIMLI_THIRDPARTY_SRC/$NAME $_SRC_"
+                cp -r $GIMLI_THIRDPARTY_SRC/$NAME $_SRC_
+            else
+                echo ".. not found."
+            fi
+        else
+            echo "GIMLI_THIRDPARTY_SRC no set"
+        fi
+    else
+        echo "$_SRC_ already exists"
+    fi
+}
+
 getWITH_WGET(){
     _URL_=$1
     _SRC_=$2
@@ -178,12 +200,15 @@ getWITH_WGET(){
 
     echo "** get with wget ** " $_URL_ $_SRC_ $_PAC_
     echo "wget -nc -nd $_URL_/$_PAC_"
+    echo "--------------------------------------------------"
 
     if [ -n "$CLEAN" ]; then
         rm -rf $_SRC_
         #rm -rf $_PAC_
     fi
 
+    copySRC_From_EXT_PATH
+    
     if [ ! -d $_SRC_ ]; then
         echo "Copying sources into $_SRC_"
         pushd $SRC_DIR
@@ -275,6 +300,8 @@ getWITH_GIT(){
     echo "----GIT--$_URL_ -> $_SRC_ : $_BRANCH_----------------"
     echo "--------------------------------------------------"
 
+    copySRC_From_EXT_PATH
+
     if ( [ -d $_SRC_ ] ); then
         pushd $_SRC_
             "$GIT" stash
@@ -285,6 +312,8 @@ getWITH_GIT(){
             "$GIT" clone $_URL_ $_SRC_
         popd
     fi
+
+
     if [ -n $_BRANCH_ ]; then
         pushd $_SRC_
           echo $_SRC_ $_BRANCH_

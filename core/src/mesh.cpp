@@ -19,10 +19,11 @@
 #include "mesh.h"
 
 #include "kdtreeWrapper.h"
+#include "line.h"
 #include "memwatch.h"
 #include "meshentities.h"
 #include "node.h"
-#include "line.h"
+#include "plane.h"
 #include "shape.h"
 #include "plane.h"
 
@@ -510,9 +511,9 @@ Boundary * findSecParent(const std::vector < Node * > & v){
 }
 
 Boundary * Mesh::copyBoundary(const Boundary & bound, double tol, bool check){
-    bool debug = true;
-    if (debug)
-    __MS("copyBoundary", bound.ids())
+    bool debug = false;
+    #define _D(...) if (debug) __MS(__VA_ARGS__)
+    _D("copyBoundary", bound.ids())
 
     std::vector < Node * > nodes(bound.nodeCount());
     bool isFreeFace = false; //** the new face is no subface
@@ -558,12 +559,10 @@ Boundary * Mesh::copyBoundary(const Boundary & bound, double tol, bool check){
     std::vector < Node * > subNodes; // nodes for the new subface
     if (bound.rtti() == MESH_POLYGON_FACE_RTTI && check == true){
 
-        if (debug)
-        __MS("connectedNodes:", conNodes, 
+        _D("connectedNodes:", conNodes, 
              "secondaryNodes:", secNodes,
              "origNodes:", oldNodes)
-        if (debug)
-        __MS("new face nodes:", nodes, "is subface", not isFreeFace)
+        _D("new face nodes:", nodes, "is subface", not isFreeFace)
 
         Boundary * secParent = findSecParent(secNodes);
 
@@ -587,33 +586,33 @@ Boundary * Mesh::copyBoundary(const Boundary & bound, double tol, bool check){
                     isFreeFace = true;
                 }
                 if (conParent){
-                    if (debug) __MS("conParent", conParent->ids())
+                    _D("conParent", conParent->ids())
                 } else {
-                    if (debug)__MS("no parent for connected nodes")
+                    _D("no parent for connected nodes")
                 }
                 if (secParent){
-                    if (debug)__MS("secParent", secParent->ids())
+                    _D("secParent", secParent->ids())
                 } else {
-                    if (debug)__MS("no parent for secondary nodes")
+                    _D("no parent for secondary nodes")
                 }
 
                 // subNodes = conNodes;
                 // subNodes.insert(subNodes.end(), secNodes.begin(), secNodes.end());
                 subNodes = nodes;
-                if (debug)__MS("subNodes", subNodes)
+                _D("subNodes", subNodes)
                 parent = secParent;
             } else if (conNodes.size()){
                 if (!conParent){
                     isFreeFace = true;
-                    if (debug)__MS("no conParent")
+                    _D("no conParent")
                 } else {
-                    if (debug)__MS("conParent", conParent->ids())
+                    _D("conParent", conParent->ids())
 
                     if (oldNodes.size()){
                         //original nodes may not be part of connected Parent
                         for (auto *n: oldNodes){
                             if (!conParent->shape().touch(n->pos())) {
-                                if (debug)__MS("node not on connected parent", n->id())
+                                _D("node not on connected parent", n->id())
                                 isFreeFace = true; 
                             }
                         }
@@ -624,13 +623,13 @@ Boundary * Mesh::copyBoundary(const Boundary & bound, double tol, bool check){
             } else if (secNodes.size()){
                 if(!secParent){
                     isFreeFace = true;
-                    if (debug)__MS("no secondary parent")
+                    _D("no secondary parent")
                 } else if (!secParent->shape().plane().compare(
                                                 bound.shape().plane(), TOLERANCE, true)){
 
-                    if (debug)__MS("secParent", secParent->ids())
-                    print(secParent->shape().plane());
-                    print(bound.shape().plane());
+                    _D("secParent", secParent->ids())
+                    _D("secParent.Plane:", secParent->shape().plane());
+                    _D("bound.Plane:", bound.shape().plane());
                     isFreeFace = true;
                 }
                 subNodes = secNodes;
@@ -641,12 +640,12 @@ Boundary * Mesh::copyBoundary(const Boundary & bound, double tol, bool check){
         }
         
         //** create new face
-        if (debug)__MS("is subface", not isFreeFace, subNodes.size(), nodes.size())
+        _D("is subface", not isFreeFace, subNodes.size(), nodes.size())
         
         if (isFreeFace){
             ret = createBoundaryChecked_< PolygonFace >(nodes,
                                                         bound.marker(), check);
-            if (debug)__MS("added freeFace: ", ret->ids())
+            _D("added freeFace: ", ret->ids())
             parent = ret;
         } else {
             if (subNodes.size() > 2){
@@ -656,12 +655,12 @@ Boundary * Mesh::copyBoundary(const Boundary & bound, double tol, bool check){
                         n->setState(No);
                     }
                     auto *p = dynamic_cast< PolygonFace * >(parent);
-                    if (debug)__MS("addSubface: ", p->subfaceCount())
+                    _D("addSubface: ", p->subfaceCount())
                     p->addSubface(subNodes);
-                    if (debug)__MS("subfacecount: ", p->subfaceCount())
+                    _D("subfacecount: ", p->subfaceCount())
 
-                    if (debug)for (auto i: range(p->subfaceCount())){
-                        __MS("added subface:", p->subface(i))
+                    if (debug) for (auto i: range(p->subfaceCount())){
+                        _D("added subface:", p->subface(i))
                     }
                 } else {
                     log(Error, "no parent boundary");
@@ -2174,6 +2173,7 @@ void Mesh::mapBoundaryMarker(const std::map < int, int > & aMap){
         }
     }
 }
+
 void Mesh::prolongateEmptyCellsValues(RVector & vals, double background) const {
     IndexArray emptyList(find(abs(vals) < TOLERANCE));
     if (emptyList.size() == 0) return;

@@ -95,9 +95,9 @@ def registerShowPendingFigsAtExit():
                     if 'Qt' in backend or 'Wx' in backend or 'Tk' in backend or 'GTK' in backend:
                         #print(plt.get_fignums())
                         if len(plt.get_fignums()) > 0:
-                            pg.info('Showing pending widgets on exit. '
+                            pg.info(f'Showing pending widgets ({backend}) on exit. '
                                         'Close all figures or Ctrl-C to quit the programm')
-                            #pg.wait()
+                            pg.wait()
                 
     __registeredShowPendingFigsAtExit__ = True
 
@@ -144,12 +144,14 @@ def adjustWorldAxes(ax):
     ax.set_xlabel('$x$ (m)')
 
     renameDepthTicks(ax)
-    plt.tight_layout()
+    ax.figure.tight_layout()
     updateAxes(ax)
 
 
 def renameDepthTicks(ax):
     """Switch signs of depth ticks to be positive"""
+    from matplotlib import ticker
+
     @ticker.FuncFormatter
     def major_formatter(x, pos):
         return prettyFloat(-x) % x
@@ -160,6 +162,8 @@ def renameDepthTicks(ax):
 
 def setPrettyTimeTicks(ax):
     """Set x axis ticks with pretty time."""
+    from matplotlib import ticker
+
     @ticker.FuncFormatter
     def major_formatter(x, pos):
         return pg.utils.prettyTime(x) % x
@@ -169,6 +173,8 @@ def setPrettyTimeTicks(ax):
 
 
 def setPrettyTimeAxis(axis, unit=None):
+
+    from matplotlib import ticker
 
     class MyLogFormatterMathtext(ticker.LogFormatterMathtext):
         def __init__(self, minExp=4, **kwargs):

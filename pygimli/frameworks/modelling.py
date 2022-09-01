@@ -609,12 +609,18 @@ class MeshModelling(Modelling):
         return mod
 
     def ensureContent(self):
-        """"""
-        # Be sure the mesh is initialized when needed
+        """Internal function to ensure there is a valid initialized mesh.
+
+        Initialization means the cell marker are recounted and/or there was a mesh refinement or boundary enlargement, all to fit the needs for the method depending forward problem.
+        """
+        ## We need to call this once to be sure the mesh is initialized when needed
         self.mesh()
 
     def setMeshPost(self, data):
-        """Called when the mesh has been set successfully."""
+        """Interface to be called when the mesh has been set successfully.
+        
+        Might be overwritten by child classes.
+        """
         pass
 
     def createRefinedFwdMesh(self, mesh):
@@ -654,10 +660,8 @@ class MeshModelling(Modelling):
         self._regionChanged = False
         super().setMesh(m, ignoreRegionManager=True)
 
-    # This might be confusing for users: self.mesh vs. self.mesh()
-    # pyflakes complains about redefinition
     def mesh(self):
-        """Return mesh."""
+        """Returns the current used mesh."""
         self._applyRegionProperties()
 
         if self._regionManagerInUse and self._regionChanged is True:
@@ -667,11 +671,14 @@ class MeshModelling(Modelling):
 
     def setMesh(self, mesh, ignoreRegionManager=False):
         """Set mesh and specify whether region manager can be ignored."""
+        ### keep a copy, just in case
         self._baseMesh = mesh
+
         if ignoreRegionManager is False:
             self._regionManagerInUse = True
 
-        if ignoreRegionManager or not self._regionManagerInUse:
+        ### Modelling without region manager
+        if ignoreRegionManager is True or not self._regionManagerInUse:
             self._regionManagerInUse = False
             if self.fop is not None:
                 pg.critical('in use?')
@@ -682,9 +689,9 @@ class MeshModelling(Modelling):
 
             self.setMeshPost(mesh)
             return
-        self.clearRegionProperties()
 
         # copy the mesh to the region manager who renumber cell markers
+        self.clearRegionProperties()
         self.regionManager().setMesh(mesh)
         self.setDefaultBackground()
 
@@ -804,7 +811,7 @@ class PetroModelling(MeshModelling):
         # pg._r("create Jacobian", self, self._jac)
         self.setJacobian(self._jac)  # to be sure .. test if necessary
 
-
+#220817 to be changed !! 
 # class JointModelling(Modelling):
 class JointModelling(MeshModelling):
     """Cumulative (joint) forward operator."""
@@ -857,9 +864,7 @@ class JointModelling(MeshModelling):
         for fi in self.fops:
             fi.setMesh(mesh)
 
-        self.setRegionManager(self.fops[0].regionManagerRef())
-
-
+#220817 to be implemented!!
 # class JointMeshModelling(JointModelling):
 #    def __init__(self, fopList):
         # super().__init__(self, fopList)

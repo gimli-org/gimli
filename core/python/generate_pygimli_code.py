@@ -384,12 +384,11 @@ def generate(defined_symbols, extraIncludes):
                 'getNonEmptyRow',
                 'getSubstrings',
                 'abs',
-                'type'
+                'type',
                 '::GIMLI::print',
                 'print',
                 'range',
-                ]
-            )
+             ])
 
     exclude(main_ns.free_operators,
             name=[''],
