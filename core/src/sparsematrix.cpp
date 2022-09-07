@@ -442,6 +442,35 @@ template <> void SparseMatrix< Complex >
     _T_addSparsityPattern_(this, idxMap);
 }
 
+template <class ValueType > void
+_T_reduce_(SparseMatrix< ValueType > * self,
+           const IVector & ids, bool keepDiag){
+    // optimize if necessary
+    __M
+    SparseMapMatrix< ValueType, Index > A1(*self);
+    A1.reduce(ids, keepDiag);
+
+    if (keepDiag){
+        // create diagonal entry, they will be needed probably
+        for (Index i = 0; i < A1.rows(); i ++){
+            A1[i][i] += .0;
+
+        }
+
+    }
+    self->copy_(A1);
+}
+
+template <> void SparseMatrix< double >
+::reduce(const IVector & ids, bool keepDiag){
+    _T_reduce_(this, ids, keepDiag);
+}
+template <> void SparseMatrix< Complex >
+::reduce(const IVector & ids, bool keepDiag){
+    _T_reduce_(this, ids, keepDiag);
+}
+
+
 
 template <class ValueType> void
 mult_T_impl(const SparseMatrix< ValueType > & A,

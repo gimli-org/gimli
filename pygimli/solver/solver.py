@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """TODO DOCUMENT ME"""
 from copy import deepcopy
-from lib2to3.pytree import Base
+#needed? from lib2to3.pytree import Base
 
 import numpy as np
 import numpy.matlib
@@ -11,6 +11,7 @@ import pygimli as pg
 
 def parseDictKey_(key, markers):
     return parseMarkersDictKey(key, markers)
+
 
 def parseMarkersDictKey(key, markers):
     """ Parse dictionary key of type str to marker list.

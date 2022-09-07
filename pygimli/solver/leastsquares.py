@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""TODO DOCUMENT ME"""
 from math import sqrt
 import numpy as np
 from numpy.linalg import norm

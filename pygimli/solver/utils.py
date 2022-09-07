@@ -30,6 +30,7 @@ def createAnisotropyMatrix(lon, trans, theta):
 @pg.renamed(createAnisotropyMatrix)
 def anisotropyMatrix(*args, **kwrags):
     return createAnisotropyMatrix(*args, **kwrags)
+    
 
 class ConstitutiveMatrix(np.ndarray):
     def __new__(cls, input_array, voigtNotation=False):

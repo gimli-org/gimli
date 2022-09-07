@@ -235,6 +235,11 @@ public:
             }
         }
     }
+
+    /*! Remove all matrix values assiated to columns and rows in idx. Optional
+    keep diagonal values and create pattern if necessary. */
+    void reduce(const IVector & ids, bool keepDiag=true);
+
     void copy_(const SparseMapMatrix< double, Index > & S);
     void copy_(const SparseMapMatrix< Complex, Index > & S);
 
@@ -488,6 +493,10 @@ addSparsityPattern(const std::vector < std::set< Index > > & idxMap);
 template <> DLLEXPORT void SparseMatrix< Complex >::
 addSparsityPattern(const std::vector < std::set< Index > > & idxMap);
 
+template <> DLLEXPORT void SparseMatrix< double >::
+reduce(const IVector & ids, bool keepDiag);
+template <> DLLEXPORT void SparseMatrix< Complex >::
+reduce(const IVector & ids, bool keepDiag);
 
 } // namespace GIMLI
 #endif //GIMLI_SPARSEMATRIX__H
