@@ -762,6 +762,7 @@ PosList = PosVector
 ############################
 # non automatic exposed functions
 ############################
+__pyabs__ = abs
 
 def abs(v):
     """Create abs in the sense of distance instead of just vanishing the sign.
@@ -825,6 +826,8 @@ def abs(v):
         for i in range(len(v)):
             v[i] = pgcore.abs(v[i])
         return v
+    elif isinstance(v, (float, int)):
+        return __pyabs__(v)
     elif hasattr(v, 'values'):
         #import pygimli as pg
         return abs(v.values)
