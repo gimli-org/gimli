@@ -396,9 +396,6 @@ def generate(defined_symbols, extraIncludes):
                   'distancePair_', 'IPCMessage', 'PythonGILSave',
                   'XAxis__', 'YAxis__', 'ZAxis__',
                 'Variable',
-                'BVectorIter',
-                'CVectorIter',
-                'RVectorIter',
                 'Electrode',
                 'ElectrodeShape',
                 'ElectrodeShapeDomain',
@@ -407,6 +404,12 @@ def generate(defined_symbols, extraIncludes):
                 'ElectrodeShapeNodesWithBypass',
                 'FunctionDD',
                 'H2SparseMapMatrix',
+                # '::GIMLI::VectorIterator<GIMLI::Pos>', needed
+                '::GIMLI::VectorIterator<bool>',
+                '::GIMLI::VectorIterator<double>',
+                #'::GIMLI::VectorIterator<long>', needed
+                '::GIMLI::VectorIterator<unsigned long>',
+                '::GIMLI::VectorIterator<std::complex<double> >', 
                   ]
             )
 
@@ -454,10 +457,6 @@ def generate(defined_symbols, extraIncludes):
         #   'std::set<Boundary*', # we need them
           'Variable',
           'Variable<GIMLI::XAxis__',
-          'BVectorIter',
-          'CVectorIter',
-          'IVectorIter',
-          'RVectorIter',
           'FunctionDD',
           '::GIMLI::print',
           'print',

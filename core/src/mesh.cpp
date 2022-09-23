@@ -509,7 +509,16 @@ Boundary * findSecParent(const std::vector < Node * > & v){
 Boundary * Mesh::copyBoundary(const Boundary & bound, double tol, bool check){
     bool debug = false;
     #define _D(...) if (debug) __MSP(__VA_ARGS__)
-    _D("copyBoundary", bound.ids())
+    // if (bound.id() == 0){
+    //     debug = true;
+    // }
+    _D("this:")
+    if (debug){
+        for (auto *b: this->boundaries()){
+            print(b->id(), ":", b->ids());
+        }
+    }
+    _D("copyBoundary:", bound.id(), "Nodes:", bound.ids())
 
     std::vector < Node * > nodes(bound.nodeCount());
     bool isFreeFace = false; //** the new face is no subface
@@ -524,6 +533,7 @@ Boundary * Mesh::copyBoundary(const Boundary & bound, double tol, bool check){
         if (bound.rtti() == MESH_POLYGON_FACE_RTTI){
             // this works with 3D poly tests but copy bounds into 2d mesh will double bounds
             nodes[i] = createNode(bound.node(i).pos(), tol);
+_D("new Node:", nodes[i]->id(), nodes[i]->state(), "Bounds:", nodes[i]->boundSet())
         } else {
             // 3D poly tests fail!! .. need to be checked and fixed  TODO
             if (check== true){
@@ -556,22 +566,29 @@ Boundary * Mesh::copyBoundary(const Boundary & bound, double tol, bool check){
     if (bound.rtti() == MESH_POLYGON_FACE_RTTI && check == true){
 
         _D("connectedNodes:", conNodes, 
-             "secondaryNodes:", secNodes,
-             "origNodes:", oldNodes)
+           "secondaryNodes:", secNodes,
+           "origNodes:", oldNodes)
         _D("new face nodes:", nodes, "is subface", not isFreeFace)
 
         Boundary * secParent = findSecParent(secNodes);
 
         //** identify if face is freeface
         if (!isFreeFace){
-            
             std::set < Boundary * > conParentCand = findBoundaries(conNodes);
+
+            for (auto *n : conNodes){
+                _D("Connected Node:", n->id(), "Bounds:", n->boundSet())
+            }
+
             Boundary * conParent = 0;
             if (conParentCand.size() > 0 ){
+                _D("Check connected parents candidates (",conParentCand.size(), ")..")
                 for (auto *b: conParentCand){
+                    _D("\t Candidate:", b->id(), b->shape().plane())
                     if (b->shape().plane().compare(bound.shape().plane(), 
                                                    TOLERANCE, true)){
                         conParent = b;
+                        _D("\t found connected parent:", b->id())
                         break;
                     }
                 }            
@@ -582,7 +599,7 @@ Boundary * Mesh::copyBoundary(const Boundary & bound, double tol, bool check){
                     isFreeFace = true;
                 }
                 if (conParent){
-                    _D("conParent", conParent->ids())
+                    _D("conParent", conParent->id(), "Nodes:", conParent->ids())
                 } else {
                     _D("no parent for connected nodes")
                 }

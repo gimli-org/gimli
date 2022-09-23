@@ -1314,6 +1314,19 @@ std::vector < PolynomialFunction < double > > Pyramid13::createShapeFunctions() 
     return std::vector < PolynomialFunction < double > >();
 }
 
+std::ostream & operator << (std::ostream & str, const std::set < GIMLI::MeshEntity * > & ents){
+    for (auto *e: ents){
+        str << e->id() << " ";
+    }
+    return str;
+}
+
+DLLEXPORT std::ostream & operator << (std::ostream & str, const std::set < GIMLI::Boundary * > & bounds){
+    for (auto *b: bounds){
+        str << b->id() << " ";
+    }
+    return str;
+}
 
 
 } // namespace GIMLI{
