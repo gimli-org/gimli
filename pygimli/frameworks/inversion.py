@@ -302,12 +302,12 @@ class Inversion(object):
     @property
     def blockyModel(self):
         return self.inv.blockyModel()
-               
+
     @blockyModel.setter
     def blockyModel(self, v):
         if self.inv is not None:
             self.inv.setBlockyModel(v)
-            
+
     @property
     def maxIter(self):
         return self.inv.maxIter()
@@ -618,7 +618,6 @@ class Inversion(object):
             if self.blockyModel:
                 self.inv.constrainBlocky()
 
-            
             phi = self.phi()
             dPhi = phi/lastPhi
 

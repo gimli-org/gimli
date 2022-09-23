@@ -144,12 +144,14 @@ def adjustWorldAxes(ax):
     ax.set_xlabel('$x$ (m)')
 
     renameDepthTicks(ax)
-    plt.tight_layout()
+    ax.figure.tight_layout()
     updateAxes(ax)
 
 
 def renameDepthTicks(ax):
     """Switch signs of depth ticks to be positive"""
+    from matplotlib import ticker
+
     @ticker.FuncFormatter
     def major_formatter(x, pos):
         return prettyFloat(-x) % x

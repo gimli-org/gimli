@@ -107,7 +107,6 @@ class ERTManager(MeshMethodManager):
         """Set primary potential from external is not supported anymore."""
         pg.critical("Not implemented.")
 
-    
     def simulate(self, mesh, scheme, res, **kwargs):
         """Simulate an ERT measurement.
 
@@ -200,7 +199,7 @@ class ERTManager(MeshMethodManager):
         # >>> rhoa = data.get('rhoa').array()
         # >>> phia = data.get('phia').array()
         """
-        pg.warn('Obsolete, do not use!. Use ert.simulate instead')    
+        pg.warn('Obsolete, do not use!. Use ert.simulate instead')
 
         verbose = kwargs.pop('verbose', self.verbose)
         calcOnly = kwargs.pop('calcOnly', False)
@@ -364,13 +363,11 @@ class ERTManager(MeshMethodManager):
         THINKABOUT: Data will be changed, or should the manager keep a copy?
         """
         data = data or pg.DataContainerERT(self.data)
-        topo = min(pg.z(data)) != max(pg.z(data))
-
+        # topo = min(pg.z(data)) != max(pg.z(data))  # not used!!
 
         if isinstance(data, pg.DataContainer):
             if not data.allNonZero('k'):
-
-                pg.critical("Data file contains no geometric factors (token='k').")
+                pg.critical("Data contains no geometric factors data['k'].")
                 # numeric = min(pg.z(data)) != max(pg.z(data))
                 # data['k'] = createGeometricFactors(data,
                 #                                 numerical=topo,
@@ -378,7 +375,6 @@ class ERTManager(MeshMethodManager):
                 #                                 verbose=self.verbose)
 
             if self.fop.complex():
-
                 if not data.haveData('rhoa'):
                     pg.critical('Datacontainer have no "rhoa" values.')
                 if not data.haveData('ip'):
@@ -426,9 +422,9 @@ class ERTManager(MeshMethodManager):
         return data
 
     def checkErrors(self, err, dataVals):
-        """Return relative error.
+        """Check (estimate) and return relative error.
 
-        Default we assume 'err' are relative vales.
+        By default we assume 'err' are relative values.
         """
         if isinstance(err, pg.DataContainer):
             rae = None
@@ -443,7 +439,6 @@ class ERTManager(MeshMethodManager):
                 rae = err['err']
 
             if self.fop.complex():
-
                 ipe = None
 
                 if err.haveData('iperr'):
@@ -458,7 +453,6 @@ class ERTManager(MeshMethodManager):
                 return pg.cat(rae, ipe)
 
         return rae  # not set if err is no DataContainer (else missing)
-
 
     def estimateError(self, data=None, **kwargs):
         """Estimate error composed of an absolute and a relative part.
@@ -491,7 +485,6 @@ class ERTManager(MeshMethodManager):
 
         return error
 
-
     def coverage(self):
         """Coverage vector considering the logarithmic transformation."""
         covTrans = pg.core.coverageDCtrans(self.fop.jacobian(),
@@ -504,23 +497,26 @@ class ERTManager(MeshMethodManager):
 
         return np.log10(covTrans / paramSizes)
 
-
     def standardizedCoverage(self, threshold=0.01):
         """Return standardized coverage vector (0|1) using thresholding."""
         return 1.0*(self.coverage() > threshold)
 
-
-    def showMisfit(self, **kwargs):
+    def showMisfit(self, errorWeighted=False, **kwargs):
         """Show relative or error-weighted data misfit."""
-        misfit = - self.inv.response / self.data["rhoa"] * 100 + 100
+        if errorWeighted:
+            misfit = (np.log(self.data["rhoa"]) - np.log(self.inv.response)) /\
+                self.data["err"]
+            kwargs.setdefault("label", "error-weighted misfit")
+        else:
+            misfit = - self.inv.response / self.data["rhoa"] * 100 + 100
+            kwargs.setdefault("label", "relative misfit (%)")
+
         kwargs.setdefault("cMax", np.max(misfit))
         kwargs.setdefault("cMin", -kwargs["cMax"])
         kwargs.setdefault("cMap", "bwr")
         kwargs.setdefault("logScale", False)
-        kwargs.setdefault("label", "relative misfit (%)")
 
         self.showData(vals=misfit, **kwargs)
-
 
     def showModel(self, model=None, elecs=True, ax=None, **kwargs):
         """Show the last inversion result.
@@ -550,7 +546,6 @@ class ERTManager(MeshMethodManager):
 
         return ax, cBar
 
-
     def saveResult(self, folder=None, size=(16, 10), **kwargs):
         """Save all results in the specified folder.
 
@@ -566,10 +561,8 @@ class ERTManager(MeshMethodManager):
 
         pg.info('Saving inversion results to: {}'.format(path))
 
-        np.savetxt(path + '/resistivity.vector',
-                   self.model)
-        np.savetxt(path + '/resistivity-cov.vector',
-                   self.coverage())
+        np.savetxt(path + '/resistivity.vector', self.model)
+        np.savetxt(path + '/resistivity-cov.vector', self.coverage())
         np.savetxt(path + '/resistivity-scov.vector',
                    self.standardizedCoverage())
 
