@@ -79,11 +79,12 @@ def parseMarkersDictKey(key, markers):
 
 
 def boundaryIdsFromDictKey(mesh, key, outside=True):
-    """Find all boundaries matching a dictionary keys
+    """Find all boundaries matching a dictionary key.
 
-    Attribute
-    ---------
+    Attributes
+    ----------
     mesh: :gimliapi:`GIMLI::Mesh`
+
     key: str|int
         Representation for boundary marker. Will be parsed by
         :py:mod:`pygimli.solver.solver.parseMarkersDictKey`
@@ -112,14 +113,14 @@ def cellValues(mesh, arg, **kwargs):
     Returns a array or vector of length mesh.cellCount() based on arg.
     The preferable arg is a dictionary for the cell marker and the appropriate
     cell value. The designated value can be calculated using a
-    callable(cell, **kwargs), which is called on demand
+    callable(cell, **kwargs), which is called on demand.
 
-    Parameters
+    Attributes
     ----------
-    mesh : :gimliapi:`GIMLI::Mesh`
+    mesh: :gimliapi:`GIMLI::Mesh`
         Used if arg is callable
 
-    arg : float | int | complex | ndarray | iterable | callable | dict
+    arg: float | int | complex | ndarray | iterable | callable | dict
         Argument to be parsed as cell data.
         If arg is a dictionary, its key will be interpreted as cell marker:
 
@@ -127,22 +128,21 @@ def cellValues(mesh, arg, **kwargs):
         The last for anistropic or elastic tensors.
 
         Key can be integer for cell marker or str, which will be interpreted as
-        splice or list. See examples or parseDictKey_.
+        splice or list. See examples or `py:mod:pygimli.solver.parseMarkersDictKey`.
 
         Iterable of length mesh.nodeCount() to be interpolated to cell centers.
 
-    userData : class
+    userData: class
         Used if arg is callable
 
     Returns
     -------
-    ret : :gimliapi:`GIMLI::RVector` | ndarray(mesh.cellCount(), xx )
+    ret: :gimliapi:`GIMLI::RVector` | ndarray(mesh.cellCount(), xx )
         Array of desired length filled with the appropriate values.
 
     Examples
     --------
     >>> import pygimli as pg
-    >>>
     >>> mesh = pg.createGrid(x=range(5))
     >>> mesh.setCellMarkers([1, 1, 2, 2])
     >>> print(mesh.cellCount())
@@ -188,6 +188,7 @@ def cellValues(mesh, arg, **kwargs):
     >>> t = pg.solver.cellValues(mesh, {':' : cellVal})
     >>> print([t[c.id()](c) for c in mesh.cells()])
     [0.5, 1.5, 2.5, 3.5]
+    
     """
     if isinstance(arg, dict):
 
@@ -1053,15 +1054,16 @@ def showSparseMatrix(mat, full=False):
 
 
 class LinSolver(object):
-    """Proxy class for the direct solution of linear systems of equations."""
+    """Proxy class for the solution of linear systems of equations."""
 
     def __init__(self, mat=None, solver=None, verbose=False, **kwargs):
-        """Init the solver class with Matrix and starts factorization.
+        """Init the solver proxy class with a matrix and start factorization.
 
         Args
         ----
-        solver: str
-            If solver is none decide form Matrix type
+        solver: str [None]
+            Name for the used solver (pg (umfpack or cholmod), scipy).
+            If solver is none decide from matrix type.
         """
         self._m = None  # hold local copy if we need to convert the matrix
         self.verbose = verbose
@@ -1149,34 +1151,36 @@ class LinSolver(object):
 
 
 def linSolve(mat, b, solver=None, verbose=False, **kwargs):
-    r"""Direct solution after :math:`\textbf{x}` using core LinSolver.
+    r"""Direct linear solution after :math:`\textbf{x}` using core LinSolver.
 
     .. math::
+
         \textbf{A}\textbf{x} = \textbf{b}
 
     If :math:`\textbf{A}` is symmetric, sparse and positive definite.
 
     Parameters
     ----------
-    mat : :gimliapi:`GIMLI::RSparseMatrix`|:gimliapi:`GIMLI::RSparseMapMatrix`|
+    mat: :gimliapi:`GIMLI::RSparseMatrix`, :gimliapi:`GIMLI::RSparseMapMatrix`,
         numpy.array
+
         System matrix. Need to be symmetric, sparse and positive definite.
 
-    b : iterable array
+    b: iterable array
         Right hand side of the equation.
 
-    solver : str [None]
+    solver: str [None]
         Try to choose a solver, 'pg' for pygimli core cholmod or umfpack.
         'np' for numpy linalg or scipy.sparse.linalg.
         Automatic choosing if solver is None depending on matrixtype.
 
-    verbose : bool [False]
+    verbose: bool [False]
         Be verbose.
 
     Returns
     -------
-    x : :gimliapi:`GIMLI::RVector`
-        Solution vector
+    x: :gimliapi:`GIMLI::Vector`
+        Solution vector.
     """
     # TODO!! refactor with LinSolver
     swatch = pg.Stopwatch()
@@ -1415,7 +1419,7 @@ def assembleDirichletBC(mat, boundaryPairs, rhs=None, time=0.0, userData={},
 
     Args
     ----
-    rhs: :gimliapi:`GIMLI::RVector`
+    rhs: :py:mod:`Vector`
         Right hand side vector of the system equation will bet set to
         :math:`u_{\text{D}}`
     """
@@ -1538,7 +1542,7 @@ def assembleRobinBC(mat, boundaryPairs, rhs=None, time=0.0, userData={},
                     dofOffset=0, nCoeff=1, dofPerCoeff=None):
     r"""Apply Robin boundary condition.
 
-    Apply Robin boundary condition to the system matrix and the rhs vector
+    Apply Robin boundary condition to the system matrix and the rhs vector:
 
     .. math::
         \frac{\partial u(\textbf{r}, t)}{\partial\textbf{n}}
@@ -1549,11 +1553,13 @@ def assembleRobinBC(mat, boundaryPairs, rhs=None, time=0.0, userData={},
         & \quad\text{for}\quad\textbf{r}\quad\text{on}\quad\delta\Omega=
         \Gamma_{\text{Robin}}\\
 
+
     Parameters
     ----------
     mat: :gimliapi:`GIMLI::SparseMatrix`
         System matrix of the system equation.
-    boundaryPair: list()
+
+    boundaryPair: list
         List of pairs [:gimliapi:`GIMLI::Boundary`, :math:`a, u_0` |
                        :math:`\alpha, \beta, \gamma`].
         The values will assigned to the nodes of the boundaries.
@@ -1565,6 +1571,7 @@ def assembleRobinBC(mat, boundaryPairs, rhs=None, time=0.0, userData={},
         Also generator (callable) is possible which will be executed at runtime
         See :py:mod:`pygimli.solver.solver.parseArgToBoundaries`
         :ref:`tut:modelling_bc` or testing/test_FEM.py for example syntax.
+
     time: float
         Will be forwarded to value generator.
     userData: dict
@@ -1756,26 +1763,26 @@ def createLoadVector(mesh, f=1.0, userData={}):
 
     TODO
     ----
-    - Callable for vector valued problems
-    - Callable called dynamic on demand
+        * Callable for vector valued problems
+        * Callable called dynamic on demand
 
     Parameters
     ----------
     f: float[1.0], array, callable(cell, [userData]), [f_x, f_y, f_z]
 
-        - float will be assumed as constant for all cells
-        like rhs = rhs(np.ones(mesh.cellCount() * f),
-        - array of length mesh.cellCount() will be processed as load value for
-        each cell: rhs = rhs(f),
-        - array of length mesh.nodeCount() is assumed to be already processed
-          correct: rhs = f
-        - callable is evaluated on once for each cell and need to return a load
-        value for each cell and can have  optional a userData dictionary:
-        `f_cell = f(cell, [userData={}])`
-        rhs = rhs(f(c, userData) for c in mesh.cells())
-        - list with length of mesh.dimension() of float or array entries will
-        create a squeezed rhs for vector valued problems
-        rhs = squeeze([rhs(f[0]), rhs(f[1]), rhs(f[2])])
+        * float will be assumed as constant for all cells
+            like rhs = rhs(np.ones(mesh.cellCount() * f),
+        * array of length mesh.cellCount() will be processed as load value for
+            each cell: rhs = rhs(f),
+        * array of length mesh.nodeCount() is assumed to be already processed
+            correct: rhs = f
+        * callable is evaluated on once for each cell and need to return a load
+            value for each cell and can have  optional a userData dictionary:
+            `f_cell = f(cell, [userData={}])`
+            rhs = rhs(f(c, userData) for c in mesh.cells())
+        * list with length of mesh.dimension() of float or array entries will
+            create a squeezed rhs for vector valued problems
+            rhs = squeeze([rhs(f[0]), rhs(f[1]), rhs(f[2])])
 
     Returns
     -------
@@ -2189,20 +2196,17 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
     Note, to ensure vector solution either set vector forces or at least on
     vector component boundary condition.
 
-    TODO:
-
-        * unsteady ub and dub
-        * 'Infinity' Boundary condition (u vanishes at infinity)
-        * 'Cauchy' Boundary condition
-        (guaranties u and du on same boundary, will never work here because the
-        problem becomes ill posed and would need some inverse strategy to
-        solve.)
-        * Example for
-            * elastic parameter
-            * anisotropic (float/complex)
-            * dynamic boundary conditions
-            * dynamic load vector
-            * nonlinearity
+    TODO
+    ----
+    * unsteady ub and dub
+    * 'Infinity' Boundary condition (u vanishes at infinity)
+    * 'Cauchy' Boundary condition (guaranties u and du on same boundary, will never work here because the problem becomes ill posed and would need some inverse strategy to solve.)
+    * Example for
+        * elastic parameter
+        * anisotropic (float/complex)
+        * dynamic boundary conditions
+        * dynamic load vector
+        * nonlinearity
 
     Parameters
     ----------
@@ -2239,13 +2243,14 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
         u0: value | array | callable(pos, userData)
             Node values
         theta: float [1]
-            - :math:`theta = 0` means explicit Euler, maybe stable for
+            * :math:`theta = 0` means explicit Euler, maybe stable for
             :math:`\Delta t \quad\text{near}\quad h`
-            - :math:`theta = 0.5`, Crank-Nicolson scheme, maybe instable
-            - :math:`theta = 2/3`, Galerkin scheme
-            - :math:`theta = 1`, implicit Euler
+            * :math:`theta = 0.5`, Crank-Nicolson scheme, maybe instable
+            * :math:`theta = 2/3`, Galerkin scheme
+            * :math:`theta = 1`, implicit Euler
 
             If unsure choose :math:`\theta = 0.5 + \epsilon` (probably stable).
+
         dynamic: bool [False]
             Boundary conditions for time depending problems will be considered
             dynamic for each time step.
@@ -2276,7 +2281,7 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
 
     See also
     --------
-        :ref:`tut:modelling` and :py:mod:`pygimli.solver.solve`
+    :ref:`tut:modelling` and :py:mod:`pygimli.solver.solve`
 
     Examples
     --------
@@ -2601,6 +2606,7 @@ def crankNicolson(times, S, I, f=None,
         * 1: Forward difference scheme (explicit)
         strong time steps dependency .. will be unstable for to small values
         * 0.5: probably best tradeoff but can also be unstable
+
     dirichlet: dirichlet generator
         Genertor object to applay dirichlet boundary conditions
     solver: LinSolver [None]

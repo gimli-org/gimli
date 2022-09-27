@@ -55,8 +55,8 @@ def wait(**kwargs):
 def noShow(on=True):
     """Toggle quiet mode to avoid popping figures.
 
-    Args
-    ....
+    Arguments
+    ---------
     on: bool[True]
         Set Matplotlib backend to 'agg' and restore old backend if set to False.
     """

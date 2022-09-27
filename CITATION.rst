@@ -1,7 +1,6 @@
 Citing pyGIMLi
 --------------
 
-
 If you use pyGIMLi for your work, please cite `this paper <http://www.sciencedirect.com/science/article/pii/S0098300417300584/pdfft?md5=44253eaacd5490e3fb32210671672496&pid=1-s2.0-S0098300417300584-main.pdf>`_ as:
 
   Rücker, C., Günther, T., Wagner, F.M., 2017. pyGIMLi: An open-source library
