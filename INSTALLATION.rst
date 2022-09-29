@@ -48,8 +48,8 @@ Or alternatively, the web-based IDE JupyterLab (https://jupyterlab.readthedocs.i
 
     conda install -c conda-forge jupyterlab
 
-Testing
--------
+Testing the installation
+------------------------
 
 To test if everything works correctly you can do the following:
 
@@ -62,6 +62,7 @@ Staying up-to-date
 
 Update your pyGIMLi installation from time to time, if want to have the newest
 functionality. 
+
 .. code-block:: bash
 
     conda update -c gimli -c conda-forge pygimli
@@ -102,13 +103,38 @@ Only if you need recent changes to the C++ core, you have to compile
 pyGIMLi using your systems toolchain as described in 
 https://www.pygimli.org/compilation.html#sec-build
 
-.. |conda| image:: https://anaconda.org/gimli/pygimli/badges/installer/conda.svg
+.. raw:: html
+
+   <p style="height:22px">
+     <a href="https://anaconda.org/gimli/pygimli" >
+       <img src="https://anaconda.org/gimli/pygimli/badges/installer/conda.svg?style=flat-square"/>
+     </a>
+     <a href="https://anaconda.org/gimli/pygimli" >
+       <img src="https://anaconda.org/gimli/pygimli/badges/installer/conda.svg?style=flat-square"/>
+    <a href="https://anaconda.org/gimli/pygimli" >
+       <img src="https://anaconda.org/gimli/pygimli/badges/version.svg?style=flat-square"/>
+     </a>
+    <a href="https://anaconda.org/gimli/pygimli" >
+       <img src="https://anaconda.org/gimli/pygimli/badges/latest_release_date.svg?style=flat-square"/>
+    </a>
+    <a href="https://anaconda.org/gimli/pygimli" >
+       <img src="https://anaconda.org/gimli/pygimli/badges/platforms.svg?style=flat-square"/>
+    </a>
+   </p>
+
+.. .. image directive s
+
+.. .. |conda| image:: https://anaconda.org/gimli/pygimli/badges/installer/conda.svg
    :target: https://anaconda.org/gimli/pygimli
-.. |downloads| image:: https://anaconda.org/gimli/pygimli/badges/downloads.svg
+
+.. .. |downloads| image:: https://anaconda.org/gimli/pygimli/badges/downloads.svg
    :target: https://anaconda.org/gimli/pygimli
-.. |condaversion| image:: https://anaconda.org/gimli/pygimli/badges/version.svg
+
+.. .. |condaversion| image:: https://anaconda.org/gimli/pygimli/badges/version.svg
    :target: https://anaconda.org/gimli/pygimli
-.. |latest| image:: https://anaconda.org/gimli/pygimli/badges/latest_release_date.svg
+
+..  .. |latest| image:: https://anaconda.org/gimli/pygimli/badges/latest_release_date.svg
    :target: https://anaconda.org/gimli/pygimli
-.. |platforms| image:: https://anaconda.org/gimli/pygimli/badges/platforms.svg
+
+.. .. |platforms| image:: https://anaconda.org/gimli/pygimli/badges/platforms.svg
    :target: https://anaconda.org/gimli/pygimli

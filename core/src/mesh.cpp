@@ -520,9 +520,22 @@ Boundary * Mesh::copyBoundary(const Boundary & bound, double tol, bool check){
     if (debug){
         for (auto *b: this->boundaries()){
             print(b->id(), ":", b->ids());
+            if (b->rtti() == MESH_POLYGON_FACE_RTTI){
+                auto *p = dynamic_cast< PolygonFace * >(b);
+                for (Index i = 0; i < p->subfaceCount(); i ++ ){
+                    print("\t", p->subface(i));
+                }
+            }
         }
     }
-    _D("copyBoundary:", bound.id(), "Nodes:", bound.ids())
+
+    bool isHole = false;
+    if (bound.rtti() == MESH_POLYGON_FACE_RTTI){
+        auto *p = dynamic_cast< const PolygonFace * >(&bound);
+        isHole = p->holeMarkers().size() > 0;
+    }
+
+    _D("copyBoundary:", bound.id(), "Nodes:", bound.ids(), "hole:", isHole)
 
     std::vector < Node * > nodes(bound.nodeCount());
     bool isFreeFace = false; //** the new face is no subface
@@ -572,16 +585,21 @@ _D("new Node:", nodes[i]->id(), nodes[i]->state(), "Bounds:", nodes[i]->boundSet
         _D("connectedNodes:", conNodes, 
            "secondaryNodes:", secNodes,
            "origNodes:", oldNodes)
-        _D("new face nodes:", nodes, "is subface", not isFreeFace)
+        _D("new face nodes:", nodes, "freeface:", isFreeFace)
 
         Boundary * secParent = findSecParent(secNodes);
 
         //** identify if face is freeface
         if (!isFreeFace){
             std::set < Boundary * > conParentCand = findBoundaries(conNodes);
-
             for (auto *n : conNodes){
                 _D("Connected Node:", n->id(), "Bounds:", n->boundSet())
+            }
+            if (conParentCand.size() == 0){
+                conParentCand = findBoundaries(oldNodes);
+                for (auto *n : oldNodes){
+                    _D("Original Node:", n->id(), "Bounds:", n->boundSet())
+                }
             }
 
             Boundary * conParent = 0;
@@ -597,6 +615,7 @@ _D("new Node:", nodes[i]->id(), nodes[i]->state(), "Bounds:", nodes[i]->boundSet
                     }
                 }            
             }
+
             if (conNodes.size() && secNodes.size()){
 
                 if (!conParent || conParent != secParent){
@@ -652,12 +671,21 @@ _D("new Node:", nodes[i]->id(), nodes[i]->state(), "Bounds:", nodes[i]->boundSet
                 subNodes = secNodes;
                 parent = secParent;
             } else if (oldNodes.size()){
-                isFreeFace = true;
+                if (!conParent){
+                    isFreeFace = true;
+                } else {
+                    //** case Test3DMerge.test_cube_mult_cut2 (boundary 4)
+                    // all nodes are old nodes and are already part of another face
+                    parent = conParent;
+                    subNodes = nodes;
+                }
             }
         }
         
         //** create new face
-        _D("is subface", not isFreeFace, subNodes.size(), nodes.size())
+        _D("Subface freeface:", isFreeFace, 
+                "subsNodes:", subNodes.size(), 
+                "nodes", nodes.size())
         
         if (isFreeFace){
             ret = createBoundaryChecked_< PolygonFace >(nodes,
@@ -673,7 +701,7 @@ _D("new Node:", nodes[i]->id(), nodes[i]->state(), "Bounds:", nodes[i]->boundSet
                     }
                     auto *p = dynamic_cast< PolygonFace * >(parent);
                     _D("addSubface: ", p->subfaceCount())
-                    p->addSubface(subNodes);
+                    p->addSubface(subNodes, isHole);
                     _D("subfacecount: ", p->subfaceCount())
 
                     if (debug) for (auto i: range(p->subfaceCount())){
@@ -684,7 +712,17 @@ _D("new Node:", nodes[i]->id(), nodes[i]->state(), "Bounds:", nodes[i]->boundSet
                 }
                 ret = parent;
             } else {
-                log(Error, "new subface but only two nodes");
+                if (nodes.size() > 2){
+                    //** case Test3DMerge.test_cube_mult_cut1 (boundary 4)
+                    auto *p = dynamic_cast< PolygonFace * >(parent);
+                    for (auto *n: secNodes){
+                        p->delSecondaryNode(n);
+                        n->setState(No);
+                    }
+                    p->addSubface(nodes, isHole);
+                } else {
+                    log(Error, "new subface but only two nodes");
+                }
             }
         }
         const PolygonFace & f = dynamic_cast< const PolygonFace & >(bound);

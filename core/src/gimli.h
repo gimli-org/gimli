@@ -16,7 +16,6 @@
  *   limitations under the License.                                           *
  *                                                                            *
  ******************************************************************************/
-
 #pragma once
 
 #ifdef HAVE_CONFIG_CMAKE_H

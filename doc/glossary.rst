@@ -13,10 +13,13 @@ Glossary
         The eponymous software package. See :ref:`sec:GIMLi`
 
     pyGIMLi
-        The eponymous software package. See :ref:`sec:pygimliapi`
+        The eponymous software package (python bindings). See :ref:`sec:GIMLi`
 
     libGIMLi
-        The eponymous software package. See :ref:`sec:GIMLi`
+        The eponymous software package (c++ core). See :ref:`sec:GIMLi`
+
+    FEniCS
+        The FEniCSx computing platform. https://fenicsproject.org/
 
     Gmsh
         Gmsh: a three-dimensional finite element mesh generator with built-in

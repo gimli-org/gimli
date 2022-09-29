@@ -130,9 +130,6 @@ To produce a new version, type:
     git tag -a -m "First official release" "v1.0.x" # tags last commit as v1.0.x
     git push --tags # pushes tags to GitHub
 
-.. _sec:coding_guidelines:
-
-
 .. _sec:testing:
 
 Testing
@@ -237,31 +234,37 @@ Behaviour by name for global functions:
 
     createFOO(...)
         """Always needs to return an instance of FOO.""
+
 .. code-block:: python
 
     showFOO(Bar, ...)
         """Always open a window or optionally use a given Axes to show us Bar as Foo."""
         return ax, cbar
+
 .. code-block:: python
 
     drawFOO(ax, Bar...)
         """Always need an Axes ax and draws Bar as Foo""
         return graphics_object
+
 .. code-block:: python
 
     readFOO(fileName, *args):
         """Read object from disc."""
         return obj
+
 .. code-block:: python
 
     importFOO(fileName, obj, *args):
         """Import object from disc into an existing object."""
         return obj
+
 .. code-block:: python
 
     exportFOO(obj, fileName):
         """Export object to disc in foreign (FOOs) format."""
         return true
+
 .. code-block:: python
 
     convertFOO(fooObj):

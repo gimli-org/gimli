@@ -1048,9 +1048,9 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=-1, paraBoundary=2,
             if iz == 2:
                 e.rotateX(-math.pi / 2)
 
-            nSurface.append(poly.createNode(e, pg.core.MARKER_NODE_SENSOR))
+            # nSurface.append(poly.createNode(e, pg.core.MARKER_NODE_SENSOR))
             if addNodes > 1:
-                # nSurface.append(poly.createNode(e, pg.core.MARKER_NODE_SENSOR))
+                nSurface.append(poly.createNode(e, pg.core.MARKER_NODE_SENSOR))
                 if i < len(sensors) - 1:
                     e1 = sensors[i + 1]
                     if iz == 2:
@@ -1060,7 +1060,7 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=-1, paraBoundary=2,
                         nSurface.append(poly.createNode(
                             e + (e1 - e) * (j+1)/(addNodes+1)))
             elif paraDX >= 0.5:
-                # nSurface.append(poly.createNode(e, pg.core.MARKER_NODE_SENSOR))
+                nSurface.append(poly.createNode(e, pg.core.MARKER_NODE_SENSOR))
                 if i < len(sensors) - 1:
                     e1 = sensors[i + 1]
                     if iz == 2:
@@ -1074,7 +1074,7 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=-1, paraBoundary=2,
 
                     nSurface.append(poly.createNode(e - (e - e1) * paraDX))
 
-                # nSurface.append(poly.createNode(e, pg.core.MARKER_NODE_SENSOR))
+                nSurface.append(poly.createNode(e, pg.core.MARKER_NODE_SENSOR))
                 if i < len(sensors) - 1:
                     e1 = sensors[i + 1]
                     if iz == 2:
