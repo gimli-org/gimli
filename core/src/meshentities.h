@@ -1176,6 +1176,10 @@ public:
 protected:
 };
 
+DLLEXPORT std::ostream & operator << (std::ostream & str, const std::set < GIMLI::MeshEntity * > & ents);
+
+DLLEXPORT std::ostream & operator << (std::ostream & str, const std::set < GIMLI::Boundary * > & bounds);
+
 } // namespace GIMLI
 
 #endif // MESHENTITIES__H

@@ -1047,29 +1047,41 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=-1, paraBoundary=2,
         for i, e in enumerate(sensors):
             if iz == 2:
                 e.rotateX(-math.pi / 2)
-            if paraDX >= 0.5:
-                nSurface.append(poly.createNode(e, pg.core.MARKER_NODE_SENSOR))
+
+            nSurface.append(poly.createNode(e, pg.core.MARKER_NODE_SENSOR))
+            if addNodes > 1:
+                # nSurface.append(poly.createNode(e, pg.core.MARKER_NODE_SENSOR))
+                if i < len(sensors) - 1:
+                    e1 = sensors[i + 1]
+                    if iz == 2:
+                        e1.rotateX(-math.pi / 2)
+
+                    for j in range(addNodes):
+                        nSurface.append(poly.createNode(
+                            e + (e1 - e) * (j+1)/(addNodes+1)))
+            elif paraDX >= 0.5:
+                # nSurface.append(poly.createNode(e, pg.core.MARKER_NODE_SENSOR))
                 if i < len(sensors) - 1:
                     e1 = sensors[i + 1]
                     if iz == 2:
                         e1.rotateX(-math.pi / 2)
                     nSurface.append(poly.createNode((e + e1) * 0.5))
-                # print("Surface add ", e, el, nSurface[-2].pos(),
-                #        nSurface[-1].pos())
             elif paraDX < 0.5:
                 if i > 0:
                     e1 = sensors[i - 1]
                     if iz == 2:
                         e1.rotateX(-math.pi / 2)
+
                     nSurface.append(poly.createNode(e - (e - e1) * paraDX))
-                nSurface.append(poly.createNode(e, pg.core.MARKER_NODE_SENSOR))
+
+                # nSurface.append(poly.createNode(e, pg.core.MARKER_NODE_SENSOR))
                 if i < len(sensors) - 1:
                     e1 = sensors[i + 1]
                     if iz == 2:
                         e1.rotateX(-math.pi / 2)
+
                     nSurface.append(poly.createNode(e + (e1 - e) * paraDX))
-                # print("Surface add ", nSurface[-3].pos(), nSurface[-2].pos(),
-                #        nSurface[-1].pos())
+
     nSurface.append(n4)
 
     for i in range(len(nSurface) - 1, 0, -1):
@@ -1193,7 +1205,7 @@ def createParaMeshSurface(sensors, paraBoundary=None, boundary=-1,
 
 def createParaMeshPLC3D(sensors, paraDX=0, paraDepth=-1, paraBoundary=None,
                         paraMaxCellSize=0.0, boundary=None,
-                        boundaryMaxCellSize=0, 
+                        boundaryMaxCellSize=0,
                         surfaceMeshQuality=30, surfaceMeshArea=0,
                         addTopo=None, isClosed=False, **kwargs):
     r"""Create a geometry (PLC) for an 3D inversion parameter mesh.
@@ -1232,7 +1244,7 @@ def createParaMeshPLC3D(sensors, paraDX=0, paraDepth=-1, paraBoundary=None,
 
         surfaceMeshQuality: float [30]
             Quality of the surface mesh.
-        
+
         surfaceMeshArea: float [0]
             Max boundary size for surface area in parametric region.
 
@@ -1254,8 +1266,8 @@ def createParaMeshPLC3D(sensors, paraDX=0, paraDepth=-1, paraBoundary=None,
 
     surface = pg.meshtools.createParaMeshSurface(
         sensors, paraBoundary=paraBoundary, boundary=boundary,
-        surfaceMeshQuality=surfaceMeshQuality, 
-        surfaceMeshArea=surfaceMeshArea, 
+        surfaceMeshQuality=surfaceMeshQuality,
+        surfaceMeshArea=surfaceMeshArea,
         addTopo=addTopo)
 
     # find depth and paradepth

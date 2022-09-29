@@ -185,6 +185,28 @@ class TestCreatePolygon(unittest.TestCase):
         assert polygon.regionMarkers()[0].marker() == 7
 
 class Test3DMerge(unittest.TestCase):
+
+    def test_PosTouchFace(self):
+        m = pg.Mesh(dim=3, isGeometry=True)
+        D = 0.1
+        H1=2.
+        H=0.1
+        
+        m.createNode([-D/2,  D/2, -(H1-H)/2 -H1/2])
+        m.createNode([+D/2,  D/2, -(H1-H)/2 -H1/2])
+        m.createNode([+D/2,  D/2, +(H1-H)/2 -H1/2])
+        m.createNode([-D/2,  D/2, +(H1-H)/2 -H1/2])
+        m.createNode([-D/2, -D/2, -(H1-H)/2 -H1/2])
+        m.createNode([+D/2, -D/2, -(H1-H)/2 -H1/2])
+        m.createNode([+D/2, -D/2, +(H1-H)/2 -H1/2])
+        m.createNode([-D/2, -D/2, +(H1-H)/2 -H1/2])
+        m.createBoundary([0, 1, 2, 3])
+        
+        n = [-D/6,  D/2,  -H/2]
+        m.createNode(n)
+        self.assertEqual(m.boundary(0).nodeCount(), 5)
+                
+
     def test_cubeBasics(self):
         plc = mt.createCube()
         for i, b in enumerate(plc.boundaries()):
@@ -379,6 +401,32 @@ class Test3DMerge(unittest.TestCase):
         #m = mt.createMesh(plc, tetgen='tetgen-1.4.3')
         pg.show(m, m.cellMarkers())
 
+    def test_cube_cube_thirdside(self):
+        """Add half size cube on another cube"""
+        D=0.1
+        H1=2
+        H=0.1
+
+        c1 = mt.createCube([D, D, H1-H], marker=1) 
+        c2 = mt.createCube([D/3, D, H], marker=2) 
+        c1.translate([0.0, 0.0, -H1/2])
+
+        #c1 = mt.createCube([D, D, D], pos=[0.0, 0.0, 0.0], marker=1) 
+        #c2 = mt.createCube([D, D/4, D], pos=[0, 0.0, D], marker=2) 
+        
+        plc = mt.merge([c1, c2])
+        plc.exportPLC('ccq')
+        #pg.show(plc)
+
+        self.assertEqual(plc.nodeCount(), 16)
+        self.assertEqual(plc.boundaryCount(), 11)
+        self.assertEqual(plc.boundary(2).nodeCount(), 8)
+        self.assertEqual(plc.boundary(4).nodeCount(), 6)
+        self.assertEqual(plc.boundary(5).nodeCount(), 6)
+        
+        m = mt.createMesh(plc)
+        #m = mt.createMesh(plc, tetgen='tetgen-1.4.3')
+        pg.show(m, m.cellMarkers())
 
     def test_cube_cut_cube(self):
         """Test cube cur from cube on two neighbour faces."""

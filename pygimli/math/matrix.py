@@ -525,7 +525,7 @@ class FrameConstraintMatrix(RepeatDMatrix):
             |     A     |
             |        A  |
             | -I +I     |
-            |    -I  +I |
+            |    -I +I  |
     """
 
     def __init__(self, A, num, scale=1.0):
@@ -537,19 +537,31 @@ class FrameConstraintMatrix(RepeatDMatrix):
             matrix for constraining a single frame (e.g. 1st order smoothness)
         num : int
             number of frames
+        scale : float | iterable of size num - 1
         """
         super().__init__(A, num)
         self.nm = A.cols()  # model parameter per frame
         self.nb = A.rows()  # boundaries per frame
-        self.Iminus_ = pgcore.IdentityMatrix(self.nm, val=-scale)
-        self.Iplus_ = pgcore.IdentityMatrix(self.nm, val=scale)
-        self.Im = self.addMatrix(self.Iminus_)
-        self.Ip = self.addMatrix(self.Iplus_)
-        nc = self.rows()
-        for i in range(num-1):
-            self.addMatrixEntry(self.Im, nc, i*self.nm)
-            self.addMatrixEntry(self.Ip, nc, (i+1)*self.nm)
-            nc += self.nm
+        if isinstance(scale, float):
+            self.Iminus_ = pgcore.IdentityMatrix(self.nm, val=-scale)
+            self.Iplus_ = pgcore.IdentityMatrix(self.nm, val=scale)
+            self.Im = self.addMatrix(self.Iminus_)
+            self.Ip = self.addMatrix(self.Iplus_)
+            nc = self.rows()
+            for i in range(num-1):
+                self.addMatrixEntry(self.Im, nc, i*self.nm)
+                self.addMatrixEntry(self.Ip, nc, (i+1)*self.nm)
+                nc += self.nm
+        elif hasattr(scale, "__iter__"):
+            assert len(scale) == self.nm-1, "scaling vector length != num-1"
+            self.diag_ = np.repeat(scale, self.nm)
+            self.Iminus_ = pg.matrix.DiagonalMatrix(-self.diag_)
+            self.Iplus_ = pg.matrix.DiagonalMatrix(self.diag_)
+            nc = self.rows()
+            self.addMatrix(self.Iminus_, nc, 0)
+            self.addMatrix(self.Iplus_, nc, self.nm)
+        else:
+            raise TypeError("Could not use scale")
 
         self.recalcMatrixSize()
 
