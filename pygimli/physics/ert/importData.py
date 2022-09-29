@@ -54,6 +54,7 @@ def load(fileName, verbose=False, **kwargs):
 
     pg.critical("Can't import ERT data file.", fileName)
 
+
 def importRes2dInv(filename, verbose=False, return_header=False):
     """Read res2dinv format
 
@@ -486,4 +487,3 @@ def readAsDictionary(content, token=None, sep=None):  # obsolote due to numpy?
                 data[token[j]][i] = v
 
     return data
-
