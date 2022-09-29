@@ -187,6 +187,7 @@ class TestCreatePolygon(unittest.TestCase):
 class Test3DMerge(unittest.TestCase):
 
     def test_PosTouchFace(self):
+        ### wildlife fail
         m = pg.Mesh(dim=3, isGeometry=True)
         D = 0.1
         H1=2.
@@ -206,6 +207,19 @@ class Test3DMerge(unittest.TestCase):
         m.createNode(n)
         self.assertEqual(m.boundary(0).nodeCount(), 5)
                 
+        ### wildlife fail
+        p = pg.Pos(-0.038, -0.038,  0.576) 
+        m = pg.Mesh(dim=3, isGeometry=True)
+        b = m.createBoundary([m.createNode(n).id() for n in [
+            [-0.048, -0.038,  0.576], 
+            [ 0.048,  -0.038,  0.576], 
+            [ 0.048,  -0.048,  0.576],
+            [-0.048,  -0.048,  0.576]]])
+
+        self.assertEqual(b.shape().touch(p), True)
+
+
+
 
     def test_cubeBasics(self):
         plc = mt.createCube()
