@@ -178,14 +178,15 @@ def fillEmptyToCellArray(mesh, vals, slope=True):
     Examples
     --------
     >>> import pygimli as pg
+    >>> import pygimli.meshtools as mt
     >>> import numpy as np
     >>> import matplotlib.pyplot as plt
     >>>
     >>> # Create a mesh with 3 layers and an outer region for extrapolation
-    >>> layers = pg.meshtools.createWorld([0,-50],[100,0], layers=[-15,-35])
-    >>> inner = pg.meshtools.createMesh(layers, area=3)
-    >>> mesh = pg.meshtools.appendTriangleBoundary(inner, xbound=120, ybound=50,
-    ...                                            area=20, marker=0)
+    >>> layers = mt.createWorld([0,-50],[100,0], layers=[-15,-35])
+    >>> inner = mt.createMesh(layers, area=3)
+    >>> mesh = mt.appendTriangleBoundary(inner, xbound=120, ybound=50,
+    ...                                  area=20, marker=0)
     >>>
     >>> # Create data for the inner region only
     >>> layer_vals = [20,30,50]
@@ -198,9 +199,9 @@ def fillEmptyToCellArray(mesh, vals, slope=True):
     >>> data_with_outer = np.array([0] + layer_vals)[mesh.cellMarkers()]
     >>>
     >>> # Actual extrapolation
-    >>> extrapolated_data = pg.meshtools.fillEmptyToCellArray(mesh,
+    >>> extrapolated_data = mt.fillEmptyToCellArray(mesh,
     ...                                  data_with_outer, slope=False)
-    >>> extrapolated_data_with_slope = pg.meshtools.fillEmptyToCellArray(mesh, 
+    >>> extrapolated_data_with_slope = mt.fillEmptyToCellArray(mesh,
     ...                                 data_with_outer, slope=True)
     >>>
     >>> # Visualization
@@ -465,7 +466,7 @@ def interpolate(*args, **kwargs):
       cubic **spline** via scipy, fit **harmonic** functions' via pygimli])
       Note, for 'linear' and 'spline' the interpolate contains all original
       coordinates while 'harmonic' returns an approximate best fit.
-      The amount of harmonic coefficients can be specfied with the 'nc' keyword.
+      The amount of harmonic coefficients can be specfied by the 'nc' keyword.
 
       Parameters:
         args: xi, x, u
@@ -550,37 +551,37 @@ def interpolate(*args, **kwargs):
 
             if args[1].ndim == 1 and args[2].ndim == 1 and args[3].ndim == 1:
                 return pg.core.pgcore.interpolate(args[0], inVec=args[1],
-                                                     x=args[2], y=args[3],
-                                                     fillValue=fallback,
-                                                     verbose=verbose)
+                                                  x=args[2], y=args[3],
+                                                  fillValue=fallback,
+                                                  verbose=verbose)
 
             if isinstance(args[1], pg.Matrix) and \
                isinstance(args[3], pg.Matrix):
                 return pg.core.pgcore.interpolate(args[0], inMat=args[1],
-                                                     destPos=args[2],
-                                                     outMat=args[3],
-                                                     fillValue=fallback,
-                                                     verbose=verbose)
+                                                  destPos=args[2],
+                                                  outMat=args[3],
+                                                  fillValue=fallback,
+                                                  verbose=verbose)
             if isinstance(args[1], pg.Vector) and \
                isinstance(args[3], pg.Vector):
                 return pg.core.pgcore.interpolate(args[0], inVec=args[1],
-                                                     destPos=args[2],
-                                                     outVec=args[3],
-                                                     fillValue=fallback,
-                                                     verbose=verbose)
+                                                  destPos=args[2],
+                                                  outVec=args[3],
+                                                  fillValue=fallback,
+                                                  verbose=verbose)
 
         if len(args) == 5:
             if args[1].ndim == 1 and args[2].ndim == 1 and \
                args[3].ndim == 1 and args[4].ndim == 1:
                 return pg.core.pgcore.interpolate(args[0], inVec=args[1],
-                                                     x=args[2], y=args[3],
-                                                     z=args[4],
-                                                     fillValue=fallback,
-                                                     verbose=verbose)
+                                                  x=args[2], y=args[3],
+                                                  z=args[4],
+                                                  fillValue=fallback,
+                                                  verbose=verbose)
 
         return pg.core.pgcore.interpolate(*args, **kwargs,
-                                             fillValue=fallback,
-                                             verbose=verbose)
+                                          fillValue=fallback,
+                                          verbose=verbose)
         # end if pg.core:
 
     if len(args) == 3:

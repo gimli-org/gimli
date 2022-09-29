@@ -1,6 +1,5 @@
 import numpy as np
 import pygimli as pg
-from pygimli.matrix import NumpyMatrix
 
 
 def SolveGravMagHolstein(pgmesh, pnts, cmp, igrf, foot=np.inf):
@@ -185,7 +184,7 @@ class GravMagModelling(pg.Modelling):
                                            pnts=self.sensorPositions,
                                            cmp=self.components, igrf=self.igrf,
                                            foot=self.footprint)
-        self._J = NumpyMatrix(self.kernel)
+        self._J = pg.matrix.NumpyMatrix(self.kernel)
 
     def response(self, model):
         return self.kernel.dot(model)
