@@ -1074,10 +1074,6 @@ def showSparseMatrix(mat, full=False):
 
 class LinSolver(object):
     """Proxy class for the solution of linear systems of equations."""
-<<<<<<< HEAD
-=======
-
->>>>>>> dev
     def __init__(self, mat=None, solver=None, verbose=False, **kwargs):
         """Init the solver proxy class with a matrix and start factorization.
 

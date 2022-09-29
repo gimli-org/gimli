@@ -416,7 +416,7 @@ class Test3DMerge(unittest.TestCase):
         #c2 = mt.createCube([D, D/4, D], pos=[0, 0.0, D], marker=2) 
         
         plc = mt.merge([c1, c2])
-        plc.exportPLC('ccq')
+        #plc.exportPLC('ccq')
         #pg.show(plc)
 
         self.assertEqual(plc.nodeCount(), 16)
