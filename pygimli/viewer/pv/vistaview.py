@@ -2,12 +2,11 @@
 # -*- coding: utf-8 -*-
 """Plot 3D mesh."""
 
-import os
 import pygimli as pg
 
 pyvista = pg.optImport("pyvista", requiredFor="properly visualize 3D data")
-panel = pg.optImport("panel", 
-    requiredFor="use interactive 3D visualizations within Jupyter notebooks")
+panel = pg.optImport("panel", requiredFor="use interactive 3D visualizations" +
+                     " within Jupyter notebooks")
 
 if pyvista is None:
     view3Dcallback = "showMesh3DFallback"
@@ -21,7 +20,7 @@ else:
     if vers_userf < vers_needf:
         pg.warn("Please consider updating PyVista to at least {}".format(
             vers_needs))
-    
+
     from .draw import drawModel
 
 
@@ -110,22 +109,23 @@ def showMesh3DVista(mesh, data=None, **kwargs):
 
         backend = kwargs.pop("backend", "panel")
 
-        plotter = drawModel(None, mesh, data, notebook=notebook, 
-                            cMap=cMap, **kwargs)
+        plotter = drawModel(kwargs.pop("ax", None), mesh, data,
+                            notebook=notebook, cMap=cMap, **kwargs)
 
         # seems top be broken on some machines
         if kwargs.get('aa', False):
             plotter.enable_anti_aliasing()
 
         if notebook is True:
-            # monkey patch show of this plotter instance so we can use multiple backends and only plotter.show() .. whoever this needs.
+            # monkeypatch show of this plotter instance so we can use multiple
+            # backends and only plotter.show() .. whoever this needs.
             plotter.__show = plotter.show
-            plotter.show = lambda *args, **kwargs: plotter.__show(*args, 
-                    jupyter_backend=backend, **kwargs)
+            plotter.show = lambda *args, **kwargs: plotter.__show(
+                *args, jupyter_backend=backend, **kwargs)
         else:
             plotter.__show = plotter.show
-            plotter.show = lambda *args, **kwargs: plotter.__show(*args, 
-            **kwargs) if pg.viewer.mpl.isInteractive() else False
+            plotter.show = lambda *args, **kwargs: plotter.__show(
+                *args, **kwargs) if pg.viewer.mpl.isInteractive() else False
 
         if hold is False:
             plotter.show()
