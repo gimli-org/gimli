@@ -19,7 +19,8 @@ General
 What is the difference between BERT and GIMLi?
 ..............................................
 
-GIMLi is a general library for modelling and inversion in geophysics. BERT
+GIMLi is a general library for modelling and inversion in geophysics. 
+`BERT <https://gitlab.com/resistivity-net/bert>`_
 builds upon this framework and provides numerous high-level and user-friendly
 functions and applications specifically tailored for DC resistivity studies.
 
@@ -30,11 +31,10 @@ Python 2 or Python 3?
 .....................
 
 Short answer: Python 3. Long answer: Currently, pygimli is functionable with all
-major Python versions (2.7, 3.4, 3.5, 3.6). When compiling from source, it is
+major Python versions from 3.7 on. When compiling from source, it is
 important that *boost_python* is build against the same Python version you want
 to use. However, many (scientific) Python projects recommend to use Python 3 for
-`various reasons <http://python-3-for-scientists.readthedocs.io/>`_ and we will
-also drop support for Python 2 eventually. In most cases you can translate your
+`various reasons <http://python-3-for-scientists.readthedocs.io/>`_. We droped support for Python 2. In most cases you can translate your
 existing Python 2 scripts to Python 3 by running `2to3
 <https://docs.python.org/2/library/2to3.html>`_.
 
@@ -53,8 +53,9 @@ Note, these setting will ony affect applications that have been started from the
 current console.
 To make these settings permanent, make sure to add them to your *.bashrc*.
 
-Windows users probably need to tell spyder where your pygimli
-installation can be found by an appropriate setting of
+Window users should use the conda/anaconda install which sets all appropriate paths to run pygimli in spyder.
+
+If this does not work, Windows users probably need to tell spyder where your manual pygimli installation can be found by an appropriate setting of
 the `PYTHONPATH` in the spyder Menubar:/tools/PYTHONPATH manager.
 
 If you start spyder from Windows startmenu you probably need to set the
@@ -69,7 +70,7 @@ You can test you installation within the console via:
 If there is something wrong with the environment settings
 you get an error like this:
 
-.. code:: bash
+.. code::
 
   python: can't open file 'import pygimli as pg; print(pg.version())':
   [Errno 2] No such file or directory

@@ -29,7 +29,15 @@ What is pyGIMLi **NOT** suited for?
 Authors
 -------
 
-.. image:: https://img.shields.io/github/contributors/gimli-org/gimli.svg
+.. raw:: html
+
+   <p style="height:22px">
+     <a href="https://github.com/gimli-org/gimli/graphs/contributors" >
+       <img src="https://img.shields.io/github/contributors/gimli-org/gimli.svg?style=flat-square"/>
+     </a>
+   </p>
+
+.. .. image:: https://img.shields.io/github/contributors/gimli-org/gimli.svg?style=flat-square
    :target: https://github.com/gimli-org/gimli/graphs/contributors
 
 We gratefully acknowledge all contributors to the pyGIMLi open-source project and look forward to `your contribution <https://pygimli.org/contrib.html>`_!

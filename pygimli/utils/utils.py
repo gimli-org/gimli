@@ -16,35 +16,35 @@ class ProgressBar(object):
     Animated text-based progressbar for intensive loops. Should work in the
     console. In IPython Notebooks a 'tqdm' progressbar instance is created and 
     can be configured with appropriate keyword arguments.
-
-    Todo
-    ----
-     * optional: 'estimated time' instead of 'x of y complete'
-
-    Parameters
-    ----------
-    its : int
-        Number of iterations of the process.
-    width : int
-        Width of the ProgressBar, default is 80.
-    sign : str
-        Sign used to fill the bar.
-
-    Additional Args
-    ---------------
-    Forwarded to create the tqdm progressbar instance. See
-    https://tqdm.github.io/docs/tqdm/
-
-    Examples
-    --------
-    >>> from pygimli.utils import ProgressBar
-    >>> pBar = ProgressBar(its=20, width=40, sign='+')
-    >>> pBar.update(5)
-    \r[+++++++++++       30%                 ] 6 of 20 complete
     """
-
     def __init__(self, its, width=80, sign=":", **kwargs):
-        """Constructor."""
+        """Create animated text-based progressbar.
+        
+        Todo
+        ----
+        * optional: 'estimated time' instead of 'x of y complete'
+
+        Parameters
+        ----------
+        its : int
+            Number of iterations of the process.
+        width : int
+            Width of the ProgressBar, default is 80.
+        sign : str
+            Sign used to fill the bar.
+
+        Additional Args
+        ---------------
+        Forwarded to create the tqdm progressbar instance. See
+        https://tqdm.github.io/docs/tqdm/
+
+        Examples
+        --------
+        >>> from pygimli.utils import ProgressBar
+        >>> pBar = ProgressBar(its=20, width=40, sign='+')
+        >>> pBar.update(5)
+        \r[+++++++++++       30%                 ] 6 of 20 complete
+        """
         self.its = int(its)
         self.width = width
         self.sign = sign[0]  # take first character only if sign is longer
