@@ -2,11 +2,32 @@ import numpy as np
 import pygimli as pg
 
 
-def SolveGravMagHolstein(pgmesh, pnts, cmp, igrf, foot=np.inf):
+def SolveGravMagHolstein(mesh, pnts, cmp, igrf, foot=np.inf):
+    """Solve gravity and/or magnetics problem after Holstein (1997).
+
+    Parameters
+    ----------
+    mesh : pygimli:mesh
+        tetrahedral or hexahedral mesh
+    pnts : list|array of (x, y, z)
+        measuring points
+    cmp : list of str
+        component list of: gx, gy, gz, TFA, Bx, By, Bz, Bxy, Bxz, Byy, Byz, Bzz
+    igrf : list|array of size 3 or 7
+        international geomagnetic reference field, either
+        [D, I, H, X, Y, Z, F] - declination, inclination, horizontal field,
+                               X/Y/Z components, total field OR
+        [X, Y, Z] - X/Y/Z components
+
+    Returns
+    -------
+    out : ndarray (nPoints x nComponents x nCells)
+        kernel matrix to be multiplied with density or susceptibility
+    """
     if pnts is None:
         pnts = [[0.0, 0.0]]
 
-    kernel = np.zeros((len(pnts), pgmesh.cellCount(), len(cmp)))
+    kernel = np.zeros((len(pnts), mesh.cellCount(), len(cmp)))
     # org: this does not make sense as igrf is either 3 or 7 long
     # B_dir = np.array(igrf / np.linalg.norm(igrf))
     # fakt = igrf[6] / (4*np.pi)
@@ -18,12 +39,12 @@ def SolveGravMagHolstein(pgmesh, pnts, cmp, igrf, foot=np.inf):
     elif len(igrf) == 7:  # an IGRF vector (D, I, H, X, Y, Z, F)
         fakt = igrf[6] / (4*np.pi)
         igrf = np.array(igrf[3:6])
-        B_dir = np.array(igrf) / np.linalg.norm(igrf)
+        B_dir = igrf / np.linalg.norm(igrf)
     else:
-        raise Exception("Could not use IGRF vector")
+        raise Exception("Could not use IGRF vector. Len must be 3 or 7!")
 
     b_list, n_list, c_list = [], [], []
-    for bd in pgmesh.boundaries():
+    for bd in mesh.boundaries():
         b_list.append([bd.allNodes()[0].id(),
                        bd.allNodes()[1].id(),
                        bd.allNodes()[2].id()])
@@ -32,7 +53,7 @@ def SolveGravMagHolstein(pgmesh, pnts, cmp, igrf, foot=np.inf):
     b_list = np.array(b_list)
     lb = len(b_list)
 
-    for nd in pgmesh.nodes():
+    for nd in mesh.nodes():
         n_list.append(nd.pos())
 
     n_list = np.array(n_list)
@@ -170,8 +191,25 @@ def SolveGravMagHolstein(pgmesh, pnts, cmp, igrf, foot=np.inf):
 
 
 class GravMagModelling(pg.Modelling):
+    """Gravity & magnetics modelling operator."""
 
     def __init__(self, mesh, points, cmp, igrf, foot=None):
+        """Setup forward operator.
+
+        Parameters
+        ----------
+        mesh : pygimli:mesh
+            tetrahedral or hexahedral mesh
+        points : list|array of (x, y, z)
+            measuring points
+        cmp : list of str
+            component of: gx, gy, gz, TFA, Bx, By, Bz, Bxy, Bxz, Byy, Byz, Bzz
+        igrf : list|array of size 3 or 7
+            international geomagnetic reference field, either
+            [D, I, H, X, Y, Z, F] - declination, inclination, horizontal field,
+                                   X/Y/Z components, total field OR
+            [X, Y, Z] - X/Y/Z components
+        """
         super().__init__()
         self.mesh = mesh
         self._J = pg.Matrix()
