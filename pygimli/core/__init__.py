@@ -763,6 +763,8 @@ PosList = PosVector
 # non automatic exposed functions
 ############################
 
+__PY_ABS__ = abs
+
 def abs(v):
     """Create abs in the sense of distance instead of just vanishing the sign.
 
@@ -830,6 +832,8 @@ def abs(v):
         return abs(v.values)
     elif hasattr(v, 'vals'):
         return abs(v.vals)
+    elif isinstance(v, (int, float, np.integer, np.float)):
+        return __PY_ABS__(v)
 
     return pgcore.fabs(v)
 
