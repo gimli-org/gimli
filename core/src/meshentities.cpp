@@ -879,8 +879,9 @@ void PolygonFace::insertNode(Node * n, double tol){
     n->setSecondaryParent(this);
 }
 
-void PolygonFace::addSubface(const std::vector < Node * > & nodes){
+void PolygonFace::addSubface(const std::vector < Node * > & nodes, bool isHole){
     this->subfaces_.push_back(nodes);
+    if (!isHole) for (auto *n: nodes) n->insertBoundary(this);
 }
 const std::vector < Node * >  & PolygonFace::subface(Index i) const {
     return this->subfaces_[i];

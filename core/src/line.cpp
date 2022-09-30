@@ -115,7 +115,7 @@ bool Line::intersectRay(const RVector3 & start, const RVector3 & dir,
 
     // if (tc >= 0.0 && (sc >= 0.0 && sc <= 1.0)){
 
-    if (tc >= -tol && (sc >= -tol && sc <= 1.0)){
+    if (tc >= -tol && (sc >= -tol && sc <= 1.0+tol)){
         RVector3 dP(w + (sc * u) - (tc * v));
         //__MS(dP)
         if (dP.length() < tol){
