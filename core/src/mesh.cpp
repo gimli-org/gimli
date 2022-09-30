@@ -193,20 +193,19 @@ Node * Mesh::createNodeGC_(const RVector3 & pos, int marker){
                 // __MS(b->rtti())
                 if (b->rtti() == MESH_POLYGON_FACE_RTTI){
 
-                    if (n->id() == 18 && b->id() == 6){
-                        std::cout << pos[0] << " " << pos[1] << " "<< pos[2] << std::endl;
-                        __MS(pos)
-                        for (auto *n: b->nodes()){
-                            //print(*n);
-                            std::cout.precision(14);
-                            std::cout << n->pos()[0] << " " << n->pos()[1] << " "<< n->pos()[2] << std::endl;
-                        }
-                        print(b->shape().touch(n->pos()));
-                    }
+                    // if (n->id() == 18 && b->id() == 6){
+                    //     std::cout << pos[0] << " " << pos[1] << " "<< pos[2] << std::endl;
+                    //     __MS(pos)
+                    //     for (auto *n: b->nodes()){
+                    //         //print(*n);
+                    //         std::cout.precision(14);
+                    //         std::cout << n->pos()[0] << " " << n->pos()[1] << " "<< n->pos()[2] << std::endl;
+                    //     }
+                    //     print(b->shape().touch(n->pos(), 1e-6, true));
+                    // }
                     // __MS(pos)
                     // __MS(b->center())
                     if (b->shape().touch(n->pos())){
-                        if (n->id() == 18)__MS(*b)
                         //  __MS(pos)
                         //  __MS(b->node(0).pos(), b->node(1).pos(),
                         //       b->node(2).pos())
@@ -523,7 +522,7 @@ Boundary * findSecParent(const std::vector < Node * > & v){
 Boundary * Mesh::copyBoundary(const Boundary & bound, double tol, bool check){
     bool debug = false;
     #define _D(...) if (debug) __MS(__VA_ARGS__)
-    if (bound.id() == 0){
+    if (bound.id() == 0 && 0){
         debug = true;
     }
     _D("this:")
