@@ -726,7 +726,7 @@ class MeshMethodManager(MethodManager):
         data: pg.DataContainer
 
         mesh: :gimliapi:`GIMLI::Mesh` [None]
-            
+
         startModel: float | iterable [None]
 
             If set to None fop.createDefaultStartModel(dataValues) is called.
@@ -794,6 +794,9 @@ class MeshMethodManager(MethodManager):
             if kw in kwargs:
                 di = {kw: kwargs.pop(kw)}
                 self.fop.setRegionProperties('*', **di)
+
+        if "blockyModel" in kwargs:
+            self.fw.blockyModel = kwargs["blockyModel"]
 
         self.preRun(**kwargs)
         self.fw.run(dataVals, errorVals, **kwargs)
@@ -888,10 +891,10 @@ class PetroInversionManager(MeshMethodManager):
 
 class JointPetroInversionManager(MeshMethodManager):
     """Joint inversion targeting at the same parameter through petrophysics.
-    
+
     This is just syntactic sugar for the combination of
-    :py:mod:`pygimli.frameworks.PetroModelling` and 
-    :py:mod:`pygimli.frameworks.JointModelling`. 
+    :py:mod:`pygimli.frameworks.PetroModelling` and
+    :py:mod:`pygimli.frameworks.JointModelling`.
     """
 
     def __init__(self, petros, mgrs):

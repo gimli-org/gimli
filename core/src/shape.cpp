@@ -419,9 +419,11 @@ bool Shape::touch(const RVector3 & pos, double tol, bool verbose) const {
     if (this->nodeCount() < 3) {
         log(Critical, "Shape need at least 3 nodes and should be a 3D boundary face.");
     }
-
+    if (verbose) print("touch:",  pos, "tol:", tol);
+    
     Plane plane(this->plane());
     if (!plane.touch(pos, tol)) {
+        if (verbose) print("\t does not touch plane!");
         return false;
     }
 
@@ -442,26 +444,35 @@ bool Shape::touch(const RVector3 & pos, double tol, bool verbose) const {
 
         for (Index i = 0; i < nodeCount(); i ++){
             Line segment(node(i).pos(), node((i+1)%nodeCount()).pos());
-            // __MS(segment)
+            // __MS(segment << " " << pos)
 
-            if (segment.intersectRay(pos, rayDir, iP)){
+            if (verbose) print("\t segment:", segment, "ray:", rayDir, "intersect:", 
+                                segment.intersectRay(pos, rayDir, iP, tol), 
+                                "p:", iP, "t(iP):", segment.t(iP));
+
+            if (segment.intersectRay(pos, rayDir, iP, tol)){
                 // __MS(iP << " vs.  " << pos << " d:" << iP.dist(pos)
                 //         << " t:" << segment.t(iP))
                 if (iP.valid()){
-                    if (iP.dist(pos) < 1e-6) return true; // is on segment
+                    if (iP.dist(pos) < tol) {
+                        if (verbose) print("\t touch segment!");
+                        return true; // is on segment
+                    }
 
                     double t = segment.t(iP);
-                    if (abs(t) < TOLERANCE || abs(t-1.0) < TOLERANCE){
+
+                    if (abs(t) < tol || abs(t-1.0) < tol){
                         // hits a node .. bad ray for the testting
                         rayStart +=1;
                         needNewRay = true;
+                        if (verbose) print("\t bad ray:", i);
                         i = nodeCount();
-                        // __MS("newray")
                     }
 
                     if (t > 0.0 && t < 1.0){
                         // if intersection pos between (node, nextNode)
                         touch = !touch;
+                        if (verbose) print("\t is inside toggle:", touch);
                         // __MS("touch: " << touch)
                     }
                 }

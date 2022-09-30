@@ -190,16 +190,25 @@ Node * Mesh::createNodeGC_(const RVector3 & pos, int marker){
         if ((this->dim() == 3) and (this->nodeCount() > oldCount)){
 
             for (auto *b: this->boundaryVector_){
-            // for (Index i = 0; i < this->boundaryVector_.size(); i ++ ){
-            //     Boundary *b = this->boundaryVector_[i];
                 // __MS(b->rtti())
                 if (b->rtti() == MESH_POLYGON_FACE_RTTI){
+
+                    // if (n->id() == 18 && b->id() == 6){
+                    //     std::cout << pos[0] << " " << pos[1] << " "<< pos[2] << std::endl;
+                    //     __MS(pos)
+                    //     for (auto *n: b->nodes()){
+                    //         //print(*n);
+                    //         std::cout.precision(14);
+                    //         std::cout << n->pos()[0] << " " << n->pos()[1] << " "<< n->pos()[2] << std::endl;
+                    //     }
+                    //     print(b->shape().touch(n->pos(), 1e-6, true));
+                    // }
                     // __MS(pos)
                     // __MS(b->center())
                     if (b->shape().touch(n->pos())){
                         //  __MS(pos)
-                        //  __MS(b->node(0).pos() << " " << b->node(1).pos()
-                        //       << " "<< b->node(2).pos())
+                        //  __MS(b->node(0).pos(), b->node(1).pos(),
+                        //       b->node(2).pos())
                         // __MS(*b)
                         dynamic_cast< PolygonFace* >(b)->insertNode(n);
                     }
@@ -513,7 +522,29 @@ Boundary * findSecParent(const std::vector < Node * > & v){
 Boundary * Mesh::copyBoundary(const Boundary & bound, double tol, bool check){
     bool debug = false;
     #define _D(...) if (debug) __MS(__VA_ARGS__)
-    _D("copyBoundary", bound.ids())
+    if (bound.id() == 0 && 0){
+        debug = true;
+    }
+    _D("this:")
+    if (debug){
+        for (auto *b: this->boundaries()){
+            print(b->id(), ":", b->ids());
+            if (b->rtti() == MESH_POLYGON_FACE_RTTI){
+                auto *p = dynamic_cast< PolygonFace * >(b);
+                for (Index i = 0; i < p->subfaceCount(); i ++ ){
+                    print("\t", p->subface(i));
+                }
+            }
+        }
+    }
+
+    bool isHole = false;
+    if (bound.rtti() == MESH_POLYGON_FACE_RTTI){
+        auto *p = dynamic_cast< const PolygonFace * >(&bound);
+        isHole = p->holeMarkers().size() > 0;
+    }
+
+    _D("copyBoundary:", bound.id(), "Nodes:", bound.ids(), "hole:", isHole)
 
     std::vector < Node * > nodes(bound.nodeCount());
     bool isFreeFace = false; //** the new face is no subface
@@ -528,6 +559,7 @@ Boundary * Mesh::copyBoundary(const Boundary & bound, double tol, bool check){
         if (bound.rtti() == MESH_POLYGON_FACE_RTTI){
             // this works with 3D poly tests but copy bounds into 2d mesh will double bounds
             nodes[i] = createNode(bound.node(i).pos(), tol);
+_D("new Node:", nodes[i]->id(), nodes[i]->state(), "Bounds:", nodes[i]->boundSet())
         } else {
             // 3D poly tests fail!! .. need to be checked and fixed  TODO
             if (check== true){
@@ -560,33 +592,46 @@ Boundary * Mesh::copyBoundary(const Boundary & bound, double tol, bool check){
     if (bound.rtti() == MESH_POLYGON_FACE_RTTI && check == true){
 
         _D("connectedNodes:", conNodes, 
-             "secondaryNodes:", secNodes,
-             "origNodes:", oldNodes)
-        _D("new face nodes:", nodes, "is subface", not isFreeFace)
+           "secondaryNodes:", secNodes,
+           "origNodes:", oldNodes)
+        _D("new face nodes:", nodes, "freeface:", isFreeFace)
 
         Boundary * secParent = findSecParent(secNodes);
 
         //** identify if face is freeface
         if (!isFreeFace){
-            
             std::set < Boundary * > conParentCand = findBoundaries(conNodes);
+            for (auto *n : conNodes){
+                _D("Connected Node:", n->id(), "Bounds:", n->boundSet())
+            }
+            if (conParentCand.size() == 0){
+                conParentCand = findBoundaries(oldNodes);
+                for (auto *n : oldNodes){
+                    _D("Original Node:", n->id(), "Bounds:", n->boundSet())
+                }
+            }
+
             Boundary * conParent = 0;
             if (conParentCand.size() > 0 ){
+                _D("Check connected parents candidates (",conParentCand.size(), ")..")
                 for (auto *b: conParentCand){
+                    _D("\t Candidate:", b->id(), b->shape().plane())
                     if (b->shape().plane().compare(bound.shape().plane(), 
                                                    TOLERANCE, true)){
                         conParent = b;
+                        _D("\t found connected parent:", b->id())
                         break;
                     }
                 }            
             }
+
             if (conNodes.size() && secNodes.size()){
 
                 if (!conParent || conParent != secParent){
                     isFreeFace = true;
                 }
                 if (conParent){
-                    _D("conParent", conParent->ids())
+                    _D("conParent", conParent->id(), "Nodes:", conParent->ids())
                 } else {
                     _D("no parent for connected nodes")
                 }
@@ -635,12 +680,21 @@ Boundary * Mesh::copyBoundary(const Boundary & bound, double tol, bool check){
                 subNodes = secNodes;
                 parent = secParent;
             } else if (oldNodes.size()){
-                isFreeFace = true;
+                if (!conParent){
+                    isFreeFace = true;
+                } else {
+                    //** case Test3DMerge.test_cube_mult_cut2 (boundary 4)
+                    // all nodes are old nodes and are already part of another face
+                    parent = conParent;
+                    subNodes = nodes;
+                }
             }
         }
         
         //** create new face
-        _D("is subface", not isFreeFace, subNodes.size(), nodes.size())
+        _D("Subface freeface:", isFreeFace, 
+                "subsNodes:", subNodes.size(), 
+                "nodes", nodes.size())
         
         if (isFreeFace){
             ret = createBoundaryChecked_< PolygonFace >(nodes,
@@ -656,7 +710,7 @@ Boundary * Mesh::copyBoundary(const Boundary & bound, double tol, bool check){
                     }
                     auto *p = dynamic_cast< PolygonFace * >(parent);
                     _D("addSubface: ", p->subfaceCount())
-                    p->addSubface(subNodes);
+                    p->addSubface(subNodes, isHole);
                     _D("subfacecount: ", p->subfaceCount())
 
                     if (debug) for (auto i: range(p->subfaceCount())){
@@ -667,7 +721,17 @@ Boundary * Mesh::copyBoundary(const Boundary & bound, double tol, bool check){
                 }
                 ret = parent;
             } else {
-                log(Error, "new subface but only two nodes");
+                if (nodes.size() > 2){
+                    //** case Test3DMerge.test_cube_mult_cut1 (boundary 4)
+                    auto *p = dynamic_cast< PolygonFace * >(parent);
+                    for (auto *n: secNodes){
+                        p->delSecondaryNode(n);
+                        n->setState(No);
+                    }
+                    p->addSubface(nodes, isHole);
+                } else {
+                    log(Error, "new subface but only two nodes");
+                }
             }
         }
         const PolygonFace & f = dynamic_cast< const PolygonFace & >(bound);

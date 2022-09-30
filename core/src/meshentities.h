@@ -589,8 +589,9 @@ public:
     void insertNode(Node * node, double tol=TOLERANCE);
 
     /*! Insert nodes for a subpolygon.
-    All nodes regarding the parent mesh and need to be inside the face.*/
-    void addSubface(const std::vector < Node * > & nodes);
+    All nodes regarding the parent mesh and need to be inside the face.
+    If marked as hole the boundary does not become part if nodes boundary set.*/
+    void addSubface(const std::vector < Node * > & nodes, bool isHole=false);
 
     Index subfaceCount() const {return this->subfaces_.size();}
 
@@ -1175,6 +1176,10 @@ public:
 
 protected:
 };
+
+DLLEXPORT std::ostream & operator << (std::ostream & str, const std::set < GIMLI::MeshEntity * > & ents);
+
+DLLEXPORT std::ostream & operator << (std::ostream & str, const std::set < GIMLI::Boundary * > & bounds);
 
 } // namespace GIMLI
 

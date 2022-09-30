@@ -185,6 +185,28 @@ class TestCreatePolygon(unittest.TestCase):
         assert polygon.regionMarkers()[0].marker() == 7
 
 class Test3DMerge(unittest.TestCase):
+
+    def test_PosTouchFace(self):
+        ### wildlife fail
+        m = pg.Mesh(dim=3, isGeometry=True)
+        D = 0.1
+        H1=2.
+        H=0.1
+        
+        m.createNode([-D/2,  D/2, -(H1-H)/2 -H1/2])
+        m.createNode([+D/2,  D/2, -(H1-H)/2 -H1/2])
+        m.createNode([+D/2,  D/2, +(H1-H)/2 -H1/2])
+        m.createNode([-D/2,  D/2, +(H1-H)/2 -H1/2])
+        m.createNode([-D/2, -D/2, -(H1-H)/2 -H1/2])
+        m.createNode([+D/2, -D/2, -(H1-H)/2 -H1/2])
+        m.createNode([+D/2, -D/2, +(H1-H)/2 -H1/2])
+        m.createNode([-D/2, -D/2, +(H1-H)/2 -H1/2])
+        m.createBoundary([0, 1, 2, 3])
+        
+        n = [-D/6,  D/2,  -H/2]
+        m.createNode(n)
+        self.assertEqual(m.boundary(0).nodeCount(), 5)
+                
     def test_cubeBasics(self):
         plc = mt.createCube()
         for i, b in enumerate(plc.boundaries()):
@@ -322,9 +344,10 @@ class Test3DMerge(unittest.TestCase):
     def test_face_in_face(self):
         """Test subface with different marker constructed with hole marker."""
         w = mt.createCube(marker=1, boundaryMarker=1)
+        w.translate([0.5, 0.5, 0.5])
         b = w.boundary(2)
 
-        pad = mt.createFacet(mt.createCircle(radius=0.2, segments=12,
+        pad = mt.createFacet(mt.createCircle(radius=0.2, nSegments=4,
                                              isHole=True))
         b2 = pad.boundary(0)
 
@@ -333,26 +356,26 @@ class Test3DMerge(unittest.TestCase):
         pad.transform(rot)
         pad.translate(b.center())
 
-        # create a boundary with new marker match the hole
+        # create a boundary with new marker as hole
         w.copyBoundary(b2)
 
-        w.createBoundary(w.nodes([w.createNode(n.pos()).id() for n in b2.nodes()]),
-                        marker=2)
+        # fill the hole with new boundary
+        w.createBoundary(w.nodes([w.createNode(n.pos()).id() for n in b2.nodes()]),  marker=2)
 
         #print(w.boundaryMarkers())
-
-        m = mt.createMesh(w)
-
-        #pg.show(mesh)
+        #pg.show(w, markers=True, showMesh=True)
         # w.exportPLC('pad.poly')
-        # mesh.exportBoundaryVTU('b.vtu')
-        np.testing.assert_array_equal(pg.unique(pg.sort(m.boundaryMarkers())),
-                                      [0, 1, 2])
-
-        #pg.show(m, m.cellMarkers())
+        
+        mesh = mt.createMesh(w)
         # print(mesh)
         # mesh.exportBoundaryVTU('b.vtu')
-        #pg.show(mesh)
+        pg.show(mesh, markers=True, showMesh=True)
+
+        # mesh.exportBoundaryVTU('b.vtu')
+        self.assertEqual(w.boundaryCount(), 7)
+
+        np.testing.assert_array_equal(pg.unique(pg.sort(mesh.boundaryMarkers())),
+                                      [0, 1, 2])
 
    
     def test_cube_cube_halfside(self):
@@ -379,6 +402,32 @@ class Test3DMerge(unittest.TestCase):
         #m = mt.createMesh(plc, tetgen='tetgen-1.4.3')
         pg.show(m, m.cellMarkers())
 
+    def test_cube_cube_thirdside(self):
+        """Add half size cube on another cube"""
+        D=0.1
+        H1=2
+        H=0.1
+
+        c1 = mt.createCube([D, D, H1-H], marker=1) 
+        c2 = mt.createCube([D/3, D, H], marker=2) 
+        c1.translate([0.0, 0.0, -H1/2])
+
+        #c1 = mt.createCube([D, D, D], pos=[0.0, 0.0, 0.0], marker=1) 
+        #c2 = mt.createCube([D, D/4, D], pos=[0, 0.0, D], marker=2) 
+        
+        plc = mt.merge([c1, c2])
+        #plc.exportPLC('ccq')
+        #pg.show(plc)
+
+        self.assertEqual(plc.nodeCount(), 16)
+        self.assertEqual(plc.boundaryCount(), 11)
+        self.assertEqual(plc.boundary(2).nodeCount(), 8)
+        self.assertEqual(plc.boundary(4).nodeCount(), 6)
+        self.assertEqual(plc.boundary(5).nodeCount(), 6)
+        
+        m = mt.createMesh(plc)
+        #m = mt.createMesh(plc, tetgen='tetgen-1.4.3')
+        pg.show(m, m.cellMarkers())
 
     def test_cube_cut_cube(self):
         """Test cube cur from cube on two neighbour faces."""
@@ -407,16 +456,68 @@ class Test3DMerge(unittest.TestCase):
         c5.translate([0.1, 0.0, -0.4])
         plc = mt.mergePLC3D([c1, c4, c5])
 
-        plc.exportPLC('cubecut')
-        pg.show(plc)
+        #plc.exportPLC('cubecut')
+        #pg.show(plc)
         
         #m = mt.createMesh(plc, tetgen='tetgen-1.4.3')
         m = mt.createMesh(plc)
 
         pg.show(m, m.cellMarkers())
         
-        m.exportVTK('cubecut')
+        #m.exportVTK('cubecut')
 
+    def test_cube_mult_cut1(self):
+        c = mt.createCube(marker=1)
+        c.translate([0.5, 0.5, 0.5])
+        c1 = mt.createCube(size=[0.1, 1, 0.1], marker=2)
+        c1.translate([0.5 - 0.05, 0, 0])
+        c1.translate([0.5, 0.5, 0.5])
+
+        c3 = mt.createCube(size=[1-2*0.1, 0.1, 0.1], marker=3)
+        c3.translate([0, -0.5 + 0.05, 0])
+        c3.translate([0.5, 0.5, 0.5])
+
+        c = mt.merge([c, c1, c3])
+                
+        self.assertEqual(c.nodeCount(), 22)
+        self.assertEqual(c.boundaryCount(), 13)
+        c.exportPLC('c')
+
+        #pg.show(c, showMesh=True)
+        m = mt.createMesh(c)
+        self.assertEqual(m.nodeCount() > 0, True)
+        #pg.show(m, m.cellMarkers())
+
+    def test_cube_mult_cut2(self):
+        c = mt.createCube(marker=1)
+        c.translate([0.5, 0.5, 0.5])
+        c1 = mt.createCube(size=[0.1, 1, 0.1], marker=2)
+        c1.translate([0.5 - 0.05, 0, 0])
+        c1.translate([0.5, 0.5, 0.5])
+
+        c2 = mt.createCube(size=[0.1, 1, 0.1], marker=2)
+        c2.translate([-0.5 + 0.05, 0, 0])
+        c2.translate([0.5, 0.5, 0.5])
+
+        c3 = mt.createCube(size=[1-2*0.1, 0.1, 0.1], marker=3)
+        c3.translate([0, -0.5 + 0.05, 0])
+        c3.translate([0.5, 0.5, 0.5])
+
+        c = mt.merge([c, c1, c2, c3])
+               
+        c.exportPLC('c')
+        self.assertEqual(c.nodeCount(), 28)
+        self.assertEqual(c.boundaryCount(), 15)
+
+        #pg.show(c, showMesh=True)
+        m = mt.createMesh(c)
+        pg.show(m, m.cellMarkers())
+
+        c.exportPLC('c')
+
+        #pg.show(c, showMesh=True)
+        m = mt.createMesh(c)
+        self.assertEqual(m.nodeCount() > 0, True)
 
     def test_face_inCube(self):
         # plc = mt.createCube()

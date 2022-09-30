@@ -880,8 +880,9 @@ void PolygonFace::insertNode(Node * n, double tol){
     n->setSecondaryParent(this);
 }
 
-void PolygonFace::addSubface(const std::vector < Node * > & nodes){
+void PolygonFace::addSubface(const std::vector < Node * > & nodes, bool isHole){
     this->subfaces_.push_back(nodes);
+    if (!isHole) for (auto *n: nodes) n->insertBoundary(this);
 }
 const std::vector < Node * >  & PolygonFace::subface(Index i) const {
     return this->subfaces_[i];
@@ -1315,6 +1316,19 @@ std::vector < PolynomialFunction < double > > Pyramid13::createShapeFunctions() 
     return std::vector < PolynomialFunction < double > >();
 }
 
+std::ostream & operator << (std::ostream & str, const std::set < GIMLI::MeshEntity * > & ents){
+    for (auto *e: ents){
+        str << e->id() << " ";
+    }
+    return str;
+}
+
+DLLEXPORT std::ostream & operator << (std::ostream & str, const std::set < GIMLI::Boundary * > & bounds){
+    for (auto *b: bounds){
+        str << b->id() << " ";
+    }
+    return str;
+}
 
 
 } // namespace GIMLI{

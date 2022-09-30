@@ -63,6 +63,7 @@ Manual installation
 Make sure to have an updated msys2 environment. Run at least:
 
 .. code-block:: bash
+
     pacman -Su
     pacman -Sy
 
