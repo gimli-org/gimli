@@ -298,10 +298,10 @@ def dur(reset=False, key=0):
 # special shortcut pg.plt with lazy evaluation
 @moduleProperty
 def _plt():
-    # import time
-    # t0 = time.time()
+    #import time
+    #t0 = time.time()
     import matplotlib.pyplot as plt
-    # print('importing plt took ', time.time() - t0)
+    #print('############### importing plt took ', time.time() - t0)
 
     from .viewer.mpl import registerShowPendingFigsAtExit, hold
     registerShowPendingFigsAtExit()

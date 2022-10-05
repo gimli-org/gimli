@@ -79,6 +79,14 @@ def registerShowPendingFigsAtExit():
     if __registeredShowPendingFigsAtExit__ == False:
         import atexit
 
+        #pg._y('register wait on exit')
+        ## first  call one empty show to initial QtManager befor register 
+        # onExit to avoid RuntimeError: wrapped C/C++ object of type MainWindow has been deleted
+        if 'matplotlib.pyplot' in sys.modules:
+            import matplotlib.pyplot as plt
+            #pg._g('empty show')
+            plt.show()
+            
         @atexit.register
         def waitOnExit():
             """ Call on script end to ensure to open all remaining mpl figures.
