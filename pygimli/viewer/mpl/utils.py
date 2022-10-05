@@ -68,6 +68,7 @@ def noShow(on=True):
         if globals()[__lastBackend__] is not None:
             matplotlib.use(globals()[__lastBackend__])
 
+
 __registeredShowPendingFigsAtExit__ = False
 
 def registerShowPendingFigsAtExit():
@@ -79,6 +80,14 @@ def registerShowPendingFigsAtExit():
     if __registeredShowPendingFigsAtExit__ == False:
         import atexit
 
+        #pg._y('register wait on exit')
+        ## first  call one empty show to initial QtManager befor register 
+        # onExit to avoid RuntimeError: wrapped C/C++ object of type MainWindow has been deleted
+        if 'matplotlib.pyplot' in sys.modules:
+            import matplotlib.pyplot as plt
+            #pg._g('empty show')
+            plt.show()
+            
         @atexit.register
         def waitOnExit():
             """ Call on script end to ensure to open all remaining mpl figures.
@@ -95,7 +104,7 @@ def registerShowPendingFigsAtExit():
                     if 'Qt' in backend or 'Wx' in backend or 'Tk' in backend or 'GTK' in backend:
                         #print(plt.get_fignums())
                         if len(plt.get_fignums()) > 0:
-                            pg.info('Showing pending widgets on exit. '
+                            pg.info(f'Showing pending widgets ({backend}) on exit. '
                                         'Close all figures or Ctrl-C to quit the programm')
                             pg.wait()
                 
