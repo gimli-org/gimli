@@ -2111,7 +2111,7 @@ def _feNorm(u, mat):
     return np.sqrt(pg.math.dot(u, mat.mult(u)))
 
 
-def normL2(u, mat=None, mesh=None):
+def normL2(u, mat=None, mesh=None, warn=True):
     r"""Create Lebesgue (L2) norm for finite element space.
 
     Find the L2 Norm for a solution in the finite element space. :math:`u` exact solution
@@ -2141,6 +2141,9 @@ def normL2(u, mat=None, mesh=None):
     mesh: :gimliapi:`GIMLI::Mesh`
         Mesh with the FE space to generate M if necessary.
 
+    warn: bool [True]
+        Warn if you forget a matrix or mass matrix which leads to algebraic L2 
+
     Returns
     -------
     ret: float
@@ -2155,7 +2158,8 @@ def normL2(u, mat=None, mesh=None):
         mat = createMassMatrix(mesh)
 
     if mat is None:
-        pg.warning("No Stiffness matrix or a mesh here, to calculate L2-Norm. "
+        if warn:
+            pg.warning("No mass matrix or a mesh here, to calculate L2-Norm. "
                    "Returning algebraic l2.")
 
         # M is Identity matrix
