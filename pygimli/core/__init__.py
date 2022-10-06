@@ -368,7 +368,9 @@ def __getVal(self, idx):
                 return self.get_([i for i, x in enumerate(idx) if x])
                 # return self[np.nonzero(idx)[0]]
         elif isinstance(idx[0], slice):  # try fixing newaxis
-            return self[idx[0]]
+            # probably the call x = x[:, np.newaxis]
+            # so we return np.array here
+            return np.array(self)[idx]
         # elif isinstance(idx[0], None) and isinstance(idx[1], slice):
             # return self[idx[1]]
 
