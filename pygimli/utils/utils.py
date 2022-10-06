@@ -289,11 +289,11 @@ def prettyFloat(value, roundValue=None, mathtex=False):
     
     if mathtex is True:
         if 'e+' in string:
-            string = string.replace('e+', '$\cdot 10^{')
-            string+='}$'
+            string = string.replace('e+', '\cdot 10^{')
+            string+='}'
         elif 'e-' in string:
-            string = string.replace('e-', '$\cdot 10^{-')
-            string+='}$'
+            string = string.replace('e-', '\cdot 10^{-')
+            string+='}'
             
     return string
 
