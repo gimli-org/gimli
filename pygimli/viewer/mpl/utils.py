@@ -68,6 +68,7 @@ def noShow(on=True):
         if globals()[__lastBackend__] is not None:
             matplotlib.use(globals()[__lastBackend__])
 
+
 __registeredShowPendingFigsAtExit__ = False
 
 def registerShowPendingFigsAtExit():

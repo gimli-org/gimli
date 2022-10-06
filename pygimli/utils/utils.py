@@ -10,6 +10,25 @@ import numpy as np
 
 import pygimli as pg
 
+# scooby is a soft dependency.
+try:
+    from scooby import Report as ScoobyReport
+except ImportError:
+    class ScoobyReport:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def __repr__(self):
+            message = (
+                "`Report` requires `scooby`. Install it via `pip install scooby` "
+                "or `conda install -c conda-forge scooby`."
+            )
+            return message
+
+        def to_dict(self):
+            return {}
+
+
 class ProgressBar(object):
     """Animated text-based progressbar.
 
@@ -934,3 +953,36 @@ def filterLinesByCommentStr(lines, comment_str='#'):
     for j in comment_line_idx[::-1]:
         del lines[j]
     return lines
+
+
+class Report(ScoobyReport):
+    r"""Report date, time, system, and package version information.
+
+    Use ``scooby`` to report date, time, system, and package version
+    information in any environment, either as html-table or as plain text.
+
+    Parameters
+    ----------
+    additional : {package, str}, default: None
+        Package or list of packages to add to output information (must be
+        imported beforehand or provided as string).
+
+    """
+
+    def __init__(self, additional=None, **kwargs):
+        """Initiate a scooby.Report instance."""
+
+        # Mandatory packages.
+        core = ['pygimli', 'pgcore', 'numpy', 'matplotlib']
+
+        # Optional packages.
+        optional = ['scipy', 'tqdm', 'IPython', 'meshio', 'tetgen', 'pyvista']
+
+        inp = {
+            'additional': additional,
+            'core': core,
+            'optional': optional,
+            **kwargs  # User input overwrites defaults.
+        }
+
+        super().__init__(**inp)
