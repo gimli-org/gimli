@@ -2114,7 +2114,7 @@ def _feNorm(u, mat):
 def normL2(u, mat=None, mesh=None, warn=True):
     r"""Create Lebesgue (L2) norm for finite element space.
 
-    Find the L2 Norm for a solution in the finite element space. :math:`u` exact solution
+    Find the L2 norm for a solution in the finite element space. :math:`u` exact solution,
     :math:`{\bf M}` Mass matrix, i.e., Finite element identity matrix.
 
     .. math::
@@ -2127,8 +2127,8 @@ def normL2(u, mat=None, mesh=None, warn=True):
                                \frac{(\sum M(u))^{1/2}}{(\sum M u)^{1/2}}
 
     The error for any approximated solution :math:`u_h` correlates to the L2
-    norm of 'L2Norm(u - u_h, M)'. If you like relative values, you can also
-    normalize this error with 'L2Norm(u - u_h, M) / L2Norm(u, M)*100'.
+    norm of 'normL2(u - u_h, M)'. If you like relative values, you can also
+    normalize this error with 'normL2(u - u_h, M) / normL2(u, M)*100'.
 
     Parameters
     ----------

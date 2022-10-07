@@ -116,7 +116,7 @@ ElementMatrix < double >::operator += (const ElementMatrix < double > & E){
 }
 template < > DLLEXPORT const Vector< double > &
 ElementMatrix < double >::operator[](Index row) const {
-    __MS("inuse?")
+    //__MS("inuse?")
 
     return mat_(row);
     // return mat_.row(row);
