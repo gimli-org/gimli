@@ -24,7 +24,7 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
     bc: pyvista color ['#EEEEEE']
         Background color.
     style: str['surface']
-        Possible options:"surface","wireframe","points" 
+        Possible options:"surface","wireframe","points"
     label: str
         Data to be plottet. If None the first is taken.
 
@@ -46,24 +46,24 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
     name = kwargs.pop('name', 'Mesh')
     bc = kwargs.pop('bc', '#EEEEEE') # background color
     lw = kwargs.pop('line_width', 0.1)
-    filt = kwargs.pop('filter', {}) 
+    filt = kwargs.pop('filter', {})
     dataName = kwargs.pop('label', list(mesh.cell_data.keys())[0])
 
     theme = pv.themes.DefaultTheme()
     theme.background = bc
-    
+
     # seems to be broken .. results on pure black screens on some machines
-    #theme.antialiasing = True
-    
-    theme.font.color = 'k'  
+    # theme.antialiasing = True
+
+    theme.font.color = 'k'
 
     if ax is None:
-        ax = pv.Plotter(notebook=notebook, 
+        ax = pv.Plotter(notebook=notebook,
                         theme=theme,
                         **kwargs
                         )
-    #if grid is True:
-        #implementme
+    # if grid is True:
+        # implementme
 
     ax.show_bounds(all_edges=True, minor_ticks=True)
     ax.add_axes()
@@ -71,10 +71,9 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
     if isinstance(mesh, pg.Mesh):
         mesh = pgMesh2pvMesh(mesh)
 
-
     for k, fi in filt.items():
         if k.lower() == 'clip':
-            
+
             if isinstance(mesh, pv.core.pointset.UnstructuredGrid):
                 fi['crinkle'] = fi.pop('crinkle', True)
 
@@ -83,17 +82,17 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
             pg.error('filter:', k, 'not yet implemented')
 
     _actor = ax.add_mesh(mesh,  # type: pv.UnstructuredGrid
-                         scalars=dataName, 
+                         scalars=dataName,
                          cmap=cMap,
                          color=color,
                          style=style,
                          show_edges=showMesh,
                          line_width=lw,
-                         #edge_color='white',
+                         # edge_color='white',
                          show_scalar_bar=colorBar,
                          opacity=opacity,
                          )
-    
+
     if returnActor:
         return ax, _actor
     else:
@@ -125,7 +124,7 @@ def drawModel(ax=None, mesh=None, data=None, **kwargs):
         return None
 
     if kwargs.pop('markers', False) is True:
-        ## show boundary mesh with markers
+        # show boundary mesh with markers
         data = mesh.boundaryMarkers()
         defaultCMap = pg.plt.cm.get_cmap("Set3", max(1, len(pg.unique(data))))
         dataName = 'Boundary Marker'
@@ -145,7 +144,7 @@ def drawModel(ax=None, mesh=None, data=None, **kwargs):
 
     kwargs['cMap'] = defaultCMap
     kwargs['label'] = dataName
-   
+
     return drawMesh(ax, mesh, **kwargs)
 
 
@@ -201,7 +200,8 @@ def drawSlice(ax, mesh, normal=[1, 0, 0], **kwargs):
     generate_triangles: bool, optional
     contour: bool, optional
 
-    They can be found at https://docs.pyvista.org/core/filters.html#pyvista.CompositeFilters.slice
+    They can be found at
+    https://docs.pyvista.org/core/filters.html#pyvista.CompositeFilters.slice
     """
     label = kwargs.pop('label', None)
     data = kwargs.pop('data', None)
@@ -234,7 +234,7 @@ def drawStreamLines(ax, mesh, data, label=None, radius=0.01, **kwargs):
         The plotter that should be used for visualization.
     mesh: pyvista.UnstructuredGrid|pg.Mesh [None]
         Structure to plot the streamlines in to.
-        If its a pv grid a check is performed if the data set is already contained.
+        If pv grid a check is performed if the data set is already contained.
     data: iterable [None]
         Values used for streamlining.
     label: str
@@ -265,7 +265,6 @@ def drawStreamLines(ax, mesh, data, label=None, radius=0.01, **kwargs):
         # add data to the mesh and convert to pyvista grid
         mesh = pgMesh2pvMesh(mesh, grad.T, label)
 
-
     elif isinstance(mesh, pv.UnstructuredGrid):
         if label not in mesh.point_arrays:  # conversion needed
             mesh.cell_data_to_point_data()
@@ -273,7 +272,7 @@ def drawStreamLines(ax, mesh, data, label=None, radius=0.01, **kwargs):
     if label is None:
         label = list(mesh.point_arrays.keys())[0]
 
-    #kwargs['vectors'] = label
+    # kwargs['vectors'] = label
 
     streams = mesh.streamlines(vectors=label, **kwargs)
     ax.add_mesh(streams.tube(radius=radius), show_scalar_bar=False)

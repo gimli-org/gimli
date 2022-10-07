@@ -18,7 +18,7 @@ try:
     from .mpl import drawMesh, drawModel, drawField, drawSensors, drawStreams
     from .mpl import drawSelectedMeshBoundaries
     from .mpl import addCoverageAlpha
-    from .mpl import updateAxes  # , registerShowPendingFigsAtExit
+    from .mpl import updateAxes
     from .mpl import createColorBar, updateColorBar
     from .mpl import CellBrowser
     from .mpl.colorbar import cmapFromName

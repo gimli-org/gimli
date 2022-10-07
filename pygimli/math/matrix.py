@@ -90,6 +90,65 @@ class SquaredTransposeMatrix(MatrixBase):
         return self._A.mult(self._A.transMult(x))
 
 
+class RealNumpyMatrix(MatrixBase):
+    """
+    Matrix Wrapper for for ndarrays, providing syntax for pygimli c++ core
+    algorithms. Holds reference to a real matrix, providing the correct
+    multiplication algorithms for the pygimli inversion process.
+    """
+
+    def __init__(self, mat, copy=False):
+        super().__init__()
+
+        self.ndim = 2
+
+        # print('real Matrix')
+        if isinstance(mat, str):
+            self.M = np.load(mat)
+        else:
+            if copy is True:
+                self.M = np.copy(mat)
+            else:
+                self.M = mat
+
+    def __repr__(self):
+        return self.M.__repr__()
+
+    def rows(self):
+        return np.shape(self.M)[0]
+
+    def cols(self):
+        return np.shape(self.M)[1]
+
+    def save(self, name):
+        np.save(name, self.M)
+
+    def mult(self, vector):
+        return self.M.dot(vector)
+
+    def transMult(self, vector):
+        return np.dot(vector, self.M)
+
+
+def ComplexNumpyMatrix(mat, copy=False):
+    """Wrapper for a complex-valued numpy matrix stacked vertically."""
+    return RealNumpyMatrix(np.row_stack([mat.real, mat.imag]), copy=copy)
+
+
+def NumpyMatrix(mat, copy=False):
+    """
+    Matrix Wrapper for for ndarrays, providing syntax for pygimli c++ core
+    algorithms (rows, cols, mult, transMult, save(numpy)).
+    """
+    if isinstance(mat, str):
+        mat = np.load(mat)
+
+    if isinstance(mat[0][0], complex):
+        return ComplexNumpyMatrix(mat, copy=copy)
+    else:
+        return RealNumpyMatrix(mat, copy=copy)
+
+
 class MultMatrix(MatrixBase):
     """Base Matrix class for all matrix types holding a matrix."""
 

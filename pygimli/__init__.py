@@ -34,6 +34,7 @@ from .meshtools import createGrid, interpolate
 from .solver import solve
 from .utils import boxprint, cache, cut, unique, unit, cmap, randn
 from .utils import prettify as pf
+from .utils.utils import Report
 def ppf(v): print(pf(v))
 
 from .viewer import show, wait, noShow, hold
@@ -298,10 +299,10 @@ def dur(reset=False, key=0):
 # special shortcut pg.plt with lazy evaluation
 @moduleProperty
 def _plt():
-    # import time
-    # t0 = time.time()
+    #import time
+    #t0 = time.time()
     import matplotlib.pyplot as plt
-    # print('importing plt took ', time.time() - t0)
+    #print('############### importing plt took ', time.time() - t0)
 
     from .viewer.mpl import registerShowPendingFigsAtExit, hold
     registerShowPendingFigsAtExit()

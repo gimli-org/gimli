@@ -12,14 +12,14 @@ modeling and inversion using the ERTManager.
 
 """
 ###############################################################################
-# Let us start with the governing partial differential equation of Poisson type
+# Let us start with the gouverning partial differential equation of Poisson type
 #
 # .. math::
 #
 #     \nabla\cdot(\sigma\nabla u)=-I\delta(\vec{r}-\vec{r}_{\text{s}}) \in R^3
 #
 # The source term (point electrode) is three-dimensional, but the distribution
-# of the electrical # conductivity :math:`\sigma(x,y)` should be 2D so we apply
+# of the electrical conductivity :math:`\sigma(x,y)` should be 2D so we apply
 # a Fourier cosine transform from :math:`u(x,y,z) \mapsto u(x,k,z)` with the
 # wave number :math:`k`. (:math:`D^{(a)}(u(x,y,z)) \mapsto i^{|a|}k^a u(x,z)`)
 #
@@ -27,8 +27,8 @@ modeling and inversion using the ERTManager.
 #
 #     \nabla\cdot( \sigma \nabla u ) - \sigma k^2 u
 #     &=-I\delta(\vec{r}-\vec{r}_{\text{s}}) \in R^2 \\
-#     \frac{\partial }{\partial x}\left(\cdot \sigma \frac{\partial u}{\partial x}\right) +
-#     \frac{\partial }{\partial z}\left(\cdot\sigma \frac{\partial u}{\partial z}\right) -
+#     \frac{\partial }{\partial x}\left(\sigma\frac{\partial u}{\partial x}\right) +
+#     \frac{\partial }{\partial z}\left(\sigma\frac{\partial u}{\partial z}\right) -
 #     \sigma k^2 u & =
 #     -I\delta(x-x_{\text{s}})\delta(z-z_{\text{s}}) \in R^2 \\
 #     \frac{\partial u}{\partial \vec{n}} & = 0 \quad\text{at the Surface}\quad (z=0) \\

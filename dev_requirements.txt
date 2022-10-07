@@ -19,6 +19,7 @@ panel
 
 # optional, but strongly recommended
 scipy
+scooby
 
 # useful
 ipython
