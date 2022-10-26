@@ -48,6 +48,27 @@ Or alternatively, the web-based IDE JupyterLab (https://jupyterlab.readthedocs.i
 
     conda install -c conda-forge jupyterlab
 
+pyGIMLi on Google Colab
+-----------------------
+Even though still experimental, pyGIMLi can be run on Google Colab without any
+installation on the own computer. Just create a new Notebook and install the
+condacolab package by
+
+.. code:: Python
+
+    !pip install -q condacolab
+    import condacolab
+    condacolab.install()
+
+After doing so, the kernel is automatically restarted, so  import condacolab
+again and install pygimli using mamba just as mentioned above.
+
+.. code:: Python
+
+    import condacolab
+    condacolab.check()
+    !mamba install -c gimli pygimli=1.3
+
 Testing the installation
 ------------------------
 
