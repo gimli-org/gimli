@@ -698,8 +698,7 @@ class MeshModelling(Modelling):
         self.setDefaultBackground()
 
     def setDefaultBackground(self):
-        """
-        """
+        """Set the lowest region to background if several exist."""
         regionIds = self.regionManager().regionIdxs()
         pg.info("Found {} regions.".format(len(regionIds)))
         if len(regionIds) > 1:
@@ -757,7 +756,6 @@ class PetroModelling(MeshModelling):
 
     :math:`p` be the petrophysical model, e.g., porosity, saturation, ...
     :math:`m` be the geophysical model, e.g., slowness, resistivity, ...
-
     """
 
     def __init__(self, fop, petro, **kwargs):
