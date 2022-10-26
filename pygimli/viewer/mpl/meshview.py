@@ -433,8 +433,8 @@ def drawSelectedMeshBoundaries(ax, boundaries, color=None, linewidth=1.0,
         lines.append(list(zip([bound.node(0).x(), bound.node(1).x()],
                               [bound.node(0).y(), bound.node(1).y()])))
 
-    lineCollection = mpl.collections.LineCollection(lines, 
-                                                    antialiaseds=drawAA, 
+    lineCollection = mpl.collections.LineCollection(lines,
+                                                    antialiaseds=drawAA,
                                                     **kwargs)
 
     if color is None:
@@ -1346,7 +1346,7 @@ def drawSensors(ax, sensors, diam=None, coords=None, **kwargs):
         coords = [0, 2]
 
         if len(sensors[0]) == 2 or \
-            not pg.core.zVari(sensors) and sensors[0][2] == 0.0:
+                not pg.core.zVari(sensors) and sensors[0][2] == 0.0:
             coords = [0, 1]
 
     eCircles = []
