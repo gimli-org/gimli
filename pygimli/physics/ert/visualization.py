@@ -256,7 +256,7 @@ def midconfERT(data, ind=None, rnum=1, circular=False, switch=False):
     if switch:
         mI, mO = mO, mI
 
-    if len(ux) * 2 > data.sensorCount():  # 2D with topography case
+    if len(ux) * 2 > data.sensorCount() and not circular:  # 2D with topography case
         dx = np.array(pg.utils.diff(pg.utils.cumDist(data.sensorPositions())))
         dxM = pg.mean(dx)
         if min(pg.y(data)) != max(pg.y(data)) or \

@@ -30,6 +30,13 @@ embedded and docstitle %} {%- set titlesuffix = " &mdash; "|safe + docstitle|e %
 {%- endmacro %}
 
 {%- macro css() %}
+    {%- for css in css_files %}
+    {%- if css|attr("filename") %}
+    {{ css_tag(css) }}
+    {%- else %}
+    <link rel="stylesheet" href="{{ pathto(css, 1)|e }}" type="text/css" />
+    {%- endif %}
+    {%- endfor %}
     <link rel="stylesheet" href="{{ pathto('_static/' + style, 1)|e }}" type="text/css" />
     <link href="https://fonts.googleapis.com/css?family=Inconsolata:400,700|Roboto:400,500,700|Fira+Sans:200,400,500" rel="stylesheet">
     <link rel="stylesheet" href="{{ pathto('_static/', 1) }}bootstrap/css/bootstrap.min.css">

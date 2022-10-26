@@ -516,7 +516,7 @@ def drawBoundaryMarkers(ax, mesh, clipBoundaryMarkers=False, **kwargs):
     --------
     >>> import pygimli as pg
     >>> import pygimli.meshtools as mt
-    >>> c0 = mt.createCircle(pos=(0.0, 0.0), radius=1, segments=4)
+    >>> c0 = mt.createCircle(pos=(0.0, 0.0), radius=1, nSegments=4)
     >>> l0 = mt.createPolygon([[-0.5, 0.0], [.5, 0.0]], boundaryMarker=2)
     >>> l1 = mt.createPolygon([[-0.25, -0.25], [0.0, -0.5], [0.25, -0.25]],
     ...                       interpolate='spline', addNodes=4,
