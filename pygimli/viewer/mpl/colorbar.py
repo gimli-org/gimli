@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 """Define special colorbar behavior."""
 import numpy as np
+from matplotlib.colors import LogNorm, Normalize
+from matplotlib.colorbar import ColorbarBase
 
 from packaging import version
 
@@ -169,7 +171,7 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
         Colorbar name.
     """
     import matplotlib as mpl
-        # print('update colorbar: ', cMin, cMax, cMap,
+    # print('update colorbar: ', cMin, cMax, cMap,
     #         logScale, ', nCols:', nCols, nLevs, ', label:', label, levels)
 
     if gci is not None:
@@ -272,7 +274,7 @@ def createColorBar(gci, orientation='horizontal', size=0.2, pad=None,
                 ax = gci.axes
             elif hasattr(gci, 'get_axes'):
                 ax = gci.get_axes()
-            elif hasattr(gci, 'ax'): # deprecated since MPL 3.3
+            elif hasattr(gci, 'ax'):  # deprecated since MPL 3.3
                 ax = gci.ax
         except:
             pass
@@ -305,7 +307,7 @@ def createColorBar(gci, orientation='horizontal', size=0.2, pad=None,
 
         cbar = cbarTarget.colorbar(gci, cax=cax, orientation=orientation)
 
-        #store the cbar into the axes to reuse it on the next call
+        # store the cbar into the axes to reuse it on the next call
         ax.__cBar__ = cbar
 
         updateColorBar(cbar, **kwargs)
@@ -350,16 +352,16 @@ def createColorBarOnly(cMin=1, cMax=100, logScale=False, cMap=None, nLevs=5,
 
     norm = None
     if cMin > 0 and logScale is True:
-        norm = mpl.colors.LogNorm(vmin=cMin, vmax=cMax)
+        norm = LogNorm(vmin=cMin, vmax=cMax)
     else:
-        norm = plt.Normalize(vmin=cMin, vmax=cMax)
+        norm = Normalize(vmin=cMin, vmax=cMax)
 
     cmap = cmapFromName(cMap)
     kwargs.pop('colorBar', False)  # often False for multiple plots
     aspect = kwargs.pop('aspect', None)
     levels = kwargs.pop('levels', None)
-    cbar = mpl.colorbar.ColorbarBase(ax, norm=norm, cmap=cmap,
-                                     orientation=orientation, **kwargs)
+    cbar = ColorbarBase(ax, norm=norm, cmap=cmap,
+                        orientation=orientation, **kwargs)
 
     #        cbar.labelpad = -20
     #        cbar.ax.yaxis.set_label_position('left')
@@ -384,7 +386,7 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5, levels=None):
     """Set colorbar levels given a number of levels and min/max values."""
     import matplotlib as mpl
     import matplotlib.ticker as ticker
-    
+
     if cMin is None:
         if hasattr(cbar, 'mappable'):
             cMin = cbar.mappable.get_clim()[0]
@@ -407,7 +409,7 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5, levels=None):
     elif hasattr(cbar, 'norm'):
         norm = cbar.norm
 
-    #norm.clip = True
+    # norm.clip = True
 
     if levels is not None:
         cbarLevels = levels
@@ -415,12 +417,12 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5, levels=None):
         if isinstance(norm, mpl.colors.LogNorm):
             cbarLevels = np.logspace(np.log10(cMin), np.log10(cMax), nLevs)
         else:
-            #if cMax < cMin:
+            # if cMax < cMin:
             cbarLevels = np.linspace(cMin, cMax, nLevs)
 
     # FIXME: [10.1, 10.2, 10.3] mapped to [10 10 10]
 
-    if np.all(np.array(cbarLevels) < 1e-2):
+    if np.all(np.array(cbarLevels) < 1e-2):  # roundValue not used at all!
         pg.debug("All values smaller than 1e-4, avoiding additional rounding.")
         roundValue = False
     else:
@@ -431,7 +433,6 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5, levels=None):
     #     cbarLevelsString.append(prettyFloat(i, roundValue))
 
     if hasattr(cbar, 'mappable'):
-        #cbar.set_clim(cMin, cMax)
         cbar.mappable.set_clim(vmin=cMin, vmax=cMax)
 
     cbar.set_ticks(cbarLevels)
@@ -466,12 +467,12 @@ def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=None,
     if mappable.get_cmap() is not None:
         try:
             import copy
-            ## from mpl 3.3
-            #cm_ = copy.copy(mappable.get_cmap()).set_bad([1.0, 1.0, 1.0, 0.0])
-            #mappable.set_cmap(cm_)
+            # from mpl 3.3
+            # cm_ = copy.copy(mappable.get_cmap()).set_bad([1.0, 1.0, 1.0, 0.])
+            # mappable.set_cmap(cm_)
             pass
         except:
-            ## old prior mpl 3.3
+            # old prior mpl 3.3  # not needed anymore
             mappable.get_cmap().set_bad([1.0, 1.0, 1.0, 0.0])
 
     if cMin is None:
@@ -496,7 +497,7 @@ def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=None,
     elif logScale is False:
         mappable.set_norm(mpl.colors.Normalize(vmin=cMin, vmax=cMax))
 
-    #pg._g(oldLog, logScale, cMin, cMax, mappable.norm, data)
+    # pg._g(oldLog, logScale, cMin, cMax, mappable.norm, data)
     mappable.set_array(data)
     mappable.set_clim(cMin, cMax)
 

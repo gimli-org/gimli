@@ -79,9 +79,9 @@ def showERTData(data, vals=None, **kwargs):
         else:
             pg.critical('field not in data container: ', vals)
 
-    kwargs['cMap'] = kwargs.pop('cMap', pg.utils.cMap('rhoa'))
-    kwargs['label'] = kwargs.pop('label', pg.utils.unit('rhoa'))
-    kwargs['logScale'] = kwargs.pop('logScale', min(vals) > 0.0)
+    kwargs.setdefault('cMap', pg.utils.cMap('rhoa'))  # better vals?
+    kwargs.setdefault('label', pg.utils.unit('rhoa'))
+    kwargs.setdefault('logScale', min(vals) > 0.0)
 
     try:
         ax, cbar = drawERTData(ax, data, vals=vals, **kwargs)

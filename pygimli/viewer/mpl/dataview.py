@@ -103,7 +103,7 @@ def drawValMapPatches(ax, vals, xVec=None, yVec=None, dx=1, dy=None, **kwargs):
         assume circular (cyclic) positions
     """
     from matplotlib.collections import PatchCollection
-    from matplotlib.colors import LogNorm, Normalize
+    # from matplotlib.colors import LogNorm, Normalize
     from matplotlib.patches import Rectangle, Wedge
 
     recs = []
