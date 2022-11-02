@@ -3,9 +3,10 @@
 import sys
 
 import numpy as np
-import matplotlib.pyplot as plt
 
 import pygimli as pg
+from pygimli import plt
+
 import pygimli.meshtools as mt
 
 
@@ -76,6 +77,7 @@ def testColorbar():
     ax, cbar = pg.show(grid, data=pg.x(grid.cellCenter())+5., 
                        label='log x',
                        ax=axs[1][0], showMesh=True, cMap='Paired', logScale=True)
+
     pg.viewer.mpl.setMappableData(cbar.mappable, pg.x(grid.cellCenter()))
 
     ax, cbar = pg.show(grid, data=pg.x(grid.cellCenter()), logScale=True,
@@ -123,8 +125,6 @@ def testColorbar():
             orientation="horizontal",
             colorBar=True)
             
-
-
 def testColRange():
     n = 5
     mesh = pg.createGrid(n, n)
@@ -206,6 +206,24 @@ def testCBarLevels():
     pg.show(mesh, node_data, ax=axs[1, 1], colorBar=True, nLevs=7)
 
 
+def testColorBarFalse():
+    from pygimli.physics import ert
+    data = ert.createData(6, "dd")
+    
+    rho = np.arange(data.size())
+    fig, ax = pg.plt.subplots(ncols=3, nrows=2)
+
+    mesh = pg.createGrid(3,2)
+    pg.show(mesh, rho, ax=ax[0][0], colorBar=True, cMap="plasma")
+    pg.show(mesh, rho, ax=ax[0][1], colorBar=False, cMap="plasma")
+    pg.show(mesh, rho, ax=ax[0][2], colorBar=False, cMap="plasma", cMin=1, cMax=2)
+
+
+    ert.show(data, rho, ax=ax[1][0], colorBar=True, cMap="plasma")
+    ert.show(data, rho, ax=ax[1][1], colorBar=False, cMap="plasma")
+    ert.show(data, rho, ax=ax[1][2], colorBar=False, cMap="plasma", cMin=1, cMax=2)
+
+
 def testShowPV():
     """
         import pygimli as pg
@@ -282,10 +300,11 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         locals()[sys.argv[1]]()
     else:
-        # testShowVariants()
-        #testColorbar()
-        testShowPV()
+        #testShowVariants()
+        #testColorbar() 
+        testColorBarFalse()
+        #testShowPV() 
         #testCBarLevels()
-        # testColRange()
+        #testColRange()
         # testCoverage()
     

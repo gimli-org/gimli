@@ -81,9 +81,8 @@ def showValMapPatches(vals, xVec=None, yVec=None, dx=1, dy=None, **kwargs):
     gci, ymap = drawValMapPatches(ax, vals, xVec=xVec, yVec=yVec, dx=dx, dy=dy,
                                   **kwargs)
 
-    cbar = None
-    if kwargs.pop('colorBar', True):
-        cbar = pg.viewer.mpl.createColorBar(gci, **kwargs)
+    cbar = pg.viewer.mpl.createColorBar(gci, **kwargs, 
+                            onlyColorSet=not kwargs.pop('colorBar', True))
 
     return ax, cbar, ymap
 

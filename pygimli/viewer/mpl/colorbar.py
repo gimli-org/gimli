@@ -169,16 +169,21 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
         Colorbar name.
     """
     import matplotlib as mpl
-        # print('update colorbar: ', cMin, cMax, cMap,
-    #         logScale, ', nCols:', nCols, nLevs, ', label:', label, levels)
+    # pg._g('update colorbar: ', cbar, gci, cMin, cMax, cMap,
+    #        logScale, ', nCols:', nCols, nLevs, ', label:', label, levels)
 
     if gci is not None:
         if min(gci.get_array()) < 1e12:
             norm = mpl.colors.Normalize(vmin=min(gci.get_array()),
                                         vmax=max(gci.get_array()))
             gci.set_norm(norm)
-        cbar.on_mappable_changed(gci)
-        # cbar.update_normal(gci)
+
+        if cbar is not None:
+            cbar.on_mappable_changed(gci)
+            # cbar.update_normal(gci)
+        mappable = gci
+    else:
+        mappable = cbar.mappable
 
     if levels is not None:
         nLevs = len(levels)
@@ -195,8 +200,8 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
             # cMap.set_under('yellow')
             # cMap.set_over('cyan')
 
-        # cbar.mappable.get_norm().clip=False
-        cbar.mappable.set_cmap(cMap)
+        # mappable.get_norm().clip=False
+        mappable.set_cmap(cMap)
 
     needLevelUpdate = False
 
@@ -212,26 +217,29 @@ def updateColorBar(cbar, gci=None, cMin=None, cMax=None, cMap=None,
         needLevelUpdate = True
 
         if cMin is None:
-            cMin = cbar.mappable.get_clim()[0]
+            cMin = mappable.get_clim()[0]
         if cMax is None:
-            cMax = cbar.mappable.get_clim()[1]
+            cMax = mappable.get_clim()[1]
 
         if logScale:
             if cMin < 1e-12:
                 cMin = min(filter(lambda _x: _x > 0.0,
-                                  cbar.mappable.get_array()))
+                                  mappable.get_array()))
 
             norm = mpl.colors.LogNorm(vmin=cMin, vmax=cMax)
         else:
             norm = mpl.colors.Normalize(vmin=cMin, vmax=cMax)
 
-        cbar.mappable.set_norm(norm)
+        mappable.set_norm(norm)
 
     if needLevelUpdate:
-        setCbarLevels(cbar, cMin, cMax, nLevs, levels)
-
-    if label is not None:
-        cbar.set_label(label)
+        if cbar is not None:
+            setCbarLevels(cbar, cMin, cMax, nLevs, levels)
+            if label is not None:
+                cbar.set_label(label)
+        else:
+            setCbarLevels(mappable, cMin, cMax, nLevs, levels)
+    
 
     return cbar
 
@@ -255,7 +263,12 @@ def createColorBar(gci, orientation='horizontal', size=0.2, pad=None,
     pad: float
 
     **kwargs :
+        onlyColorSet: bool (False)
+            If set to true, only the gci aka mappable values are changed and no
+            colorBar will be created.
+
         Forwarded to updateColorBar
+
     """
     from mpl_toolkits.axes_grid1 import make_axes_locatable
     cbarTarget = pg.plt
@@ -287,28 +300,34 @@ def createColorBar(gci, orientation='horizontal', size=0.2, pad=None,
 
     if hasattr(ax, '__cBar__'):
         cbar = ax.__cBar__
-        pg._y('update', kwargs)
+        # pg._y('update', kwargs)
         updateColorBar(cbar, gci, **kwargs)
     else:
-        divider = make_axes_locatable(ax)
 
-        if divider:
-            if orientation == 'horizontal':
-                if pad is None:
-                    pad = 0.5
-                cax = divider.append_axes("bottom", size=size, pad=pad)
+        if kwargs.pop('onlyColorSet', False) == False:
+            # pg._y(kwargs)
 
-            else:
-                if pad is None:
-                    pad = 0.1
-                cax = divider.append_axes("right", size=size, pad=pad)
+            divider = make_axes_locatable(ax)
 
-        cbar = cbarTarget.colorbar(gci, cax=cax, orientation=orientation)
+            if divider:
+                if orientation == 'horizontal':
+                    if pad is None:
+                        pad = 0.5
+                    cax = divider.append_axes("bottom", size=size, pad=pad)
 
-        #store the cbar into the axes to reuse it on the next call
-        ax.__cBar__ = cbar
+                else:
+                    if pad is None:
+                        pad = 0.1
+                    cax = divider.append_axes("right", size=size, pad=pad)
 
-        updateColorBar(cbar, **kwargs)
+            cbar = cbarTarget.colorbar(gci, cax=cax, orientation=orientation)
+
+            #store the cbar into the axes to reuse it on the next call
+            ax.__cBar__ = cbar
+            updateColorBar(cbar, **kwargs)
+        else:
+            updateColorBar(None, gci=gci, **kwargs)
+            
 
     return cbar
 
@@ -381,31 +400,33 @@ def createColorBarOnly(cMin=1, cMax=100, logScale=False, cMap=None, nLevs=5,
 
 
 def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5, levels=None):
-    """Set colorbar levels given a number of levels and min/max values."""
+    """Set colorbar levels given a number of levels and min/max values.
+    """
     import matplotlib as mpl
     import matplotlib.ticker as ticker
     
-    if cMin is None:
-        if hasattr(cbar, 'mappable'):
-            cMin = cbar.mappable.get_clim()[0]
-        else:
-            pg.error('no cbar mappable. Cannot find cmin')
-    if cMax is None:
-        if hasattr(cbar, 'mappable'):
-            cMax = cbar.mappable.get_clim()[1]
-        else:
-            pg.error('no cbar mappable. Cannot find cmax')
+    if hasattr(cbar, 'mappable'):
+        mappable = cbar.mappable
+    else:
+        # cbar might be a mappable itself
+        mappable = cbar
 
+    if cMin is None:
+        cMin = mappable.get_clim()[0]
+        
+    if cMax is None:
+        cMax = mappable.get_clim()[1]
+        
     if cMin == cMax:
 
         cMin *= 0.999
         cMax *= 1.001
 
     norm = None
-    if hasattr(cbar, 'mappable'):
-        norm = cbar.mappable.norm
-    elif hasattr(cbar, 'norm'):
-        norm = cbar.norm
+    if hasattr(mappable, 'mappable'):
+        norm = mappable.norm
+    elif hasattr(mappable, 'norm'):
+        norm = mappable.norm
 
     #norm.clip = True
 
@@ -430,28 +451,29 @@ def setCbarLevels(cbar, cMin=None, cMax=None, nLevs=5, levels=None):
     # for i in cbarLevels:
     #     cbarLevelsString.append(prettyFloat(i, roundValue))
 
-    if hasattr(cbar, 'mappable'):
-        #cbar.set_clim(cMin, cMax)
-        cbar.mappable.set_clim(vmin=cMin, vmax=cMax)
+    mappable.set_clim(vmin=cMin, vmax=cMax)
 
-    cbar.set_ticks(cbarLevels)
-    # cbar.set_ticklabels(cbarLevelsString)
-    cbar.draw_all()
 
-    # necessary since mpl 3.0
-    cbar.ax.minorticks_off()
+    if hasattr(cbar, 'set_ticks'):
+        # cbar is a ColorBar with ticks
+        cbar.set_ticks(cbarLevels)
+        # cbar.set_ticklabels(cbarLevelsString)
+        cbar.draw_all()
 
-    @ticker.FuncFormatter
-    def pfMajorFormatter(x, pos):
-        return prettyFloat(x) % x
+        # necessary since mpl 3.0
+        cbar.ax.minorticks_off()
 
-    try:  # mpl 3.5
-        if cbar.orientation == 'horizontal':
-            cbar.ax.xaxis.set_major_formatter(pfMajorFormatter)
-        else:
-            cbar.ax.yaxis.set_major_formatter(pfMajorFormatter)
-    except Exception as e:
-        pg.warn(e)
+        @ticker.FuncFormatter
+        def pfMajorFormatter(x, pos):
+            return prettyFloat(x) % x
+
+        try:  # mpl 3.5
+            if cbar.orientation == 'horizontal':
+                cbar.ax.xaxis.set_major_formatter(pfMajorFormatter)
+            else:
+                cbar.ax.yaxis.set_major_formatter(pfMajorFormatter)
+        except Exception as e:
+            pg.warn(e)
 
 
 def setMappableData(mappable, dataIn, cMin=None, cMax=None, logScale=None,
