@@ -145,13 +145,13 @@ ElementMatrix < double >::col(Index i) const {
 }
 
 template < > DLLEXPORT void
-ElementMatrix < double >::setMatXI(Index i, const SmallMatrix & m){
+ElementMatrix < double >::setMatXI(Index i, const RSmallMatrix & m){
     ASSERT_RANGE(i, 0, this->_matX.size())
     //this->_integrated = false; ## better here but lead to problems until integration is marked correctly for ref imnpl.
     this->_matX[i] = m;
 }
 // template < > DLLEXPORT void
-// ElementMatrix < double >::setMatXI_RM(Index i, const SmallMatrix  & m){
+// ElementMatrix < double >::setMatXI_RM(Index i, const RSmallMatrix  & m){
 // // #if USE_EIGEN3
 // //     toEigenMatrix(m, this->_matX[i]);
 // // #else
@@ -159,7 +159,7 @@ ElementMatrix < double >::setMatXI(Index i, const SmallMatrix & m){
 // // #endif
 // }
 // template < > DLLEXPORT void
-// ElementMatrix < double >::setMat_RM(const SmallMatrix  & m){
+// ElementMatrix < double >::setMat_RM(const RSmallMatrix  & m){
 // // #if USE_EIGEN3
 // // __MS(m)
 //     // toEigenMatrix(m, this->mat_);
@@ -168,12 +168,12 @@ ElementMatrix < double >::setMatXI(Index i, const SmallMatrix & m){
 //     return this->setMat(m);
 // // #endif
 // }
-// template < > DLLEXPORT SmallMatrix 
+// template < > DLLEXPORT RSmallMatrix 
 // ElementMatrix < double >::mat_RM() const {
 //     // __MS(this->mat().rows(), this->mat().cols() )
 // // #if USE_EIGEN3
-// //     SmallMatrix  r;
-// //     toSmallMatrix (this->mat(), r);
+// //     RSmallMatrix  r;
+// //     toRSmallMatrix (this->mat(), r);
 // //     return r;
 // // #else
 //     return this->mat();
@@ -213,7 +213,7 @@ ElementMatrix < double >::u(const MeshEntity & ent,
         uint nRules = w.size();
 
         RVector u(nVerts);
-        SmallMatrix  N(nVerts, nRules);
+        RSmallMatrix  N(nVerts, nRules);
 
         RVector tmp;
         for (uint i = 0; i < nRules; i ++){
@@ -263,23 +263,28 @@ ElementMatrix < double > & ElementMatrix < double >::u2(const MeshEntity & ent,
                                                         bool verbose){
 
     uint nVerts = ent.nodeCount();
-    std::map< uint, SmallMatrix >::const_iterator it = u2Cache_.find(ent.rtti());
+    std::map< uint, RSmallMatrix >::const_iterator it = u2Cache_.find(ent.rtti());
+    // const auto &u2Cache = u2Cache_;
+    // auto it = u2Cache.find(ent.rtti());
 
     if (it == u2Cache_.end()) {
-        uint nRules = w.size();
+        // __M
+        Index nRules = w.size();
 
-        SmallMatrix  u2(nVerts, nVerts);
-        SmallMatrix  N(nVerts, nRules);
+        RSmallMatrix  u2(nVerts, nVerts);
+        RSmallMatrix  N(nVerts, nRules);
 
         RVector tmp;
-        for (uint i = 0; i < nRules; i ++){
+        for (Index i = 0; i < nRules; i ++){
             tmp = ent.N(x[i]);
             N.setCol(i, tmp);
         }
+        double t;
         for (uint i = 0; i < nVerts; i ++){
             for (uint j = i; j < nVerts; j ++){
-                u2[i][j] = sum(w * N[j] * N[i]);
-                u2[j][i] = u2[i][j];
+                t = sum(w * N[j] * N[i]);
+                u2[i][j] = t;
+                u2[j][i] = t;
             }
         }
         u2Cache_[ent.rtti()] = u2;
@@ -293,7 +298,6 @@ ElementMatrix < double > & ElementMatrix < double >::u2(const MeshEntity & ent,
 
     for (Index i = 0; i < nVerts; i ++){
         for (Index j = 0; j < nVerts; j ++){
-
             mat_(i, j) = A * it->second(i,j);
         }
     }
@@ -730,7 +734,7 @@ ElementMatrix < double > & ElementMatrix < double >::gradU(const Cell & cell,
 
 template < > DLLEXPORT
 RVector ElementMatrix < double >::stress(const MeshEntity & ent,
-                                         const SmallMatrix  & C,
+                                         const RSmallMatrix & C,
                                          const RVector & u, bool voigtNotation){
     const RVector * w = 0;
     const PosVector * x = 0;
@@ -1575,7 +1579,7 @@ ElementMatrix < double > & ElementMatrix < double >::pot(
 
     _matX.resize(nRules);
 
-    SmallMatrix  N(nRules, nVerts);
+    RSmallMatrix  N(nRules, nVerts);
 
     for (Index i = 0; i < nRules; i ++ ){
         // transpose might be better?? check
@@ -1904,9 +1908,9 @@ ElementMatrix < double >::trace() const {
     return 0;
 }
 
-template < > DLLEXPORT SmallMatrix 
+template < > DLLEXPORT RSmallMatrix 
 ElementMatrix < double >::traceX() const {
-    SmallMatrix  ret(_matX.size());
+    RSmallMatrix  ret(_matX.size());
     Index i = 0;
     for (auto & m: _matX){
         if (m.size() == 4){
@@ -1944,6 +1948,12 @@ void dot(const ElementMatrix < double > & A,
          double b,
          ElementMatrix < double > & C){
 
+
+    if (A.isIntegrated() && B.isIntegrated()){
+        // shortcut for const per cell cases
+        //THROW_TO_IMPL
+    }
+
     bool verbose = false;
     _prepDot(A, B, C);
 
@@ -1961,9 +1971,9 @@ void dot(const ElementMatrix < double > & A,
     for (Index r = 0; r < nRules; r++){
         if (r > 0) beta = 1.0;
 
-        const SmallMatrix & Ai = A.matX()[r];
-        const SmallMatrix & Bi = B.matX()[r];
-        SmallMatrix & Ci = (*C.pMatX())[r];
+        const RSmallMatrix & Ai = A.matX()[r];
+        const RSmallMatrix & Bi = B.matX()[r];
+        RSmallMatrix & Ci = (*C.pMatX())[r];
 
         double wS = w[r] * A.entity()->size();
 
@@ -1979,7 +1989,7 @@ void dot(const ElementMatrix < double > & A,
             //
             // !! compare the following with the working
             //
-            // SmallMatrix  sA(1, Ai.cols());
+            // RSmallMatrix  sA(1, Ai.cols());
             // sA[0] += Ai[0]; // v_x/dx
             // if (A.entity()->dim() == 2){
             //     ASSERT_VEC_SIZE(Ai, 2*2)
@@ -2004,12 +2014,12 @@ void dot(const ElementMatrix < double > & A,
             }
 
             // __MS(ids)
-            // SmallMatrix  Aii(Ai[0]);
+            // RSmallMatrix  Aii(Ai[0]);
             // for (Index i = 1; i < ids.size(); i ++){
             //     Aii += Ai[ids[i]];
             // }
             // double bi = 0;
-            SmallMatrix Aii(1, Ai.cols());
+            RSmallMatrix Aii(1, Ai.cols());
             Aii.row(0) = Ai.row(0);
 
             for (Index i = 1; i < ids.size(); i ++){
@@ -2024,7 +2034,7 @@ void dot(const ElementMatrix < double > & A,
                 // THROW_TO_IMPL
 
         } else if (B.isDiv() || (Bi.rows() > 1 && Ai.rows() == 1)){
-            // SmallMatrix  sB(1, Bi.cols());
+            // RSmallMatrix  sB(1, Bi.cols());
             // sB[0] += Bi[0]; // v_x/dx
             // if (B.entity()->dim() == 2){
             //     ASSERT_VEC_SIZE(Bi, 2*2)
@@ -2049,8 +2059,8 @@ void dot(const ElementMatrix < double > & A,
             }
 
             // __MS(ids)
-            // SmallMatrix Bii(Bi.row(0));
-            SmallMatrix Bii(1, Bi.cols());
+            // RSmallMatrix Bii(Bi.row(0));
+            RSmallMatrix Bii(1, Bi.cols());
             Bii.row(0) = Bi.row(0);
 
             for (Index i = 1; i < ids.size(); i ++){
@@ -2062,7 +2072,7 @@ void dot(const ElementMatrix < double > & A,
             // for (auto i: ids){
             //     // __MS(i)
             //     if (i > 0) bi = 1.0;
-            //     SmallMatrix  Bii(1, Bi[i].size());
+            //     RSmallMatrix  Bii(1, Bi[i].size());
             //     Bii[0] = Bi[i];
             //     matTransMult(Ai, Bii, Ci, b, bi);
             // }
@@ -2109,7 +2119,7 @@ void dot(const ElementMatrix < double > & A,
 }
 void dot(const ElementMatrix < double > & A,
          const ElementMatrix < double > & B,
-         const SmallMatrix  & c,
+         const RSmallMatrix  & c,
          ElementMatrix < double > & C){
 // __M
     _prepDot(A, B, C);
@@ -2126,16 +2136,16 @@ void dot(const ElementMatrix < double > & A,
     const RVector &w = *A.w();
     (*C.pMat()) *= 0.0; // needed because matMult allways adds
 
-    SmallMatrix AtC;
+    RSmallMatrix AtC;
 
     //** mat = sum A_i.T * C_i * B_i
     // log(Info, "A:(", A.rows(), ",", A.cols(), ")",
     //           "B:(", B.rows(), ",", B.cols(), ")");
 // #if USE_EIGEN3
-//     SmallMatrix ce;
+//     RSmallMatrix ce;
 //     toEigenMatrix(c, ce);
 // #else 
-    const SmallMatrix &ce = c;
+    const RSmallMatrix &ce = c;
 // #endif
 
     // double beta = 0.0;
@@ -2143,9 +2153,9 @@ void dot(const ElementMatrix < double > & A,
     for (Index i = 0; i < w.size(); i ++ ){
         // if (i > 0) beta = 1.0;
 
-        const SmallMatrix & Ai = A.matX()[i];
-        const SmallMatrix & Bi = B.matX()[i];
-        SmallMatrix & Ci = (*C.pMatX())[i];
+        const RSmallMatrix & Ai = A.matX()[i];
+        const RSmallMatrix & Bi = B.matX()[i];
+        RSmallMatrix & Ci = (*C.pMatX())[i];
         double wS = w[i] * A.entity()->size();
 
         AtC *= 0.0; // needed because matMult allways adds
@@ -2185,7 +2195,7 @@ THROW_TO_IMPL
 }
 void dot(const ElementMatrix < double > & A,
          const ElementMatrix < double > & B,
-         const std::vector < SmallMatrix  > & c,
+         const std::vector < RSmallMatrix  > & c,
          ElementMatrix < double > & C){
 THROW_TO_IMPL
 }
@@ -2225,8 +2235,8 @@ DEFINE_DOT_MULT_WITH_RETURN(double)
 DEFINE_DOT_MULT_WITH_RETURN(const RVector &)
 DEFINE_DOT_MULT_WITH_RETURN(const Pos &)
 DEFINE_DOT_MULT_WITH_RETURN(const PosVector &)
-DEFINE_DOT_MULT_WITH_RETURN(const SmallMatrix  &)
-DEFINE_DOT_MULT_WITH_RETURN(const std::vector < SmallMatrix  > &)
+DEFINE_DOT_MULT_WITH_RETURN(const RSmallMatrix  &)
+DEFINE_DOT_MULT_WITH_RETURN(const std::vector < RSmallMatrix  > &)
 DEFINE_DOT_MULT_WITH_RETURN(const FEAFunction &)
 
 #undef DEFINE_DOT_MULT_WITH_RETURN
@@ -2240,7 +2250,7 @@ void mult(const ElementMatrix < double > & A, double f,
     Index nRules(w.size());
 
     for (Index r = 0; r < nRules; r++){
-        SmallMatrix & iC = (*C.pMatX())[r];
+        RSmallMatrix & iC = (*C.pMatX())[r];
 
         for (Index k = 0; k < iC.rows(); k ++){
             iC.row(k) *= f;
@@ -2261,7 +2271,7 @@ void mult(const ElementMatrix < double > & A, const Pos & f,
     Index nRules(x.size());
 
     for (Index r = 0; r < nRules; r++){
-        SmallMatrix & iC = (*C.pMatX())[r];
+        RSmallMatrix & iC = (*C.pMatX())[r];
 
         for (Index k = 0; k < iC.rows(); k ++){
             iC.row(k) *= f[k];
@@ -2283,7 +2293,7 @@ void mult(const ElementMatrix < double > & A, const RVector & b,
         //** const scalar scale of matrix components
         
         for (Index r = 0; r < nRules; r++){
-            SmallMatrix & iC = (*C.pMatX())[r];
+            RSmallMatrix & iC = (*C.pMatX())[r];
             // print("iC:", iC);
             for (Index k = 0; k < iC.rows(); k ++){
                 // print('r', r, 'k', k, mr(k), b[r]);
@@ -2300,7 +2310,7 @@ void mult(const ElementMatrix < double > & A, const RVector & b,
     ASSERT_VEC_SIZE(C.matX(), nRules)
 
     for (Index r = 0; r < nRules; r++){
-        SmallMatrix & mr = (*C.pMatX())[r];
+        RSmallMatrix & mr = (*C.pMatX())[r];
         // print("iC:", mr);
         for (Index k = 0; k < mr.rows(); k ++){
             // print('r', r, 'k', k, mr(k), b[r]);
@@ -2324,7 +2334,7 @@ void mult(const ElementMatrix < double > & A, const PosVector & f,
     ASSERT_VEC_SIZE(C.matX(), nRules)
 
     for (Index r = 0; r < nRules; r++){
-        SmallMatrix & iC = (*C.pMatX())[r];
+        RSmallMatrix & iC = (*C.pMatX())[r];
         for (Index k = 0; k < iC.rows(); k ++){
             // __MS(r << " " << k << " " << b[r][k])
             iC.row(k) *= f[r][k];
@@ -2334,7 +2344,7 @@ void mult(const ElementMatrix < double > & A, const PosVector & f,
     C.integrate();
 }
 // constant Matrix
-void mult(const ElementMatrix < double > & A, const SmallMatrix  &  b,
+void mult(const ElementMatrix < double > & A, const RSmallMatrix  &  b,
           ElementMatrix < double > & C){
 
     if (b.rows()*b.cols() == A.cols()){
@@ -2358,8 +2368,8 @@ void mult(const ElementMatrix < double > & A, const SmallMatrix  &  b,
         //** RVector per quadrature 
 
         for (Index i = 0; i < nRules; i++){
-            SmallMatrix & Ci = (*C.pMatX())[i];
-            const SmallMatrix & Ai = A.matX()[i];
+            RSmallMatrix & Ci = (*C.pMatX())[i];
+            const RSmallMatrix & Ai = A.matX()[i];
             Ci = Ai;
             Ci *= b(i);
         }
@@ -2377,7 +2387,7 @@ void mult(const ElementMatrix < double > & A, const SmallMatrix  &  b,
     // __MS(b.rows(), b.cols())
     // __MS(C.rows(), C.cols())
 // #if USE_EIGEN3
-//         SmallMatrix be;
+//         RSmallMatrix be;
 //         toEigenMatrix(b, be);
 // #endif
 
@@ -2385,8 +2395,8 @@ void mult(const ElementMatrix < double > & A, const SmallMatrix  &  b,
         for (Index i = 0; i < nRules; i++){
             if (i > 0) beta = 1.0;
 
-            SmallMatrix & Ci = (*C.pMatX())[i];
-            const SmallMatrix & Ai = A.matX()[i];
+            RSmallMatrix & Ci = (*C.pMatX())[i];
+            const RSmallMatrix & Ai = A.matX()[i];
             // A.T * C
             Ci *= 0.0; // test and optimize me with C creation
             //matTransMult(Ai, b, Ci, 1.0, beta);
@@ -2402,7 +2412,7 @@ void mult(const ElementMatrix < double > & A, const SmallMatrix  &  b,
 }
 
 // matrix per quadrature
-void mult(const ElementMatrix < double > & A, const std::vector < SmallMatrix  > & b,
+void mult(const ElementMatrix < double > & A, const std::vector < RSmallMatrix  > & b,
           ElementMatrix < double > & C){
     C.copyFrom(A, false);
     const PosVector &x = *A.x();
@@ -2416,8 +2426,8 @@ void mult(const ElementMatrix < double > & A, const std::vector < SmallMatrix  >
     for (Index i = 0; i < nRules; i++){
         if (i > 0) beta = 1.0;
 
-        SmallMatrix & Ci = (*C.pMatX())[i];
-        const SmallMatrix & Ai = A.matX()[i];
+        RSmallMatrix & Ci = (*C.pMatX())[i];
+        const RSmallMatrix & Ai = A.matX()[i];
         // A.T * C
         Ci *= 0.0; // test and optimize me with C creation
 // #if USE_EIGEN3
@@ -2451,7 +2461,7 @@ void mult(const ElementMatrix < double > & A, const FEAFunction & b,
         if (b.evalOnCellCenter()){
             return mult(A, b.evalRM(A.entity()->center(), A.entity()), C);
         }
-        std::vector < SmallMatrix  > e;
+        std::vector < RSmallMatrix  > e;
         evaluateQuadraturePoints(*A.entity(), *A.x(), b, e);
         mult(A, e, C);
     }
@@ -2465,7 +2475,7 @@ void mult(const ElementMatrix < double > & A, const FEAFunction & b,
     ASSERT_VEC_SIZE(this->matX(), nRules) \
     RVector rt(this->rows()); \
     for (Index r = 0; r < nRules; r++){ \
-        const SmallMatrix &mr(this->_matX[r]); \
+        const RSmallMatrix &mr(this->_matX[r]); \
         for (Index k = 0; k < mr.rows(); k ++){\
             if (r == 0 && k == 0){ \
                 rt = mr.row(k) * w[r] _F; \
@@ -2523,8 +2533,8 @@ void ElementMatrix < double >::integrate(A_TYPE f, \
 // DEFINE_INTEGRATOR(Pos)      // const vector
 // DEFINE_INTEGRATOR(RVector)  // scalar for each quadr
 // DEFINE_INTEGRATOR(PosVector)  // vector for each quadr
-DEFINE_INTEGRATOR(const SmallMatrix  & )  // const Matrix
-DEFINE_INTEGRATOR(const std::vector< SmallMatrix  > &)// matrix for each quadrs
+DEFINE_INTEGRATOR(const RSmallMatrix  & )  // const Matrix
+DEFINE_INTEGRATOR(const std::vector< RSmallMatrix  > &)// matrix for each quadrs
 DEFINE_INTEGRATOR(const FEAFunction &)
 #undef DEFINE_INTEGRATOR
 
@@ -2539,7 +2549,7 @@ void ElementMatrix < double >::integrate(const ElementMatrix < double > & B, \
 }
 
 DEFINE_INTEGRATOR(double)   // const scalar
-DEFINE_INTEGRATOR(const SmallMatrix  &)  // const Matrix
+DEFINE_INTEGRATOR(const RSmallMatrix  &)  // const Matrix
 #undef DEFINE_INTEGRATOR
 
 #define DEFINE_INTEGRATOR(A_TYPE) \
@@ -2555,7 +2565,7 @@ void ElementMatrix < double >::integrate(const ElementMatrix < double > & B, \
 }
 
 DEFINE_INTEGRATOR(const RVector &)  // scalar for each quadr
-DEFINE_INTEGRATOR(const std::vector< SmallMatrix  > &)// matrix for each quadrs
+DEFINE_INTEGRATOR(const std::vector< RSmallMatrix  > &)// matrix for each quadrs
 #undef DEFINE_INTEGRATOR
 
 template < >
@@ -2626,7 +2636,7 @@ void evaluateQuadraturePoints(const Mesh & mesh, Index order,
 
 void evaluateQuadraturePoints(const Mesh & mesh, Index order,
                               const FEAFunction & f,
-                              std::vector< SmallMatrix  > & ret){
+                              std::vector< RSmallMatrix  > & ret){
     THROW_TO_IMPL
 }
 
@@ -2648,7 +2658,7 @@ void evaluateQuadraturePoints(const MeshEntity & ent, const PosVector & x,
 
 void evaluateQuadraturePoints(const MeshEntity & ent, const PosVector & x,
                               const FEAFunction & f,
-                              std::vector < SmallMatrix  > & ret){
+                              std::vector < RSmallMatrix  > & ret){
     ret.resize(x.size());
     for (Index i = 0; i < x.size(); i ++){
         ret[i] = f.evalRM(ent.shape().xyz(x[i]), &ent);
@@ -2681,7 +2691,7 @@ void evaluateQuadraturePoints(const Mesh & mesh, Index order,
 
 void evaluateQuadraturePoints(const Mesh & mesh, Index order,
                               const FEAFunction & f,
-                              std::vector< std::vector< SmallMatrix  > > & ret){
+                              std::vector< std::vector< RSmallMatrix  > > & ret){
     evaluateQuadraturePoints_(mesh, order, f, ret);
 }
 
@@ -2925,22 +2935,22 @@ DEFINE_CREATE_SCALAR_IMPL(const Pos &, PosVector)
 
 //** IMPL constant matrix
 void createForceVector(const Mesh & mesh, Index order, RVector & ret,
-                       const SmallMatrix  & a, Index nCoeff, Index dofOffset){
-    std::vector < SmallMatrix  > aM(1);
+                       const RSmallMatrix  & a, Index nCoeff, Index dofOffset){
+    std::vector < RSmallMatrix  > aM(1);
     aM[0] = a;
     createForceVectorPerCell_(mesh, order, ret, aM, nCoeff, dofOffset);
 }
 void createMassMatrix(const Mesh & mesh, Index order, RSparseMapMatrix & ret,
-                      const SmallMatrix  & a, Index nCoeff, Index dofOffset){
-    std::vector < SmallMatrix  > aM(1);
+                      const RSmallMatrix  & a, Index nCoeff, Index dofOffset){
+    std::vector < RSmallMatrix  > aM(1);
     aM[0] = a;
     createMassMatrixPerCell_(mesh, order, ret, aM, nCoeff, dofOffset);
 }
 void createStiffnessMatrix (const Mesh & mesh, Index order,
-                            RSparseMapMatrix & ret, const SmallMatrix  & a,
+                            RSparseMapMatrix & ret, const RSmallMatrix  & a,
                             Index nCoeff, Index dofOffset,
                             bool elastic, bool kelvin){
-    std::vector < SmallMatrix  > aM(1);
+    std::vector < RSmallMatrix  > aM(1);
     aM[0] = a;
     createStiffnessMatrixPerCell_(mesh, order, ret, aM,
                                   nCoeff, dofOffset, elastic, kelvin);
@@ -2967,7 +2977,7 @@ void createStiffnessMatrix (const Mesh & mesh, Index order, \
 
 DEFINE_CREATE_PERCELL_IMPL(const RVector &)
 DEFINE_CREATE_PERCELL_IMPL(const PosVector &)
-DEFINE_CREATE_PERCELL_IMPL(const std::vector< SmallMatrix  > &)
+DEFINE_CREATE_PERCELL_IMPL(const std::vector< RSmallMatrix  > &)
 #undef DEFINE_CREATE_PERCELL_IMPL
 
 
@@ -2993,7 +3003,7 @@ void createStiffnessMatrix(const Mesh & mesh, Index order, \
 
 DEFINE_CREATE_FORCE_VECTOR_IMPL(const std::vector< RVector > &)
 DEFINE_CREATE_FORCE_VECTOR_IMPL(const std::vector< PosVector > &)
-DEFINE_CREATE_FORCE_VECTOR_IMPL(const std::vector< std::vector < SmallMatrix  > > &)
+DEFINE_CREATE_FORCE_VECTOR_IMPL(const std::vector< std::vector < RSmallMatrix  > > &)
 #undef DEFINE_CREATE_FORCE_VECTOR_IMPL
 
 //** IMPL fallbacks

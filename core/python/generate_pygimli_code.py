@@ -178,7 +178,7 @@ def generate(defined_symbols, extraIncludes):
                           # refer to it. This could cause "no to_python converter > found" run
                           # time error
         # This is serious and lead to RuntimeError: `Py++` is going to write different content to the same file
-        , messages.W1047 # There are two or more classes that use same > alias("MatElement"). Duplicated aliases causes
+        #, messages.W1047 # There are two or more classes that use same > alias("MatElement"). Duplicated aliases causes
                          # few problems, but the main one > is that some of the classes will not
                          # be exposed to Python.Other classes : >
         , messages.W1049  # This method could not be overriden in Python - method returns >

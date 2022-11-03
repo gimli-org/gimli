@@ -23,6 +23,7 @@
 // #endif
 
 
+#include "cassert"
 #include "gimli.h"
 #include "pos.h"
 #include "vector.h"
@@ -382,7 +383,7 @@ public:
 
     DEFINE_ADDS(double)
     DEFINE_ADDS(RVector3)
-    DEFINE_ADDS(RMatrix)
+    DEFINE_ADDS(RSmallMatrix)
     #undef DEFINE_ADDS
 
     // virtual void add(const ElementMatrix < double > & A, double scale=1.0, bool neg=false){
@@ -502,18 +503,27 @@ public:
     }
     /*! Read only access to matrix element i,j. */
     inline const ValueType & operator ()(Index i, Index j) const {
-        ASSERT_THIS_SIZE(i)
-        ASSERT_EQUAL(j, this->_cols)
+        // assert(i < this->_rows && j < this->_cols);
+        
+        if (i >= this->_rows || j >= this->_cols) {
+            throwLengthError(WHERE_AM_I + " ASSERT_LOWER2: ");
+            // weirdly this costs 80% runtime performance even if not called.
+            // throwLengthError(WHERE_AM_I + " ASSERT_LOWER2: " + str(i) + " < "  + str(this->_rows) + " or " + str(j) + " < "  + str(this->_cols));
+        }
+        // ASSERT_LOWER2(i, this->_rows, j, this->_cols)
         return _data[this->_cols * i + j];
-        //return _data.get()[this->_cols * i + j];
     }
 
     /*! Write access to matrix element i,j. */
     inline ValueType & operator ()(Index i, Index j) {
-        ASSERT_THIS_SIZE(i)
-        ASSERT_EQUAL(j, _cols)
+        // assert(i < this->_rows && j < this->_cols);
+
+        if (i >= this->_rows || j >= this->_cols) {
+            throwLengthError(WHERE_AM_I + " ASSERT_LOWER2: ");
+            // weirdly this costs 80% runtime performance even if not called.
+            // throwLengthError(WHERE_AM_I + " ASSERT_LOWER2: " + str(i) + " < "  + str(this->_rows) + " or " + str(j) + " < "  + str(this->_cols));
+        }
         return _data[this->_cols * i + j];
-        // return _data.get()[this->_cols * i + j];
     }
 
     /*! Read only access to matrix row i. */
@@ -561,8 +571,13 @@ public:
     /*! Return view to row i*/
     Vector< ValueType > row(Index i);
 
-    inline void setRow(Index i, const Vector< ValueType > r ) const {
+    inline void setRow(Index i, const Vector< ValueType > & r ) const {
         row(i).assign(r);
+    }
+    inline void setCol(Index j, const Vector< ValueType > & r ) const {
+        for (Index i = 0; i < this->_rows; i ++){
+            _data[i*this->_cols + j] = r[i];
+        }
     }
 
     inline Vector< ValueType > col(Index c) const {
@@ -958,11 +973,17 @@ public:
 
     /*! Read only access to matrix element i,j. */
     inline const ValueType & operator ()(Index i, Index j) const {
-        return mat_[i][j];}
+        // ASSERT_THIS_SIZE(i)
+        // ASSERT_LOWER(j, this->_cols)
+        return mat_[i][j];
+    }
 
     /*! Write access to matrix element i,j. */
     inline ValueType & operator ()(Index i, Index j) {
-        return mat_[i][j];}
+        // ASSERT_THIS_SIZE(i) // doubles runtime
+        // ASSERT_LOWER(j, this->_cols)
+        return mat_[i][j];
+    }
 
     /*! Read only access to matrix row i. */
     inline const Vector< ValueType > & operator ()(Index i) const {

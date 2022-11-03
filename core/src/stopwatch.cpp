@@ -57,7 +57,7 @@ void Stopwatch::reset(){
     this->_store->clear();
 }
 
-double Stopwatch::duration(bool res){
+double Stopwatch::duration(bool restart){
     std::chrono::time_point<std::chrono::high_resolution_clock> now;
     
     if (_state == undefined) {
@@ -76,12 +76,12 @@ double Stopwatch::duration(bool res){
     
     std::chrono::duration< double > t = now - this->_start;
 
-    if (res) restart();
+    if (restart) this->restart();
     return t.count();
 }
 
-void Stopwatch::store(){
-    this->_store->push_back(this->duration());
+void Stopwatch::store(bool restart){
+    this->_store->push_back(this->duration(restart));
 }
 
 size_t Stopwatch::cycles(bool res){

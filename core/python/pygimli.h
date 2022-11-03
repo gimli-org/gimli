@@ -228,8 +228,9 @@ DEFINE_COMPARE_OPERATOR__(>)
     template class VectorIterator< GIMLI::Complex >;
 
     template class Matrix< double >;
-    template class DenseMatrix< double >;
     template class Matrix< std::complex< double > >;
+    template class DenseMatrix< double >;
+    template class DenseMatrix< std::complex< double > >;
     template class Matrix3< double >;
 
     template class BlockMatrix< double >;

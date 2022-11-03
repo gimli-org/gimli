@@ -90,7 +90,7 @@ SparseMapMatrix< double, Index >::add(const ElementMatrix < double > & A,
 }
 template <> void 
 SparseMapMatrix< double, Index >::add(const ElementMatrix < double > & A, 
-                                      const RMatrix & scale, bool neg){
+                                      const RSmallMatrix & scale, bool neg){
     A.integrate();
     THROW_TO_IMPL
     // double tol = 1e-25;
@@ -149,7 +149,7 @@ SparseMapMatrix< Complex, Index >::add(const ElementMatrix < double > & A,
 }
 template <> void
 SparseMapMatrix< Complex, Index >::add(const ElementMatrix < double > & A, 
-                                       const CMatrix & scale, bool neg){
+                                       const CSmallMatrix & scale, bool neg){
     A.integrate();
     THROW_TO_IMPL
 }

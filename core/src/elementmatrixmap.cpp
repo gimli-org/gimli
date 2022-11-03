@@ -250,7 +250,7 @@ void ElementMatrixMap::mult(const A_TYPE & f, ElementMatrixMap & ret) const { \
 
 DEFINE_INTEGRATE_ELEMENTMAP_L_IMPL(double)
 DEFINE_INTEGRATE_ELEMENTMAP_L_IMPL(Pos)
-DEFINE_INTEGRATE_ELEMENTMAP_L_IMPL(RMatrix)
+DEFINE_INTEGRATE_ELEMENTMAP_L_IMPL(RSmallMatrix)
 #undef DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL
 
 void ElementMatrixMap::add(const ElementMatrixMap & B,
@@ -290,10 +290,10 @@ void ElementMatrixMap::mult(const A_TYPE & f, ElementMatrixMap & ret) const { \
 
 DEFINE_INTEGRATE_ELEMENTMAP_L_PERCELL_IMPL(RVector)
 DEFINE_INTEGRATE_ELEMENTMAP_L_PERCELL_IMPL(PosVector)
-DEFINE_INTEGRATE_ELEMENTMAP_L_PERCELL_IMPL(std::vector< RMatrix >)
+DEFINE_INTEGRATE_ELEMENTMAP_L_PERCELL_IMPL(std::vector< RSmallMatrix >)
 DEFINE_INTEGRATE_ELEMENTMAP_L_PERCELL_IMPL(std::vector< RVector >)
 DEFINE_INTEGRATE_ELEMENTMAP_L_PERCELL_IMPL(std::vector< PosVector >)
-DEFINE_INTEGRATE_ELEMENTMAP_L_PERCELL_IMPL(std::vector< std::vector< RMatrix > >)
+DEFINE_INTEGRATE_ELEMENTMAP_L_PERCELL_IMPL(std::vector< std::vector< RSmallMatrix > >)
 #undef DEFINE_INTEGRATE_ELEMENTMAP_L_PERCELL_IMPL
 // 
 
@@ -307,7 +307,7 @@ void ElementMatrixMap::integrate(const ElementMatrixMap & B, const A_TYPE & f, \
 }
 DEFINE_INTEGRATE_ELEMENTMAP_BL_IMPL(double)
 DEFINE_INTEGRATE_ELEMENTMAP_BL_IMPL(Pos)
-DEFINE_INTEGRATE_ELEMENTMAP_BL_IMPL(RMatrix)
+DEFINE_INTEGRATE_ELEMENTMAP_BL_IMPL(RSmallMatrix)
 #undef DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL
 
 
@@ -321,10 +321,10 @@ void ElementMatrixMap::integrate(const ElementMatrixMap & B, const A_TYPE & f, \
 }
 DEFINE_INTEGRATE_ELEMENTMAP_BL_PERCELL_IMPL(RVector)
 DEFINE_INTEGRATE_ELEMENTMAP_BL_PERCELL_IMPL(PosVector)
-DEFINE_INTEGRATE_ELEMENTMAP_BL_PERCELL_IMPL(std::vector< RMatrix >)
+DEFINE_INTEGRATE_ELEMENTMAP_BL_PERCELL_IMPL(std::vector< RSmallMatrix >)
 DEFINE_INTEGRATE_ELEMENTMAP_BL_PERCELL_IMPL(std::vector< RVector >)
 DEFINE_INTEGRATE_ELEMENTMAP_BL_PERCELL_IMPL(std::vector< PosVector >)
-DEFINE_INTEGRATE_ELEMENTMAP_BL_PERCELL_IMPL(std::vector< std::vector< RMatrix > >)
+DEFINE_INTEGRATE_ELEMENTMAP_BL_PERCELL_IMPL(std::vector< std::vector< RSmallMatrix > >)
 #undef DEFINE_INTEGRATE_ELEMENTMAP_BL_PERCELL_IMPL
 
 
@@ -341,13 +341,13 @@ RVector ElementMatrixMap::integrate(const A_TYPE & f, bool neg) const { \
 
 DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(double)
 DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(Pos)
-DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(RMatrix)
+DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(RSmallMatrix)
 DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(RVector)
 DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(PosVector)
-DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(std::vector< RMatrix >)
+DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(std::vector< RSmallMatrix >)
 DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(std::vector< RVector >)
 DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(std::vector< PosVector >)
-DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(std::vector< std::vector< RMatrix > >)
+DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(std::vector< std::vector< RSmallMatrix > >)
 #undef DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET
 
 #define DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(A_TYPE) \
@@ -359,13 +359,13 @@ RSparseMapMatrix ElementMatrixMap::integrate(const ElementMatrixMap & R, \
 }
 DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(double)
 DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(Pos)
-DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(RMatrix)
+DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(RSmallMatrix)
 DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(RVector)
 DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(PosVector)
-DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(std::vector< RMatrix >)
+DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(std::vector< RSmallMatrix >)
 DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(std::vector< RVector >)
 DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(std::vector< PosVector >)
-DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(std::vector< std::vector< RMatrix > >)
+DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(std::vector< std::vector< RSmallMatrix > >)
 #undef DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET
 
 void ElementMatrixMap::dot(const ElementMatrixMap & B,
@@ -531,7 +531,7 @@ void ElementMatrixMap::assemble(const A_TYPE & f, SparseMatrixBase & R, bool neg
 } \
 
 DEFINE_ASSEMBLER_L(double)   // const scalar for all cells
-DEFINE_ASSEMBLER_L(RMatrix)  // const Matrix for all cells
+DEFINE_ASSEMBLER_L(RSmallMatrix)  // const Matrix for all cells
 DEFINE_ASSEMBLER_L(RVector3)  // const Pos for all cells
 #undef DEFINE_ASSEMBLER_L
 
@@ -547,7 +547,7 @@ void ElementMatrixMap::assemble(const A_TYPE & f, SparseMatrixBase & R, bool neg
 } \
 
 DEFINE_ASSEMBLER_B(RVector)  // const scalar for each cell
-DEFINE_ASSEMBLER_B(std::vector< RMatrix >)// const matrix for each cell
+DEFINE_ASSEMBLER_B(std::vector< RSmallMatrix >)// const matrix for each cell
 DEFINE_ASSEMBLER_B(std::vector< RVector3 >)  // const Pos for each cell
 #undef DEFINE_ASSEMBLER_B
 
@@ -596,7 +596,7 @@ RVector ElementMatrixMap::mult(const RVector & a, const RVector & b,
 /// refactor me with ElementMatrix.mult
     for (Index r = 0; r < row_.size(); r ++ ){
         double s = 0.0;
-        const SmallMatrix & mat = mat_[r];
+        const RSmallMatrix & mat = mat_[r];
         const IndexArray & idx = _ids[r];
         for (Index i = 0; i < mat.rows(); i ++) {
             double t = 0;
@@ -617,7 +617,7 @@ RVector ElementMatrixMap::mult(const RVector & a, const RVector & b) const{
 
     for (Index r = 0; r < row_.size(); r ++ ){
         double s = 0.0;
-        const SmallMatrix & mat = mat_[r];
+        const RSmallMatrix & mat = mat_[r];
         const IndexArray & idx = _ids[r];
         for (Index i = 0; i < mat.rows(); i ++) {
             double t = 0;
