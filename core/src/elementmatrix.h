@@ -27,7 +27,6 @@ namespace GIMLI{
 class FEAFunction;
 class ElementMatrixMap;
 
-typedef RMatrix SmallMatrix;
 
 template < class ValueType > class DLLEXPORT ElementMatrix {
 public:
@@ -78,11 +77,11 @@ public:
     inline void addVal(Index i, Index j, const ValueType & v) {mat_(i,j) += v; }
 
     /*! Set data matrix. */
-    inline void setMat(const SmallMatrix & m) { mat_ = m; }
+    inline void setMat(const RSmallMatrix & m) { mat_ = m; }
     /*! Return data matrix. */
-    inline SmallMatrix * pMat() { return & mat_; }
+    inline RSmallMatrix * pMat() { return & mat_; }
     /*! Return data for row i. */
-    inline const SmallMatrix & mat() const { return mat_; }
+    inline const RSmallMatrix & mat() const { return mat_; }
     /*! Return data for row i. */
 
     inline const Vector< ValueType > & row(Index i) const {
@@ -135,11 +134,11 @@ public:
 
     /*! Return the stress matrix for this entity.*/
     Vector < ValueType > stress(const MeshEntity & ent,
-                                const Matrix< ValueType > & C,
+                                const RSmallMatrix & C,
                                 const RVector & u, bool voigtNotation=false);
 
     /*! Return gradient base for the last entity, i.e., integrate over gradient u over the cell. */
-    const Matrix < ValueType > & gradientBase() const { return this->_grad;}
+    const SmallMatrix < ValueType > & gradientBase() const { return this->_grad;}
 
     /*! Fill Element Gradients Matrix for all integration points. */
     void fillGradientBase(const MeshEntity & ent,
@@ -351,27 +350,27 @@ public:
     void integrate() const;
 
     /*! Set submatrices. matx of (nWeight, shape(mat.T))*/
-    void setMatXI(Index i, const SmallMatrix & mat);
+    void setMatXI(Index i, const RSmallMatrix & mat);
 
-    // /*! PG temp hack .. Convert SmallMatrix  into EigenMatrix for pg. */
-    // void setMatXI_RM(Index i, const SmallMatrix  & mat);
+    // /*! PG temp hack .. Convert RSmallMatrix  into EigenMatrix for pg. */
+    // void setMatXI_RM(Index i, const RSmallMatrix  & mat);
 
     // /*! Set data matrix. */
-    // void setMat_RM(const SmallMatrix  & m);
+    // void setMat_RM(const RSmallMatrix  & m);
 
     // /*! Return copy of mat */
-    // SmallMatrix  mat_RM() const;
+    // RSmallMatrix  mat_RM() const;
 
     /*! Return traces of mat */
     RVector trace() const;
 
     /*! Return traces of matX */
-    SmallMatrix  traceX() const;
+    RSmallMatrix  traceX() const;
 
     /*! Return reference to all matrices per quadrature point.*/
-    const std::vector < SmallMatrix > & matX() const { return _matX; }
+    const std::vector < RSmallMatrix > & matX() const { return _matX; }
 
-    std::vector < SmallMatrix > * pMatX() { return &_matX; }
+    std::vector < RSmallMatrix > * pMatX() { return &_matX; }
 
     /*! Set const reference to the current entity.*/
     void setEntity(const MeshEntity & ent) { _ent = &ent; }
@@ -426,11 +425,11 @@ public:
         void integrate(A_TYPE f, RVector & r, double scale) const; \
 
     DEFINE_INTEGRATOR(double)   // const scalar
-    DEFINE_INTEGRATOR(const SmallMatrix  &)  // const Matrix
+    DEFINE_INTEGRATOR(const RSmallMatrix  &)  // const Matrix
     DEFINE_INTEGRATOR(const RVector &)  // scalar for each quadr
     DEFINE_INTEGRATOR(const Pos &)      // const vector //!calling order!
     DEFINE_INTEGRATOR(const PosVector &)  // vector for each quadr
-    DEFINE_INTEGRATOR(const std::vector< SmallMatrix  > &) // matrix for each quadrs
+    DEFINE_INTEGRATOR(const std::vector< RSmallMatrix  > &) // matrix for each quadrs
     DEFINE_INTEGRATOR(const FEAFunction &) // matrix for each quadrs
 
     #undef DEFINE_INTEGRATOR
@@ -442,9 +441,9 @@ public:
                        A_TYPE f, SparseMatrixBase & A, double scale) const; \
 
     DEFINE_INTEGRATOR(double)   // const scalar
-    DEFINE_INTEGRATOR(const SmallMatrix  &)  // const Matrix
+    DEFINE_INTEGRATOR(const RSmallMatrix  &)  // const Matrix
     DEFINE_INTEGRATOR(const RVector &)  // scalar for each quadr
-    DEFINE_INTEGRATOR(const std::vector< SmallMatrix  > &) // matrix for each quadrs
+    DEFINE_INTEGRATOR(const std::vector< RSmallMatrix  > &) // matrix for each quadrs
     DEFINE_INTEGRATOR(const FEAFunction &) // matrix for each quadrs
 
     #undef DEFINE_INTEGRATOR
@@ -461,31 +460,31 @@ public:
     #undef DEFINE_INTEGRATOR
 
 protected:
-    mutable SmallMatrix mat_;
+    mutable RSmallMatrix mat_;
     IndexArray _ids;
     IndexArray _idsC;
     IndexArray _idsR;
 
     std::map< uint, RVector > uCache_;
-    std::map< uint, Matrix < ValueType > > u2Cache_;
+    std::map< uint, RSmallMatrix > u2Cache_;
 
-    std::vector< Matrix < ValueType > > _B;
-    Matrix < ValueType > _grad;
+    std::vector< RSmallMatrix > _B;
+    RSmallMatrix _grad;
 
     // number of single dof
     Index _nDof;
     // number of coefficients: 1, 2, 3 for scalar(dim), 1, 3, 6 for vector(dim)
     // Index _nC;
 
-    SmallMatrix dNdr_;
-    SmallMatrix  dNds_;
-    SmallMatrix  dNdt_;
+    RSmallMatrix dNdr_;
+    RSmallMatrix  dNds_;
+    RSmallMatrix  dNdt_;
 
-    SmallMatrix  dNdx_; // (nRules, nVerts)
-    SmallMatrix  dNdy_; // (nRules, nVerts)
-    SmallMatrix  dNdz_; // (nRules, nVerts)
+    RSmallMatrix  dNdx_; // (nRules, nVerts)
+    RSmallMatrix  dNdy_; // (nRules, nVerts)
+    RSmallMatrix  dNdz_; // (nRules, nVerts)
 
-    SmallMatrix  _abaTmp; // temp workspace
+    RSmallMatrix  _abaTmp; // temp workspace
 
     //** new interface starts here **//
     // const Mesh * _mesh;
@@ -499,7 +498,7 @@ protected:
     const PosVector * _x;
 
     // matrices per quadrature point
-    std::vector < SmallMatrix > _matX;
+    std::vector < RSmallMatrix > _matX;
 
     bool _newStyle;
     bool _div;
@@ -567,7 +566,7 @@ DLLEXPORT const ElementMatrix < double > dot(const ElementMatrix < double > & A,
 //                     ElementMatrix < double > & C);
 // /*! Matrix per quadrature point */
 // DLLEXPORT void mult(const ElementMatrix < double > & A,
-//                     const std::vector < SmallMatrix  > & b,
+//                     const std::vector < RSmallMatrix  > & b,
 //                     ElementMatrix < double > & C);
 
 
@@ -590,8 +589,8 @@ DEFINE_DOT_MULT(double)
 DEFINE_DOT_MULT(const RVector &)
 DEFINE_DOT_MULT(const Pos &) // check Pos before RVector
 DEFINE_DOT_MULT(const PosVector &)
-DEFINE_DOT_MULT(const SmallMatrix  &)
-DEFINE_DOT_MULT(const std::vector < SmallMatrix  > &)
+DEFINE_DOT_MULT(const RSmallMatrix  &)
+DEFINE_DOT_MULT(const std::vector < RSmallMatrix  > &)
 DEFINE_DOT_MULT(const FEAFunction &)
 #undef DEFINE_DOT_MULT
 
@@ -603,9 +602,9 @@ void ElementMatrix < double >::integrate(const ElementMatrix < double > & R, \
                                          SparseMatrixBase & A, double scale) const; \
 
 DEFINE_INTEGRATE(double)
-DEFINE_INTEGRATE(const SmallMatrix  &)
+DEFINE_INTEGRATE(const RSmallMatrix  &)
 DEFINE_INTEGRATE(const RVector &)
-DEFINE_INTEGRATE(const std::vector < SmallMatrix  > &)
+DEFINE_INTEGRATE(const std::vector < RSmallMatrix  > &)
 DEFINE_INTEGRATE(const FEAFunction &)
 
 #undef DEFINE_INTEGRATE
@@ -633,7 +632,7 @@ DLLEXPORT void evaluateQuadraturePoints(const MeshEntity & ent,
 DLLEXPORT void evaluateQuadraturePoints(const MeshEntity & ent,
                                         const PosVector & x,
                                         const FEAFunction & f,
-                                        std::vector < SmallMatrix  > & ret);
+                                        std::vector < RSmallMatrix  > & ret);
 /*!Evaluate scalar for each cell.*/
 DLLEXPORT void evaluateQuadraturePoints(const Mesh & mesh, Index order,
                                         const FEAFunction & f,
@@ -645,7 +644,7 @@ DLLEXPORT void evaluateQuadraturePoints(const Mesh & mesh, Index order,
 /*!Evaluate matrices for each cell.*/
 DLLEXPORT void evaluateQuadraturePoints(const Mesh & mesh, Index order,
                                         const FEAFunction & f,
-                                        std::vector< std::vector< SmallMatrix  > > & ret);
+                                        std::vector< std::vector< RSmallMatrix  > > & ret);
 
 /*! Return symmetrized copy of A as 0.5*(A + A.T). Only for gradients without Voigt or Kelvin notation. */
 DLLEXPORT ElementMatrix < double > sym(const ElementMatrix < double > & A);
@@ -670,15 +669,15 @@ DEFINE_CREATE_FORCE_VECTOR(double)             // const scalar for all cells
 DEFINE_CREATE_FORCE_VECTOR(const Pos &)   // const vector for all cells
 DEFINE_CREATE_FORCE_VECTOR(const RVector &)    // scalar for each cell
 DEFINE_CREATE_FORCE_VECTOR(const PosVector &)   // vector for each cell
-DEFINE_CREATE_FORCE_VECTOR(const SmallMatrix  &)    // const matrix for all cells
+DEFINE_CREATE_FORCE_VECTOR(const RSmallMatrix  &)    // const matrix for all cells
 // matrix for each cell
 DEFINE_CREATE_FORCE_VECTOR(const std::vector< RVector > &)
 // vector at each quadrature point for each cell
 DEFINE_CREATE_FORCE_VECTOR(const std::vector< PosVector > &)
 // matrix at each quadrature point for each cell
-DEFINE_CREATE_FORCE_VECTOR(const std::vector< SmallMatrix  > &)
+DEFINE_CREATE_FORCE_VECTOR(const std::vector< RSmallMatrix  > &)
 // scalar at each quadrature point for each cell
-DEFINE_CREATE_FORCE_VECTOR(const std::vector< std::vector < SmallMatrix  > > &)
+DEFINE_CREATE_FORCE_VECTOR(const std::vector< std::vector < RSmallMatrix  > > &)
 // generic function for each point
 DEFINE_CREATE_FORCE_VECTOR(const FEAFunction &)
 
@@ -701,9 +700,9 @@ public:
         log(Warning, "FEAFunction.evalR3 should be overloaded.");
         return Pos(0.0, 0.0, 0.0);
     }
-    virtual SmallMatrix  evalRM(const Pos & arg, const MeshEntity * ent=0) const{
+    virtual RSmallMatrix  evalRM(const Pos & arg, const MeshEntity * ent=0) const{
         log(Warning, "FEAFunction.evalRM should be overloaded.");
-        return SmallMatrix (0, 0);
+        return RSmallMatrix (0, 0);
     }
 
     /*!Return expected value size for evaluation */

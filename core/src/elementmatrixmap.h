@@ -53,14 +53,14 @@ public:
         void mult(const A_TYPE & f, ElementMatrixMap & ret) const;
 
     DEFINE_INTEGRATOR(double)   // const scalar for all cells
-    DEFINE_INTEGRATOR(RMatrix)  // const Matrix for all cells
+    DEFINE_INTEGRATOR(RSmallMatrix)  // const Matrix for all cells
     DEFINE_INTEGRATOR(RVector)      // const scalar for each cells
     DEFINE_INTEGRATOR(Pos)      // const vector for all cells //!calling order!
     DEFINE_INTEGRATOR(PosVector)    // const vector for each cells
-    DEFINE_INTEGRATOR(std::vector< RMatrix >)// const matrix for each cells
+    DEFINE_INTEGRATOR(std::vector< RSmallMatrix >)// const matrix for each cells
     DEFINE_INTEGRATOR(std::vector< RVector >)// scalar for quadr. on each cells
     DEFINE_INTEGRATOR(std::vector< PosVector >)// vector for quadr. on each cells
-    DEFINE_INTEGRATOR(std::vector< std::vector< RMatrix > >)// mat for quadr. on each cells
+    DEFINE_INTEGRATOR(std::vector< std::vector< RSmallMatrix > >)// mat for quadr. on each cells
 
     #undef DEFINE_INTEGRATOR
 
@@ -75,12 +75,12 @@ public:
                                    const A_TYPE & f, bool neg=false) const; \
 
     DEFINE_INTEGRATOR(double)   // const scalar for all cells
-    DEFINE_INTEGRATOR(RMatrix)  // const Matrix for all cells
+    DEFINE_INTEGRATOR(RSmallMatrix)  // const Matrix for all cells
     DEFINE_INTEGRATOR(RVector)      // const scalar for each cells
-    DEFINE_INTEGRATOR(std::vector< RMatrix >)// const matrix for each cells
+    DEFINE_INTEGRATOR(std::vector< RSmallMatrix >)// const matrix for each cells
     DEFINE_INTEGRATOR(std::vector< RVector >)// scalar for quadr. on each cells
     DEFINE_INTEGRATOR(std::vector< PosVector >)// vector for quadr. on each cells
-    DEFINE_INTEGRATOR(std::vector< std::vector< RMatrix > >)// mat for quadr. on each cells
+    DEFINE_INTEGRATOR(std::vector< std::vector< RSmallMatrix > >)// mat for quadr. on each cells
 
     #undef DEFINE_INTEGRATOR
 
@@ -109,9 +109,9 @@ public:
         void assemble(const A_TYPE & f, SparseMatrixBase & A, bool neg=false) const; \
 
     DEFINE_ASSEMBLER(double)   // const scalar for all cells
-    DEFINE_ASSEMBLER(RMatrix)  // const Matrix for all cells
+    DEFINE_ASSEMBLER(RSmallMatrix)  // const Matrix for all cells
     DEFINE_ASSEMBLER(RVector)  // const scalar for each cell
-    DEFINE_ASSEMBLER(std::vector< RMatrix >)// const matrix for each cell
+    DEFINE_ASSEMBLER(std::vector< RSmallMatrix >)// const matrix for each cell
     #undef DEFINE_ASSEMBLER
 
     // To avoid ambiguity between Pos|RVector and PosVector|Matrix we define a slightly different interface with differnt keyword names and python have to be decide what is called
@@ -165,7 +165,7 @@ protected:
     std::vector< ElementMatrix < double > > mats_;
     mutable std::vector < PosVector > quadrPnts_; // cache Q for mats_
 
-    std::vector< SmallMatrix > mat_;
+    std::vector< RSmallMatrix > mat_;
     std::vector< IndexArray > _ids;
     std::vector< Index > row_;
 

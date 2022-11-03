@@ -129,12 +129,14 @@ SparseMatrix< double >::add(const ElementMatrix< double > & A, const Pos & scale
     THROW_TO_IMPL
 }
 template <> void
-SparseMatrix< double >::add(const ElementMatrix< double > & A, const Matrix < double > & scale, bool neg){
+SparseMatrix< double >::add(const ElementMatrix< double > & A, 
+                            const RSmallMatrix & scale, bool neg){
     THROW_TO_IMPL
 }
 
 template <> void
-SparseMatrix< Complex >::add(const ElementMatrix < double > & A, const Complex & scale, bool neg){
+SparseMatrix< Complex >::add(const ElementMatrix < double > & A, 
+                             const Complex & scale, bool neg){
     if (!valid_) SPARSE_NOT_VALID;
 
     for (Index i = 0, imax = A.size(); i < imax; i++){
@@ -152,7 +154,8 @@ SparseMatrix< Complex >::add(const ElementMatrix < double > & A, const Pos & sca
     THROW_TO_IMPL
 }
 template <> void
-SparseMatrix< Complex >::add(const ElementMatrix < double > & A, const CMatrix & scale, bool neg){
+SparseMatrix< Complex >::add(const ElementMatrix < double > & A, 
+                             const CSmallMatrix & scale, bool neg){
     THROW_TO_IMPL
 }
 

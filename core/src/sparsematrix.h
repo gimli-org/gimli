@@ -183,7 +183,7 @@ public:
     virtual void add(const ElementMatrix< double > & A,
                      const Pos & scale, bool neg=false);
     virtual void add(const ElementMatrix< double > & A,
-                     const Matrix < ValueType > & scale, bool neg=false);
+                     const SmallMatrix < ValueType > & scale, bool neg=false);
 
     /*! Perftest .. maybe optimizer problem. Single calls outside calls of addVall suffer from polymorphism. */
     void addS(const ElementMatrix< double > & A, const ValueType & scale, 
@@ -409,14 +409,14 @@ template <> DLLEXPORT void SparseMatrix< double >::
 template <> DLLEXPORT void SparseMatrix< double >::
     add(const ElementMatrix < double > & A, const Pos & scale, bool neg);
 template <> DLLEXPORT void SparseMatrix< double >::
-    add(const ElementMatrix < double > & A, const RMatrix & scale, bool neg);
+    add(const ElementMatrix < double > & A, const RSmallMatrix & scale, bool neg);
 
 template <> DLLEXPORT void SparseMatrix< Complex >::
     add(const ElementMatrix < double > & A, const Complex & scale, bool neg);
 template <> DLLEXPORT void SparseMatrix< Complex >::
     add(const ElementMatrix < double > & A, const Pos & scale, bool neg);
 template <> DLLEXPORT void SparseMatrix< Complex >::
-    add(const ElementMatrix < double > & A, const CMatrix & scale, bool neg);
+    add(const ElementMatrix < double > & A, const CSmallMatrix & scale, bool neg);
 
 inline CSparseMatrix operator + (const CSparseMatrix & A, const RSparseMatrix & B){
     CSparseMatrix ret(A);

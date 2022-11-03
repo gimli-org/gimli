@@ -220,6 +220,10 @@ void print(Args&&... args) {
     throwRangeError(WHERE_AM_I, i, start, end);
 #define ASSERT_NON_EMPTY(v) if (v.size()==0) \
     throwLengthError(WHERE_AM_I + " empty array.");
+#define ASSERT_LOWER(a, b) if (a >= b) \
+    throwLengthError(WHERE_AM_I + " ASSERT_LOWER:" + str(a) + " < "  + str(b));
+#define ASSERT_LOWER2(a, b, c, d) if (!(a < b || c < d)) \
+    throwLengthError(WHERE_AM_I + " ASSERT_LOWER2: " + str(a) + " < "  + str(b) + " or " + str(c) + " < "  + str(d));
 #define ASSERT_PTR(v) if (v == 0) \
     throwError(WHERE_AM_I + " object not initialized.");
 
@@ -328,13 +332,21 @@ typedef Vector < Index > IndexArray;
 typedef std::vector < SIndex > SIndexArray;
 
 typedef Matrix < double > RMatrix;
-typedef Matrix3< double > RMatrix3;
 typedef Matrix < Complex > CMatrix;
+typedef DenseMatrix < double > RDenseMatrix;
+typedef DenseMatrix < Complex > CDenseMatrix;
+typedef Matrix3< double > RMatrix3;
 typedef BlockMatrix < double > RBlockMatrix;
 typedef BlockMatrix < Complex > CBlockMatrix;
 
-typedef DenseMatrix < double > RDenseMatrix;
-typedef DenseMatrix < Complex > CDenseMatrix;
+// template<typename T> using SmallMatrix = Matrix<T>;
+// typedef RMatrix RSmallMatrix;
+// typedef CMatrix CSmallMatrix;
+
+template<typename T> using SmallMatrix = DenseMatrix<T>;
+typedef DenseMatrix < double > RSmallMatrix;
+typedef DenseMatrix < Complex > CSmallMatrix;
+
 
 //#typedef Vector< unsigned char > BVector;
 

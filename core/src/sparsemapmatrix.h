@@ -312,7 +312,7 @@ public:
     void add(const ElementMatrix < double > & A, 
              const Pos & scale, bool neg=false);
     void add(const ElementMatrix < double > & A, 
-             const Matrix< ValueType> & scale, bool neg=false);
+             const SmallMatrix< ValueType> & scale, bool neg=false);
     /*!Scale with values from vector scale. Take values from scale[A.ids()]. */
     void add(const ElementMatrix < double > & A,
              const Vector < ValueType > & scale, bool neg=false);
@@ -757,7 +757,8 @@ template <> DLLEXPORT void SparseMapMatrix< double, Index >::
 template <> DLLEXPORT void SparseMapMatrix< double, Index >::
     add(const ElementMatrix < double > & A, const Pos & scale, bool neg);
 template <> DLLEXPORT void SparseMapMatrix< double, Index >::
-    add(const ElementMatrix < double > & A, const RMatrix & scale, bool neg);
+    add(const ElementMatrix < double > & A, const RSmallMatrix & scale, 
+    bool neg);
 template <> DLLEXPORT void SparseMapMatrix< double, Index >::
     add(const ElementMatrix < double > & A, const Vector < double > & scale, bool neg);
 
@@ -766,7 +767,7 @@ template <> DLLEXPORT void SparseMapMatrix< Complex, Index >::
 template <> DLLEXPORT void SparseMapMatrix< Complex, Index >::
     add(const ElementMatrix < double > & A, const Pos & scale, bool neg);
 template <> DLLEXPORT void SparseMapMatrix< Complex, Index >::
-    add(const ElementMatrix < double > & A, const Matrix < Complex > & scale, bool neg);
+    add(const ElementMatrix < double > & A, const CSmallMatrix & scale, bool neg);
 template <> DLLEXPORT void SparseMapMatrix< Complex, Index >::
     add(const ElementMatrix < double > & A, const Vector < Complex > & scale, bool neg);
 

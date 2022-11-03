@@ -101,7 +101,7 @@ void Vector< double >::add(const ElementMatrix < double > & A,
 }
 template <>
 void Vector< double >::add(const ElementMatrix < double > & A,
-                           const RMatrix & scale, bool neg){
+                           const RSmallMatrix & scale, bool neg){
     if (A.oldStyle()){
         THROW_TO_IMPL
     } else {

@@ -658,11 +658,13 @@ public:
     void add(const ElementMatrix < double > & A, const double & scale, bool neg=false);
 
     /*! Add Values from an ElementMatrix. Optional scale constant Pos. */
-    void add(const ElementMatrix < double > & A, const Pos & scale, bool neg=false);
+    void add(const ElementMatrix < double > & A, const Pos & scale,
+             bool neg=false);
 
     /*! Add Values from an ElementMatrix. Optional scale constant RMatrix. */
-    void add(const ElementMatrix < double > & A, const RMatrix & scale, bool neg=false);
-
+    void add(const ElementMatrix < double > & A, const RSmallMatrix & scale, 
+             bool neg=false);
+    
     /*! DEPRECATED Bad design (Per node values need to be interpolated to quadrature points first.)*/
     void add(const ElementMatrix < double > & A,
              const Vector < double > & scale);
@@ -1096,7 +1098,8 @@ Vector<double>::add(const ElementMatrix < double >& A, const double & a, bool ne
 template <> DLLEXPORT void
 Vector<double>::add(const ElementMatrix < double >& A, const Pos & a, bool neg);
 template <> DLLEXPORT void
-Vector<double>::add(const ElementMatrix < double >& A, const RMatrix & a, bool neg);
+Vector<double>::add(const ElementMatrix < double >& A, const RSmallMatrix & a, 
+                    bool neg);
 
 template< typename ValueType > void
 Vector< ValueType >::add(const ElementMatrix < double >& A,  bool neg){ THROW_TO_IMPL}
@@ -1105,7 +1108,9 @@ Vector< ValueType >::add(const ElementMatrix < double >& A, const double & a, bo
 template< typename ValueType > void
 Vector< ValueType >::add(const ElementMatrix < double >& A, const Pos & a, bool neg){THROW_TO_IMPL}
 template< typename ValueType > void
-Vector< ValueType >::add(const ElementMatrix < double >& A, const RMatrix & a, bool neg){THROW_TO_IMPL}
+Vector< ValueType >::add(const ElementMatrix < double >& A, 
+                         const RSmallMatrix & a, 
+                         bool neg){ THROW_TO_IMPL }
 
 // removeme in V1.2, 20200727
 template <> DLLEXPORT void Vector<double>::add(
@@ -1745,6 +1750,7 @@ template < class T > Vector< T > unique(const Vector < T > & a){
 }
 
 
+#ifndef PYGIMLI_CAST
 //** Beware! this is not thread safe.
 template< class ValueType > struct indexCmp {
     indexCmp(const Vector < ValueType > & arr) : arr_(arr) {}
@@ -1753,12 +1759,13 @@ template< class ValueType > struct indexCmp {
     }
     const Vector < ValueType > & arr_;
 };
+#endif
 
 template < class ValueType >
 void sort(const Vector < ValueType > & unsorted,
           Vector < ValueType > & sorted,
           IndexArray & indexMap){
-
+#ifndef PYGIMLI_CAST
     indexMap.resize(unsorted.size());
 
     for (Index i=0; i < unsorted.size(); i++) indexMap[i] = i;
@@ -1771,6 +1778,7 @@ void sort(const Vector < ValueType > & unsorted,
     for (Index i = 0; i < indexMap.size(); i ++) indexMap[i] = tmp[i];
 
     sorted = unsorted(indexMap);
+#endif
 }
 
 template < class ValueType >
