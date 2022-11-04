@@ -132,6 +132,20 @@ To produce a new version, type:
 
 .. _sec:testing:
 
+To see the commits since the last tag/release, you can use:
+
+.. code-block:: bash
+
+    git log v1.3.0...HEAD --oneline
+
+Or to see commits between specific versions:
+
+.. code-block:: bash
+
+    git log v1.2.5...v1.2.6 --oneline
+
+Alternatively, this information can also be obtained `via GitHub <http://github.com/gimli-org/gimli/compare/v1.2.5...v1.2.6>`_.
+
 Testing
 -------
 
