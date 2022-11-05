@@ -4,6 +4,9 @@
 
 import numpy as np
 import pygimli as pg
+from matplotlib.colors import LogNorm, Normalize
+from matplotlib.patches import Wedge, Rectangle
+from matplotlib.collections import PatchCollection
 
 from .utils import updateAxes as updateAxes_
 
@@ -81,8 +84,8 @@ def showValMapPatches(vals, xVec=None, yVec=None, dx=1, dy=None, **kwargs):
     gci, ymap = drawValMapPatches(ax, vals, xVec=xVec, yVec=yVec, dx=dx, dy=dy,
                                   **kwargs)
 
-    cbar = pg.viewer.mpl.createColorBar(gci, **kwargs, 
-                            onlyColorSet=not kwargs.pop('colorBar', True))
+    cbar = pg.viewer.mpl.createColorBar(
+        gci, **kwargs, onlyColorSet=not kwargs.pop('colorBar', True))
 
     return ax, cbar, ymap
 
@@ -101,10 +104,6 @@ def drawValMapPatches(ax, vals, xVec=None, yVec=None, dx=1, dy=None, **kwargs):
     circular : bool
         assume circular (cyclic) positions
     """
-    from matplotlib.collections import PatchCollection
-    # from matplotlib.colors import LogNorm, Normalize
-    from matplotlib.patches import Rectangle, Wedge
-
     recs = []
 
     circular = kwargs.pop('circular', False)
@@ -216,7 +215,7 @@ def patchValMap(vals, xvec=None, yvec=None, ax=None, cMin=None, cMax=None,
         norm = Normalize(vmin=cMin, vmax=cMax)
 
     if ax is None:
-        ax = plt.subplots()[1]
+        ax = pg.plt.subplots()[1]
 
     recs = []
 
@@ -235,7 +234,6 @@ def patchValMap(vals, xvec=None, yvec=None, ax=None, cMin=None, cMax=None,
             # maxR = max(ymap.values())  # what's that for? not used
             dR = 1 / (len(ymap.values())+1)
             # dOff = np.pi / 2  # what's that for? not used
-
             for y, xIds in xyMap.items():
                 r = 1. - dR*(ymap[y]+1)
                 # ax.plot(r * np.cos(xvec[xIds]),
@@ -254,9 +252,6 @@ def patchValMap(vals, xvec=None, yvec=None, ax=None, cMin=None, cMax=None,
                                     (phi + dPhi)*360/(2*np.pi),
                                     width=dR,
                                     zorder=1+r)
-                    # if i < 5:
-                    #     ax.text(x, y, str(i))
-                    # pg.wait()
         else:
             raise("Implementme")
     else:
@@ -354,7 +349,7 @@ def patchMatrix(mat, xmap=None, ymap=None, ax=None, cMin=None, cMax=None,
         norm = Normalize(vmin=cMin, vmax=cMax)
 
     if ax is None:
-        ax = plt.subplots()[1]
+        ax = pg.plt.subplots()[1]
 
     iy, ix = np.nonzero(mat)  # != 0)
     recs = []
