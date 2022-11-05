@@ -1839,7 +1839,7 @@ def syscallTetgen(filename, quality=1.2, area=0, preserveBoundary=False,
     -------
     mesh : :gimliapi:`GIMLI::Mesh`
     """
-    # filebody = filename.replace('.poly', '')
+    filebody = filename.replace('.poly', '')
 
     # tetgen -pazVAC -q1.2 $MESH
     # test -O2
@@ -1865,6 +1865,7 @@ def syscallTetgen(filename, quality=1.2, area=0, preserveBoundary=False,
 
     if verbose:
         print(syscal)
+
     pg.debug(syscal)
 
     system(syscal)
