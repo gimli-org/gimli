@@ -1198,7 +1198,7 @@ PosVector Mesh::boundaryCenters() const {
     return pos;
 }
 
-RVector & Mesh::cellSizes() const{
+const RVector & Mesh::cellSizes() const{
 
     if (cellSizesCache_.size() != cellCount()){
         cellSizesCache_.resize(cellCount());
@@ -1216,7 +1216,7 @@ RVector & Mesh::cellSizes() const{
     return cellSizesCache_;
 }
 
-RVector & Mesh::boundarySizes() const{
+const RVector & Mesh::boundarySizes() const{
     if (boundarySizesCache_.size() != boundaryCount()){
         boundarySizesCache_.resize(boundaryCount());
 
@@ -1233,7 +1233,7 @@ RVector & Mesh::boundarySizes() const{
     return boundarySizesCache_;
 }
 
-PosVector & Mesh::boundarySizedNormals() const {
+const PosVector & Mesh::boundarySizedNormals() const {
     if (boundarySizedNormCache_.size() != boundaryCount()){
         boundarySizedNormCache_.resize(boundaryCount());
 

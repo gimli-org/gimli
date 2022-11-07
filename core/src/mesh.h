@@ -364,10 +364,10 @@ public:
     PosVector boundaryCenters() const;
 
     /*! Return the reference to a RVector of all cell sizes. Cached for static geometry.*/
-    RVector & cellSizes() const;
+    const RVector & cellSizes() const;
 
     /*! Return the reference to a RVector of all boundary sizes. Cached for static geometry. */
-    RVector & boundarySizes() const;
+    const RVector & boundarySizes() const;
 
     /*! Return the reference to the vector of scaled normal directions for each boundary.
      * Cached for static geometry and will be build on first call. Not thread safe, perhaps not python GC safe.
@@ -375,7 +375,7 @@ public:
      Where \f$ A_i\f$ is the size and \f$ \vec{n}_i\f$ the normal direction for the i-th boundary.
      If you want to use this, i.e. for the calculation of inside or outside flow through the boundary, you need to recognize the orientation of this boundary to the cell the flow goes into or comes from.
      For the left cell neighbor the normal direction should be always the outer normal.*/
-    PosVector & boundarySizedNormals() const;
+    const PosVector & boundarySizedNormals() const;
 
     /*! Set the marker to all boundaries in index array. */
     void setBoundaryMarkers(const IndexArray & ids, int marker);
