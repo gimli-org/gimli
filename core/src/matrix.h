@@ -454,40 +454,45 @@ public:
 
     DenseMatrix()
         : MatrixBase(){
+            // __MS("c0", this)
         this->resize(0, 0);
     }
 
     /*!Create Densematrix with specified dimensions.*/
     DenseMatrix(Index rows, Index cols)
         : MatrixBase(){
+            // __MS("c1", this)
         this->resize(rows, cols);
     }
     /*!Create Densematrix with specified dimensions and copy content
     from data.*/
     DenseMatrix(Index rows, Index cols, ValueType * data)
         : MatrixBase(){
+            // __MS("c2", this)
         this->resize(rows, cols);
         std::memcpy(_data.get(), data, sizeof(ValueType)*length());
     }
 
     DenseMatrix(const DenseMatrix < ValueType > & mat)
         : MatrixBase() {
+            // __MS("copy ", &mat, "into ", this)
         copy_(mat);
     }
-    DenseMatrix(const Matrix < ValueType > & S)
+    DenseMatrix(const Matrix < ValueType > & mat)
         : MatrixBase(){
-        this->resize(S.rows(), S.cols());
-        for (Index i = 0; i < S.rows(); i ++ ){
-            for (Index j = 0; j < S.cols(); j ++ ){
-                this->setVal(i, j, S[i][j]);
+        this->resize(mat.rows(), mat.cols());
+        for (Index i = 0; i < mat.rows(); i ++ ){
+            for (Index j = 0; j < mat.cols(); j ++ ){
+                this->setVal(i, j, mat[i][j]);
             }
         }
     }
-
     virtual ~DenseMatrix(){
+        // __MS("destruct:", this)
         free_();
     }
     DenseMatrix < ValueType > & operator=(const DenseMatrix < ValueType > & mat) {
+        // __MS("assign ", &mat, "into ", this)
         if (this != & mat){
             copy_(mat);
         } return *this;
