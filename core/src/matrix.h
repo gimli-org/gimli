@@ -454,45 +454,40 @@ public:
 
     DenseMatrix()
         : MatrixBase(){
-            // __MS("c0", this)
         this->resize(0, 0);
     }
 
     /*!Create Densematrix with specified dimensions.*/
     DenseMatrix(Index rows, Index cols)
         : MatrixBase(){
-            // __MS("c1", this)
         this->resize(rows, cols);
     }
     /*!Create Densematrix with specified dimensions and copy content
     from data.*/
     DenseMatrix(Index rows, Index cols, ValueType * data)
         : MatrixBase(){
-            // __MS("c2", this)
         this->resize(rows, cols);
         std::memcpy(_data.get(), data, sizeof(ValueType)*length());
     }
 
     DenseMatrix(const DenseMatrix < ValueType > & mat)
         : MatrixBase() {
-            // __MS("copy ", &mat, "into ", this)
         copy_(mat);
     }
-    DenseMatrix(const Matrix < ValueType > & mat)
+    DenseMatrix(const Matrix < ValueType > & S)
         : MatrixBase(){
-        this->resize(mat.rows(), mat.cols());
-        for (Index i = 0; i < mat.rows(); i ++ ){
-            for (Index j = 0; j < mat.cols(); j ++ ){
-                this->setVal(i, j, mat[i][j]);
+        this->resize(S.rows(), S.cols());
+        for (Index i = 0; i < S.rows(); i ++ ){
+            for (Index j = 0; j < S.cols(); j ++ ){
+                this->setVal(i, j, S[i][j]);
             }
         }
     }
+
     virtual ~DenseMatrix(){
-        // __MS("destruct:", this)
         free_();
     }
     DenseMatrix < ValueType > & operator=(const DenseMatrix < ValueType > & mat) {
-        // __MS("assign ", &mat, "into ", this)
         if (this != & mat){
             copy_(mat);
         } return *this;
@@ -542,10 +537,12 @@ public:
     }
 
     inline void setVal(Index i, Index j, const ValueType & v){
-        _data[this->_cols * i + j]  = v;
+        this->operator()(i,j) = v;
+        // _data[this->_cols * i + j]  = v;
     }
     inline void addVal(Index i, Index j, const ValueType & v){
-        _data[this->_cols * i + j] += v;
+        this->operator()(i,j) += v;
+        // _data[this->_cols * i + j] += v;
     }
 
     inline ValueType * pData(){ return _data.get(); }
@@ -771,6 +768,8 @@ public:
 
     inline Index length() const {return this->_rows * this->_cols;}
 
+    std::shared_ptr< ValueType [] > _data;
+
 protected:
     void copy_(const DenseMatrix< ValueType > & mat){
         resize(mat.rows(), mat.cols());
@@ -799,14 +798,13 @@ protected:
         _cols = 0;
         if (_data.use_count() > 1){
             __MS(_data.use_count())
-            log(Error, "Matrix data are in use and can't be new deallocated.");
+            log(Error, "Matrix data are in use and can't be deallocated.", this);
         }
         if (_data.use_count() == 1){
             _data.reset();
         }
     }
 
-    std::shared_ptr< ValueType [] > _data;
 };
 
 #define DEFINE_BINARY_OPERATOR__(OP, NAME) \
