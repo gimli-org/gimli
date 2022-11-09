@@ -5,7 +5,7 @@ import os
 import math
 
 import numpy as np
-#import matplotlib.image as mpimg
+import matplotlib.image as mpimg
 
 import pygimli as pg
 
@@ -97,6 +97,7 @@ class MapTilesCacheSingleton(object):
             return self._tilesCache[key]
         return None
 
+
 # We only want one instance of this global cache so its a singleton class
 __MatTilesCache__ = MapTilesCacheSingleton()
 
@@ -107,24 +108,21 @@ def deg2MapTile(lon_deg, lat_deg, zoom):
     n = 2.0 ** zoom
     xtile = int((lon_deg + 180.0) / 360.0 * n)
     ytile = int((1.0 - math.log(math.tan(lat_rad) +
-                                (1 / math.cos(lat_rad))) / math.pi) / 2.0 * n)
+                (1 / math.cos(lat_rad))) / math.pi) / 2.0 * n)
 
+    # correct the latitude to go from 0 (north) to 180 (south),
+    # instead of 90(north) to -90(south)
+    latitude = 90 - lat_deg
+    # correct the longitude to go from 0 to 360
+    longitude = 180 + lon_deg
 
+    # find tile size from zoom level
+    latTileSize = 180/(pow(2, (17-zoom)))
+    longTileSize = 360/(pow(2, (17-zoom)))
 
-    #correct the latitude to go from 0 (north) to 180 (south),
-    #instead of 90(north) to -90(south)
-    latitude=90 - lat_deg;
-    #//correct the longitude to go from 0 to 360
-    longitude=180 + lon_deg;
-
-    #//find tile size from zoom level
-    latTileSize = 180/(pow(2,(17-zoom)))
-    longTileSize = 360/(pow(2,(17-zoom)))
-
-    #//find the tile coordinates
-    tilex=(int)(longitude/longTileSize)
-    tiley=(int)(latitude/latTileSize)
-
+    # find the tile coordinates
+    # tilex = int(longitude / longTileSize)
+    # tiley = int(latitude / latTileSize)
 
     return (xtile, ytile)
 
@@ -146,7 +144,7 @@ def cacheFileName(fullname, vendor):
     """Createfilename and path to cache download data."""
     (dirName, fileName) = os.path.split(fullname)
 
-    #os.path.joint(pg.getConfigPath(), fileName)
+    # os.path.joint(pg.getConfigPath(), fileName)
 
     path = os.path.join(pg.getConfigPath(), vendor, dirName)
 
@@ -195,21 +193,21 @@ def getMapTile(xtile, ytile, zoom, vendor='OSM', verbose=False):
         # google maps api .. if you use it to often your IP will be blacklisted
         # mt.google.com will balance itself
         serverName = 'http://mt.google.com'
-        #nr = random.randint(1, 4)
-        #serverName = 'http://mt' + str(nr) + '.google.com'
+        # nr = random.randint(1, 4)
+        # serverName = 'http://mt' + str(nr) + '.google.com'
         # LAYERS:
-        #h = roads only
-        #m = standard roadmap
-        #p = terrain
-        #r = somehow altered roadmap
-        #s = satellite only
-        #t = terrain only
-        #y = hybrid
-        #,transit
+        # h = roads only
+        # m = standard roadmap
+        # p = terrain
+        # r = somehow altered roadmap
+        # s = satellite only
+        # t = terrain only
+        # y = hybrid
+        # ,transit
 
         url = serverName + '/vt/lyrs=m' + \
-              '&x=' + str(xtile) + '&y=' + str(ytile) + \
-              '&hl=en' + '&z=' + str(zoom)
+            '&x=' + str(xtile) + '&y=' + str(ytile) + \
+            '&hl=en' + '&z=' + str(zoom)
         imFormat = '.png'
     else:
         raise "Vendor: " + vendor + \
@@ -348,6 +346,7 @@ def underlayMap(ax, proj, vendor='OSM', zoom=-1, pixelLimit=None,
         ax.set_ylim(extent[2], extent[3])
 
     return gci
+
 
 def getBKGaddress(xlim, ylim, imsize=1000, zone=32, service='dop40',
                   usetls=False, epsg=0, uuid='', fmt='image/jpeg',
