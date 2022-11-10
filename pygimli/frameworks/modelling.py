@@ -543,6 +543,7 @@ class MeshModelling(Modelling):
         self._baseMesh = None
         # optional p2 refinement for forward task
         self._refineP2 = False
+        self._refineH2 = True
         self._pd = None
 
     def __hash__(self):
@@ -631,12 +632,15 @@ class MeshModelling(Modelling):
         This is called automatic when accessing self.mesh() so it ensures any
         effect of changing region properties (background, single).
         """
-        if self._refineP2 is True:
+        m = pg.Mesh(mesh)
+        if self._refineH2:
             pg.info("Creating refined mesh (P2) to solve forward task.")
-            m = mesh.createP2()
-        else:
-            pg.info("Creating refined mesh (H2) to solve forward task.")
-            m = mesh.createH2()
+            m = m.createH2()
+
+        if self._refineP2:
+            pg.info("Creating refined mesh (P2) to solve forward task.")
+            m = m.createP2()
+
         pg.verbose(m)
         return m
 
