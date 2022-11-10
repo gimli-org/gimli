@@ -453,29 +453,38 @@ public:
     virtual uint rtti() const { return GIMLI_DENSE_MATRIX_RTTI; }
 
     DenseMatrix()
-        : MatrixBase(){
+        : MatrixBase(), _rowView(0){
+        // __MS("mat(0)", this); 
         this->resize(0, 0);
+    }
+    /*!Create Densematrix with specified dimensions.*/
+    DenseMatrix(Index rows)
+        : MatrixBase(), _rowView(0){
+        this->resize(rows, 0);
+        log(Error, "Densematrix need rows and cols in constructor.");
     }
 
     /*!Create Densematrix with specified dimensions.*/
     DenseMatrix(Index rows, Index cols)
-        : MatrixBase(){
+        : MatrixBase(), _rowView(0){
+        // __MS("mat", this); 
         this->resize(rows, cols);
     }
     /*!Create Densematrix with specified dimensions and copy content
     from data.*/
     DenseMatrix(Index rows, Index cols, ValueType * data)
-        : MatrixBase(){
+        : MatrixBase(), _rowView(0){
         this->resize(rows, cols);
         std::memcpy(_data.get(), data, sizeof(ValueType)*length());
     }
 
     DenseMatrix(const DenseMatrix < ValueType > & mat)
-        : MatrixBase() {
+        : MatrixBase(), _rowView(0) {
+        // __MS("mat(C)", this, &mat); 
         copy_(mat);
     }
     DenseMatrix(const Matrix < ValueType > & S)
-        : MatrixBase(){
+        : MatrixBase(), _rowView(0){
         this->resize(S.rows(), S.cols());
         for (Index i = 0; i < S.rows(); i ++ ){
             for (Index j = 0; j < S.cols(); j ++ ){
@@ -485,22 +494,33 @@ public:
     }
 
     virtual ~DenseMatrix(){
+        // __MS("~mat", this); 
         free_();
     }
     DenseMatrix < ValueType > & operator=(const DenseMatrix < ValueType > & mat) {
+        // __MS("mat=", this, &mat); 
         if (this != & mat){
             copy_(mat);
         } return *this;
     }
 
+    // /*!Return write access \ref Vector of borrowed memory for the ith row.*/
+    // inline Vector< ValueType > & operator[](Index i) {
+    //     return row(i);
+    // }
+    // /*!Return \ref Vector of borrowed memory for the ith row.*/
+    // inline const Vector< ValueType > & operator[](Index i) const {
+    //     return row(i);
+    // }
     /*!Return write access \ref Vector of borrowed memory for the ith row.*/
-    Vector< ValueType > operator[](Index i) {
+    inline Vector< ValueType > operator[](Index i) {
         return row(i);
     }
     /*!Return \ref Vector of borrowed memory for the ith row.*/
-    Vector< ValueType > operator[](Index i) const {
+    inline Vector< ValueType > operator[](Index i) const {
         return row(i);
     }
+        
     /*! Read only access to matrix element i,j. */
     inline const ValueType & operator ()(Index i, Index j) const {
         // assert(i < this->_rows && j < this->_cols);
@@ -524,16 +544,6 @@ public:
             // throwLengthError(WHERE_AM_I + " ASSERT_LOWER2: " + str(i) + " < "  + str(this->_rows) + " or " + str(j) + " < "  + str(this->_cols));
         }
         return _data[this->_cols * i + j];
-    }
-
-    /*! Read only access to matrix row i. */
-    inline Vector< ValueType > operator ()(Index i) const {
-        return row(i);
-    }
-
-    /*! Write access to matrix row i */
-    inline Vector< ValueType > operator ()(Index i) {
-        return row(i);
     }
 
     inline void setVal(Index i, Index j, const ValueType & v){
@@ -567,16 +577,50 @@ public:
         }
     }
 
+    // /*! Return read only view to row i*/
+    // const Vector< ValueType > & row(Index i) const;
+
+    // /*! Return view to row i*/
+    // Vector< ValueType > & row(Index i);
+
     /*! Return read only view to row i*/
-    Vector< ValueType > row(Index i) const;
+    Vector< ValueType > row(Index i) const {
+#ifndef PYGIMLI_CAST
+        ASSERT_THIS_SIZE(i)
+        // return Vector< ValueType >(&_data[this->_cols * i], this->_cols);
+        return Vector< ValueType >(this->_cols, _data, this->_cols * i);
+#endif
+    }
 
     /*! Return view to row i*/
-    Vector< ValueType > row(Index i);
+    Vector< ValueType > row(Index i){
+#ifndef PYGIMLI_CAST
+        ASSERT_THIS_SIZE(i)
+        // return Vector< ValueType >(&_data[this->_cols * i], this->_cols);
+        return Vector< ValueType >(this->_cols, _data, this->_cols * i);
+#endif
+    }
 
-    inline void setRow(Index i, const Vector< ValueType > & r ) const {
+    /*! Return read only view to row i*/
+    Vector< ValueType > rowView(Index i) const{
+#ifndef PYGIMLI_CAST
+        ASSERT_THIS_SIZE(i)
+        return Vector< ValueType >(this->_cols, _data, this->_cols * i);
+#endif
+    }
+
+    /*! Return view to row i*/
+    Vector< ValueType > rowView(Index i){
+#ifndef PYGIMLI_CAST
+        ASSERT_THIS_SIZE(i)
+        return Vector< ValueType >(this->_cols, _data, this->_cols * i);
+#endif
+    }
+
+    inline void setRow(Index i, const Vector< ValueType > & r) {
         row(i).assign(r);
     }
-    inline void setCol(Index j, const Vector< ValueType > & r ) const {
+    inline void setCol(Index j, const Vector< ValueType > & r) const {
         for (Index i = 0; i < this->_rows; i ++){
             _data[i*this->_cols + j] = r[i];
         }
@@ -635,7 +679,7 @@ public:
             return *this;\
         } \
         if (this->rows() == 1 && this->cols() == A.cols()){ \
-            Vector < ValueType > tmp(this->row(0)); \
+            Vector < ValueType > tmp(&_data[0], this->cols()); /*!need deepcopy */\
             this->resize(A.rows(), this->cols()); \
             for (Index i = 0; i < this->size(); i ++){ \
                 this->setRow(i, A[i] OP tmp);} \
@@ -769,7 +813,8 @@ public:
     inline Index length() const {return this->_rows * this->_cols;}
 
     std::shared_ptr< ValueType [] > _data;
-
+    
+    mutable Vector < ValueType > * _rowView;
 protected:
     void copy_(const DenseMatrix< ValueType > & mat){
         resize(mat.rows(), mat.cols());
@@ -779,16 +824,29 @@ protected:
     void allocate_(Index rows, Index cols){
         if (rows * cols > _rows * _cols){
 
-            if (_data.use_count() > 1){
+            if (_data.use_count() > 2){
                 __MS(_data.use_count())
-               log(Error, "Matrix data are in use and can't be new allocated.");
+               throwError("Matrix data are in use and can't be new allocated.");
             }
-            if (_data.use_count() == 1){
-                _data.reset();
+            if (_data.use_count() == 2 || _data != nullptr){
+                free_();
             }
+            
             _data = std::shared_ptr< ValueType [] >(new ValueType[rows*cols]);
             std::memset(_data.get(), '\0', sizeof(ValueType) * rows*cols);
         }
+
+        if (cols != _cols || _rowView == nullptr){
+            if (_rowView != nullptr){
+                delete _rowView;
+            }
+            if (_data != nullptr){
+#ifndef PYGIMLI_CAST
+                _rowView = new Vector< ValueType >(cols, _data, 0);
+#endif
+            }
+        }
+
         _rows = rows;
         _cols = cols;
     }
@@ -796,6 +854,12 @@ protected:
     void free_(){
         _rows = 0;
         _cols = 0;
+
+        if (_rowView != nullptr){
+            delete _rowView;
+            _rowView = 0;
+        }
+
         if (_data.use_count() > 1){
             __MS(_data.use_count())
             log(Error, "Matrix data are in use and can't be deallocated.", this);
@@ -826,18 +890,18 @@ DEFINE_BINARY_OPERATOR__(*, MULT)
 
 #undef DEFINE_BINARY_OPERATOR__
 
-template <> DLLEXPORT Vector< double >
-DenseMatrix< double >::row(Index i) const;
-template <> DLLEXPORT Vector< double >
-DenseMatrix< double >::row(Index i);
+// template <> DLLEXPORT const Vector< double > &
+// DenseMatrix< double >::row(Index i) const;
+// template <> DLLEXPORT Vector< double > & 
+// DenseMatrix< double >::row(Index i);
+
+// template <> DLLEXPORT const Vector< Complex > &
+// DenseMatrix< Complex >::row(Index i) const;
+// template <> DLLEXPORT Vector< Complex > &
+// DenseMatrix< Complex >::row(Index i);
 
 template <> DLLEXPORT void
 DenseMatrix< double >::round(const double & v);
-
-template <> DLLEXPORT Vector< Complex >
-DenseMatrix< Complex >::row(Index i) const;
-template <> DLLEXPORT Vector< Complex >
-DenseMatrix< Complex >::row(Index i);
 template <> DLLEXPORT void
 DenseMatrix< Complex >::round(const Complex & v);
 

@@ -1923,7 +1923,6 @@ def createLoadVector(mesh, f=1.0, userData={}):
             b_l.u(c)
             # rhs.addVal(b_l.row(0) * fArray[b_l.idx()], b_l.idx())
             rhs.add(b_l, fA)
-
         # print("test reference solution:")
         # rhsRef = pg.Vector(mesh.nodeCount(), 0)
         # for c in mesh.cells():
@@ -1936,6 +1935,7 @@ def createLoadVector(mesh, f=1.0, userData={}):
         #       sum(rhs), sum(rhsRef))
 
             # rhs = pg.Vector(fArray)
+
     else:
         raise Exception("Load vector have the wrong size: " +
                         str(len(fArray)))

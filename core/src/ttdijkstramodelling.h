@@ -131,13 +131,6 @@ public:
         Edge_ second;
     };
 
-    template < class T > class ComparePairsClass_ : public std::binary_function< T, T, T > {
-    public:
-        bool operator() (const T & lhs, const T & rhs) {
-            return lhs.first > rhs.first;
-        }
-    };
-
 protected:
     std::vector < Edge_ > pathMatrix_;
     

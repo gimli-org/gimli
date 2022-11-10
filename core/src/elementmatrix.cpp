@@ -114,13 +114,13 @@ ElementMatrix < double >::operator += (const ElementMatrix < double > & E){
     }
     return *this;
 }
-template < > DLLEXPORT const Vector< double > &
-ElementMatrix < double >::operator[](Index row) const {
-    //__MS("inuse?")
+// template < > DLLEXPORT const Vector< double > &
+// ElementMatrix < double >::operator[](Index row) const {
+//     __MS("inuse?")
 
-    return mat_(row);
-    // return mat_.row(row);
-}
+//     return mat_[row];
+//     // return mat_.row(row);
+// }
 
 template < > DLLEXPORT Vector< double >
 ElementMatrix < double >::row_RM(Index i) const {
@@ -279,14 +279,30 @@ ElementMatrix < double > & ElementMatrix < double >::u2(const MeshEntity & ent,
             tmp = ent.N(x[i]);
             N.setCol(i, tmp);
         }
+
+        // print(N);
+
         double t;
         for (uint i = 0; i < nVerts; i ++){
             for (uint j = i; j < nVerts; j ++){
+                
+                // print(i, N[i]);
+                // print(j, N[j]);
+                // print('*', N[i],N[j]);
+                // print('*', N[i]*N[j]);
+                // print("*********************************************");
+                
                 t = sum(w * N[j] * N[i]);
+
                 u2[i][j] = t;
                 u2[j][i] = t;
+
+                // print(i, j, t, u2[i][j]);
             }
+                // exit(1);
         }
+        // print(u2);
+
         u2Cache_[ent.rtti()] = u2;
         it = u2Cache_.find(ent.rtti());
     }
@@ -298,6 +314,7 @@ ElementMatrix < double > & ElementMatrix < double >::u2(const MeshEntity & ent,
 
     for (Index i = 0; i < nVerts; i ++){
         for (Index j = 0; j < nVerts; j ++){
+            // print(i, j, A * it->second(i,j));
             mat_(i, j) = A * it->second(i,j);
         }
     }
@@ -709,7 +726,7 @@ ElementMatrix < double > & ElementMatrix < double >::gradU(const MeshEntity & en
 // __MS("EIGENNEEDFIX")
 // #else
 
-            mat_(j * ent.nodeCount()) += _B[i][j] * w[i] * ent.size();
+            mat_[j * ent.nodeCount()] += _B[i][j] * w[i] * ent.size();
 // #endif
 
         }
@@ -1345,6 +1362,7 @@ void ElementMatrix < double >::fillIds(const MeshEntity & ent, Index nC){
 //** old interface constructor
 template < > DLLEXPORT
 ElementMatrix < double >::ElementMatrix(Index dof) {
+    // __MS("EM()", this); 
     this->init(0, 0, 0);
     this->_nDof = dof;
     this->_newStyle = false;
@@ -1361,11 +1379,13 @@ ElementMatrix < double >::ElementMatrix(Index dof) {
 template < > DLLEXPORT
 ElementMatrix < double >::ElementMatrix(Index nCoeff, Index dofPerCoeff,
                                         Index dofOffset){
+    // __MS("EM(a,b,c)", this); 
     this->init(nCoeff, dofPerCoeff, dofOffset);
 }
 
 template < > DLLEXPORT
 ElementMatrix < double >::ElementMatrix(const ElementMatrix < double > & E){
+    // __MS("EM(a,b,c)", this); 
     this->copyFrom(E, true);
 }
 
@@ -1739,39 +1759,39 @@ ElementMatrix < double > & ElementMatrix < double >::grad(
         if (nCoeff == 1){
             //** scalar field
             if (ent.dim() > 0){
-                _matX[i](0).setVal(dNdx_[i], 0, nVerts); //dNx/dx
+                _matX[i][0].setVal(dNdx_[i], 0, nVerts); //dNx/dx
 // SET_MAT_ROW_SLICE(_matX[i],0,dNdx_[i], 1, 0, nVerts);
             }
             if (ent.dim() > 1){
-                _matX[i](1).setVal(dNdy_[i], 0, nVerts); //dNy/dy
+                _matX[i][1].setVal(dNdy_[i], 0, nVerts); //dNy/dy
 // SET_MAT_ROW_SLICE(_matX[i],1,dNdy_[i], 1, 0, nVerts);
             }
             if (ent.dim() > 2){
-                _matX[i](2).setVal(dNdz_[i], 0, nVerts); //dNz/dz
+                _matX[i][2].setVal(dNdz_[i], 0, nVerts); //dNz/dz
 // SET_MAT_ROW_SLICE(_matX[i],2,dNdz_[i], 1, 0, nVerts);
             }
         } else {
             //** vector field
             if (ent.dim() == 1){
-                _matX[i](0).setVal(dNdx_[i], 0, nVerts); //dNx/dx
+                _matX[i][0].setVal(dNdx_[i], 0, nVerts); //dNx/dx
 // SET_MAT_ROW_SLICE(_matX[i],0,dNdx_[i], 1, 0 * nVerts, 1 * nVerts);
             } else if (ent.dim() == 2){
                 if (elastic == true){
                     // special case for constitutive matrix (2x3)
-        _matX[i](0).setVal(dNdx_[i], 0 * nVerts, 1 * nVerts); //dNx/dx
-        _matX[i](1).setVal(dNdy_[i], 1 * nVerts, 2 * nVerts); //dNy/dy
-        _matX[i](2).setVal(dNdy_[i] * a, 0 * nVerts, 1 * nVerts); //dNy/dx
-        _matX[i](2).setVal(dNdx_[i] * a, 1 * nVerts, 2 * nVerts); //dNx/dy
+        _matX[i][0].setVal(dNdx_[i], 0 * nVerts, 1 * nVerts); //dNx/dx
+        _matX[i][1].setVal(dNdy_[i], 1 * nVerts, 2 * nVerts); //dNy/dy
+        _matX[i][2].setVal(dNdy_[i] * a, 0 * nVerts, 1 * nVerts); //dNy/dx
+        _matX[i][2].setVal(dNdx_[i] * a, 1 * nVerts, 2 * nVerts); //dNx/dy
 // SET_MAT_ROW_SLICE(_matX[i], 0,dNdx_[i], 1, 0 * nVerts, 1 * nVerts); //dNx/dx
 // SET_MAT_ROW_SLICE(_matX[i], 1,dNdy_[i], 1, 1 * nVerts, 2 * nVerts); //dNy/dy
 // SET_MAT_ROW_SLICE(_matX[i], 2,dNdy_[i], a, 0 * nVerts, 1 * nVerts); //dNy/dx
 // SET_MAT_ROW_SLICE(_matX[i], 2,dNdx_[i], a, 1 * nVerts, 2 * nVerts); //dNx/dy
                 } else{
                 // full matrix still unsure how to add constitutive for it
-            _matX[i](0).setVal(dNdx_[i], 0 * nVerts, 1 * nVerts); //dNx/dx
-            _matX[i](1).setVal(dNdy_[i], 0 * nVerts, 1 * nVerts); //dNx/dy
-            _matX[i](2).setVal(dNdx_[i], 1 * nVerts, 2 * nVerts); //dNy/dx
-            _matX[i](3).setVal(dNdy_[i], 1 * nVerts, 2 * nVerts); //dNy/dy
+            _matX[i][0].setVal(dNdx_[i], 0 * nVerts, 1 * nVerts); //dNx/dx
+            _matX[i][1].setVal(dNdy_[i], 0 * nVerts, 1 * nVerts); //dNx/dy
+            _matX[i][2].setVal(dNdx_[i], 1 * nVerts, 2 * nVerts); //dNy/dx
+            _matX[i][3].setVal(dNdy_[i], 1 * nVerts, 2 * nVerts); //dNy/dy
 // SET_MAT_ROW_SLICE(_matX[i], 0, dNdx_[i], 1, 0 * nVerts, 1 * nVerts); //dNx/dx
 // SET_MAT_ROW_SLICE(_matX[i], 1, dNdy_[i], 1, 0 * nVerts, 1 * nVerts); //dNx/dy
 // SET_MAT_ROW_SLICE(_matX[i], 2, dNdx_[i], 1, 1 * nVerts, 2 * nVerts); //dNy/dx
@@ -1782,15 +1802,15 @@ ElementMatrix < double > & ElementMatrix < double >::grad(
 
                 if (elastic == true){
                     // special case for constitutive matrix (3x6)
-_matX[i](0).setVal(dNdx_[i], 0 * nVerts, 1 * nVerts); //dNx/dx
-_matX[i](1).setVal(dNdy_[i], 1 * nVerts, 2 * nVerts); //dNy/dy
-_matX[i](2).setVal(dNdz_[i], 2 * nVerts, 3 * nVerts); //dNz/dz
-_matX[i](3).setVal(dNdy_[i] * a, 0 * nVerts, 1 * nVerts);//dNy/dx
-_matX[i](3).setVal(dNdx_[i] * a, 1 * nVerts, 2 * nVerts);//dNx/dy
-_matX[i](4).setVal(dNdz_[i] * a, 1 * nVerts, 2 * nVerts);//dNz/dy
-_matX[i](4).setVal(dNdy_[i] * a, 2 * nVerts, 3 * nVerts);//dNy/dz
-_matX[i](5).setVal(dNdz_[i] * a, 0 * nVerts, 1 * nVerts);//dNz/dx
-_matX[i](5).setVal(dNdx_[i] * a, 2 * nVerts, 3 * nVerts);//dNx/dz
+_matX[i][0].setVal(dNdx_[i], 0 * nVerts, 1 * nVerts); //dNx/dx
+_matX[i][1].setVal(dNdy_[i], 1 * nVerts, 2 * nVerts); //dNy/dy
+_matX[i][2].setVal(dNdz_[i], 2 * nVerts, 3 * nVerts); //dNz/dz
+_matX[i][3].setVal(dNdy_[i] * a, 0 * nVerts, 1 * nVerts);//dNy/dx
+_matX[i][3].setVal(dNdx_[i] * a, 1 * nVerts, 2 * nVerts);//dNx/dy
+_matX[i][4].setVal(dNdz_[i] * a, 1 * nVerts, 2 * nVerts);//dNz/dy
+_matX[i][4].setVal(dNdy_[i] * a, 2 * nVerts, 3 * nVerts);//dNy/dz
+_matX[i][5].setVal(dNdz_[i] * a, 0 * nVerts, 1 * nVerts);//dNz/dx
+_matX[i][5].setVal(dNdx_[i] * a, 2 * nVerts, 3 * nVerts);//dNx/dz
 // SET_MAT_ROW_SLICE(_matX[i],0,dNdx_[i], 1, 0 * nVerts, 1 * nVerts); //dNx/dx
 // SET_MAT_ROW_SLICE(_matX[i],1,dNdy_[i], 1, 1 * nVerts, 2 * nVerts); //dNy/dy
 // SET_MAT_ROW_SLICE(_matX[i],2,dNdz_[i], 1, 2 * nVerts, 3 * nVerts); //dNz/dz
@@ -1803,17 +1823,15 @@ _matX[i](5).setVal(dNdx_[i] * a, 2 * nVerts, 3 * nVerts);//dNx/dz
 // SET_MAT_ROW_SLICE(_matX[i],5,dNdx_[i], a, 2 * nVerts, 3 * nVerts);//dNx/dz
                 } else {
                 // full matrix still unsure how to add constitutive for it
-            _matX[i](0).setVal(dNdx_[i], 0 * nVerts, 1 * nVerts); //dNx/dx
-            _matX[i](1).setVal(dNdy_[i], 0 * nVerts, 1 * nVerts); //dNx/dy
-            _matX[i](2).setVal(dNdz_[i], 0 * nVerts, 1 * nVerts); //dNx/dz
-
-            _matX[i](3).setVal(dNdx_[i], 1 * nVerts, 2 * nVerts); //dNy/dx
-            _matX[i](4).setVal(dNdy_[i], 1 * nVerts, 2 * nVerts); //dNy/dy
-            _matX[i](5).setVal(dNdz_[i], 1 * nVerts, 2 * nVerts); //dNy/dz
-
-            _matX[i](6).setVal(dNdx_[i], 2 * nVerts, 3 * nVerts); //dNz/dx
-            _matX[i](7).setVal(dNdy_[i], 2 * nVerts, 3 * nVerts); //dNz/dy
-            _matX[i](8).setVal(dNdz_[i], 2 * nVerts, 3 * nVerts); //dNz/dz
+            _matX[i][0].setVal(dNdx_[i], 0 * nVerts, 1 * nVerts); //dNx/dx
+            _matX[i][1].setVal(dNdy_[i], 0 * nVerts, 1 * nVerts); //dNx/dy
+            _matX[i][2].setVal(dNdz_[i], 0 * nVerts, 1 * nVerts); //dNx/dz
+            _matX[i][3].setVal(dNdx_[i], 1 * nVerts, 2 * nVerts); //dNy/dx
+            _matX[i][4].setVal(dNdy_[i], 1 * nVerts, 2 * nVerts); //dNy/dy
+            _matX[i][5].setVal(dNdz_[i], 1 * nVerts, 2 * nVerts); //dNy/dz
+            _matX[i][6].setVal(dNdx_[i], 2 * nVerts, 3 * nVerts); //dNz/dx
+            _matX[i][7].setVal(dNdy_[i], 2 * nVerts, 3 * nVerts); //dNz/dy
+            _matX[i][8].setVal(dNdz_[i], 2 * nVerts, 3 * nVerts); //dNz/dz
 
 // SET_MAT_ROW_SLICE(_matX[i],0, dNdx_[i], 1, 0 * nVerts, 1 * nVerts); //dNx/dx
 // SET_MAT_ROW_SLICE(_matX[i],1, dNdy_[i], 1, 0 * nVerts, 1 * nVerts); //dNx/dy
@@ -1910,7 +1928,9 @@ ElementMatrix < double >::trace() const {
 
 template < > DLLEXPORT RSmallMatrix 
 ElementMatrix < double >::traceX() const {
-    RSmallMatrix  ret(_matX.size());
+    // __M
+    RSmallMatrix  ret(_matX.size(), _matX[0].cols());
+    // __MS(ret.rows(), ret.cols())
     Index i = 0;
     for (auto & m: _matX){
         if (m.size() == 4){
@@ -1924,6 +1944,7 @@ ElementMatrix < double >::traceX() const {
         }
         i++;
     } 
+    // __MS(ret)
     return ret;
 }
 
@@ -2347,6 +2368,8 @@ void mult(const ElementMatrix < double > & A, const PosVector & f,
 void mult(const ElementMatrix < double > & A, const RSmallMatrix  &  b,
           ElementMatrix < double > & C){
 
+    // __MS("b:\n", b)
+
     if (b.rows()*b.cols() == A.cols()){
         //** const scalar scale of each matrix components
         THROW_TO_IMPL
@@ -2371,13 +2394,13 @@ void mult(const ElementMatrix < double > & A, const RSmallMatrix  &  b,
             RSmallMatrix & Ci = (*C.pMatX())[i];
             const RSmallMatrix & Ai = A.matX()[i];
             Ci = Ai;
-            Ci *= b(i);
+            Ci *= b[i];
         }
         C.integrate();
     } else {
         if (b.rows() != A.matX()[0].rows()){
-            __MS(b)
-            __MS(A.matX()[0])
+            __MS("b:\n", b)
+            __MS("A.matX()[0]:\n", A.matX()[0])
             log(Error, "Parameter matrix rows need to match Element sub matrix rows: ",
                 A.matX()[0].rows());
             return;

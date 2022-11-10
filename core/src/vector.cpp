@@ -119,10 +119,15 @@ void Vector< double >::add(const ElementMatrix < double > & A,
     A.integrate();
     //!! warning this will lead to incorrect results with non constant scale
     //!! use new fea style for correct integration
+    // __M
     if (A.cols() == 1){
-        addVal(A.col(0) * scale.get_(A.rowIDs()), A.rowIDs());
+        // addVal(A.mat().col(0) * scale.get_(A.rowIDs()), A.rowIDs());
+        addVal(A.mat().col(0), A.rowIDs(), scale);
     } else {
-        addVal(A.row(0) * scale.get_(A.ids()), A.ids());
+        //** This[ids] += vals[:] * scale[ids] 
+        // __MS(A.mat().row(0))
+        // addVal(A.mat().row(0) * scale.get_(A.ids()), A.ids());
+        addVal(A.mat().row(0), A.ids(), scale);
     }
 }
 

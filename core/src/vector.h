@@ -63,6 +63,9 @@
     #include <functional>
 #endif
 
+//#define __DDS(...) __MS(__VA_ARGS__)
+#define __DDS(...)
+
 namespace GIMLI{
 
 template < class ValueType, class A > class __VectorExpr;
@@ -98,15 +101,17 @@ public:
     #endif
 
     VectorIterator()
-        : val_(0), maxSize_(0), end_(0){
+        : val_(0), maxSize_(0), end_(0), data_(0), _haveBorrowedData(false){
     }
 
-    VectorIterator(ValueType * v, Index size)
-        : val_(v), maxSize_(size), end_(v + size){
+    VectorIterator(ValueType * v, Index size, const Vector < ValueType > * owner)
+        : val_(v), maxSize_(size), end_(v + size), 
+        data_(owner->data_), _haveBorrowedData(owner->_haveBorrowedData){
     }
 
     VectorIterator(const VectorIterator < ValueType > & iter)
-        : val_(iter.val_), maxSize_(iter.maxSize_), end_(iter.val_ + iter.maxSize_){
+        : val_(iter.val_), maxSize_(iter.maxSize_), end_(iter.val_ + iter.maxSize_), data_(iter.data_), 
+        _haveBorrowedData(iter._haveBorrowedData){
     }
 
     VectorIterator < ValueType > & operator = (const VectorIterator < ValueType > & iter){
@@ -115,6 +120,8 @@ public:
             val_ = iter.val_;
             maxSize_ = iter.maxSize_ ;
             end_ = iter.end_;
+            data_ = iter.data_;
+            _haveBorrowedData = iter._haveBorrowedData;
         }
         return *this;
     }
@@ -180,14 +187,23 @@ public:
     ValueType * val_;
     Index maxSize_;
     ValueType * end_;
+    ValueType * data_; // begin()
+    bool _haveBorrowedData;
 
 };
+
+
+template < class VEC1, class VEC2 > void _assertDifferentBorrowedView(const VEC1 & a,
+                                                         const VEC2 & b){
+//    if (a._haveBorrowedData && a.data_ == b.data_) {
+//        log(Error, "vector a and b have same borrowed data and are the same single rowview of RDensematrix. This is probably not what you want." );
+//    }
+}
 
 //! One dimensional array aka Vector of limited size.
 /*!
 One dimensional array aka Vector of limited size. Size limit depends on platform (32bit system maxsize = 2^32, 64bit system, maxsize=2^64)
 */
-
 template< class ValueType > class DLLEXPORT Vector {
 public:
     typedef ValueType ValType;
@@ -201,13 +217,15 @@ public:
 // this constructor is dangerous for IndexArray in pygimli ..
 // there is an autocast from int -> IndexArray(int)
     Vector()
-        : size_(0), data_(0), capacity_(0){
+        : _haveBorrowedData(false), size_(0), data_(0), capacity_(0){
+        __DDS("vec(0)", this); 
     // explicit Vector(Index n = 0) : data_(NULL), begin_(NULL), end_(NULL) {
         resize(0);
         clean();
     }
     Vector(Index n)
-        : size_(0), data_(0), capacity_(0){
+        : _haveBorrowedData(false), size_(0), data_(0), capacity_(0){
+        __DDS("vec(int)", this); 
     // explicit Vector(Index n = 0) : data_(NULL), begin_(NULL), end_(NULL) {
         resize(n);
         clean();
@@ -217,17 +235,20 @@ public:
      * Construct one-dimensional array of size n, and fill it with val
      */
     Vector(Index n, const ValueType & val)
-        : size_(0), data_(0), capacity_(0){
+        : _haveBorrowedData(false), size_(0), data_(0), capacity_(0){
+        __DDS("vec(int, float)", this); 
         resize(n);
         fill(val);
     }
     Vector(std::initializer_list< ValueType > l):
-        size_(0), data_(0), capacity_(0){
+        _haveBorrowedData(false), size_(0), data_(0), capacity_(0){
+        __DDS("vec([])", this); 
         resize(l.size());
         std::copy(l.begin(), l.end(), data_);
     }
     Vector(ValueType * buf, Index n):
-        size_(0), data_(0), capacity_(0){
+        _haveBorrowedData(false), size_(0), data_(0), capacity_(0){
+        __DDS("vec(*, n)", this); 
         reserve(n);
         size_ = n;
         std::memcpy(data_, buf, sizeof(ValueType) * n);
@@ -237,31 +258,35 @@ public:
      * Construct vector from file. Shortcut for Vector::load
      */
     Vector(const std::string & filename, IOFormat format=Ascii)
-        : size_(0), data_(0), capacity_(0){
+        : _haveBorrowedData(false), size_(0), data_(0), capacity_(0){
         this->load(filename, format);
     }
     /*!
      * Copy constructor. Create new vector as a deep copy of v.
      */
     Vector(const Vector< ValueType > & v)
-        : size_(0), data_(0), capacity_(0){
+        : _haveBorrowedData(false), size_(0), data_(0), capacity_(0){
+        __DDS("vec(copy)", this, &v)
+        // this->_haveBorrowedData = v._haveBorrowedData;
+        // no shallow copy
+        copy_(v);
 
-        if (v._borrowedData){
-            // __MS(v.size())
-            // __MS(v._borrowedDataOffset)
-            size_ = v.size();
-            this->_borrowedData = v._borrowedData;
-            this->_borrowedDataOffset = v._borrowedDataOffset;
-            this->data_ = &v._borrowedData[v._borrowedDataOffset];
-        } else {
-            copy_(v);
-        }
+        // if (v._haveBorrowedData){
+            // // __MS(v.size(), v._borrowedDataOffset)
+            // size_ = v.size();
+            // this->_borrowedData = v._borrowedData;
+            // this->_borrowedDataOffset = v._borrowedDataOffset;
+            // this->data_ = &v._borrowedData[v._borrowedDataOffset];
+        // } else {
+        // }
+        __DDS("vec copied:", this)
     }
     /*!
      * Copy constructor. Create new vector as a deep copy of the slice v[start, end)
      */
     Vector(const Vector< ValueType > & v, Index start, Index end)
-        : size_(0), data_(0), capacity_(0){
+        : _haveBorrowedData(false), size_(0), data_(0), capacity_(0){
+        __DDS("vec(copy, start, end)", this); 
         resize(end - start);
         std::copy(&v[start], &v[end], data_);
     }
@@ -269,7 +294,8 @@ public:
      * Copy constructor. Create new vector from expression
      */
     template < class A > Vector(const __VectorExpr< ValueType, A > & v)
-        : size_(0), data_(0), capacity_(0){
+        : _haveBorrowedData(false), size_(0), data_(0), capacity_(0){
+        __DDS("vec(expr)", this); 
         resize(v.size());
         assign_(v);
     }
@@ -279,21 +305,29 @@ public:
      * Copy constructor. Create new vector as a deep copy of std::vector(Valuetype)
      */
     Vector(const std::vector< ValueType > & v)
-        : size_(0), data_(0), capacity_(0){
+        : _haveBorrowedData(false), size_(0), data_(0), capacity_(0){
+        __DDS("std::vec()", this); 
         resize(v.size());
         for (Index i = 0; i < v.size(); i ++) data_[i] = v[i];
         //std::copy(&v[0], &v[v.size()], data_);
     }
     /*! Create Vector from borrowed data. */
     Vector(Index n, const std::shared_ptr< ValueType [] > & d, Index offset=0)
-        : size_(n), data_(0), capacity_(0){
+        : _haveBorrowedData(true), size_(n), data_(0), capacity_(0){
+        __DDS("vec(boorowed)", this, n, d)
         this->_borrowedData = d;
-        this->_borrowedDataOffset = offset;
-        data_ = &d.get()[offset];
+        
+        if (d == nullptr){
+            log(Error, "borrowed data is empty.");
+        } else {
+            this->setBorrowedDataOffset(offset);
+        }
+        __DDS("vec(borrowed) created:", this, *this)
     }
 
     template < class ValueType2 > Vector(const Vector< ValueType2 > & v)
-        : size_(0), data_(0), capacity_(0){
+        : _haveBorrowedData(false), size_(0), data_(0), capacity_(0){
+        __DDS("vec(vec2)", this)
         resize(v.size());
         for (Index i = 0; i < v.size(); i ++) data_[i] = ValueType(v[i]);
         //std::copy(&v[0], &v[v.size()], data_);
@@ -301,10 +335,14 @@ public:
 #endif
 
     /*! Default destructor. */
-    ~Vector() { free_(); }
+    ~Vector() { 
+        __DDS("~vec", this); 
+        free_();
+    }
 
     /*! Assignment operator. Creates a new vector as copy of v */
     Vector< ValueType > & operator = (const Vector< ValueType > & v) {
+        __DDS("vec=", this); 
         if (this != &v) {
             copy_(v);
         }
@@ -321,6 +359,7 @@ public:
 
     /*! Assignment operator. Creates a new vector as from expression. */
     template < class A > Vector< ValueType > & operator = (const __VectorExpr< ValueType, A > & v) {
+        __DDS("vec = expr", this); 
         assign_(v);
         return *this;
     }
@@ -626,6 +665,20 @@ public:
         for (Index i = 0; i < idx.size(); i ++) data_[idx[i]] += vals[i];
         return *this;
     }
+    /*! This[ids] += vals[:] * alpha[ids] */
+    inline Vector< ValueType > & addVal(const Vector < ValueType > & vals,
+                                        const IndexArray & ids, 
+                                        const Vector < ValueType > & alpha) {
+        // assert(max(ids) < vals.size() && vals.size() == alpha.size() // expensive?
+        ASSERT_EQUAL(this->size(), alpha.size())
+        
+        Index id;
+        for (Index i = 0; i < ids.size(); i ++) {
+            id = ids[i];
+            data_[id] += vals[i] * alpha[id];
+        }
+        return *this;
+    }
     /*! sub values from vals at IndexArray idx.
      * Throws length exception if sizes of vals and idx mismatch. */
     inline Vector< ValueType > & subVal(const Vector < ValueType > & vals,
@@ -709,6 +762,7 @@ public:
 #else
     BVector operator < (const Vector< ValueType > & v) const {
         ASSERT_EQUAL(this->size(), v.size())
+        _assertDifferentBorrowedView(*this, v); 
 
         BVector ret(this->size(), 0);
 
@@ -722,6 +776,7 @@ public:
 
 #define DEFINE_COMPARE_OPERATOR_VEC__(OP, FUNCT) \
     BVector operator OP (const Vector< ValueType > & v) const { \
+        _assertDifferentBorrowedView(*this, v); \
         ASSERT_EQUAL(this->size(), v.size()) \
         BVector ret(this->size(), 0); \
         FUNCT<ValueType> f; \
@@ -772,6 +827,7 @@ DEFINE_COMPARE_OPERATOR__(>, std::greater)
 
 #define DEFINE_UNARY_MOD_OPERATOR__(OP, FUNCT) \
   inline Vector< ValueType > & operator OP##= (const Vector < ValueType > & v) { \
+        _assertDifferentBorrowedView(*this, v); \
         if (v.size() == 1) return *this OP##= v[0];\
         ASSERT_SIZES_GREATER_EQUAL((*this), v) \
         std::transform(data_, data_ + v.size(), &v[0], data_, FUNCT()); return *this; } \
@@ -800,6 +856,9 @@ DEFINE_UNARY_MOD_OPERATOR__(*, MULT)
     /*! Resize if n differs size() and fill new with val. Old data are preserved. */
     void resize(Index n, ValueType fill){
         if (n != size_){
+            if (this->_haveBorrowedData){
+                throwError("Vector with borrowed data can't be resized.");
+            }
             reserve(n);
             for (Index i = size_; i < n; i ++) data_[i]=fill;
             size_ = n;
@@ -813,7 +872,7 @@ DEFINE_UNARY_MOD_OPERATOR__(*, MULT)
     /*! Reserve memory. Old data are preserved*/
     void reserve(Index n){
 
-        if (this->_borrowedData.use_count() > 0){
+        if (this->_haveBorrowedData){
             throwError("Vector with borrowed data can't be resized.");
         }
 
@@ -827,7 +886,7 @@ DEFINE_UNARY_MOD_OPERATOR__(*, MULT)
 
         if (newCapacity != capacity_) {
 
-            if (this->_borrowedData){
+            if (this->_haveBorrowedData){
                 log(Error, "Cannot resize Vector with borrowed data");
                 return;
             }
@@ -864,6 +923,7 @@ DEFINE_UNARY_MOD_OPERATOR__(*, MULT)
     }
 
     inline void assign(const Vector< ValueType > & v){
+        _assertDifferentBorrowedView(*this, v);
         this->copy_(v);
     }
     template < class ExprOP > inline void assign(const ExprOP & v){
@@ -1016,9 +1076,9 @@ DEFINE_UNARY_MOD_OPERATOR__(*, MULT)
         return true;
     }
 
-    VectorIterator< ValueType > beginPyIter() const { return VectorIterator< ValueType >(data_, size_); }
-    VectorIterator< ValueType > begin() const { return VectorIterator< ValueType >(data_, size_); }
-    VectorIterator< ValueType > end() const { return VectorIterator< ValueType >(data_ + size_, 0); }
+    VectorIterator< ValueType > beginPyIter() const { return VectorIterator< ValueType >(data_, size_, this); }
+    VectorIterator< ValueType > begin() const { return VectorIterator< ValueType >(data_, size_, this); }
+    VectorIterator< ValueType > end() const { return VectorIterator< ValueType >(data_ + size_, 0, this); }
 
     Index hash() const {
         Index seed = 0;
@@ -1031,14 +1091,20 @@ DEFINE_UNARY_MOD_OPERATOR__(*, MULT)
     // std::shared_ptr< ValueType [] > & borrowedData() const {
     //     return _borrowedData; }
 
+    inline void setBorrowedDataOffset(Index offset){
+        data_ = &_borrowedData.get()[offset];
+    }
+    bool _haveBorrowedData; // we need a flag if borrowedData are used, it cannot be read from the shared_ptr in case an empty pointer was set.
     std::shared_ptr< ValueType [] > _borrowedData;
-    Index _borrowedDataOffset;
+    
+    Index size_;
+    ValueType * data_;
 protected:
 
     void free_(){
         size_ = 0;
         capacity_ = 0;
-        if (this->_borrowedData){
+        if (this->_haveBorrowedData){
             // delete [] this->_borrowedData;
         } else {
             if (data_)  delete [] data_;
@@ -1047,13 +1113,7 @@ protected:
     }
 
     void copy_(const Vector< ValueType > & v){
-
         if (v.size()) {
-            if (this->_borrowedData){
-                // __MS(this->_borrowedData)
-                // __MS(this->_borrowedData.get())
-            }
-
             // __MS(*this)
             resize(v.size());
                 //"" check speed for memcpy here
@@ -1077,8 +1137,6 @@ protected:
         }
     }
 
-    Index size_;
-    ValueType * data_;
     Index capacity_;
 
 
@@ -1204,7 +1262,11 @@ template< class ValueType, class Iter > void assignResult(Vector< ValueType > & 
 
 template< class ValueType, class A > class __VectorExpr {
 public:
-    __VectorExpr(const A & a) : iter_(a) { }
+    __VectorExpr(const A & a) : iter_(a) { 
+        this->data_ = a.data_;
+        this->_haveBorrowedData = a._haveBorrowedData;
+        // __MS("Expr", this->data_, this->_haveBorrowedData)
+    }
 
     inline ValueType operator [] (Index i) const { return iter_[i]; }
 
@@ -1219,13 +1281,19 @@ public:
     A * begin() { return iter_.begin(); }
     A * end() { return iter_.end(); }
 
-private:
+// private:
     A iter_;
+    ValueType * data_;
+    bool _haveBorrowedData;
 };
 
 template< class ValueType, class A, class Op > class __VectorUnaryExprOp {
 public:
-    __VectorUnaryExprOp(const A & a) : iter_(a) { }
+    __VectorUnaryExprOp(const A & a) : iter_(a) { 
+        this->data_ = a.data_;
+        this->_haveBorrowedData = a._haveBorrowedData;
+        // __MS("V", this->data_, this->_haveBorrowedData)
+    }
 
     inline ValueType operator [] (Index i) const { return Op()(iter_[i]); }
 
@@ -1235,13 +1303,20 @@ public:
 
     inline Index size() const { return iter_.size(); }
 
-private:
+// private:
     A iter_;
+    ValueType * data_;
+    bool _haveBorrowedData;
 };
 
 template< class ValueType, class A, class B, class Op > class __VectorBinaryExprOp {
 public:
-    __VectorBinaryExprOp(const A & a, const B & b) : iter1_(a), iter2_(b) { }
+    __VectorBinaryExprOp(const A & a, const B & b) : iter1_(a), iter2_(b) { 
+        _assertDifferentBorrowedView(a, b); 
+        this->data_ = a.data_;
+        this->_haveBorrowedData = a._haveBorrowedData;
+        // __MS("V*W", this->data_, this->_haveBorrowedData)
+    }
 
     inline ValueType operator [] (Index i) const { return Op()(iter1_[i], iter2_[i]); }
 
@@ -1251,14 +1326,20 @@ public:
 
     inline Index size() const { return iter2_.size(); }
 
-private:
+// private:
     A iter1_;
     B iter2_;
+    ValueType * data_;
+    bool _haveBorrowedData;
 };
 
 template< class ValueType, class A, class Op > class __VectorValExprOp {
 public:
-    __VectorValExprOp(const A & a, const ValueType & val) : iter_(a), val_(val) { }//__DS(val << " " << &val)}
+    __VectorValExprOp(const A & a, const ValueType & val) : iter_(a), val_(val) { 
+        this->data_ = a.data_;
+        this->_haveBorrowedData = a._haveBorrowedData;
+        // __MS("V*a", this->data_, this->_haveBorrowedData)
+    }
 
     inline ValueType operator [] (Index i) const { return Op()(iter_[i], val_); }
 
@@ -1268,14 +1349,21 @@ public:
 
     inline Index size() const { return iter_.size(); }
 
-private:
+// private:
     A iter_;
     ValueType val_;
+    ValueType * data_;
+    bool _haveBorrowedData;
 };
 
 template< class ValueType, class A, class Op > class __ValVectorExprOp {
 public:
-    __ValVectorExprOp(const ValueType & val, const A & a) : iter_(a), val_(val) { }
+    __ValVectorExprOp(const ValueType & val, const A & a) : iter_(a), val_(val) 
+    {
+        this->data_ = a.data_;
+        this->_haveBorrowedData = a._haveBorrowedData;
+        // __MS("a*V", this->data_, this->_haveBorrowedData)
+    }
 
     inline ValueType operator [] (Index i) const { return Op()(val_, iter_[i]); }
 
@@ -1285,9 +1373,11 @@ public:
 
     inline Index size() const { return iter_.size(); }
 
-private:
+// private:
     A iter_;
     ValueType val_;
+    ValueType * data_;
+    bool _haveBorrowedData;
 };
 
 #define DEFINE_UNARY_EXPR_OPERATOR__(OP, FUNCT)\
@@ -1329,6 +1419,7 @@ template < class T >							\
 __VectorExpr< T, __VectorBinaryExprOp< T, VectorIterator< T >, VectorIterator< T >, FUNCT > > \
 operator OP (const Vector< T > & a, const Vector< T > & b){		\
     typedef __VectorBinaryExprOp< T, VectorIterator< T >, VectorIterator< T >, FUNCT > ExprT; \
+    _assertDifferentBorrowedView(a, b); \
     return __VectorExpr< T, ExprT >(ExprT(a.begin(), b.begin()));	\
 }									\
                                                                         \
@@ -1350,6 +1441,7 @@ template< class T, class A >						\
 __VectorExpr< T, __VectorBinaryExprOp< T, __VectorExpr< T, A >, VectorIterator< T >, FUNCT > > \
 operator OP (const __VectorExpr< T, A > & a, const Vector< T > & b){	\
   typedef __VectorBinaryExprOp< T, __VectorExpr< T, A >, VectorIterator< T >, FUNCT > ExprT; \
+  _assertDifferentBorrowedView(a, b); \
   return __VectorExpr< T, ExprT >(ExprT(a, b.begin()));		\
 }									\
     									\
@@ -1357,6 +1449,7 @@ template< class T, class A >					\
 __VectorExpr< T, __VectorBinaryExprOp< T, VectorIterator< T >, __VectorExpr< T, A >, FUNCT > > \
 operator OP (const Vector< T > & a, const __VectorExpr< T, A > & b){	\
   typedef __VectorBinaryExprOp< T, VectorIterator< T >, __VectorExpr< T, A >, FUNCT > ExprT; \
+  _assertDifferentBorrowedView(a, b); \
   return __VectorExpr< T, ExprT >(ExprT(a.begin(), b));		\
 }									\
 									\
@@ -1378,6 +1471,7 @@ template< class T, class A, class B >				\
 __VectorExpr< T, __VectorBinaryExprOp< T, __VectorExpr< T, A >, __VectorExpr< T, B >, FUNCT > > \
 operator OP (const __VectorExpr< T, A > & a, const __VectorExpr< T, B > & b){ \
   typedef __VectorBinaryExprOp< T, __VectorExpr< T, A >, __VectorExpr< T, B >, FUNCT > ExprT; \
+  _assertDifferentBorrowedView(a, b); \
   return __VectorExpr< T, ExprT >(ExprT(a, b));			\
 }									\
 \
@@ -1804,6 +1898,13 @@ std::ostream & operator << (std::ostream & str, const std::vector < T > & vec){
 
 template < class T >
 std::ostream & operator << (std::ostream & str, const Vector < T > & vec){
+    for (Index i = 0; i < vec.size(); i ++) str << vec[i] << " ";
+    return str;
+}
+
+template < class ValueType, class A >
+std::ostream & operator << (std::ostream & str, 
+                            const __VectorExpr< ValueType, A > & vec){
     for (Index i = 0; i < vec.size(); i ++) str << vec[i] << " ";
     return str;
 }

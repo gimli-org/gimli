@@ -128,38 +128,39 @@ namespace pyplusplus{ namespace aliases{
 
 namespace GIMLI{
 
+// ensure ret is deep copy of a or it will fail for borrowed data arrays
 #define DEFINE_PY_VEC_OPERATOR__(OP) \
     inline IndexArray operator OP (const IndexArray & a, const IndexArray & b){\
-        IndexArray ret(a);   ret OP##=b; return ret; } \
+        IndexArray ret(a, 0, a.size());   ret OP##=b; return ret; } \
     inline IndexArray operator OP (const IndexArray & a, Index b){ \
-        IndexArray ret(a);   ret OP##=b; return ret; } \
+        IndexArray ret(a, 0, a.size());   ret OP##=b; return ret; } \
     inline IndexArray operator OP (const IndexArray & a, int b){ \
-        IndexArray ret(a);   ret OP##=(Index)abs(b); return ret; } \
+        IndexArray ret(a, 0, a.size());   ret OP##=(Index)abs(b); return ret; } \
     inline IndexArray operator OP (Index a, const IndexArray & b){ \
         IndexArray ret(b.size()); for (Index i = 0; i < b.size(); i ++) ret[i] = a OP b[i]; return ret; } \
     inline IndexArray operator OP (int a, const IndexArray & b){ \
         IndexArray ret(b.size()); for (Index i = 0; i < b.size(); i ++) ret[i] = (Index)abs(a) OP b[i]; return ret; } \
     inline RVector operator OP (const RVector & a, const RVector & b){ \
-        RVector ret(a);   ret OP##=b; return ret; }                           \
+        RVector ret(a, 0, a.size());   ret OP##=b; return ret; }                           \
     inline RVector operator OP (const double & a, const RVector & b){ \
         RVector ret(b.size()); for (Index i = 0; i < b.size(); i ++) ret[i] = a OP b[i]; return ret; } \
     inline RVector operator OP (const RVector & a, const double & b){ \
-        RVector ret(a);   ret OP##=b; return ret; }                           \
+        RVector ret(a, 0, a.size());   ret OP##=b; return ret; }                           \
     inline IVector operator OP (const IVector & a, const IVector & b){ \
-        IVector ret(a);   ret OP##=b; return ret; }                           \
+        IVector ret(a, 0, a.size()); ret OP##=b; return ret; }                           \
     inline IVector operator OP (const IVector & a, SIndex b){ \
-        IVector ret(a);   ret OP##=b; return ret; }                           \
+        IVector ret(a, 0, a.size());   ret OP##=b; return ret; }                           \
     inline IVector operator OP (SIndex a, const IVector & b){ \
         IVector ret(b.size()); \
         for (Index i = 0; i < b.size(); i ++) ret[i] = a OP b[i]; return ret; } \
     inline CVector operator OP (const CVector & a, const CVector & b){ \
-        CVector c(a);   c OP##=b; return c; }                           \
+        CVector c(a, 0, a.size());   c OP##=b; return c; }                           \
     inline CVector operator OP (const CVector & a, const Complex & b){ \
-        CVector c(a);   c OP##=b; return c; }                           \
+        CVector c(a, 0, a.size());   c OP##=b; return c; }                           \
     inline CVector operator OP (const CVector & a, const RVector & b){ \
-        CVector c(a);   c OP##=toComplex(b); return c; }                        \
+        CVector c(a, 0, a.size());   c OP##=toComplex(b); return c; }                        \
     inline CVector operator OP (const CVector & a, const double  & b){ \
-        CVector c(a);   c OP##=Complex(b); return c; }                         \
+        CVector c(a, 0, a.size());   c OP##=Complex(b); return c; }                         \
     inline CVector operator OP (const Complex & v, const CVector & b){ \
         CVector c(b.size());   for (Index i = 0; i < c.size(); i ++) c[i] = v OP b[i]; return c; } \
     inline CVector operator OP (const double  & v, const CVector & b){ \

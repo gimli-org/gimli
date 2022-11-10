@@ -49,9 +49,9 @@ pgcore.RDenseMatrix.dtype = np.float
 
 def __RMatrix_str(self):
     import pygimli as pg
-    s = "RMatrix: " + str(self.rows()) + " x " + str(self.cols())
+    s = str(type(self)).split('.')[-1].split("'")[0] + ": " + str(self.rows()) + " x " + str(self.cols())
 
-    if self.rows() < 6:
+    if self.rows() < 10:
         s += '\n'
 
         for row in self:
@@ -63,7 +63,7 @@ def __RMatrix_str(self):
 def __CMatrix_str(self):
     s = "CMatrix: " + str(self.rows()) + " x " + str(self.cols())
 
-    if self.rows() < 6:
+    if self.rows() < 10:
         s += '\n'
         for v in range(self.rows()):
             s += self[v].__str__() + '\n'
@@ -80,7 +80,7 @@ def __ElementMatrix_str(self):
 
     maxRowID = int(np.log10(max(self.rowIDs())))+2
 
-    if self.multR is not None:
+    if hasattr(self, 'multR') and self.multR is not None:
         if (pg.isScalar(self.multR) and self.multR != 1.0) or \
             pg.isPos(self.multR) or \
             pg.isArray(self.multR) or\
@@ -91,6 +91,7 @@ def __ElementMatrix_str(self):
         else:
             s = '\n ' + f' multR = {self.multR} (unknown how to apply)' + '\n ' + ' ' * maxRowID
     else:
+        self.multR = 1
         s = '\n ' + ' ' * maxRowID
 
     # print(self.mat())
@@ -105,8 +106,8 @@ def __ElementMatrix_str(self):
     for i in range(self.mat().rows()):
         s += str(self.rowIDs()[i]).rjust(maxRowID) + " :"
         if isinstance(self.multR, (int, float)):
-            for v in self.row_RM(i)*self.multR:
-                s += pg.pf(v).rjust(9)
+            for v in self.row_RM(i):
+                s += pg.pf(v*self.multR).rjust(9)
         elif pg.isPos(self.multR):
             if self.mat().cols() == len(self.multR):
                 for v in self.row_RM(i)*self.multR:
@@ -145,10 +146,38 @@ pgcore.CMatrix.__repr__ = __CMatrix_str
 pgcore.ElementMatrix.__repr__ = __ElementMatrix_str
 
 
+# for copy by reference objects we need to keep the owner objects alive, i.e. increase the reference counter 
+__ElementMatrix_mat = pgcore.ElementMatrix.mat
+def __ElementMatrix_mat_GC__(self):
+    R = __ElementMatrix_mat(self)
+    R.owner = self
+    return R
+pgcore.ElementMatrix.mat = __ElementMatrix_mat_GC__
+
+# temporary object for debugging 
+__TElementMatrix_mat = pgcore.TestEM.mat
+def __TElementMatrix_mat_GC__(self):
+    R = __TElementMatrix_mat(self)
+    R.owner = self
+    return R
+pgcore.TestEM.mat = __TElementMatrix_mat_GC__
+
+
+__DenseMatrix_row = pgcore.RDenseMatrix.row
+def __DenseMatrix_row_GC__(self, i):
+    R = __DenseMatrix_row(self, i)
+    R.owner = self
+    return R
+pgcore.RDenseMatrix.row = __DenseMatrix_row_GC__
+
+
 def __CopyRMatrixTranspose__(self):
     return pgcore.RMatrix(np.array(self).T)
-
 pgcore.RMatrix.T = property(__CopyRMatrixTranspose__)
+
+def __CopyRDenseMatrixTranspose__(self):
+    return pgcore.RDenseMatrix(np.array(self).T)
+pgcore.RDenseMatrix.T = property(__CopyRDenseMatrixTranspose__)
 
 
 def __SparseMatrix_str(self):

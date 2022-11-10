@@ -39,6 +39,13 @@
 
 namespace GIMLI {
 
+template < class T > class ComparePairsClass_ : public std::binary_function< T, T, T > {
+    public:
+        bool operator() (const T & lhs, const T & rhs) {
+            return lhs.first > rhs.first;
+        }
+};
+
 Dijkstra::Dijkstra()
 : _root(std::numeric_limits<Index>::max()){
 

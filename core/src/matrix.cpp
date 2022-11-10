@@ -129,31 +129,50 @@ double cblasMinTime(bool reset){
 //##############################################################################
 // DenseMatrix related implementations
 //##############################################################################
+// template <> const Vector< double > DenseMatrix< double >::rowView(Index i) const {
+//     ASSERT_THIS_SIZE(i)
+//     return Vector< double >(this->_cols, _data, this->_cols * i);
+// }
+// template <> Vector< double > DenseMatrix< double >::rowView(Index i) {
+//     ASSERT_THIS_SIZE(i)
+//     return Vector< double >(this->_cols, _data, this->_cols * i);
+// }
+// template <> Vector< Complex > DenseMatrix< Complex >::rowView(Index i) const {
+//     ASSERT_THIS_SIZE(i)
+//     return Vector< Complex >(this->_cols, _data, this->_cols * i);
+// }
+// template <> Vector< Complex > DenseMatrix< Complex >::rowView(Index i) {
+//     ASSERT_THIS_SIZE(i)
+//     return Vector< Complex >(this->_cols, _data, this->_cols * i);
+// }
 
-template <> Vector< double >
-DenseMatrix< double >::row(Index i) const {
-    ASSERT_THIS_SIZE(i)
-    return Vector< double >(this->_cols, _data, this->_cols * i);
-}
-template <> Vector< double >
-DenseMatrix< double >::row(Index i) {
-    ASSERT_THIS_SIZE(i)
-    return Vector< double >(this->_cols, _data, this->_cols * i);
-}
+// template <> const Vector< double > & DenseMatrix< double >::row(Index i) const {
+//     ASSERT_THIS_SIZE(i)
+//     _rowView->setBorrowedDataOffset(this->_cols * i);
+//     // __MS(i, *_rowView)
+//     return *_rowView;
+// }
+// template <> Vector< double > & DenseMatrix< double >::row(Index i) {
+//     ASSERT_THIS_SIZE(i)
+//     _rowView->setBorrowedDataOffset(this->_cols * i);
+//     // __MS(i, *_rowView)
+//     return *_rowView;
+// }
+// template <> const Vector< Complex > & DenseMatrix< Complex >::row(Index i) const {
+//     ASSERT_THIS_SIZE(i)
+//     _rowView->setBorrowedDataOffset(this->_cols * i);
+//     return *_rowView;
+// }
+// template <> Vector< Complex > & DenseMatrix< Complex >::row(Index i) {
+//     ASSERT_THIS_SIZE(i)
+//     _rowView->setBorrowedDataOffset(this->_cols * i);
+//     return *_rowView;
+// }
+
 template <> void
 DenseMatrix< double >::round(const double & tol){
     Vector < double > view(length(), this->_data, 0);
     view.round(tol);
-}
-template <> Vector< Complex >
-DenseMatrix< Complex >::row(Index i) const {
-    ASSERT_THIS_SIZE(i)
-    return Vector< Complex >(this->_cols, _data, this->_cols * i);
-}
-template <> Vector< Complex >
-DenseMatrix< Complex >::row(Index i) {
-    ASSERT_THIS_SIZE(i)
-    return Vector< Complex >(this->_cols, _data, this->_cols * i);
 }
 template <> void
 DenseMatrix< Complex >::round(const Complex & tol){
@@ -559,17 +578,6 @@ void transMult(const CDenseMatrix & A,
 #endif
 }
 
-template <> DenseMatrix<double> &
-DenseMatrix<double>::transAdd(const DenseMatrix < double > & a) {
-    THROW_TO_IMPL
-    return *this;
-}
-template <> DenseMatrix<Complex> &
-DenseMatrix<Complex>::transAdd(const DenseMatrix < Complex > & a){
-    THROW_TO_IMPL
-    return *this;
-}
-
 void mult(const RDenseMatrix & A, const RDenseMatrix & B,
           RDenseMatrix & C, const double & a, const double & b){
     return mult_MM_T(A, B, C, a, b);
@@ -645,6 +653,33 @@ Matrix<double>::transAdd(const Matrix < double > & a){
 }
 template <> Matrix < Complex > &
 Matrix<Complex>::transAdd(const Matrix < Complex > & a){
+    return _transAdd(this, a);
+}
+template < class ValueType > DenseMatrix < ValueType > &
+_transAdd(DenseMatrix < ValueType > * a, const DenseMatrix < ValueType > & b){
+    // a+=b.T
+    if (a->rows() != b.cols() || a->cols() != b.rows()){
+        __MS(a->rows(), a->cols(), ":",  b.rows(), b.cols())
+        // print(*a);
+        // print(b);
+        log(Error, "Matrix _transAdd with wrong dimensions");
+        // #exit(-1);
+        return *a;
+    }
+
+    for (Index i = 0; i < a->rows(); i ++ ){
+        for (Index j = 0; j < a->cols(); j ++ ){
+            a->_data[a->cols() * i + j] += b._data[b.cols() * j + i];
+        }
+    }
+    return *a;
+}
+template <> DenseMatrix<double> &
+DenseMatrix<double>::transAdd(const DenseMatrix < double > & a) {
+    return _transAdd(this, a);
+}
+template <> DenseMatrix<Complex> &
+DenseMatrix<Complex>::transAdd(const DenseMatrix < Complex > & a){
     return _transAdd(this, a);
 }
 

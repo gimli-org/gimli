@@ -313,6 +313,9 @@ class TestRVectorMethods(unittest.TestCase):
         np.testing.assert_equal(len(a < b), 10)
         np.testing.assert_equal(len(a > b), 10)
 
+
+class TestMatrixMethods(unittest.TestCase):
+
     def testRMatrixIndex(self):
         A = pg.Matrix(3,4)
         A[0] = pg.Vector(4,1)
@@ -330,6 +333,45 @@ class TestRVectorMethods(unittest.TestCase):
         # return a const reference. use the tuple idx above
         # A[2][2] = 2.0
         # np.testing.assert_equal(sum(A[2]), 2)
+
+    def testRDensMatrixAccess(self):
+
+        A = pg.core.RMatrix(2,2)
+        A = pg.core.RDenseMatrix(2,2)
+        print(type(A[0] + 1.0))
+        print(A[0] + 1)
+        print(A[0] + 1)
+        # for v in A[0] + 1:
+        #     print(v)
+        # for v in A[0] + 1:
+        #     print(v)
+
+    def testRDensMatrixRefCounting(self):
+
+        def createE():
+            E = pg.core.ElementMatrix()
+            E.setIds([0, 1], [0,0])
+            E.multR = 1.0
+            E.resize(2, 2)
+            A = pg.core.RMatrix(2,2)
+            A = pg.core.RDenseMatrix(A+1.0)
+            E.setMat(A)
+            return E
+
+            ## for debugging only
+            # E = pg.core.TestEM()
+            # A = pg.core.RDenseMatrix(2, 2)
+            # A[0].fill(1.0)
+            # E.setMat(A)
+            # return E
+
+        E = createE()
+        np.testing.assert_equal(E.mat().row(0), [1.0, 1.0])
+
+        ### Without GC patch () this fails since mat() is copy by reference, and E is destructed after createE().mat() has been called so mat is not more valid
+        np.testing.assert_equal(createE().mat().row(0), [1.0, 1.0])
+
+        
 
 if __name__ == '__main__':
 

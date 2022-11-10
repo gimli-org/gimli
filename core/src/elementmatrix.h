@@ -28,17 +28,42 @@ class FEAFunction;
 class ElementMatrixMap;
 
 
+//# temporary object for debugging 
+class TestEM {
+public:
+    TestEM(){
+        __MS("EM()", this)
+    }
+    ~TestEM(){
+        __MS("~EM()", this)
+    }
+
+    inline void setMat(const RSmallMatrix & m) { mat_ = m; }
+    /*! Return data matrix. */
+    inline RSmallMatrix * pMat() { return & mat_; }
+    /*! Return data for row i. */
+    inline const RSmallMatrix & mat() const { return mat_; }
+    /*! Return data for row i. */
+
+    RSmallMatrix mat_;
+};
+
+
+
+
 template < class ValueType > class DLLEXPORT ElementMatrix {
 public:
     /*! If dof != 0 then scalar field approximation is to be supposed.
     For vector field solution give a dof, means be the number of nodes of the current mesh. */
     ElementMatrix(Index dof=0);
 
-    ~ElementMatrix() {}
+    ~ElementMatrix() { 
+        // __MS("~EM", this); 
+    }
 
     /*! Assignment operator.*/
     ElementMatrix < ValueType > & operator = (const ElementMatrix < ValueType > & E) {
-        std::cout << "ElementMatrix::operator = (" << std::endl;
+        // std::cout << "ElementMatrix::operator = (" << std::endl;
         THROW_TO_IMPL
         if (this != & E){
 //             this->resize(E.size());
@@ -47,7 +72,7 @@ public:
         } return *this;
     }
 
-    const Vector< ValueType > & operator[](Index row) const;
+    // const Vector< ValueType > & operator[](Index row) const;
 
     inline const ValueType & operator()(Index i, Index j) const {
         return mat_(i,j);
@@ -84,9 +109,9 @@ public:
     inline const RSmallMatrix & mat() const { return mat_; }
     /*! Return data for row i. */
 
-    inline const Vector< ValueType > & row(Index i) const {
-        return (*this)[i];
-    }
+    // inline const Vector< ValueType > & row(Index i) const {
+    //     return mat_[i];
+    // }
     Vector< ValueType > row_RM(Index i) const;
 
     /*! Return data for col i. */
