@@ -2726,7 +2726,7 @@ def crankNicolson(times, S, I, f=None,
             A = I + S * (dt * theta)
 
             if dirichlet is not None:
-                dirichlet.apply(A)
+                dirichlet.apply(A, t=times[n])
 
             solver.factorize(A)
 
