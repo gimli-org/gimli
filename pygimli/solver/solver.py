@@ -128,7 +128,8 @@ def cellValues(mesh, arg, **kwargs):
         The last for anistropic or elastic tensors.
 
         Key can be integer for cell marker or str, which will be interpreted as
-        splice or list. See examples or `py:mod:pygimli.solver.parseMarkersDictKey`.
+        splice or list.
+        See examples or `py:mod:pygimli.solver.parseMarkersDictKey`.
 
         Iterable of length mesh.nodeCount() to be interpolated to cell centers.
 
@@ -188,7 +189,6 @@ def cellValues(mesh, arg, **kwargs):
     >>> t = pg.solver.cellValues(mesh, {':' : cellVal})
     >>> print([t[c.id()](c) for c in mesh.cells()])
     [0.5, 1.5, 2.5, 3.5]
-    
     """
     if isinstance(arg, dict):
 
@@ -223,11 +223,11 @@ def cellValues(mesh, arg, **kwargs):
     # if arg if scalar or global data type, ndarray or Matrix but not the right
     # size assume global tensor
     if isinstance(arg, np.ndarray) or \
-        isinstance(arg, pg.core.RMatrix) or \
-        isinstance(arg, pg.core.CMatrix) or \
-        isinstance(arg, float) or \
-        isinstance(arg, int) or \
-        isinstance(arg, complex):
+            isinstance(arg, pg.core.RMatrix) or \
+            isinstance(arg, pg.core.CMatrix) or \
+            isinstance(arg, float) or \
+            isinstance(arg, int) or \
+            isinstance(arg, complex):
         return [arg]*mesh.cellCount()
 
     return parseArgToArray(arg,
@@ -412,7 +412,8 @@ def generateBoundaryValue(boundary, arg, time=0.0, userData={},
             val = np.ones(boundary.nodeCount(), dtype=float) * val
         if len(val) != boundary.nodeCount():
             print(val)
-            pg.critical("Boundary value can not be generated for nCoeff=1 val:", val,)
+            pg.critical("Boundary value cannot be generated for nCoeff=1 val:",
+                        val)
     else:
         val = np.atleast_2d(val)
         # pg._y(val)
@@ -874,7 +875,7 @@ def div(mesh, v):
     9 [2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0]
     >>> divCells = pg.solver.div(mesh, v(mesh.cellCenters()))
     >>> # divergence from boundary values are exact where the divergence from
-    >>> # interpolated cell center values are wrong due to interpolation to the boundary
+    >>> # interpolated cell center values wrong due to interpolation to boundary
     >>> print(sum(divCells))
     12.0
     >>> mesh = pg.createGrid(x=np.linspace(0, 1, 4),
@@ -1123,8 +1124,8 @@ class LinSolver(object):
     def factorizeSciPy(self, mat):
         """"""
         self._m = pg.utils.sparseMatrix2csr(mat)
-        scipy = pg.optImport('scipy', 'Used for sparse linear solver.')
-
+        # scipy is not dependency
+        # scipy = pg.optImport('scipy', 'Used for sparse linear solver.')
         from scipy.sparse.linalg import factorized
 
         self._desiredArrayType = np.array
@@ -1227,7 +1228,8 @@ def linSolve(mat, b, solver=None, verbose=False, **kwargs):
         _m = pg.utils.sparseMatrix2csr(mat)
         # pg._r('convert', swatch.duration(restart=True))
 
-        scipy = pg.optImport('scipy', 'Used for sparse linear solver.')
+        # scipy is now a dependency
+        # scipy = pg.optImport('scipy', 'Used for sparse linear solver.')
         # pg._r('import', swatch.duration(restart=True))
 
         from scipy.sparse.linalg import spsolve
@@ -1295,7 +1297,7 @@ def applyDirichlet(mat, rhs, uDirIndex, uDirichlet):
 
 def getDirichletMap(mat, boundaryPairs, time=0.0, userData={},
                     nodePairs=None, dofOffset=0, nCoeff=1, dofPerCoeff=None):
-    """Get map of index: dirichlet value
+    r"""Get map of index: dirichlet value
 
     Apply Dirichlet boundary condition to the system matrix S and rhs vector.
     The right hand side values for h can be given for each boundary
@@ -2200,7 +2202,9 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
     ----
     * unsteady ub and dub
     * 'Infinity' Boundary condition (u vanishes at infinity)
-    * 'Cauchy' Boundary condition (guaranties u and du on same boundary, will never work here because the problem becomes ill posed and would need some inverse strategy to solve.)
+    * 'Cauchy' Boundary condition (guaranties u and du on same boundary)
+      will never work here because the problem becomes ill posed and would need
+      some inverse strategy to solve.
     * Example for
         * elastic parameter
         * anisotropic (float/complex)
