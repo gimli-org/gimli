@@ -27,7 +27,7 @@ import pygimli.meshtools as mt
 # the bottom of a lake. We used cables with 2m spaced takeouts.
 #
 
-data = ert.load("data/lake.ohm")
+data = pg.getExampleData("ert/lake.ohm")
 print(data)
 
 # %%%
@@ -146,7 +146,7 @@ pg.show(water, resWater);
 
 mgr.inv.setRegularization(zWeight=0.1)
 mgr.invert()
-#mgr.invert(zWeight=0.1)  # only temporarily
+# mgr.invert(zWeight=0.1)  # only temporarily
 mgr.showResult(**kw);
 
 # %%%
