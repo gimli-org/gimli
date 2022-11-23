@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+# sphinx_gallery_thumbnail_number = 8
 r"""
 Regularization - concepts explained
 -----------------------------------
@@ -43,6 +44,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pygimli as pg
 import pygimli.meshtools as mt
+from pygimli.math.matrix import GeostatisticConstraintsMatrix
 from pygimli.core.math import symlog
 
 # %%%
@@ -85,7 +87,6 @@ from pygimli.frameworks import PriorModelling
 rect = mt.createRectangle(start=[0, -10], end=[10, 0])
 mesh = mt.createMesh(rect, quality=34.5, area=0.3)
 print(mesh)
-pg.show(mesh);
 
 # %%%
 # We define two positions where we associate two arbitrary values.
@@ -120,15 +121,19 @@ pg.show(mesh, result);
 
 C = fop.constraints()
 print(C.rows(), C.cols(), mesh)
-ax, _ = pg.show(fop.constraints(), markersize=1);
+ax, _ = pg.show(fop.constraints(), markersize=1)
 
 row = C.row(111)
 nz = np.nonzero(row)[0]
 print(nz, row[nz])
 
+# %%%
+# How does that change the regularization matrix C?
+#
+
 inv.setRegularization(cType=1, zWeight=0.2)  # the default
 result = inv.run(**invkw)
-pg.show(mesh, result);
+pg.show(mesh, result)
 
 RM = fop.regionManager()
 cw = RM.constraintWeights()
@@ -140,7 +145,7 @@ print(min(cw), max(cw))
 
 inv.setRegularization(cType=0)  # damping difference to starting model
 result = inv.run(**invkw)
-pg.show(mesh, result);
+ax, _ = pg.show(mesh, result)
 
 # %%%
 # Obviously, the damping keeps the model small ($\log 1=0$) as the
@@ -150,16 +155,24 @@ pg.show(mesh, result);
 
 invkw["isReference"] = True
 result = inv.run(**invkw)
-pg.show(mesh, result);
+ax, cb = pg.show(mesh, result)
+
+# %%%
+# cType 10 means a mix between 1st order smoothness and damping (0)
+#
 
 inv.setRegularization(cType=10)  # mix of 1st order smoothing and damping
 result = inv.run(**invkw)
-pg.show(mesh, result);
+ax, _ = pg.show(mesh, result)
+
+# %%%
+# In the matrix both contributions are under each other
+#
 
 C = fop.constraints()
 print(C.rows(), C.cols())
 print(mesh)
-pg.show(fop.constraints(), markersize=1);
+ax, _ = pg.show(fop.constraints(), markersize=1)
 
 # %%%
 # We see that we have the first order smoothness and the identity matrix
@@ -169,7 +182,7 @@ pg.show(fop.constraints(), markersize=1);
 
 inv.setRegularization(cType=2)  # 2nd order smoothing
 result = inv.run(**invkw)
-pg.show(mesh, result);
+ax, _ = pg.show(mesh, result)
 
 # %%%
 # We have a closer look at the constraints matrix
@@ -177,7 +190,7 @@ pg.show(mesh, result);
 
 C = fop.constraints()
 print(C.rows(), C.cols(), mesh)
-pg.show(C, markersize=1);
+ax, _ = pg.show(C, markersize=1)
 
 # %%%
 # It looks like a Laplace operator and seems to have a wider range
@@ -205,72 +218,47 @@ pg.show(C, markersize=1);
 # https://www.pygimli.org/_tutorials_auto/3_inversion/plot_6-geostatConstraints.html
 #
 
-ind = mesh.findCell([5, -5]).id()
-print(ind)
-CM = pg.utils.covarianceMatrix(mesh, I=[8, 4], dip=-20)
-pg.show(mesh, CM[:, ind], cMap="magma_r");
-
 # %%%
-# We have a look at the matrix and multiply it with a zero vector of just one 1
-#
-
-C = pg.matrix.Cm05Matrix(CM)
-print(C)
-
-vec = pg.Vector(mesh.cellCount())
-vec[ind] = 1.0
-pg.show(mesh, C*vec, cMin=-1, cMax=1, cMap="bwr");
-
-# %%%
+# We generate such a matrix and multiply it with a zero vector of just one 1.
 # For displaying the wide range of magnitudes we use the symlog function
 #
 
-pg.show(mesh, symlog(C*vec, 1e-2), cMin=-2, cMax=2, cMap="bwr");
+C = GeostatisticConstraintsMatrix(mesh=mesh, I=[8, 4], dip=-20)
+print(C)
+
+vec = pg.Vector(mesh.cellCount())
+vec[mesh.findCell([5, -5]).id()] = 1.0
+ax, _ = pg.show(mesh, symlog(C*vec, 1e-2), cMin=-2, cMax=2, cMap="bwr")
 
 # %%%
-# For comparison, we use a much finer mesh
+# For comparison, we use a much finer mesh and compute the same matrix
 #
 
 fineMesh = mt.createMesh(rect, area=0.03)
-pg.show(fineMesh);
-
-# %%%
-# and do the same
-#
-
-Cfine = pg.matrix.GeostatisticConstraintsMatrix(
-    mesh=fineMesh, I=[8, 4], dip=-20)
-indFine = fineMesh.findCell([5, -5]).id()
+Cfine = GeostatisticConstraintsMatrix(mesh=fineMesh, I=[8, 4], dip=-20)
 vec = pg.Vector(fineMesh.cellCount())
-vec[indFine] = 1.0
-pg.show(fineMesh, symlog(Cfine*vec, 1e-2), cMin=-1, cMax=1, cMap="bwr");
+vec[fineMesh.findCell([5, -5]).id()] = 1.0
+ax, _ = pg.show(fineMesh, symlog(Cfine*vec, 1e-2), cMin=-1, cMax=1, cMap="bwr")
 
 # %%%
 # Application
 # ~~~~~~~~~~~
-# We now pass the correlation length directly to the inversion instance
+# We can pass the correlation length directly to the inversion instance
 #
 
 inv.setRegularization(correlationLengths=[2, 2, 2])
 result = inv.run(**invkw)
-pg.show(mesh, result);
+ax, cb = pg.show(mesh, result)
 
 # %%%
 # This look structurally similar to the second-order smoothness, but can
 # drive values outside the expected range in regions of no data coverage.
-#
-
-inv.setRegularization(correlationLengths=[2, 0.5, 2])
-result = inv.run(**invkw)
-pg.show(mesh, result);
-
-# %%%
-# We change the dip to be inclining
+# We change the correlation lengths and the dip to be inclining
 #
 
 inv.setRegularization(correlationLengths=[2, 0.5, 2], dip=-20)
 result = inv.run(**invkw)
-pg.show(mesh, result);
+ax, cb = pg.show(mesh, result)
 
 # %%%
 # We now add many more points.
@@ -279,7 +267,7 @@ pg.show(mesh, result);
 N = 30
 x = np.random.rand(N) * 10
 y = -np.random.rand(N) * 10
-v = np.random.rand(N)*10 + 10
+v = np.random.rand(N) * 10 + 10
 plt.plot(x, y, "*")
 
 # %%%
@@ -290,13 +278,13 @@ fop = PriorModelling(mesh, zip(x, y))
 inv = pg.Inversion(fop=fop, verbose=True)
 inv.setRegularization(correlationLengths=[4, 4])
 result = inv.run(v, np.ones_like(v)*0.03, startModel=10)
-pg.show(mesh, result);
+ax, cb = pg.show(mesh, result)
 
 # %%%
 # Comparing the data with the model response is always a good idea.
 #
 
-plt.plot(v, inv.response, "*");
+plt.plot(v, inv.response, "*")
 
 # %%%
 # Individual regularization operators
@@ -311,7 +299,7 @@ G = pg.matrix.GeostatisticConstraintsMatrix(mesh=mesh, I=[2, 0.5], dip=-20)
 I = pg.matrix.IdentityMatrix(mesh.cellCount(), val=0.1)
 C.addMatrix(G, 0, 0)
 C.addMatrix(I, mesh.cellCount(), 0)
-pg.show(C);
+ax, _ = pg.show(C)
 
 # %%%
 # Note that in `pg.matrix` you find a lot of matrices and matrix generators.
@@ -321,7 +309,7 @@ pg.show(C);
 
 fop.setConstraints(C)
 result = inv.run(v, np.ones_like(v)*0.03, startModel=10, isReference=True)
-pg.show(mesh, result);
+ax, cb = pg.show(mesh, result)
 
 # %%%
 # If you are using a method manager, you access the inversion instance by
