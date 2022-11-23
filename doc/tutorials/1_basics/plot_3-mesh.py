@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+# sphinx_gallery_thumbnail_number = 2
 r"""
 The mesh class
 --------------
@@ -20,7 +21,6 @@ create and manipulate meshes from the scratch.
 #
 
 import numpy as np
-import matplotlib.pyplot as plt
 import pygimli as pg
 
 # %%%
@@ -64,9 +64,11 @@ for c in mesh.cells():
     ax.text(c.center().x(), c.center().y(), str(c.id()), color="C2")
 
 # %%%
-# Or we show the all (cell or boundary) markers of a mesh
+# Or we can change and show all (cell or boundary) markers of a mesh
 #
 
+mesh.boundary(2).setMarker(1)
+mesh.boundary(6).setMarker(2)
 ax, _ = pg.show(mesh, markers=True, showMesh=True)
 
 # %%%
@@ -94,26 +96,33 @@ for b in mesh.boundaries():
         left = b.leftCell()
         right = b.rightCell()
         print(left.id(), right.id())
-    print()
 
 # %%%
 # We visualize some related property and attribute it the mesh cells.
 #
 
 voltage = np.arange(mesh.nodeCount()) + 10
-pg.show(mesh, voltage);
+ax, cb = pg.show(mesh, voltage)
 
 # %%%
+# Node-based data are typically shown in form of contour lines.
+#
 # We can add this (node-based) vector to the mesh as a property.
 # The same can be done for cell-based properties.
 #
 
 mesh["voltage"] = voltage
 mesh["velocity"] = np.arange(mesh.cellCount()) + 2
+ax, cb = pg.show(mesh, "velocity")
 
 # %%%
-# The VTK format can save these properties along with the mesh.
-# It can be nicely visualized by a number of programs, e.g. Paraview.
+# Cell-based data are, on the other hand, valid for the whole cell, which is
+# why they are typically shown by filled patches.
+#
+# The VTK format can save these properties along with the mesh, point data like
+# the voltage under POINT_DATA and cell data like velocity under CELL_DATA.
+# It is particularly suited to save inversion results in one file.
+# 3D vtk files can be nicely visualized by a number of programs, e.g. Paraview.
 #
 
 mesh.exportVTK("mesh.vtk")
