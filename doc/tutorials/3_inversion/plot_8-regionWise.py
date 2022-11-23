@@ -71,23 +71,27 @@ for i, n in enumerate(plc.nodes()[:12]):
     ax.text(n.x(), n.y(), str(i))
     print(i, n.x(), n.y())
 
+# %%%
 # So node number 10 is the left one at the shore
+#
+
 for i in range(95, plc.nodeCount()):
     print(i, plc.node(i).x(), plc.node(i).y())
 
+# %%
 # and 100 the first on the other side. We connect nodes 10 and 100 by an edge
+#
+
 plc.createEdge(plc.node(10), plc.node(100), marker=-1)
 plc.addRegionMarker([50, -0.1], marker=3)
 pg.show(plc, markers=True);
 
 # %%%
-# Region 3 represents the water body and should be treated differently. We
-# expect it to be rather homogeneous, maybe with a slight layering.
+# As the lake bottom is not a surface boundary (-1) anymore, but an inside
+# boundary, we set its marker >0 by iterating through all boundaries.
 #
 
 mesh = mt.createMesh(plc, quality=34.4)
-pg.show(mesh, markers=True, showMesh=True);
-
 for b in mesh.boundaries():
     if b.marker() == -1 and not b.outside():
         b.setMarker(2)
@@ -110,14 +114,14 @@ mgr.invert()
 # response.
 #
 
-mgr.showFit();
+ax = mgr.showFit()
 
 # %%%
 # Both look very similar, but let us look at the misfit function in
 # detail.
 #
 
-mgr.showMisfit();
+mgr.showMisfit()
 
 # %%%
 # There is still systematics in the misfit. Ideally it should be a random
@@ -125,7 +129,7 @@ mgr.showMisfit();
 #
 
 kw = dict(cMin=20, cMax=300, logScale=True, cMap="Spectral_r")
-mgr.showResult(**kw);
+ax, cb = mgr.showResult(**kw)
 
 # %%%
 # Apparently, the two regions are already decoupled from each other which
@@ -135,7 +139,7 @@ mgr.showResult(**kw);
 
 water = mesh.createSubMesh(mesh.cells(mesh.cellMarkers() == 3))
 resWater = mgr.model[len(mgr.model)-water.cellCount():]
-pg.show(water, resWater);
+ax, cb = pg.show(water, resWater)
 
 # %%%
 # Apparently, all values are below the expected 22.5\ $\Omega$\ m
@@ -147,7 +151,7 @@ pg.show(water, resWater);
 mgr.inv.setRegularization(zWeight=0.1)
 mgr.invert()
 # mgr.invert(zWeight=0.1)  # only temporarily
-mgr.showResult(**kw);
+ax, cb = mgr.showResult(**kw)
 
 # %%%
 # Region-specific regularization
@@ -159,7 +163,7 @@ mgr.showResult(**kw);
 
 mgr.inv.setRegularization(3, limits=[20, 25], trans="log")
 mgr.invert()
-mgr.showResult(**kw);
+ax, cb = mgr.showResult(**kw)
 
 # %%%
 # As a result of the log-log transform, we have a homogeneous body but
@@ -170,7 +174,7 @@ mgr.showResult(**kw);
 
 mgr.inv.setRegularization(2, limits=[20, 2000], trans="log")
 mgr.invert()
-mgr.showResult(**kw);
+ax, cb = mgr.showResult(**kw)
 
 # %%%
 # Apparently, this makes it harder to fit the data accurately. So maybe an
@@ -191,28 +195,30 @@ mgr.showResult(**kw);
 mgr.inv.setRegularization(limits=[0, 0], trans="log")
 mgr.inv.setRegularization(3, single=True)
 mgr.invert()
-mgr.showResult(**kw);
+mgr.showResult(**kw)
 
 print(mgr.inv.model)
 print(min(mgr.model))
 
 # %%%
-# The last value represents the value for the lake and is close to our
-# measured data.
-#
+# The last value represents the value for the lake, close to our measurement.
+# This value can, however, also be set beforehand.
 
 mgr.inv.setRegularization(3, fix=22.5)
 mgr.invert()
-mgr.showResult(**kw);
-
-mgr.inv.setRegularization(2, correlationLengths=[30, 2])
-mgr.invert()
-mgr.showResult(**kw);
+ax, cb = mgr.showResult(**kw)
 
 # %%%
 # We see that the lake does not appear anymore as it is not a part of the
 # inversion mesh ``mgr.paraDomain`` anymore.
 #
+
+# %%%
+# Instead of the standard smoothness we use geostatistical regularization.
+#
+mgr.inv.setRegularization(2, correlationLengths=[30, 2])
+mgr.invert()
+ax, cb = mgr.showResult(**kw)
 
 # %%%
 # Region coupling
