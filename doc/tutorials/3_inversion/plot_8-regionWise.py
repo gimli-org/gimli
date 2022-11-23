@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+# sphinx_gallery_thumbnail_number = 12
 r"""
 Region-wise regularization
 ==========================
@@ -57,7 +58,8 @@ ert.show(data);
 #
 
 data["err"] = ert.estimateError(data, relativeError=0.02, absoluteUError=1e-4)
-pg.show(data, data["err"]*100, label="error (%)");
+print(max(data["err"]))
+# pg.show(data, data["err"]*100, label="error (%)");
 
 # %%%
 # Building a mesh with the water body
@@ -117,18 +119,17 @@ mgr.invert()
 ax = mgr.showFit()
 
 # %%%
-# Both look very similar, but let us look at the misfit function in
-# detail.
+# Both look very similar, but let us look at the misfit function in detail.
 #
 
-mgr.showMisfit()
+mgr.showMisfit(errorWeighted=True)
 
 # %%%
 # There is still systematics in the misfit. Ideally it should be a random
 # distribution of Gaussian noise.
 #
 
-kw = dict(cMin=20, cMax=300, logScale=True, cMap="Spectral_r")
+kw = dict(cMin=20, cMax=300, logScale=True, cMap="Spectral_r", coverage=1)
 ax, cb = mgr.showResult(**kw)
 
 # %%%
@@ -195,7 +196,7 @@ ax, cb = mgr.showResult(**kw)
 mgr.inv.setRegularization(limits=[0, 0], trans="log")
 mgr.inv.setRegularization(3, single=True)
 mgr.invert()
-mgr.showResult(**kw)
+ax, cb = mgr.showResult(**kw)
 
 print(mgr.inv.model)
 print(min(mgr.model))
@@ -236,7 +237,7 @@ print(mgr.fop.regionManager().regionCount())
 mgr.inv.setRegularization(cType=1, zWeight=0.2)
 mgr.fop.setInterRegionCoupling(2, 3, 1.0)  # normal coupling
 mgr.invert()
-mgr.showResult(**kw);
+ax, cb = mgr.showResult(**kw)
 
 # %%%
 # The general image is of course similar, but the structures are mirrored
