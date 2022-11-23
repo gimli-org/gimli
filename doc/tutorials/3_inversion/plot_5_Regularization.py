@@ -330,7 +330,7 @@ pg.show(mesh, result);
 
 # %%%
 # Take-away messages
-# ==================
+# ------------------
 #
 # -  regularization drives the model where data are weak
 # -  think and play with your assumptions to the model
