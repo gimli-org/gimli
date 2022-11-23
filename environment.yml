@@ -18,10 +18,9 @@ dependencies:
   - sphinxcontrib-programoutput
   - sphinxcontrib-spelling
   - sphinxcontrib-doxylink
-  - scipy
   - bibtexparser
   - pyvista>=0.34
+  - panel
   - meshio
   - tetgen
-  - panel
-  - conda-build
+  - scooby
