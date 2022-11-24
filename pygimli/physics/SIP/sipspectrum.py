@@ -731,7 +731,7 @@ class SIPSpectrum(object):
 
         """
         f2CC = DoubleColeCole(self.f, rho=useRho, aphi=aphi, tauRho=False,
-                              useMult=useMult)
+                              mult=useMult)
         if useRho:
             rhoStart = min(self.amp)
             f2CC.region(0).setParameters(rhoStart, 0., rhoStart*10)
