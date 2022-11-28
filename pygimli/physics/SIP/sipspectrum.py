@@ -380,6 +380,9 @@ class SIPSpectrum(object):
         self.phi = self.phi[ind]
         if np.any(self.phiOrg):
             self.phiOrg = self.phiOrg[ind]
+        if np.any(self.ampOrg):
+            self.ampOrg = self.ampOrg[ind]
+
         self.f = self.f[ind]
 #        self.amp = self.amp[self.f <= fcut]
 #        self.phi = self.phi[self.f <= fcut]
