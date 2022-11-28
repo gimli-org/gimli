@@ -310,7 +310,7 @@ html_short_title = "pyGIMLi"
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-html_logo = "_static/gimli_logo_simple.svg"
+html_logo = join(SPHINXDOC_PATH, "_static/gimli_logo_simple.svg")
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
