@@ -91,6 +91,7 @@ extensions = ["sphinx.ext.autodoc",
               "matplotlib.sphinxext.plot_directive",
               "srclinks",
               "sphinxcontrib.doxylink",
+              "sphinx_design",
               # "sphinxcontrib.spelling"
               ]
 
@@ -222,7 +223,7 @@ master_doc = "documentation"
 
 # General information about the project.
 project = "pyGIMLi"
-copyright = "2022 - GIMLi Development Team"
+copyright = "2022 - pyGIMLi Development Team"
 
 # The version info for the project you"re documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -270,9 +271,6 @@ exclude_patterns = ["_build", "_sphinx-ext", "_templates", "tmp", "examples",
 # output. They are ignored by default.
 # show_authors = False
 
-# The name of the Pygments (syntax highlighting) style to use.
-pygments_style = "default"
-
 # A list of ignored prefixes for module index sorting.
 # modindex_common_prefix = []
 
@@ -291,11 +289,12 @@ html_theme = "pydata_sphinx_theme"
 # documentation.
 html_theme_options = {
     "logo": {
-      "image_light": "https://www.pygimli.org/_static/android-chrome-192x192.png?v=2",
-      "image_dark": "https://www.pygimli.org/_static/android-chrome-192x192.png?v=2",
       "text": "py<b>GIMLi</b>",
     },
-    "use_edit_page_button": True,
+    "secondary_sidebar_items": ["page-toc", "improve-this-page"],
+    "footer_items": ["footer"],
+    "pygment_light_style": "friendly",
+    "pygment_dark_style": "native"
 }
 
 html_css_files = [
@@ -311,7 +310,7 @@ html_short_title = "pyGIMLi"
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-# html_logo = "_static/resisnet.png"
+html_logo = "_static/gimli_logo_simple.svg"
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
@@ -547,10 +546,6 @@ random.shuffle(showcase) # mix it up
 html_context = {
     "showcase": showcase,
     "publications": publications,
-    "github_user": "gimli-org",
-    "github_repo": "gimli",
-    "github_version": "dev",
-    "doc_path": "doc",
     "default_mode": "light"
 }
 

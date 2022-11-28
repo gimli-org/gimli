@@ -15,3 +15,5 @@ scipy
 bibtexparser
 pyvista>=0.33
 panel
+sphinx-design
+pydata-sphinx-theme
