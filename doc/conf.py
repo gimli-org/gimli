@@ -9,6 +9,7 @@ warnings.filterwarnings("ignore", category=UserWarning,
                                 " non-GUI backend, so cannot show the figure.")
 
 import random
+import datetime
 import os
 import re
 import sys
@@ -143,6 +144,9 @@ try:
         "first_notebook_cell": ("# Checkout www.pygimli.org for more examples"),
 
         "reset_modules": (reset_mpl),
+
+        # Avoid representation of mpl axis, LineCollections, etc.
+        'ignore_repr_types': r'matplotlib[text, axes, collections]',
         }
 
     pyvista = pygimli.optImport("pyvista", "build the gallery with 3D visualizations")
@@ -223,7 +227,8 @@ master_doc = "documentation"
 
 # General information about the project.
 project = "pyGIMLi"
-copyright = "2022 - pyGIMLi Development Team"
+year = datetime.date.today().year
+copyright = f"{year} - pyGIMLi Development Team"
 
 # The version info for the project you"re documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -332,7 +337,7 @@ html_use_smartypants = True
 
 # Custom sidebar templates, maps document names to template names.
 html_sidebars = {
-  "index": []
+  "index": [],
 }
 
 # Additional templates that should be rendered to pages, maps page names to

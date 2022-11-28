@@ -13,7 +13,7 @@ underlying slowness distribution for a crosshole scenario.
 
 We start by importing the necessary packages.
 """
-# sphinx_gallery_thumbnail_number = 3
+# sphinx_gallery_thumbnail_number = 4
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -90,11 +90,9 @@ mesh = pg.meshtools.createGrid(x, y)
 ax, _ = pg.show(mesh, hold=True)
 ax.plot(sensors[:, 0], sensors[:, 1], "ro")
 
-###############################################################################
 invmodel = mgr.invert(data, mesh=mesh, secNodes=3, lam=1000, zWeight=1.0,
                       useGradient=False, verbose=True)
 print("chi^2 = {:.2f}".format(mgr.inv.chi2()))  # Look at the data fit
-# np.testing.assert_approx_equal(mgr.inv.chi2(), 0.999038, significant=5)
 
 ###############################################################################
 # Finally, we visualize the true model and the inversion result next to each

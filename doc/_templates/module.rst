@@ -55,7 +55,7 @@ Functions
 
 {% for function in functions %}
 
-{{ function | underline(".") }}
+.. {{ function | underline(".") }}
 
 .. autofunction:: {{ function }}
 

@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# sphinx_gallery_thumbnail_number = 2
 r"""
 The DataContainer class
 -----------------------
@@ -12,6 +11,7 @@ So first a data container holds vectors like in a dictionary, however, all of
 them need to have the same length defined by the .size() method.
 Assume we want to store Vertical Electrical Sounding (VES) data.
 """
+# sphinx_gallery_thumbnail_number = 2
 
 # We start off with the typical imports
 import numpy as np
