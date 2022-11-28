@@ -317,7 +317,8 @@ def getExampleFile(path, load=False, force=False, verbose=False, **kwargs):
                                 *url.split('http://')[1].split('/'),
                                 )
 
-        pg.info(f'Looking for {url}')
+        if verbose is True:
+            pg.info(f'Looking for {url}')
 
     if not os.path.exists(fileName) or force is True:
         if verbose:
