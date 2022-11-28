@@ -284,12 +284,23 @@ html_theme_path = [join(SPHINXDOC_PATH, "_themes")]
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 
-html_theme = "gimli"
+html_theme = "pydata_sphinx_theme"
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-# html_theme_options = {}
+html_theme_options = {
+    "logo": {
+      "image_light": "https://www.pygimli.org/_static/android-chrome-192x192.png?v=2",
+      "image_dark": "https://www.pygimli.org/_static/android-chrome-192x192.png?v=2",
+      "text": "py<b>GIMLi</b>",
+    },
+    "use_edit_page_button": True,
+}
+
+html_css_files = [
+    'css/custom.css',
+]
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
@@ -321,7 +332,9 @@ html_last_updated_fmt = "%b %d, %Y"  # + " with " + version
 html_use_smartypants = True
 
 # Custom sidebar templates, maps document names to template names.
-# html_sidebars = {}
+html_sidebars = {
+  "index": []
+}
 
 # Additional templates that should be rendered to pages, maps page names to
 # template names.
@@ -531,7 +544,15 @@ make_gallery(os.path.abspath(SPHINXDOC_PATH), os.path.abspath(DOC_BUILD_DIR))
 # Add carousel to start page
 from paper_carousel import showcase
 random.shuffle(showcase) # mix it up
-html_context = {"showcase": showcase, "publications": publications}
+html_context = {
+    "showcase": showcase,
+    "publications": publications,
+    "github_user": "gimli-org",
+    "github_repo": "gimli",
+    "github_version": "dev",
+    "doc_path": "doc",
+    "default_mode": "light"
+}
 
 srclink_project = "https://github.com/gimli-org/gimli"
 srclink_src_path = "doc/"

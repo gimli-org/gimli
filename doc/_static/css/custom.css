@@ -1,0 +1,94 @@
+html[data-theme=light] {
+    --pst-color-primary: #337AB7;
+}
+
+html[data-theme=dark] {
+    --pst-color-primary: #337AB7;
+}
+
+html {
+    /* background-color: transparent; */
+    --pst-font-family-base: "Fira Sans", var(--pst-font-family-base-system);
+    --pst-font-size-base: 16px;
+    --pst-font-size-milli: 19px;
+}
+
+/* body {
+    background: url("/_static/bg.png") repeat fixed !important;
+} */
+
+a {
+    color: #337AB7
+}
+
+a:hover {
+    color: #107896;
+    text-decoration: none;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: "Roboto", sans-serif;
+    font-weight: 500;
+}
+
+pre, code {
+  font-family: "Inconsolata", monospace;
+}
+
+.container-fluid {
+  padding-left: 30px;
+  min-height: 100%;
+  height: auto !important;
+  height: 100%;
+  padding-right: 30px;
+  width: auto;
+  box-shadow: 2px 0 10px #aaa, -2px 0 10px #aaa;
+  -moz-box-shadow: 2px 0 10px #aaa, -2px 0 10px #aaa;
+  -webkit-box-shadow: 2px 0 10px #aaa, -2px 0 10px #aaa;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.navbar ul {
+  list-style: none;
+  text-align: center;
+}
+
+.navbar ul li {
+  display: inline-block;
+}
+
+.navbar ul li a {
+  display: block;
+  text-decoration: none;
+  margin: 0 10px;
+}
+
+.navbar ul li a,
+.navbar ul li a:after,
+.navbar ul li a:before {
+  transition: all .4s;
+}
+
+/* stroke */
+.navbar ul li a {
+  position: relative;
+}
+
+.navbar ul li a:after {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto;
+  width: 0%;
+  content: '.';
+  color: transparent;
+  background: #aaa;
+  height: 1px;
+}
+
+.navbar ul li a:hover:after {
+  width: 100%;
+}
