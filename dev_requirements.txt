@@ -13,6 +13,8 @@ sphinxcontrib-bibtex
 sphinxcontrib-programoutput
 sphinxcontrib-doxylink
 sphinx-gallery
+sphinx-design
+pydata-sphinx-theme
 bibtexparser
 pyvista>=0.34
 panel
