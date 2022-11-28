@@ -38,11 +38,12 @@ class MagneticsModelling(pg.Modelling):
         self.J = pg.matrix.BlockMatrix()
         self.Ki = []
         self.Ji = []
-        for iC in range(self.kernel.shape):
+        for iC in range(self.kernel.shape[1]):
             self.Ki.append(np.squeeze(self.kernel[:, iC, :]))
             self.Ji.append(pg.matrix.NumpyMatrix(self.Ki[-1]))
-            self.J.addMatrix(self.Ji, iC*self.kernel.shape[0], 0)
+            self.J.addMatrix(self.Ji[-1], iC*self.kernel.shape[0], 0)
 
+        self.J.recalcMatrixSize()
         self.setJacobian(self.J)
 
     # better move the latter to
@@ -55,6 +56,6 @@ class MagneticsModelling(pg.Modelling):
         """Compute forward response."""
         return self.J.dot(model)
 
-    def createJacobian(self):
+    def createJacobian(self, model):
         """Do nothing as this is a linear problem."""
         pass
