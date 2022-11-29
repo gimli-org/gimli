@@ -205,7 +205,7 @@ response = fopJoint(model)
 respERT = response[:data.size()]
 respDP = response[data.size():]
 print(respDP)
-ax, cb = ert.show(data, respERT)
+# ax, cb = ert.show(data, respERT)
 
 # %%%
 # The jacobian can be looked up
@@ -254,7 +254,6 @@ ax, cb = pg.show(para, model, **kw)
 #
 
 respERT = inv.response[:data.size()]
-ert.show(data, respERT)
 misfit = - respERT / data["rhoa"] * 100 + 100
 # ax, cb = ert.show(data, misfit, cMap="bwr", cMin=-5, cMax=5)
 

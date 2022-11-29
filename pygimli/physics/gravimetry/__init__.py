@@ -17,11 +17,11 @@ from . gravMagModelling import gradUHalfPlateHoriz
 from . gravMagModelling import gradGZHalfPlateHoriz
 
 from . gravMagModelling import solveGravimetry
-from . MagneticsModelling import SolveGravMagHolstein
-from . MagneticsModelling import GravMagModelling
+from . kernel import SolveGravMagHolstein
+from . MagneticsModelling import MagneticsModelling
 #from . MagneticsModelling import gravMagBoundaryHolstein
 
-from . gravMagModelling import GravimetryModelling  # FOP class
+# from . gravMagModelling import GravimetryModelling  # FOP class
 # from . gravMagModelling import Gravimetry  # MethodManager class TODO
 
 # __all__ = ['']
