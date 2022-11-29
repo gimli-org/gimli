@@ -27,7 +27,11 @@ def SolveGravMagHolstein(mesh, pnts, cmp, igrf, foot=np.inf):
     if pnts is None:
         pnts = [[0.0, 0.0]]
 
-    kernel = np.zeros((len(pnts), mesh.cellCount(), len(cmp)))
+    doB = np.any([c[0] == "B" and len(c) == 2 for c in cmp]) or "TFA" in cmp
+    doBT = np.any([c[0] == "B" and len(c) == 3 for c in cmp])
+    B_tens = None
+
+    kernel = np.zeros((mesh.cellCount(), len(pnts), len(cmp)))
     # org: this does not make sense as igrf is either 3 or 7 long
     # B_dir = np.array(igrf / np.linalg.norm(igrf))
     # fakt = igrf[6] / (4*np.pi)
@@ -38,20 +42,18 @@ def SolveGravMagHolstein(mesh, pnts, cmp, igrf, foot=np.inf):
         B_dir = np.array(igrf) / F
     elif len(igrf) == 7:  # an IGRF vector (D, I, H, X, Y, Z, F)
         fakt = igrf[6] / (4*np.pi)
-        igrf = np.array(igrf[3:6])
-        B_dir = igrf / np.linalg.norm(igrf)
+        myigrf = np.array(igrf[3:6])
+        B_dir = myigrf / np.linalg.norm(myigrf)
     else:
         raise Exception("Could not use IGRF vector. Len must be 3 or 7!")
 
     b_list, n_list, c_list = [], [], []
     for bd in mesh.boundaries():
-        b_list.append([bd.allNodes()[0].id(),
-                       bd.allNodes()[1].id(),
-                       bd.allNodes()[2].id()])
+        b_list.append([n.id() for n in bd.allNodes()])
         c_list.append([bd.leftCell(), bd.rightCell()])
 
     b_list = np.array(b_list)
-    lb = len(b_list)
+    lb = b_list.shape
 
     for nd in mesh.nodes():
         n_list.append(nd.pos())
@@ -68,14 +70,22 @@ def SolveGravMagHolstein(mesh, pnts, cmp, igrf, foot=np.inf):
     cl = np.array(cl)
     cr = np.array(cr)
 
+    rr = range(0, mesh.cellCount())
+    rs = np.roll(range(0, 4), -1)
+
+    itest = 0
+    temp = np.zeros((len(pnts), lb[0], len(cmp)))
     for i, p in enumerate(pnts):
-        temp = np.zeros((lb, len(cmp)))
+        if np.floor(100*i/len(pnts)) > itest:
+            itest = np.floor(100 * i / len(pnts))
+            print('.', end="")
+
         r1 = n_list[b_list] - p
-        r2 = r1[:, [1, 2, 0], :]
+        r2 = r1[:, rs, :]
         r0 = r2 - r1
         u = np.sum(np.cross(r1, r2), 1)
         u = u / np.expand_dims(np.linalg.norm(u, axis=1), axis=1)
-        ut = np.tile(u, 3).reshape((lb, 3, 3))
+        ut = np.tile(u, lb[1]).reshape((lb[0], lb[1], 3))
         ll = np.linalg.norm(r0, axis=2)
         t = r0/np.expand_dims(ll, axis=2)
         lm = (np.sum(r1*t, 2) + np.sum(r2*t, 2)) / 2
@@ -90,45 +100,45 @@ def SolveGravMagHolstein(mesh, pnts, cmp, igrf, foot=np.inf):
         # gravitational field
         g = hn*np.arctanh(lumbda)-np.sign(v)*v*np.arctan2(
             hn*lumbda, (rm*(1-lumbda**2)+abs(v)))
+        g_vec = u*np.expand_dims(np.sum(g, 1), axis=1)
 
         # magnetic field vector and gravity gradient tensor
         b = h*np.expand_dims(np.arctanh(lumbda), axis=2) - \
             ut*np.expand_dims(np.sign(v)*np.arctan2(
                 hn*lumbda, (rm*(1-lumbda**2)+abs(v))), axis=2)
 
-        # magnetic gradient tensor
-        d = (-2*lumbda*hn) / (r1n*r2n*(1-lumbda**2))
-        e = (-2*lumbda*lm) / (r1n*r2n)
-        f = (-2*lumbda*v) / (r1n*r2n*(1-lumbda**2))
-
-        h1 = np.expand_dims(h, axis=3)
-        h2 = np.swapaxes(h1, 2, 3)
-        t1 = np.expand_dims(t, axis=3)
-        t2 = np.swapaxes(t1, 2, 3)
-        u1 = np.expand_dims(ut, axis=3)
-        u2 = np.swapaxes(u1, 2, 3)
-
-        B = (h1*h2-u1*u2)*np.expand_dims(d, (2, 3)) + \
-            (t1*h2+h1*t2)*np.expand_dims(e, (2, 3))/2 + \
-            (h1*u2+u1*h2)*np.expand_dims(f, (2, 3))
-
         P = np.dot(u, B_dir)
-
-        g_vec = u*np.expand_dims(np.sum(g, 1), axis=1)
         B_vec = np.expand_dims(P, 1) * np.sum(b, 1)
-        B_tens = np.expand_dims(P, (1, 2)) * np.sum(B, 1)
+
+        if doBT:  # magnetic gradient tensor
+            d = (-2*lumbda*hn) / (r1n*r2n*(1-lumbda**2))
+            e = (-2*lumbda*lm) / (r1n*r2n)
+            f = (-2*lumbda*v) / (r1n*r2n*(1-lumbda**2))
+
+            h1 = np.expand_dims(h, axis=3)
+            h2 = np.swapaxes(h1, 2, 3)
+            t1 = np.expand_dims(t, axis=3)
+            t2 = np.swapaxes(t1, 2, 3)
+            u1 = np.expand_dims(ut, axis=3)
+            u2 = np.swapaxes(u1, 2, 3)
+
+            B = (h1*h2-u1*u2)*np.expand_dims(d, (2, 3)) + \
+                (t1*h2+h1*t2)*np.expand_dims(e, (2, 3))/2 + \
+                (h1*u2+u1*h2)*np.expand_dims(f, (2, 3))
+
+            B_tens = np.expand_dims(P, (1, 2)) * np.sum(B, 1)
 
         jj = 0
         if 'gx' in cmp:
-            temp[:, jj] = g_vec[:, 0]
+            temp[i, :, jj] = g_vec[:, 0]
             jj += 1
 
         if 'gy' in cmp:
-            temp[:, jj] = g_vec[:, 1]
+            temp[i, :, jj] = g_vec[:, 1]
             jj += 1
 
         if 'gz' in cmp:
-            temp[:, jj] = g_vec[:, 2]
+            temp[i, :, jj] = g_vec[:, 2]
             jj += 1
 
         # if 'gxx' in cmp:
@@ -145,49 +155,49 @@ def SolveGravMagHolstein(mesh, pnts, cmp, igrf, foot=np.inf):
         #     temp[:, jj]=G_tens[:, 2, 2]
 
         if 'TFA' in cmp:
-            temp[:, jj] = fakt*B_vec.dot(B_dir)
+            temp[i, :, jj] = fakt*B_vec.dot(B_dir)
             jj += 1
 
         if 'Bx' in cmp:
-            temp[:, jj] = fakt*B_vec[:, 0]
+            temp[i, :, jj] = fakt*B_vec[:, 0]
             jj += 1
 
         if 'By' in cmp:
-            temp[:, jj] = fakt*B_vec[:, 1]
+            temp[i, :, jj] = fakt*B_vec[:, 1]
             jj += 1
 
         if 'Bz' in cmp:
-            temp[:, jj] = fakt*B_vec[:, 2]
+            temp[i, :, jj] = fakt*B_vec[:, 2]
             jj += 1
 
         if 'Bxx' in cmp:
-            temp[:, jj] = fakt*B_tens[:, 0, 0]
+            temp[i, :, jj] = fakt*B_tens[:, 0, 0]
             jj += 1
 
         if 'Bxy' in cmp:
-            temp[:, jj] = fakt*B_tens[:, 0, 1]
+            temp[i, :, jj] = fakt*B_tens[:, 0, 1]
             jj += 1
 
         if 'Bxz' in cmp:
-            temp[:, jj] = fakt*B_tens[:, 0, 2]
+            temp[i, :, jj] = fakt*B_tens[:, 0, 2]
             jj += 1
 
         if 'Byy' in cmp:
-            temp[:, jj] = fakt*B_tens[:, 1, 1]
+            temp[i, :, jj] = fakt*B_tens[:, 1, 1]
             jj += 1
 
         if 'Byz' in cmp:
-            temp[:, jj] = fakt*B_tens[:, 1, 2]
+            temp[i, :, jj] = fakt*B_tens[:, 1, 2]
             jj += 1
 
         if 'Bzz' in cmp:
-            temp[:, jj] = fakt * B_tens[:, 2, 2]
+            temp[i, :, jj] = fakt * B_tens[:, 2, 2]
             jj += 1
 
-        kernel[i][cl[:, 1]] += temp[cl[:, 0]]
-        kernel[i][cr[:, 1]] -= temp[cr[:, 0]]
+    kernel += np.array([np.sum(temp[:, cl[cl[:, 1] == j, 0]], 1) for j in rr])
+    kernel -= np.array([np.sum(temp[:, cr[cr[:, 1] == j, 0]], 1) for j in rr])
 
-    return kernel.transpose([0, 2, 1])
+    return kernel.transpose([1, 2, 0])
 
 
 class GravMagModelling(pg.Modelling):
