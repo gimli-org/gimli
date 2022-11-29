@@ -1,7 +1,7 @@
 .. _tut:basics:
 
-Basics
+Meshes
 ------
 
-These introductory tutorials cover basic tasks such as mesh generation,
-visualization, interpolation and more.
+These introductory tutorials cover meshes from simple generation,
+their elements, visualization, interpolation and more.
