@@ -71,7 +71,7 @@ def SolveGravMagHolstein(mesh, pnts, cmp, igrf, foot=np.inf):
     cr = np.array(cr)
 
     rr = range(0, mesh.cellCount())
-    rs = np.roll(range(0, 4), -1)
+    rs = np.roll(range(0, lb[1]), -1)
 
     itest = 0
     temp = np.zeros((len(pnts), lb[0], len(cmp)))
@@ -100,7 +100,7 @@ def SolveGravMagHolstein(mesh, pnts, cmp, igrf, foot=np.inf):
         # gravitational field
         g = hn*np.arctanh(lumbda)-np.sign(v)*v*np.arctan2(
             hn*lumbda, (rm*(1-lumbda**2)+abs(v)))
-        g_vec = u*np.expand_dims(np.sum(g, 1), axis=1)
+        g_vec = 2 * u * np.expand_dims(np.sum(g, 1), axis=1)
 
         # magnetic field vector and gravity gradient tensor
         b = h*np.expand_dims(np.arctanh(lumbda), axis=2) - \
@@ -109,6 +109,7 @@ def SolveGravMagHolstein(mesh, pnts, cmp, igrf, foot=np.inf):
 
         P = np.dot(u, B_dir)
         B_vec = np.expand_dims(P, 1) * np.sum(b, 1)
+        B_vec = 2 * np.expand_dims(P, 1) * np.sum(b, 1)
 
         if doBT:  # magnetic gradient tensor
             d = (-2*lumbda*hn) / (r1n*r2n*(1-lumbda**2))
