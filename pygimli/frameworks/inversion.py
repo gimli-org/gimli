@@ -195,11 +195,11 @@ class Inversion(object):
         if model is None:
             return None
         elif isinstance(model, float) or isinstance(model, int):
-            pg.info("Homogeneous starting model set to:", float(model))
+            pg.debug("Homogeneous starting model set to:", float(model))
             return np.full(self.fop.parameterCount, float(model))
         elif hasattr(model, '__iter__'):
             if len(model) == self.fop.parameterCount:
-                pg.info("Starting model set from given array.", model)
+                pg.debug("Starting model set from given array.", model)
                 return model
             else:
                 pg.error("Starting model size invalid {0} != {1}.".
