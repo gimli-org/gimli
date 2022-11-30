@@ -201,7 +201,7 @@ def drawSlice(ax, mesh, normal=[1, 0, 0], **kwargs):
     contour: bool, optional
 
     They can be found at
-    https://docs.pyvista.org/core/filters.html#pyvista.CompositeFilters.slice
+    https://docs.pyvista.org/api/core/filters.html
     """
     label = kwargs.pop('label', None)
     data = kwargs.pop('data', None)
@@ -245,7 +245,7 @@ def drawStreamLines(ax, mesh, data, label=None, radius=0.01, **kwargs):
     Note
     ----
     All kwargs will be forwarded to pyvistas streamline filter:
-    https://docs.pyvista.org/core/filters.html?highlight=streamlines#pyvista.DataSetFilters.streamlines
+    https://docs.pyvista.org/api/core/_autosummary/pyvista.DataSetFilters.streamlines.html
     """
     if label is None:
         label = 'grad'
