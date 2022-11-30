@@ -79,6 +79,8 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
             mesh = mesh.clip(**fi)
         elif k.lower() == 'threshold':
             mesh = mesh.threshold(**fi)
+        elif k.lower() == 'slice':
+            mesh = mesh.slice(**fi)
         else:
             pg.error('filter:', k, 'not yet implemented')
 
