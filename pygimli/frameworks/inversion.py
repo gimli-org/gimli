@@ -195,11 +195,11 @@ class Inversion(object):
         if model is None:
             return None
         elif isinstance(model, float) or isinstance(model, int):
-            pg.info("Homogeneous starting model set to:", float(model))
+            pg.debug("Homogeneous starting model set to:", float(model))
             return np.full(self.fop.parameterCount, float(model))
         elif hasattr(model, '__iter__'):
             if len(model) == self.fop.parameterCount:
-                pg.info("Starting model set from given array.", model)
+                pg.debug("Starting model set from given array.", model)
                 return model
             else:
                 pg.error("Starting model size invalid {0} != {1}.".
@@ -477,12 +477,26 @@ class Inversion(object):
         dPhi : float [1]
             Overwrite class settings for delta data phi aborting criteria.
             Default is 1%
-        cType: int[1]
+        cType: int [1]
             Temporary global contraint type for all regions.
         startModel: array
             Temporary starting model for the current inversion run.
         lam: float
             Temporary regularization parameter lambda.
+        lambdaFactor : float [1]
+            factor to change lam with every iteration
+        robustData : bool
+            robust (L1 norm mimicking) data reweighting
+        blockyModel : bool
+            robust (L1 norm mimicking) model roughness reweighting
+        isReference : bool [False]
+            starting model is also a reference to constrain against
+        showProgress : bool
+            show progress in form of updating models
+        verbose : bool
+            verbose output on the console
+        debug : bool
+            even verboser console and file output
         """
         self.reset()
         if self.isFrameWork:
@@ -496,6 +510,10 @@ class Inversion(object):
         maxIter = kwargs.pop('maxIter', self.maxIter)
         minDPhi = kwargs.pop('dPhi', self.minDPhi)
         showProgress = kwargs.pop('showProgress', False)
+        if 'robustData' in kwargs:
+            self.robustData = kwargs['robustData']
+        # if 'blockyModel' in kwargs:
+        #     self.blockyModel = kwargs['blockyModel']
 
         self.verbose = kwargs.pop('verbose', self.verbose)
         self.debug = kwargs.pop('debug', self.debug)
@@ -503,6 +521,8 @@ class Inversion(object):
 
         lam = kwargs.pop('lam', self.lam)
         self.inv.setLambda(lam)
+
+        self.inv.setLambdaFactor(kwargs.pop('lambdaFactor', 1.0))
 
         if 'cType' in kwargs:
             self.fop.setRegionProperties('*', cType=kwargs['cType'])

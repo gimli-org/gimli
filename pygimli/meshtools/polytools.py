@@ -1283,6 +1283,7 @@ def createParaMeshPLC3D(sensors, paraDX=0, paraDepth=-1, paraBoundary=None,
 
     def sortP(p):
         base = pg.core.Line(p[0], p[1]).at(-1e7)
+
         def cmp_(p1, p2):
             if p1.distSquared(base) < p2.distSquared(base):
                 return -1
@@ -1297,8 +1298,10 @@ def createParaMeshPLC3D(sensors, paraDX=0, paraDepth=-1, paraBoundary=None,
     for i in range(4):
 
         p = [n.pos() for n in surface.nodes() if n.marker() == i+1]
-        p.append(surface.nodes(surface.nodeMarkers()==(i%4+1)*10)[0].pos())
-        p.append(surface.nodes(surface.nodeMarkers()==((i+1)%4+1)*10)[0].pos())
+        p.append(surface.nodes(
+            surface.nodeMarkers() == (i % 4 + 1) * 10)[0].pos())
+        p.append(surface.nodes(
+            surface.nodeMarkers() == ((i + 1) % 4 + 1) * 10)[0].pos())
         sortP(p)
 
         p0 = pg.Pos(p[-1])
@@ -1325,8 +1328,10 @@ def createParaMeshPLC3D(sensors, paraDX=0, paraDepth=-1, paraBoundary=None,
     bttm = []
     for i in range(4):
         p = [n.pos() for n in surface.nodes() if n.marker() == i+5]
-        p.append(surface.nodes(surface.nodeMarkers()==(i%4+5)*10)[0].pos())
-        p.append(surface.nodes(surface.nodeMarkers()==((i+1)%4+5)*10)[0].pos())
+        p.append(surface.nodes(
+            surface.nodeMarkers() == (i % 4 + 5) * 10)[0].pos())
+        p.append(surface.nodes(
+            surface.nodeMarkers() == ((i + 1) % 4 + 5) * 10)[0].pos())
         sortP(p)
 
         p0 = pg.Pos(p[-1])
@@ -1865,6 +1870,7 @@ def syscallTetgen(filename, quality=1.2, area=0, preserveBoundary=False,
 
     if verbose:
         print(syscal)
+
     pg.debug(syscal)
 
     system(syscal)

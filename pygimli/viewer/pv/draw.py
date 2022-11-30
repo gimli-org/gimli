@@ -73,11 +73,14 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
 
     for k, fi in filt.items():
         if k.lower() == 'clip':
-
             if isinstance(mesh, pv.core.pointset.UnstructuredGrid):
-                fi['crinkle'] = fi.pop('crinkle', True)
+                fi.setdefault('crinkle', True)
 
             mesh = mesh.clip(**fi)
+        elif k.lower() == 'threshold':
+            mesh = mesh.threshold(**fi)
+        elif k.lower() == 'slice':
+            mesh = mesh.slice(**fi)
         else:
             pg.error('filter:', k, 'not yet implemented')
 
@@ -201,7 +204,7 @@ def drawSlice(ax, mesh, normal=[1, 0, 0], **kwargs):
     contour: bool, optional
 
     They can be found at
-    https://docs.pyvista.org/core/filters.html#pyvista.CompositeFilters.slice
+    https://docs.pyvista.org/api/core/filters.html
     """
     label = kwargs.pop('label', None)
     data = kwargs.pop('data', None)
@@ -245,7 +248,7 @@ def drawStreamLines(ax, mesh, data, label=None, radius=0.01, **kwargs):
     Note
     ----
     All kwargs will be forwarded to pyvistas streamline filter:
-    https://docs.pyvista.org/core/filters.html?highlight=streamlines#pyvista.DataSetFilters.streamlines
+    https://docs.pyvista.org/api/core/_autosummary/pyvista.DataSetFilters.streamlines.html
     """
     if label is None:
         label = 'grad'

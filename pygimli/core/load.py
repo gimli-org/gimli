@@ -153,6 +153,9 @@ def load(fname, verbose=False, testAll=True, realName=None):
         # Misc
         ".gpx": readGPX,  # read gpx waypoints
         ".xy": np.loadtxt,  #
+        ".txt": np.loadtxt,  #
+        ".npy": np.load,  # numpy binary format (important for pg.getExample*)
+        ".npz": np.load,  #
     }
 
     if fname.startswith('https://') or fname.startswith('http://'):
@@ -166,6 +169,7 @@ def load(fname, verbose=False, testAll=True, realName=None):
         files = os.listdir(fname)
         if verbose:
             print("Reading %s with %d files..." % (fname, len(files)))
+
         return [load(os.path.join(fname, f)) for f in files]
 
     suffix = None
@@ -175,7 +179,6 @@ def load(fname, verbose=False, testAll=True, realName=None):
         suffix = os.path.splitext(fname)[1]
 
     if suffix in ImportFilter:
-
         importTrys = ImportFilter[suffix]
         if not isinstance(importTrys, list):
             importTrys = [importTrys]
@@ -298,15 +301,15 @@ def getExampleFile(path, load=False, force=False, verbose=False, **kwargs):
     branch = kwargs.pop('branch', 'master')
 
     fileName = ''
-    if not path.startswith('http://'): 
+    if not path.startswith('http://'):
         url = '/'.join(('https://raw.githubusercontent.com/',  # RAW files
-                           repo, branch, path))
+                        repo, branch, path))
 
         pg.info(f'Looking for {path} in {repo}')
 
         fileName = os.path.join(getCachePath(),
-                            __gimliExampleDataBase__,
-                            repo, branch, path)
+                                __gimliExampleDataBase__,
+                                repo, branch, path)
     else:
         url = path
         fileName = os.path.join(getCachePath(),
@@ -328,6 +331,7 @@ def getExampleFile(path, load=False, force=False, verbose=False, **kwargs):
 
     if load is True:
         return pg.load(fileName, verbose=verbose)
+
     return fileName
 
 
