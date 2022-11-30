@@ -47,7 +47,12 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
     bc = kwargs.pop('bc', '#EEEEEE') # background color
     lw = kwargs.pop('line_width', 0.1)
     filt = kwargs.pop('filter', {})
-    dataName = kwargs.pop('label', list(mesh.cell_data.keys())[0])
+    dk = mesh.dataKeys()
+    if len(dk) > 0:
+        dataName = kwargs.pop('label', dk[0])
+        # list(mesh.cell_data.keys())[0])
+    else:
+        dataName = 'Cell Marker'
 
     theme = pv.themes.DefaultTheme()
     theme.background = bc
@@ -135,7 +140,7 @@ def drawModel(ax=None, mesh=None, data=None, **kwargs):
     else:
 
         if data is not None or len(mesh.dataMap()) != 0:
-            kwargs['style'] = 'surface'
+            kwargs.setdefault('style', 'surface')
             kwargs['color'] = None
         if dataName is None and data is not None:
             if len(data) == mesh.cellCount():
