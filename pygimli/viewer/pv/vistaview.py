@@ -106,7 +106,9 @@ def showMesh3DVista(mesh, data=None, **kwargs):
         # return s3d.plotter, s3d  # plotter, gui
 
     else:
+
         backend = kwargs.pop("backend", "panel")
+
         plotter = drawModel(kwargs.pop("ax", None), mesh, data,
                             notebook=notebook, cMap=cMap, **kwargs)
 
@@ -119,8 +121,7 @@ def showMesh3DVista(mesh, data=None, **kwargs):
             # backends and only plotter.show() .. whoever this needs.
             plotter.__show = plotter.show
             plotter.show = lambda *args, **kwargs: plotter.__show(
-                *args, **kwargs)
-            kwargs.setdefault("jupyter_backend", backend)
+                *args, jupyter_backend=backend, **kwargs)
         else:
             plotter.__show = plotter.show
             plotter.show = lambda *args, **kwargs: plotter.__show(
