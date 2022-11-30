@@ -197,13 +197,12 @@ def __SparseMatrix_str(self):
         M = pg.utils.toDense(self)
         for mi in M:
             for v in mi:
-                if (abs(v)< 1e-12 and abs(v) > 0):
+                if (abs(v) < 1e-12 and abs(v) > 0):
                     s += ('+'+pg.pf(v)).rjust(9)
                 elif (abs(v)< 1e-12 and abs(v) < 0):
                     s += ('-'+pg.pf(v)).rjust(9)
                 else:
                     s += pg.pf(v).rjust(9)
-
             s += '\n'
     return s
 

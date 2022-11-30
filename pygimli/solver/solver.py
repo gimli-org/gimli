@@ -2601,6 +2601,16 @@ def checkCFL(times, mesh, vMax, verbose=False):
     For advection and flow problems. CFL Number should be lower then 1 to
     ensure stability.
 
+    .. math ::
+
+        cMax = \Delta t \sum_n \left(\frac{vMax_n}{\Delta x_n}\right)
+
+    with $n$ be number of spatial dimensions and $vMax_n$ and $x_n$ the dimensional component. For unstructured meshes we apply:
+
+    .. math ::
+
+        cMax = \Delta t \left(\frac{vMax}{min(mesh_h)}\right) * dim
+
     Parameters
     ----------
     """
@@ -2615,7 +2625,7 @@ def checkCFL(times, mesh, vMax, verbose=False):
     #     dx = min(mesh.cellSizes())
     # else:
     #     dx = min(mesh.boundarySizes())
-    c = vMax * dt / dx
+    c = (vMax * dt / dx) * mesh.dim()
 
     if c > 1:
         pg.warn("Courant-Friedrichs-Lewy Number:", c,
