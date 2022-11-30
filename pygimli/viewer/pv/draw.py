@@ -44,15 +44,16 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
     grid = kwargs.pop('grid', False)
     colorBar = kwargs.pop('colorBar', style != 'wireframe')
     name = kwargs.pop('name', 'Mesh')
-    bc = kwargs.pop('bc', '#EEEEEE') # background color
+    bc = kwargs.pop('bc', '#EEEEEE')  # background color
     lw = kwargs.pop('line_width', 0.1)
     filt = kwargs.pop('filter', {})
-    dk = mesh.dataKeys()
-    if len(dk) > 0:
-        dataName = kwargs.pop('label', dk[0])
-        # list(mesh.cell_data.keys())[0])
+    if isinstance(mesh, pg.Mesh):
+        if len(mesh.dataKeys()) > 0:
+            dataName = kwargs.pop('label', mesh.dataKeys()[0])
+        else:
+            dataName = kwargs.pop('label', 'Cell Marker')
     else:
-        dataName = 'Cell Marker'
+        dataName = kwargs.pop('label', list(mesh.cell_data.keys())[0])
 
     theme = pv.themes.DefaultTheme()
     theme.background = bc
