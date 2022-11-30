@@ -73,11 +73,12 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
 
     for k, fi in filt.items():
         if k.lower() == 'clip':
-
             if isinstance(mesh, pv.core.pointset.UnstructuredGrid):
-                fi['crinkle'] = fi.pop('crinkle', True)
+                fi.setdefault('crinkle', True)
 
             mesh = mesh.clip(**fi)
+        elif k.lower() == 'threshold':
+            mesh = mesh.threshold(**fi)
         else:
             pg.error('filter:', k, 'not yet implemented')
 
