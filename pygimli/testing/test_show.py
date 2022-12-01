@@ -262,8 +262,17 @@ def testShowPV():
     print('Show Field (x)')
     pg.show(m1, data=pg.x(m1), label='x', cMap='Spectral_r')
 
-    print('Show TetP2 Field (x)')
+    print('Show threshold and slice')
     m2 = mt.createGrid(4, 4, 4)
+    m2["m"] = pg.utils.grange(1, m2.cellCount(), 1)
+    ax, _ = pg.show(m2, style="wireframe", hold=True)
+    pg.viewer.pv.drawMesh(ax, m2, label="m", filter={
+        "threshold": dict(value=14, scalars="m", invert=True)})
+    pg.viewer.pv.drawMesh(ax, m2, label="m", filter={
+        "slice": dict(origin=[1, 1, 1], normal=[1, 1, 0])})
+    ax.show()
+
+    print('Show TetP2 Field (x)')
     m2 = mt.refineHex2Tet(m2)
     m2 = m2.createP2()
     pg.show(m2, data=pg.z(m2), showMesh=True, label='x', cMap='Spectral_r')

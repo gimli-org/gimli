@@ -34,7 +34,6 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
         The plotter
     """
     # sort out a few kwargs to not confuse the plotter initialization
-    show_edges = kwargs.pop('show_edges', True)
     opacity = kwargs.pop('alpha', kwargs.pop('opacity', 1))
     cMap = kwargs.pop('cMap', None)
     color = kwargs.pop('color', None)
@@ -43,39 +42,33 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
     showMesh = kwargs.pop('showMesh', False)
     grid = kwargs.pop('grid', False)
     colorBar = kwargs.pop('colorBar', style != 'wireframe')
-    name = kwargs.pop('name', 'Mesh')
     bc = kwargs.pop('bc', '#EEEEEE')  # background color
     lw = kwargs.pop('line_width', 0.1)
     filt = kwargs.pop('filter', {})
+
+    # show_edges = kwargs.pop('show_edges', True)  # not used
+    # name = kwargs.pop('name', 'Mesh')  # not used
+
     if isinstance(mesh, pg.Mesh):
-        if len(mesh.dataKeys()) > 0:
-            dataName = kwargs.pop('label', mesh.dataKeys()[0])
-        else:
-            dataName = kwargs.pop('label', 'Cell Marker')
-    else:
-        dataName = kwargs.pop('label', list(mesh.cell_data.keys())[0])
+        mesh = pgMesh2pvMesh(mesh)
+
+    dataName = kwargs.pop('label', list(mesh.cell_data.keys())[0])
 
     theme = pv.themes.DefaultTheme()
     theme.background = bc
-
     # seems to be broken .. results on pure black screens on some machines
     # theme.antialiasing = True
 
     theme.font.color = 'k'
 
     if ax is None:
-        ax = pv.Plotter(notebook=notebook,
-                        theme=theme,
-                        **kwargs
-                        )
-    # if grid is True:
-        # implementme
+        ax = pv.Plotter(notebook=notebook, theme=theme, **kwargs)
+
+    if grid is True:
+        pass  # implementme
 
     ax.show_bounds(all_edges=True, minor_ticks=True)
     ax.add_axes()
-
-    if isinstance(mesh, pg.Mesh):
-        mesh = pgMesh2pvMesh(mesh)
 
     for k, fi in filt.items():
         if k.lower() == 'clip':
