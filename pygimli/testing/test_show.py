@@ -280,6 +280,23 @@ def testShowPV():
     ax.show()
 
 
+def testShowPV2():
+    """
+        import pygimli as pg
+        from pygimli.testing.test_show import testShowPV2
+        import pyvista as pv
+        print(pv.__version__)
+        import panel as pnl
+        print(pnl.__version__)
+        testShowPV2()
+    """
+    grid = mt.createGrid(4,4,4)
+    grid["m"] = np.arange(grid.cellCount())
+    pl, _ = pg.show(grid, style="wireframe", hold=True)
+    pg.viewer.pv.drawMesh(pl, grid, label="m", 
+                filter={"threshold": dict(value=13, scalars="m", invert=True)})
+    pl.show()
+        
 def testPVBackends():
     m1 = mt.createCube()
 
@@ -307,10 +324,11 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         locals()[sys.argv[1]]()
     else:
-        # testShowVariants()
-        # testColorbar()
-        # testColorBarFalse()
-        testShowPV()
-        # testCBarLevels()
-        # testColRange()
+        pass
+        #testShowVariants()
+        #testColorbar() 
+        #testColorBarFalse()
+        #testShowPV() 
+        #testCBarLevels()
+        #testColRange()
         # testCoverage()

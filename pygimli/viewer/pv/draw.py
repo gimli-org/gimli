@@ -49,7 +49,7 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
     filt = kwargs.pop('filter', {})
     if isinstance(mesh, pg.Mesh):
         if len(mesh.dataKeys()) > 0:
-            dataName = kwargs.pop('label', mesh.dataKeys()[0])
+            dataName = kwargs.pop('label', list(mesh.dataKeys())[0])
         else:
             dataName = kwargs.pop('label', 'Cell Marker')
     else:
