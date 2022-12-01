@@ -41,7 +41,6 @@ h6 {
     font-weight: 500;
 }
 
-
 pre,
 code {
     font-family: "Inconsolata", monospace;
@@ -78,6 +77,10 @@ nav#bd-docs-nav {
 }
 
 ul.search li a {
+    font-weight: 500;
+}
+
+dt, b, strong {
     font-weight: 500;
 }
 

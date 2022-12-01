@@ -4,13 +4,8 @@
 pyGIMLi API Reference
 =====================
 
-
 .. only:: latex
 
-  .. toctree::
-    :maxdepth: 1
-    :hidden:
-    
   .. note::
 
     In the following, all Python modules, functions and classes are documented.
@@ -20,11 +15,10 @@ pyGIMLi API Reference
 
 .. currentmodule:: pygimli
 
-.. automodule:: pygimli
-
 .. rubric:: Module overview
 
 .. autosummary::
+  :toctree: _generated
   :template: module.rst
 
   frameworks

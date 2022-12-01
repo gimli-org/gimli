@@ -81,7 +81,6 @@ Classes
 -------
 
 {% for class in classes %}
-.. rubric:: {{ class }}
 .. autoclass:: {{ class }}
   :members:
   :undoc-members:

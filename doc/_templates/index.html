@@ -38,18 +38,21 @@
           </div>
           <div class="col-md-4 align-center">
 
-            <div class="h-25 d-inline-block">
-              <h3 class="mt-0">{{ paper["title"] }}</h3>
-              <p>{{ paper["subtitle"] }}</p>
+            <div class="d-flex align-items-start flex-column bd-highlight mb-3" style="height: 80%;">
+              <div class="mb-auto p-2 bd-highlight">
+                <h4 class="mt-0">{{ paper["title"] }}</h4>
+                <p class="fs-6 text-muted">{{ paper["subtitle"] }}</p>
               </div>
-              <div class="h-75 d-inline-block">
-              <a href="{{ paper['link'] }}" target="_blank">
-              <button class="btn btn-outline-success mt-2 mb-2">Go to {{ paper["subtitle"].split(',')[0] }}</button>
-              </a>
-              <a href="{{ pathto('publist') }}">
-              <button class="btn btn-outline-secondary btn-sm">More pyGIMLi-based publications</button>
-              </a>
+              <div class="p-2 bd-highlight">
+                <a href="{{ paper['link'] }}" target="_blank">
+                  <button class="btn btn-outline-success mb-2 btn-sm">Go to {{ paper["subtitle"].split(',')[0]
+                    }}</button>
+                </a>
+                <a href="{{ pathto('publist') }}">
+                  <button class="btn btn-outline-secondary btn-sm">More pyGIMLi-based publications</button>
+                </a>
               </div>
+            </div>
           </div>
         </div>
       </div>
@@ -80,8 +83,8 @@
     <i class="fab fa-apple"></i>
   </small>
 </h1>
-pyGIMLi has been successfully compiled on Windows, various Linux distributions and Mac OS X. See the <a
-  href="installation.html">installation section</a> for more details on how to install or build pyGIMLi.
+pyGIMLi works on Windows, various Linux distributions and Mac OS. See the <a
+  href="installation.html">installation section</a> for more details on how to install the binaries or build pyGIMLi from the source code.
 <h1 class="mt-5">Get started.
   <small class="text-muted">
     Check out the tutorials.
@@ -89,7 +92,8 @@ pyGIMLi has been successfully compiled on Windows, various Linux distributions a
 
 </h1>
 To get started, have a look at the
-<a href="{{pathto(" _tutorials_auto/index")}}">pyGIMLi tutorials</a>. Applications and user stories can be found in the
+<a href="{{pathto(" _tutorials_auto/index")}}">pyGIMLi tutorials</a>. Applications and user stories can be found in
+the
 <a href="{{pathto(" _examples_auto/index")}}">Example section</a>.
 
 <h1 class="mt-5">Get involved.
