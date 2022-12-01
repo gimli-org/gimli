@@ -8,6 +8,7 @@ html {
 
 html[data-theme=light] {
     --pst-color-h1: #002b36;
+    --pst-color-primary: #337AB7;
 }
 
 html[data-theme=dark] {
@@ -60,11 +61,8 @@ nav#bd-docs-nav {
 
 .bd-container__inner.bd-page-width {
     background: var(--pst-color-background);
-    min-height: 100%;
-    height: auto !important;
     height: 100%;
     box-shadow: 0 0 .125rem 0px var(--pst-color-shadow);
-    clip-path: inset(0px -.125rem 0px -.125rem);
 }
 
 /* Bold font fixes */
