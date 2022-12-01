@@ -316,10 +316,11 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         locals()[sys.argv[1]]()
     else:
-        # testShowVariants()
-        # testColorbar()
-        # testColorBarFalse()
-        testShowPV()
-        # testCBarLevels()
-        # testColRange()
+        pass
+        #testShowVariants()
+        #testColorbar()
+        #testColorBarFalse()
+        #testShowPV()
+        #testCBarLevels()
+        #testColRange()
         # testCoverage()
