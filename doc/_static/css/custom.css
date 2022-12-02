@@ -64,6 +64,10 @@ nav#bd-docs-nav {
     box-shadow: 0 0 .125rem 0px var(--pst-color-shadow);
 }
 
+.bd-sidebar-primary.bd-sidebar::-webkit-scrollbar {
+    display: none;
+}
+
 
 footer.bd-footer {
     background-color: #ffffffb0;
