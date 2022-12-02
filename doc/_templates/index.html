@@ -1,5 +1,4 @@
 {%- extends "layout.html" %}
-{%- set remove_sidebar_secondary = true %}
 {%- set title = "Home" %}
 
 {% block body %}
@@ -112,7 +111,5 @@ purposes.
 
 {# Secondary sidebar #}
 {% block docs_toc %}
-{% if not remove_sidebar_secondary %}
 <div class="bd-sidebar-secondary bd-toc">{% include "sidebar.html" %}</div>
-{% endif %}
 {% endblock docs_toc %}

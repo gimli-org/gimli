@@ -33,12 +33,14 @@ try:
     # from _build.doc.conf_environment import *
     from conf_environment import *
     pygimli.boxprint("Building documentation out-of-source. Good.")
+    in_source = False
     print("DOXY_BUILD_DIR", DOXY_BUILD_DIR)
 except ImportError:
     TRUNK_PATH = ".."
     SPHINXDOC_PATH = "."
     DOC_BUILD_DIR = ""
     DOXY_BUILD_DIR = ""
+    in_source = True
     pygimli.boxprint("Building documentation in-source. Don't forget to make clean.")
 
 sys.path.append(os.path.abspath(SPHINXDOC_PATH))
@@ -185,6 +187,7 @@ intersphinx_mapping = {
     "matplotlib": ("https://matplotlib.org/stable/", None),
 }
 
+autosectionlabel_prefix_document = True
 autoclass_content = "class"
 autosummary_generate = True
 autosummary_generate_overwrite = False
@@ -211,7 +214,9 @@ templates_path = [join(SPHINXDOC_PATH, "_templates"),
                   join(DOC_BUILD_DIR, "_templates")]
 
 # MPL plot directive settings
-plot_formats = [("png", 96), ("pdf", 96)]
+plot_formats = [("png", 96)]
+if not in_source:
+    plot_formats.append(("pdf", 96))
 plot_include_source = True
 plot_html_show_source_link = False
 plot_apply_rcparams = True  # if context option is used

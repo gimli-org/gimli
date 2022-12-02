@@ -483,6 +483,7 @@ def createCircle(pos=None, radius=1, nSegments=12, start=0, end=2.*math.pi,
     --------
     >>>  # no need to import matplotlib. pygimli's show does
     >>> import math
+    >>> import pygimli as pg
     >>> from pygimli.viewer.mpl import drawMesh
     >>> import pygimli.meshtools as mt
     >>> c0 = mt.createCircle(pos=(-5.0, 0.0), radius=2, nSegments=6)

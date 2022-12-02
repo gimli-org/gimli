@@ -61,8 +61,13 @@ nav#bd-docs-nav {
 
 .bd-container__inner.bd-page-width {
     background: var(--pst-color-background);
-    height: 100%;
     box-shadow: 0 0 .125rem 0px var(--pst-color-shadow);
+}
+
+
+footer.bd-footer {
+    background-color: #ffffffb0;
+    opacity: 80%;
 }
 
 /* Bold font fixes */

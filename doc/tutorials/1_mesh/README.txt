@@ -1,4 +1,4 @@
-.. _tut:basics:
+.. _tut:meshing:
 
 Meshes
 ------

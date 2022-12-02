@@ -1,3 +1,5 @@
+:html_theme.sidebar_secondary.remove: true
+
 .. _sec:pygimliapi:
 
 =====================
@@ -18,8 +20,9 @@ pyGIMLi API Reference
 .. rubric:: Module overview
 
 .. autosummary::
-  :toctree: _generated
   :template: module.rst
+  :toctree: _generated
+  :recursive:
 
   frameworks
   math
@@ -29,13 +32,6 @@ pyGIMLi API Reference
   testing
   utils
   viewer
-
-.. only:: latex
-
-  .. toctree::
-    :glob:
-
-    _generated/*
 
 .. note::
 

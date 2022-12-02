@@ -55,9 +55,8 @@ Functions
 
 {% for function in functions %}
 
-.. {{ function | underline(".") }}
-
 .. autofunction:: {{ function }}
+
 
 .. include:: {{fullname}}.{{function}}.examples
     :end-line: 3

@@ -55,8 +55,6 @@ clean:
 doc: html
 
 api:
-	rm -rf pygimliapi/_generated && mkdir pygimliapi/_generated
-	# sphinx-autogen -i -t _templates pygimliapi/*.rst
 	cp -f pygimliapi/viewer_overwrite pygimliapi/_generated/pygimli.viewer.rst
 	cp -f pygimliapi/physics_overwrite pygimliapi/_generated/pygimli.physics.rst
 
