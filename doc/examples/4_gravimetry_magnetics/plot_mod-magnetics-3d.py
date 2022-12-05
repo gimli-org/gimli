@@ -139,8 +139,9 @@ grid["inv"] = invmodel
 pl, _ = pg.show(grid, label="synth", style="wireframe", hold=True,
                 filter={"threshold": dict(value=0.025, scalars="synth")})
 pv.drawMesh(pl, grid, label="inv", style="surface", cMap="Spectral_r",
-            filter={"threshold": dict(value=0.02, scalars="inv")},
-            vmin=0, vmax=0.05)
+            filter={"threshold": dict(value=0.02, scalars="inv")})
+pv.drawMesh(pl, grid, label="inv", style="surface", cMap="Spectral_r",
+            filter={"slice": dict(normal=[-1, 0, 0], origin=[500, 600, 250])})
 pl.camera_position = "yz"
 pl.camera.roll = 90
 pl.camera.azimuth = 180 - 15
