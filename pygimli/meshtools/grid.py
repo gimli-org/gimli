@@ -176,7 +176,7 @@ def appendBoundary(mesh, **kwargs):
 
     Additional Args
     ---------------
-    ** kwargs forwarded to :py:mod:`pygimli.meshtools.appendTriangleBoundary`
+    **kwargs forwarded to :py:mod:`pygimli.meshtools.appendTriangleBoundary`
     or :py:mod:`pygimli.meshtools.appendTetrahedronBoundary`.
 
     Returns

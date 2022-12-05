@@ -1,12 +1,10 @@
+:html_theme.sidebar_secondary.remove: true
+
 .. _sec:pygimliapi:
 
 =====================
 pyGIMLi API Reference
 =====================
-
-.. toctree::
-   :maxdepth: 1
-   :hidden:
 
 .. only:: latex
 
@@ -19,13 +17,12 @@ pyGIMLi API Reference
 
 .. currentmodule:: pygimli
 
-.. automodule:: pygimli
-
 .. rubric:: Module overview
 
 .. autosummary::
-  :toctree: _generated
   :template: module.rst
+  :toctree: _generated
+  :recursive:
 
   frameworks
   math
@@ -35,13 +32,6 @@ pyGIMLi API Reference
   testing
   utils
   viewer
-
-.. only:: latex
-
-  .. toctree::
-    :glob:
-
-    _generated/*
 
 .. note::
 

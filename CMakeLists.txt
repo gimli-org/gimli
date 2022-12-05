@@ -549,7 +549,7 @@ if (CASTER_EXECUTABLE)
 endif()
 
 find_package(Doxygen)
-find_package(Sphinx 1.5)
+find_package(Sphinx 3.1)
 
 if (SPHINX_FOUND AND NOT SKIP_SPHINX)
     add_subdirectory(doc EXCLUDE_FROM_ALL)

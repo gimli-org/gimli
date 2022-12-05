@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# sphinx_gallery_thumbnail_number = 3
 r"""
 Matrices
 --------
@@ -10,6 +9,7 @@ logical or wrappers. They just have to provide the functions
 ``A.cols()``, ``A.rows()`` (column and row numbers),
 ``A.mult(x)``\ $=A\cdot x$ and ``A.transMult(y)``\ $=A^T\cdot y$.
 """
+# sphinx_gallery_thumbnail_number = 3
 
 # We start off with the typical imports
 import numpy as np

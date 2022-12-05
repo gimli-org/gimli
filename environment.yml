@@ -7,7 +7,7 @@ dependencies:
   - pgcore >= 1.3.0
   - matplotlib
   - jupyter
-  - sphinx >= 1.8.5
+  - sphinx >= 3.1
   - pytest
   - numpy
   - scipy
@@ -24,3 +24,6 @@ dependencies:
   - meshio
   - tetgen
   - scooby
+  - sphinx-design
+  - pydata-sphinx-theme
+

@@ -13,7 +13,7 @@ and some high-velocity bedrock. The data file can be found in the `pyGIMLi
 example data repository
 <https://github.com/gimli-org/example-data/blob/master/traveltime/koenigsee.sgt>`_.
 """
-# sphinx_gallery_thumbnail_number = 2
+# sphinx_gallery_thumbnail_number = 5
 
 ###############################################################################
 # We import pyGIMLi and the traveltime module.
