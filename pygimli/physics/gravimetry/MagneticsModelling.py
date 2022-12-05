@@ -26,7 +26,6 @@ class MagneticsModelling(pg.Modelling):
         # check if components do not contain g!
         super().__init__()
         self.mesh = mesh
-        self._J = pg.Matrix()
         self.sensorPositions = points
         self.components = cmp
         self.igrf = igrf
@@ -35,6 +34,7 @@ class MagneticsModelling(pg.Modelling):
                                            pnts=self.sensorPositions,
                                            cmp=self.components, igrf=self.igrf,
                                            foot=self.footprint)
+        self.setMesh(mesh)
         self.J = pg.matrix.BlockMatrix()
         self.Ki = []
         self.Ji = []

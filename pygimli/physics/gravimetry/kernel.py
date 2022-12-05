@@ -1,5 +1,6 @@
 import numpy as np
 import pygimli as pg
+from pygimli.utils import ProgressBar
 
 
 def SolveGravMagHolstein(mesh, pnts, cmp, igrf, foot=np.inf):
@@ -75,10 +76,11 @@ def SolveGravMagHolstein(mesh, pnts, cmp, igrf, foot=np.inf):
 
     itest = 0
     temp = np.zeros((len(pnts), lb[0], len(cmp)))
+    pBar = ProgressBar(its=len(pnts), width=40, sign='+')
     for i, p in enumerate(pnts):
-        if np.floor(100*i/len(pnts)) > itest:
-            itest = np.floor(100 * i / len(pnts))
-            print('.', end="")
+        # if np.floor(100*i/len(pnts)) > itest:
+        #     itest = np.floor(100 * i / len(pnts))
+        #     print('.', end="")
 
         r1 = n_list[b_list] - p
         r2 = r1[:, rs, :]
@@ -110,7 +112,7 @@ def SolveGravMagHolstein(mesh, pnts, cmp, igrf, foot=np.inf):
         P = np.dot(u, B_dir)
         B_vec = np.expand_dims(P, 1) * np.sum(b, 1)
         B_vec = 2 * np.expand_dims(P, 1) * np.sum(b, 1)
-
+        pBar.update(i)
         if doBT:  # magnetic gradient tensor
             d = (-2*lumbda*hn) / (r1n*r2n*(1-lumbda**2))
             e = (-2*lumbda*lm) / (r1n*r2n)
