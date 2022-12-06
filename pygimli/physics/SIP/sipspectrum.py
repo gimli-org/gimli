@@ -301,7 +301,6 @@ class SIPSpectrum(object):
         with codecs.open(filename, 'r', encoding='iso-8859-15',
                          errors='replace') as f:
             firstLine = f.readline()
-        f.close()
 
         fnLow = filename.lower()
         self.basename = filename[:-4]
@@ -329,7 +328,14 @@ class SIPSpectrum(object):
             self.f, self.amp, self.phi = readTXTSpectrum(filename)
             self.amp *= self.k
         else:
-            raise Exception("Don't know how to read data.")
+            try:
+                out = np.genfromtxt(filename, names=True)
+                self.f = out["FreqHz"]
+                self.amp = out["AppResOhmm"]
+                self.phi = -out["Phasedeg"] * np.pi / 180
+                self.amp *= self.k
+            except BaseException:
+                raise Exception("Don't know how to read data.")
 
         return self.f, self.amp, self.phi
 
@@ -925,7 +931,7 @@ class SIPSpectrum(object):
             ax[2].semilogx(self.tau, self.mDD * 1e3)
             ax[2].set_xlim(ax[2].get_xlim()[::-1])
             ax[2].grid(True)
-            ax[2].set_xlabel(r'$\tau$ (ms)')
+            ax[2].set_xlabel(r'$\tau$ (s)')
             ax[2].set_ylabel('m (mV/V)')
             ax[2].set_title(tDD, loc='left')
 
