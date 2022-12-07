@@ -70,7 +70,8 @@ nav#bd-docs-nav {
 
 
 footer.bd-footer {
-    opacity: 80%;
+    background: var(--pst-color-background);
+    opacity: 65%;
 }
 
 /* Bold font fixes */

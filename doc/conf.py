@@ -117,14 +117,13 @@ try:
                           join(SPHINXDOC_PATH, "tutorials")],
         "gallery_dirs": ["_examples_auto", "_tutorials_auto"],
 
-        # Currently deactivated until this is fixed: https://github.com/sphinx-gallery/sphinx-gallery/issues/967
-        # "reference_url": {
-        #     "pygimli": "https://pygimli.org",
-        #     "python": "https://docs.python.org/dev",
-        #     "numpy": "https://numpy.org/doc/stable",
-        #     "scipy": "https://docs.scipy.org/doc/scipy/reference",
-        #     "matplotlib": "https://matplotlib.org/stable",
-        # },
+        "reference_url": {
+            "pygimli": "https://pygimli.org",
+            "python": "https://docs.python.org/dev",
+            "numpy": "https://numpy.org/doc/stable",
+            "scipy": "https://docs.scipy.org/doc/scipy/reference",
+            "matplotlib": "https://matplotlib.org/stable",
+        },
 
         # Don"t report time of fast scripts (< 10 sec)
         "min_reported_time": 10,
@@ -148,7 +147,7 @@ try:
         "reset_modules": (reset_mpl),
 
         # Avoid representation of mpl axis, LineCollections, etc.
-        'ignore_repr_types': r'matplotlib[text, axes, collections]',
+        "ignore_repr_types": r"matplotlib[text, axes, collections]",
         }
 
     pyvista = pygimli.optImport("pyvista", "build the gallery with 3D visualizations")

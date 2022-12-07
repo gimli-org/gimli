@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 2D ERT modeling and inversion
------------------------------
+=============================
 """
 # sphinx_gallery_thumbnail_number = 6
 
@@ -13,9 +13,10 @@ import pygimli.meshtools as mt
 from pygimli.physics import ert
 
 ###############################################################################
-# Create geometry definition for the modelling domain.
-#
-# worldMarker=True indicates the default boundary conditions for the ERT
+# Geometry definition
+# -------------------
+# Create geometry definition for the modelling domain. ``worldMarker=True``
+# indicates the default boundary conditions for the ERT
 world = mt.createWorld(start=[-50, 0], end=[50, -50], layers=[-1, -5],
                        worldMarker=True)
 
@@ -38,6 +39,8 @@ geom = world + block + poly
 pg.show(geom)
 
 ###############################################################################
+# Synthetic data generation
+# -------------------------
 # Create a Dipole Dipole ('dd') measuring scheme with 21 electrodes.
 scheme = ert.createData(elecs=np.linspace(start=-15, stop=15, num=21),
                            schemeName='dd')
@@ -96,6 +99,8 @@ data.save('simple.dat')
 ert.show(data)
 
 ###############################################################################
+# Inversion with the ERTManager
+# -----------------------------
 # Initialize the ERTManager, e.g. with a data container or a filename.
 mgr = ert.ERTManager('simple.dat')
 ###############################################################################
@@ -121,6 +126,8 @@ inversionDomain = pg.createGrid(x=np.linspace(start=-18, stop=18, num=33),
                                 marker=2)
 
 ###############################################################################
+# Inversion with custom mesh
+# --------------------------
 # The inversion domain for ERT problems needs a boundary that represents the
 # far regions in the subsurface of the halfspace.
 # Give a cell marker lower than the marker for the inversion region, the lowest
@@ -132,13 +139,17 @@ pg.show(grid, markers=True)
 ###############################################################################
 # The Inversion can be called with data and mesh as argument as well
 model = mgr.invert(data, mesh=grid, lam=20, verbose=True)
-# np.testing.assert_approx_equal(mgr.inv.chi2(), 0.951027, significant=3)
+# sphinx_gallery_start_ignore
+np.testing.assert_approx_equal(mgr.inv.chi2(), 1.4, significant=2)
+# sphinx_gallery_end_ignore
+
 ###############################################################################
+# Visualization
+# -------------
 # You can of course get access to mesh and model and plot them for your own.
 # Note that the cells of the parametric domain of your mesh might be in
 # a different order than the values in the model array if regions are used.
 # The manager can help to permutate them into the right order.
-np.testing.assert_approx_equal(mgr.inv.chi2(), 1.4, significant=2)
 
 modelPD = mgr.paraModel(model)  # do the mapping
 pg.show(mgr.paraDomain, modelPD, label='Model', cMap='Spectral_r',
