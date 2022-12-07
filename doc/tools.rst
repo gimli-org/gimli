@@ -8,26 +8,31 @@ Mesh manipulation
 
 meshConvert
 ...........
+
 .. program-output:: convertMesh -h
     :nostderr:
 
 meshMerge
 .........
+
 .. program-output:: meshMerge -h
     :nostderr:
 
 createParameterMesh
 ...................
+
 .. program-output:: createParameterMesh -h
     :nostderr:
 
 pyCreateSurface
 ...............
+
 .. program-output:: pyCreateSurface -h
     :nostderr:
 
 recountPara
 ...........
+
 .. program-output:: recountPara -h
     :nostderr:
 
@@ -66,15 +71,9 @@ Generic two-dimensional mesh/model viewer:
 
         pytripatch -d data.txt mesh.bms
 
-    * Color the mesh based on data. Data can be a string of a data vector shipped with the :gimliapi:`GIMLI::Mesh` see :gimliapi:`GIMLI::Mesh::addExportData` and binary format v2. Or internal attributes like ``attribute`` or ``marker``
-
+    * Color the mesh based on data. Data can be a string of a data vector shipped with the :gimliapi:`GIMLI::Mesh` see :gimliapi:`GIMLI::Mesh::addData` and binary format v2. Or internal attributes like ``attribute`` or ``marker``
 
     ::
 
         pytripatch --data=marker mesh.bms
 
-.. Move to pybert?
-.. showSens
-.. ........
-.. .. program-output:: showSens -h
-..     :nostderr:

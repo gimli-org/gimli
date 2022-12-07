@@ -442,7 +442,7 @@ bool Shape::touch(const RVector3 & pos, double tol, bool verbose) const {
 
         for (Index i = 0; i < nodeCount(); i ++){
             Line segment(node(i).pos(), node((i+1)%nodeCount()).pos());
-            // __MS(segment)
+            // __MS(segment << " " << pos)
 
             if (segment.intersectRay(pos, rayDir, iP)){
                 // __MS(iP << " vs.  " << pos << " d:" << iP.dist(pos)

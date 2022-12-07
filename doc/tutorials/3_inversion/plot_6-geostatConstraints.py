@@ -2,7 +2,7 @@
 # encoding: utf-8
 r"""
 Geostatistical regularization
------------------------------
+=============================
 
 In this example we illustrate the use of geostatistical constraints on
 irregular meshes as presented by :cite:`jordi2018geostatistical`, compared to

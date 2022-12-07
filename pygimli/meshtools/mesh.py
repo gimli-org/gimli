@@ -1226,7 +1226,7 @@ def readHydrusMeshV3(fileName):
                                 pg.error('Something is wrong in the file.'
                                          '{:d} 1D-Elements are announced but'
                                          'only {:d} found'.format(
-                                            nBound, mesh.boundaryCount()))
+                                             nBound, mesh.boundaryCount()))
                                 i = i + 8 + mesh.boundaryCount()
                             break
                     else:
@@ -1912,7 +1912,9 @@ def mergeMeshes(meshList, verbose=False):
 def createParaMesh(data, **kwargs):
     """Create parameter mesh from list of sensor positions.
 
-    Create parameter mesh from list of sensor positions. Use `:py:func:pygimli.meshtools.createParaMeshPLC` and `:py:func:pygimli.meshtools.createMesh` and forwards keyword arguments respectively.
+    Create parameter mesh from list of sensor positions.
+    Uses `:py:func:pygimli.meshtools.createParaMeshPLC` and
+    `:py:func:pygimli.meshtools.createMesh` and forwards keyword arguments.
 
     Args
     ----
@@ -2076,7 +2078,7 @@ def extractUpperSurface2dMesh(mesh, zCut=None):
     [mesh2d.createNode(n.pos()) for n in bMesh.nodes()]
     for b in bMesh.boundaries():
         mesh2d.createCell([n.id() for n in b.nodes()])
-    
+
     # copy data
     cind = np.array([mesh.boundary(i).leftCell().id() for i in bind])
     for k in mesh.dataKeys():

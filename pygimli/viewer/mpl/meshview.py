@@ -433,8 +433,8 @@ def drawSelectedMeshBoundaries(ax, boundaries, color=None, linewidth=1.0,
         lines.append(list(zip([bound.node(0).x(), bound.node(1).x()],
                               [bound.node(0).y(), bound.node(1).y()])))
 
-    lineCollection = mpl.collections.LineCollection(lines, 
-                                                    antialiaseds=drawAA, 
+    lineCollection = mpl.collections.LineCollection(lines,
+                                                    antialiaseds=drawAA,
                                                     **kwargs)
 
     if color is None:
@@ -516,7 +516,7 @@ def drawBoundaryMarkers(ax, mesh, clipBoundaryMarkers=False, **kwargs):
     --------
     >>> import pygimli as pg
     >>> import pygimli.meshtools as mt
-    >>> c0 = mt.createCircle(pos=(0.0, 0.0), radius=1, segments=4)
+    >>> c0 = mt.createCircle(pos=(0.0, 0.0), radius=1, nSegments=4)
     >>> l0 = mt.createPolygon([[-0.5, 0.0], [.5, 0.0]], boundaryMarker=2)
     >>> l1 = mt.createPolygon([[-0.25, -0.25], [0.0, -0.5], [0.25, -0.25]],
     ...                       interpolate='spline', addNodes=4,
@@ -1346,7 +1346,7 @@ def drawSensors(ax, sensors, diam=None, coords=None, **kwargs):
         coords = [0, 2]
 
         if len(sensors[0]) == 2 or \
-            not pg.core.zVari(sensors) and sensors[0][2] == 0.0:
+                not pg.core.zVari(sensors) and sensors[0][2] == 0.0:
             coords = [0, 1]
 
     eCircles = []

@@ -15,7 +15,6 @@
  *   limitations under the License.                                           *
  *                                                                            *
  ******************************************************************************/
-
 #ifndef _GIMLI_GIMLI__H
 #define _GIMLI_GIMLI__H
 

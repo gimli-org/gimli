@@ -89,10 +89,9 @@ Documentation
         citation.rst
         design.rst
         installation.rst
-        .. faq.rst
+        faq.rst
         _examples_auto/index.rst
         _tutorials_auto/index.rst
-        contrib.rst
         pygimliapi/index.rst
         contrib.rst
         glossary.rst

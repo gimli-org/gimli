@@ -10,41 +10,60 @@ import numpy as np
 
 import pygimli as pg
 
+# scooby is a soft dependency.
+try:
+    from scooby import Report as ScoobyReport
+except ImportError:
+    class ScoobyReport:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def __repr__(self):
+            message = (
+                "`Report` requires `scooby`. Install it via `pip install scooby` "
+                "or `conda install -c conda-forge scooby`."
+            )
+            return message
+
+        def to_dict(self):
+            return {}
+
+
 class ProgressBar(object):
     """Animated text-based progressbar.
 
     Animated text-based progressbar for intensive loops. Should work in the
     console. In IPython Notebooks a 'tqdm' progressbar instance is created and 
     can be configured with appropriate keyword arguments.
-
-    Todo
-    ----
-     * optional: 'estimated time' instead of 'x of y complete'
-
-    Parameters
-    ----------
-    its : int
-        Number of iterations of the process.
-    width : int
-        Width of the ProgressBar, default is 80.
-    sign : str
-        Sign used to fill the bar.
-
-    Additional Args
-    ---------------
-    Forwarded to create the tqdm progressbar instance. See
-    https://tqdm.github.io/docs/tqdm/
-
-    Examples
-    --------
-    >>> from pygimli.utils import ProgressBar
-    >>> pBar = ProgressBar(its=20, width=40, sign='+')
-    >>> pBar.update(5)
-    \r[+++++++++++       30%                 ] 6 of 20 complete
     """
-
     def __init__(self, its, width=80, sign=":", **kwargs):
-        """Constructor."""
+        """Create animated text-based progressbar.
+        
+        Todo
+        ----
+        * optional: 'estimated time' instead of 'x of y complete'
+
+        Parameters
+        ----------
+        its : int
+            Number of iterations of the process.
+        width : int
+            Width of the ProgressBar, default is 80.
+        sign : str
+            Sign used to fill the bar.
+
+        Additional Args
+        ---------------
+        Forwarded to create the tqdm progressbar instance. See
+        https://tqdm.github.io/docs/tqdm/
+
+        Examples
+        --------
+        >>> from pygimli.utils import ProgressBar
+        >>> pBar = ProgressBar(its=20, width=40, sign='+')
+        >>> pBar.update(5)
+        \r[+++++++++++       30%                 ] 6 of 20 complete
+        """
         self.its = int(its)
         self.width = width
         self.sign = sign[0]  # take first character only if sign is longer
@@ -908,3 +927,36 @@ def filterLinesByCommentStr(lines, comment_str='#'):
     for j in comment_line_idx[::-1]:
         del lines[j]
     return lines
+
+
+class Report(ScoobyReport):
+    r"""Report date, time, system, and package version information.
+
+    Use ``scooby`` to report date, time, system, and package version
+    information in any environment, either as html-table or as plain text.
+
+    Parameters
+    ----------
+    additional : {package, str}, default: None
+        Package or list of packages to add to output information (must be
+        imported beforehand or provided as string).
+
+    """
+
+    def __init__(self, additional=None, **kwargs):
+        """Initiate a scooby.Report instance."""
+
+        # Mandatory packages.
+        core = ['pygimli', 'pgcore', 'numpy', 'matplotlib']
+
+        # Optional packages.
+        optional = ['scipy', 'tqdm', 'IPython', 'meshio', 'tetgen', 'pyvista']
+
+        inp = {
+            'additional': additional,
+            'core': core,
+            'optional': optional,
+            **kwargs  # User input overwrites defaults.
+        }
+
+        super().__init__(**inp)

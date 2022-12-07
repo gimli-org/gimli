@@ -96,7 +96,7 @@ bool Line::intersectRay(const RVector3 & start, const RVector3 & dir,
     double sc, tc;
     
     bool isParallel = false;
-
+    //__MS(dd)
     if (dd < tol) {
         isParallel = true;
         sc = 0.0;
@@ -106,16 +106,18 @@ bool Line::intersectRay(const RVector3 & start, const RVector3 & dir,
         tc = (a*e - b*d) / dd;
     }
 
-
     if (isParallel){
         pos.setValid(false);
     } else {
         pos = this->at(sc);
     }
-    // __MS(sc << " " << tc )
+    //__MS(sc << " " << tc )
 
-    if (tc >= 0.0 && (sc >= 0.0 && sc <= 1.0)){
+    // if (tc >= 0.0 && (sc >= 0.0 && sc <= 1.0)){
+
+    if (tc >= -tol && (sc >= -tol && sc <= 1.0+tol)){
         RVector3 dP(w + (sc * u) - (tc * v));
+        //__MS(dP)
         if (dP.length() < tol){
             return true;
         }

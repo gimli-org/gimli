@@ -101,10 +101,32 @@ Branches
 +--------------+----------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------+
 | release      | Latest release             | This is where releases are "staged". This usually means creating a git tag and manually merging dev into release. Hot fixes and website typos can be directly commited here.                                                           | Starts in empty workspace, runs build, documentation and tests after each push to GitHub. If the build is successful, release is merged into master and http://www.pygimli.org is updated.  | Test "backward compatibility" (e.g., run example scripts from last release with this version). Test on Mac and Windows, too.  | Make sure the tag is annotated and the version string is following the principles described below.                     |
 +--------------+----------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------+
-| master       | Latest and tested release  | Make sure that if people checkout the repository, they always have a working version.                                                                                                                                                  |                                                                                                                                                                                             | Build pgcore (if necessary) and pygimli conda packages for release.                                                           | Never push anything to master!                                                                                         |
+| master       | Tested latest dev version  | Make sure that if people checkout the repository, they always have a working version.                                                                                                                                                  |                                                                                                                                                                                             | Build pgcore (if necessary) and pygimli conda packages for release.                                                           | Never push anything to master!                                                                                         |
 +--------------+----------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------+
 | *            | Feature branches           | Larger endeavors and major restructuring should happen in dedicated feature branches (or forks), which are eventually merged to dev. This can also be useful if you want to give write access to others to jointly work on a feature.  | Automatic testing can be requested (florian@pygimli.org).                                                                                                                                   |                                                                                                                               | Start feature branch from dev. Inform other developers about your develpment (to avoid conflicts and redundant work).  |
 +--------------+----------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------+
+
+Commit messages
+---------------
+Please prepend your commit messages with one of the following prefixes depending on the nature of the commit:
+
+| **Prefix** | **Meaning**                                                          |
+|------------|----------------------------------------------------------------------|
+| **ADD:**   | Addition of new functionality                                        |
+| **API:**   | API change (argument orders or renames)                              |
+| **BLD:**   | Changes to pyGIMLi's build pipeline                                  |
+| **CI:**    | Continuous integration (i.e., Jenkins related)                       |
+| **CLN:**   | Clean up, refactoring or typo correction                             |
+| **DEF:**   | Change of default behavior                                           |
+| **DEP:**   | Deprecation                                                          |
+| **DOC:**   | Improve documentation (i.e., docstrings or website)                  |
+| **ENH:**   | Enhancement, e.g. due to more flexibility by new (keyword) arguments |
+| **FIX:**   | Fixing a bug                                                         |
+| **REL:**   | Release (setting tags, updating version strings, etc.)               |
+| **STY:**   | Coding style improvement (PEP8, PEP257)                              |
+| **TST:**   | New or improved test                                                 |
+
+Note that the tags **API, ENH, ADD, FIX** are relevant for creating the changelog later.
 
 Version numbering
 -----------------
@@ -130,10 +152,21 @@ To produce a new version, type:
     git tag -a -m "First official release" "v1.0.x" # tags last commit as v1.0.x
     git push --tags # pushes tags to GitHub
 
-.. _sec:coding_guidelines:
-
-
 .. _sec:testing:
+
+To see the commits since the last tag/release, you can use:
+
+.. code-block:: bash
+
+    git log v1.3.0...HEAD --oneline
+
+Or to see commits between specific versions:
+
+.. code-block:: bash
+
+    git log v1.2.5...v1.2.6 --oneline
+
+Alternatively, this information can also be obtained `via GitHub <http://github.com/gimli-org/gimli/compare/v1.2.5...v1.2.6>`_.
 
 Testing
 -------
@@ -234,29 +267,42 @@ Behaviour by name for global functions:
 .......................................
 
 .. code-block:: python
+
     createFOO(...)
         """Always needs to return an instance of FOO.""
+
 .. code-block:: python
+
     showFOO(Bar, ...)
         """Always open a window or optionally use a given Axes to show us Bar as Foo."""
         return ax, cbar
+
 .. code-block:: python
+
     drawFOO(ax, Bar...)
         """Always need an Axes ax and draws Bar as Foo""
         return graphics_object
+
 .. code-block:: python
+
     readFOO(fileName, *args):
         """Read object from disc."""
         return obj
+
 .. code-block:: python
+
     importFOO(fileName, obj, *args):
         """Import object from disc into an existing object."""
         return obj
+
 .. code-block:: python
+
     exportFOO(obj, fileName):
         """Export object to disc in foreign (FOOs) format."""
         return true
+
 .. code-block:: python
+
     convertFOO(fooObj):
         """Convert Foo obj into gimli Obj"""
         return gimliObj
@@ -268,6 +314,7 @@ Use the following documentation syntax or see at:
 https://www.sphinx-doc.org/en/master/usage/extensions/napoleon.html
 
 .. code-block:: python
+
   def foo(arg1, arg2):
   """Short description, i.e., one line to explain what foo does. [DOT_AT_END]
     [ONE BLANKLINE]

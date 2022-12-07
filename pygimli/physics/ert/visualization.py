@@ -7,9 +7,6 @@ from math import pi
 import numpy as np
 from numpy import ma
 
-# import matplotlib.pyplot as plt
-# from matplotlib.backends.backend_pdf import PdfPages
-
 import pygimli as pg
 from pygimli.viewer.mpl.dataview import showValMapPatches
 
@@ -20,8 +17,9 @@ def generateDataPDF(data, filename="data.pdf"):
         filename = data.replace('.txt', '-data.pdf')
         data = pg.load(data)
 
+    from matplotlib.backends.backend_pdf import PdfPages
     with PdfPages(filename) as pdf:
-        fig, ax = plt.subplots()
+        fig, ax = pg.plt.subplots()
         for tok in data.tokenList().split():
             if data.haveData(tok):
                 pg.show(data, tok, ax=ax, label=tok)
@@ -81,13 +79,13 @@ def showERTData(data, vals=None, **kwargs):
         else:
             pg.critical('field not in data container: ', vals)
 
-    kwargs['cMap'] = kwargs.pop('cMap', pg.utils.cMap('rhoa'))
-    kwargs['label'] = kwargs.pop('label', pg.utils.unit('rhoa'))
-    kwargs['logScale'] = kwargs.pop('logScale', min(vals) > 0.0)
+    kwargs.setdefault('cMap', pg.utils.cMap('rhoa'))  # better vals?
+    kwargs.setdefault('label', pg.utils.unit('rhoa'))
+    kwargs.setdefault('logScale', min(vals) > 0.0)
 
     try:
         ax, cbar = drawERTData(ax, data, vals=vals, **kwargs)
-    except:
+    except Exception:
         pg.warning('Something gone wrong while drawing data. '
                    'Try fallback with equidistant electrodes.')
         d = pg.DataContainerERT(data)
@@ -206,8 +204,9 @@ def drawERTData(ax, data, vals=None, **kwargs):
 #        if yt[0] == yt[1]:
 #            yt = yt[1:]
         dyt = np.diff(yt)
-        if dyt[-1] < dyt[-2]:
+        if len(dyt) > 1 and dyt[-1] < dyt[-2]:
             yt = yt[:-1]
+
         ax.set_yticks(yt)
         ax.set_yticklabels([ytl[int(yti)] for yti in yt])
     return ax, cbar
@@ -257,7 +256,7 @@ def midconfERT(data, ind=None, rnum=1, circular=False, switch=False):
     if switch:
         mI, mO = mO, mI
 
-    if len(ux) * 2 > data.sensorCount():  # 2D with topography case
+    if len(ux) * 2 > data.sensorCount() and not circular:  # 2D with topography case
         dx = np.array(pg.utils.diff(pg.utils.cumDist(data.sensorPositions())))
         dxM = pg.mean(dx)
         if min(pg.y(data)) != max(pg.y(data)) or \

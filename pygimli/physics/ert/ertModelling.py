@@ -398,7 +398,7 @@ class ERTModellingReference(ERTModellingBase):
 
         if r1A > 1e-12 and r2A > 1e-12:
             return (pg.math.besselK0(r1A * k) + pg.math.besselK0(r2A * k)) / \
-                    (2.0 * np.pi)
+                (2.0 * np.pi)
         else:
             return 0.
 
@@ -449,8 +449,7 @@ class ERTModellingReference(ERTModellingBase):
 
                 return k / rho * (r1.dot(n) / r1A * pg.math.besselK1(r1A * k) +
                                   r2.dot(n) / r2A * pg.math.besselK1(r2A * k))\
-                                / (pg.math.besselK0(r1A * k) +
-                                   pg.math.besselK0(r2A * k))
+                    / (pg.math.besselK0(r1A * k) + pg.math.besselK0(r2A * k))
             else:
                 return 0.
         else:

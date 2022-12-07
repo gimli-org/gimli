@@ -165,8 +165,8 @@ def drawVA(ax, data, vals=None, usePos=True, pseudosection=False, **kwargs):
                                                    queeze=True,
                                                    label=pg.unit('as'))
     else:
-        gci = pg.viewer.mpl.dataview.drawVecMatrix(ax, gx, sx, va,
-                                                   squeeze=True,
+        gci = pg.viewer.mpl.dataview.drawVecMatrix(ax, data["g"], data["s"],
+                                                   va, squeeze=True,
                                                    label=pg.unit('as'))
 
     # A = np.ones((data.sensorCount(), data.sensorCount())) * np.nan

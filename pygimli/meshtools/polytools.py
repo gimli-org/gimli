@@ -483,6 +483,7 @@ def createCircle(pos=None, radius=1, nSegments=12, start=0, end=2.*math.pi,
     --------
     >>>  # no need to import matplotlib. pygimli's show does
     >>> import math
+    >>> import pygimli as pg
     >>> from pygimli.viewer.mpl import drawMesh
     >>> import pygimli.meshtools as mt
     >>> c0 = mt.createCircle(pos=(-5.0, 0.0), radius=2, nSegments=6)
@@ -1048,29 +1049,41 @@ def createParaMeshPLC(sensors, paraDX=1, paraDepth=-1, paraBoundary=2,
         for i, e in enumerate(sensors):
             if iz == 2:
                 e.rotateX(-math.pi / 2)
-            if paraDX >= 0.5:
+
+            # nSurface.append(poly.createNode(e, pg.core.MARKER_NODE_SENSOR))
+            if addNodes > 1:
+                nSurface.append(poly.createNode(e, pg.core.MARKER_NODE_SENSOR))
+                if i < len(sensors) - 1:
+                    e1 = sensors[i + 1]
+                    if iz == 2:
+                        e1.rotateX(-math.pi / 2)
+
+                    for j in range(addNodes):
+                        nSurface.append(poly.createNode(
+                            e + (e1 - e) * (j+1)/(addNodes+1)))
+            elif paraDX >= 0.5:
                 nSurface.append(poly.createNode(e, pg.core.MARKER_NODE_SENSOR))
                 if i < len(sensors) - 1:
                     e1 = sensors[i + 1]
                     if iz == 2:
                         e1.rotateX(-math.pi / 2)
                     nSurface.append(poly.createNode((e + e1) * 0.5))
-                # print("Surface add ", e, el, nSurface[-2].pos(),
-                #        nSurface[-1].pos())
             elif paraDX < 0.5:
                 if i > 0:
                     e1 = sensors[i - 1]
                     if iz == 2:
                         e1.rotateX(-math.pi / 2)
+
                     nSurface.append(poly.createNode(e - (e - e1) * paraDX))
+
                 nSurface.append(poly.createNode(e, pg.core.MARKER_NODE_SENSOR))
                 if i < len(sensors) - 1:
                     e1 = sensors[i + 1]
                     if iz == 2:
                         e1.rotateX(-math.pi / 2)
+
                     nSurface.append(poly.createNode(e + (e1 - e) * paraDX))
-                # print("Surface add ", nSurface[-3].pos(), nSurface[-2].pos(),
-                #        nSurface[-1].pos())
+
     nSurface.append(n4)
 
     for i in range(len(nSurface) - 1, 0, -1):
@@ -1194,7 +1207,7 @@ def createParaMeshSurface(sensors, paraBoundary=None, boundary=-1,
 
 def createParaMeshPLC3D(sensors, paraDX=0, paraDepth=-1, paraBoundary=None,
                         paraMaxCellSize=0.0, boundary=None,
-                        boundaryMaxCellSize=0, 
+                        boundaryMaxCellSize=0,
                         surfaceMeshQuality=30, surfaceMeshArea=0,
                         addTopo=None, isClosed=False, **kwargs):
     r"""Create a geometry (PLC) for an 3D inversion parameter mesh.
@@ -1233,7 +1246,7 @@ def createParaMeshPLC3D(sensors, paraDX=0, paraDepth=-1, paraBoundary=None,
 
         surfaceMeshQuality: float [30]
             Quality of the surface mesh.
-        
+
         surfaceMeshArea: float [0]
             Max boundary size for surface area in parametric region.
 
@@ -1255,8 +1268,8 @@ def createParaMeshPLC3D(sensors, paraDX=0, paraDepth=-1, paraBoundary=None,
 
     surface = pg.meshtools.createParaMeshSurface(
         sensors, paraBoundary=paraBoundary, boundary=boundary,
-        surfaceMeshQuality=surfaceMeshQuality, 
-        surfaceMeshArea=surfaceMeshArea, 
+        surfaceMeshQuality=surfaceMeshQuality,
+        surfaceMeshArea=surfaceMeshArea,
         addTopo=addTopo)
 
     # find depth and paradepth
@@ -1271,6 +1284,7 @@ def createParaMeshPLC3D(sensors, paraDX=0, paraDepth=-1, paraBoundary=None,
 
     def sortP(p):
         base = pg.core.Line(p[0], p[1]).at(-1e7)
+
         def cmp_(p1, p2):
             if p1.distSquared(base) < p2.distSquared(base):
                 return -1
@@ -1285,8 +1299,10 @@ def createParaMeshPLC3D(sensors, paraDX=0, paraDepth=-1, paraBoundary=None,
     for i in range(4):
 
         p = [n.pos() for n in surface.nodes() if n.marker() == i+1]
-        p.append(surface.nodes(surface.nodeMarkers()==(i%4+1)*10)[0].pos())
-        p.append(surface.nodes(surface.nodeMarkers()==((i+1)%4+1)*10)[0].pos())
+        p.append(surface.nodes(
+            surface.nodeMarkers() == (i % 4 + 1) * 10)[0].pos())
+        p.append(surface.nodes(
+            surface.nodeMarkers() == ((i + 1) % 4 + 1) * 10)[0].pos())
         sortP(p)
 
         p0 = pg.Pos(p[-1])
@@ -1313,8 +1329,10 @@ def createParaMeshPLC3D(sensors, paraDX=0, paraDepth=-1, paraBoundary=None,
     bttm = []
     for i in range(4):
         p = [n.pos() for n in surface.nodes() if n.marker() == i+5]
-        p.append(surface.nodes(surface.nodeMarkers()==(i%4+5)*10)[0].pos())
-        p.append(surface.nodes(surface.nodeMarkers()==((i+1)%4+5)*10)[0].pos())
+        p.append(surface.nodes(
+            surface.nodeMarkers() == (i % 4 + 5) * 10)[0].pos())
+        p.append(surface.nodes(
+            surface.nodeMarkers() == ((i + 1) % 4 + 5) * 10)[0].pos())
         sortP(p)
 
         p0 = pg.Pos(p[-1])
@@ -1853,6 +1871,7 @@ def syscallTetgen(filename, quality=1.2, area=0, preserveBoundary=False,
 
     if verbose:
         print(syscal)
+
     pg.debug(syscal)
 
     system(syscal)

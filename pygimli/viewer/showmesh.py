@@ -471,19 +471,24 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
     if label is not None and colorBar is None:
         colorBar = True
 
-    if colorBar and validData:
+    # pg._r(validData, gci)
+    if validData:
         labels = ['cMin', 'cMax', 'nCols', 'nLevs', 'logScale', 'levels']
         subkwargs = {key: kwargs[key] for key in labels if key in kwargs}
 
-        subkwargs['label'] = label
         subkwargs['cMap'] = cMap
-        subkwargs['orientation'] = cBarOrientation
 
-        if bool(colorBar) is not False:
+        if isinstance(colorBar, bool):
+
+            if colorBar is True:
+                subkwargs['label'] = label
+                subkwargs['orientation'] = cBarOrientation
+
             cBar = createColorBar(gci,
                                   size=kwargs.pop('size', 0.2),
                                   pad=kwargs.pop('pad', None),
-                                  **subkwargs
+                                  **subkwargs,
+                                  onlyColorSet=not colorBar,
                                   )
         elif colorBar is not False:
             cBar = updateColorBar(colorBar, **subkwargs)
@@ -495,6 +500,7 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
             for marker in uniquemarkers:
                 labels.append(str((marker)))
             cBar.set_ticklabels(labels)
+    
 
     if coverage is not None:
         if isinstance(coverage, float):

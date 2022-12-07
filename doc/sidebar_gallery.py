@@ -17,7 +17,7 @@ import pygimli as pg
 
 def make_gallery(src_path, out_path):
     """TODO DOCUMENTME."""
-    pg.info(f"Create gallery: {src_path} at: {out_path}")
+    pg.info(f"Creating gallery: {src_path} at: {out_path}")
     example_dir = join(src_path, "examples")
     tutorial_dir = join(src_path, "tutorials")
     img_dir = "{{ pathto('_images', 1) }}"
