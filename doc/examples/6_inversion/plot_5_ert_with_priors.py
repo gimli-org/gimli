@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 r"""
 Incorporating prior data into ERT inversion
--------------------------------------------
+===========================================
 Prior data can often help to overcome ambiguity in the inversion process.
 Here we demonstrate the use of direct push (DP) data in an ERT inversion of
 data collected at the surface.
@@ -16,7 +16,7 @@ from pygimli.frameworks import PriorModelling, JointModelling
 
 # %%%
 # The prior data
-# ~~~~~~~~~~~~~~
+# --------------
 #
 # This field data is from a site with layered sands and clays over a
 # resistive bedrock. We load it from the example repository.
@@ -42,7 +42,7 @@ ax.grid(True)
 
 # %%%
 # The ERT data
-# ~~~~~~~~~~~~
+# ------------
 # We load the ERT data from the example repository and plot the pseudosection.
 #
 
@@ -179,7 +179,7 @@ ax, cb = pg.show(para, model, **kw)
 
 # %%%
 # Joint inversion of ERT and DP data
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ----------------------------------
 #
 # We now use the framework ``JointModelling`` to combine the ERT and the
 # DP forward operators. So we set up a new ERT modelling operator and join
@@ -276,16 +276,15 @@ ax.legend()
 #
 
 # %%%
-# Take-away messages
-# ~~~~~~~~~~~~~~~~~~
+# .. note:: Take-away messages
 #
-# -  (ERT) data inversion is highly ambiguous, particularly for hidden
-#    layers
-# -  prior data can help to improve regularization
-# -  structural data can be of great help, but only if extended
-# -  point data improve images, but only locally with smoothness
-#    constraints
-# -  geostatistical regularization can extrapolate point data
-# -  incorporation of prior data with geostatistic regularization is best
-#    and simple
+#    -  (ERT) data inversion is highly ambiguous, particularly for hidden
+#       layers
+#    -  prior data can help to improve regularization
+#    -  structural data can be of great help, but only if extended
+#    -  point data improve images, but only locally with smoothness
+#       constraints
+#    -  geostatistical regularization can extrapolate point data
+#    -  incorporation of prior data with geostatistic regularization is best
+#       and simple
 #

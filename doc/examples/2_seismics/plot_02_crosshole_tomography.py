@@ -2,7 +2,7 @@
 # coding: utf-8
 """
 Crosshole traveltime tomography
--------------------------------
+===============================
 
 Seismic and ground penetrating radar (GPR) methods are frequently applied to
 image the shallow subsurface. While novel developments focus on inverting the
@@ -25,6 +25,8 @@ import pygimli.physics.traveltime as tt
 
 pg.utils.units.quants['vel']['cMap'] = 'inferno_r'
 ###############################################################################
+# Geometry setup
+# --------------
 # Next, we build the crosshole acquisition geometry with two shallow boreholes.
 
 # Acquisition parameters
@@ -59,6 +61,8 @@ pg.show(mesh_fwd, model,
         label=pg.unit('vel'), cMap=pg.cmap('vel'), nLevs=3, logScale=False)
 
 ###############################################################################
+# Synthetic data generation
+# -------------------------
 # Next, we create an empty DataContainer and fill it with sensor positions and
 # all possible shot-receiver pairs for the two-borehole scenario.
 
@@ -81,6 +85,8 @@ data = tt.simulate(mesh=mesh_fwd, scheme=scheme, slowness=1./model,
 tt.showVA(data, usePos=False)
 
 ###############################################################################
+# Inversion
+# ---------
 # Now we create a structured grid as inversion mesh
 refinement = 0.25
 x = np.arange(0, bh_spacing + refinement, sensor_spacing * refinement)
@@ -113,6 +119,8 @@ mgr.drawRayPaths(ax=ax2, color="0.8", alpha=0.3)
 fig.tight_layout()
 
 ###############################################################################
+# Coverage and ray paths
+# ----------------------
 # Note how the rays are attracted by the high velocity anomaly while
 # circumventing the low-velocity region.
 # This is also reflected in the coverage, which can be visualized as follows:

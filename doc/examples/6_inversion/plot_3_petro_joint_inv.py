@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 Petrophysical joint inversion
------------------------------
+=============================
 
 Joint inversion of different geophysical techniques helps to improve both
 resolution and interpretability of the resulting images. Different data sets
@@ -95,7 +95,7 @@ def showModel(ax, model, mesh, petro=1, cMin=None, cMax=None, label=None,
 
 ###############################################################################
 # Create synthetic model
-# ......................
+# ----------------------
 mMesh, pMesh, saturation = createSynthModel()
 
 ###############################################################################
@@ -110,7 +110,7 @@ sensors = mMesh.positions()[mMesh.findNodesIdxByMarker(-99)]
 
 ###############################################################################
 # Forward simulation
-# ..................
+# ------------------
 # To create synthetic data sets, we assume 16 equally-spaced sensors on the
 # circumferential boundary of the mesh. For the ERT modelling we build a
 # complete dipole-dipole array. For the ultrasonic tomography we simulate the
@@ -126,6 +126,7 @@ ttData = tt.simulate(mMesh, scheme=ttScheme, vel=vel,
 
 ###############################################################################
 # Conventional inversion
+# ----------------------
 pg.info("ERT Inversion")
 ERT = ert.ERTManager(verbose=False, sr=False)
 resInv = ERT.invert(ertData, mesh=pMesh, zWeight=1, lam=20, verbose=False)
@@ -138,6 +139,7 @@ TT.inv.echoStatus()
 
 ###############################################################################
 # Petrophysical inversion (individually)
+# --------------------------------------
 pg.info("ERT Petrogeophysical Inversion")
 ERTPetro = PetroInversionManager(petro=ertTrans, mgr=ERT)
 satERT = ERTPetro.invert(ertData, mesh=pMesh, limits=[0., 1.], lam=10,
@@ -151,6 +153,7 @@ TTPetro.inv.echoStatus()
 
 ###############################################################################
 # Petrophysical joint inversion
+# -----------------------------
 pg.info("Petrophysical Joint-Inversion TT-ERT")
 JointPetro = JointPetroInversionManager(petros=[ertTrans, ttTrans],
                                         mgrs=[ERT, TT])
@@ -159,7 +162,8 @@ satJoint = JointPetro.invert([ertData, ttData], mesh=pMesh,
 JointPetro.inv.echoStatus()
 
 ###############################################################################
-# Show results
+# Visualization
+# -------------
 ERT.showData(ertData)
 TT.showData(ttData)
 

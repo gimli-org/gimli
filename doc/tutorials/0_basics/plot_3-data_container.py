@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 r"""
 The DataContainer class
------------------------
+=======================
 Data are often organized in a data container storing the individual data values
 as well as any description how they were obtained, e.g. the geometry of source
 and receivers.
@@ -175,7 +175,7 @@ print(data)
 # data.save("TxRx.data")
 
 # %%%
-# Any datacontainer (indexed or not) can be visualized as matrix plot
+# Any DataContainer (indexed or not) can be visualized as matrix plot
 #
 
 pg.viewer.mpl.showDataContainerAsMatrix(data, "Rx", "Tx", "dist");

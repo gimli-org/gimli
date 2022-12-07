@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# sphinx_gallery_thumbnail_number = 12
 r"""
 Region-wise regularization
 ==========================
@@ -10,6 +9,7 @@ subsurface regions individually by using an ERT field case. The data is a 2d
 profile that was measured in 2005 on the bottom of a lake. The water body is
 of course influencing the fields and needs to be treated accordingly.
 """
+# sphinx_gallery_thumbnail_number = 12
 
 # %%%
 # We first import pygimli and the modules for ERT and mesh building.

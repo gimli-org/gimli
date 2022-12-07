@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# sphinx_gallery_thumbnail_number = 8
 r"""
 Regularization - concepts explained
------------------------------------
+===================================
 
 In geophysical inversion, we minimize the data objective functional as
 the L2 norm of the misfit between data $d$ and the forward
@@ -35,7 +34,7 @@ smoothness operator, or the identity to keep the model close to the
 reference model $m_{ref}$.
 
 """
-
+# sphinx_gallery_thumbnail_number = 8
 # %%%
 # We start with importing the numpy, matplotlib and pygimli libraries
 #
@@ -48,7 +47,7 @@ from pygimli.math.matrix import GeostatisticConstraintsMatrix
 from pygimli.core.math import symlog
 
 # %%%
-# Regularisation drives the model where the data are too weak to constrain
+# Regularization drives the model where the data are too weak to constrain
 # the model. In order to explain different kinds of regularization (also
 # called constraints), we use a very simple mapping forward operator: The
 # values at certain positions are picked.
@@ -116,7 +115,7 @@ result = inv.run(**invkw)
 pg.show(mesh, result);
 
 # %%%
-# We will have a closer look at the regularization matrix C.
+# We will have a closer look at the regularization matrix $C$.
 #
 
 C = fop.constraints()
@@ -128,7 +127,7 @@ nz = np.nonzero(row)[0]
 print(nz, row[nz])
 
 # %%%
-# How does that change the regularization matrix C?
+# How does that change the regularization matrix $C$?
 #
 
 inv.setRegularization(cType=1, zWeight=0.2)  # the default
@@ -158,7 +157,7 @@ result = inv.run(**invkw)
 ax, cb = pg.show(mesh, result)
 
 # %%%
-# cType 10 means a mix between 1st order smoothness and damping (0)
+# ``cType=10`` means a mix between 1st order smoothness (1) and damping (0)
 #
 
 inv.setRegularization(cType=10)  # mix of 1st order smoothing and damping
@@ -198,8 +197,8 @@ ax, _ = pg.show(C, markersize=1)
 #
 
 # %%%
-# Geostatistic regularization
-# ---------------------------
+# Geostatistical regularization
+# -----------------------------
 #
 
 # %%%
@@ -242,7 +241,7 @@ ax, _ = pg.show(fineMesh, symlog(Cfine*vec, 1e-2), cMin=-1, cMax=1, cMap="bwr")
 
 # %%%
 # Application
-# ~~~~~~~~~~~
+# -----------
 # We can pass the correlation length directly to the inversion instance
 #
 
@@ -317,14 +316,13 @@ ax, cb = pg.show(mesh, result)
 #
 
 # %%%
-# Take-away messages
-# ------------------
-#
-# -  regularization drives the model where data are weak
-# -  think and play with your assumptions to the model
-# -  there are several predefined options
-# -  geostatistic regularization can be superior
-#
-#    -  it is mesh-independent
-#    -  it better fills the data gaps (e.g. 3D inversion of 2D profiles)
+# 
+# .. note:: Take-away messages
+# 
+#    -  regularization drives the model where data are weak
+#    -  think and play with your assumptions to the model
+#    -  there are several predefined options
+#    -  geostatistical regularization can be superior, because:
+#       -  it is mesh-independent
+#       -  it better fills the data gaps (e.g. 3D inversion of 2D profiles)
 #

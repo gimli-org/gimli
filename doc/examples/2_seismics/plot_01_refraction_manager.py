@@ -2,7 +2,7 @@
 # encoding: utf-8
 """
 2D Refraction modeling and inversion
-------------------------------------
+====================================
 
 This example shows how to use the TravelTime manager to generate the response
 of a three-layered sloping model and to invert the synthetic noisified data."""
@@ -17,6 +17,8 @@ from pygimli.physics import TravelTimeManager
 
 
 ###############################################################################
+# Model setup
+# -----------
 # We start by creating a three-layered slope (The model is taken from the BSc
 # thesis of Constanze Reinken conducted at the University of Bonn).
 layer1 = mt.createPolygon([[0.0, 137], [117.5, 164], [117.5, 162], [0.0, 135]],
@@ -56,6 +58,8 @@ for x in pos[:, 0]:
 scheme.setSensors(pos)
 
 ###############################################################################
+# Synthetic data generation
+# -------------------------
 # Now we initialize the TravelTime manager and asssign P-wave velocities to the
 # layers. To this end, we create a map from cell markers 0 through 3 to
 # velocities (in m/s) and generate a velocity vector. To check whether the
@@ -81,6 +85,8 @@ data = mgr.simulate(slowness=1.0 / vp, scheme=scheme, mesh=mesh,
                     verbose=True)
 mgr.showData(data)
 ###############################################################################
+# Inversion
+# ---------
 # Now we invert the synthetic data. We need a new independent mesh without
 # information about the layered structure. This mesh can be created manual or
 # guessd automatic from the data sensor positions (in this example). We
@@ -112,6 +118,6 @@ mgr.showResultAndFit(cMin=min(vp), cMax=max(vp))
 
 ###############################################################################
 # .. note:: Takeaway message
-
+#
 #     A default data inversion with checking of the data consists of only few
 #     lines. Check out :ref:`ex:koenigsee`.
