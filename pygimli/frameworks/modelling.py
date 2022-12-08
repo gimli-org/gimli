@@ -606,6 +606,8 @@ class MeshModelling(Modelling):
 
     def paraModel(self, model):
         mod = model[self.paraDomain.cellMarkers()]
+        if isinstance(mod, np.ndarray):
+            mod = pg.Vector(mod) # Otherwise the next line will fail, as np.array does not allow setting attributes.
         mod.isParaModel = True
         return mod
 
