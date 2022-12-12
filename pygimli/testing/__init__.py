@@ -111,17 +111,15 @@ def test(target=None, show=False, onlydoctests=False, coverage=False,
                 target = getattr(mod, func_name)
             except:
             
-                try:
-                    import pytest
-                    exitcode = pytest.main([target])
+                import pytest
+                exitcode = pytest.main([target])
 
-                    print('###', exitcode)
-
-                    if exitcode == pytest.ExitCode.OK:
-                        return 
-                except:
-                    pass
-
+                if exitcode == pytest.ExitCode.OK:
+                    return 
+                
+                print("Exiting with exitcode", exitcode)
+                sys.exit(exitcode)
+                
             #print('########')
 
 
