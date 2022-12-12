@@ -28,6 +28,26 @@ class renamed:
         return wrapper
 
 
+def skippOnDefaultTest(func):
+    """Decorator to mark a test to be skipped with default testing
+    ```
+    @pg.skippOnDefaultTest()
+    def test(args, kwargs):
+        pass
+    ```
+    """
+    def wrapper(*args, **kwargs):
+        import pygimli as pg
+        from pygimli.testing import devTests
+
+        if devTests() == True:
+            return func(*args, **kwargs)
+        else:
+            pg.info('Skipped test:', func)
+
+    return wrapper
+
+
 import functools
 def singleton(cls):
     """Make a class a Singleton class (only one instance)"""

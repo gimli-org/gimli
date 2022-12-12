@@ -186,6 +186,7 @@ class TestCreatePolygon(unittest.TestCase):
 
 class Test3DMerge(unittest.TestCase):
 
+    @pg.skippOnDefaultTest
     def test_PosTouchFace(self):
         m = pg.Mesh(dim=3, isGeometry=True)
         D = 0.1
@@ -205,7 +206,7 @@ class Test3DMerge(unittest.TestCase):
         n = [-D/6,  D/2,  -H/2]
         m.createNode(n)
         self.assertEqual(m.boundary(0).nodeCount(), 5)
-                
+                                
 
     def test_cubeBasics(self):
         plc = mt.createCube()
@@ -402,6 +403,7 @@ class Test3DMerge(unittest.TestCase):
         #m = mt.createMesh(plc, tetgen='tetgen-1.4.3')
         pg.show(m, m.cellMarkers())
 
+    @pg.skippOnDefaultTest
     def test_cube_cube_thirdside(self):
         """Add half size cube on another cube"""
         D=0.1
@@ -466,6 +468,7 @@ class Test3DMerge(unittest.TestCase):
         
         #m.exportVTK('cubecut')
 
+    @pg.skippOnDefaultTest
     def test_cube_mult_cut1(self):
         c = mt.createCube(marker=1)
         c.translate([0.5, 0.5, 0.5])
@@ -488,6 +491,7 @@ class Test3DMerge(unittest.TestCase):
         self.assertEqual(m.nodeCount() > 0, True)
         #pg.show(m, m.cellMarkers())
 
+    @pg.skippOnDefaultTest
     def test_cube_mult_cut2(self):
         c = mt.createCube(marker=1)
         c.translate([0.5, 0.5, 0.5])
@@ -518,6 +522,7 @@ class Test3DMerge(unittest.TestCase):
         #pg.show(c, showMesh=True)
         m = mt.createMesh(c)
         self.assertEqual(m.nodeCount() > 0, True)
+
 
     def test_face_inCube(self):
         # plc = mt.createCube()
