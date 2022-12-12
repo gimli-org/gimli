@@ -100,21 +100,30 @@ def test(target=None, show=False, onlydoctests=False, coverage=False,
 
     if target:
         if isinstance(target, str):
-            try:
-                import pytest
-                exitcode = pytest.main([target])
-                return 
-            except:
-                pass
-
             # If target is a string, such as "pg.solver.solve"
             # the code below will overwrite target with the corresponding
             # imported function, so that doctest works.
             target = target.replace("pg.", "pygimli.")
             import importlib
             mod_name, func_name = target.rsplit('.', 1)
-            mod = importlib.import_module(mod_name)
-            target = getattr(mod, func_name)
+            try:
+                mod = importlib.import_module(mod_name)
+                target = getattr(mod, func_name)
+            except:
+            
+                try:
+                    import pytest
+                    exitcode = pytest.main([target])
+
+                    print('###', exitcode)
+
+                    if exitcode == pytest.ExitCode.OK:
+                        return 
+                except:
+                    pass
+
+            #print('########')
+
 
         if show:  # Keep figure openend if single function is tested
             plt.ioff()
