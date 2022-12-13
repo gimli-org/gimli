@@ -34,6 +34,7 @@ class TestManagers(unittest.TestCase):
     def test_TT(self, showProgress=False):
         pass
 
+    @pg.skipOnDefaultTest
     def test_VMD(self, showProgress=False):
         t = np.logspace(-5.5, -2.2, 20)
         verbose = False
