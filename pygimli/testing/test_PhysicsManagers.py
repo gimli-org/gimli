@@ -132,7 +132,7 @@ class TestManagers(unittest.TestCase):
         mgr.invert(ra, err, layerLimits=False, showProgress=showProgress,
                    maxIter=50)
 
-        # np.testing.assert_array_less(mgr.inv.inv.chi2(), 1.09)
+        np.testing.assert_array_less(mgr.inv.inv.chi2(), 1.09)
 
 
 if __name__ == '__main__':

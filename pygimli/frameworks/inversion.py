@@ -584,7 +584,7 @@ class Inversion(object):
 
         # self.inv.start()  # start is reset() and run() so better run?
         self.inv.setMaxIter(0)
-        self.inv.run()
+        self.inv.start()
         self.maxIter = maxIterTmp
 
         if self._postStep and callable(self._postStep):
