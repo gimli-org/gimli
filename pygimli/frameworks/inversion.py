@@ -549,7 +549,7 @@ class Inversion(object):
             if isinstance(self.inv.transData(), pg.trans.TransCumulative):
                 print("Data transformation (cumulative):")
                 for i in range(self.inv.transData().size()):
-                    print("\t", i, self.inv.transDataataTrans().at(i))
+                    print("\t", i, self.inv.transData().at(i))
             else:
                 print("Data transformation:", self.inv.transData())
 
