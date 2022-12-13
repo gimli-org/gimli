@@ -20,26 +20,33 @@ import pygimli as pg
 
 import warnings
 
-# __testingMode__ = False
-#
-# def setTestingMode(mode):
-#     """Set pygimli testing mode.
-#
-#     Testing mode ensures a constant seed for the random generator if you use
-#     pg.randn().
-#     """
-#     globals()[__testingMode__] = mode
-#
-# def testingMode():
-#     """Determine pygimli testing mode.
-#
-#     Returns True if pygimli is in testing mode.
-#     """
-#     return globals()[__testingMode__]
+__devTests__ = True
 
+def setDevTests(mode):
+    """Set pygimli testing mode.
 
+    Testing mode ensures a constant seed for the random generator if you use
+    pg.randn().
+    """
+    global __devTests__
+    __devTests__ = mode
+
+def devTests():
+    """Determine pygimli testing mode.
+
+    Returns True if pygimli is in testing mode.
+    """
+    import os
+    if os.getenv('DEVTESTS') == '1':
+        return True
+    if os.getenv('DEVTESTS') == '0':
+        return False
+
+    global __devTests__
+    return __devTests__
+    
 def test(target=None, show=False, onlydoctests=False, coverage=False,
-         htmlreport=False, abort=False, verbose=True):
+         htmlreport=False, abort=False, verbose=True, devTests=False):
     """Run docstring examples and additional tests.
 
     Examples
@@ -68,8 +75,11 @@ def test(target=None, show=False, onlydoctests=False, coverage=False,
     abort : boolean, optional
         Return correct exit code, e.g. abort documentation build when a test
         fails.
+    devTests: boolean[False]
+        Don't skipp special tests marked for development only with the @pg.skippOnDefaultTest decorator. Can be overwritten by env DEVTESTS.
     """
-    # pg.setTestingMode(True)
+    setDevTests(devTests)
+    
     # Remove figure warnings
     np.random.seed(1337)
     plt = pg.plt
@@ -96,8 +106,22 @@ def test(target=None, show=False, onlydoctests=False, coverage=False,
             target = target.replace("pg.", "pygimli.")
             import importlib
             mod_name, func_name = target.rsplit('.', 1)
-            mod = importlib.import_module(mod_name)
-            target = getattr(mod, func_name)
+            try:
+                mod = importlib.import_module(mod_name)
+                target = getattr(mod, func_name)
+            except:
+            
+                import pytest
+                exitcode = pytest.main([target])
+
+                if exitcode == pytest.ExitCode.OK:
+                    return 
+                
+                print("Exiting with exitcode", exitcode)
+                sys.exit(exitcode)
+                
+            #print('########')
+
 
         if show:  # Keep figure openend if single function is tested
             plt.ioff()

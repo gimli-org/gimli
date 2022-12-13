@@ -5,7 +5,9 @@ pyGIMLi - An open-source library for modelling and inversion in geophysics
 import sys
 import locale
 
-from .core.decorators import renamed, singleton, moduleProperty
+from .core.decorators import (renamed, singleton, moduleProperty, 
+                              skippOnDefaultTest,
+                              )
 
 # Import everything that should be accessible through main namespace.
 from .core import (BVector, CVector, DataContainer, DataContainerERT,

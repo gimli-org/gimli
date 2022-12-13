@@ -36,12 +36,12 @@ for m in __Matrices:
     m.__len__ = lambda self: self.rows()
     m.shape = property(lambda self: (self.rows(), self.cols()))
 
-pgcore.RMatrix.dtype = np.float
-pgcore.CMatrix.dtype = np.complex
-pgcore.RSparseMapMatrix.dtype = np.float
-pgcore.CSparseMapMatrix.dtype = np.complex
-pgcore.RSparseMatrix.dtype = np.float
-pgcore.CSparseMatrix.dtype = np.complex
+pgcore.RMatrix.dtype = float
+pgcore.CMatrix.dtype = complex
+pgcore.RSparseMapMatrix.dtype = float
+pgcore.CSparseMapMatrix.dtype = complex
+pgcore.RSparseMatrix.dtype = float
+pgcore.CSparseMatrix.dtype = complex
 
 
 def __RMatrix_str(self):

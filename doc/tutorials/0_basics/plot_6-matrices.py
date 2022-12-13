@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 r"""
 Matrices
---------
+========
 There is a large number of Matrix types that are all derived from the
 base class ``MatrixBase``. They do not have to store elements but can be
 logical or wrappers. They just have to provide the functions
@@ -18,7 +18,7 @@ import pygimli as pg
 
 # %%%
 # Dense matrix ``Matrix``
-# ^^^^^^^^^^^^^^^^^^^^^^^
+# -----------------------
 #
 # All elements are stored column-wise, i.e. all rows ``A[i]`` are of type
 # ``pg.Vector``. This matrix is used for storing dense data (like ERT
@@ -39,7 +39,7 @@ A*x
 
 # %%%
 # Index-based sparse matrix ``SparseMapMatrix``
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# ---------------------------------------------
 #
 # Sparse matrix (most elements are zero) with single access and. Typical
 # for traveltime Jacobian (only certain cells covered by individual rays)
@@ -62,7 +62,7 @@ ax, _ = pg.show(A)
 
 # %%%
 # Column-compressed matrix ``SparseMatrix``
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# -----------------------------------------
 #
 # Used for numerical approximation of partial differential equations like
 # finite-element or finite volume. Not typically used unless efficiency is
@@ -71,7 +71,7 @@ ax, _ = pg.show(A)
 
 # %%%
 # Diagonal matrices
-# ^^^^^^^^^^^^^^^^^
+# -----------------
 #
 # First, there is an identity matrix ``IdentityMatrix``. No elements
 # stored at all. Important for constraint matrices when combined into
@@ -85,7 +85,7 @@ A*x
 
 # %%%
 # Weighted matrices
-# ^^^^^^^^^^^^^^^^^
+# -----------------
 # ``MultLeftMatrix``/``MultRightMatrix``/``MultLeftRightMatrix``
 #
 # Often, matrices are weighted from either side by a vector, e.g. data
@@ -104,7 +104,7 @@ print(B*x)
 
 # %%%
 # Combinations of matrices
-# ^^^^^^^^^^^^^^^^^^^^^^^^
+# ------------------------
 #
 # Logical matrices can combine different other matrices (of arbitrary
 # type) avoiding double memory storage by multiplication (``Mult2Matrix``)
@@ -120,7 +120,7 @@ C * x
 
 # %%%
 # Block matrices
-# ^^^^^^^^^^^^^^
+# --------------
 #
 # The most important type is the ``BlockMatrix``, where arbitrary matrices
 # are combined into a logical matrix. This is of importance for inversion
@@ -145,7 +145,7 @@ ax, _ = pg.show(A)
 
 # %%%
 # Matrix combinations
-# ^^^^^^^^^^^^^^^^^^^
+# -------------------
 # There are also simpler types of matrix combinations: \*
 # ``H2Matrix``/``V2Matrix``: two matrices below/next to each other \*
 # ``HNMatrix``/``VNMatrix``: one matrix repeated N times
@@ -154,7 +154,7 @@ ax, _ = pg.show(A)
 
 # %%%
 # Matrix wrappers
-# ^^^^^^^^^^^^^^^
+# ---------------
 # TransposedMatrix avoids transposing any matrix by exchanging left/right mult.
 # SquaredMatrix keeps only the matrix A but works as A^T @ A
 # SquaredTransposeMatrix keeps only the matrix A but works as A @ A.T
@@ -165,7 +165,7 @@ ax, _ = pg.show(A)
 
 # %%%
 # Matrix generators
-# ^^^^^^^^^^^^^^^^^
+# -----------------
 # Often, several matrices or even the same one have to be combined.
 # RepeatHMatrix, RepeatVMatrix, RepeatDMatrix hold a single matrix that is
 # repeated horizontally, vertically or diagonally.
@@ -179,7 +179,7 @@ print(F)
 
 # %%%
 # Geostatistical constraint matrix
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# --------------------------------
 #
 # For geostatistical constraints, a correlation matrix is computed using
 # correlation lengths and angles to define their directions. To access its

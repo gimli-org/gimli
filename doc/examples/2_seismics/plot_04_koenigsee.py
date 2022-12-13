@@ -15,7 +15,6 @@ example data repository
 """
 # sphinx_gallery_thumbnail_number = 5
 
-###############################################################################
 # We import pyGIMLi and the traveltime module.
 
 import pygimli as pg

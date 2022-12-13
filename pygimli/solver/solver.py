@@ -4,7 +4,7 @@
 from copy import deepcopy
 
 import numpy as np
-import numpy.matlib
+#import numpy.matlib
 import pygimli as pg
 
 
@@ -2289,20 +2289,17 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
 
     Examples
     --------
+    >>> # no need to import matplotlib, pygimli show does.
     >>> import pygimli as pg
-    >>> from pygimli.meshtools import polytools as plc
-    >>> from pygimli.viewer.mpl import drawField, drawMesh
-    >>> import matplotlib.pyplot as plt
-    >>> world = plc.createWorld(start=[-10, 0], end=[10, -10],
-    ...                         marker=1, worldMarker=False)
-    >>> c1 = plc.createCircle(pos=[0.0, -5.0], radius=3.0, area=.1, marker=2)
-    >>> mesh = pg.meshtools.createMesh([world, c1], quality=34.3)
+    >>> import pygimli.meshtools as mt
+    >>> world = mt.createWorld(start=[-10, 0], end=[10, -10],
+    ...                        marker=1, worldMarker=False)
+    >>> c1 = mt.createCircle(pos=[0.0, -5.0], radius=3.0, area=.1, marker=2)
+    >>> mesh = mt.createMesh([world, c1], quality=34.3)
     >>> u = pg.solver.solveFiniteElements(mesh, a={1: 100.0, 2: 1.0},
-    ...                                   bc={'Dirichlet':{4: 1.0, 2: 0.0}})
-    >>> fig, ax = plt.subplots()
-    >>> pc = drawField(ax, mesh, u)
-    >>> drawMesh(ax, mesh)
-    >>> plt.show()
+    ...                                   bc={'Dirichlet':{4: 1.0, 3: 0.0}})
+    >>> ax = pg.show(mesh, u, showMesh=True)[0]
+    >>> _ = pg.show(c1, ax=ax, fillRegion=False)
     """
     if bc is None:
         bc = {}
