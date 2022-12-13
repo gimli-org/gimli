@@ -28,10 +28,10 @@ class renamed:
         return wrapper
 
 
-def skippOnDefaultTest(func):
+def skipOnDefaultTest(func):
     """Decorator to mark a test to be skipped with default testing
     ```
-    @pg.skippOnDefaultTest()
+    @pg.skipOnDefaultTest()
     def test(args, kwargs):
         pass
     ```
@@ -94,4 +94,3 @@ def moduleProperty(func):
     module.__getattr__ = ag
     ag.add(func)
     return func
-

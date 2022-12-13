@@ -22,6 +22,7 @@ import warnings
 
 __devTests__ = True
 
+
 def setDevTests(mode):
     """Set pygimli testing mode.
 
@@ -30,6 +31,7 @@ def setDevTests(mode):
     """
     global __devTests__
     __devTests__ = mode
+
 
 def devTests():
     """Determine pygimli testing mode.
@@ -44,7 +46,8 @@ def devTests():
 
     global __devTests__
     return __devTests__
-    
+
+
 def test(target=None, show=False, onlydoctests=False, coverage=False,
          htmlreport=False, abort=False, verbose=True, devTests=False):
     """Run docstring examples and additional tests.
@@ -76,10 +79,11 @@ def test(target=None, show=False, onlydoctests=False, coverage=False,
         Return correct exit code, e.g. abort documentation build when a test
         fails.
     devTests: boolean[False]
-        Don't skipp special tests marked for development only with the @pg.skippOnDefaultTest decorator. Can be overwritten by env DEVTESTS.
+        Don't skip special tests marked for development, only with the
+        @pg.skipOnDefaultTest decorator. Can be overwritten by env DEVTESTS.
     """
     setDevTests(devTests)
-    
+
     # Remove figure warnings
     np.random.seed(1337)
     plt = pg.plt
@@ -109,19 +113,15 @@ def test(target=None, show=False, onlydoctests=False, coverage=False,
             try:
                 mod = importlib.import_module(mod_name)
                 target = getattr(mod, func_name)
-            except:
-            
+            except Exception:
                 import pytest
                 exitcode = pytest.main([target])
 
                 if exitcode == pytest.ExitCode.OK:
-                    return 
-                
+                    return
+
                 print("Exiting with exitcode", exitcode)
                 sys.exit(exitcode)
-                
-            #print('########')
-
 
         if show:  # Keep figure openend if single function is tested
             plt.ioff()
@@ -139,7 +139,7 @@ def test(target=None, show=False, onlydoctests=False, coverage=False,
                           "Try 'sudo pip install pytest'.")
 
     old_backend = plt.get_backend()
-    #pg._r(old_backend, show)
+    # pg._r(old_backend, show)
     if not show:
         plt.switch_backend("Agg")
     else:
