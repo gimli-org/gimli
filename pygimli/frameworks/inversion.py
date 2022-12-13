@@ -510,8 +510,6 @@ class Inversion(object):
         maxIter = kwargs.pop('maxIter', self.maxIter)
         minDPhi = kwargs.pop('dPhi', self.minDPhi)
         showProgress = kwargs.pop('showProgress', False)
-        if 'robustData' in kwargs:
-            self.robustData = kwargs['robustData']
         # if 'blockyModel' in kwargs:
         #     self.blockyModel = kwargs['blockyModel']
 
@@ -528,7 +526,7 @@ class Inversion(object):
             self.fop.setRegionProperties('*', cType=kwargs['cType'])
 
         # Triggers update of fop properties, any property to be set before.
-        self.inv.setTransModel(self.fop.modelTrans)
+        self.inv.setTransModel(self.fop.modelTrans)  # why from fop??
         self.dataVals = dataVals
         self.errorVals = errorVals
 
@@ -584,7 +582,9 @@ class Inversion(object):
         if self._preStep and callable(self._preStep):
             self._preStep(0, self)
 
-        self.inv.start()
+        # self.inv.start()  # start is reset() and run() so better run?
+        self.inv.setMaxIter(0)
+        self.inv.run()
         self.maxIter = maxIterTmp
 
         if self._postStep and callable(self._postStep):
