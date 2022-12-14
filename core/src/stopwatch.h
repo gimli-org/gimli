@@ -106,5 +106,3 @@ protected:
 } // namespace GIMLI
 
 #endif // _GIMLI_STOPWATCH__H
-
-

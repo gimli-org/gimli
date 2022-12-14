@@ -9,21 +9,22 @@ import time
 import numpy as np
 import pygimli as pg
 
+
 def rms(v, axis=None):
     """Compute the root mean square."""
-    ### abs for complex values
+    # abs for complex values
     return np.sqrt(np.mean(np.abs(v)**2, axis))
 
 
 def rrms(a, b, axis=None):
     """Compute the relative (regarding a) root mean square."""
-    ### abs for complex values
+    # abs for complex values
     return rms(np.abs(a-b)/np.abs(a), axis)
 
 
 def nanrms(v, axis=None):
     """Compute the root mean square excluding nan values."""
-    ### abs for complex values
+    # abs for complex values
     return np.sqrt(np.nanmean(np.abs(v)**2, axis))
 
 

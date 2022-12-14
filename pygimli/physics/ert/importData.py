@@ -33,7 +33,7 @@ def load(fileName, verbose=False, **kwargs):
         pg.info("could not read unified data format for ERT ... try res2dinv")
         data = importRes2dInv(fileName)
         return data
-    except:
+    except Exception:
         pg.info("could not read res2dinv ... try Ascii columns")
 
     try:
@@ -306,11 +306,11 @@ def importAsciiColumns(filename, verbose=False, return_header=False):
 
     Input can be:
         * Terrameter LS or SAS Ascii Export format, e.g.
-    Time MeasID DPID Channel A(x) A(y) A(z) B(x) B(y) B(z) M(x) M(y) M(z) \
-    N(x) N(y) N(z) F(x) F(y) F(z) Note I(mA) Uout(V) U(V)        SP(V) R(O) \
+    Time MeasID DPID Channel A(x) A(y) A(z) B(x) B(y) B(z) M(x) M(y) M(z)
+    N(x) N(y) N(z) F(x) F(y) F(z) Note I(mA) Uout(V) U(V)        SP(V) R(O)
     Var(%)         Rhoa Cycles Pint Pext(V) T(°C) Lat Long
-    2016-09-14 07:01:56 73 7 1 8 1 1 20 1 1 12 1 1 \
-    16 1 1 14 1 2.076  99.8757 107.892 0.0920761 0 0.921907 \
+    2016-09-14 07:01:56 73 7 1 8 1 1 20 1 1 12 1 1
+    16 1 1 14 1 2.076  99.8757 107.892 0.0920761 0 0.921907
     0.196302 23.17 1 12.1679 12.425 42.1962 0 0
         * Resecs Output format
 
@@ -391,7 +391,7 @@ def importAsciiColumns(filename, verbose=False, return_header=False):
         # data.save('tmp.shm', 'a b m n')
         tokenmap = {'I(mA)': 'i', 'I': 'i', 'In': 'i', 'Vp': 'u',
                     'VoltageV': 'u', 'U': 'u', 'U(V)': 'u', 'UV': 'u',
-                    'R(Ohm)': 'r',  'RO': 'r', 'R(O)': 'r', 'Res': 'r',
+                    'R(Ohm)': 'r', 'RO': 'r', 'R(O)': 'r', 'Res': 'r',
                     'Rho': 'rhoa', 'AppROhmm': 'rhoa', 'Rho-a(Ohm-m)': 'rhoa',
                     'Rho-a(Om)': 'rhoa',
                     'Var(%)': 'err', 'D': 'err', 'Dev.': 'err', 'Dev': 'err',
@@ -481,7 +481,7 @@ def readAsDictionary(content, token=None, sep=None):  # obsolote due to numpy?
                 data[token[j]] = [None] * (len(content)-1)
             try:
                 data[token[j]][i] = float(v)
-            except:
+            except Exception:
                 if len(v) == 1 and v[0] == '-':
                     v = 0.0
                 data[token[j]][i] = v

@@ -79,9 +79,9 @@ def showERTData(data, vals=None, **kwargs):
         else:
             pg.critical('field not in data container: ', vals)
 
-    kwargs['cMap'] = kwargs.pop('cMap', pg.utils.cMap('rhoa'))
-    kwargs['label'] = kwargs.pop('label', pg.utils.unit('rhoa'))
-    kwargs['logScale'] = kwargs.pop('logScale', min(vals) > 0.0)
+    kwargs.setdefault('cMap', pg.utils.cMap('rhoa'))  # better vals?
+    kwargs.setdefault('label', pg.utils.unit('rhoa'))
+    kwargs.setdefault('logScale', min(vals) > 0.0)
 
     try:
         ax, cbar = drawERTData(ax, data, vals=vals, **kwargs)
@@ -256,7 +256,7 @@ def midconfERT(data, ind=None, rnum=1, circular=False, switch=False):
     if switch:
         mI, mO = mO, mI
 
-    if len(ux) * 2 > data.sensorCount():  # 2D with topography case
+    if len(ux) * 2 > data.sensorCount() and not circular:  # 2D with topography case
         dx = np.array(pg.utils.diff(pg.utils.cumDist(data.sensorPositions())))
         dxM = pg.mean(dx)
         if min(pg.y(data)) != max(pg.y(data)) or \

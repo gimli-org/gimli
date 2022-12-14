@@ -513,18 +513,18 @@ for v in _vecs:
     except AttributeError:
         pass
 
-pgcore.RVector.dtype = np.float
-pgcore.BVector.dtype = np.bool
-pgcore.CVector.dtype = np.complex
-pgcore.IVector.dtype = np.long
+pgcore.RVector.dtype = float
+pgcore.BVector.dtype = bool
+pgcore.CVector.dtype = complex
+pgcore.IVector.dtype = int
 pgcore.IndexArray.dtype = np.uint
 
-pgcore.RVector3.dtype = np.float
+pgcore.RVector3.dtype = float
 pgcore.RVector3.__len__ = lambda self: 3
 pgcore.RVector3.ndim = 1
 pgcore.RVector3.shape = (3,)
 
-pgcore.R3Vector.dtype = np.float
+pgcore.R3Vector.dtype = float
 pgcore.R3Vector.__len__ = lambda self: self.size()
 pgcore.R3Vector.ndim = 2
 pgcore.R3Vector.shape = property(lambda self: (self.size(), 3))

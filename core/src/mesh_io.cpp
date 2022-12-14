@@ -939,10 +939,6 @@ void Mesh::exportVTK(const std::string & fbody,
             }
             file << std::endl;
 
-            RVector tmp(boundaryCount());
-            std::transform(boundaryVector_.begin(), boundaryVector_.end(),
-                           &tmp[0], std::mem_fn(&Boundary::marker));
-
             if (!bData.count("Marker")) bData["Marker"] = this->boundaryMarkers();
             
             if (bData.size() > 0){
@@ -1366,9 +1362,9 @@ void Mesh::exportVTU(const std::string & fbody, bool binary) const {
 
     std::map< std::string, RVector > data(dataMap_);
     if (cellCount() > 0){
-        RVector tmp(cellCount());
-        std::transform(cellVector_.begin(), cellVector_.end(), &tmp[0], std::mem_fn(&Cell::marker));
-        if (!data.count("_Marker")) data.insert(std::make_pair("_Marker",  tmp));
+        if (!data.count("_Marker")) {
+            data.insert(std::make_pair("_Marker",  this->cellMarkers()));
+        }
         if (!data.count("_Attribute")) data.insert(std::make_pair("_Attribute",  cellAttributes()));
     }
     addVTUPiece_(file, *this, data);
@@ -1404,12 +1400,10 @@ void Mesh::exportBoundaryVTU(const std::string & fbody, bool binary) const {
     //for (uint i =0; i < boundMesh.nodeCount(); i ++) std::cout << boundMesh.node(i)<< std::endl;
     std::map< std::string, RVector > boundData;
 
-    RVector tmp(boundMesh.boundaryCount());
-    std::transform(boundMesh.boundaries().begin(),
-                   boundMesh.boundaries().end(),
-                   &tmp[0], std::mem_fn(&Boundary::marker));
-
-    if (!boundData.count("_BoundaryMarker")) boundData.insert(std::make_pair("_BoundaryMarker",  tmp));
+    if (!boundData.count("_BoundaryMarker")) {
+        boundData.insert(std::make_pair("_BoundaryMarker", 
+                         this->boundaryMarkers()));
+    }
 
     //boundMesh.exportVTK(fbody, boundData);
     addVTUPiece_(file, boundMesh, boundData);

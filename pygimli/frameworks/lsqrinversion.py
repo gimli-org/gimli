@@ -16,6 +16,7 @@ class LSQRInversion(pg.Inversion):
         self.G = None
         self.c = None
         self.my = 1.0
+        self.LSQRiter = 200
 
     def setParameterConstraints(self, G, c, my=1.0):
         """Set parameter constraints G*p=c."""
@@ -74,7 +75,7 @@ class LSQRInversion(pg.Inversion):
             deltaG = (self.c - self.G * model) * sqrt(self.my)
             rhs = pg.cat(pg.cat(deltaD, deltaC), deltaG)
 
-        dM = lssolver(self.A, rhs, verbose=True)
+        dM = lssolver(self.A, rhs, maxiter=self.LSQRiter, verbose=True)
         tau, responseLS = self.lineSearchInter(dM)
         if tau < 0.1:  # did not work out
             tau = self.lineSearchQuad(dM, responseLS)
@@ -135,6 +136,7 @@ if __name__ == '__main__':
     tLog = pg.trans.TransLog()
 
     inv = LSQRInversion(fop=f, verbose=True)
+    inv.LSQRiter = 20
     # inv = pg.Inversion(fop=f)
     inv.dataTrans = tLog
     inv.modelTrans = tLog

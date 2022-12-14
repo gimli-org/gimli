@@ -5,7 +5,7 @@ from copy import deepcopy
 #needed? from lib2to3.pytree import Base
 
 import numpy as np
-import numpy.matlib
+#import numpy.matlib
 import pygimli as pg
 
 
@@ -131,6 +131,7 @@ def cellValues(mesh, arg, **kwargs):
         Dictionary is {key: value, }. Value can be float, int, complex or ndarray. The latter for anistropic or elastic tensors.
         Key can be integer for the cell marker or a str, which will be interpreted as wildcard, splice or list. See examples or parseDictKey_.
         String keys will be interpreted before integer keys, the latter will overwite the first, i.e. you can fill all with wildcard '*' and specify others with integers.
+        See examples or `py:mod:pygimli.solver.parseMarkersDictKey`.
 
         Iterable of length mesh.nodeCount() to be interpolated to cell centers.
 
@@ -194,7 +195,6 @@ def cellValues(mesh, arg, **kwargs):
     >>> t = pg.solver.cellValues(mesh, {':' : cellVal})
     >>> print([t[c.id()](c) for c in mesh.cells()])
     [0.5, 1.5, 2.5, 3.5]
-    
     """
     if isinstance(arg, dict):
 
@@ -242,11 +242,11 @@ def cellValues(mesh, arg, **kwargs):
     # if arg if scalar or global data type, ndarray or Matrix but not the right
     # size assume global tensor
     if isinstance(arg, np.ndarray) or \
-        isinstance(arg, pg.core.RMatrix) or \
-        isinstance(arg, pg.core.CMatrix) or \
-        isinstance(arg, float) or \
-        isinstance(arg, int) or \
-        isinstance(arg, complex):
+            isinstance(arg, pg.core.RMatrix) or \
+            isinstance(arg, pg.core.CMatrix) or \
+            isinstance(arg, float) or \
+            isinstance(arg, int) or \
+            isinstance(arg, complex):
         return [arg]*mesh.cellCount()
 
     return parseArgToArray(arg,
@@ -433,7 +433,8 @@ def generateBoundaryValue(boundary, arg, time=0.0, userData={},
             val = np.ones(boundary.nodeCount(), dtype=float) * val
         if len(val) != boundary.nodeCount():
             print(val)
-            pg.critical("Boundary value can not be generated for nCoeff=1 val:", val,)
+            pg.critical("Boundary value cannot be generated for nCoeff=1 val:",
+                        val)
     else:
         val = np.atleast_2d(val)
         # pg._y(val)
@@ -896,7 +897,7 @@ def div(mesh, v):
     9 [2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0]
     >>> divCells = pg.solver.div(mesh, v(mesh.cellCenters()))
     >>> # divergence from boundary values are exact where the divergence from
-    >>> # interpolated cell center values are wrong due to interpolation to the boundary
+    >>> # interpolated cell center values wrong due to interpolation to boundary
     >>> print(sum(divCells))
     12.0
     >>> mesh = pg.createGrid(x=np.linspace(0, 1, 4),
@@ -1270,7 +1271,8 @@ def linSolve(mat, b, solver=None, verbose=False, **kwargs):
         _m = pg.utils.toCSR(mat)
         # pg._r('convert', swatch.duration(restart=True))
 
-        scipy = pg.optImport('scipy', 'Used for sparse linear solver.')
+        # scipy is now a dependency
+        # scipy = pg.optImport('scipy', 'Used for sparse linear solver.')
         # pg._r('import', swatch.duration(restart=True))
 
         from scipy.sparse.linalg import spsolve
@@ -1338,7 +1340,7 @@ def applyDirichlet(mat, rhs, uDirIndex, uDirichlet):
 
 def getDirichletMap(mat, boundaryPairs, time=0.0, userData={},
                     nodePairs=None, dofOffset=0, nCoeff=1, dofPerCoeff=None):
-    """Get map of index: dirichlet value
+    r"""Get map of index: dirichlet value
 
     Apply Dirichlet boundary condition to the system matrix S and rhs vector.
     The right hand side values for h can be given for each boundary
@@ -2253,7 +2255,9 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
     ----
     * unsteady ub and dub
     * 'Infinity' Boundary condition (u vanishes at infinity)
-    * 'Cauchy' Boundary condition (guaranties u and du on same boundary, will never work here because the problem becomes ill posed and would need some inverse strategy to solve.)
+    * 'Cauchy' Boundary condition (guaranties u and du on same boundary)
+      will never work here because the problem becomes ill posed and would need
+      some inverse strategy to solve.
     * Example for
         * elastic parameter
         * anisotropic (float/complex)
@@ -2338,20 +2342,17 @@ def solveFiniteElements(mesh, a=1.0, b=None, f=0.0, bc=None,
 
     Examples
     --------
+    >>> # no need to import matplotlib, pygimli show does.
     >>> import pygimli as pg
-    >>> from pygimli.meshtools import polytools as plc
-    >>> from pygimli.viewer.mpl import drawField, drawMesh
-    >>> import matplotlib.pyplot as plt
-    >>> world = plc.createWorld(start=[-10, 0], end=[10, -10],
-    ...                         marker=1, worldMarker=False)
-    >>> c1 = plc.createCircle(pos=[0.0, -5.0], radius=3.0, area=.1, marker=2)
-    >>> mesh = pg.meshtools.createMesh([world, c1], quality=34.3)
+    >>> import pygimli.meshtools as mt
+    >>> world = mt.createWorld(start=[-10, 0], end=[10, -10],
+    ...                        marker=1, worldMarker=False)
+    >>> c1 = mt.createCircle(pos=[0.0, -5.0], radius=3.0, area=.1, marker=2)
+    >>> mesh = mt.createMesh([world, c1], quality=34.3)
     >>> u = pg.solver.solveFiniteElements(mesh, a={1: 100.0, 2: 1.0},
-    ...                                   bc={'Dirichlet':{4: 1.0, 2: 0.0}})
-    >>> fig, ax = plt.subplots()
-    >>> pc = drawField(ax, mesh, u)
-    >>> drawMesh(ax, mesh)
-    >>> plt.show()
+    ...                                   bc={'Dirichlet':{4: 1.0, 3: 0.0}})
+    >>> ax = pg.show(mesh, u, showMesh=True)[0]
+    >>> _ = pg.show(c1, ax=ax, fillRegion=False)
     """
     if bc is None:
         bc = {}
