@@ -648,6 +648,7 @@ def showBoundaryNorm(mesh, normMap=None, **kwargs):
     return ax
 
 
+<<<<<<< Updated upstream
 __Animation_Keeper__ = None
 
 
@@ -693,12 +694,28 @@ def showAnimation(mesh, data, ax=None, **kwargs):
         times = mesh['times']
     except Exception:
         times = None
+=======
+def animate(mesh, data, **kwargs):
+    import matplotlib.animation
+    import matplotlib.pyplot as plt
+    import numpy as np
+    
+    plt.rcParams["animation.html"] = "jshtml"
+    plt.rcParams['figure.dpi'] = 50  
+    plt.rcParams['animation.embed_limit'] = 50  
+        
+    plt.ioff()
+
+    #q = m['Flux']
+    ax,_ = pg.show(mesh, data[0])
+>>>>>>> Stashed changes
 
     p = pg.utils.ProgressBar(len(data))
     def animate(t):
         p.update(t)
         ax.clear()
         pg.show(mesh, data[t], ax=ax, **kwargs)
+<<<<<<< Updated upstream
         if flux is not None:
             pg.show(mesh, flux[t], ax=ax)
 
@@ -716,3 +733,9 @@ def showAnimation(mesh, data, ax=None, **kwargs):
                                                               animate,
                                                               frames=len(data))
     return __Animation_Keeper__
+=======
+        #pg.show(m, q[t], ax=ax)
+    
+    anim = matplotlib.animation.FuncAnimation(ax.figure, animate, frames=len(data))
+    return anim
+>>>>>>> Stashed changes
