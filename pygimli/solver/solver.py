@@ -386,10 +386,12 @@ def generateBoundaryValue(boundary, arg, time=0.0, userData={},
     val: [float]
         Value for all nodes of the boundary.
     """
+    # pg._r('genBounds')
     val = 0.
 
     if callable(arg):
         kwargs = dict()
+        # pg._r(arg)
         if time != 0.0 and time is not None:
             kwargs['time'] = time
         if userData is not None and userData.keys():
@@ -485,6 +487,7 @@ def parseArgPairToBoundaryArray(pair, mesh):
         for b in mesh.boundaries():
             if b.leftCell() is not None and b.rightCell() is None:
                 bounds.append(b)
+
     elif isinstance(pair[0], int):
         bounds = mesh.findBoundaryByMarker(pair[0])
     elif isinstance(pair[0], pg.core.Node):
@@ -1241,8 +1244,7 @@ def linSolve(mat, b, solver=None, verbose=False, **kwargs):
     if solver == 'pg':
         # core proxy to cholmod and LDL for float and umfpack for complex
         if reorder is True:
-            pg.warning(
-                'Matrix reordering for pg core solver not yet implemented')
+            pg.warning('Matrix reordering for pg core solver not yet implemented')
         _m = pg.utils.toSparseMatrix(mat)
 
         solver = pg.core.LinSolver(_m, verbose=verbose)
@@ -2726,7 +2728,7 @@ def crankNicolson(times, S, I, f=None,
             A = I + S * (dt * theta)
 
             if dirichlet is not None:
-                dirichlet.apply(A, t=times[n])
+                dirichlet.apply(A, time=times[n])
 
             solver.factorize(A)
 
@@ -2755,7 +2757,7 @@ def crankNicolson(times, S, I, f=None,
         try: swatches('CN dirichlet').start()
         except: pass
         if dirichlet is not None:
-            dirichlet.apply(b)
+            dirichlet.apply(b, time=times[n])
         try: swatches('CN dirichlet').store()
         except: pass
 

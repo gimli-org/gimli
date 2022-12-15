@@ -694,7 +694,10 @@ def showAnimation(mesh, data, ax=None, **kwargs):
         ax.clear()
         pg.show(mesh, data[t], ax=ax, **kwargs)
         if flux is not None:
-            pg.show(mesh, flux[t], ax=ax)
+            try:
+                pg.show(mesh, flux[t], ax=ax)
+            except:
+                pass
 
         if times is not None and len(times) > t:
             # ax.text(0.02, 0.02, f't={pg.pf(times[t])}',

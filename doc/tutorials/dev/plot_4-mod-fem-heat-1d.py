@@ -28,93 +28,87 @@ import pygimli as pg
 import pygimli.solver as solver
 
 # temporarily decativaed
+grid = pg.createGrid(x=np.linspace(0.0, 1.0, 21))
 
-# grid = pg.createGrid(x=np.linspace(0.0, 1.0, 100))
+bc = {'Dirichlet': {1:0, 2:0}}
+times = np.arange(0, 1.0, 0.02)
 
-# dirichletBC = [[1, 0],  # left
-#                [2, 0]]  # right
+dof = grid.nodeCount()
+u = np.zeros((len(times), dof))
+u[0, :] = np.sin(np.pi * pg.x(grid))
 
-# times = np.arange(0, 1.0, 0.04)
+dt = times[1] - times[0]
+A = solver.createStiffnessMatrix(grid)
+M = solver.createMassMatrix(grid)
 
-# dof = grid.nodeCount()
-# u = np.zeros((len(times), dof))
-# u[0, :] = list(map(lambda r: np.sin(np.pi * r[0]), grid.positions()))
+ut = pg.Vector(dof, 0.0)
+rhs = pg.Vector(dof, 0.0)
+b = pg.Vector(dof, 0.0)
+theta = 0
 
-# dt = times[1] - times[0]
-# A = solver.createStiffnessMatrix(grid)
-# M = solver.createMassMatrix(grid)
+boundUdir = solver.parseArgToBoundaries(bc['Dirichlet'], grid)
 
-# ut = pg.Vector(dof, 0.0)
-# rhs = pg.Vector(dof, 0.0)
-# b = pg.Vector(dof, 0.0)
-# theta = 0
+for n in range(1, len(times)):
+    b = (M - A * dt) * u[n - 1] + rhs * dt
 
-# boundUdir = solver.parseArgToBoundaries(dirichletBC, grid)
+    b = M * u[n - 1] - (A * u[n - 1]) * dt + rhs * dt
+    S = M
 
-# for n in range(1, len(times)):
-#     b = (M - A * dt) * u[n - 1] + rhs * dt
-#     S = M
+    solver.assembleDirichletBC(S, boundUdir, rhs=b)
 
-#     solver.assembleDirichletBC(S, boundUdir, rhs=b)
+    solve = pg.core.LinSolver(S)
+    solve.solve(b, ut)
 
-#     solve = pg.core.LinSolver(S)
-#     solve.solve(b, ut)
+    u[n, :] = ut
 
-#     u[n, :] = ut
+probeID=len(pg.x(grid))//2
+pg.plt.plot(times, u[:, probeID], label='Explicit Euler')
+theta = 1
 
-# plt.plot(times, u[:, probeID], label='Explicit Euler')
+for n in range(1, len(times)):
+    b = (M - A * (dt*(1.0 - theta))) * u[n-1] + \
+        rhs * (dt*(1.0 - theta)) + \
+        rhs * dt * theta
 
-# theta = 1
+    b = M * u[n-1] + rhs * dt
 
-# for n in range(1, len(times)):
-#     b = (M + A * (dt*(theta - 1.0))) * u[n-1] + \
-#         rhs * (dt*(1.0 - theta)) + \
-#         rhs * dt * theta
+    S = M + A * dt
 
-#     b = M * u[n-1] + rhs * dt
+    solver.assembleDirichletBC(S, boundUdir, rhs=b)
 
-#     S = M + A * dt
+    solve = pg.core.LinSolver(S)
+    solve.solve(b, ut)
 
-#     solver.assembleDirichletBC(S, boundUdir, rhs=b)
+    u[n, :] = ut
 
-#     solve = pg.core.LinSolver(S)
-#     solve.solve(b, ut)
+pg.plt.plot(times, u[:, probeID], label='Implicit Euler')
 
-#     u[n, :] = ut
 
-# plt.plot(times, u[:, probeID], label='Implicit Euler')
-
-# u = solver.solve(grid, times=times, theta=0.5,
+# u = solver.solve(grid, times=times, theta=0.0,
 #                  u0=lambda node: np.sin(np.pi * node[0]),
-#                  bc={'Dirichlet':dirichletBC})
-
-# plt.plot(times, u[:, probeID], label='Crank-Nicolson')
-
-# plt.xlabel("t[s] at x = " + str(round(grid.node(probeID).pos()[0], 2)))
-# plt.ylabel("u")
-# plt.ylim(0.0, 1.0)
-# plt.legend()
-# plt.grid()
-
-# ###############################################################################
-# # Explicit Euler scheme is unstable at progressing time.
-
-# plt.show()
+#                  bc=bc)
+# pg.plt.plot(times, u[:, probeID], label='Crank-Nicolson')
 
 
+###############################################################################
+# Explicit Euler scheme is unstable at progressing time.
 
+###############################################################################
+# For this case we have an analytical solution:
+#
+# .. math::
+#
+#     u(t,x) = \operatorname{e}^{-\pi^2 t} \sin(\pi x)
+#
+#
 
-# ###############################################################################
-# # For this case we have an analytical solution:
-# #
-# # .. math::
-# #
-# #     u(t,x) = \operatorname{e}^{-\pi^2 t} \sin(\pi x)
-# #
-# #
+def uAna(t, x):
+    return np.exp(-np.pi**2. * t) * np.sin(np.pi * x)
 
-# probeID = int(grid.nodeCount() / 2)
-# def uAna(t, x):
-#     return np.exp(-np.pi**2. * t) * np.sin(np.pi * x)
+pg.plt.plot(times, uAna(times, grid.node(probeID).pos()[0]), label='Analytical')
 
-# plt.plot(times, uAna(times, grid.node(probeID).pos()[0]), label='Analytical')
+pg.plt.xlabel("t[s] at x = " + str(round(grid.node(probeID).pos()[0], 2)))
+pg.plt.ylabel("u")
+pg.plt.ylim(0.0, 1.0)
+pg.plt.legend()
+pg.plt.grid()

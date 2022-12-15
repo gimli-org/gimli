@@ -12,10 +12,11 @@ pypandoc: install using `pip install pypandoc`
 import pypandoc as pdoc
 import json
 
+
 def fixRST(rst):
-    rst = rst.replace('\n', '')
+    #rst = rst.replace('\n', '') # only for windows
     rst = rst.replace('\r', '\n')
-    rst = rst.replace(r":raw-latex:`\begin{align}", "\n.. math::\n\n\t")
+    rst = rst.replace(r":raw-latex:`\begin{align}", "\n.. math::\n\t")
     rst = rst.replace("\end{align}`", "")
 
     # some spocky encoding problems with '
@@ -31,14 +32,14 @@ def fixRST(rst):
     return rst
 
 
-def convert_ipynb_to_gallery(file_name):
-    outFileName = file_name.replace('.ipynb', '.py')
-    print("Converting {0} -> {1}".format(file_name, outFileName))
+def convert_ipynb_to_gallery(fileName):
+    outFileName = fileName.replace('.ipynb', '.py')
+    print("Converting {0} -> {1}".format(fileName, outFileName))
 
     header = "#!/usr/bin/env python\n" +\
              "# -*- coding: utf-8 -*-\n"
 
-    with open(file_name, encoding="utf-8") as fi:
+    with open(fileName, encoding="utf-8") as fi:
         nb_dict = json.load(fi)
 
     cells = nb_dict['cells']
@@ -57,8 +58,8 @@ def convert_ipynb_to_gallery(file_name):
             first = False
 
             md_source = ''.join(cell['source'])
-            rst_source = pdoc.convert_text(md_source, 'rst', 'md')
 
+            rst_source = pdoc.convert_text(md_source, 'rst', 'md')
             python_file = header + 'r"""\n' + fixRST(rst_source) + '\n"""'
         else:
             if cell['cell_type'] == 'markdown':
@@ -74,7 +75,7 @@ def convert_ipynb_to_gallery(file_name):
 
             elif cell['cell_type'] == 'code':
                 source = ''.join(cell['source'])
-                python_file = python_file + '\n\n' + source
+                python_file = python_file + '\n\n# %%%\n' + source
 
     python_file = python_file.replace("\n%", "\n# %")
     open(outFileName, 'w', encoding="utf-8").write(python_file)
