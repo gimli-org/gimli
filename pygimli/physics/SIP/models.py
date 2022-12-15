@@ -53,7 +53,7 @@ def modelColeColeRho(f, rho, m, tau, c, a=1):
     >>> ax3 = axs[1]
     >>> ax4 = axs[1].twinx()
     >>> for i in range(len(m)):
-    ...     Z = ColeColeRho(f, rho=1, m=m[i], tau=tau, c=0.5)
+    ...     Z = modelColeColeRho(f, rho=1, m=m[i], tau=tau, c=0.5)
     ...     _= ax1.loglog(f, np.abs(Z), color='black')
     ...     _= ax2.loglog(f, -np.angle(Z)*1000, color='b')
     ...     _= ax3.loglog(f, Z.real, color='g')
@@ -221,8 +221,8 @@ class ColeColePhi(pg.core.ModellingBase):
     r"""Cole-Cole model with EM term after Pelton et al. (1978)
 
     Modelling operator for the Frequency Domain
-    :py:mod:`Cole-Cole <pygimli.physics.SIP.ColeColeRho>` impedance model using
-    :py:mod:`pygimli.physics.SIP.ColeColeRho` after Pelton et al. (1978)
+    :py:mod:`Cole-Cole <pygimli.physics.SIP.modelColeColeRho>` impedance model using
+    :py:mod:`pygimli.physics.SIP.modelColeColeRho` after Pelton et al. (1978)
     :cite:`PeltonWarHal1978`
 
     * :math:`\textbf{m} =\{ m, \tau, c\}`
@@ -252,8 +252,8 @@ class DoubleColeCole(pg.Modelling):
     r"""Complex double Cole-Cole model with EM term after Pelton et al. (1978)
 
     Modelling operator for the Frequency Domain
-    :py:mod:`Cole-Cole <pygimli.physics.SIP.ColeColeRho>` impedance model
-    using :py:mod:`pygimli.physics.SIP.ColeColeRho` after Pelton et al. (1978)
+    :py:mod:`Cole-Cole <pygimli.physics.SIP.modelColeColeRho>` impedance model
+    using :py:mod:`pygimli.physics.SIP.modelColeColeRho` after Pelton et al. (1978)
     :cite:`PeltonWarHal1978`
 
     * :math:`\textbf{m} =\{ m_1, \tau_1, c_1, m_2, \tau_2, c_2\}`
@@ -299,8 +299,8 @@ class DoubleColeColePhi(pg.core.ModellingBase):
     r"""Double Cole-Cole model after Pelton et al. (1978)
 
     Modelling operator for the Frequency Domain - phase only
-    :py:mod:`Cole-Cole <pygimli.physics.SIP.ColeColeRho>` impedance model
-    using :py:mod:`pygimli.physics.SIP.ColeColeRho` after Pelton et al. (1978)
+    :py:mod:`Cole-Cole <pygimli.physics.SIP.modelColeColeRho>` impedance model
+    using :py:mod:`pygimli.physics.SIP.modelColeColeRho` after Pelton et al. (1978)
     :cite:`PeltonWarHal1978`
 
     * :math:`\textbf{m} =\{ m_1, \tau_1, c_1, m_2, \tau_2, c_2\}`

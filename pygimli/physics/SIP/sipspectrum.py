@@ -301,7 +301,6 @@ class SIPSpectrum(object):
         with codecs.open(filename, 'r', encoding='iso-8859-15',
                          errors='replace') as f:
             firstLine = f.readline()
-        f.close()
 
         fnLow = filename.lower()
         self.basename = filename[:-4]
@@ -329,7 +328,14 @@ class SIPSpectrum(object):
             self.f, self.amp, self.phi = readTXTSpectrum(filename)
             self.amp *= self.k
         else:
-            raise Exception("Don't know how to read data.")
+            try:
+                out = np.genfromtxt(filename, names=True)
+                self.f = out["FreqHz"]
+                self.amp = out["AppResOhmm"]
+                self.phi = -out["Phasedeg"] * np.pi / 180
+                self.amp *= self.k
+            except BaseException:
+                raise Exception("Don't know how to read data.")
 
         return self.f, self.amp, self.phi
 
@@ -380,6 +386,9 @@ class SIPSpectrum(object):
         self.phi = self.phi[ind]
         if np.any(self.phiOrg):
             self.phiOrg = self.phiOrg[ind]
+        if np.any(self.ampOrg):
+            self.ampOrg = self.ampOrg[ind]
+
         self.f = self.f[ind]
 #        self.amp = self.amp[self.f <= fcut]
 #        self.phi = self.phi[self.f <= fcut]
@@ -547,13 +556,16 @@ class SIPSpectrum(object):
         """
         if sigmaR is None or sigmaI is None:
             sigmaR, sigmaI = self.realimag(cond=True)
+
         epsr = sigmaI / self.omega() / self.epsilon0
         nmax = np.argmax(self.f)
         if mode == 0:
             f1 = self.f * 1
+            a = f1[nmax] * 1.
             f1[nmax] = 0
             nmax1 = np.argmax(f1)
-            er = 2*epsr[nmax] - epsr[nmax1]
+            a = a / f1[nmax1]
+            er = (a*epsr[nmax] - epsr[nmax1]) / (a-1)
         elif mode < 0:
             er = np.median(epsr[mode:])
         else:
@@ -590,7 +602,7 @@ class SIPSpectrum(object):
 
     def fitCCPhi(self, ePhi=0.001, lam=1000., mpar=(0, 0, 1),
                  taupar=(0, 1e-5, 100), cpar=(0.3, 0, 1), verbose=False):
-        """fit a Cole-Cole term to phase only
+        """Fit a Cole-Cole term (to phase only).
 
         Parameters
         ----------
@@ -618,7 +630,7 @@ class SIPSpectrum(object):
     def fit2CCPhi(self, ePhi=0.001, lam=1000., mpar=(0, 0, 1),
                   taupar1=(0, 1e-5, 1), taupar2=(0, 1e-1, 1000),
                   cpar=(0.5, 0, 1), verbose=False):
-        """fit a Cole-Cole term to phase only
+        """Fit two Cole-Cole terms (to phase only).
 
         Parameters
         ----------
@@ -626,9 +638,12 @@ class SIPSpectrum(object):
             absolute error of phase angle
         lam : float
             regularization parameter
-        mpar1/2, taupar1/2, cpar1/2 : list[3]
-            inversion parameters (starting value, lower bound, upper bound)
-            for the two Cole-Cole parameters (m, tau, c)
+        mpar : list[3]
+            starting value, lower bound, upper bound for chargeability
+        taupar1 / taupar2 : list[3]
+            starting value, lower bound, upper bound for 2 time constants
+        cpar1 / cpar2 : list[3]
+            starting value, lower bound, upper bound for 2 relaxation exponents
         """
         if taupar1[0] == 0:
             taupar1 = (np.sqrt(taupar1[1]*taupar1[2]), taupar1[1], taupar1[2])
@@ -725,7 +740,7 @@ class SIPSpectrum(object):
 
         """
         f2CC = DoubleColeCole(self.f, rho=useRho, aphi=aphi, tauRho=False,
-                              useMult=useMult)
+                              mult=useMult)
         if useRho:
             rhoStart = min(self.amp)
             f2CC.region(0).setParameters(rhoStart, 0., rhoStart*10)
@@ -800,8 +815,9 @@ class SIPSpectrum(object):
         # discretize tau, setup DD and perform DD inversion
         self.tau = np.logspace(log10(mint), log10(maxt), nt)
         phi = self.phi
-        tLin, tLog = pg.trans.Trans(), pg.trans.TransLog()
+        tLin = pg.trans.Trans()
         tM = pg.trans.TransLog()  # pg.trans.TransLogLU(0., 1.)
+        # should be refactored to pg 1.1 (frameworks) style (no core)
         if new:
             reNorm, imNorm = self.zNorm()
             fDD = DebyeComplex(self.f, self.tau)
@@ -915,7 +931,7 @@ class SIPSpectrum(object):
             ax[2].semilogx(self.tau, self.mDD * 1e3)
             ax[2].set_xlim(ax[2].get_xlim()[::-1])
             ax[2].grid(True)
-            ax[2].set_xlabel(r'$\tau$ (ms)')
+            ax[2].set_xlabel(r'$\tau$ (s)')
             ax[2].set_ylabel('m (mV/V)')
             ax[2].set_title(tDD, loc='left')
 

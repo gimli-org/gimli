@@ -38,13 +38,12 @@ for m in __Matrices:
     m.__len__ = lambda self: self.rows()
     m.shape = property(lambda self: (self.rows(), self.cols()))
 
-pgcore.RMatrix.dtype = np.float
-pgcore.CMatrix.dtype = np.complex
-pgcore.RSparseMapMatrix.dtype = np.float
-pgcore.CSparseMapMatrix.dtype = np.complex
-pgcore.RSparseMatrix.dtype = np.float
-pgcore.CSparseMatrix.dtype = np.complex
-pgcore.RDenseMatrix.dtype = np.float
+pgcore.RMatrix.dtype = float
+pgcore.CMatrix.dtype = complex
+pgcore.RSparseMapMatrix.dtype = float
+pgcore.CSparseMapMatrix.dtype = complex
+pgcore.RSparseMatrix.dtype = float
+pgcore.CSparseMatrix.dtype = complex
 
 
 def __RMatrix_str(self):
@@ -197,13 +196,12 @@ def __SparseMatrix_str(self):
         M = pg.utils.toDense(self)
         for mi in M:
             for v in mi:
-                if (abs(v)< 1e-12 and abs(v) > 0):
+                if (abs(v) < 1e-12 and abs(v) > 0):
                     s += ('+'+pg.pf(v)).rjust(9)
                 elif (abs(v)< 1e-12 and abs(v) < 0):
                     s += ('-'+pg.pf(v)).rjust(9)
                 else:
                     s += pg.pf(v).rjust(9)
-
             s += '\n'
     return s
 

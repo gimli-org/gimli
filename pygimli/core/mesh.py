@@ -557,7 +557,7 @@ def __Mesh_cutBoundary__(self, marker, boundaryMarker=None):
     -------
     >>> import pygimli as pg
     >>> import pygimli.meshtools as mt
-    >>> plc = mt.createCircle(segments=24)
+    >>> plc = mt.createCircle(nSegments=24)
     >>> l = mt.createLine(start=[0, -1], end=[0, -0.1], boundaryMarker=2)
     >>> mesh = mt.createMesh([plc, l], area=0.1)
     >>> fig, axs= pg.plt.subplots(1, 2)

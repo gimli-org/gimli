@@ -39,7 +39,8 @@ class Show3D(QMainWindow):
 
         Note
         ----
-        Everything pyvista.Plotter would accept: https://docs.pyvista.org/plotting/plotting.html#plotter
+        Everything pyvista.Plotter would accept: 
+        https://docs.pyvista.org/api/plotting/plotting.html
         """
         super(Show3D, self).__init__(None)
         # self.tmpMesh = tmpMesh

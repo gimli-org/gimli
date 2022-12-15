@@ -36,8 +36,8 @@ class HEMmodelling(pg.Modelling):
     ep0 = 8.8542e-12
     mu0 = 4e-7 * np.pi
     c0 = sqrt(1. / ep0 / mu0)
-    fdefault = np.array([387.0, 1821.0, 8388.0, 41460.0, 133300.0], np.float)
-    rdefault = np.array([7.94, 7.93, 7.93, 7.91, 7.92], np.float)
+    fdefault = np.array([387.0, 1821.0, 8388.0, 41460.0, 133300.0], float)
+    rdefault = np.array([7.94, 7.93, 7.93, 7.91, 7.92], float)
     scaling = 1e6
 
     def __init__(self, nlay, height, f=None, r=None, **kwargs):

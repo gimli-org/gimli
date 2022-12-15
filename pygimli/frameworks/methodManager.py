@@ -754,7 +754,7 @@ class MeshMethodManager(MethodManager):
         -------
         model : array
             Model mapped for match the paraDomain Cell markers.
-            The calculated model is in self.fw.model.
+            The calculated model vector (unmapped) is in self.fw.model.
         """
         if data is None:
             data = self.data
@@ -780,17 +780,12 @@ class MeshMethodManager(MethodManager):
 
         if self.fop.mesh() is None:
             pg.critical('Please provide a mesh')
-        # inversion will call this itsself as default behaviour
-        # if startModel is None:
-        #     startModel = self.fop.createStartModel(dataVals)
-
-        # pg._g('invert-dats', dataVals)
-        # pg._g('invert-err', errVals)
-        # pg._g('invert-sm', startModel)
 
         kwargs['startModel'] = startModel
 
-        for kw in ["zWeight", "correlationLengths", "limits"]:
+        # take some global inversion option for all regions
+        for kw in ["zWeight", "limits", "cType",
+                   "correlationLengths", "dip", "strike"]:
             if kw in kwargs:
                 di = {kw: kwargs.pop(kw)}
                 self.fop.setRegionProperties('*', **di)

@@ -1,2 +1,2 @@
-Electrical resistivity and induced polarization
------------------------------------------------
+Electrical resistivity tomography
+---------------------------------

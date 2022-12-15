@@ -67,8 +67,12 @@ void _T_integrateLPerCell(const ElementMatrixMap * self,
 }
 
 void ElementMatrixMap::fillSparsityPattern(RSparseMatrix & R) const {
+<<<<<<< Updated upstream
     // this * this.T -> quadratic (not necessary) symmetric e.g. u*c
 //    __M
+=======
+    // this * this.T -> quadratic symmetric
+>>>>>>> Stashed changes
     const ElementMatrixMap & A = *this;
 
     //__MS(&A, A.dofA(), A.dofB(), R.rows(), R.cols())
@@ -92,6 +96,7 @@ void ElementMatrixMap::fillSparsityPattern(RSparseMatrix & R) const {
         }
         i++;
     }
+<<<<<<< Updated upstream
     // __MS("pattern A*A.T (idx)", sw.duration(true))
     if (R.rows() > 0 && R.cols() > 0){
         // assume R is valid and the new pattern need to be add
@@ -102,6 +107,11 @@ void ElementMatrixMap::fillSparsityPattern(RSparseMatrix & R) const {
         R.buildSparsityPattern(idxMap);
         // __MS("pattern A*A.T (build)", sw.duration(true))
     }
+=======
+    __MS("pattern A*A.T (idx)", sw.duration(true))
+    R.buildSparsityPattern(idxMap);
+    __MS("pattern A*A.T (build)", sw.duration(true))
+>>>>>>> Stashed changes
     
     // __MS(R.values().size())
 }
@@ -145,6 +155,7 @@ void ElementMatrixMap::fillSparsityPattern(RSparseMatrix & R,
     }
     // __MS("pattern A*B.T (idx)", sw.duration(true))
 
+<<<<<<< Updated upstream
     if (R.rows() > 0 && R.cols() > 0){
         // assume R is valid and the new pattern need to be add
         R.addSparsityPattern(idxMap);
@@ -154,6 +165,12 @@ void ElementMatrixMap::fillSparsityPattern(RSparseMatrix & R,
         R.buildSparsityPattern(idxMap);
         // __MS("pattern A*B.T (build)", sw.duration(true))
     }
+=======
+    __MS("pattern A*B.T (idx)", sw.duration(true))
+    R.buildSparsityPattern(idxMap);
+    __MS("pattern A*B.T (build)", sw.duration(true))
+    //     __MS(R.values().size())
+>>>>>>> Stashed changes
 }
 
 template < class ValueType >

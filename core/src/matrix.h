@@ -590,6 +590,7 @@ public:
         // return Vector< ValueType >(&_data[this->_cols * i], this->_cols);
         return Vector< ValueType >(this->_cols, _data, this->_cols * i);
 #endif
+        return Vector < ValueType >(0);
     }
 
     /*! Return view to row i*/
@@ -599,6 +600,7 @@ public:
         // return Vector< ValueType >(&_data[this->_cols * i], this->_cols);
         return Vector< ValueType >(this->_cols, _data, this->_cols * i);
 #endif
+        return Vector < ValueType >(0);
     }
 
     /*! Return read only view to row i*/
@@ -607,6 +609,7 @@ public:
         ASSERT_THIS_SIZE(i)
         return Vector< ValueType >(this->_cols, _data, this->_cols * i);
 #endif
+    return Vector < ValueType >(0);
     }
 
     /*! Return view to row i*/
@@ -615,6 +618,7 @@ public:
         ASSERT_THIS_SIZE(i)
         return Vector< ValueType >(this->_cols, _data, this->_cols * i);
 #endif
+        return Vector < ValueType >(0);
     }
 
     inline void setRow(Index i, const Vector< ValueType > & r) {

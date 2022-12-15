@@ -539,8 +539,8 @@ class ERTManager(MeshMethodManager):
         if ax is None:
             fig, ax = pg.plt.subplots()
 
-        ax, cBar = self.fop.drawModel(ax, model, coverage=self.coverage(),
-                                      **kwargs)
+        kwargs.setdefault("coverage", self.coverage())
+        ax, cBar = self.fop.drawModel(ax, model, **kwargs)
         if elecs is True:
             pg.viewer.mpl.drawSensors(ax, self.fop.data.sensors())
 

@@ -1,6 +1,6 @@
 # Requirements to test and build the documentation
 # Install via pip: sudo pip install -U -r requirements.txt
-sphinx >= 1.8
+sphinx >= 3.1
 matplotlib
 numpy
 pytest
@@ -12,6 +12,9 @@ sphinxcontrib-spelling
 sphinxcontrib-doxylink
 pillow
 scipy
+scooby
 bibtexparser
 pyvista>=0.33
 panel
+sphinx-design
+pydata-sphinx-theme

@@ -46,7 +46,7 @@ def createCrossholeData(sensors):
     return scheme
 
 
-def shotReceiverDistances(data, full=False):
+def shotReceiverDistances(data, full=True):
     """Return vector of all distances (in m) between shot and receiver.
     for each 's' and 'g' in data.
 

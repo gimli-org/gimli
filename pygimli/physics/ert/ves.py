@@ -138,8 +138,11 @@ class VESModelling(Block1DModelling):
         pg.viewer.mpl.drawModel1D(ax=ax,
                                   model=model,
                                   plot=kwargs.pop('plot', 'loglog'),
-                                  xlabel=r'Resistivity ($\Omega$m)', **kwargs)
+                                  xlabel=r'Resistivity ($\Omega$m)',
+                                  **kwargs)
         ax.set_ylabel('Depth in (m)')
+
+        return ax, None
 
     def drawData(self, ax, data, error=None, label=None, **kwargs):
         r"""Draw modeled apparent resistivity data.
@@ -169,16 +172,14 @@ class VESModelling(Block1DModelling):
         """
         ab2 = kwargs.pop('ab2', self.ab2)
         # mn2 = kwargs.pop('mn2', self.mn2)
-        plot = kwargs.pop('plot', 'loglog')
+        plot = plot = getattr(ax, kwargs.pop('plot', 'loglog'))
 
         ra = data
         raE = error
 
-        style = dict(pg.frameworks.modelling.DEFAULT_STYLES.get(label,
-                        pg.frameworks.modelling.DEFAULT_STYLES['Default']))
+        style = dict(pg.frameworks.modelling.DEFAULT_STYLES.get(
+            label, pg.frameworks.modelling.DEFAULT_STYLES['Default']))
         style.update(kwargs)
-        a1 = ax
-        plot = getattr(a1, plot)
 
         if label is None:
             label = r'$\varrho_a$'
@@ -189,17 +190,18 @@ class VESModelling(Block1DModelling):
             raErr = np.array(ra * raE)
 
             if pg.isArray(raErr, len(ra)):
-                a1.errorbar(ra, ab2,
+                ax.errorbar(ra, ab2,
                             xerr=raErr, barsabove=True,
                             **DEFAULT_STYLES.get('Error',
                                                  DEFAULT_STYLES['Default']),
                             label='_nolegend_')
 
-        a1.set_ylim(max(ab2), min(ab2))
-        a1.set_xlabel(r'Apparent resistivity ($\Omega$m)')
-        a1.set_ylabel(r'AB/2 (m)')
-        a1.grid(True)
-        a1.legend()
+        ax.set_ylim(max(ab2), min(ab2))
+        ax.set_xlabel(r'Apparent resistivity ($\Omega$m)')
+        ax.set_ylabel(r'AB/2 (m)')
+        ax.grid(True)
+        ax.legend()
+        return ax, None
 
 
 class VESCModelling(VESModelling):

@@ -511,19 +511,24 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
     if label is not None and colorBar is None:
         colorBar = True
 
-    if colorBar and validData:
+    # pg._r(validData, gci)
+    if validData:
         labels = ['cMin', 'cMax', 'nCols', 'nLevs', 'logScale', 'levels']
         subkwargs = {key: kwargs[key] for key in labels if key in kwargs}
 
-        subkwargs['label'] = label
         subkwargs['cMap'] = cMap
-        subkwargs['orientation'] = cBarOrientation
 
-        if bool(colorBar) is not False:
+        if isinstance(colorBar, bool):
+
+            if colorBar is True:
+                subkwargs['label'] = label
+                subkwargs['orientation'] = cBarOrientation
+
             cBar = createColorBar(gci,
                                   size=kwargs.pop('size', 0.2),
                                   pad=kwargs.pop('pad', None),
-                                  **subkwargs
+                                  **subkwargs,
+                                  onlyColorSet=not colorBar,
                                   )
         elif colorBar is not False:
             cBar = updateColorBar(colorBar, **subkwargs)
@@ -535,6 +540,7 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
             for marker in uniquemarkers:
                 labels.append(pg.pf(marker, mathtex=True))
             cBar.set_ticklabels(labels)
+    
 
     if coverage is not None:
         if isinstance(coverage, float):
@@ -642,6 +648,7 @@ def showBoundaryNorm(mesh, normMap=None, **kwargs):
     return ax
 
 
+<<<<<<< Updated upstream
 __Animation_Keeper__ = None
 
 
@@ -687,12 +694,28 @@ def showAnimation(mesh, data, ax=None, **kwargs):
         times = mesh['times']
     except Exception:
         times = None
+=======
+def animate(mesh, data, **kwargs):
+    import matplotlib.animation
+    import matplotlib.pyplot as plt
+    import numpy as np
+    
+    plt.rcParams["animation.html"] = "jshtml"
+    plt.rcParams['figure.dpi'] = 50  
+    plt.rcParams['animation.embed_limit'] = 50  
+        
+    plt.ioff()
+
+    #q = m['Flux']
+    ax,_ = pg.show(mesh, data[0])
+>>>>>>> Stashed changes
 
     p = pg.utils.ProgressBar(len(data))
     def animate(t):
         p.update(t)
         ax.clear()
         pg.show(mesh, data[t], ax=ax, **kwargs)
+<<<<<<< Updated upstream
         if flux is not None:
             try:
                 pg.show(mesh, flux[t], ax=ax)
@@ -713,3 +736,9 @@ def showAnimation(mesh, data, ax=None, **kwargs):
                                                               animate,
                                                               frames=len(data))
     return __Animation_Keeper__
+=======
+        #pg.show(m, q[t], ax=ax)
+    
+    anim = matplotlib.animation.FuncAnimation(ax.figure, animate, frames=len(data))
+    return anim
+>>>>>>> Stashed changes
