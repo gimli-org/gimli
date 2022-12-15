@@ -129,10 +129,9 @@ DLLEXPORT  std::string replace(const std::string & str,
 #endif
 
 #ifdef _WIN64__
-    /// testme and refactor with below # 1.3.1
+    // testme and refactor with below # 1.3.1
     #define __FILENAME__ GIMLI::replace(__FILE__, SRC_DIR, ".")
-    // #define __FILENAME__ std::max<const char*>(__FILE__,\
-    //     std::max(strrchr(__FILE__, '\\')+1, strrchr(__FILE__, '/')+1))
+    // #define __FILENAME__ std::max<const char*>(__FILE__, std::max(strrchr(__FILE__, '\\')+1, strrchr(__FILE__, '/')+1))
 #else
     #define __FILENAME__ GIMLI::replace(__FILE__, SRC_DIR, ".")
 #endif

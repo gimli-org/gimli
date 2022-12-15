@@ -1242,7 +1242,7 @@ def linSolve(mat, b, solver=None, verbose=False, **kwargs):
             if isinstance(mat, spmatrix):
                 solver = 'scipy'
 
-    if solver == 'pg':
+    if solver.lower() == 'pg':
         # core proxy to cholmod and LDL for float and umfpack for complex
         if reorder is True:
             pg.warning('Matrix reordering for pg core solver not yet implemented')
@@ -1259,13 +1259,13 @@ def linSolve(mat, b, solver=None, verbose=False, **kwargs):
         if verbose:
             pg.info("Matrix solution:", swatch.duration())
 
-    elif solver == 'numpy':
+    elif solver.lower() == 'numpy':
         if verbose:
             pg.info("Solving with np.linalg.solve")
 
         x = np.linalg.solve(mat, b)
 
-    elif solver == 'scipy':
+    elif solver.lower() == 'scipy':
         # pg._r(swatch.duration(restart=True))
         _m = pg.utils.toCSR(mat)
         # pg._r('convert', swatch.duration(restart=True))
