@@ -597,7 +597,7 @@ class Inversion(object):
         self.chi2History = [self.chi2()]
         self.modelHistory = [startModel]
 
-        for i in range(1, maxIter):
+        for i in range(maxIter):
 
             if self._preStep and callable(self._preStep):
                 self._preStep(i, self)
