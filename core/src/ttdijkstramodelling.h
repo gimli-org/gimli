@@ -131,7 +131,7 @@ public:
         Edge_ second;
     };
 
-    template < class T > class ComparePairsClass_ : public std::binary_function< T, T, T > {
+    template < class T > class ComparePairsClass_ {
     public:
         bool operator() (const T & lhs, const T & rhs) {
             return lhs.first > rhs.first;

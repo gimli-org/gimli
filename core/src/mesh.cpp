@@ -28,8 +28,6 @@
 #include "sparsematrix.h"
 #include "stopwatch.h"
 
-#include <boost/bind.hpp>
-
 #include <map>
 
 namespace GIMLI{
@@ -1133,7 +1131,7 @@ void Mesh::setCellMarkers(const RVector & attribute){
 IVector Mesh::cellMarkers() const{
     IVector tmp(cellCount());
     std::transform(cellVector_.begin(), cellVector_.end(), tmp.begin(),
-                    std::mem_fn(&Cell::marker));
+                   std::mem_fn(&Cell::marker));
     return tmp;
 }
 
@@ -2517,8 +2515,12 @@ void Mesh::fillKDTree_() const {
     if (tree_->size() != nodeCount(true)){
 
         if (tree_->size() == 0){
-            for_each(nodeVector_.begin(), nodeVector_.end(), boost::bind(&KDTreeWrapper::insert, tree_, _1));
-            for_each(secNodeVector_.begin(), secNodeVector_.end(), boost::bind(&KDTreeWrapper::insert, tree_, _1));
+            // for_each(nodeVector_.begin(), nodeVector_.end(), boost::bind(&KDTreeWrapper::insert, tree_, _1));
+            // for_each(secNodeVector_.begin(), secNodeVector_.end(), boost::bind(&KDTreeWrapper::insert, tree_, _1));
+            for_each(nodeVector_.begin(), nodeVector_.end(), 
+                     [&](Node * n){tree_->insert(n);});
+            for_each(secNodeVector_.begin(), secNodeVector_.end(), 
+                     [&](Node * n){tree_->insert(n);});
 
             tree_->tree()->optimize();
         } else {

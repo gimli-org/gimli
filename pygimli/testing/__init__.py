@@ -15,9 +15,7 @@ import sys
 from os.path import join, realpath
 
 import numpy as np
-
 import pygimli as pg
-
 import warnings
 
 __devTests__ = True
