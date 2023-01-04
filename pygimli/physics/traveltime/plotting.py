@@ -4,8 +4,7 @@
 import numpy as np
 
 import pygimli as pg
-from pygimli.viewer.mpl import createColorBar  # , updateColorBar
-# local
+from pygimli.viewer.mpl import createColorBar
 from .utils import shotReceiverDistances
 
 
@@ -68,7 +67,16 @@ def plotFirstPicks(ax, data, tt=None, plotva=False, marker='x-'):
 
 
 def drawFirstPicks(ax, data, tt=None, plotva=False, **kwargs):
-    """Plot first arrivals as lines."""
+    """Plot first arrivals as lines.
+
+    Parameters
+    ----------
+
+    Return
+    ------
+    gci : list
+        list of plotting items (matplotlib lines)
+    """
     px = pg.x(data)
     gx = np.array([px[int(g)] for g in data("g")])
     sx = np.array([px[int(s)] for s in data("s")])
@@ -83,12 +91,15 @@ def drawFirstPicks(ax, data, tt=None, plotva=False, **kwargs):
     kwargs.setdefault('marker', 'x')
     kwargs.setdefault('markersize', 8)
     kwargs.setdefault('linestyle', '-')
+    kwargs.setdefault('plotSource', True)
+    GCI = []
     for i, si in enumerate(uns):
         ti = tt[sx == si]
         gi = gx[sx == si]
         ii = gi.argsort()
-        ax.plot(gi[ii], ti[ii], color=cols[i % 10], **kwargs)
-        ax.plot(si, 0., 's', color=cols[i % 10])
+        GCI.append(ax.plot(gi[ii], ti[ii], color=cols[i % 10], **kwargs))
+        if kwargs["plotSource"]:
+            ax.plot(si, 0., 's', color=cols[i % 10])
 
     ax.grid(True)
     if plotva:
@@ -98,6 +109,7 @@ def drawFirstPicks(ax, data, tt=None, plotva=False, **kwargs):
 
     ax.set_xlabel("x (m)")
     ax.invert_yaxis()
+    return GCI
 
 
 def _getOffset(data, full=False):
@@ -183,15 +195,3 @@ def drawVA(ax, data, vals=None, usePos=True, pseudosection=False, **kwargs):
         ax.set_yticklabels([str(int(px[xti])) for xti in xt])
 
     return gci
-
-
-def plotLines(ax, line_filename, step=1):
-    xz = np.loadtxt(line_filename)
-    n_points = xz.shape[0]
-    if step == 2:
-        for i in range(0, n_points, step):
-            x = xz[i:i + step, 0]
-            z = xz[i:i + step, 1]
-            ax.plot(x, z, 'k-')
-    if step == 1:
-        ax.plot(xz[:, 0], xz[:, 1], 'k-')

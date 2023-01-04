@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""Class for managing first arrival travel time inversions"""
+"""Class for managing first arrival travel time inversions."""
 import os
 import numpy as np
 
@@ -251,7 +251,7 @@ class TravelTimeManager(MeshMethodManager):
 
     def getRayPaths(self, model=None):
         """Compute ray paths.
-        
+
         If model is not specified, the last calculated Jacobian is used.
 
         Parameters
