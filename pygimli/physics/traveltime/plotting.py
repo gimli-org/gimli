@@ -95,14 +95,14 @@ def drawFirstPicks(ax, data, tt=None, plotva=False, **kwargs):
     kwargs.setdefault('marker', 'x')
     kwargs.setdefault('markersize', 8)
     kwargs.setdefault('linestyle', '-')
-    kwargs.setdefault('plotSource', True)
+    plotSource = kwargs.pop('plotSource', True)
     GCI = []
     for i, si in enumerate(uns):
         ti = tt[sx == si]
         gi = gx[sx == si]
         ii = gi.argsort()
         GCI.append(ax.plot(gi[ii], ti[ii], color=cols[i % 10], **kwargs))
-        if kwargs["plotSource"]:
+        if plotSource:
             ax.plot(si, 0., 's', color=cols[i % 10])
 
     ax.grid(True)
