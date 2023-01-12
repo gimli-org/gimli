@@ -31,6 +31,7 @@ class VectorTest : public CppUnit::TestFixture  {
     CPPUNIT_TEST(testMatrix);
     CPPUNIT_TEST(testBlockMatrix);
     CPPUNIT_TEST(testSparseMapMatrix);
+    CPPUNIT_TEST(testSparseMatrixBasics);
     CPPUNIT_TEST(testSparseMatrixRowCol);
     CPPUNIT_TEST(testFind);
     CPPUNIT_TEST(testIO);
@@ -368,13 +369,14 @@ public:
 
     void testDenseMatrixRefCounter_(){
         DenseMatrix<double> A(5, 5);
-        CPPUNIT_ASSERT(A.data().use_count() == 1);
-        A[0][0] = 1.0;
-        CPPUNIT_ASSERT(A.data().use_count() == 1);
-        RVector T1(A[0]);
+        // use_count == 2 because default A.rowView use one additional
         CPPUNIT_ASSERT(A.data().use_count() == 2);
-        RVector T2(A[0]);
+        A[0][0] = 1.0;
+        CPPUNIT_ASSERT(A.data().use_count() == 2);
+        RVector T1(A[0]);
         CPPUNIT_ASSERT(A.data().use_count() == 3);
+        RVector T2(A[0]);
+        CPPUNIT_ASSERT(A.data().use_count() == 4);
     }
 
     template < class M, class ValueType >
@@ -516,6 +518,22 @@ public:
         CPPUNIT_ASSERT(AM.col(1) == AM.mult(GIMLI::RVector({0, 1, 0})));
         CPPUNIT_ASSERT(AM.col(2) == AM.mult(GIMLI::RVector({0, 0, 1})));
     
+    }
+
+    void testSparseMatrixBasics(){
+        Index m = 2;
+        Index n = 3;
+        double *_A = new double[m * n];
+        for (Index i = 0; i < m*n; i ++ ) _A[i] = i+1;
+        GIMLI::Matrix A_(m, n, _A);
+        
+        GIMLI::RSparseMatrix A(A_);
+        
+        GIMLI::RSparseMatrix B(A + 2.0 * A);
+        GIMLI::RSparseMatrix C(A + A * 2.0);
+        
+        CPPUNIT_ASSERT(B.values() == C.values());
+
     }
 
     void testSmallMatrix(){

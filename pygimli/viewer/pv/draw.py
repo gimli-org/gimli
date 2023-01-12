@@ -46,29 +46,8 @@ def drawMesh(ax, mesh, notebook=False, **kwargs):
     lw = kwargs.pop('line_width', 0.1)
     filt = kwargs.pop('filter', {})
 
-<<<<<<< Updated upstream
     # show_edges = kwargs.pop('show_edges', True)  # not used
     # name = kwargs.pop('name', 'Mesh')  # not used
-=======
-    theme = pv.themes.DefaultTheme()
-    theme.background = bc
-    
-    # seems to be broken .. results on pure black screens on some machines
-    #theme.antialiasing = True
-    
-    theme.font.color = 'k'  
-
-    if ax is None:
-        ax = pv.Plotter(notebook=notebook, 
-                        theme=theme,
-                        **kwargs
-                        )
-    #if grid is True:
-        #implementme
-
-    ax.show_bounds(all_edges=True, minor_ticks=True)
-    ax.add_axes()
->>>>>>> Stashed changes
 
     if isinstance(mesh, pg.Mesh):
         mesh = pgMesh2pvMesh(mesh)

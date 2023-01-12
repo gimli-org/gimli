@@ -159,8 +159,6 @@ class TestSparseMatrix(unittest.TestCase):
         A2 = pg.matrix.SparseMapMatrix(colIds, rowIds, vals)
         A1 += A2
 
-        
-
     def test_Access(self):
         #addVal(0, 1, 1.2) kommt nach der konvertierung auch wieder [0], [1], [1.2]
         pass
@@ -173,6 +171,9 @@ class TestSparseMatrix(unittest.TestCase):
         S = pg.utils.toSparseMatrix(A)
 
         S2 = S + S * 0.1 * 0.3
+        S3 = S + 0.1 * 0.3 * S
+
+        np.testing.assert_equal(S2, S3)
 
     def test_ComplexMatrix(self):
         verbose = False

@@ -317,6 +317,21 @@ class TestRVectorMethods(unittest.TestCase):
 
 class TestMatrixMethods(unittest.TestCase):
 
+    def testSparceMatrixBasics(self):
+        A = pg.SparseMapMatrix(3,3)
+        for i in range(A.size()):
+            A.setVal(i,i, 1.0)
+
+        np.testing.assert_equal(A + 2.0 * A == 
+                                A + A * 2.0, True)
+
+        ## check to ignore np.*.__mul__ in case A has __rmul__ function
+        np.testing.assert_equal(A + np.float64(2.0) * A == 
+                                A + A * np.float64(2.0), True)
+
+            
+        
+
     def testRMatrixIndex(self):
         A = pg.Matrix(3,4)
         A[0] = pg.Vector(4,1)
