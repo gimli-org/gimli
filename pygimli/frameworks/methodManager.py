@@ -786,8 +786,10 @@ class MeshMethodManager(MethodManager):
                 di = {kw: kwargs.pop(kw)}
                 self.fop.setRegionProperties('*', **di)
 
-        if "blockyModel" in kwargs:
-            self.fw.blockyModel = kwargs["blockyModel"]
+        # if "blockyModel" in kwargs:  # redundant, now in fw
+        #     self.fw.blockyModel = kwargs["blockyModel"]
+        # if "stopAtChi1" in kwargs:
+        #     self.fw._stopAtChi1 = kwargs["stopAtChi1"]
 
         self.preRun(**kwargs)
         self.fw.run(dataVals, errorVals, **kwargs)

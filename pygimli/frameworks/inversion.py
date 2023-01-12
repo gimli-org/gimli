@@ -510,12 +510,14 @@ class Inversion(object):
         maxIter = kwargs.pop('maxIter', self.maxIter)
         minDPhi = kwargs.pop('dPhi', self.minDPhi)
         showProgress = kwargs.pop('showProgress', False)
-        # if 'blockyModel' in kwargs:
-        #     self.blockyModel = kwargs['blockyModel']
+        if 'blockyModel' in kwargs:
+            self.blockyModel = kwargs['blockyModel']
 
         self.verbose = kwargs.pop('verbose', self.verbose)
         self.debug = kwargs.pop('debug', self.debug)
         self.robustData = kwargs.pop('robustData', False)
+        if "stopAtChi1" in kwargs:
+            self._stopAtChi1 = kwargs["stopAtChi1"]
 
         lam = kwargs.pop('lam', self.lam)
         self.inv.setLambda(lam)
