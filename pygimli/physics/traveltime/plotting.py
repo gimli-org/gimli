@@ -71,7 +71,11 @@ def drawFirstPicks(ax, data, tt=None, plotva=False, **kwargs):
 
     Parameters
     ----------
-
+    ax : matplotlib.axes
+        axis to draw the lines in
+    data : :gimliapi:`GIMLI::DataContainer`
+        data containing shots ("s"), geophones ("g") and traveltimes ("t").
+        (`:py:class:pygimli.physics.traveltimeDataContainerTT.`)
     Return
     ------
     gci : list
