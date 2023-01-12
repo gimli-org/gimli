@@ -468,6 +468,7 @@ public:
     DenseMatrix(Index rows, Index cols)
         : MatrixBase(), _rowView(0){
         // __MS("mat", this); 
+        // __MS("mat(i,i): ", _data.use_count())
         this->resize(rows, cols);
     }
     /*!Create Densematrix with specified dimensions and copy content
@@ -646,8 +647,7 @@ public:
         log(Warning, "Efficency .. push_back for dense matrix not recommanded");
         __MS("Check Refcounter!")
 
-        if (_data.use_count() > 1){
-            __MS(_data.use_count())
+        if (_data.use_count() > 2){
             log(Error, "Cannot push_back on data that has been borrowed.");
         }
         Index oldLength = length();
@@ -832,12 +832,16 @@ protected:
                 __MS(_data.use_count())
                throwError("Matrix data are in use and can't be new allocated.");
             }
+
+            // use_count == 2 because default rowView use one additional
             if (_data.use_count() == 2 || _data != nullptr){
                 free_();
             }
             
             _data = std::shared_ptr< ValueType [] >(new ValueType[rows*cols]);
+
             std::memset(_data.get(), '\0', sizeof(ValueType) * rows*cols);
+            
         }
 
         if (cols != _cols || _rowView == nullptr){
@@ -860,7 +864,9 @@ protected:
         _cols = 0;
 
         if (_rowView != nullptr){
+            //** --> _data.use_count() == 2
             delete _rowView;
+            //** --> _data.use_count() == 1
             _rowView = 0;
         }
 

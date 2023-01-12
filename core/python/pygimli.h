@@ -295,15 +295,23 @@ DEFINE_XVECTOR_STUFF__(RVector) //RVector last since auto rhs conversion will fa
     template class SparseMatrix< double >;
     template class SparseMatrix< GIMLI::Complex >;
 
-    template RSparseMatrix operator + (const RSparseMatrix & A, const RSparseMatrix & B);
-    template RSparseMatrix operator - (const RSparseMatrix & A, const RSparseMatrix & B);
-    template RSparseMatrix operator * (const RSparseMatrix & A, const double & b);
-    template RSparseMatrix operator * (const double & b, const RSparseMatrix & A);
+    template RSparseMatrix operator + (const RSparseMatrix & A, 
+                                       const RSparseMatrix & B);
+    template RSparseMatrix operator - (const RSparseMatrix & A, 
+                                       const RSparseMatrix & B);
+    template RSparseMatrix operator * (const RSparseMatrix & A, 
+                                       const double & b);
+    template RSparseMatrix operator * (const double & b, 
+                                       const RSparseMatrix & A);
 
-    template CSparseMatrix operator + (const CSparseMatrix & A, const CSparseMatrix & B);
-    template CSparseMatrix operator - (const CSparseMatrix & A, const CSparseMatrix & B);
-    template CSparseMatrix operator * (const GIMLI::Complex & b, const CSparseMatrix & A);
-    template CSparseMatrix operator * (const CSparseMatrix & A, const GIMLI::Complex & b);
+    template CSparseMatrix operator + (const CSparseMatrix & A, 
+                                       const CSparseMatrix & B);
+    template CSparseMatrix operator - (const CSparseMatrix & A, 
+                                       const CSparseMatrix & B);
+    template CSparseMatrix operator * (const GIMLI::Complex & b, 
+                                       const CSparseMatrix & A);
+    template CSparseMatrix operator * (const CSparseMatrix & A, 
+                                       const GIMLI::Complex & b);
 
     template class ElementMatrix< double >;
     // template std::ostream & operator << (std::ostream & str,

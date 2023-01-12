@@ -37,6 +37,10 @@ for m in __Matrices:
     m.ndim = 2
     m.__len__ = lambda self: self.rows()
     m.shape = property(lambda self: (self.rows(), self.cols()))
+    
+    ## To allow for ignoring np.*.__mul__ in case A has the __rmul__ function
+    ## see test TestMatrixMethods.testSparceMatrixBasics
+    m.__array_ufunc__ = None
 
 pgcore.RMatrix.dtype = float
 pgcore.CMatrix.dtype = complex

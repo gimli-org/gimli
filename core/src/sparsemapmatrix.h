@@ -711,13 +711,13 @@ inline RSparseMapMatrix operator - (const RSparseMapMatrix & A,
 #undef DEFINE_SPARSEMAPMATRIX_EXPR_OPERATOR__
 
 #define DEFINE_SPARSEMAPMATRIX_EXPR_OPERATOR__(OP) \
-    inline RSparseMapMatrix operator OP (const double & v, \
-                                         const RSparseMapMatrix & A){\
-        return RSparseMapMatrix(A) OP##= v; \
-    } \
+inline RSparseMapMatrix operator OP (const double & v, \
+                                     const RSparseMapMatrix & A){\
+    return RSparseMapMatrix(A) OP##= v; \
+} \
 
-    DEFINE_SPARSEMAPMATRIX_EXPR_OPERATOR__(+)
-    DEFINE_SPARSEMAPMATRIX_EXPR_OPERATOR__(*)
+DEFINE_SPARSEMAPMATRIX_EXPR_OPERATOR__(+)
+DEFINE_SPARSEMAPMATRIX_EXPR_OPERATOR__(*)
 
 #undef DEFINE_SPARSEMAPMATRIX_EXPR_OPERATOR__
 
