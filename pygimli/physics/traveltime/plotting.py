@@ -52,7 +52,7 @@ def drawTravelTimeData(ax, data, t=None):
             np.zeros(len(geoph)) + 3. * yPixel, 'r^', markersize=8)
 
     ax.grid()
-    ax.set_ylim([max(tShow), +16. * yPixel])
+    ax.set_ylim([max(tShow), + 16. * yPixel])
     ax.set_xlim([min(x) - 5. * xPixel, max(x) + 5. * xPixel])
 
     ax.set_xlabel('x-Coordinate [m]')
@@ -75,7 +75,7 @@ def drawFirstPicks(ax, data, tt=None, plotva=False, **kwargs):
         axis to draw the lines in
     data : :gimliapi:`GIMLI::DataContainer`
         data containing shots ("s"), geophones ("g") and traveltimes ("t").
-        (`:py:class:pygimli.physics.traveltimeDataContainerTT.`)
+        (`:py:class:pygimli.physics.traveltime.DataContainerTT.`)
     Return
     ------
     gci : list
@@ -114,12 +114,6 @@ def drawFirstPicks(ax, data, tt=None, plotva=False, **kwargs):
     ax.set_xlabel("x (m)")
     ax.invert_yaxis()
     return GCI
-
-
-def _getOffset(data, full=False):
-    """Return vector of offsets (in m) between shot and receiver."""
-    pg.deprecated('use shotReceiverDistances')  # 190429 ??
-    return shotReceiverDistances(data, full)
 
 
 # better be renamed to showData and optionally show first pick curves
