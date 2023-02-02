@@ -2263,7 +2263,8 @@ DEFINE_DOT_MULT_WITH_RETURN(const FEAFunction &)
 #undef DEFINE_DOT_MULT_WITH_RETURN
 
 // this *= const. Scalar
-void mult(const ElementMatrix < double > & A, double f,
+void mult(const ElementMatrix < double > & A, 
+          double f,
           ElementMatrix < double > & C){
 
     C.copyFrom(A, false);
@@ -2282,8 +2283,10 @@ void mult(const ElementMatrix < double > & A, double f,
     C.integrate();
 }
 // this *= constant Pos
-void mult(const ElementMatrix < double > & A, const Pos & f,
+void mult(const ElementMatrix < double > & A, 
+          const Pos & f,
           ElementMatrix < double > & C){
+// __MS(f)
     C.copyFrom(A, false);
 
     const PosVector &x = *A.x();
@@ -2301,8 +2304,10 @@ void mult(const ElementMatrix < double > & A, const Pos & f,
     C.integrate();
 }
 // this *= scalar per quadrature
-void mult(const ElementMatrix < double > & A, const RVector & b,
+void mult(const ElementMatrix < double > & A, 
+          const RVector & b,
           ElementMatrix < double > & C){
+// __MS(b)
     C.copyFrom(A, false);
     //const PosVector &x = *A.x();
 
@@ -2342,10 +2347,10 @@ void mult(const ElementMatrix < double > & A, const RVector & b,
     C.integrate();
 }
 // vector per quadrature
-void mult(const ElementMatrix < double > & A, const PosVector & f,
+void mult(const ElementMatrix < double > & A, 
+          const PosVector & f,
           ElementMatrix < double > & C){
     // result is no bilinear form, so keep it a rowMatrix check!!
-
     C.copyFrom(A, false);
     const PosVector &x = *A.x();
 
@@ -2365,7 +2370,8 @@ void mult(const ElementMatrix < double > & A, const PosVector & f,
     C.integrate();
 }
 // constant Matrix
-void mult(const ElementMatrix < double > & A, const RSmallMatrix  &  b,
+void mult(const ElementMatrix < double > & A, 
+          const RSmallMatrix  &  b,
           ElementMatrix < double > & C){
 
     // __MS("b:\n", b)
@@ -2435,7 +2441,8 @@ void mult(const ElementMatrix < double > & A, const RSmallMatrix  &  b,
 }
 
 // matrix per quadrature
-void mult(const ElementMatrix < double > & A, const std::vector < RSmallMatrix  > & b,
+void mult(const ElementMatrix < double > & A, 
+          const std::vector < RSmallMatrix  > & b,
           ElementMatrix < double > & C){
     C.copyFrom(A, false);
     const PosVector &x = *A.x();
@@ -2466,6 +2473,7 @@ void mult(const ElementMatrix < double > & A, const FEAFunction & b,
           ElementMatrix < double > & C){
     // refactor with above
     // __MS(b.valueSize())
+    
     if (b.valueSize() == 1){
         if (b.evalOnCellCenter()){
             return mult(A, b.evalR1(A.entity()->center(), A.entity()), C);

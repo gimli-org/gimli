@@ -12,6 +12,12 @@ except:
         def _g(*args):
             print(*args)
 
+        def warn(self, *args):
+            print(*args)
+        
+        def error(self, *args):
+            print(*args)
+
 from environment_for_pygimli_build import settings
 
 import hand_made_wrappers
