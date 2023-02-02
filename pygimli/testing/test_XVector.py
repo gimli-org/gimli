@@ -321,7 +321,7 @@ class TestRVectorMethods(unittest.TestCase):
 
 class TestMatrixMethods(unittest.TestCase):
 
-    def testSparceMatrixBasics(self):
+    def testSparseMatrixBasics(self):
         A = pg.SparseMapMatrix(3,3)
         for i in range(A.size()):
             A.setVal(i,i, 1.0)

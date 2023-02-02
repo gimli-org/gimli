@@ -39,7 +39,7 @@ for m in __Matrices:
     m.shape = property(lambda self: (self.rows(), self.cols()))
     
     ## To allow for ignoring np.*.__mul__ in case A has the __rmul__ function
-    ## see test TestMatrixMethods.testSparceMatrixBasics
+    ## see test TestMatrixMethods.testSparseMatrixBasics
     m.__array_ufunc__ = None
 
 pgcore.RMatrix.dtype = float
