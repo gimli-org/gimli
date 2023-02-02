@@ -101,6 +101,7 @@ public:
 
     /*! Assignment operator */
     Pos & operator = (const Vector < double > & v){
+        __M
         if (v.size() > 2) {
             mat_[0] = v[0];
             mat_[1] = v[1];

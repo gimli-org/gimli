@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""Method Manager
+"""Method Manager.
 
 Provide the end user interface for method (geophysical) dependent
 modelling and inversion as well as data and model visualization.
@@ -117,7 +117,7 @@ class MethodManager(object):
     """
 
     def __init__(self, fop=None, fw=None, data=None, **kwargs):
-        """Constructor."""
+        """Initialize the class with given fop, inv and data."""
         self._fop = fop
         self._fw = fw
         # we hold our own copy of the data
@@ -148,6 +148,7 @@ class MethodManager(object):
 
     @property
     def verbose(self):
+        """Verbose output."""
         return self._verbose
 
     @verbose.setter
@@ -157,6 +158,7 @@ class MethodManager(object):
 
     @property
     def debug(self):
+        """Debug mode (extensive output)."""
         return self._debug
 
     @debug.setter
@@ -166,18 +168,22 @@ class MethodManager(object):
 
     @property
     def fw(self):
+        """Inversion framework."""
         return self._fw
 
     @property
     def fop(self):
+        """Forward operator."""
         return self.fw.fop
 
     @property
     def inv(self):
+        """Inversion instance."""
         return self.fw
 
     @property
     def model(self):
+        """Inversion model."""
         return self.fw.model
 
     def reinitForwardOperator(self, **kwargs):
@@ -263,7 +269,7 @@ class MethodManager(object):
             return self._fw
 
     def load(self, fileName):
-        """API, overwrite in derived classes."""
+        """Load API, overwrite in derived classes."""
         pg.critical('API, overwrite in derived classes', fileName)
 
     def estimateError(self, data, errLevel=0.01, absError=None):
@@ -297,8 +303,7 @@ class MethodManager(object):
         return np.ones(len(data)) * errLevel
 
     def simulate(self, model, **kwargs):
-        # """Run a simulation aka the forward task."""
-
+        """Run a simulation aka the forward task."""
         ra = self.fop.response(par=model)
 
         noiseLevel = kwargs.pop('noiseLevel', 0.0)
@@ -310,23 +315,23 @@ class MethodManager(object):
         return ra
 
     def setData(self, data):
-        """Set a data and distribute it to the forward operator"""
+        """Set data and distribute it to the forward operator."""
         self.data = data
         self.applyData(data)
 
     def applyData(self, data):
-        """ """
+        """Pass the data to the forward operator."""
         self.fop.data = data
 
     def checkData(self, data):
-        """Overwrite for special checks to return data values"""
+        """Overwrite for special checks to return data values."""
         # if self._dataToken == 'nan':
         #     pg.critical('self._dataToken nan, should be set in class', self)
         #     return data(self._dataToken)
         return data
 
     def _ensureData(self, data):
-        """Check data validity"""
+        """Check data validity."""
         if data is None:
             data = self.fw.dataVals
 
@@ -342,8 +347,11 @@ class MethodManager(object):
         return vals
 
     def checkError(self, err, dataVals=None):
-        """Return relative error. Default we assume 'err' are relative values.
-        Overwrite is derived class if needed. """
+        """Check and return relative error.
+
+        By default we assume 'err' as relative values.
+        Overwrite in derived class if needed.
+        """
         if isinstance(err, pg.DataContainer):
             if not err.haveData('err'):
                 pg.error('Datacontainer have no "err" values. '
@@ -353,7 +361,7 @@ class MethodManager(object):
         return err
 
     def _ensureError(self, err, dataVals=None):
-        """Check error validity"""
+        """Check error validity."""
         if err is None:
             err = self.fw.errorVals
 
@@ -374,11 +382,11 @@ class MethodManager(object):
         return vals
 
     def preRun(self, *args, **kwargs):
-        """Called just before the inversion run starts."""
+        """Fcn to be called just before the inversion run starts."""
         pass
 
     def postRun(self, *args, **kwargs):
-        """Called just after the inversion run."""
+        """Fcn to be called just after the inversion run."""
         pass
 
     def invert(self, data=None, err=None, **kwargs):
@@ -520,10 +528,10 @@ class MethodManager(object):
         return ax, cBar
 
     def showResultAndFit(self, **kwargs):
-        """Calls showResults and showFit.
+        """Call showResults and showFit.
 
         Keyword Args
-        ............
+        ------------
         saveFig: str[None]
             If not None save figure.
         axs: [mpl.Axes]
@@ -606,7 +614,7 @@ class ParameterInversionManager(MethodManager):
     """Framework to invert unconstrained parameters."""
 
     def __init__(self, funct=None, fop=None, **kwargs):
-        """Constructor."""
+        """Inizialize instance."""
         if fop is not None:
             if not isinstance(fop, pg.frameworks.ParameterModelling):
                 pg.critical("We need a fop if type ",
@@ -620,12 +628,12 @@ class ParameterInversionManager(MethodManager):
         super(ParameterInversionManager, self).__init__(fop, **kwargs)
 
     def createInversionFramework(self, **kwargs):
-        """
-        """
+        """Create a Marquardt-type inversion framework instance."""
         return pg.frameworks.MarquardtInversion(**kwargs)
 
     def invert(self, data=None, err=None, **kwargs):
-        """
+        """Run inversion.
+
         Parameters
         ----------
         limits: {str: [min, max]}
@@ -662,23 +670,24 @@ class MethodManager1d(MethodManager):
     """Method Manager base class for managers on a 1d discretization."""
 
     def __init__(self, fop=None, **kwargs):
-        """Constructor."""
+        """Initialize with fop."""
         super(MethodManager1d, self).__init__(fop, **kwargs)
 
     def createInversionFramework(self, **kwargs):
-        """
-        """
+        """Create inversion with block discretization."""
         return pg.frameworks.Block1DInversion(**kwargs)
 
     def invert(self, data=None, err=None, **kwargs):
-        """ """
+        """Run inversion."""
         return super(MethodManager1d, self).invert(data=data, err=err,
                                                    **kwargs)
 
 
 class MeshMethodManager(MethodManager):
+    """Method manager for mesh-based modelling and inversion."""
+
     def __init__(self, **kwargs):
-        """Constructor.
+        """Initialize by calling super methods.
 
         Attribute
         ---------
@@ -691,6 +700,7 @@ class MeshMethodManager(MethodManager):
 
     @property
     def paraDomain(self):
+        """Parameter (inversion) domain mesh."""
         return self.fop.paraDomain
 
     def paraModel(self, model=None):
@@ -700,18 +710,17 @@ class MeshMethodManager(MethodManager):
         return self.fop.paraModel(model)
 
     def createMesh(self, data=None, **kwargs):
-        """API, implement in derived classes."""
+        """Create mesh class, must be implemented in derived classes."""
         pg.critical('no default mesh generation defined .. implement in '
                     'derived class')
 
     def setMesh(self, mesh, **kwargs):
-        """Set a mesh and distribute it to the forward operator"""
-        # keep a copy of the original mesh
-        self.mesh = mesh
+        """Set a mesh and distribute it to the forward operator."""
+        self.mesh = mesh  # keep a copy of the original mesh
         self.applyMesh(mesh, **kwargs)
 
     def applyMesh(self, mesh, ignoreRegionManager=False, **kwargs):
-        """ """
+        """Pass the mesh along to the forward operator."""
         if ignoreRegionManager is True:
             mesh = self.fop.createRefinedFwdMesh(mesh, **kwargs)
 
@@ -790,8 +799,10 @@ class MeshMethodManager(MethodManager):
                 di = {kw: kwargs.pop(kw)}
                 self.fop.setRegionProperties('*', **di)
 
-        if "blockyModel" in kwargs:
-            self.fw.blockyModel = kwargs["blockyModel"]
+        # if "blockyModel" in kwargs:  # redundant, now in fw
+        #     self.fw.blockyModel = kwargs["blockyModel"]
+        # if "stopAtChi1" in kwargs:
+        #     self.fw._stopAtChi1 = kwargs["stopAtChi1"]
 
         self.preRun(**kwargs)
         self.fw.run(dataVals, errorVals, **kwargs)
@@ -841,8 +852,7 @@ class MeshMethodManager(MethodManager):
         return axs
 
     def coverage(self):
-        """Return coverage vector considering the logarithmic transformation.
-        """
+        """Coverage vector considering the logarithmic transformation."""
         covTrans = pg.core.coverageDCtrans(self.fop.jacobian(),
                                            1.0 / self.inv.response,
                                            1.0 / self.inv.model)
@@ -850,8 +860,7 @@ class MeshMethodManager(MethodManager):
         return np.log10(covTrans[:nCells] / self.fop.paraDomain.cellSizes())
 
     def standardizedCoverage(self, threshhold=0.01):
-        """Return standardized coverage vector (0|1) using thresholding.
-        """
+        """Standardized coverage vector (0|1) using thresholding."""
         return 1.0*(abs(self.coverage()) > threshhold)
 
 
@@ -893,7 +902,7 @@ class JointPetroInversionManager(MeshMethodManager):
     """
 
     def __init__(self, petros, mgrs):
-        """Initialize with lists of managers and transformations"""
+        """Initialize with lists of managers and transformations."""
         self.mgrs = mgrs
 
         self.fops = [pg.frameworks.PetroModelling(m.fop, p)
@@ -932,7 +941,7 @@ class JointPetroInversionManager(MeshMethodManager):
         return vals
 
     def invert(self, data, **kwargs):
-        """Run inversion"""
+        """Run inversion."""
         limits = kwargs.pop('limits', [0., 1.])
         self.fop.modelTrans.setLowerBound(limits[0])
         self.fop.modelTrans.setUpperBound(limits[1])

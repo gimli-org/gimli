@@ -1,7 +1,4 @@
-# -*- coding: utf-8 -*-
-"""
-Vertical electrical sounding (VES) manager class.
-"""
+"""Vertical electrical sounding (VES) manager class."""
 import numpy as np
 
 import pygimli as pg
@@ -35,8 +32,7 @@ class VESModelling(Block1DModelling):
     """
 
     def __init__(self, ab2=None, mn2=None, **kwargs):
-        r"""Constructor
-        """
+        """Initialize with distances."""
         self.am = None
         self.bm = None
         self.an = None
@@ -61,8 +57,7 @@ class VESModelling(Block1DModelling):
         self.setDataSpace(ab2=ab2, mn2=mn2, **kwargs)
 
     def createStartModel(self, rhoa):
-        r"""
-        """
+        """Create starting model."""
         if self.nLayers == 0:
             pg.critical("Model space is not been initialized.")
 
@@ -84,8 +79,16 @@ class VESModelling(Block1DModelling):
                      **kwargs):
         """Set data basis, i.e., arrays for all am, an, bm, bn distances.
 
+        You can set either
+        * AB/2 and (optionally) MN/2 spacings for a classical sounding, or
+        * all distances AM, AN, BM, BN for arbitrary arrays
         Parameters
         ----------
+        ab2 : iterable
+            AB/2 distances
+        mn2 : iterable | float
+            MN/2 distance(s)
+        am, an, bm, bn : distances between current and potential electrodes
         """
         # Sometimes you don't have AB2/MN2 but provide am etc.
         self.am = am
@@ -121,10 +124,11 @@ class VESModelling(Block1DModelling):
                                       1.0 / self.bm + 1.0 / self.bn)
 
     def response(self, par):
+        """Model response."""
         return self.response_mt(par, 0)
 
     def response_mt(self, par, i=0):
-
+        """Multi-threading model response."""
         if self.am is not None and self.bm is not None:
             nLayers = (len(par)+1) // 2
             fop = pg.core.DC1dModelling(nLayers,
@@ -135,6 +139,7 @@ class VESModelling(Block1DModelling):
         return fop.response(par)
 
     def drawModel(self, ax, model, **kwargs):
+        """Draw model as 1D block model."""
         pg.viewer.mpl.drawModel1D(ax=ax,
                                   model=model,
                                   plot=kwargs.pop('plot', 'loglog'),
@@ -142,7 +147,7 @@ class VESModelling(Block1DModelling):
                                   **kwargs)
         ax.set_ylabel('Depth in (m)')
 
-        return ax, None
+        return ax, None  # should return gci and not ax
 
     def drawData(self, ax, data, error=None, label=None, **kwargs):
         r"""Draw modeled apparent resistivity data.
@@ -161,7 +166,7 @@ class VESModelling(Block1DModelling):
         label: str ['$\varrho_a$']
             Set legend label for the amplitude.
 
-        Other parameters
+        Other Parameters
         ----------------
         ab2: iterable
             Override ab2 that fits data size.
@@ -172,7 +177,7 @@ class VESModelling(Block1DModelling):
         """
         ab2 = kwargs.pop('ab2', self.ab2)
         # mn2 = kwargs.pop('mn2', self.mn2)
-        plot = plot = getattr(ax, kwargs.pop('plot', 'loglog'))
+        plot = getattr(ax, kwargs.pop('plot', 'loglog'))
 
         ra = data
         raE = error
@@ -205,7 +210,7 @@ class VESModelling(Block1DModelling):
 
 
 class VESCModelling(VESModelling):
-    """Vertical Electrical Sounding (VES) forward operator. (complex)
+    """Vertical Electrical Sounding (VES) complex forward operator.
 
     Vertical Electrical Sounding (VES) forward operator for complex
     resistivity values. see: :py:mod:`pygimli.physics.ert.VESModelling`
@@ -226,6 +231,7 @@ class VESCModelling(VESModelling):
         return model[0:nLay*2-1]
 
     def createStartModel(self, rhoa):
+        """Create starting model of nlay-1 thicknesses & nlay resistivities."""
         startThicks = np.logspace(np.log10(min(self.mn2)/2),
                                   np.log10(max(self.ab2)/5),
                                   self._nLayers-1)
@@ -246,11 +252,13 @@ class VESCModelling(VESModelling):
         return sm
 
     def response_mt(self, par, i=0):
-        """ Multithread response for parametrization.
+        """Multi-threaded model response for parametrization.
 
-            Returns [|rhoa|, +phi(rad)] for [thicks, res, phi(rad)]
+        Returns
+        -------
+        response : iterable
+            [|rhoa|, +phi(rad)] for [thicks, res, phi(rad)]
         """
-
         if self.am is not None and self.bm is not None:
             nLayers = (len(par) + 1) // 3
             fop = pg.core.DC1dModellingC(nLayers,
@@ -305,8 +313,8 @@ class VESCModelling(VESModelling):
         labels: str [r'$\varrho_a$', r'$\varphi_a$']
             Set legend labels for amplitude and phase.
 
-        Other parameters:
-        -----------------
+        Other Parameters
+        ----------------
         ab2: iterable
             Override ab2 that fits data size.
         mn2: iterable
@@ -379,7 +387,6 @@ class VESManager(MethodManager1d):
 
     Examples
     --------
-
     >>> import numpy as np
     >>> import pygimli as pg
     >>> from pygimli.physics import VESManager
@@ -399,11 +406,10 @@ class VESManager(MethodManager1d):
     """
 
     def __init__(self, **kwargs):
-        """Constructor
+        """Initialize instance.
 
         Parameters
         ----------
-
         complex : bool
             Accept complex resistivities.
 
@@ -424,6 +430,7 @@ class VESManager(MethodManager1d):
 
     @property
     def complex(self):
+        """Return whether the computations are complex."""
         return self._complex
 
     @complex.setter
@@ -449,7 +456,7 @@ class VESManager(MethodManager1d):
         return super(VESManager, self).simulate(model, **kwargs)
 
     def preErrorCheck(self, err, dataVals=None):
-        """Called before the validity check of the error values."""
+        """Fct to be called before the validity check of the error values."""
         err = np.atleast_1d(err)
         if self.complex:
             if len(err) == 2:
@@ -467,6 +474,14 @@ class VESManager(MethodManager1d):
 
         Parameters
         ----------
+        data : iterable
+            data vector
+        err : iterable
+            error vector
+        ab2: iterable
+            AB/2 vector (otherwise taken from data)
+        mn2: iterable
+            MN/2 vector (otherwise taken from data)
 
         Keyword Arguments
         ----------------
@@ -504,8 +519,7 @@ class VESManager(MethodManager1d):
         return super(VESManager, self).invert(data=data, err=err, **kwargs)
 
     def loadData(self, fileName, **kwargs):
-        """ Load simple data matrix
-        """
+        """Load simple data matrix."""
         mat = np.loadtxt(fileName)
         if len(mat[0]) == 4:
             self.fop.setDataSpace(ab2=mat[:, 0], mn2=mat[:, 1])
@@ -545,8 +559,7 @@ class VESManager(MethodManager1d):
 
 
 def VESManagerApp():
-    """Call VESManager as console app"""
-
+    """Call VESManager as console app."""
     parser = VESManager.createArgParser(dataSuffix='ves')
     options = parser.parse_args()
 

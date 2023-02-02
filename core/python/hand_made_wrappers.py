@@ -6,12 +6,27 @@ import environment_for_pygimli_build
 
 try:
     import pygimli as pg
+    print('*'*40, pg)
+    print(dir(pg))
+
+    try:
+        pg._g('pygimli installation found')
+    except:
+        pg._g = lambda a: print(a)
+        pg.warn = _g
+        pg.error = _g
 except:
-    class pg:
-        def _g(*args):
+    class pygimli:
+        def _g(self, *args):
             print(*args)
-        def warn(*args):
+        def warn(self, *args):
             print(*args)
+        def error(self, *args):
+            print(*args)
+
+    pg = pygimli
+
+
 
 
 

@@ -307,14 +307,13 @@ class SIPSpectrum(object):
         if 'SIP Fuchs III' in firstLine:
             if verbose:
                 pg.info("Reading SIP Fuchs III file")
-            self.f, self.amp, self.phi, header = readFuchs3File(
+            self.f, self.amp, self.phi, self.header = readFuchs3File(
                 filename, verbose=verbose, **kwargs)
             self.phi *= -np.pi/180.
-            # print(header) # not used?
         elif 'SIP-Quad' in firstLine:
             if verbose:
                 pg.info("Reading SIP Quad file")
-            self.f, self.amp, self.phi, header = readFuchs3File(
+            self.f, self.amp, self.phi, self.header = readFuchs3File(
                 filename, verbose=verbose, quad=True, **kwargs)
             self.phi *= -np.pi/180.
         elif 'SIP-Fuchs' in firstLine:
@@ -326,17 +325,16 @@ class SIPSpectrum(object):
             self.phi *= -np.pi/180.
         elif fnLow.endswith('.txt') or fnLow.endswith('.csv'):
             self.f, self.amp, self.phi = readTXTSpectrum(filename)
-            self.amp *= self.k
         else:
             try:
                 out = np.genfromtxt(filename, names=True)
                 self.f = out["FreqHz"]
                 self.amp = out["AppResOhmm"]
                 self.phi = -out["Phasedeg"] * np.pi / 180
-                self.amp *= self.k
             except BaseException:
                 raise Exception("Don't know how to read data.")
 
+        self.amp *= self.k
         return self.f, self.amp, self.phi
 
     def unifyData(self, onlydown=False):
@@ -891,7 +889,7 @@ class SIPSpectrum(object):
 
         if ax is None:
             fig, ax = pg.plt.subplots(nrows=2+(self.mDD is not None),
-                                   figsize=(12, 12))
+                                      figsize=(12, 12))
         else:
             fig = ax[0].figure
 

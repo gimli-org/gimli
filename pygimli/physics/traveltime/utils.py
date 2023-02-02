@@ -6,14 +6,18 @@ import numpy as np
 import pygimli as pg
 
 
-def createCrossholeData(sensors):
+def createCrossholeData(sensors=None, x=None, z=None):
     """
     Create crosshole scheme assuming two boreholes with equal sensor numbers.
 
     Parameters
     ----------
     sensors : array (Nx2)
-        Array with position of sensors.
+        Array with position of sensors. Alternatively, specify x and z
+    x : iterable [M]
+        horizontal positions of boreholes
+    z : iterable [M]
+        vertical positions of sensors in each borehole
 
     Returns
     -------
@@ -22,6 +26,12 @@ def createCrossholeData(sensors):
         for shot and receiver numbers.
     """
     from itertools import product
+    if sensors is None:
+        if x is None or z is None:
+            raise Exception("Both x and z must be given")
+
+        sensors = np.array([(xi, zi) for zi in z for xi in x])
+
     if len(sensors) % 2 > 0:
         pg.error("createCrossholeData is only defined for an equal number of"
                  " sensors in two boreholes.")
@@ -47,14 +57,13 @@ def createCrossholeData(sensors):
 
 
 def shotReceiverDistances(data, full=True):
-    """Return vector of all distances (in m) between shot and receiver.
-    for each 's' and 'g' in data.
+    """Distance vector between shot and for each 's' and 'g' in data.
 
     Parameters
     ----------
     data : pg.DataContainerERT
 
-    full : bool [False]
+    full : bool [True]
         Get distances between shot and receiver position when full is True or
         only form x coordinate if full is False
 
@@ -131,11 +140,6 @@ def createGradientModel2D(data, mesh, vTop, vBot, flat=False):
     Creates a smooth, linear, starting model that takes the slope
     of the topography into account. This is done by fitting a straight line
     and using the distance to that as the depth value.
-    Known as "The Marcus method"
-
-    TODO
-    ----
-        * Cite "The Marcus method"
 
     Parameters
     ----------

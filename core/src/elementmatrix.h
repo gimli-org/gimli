@@ -582,10 +582,6 @@ DLLEXPORT void dot(const ElementMatrix < double > & A,
 DLLEXPORT const ElementMatrix < double > dot(const ElementMatrix < double > & A,
                                             const ElementMatrix < double > & B);
 
-// // declare this before mult(.., pos, C) to avoid ambiguities
-// /*! scalar per quadrature point */
-// DLLEXPORT void mult(const ElementMatrix < double > & A, const RVector & b,
-//                     ElementMatrix < double > & C);
 // /*! vector per quadrature point */
 // DLLEXPORT void mult(const ElementMatrix < double > & A, const PosVector & b,
 //                     ElementMatrix < double > & C);
@@ -618,6 +614,14 @@ DEFINE_DOT_MULT(const RSmallMatrix  &)
 DEFINE_DOT_MULT(const std::vector < RSmallMatrix  > &)
 DEFINE_DOT_MULT(const FEAFunction &)
 #undef DEFINE_DOT_MULT
+
+// Special declares to handle ambiguities for the python binding
+/*! scalar per quadrature point */
+DLLEXPORT inline void mult_s_q(const ElementMatrix < double > & A, 
+                               const RVector & b,
+                               ElementMatrix < double > & C){
+    mult(A, b, C);
+}
 
 
 #define DEFINE_INTEGRATE(A_TYPE) \

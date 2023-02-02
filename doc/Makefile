@@ -55,6 +55,7 @@ clean:
 doc: html
 
 api:
+	mkdir -p pygimliapi/_generated
 	cp -f pygimliapi/viewer_overwrite pygimliapi/_generated/pygimli.viewer.rst
 	cp -f pygimliapi/physics_overwrite pygimliapi/_generated/pygimli.physics.rst
 
