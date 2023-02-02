@@ -71,7 +71,7 @@ fi
 # Test pygimli
 export PYTHONPATH=`pwd`/../trunk:$PYTHONPATH
 
-OMP_THREAD_LIMIT=4 python -c "import pygimli; pygimli.test(show=False, abort=True, htmlreport=\"build_tests.html\", devTests=True)"
+OMP_THREAD_LIMIT=4 python -c "import pygimli; print(pygimli.Report()); pygimli.test(show=False, abort=True, htmlreport=\"build_tests.html\", devTests=True)"
 
 # Build documentation
 

@@ -1,11 +1,10 @@
 #!/bin/env bash
 
 if [ -f /var/lib/pacman/db.lck ]; then
-        echo "old db lock deteced .. removing them"
+        echo "old db lock detected .. removing them"
         rm -f /var/lib/pacman/db.lck
 fi
-
-#pacman --noconfirm -Syuu
+pacman --noconfirm -Syuu
 
 echo "#########################################################################"
 echo "### Maybe you need to restart msys after update of system components! ###"

@@ -58,7 +58,8 @@
 #endif
 
 #ifdef USE_BOOST_BIND
-    #include <boost/bind.hpp>
+    // deprecated
+    //#include <boost/bind.hpp>
 #else
     #include <functional>
 #endif
@@ -737,13 +738,15 @@ public:
 
     Vector < ValueType > getVal(Index start, SIndex end) const {
         Index e = (Index) end;
-        if (end == -1 || end > (SIndex)size_) e = size_;
-
+        if (end < 0){
+            e = max(start, size_ + end);
+        }
+        
         Vector < ValueType > v(e-start);
 
-        if ((SIndex)start == end) return v;
+        if (start == e) return v;
 
-        if ((SIndex)start >= 0 && start < e){
+        if (start >= 0 && start < e){
             std::copy(& data_[start], & data_[e], &v[0]);
         } else {
             throwLengthError(WHERE_AM_I + " bounds out of range " +
