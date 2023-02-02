@@ -6,6 +6,22 @@ import numpy as np
 
 from .core import (RVector3, R3Vector, RMatrix)
 
+def isInt(v, val=None):
+    """Check if v is int , i.e. int, np.int32, np.int64.
+
+    Examples
+    --------
+    >>> import pygimli as pg
+    >>> print(pg.isInt(0))
+    True
+    >>> print(pg.isInt(np.int32(1)))
+    True
+    >>> print(pg.isInt(1.0))
+    False
+    """
+    if val is None:
+        return isinstance(v, (int, np.int32, np.int64))
+    return isInt(v) and v == val
 
 def isScalar(v, val=None):
     """Check if v is scalar, i.e. int, float or complex.
