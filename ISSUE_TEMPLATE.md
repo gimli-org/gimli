@@ -4,10 +4,13 @@ Please describe your issue here.
 
 ### Your environment
 
+Please provide the output of `print(pygimli.Report())` here. If that does not
+work, please give provide some additional information on your:
+
 **Operating system**: e.g. Windows, Linux or Mac?
-**Python version**: e.g. 2.7,3.5,3.6?
-**pyGIMLi version**: Output of `print(pg.__version__)`
-**Way of installation**: e.g. Conda package, Win binary, curl script, manual compilation from source
+**Python version**: e.g. 3.8, 3.9, etc.?
+**pyGIMLi version**: Output of `print(pygimli.__version__)`
+**Way of installation**: e.g. Conda package, manual compilation from source, etc.
 
 ### Steps to reproduce
 
@@ -31,4 +34,3 @@ Paste output here.
 ```
 
 > If possible, please add one or more labels to your issue, e.g. if you expect that your issue is rather a question than a problem with the code, please add the label "question".
-

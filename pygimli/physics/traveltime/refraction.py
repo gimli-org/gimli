@@ -20,7 +20,7 @@ from pygimli.frameworks import MethodManager#, MethodManager0
 # the explicit import with full name allow for:
 # python ~/src/gimli/gimli/pygimli/physics/traveltime/refraction.py
 from .utils import createGradientModel2D
-from .plotting import drawTravelTimeData, drawFirstPicks, plotLines
+from .plotting import drawTravelTimeData, drawFirstPicks  # , plotLines
 from .importData import importGTT
 from .modelling import FatrayDijkstraModelling
 

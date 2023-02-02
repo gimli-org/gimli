@@ -50,13 +50,13 @@ def lsqr(A, b, x=None, maxiter=200, tol=1e-8, verbose=False, damp=0.0):
     rhoU = alfa
     for i in range(maxiter):
         if verbose and (i % 10 == 0):
-            pg.info(i, Arnorm, Arnorm/Arnorm0)
+            pg.debug(i, Arnorm, Arnorm/Arnorm0)
 
         u = A.mult(v) - alfa * u
         beta = norm(u)
         if np.isclose(beta, 0.0):
             if verbose:
-                pg.info("stopping due to beta=0")
+                pg.debug("stopping due to beta=0")
 
             break
 
@@ -78,14 +78,14 @@ def lsqr(A, b, x=None, maxiter=200, tol=1e-8, verbose=False, damp=0.0):
         Arnorm = phiU * alfa * abs(c)
         if Arnorm / Arnorm0 < tol:
             if verbose:
-                pg.info("Solution norm reached")
-                pg.info(i, Arnorm, Arnorm/Arnorm0)
+                pg.debug("Solution norm reached")
+                pg.debug(i, Arnorm, Arnorm/Arnorm0)
 
             break
 
     if verbose:
-        pg.info("Maximum iteration reached")
-        pg.info(i, Arnorm, Arnorm/Arnorm0)
+        pg.debug("Maximum iteration reached")
+        pg.debug(i, Arnorm, Arnorm/Arnorm0)
 
     return x
 
