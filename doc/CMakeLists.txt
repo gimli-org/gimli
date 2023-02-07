@@ -184,8 +184,7 @@ add_custom_target(html
 
 add_custom_target(doc
     COMMENT
-        "Building HTML, API and PDF Documentation"
+    "Building HTML and API documentation"
     DEPENDS
         sphinxhtml
-        sphinxpdf
 )
