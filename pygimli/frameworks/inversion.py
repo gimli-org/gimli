@@ -95,6 +95,10 @@ class Inversion(object):
         self._errorVals = None
 
     @property
+    def iter(self):
+        return self._inv.iter()
+
+    @property
     def inv(self):
         return self._inv
 
