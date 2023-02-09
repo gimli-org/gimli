@@ -437,11 +437,13 @@ def underlayBKGMap(ax, mode='DOP', utmzone=32, epsg=0, imsize=2500, uuid='',
                                 fmt=fmt[mode.upper()], layer=lay[mode.upper()])
         imname = mode + box + ext[mode]
         if not os.path.isfile(imname):  # not already existing
-            print('Retrieving file from geodatenzentrum.de using URL: ' + ad)
+            pg.info('Retrieving file from geodatenzentrum.de using URL: ' + ad)
             req = urllib2.Request(ad)
             response = urllib2.urlopen(req)
             with open(imname, 'wb') as output:
                 output.write(response.read())
+        else:
+            pg.info('Found image file: ' + imname)
 
     im = mpimg.imread(imname)
     bb = [int(bi) for bi in box.split(',')]  # bounding box
