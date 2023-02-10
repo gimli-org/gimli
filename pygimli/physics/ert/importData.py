@@ -338,9 +338,6 @@ def importAsciiColumns(filename, verbose=False, return_header=False):
                     header[tok] = sp[1].rstrip("\n").rstrip("\r")
 
             for last in range(len(content)-1, -1, -1):
-                # if content[last].find("MeasID") > 0:
-                #     last = len(content)
-                #     break
                 if content[last].find("---") == 0:
                     print(content[last])
                     last -= 1
@@ -348,14 +345,12 @@ def importAsciiColumns(filename, verbose=False, return_header=False):
                     while len(content[last]) < 3:
                         last -= 1
 
-                    # print(content[last])
                     last += 1
                     break
             if last <= 1:
                 last = len(content)
 
             content = content[n:last]
-            # raise SystemExit
 
         d = readAsDictionary(content, sep='\t')
         if len(d) < 2:
