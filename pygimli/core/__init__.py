@@ -11,6 +11,7 @@ import numpy as np
 from .core import pgcore
 from .core import *
 from .logger import error, critical
+from .base import isInt
 
 # #######################################
 # ###  Global convenience functions #####
@@ -177,68 +178,66 @@ pgcore.BVector.__init__ = __newBVectorInit__
 
 # RVector + int fails .. so we need to tweak this command
 __oldRVectorAdd__ = pgcore.RVector.__add__
-
-
 def __newRVectorAdd__(a, b):
     if isinstance(b, np.ndarray) and b.dtype == complex:
         return __oldRVectorAdd__(a, CVector(b))
-    if isinstance(b, int):
+    if isInt(b):
         return __oldRVectorAdd__(a, float(b))
-    if isinstance(a, int):
+    if isInt(a):
         return __oldRVectorAdd__(float(a), b)
     return __oldRVectorAdd__(a, b)
-
-
 pgcore.RVector.__add__ = __newRVectorAdd__
 
 __oldRVectorSub__ = pgcore.RVector.__sub__
-
-
 def __newRVectorSub__(a, b):
-    if isinstance(b, int):
+    if isInt(b):
         return __oldRVectorSub__(a, float(b))
-    if isinstance(a, int):
+    if isInt(a):
         return __oldRVectorSub__(float(a), b)
     return __oldRVectorSub__(a, b)
-
-
 pgcore.RVector.__sub__ = __newRVectorSub__
 
 __oldRVectorMul__ = pgcore.RVector.__mul__
-
-
 def __newRVectorMul__(a, b):
-    if isinstance(b, int):
+    if isInt(b):
         return __oldRVectorMul__(a, float(b))
-    if isinstance(a, int):
+    if isInt(a):
         return __oldRVectorMul__(float(a), b)
     return __oldRVectorMul__(a, b)
-
-
 pgcore.RVector.__mul__ = __newRVectorMul__
 
 try:
     __oldRVectorTrueDiv__ = pgcore.RVector.__truediv__
-
     def __newRVectorTrueDiv__(a, b):
-        if isinstance(b, int):
+        if isInt(b):
             return __oldRVectorTrueDiv__(a, float(b))
-        if isinstance(a, int):
+        if isInt(a):
             return __oldRVectorTrueDiv__(float(a), b)
         return __oldRVectorTrueDiv__(a, b)
-
     pgcore.RVector.__truediv__ = __newRVectorTrueDiv__
 except:
     __oldRVectorTrueDiv__ = pgcore.RVector.__div__
-
     def __newRVectorTrueDiv__(a, b):
-        if isinstance(b, int):
+        if isInt(b):
             return __oldRVectorTrueDiv__(a, float(b))
-        if isinstance(a, int):
+        if isInt(a):
             return __oldRVectorTrueDiv__(float(a), b)
         return __oldRVectorTrueDiv__(a, b)
-
     pgcore.RVector.__div__ = __newRVectorTrueDiv__
+
+__oldRMatMul__ = pgcore.RMatrix.__mul__
+def __newRMatMul__(a, b):
+    if isInt(b):
+        return __oldRMatMul__(a, float(b))
+    return __oldRMatMul__(a, b)
+pgcore.RMatrix.__mul__ = __newRMatMul__
+
+__oldRMatAdd__ = pgcore.RMatrix.__add__
+def __newRMatAdd__(a, b):
+    if isInt(b):
+        return __oldRMatAdd__(a, float(b))
+    return __oldRMatAdd__(a, b)
+pgcore.RMatrix.__add__ = __newRMatAdd__
 
 ################################################################################
 # override wrong default conversion from int to IndexArray(int) for setVal     #
@@ -1109,7 +1108,7 @@ def search(what):
     """Utility function to search docstrings for string `what`."""
     np.lookfor(what, module="pygimli", import_modules=False)
 
-from .base import (isScalar, isArray, isPos, isR3Array,
+from .base import (isInt, isScalar, isArray, isPos, isR3Array,
                    isPosList, isComplex, isMatrix)
 
 # Import from submodules at the end

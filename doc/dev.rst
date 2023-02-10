@@ -110,23 +110,39 @@ Commit messages
 ---------------
 Please prepend your commit messages with one of the following prefixes depending on the nature of the commit:
 
++------------+----------------------------------------------------------------------+
 | **Prefix** | **Meaning**                                                          |
-|------------|----------------------------------------------------------------------|
++============+======================================================================+
 | **ADD:**   | Addition of new functionality                                        |
++------------+----------------------------------------------------------------------+
 | **API:**   | API change (argument orders or renames)                              |
++------------+----------------------------------------------------------------------+
 | **BLD:**   | Changes to pyGIMLi's build pipeline                                  |
++------------+----------------------------------------------------------------------+
 | **CI:**    | Continuous integration (i.e., Jenkins related)                       |
++------------+----------------------------------------------------------------------+
 | **CLN:**   | Clean up, refactoring or typo correction                             |
++------------+----------------------------------------------------------------------+
 | **DEF:**   | Change of default behavior                                           |
++------------+----------------------------------------------------------------------+
 | **DEP:**   | Deprecation                                                          |
++------------+----------------------------------------------------------------------+
 | **DOC:**   | Improve documentation (i.e., docstrings or website)                  |
++------------+----------------------------------------------------------------------+
 | **ENH:**   | Enhancement, e.g. due to more flexibility by new (keyword) arguments |
++------------+----------------------------------------------------------------------+
 | **FIX:**   | Fixing a bug                                                         |
++------------+----------------------------------------------------------------------+
 | **REL:**   | Release (setting tags, updating version strings, etc.)               |
++------------+----------------------------------------------------------------------+
 | **STY:**   | Coding style improvement (PEP8, PEP257)                              |
++------------+----------------------------------------------------------------------+
 | **TST:**   | New or improved test                                                 |
++------------+----------------------------------------------------------------------+
 
-Note that the tags **API, ENH, ADD, FIX** are relevant for creating the changelog later.
+.. note::
+
+    The tags **API, ENH, ADD, FIX** are relevant for creating the changelog later.
 
 Version numbering
 -----------------
