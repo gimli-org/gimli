@@ -561,8 +561,10 @@ class Inversion(object):
 
         self.inv.setLambdaFactor(kwargs.pop('lambdaFactor', 1.0))
 
-        if 'cType' in kwargs:
-            self.fop.setRegionProperties('*', cType=kwargs['cType'])
+        # catch a few regularization options that don't go into run
+        for opt in ["cType", "limits", "correlationLengths"]:
+            if opt in kwargs:
+                self.setRegularization({opt: kwargs.pop(opt)})
 
         # Triggers update of fop properties, any property to be set before.
         self.inv.setTransModel(self.fop.modelTrans)  # why from fop??
@@ -637,7 +639,6 @@ class Inversion(object):
         self.modelHistory = [startModel]
 
         for i in range(maxIter):
-
             if self._preStep and callable(self._preStep):
                 self._preStep(i, self)
 
