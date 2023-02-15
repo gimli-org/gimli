@@ -14,7 +14,7 @@ from .utils import updateAxes as updateAxes_
 def drawModel1D(ax, thickness=None, values=None, model=None, depths=None,
                 plot='plot',
                 xlabel=r'Resistivity $(\Omega$m$)$', zlabel='Depth (m)',
-                z0=0,
+                z0=0, zmax=None,
                 **kwargs):
     """Draw 1d block model into axis ax.
 
@@ -95,7 +95,7 @@ def drawModel1D(ax, thickness=None, values=None, model=None, depths=None,
         px[2 * i + 1] = values[i]
 
         if i == nLayers - 1:
-            pz[2 * i + 1] = z1[i - 1] * 1.2
+            pz[2 * i + 1] = zmax or z1[i - 1] * 1.2
         else:
             pz[2 * i + 1] = z1[i]
             pz[2 * i + 2] = z1[i]
