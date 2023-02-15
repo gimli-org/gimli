@@ -12,33 +12,33 @@ class VESModelling(Block1DModelling):
 
     Attributes
     ----------
-    am :
-        Part of data basis. Distances between A and M electrodes.
-        A is first power, M is first potential electrode.
-    bm :
-        Part of data basis. Distances between B and M electrodes.
-        B is second power, M is first potential electrode.
-    an :
-        Part of data basis. Distances between A and N electrodes.
-        A is first power, N is second potential electrode.
-    bn :
-        Part of data basis. Distances between B and N electrodes.
-        B is second power, N is second potential electrode.
     ab2 :
         Half distance between the current electrodes A and B.
     mn2 :
         Half distance between the potential electrodes M and N.
-        Only used for input (feeding am etc.).
+        Only used for input (feeding am etc.) or plotting.
+    am :
+        Part of data basis. Distances between A and M electrodes.
+        A is first current, M is first potential electrode.
+    bm :
+        Part of data basis. Distances between B and M electrodes.
+        B is second current, M is first potential electrode.
+    an :
+        Part of data basis. Distances between A and N electrodes.
+        A is first current, N is second potential electrode.
+    bn :
+        Part of data basis. Distances between B and N electrodes.
+        B is second current, N is second potential electrode.
     """
 
     def __init__(self, ab2=None, mn2=None, **kwargs):
         """Initialize with distances."""
-        self.am = None
-        self.bm = None
-        self.an = None
-        self.bn = None
-        self.ab2 = None
-        self.mn2 = None
+        self.am = kwargs.pop("am", None)
+        self.bm = kwargs.pop("bm", None)
+        self.an = kwargs.pop("an", None)
+        self.bn = kwargs.pop("bn", None)
+        self.ab2 = ab2
+        self.mn2 = mn2
 
         super(VESModelling, self).__init__(**kwargs)
 
@@ -95,7 +95,8 @@ class VESModelling(Block1DModelling):
         self.an = an
         self.bm = bm
         self.bn = bn
-        if ab2 is not None and mn2 is not None:  # overrides am etc.
+        if ab2 is not None:
+            mn2 = mn2 or np.array(ab2) / 3
             if isinstance(mn2, float):
                 mn2 = np.ones(len(ab2))*mn2
 
@@ -232,10 +233,10 @@ class VESCModelling(VESModelling):
 
     def createStartModel(self, rhoa):
         """Create starting model of nlay-1 thicknesses & nlay resistivities."""
-        startThicks = np.logspace(np.log10(min(self.mn2)/2),
+        startDepths = np.logspace(np.log10(min(self.mn2)/2),
                                   np.log10(max(self.ab2)/5),
                                   self._nLayers-1)
-        startThicks = pg.utils.diff(pg.cat([0.0], startThicks))
+        startThicks = pg.utils.diff(pg.cat([0.0], startDepths))
 
         # layer thickness properties
         self.setRegionProperties(0, startModel=startThicks,
