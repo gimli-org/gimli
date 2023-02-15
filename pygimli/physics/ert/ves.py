@@ -399,10 +399,9 @@ class VESManager(MethodManager1d):
     >>> ves = VESManager()
     >>> ra, err = ves.simulate(synthModel, ab2=ab2, mn2=mn2, noiseLevel=0.01)
     >>> ax = ves.showData(ra, error=err)
-    >>> # _= ves.invert(ra, err, nLayer=4, showProgress=0, verbose=0)
-    >>> # ax = ves.showModel(synthModel)
-    >>> # ax = ves.showResult(ax=ax)
-    >>> pg.wait()
+    >>> model = ves.invert(ra, err, nLayers=4, showProgress=0, verbose=0)
+    >>> ax, _ = ves.showModel(synthModel)
+    >>> _ = ves.showResult(ax=ax)
     """
 
     def __init__(self, **kwargs):
