@@ -243,7 +243,7 @@ template < class ValueType > void * checkConvertibleNumpyScalar(PyObject * obj){
                 return NULL;
             }
         }
-        __DC("\t" << obj << "\t ok.")
+        __DC("\t", obj, "\t ok.")
         return obj;
     }
     __DC("\t", obj, "\t abort: no numpy scalar.")

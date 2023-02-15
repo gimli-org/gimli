@@ -40,29 +40,21 @@ void ElementMatrixMap::push_back(const ElementMatrix < double > & Ai){
 
 template < class ValueType >
 void _T_integrateLConst(const ElementMatrixMap * self,
-                     const ValueType & f, RVector & R, bool neg){
+                     const ValueType & f, RVector & R, const double & scale){
     ASSERT_NON_EMPTY(R)
     for (auto &m : self->mats()){
-        if (neg) {
-            m.integrate(f, R, -1);
-        } else {
-            m.integrate(f, R, 1);
-        }
+        m.integrate(f, R, scale);
     }
 }
 
 template < class ValueType >
 void _T_integrateLPerCell(const ElementMatrixMap * self,
-                        const ValueType & f, RVector & R, bool neg){
+                        const ValueType & f, RVector & R, const double & scale){
     ASSERT_NON_EMPTY(R)
     ASSERT_EQUAL_SIZE(self->mats(), f)
 
     for (auto &m : self->mats()){
-        if (neg) {
-            m.integrate(f[m.entity()->id()], R, -1);
-        } else {
-            m.integrate(f[m.entity()->id()], R, 1);
-        }
+        m.integrate(f[m.entity()->id()], R, scale);
     }
 }
 
@@ -159,7 +151,8 @@ void ElementMatrixMap::fillSparsityPattern(RSparseMatrix & R,
 template < class ValueType >
 void _T_integrateBLConst(const ElementMatrixMap & A,
                         const ElementMatrixMap & B,
-                        const ValueType & f, SparseMatrixBase & R, bool neg){
+                        const ValueType & f, SparseMatrixBase & R, 
+                         const double & scale){
 
     // __MS(f)
     // __MS(typeid(f).name())
@@ -178,7 +171,7 @@ void _T_integrateBLConst(const ElementMatrixMap & A,
             }
             for (Index i = 0; i < m.rows(); i ++){
                 // __MS(row, m.rowIDs(), m.getVal(i,0), m.cols())
-                R.addVal(row, m.rowIDs()[i], m.getVal(i,0));
+                R.addVal(row, m.rowIDs()[i], scale*m.getVal(i,0));
             }
         }
         return;
@@ -195,7 +188,7 @@ void _T_integrateBLConst(const ElementMatrixMap & A,
             }
             for (Index i = 0; i < m.rows(); i ++){
                 // __MS(col, m.rowIDs(), m.getVal(i,0))
-                R.addVal(m.rowIDs()[i], col, m.getVal(i,0));
+                R.addVal(m.rowIDs()[i], col, scale*m.getVal(i,0));
             }
         }
         return;
@@ -204,11 +197,7 @@ void _T_integrateBLConst(const ElementMatrixMap & A,
     ASSERT_EQUAL_SIZE(A.mats(), B.mats())
     Index i = 0;
     for (auto &m : A.mats()){
-        if (neg){
-            m.integrate(B.mats()[i], f, R, -1.0);
-        } else {
-            m.integrate(B.mats()[i], f, R, 1.0);
-        }
+        m.integrate(B.mats()[i], f, R, scale);
         i++;
     }
 }
@@ -216,18 +205,15 @@ void _T_integrateBLConst(const ElementMatrixMap & A,
 template < class ValueType >
 void _T_integrateBLPerCell(const ElementMatrixMap & A,
                           const ElementMatrixMap & B,
-                          const ValueType & f, SparseMatrixBase & R, bool neg){
+                          const ValueType & f, SparseMatrixBase & R, 
+                          const double & scale){
 
 // __M
     ASSERT_EQUAL_SIZE(A.mats(), B.mats())
     ASSERT_EQUAL_SIZE(A, f)
     Index i = 0;
     for (auto &m : A.mats()){
-        if (neg){
-            m.integrate(B.mats()[i], f[m.entity()->id()], R, -1.0);
-        } else {
-            m.integrate(B.mats()[i], f[m.entity()->id()], R, 1.0);
-        }
+        m.integrate(B.mats()[i], f[m.entity()->id()], R, scale);
         i++;
     }
 
@@ -235,8 +221,8 @@ void _T_integrateBLPerCell(const ElementMatrixMap & A,
 
 #define DEFINE_INTEGRATE_ELEMENTMAP_L_IMPL(A_TYPE) \
 void ElementMatrixMap::integrate(const A_TYPE & f, \
-                                 RVector & R, bool neg) const {\
-    _T_integrateLConst(this, f, R, neg); \
+                                 RVector & R, const double & scale) const {\
+    _T_integrateLConst(this, f, R, scale); \
 } \
 void ElementMatrixMap::mult(const A_TYPE & f, ElementMatrixMap & ret) const { \
     ret.resize(this->size());\
@@ -275,8 +261,8 @@ void ElementMatrixMap::add(const ElementMatrixMap & B,
 
 
 #define DEFINE_INTEGRATE_ELEMENTMAP_L_PERCELL_IMPL(A_TYPE) \
-void ElementMatrixMap::integrate(const A_TYPE & f, RVector & R , bool neg) const { \
-    _T_integrateLPerCell(this, f, R, neg); \
+void ElementMatrixMap::integrate(const A_TYPE & f, RVector & R, const double & scale) const { \
+    _T_integrateLPerCell(this, f, R, scale); \
 } \
 void ElementMatrixMap::mult(const A_TYPE & f, ElementMatrixMap & ret) const { \
     ret.resize(this->size()); \
@@ -299,11 +285,11 @@ DEFINE_INTEGRATE_ELEMENTMAP_L_PERCELL_IMPL(std::vector< std::vector< RSmallMatri
 
 #define DEFINE_INTEGRATE_ELEMENTMAP_BL_IMPL(A_TYPE) \
 void ElementMatrixMap::integrate(const ElementMatrixMap & B, const A_TYPE & f, \
-                                 SparseMatrixBase & R, bool neg) const {\
+                                 SparseMatrixBase & R, const double & scale) const {\
     if (R.rtti() == GIMLI_SPARSE_CRS_MATRIX_RTTI){\
         this->fillSparsityPattern(*dynamic_cast< RSparseMatrix * >(&R), B);\
     }\
-    _T_integrateBLConst(*this, B, f, R, neg); \
+    _T_integrateBLConst(*this, B, f, R, scale); \
 }
 DEFINE_INTEGRATE_ELEMENTMAP_BL_IMPL(double)
 DEFINE_INTEGRATE_ELEMENTMAP_BL_IMPL(Pos)
@@ -313,11 +299,11 @@ DEFINE_INTEGRATE_ELEMENTMAP_BL_IMPL(RSmallMatrix)
 
 #define DEFINE_INTEGRATE_ELEMENTMAP_BL_PERCELL_IMPL(A_TYPE) \
 void ElementMatrixMap::integrate(const ElementMatrixMap & B, const A_TYPE & f, \
-                                 SparseMatrixBase & R, bool neg) const {\
+                                 SparseMatrixBase & R, const double & scale) const {\
     if (R.rtti() == GIMLI_SPARSE_CRS_MATRIX_RTTI){\
         this->fillSparsityPattern(*dynamic_cast< RSparseMatrix * >(&R), B);\
     }\
-    _T_integrateBLPerCell(*this, B, f, R, neg); \
+    _T_integrateBLPerCell(*this, B, f, R, scale); \
 }
 DEFINE_INTEGRATE_ELEMENTMAP_BL_PERCELL_IMPL(RVector)
 DEFINE_INTEGRATE_ELEMENTMAP_BL_PERCELL_IMPL(PosVector)
@@ -329,13 +315,13 @@ DEFINE_INTEGRATE_ELEMENTMAP_BL_PERCELL_IMPL(std::vector< std::vector< RSmallMatr
 
 
 #define DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(A_TYPE) \
-RVector ElementMatrixMap::integrate(const A_TYPE & f, bool neg) const { \
+RVector ElementMatrixMap::integrate(const A_TYPE & f, const double & scale) const { \
     Index maxR = 0; \
     for (auto &m : this->mats_){ \
         maxR = max(maxR, max(m.rowIDs()));\
     } \
     RVector R(maxR+1); \
-    integrate(f, R, neg); \
+    integrate(f, R, scale); \
     return R; \
 } \
 
@@ -352,9 +338,9 @@ DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(std::vector< std::vector< RSmallMatrix > 
 
 #define DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(A_TYPE) \
 RSparseMapMatrix ElementMatrixMap::integrate(const ElementMatrixMap & R, \
-                                             const A_TYPE & f, bool neg) const{\
+                                             const A_TYPE & f, const double & scale) const{\
     RSparseMapMatrix A(0,0); \
-    integrate(R, f, A, neg); \
+    integrate(R, f, A, scale); \
     return A; \
 }
 DEFINE_INTEGRATE_ELEMENTMAP_R_IMPL_RET(double)
@@ -452,25 +438,25 @@ void ElementMatrixMap::dot(const ElementMatrixMap & B,
 
 template < class ValueType, class RetType >
 void _T_assembleFConst(const ElementMatrixMap * self, const ValueType & f,
-                     RetType & R, bool neg){
+                     RetType & R, const double & scale){
     ASSERT_NON_EMPTY(R)
 
     // R.clean(); dont clean
     for (auto &m : self->mats()){
-        R.add(m, f, neg);
+        R.add(m, f, scale);
     }
 }
 
 template < >
 void _T_assembleFConst(const ElementMatrixMap * self, const double & f,
-                     SparseMatrixBase & R, bool neg){
+                     SparseMatrixBase & R, const double & scale){
     if (R.size() == 0) R.resize(self->dof(), 0);
     ASSERT_NON_EMPTY(R)
 
     Stopwatch s(true);
     // R.clean(); dont clean
     for (auto &m : self->mats()){
-        R.add(m, f, neg);
+        R.add(m, f, scale);
     }
     // ALLOW_PYTHON_THREADS
     // double b = f;
@@ -510,24 +496,26 @@ void _T_assembleFConst(const ElementMatrixMap * self, const double & f,
 
 template < class ValueType, class RetType >
 void assembleFPerCellT_(const ElementMatrixMap * self, const ValueType & f, 
-                       RetType & R, bool neg){
+                       RetType & R, const double & scale){
     ASSERT_NON_EMPTY(R)
     ASSERT_EQUAL_SIZE(self->mats(), f)
     // R.clean(); dont clean
     for (auto &m : self->mats()){
-        R.add(m, f[m.entity()->id()], neg);
+        R.add(m, f[m.entity()->id()], scale);
     }
 }
 
 #define DEFINE_ASSEMBLER_L(A_TYPE) \
-void ElementMatrixMap::assemble(const A_TYPE & f, RVector & R, bool neg) const { \
-    _T_assembleFConst(this, f, R, neg); \
+void ElementMatrixMap::assemble(const A_TYPE & f, RVector & R, \
+                                const double & scale) const { \
+    _T_assembleFConst(this, f, R, scale); \
 } \
-void ElementMatrixMap::assemble(const A_TYPE & f, SparseMatrixBase & R, bool neg) const { \
+void ElementMatrixMap::assemble(const A_TYPE & f, SparseMatrixBase & R,\
+                                const double & scale) const { \
     if (R.rtti() == GIMLI_SPARSE_CRS_MATRIX_RTTI){\
         this->fillSparsityPattern(*dynamic_cast< RSparseMatrix * >(&R));\
     }\
-    _T_assembleFConst(this, f, R, neg); \
+    _T_assembleFConst(this, f, R, scale); \
 } \
 
 DEFINE_ASSEMBLER_L(double)   // const scalar for all cells
@@ -536,14 +524,16 @@ DEFINE_ASSEMBLER_L(RVector3)  // const Pos for all cells
 #undef DEFINE_ASSEMBLER_L
 
 #define DEFINE_ASSEMBLER_B(A_TYPE) \
-void ElementMatrixMap::assemble(const A_TYPE & f, RVector & R, bool neg) const { \
-    assembleFPerCellT_(this, f, R, neg); \
+void ElementMatrixMap::assemble(const A_TYPE & f, RVector & R, \
+                                const double & scale) const { \
+    assembleFPerCellT_(this, f, R, scale); \
 } \
-void ElementMatrixMap::assemble(const A_TYPE & f, SparseMatrixBase & R, bool neg) const { \
+void ElementMatrixMap::assemble(const A_TYPE & f, SparseMatrixBase & R, \
+                                const double & scale) const { \
     if (R.rtti() == GIMLI_SPARSE_CRS_MATRIX_RTTI){\
         this->fillSparsityPattern(*dynamic_cast< RSparseMatrix * >(&R));\
     }\
-    assembleFPerCellT_(this, f, R, neg); \
+    assembleFPerCellT_(this, f, R, scale); \
 } \
 
 DEFINE_ASSEMBLER_B(RVector)  // const scalar for each cell

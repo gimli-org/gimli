@@ -1009,7 +1009,6 @@ def divergence(mesh, func=None, normMap=None, order=1):
 
     return diverg
 
-
 def triDiagToeplitz(dom, a, l, r, start=0, end=-1):
     """Create tri-diagonal Toeplitz matrix."""
     A = pg.matrix.SparseMapMatrix(dom, dom)
