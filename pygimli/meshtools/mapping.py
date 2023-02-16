@@ -651,6 +651,51 @@ def interpolate(*args, **kwargs):
         return interpolateAlongCurve(curve, t, **kwargs)
 
 
+def extract2dSlice(mesh, origin=None, angle=0, dip=0):
+    """Extract slice from 3D mesh as triangle mesh.
+
+    Parameters
+    ----------
+    mesh : pg.Mesh
+        Input mesh
+    origin : [x, y, z]
+        origin to be shifted
+    angle : float [0]
+        azimuth of plane in the xy plane (0=x, 90=y)
+    dip : float [0]
+        angle to be tilted into the x'z plane (0=vertical)
+
+    Returns
+    -------
+    2d triangular pygimli mesh with all data fields
+    """
+    from pygimli.viewer.pv import pgMesh2pvMesh
+    # from pygimli.meshtools import convertPVPolyData  # to be written yet
+
+    meshtmp = pg.Mesh(mesh)
+    if origin:
+        meshtmp.translate(-pg.Pos(origin))
+
+    meshtmp.rotate(pg.Pos(0, np.deg2rad(dip), np.deg2rad(angle)))
+    pvmesh = pgMesh2pvMesh(meshtmp)
+    pvs = pvmesh.slice(normal=[0, 1, 0], origin=[0, 0, 0],
+                       generate_triangles=True)
+    # return convertPVPolyData(pvs)  # that's the better way
+    tri = pvs.faces.reshape((-1, 4))[:, 1:]
+    mesh2d = pg.Mesh(dim=2)
+    for point in pvs.points:
+        mesh2d.createNode(point)
+
+    for face in tri:
+        mesh2d.createTriangle(*[mesh2d.node(p) for p in face])
+
+    for key in mesh.dataKeys():
+        mesh2d[key] = pvs[key]
+
+    mesh2d.swapCoordinates(1, 2)
+    return mesh2d
+
+
 if __name__ == '__main__':
     # no need to import matplotlib. pygimli's show does
     # import pygimli as pg
