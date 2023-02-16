@@ -473,7 +473,9 @@ class MethodManager(object):
         if data is None:
             data = self.data
 
-        return self.fop.drawData(ax, data, **kwargs), None
+        self.fop.drawData(ax, data, **kwargs)
+
+        return ax, None
 
     def showResult(self, model=None, ax=None, **kwargs):
         """Show the last inversion result.

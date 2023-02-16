@@ -163,7 +163,7 @@ class VESModelling(Block1DModelling):
         error: iterable [None]
             Adds an error bar if you have error values.
 
-        label: str ['$\varrho_a$']
+        label: str ['$\rho_a$']
             Set legend label for the amplitude.
 
         Other Parameters
@@ -187,7 +187,7 @@ class VESModelling(Block1DModelling):
         style.update(kwargs)
 
         if label is None:
-            label = r'$\varrho_a$'
+            label = r'$\rho_a$'
 
         plot(ra, ab2, label=label, **style)
 
@@ -206,7 +206,7 @@ class VESModelling(Block1DModelling):
         ax.set_ylabel(r'AB/2 (m)')
         ax.grid(True)
         ax.legend()
-        return ax, None
+        return ax, None  # should return gci and not ax&cb
 
 
 class VESCModelling(VESModelling):

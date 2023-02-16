@@ -337,7 +337,20 @@ def importAsciiColumns(filename, verbose=False, return_header=False):
                     tok = sp[0].lstrip("\t").lstrip("- ")
                     header[tok] = sp[1].rstrip("\n").rstrip("\r")
 
-            content = content[n:]
+            for last in range(len(content)-1, -1, -1):
+                if content[last].find("---") == 0:
+                    print(content[last])
+                    last -= 1
+                    print(content[last])
+                    while len(content[last]) < 3:
+                        last -= 1
+
+                    last += 1
+                    break
+            if last <= 1:
+                last = len(content)
+
+            content = content[n:last]
 
         d = readAsDictionary(content, sep='\t')
         if len(d) < 2:

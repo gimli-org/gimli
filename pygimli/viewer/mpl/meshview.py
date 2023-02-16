@@ -734,6 +734,10 @@ def drawPLC(ax, mesh, fillRegion=True, regionMarker=True,
                 areas = {}
                 for reg in mesh.regionMarkers():
                     areas[reg.marker()] = reg.area()
+                    ax.plot(reg.x(), reg.y(), "mx", alpha=0.5)
+                    ax.text(reg.x(), reg.y(), str(reg.marker()), color="m",
+                            ha="center", va="center")
+
                 labels = []
                 for marker in uniquemarkers:
                     label = "{:d}".format(marker)
