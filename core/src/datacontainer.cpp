@@ -16,10 +16,13 @@
  *                                                                            *
  ******************************************************************************/
 
+#include <list>
+
 #include "datacontainer.h"
 #include "pos.h"
 #include "numericbase.h"
 #include "vectortemplates.h"
+
 
 namespace GIMLI{
 
@@ -279,11 +282,17 @@ int DataContainer::load(const std::string & fileName,
         }
     }
 
-    for (int i = 0; i < nSensors; i ++) {
+    std::list < std::pair< Index, Index > > duplicatedSensors;
+    for (SIndex i = 0; i < nSensors; i ++) {
         Index oldCount = this->sensorCount();
-        createSensor(RVector3(x[i], y[i], z[i]).round(1e-12));
+        Index s = createSensor(RVector3(x[i], y[i], z[i]).round(1e-12));
+
         if (this->sensorCount() != oldCount+1){
+            duplicatedSensors.insert(duplicatedSensors.end(), 
+                                     std::pair< Index, Index >(this->sensorCount(), s));
             log(Warning, "Duplicated sensor position found at: " + str(RVector3(x[i], y[i], z[i])));
+            //** we add them temporary and delete them later as unused
+            sensorPoints_.push_back(RVector3(x[i], y[i], z[i]).round(1e-12));
         }
     }
     //****************************** Start read the data;
@@ -367,7 +376,7 @@ int DataContainer::load(const std::string & fileName,
         }
     }
 
-   inputFormatString_.clear();
+    inputFormatString_.clear();
     for (Index i = 0; i < format.size(); i ++) {
         if (haveTranslationForAlias(format[i])){
             inputFormatString_ += translateAlias(format[i]) + " ";
@@ -386,6 +395,24 @@ int DataContainer::load(const std::string & fileName,
     }
 
     dataMap_["valid"] = 1;
+
+    //** Fix duplicated sensors
+    if (!duplicatedSensors.empty()){
+        for (auto p: duplicatedSensors){
+            // print(p.first, p.second);
+
+            for (auto &it: dataMap_){
+                if (isSensorIndex(it.first) && size() > 0){
+                    RVector &v = it.second;
+                    for (Index i = 0; i < v.size(); i ++){
+                        if (v[i] == p.first) v[i] = p.second;
+                    }
+                }
+            }
+        }
+        this->removeUnusedSensors();
+    }
+
 
     // validity check should only used in specialization
     this->checkDataValidity(removeInvalid);
