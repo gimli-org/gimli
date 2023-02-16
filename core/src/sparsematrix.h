@@ -175,22 +175,22 @@ public:
     virtual uint rtti() const { return GIMLI_SPARSE_CRS_MATRIX_RTTI; }
 
     
-    void add(const ElementMatrix< double > & A, bool neg=false){
-        return add(A, ValueType(1.0), neg);
-    }
+    // void add(const ElementMatrix< double > & A, const double & scale){
+    //     return add(A, ValueType(scale), 1.0scale);
+    // }
     virtual void add(const ElementMatrix< double > & A,
-                     const ValueType & scale, bool neg=false);
+                     const ValueType & f, const double & scale=1.0);
     virtual void add(const ElementMatrix< double > & A,
-                     const Pos & scale, bool neg=false);
+                     const Pos & f, const double & scale=1.0);
     virtual void add(const ElementMatrix< double > & A,
-                     const SmallMatrix < ValueType > & scale, bool neg=false);
+                     const SmallMatrix < ValueType > & f, const double & scale=1.0);
 
     /*! Perftest .. maybe optimizer problem. Single calls outside calls of addVall suffer from polymorphism. */
-    void addS(const ElementMatrix< double > & A, const ValueType & scale, 
-              bool neg=false){
+    void addS(const ElementMatrix< double > & A, const ValueType & f, 
+              const double & scale){
 
-        ValueType b = scale;
-        if (neg == true) b *= -1.0;
+        ValueType b = f*scale;
+        
         A.integrate();
 
         for (Index i = 0, imax = A.rows(); i < imax; i++){
@@ -405,18 +405,18 @@ template <> DLLEXPORT void SparseMatrix<double>::copy_(const SparseMapMatrix< do
 template <> DLLEXPORT void SparseMatrix<Complex>::copy_(const SparseMapMatrix< Complex, Index > & S);
 
 template <> DLLEXPORT void SparseMatrix< double >::
-    add(const ElementMatrix < double > & A, const double & scale, bool neg);
+    add(const ElementMatrix < double > & A, const double & f, const double & scale);
 template <> DLLEXPORT void SparseMatrix< double >::
-    add(const ElementMatrix < double > & A, const Pos & scale, bool neg);
+    add(const ElementMatrix < double > & A, const Pos & f, const double & scale);
 template <> DLLEXPORT void SparseMatrix< double >::
-    add(const ElementMatrix < double > & A, const RSmallMatrix & scale, bool neg);
+    add(const ElementMatrix < double > & A, const RSmallMatrix & f, const double & scale);
 
 template <> DLLEXPORT void SparseMatrix< Complex >::
-    add(const ElementMatrix < double > & A, const Complex & scale, bool neg);
+    add(const ElementMatrix < double > & A, const Complex & f, const double & scale);
 template <> DLLEXPORT void SparseMatrix< Complex >::
-    add(const ElementMatrix < double > & A, const Pos & scale, bool neg);
+    add(const ElementMatrix < double > & A, const Pos & f, const double & scale);
 template <> DLLEXPORT void SparseMatrix< Complex >::
-    add(const ElementMatrix < double > & A, const CSmallMatrix & scale, bool neg);
+    add(const ElementMatrix < double > & A, const CSmallMatrix & f, const double & scale);
 
 inline CSparseMatrix operator + (const CSparseMatrix & A, const RSparseMatrix & B){
     CSparseMatrix ret(A);

@@ -43,12 +43,12 @@ public:
         /*! R = \int_mesh this * f \d mesh and R = RVector(dof) and \
             f = A_TYPE \
         */ \
-        void integrate(const A_TYPE & f, RVector & R, bool neg=false) const; \
+        void integrate(const A_TYPE & f, RVector & R, const double & scale=1.0) const; \
         /*! Integrate into bilinear form R = \int_mesh this * f * R \d mesh an\
         R = RSparseMapMatrix(dof, dof) and \
             f = A_TYPE \
         */ \
-        RVector integrate(const A_TYPE & f, bool neg=false) const; \
+        RVector integrate(const A_TYPE & f, const double & scale=1.0) const; \
         /*! R = this * f */ \
         void mult(const A_TYPE & f, ElementMatrixMap & ret) const;
 
@@ -70,9 +70,9 @@ public:
             f = A_TYPE \
         */ \
         void integrate(const ElementMatrixMap & R, const A_TYPE & f, \
-                       SparseMatrixBase & A, bool neg=false) const; \
+                       SparseMatrixBase & A, const double & scale=1.0) const; \
         RSparseMapMatrix integrate(const ElementMatrixMap & R, \
-                                   const A_TYPE & f, bool neg=false) const; \
+                                   const A_TYPE & f, const double & scale=1.0) const; \
 
     DEFINE_INTEGRATOR(double)   // const scalar for all cells
     DEFINE_INTEGRATOR(RSmallMatrix)  // const Matrix for all cells
@@ -91,9 +91,9 @@ public:
             f = A_TYPE \
         */ \
         void integrate(const ElementMatrixMap & R, const A_TYPE & v, \
-                       SparseMatrixBase & A, bool neg=false) const; \
+                       SparseMatrixBase & A, const double & scale=1.0) const; \
         RSparseMapMatrix integrate(const ElementMatrixMap & R, \
-                                   const A_TYPE & v, bool neg=false) const; \
+                                   const A_TYPE & v, const double & scale=1.0) const; \
 
     DEFINE_INTEGRATOR(Pos)      // const scalar for each cells (u * (pos*v))
     DEFINE_INTEGRATOR(PosVector) // const Pos (u * (pos*v)) for each cells
@@ -104,9 +104,11 @@ public:
 
     #define DEFINE_ASSEMBLER(A_TYPE) \
         /*! Assemble linear form with non continuous properties. */ \
-        void assemble(const A_TYPE & f, RVector & R, bool neg=false) const; \
+        void assemble(const A_TYPE & f, RVector & R, \
+                      const double & scale=1.0) const; \
         /*! Assemble bilinear form with non continuous properties. */ \
-        void assemble(const A_TYPE & f, SparseMatrixBase & A, bool neg=false) const; \
+        void assemble(const A_TYPE & f, SparseMatrixBase & A, \
+                      const double & scale=1.0) const; \
 
     DEFINE_ASSEMBLER(double)   // const scalar for all cells
     DEFINE_ASSEMBLER(RSmallMatrix)  // const Matrix for all cells
@@ -118,8 +120,10 @@ public:
     #define DEFINE_ASSEMBLER(A_TYPE) \
         /*! Assemble linear form with non continuous properties. */ \
         /*! Assemble bilinear form with non continuous properties. */ \
-        void assemble(const A_TYPE & v, RVector & R, bool neg=false) const; \
-        void assemble(const A_TYPE & v, SparseMatrixBase & A, bool neg=false) const; \
+        void assemble(const A_TYPE & v, RVector & R, \
+                      const double & scale=1.0) const; \
+        void assemble(const A_TYPE & v, SparseMatrixBase & A, \
+                      const double & scale=1.0) const; \
 
     DEFINE_ASSEMBLER(Pos)  // const Pos for all cells
     DEFINE_ASSEMBLER(std::vector< Pos >)  // const Pos for each cell

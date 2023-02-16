@@ -374,10 +374,12 @@ public:
 
     // Virtual calls are expensive so use them with care
     #define DEFINE_ADDS(A_TYPE) \
-    virtual void add(const ElementMatrix < double > & A, const A_TYPE &, bool neg=false){ \
+    virtual void add(const ElementMatrix < double > & A, const A_TYPE & f, \
+                     const double & scale=1.0){ \
         THROW_TO_IMPL \
     } \
-    void addS(const ElementMatrix < double > & A, const A_TYPE &, bool neg=false){ \
+    void addS(const ElementMatrix < double > & A, const A_TYPE & f, \
+              const double & scale=1.0){ \
         THROW_TO_IMPL \
     } \
 

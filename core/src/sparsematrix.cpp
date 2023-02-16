@@ -101,10 +101,9 @@ void SparseMatrix< Complex >::copy_(const SparseMapMatrix< Complex, Index > & S)
 
 template <> void
 SparseMatrix< double >::add(const ElementMatrix< double > & A,
-                            const double & scale, bool neg){
-    double b = scale;
-    if (neg == true) b *= -1.0;
-
+                            const double & f, const double & scale){
+    double b = f*scale;
+    
     if (A.oldStyle()){
         if (!valid_) SPARSE_NOT_VALID;
         for (Index i = 0, imax = A.size(); i < imax; i++){
@@ -113,7 +112,7 @@ SparseMatrix< double >::add(const ElementMatrix< double > & A,
             }
         }
     } else {
-        this->addS(A, scale, neg);
+        this->addS(A, f, scale);
         // A.integrate();
         // for (Index i = 0, imax = A.rows(); i < imax; i++){
         //     for (Index j = 0, jmax = A.cols(); j < jmax; j++){
@@ -125,37 +124,33 @@ SparseMatrix< double >::add(const ElementMatrix< double > & A,
     }
 }
 template <> void
-SparseMatrix< double >::add(const ElementMatrix< double > & A, const Pos & scale, bool neg){
+SparseMatrix< double >::add(const ElementMatrix< double > & A, const Pos & f, const double & scale){
     THROW_TO_IMPL
 }
 template <> void
 SparseMatrix< double >::add(const ElementMatrix< double > & A, 
-                            const RSmallMatrix & scale, bool neg){
+                            const RSmallMatrix & f, const double & scale){
     THROW_TO_IMPL
 }
 
 template <> void
 SparseMatrix< Complex >::add(const ElementMatrix < double > & A, 
-                             const Complex & scale, bool neg){
+                             const Complex & f, const double & scale){
     if (!valid_) SPARSE_NOT_VALID;
 
     for (Index i = 0, imax = A.size(); i < imax; i++){
         for (Index j = 0, jmax = A.size(); j < jmax; j++){
-            if (neg == true) {
-                subVal(A.idx(i), A.idx(j), scale * A.getVal(i, j));
-            } else {
-                addVal(A.idx(i), A.idx(j), scale * A.getVal(i, j));
-            }
+            addVal(A.idx(i), A.idx(j), f*scale * A.getVal(i, j));
         }
     }
 }
 template <> void
-SparseMatrix< Complex >::add(const ElementMatrix < double > & A, const Pos & scale, bool neg){
+SparseMatrix< Complex >::add(const ElementMatrix < double > & A, const Pos & f, const double & scale){
     THROW_TO_IMPL
 }
 template <> void
 SparseMatrix< Complex >::add(const ElementMatrix < double > & A, 
-                             const CSmallMatrix & scale, bool neg){
+                             const CSmallMatrix & f, const double & scale){
     THROW_TO_IMPL
 }
 
