@@ -2,7 +2,6 @@
 import numpy as np
 
 import pygimli as pg
-# from pygimli.frameworks import Modelling, Block1DModelling
 from pygimli.frameworks import Block1DModelling, MethodManager1d
 from pygimli.frameworks.modelling import DEFAULT_STYLES
 
@@ -96,7 +95,9 @@ class VESModelling(Block1DModelling):
         self.bm = bm
         self.bn = bn
         if ab2 is not None:
-            mn2 = mn2 or np.array(ab2) / 3
+            if mn2 is None:
+                mn2 = np.array(ab2) / 3
+
             if isinstance(mn2, float):
                 mn2 = np.ones(len(ab2))*mn2
 
