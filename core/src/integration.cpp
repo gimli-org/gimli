@@ -157,6 +157,7 @@ const RVector & IntegrationRules::weights(const Shape & shape, uint order) const
 
 void IntegrationRules::initGau_(){
     // Gauss quadrature points and weights with the Jacobi polynomials.
+    // Edge defined from -1 to 1, size = 2
     //** 0.Order, n=1 -- just placeholder
     gauAbscissa_.push_back(R3Vector (0));
     gauWeights_.push_back(RVector(0, 0.0));

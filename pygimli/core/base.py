@@ -103,7 +103,8 @@ def isPos(v):
     >>> print(pg.isPos(np.ones(4)))
     False
     """
-    return isArray(v, 2) or isArray(v, 3) or isinstance(v, RVector3)
+    return isinstance(v, RVector3) or \
+        isArray(v, 1) or isArray(v, 2) or isArray(v, 3)
 
 def isR3Array(v, N=None):
     """Check if v is an array of size(N,3), a R3Vector or a list of pg.Pos.
