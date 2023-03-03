@@ -562,7 +562,7 @@ class Inversion(object):
         self.inv.setLambdaFactor(kwargs.pop('lambdaFactor', 1.0))
 
         # catch a few regularization options that don't go into run
-        for opt in ["cType", "limits", "correlationLengths"]:
+        for opt in ["cType", "limits", "correlationLengths", "C"]:
             if opt in kwargs:
                 self.setRegularization({opt: kwargs.pop(opt)})
 

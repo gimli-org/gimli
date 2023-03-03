@@ -181,6 +181,7 @@ pg.show(mesh, res, ax=ax[0, 0], **kw)
 ax[0, 0].set_title("1st order")
 np.testing.assert_array_less(inv.chi2(), 1.2)
 
+fop.clearConstraints()
 # Next, we use the second order (curvature) constraint type
 res = inv.run(vals, error, cType=2, lam=25)
 print(('Ctype=2: ' + '{:.1f} ' * 6).format(*fop(res), inv.chi2()))
@@ -189,16 +190,16 @@ ax[0, 1].set_title("2nd order")
 np.testing.assert_array_less(inv.chi2(), 1.2)
 
 # Now we set the geostatistic isotropic operator with 5m correlation length
-fop.setConstraints(C)
-res = inv.run(vals, error, lam=15)
+# fop.setConstraints(C)
+res = inv.run(vals, error, C=C, lam=15)
 print(('Cg-5/5m: ' + '{:.1f} ' * 6).format(*fop(res), inv.chi2()))
 pg.show(mesh, res, ax=ax[1, 0], **kw)
 ax[1, 0].set_title("I=5")
 np.testing.assert_array_less(inv.chi2(), 1.2)
 
 # and finally we use the dipping constraint matrix
-fop.setConstraints(Cdip)
-res = inv.run(vals, error, lam=15)
+# fop.setConstraints(Cdip)
+res = inv.run(vals, error, C=Cdip, lam=15)
 print(('Cg-9/2m: ' + '{:.1f} ' * 6).format(*fop(res), inv.chi2()))
 pg.show(mesh, res, ax=ax[1, 1], **kw)
 ax[1, 1].set_title("I=[10/2], dip=25")
