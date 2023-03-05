@@ -511,7 +511,7 @@ class ERTManager(MeshMethodManager):
             misfit = - self.inv.response / self.data["rhoa"] * 100 + 100
             kwargs.setdefault("label", "relative misfit (%)")
 
-        kwargs.setdefault("cMax", np.max(misfit))
+        kwargs.setdefault("cMax", np.max(np.abs(misfit)))
         kwargs.setdefault("cMin", -kwargs["cMax"])
         kwargs.setdefault("cMap", "bwr")
         kwargs.setdefault("logScale", False)
