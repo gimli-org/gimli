@@ -67,9 +67,11 @@ import pygimli as pg
 # function must be filled.
 
 
-class FunctionModelling(pg.core.ModellingBase):
+class FunctionModelling(pg.Modelling):
+    """Forward operator for polygonal interpolation."""
+
     def __init__(self, nc, xvec, verbose=False):
-        pg.core.ModellingBase.__init__(self, verbose)
+        super().__init__(verbose=verbose)
         self.x_ = xvec
         self.nc_ = nc
         nx = len(xvec)
@@ -79,9 +81,11 @@ class FunctionModelling(pg.core.ModellingBase):
             self.jacobian().setCol(i, pg.math.pow(self.x_, i))
 
     def response(self, model):
+        """Return forward response by multiplying with kernel matrix."""
         return self.jacobian() * model
 
     def responseDirect(self, model):
+        """Forward response step by step."""
         y = pg.Vector(len(self.x_), model[0])
 
         for i in range(1, self.nc_):
@@ -90,10 +94,12 @@ class FunctionModelling(pg.core.ModellingBase):
         return y
 
     def createJacobian(self, model):
+        """Do nothing (avoid default brute-force Jacobian)."""
         pass  # if J depends on the model you should work here
 
-    def startModel(self):
-        return pg.Vector(self.nc_, 0.5)
+    def createStartModel(self, data):
+        """Create some starting model in the order of the data."""
+        return pg.Vector(self.nc_, np.mean(data)/self.nc_/3)
 
 
 ###############################################################################
@@ -108,22 +114,17 @@ y += np.random.randn(len(y)) * noise
 # We now start by setting up the modelling operator, and inversion and run it.
 
 fop = FunctionModelling(3, x)
-
 # initialize inversion with data and forward operator and set options
-inv = pg.core.Inversion(y, fop)
-
-# constant absolute error of 0.01 is 1% (not necessary, only for chi^2)
-inv.setAbsoluteError(noise)
-
-# the problem is well-posed and does not need any regularization
-inv.setLambda(0)
-
+inv = pg.Inversion(fop=fop)
+# We set model transformation to linear to allow for negative values
+inv.modelTrans = pg.trans.Trans()
+# the problem is well-posed and does not need any regularization (lam=0)
+coeff = inv.run(dataVals=y, errorVals=noise/y, lam=0, verbose=True)
 # actual inversion run yielding coefficient model
-coeff = inv.run()
 print(coeff)
 
 ###############################################################################
-# The result is easily plotted by
+# The data and model response are plotted by
 
-plt.plot(x, y, 'rx', x, inv.response(), 'b-')
+plt.plot(x, y, 'rx', x, inv.response, 'b-')
 plt.show()
