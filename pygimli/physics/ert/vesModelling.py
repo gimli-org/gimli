@@ -382,3 +382,17 @@ class VESCModelling(VESModelling):
         a2.set_ylabel('AB/2 in (m)')
         a2.legend()
         a2.grid(True)
+
+
+class VESRhoModelling(pg.Modelling):
+    """Vertical electrical sounding (VES) modelling with fixed layers."""
+
+    def __init__(self, thk, **kwargs):
+        super().__init__()
+        self.fwd = pg.core.DC1dRhoModelling(thk, **kwargs)
+        mesh = pg.meshtools.createMesh1D(len(thk)+1)
+        self.setMesh(mesh)
+
+    def response(self, par):
+        """Forward response."""
+        return self.fwd.response(par)
