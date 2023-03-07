@@ -623,9 +623,6 @@ def drawMeshBoundaries(ax, mesh, hideMesh=False, useColorMap=False,
     if fitView is True:
         ax.autoscale(enable=True, axis='both', tight=True)
 
-
-#    drawAA = True
-#    swatch = pg.core.Stopwatch(True)
     mesh.createNeighborInfos()
 
     if not hideMesh:

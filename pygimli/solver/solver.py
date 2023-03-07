@@ -950,7 +950,7 @@ def divergence(mesh, func=None, normMap=None, order=1):
         if directionCheck:
             if b.leftCell() is None and b.rightCell() is None:
                 # print(b.id(), b.leftCell(), b.rightCell())
-                sw = pg.core.Stopwatch(True)
+                sw = pg.Stopwatch(True)
                 mesh.createNeighborInfos()
                 print("NeighborInfos()", sw.duration(True))
                 # return gauss(grid, F)
