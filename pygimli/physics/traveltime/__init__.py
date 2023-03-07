@@ -12,6 +12,7 @@ from .refraction1d import RefractionNLayer, RefractionNLayerFix1stLayer
 from .TravelTimeManager import TravelTimeDijkstraModelling, TravelTimeManager
 
 Manager = TravelTimeManager
+DataContainer = DataContainerTT
 
 __all__ = [
     'drawTravelTimeData',

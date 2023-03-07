@@ -649,14 +649,14 @@ class MeshModelling(Modelling):
         """
         m = pg.Mesh(mesh)
         if self._refineH2:
-            pg.info("Creating refined mesh (P2) to solve forward task.")
+            pg.info("Creating refined mesh (H2) to solve forward task.")
             m = m.createH2()
 
         if self._refineP2:
             pg.info("Creating refined mesh (P2) to solve forward task.")
             m = m.createP2()
 
-        pg.verbose(m)
+        pg.info("Mesh for forward task:", m)
         return m
 
     def createFwdMesh_(self):
