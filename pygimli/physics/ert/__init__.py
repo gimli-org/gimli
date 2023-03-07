@@ -13,8 +13,8 @@ from .ert import (simulate, estimateError,
 from .ertManager import ERTManager
 from .ertModelling import ERTModelling, ERTModellingReference
 from .ertScheme import createData
-from .vesModelling import VESModelling, VESCModelling
 from .ves import VESManager
+from .vesModelling import VESModelling, VESCModelling
 
 from .visualization import showERTData, drawERTData, generateDataPDF
 from .importData import load

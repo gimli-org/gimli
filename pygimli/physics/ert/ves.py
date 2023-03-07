@@ -3,7 +3,7 @@ import numpy as np
 
 import pygimli as pg
 from pygimli.frameworks import MethodManager1d
-from .vesmodelling import VESModelling, VESCModelling
+from .vesModelling import VESModelling, VESCModelling
 
 
 class VESManager(MethodManager1d):
