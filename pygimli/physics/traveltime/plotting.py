@@ -116,7 +116,7 @@ def drawFirstPicks(ax, data, tt=None, plotva=False, **kwargs):
     return GCI
 
 
-# better be renamed to showData and optionally show first pick curves
+# better be renamed to showData and optionaly show first pick curves
 def showVA(data, usePos=True, ax=None, **kwargs):
     """Show apparent velocity as image plot.
 
@@ -168,7 +168,7 @@ def drawVA(ax, data, vals=None, usePos=True, pseudosection=False, **kwargs):
         print(vals)
         pg.error('zero traveltimes found.')
     va = offset / vals
-
+    
     if pseudosection:
         midpoint = (gx + sx) / 2
         gci = pg.viewer.mpl.dataview.drawVecMatrix(ax, midpoint, offset, va,
