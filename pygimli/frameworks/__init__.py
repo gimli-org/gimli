@@ -17,8 +17,6 @@ from .methodManager import (fit, MethodManager, MethodManager1d,
                             PetroInversionManager,
                             JointPetroInversionManager)
 
-from .lsqrinversion import LSQRInversion
-
 from .timelapse import MultiFrameModelling
 
 # from .resolution import computeR
