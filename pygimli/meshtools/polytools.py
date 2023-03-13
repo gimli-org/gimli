@@ -2019,10 +2019,11 @@ def createFacet(mesh, boundaryMarker=None, verbose=True):
 def createCube(size=[1.0, 1.0, 1.0], pos=None,
                start=None, end=None,
                rot=None, boundaryMarker=0, **kwargs):
-    """Create cube PLC as geometrie definition.
+    """Create a cube PLC as geometry definition.
 
-    Create cube PLC as geometrie definition.
-    You can either give size and center position or start and end position.
+    Create a cube PLC as geometry definition.
+    The size and location of the cube can be specified either as size and
+    center position, or by start and end positions.
 
     Parameters
     ----------
@@ -2031,9 +2032,9 @@ def createCube(size=[1.0, 1.0, 1.0], pos=None,
     pos: [x, y, z]
         The center position, default is at the origin.
     start: [x, y, z]
-        Left Front Bottom corner.
+        Left front bottom corner.
     end: [x, y, z]
-        Right Back Top corner.
+        Right back top corner.
     rot: pg.Pos [None]
         Rotate on the center.
     boundaryMarker: int[0]
@@ -2055,6 +2056,10 @@ def createCube(size=[1.0, 1.0, 1.0], pos=None,
     >>> cube = mt.createCube([10, 10, 1], pos=[-4.0, 0.0, 0.0])
     >>> print(pg.center(cube.positions()))
     RVector3: (-4.0, 0.0, 0.0)
+    >>> cube = mt.createCube(
+    ...     start=np.atleast_1d([0, 0, 0]), end=np.atleast_1d([1, 1, 1]))
+    >>> print(cube.bb())
+    [RVector3: (0.0, 0.0, 0.0), RVector3: (1.0, 1.0, 1.0)]
 
     Returns
     -------

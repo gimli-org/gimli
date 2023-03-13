@@ -67,6 +67,14 @@ def simulate(mesh, scheme, res, **kwargs):
     returnFields: bool [False]
         Returns a matrix of all potential values (per mesh nodes)
         for each injection electrodes.
+    contactImpedances : array|None [None]
+        Can be used to specify area impedances [Ohm m^2] for CEM electrodes.
+        Must be of length equal to the number of CEM electrodes. Is ignored if
+        contactResistances are also set.
+    contactResistances : array|None [None]
+        Can be used to specify contact resistances [Ohm] for CEM electrodes.
+        Must be of length equal to the number of CEM electrodes.
+        Supersedes `contactImpedances`.
 
     Returns
     -------
@@ -112,6 +120,8 @@ def simulate(mesh, scheme, res, **kwargs):
     noiseAbs = kwargs.pop('noiseAbs', 1e-4)
     seed = kwargs.pop('seed', None)
     sr = kwargs.pop('sr', True)  # self.sr)
+    contactImpedances = kwargs.pop('contactImpedances', None)
+    contactResistances = kwargs.pop('contactResistances', None)
 
     # segfaults with self.fop (test & fix)
     fop = ERTModelling(sr=sr, verbose=verbose)
@@ -119,6 +129,11 @@ def simulate(mesh, scheme, res, **kwargs):
     #                                   sr=sr, verbose=verbose)
     fop.data = scheme
     fop.setMesh(mesh, ignoreRegionManager=True)
+
+    if contactImpedances is not None:
+        fop._core.setContactImpedances(contactImpedances)
+    if contactResistances is not None:
+        fop._core.setContactResistances(contactResistances)
 
     rhoa = None
     phia = None
@@ -148,13 +163,21 @@ def simulate(mesh, scheme, res, **kwargs):
     if isinstance(res[0], complex) or isinstance(res, pg.CVector):
         pg.info("Complex resistivity values found.")
         fop.setComplex(True)
+        is_complex = True
     else:
         fop.setComplex(False)
+        is_complex = False
 
     if not scheme.allNonZero('k') and not calcOnly:
         if verbose:
             pg.info('Calculate geometric factors.')
+        if is_complex:
+            # temporary set to real-valued modeling for computation of
+            # geometric factors
+            fop.setComplex(False)
         scheme.set('k', fop.calcGeometricFactor(scheme))
+        if is_complex:
+            fop.setComplex(True)
 
     ret = pg.DataContainerERT(scheme)
     # just to be sure that we don't work with artifacts
@@ -355,6 +378,9 @@ def createGeometricFactors(scheme, numerical=None, mesh=None, dim=3,
         m = mesh.createH2()
         if verbose:
             pg.info('h2 refine', m)
+    else:
+        # just use the mesh provided by the user or created previously
+        m = mesh
 
     if p2 is True:
         m = m.createP2()

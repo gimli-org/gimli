@@ -317,7 +317,10 @@ void dcfemBoundaryAssembleStiffnessMatrix(CSparseMatrix & S, const Mesh & mesh,
 void assembleCompleteElectrodeModel_(RSparseMatrix & S,
                                     const std::vector < ElectrodeShape * > & elecs,
                                     uint oldMatSize, bool lastIsReferenz,
-                                    const RVector & contactImpedances){
+                                    const RVector & contactImpedances,
+                                    const RVector & contactResistances,
+									bool use_cimp
+									){
     RSparseMapMatrix mapS(S);
     ElementMatrix < double > Se;
 
@@ -325,13 +328,13 @@ void assembleCompleteElectrodeModel_(RSparseMatrix & S,
     mapS.setRows(oldMatSize + nElectrodes);
     mapS.setCols(oldMatSize + nElectrodes);
 
-    // RVector vContactImpedance( nElectrodes, 1.0); // Ohm * m^2
-
-    // bool hasImp = checkIfMapFileExistAndLoadToVector("contactImpedance.map",  vContactImpedance);
-
     bool hasImp = true;
-    RVector vContactResistance(nElectrodes, 1.0); // Ohm
-    bool hasRes = checkIfMapFileExistAndLoadToVector("contactResistance.map", vContactResistance);
+	bool hasRes = false;
+	if (!use_cimp)
+	{
+		hasImp = false;
+		hasRes = true;
+	}
 
     for (uint elecID = 0; elecID < nElectrodes; elecID ++){
 
@@ -343,25 +346,123 @@ void assembleCompleteElectrodeModel_(RSparseMatrix & S,
         // __MS(elecs[elecID])
         elecs[elecID]->setMID(mat_ID);
 
-        double contactResistance = vContactResistance[elecID];
+        double contactResistance = contactResistances[elecID];
         double contactImpedance  = contactImpedances[elecID];
 
         std::vector < MeshEntity * > electrodeEnts(elecs[elecID]->entities());
-        if (hasImp || hasRes){
-            if (sumArea < TOLERANCE){ //** point electrode
-                contactImpedance = 1.0;
-                sumArea = 1.0;
+		if (sumArea < TOLERANCE){ //** point electrode
+			contactImpedance = 1.0;
+			contactResistance = 1.0;
+			sumArea = 0.0;
+		} else {
+			if (hasRes) contactImpedance = contactResistance * sumArea;
+			else if (hasImp) contactResistance = contactImpedance / sumArea;
+		}
+		std::cout << "Electrode " << elecs[elecID]->id()
+			<< " Contact- resistance: "<< contactResistance << " Ohm"
+			<< " - impedance: " << contactImpedance  << " Ohm m^2"
+			<< " - area: " << sumArea << " m^2" << std::endl;
+
+        //std::cout << "electrode facet contact impedance: " << contactImpedance << std::endl;
+        for (uint j = 0; j < electrodeEnts.size(); j ++){
+
+            Se.u(*electrodeEnts[j]);
+
+            if (lastIsReferenz && elecID == nElectrodes - 1){
+                Se /= contactImpedance;
             } else {
-                if (hasRes) contactImpedance = contactResistance * sumArea;
-                else if (hasImp) contactResistance = contactImpedance / sumArea;
+                Se /= -contactImpedance;
             }
-            if (sumArea != 1.0){
-                std::cout << "Electrode " << elecs[elecID]->id()
-                    << " Contact- resistance: "<< contactResistance << " Ohm"
-                    << " - impedance: " << contactImpedance  << " Ohm m^2"
-                    << " - area: " << sumArea << " m^2" << std::endl;
+
+            //** C
+            mapS.addToCol(mat_ID, Se);
+                //** C'
+            mapS.addToRow(mat_ID, Se);
+//            std::cout << Se<< std::endl;
+            //if (::fabs(contactImpedance - 1.0) > TOLERANCE){
+                //** B +=
+                Se.u2(*electrodeEnts[j]);
+                Se /= contactImpedance;
+                mapS += Se;
+//             } else {
+//                 std::cout << " cem: without contactImpedance " << std::endl;
+//             }
+        } // for each: electrode entity
+
+        //** G
+        if (lastIsReferenz){
+            throwError("CEM with lastIsReferenz is currently not supported. Please add Reference Electrode");
+            //**!! this leads to nonpositive definite S .. pls check
+            if (elecID != nElectrodes- 1){
+                std::cout << " cem: last is reference" << std::endl;
+                uint refID = oldMatSize + nElectrodes -1;
+
+                mapS[refID][mat_ID] = sumArea / contactImpedance;
+                mapS[mat_ID][refID] = sumArea / contactImpedance;
+
+                mapS[refID][refID]   = 2.0 * sumArea / contactImpedance;
+                mapS[mat_ID][mat_ID] = 2.0 * sumArea / contactImpedance;
+            }
+        } else {
+            if (::fabs(sumArea) < TOLERANCE){
+                //** asuming node electrode
+                mapS[mat_ID][mat_ID] = 1.0;
+            } else {
+                mapS[mat_ID][mat_ID] = sumArea / contactImpedance;
             }
         }
+    } // for each: electrode
+    S = mapS;
+}
+
+void assembleCompleteElectrodeModel_(CSparseMatrix & S,
+                                    const std::vector < ElectrodeShape * > & elecs,
+                                    uint oldMatSize, bool lastIsReferenz,
+                                    const RVector & contactImpedances,
+                                    const RVector & contactResistances,
+									bool use_cimp
+									){
+    CSparseMapMatrix mapS(S);
+    ElementMatrix < double > Se;
+
+    uint nElectrodes = elecs.size();
+    mapS.setRows(oldMatSize + nElectrodes);
+    mapS.setCols(oldMatSize + nElectrodes);
+
+    bool hasImp = true;
+	bool hasRes = false;
+	if (!use_cimp)
+	{
+		hasImp = false;
+		hasRes = true;
+	}
+
+    for (uint elecID = 0; elecID < nElectrodes; elecID ++){
+
+        //** some scale value, can used for contact impedance
+        double sumArea = elecs[elecID]->domainSize();
+        uint mat_ID = oldMatSize + elecID;
+        // __MS(elecID)
+        // __MS(sumArea)
+        // __MS(elecs[elecID])
+        elecs[elecID]->setMID(mat_ID);
+
+        double contactResistance = contactResistances[elecID];
+        double contactImpedance  = contactImpedances[elecID];
+
+        std::vector < MeshEntity * > electrodeEnts(elecs[elecID]->entities());
+		if (sumArea < TOLERANCE){ //** point electrode
+			contactImpedance = 1.0;
+			contactResistance = 1.0;
+			sumArea = 1.0;
+		} else {
+			if (hasRes) contactImpedance = contactResistance * sumArea;
+			else if (hasImp) contactResistance = contactImpedance / sumArea;
+		}
+		std::cout << "Electrode " << elecs[elecID]->id()
+			<< " Contact- resistance: "<< contactResistance << " Ohm"
+			<< " - impedance: " << contactImpedance  << " Ohm m^2"
+			<< " - area: " << sumArea << " m^2" << std::endl;
 
         //std::cout << "electrode facet contact impedance: " << contactImpedance << std::endl;
         for (uint j = 0; j < electrodeEnts.size(); j ++){
@@ -418,15 +519,22 @@ void assembleCompleteElectrodeModel_(RSparseMatrix & S,
 void assembleCompleteElectrodeModel(RSparseMatrix & S,
                                     const std::vector < ElectrodeShape * > & elecs,
                                     uint oldMatSize, bool lastIsReferenz,
-                                    const RVector & contactImpedances){
-    assembleCompleteElectrodeModel_(S, elecs, oldMatSize, lastIsReferenz, contactImpedances);
+                                    const RVector & contactImpedances,
+                                    const RVector & contactResistances,
+									bool use_cimp
+									){
+    assembleCompleteElectrodeModel_(S, elecs, oldMatSize, lastIsReferenz, contactImpedances, contactResistances, use_cimp);
 }
 
 void assembleCompleteElectrodeModel(CSparseMatrix & S,
                                     const std::vector < ElectrodeShape * > & elecs,
                                     uint oldMatSize, bool lastIsReferenz,
-                                    const RVector & contactImpedances){
-    THROW_TO_IMPL
+                                    const RVector & contactImpedances,
+                                    const RVector & contactResistances,
+									bool use_cimp
+									){
+    assembleCompleteElectrodeModel_(S, elecs, oldMatSize, lastIsReferenz, contactImpedances, contactResistances, use_cimp);
+    // THROW_TO_IMPL
 }
 
 double mixedBoundaryCondition(const Boundary & boundary, const RVector3 & source, double k){
@@ -785,8 +893,14 @@ void DCMultiElectrodeModelling::updateDataDependency_(){
     if (mesh_) searchElectrodes_();
 }
 
+// Set the contact impedances (i.e., area resistivities  [Ohm m^2]) of the CEM electrodes
 void DCMultiElectrodeModelling::setContactImpedances(const RVector & zi){
     vContactImpedance_ = zi;
+}
+
+// Set the contact resistances of the CEM electrodes
+void DCMultiElectrodeModelling::setContactResistances(const RVector & ri){
+    vContactResistance_ = ri;
 }
 
 void DCMultiElectrodeModelling::searchElectrodes_(){
@@ -881,6 +995,14 @@ void DCMultiElectrodeModelling::searchElectrodes_(){
 
                 if (ePos[i].distance((*it)->pos()) < std::sqrt((*it)->domainSize()) * 2.0 ||
                     (uint)(*it)->id() == i) {
+					bool test_distance;
+					test_distance = (ePos[i].distance((*it)->pos()) < std::sqrt((*it)->domainSize()) * 2.0);
+					std::cout << "Assigning CEM electrode " << (*it)->id()
+						<< " to electrode " << i
+						<< " cause: "
+						<< " distance to CEM center: " << test_distance
+						 << " id match: " << ((uint)(*it)->id() == i)
+					   	<< std::endl;
                     electrodes_.push_back((*it));
                     electrodes_.back()->setId(i);
                     electrodes_.back()->setPos(ePos[i]);
@@ -1103,6 +1225,7 @@ RVector DCMultiElectrodeModelling::response(const RVector & model,
         log(Critical, "Found no mesh, so cannot calculate a response.");
     }
     if (complex()){
+		std::cout << "Computing complex forward response" << std::endl;
 
         if (min(abs(model) < TOLERANCE)){
             model.save("modelFail.vector");
@@ -1112,8 +1235,8 @@ RVector DCMultiElectrodeModelling::response(const RVector & model,
         DataMap dMap(response_(toComplex(model(0, model.size()/2),
                                          model(model.size()/2, model.size())),
                                Complex(background, -9e99)));
-
         RVector respRe(dMap.data(this->dataContainer(), false, false));
+		// this fails
         RVector respIm(dMap.data(this->dataContainer(), false, true));
 
         CVector resp(toComplex(respRe, respIm) * dataContainer_->get("k"));
@@ -1568,8 +1691,8 @@ void DCMultiElectrodeModelling::calculate(DataContainerERT & data, bool reciproc
         createCurrentPattern(eA, eB, false);
         calculate(eA, eB);
 
-        if (buildCompleteElectrodeModel_ && potentialsCEM_.rows()){
-            std::cout << "Save cemMatrix.matrix for debugging purposes" << std::endl;
+        if (verbose_ && buildCompleteElectrodeModel_ && potentialsCEM_.rows()){
+            std::cout << "Saving cemMatrix.matrix for debugging purposes" << std::endl;
             saveMatrixRow(potentialsCEM_, "cemMatrix.matrix");
         }
 
@@ -1632,14 +1755,17 @@ void DCMultiElectrodeModelling::calculate(DataContainerERT & data, bool reciproc
 
 void DCMultiElectrodeModelling::calculate(DataMap & dMap){
     //! create current pattern;
-
     if (dipoleCurrentPattern_){
         throwError(WHERE_AM_I + " Unable to calculate(datamap) using dipoleCurrentPattern. Use calculate(DataContainer) instead ");
     }
     std::vector < ElectrodeShape * > eA, eB;
 
+	/* std::cout << getComplexResistivities(*this->mesh_) << std::endl; */
+
     createCurrentPattern(eA, eB, true);
     calculate(eA, eB);
+
+	saveMatrixRow(potentialsCEM_, "cemMatrix.matrix");
 
     if (buildCompleteElectrodeModel_ && potentialsCEM_.rows()) {
         if (verbose_) std::cout << "Building collectmatrix from CEM matrix appendix." << std::endl;
@@ -1750,6 +1876,7 @@ void DCMultiElectrodeModelling::calculate(const std::vector < ElectrodeShape * >
     if (verbose_) std::cout << "Forward: ";
     swatch.stop(verbose_);
     // MEMINFO
+	std::cout << "INFO" << nCurrentPattern << " " << solutions_.rows() << " / " << solutions_.cols() << std::endl;
 }
 
 template < class ValueType >
@@ -1830,22 +1957,57 @@ void DCMultiElectrodeModelling::calculateK_(const std::vector < ElectrodeShape *
 
         for (Index i = 0; i < passiveCEM_.size(); i ++) elecs.push_back(passiveCEM_[i]);
 
+		// decide whether to use the supplied impedance vector or the supplied
+		// resistance vector
+		// the logic should be the following:
+		// 1) resistance overwrites impedance
+		// 2) file-import overwrites setter functions (setContactImpedances/setContactResistances)
+		bool use_cimp = false;
         if (vContactImpedance_.size() == 0){
-            vContactImpedance_.resize(elecs.size(), 1.0); // Ohm
-            // RVector vContactResistance(nElectrodes, 1.0); // Ohm
-            // RVector vContactImpedance( nElectrodes, 1.0); // Ohm * m^2
+			// note that the 1.0 Ohm m^2 is not relevant as a default value
+			// as it will be overwritten by the default impedance down below
+            vContactImpedance_.resize(elecs.size(), 1.0); // Ohm * m^2
 
             bool hasImp = checkIfMapFileExistAndLoadToVector("contactImpedance.map",
                                                              vContactImpedance_);
             if (hasImp){
                 if (verbose_) std::cout << "Loaded: contactImpedance.map." << std::endl;
+				use_cimp = true;
             }
         }
+		else
+		{
+			// vContactImpedance_ was already set, e.g. by the setter function
+			// use this
+			use_cimp = true;
+		}
+        if (vContactResistance_.size() == 0){
+			// this is the default value
+            vContactResistance_.resize(elecs.size(), 1.0); // [Ohm]
+			bool hasRes = checkIfMapFileExistAndLoadToVector("contactResistance.map", vContactResistance_);
+            if (hasRes){
+                if (verbose_) std::cout << "Loaded: contactResistance.map." << std::endl;
+				use_cimp = false;
+            }
+		}
+		else
+		{
+			// vContactResistance_ was already set, e.g. by the setter function
+			// use this
+			use_cimp = false;
+		}
 
         assembleCompleteElectrodeModel(S_, elecs, oldMatSize, lastIsReferenz_,
-                                           vContactImpedance_);
+                                           vContactImpedance_,
+										   vContactResistance_,
+										   use_cimp
+										   );
 
-        potentialsCEM_.resize(nCurrentPattern, lastValidElectrode);
+		if (complex_){
+        	potentialsCEM_.resize(nCurrentPattern * 2, lastValidElectrode);
+		} else {
+        	potentialsCEM_.resize(nCurrentPattern, lastValidElectrode);
+		}
 
     } // end CEM
 
@@ -1919,7 +2081,12 @@ void DCMultiElectrodeModelling::calculateK_(const std::vector < ElectrodeShape *
 
         if (buildCompleteElectrodeModel_){
             //__MS(sol(oldMatSize, sol.size()- passiveCEM_.size()));
-            potentialsCEM_[i] = TmpToRealHACK(sol(oldMatSize, sol.size() - passiveCEM_.size()));
+			if (complex_){
+            	potentialsCEM_[i] = TmpToRealHACK((sol(oldMatSize, sol.size() - passiveCEM_.size())));
+            	potentialsCEM_[i + nCurrentPattern] = TmpToImagHACK((sol(oldMatSize, sol.size() - passiveCEM_.size())));
+			} else {
+            	potentialsCEM_[i] = TmpToRealHACK(sol(oldMatSize, sol.size() - passiveCEM_.size()));
+			}
         }
 
         // no need for setSingValue here .. numerical primpotentials have
