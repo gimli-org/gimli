@@ -14,7 +14,7 @@ from .ertManager import ERTManager
 from .ertModelling import ERTModelling, ERTModellingReference
 from .ertScheme import createData
 from .ves import VESManager
-from .vesModelling import VESModelling, VESCModelling
+from .vesModelling import VESModelling, VESCModelling, VESRhoModelling
 
 from .visualization import showERTData, drawERTData, generateDataPDF
 from .importData import load

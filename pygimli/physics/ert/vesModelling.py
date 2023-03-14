@@ -384,15 +384,27 @@ class VESCModelling(VESModelling):
         a2.grid(True)
 
 
+# class VESRhoModelling(VESModelling):  # not working due to Block1dModelling
 class VESRhoModelling(pg.Modelling):
     """Vertical electrical sounding (VES) modelling with fixed layers."""
 
-    def __init__(self, thk, **kwargs):
-        super().__init__()
-        self.fwd = pg.core.DC1dRhoModelling(thk, **kwargs)
-        mesh = pg.meshtools.createMesh1D(len(thk)+1)
-        self.setMesh(mesh)
+    def __init__(self, thk=None, verbose=False, **kwargs):
+        super().__init__(verbose=verbose)
+        # better do the following in a function like setDataSpace/setModelSpace
+        # self.fwd = pg.core.DC1dRhoModelling(thk, **kwargs)
+        self.bfop = VESModelling(**kwargs)  # just to sort out AM, AN etc.
+        self.fwd = pg.core.DC1dRhoModelling(thk, self.bfop.am, self.bfop.bm,
+                                            self.bfop.an, self.bfop.bn,
+                                            verbose=verbose)
+        self.mesh_ = pg.meshtools.createMesh1D(len(thk)+1)
+        self.setMesh(self.mesh_)
+        # self.mesh = self.mesh_
+        self.thk = thk
 
     def response(self, par):
         """Forward response."""
         return self.fwd.response(par)
+
+    def createStartModel(self, rhoa):
+        """Create starting model."""
+        return pg.Vector(len(self.thk)+1, np.median(rhoa))
