@@ -500,7 +500,6 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
             for marker in uniquemarkers:
                 labels.append(str((marker)))
             cBar.set_ticklabels(labels)
-    
 
     if coverage is not None:
         if isinstance(coverage, float):
@@ -558,7 +557,6 @@ def showBoundaryNorm(mesh, normMap=None, **kwargs):
 
     Parameters
     ----------
-
     mesh : :gimliapi:`GIMLI::Mesh`
         2D or 3D GIMLi mesh
 
@@ -617,7 +615,6 @@ def showAnimation(mesh, data, ax=None, **kwargs):
 
     Parameters
     ----------
-
     mesh: :gimliapi:`GIMLI::Mesh`
         2D GIMLi mesh
     data: [NxM] iterable
