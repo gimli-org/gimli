@@ -19,9 +19,6 @@ def nodeDataToCellData(mesh, data):
     data : iterable [float]
         Data of len mesh.nodeCount().
         TODO complex, R3Vector, ndarray
-
-    Examples
-    --------
     """
     if len(data) != mesh.nodeCount():
         raise BaseException(
@@ -93,9 +90,10 @@ def cellDataToNodeData(mesh, data, style='mean'):
 
 
 def nodeDataToBoundaryData(mesh, data):
-    """
-        Assuming [NodeCount, dim] data
-        DOCUMENT_ME
+    """Convert node data to boundary data.
+
+    Assuming [NodeCount, dim] data
+    DOCUMENT_ME
     """
     if len(data) != mesh.nodeCount():
         raise BaseException(
@@ -138,7 +136,7 @@ def nodeDataToBoundaryData(mesh, data):
 
 
 def cellDataToBoundaryData(mesh, data):
-    """ TODO DOCUMENT_ME """
+    """Convert cell data to boundary data."""
     if len(data) != mesh.cellCount():
         raise BaseException(
             "Dimension mismatch, expecting cellCount(): " +
@@ -155,8 +153,7 @@ def cellDataToBoundaryData(mesh, data):
 
 
 def fillEmptyToCellArray(mesh, vals, slope=True):
-    """
-    Prolongate empty cell values to complete cell attributes.
+    """Prolongate empty cell values to complete cell attributes.
 
     It is possible to have zero values that are filled with appropriate
     attributes. This function tries to fill empty values successively by
@@ -279,9 +276,9 @@ def interpolateAlongCurve(curve, t, **kwargs):
         periodic : bool [False]
             Curve is periodic.
             Usefull for closed parametric spline interpolation.
+
     Returns
     -------
-
     p : np.array
         Curve positions at query points :math:`t`.
         Dimension of p match the size of curve the coordinates.
@@ -411,7 +408,7 @@ def tapeMeasureToCoordinates(tape, pos):
 
 
 def interpolate(*args, **kwargs):
-    r"""Interpolation convinience function.
+    r"""Interpolation convenience function.
 
     Convenience function to interpolate different kind of data.
     Currently supported interpolation schemes are:
@@ -419,7 +416,8 @@ def interpolate(*args, **kwargs):
     * Interpolate mesh based data from one mesh to another
      (syntactic sugar for the core based interpolate (see below))
 
-      Parameters:
+    Parameters
+    ----------
         args: :gimliapi:`GIMLI::Mesh`, :gimliapi:`GIMLI::Mesh`, iterable
             `outData = interpolate(outMesh, inMesh, vals)`
             Interpolate values based on inMesh to outMesh.
@@ -427,13 +425,15 @@ def interpolate(*args, **kwargs):
             outMesh.cellCenters() or inMesh.nodeCount() which are interpolated
             to outMesh.positions().
 
-      Returns:
+    Returns
+    -------
         Interpolated values.
 
     * Mesh based values to arbitrary points, based on finite element
       interpolation (from gimli core).
 
-      Parameters:
+    Parameters
+    ----------
         args: :gimliapi:`GIMLI::Mesh`, ...
             Arguments forwarded to :gimliapi:`GIMLI::interpolate`
         kwargs:
@@ -442,13 +442,15 @@ def interpolate(*args, **kwargs):
         `interpolate(srcMesh, destMesh)`
             All data from inMesh are interpolated to outMesh
 
-      Returns:
+    Returns
+    -------
         Interpolated values
 
     * Interpolate along curve.
       Forwarded to :py:mod:`pygimli.meshtools.interpolateAlongCurve`
 
-      Parameters:
+    Parameters
+    ----------
         args: curve, t
 
         kwargs:
@@ -468,7 +470,8 @@ def interpolate(*args, **kwargs):
       coordinates while 'harmonic' returns an approximate best fit.
       The amount of harmonic coefficients can be specfied by the 'nc' keyword.
 
-      Parameters:
+    Parameters
+    ----------
         args: xi, x, u
             * :math:`x_{\text{i}}` - target sample points
             * :math:`x` - function sample points
@@ -482,7 +485,8 @@ def interpolate(*args, **kwargs):
                 Curve is periodic.
                 Useful for closed parametric spline interpolation.
 
-      Returns:
+    Returns
+    -------
         ui: array of length xi
             :math:`u_{\text{i}} = I(x_{\text{i}})`, with :math:`I = u(x)`
 
@@ -499,7 +503,6 @@ def interpolate(*args, **kwargs):
 
     Examples
     --------
-
     >>> import numpy as np
     >>> import pygimli as pg
     >>> fig, ax = pg.plt.subplots(1, 1, figsize=(10, 5))
