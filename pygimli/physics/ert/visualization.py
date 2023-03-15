@@ -18,11 +18,14 @@ def generateDataPDF(data, filename="data.pdf"):
         data = pg.load(data)
 
     from matplotlib.backends.backend_pdf import PdfPages
+    logToks = ["Uout(V)", "u", "i", "r", "rhoa"]
     with PdfPages(filename) as pdf:
         fig, ax = pg.plt.subplots()
         for tok in data.tokenList().split():
             if data.haveData(tok):
-                pg.show(data, tok, ax=ax, label=tok)
+                vals = data[tok]
+                logScale = min(vals) > 0 and tok in logToks
+                pg.show(data, vals, ax=ax, label=tok, logScale=logScale)
                 fig.savefig(pdf, format='pdf')
                 ax.cla()
 
@@ -34,7 +37,6 @@ def showERTData(data, vals=None, **kwargs):
 
     Parameters
     ----------
-
     data : :gimliapi:`BERT::DataContainerERT`
 
     **kwargs :
