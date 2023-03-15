@@ -845,7 +845,7 @@ class JointModelling(MeshModelling):
         self.jac = pg.matrix.BlockMatrix()
 
         # self.modelTrans = self.fops[0].modelTrans
-        self.modelTrans = pg.core.TransLogLU()
+        self.modelTrans = pg.trans.TransLogLU()
         self.fops[0].regionManager()
         self.setRegionManager(self.fops[0].regionManagerRef())
 

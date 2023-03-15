@@ -258,7 +258,7 @@ class MultLeftRightMatrix(MultMatrix):
 
         Parameters
         ----------
-        A : pg.core.MatrixBase derived
+        A : pg.matrix.MatrixBase derived matrix
             main matrix
         left, right : pg.Vector
             left and right side vectors to weight individual rows & columns
