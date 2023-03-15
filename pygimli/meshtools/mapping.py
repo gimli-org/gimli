@@ -101,7 +101,7 @@ def nodeDataToBoundaryData(mesh, data):
             str(mesh.nodeCount()) + " got: " + str(len(data)),
             str(len(data[0])))
 
-    if isinstance(data, pg.core.R3Vector):
+    if isinstance(data, pg.PosVector):
         ret = np.zeros((mesh.boundaryCount(), 3))
         for b in mesh.boundaries():
             ret[b.id()] = sum(data[b.ids()]) / b.nodeCount()
@@ -145,7 +145,7 @@ def cellDataToBoundaryData(mesh, data):
 
     CtB = mesh.cellToBoundaryInterpolation()
 
-    if isinstance(data, pg.core.R3Vector()):
+    if isinstance(data, pg.PosVector()):
         return np.array([CtB * pg.x(data), CtB * pg.y(data),
                          CtB * pg.z(data)]).T
     else:
@@ -332,7 +332,7 @@ def interpolateAlongCurve(curve, t, **kwargs):
         ], axis=0)
         tCurve = np.append(tCurve, max(t))
 
-    if isinstance(curve, pg.core.R3Vector) or isinstance(
+    if isinstance(curve, pg.PosVector) or isinstance(
             curve, pg.core.stdVectorRVector3):
         xC = pg.x(curve)
         yC = pg.y(curve)
@@ -499,7 +499,7 @@ def interpolate(*args, **kwargs):
     * 2D parametric to points (method=['linear, 'spline', 'harmonic'])
     * 2D/3D point cloud to points/grids
         ('Delauney', 'linear, 'spline', 'harmonic')
-    * Mesh to points based on nearest neighbor values (pg.core)
+    * Mesh to points based on nearest neighbor values (pgcore)
 
     Examples
     --------
@@ -529,7 +529,7 @@ def interpolate(*args, **kwargs):
     elif len(args) > 0:
         if isinstance(args[0], pg.Mesh):
             if len(args) == 2 and isinstance(args[1], pg.Mesh):
-                return pg.core.pgcore.interpolate(args[0], args[1],
+                return pg.core.interpolate(args[0], args[1],
                                                   fillValue=fallback,
                                                   verbose=verbose)
 
@@ -544,7 +544,7 @@ def interpolate(*args, **kwargs):
             if args[1].ndim == 2:  # outData = (inMesh, mat, vR3)
 
                 outMat = pg.Matrix()
-                pg.core.pgcore.interpolate(args[0], inMat=np.array(args[1]),
+                pg.core.interpolate(args[0], inMat=np.array(args[1]),
                                            destPos=args[2], outMat=outMat,
                                            fillValue=fallback,
                                            verbose=verbose)
@@ -553,21 +553,21 @@ def interpolate(*args, **kwargs):
         if len(args) == 4:  # args: (inMesh, inData, outPos, outData)
 
             if args[1].ndim == 1 and args[2].ndim == 1 and args[3].ndim == 1:
-                return pg.core.pgcore.interpolate(args[0], inVec=args[1],
+                return pg.core.interpolate(args[0], inVec=args[1],
                                                   x=args[2], y=args[3],
                                                   fillValue=fallback,
                                                   verbose=verbose)
 
             if isinstance(args[1], pg.Matrix) and \
                isinstance(args[3], pg.Matrix):
-                return pg.core.pgcore.interpolate(args[0], inMat=args[1],
+                return pg.core.interpolate(args[0], inMat=args[1],
                                                   destPos=args[2],
                                                   outMat=args[3],
                                                   fillValue=fallback,
                                                   verbose=verbose)
             if isinstance(args[1], pg.Vector) and \
                isinstance(args[3], pg.Vector):
-                return pg.core.pgcore.interpolate(args[0], inVec=args[1],
+                return pg.core.interpolate(args[0], inVec=args[1],
                                                   destPos=args[2],
                                                   outVec=args[3],
                                                   fillValue=fallback,
@@ -576,13 +576,13 @@ def interpolate(*args, **kwargs):
         if len(args) == 5:
             if args[1].ndim == 1 and args[2].ndim == 1 and \
                args[3].ndim == 1 and args[4].ndim == 1:
-                return pg.core.pgcore.interpolate(args[0], inVec=args[1],
+                return pg.core.interpolate(args[0], inVec=args[1],
                                                   x=args[2], y=args[3],
                                                   z=args[4],
                                                   fillValue=fallback,
                                                   verbose=verbose)
 
-        return pg.core.pgcore.interpolate(*args, **kwargs,
+        return pg.core.interpolate(*args, **kwargs,
                                           fillValue=fallback,
                                           verbose=verbose)
         # end if pg.core:
@@ -594,7 +594,7 @@ def interpolate(*args, **kwargs):
             inMesh = args[1]
             data = args[2]
 
-            if isinstance(data, pg.core.R3Vector) or isinstance(
+            if isinstance(data, pg.PosVector) or isinstance(
                     data, pg.core.stdVectorRVector3):
                 x = pg.interpolate(outMesh, inMesh, pg.x(data))
                 y = pg.interpolate(outMesh, inMesh, pg.y(data))

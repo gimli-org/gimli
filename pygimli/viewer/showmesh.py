@@ -195,7 +195,7 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
         . iterable of type [float, float] -- vector field
             forward to :py:mod:`pygimli.viewer.mpl.drawStreams`
 
-        . pg.core.R3Vector -- vector field
+        . pg.PosVector -- vector field
             forward to :py:mod:`pygimli.viewer.mpl.drawStreams`
 
         . pg.core.stdVectorRVector3 -- sensor positions
@@ -318,7 +318,7 @@ def showMesh(mesh, data=None, block=False, colorBar=None,
 
     elif isinstance(data, pg.core.stdVectorRVector3):
         drawSensors(ax, data, **kwargs)
-    elif isinstance(data, pg.core.R3Vector):
+    elif isinstance(data, pg.PosVector):
         drawStreams(ax, mesh, data, **kwargs)
     else:
 
