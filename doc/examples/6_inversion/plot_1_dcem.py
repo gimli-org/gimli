@@ -4,46 +4,51 @@
 DC-EM Joint inversion
 ---------------------
 
+Joint inversion is
 This is an old script from early pyGIMLi jointly inverting direct current (DC)
 and electromagnetic (EM) soundings on the modelling abstraction level.
 Note that this is not recommended as a basis for programming, because there
 is a dedicated framework for classical joint inversion. However, it explains
-what happens under the hood in the much simpler script that follows."""
+what happens under the hood in the much simpler script that follows.
+"""
 
-###############################################################################
-# The case has been documented by :cite:`Guenther2013NSG`.
+# %%%
+# A similar case has been documented by :cite:`Guenther2013NSG`.
+#
+
+# We import the numpy and matplotlib
 import numpy as np
 import matplotlib.pyplot as plt
-
+# Next we import pyGIMLi and the modelling operators for block models
 import pygimli as pg
 from pygimli.physics.em import HEMmodelling
 from pygimli.physics.ves import VESModelling
 from pygimli.frameworks import JointModelling
+# For block models we need the Marquardt-Levenberg inversion scheme
 from pygimli.frameworks import MarquardtInversion
 from pygimli.viewer.mpl import drawModel1D
 
-
-###############################################################################
-# The actual script starts here. There are some options to play with
-errorEMabs = 1.  # absolute (ppm of primary signal)
-errorDCrel = 3.  # in per cent
-
-###############################################################################
-# First we create a synthetic model.
+# %%%
+# First we create a synthetic model and error models to be used later.
+#
 
 nlay = 4  # number of layers
 synThk = [5, 15, 15]
 synRes = [1000, 100, 500, 20]
+errorEMabs = 1.  # absolute (ppm of primary signal)
+errorDCrel = 3.  # in per cent
 
 # %%%
-# We first set up EM forward operator and generate synthetic data with noise
+# Part 1: EM
+# ==========
+# We set forward operator and generate synthetic data with noise.
 #
 
 # MaxMin-10/Promys instrument, 1m above the ground
 nf = 10
 freq = 2**np.arange(nf) * 110.
 fEM = HEMmodelling(nlay=nlay, height=1, f=freq, r=100, scaling="%")
-# alternative: RESOLVE airborne system
+# alternatively: RESOLVE airborne system
 # freq = [338]
 # fEM = HEMmodelling(nlay=nlay, height=50, f=freq, r=10)
 
@@ -135,8 +140,8 @@ ax2.semilogy(dataEM[0:nf], freq, 'x', color="C0", label='syn IP')
 ax2.semilogy(dataEM[nf:nf*2], freq, 'o', color="C0", label='syn OP')
 ax2.semilogy(invEM.response[0:nf], freq, '--', color="C2", label='EM')
 ax2.semilogy(invEM.response[nf:nf*2], freq, '--', color="C2")
-ax2.semilogy(invDCEM.response[na:na+nf], freq, ':', color="C2", label='DCEM')
-ax2.semilogy(invDCEM.response[na+nf:na+nf*2], freq, '2:', color="C2")
+ax2.semilogy(invDCEM.response[na:na+nf], freq, ':', color="C3", label='DCEM')
+ax2.semilogy(invDCEM.response[na+nf:na+nf*2], freq, '2:', color="C3")
 ax2.set_ylim((min(freq), max(freq)))
 ax2.set_xlabel("IP/OP in %")
 ax2.set_ylabel("$f$ in Hz")
