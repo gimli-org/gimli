@@ -32,11 +32,14 @@ from pygimli.viewer.mpl import drawModel1D
 # First we create a synthetic model and error models to be used later.
 #
 
-nlay = 4  # number of layers
 synThk = [5, 15, 15]
 synRes = [1000, 100, 500, 20]
+nlay = len(synRes)  # number of layers
 errorEMabs = 1.  # absolute (ppm of primary signal)
 errorDCrel = 3.  # in per cent
+# we use the same starting model for all
+startModel = [10]*(nlay-1) + [100]*nlay
+
 
 # %%%
 # Part 1: EM
@@ -48,9 +51,6 @@ errorDCrel = 3.  # in per cent
 nf = 10
 freq = 2**np.arange(nf) * 110.
 fEM = HEMmodelling(nlay=nlay, height=1, f=freq, r=100, scaling="%")
-# alternatively: RESOLVE airborne system
-# freq = [338]
-# fEM = HEMmodelling(nlay=nlay, height=50, f=freq, r=10)
 
 dataEM = fEM(synThk + synRes)
 errorEM = np.ones_like(dataEM) * errorEMabs
@@ -58,59 +58,41 @@ dataEM += pg.randn(len(dataEM), seed=1234) * errorEM
 print(dataEM)
 
 # %%%
-# We define model transformations: logarithms and log with upper+lower bounds
+# We set up the independent EM inversion and run the model.
 #
 
-# transRhoa = pg.trans.TransLog()
-# transEM = pg.trans.Trans()
-
-###############################################################################
-# We set up the independent EM inversion and run the model.
-startModel = [10]*(nlay-1) + [100]*nlay
-
 invEM = MarquardtInversion(fop=fEM, verbose=False)
-# invEM.setRegularization(0, limits=[1, 30], cType=0)
-# invEM.setRegularization(1, limits=[10, 1000])
 modelEM = invEM.run(dataEM, np.abs(errorEM/dataEM), startModel=startModel)
 
 # %%%
+# Part 2: DC
+# ==========
 # Next we set up the DC forward operator and generate synthetic data with noise
 #
 
-ab2 = pg.Vector(20, 3.)
+ab2 = 1.3**np.arange(20) * 3.  # logarithmically equidistance starting with 3m
 na = len(ab2)
-mn2 = pg.Vector(na, 1.0)
-for i in range(na-1):
-    ab2[i+1] = ab2[i] * 1.3
-fDC = VESModelling(ab2=ab2, mn2=mn2)
+
+fDC = VESModelling(ab2=ab2, mn2=np.ones_like(ab2))
 dataDC = fDC(synThk+synRes)
 errorDC = np.ones_like(dataDC) * errorDCrel / 100.
 dataDC *= 1. + pg.randn(len(dataDC), seed=1234) * errorDC
 
-# fDC.region(0).setTransModel(transThk)
-# fDC.region(1).setTransModel(transRes)
-
 # We set up the independent DC inversion and let it run.
 invDC = MarquardtInversion(fop=fDC, verbose=False)
-# invDC.dataTrans = pg.trans.TransLog()
-# invDC.setRegularization(0, limits=[1, 100], cType=0)
-# invDC.setRegularization(1, limits=[1, 1000], cType=0)
 modelDC = invDC.run(dataDC, errorDC, startModel=startModel)
 
 # %%%
+# Part 3: Joint inversion
+# =======================
 # We create a the joint forward operator using the Joint inversion framework.
 #
 
 fDCEM = JointModelling([fDC, fEM])
 fDCEM.setData([dataDC, dataEM])  # just for sizes!
-# transDCEM = pg.trans.TransCumulative()
-# transDCEM.add(transRhoa, na)
-# transDCEM.add(transEM, nf*2)
 jointData = pg.cat(dataDC, dataEM)
 jointError = pg.cat(errorDC, np.abs(errorEM/dataEM))
 invDCEM = MarquardtInversion(fop=fDCEM, verbose=False)
-# invDCEM.setRegularization(0, limits=[1, 100], cType=0)
-# invDCEM.setRegularization(1, limits=[1, 1000], cType=0)
 modelDCEM = invDCEM.run(jointData, jointError,
                         startModel=startModel)
 
@@ -129,8 +111,8 @@ print([invEM.chi2(), invDC.chi2(), invDCEM.chi2()])  # chi-square values
 
 fig, (ax1, ax2, ax3) = plt.subplots(figsize=(10, 5), ncols=3)
 drawModel1D(ax1, synThk, synRes, plot='semilogx', color='C0', label="synth")
-drawModel1D(ax1, model=modelEM, color='C1', label="DC")
-drawModel1D(ax1, model=modelDC, color='C2', label="EM")
+drawModel1D(ax1, model=modelEM, color='C1', label="EM")
+drawModel1D(ax1, model=modelDC, color='C2', label="DC")
 drawModel1D(ax1, model=modelDCEM, color='C3', label="DC-EM")
 ax1.legend()
 ax1.set_xlim((10., 1000.))
@@ -138,8 +120,8 @@ ax1.set_ylim((40., 0.))
 ax1.grid(which='both')
 ax2.semilogy(dataEM[0:nf], freq, 'x', color="C0", label='syn IP')
 ax2.semilogy(dataEM[nf:nf*2], freq, 'o', color="C0", label='syn OP')
-ax2.semilogy(invEM.response[0:nf], freq, '--', color="C2", label='EM')
-ax2.semilogy(invEM.response[nf:nf*2], freq, '--', color="C2")
+ax2.semilogy(invEM.response[0:nf], freq, '--', color="C1", label='EM')
+ax2.semilogy(invEM.response[nf:nf*2], freq, '--', color="C1")
 ax2.semilogy(invDCEM.response[na:na+nf], freq, ':', color="C3", label='DCEM')
 ax2.semilogy(invDCEM.response[na+nf:na+nf*2], freq, '2:', color="C3")
 ax2.set_ylim((min(freq), max(freq)))
@@ -148,8 +130,8 @@ ax2.set_ylabel("$f$ in Hz")
 ax2.yaxis.set_label_position("right")
 ax2.grid(which='both')
 ax2.legend(loc="best")
-ax3.loglog(dataDC, ab2, 'bx-', label='syn')
-ax3.loglog(invDC.response, ab2, '-', label='DC', color="C1")
+ax3.loglog(dataDC, ab2, 'x-', label='syn', color="C0")
+ax3.loglog(invDC.response, ab2, '-', label='DC', color="C2")
 ax3.loglog(invDCEM.response[0:na], ab2, '-', label='DCEM', color="C3")
 ax3.set_ylim((max(ab2), min(ab2)))
 ax3.grid(which='both')
@@ -158,6 +140,16 @@ ax3.set_ylabel("AB/2 in m")
 ax3.yaxis.set_ticks_position("right")
 ax3.yaxis.set_label_position("right")
 ax3.legend()
+
+# %%%
+# All three inversions are able to reveal the subsurface structures.
+# EM fails to describe the first layer-resistivity and also its thickness, for
+# which DC does a better job. Both are similarly away from the synthetic model
+# regarding the resistivity and upper depth of the third layer. EM can better
+# resolve the good conductor at depth as expected.
+# The joint inversion result combines the resolution properties of both methods
+# and yields a result that is very close to the synthetic.
+#
 
 ###############################################################################
 
