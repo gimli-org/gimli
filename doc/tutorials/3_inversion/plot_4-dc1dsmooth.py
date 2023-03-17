@@ -19,7 +19,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import pygimli as pg
-from pygimli.physics.ert import VESRhoModelling, VESManager
+from pygimli.physics.ves import VESRhoModelling, VESManager
 from pygimli.viewer.mpl import drawModel1D
 
 # %%%

@@ -20,7 +20,7 @@ constrain the sum of water, ice, air and rock fraction to be 1.
 import numpy as np
 import pygimli as pg
 from pygimli.frameworks.lsqrinversion import LSQRInversion
-from pygimli.physics.ert import VESModelling
+from pygimli.physics.ves import VESModelling
 from pygimli.viewer.mpl import drawModel1D
 
 

@@ -126,7 +126,7 @@ if __name__ == '__main__':
     errPerc = 3.  # relative error of 3 percent
     ab2 = np.logspace(-1, 2, 50)  # AB/2 distance (current electrodes)
     mn2 = ab2 / 3.  # MN/2 distance (potential electrodes)
-    f = pg.physics.ert.VESModelling(ab2=ab2, mn2=mn2, nLayers=nlay)
+    f = pg.physics.ves.VESModelling(ab2=ab2, mn2=mn2, nLayers=nlay)
     synres = [100., 500., 20., 800.]  # synthetic resistivity
     synthk = [0.5, 3.5, 6.]  # synthetic thickness (nlay-th layer is infinite)
     rhoa = f(synthk+synres)
