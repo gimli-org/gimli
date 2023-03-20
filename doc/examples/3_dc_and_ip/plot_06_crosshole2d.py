@@ -5,12 +5,11 @@
 --------------------------
 
 Inversion of 2D crosshole field data.
-
-
 """
 
 # %%%
-#
+# We import the used libraries pygimli, meshtools the ERT module and a function
+# for displaying a data container.
 #
 
 import numpy as np
@@ -24,8 +23,8 @@ from pygimli.viewer.mpl import showDataContainerAsMatrix
 # data set published by Kuras et al. (2009) in the frame of the ALERT project.
 #
 
-data = ert.load("crosshole2d.dat")
-# data = pg.getExampleData("ert/crosshole2d.dat")
+# data = ert.load("crosshole2d.dat")
+data = pg.getExampleData("ert/crosshole2d.dat")
 print(data)
 
 # %%%
@@ -86,7 +85,8 @@ pg.show(mesh, markers=True)
 
 data["err"] = ert.estimateError(data)
 mgr = ert.Manager(data)
-mgr.invert(mesh=mesh, zWeight=0.5, verbose=True)
+mgr.inv.setRegularization(correlationLengths=[1, 0.5])
+mgr.invert(mesh=mesh, verbose=True)
 mgr.showResult(cMin=15, cMax=200)
 
 # %%%
@@ -95,4 +95,5 @@ mgr.showResult(cMin=15, cMax=200)
 # Kuras, O., Pritchard, J., Meldrum, P. I., Chambers, J. E., Wilkinson, P. B.,
 # Ogilvy, R. D.,and Wealthall, G. P. (2009). Monitoring hydraulic processes
 # with Automated time-Lapse Electrical Resistivity Tomography (ALERT).
-# Compte Rendus Geosciences - Special issue on Hydrogeophysics, 341(10-11):868–885.
+# Compte Rendus Geosciences - Special issue on Hydrogeophysics,
+# 341(10-11):868–885.

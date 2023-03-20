@@ -48,6 +48,12 @@ def __DataContainer_setSensors(self, sensors):
 DataContainer.setSensors = __DataContainer_setSensors
 
 
+def __DataContainer_copy(self):
+    return type(self)(self)
+
+DataContainer.copy = __DataContainer_copy
+DataContainerERT.copy = __DataContainer_copy
+
 def __DC_setVal(self, key, val):
     if len(val) > self.size():
         verbose("DataContainer resized to:", len(val))
