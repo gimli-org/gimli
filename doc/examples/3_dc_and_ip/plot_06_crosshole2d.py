@@ -23,7 +23,6 @@ from pygimli.viewer.mpl import showDataContainerAsMatrix
 # data set published by Kuras et al. (2009) in the frame of the ALERT project.
 #
 
-# data = ert.load("crosshole2d.dat")
 data = pg.getExampleData("ert/crosshole2d.dat")
 print(data)
 
